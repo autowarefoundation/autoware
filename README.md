@@ -1,4 +1,4 @@
-EasyDrive
+Autoware
 =========
 
-Tablet-based user interface for autonomous driving
+Open software for autonomous driving
