@@ -84,7 +84,7 @@ find_package(OpenCV REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
+#  INCLUDE_DIRS include
   LIBRARIES calibration_of_camera_and_lrf
   CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
   DEPENDS system_lib

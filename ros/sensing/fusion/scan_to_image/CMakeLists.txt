@@ -85,7 +85,7 @@ find_package(OpenCV REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
+#  INCLUDE_DIRS include
   LIBRARIES scan_to_image
   CATKIN_DEPENDS cv_bridge image_transport roscpp rospy sensor_msgs std_msgs
   DEPENDS system_lib
@@ -173,4 +173,4 @@ include_directories(/usr/include/opencv2/legacy)
 
 add_executable(point_to_image src/transformation.cpp)
 target_link_libraries(point_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
-
+add_dependencies(image_detector scan_to_image_generate_messages_cpp)
