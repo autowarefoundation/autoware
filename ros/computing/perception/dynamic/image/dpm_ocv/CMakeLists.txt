@@ -189,3 +189,4 @@ add_executable(image_detector
  src/routine.cpp)
 
 target_link_libraries(image_detector ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(image_detector dpm_ocv_generate_messages_cpp)

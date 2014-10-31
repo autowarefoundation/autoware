@@ -185,3 +185,4 @@ add_executable(fusion
  src/resize.cc)
 
 target_link_libraries(fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(fusion sensor_fusion_generate_messages_cpp)
