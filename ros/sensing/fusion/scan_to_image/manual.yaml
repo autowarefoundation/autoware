@@ -1,0 +1,12 @@
+%YAML:1.0
+manual_mode: 0
+x_theta: 0.0
+y_theta: 0.0
+z_theta: 0.0
+x_vector: 0.0
+y_vector: 0.3
+z_vector: 0.0
+fx_camera_param:585.0
+fy_camera_param:585.0
+ox_camera_param:320.0
+oy_camera_param:240.0
