@@ -157,7 +157,14 @@ int main(int argc, char* argv[])
     float overlapThreshold = 0.5f;
     int numThreads = 6;
 #if 1 // AXE
-    // ToDo ...
+    if(n.hasParam("/image_detector/threshold")){
+      double threshold = 0.5;
+      n.getParam("/image_detector/threshold", threshold);
+      overlapThreshold = (float)threshold;
+    }
+    if(n.hasParam("/image_detector/threads")){
+      n.getParam("/image_detector/threads", numThreads);
+    }
 #else
     if( argc < 3 )
     {
@@ -179,7 +186,9 @@ int main(int argc, char* argv[])
 
     images_filenames.clear();models_filenames.clear();
 #if 1 //AXE
-    models_filenames.push_back( std::string("models_VOC2007/car.xml") );
+    if(n.getParam("/image_detector/models", models_filenames) == 0){
+      models_filenames.push_back( std::string("models_VOC2007/car.xml") );
+    }
 #else
     images_filenames.push_back( std::string(argv[1]) );
     models_filenames.push_back( std::string(argv[2]) );
