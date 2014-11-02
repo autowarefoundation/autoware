@@ -14,12 +14,19 @@
 #include "utils.h"
 #include "switch_release.h"
 
+#if !defined(USE_POSIX_SHARED_MEMORY)
+#include "ros/ros.h"
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#endif
+
 #undef MAX
 #undef MIN
 #define MAX(a,b) ((a)<(b) ? (b) : (a))
 #define MIN(a,b) ((a)>(b) ? (b) : (a))
 
 
+#if defined(USE_POSIX_SHARED_MEMORY)
 /* global variables and function to use shared memory */
 unsigned char    *shrd_ptr;
 int              *shrd_ptr_height, *shrd_ptr_width;
@@ -27,6 +34,7 @@ extern void      attach_ShareMem(void);
 extern IplImage *getImage_fromSHM(void);
 extern void      setImage_toSHM(IplImage *result);
 extern void      detach_ShareMem(void);
+#endif
 
 #ifndef RELEASE
 #define SHOW_DETAIL // if this macro is valid, grayscale/edge/half images are displayed
@@ -424,104 +432,116 @@ void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, IplImage 
          cvPoint(x2, laneL.k.get()*x2 + laneL.b.get() + org_offset), PURPLE, 2);
 }
 
-
-
-int main(void)
+static void process_image_common(IplImage *frame)
 {
-  // CvCapture *input_video = cvCaptureFromCAM(0);
-  // if (input_video == NULL) {
-  //   fprintf(stderr, "Error: Can't open video\n");
-  //   return -1;
-  // }
-
-  /* attach shared memory */
-  attach_ShareMem();
-
   CvFont font;
   cvInitFont(&font, CV_FONT_VECTOR0, 0.25f, 0.25f);
 
   CvSize video_size;
-  // video_size.height = (int)cvGetCaptureProperty(input_video, CV_CAP_PROP_FRAME_HEIGHT);
+#if defined(USE_POSIX_SHARED_MEMORY)
   video_size.height = *shrd_ptr_height;
-  // video_size.width  = (int)cvGetCaptureProperty(input_video, CV_CAP_PROP_FRAME_WIDTH);
   video_size.width  = *shrd_ptr_width;
-
-  long current_frame = 0;
-  int key_pressed = 0;
-  IplImage *frame = NULL;
-
+#else
+  // XXX These parameters should be set ROS parameters
+  video_size.height = 480;
+  video_size.width  = 640;
+#endif
   CvSize    frame_size = cvSize(video_size.width, video_size.height/2);
   IplImage *temp_frame = cvCreateImage(frame_size, IPL_DEPTH_8U, 3);
   IplImage *gray       = cvCreateImage(frame_size, IPL_DEPTH_8U, 1);
   IplImage *edges      = cvCreateImage(frame_size, IPL_DEPTH_8U, 1);
   IplImage *half_frame = cvCreateImage(cvSize(video_size.width/2, video_size.height/2), IPL_DEPTH_8U, 3);
 
-  //  while (key_pressed != 27)     // loop until 'Esc' is typed
-  while (1)
-    {
-      // frame = cvQueryFrame(input_video);
-      // if (frame == NULL)
-      //   {
-      //     fprintf(stderr, "Error: null frame received\n");
-      //     return -1;
-      //   }
-      CvMemStorage *houghStorage = cvCreateMemStorage(0);
-      frame = getImage_fromSHM();
+  CvMemStorage *houghStorage = cvCreateMemStorage(0);
 
-      cvPyrDown(frame, half_frame, CV_GAUSSIAN_5x5); // Reduce the image by 2
+  cvPyrDown(frame, half_frame, CV_GAUSSIAN_5x5); // Reduce the image by 2
 
-      /* we're intersted only in road below horizont - so crop top image portion off */
-      crop(frame, temp_frame, cvRect(0, frame_size.height, frame_size.width, frame_size.height));
-      cvCvtColor(temp_frame, gray, CV_BGR2GRAY); // contert to grayscale
+  /* we're intersted only in road below horizont - so crop top image portion off */
+  crop(frame, temp_frame, cvRect(0, frame_size.height, frame_size.width, frame_size.height));
+  cvCvtColor(temp_frame, gray, CV_BGR2GRAY); // contert to grayscale
 
-      /* Perform a Gaussian blur (Convolving with 5 X 5 Gaussian) & detect edges */
-      //      cvSmooth(gray, gray, CV_GAUSSIAN, 5, 5);
-      cvSmooth(gray, gray, CV_GAUSSIAN, 15, 15); // smoothing image more strong than original program
-      //      cvSmooth(gray, gray, CV_GAUSSIAN, 7, 7); // smoothing image more strong than original program
-      cvCanny(gray, edges, CANNY_MIN_TRESHOLD, CANNY_MAX_TRESHOLD);
+  /* Perform a Gaussian blur & detect edges */
+  // smoothing image more strong than original program
+  cvSmooth(gray, gray, CV_GAUSSIAN, 15, 15);
+  cvCanny(gray, edges, CANNY_MIN_TRESHOLD, CANNY_MAX_TRESHOLD);
 
-      /* do Hough transform to find lanes */
-      double rho = 1;
-      double theta = CV_PI/180;
-      CvSeq *lines = cvHoughLines2(edges, houghStorage, CV_HOUGH_PROBABILISTIC,
-                                   rho, theta, HOUGH_TRESHOLD, HOUGH_MIN_LINE_LENGTH, HOUGH_MAX_LINE_GAP);
+  /* do Hough transform to find lanes */
+  double rho = 1;
+  double theta = CV_PI/180;
+  CvSeq *lines = cvHoughLines2(edges, houghStorage, CV_HOUGH_PROBABILISTIC,
+                               rho, theta, HOUGH_TRESHOLD, HOUGH_MIN_LINE_LENGTH, HOUGH_MAX_LINE_GAP);
 
-      //      processLanes(lines, edges, temp_frame);
-      processLanes(lines, edges, temp_frame, frame);
+  processLanes(lines, edges, temp_frame, frame);
 
 #ifdef SHOW_DETAIL
-      /* show middle line */
-      cvLine(temp_frame, cvPoint(frame_size.width/2, 0),
-             cvPoint(frame_size.width/2, frame_size.height), CV_RGB(255, 255, 0), 1);
+  /* show middle line */
+  cvLine(temp_frame, cvPoint(frame_size.width/2, 0),
+         cvPoint(frame_size.width/2, frame_size.height), CV_RGB(255, 255, 0), 1);
 
-      cvShowImage("Gray", gray);
-      cvShowImage("Edges", edges);
-      cvShowImage("Color", temp_frame);
+  cvShowImage("Gray", gray);
+  cvShowImage("Edges", edges);
+  cvShowImage("Color", temp_frame);
 #endif
 
-      //      cvShowImage("Original size", frame);
-      setImage_toSHM(frame);
+#if defined(USE_POSIX_SHARED_MEMORY)
+  setImage_toSHM(frame);
+#else
+  // XXX public image data to image_objects node
+  cvShowImage( "result", frame );
+#endif
 
 #ifdef SHOW_DETAIL
-      cvMoveWindow("Gray", 0, 0);
-      cvMoveWindow("Edges", 0, frame_size.height+25);
-      cvMoveWindow("Color", 0, 2*(frame_size.height+25));
+  cvMoveWindow("Gray", 0, 0);
+  cvMoveWindow("Edges", 0, frame_size.height+25);
+  cvMoveWindow("Color", 0, 2*(frame_size.height+25));
 #endif
 
-      //key_pressed = cvWaitKey(5);
-      cvReleaseImage(&frame);
-      cvReleaseMemStorage(&houghStorage);
-    }
-
-  /* release resources */
+  cvReleaseMemStorage(&houghStorage);
   cvReleaseImage(&gray);
   cvReleaseImage(&edges);
   cvReleaseImage(&temp_frame);
   cvReleaseImage(&half_frame);
-
-  //  cvReleaseCapture(&input_video);
-
-  /* detach shared memory */
-  detach_ShareMem();
-
 }
+
+#if !defined(USE_POSIX_SHARED_MEMORY)
+static void image_raw_callback(const sensor_msgs::Image& image_source)
+{
+  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
+  IplImage frame = cv_image->image;
+  process_image_common(&frame);
+  cvWaitKey(2);
+}
+#endif
+
+int main(int argc, char *argv[])
+{
+#if defined(USE_POSIX_SHARED_MEMORY)
+  attach_ShareMem();
+
+  while (1)
+    {
+      CvMemStorage *houghStorage = cvCreateMemStorage(0);
+      IplImage *frame = getImage_fromSHM();
+      process_image_common(frame);
+      cvReleaseImage(frame);
+    }
+
+  detach_ShareMem();
+#else
+  ros::init(argc, argv, "line_ocv");
+  ros::NodeHandle n;
+  ros::Subscriber subscriber = n.subscribe("/image_raw", 1, image_raw_callback);
+
+  ros::spin();
+#endif
+
+  return 0;
+}
+
+/*
+  Local Variables:
+  c-file-style: "gnu"
+  c-basic-offset: 2
+  indent-tabs-mode: nil
+  End:
+*/
