@@ -35,7 +35,12 @@ cleanする場合は `catkin_make clean`, ビルドプロセスの詳細を見�
 参考URL
  - http://ros-robot.blogspot.jp/2010/11/cameracalibrationusb.html
 
-USBカメラを接続
+USBカメラを接続し起動
+
+```
+ $ rosrun uvc_camera uvc_camera_node
+```
+
 チェッカーボードを用意 (例えば checkr2.bmp)
 
 ```
@@ -44,7 +49,7 @@ USBカメラを接続
 
 ボードを動かしてみて
  - calibrate ボタン有効 click
- - save ボタン有効 clock
+ - save ボタン有効 click
 
 メッセージ `('Wrote calibration data to', '/tmp/calibrationdata.tar.gz')`を確認
 
@@ -55,11 +60,19 @@ USBカメラを接続
 ost.txt の内容のうち
 
   - camera matrix の 9 つの値
-  - distortion の 5 つの値のうち末尾の 0 以外の値
+  - distortion の 5 つの値のうち末尾の 0 以外の4つの値
 
 を使用する
 
 ### 空間キャリブレーション
+
+北陽センサを接続し起動
+
+```
+ $ rosparam set hokuyo_node/calibrate_time false
+ $ rosparam set hokuyo_node/port /dev/ttyACM0
+ $ rosrun hokuyo_node hokuyo_node
+```
 
 ```
  $ roscd calibration_of_camera_and_lrf/
@@ -73,7 +86,7 @@ ost.txt の内容のうち
   intrinsic_matirix: !!oencv-matirx
    data [] に ost.txt の camera matrix の 9 つの値を設定
   distrotion_matrix: !!opencv-matrix
-   data [] に ost.txt の distortion の 5 つの値のうち末尾の 0 以外の値を設定
+   data [] に ost.txt の distortion の 5 つの値のうち末尾の 0 以外の4つの値を設定
 ```
 
 ```
