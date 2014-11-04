@@ -122,11 +122,11 @@ LRF画面 CALIBRATE(click) SAVE(click)
  $ rosrun scan_to_image point_to_image
 ```
 
-### image_detector ノード起動
+### image_detector ノード起動 (dpm_ocv)
 
 ```
- $ roscd dpm_ocv/Debug/
- $ rosrun dpm_ocv image_detector
+ $ roscd roscd image/detectors/dpm_ocv/Debug/
+ $ rosrun image image_detector
 ```
 
 カメラの画像と矩形、その他が画面に表示される
@@ -145,6 +145,20 @@ LRF画面 CALIBRATE(click) SAVE(click)
  $ rosparam set image_detecotr/threads 7
  $ rosparam set image_detecotr/models "[ models_VOC2007/car.xml , models_VOC2007/person.xml ]"
 ```
+
+### image_detector ノード起動 (dpm_ttic)
+
+```
+ $ rosparam set image_detector/algorithm ttic
+ $ roscd image/detectors/dpm_ttic/
+ $ rosrun image image_detector
+```
+
+デフォルトのdpm_ocvに戻す場合
+```
+$ rosparam delete image_detector/algorithm
+```
+
 
 ### fusion ノード起動
 
