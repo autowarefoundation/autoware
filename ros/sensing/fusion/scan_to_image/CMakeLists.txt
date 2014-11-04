@@ -51,7 +51,7 @@ find_package(OpenCV REQUIRED)
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   ImagePoint.msg
+   PointedImage.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -168,7 +168,6 @@ include_directories(
 # catkin_add_nosetests(test)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-#include_directories(/usr/local/include/opencv2/legacy)
 include_directories(/usr/include/opencv2/legacy)
 
 add_executable(point_to_image src/transformation.cpp)

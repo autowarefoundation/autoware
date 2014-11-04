@@ -63,7 +63,7 @@
 #include <sensor_msgs/CompressedImage.h>
 #if 1 // AXE
 #include "dpm_ocv/ImageObjects.h"
-#include "scan_to_image/ImagePoint.h"
+#include "scan_to_image/PointedImage.h"
 #include "sensor_fusion/FusedObjects.h"
 #else
 #include "sensors_fusion/ObstaclePosition.h"
@@ -106,7 +106,7 @@ void obstacle_detectionCallback(const sensors_fusion::ObstaclePosition& obstacle
     }
 }
 #if 1 // AXE
-void distance_measurementCallback(const scan_to_image::ImagePoint& transformed_point_data)
+void distance_measurementCallback(const scan_to_image::PointedImage& transformed_point_data)
 #else
 void distance_measurementCallback(const sensors_fusion::TransformedPointData& transformed_point_data)
 #endif
@@ -271,7 +271,7 @@ int main(int argc, char **argv)
 // %Tag(SUBSCRIBER)%
 #if 1 // AXE
   ros::Subscriber obstacle_detection = n.subscribe("image_objects", 1, obstacle_detectionCallback);
-  ros::Subscriber distance_measurement = n.subscribe("image_point", 1, distance_measurementCallback);
+  ros::Subscriber distance_measurement = n.subscribe("pointed_image", 1, distance_measurementCallback);
   ros::Subscriber image = n.subscribe("/image_raw", 1, imageCallback);
   
   fused_objects = n.advertise<sensor_fusion::FusedObjects>("fused_objects", 10);

@@ -106,7 +106,7 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
     image_objects_msg.car_num = num;
     image_objects_msg.corner_point = corner_point_array;
     image_objects_msg.car_type = car_type_array;
-    /* データをpublish */
+
     image_objects.publish(image_objects_msg);
 #endif
 
