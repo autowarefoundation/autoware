@@ -62,7 +62,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CompressedImage.h>
 #if 1 // AXE
-#include "dpm_ocv/ImageObjects.h"
+#include "image/ImageObjects.h"
 #include "scan_to_image/PointedImage.h"
 #include "sensor_fusion/FusedObjects.h"
 #else
@@ -89,7 +89,7 @@ ros::Publisher fused_objects;
  */
 // %Tag(CALLBACK)%
 #if 1 // AXE
-void obstacle_detectionCallback(const dpm_ocv::ImageObjects& obstacle_position)
+void obstacle_detectionCallback(const image::ImageObjects& obstacle_position)
 #else
 void obstacle_detectionCallback(const sensors_fusion::ObstaclePosition& obstacle_position)
 #endif
