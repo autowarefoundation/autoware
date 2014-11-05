@@ -125,7 +125,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ### image_detector ノード起動 (dpm_ocv)
 
 ```
- $ roscd roscd image/detectors/dpm_ocv/Debug/
+ $ roscd image/detectors/dpm_ocv/Debug/
  $ rosrun image image_detector
 ```
 
