@@ -135,6 +135,7 @@ extern FLOAT *dst_C;
 
 /* functions for using GPU and to calculate on GPU */
 extern void init_cuda(void);
+extern void init_cuda_with_cubin(const char *cubin_path);
 
 extern void clean_cuda(void);
     

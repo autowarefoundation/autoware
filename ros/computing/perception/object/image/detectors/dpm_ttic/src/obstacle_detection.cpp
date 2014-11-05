@@ -63,6 +63,7 @@
 #include <sensor_msgs/CompressedImage.h>
 #if 1 // AXE
 #include "image/ImageObjects.h"
+#include "for_use_GPU.h"
 #else
 #include "sensors_fusion/ObstaclePosition.h"
 #endif
@@ -166,12 +167,13 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
 // %EndTag(CALLBACK)%
 
 #if 1 // AXE
-int dpm_ttic_main(int argc, char* argv[])
+int dpm_ttic_main(int argc, char* argv[], const char *cubin_path)
 #else
 int main(int argc, char **argv)
 #endif
 {
 #if 1 // AXE
+	init_cuda_with_cubin(cubin_path);
 #else
 	FILE* fp;					//file pointer
 	CvCapture *capt;			//movie file capture
@@ -265,6 +267,7 @@ int main(int argc, char **argv)
    */
 // %Tag(SPIN)%
   ros::spin();
+  clean_cuda();
 // %EndTag(SPIN)%
 
   //release car-detector-model
