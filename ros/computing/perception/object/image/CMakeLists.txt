@@ -173,20 +173,20 @@ include_directories(/usr/local/cuda/include)
 
 file(GLOB DPM_OCV_CXX_SOURCES "detectors/dpm_ocv/src/*.cpp")
 
-set(DPM_TTIC_PATH detectors/dpm_ttic/src)
-file(GLOB DPM_TTIC_CXX_SOURCES "${DPM_TTIC_PATH}/*.cpp")
-file(GLOB DPM_TTIC_CC_SOURCES "${DPM_TTIC_PATH}/*.cc")
+set(DPM_GPU_PATH detectors/dpm_gpu/src)
+file(GLOB DPM_GPU_CXX_SOURCES "${DPM_GPU_PATH}/*.cpp")
+file(GLOB DPM_GPU_CC_SOURCES "${DPM_GPU_PATH}/*.cc")
 
-set(DPM_TTIC_SOURCES
-  ${DPM_TTIC_CXX_SOURCES}
-  ${DPM_TTIC_CC_SOURCES}
-  ${DPM_TTIC_PATH}/conv.c
+set(DPM_GPU_SOURCES
+  ${DPM_GPU_CXX_SOURCES}
+  ${DPM_GPU_CC_SOURCES}
+  ${DPM_GPU_PATH}/conv.c
 )
 
 add_executable(image_detector
  image_detector.cpp
  ${DPM_OCV_CXX_SOURCES}
- ${DPM_TTIC_SOURCES}
+ ${DPM_GPU_SOURCES}
 )
 
 target_link_libraries(image_detector
@@ -201,7 +201,7 @@ set(CUDA_ARCH "sm_35") # jetson: sm_32
 
 ## XXX How to generate .cubin file with CMake commands
 set(CUBIN_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR})
-set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_TTIC_PATH}")
+set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}")
 set(CUDA_FILE_OUTPUT "${CATKIN_DEVEL_PREFIX}/lib/image")
 
 execute_process(
@@ -209,5 +209,5 @@ execute_process(
           "-o" "${CUDA_FILE_OUTPUT}/GPU_function.cubin"
           "-cubin" "-Xptxas" "-v" "--maxrregcount" "32"
           "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
-          "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_TTIC_PATH}/GPU_function.cu"
+          "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
 )
