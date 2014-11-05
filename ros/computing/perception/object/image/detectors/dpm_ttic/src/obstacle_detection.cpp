@@ -167,13 +167,13 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
 // %EndTag(CALLBACK)%
 
 #if 1 // AXE
-int dpm_ttic_main(int argc, char* argv[])
+int dpm_ttic_main(int argc, char* argv[], const char *cubin_path)
 #else
 int main(int argc, char **argv)
 #endif
 {
 #if 1 // AXE
-	init_cuda();
+	init_cuda_with_cubin(cubin_path);
 #else
 	FILE* fp;					//file pointer
 	CvCapture *capt;			//movie file capture

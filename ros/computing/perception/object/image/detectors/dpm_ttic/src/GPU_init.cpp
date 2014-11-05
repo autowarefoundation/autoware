@@ -61,15 +61,18 @@ CUdeviceptr *A_SIZE_dev, *featp2_dev, *B_dev, *B_dims_dev, *fconvs_error_array_d
 /*****************************************************************/
 void init_cuda(void)
 {
-
-
-    CUresult res;
     //const char file_name[43] = "./gccDebug/GPU_function.cubin";
 #ifdef RELEASE
     const char file_name[256] = "/usr/local/geye_with_cam/bin/car_detecter/GPU_function.cubin";
 #else
     const char file_name[43] = "./gccRelease/GPU_function.cubin";
 #endif
+    init_cuda_with_cubin(file_name);
+}/* init_cuda */
+
+void init_cuda_with_cubin(const char *cubin_path)
+{
+    CUresult res;
     int i;
     /* initnialize GPU */
     res = cuInit(0);
@@ -157,7 +160,7 @@ void init_cuda(void)
 
 
     /* load .cubin file */
-    res = cuModuleLoad(&module[i], file_name);
+    res = cuModuleLoad(&module[i], cubin_path);
     if(res != CUDA_SUCCESS){
       printf("\ncuModuleLoad failed: res = %s\n", conv(res));
       /*** for debug(windows) ***//*  
@@ -461,8 +464,7 @@ void init_cuda(void)
     if(check_exit == 'q') exit(1);
 
 #endif
-
-}/* init_cuda */
+}
 
 
 /*****************************************************************/
