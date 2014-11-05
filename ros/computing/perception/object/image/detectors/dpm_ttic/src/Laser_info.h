@@ -29,6 +29,8 @@
 //C++ library
 #include <stdio.h>	
 
+#include "switch_float.h"
+
 #ifndef INCLUDED_L_INFO_
 #define INCLUDED_L_INFO_
 
@@ -46,7 +48,7 @@ typedef struct {
 	int SNUM;				//number of scan point
 	int *CCLASS;			//car class (for discrimination)
 	int *Ctype;				//channel type of each scanpoint
-	double *XYZdata;			//(X,Y,Z) data of each scanpoint
+	FLOAT *XYZdata;			//(X,Y,Z) data of each scanpoint
 	int *XYIM;				//(X,Y) image coordinate of each scanpoint
 }SCANDATA;
 

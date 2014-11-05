@@ -14,6 +14,7 @@
 #include "MODEL_info.h"		//File information
 #include "Common.h"
 
+#include "switch_float.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,16 +25,16 @@
 //definiton of functions//
 
 //inline function
-static inline double max_d(double x,double y);
-static inline double min_d(double x,double y);
+static inline FLOAT max_d(FLOAT x,FLOAT y);
+static inline FLOAT min_d(FLOAT x,FLOAT y);
 
 //sub functions
-inline void exchangeOfValues(double *x , double *y);		//sub function for quick-sort
+inline void exchangeOfValues(FLOAT *x , FLOAT *y);		//sub function for quick-sort
 inline void exchangeOfOrders(int *x , int *y);				//sub function for quick-sort
-void  quickSort(double *ary , int *Order, int first_index , int last_index);		//quick sort function
+void  quickSort(FLOAT *ary , int *Order, int first_index , int last_index);		//quick sort function
 
 //Non_maximum suppression function (extended to detect.cc)
-double *nms(double *boxes,double overlap,int *num,MODEL *MO);
+FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,8 +43,8 @@ double *nms(double *boxes,double overlap,int *num,MODEL *MO);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //inline function
-static inline double max_d(double x,double y) {return (x >= y ? x : y); }
-static inline double min_d(double x,double y) {return (x <= y ? x : y); }
+static inline FLOAT max_d(FLOAT x,FLOAT y) {return (x >= y ? x : y); }
+static inline FLOAT min_d(FLOAT x,FLOAT y) {return (x <= y ? x : y); }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,8 +54,8 @@ static inline double min_d(double x,double y) {return (x <= y ? x : y); }
 
 //sub functions
 
-inline void exchangeOfValues(double *x , double *y) {
-	double tmp;
+inline void exchangeOfValues(FLOAT *x , FLOAT *y) {
+	FLOAT tmp;
 	tmp = *x; *x = *y ; *y = tmp;
 	return;
 }
@@ -66,9 +67,9 @@ inline void exchangeOfOrders(int *x , int *y) {
 }
 
 //Quick sort function
-void  quickSort(double *ary , int *Order, int first_index , int last_index) {
+void  quickSort(FLOAT *ary , int *Order, int first_index , int last_index) {
 	int i = first_index, j = last_index;
-	double key = *(ary + (first_index + last_index) / 2);
+	FLOAT key = *(ary + (first_index + last_index) / 2);
 
 	while(1) {
 		while (*(ary + i ) > key) i++;
@@ -90,7 +91,7 @@ void  quickSort(double *ary , int *Order, int first_index , int last_index) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-double *nms(double *boxes,double overlap,int *num,MODEL *MO)
+FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO)
 {
   int NUM = *num;
   if(NUM<=0) return(NULL);
@@ -98,13 +99,13 @@ double *nms(double *boxes,double overlap,int *num,MODEL *MO)
     {
       const int *numpart = MO->MI->numpart;
       const int GL = (numpart[0]+1)*4+3;
-      double *area = (double*)calloc(NUM,sizeof(double));
-      double *scores = (double*)calloc(NUM,sizeof(double));
+      FLOAT *area = (FLOAT*)calloc(NUM,sizeof(FLOAT));
+      FLOAT *scores = (FLOAT*)calloc(NUM,sizeof(FLOAT));
       int *sorted_orders = (int *)calloc(NUM,sizeof(int));
-      double *P=boxes;
+      FLOAT *P=boxes;
       //calculate area of each boundary-box
       
-      double *score_t = scores;
+      FLOAT *score_t = scores;
       int *so_t =sorted_orders; 
       for(int ii=0;ii<NUM;ii++)
         {
@@ -126,10 +127,10 @@ double *nms(double *boxes,double overlap,int *num,MODEL *MO)
         {
           int A=sorted_orders[cur];
           P=boxes+GL*A;
-          double Ay1 = P[0];
-          double Ax1 = P[1];
-          double Ay2 = P[2];
-          double Ax2 = P[3];
+          FLOAT Ay1 = P[0];
+          FLOAT Ax1 = P[1];
+          FLOAT Ay2 = P[2];
+          FLOAT Ax2 = P[3];
           checked[A]=1;
           cnum--;
           cur++;
@@ -141,20 +142,20 @@ double *nms(double *boxes,double overlap,int *num,MODEL *MO)
               if(checked[B]!=0) continue;
               
               P=boxes+GL*B;
-              double yy1 = max_d(Ay1,P[0]);
-              double xx1 = max_d(Ax1,P[1]);
-              double yy2 = min_d(Ay2,P[2]);
-              double xx2 = min_d(Ax2,P[3]);
-              double w = xx2-xx1+1.0;
-              double h = yy2-yy1+1.0;
-              double R_AREA = min_d(area[A],area[B]);
+              FLOAT yy1 = max_d(Ay1,P[0]);
+              FLOAT xx1 = max_d(Ax1,P[1]);
+              FLOAT yy2 = min_d(Ay2,P[2]);
+              FLOAT xx2 = min_d(Ax2,P[3]);
+              FLOAT w = xx2-xx1+1.0;
+              FLOAT h = yy2-yy1+1.0;
+              FLOAT R_AREA = min_d(area[A],area[B]);
               
               //eliminate over-lap rectangles
               //over-lap(normal)
               if(w>0&&h>0)
                 {
-                  //double o = w*h/area[A];		//compute overlap
-                  double o = w*h/R_AREA;			//compute overlap
+                  //FLOAT o = w*h/area[A];		//compute overlap
+                  FLOAT o = w*h/R_AREA;			//compute overlap
                   if(o>overlap)
                     {
                       checked[B]=-1;	//suppress
@@ -187,17 +188,17 @@ double *nms(double *boxes,double overlap,int *num,MODEL *MO)
         }
       
       //get result (rectangle-box coordinate)
-      double *Out = (double*)calloc(pi_num*GL,sizeof(double));
+      FLOAT *Out = (FLOAT*)calloc(pi_num*GL,sizeof(FLOAT));
       int count =0,ii=0;
-      double *Pout =Out;
+      FLOAT *Pout =Out;
       
       while(count<pi_num)
         {
           if(checked[ii]==1)
             {
               P = boxes+GL*ii;
-              //memcpy_s(Pout,sizeof(double)*GL,P,sizeof(double)*GL);
-              memcpy(Pout, P,sizeof(double)*GL);
+              //memcpy_s(Pout,sizeof(FLOAT)*GL,P,sizeof(FLOAT)*GL);
+              memcpy(Pout, P,sizeof(FLOAT)*GL);
               Pout+=GL;
               count++;
             }

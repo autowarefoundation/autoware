@@ -33,10 +33,13 @@
 #include <time.h>
 
 //added by messi
-#include <legacy.hpp>
+#include <opencv2/legacy/legacy.hpp>
 //Header files
 #include "MODEL_info.h"		//Model-structure definition
 #include "Common.h"
+
+#include "switch_float.h"
+#include "switch_release.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +50,7 @@
 extern int *show_particles(IplImage *Image,RESULT *CUR,PINFO *P_I);
 
 //get object_rectangles
-RESULT *get_new_rects(IplImage *Image,MODEL *MO,double *boxes,int *NUM);			//get new_rectangle pixel_point
+RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM);			//get new_rectangle pixel_point
 int* elm_rect(RESULT *CUR,int *partner);											//eliminate rectangle(bad score)
 
 //functions about result
@@ -59,23 +62,23 @@ void update_result(RESULT *LR,RESULT *CUR);											//update result
 //function about Condensation(Particle_filter tracking lower_level functions)
 CvConDensation *initialize_cond(IplImage *Image,int TYPE);							//initialize particle filter parameters
 CvMat *match_likelihood(IplImage *TEMP,IplImage *Img,int *COORD);					//match template 
-int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,double *A_SCORE,IplImage *RTEMP,IplImage *Im,RESULT *CUR); //calculate likelihood
+int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,FLOAT *A_SCORE,IplImage *RTEMP,IplImage *Im,RESULT *CUR); //calculate likelihood
 void init_particle_position(RESULT *CUR,CvConDensation *COND,IplImage *IM,int NUM,int L);//initialize position of particles
-void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,double *A_SCORE,IplImage *Im,int Lnum,int NUM); //tracking function
+void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,IplImage *Im,int Lnum,int NUM); //tracking function
 
 //functions about tracking(higher level)
 void reset_pinfo(PINFO *PI,RESULT *LR);												//reset particle filter information
 int *get_partner_rectangle(RESULT *LR,RESULT *CUR,PINFO *PI,int THL);				//get partner rectangle information
 void update_h_position(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,int **NP,int *NSNUM);			//update historical positon
-void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,double **NVX,double **NVY,int *NSNUM);//update historical velocity
-void update_ave_p(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,double **avep,int *NSNUM);			//update average position (Laser RADER)
+void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **NVX,FLOAT **NVY,int *NSNUM);//update historical velocity
+void update_ave_p(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **avep,int *NSNUM);			//update average position (Laser RADER)
 
 void object_prediction(RESULT *CUR,CvConDensation **COND);							//prediction of object_position
-void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,double *A_SCORE,IplImage *Image,int THL);//update particle filter information
+void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Image,int THL);//update particle filter information
 
 //finalization_function
 void get_texture(RESULT *RES,IplImage *IM);											//get texture 
-int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,double *A_SCORE,IplImage* Image,int THL);//finalize object_information(tracking)
+int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,FLOAT *A_SCORE,IplImage* Image,int THL);//finalize object_information(tracking)
 
 #define n_particle 1000																//number of particles
 #define max_hist 5
@@ -83,20 +86,21 @@ int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,double *A_SCORE,IplImage* Ima
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+extern FILE *resFP;
 //get new_rectangle information
-RESULT *get_new_rects(IplImage *Image,MODEL *MO,double *boxes,int *NUM)
+RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
 {
   const int *numpart = MO->MI->numpart;	
   const int GL = (numpart[0]+1)*4+3;
-  const double ratio = MO->MI->ratio;
+  const FLOAT ratio = MO->MI->ratio;
   const int height = 480;
   const int width =  640;
   const int UpY = height/10;
   const int NEW_Y = height-UpY-height/10;
   
   int LL = GL-3;
-  double **x1 = MO->MI->x1; double **x2 = MO->MI->x2;
-  double **y1 = MO->MI->y1; double **y2 = MO->MI->y2;
+  FLOAT **x1 = MO->MI->x1; FLOAT **x2 = MO->MI->x2;
+  FLOAT **y1 = MO->MI->y1; FLOAT **y2 = MO->MI->y2;
   int ML = 1+2*(1+numpart[0]);
   
   RESULT *CUR =create_result(*NUM);
@@ -104,11 +108,11 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,double *boxes,int *NUM)
   //no_rectangle was detected 
   if(*NUM==0) return(CUR);
   
-  double *Avec = (double *)calloc(ML,sizeof(double));
+  FLOAT *Avec = (FLOAT *)calloc(ML,sizeof(FLOAT));
   for(int ii=0;ii<*NUM;ii++)
     {
-      double *P = boxes+GL*ii;
-      double *Avec_T = Avec;
+      FLOAT *P = boxes+GL*ii;
+      FLOAT *Avec_T = Avec;
       int CNUM = (int)(*(P+GL-3));
       int PP[4];
       
@@ -120,10 +124,10 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,double *boxes,int *NUM)
           *(Avec_T++)=*(P+kk);
         }
       
-      double XP1=0,XP2=0,YP1=0,YP2=0;
+      FLOAT XP1=0,XP2=0,YP1=0,YP2=0;
       Avec_T = Avec;
-      double *x1_T = x1[CNUM]; double *x2_T = x2[CNUM];
-      double *y1_T = y1[CNUM]; double *y2_T = y2[CNUM];		
+      FLOAT *x1_T = x1[CNUM]; FLOAT *x2_T = x2[CNUM];
+      FLOAT *y1_T = y1[CNUM]; FLOAT *y2_T = y2[CNUM];		
       
       //get rectangle coodinate (by linear-method)
       for(int kk=0;kk<ML;kk++)
@@ -148,14 +152,19 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,double *boxes,int *NUM)
       
       //calculate image coodinate for ORIGINAL-scale-image[640x480]
       int *OPP = CUR->OR_point+ii*4;
-      OPP[0] = (int)((double)PP[0]/ratio);
-      OPP[1] = (int)((double)PP[1]/ratio);
-      OPP[2] = (int)((double)PP[2]/ratio);
-      OPP[3] = (int)((double)PP[3]/ratio);
+      OPP[0] = (int)((FLOAT)PP[0]/ratio);
+      OPP[1] = (int)((FLOAT)PP[1]/ratio);
+      OPP[2] = (int)((FLOAT)PP[2]/ratio);
+      OPP[3] = (int)((FLOAT)PP[3]/ratio);
       
+#ifdef PRINT_INFO
       //for debug 
       //printf("x1:%d y1:%d x2:%d y2:%d\n",PP[0],PP[1],PP[2],PP[3]);
       printf("scale:%f score:%f type:%d\n",CUR->scale[ii],CUR->score[ii],CUR->type[ii]);
+#endif  // ifdef PRINT_INFO
+#ifndef RELEASE
+      fprintf(resFP, "scale:%f score:%f type:%d\n",CUR->scale[ii],CUR->score[ii],CUR->type[ii]);
+#endif  // ifndef RELEASE
     }
   s_free(Avec);	
   return(CUR);
@@ -181,8 +190,8 @@ int* elm_rect(RESULT *CUR,int *partner)
     {
       int *N_P=(int *)calloc(N_NUM*4,sizeof(int));
       int *N_T=(int *)calloc(N_NUM,sizeof(int));
-      double *N_SCORE=(double *)calloc(N_NUM,sizeof(double));
-      double *N_SCALE=(double *)calloc(N_NUM,sizeof(double));
+      FLOAT *N_SCORE=(FLOAT *)calloc(N_NUM,sizeof(FLOAT));
+      FLOAT *N_SCALE=(FLOAT *)calloc(N_NUM,sizeof(FLOAT));
       IplImage **N_IM	=(IplImage**)calloc(N_NUM,sizeof(IplImage*));
       NEW_PARTNER = (int *)calloc(N_NUM,sizeof(int));
       
@@ -250,8 +259,8 @@ void reset_result(RESULT *RES,int num)
 	RES->num=num;
 	RES->point = (int *)calloc(num*4,sizeof(int));
 	RES->type = (int *)calloc(num,sizeof(int));
-	RES->score = (double *)calloc(num,sizeof(double));
-	RES->scale = (double *)calloc(num,sizeof(double));
+	RES->score = (FLOAT *)calloc(num,sizeof(FLOAT));
+	RES->scale = (FLOAT *)calloc(num,sizeof(FLOAT));
 	RES->IM = (IplImage **)malloc(sizeof(IplImage *)*num);
 }
 
@@ -272,8 +281,8 @@ RESULT *create_result(int num)
 		RES->point = (int *)calloc(num*4,sizeof(int));
 		RES->OR_point = (int *)calloc(num*4,sizeof(int));
 		RES->type = (int *)calloc(num,sizeof(int));
-		RES->score = (double *)calloc(num,sizeof(double));
-		RES->scale = (double *)calloc(num,sizeof(double));
+		RES->score = (FLOAT *)calloc(num,sizeof(FLOAT));
+		RES->scale = (FLOAT *)calloc(num,sizeof(FLOAT));
 		RES->IM = (IplImage **)malloc(sizeof(IplImage *)*num);
 	}
 	return(RES);
@@ -316,10 +325,10 @@ void update_result(RESULT *LR,RESULT *CUR)
 //initialize particle filter parameters
 CvConDensation *initialize_cond(IplImage *Image,int TYPE)
 {
-	double w = Image->width;				//position bound
-	double h = Image->height;
-	double w_ve = 60.0; double h_ve = 30.0;	//velocity bound
-	double w_no = 10.0; double h_no = 10.0;	//noise parameter
+	FLOAT w = Image->width;				//position bound
+	FLOAT h = Image->height;
+	FLOAT w_ve = 60.0; FLOAT h_ve = 30.0;	//velocity bound
+	FLOAT w_no = 10.0; FLOAT h_no = 10.0;	//noise parameter
 	
 	int n_stat;
 	if(TYPE==0)			n_stat=4; 	
@@ -396,9 +405,9 @@ CvMat *match_likelihood(IplImage *TEMP,IplImage *Img,int *COORD)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //calculate likelihood for each particle
-int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,double *A_SCORE,IplImage *RTEMP,IplImage *Im,RESULT *CUR)
+int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,FLOAT *A_SCORE,IplImage *RTEMP,IplImage *Im,RESULT *CUR)
 {
-	double alpha = -8.0;
+	FLOAT alpha = -8.0;
 	int L = 20;
 	int IM_HEI = Im->height;
 	int WID = RTEMP->width/2;		//width of template 
@@ -484,9 +493,9 @@ void init_particle_position(RESULT *CUR,CvConDensation *COND,IplImage *IM,int NU
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //tracking function
-void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,double *A_SCORE,IplImage *Im,int Lnum,int NUM)
+void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,IplImage *Im,int Lnum,int NUM)
 {
-	double ASP_TH = 0.2;
+	FLOAT ASP_TH = 0.2;
 	int R_flag=0,F_flag=0;
 	IplImage *RTEMP;
 	int BTH =15;
@@ -498,9 +507,9 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,double *A_SCORE
 	int L_BORD = PP[0];			int R_BORD = PP[2];
 	PP = LR->point+Lnum*4;
 	int LaX = (*(PP+2)+*PP)/2;	int LaY = (*(PP+3)+*(PP+1))/2;
-	double XMOVE = (double)(OrX-LaX); 
-	double YMOVE = (double)(OrY-LaY);
-	double LENGTH =sqrt(XMOVE*XMOVE+YMOVE*YMOVE);
+	FLOAT XMOVE = (FLOAT)(OrX-LaX); 
+	FLOAT YMOVE = (FLOAT)(OrY-LaY);
+	FLOAT LENGTH =sqrt(XMOVE*XMOVE+YMOVE*YMOVE);
 
 	//check static object
 	if(LENGTH<5 && CUR->type[NUM]==1)
@@ -527,17 +536,17 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,double *A_SCORE
 	}
 
 	//calculate aspect-ratio
-	double ASP_L = (double)WID1/(double)HEI1;
-	double ASP_C = (double)Limg->width/(double)Limg->height;
+	FLOAT ASP_L = (FLOAT)WID1/(FLOAT)HEI1;
+	FLOAT ASP_C = (FLOAT)Limg->width/(FLOAT)Limg->height;
 	//resize template(fit scale of matching)
 	if(CUR->scale[NUM]==LR->scale[Lnum]) { RTEMP = Limg;}
 	else
 	{
 		R_flag=1;
-		double ratio = CUR->scale[NUM]/LR->scale[Lnum];
-		double RW = (double)WID1/(double)Limg->width;
-		double RH = (double)HEI1/(double)Limg->height;
-		double LRAT = (RW+RH)*0.5;
+		FLOAT ratio = CUR->scale[NUM]/LR->scale[Lnum];
+		FLOAT RW = (FLOAT)WID1/(FLOAT)Limg->width;
+		FLOAT RH = (FLOAT)HEI1/(FLOAT)Limg->height;
+		FLOAT LRAT = (RW+RH)*0.5;
 		//get matched-scale
 		if(abs(ASP_L-ASP_C)>ASP_TH) {ratio = LRAT;}
 		else						{ratio = (LRAT+ratio)*0.5;}
@@ -550,8 +559,8 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,double *A_SCORE
 	int WID = RTEMP->width; int HEI = RTEMP->height;
 	if(WID<WID1) WID = WID1;
 	if(HEI<HEI1) HEI = HEI1;
-	WID = (int)((double)WID*0.7);
-	HEI = (int)((double)HEI*0.7);
+	WID = (int)((FLOAT)WID*0.7);
+	HEI = (int)((FLOAT)HEI*0.7);
 	//set searching range
 	int COORD[4] = {OrX-WID,OrY-HEI,OrX+WID,OrY+HEI};
 	if(COORD[0]<0) COORD[0]=0;					
@@ -632,17 +641,17 @@ int *get_partner_rectangle(RESULT *LR,RESULT *CUR,PINFO *PI,int THL)
 	int L_num = LR->num;	//# of current frame object
 	int *partner=(int *)calloc(C_num,sizeof(int));	//partner objects
 	int *Lcheck=(int *)calloc(L_num,sizeof(int));	
-	double *VEL = (double *)calloc(L_num,sizeof(double));	//average velocity
+	FLOAT *VEL = (FLOAT *)calloc(L_num,sizeof(FLOAT));	//average velocity
 
 	//get average velocity
 	for(int ss=0;ss<L_num;ss++)
 	{
-		double tempV=0.0;
+		FLOAT tempV=0.0;
 		int SNUM = PI->se_num[ss];
 		if(SNUM<1){ VEL[ss]=-1.0; continue;}
 		if(SNUM>5) SNUM=5;
 		for(int tt=0;tt<SNUM;tt++){ tempV+=PI->L_VX[ss][tt];}
-		VEL[ss]=tempV/(double)SNUM;
+		VEL[ss]=tempV/(FLOAT)SNUM;
 	}
 
 	//get partner information (compare length between detected rectangle)
@@ -662,13 +671,13 @@ int *get_partner_rectangle(RESULT *LR,RESULT *CUR,PINFO *PI,int THL)
 				int *PP = LR->point+kk*4;
 				int Lx = (*(PP+2)+*(PP))/2;		//position of last frame object(X)		
 				int Ly = (*(PP+3)+*(PP+1))/2;	//position of last frame object(Y)
-				int Length = (int)sqrt((double)((Lx-Cx)*(Lx-Cx)+(Ly-Cy)*(Ly-Cy)));	//lenght of current and last object
+				int Length = (int)sqrt((FLOAT)((Lx-Cx)*(Lx-Cx)+(Ly-Cy)*(Ly-Cy)));	//lenght of current and last object
 				//find near and same-type object
 				if(Length<Shtest && CUR->type[ss]==LR->type[kk])
 				{
 					int VX_CUR = Cx-Lx;
-					double C_A = abs((double)VX_CUR-VEL[kk]);
-					double C_B = VEL[kk]*VX_CUR;
+					FLOAT C_A = abs((FLOAT)VX_CUR-VEL[kk]);
+					FLOAT C_B = VEL[kk]*VX_CUR;
 					//debug
 					//printf("LENGTH %d  ABS %f\n",Length,C_A);
 					if		(C_A<40)									{ tempP=kk;Shtest=Length;}
@@ -714,13 +723,13 @@ void update_h_position(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,int **NP,int *N
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update historical-position
-void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,double **NVX,double **NVY,int *NSNUM)
+void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **NVX,FLOAT **NVY,int *NSNUM)
 {
-	NVX[CCNUM]=(double *)calloc(max_hist,sizeof(double));
-	NVY[CCNUM]=(double *)calloc(max_hist,sizeof(double));
+	NVX[CCNUM]=(FLOAT *)calloc(max_hist,sizeof(FLOAT));
+	NVY[CCNUM]=(FLOAT *)calloc(max_hist,sizeof(FLOAT));
 
-	double *LVX = P_I->L_VX[LNUM];
-	double *LVY = P_I->L_VX[LNUM];
+	FLOAT *LVX = P_I->L_VX[LNUM];
+	FLOAT *LVY = P_I->L_VX[LNUM];
 	int P_COUNT = NSNUM[CCNUM];
 	if(P_COUNT>max_hist-1) P_COUNT=max_hist-1;
 
@@ -739,11 +748,11 @@ void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,double **NVX,do
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update historical-position
-void update_ave_p(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,double **avep,int *NSNUM)
+void update_ave_p(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **avep,int *NSNUM)
 {
-	avep[CCNUM]=(double *)calloc(max_hist*2,sizeof(double));
+	avep[CCNUM]=(FLOAT *)calloc(max_hist*2,sizeof(FLOAT));
 
-	double *LAP = P_I->ave_p[LNUM];
+	FLOAT *LAP = P_I->ave_p[LNUM];
 	int P_COUNT = NSNUM[CCNUM];
 	if(P_COUNT>max_hist-1) P_COUNT=max_hist-1;
 
@@ -771,7 +780,7 @@ void object_prediction(RESULT *CUR,CvConDensation **COND)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update P_info
-void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,double *A_SCORE,IplImage *Image,int THL)
+void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Image,int THL)
 {
 	//check partner-rectangle for all rectangles detected in current-frame
 	int *ptemp = get_partner_rectangle(LR,CUR,P_I,THL);
@@ -783,9 +792,9 @@ void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,double *A_SCORE,IplImage *Im
 	CvConDensation ** new_cond= (CvConDensation **)calloc(CUR->num,sizeof(CvConDensation*));
 	int *new_seq_num = (int *)calloc(CUR->num,sizeof(int));
 	int **new_L_P= (int **)calloc(CUR->num,sizeof(int*));
-	double **new_L_VX= (double **)calloc(CUR->num,sizeof(double*));
-	double **new_L_VY= (double **)calloc(CUR->num,sizeof(double*));
-	double **new_ave_P= (double **)calloc(CUR->num,sizeof(double*));
+	FLOAT **new_L_VX= (FLOAT **)calloc(CUR->num,sizeof(FLOAT*));
+	FLOAT **new_L_VY= (FLOAT **)calloc(CUR->num,sizeof(FLOAT*));
+	FLOAT **new_ave_P= (FLOAT **)calloc(CUR->num,sizeof(FLOAT*));
 
 	//update particle filter tracking information
 	for(int ii=0;ii<CUR->num;ii++)
@@ -805,9 +814,9 @@ void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,double *A_SCORE,IplImage *Im
 			new_cond[ii]=initialize_cond(Image,0);				//initialize condensation(for particle filter)
 			new_seq_num[ii]=0;
 			new_L_P[ii]=(int *)calloc(max_hist*4,sizeof(int));
-			new_L_VX[ii]=(double *)calloc(max_hist,sizeof(double));
-			new_L_VY[ii]=(double *)calloc(max_hist,sizeof(double));
-			new_ave_P[ii]=(double *)calloc(max_hist*2,sizeof(double));
+			new_L_VX[ii]=(FLOAT *)calloc(max_hist,sizeof(FLOAT));
+			new_L_VY[ii]=(FLOAT *)calloc(max_hist,sizeof(FLOAT));
+			new_ave_P[ii]=(FLOAT *)calloc(max_hist*2,sizeof(FLOAT));
 			init_particle_position(CUR,new_cond[ii],Image,ii,20);		//initialize particle_position
 		}
 	}
@@ -873,7 +882,7 @@ void get_texture(RESULT *RES,IplImage *IM)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //finalize object regions
-int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,double *A_SCORE,IplImage* Image,int THL)
+int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,FLOAT *A_SCORE,IplImage* Image,int THL)
 {
 	//no-object
 	if(CUR->num==0)

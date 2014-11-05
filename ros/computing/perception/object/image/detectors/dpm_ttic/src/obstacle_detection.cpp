@@ -112,7 +112,7 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
     /* start processing time */
     clock_gettime(CLOCK_REALTIME, &start);
     IplImage *R_I = IM_D;
-    double *A_SCORE = ini_ac_score(R_I);	//alloc accum
+    FLOAT *A_SCORE = ini_ac_score(R_I);	//alloc accum
     RESULT *CUR = car_detection(IM_D,MO,thresh,&D_NUMS,A_SCORE,overlap);	//detect car
     clock_gettime(CLOCK_REALTIME, &end);
 #if 1 // AXE
