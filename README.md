@@ -148,10 +148,6 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 ### image_detector ノード起動 (dpm_ttic)
 
-ファイル sensors_fusion/src/CAR_TRACKING/2010_2_3.txt を
-Autoware/ros/computing/perception/object/image/detectors/dpm_ttic/CAR_TRACKING/
-以下に配置する
-
 ```
  $ rosparam set image_detector/algorithm ttic
  $ roscd image/detectors/dpm_ttic/

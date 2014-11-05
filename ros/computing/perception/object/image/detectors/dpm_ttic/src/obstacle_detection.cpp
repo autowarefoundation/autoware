@@ -68,8 +68,11 @@
 #endif
 #include <boost/array.hpp>
 
+#if 1 // AXE
+#else
 char ldata_name[]="2010_2_3.txt";
 char WINDOW_NAME[] = "CAR_TRACK";
+#endif
 double ratio = 1;	//resize ratio
 MODEL *MO;
 double overlap = 0.4;
@@ -168,6 +171,8 @@ int dpm_ttic_main(int argc, char* argv[])
 int main(int argc, char **argv)
 #endif
 {
+#if 1 // AXE
+#else
 	FILE* fp;					//file pointer
 	CvCapture *capt;			//movie file capture
 	fpos_t curpos,fsize;		//file size
@@ -189,6 +194,7 @@ int main(int argc, char **argv)
 
 	//open save file
 	if ((fp = fopen(FPASS,"rb")) == NULL) { printf("file open error!!\n"); exit(EXIT_FAILURE);}
+#endif
 
 	//get car-detector model
 	MO=load_model(ratio);
@@ -199,12 +205,12 @@ int main(int argc, char **argv)
 	//Particle filter information
 	PINFO P_I = {0};
 
+#if 1 // AXE
+#else
 	//get file size and current file position
 	get_f_size(fp,&curpos,&fsize);
 	skip_data_2(fp,1,&ss);   //ある位置からの画像を見る(今は50枚目からみている。)
 
-#if 1 // AXE
-#else
   /**
    * The ros::init() function needs to see argc and argv so that it can perform
    * any ROS arguments and name remapping that were provided at the command line. For programmatic
@@ -267,11 +273,14 @@ int main(int argc, char **argv)
   //release detection result
   release_result(LR);
 
+#if 1 // AXE
+#else
   //close and release file information
   fclose(fp);			//close laser_file
   //cvReleaseCapture(&capt);
 
   s_free(FPASS);		//release laser_file pass
+#endif
   return 0;
 }
 // %EndTag(FULLTEXT)%
