@@ -169,39 +169,45 @@ include_directories(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
+include_directories(/usr/local/cuda/include)
+
+file(GLOB DPM_OCV_CXX_SOURCES "detectors/dpm_ocv/src/*.cpp")
+
+set(DPM_TTIC_PATH detectors/dpm_ttic/src)
+file(GLOB DPM_TTIC_CXX_SOURCES "${DPM_TTIC_PATH}/*.cpp")
+file(GLOB DPM_TTIC_CC_SOURCES "${DPM_TTIC_PATH}/*.cc")
+
+set(DPM_TTIC_SOURCES
+  ${DPM_TTIC_CXX_SOURCES}
+  ${DPM_TTIC_CC_SOURCES}
+  ${DPM_TTIC_PATH}/conv.c
+)
 
 add_executable(image_detector
  image_detector.cpp
- detectors/dpm_ocv/src/main_test.cpp 
- detectors/dpm_ocv/src/cascadedetect.cpp
- detectors/dpm_ocv/src/datamatrix.cpp
- detectors/dpm_ocv/src/distancetransform.cpp
- detectors/dpm_ocv/src/featurepyramid.cpp
- detectors/dpm_ocv/src/fft.cpp
- detectors/dpm_ocv/src/haar.cpp
- detectors/dpm_ocv/src/hog.cpp
- detectors/dpm_ocv/src/latentsvm.cpp
- detectors/dpm_ocv/src/latentsvmdetector.cpp
- detectors/dpm_ocv/src/linemod.cpp
- detectors/dpm_ocv/src/lsvmparser.cpp
- detectors/dpm_ocv/src/lsvmtbbversion.cpp
- detectors/dpm_ocv/src/matching.cpp
- detectors/dpm_ocv/src/objdetect_init.cpp
- detectors/dpm_ocv/src/resizeimg.cpp
- detectors/dpm_ocv/src/routine.cpp
- detectors/dpm_ttic/src/obstacle_detection.cpp
- detectors/dpm_ttic/src/detect.cpp
- detectors/dpm_ttic/src/get_boxes.cpp
- detectors/dpm_ttic/src/tracking.cpp
- detectors/dpm_ttic/src/showboxes.cpp
- detectors/dpm_ttic/src/load_model.cpp
- detectors/dpm_ttic/src/featurepyramid.cpp
- detectors/dpm_ttic/src/laser_func.cpp
- detectors/dpm_ttic/src/nms.cpp
- detectors/dpm_ttic/src/dt.cpp
- detectors/dpm_ttic/src/fconvsMT.cpp
- detectors/dpm_ttic/src/resize.cc
+ ${DPM_OCV_CXX_SOURCES}
+ ${DPM_TTIC_SOURCES}
 )
 
-target_link_libraries(image_detector ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(image_detector
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  cuda
+)
 add_dependencies(image_detector image_generate_messages_cpp)
+
+set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
+set(CUDA_ARCH "sm_35") # jetson: sm_32
+
+## XXX How to generate .cubin file with CMake commands
+set(CUBIN_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR})
+set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_TTIC_PATH}")
+set(CUDA_FILE_OUTPUT "${CATKIN_DEVEL_PREFIX}/lib/image")
+
+execute_process(
+  COMMAND "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
+          "-o" "${CUDA_FILE_OUTPUT}/GPU_function.cubin"
+          "-cubin" "-Xptxas" "-v" "--maxrregcount" "32"
+          "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
+          "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_TTIC_PATH}/GPU_function.cu"
+)

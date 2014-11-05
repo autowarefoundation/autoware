@@ -14,6 +14,8 @@
 //ORIGINAL header files
 #include "Common.h"
 
+#include "switch_float.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,7 +26,7 @@
 // struct used for caching interpolation values
 struct alphainfo {
 	int si, di;
-	double alpha;
+	FLOAT alpha;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,11 +36,11 @@ struct alphainfo {
 //sub functions
 
 // copy src into dst using precomputed interpolation values
-inline void alphacopy(double *src, double *dst, struct alphainfo *ofs, int n);
+inline void alphacopy(FLOAT *src, FLOAT *dst, struct alphainfo *ofs, int n);
 // resize along each column
-void resize1dtran(double *src, int sheight, double *dst, int dheight, int width, int chan);
+void resize1dtran(FLOAT *src, int sheight, FLOAT *dst, int dheight, int width, int chan);
 //main function
-double *resize(double *src,int *sdims,int *odims,double scale);
+FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +49,7 @@ double *resize(double *src,int *sdims,int *odims,double scale);
 //sub functions 
 
 // copy src into dst using precomputed interpolation values
-inline void alphacopy(double *src, double *dst, struct alphainfo *ofs, int n) 
+inline void alphacopy(FLOAT *src, FLOAT *dst, struct alphainfo *ofs, int n) 
 {
 	struct alphainfo *end = ofs + n;
 	while (ofs != end) 
@@ -63,10 +65,10 @@ inline void alphacopy(double *src, double *dst, struct alphainfo *ofs, int n)
 
 // resize along each column
 // result is transposed, so we can apply it twice for a complete resize
-void resize1dtran(double *src, int sheight, double *dst, int dheight, int width, int chan) 
+void resize1dtran(FLOAT *src, int sheight, FLOAT *dst, int dheight, int width, int chan) 
 {
-	double scale = (double)dheight/(double)sheight;
-	double invscale = (double)sheight/(double)dheight; 
+	FLOAT scale = (FLOAT)dheight/(FLOAT)sheight;
+	FLOAT invscale = (FLOAT)sheight/(FLOAT)dheight; 
 	// we cache the interpolation values since they can be 
 	// shared among different columns
 	int len = (int)(dheight*invscale+0.99) + 2*dheight;
@@ -78,8 +80,8 @@ void resize1dtran(double *src, int sheight, double *dst, int dheight, int width,
 	int k = 0;
 	for (int dy = 0; dy < dheight; dy++)
 	{
-		double fsy1 = dy * invscale;
-		double fsy2 = fsy1 + invscale;
+		FLOAT fsy1 = dy * invscale;
+		FLOAT fsy2 = fsy1 + invscale;
 		int sy1 = (int)(fsy1+0.99);
 		int sy2 = (int)fsy2;       
 		int dyW = dy*width;
@@ -105,13 +107,13 @@ void resize1dtran(double *src, int sheight, double *dst, int dheight, int width,
 		}
 	}
 	// resize each column of each color channel
-	memset(dst,0, chan*WD*sizeof(double));
+	memset(dst,0, chan*WD*sizeof(FLOAT));
 	for (int c = 0; c < chan; c++) 
 	{
 		int CWS = c*WS;
 		int CWD = c*WD;
-		double *s = src + CWS;	
-		double *d = dst + CWD;
+		FLOAT *s = src + CWS;	
+		FLOAT *d = dst + CWD;
 		for (int x = 0; x < width; x++) {     
 			alphacopy(s, d, ofs, k);
 			s+=sheight;
@@ -127,28 +129,28 @@ void resize1dtran(double *src, int sheight, double *dst, int dheight, int width,
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // main function (resize)
-// takes a double color image and a scaling factor
+// takes a FLOAT color image and a scaling factor
 // returns resized image
 
-double *resize(double *src,int *sdims,int *odims,double scale)
+FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale)
 {
-  double *dst;
+  FLOAT *dst;
   if(scale==1.0)
     {
       //memcpy_s(odims,sizeof(int)*3,sdims,sizeof(int)*3);  //memcpy_s(コピー先のバッファー,コピー先のバッファーのサイズ,コピー元のバッファー,コピーする文字数)
       memcpy(odims, sdims,sizeof(int)*3);  //memcpy_s(コピー先のバッファー,コピー先のバッファーのサイズ,コピー元のバッファー,コピーする文字数)
       int DL = odims[0]*odims[1]*odims[2];
-      dst = (double*)calloc(DL,sizeof(double));
-      //memcpy_s(dst,sizeof(double)*DL,src,sizeof(double)*DL);
-      memcpy(dst, src,sizeof(double)*DL);
+      dst = (FLOAT*)calloc(DL,sizeof(FLOAT));
+      //memcpy_s(dst,sizeof(FLOAT)*DL,src,sizeof(FLOAT)*DL);
+      memcpy(dst, src,sizeof(FLOAT)*DL);
     }
   else
     {
-      odims[0] = (int)((double)sdims[0]*scale+0.5);
-      odims[1] = (int)((double)sdims[1]*scale+0.5);
+      odims[0] = (int)((FLOAT)sdims[0]*scale+0.5);
+      odims[1] = (int)((FLOAT)sdims[1]*scale+0.5);
       odims[2] = sdims[2];
-      dst = (double*)calloc(odims[0]*odims[1]*sdims[2],sizeof(double));
-      double *tmp = (double*)calloc(odims[0]*sdims[1]*sdims[2],sizeof(double));
+      dst = (FLOAT*)calloc(odims[0]*odims[1]*sdims[2],sizeof(FLOAT));
+      FLOAT *tmp = (FLOAT*)calloc(odims[0]*sdims[1]*sdims[2],sizeof(FLOAT));
       resize1dtran(src, sdims[0], tmp, odims[0], sdims[1], sdims[2]);
       resize1dtran(tmp, sdims[1], dst, odims[1], odims[0], sdims[2]);
       s_free(tmp);

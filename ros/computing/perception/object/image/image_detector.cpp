@@ -4,6 +4,13 @@
 int dpm_ocv_main(int argc, char* argv[]);
 int dpm_ttic_main(int argc, char* argv[]);
 
+struct timeval tv_memcpy_start, tv_memcpy_end;
+float time_memcpy;
+struct timeval tv_kernel_start, tv_kernel_end;
+float time_kernel;
+
+int device_num;
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "image_detector");

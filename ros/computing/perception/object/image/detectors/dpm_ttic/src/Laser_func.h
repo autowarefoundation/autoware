@@ -31,6 +31,8 @@
 #include "Laser_info.h"
 #include "MODEL_info.h"
 
+#include "switch_float.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -38,7 +40,7 @@
 #define INCLUDED_L_FUNC_
 
 extern char *get_file_pass(char *lname);														//get laser-data pass
-extern SCANDATA *save_sdata(double *fdata,int SNUM,IplImage *IM);								//save scan-point data
+extern SCANDATA *save_sdata(FLOAT *fdata,int SNUM,IplImage *IM);								//save scan-point data
 extern void Release_sdata(SCANDATA *sdata);														//release scan-point data
 extern IplImage *ini_Image(int WID,int HEI);													//initialize zero image
 //extern void draw_point_on_image(SCANDATA *sdata,IplImage* IM,char *WNAME,RESULT *RE);			//draw scan-point on image

@@ -9,8 +9,15 @@
 #ifndef INCLUDED_F_INFORMATION_
 #define INCLUDED_F_INFORMATION_
 
+#include "switch_release.h"
+#include "switch_release.h"
+
 //#define L_DATA_PASS	"C:\\äwçZ\\å§ãÜé∫\\ÉvÉçÉOÉâÉÄ\\TTIC_CARDETECTION(Takeuchi)\\CAR_TRACKING(VS2008_data_fusion)\\CAR_TRACKING\\"
-#define L_DATA_PASS		"./CAR_TRACKING/"
+#ifdef RELEASE
+#define L_DATA_PASS	"/usr/local/geye_with_cam/bin/car_detecter/"
+#else
+#define L_DATA_PASS	"./CAR_TRACKING/"
+#endif  /* ifdef RELEASE */
 
 #endif
 
