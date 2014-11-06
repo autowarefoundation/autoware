@@ -39,10 +39,11 @@ find_package(OpenCV REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   ImageObjects.msg
- )
+add_message_files(
+  FILES
+  ImageObjects.msg
+  ImageLaneObjects.msg
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -128,3 +129,4 @@ target_link_libraries(lane_ocv
   ${catkin_LIBRARIES}
   opencv_highgui opencv_core opencv_imgproc m
 )
+add_dependencies(lane_ocv image_generate_messages_cpp)
