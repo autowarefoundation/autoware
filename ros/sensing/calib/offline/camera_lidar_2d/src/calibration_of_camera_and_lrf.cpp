@@ -535,7 +535,8 @@ int main(int argc, char **argv)
     char path[128];
     strcpy(path, getenv("HOME"));
 #if 1 // AXE
-    strcat(path, "/catkin_ws/src/sensing/calib/calibration_of_camera_and_lrf/param.yaml");
+    //strcat(path, "/catkin_ws/src/sensing/calib/calibration_of_camera_and_lrf/param.yaml");
+    strcat(path, "/catkin_ws/src/sensing/calib/offline/camera_lidar_2d/param.yaml");
 #else
     strcat(path, "/catkin_ws/src/calibration_of_camera_and_lrf/param.yaml");
 #endif
