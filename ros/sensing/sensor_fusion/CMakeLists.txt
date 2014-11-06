@@ -172,17 +172,8 @@ include_directories(/usr/include/opencv2/legacy)
 
 add_executable(fusion
  src/obstacle_detection_and_distance_measurement_rapidimage.cpp 
- src/detect.cpp
- src/get_boxes.cpp
- src/tracking.cpp
  src/showboxes.cpp
- src/load_model.cpp
- src/featurepyramid.cpp
- src/laser_func.cpp
- src/nms.cpp
- src/dt.cpp
- src/fconvsMT.cpp
- src/resize.cc)
+)
 
 target_link_libraries(fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(fusion sensor_fusion_generate_messages_cpp)
