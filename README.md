@@ -86,6 +86,7 @@ ost.txt の内容のうち
 ```
 
 ```
+ $ roscd camera_lidar_2d/
  $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
 ```
 
@@ -96,6 +97,20 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
  $ cp camera.yaml $(rosdir)/sensing/fusion/scan_to_image/
 ```
+
+#### 別の場所にある param.yaml を使用する場合
+
+```
+ $ rosparam set scan_to_image/param_yaml ~/other_dir/param.yaml
+ $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
+```
+この場合は roscd camera_lidar_2d/ は不要
+
+#### デフォルトのパスに戻す場合
+```
+ $ rosparam delete scan_to_image/param_yaml
+```
+
 
 ### カメラ起動
 

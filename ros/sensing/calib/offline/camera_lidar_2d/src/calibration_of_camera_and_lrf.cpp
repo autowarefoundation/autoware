@@ -224,7 +224,11 @@ void trans_depth_points_to_image_points(Three_dimensional_vector* depth_points, 
     float camera_z;
     int i;
 
+#if 1 // AXE
+    for(i = 0; i < (int)depth_points->x.size(); i++) {
+#else
     for(i = 0; i < depth_points->x.size(); i++) {
+#endif
         //global座標系に変換
         global_y = (-1.0 * depth_points->x[i]) - (cvmGet(translation_global2lrf, 0, 0) /1000);
         global_x = depth_points->y[i] - (cvmGet(translation_global2lrf, 0, 1)/1000);
@@ -256,11 +260,19 @@ void plot_depth_points(Two_dimensional_vector* image_points)
     CvSeq *points;
     CvPoint pt;
     CvMemStorage *storage = cvCreateMemStorage (0);
+#if 1 // AXE
+    int i;
+#else
     int i, j;
+#endif
 
     //画像に点群データをプロット
     points = cvCreateSeq (CV_SEQ_ELTYPE_POINT, sizeof (CvSeq), sizeof (CvPoint), storage);
+#if 1 // AXE
+    for (i = 0; i < (int)image_points->x.size(); i++) {
+#else
     for (i = 0; i < image_points->x.size(); i++) {
+#endif
         if(0 > image_points->x[i] || image_points->x[i] > 639) {
             continue;
         }
@@ -397,7 +409,10 @@ void imageCallback(const sensor_msgs::Image& image_raw) {
 
 void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 {
+#if 1 // AXE
+#else
     CvSeq *points;
+#endif
     IplImage *image_lrf;
     CvPoint pt, center_pt, line_start, line_end;
 
@@ -411,7 +426,11 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
     g_lrf_depth_points.y.resize(scan->ranges.size());
     g_lrf_depth_points.z.resize(scan->ranges.size());
 
+#if 1 // AXE
+    for(i = 0; i < (int)scan->ranges.size(); i++) {
+#else
     for(i = 0; i < scan->ranges.size(); i++) {
+#endif
         g_lrf_depth_points.x[i] = scan->ranges[i] * sin(scan->angle_min + scan->angle_increment * i);
         g_lrf_depth_points.y[i] = 0;
         g_lrf_depth_points.z[i] = scan->ranges[i] * cos(scan->angle_min + scan->angle_increment * i);
@@ -459,7 +478,11 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 
     //scanデータのプロット
     g_lrf_judge = 1;
+#if 1 // AXE
+    for (i = 0; i < (int)scan->ranges.size(); i++) {
+#else
     for (i = 0; i < scan->ranges.size(); i++) {
+#endif
         if(0 > g_lrf_depth_points.x[i] * scale + (window_lrf_width / 2) || g_lrf_depth_points.x[i] * scale + (window_lrf_width / 2) > window_lrf_width) {
             continue;
         }
@@ -531,18 +554,25 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 
 int main(int argc, char **argv)
 {
+#if 1 // AXE
+    ros::init(argc, argv, "calibration_of_camera_and_LRF");
+    ros::NodeHandle n;
+
+    /* xmlからパラメータ設定 */
+    std::string param_yaml;
+    n.param<std::string>("/camera_lidar_2d/param_yaml", param_yaml, "param.yaml");
+
+    // ファイルの種類は，内容から決定
+    cv::FileStorage fs(param_yaml.c_str(), cv::FileStorage::READ);
+#else
     /* xmlからパラメータ設定 */
     char path[128];
     strcpy(path, getenv("HOME"));
-#if 1 // AXE
-    //strcat(path, "/catkin_ws/src/sensing/calib/calibration_of_camera_and_lrf/param.yaml");
-    strcat(path, "/catkin_ws/src/sensing/calib/offline/camera_lidar_2d/param.yaml");
-#else
     strcat(path, "/catkin_ws/src/calibration_of_camera_and_lrf/param.yaml");
-#endif
 
     // ファイルの種類は，内容から決定
     cv::FileStorage fs(path, cv::FileStorage::READ);
+#endif
     cv::FileNode tm = fs["checkerboard"];
     CV_Assert(tm.type() == cv::FileNode::MAP && tm.size() == 4);
     pat_row = static_cast<int>(tm["pat_row"]);
@@ -570,6 +600,8 @@ int main(int argc, char **argv)
     cvCreateTrackbar ("rad_Y", WINDOW_NAME_CAMERA, &default_rad_trackbar, 360, rad_y_bar);
     cvCreateTrackbar ("rad_Z", WINDOW_NAME_CAMERA, &default_rad_trackbar, 360, rad_z_bar);
 
+#if 1 // AXE
+#else
     /**
    * The ros::init() function needs to see argc and argv so that it can perform
    * any ROS arguments and name remapping that were provided at the command line. For programmatic
@@ -588,6 +620,7 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n;
+#endif
 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages
