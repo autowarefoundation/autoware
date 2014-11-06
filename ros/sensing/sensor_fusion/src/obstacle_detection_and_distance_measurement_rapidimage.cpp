@@ -115,6 +115,11 @@ void distance_measurementCallback(const sensors_fusion::TransformedPointData& tr
     CvPoint pt;
     CvMemStorage *storage = cvCreateMemStorage (0);
     int i, j;
+#if 1 // AXE
+    if(IM_D_clone == NULL){
+      return;
+    }
+#endif
     IplImage *IM_D_clone_plot;
 
     IM_D_clone_plot = cvCloneImage(IM_D_clone);
@@ -224,7 +229,8 @@ int main(int argc, char **argv)
 //    cvNamedWindow(WINDOW_NAME, CV_WINDOW_AUTOSIZE);
     cvNamedWindow(WINDOW_NAME, 2);
 #if 1 // AXE
-    IM_D_clone = cvLoadImage("5.png",CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+    IM_D_clone = NULL;
+    car_num = 0;
 #else
     IM_D_clone = cvLoadImage("/home/yukky/workspace/cartrack/gccDebug/CAR_TRACKING/Test_Images/Daytime_Image_PNG/5.png",CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
 #endif

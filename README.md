@@ -163,7 +163,6 @@ $ rosparam delete image_detector/algorithm
 ### fusion ノード起動
 
 ```
- $ roscd sensor_fusion/src/
  $ rosrun sensor_fusion fusion
 ```
 
