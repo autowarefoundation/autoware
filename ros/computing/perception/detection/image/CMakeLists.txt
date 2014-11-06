@@ -197,7 +197,7 @@ target_link_libraries(image_detector
 add_dependencies(image_detector image_generate_messages_cpp)
 
 set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
-set(CUDA_ARCH "sm_35") # jetson: sm_32
+set(CUDA_ARCH "sm_50") # Titan: sm_35 jetson: sm_32
 
 ## XXX How to generate .cubin file with CMake commands
 set(CUBIN_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR})
