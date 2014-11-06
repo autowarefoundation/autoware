@@ -119,3 +119,12 @@ execute_process(
           "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
           "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
 )
+
+add_executable(lane_ocv
+  classes/lane/src/line_detection.cpp
+)
+
+target_link_libraries(lane_ocv
+  ${catkin_LIBRARIES}
+  opencv_highgui opencv_core opencv_imgproc m
+)
