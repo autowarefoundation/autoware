@@ -78,9 +78,9 @@ ost.txt の内容のうち
  $ roscd calibration_of_camera_and_lrf/
 ```
 
-[param.yaml](ros/sensing/calib/calibration_of_camera_and_lrf/param.yaml)の作成方法は [ReadMe.txt](ros/sensing/calib/calibration_of_camera_and_lrf/ReadMe.txt)を参照
+[param.yaml]作成方法は [ReadMe.txt](ros/sensing/calib/offline/camera_lidar_2d/ReadMe.txt)を参照
 
-[param.yaml](ros/sensing/calib/calibration_of_camera_and_lrf/param.yaml) 中の
+[param.yaml]中の
 
 ```
   intrinsic_matirix: !!oencv-matirx
@@ -90,7 +90,7 @@ ost.txt の内容のうち
 ```
 
 ```
- $ rosrun calibration_of_camera_and_lrf calibration_of_camera_and_lrf
+ $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
 ```
 
 LRF画面 CALIBRATE(click) SAVE(click)
@@ -98,7 +98,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 `camera.yaml` が生成される
 
 ```
- $ cp camera.yaml ../../fusion/scan_to_image/
+ $ cp camera.yaml $(rosdir)/sensing/fusion/scan_to_image/
 ```
 
 ### カメラ起動
@@ -150,7 +150,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 ```
  $ rosparam set image_detector/algorithm ttic
- $ roscd image/detectors/dpm_ttic/
+ $ rosparam set image_detector/cubon ~/catkin_ws/devel/lib/image/GPU_function.cubin
  $ rosrun image image_detector
 ```
 
