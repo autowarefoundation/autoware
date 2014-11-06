@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "image_viewer");
+	ros::init(argc, argv, "camera_sim");
 	ros::NodeHandle n;
 
 	if(argc < 2){
@@ -23,6 +23,8 @@ int main(int argc, char **argv)
 	  exit(1);
 	}
 
+	ros::Publisher pub = n.advertise<sensor_msgs::Image>("image_raw", 1000);
+
 	sensor_msgs::Image msg;
 	msg.width = img->width;
 	msg.height = img->height;
@@ -35,18 +37,12 @@ int main(int argc, char **argv)
 
 	msg.encoding = sensor_msgs::image_encodings::RGB8; // TODO
 
-	ros::Publisher pub = n.advertise<sensor_msgs::Image>("image_raw", 1000);
 	ros::Rate loop_rate(10); // Hz
 
-#if 0 // for debug
-	pub.publish(msg);
-	ros::spin();
-#else
 	while(ros::ok()){
 		pub.publish(msg);
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
-#endif
 	return 0;
 }
