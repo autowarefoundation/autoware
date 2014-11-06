@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "image_viewer");
 	ros::NodeHandle n;
-	ros::Subscriber scriber = n.subscribe("/image_viewer", 1,
+	ros::Subscriber scriber = n.subscribe("/image_raw", 1,
 					      image_viewer_callback);
 
 	ros::spin();

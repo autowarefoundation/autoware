@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(image_viewer)
+project(camera)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -26,8 +26,13 @@ catkin_package(
 )
 
 add_executable(image_viewer src/image_viewer.cpp)
-# add_dependencies(camera_node camera_generate_messages_cpp)
 target_link_libraries(image_viewer
+   ${catkin_LIBRARIES}
+   opencv_highgui opencv_core opencv_imgproc
+)
+
+add_executable(camera_sim src/camera_sim.cpp)
+target_link_libraries(camera_sim
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )

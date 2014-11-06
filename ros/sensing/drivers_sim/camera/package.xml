@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <package>
-  <name>image_viewer</name>
+  <!-- <name>image_viewer</name> -->
+  <name>camera</name>
   <version>0.0.0</version>
   <description>The image_viewer package</description>
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
