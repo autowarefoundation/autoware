@@ -291,28 +291,35 @@ int main(int argc, char **argv)
    */
     /* xmlからパラメータ設定 */
     char path[128];
-    strcpy(path, getenv("HOME"));
 #if 1 // AXE
-    strcat(path, "/catkin_ws/src/sensing/fusion/scan_to_image/camera.yaml");
+    ros::init(argc, argv, "point_to_image");
+    ros::NodeHandle n;
+
+    std::string camera_yaml;
+    n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml, "camera.yaml");
+    cv::FileStorage fs_auto_file(camera_yaml.c_str(), cv::FileStorage::READ);
 #else
+    strcpy(path, getenv("HOME"));
     strcat(path, "/catkin_ws/src/sensors_fusion/camera.yaml");
-#endif
     // ファイルの種類は，内容から決定
     cv::FileStorage fs_auto_file(path, cv::FileStorage::READ);
+#endif
     fs_auto_file["translation_global2lrf"] >> translation_global2lrf;
     fs_auto_file["translation_global2camera"] >> translation_global2camera;
     fs_auto_file["rotation_matrix"] >> rotation;
     fs_auto_file["intrinsic"] >> intrinsic;
     fs_auto_file.release();
 
-    strcpy(path, getenv("HOME"));
 #if 1 // AXE
-    strcat(path, "/catkin_ws/src/sensing/fusion/scan_to_image/manual.yaml");
+    std::string manual_yaml;
+    n.param<std::string>("/scan_to_image/manual_yaml", manual_yaml, "manual.yaml");
+    cv::FileStorage fs_manual_file(manual_yaml.c_str(), cv::FileStorage::READ);
 #else
+    strcpy(path, getenv("HOME"));
     strcat(path, "/catkin_ws/src/sensors_fusion/manual.yaml");
-#endif
     // ファイルの種類は，内容から決定
     cv::FileStorage fs_manual_file(path, cv::FileStorage::READ);
+#endif
     fs_manual_file["manual_mode"] >> manual_mode;
     fs_manual_file["x_theta"] >> x_theta;
     fs_manual_file["y_theta"] >> y_theta;
@@ -333,6 +340,8 @@ int main(int argc, char **argv)
     }
 
 
+#if 1 // AXE
+#else
     ros::init(argc, argv, "point_to_image");
 
   /**
@@ -341,6 +350,7 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n;
+#endif
 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages
