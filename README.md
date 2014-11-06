@@ -74,10 +74,6 @@ ost.txt の内容のうち
  $ rosrun hokuyo_node hokuyo_node
 ```
 
-```
- $ roscd calibration_of_camera_and_lrf/
-```
-
 [param.yaml]作成方法は [ReadMe.txt](ros/sensing/calib/offline/camera_lidar_2d/ReadMe.txt)を参照
 
 [param.yaml]中の
