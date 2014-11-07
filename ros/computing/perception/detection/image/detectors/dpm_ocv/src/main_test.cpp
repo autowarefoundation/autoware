@@ -139,6 +139,16 @@ void image_objectsCallback(const sensor_msgs::Image& image_source)
 #define STR(x) XSTR(x)
 #endif
 
+#if defined(CAR_DETECTOR)
+#define THRESHOLD_PARAM "/car_detector/threshold"
+#define THREADS_PARAM "/car_detector/threads"
+#elif defined(PEDESTRIAN_DETECTOR)
+#define THRESHOLD_PARAM "/pedestrian_detector/threshold"
+#define THREADS_PARAM "/pedestrian_detector/threads"
+#else
+#error Invalid detector type
+#endif
+
 #if 1 // AXE
 int dpm_ocv_main(int argc, char* argv[])
 #else
@@ -165,13 +175,13 @@ int main(int argc, char* argv[])
     float overlapThreshold = 0.5f;
     int numThreads = 6;
 #if 1 // AXE
-    if(n.hasParam("/image_detector/threshold")){
+    if(n.hasParam(THRESHOLD_PARAM)){
       double threshold = 0.5;
-      n.getParam("/image_detector/threshold", threshold);
+      n.getParam(THRESHOLD_PARAM, threshold);
       overlapThreshold = (float)threshold;
     }
-    if(n.hasParam("/image_detector/threads")){
-      n.getParam("/image_detector/threads", numThreads);
+    if(n.hasParam(THREADS_PARAM)){
+      n.getParam(THREADS_PARAM, numThreads);
     }
 #else
     if( argc < 3 )
