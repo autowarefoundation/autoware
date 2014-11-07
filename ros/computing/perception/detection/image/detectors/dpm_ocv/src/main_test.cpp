@@ -134,6 +134,11 @@ void image_objectsCallback(const sensor_msgs::Image& image_source)
 }
 #endif
 
+#if defined(ROS)
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+#endif
+
 #if 1 // AXE
 int dpm_ocv_main(int argc, char* argv[])
 #else
@@ -188,10 +193,8 @@ int main(int argc, char* argv[])
     //readDirectory( models_folder, models_filenames );
 
     images_filenames.clear();models_filenames.clear();
-#if 1 //AXE
-    if(n.getParam("/image_detector/models", models_filenames) == 0){
-      models_filenames.push_back( std::string("models_VOC2007/car.xml") );
-    }
+#if ROS //AXE
+    models_filenames.push_back( STR(OPENCV_MODEL_FILE) );
 #else
     images_filenames.push_back( std::string(argv[1]) );
     models_filenames.push_back( std::string(argv[2]) );

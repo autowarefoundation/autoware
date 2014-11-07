@@ -72,6 +72,9 @@ catkin_package(
 ## Build ##
 ###########
 
+SET(CMAKE_C_FLAGS "-O2 -g -Wall -DROS ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
@@ -92,18 +95,43 @@ set(DPM_GPU_SOURCES
   ${DPM_GPU_PATH}/conv.c
 )
 
-add_executable(image_detector
- image_detector.cpp
- ${DPM_OCV_CXX_SOURCES}
- ${DPM_GPU_SOURCES}
-)
+set(DPM_OPENCV_PATH detectors/dpm_ocv/src)
+foreach(dpm_target car_detector pedestrian_detector)
+  add_executable(${dpm_target}
+    image_detector.cpp
+    ${DPM_OCV_CXX_SOURCES}
+    ${DPM_GPU_SOURCES}
+  )
 
-target_link_libraries(image_detector
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
-  cuda
-)
-add_dependencies(image_detector image_generate_messages_cpp)
+  target_link_libraries(${dpm_target}
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    cuda
+  )
+  add_dependencies(${dpm_target} image_generate_messages_cpp)
+endforeach(dpm_target)
+
+set(GPU_MODEL_PATH
+ "${CMAKE_CURRENT_SOURCE_DIR}/detectors/dpm_gpu/CAR_TRACKING/")
+set(CUBIN_OUTPUT "${CATKIN_DEVEL_PREFIX}/lib/image/GPU_function.cubin")
+
+set(DPM_GPU_COMMON_OPTIONS
+  "-DGPU_MODEL_PATH=${GPU_MODEL_PATH} -DDEFAULT_CUBIN=${CUBIN_OUTPUT}")
+
+set(OPENCV_MODEL_PATH
+  "${CMAKE_CURRENT_SOURCE_DIR}/detectors/dpm_ocv/Debug/models_VOC2007")
+set(OPENCV_CAR_MODEL
+  "${OPENCV_MODEL_PATH}/car.xml")
+set(OPENCV_PEDESTRIAN_MODEL
+  "${OPENCV_MODEL_PATH}/person.xml")
+
+set_target_properties(car_detector
+  PROPERTIES COMPILE_FLAGS
+  "-DCAR_DETECTOR -DOPENCV_MODEL_FILE=${OPENCV_CAR_MODEL} ${DPM_GPU_COMMON_OPTIONS}")
+
+set_target_properties(pedestrian_detector
+  PROPERTIES COMPILE_FLAGS
+  "-DPEDESTRIAN_DETECTOR -DOPENCV_MODEL_FILE=${OPENCV_PEDESTRIAN_MODEL} ${DPM_GPU_COMMON_OPTIONS}")
 
 set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
 set(CUDA_ARCH "sm_50") # Titan: sm_35 jetson: sm_32
@@ -115,7 +143,7 @@ set(CUDA_FILE_OUTPUT "${CATKIN_DEVEL_PREFIX}/lib/image")
 
 execute_process(
   COMMAND "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
-          "-o" "${CUDA_FILE_OUTPUT}/GPU_function.cubin"
+          "-o" "${CUBIN_OUTPUT}"
           "-cubin" "-Xptxas" "-v" "--maxrregcount" "32"
           "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
           "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
