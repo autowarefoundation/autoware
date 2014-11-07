@@ -168,16 +168,16 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 #### 変更する場合
 ```
- $ rosparam set image_detecotr/threshold 0.48
- $ rosparam set image_detecotr/threads 7
- $ rosparam set image_detecotr/models "[ models_VOC2007/car.xml , models_VOC2007/person.xml ]"
+ $ rosparam set image_detector/threshold 0.48
+ $ rosparam set image_detector/threads 7
+ $ rosparam set image_detector/models "[ models_VOC2007/car.xml , models_VOC2007/person.xml ]"
 ```
 
 ### image_detector ノード起動 (dpm_ttic)
 
 ```
  $ rosparam set image_detector/algorithm ttic
- $ rosparam set image_detector/cubon ~/catkin_ws/devel/lib/image/GPU_function.cubin
+ $ rosparam set image_detector/cubin ~/catkin_ws/devel/lib/image/GPU_function.cubin
  $ rosrun image image_detector
 ```
 
