@@ -149,41 +149,51 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
 
 
-### image_detector ノード起動 (dpm_ocv)
+### car_detectorノードの起動
 
 ```
- $ roscd image/detectors/dpm_ocv/Debug/
- $ rosrun image image_detector
+ $ rosrun image car_detector
 ```
 
 カメラの画像と矩形、その他が画面に表示される
 
-#### デフォルトの状態
+### pedestrian_detectorノードの起動
+
+```
+ $ rosrun image pedestrian_detector
+```
+
+カメラの画像と矩形、その他が画面に表示される
+
+#### OpenCV版, GPU版の切り替え(デフォルト: `OpenCV`)
+
+```
+# OpenCV版
+ $ rosparam set car_detector/algorithm ocv
+ $ rosparam set pedestrian_detector/algorithm ocv
+
+# GPU版
+ $ rosparam set car_detector/algorithm gpu
+ $ rosparam set pedestrian_detector/algorithm gpu
+```
+
+#### OpenCV版 car_detector, pedestrian_detectorのデフォルトパラメータ
 
 ```c++
   overlapThreshold = 0.5
   numThreads = 6
-  models_filenames.push_back( std::string("models_VOC2007/car.xml") );
 ```
 
-#### 変更する場合
-```
- $ rosparam set image_detector/threshold 0.48
- $ rosparam set image_detector/threads 7
- $ rosparam set image_detector/models "[ models_VOC2007/car.xml , models_VOC2007/person.xml ]"
-```
-
-### image_detector ノード起動 (dpm_ttic)
+#### OpenCV版 car_detector, pedestrian_detectorのパラメータ変更
 
 ```
- $ rosparam set image_detector/algorithm ttic
- $ rosparam set image_detector/cubin ~/catkin_ws/devel/lib/image/GPU_function.cubin
- $ rosrun image image_detector
-```
+# 車
+ $ rosparam set car_detector/threshold 0.48
+ $ rosparam set car_detector/threads 7
 
-デフォルトのdpm_ocvに戻す場合
-```
-$ rosparam delete image_detector/algorithm
+# 歩行者
+ $ rosparam set pedestrian_detector/threshold 0.48
+ $ rosparam set pedestrian_detector/threads 7
 ```
 
 
