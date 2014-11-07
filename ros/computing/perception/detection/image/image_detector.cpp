@@ -7,9 +7,17 @@ int dpm_ttic_main(int argc, char* argv[], const char *cubin);
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
+#if defined(CAR_DETECTOR)
+#define NODE_NAME "car_detector"
+#elif defined(PEDESTRIAN_DETECTOR)
+#define NODE_NAME "pedestrian_detector"
+#else
+#error Invalid detector type
+#endif
+
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "image_detector");
+  ros::init(argc, argv, NODE_NAME);
 
   ros::NodeHandle n;
 
