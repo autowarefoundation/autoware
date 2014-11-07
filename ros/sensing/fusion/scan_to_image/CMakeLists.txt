@@ -172,4 +172,4 @@ include_directories(/usr/include/opencv2/legacy)
 
 add_executable(point_to_image src/transformation.cpp)
 target_link_libraries(point_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(image_detector scan_to_image_generate_messages_cpp)
+add_dependencies(point_to_image scan_to_image_generate_messages_cpp)
