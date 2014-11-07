@@ -19,8 +19,8 @@ int main(int argc, char **argv)
 
 	IplImage* img = cvLoadImage(fn, CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
 	if(img == NULL){
-	  fprintf(stderr, "Can't load '%s'\n", fn);
-	  exit(1);
+		fprintf(stderr, "Can't load '%s'\n", fn);
+		exit(1);
 	}
 
 	ros::Publisher pub = n.advertise<sensor_msgs::Image>("image_raw", 1000);
@@ -35,9 +35,14 @@ int main(int argc, char **argv)
 	std::vector<uint8_t> data(dataPtr, dataPtr + img->imageSize);
 	msg.data = data;
 
-	msg.encoding = sensor_msgs::image_encodings::RGB8; // TODO
+	msg.encoding = (img->nChannels == 1) ? 
+		sensor_msgs::image_encodings::MONO8 : 
+		sensor_msgs::image_encodings::RGB8;
 
-	ros::Rate loop_rate(10); // Hz
+	int fps;
+	n.param<int>("/camera_sim/fps", fps, 30);
+	fprintf(stderr, "%d fps\n", fps);
+	ros::Rate loop_rate(fps); // Hz
 
 	while(ros::ok()){
 		pub.publish(msg);
