@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CanDataSender</string>
+    <string name="action_settings">Settings</string>
+    <string name="connection_name">接続名</string>
+    <string name="ssh_setting">ssh設定</string>
+    <string name="port">ポート</string>
+    <string name="host_name">ホスト名</string>
+    <string name="user_name">ユーザー名</string>
+    <string name="password">パスワード</string>
+    <string name="prtfwd_setting">ポートフォワーディング設定</string>
+	<string name="connect_host">接続ホスト名</string>
+	<string name="connect_port">接続ポート</string>
+	<string name="add">追加</string>
+	<string name="cancel">キャンセル</string>
+	<string name="def">デフォルト</string>
+	<string name="finish">終了</string>
+</resources>
