@@ -211,3 +211,20 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
  $ rostopic echo /fused_objects
 ```
+
+
+### デバッグ開発用にダミー画像を送るノードの起動
+
+```
+ $ rosrun camera camera_sim [画像ファイルのパス]
+```
+
+画像ファイルの内容を /image_raw topic として出力する
+
+#### フレームレートの変更
+
+デフォルト設定は 30 fps
+
+```
+ $ rosparam set camera_sim/fps 15
+```
