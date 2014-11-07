@@ -54,6 +54,28 @@
 #define OUT_NAME		"Out_Image/res"		//Result name
 #define EX_NAME			".png"
 
+#if defined(ROS)
+
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+#if defined(CAR_DETECTOR)
+
+#define	F_NAME_COM STR(GPU_MODEL_PATH)	"car_comp.csv"
+#define	F_NAME_ROOT STR(GPU_MODEL_PATH)	"car_root.csv"
+#define	F_NAME_PART STR(GPU_MODEL_PATH)	"car_part.csv"
+
+#elif defined(PEDESTRIAN_DETECTOR)
+
+#define	F_NAME_COM STR(GPU_MODEL_PATH)	"person_comp.csv"
+#define	F_NAME_ROOT STR(GPU_MODEL_PATH)	"person_root.csv"
+#define	F_NAME_PART STR(GPU_MODEL_PATH)	"person_part.csv"
+
+#else
+#error Invalid detector should be Car or Pedestrian
+#endif
+
+#else
 #ifdef RELEASE
 
 #define F_NAME_COM "/usr/local/geye_with_cam/bin/car_detecter/car_comp.csv" //file name (component)
@@ -70,6 +92,7 @@
 #define F_NAME_PART	"./CAR_TRACKING/car_part.csv"			//file name (part_filter)
 
 #endif /* ifdef RELEASE */
+#endif
 
 ///////////////////////
 //struct information///

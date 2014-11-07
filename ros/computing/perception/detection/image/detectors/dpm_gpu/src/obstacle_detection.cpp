@@ -84,6 +84,13 @@ static ros::Publisher image_objects;
 ros::Publisher image_and_obstacle_position;
 #endif
 
+struct timeval tv_memcpy_start, tv_memcpy_end;
+float time_memcpy;
+struct timeval tv_kernel_start, tv_kernel_end;
+float time_kernel;
+
+int device_num;
+
 /**
  * This tutorial demonstrates simple receipt of messages over the ROS system.
  */

@@ -682,6 +682,9 @@ MODEL *load_model(FLOAT ratio)
 {
   MODEL *MO=(MODEL*)malloc(sizeof(MODEL));		//modelサイズを確保
   //MO.OOに＝以降を代入
+std::cout << "@@ com:" << F_NAME_COM << std::endl;
+std::cout << "@@ root:" << F_NAME_ROOT << std::endl;
+std::cout << "@@ part:" << F_NAME_PART << std::endl;
   MO->MI=load_modelinfo(F_NAME_COM);
   MO->RF=load_rootfilter(F_NAME_ROOT);
   MO->PF=load_partfilter(F_NAME_PART);

@@ -4,12 +4,8 @@
 int dpm_ocv_main(int argc, char* argv[]);
 int dpm_ttic_main(int argc, char* argv[], const char *cubin);
 
-struct timeval tv_memcpy_start, tv_memcpy_end;
-float time_memcpy;
-struct timeval tv_kernel_start, tv_kernel_end;
-float time_kernel;
-
-int device_num;
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
 
 int main(int argc, char **argv)
 {
@@ -20,8 +16,8 @@ int main(int argc, char **argv)
   if(n.hasParam("/image_detector/algorithm")){
     std::string algo("ocv");
     n.getParam("/image_detector/algorithm", algo);
-    if(algo.compare("ttic") == 0){
-      std::string cubin("");
+    if(algo == "gpu"){
+      std::string cubin(STR(DEFAULT_CUBIN));
       n.getParam("/image_detector/cubin", cubin);
       return dpm_ttic_main(argc, argv, cubin.c_str());
     }
