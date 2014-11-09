@@ -25,12 +25,6 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-add_executable(image_viewer src/image_viewer.cpp)
-target_link_libraries(image_viewer
-   ${catkin_LIBRARIES}
-   opencv_highgui opencv_core opencv_imgproc
-)
-
 add_executable(camera_sim src/camera_sim.cpp)
 target_link_libraries(camera_sim
    ${catkin_LIBRARIES}
