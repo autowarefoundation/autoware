@@ -137,9 +137,7 @@ set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
 set(CUDA_ARCH "sm_50") # Titan: sm_35 jetson: sm_32
 
 ## XXX How to generate .cubin file with CMake commands
-set(CUBIN_OUTPUT ${CMAKE_CURRENT_SOURCE_DIR})
 set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}")
-set(CUDA_FILE_OUTPUT "${CATKIN_DEVEL_PREFIX}/lib/image")
 
 execute_process(
   COMMAND "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
