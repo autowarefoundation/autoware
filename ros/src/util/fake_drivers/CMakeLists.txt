@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(camera)
+project(fake_drivers)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -20,12 +20,16 @@ generate_messages(
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES camera
+#  LIBRARIES fake_drivers
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
 
-add_executable(camera_sim src/camera_sim.cpp)
+###########
+## Build ##
+###########
+
+add_executable(camera_sim camera/src/camera_sim.cpp)
 target_link_libraries(camera_sim
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc

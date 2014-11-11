@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(debug)
+project(viewers)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -31,7 +31,7 @@ catkin_package(
 ## Build ##
 ###########
 
-add_executable(image_viewer viewer/image_viewer.cpp)
+add_executable(image_viewer image_viewer/image_viewer.cpp)
 target_link_libraries(image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
