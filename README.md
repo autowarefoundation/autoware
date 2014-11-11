@@ -7,22 +7,11 @@ Open software for autonomous driving
 ```
 $ cd $HOME
 $ git clone git@github.com:CPFL/Autoware.git
-```
-
-### Create symbolic links
-
-`~/Autoware/ros/` 以下生成
-
-```
-$ cd ~/catkin_ws/src
-$ ln -s ~/Autoware/ros/sensing
-$ ln -s ~/Autoware/ros/computing
-```
-
-### catkin_make
-
-```
-$ cd ~/catkin_ws
+$ cd ~/Autoware/ros/src
+$ catkin_init_workspace
+$ cd ../
+$ catkin_make clean # for generating setup scripts
+$ source devel/setup.bash # you should load devel/setup.zsh if you are zsh user
 $ catkin_make
 ```
 
