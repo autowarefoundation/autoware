@@ -56,9 +56,10 @@ struct Lane {
   Lane(CvPoint a, CvPoint b, float angle, float kl, float bl): p0(a),p1(b),angle(angle),
                                                                votes(0),visited(false),found(false),k(kl),b(bl) { }
   CvPoint p0, p1;
+  float angle;
   int votes;
   bool visited, found;
-  float angle, k, b;
+  float k, b;
 };
 
 struct Status {
@@ -141,7 +142,6 @@ int findSymmetryAxisX(IplImage *half_frame, CvPoint bmin, CvPoint bmax)
   int xmax = bmax.x;
   int ymax = bmax.y;
   int half_width = half_frame->width/2;
-  int maxi = 1;
 
   for (int x=xmin, j=0; x<xmax; x++, j++)
     {
@@ -234,11 +234,10 @@ void processSide(std::vector<Lane> lanes, IplImage *edges, bool right)
   const int ENDX = right ? (w-BORDERX) : BORDERX;
   int midx = w/2;
   int midy = edges->height/2;
-  unsigned char *ptr = (unsigned char *)edges->imageData;
 
   /* show responses */
   int *votes = new int[lanes.size()];
-  for (int i=0; i<lanes.size(); i++) votes[i++] = 0;
+  for (std::size_t i = 0; i < lanes.size(); ++i) votes[i++] = 0;
 
   for (int y=ENDY; y>=BEGINY; y-=SCAN_STEP)
     {
@@ -253,7 +252,7 @@ void processSide(std::vector<Lane> lanes, IplImage *edges, bool right)
           float xmin = 9999999;
           int match = -1;
 
-          for (int j=0; j<lanes.size(); j++)
+          for (std::size_t j = 0; j < lanes.size(); ++j)
             {
               /* compute response point destance to current line */
               float d = dist2line (
@@ -286,7 +285,7 @@ void processSide(std::vector<Lane> lanes, IplImage *edges, bool right)
 
   int bestMatch = -1;
   int mini = 9999999;
-  for (int i=0; i<lanes.size(); i++)
+  for (std::size_t i = 0; i<lanes.size(); ++i)
     {
       int xline = (midy - lanes[i].b) / lanes[i].k;
       int dist = abs(midx - xline); // distance to midpoint
@@ -385,7 +384,7 @@ void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, IplImage 
 
   /* show Hough lines */
   int org_offset = temp_frame->height;
-  for (int i=0; i<right.size(); i++)
+  for (std::size_t i = 0; i < right.size(); ++i)
     {
       CvPoint org_p0 = right[i].p0;
       org_p0.y += org_offset;
@@ -398,7 +397,7 @@ void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, IplImage 
       cvLine(org_frame, org_p0, org_p1, BLUE, 2);
 #endif
     }
-  for (int i=0; i<left.size(); i++)
+  for (std::size_t i = 0; i < left.size(); ++i)
     {
       CvPoint org_p0 = left[i].p0;
       org_p0.y += org_offset;

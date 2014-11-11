@@ -40,27 +40,9 @@ CUT_THREADPROC dt_thread_func(void *p){
 
   dt_partition *pt = (dt_partition *)p;
   struct timeval tv;
-  struct timeval part_tv_memcpy_start, part_tv_memcpy_end;
-  float part_time_memcpy = 0;
   CUresult res;
   int thread_num_x=0, thread_num_y=0;
   int block_num_x=0, block_num_y=0;
-
-  struct timeval tv_dt_kernel_start, tv_dt_kernel_end;
-  float time_dt_kernel;
-  struct timeval tv_dt_memcpyHtoD_start, tv_dt_memcpyHtoD_end;
-  float time_dt_memcpyHtoD;
-  struct timeval tv_dt_memcpyDtoH_start, tv_dt_memcpyDtoH_end;
-  float time_dt_memcpyDtoH;
-  struct timeval tv_dt_texture_start, tv_dt_texture_end;
-  float time_dt_texture;
-  struct timeval tv_dt_memalloc_start, tv_dt_memalloc_end;
-  float time_dt_memalloc;
-  struct timeval tv_dt_memfree_start, tv_dt_memfree_end;
-  float time_dt_memfree;
-  struct timeval tv_dt_others_start, tv_dt_others_end;
-  float time_dt_others;
-
 
   res = cuCtxSetCurrent(ctx[pt->pid]);
   if(res != CUDA_SUCCESS) {
@@ -374,10 +356,11 @@ CUT_THREADPROC dt_thread_func(void *p){
   int pointer_size = 0;
   int part_y = 0;
   int move_size = 0;
-  int error_flag = 0;
   int start_kk = 0;
   int end_kk = 0;
+#if 0
   int part_start_kk = 0;
+#endif
   int part_end_kk = 0;
   unsigned long long int pointer_dst_M = (unsigned long long int)pt->dst_M;
   unsigned long long int pointer_M_dev = (unsigned long long int)M_dev[pt->pid];
@@ -410,7 +393,9 @@ CUT_THREADPROC dt_thread_func(void *p){
       }
 
       if(pt->pid > 0){
+#if 0
         part_start_kk = part_y * (pt->pid - 1);
+#endif
         part_end_kk = part_y * pt->pid;
       }
       
@@ -477,10 +462,11 @@ CUT_THREADPROC dt_thread_func(void *p){
   pointer_size = 0;
   part_y = 0;
   move_size = 0;
-  error_flag = 0;
   start_kk = 0;
   end_kk = 0;
+#if 0
   part_start_kk = 0;
+#endif
   part_end_kk = 0;
   unsigned long long int pointer_dst_tmpIx = (unsigned long long int)pt->dst_tmpIx;
   unsigned long long int pointer_tmpIx_dev = (unsigned long long int)tmpIx_dev[pt->pid];
@@ -513,7 +499,9 @@ CUT_THREADPROC dt_thread_func(void *p){
       }
 
       if(pt->pid > 0){
+#if 0
         part_start_kk = part_y * (pt->pid - 1);
+#endif
         part_end_kk = part_y * pt->pid;
       }
       
@@ -579,10 +567,11 @@ CUT_THREADPROC dt_thread_func(void *p){
   pointer_size = 0;
   part_y = 0;
   move_size = 0;
-  error_flag = 0;
   start_kk = 0;
   end_kk = 0;
+#if 0
   part_start_kk = 0;
+#endif
   part_end_kk = 0;
   unsigned long long int pointer_dst_tmpIy = (unsigned long long int)pt->dst_tmpIy;
   unsigned long long int pointer_tmpIy_dev = (unsigned long long int)tmpIy_dev[pt->pid];
@@ -615,7 +604,6 @@ CUT_THREADPROC dt_thread_func(void *p){
       }
 
       if(pt->pid > 0){
-        part_start_kk = part_y * (pt->pid - 1);
         part_end_kk = part_y * pt->pid;
       }
       
@@ -704,8 +692,6 @@ FLOAT ****dt_GPU(
 
   dt_partition *p = (dt_partition *)malloc(device_num*sizeof(dt_partition));
 
-  CUresult res;
-  struct timeval tv;
   int max_dim0 = 0, max_dim1 = 0;  
   /* prepare for parallel execution */
   int sum_size_SQ = 0;
@@ -941,7 +927,7 @@ FLOAT ****dt_GPU(
               {
                 *(IX_P++) = *tmpIx_P;
                 *(IY_P++) = tmpIy_array[L][jj][kk][(*tmpIx_P)*(dims0)+y];
-                *tmpIx_P++;       // increment address
+                tmpIx_P++;       // increment address
               }
           }
       }

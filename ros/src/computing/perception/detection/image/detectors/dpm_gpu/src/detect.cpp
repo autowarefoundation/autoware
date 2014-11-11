@@ -19,6 +19,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#if !defined(ROS)
 #ifdef _DEBUG
     //DebugÉÇÅ[ÉhÇÃèÍçá
     #pragma comment(lib,"cv200d.lib") 
@@ -31,6 +32,7 @@
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
     #pragma comment(lib,"highgui200.lib") 
+#endif
 #endif
 //C++ library
 #include <stdio.h>
@@ -154,17 +156,10 @@ FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE)
   /* for measurement */
   struct timeval tv;
   struct timeval tv_ini_scales_start, tv_ini_scales_end;
-  float time_ini_scales;
   struct timeval tv_ini_feat_size_start, tv_ini_feat_size_end;
-  float time_ini_feat_size;
   struct timeval tv_get_boxes_start, tv_get_boxes_end;
-  float time_get_boxes;
   struct timeval tv_calc_f_pyramid_start, tv_calc_f_pyramid_end;
   float time_calc_f_pyramid = 0;
-  
-  
-  //for time measurement
-  clock_t t1,t2,t3;
   
   //initialize scale information for hierachical detection
   gettimeofday(&tv_ini_scales_start, NULL);
@@ -177,7 +172,6 @@ FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE)
   gettimeofday(&tv_ini_feat_size_end, NULL);
 
   //calculate feature pyramid
-  t1=clock();
   gettimeofday(&tv_calc_f_pyramid_start, NULL);
   FLOAT **feature=calc_f_pyramid(IM,MO->MI,featsize,scales);		
   gettimeofday(&tv_calc_f_pyramid_end, NULL);
@@ -190,14 +184,10 @@ FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE)
   printf("calc_f_pyramid %f[ms]\n", time_calc_f_pyramid);
 #endif  // ifdef PRINT_INFO
 
-  t2=clock();
-
   //detect boundary boxes
   gettimeofday(&tv_get_boxes_start, NULL);
   FLOAT *boxes = get_boxes(feature,scales,featsize,MO,D_NUMS,A_SCORE,thresh);
   gettimeofday(&tv_get_boxes_end, NULL);
-  t3=clock();
-
 
 #if 1
   // tvsub(&tv_ini_scales_end, &tv_ini_scales_start, &tv);
@@ -235,13 +225,14 @@ FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE)
 RESULT *car_detection(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE,FLOAT overlap)
 {
   /* for measurement */
-  struct timeval tv;
   struct timeval tv_detect_start, tv_detect_end;
-  float time_detect;
   struct timeval tv_nms_start, tv_nms_end;
+#if 0
+  struct timeval tv;
+  float time_detect;
   float time_nms;
+#endif
   struct timeval tv_get_new_rects_start, tv_get_new_rects_end;
-  float time_get_new_rects;
   
   gettimeofday(&tv_detect_start, NULL);
   FLOAT *boxes = detect(IM,MO,thresh,D_NUMS,A_SCORE);	//detect high-score region

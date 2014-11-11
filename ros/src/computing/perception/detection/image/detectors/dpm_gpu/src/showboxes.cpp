@@ -13,6 +13,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#if !defined(ROS)
 #ifdef _DEBUG
     //DebugÉÇÅ[ÉhÇÃèÍçá
     #pragma comment(lib,"cv200d.lib") 
@@ -25,6 +26,7 @@
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
     #pragma comment(lib,"highgui200.lib") 
+#endif
 #endif
 //C++ library
 #include <stdio.h>
@@ -119,12 +121,6 @@ void show_rects(IplImage *Image,RESULT *CUR,FLOAT ratio)
       cvLine(Image,p1,p2,col,2);
     }
 #else
-  
-  //parameters 
-  const int height = Image->height;
-  const int width = Image->width;
-  const int UpY = 0;
-  const int NEW_Y = Image->height;
   
   // generate key
   // key_t shm_key = ftok(OUTPUT_SHM_PATH, 1);
@@ -279,7 +275,6 @@ void show_rects(IplImage *Image,RESULT *CUR,FLOAT ratio)
     {
       //int *P = CUR->point+4*ii;
       int *P = CUR->OR_point+4*ii;
-      CvScalar col = get_color(CUR->type[ii]);
       CvPoint p1=cvPoint(P[0],P[1]);	
       CvPoint p2=cvPoint(P[2],P[3]);
       
@@ -541,13 +536,10 @@ int *show_vector_im(IplImage *Image,RESULT *CUR,PINFO *P_I,FLOAT ratio)
 {	
 	//parameters 
 	const int height = Image->height;
-	const int width = Image->width;
 	const int UpY = height/10;
-	const int NEW_Y = height-UpY-height/10;
 	int *IM_V = (int *)calloc(CUR->num*4,sizeof(int));
 
 	CvScalar COL = cvScalar(0.0,0.0,255.0);	//color of particles
-	CvScalar WCOL = cvScalar(255.0,255.0,255.0);	//white
 	CvScalar GCOL = cvScalar(0.0,255.0,0.0);	//white
 	for(int ii=0;ii<CUR->num;ii++)
 	{
@@ -676,10 +668,7 @@ int *show_vector_im(IplImage *Image,RESULT *CUR,PINFO *P_I,FLOAT ratio)
 void show_vector_2D(IplImage *MAP,IplImage *IM,RESULT *CUR,PINFO *P_I,int *I_VEC,FLOAT ratio)
 {	
 	//Image information
-	const int height = IM->height;
 	const int width = IM->width;
-	const int UpY = height/10;
-	const int NEW_Y = height-UpY-height/10;
 
 	FLOAT TAN_ANG = tan(VA/2/180*m_PI);
 
@@ -704,9 +693,7 @@ void show_vector_2D(IplImage *MAP,IplImage *IM,RESULT *CUR,PINFO *P_I,int *I_VEC
 		int Yimg = Y_OF_IM-(int)(Yratio*Y);
 		FLOAT D_RANGE = Y*TAN_ANG*2;
 		FLOAT Pi_AX=(FLOAT)I_VEC[4*kk];
-		FLOAT Pi_AY=(FLOAT)I_VEC[4*kk+1];
 		FLOAT Pi_BX=(FLOAT)I_VEC[4*kk+2];
-		FLOAT Pi_BY=(FLOAT)I_VEC[4*kk+3];
 		//printf("[%f %f %f %f]\n",Pi_AX,Pi_AX,Pi_AX,Pi_BY);
 
 		FLOAT A_RATIO = (Pi_BX-Pi_AX)/(FLOAT)width;
@@ -803,7 +790,6 @@ void show_likelihood(IplImage *Image,CvMat *LIKE,int *COORD)
 	FLOAT min_val=0,max_val=0;
 
 	cvMinMaxLoc(LIKE,(double*)&min_val, (double*)&max_val);
-	FLOAT ratio = 255.0/(max_val);
 
 	for(int ii=0;ii<LIKE->width;ii++)
 	{
@@ -825,7 +811,6 @@ void show_det_score(IplImage *Image,FLOAT *ac_score,RESULT *CUR)
 	IplImage *D_score = cvCreateImage(cvSize(Image->width,Image->height),Image->depth,3);
 	int Step = D_score->widthStep;
 	int chs = D_score->nChannels;
-	int LL = Image->width*Image->height;
 	FLOAT *TP = ac_score;
 
 	if(CUR->num>0)
@@ -990,8 +975,6 @@ IplImage *load_suc_image(int fnum)
   }
 
   unsigned char *shrd_ptr = (unsigned char*)shmat(shrd_id, NULL, 0);
-  int *shrd_ptr_height = (int*)shmat(shrd_id_height, NULL, 0);
-  int *shrd_ptr_width = (int*)shmat(shrd_id_width, NULL, 0);
 
   // attach reader-writer lock
   pthread_rwlock_t *shrd_ptr_rwlock = (pthread_rwlock_t *)shmat(shrd_id_rwlock, NULL, 0);

@@ -23,7 +23,7 @@
 typedef int errno_t;
 #endif
 
-#if 1 // AXE
+#if defined(ROS) // AXE
 
 #ifdef USE_FLOAT_AS_DECIMAL
 #define FLOAT_SCAN_FMT	"%f,"
@@ -49,7 +49,7 @@ int sum_size_def_array;
 //definiton of functions//
 
 //subfunctions 
-#if 1 // AXE
+#if defined(ROS) // AXE
 Model_info * load_modelinfo(const char *filename);	//load model basic information
 Rootfilters *load_rootfilter(const char *filename);	//load root filter information
 Partfilters *load_partfilter(const char *filename);	//load part filter information
@@ -75,7 +75,7 @@ void free_model(MODEL *MO);						//release model-information (externed to main.c
 //subfunctions
 
 //load model basic information
-#if 1 // AXE
+#if defined(ROS) // AXE
 Model_info * load_modelinfo(const char *filename)
 #else
 Model_info * load_modelinfo(char *filename)
@@ -84,7 +84,6 @@ Model_info * load_modelinfo(char *filename)
   CUresult res;
 
   FILE *file;		//File
-  errno_t err;	//err ( for fopen)
   Model_info *MI=(Model_info*)malloc(sizeof(Model_info));		//Model information
   
   //fopen	
@@ -95,19 +94,18 @@ Model_info * load_modelinfo(char *filename)
       exit(-1);
     }
   FLOAT t1,t2,t3,t4;	
-  int b;
 
   //load basic information
-#if 1 // AXE
-  b = fscanf(file,FLOAT_SCAN_FMT ",",&t1);
+#if defined(ROS) // AXE
+  fscanf(file,FLOAT_SCAN_FMT ",",&t1);
   MI->numcomponent=(int)t1;   //number of components 
-  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+  fscanf(file,FLOAT_SCAN_FMT,&t1);
   MI->sbin=(int)t1;           //sbin
-  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+  fscanf(file,FLOAT_SCAN_FMT,&t1);
   MI->interval=(int)t1;       //interval
-  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+  fscanf(file,FLOAT_SCAN_FMT,&t1);
   MI->max_Y=(int)t1;          //max_Y
-  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+  fscanf(file,FLOAT_SCAN_FMT,&t1);
   MI->max_X=(int)t1;          //max_X
 #else
   if( sizeof(FLOAT) == sizeof(double) ){
@@ -148,17 +146,17 @@ Model_info * load_modelinfo(char *filename)
   
   for(int ii=0;ii<MI->numcomponent;ii++)	//LOOP (component)
     {
-#if 1 // AXE
-      b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+#if defined(ROS) // AXE
+      fscanf(file,FLOAT_SCAN_FMT,&t1);
       MI->ridx[ii]=(int)t1-1; //root index
-      b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+      fscanf(file,FLOAT_SCAN_FMT,&t1);
       MI->oidx[ii]=(int)t1-1; //offset index
-      b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+      fscanf(file,FLOAT_SCAN_FMT,&t1);
       MI->offw[ii]=t1;        //offset weight (FLOAT)
-      b =fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
+      fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
       MI->rsize[ii*2]=(int)t1;   //rsize (Y)
       MI->rsize[ii*2+1]=(int)t2; //rsize (X)
-      b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+      fscanf(file,FLOAT_SCAN_FMT,&t1);
       MI->numpart[ii]=(int)t1; //number of part filter
 #else
       if(sizeof(FLOAT)==sizeof(double)) {
@@ -194,12 +192,12 @@ Model_info * load_modelinfo(char *filename)
 		
       for(int jj=0;jj<MI->numpart[ii];jj++)	//LOOP (part-filter)
         {
-#if 1 // AXE
-	  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+#if defined(ROS) // AXE
+	  fscanf(file,FLOAT_SCAN_FMT,&t1);
 	  MI->pidx[ii][jj]=(int)t1-1; //part index
-	  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+	  fscanf(file,FLOAT_SCAN_FMT,&t1);
 	  MI->didx[ii][jj]=(int)t1-1; //define-index of part
-	  b =fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
+	  fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
 	  MI->psize[ii][jj*2]=(int)t1;
 	  MI->psize[ii][jj*2+1]=(int)t2;
 #else
@@ -225,8 +223,8 @@ Model_info * load_modelinfo(char *filename)
     }
   
   //get defs information
-#if 1 // AXE
-    b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+#if defined(ROS) // AXE
+    fscanf(file,FLOAT_SCAN_FMT,&t1);
 #else
   if(sizeof(FLOAT)==sizeof(double)) {
     b =fscanf(file,"%lf,",&t1);	
@@ -249,13 +247,13 @@ Model_info * load_modelinfo(char *filename)
 
   for (int kk=0;kk<DefL;kk++)
     {
-#if 1 // AXE
-      b =fscanf(file,FLOAT_SCAN_FMT4,&t1,&t2,&t3,&t4);
+#if defined(ROS) // AXE
+      fscanf(file,FLOAT_SCAN_FMT4,&t1,&t2,&t3,&t4);
       MI->def[kk*4]=t1;
       MI->def[kk*4+1]=t2;
       MI->def[kk*4+2]=t3;
       MI->def[kk*4+3]=t4;
-      b =fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
+      fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
       MI->anchor[kk*2]=(int)t1;
       MI->anchor[kk*2+1]=(int)t2;
 #else
@@ -295,11 +293,11 @@ Model_info * load_modelinfo(char *filename)
       MI->x2[ii] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
       MI->y2[ii] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
       
-#if 1 // AXE
-      for (int jj=0;jj<GL;jj++){b =fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->x1[ii][jj]=t1;}
-      for (int jj=0;jj<GL;jj++){b =fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->y1[ii][jj]=t1;}
-      for (int jj=0;jj<GL;jj++){b =fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->x2[ii][jj]=t1;}
-      for (int jj=0;jj<GL;jj++){b =fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->y2[ii][jj]=t1;}
+#if defined(ROS) // AXE
+      for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->x1[ii][jj]=t1;}
+      for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->y1[ii][jj]=t1;}
+      for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->x2[ii][jj]=t1;}
+      for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->y2[ii][jj]=t1;}
 #else
       if(sizeof(FLOAT)==sizeof(double)) {
         for (int jj=0;jj<GL;jj++){b =fscanf(file,"%lf,",&t1);	MI->x1[ii][jj]=t1;}
@@ -331,14 +329,13 @@ Model_info * load_modelinfo(char *filename)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if 1 // AXE
+#if defined(ROS) // AXE
 Rootfilters *load_rootfilter(const char *filename)
 #else
 Rootfilters *load_rootfilter(char *filename)
 #endif
 {
   FILE *file;		//File
-  errno_t err;	//err ( for fopen)
   CUresult res;
   
   Rootfilters *RF=(Rootfilters*)malloc(sizeof(Rootfilters));		//Root filter
@@ -354,9 +351,8 @@ Rootfilters *load_rootfilter(char *filename)
   FLOAT t1,t2,t3;
   FLOAT dummy_t1, dummy_t2, dummy_t3;  // variable for dummy scan in order to adjust the location of file-pointer
   
-  int b;
-#if 1 // AXE
-  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+#if defined(ROS) // AXE
+  fscanf(file,FLOAT_SCAN_FMT,&t1);
 #else
   if(sizeof(FLOAT)==sizeof(double)) {
     b =fscanf(file,"%lf,",&t1);		
@@ -377,8 +373,8 @@ Rootfilters *load_rootfilter(char *filename)
   size_t SUM_SIZE_ROOT=0;
   for (int ii=0;ii<RF->NoR;ii++)
     {
-#if 1 // AXE
-      b =fscanf(file,FLOAT_SCAN_FMT3,&t1,&t2,&t3);				//number of components
+#if defined(ROS) // AXE
+      fscanf(file,FLOAT_SCAN_FMT3,&t1,&t2,&t3);				//number of components
 #else
       if(sizeof(FLOAT)==sizeof(double)) {
         b =fscanf(file,"%lf,%lf,%lf,",&t1,&t2,&t3);				//number of components 
@@ -409,7 +405,7 @@ Rootfilters *load_rootfilter(char *filename)
       
       /* adjust the location of file-pointer */
       for(int jj=0; jj<NUMB; jj++) {
-#if 1 // AXE
+#if defined(ROS) // AXE
 	fscanf(file,FLOAT_SCAN_FMT,&dummy_t1);  // this is dummy scan
 #else
         if(sizeof(FLOAT)==sizeof(double)) {
@@ -455,7 +451,7 @@ Rootfilters *load_rootfilter(char *filename)
       int NUMB=RF->root_size[ii][0]*RF->root_size[ii][1]*RF->root_size[ii][2];
       
       /* adjust the location of file-pointer */
-#if 1 // AXE
+#if defined(ROS) // AXE
       fscanf(file,FLOAT_SCAN_FMT3,&dummy_t1,&dummy_t2,&dummy_t3);  // this is dummy scan
 #else
       if(sizeof(FLOAT)==sizeof(double)) {
@@ -467,8 +463,8 @@ Rootfilters *load_rootfilter(char *filename)
       
       for (int jj=0;jj<NUMB;jj++)
         {
-#if 1 // AXE
-	  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+#if defined(ROS) // AXE
+	  fscanf(file,FLOAT_SCAN_FMT,&t1);
 #else
           if(sizeof(FLOAT)==sizeof(double)) {
             b =fscanf(file,"%lf,",&t1);		
@@ -497,14 +493,13 @@ Rootfilters *load_rootfilter(char *filename)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if 1 // AXE
+#if defined(ROS) // AXE
 Partfilters *load_partfilter(const char *filename)
 #else
 Partfilters *load_partfilter(char *filename)
 #endif
 {
   FILE *file;		//File
-  errno_t err;	//err ( for fopen)
   
   CUresult res;
   
@@ -520,10 +515,9 @@ Partfilters *load_partfilter(char *filename)
   
   FLOAT t1,t2,t3;
   FLOAT dummy_t1, dummy_t2, dummy_t3;  // variable for dummy scan in order to adjust the location of file-pointer
-  
-  int b;
-#if 1 // AXE
-  b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+
+ #if defined(ROS) // AXE
+  fscanf(file,FLOAT_SCAN_FMT,&t1);
 #else
   if(sizeof(FLOAT)==sizeof(double)) {
     b =fscanf(file,"%lf,",&t1);		
@@ -546,8 +540,8 @@ Partfilters *load_partfilter(char *filename)
   int SUM_SIZE_PART = 0;
   for (int ii=0;ii<PF->NoP;ii++)
     {
-#if 1 // AXE
-      b =fscanf(file,FLOAT_SCAN_FMT3,&t1,&t2,&t3);			//number of components
+#if defined(ROS) // AXE
+      fscanf(file,FLOAT_SCAN_FMT3,&t1,&t2,&t3);			//number of components
 #else
       if(sizeof(FLOAT)==sizeof(double)) {
         b =fscanf(file,"%lf,%lf,%lf,",&t1,&t2,&t3);			//number of components 
@@ -576,7 +570,7 @@ Partfilters *load_partfilter(char *filename)
 #endif
      
        /* adjust the location of file-pointer */
-#if 1 // AXE
+#if defined(ROS) // AXE
       for(int jj=0; jj<NUMB; jj++) {
 	fscanf(file,FLOAT_SCAN_FMT,&dummy_t1);  // this is dummy scan
       }
@@ -628,15 +622,15 @@ Partfilters *load_partfilter(char *filename)
     int NUMB=PF->part_size[ii][0]*PF->part_size[ii][1]*PF->part_size[ii][2];
 
     /* adjust the location of file-pointer */
-#if 1 // AXE
+#if defined(ROS) // AXE
     fscanf(file,FLOAT_SCAN_FMT3,&dummy_t1,&dummy_t2,&dummy_t3);  // this is dummy scan
 
     for (int jj=0;jj<NUMB;jj++)
       {
-	b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+	fscanf(file,FLOAT_SCAN_FMT,&t1);
         PF->partfilter[ii][jj]=t1;
       }
-    b =fscanf(file,FLOAT_SCAN_FMT,&t1);
+    fscanf(file,FLOAT_SCAN_FMT,&t1);
 #else
     if(sizeof(FLOAT)==sizeof(double)) {
       fscanf(file,"%lf,%lf,%lf,",&dummy_t1,&dummy_t2,&dummy_t3);  // this is dummy scan

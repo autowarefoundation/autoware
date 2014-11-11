@@ -45,7 +45,7 @@ void skip_data(FILE* fp,CvCapture *capt,int sk_num,int *fnum);						//skip data 
 void skip_data_2(FILE* fp,int sk_num,int *ss);										
 IplImage *combine_image (int num, IplImage ** tmp);									//combine image
 
-char b_cmp[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};								//magic words of laser-lader data
+unsigned char b_cmp[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//magic words of laser-lader data
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +219,6 @@ void radar_data_fusion(SCANDATA *sdata,IplImage* IM,RESULT *RES,PINFO *PI)
 			int Y= sdata->XYIM[2*ii+1];
 			if(X>X1 && X<X2 && Y>Y1 && Y<Y2)
 			{
-				CvScalar COL = get_c_color(sdata->Ctype[ii]);
 				sdata->CCLASS[ii]=kk;
 			}
 		}
@@ -373,8 +372,8 @@ IplImage *draw_point_MAP2D(SCANDATA *sdata)
 //skip laser pointer data (for synchronization and debug)
 void skip_laser_frame(FILE* fp,int sk_num,int *fnum)
 {
-	const char b_cmp[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//comparing array 
-	char mword[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//magic words of laser-lader data
+	const unsigned char b_cmp[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//comparing array 
+	unsigned char mword[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//magic words of laser-lader data
 	int b_locate;	//get number of all elements ([Channel,X,Y,Z]*scanpoint)
 	FLOAT temp;
 	for(int ii=0;ii<sk_num;ii++)
@@ -382,7 +381,7 @@ void skip_laser_frame(FILE* fp,int sk_num,int *fnum)
 		//get magic-word of file
 		fread(&mword,sizeof(FLOAT),1,fp);
 		//check magic-word
-		if(strncmp(&mword[0],&b_cmp[0],8)!=0){printf("magic word error\n");return;}
+		if(std::memcmp(&mword[0],&b_cmp[0],8)!=0){printf("magic word error\n");return;}
 		//get size of laser-points int time T
 		fread(&temp,sizeof(FLOAT),1,fp);
 		b_locate = (int)temp;		//get scan-data size 
@@ -464,8 +463,8 @@ IplImage *draw_sdata(SCANDATA *sdata,IplImage* IM,RESULT *RES)
 //skip data and image (for debug)
 void skip_data(FILE* fp,CvCapture *capt,int sk_num,int *fnum)
 {
-	const char b_cmp[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//comparing array 
-	char mword[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//magic words of laser-lader data
+	const unsigned char b_cmp[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//comparing array 
+	unsigned char mword[]={0xAF,0xFE,0xC0,0xC0,0xAF,0xFE,0xC0,0xC0};	//magic words of laser-lader data
 	int b_locate;	//get number of all elements ([Channel,X,Y,Z]*scanpoint)
 	FLOAT temp;
 	for(int ii=0;ii<sk_num;ii++)
@@ -473,7 +472,7 @@ void skip_data(FILE* fp,CvCapture *capt,int sk_num,int *fnum)
 		IplImage *IMG;
 		//get magic-word of file
 		fread(&mword,sizeof(FLOAT),1,fp);
-		if(strncmp(&mword[0],&b_cmp[0],8)!=0){printf("magic word error\n");return;}
+		if(std::memcmp(&mword[0],&b_cmp[0],8)!=0){printf("magic word error\n");return;}
 		fread(&temp,sizeof(FLOAT),1,fp);
 		b_locate = (int)temp;		//get scan-data size 
 		//access scan-point data 

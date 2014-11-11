@@ -13,6 +13,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#if !defined(ROS)
 #ifdef _DEBUG
     //DebugÉÇÅ[ÉhÇÃèÍçá
     #pragma comment(lib,"cv200d.lib") 
@@ -25,6 +26,7 @@
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
     #pragma comment(lib,"highgui200.lib") 
+#endif
 #endif
 //C++ library
 #include <stdio.h>		
@@ -93,10 +95,6 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
   const int *numpart = MO->MI->numpart;	
   const int GL = (numpart[0]+1)*4+3;
   const FLOAT ratio = MO->MI->ratio;
-  const int height = 480;
-  const int width =  640;
-  const int UpY = height/10;
-  const int NEW_Y = height-UpY-height/10;
   
   int LL = GL-3;
   FLOAT **x1 = MO->MI->x1; FLOAT **x2 = MO->MI->x2;
@@ -177,7 +175,7 @@ int* elm_rect(RESULT *CUR,int *partner)
   int *NEW_PARTNER;		//output
   int N_NUM=CUR->num;
   int *CHECK	=(int *)calloc(N_NUM,sizeof(int));
-  int n_shift=0;
+
   //check bad-score & independent object
   for(int ii=0;ii<CUR->num;ii++)
     {
@@ -331,8 +329,18 @@ CvConDensation *initialize_cond(IplImage *Image,int TYPE)
 	FLOAT w_no = 10.0; FLOAT h_no = 10.0;	//noise parameter
 	
 	int n_stat;
-	if(TYPE==0)			n_stat=4; 	
-	else if(TYPE==1)	n_stat=2;
+
+	switch (TYPE) {
+	case 0:
+		n_stat = 4;
+		break;
+	case 1:
+		n_stat = 2;
+	default:
+		std::cerr << "Invalid Type: " << TYPE << std::endl;
+		std::exit(1);
+	}
+
 	CvConDensation *cond = cvCreateConDensation(n_stat,n_stat,n_particle);
 
 	//matrix for boundary information
@@ -467,7 +475,6 @@ void init_particle_position(RESULT *CUR,CvConDensation *COND,IplImage *IM,int NU
 	float X = ((float)*PP+(float)*(PP+2))/2;
 	float Y = ((float)*(PP+1)+(float)*(PP+3))/2;
 	int LX=L,LY=L;
-	int TYPE = CUR->type[NUM];
 
 	X-=(LX/2);	Y-=(LY/2);
 	

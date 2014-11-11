@@ -13,6 +13,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#if !defined(ROS)
 #ifdef _DEBUG
     //Debugモードの場合
     #pragma comment(lib,"cv200d.lib") 
@@ -25,6 +26,7 @@
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
     #pragma comment(lib,"highgui200.lib") 
+#endif
 #endif
 //C++ library
 #include <stdio.h>
@@ -183,7 +185,6 @@ FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 		const int sbin = MI->sbin;
 		interval = MI->interval;
 		const FLOAT sc = pow(2.0,(1/(double)interval));//縮小比を表している。
-		const FLOAT minsize = FLOAT(min_i(X,Y));
 		const int numcomponent = MI->numcomponent;
 		//max_scale = 1+int(floor(log(minsize/(5*FLOAT(sbin)))/log(sc)));
 		max_scale = 36;
@@ -528,12 +529,10 @@ void calc_feature_byGPU
 {
   /* rename argument */
   //  FLOAT *resized_image      = SRC;
-  int   *resized_image_size = ISIZE;
 
   /* input size */
   const int height  = ISIZE[0]; //{268,268,134,67,233,117,203,203,177,154,89,203,154,77}
   const int width   = ISIZE[1]; //{448,112,224,390,195,340,170,296,257,148,340,257,129}
-  const int dims[2] = {height, width};
 
   /* size of Histgrams and Norm calculation space size */
   const int blocks[2] = {(int)floor(double(height)/double(sbin)+0.5), (int)floor(double(width)/double(sbin)+0.5)}; //{67,112}....sbine=4
@@ -869,10 +868,6 @@ FLOAT *Ipl_to_FLOAT(IplImage *Input)	//get intensity data (FLOAT) of input
 void* feat_calc(void *thread_arg) 
 {
   thread_data *args  = (thread_data *)thread_arg;
-  FLOAT       *IM    = args->IM;
-  int         *ISIZE = args->ISIZE;
-  int         *FSIZE = args->FSIZE;
-  int          sbin  = args->sbin;
   FLOAT       *Out   = calc_feature(args->IM, args->ISIZE, args->FSIZE, args->sbin);			
   // FLOAT       *Out   = calc_feature_byGPU(args->IM, args->ISIZE, args->FSIZE, args->sbin);			
   args->Out = Out;			
@@ -982,7 +977,6 @@ FLOAT **calc_f_pyramid
 #endif
   
   /* thread for feature calculation */
-  unsigned     threadID;
 #ifdef ORIGINAL
   thread_data *td = (thread_data *)calloc(LEN, sizeof(thread_data));
 #else
@@ -1160,7 +1154,6 @@ FLOAT **calc_f_pyramid
       /* size of image of each level */
       int height_inner = resized_image_size[level*3];
       int width_inner  = resized_image_size[level*3 + 1];
-      int depth_inner  = resized_image_size[level*3 + 2];
 
       /* size of Histgram and Norm caluculation space */
       int blocks_inner[2] = {
@@ -1436,8 +1429,6 @@ FLOAT **calc_f_pyramid
   /* calculate HOG feature for each resized image */
   for(int ii=0; ii<interval; ii++)
     {
-      FLOAT st = 1.0/pow(sc, ii);
-
       /* ルートフィルタ用特徴量(全体的特徴量)？ */
       /* "first" 2x interval */
 #ifdef ORIGINAL
@@ -1654,7 +1645,6 @@ FLOAT **calc_f_pyramid
 
 void free_features(FLOAT **features,Model_info *MI)
 {
-	int LofFeat = MI->max_scale + MI->interval;
 	if(features != NULL)
 	{
 #if 0

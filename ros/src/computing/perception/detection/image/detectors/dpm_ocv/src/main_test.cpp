@@ -1,5 +1,5 @@
 #include <iostream>
-#if 1 // AXE
+#if defined(ROS) // AXE
 #include "objdetect.hpp"
 #else
 #include "objdetect/objdetect.hpp"
@@ -23,7 +23,7 @@
 #include "tbb/task_scheduler_init.h"
 #endif
 
-#if 1 // AXE
+#if defined(ROS) // AXE
 #include "ros/ros.h"
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -35,6 +35,7 @@ using namespace cv;
 
 ros::Publisher image_objects;
 
+#if !defined(ROS)
 static void help()
 {
     cout << "This program demonstrated the use of the latentSVM detector." << endl <<
@@ -50,6 +51,7 @@ static void help()
             "'esc' - to quit." << endl <<
             endl;
 }
+#endif
 
 static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
 			const vector<Scalar>& colors, float overlapThreshold, int numThreads, FILE *f )
@@ -67,7 +69,7 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
     const vector<string> classNames = detector.getClassNames();
     CV_Assert( colors.size() == classNames.size() );
 
-#if 1 // AXE
+#if defined(ROS) // AXE
     int num = detections.size();
     std::vector<int> corner_point_array(num * 4,0);
     std::vector<int> car_type_array(num, 0);
@@ -86,7 +88,7 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
         	fprintf(f, "%d -1 Car -1 -1 1 %d %d %d %d -1 -1 -1 -1000 -1000 -1000 -10 %.4f\n",
         				0, od.rect.x, od.rect.y, od.rect.x+od.rect.width, od.rect.y + od.rect.height, od.score );
         }
-#if 1 // AXE
+#if defined(ROS) // AXE
         car_type_array[i] = od.classID; // ?
         corner_point_array[0+i*4] = od.rect.x;
         corner_point_array[1+i*4] = od.rect.y;
@@ -101,7 +103,7 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
         putText( image, classNames[od.classID], Point(od.rect.x+4,od.rect.y+13), FONT_HERSHEY_SIMPLEX, 0.55, colors[od.classID], 2 );
     }
 
-#if 1 // AXE
+#if defined(ROS) // AXE
     image::ImageObjects image_objects_msg;
     image_objects_msg.car_num = num;
     image_objects_msg.corner_point = corner_point_array;
@@ -112,7 +114,7 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
 
 }
 
-#if 1 // AXE
+#if defined(ROS) // AXE
 
 LatentSvmDetector* pDetector = NULL;
 vector<Scalar>* pColors = NULL;
@@ -149,13 +151,13 @@ void image_objectsCallback(const sensor_msgs::Image& image_source)
 #error Invalid detector type
 #endif
 
-#if 1 // AXE
+#if defined(ROS) // AXE
 int dpm_ocv_main(int argc, char* argv[])
 #else
 int main(int argc, char* argv[])
 #endif
 {
-#if 1 // AXE
+#if defined(ROS) // AXE
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe("/image_raw", 1, image_objectsCallback);
     image_objects = n.advertise<image::ImageObjects>("image_objects", 1);
@@ -174,7 +176,7 @@ int main(int argc, char* argv[])
     string images_folder, models_folder;
     float overlapThreshold = 0.5f;
     int numThreads = 6;
-#if 1 // AXE
+#if defined(ROS) // AXE
     if(n.hasParam(THRESHOLD_PARAM)){
       double threshold = 0.5;
       n.getParam(THRESHOLD_PARAM, threshold);
@@ -231,7 +233,7 @@ int main(int argc, char* argv[])
     vector<Scalar> colors;
     generateColors( colors, detector.getClassNames().size() );
 
-#if 1 // AXE
+#if defined(ROS) // AXE
 #else
     for( size_t i = 0; i < images_filenames.size(); i++ )
     {
@@ -254,7 +256,7 @@ int main(int argc, char* argv[])
     }
 #endif
 
-#if 1 // AXE
+#if defined(ROS) // AXE
     pF = &f;
     pOverlapThreshold = &overlapThreshold;
     pNumThreads = &numThreads;

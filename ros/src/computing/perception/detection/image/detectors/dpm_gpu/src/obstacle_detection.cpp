@@ -29,6 +29,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#if !defined(ROS)
 #ifdef _DEBUG
 //Debugモードの場合
 #pragma comment(lib,"cv200d.lib")
@@ -41,6 +42,7 @@
 #pragma comment(lib,"cxcore200.lib")
 #pragma comment(lib,"cvaux200.lib")
 #pragma comment(lib,"highgui200.lib")
+#endif
 #endif
 //C++ library
 #include <stdio.h>
@@ -210,9 +212,6 @@ int main(int argc, char **argv)
 
 	//create lesult information
 	RESULT *LR = create_result(0);
-
-	//Particle filter information
-	PINFO P_I = {0};
 
 #if 1 // AXE
 #else
