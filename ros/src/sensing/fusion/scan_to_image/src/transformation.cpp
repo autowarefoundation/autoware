@@ -292,7 +292,7 @@ int main(int argc, char **argv)
     /* xmlからパラメータ設定 */
     char path[128];
 #if 1 // AXE
-    ros::init(argc, argv, "point_to_image");
+    ros::init(argc, argv, "points_to_image");
     ros::NodeHandle n;
 
     std::string camera_yaml;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sensor_fusion)
+project(fusion)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -86,7 +86,7 @@ find_package(OpenCV REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES sensor_fusion
+  LIBRARIES fusion
   CATKIN_DEPENDS cv_bridge image_transport roscpp rospy sensor_msgs std_msgs
   DEPENDS system_lib
 )
@@ -103,19 +103,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(sensor_fusion
-#   src/${PROJECT_NAME}/sensor_fusion.cpp
+# add_library(fusion
+#   src/${PROJECT_NAME}/fusion.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(sensor_fusion_node src/sensor_fusion_node.cpp)
+# add_executable(fusion_node src/fusion_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(sensor_fusion_node sensor_fusion_generate_messages_cpp)
+# add_dependencies(fusion_node fusion_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(sensor_fusion_node
+# target_link_libraries(fusion_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -134,7 +134,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS sensor_fusion sensor_fusion_node
+# install(TARGETS fusion fusion_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -159,7 +159,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_sensor_fusion.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_fusion.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
@@ -170,10 +170,10 @@ include_directories(
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 
-add_executable(fusion
- src/obstacle_detection_and_distance_measurement_rapidimage.cpp 
+add_executable(fusion_detector
+ fusion_detector.cpp
  src/showboxes.cpp
 )
 
-target_link_libraries(fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(fusion sensor_fusion_generate_messages_cpp)
+target_link_libraries(fusion_detector ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(fusion_detector fusion_generate_messages_cpp)

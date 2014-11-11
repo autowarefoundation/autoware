@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>sensor_fusion</name>
+  <name>fusion</name>
   <version>0.0.0</version>
-  <description>The sensor_fusion package</description>
+  <description>The fusion package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/sensor_fusion</url> -->
+  <!-- <url type="website">http://wiki.ros.org/fusion</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->

@@ -115,11 +115,11 @@ LRF画面 CALIBRATE(click) SAVE(click)
  $ rosrun hokuyo_node hokuyo_node
 ```
 
-### point_to_image ノード起動
+### points_to_image ノード起動
 
 ```
  $ roscd scan_to_image/
- $ rosrun scan_to_image point_to_image
+ $ rosrun scan_to_image points_to_image
 ```
 
 #### 別の場所にある camera.yaml menual.yaml を使用する場合
@@ -127,7 +127,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
  $ rosparam set scan_to_image/camera_yaml ~/other_dir/camera.yaml
  $ rosparam set scan_to_image/manual_yaml ~/anther_dir/manual.yaml
- $ rosrun scan_to_image point_to_image
+ $ rosrun scan_to_image points_to_image
 ```
 この場合は roscd scan_to_image/ は不要
 
@@ -186,10 +186,10 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
 
 
-### fusion ノード起動
+### fusion_detector ノード起動
 
 ```
- $ rosrun sensor_fusion fusion
+ $ rosrun fusion fusion_detector
 ```
 
 カメラの画像と矩形、その他が画面に表示される

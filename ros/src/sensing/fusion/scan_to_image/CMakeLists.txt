@@ -170,6 +170,6 @@ include_directories(
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 
-add_executable(point_to_image src/transformation.cpp)
-target_link_libraries(point_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(point_to_image scan_to_image_generate_messages_cpp)
+add_executable(points_to_image src/transformation.cpp)
+target_link_libraries(points_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(points_to_image scan_to_image_generate_messages_cpp)
