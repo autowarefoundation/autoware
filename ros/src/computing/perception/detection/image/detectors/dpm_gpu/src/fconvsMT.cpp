@@ -48,10 +48,6 @@ CUT_THREADPROC fconvs_thread_func(void *p){
   fconvs_partition *pt = (fconvs_partition *)p;
   CUresult res;
   struct timeval tv;
-  int part_size_B_len;
-  int part_size_error_array_num;
-  int pid;
-  int gridDimX;
   //CUdeviceptr part_root_C_dev;
   //CUdeviceptr part_part_C_dev;
   int thread_num_x, thread_num_y, block_num_x, block_num_y;
@@ -63,10 +59,9 @@ CUT_THREADPROC fconvs_thread_func(void *p){
   float time_fconv_memcpyDtoH;
   struct timeval tv_fconv_texture_start, tv_fconv_texture_end;
   float time_fconv_texture;
-  struct timeval tv_fconv_memalloc_start, tv_fconv_memalloc_end;
+#ifdef PRINT_INFO
   float time_fconv_memalloc;
-  struct timeval tv_fconv_memfree_start, tv_fconv_memfree_end;
-  float time_fconv_memfree;
+#endif
   struct timeval tv_fconv_others_start, tv_fconv_others_end;
   float time_fconv_others;
 
@@ -417,8 +412,6 @@ CUT_THREADPROC fconvs_thread_func(void *p){
     int C_dims1 = 0;
     int C_x = 0;
     size_t x_size = 0;
-    int ii = 0;
-    int lev = 0;
     int error_flag = 0;
     unsigned long long int pointer_C = (unsigned long long int)pt->dst_C;
     unsigned long long int root_pointer_dev = (unsigned long long int)fconvs_C_dev[pt->pid];
@@ -638,8 +631,6 @@ FLOAT ***fconvsMT_GPU(
    
   
   CUresult res;
-  
-  CUdeviceptr B_dims_dev;
   
   int *B_dimension = (int*)malloc(3*len*sizeof(int)); 
   

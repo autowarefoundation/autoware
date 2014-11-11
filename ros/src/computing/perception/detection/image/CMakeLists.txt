@@ -72,8 +72,8 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_C_FLAGS "-O2 -g -Wall -DROS ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations

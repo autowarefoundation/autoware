@@ -13,6 +13,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#if !defined(ROS)
 #ifdef _DEBUG
     //Debugƒ‚[ƒh‚Ìê‡
     #pragma comment(lib,"cv200d.lib") 
@@ -25,6 +26,7 @@
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
     #pragma comment(lib,"highgui200.lib") 
+#endif
 #endif
 //C++ library
 #include <stdio.h>	

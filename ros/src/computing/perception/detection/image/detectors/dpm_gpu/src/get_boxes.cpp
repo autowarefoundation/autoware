@@ -259,10 +259,8 @@ FLOAT *partbox(int x,int y,int ax,int ay,FLOAT scale,int padx,int pady,int *psiz
 //calculate accumulated HOG detector score
 void calc_a_score(FLOAT *ac_score,FLOAT *score,int *ssize,int *rsize,Model_info *MI,FLOAT scale)
 {
-  const int L_AS = MI->IM_HEIGHT*MI->IM_WIDTH;
   const int IHEI = MI->IM_HEIGHT;
   const int IWID = MI->IM_WIDTH;
-  FLOAT sbin = (FLOAT)(MI->sbin);
   int pady_n = MI->pady;
   int padx_n = MI->padx;
   int block_pad = (int)(scale/2.0);
@@ -310,10 +308,8 @@ void calc_a_score_GPU(
 {
   CUresult res;
 
-  const int L_AS = MI->IM_HEIGHT*MI->IM_WIDTH;
   const int IHEI = MI->IM_HEIGHT;
   const int IWID = MI->IM_WIDTH;
-  FLOAT sbin = (FLOAT)(MI->sbin);
   int pady_n = MI->pady;
   int padx_n = MI->padx;
   int block_pad = (int)(scale/2.0);
@@ -593,9 +589,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
   /* for measurement */
   struct timeval tv;
   struct timeval tv_make_c_start, tv_make_c_end;
-  float make_c;
   struct timeval tv_nucom_start, tv_nucom_end;
-  float nucom;
   struct timeval tv_box_start, tv_box_end;
   float time_box=0;
   struct timeval tv_root_score_start, tv_root_score_end;
@@ -628,7 +622,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
   CUresult res;
   
   /* matched score (root and part) */
-  FLOAT ***rootmatch,***partmatch;  
+  FLOAT ***rootmatch,***partmatch = nullptr;
 
   int *new_PADsize;  // need new_PADsize[L_MAX*3]
   size_t SUM_SIZE_feat = 0;
@@ -757,11 +751,6 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
   
   for (int level=interval; level<L_MAX; level++)  // feature's loop(A's loop) 1level 1picture
     {
-      /* parameters (related for level) */
-      int L=level-interval;
-      /* matched score size matrix */
-      FLOAT scale=(FLOAT)sbin/scales[level];
-      
       /**************************************************************************/      
       /* loop conditon */
       if(FSIZE[level*2]+2*pady<MO->MI->max_Y ||(FSIZE[level*2+1]+2*padx<MO->MI->max_X))
@@ -1619,18 +1608,18 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
   s_free(rootmatch[0]);
   s_free(rootmatch);
   
-  
-  res = cuMemFreeHost((void *)partmatch[0][0]);
-  if(res != CUDA_SUCCESS) {
-    printf("cuMemFreeHost(partmatch[0][0]) failed: res = %s\n", conv(res));
-    exit(1);
+  if (partmatch != nullptr) {
+    res = cuMemFreeHost((void *)partmatch[0][0]);
+    if(res != CUDA_SUCCESS) {
+      printf("cuMemFreeHost(partmatch[0][0]) failed: res = %s\n", conv(res));
+      exit(1);
+    }
+    
+    s_free(partmatch[0]);
+    s_free(partmatch);
+    
+    s_free(new_PADsize);
   }
-  
-  s_free(partmatch[0]);
-  s_free(partmatch);
-  
-  s_free(new_PADsize);
-  
   
   /* release */
   s_free(rm_size_array[0]);
@@ -1643,8 +1632,6 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
   int GL=(numpart[0]+1)*4+3;
   FLOAT *boxes=(FLOAT*)calloc(D_NUMS*GL,sizeof(FLOAT));		//box coordinate information(Temp)
   FLOAT *T1=boxes;
-  int cc=0;
-  
   
   for(int ii=0;ii<LofFeat;ii++)
     {

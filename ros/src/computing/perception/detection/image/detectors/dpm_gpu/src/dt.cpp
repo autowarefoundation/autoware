@@ -126,7 +126,7 @@ FLOAT *dt(FLOAT *vals,FLOAT ax,FLOAT bx,FLOAT ay,FLOAT by,int *dims,int *Ix,int 
         {
           *(IX_P++) = *tmpIx_P;
           *(IY_P++) = tmpIy[*tmpIx_P*dims[0]+y];
-          *tmpIx_P++;
+          tmpIx_P++;
         }
     }
   s_free(tmpM);
