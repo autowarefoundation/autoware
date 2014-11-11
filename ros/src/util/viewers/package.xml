@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <package>
-  <!-- <name>image_viewer</name> -->
-  <name>camera</name>
+  <name>viewers</name>
   <version>0.0.0</version>
-  <description>The image_viewer package</description>
+  <description>The viewers package</description>
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
-  <license>TODO</license>
+  <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
   <export>
   </export>
