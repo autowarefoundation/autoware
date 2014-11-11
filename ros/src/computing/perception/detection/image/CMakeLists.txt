@@ -135,17 +135,22 @@ set_target_properties(pedestrian_detector
 
 set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
 set(CUDA_ARCH "sm_50") # Titan: sm_35 jetson: sm_32
-
-## XXX How to generate .cubin file with CMake commands
 set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}")
 
-execute_process(
-  COMMAND "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
-          "-o" "${CUBIN_OUTPUT}"
-          "-cubin" "-Xptxas" "-v" "--maxrregcount" "32"
-          "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
-          "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
+add_custom_command(
+  OUTPUT GPU_function.cubin
+  COMMAND
+  "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
+  "-o" "${CUBIN_OUTPUT}" "-cubin" "-Xptxas" "-v"
+  "--maxrregcount" "32"
+  "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
 )
+
+add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
+add_dependencies(car_detector DEPENDS cuda_binary)
+add_dependencies(pedestrian_detector DEPENDS cuda_binary)
 
 add_executable(lane_ocv
   classes/lane/src/line_detection.cpp
