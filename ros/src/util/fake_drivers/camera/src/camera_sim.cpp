@@ -49,5 +49,6 @@ int main(int argc, char **argv)
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
+	cvReleaseImage(&img);//Free allocated data
 	return 0;
 }
