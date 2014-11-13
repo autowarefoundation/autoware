@@ -31,13 +31,13 @@
 #include "cxcore.h"
 #if !defined(ROS)
 #ifdef _DEBUG
-//Debugモードの場合
+// case of Debug mode
 #pragma comment(lib,"cv200d.lib")
 #pragma comment(lib,"cxcore200d.lib")
 #pragma comment(lib,"cvaux200d.lib")
 #pragma comment(lib,"highgui200d.lib")
 #else
-//Releaseモードの場合
+// case of Release mode
 #pragma comment(lib,"cv200.lib")
 #pragma comment(lib,"cxcore200.lib")
 #pragma comment(lib,"cvaux200.lib")
@@ -142,7 +142,7 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
         corner_point_array[3+i*4] = *(CUR->OR_point + (3+i*4));
     }
 
-    /* publishするデータを格納 */
+    /* store data which will be published */
 #if 1 // AXE
     image_objects_msg.car_num = CUR->num;
     image_objects_msg.corner_point = corner_point_array;
@@ -153,7 +153,7 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
     image_and_obstacle_position_msg.corner_point = corner_point_array;
     image_and_obstacle_position_msg.car_type = car_type_array;
 #endif
-    /* データをpublish */
+    /* publish data */
 #if 1 // AXE
     image_objects.publish(image_objects_msg);
 #else
@@ -217,7 +217,7 @@ int main(int argc, char **argv)
 #else
 	//get file size and current file position
 	get_f_size(fp,&curpos,&fsize);
-	skip_data_2(fp,1,&ss);   //ある位置からの画像を見る(今は50枚目からみている。)
+	skip_data_2(fp,1,&ss);   
 
   /**
    * The ros::init() function needs to see argc and argv so that it can perform

@@ -15,13 +15,13 @@
 #include "cxcore.h"
 #if !defined(ROS)
 #ifdef _DEBUG
-    //Debugモードの場合
+    // case of Debug mode
     #pragma comment(lib,"cv200d.lib") 
     #pragma comment(lib,"cxcore200d.lib") 
     #pragma comment(lib,"cvaux200d.lib") 
     #pragma comment(lib,"highgui200d.lib") 
 #else
-    //Releaseモードの場合
+    // case of Release mode
     #pragma comment(lib,"cv200.lib") 
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
@@ -184,7 +184,7 @@ FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 		//MI->interval/=2;	//reduce calculation time
 		const int sbin = MI->sbin;
 		interval = MI->interval;
-		const FLOAT sc = pow(2.0,(1/(double)interval));//縮小比を表している。
+		const FLOAT sc = pow(2.0,(1/(double)interval));// represent down-scale rate
 		const int numcomponent = MI->numcomponent;
 		//max_scale = 1+int(floor(log(minsize/(5*FLOAT(sbin)))/log(sc)));
 		max_scale = 36;
@@ -204,7 +204,7 @@ FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 
 		FLOAT height =(FLOAT)IM->height/(FLOAT)sbin;
 		FLOAT width = (FLOAT)IM->width/(FLOAT)sbin;
-		FLOAT sc_step =1/sc;   //縮小比
+		FLOAT sc_step =1/sc;   // down-scale rate
 
 		for(int kk=0;kk<L_NUM;kk++)
 		{
@@ -223,9 +223,9 @@ FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 		printf("max_scale:%d\n",max_scale);
 #endif
 		MI->IM_HEIGHT=IM->height;
-		/*printf("高さ%d\n",MI->IM_HEIGHT);*/
+
 		MI->IM_WIDTH=IM->width;
-		/*printf("横%d\n",MI->IM_WIDTH);*/
+
 		MI->ini=false;
 	}
 	else
@@ -266,7 +266,7 @@ FLOAT *calc_feature
  FLOAT *SRC,                    // resized image
  int *ISIZE,                    // resized image size (3 dimension)
  int *FTSIZE,                   // size of feature(output)
- int sbin                       // 各フィルタ用ブロックサイズ決定要因
+ int sbin                       // block size desicion element for each filter
  )
 {
   /* input size */
@@ -519,7 +519,7 @@ void calc_feature_byGPU
  // FLOAT *SRC,                    // resized image
  int *ISIZE,                    // resized image size (3 dimension)
  int *FTSIZE,                   // size of feature(output)
- int sbin,                      // 各フィルタ用ブロックサイズ決定要因
+ int sbin,                      // block size desicion element for each filter
  int level,
  CUdeviceptr hist_dev,
  CUdeviceptr norm_dev,
@@ -968,8 +968,8 @@ FLOAT **calc_f_pyramid
   int org_image_size[3]  = {Image->height, Image->width, Image->nChannels}; // original image size // (元INSIZE)
   
   /* Original image (FLOAT) */
-//  FLOAT *org_image = Ipl_to_FLOAT(Image); // IplImageから各チャンネルの輝度を抽出 // (元D_I)
-  FLOAT *org_image = Ipl_to_FLOAT_forGPU(Image); // IplImageから各チャンネルの輝度を抽出 // (元D_I)
+//  FLOAT *org_image = Ipl_to_FLOAT(Image); // pickup brightness values of each channel from IplImage // (originally D_I)
+  FLOAT *org_image = Ipl_to_FLOAT_forGPU(Image); // pickup brightness values of each channel from IplImage // (originally D_I)
   
 #ifdef ORIGINAL
   /* features */
@@ -984,8 +984,8 @@ FLOAT **calc_f_pyramid
 #endif
   pthread_t   *ts = (pthread_t *)calloc(LEN, sizeof(HANDLE));	
   
-  //  FLOAT **resized_image      = (FLOAT**)calloc(LEN, sizeof(FLOAT*)); // リサイズされた画像 // (元RIM_S)
-  int    *resized_image_size = (int*)calloc(LEN*3, sizeof(int));     // リサイズされた画像のサイズ // (元RI_S)
+  //  FLOAT **resized_image      = (FLOAT**)calloc(LEN, sizeof(FLOAT*)); // resized image // (originally RIM_S)
+  int    *resized_image_size = (int*)calloc(LEN*3, sizeof(int));     // resized image size // (originally RI_S)
   int     t_count            = 0;
   
   CUresult res;
@@ -1009,7 +1009,7 @@ FLOAT **calc_f_pyramid
 
 
   /* calculate resized image */
-  /* resize画像がinterval枚生成される */
+  /* interval pieces resized image will be created */
   // for(int ii=0; ii<interval; ii++) 
   //   {
   //     FLOAT st = 1.0/pow(sc, ii);
@@ -1429,7 +1429,7 @@ FLOAT **calc_f_pyramid
   /* calculate HOG feature for each resized image */
   for(int ii=0; ii<interval; ii++)
     {
-      /* ルートフィルタ用特徴量(全体的特徴量)？ */
+      /* features for root filter(global features)? */
       /* "first" 2x interval */
 #ifdef ORIGINAL
       ini_thread_data(
@@ -1462,7 +1462,7 @@ FLOAT **calc_f_pyramid
       //      feat_calc((void *)&td[t_count]);
       t_count++;
       
-      /* パートフィルタ用特徴量(局所的特徴量)？ */
+      /* features for part filter(local features)? */
       /* "second" 1x interval */
 #ifdef ORIGINAL
       ini_thread_data(
@@ -1537,7 +1537,7 @@ FLOAT **calc_f_pyramid
     {
       pthread_join(ts[ss], NULL);
 #ifdef ORIGINAL
-      feat[td[ss].F_C] = td[ss].Out; // ここで特徴量をひとつの配列にまとめる
+      feat[td[ss].F_C] = td[ss].Out; // assemble features into one array
 #endif
       memcpy(&FTSIZE[td[ss].F_C*2], td[ss].FSIZE, sizeof(int)*2);
 

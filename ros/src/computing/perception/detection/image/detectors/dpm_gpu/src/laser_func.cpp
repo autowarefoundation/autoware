@@ -407,14 +407,14 @@ void skip_image_frame(CvCapture *capt,int sk_num)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//ファイルの位置の設定
+// configure the position in the file
 //get file size
 void get_f_size(FILE* fp,fpos_t *curpos,fpos_t *fsize)
 {
-	fseek(fp,0,SEEK_END);   //ファイルの終端位置へ移動
-	fgetpos(fp,fsize);		//get file size 
-	fseek(fp,0,SEEK_SET);   //ファイルの先端位置を指定
-	fgetpos(fp,curpos);		//get current file position
+	fseek(fp,0,SEEK_END);   // move to EOF
+	fgetpos(fp,fsize);		// get file size 
+	fseek(fp,0,SEEK_SET);   // set file pointer to head
+	fgetpos(fp,curpos);		// get current file position
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -510,18 +510,18 @@ void skip_data_2(FILE* fp,int sk_num,int *ss)
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-/* 画像を連結する関数 */
+/* concatenate image */
 IplImage *combine_image (int num, IplImage ** tmp)
 {   int i;
 	int width = 0, height = 0;
 	IplImage *cimg;
-	CvRect roi = cvRect (0, 0, 0, 0);  // (3)与えられた各画像から，連結後の幅と高さを求める
+	CvRect roi = cvRect (0, 0, 0, 0);  // (3) compute width and height after concatenation from each given images
 	for (i = 0; i < num; i++) {
 		width += tmp[i]->width;
 		height = height < tmp[i]->height ? tmp[i]->height : height;
 	}
 	cimg = cvCreateImage (cvSize (width, height), IPL_DEPTH_8U, 3);
-	cvZero (cimg);  // (4)ROIを利用して各画像をコピーする
+	cvZero (cimg);  // (4) copy each images using ROI
 	for (i = 0; i < num; i++) {
 		roi.width = tmp[i]->width;
 		roi.height = tmp[i]->height;

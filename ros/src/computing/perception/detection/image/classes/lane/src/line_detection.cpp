@@ -43,12 +43,12 @@ extern void      detach_ShareMem(void);
 
 static ros::Publisher image_lane_objects;
 
-// 画像の一部分を切り抜き
+// clip portion of the image
 void crop(IplImage *src, IplImage *dst, CvRect rect)
 {
-  cvSetImageROI(src, rect);     // 画像srcを矩形rectで切り取り
-  cvCopy(src, dst);             // 切り取り部分をdstにコピー
-  cvResetImageROI(src);         // srcの切り取りを解除
+  cvSetImageROI(src, rect);     // clip "rect" from "src" image
+  cvCopy(src, dst);             // copy clipped portion to "dst"
+  cvResetImageROI(src);         // reset cliping of "src"
 }
 
 struct Lane {

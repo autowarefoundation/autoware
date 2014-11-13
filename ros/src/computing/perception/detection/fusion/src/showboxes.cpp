@@ -14,13 +14,13 @@
 #include "highgui.h"
 #include "cxcore.h"
 #ifdef _DEBUG
-    //Debugモードの場合
+    // case of Debug mode
     #pragma comment(lib,"cv200d.lib")
     #pragma comment(lib,"cxcore200d.lib")
     #pragma comment(lib,"cvaux200d.lib")
     #pragma comment(lib,"highgui200d.lib")
 #else
-    //Releaseモードの場合
+    // case of Release mode
     #pragma comment(lib,"cv200.lib")
     #pragma comment(lib,"cxcore200.lib")
     #pragma comment(lib,"cvaux200.lib")
@@ -105,10 +105,10 @@ void show_rects(IplImage *Image,int car_num, int *corner_point, int *type, doubl
 		CvPoint p1=cvPoint(corner_point[0+ii*4],corner_point[1+ii*4]);
 		CvPoint p2=cvPoint(corner_point[2+ii*4],corner_point[3+ii*4]);
 		cvRectangle(Image,p1,p2,col,3);			//draw current-object rectangle
-		cvLine(Image,p1,p2,col,2); //右下から左上
+		cvLine(Image,p1,p2,col,2); // from right-bottom to left-upper
 		p1 = cvPoint(corner_point[0+ii*4],corner_point[3+ii*4]);
 		p2 = cvPoint(corner_point[2+ii*4],corner_point[1+ii*4]);
-		cvLine(Image,p1,p2,col,2); // 右上から左下
+		cvLine(Image,p1,p2,col,2); // from right-upper to left-bottom
 	}
 }
 

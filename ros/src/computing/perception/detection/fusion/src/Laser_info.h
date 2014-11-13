@@ -14,13 +14,13 @@
 #include "highgui.h"
 #include "cxcore.h"
 #ifdef _DEBUG
-    //Debugモードの場合
+    // case of Debug mode
     #pragma comment(lib,"cv200d.lib") 
     #pragma comment(lib,"cxcore200d.lib") 
     #pragma comment(lib,"cvaux200d.lib") 
     #pragma comment(lib,"highgui200d.lib") 
 #else
-    //Releaseモードの場合
+    // case of Release mode
     #pragma comment(lib,"cv200.lib") 
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 

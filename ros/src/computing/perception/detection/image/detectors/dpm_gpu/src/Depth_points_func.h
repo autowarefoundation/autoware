@@ -9,8 +9,8 @@
 #define X_THETA 0.0
 #define Y_THETA 0.0
 #define Z_THETA 0.0
-#define X_VECTOR -0.265 //横
-#define Y_VECTOR 0.16 //縦
+#define X_VECTOR -0.265 //width
+#define Y_VECTOR 0.16 //height
 #define Z_VECTOR 0 //depth
 #define FX_CAMERA_PARAM 585
 #define FY_CAMERA_PARAM 585

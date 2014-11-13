@@ -47,10 +47,10 @@ CUdeviceptr *A_SIZE_dev, *featp2_dev, *B_dev, *B_dims_dev, *fconvs_error_array_d
 #define _MAX_DIR 256
 #define _MAX_DRIVE 8 */
                   
-//TCHAR szAppDir[_MAX_PATH];  // アプリケーションが起動されたディレクトリ
-//TCHAR szFull[_MAX_PATH];    // 起動されたアプリケーションのフルパス名
-//TCHAR szDrive[_MAX_DRIVE];  // 起動されたアプリケーションのドライブ名
-//TCHAR szDir[_MAX_DIR];      // 起動されたアプリケーションのディレクトリ名
+//TCHAR szAppDir[_MAX_PATH];  // directory in which application is executed
+//TCHAR szFull[_MAX_PATH];    // full path name of executed application
+//TCHAR szDrive[_MAX_DRIVE];  // drive name of executed application
+//TCHAR szDir[_MAX_DIR];      // directory name of executed application
                   
 
 /*****************************************************************/
@@ -164,13 +164,13 @@ void init_cuda_with_cubin(const char *cubin_path)
     if(res != CUDA_SUCCESS){
       printf("\ncuModuleLoad failed: res = %s\n", conv(res));
       /*** for debug(windows) ***//*  
-                         // 起動されたアプリケーションのフルパス名を取得
+                         // get full path name of executed application
                          ::GetModuleFileName(NULL, szFull, sizeof(szFull) / sizeof(TCHAR));
                          
-                         // フルパス名をドライブ名やディレクトリ名部分に分解
+                         // separate full path name into drive name and directory name
                          _tsplitpath(szFull, szDrive, szDir, NULL, NULL);
                          
-                         // ドライブ名とディレクトリ名部分を連結
+                         // concatenate drive name and directory name
                          _tmakepath(szAppDir, szDrive, szDir, NULL, NULL);
                          
                          MessageBox(NULL, szAppDir, (LPCWSTR)" ", MB_OK);*/

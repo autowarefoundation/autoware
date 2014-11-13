@@ -12,7 +12,7 @@
 #include "switch_release.h"
 #include "switch_release.h"
 
-//#define L_DATA_PASS	"C:\\ŠwZ\\Œ¤‹†º\\ƒvƒƒOƒ‰ƒ€\\TTIC_CARDETECTION(Takeuchi)\\CAR_TRACKING(VS2008_data_fusion)\\CAR_TRACKING\\"
+
 #ifdef RELEASE
 #define L_DATA_PASS	"/usr/local/geye_with_cam/bin/car_detecter/"
 #else

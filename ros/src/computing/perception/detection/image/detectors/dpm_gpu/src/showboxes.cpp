@@ -15,13 +15,13 @@
 #include "cxcore.h"
 #if !defined(ROS)
 #ifdef _DEBUG
-    //Debugモードの場合
+    // case of Debug mode
     #pragma comment(lib,"cv200d.lib") 
     #pragma comment(lib,"cxcore200d.lib") 
     #pragma comment(lib,"cvaux200d.lib") 
     #pragma comment(lib,"highgui200d.lib") 
 #else
-    //Releaseモードの場合
+    // case of Release mode
     #pragma comment(lib,"cv200.lib") 
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
@@ -327,8 +327,8 @@ void show_rects(IplImage *Image,RESULT *CUR,FLOAT ratio)
   //CvMat *buf_for_output = cvEncodeImage(".jpeg", output_image);
   
   My_sem_operation(semid, LOCK);  // lock semaphore
-  //  memcpy(shrd_ptr, buf_for_output->data.ptr, IMAGE_SIZE);  // サイズ違いでエラー？
-  memcpy(shrd_ptr, buf_for_output->data.ptr, (buf_for_output->rows)*(buf_for_output->cols)*sizeof(unsigned char));  // サイズ違いでエラー？
+  //  memcpy(shrd_ptr, buf_for_output->data.ptr, IMAGE_SIZE);  
+  memcpy(shrd_ptr, buf_for_output->data.ptr, (buf_for_output->rows)*(buf_for_output->cols)*sizeof(unsigned char));  
   My_sem_operation(semid, UNLOCK);  // unlock semaphore
   
   

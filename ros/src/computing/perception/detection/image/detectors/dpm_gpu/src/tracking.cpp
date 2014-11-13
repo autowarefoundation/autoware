@@ -15,13 +15,13 @@
 #include "cxcore.h"
 #if !defined(ROS)
 #ifdef _DEBUG
-    //Debugモードの場合
+    // case of Debug mode
     #pragma comment(lib,"cv200d.lib") 
     #pragma comment(lib,"cxcore200d.lib") 
     #pragma comment(lib,"cvaux200d.lib") 
     #pragma comment(lib,"highgui200d.lib") 
 #else
-    //Releaseモードの場合
+    // case of Release mode
     #pragma comment(lib,"cv200.lib") 
     #pragma comment(lib,"cxcore200.lib") 
     #pragma comment(lib,"cvaux200.lib") 
@@ -741,7 +741,7 @@ void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **NVX,FLO
 	if(P_COUNT>max_hist-1) P_COUNT=max_hist-1;
 
 	float *s_vector=P_I->condens[LNUM]->State;
-	//間違え？？NVY[CCNUM][1]→NVY[CCNUM][0]
+
 	if(P_I->condens[LNUM]->DP>2) {NVX[CCNUM][0]=*(s_vector+2);NVY[CCNUM][1]=*(s_vector+3);}
 	else						 {NVX[CCNUM][0]=0;NVY[CCNUM][1]=0;}	
 

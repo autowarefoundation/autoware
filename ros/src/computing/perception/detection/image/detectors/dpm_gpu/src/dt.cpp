@@ -107,7 +107,7 @@ FLOAT *dt(FLOAT *vals,FLOAT ax,FLOAT bx,FLOAT ay,FLOAT by,int *dims,int *Ix,int 
   int *tmpIy = (int*)malloc(sizeof(int)*SQ);
   int XD=0;
   
-  for (int x = 0; x < dims[1]; x++) // たかだか150～200ループだが、dt1dが内部で再帰呼び出し
+  for (int x = 0; x < dims[1]; x++) 
     {
       dt1d(vals+XD, tmpM+XD, tmpIy+XD, 1, dims[0], ay, by);
       XD+=dims[0];

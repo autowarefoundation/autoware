@@ -137,8 +137,8 @@ FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale)
   FLOAT *dst;
   if(scale==1.0)
     {
-      //memcpy_s(odims,sizeof(int)*3,sdims,sizeof(int)*3);  //memcpy_s(コピー先のバッファー,コピー先のバッファーのサイズ,コピー元のバッファー,コピーする文字数)
-      memcpy(odims, sdims,sizeof(int)*3);  //memcpy_s(コピー先のバッファー,コピー先のバッファーのサイズ,コピー元のバッファー,コピーする文字数)
+
+      memcpy(odims, sdims,sizeof(int)*3);  
       int DL = odims[0]*odims[1]*odims[2];
       dst = (FLOAT*)calloc(DL,sizeof(FLOAT));
       //memcpy_s(dst,sizeof(FLOAT)*DL,src,sizeof(FLOAT)*DL);

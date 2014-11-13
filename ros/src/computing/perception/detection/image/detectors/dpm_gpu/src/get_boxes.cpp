@@ -1222,7 +1222,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
                   ax_array[L][jj][kk] = MO->MI->anchor[DIDX_array[L][jj][kk]*2]+1;
                   ay_array[L][jj][kk] = MO->MI->anchor[DIDX_array[L][jj][kk]*2+1]+1;
 
-                  int PSSIZE[2] ={pm_size_array[L][PIDX_array[L][jj][kk]*2], pm_size_array[L][PIDX_array[L][jj][kk]*2+1]}; // Cのサイズ
+                  int PSSIZE[2] ={pm_size_array[L][PIDX_array[L][jj][kk]*2], pm_size_array[L][PIDX_array[L][jj][kk]*2+1]}; // size of C
                   
                   
                   /* index matrix */
@@ -1253,7 +1253,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
             for(int jj=0; jj<NoC; jj++) {
               for (int kk=0;kk<numpart[jj];kk++)
                 {
-                  int PSSIZE[2] ={pm_size_array[L][PIDX_array[L][jj][kk]*2], pm_size_array[L][PIDX_array[L][jj][kk]*2+1]}; // Cのサイズ
+                  int PSSIZE[2] ={pm_size_array[L][PIDX_array[L][jj][kk]*2], pm_size_array[L][PIDX_array[L][jj][kk]*2+1]}; // size of C
                   
                   Ix_array[L][jj][kk] = (int *)pointer_Ix_kk;
                   Iy_array[L][jj][kk] = (int *)pointer_Iy_kk;
