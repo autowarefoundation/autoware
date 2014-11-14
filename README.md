@@ -118,18 +118,26 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ### points_to_image ノード起動
 
 ```
- $ roscd scan_to_image/
  $ rosrun scan_to_image points_to_image
 ```
 
-#### 別の場所にある camera.yaml menual.yaml を使用する場合
+#### camera.yaml のデフォルトのパス
+
+~/.ros/camera_info/camera.yaml 
+
+
+#### manual.yaml のデフォルトのパス
+
+<scan_to_image パッケージディレクトリ>/manual.yaml
+
+
+#### 別の場所にある camera.yaml manual.yaml を使用する場合
 
 ```
  $ rosparam set scan_to_image/camera_yaml ~/other_dir/camera.yaml
- $ rosparam set scan_to_image/manual_yaml ~/anther_dir/manual.yaml
+ $ rosparam set scan_to_image/manual_yaml ~/another_dir/manual.yaml
  $ rosrun scan_to_image points_to_image
 ```
-この場合は roscd scan_to_image/ は不要
 
 #### デフォルトのパスに戻す場合
 ```

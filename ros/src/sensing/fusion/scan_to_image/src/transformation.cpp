@@ -60,6 +60,10 @@
 #include <sensor_msgs/LaserScan.h>
 #include <algorithm>
 
+#if 1 // AXE
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+#endif
 
 IplImage *IMAGE_PATH;
 char WINDOW_NAME[] = "CAR_TRACK";
@@ -257,7 +261,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     std::string camera_yaml;
-    n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml, "camera.yaml");
+    n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml, STR(CAMERA_YAML));
     cv::FileStorage fs_auto_file(camera_yaml.c_str(), cv::FileStorage::READ);
 #else
     strcpy(path, getenv("HOME"));
@@ -273,7 +277,7 @@ int main(int argc, char **argv)
 
 #if 1 // AXE
     std::string manual_yaml;
-    n.param<std::string>("/scan_to_image/manual_yaml", manual_yaml, "manual.yaml");
+    n.param<std::string>("/scan_to_image/manual_yaml", manual_yaml, STR(MANUAL_YAML));
     cv::FileStorage fs_manual_file(manual_yaml.c_str(), cv::FileStorage::READ);
 #else
     strcpy(path, getenv("HOME"));
