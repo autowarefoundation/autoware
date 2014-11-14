@@ -1,3 +1,8 @@
+/*
+This program requires ROS and Flycapture SDK installed
+Author: Abraham Monrroy (amonrroy@ertl.jp)
+Initial version 2014-11-14
+*/
 #include "FlyCapture2.h"
 #include "ros/ros.h"
 #include <sensor_msgs/image_encodings.h>
@@ -173,7 +178,7 @@ void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** p
 			PrintError( error );
 			printf(
 					"Error starting cameras. \n"
-					"This example requires cameras to be able to set to 800x600 RGB at 30fps. \n"
+					"This example requires cameras to be able to set to 1600x1200 RGB at 30fps. \n"
 					"If your camera does not support this mode, please edit the source code and recompile the application. \n"
 					"Press Enter to exit. \n");
 			getchar();
@@ -190,12 +195,6 @@ void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** p
 		}
 
 		PrintCameraInfo(&camInfo);
-
-		/*char camnum[6];
-		sprintf( camnum, "Camera %d", i+1);
-		printf("%s\n",camnum);
-
-		cvNamedWindow( camnum, 1) ;*/
 
 	}
 }
@@ -235,7 +234,7 @@ void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCamera
 	{
 		error[i] = ppCameras[i]->RetrieveBuffer( &(images[i]) );
 	}
-	//send them to ROS
+	//check for Errors
 	for (unsigned int i=0; i<numCameras;i++)
 	{
 		if (error[i] != PGRERROR_OK)
@@ -243,27 +242,7 @@ void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCamera
 			PrintError( error[i] );
 			exit(-1);
 		}
-
-		if (error[i] != PGRERROR_OK)
-		{
-			PrintError( error[i] );
-			exit(-1);
-		}
 	}
-//	/sensor_msgs::Image imagemsg;
-//	imagemsg.header.seq=frame;
-//	imagemsg.header.frame_id=frame;
-//	imagemsg.header.stamp.sec=t[0]/1000;
-//	imagemsg.header.stamp.nsec=t[0]%1000*1000;
-//
-//	imagemsg.height= image[0].GetRows();
-//	imagemsg.width= image[0].GetCols();
-//	imagemsg.encoding = "rgb8";
-//	imagemsg.step = image[0].GetStride();
-//	imagemsg.data.resize(image[0].GetDataSize());
-//	memcpy(imagemsg.data.data(),image[0].GetData(), image[0].GetDataSize());
-//	imagepub->sendMessage(imagemsg);
-
 }
 
 void PrintCameraInfo( CameraInfo* pCamInfo )
