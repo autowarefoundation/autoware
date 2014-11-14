@@ -29,5 +29,13 @@ catkin_package(
 include_directories(/usr/include/libxml2)
 
 add_executable(calibration_of_camera_and_lrf src/calibration_of_camera_and_lrf.cpp)
+
+set(PARAM_YAML "${CMAKE_CURRENT_SOURCE_DIR}/param.yaml")
+set(CAMERA_YAML "$ENV{HOME}/.ros/camera_info/camera.yaml")
+
+set_target_properties(calibration_of_camera_and_lrf 
+  PROPERTIES COMPILE_FLAGS
+  "-DPARAM_YAML=${PARAM_YAML} -DCAMERA_YAML=${CAMERA_YAML}")
+
 target_link_libraries(calibration_of_camera_and_lrf 
    ${catkin_LIBRARIES} ${OpenCV_LIBS} xml2)

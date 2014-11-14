@@ -47,6 +47,12 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/CompressedImage.h>
 #include <boost/array.hpp>
+
+#if 1 // AXE
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+#endif
+
 //parameter
 int window_lrf_width = 1240;
 int window_lrf_height = 960;
@@ -391,7 +397,14 @@ void imageCallback(const sensor_msgs::Image& image_raw) {
     }
     if (g_save_param_judge == 1) {
         // (7)yamlファイルへの書き出し
+#if 1 // AXE
+        ros::NodeHandle n;
+        std::string camera_yaml;
+	n.param<std::string>("/camera_lidar_2d/camera_yaml", camera_yaml, STR(CAMERA_YAML));
+        cv::FileStorage fs(camera_yaml.c_str(), cv::FileStorage::WRITE);
+#else
         cv::FileStorage fs("camera.yaml", cv::FileStorage::WRITE);
+#endif
         fs << "intrinsic" << intrinsic;
         fs << "rotation" << rotation;
         fs << "rotation_matrix" << rotation_matrix;
@@ -560,7 +573,7 @@ int main(int argc, char **argv)
 
     /* xmlからパラメータ設定 */
     std::string param_yaml;
-    n.param<std::string>("/camera_lidar_2d/param_yaml", param_yaml, "param.yaml");
+    n.param<std::string>("/camera_lidar_2d/param_yaml", param_yaml, STR(PARAM_YAML));
 
     // ファイルの種類は，内容から決定
     cv::FileStorage fs(param_yaml.c_str(), cv::FileStorage::READ);

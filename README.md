@@ -74,30 +74,42 @@ ost.txt の内容のうち
    data [] に ost.txt の distortion の 5 つの値のうち末尾の 0 以外の4つの値を設定
 ```
 
+camera.yaml ファイルの出力先ディレクトリ ~/.ros/camera_info/ が無い場合は作成しておく
 ```
- $ roscd camera_lidar_2d/
+ $ mkdir -p ~/.ros/camera_info
+```
+
+```
  $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
 ```
 
 LRF画面 CALIBRATE(click) SAVE(click)
 端末の saved 表示確認して ^C で終了
-`camera.yaml` が生成される
+`~/.ros/camera_info/camera.yaml` が生成される
+
+
+#### param.yaml のデフォルトのパス
+
+<camera_lidar_2d パッケージディレクトリ>/param.yaml
+
+
+#### camera.yaml のデフォルトのパス
+
+~/.ros/camera_info/camera.yaml 
+
+
+#### 別の場所にある param.yaml を使用し、別の場所に camera.yaml を出力する場合
 
 ```
- $ cp camera.yaml $(rosdir)/sensing/fusion/scan_to_image/
-```
-
-#### 別の場所にある param.yaml を使用する場合
-
-```
- $ rosparam set scan_to_image/param_yaml ~/other_dir/param.yaml
+ $ rosparam set camera_lidar_2d/param_yaml ~/other_dir/param.yaml
+ $ rosparam set camera_lidar_2d/camera_yaml ~/another_dir/camera.yaml
  $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
 ```
-この場合は roscd camera_lidar_2d/ は不要
 
 #### デフォルトのパスに戻す場合
 ```
- $ rosparam delete scan_to_image/param_yaml
+ $ rosparam delete camera_lidar_2d/param_yaml
+ $ rosparam delete camera_lidar_2d/camera_yaml
 ```
 
 
