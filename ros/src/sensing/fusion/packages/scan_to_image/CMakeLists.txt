@@ -51,7 +51,7 @@ find_package(OpenCV REQUIRED)
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   PointedImage.msg
+   ScanImage.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -170,14 +170,14 @@ include_directories(
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 
-add_executable(points_to_image src/transformation.cpp)
+add_executable(scan_to_image nodes/scan_to_image/scan_to_image.cpp)
 
 set(CAMERA_YAML "$ENV{HOME}/.ros/camera_info/camera.yaml")
 set(MANUAL_YAML "${CMAKE_CURRENT_SOURCE_DIR}/manual.yaml")
 
-set_target_properties(points_to_image
+set_target_properties(scan_to_image
   PROPERTIES COMPILE_FLAGS
   "-DCAMERA_YAML=${CAMERA_YAML} -DMANUAL_YAML=${MANUAL_YAML}")
 
-target_link_libraries(points_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(points_to_image scan_to_image_generate_messages_cpp)
+target_link_libraries(scan_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(scan_to_image scan_to_image_generate_messages_cpp)

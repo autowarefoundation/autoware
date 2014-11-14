@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>camera_lidar_2d</name>
+  <name>camera_lidar2d</name>
   <version>0.0.0</version>
-  <description>The camera_lidar_2d package</description>
+  <description>The camera_lidar2d package</description>
   <maintainer email="kondoh@axe.bz">kondoh</maintainer>
   <license>TODO</license>
   <buildtool_depend>catkin</buildtool_depend>

@@ -400,7 +400,7 @@ void imageCallback(const sensor_msgs::Image& image_raw) {
 #if 1 // AXE
         ros::NodeHandle n;
         std::string camera_yaml;
-	n.param<std::string>("/camera_lidar_2d/camera_yaml", camera_yaml, STR(CAMERA_YAML));
+	n.param<std::string>("/camera_lidar2d/camera_yaml", camera_yaml, STR(CAMERA_YAML));
         cv::FileStorage fs(camera_yaml.c_str(), cv::FileStorage::WRITE);
 #else
         cv::FileStorage fs("camera.yaml", cv::FileStorage::WRITE);
@@ -568,12 +568,12 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan)
 int main(int argc, char **argv)
 {
 #if 1 // AXE
-    ros::init(argc, argv, "calibration_of_camera_and_LRF");
+    ros::init(argc, argv, "camera_lidar2d_offline_calib");
     ros::NodeHandle n;
 
     /* xmlからパラメータ設定 */
     std::string param_yaml;
-    n.param<std::string>("/camera_lidar_2d/param_yaml", param_yaml, STR(PARAM_YAML));
+    n.param<std::string>("/camera_lidar2d/param_yaml", param_yaml, STR(PARAM_YAML));
 
     // ファイルの種類は，内容から決定
     cv::FileStorage fs(param_yaml.c_str(), cv::FileStorage::READ);

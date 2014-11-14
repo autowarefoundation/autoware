@@ -56,7 +56,7 @@
 #include "Depth_points_func.h"
 #include "std_msgs/Float64.h"
 #include "std_msgs/String.h"
-#include "scan_to_image/PointedImage.h"
+#include "scan_to_image/ScanImage.h"
 #include <sensor_msgs/LaserScan.h>
 #include <algorithm>
 
@@ -67,7 +67,7 @@
 
 IplImage *IMAGE_PATH;
 char WINDOW_NAME[] = "CAR_TRACK";
-ros::Publisher pointed_image;
+ros::Publisher pub;
 cv::Mat translation_global2lrf, translation_global2camera, rotation, intrinsic;
 double x_theta, y_theta, z_theta, x_vector, y_vector, z_vector, fx_camera_param, fy_camera_param, ox_camera_param, oy_camera_param;
 int manual_mode;
@@ -204,12 +204,12 @@ void chatterCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
         auto_trans_depth_points_to_image_points(&depth_points, &image_points, &distance);
     }
 
-    scan_to_image::PointedImage pointed_image_msg;
-    pointed_image_msg.scan = *msg;
-    pointed_image_msg.image_point_x = image_points.x;
-    pointed_image_msg.image_point_y = image_points.y;
-    pointed_image_msg.distance = distance;
-    pointed_image.publish(pointed_image_msg);
+    scan_to_image::ScanImage scan_image_msg;
+    scan_image_msg.scan = *msg;
+    scan_image_msg.image_point_x = image_points.x;
+    scan_image_msg.image_point_y = image_points.y;
+    scan_image_msg.distance = distance;
+    pub.publish(scan_image_msg);
 
 }
 
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
     /* xmlからパラメータ設定 */
     char path[128];
 #if 1 // AXE
-    ros::init(argc, argv, "points_to_image");
+    ros::init(argc, argv, "scan_to_image");
     ros::NodeHandle n;
 
     std::string camera_yaml;
@@ -335,7 +335,7 @@ int main(int argc, char **argv)
 // %Tag(SUBSCRIBER)%
 
   ros::Subscriber sub = n.subscribe("scan", 1, chatterCallback);
-  pointed_image = n.advertise<scan_to_image::PointedImage>("pointed_image", 10);
+  pub = n.advertise<scan_to_image::ScanImage>("scan_image", 10);
 
 // %EndTag(SUBSCRIBER)%
 

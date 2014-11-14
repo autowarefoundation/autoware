@@ -63,7 +63,7 @@ ost.txt の内容のうち
  $ rosrun hokuyo_node hokuyo_node
 ```
 
-[param.yaml]作成方法は [ReadMe.txt](ros/sensing/calib/offline/camera_lidar_2d/ReadMe.txt)を参照
+[param.yaml]作成方法は [ReadMe.txt](ros/src/sensing/calibration/packages/camera_lidar2d/ReadMe.txt)を参照
 
 [param.yaml]中の
 
@@ -80,7 +80,7 @@ camera.yaml ファイルの出力先ディレクトリ ~/.ros/camera_info/ が�
 ```
 
 ```
- $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
+ $ rosrun camera_lidar2d camera_lidar2d_offline_calib
 ```
 
 LRF画面 CALIBRATE(click) SAVE(click)
@@ -90,7 +90,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 #### param.yaml のデフォルトのパス
 
-<camera_lidar_2d パッケージディレクトリ>/param.yaml
+<camera_lidar2d パッケージディレクトリ>/param.yaml
 
 
 #### camera.yaml のデフォルトのパス
@@ -101,15 +101,15 @@ LRF画面 CALIBRATE(click) SAVE(click)
 #### 別の場所にある param.yaml を使用し、別の場所に camera.yaml を出力する場合
 
 ```
- $ rosparam set camera_lidar_2d/param_yaml ~/other_dir/param.yaml
- $ rosparam set camera_lidar_2d/camera_yaml ~/another_dir/camera.yaml
- $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
+ $ rosparam set camera_lidar2d/param_yaml ~/other_dir/param.yaml
+ $ rosparam set camera_lidar2d/camera_yaml ~/another_dir/camera.yaml
+ $ rosrun camera_lidar2d camera_lidar2d_offline_calib
 ```
 
 #### デフォルトのパスに戻す場合
 ```
- $ rosparam delete camera_lidar_2d/param_yaml
- $ rosparam delete camera_lidar_2d/camera_yaml
+ $ rosparam delete camera_lidar2d/param_yaml
+ $ rosparam delete camera_lidar2d/camera_yaml
 ```
 
 
@@ -130,7 +130,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ### points_to_image ノード起動
 
 ```
- $ rosrun scan_to_image points_to_image
+ $ rosrun scan_to_image scan_to_image
 ```
 
 #### camera.yaml のデフォルトのパス
