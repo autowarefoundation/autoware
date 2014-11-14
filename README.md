@@ -1,6 +1,11 @@
 # Autoware
 
-Open software for autonomous driving
+Open-source software for autonomous driving
+
+## License
+
+* New BSD License
+    * See LICENSE
 
 ## How to Build
 
