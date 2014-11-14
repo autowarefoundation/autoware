@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
     //ROS STUFF
 
-    ros::init(argc, argv, "grasshopper_camera");
+    ros::init(argc, argv, "grasshopper3");
     ros::NodeHandle n;
 
     ros::Publisher pub[numCameras];
