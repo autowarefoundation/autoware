@@ -237,3 +237,42 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
  $ rosparam set camera_sim/fps 15
 ```
+
+### FlyCapture SDK 設定方法
+
+ライブラリの依存関係
+
+```
+ $  sudo apt-get install libraw1394-11 libgtk2.0-0 libgtkmm-2.4-dev libglademm-2.4­dev libgtkglextmm-x11-1.2-dev libusb-1.0-0
+
+```
+SDK の設定
+
+* 1. PointGreyウェブサイトからダウンロード（無料アカウントが必要）
+
+```
+sudo sh install_flycapture.sh
+```
+
+* 2. ユーザーを入力して許可のグループ追加されます
+
+フィール：/etc/default/grub 開けて 次のライン
+             GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+変わって＝＞ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore usbfs_memory_mb=1000"
+
+```
+sudo updategrub
+sudo modprobe usbcore usbfs_memory_mb=1000
+```
+
+* 3. 再起動
+* 4. カメラの試し方
+```
+$ cd ~
+$ cp -rf /usr/src/flycapture .
+$ cd flycapture/src/FlyCapture2Test
+$ sudo apt-get install build-essential
+$ make
+$ cd ~/flycapture/bin
+$ ./FlyCapture2Test
+```
