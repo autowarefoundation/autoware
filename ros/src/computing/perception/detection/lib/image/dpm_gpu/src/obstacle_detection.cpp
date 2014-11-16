@@ -64,7 +64,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CompressedImage.h>
 #if 1 // AXE
-#include "image/ImageObjects.h"
+#include "dpm/ImageObjects.h"
 #include "for_use_GPU.h"
 #else
 #include "sensors_fusion/ObstaclePosition.h"
@@ -126,7 +126,7 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
     RESULT *CUR = car_detection(IM_D,MO,thresh,&D_NUMS,A_SCORE,overlap);	//detect car
     clock_gettime(CLOCK_REALTIME, &end);
 #if 1 // AXE
-    image::ImageObjects image_objects_msg;
+    dpm::ImageObjects image_objects_msg;
 #else
     sensors_fusion::ObstaclePosition image_and_obstacle_position_msg;
 #endif
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 // %Tag(SUBSCRIBER)%
   ros::Subscriber sub = n.subscribe("/image_raw", 1, obstacle_detectionCallback);
 #if 1 // AXE
-  image_objects = n.advertise<image::ImageObjects>("image_objects", 1);
+  image_objects = n.advertise<dpm::ImageObjects>("image_objects", 1);
 #else
   image_and_obstacle_position = n.advertise<sensors_fusion::ObstaclePosition>("obstacle_position", 1);
 #endif

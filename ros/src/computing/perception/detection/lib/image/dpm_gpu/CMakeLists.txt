@@ -18,7 +18,6 @@ find_package(OpenCV REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES dpm_gpu
-#  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
 
@@ -34,15 +33,14 @@ include_directories(/usr/include/opencv2/legacy)
 include_directories(/usr/local/cuda/include)
 include_directories(src)
 
-set(DPM_GPU_PATH src)
-file(GLOB DPM_GPU_CXX_SOURCES "${DPM_GPU_PATH}/*.cpp")
-file(GLOB DPM_GPU_CC_SOURCES "${DPM_GPU_PATH}/*.cc")
+file(GLOB DPM_GPU_CXX_SOURCES "src/*.cpp")
+file(GLOB DPM_GPU_CC_SOURCES "src/*.cc")
 
 ## Declare a cpp library
 add_library(dpm_gpu
   ${DPM_GPU_CXX_SOURCES}
   ${DPM_GPU_CC_SOURCES}
-  ${DPM_GPU_PATH}/conv.c
+  src/conv.c
 )
 
 target_link_libraries(dpm_gpu
@@ -53,17 +51,17 @@ target_link_libraries(dpm_gpu
 
 set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
 set(CUDA_ARCH "sm_50") # Titan: sm_35 jetson: sm_32
-set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}")
+set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_custom_command(
   OUTPUT GPU_function.cubin
   COMMAND
   "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
-  "-o" "${CUBIN_OUTPUT}" "-cubin" "-Xptxas" "-v"
-  "--maxrregcount" "32"
-  "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
+  "-o" "${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin"
+  "-cubin" "-Xptxas" "-v" "--maxrregcount" "32" "-I${CUDA_FILE_PATH}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/GPU_function.cu"
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/GPU_function.cu"
 )
 
 add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
+add_dependencies(dpm_gpu cuda_binary)
