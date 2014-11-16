@@ -176,12 +176,34 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
 // %EndTag(CALLBACK)%
 
 #if 1 // AXE
-int dpm_ttic_main(int argc, char* argv[], const char *cubin_path)
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+std::string com_name;
+std::string root_name;
+std::string part_name;
+
+int dpm_ttic_main(int argc, char* argv[], const char *cubin_path,
+		  const std::string& detection_type)
 #else
 int main(int argc, char **argv)
 #endif
 {
 #if 1 // AXE
+	if (detection_type == "car") {
+		com_name = STR(DPM_GPU_ROOT) "car_comp.csv";
+		root_name = STR(DPM_GPU_ROOT) "car_root.csv";
+		part_name = STR(DPM_GPU_ROOT) "car_part.csv";
+	} else if (detection_type == "pedestrian") {
+		com_name = STR(DPM_GPU_ROOT)  "pedestrian_comp.csv";
+		root_name = STR(DPM_GPU_ROOT) "pedestrian_root.csv";
+		part_name = STR(DPM_GPU_ROOT) "pedestrian_part.csv";
+	} else {
+		std::cerr << "Invalid detection type: "
+			  << detection_type
+			  << std::endl;
+	}
+
 	init_cuda_with_cubin(cubin_path);
 #else
 	FILE* fp;					//file pointer

@@ -672,13 +672,25 @@ Partfilters *load_partfilter(char *filename)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //load model infroamtion
 
+#if defined(ROS)
+extern std::string com_name;
+extern std::string root_name;
+extern std::string part_name;
+#endif
+
 MODEL *load_model(FLOAT ratio)
 {
   MODEL *MO=(MODEL*)malloc(sizeof(MODEL));		// allocate model size
   // assign information into  MO.OO
+#if defined(ROS)
+  MO->MI=load_modelinfo(com_name.c_str());
+  MO->RF=load_rootfilter(root_name.c_str());
+  MO->PF=load_partfilter(part_name.c_str());
+#else
   MO->MI=load_modelinfo(F_NAME_COM);
   MO->RF=load_rootfilter(F_NAME_ROOT);
   MO->PF=load_partfilter(F_NAME_PART);
+#endif
   MO->MI->ratio = ratio;
   
   /**********************************/
