@@ -28,12 +28,14 @@ int main(int argc, char **argv)
   if(n.hasParam(ALGORITHM_PARAM)){
     std::string algo("ocv");
     n.getParam(ALGORITHM_PARAM, algo);
+#ifdef NEVER
     if(algo == "gpu"){
       std::string cubin(STR(DEFAULT_CUBIN));
       if (n.hasParam(CUBIN_PARAM))
         n.getParam(CUBIN_PARAM, cubin);
       return dpm_ttic_main(argc, argv, cubin.c_str());
     }
+#endif
   }
   return dpm_ocv_main(argc, argv);
 }

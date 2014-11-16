@@ -85,22 +85,11 @@ include_directories(/usr/local/cuda/include)
 
 file(GLOB DPM_OCV_CXX_SOURCES "detectors/dpm_ocv/src/*.cpp")
 
-set(DPM_GPU_PATH detectors/dpm_gpu/src)
-file(GLOB DPM_GPU_CXX_SOURCES "${DPM_GPU_PATH}/*.cpp")
-file(GLOB DPM_GPU_CC_SOURCES "${DPM_GPU_PATH}/*.cc")
-
-set(DPM_GPU_SOURCES
-  ${DPM_GPU_CXX_SOURCES}
-  ${DPM_GPU_CC_SOURCES}
-  ${DPM_GPU_PATH}/conv.c
-)
-
 set(DPM_OPENCV_PATH detectors/dpm_ocv/src)
 foreach(dpm_target car_detector pedestrian_detector)
   add_executable(${dpm_target}
     image_detector.cpp
     ${DPM_OCV_CXX_SOURCES}
-    ${DPM_GPU_SOURCES}
   )
 
   target_link_libraries(${dpm_target}
@@ -111,13 +100,6 @@ foreach(dpm_target car_detector pedestrian_detector)
   add_dependencies(${dpm_target} image_generate_messages_cpp)
 endforeach(dpm_target)
 
-set(GPU_MODEL_PATH
- "${CMAKE_CURRENT_SOURCE_DIR}/detectors/dpm_gpu/CAR_TRACKING/")
-set(CUBIN_OUTPUT "${CATKIN_DEVEL_PREFIX}/lib/image/GPU_function.cubin")
-
-set(DPM_GPU_COMMON_OPTIONS
-  "-DGPU_MODEL_PATH=${GPU_MODEL_PATH} -DDEFAULT_CUBIN=${CUBIN_OUTPUT}")
-
 set(OPENCV_MODEL_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}/detectors/dpm_ocv/Debug/models_VOC2007")
 set(OPENCV_CAR_MODEL
@@ -127,27 +109,8 @@ set(OPENCV_PEDESTRIAN_MODEL
 
 set_target_properties(car_detector
   PROPERTIES COMPILE_FLAGS
-  "-DCAR_DETECTOR -DOPENCV_MODEL_FILE=${OPENCV_CAR_MODEL} ${DPM_GPU_COMMON_OPTIONS}")
+  "-DCAR_DETECTOR -DOPENCV_MODEL_FILE=${OPENCV_CAR_MODEL}")
 
 set_target_properties(pedestrian_detector
   PROPERTIES COMPILE_FLAGS
-  "-DPEDESTRIAN_DETECTOR -DOPENCV_MODEL_FILE=${OPENCV_PEDESTRIAN_MODEL} ${DPM_GPU_COMMON_OPTIONS}")
-
-set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
-set(CUDA_ARCH "sm_50") # Titan: sm_35 jetson: sm_32
-set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}")
-
-add_custom_command(
-  OUTPUT GPU_function.cubin
-  COMMAND
-  "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
-  "-o" "${CUBIN_OUTPUT}" "-cubin" "-Xptxas" "-v"
-  "--maxrregcount" "32"
-  "-I${CMAKE_CURRENT_SOURCE_DIR}/include" "-I${CUDA_FILE_PATH}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${DPM_GPU_PATH}/GPU_function.cu"
-)
-
-add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
-add_dependencies(car_detector DEPENDS cuda_binary)
-add_dependencies(pedestrian_detector DEPENDS cuda_binary)
+  "-DPEDESTRIAN_DETECTOR -DOPENCV_MODEL_FILE=${OPENCV_PEDESTRIAN_MODEL}")
