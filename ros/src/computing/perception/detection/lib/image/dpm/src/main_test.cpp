@@ -27,7 +27,7 @@
 #include "ros/ros.h"
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include "image/ImageObjects.h"
+#include "dpm/ImageObjects.h"
 #endif
 
 using namespace std;
@@ -104,7 +104,7 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
     }
 
 #if defined(ROS) // AXE
-    image::ImageObjects image_objects_msg;
+    dpm::ImageObjects image_objects_msg;
     image_objects_msg.car_num = num;
     image_objects_msg.corner_point = corner_point_array;
     image_objects_msg.car_type = car_type_array;
@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
 #if defined(ROS) // AXE
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe("/image_raw", 1, image_objectsCallback);
-    image_objects = n.advertise<image::ImageObjects>("image_objects", 1);
+    image_objects = n.advertise<dpm::ImageObjects>("image_objects", 1);
 #else
     help();
 #endif
