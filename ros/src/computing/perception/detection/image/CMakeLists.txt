@@ -151,13 +151,3 @@ add_custom_command(
 add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
 add_dependencies(car_detector DEPENDS cuda_binary)
 add_dependencies(pedestrian_detector DEPENDS cuda_binary)
-
-add_executable(lane_ocv
-  classes/lane/src/line_detection.cpp
-)
-
-target_link_libraries(lane_ocv
-  ${catkin_LIBRARIES}
-  opencv_highgui opencv_core opencv_imgproc m
-)
-add_dependencies(lane_ocv image_generate_messages_cpp)
