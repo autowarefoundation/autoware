@@ -12,7 +12,7 @@
 #include <highgui.h>
 #include <math.h>
 #include "utils.h"
-#include "switch_release.h"
+/*#include "switch_release.h"*/
 
 #if !defined(USE_POSIX_SHARED_MEMORY)
 #include "ros/ros.h"
