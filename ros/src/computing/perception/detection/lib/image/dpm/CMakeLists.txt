@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lane_detector)
+project(dpm)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
@@ -11,13 +11,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
-## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  ImageLaneObjects.msg
+  ImageObjects.msg
 )
 
-## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
   sensor_msgs
@@ -29,7 +27,7 @@ generate_messages(
 ###################################
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES lane_detector
+#  LIBRARIES dpm
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -38,14 +36,20 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(nodes/lane_detector)
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
-add_executable(lane_detector
-  nodes/lane_detector/line_detection.cpp
+include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(/usr/include/opencv2/legacy)
+include_directories(src)
+
+file(GLOB DPM_OCV_CXX_SOURCES "src/*.cpp")
+
+add_library(dpm
+  ${DPM_OCV_CXX_SOURCES}
 )
 
-target_link_libraries(lane_detector
+target_link_libraries(dpm
   ${catkin_LIBRARIES}
-  opencv_highgui opencv_core opencv_imgproc m
-)
-add_dependencies(lane_detector lane_detector_generate_messages_cpp)
+  ${OpenCV_LIBS}
+  )
+add_dependencies(dpm dpm_generate_messages_cpp)
