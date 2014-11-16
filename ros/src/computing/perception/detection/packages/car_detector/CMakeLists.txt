@@ -29,8 +29,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES dpm dpm_gpu
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS dpm dpm_gpu
 #  DEPENDS system_lib
 )
 
