@@ -27,6 +27,6 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-add_executable(ui_receiver ui_receiver/ui_receiver.cpp)
+add_executable(ui_receiver nodes/ui_receiver/ui_receiver.cpp)
 target_link_libraries(ui_receiver ${catkin_LIBRARIES})
 add_dependencies(ui_receiver ui_receiver_generate_messages_cpp)
