@@ -48,4 +48,4 @@ target_link_libraries(lane_detector
   ${catkin_LIBRARIES}
   opencv_highgui opencv_core opencv_imgproc m
 )
-add_dependencies(lane_detector image_generate_messages_cpp)
+add_dependencies(lane_detector lane_detector_generate_messages_cpp)

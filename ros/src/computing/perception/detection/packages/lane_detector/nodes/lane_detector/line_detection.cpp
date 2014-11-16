@@ -18,7 +18,7 @@
 #include "ros/ros.h"
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include <image/ImageLaneObjects.h>
+#include <lane_detector/ImageLaneObjects.h>
 #endif
 
 #undef MAX
@@ -426,7 +426,7 @@ void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, IplImage 
   cvLine(org_frame, cvPoint(x, laneR.k.get()*x + laneR.b.get() + org_offset),
          cvPoint(x2, laneR.k.get()*x2 + laneR.b.get() + org_offset), PURPLE, 2);
 #else
-  image::ImageLaneObjects lane_msg;
+  lane_detector::ImageLaneObjects lane_msg;
   lane_msg.lane_r_x1 = x;
   lane_msg.lane_r_y1 = laneR.k.get()*x + laneR.b.get() + org_offset;
   lane_msg.lane_r_x2 = x2;
@@ -550,7 +550,7 @@ int main(int argc, char *argv[])
   ros::NodeHandle n;
   ros::Subscriber subscriber = n.subscribe("/image_raw", 1, image_raw_callback);
 
-  image_lane_objects = n.advertise<image::ImageLaneObjects>("image_lane", 1);
+  image_lane_objects = n.advertise<lane_detector::ImageLaneObjects>("image_lane", 1);
 
   ros::spin();
 #endif
