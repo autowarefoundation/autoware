@@ -280,11 +280,11 @@ int main(int argc, char **argv)
    */
 // %Tag(SUBSCRIBER)%
 #if 1 // AXE
-  ros::Subscriber obstacle_detection = n.subscribe("image_objects", 1, obstacle_detectionCallback);
+  ros::Subscriber obstacle_detection = n.subscribe("car_pos_xy", 1, obstacle_detectionCallback);
   ros::Subscriber distance_measurement = n.subscribe("scan_image", 1, distance_measurementCallback);
   ros::Subscriber image = n.subscribe("/image_raw", 1, imageCallback);
   
-  fused_objects = n.advertise<car_fusion::FusedObjects>("fused_objects", 10);
+  fused_objects = n.advertise<car_fusion::FusedObjects>("car_pos_xyz", 10);
 #else
   ros::Subscriber obstacle_detection = n.subscribe("obstacle_position", 1, obstacle_detectionCallback);
   ros::Subscriber distance_measurement = n.subscribe("transformed_point_data", 1, distance_measurementCallback);
