@@ -55,6 +55,58 @@ PlaneExtractor::PlaneExtractor(sensor_msgs::PointCloud2ConstPtr velodynePoints, 
     connect(this,SIGNAL(mousePositionSignal(QMouseEvent*,CAMERAPARAMETERS*)),this,SLOT(mousePositionSlot(QMouseEvent*,CAMERAPARAMETERS*)));
 }
 
+PlaneExtractor::PlaneExtractor(pcl::PointCloud<pcl::PointXYZI>::Ptr velodynePoints, int id, double neighborRadius, double distanceThreshold, QWidget *parent)
+    : GLViewer(parent)
+{
+    pointsid=id;
+    neighborradius=neighborRadius;
+    distance=distanceThreshold;
+
+    int i,n=velodynePoints->size();
+    cloud.resize(n);
+    QVector<float> colors(3*n);
+    for(i=0;i<n;i++)
+    {
+        cloud[i].x=velodynePoints->points[i].x;
+        cloud[i].y=velodynePoints->points[i].y;
+        cloud[i].z=velodynePoints->points[i].z;
+        cloud[i].intensity=velodynePoints->points[i].intensity;
+        colors[i*3+0]=cloud[i].intensity/255.0;
+        colors[i*3+1]=cloud[i].intensity/255.0;
+        colors[i*3+2]=cloud[i].intensity/255.0;
+    }
+    kdtree.setInputCloud(cloud.makeShared());
+
+    this->makeCurrent();
+
+    pointsdisplaylist=glGenLists(1);
+    selecteddisplaylist=glGenLists(1);
+    mousedisplaylist=glGenLists(1);
+
+    this->addDisplayList(pointsdisplaylist);
+    this->addDisplayList(selecteddisplaylist);
+    this->addDisplayList(mousedisplaylist);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    glVertexPointer(3,GL_FLOAT,sizeof(pcl::PointXYZI),cloud.points.data());
+    glColorPointer(3,GL_FLOAT,3*sizeof(float),colors.data());
+
+    glNewList(pointsdisplaylist,GL_COMPILE);
+    glDrawArrays(GL_POINTS,0,n);
+    glEndList();
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+
+    this->update();
+
+    extracted=1;
+
+    connect(this,SIGNAL(mousePositionSignal(QMouseEvent*,CAMERAPARAMETERS*)),this,SLOT(mousePositionSlot(QMouseEvent*,CAMERAPARAMETERS*)));
+}
+
 void PlaneExtractor::mousePositionSlot(QMouseEvent * event, CAMERAPARAMETERS * parameters)
 {
     this->makeCurrent();

@@ -23,6 +23,7 @@ class PlaneExtractor : public GLViewer
     Q_OBJECT
 public:
     PlaneExtractor(sensor_msgs::PointCloud2ConstPtr velodynePoints, int id, double neighborRadius=0.2, double distanceThreshold=0.05, QWidget * parent=0);
+    PlaneExtractor(pcl::PointCloud<pcl::PointXYZI>::Ptr velodynePoints, int id, double neighborRadius=0.2, double distanceThreshold=0.05, QWidget * parent=0);
 protected:
     int pointsid;
     double neighborradius;
