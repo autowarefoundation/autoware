@@ -154,14 +154,25 @@ void image_objectsCallback(const sensor_msgs::Image& image_source)
 #endif
 
 #if defined(ROS) // AXE
-int dpm_ocv_main(int argc, char* argv[])
+int dpm_ocv_main(int argc, char* argv[], const std::string& detection_type)
 #else
 int main(int argc, char* argv[])
 #endif
 {
 #if defined(ROS) // AXE
     ros::NodeHandle n;
-    ros::Subscriber sub = n.subscribe("/image_raw", 1, image_objectsCallback);
+    ros::Subscriber sub = n.subscribe("/image_hog", 1, image_objectsCallback);
+
+    std::string published_node;
+    if (detection_type == "car") {
+        published_node = "car_pos_xy";
+    } else if (detection_type == "pedestrian") {
+	published_node = "pedestrian_pos_xy";
+    } else {
+        std::cerr << "Invalid detection type: " << detection_type
+                  << std::endl;
+        std::exit(1);
+    }
     image_objects = n.advertise<dpm::ImageObjects>("image_objects", 1);
 #else
     help();

@@ -522,7 +522,7 @@ static void process_image_common(IplImage *frame)
 }
 
 #if !defined(USE_POSIX_SHARED_MEMORY)
-static void image_raw_callback(const sensor_msgs::Image& image_source)
+static void lane_cannyhough_callback(const sensor_msgs::Image& image_source)
 {
   cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
   IplImage frame = cv_image->image;
@@ -548,9 +548,9 @@ int main(int argc, char *argv[])
 #else
   ros::init(argc, argv, "line_ocv");
   ros::NodeHandle n;
-  ros::Subscriber subscriber = n.subscribe("/image_raw", 1, image_raw_callback);
+  ros::Subscriber subscriber = n.subscribe("/lane_cannyhough", 1, lane_cannyhough_callback);
 
-  image_lane_objects = n.advertise<lane_detector::ImageLaneObjects>("image_lane", 1);
+  image_lane_objects = n.advertise<lane_detector::ImageLaneObjects>("lane_pos_xy", 1);
 
   ros::spin();
 #endif
