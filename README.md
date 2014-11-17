@@ -161,33 +161,38 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
 
 
-### car_detectorノードの起動
+### car_detector(OpenCV)ノードの起動
 
 ```
- $ rosrun image car_detector
-```
-
-カメラの画像と矩形、その他が画面に表示される
-
-### pedestrian_detectorノードの起動
-
-```
- $ rosrun image pedestrian_detector
+ $ rosrun car_detector car_dpm
 ```
 
 カメラの画像と矩形、その他が画面に表示される
 
-#### OpenCV版, GPU版の切り替え(デフォルト: `OpenCV`)
+### car_detector(GPU)ノードの起動
 
 ```
-# OpenCV版
- $ rosparam set car_detector/algorithm ocv
- $ rosparam set pedestrian_detector/algorithm ocv
-
-# GPU版
- $ rosparam set car_detector/algorithm gpu
- $ rosparam set pedestrian_detector/algorithm gpu
+ $ rosrun car_detector car_dpm_gpu
 ```
+
+カメラの画像と矩形、その他が画面に表示される
+
+### pedestrian_detector(OpenCV)ノードの起動
+
+```
+ $ rosrun pedestrian_detector pedestrian_dpm
+```
+
+カメラの画像と矩形、その他が画面に表示される
+
+### pedestrian_detector(GPU)ノードの起動
+
+```
+ $ rosrun pedestrian_detector pedestrian_dpm_gpu
+```
+
+カメラの画像と矩形、その他が画面に表示される
+
 
 #### OpenCV版 car_detector, pedestrian_detectorのデフォルトパラメータ
 
