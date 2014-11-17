@@ -18,7 +18,6 @@ generate_messages(
   std_msgs
 )
 
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -44,16 +43,26 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 include_directories(/usr/local/cuda/include)
 
-add_executable(pedestrian_detector
-  nodes/pedestrian_detector/pedestrian_detector.cpp
+add_executable(pedestrian_dpm
+  nodes/pedestrian_dpm/pedestrian_dpm.cpp
 )
 
-SET_TARGET_PROPERTIES(pedestrian_detector
+target_link_libraries(pedestrian_dpm
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  dpm
+)
+
+add_executable(pedestrian_dpm_gpu
+  nodes/pedestrian_dpm_gpu/pedestrian_dpm_gpu.cpp
+)
+
+SET_TARGET_PROPERTIES(pedestrian_dpm_gpu
   PROPERTIES
   COMPILE_FLAGS "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin"
 )
 
-target_link_libraries(pedestrian_detector
+target_link_libraries(pedestrian_dpm_gpu
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   cuda
