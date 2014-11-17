@@ -43,19 +43,28 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 include_directories(/usr/local/cuda/include)
 
-add_executable(car_detector
-  nodes/car_detector/car_detector.cpp
+add_executable(car_dpm
+  nodes/car_dpm/car_dpm.cpp
 )
 
-SET_TARGET_PROPERTIES(car_detector
+target_link_libraries(car_dpm
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  dpm
+)
+
+add_executable(car_dpm_gpu
+  nodes/car_dpm_gpu/car_dpm_gpu.cpp
+)
+
+SET_TARGET_PROPERTIES(car_dpm_gpu
   PROPERTIES
   COMPILE_FLAGS "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin"
 )
 
-target_link_libraries(car_detector
+target_link_libraries(car_dpm_gpu
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
+#  ${OpenCV_LIBS}
   cuda
-  dpm
   dpm_gpu
 )
