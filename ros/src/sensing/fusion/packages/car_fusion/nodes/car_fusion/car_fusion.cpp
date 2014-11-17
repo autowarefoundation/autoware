@@ -51,7 +51,7 @@
 
 //ORIGINAL header files
 #if 1 // AXE
-#include "src/car_det_func.h"
+extern void show_rects(IplImage *Image, int car_num, int *corner_point, int *type, double ratio);
 #else
 #include "Laser_func.h"
 #include "car_det_func.h"
@@ -68,7 +68,7 @@
 #if 1 // AXE
 #include "dpm/ImageObjects.h"
 #include "scan_to_image/ScanImage.h"
-#include "fusion/FusedObjects.h"
+#include "car_fusion/FusedObjects.h"
 #else
 #include "sensors_fusion/ObstaclePosition.h"
 #include "sensors_fusion/TransformedPointData.h"
@@ -95,7 +95,7 @@ ros::Publisher fused_objects;
 #if 1 // AXE
 void obstacle_detectionCallback(const dpm::ImageObjects& obstacle_position)
 #else
-void obstacle_detectionCallback(const sensors_fusion::ObstaclePosition& obstacle_position)
+void obstacle_detectionCallback(const sensors_car_fusion::ObstaclePosition& obstacle_position)
 #endif
 {
     int i;
@@ -188,7 +188,7 @@ void distance_measurementCallback(const sensors_fusion::TransformedPointData& tr
         }
     }
 #if 1 // AXE
-    fusion::FusedObjects fused_objects_msg;
+    car_fusion::FusedObjects fused_objects_msg;
     fused_objects_msg.car_num = car_type_array.size();
     fused_objects_msg.car_type = car_type_array;
     fused_objects_msg.corner_point = corner_point_array;
@@ -284,7 +284,7 @@ int main(int argc, char **argv)
   ros::Subscriber distance_measurement = n.subscribe("scan_image", 1, distance_measurementCallback);
   ros::Subscriber image = n.subscribe("/image_raw", 1, imageCallback);
   
-  fused_objects = n.advertise<fusion::FusedObjects>("fused_objects", 10);
+  fused_objects = n.advertise<car_fusion::FusedObjects>("fused_objects", 10);
 #else
   ros::Subscriber obstacle_detection = n.subscribe("obstacle_position", 1, obstacle_detectionCallback);
   ros::Subscriber distance_measurement = n.subscribe("transformed_point_data", 1, distance_measurementCallback);
