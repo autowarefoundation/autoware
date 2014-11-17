@@ -190,11 +190,14 @@ int main(int argc, char **argv)
 #endif
 {
 #if 1 // AXE
+	std::string published_topic;
 	if (detection_type == "car") {
+		published_topic = "car_pos_xy";
 		com_name = STR(DPM_GPU_ROOT) "car_comp.csv";
 		root_name = STR(DPM_GPU_ROOT) "car_root.csv";
 		part_name = STR(DPM_GPU_ROOT) "car_part.csv";
 	} else if (detection_type == "pedestrian") {
+		published_topic = "pedestrian_pos_xy";
 		com_name = STR(DPM_GPU_ROOT)  "pedestrian_comp.csv";
 		root_name = STR(DPM_GPU_ROOT) "pedestrian_root.csv";
 		part_name = STR(DPM_GPU_ROOT) "pedestrian_part.csv";
@@ -278,9 +281,9 @@ int main(int argc, char **argv)
    * away the oldest ones.
    */
 // %Tag(SUBSCRIBER)%
-  ros::Subscriber sub = n.subscribe("/image_raw", 1, obstacle_detectionCallback);
+  ros::Subscriber sub = n.subscribe("/image_hog", 1, obstacle_detectionCallback);
 #if 1 // AXE
-  image_objects = n.advertise<dpm::ImageObjects>("image_objects", 1);
+  image_objects = n.advertise<dpm::ImageObjects>(published_topic, 1);
 #else
   image_and_obstacle_position = n.advertise<sensors_fusion::ObstaclePosition>("obstacle_position", 1);
 #endif
