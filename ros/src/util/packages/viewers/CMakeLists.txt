@@ -31,7 +31,7 @@ catkin_package(
 ## Build ##
 ###########
 
-add_executable(image_viewer image_viewer/image_viewer.cpp)
+add_executable(image_viewer nodes/image_viewer/image_viewer.cpp)
 target_link_libraries(image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
