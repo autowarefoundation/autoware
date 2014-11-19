@@ -38,7 +38,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES car_fusion
-  CATKIN_DEPENDS fusion
+  CATKIN_DEPENDS scan_to_image
 #  DEPENDS system_lib
 )
 
