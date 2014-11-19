@@ -6,4 +6,11 @@ catkin_package(
 #  LIBRARIES
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
+# catkin
+# geometry_msgs
+# nmea_msgs
+# python-serial
+# roslint
+# rospy
+# sensor_msgs
 )
