@@ -1,6 +1,11 @@
 # Autoware
 
-Open software for autonomous driving
+Open-source software for autonomous driving
+
+## License
+
+* New BSD License
+    * See LICENSE
 
 ## How to Build
 
@@ -58,12 +63,10 @@ ost.txt の内容のうち
 北陽センサを接続し起動
 
 ```
- $ rosparam set hokuyo_node/calibrate_time false
- $ rosparam set hokuyo_node/port /dev/ttyACM0
- $ rosrun hokuyo_node hokuyo_node
+ $ roslaunch lidar hokuyo_utm30lx.launch
 ```
 
-[param.yaml]作成方法は [ReadMe.txt](ros/sensing/calib/offline/camera_lidar_2d/ReadMe.txt)を参照
+[param.yaml]作成方法は [ReadMe.txt](ros/src/sensing/calibration/packages/camera_lidar2d/ReadMe.txt)を参照
 
 [param.yaml]中の
 
@@ -80,7 +83,7 @@ camera.yaml ファイルの出力先ディレクトリ ~/.ros/camera_info/ が�
 ```
 
 ```
- $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
+ $ rosrun camera_lidar2d camera_lidar2d_offline_calib
 ```
 
 LRF画面 CALIBRATE(click) SAVE(click)
@@ -90,7 +93,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 #### param.yaml のデフォルトのパス
 
-<camera_lidar_2d パッケージディレクトリ>/param.yaml
+<camera_lidar2d パッケージディレクトリ>/param.yaml
 
 
 #### camera.yaml のデフォルトのパス
@@ -101,15 +104,15 @@ LRF画面 CALIBRATE(click) SAVE(click)
 #### 別の場所にある param.yaml を使用し、別の場所に camera.yaml を出力する場合
 
 ```
- $ rosparam set camera_lidar_2d/param_yaml ~/other_dir/param.yaml
- $ rosparam set camera_lidar_2d/camera_yaml ~/another_dir/camera.yaml
- $ rosrun camera_lidar_2d calibration_of_camera_and_lrf
+ $ rosparam set camera_lidar2d/param_yaml ~/other_dir/param.yaml
+ $ rosparam set camera_lidar2d/camera_yaml ~/another_dir/camera.yaml
+ $ rosrun camera_lidar2d camera_lidar2d_offline_calib
 ```
 
 #### デフォルトのパスに戻す場合
 ```
- $ rosparam delete camera_lidar_2d/param_yaml
- $ rosparam delete camera_lidar_2d/camera_yaml
+ $ rosparam delete camera_lidar2d/param_yaml
+ $ rosparam delete camera_lidar2d/camera_yaml
 ```
 
 
@@ -130,7 +133,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ### points_to_image ノード起動
 
 ```
- $ rosrun scan_to_image points_to_image
+ $ rosrun scan_to_image scan_to_image
 ```
 
 #### camera.yaml のデフォルトのパス
@@ -158,33 +161,38 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
 
 
-### car_detectorノードの起動
+### car_detector(OpenCV)ノードの起動
 
 ```
- $ rosrun image car_detector
-```
-
-カメラの画像と矩形、その他が画面に表示される
-
-### pedestrian_detectorノードの起動
-
-```
- $ rosrun image pedestrian_detector
+ $ rosrun car_detector car_dpm
 ```
 
 カメラの画像と矩形、その他が画面に表示される
 
-#### OpenCV版, GPU版の切り替え(デフォルト: `OpenCV`)
+### car_detector(GPU)ノードの起動
 
 ```
-# OpenCV版
- $ rosparam set car_detector/algorithm ocv
- $ rosparam set pedestrian_detector/algorithm ocv
-
-# GPU版
- $ rosparam set car_detector/algorithm gpu
- $ rosparam set pedestrian_detector/algorithm gpu
+ $ rosrun car_detector car_dpm_gpu
 ```
+
+カメラの画像と矩形、その他が画面に表示される
+
+### pedestrian_detector(OpenCV)ノードの起動
+
+```
+ $ rosrun pedestrian_detector pedestrian_dpm
+```
+
+カメラの画像と矩形、その他が画面に表示される
+
+### pedestrian_detector(GPU)ノードの起動
+
+```
+ $ rosrun pedestrian_detector pedestrian_dpm_gpu
+```
+
+カメラの画像と矩形、その他が画面に表示される
+
 
 #### OpenCV版 car_detector, pedestrian_detectorのデフォルトパラメータ
 
@@ -236,4 +244,43 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 ```
  $ rosparam set camera_sim/fps 15
+```
+
+### FlyCapture SDK 設定方法
+
+ライブラリの依存関係
+
+```
+ $  sudo apt-get install libraw1394-11 libgtk2.0-0 libgtkmm-2.4-dev libglademm-2.4­dev libgtkglextmm-x11-1.2-dev libusb-1.0-0
+
+```
+SDK の設定
+
+* 1. PointGreyウェブサイトからダウンロード（無料アカウントが必要）
+
+```
+sudo sh install_flycapture.sh
+```
+
+* 2. ユーザーを入力して許可のグループ追加されます
+
+フィール：/etc/default/grub 開けて 次のライン
+             GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+変わって＝＞ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore usbfs_memory_mb=1000"
+
+```
+sudo updategrub
+sudo modprobe usbcore usbfs_memory_mb=1000
+```
+
+* 3. 再起動
+* 4. カメラの試し方
+```
+$ cd ~
+$ cp -rf /usr/src/flycapture .
+$ cd flycapture/src/FlyCapture2Test
+$ sudo apt-get install build-essential
+$ make
+$ cd ~/flycapture/bin
+$ ./FlyCapture2Test
 ```
