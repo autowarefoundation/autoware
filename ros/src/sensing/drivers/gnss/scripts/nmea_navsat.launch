@@ -1,0 +1,6 @@
+<launch> 
+  <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="nmea_navsat_launch">
+    <param name="_port" type="str" value="/dev/ttyUSB0" />
+    <param name="_baud" type="int" value="57600" />
+  </node>
+</launch>

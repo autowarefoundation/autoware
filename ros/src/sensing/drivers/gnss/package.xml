@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>gnss</name>
+  <version>0.0.0</version>
+  <description>gnss package to read nmea sentences from serial port</description>
+  <maintainer email="kondoh@todo.todo">kondoh</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>
