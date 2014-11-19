@@ -194,8 +194,9 @@ protected:
     QVector<pcl::PointCloud<pcl::PointXYZI>::Ptr> calibvelodynespoints;
     QVector<cv::Mat> calibvelodynesnormals;
     QTabWidget * calibvelodynesshow;
-public slots:
+protected slots:
     void refreshVelodyneSlot();
+public slots:
     void extractionResultSlot(pcl::PointCloud<pcl::PointXYZI>::Ptr extraction, cv::Mat normal, int id);
     void projectVelodynePointsSlot();
 signals:
