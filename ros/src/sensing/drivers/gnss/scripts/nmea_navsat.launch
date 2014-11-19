@@ -1,4 +1,10 @@
+<!-- nmea_navsar_driver MUST be installed before -->
+<!-- sudo apt-get install ros-indigo-nmea-navsat-driver -->
+<!-- publishes fix, vel and time_reference -->
+<!-- For details: http://wiki.ros.org/nmea_navsat_driver-->
 <launch> 
+  <!-- HOW TO RUN using rosrun:-->
+  <!-- rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
   <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="nmea_navsat_launch">
     <param name="_port" type="str" value="/dev/ttyUSB0" />
     <param name="_baud" type="int" value="57600" />
