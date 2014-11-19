@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "camera_sim");
+	ros::init(argc, argv, "fake_camera");
 	ros::NodeHandle n;
 
 	if(argc < 2){
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 		sensor_msgs::image_encodings::RGB8;
 
 	int fps;
-	n.param<int>("/camera_sim/fps", fps, 30);
+	n.param<int>("/fake_camera/fps", fps, 30);
 	fprintf(stderr, "%d fps\n", fps);
 	ros::Rate loop_rate(fps); // Hz
 

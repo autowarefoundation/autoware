@@ -29,8 +29,8 @@ catkin_package(
 ## Build ##
 ###########
 
-add_executable(camera_sim camera/src/camera_sim.cpp)
-target_link_libraries(camera_sim
+add_executable(fake_camera nodes/fake_camera/fake_camera.cpp)
+target_link_libraries(fake_camera
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
