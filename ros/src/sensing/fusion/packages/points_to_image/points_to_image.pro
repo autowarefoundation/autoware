@@ -1,11 +1,21 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2014-11-18T22:21:04
+# Project created by QtCreator 2014-11-20T12:48:46
 #
 #-------------------------------------------------
 
-SOURCES += points_to_image.cpp
-HEADERS += points_to_image.h
+QT       += core widgets
+
+QT       -= gui
+
+TARGET = points_to_image
+CONFIG   += console
+CONFIG   -= app_bundle
+
+TEMPLATE = app
+
+
+SOURCES += main.cpp
 
 unix{
     INCLUDEPATH += /usr/include
@@ -16,6 +26,20 @@ unix{
     LIBS += -L/usr/lib/x86_64-linux-gnu -lopencv_contrib
     LIBS += -L/usr/lib/x86_64-linux-gnu -lopencv_calib3d
     LIBS += -L/usr/lib/x86_64-linux-gnu -lopencv_imgproc
+
+    INCLUDEPATH += /usr/include/pcl-1.7
+    INCLUDEPATH += /usr/include/eigen3
+    LIBS += -L/usr/lib -lpcl_common
+    LIBS += -L/usr/lib -lpcl_filters
+    LIBS += -L/usr/lib -lpcl_search
+    LIBS += -L/usr/lib -lpcl_kdtree
+
+    INCLUDEPATH += $$(HOME)/SDK/ROSInterface/include
+    CONFIG(debug, debug|release){
+        LIBS += -L$$(HOME)/SDK/ROSInterface/lib -lROSInterface_Debug
+    }else{
+        LIBS += -L$$(HOME)/SDK/ROSInterface/lib -lROSInterface_Release
+    }
 
     INCLUDEPATH += /opt/ros/indigo/include
     LIBS += -L/opt/ros/indigo/lib -lroscpp
@@ -28,14 +52,5 @@ unix{
     LIBS += -L/opt/ros/indigo/lib -lrosconsole_backend_interface
     LIBS += -L/usr/lib/x86_64-linux-gnu -lboost_system
 
-    INCLUDEPATH += $$(HOME)/SDK/ROSInterface/include
-    CONFIG(debug, debug|release){
-        LIBS += -L$$(HOME)/SDK/ROSInterface/lib -lROSInterface_Debug
-    }else{
-        LIBS += -L$$(HOME)/SDK/ROSInterface/lib -lROSInterface_Release
-    }
-}
 
-PROJNAME = points_to_image
-INSTTYPE = SDK
-include(RobotSDK_Main.pri)
+}
