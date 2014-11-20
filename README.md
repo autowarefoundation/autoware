@@ -63,7 +63,7 @@ ost.txt の内容のうち
 北陽センサを接続し起動
 
 ```
- $ roslaunch lidar hokuyo_utm30lx.launch
+ $ roslaunch hokuyo hokuyo_utm30lx.launch
 ```
 
 [param.yaml]作成方法は [ReadMe.txt](ros/src/sensing/calibration/packages/camera_lidar2d/ReadMe.txt)を参照
@@ -125,9 +125,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ### 北陽センサ起動
 
 ```
- $ rosparam set hokuyo_node/calibrate_time false
- $ rosparam set hokuyo_node/port /dev/ttyACM0
- $ rosrun hokuyo_node hokuyo_node
+ $ roslaunch hokuyo hokuyo_utm30lx.launch
 ```
 
 ### points_to_image ノード起動
