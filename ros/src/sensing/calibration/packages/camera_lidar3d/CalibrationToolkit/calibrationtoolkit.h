@@ -32,9 +32,10 @@
 
 #include"selectionwidget.h"
 
-#define CAMERAEXTRINSICMATSTR "CameraExtrinsicMat"
+#define CAMERAEXTRINSICMAT "CameraExtrinsicMat"
 #define CAMERAMAT "CameraMat"
 #define DISTCOEFF "DistCoeff"
+#define IMAGESIZE "ImageSize"
 #define CHESSBOARDPOSE "ChessboardPose"
 #define CHESSBOARDIMAGE "ChessboardImage"
 #define CHESSBOARDVIEWNUM "ChessboardViewNUM"
@@ -92,6 +93,8 @@ protected:
     QTableWidget * cameramatshow;
     cv::Mat distcoeff;
     QTableWidget * distcoeffshow;
+    cv::Size2i imagesize;
+    QLabel * imagesizeshow;
 
     QSplitter * imagesplitter;
     QTabWidget * cameraimagetab;
@@ -114,6 +117,7 @@ public:
     cv::Mat getCameraExtrinsicMat();
     cv::Mat getCameraMat();
     cv::Mat getDistCoeff();
+    cv::Size2i getImageSize();
 };
 
 class CalibrateCameraChessboardBase : public CalibrateCameraBase

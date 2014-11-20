@@ -125,7 +125,7 @@ CalibrateCameraBase::CalibrateCameraBase(QWidget *parent)
 
     cameraextrinsicmat=cv::Mat::eye(4,4,CV_64F);
     cameraextrinsicshow=new QTableWidget;
-    cameracalibtab->addTab(cameraextrinsicshow,CAMERAEXTRINSICMATSTR);
+    cameracalibtab->addTab(cameraextrinsicshow,CAMERAEXTRINSICMAT);
     setResultShow(cameraextrinsicmat,cameraextrinsicshow);
 
     cameramat=cv::Mat::zeros(3,3,CV_64F);
@@ -137,6 +137,10 @@ CalibrateCameraBase::CalibrateCameraBase(QWidget *parent)
     distcoeffshow=new QTableWidget;
     cameracalibtab->addTab(distcoeffshow,DISTCOEFF);
     setResultShow(distcoeff,distcoeffshow);
+
+    imagesize=cv::Size2i(0,0);
+    imagesizeshow=new QLabel(IMAGESIZE);
+    cameracalibtab->addTab(imagesizeshow,IMAGESIZE);
 
     imagesplitter=new QSplitter(Qt::Vertical);
     splitter->addWidget(imagesplitter);
@@ -198,25 +202,29 @@ bool CalibrateCameraBase::refreshImage()
         cameraimagetab->setCurrentIndex(0);
         return 0;
     }
+    imagesizeshow->setText(QString("%1 * %2").arg(imagesize.height).arg(imagesize.width));
     return 1;
 }
 
 bool CalibrateCameraBase::loadCalibResult(cv::FileStorage &fs)
 {
-    fs[CAMERAEXTRINSICMATSTR]>>cameraextrinsicmat;
+    fs[CAMERAEXTRINSICMAT]>>cameraextrinsicmat;
     setResultShow(cameraextrinsicmat,cameraextrinsicshow);
     fs[CAMERAMAT]>>cameramat;
     setResultShow(cameramat,cameramatshow);
     fs[DISTCOEFF]>>distcoeff;
     setResultShow(distcoeff,distcoeffshow);
+    fs[IMAGESIZE]>>imagesize;
+    imagesizeshow->setText(QString("%1 * %2").arg(imagesize.height).arg(imagesize.width));
     return 1;
 }
 
 bool CalibrateCameraBase::saveCalibResult(cv::FileStorage &fs)
 {
-    fs<<CAMERAEXTRINSICMATSTR<<cameraextrinsicmat;
+    fs<<CAMERAEXTRINSICMAT<<cameraextrinsicmat;
     fs<<CAMERAMAT<<cameramat;
     fs<<DISTCOEFF<<distcoeff;
+    fs<<IMAGESIZE<<imagesize;
     return 1;
 }
 
@@ -233,6 +241,11 @@ cv::Mat CalibrateCameraBase::getCameraMat()
 cv::Mat CalibrateCameraBase::getDistCoeff()
 {
     return distcoeff;
+}
+
+cv::Size2i CalibrateCameraBase::getImageSize()
+{
+    return imagesize;
 }
 
 //=========================================================================
@@ -418,6 +431,8 @@ bool CalibrateCameraChessboardROS::refreshImage()
     {
         return 0;
     }
+    imagesize.height=msg->height;
+    imagesize.width=msg->width;
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
     void * data=(void *)(msg->data.data());
     if(QString::fromStdString(msg->encoding)=="rgb8")
@@ -995,6 +1010,8 @@ bool CalibrateCameraVelodyneChessboardROS::refreshVelodyne()
     {
         return 0;
     }
+    imagesize.height=msg->height;
+    imagesize.width=msg->width;
     velodynetimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
     calibvelodyne=msg;
     return CalibrateCameraVelodyneChessboardBase::refreshVelodyne();
