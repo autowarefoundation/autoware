@@ -10,10 +10,10 @@
 #include <assert.h>
 
 #include "ros/ros.h"
-#include "ui_receiver/gear_info.h"
-#include "ui_receiver/mode_info.h"
+#include "ui_socket/gear_info.h"
+#include "ui_socket/mode_info.h"
 
-#define PACKAGE_NAME	"ui_receiver"
+#define NODE_NAME	"ui_receiver"
 #define TOPIC_NR	(2)
 
 #define DEFAULT_PORT	(12345)
@@ -28,10 +28,10 @@ int main(int argc, char *argv[])
 	int port;
 	int sock, asock;
 
-	ros::init(argc, argv, PACKAGE_NAME);
+	ros::init(argc, argv, NODE_NAME);
 	ros::NodeHandle node;
-	pub[0] = node.advertise<ui_receiver::gear_info>("gear_info", 1);
-	pub[1] = node.advertise<ui_receiver::mode_info>("mode_info", 1);
+	pub[0] = node.advertise<ui_socket::gear_info>("gear_info", 1);
+	pub[1] = node.advertise<ui_socket::mode_info>("mode_info", 1);
 	node.param<int>("ui_receiver/port", port, DEFAULT_PORT);
 	fprintf(stderr, "listen port=%d\n", port);
 
@@ -114,13 +114,13 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 
 	switch(info[0]) {
 	case 1: { // GEAR
-		ui_receiver::gear_info msg;
+		ui_socket::gear_info msg;
 		msg.gear_num = info[1];
 		pub[0].publish(msg);
 		break;
 	}
 	case 2: { // MODE
-		ui_receiver::mode_info msg;
+		ui_socket::mode_info msg;
 		msg.mode_num = info[1];
 		pub[1].publish(msg);
 		break;
