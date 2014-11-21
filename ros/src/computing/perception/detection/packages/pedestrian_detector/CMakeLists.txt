@@ -69,3 +69,17 @@ target_link_libraries(pedestrian_dpm_gpu
   dpm
   dpm_gpu
 )
+
+include_directories(lib/fusion)
+add_library(fusion
+  lib/fusion/showboxes.cpp
+)
+
+## Declare a cpp executable
+add_executable(pedestrian_fusion
+  nodes/pedestrian_fusion/pedestrian_fusion.cpp
+)
+
+target_link_libraries(pedestrian_fusion
+  ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
+)
