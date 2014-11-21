@@ -68,7 +68,7 @@ extern void show_rects(IplImage *Image, int car_num, int *corner_point, int *typ
 #if 1 // AXE
 #include "dpm/ImageObjects.h"
 #include "scan_to_image/ScanImage.h"
-#include "car_fusion/FusedObjects.h"
+#include "car_detector/FusedObjects.h"
 #else
 #include "sensors_fusion/ObstaclePosition.h"
 #include "sensors_fusion/TransformedPointData.h"
@@ -188,7 +188,7 @@ void distance_measurementCallback(const sensors_fusion::TransformedPointData& tr
         }
     }
 #if 1 // AXE
-    car_fusion::FusedObjects fused_objects_msg;
+    car_detector::FusedObjects fused_objects_msg;
     fused_objects_msg.car_num = car_type_array.size();
     fused_objects_msg.car_type = car_type_array;
     fused_objects_msg.corner_point = corner_point_array;
@@ -280,11 +280,12 @@ int main(int argc, char **argv)
    */
 // %Tag(SUBSCRIBER)%
 #if 1 // AXE
-  ros::Subscriber obstacle_detection = n.subscribe("car_pos_xy", 1, obstacle_detectionCallback);
+  ros::Subscriber obstacle_detection = n.subscribe("pedestrian_pos_xy", 1, obstacle_detectionCallback);
   ros::Subscriber distance_measurement = n.subscribe("scan_image", 1, distance_measurementCallback);
-  ros::Subscriber image = n.subscribe("/image_raw", 1, imageCallback);
+  // XXX pedestrian_fusion should subscribe 'points_image' topic
+  //ros::Subscriber image = n.subscribe("/image_raw", 1, imageCallback);
   
-  fused_objects = n.advertise<car_fusion::FusedObjects>("car_pos_xyz", 10);
+  fused_objects = n.advertise<car_detector::FusedObjects>("pedestrian_pos_xyz", 10);
 #else
   ros::Subscriber obstacle_detection = n.subscribe("obstacle_position", 1, obstacle_detectionCallback);
   ros::Subscriber distance_measurement = n.subscribe("transformed_point_data", 1, distance_measurementCallback);
