@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ui_receiver)
+project(ui_socket)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -29,4 +29,4 @@ catkin_package(
 
 add_executable(ui_receiver nodes/ui_receiver/ui_receiver.cpp)
 target_link_libraries(ui_receiver ${catkin_LIBRARIES})
-add_dependencies(ui_receiver ui_receiver_generate_messages_cpp)
+add_dependencies(ui_receiver ui_socket_generate_messages_cpp)
