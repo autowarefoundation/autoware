@@ -1,5 +1,5 @@
 #include "calibrationtoolkit.h"
-
+#include "calibrationtoolkit_moc.cpp"
 
 CalibrationToolkitBase::CalibrationToolkitBase(QWidget * parent)
     : QWidget(parent)
