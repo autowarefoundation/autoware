@@ -6,7 +6,7 @@
   <!-- HOW TO RUN using rosrun:-->
   <!-- rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
   <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="nmea_navsat_launch">
-    <param name="_port" type="str" value="/dev/ttyUSB0" />
-    <param name="_baud" type="int" value="57600" />
+    <param name="port" value="/dev/ttyUSB0" />
+    <param name="baud" value="57600" />
   </node>
 </launch>
