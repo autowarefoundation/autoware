@@ -261,7 +261,7 @@ SDK の設定
 sudo sh install_flycapture.sh
 ```
 
-* 2. ユーザーを入力して許可のグループ追加されます
+* 2. 自分のユーザーを入力して許可のグループ追加されます
 
 フィール：/etc/default/grub 開けて 次のライン
              GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
