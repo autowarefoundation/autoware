@@ -255,7 +255,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 SDK の設定
 
 * 1. PointGreyウェブサイトからダウンロード（無料アカウントが必要）
-* http://vega.ertl.jp/~amonrroy/flycapture2-2.6.3.2-amd64-pkg.tgz
+* http://vega.ertl.jp/~amonrroy/flycapture2-2.6.3.4-amd64-pkg.tgz
 
 ```
 sudo sh install_flycapture.sh
