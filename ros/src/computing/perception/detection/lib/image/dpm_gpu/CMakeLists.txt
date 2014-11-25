@@ -36,7 +36,7 @@ include_directories(src)
 file(GLOB DPM_GPU_CXX_SOURCES "src/*.cpp")
 file(GLOB DPM_GPU_CC_SOURCES "src/*.cc")
 
-set(DPM_GPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(DPM_GPU_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/models_TTIC/")
 
 ## Declare a cpp library
 add_library(dpm_gpu
