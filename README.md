@@ -8,7 +8,7 @@ Open-source software for autonomous driving
     * See LICENSE
 ## Dependencies
 ```
-sudo apt-get install libnlopt-dev
+sudo apt-get install libnlopt-dev freeglut3-dev
 ```
 
 ## How to Build
