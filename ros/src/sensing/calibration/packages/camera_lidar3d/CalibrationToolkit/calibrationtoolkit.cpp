@@ -1,5 +1,5 @@
 #include "calibrationtoolkit.h"
-#include "calibrationtoolkit_moc.cpp"
+
 
 CalibrationToolkitBase::CalibrationToolkitBase(QWidget * parent)
     : QWidget(parent)
@@ -831,7 +831,12 @@ bool CalibrateCameraVelodyneChessboardBase::calibrateSensor()
     }
     cv::Mat NM=calibrationdata.chessboardnormals.t()*calibrationdata.velodynenormals;
 
-    calibrationdata.rotationresult=(NN.inv()*NM).t();
+    cv::Mat UNR=(NN.inv()*NM).t();
+    cv::Mat S,U,V;
+    cv::SVD::compute(UNR,S,U,V);
+    calibrationdata.rotationresult=U*V;
+    //calibrationdata.rotationresult=(NN.inv()*NM).t();
+
     cv::Mat tmpmat=cameraextrinsicmat(cv::Rect(0,0,3,3));
     calibrationdata.rotationresult.copyTo(tmpmat);
     QVector<double> euler=convertMatrix2Euler(calibrationdata.rotationresult);
@@ -985,6 +990,8 @@ bool CalibrateCameraVelodyneChessboardROS::refreshImage()
     {
         return 0;
     }
+    imagesize.height=msg->height;
+    imagesize.width=msg->width;
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
     void * data=(void *)(msg->data.data());
     if(QString::fromStdString(msg->encoding)=="rgb8")
