@@ -268,7 +268,7 @@ sudo sh install_flycapture.sh
 変わって＝＞ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore usbfs_memory_mb=1000"
 
 ```
-sudo updategrub
+sudo update-grub
 sudo modprobe usbcore usbfs_memory_mb=1000
 ```
 
