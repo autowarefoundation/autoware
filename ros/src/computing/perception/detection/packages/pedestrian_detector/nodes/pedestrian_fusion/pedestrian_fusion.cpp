@@ -250,7 +250,7 @@ int main(int argc, char **argv)
    * part of the ROS system.
    */
 #if 1 // AXE
-  ros::init(argc, argv, "fusion_detector");
+  ros::init(argc, argv, "pedestrian_fusion");
 #else
   ros::init(argc, argv, "obstacle_detection_and_distance_measurement");
 #endif
