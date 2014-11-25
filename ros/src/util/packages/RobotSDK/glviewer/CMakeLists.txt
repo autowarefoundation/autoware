@@ -36,9 +36,21 @@ include_directories(
   /usr/include/qt5/QtWidgets
 )
 
+add_custom_command(
+  OUTPUT glviewer_moc.cpp
+  COMMAND
+  "/usr/lib/x86_64-linux-gnu/qt5/bin/moc"
+  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/include/glviewer/glviewer_moc.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/glviewer/glviewer.h"
+)
+add_custom_target(glviewer_moc
+  DEPENDS glviewer_moc.cpp
+)
+
 add_library(glviewer
   GLViewer/glviewer.cpp
 )
+add_dependencies(glviewer glviewer_moc)
 
 #############
 ## Install ##
