@@ -1,4 +1,5 @@
 #include "rosinterface.h"
+#include "rosinterface_moc.cpp"
 
 ROSInterfaceBase::ROSInterfaceBase(QString NodeName, QString ROSMasterURI, QObject *parent)
     : QObject(parent)
