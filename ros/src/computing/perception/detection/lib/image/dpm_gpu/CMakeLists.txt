@@ -56,8 +56,19 @@ target_link_libraries(dpm_gpu
   cuda
   )
 
+execute_process(
+  COMMAND lspci
+  COMMAND grep "GTX 750"
+  OUTPUT_VARIABLE CUDA_GPU_TYPE
+)
+
+if("${CUDA_GPU_TYPE}" STREQUAL "")
+set(CUDA_ARCH "sm_30")
+else(${CUDA_GPU_TYPE})
+set(CUDA_ARCH "sm_50")
+endif(${CUDA_GPU_TYPE})
+
 set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
-set(CUDA_ARCH "sm_50") # Titan: sm_35 jetson: sm_32
 set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_custom_command(
