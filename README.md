@@ -17,7 +17,7 @@ sudo apt-get install libnlopt-dev freeglut3-dev
 
 ```
 $ cd $HOME
-$ git clone git@github.com:CPFL/Autoware.git
+$ git clone https://github.com/CPFL/Autoware.git
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
 $ cd ../
