@@ -64,9 +64,9 @@ execute_process(
 
 if("${CUDA_GPU_TYPE}" STREQUAL "")
 set(CUDA_ARCH "sm_30")
-else(${CUDA_GPU_TYPE})
+else()
 set(CUDA_ARCH "sm_50")
-endif(${CUDA_GPU_TYPE})
+endif()
 
 set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
 set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
