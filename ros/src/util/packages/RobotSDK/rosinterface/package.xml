@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosinterface</name>
+  <version>0.0.0</version>
+  <description>The rosinterface package</description>
+  <maintainer email="syohei@todo.todo">syohei</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>
