@@ -15,6 +15,7 @@
 #include "cxcore.h"
 //Add messi 2012/11/16
 #include "opencv2/legacy/legacy.hpp"
+#ifndef ROS
 #ifdef _DEBUG
     // case of Debug mode
     #pragma comment(lib,"cv200d.lib")
@@ -27,6 +28,7 @@
     #pragma comment(lib,"cxcore200.lib")
     #pragma comment(lib,"cvaux200.lib")
     #pragma comment(lib,"highgui200.lib")
+#endif
 #endif
 #include <stdio.h>
 
