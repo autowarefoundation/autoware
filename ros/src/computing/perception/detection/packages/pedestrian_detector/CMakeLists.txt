@@ -11,13 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
-## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  sensor_msgs
-  std_msgs
-)
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -29,7 +22,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  CATKIN_DEPENDS other_catkin_pkg
+   CATKIN_DEPENDS car_detector
 #  DEPENDS system_lib
 )
 

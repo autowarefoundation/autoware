@@ -29,6 +29,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#ifndef ROS
 #ifdef _DEBUG
 //Debugモードの場合
 #pragma comment(lib,"cv200d.lib")
@@ -41,6 +42,7 @@
 #pragma comment(lib,"cxcore200.lib")
 #pragma comment(lib,"cvaux200.lib")
 #pragma comment(lib,"highgui200.lib")
+#endif
 #endif
 //C++ library
 #include <stdio.h>
@@ -118,7 +120,7 @@ void distance_measurementCallback(const sensors_fusion::TransformedPointData& tr
     CvSeq *points;
     CvPoint pt;
     CvMemStorage *storage = cvCreateMemStorage (0);
-    int i, j;
+
 #if 1 // AXE
     if(IM_D_clone == NULL){
       return;
@@ -131,7 +133,7 @@ void distance_measurementCallback(const sensors_fusion::TransformedPointData& tr
     //画像に点群データをプロット
     points = cvCreateSeq (CV_SEQ_ELTYPE_POINT, sizeof (CvSeq), sizeof (CvPoint), storage);
 
-    for (i = 0; i < transformed_point_data.scan.ranges.size(); i++) {
+    for (std::size_t i = 0; i < transformed_point_data.scan.ranges.size(); i++) {
         if(0 > transformed_point_data.image_point_x[i] || transformed_point_data.image_point_x[i] > 639) {
             continue;
         }
@@ -149,14 +151,13 @@ void distance_measurementCallback(const sensors_fusion::TransformedPointData& tr
     std::vector<int> corner_point_array;
     std::vector<int> car_type_array;
 #endif
-	for(i = 0; i < car_num; i++)
+	for(int i = 0; i < car_num; i++)
 	{
         double obstacle_distance = -1;
         char distance_string[32];
-        CvScalar col = cvScalar(0.0, 0.0, 255.0);
 
         printf("%d, %d, %d, %d\n", corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
-        for(j = 0; j < transformed_point_data.scan.ranges.size(); j++) {
+        for(std::size_t j = 0; j < transformed_point_data.scan.ranges.size(); j++) {
             if(transformed_point_data.image_point_x[j] > corner_point[0+i*4] && transformed_point_data.image_point_x[j] < corner_point[2+i*4]) {
                 if(transformed_point_data.image_point_y[j] > corner_point[1+i*4] && transformed_point_data.image_point_y[j] < corner_point[3+i*4]) {
                     if(obstacle_distance > transformed_point_data.distance[j] || obstacle_distance == -1) {
@@ -177,7 +178,7 @@ void distance_measurementCallback(const sensors_fusion::TransformedPointData& tr
             cvPutText(IM_D_clone_plot, distance_string, cvPoint(corner_point[0+i*4] , corner_point[3+i*4]), &dfont, CV_RGB(255, 0, 0));
 #if 1 // AXE
 	    car_type_array.push_back(car_type[i]);
-	    for(j=0; j<4; j++){
+	    for(int j=0; j<4; j++){
 	      corner_point_array.push_back(corner_point[i+4+j]);
 	    }
 #endif
@@ -250,7 +251,7 @@ int main(int argc, char **argv)
    * part of the ROS system.
    */
 #if 1 // AXE
-  ros::init(argc, argv, "fusion_detector");
+  ros::init(argc, argv, "car_fusion");
 #else
   ros::init(argc, argv, "obstacle_detection_and_distance_measurement");
 #endif

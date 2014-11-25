@@ -13,6 +13,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "cxcore.h"
+#ifndef ROS
 #ifdef _DEBUG
     // case of Debug mode
     #pragma comment(lib,"cv200d.lib")
@@ -25,6 +26,7 @@
     #pragma comment(lib,"cxcore200.lib")
     #pragma comment(lib,"cvaux200.lib")
     #pragma comment(lib,"highgui200.lib")
+#endif
 #endif
 //C++ library
 #include <stdio.h>
@@ -92,12 +94,6 @@ CvScalar get_color(int coltype)
 //void show_rects(IplImage *Image,RESULT *CUR,double ratio)
 void show_rects(IplImage *Image,int car_num, int *corner_point, int *type, double ratio)
 {
-	//parameters
-	const int height = Image->height;
-	const int width = Image->width;
-	const int UpY = 0;
-	const int NEW_Y = Image->height;
-
 	for(int ii=0;ii<car_num;ii++)
 	{
 		//int *P = CUR->point+4*ii;
@@ -192,13 +188,10 @@ int *show_vector_im(IplImage *Image,RESULT *CUR,PINFO *P_I,double ratio)
 {
 	//parameters
 	const int height = Image->height;
-	const int width = Image->width;
 	const int UpY = height/10;
-	const int NEW_Y = height-UpY-height/10;
 	int *IM_V = (int *)calloc(CUR->num*4,sizeof(int));
 
 	CvScalar COL = cvScalar(0.0,0.0,255.0);	//color of particles
-	CvScalar WCOL = cvScalar(255.0,255.0,255.0);	//white
 	CvScalar GCOL = cvScalar(0.0,255.0,0.0);	//white
 	for(int ii=0;ii<CUR->num;ii++)
 	{
@@ -327,10 +320,7 @@ int *show_vector_im(IplImage *Image,RESULT *CUR,PINFO *P_I,double ratio)
 void show_vector_2D(IplImage *MAP,IplImage *IM,RESULT *CUR,PINFO *P_I,int *I_VEC,double ratio)
 {
 	//Image information
-	const int height = IM->height;
 	const int width = IM->width;
-	const int UpY = height/10;
-	const int NEW_Y = height-UpY-height/10;
 
 	double TAN_ANG = tan(VA/2/180*m_PI);
 
@@ -355,9 +345,7 @@ void show_vector_2D(IplImage *MAP,IplImage *IM,RESULT *CUR,PINFO *P_I,int *I_VEC
 		int Yimg = Y_OF_IM-(int)(Yratio*Y);
 		double D_RANGE = Y*TAN_ANG*2;
 		double Pi_AX=(double)I_VEC[4*kk];
-		double Pi_AY=(double)I_VEC[4*kk+1];
 		double Pi_BX=(double)I_VEC[4*kk+2];
-		double Pi_BY=(double)I_VEC[4*kk+3];
 		//printf("[%f %f %f %f]\n",Pi_AX,Pi_AX,Pi_AX,Pi_BY);
 
 		double A_RATIO = (Pi_BX-Pi_AX)/(double)width;
@@ -452,7 +440,6 @@ void show_likelihood(IplImage *Image,CvMat *LIKE,int *COORD)
 	double min_val=0,max_val=0;
 
 	cvMinMaxLoc(LIKE,&min_val,&max_val);
-	double ratio = 255.0/(max_val);
 
 	for(int ii=0;ii<LIKE->width;ii++)
 	{
@@ -474,7 +461,6 @@ void show_det_score(IplImage *Image,double *ac_score,RESULT *CUR)
 	IplImage *D_score = cvCreateImage(cvSize(Image->width,Image->height),Image->depth,3);
 	int Step = D_score->widthStep;
 	int chs = D_score->nChannels;
-	int LL = Image->width*Image->height;
 	double *TP = ac_score;
 
 	if(CUR->num>0)
