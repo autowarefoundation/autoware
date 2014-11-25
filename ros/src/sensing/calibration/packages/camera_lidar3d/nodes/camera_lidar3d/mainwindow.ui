@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>785</width>
+    <height>395</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="load">
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="save">
+        <property name="text">
+         <string>Save</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="refresh">
+        <property name="text">
+         <string>Refresh</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="grab">
+        <property name="text">
+         <string>Grab</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="calibrate">
+        <property name="text">
+         <string>Calibrate</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="Project">
+        <property name="text">
+         <string>Project</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget"/>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
