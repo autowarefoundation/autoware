@@ -4,6 +4,7 @@ project(camera_lidar2d)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  sensor_msgs
   message_generation
   cv_bridge
   image_transport
@@ -12,12 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(OpenCV REQUIRED)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  sensor_msgs
-)
 
 catkin_package(
 #  INCLUDE_DIRS include
