@@ -6,6 +6,10 @@ Open-source software for autonomous driving
 
 * New BSD License
     * See LICENSE
+## Dependencies
+```
+sudo apt-get install libnlopt-dev
+```
 
 ## How to Build
 
