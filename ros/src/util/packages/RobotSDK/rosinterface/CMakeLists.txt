@@ -27,15 +27,16 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include/rosinterface
-  /usr/include/qt4
-  /usr/include/qt4/Qt/
-  /usr/include/qt4/QtCore
+  /usr/include/qt5
+  /usr/include/qt5/QtCore
+  /usr/include/qt5/QtGui
+  /usr/include/qt5/QtWidgets
 )
 
 add_custom_command(
   OUTPUT rosinterface_moc.cpp
   COMMAND
-  "moc"
+  "/usr/lib/x86_64-linux-gnu/qt5/bin/moc"
   "-o" "${CMAKE_CURRENT_SOURCE_DIR}/ROSInterface/rosinterface_moc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/rosinterface/rosinterface.h"
 )
@@ -44,7 +45,16 @@ add_custom_target(rosinterface_moc DEPENDS rosinterface_moc.cpp)
 ## Declare a cpp library
 add_library(rosinterface
   ROSInterface/rosinterface.cpp
-  ROSInterface/rosinterface_moc.cpp
+)
+
+target_link_libraries(rosinterface
+  ${catkin_LIBRARIES}
+  Qt5Core
+  Qt5Gui
+  Qt5Widgets
+  QtCore
+  QtGui
+  QtWebKit
 )
 
 ## Add cmake target dependencies of the executable/library

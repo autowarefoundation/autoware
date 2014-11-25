@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
 )
-find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui)
 find_package(OpenCV REQUIRED)
 
 ################################################
@@ -39,19 +38,27 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  /usr/include/qt5
+  /usr/include/qt5/QtCore
+  /usr/include/qt5/QtGui
+  /usr/include/qt5/QtWidgets
 )
-include(${QT_USE_FILE})
 
 ## Declare a cpp executable
 add_executable(points_to_image nodes/points_to_image/main.cpp)
-
-## Add cmake target dependencies of the executable/library
-#add_dependencies(points_to_image points_to_image_generate_messages_cpp)
+set_target_properties(points_to_image
+  PROPERTIES COMPILE_FLAGS "-fPIC"
+)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(points_to_image
   ${catkin_LIBRARIES}
-  ${QT_LIBRARIES}
   ${OpenCV_LIBS}
   rosinterface
+  Qt5Core
+  Qt5Gui
+  Qt5Widgets
+  QtCore
+  QtGui
+  QtWebKit
 )
