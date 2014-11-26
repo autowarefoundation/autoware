@@ -52,9 +52,6 @@ target_link_libraries(rosinterface
   Qt5Core
   Qt5Gui
   Qt5Widgets
-  QtCore
-  QtGui
-  QtWebKit
 )
 
 ## Add cmake target dependencies of the executable/library

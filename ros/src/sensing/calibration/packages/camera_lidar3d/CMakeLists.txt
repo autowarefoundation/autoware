@@ -134,9 +134,5 @@ target_link_libraries(camera_lidar3d_offline_calib
   Qt5Gui
   Qt5OpenGL
   Qt5Widgets
-  QtCore
-  QtGui
-  QtOpenGL
-  QtWebKit
   nlopt
 )
