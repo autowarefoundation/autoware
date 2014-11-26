@@ -58,7 +58,4 @@ target_link_libraries(points_to_image
   Qt5Core
   Qt5Gui
   Qt5Widgets
-  QtCore
-  QtGui
-  QtWebKit
 )
