@@ -30,10 +30,11 @@ catkin_package(
 ## Build ##
 ###########
 
+if(EXISTS "/usr/include/flycapture")
 include_directories(/usr/include/flycapture)
-
 add_executable(grasshopper3 nodes/grasshopper3/grasshopper3.cpp)
 
 target_link_libraries(grasshopper3
    ${catkin_LIBRARIES} flycapture
 )
+endif()
