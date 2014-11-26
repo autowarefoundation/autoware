@@ -102,19 +102,24 @@ public class StartActivity extends Activity implements OnClickListener {
 	public void onClick(View v) {
 		// push button
 		if(v == startButton){
-			// show the message
-			Toast.makeText(this, "Start Push!", Toast.LENGTH_LONG).show();
-
-			// pass intent to GhostEyeActivity
-			Intent intent = new Intent(getApplication(), SoundManagementActivity.class);
-
 			// address box
 			addressBox = (EditText) findViewById(R.id.addressBox);
 			address = addressBox.getText().toString();
+			if (address == null || address.length() == 0) {
+				Toast.makeText(this, "Please input address", Toast.LENGTH_LONG).show();
+				return;
+			}
 
 			// port number box
 			portNumberBox = (EditText) findViewById(R.id.portNumberBox);
 			port = portNumberBox.getText().toString();
+			if (port == null || port.length() == 0) {
+				Toast.makeText(this, "Please input port", Toast.LENGTH_LONG).show();
+				return;
+			}
+
+			// pass intent to GhostEyeActivity
+			Intent intent = new Intent(getApplication(), SoundManagementActivity.class);
 
 			// address and port
 			intent.putExtra("address", address);

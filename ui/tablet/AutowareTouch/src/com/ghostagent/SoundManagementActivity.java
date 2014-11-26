@@ -8,11 +8,13 @@ import com.design.DrawRightView;
 import com.ghostagent.R;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 public class SoundManagementActivity extends Activity implements OnClickListener {
 	/**
@@ -64,11 +66,13 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		// get parameters
 		address = getIntent().getExtras().getString("address");
 		if (address == null || address.length() == 0) {
+			Toast.makeText(this, "Bad address", Toast.LENGTH_LONG).show();
 			Log.v("Log", "bad address");
 			finish();
 		}
 		String portStr = getIntent().getExtras().getString("port");
 		if (portStr == null || portStr.length() == 0) {
+			Toast.makeText(this, "Bad port", Toast.LENGTH_LONG).show();
 			Log.v("Log", "bad port");
 			finish();
 		}
@@ -77,7 +81,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		//connect server
 		if (SoundManagementNative.connect(address, port) < 0) {
-			// go back to StartActivity
+			Toast.makeText(this, "Cannot connect", Toast.LENGTH_LONG).show();
 			Log.w("Log", "cannot connect");
 			finish();
 		}
@@ -202,7 +206,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 		else if(v == normalCruise){
 			Log.v("Button", "normalCruise");
-			SoundManagementNative.send(2, 1); // MODE:1
+			SoundManagementNative.send(2, 0); // MODE:0
 		}
 		else if(v == pursuit){
 			Log.v("Button", "pursuit");
