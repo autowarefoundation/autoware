@@ -37,4 +37,6 @@ add_executable(grasshopper3 nodes/grasshopper3/grasshopper3.cpp)
 target_link_libraries(grasshopper3
    ${catkin_LIBRARIES} flycapture
 )
+else()
+message("'flycapture2' is not installed. 'grasshopper3' is not built.")
 endif()
