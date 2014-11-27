@@ -34,7 +34,6 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CX
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
-include_directories(/usr/local/cuda/include)
 
 add_executable(pedestrian_dpm
   nodes/pedestrian_dpm/pedestrian_dpm.cpp
@@ -45,6 +44,9 @@ target_link_libraries(pedestrian_dpm
   ${OpenCV_LIBS}
   dpm
 )
+
+if(EXISTS "/usr/local/cuda")
+include_directories(/usr/local/cuda/include)
 
 add_executable(pedestrian_dpm_gpu
   nodes/pedestrian_dpm_gpu/pedestrian_dpm_gpu.cpp
@@ -57,11 +59,12 @@ SET_TARGET_PROPERTIES(pedestrian_dpm_gpu
 
 target_link_libraries(pedestrian_dpm_gpu
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
   cuda
-  dpm
   dpm_gpu
 )
+else()
+message("CUDA is not installed. 'pedestrian_dpm_gpu' is not built.")
+endif()
 
 include_directories(lib/fusion)
 add_library(fusion

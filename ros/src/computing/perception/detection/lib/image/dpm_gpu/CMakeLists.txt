@@ -28,6 +28,7 @@ catkin_package(
 SET(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_C_FLAGS}")
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
+if(EXISTS "/usr/local/cuda")
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 include_directories(/usr/local/cuda/include)
@@ -83,3 +84,7 @@ add_custom_command(
 
 add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
 add_dependencies(dpm_gpu cuda_binary)
+
+else()
+message("CUDA is not installed. 'libdpm_gpu' is not built.")
+endif()
