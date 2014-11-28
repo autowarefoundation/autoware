@@ -198,9 +198,9 @@ int main(int argc, char **argv)
 		part_name = STR(DPM_GPU_ROOT) "car_part.csv";
 	} else if (detection_type == "pedestrian") {
 		published_topic = "pedestrian_pos_xy";
-		com_name = STR(DPM_GPU_ROOT)  "pedestrian_comp.csv";
-		root_name = STR(DPM_GPU_ROOT) "pedestrian_root.csv";
-		part_name = STR(DPM_GPU_ROOT) "pedestrian_part.csv";
+		com_name = STR(DPM_GPU_ROOT)  "person_comp.csv";
+		root_name = STR(DPM_GPU_ROOT) "person_root.csv";
+		part_name = STR(DPM_GPU_ROOT) "person_part.csv";
 	} else {
 		std::cerr << "Invalid detection type: "
 			  << detection_type
