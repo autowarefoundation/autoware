@@ -256,7 +256,7 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ライブラリの依存関係
 
 ```
- $  sudo apt-get install libraw1394-11 libgtk2.0-0 libgtkmm-2.4-dev libglademm-2.4­dev libgtkglextmm-x11-1.2-dev libusb-1.0-0
+ $  sudo apt-get install libraw1394-11 libgtk2.0-0 libgtkmm-2.4-dev libglademm-2.4-dev libgtkglextmm-x11-1.2-dev libusb-1.0-0
 
 ```
 SDK の設定
