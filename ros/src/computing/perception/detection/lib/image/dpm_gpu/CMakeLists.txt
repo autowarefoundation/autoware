@@ -55,27 +55,37 @@ target_link_libraries(dpm_gpu
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   cuda
-  )
-
-execute_process(
-  COMMAND lspci
-  COMMAND grep "GTX 750"
-  OUTPUT_VARIABLE CUDA_GPU_TYPE
 )
 
-if("${CUDA_GPU_TYPE}" STREQUAL "")
-set(CUDA_ARCH "sm_30")
-else()
-set(CUDA_ARCH "sm_50")
+set(CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+set(CUDA_CAPABILITY_VERSION_CHECKER
+  "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
+)
+
+execute_process(
+  COMMAND
+  ${CUDA_COMPILER}
+  "-o" ${CUDA_CAPABILITY_VERSION_CHECKER}
+  "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
+)
+
+execute_process(
+  COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+  OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if("${CUDA_CAPABILITY_VERSION}" STREQUAL "")
+message(FATAL_ERROR "Error: Missing CUDA capability version")
 endif()
 
-set(CUDA_REG_CONF_OPTION "-Xptxas -v --maxrregcount 32")
+set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
 set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_custom_command(
   OUTPUT GPU_function.cubin
   COMMAND
-  "/usr/local/cuda/bin/nvcc" "-arch=${CUDA_ARCH}"
+  ${CUDA_COMPILER} "-arch=${CUDA_ARCH}"
   "-o" "${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin"
   "-cubin" "-Xptxas" "-v" "--maxrregcount" "32" "-I${CUDA_FILE_PATH}"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/GPU_function.cu"
