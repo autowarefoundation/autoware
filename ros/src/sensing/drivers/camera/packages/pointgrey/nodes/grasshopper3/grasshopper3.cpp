@@ -47,12 +47,18 @@ int main(int argc, char **argv)
     for (unsigned int i=0; i< numCameras; i++)
     {
     	char topic_name[512];
-    	sprintf( topic_name, "image_raw%d",
-    					i);
+    	if (numCameras>1)
+			sprintf( topic_name, "image_raw%d",
+							i);
+    	else
+    		sprintf( topic_name, "image_raw");
+    		
     	pub[i]= n.advertise<sensor_msgs::Image>(topic_name, 100);//publish as many cameras as we have
     }
 
     startCapture(numCameras, ppCameras);
+    
+    printf( "Capturing from %d cameras...\n", numCameras );
 
     unsigned int count=0;
     while(ros::ok())
