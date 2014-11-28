@@ -75,11 +75,12 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if("${CUDA_CAPABILITY_VERSION}" STREQUAL "")
-message(FATAL_ERROR "Error: Missing CUDA capability version")
+if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+else()
+set(CUDA_ARCH "sm_30")
 endif()
 
-set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
 set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_custom_command(
