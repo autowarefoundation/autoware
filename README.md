@@ -105,8 +105,9 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 #### camera.yaml のデフォルトのパス
 
-~/.ros/camera_info/camera.yaml 
-
+```
+~/.ros/camera_info/camera.yaml
+```
 
 #### 別の場所にある param.yaml を使用し、別の場所に camera.yaml を出力する場合
 
@@ -143,8 +144,9 @@ LRF画面 CALIBRATE(click) SAVE(click)
 
 #### camera.yaml のデフォルトのパス
 
-~/.ros/camera_info/camera.yaml 
-
+```
+~/.ros/camera_info/camera.yaml
+```
 
 #### manual.yaml のデフォルトのパス
 
