@@ -6,7 +6,13 @@ Open-source software for autonomous driving
 
 * New BSD License
     * See LICENSE
-    
+
+## Requirements
+
+- ROS indigo(Ubuntu 14.04)
+- OpenCV 2.4.8 or higher
+- CUDA(Optional)
+- FlyCapture2(optional)
 
 ## Dependencies
 
