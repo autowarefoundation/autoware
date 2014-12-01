@@ -24,7 +24,7 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	cout << "size:"<<cars.size()<<endl;
 	for(int i=0; i<cars.size();i++)
 	{
-		cout << "cars:" << cars[i] <<endl;
+		
 		cvRectangle( &frame, 
 				cvPoint(cars[i].x, cars[i].y),
 				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
@@ -52,7 +52,7 @@ void rect_updater_callback(dpm::ImageObjects image_objects_msg)
 		cars.push_back(tmp);
 		
 	}
-	cout << "cars:"<< cars.size() <<endl;
+	
 }
 
 int main(int argc, char **argv)
