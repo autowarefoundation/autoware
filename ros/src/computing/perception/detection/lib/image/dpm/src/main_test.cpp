@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
 {
 #if defined(ROS) // AXE
     ros::NodeHandle n;
-    ros::Subscriber sub = n.subscribe("/image_hog", 1, image_objectsCallback);
+    ros::Subscriber sub = n.subscribe("/image_raw", 1, image_objectsCallback);
 
     std::string published_node;
     if (detection_type == "car") {

@@ -138,8 +138,8 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
         car_type_array[i] = CUR->type[i];
         corner_point_array[0+i*4] = *(CUR->OR_point + (i*4));
         corner_point_array[1+i*4] = *(CUR->OR_point + (1+i*4));
-        corner_point_array[2+i*4] = *(CUR->OR_point + (2+i*4));
-        corner_point_array[3+i*4] = *(CUR->OR_point + (3+i*4));
+        corner_point_array[2+i*4] = *(CUR->OR_point + (2+i*4)-(i*4));
+        corner_point_array[3+i*4] = *(CUR->OR_point + (3+i*4)-(1+i*4));
     }
 
     /* store data which will be published */
@@ -270,7 +270,8 @@ int main(int argc, char **argv)
    * on a given topic.  This invokes a call to the ROS
    * master node, which keeps a registry of who is publishing and who
    * is subscribing.  Messages are passed to a callback function, here
-   * called chatterCallback.  subscribe() returns a Subscriber object that you
+   * called chatterCallback.  
+subscribe() returns a Subscriber object that you
    * must hold on to until you want to unsubscribe.  When all copies of the Subscriber
    * object go out of scope, this callback will automatically be unsubscribed from
    * this topic.
@@ -281,7 +282,7 @@ int main(int argc, char **argv)
    * away the oldest ones.
    */
 // %Tag(SUBSCRIBER)%
-  ros::Subscriber sub = n.subscribe("/image_hog", 1, obstacle_detectionCallback);
+  ros::Subscriber sub = n.subscribe("/image_raw", 1, obstacle_detectionCallback);
 #if 1 // AXE
   image_objects = n.advertise<dpm::ImageObjects>(published_topic, 1);
 #else
