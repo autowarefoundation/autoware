@@ -13,6 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
+            android:gravity="left"
             android:orientation="vertical" >
 
             <ImageButton
@@ -56,6 +57,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="0.1"
+            android:gravity="center"
             android:orientation="vertical" >
 
             <LinearLayout
@@ -115,6 +117,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="0.2"
+            android:gravity="right"
             android:orientation="vertical" >
 
             <ImageButton
