@@ -138,8 +138,8 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
         car_type_array[i] = CUR->type[i];
         corner_point_array[0+i*4] = *(CUR->OR_point + (i*4));
         corner_point_array[1+i*4] = *(CUR->OR_point + (1+i*4));
-        corner_point_array[2+i*4] = *(CUR->OR_point + (2+i*4)-(i*4));
-        corner_point_array[3+i*4] = *(CUR->OR_point + (3+i*4)-(1+i*4));
+        corner_point_array[2+i*4] = *(CUR->OR_point + (2+i*4)) - *(CUR->OR_point + (i*4));//updated
+        corner_point_array[3+i*4] = *(CUR->OR_point + (3+i*4)) - *(CUR->OR_point + (1+i*4));//updated
     }
 
     /* store data which will be published */
