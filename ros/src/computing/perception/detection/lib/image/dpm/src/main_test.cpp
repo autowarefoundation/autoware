@@ -92,8 +92,8 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
         car_type_array[i] = od.classID; // ?
         corner_point_array[0+i*4] = od.rect.x;
         corner_point_array[1+i*4] = od.rect.y;
-        corner_point_array[2+i*4] = od.rect.x + od.rect.width;
-        corner_point_array[3+i*4] = od.rect.y + od.rect.height;
+        corner_point_array[2+i*4] = od.rect.width;//updated to show width instead of 2nd point
+        corner_point_array[3+i*4] = od.rect.height;//updated to show width instead of 2nd point
 #endif
     }
     // put text over the all rectangles
