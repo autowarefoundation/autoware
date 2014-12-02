@@ -176,20 +176,20 @@ void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** p
 		}
 		// Set all cameras to a specific mode and frame rate so they
 		// can be synchronized
-		error = ppCameras[i]->SetVideoModeAndFrameRate(
-				VIDEOMODE_1600x1200RGB,
-				FRAMERATE_30 );
-		if (error != PGRERROR_OK)
-		{
-			PrintError( error );
-			printf(
-					"Error starting cameras. \n"
-					"This example requires cameras to be able to set to 1600x1200 RGB at 30fps. \n"
-					"If your camera does not support this mode, please edit the source code and recompile the application. \n"
-					"Press Enter to exit. \n");
-			getchar();
-			exit(-1);
-		}
+		//error = ppCameras[i]->SetVideoModeAndFrameRate(
+		//		VIDEOMODE_1600x1200RGB,
+		//		FRAMERATE_30 );
+		//if (error != PGRERROR_OK)
+		//{
+	//		PrintError( error );
+	//		printf(
+	//				"Error starting cameras. \n"
+	//				"This example requires cameras to be able to set to 1600x1200 RGB at 30fps. \n"
+	//				"If your camera does not support this mode, please edit the source code and recompile the application. \n"
+	//				"Press Enter to exit. \n");
+	//		getchar();
+	//		exit(-1);
+	//	}
 
 		// Get the camera information
 		CameraInfo camInfo;
