@@ -164,10 +164,13 @@ int main(int argc, char* argv[])
     ros::Subscriber sub = n.subscribe("/image_raw", 1, image_objectsCallback);
 
     std::string published_node;
+    std::string model_file(STR(OPENCV_MODEL_DIR));
     if (detection_type == "car") {
         published_node = "car_pos_xy";
+	model_file.append("car.xml");
     } else if (detection_type == "pedestrian") {
 	published_node = "pedestrian_pos_xy";
+	model_file.append("person.xml");
     } else {
         std::cerr << "Invalid detection type: " << detection_type
                   << std::endl;
@@ -219,7 +222,7 @@ int main(int argc, char* argv[])
 
     images_filenames.clear();models_filenames.clear();
 #if ROS //AXE
-    models_filenames.push_back( STR(OPENCV_MODEL_FILE) );
+    models_filenames.push_back( model_file );
 #else
     images_filenames.push_back( std::string(argv[1]) );
     models_filenames.push_back( std::string(argv[2]) );
@@ -228,7 +231,7 @@ int main(int argc, char* argv[])
     LatentSvmDetector detector( models_filenames );
     if( detector.empty() )
     {
-        cout << "Models can't be loaded" << endl;
+        cout << "Models can't be loaded: " << model_file << endl;
         fclose(f);
         exit(-1);
     }
