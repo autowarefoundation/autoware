@@ -11,7 +11,7 @@ Initial version 2014-11-14
 #include <sys/time.h>
 #include <stdio.h>
 
-#define FPS 30//CURRENT SETTING 30FPS (initializeCamera)
+#define FPS 15
 
 using namespace FlyCapture2;
 
