@@ -99,6 +99,23 @@ public class StartActivity extends Activity implements OnClickListener {
 		return true;
 	}
 
+	private boolean validatePortNumer(final String portString) {
+		int port;
+		boolean isValid;
+
+		try {
+			port = Integer.parseInt(portString);
+			if (port >= 0 && port <= 65535)
+				isValid = true;
+			else
+				isValid = false;
+		} catch (NumberFormatException e) {
+			isValid = false;
+		}
+
+		return isValid;
+	}
+
 	public void onClick(View v) {
 		// push button
 		if(v == startButton){
@@ -115,6 +132,11 @@ public class StartActivity extends Activity implements OnClickListener {
 			port = portNumberBox.getText().toString();
 			if (port == null || port.length() == 0) {
 				Toast.makeText(this, "Please input port", Toast.LENGTH_LONG).show();
+				return;
+			}
+
+			if (!validatePortNumer(port)) {
+				Toast.makeText(this, "Please input port less than equal 65535", Toast.LENGTH_LONG).show();
 				return;
 			}
 
