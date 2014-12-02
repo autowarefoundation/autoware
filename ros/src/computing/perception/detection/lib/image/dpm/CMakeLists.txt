@@ -48,6 +48,10 @@ add_library(dpm
   ${DPM_OCV_CXX_SOURCES}
 )
 
+set_target_properties(dpm PROPERTIES
+  COMPILE_FLAGS "-DOPENCV_MODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/models_VOC2007/"
+)
+
 target_link_libraries(dpm
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
