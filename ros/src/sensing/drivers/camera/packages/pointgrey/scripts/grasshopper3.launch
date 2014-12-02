@@ -1,11 +1,9 @@
-
 <launch>
 
 	<!-- declare arguments with default values -->
 	<arg name="FPS" default="15"/>
 
-	<node pkg="pointgrey" type="grasshopper3" name="velodyne_nodelet"
-		args="load velodyne_pointcloud/CloudNodelet velodyne_nodelet_manager">
+	<node pkg="pointgrey" type="grasshopper3" name="grasshopper">
 		<param name="fps" value="$(arg FPS)"/>
 	</node>
 </launch>
