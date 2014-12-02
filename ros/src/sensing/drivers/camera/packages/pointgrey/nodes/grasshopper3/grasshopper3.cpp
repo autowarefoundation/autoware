@@ -11,7 +11,6 @@ Initial version 2014-11-14
 #include <sys/time.h>
 #include <stdio.h>
 
-#define FPS 15
 
 using namespace FlyCapture2;
 
@@ -22,12 +21,15 @@ void startCapture(unsigned int numCameras, Camera** ppCameras);
 void PrintError( Error error );
 void PrintCameraInfo( CameraInfo* pCamInfo );
 
+
+
 int main(int argc, char **argv)
 {
-	BusManager busMgr;
+    BusManager busMgr;
     Error error;
 
     unsigned int numCameras;
+    double FPS;
 
     getNumCameras(&busMgr, &numCameras);
     Camera** ppCameras = new Camera*[numCameras];
@@ -39,14 +41,31 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "grasshopper3");
     ros::NodeHandle n;
+    ros::NodeHandle private_nh("~");
 
     ros::Publisher pub[numCameras];
+
+    
+    if (private_nh.getParam("fps", FPS))
+    {
+	char text[50];
+	sprintf(text, "FPS set to %.2f" ,FPS);
+        ROS_INFO(text);
+    }
+    else
+    {
+        
+        FPS=15.0;
+	char text[50];
+	sprintf(text, "No param received, defaulting to %.2f" ,FPS);
+        ROS_INFO(text);
+    }
 
     ros::Rate loop_rate(FPS); // Hz
 
     for (unsigned int i=0; i< numCameras; i++)
     {
-    	char topic_name[512];
+    	char topic_name[50];
     	if (numCameras>1)
 			sprintf( topic_name, "image_raw%d",
 							i);
