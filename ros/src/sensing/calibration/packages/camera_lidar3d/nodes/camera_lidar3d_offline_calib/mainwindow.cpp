@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    CalibrateCameraVelodyneChessboardROS * calibration=new CalibrateCameraVelodyneChessboardROS("/camera/image_raw",1000,10,"/velodyne_points",1000,10,30,cv::Size2f(0.108,0.108),cv::Size2i(8,6));
+    CalibrateCameraVelodyneChessboardROS * calibration=new CalibrateCameraVelodyneChessboardROS("/image_raw",1000,10,"/velodyne_points",1000,10,30,cv::Size2f(0.108,0.108),cv::Size2i(8,6));
     ui->tabWidget->addTab(calibration,"Calibration");
 
     connect(ui->grab,SIGNAL(clicked()),calibration,SLOT(grabCalibDataSlot()));
