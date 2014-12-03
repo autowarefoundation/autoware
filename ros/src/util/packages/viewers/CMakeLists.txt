@@ -36,3 +36,4 @@ target_link_libraries(image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
+add_dependencies(image_viewer dpm_generate_messages_cpp)
