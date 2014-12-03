@@ -6,6 +6,7 @@
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>dpm</build_depend>
   <export>
   </export>
 </package>
