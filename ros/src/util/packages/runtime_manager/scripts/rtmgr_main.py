@@ -14,6 +14,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.bitmap_1 = wx.StaticBitmap(self.notebook_1_pane_4, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
 		self.bitmap_2 = wx.StaticBitmap(self.notebook_1_pane_4, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
 
+		self.tree_ctrl_3.Destroy()
+
 		items = [
 		    [ 'contorl' ],
 		    [ 'perception', [
