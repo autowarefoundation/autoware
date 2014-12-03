@@ -21,7 +21,10 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-include_directories(/usr/include/libxml2)
+include_directories(
+  /usr/include/libxml2
+  ${OpenCV_INCLUDE_DIRS}
+)
 
 add_executable(camera_lidar2d_offline_calib nodes/camera_lidar2d_offline_calib/camera_lidar2d_offline_calib.cpp)
 

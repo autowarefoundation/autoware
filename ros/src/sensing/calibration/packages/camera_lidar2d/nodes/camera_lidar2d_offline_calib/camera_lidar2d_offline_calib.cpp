@@ -28,7 +28,7 @@
 // %Tag(FULLTEXT)%
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "cxcore.h"
+#include <opencv/cxcore.h>
 //C++ library
 #include <stdio.h>
 #include <stdlib.h>
