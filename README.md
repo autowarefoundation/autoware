@@ -17,7 +17,7 @@ Open-source software for autonomous driving
 ## Dependencies
 
 ```
-sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev
+sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev
 ```
 
 ## How to Build
