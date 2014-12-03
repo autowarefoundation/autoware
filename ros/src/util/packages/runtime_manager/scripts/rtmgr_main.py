@@ -10,9 +10,20 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 
+		tab_nodes = self.notebook_1_pane_3
+		tab_version = self.notebook_1_pane_5
+
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
-		self.bitmap_1 = wx.StaticBitmap(self.notebook_1_pane_4, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
-		self.bitmap_2 = wx.StaticBitmap(self.notebook_1_pane_4, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
+		self.bitmap_1 = wx.StaticBitmap(tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
+		self.bitmap_2 = wx.StaticBitmap(tab_version, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
+
+		self.tree_ctrl_1.Destroy()
+		items = []
+		self.tree_ctrl_1 = self.create_tree(tab_nodes, items, 'Actuation')
+
+		self.tree_ctrl_2.Destroy()
+		items = []
+		self.tree_ctrl_2 = self.create_tree(tab_nodes, items, 'Sensing')
 
 		self.tree_ctrl_3.Destroy()
 
@@ -26,17 +37,17 @@ class MyFrame(rtmgr.MyFrame):
 			    [ 'pedestrian_detecto', False ] ] ] ] ],
 		    [ 'planning' ] ]
 
-		self.tree_ctrl_3 = self.create_tree(self.notebook_1_pane_3, items)
+		self.tree_ctrl_3 = self.create_tree(tab_nodes, items, 'Computing')
 
 		rtmgr.MyFrame.__do_layout(self);
 
 	def __do_layout(self):
 		pass
 
-	def create_tree(self, parent, items):
+	def create_tree(self, parent, items, root_name):
 		style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 		tree = wx.lib.agw.customtreectrl.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
-		root = tree.AddRoot('root')
+		root = tree.AddRoot(root_name)
 		self.append_items(tree, root, items)
 		tree.ExpandAll()
 		return tree
