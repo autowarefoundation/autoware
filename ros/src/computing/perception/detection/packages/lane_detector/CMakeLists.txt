@@ -38,7 +38,10 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(nodes/lane_detector)
+include_directories(
+  nodes/lane_detector
+  ${OpenCV_INCLUDE_DIRS}
+)
 
 add_executable(lane_detector
   nodes/lane_detector/line_detection.cpp
