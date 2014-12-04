@@ -341,7 +341,7 @@ sudo sh install_flycapture.sh
 
 ```
 sudo update-grub
-sudo modprobe usbcore usbfs_memory_mb=1000
+sudo modprobe usbcore.usbfs_memory_mb=1000
 ```
 
 * 3. 再起動
