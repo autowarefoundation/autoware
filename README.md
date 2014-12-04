@@ -9,15 +9,62 @@ Open-source software for autonomous driving
 
 ## Requirements
 
-- ROS indigo(Ubuntu 14.04)
+- ROS indigo(Ubuntu 13.10, 14.04) or ROS hydro(Ubuntu 13.04)
 - OpenCV 2.4.8 or higher
+- Qt 5.2.1 or higher
 - CUDA(Optional)
 - FlyCapture2(optional)
 
-## Dependencies
+### Install dependencies for Ubuntu 14.04 indigo
 
 ```
 sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev
+```
+
+### Install dependencies for Ubuntu 13.10 indigo and Ubuntu 13.04 hydro
+
+```
+sudo apt-get install libnlopt-dev freeglut3-dev
+```
+
+You cannot build **Autoware/ros** source code with those OpenCV and Qt5 package,
+because they are too old. So you have to install newer OpenCV and Qt5.
+
+#### Install OpenCV
+
+You can download source code from [here](http://sourceforge.net/projects/opencvlibrary/).
+
+```
+% unzip opencv-2.4.8.zip
+% cd opencv-2.4.8
+% cmake .
+% make
+% make install
+```
+
+#### Install Qt 5
+
+Document is [here](http://qt-project.org/wiki/Building_Qt_5_from_Git).
+
+First you have to install Qt5 dependencies.
+
+```
+% sudo apt-get build-dep qt5-default
+% sudo apt-get install build-essential perl python git
+% sudo apt-get install "^libxcb.*" libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev
+% sudo apt-get install flex bison gperf libicu-dev libxslt-dev ruby
+% sudo apt-get install libssl-dev libxcursor-dev libxcomposite-dev libxdamage-dev libxrandr-dev libfontconfig1-dev
+% sudo apt-get install libasound2-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev
+```
+
+```
+% git clone https://git.gitorious.org/qt/qt5.git qt5
+% cd qt5
+% git checkout v5.2.1 # <- Same as Ubuntu 14.04 'qtbase5-dev'
+% perl init-repository --no-webkit # <- webkit is very too large
+% make -j # You may take a few hours
+% make install
+% sudo cp -r qtbase /usr/local/qtbase5
 ```
 
 ## How to Build
