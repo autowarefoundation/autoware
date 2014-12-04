@@ -260,7 +260,9 @@ LRF画面 CALIBRATE(click) SAVE(click)
 ```
 
 ### FlyCapture SDK 設定方法
+
 PointGreyによると推奨されたUSB3 アダプター:
+
 *Fresco FL1100EX
 *Renesas (NEC) µPD720202
 *Renesas (NEC) µPD720201
@@ -268,6 +270,7 @@ PointGreyによると推奨されたUSB3 アダプター:
 *Fresco FL1009
 *AMD
 *Intel
+
 それ以外ボードスピードが足りないかもしれない。
 動かない場合,画像の解像度とフレーム数を下げて試してみて下さい。
 
