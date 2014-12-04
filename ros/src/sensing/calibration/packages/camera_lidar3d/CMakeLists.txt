@@ -32,6 +32,17 @@ catkin_package(
 ## Build ##
 ###########
 
+if(EXISTS /usr/local/qtbase5)
+# Self install version
+set(Qt5INCLUDE "/usr/local/qtbase5/include")
+set(Qt5BIN "/usr/local/qtbase5/bin")
+link_directories("/usr/local/qtbase5/lib")
+else()
+# Ubuntu Qt5 package
+set(Qt5INCLUDE "/usr/include/qt5")
+set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
+endif()
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
@@ -39,17 +50,17 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   CalibrationToolkit
   nodes/camera_lidar3d
-  /usr/include/qt5
-  /usr/include/qt5/QtCore
-  /usr/include/qt5/QtGui
-  /usr/include/qt5/QtOpenGL
-  /usr/include/qt5/QtWidgets
+  ${Qt5INCLUDE}
+  ${Qt5INCLUDE}/QtCore
+  ${Qt5INCLUDE}/QtGui
+  ${Qt5INCLUDE}/QtOpenGL
+  ${Qt5INCLUDE}/QtWidgets
 )
 
 add_custom_command(
   OUTPUT calibrationtoolkit_moc.cpp
   COMMAND
-  "/usr/lib/x86_64-linux-gnu/qt5/bin/moc"
+  ${Qt5BIN}/moc
   "-o" "${CMAKE_CURRENT_SOURCE_DIR}/CalibrationToolkit/calibrationtoolkit_moc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/CalibrationToolkit/calibrationtoolkit.h"
 )
@@ -60,7 +71,7 @@ add_custom_target(calibrationtoolkit_moc
 add_custom_command(
   OUTPUT selectionwidget_moc.cpp
   COMMAND
-  "/usr/lib/x86_64-linux-gnu/qt5/bin/moc"
+  ${Qt5BIN}/moc
   "-o" "${CMAKE_CURRENT_SOURCE_DIR}/CalibrationToolkit/selectionwidget_moc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/CalibrationToolkit/selectionwidget.h"
 )
@@ -89,7 +100,7 @@ target_link_libraries(calibrationtoolkit
 add_custom_command(
   OUTPUT ui_mainwindow.h
   COMMAND
-  "/usr/lib/x86_64-linux-gnu/qt5/bin/uic"
+  ${Qt5BIN}/uic
   "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/ui_mainwindow.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/mainwindow.ui"
 )
@@ -98,7 +109,7 @@ add_custom_target(ui_mainwindow DEPENDS ui_mainwindow.h)
 add_custom_command(
   OUTPUT mainwindow_moc.cpp
   COMMAND
-  "/usr/lib/x86_64-linux-gnu/qt5/bin/moc"
+  ${Qt5BIN}/moc
   "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/mainwindow_moc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/mainwindow.h"
 )

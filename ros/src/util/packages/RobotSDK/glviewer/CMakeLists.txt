@@ -26,20 +26,31 @@ catkin_package(
 ## Build ##
 ###########
 
+if(EXISTS /usr/local/qtbase5)
+# Self install version
+set(Qt5INCLUDE "/usr/local/qtbase5/include")
+set(Qt5BIN "/usr/local/qtbase5/bin")
+link_directories("/usr/local/qtbase5/lib")
+else()
+# Ubuntu Qt5 package
+set(Qt5INCLUDE "/usr/include/qt5")
+set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
+endif()
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include/glviewer
-  /usr/include/qt5
-  /usr/include/qt5/QtCore
-  /usr/include/qt5/QtGui
-  /usr/include/qt5/QtOpenGL
-  /usr/include/qt5/QtWidgets
+  ${Qt5INCLUDE}
+  ${Qt5INCLUDE}/QtCore
+  ${Qt5INCLUDE}/QtGui
+  ${Qt5INCLUDE}/QtOpenGL
+  ${Qt5INCLUDE}/QtWidgets
 )
 
 add_custom_command(
   OUTPUT glviewer_moc.cpp
   COMMAND
-  "/usr/lib/x86_64-linux-gnu/qt5/bin/moc"
+  ${Qt5BIN}/moc
   "-o" "${CMAKE_CURRENT_SOURCE_DIR}/include/glviewer/glviewer_moc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/glviewer/glviewer.h"
 )
