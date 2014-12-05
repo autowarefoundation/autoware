@@ -46,17 +46,12 @@ int main(int argc, char **argv)
     
     if (private_nh.getParam("fps", FPS))
     {
-	char text[50];
-	sprintf(text, "FPS set to %.2f" ,FPS);
-        ROS_INFO(text);
+        ROS_INFO("FPS set to %.2f", FPS);
     }
     else
     {
-        
         FPS=15.0;
-	char text[50];
-	sprintf(text, "No param received, defaulting to %.2f" ,FPS);
-        ROS_INFO(text);
+        ROS_INFO("No param received, defaulting to %.2f", FPS);
     }
 
     ros::Rate loop_rate(FPS); // Hz
