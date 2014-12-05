@@ -337,7 +337,7 @@ sudo sh install_flycapture.sh
 
 フィール：/etc/default/grub 開けて 次のライン
              GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
-変わって＝＞ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore usbfs_memory_mb=1000"
+変わって＝＞ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore.usbfs_memory_mb=1000"
 
 ```
 sudo update-grub
