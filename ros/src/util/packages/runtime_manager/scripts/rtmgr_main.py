@@ -5,6 +5,7 @@ import wx.lib.agw.customtreectrl
 import gettext
 import os
 import socket
+import struct
 import rtmgr
 
 class MyFrame(rtmgr.MyFrame):
@@ -128,6 +129,15 @@ class MyFrame(rtmgr.MyFrame):
 		self.radio_action(event, grp)
 		self.statchk_send()
 
+	def OnScAccel(self, event):
+		self.statchk_send()
+
+	def OnScBrake(self, event):
+		self.statchk_send()
+
+	def OnScSteer(self, event):
+		self.statchk_send()
+
 	def update_button_conn_stat(self, t): # a
 		conn = getattr(self, 'button_conn_' + t);
 		en = conn.IsEnabled()
@@ -159,7 +169,21 @@ class MyFrame(rtmgr.MyFrame):
 				b.SetValue(act)
 
 	def statchk_send(self):
-                pass
+		sock = self.sock_c # Vehicle conn
+		if sock is None: 
+			print 'Not connect !'
+			return
+		steer = self.slider_statchk_steer.GetValue()
+		accel = self.slider_statchk_accel.GetValue()
+		brake = self.slider_statchk_brake.GetValue()
+		gear = self.radio_value_get('button_statchk_', { 'b':0 , 'r':1 , 'n':2 , 'd':3 })
+		prog_manu = self.radio_value_get('button_statchk_', { 'prog':0, 'manu':1 })
+		data = struct.pack('=5i', steer, accel, brake, gear, prog_manu)
+		sock.send(data)
+
+	def radio_value_get(self, base_name, dic):
+		res = [ v for (s,v) in dic.items() if getattr(self, base_name + s).GetValue() ]
+                return res[0] if len(res) > 0 else 0
 
 	def name_get(self, obj):
 		nms = [ nm for nm in dir(self) if getattr(self, nm) is obj ]
