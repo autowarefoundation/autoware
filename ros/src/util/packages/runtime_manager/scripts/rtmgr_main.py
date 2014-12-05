@@ -9,10 +9,19 @@ import struct
 import shlex
 import subprocess
 import rtmgr
+import rospy
+import std_msgs.msg
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
+
+		#
+		# ros
+		#
+		rospy.init_node('runime_manager', anonymous=True)
+		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.RosCb)
+		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		self.bitmap_1 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
@@ -77,6 +86,15 @@ class MyFrame(rtmgr.MyFrame):
 
 	def __do_layout(self):
 		pass
+
+	def RosCb(self, data):
+		print 'recv topic msg :', data.data
+
+		r = rospy.Rate(10)
+		rospy.is_shutdown()
+		r.sleep()
+		self.pub.publish(data.data)
+		r.sleep()
 
 	def create_tree(self, parent, items, root_name):
 		style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
