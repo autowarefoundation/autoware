@@ -62,6 +62,7 @@ First you have to install Qt5 dependencies.
 % cd qt5
 % git checkout v5.2.1 # <- Same as Ubuntu 14.04 'qtbase5-dev'
 % perl init-repository --no-webkit # <- webkit is very too large
+% ./configure -developer-build -opensource -nomake examples -nomake tests # And accept the license 
 % make -j # You may take a few hours
 % make install
 % sudo cp -r qtbase /usr/local/qtbase5
