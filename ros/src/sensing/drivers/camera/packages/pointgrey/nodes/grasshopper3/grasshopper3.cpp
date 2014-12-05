@@ -28,14 +28,12 @@ int main(int argc, char **argv)
     BusManager busMgr;
     Error error;
 
-    unsigned int numCameras;
+    unsigned int numCameras=1;
     double FPS;
 
     getNumCameras(&busMgr, &numCameras);
     Camera** ppCameras = new Camera*[numCameras];
     initializeCameras(&busMgr, numCameras, &ppCameras);
-
-    Image images[numCameras];
 
     //ROS STUFF
 
@@ -74,6 +72,11 @@ int main(int argc, char **argv)
     		
     	pub[i]= n.advertise<sensor_msgs::Image>(topic_name, 100);//publish as many cameras as we have
     }
+    //END ROS STUFF
+
+    
+
+    Image images[numCameras];
 
     startCapture(numCameras, ppCameras);
     
@@ -94,8 +97,8 @@ int main(int argc, char **argv)
     		//fill ROS Message structure
     		imagemsg[i].header.seq=count;
     		imagemsg[i].header.frame_id=count;
-    		imagemsg[i].header.stamp.sec=te.tv_sec;
-    		imagemsg[i].header.stamp.nsec=te.tv_usec*1000;
+    		imagemsg[i].header.stamp.sec=ros::Time::now().toSec();
+    		imagemsg[i].header.stamp.nsec=ros::Time::now().toNSec();
     		imagemsg[i].height= images[i].GetRows();
     		imagemsg[i].width= images[i].GetCols();
     		imagemsg[i].encoding = "rgb8";
