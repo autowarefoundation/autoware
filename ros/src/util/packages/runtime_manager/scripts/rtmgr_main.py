@@ -4,6 +4,7 @@ import wx
 import wx.lib.agw.customtreectrl
 import gettext
 import os
+import socket
 import rtmgr
 
 class MyFrame(rtmgr.MyFrame):
@@ -41,6 +42,11 @@ class MyFrame(rtmgr.MyFrame):
 
 		rtmgr.MyFrame.__do_layout(self);
 
+		self.sock_a = None
+		self.sock_b = None
+		self.sock_c = None
+		self.sock_d = None
+
 	def __do_layout(self):
 		pass
 
@@ -65,6 +71,78 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnStart(self, event):
 		print "start!"
+
+	def OnTextIp(self, event):
+		tc = event.GetEventObject()
+		bak = s = tc.GetValue()
+                if s.isdigit():
+			i = int(s)
+			i = 0 if i < 0 else i
+			i = 255 if i > 255 else i
+			s = '%d' % i
+		else:
+			s = ''
+		if s != bak:
+			tc.SetValue(s)
+
+		nm = self.name_get(tc) # text_ctrl_ip_a_0
+		yet = [ s for s in ['0','1','2','3'] if getattr(self, nm[:-1] + s).GetValue() == '' ]
+		t = nm[-3:-2] # a
+
+		conn = getattr(self, 'button_conn_' + t);
+		en = conn.IsEnabled()
+		act = None
+		act = True if len(yet) <= 0 and not en else act
+		act = False if len(yet) > 0 and en else act
+		if act is not None:
+			comm.Enable(act)
+
+	def OnConn(self, event):
+		b = event.GetEventObject()
+		nm = self.name_get(b) # button_conn_a
+		t = nm[-1:] # a
+		ipaddr = ''
+		for s in ['0','1','2','3']:
+			ipaddr += getattr(self, 'text_ctrl_ip_' + t + '_' + s) + '.'
+		ipaddr = ipaddr[:-1]
+
+		print ipaddr
+
+		port = 12345
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((ipaddr, port))
+		setattr(self, 'sock_' + t, sock)
+
+	def OnGear(self, event):
+		grp = [ self.button_statchk_d,
+			self.button_statchk_r,
+			self.button_statchk_b,
+			self.button_statchk_n ]
+		self.radio_action(event, grp)
+		self.statchk_send()
+
+	def OnProgManu(self, event):
+		grp = [ self.button_statchk_prog,
+			self.button_statchk_manu ]
+		self.radio_action(event, grp)
+		self.statchk_send()
+
+	def radio_action(self, event, grp):
+		push = event.GetEventObject()
+		for b in grp:
+			v = b.GetValue()
+			act = None
+			act = True if b is push and not v else act
+			act = False if b is not push and v else act
+			if act is not None:
+				b.SetValue(act)
+
+	def statchk_send(self):
+                pass
+
+	def name_get(self, obj):
+		nms = [ nm for nm in dir(self) if getattr(self, nm) is obj ]
+		return nms[0] if len(nms) > 0 else None
 
 class MyApp(wx.App):
 	def OnInit(self):
