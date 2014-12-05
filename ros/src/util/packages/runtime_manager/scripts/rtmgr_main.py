@@ -6,18 +6,19 @@ import gettext
 import os
 import socket
 import struct
+import shlex
+import subprocess
 import rtmgr
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 
-		tab_nodes = self.notebook_1_pane_3
-		tab_version = self.notebook_1_pane_5
-
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
-		self.bitmap_1 = wx.StaticBitmap(tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
-		self.bitmap_2 = wx.StaticBitmap(tab_version, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
+		self.bitmap_1 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
+		self.bitmap_2 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
+
+		tab_nodes = self.notebook_1_pane_3
 
 		self.tree_ctrl_1.Destroy()
 		items = []
@@ -43,10 +44,28 @@ class MyFrame(rtmgr.MyFrame):
 
 		rtmgr.MyFrame.__do_layout(self);
 
+		# for Main Tab
 		self.sock_a = None
 		self.sock_b = None
 		self.sock_c = None
 		self.sock_d = None
+
+		# for Sensing Tab
+		self.drivers_cmd = {
+			self.checkbox_camera_pggh3_usb1 : ('', None),
+			self.checkbox_camera_pggh3_usb2 : ('', None),
+			self.checkbox_camera_pglb5 : ('', None),
+			self.checkbox_camera_usb_gen : ('rosrun uvc_camera uvc_camera_node', None),
+			self.checkbox_camera_ieee1394 : ('', None),
+			self.checkbox_gnss_javad_d3_tty1 : ('', None),
+			self.checkbox_imu_crossbow_vg440 : ('', None),
+			self.checkbox_lidars_velodyne_hdl_64e : ('', None),
+			self.checkbox_lidars_velodyne_hdl_32e : ('', None),
+			self.checkbox_lidars_hokuyo_utm30lx_usb1 : ('roslaunch hokuyo hokuyo_utm30lx.launch', None),
+			self.checkbox_lidars_hokuyo_utm30lx_usb2 : ('', None),
+			self.checkbox_lidars_sick_lms5511 : ('', None),
+			self.checkbox_lidars_ibeo_8l_single : ('', None),
+			self.checkbox_other_sensors_xxxx_tty1 : ('rosrun turtlesim turtlesim_node', None) } # for debug ...
 
 	def __do_layout(self):
 		pass
@@ -70,6 +89,9 @@ class MyFrame(rtmgr.MyFrame):
 				else:
 					self.append_items(tree, add_item, add[1])
 
+	#
+	# Main Tab
+	#
 	def OnStart(self, event):
 		print "start!"
 
@@ -185,6 +207,33 @@ class MyFrame(rtmgr.MyFrame):
 		res = [ v for (s,v) in dic.items() if getattr(self, base_name + s).GetValue() ]
                 return res[0] if len(res) > 0 else 0
 
+	#
+	# Sensing Tab
+	#
+	def OnSensingDriver(self, event):
+		cb = event.GetEventObject()
+		v = cb.GetValue()
+		(cmd, proc) = self.drivers_cmd[cb]
+
+                msg = None
+		msg = 'already launched.' if v and proc else msg
+		msg = 'already terminated.' if not v and proc is None else msg
+		if msg is not None:
+                        print msg
+			return
+		if v:
+			args = shlex.split(cmd)
+			print args
+			proc = subprocess.Popen(args)
+		else:
+			proc.terminate()
+			proc.wait()
+			proc = None
+		self.drivers_cmd[cb] = (cmd, proc)
+
+	#
+	# Common Utils
+	#
 	def name_get(self, obj):
 		nms = [ nm for nm in dir(self) if getattr(self, nm) is obj ]
 		return nms[0] if len(nms) > 0 else None
