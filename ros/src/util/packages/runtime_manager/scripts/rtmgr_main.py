@@ -52,20 +52,28 @@ class MyFrame(rtmgr.MyFrame):
 
 		# for Sensing Tab
 		self.drivers_cmd = {
-			self.checkbox_camera_pggh3_usb1 : ('', None),
+			self.checkbox_camera_pggh3_usb1 : ('roslaunch pointgrey grasshopper3.launch', None),
 			self.checkbox_camera_pggh3_usb2 : ('', None),
 			self.checkbox_camera_pglb5 : ('', None),
 			self.checkbox_camera_usb_gen : ('rosrun uvc_camera uvc_camera_node', None),
 			self.checkbox_camera_ieee1394 : ('', None),
-			self.checkbox_gnss_javad_d3_tty1 : ('', None),
+			self.checkbox_gnss_javad_d3_tty1 : ('roslaunch javad nmea_navsat.launch', None),
 			self.checkbox_imu_crossbow_vg440 : ('', None),
-			self.checkbox_lidars_velodyne_hdl_64e : ('', None),
-			self.checkbox_lidars_velodyne_hdl_32e : ('', None),
+			self.checkbox_lidars_velodyne_hdl_64e : ('roslaunch velodyne velodyne_hdl64e.launch', None),
+			self.checkbox_lidars_velodyne_hdl_32e : ('roslaunch velodyne velodyne_hdl32e.launch', None),
 			self.checkbox_lidars_hokuyo_utm30lx_usb1 : ('roslaunch hokuyo hokuyo_utm30lx.launch', None),
 			self.checkbox_lidars_hokuyo_utm30lx_usb2 : ('', None),
 			self.checkbox_lidars_sick_lms5511 : ('', None),
 			self.checkbox_lidars_ibeo_8l_single : ('', None),
-			self.checkbox_other_sensors_xxxx_tty1 : ('rosrun turtlesim turtlesim_node', None) } # for debug ...
+			self.checkbox_other_sensors_xxxx_tty1 : ('rosrun turtlesim turtlesim_node', None), # for debug ...
+		}
+		self.etc_cmd = {
+			self.checkbox_sensor_fusion : ('', None),
+			self.checkbox_rosbag : ('', None),
+			self.button_calibration : ('', None),
+			self.button_tf : ('', None),
+			self.button_rviz : ('rosrun rviz rviz', None),
+		}
 
 	def __do_layout(self):
 		pass
@@ -211,13 +219,33 @@ class MyFrame(rtmgr.MyFrame):
 	# Sensing Tab
 	#
 	def OnSensingDriver(self, event):
-		cb = event.GetEventObject()
-		v = cb.GetValue()
-		(cmd, proc) = self.drivers_cmd[cb]
+		self.launch_kill_proc(event, self.drivers_cmd)
 
+	def OnSensorFusion(self, event):
+		self.launch_kill_proc(event, self.etc_cmd)
+
+	def OnRosbag(self, event):
+		self.launch_kill_proc(event, self.etc_cmd)
+		
+	def OnCalib(self, event):
+		self.launch_kill_proc(event, self.etc_cmd)
+
+	def OnTf(self, event):
+		self.launch_kill_proc(event, self.etc_cmd)
+
+	def OnRviz(self, event):
+		self.launch_kill_proc(event, self.etc_cmd)
+
+	def launch_kill_proc(self, event, cmd_dic):
+		obj = event.GetEventObject()
+		v = obj.GetValue()
+		(cmd, proc) = cmd_dic[obj]
+		if cmd == '':
+			obj.SetValue(False)
                 msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
+		msg = 'cmd not implemented.' if cmd == '' else msg
 		if msg is not None:
                         print msg
 			return
@@ -229,7 +257,7 @@ class MyFrame(rtmgr.MyFrame):
 			proc.terminate()
 			proc.wait()
 			proc = None
-		self.drivers_cmd[cb] = (cmd, proc)
+		cmd_dic[obj] = (cmd, proc)
 
 	#
 	# Common Utils
