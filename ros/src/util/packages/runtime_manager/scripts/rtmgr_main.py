@@ -75,43 +75,44 @@ class MyFrame(rtmgr.MyFrame):
 	def OnTextIp(self, event):
 		tc = event.GetEventObject()
 		bak = s = tc.GetValue()
+		nm = self.name_get(tc) # text_ctrl_ip_a_0
+		t = nm[-3:-2] # a
                 if s.isdigit():
 			i = int(s)
 			i = 0 if i < 0 else i
 			i = 255 if i > 255 else i
-			s = '%d' % i
+			s = str(i)
 		else:
 			s = ''
 		if s != bak:
 			tc.SetValue(s)
-
-		nm = self.name_get(tc) # text_ctrl_ip_a_0
-		yet = [ s for s in ['0','1','2','3'] if getattr(self, nm[:-1] + s).GetValue() == '' ]
-		t = nm[-3:-2] # a
-
-		conn = getattr(self, 'button_conn_' + t);
-		en = conn.IsEnabled()
-		act = None
-		act = True if len(yet) <= 0 and not en else act
-		act = False if len(yet) > 0 and en else act
-		if act is not None:
-			comm.Enable(act)
+		self.update_button_conn_stat(t)
 
 	def OnConn(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_conn_a
 		t = nm[-1:] # a
-		ipaddr = ''
-		for s in ['0','1','2','3']:
-			ipaddr += getattr(self, 'text_ctrl_ip_' + t + '_' + s) + '.'
-		ipaddr = ipaddr[:-1]
-
-		print ipaddr
-
+		ipaddr = '.'.join([ self.text_ip_get(t, s).GetValue() for s in ['0','1','2','3'] ])
 		port = 12345
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.connect((ipaddr, port))
+		sock.connect((ipaddr, port))
 		setattr(self, 'sock_' + t, sock)
+
+		b.Disable()
+		self.text_ip_stat_set(t, False)
+		getattr(self, 'button_disconn_' + t).Enable()
+
+	def OnDisconn(self, event):
+		b = event.GetEventObject()
+		nm = self.name_get(b) # button_disconn_a
+		t = nm[-1:] # a
+		sock = getattr(self, 'sock_' + t)
+		if sock:
+			sock.close()
+			setattr(self, 'sock_' + t, None)
+		b.Disable()
+		self.text_ip_stat_set(t, True)
+		self.update_button_conn_stat(t)
 
 	def OnGear(self, event):
 		grp = [ self.button_statchk_d,
@@ -126,6 +127,26 @@ class MyFrame(rtmgr.MyFrame):
 			self.button_statchk_manu ]
 		self.radio_action(event, grp)
 		self.statchk_send()
+
+	def update_button_conn_stat(self, t): # a
+		conn = getattr(self, 'button_conn_' + t);
+		en = conn.IsEnabled()
+		if getattr(self, 'sock_' + t) and en:
+			conn.Disable()
+			return
+		yet = [ s for s in ['0','1','2','3'] if self.text_ip_get(t, s).GetValue() == '' ]
+		act = None
+		act = True if len(yet) <= 0 and not en else act
+		act = False if len(yet) > 0 and en else act
+		if act is not None:
+			conn.Enable(act)
+
+	def text_ip_get(self, t, s): # t a, s 0
+		return getattr(self, 'text_ctrl_ip_' + t + '_' + s)
+
+	def text_ip_stat_set(self, t, en): # a
+		for s in ['0','1','2','3']:
+			self.text_ip_get(t, s).Enable(en)
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
