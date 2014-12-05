@@ -22,7 +22,7 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	IplImage frame = cv_image->image;
 	
 	cout << "size:"<<cars.size()<<endl;
-	for(int i=0; i<cars.size();i++)
+	for(std::size_t i=0; i<cars.size();i++)
 	{
 		
 		cvRectangle( &frame, 
