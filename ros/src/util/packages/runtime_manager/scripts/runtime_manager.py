@@ -8,6 +8,7 @@ import socket
 import struct
 import shlex
 import subprocess
+import yaml
 import rtmgr
 import rospy
 import std_msgs.msg
@@ -59,30 +60,22 @@ class MyFrame(rtmgr.MyFrame):
 		self.sock_c = None
 		self.sock_d = None
 
+		#
 		# for Sensing Tab
-		self.drivers_cmd = {
-			self.checkbox_camera_pggh3_usb1 : ('roslaunch pointgrey grasshopper3.launch', None),
-			self.checkbox_camera_pggh3_usb2 : ('', None),
-			self.checkbox_camera_pglb5 : ('', None),
-			self.checkbox_camera_usb_gen : ('rosrun uvc_camera uvc_camera_node', None),
-			self.checkbox_camera_ieee1394 : ('', None),
-			self.checkbox_gnss_javad_d3_tty1 : ('roslaunch javad nmea_navsat.launch', None),
-			self.checkbox_imu_crossbow_vg440 : ('', None),
-			self.checkbox_lidars_velodyne_hdl_64e : ('roslaunch velodyne velodyne_hdl64e.launch', None),
-			self.checkbox_lidars_velodyne_hdl_32e : ('roslaunch velodyne velodyne_hdl32e.launch', None),
-			self.checkbox_lidars_hokuyo_utm30lx_usb1 : ('roslaunch hokuyo hokuyo_utm30lx.launch', None),
-			self.checkbox_lidars_hokuyo_utm30lx_usb2 : ('', None),
-			self.checkbox_lidars_sick_lms5511 : ('', None),
-			self.checkbox_lidars_ibeo_8l_single : ('', None),
-			self.checkbox_other_sensors_xxxx_tty1 : ('rosrun turtlesim turtlesim_node', None), # for debug ...
-		}
-		self.etc_cmd = {
-			self.checkbox_sensor_fusion : ('', None),
-			self.checkbox_rosbag : ('', None),
-			self.button_calibration : ('', None),
-			self.button_tf : ('', None),
-			self.button_rviz : ('rosrun rviz rviz', None),
-		}
+		#
+		filename = 'sensing_launch_cmd.yaml'
+		f = open(dir + filename, 'r')
+		d = yaml.load(f)
+		f.close()
+
+		self.sensing_cmd = {}
+		for (k,v) in d.items():
+			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
+			if len(res) <= 0:
+				print k + ' in file ' + filename + ', not found correspoinding widget.'
+				continue
+			obj = self.obj_get(res[0] + k)
+			self.sensing_cmd[obj] = (v, None)
 
 	def __do_layout(self):
 		pass
@@ -237,33 +230,38 @@ class MyFrame(rtmgr.MyFrame):
 	# Sensing Tab
 	#
 	def OnSensingDriver(self, event):
-		self.launch_kill_proc(event, self.drivers_cmd)
+		self.launch_kill_proc(event)
 
 	def OnSensorFusion(self, event):
-		self.launch_kill_proc(event, self.etc_cmd)
+		self.launch_kill_proc(event)
 
 	def OnRosbag(self, event):
-		self.launch_kill_proc(event, self.etc_cmd)
+		self.launch_kill_proc(event)
 		
 	def OnCalib(self, event):
-		self.launch_kill_proc(event, self.etc_cmd)
+		self.launch_kill_proc(event)
 
 	def OnTf(self, event):
-		self.launch_kill_proc(event, self.etc_cmd)
+		self.launch_kill_proc(event)
 
 	def OnRviz(self, event):
-		self.launch_kill_proc(event, self.etc_cmd)
+		self.launch_kill_proc(event)
 
-	def launch_kill_proc(self, event, cmd_dic):
+	def launch_kill_proc(self, event):
+		cmd_dic = self.sensing_cmd
 		obj = event.GetEventObject()
+		if obj not in cmd_dic:
+			obj.SetValue(False)
+			print 'not implemented.'
+			return
 		v = obj.GetValue()
 		(cmd, proc) = cmd_dic[obj]
-		if cmd == '':
+		if not cmd:
 			obj.SetValue(False)
                 msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
-		msg = 'cmd not implemented.' if cmd == '' else msg
+		msg = 'cmd not implemented.' if not cmd else msg
 		if msg is not None:
                         print msg
 			return
@@ -283,6 +281,9 @@ class MyFrame(rtmgr.MyFrame):
 	def name_get(self, obj):
 		nms = [ nm for nm in dir(self) if getattr(self, nm) is obj ]
 		return nms[0] if len(nms) > 0 else None
+
+	def obj_get(self, name):
+		return getattr(self, name) if name in dir(self) else None
 
 class MyApp(wx.App):
 	def OnInit(self):
