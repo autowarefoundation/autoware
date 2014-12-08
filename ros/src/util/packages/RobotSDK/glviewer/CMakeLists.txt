@@ -30,11 +30,12 @@ if(EXISTS /usr/local/qtbase5)
 # Self install version
 set(Qt5INCLUDE "/usr/local/qtbase5/include")
 set(Qt5BIN "/usr/local/qtbase5/bin")
-link_directories("/usr/local/qtbase5/lib")
+set(Qt5LIBROOT "/usr/local/qtbase5/lib")
 else()
 # Ubuntu Qt5 package
 set(Qt5INCLUDE "/usr/include/qt5")
 set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
+set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
 endif()
 
 include_directories(

@@ -27,11 +27,12 @@ if(EXISTS /usr/local/qtbase5)
 # Self install version
 set(Qt5INCLUDE "/usr/local/qtbase5/include")
 set(Qt5BIN "/usr/local/qtbase5/bin")
-link_directories("/usr/local/qtbase5/lib")
+set(Qt5LIBROOT "/usr/local/qtbase5/lib")
 else()
 # Ubuntu Qt5 package
 set(Qt5INCLUDE "/usr/include/qt5")
 set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
+set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
 endif()
 
 ## Specify additional locations of header files
@@ -60,9 +61,9 @@ add_library(rosinterface
 
 target_link_libraries(rosinterface
   ${catkin_LIBRARIES}
-  Qt5Core
-  Qt5Gui
-  Qt5Widgets
+  ${Qt5LIBROOT}/libQt5Core.so
+  ${Qt5LIBROOT}/libQt5Gui.so
+  ${Qt5LIBROOT}/libQt5Widgets.so
 )
 
 ## Add cmake target dependencies of the executable/library
