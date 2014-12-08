@@ -1182,7 +1182,7 @@ calc_hist
       FLOAT vy0 = yp - iyp;
       FLOAT vx1 = 1.0 - vx0;
       FLOAT vy1 = 1.0 - vy0;
-      v = sqrt((double)v);
+      v = sqrtf((double)v);
       
       
 #ifdef USE_FLOAT_AS_DECIMAL
@@ -1313,7 +1313,7 @@ calc_hist
   //     FLOAT vy0 = yp - iyp;
   //     FLOAT vx1 = 1.0 - vx0;
   //     FLOAT vy1 = 1.0 - vy0;
-  //     v = sqrt(v);
+  //     v = sqrtf(v);
 
   //     if (ixp >= 0 && iyp >= 0) {
   //       *(hist + ixp*blocks[0] + iyp + best_o*blocks[0]*blocks[1]) += vx1*vy1*v;
@@ -1452,23 +1452,23 @@ calc_feat
       
       //      p = norm + (x+1)*blocks[0] + y+1;
       p = norm + (x+1)*blocks_0 + y+1;
-      //      n1 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
+      //      n1 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
       n1 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks_0) + *(p+blocks_0+1) + EPS);
       
       //      p = norm + (x+1)*blocks[0] + y;
       p = norm + (x+1)*blocks_0 + y;
-      //      n2 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
-      n2 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks_0) + *(p+blocks_0+1) + EPS);
+      //      n2 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
+      n2 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks_0) + *(p+blocks_0+1) + EPS);
       
       //      p = norm + x*blocks[0] + y+1;
       p = norm + x*blocks_0 + y+1;
-      //      n3 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
-      n3 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks_0) + *(p+blocks_0+1) + EPS);
+      //      n3 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
+      n3 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks_0) + *(p+blocks_0+1) + EPS);
       
       //      p = norm + x*blocks[0] + y;
       p = norm + x*blocks_0 + y;
-      //      n4 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
-      n4 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks_0) + *(p+blocks_0+1) + EPS);
+      //      n4 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + EPS);
+      n4 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks_0) + *(p+blocks_0+1) + EPS);
 
       FLOAT t1 = 0;
       FLOAT t2 = 0;
@@ -1550,16 +1550,16 @@ calc_feat
   //     FLOAT *src, *p, n1, n2, n3, n4;
   
   //     p = norm + (x+1)*blocks[0] + y+1;
-  //     n1 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
+  //     n1 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
   
   //     p = norm + (x+1)*blocks[0] + y;
-  //     n2 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
+  //     n2 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
   
   //     p = norm + x*blocks[0] + y+1;
-  //     n3 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
+  //     n3 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
   
   //     p = norm + x*blocks[0] + y;
-  //     n4 = 1.0 / sqrt(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
+  //     n4 = 1.0 / sqrtf(*p + *(p+1) + *(p+blocks[0]) + *(p+blocks[0]+1) + eps);
   
   //     FLOAT t1 = 0;
   //     FLOAT t2 = 0;
