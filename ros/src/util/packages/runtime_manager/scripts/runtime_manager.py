@@ -72,7 +72,7 @@ class MyFrame(rtmgr.MyFrame):
 		for (k,v) in d.items():
 			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
 			if len(res) <= 0:
-				print k + ' in file ' + filename + ', not found correspoinding widget.'
+				print(k + ' in file ' + filename + ', not found correspoinding widget.')
 				continue
 			obj = self.obj_get(res[0] + k)
 			self.sensing_cmd[obj] = (v, None)
@@ -81,7 +81,7 @@ class MyFrame(rtmgr.MyFrame):
 		pass
 
 	def RosCb(self, data):
-		print 'recv topic msg :', data.data
+		print('recv topic msg : ' + data.data)
 
 		r = rospy.Rate(10)
 		rospy.is_shutdown()
@@ -112,7 +112,7 @@ class MyFrame(rtmgr.MyFrame):
 	# Main Tab
 	#
 	def OnStart(self, event):
-		print "start!"
+		print("start!")
 
 	def OnTextIp(self, event):
 		tc = event.GetEventObject()
@@ -212,7 +212,7 @@ class MyFrame(rtmgr.MyFrame):
 	def statchk_send(self):
 		sock = self.sock_c # Vehicle conn
 		if sock is None: 
-			print 'Not connect !'
+			print('Not connect !')
 			return
 		steer = self.slider_statchk_steer.GetValue()
 		accel = self.slider_statchk_accel.GetValue()
@@ -252,7 +252,7 @@ class MyFrame(rtmgr.MyFrame):
 		obj = event.GetEventObject()
 		if obj not in cmd_dic:
 			obj.SetValue(False)
-			print 'not implemented.'
+			print('not implemented.')
 			return
 		v = obj.GetValue()
 		(cmd, proc) = cmd_dic[obj]
@@ -263,11 +263,11 @@ class MyFrame(rtmgr.MyFrame):
 		msg = 'already terminated.' if not v and proc is None else msg
 		msg = 'cmd not implemented.' if not cmd else msg
 		if msg is not None:
-                        print msg
+                        print(msg)
 			return
 		if v:
 			args = shlex.split(cmd)
-			print args
+			print(args)
 			proc = subprocess.Popen(args)
 		else:
 			proc.terminate()
