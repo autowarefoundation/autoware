@@ -36,12 +36,22 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 
+if(EXISTS /usr/local/qtbase5)
+# Self install version
+set(Qt5INCLUDE "/usr/local/qtbase5/include")
+set(Qt5LIBROOT "/usr/local/qtbase5/lib")
+else()
+# Ubuntu Qt5 package
+set(Qt5INCLUDE "/usr/include/qt5")
+set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
+endif()
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  /usr/include/qt5
-  /usr/include/qt5/QtCore
-  /usr/include/qt5/QtGui
-  /usr/include/qt5/QtWidgets
+  ${Qt5INCLUDE}
+  ${Qt5INCLUDE}/QtCore
+  ${Qt5INCLUDE}/QtGui
+  ${Qt5INCLUDE}/QtWidgets
 )
 
 ## Declare a cpp executable
@@ -55,7 +65,7 @@ target_link_libraries(points_to_image
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   rosinterface
-  Qt5Core
-  Qt5Gui
-  Qt5Widgets
+  ${Qt5LIBROOT}/libQt5Core.so
+  ${Qt5LIBROOT}/libQt5Gui.so
+  ${Qt5LIBROOT}/libQt5Widgets.so
 )

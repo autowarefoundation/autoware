@@ -23,20 +23,32 @@ catkin_package(
 ## Build ##
 ###########
 
+if(EXISTS /usr/local/qtbase5)
+# Self install version
+set(Qt5INCLUDE "/usr/local/qtbase5/include")
+set(Qt5BIN "/usr/local/qtbase5/bin")
+set(Qt5LIBROOT "/usr/local/qtbase5/lib")
+else()
+# Ubuntu Qt5 package
+set(Qt5INCLUDE "/usr/include/qt5")
+set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
+set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
+endif()
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
   include/rosinterface
-  /usr/include/qt5
-  /usr/include/qt5/QtCore
-  /usr/include/qt5/QtGui
-  /usr/include/qt5/QtWidgets
+  ${Qt5INCLUDE}
+  ${Qt5INCLUDE}/QtCore
+  ${Qt5INCLUDE}/QtGui
+  ${Qt5INCLUDE}/QtWidgets
 )
 
 add_custom_command(
   OUTPUT rosinterface_moc.cpp
   COMMAND
-  "/usr/lib/x86_64-linux-gnu/qt5/bin/moc"
+  ${Qt5BIN}/moc
   "-o" "${CMAKE_CURRENT_SOURCE_DIR}/ROSInterface/rosinterface_moc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/rosinterface/rosinterface.h"
 )
@@ -49,9 +61,9 @@ add_library(rosinterface
 
 target_link_libraries(rosinterface
   ${catkin_LIBRARIES}
-  Qt5Core
-  Qt5Gui
-  Qt5Widgets
+  ${Qt5LIBROOT}/libQt5Core.so
+  ${Qt5LIBROOT}/libQt5Gui.so
+  ${Qt5LIBROOT}/libQt5Widgets.so
 )
 
 ## Add cmake target dependencies of the executable/library
