@@ -162,22 +162,22 @@ class MyFrame(rtmgr.MyFrame):
 			self.button_statchk_b,
 			self.button_statchk_n ]
 		self.radio_action(event, grp)
-		self.statchk_send()
+		self.statchk_send_recv()
 
 	def OnProgManu(self, event):
 		grp = [ self.button_statchk_prog,
 			self.button_statchk_manu ]
 		self.radio_action(event, grp)
-		self.statchk_send()
+		self.statchk_send_recv()
 
 	def OnScAccel(self, event):
-		self.statchk_send()
+		self.statchk_send_recv()
 
 	def OnScBrake(self, event):
-		self.statchk_send()
+		self.statchk_send_recv()
 
 	def OnScSteer(self, event):
-		self.statchk_send()
+		self.statchk_send_recv()
 
 	def update_button_conn_stat(self, t): # a
 		conn = getattr(self, 'button_conn_' + t);
@@ -209,7 +209,10 @@ class MyFrame(rtmgr.MyFrame):
 			if act is not None:
 				b.SetValue(act)
 
-	def statchk_send(self):
+	def statchk_send_recv(self):
+		#
+		# send
+		#
 		sock = self.sock_c # Vehicle conn
 		if sock is None: 
 			print('Not connect !')
@@ -217,14 +220,43 @@ class MyFrame(rtmgr.MyFrame):
 		steer = self.slider_statchk_steer.GetValue()
 		accel = self.slider_statchk_accel.GetValue()
 		brake = self.slider_statchk_brake.GetValue()
-		gear = self.radio_value_get('button_statchk_', { 'b':0 , 'r':1 , 'n':2 , 'd':3 })
-		prog_manu = self.radio_value_get('button_statchk_', { 'prog':0, 'manu':1 })
-		data = struct.pack('=5i', steer, accel, brake, gear, prog_manu)
+		gear_dic = { 'b':0 , 'r':1 , 'n':2 , 'd':3 }
+		gear = self.radio_value_get('button_statchk_', gear_dic)
+		mode_dic = { 'prog':0, 'manu':1 }
+		mode = self.radio_value_get('button_statchk_', mode_dic)
+		data = struct.pack('=5i', steer, accel, brake, gear, mode)
 		sock.send(data)
+
+		#
+		# recv
+		#
+		rdata = sock.recv(1024)
+		(r_steer, r_accel, r_brake, r_gear, r_mode) = struct.unpack('=5i', rdata)
+		
+		self.radio_value_set('button_statchk_', gear_dic, r_gear)
+		self.radio_value_set('button_statchk_', mode_dic, r_mode)
+		self.slider_statchk_steer.SetValue(r_steer)
+		self.slider_statchk_accel.SetValue(r_accel)
+		self.slider_statchk_brake.SetValue(r_brake)
+
+		s = self.key_get(gear_dic, r_gear)
+		self.label_gear.SetLabel(s.upper() if s else '?')
+		s = self.key_get(mode_dic, r_mode)
+		self.label_mode.SetLabel(s[0].upper() if s else '?')
 
 	def radio_value_get(self, base_name, dic):
 		res = [ v for (s,v) in dic.items() if getattr(self, base_name + s).GetValue() ]
                 return res[0] if len(res) > 0 else 0
+
+	def radio_value_set(self, base_name, dic, val):
+		for (k,v) in dic.items():
+			obj = getattr(self, base_name + k)
+			ov = obj.GetValue()
+			act = None
+			act = True if v == val and not ov else act
+			act = False if v != val and ov else act
+			if act is not None:
+				obj.SetValue(act)
 
 	#
 	# Sensing Tab
@@ -284,6 +316,10 @@ class MyFrame(rtmgr.MyFrame):
 
 	def obj_get(self, name):
 		return getattr(self, name) if name in dir(self) else None
+
+	def key_get(self, dic, val):
+		ks = [ k for (k,v) in dic.items() if v == val ]
+		return ks[0] if len(ks) > 0 else None
 
 class MyApp(wx.App):
 	def OnInit(self):
