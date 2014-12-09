@@ -14,6 +14,7 @@ add_message_files(
   gear_info.msg
   mode_info.msg
   error_info.msg
+  can_info.msg
 )
 
 generate_messages(
