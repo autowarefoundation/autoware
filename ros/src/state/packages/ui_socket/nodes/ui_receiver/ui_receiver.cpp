@@ -76,6 +76,8 @@ static int getConnect(int port, int *sock, int *asock)
 			perror("socket");
 			return -1;
 		}
+
+		std::memset(&addr, 0, sizeof(sockaddr_in));
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
