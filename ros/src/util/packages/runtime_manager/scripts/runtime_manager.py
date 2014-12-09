@@ -63,19 +63,13 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Sensing Tab
 		#
-		filename = 'sensing_launch_cmd.yaml'
-		f = open(dir + filename, 'r')
-		d = yaml.load(f)
-		f.close()
+		self.drv_probe_cmd = self.load_yaml('drivers_probe_cmd.yaml')
+		self.sensing_cmd = self.load_yaml('sensing_launch_cmd.yaml')
 
-		self.sensing_cmd = {}
-		for (k,v) in d.items():
-			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
-			if len(res) <= 0:
-				print(k + ' in file ' + filename + ', not found correspoinding widget.')
-				continue
-			obj = self.obj_get(res[0] + k)
-			self.sensing_cmd[obj] = (v, None)
+		self.timer = wx.Timer(self)
+		self.Bind(wx.EVT_TIMER, self.OnProbeTimer, self.timer)
+		self.OnProbeTimer(None)
+		self.timer.Start(10*1000)
 
 	def __do_layout(self):
 		pass
@@ -107,6 +101,22 @@ class MyFrame(rtmgr.MyFrame):
 						add_item.Set3StateValue(wx.CHK_CHECKED)
 				else:
 					self.append_items(tree, add_item, add[1])
+
+	def load_yaml(self, filename):
+		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		f = open(dir + filename, 'r')
+		d = yaml.load(f)
+		f.close()
+
+		ret_dic = {}
+		for (k,v) in d.items():
+			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
+			if len(res) <= 0:
+				print(k + ' in file ' + filename + ', not found correspoinding widget.')
+				continue
+			obj = self.obj_get(res[0] + k)
+			ret_dic[obj] = (v, None)
+		return ret_dic
 
 	#
 	# Main Tab
@@ -262,26 +272,25 @@ class MyFrame(rtmgr.MyFrame):
 	# Sensing Tab
 	#
 	def OnSensingDriver(self, event):
-		self.launch_kill_proc(event)
+		self.launch_kill_proc(event.GetEventObject())
 
 	def OnSensorFusion(self, event):
-		self.launch_kill_proc(event)
+		self.launch_kill_proc(event.GetEventObject())
 
 	def OnRosbag(self, event):
-		self.launch_kill_proc(event)
+		self.launch_kill_proc(event.GetEventObject())
 		
 	def OnCalib(self, event):
-		self.launch_kill_proc(event)
+		self.launch_kill_proc(event.GetEventObject())
 
 	def OnTf(self, event):
-		self.launch_kill_proc(event)
+		self.launch_kill_proc(event.GetEventObject())
 
 	def OnRviz(self, event):
-		self.launch_kill_proc(event)
+		self.launch_kill_proc(event.GetEventObject())
 
-	def launch_kill_proc(self, event):
+	def launch_kill_proc(self, obj):
 		cmd_dic = self.sensing_cmd
-		obj = event.GetEventObject()
 		if obj not in cmd_dic:
 			obj.SetValue(False)
 			print('not implemented.')
@@ -306,6 +315,25 @@ class MyFrame(rtmgr.MyFrame):
 			proc.wait()
 			proc = None
 		cmd_dic[obj] = (cmd, proc)
+
+	def OnProbeTimer(self, event):
+		#print('probe') # for debug
+                items = self.drv_probe_cmd.items()
+		for (obj, (cmd, bak_res)) in items:
+			res = (os.system(cmd) == 0) if cmd else False
+			if res == bak_res:
+				continue
+			self.drv_probe_cmd[obj] = (cmd, res)
+			en = obj.IsEnabled()
+			if res and not en:
+				obj.Enable()
+				continue
+			if not res and en:
+				v = obj.GetValue()
+				if v:
+					obj.SetValue(False)	
+					self.launch_kill_proc(obj)
+				obj.Disable()
 
 	#
 	# Common Utils
