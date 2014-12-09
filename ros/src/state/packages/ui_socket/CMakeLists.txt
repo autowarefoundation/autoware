@@ -13,6 +13,7 @@ add_message_files(
   FILES
   gear_info.msg
   mode_info.msg
+  error_info.msg
 )
 
 generate_messages(
@@ -30,3 +31,7 @@ catkin_package(
 add_executable(ui_receiver nodes/ui_receiver/ui_receiver.cpp)
 target_link_libraries(ui_receiver ${catkin_LIBRARIES})
 add_dependencies(ui_receiver ui_socket_generate_messages_cpp)
+
+add_executable(ui_sender nodes/ui_sender/ui_sender.cpp)
+target_link_libraries(ui_sender ${catkin_LIBRARIES})
+add_dependencies(ui_sender ui_socket_generate_messages_cpp)
