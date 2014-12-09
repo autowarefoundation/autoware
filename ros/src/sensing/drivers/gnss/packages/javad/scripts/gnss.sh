@@ -12,5 +12,6 @@ echo "em,,msg/nmea/RMC" > /dev/ttyUSB0
 echo "sleep 3 second"
 sleep 3s
 
+
 echo "launch gnss driver..."
 roslaunch javad nmea_navsat.launch
