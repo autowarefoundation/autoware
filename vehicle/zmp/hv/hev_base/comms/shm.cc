@@ -60,7 +60,7 @@ int main(int argc, char ** argv)
 	  fprintf(stderr,"\t motor state = %d\n", (int) data.base.motor_state);
 	}
 	count++;
-	usleep(1000000);
+	usleep(100000);
       }
     }
     /* dettach the segment to data space */

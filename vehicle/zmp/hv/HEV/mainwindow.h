@@ -57,10 +57,10 @@ public:
    /*===========HevBase用関数===================*/ 
 
     void UpdateState();//hevの状態を更新
-    void ChangeShiftMode(); //シフトチェック
-    void AccelerateControl(); //自動運転：加速
-    void DecelerateControl(); //自動運転：減速
-    void StoppingControl(); //自動運転：停止
+    void ChangeShiftMode(double cmd_velocity); //シフトチェック
+    void AccelerateControl(double current_velocity,double cmd_velocity); //自動運転：加速
+    void DecelerateControl(double current_velocity,double cmd_velocity); //自動運転：減速
+    void StoppingControl(double current_velocity,double cmd_velocity); //自動運転：停止
     bool Brake(int target_brake, int gain); //ブレーキの関数
     bool Accel(int target_accel, int gain); //アクセルの関数
 
