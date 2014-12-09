@@ -9,6 +9,7 @@ cmake_install.cmake
 # catkin files
 catkin/
 catkin_generated/
-build/
-devel/
-gtest/
+/build/
+/devel/
+/install/
+/gtest/
