@@ -78,7 +78,7 @@ static int getConnect(int port, int *sock, int *asock)
 		}
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
-		addr.sin_addr.s_addr = INADDR_ANY;
+		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 		//make it available immediately to connect
 		setsockopt(*sock, SOL_SOCKET, SO_REUSEADDR,
 			(const char *)&yes, sizeof(yes));
