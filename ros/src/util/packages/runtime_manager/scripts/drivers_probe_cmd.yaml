@@ -1,0 +1,14 @@
+camera_pggh3_usb1 :
+camera_pggh3_usb2 :
+camera_pglb5 :
+camera_usb_gen : 'true'
+camera_ieee1394 :
+gnss_javad_d3_tty1 :
+imu_crossbow_vg440 :
+lidars_velodyne_hdl_64e :
+lidars_velodyne_hdl_32e :
+lidars_hokuyo_utm30lx_usb1 : 'lsusb -d 15d1: > /dev/null'
+lidars_hokuyo_utm30lx_usb2 :
+lidars_sick_lms5511 :
+lidars_ibeo_8l_single :
+other_sensors_xxxx_tty1 : 'true'

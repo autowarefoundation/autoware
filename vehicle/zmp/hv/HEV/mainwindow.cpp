@@ -4,8 +4,7 @@
 using namespace std;
 using namespace zmp::hev;
 
-#include "../server/andrive.cpp" // handy extension for Andrive.
-#include "../server/auto.cpp"    // smart stop function.
+#include "../hev_base/activate_hev.cpp" 
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -268,19 +267,16 @@ void* MainWindow::LogThreadEntry(void* arg)
 
 void MainWindow::logThread()
 {
-#if 1
-    andrvActivate();
-#else
+  //activate hev_base program
+  HevBaseActivate();
 //    readTimer->start(10);
     while(1){
         updateTime();
         if(_selectLog.start == true){
             writeLog();
         }
-        //usleep(10*1000);
-        usleep(1000);
+        usleep(10*1000);
     }
-#endif
 }
 
 void MainWindow::changeEvent(QEvent *e)
@@ -445,21 +441,6 @@ void MainWindow::changeEvent(QEvent *e)
 
 void MainWindow::startLog()
 {
-#if 0
-  // just a test.
-  sleep(1);
-  autoSmartStop();
-  sleep(1);
-  autoSmartCleep();
-  sleep(1);
-  autoSmartStart();
-  sleep(2);
-  autoSmartStop();
-  printf("end.\n");
-#else
-  // auto drive - smart stop/start.
-  autoActivate();
-#endif
     updateTime();
     char logFile[32];
     sprintf(logFile, "%d_%d_%d_%d_%d_%d.txt",
@@ -518,7 +499,6 @@ void MainWindow::stopLog()
 
     ui->pushButton_startLog->setEnabled(true);
     ui->pushButton_stopLog->setEnabled(false);
-
 }
 
 /*QImage* MainWindow::grab2()

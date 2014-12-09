@@ -25,6 +25,10 @@
 #include <sys/types.h>
 #include <pthread.h>
 
+
+
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -49,6 +53,18 @@ public:
 
     bool GameInit();
     bool GameStart();
+
+   /*===========HevBase用関数===================*/ 
+
+    void UpdateState();//hevの状態を更新
+    void ChangeShiftMode(); //シフトチェック
+    void AccelerateControl(); //自動運転：加速
+    void DecelerateControl(); //自動運転：減速
+    void StoppingControl(); //自動運転：停止
+    bool Brake(int target_brake, int gain); //ブレーキの関数
+    bool Accel(int target_accel, int gain); //アクセルの関数
+
+    /*============ここまで=================*/
 
 protected:
     void changeEvent(QEvent *);
@@ -184,16 +200,15 @@ private slots:
     // Game slots
     void setGameEnable();
 
+ 
 private:
-    // Andrive
-    void andrvActivate();
-    static void* andrvThreadEntry(void*);
 
-    // auto
-    void autoActivate();
-    void autoSmartStart();
-    void autoSmartStop();
-    void autoSmartCleep();
+    /*===========HevBase用関数===================*/ 
+
+    void HevBaseActivate();
+    static void* HevBaseThreadEntry(void* arg);
+
+    /*============ここまで=================*/
 
     void viewBattInf();
     void viewBrakeInf();
