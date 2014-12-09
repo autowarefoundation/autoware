@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>gnss</name>
+  <version>0.0.0</version>
+  <description>The gnss package</description>
+  <maintainer email="tomo@axe.bz">Tomomi HORII</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>
