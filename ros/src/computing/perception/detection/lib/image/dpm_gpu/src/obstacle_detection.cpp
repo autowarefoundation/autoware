@@ -285,7 +285,7 @@ subscribe() returns a Subscriber object that you
    * away the oldest ones.
    */
 // %Tag(SUBSCRIBER)%
-  ros::Subscriber sub = n.subscribe("/image_raw", 1, obstacle_detectionCallback);
+  ros::Subscriber sub = n.subscribe("/camera/image_raw", 1, obstacle_detectionCallback);
 #if 1 // AXE
   image_objects = n.advertise<dpm::ImageObjects>(published_topic, 1);
 #else

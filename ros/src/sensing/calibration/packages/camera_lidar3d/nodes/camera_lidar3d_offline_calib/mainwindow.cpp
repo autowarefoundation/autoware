@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tabWidget->addTab(calibration,"Calibration");
 
     connect(ui->grab,SIGNAL(clicked()),calibration,SLOT(grabCalibDataSlot()));
+    connect(ui->remove,SIGNAL(clicked()),calibration,SLOT(removeCalibDataSlot()));
     connect(ui->calibrate,SIGNAL(clicked()),calibration,SLOT(calibrateSensorSlot()));
     connect(ui->load,SIGNAL(clicked()),calibration,SLOT(loadCalibResultSlot()));
     connect(ui->save,SIGNAL(clicked()),calibration,SLOT(saveCalibResultSlot()));
