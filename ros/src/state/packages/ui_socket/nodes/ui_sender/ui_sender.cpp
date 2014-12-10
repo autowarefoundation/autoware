@@ -1,29 +1,66 @@
+#include <mutex>
+
 #include <netinet/in.h>
 
 #include <ros/ros.h>
 #include <ros/console.h>
 
 #include <ui_socket/error_info.h>
+#include <ui_socket/can_info.h>
 
-static constexpr int ERROR_INFO_TYPE = 3;
+#include "request.h"
+
 static constexpr int DEFAULT_PORT = 23456;
-static constexpr uint32_t QUEUE_SIZE = 1000;
 static constexpr int LISTEN_BACKLOG = 10;
+static constexpr uint32_t QUEUE_SIZE = 1000;
 
 static int port;
 static int connfd;
 static volatile bool socket_ok;
+std::mutex mtx;
 
 static void subscribe_error_info(const ui_socket::error_info& msg)
 {
-	int request[2];
+	error_request request(msg);
 	int response;
 	ssize_t nbytes;
 
-	request[0] = ERROR_INFO_TYPE;
-	request[1] = msg.error;
+	std::lock_guard<std::mutex> lock(mtx);
 
-	nbytes = send(connfd, request, sizeof(request), 0);
+	nbytes = send(connfd, &request, sizeof(request), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("send: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(request)) {
+		ROS_WARN("send: %zd bytes remaining",
+			 sizeof(request) - nbytes);
+		return;
+	}
+
+	nbytes = recv(connfd, &response, sizeof(response), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("recv: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(response)) {
+		ROS_WARN("recv: %zd bytes remaining",
+			 sizeof(response) - nbytes);
+		return;
+	}
+}
+
+static void subscribe_can_info(const ui_socket::can_info& msg)
+{
+	can_request request(msg);
+	int response;
+	ssize_t nbytes;
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	nbytes = send(connfd, &request, sizeof(request), 0);
 	if (nbytes < 0) {
 		ROS_ERROR("send: %s", strerror(errno));
 		socket_ok = false;
@@ -86,8 +123,10 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	ros::Subscriber sub = n.subscribe("error_info", QUEUE_SIZE,
-					  subscribe_error_info);
+	ros::Subscriber sub_error_info = n.subscribe("error_info", QUEUE_SIZE,
+						     subscribe_error_info);
+	ros::Subscriber sub_can_info = n.subscribe("can_info", QUEUE_SIZE,
+						   subscribe_can_info);
 
 	while (true) {
 		connfd = accept(listenfd, (struct sockaddr *)nullptr,
