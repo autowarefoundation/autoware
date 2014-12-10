@@ -3,6 +3,7 @@
 #include <visualization_msgs/Marker.h>
 
 #define SELF_TRANS	0
+int swap_x_y = 0;
 
 typedef std::vector<std::vector<std::string>> Tbl;
 
@@ -53,7 +54,7 @@ std::vector<RoadEdge> read_roadedge(const char* filename)
   return ret;
 }
 
-/* for gutter.csv, road_surface_mark.csv, guardrail.csv */
+/* for gutter.csv, guardrail.csv */
 struct Gutter {
   int id;
   int aid;
@@ -111,7 +112,7 @@ struct WhiteLine {
 	int lid;
 	double width;
 	char color;
-	int dir;
+	int type;
 	int linkid;
 };
 
@@ -127,7 +128,7 @@ std::vector<WhiteLine> read_whiteline(const char* filename)
     ret[id].lid = std::stoi(tbl[i][1]);
     ret[id].width = std::stod(tbl[i][2]);
     ret[id].color = tbl[i][3].c_str()[0];
-    ret[id].dir = std::stod(tbl[i][4]);
+    ret[id].type = std::stod(tbl[i][4]);
     ret[id].linkid = std::stoi(tbl[i][5]);
   }
   return ret;
@@ -203,6 +204,30 @@ std::vector<CrossWalk> read_crosswalk(const char* filename)
     ret[id].type = std::stoi(tbl[i][2]);
     ret[id].bdid = std::stoi(tbl[i][3]);
     ret[id].linkid = std::stoi(tbl[i][4]);
+  }
+  return ret;
+}
+
+/* for road_surface_mark.csv */
+struct RoadSurfaceMark {
+  int id;
+  int aid;
+  std::string type;
+  int linkid;
+};
+
+std::vector<RoadSurfaceMark> read_roadsurfacemark(const char* filename)
+{
+  int max_id;
+  Tbl tbl = read_csv(filename, &max_id);
+  size_t i, n = tbl.size();
+  std::vector<RoadSurfaceMark> ret(max_id + 1);
+  for (i=0; i<n; i++) {
+    int id = std::stoi(tbl[i][0]);
+    ret[id].id = id;
+    ret[id].aid = std::stoi(tbl[i][1]);
+    ret[id].type = tbl[i][2];
+    ret[id].linkid = std::stoi(tbl[i][3]);
   }
   return ret;
 }
@@ -568,12 +593,19 @@ void set_marker_data(visualization_msgs::Marker* marker,
 		    double px, double py, double pz, double ox, double oy, double oz, double ow,
 		    double sx, double sy, double sz, double r, double g, double b, double a)
 {
-  marker->pose.position.x = px;
-  marker->pose.position.y = py;
+  if(swap_x_y) {
+    marker->pose.position.x = py;
+    marker->pose.position.y = px;
+    marker->pose.orientation.x = oy;
+    marker->pose.orientation.y = ox;
+  } else {
+    marker->pose.position.x = px;
+    marker->pose.position.y = py;
+    marker->pose.orientation.x = ox;
+    marker->pose.orientation.y = oy;
+  }
   marker->pose.position.z = pz;
 
-  marker->pose.orientation.x = ox;
-  marker->pose.orientation.y = oy;
   marker->pose.orientation.z = oz;
   marker->pose.orientation.w = ow;
 
@@ -598,10 +630,17 @@ void add_marker_points(visualization_msgs::Marker* marker, double x, double y, d
 
 void add_marker_points_pointclass(visualization_msgs::Marker* marker, PointClass& pclass)
 {
-  add_marker_points(marker,
-		    pclass.bx,
-		    pclass.ly,
-		    pclass.h);
+  if(swap_x_y) {
+    add_marker_points(marker,
+		      pclass.ly,
+		      pclass.bx,
+		      pclass.h);
+  } else {
+    add_marker_points(marker,
+		      pclass.bx,
+		      pclass.ly,
+		      pclass.h);
+  }
 }
 
 void publish_marker(visualization_msgs::Marker* marker,
@@ -609,9 +648,14 @@ void publish_marker(visualization_msgs::Marker* marker,
 		    ros::Rate& rate)
 {
 #if SELF_TRANS
-    marker->pose.position.x += 86432;
-    marker->pose.position.y += 16635;
-    marker->pose.position.z += -50; // -90
+    if(swap_x_y) {
+      marker->pose.position.x += 16635;
+      marker->pose.position.y += 86432;
+    } else {
+      marker->pose.position.x += 86432;
+      marker->pose.position.y += 16635;
+    }
+    marker->pose.position.z += -50; // -50
 #endif
 
     ros::ok();
@@ -678,7 +722,7 @@ int main(int argc, char **argv)
 
 
 #!/bin/sh
-rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector.csv point.csv roadsign.csv dtlane.csv node.csv lane.csv whiteline.csv zebrazone.csv area.csv crosswalk.csv line.csv
+rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector.csv point.csv roadsign.csv dtlane.csv node.csv lane.csv whiteline.csv zebrazone.csv area.csv crosswalk.csv line.csv roadedge.csv road_surface_mark.csv <swap_x_y_off|swap_x_y_on>
 
 # EOF
 
@@ -687,6 +731,13 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
   ros::init(argc, argv, "sample_vector_map");
   ros::NodeHandle n;
   ros::Publisher pub = n.advertise<visualization_msgs::Marker>("/vector_map", 10, true);
+
+
+  if (argc < 18) {
+    std::cerr << "Usage: " << argv[0] << " csv_file"
+              << std::endl;
+    std::exit(1);
+  }
 
   std::vector<PoleData> poledatas = read_poledata(argv[1]);
   std::vector<SignalData> signaldatas = read_signaldata(argv[2]);
@@ -702,6 +753,14 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
   std::vector<AreaClass> areaclasses = read_areaclass(argv[12]);
   std::vector<CrossWalk> crosswalks = read_crosswalk(argv[13]);
   std::vector<LineClass> lines = read_lineclass(argv[14]);
+  std::vector<RoadEdge> roadedges = read_roadedge(argv[15]);
+  std::vector<Gutter> roadmarks = read_gutter(argv[16]);
+  if(std::string(argv[17]) == "swap_x_y_on") {
+    printf("swap_x_y: on\n");
+    swap_x_y = 1;
+  } else {
+    printf("swap_x_y : off\n");
+  }
 
   visualization_msgs::Marker marker;
 #if SELF_TRANS
@@ -734,6 +793,7 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
 		      pointclasses,
 		      &marker, pub, rate);
   }
+  rate.sleep();
 
   // signaldata
   for (i=0; i<signaldatas.size(); i++) {
@@ -743,6 +803,7 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
     int vid = signaldatas[i].vid;
     int pid = vectorclasses[vid].pid;
 
+    rate.sleep();
     marker.type = visualization_msgs::Marker::SPHERE;
 
     double ox, oy, oz, ow;
@@ -781,16 +842,21 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
 		    0.5, 0.5, 0.5,
 		    r, g, b, a);
     publish_marker(&marker, pub, rate);
+    rate.sleep();
+    rate.sleep();
 
     // signal pole
-    if (signaldatas[i].type == 3) { // yellow
+    if (signaldatas[i].type == 2) { // blue
       int plid = signaldatas[i].plid;
+    rate.sleep();
       if (plid > 0) {
 	publish_poleclass(poleclasses[plid],
 			  0.5, 0.5, 0.5, 1,
 			  vectorclasses,
 			  pointclasses,
 			  &marker, pub, rate);
+    rate.sleep();
+    rate.sleep();
       }
     }
   }
@@ -878,10 +944,130 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
 		    pointclasses[pid].bx - lanes[i].span/2, pointclasses[pid].ly - (dtlanes[did].lw + dtlanes[did].rw)/2, pointclasses[pid].h,
 		    ox, oy, oz, ow,
 		    lanes[i].span, dtlanes[did].lw + dtlanes[did].rw, 0.1,
-		    0.5, 0, 0, 1);
+		    0.5, 0, 0, 0.3);
     
     publish_marker(&marker, pub, rate);
   }
 
+  // zebrazone ?????
+  for (i=0; i<zebrazones.size(); i++) {
+    if (zebrazones[i].id <= 0) {
+      continue;
+    }
+    int aid = zebrazones[i].aid;
+    int slid = areaclasses[aid].slid;
+    int elid = areaclasses[aid].elid;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+
+    set_marker_data(&marker,
+		    0, 0, 0,
+		    0, 0, 0, 1,
+		    0.1, 0, 0,
+		    1, 1, 1, 1);
+    for(int lid = slid; ; lid = lines[lid].flid) {
+      int pid = lines[lid].bpid;
+      add_marker_points_pointclass(&marker, pointclasses[pid]);
+      if (lid == elid) {
+	pid = lines[lid].fpid;
+	add_marker_points_pointclass(&marker, pointclasses[pid]);
+	break;
+      }
+    }
+
+    publish_marker(&marker, pub, rate);
+  }
+
+  // white line
+  marker.type = visualization_msgs::Marker::LINE_STRIP;
+  for (i=0; i<whitelines.size(); i++) {
+    if (whitelines[i].id <= 0) {
+      continue;
+    }
+    int lid = whitelines[i].lid;
+    if(lines[lid].blid == 0) {
+      ;
+      double r = 1.0, g = 1.0, b = 1.0;
+      if(whitelines[i].color == 'Y') {
+	g = 0.5;
+	b = 0.0;
+      }
+      set_marker_data(&marker,
+		      0, 0, 0,
+		      0, 0, 0, 1,
+		      whitelines[i].width, 0, 0,
+		      r, g, b, 1);
+    
+      marker.points.clear();
+    }
+
+    int pid = lines[lid].bpid;
+    add_marker_points_pointclass(&marker, pointclasses[pid]);
+    if(lines[lid].flid == 0) {
+      pid = lines[lid].fpid;
+      add_marker_points_pointclass(&marker, pointclasses[pid]);
+    }
+
+    publish_marker(&marker, pub, rate);
+  }
+
+
+  // roadedge
+  marker.type = visualization_msgs::Marker::LINE_STRIP;
+  for (i=0; i<roadedges.size(); i++) {
+    if (roadedges[i].id <= 0) {
+      continue;
+    }
+    int lid = roadedges[i].lid;
+    if(lines[lid].blid == 0) {
+      ;
+      set_marker_data(&marker,
+		      0, 0, 0,
+		      0, 0, 0, 1,
+		      0.1, 0, 0,
+		      0.5, 0.5, 0.5, 1);		// grey @@@@
+    
+      marker.points.clear();
+    }
+
+    int pid = lines[lid].bpid;
+    add_marker_points_pointclass(&marker, pointclasses[pid]);
+    if(lines[lid].flid == 0) {
+      pid = lines[lid].fpid;
+      add_marker_points_pointclass(&marker, pointclasses[pid]);
+    }
+
+    publish_marker(&marker, pub, rate);
+  }
+
+
+  // road_surface_mark
+  for (i=0; i<roadmarks.size(); i++) {
+    if (roadmarks[i].id <= 0) {
+      continue;
+    }
+    int aid = roadmarks[i].aid;
+    int slid = areaclasses[aid].slid;
+    int elid = areaclasses[aid].elid;
+    double w = 0.2;
+
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    set_marker_data(&marker,
+		    0, 0, 0,
+		    0, 0, 0, 1,
+		    w, 0, 0,
+		    1, 1, 1, 1);
+    marker.points.clear();
+    for(int lid = slid; ; lid = lines[lid].flid) {
+      int pid = lines[lid].bpid;
+      add_marker_points_pointclass(&marker, pointclasses[pid]);
+      if (lid == elid) {
+	pid = lines[lid].fpid;
+	add_marker_points_pointclass(&marker, pointclasses[pid]);
+	break;
+      }
+    }
+
+    publish_marker(&marker, pub, rate);
+  }
   return 0;
 }

@@ -35,6 +35,7 @@ public:
     QPushButton *refresh;
     QSpacerItem *horizontalSpacer;
     QPushButton *grab;
+    QPushButton *remove;
     QPushButton *calibrate;
     QPushButton *Project;
     QTabWidget *tabWidget;
@@ -77,6 +78,11 @@ public:
 
         horizontalLayout->addWidget(grab);
 
+        remove = new QPushButton(centralWidget);
+        remove->setObjectName(QStringLiteral("remove"));
+
+        horizontalLayout->addWidget(remove);
+
         calibrate = new QPushButton(centralWidget);
         calibrate->setObjectName(QStringLiteral("calibrate"));
 
@@ -109,6 +115,7 @@ public:
         save->setText(QApplication::translate("MainWindow", "Save", 0));
         refresh->setText(QApplication::translate("MainWindow", "Refresh", 0));
         grab->setText(QApplication::translate("MainWindow", "Grab", 0));
+        remove->setText(QApplication::translate("MainWindow", "Remove", 0));
         calibrate->setText(QApplication::translate("MainWindow", "Calibrate", 0));
         Project->setText(QApplication::translate("MainWindow", "Project", 0));
     } // retranslateUi

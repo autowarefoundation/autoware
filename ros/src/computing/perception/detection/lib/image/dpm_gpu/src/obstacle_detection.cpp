@@ -144,12 +144,14 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
 
     /* store data which will be published */
 #if 1 // AXE
+    image_objects_msg.header = image_source.header;
     image_objects_msg.car_num = CUR->num;
     image_objects_msg.corner_point = corner_point_array;
     image_objects_msg.car_type = car_type_array;
     image_objects_msg.header.stamp = image_source.header.stamp;
 #else
 //    image_and_obstacle_position_msg.image_raw = image_source;
+    image_and_obstacle_position_msg.header = image_source.header;
     image_and_obstacle_position_msg.car_num = CUR->num;
     image_and_obstacle_position_msg.corner_point = corner_point_array;
     image_and_obstacle_position_msg.car_type = car_type_array;
@@ -283,7 +285,7 @@ subscribe() returns a Subscriber object that you
    * away the oldest ones.
    */
 // %Tag(SUBSCRIBER)%
-  ros::Subscriber sub = n.subscribe("/image_raw", 1, obstacle_detectionCallback);
+  ros::Subscriber sub = n.subscribe("/camera/image_raw", 1, obstacle_detectionCallback);
 #if 1 // AXE
   image_objects = n.advertise<dpm::ImageObjects>(published_topic, 1);
 #else

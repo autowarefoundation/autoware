@@ -57,12 +57,15 @@ protected:
     QSplitter * calibsplitter;
 public slots:
     void grabCalibDataSlot();
+    void removeCalibDataSlot();
     void calibrateSensorSlot();
     void loadCalibResultSlot();
     void saveCalibResultSlot();
 signals:
     void calibDataGrabbedSignal();
     void calibDataGrabbedErrorSignal();
+    void calibDataRemovedSignal();
+    void calibDataRemovedErrorSignal();
     void sensorCalibratedSignal();
     void sensorCalibratedErrorSignal();
     void calibResultLoadedSignal();
@@ -71,6 +74,7 @@ signals:
     void calibResultSavedErrorSignal();
 protected:
     virtual bool grabCalibData()=0;
+    virtual bool removeCalibData()=0;
     virtual bool calibrateSensor()=0;
     virtual bool loadCalibResult(cv::FileStorage & fs)=0;
     virtual bool saveCalibResult(cv::FileStorage & fs)=0;
@@ -142,6 +146,7 @@ protected:
     cv::vector<cv::Mat> calibimages;
     QTabWidget * calibimagesshow;
 protected:
+    bool removeCalibData();
     bool calibrateSensor();
     bool loadCalibResult(cv::FileStorage & fs);
     bool saveCalibResult(cv::FileStorage & fs);
@@ -183,8 +188,12 @@ protected:
     float maxrange;
 
     QTabWidget * calibvelodynetab;
+
+    QVector<pcl::PointCloud<pcl::PointXYZI>::Ptr> calibvelodynespoints;
+    QVector<cv::Mat> calibvelodynesnormals;
     QTabWidget * calibvelodynepointstab;
     QTabWidget * calibvelodynenormalstab;
+
     double calibrationrotationalerror;
     double calibrationtranslationalerror;
     QLabel * calibrationerrorshow;
@@ -195,8 +204,7 @@ protected:
     sensor_msgs::PointCloud2ConstPtr calibvelodyne;
     GLViewer * calibvelodyneviewer;
     GLuint calibvelodynedisplaylist;
-    QVector<pcl::PointCloud<pcl::PointXYZI>::Ptr> calibvelodynespoints;
-    QVector<cv::Mat> calibvelodynesnormals;
+
     QTabWidget * calibvelodynesshow;
 protected slots:
     void refreshVelodyneSlot();
@@ -208,6 +216,7 @@ signals:
     void velodyneRefreshedErrorSignal();
 protected:
     virtual bool refreshVelodyne();
+    bool removeCalibData();
     bool calibrateSensor();
     bool loadCalibResult(cv::FileStorage &fs);
     bool saveCalibResult(cv::FileStorage &fs);

@@ -76,9 +76,11 @@ static int getConnect(int port, int *sock, int *asock)
 			perror("socket");
 			return -1;
 		}
+
+		std::memset(&addr, 0, sizeof(sockaddr_in));
 		addr.sin_family = AF_INET;
 		addr.sin_port = htons(port);
-		addr.sin_addr.s_addr = INADDR_ANY;
+		addr.sin_addr.s_addr = htonl(INADDR_ANY);
 		//make it available immediately to connect
 		setsockopt(*sock, SOL_SOCKET, SO_REUSEADDR,
 			(const char *)&yes, sizeof(yes));

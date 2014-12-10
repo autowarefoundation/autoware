@@ -59,6 +59,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="remove">
+        <property name="text">
+         <string>Remove</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="calibrate">
         <property name="text">
          <string>Calibrate</string>
