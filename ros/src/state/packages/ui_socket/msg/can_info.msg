@@ -1,8 +1,7 @@
 Header header
 int32 application
-time timestamp
-time startup
-string terminal
+int32 timestamp
+int32 startup
 float64 can_str
 float64 can_vel
 float64 can_gas
@@ -17,7 +16,6 @@ float64 lon
 float64 roll
 float64 pitch
 float64 yaw
-string img
 float64 cal_orientation_x
 float64 cal_orientation_y
 float64 cal_orientation_z
@@ -52,3 +50,5 @@ float64 accuracy
 float64 speed
 float64 env_battery
 float64 env_temperature
+string terminal
+string img
