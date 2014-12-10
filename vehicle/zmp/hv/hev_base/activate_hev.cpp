@@ -153,7 +153,7 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
           Main->sndDrvModeM();
           Main->sndStrModeM();
           std::cout << "Fallback to Manual Mode" << std::endl;
-
+          usleep(PERIOD*10000);
         }
         continue;
       }
@@ -240,17 +240,11 @@ bool CheckHevMode()
 {
   
   int drv_mode = _hev_state.drvInf.mode; // 0x00 : manual ; 0x10 : program
-  int drv_servo = _hev_state.drvInf.servo; // 0x00 : ON 0x10 :OFF
+  int drv_servo = _hev_state.drvInf.servo; // 0x00 : OFF 0x10 :ON
   int str_mode = _hev_state.strInf.mode; // 0x00 : manual ; 0x10 : program
-  int str_servo = _hev_state.strInf.servo; // 0x00 : ON 0x10 :OFF
+  int str_servo = _hev_state.strInf.servo; // 0x00 : OFF 0x10 :ON
 
   // cout <<  "===============CheckHevMode===============" << endl;
-
-  if(drv_mode == 0x10 && drv_servo == true && str_mode == 0x10 && str_servo == true){
-    return true;
-  }else{
-    return false;
-  }
 
   if(drv_mode == 0x10 && drv_servo == 0x10 && str_mode == 0x10 && str_servo == 0x10){
     return true;
@@ -541,9 +535,10 @@ std::queue<double> vel_buffer;
   double old_velocity = 0.0;
   vel_data_t current = _shared_memory.readCurVel();
 
-  double current_velocity = current.tv;
+  double current_velocity = current.tv*3.6;
   double current_steering_angle = current.sv;
-
+  
+  
   double cmd_velocity = tv;
   double cmd_steering_angle = sv;
  
@@ -556,6 +551,7 @@ std::queue<double> vel_buffer;
     estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
     
   }
+  cout << endl << "Current " << "tv : " << current_velocity << " sv : "<< current_steering_angle << endl; 
   cout << endl << "Command " << "tv : " << tv << " sv : "<< sv << endl; 
   cout << "Estimate Accel : " << estimate_accel << endl; 
 
@@ -799,20 +795,20 @@ void MainWindow::StoppingControl(double current_velocity,double cmd_velocity)
       //shift to neutral
       sndDrvShiftN(); //HEVの関数
       //hev->SetDrvShiftMode(SHIFT_POS_N);
-            
-      }
-	  
-      } // if nearly at stop
-      else {
-      // one second is approximately how fast full brakes applied in sharp stop
-        int high_brake = HEV_MAX_BRAKE-500;
-        int brake_target = HEV_MED_BRAKE;
-        if (fabs(current_velocity) > KmhToMs(16.0)) {
-          brake_target = HEV_MED_BRAKE + (int)((fabs(current_velocity) - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
-          if (brake_target > high_brake) brake_target = high_brake;
-          
-        }
-        Brake(brake_target, (int)(((double)brake_target)/0.5*cycle_time));
+      
+    }
+	
+  } // if nearly at stop
+  else {
+    // one second is approximately how fast full brakes applied in sharp stop
+    int high_brake = HEV_MAX_BRAKE-500;
+    int brake_target = HEV_MED_BRAKE;
+    if (fabs(current_velocity) > KmhToMs(16.0)) {
+      brake_target = HEV_MED_BRAKE + (int)((fabs(current_velocity) - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
+      if (brake_target > high_brake) brake_target = high_brake;
+      
+    }
+    Brake(brake_target, (int)(((double)brake_target)/0.5*cycle_time));
      
-      } // else decelerate*/
+  } // else decelerate*/
 }
