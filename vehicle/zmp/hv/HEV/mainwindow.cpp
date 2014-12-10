@@ -231,6 +231,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+
     hev->Stop();
     hev->Close();
     delete ui;

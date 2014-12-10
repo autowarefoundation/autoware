@@ -6,6 +6,9 @@ base_server
 shm
 vel_cmd_client
 vel_cmd_server
-moc.mainwindow.cpp
+moc_mainwindow.cpp
 ui_mainwindow.h
 aist_hev
+cmd_test
+hev_reset_odom
+HEV/HEV

@@ -38,6 +38,7 @@ using namespace zmp::hev;
 #define ACCEL_PEDAL_MAX 300
 
 #define HEV_LIGHT_BRAKE 400
+#define HEV_MED_BRAKE 1000
 #define HEV_MED2_BRAKE 2000
 #define HEV_MAX_BRAKE 4096
 
@@ -114,6 +115,8 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
 {
   //class which operate HEV
   MainWindow* Main = (MainWindow*)arg;
+
+  int change_flag = 0;
   
   cout << "HevBase Thread Create!!!!!!!!!!!!" << endl;
   
@@ -125,27 +128,56 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
     //update hev drvinf strinf brkinf 
     Main->UpdateState();
 
- 
     //update odom and current velocity steering in shm
     SharedMemoryUpdate();
     
     //check hev mode
     hev_mode = CheckHevMode();
-
+    
+    //プログラムモード切り替えの判断
     if(hev_mode == true){
-      cout << "hev_mode : Program Mode" << endl; 
+      
+      if(change_flag == 0){
+        char answer[1];
+        std::cout << "Change Program Mode?(y,n) : ";
+        std::cin >> answer; 
+        
+        if(strcmp(answer,"y") == 0){
+          std::cout << "Changing to Program Mode" << std::endl; 
+          change_flag = 1;
+   
+        } else{
+          hev_mode = false;
+          Main->sndDrvServoOFF();
+          Main->sndStrServoOFF();
+          Main->sndDrvModeM();
+          Main->sndStrModeM();
+          std::cout << "Fallback to Manual Mode" << std::endl;
+          usleep(PERIOD*10000);
+        }
+        continue;
+      }
+      
+      //reset odometry
+       pose_data_t zero_odom;
+       memset(&zero_odom, 0, sizeof(zero_odom));
+       _shared_memory.writeOdomPose(zero_odom);
+      
       //Get velocity and steering command
       vel_data_t cmd = GetCommand();
-     
+      
       //prius control 
       Control(cmd.tv,cmd.sv,Main);
       
     }else{
-      cout << "hev_mode : Manual Mode" << endl;
+      cout << "HEV: Manual Mode" << endl;
     }
-    
+    printf("\n\n");
     usleep(PERIOD*1000);
   }
+
+
+
   return NULL;
   
 }
@@ -170,8 +202,10 @@ vel_data_t GetCommand()
   //check if new command
   if((cmd_time - cmd.tstamp) > 500){
     //old command
+    std::cout << "command is old" <<std::endl;
     cmd = zero_cmd();
   }
+  std::cout << "velocity command : " << cmd.tv << " " << cmd.sv << std::endl;
   return cmd;
 }
 
@@ -187,9 +221,9 @@ void SharedMemoryUpdate()
   double x, y,theta,tv,sv;    
   HevBaseUpdate(&x,&y,&theta,&tv,&sv);
 
-  cout << "===============SharedMemoryUpdate===============" << endl;
-  printf("x\t\t y      \t theta      \t tv      \t sv\n");
-  printf("%lf \t %lf \t %lf \t %lf \t %lf\n\n",x,y,theta,tv,sv);
+  // cout << "===============SharedMemoryUpdate===============" << endl;
+  //printf("x\t\t y      \t theta      \t tv      \t sv\n");
+  //printf("%lf \t %lf \t %lf \t %lf \t %lf\n\n",x,y,theta,tv,sv);
   
   data.odom_pose.x = x;
   data.odom_pose.y = y;
@@ -206,17 +240,11 @@ bool CheckHevMode()
 {
   
   int drv_mode = _hev_state.drvInf.mode; // 0x00 : manual ; 0x10 : program
-  int drv_servo = _hev_state.drvInf.servo; // 0x00 : ON 0x10 :OFF
+  int drv_servo = _hev_state.drvInf.servo; // 0x00 : OFF 0x10 :ON
   int str_mode = _hev_state.strInf.mode; // 0x00 : manual ; 0x10 : program
-  int str_servo = _hev_state.strInf.servo; // 0x00 : ON 0x10 :OFF
+  int str_servo = _hev_state.strInf.servo; // 0x00 : OFF 0x10 :ON
 
-  cout <<  "===============CheckHevMode===============" << endl;
-
-  if(drv_mode == 0x10 && drv_servo == true && str_mode == 0x10 && str_servo == true){
-    return true;
-  }else{
-    return false;
-  }
+  // cout <<  "===============CheckHevMode===============" << endl;
 
   if(drv_mode == 0x10 && drv_servo == 0x10 && str_mode == 0x10 && str_servo == 0x10){
     return true;
@@ -227,13 +255,11 @@ bool CheckHevMode()
 }
 
 //use for HevBaseUpdate
-double current_velocity = 0; 
-double current_steering_angle = 0;
+
+
 static long long int old_tstamp= 0;
 int hevbaseupdate_count = 0;
-double odometry_x = 0;
-double odometry_y = 0;
-double odometry_theta = 0;
+
 double cycle_time = 0;
 bool HevBaseUpdate(double * x, double * y, double *theta, double *tv, double * sv)
 {
@@ -245,8 +271,11 @@ bool HevBaseUpdate(double * x, double * y, double *theta, double *tv, double * s
   double str_angle = 0.0;
   double vel = 0.0;
   
-
-    
+  pose_data_t odometry = _shared_memory.readOdomPose();
+  double odometry_x = odometry.x;
+  double odometry_y = odometry.y;
+  double odometry_theta = odometry.Y;
+  
   if (old_tstamp != 0) {
 
     if (_hev_state.drvInf.actualShift == SHIFT_POS_R) {
@@ -277,29 +306,15 @@ bool HevBaseUpdate(double * x, double * y, double *theta, double *tv, double * s
   }
   old_tstamp = _hev_state.tstamp;
     
-  //
-  current_velocity = vel;
-  current_steering_angle = str_angle;
-    
+  
+
   *tv = vel;
   *sv =str_angle;
   *x = odometry_x;
   *y = odometry_y;
   *theta = odometry_theta;
   
-  //*x = count % 100;
-  //    fprintf(stderr,"set odom return to %.2f %.2f %.2f\n", *x, *y, *theta);
-  
-  /* if (DEBUG) {
-     fprintf(stderr,"Hev::update: dt = %.2f vel = %.2f odom = %.2f %.2f %.2f\n",dt, vel, 
-     _odomX, _odomY, _odomTheta);
-     }
-     if (_log) {
-     _writeLog(this->_hevState);
-     }
-     if (DEBUG || (count % 100 == 0)) 
-    
-  */
+
   PrintState();
   hevbaseupdate_count++;
  
@@ -317,25 +332,24 @@ void PrintState()
 
 }
 
-void PrintDrvInf()
-{
-  int mode = _hev_state.drvInf.mode;
-  int servo = _hev_state.drvInf.servo;
-
-  printf("---: MODE\tSERVO\tSHIFT\tVELOC\t\n");
-
-  printf("Drv: ");
+void PrintMode(int mode){
+  
   switch(mode){
   case MODE_MANUAL:
-    printf("manual\t");
+    printf("MANUAL\t");
     break;
   case MODE_PROGRAM:
-    printf("program\t");
+    printf("PROGRAM\t");
     break;
   default:
-    printf("unknown\t");
+    printf("UNKNOWN\t");
     break;
   }
+}
+
+
+void PrintServo(int servo){
+  
   switch(servo){
   case SERVO_TRUE:
     printf("ON\t");
@@ -344,9 +358,25 @@ void PrintDrvInf()
     printf("OFF\t");
     break;
   default:
-    printf("unknown\t");
+    printf("UNKNOWN\t");
     break;
   }
+}
+
+
+
+
+void PrintDrvInf()
+{
+  int mode = _hev_state.drvInf.mode;
+  int servo = _hev_state.drvInf.servo;
+
+  printf("---: MODE\tSERVO\tSHIFT\tVELOC\t\n");
+
+  printf("Drv: ");
+  PrintMode(mode);
+  PrintServo(servo);
+
   printf("%d\t%.4f\t\n\n",_hev_state.drvInf.actualShift, _hev_state.drvInf.veloc);  
 }
 
@@ -359,29 +389,9 @@ void PrintStrInf()
 
   printf("---: MODE\tSERVO\tANGLE\n"); 
   printf("Str: "); 
- 
-  switch(mode){
-  case MODE_MANUAL:
-    printf("manual\t");
-    break;
-  case MODE_PROGRAM:
-    printf("program\t");
-    break;
-  default:
-    printf("unknown\t");
-    break;
-  }
-  switch(servo){
-  case SERVO_TRUE:
-    printf("ON\t");
-    break;
-  case SERVO_FALSE:
-    printf("OFF\t");
-    break;
-  default:
-    printf("unknown\t");
-    break;
-  }
+  PrintMode(mode);
+  PrintServo(servo);
+
   printf("%.4f\t\n\n",_hev_state.strInf.angle);  
 }
 
@@ -402,9 +412,8 @@ void PrintBrkInf()
     printf("unknown\t");
     break;
   }
-  printf("\t%d\t%d\n\n",_hev_state.brkInf.actualPedalStr, _hev_state.brkInf.inputPedalStr);
+  printf("%d\t%d\n",_hev_state.brkInf.actualPedalStr, _hev_state.brkInf.inputPedalStr);
 }
-
 
 
 static int old_accel_cmd = -1;
@@ -440,15 +449,14 @@ bool MainWindow::Accel(int target_accel, int gain) {
     }
     fprintf(stderr,"accel: cur: %d cmd: %d target: %d\n", current_accel, cmd_accel, target_accel); 
   }
-  // if (DEBUG) {
+
   fprintf(stderr,"setting accel pedal to %d\n", cmd_accel);
-  // }
-  //if (LIVE_HEV) {
+
   if (cmd_accel >= 0 && cmd_accel < ACCEL_PEDAL_MAX) {
     fprintf(stderr,"calling SetPedalStroke\n");
     hev->SetDrvStroke(cmd_accel);
   }
-  // }
+
   old_accel_cmd = cmd_accel;
 
   if (target_accel == current_accel){ 
@@ -493,14 +501,13 @@ bool MainWindow::Brake(int target_brake, int gain) {
     }
     fprintf(stderr,"cur: %d cmd: %d target: %d\n", current_brake, cmd_brake, target_brake); 
   }
-  //if (DEBUG) {
+  
   fprintf(stderr,"setting brake pedal to %d\n", cmd_brake);
-  // }
-  //if (LIVE_HEV) {
+
   fprintf(stderr,"calling SetBrakeStroke\n");
   hev->SetBrakeStroke(cmd_brake);
 
-  //}
+ 
   old_brake_cmd = cmd_brake;
 
   if (target_brake == current_brake){ 
@@ -512,23 +519,28 @@ bool MainWindow::Brake(int target_brake, int gain) {
 }
 
 
-std::queue<double> vel_buffer;
-static int vel_buffer_size = 10; 
-double cmd_velocity;
-double cmd_steering_angle;
+
 static int target_accel_level = 0;
-//static double old_cmd_velocity = 0.0;
-//static double old_current_velocity = 0.0;
-//static int old_brake;
+
 double estimate_accel = 0.0;
 
 bool Control(double tv, double sv,void* p) 
 {
   MainWindow* Main = (MainWindow*)p;
 
+std::queue<double> vel_buffer;
+ static int vel_buffer_size = 10; 
+ 
+
   double old_velocity = 0.0;
+  vel_data_t current = _shared_memory.readCurVel();
 
-
+  double current_velocity = current.tv*3.6;
+  double current_steering_angle = current.sv;
+  
+  
+  double cmd_velocity = tv;
+  double cmd_steering_angle = sv;
  
   // estimate current acceleration
   vel_buffer.push(fabs(current_velocity));
@@ -539,10 +551,10 @@ bool Control(double tv, double sv,void* p)
     estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
     
   }
+  cout << endl << "Current " << "tv : " << current_velocity << " sv : "<< current_steering_angle << endl; 
   cout << endl << "Command " << "tv : " << tv << " sv : "<< sv << endl; 
   cout << "Estimate Accel : " << estimate_accel << endl; 
-  cmd_velocity = tv;
-  cmd_steering_angle = sv;
+
   // TRY TO INCREASE STEERING
   sv +=0.1*sv;
 
@@ -555,7 +567,7 @@ bool Control(double tv, double sv,void* p)
   //    - release brake if pressed
   
   //ギアがNの場合DかRに
-  Main->ChangeShiftMode();
+  Main->ChangeShiftMode(cmd_velocity);
    
   //------------------------------------------------------
   // if shift in drive
@@ -570,7 +582,7 @@ bool Control(double tv, double sv,void* p)
   
  
   
-  if (_hev_state.drvInf.actualShift == SHIFT_POS_D 
+  if ( _hev_state.drvInf.actualShift == SHIFT_POS_D 
       //|| _hev_state.drvInf.actualShift == SHIFT_POS_R
       ) {
     fprintf(stderr,"In Drive or Reverse\n");
@@ -581,20 +593,22 @@ bool Control(double tv, double sv,void* p)
         && fabs(current_velocity) <= KmhToMs(51.0) ) {
 
       //accelerate !!!!!!!!!!!!!!!!
-      Main->AccelerateControl();
+      std::cout << "Acceleration" << std::endl;
+      Main->AccelerateControl(current_velocity,cmd_velocity);
       
     }else if (fabs(cmd_velocity) < fabs(current_velocity) 
               && fabs(cmd_velocity) > 0.0) 
       {
         //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        Main->DecelerateControl();
+        std::cout << "Deceleration" << std::endl;
+        Main->DecelerateControl(current_velocity,cmd_velocity);
       }
     
       else if (cmd_velocity == 0.0) {
 	
         //Stopping!!!!!!!!!!!
        
-        Main->StoppingControl();
+        Main->StoppingControl(current_velocity,cmd_velocity);
   
       } // if cmdvel < curvel
     
@@ -625,7 +639,7 @@ bool Control(double tv, double sv,void* p)
   
 }
 
-void MainWindow::ChangeShiftMode()
+void MainWindow::ChangeShiftMode(double cmd_velocity)
 {
 
 
@@ -639,11 +653,13 @@ void MainWindow::ChangeShiftMode()
         // brake fully on
         printf("Brake fully on, set shift to drive\n");
         if (cmd_velocity > 0.0){ 
-          hev->SetDrvShiftMode(SHIFT_POS_D);
+          // hev->SetDrvShiftMode(SHIFT_POS_D);
+          sndDrvShiftD(); //HEVの関数
         }
         else if (cmd_velocity < 0.0) {
           printf("-- WARNING: changing shift to REVERSE --\n");
-          hev->SetDrvShiftMode(SHIFT_POS_R);
+          //hev->SetDrvShiftMode(SHIFT_POS_R);
+          sndDrvShiftR(); //HEVの関数
         } 
       }
       
@@ -658,11 +674,11 @@ void MainWindow::ChangeShiftMode()
     }
     target_accel_level = 0;
   }
-
+  printf("SHIFT = %d\n",_hev_state.drvInf.actualShift);
 }
 
 
-void MainWindow::AccelerateControl()
+void MainWindow::AccelerateControl(double current_velocity,double cmd_velocity)
 {
 
 
@@ -707,7 +723,7 @@ void MainWindow::AccelerateControl()
         
 }
 
-void MainWindow::DecelerateControl()
+void MainWindow::DecelerateControl(double current_velocity,double cmd_velocity)
 {
 
 
@@ -756,43 +772,43 @@ void MainWindow::DecelerateControl()
  
 }
 
-void MainWindow::StoppingControl()
+void MainWindow::StoppingControl(double current_velocity,double cmd_velocity)
 {
 
-  printf("stopping function is here");
+  printf("stopping function is here\n");
 
-  /*// if using acc pedal release
-      Accel(0, (int)(((double)1000)/0.2*cycle_time)); 
-      // accel goes from pedal pos 1000 to 0 in 0.2s
-      // should be faster than break application below
-      target_accel_level = 0;
+  // if using acc pedal release
+  Accel(0, (int)(((double)1000)/0.2*cycle_time)); 
+  // accel goes from pedal pos 1000 to 0 in 0.2s
+  // should be faster than break application below
+  target_accel_level = 0;
       
       
-      // decelerate by using brake	
-      if (cmd_velocity == 0.0 && fabs(current_velocity) < 0.1) {
-      // nearly at stop/at stop to stop -> apply full brake
-      if (this->_brake(HEV_MAX_BRAKE, (int)(((double)HEV_MAX_BRAKE)/1.0*cycle_time))) {
+  // decelerate by using brake	
+  if (cmd_velocity == 0.0 && fabs(current_velocity) < 0.1) {
+    // nearly at stop/at stop to stop -> apply full brake
+    if (Brake(HEV_MAX_BRAKE, (int)(((double)HEV_MAX_BRAKE)/1.0*cycle_time))) {
       // car nearly zero vel with max brake - wait and change to neutral
 	    
       //samejima change 
       // simon - uncommented to test vel mode
       //shift to neutral
-          
-      this->_shift(SHIFT_POS_N);
-            
-      }
-	  
-      } // if nearly at stop
-      else {
-      // one second is approximately how fast full brakes applied in sharp stop
-      int high_brake = HEV_MAX_BRAKE-500;
-      int brake_target = HEV_MED_BRAKE;
-      if (fabs(current_velocity) > KmhToMs(16.0)) {
+      sndDrvShiftN(); //HEVの関数
+      //hev->SetDrvShiftMode(SHIFT_POS_N);
+      
+    }
+	
+  } // if nearly at stop
+  else {
+    // one second is approximately how fast full brakes applied in sharp stop
+    int high_brake = HEV_MAX_BRAKE-500;
+    int brake_target = HEV_MED_BRAKE;
+    if (fabs(current_velocity) > KmhToMs(16.0)) {
       brake_target = HEV_MED_BRAKE + (int)((fabs(current_velocity) - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
       if (brake_target > high_brake) brake_target = high_brake;
-          
-      }
-      this->_brake(brake_target, (int)(((double)brake_target)/0.5*cycle_time));
+      
+    }
+    Brake(brake_target, (int)(((double)brake_target)/0.5*cycle_time));
      
-      } // else decelerate*/
+  } // else decelerate*/
 }
