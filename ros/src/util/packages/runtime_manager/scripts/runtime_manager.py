@@ -67,9 +67,11 @@ class MyFrame(rtmgr.MyFrame):
 		self.sensing_cmd = self.load_yaml('sensing_launch_cmd.yaml')
 
 		self.timer = wx.Timer(self)
-		self.Bind(wx.EVT_TIMER, self.OnProbeTimer, self.timer)
-		self.OnProbeTimer(None)
-		self.timer.Start(10*1000)
+		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
+		self.probe_interval = 10*1000
+		if self.checkbox_auto_probe.GetValue():
+			self.OnProbe(None)
+			self.timer.Start(self.probe_interval)
 
 	def __do_layout(self):
 		pass
@@ -316,7 +318,13 @@ class MyFrame(rtmgr.MyFrame):
 			proc = None
 		cmd_dic[obj] = (cmd, proc)
 
-	def OnProbeTimer(self, event):
+	def OnAutoProbe(self, event):
+		if event.GetEventObject().GetValue():
+			self.timer.Start(self.probe_interval)
+		else:
+			self.timer.Stop()
+
+	def OnProbe(self, event):
 		#print('probe') # for debug
                 items = self.drv_probe_cmd.items()
 		for (obj, (cmd, bak_res)) in items:
