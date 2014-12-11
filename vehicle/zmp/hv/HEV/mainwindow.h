@@ -58,6 +58,7 @@ public:
 
     void UpdateState();//hevの状態を更新
     void ChangeShiftMode(double cmd_velocity); //シフトチェック
+    void SteeringControl(double cmd_steering_angle);
     void AccelerateControl(double current_velocity,double cmd_velocity); //自動運転：加速
     void DecelerateControl(double current_velocity,double cmd_velocity); //自動運転：減速
     void StoppingControl(double current_velocity,double cmd_velocity); //自動運転：停止

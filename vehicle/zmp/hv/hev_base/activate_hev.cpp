@@ -139,11 +139,11 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
       
       if(change_flag == 0){
         char answer[1];
-        std::cout << "Change Program Mode?(y,n) : ";
-        std::cin >> answer; 
+        cout << "Change Program Mode?(y,n) : ";
+        cin >> answer; 
         
         if(strcmp(answer,"y") == 0){
-          std::cout << "Changing to Program Mode" << std::endl; 
+          cout << "Changing to Program Mode" << endl; 
           change_flag = 1;
    
         } else{
@@ -152,7 +152,7 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
           Main->sndStrServoOFF();
           Main->sndDrvModeM();
           Main->sndStrModeM();
-          std::cout << "Fallback to Manual Mode" << std::endl;
+          cout << "Fallback to Manual Mode" << endl;
           usleep(PERIOD*10000);
         }
         continue;
@@ -202,10 +202,10 @@ vel_data_t GetCommand()
   //check if new command
   if((cmd_time - cmd.tstamp) > 500){
     //old command
-    std::cout << "command is old" <<std::endl;
+    cout << "command is old" <<endl;
     cmd = zero_cmd();
   }
-  std::cout << "velocity command : " << cmd.tv << " " << cmd.sv << std::endl;
+  cout << "velocity command : " << cmd.tv << " " << cmd.sv << endl;
   return cmd;
 }
 
@@ -364,28 +364,51 @@ void PrintServo(int servo){
 }
 
 
+void PrintShift(int shift){
+
+ switch(shift){
+  case SHIFT_POS_D:
+    printf("D\t");
+    break;
+  case SHIFT_POS_R:
+    printf("R\t");
+    break;
+  case SHIFT_POS_N:
+    printf("N\t");
+    break;
+    case SHIFT_POS_B:
+    printf("B\t");
+    break;
+  case SHIFT_POS_P:
+    printf("P\t");
+    break;
+  default:
+    printf("UNKNOWN\t");
+    break;
+  }
+} 
+
 
 
 void PrintDrvInf()
 {
   int mode = _hev_state.drvInf.mode;
   int servo = _hev_state.drvInf.servo;
+  int shift = _hev_state.drvInf.actualShift;
 
   printf("---: MODE\tSERVO\tSHIFT\tVELOC\t\n");
 
   printf("Drv: ");
   PrintMode(mode);
   PrintServo(servo);
-
-  printf("%d\t%.4f\t\n\n",_hev_state.drvInf.actualShift, _hev_state.drvInf.veloc);  
+  PrintShift(shift);
+  printf("%.4f\t\n\n", _hev_state.drvInf.veloc);  
 }
 
 void PrintStrInf()
 {
   int mode = _hev_state.strInf.mode;
   int servo = _hev_state.strInf.servo;
-  printf("servo = %d\n",servo);
-
 
   printf("---: MODE\tSERVO\tANGLE\n"); 
   printf("Str: "); 
@@ -403,7 +426,7 @@ void PrintBrkInf()
   printf("Brk: ");
   switch(press){
   case true:
-    printf("ON\t");
+    printf("ON \t");
     break;
   case false:
     printf("OFF\t");
@@ -528,7 +551,7 @@ bool Control(double tv, double sv,void* p)
 {
   MainWindow* Main = (MainWindow*)p;
 
-std::queue<double> vel_buffer;
+queue<double> vel_buffer;
  static int vel_buffer_size = 10; 
  
 
@@ -556,7 +579,7 @@ std::queue<double> vel_buffer;
   cout << "Estimate Accel : " << estimate_accel << endl; 
 
   // TRY TO INCREASE STEERING
-  sv +=0.1*sv;
+  //  sv +=0.1*sv;
 
   // if tv non zero then check if in drive gear first
   //--------------------------------------------------------------
@@ -593,14 +616,14 @@ std::queue<double> vel_buffer;
         && fabs(current_velocity) <= KmhToMs(51.0) ) {
 
       //accelerate !!!!!!!!!!!!!!!!
-      std::cout << "Acceleration" << std::endl;
+      cout << "Acceleration" << endl;
       Main->AccelerateControl(current_velocity,cmd_velocity);
       
     }else if (fabs(cmd_velocity) < fabs(current_velocity) 
               && fabs(cmd_velocity) > 0.0) 
       {
         //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        std::cout << "Deceleration" << std::endl;
+        cout << "Deceleration" << endl;
         Main->DecelerateControl(current_velocity,cmd_velocity);
       }
     
@@ -613,30 +636,33 @@ std::queue<double> vel_buffer;
       } // if cmdvel < curvel
     
   } //if shift in drive
+  else if( _hev_state.drvInf.actualShift == SHIFT_POS_N ){
+    cout << "Shift value unknown" << endl;
+  }
   else {
     fprintf(stderr,"Shift value unknown\n");
   }
-  /*
+  
   // set steering angle
-    
-  if (_checkStrMode(MODE_PROGRAM)) {
-  fprintf(stderr,"program mode\n");
-  int str = (int)(sv/M_PI*180.0*20);
+  Main->SteeringControl(cmd_steering_angle);
       
-      
-  fprintf(stderr,"setting str angle to %d/n",str);
-  if (abs(str) > 600) {
-  fprintf(stderr,"steering angle too large : %d\n");
-  if (str < 0) str = -600;
-  else str = 600;
-  }
-  else 
-  _hev->SetStrAngle(str*10);
-      
-  }
-  */
+  
   return true;
   
+}
+
+void MainWindow::SteeringControl(double cmd_steering_angle){
+    
+  int str = (int)(cmd_steering_angle/M_PI*180.0*20);    
+  cout << "setting str angle to " << str << endl;
+  if (abs(str) > 600) {
+    cout << "steering angle too large : " <<  str << endl;
+    if (str < 0) 
+      str = -600;
+    else str = 600;
+  }
+  else 
+    hev->SetStrAngle(str*10);
 }
 
 void MainWindow::ChangeShiftMode(double cmd_velocity)
