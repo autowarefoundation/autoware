@@ -15,5 +15,7 @@ other_sensors_xxxx_tty1 : rosrun turtlesim turtlesim_node
 sensor_fusion :
 rosbag :
 calibration :
+  - [ LIDAR2D , echo 'launch lidar2d' ]
+  - [ LIDAR3D , echo 'launch lidar3d' ]
 tf :
 rviz : rosrun rviz rviz
