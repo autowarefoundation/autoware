@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import wx
-import wx.lib.agw.customtreectrl
+import wx.lib.agw.customtreectrl as CT
 import gettext
 import os
 import socket
@@ -24,37 +24,27 @@ class MyFrame(rtmgr.MyFrame):
 		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.RosCb)
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
+		#
+		# for Version tab
+                #
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		self.bitmap_1 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
 		self.bitmap_2 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
 
-		tab_nodes = self.notebook_1_pane_3
-
-		self.tree_ctrl_1.Destroy()
-		items = []
-		self.tree_ctrl_1 = self.create_tree(tab_nodes, items, 'Actuation')
-
-		self.tree_ctrl_2.Destroy()
-		items = []
-		self.tree_ctrl_2 = self.create_tree(tab_nodes, items, 'Sensing')
-
-		self.tree_ctrl_3.Destroy()
-
-		items = [
-		    [ 'contorl' ],
-		    [ 'perception', [
-			[ 'detection', [
-			    [ 'car_detector', True ],
-			    [ 'hog_extractor', False ],
-			    [ 'lane_detecto', True ],
-			    [ 'pedestrian_detecto', False ] ] ] ] ],
-		    [ 'planning' ] ]
-
-		self.tree_ctrl_3 = self.create_tree(tab_nodes, items, 'Computing')
-
+		#
+		# for Computing tab
+		#
+		parent = self.tree_ctrl.GetParent()
+		self.tree_ctrl.Destroy()
+		items = self.load_yaml('computing_launch_cmd.yaml')
+		self.computing_cmd = {}
+		self.tree_ctrl = self.create_tree(parent, items, 'Computing', self.computing_cmd)
+		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 		rtmgr.MyFrame.__do_layout(self)
 
+		#
 		# for Main Tab
+		#
 		self.sock_a = None
 		self.sock_b = None
 		self.sock_c = None
@@ -63,8 +53,8 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Sensing Tab
 		#
-		self.drv_probe_cmd = self.load_yaml('drivers_probe_cmd.yaml')
-		self.sensing_cmd = self.load_yaml('sensing_launch_cmd.yaml')
+		self.drv_probe_cmd = self.load_yaml_dic('drivers_probe_cmd.yaml')
+		self.sensing_cmd = self.load_yaml_dic('sensing_launch_cmd.yaml')
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -85,31 +75,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub.publish(data.data)
 		r.sleep()
 
-	def create_tree(self, parent, items, root_name):
-		style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
-		tree = wx.lib.agw.customtreectrl.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
-		root = tree.AddRoot(root_name)
-		self.append_items(tree, root, items)
-		tree.ExpandAll()
-		return tree
-
-	def append_items(self, tree, item, items):
-		for add in items:
-			ct_type = 1 if len(add) > 1 and type(add[1]) is bool else 0
-			add_item = tree.AppendItem(item, add[0], ct_type=ct_type)
-			if len(add) > 1:
-				if type(add[1]) is bool:
-					if add[1] is True:
-						add_item.Set3StateValue(wx.CHK_CHECKED)
-				else:
-					self.append_items(tree, add_item, add[1])
-
-	def load_yaml(self, filename):
-		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
-		f = open(dir + filename, 'r')
-		d = yaml.load(f)
-		f.close()
-
+	def load_yaml_dic(self, filename):
+		d = self.load_yaml(filename)
 		ret_dic = {}
 		for (k,v) in d.items():
 			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
@@ -271,28 +238,83 @@ class MyFrame(rtmgr.MyFrame):
 				obj.SetValue(act)
 
 	#
+	# Computing Tab
+	#
+	def OnTreeChecked(self, event):
+		self.launch_kill_proc(event.GetItem(), self.computing_cmd)
+
+	#
 	# Sensing Tab
 	#
 	def OnSensingDriver(self, event):
-		self.launch_kill_proc(event.GetEventObject())
+		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnSensorFusion(self, event):
-		self.launch_kill_proc(event.GetEventObject())
+		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnRosbag(self, event):
-		self.launch_kill_proc(event.GetEventObject())
+		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 		
 	def OnCalib(self, event):
-		self.launch_kill_proc(event.GetEventObject())
+		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnTf(self, event):
-		self.launch_kill_proc(event.GetEventObject())
+		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnRviz(self, event):
-		self.launch_kill_proc(event.GetEventObject())
+		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
-	def launch_kill_proc(self, obj):
-		cmd_dic = self.sensing_cmd
+	def OnAutoProbe(self, event):
+		if event.GetEventObject().GetValue():
+			self.OnProbe(None)
+			self.timer.Start(self.probe_interval)
+		else:
+			self.timer.Stop()
+
+	def OnProbe(self, event):
+		#print('probe') # for debug
+		items = self.drv_probe_cmd.items()
+		for (obj, (cmd, bak_res)) in items:
+			res = (os.system(cmd) == 0) if cmd else False
+			if res == bak_res:
+				continue
+			self.drv_probe_cmd[obj] = (cmd, res)
+			en = obj.IsEnabled()
+			if res and not en:
+				obj.Enable()
+				continue
+			if not res and en:
+				v = obj.GetValue()
+				if v:
+					obj.SetValue(False)	
+					self.launch_kill_proc(obj)
+				obj.Disable()
+
+	#
+	# Common Utils
+	#
+	def create_tree(self, parent, items, root_name, cmd_dic):
+		style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
+		tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
+		root = tree.AddRoot(root_name)
+		self.append_items(tree, root, items, cmd_dic)
+		tree.ExpandAll()
+		return tree
+
+	def append_items(self, tree, item, items, cmd_dic):
+		for add in items:
+			ct_type = 1 if len(add) > 1 and type(add[1]) is bool else 0
+			add_item = tree.AppendItem(item, add[0], ct_type=ct_type)
+			if len(add) > 1:
+				if type(add[1]) is bool:
+					if add[1] is True:
+						add_item.Set3StateValue(wx.CHK_CHECKED)
+					cmd = add[2] if len(add) > 2 else None
+					cmd_dic[add_item] = (cmd, None)
+				else:
+					self.append_items(tree, add_item, add[1], cmd_dic)
+
+	def launch_kill_proc(self, obj, cmd_dic):
 		if obj not in cmd_dic:
 			obj.SetValue(False)
 			print('not implemented.')
@@ -332,35 +354,13 @@ class MyFrame(rtmgr.MyFrame):
 			obj.SetValue(False)
 		return cmds[r] if ok else None
 
-	def OnAutoProbe(self, event):
-		if event.GetEventObject().GetValue():
-			self.OnProbe(None)
-			self.timer.Start(self.probe_interval)
-		else:
-			self.timer.Stop()
+	def load_yaml(self, filename):
+		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		f = open(dir + filename, 'r')
+		d = yaml.load(f)
+		f.close()
+		return d
 
-	def OnProbe(self, event):
-		#print('probe') # for debug
-		items = self.drv_probe_cmd.items()
-		for (obj, (cmd, bak_res)) in items:
-			res = (os.system(cmd) == 0) if cmd else False
-			if res == bak_res:
-				continue
-			self.drv_probe_cmd[obj] = (cmd, res)
-			en = obj.IsEnabled()
-			if res and not en:
-				obj.Enable()
-				continue
-			if not res and en:
-				v = obj.GetValue()
-				if v:
-					obj.SetValue(False)	
-					self.launch_kill_proc(obj)
-				obj.Disable()
-
-	#
-	# Common Utils
-	#
 	def name_get(self, obj):
 		nms = [ nm for nm in dir(self) if getattr(self, nm) is obj ]
 		return nms[0] if len(nms) > 0 else None
