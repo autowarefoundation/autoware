@@ -15,7 +15,7 @@ other_sensors_xxxx_tty1 : rosrun turtlesim turtlesim_node
 sensor_fusion :
 rosbag :
 calibration :
-  - [ LIDAR2D , echo 'launch lidar2d' ]
-  - [ LIDAR3D , echo 'launch lidar3d' ]
+  - [ LIDAR2D , rosrun camera_lidar2d camera_lidar2d_offline_calib ]
+  - [ LIDAR3D , echo 'not registered.' ]
 tf :
 rviz : rosrun rviz rviz

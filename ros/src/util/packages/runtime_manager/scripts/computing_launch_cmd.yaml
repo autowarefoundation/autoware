@@ -1,0 +1,28 @@
+- [ Perception, [
+    [ Detection, [
+      [ car_dpm , False , rosrun car_detector car_dpm ],
+      [ car_dpm_gpu , False , rosrun car_detector car_dpm_gpu ],
+      [ car_fusion , False , rosrun car_detector car_fusion ],
+
+      [ lane_detector , False , rosrun lane_detector lane_detector ],
+
+      [ perception_dpm , False , rosrun pedestrian_detector pedestrian_dpm ],
+      [ perception_dpm_gpu , False , rosrun pedestrian_detector pedestrian_dpm_gpu ],
+      [ perception_fusion , False , rosrun pedestrian_detector pedestrian_fusion ],
+    ]],
+    [ Localization, [
+
+    ]],
+  ]]
+
+- [ Planning, [
+   [ Mission, [
+
+   ]],
+   [ Motion, [
+
+   ]],
+   [ Path, [
+
+   ]],
+  ]]
