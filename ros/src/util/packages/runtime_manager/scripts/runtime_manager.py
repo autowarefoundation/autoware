@@ -52,7 +52,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.tree_ctrl_3 = self.create_tree(tab_nodes, items, 'Computing')
 
-		rtmgr.MyFrame.__do_layout(self);
+		rtmgr.MyFrame.__do_layout(self)
 
 		# for Main Tab
 		self.sock_a = None
@@ -131,7 +131,7 @@ class MyFrame(rtmgr.MyFrame):
 		bak = s = tc.GetValue()
 		nm = self.name_get(tc) # text_ctrl_ip_a_0
 		t = nm[-3:-2] # a
-                if s.isdigit():
+		if s.isdigit():
 			i = int(s)
 			i = 0 if i < 0 else i
 			i = 255 if i > 255 else i
@@ -258,7 +258,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def radio_value_get(self, base_name, dic):
 		res = [ v for (s,v) in dic.items() if getattr(self, base_name + s).GetValue() ]
-                return res[0] if len(res) > 0 else 0
+		return res[0] if len(res) > 0 else 0
 
 	def radio_value_set(self, base_name, dic, val):
 		for (k,v) in dic.items():
@@ -301,16 +301,20 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			obj.SetValue(False)
-                msg = None
+		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
 		msg = 'cmd not implemented.' if not cmd else msg
 		if msg is not None:
-                        print(msg)
+			print(msg)
 			return
 		if v:
-			args = shlex.split(cmd)
-			print(args)
+			t = cmd
+			if type(t) is list:
+				t = self.modal_dialog(obj, t)
+				if t is None:
+					return # cancel
+			args = shlex.split(t)
 			proc = subprocess.Popen(args)
 		else:
 			proc.terminate()
@@ -318,15 +322,26 @@ class MyFrame(rtmgr.MyFrame):
 			proc = None
 		cmd_dic[obj] = (cmd, proc)
 
+	def modal_dialog(self, obj, lst):
+		(lbs, cmds) = zip(*lst)
+		dlg = MyDialog(self, lbs=lbs)
+		dlg.SetTitle(obj.GetLabel())
+		r = dlg.ShowModal()
+		ok = (0 <= r and r < len(cmds))
+		if not ok:
+			obj.SetValue(False)
+		return cmds[r] if ok else None
+
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
+			self.OnProbe(None)
 			self.timer.Start(self.probe_interval)
 		else:
 			self.timer.Stop()
 
 	def OnProbe(self, event):
 		#print('probe') # for debug
-                items = self.drv_probe_cmd.items()
+		items = self.drv_probe_cmd.items()
 		for (obj, (cmd, bak_res)) in items:
 			res = (os.system(cmd) == 0) if cmd else False
 			if res == bak_res:
@@ -356,6 +371,31 @@ class MyFrame(rtmgr.MyFrame):
 	def key_get(self, dic, val):
 		ks = [ k for (k,v) in dic.items() if v == val ]
 		return ks[0] if len(ks) > 0 else None
+
+class MyDialog(rtmgr.MyDialog):
+	def __init__(self, *args, **kwds):
+		lbs = kwds['lbs']
+		del kwds['lbs']
+		rtmgr.MyDialog.__init__(self, *args, **kwds)
+
+		self.radio_box.Destroy()
+		self.radio_box = wx.RadioBox(self.panel_2, wx.ID_ANY, "", choices=lbs, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
+
+		rtmgr.MyDialog.__set_properties(self)
+		rtmgr.MyDialog.__do_layout(self)
+
+	def __set_properties(self):
+		pass
+
+	def __do_layout(self):
+		pass
+
+	def OnOk(self, event):
+		ret = self.radio_box.GetSelection()
+		self.EndModal(ret)
+
+	def OnCancel(self, event):
+		self.EndModal(-1)
 
 class MyApp(wx.App):
 	def OnInit(self):
