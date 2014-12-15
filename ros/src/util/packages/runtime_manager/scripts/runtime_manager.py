@@ -26,7 +26,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		#
 		# for Version tab
-                #
+		#
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		self.bitmap_1 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
 		self.bitmap_2 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
@@ -38,7 +38,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.tree_ctrl.Destroy()
 		items = self.load_yaml('computing_launch_cmd.yaml')
 		self.computing_cmd = {}
-		self.tree_ctrl = self.create_tree(parent, items, 'Computing', self.computing_cmd)
+		self.tree_ctrl = self.create_tree(parent, items, None, None, self.computing_cmd)
+		self.tree_ctrl.ExpandAll()
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 		rtmgr.MyFrame.__do_layout(self)
 
@@ -293,26 +294,20 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Common Utils
 	#
-	def create_tree(self, parent, items, root_name, cmd_dic):
-		style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
-		tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
-		root = tree.AddRoot(root_name)
-		self.append_items(tree, root, items, cmd_dic)
-		tree.ExpandAll()
+	def create_tree(self, parent, items, tree, item, cmd_dic):
+		name = items['name'] if 'name' in items else ''
+		if tree is None:
+			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
+			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
+			item = tree.AddRoot(name)
+		else:
+			ct_type = 1 if 'cmd' in items else 0 # 1:checkbox type
+			item = tree.AppendItem(item, name, ct_type=ct_type)
+			if 'cmd' in items:
+				cmd_dic[item] = (items['cmd'], None)
+		for sub in items['subs'] if 'subs' in items else []:
+			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
-
-	def append_items(self, tree, item, items, cmd_dic):
-		for add in items:
-			ct_type = 1 if len(add) > 1 and type(add[1]) is bool else 0
-			add_item = tree.AppendItem(item, add[0], ct_type=ct_type)
-			if len(add) > 1:
-				if type(add[1]) is bool:
-					if add[1] is True:
-						add_item.Set3StateValue(wx.CHK_CHECKED)
-					cmd = add[2] if len(add) > 2 else None
-					cmd_dic[add_item] = (cmd, None)
-				else:
-					self.append_items(tree, add_item, add[1], cmd_dic)
 
 	def launch_kill_proc(self, obj, cmd_dic):
 		if obj not in cmd_dic:
