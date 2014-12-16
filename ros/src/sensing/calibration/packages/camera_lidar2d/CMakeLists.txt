@@ -29,7 +29,7 @@ include_directories(
 add_executable(camera_lidar2d_offline_calib nodes/camera_lidar2d_offline_calib/camera_lidar2d_offline_calib.cpp)
 
 set(PARAM_YAML "${CMAKE_CURRENT_SOURCE_DIR}/param.yaml")
-set(CAMERA_YAML "$ENV{HOME}/.ros/camera_info/camera.yaml")
+set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 
 set_target_properties(camera_lidar2d_offline_calib
   PROPERTIES COMPILE_FLAGS

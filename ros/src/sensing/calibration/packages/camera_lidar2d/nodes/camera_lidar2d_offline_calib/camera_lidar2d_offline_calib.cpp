@@ -402,6 +402,10 @@ void imageCallback(const sensor_msgs::Image& image_raw) {
         std::string camera_yaml;
 	n.param<std::string>("/camera_lidar2d/camera_yaml", camera_yaml, STR(CAMERA_YAML));
         cv::FileStorage fs(camera_yaml.c_str(), cv::FileStorage::WRITE);
+        if(!fs.isOpened()){
+            fprintf(stderr, "%s : cannot open file\n", camera_yaml.c_str());
+            exit(EXIT_FAILURE);
+        }
 #else
         cv::FileStorage fs("camera.yaml", cv::FileStorage::WRITE);
 #endif
@@ -577,6 +581,10 @@ int main(int argc, char **argv)
 
     // ファイルの種類は，内容から決定
     cv::FileStorage fs(param_yaml.c_str(), cv::FileStorage::READ);
+    if(!fs.isOpened()){
+        fprintf(stderr, "%s : cannot open file\n", param_yaml.c_str());
+        exit(EXIT_FAILURE);
+    }
 #else
     /* xmlからパラメータ設定 */
     char path[128];

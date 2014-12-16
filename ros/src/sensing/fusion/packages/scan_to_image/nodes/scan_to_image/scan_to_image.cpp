@@ -263,6 +263,10 @@ int main(int argc, char **argv)
     std::string camera_yaml;
     n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml, STR(CAMERA_YAML));
     cv::FileStorage fs_auto_file(camera_yaml.c_str(), cv::FileStorage::READ);
+    if(!fs_auto_file.isOpened()){
+        fprintf(stderr, "%s : cannot open file\n", camera_yaml.c_str());
+        exit(EXIT_FAILURE);
+    }
 #else
     strcpy(path, getenv("HOME"));
     strcat(path, "/catkin_ws/src/sensors_fusion/camera.yaml");
@@ -279,6 +283,10 @@ int main(int argc, char **argv)
     std::string manual_yaml;
     n.param<std::string>("/scan_to_image/manual_yaml", manual_yaml, STR(MANUAL_YAML));
     cv::FileStorage fs_manual_file(manual_yaml.c_str(), cv::FileStorage::READ);
+    if(!fs_manual_file.isOpened()){
+        fprintf(stderr, "%s : cannot open file\n", manual_yaml.c_str());
+        exit(EXIT_FAILURE);
+    }
 #else
     strcpy(path, getenv("HOME"));
     strcat(path, "/catkin_ws/src/sensors_fusion/manual.yaml");

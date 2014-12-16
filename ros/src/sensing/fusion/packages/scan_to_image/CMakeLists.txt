@@ -172,7 +172,7 @@ include_directories(/usr/include/opencv2/legacy)
 
 add_executable(scan_to_image nodes/scan_to_image/scan_to_image.cpp)
 
-set(CAMERA_YAML "$ENV{HOME}/.ros/camera_info/camera.yaml")
+set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 set(MANUAL_YAML "${CMAKE_CURRENT_SOURCE_DIR}/manual.yaml")
 
 set_target_properties(scan_to_image
