@@ -37,3 +37,10 @@ target_link_libraries(image_viewer
    opencv_highgui opencv_core opencv_imgproc
 )
 add_dependencies(image_viewer dpm_generate_messages_cpp)
+
+add_executable(points_image_viewer nodes/points_image_viewer/points_image_viewer.cpp)
+target_link_libraries(points_image_viewer
+   ${catkin_LIBRARIES}
+   opencv_highgui opencv_core opencv_imgproc
+)
+add_dependencies(points_image_viewer points_to_image_generate_messages_cpp)
