@@ -41,6 +41,7 @@ void rect_updater_callback(dpm::ImageObjects image_objects_msg)
 	int num = image_objects_msg.car_num;
 	vector<int> points = image_objects_msg.corner_point; 
 	//points are X,Y,W,H and repeat for each instance
+    cars.clear();
 	
 	for (int i=0; i<num;i++)
 	{
