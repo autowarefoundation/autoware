@@ -20,17 +20,34 @@ void show(void)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
 	IplImage frame = cv_image->image;
 
+	int w = points_msg->width;
+	int h = points_msg->height;
+
+	int i, n = w * h;
+	int min_d = 1<<16, max_d = -1;
+	int min_i = 1<<8, max_i = -1;
+	for(i=0; i<n; i++){
+		int di = points_msg->distance[i];
+		max_d = di > max_d ? di : max_d;
+		min_d = di < min_d ? di : min_d;
+		int it = points_msg->intensity[i];
+		max_i = it > max_i ? it : max_i;
+		min_i = it < min_i ? it : min_i;
+	}
+	int wid_d = max_d - min_d;
+	int wid_i = max_i - min_i;
+
 	int x, y;
-	for(y=0; y<points_msg->height; y++){
-		for(x=0; x<points_msg->width; x++){
-			int i = y * points_msg->width + x;
+	for(y=0; y<h; y++){
+		for(x=0; x<w; x++){
+			int i = y * w + x;
 			int distance = points_msg->distance[i];
 			int intensity = points_msg->intensity[i];
 			if(distance == 0){
 				continue;
 			}
-			int g = intensity & 255;
-			int b = (distance / 256) & 255;
+			int g = wid_i ? ( (intensity - min_i) * 255 / wid_i ) : 128;
+			int b = wid_d ? ( (distance - min_d) * 255 / wid_d ) : 128;
 			int r = 255 - b;
 			cvRectangle(&frame, cvPoint(x, y), cvPoint(x+1, y+1), CV_RGB(r, g, b));
 		}
