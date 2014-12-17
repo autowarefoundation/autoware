@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "points_image_viewer");
 	ros::NodeHandle n;
-	ros::Subscriber sub_image = n.subscribe("/camera/image_raw", 1, image_cb);
+	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
 	ros::Subscriber sub_points = n.subscribe("points_image", 1, points_cb);
 	
 	cv::Mat grayscale(256,1,CV_8UC1);
