@@ -1,5 +1,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
 
 #include "ros/ros.h"
@@ -10,6 +11,7 @@ bool existImage = false;
 bool existPoints = false;
 sensor_msgs::Image image_msg;
 points_to_image::PointsImageConstPtr points_msg;
+cv::Mat colormap;
 
 void show(void)
 {
@@ -46,9 +48,11 @@ void show(void)
 			if(distance == 0){
 				continue;
 			}
-			int g = wid_i ? ( (intensity - min_i) * 255 / wid_i ) : 128;
-			int b = wid_d ? ( (distance - min_d) * 255 / wid_d ) : 128;
-			int r = 255 - b;
+			int colorid= wid_d ? ( (distance - min_d) * 255 / wid_d ) : 128;
+			cv::Vec3b color=colormap.at<cv::Vec3b>(colorid);
+			int g = color[1];
+			int b = color[2];
+			int r = color[0];
 			cvRectangle(&frame, cvPoint(x, y), cvPoint(x+1, y+1), CV_RGB(r, g, b));
 		}
 	}
@@ -74,8 +78,17 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "points_image_viewer");
 	ros::NodeHandle n;
-	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
+	ros::Subscriber sub_image = n.subscribe("/camera/image_raw", 1, image_cb);
 	ros::Subscriber sub_points = n.subscribe("points_image", 1, points_cb);
+	
+	cv::Mat grayscale(256,1,CV_8UC1);
+	int i;
+	for(i=0;i<256;i++)
+	{
+		grayscale.at<uchar>(i)=i;
+	}
+	cv::applyColorMap(grayscale,colormap,cv::COLORMAP_JET);
+
 	ros::spin();
 	return 0;
 }

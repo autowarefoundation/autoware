@@ -38,7 +38,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 		for(x=0; x<msg->width; x++){
 			float* fp = (float *)(cp + msg->row_step * y + msg->point_step * x);
 			//double intensity = fp[3];
-			unsigned short ring = *(unsigned short *)&fp[4];
+			unsigned short intensity = (unsigned short)(fp[4]);
 
 			cv::Mat point(1, 3, CV_64F);
 			point.at<double>(0) = double(fp[0]);
@@ -74,7 +74,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 				if(pub_msg.distance[pid] == 0 ||
 				   pub_msg.distance[pid] / 100 > point.at<double>(2)){
 					pub_msg.distance[pid] = ushort(point.at<double>(2) * 100 + 0.5);
-					pub_msg.intensity[pid] = uchar(ring);
+					pub_msg.intensity[pid] = intensity;
 				}
 			}
 		}
