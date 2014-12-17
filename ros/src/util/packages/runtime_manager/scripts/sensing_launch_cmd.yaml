@@ -12,7 +12,7 @@ lidars_hokuyo_utm30lx_usb2 :
 lidars_sick_lms5511 :
 lidars_ibeo_8l_single :
 other_sensors_xxxx_tty1 : rosrun turtlesim turtlesim_node
-sensor_fusion :
+fusion :
 rosbag :
 calibration :
   - [ LIDAR2D , rosrun camera_lidar2d camera_lidar2d_offline_calib ]
