@@ -250,7 +250,7 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSensingDriver(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
-	def OnSensorFusion(self, event):
+	def OnFusion(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnRosbag(self, event):
