@@ -65,6 +65,18 @@ class MyFrame(rtmgr.MyFrame):
 			self.OnProbe(None)
 			self.timer.Start(self.probe_interval)
 
+		#
+		# for Simulation Tab
+		#
+		self.simulation_cmd = self.load_yaml_dic('simulation_launch_cmd.yaml')
+		self.vmap_names = self.load_yaml('vector_map_files.yaml')
+
+		self.sel_multi_ks = [ 'pmap' ]
+		self.sel_dir_ks = [ 'vmap' ]
+
+		self.text_ctrl_rviz_simu.Disable()
+		self.button_ref_rviz_simu.Disable()
+
 	def __do_layout(self):
 		pass
 
@@ -255,7 +267,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnRosbag(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
+		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 		
 	def OnCalib(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
@@ -292,6 +304,24 @@ class MyFrame(rtmgr.MyFrame):
 					self.launch_kill_proc(obj)
 				obj.Disable()
 
+	#
+	# Simulation Tab
+	#
+	def OnRvizSimu(self, event):
+		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
+
+	def OnRosbagSimu(self, event):
+		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
+
+	def OnPmap(self, event):
+		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
+
+	def OnVmap(self, event):
+		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd, names=self.vmap_names)
+
+	#
+	# Common Utils
+	#
 	def OnRef(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_ref_xxx
@@ -300,16 +330,19 @@ class MyFrame(rtmgr.MyFrame):
 		if tc is None:
 			return
 		path = tc.GetValue()
-		(dn, fn) = os.path.split(path)
-		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn);
+		multi = k in self.sel_multi_ks
+		if k in self.sel_dir_ks:
+			dlg = wx.DirDialog(self, defaultPath=path);
+		else:
+			(dn, fn) = os.path.split(path)
+			style = wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
 		if dlg.ShowModal() == wx.ID_OK:
-			tc.SetValue(dlg.GetPath())
+			path = ','.join(dlg.GetPaths()) if multi else dlg.GetPath()
+			tc.SetValue(path)
 			tc.SetInsertionPointEnd()
 		dlg.Destroy()
 
-	#
-	# Common Utils
-	#
 	def create_tree(self, parent, items, tree, item, cmd_dic):
 		name = items['name'] if 'name' in items else ''
 		if tree is None:
@@ -325,24 +358,26 @@ class MyFrame(rtmgr.MyFrame):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
 
-	def launch_kill_proc_file(self, obj, cmd_dic):
+	def launch_kill_proc_file(self, obj, cmd_dic, names=None):
 		name = self.name_get(obj)
 		pfs = [ 'button_', 'checkbox_' ]
 		keys = [ name[len(pf):] for pf in pfs if name[0:len(pf)] == pf ]
 		if len(keys) <= 0:
 			return
-                key = keys[0]
+		key = keys[0]
 		v = obj.GetValue()
 		tc = self.obj_get('text_ctrl_' + key)
+
 		path = tc.GetValue()
 		if v and not path:
 			obj.SetValue(False)
 			return
-		ref = self.obj_get('button_ref_' + key)
-		en = not v
+		add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
+		self.launch_kill_proc(obj, cmd_dic, add_args)
+		en = not obj.GetValue()
 		tc.Enable(en)
+		ref = self.obj_get('button_ref_' + key)
 		ref.Enable(en)
-		self.launch_kill_proc(obj, cmd_dic, [ path ])
 
 	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
@@ -368,7 +403,12 @@ class MyFrame(rtmgr.MyFrame):
 					return # cancel
 			args = shlex.split(t)
 			if add_args:
-				args.extend(add_args)
+				s = '__args__'
+				pos = args.index(s) if s in args else -1
+				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
+			print args # for debug
+			for a in args:
+				print a
 			proc = subprocess.Popen(args)
 		else:
 			terminate_children(proc.pid)
