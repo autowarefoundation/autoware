@@ -55,8 +55,7 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Sensing Tab
 		#
-		self.drv_probe_cmd = self.load_yaml_dic('drivers_probe_cmd.yaml')
-		self.sensing_cmd = self.load_yaml_dic('sensing_launch_cmd.yaml')
+		(self.drv_probe_cmd, self.sensing_cmd) = self.load_yaml_probe_run('sensing_cmd.yaml')
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -100,6 +99,24 @@ class MyFrame(rtmgr.MyFrame):
 			obj = self.obj_get(res[0] + k)
 			ret_dic[obj] = (v, None)
 		return ret_dic
+
+	def load_yaml_probe_run(self, filename):
+		d = self.load_yaml(filename)
+		probe_dic = {}
+		run_dic = {}
+		for (k,d2) in d.items():
+			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
+			if len(res) <= 0:
+				print(k + ' in file ' + filename + ', not found correspoinding widget.')
+				continue
+			obj = self.obj_get(res[0] + k)
+			if not d2 or type(d2) is not dict:
+				continue
+			if 'probe' in d2:
+				probe_dic[obj] = (d2['probe'], None)
+			if 'run' in d2:
+                                run_dic[obj] = (d2['run'], None)
+		return (probe_dic, run_dic)
 
 	#
 	# Main Tab
@@ -293,16 +310,16 @@ class MyFrame(rtmgr.MyFrame):
 			if res == bak_res:
 				continue
 			self.drv_probe_cmd[obj] = (cmd, res)
-			en = obj.IsEnabled()
+			en = obj.IsShown()
 			if res and not en:
-				obj.Enable()
+				obj.Show()
 				continue
 			if not res and en:
 				v = obj.GetValue()
 				if v:
 					obj.SetValue(False)	
 					self.launch_kill_proc(obj)
-				obj.Disable()
+				obj.Hide()
 
 	#
 	# Simulation Tab
@@ -481,6 +498,10 @@ class MyApp(wx.App):
 def terminate_children(pid):
 	for child in psutil.Process(pid).get_children():
 		child.terminate()
+
+def prn_dict(dic):
+	for (k,v) in dic.items():
+		print (k, ':', v)
 
 if __name__ == "__main__":
 	gettext.install("app")
