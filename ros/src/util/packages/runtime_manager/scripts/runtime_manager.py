@@ -42,6 +42,19 @@ class MyFrame(rtmgr.MyFrame):
 		self.tree_ctrl = self.create_tree(parent, items, None, None, self.computing_cmd)
 		self.tree_ctrl.ExpandAll()
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
+
+		self.compu_viewer_cmd = {}
+		for (k, v) in self.load_yaml('computing_viewer.yaml').items():
+			obj = self.obj_get('button_' + k)
+			if not obj:
+				print ('not found button_' + k)
+				continue
+			if not v or 'name' not in v or 'cmd' not in v:
+				continue
+			obj.SetLabel(v['name'])
+			obj.Show()
+			self.compu_viewer_cmd[obj] = (v['cmd'], None)
+
 		rtmgr.MyFrame.__do_layout(self)
 
 		#
@@ -274,6 +287,9 @@ class MyFrame(rtmgr.MyFrame):
 	def OnTreeChecked(self, event):
 		self.launch_kill_proc(event.GetItem(), self.computing_cmd)
 
+	def OnCompuViewer(self, event):
+		self.launch_kill_proc(event.GetEventObject(), self.compu_viewer_cmd)
+
 	#
 	# Sensing Tab
 	#
@@ -423,9 +439,6 @@ class MyFrame(rtmgr.MyFrame):
 				s = '__args__'
 				pos = args.index(s) if s in args else -1
 				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
-			print args # for debug
-			for a in args:
-				print a
 			proc = subprocess.Popen(args)
 		else:
 			terminate_children(proc.pid)
