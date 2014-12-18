@@ -8,6 +8,7 @@ import socket
 import struct
 import shlex
 import subprocess
+import psutil
 import yaml
 import rtmgr
 import rospy
@@ -122,13 +123,13 @@ class MyFrame(rtmgr.MyFrame):
 
 		b.Disable()
 		self.text_ip_stat_set(t, False)
-		getattr(self, 'button_disconn_' + t).Enable()
+		self.obj_get('button_disconn_' + t).Enable()
 
 	def OnDisconn(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_disconn_a
 		t = nm[-1:] # a
-		sock = getattr(self, 'sock_' + t)
+		sock = self.obj_get('sock_' + t)
 		if sock:
 			sock.close()
 			setattr(self, 'sock_' + t, None)
@@ -160,9 +161,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.statchk_send_recv()
 
 	def update_button_conn_stat(self, t): # a
-		conn = getattr(self, 'button_conn_' + t);
+		conn = self.obj_get('button_conn_' + t);
 		en = conn.IsEnabled()
-		if getattr(self, 'sock_' + t) and en:
+		if self.obj_get('sock_' + t) and en:
 			conn.Disable()
 			return
 		yet = [ s for s in ['0','1','2','3'] if self.text_ip_get(t, s).GetValue() == '' ]
@@ -173,7 +174,7 @@ class MyFrame(rtmgr.MyFrame):
 			conn.Enable(act)
 
 	def text_ip_get(self, t, s): # t a, s 0
-		return getattr(self, 'text_ctrl_ip_' + t + '_' + s)
+		return self.obj_get('text_ctrl_ip_' + t + '_' + s)
 
 	def text_ip_stat_set(self, t, en): # a
 		for s in ['0','1','2','3']:
@@ -225,12 +226,12 @@ class MyFrame(rtmgr.MyFrame):
 		self.label_mode.SetLabel(s[0].upper() if s else '?')
 
 	def radio_value_get(self, base_name, dic):
-		res = [ v for (s,v) in dic.items() if getattr(self, base_name + s).GetValue() ]
+		res = [ v for (s,v) in dic.items() if self.obj_get(base_name + s).GetValue() ]
 		return res[0] if len(res) > 0 else 0
 
 	def radio_value_set(self, base_name, dic, val):
 		for (k,v) in dic.items():
-			obj = getattr(self, base_name + k)
+			obj = self.obj_get(base_name + k)
 			ov = obj.GetValue()
 			act = None
 			act = True if v == val and not ov else act
@@ -254,7 +255,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnRosbag(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
+		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
 		
 	def OnCalib(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
@@ -291,6 +292,21 @@ class MyFrame(rtmgr.MyFrame):
 					self.launch_kill_proc(obj)
 				obj.Disable()
 
+	def OnRef(self, event):
+		b = event.GetEventObject()
+		nm = self.name_get(b) # button_ref_xxx
+		k = nm[ len('button_ref_'): ] # xxx
+		tc = self.obj_get('text_ctrl_' + k)
+		if tc is None:
+			return
+		path = tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn);
+		if dlg.ShowModal() == wx.ID_OK:
+			tc.SetValue(dlg.GetPath())
+			tc.SetInsertionPointEnd()
+		dlg.Destroy()
+
 	#
 	# Common Utils
 	#
@@ -309,7 +325,26 @@ class MyFrame(rtmgr.MyFrame):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
 
-	def launch_kill_proc(self, obj, cmd_dic):
+	def launch_kill_proc_file(self, obj, cmd_dic):
+		name = self.name_get(obj)
+		pfs = [ 'button_', 'checkbox_' ]
+		keys = [ name[len(pf):] for pf in pfs if name[0:len(pf)] == pf ]
+		if len(keys) <= 0:
+			return
+                key = keys[0]
+		v = obj.GetValue()
+		tc = self.obj_get('text_ctrl_' + key)
+		path = tc.GetValue()
+		if v and not path:
+			obj.SetValue(False)
+			return
+		ref = self.obj_get('button_ref_' + key)
+		en = not v
+		tc.Enable(en)
+		ref.Enable(en)
+		self.launch_kill_proc(obj, cmd_dic, [ path ])
+
+	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
 			obj.SetValue(False)
 			print('not implemented.')
@@ -332,8 +367,11 @@ class MyFrame(rtmgr.MyFrame):
 				if t is None:
 					return # cancel
 			args = shlex.split(t)
+			if add_args:
+				args.extend(add_args)
 			proc = subprocess.Popen(args)
 		else:
+			terminate_children(proc.pid)
 			proc.terminate()
 			proc.wait()
 			proc = None
@@ -361,7 +399,7 @@ class MyFrame(rtmgr.MyFrame):
 		return nms[0] if len(nms) > 0 else None
 
 	def obj_get(self, name):
-		return getattr(self, name) if name in dir(self) else None
+		return getattr(self, name, None)
 
 	def key_get(self, dic, val):
 		ks = [ k for (k,v) in dic.items() if v == val ]
@@ -399,6 +437,10 @@ class MyApp(wx.App):
 		self.SetTopWindow(frame_1)
 		frame_1.Show()
 		return 1
+
+def terminate_children(pid):
+	for child in psutil.Process(pid).get_children():
+		child.terminate()
 
 if __name__ == "__main__":
 	gettext.install("app")
