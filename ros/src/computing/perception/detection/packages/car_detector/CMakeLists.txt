@@ -86,3 +86,7 @@ target_link_libraries(car_fusion
   ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
 )
 add_dependencies(car_fusion car_detector_generate_messages_cpp)
+
+add_executable(car_tracking
+  nodes/car_tracking/car_tracking.cpp
+)
