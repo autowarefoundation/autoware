@@ -352,6 +352,9 @@ class MyFrame(rtmgr.MyFrame):
 	def OnVmap(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd, names=self.vmap_names)
 
+	def OnTrajectory(self, event):
+		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
+
 	#
 	# Common Utils
 	#

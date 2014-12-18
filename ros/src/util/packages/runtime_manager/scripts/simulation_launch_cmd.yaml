@@ -3,4 +3,4 @@ rosbag_simu : rosbag play
 pmap : rosrun sample_data sample_points_map
 vmap : rosrun sample_data sample_vector_map __args__ swap_x_y_off
 mobility :
-trajectory : echo not yet, trajectory command ...
+trajectory : rosrun sample_data sample_trajectory __args__ swap_x_y_off
