@@ -22,6 +22,9 @@ void show(void)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
 	IplImage frame = cv_image->image;
 
+	cv::Mat matImage(&frame, false);	
+	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
+
 	int w = points_msg->width;
 	int h = points_msg->height;
 

@@ -21,6 +21,8 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 							     encoding);
 	IplImage frame = cv_image->image;
 	
+	Mat matImage(&frame, false);	
+	cvtColor(matImage, matImage, CV_BGR2RGB);
 	cout << "size:"<<cars.size()<<endl;
 	for(std::size_t i=0; i<cars.size();i++)
 	{
