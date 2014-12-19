@@ -360,6 +360,9 @@ class MyFrame(rtmgr.MyFrame):
 	def OnVmap(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd, names=self.vmap_names)
 
+	def OnMobility(self, event):
+		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
+
 	def OnTrajectory(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
 
@@ -446,10 +449,11 @@ class MyFrame(rtmgr.MyFrame):
 				if t is None:
 					return # cancel
 			# for replace
-			t2 = eval(t)
-			if t2 != t:
-				t = t2
-				add_args = None
+			if t.find('replace') >= 0:
+				t2 = eval(t)
+				if t2 != t:
+					t = t2
+					add_args = None
 
 			args = shlex.split(t)
 			if add_args:
