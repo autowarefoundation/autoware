@@ -8,41 +8,17 @@
   <arg name="baud" value="57600" />
  
   <!-- HOW TO RUN using rosrun:-->
-<!-- GGA -->
-  <!-- rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
-  <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="nmea_navsat_gga">
-    <param name="port" value="$(arg port)" />
-    <param name="baud" value="$(arg baud)" />
-    <remap from="/fix" to="/gga_fix"/>
-  </node>
+  <!-- rosrun nmea_navsat_driver nmea_topic_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
+ <!-- rosrun nmea_navsat_driver nmea_topic_driver -->
 
-  <!--RMC -->
-  <!-- rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 _useRMC:=true-->
-  <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="nmea_navsat_rmc">
-    <param name="port" value="$(arg port)" />
-    <param name="baud" value="$(arg baud)" />
-    <param name="useRMC" value="true"/>
-    <remap from="/fix" to="/rmc_fix"/> 
-  </node>
-
-
-<!--Another Settings-->
 <!--read sentence and publish topic-->
-<!--<node pkg="nmea_navsat_driver" type="nmea_topic_serial_reader" name="nmea_topic_serial_reader">
+<node pkg="nmea_navsat_driver" type="nmea_topic_serial_reader" name="nmea_topic_serial_reader">
   <param name="port" value="$(arg port)" />
   <param name="baud" value="$(arg baud)" />
 </node>
--->
-<!--subscribe GGA topic-->
-<!--<node pkg="nmea_navsat_driver" type="nmea_topic_driver" name="nmea_navsat_gga">
-    <remap from="/fix" to="/gga_fix"/>
-  </node>
--->
-<!--subscribe RMC topic-->
- <!-- <node pkg="nmea_navsat_driver" type="nmea_topic_driver" name="nmea_navsat_rmc">
-    <param name="useRMC" value="true"/>
-    <remap from="/fix" to="/rmc_fix"/> 
-  </node>
--->
+
+<!--subscribe topic-->
+<node pkg="nmea_navsat_driver" type="nmea_topic_driver" name="nmea_topic_driver"> 
+</node>
 
 </launch>
