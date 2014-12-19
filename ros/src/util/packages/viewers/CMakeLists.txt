@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(viewers)
 
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
+  image_transport
   roscpp
+  sensor_msgs
   std_msgs
   message_generation
-  cv_bridge
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")

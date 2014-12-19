@@ -26,10 +26,12 @@ int main(int argc, char **argv)
 	ros::Publisher pub = n.advertise<sensor_msgs::Image>("image_raw", 1000);
 
 	sensor_msgs::Image msg;
+
 	msg.width = img->width;
 	msg.height = img->height;
 	msg.is_bigendian = 0;
 	msg.step = img->widthStep;
+
 
 	uint8_t* dataPtr = (uint8_t*)img->imageData;
 	std::vector<uint8_t> data(dataPtr, dataPtr + img->imageSize);
@@ -44,10 +46,16 @@ int main(int argc, char **argv)
 	fprintf(stderr, "%d fps\n", fps);
 	ros::Rate loop_rate(fps); // Hz
 
+	long int count=0;
 	while(ros::ok()){
+		msg.header.seq=count;
+	    	msg.header.frame_id=count;
+	    	msg.header.stamp.sec=ros::Time::now().toSec();
+	    	msg.header.stamp.nsec=ros::Time::now().toNSec();
 		pub.publish(msg);
 		ros::spinOnce();
 		loop_rate.sleep();
+		count++;
 	}
 	cvReleaseImage(&img);//Free allocated data
 	return 0;
