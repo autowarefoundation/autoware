@@ -2,7 +2,7 @@
 # checkboxs
 #
 camera_pggh3_usb1 :
-  probe :
+  probe : 'lsusb -d 1e10: > /dev/null'
   run   : roslaunch pointgrey grasshopper3.launch
 camera_pggh3_usb2 :
   probe :
