@@ -7,14 +7,59 @@
 #include <sensor_msgs/image_encodings.h>
 #include "points_to_image/PointsImage.h"
 
-#define IMAGE_WIDTH 640
-#define IMAGE_HEIGHT 480
+#include "dpm/ImageObjects.h"
+
+#include <vector>
+#include <iostream>
+
+using namespace std;
+using namespace cv;
 
 bool existImage = false;
 bool existPoints = false;
 sensor_msgs::Image image_msg;
 points_to_image::PointsImageConstPtr points_msg;
 cv::Mat colormap;
+
+vector<Rect> cars;
+
+
+
+static void image_viewer_callback(const sensor_msgs::Image& image_source)
+{
+	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
+							     encoding);
+	IplImage frame = cv_image->image;
+	
+	Mat matImage(&frame, false);	
+	cvtColor(matImage, matImage, CV_BGR2RGB);
+	cout << "size:"<<cars.size()<<endl;
+	
+	
+
+	//cvShowImage("Point Image Distance Viewer", &frame);
+	cvWaitKey(2);
+}
+
+void rect_updater_callback(dpm::ImageObjects image_objects_msg)
+{
+	int num = image_objects_msg.car_num;
+	vector<int> points = image_objects_msg.corner_point; 
+	//points are X,Y,W,H and repeat for each instance
+    	cars.clear();
+	
+	for (int i=0; i<num;i++)
+	{
+		Rect tmp;
+		tmp.x = points[i*4 + 0];
+		tmp.y = points[i*4 + 1];
+		tmp.width = points[i*4 + 2];
+		tmp.height = points[i*4 + 3];
+		cars.push_back(tmp);
+	}
+	
+}
 
 void show(void)
 {
@@ -28,24 +73,39 @@ void show(void)
 	cv::Mat matImage(&frame, false);	
 	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
 
-	int w = IMAGE_WIDTH;
-	int h = IMAGE_HEIGHT;
-	int i, n = w * h;
+	/*DRAW RECTANGLES of detected objects*/
+	for(std::size_t i=0; i<cars.size();i++)
+	{
+		
+		cvRectangle( &frame, 
+				cvPoint(cars[i].x, cars[i].y),
+				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
+				Scalar( 0, 255, 0,0 ), 1, 8,0 );
+	}
 
-	float min_d, max_d;
-	min_d = max_d = points_msg->distance[0];
-	for(i=1; i<n; i++){
-		float di = points_msg->distance[i];
+	int w = points_msg->width;
+	int h = points_msg->height;
+
+	int i, n = w * h;
+	int min_d = 1<<16, max_d = -1;
+	int min_i = 1<<8, max_i = -1;
+	for(i=0; i<n; i++){
+		int di = points_msg->distance[i];
 		max_d = di > max_d ? di : max_d;
 		min_d = di < min_d ? di : min_d;
+		int it = points_msg->intensity[i];
+		max_i = it > max_i ? it : max_i;
+		min_i = it < min_i ? it : min_i;
 	}
-	float wid_d = max_d - min_d;
+	int wid_d = max_d - min_d;
+	int wid_i = max_i - min_i;
 
 	int x, y;
 	for(y=0; y<h; y++){
 		for(x=0; x<w; x++){
 			int i = y * w + x;
-			float distance = points_msg->distance[i];
+			int distance = points_msg->distance[i];
+			int intensity = points_msg->intensity[i];
 			if(distance == 0){
 				continue;
 			}
@@ -81,6 +141,9 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
 	ros::Subscriber sub_points = n.subscribe("points_image", 1, points_cb);
+
+	ros::Subscriber scriber_car = n.subscribe("/car_pos_xy", 1,
+					      rect_updater_callback); 
 	
 	cv::Mat grayscale(256,1,CV_8UC1);
 	int i;
