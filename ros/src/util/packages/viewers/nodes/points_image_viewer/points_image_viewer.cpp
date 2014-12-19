@@ -7,6 +7,9 @@
 #include <sensor_msgs/image_encodings.h>
 #include "points_to_image/PointsImage.h"
 
+#define IMAGE_WIDTH 640
+#define IMAGE_HEIGHT 480
+
 bool existImage = false;
 bool existPoints = false;
 sensor_msgs::Image image_msg;
@@ -25,29 +28,24 @@ void show(void)
 	cv::Mat matImage(&frame, false);	
 	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
 
-	int w = points_msg->width;
-	int h = points_msg->height;
-
+	int w = IMAGE_WIDTH;
+	int h = IMAGE_HEIGHT;
 	int i, n = w * h;
-	int min_d = 1<<16, max_d = -1;
-	int min_i = 1<<8, max_i = -1;
-	for(i=0; i<n; i++){
-		int di = points_msg->distance[i];
+
+	float min_d, max_d;
+	min_d = max_d = points_msg->distance[0];
+	for(i=1; i<n; i++){
+		float di = points_msg->distance[i];
 		max_d = di > max_d ? di : max_d;
 		min_d = di < min_d ? di : min_d;
-		int it = points_msg->intensity[i];
-		max_i = it > max_i ? it : max_i;
-		min_i = it < min_i ? it : min_i;
 	}
-	int wid_d = max_d - min_d;
-	int wid_i = max_i - min_i;
+	float wid_d = max_d - min_d;
 
 	int x, y;
 	for(y=0; y<h; y++){
 		for(x=0; x<w; x++){
 			int i = y * w + x;
-			int distance = points_msg->distance[i];
-			int intensity = points_msg->intensity[i];
+			float distance = points_msg->distance[i];
 			if(distance == 0){
 				continue;
 			}
