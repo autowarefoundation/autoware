@@ -70,6 +70,14 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		(self.drv_probe_cmd, self.sensing_cmd) = self.load_yaml_probe_run('sensing_cmd.yaml')
 
+		# for button_fusion
+		tc = self.text_ctrl_calibration
+		path = os.path.expanduser("~") + '/.ros/autoware'
+		tc.SetValue(path)
+		tc.SetInsertionPointEnd()
+		self.text_ctrl_fusion = tc
+		self.button_ref_fusion = self.button_ref_calibration
+
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
 		self.probe_interval = 10*1000
@@ -84,7 +92,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
 		self.sel_multi_ks = [ 'pmap' ]
-		self.sel_dir_ks = [ 'vmap' ]
+		self.sel_dir_ks = [ 'vmap', 'calibration' ]
 
 		self.text_ctrl_rviz_simu.Disable()
 		self.button_ref_rviz_simu.Disable()
@@ -297,13 +305,13 @@ class MyFrame(rtmgr.MyFrame):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnFusion(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
+		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
 
 	def OnRosbag(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 		
 	def OnCalib(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
+		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
 
 	def OnTf(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
@@ -437,11 +445,18 @@ class MyFrame(rtmgr.MyFrame):
 				t = self.modal_dialog(obj, t)
 				if t is None:
 					return # cancel
+			# for replace
+			t2 = eval(t)
+			if t2 != t:
+				t = t2
+				add_args = None
+
 			args = shlex.split(t)
 			if add_args:
 				s = '__args__'
 				pos = args.index(s) if s in args else -1
 				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
+			print(args) # for debug
 			proc = subprocess.Popen(args)
 		else:
 			terminate_children(proc.pid)

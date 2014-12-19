@@ -48,12 +48,12 @@ other_sensors_xxxx_tty1 :
 # buttons
 #
 fusion :
-  run :
+  run : "'roslaunch sensing_fusions sensing_fusions.launch dir:=$'.replace('$', add_args[0])"
 rosbag :
   run :
 calibration :
   run :
-    - [ LIDAR2D , rosrun camera_lidar2d camera_lidar2d_offline_calib ]
+    - [ LIDAR2D , "'roslaunch camera_lidar2d camera_lidar2d_offline_calib.launch dir:=$'.replace('$', add_args[0])" ]
     - [ LIDAR3D , echo 'not registered.' ]
 tf :
   run :
