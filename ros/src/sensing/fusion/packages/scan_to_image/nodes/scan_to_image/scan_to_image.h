@@ -1,6 +1,8 @@
 #ifndef _Scan_to_image_
 #define _Scan_to_image_
 
+#include <vector>
+
 #define IMAGE_WIDTH 640
 #define IMAGE_HEIGHT 480
 #define NO_DATA 0

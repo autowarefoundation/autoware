@@ -269,8 +269,6 @@ int main(int argc, char **argv)
     /*
      * Read parameters from yaml file
      */
-    char path[128];
-
     std::string camera_yaml;
     n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml, STR(CAMERA_YAML));
     cv::FileStorage fs_auto_file(camera_yaml.c_str(), cv::FileStorage::READ);

@@ -54,7 +54,7 @@ void setScanImage(const scan_to_image::ScanImage& scan_image)
         for(i = 0; i < (int)scan_image.distance.size(); i++) {
             height = (int)(i % IMAGE_HEIGHT);
             width = (int)(i / IMAGE_HEIGHT);
-            g_scan_image.distance[width][height] = scan_image.distance.at(i)/100;
+            g_scan_image.distance[width][height] = scan_image.distance.at(i);
             g_scan_image.intensity[width][height] = scan_image.intensity.at(i);
         }
     }
@@ -77,21 +77,16 @@ void setPointsImage(const points_to_image::PointsImage& points_image)
     {
         int height, width;
         for(i = 0; i < (int)points_image.distance.size(); i++) {
-            height = (int)(i % points_image.height);
-            width = (int)(i / points_image.width);
+            height = (int)(i % IMAGE_HEIGHT);
+            width = (int)(i / IMAGE_HEIGHT);
             if (height < IMAGE_HEIGHT && width < IMAGE_WIDTH) {
-                g_scan_image.distance[width][height] = points_image.distance.at(i);
+                g_scan_image.distance[width][height] = points_image.distance.at(i)/100;
                 g_scan_image.intensity[width][height] = points_image.intensity.at(i);
             }
         }
     }
-    /*
-     *
-     */
-    // g_scan_image.max_y = points_image.max_y;
-    // g_scan_image.min_y = points_image.min_y;
-    g_scan_image.max_y = IMAGE_HEIGHT;
-    g_scan_image.min_y = 0;
+    g_scan_image.max_y = points_image.max_y;
+    g_scan_image.min_y = points_image.min_y;
 }
 
 
