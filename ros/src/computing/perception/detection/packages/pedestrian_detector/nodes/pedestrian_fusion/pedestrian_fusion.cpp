@@ -56,7 +56,7 @@ void PointsImageCallback(const points_to_image::PointsImage& points_image)
 void publishTopic()
 {
     /*
-     * Publish topic(Car position xyz).
+     * Publish topic(Pedestrian position xyz).
      */
     car_detector::FusedObjects fused_objects_msg;
 
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
      * part of the ROS system.
      */
     init();
-    ros::init(argc, argv, "car_fusion");
+    ros::init(argc, argv, "pedestrian_fusion");
 
     /**
      * NodeHandle is the main access point to communications with the ROS system.
