@@ -35,6 +35,7 @@ using namespace std;
 using namespace cv;
 
 ros::Publisher image_objects;
+int counter=0;
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
@@ -58,7 +59,7 @@ static void help()
 #endif
 
 static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
-			const vector<Scalar>& colors, float overlapThreshold, int numThreads)
+			const vector<Scalar>& colors, float overlapThreshold, int numThreads, sensor_msgs::Image image_source)
 {
     vector<LatentSvmDetector::ObjectDetection> detections;
 
@@ -101,6 +102,9 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
     image_objects_msg.corner_point = corner_point_array;
     image_objects_msg.car_type = car_type_array;
 
+    image_objects_msg.header = image_source.header;
+    image_objects_msg.header.stamp = image_source.header.stamp;
+
     image_objects.publish(image_objects_msg);
 #endif
 
@@ -120,7 +124,7 @@ void image_objectsCallback(const sensor_msgs::Image& image_source)
   Mat image = cv_image->image;
 
   if(pDetector && pColors && pOverlapThreshold && pNumThreads){
-    detectAndDrawObjects( image, *pDetector, *pColors, *pOverlapThreshold, *pNumThreads);
+    detectAndDrawObjects( image, *pDetector, *pColors, *pOverlapThreshold, *pNumThreads, image_source);
   }
 
   //imshow( "result", image );
@@ -168,7 +172,7 @@ int main(int argc, char* argv[])
                   << std::endl;
         std::exit(1);
     }
-    image_objects = n.advertise<dpm::ImageObjects>("car_pos_xy", 1);
+    image_objects = n.advertise<dpm::ImageObjects>(published_node, 1);
 #else
     help();
 #endif
