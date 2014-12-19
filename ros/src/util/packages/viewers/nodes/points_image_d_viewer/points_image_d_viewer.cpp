@@ -71,7 +71,7 @@ void show(void)
 	int h = IMAGE_HEIGHT;
 
 	int i, n = w * h;
-	int min_d = 1<<16, max_d = -1;
+	float min_d = 1<<16, max_d = -1;
 	int min_i = 1<<8, max_i = -1;
 	for(i=0; i<n; i++){
 		int di = points_msg->distance[i];
@@ -81,7 +81,7 @@ void show(void)
 		max_i = it > max_i ? it : max_i;
 		min_i = it < min_i ? it : min_i;
 	}
-	int wid_d = max_d - min_d;
+	float wid_d = max_d - min_d;
 
 	int x, y;
 	for(y=0; y<h; y++){
