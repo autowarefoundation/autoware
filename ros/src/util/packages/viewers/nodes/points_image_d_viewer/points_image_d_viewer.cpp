@@ -82,14 +82,12 @@ void show(void)
 		min_i = it < min_i ? it : min_i;
 	}
 	int wid_d = max_d - min_d;
-	int wid_i = max_i - min_i;
 
 	int x, y;
 	for(y=0; y<h; y++){
 		for(x=0; x<w; x++){
 			int i = y * w + x;
 			double distance = points_msg->distance[i];
-			double intensity = points_msg->intensity[i];
 			if(distance == 0){
 				continue;
 			}
