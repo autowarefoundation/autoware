@@ -73,7 +73,7 @@ add_library(fusion
 
 ## Declare a cpp executable
 add_executable(pedestrian_fusion
-  nodes/pedestrian_fusion/pedestrian_fusion.cpp
+  nodes/pedestrian_fusion/pedestrian_fusion.cpp  nodes/pedestrian_fusion/fusion.cpp
 )
 
 target_link_libraries(pedestrian_fusion
