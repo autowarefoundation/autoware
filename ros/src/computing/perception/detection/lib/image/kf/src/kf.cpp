@@ -399,14 +399,21 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 	image_objects.publish(image_objects_msg);
 }
 void sync_callback(const sensor_msgs::ImageConstPtr& image_source,
-			const dpm::ImageObjectsConstPtr &image_objects_msg)
+			const dpm::ImageObjectsConstPtr &image_objects_msg_ptr)
 {
+	dpm::ImageObjects image_objects_msg = *image_objects_msg_ptr;
+
 	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 							     encoding);
 	IplImage frame = cv_image->image;
 	
-	Mat image(&frame, true);	
+	Mat image(&frame, true);
+
+	int num = image_objects_msg.car_num;
+	vector<int> points = image_objects_msg.corner_point; 
+
+		
 	
 	
 }
