@@ -43,8 +43,8 @@
 #include "points_to_image/PointsImage.h"
 #include "car_detector/FusedObjects.h"
 
-#define IMAGE_WIDTH 640
-#define IMAGE_HEIGHT 480
+#define IMAGE_WIDTH 800
+#define IMAGE_HEIGHT 600
 #define NO_DATA 0
 #if _DEBUG
 #define IMAGE_TOPIC "/image_raw"

@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#define IMAGE_WIDTH 640
-#define IMAGE_HEIGHT 480
+#define IMAGE_WIDTH 800
+#define IMAGE_HEIGHT 600
 #define NO_DATA 0
 
 struct Three_dimensional_vector{
