@@ -23,6 +23,9 @@ cv::Mat colormap;
 
 vector<Rect> cars;
 
+#define	IMAGE_WIDTH	640
+#define	IMAGE_HEIGHT	480
+
 void rect_updater_callback(dpm::ImageObjects image_objects_msg)
 {
 	int num = image_objects_msg.car_num;
@@ -64,8 +67,8 @@ void show(void)
 				Scalar( 0, 255, 0,0 ), 1, 8,0 );
 	}
 
-	int w = points_msg->width;
-	int h = points_msg->height;
+	int w = IMAGE_WIDTH;
+	int h = IMAGE_HEIGHT;
 
 	int i, n = w * h;
 	int min_d = 1<<16, max_d = -1;
@@ -79,14 +82,12 @@ void show(void)
 		min_i = it < min_i ? it : min_i;
 	}
 	int wid_d = max_d - min_d;
-	int wid_i = max_i - min_i;
 
 	int x, y;
 	for(y=0; y<h; y++){
 		for(x=0; x<w; x++){
 			int i = y * w + x;
-			int distance = points_msg->distance[i];
-			int intensity = points_msg->intensity[i];
+			double distance = points_msg->distance[i];
 			if(distance == 0){
 				continue;
 			}
