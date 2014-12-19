@@ -3,10 +3,22 @@
 <!-- publishes fix, vel and time_reference -->
 <!-- For details: http://wiki.ros.org/nmea_navsat_driver-->
 <launch> 
+
+  <arg name="port" value="/dev/ttyUSB0"/>
+  <arg name="baud" value="57600" />
+ 
   <!-- HOW TO RUN using rosrun:-->
-  <!-- rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
-  <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="nmea_navsat_launch">
-    <param name="port" value="/dev/ttyUSB0" />
-    <param name="baud" value="57600" />
-  </node>
+  <!-- rosrun nmea_navsat_driver nmea_topic_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
+ <!-- rosrun nmea_navsat_driver nmea_topic_driver -->
+
+<!--read sentence and publish topic-->
+<node pkg="nmea_navsat_driver" type="nmea_topic_serial_reader" name="nmea_topic_serial_reader">
+  <param name="port" value="$(arg port)" />
+  <param name="baud" value="$(arg baud)" />
+</node>
+
+<!--subscribe topic-->
+<node pkg="nmea_navsat_driver" type="nmea_topic_driver" name="nmea_topic_driver"> 
+</node>
+
 </launch>
