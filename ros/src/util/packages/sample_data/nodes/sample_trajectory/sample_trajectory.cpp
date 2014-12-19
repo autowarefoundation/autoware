@@ -120,7 +120,7 @@ rosrun sample_data sample_trajectory gnss.log <swap_x_y_off|swap_x_y_on>
 
 */
 
-  ros::init(argc, argv, "sample_vector_map");
+  ros::init(argc, argv, "sample_trajectory");
   ros::NodeHandle n;
   ros::Publisher pub = n.advertise<visualization_msgs::Marker>("/vector_map", 10, true);
 
