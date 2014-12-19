@@ -18,6 +18,10 @@ std::vector<int> depth_point_x_on_image;
 std::vector<int> depth_point_y_on_image;
 double ratio = 1;	//resize ratio
 
+int flag_car;
+int flag_image;
+int flag_pedestrian;
+
 void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, double ratio)
 {
 	for(int i = 0; i < object_num; i++)
@@ -29,13 +33,12 @@ void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, do
 	}
 }
 
-void fused_objectsCallback(const car_detector::FusedObjects& fused_objects)
+void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
     if(image == NULL){
       return;
     }
-
-    IplImage *image_clone = cvCloneImage(image);
+    flag_car++;
 
     int i;
 
@@ -59,26 +62,92 @@ void fused_objectsCallback(const car_detector::FusedObjects& fused_objects)
         if(fused_objects.distance.at(i) != NO_DATA) {
             cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
             sprintf(distance_string, "%.2f m", fused_objects.distance.at(i));
-            cvPutText(image_clone, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4]), &dfont, CV_RGB(255, 0, 0));
+            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
         } else {
             cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
             sprintf(distance_string, "No data");
-            cvPutText(image_clone, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4]), &dfont, CV_RGB(255, 0, 0));
+            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
         }
     }
-
-    showRects(image_clone, fused_objects.car_num, fused_objects.corner_point, ratio);
 
     /*
      * Show image
      */
-    cvShowImage(window_name, image_clone);
-    cvWaitKey(2);
-    cvReleaseImage(&image_clone);
+    if (flag_image == 0) {
+        return;
+    } else if (flag_pedestrian == 1 && flag_car == 1) {
+        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
+        cvShowImage(window_name, image);
+        cvWaitKey(2);
+        flag_image = 0;
+    } else if(flag_pedestrian == 0 && flag_car == 1) {
+        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
+    } else {
+        return;
+    }
 }
+
+void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+{
+    if(image == NULL){
+      return;
+    }
+    flag_pedestrian++;
+
+    int i;
+
+    for (i = 0; i < fused_objects.car_num; i++) {
+        if(fused_objects.distance.at(i) != NO_DATA) {
+            printf("%f\n", fused_objects.distance.at(i));
+        } else {
+            printf("no data\n");
+        }
+
+        char distance_string[32];
+        CvFont dfont;
+        float hscale      = 1.0f;
+        float vscale      = 1.0f;
+        float italicscale = 0.0f;
+        int  thickness    = 2;
+
+        /*
+         * Plot distances on an image
+         */
+        if(fused_objects.distance.at(i) != NO_DATA) {
+            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
+            sprintf(distance_string, "%.2f m", fused_objects.distance.at(i));
+            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
+        } else {
+            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
+            sprintf(distance_string, "No data");
+            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
+        }
+    }
+
+    /*
+     * Show image
+     */
+    if (flag_image == 0) {
+        return;
+    } else if (flag_car == 1 && flag_pedestrian == 1) {
+        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
+        cvShowImage(window_name, image);
+        cvWaitKey(2);
+        flag_image = 0;
+    } else if (flag_car == 0 && flag_pedestrian == 1) {
+        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
+    } else {
+        return;
+    }
+}
+
 
 void imageCallback(const sensor_msgs::Image& image_source)
 {
+    flag_pedestrian = 0;
+    flag_car = 0;
+    flag_image++;
+
     cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
     temp = cv_image->image;
     image = &temp;
@@ -101,6 +170,9 @@ int main(int argc, char **argv)
 
     cvNamedWindow(window_name, 2);
     image = NULL;
+    flag_car = false;
+    flag_image = false;
+    flag_pedestrian = false;
 
     ros::init(argc, argv, "image_d_viewer");
 
@@ -128,7 +200,8 @@ int main(int argc, char **argv)
      */
 
     ros::Subscriber image_sub = n.subscribe("/image_raw", 1, imageCallback);
-    ros::Subscriber fused_objects_sub = n.subscribe("/car_pos_xyz", 1, fused_objectsCallback);
+    ros::Subscriber car_pos_xyz_sub = n.subscribe("/car_pos_xyz", 1, car_pos_xyzCallback);
+    ros::Subscriber pedestrian_pos_xyz_sub = n.subscribe("/pedestrian_pos_xyz", 1, pedestrian_pos_xyzCallback);
 
     /**
      * ros::spin() will enter a loop, pumping callbacks.  With this version, all
