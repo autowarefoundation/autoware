@@ -1,5 +1,5 @@
 Header header
-sensor_msgs/LaserScan scan
-float32[] image_point_x
-float32[] image_point_y
 float32[] distance
+float32[] intensity
+int32 max_y
+int32 min_y
