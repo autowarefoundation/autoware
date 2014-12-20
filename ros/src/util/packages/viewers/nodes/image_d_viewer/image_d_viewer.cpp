@@ -9,24 +9,22 @@
 #include "car_detector/FusedObjects.h"
 #define NO_DATA 0
 
-char window_name[] = "CAR_TRACK";
+char window_name[] = "image_d_viewer";
 //for imageCallback
 cv_bridge::CvImagePtr cv_image;
 IplImage temp;
 IplImage *image;
-std::vector<int> depth_point_x_on_image;
-std::vector<int> depth_point_y_on_image;
 double ratio = 1;	//resize ratio
 
-int flag_car;
-int flag_image;
-int flag_pedestrian;
+car_detector::FusedObjects car_fused_objects;
+car_detector::FusedObjects pedestrian_fused_objects;
 
-void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, double ratio)
+void showImage();
+
+void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, double ratio, CvScalar col)
 {
 	for(int i = 0; i < object_num; i++)
 	{
-		CvScalar col = cvScalar(255.0,255.0,0.0);
 		CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
 		CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
 		cvRectangle(Image,p1,p2,col,3);
@@ -38,53 +36,8 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
     if(image == NULL){
       return;
     }
-    flag_car++;
-
-    int i;
-
-    for (i = 0; i < fused_objects.car_num; i++) {
-        if(fused_objects.distance.at(i) != NO_DATA) {
-            printf("%f\n", fused_objects.distance.at(i));
-        } else {
-            printf("no data\n");
-        }
-
-        char distance_string[32];
-        CvFont dfont;
-        float hscale      = 1.0f;
-        float vscale      = 1.0f;
-        float italicscale = 0.0f;
-        int  thickness    = 2;
-
-        /*
-         * Plot distances on an image
-         */
-        if(fused_objects.distance.at(i) != NO_DATA) {
-            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "%.2f m", fused_objects.distance.at(i));
-            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
-        } else {
-            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "No data");
-            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
-        }
-    }
-
-    /*
-     * Show image
-     */
-    if (flag_image == 0) {
-        return;
-    } else if (flag_pedestrian == 1 && flag_car == 1) {
-        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
-        cvShowImage(window_name, image);
-        cvWaitKey(2);
-        flag_image = 0;
-    } else if(flag_pedestrian == 0 && flag_car == 1) {
-        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
-    } else {
-        return;
-    }
+    car_fused_objects = fused_objects;
+    showImage();
 }
 
 void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
@@ -92,67 +45,118 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
     if(image == NULL){
       return;
     }
-    flag_pedestrian++;
+    pedestrian_fused_objects = fused_objects;
+    showImage();
+}
 
+
+void imageCallback(const sensor_msgs::Image& image_source)
+{
+    cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
+    temp = cv_image->image;
+    image = &temp;
+    showImage();
+}
+
+void showImage()
+{
     int i;
+    IplImage* image_clone = cvCloneImage(image);
+    char distance_string[32];
+    CvFont dfont;
+    float hscale      = 0.7f;
+    float vscale      = 0.7f;
+    float italicscale = 0.0f;
+    int  thickness    = 1;
 
-    for (i = 0; i < fused_objects.car_num; i++) {
-        if(fused_objects.distance.at(i) != NO_DATA) {
-            printf("%f\n", fused_objects.distance.at(i));
+    /*
+     * Plot obstacle frame
+     */
+    showRects(image_clone, car_fused_objects.car_num, car_fused_objects.corner_point, ratio, cvScalar(255.0,255.0,0.0));
+    showRects(image_clone, pedestrian_fused_objects.car_num, pedestrian_fused_objects.corner_point, ratio, cvScalar(0.0,255.0,0.0));
+
+
+    /*
+     * Plot car distance data on image
+     */
+    for (i = 0; i < car_fused_objects.car_num; i++) {
+        if(car_fused_objects.distance.at(i) != NO_DATA) {
+            cvRectangle(image_clone,
+                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - (((int)log10(car_fused_objects.distance.at(i))+1) * 5 + 45),
+                                  car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 5),
+                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) + (((int)log10(car_fused_objects.distance.at(i))+1) * 8 + 38),
+                                  car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 30),
+                        cv::Scalar(255,255,255), -1);
+            cvInitFont (&dfont, CV_FONT_HERSHEY_COMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
+            sprintf(distance_string, "%.2f m", car_fused_objects.distance.at(i));
+            cvPutText(image_clone,
+                      distance_string,
+                      cvPoint(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - (((int)log10(car_fused_objects.distance.at(i))+1) * 5 + 40),
+                              car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 25),
+                      &dfont,
+                      CV_RGB(255, 0, 0));
         } else {
-            printf("no data\n");
-        }
-
-        char distance_string[32];
-        CvFont dfont;
-        float hscale      = 1.0f;
-        float vscale      = 1.0f;
-        float italicscale = 0.0f;
-        int  thickness    = 2;
-
-        /*
-         * Plot distances on an image
-         */
-        if(fused_objects.distance.at(i) != NO_DATA) {
-            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "%.2f m", fused_objects.distance.at(i));
-            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
-        } else {
-            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
+            cvRectangle(image_clone,
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - 50,
+                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 5),
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) + 55,
+                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 30),
+                        cv::Scalar(255,255,255), -1);
+            cvInitFont (&dfont, CV_FONT_HERSHEY_COMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
             sprintf(distance_string, "No data");
-            cvPutText(image, distance_string, cvPoint(fused_objects.corner_point[0+i*4] , fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4] + 10), &dfont, CV_RGB(255, 0, 0));
+            cvPutText(image_clone,
+                      distance_string,
+                      cvPoint(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - 45,
+                              pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 25),
+                      &dfont,
+                      CV_RGB(255, 0, 0));
+        }
+    }
+
+    /*
+     * Plot pedestrian distance data on image
+     */
+    for (i = 0; i < pedestrian_fused_objects.car_num; i++) {
+        if(pedestrian_fused_objects.distance.at(i) != NO_DATA) {
+            cvRectangle(image_clone,
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - (((int)log10(pedestrian_fused_objects.distance.at(i))+1) * 5 + 45),
+                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 5),
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) + (((int)log10(pedestrian_fused_objects.distance.at(i))+1) * 8 + 38),
+                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 30),
+                        cv::Scalar(255,255,255), -1);
+            cvInitFont (&dfont, CV_FONT_HERSHEY_COMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
+            sprintf(distance_string, "%.2f m", pedestrian_fused_objects.distance.at(i));
+            cvPutText(image_clone,
+                      distance_string,
+                      cvPoint(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - (((int)log10(pedestrian_fused_objects.distance.at(i))+1) * 5 + 40),
+                              pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 25),
+                      &dfont,
+                      CV_RGB(255, 0, 0));
+        } else {
+            cvRectangle(image_clone,
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - 50,
+                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 5),
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) + 55,
+                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 30),
+                        cv::Scalar(255,255,255), -1);
+            cvInitFont (&dfont, CV_FONT_HERSHEY_COMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
+            sprintf(distance_string, "No data");
+            cvPutText(image_clone,
+                      distance_string,
+                      cvPoint(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - 45,
+                              pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 25),
+                      &dfont,
+                      CV_RGB(255, 0, 0));
         }
     }
 
     /*
      * Show image
      */
-    if (flag_image == 0) {
-        return;
-    } else if (flag_car == 1 && flag_pedestrian == 1) {
-        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
-        cvShowImage(window_name, image);
-        cvWaitKey(2);
-        flag_image = 0;
-    } else if (flag_car == 0 && flag_pedestrian == 1) {
-        showRects(image, fused_objects.car_num, fused_objects.corner_point, ratio);
-    } else {
-        return;
-    }
+    cvShowImage(window_name, image_clone);
+    cvWaitKey(2);
+    cvReleaseImage(&image_clone);
 }
-
-
-void imageCallback(const sensor_msgs::Image& image_source)
-{
-    flag_pedestrian = 0;
-    flag_car = 0;
-    flag_image++;
-
-    cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
-    temp = cv_image->image;
-    image = &temp;
-}
-
 
 
 int main(int argc, char **argv)
@@ -170,9 +174,8 @@ int main(int argc, char **argv)
 
     cvNamedWindow(window_name, 2);
     image = NULL;
-    flag_car = false;
-    flag_image = false;
-    flag_pedestrian = false;
+    car_fused_objects.car_num = 0;
+    pedestrian_fused_objects.car_num = 0;
 
     ros::init(argc, argv, "image_d_viewer");
 
