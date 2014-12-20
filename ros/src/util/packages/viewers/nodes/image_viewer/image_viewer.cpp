@@ -2,6 +2,7 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include "opencv2/contrib/contrib.hpp"
 
 #include "ros/ros.h"
 #include <cv_bridge/cv_bridge.h>
@@ -15,6 +16,8 @@ using namespace cv;
 vector<Rect> cars;
 vector<Rect> peds;
 
+vector<Scalar> 	_colors;
+
 static void image_viewer_callback(const sensor_msgs::Image& image_source)
 {
 	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
@@ -23,23 +26,29 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	IplImage frame = cv_image->image;
 	
 	Mat matImage(&frame, false);	
-	//cvtColor(matImage, matImage, CV_BGR2RGB);
+	cvtColor(matImage, matImage, CV_BGR2RGB);
+
+	
 	
 	for(std::size_t i=0; i<cars.size();i++)
 	{
-		
-		cvRectangle( &frame, 
+		if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
+		{
+			cvRectangle( &frame, 
 				cvPoint(cars[i].x, cars[i].y),
 				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
-				Scalar( 0, 255, 0,0 ), 3, 8,0 );
+				_colors[0], 3, 8,0 );
+		}
 	}
 	for(std::size_t i=0; i<peds.size();i++)
 	{
-		
-		cvRectangle( &frame, 
+		if(peds[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
+		{
+			cvRectangle( &frame, 
 				cvPoint(peds[i].x, peds[i].y),
 				cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
-				Scalar( 255, 0,0, 0 ), 3, 8,0 );
+				_colors[1], 3, 8,0 );
+		}
 	}
 	
 
@@ -106,7 +115,7 @@ int main(int argc, char **argv)
 		image_node = "/image_raw";
 	}
 
-	if (private_nh.getParam("cars_node", car_node))
+	if (private_nh.getParam("car_node", car_node))
     	{
         	ROS_INFO("Setting car positions node to %s", car_node.c_str());
     	}
@@ -126,11 +135,13 @@ int main(int argc, char **argv)
 		pedestrian_node = "/pedestrian_pos_xy";
 	}
 
+	cv::generateColors(_colors, 25);
+
 	ros::Subscriber scriber = n.subscribe(image_node, 1,
 					      image_viewer_callback);
 	ros::Subscriber scriber_car = n.subscribe(car_node, 1,
 					      car_updater_callback);
-	ros::Subscriber scriber_ped = n.subscribe(car_node, 1,
+	ros::Subscriber scriber_ped = n.subscribe(pedestrian_node, 1,
 					      ped_updater_callback); 
 
 	ros::spin();

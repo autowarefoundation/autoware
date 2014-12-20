@@ -2,6 +2,7 @@
 #include <opencv/highgui.h>
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include "opencv2/contrib/contrib.hpp"
 
 #include "ros/ros.h"
 #include <sensor_msgs/image_encodings.h>
@@ -22,16 +23,19 @@ points_to_image::PointsImageConstPtr points_msg;
 cv::Mat colormap;
 
 vector<Rect> cars;
+vector<Rect> peds;
+
+vector<Scalar> 	_colors;
 
 #define	IMAGE_WIDTH	640
 #define	IMAGE_HEIGHT	480
 
-void rect_updater_callback(dpm::ImageObjects image_objects_msg)
+void car_updater_callback(dpm::ImageObjects image_objects_msg)
 {
 	int num = image_objects_msg.car_num;
 	vector<int> points = image_objects_msg.corner_point; 
 	//points are X,Y,W,H and repeat for each instance
-    	cars.clear();
+	cars.clear();
 	
 	for (int i=0; i<num;i++)
 	{
@@ -41,6 +45,26 @@ void rect_updater_callback(dpm::ImageObjects image_objects_msg)
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		cars.push_back(tmp);
+		
+	}
+	
+}
+void ped_updater_callback(dpm::ImageObjects image_objects_msg)
+{
+	int num = image_objects_msg.car_num;
+	vector<int> points = image_objects_msg.corner_point; 
+	//points are X,Y,W,H and repeat for each instance
+	peds.clear();
+	
+	for (int i=0; i<num;i++)
+	{
+		Rect tmp;
+		tmp.x = points[i*4 + 0];
+		tmp.y = points[i*4 + 1];
+		tmp.width = points[i*4 + 2];
+		tmp.height = points[i*4 + 3];
+		peds.push_back(tmp);
+		
 	}
 	
 }
@@ -61,10 +85,23 @@ void show(void)
 	for(std::size_t i=0; i<cars.size();i++)
 	{
 		
-		cvRectangle( &frame, 
+		if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
+		{
+			cvRectangle( &frame, 
 				cvPoint(cars[i].x, cars[i].y),
 				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
-				Scalar( 0, 255, 0,0 ), 1, 8,0 );
+				_colors[0], 3, 8,0 );
+		}
+	}
+	for(std::size_t i=0; i<peds.size();i++)
+	{
+		if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
+		{
+			cvRectangle( &frame, 
+				cvPoint(peds[i].x, peds[i].y),
+				cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
+				_colors[1], 3, 8,0 );
+		}
 	}
 
 	int w = IMAGE_WIDTH;
@@ -119,14 +156,66 @@ void points_cb(const points_to_image::PointsImageConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "points_image_viewer");
+	ros::init(argc, argv, "points_image_d_viewer");
 	ros::NodeHandle n;
-	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
-	ros::Subscriber sub_points = n.subscribe("points_image", 1, points_cb);
+	ros::NodeHandle private_nh("~");
 
-	ros::Subscriber scriber_car = n.subscribe("/car_pos_xy", 1,
-					      rect_updater_callback); 
-	
+	string image_node;
+	string car_node;
+	string pedestrian_node;
+	string points_node;
+
+	if (private_nh.getParam("image_node", image_node))
+    	{
+        	ROS_INFO("Setting image node to %s", image_node.c_str());
+    	}
+	else
+	{
+		ROS_INFO("No image node received, defaulting to image_raw, you can use _image_node:=YOUR_NODE");
+		image_node = "/image_raw";
+	}
+
+	if (private_nh.getParam("car_node", car_node))
+    	{
+        	ROS_INFO("Setting car positions node to %s", car_node.c_str());
+    	}
+	else
+	{
+		ROS_INFO("No car positions node received, defaulting to car_pos_xy, you can use _car_node:=YOUR_TOPIC");
+		car_node = "/car_pos_xy";
+	}
+
+	if (private_nh.getParam("pedestrian_node", pedestrian_node))
+    	{
+        	ROS_INFO("Setting pedestrian positions node to %s", pedestrian_node.c_str());
+    	}
+	else
+	{
+		ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pos_xy, you can use _pedestrian_node:=YOUR_TOPIC");
+		pedestrian_node = "/pedestrian_pos_xy";
+	}
+
+	if (private_nh.getParam("points_node", points_node))
+    	{
+        	ROS_INFO("Setting pedestrian positions node to %s", points_node.c_str());
+    	}
+	else
+	{
+		ROS_INFO("No points node received, defaulting to points_image, you can use _points_node:=YOUR_TOPIC");
+		points_node = "/points_image";
+	}
+
+	cv::generateColors(_colors, 25);
+
+	ros::Subscriber scriber = n.subscribe(image_node, 1,
+					      image_cb);
+	ros::Subscriber scriber_car = n.subscribe(car_node, 1,
+					      car_updater_callback);
+	ros::Subscriber scriber_ped = n.subscribe(pedestrian_node, 1,
+					      ped_updater_callback); 
+	ros::Subscriber scriber_points = n.subscribe(points_node, 1,
+					      points_cb); 
+
 	cv::Mat grayscale(256,1,CV_8UC1);
 	int i;
 	for(i=0;i<256;i++)
