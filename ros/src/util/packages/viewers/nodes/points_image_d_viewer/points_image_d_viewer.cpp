@@ -95,7 +95,7 @@ void show(void)
 	}
 	for(std::size_t i=0; i<peds.size();i++)
 	{
-		if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
+		if(peds[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
 		{
 			cvRectangle( &frame, 
 				cvPoint(peds[i].x, peds[i].y),
