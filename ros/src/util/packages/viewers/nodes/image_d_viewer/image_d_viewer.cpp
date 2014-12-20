@@ -97,17 +97,17 @@ void showImage()
                       CV_RGB(255, 0, 0));
         } else {
             cvRectangle(image_clone,
-                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - 50,
-                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 5),
-                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) + 55,
-                                  pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 30),
+                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - 50,
+                                  car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 5),
+                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) + 55,
+                                  car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 30),
                         cv::Scalar(255,255,255), -1);
             cvInitFont (&dfont, CV_FONT_HERSHEY_COMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
             sprintf(distance_string, "No data");
             cvPutText(image_clone,
                       distance_string,
-                      cvPoint(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - 45,
-                              pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 25),
+                      cvPoint(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - 45,
+                              car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 25),
                       &dfont,
                       CV_RGB(255, 0, 0));
         }
