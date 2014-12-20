@@ -92,45 +92,45 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
-	string image_topic;
-	string car_topic;
-	string pedestrian_topic;
+	string image_node;
+	string car_node;
+	string pedestrian_node;
 
-	if (private_nh.getParam("image_topic", image_topic))
+	if (private_nh.getParam("image_node", image_node))
     	{
-        	ROS_INFO("Setting image topic to %s", image_topic.c_str());
+        	ROS_INFO("Setting image node to %s", image_node.c_str());
     	}
 	else
 	{
-		ROS_INFO("No image topic received, defaulting to image_raw, you can use _image_topic:=YOUR_TOPIC");
-		image_topic = "/image_raw";
+		ROS_INFO("No image node received, defaulting to image_raw, you can use _image_node:=YOUR_NODE");
+		image_node = "/image_raw";
 	}
 
-	if (private_nh.getParam("cars_topic", car_topic))
+	if (private_nh.getParam("cars_node", car_node))
     	{
-        	ROS_INFO("Setting car positions topic to %s", car_topic.c_str());
+        	ROS_INFO("Setting car positions node to %s", car_node.c_str());
     	}
 	else
 	{
-		ROS_INFO("No car positions topic received, defaulting to car_pos_xy, you can use _car_topic:=YOUR_TOPIC");
-		car_topic = "/car_pos_xy";
+		ROS_INFO("No car positions node received, defaulting to car_pos_xy, you can use _car_node:=YOUR_TOPIC");
+		car_node = "/car_pos_xy";
 	}
 
-	if (private_nh.getParam("pedestrian_topic", pedestrian_topic))
+	if (private_nh.getParam("pedestrian_node", pedestrian_node))
     	{
-        	ROS_INFO("Setting pedestrian positions topic to %s", pedestrian_topic.c_str());
+        	ROS_INFO("Setting pedestrian positions node to %s", pedestrian_node.c_str());
     	}
 	else
 	{
-		ROS_INFO("No pedestrian positions topic received, defaulting to pedestrian_pos_xy, you can use _pedestrian_topic:=YOUR_TOPIC");
-		pedestrian_topic = "/pedestrian_pos_xy";
+		ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pos_xy, you can use _pedestrian_node:=YOUR_TOPIC");
+		pedestrian_node = "/pedestrian_pos_xy";
 	}
 
-	ros::Subscriber scriber = n.subscribe(image_topic, 1,
+	ros::Subscriber scriber = n.subscribe(image_node, 1,
 					      image_viewer_callback);
-	ros::Subscriber scriber_car = n.subscribe(car_topic, 1,
+	ros::Subscriber scriber_car = n.subscribe(car_node, 1,
 					      car_updater_callback);
-	ros::Subscriber scriber_ped = n.subscribe(car_topic, 1,
+	ros::Subscriber scriber_ped = n.subscribe(car_node, 1,
 					      ped_updater_callback); 
 
 	ros::spin();

@@ -83,3 +83,7 @@ target_link_libraries(pedestrian_fusion
 add_executable(pedestrian_tracking
   nodes/pedestrian_tracking/pedestrian_tracking.cpp
 )
+target_link_libraries(pedestrian_tracking
+  ${catkin_LIBRARIES}
+  kf
+)

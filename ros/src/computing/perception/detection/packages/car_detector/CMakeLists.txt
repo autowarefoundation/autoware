@@ -90,3 +90,8 @@ add_dependencies(car_fusion car_detector_generate_messages_cpp)
 add_executable(car_tracking
   nodes/car_tracking/car_tracking.cpp
 )
+target_link_libraries(car_tracking
+  ${catkin_LIBRARIES}
+  kf
+)
+add_dependencies(car_tracking dpm_generate_messages_cpp)

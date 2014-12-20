@@ -9,6 +9,9 @@
 #include <sensor_msgs/image_encodings.h>
 #include "dpm/ImageObjects.h"
 
+#define CAR_NODE "car_pos_xy_tracked"
+#define PED_NODE "pedestrian_pos_xy_tracked"
+
 //TRACKING STUFF
 #include "opencv2/core/core.hpp"
 #include "opencv2/objdetect/objdetect.hpp"
@@ -48,11 +51,16 @@ struct kstate
 	Scalar			color;
 };
 
-vector<kstate> _kstates;
-vector<bool> _active;
-vector<LatentSvmDetector::ObjectDetection> _detections;
+//tracking required code
+vector<kstate> 	_kstates;
+vector<bool> 	_active;
+vector<Scalar> 	_colors;
+vector<LatentSvmDetector::ObjectDetection> _dpm_detections;
 
+bool _ready =false;
 
+long int _counter = 0;
+//
 
 ///Returns true if an im1 is contained in im2 or viceversa
 bool crossCorr(Mat im1, Mat im2)
@@ -166,7 +174,7 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 	kstate new_state;
 	//KalmanFilter KF(4, 2, 0);//XY Only
 	KalmanFilter KF(8, 4, 0);
-
+	
 	/*Mat_<float> measurement = (Mat_<float>(2, 1) << object.rect.x,//XY Only
 		object.rect.y);*/
 	Mat_<float> measurement = (Mat_<float>(4, 1) << object.rect.x,
@@ -366,7 +374,7 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 
 	TickMeter tm;
 	tm.start();
-	std::cout << endl << "START tracking" << endl;
+	std::cout << endl << "START tracking...";
 	doTracking(detections, frameNumber, kstates, active, image, tracked_detections, colors);
 	tm.stop();
 	std::cout << "END Tracking time = " << tm.getTimeSec() << " sec" << endl;
@@ -391,6 +399,7 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 		corner_point_array[3+i*4] = od.pos.height;//updated to show height instead of 2nd point
 		//ENDROS
 	}
+	//more ros
 	dpm::ImageObjects image_objects_msg;
 	image_objects_msg.car_num = num;
 	image_objects_msg.corner_point = corner_point_array;
@@ -398,40 +407,101 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 
 	image_objects.publish(image_objects_msg);
 }
-void sync_callback(const sensor_msgs::ImageConstPtr& image_source,
-			const dpm::ImageObjectsConstPtr &image_objects_msg_ptr)
-{
-	dpm::ImageObjects image_objects_msg = *image_objects_msg_ptr;
 
+void image_callback(const sensor_msgs::ImageConstPtr& image_source)
+{
+	if (!_ready)
+		return;
+	_ready=false;
 	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 							     encoding);
 	IplImage frame = cv_image->image;
 	
-	Mat image(&frame, true);
+	Mat imageTrack(&frame, true);
 
-	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point; 
+	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors);	
 
-		
+	imshow("Tracked", imageTrack);
 	
-	
+	_counter++;
 }
 
-int main(int argc, char **argv)
+void detections_callback(dpm::ImageObjects image_objects_msg)
 {
+	int num = image_objects_msg.car_num;
+	vector<int> points = image_objects_msg.corner_point; 
+	//points are X,Y,W,H and repeat for each instance
+	_dpm_detections.clear();
+	cv::generateColors(_colors, num);
+	for (int i=0; i<num;i++)
+	{
+		Rect tmp;
+		tmp.x = points[i*4 + 0];
+		tmp.y = points[i*4 + 1];
+		tmp.width = points[i*4 + 2];
+		tmp.height = points[i*4 + 3];
+		_dpm_detections.push_back(LatentSvmDetector::ObjectDetection(tmp, 0));
+		
+	}
+	_ready = true;
+	cout << "received pos" << endl;
+}
+
+int kf_main(int argc, char* argv[], const std::string& tracking_type)
+{
+	std::string published_node;
+	string obj_topic_def;
+	if(tracking_type=="car")
+	{
+		published_node="car_pos_xy_tracked";
+		obj_topic_def="car_pos_xy";
+	}
+	else if (tracking_type=="pedestrian")
+	{
+		published_node="pedestrian_pos_xy_tracked";
+		obj_topic_def="pedestrian_pos_xy";
+	}
+	else
+	{
+		std::cerr << "Invalid detection type: "
+			  << tracking_type
+			  << std::endl;
+	}
+
 	ros::init(argc, argv, "kf");
-	ros::NodeHandle nh;
+	ros::NodeHandle n;
+	ros::NodeHandle private_nh("~");
 
-	//std::string published_node;//future_use
+	image_objects = n.advertise<dpm::ImageObjects>(published_node, 1);
 
-	image_objects = nh.advertise<dpm::ImageObjects>("car_pos_xy_tracked", 1);
-
-	message_filters::Subscriber<Image> image_sub(nh, "/image_raw", 1);
-	message_filters::Subscriber<dpm::ImageObjects> pos_sub(nh, "/car_pos_xy", 1);
-	TimeSynchronizer<Image, dpm::ImageObjects> sync(image_sub, pos_sub, 10);
+	string image_topic;
+	string obj_topic;
+	if (private_nh.getParam("image_node", image_topic))
+    	{
+        	ROS_INFO("Setting image node to %s", image_topic.c_str());
+    	}
+	else
+	{
+		ROS_INFO("No image node received, defaulting to image_raw, you can use _image_node:=YOUR_TOPIC");
+		image_topic = "/image_raw";
+	}
+	if (private_nh.getParam("object_node", image_topic))
+    	{
+        	ROS_INFO("Setting object node to %s", image_topic.c_str());
+    	}
+	else
+	{
+		ROS_INFO("No object node received, defaulting to %s, you can use _object_node:=YOUR_TOPIC", obj_topic_def.c_str());
+		obj_topic = obj_topic_def;
+	}
 	
-	sync.registerCallback(boost::bind(&sync_callback, _1, _2));
+
+	ros::Subscriber sub_image = n.subscribe(image_topic, 1, image_callback);
+	ros::Subscriber sub_dpm = n.subscribe(obj_topic, 1, detections_callback);
+	//TimeSynchronizer<Image, dpm::ImageObjects> sync(image_sub, pos_sub, 10);
+	
+	//sync.registerCallback(boost::bind(&sync_callback, _1, _2));
 	
 
 	ros::spin();

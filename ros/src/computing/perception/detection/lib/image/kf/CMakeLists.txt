@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-
+find_package(OpenCV REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -27,7 +27,6 @@ catkin_package(
 ###########
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
-find_package(OpenCV REQUIRED)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(src)
