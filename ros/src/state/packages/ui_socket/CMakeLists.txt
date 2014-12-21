@@ -11,8 +11,10 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 add_message_files(
   FILES
+  Waypoint.msg
   gear_info.msg
   mode_info.msg
+  route_info.msg
   error_info.msg
   can_info.msg
 )

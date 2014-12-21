@@ -3,6 +3,7 @@ package com.ghostagent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -165,25 +166,34 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	}
 
+	private int sendWayPoints(ArrayList<Double> wayPoints) {
+		double[] way = new double[wayPoints.size()];
+
+		for (int i = 0; i < wayPoints.size(); i++)
+			way[i] = wayPoints.get(i).doubleValue();
+
+		return SoundManagementNative.sendDoubleArray(3, way); // ROUTE
+	}
+
 	@Override
 	public void onRestart() {
-		Toast.makeText(this, "onRestart", Toast.LENGTH_LONG).show();
+		Log.v("Log", "restart");
 		File file = new File(
 				Environment.getExternalStorageDirectory().getPath() + "/MapRoute.txt");
 		try {
 			FileReader reader = new FileReader(file);
 			BufferedReader breader = new BufferedReader(reader);
 			String line;
-			StringTokenizer token;
-			for (int i = 1; (line = breader.readLine()) != null; i++) {
-				token = new StringTokenizer(line, ",");
+			ArrayList<Double> wayPoints = new ArrayList<Double>();
+			while ((line = breader.readLine()) != null) {
+				StringTokenizer token = new StringTokenizer(line, ",");
 				if (token.countTokens() == 2) {
-					Double lat = Double.parseDouble(token.nextToken());
-					Double lon = Double.parseDouble(token.nextToken());
-					Toast.makeText(this, "[" + i + "] " + lat + "," + lon, Toast.LENGTH_SHORT).show();
+					wayPoints.add(Double.parseDouble(token.nextToken()));
+					wayPoints.add(Double.parseDouble(token.nextToken()));
 				}
 			}
 			breader.close();
+			sendWayPoints(wayPoints);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
