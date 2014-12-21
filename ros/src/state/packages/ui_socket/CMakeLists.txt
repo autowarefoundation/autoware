@@ -17,6 +17,7 @@ add_message_files(
   route_cmd.msg
   error_info.msg
   can_info.msg
+  mode_info.msg
 )
 
 generate_messages(
