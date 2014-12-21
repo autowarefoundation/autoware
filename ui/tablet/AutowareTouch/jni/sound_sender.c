@@ -73,6 +73,49 @@ JNIEXPORT jint JNICALL Java_com_ghostagent_SoundManagementNative_send(JNIEnv * e
 	return (ret != -1) ? sdata[0]:ret;
 }
 
+JNIEXPORT jint JNICALL Java_com_ghostagent_SoundManagementNative_sendDoubleArray(JNIEnv * env, jobject thiz, jint type, jdoubleArray data) {
+	int sdata[2];
+	jint ret;
+	jdouble * array;
+	int array_size;
+
+	if (sock < 0) {
+		return -1;
+	}
+
+	array = (*env)->GetDoubleArrayElements(env, data, NULL);
+	if (array == NULL) {
+		return -1;
+	}
+
+	array_size = (*env)->GetArrayLength(env, data);
+
+	sdata[0] = type;
+	sdata[1] = sizeof(jdouble) * array_size;
+	if (send(sock, sdata, sizeof(sdata), 0) == -1) {
+		LOGE("sendSoundData", "send failed");
+		goto fail;
+	}
+
+	if (send(sock, array, sdata[1], 0) == -1) {
+		LOGE("sendSoundData", "send failed");
+		goto fail;
+	}
+
+	ret = recv(sock, sdata, sizeof(int), 0);
+	if (ret == -1) {
+		LOGE("sendSoundData", "recv failed");
+		goto fail;
+	}
+
+	(*env)->ReleaseDoubleArrayElements(env, data, array, 0);
+	return sdata[0];
+
+fail:
+	(*env)->ReleaseDoubleArrayElements(env, data, array, 0);
+	return -1;
+}
+
 int convertEndian(void *input, size_t s){
 	int i;   // counter
 	unsigned char *temp;   // temp

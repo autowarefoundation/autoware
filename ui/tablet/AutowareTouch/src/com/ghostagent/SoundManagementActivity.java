@@ -1,6 +1,11 @@
 package com.ghostagent;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Random;
+import java.util.StringTokenizer;
 
 import com.design.DrawCenterView;
 import com.design.DrawLeftView;
@@ -8,8 +13,10 @@ import com.design.DrawRightView;
 import com.ghostagent.R;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -159,6 +166,40 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	}
 
+	private int sendWayPoints(ArrayList<Double> wayPoints) {
+		double[] way = new double[wayPoints.size()];
+
+		for (int i = 0; i < wayPoints.size(); i++)
+			way[i] = wayPoints.get(i).doubleValue();
+
+		return SoundManagementNative.sendDoubleArray(3, way); // ROUTE
+	}
+
+	@Override
+	public void onRestart() {
+		Log.v("Log", "restart");
+		File file = new File(
+				Environment.getExternalStorageDirectory().getPath() + "/MapRoute.txt");
+		try {
+			FileReader reader = new FileReader(file);
+			BufferedReader breader = new BufferedReader(reader);
+			String line;
+			ArrayList<Double> wayPoints = new ArrayList<Double>();
+			while ((line = breader.readLine()) != null) {
+				StringTokenizer token = new StringTokenizer(line, ",");
+				if (token.countTokens() == 2) {
+					wayPoints.add(Double.parseDouble(token.nextToken()));
+					wayPoints.add(Double.parseDouble(token.nextToken()));
+				}
+			}
+			breader.close();
+			sendWayPoints(wayPoints);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		super.onStart();
+	}
+
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		if (hasFocus) {
@@ -177,6 +218,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 		else if(v == voice){
 			Log.v("Button", "voice");
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.setClassName("com.example.sampleroute", "com.example.sampleroute.MainActivity");
+			startActivity(intent);
 		}
 		else if(v == s1){
 			Log.v("Button", "s1");
