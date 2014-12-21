@@ -39,14 +39,14 @@ JNIEXPORT jint JNICALL Java_com_ghostagent_SoundManagementNative_connect(JNIEnv 
 		sock = -1;
 		return -1;
 	}
-	LOGI("connect", "connected");
+	LOGI("connected");
 	return 0;
 }
 
 JNIEXPORT jint JNICALL Java_com_ghostagent_SoundManagementNative_close(JNIEnv * env) {
 	close(sock);
 	sock = -1;
-	LOGI("close", "done");
+	LOGI("closed");
 	return 0;
 }
 
@@ -62,13 +62,13 @@ JNIEXPORT jint JNICALL Java_com_ghostagent_SoundManagementNative_send(JNIEnv * e
 	sdata[0] = type;
 	sdata[1] = data;
 	if (send(sock, sdata, sizeof(sdata), 0) == -1) {
-		LOGE("sendSoundData", "send failed");
+		LOGE("send failed");
 		return -1;
 	}
 
 	ret = recv(sock, sdata, sizeof(int), 0);
 	if (ret == -1) {
-		LOGE("sendSoundData", "recv failed");
+		LOGE("recv failed");
 	}
 	return (ret != -1) ? sdata[0]:ret;
 }
@@ -93,18 +93,18 @@ JNIEXPORT jint JNICALL Java_com_ghostagent_SoundManagementNative_sendDoubleArray
 	sdata[0] = type;
 	sdata[1] = sizeof(jdouble) * array_size;
 	if (send(sock, sdata, sizeof(sdata), 0) == -1) {
-		LOGE("sendSoundData", "send failed");
+		LOGE("send failed");
 		goto fail;
 	}
 
 	if (send(sock, array, sdata[1], 0) == -1) {
-		LOGE("sendSoundData", "send failed");
+		LOGE("send failed");
 		goto fail;
 	}
 
 	ret = recv(sock, sdata, sizeof(int), 0);
 	if (ret == -1) {
-		LOGE("sendSoundData", "recv failed");
+		LOGE("recv failed");
 		goto fail;
 	}
 
