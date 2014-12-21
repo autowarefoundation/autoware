@@ -1,5 +1,6 @@
-#define ERROR_INFO_TYPE		3
-#define CAN_INFO_TYPE		4
+#define ERROR_INFO_TYPE		1
+#define CAN_INFO_TYPE		2
+#define MODE_INFO_TYPE		3
 
 struct error_request {
 	int32_t type;
@@ -121,5 +122,14 @@ struct can_request {
 		env_temperature = msg.env_temperature;
 		msg.terminal.copy(terminal, 32, 0);
 		msg.img.copy(img, 256, 0);
+	}
+};
+
+struct mode_request {
+	int32_t type;
+	int32_t mode;
+
+	mode_request(const ui_socket::mode_info& msg)
+	: type(MODE_INFO_TYPE), mode(msg.mode) {
 	}
 };

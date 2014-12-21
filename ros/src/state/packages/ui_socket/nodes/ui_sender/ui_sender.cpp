@@ -7,6 +7,7 @@
 
 #include <ui_socket/error_info.h>
 #include <ui_socket/can_info.h>
+#include <ui_socket/mode_info.h>
 
 #include "request.h"
 
@@ -85,6 +86,39 @@ static void subscribe_can_info(const ui_socket::can_info& msg)
 	}
 }
 
+static void subscribe_mode_info(const ui_socket::mode_info& msg)
+{
+	mode_request request(msg);
+	int response;
+	ssize_t nbytes;
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	nbytes = send(connfd, &request, sizeof(request), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("send: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(request)) {
+		ROS_WARN("send: %zd bytes remaining",
+			 sizeof(request) - nbytes);
+		return;
+	}
+
+	nbytes = recv(connfd, &response, sizeof(response), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("recv: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(response)) {
+		ROS_WARN("recv: %zd bytes remaining",
+			 sizeof(response) - nbytes);
+		return;
+	}
+}
+
 int main(int argc, char **argv)
 {
 	int listenfd;
@@ -127,6 +161,8 @@ int main(int argc, char **argv)
 						     subscribe_error_info);
 	ros::Subscriber sub_can_info = n.subscribe("can_info", QUEUE_SIZE,
 						   subscribe_can_info);
+	ros::Subscriber sub_mode_info = n.subscribe("mode_info", QUEUE_SIZE,
+						    subscribe_mode_info);
 
 	while (true) {
 		connfd = accept(listenfd, (struct sockaddr *)nullptr,
