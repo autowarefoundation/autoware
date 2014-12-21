@@ -10,9 +10,9 @@
 #include <assert.h>
 
 #include "ros/ros.h"
-#include "ui_socket/gear_info.h"
-#include "ui_socket/mode_info.h"
-#include "ui_socket/route_info.h"
+#include "ui_socket/gear_cmd.h"
+#include "ui_socket/run_cmd.h"
+#include "ui_socket/route_cmd.h"
 
 #define NODE_NAME	"ui_receiver"
 #define TOPIC_NR	(3)
@@ -31,9 +31,9 @@ int main(int argc, char *argv[])
 
 	ros::init(argc, argv, NODE_NAME);
 	ros::NodeHandle node;
-	pub[0] = node.advertise<ui_socket::gear_info>("gear_info", 1);
-	pub[1] = node.advertise<ui_socket::mode_info>("mode_info", 1);
-	pub[2] = node.advertise<ui_socket::route_info>("route_info", 1);
+	pub[0] = node.advertise<ui_socket::gear_cmd>("gear_cmd", 1);
+	pub[1] = node.advertise<ui_socket::run_cmd>("run_cmd", 1);
+	pub[2] = node.advertise<ui_socket::route_cmd>("route_cmd", 1);
 	node.param<int>("ui_receiver/port", port, DEFAULT_PORT);
 	fprintf(stderr, "listen port=%d\n", port);
 
@@ -118,19 +118,19 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 
 	switch(info[0]) {
 	case 1: { // GEAR
-		ui_socket::gear_info msg;
-		msg.gear_num = info[1];
+		ui_socket::gear_cmd msg;
+		msg.gear = info[1];
 		pub[0].publish(msg);
 		break;
 	}
-	case 2: { // MODE
-		ui_socket::mode_info msg;
-		msg.mode_num = info[1];
+	case 2: { // RUN
+		ui_socket::run_cmd msg;
+		msg.run = info[1];
 		pub[1].publish(msg);
 		break;
 	}
 	case 3: { // ROUTE
-		ui_socket::route_info msg;
+		ui_socket::route_cmd msg;
 		ui_socket::Waypoint point;
 		size_t size = info[1];
 		double *points;

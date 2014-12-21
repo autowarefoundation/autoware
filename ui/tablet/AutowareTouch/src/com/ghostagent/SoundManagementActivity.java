@@ -246,11 +246,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 		else if(v == autoCruise){
 			Log.v("Button", "autoCruise");
-			SoundManagementNative.send(2, 1); // MODE:1
+			SoundManagementNative.send(2, 1); // RUN:1
 		}
 		else if(v == normalCruise){
 			Log.v("Button", "normalCruise");
-			SoundManagementNative.send(2, 0); // MODE:0
+			SoundManagementNative.send(2, 2); // RUN:2
 		}
 		else if(v == pursuit){
 			Log.v("Button", "pursuit");
