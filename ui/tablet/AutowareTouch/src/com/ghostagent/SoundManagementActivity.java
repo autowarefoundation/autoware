@@ -1,6 +1,10 @@
 package com.ghostagent;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Random;
+import java.util.StringTokenizer;
 
 import com.design.DrawCenterView;
 import com.design.DrawLeftView;
@@ -8,8 +12,10 @@ import com.design.DrawRightView;
 import com.ghostagent.R;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -160,6 +166,31 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	@Override
+	public void onRestart() {
+		Toast.makeText(this, "onRestart", Toast.LENGTH_LONG).show();
+		File file = new File(
+				Environment.getExternalStorageDirectory().getPath() + "/MapRoute.txt");
+		try {
+			FileReader reader = new FileReader(file);
+			BufferedReader breader = new BufferedReader(reader);
+			String line;
+			StringTokenizer token;
+			for (int i = 1; (line = breader.readLine()) != null; i++) {
+				token = new StringTokenizer(line, ",");
+				if (token.countTokens() == 2) {
+					Double lat = Double.parseDouble(token.nextToken());
+					Double lon = Double.parseDouble(token.nextToken());
+					Toast.makeText(this, "[" + i + "] " + lat + "," + lon, Toast.LENGTH_SHORT).show();
+				}
+			}
+			breader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		super.onStart();
+	}
+
+	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		if (hasFocus) {
 			viewWidth = drawLeftView.getWidth();
@@ -177,6 +208,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 		else if(v == voice){
 			Log.v("Button", "voice");
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.setClassName("com.example.sampleroute", "com.example.sampleroute.MainActivity");
+			startActivity(intent);
 		}
 		else if(v == s1){
 			Log.v("Button", "s1");
