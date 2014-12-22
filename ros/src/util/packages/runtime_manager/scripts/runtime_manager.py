@@ -161,6 +161,12 @@ class MyFrame(rtmgr.MyFrame):
 			tc.SetValue(s)
 		self.update_button_conn_stat(t)
 
+	def OnConnTablet(self, event):
+		obj = event.GetEventObject()
+		cmd = 'sh -c "rosparam set ui_receiver/port 5666 ; rosrun ui_socket ui_receiver"'
+		dic = { obj : (cmd , None) }
+		self.launch_kill_proc_tablet(obj, dic)
+
 	def OnConn(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_conn_a
@@ -435,6 +441,50 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			obj.SetValue(False)
+		msg = None
+		msg = 'already launched.' if v and proc else msg
+		msg = 'already terminated.' if not v and proc is None else msg
+		msg = 'cmd not implemented.' if not cmd else msg
+		if msg is not None:
+			print(msg)
+			return
+		if v:
+			t = cmd
+			if type(t) is list:
+				t = self.modal_dialog(obj, t)
+				if t is None:
+					return # cancel
+			# for replace
+			if t.find('replace') >= 0:
+				t2 = eval(t)
+				if t2 != t:
+					t = t2
+					add_args = None
+
+			args = shlex.split(t)
+			if add_args:
+				s = '__args__'
+				pos = args.index(s) if s in args else -1
+				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
+			print(args) # for debug
+			proc = subprocess.Popen(args)
+		else:
+			terminate_children(proc.pid)
+			proc.terminate()
+			proc.wait()
+			proc = None
+		cmd_dic[obj] = (cmd, proc)
+
+	def launch_kill_proc_tablet(self, obj, cmd_dic, add_args=None):
+		if obj not in cmd_dic:
+			obj.SetValue(False)
+			print('not implemented.')
+			return
+		v = True
+		(cmd, proc) = cmd_dic[obj]
+		if not cmd:
+			#obj.SetValue(False)
+			pass
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
