@@ -9,8 +9,8 @@
 #define DISTCOEFF "DistCoeff"
 #define IMAGESIZE "ImageSize"
 
-#define IMAGE_WIDTH 640
-#define IMAGE_HEIGHT 480
+#define IMAGE_WIDTH 800
+#define IMAGE_HEIGHT 640
 
 cv::Mat cameraExtrinsicMat;
 cv::Mat cameraMat;
