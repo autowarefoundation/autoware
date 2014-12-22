@@ -27,8 +27,8 @@ vector<Rect> peds;
 
 vector<Scalar> 	_colors;
 
-#define	IMAGE_WIDTH	640
-#define	IMAGE_HEIGHT	480
+#define	IMAGE_WIDTH	800
+#define	IMAGE_HEIGHT	600
 
 void car_updater_callback(dpm::ImageObjects image_objects_msg)
 {
