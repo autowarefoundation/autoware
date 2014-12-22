@@ -7,8 +7,8 @@
 #include <sensor_msgs/image_encodings.h>
 #include "points_to_image/PointsImage.h"
 
-#define IMAGE_WIDTH 640
-#define IMAGE_HEIGHT 480
+#define IMAGE_WIDTH 800
+#define IMAGE_HEIGHT 640
 
 bool existImage = false;
 bool existPoints = false;
