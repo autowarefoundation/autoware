@@ -1,6 +1,6 @@
 compu_viewer_1 :
   name : Image Viewer
-  cmd  : rosrun viewers image_viewer
+  cmd  : rosrun viewers image_viewer _car_node:=car_pos_xy_tracked _pedestrian_node:=pedestrian_pos_xy_tracked
 compu_viewer_2 :
   name : Points Image Viewer
   cmd  : rosrun viewers points_image_viewer
