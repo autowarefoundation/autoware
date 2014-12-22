@@ -87,11 +87,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		Log.v("Log", "address: " + address + ", port: " + port);
 
 		//connect server
-		if (SoundManagementNative.connect(address, port) < 0) {
-			Toast.makeText(this, "Cannot connect", Toast.LENGTH_LONG).show();
-			Log.w("Log", "cannot connect");
-			finish();
-		}
+		// if (SoundManagementNative.connect(address, port) < 0) {
+			// Toast.makeText(this, "Cannot connect", Toast.LENGTH_LONG).show();
+			// Log.w("Log", "cannot connect");
+			// finish();
+		// }
 
 		// center expression
 		drawLeftView = (DrawLeftView) findViewById(R.id.leftView);
