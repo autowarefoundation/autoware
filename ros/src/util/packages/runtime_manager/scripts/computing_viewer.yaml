@@ -1,0 +1,16 @@
+compu_viewer_1 :
+  name : Image Viewer
+  cmd  : rosrun viewers image_viewer _car_node:=car_pos_xy_tracked _pedestrian_node:=pedestrian_pos_xy_tracked
+compu_viewer_2 :
+  name : Points Image Viewer
+  cmd  : rosrun viewers points_image_viewer
+compu_viewer_3 :
+compu_viewer_4 :
+compu_viewer_5 :
+compu_viewer_6 :
+compu_viewer_7 :
+compu_viewer_8 :
+compu_viewer_9 :
+compu_viewer_10:
+  name : Hello
+  cmd  : echo hello

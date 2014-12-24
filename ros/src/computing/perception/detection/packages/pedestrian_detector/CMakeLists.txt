@@ -73,9 +73,17 @@ add_library(fusion
 
 ## Declare a cpp executable
 add_executable(pedestrian_fusion
-  nodes/pedestrian_fusion/pedestrian_fusion.cpp
+  nodes/pedestrian_fusion/pedestrian_fusion.cpp  nodes/pedestrian_fusion/fusion.cpp
 )
 
 target_link_libraries(pedestrian_fusion
   ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
+)
+
+add_executable(pedestrian_tracking
+  nodes/pedestrian_tracking/pedestrian_tracking.cpp
+)
+target_link_libraries(pedestrian_tracking
+  ${catkin_LIBRARIES}
+  kf
 )

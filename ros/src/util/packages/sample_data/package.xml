@@ -6,6 +6,8 @@
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gnss</build_depend>
+  <run_depend>gnss</run_depend>
   <export>
   </export>
 </package>

@@ -9,6 +9,9 @@
 #define DISTCOEFF "DistCoeff"
 #define IMAGESIZE "ImageSize"
 
+#define IMAGE_WIDTH 800
+#define IMAGE_HEIGHT 640
+
 cv::Mat cameraExtrinsicMat;
 cv::Mat cameraMat;
 cv::Mat distCoeff;
@@ -25,20 +28,19 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 
 	//pub_msg.header = msg->header;
 
-	pub_msg.width = w;
-	pub_msg.height = h;
 	pub_msg.intensity.assign(w * h, 0);
 	pub_msg.distance.assign(w * h, 0);
 	cv::Mat invR = cameraExtrinsicMat(cv::Rect(0,0,3,3)).t();
 	cv::Mat invT = -invR*(cameraExtrinsicMat(cv::Rect(3,0,1,3)));
 	char* cp = (char*)msg->data.data();
 
+	pub_msg.max_y = -1;
+	pub_msg.min_y = h;
 	int x, y;
 	for(y=0; y<msg->height; y++){
 		for(x=0; x<msg->width; x++){
 			float* fp = (float *)(cp + msg->row_step * y + msg->point_step * x);
-			//double intensity = fp[3];
-			unsigned short intensity = (unsigned short)(fp[4]);
+			double intensity = fp[4];
 
 			cv::Mat point(1, 3, CV_64F);
 			point.at<double>(0) = double(fp[0]);
@@ -72,9 +74,12 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 			if(0 <= px && px < w && 0 <= py && py < h){
 				int pid = py * w + px;
 				if(pub_msg.distance[pid] == 0 ||
-				   pub_msg.distance[pid] / 100 > point.at<double>(2)){
-					pub_msg.distance[pid] = ushort(point.at<double>(2) * 100 + 0.5);
-					pub_msg.intensity[pid] = intensity;
+				   pub_msg.distance[pid] > point.at<double>(2)){
+					pub_msg.distance[pid] = float(point.at<double>(2));
+					pub_msg.intensity[pid] = float(intensity);
+
+					pub_msg.max_y = py > pub_msg.max_y ? py : pub_msg.max_y;
+					pub_msg.min_y = py < pub_msg.min_y ? py : pub_msg.min_y;
 				}
 			}
 		}
@@ -101,7 +106,9 @@ int main(int argc, char *argv[])
 	fs[CAMERAEXTRINSICMAT] >> cameraExtrinsicMat;
 	fs[CAMERAMAT] >> cameraMat;
 	fs[DISTCOEFF] >> distCoeff;
-	fs[IMAGESIZE] >> imageSize;
+	//fs[IMAGESIZE] >> imageSize;
+	imageSize.width = IMAGE_WIDTH;
+	imageSize.height = IMAGE_HEIGHT;
 
 	pub = n.advertise<points_to_image::PointsImage>("points_image", 10);
 	ros::Subscriber sub = n.subscribe("velodyne_points", 1, callback);

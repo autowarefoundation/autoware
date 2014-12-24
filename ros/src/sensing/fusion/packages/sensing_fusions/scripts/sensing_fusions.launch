@@ -1,0 +1,5 @@
+<launch>
+  <param name="scan_to_iamge/camera_yaml" value="$(arg dir)/camera_lidar_2d.yaml" />
+  <node pkg="scan_to_image" type="scan_to_image" name="scan_to_image" />
+  <node pkg="points_to_image" type="points_to_image" name="points_to_image" args="$(arg dir)/camera_lidar_3d.yaml" />
+</launch>

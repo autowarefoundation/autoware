@@ -79,10 +79,19 @@ endif()
 
 ## Declare a cpp executable
 add_executable(car_fusion
-  nodes/car_fusion/car_fusion.cpp
+  nodes/car_fusion/car_fusion.cpp   nodes/car_fusion/fusion.cpp
 )
 
 target_link_libraries(car_fusion
-  ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
+  ${catkin_LIBRARIES} ${OpenCV_LIBS}
 )
 add_dependencies(car_fusion car_detector_generate_messages_cpp)
+
+add_executable(car_tracking
+  nodes/car_tracking/car_tracking.cpp
+)
+target_link_libraries(car_tracking
+  ${catkin_LIBRARIES}
+  kf
+)
+add_dependencies(car_tracking dpm_generate_messages_cpp)

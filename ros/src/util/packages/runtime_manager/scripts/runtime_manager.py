@@ -42,6 +42,19 @@ class MyFrame(rtmgr.MyFrame):
 		self.tree_ctrl = self.create_tree(parent, items, None, None, self.computing_cmd)
 		self.tree_ctrl.ExpandAll()
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
+
+		self.compu_viewer_cmd = {}
+		for (k, v) in self.load_yaml('computing_viewer.yaml').items():
+			obj = self.obj_get('button_' + k)
+			if not obj:
+				print ('not found button_' + k)
+				continue
+			if not v or 'name' not in v or 'cmd' not in v:
+				continue
+			obj.SetLabel(v['name'])
+			obj.Show()
+			self.compu_viewer_cmd[obj] = (v['cmd'], None)
+
 		rtmgr.MyFrame.__do_layout(self)
 
 		#
@@ -55,8 +68,15 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Sensing Tab
 		#
-		self.drv_probe_cmd = self.load_yaml_dic('drivers_probe_cmd.yaml')
-		self.sensing_cmd = self.load_yaml_dic('sensing_launch_cmd.yaml')
+		(self.drv_probe_cmd, self.sensing_cmd) = self.load_yaml_probe_run('sensing_cmd.yaml')
+
+		# for button_fusion
+		tc = self.text_ctrl_calibration
+		path = os.path.expanduser("~") + '/.ros/autoware'
+		tc.SetValue(path)
+		tc.SetInsertionPointEnd()
+		self.text_ctrl_fusion = tc
+		self.button_ref_fusion = self.button_ref_calibration
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -72,7 +92,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
 		self.sel_multi_ks = [ 'pmap' ]
-		self.sel_dir_ks = [ 'vmap' ]
+		self.sel_dir_ks = [ 'vmap', 'calibration' ]
 
 		self.text_ctrl_rviz_simu.Disable()
 		self.button_ref_rviz_simu.Disable()
@@ -101,6 +121,24 @@ class MyFrame(rtmgr.MyFrame):
 			ret_dic[obj] = (v, None)
 		return ret_dic
 
+	def load_yaml_probe_run(self, filename):
+		d = self.load_yaml(filename)
+		probe_dic = {}
+		run_dic = {}
+		for (k,d2) in d.items():
+			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
+			if len(res) <= 0:
+				print(k + ' in file ' + filename + ', not found correspoinding widget.')
+				continue
+			obj = self.obj_get(res[0] + k)
+			if not d2 or type(d2) is not dict:
+				continue
+			if 'probe' in d2:
+				probe_dic[obj] = (d2['probe'], None)
+			if 'run' in d2:
+                                run_dic[obj] = (d2['run'], None)
+		return (probe_dic, run_dic)
+
 	#
 	# Main Tab
 	#
@@ -122,6 +160,12 @@ class MyFrame(rtmgr.MyFrame):
 		if s != bak:
 			tc.SetValue(s)
 		self.update_button_conn_stat(t)
+
+	def OnConnTablet(self, event):
+		obj = event.GetEventObject()
+		cmd = 'sh -c "rosparam set ui_receiver/port 5666 ; rosrun ui_socket ui_receiver"'
+		dic = { obj : (cmd , None) }
+		self.launch_kill_proc_tablet(obj, dic)
 
 	def OnConn(self, event):
 		b = event.GetEventObject()
@@ -257,6 +301,9 @@ class MyFrame(rtmgr.MyFrame):
 	def OnTreeChecked(self, event):
 		self.launch_kill_proc(event.GetItem(), self.computing_cmd)
 
+	def OnCompuViewer(self, event):
+		self.launch_kill_proc(event.GetEventObject(), self.compu_viewer_cmd)
+
 	#
 	# Sensing Tab
 	#
@@ -264,13 +311,13 @@ class MyFrame(rtmgr.MyFrame):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnFusion(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
+		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
 
 	def OnRosbag(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 		
 	def OnCalib(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
+		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
 
 	def OnTf(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
@@ -293,16 +340,16 @@ class MyFrame(rtmgr.MyFrame):
 			if res == bak_res:
 				continue
 			self.drv_probe_cmd[obj] = (cmd, res)
-			en = obj.IsEnabled()
+			en = obj.IsShown()
 			if res and not en:
-				obj.Enable()
+				obj.Show()
 				continue
 			if not res and en:
 				v = obj.GetValue()
 				if v:
 					obj.SetValue(False)	
 					self.launch_kill_proc(obj)
-				obj.Disable()
+				obj.Hide()
 
 	#
 	# Simulation Tab
@@ -318,6 +365,12 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnVmap(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd, names=self.vmap_names)
+
+	def OnMobility(self, event):
+		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
+
+	def OnTrajectory(self, event):
+		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
 
 	#
 	# Common Utils
@@ -401,14 +454,63 @@ class MyFrame(rtmgr.MyFrame):
 				t = self.modal_dialog(obj, t)
 				if t is None:
 					return # cancel
+			# for replace
+			if t.find('replace') >= 0:
+				t2 = eval(t)
+				if t2 != t:
+					t = t2
+					add_args = None
+
 			args = shlex.split(t)
 			if add_args:
 				s = '__args__'
 				pos = args.index(s) if s in args else -1
 				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
-			print args # for debug
-			for a in args:
-				print a
+			print(args) # for debug
+			proc = subprocess.Popen(args)
+		else:
+			terminate_children(proc.pid)
+			proc.terminate()
+			proc.wait()
+			proc = None
+		cmd_dic[obj] = (cmd, proc)
+
+	def launch_kill_proc_tablet(self, obj, cmd_dic, add_args=None):
+		if obj not in cmd_dic:
+			obj.SetValue(False)
+			print('not implemented.')
+			return
+		v = True
+		(cmd, proc) = cmd_dic[obj]
+		if not cmd:
+			#obj.SetValue(False)
+			pass
+		msg = None
+		msg = 'already launched.' if v and proc else msg
+		msg = 'already terminated.' if not v and proc is None else msg
+		msg = 'cmd not implemented.' if not cmd else msg
+		if msg is not None:
+			print(msg)
+			return
+		if v:
+			t = cmd
+			if type(t) is list:
+				t = self.modal_dialog(obj, t)
+				if t is None:
+					return # cancel
+			# for replace
+			if t.find('replace') >= 0:
+				t2 = eval(t)
+				if t2 != t:
+					t = t2
+					add_args = None
+
+			args = shlex.split(t)
+			if add_args:
+				s = '__args__'
+				pos = args.index(s) if s in args else -1
+				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
+			print(args) # for debug
 			proc = subprocess.Popen(args)
 		else:
 			terminate_children(proc.pid)
@@ -481,6 +583,10 @@ class MyApp(wx.App):
 def terminate_children(pid):
 	for child in psutil.Process(pid).get_children():
 		child.terminate()
+
+def prn_dict(dic):
+	for (k,v) in dic.items():
+		print (k, ':', v)
 
 if __name__ == "__main__":
 	gettext.install("app")
