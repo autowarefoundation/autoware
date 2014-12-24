@@ -38,7 +38,9 @@ SHMClient::~SHMClient()
   }
 }
 
-
+//read cmd velocity and steering angle
+//velocity : km/h
+//steering angle : rad/s
 vel_data_t SHMClient::readControl()
 {
   vel_data_t cmd;
@@ -46,6 +48,7 @@ vel_data_t SHMClient::readControl()
   // fprintf(stderr,"SHMClient::readControl() tstmap = %lld\n", cmd.tstamp);
   return cmd;
 }
+
 vel_cmd_data_t SHMClient::readVelCmd()
 {
   vel_cmd_data_t cmd;
@@ -62,6 +65,10 @@ state_data_t SHMClient::readState()
   memcpy(&data, _data, SHM_STATE_SZ);
   return data;
 }  
+
+//read odomerty
+//x,y,z : m/s
+//R,P,Y : rad/s
 pose_data_t SHMClient::readOdomPose()
 {
   pose_data_t pose;
@@ -76,15 +83,19 @@ pose_data_t SHMClient::readEstPose()
   return pose;
 }  
 
+//read current velocity and steering angle
+//velocity : m/s
+//steering angle : rad/s
 vel_data_t SHMClient::readCurVel()
 {
-
   vel_data_t vel;
   memcpy(&vel, &(_data->base.vel_cur), sizeof(vel_data_t));
   return  vel;
 }
 
-
+//write odomerty
+//x,y,z : m/s
+//R,P,Y : rad/s
 int SHMClient::writeOdomPose(pose_data_t pose)
 {
   // if (pose.tstamp == NO_TSTAMP) 
@@ -105,6 +116,9 @@ int SHMClient::writeBaseState(base_data_t data)
   memcpy(&(_data->base), &(data), sizeof(base_data_t));
 }
 
+//write current velocity and steering angle
+//velocity : m/s
+//steering angle : rad/s
 int SHMClient::writeCurVel(vel_data_t vel) 
 {
  
@@ -112,7 +126,9 @@ int SHMClient::writeCurVel(vel_data_t vel)
   memcpy(&(_data->base.vel_cur), &vel, sizeof(vel_data_t));
 }
 
-
+//read cmd velocity and steering angle
+//velocity : km/h
+//steering angle : rad/s
 int SHMClient::writeControl(int mode, vel_data_t control) 
 {
  
