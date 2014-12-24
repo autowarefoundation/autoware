@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sys/time.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 using namespace std;
 
 int main(int argc, char **argv) {
