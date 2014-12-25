@@ -71,20 +71,20 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		setContentView(R.layout.knight_rider);
 
 		// get parameters
-		address = getIntent().getExtras().getString("address");
-		if (address == null || address.length() == 0) {
-			Toast.makeText(this, "Bad address", Toast.LENGTH_LONG).show();
-			Log.v("Log", "bad address");
-			finish();
-		}
-		String portStr = getIntent().getExtras().getString("port");
-		if (portStr == null || portStr.length() == 0) {
-			Toast.makeText(this, "Bad port", Toast.LENGTH_LONG).show();
-			Log.v("Log", "bad port");
-			finish();
-		}
-		port = Integer.parseInt(portStr);
-		Log.v("Log", "address: " + address + ", port: " + port);
+		// address = getIntent().getExtras().getString("address");
+		// if (address == null || address.length() == 0) {
+		// 	Toast.makeText(this, "Bad address", Toast.LENGTH_LONG).show();
+		// 	Log.v("Log", "bad address");
+		// 	finish();
+		// }
+		// String portStr = getIntent().getExtras().getString("port");
+		// if (portStr == null || portStr.length() == 0) {
+		// 	Toast.makeText(this, "Bad port", Toast.LENGTH_LONG).show();
+		// 	Log.v("Log", "bad port");
+		// 	finish();
+		// }
+		// port = Integer.parseInt(portStr);
+		// Log.v("Log", "address: " + address + ", port: " + port);
 
 		//connect server
 		// if (SoundManagementNative.connect(address, port) < 0) {
