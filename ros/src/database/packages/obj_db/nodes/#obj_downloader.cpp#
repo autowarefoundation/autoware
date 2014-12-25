@@ -42,10 +42,13 @@ std::vector<std::string> split(const std::string& input, char delimiter)
 //wrap SendData class
 void* wrapSender(void *tsd){
 
+  std::vector<>
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
   sd.setServerName(serverName);
   dbres = sd.Sender();
+
+  
 
   printf("%lu\n",dbres.size());
   printf("%s\n",dbres.c_str());
