@@ -53,7 +53,8 @@ public class DrawLeftView extends View{
 		//back color
 		canvas.drawColor(Color.BLACK);
 
-		if(SoundManagementActivity.getSizeFlag == true){
+		if(SoundManagementActivity.getSizeFlag == true &&
+		   SoundManagementActivity.bIsServerConnecting == true){
 			//center rect
 			//rect = new Rect(left, top, right, bottom);
 			rect = new Rect(left, bottom, right, top);
