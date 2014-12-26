@@ -439,7 +439,7 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			obj.SetValue(False)
-		proc = self.lauch_kill(v, cmd, proc, add_args)
+		proc = self.launch_kill(v, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd, proc)
 
 	def launch_kill(self, v, cmd, proc, add_args=None):
