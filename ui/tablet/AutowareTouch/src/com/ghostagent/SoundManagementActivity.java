@@ -1,7 +1,12 @@
 package com.ghostagent;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Random;
@@ -34,11 +39,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	/**
 	 * server address
 	 */
-	String address = null;
+	String address;
 	/**
 	 * server port
 	 */
-	int port = -1;
+	int port;
 	/**
 	 * view width
 	 */
@@ -72,6 +77,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	 */
 	boolean bIsKnightRiding = false;
 	/**
+	 * flag for server connecting
+	 */
+	public static boolean bIsServerConnecting = false;
+	/**
 	 * menu item id
 	 */
 	private static final int MENU_ID_SETTINGS = 0;
@@ -81,13 +90,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		super.onCreate(savedInstanceState);
 		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		setContentView(R.layout.knight_rider);
-
-		//connect server
-		// if (SoundManagementNative.connect(address, port) < 0) {
-			// Toast.makeText(this, "Cannot connect", Toast.LENGTH_LONG).show();
-			// Log.w("Log", "cannot connect");
-			// finish();
-		// }
 
 		// center expression
 		drawLeftView = (DrawLeftView) findViewById(R.id.leftView);
@@ -128,10 +130,37 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		pursuit = (ImageButton)findViewById(R.id.pursuit);
 		findViewById(R.id.pursuit).setOnClickListener(this);
 
+		String text = null;
+		try {
+			BufferedInputStream stream = new BufferedInputStream(
+				new FileInputStream(Environment.getExternalStorageDirectory().getPath() +
+						    "/autowaretouch.txt"));
+
+			byte[] buffer = new byte[256];
+			stream.read(buffer);
+
+			text = new String(buffer).trim();
+
+			stream.close();
+		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		if (text != null) {
+			String[] settings = text.split(",");
+			if (validateIpAddress(settings[0]) && validatePortNumber(settings[1])) {
+				address = settings[0];
+				port = Integer.parseInt(settings[1]);
+				if (SoundManagementNative.connect(address, port) == 0) {
+					bIsServerConnecting = true;
+				}
+			}
+		}
+
 		// start recording
 		bIsKnightRiding = true;
 		startKnightRiding();
-
 	}
 
 	@Override
@@ -203,8 +232,30 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						if (!validatePortNumber(portString))
 							return;
 
+						String text = addressString + "," + portString;
+						try {
+							BufferedOutputStream stream = new BufferedOutputStream(
+								new FileOutputStream(
+									Environment.getExternalStorageDirectory().getPath() +
+									"/autowaretouch.txt"));
+
+							stream.write(text.getBytes("UTF-8"));
+
+							stream.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+						if (bIsServerConnecting) {
+							bIsServerConnecting = false;
+							SoundManagementNative.close();
+						}
+
 						address = addressString;
 						port = Integer.parseInt(portString);
+						if (SoundManagementNative.connect(address, port) == 0) {
+							bIsServerConnecting = true;
+						}
 					}
 				});
 			builder.setNegativeButton(
@@ -246,8 +297,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	protected void onDestroy() {
 		super.onDestroy();
 		bIsKnightRiding = false;
-		SoundManagementNative.close();
-
+		if (bIsServerConnecting) {
+			bIsServerConnecting = false;
+			SoundManagementNative.close();
+		}
 	}
 
 	private int sendWayPoints(ArrayList<Double> wayPoints) {

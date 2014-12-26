@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="IP Address" />
+        android:text="@string/ip_address" />
 
     <EditText
         android:id="@+id/ipAddress"
@@ -21,7 +21,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Port Number" />
+        android:text="@string/port_number" />
 
     <EditText
         android:id="@+id/portNumber"
