@@ -5,7 +5,47 @@
 #include "../utils/timer.h"
 #include "../comms/shm_client.h"
 
-//HEVからの情報取得用構造体
+
+using namespace std;
+using namespace zmp::hev;
+
+#define HEV_WHEEL_BASE 2.7 //Prius Tire Size
+#define PERIOD 100  
+
+#define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
+#define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
+
+#define SERVO_TRUE 0x10 //HEV Servo ON = 0x10
+#define SERVO_FALSE 0x00 //HEV Servo OFF = 0x00
+
+#define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
+#define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 
+#define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 
+#define ACCEL_PEDAL_STEP_BIG 5
+#define ACCEL_PEDAL_RELEASE_STEP 100 //release value for accel pedal
+#define ACCEL_PEDAL_MAX 300 
+
+#define HEV_LIGHT_BRAKE 400 //brake pedal
+#define HEV_MED_BRAKE 1000
+#define HEV_MED2_BRAKE 2000
+#define HEV_MAX_BRAKE 4096 //max brake pedal value 
+
+void PrintState(); //display hev information
+void PrintDrvInf();  //display drv information
+void PrintStrInf(); //display str information
+void PrintBrkInf(); //display brk information
+void PrintMode(int mode); //display drv and str mode
+void PrintServo(int servo); //display drv and str servo
+void PrintShift(int shift); //display drv shift 
+
+void SharedMemoryUpdate();//update Sharedmemory
+vel_data_t GetCommand();//get command from shm
+bool HevBaseUpdate(double * x, double * y, double *theta, double *tv, double * sv);//update odometry and current velocity
+bool CheckHevMode(); //check HEV Mode
+bool Control(double tv,double sv,void*);//function for autonomous driving
+
+
+//Structure to store HEV State
 typedef struct HevState {
   DrvInf drvInf;
   StrInf strInf;
@@ -15,45 +55,9 @@ typedef struct HevState {
 
 HevState _hev_state;
 
-//shm用クラス
-SHMClient _shared_memory;
 
-using namespace std;
-using namespace zmp::hev;
-
-#define HEV_WHEEL_BASE 2.7 //タイヤサイズ
-#define PERIOD 100
-#define MODE_MANUAL 0x00
-#define MODE_PROGRAM 0x10
-
-
-#define SERVO_TRUE 0x10 
-#define SERVO_FALSE 0x00
-
-#define ACCEL_PEDAL_SET_START 100
-#define ACCEL_PEDAL_SET_START_FAST 1000
-#define ACCEL_PEDAL_STEP 5
-#define ACCEL_PEDAL_STEP_BIG 5
-#define ACCEL_PEDAL_RELEASE_STEP 100
-#define ACCEL_PEDAL_MAX 300
-
-#define HEV_LIGHT_BRAKE 400
-#define HEV_MED_BRAKE 1000
-#define HEV_MED2_BRAKE 2000
-#define HEV_MAX_BRAKE 4096
-
-void PrintState();//hevの状態表示
-void PrintDrvInf();
-void PrintStrInf();
-void PrintBrkInf();
-
-void SharedMemoryUpdate();//Sharedmemoryの更新
-vel_data_t GetCommand();//shmから速度指令を取得
-bool HevBaseUpdate(double * x, double * y, double *theta, double *tv, double * sv);//オドメトリ、現在の速度を更新
-bool CheckHevMode(); //Hevの状態をチェック
-bool Control(double tv,double sv,void*);//自動運転の関数
-
-
+SHMClient _shared_memory; //shm Class
+pthread_t __HevBaseThread;
 
 double inline Mod(double x, double y)
 {
@@ -61,18 +65,21 @@ double inline Mod(double x, double y)
   return (x - (y * floor(x/y)));
 }
 
+
 double inline WrapPI(double a)
 {
   return (Mod(a + M_PI, 2*M_PI) - M_PI);
 }
 
+
+//convert km/h to m/s
 static double KmhToMs(double v) {
   return (v*1000.0/(60.0*60.0));
 }
 
-
+//get current time
 static double getTime() {
-  /* returns time in milliseconds */
+  //returns time in milliseconds 
   struct timeval current_time;
   struct timezone ttz;
   double t;
@@ -84,6 +91,7 @@ static double getTime() {
   return t;
 }
 
+//set velocity command to 0
 vel_data_t zero_cmd() {
   vel_data_t z;
   z.tv = 0.0;
@@ -92,7 +100,6 @@ vel_data_t zero_cmd() {
   return z;
 }
 
-pthread_t __HevBaseThread;
 
 void MainWindow::HevBaseActivate()
 {
@@ -113,38 +120,30 @@ void MainWindow::HevBaseActivate()
 //HEVの制御スレッド
 void* MainWindow::HevBaseThreadEntry(void* arg)
 {
-  //class which operate HEV
-  MainWindow* Main = (MainWindow*)arg;
-
-  int change_flag = 0;
-  
   cout << "HevBase Thread Create!!!!!!!!!!!!" << endl;
-  
+
+  MainWindow* Main = (MainWindow*)arg;   //refer MainWindow class
+  bool change_flag = false;  //HEV Mode Change flag
   bool hev_mode = false; //if program,true. if manual,false
 
   //Start HevBase
   while(1){
 
-    //update hev drvinf strinf brkinf 
-    Main->UpdateState();
-
-    //update odom and current velocity steering in shm
-    SharedMemoryUpdate();
-    
-    //check hev mode
-    hev_mode = CheckHevMode();
-    
-    //プログラムモード切り替えの判断
-    if(hev_mode == true){
+    Main->UpdateState(); //update hev drvinf strinf brkinf 
+    SharedMemoryUpdate();  //update odom and current velocity steering in SHM
+    hev_mode = CheckHevMode(); //check hev mode manual or program
+   
+    //judge if HEV mode is program
+    if(hev_mode == true){ 
       
       if(change_flag == 0){
         char answer[1];
-        cout << "Change Program Mode?(y,n) : ";
+        cout << "Change Program Mode?(y) : ";
         cin >> answer; 
         
-        if(strcmp(answer,"y") == 0){
-          cout << "Changing to Program Mode" << endl; 
-          change_flag = 1;
+        if(strncmp(answer,"y",1) == 0){
+          cout << "Change to Program Mode" << endl; 
+          change_flag = true;
    
         } else{
           hev_mode = false;
@@ -155,13 +154,15 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
           cout << "Fallback to Manual Mode" << endl;
           usleep(PERIOD*10000);
         }
+
+        //loop back to while
         continue;
       }
       
       //reset odometry
-       pose_data_t zero_odom;
-       memset(&zero_odom, 0, sizeof(zero_odom));
-       _shared_memory.writeOdomPose(zero_odom);
+      // pose_data_t zero_odom;
+      // memset(&zero_odom, 0, sizeof(zero_odom));
+      // _shared_memory.writeOdomPose(zero_odom);
       
       //Get velocity and steering command
       vel_data_t cmd = GetCommand();
@@ -176,11 +177,12 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
     usleep(PERIOD*1000);
   }
 
-
-
   return NULL;
   
 }
+
+
+//Update HEV State
 
 void MainWindow::UpdateState()
 {
@@ -192,7 +194,7 @@ void MainWindow::UpdateState()
 
 
 
-
+//get velocity and steering command
 vel_data_t GetCommand()
 {
   //get velocity , steering command and timestamp
@@ -653,7 +655,7 @@ queue<double> vel_buffer;
 
 void MainWindow::SteeringControl(double cmd_steering_angle){
     
-  int str = (int)(cmd_steering_angle/M_PI*180.0*20);    
+  int str = (int)(cmd_steering_angle/M_PI*180.0);    
   cout << "setting str angle to " << str << endl;
   if (abs(str) > 600) {
     cout << "steering angle too large : " <<  str << endl;
