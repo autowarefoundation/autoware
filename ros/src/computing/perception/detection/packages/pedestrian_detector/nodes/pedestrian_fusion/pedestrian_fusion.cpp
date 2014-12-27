@@ -24,298 +24,102 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include "pedestrian_fusion_func.h"
 
-// %Tag(FULLTEXT)%
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#ifndef ROS
-#ifdef _DEBUG
-//Debugモードの場合
-#pragma comment(lib,"cv200d.lib")
-#pragma comment(lib,"cxcore200d.lib")
-#pragma comment(lib,"cvaux200d.lib")
-#pragma comment(lib,"highgui200d.lib")
-#else
-//Releaseモードの場合
-#pragma comment(lib,"cv200.lib")
-#pragma comment(lib,"cxcore200.lib")
-#pragma comment(lib,"cvaux200.lib")
-#pragma comment(lib,"highgui200.lib")
-#endif
-#endif
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-#include <math.h>
-
-//ORIGINAL header files
-#if 1 // AXE
-extern void show_rects(IplImage *Image, int car_num, int *corner_point, int *type, double ratio);
-#else
-#include "Laser_func.h"
-#include "car_det_func.h"
-#include "Common.h"
-#include "Depth_points_func.h"
-#endif
-
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-#include <image_transport/image_transport.h>//C++ library
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-#if 1 // AXE
-#include "dpm/ImageObjects.h"
-#include "scan_to_image/ScanImage.h"
-#include "car_detector/FusedObjects.h"
-#else
-#include "sensors_fusion/ObstaclePosition.h"
-#include "sensors_fusion/TransformedPointData.h"
-#endif
-#include <boost/array.hpp>
-//end yukky there are not hedarfile
-
-char WINDOW_NAME[] = "CAR_TRACK";
-double ratio = 1;	//resize ratio
-IplImage *IM_D;
-IplImage *IM_D_clone;
-int corner_point[128]; //max corner point
-int car_type[64];
-int car_num;
-
-#if 1 // AXE
+void publishTopic();
 ros::Publisher fused_objects;
-#endif
 
-/**
- * This tutorial demonstrates simple receipt of messages over the ROS system.
- */
-// %Tag(CALLBACK)%
-#if 1 // AXE
-void obstacle_detectionCallback(const dpm::ImageObjects& obstacle_position)
-#else
-void obstacle_detectionCallback(const sensors_car_fusion::ObstaclePosition& obstacle_position)
-#endif
+
+void ImageObjectsCallback(const dpm::ImageObjects& image_object)
 {
-    int i;
+    setImageObjects(image_object);
 
-    car_num = obstacle_position.car_num;
-    for (i = 0 ;i < obstacle_position.car_num; i++) {
-        car_type[i] = obstacle_position.car_type[i];
-        corner_point[0+i*4] = obstacle_position.corner_point[0+i*4];
-        corner_point[1+i*4] = obstacle_position.corner_point[1+i*4];
-        corner_point[2+i*4] = obstacle_position.corner_point[2+i*4];
-        corner_point[3+i*4] = obstacle_position.corner_point[3+i*4];
-    }
+    calcDistance();
+    publishTopic();
 }
-#if 1 // AXE
-void distance_measurementCallback(const scan_to_image::ScanImage& transformed_point_data)
-#else
-void distance_measurementCallback(const sensors_fusion::TransformedPointData& transformed_point_data)
-#endif
+
+void ScanImageCallback(const scan_to_image::ScanImage& scan_image)
 {
-    CvSeq *points;
-    CvPoint pt;
-    CvMemStorage *storage = cvCreateMemStorage (0);
+    setScanImage(scan_image);
 
-#if 1 // AXE
-    if(IM_D_clone == NULL){
-      return;
-    }
-#endif
-    IplImage *IM_D_clone_plot;
+    calcDistance();
+    publishTopic();
+}
 
-    IM_D_clone_plot = cvCloneImage(IM_D_clone);
+void PointsImageCallback(const points_to_image::PointsImage& points_image)
+{
+    setPointsImage(points_image);
 
-    //画像に点群データをプロット
-    points = cvCreateSeq (CV_SEQ_ELTYPE_POINT, sizeof (CvSeq), sizeof (CvPoint), storage);
-
-    for (std::size_t i = 0; i < transformed_point_data.scan.ranges.size(); i++) {
-        if(0 > transformed_point_data.image_point_x[i] || transformed_point_data.image_point_x[i] > 639) {
-            continue;
-        }
-        if(0 > transformed_point_data.image_point_y[i] || transformed_point_data.image_point_y[i] > 479) {
-            continue;
-        }
-        pt.x = transformed_point_data.image_point_x[i];
-        pt.y = transformed_point_data.image_point_y[i];
-
-        cvSeqPush (points, &pt);
-        cvCircle(IM_D_clone_plot, pt, 2, CV_RGB (0, 255, 0), CV_FILLED, 8, 0);
-    }
-
-#if 1 // AXE
-    std::vector<int> corner_point_array;
-    std::vector<int> car_type_array;
-#endif
-	for(int i = 0; i < car_num; i++)
-	{
-        double obstacle_distance = -1;
-        char distance_string[32];
-
-        printf("%d, %d, %d, %d\n", corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
-        for(std::size_t j = 0; j < transformed_point_data.scan.ranges.size(); j++) {
-            if(transformed_point_data.image_point_x[j] > corner_point[0+i*4] && transformed_point_data.image_point_x[j] < corner_point[2+i*4]) {
-                if(transformed_point_data.image_point_y[j] > corner_point[1+i*4] && transformed_point_data.image_point_y[j] < corner_point[3+i*4]) {
-                    if(obstacle_distance > transformed_point_data.distance[j] || obstacle_distance == -1) {
-                        obstacle_distance = transformed_point_data.distance[j];
-                    }
-                }
-            }
-        }
-        CvFont dfont;
-        float hscale      = 1.0f;
-        float vscale      = 1.0f;
-        float italicscale = 0.0f;
-        int  thickness    = 2;
-
-        if(obstacle_distance != -1) {
-            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "%.2f m", obstacle_distance);
-            cvPutText(IM_D_clone_plot, distance_string, cvPoint(corner_point[0+i*4] , corner_point[3+i*4]), &dfont, CV_RGB(255, 0, 0));
-#if 1 // AXE
-	    car_type_array.push_back(car_type[i]);
-	    for(int j=0; j<4; j++){
-	      corner_point_array.push_back(corner_point[i+4+j]);
-	    }
-#endif
-        } else {
-            cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "No data");
-            cvPutText(IM_D_clone_plot, distance_string, cvPoint(corner_point[0+i*4] , corner_point[3+i*4]), &dfont, CV_RGB(255, 0, 0));
-        }
-    }
-#if 1 // AXE
+    calcDistance();
+    publishTopic();
+}
+void publishTopic()
+{
+    /*
+     * Publish topic(Pedestrian position xyz).
+     */
     car_detector::FusedObjects fused_objects_msg;
-    fused_objects_msg.car_num = car_type_array.size();
-    fused_objects_msg.car_type = car_type_array;
-    fused_objects_msg.corner_point = corner_point_array;
+
+    fused_objects_msg.car_num = getObjectNum();
+    fused_objects_msg.corner_point = getCornerPoint();
+    fused_objects_msg.distance = getDistance();
     fused_objects.publish(fused_objects_msg);
-#endif
-    cvShowImage(WINDOW_NAME,IM_D_clone_plot);
-    cvWaitKey(2);
-    cvClearSeq(points);
-    cvReleaseMemStorage(&storage);
-    cvReleaseImage(&IM_D_clone_plot);
 }
-
-/* メモリリークを防ぐための苦肉の策 */
-cv_bridge::CvImagePtr cv_image;
-IplImage temp;
-void imageCallback(const sensor_msgs::Image& image_source)
-{
-    /* メモリリークを起こす */
-    // cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
-    // IplImage temp = cv_image->image;
-    // IM_D = &temp;
-    // show_rects(IM_D, car_num, corner_point, car_type, ratio);
-    // IM_D_clone = cvCloneImage(IM_D);
-
-    /* メモリリークを起こさない */
-    cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
-    temp = cv_image->image;
-
-    IM_D_clone = &temp;
-    show_rects(IM_D_clone, car_num, corner_point, car_type, ratio);
-}
-
-
-
-// %EndTag(CALLBACK)%
-
-
 
 int main(int argc, char **argv)
 {
+    /**
+     * The ros::init() function needs to see argc and argv so that it can perform
+     * any ROS arguments and name remapping that were provided at the command line. For programmatic
+     * remappings you can use a different version of init() which takes remappings
+     * directly, but for most command-line programs, passing argc and argv is the easiest
+     * way to do it.  The third argument to init() is the name of the node.
+     *
+     * You must call one of the versions of ros::init() before using any other
+     * part of the ROS system.
+     */
+    init();
+    ros::init(argc, argv, "pedestrian_fusion");
 
-//    cvNamedWindow(WINDOW_NAME, CV_WINDOW_AUTOSIZE);
-    cvNamedWindow(WINDOW_NAME, 2);
-#if 1 // AXE
-    IM_D_clone = NULL;
-    car_num = 0;
-#else
-    IM_D_clone = cvLoadImage("/home/yukky/workspace/cartrack/gccDebug/CAR_TRACKING/Test_Images/Daytime_Image_PNG/5.png",CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+    /**
+     * NodeHandle is the main access point to communications with the ROS system.
+     * The first NodeHandle constructed will fully initialize this node, and the last
+     * NodeHandle destructed will close down the node.
+     */
+    ros::NodeHandle n;
+
+    /**
+     * The subscribe() call is how you tell ROS that you want to receive messages
+     * on a given topic.  This invokes a call to the ROS
+     * master node, which keeps a registry of who is publishing and who
+     * is subscribing.  Messages are passed to a callback function, here
+     * called Callback.  subscribe() returns a Subscriber object that you
+     * must hold on to until you want to unsubscribe.  When all copies of the Subscriber
+     * object go out of scope, this callback will automatically be unsubscribed from
+     * this topic.
+     *
+     * The second parameter to the subscribe() function is the size of the message
+     * queue.  If messages are arriving faster than they are being processed, this
+     * is the number of messages that will be buffered up before beginning to throw
+     * away the oldest ones.
+     */
+
+    ros::Subscriber pedestrian_pos_xy_sub = n.subscribe("pedestrian_pos_xy", 1, ImageObjectsCallback);
+    ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
+    ros::Subscriber points_image_sub =n.subscribe("points_image", 1, PointsImageCallback);
+#if _DEBUG
+    ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
+    fused_objects = n.advertise<car_detector::FusedObjects>("pedestrian_pos_xyz", 1);
 
-  /**
-   * The ros::init() function needs to see argc and argv so that it can perform
-   * any ROS arguments and name remapping that were provided at the command line. For programmatic
-   * remappings you can use a different version of init() which takes remappings
-   * directly, but for most command-line programs, passing argc and argv is the easiest
-   * way to do it.  The third argument to init() is the name of the node.
-   *
-   * You must call one of the versions of ros::init() before using any other
-   * part of the ROS system.
-   */
-#if 1 // AXE
-  ros::init(argc, argv, "pedestrian_fusion");
-#else
-  ros::init(argc, argv, "obstacle_detection_and_distance_measurement");
-#endif
+    /**
+     * ros::spin() will enter a loop, pumping callbacks.  With this version, all
+     * callbacks will be called from within this thread (the main one).  ros::spin()
+     * will exit when Ctrl-C is pressed, or the node is shutdown by the master.
+     */
+    ros::spin();
 
-  /**
-   * NodeHandle is the main access point to communications with the ROS system.
-   * The first NodeHandle constructed will fully initialize this node, and the last
-   * NodeHandle destructed will close down the node.
-   */
-  ros::NodeHandle n;
+    destroy();
 
-
-  /**
-   * The subscribe() call is how you tell ROS that you want to receive messages
-   * on a given topic.  This invokes a call to the ROS
-   * master node, which keeps a registry of who is publishing and who
-   * is subscribing.  Messages are passed to a callback function, here
-   * called chatterCallback.  subscribe() returns a Subscriber object that you
-   * must hold on to until you want to unsubscribe.  When all copies of the Subscriber
-   * object go out of scope, this callback will automatically be unsubscribed from
-   * this topic.
-   *
-   * The second parameter to the subscribe() function is the size of the message
-   * queue.  If messages are arriving faster than they are being processed, this
-   * is the number of messages that will be buffered up before beginning to throw
-   * away the oldest ones.
-   */
-// %Tag(SUBSCRIBER)%
-#if 1 // AXE
-  ros::Subscriber obstacle_detection = n.subscribe("pedestrian_pos_xy", 1, obstacle_detectionCallback);
-  ros::Subscriber distance_measurement = n.subscribe("scan_image", 1, distance_measurementCallback);
-  // XXX pedestrian_fusion should subscribe 'points_image' topic
-  //ros::Subscriber image = n.subscribe("/image_raw", 1, imageCallback);
-  
-  fused_objects = n.advertise<car_detector::FusedObjects>("pedestrian_pos_xyz", 10);
-#else
-  ros::Subscriber obstacle_detection = n.subscribe("obstacle_position", 1, obstacle_detectionCallback);
-  ros::Subscriber distance_measurement = n.subscribe("transformed_point_data", 1, distance_measurementCallback);
-  ros::Subscriber image = n.subscribe("/usb_cam/image_raw", 1, imageCallback);
-#endif
-
-//  image_transport::ImageTransport it(n);
-//  image_transport::Subscriber sub = it.subscribe("imageraw", 1, chatterCallback);
-// %EndTag(SUBSCRIBER)%
-
-  /**
-   * ros::spin() will enter a loop, pumping callbacks.  With this version, all
-   * callbacks will be called from within this thread (the main one).  ros::spin()
-   * will exit when Ctrl-C is pressed, or the node is shutdown by the master.
-   */
-// %Tag(SPIN)%
-  ros::spin();
-// %EndTag(SPIN)%
-  cvDestroyWindow(WINDOW_NAME);
-/* yukky
-  //release car-detector-model
-  free_model(MO);
-  //release detection result
-  release_result(LR);
-  //close and release file information
-  fclose(fp);			//close laser_file
-  //cvReleaseCapture(&capt);
-  s_free(FPASS);		//release laser_file pass
-*/
-  return 0;
+    return 0;
 }
-// %EndTag(FULLTEXT)%

@@ -96,6 +96,7 @@ target_link_libraries(calibrationtoolkit
   glviewer
   rosinterface
   nlopt
+  Qt5OpenGL
 )
 
 add_custom_command(

@@ -7,4 +7,5 @@ public class SoundManagementNative {
 	public static native int connect(String address, int port_number);
 	public static native int close();
 	public static native int send(int type, int data);
+	public static native int sendDoubleArray(int type, double data[]);
 }

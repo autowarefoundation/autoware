@@ -1,8 +1,9 @@
 #include <iostream>
+#include <sstream>
 #if defined(ROS) // AXE
-#include "objdetect.hpp"
+#include "opencv2/objdetect/objdetect.hpp"
 #else
-#include "objdetect/objdetect.hpp"
+#include "opencv2/objdetect/objdetect.hpp"
 #endif
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/contrib/contrib.hpp"
@@ -34,6 +35,10 @@ using namespace std;
 using namespace cv;
 
 ros::Publisher image_objects;
+int counter=0;
+
+#define SSTR( x ) dynamic_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
 
 #if !defined(ROS)
 static void help()
@@ -54,7 +59,7 @@ static void help()
 #endif
 
 static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
-			const vector<Scalar>& colors, float overlapThreshold, int numThreads, FILE *f )
+			const vector<Scalar>& colors, float overlapThreshold, int numThreads, sensor_msgs::Image image_source)
 {
     vector<LatentSvmDetector::ObjectDetection> detections;
 
@@ -79,28 +84,16 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
     {
         const LatentSvmDetector::ObjectDetection& od = detections[i];
         //od.rect contains x,y, width, height
-        rectangle( image, od.rect, colors[od.classID], 3 );
-        //write to output file
-        if (NULL != f)
-        {
-        	//KITTI layout: frame, tracklet(-1), type (Car), truncation(-1), occlusion(-1), alpha (angle 1), bbox(left), bbox (top), bbox (right), bbox (bottom), -1, -1, -1, -1000, -1000, -10, SCORE
-
-        	fprintf(f, "%d -1 Car -1 -1 1 %d %d %d %d -1 -1 -1 -1000 -1000 -1000 -10 %.4f\n",
-        				0, od.rect.x, od.rect.y, od.rect.x+od.rect.width, od.rect.y + od.rect.height, od.score );
-        }
+        //rectangle( image, od.rect, colors[od.classID], 3 );
+	//putText( image, SSTR(od.score), Point(od.rect.x+4,od.rect.y+13), FONT_HERSHEY_SIMPLEX, 0.55, colors[od.classID], 2 );
+        
 #if defined(ROS) // AXE
         car_type_array[i] = od.classID; // ?
         corner_point_array[0+i*4] = od.rect.x;
         corner_point_array[1+i*4] = od.rect.y;
         corner_point_array[2+i*4] = od.rect.width;//updated to show width instead of 2nd point
-        corner_point_array[3+i*4] = od.rect.height;//updated to show width instead of 2nd point
+        corner_point_array[3+i*4] = od.rect.height;//updated to show height instead of 2nd point
 #endif
-    }
-    // put text over the all rectangles
-    for( size_t i = 0; i < detections.size(); i++ )
-    {
-        const LatentSvmDetector::ObjectDetection& od = detections[i];
-        putText( image, classNames[od.classID], Point(od.rect.x+4,od.rect.y+13), FONT_HERSHEY_SIMPLEX, 0.55, colors[od.classID], 2 );
     }
 
 #if defined(ROS) // AXE
@@ -108,6 +101,9 @@ static void detectAndDrawObjects( Mat& image, LatentSvmDetector& detector,
     image_objects_msg.car_num = num;
     image_objects_msg.corner_point = corner_point_array;
     image_objects_msg.car_type = car_type_array;
+
+    image_objects_msg.header = image_source.header;
+    image_objects_msg.header.stamp = image_source.header.stamp;
 
     image_objects.publish(image_objects_msg);
 #endif
@@ -120,19 +116,19 @@ LatentSvmDetector* pDetector = NULL;
 vector<Scalar>* pColors = NULL;
 float* pOverlapThreshold = NULL;
 int* pNumThreads = NULL;
-FILE** pF = NULL;
+
 
 void image_objectsCallback(const sensor_msgs::Image& image_source)
 {
   cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
   Mat image = cv_image->image;
 
-  if(pDetector && pColors && pOverlapThreshold && pNumThreads && pF){
-    detectAndDrawObjects( image, *pDetector, *pColors, *pOverlapThreshold, *pNumThreads, *pF );
+  if(pDetector && pColors && pOverlapThreshold && pNumThreads){
+    detectAndDrawObjects( image, *pDetector, *pColors, *pOverlapThreshold, *pNumThreads, image_source);
   }
 
-  imshow( "result", image );
-  cvWaitKey(2);
+  //imshow( "result", image );
+  //cvWaitKey(2);
 }
 #endif
 
@@ -167,7 +163,7 @@ int main(int argc, char* argv[])
     std::string model_file(STR(OPENCV_MODEL_DIR));
     if (detection_type == "car") {
         published_node = "car_pos_xy";
-	model_file.append("car.xml");
+	model_file.append("car_2008.xml");
     } else if (detection_type == "pedestrian") {
 	published_node = "pedestrian_pos_xy";
 	model_file.append("person.xml");
@@ -176,7 +172,7 @@ int main(int argc, char* argv[])
                   << std::endl;
         std::exit(1);
     }
-    image_objects = n.advertise<dpm::ImageObjects>("image_objects", 1);
+    image_objects = n.advertise<dpm::ImageObjects>(published_node, 1);
 #else
     help();
 #endif
@@ -190,11 +186,11 @@ int main(int argc, char* argv[])
     }
 
     string images_folder, models_folder;
-    float overlapThreshold = 0.5f;
-    int numThreads = 6;
+    float overlapThreshold = 0.1f;
+    int numThreads = 8;
 #if defined(ROS) // AXE
     if(n.hasParam(THRESHOLD_PARAM)){
-      double threshold = 0.5;
+      double threshold = 0.1;
       n.getParam(THRESHOLD_PARAM, threshold);
       overlapThreshold = (float)threshold;
     }
@@ -273,7 +269,6 @@ int main(int argc, char* argv[])
 #endif
 
 #if defined(ROS) // AXE
-    pF = &f;
     pOverlapThreshold = &overlapThreshold;
     pNumThreads = &numThreads;
     pDetector = &detector;
