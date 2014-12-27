@@ -4,8 +4,9 @@
 #include <iostream>
 #include <sys/time.h>
 #include <stdlib.h>
-#include <unistd.h>
 
+#include <math.h>
+#include <unistd.h>
 using namespace std;
 
 int main(int argc, char **argv) {
@@ -15,15 +16,19 @@ int main(int argc, char **argv) {
 
   int velocity = 5;
   int time = 15;
+  vel_data_t test_cmd;
+  memset(&test_cmd, 0 ,sizeof(test_cmd));
+  _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
   printf("side brake release ok?(y) : ");
   char side[1]; 
   cin >> side;
 
   if(strcmp(side,"y") == 0){
+
+    //速度コマンドテスト
     
-    vel_data_t test_cmd;
-    memset(&test_cmd, 0 ,sizeof(test_cmd));
-  
+   
+    /*
     int i=0;
     int j=0;
     printf("accelerate!\n");
@@ -36,7 +41,7 @@ int main(int argc, char **argv) {
       _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
       usleep(100000); 
       }*/
-    gettimeofday(&start,NULL);
+    /* gettimeofday(&start,NULL);
     printf("clock start : %d\n",start.tv_sec);
 
  
@@ -65,8 +70,28 @@ int main(int argc, char **argv) {
       _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
       usleep(100000);
       }
-  }
-  else{
+  
+    */
+
+    //ステアコマンドテスト
+    double degree = 45;
+    for (int i = 0;i<=degree;i++){
+    test_cmd.tv = 0;
+    test_cmd.sv = i * M_PI/180;
+    test_cmd.tstamp = 0;
+    printf("set steering control cmd tv: %.3lf sv: %.3lf\n",test_cmd.tv,test_cmd.sv);
+    _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
+    usleep(100000); 
+    }
+    for (int j = degree;j>=0;j--){
+      test_cmd.tv = 0;
+      test_cmd.sv = j * M_PI/180;
+    test_cmd.tstamp = 0;
+    printf("set steering control cmd tv: %.3lf sv: %.3lf\n",test_cmd.tv,test_cmd.sv);
+    _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
+    usleep(100000); 
+    }
+  }else{
     printf("exit\n");
     exit(-1);
   }
