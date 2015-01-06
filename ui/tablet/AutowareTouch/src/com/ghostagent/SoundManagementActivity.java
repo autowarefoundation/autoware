@@ -215,6 +215,16 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				R.layout.settings,
 				(ViewGroup)findViewById(R.id.settingsLayout));
 
+			if (address != null) {
+				EditText addressEdit = (EditText)view.findViewById(R.id.ipAddress);
+				addressEdit.setText(address);
+			}
+
+			if (port != 0) {
+				EditText portEdit = (EditText)view.findViewById(R.id.portNumber);
+				portEdit.setText(String.valueOf(port));
+			}
+
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Settings");
 			builder.setView(view);
