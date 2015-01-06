@@ -68,7 +68,12 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Sensing Tab
 		#
-		(self.drv_probe_cmd, self.sensing_cmd) = self.load_yaml_probe_run('sensing_cmd.yaml')
+		self.drv_probe_cmd = {}
+		self.sensing_cmd = {}
+		dic = self.load_yaml('sensing.yaml')
+		self.load_yaml_sensing(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd)
+		if 'buttons' in dic:
+			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
 		# for button_fusion
 		tc = self.text_ctrl_calibration
@@ -121,23 +126,16 @@ class MyFrame(rtmgr.MyFrame):
 			ret_dic[obj] = (v, None)
 		return ret_dic
 
-	def load_yaml_probe_run(self, filename):
-		d = self.load_yaml(filename)
-		probe_dic = {}
-		run_dic = {}
+	def load_yaml_button_run(self, d, run_dic):
 		for (k,d2) in d.items():
-			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
-			if len(res) <= 0:
-				print(k + ' in file ' + filename + ', not found correspoinding widget.')
+			obj = self.obj_get('button_' + k)
+			if not obj:
+				print('button_' + k + ' not found correspoinding widget.')
 				continue
-			obj = self.obj_get(res[0] + k)
 			if not d2 or type(d2) is not dict:
 				continue
-			if 'probe' in d2:
-				probe_dic[obj] = (d2['probe'], None)
 			if 'run' in d2:
                                 run_dic[obj] = (d2['run'], None)
-		return (probe_dic, run_dic)
 
 	#
 	# Main Tab
@@ -348,6 +346,28 @@ class MyFrame(rtmgr.MyFrame):
 					obj.SetValue(False)	
 					self.launch_kill_proc(obj)
 				obj.Hide()
+
+	def load_yaml_sensing(self, dic, panel, sizer, probe_dic, run_dic):
+		if 'name' not in dic:
+			return
+		obj = None
+		if 'subs' in dic:
+			sb = wx.StaticBox(panel, wx.ID_ANY, dic['name'])
+			sb.Lower()
+			obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+			for d in dic['subs']:
+				self.load_yaml_sensing(d, panel, obj, probe_dic, run_dic)
+		else:
+			obj = wx.CheckBox(panel, wx.ID_ANY, dic['name'])
+			self.Bind(wx.EVT_CHECKBOX, self.OnSensingDriver, obj)
+			if 'probe' in dic:
+				probe_dic[obj] = (dic['probe'], None)
+			if 'run' in dic:
+				run_dic[obj] = (dic['run'], None)
+		if sizer:
+			sizer.Add(obj, 0, wx.EXPAND, 0)
+		else:
+			panel.SetSizer(obj)
 
 	#
 	# Simulation Tab
