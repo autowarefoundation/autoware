@@ -439,8 +439,13 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			obj.SetValue(False)
+		cmd_bak = cmd
+		if v and type(cmd) is list:
+			cmd = self.modal_dialog(obj, cmd)
+			if not cmd:
+				return # cancel
 		proc = self.launch_kill(v, cmd, proc, add_args)
-		cmd_dic[obj] = (cmd, proc)
+		cmd_dic[obj] = (cmd_bak, proc)
 
 	def launch_kill(self, v, cmd, proc, add_args=None):
 		msg = None
@@ -452,10 +457,6 @@ class MyFrame(rtmgr.MyFrame):
 			return proc
 		if v:
 			t = cmd
-			if type(t) is list:
-				t = self.modal_dialog(obj, t)
-				if t is None:
-					return proc # cancel
 			# for replace
 			if t.find('replace') >= 0:
 				t2 = eval(t)
