@@ -47,14 +47,14 @@ void setScanImage(const scan_to_image::ScanImage& scan_image)
 #endif
 
     /*
-     * Initialize. Assign 0 to scan_image.distance[][]
+     * Assign distance and intensity to scan_image
      */
     {
         int height, width;
         for(i = 0; i < (int)scan_image.distance.size(); i++) {
             height = (int)(i % IMAGE_HEIGHT);
             width = (int)(i / IMAGE_HEIGHT);
-            g_scan_image.distance[width][height] = scan_image.distance.at(i);
+            g_scan_image.distance[width][height] = scan_image.distance.at(i); //unit of length is centimeter
             g_scan_image.intensity[width][height] = scan_image.intensity.at(i);
         }
     }
@@ -72,7 +72,7 @@ void setPointsImage(const points_to_image::PointsImage& points_image)
 #endif
 
     /*
-     * Initialize. Assign 0 to scan_image.distance[][]
+     * Assign distance and intensity to scan_image
      */
     {
         int height, width;
@@ -80,7 +80,7 @@ void setPointsImage(const points_to_image::PointsImage& points_image)
             height = (int)(i % IMAGE_HEIGHT);
             width = (int)(i / IMAGE_HEIGHT);
             if (height < IMAGE_HEIGHT && width < IMAGE_WIDTH) {
-                g_scan_image.distance[width][height] = points_image.distance.at(i)/100;
+                g_scan_image.distance[width][height] = points_image.distance.at(i); //unit of length is centimeter
                 g_scan_image.intensity[width][height] = points_image.intensity.at(i);
             }
         }
@@ -124,7 +124,7 @@ void calcDistance()
             }
         }
 
-        g_distance.push_back(obstacle_distance);
+        g_distance.push_back(obstacle_distance); //unit of length is centimeter
 #if _DEBUG //debug
         if(obstacle_distance != NO_DATA) {
             printf("%f\n", obstacle_distance);
@@ -143,7 +143,7 @@ void calcDistance()
          */
         if(obstacle_distance != NO_DATA) {
             cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "%.2f m", obstacle_distance);
+            sprintf(distance_string, "%.2f m", obstacle_distance / 100);
             cvPutText(image, distance_string, cvPoint(g_corner_point[0+i*4] , g_corner_point[1+i*4] + g_corner_point[3+i*4]), &dfont, CV_RGB(255, 0, 0));
         } else {
             cvInitFont (&dfont, CV_FONT_HERSHEY_SIMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
