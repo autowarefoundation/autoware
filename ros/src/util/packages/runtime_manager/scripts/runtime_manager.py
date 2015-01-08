@@ -68,7 +68,12 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Sensing Tab
 		#
-		(self.drv_probe_cmd, self.sensing_cmd) = self.load_yaml_probe_run('sensing_cmd.yaml')
+		self.drv_probe_cmd = {}
+		self.sensing_cmd = {}
+		dic = self.load_yaml('sensing.yaml')
+		self.load_yaml_sensing(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd)
+		if 'buttons' in dic:
+			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
 		# for button_fusion
 		tc = self.text_ctrl_calibration
@@ -121,23 +126,16 @@ class MyFrame(rtmgr.MyFrame):
 			ret_dic[obj] = (v, None)
 		return ret_dic
 
-	def load_yaml_probe_run(self, filename):
-		d = self.load_yaml(filename)
-		probe_dic = {}
-		run_dic = {}
+	def load_yaml_button_run(self, d, run_dic):
 		for (k,d2) in d.items():
-			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
-			if len(res) <= 0:
-				print(k + ' in file ' + filename + ', not found correspoinding widget.')
+			obj = self.obj_get('button_' + k)
+			if not obj:
+				print('button_' + k + ' not found correspoinding widget.')
 				continue
-			obj = self.obj_get(res[0] + k)
 			if not d2 or type(d2) is not dict:
 				continue
-			if 'probe' in d2:
-				probe_dic[obj] = (d2['probe'], None)
 			if 'run' in d2:
                                 run_dic[obj] = (d2['run'], None)
-		return (probe_dic, run_dic)
 
 	#
 	# Main Tab
@@ -162,10 +160,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.update_button_conn_stat(t)
 
 	def OnConnTablet(self, event):
-		obj = event.GetEventObject()
 		cmd = 'sh -c "rosparam set ui_receiver/port 5666 ; rosrun ui_socket ui_receiver"'
-		dic = { obj : (cmd , None) }
-		self.launch_kill_proc_tablet(obj, dic)
+		proc = self.launch_kill(True, cmd, None)
 
 	def OnConn(self, event):
 		b = event.GetEventObject()
@@ -351,6 +347,28 @@ class MyFrame(rtmgr.MyFrame):
 					self.launch_kill_proc(obj)
 				obj.Hide()
 
+	def load_yaml_sensing(self, dic, panel, sizer, probe_dic, run_dic):
+		if 'name' not in dic:
+			return
+		obj = None
+		if 'subs' in dic:
+			sb = wx.StaticBox(panel, wx.ID_ANY, dic['name'])
+			sb.Lower()
+			obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+			for d in dic['subs']:
+				self.load_yaml_sensing(d, panel, obj, probe_dic, run_dic)
+		else:
+			obj = wx.CheckBox(panel, wx.ID_ANY, dic['name'])
+			self.Bind(wx.EVT_CHECKBOX, self.OnSensingDriver, obj)
+			if 'probe' in dic:
+				probe_dic[obj] = (dic['probe'], None)
+			if 'run' in dic:
+				run_dic[obj] = (dic['run'], None)
+		if sizer:
+			sizer.Add(obj, 0, wx.EXPAND, 0)
+		else:
+			panel.SetSizer(obj)
+
 	#
 	# Simulation Tab
 	#
@@ -441,19 +459,24 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			obj.SetValue(False)
+		cmd_bak = cmd
+		if v and type(cmd) is list:
+			cmd = self.modal_dialog(obj, cmd)
+			if not cmd:
+				return # cancel
+		proc = self.launch_kill(v, cmd, proc, add_args)
+		cmd_dic[obj] = (cmd_bak, proc)
+
+	def launch_kill(self, v, cmd, proc, add_args=None):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
 		msg = 'cmd not implemented.' if not cmd else msg
 		if msg is not None:
 			print(msg)
-			return
+			return proc
 		if v:
 			t = cmd
-			if type(t) is list:
-				t = self.modal_dialog(obj, t)
-				if t is None:
-					return # cancel
 			# for replace
 			if t.find('replace') >= 0:
 				t2 = eval(t)
@@ -473,51 +496,7 @@ class MyFrame(rtmgr.MyFrame):
 			proc.terminate()
 			proc.wait()
 			proc = None
-		cmd_dic[obj] = (cmd, proc)
-
-	def launch_kill_proc_tablet(self, obj, cmd_dic, add_args=None):
-		if obj not in cmd_dic:
-			obj.SetValue(False)
-			print('not implemented.')
-			return
-		v = True
-		(cmd, proc) = cmd_dic[obj]
-		if not cmd:
-			#obj.SetValue(False)
-			pass
-		msg = None
-		msg = 'already launched.' if v and proc else msg
-		msg = 'already terminated.' if not v and proc is None else msg
-		msg = 'cmd not implemented.' if not cmd else msg
-		if msg is not None:
-			print(msg)
-			return
-		if v:
-			t = cmd
-			if type(t) is list:
-				t = self.modal_dialog(obj, t)
-				if t is None:
-					return # cancel
-			# for replace
-			if t.find('replace') >= 0:
-				t2 = eval(t)
-				if t2 != t:
-					t = t2
-					add_args = None
-
-			args = shlex.split(t)
-			if add_args:
-				s = '__args__'
-				pos = args.index(s) if s in args else -1
-				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
-			print(args) # for debug
-			proc = subprocess.Popen(args)
-		else:
-			terminate_children(proc.pid)
-			proc.terminate()
-			proc.wait()
-			proc = None
-		cmd_dic[obj] = (cmd, proc)
+		return proc
 
 	def modal_dialog(self, obj, lst):
 		(lbs, cmds) = zip(*lst)

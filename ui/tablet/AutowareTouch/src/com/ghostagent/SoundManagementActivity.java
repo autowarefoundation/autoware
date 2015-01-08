@@ -1,7 +1,12 @@
 package com.ghostagent;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Random;
@@ -13,13 +18,20 @@ import com.design.DrawRightView;
 import com.ghostagent.R;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.View.OnClickListener;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -64,34 +76,20 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	 * flag for knight riding
 	 */
 	boolean bIsKnightRiding = false;
+	/**
+	 * flag for server connecting
+	 */
+	public static boolean bIsServerConnecting = false;
+	/**
+	 * menu item id
+	 */
+	private static final int MENU_ID_SETTINGS = 0;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 		setContentView(R.layout.knight_rider);
-
-		// get parameters
-		address = getIntent().getExtras().getString("address");
-		if (address == null || address.length() == 0) {
-			Toast.makeText(this, "Bad address", Toast.LENGTH_LONG).show();
-			Log.v("Log", "bad address");
-			finish();
-		}
-		String portStr = getIntent().getExtras().getString("port");
-		if (portStr == null || portStr.length() == 0) {
-			Toast.makeText(this, "Bad port", Toast.LENGTH_LONG).show();
-			Log.v("Log", "bad port");
-			finish();
-		}
-		port = Integer.parseInt(portStr);
-		Log.v("Log", "address: " + address + ", port: " + port);
-
-		//connect server
-		// if (SoundManagementNative.connect(address, port) < 0) {
-			// Toast.makeText(this, "Cannot connect", Toast.LENGTH_LONG).show();
-			// Log.w("Log", "cannot connect");
-			// finish();
-		// }
 
 		// center expression
 		drawLeftView = (DrawLeftView) findViewById(R.id.leftView);
@@ -132,10 +130,157 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		pursuit = (ImageButton)findViewById(R.id.pursuit);
 		findViewById(R.id.pursuit).setOnClickListener(this);
 
+		String text = null;
+		try {
+			BufferedInputStream stream = new BufferedInputStream(
+				new FileInputStream(Environment.getExternalStorageDirectory().getPath() +
+						    "/autowaretouch.txt"));
+
+			byte[] buffer = new byte[256];
+			stream.read(buffer);
+
+			text = new String(buffer).trim();
+
+			stream.close();
+		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		if (text != null) {
+			String[] settings = text.split(",");
+			if (validateIpAddress(settings[0]) && validatePortNumber(settings[1])) {
+				address = settings[0];
+				port = Integer.parseInt(settings[1]);
+				if (SoundManagementNative.connect(address, port) == 0) {
+					bIsServerConnecting = true;
+				}
+			}
+		}
+
 		// start recording
 		bIsKnightRiding = true;
 		startKnightRiding();
+	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(Menu.NONE, MENU_ID_SETTINGS, Menu.NONE, "Settings");
+		return true;
+	}
+
+	private boolean validateIpAddress(final String addressString) {
+		if (addressString == null || addressString.isEmpty()) {
+			Toast.makeText(this, "Please input IP Address",
+				       Toast.LENGTH_LONG).show();
+			return false;
+		}
+
+		return true;
+	}
+
+	private boolean validatePortNumber(final String portString) {
+		if (portString == null || portString.isEmpty()) {
+			Toast.makeText(this, "Please input Port Number",
+				       Toast.LENGTH_LONG).show();
+			return false;
+		}
+
+		boolean isValid;
+		try {
+			int port = Integer.parseInt(portString);
+			if (port >= 0 && port <= 65535)
+				isValid = true;
+			else
+				isValid = false;
+		} catch (NumberFormatException e) {
+			isValid = false;
+		}
+
+		if (!isValid)
+			Toast.makeText(this, "Please input Port Number " +
+				       "less than equal 65535",
+				       Toast.LENGTH_LONG).show();
+
+		return isValid;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case MENU_ID_SETTINGS:
+			LayoutInflater inflater = getLayoutInflater();
+
+			final View view = inflater.inflate(
+				R.layout.settings,
+				(ViewGroup)findViewById(R.id.settingsLayout));
+
+			if (address != null) {
+				EditText addressEdit = (EditText)view.findViewById(R.id.ipAddress);
+				addressEdit.setText(address);
+			}
+
+			if (port != 0) {
+				EditText portEdit = (EditText)view.findViewById(R.id.portNumber);
+				portEdit.setText(String.valueOf(port));
+			}
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Settings");
+			builder.setView(view);
+			builder.setPositiveButton(
+				"OK",
+				new DialogInterface.OnClickListener () {
+					public void onClick(DialogInterface dialog, int which) {
+						EditText addressEdit = (EditText)view.findViewById(R.id.ipAddress);
+						String addressString = addressEdit.getText().toString();
+						if (!validateIpAddress(addressString))
+							return;
+
+						EditText portEdit = (EditText)view.findViewById(R.id.portNumber);
+						String portString = portEdit.getText().toString();
+						if (!validatePortNumber(portString))
+							return;
+
+						String text = addressString + "," + portString;
+						try {
+							BufferedOutputStream stream = new BufferedOutputStream(
+								new FileOutputStream(
+									Environment.getExternalStorageDirectory().getPath() +
+									"/autowaretouch.txt"));
+
+							stream.write(text.getBytes("UTF-8"));
+
+							stream.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+						if (bIsServerConnecting) {
+							bIsServerConnecting = false;
+							SoundManagementNative.close();
+						}
+
+						address = addressString;
+						port = Integer.parseInt(portString);
+						if (SoundManagementNative.connect(address, port) == 0) {
+							bIsServerConnecting = true;
+						}
+					}
+				});
+			builder.setNegativeButton(
+				"Cancel",
+				new DialogInterface.OnClickListener () {
+					public void onClick(DialogInterface dialog, int which) {
+					}
+				});
+
+			builder.create().show();
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public void startKnightRiding() {
@@ -162,8 +307,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	protected void onDestroy() {
 		super.onDestroy();
 		bIsKnightRiding = false;
-		SoundManagementNative.close();
-
+		if (bIsServerConnecting) {
+			bIsServerConnecting = false;
+			SoundManagementNative.close();
+		}
 	}
 
 	private int sendWayPoints(ArrayList<Double> wayPoints) {
