@@ -21,11 +21,28 @@
 */
 #include "SendData.h"
 
+long startTime[10] = {
+    1255698868,
+    1255723190,
+    1266425473,
+    1266765883,
+    1266851714,
+    1266938129,
+    1267471638,
+    1267542268,
+    1267715826,
+    1268755256
+};
+
+
+
 ros::Publisher pub;
 
 char serverName[100] = "db1.ertl.jp";
 std::string dbres;
 SendData sd;
+bool testFlag;
+int counter;
 
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
@@ -44,19 +61,32 @@ void* wrapSender(void *tsd){
 
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
-  sd.setServerName(serverName);
+
+  std::string data;
+  std::ostringstream oss;
+  if(testFlag){
+    oss << "select order\t" << counter << "<E>";
+    data = oss.str();
+    sd.setValue(data);
+    printf("test\n");
+    counter++;
+  }else{
+    data = "select order<E>";
+    sd.setValue(data);
+  }
   dbres = sd.Sender();
 
   printf("%lu\n",dbres.size());
-  printf("%s\n",dbres.c_str());
 
   std_msgs::String msg;
   std::stringstream ss;
   ss << dbres;
   msg.data = ss.str();
-  ROS_INFO("%s",msg.data.c_str());
 
-  pub.publish(msg);
+  if(msg.data.compare("") != 0){
+    ROS_INFO("test\t%s",msg.data.c_str());
+    pub.publish(msg);
+  }
 
   /*
   std::vector<std::string>::iterator itr = dbres.begin();
@@ -90,20 +120,6 @@ void* intervalCall(void *a){
 
 int main(int argc, char **argv){
   
-  std::string argFlag = argv[1];
-  if(argc == 1){
-    sd = SendData(0);
-  }else if(argc == 2){
-    if(argFlag.compare("--test") == 0){
-      printf("test access\n");
-      sd = SendData(1);
-    }else{
-      printf("invalid argment\n");
-      sd = SendData(0);
-    }
-  }
-
-
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
   
@@ -111,6 +127,22 @@ int main(int argc, char **argv){
 
   pub = nh.advertise<std_msgs::String>("mo",1000); 
   //ros::Subscriber subscriber = nh,subscribe("topic_name",1000,Callback_Name)
+
+  std::string argFlag = argv[1];
+  if(argc == 1){
+    printf("normal execution\n");
+    testFlag = false;
+  }else if(argc == 2){
+    if(argFlag.compare("--test") == 0){
+      printf("test access\n");
+      testFlag = true;
+    }else{
+      printf("invalid argment\n");
+      testFlag = false;
+    }
+  }
+  sd = SendData(serverName,5678);
+  counter = 0;
 
   pthread_t th;
   if(pthread_create(&th, NULL, intervalCall, NULL)){

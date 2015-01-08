@@ -11,42 +11,35 @@
 #include <string>
 
 
-long startTime[10] = {
-    1255698868,
-    1255723190,
-    1266425473,
-    1266765883,
-    1266851714,
-    1266938129,
-    1267471638,
-    1267542268,
-    1267715826,
-    1268755256
-};
-
 class SendData{
     
 public:
     
 SendData() : 
-    counter(0),testFlag(0),serverName(NULL)
+  serverName("db1.ertl.jp"),port(5678),value("")
     {
     }
+  /*    
+ SendData(int flag,char server,int pt) : 
+  counter(0),testFlag(flag),serverName(server),port(pt),value(NULL),valueSize(0)
+  {
+  }
+  */
+
+ SendData(char *server,int pt) : 
+  serverName(server),port(pt),value("")
+  {
+  }
+
     
-SendData(int flag) : 
-    counter(0),testFlag(flag),serverName(NULL)
-    {
-    }
+  ~SendData(){}
     
-    ~SendData(){}
-    
-    std::string Sender(){
+  std::string Sender(){
         
       
     /*********************************************
    format data to send
     *******************************************/
-    char data[256];
     char recvdata[1024];
     int n;
     std::string result = "";
@@ -62,7 +55,7 @@ SendData(int flag) :
     }
 
     server.sin_family = AF_INET;
-    server.sin_port = htons(5678); // HTTP port is 80 
+    server.sin_port = htons(port); // HTTP port is 80 
 
     server.sin_addr.s_addr = inet_addr(serverName);
     if (server.sin_addr.s_addr == 0xffffffff) {
@@ -109,41 +102,47 @@ SendData(int flag) :
       }
     }
 
+    /*
     if(testFlag == 1){
         sprintf(data,"select order\t%d",counter);
         printf("test");
     }else{
         sprintf(data,"select order");
     }
-    printf("%s\n",data);
-    n = write(sock, data, (int)strlen(data));
+    */
+
+    if(value == ""){
+      fprintf(stderr,"no data\n");
+      return result;
+    }
+
+    printf("send data : %s\n",value.c_str());
+    n = write(sock, value.c_str(), value.size());
     if (n < 0) {
         perror("write");
         return result;
     }
         
-
     //cation : もしサーバ側で一回の通信でクローズするようになっていない場合は
     //readで0が返ってこないのでループから抜けられなくなる
     //If server do not close in one communication,loop forever because read() do not return 0.
     while(1){
-        memset(recvdata, 0, sizeof(recvdata));
-        n = read(sock, recvdata, sizeof(recvdata));
-        if (n < 0) {
-            perror("recv error");
-            result = "";
-            return result;
-        }else if(n==0){
-            break;
-        }
-        result += recvdata;    
-    }
+      memset(recvdata, 0, sizeof(recvdata));
+      n = read(sock, recvdata, sizeof(recvdata));
+      if (n < 0) {
+	perror("recv error");
+	return result;
+      }else if(n==0){
+	break;
+      }
 
-    if(testFlag == 1){
-        counter++;
-        if(counter > 5000) counter = 0;
+      if(strlen(recvdata)>=sizeof(recvdata)){
+	result.append(recvdata,sizeof(recvdata));
+      }else{
+	result.append(recvdata,strlen(recvdata));
+      }
     }
-
+    
     close(sock);
     
     return result;
@@ -151,6 +150,14 @@ SendData(int flag) :
   }
   void setServerName(char * server){
     serverName = server;
+  }
+
+  void setPort(int pt){
+    port = pt;
+  }
+
+  void setValue(std::string v){
+    value = v;
   }
 
 private:
@@ -173,8 +180,8 @@ private:
 //start time by seconds
   //long startTime[10];
 
-  int counter;
-  int testFlag;
   char *serverName;
+  int port;
+  std::string value;
  
 };

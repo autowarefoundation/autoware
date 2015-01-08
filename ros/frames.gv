@@ -1,0 +1,4 @@
+digraph G {
+"world" -> "map"[label="Broadcaster: /static_transform_publisher_1420618954685083698\nAverage rate: 99.435 Hz\nMost recent transform: 1420619422.861 \nBuffer length: 4.978 sec\n"];
+"world" -> "mobility"[label="Broadcaster: /static_transform_publisher_1420619082081597508\nAverage rate: 99.452 Hz\nMost recent transform: 1420619422.857 \nBuffer length: 4.967 sec\n"];
+}

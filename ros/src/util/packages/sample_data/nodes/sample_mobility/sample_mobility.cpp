@@ -200,13 +200,14 @@ void db_callback(const std_msgs::String::ConstPtr &msg)
     a.ele = std::stod(tmp[3].c_str());
     a.timestamp = tmp[4];
 
-   // Convert from lat,lon to x,y
-    geo.set_llh_nmea_degrees(a.lat, a.lon, a.ele);
+    // Convert from lat,lon to x,y
+    //    geo.set_llh_nmea_degrees(a.lat, a.lon, a.ele);
+    geo.llh_to_xyz(a.lat, a.lon, a.ele);
     a.x = geo.x();
     a.y = geo.y();
     a.z = geo.z();
-    p.x = geo.x()/100000.0;
-    p.y = geo.y()/10000000.0;
+    p.x = geo.x();
+    p.y = geo.y();
     p.z = geo.z();
     /*
     p.x = 1000.0 + i * 10.0;
@@ -225,14 +226,14 @@ void db_callback(const std_msgs::String::ConstPtr &msg)
 
     //    std::cout << cars[i].gps_id << " : " << cars[i].lat << " : " << cars[i].lon << " : " << cars[i].ele << " : " << cars[i].timestamp << " : " << cars[i].x << " : " << cars[i].y << " : " << cars[i].z << std::endl;
 
-    std::cout << cars[counter].gps_id << std::endl;
-    std::cout << cars[counter].lat << std::endl;
-    std::cout << cars[counter].lon << std::endl;
-    std::cout << cars[counter].ele << std::endl;
-    std::cout << cars[counter].timestamp << std::endl;
-    std::cout << cars[counter].x << std::endl;
-    std::cout << cars[counter].y << std::endl;
-    std::cout << cars[counter].z << std::endl;
+    std::cout << "gps_id: " << cars[counter].gps_id << std::endl;
+    std::cout << "lat: " << cars[counter].lat << std::endl;
+    std::cout << "lon: " << cars[counter].lon << std::endl;
+    std::cout << "ele: " << cars[counter].ele << std::endl;
+    std::cout << "timestamp: " << cars[counter].timestamp << std::endl;
+    std::cout << "x: " << cars[counter].x << std::endl;
+    std::cout << "y: " << cars[counter].y << std::endl;
+    std::cout << "z: " << cars[counter].z << std::endl;
     counter++;
     /*
     set_marker_data(&marker,
