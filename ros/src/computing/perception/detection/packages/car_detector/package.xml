@@ -10,10 +10,12 @@
   <build_depend>dpm_gpu</build_depend>
   <build_depend>kf</build_depend>
   <build_depend>scan_to_image</build_depend>
+  <build_depend>fusion_</build_depend>
   <run_depend>dpm</run_depend>
   <run_depend>dpm_gpu</run_depend>
   <run_depend>kf</run_depend>
   <run_depend>scan_to_image</run_depend>
+  <run_depend>fusion_</run_depend>
   <export>
   </export>
 </package>
