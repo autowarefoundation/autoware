@@ -1,0 +1,3 @@
+buttons:
+  moving_objects:
+    run : echo moving objects
