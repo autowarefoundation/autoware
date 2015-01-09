@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  fusion_
 )
 find_package(OpenCV REQUIRED)
 
@@ -22,7 +23,7 @@ find_package(OpenCV REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-   CATKIN_DEPENDS car_detector
+   CATKIN_DEPENDS car_detector fusion_
 #  DEPENDS system_lib
 )
 
@@ -73,11 +74,11 @@ add_library(fusion
 
 ## Declare a cpp executable
 add_executable(pedestrian_fusion
-  nodes/pedestrian_fusion/pedestrian_fusion.cpp  nodes/pedestrian_fusion/fusion.cpp
+  nodes/pedestrian_fusion/pedestrian_fusion.cpp
 )
 
 target_link_libraries(pedestrian_fusion
-  ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
+  ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion fusion_
 )
 
 add_executable(pedestrian_tracking
