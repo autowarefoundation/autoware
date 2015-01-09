@@ -104,6 +104,14 @@ class MyFrame(rtmgr.MyFrame):
 		self.text_ctrl_rviz_simu.Disable()
 		self.button_ref_rviz_simu.Disable()
 
+		#
+		# for Database Tab
+		#
+		self.database_cmd = {}
+		dic = self.load_yaml('database.yaml')
+		if 'buttons' in dic:
+			self.load_yaml_button_run(dic['buttons'], self.database_cmd)
+
 	def __do_layout(self):
 		pass
 
@@ -395,6 +403,48 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnTrajectory(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
+
+	#
+	# Database Tab
+	#
+	def OnTextArea(self, event):
+		pf = 'text_ctrl_moving_objects_route_'
+		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
+		yet = [ nm for nm in lst if self.obj_get(pf + nm).GetValue() == '' ]
+		en = len(yet) <= 0
+		btn = self.button_moving_objects
+		if btn.IsEnabled() is not en:
+			btn.Enable(en)
+
+	def OnMovingObjects(self, event):
+		btn = event.GetEventObject()
+		pf = 'text_ctrl_moving_objects_route_'
+		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
+		tcs = [ self.obj_get(pf + nm) for nm in lst ]
+		add_args = [ tc.GetValue() for tc in tcs ]
+
+		if self.check_moving_objects_stat(btn, tcs, add_args):
+			self.launch_kill_proc(btn, self.database_cmd, add_args)
+
+	def check_moving_objects_stat(self, btn, tcs, add_args):
+		v = btn.GetValue()
+		ngs = []
+		if v:
+			for s in add_args:
+				try:
+					float(s)
+				except ValueError:
+					ngs.append(tcs[ add_args.index(s) ])
+		if len(ngs) == 0:
+			for tc in tcs:
+				tc.Enable(not v)
+			return True
+
+		for tc in ngs:
+			tc.SetValue('')
+		btn.SetValue(False)
+		btn.Disable()
+		return False
 
 	#
 	# Common Utils
