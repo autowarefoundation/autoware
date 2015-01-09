@@ -17,6 +17,8 @@ import std_msgs.msg
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
+		self.all_procs = []
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		#
 		# ros
@@ -104,6 +106,10 @@ class MyFrame(rtmgr.MyFrame):
 
 	def __do_layout(self):
 		pass
+
+	def OnClose(self, event):
+		self.kill_all()
+		self.Destroy()
 
 	def RosCb(self, data):
 		print('recv topic msg : ' + data.data)
@@ -467,6 +473,11 @@ class MyFrame(rtmgr.MyFrame):
 		proc = self.launch_kill(v, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd_bak, proc)
 
+	def kill_all(self):
+		all = self.all_procs[:] # copy
+		for proc in all:
+			self.launch_kill(False, 'dmy', proc)
+
 	def launch_kill(self, v, cmd, proc, add_args=None):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
@@ -491,10 +502,13 @@ class MyFrame(rtmgr.MyFrame):
 				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
 			print(args) # for debug
 			proc = subprocess.Popen(args)
+			self.all_procs.append(proc)
 		else:
 			terminate_children(proc.pid)
 			proc.terminate()
 			proc.wait()
+			if proc in self.all_procs:
+				self.all_procs.remove(proc)
 			proc = None
 		return proc
 

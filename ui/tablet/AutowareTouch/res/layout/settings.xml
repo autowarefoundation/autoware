@@ -15,7 +15,7 @@
         android:id="@+id/ipAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="phone"
+        android:inputType="number"
         android:digits="0123456789." />
 
     <TextView
@@ -27,7 +27,7 @@
         android:id="@+id/portNumber"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="phone"
+        android:inputType="number"
         android:digits="0123456789" />
 
 </LinearLayout>
