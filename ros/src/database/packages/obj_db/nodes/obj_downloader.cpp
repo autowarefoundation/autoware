@@ -21,6 +21,7 @@
 */
 #include "SendData.h"
 
+/*
 long startTime[10] = {
     1255698868,
     1255723190,
@@ -33,15 +34,24 @@ long startTime[10] = {
     1267715826,
     1268755256
 };
+*/
 
+
+enum TYPE{
+  NORMAL,
+  RANGE,
+  TEST
+};
 
 
 ros::Publisher pub;
 
 char serverName[100] = "db1.ertl.jp";
+double positionRange[4];
+
 std::string dbres;
 SendData sd;
-bool testFlag;
+TYPE SendDataType;
 int counter;
 
 std::vector<std::string> split(const std::string& input, char delimiter)
@@ -56,6 +66,11 @@ std::vector<std::string> split(const std::string& input, char delimiter)
     return result;
 }
 
+bool isNumeric(const std::string str){
+  if(str.find_first_not_of("-0123456789. Ee\t") != std::string::npos) return false;
+  return true;
+}
+
 //wrap SendData class
 void* wrapSender(void *tsd){
 
@@ -64,16 +79,21 @@ void* wrapSender(void *tsd){
 
   std::string data;
   std::ostringstream oss;
-  if(testFlag){
-    oss << "select order\t" << counter << "<E>";
-    data = oss.str();
-    sd.setValue(data);
-    printf("test\n");
-    counter++;
-  }else{
+  switch (SendDataType){
+  case TEST:
+    {
+      oss << "select order\t" << counter << "<E>";
+      data = oss.str();
+      printf("test\n");
+      counter++;
+    }
+  case NORMAL:
     data = "select order<E>";
-    sd.setValue(data);
+  case RANGE:
+    data = "select order<E>";
   }
+
+  sd.setValue(data);
   dbres = sd.Sender();
 
   printf("%lu\n",dbres.size());
@@ -130,16 +150,31 @@ int main(int argc, char **argv){
 
   if(argc == 1){
     printf("normal execution\n");
-    testFlag = false;
+    SendDataType = NORMAL;
   }else if(argc == 2){
     std::string argFlag = argv[1];
     if(argFlag.compare("--test") == 0){
       printf("test access\n");
-      testFlag = true;
+      SendDataType = TEST;
     }else{
       printf("invalid argment\n");
-      testFlag = false;
+      SendDataType = NORMAL;
     }
+  }else if(argc == 5){
+    std::string arg;
+    for(int i=1; i<5 ;i++){
+      arg = argv[i];
+      if(!isNumeric(arg)){
+	fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
+	return 0;
+      }
+      positionRange[i-1] = atof(arg.c_str());
+    }
+    SendDataType = RANGE;
+
+  }else{
+    fprintf(stderr,"The number of argment is invalid.\n");
+    return 0;
   }
   sd = SendData(serverName,5678);
   counter = 0;
