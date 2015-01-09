@@ -17,6 +17,8 @@ import std_msgs.msg
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
+		self.all_procs = []
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		#
 		# ros
@@ -102,8 +104,20 @@ class MyFrame(rtmgr.MyFrame):
 		self.text_ctrl_rviz_simu.Disable()
 		self.button_ref_rviz_simu.Disable()
 
+		#
+		# for Database Tab
+		#
+		self.database_cmd = {}
+		dic = self.load_yaml('database.yaml')
+		if 'buttons' in dic:
+			self.load_yaml_button_run(dic['buttons'], self.database_cmd)
+
 	def __do_layout(self):
 		pass
+
+	def OnClose(self, event):
+		self.kill_all()
+		self.Destroy()
 
 	def RosCb(self, data):
 		print('recv topic msg : ' + data.data)
@@ -391,6 +405,48 @@ class MyFrame(rtmgr.MyFrame):
 		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
 
 	#
+	# Database Tab
+	#
+	def OnTextArea(self, event):
+		pf = 'text_ctrl_moving_objects_route_'
+		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
+		yet = [ nm for nm in lst if self.obj_get(pf + nm).GetValue() == '' ]
+		en = len(yet) <= 0
+		btn = self.button_moving_objects
+		if btn.IsEnabled() is not en:
+			btn.Enable(en)
+
+	def OnMovingObjects(self, event):
+		btn = event.GetEventObject()
+		pf = 'text_ctrl_moving_objects_route_'
+		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
+		tcs = [ self.obj_get(pf + nm) for nm in lst ]
+		add_args = [ tc.GetValue() for tc in tcs ]
+
+		if self.check_moving_objects_stat(btn, tcs, add_args):
+			self.launch_kill_proc(btn, self.database_cmd, add_args)
+
+	def check_moving_objects_stat(self, btn, tcs, add_args):
+		v = btn.GetValue()
+		ngs = []
+		if v:
+			for s in add_args:
+				try:
+					float(s)
+				except ValueError:
+					ngs.append(tcs[ add_args.index(s) ])
+		if len(ngs) == 0:
+			for tc in tcs:
+				tc.Enable(not v)
+			return True
+
+		for tc in ngs:
+			tc.SetValue('')
+		btn.SetValue(False)
+		btn.Disable()
+		return False
+
+	#
 	# Common Utils
 	#
 	def OnRef(self, event):
@@ -467,6 +523,11 @@ class MyFrame(rtmgr.MyFrame):
 		proc = self.launch_kill(v, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd_bak, proc)
 
+	def kill_all(self):
+		all = self.all_procs[:] # copy
+		for proc in all:
+			self.launch_kill(False, 'dmy', proc)
+
 	def launch_kill(self, v, cmd, proc, add_args=None):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
@@ -491,10 +552,13 @@ class MyFrame(rtmgr.MyFrame):
 				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
 			print(args) # for debug
 			proc = subprocess.Popen(args)
+			self.all_procs.append(proc)
 		else:
 			terminate_children(proc.pid)
 			proc.terminate()
 			proc.wait()
+			if proc in self.all_procs:
+				self.all_procs.remove(proc)
 			proc = None
 		return proc
 

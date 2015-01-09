@@ -128,11 +128,11 @@ int main(int argc, char **argv){
   pub = nh.advertise<std_msgs::String>("mo",1000); 
   //ros::Subscriber subscriber = nh,subscribe("topic_name",1000,Callback_Name)
 
-  std::string argFlag = argv[1];
   if(argc == 1){
     printf("normal execution\n");
     testFlag = false;
   }else if(argc == 2){
+    std::string argFlag = argv[1];
     if(argFlag.compare("--test") == 0){
       printf("test access\n");
       testFlag = true;
