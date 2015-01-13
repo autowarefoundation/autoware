@@ -75,7 +75,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 				int pid = py * w + px;
 				if(pub_msg.distance[pid] == 0 ||
 				   pub_msg.distance[pid] > point.at<double>(2)){
-					pub_msg.distance[pid] = float(point.at<double>(2));
+					pub_msg.distance[pid] = float(point.at<double>(2) * 100);
 					pub_msg.intensity[pid] = float(intensity);
 
 					pub_msg.max_y = py > pub_msg.max_y ? py : pub_msg.max_y;

@@ -75,23 +75,22 @@ void showImage()
     showRects(image_clone, car_fused_objects.car_num, car_fused_objects.corner_point, ratio, cvScalar(255.0,255.0,0.0));
     showRects(image_clone, pedestrian_fused_objects.car_num, pedestrian_fused_objects.corner_point, ratio, cvScalar(0.0,255.0,0.0));
 
-
     /*
      * Plot car distance data on image
      */
     for (i = 0; i < car_fused_objects.car_num; i++) {
         if(car_fused_objects.distance.at(i) != NO_DATA) {
             cvRectangle(image_clone,
-                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - (((int)log10(car_fused_objects.distance.at(i))+1) * 5 + 45),
+                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - (((int)log10(car_fused_objects.distance.at(i)/100)+1) * 5 + 45),
                                   car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 5),
-                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) + (((int)log10(car_fused_objects.distance.at(i))+1) * 8 + 38),
+                        cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) + (((int)log10(car_fused_objects.distance.at(i)/100)+1) * 8 + 38),
                                   car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 30),
                         cv::Scalar(255,255,255), -1);
             cvInitFont (&dfont, CV_FONT_HERSHEY_COMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "%.2f m", car_fused_objects.distance.at(i));
+            sprintf(distance_string, "%.2f m", car_fused_objects.distance.at(i) / 100); //unit of length is meter
             cvPutText(image_clone,
                       distance_string,
-                      cvPoint(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - (((int)log10(car_fused_objects.distance.at(i))+1) * 5 + 40),
+                      cvPoint(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - (((int)log10(car_fused_objects.distance.at(i)/100)+1) * 5 + 40),
                               car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 25),
                       &dfont,
                       CV_RGB(255, 0, 0));
@@ -119,16 +118,16 @@ void showImage()
     for (i = 0; i < pedestrian_fused_objects.car_num; i++) {
         if(pedestrian_fused_objects.distance.at(i) != NO_DATA) {
             cvRectangle(image_clone,
-                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - (((int)log10(pedestrian_fused_objects.distance.at(i))+1) * 5 + 45),
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - (((int)log10(pedestrian_fused_objects.distance.at(i)/100)+1) * 5 + 45),
                                   pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 5),
-                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) + (((int)log10(pedestrian_fused_objects.distance.at(i))+1) * 8 + 38),
+                        cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) + (((int)log10(pedestrian_fused_objects.distance.at(i)/100)+1) * 8 + 38),
                                   pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 30),
                         cv::Scalar(255,255,255), -1);
             cvInitFont (&dfont, CV_FONT_HERSHEY_COMPLEX , hscale, vscale, italicscale, thickness, CV_AA);
-            sprintf(distance_string, "%.2f m", pedestrian_fused_objects.distance.at(i));
+            sprintf(distance_string, "%.2f m", pedestrian_fused_objects.distance.at(i) / 100); //unit of length is meter
             cvPutText(image_clone,
                       distance_string,
-                      cvPoint(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - (((int)log10(pedestrian_fused_objects.distance.at(i))+1) * 5 + 40),
+                      cvPoint(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - (((int)log10(pedestrian_fused_objects.distance.at(i)/100)+1) * 5 + 40),
                               pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 25),
                       &dfont,
                       CV_RGB(255, 0, 0));
