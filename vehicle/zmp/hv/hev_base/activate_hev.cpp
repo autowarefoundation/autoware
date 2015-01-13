@@ -564,7 +564,7 @@ queue<double> vel_buffer;
   double current_steering_angle = current.sv;
   
   
-  double cmd_velocity = tv;
+  double cmd_velocity = tv *3.6;
   double cmd_steering_angle = sv;
  
   // estimate current acceleration
@@ -655,7 +655,7 @@ queue<double> vel_buffer;
 
 void MainWindow::SteeringControl(double cmd_steering_angle){
     
-  int str = (int)(cmd_steering_angle/M_PI*180.0);    
+  int str = (int)(cmd_steering_angle/M_PI*180.0 * 20);    
   cout << "setting str angle to " << str << endl;
   if (abs(str) > 600) {
     cout << "steering angle too large : " <<  str << endl;
