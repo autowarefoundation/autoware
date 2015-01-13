@@ -30,6 +30,9 @@ public:
 
 	//set llh in nmea degrees
 	void set_llh_nmea_degrees(double latd,double lond, double h);
+
+        void llh_to_xyz(double lat, double lon, double ele);
+
 	void conv_llh2xyz(void);
 	void conv_xyz2llh(void);
 };

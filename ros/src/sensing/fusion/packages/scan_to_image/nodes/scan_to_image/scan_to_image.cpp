@@ -67,9 +67,9 @@ void auto_trans_depth_points_to_image_points(Scan_points_dataset* scan_points_da
         /*
          * Coordinate transformation. Change from laser range finder coordinate to global coordinate
          */
-        global_x = (-1.0 * scan_points_dataset->scan_points.y.at(i)) - (translation_global2lrf.at<float>(0,1)/1000);
-        global_y = scan_points_dataset->scan_points.x.at(i) - (translation_global2lrf.at<float>(0,0)/1000);
-        global_z = -1.0 * (scan_points_dataset->scan_points.z.at(i) - (translation_global2lrf.at<float>(0,2)/1000));
+        global_x = (-1.0 * scan_points_dataset->scan_points.y.at(i)) - (translation_global2lrf.at<float>(0,1)/10);
+        global_y = scan_points_dataset->scan_points.x.at(i) - (translation_global2lrf.at<float>(0,0)/10);
+        global_z = -1.0 * (scan_points_dataset->scan_points.z.at(i) - (translation_global2lrf.at<float>(0,2)/10));
 
         /*
          * Coordinate transformation. Change from global coordinate to camera coordinate
@@ -79,9 +79,9 @@ void auto_trans_depth_points_to_image_points(Scan_points_dataset* scan_points_da
         camera_y = rotation.at<float>(0,1) * global_x + rotation.at<float>(1,1) * global_y + rotation.at<float>(2,1) * global_z;
         camera_z = rotation.at<float>(0,2) * global_x + rotation.at<float>(1,2) * global_y + rotation.at<float>(2,2) * global_z;
         /* Transration vector */
-        camera_x = camera_x + (translation_global2camera.at<float>(0,0)/1000);
-        camera_y = camera_y + (translation_global2camera.at<float>(0,1)/1000);
-        camera_z = camera_z + (translation_global2camera.at<float>(0,2)/1000);
+        camera_x = camera_x + (translation_global2camera.at<float>(0,0)/10);
+        camera_y = camera_y + (translation_global2camera.at<float>(0,1)/10);
+        camera_z = camera_z + (translation_global2camera.at<float>(0,2)/10);
 
         if (camera_z >= 0.0) {
             /*
@@ -93,7 +93,7 @@ void auto_trans_depth_points_to_image_points(Scan_points_dataset* scan_points_da
             /*
              * Calculate euclidean distance from the camera to objects
              */
-            image_points_dataset->distance.push_back(sqrt(camera_x * camera_x + camera_y * camera_y + camera_z * camera_z));
+            image_points_dataset->distance.push_back(sqrt(camera_x * camera_x + camera_y * camera_y + camera_z * camera_z)); //unit of length is centimeter
 
             /*
              * Copy to intensity
@@ -143,7 +143,7 @@ void manual_trans_depth_points_to_image_points(Scan_points_dataset* scan_points_
             /*
              * Calculate euclidean distance from the camera to objects
              */
-            image_points_dataset->distance.push_back(sqrt(camera_x * camera_x + camera_y * camera_y + camera_z * camera_z));
+            image_points_dataset->distance.push_back(sqrt(camera_x * camera_x + camera_y * camera_y + camera_z * camera_z)); //unit of length is centimeter
 
             /*
              * Copy to intensity
@@ -179,9 +179,9 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
      * Change to three dimentional coordinate. And copy intensity
      */
     for(i = 0; i < (int)msg->ranges.size(); i++) {
-        scan_points_dataset.scan_points.x.at(i) = -1.0 * msg->ranges.at(i) * sin(msg->angle_min + msg->angle_increment * i);
-        scan_points_dataset.scan_points.y.at(i) = 0;
-        scan_points_dataset.scan_points.z.at(i) = msg->ranges.at(i) * cos(msg->angle_min + msg->angle_increment * i);
+        scan_points_dataset.scan_points.x.at(i) = -1.0 * msg->ranges.at(i) * sin(msg->angle_min + msg->angle_increment * i) * 100; //unit of length is centimeter
+        scan_points_dataset.scan_points.y.at(i) = 0; //unit of length is centimeter
+        scan_points_dataset.scan_points.z.at(i) = msg->ranges.at(i) * cos(msg->angle_min + msg->angle_increment * i) * 100; //unit of length is centimeter
         if(!(msg->intensities.empty())){
             scan_points_dataset.intensity.at(i) = msg->intensities.at(i);
         }

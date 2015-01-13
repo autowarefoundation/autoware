@@ -12,8 +12,8 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="0.2"
-            android:gravity="left"
+            android:layout_weight="0.05"
+            android:gravity="center"
             android:orientation="vertical" >
 
             <ImageButton
@@ -89,16 +89,16 @@
                 android:id="@+id/autoCruise"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.25"
+                android:layout_weight="0.01"
                 android:background="@null"
                 android:scaleType="fitXY"
-                android:src="@drawable/autocruiseb" />
+                android:src="@drawable/autodrive" />
 
             <ImageButton
                 android:id="@+id/normalCruise"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.25"
+                android:layout_weight="0.01"
                 android:background="@null"
                 android:scaleType="fitXY"
                 android:src="@drawable/normaldrive" />
@@ -107,17 +107,17 @@
                 android:id="@+id/pursuit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.25"
+                android:layout_weight="0.01"
                 android:background="@null"
                 android:scaleType="fitXY"
-                android:src="@drawable/pursuitb" />
+                android:src="@drawable/pursuit" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="0.2"
-            android:gravity="right"
+            android:layout_weight="0.05"
+            android:gravity="center"
             android:orientation="vertical" >
 
             <ImageButton
@@ -127,7 +127,7 @@
                 android:layout_weight="0.25"
                 android:background="@null"
                 android:scaleType="fitXY"
-                android:src="@drawable/gear_p" />
+                android:src="@drawable/gear_d" />
 
             <ImageButton
                 android:id="@+id/s2"
@@ -145,7 +145,7 @@
                 android:layout_weight="0.25"
                 android:background="@null"
                 android:scaleType="fitXY"
-                android:src="@drawable/gear_n" />
+                android:src="@drawable/gear_b" />
 
             <ImageButton
                 android:id="@+id/p4"
@@ -154,7 +154,7 @@
                 android:layout_weight="0.25"
                 android:background="@null"
                 android:scaleType="fitXY"
-                android:src="@drawable/gear_d" />
+                android:src="@drawable/gear_n" />
         </LinearLayout>
     </LinearLayout>
 

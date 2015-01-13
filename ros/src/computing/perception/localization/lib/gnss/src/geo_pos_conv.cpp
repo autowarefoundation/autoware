@@ -58,6 +58,15 @@ void geo_pos_conv::set_llh_nmea_degrees(double latd,double lond, double h)
 	conv_llh2xyz();
 }
 
+void geo_pos_conv::llh_to_xyz(double lat, double lon, double ele)
+{
+  m_lat = lat * M_PI/180;
+  m_lon = lon * M_PI/180;
+  m_h = ele;
+
+  conv_llh2xyz();
+}
+
 void geo_pos_conv::conv_llh2xyz(void)
 {
 	double PS;           //

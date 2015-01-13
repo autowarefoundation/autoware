@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  fusion
 )
 find_package(OpenCV REQUIRED)
 
@@ -34,7 +35,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  CATKIN_DEPENDS dpm dpm_gpu scan_to_image
+  CATKIN_DEPENDS dpm dpm_gpu scan_to_image fusion
 #  DEPENDS system_lib
 )
 
@@ -79,11 +80,11 @@ endif()
 
 ## Declare a cpp executable
 add_executable(car_fusion
-  nodes/car_fusion/car_fusion.cpp   nodes/car_fusion/fusion.cpp
+  nodes/car_fusion/car_fusion.cpp
 )
 
 target_link_libraries(car_fusion
-  ${catkin_LIBRARIES} ${OpenCV_LIBS}
+  ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
 )
 add_dependencies(car_fusion car_detector_generate_messages_cpp)
 
