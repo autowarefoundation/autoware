@@ -1,6 +1,0 @@
-rviz_simu : rosrun rviz rviz
-rosbag_simu : rosbag play
-pmap : rosrun sample_data sample_points_map
-vmap : rosrun sample_data sample_vector_map __args__ swap_x_y_off
-mobility : rosrun sample_data sample_mobility __args__ swap_x_y_off
-trajectory : rosrun sample_data sample_trajectory __args__ swap_x_y_off
