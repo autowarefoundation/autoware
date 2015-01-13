@@ -23,6 +23,11 @@ subs :
           - name : pedestrian_fusion
             cmd  : rosrun pedestrian_detector pedestrian_fusion
       - name : Localization
+        subs :
+          - name : ndt
+            cmd  : echo ndt
+          - name : pos_master
+            cmd  : echo pos_master
   - name : Planning
     subs :
       - name : Mission

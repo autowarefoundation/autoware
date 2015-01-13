@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
-  fusion_
+  fusion
 )
 find_package(OpenCV REQUIRED)
 
@@ -23,7 +23,7 @@ find_package(OpenCV REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-   CATKIN_DEPENDS car_detector fusion_
+   CATKIN_DEPENDS car_detector fusion
 #  DEPENDS system_lib
 )
 
@@ -67,18 +67,13 @@ else()
 message("CUDA is not installed. 'pedestrian_dpm_gpu' is not built.")
 endif()
 
-include_directories(lib/fusion)
-add_library(fusion
-  lib/fusion/showboxes.cpp
-)
-
 ## Declare a cpp executable
 add_executable(pedestrian_fusion
   nodes/pedestrian_fusion/pedestrian_fusion.cpp
 )
 
 target_link_libraries(pedestrian_fusion
-  ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion fusion_
+  ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
 )
 
 add_executable(pedestrian_tracking
