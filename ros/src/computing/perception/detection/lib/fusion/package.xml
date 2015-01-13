@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>fusion_</name>
+  <name>fusion</name>
   <version>0.0.0</version>
-  <description>The fusion_ package</description>
+  <description>The fusion package</description>
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
