@@ -12,30 +12,14 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-/*
 #include "opencv/cv.h" 
 #include "opencv/highgui.h" 
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
 #include "scan_to_image/ScanImage.h"
-*/
 #include "SendData.h"
 
-/*
-long startTime[10] = {
-    1255698868,
-    1255723190,
-    1266425473,
-    1266765883,
-    1266851714,
-    1266938129,
-    1267471638,
-    1267542268,
-    1267715826,
-    1268755256
-};
-*/
-
+using namespace std;
 
 enum TYPE{
   NORMAL,
@@ -46,15 +30,12 @@ enum TYPE{
 
 ros::Publisher pub;
 
-char serverName[100] = "db1.ertl.jp";
 double positionRange[4];
-
-std::string dbres;
 SendData sd;
 TYPE SendDataType;
 int counter;
 
-std::vector<std::string> split(const std::string& input, char delimiter)
+std::vector<std::string> split(const string& input, char delimiter)
 {
     std::istringstream stream(input);
 
@@ -67,7 +48,7 @@ std::vector<std::string> split(const std::string& input, char delimiter)
 }
 
 bool isNumeric(const std::string str){
-  if(str.find_first_not_of("-0123456789. Ee\t") != std::string::npos) return false;
+  if(str.find_first_not_of("-0123456789. Ee\t") != string::npos) return false;
   return true;
 }
 
@@ -77,8 +58,10 @@ void* wrapSender(void *tsd){
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
 
-  std::string data;
-  std::ostringstream oss;
+  string dbres;
+  string data;
+  stringstream oss;
+
   switch (SendDataType){
   case TEST:
     {
@@ -86,10 +69,20 @@ void* wrapSender(void *tsd){
       data = oss.str();
       printf("test\n");
       counter++;
+      break;
+    }
+  case RANGE:
+    {
+      oss <<  "select order";
+      for(int i=0; i<4; i++){
+	oss << "\t" << fixed << setprecision(7) <<positionRange[i];
+      }
+      oss << "<E>";
+      data = oss.str();
+      break;
     }
   case NORMAL:
-    data = "select order<E>";
-  case RANGE:
+  default:
     data = "select order<E>";
   }
 
@@ -99,9 +92,13 @@ void* wrapSender(void *tsd){
   printf("%lu\n",dbres.size());
 
   std_msgs::String msg;
-  std::stringstream ss;
+  msg.data = dbres.c_str();
+
+  /*
+  ostringstream ss;
   ss << dbres;
   msg.data = ss.str();
+  */
 
   if(msg.data.compare("") != 0){
     ROS_INFO("test\t%s",msg.data.c_str());
@@ -126,7 +123,7 @@ void* intervalCall(void *a){
   pthread_t th;
 
   while(1){
-    //create new thread for socket communication.      
+    //create new thread for socket communication.
     if(pthread_create(&th, NULL, wrapSender, NULL)){
       printf("thread create error\n");
     }
@@ -142,8 +139,9 @@ int main(int argc, char **argv){
   
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
+  char serverName[100] = "db1.ertl.jp";
   
-  std::cout << "obj_downloader" << std::endl;
+  cout << "obj_downloader" << endl;
 
   pub = nh.advertise<std_msgs::String>("mo",1000); 
   //ros::Subscriber subscriber = nh,subscribe("topic_name",1000,Callback_Name)
@@ -152,7 +150,7 @@ int main(int argc, char **argv){
     printf("normal execution\n");
     SendDataType = NORMAL;
   }else if(argc == 2){
-    std::string argFlag = argv[1];
+    string argFlag = argv[1];
     if(argFlag.compare("--test") == 0){
       printf("test access\n");
       SendDataType = TEST;
@@ -161,21 +159,43 @@ int main(int argc, char **argv){
       SendDataType = NORMAL;
     }
   }else if(argc == 5){
-    std::string arg;
-    for(int i=1; i<5 ;i++){
-      arg = argv[i];
-      if(!isNumeric(arg)){
-	fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
-	return 0;
-      }
-      positionRange[i-1] = atof(arg.c_str());
-    }
-    SendDataType = RANGE;
+    if(static_cast<std::string>(argv[1]).compare("10000")==0){
+      printf("normal access\n");
+      SendDataType = NORMAL;
+    }else if(static_cast<string>(argv[1]).compare("10001")==0){
+      printf("test access\n");
+      SendDataType = TEST;
+    }else if(static_cast<string>(argv[1]).compare("10002")==0){
+      printf("fixed range access\n");
+      positionRange[0] = 35.2038955;
+      positionRange[1] = 35.2711311;
+      positionRange[2] = 136.9813925;
+      positionRange[3] = 137.055852;
 
+      SendDataType = RANGE;
+    }else{
+      printf("range access\n");
+      string arg;
+      for(int i=1; i<5 ;i++){
+	arg = argv[i];
+	if(!isNumeric(arg)){
+	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
+	  exit(1);
+	}
+	positionRange[i-1] = atof(arg.c_str());
+
+	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
+	  fprintf(stderr,"error.\ninvalid range.\n");
+	  exit(1);
+	}
+      }
+      SendDataType = RANGE;
+    }
   }else{
     fprintf(stderr,"The number of argment is invalid.\n");
     return 0;
   }
+
   sd = SendData(serverName,5678);
   counter = 0;
 
