@@ -12,7 +12,7 @@ subs :
         probe:
         run  :
       - name : USB Generic
-        probe:
+        probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
         run  : rosrun uvc_camera uvc_camera_node
       - name : IEEE1394
         probe:
@@ -68,5 +68,6 @@ buttons:
       - [ LIDAR3D , "rosrun camera_lidar3d camera_lidar3d_offline_calib" ]
   tf :
     run : rosrun tf static_transform_publisher 86432 16635 -50 0 0 0 /map2 /map 10
+#    run : rosrun tf static_transform_publisher 93678 18337 -37 0 0 0 /map2 /map 10
   rviz :
     run : rosrun rviz rviz
