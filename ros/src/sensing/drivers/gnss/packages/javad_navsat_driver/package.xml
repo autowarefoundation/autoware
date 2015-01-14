@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package>
+  <name>javad_navsat_driver</name>
+  <version>0.0.1</version>
+  <description>
+	Package to parse NMEA strings and publish a very simple GPS message. Does not require the GPSD deamon.
+  </description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
+  <!--<maintainer email="eric@ericperko.com">Eric Perko</maintainer>-->
+  <maintainer email="h_ohta@ertl.jp">Hiroki Ohta</maintainer>
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <license>BSD</license>
+
+  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!--<url type="website">http://ros.org/wiki/nmea_navsat_driver</url>-->
+
+  <!-- Author tags are optional, mutiple are allowed, one per tag -->
+  <!-- Authors do not have to be maintianers, but could be -->
+ <!-- <author email="eric@ericperko.com">Eric Perko</author>-->
+ <!-- <author>Steven Martin</author>-->
+ <author>Hiroki Ohta</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roslint</build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>python-serial</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>nmea_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- This is a pure Python package, so mark it architecture independent -->
+    <architecture_independent/>
+  </export>
+</package>

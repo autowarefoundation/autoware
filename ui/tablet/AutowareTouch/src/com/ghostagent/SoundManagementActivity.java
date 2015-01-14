@@ -36,6 +36,171 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 public class SoundManagementActivity extends Activity implements OnClickListener {
+	private static final int COMMAND_EXIT = 0;
+	private static final int COMMAND_GEAR = 1;
+	private static final int COMMAND_RUN = 2;
+	private static final int COMMAND_ROUTE = 3;
+
+	abstract class RadioButton {
+		static final int NONE = 0;
+
+		private int mode = NONE;
+
+		int getMode() {
+			return mode;
+		}
+
+		void updateMode(int mode) {
+			if (mode == this.mode)
+				mode = NONE;
+			this.mode = mode;
+
+			refresh();
+		}
+
+		abstract void refresh();
+	}
+
+	class GearButton extends RadioButton {
+		static final int DRIVE = 1;
+		static final int REVERSE = 2;
+		static final int BRAKE = 3;
+		static final int NEUTRAL = 4;
+
+		ImageButton drive;
+		ImageButton reverse;
+		ImageButton brake;
+		ImageButton neutral;
+
+		GearButton(OnClickListener listener) {
+			drive = (ImageButton)findViewById(R.id.s1);
+			drive.setOnClickListener(listener);
+			reverse = (ImageButton)findViewById(R.id.s2);
+			reverse.setOnClickListener(listener);
+			brake = (ImageButton)findViewById(R.id.p3);
+			brake.setOnClickListener(listener);
+			neutral = (ImageButton)findViewById(R.id.p4);
+			neutral.setOnClickListener(listener);
+
+			refresh();
+		}
+
+		@Override
+		void refresh() {
+			drive.setImageResource(R.drawable.gear_d);
+			reverse.setImageResource(R.drawable.gear_r);
+			brake.setImageResource(R.drawable.gear_b);
+			neutral.setImageResource(R.drawable.gear_n);
+
+			switch (getMode()) {
+			case DRIVE:
+				drive.setImageResource(R.drawable.pressed_gear_d);
+				break;
+			case REVERSE:
+				reverse.setImageResource(R.drawable.pressed_gear_r);
+				break;
+			case BRAKE:
+				brake.setImageResource(R.drawable.pressed_gear_b);
+				break;
+			case NEUTRAL:
+				neutral.setImageResource(R.drawable.pressed_gear_n);
+				break;
+			}
+		}
+	}
+
+	class DriveButton extends RadioButton {
+		static final int AUTO = 1;
+		static final int NORMAL = 2;
+		static final int PURSUIT = 3;
+
+		ImageButton auto;
+		ImageButton normal;
+		ImageButton pursuit;
+
+		DriveButton(OnClickListener listener) {
+			auto = (ImageButton)findViewById(R.id.autoCruise);
+			auto.setOnClickListener(listener);
+			normal = (ImageButton)findViewById(R.id.normalCruise);
+			normal.setOnClickListener(listener);
+			pursuit = (ImageButton)findViewById(R.id.pursuit);
+			pursuit.setOnClickListener(listener);
+
+			refresh();
+		}
+
+		@Override
+		void refresh() {
+			auto.setImageResource(R.drawable.autodrive);
+			normal.setImageResource(R.drawable.normaldrive);
+			pursuit.setImageResource(R.drawable.pursuit);
+
+			switch (getMode()) {
+			case AUTO:
+				auto.setImageResource(R.drawable.pressed_autodrive);
+				break;
+			case NORMAL:
+				normal.setImageResource(R.drawable.pressed_normaldrive);
+				break;
+			case PURSUIT:
+				pursuit.setImageResource(R.drawable.pressed_pursuit);
+				break;
+			}
+		}
+	}
+
+	class ApplicationButton extends RadioButton {
+		static final int NAVIGATION = 1;
+		static final int MAP = 2;
+		static final int DISPLAY = 3;
+		static final int INFORMATION = 4;
+
+		ImageButton navigation;
+		ImageButton map;
+		ImageButton display;
+		ImageButton information;
+
+		ApplicationButton(OnClickListener listener) {
+			navigation = (ImageButton)findViewById(R.id.air);
+			navigation.setOnClickListener(listener);
+			map = (ImageButton)findViewById(R.id.oil);
+			map.setOnClickListener(listener);
+			display = (ImageButton)findViewById(R.id.p1);
+			display.setOnClickListener(listener);
+			information = (ImageButton)findViewById(R.id.p2);
+			information.setOnClickListener(listener);
+
+			refresh();
+		}
+
+		@Override
+		void refresh() {
+			navigation.setImageResource(R.drawable.app_navi);
+			map.setImageResource(R.drawable.app_map);
+			display.setImageResource(R.drawable.app_disp);
+			information.setImageResource(R.drawable.app_info);
+
+			switch (getMode()) {
+			case NAVIGATION:
+				navigation.setImageResource(R.drawable.pressed_app_navi);
+				break;
+			case MAP:
+				map.setImageResource(R.drawable.pressed_app_map);
+				break;
+			case DISPLAY:
+				display.setImageResource(R.drawable.pressed_app_disp);
+				break;
+			case INFORMATION:
+				information.setImageResource(R.drawable.pressed_app_info);
+				break;
+			}
+		}
+	}
+
+	GearButton gearButton;
+	DriveButton driveButton;
+	ApplicationButton applicationButton;
+
 	/**
 	 * server address
 	 */
@@ -69,10 +234,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	 */
 	public static boolean getSizeFlag = false;
 	/**
-	 * Image buttons
-	 */
-	ImageButton vision, voice, s1, s2, p1, p2, p3, p4, autoCruise, normalCruise, pursuit;
-	/**
 	 * flag for knight riding
 	 */
 	boolean bIsKnightRiding = false;
@@ -97,38 +258,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		drawCenterView = (DrawCenterView) findViewById(R.id.centerView);
 
 		// set buttons
-		vision = (ImageButton)findViewById(R.id.air);
-		findViewById(R.id.air).setOnClickListener(this);
-
-		voice = (ImageButton)findViewById(R.id.oil);
-		findViewById(R.id.oil).setOnClickListener(this);
-
-		s1 = (ImageButton)findViewById(R.id.s1);
-		findViewById(R.id.s1).setOnClickListener(this);
-
-		s2 = (ImageButton)findViewById(R.id.s2);
-		findViewById(R.id.s2).setOnClickListener(this);
-
-		p1 = (ImageButton)findViewById(R.id.p1);
-		findViewById(R.id.p1).setOnClickListener(this);
-
-		p2 = (ImageButton)findViewById(R.id.p2);
-		findViewById(R.id.p2).setOnClickListener(this);
-
-		p3 = (ImageButton)findViewById(R.id.p3);
-		findViewById(R.id.p3).setOnClickListener(this);
-
-		p4 = (ImageButton)findViewById(R.id.p4);
-		findViewById(R.id.p4).setOnClickListener(this);
-
-		autoCruise = (ImageButton)findViewById(R.id.autoCruise);
-		findViewById(R.id.autoCruise).setOnClickListener(this);
-
-		normalCruise = (ImageButton)findViewById(R.id.normalCruise);
-		findViewById(R.id.normalCruise).setOnClickListener(this);
-
-		pursuit = (ImageButton)findViewById(R.id.pursuit);
-		findViewById(R.id.pursuit).setOnClickListener(this);
+		gearButton = new GearButton(this);
+		driveButton = new DriveButton(this);
+		applicationButton = new ApplicationButton(this);
 
 		String text = null;
 		try {
@@ -154,6 +286,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				port = Integer.parseInt(settings[1]);
 				if (SoundManagementNative.connect(address, port) == 0) {
 					bIsServerConnecting = true;
+					SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+					SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
 				}
 			}
 		}
@@ -258,6 +392,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 						if (bIsServerConnecting) {
 							bIsServerConnecting = false;
+							SoundManagementNative.send(COMMAND_EXIT, 0);
 							SoundManagementNative.close();
 						}
 
@@ -265,6 +400,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						port = Integer.parseInt(portString);
 						if (SoundManagementNative.connect(address, port) == 0) {
 							bIsServerConnecting = true;
+							SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+							SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
 						}
 					}
 				});
@@ -309,6 +446,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		bIsKnightRiding = false;
 		if (bIsServerConnecting) {
 			bIsServerConnecting = false;
+			SoundManagementNative.send(COMMAND_EXIT, 0);
 			SoundManagementNative.close();
 		}
 	}
@@ -319,30 +457,32 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		for (int i = 0; i < wayPoints.size(); i++)
 			way[i] = wayPoints.get(i).doubleValue();
 
-		return SoundManagementNative.sendDoubleArray(3, way); // ROUTE
+		return SoundManagementNative.sendDoubleArray(COMMAND_ROUTE, way);
 	}
 
 	@Override
 	public void onRestart() {
-		Log.v("Log", "restart");
-		File file = new File(
+		if (applicationButton.getMode() == ApplicationButton.MAP) {
+			applicationButton.updateMode(ApplicationButton.MAP);
+			File file = new File(
 				Environment.getExternalStorageDirectory().getPath() + "/MapRoute.txt");
-		try {
-			FileReader reader = new FileReader(file);
-			BufferedReader breader = new BufferedReader(reader);
-			String line;
-			ArrayList<Double> wayPoints = new ArrayList<Double>();
-			while ((line = breader.readLine()) != null) {
-				StringTokenizer token = new StringTokenizer(line, ",");
-				if (token.countTokens() == 2) {
-					wayPoints.add(Double.parseDouble(token.nextToken()));
-					wayPoints.add(Double.parseDouble(token.nextToken()));
+			try {
+				FileReader reader = new FileReader(file);
+				BufferedReader breader = new BufferedReader(reader);
+				String line;
+				ArrayList<Double> wayPoints = new ArrayList<Double>();
+				while ((line = breader.readLine()) != null) {
+					StringTokenizer token = new StringTokenizer(line, ",");
+					if (token.countTokens() == 2) {
+						wayPoints.add(Double.parseDouble(token.nextToken()));
+						wayPoints.add(Double.parseDouble(token.nextToken()));
+					}
 				}
+				breader.close();
+				sendWayPoints(wayPoints);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			breader.close();
-			sendWayPoints(wayPoints);
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		super.onStart();
 	}
@@ -360,49 +500,39 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	@Override
 	public void onClick(View v) {
-		if(v == vision){
-			Log.v("Button", "vision");
-		}
-		else if(v == voice){
-			Log.v("Button", "voice");
-			Intent intent = new Intent(Intent.ACTION_MAIN);
-			intent.setClassName("com.example.sampleroute", "com.example.sampleroute.MainActivity");
-			startActivity(intent);
-		}
-		else if(v == s1){
-			Log.v("Button", "s1");
-			SoundManagementNative.send(1, 1); // GEAR:1
-		}
-		else if(v == s2){
-			Log.v("Button", "s2");
-			SoundManagementNative.send(1, 2); // GEAR:2
-		}
-		else if(v == p1){
-			Log.v("Button", "p1");
-		}
-		else if(v == p2){
-			Log.v("Button", "p2");
-		}
-		else if(v == p3){
-			Log.v("Button", "p3");
-			SoundManagementNative.send(1, 3); // GEAR:3
-		}
-		else if(v == p4){
-			Log.v("Button", "p4");
-			SoundManagementNative.send(1, 4); // GEAR:4
-		}
-		else if(v == autoCruise){
-			Log.v("Button", "autoCruise");
-			SoundManagementNative.send(2, 1); // RUN:1
-		}
-		else if(v == normalCruise){
-			Log.v("Button", "normalCruise");
-			SoundManagementNative.send(2, 2); // RUN:2
-		}
-		else if(v == pursuit){
-			Log.v("Button", "pursuit");
-			SoundManagementNative.send(0, 0); // Disconnect- test
+		if (v == gearButton.drive) {
+			gearButton.updateMode(GearButton.DRIVE);
+			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+		} else if (v == gearButton.reverse) {
+			gearButton.updateMode(GearButton.REVERSE);
+			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+		} else if (v == gearButton.brake) {
+			gearButton.updateMode(GearButton.BRAKE);
+			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+		} else if (v == gearButton.neutral) {
+			gearButton.updateMode(GearButton.NEUTRAL);
+			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+		} else if (v == driveButton.auto) {
+			driveButton.updateMode(DriveButton.AUTO);
+			SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
+		} else if (v == driveButton.normal) {
+			driveButton.updateMode(DriveButton.NORMAL);
+			SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
+		} else if (v == driveButton.pursuit) {
+			driveButton.updateMode(DriveButton.PURSUIT);
 			finish();
+		} else if (v == applicationButton.navigation) {
+			applicationButton.updateMode(ApplicationButton.NAVIGATION);
+		} else if (v == applicationButton.map) {
+			applicationButton.updateMode(ApplicationButton.MAP);
+			Intent intent = new Intent(Intent.ACTION_MAIN);
+			intent.setClassName("com.example.sampleroute",
+					    "com.example.sampleroute.MainActivity");
+			startActivity(intent);
+		} else if (v == applicationButton.display) {
+			applicationButton.updateMode(ApplicationButton.DISPLAY);
+		} else if (v == applicationButton.information) {
+			applicationButton.updateMode(ApplicationButton.INFORMATION);
 		}
 	}
 }

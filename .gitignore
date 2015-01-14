@@ -4,5 +4,10 @@ GRTAGS
 GSYMS
 GPATH
 
+# Python byte-compile file
+__pycache__/
+*.py[co]
+
 # editor backup files
 *~
+\#*\#
