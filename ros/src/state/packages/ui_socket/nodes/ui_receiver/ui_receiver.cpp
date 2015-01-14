@@ -173,6 +173,7 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 	}
 	default: // TERMINATOR
 		fprintf(stderr, "receive %d, terminated.\n", info[0]);
+		sendSignal(sock);
 		return -1;
 	}
 
