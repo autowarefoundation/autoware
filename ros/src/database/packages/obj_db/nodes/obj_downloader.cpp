@@ -16,7 +16,7 @@
 #include "opencv/highgui.h" 
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
-#include "scan_to_image/ScanImage.h"
+//#include "scan_to_image/ScanImage.h"
 #include "SendData.h"
 
 using namespace std;
