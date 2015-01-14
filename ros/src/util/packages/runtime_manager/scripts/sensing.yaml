@@ -35,9 +35,11 @@ subs :
       - name : Velodyne HDL-64e
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
         run  : roslaunch velodyne velodyne_hdl64e.launch
+        path : calibration
       - name : Velodyne HDL-32e
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
         run  : roslaunch velodyne velodyne_hdl32e.launch
+        path : calibration
       - name : Hokuyo UTM30LX (USB1)
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo hokuyo_utm30lx.launch
