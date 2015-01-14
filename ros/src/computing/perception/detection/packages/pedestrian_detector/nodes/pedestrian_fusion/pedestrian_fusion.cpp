@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pedestrian_fusion_func.h"
+#include "fusion_func.h"
 
 void publishTopic();
 ros::Publisher fused_objects;

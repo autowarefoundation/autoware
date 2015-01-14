@@ -10,6 +10,8 @@ using namespace std;
 using namespace zmp::hev;
 
 #define HEV_WHEEL_BASE 2.7 //Prius Tire Size
+#define HANDLE_ANGLE_MAX 600 //ハンドルを最大まで回したときの角度 
+#define WHEEL_ANGLE_MAX 31.28067 //フロントタイヤの最大角度
 #define PERIOD 100  
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
@@ -296,7 +298,8 @@ bool HevBaseUpdate(double * x, double * y, double *theta, double *tv, double * s
 
     // strInf.angle [deg*10] , ((angle/10)/180)*pi radians
     // and steering ratio 2 (well really 20 but already dvide by 10)
-    str_angle = (_hev_state.strInf.angle / 1800.0 * M_PI)/2.0; 
+    str_angle = (_hev_state.strInf.angle / 180.0 * M_PI 
+                 /(HANDLE_ANGLE_MAX/WHEEL_ANGLE_MAX)); 
     //  fprintf(stderr,"steering angle = %.2f\n",str_angle);
 
     // calculate odom from state information
@@ -368,7 +371,7 @@ void PrintServo(int servo){
 
 void PrintShift(int shift){
 
- switch(shift){
+  switch(shift){
   case SHIFT_POS_D:
     printf("D\t");
     break;
@@ -378,7 +381,7 @@ void PrintShift(int shift){
   case SHIFT_POS_N:
     printf("N\t");
     break;
-    case SHIFT_POS_B:
+  case SHIFT_POS_B:
     printf("B\t");
     break;
   case SHIFT_POS_P:
@@ -553,8 +556,8 @@ bool Control(double tv, double sv,void* p)
 {
   MainWindow* Main = (MainWindow*)p;
 
-queue<double> vel_buffer;
- static int vel_buffer_size = 10; 
+  queue<double> vel_buffer;
+  static int vel_buffer_size = 10; 
  
 
   double old_velocity = 0.0;
@@ -564,7 +567,7 @@ queue<double> vel_buffer;
   double current_steering_angle = current.sv;
   
   
-  double cmd_velocity = tv;
+  double cmd_velocity = tv *3.6;
   double cmd_steering_angle = sv;
  
   // estimate current acceleration
@@ -608,8 +611,8 @@ queue<double> vel_buffer;
  
   
   if ( _hev_state.drvInf.actualShift == SHIFT_POS_D 
-      //|| _hev_state.drvInf.actualShift == SHIFT_POS_R
-      ) {
+       //|| _hev_state.drvInf.actualShift == SHIFT_POS_R
+       ) {
     fprintf(stderr,"In Drive or Reverse\n");
          
     // if accell 
@@ -629,13 +632,13 @@ queue<double> vel_buffer;
         Main->DecelerateControl(current_velocity,cmd_velocity);
       }
     
-      else if (cmd_velocity == 0.0) {
+    else if (cmd_velocity == 0.0) {
 	
-        //Stopping!!!!!!!!!!!
+      //Stopping!!!!!!!!!!!
        
-        Main->StoppingControl(current_velocity,cmd_velocity);
+      Main->StoppingControl(current_velocity,cmd_velocity);
   
-      } // if cmdvel < curvel
+    } // if cmdvel < curvel
     
   } //if shift in drive
   else if( _hev_state.drvInf.actualShift == SHIFT_POS_N ){
@@ -655,7 +658,7 @@ queue<double> vel_buffer;
 
 void MainWindow::SteeringControl(double cmd_steering_angle){
     
-  int str = (int)(cmd_steering_angle/M_PI*180.0);    
+  int str = (int)(cmd_steering_angle/M_PI*180.0 * (HANDLE_ANGLE_MAX/WHEEL_ANGLE_MAX));    
   cout << "setting str angle to " << str << endl;
   if (abs(str) > 600) {
     cout << "steering angle too large : " <<  str << endl;
