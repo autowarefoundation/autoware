@@ -110,9 +110,9 @@ include_directories(
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(vehicle_socket_node
 #   ${catkin_LIBRARIES}
-# )
-# add_executable(vehicle_receiver nodes/vehicle_receiver.cpp)
-# target_link_libraries(vehicle_receiver  ${catkin_LIBRARIES} )
+# ) 
+add_executable(vehicle_receiver nodes/vehicle_receiver.cpp)
+ target_link_libraries(vehicle_receiver  ${catkin_LIBRARIES} )
 
 #add_executable(vehicle_sender nodes/vehicle_receiver.cpp)
 # target_link_libraries(vehicle_sender  ${catkin_LIBRARIES})
