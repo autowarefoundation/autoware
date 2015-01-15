@@ -18,6 +18,8 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
+		self.load_dic = self.load_yaml('param.yaml', def_ret={})
+		self.config_dic = {}
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		#
@@ -117,6 +119,19 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnClose(self, event):
 		self.kill_all()
+
+		save_dic = {}
+		for dic in self.config_dic.values():
+			if dic['pdic'] != {}:
+				save_dic[ dic['name'] ] = dic['pdic']
+		if save_dic != {}:
+			dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+                        f = open(dir + 'param.yaml', 'w')
+                        s = yaml.dump(save_dic, default_flow_style=False)
+                        print 'save\n', s # for debug
+                        f.write(s)
+                        f.close()		
+
 		self.Destroy()
 
 	def RosCb(self, data):
@@ -350,9 +365,12 @@ class MyFrame(rtmgr.MyFrame):
 			if res == bak_res:
 				continue
 			self.drv_probe_cmd[obj] = (cmd, res)
+			cfg_obj = self.get_cfg_obj(obj)
 			en = obj.IsShown()
 			if res and not en:
 				obj.Show()
+				if cfg_obj:
+					cfg_obj.Show()
 				continue
 			if not res and en:
 				v = obj.GetValue()
@@ -360,6 +378,8 @@ class MyFrame(rtmgr.MyFrame):
 					obj.SetValue(False)	
 					self.launch_kill_proc(obj)
 				obj.Hide()
+				if cfg_obj:
+					cfg_obj.Hide()
 
 	def load_yaml_sensing(self, dic, panel, sizer, probe_dic, run_dic):
 		if 'name' not in dic:
@@ -378,10 +398,25 @@ class MyFrame(rtmgr.MyFrame):
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
 				run_dic[obj] = (dic['run'], None)
+			if 'path' in dic:
+				obj = self.add_config_link(dic, panel, obj)
 		if sizer:
 			sizer.Add(obj, 0, wx.EXPAND, 0)
 		else:
 			panel.SetSizer(obj)
+
+	def add_config_link(self, dic, panel, obj):
+		cfg_obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, '[config]', '')
+		cfg_obj.SetVisitedColour(cfg_obj.GetNormalColour()) # no change
+		self.Bind(wx.EVT_HYPERLINK, self.OnConfig, cfg_obj)
+		hszr = wx.BoxSizer(wx.HORIZONTAL)
+		hszr.Add(obj)
+		hszr.Add(wx.StaticText(panel, wx.ID_ANY, '  '))
+		hszr.Add(cfg_obj)
+		name = dic['name']
+		pdic = self.load_dic[name] if name in self.load_dic else {}
+		self.config_dic[ cfg_obj ] = { 'obj':obj ,'name':name , 'path':dic['path'] , 'pdic':pdic }
+		return hszr
 
 	#
 	# Simulation Tab
@@ -449,6 +484,28 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Common Utils
 	#
+	def OnConfig(self, event):
+		cfg_obj = event.GetEventObject()
+		dic = self.config_dic[ cfg_obj ] if cfg_obj in self.config_dic else None
+		if dic is None:
+			return
+		pdic = dic['pdic']
+		path_name = dic['path']
+		dlg = MyDialogPath(self, pdic=pdic, path_name=path_name)
+		dlg.ShowModal()
+
+	def get_cfg_obj(self, obj):
+		ks = [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ]
+		return ks[0] if len(ks) > 0 else None
+
+	def get_cfg_info(self, obj):
+		cfg_obj = self.get_cfg_obj(obj)
+		return self.config_dic[ cfg_obj ] if cfg_obj else None
+
+	def get_cfg_pdic(self, obj):
+		info = self.get_cfg_info(obj)
+		return info[ 'pdic' ] if info else None
+
 	def OnRef(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_ref_xxx
@@ -458,17 +515,24 @@ class MyFrame(rtmgr.MyFrame):
 			return
 		path = tc.GetValue()
 		multi = k in self.sel_multi_ks
-		if k in self.sel_dir_ks:
-			dlg = wx.DirDialog(self, defaultPath=path);
-		else:
-			(dn, fn) = os.path.split(path)
-			style = wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
-			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
-		if dlg.ShowModal() == wx.ID_OK:
-			path = ','.join(dlg.GetPaths()) if multi else dlg.GetPath()
+		dir = k in self.sel_dir_ks
+		path = self.file_dialog(path, dir, multi)
+		if path:
 			tc.SetValue(path)
 			tc.SetInsertionPointEnd()
+
+	def file_dialog(self, defaultPath='', dir=False, multi=False):
+		if dir:
+			dlg = wx.DirDialog(self, defaultPath=defaultPath);
+		else:
+			(dn, fn) = os.path.split(defaultPath)
+			style = wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
+                path = None
+		if dlg.ShowModal() == wx.ID_OK:
+			path = ','.join(dlg.GetPaths()) if multi else dlg.GetPath()
 		dlg.Destroy()
+		return path
 
 	def create_tree(self, parent, items, tree, item, cmd_dic):
 		name = items['name'] if 'name' in items else ''
@@ -520,7 +584,18 @@ class MyFrame(rtmgr.MyFrame):
 			cmd = self.modal_dialog(obj, cmd)
 			if not cmd:
 				return # cancel
+
+		pdic = self.get_cfg_pdic(obj)
+		if pdic:
+			add_args = [] if add_args is None else add_args
+			add_args += [ k + ":=" + val for (k,val) in pdic.items() ]
+
 		proc = self.launch_kill(v, cmd, proc, add_args)
+
+		cfg_obj = self.get_cfg_obj(obj)
+		if cfg_obj:
+			cfg_obj.Enable(not v)
+
 		cmd_dic[obj] = (cmd_bak, proc)
 
 	def kill_all(self):
@@ -572,8 +647,11 @@ class MyFrame(rtmgr.MyFrame):
 			obj.SetValue(False)
 		return cmds[r] if ok else None
 
-	def load_yaml(self, filename):
+	def load_yaml(self, filename, def_ret=None):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		path = dir + filename
+		if not os.path.isfile(path):
+			return def_ret
 		f = open(dir + filename, 'r')
 		d = yaml.load(f)
 		f.close()
@@ -611,6 +689,35 @@ class MyDialog(rtmgr.MyDialog):
 	def OnOk(self, event):
 		ret = self.radio_box.GetSelection()
 		self.EndModal(ret)
+
+	def OnCancel(self, event):
+		self.EndModal(-1)
+
+class MyDialogPath(rtmgr.MyDialogPath):
+	def __init__(self, *args, **kwds):
+		self.pdic = kwds['pdic']
+		del kwds['pdic']
+		self.path_name = kwds['path_name']
+		del kwds['path_name']
+
+		rtmgr.MyDialogPath.__init__(self, *args, **kwds)
+		self.SetTitle(self.path_name)
+		path = self.pdic[self.path_name] if self.path_name in self.pdic else ''
+		self.text_ctrl.SetValue(path)
+
+	def OnRef(self, event):
+		tc = self.text_ctrl
+		path = tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn)
+		if dlg.ShowModal() == wx.ID_OK:
+			tc.SetValue(dlg.GetPath())
+			tc.SetInsertionPointEnd()
+        	dlg.Destroy()
+
+	def OnOk(self, event):
+		self.pdic[self.path_name] = str(self.text_ctrl.GetValue())
+		self.EndModal(0)
 
 	def OnCancel(self, event):
 		self.EndModal(-1)
