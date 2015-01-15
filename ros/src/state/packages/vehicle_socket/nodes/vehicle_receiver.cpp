@@ -20,6 +20,7 @@ ros::Publisher pub;
 void* getCanValue(void *fd){
 
   int conn_fd =*static_cast<int*>(fd);
+  delete fd;
   char recvdata[1024];
   string result = "";
   int n;
@@ -80,10 +81,10 @@ void* receiverCaller(void *a){
 
   sock0 = socket(AF_INET, SOCK_STREAM, 0);
   addr.sin_family = PF_INET;
-  addr.sin_port = htons(11111); 
+  addr.sin_port = htons(11111);
   addr.sin_addr.s_addr = INADDR_ANY;
   //make it available immediately to connect
-  //  setsockopt(sock0,SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
+  //setsockopt(sock0,SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
   bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
   listen(sock0, 5);
   len = sizeof(client);
@@ -91,8 +92,9 @@ void* receiverCaller(void *a){
   while(true){
     //get connect to android
     printf("Waiting access...\n");
-    conn_fd = accept(sock0, (struct sockaddr *)&client, &len);
-    if(conn_fd == -1){
+    int *conn_fd = new int();
+    *conn_fd = accept(sock0, (struct sockaddr *)&client, &len);
+    if(*conn_fd == -1){
       printf("ERROR: cannot accept\n");
       break;
     }
@@ -100,7 +102,7 @@ void* receiverCaller(void *a){
     printf("get connect.\n");
     //printf("count: %d\n", count);
 
-    if(pthread_create(&th, NULL, getCanValue, (void *)&conn_fd)){
+    if(pthread_create(&th, NULL, getCanValue, (void *)conn_fd)){
       printf("thread create error\n");
     }
     pthread_detach(th);
