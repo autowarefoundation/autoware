@@ -33,3 +33,8 @@ subs :
       - name : Mission
       - name : Motion
       - name : Path
+        subs :
+          - name : ndt
+            cmd : roslaunch lane_follower ndt.launch
+          - name : gnss
+            cmd : roslaunch lane_follower gnss.launch
