@@ -14,26 +14,21 @@
 
 #include "geo_pos_conv.hh"
 
-double _initial_velocity = 1.4; // m/s
+//parameter server
+double _initial_velocity_kmh = 5; // km/h
+double _lookahead_threshold = 4.0;
+std::string _mobility_frame = "/base_link";
+std::string _current_pose_topic = "odometry";
+
+const std::string PATH_FRAME = "/path";
+
+geometry_msgs::PoseStamped _current_pose; //グローバル座標系での現在位置
 geometry_msgs::Twist _current_velocity;
-
 nav_msgs::Path _current_path;
-
-//車の座標系に変換したwaypoint
-geometry_msgs::PoseStamped _transformed_waypoint;
+geometry_msgs::PoseStamped _transformed_waypoint; //車の座標系に変換したwaypoint
 
 //参照するwaypointの番号
 int _next_waypoint = 0;
-
-//グローバル座標系での現在位置
-geometry_msgs::PoseStamped _current_pose;
-
-double _lookahead_threshold = 4.0;
-
-const std::string PATH_FRAME = "/path";
-const std::string CAR_FRAME = "/base_link";
-
-std::string _current_pose_topic;
 
 void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
@@ -45,34 +40,46 @@ void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
     if (_current_pose_topic == "odometry") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose.pose;
-    }else
+    } else
         std::cout << "pose is not odometry" << std::endl;
 
 }
 
- void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
- {
- //std::cout << "gnss callback" << std::endl;
- if (_current_pose_topic == "gnss") {
- //平面直角座標への変換
+void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
+{
+    //std::cout << "gnss callback" << std::endl;
+    if (_current_pose_topic == "gnss") {
+        //平面直角座標への変換
         geo_pos_conv geo;
- geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
-  _current_pose.header = msg->header;
-  _current_pose.pose.position.x = geo.x();
-_current_pose.pose.position.y = geo.y();
- _current_pose.pose.position.z = geo.z();
-    }else
+        geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
+        _current_pose.header = msg->header;
+        _current_pose.pose.position.x = geo.x();
+        _current_pose.pose.position.y = geo.y();
+        _current_pose.pose.position.z = geo.z();
+    } else
         std::cout << "pose is not gnss" << std::endl;
 
- }
+}
+
+void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+{
+    //std::cout << "gnss callback" << std::endl;
+    if (_current_pose_topic == "ndt") {
+        _current_pose.header = msg->header;
+        _current_pose.pose = msg->pose;
+
+    } else
+        std::cout << "pose is not ndt" << std::endl;
+
+}
 
 void AmclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
 {
     if (_current_pose_topic == "amcl") {
-           _current_pose.header = msg->header;
-           _current_pose.pose = msg->pose.pose;
-       }else
-           std::cout << "pose is not amcl" << std::endl;
+        _current_pose.header = msg->header;
+        _current_pose.pose = msg->pose.pose;
+    } else
+        std::cout << "pose is not amcl" << std::endl;
 }
 
 void WayPointCallback(const nav_msgs::PathConstPtr &msg)
@@ -104,11 +111,11 @@ int GetNextWayPoint(const tf::TransformListener &tfListener)
             //waypointを車の座標系に変換
             try {
                 ros::Time now = ros::Time::now();
-                tfListener.waitForTransform(CAR_FRAME,
+                tfListener.waitForTransform(_mobility_frame,
                         _current_path.header.frame_id, now, ros::Duration(0.1));
 
-                tfListener.transformPose(CAR_FRAME, _current_path.poses[i],
-                        _transformed_waypoint);
+                tfListener.transformPose(_mobility_frame,
+                        _current_path.poses[i], _transformed_waypoint);
                 std::cout << "current path ("
                         << _current_path.poses[i].pose.position.x << " "
                         << _current_path.poses[i].pose.position.y << " "
@@ -175,15 +182,17 @@ geometry_msgs::Twist CalculateCmdTwist()
     double radius = pow(lookahead_distance, 2)
             / (2 * _transformed_waypoint.pose.position.y);
 
+    double initial_velocity_ms = _initial_velocity_kmh / 3.6;
+    //std::cout << "initial_velocity_ms : " << initial_velocity_ms << std::endl;
     double angular_velocity;
 
     if (radius > 0 || radius < 0) {
-        angular_velocity = _initial_velocity / radius;
+        angular_velocity = initial_velocity_ms / radius;
     } else {
         angular_velocity = 0;
     }
 
-    double linear_velocity = _initial_velocity;
+    double linear_velocity = initial_velocity_ms;
 
     twist.linear.x = linear_velocity;
     twist.angular.z = angular_velocity;
@@ -203,9 +212,18 @@ int main(int argc, char **argv)
     ros::NodeHandle private_nh("~");
 
     //setting params
-    _current_pose_topic = "odometry";
+
     private_nh.getParam("current_pose_topic", _current_pose_topic);
     std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
+
+    private_nh.getParam("mobility_frame", _mobility_frame);
+    std::cout << "mobility_frame : " << _mobility_frame << std::endl;
+
+    private_nh.getParam("velocity_kmh", _initial_velocity_kmh);
+    std::cout << "initial_velocity : " << _initial_velocity_kmh << std::endl;
+
+    private_nh.getParam("lookahead_threshold", _lookahead_threshold);
+    std::cout << "lookahead_threshold : " << _lookahead_threshold << std::endl;
 
 //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::Twist>(
@@ -221,6 +239,9 @@ int main(int argc, char **argv)
 
     ros::Subscriber amcl_subscriber = nh.subscribe("amcl_pose", 1000,
             AmclCallback);
+
+    ros::Subscriber ndt_subscriber = nh.subscribe("ndt_pose", 1000,
+            NDTCallback);
 
     geometry_msgs::Twist twist;
     tf::TransformListener tfListener;
