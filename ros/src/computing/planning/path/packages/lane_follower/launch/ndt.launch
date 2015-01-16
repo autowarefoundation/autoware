@@ -1,25 +1,32 @@
 <!-- -->
 <launch>
-	<arg name="current_pose_topic" default="amcl" />
-<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path.txt" />
+	<arg name="current_pose_topic" default="ndt" />
+	<arg name="mobility_frame" default="/velodyne" />
+	<arg name="velocity_kmh" default="5" /> <!-- set velocity (km/h) -->
+	<arg name="lookahead_threshold" default="4" /> <!-- meter -->
+	<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path.txt" />
 
 	<!-- transform path coordinate to global coordinate -->
-	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /world /path 100"
+	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /path 100"
 		name="path_to_global" />
-	
-	<!-- transform mobility original coordinate to global coordinate-->
-	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /world /odom 100"
+
+	<!-- transform mobility original coordinate to global coordinate -->
+	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /odom 100"
 		name="mobility_to_global" />
 
-<!-- rosrun lane_follower test_lane_navigator [path file] -->
-		<node pkg="lane_follower" type="test_lane_navigator" name="lane_nav">
+	<!-- rosrun lane_follower test_lane_navigator _filename:="path file" -->
+	<node pkg="lane_follower" type="test_lane_navigator" name="lane_nav">
 		<param name="filename" value="$(arg waypoint_filename)" />
 	</node>
 
 
-<!-- rosrun lane_follower lane_follower  -->
+	<!-- rosrun lane_follower lane_follower _current_pose_topic:="topic" _mobility_frame:="/frame" 
+		_velocity_kmh:=0 _lookahead_threshold:=0 -->
 	<node pkg="lane_follower" type="lane_follower" name="lane_follower">
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
+		<param name="mobility_frame" value="$(arg mobility_frame)" />
+		<param name="velocity_kmh" value="$(arg velocity_kmh)" />
+		<param name="lookahead_threshold" value="$(arg lookahead_threshold)" />
 	</node>
 
 </launch>
