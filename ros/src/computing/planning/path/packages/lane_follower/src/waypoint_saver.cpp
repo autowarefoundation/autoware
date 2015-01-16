@@ -38,14 +38,18 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
 {
     ros::NodeHandle n_private_("~");
 
-    std::string filename = "/home/pdsljp/auto_ws/path.txt";
-    n_private_.getParam("filename", filename);
+    std::string filename = "";
+    if (n_private_.getParam("save_filename", filename) == false) {
+        std::cout << "error! usage : rosrun lane_follower waypoint_saver _save_filename:=\"[save file]\"" << std::endl;
+        exit(-1);
+    }
+
     save_topic = "amcl";
     n_private_.getParam("save_topic", save_topic);
     pose_sub_ = node_.subscribe("amcl_pose", 1, &WAYPOINT_SAVER::PoseCB, this);
     gnss_pose_sub = node_.subscribe("fix", 1, &WAYPOINT_SAVER::GNSSPoseCB,
             this);
-    ndt_pose_sub = node_.subscribe("fix", 1, &WAYPOINT_SAVER::NDTPoseCB,
+    ndt_pose_sub = node_.subscribe("ndt_pose", 1, &WAYPOINT_SAVER::NDTPoseCB,
             this);
     //pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped> ("/amcl_pose", 100);
 
@@ -80,8 +84,8 @@ void WAYPOINT_SAVER::NDTPoseCB(const geometry_msgs::PoseStampedConstPtr &pose)
                 ofs_ << p.x << "," << p.y << std::endl;
             }
         }
-    }else{
-        std::cout <<"save_topic is not gnss" << std::endl;
+    } else {
+        std::cout << "save_topic is not gnss" << std::endl;
     }
 }
 void WAYPOINT_SAVER::GNSSPoseCB(const sensor_msgs::NavSatFixConstPtr &pose)
@@ -109,8 +113,8 @@ void WAYPOINT_SAVER::GNSSPoseCB(const sensor_msgs::NavSatFixConstPtr &pose)
                 ofs_ << p.x << "," << p.y << std::endl;
             }
         }
-    }else{
-        std::cout <<"save_topic is not gnss" << std::endl;
+    } else {
+        std::cout << "save_topic is not gnss" << std::endl;
     }
 }
 
@@ -118,25 +122,25 @@ void WAYPOINT_SAVER::PoseCB(
         const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &pose)
 {
     if (save_topic == "amcl") {
-    geometry_msgs::Point p(pose->pose.pose.position);
-    if (RecieveOnce != true) {
-
-        ofs_ << p.x << "," << p.y << std::endl;
-        RecieveOnce = true;
-    } else {
-
-        double distance = (p.x - last_pose_.x) * (p.x - last_pose_.x)
-                + (p.y - last_pose_.y) * (p.y - last_pose_.y);
-
-        if (distance > 4.0) {
-            last_pose_ = p;
+        geometry_msgs::Point p(pose->pose.pose.position);
+        if (RecieveOnce != true) {
 
             ofs_ << p.x << "," << p.y << std::endl;
+            RecieveOnce = true;
+        } else {
+
+            double distance = (p.x - last_pose_.x) * (p.x - last_pose_.x)
+                    + (p.y - last_pose_.y) * (p.y - last_pose_.y);
+
+            if (distance > 4.0) {
+                last_pose_ = p;
+
+                ofs_ << p.x << "," << p.y << std::endl;
+            }
         }
+    } else {
+        std::cout << "save_topic is not amcl" << std::endl;
     }
-    }else{
-            std::cout <<"save_topic is not amcl" << std::endl;
-        }
 }
 
 int main(int argc, char **argv)

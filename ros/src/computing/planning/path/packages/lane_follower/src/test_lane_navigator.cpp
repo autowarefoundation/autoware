@@ -23,9 +23,12 @@ int main(int argc, char **argv)
 
     std::vector<pose> Pose;
 
-    std::string filename = "/home/h_ohta/auto_ws/path.txt";
-    private_nh.getParam("filename",filename);
-
+    std::string filename = "";
+    if (private_nh.getParam("filename", filename) == false) {
+        std::cout << "error! usage : rosrun lane_follower test_lane_navigator _filename:=\"[path file]\"" << std::endl;
+        exit(-1);
+    }
+    std::cout << "filename : " << filename <<  std::endl;
     std::ifstream ifs(filename.c_str());
     std::string str;
     while (getline(ifs, str)) {
