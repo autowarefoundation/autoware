@@ -13,6 +13,9 @@ import yaml
 import rtmgr
 import rospy
 import std_msgs.msg
+from decimal import Decimal
+from runtime_manager.msg import ConfigCarDpm
+from runtime_manager.msg import ConfigPedestrianDpm
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -42,10 +45,22 @@ class MyFrame(rtmgr.MyFrame):
 		parent = self.tree_ctrl.GetParent()
 		self.tree_ctrl.Destroy()
 		items = self.load_yaml('computing_launch_cmd.yaml')
+
+		self.params = items.get('params', [])
+		for prm in self.params:
+			if 'topic' in prm and 'msg' in prm:
+				klass_msg = globals()[ prm['msg'] ]
+				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
+
 		self.computing_cmd = {}
 		self.tree_ctrl = self.create_tree(parent, items, None, None, self.computing_cmd)
+
+		self.setup_config_param_pdic()
+
 		self.tree_ctrl.ExpandAll()
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
+		self.tree_ctrl.SetHyperTextVisitedColour(self.tree_ctrl.GetHyperTextNewColour()) # no change
+		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		self.compu_viewer_cmd = {}
 		for (k, v) in self.load_yaml('computing_viewer.yaml').items():
@@ -121,16 +136,16 @@ class MyFrame(rtmgr.MyFrame):
 		self.kill_all()
 
 		save_dic = {}
-		for dic in self.config_dic.values():
-			if dic['pdic'] != {}:
-				save_dic[ dic['name'] ] = dic['pdic']
+		for (name, pdic) in self.load_dic.items():
+			if pdic and pdic != {}:
+				save_dic[name] = pdic
 		if save_dic != {}:
 			dir = os.path.abspath(os.path.dirname(__file__)) + "/"
-                        f = open(dir + 'param.yaml', 'w')
-                        s = yaml.dump(save_dic, default_flow_style=False)
-                        print 'save\n', s # for debug
-                        f.write(s)
-                        f.close()		
+			f = open(dir + 'param.yaml', 'w')
+			s = yaml.dump(save_dic, default_flow_style=False)
+			print 'save\n', s # for debug
+			f.write(s)
+			f.close()		
 
 		self.Destroy()
 
@@ -147,11 +162,11 @@ class MyFrame(rtmgr.MyFrame):
 		d = self.load_yaml(filename)
 		ret_dic = {}
 		for (k,v) in d.items():
-			res = [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ]
-			if len(res) <= 0:
+			pf = get_top( [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ] )
+			if pf is None:
 				print(k + ' in file ' + filename + ', not found correspoinding widget.')
 				continue
-			obj = self.obj_get(res[0] + k)
+			obj = self.obj_get(pf + k)
 			ret_dic[obj] = (v, None)
 		return ret_dic
 
@@ -164,7 +179,7 @@ class MyFrame(rtmgr.MyFrame):
 			if not d2 or type(d2) is not dict:
 				continue
 			if 'run' in d2:
-                                run_dic[obj] = (d2['run'], None)
+				run_dic[obj] = (d2['run'], None)
 
 	#
 	# Main Tab
@@ -307,8 +322,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.label_mode.SetLabel(s[0].upper() if s else '?')
 
 	def radio_value_get(self, base_name, dic):
-		res = [ v for (s,v) in dic.items() if self.obj_get(base_name + s).GetValue() ]
-		return res[0] if len(res) > 0 else 0
+		return get_top( [ v for (s,v) in dic.items() if self.obj_get(base_name + s).GetValue() ], 0 )
 
 	def radio_value_set(self, base_name, dic, val):
 		for (k,v) in dic.items():
@@ -325,6 +339,33 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	def OnTreeChecked(self, event):
 		self.launch_kill_proc(event.GetItem(), self.computing_cmd)
+
+	def OnTreeHyperlinked(self, event):
+		item = event.GetItem()		
+		info = self.config_dic.get(item, None)
+		if info is None:
+			return
+		pdic = info['pdic']
+		prm = self.get_param(info['param'])
+		dlg = MyDialogParam(self, pdic=pdic, prm=prm)
+		if dlg.ShowModal() == 0 and 'pub' in prm:
+			n = 1 #
+			r = rospy.Rate(10)
+			for i in range(n):
+				self.publish_param_topic(pdic, prm)
+				r.sleep()
+
+	def publish_param_topic(self, pdic, prm):
+		pub = prm['pub']
+		klass_msg = globals()[ prm['msg'] ]
+		msg = klass_msg(**pdic)
+
+		for name in msg.__slots__[1:]: # skip 'header'
+			type_str = msg._slot_types[ msg.__slots__.index(name) ]
+			s = getattr(msg, name)
+			setattr(msg, name, str_to_rosval(s, type_str, s))
+
+		pub.publish(msg)
 
 	def OnCompuViewer(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.compu_viewer_cmd)
@@ -414,8 +455,11 @@ class MyFrame(rtmgr.MyFrame):
 		hszr.Add(wx.StaticText(panel, wx.ID_ANY, '  '))
 		hszr.Add(cfg_obj)
 		name = dic['name']
-		pdic = self.load_dic[name] if name in self.load_dic else {}
-		self.config_dic[ cfg_obj ] = { 'obj':obj ,'name':name , 'path':dic['path'] , 'pdic':pdic }
+		pdic = self.load_dic.get(name, None)
+		if pdic is None:
+			pdic = {}
+			self.load_dic[name] = pdic
+		self.add_cfg_info(cfg_obj, obj, name, pdic, True, 'path', dic['path'])
 		return hszr
 
 	#
@@ -486,17 +530,19 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	def OnConfig(self, event):
 		cfg_obj = event.GetEventObject()
-		dic = self.config_dic[ cfg_obj ] if cfg_obj in self.config_dic else None
-		if dic is None:
+		info = self.config_dic.get(cfg_obj, None)
+		if info is None:
 			return
-		pdic = dic['pdic']
-		path_name = dic['path']
+		pdic = info['pdic']
+		path_name = info['path']
 		dlg = MyDialogPath(self, pdic=pdic, path_name=path_name)
 		dlg.ShowModal()
 
 	def get_cfg_obj(self, obj):
-		ks = [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ]
-		return ks[0] if len(ks) > 0 else None
+		return get_top( [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ] )
+
+	def add_cfg_info(self, cfg_obj, obj, name, pdic, run_disable, key, value):
+		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'run_disable':run_disable , key:value }
 
 	def get_cfg_info(self, obj):
 		cfg_obj = self.get_cfg_obj(obj)
@@ -505,6 +551,28 @@ class MyFrame(rtmgr.MyFrame):
 	def get_cfg_pdic(self, obj):
 		info = self.get_cfg_info(obj)
 		return info[ 'pdic' ] if info else None
+
+	def get_param(self, prm_name):
+		return get_top( [ prm for prm in self.params if prm['name'] == prm_name ] )
+
+	def setup_config_param_pdic(self):
+		for info in self.config_dic.values():
+			if 'param' in info and info['pdic'] is None:
+				self.setup_create_pdic(info)
+
+	def setup_create_pdic(self, targ_info):
+		prm_name = targ_info['param']
+		info = get_top( [ info for info in self.config_dic.values() if info.get('param', None) == prm_name and info['pdic'] ] )
+		if info:
+			targ_info['pdic'] = info['pdic']
+			return
+		pdic = {}
+		prm = self.get_param(prm_name)
+		if prm:
+			for var in prm['vars']:
+				pdic[ var['name'] ] = var['v']
+		targ_info['pdic'] = pdic
+		self.load_dic[ targ_info['name'] ] = pdic
 
 	def OnRef(self, event):
 		b = event.GetEventObject()
@@ -528,14 +596,14 @@ class MyFrame(rtmgr.MyFrame):
 			(dn, fn) = os.path.split(defaultPath)
 			style = wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
 			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
-                path = None
+		path = None
 		if dlg.ShowModal() == wx.ID_OK:
 			path = ','.join(dlg.GetPaths()) if multi else dlg.GetPath()
 		dlg.Destroy()
 		return path
 
 	def create_tree(self, parent, items, tree, item, cmd_dic):
-		name = items['name'] if 'name' in items else ''
+		name = items.get('name', '')
 		if tree is None:
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
@@ -545,17 +613,25 @@ class MyFrame(rtmgr.MyFrame):
 			item = tree.AppendItem(item, name, ct_type=ct_type)
 			if 'cmd' in items:
 				cmd_dic[item] = (items['cmd'], None)
-		for sub in items['subs'] if 'subs' in items else []:
+
+			if 'param' in items:
+				self.add_config_link_tree_item(item, name, items['param'])
+
+		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
+
+	def add_config_link_tree_item(self, item, name, prm_name):
+		pdic = self.load_dic.get(name, None)
+		self.add_cfg_info(item, item, name, pdic, False, 'param', prm_name)
+		item.SetHyperText()
 
 	def launch_kill_proc_file(self, obj, cmd_dic, names=None):
 		name = self.name_get(obj)
 		pfs = [ 'button_', 'checkbox_' ]
-		keys = [ name[len(pf):] for pf in pfs if name[0:len(pf)] == pf ]
-		if len(keys) <= 0:
+		key = get_top( [ name[len(pf):] for pf in pfs if name[0:len(pf)] == pf ] )
+		if key is None:
 			return
-		key = keys[0]
 		v = obj.GetValue()
 		tc = self.obj_get('text_ctrl_' + key)
 
@@ -588,12 +664,12 @@ class MyFrame(rtmgr.MyFrame):
 		pdic = self.get_cfg_pdic(obj)
 		if pdic:
 			add_args = [] if add_args is None else add_args
-			add_args += [ k + ":=" + val for (k,val) in pdic.items() ]
+			add_args += [ k + ":=" + str(val) for (k,val) in pdic.items() ]
 
 		proc = self.launch_kill(v, cmd, proc, add_args)
 
 		cfg_obj = self.get_cfg_obj(obj)
-		if cfg_obj:
+		if cfg_obj and self.config_dic[ cfg_obj ]['run_disable']:
 			cfg_obj.Enable(not v)
 
 		cmd_dic[obj] = (cmd_bak, proc)
@@ -658,20 +734,17 @@ class MyFrame(rtmgr.MyFrame):
 		return d
 
 	def name_get(self, obj):
-		nms = [ nm for nm in dir(self) if getattr(self, nm) is obj ]
-		return nms[0] if len(nms) > 0 else None
+		return get_top( [ nm for nm in dir(self) if getattr(self, nm) is obj ] )
 
 	def obj_get(self, name):
 		return getattr(self, name, None)
 
 	def key_get(self, dic, val):
-		ks = [ k for (k,v) in dic.items() if v == val ]
-		return ks[0] if len(ks) > 0 else None
+		return get_top( [ k for (k,v) in dic.items() if v == val ] )
 
 class MyDialog(rtmgr.MyDialog):
 	def __init__(self, *args, **kwds):
-		lbs = kwds['lbs']
-		del kwds['lbs']
+		lbs = kwds.pop('lbs')
 		rtmgr.MyDialog.__init__(self, *args, **kwds)
 
 		self.radio_box.Destroy()
@@ -695,14 +768,12 @@ class MyDialog(rtmgr.MyDialog):
 
 class MyDialogPath(rtmgr.MyDialogPath):
 	def __init__(self, *args, **kwds):
-		self.pdic = kwds['pdic']
-		del kwds['pdic']
-		self.path_name = kwds['path_name']
-		del kwds['path_name']
-
+		self.pdic = kwds.pop('pdic')
+		self.path_name = kwds.pop('path_name')
 		rtmgr.MyDialogPath.__init__(self, *args, **kwds)
+
 		self.SetTitle(self.path_name)
-		path = self.pdic[self.path_name] if self.path_name in self.pdic else ''
+		path = self.pdic.get(self.path_name, '')
 		self.text_ctrl.SetValue(path)
 
 	def OnRef(self, event):
@@ -713,10 +784,90 @@ class MyDialogPath(rtmgr.MyDialogPath):
 		if dlg.ShowModal() == wx.ID_OK:
 			tc.SetValue(dlg.GetPath())
 			tc.SetInsertionPointEnd()
-        	dlg.Destroy()
+		dlg.Destroy()
 
 	def OnOk(self, event):
 		self.pdic[self.path_name] = str(self.text_ctrl.GetValue())
+		self.EndModal(0)
+
+	def OnCancel(self, event):
+		self.EndModal(-1)
+
+class VarPanel(wx.Panel):
+	def __init__(self, *args, **kwds):
+		self.var = kwds.pop('var')
+		v = kwds.pop('v')
+		wx.Panel.__init__(self, *args, **kwds)
+
+		self.min = self.var['min']
+		self.max = self.var['max']
+		self.w = self.max - self.min
+
+		vlst = [ v, self.min, self.max, self.var['v'] ]
+		self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
+
+		self.int_max = 1000 if self.is_float else self.max
+		self.int_min = 0 if self.is_float else self.min
+
+		lb = wx.StaticText(self, wx.ID_ANY, self.var['label'])
+		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
+		self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter, self.tc)
+
+		self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
+		self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
+		self.slider.SetMinSize((82, 27))
+
+		szr = wx.BoxSizer(wx.HORIZONTAL)
+		szr.Add(lb, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+		szr.Add(self.slider, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+		szr.Add(self.tc, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+		self.SetSizer(szr)
+
+	def get_tc_v(self):
+		s = self.tc.GetValue()
+		v = float(s) if self.is_float else int(s)
+		v = self.min if v < self.min else v
+		v = self.max if v > self.max else v
+		self.tc.SetValue(str(v))
+		return v
+
+	def get_int_v(self):
+		v = self.get_tc_v()
+		if self.is_float:
+			v = int( self.int_max * (v - self.min) / self.w if self.w != 0 else 0 )
+		return v
+
+	def OnScroll(self, event):
+		iv = self.slider.GetValue()
+		s = str(iv)
+		if self.is_float:
+			v = self.min + float(self.w) * iv / self.int_max
+			s = str(Decimal(v).quantize(Decimal('.01')))
+		self.tc.SetValue(s)
+
+	def OnTextEnter(self, event):
+		self.slider.SetValue(self.get_int_v())
+
+class MyDialogParam(rtmgr.MyDialogParam):
+	def __init__(self, *args, **kwds):
+		self.pdic = kwds.pop('pdic')
+		self.prm = kwds.pop('prm')
+		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
+
+		self.vps = []
+		for var in self.prm['vars']:
+			v = self.pdic[ var['name'] ]
+			vp = VarPanel(self, var=var, v=v)
+			self.sizer_v.Add(vp, 0, wx.EXPAND)
+			self.vps.append(vp)
+
+		self.SetTitle(self.prm['name'])
+
+	def OnOk(self, event):
+		vars = self.prm['vars']
+		for var in vars:
+                	v = self.vps[ vars.index(var) ].get_tc_v()
+			self.pdic[ var['name'] ] = v
 		self.EndModal(0)
 
 	def OnCancel(self, event):
@@ -733,6 +884,19 @@ class MyApp(wx.App):
 def terminate_children(pid):
 	for child in psutil.Process(pid).get_children():
 		child.terminate()
+
+def str_to_rosval(str, type_str, def_ret=None):
+	cvt_dic = {
+		'int8':int , 'int16':int , 'int32':int ,
+		'uint8':int , 'uint16':int , 'uint32':int ,
+		'int64':long , 'uint64':long,
+		'float32':float, 'float64':float,
+	}
+	t = cvt_dic.get(type_str, None)
+	return t(str) if t else def_ret
+
+def get_top(lst, def_ret=None):
+	return lst[0] if len(lst) > 0 else def_ret
 
 def prn_dict(dic):
 	for (k,v) in dic.items():
