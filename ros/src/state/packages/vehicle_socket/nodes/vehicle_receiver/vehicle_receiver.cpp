@@ -120,7 +120,7 @@ int main(int argc, char **argv){
   
   std::cout << "vehicle receiver" << std::endl;
 
-  pub = nh.advertise<std_msgs::String>("car_info",100);
+  pub = nh.advertise<std_msgs::String>("can_info",100);
 
   pthread_t th;
   if(pthread_create(&th, NULL, receiverCaller, NULL)){
