@@ -1,0 +1,25 @@
+<!-- -->
+<launch>
+	<arg name="current_pose_topic" default="gnss" />
+	<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path.txt" />
+	
+	
+	<!-- transform path coordinate to global coordinate -->
+	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /world /path 100"
+		name="path_to_global" />
+	
+	<!-- transform mobility original coordinate to global coordinate-->
+	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /world /odom 100"
+		name="mobility_to_global" />
+	
+
+	<node pkg="lane_follower" type="test_lane_navigator" name="lane_nav">
+		<param name="filename" value="$(arg waypoint_filename)" />
+	</node>
+
+	
+	<node pkg="lane_follower" type="lane_follower" name="lane_follower">
+		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
+	</node>
+
+</launch>

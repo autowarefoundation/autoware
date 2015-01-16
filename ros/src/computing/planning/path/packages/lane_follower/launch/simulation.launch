@@ -1,0 +1,23 @@
+<!-- -->
+<launch>
+	<arg name="current_pose_topic" default="odometry" />
+	<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path3.txt" />
+
+
+	<node pkg="lane_follower" type="odometry_pub" name="odometry_simu" />
+
+	<!-- <node pkg="lane_follower" type="test_lane_navigator" args="$(arg waypoint_filename)" 
+		name="lane_nav" /> -->
+
+	<node pkg="lane_follower" type="test_lane_navigator" name="lane_nav">
+		<param name="filename" value="$(arg waypoint_filename)" />
+	</node>
+
+	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /odom /path 100"
+		name="odom_to_path" />
+
+	<node pkg="lane_follower" type="lane_follower" name="lane_follower">
+		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
+	</node>
+
+</launch>

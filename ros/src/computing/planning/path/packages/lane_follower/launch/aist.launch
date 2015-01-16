@@ -1,0 +1,15 @@
+<!-- -->
+<launch>
+	<arg name="current_pose_topic" default="amcl" />
+	<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path.txt" />
+
+	<node pkg="lane_follower" type="test_lane_navigator" args="$(arg waypoint_filename)"
+		name="lane_nav" />
+	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /map /path 100"
+		name="map_to_path" />
+
+	<node pkg="lane_follower" type="lane_follower" name="lane_follower">
+		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
+	</node>
+
+</launch>
