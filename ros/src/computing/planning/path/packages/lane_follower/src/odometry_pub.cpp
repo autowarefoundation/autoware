@@ -49,7 +49,7 @@ int main(int argc, char **argv)
         ros::spinOnce(); //check subscribe topic
 
         double vx = _current_velocity.linear.x;
-          double vth = _current_velocity.angular.z*0.5;
+          double vth = _current_velocity.angular.z;
         current_time = ros::Time::now();
 
         //compute odometry in a typical way given the velocities of the robot
