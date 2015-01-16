@@ -6,8 +6,9 @@
 #include <ros/console.h>
 
 #include <ui_socket/error_info.h>
-#include <ui_socket/can_info.h>
 #include <ui_socket/mode_info.h>
+
+#include <vehicle_socket/CanInfo.h>
 
 #include "request.h"
 
@@ -53,7 +54,7 @@ static void subscribe_error_info(const ui_socket::error_info& msg)
 	}
 }
 
-static void subscribe_can_info(const ui_socket::can_info& msg)
+static void subscribe_can_info(const vehicle_socket::CanInfo& msg)
 {
 	can_request request(msg);
 	int response;
