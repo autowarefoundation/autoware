@@ -22,6 +22,6 @@ generate_messages(
 catkin_package(
 )
 
-add_executable(vehicle_receiver nodes/vehicle_receiver.cpp)
+add_executable(vehicle_receiver nodes/vehicle_receiver/vehicle_receiver.cpp)
 target_link_libraries(vehicle_receiver ${catkin_LIBRARIES})
 add_dependencies(vehicle_receiver vehicle_socket_generate_messages_cpp)
