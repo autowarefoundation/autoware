@@ -16,7 +16,6 @@ add_message_files(
   run_cmd.msg
   route_cmd.msg
   error_info.msg
-  can_info.msg
   mode_info.msg
 )
 
@@ -26,10 +25,7 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES camera
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  CATKIN_DEPENDS vehicle_socket
 )
 
 add_executable(ui_receiver nodes/ui_receiver/ui_receiver.cpp)
