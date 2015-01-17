@@ -1,0 +1,8 @@
+car_dpm:
+  group_threshold: 0.1
+  pyramid_levels: 32
+  score_threshold: 0.5
+pedestrian_dpm_gpu:
+  group_threshold: 0.3
+  pyramid_levels: 32
+  score_threshold: 0.6

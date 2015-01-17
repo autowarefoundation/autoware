@@ -77,8 +77,8 @@ void setPointsImage(const points_to_image::PointsImage& points_image)
     {
         int height, width;
         for(i = 0; i < (int)points_image.distance.size(); i++) {
-            height = (int)(i % IMAGE_HEIGHT);
-            width = (int)(i / IMAGE_HEIGHT);
+            height = (int)(i / IMAGE_WIDTH);
+            width = (int)(i % IMAGE_WIDTH);
             if (height < IMAGE_HEIGHT && width < IMAGE_WIDTH) {
                 g_scan_image.distance[width][height] = points_image.distance.at(i); //unit of length is centimeter
                 g_scan_image.intensity[width][height] = points_image.intensity.at(i);
