@@ -6,8 +6,10 @@ subs :
         subs :
           - name : car_dpm
             cmd  : rosrun car_detector car_dpm
+            param: car_dpm
           - name : car_dpm_gpu
             cmd  : rosrun car_detector car_dpm_gpu
+            param: car_dpm
           - name : car_tracking
             cmd  : rosrun car_detector car_tracking
           - name : car_fusion
@@ -16,8 +18,10 @@ subs :
             cmd  : rosrun lane_detector lane_detector
           - name : pedestrian_dpm
             cmd  : rosrun pedestrian_detector pedestrian_dpm
+            param: pedestrian_dpm
           - name : pedestrian_dpm_gpu
             cmd  : rosrun pedestrian_detector pedestrian_dpm_gpu
+            param: pedestrian_dpm
           - name : pedestrian_tracking
             cmd  : rosrun pedestrian_detector pedestrian_tracking
           - name : pedestrian_fusion
@@ -33,3 +37,49 @@ subs :
       - name : Mission
       - name : Motion
       - name : Path
+        subs :
+          - name : ndt
+            cmd : roslaunch lane_follower ndt.launch
+          - name : gnss
+            cmd : roslaunch lane_follower gnss.launch
+
+params :
+  - name  : car_dpm
+    topic : /config/car_dpm
+    msg   : ConfigCarDpm
+    vars  :
+    - name  : score_threshold
+      label : Score Threshold
+      min   : -2
+      max   : 2
+      v     : 0.5
+    - name  : group_threshold
+      label : Group Threshold
+      min   : 0
+      max   : 1
+      v     : 0.1
+    - name  : pyramid_levels
+      label : Pyramid Levels
+      min   : 0
+      max   : 50
+      v     : 32
+
+  - name  : pedestrian_dpm
+    topic : /config/pedestrian_dpm
+    msg   : ConfigPedestrianDpm
+    vars  :
+    - name  : score_threshold
+      label : Score Threshold
+      min   : -2
+      max   : 2
+      v     : 0.6
+    - name  : group_threshold
+      label : Group Threshold
+      min   : 0
+      max   : 1
+      v     : 0.3
+    - name  : pyramid_levels
+      label : Pyramid Levels
+      min   : 0
+      max   : 50
+      v     : 32

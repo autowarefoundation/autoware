@@ -78,7 +78,7 @@ execute_process(
 if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
 set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
 else()
-set(CUDA_ARCH "sm_35")
+set(CUDA_ARCH "sm_52")
 endif()
 
 set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src")

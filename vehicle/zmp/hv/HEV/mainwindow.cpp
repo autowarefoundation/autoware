@@ -6,6 +6,8 @@ using namespace zmp::hev;
 
 #include "../hev_base/activate_hev.cpp" 
 
+std::string rosServerIP;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -206,7 +208,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_startLog->setEnabled(true);
     ui->pushButton_stopLog->setEnabled(false);
 
+    duration = 1000; //ログをとる間隔はデフォルトで1000ms
+    rosServerIP = "192.168.1.102";
+    if(setConfig()) {
+      printf("read config error\n");    
+    }
     pthread_create(&_logThread, NULL, LogThreadEntry, this);
+
     readTimer->start(100);
     drvTimer->start(200);
 
@@ -259,6 +267,38 @@ bool MainWindow::GameStart()
     return true;
 }
 
+bool MainWindow::setConfig(){
+
+  std::ifstream ifs("./config");
+  std::string str;
+  if(ifs.fail()){
+    return false;
+  }
+
+  if(getline(ifs,str)){
+    duration = atoi(str.c_str());
+  }else{
+    return false;
+  }
+
+  if(getline(ifs,str)){
+    rosServerIP = str;
+  }else{
+    return false;
+  }
+  /*
+  if((fp=fopen("./config","r"))==NULL){
+    return false;
+  }
+  if(fgets(dur,sizeof(dur),fp)==NULL){
+    return false;
+  }else{
+    duration = atoi(dur);
+  }
+  */
+  return true;
+}
+
 void* MainWindow::LogThreadEntry(void* arg)
 {
     MainWindow* main = (MainWindow*)arg;
@@ -269,14 +309,15 @@ void* MainWindow::LogThreadEntry(void* arg)
 void MainWindow::logThread()
 {
   //activate hev_base program
-  HevBaseActivate();
+    HevBaseActivate();
 //    readTimer->start(10);
     while(1){
-        updateTime();
-        if(_selectLog.start == true){
-            writeLog();
-        }
-        usleep(10*1000);
+      updateTime();
+      if(_selectLog.start == true){
+        //writeLog();
+        sendData();
+      }
+      usleep(duration*1000);
     }
 }
 
@@ -1108,6 +1149,109 @@ void MainWindow::writeLog()
     fprintf(_logSave, "\n");
 }
 
+void MainWindow::sendData()
+{
+
+  char temp[300] = "";
+  char Senddata[1000] = "";
+
+  //時間は送信時に付け足すことにする
+   
+  sprintf(temp,"'%d/%02d/%02d %02d:%02d:%02d.%ld',",_s_time->tm_year+1900, _s_time->tm_mon+1, _s_time->tm_mday,
+          _s_time->tm_hour + 9, _s_time->tm_min, _s_time->tm_sec, _getTime.tv_usec);
+  strcat(Senddata,temp);
+    
+    if(_selectLog.drvInf == true){
+
+        /*ここ改造*/
+        sprintf(temp,"%d,%d,%d,%d,%d,%d,%d,%3.2f,%3.2f,%d,%d,%d,",
+                _drvInf.mode, _drvInf.contMode, _drvInf.overrideMode, _drvInf.servo,
+                _drvInf.actualPedalStr, _drvInf.targetPedalStr, _drvInf.inputPedalStr,
+                _drvInf.targetVeloc, _drvInf.veloc,
+                _drvInf.actualShift, _drvInf.targetShift, _drvInf.inputShift);
+        strcat(Senddata,temp);
+        
+
+    } else {
+        /*ここ改造*/
+        sprintf(temp,"0,0,0,0,0,0,0,0,0,0,0,0,");
+        strcat(Senddata,temp);
+    }
+    if(_selectLog.strInf == true){
+        /*ここ改造*/
+        sprintf(temp,"%d,%d,%d,%d,%d,%d,%3.2f,%3.2f,",
+                _strInf.mode, _strInf.cont_mode, _strInf.overrideMode, _strInf.servo,
+                _strInf.targetTorque, _strInf.torque,
+                _strInf.angle, _strInf.targetAngle);
+        strcat(Senddata,temp);
+
+    } else {
+        /*ここ改造*/
+        sprintf(temp,"0,0,0,0,0,0,0,0,");
+        strcat(Senddata,temp);
+
+    }
+    if(_selectLog.brkInf == true){
+        /*ここ改造*/
+        sprintf(temp,"%d,%d,%d,%d,",
+                _brakeInf.pressed, _brakeInf.actualPedalStr, _brakeInf.targetPedalStr, _brakeInf.inputPedalStr);
+        strcat(Senddata,temp);
+        
+    } else {
+        /*ここ改造*/
+        sprintf(temp,"0,0,0,0,");
+        strcat(Senddata,temp);
+
+    }
+    if(_selectLog.battInf == true){
+
+        /*ここ改造*/
+        sprintf(temp,"%3.2f,%d,%3.2f,%d,%d,%3.2f,%3.2f,",
+                       _battInf.soc, _battInf.voltage, _battInf.current,
+                       _battInf.max_temp, _battInf.min_temp,
+                       _battInf.max_chg_current, _battInf.max_dischg_current);
+        strcat(Senddata,temp);
+
+    } else {
+        /*ここ改造*/
+        sprintf(temp,"0,0,0,0,0,0,0,");
+        strcat(Senddata,temp);
+
+    }
+    if(_selectLog.otherInf == true){
+        /*ここ改造*/
+        sprintf(temp,"%3.3f,%3.5f,%3.1f,%3.1f,%3.1f,%3.1f,%3.1f,%3.1f,%3.1f,%d,%d,%d,%3.1f,%d,%d,%d,%d,%d,%d,%d",
+                _otherInf.sideAcc, _otherInf.acc, _otherInf.angleFromP, _otherInf.brkPedalStrFromP,
+                _otherInf.velocFrFromP, _otherInf.velocFlFromP, _otherInf.velocRrFromP, _otherInf.velocRlFromP,
+                _otherInf.velocFromP2,
+                _otherInf.drv_mode, _otherInf.drvPedalStrFromP, _otherInf.rpm,
+                _otherInf.velocFlFromP,
+                _otherInf.ev_mode, _otherInf.temp, _otherInf.shiftFromPrius, _otherInf.light,
+                _otherInf.level, _otherInf.door, _otherInf.cluise);
+
+        strcat(Senddata,temp);
+
+    } else {
+      /*ここ改造*/
+      sprintf(temp,"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
+      strcat(Senddata,temp);
+    }
+
+    //sprintf(temp,"\n");
+    //strcat(Senddata,temp);
+
+    if(pthread_create(&_sendData, NULL, SendData, (void *)Senddata)){
+      fprintf(stderr,"pthread create error");
+      return;
+    }
+    pthread_detach(_sendData);
+
+    //SendData(Senddata);
+
+}
+
+
+
 void MainWindow::updateTime()
 {
     time(&_day_time);
@@ -1720,3 +1864,108 @@ void MainWindow::UpdateConfig(int num, int index, int data[])
         break;
     }
 }
+
+//void* SendData(char *values){
+void* SendData(void *arg){
+
+  char *values = (char *)arg;
+
+  struct sockaddr_in server;
+  int sock;
+  //  char deststr[80] = serverIP.c_str();
+  unsigned int **addrptr;
+
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    perror("socket");
+    return NULL;
+  }
+
+  server.sin_family = AF_INET;
+  server.sin_port = htons(11111); /* HTTPのポートは80番です */
+
+  server.sin_addr.s_addr = inet_addr(rosServerIP.c_str());
+  if (server.sin_addr.s_addr == 0xffffffff) {
+    struct hostent *host;
+
+    host = gethostbyname(rosServerIP.c_str());
+    if (host == NULL) {
+      if (h_errno == HOST_NOT_FOUND) {
+	/* h_errnoはexternで宣言されています */
+	printf("host not found : %s\n", rosServerIP.c_str());
+      } else {
+	/*
+	  HOST_NOT_FOUNDだけ特別扱いする必要はないですが、
+	  とりあえず例として分けてみました
+	*/
+	printf("%s : %s\n", hstrerror(h_errno), rosServerIP.c_str());
+      }
+      return NULL;
+    }
+
+    addrptr = (unsigned int **)host->h_addr_list;
+
+    while (*addrptr != NULL) {
+      server.sin_addr.s_addr = *(*addrptr);
+
+      /* connect()が成功したらloopを抜けます */
+      if (connect(sock,
+		  (struct sockaddr *)&server,
+		  sizeof(server)) == 0) {
+	break;
+      }
+
+      addrptr++;
+      /* connectが失敗したら次のアドレスで試します */
+    }
+
+    /* connectが全て失敗した場合 */
+    if (*addrptr == NULL) {
+      perror("connect");
+      return NULL;
+    }
+  } else {
+    if (connect(sock,
+		(struct sockaddr *)&server, sizeof(server)) != 0) {
+      perror("connect");
+      return NULL;
+    }
+  }
+
+  char senddata[1024];
+  //  char recvdata[20];
+  //char time_n[30];
+
+  int n;
+
+
+  memset(senddata, 0, sizeof(senddata));
+  strcat(senddata,values);
+  strcat(senddata,"\n");
+
+  printf("%s\n",values);
+  printf("%s\n",senddata);
+    
+  n = send(sock, senddata, (int)strlen(senddata),0);
+  if (n < 0) {
+    perror("write");
+    exit(-1);
+  }
+    
+  //while (n > 0) {
+  /*
+  memset(recvdata, 0, sizeof(recvdata));
+  n = recv(sock, recvdata, sizeof(recvdata),0);
+  if (n < 0) {
+    perror("read");
+    exit(-1);
+  }
+  */
+  close(sock);
+
+  return NULL;
+}
+
+
+
+

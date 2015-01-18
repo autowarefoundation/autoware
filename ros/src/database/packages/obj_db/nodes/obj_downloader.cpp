@@ -16,7 +16,7 @@
 #include "opencv/highgui.h" 
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
-#include "scan_to_image/ScanImage.h"
+//#include "scan_to_image/ScanImage.h"
 #include "SendData.h"
 
 using namespace std;
@@ -143,7 +143,7 @@ int main(int argc, char **argv){
   
   cout << "obj_downloader" << endl;
 
-  pub = nh.advertise<std_msgs::String>("mo",1000); 
+  pub = nh.advertise<std_msgs::String>("mo",10); 
   //ros::Subscriber subscriber = nh,subscribe("topic_name",1000,Callback_Name)
 
   if(argc == 1){
@@ -203,6 +203,8 @@ int main(int argc, char **argv){
   if(pthread_create(&th, NULL, intervalCall, NULL)){
     printf("thread create error\n");
   }
+
+  pthread_detach(th);
 
   ros::spin();
 

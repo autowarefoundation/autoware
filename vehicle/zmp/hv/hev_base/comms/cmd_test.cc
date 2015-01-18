@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     */
 
     //ステアコマンドテスト
-    double degree = 45;
+    double degree = 10;
     for (int i = 0;i<=degree;i++){
     test_cmd.tv = 0;
     test_cmd.sv = i * M_PI/180;
@@ -83,14 +83,21 @@ int main(int argc, char **argv) {
     _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
     usleep(100000); 
     }
-    for (int j = degree;j>=0;j--){
+    while(1){
+      test_cmd.tv = 0;
+      test_cmd.sv = degree * M_PI/180;
+      test_cmd.tstamp = 0;
+      _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
+      usleep(100000); 
+    }
+    /*for (int j = degree;j>=0;j--){
       test_cmd.tv = 0;
       test_cmd.sv = j * M_PI/180;
     test_cmd.tstamp = 0;
     printf("set steering control cmd tv: %.3lf sv: %.3lf\n",test_cmd.tv,test_cmd.sv);
     _shared_memory.writeControl(SHM_CONTROL_MODE_AUTO,test_cmd);
     usleep(100000); 
-    }
+    }*/
   }else{
     printf("exit\n");
     exit(-1);
