@@ -8,6 +8,8 @@ compu_viewer_3 :
   name : Image-D Viewer
   cmd  : rosrun viewers image_d_viewer
 compu_viewer_4 :
+  name : Points Image-D Viewer
+  cmd  : rosrun viewers points_image_d_viewer
 compu_viewer_5 :
 compu_viewer_6 :
 compu_viewer_7 :
