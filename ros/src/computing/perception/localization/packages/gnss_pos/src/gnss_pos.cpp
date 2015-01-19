@@ -22,10 +22,19 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg){
   geo.set_plane(7);
   geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
   
+  static tf::TransformBroadcaster pose_broadcaster;
+  tf::Transform pose_transform;
+  tf::Quaternion pose_q;
+
+  pose_transform.setOrigin(tf::Vector3(0,0,0));
+  pose_q.setRPY(0,0,0);
+  pose_transform.setRotation(pose_q);
+  pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform,ros::Time::now(),"map","gps"));
+
   geometry_msgs::PoseStamped pose;
   pose.header = msg->header;
   pose.header.stamp = ros::Time::now();
-  pose.header.frame_id = "gps_frame";
+  pose.header.frame_id = "gps";
   pose.pose.position.x = geo.y();
   pose.pose.position.y = geo.x();
   pose.pose.position.z = geo.z();
@@ -43,6 +52,8 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg){
   pose.pose.orientation = quat;
   pose_publisher.publish(pose);
   
+
+  //座標変換
   static tf::TransformBroadcaster br;
   tf::Transform transform;
   tf::Quaternion q;
@@ -56,7 +67,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "pose_visualizer");
   ros::NodeHandle nh;
-  pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("visualized_pose",1000);
+  pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("gnss_pose",1000);
   ros::Subscriber gnss_pose_subscriber = nh.subscribe("fix",100,GNSSCallback);
 
   
