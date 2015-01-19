@@ -43,6 +43,17 @@
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
 
+using namespace std;
+
+
+/*
+  our rectangular plane is 7 in Japan.
+*/
+const double LAT_PLANE = 36;//136.906565;
+const double LON_PLANE = 137.1;//35.180188;
+
+
+
 typedef struct _CARPOS{
   int x1;
   int y1;
@@ -55,10 +66,10 @@ pthread_mutex_t mutex;
 pthread_mutex_t pos_mutex;
 
 selfLocation sl;
-std::vector<CARPOS> global_cp_vector;
+vector<CARPOS> global_cp_vector;
 
 const char serverName[100] = "db1.ertl.jp";
-std::string dbres;
+string dbres;
 SendData sd;
 
 LOCATION my_loc;
@@ -81,17 +92,30 @@ void printDiff(struct timeval begin, struct timeval end){
 
 //wrap SendData class
 void* wrapSender(void *tsd){
-
+  
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
-  std::vector<CARPOS> car_position_vector(global_cp_vector.size());
-  std::vector<CARPOS>::iterator cp_iterator;
-  std::string value;
-  std::ostringstream oss;
+  vector<CARPOS> car_position_vector(global_cp_vector.size());
+  vector<CARPOS>::iterator cp_iterator;
+  string value = "";
+  ostringstream oss;
+
+  char magic[5] = "MPWC";
+  short major = 1;
+  short minor = 0;
+  int sql_num = global_cp_vector.size();
+  char header[12];
+  memcpy(header,magic,4);
+  memcpy(&header[4],&major,2);
+  memcpy(&header[6],&minor,2);
+  memcpy(&header[8],&sql_num,4);
+  //value.append(header,12);
 
   //thread safe process for vector
+
   pthread_mutex_lock( &mutex );
   std::copy(global_cp_vector.begin(), global_cp_vector.end(), car_position_vector.begin());
+  global_cp_vector.clear();
   pthread_mutex_unlock( &mutex );
   cp_iterator = car_position_vector.begin();
 
@@ -135,12 +159,6 @@ void* wrapSender(void *tsd){
       and I convert to plane rectangular coordinate  from latitude and longitude.
      */
 
-    /*
-      our rectangular plane is 7 in Japan.
-     */
-    double lat_plane = 36;//136.906565;
-    double lon_plane = 137.1;//35.180188;
-
     //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
 
     geo_pos_conv geo;
@@ -159,13 +177,17 @@ void* wrapSender(void *tsd){
 
     //covert plane rectangular coordinate to latitude and longitude.
     calcoordinates cc;
-    RESULT res = cc.cal(rescoord.X,rescoord.Z,lat_plane,lon_plane);
+    RESULT res = cc.cal(rescoord.X,rescoord.Z,LAT_PLANE,LON_PLANE);
 
     printf("object position : lat:%f\tlon:%f\n",res.lat,res.lon);
 
     //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
     //And if setting the other number of value , sendData will be failed.
-    oss << "0 " << rescoord.X << " " << rescoord.Y << " 0" << ",";
+
+    //    oss << "\"INSERT INTO POS(id,x,y,area,type,self) ";
+    //oss << "values(0," << rescoord.X << "," << rescoord.Y << ",0,0,1" << ");\"";
+
+    oss << "0 " << rescoord.X << " " << rescoord.Y << " 0,";
 
     cp_iterator++;
   
@@ -173,13 +195,14 @@ void* wrapSender(void *tsd){
 
   oss << "<E>";
 
-  value = oss.str();
+  value += oss.str();
+  //  printf("%s\n",value.c_str());
+  //  printf("%d\n",value.size());
+  
 
   sd.setValue(value);
   sd.Sender();
 
-  global_cp_vector.clear();
-  
 }
 
 
@@ -282,7 +305,7 @@ void set_car_position_xyz()
 int main(int argc, char **argv){
   
   ros::init(argc ,argv, "obj_uploader") ;  
-  std::cout << "obj_uploader" << std::endl;
+  cout << "obj_uploader" << endl;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -326,7 +349,7 @@ int main(int argc, char **argv){
 
   sl.setCameraParam(fkx,fky,Ox,Oy);
 
-  set_car_position_xyz();
+  //set_car_position_xyz();
 
   sd = SendData(const_cast<char*>(serverName),5777);
 
