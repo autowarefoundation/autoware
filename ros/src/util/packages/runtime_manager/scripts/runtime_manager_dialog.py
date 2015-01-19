@@ -36,9 +36,9 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Version tab
 		#
-		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
-		self.bitmap_1 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
-		self.bitmap_2 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
+		tab = self.notebook_1_pane_1
+		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
+		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", 0.5)
 
 		#
 		# for Computing tab
@@ -753,6 +753,15 @@ class MyFrame(rtmgr.MyFrame):
 		if not ok:
 			obj.SetValue(False)
 		return cmds[r] if ok else None
+
+	def get_static_bitmap(self, parent, filename, scale):
+		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
+		(w, h) = bm.GetSize()
+		img = wx.ImageFromBitmap(bm)
+		img = img.Scale(w * scale, h * scale, wx.IMAGE_QUALITY_HIGH)
+		bm = wx.BitmapFromImage(img)
+		return wx.StaticBitmap(parent, wx.ID_ANY, bm)
 
 	def load_yaml(self, filename, def_ret=None):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
