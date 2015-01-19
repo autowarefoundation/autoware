@@ -45,8 +45,8 @@ public:
 
   //set llh in radians
   void set_llh(double lat, double lon, double h){
-    m_lat =lat;
-    m_lon=lon;
+    m_lat = lat*M_PI/180;
+    m_lon = lon*M_PI/180;
     m_h=h;
     conv_llh2xyz();
   }

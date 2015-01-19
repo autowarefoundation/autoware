@@ -45,14 +45,11 @@
 
 using namespace std;
 
-
 /*
   our rectangular plane is 7 in Japan.
 */
 const double LAT_PLANE = 36;//136.906565;
 const double LON_PLANE = 137.1;//35.180188;
-
-
 
 typedef struct _CARPOS{
   int x1;
@@ -98,6 +95,8 @@ void* wrapSender(void *tsd){
   vector<CARPOS> car_position_vector(global_cp_vector.size());
   vector<CARPOS>::iterator cp_iterator;
   string value = "";
+  LOCATION rescoord;
+  geo_pos_conv geo;
   ostringstream oss;
 
   char magic[5] = "MPWC";
@@ -124,6 +123,12 @@ void* wrapSender(void *tsd){
   double my_yloc = my_loc.Y;
   double my_zloc = my_loc.Z;
   pthread_mutex_unlock( &pos_mutex );
+  //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
+
+  printf("position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
+  geo.set_plane(7);
+  geo.set_llh_nmea_degrees(my_xloc,my_yloc,my_zloc);
+  printf("X,Y,Z = %f,%f,%f\n",geo.x(),geo.y(),geo.z());
 
   while(cp_iterator != car_position_vector.end()){
 
@@ -143,29 +148,21 @@ void* wrapSender(void *tsd){
     //convert axes to north direction 0 angle.
     LOCATION anglefixed = am.cal(velocoordinate,angle);
 
-
     /*
       rectangular coordinate is that axial x is the direction to left and right,
       axial y is the direction to front and backend and axial z is the direction to upper and lower.
       So convert them.
      */
-    LOCATION rescoord;
     rescoord.X = anglefixed.X;
     rescoord.Y = anglefixed.Z;
     rescoord.Z = anglefixed.Y;
+
+    printf("obj position:%f,%f,%f\n",rescoord.X,rescoord.Y,rescoord.Z);
 
     /*
       I got my GPS location too.it`s my_xloc,my_yloc.
       and I convert to plane rectangular coordinate  from latitude and longitude.
      */
-
-    //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
-
-    geo_pos_conv geo;
-    geo.set_plane(7);
-    geo.set_llh_nmea_degrees(my_xloc,my_yloc,my_zloc);
-
-    printf("X,Y,Z = %f,%f,%f\n",rescoord.X,rescoord.Y,rescoord.Z);
 
     //add plane rectangular coordinate to that of target car.
     rescoord.X += geo.x();
@@ -176,10 +173,12 @@ void* wrapSender(void *tsd){
 
 
     //covert plane rectangular coordinate to latitude and longitude.
+    /*
     calcoordinates cc;
     RESULT res = cc.cal(rescoord.X,rescoord.Z,LAT_PLANE,LON_PLANE);
 
     printf("object position : lat:%f\tlon:%f\n",res.lat,res.lon);
+    */
 
     //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
     //And if setting the other number of value , sendData will be failed.
@@ -193,6 +192,15 @@ void* wrapSender(void *tsd){
   
   }
 
+  //oss << "\"INSERT INTO POS(id,x,y,area,type,self) ";
+  //oss << "values(0," << rescoord.X << "," << rescoord.Y << ",0,0,1" << ");\"";
+
+  oss << "0 " << geo.x() << " " << geo.y() << " 0,";
+
+  printf("geo : %f\t%f\n",geo.x(),geo.y());
+
+
+  //end charactor
   oss << "<E>";
 
   value += oss.str();
@@ -238,7 +246,7 @@ void car_position_xyzCallback(const sensors_fusion::CarPositionXYZ& car_position
     cp.y2 = car_position_xyz.corner_point.at(3+i*4);//y-axis of the lower right
     cp.distance = car_position_xyz.distance.at(i);
 
-    printf("%d,%d,%d,%d\n",cp.x1,cp.y1,cp.x2,cp.y2);
+    printf("\n%d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
     global_cp_vector.push_back(cp);
       
@@ -255,7 +263,7 @@ void azimuth_getter(const geometry_msgs::TwistStamped& azi)
   angle.thiX = 0;
   angle.thiY = azi.twist.angular.z*180/M_PI;
   angle.thiZ = 0;
-  printf("azimuth : %f\n",angle.thiY);
+  //printf("azimuth : %f\n",angle.thiY);
   //printf("ok\n");
 
 }
