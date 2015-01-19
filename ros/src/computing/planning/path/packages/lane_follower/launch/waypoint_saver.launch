@@ -1,11 +1,11 @@
 <!-- -->
 <launch>
-	<arg name="save_finename" default="$(find lane_follower)/path/path.txt" />
-	<arg name="save_topic" default="amcl" />
+	<arg name="save_finename" default="/home/pdsljp/Autoware/ros/ndtpath.txt" />
+	<arg name="save_topic" default="ndt" />
 
 	<node pkg="lane_follower" type="waypoint_saver" name="waypoint_saver">
-		<param name="save_finename" value="$(arg save_finename)" />
-		<param name="save_topic" value="$(arg save_topic}" />
+		<param name="save_filename" value="$(arg save_finename)" />
+		<param name="save_topic" value="$(arg save_topic)" />
 	</node>
 
 </launch>
