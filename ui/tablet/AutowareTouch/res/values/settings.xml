@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="ip_address">IP Address</string>
-    <string name="port_number">Port Number</string>
+    <string name="ros_pc">ROS PC</string>
+    <string name="ip_address">IPアドレス:</string>
+    <string name="command_port_number">命令ポート番号:</string>
+    <string name="information_port_number">情報ポート番号:</string>
 
 </resources>
