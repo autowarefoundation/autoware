@@ -206,9 +206,13 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	 */
 	String address;
 	/**
-	 * server port
+	 * server command port
 	 */
-	int port;
+	int commandPort;
+	/**
+	 * server information port
+	 */
+	int informationPort;
 	/**
 	 * view width
 	 */
@@ -245,6 +249,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	 * menu item id
 	 */
 	private static final int MENU_ID_SETTINGS = 0;
+	private static final int MENU_ID_DATA_GATHERING = 1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -281,14 +286,16 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		if (text != null) {
 			String[] settings = text.split(",");
-			if (validateIpAddress(settings[0]) && validatePortNumber(settings[1])) {
+			if (validateIpAddress(settings[0]) && validatePortNumber(settings[1]) && validatePortNumber(settings[2])) {
 				address = settings[0];
-				port = Integer.parseInt(settings[1]);
-				if (SoundManagementNative.connect(address, port) == 0) {
+				commandPort = Integer.parseInt(settings[1]);
+				if (SoundManagementNative.connect(address, commandPort) == 0) {
 					bIsServerConnecting = true;
 					SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
 					SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
 				}
+				informationPort = Integer.parseInt(settings[2]);
+				// must start information receiver thread
 			}
 		}
 
@@ -299,7 +306,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(Menu.NONE, MENU_ID_SETTINGS, Menu.NONE, "Settings");
+		menu.add(Menu.NONE, MENU_ID_SETTINGS, Menu.NONE, "設定");
+		menu.add(Menu.NONE, MENU_ID_DATA_GATHERING, Menu.NONE, "データ収集");
 		return true;
 	}
 
@@ -341,11 +349,13 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		LayoutInflater inflater = getLayoutInflater();
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		final View view;
+
 		switch (item.getItemId()) {
 		case MENU_ID_SETTINGS:
-			LayoutInflater inflater = getLayoutInflater();
-
-			final View view = inflater.inflate(
+			view = inflater.inflate(
 				R.layout.settings,
 				(ViewGroup)findViewById(R.id.settingsLayout));
 
@@ -354,13 +364,17 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				addressEdit.setText(address);
 			}
 
-			if (port != 0) {
-				EditText portEdit = (EditText)view.findViewById(R.id.portNumber);
-				portEdit.setText(String.valueOf(port));
+			if (commandPort != 0) {
+				EditText portEdit = (EditText)view.findViewById(R.id.commandPortNumber);
+				portEdit.setText(String.valueOf(commandPort));
 			}
 
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Settings");
+			if (informationPort != 0) {
+				EditText portEdit = (EditText)view.findViewById(R.id.informationPortNumber);
+				portEdit.setText(String.valueOf(informationPort));
+			}
+
+			builder.setTitle("設定");
 			builder.setView(view);
 			builder.setPositiveButton(
 				"OK",
@@ -371,12 +385,17 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						if (!validateIpAddress(addressString))
 							return;
 
-						EditText portEdit = (EditText)view.findViewById(R.id.portNumber);
-						String portString = portEdit.getText().toString();
-						if (!validatePortNumber(portString))
+						EditText commandPortEdit = (EditText)view.findViewById(R.id.commandPortNumber);
+						String commandPortString = commandPortEdit.getText().toString();
+						if (!validatePortNumber(commandPortString))
 							return;
 
-						String text = addressString + "," + portString;
+						EditText informationPortEdit = (EditText)view.findViewById(R.id.informationPortNumber);
+						String informationPortString = informationPortEdit.getText().toString();
+						if (!validatePortNumber(informationPortString))
+							return;
+
+						String text = addressString + "," + commandPortString + "," + informationPortString;
 						try {
 							BufferedOutputStream stream = new BufferedOutputStream(
 								new FileOutputStream(
@@ -397,21 +416,38 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						}
 
 						address = addressString;
-						port = Integer.parseInt(portString);
-						if (SoundManagementNative.connect(address, port) == 0) {
+						commandPort = Integer.parseInt(commandPortString);
+						if (SoundManagementNative.connect(address, commandPort) == 0) {
 							bIsServerConnecting = true;
 							SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
 							SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
 						}
+						informationPort = Integer.parseInt(informationPortString);
+						// must start information receiver thread
 					}
 				});
 			builder.setNegativeButton(
-				"Cancel",
+				"キャンセル",
 				new DialogInterface.OnClickListener () {
 					public void onClick(DialogInterface dialog, int which) {
 					}
 				});
+			builder.create().show();
 
+			return true;
+		case MENU_ID_DATA_GATHERING:
+			view = inflater.inflate(
+				R.layout.data_gathering,
+				(ViewGroup)findViewById(R.id.dataGatheringLayout));
+
+			builder.setTitle("データ収集");
+			builder.setView(view);
+			builder.setNegativeButton(
+				"キャンセル",
+				new DialogInterface.OnClickListener () {
+					public void onClick(DialogInterface dialog, int which) {
+					}
+				});
 			builder.create().show();
 
 			return true;
@@ -438,6 +474,12 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				}
 			}
 		}).start();
+	}
+
+	public void startCanGather(View v) {
+	}
+
+	public void startCarLink(View v) {
 	}
 
 	@Override
