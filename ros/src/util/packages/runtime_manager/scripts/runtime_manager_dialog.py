@@ -7,6 +7,7 @@ import os
 import socket
 import struct
 import shlex
+import signal
 import subprocess
 import psutil
 import yaml
@@ -94,13 +95,13 @@ class MyFrame(rtmgr.MyFrame):
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
-		# for button_fusion
-		tc = self.text_ctrl_calibration
+		# for button_calibration
+		tc = self.text_ctrl_sensor_fusion
 		path = os.path.expanduser("~") + '/.ros/autoware'
 		tc.SetValue(path)
 		tc.SetInsertionPointEnd()
-		self.text_ctrl_fusion = tc
-		self.button_ref_fusion = self.button_ref_calibration
+		self.text_ctrl_calibration = tc
+		self.button_ref_calibration = self.button_ref_sensor_fusion
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -366,20 +367,8 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSensingDriver(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
-	def OnFusion(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
-
-	def OnRosbag(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
-		
 	def OnCalib(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
-
-	def OnTf(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
-
-	def OnRviz(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
@@ -557,7 +546,7 @@ class MyFrame(rtmgr.MyFrame):
 	def get_cmd_dic(self, key):
 		dic = { 'tf'		: self.sensing_cmd,
 			'sensor_fusion'	: self.sensing_cmd,
-			'rosbag_recored': self.sensing_cmd,
+			'rosbag_record' : self.sensing_cmd,
 			'rosbag_play'	: self.simulation_cmd,
 			'pmap'		: self.simulation_cmd,
 			'vmap'		: self.simulation_cmd,
@@ -572,6 +561,11 @@ class MyFrame(rtmgr.MyFrame):
 			return
 		tc = self.obj_get('text_ctrl_' + key) 
 		path = tc.GetValue() if tc else None
+
+		if key == 'tf' and not path:
+			# TF default setting
+			path = 'runtime_manager,tf.launch' # !
+
 		if tc and not path:
 			return
 
@@ -582,6 +576,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		add_args = None
 		if path:
+			# Vector Map default setting
 			names = self.vmap_names if key == 'vmap' else None
 			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
 
@@ -602,7 +597,10 @@ class MyFrame(rtmgr.MyFrame):
 			return
 		(cmd, proc) = cmd_dic[obj]
 
-		proc = self.launch_kill(False, cmd, proc)
+		# ROSBAG Record modify
+		sigint = (key == 'rosbag_record')
+
+		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
 		cmd_dic[obj] = (cmd, proc)
 
 		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key)
@@ -618,17 +616,18 @@ class MyFrame(rtmgr.MyFrame):
 		path = tc.GetValue()
 		multi = k in self.sel_multi_ks
 		dir = k in self.sel_dir_ks
-		path = self.file_dialog(path, dir, multi)
+		save = k in [ 'rosbag_record' ]
+		path = self.file_dialog(path, dir, multi, save)
 		if path:
 			tc.SetValue(path)
 			tc.SetInsertionPointEnd()
 
-	def file_dialog(self, defaultPath='', dir=False, multi=False):
+	def file_dialog(self, defaultPath='', dir=False, multi=False, save=False):
 		if dir:
 			dlg = wx.DirDialog(self, defaultPath=defaultPath);
 		else:
 			(dn, fn) = os.path.split(defaultPath)
-			style = wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
+			style = wx.FD_SAVE if save else wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
 			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
 		path = None
 		if dlg.ShowModal() == wx.ID_OK:
@@ -711,7 +710,7 @@ class MyFrame(rtmgr.MyFrame):
 		for proc in all:
 			self.launch_kill(False, 'dmy', proc)
 
-	def launch_kill(self, v, cmd, proc, add_args=None):
+	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
@@ -737,8 +736,8 @@ class MyFrame(rtmgr.MyFrame):
 			proc = subprocess.Popen(args)
 			self.all_procs.append(proc)
 		else:
-			terminate_children(proc.pid)
-			proc.terminate()
+			terminate_children(proc, sigint)
+			terminate(proc, sigint)
 			proc.wait()
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
@@ -924,9 +923,15 @@ class MyApp(wx.App):
 		frame_1.Show()
 		return 1
 
-def terminate_children(pid):
-	for child in psutil.Process(pid).get_children():
-		child.terminate()
+def terminate_children(proc, sigint=False):
+	for child in psutil.Process(proc.pid).get_children():
+		terminate(child, sigint)
+
+def terminate(proc, sigint=False):
+	if sigint:
+		proc.send_signal(signal.SIGINT)
+	else:
+		proc.terminate()
 
 def str_to_rosval(str, type_str, def_ret=None):
 	cvt_dic = {

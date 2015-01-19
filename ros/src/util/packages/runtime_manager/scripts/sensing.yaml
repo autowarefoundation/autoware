@@ -60,15 +60,13 @@ subs :
         run  : rosrun turtlesim turtlesim_node # for debug
 
 buttons:
-  fusion :
+  sensor_fusion :
     run : "'roslaunch sensing_fusions sensing_fusions.launch dir:=$'.replace('$', add_args[0])"
-  rosbag :
-    run :
+  rosbag_record :
+    run : rosbag record -a -O
   calibration :
     run :
       - [ LIDAR2D , "'roslaunch camera_lidar2d camera_lidar2d_offline_calib.launch dir:=$'.replace('$', add_args[0])" ]
       - [ LIDAR3D , "rosrun camera_lidar3d camera_lidar3d_offline_calib" ]
   tf :
-    run : roslaunch runtime_manager tf.launch
-  rviz :
-    run : rosrun rviz rviz
+    run : roslaunch
