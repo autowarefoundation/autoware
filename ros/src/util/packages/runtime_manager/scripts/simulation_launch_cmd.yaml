@@ -30,7 +30,7 @@ subs :
         run  : rosrun sample_data sample_mobility
 
 buttons:
-  rosbag_simu :
+  rosbag_play :
     run : rosbag play
   pmap :
     run : rosrun sample_data sample_points_map

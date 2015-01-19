@@ -162,7 +162,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def load_yaml_button_run(self, d, run_dic):
 		for (k,d2) in d.items():
-			obj = self.obj_get('button_' + k)
+			obj = get_top( self.key_objs_get([ 'button_', 'button_launch_' ], k) )
 			if not obj:
 				print('button_' + k + ' not found correspoinding widget.')
 				continue
@@ -463,24 +463,6 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSimulation(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
 
-	def OnRvizSimu(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
-
-	def OnRosbagSimu(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
-
-	def OnPmap(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
-
-	def OnVmap(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd, names=self.vmap_names)
-
-	def OnMobility(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
-
-	def OnTrajectory(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
-
 	#
 	# Database Tab
 	#
@@ -572,6 +554,60 @@ class MyFrame(rtmgr.MyFrame):
 		targ_info['pdic'] = pdic
 		self.load_dic[ targ_info['name'] ] = pdic
 
+	def get_cmd_dic(self, key):
+		dic = { 'tf'		: self.sensing_cmd,
+			'sensor_fusion'	: self.sensing_cmd,
+			'rosbag_recored': self.sensing_cmd,
+			'rosbag_play'	: self.simulation_cmd,
+			'pmap'		: self.simulation_cmd,
+			'vmap'		: self.simulation_cmd,
+			'trajectory'	: self.simulation_cmd,
+		}
+		return dic.get(key, None)
+
+	def OnLaunch(self, event):
+		obj = event.GetEventObject()
+		key = self.obj_key_get(obj, ['button_launch_'])
+		if not key:
+			return
+		tc = self.obj_get('text_ctrl_' + key) 
+		path = tc.GetValue() if tc else None
+		if tc and not path:
+			return
+
+		cmd_dic = self.get_cmd_dic(key)
+		if obj not in cmd_dic:
+			return
+		(cmd, proc) = cmd_dic[obj]
+
+		add_args = None
+		if path:
+			names = self.vmap_names if key == 'vmap' else None
+			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
+
+		proc = self.launch_kill(True, cmd, proc, add_args)
+		cmd_dic[obj] = (cmd, proc)
+
+		self.enable_key_objs([ 'button_kill_' ], key)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key, en=False)
+
+	def OnKill(self, event):
+		kill_obj = event.GetEventObject()
+		key = self.obj_key_get(kill_obj, ['button_kill_'])
+		if not key:
+			return
+		obj = self.obj_get('button_launch_' + key)
+		cmd_dic = self.get_cmd_dic(key)
+		if obj not in cmd_dic:
+			return
+		(cmd, proc) = cmd_dic[obj]
+
+		proc = self.launch_kill(False, cmd, proc)
+		cmd_dic[obj] = (cmd, proc)
+
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key)
+		self.enable_key_objs([ 'button_kill_' ], key, en=False)
+
 	def OnRef(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_ref_xxx
@@ -625,9 +661,7 @@ class MyFrame(rtmgr.MyFrame):
 		item.SetHyperText()
 
 	def launch_kill_proc_file(self, obj, cmd_dic, names=None):
-		name = self.name_get(obj)
-		pfs = [ 'button_', 'checkbox_' ]
-		key = get_top( [ name[len(pf):] for pf in pfs if name[0:len(pf)] == pf ] )
+		key = self.obj_key_get(obj, [ 'button_', 'checkbox_' ])
 		if key is None:
 			return
 		v = obj.GetValue()
@@ -730,6 +764,17 @@ class MyFrame(rtmgr.MyFrame):
 		d = yaml.load(f)
 		f.close()
 		return d
+
+	def enable_key_objs(self, pfs, key, en=True):
+                for obj in self.key_objs_get(pfs, key):
+			obj.Enable(en)
+
+	def obj_key_get(self, obj, pfs):
+		name = self.name_get(obj)
+		return get_top( [ name[len(pf):] for pf in pfs if name[:len(pf)] == pf ] )
+
+	def key_objs_get(self, pfs, key):
+		return [ self.obj_get(pf + key) for pf in pfs if self.obj_get(pf + key) ]
 
 	def name_get(self, obj):
 		return get_top( [ nm for nm in dir(self) if getattr(self, nm) is obj ] )
