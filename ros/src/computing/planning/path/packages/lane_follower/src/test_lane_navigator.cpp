@@ -10,6 +10,7 @@
 struct pose {
     double x;
     double y;
+  double z;
 };
 
 int main(int argc, char **argv)
@@ -34,7 +35,7 @@ int main(int argc, char **argv)
     while (getline(ifs, str)) {
         std::cout << str << std::endl;
         pose test_pose;
-        sscanf(str.c_str(), "%lf,%lf", &test_pose.x, &test_pose.y);
+        sscanf(str.c_str(), "%lf,%lf,%lf", &test_pose.x, &test_pose.y,&test_pose.z);
         //std::cout <<test_pose.x << " "<< test_pose.y << " "<<  std::endl;
         Pose.push_back(test_pose);
     }
@@ -53,10 +54,11 @@ int main(int argc, char **argv)
             //std::cout << Pose[i].x <<  " " << Pose[i].y << std::endl;
             posestamped.pose.position.x = Pose[i].x;
             posestamped.pose.position.y = Pose[i].y;
+     posestamped.pose.position.z = Pose[i].z;
             posestamped.pose.orientation.w = 1.0;
 
             std::cout << posestamped.pose.position.x << " "
-                    << posestamped.pose.position.y << std::endl;
+                    << posestamped.pose.position.y << " " << posestamped.pose.position.z <<std::endl;
             cmd_path.poses.push_back(posestamped);
         }
 
