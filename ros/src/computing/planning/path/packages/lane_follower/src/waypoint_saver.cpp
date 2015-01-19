@@ -16,7 +16,6 @@ private:
     ros::Subscriber pose_sub_;
     ros::Subscriber gnss_pose_sub;
     ros::Subscriber ndt_pose_sub;
-    //ros::Publisher pose_pub_;
     std::string save_topic;
     ros::Time t1, t2;
     std::ofstream ofs_;
@@ -51,7 +50,7 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
             this);
     ndt_pose_sub = node_.subscribe("ndt_pose", 1, &WAYPOINT_SAVER::NDTPoseCB,
             this);
-    //pose_pub_ = node_.advertise<geometry_msgs::PoseWithCovarianceStamped> ("/amcl_pose", 100);
+   
 
     std::cout << "WAIT...\n";
     ofs_.open(filename.c_str());
@@ -71,17 +70,17 @@ void WAYPOINT_SAVER::NDTPoseCB(const geometry_msgs::PoseStampedConstPtr &pose)
 
         if (RecieveOnce != true) {
 
-            ofs_ << p.x << "," << p.y << std::endl;
+            ofs_ << p.x << "," << p.y << "," << p.z << std::endl;
             RecieveOnce = true;
         } else {
 
-            double distance = (p.x - last_pose_.x) * (p.x - last_pose_.x)
-                    + (p.y - last_pose_.y) * (p.y - last_pose_.y);
+           double distance = sqrt((p.x - last_pose_.x) * (p.x - last_pose_.x)
+				 + (p.y - last_pose_.y) * (p.y - last_pose_.y) + (p.z - last_pose_.z) * (p.z - last_pose_.z));
 
             if (distance > 4.0) {
                 last_pose_ = p;
 
-                ofs_ << p.x << "," << p.y << std::endl;
+                ofs_ << p.x << "," << p.y << "," << p.z <<std::endl;
             }
         }
     } else {
@@ -92,25 +91,26 @@ void WAYPOINT_SAVER::GNSSPoseCB(const sensor_msgs::NavSatFixConstPtr &pose)
 {
     if (save_topic == "gnss") {
         geo_pos_conv geo;
+	geo.set_plane(7);
         geo.llh_to_xyz(pose->latitude, pose->longitude, pose->altitude);
         geometry_msgs::Point p;
         p.x = geo.x();
         p.y = geo.y();
-        p.z = geo.z();
+        p.z = geo.z();	
 
         if (RecieveOnce != true) {
 
-            ofs_ << p.x << "," << p.y << std::endl;
+	  ofs_ << p.y << "," << p.x << ","<< p.z << std::endl;
             RecieveOnce = true;
         } else {
 
-            double distance = (p.x - last_pose_.x) * (p.x - last_pose_.x)
-                    + (p.y - last_pose_.y) * (p.y - last_pose_.y);
+	  double distance = sqrt((p.x - last_pose_.x) * (p.x - last_pose_.x)
+				 + (p.y - last_pose_.y) * (p.y - last_pose_.y) + (p.z - last_pose_.z) * (p.z - last_pose_.z));
 
             if (distance > 4.0) {
                 last_pose_ = p;
 
-                ofs_ << p.x << "," << p.y << std::endl;
+                ofs_ << p.y << "," << p.x <<"," << p.z <<std::endl;
             }
         }
     } else {
