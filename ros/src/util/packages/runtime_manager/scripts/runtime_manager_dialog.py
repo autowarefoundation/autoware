@@ -90,7 +90,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.drv_probe_cmd = {}
 		self.sensing_cmd = {}
 		dic = self.load_yaml('sensing.yaml')
-		self.load_yaml_sensing(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd)
+		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
@@ -112,14 +112,16 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Simulation Tab
 		#
-		self.simulation_cmd = self.load_yaml_dic('simulation_launch_cmd.yaml')
+		self.simulation_cmd = {}
+		dic = self.load_yaml('simulation_launch_cmd.yaml')
+		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
+		if 'buttons' in dic:
+			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
+
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
 		self.sel_multi_ks = [ 'pmap' ]
 		self.sel_dir_ks = [ 'vmap', 'calibration' ]
-
-		self.text_ctrl_rviz_simu.Disable()
-		self.button_ref_rviz_simu.Disable()
 
 		#
 		# for Database Tab
@@ -157,18 +159,6 @@ class MyFrame(rtmgr.MyFrame):
 		r.sleep()
 		self.pub.publish(data.data)
 		r.sleep()
-
-	def load_yaml_dic(self, filename):
-		d = self.load_yaml(filename)
-		ret_dic = {}
-		for (k,v) in d.items():
-			pf = get_top( [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ] )
-			if pf is None:
-				print(k + ' in file ' + filename + ', not found correspoinding widget.')
-				continue
-			obj = self.obj_get(pf + k)
-			ret_dic[obj] = (v, None)
-		return ret_dic
 
 	def load_yaml_button_run(self, d, run_dic):
 		for (k,d2) in d.items():
@@ -422,19 +412,24 @@ class MyFrame(rtmgr.MyFrame):
 				if cfg_obj:
 					cfg_obj.Hide()
 
-	def load_yaml_sensing(self, dic, panel, sizer, probe_dic, run_dic):
+	def create_checkboxes(self, dic, panel, sizer, probe_dic, run_dic, bind_handler):
 		if 'name' not in dic:
 			return
 		obj = None
+		bdr_flg = wx.ALL
 		if 'subs' in dic:
-			sb = wx.StaticBox(panel, wx.ID_ANY, dic['name'])
-			sb.Lower()
-			obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+			if dic['name']:
+				sb = wx.StaticBox(panel, wx.ID_ANY, dic['name'])
+				sb.Lower()
+				obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+			else:
+				obj = wx.BoxSizer(wx.VERTICAL)
 			for d in dic['subs']:
-				self.load_yaml_sensing(d, panel, obj, probe_dic, run_dic)
+				self.create_checkboxes(d, panel, obj, probe_dic, run_dic, bind_handler)
 		else:
 			obj = wx.CheckBox(panel, wx.ID_ANY, dic['name'])
-			self.Bind(wx.EVT_CHECKBOX, self.OnSensingDriver, obj)
+			self.Bind(wx.EVT_CHECKBOX, bind_handler, obj)
+			bdr_flg = wx.LEFT | wx.RIGHT
 			if 'probe' in dic:
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
@@ -442,7 +437,7 @@ class MyFrame(rtmgr.MyFrame):
 			if 'path' in dic:
 				obj = self.add_config_link(dic, panel, obj)
 		if sizer:
-			sizer.Add(obj, 0, wx.EXPAND, 0)
+			sizer.Add(obj, 0, wx.EXPAND | bdr_flg, 4)
 		else:
 			panel.SetSizer(obj)
 
@@ -465,6 +460,9 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Simulation Tab
 	#
+	def OnSimulation(self, event):
+		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
+
 	def OnRvizSimu(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
 

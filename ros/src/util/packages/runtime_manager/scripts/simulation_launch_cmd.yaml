@@ -1,6 +1,40 @@
-rviz_simu : rosrun rviz rviz
-rosbag_simu : rosbag play
-pmap : rosrun sample_data sample_points_map
-vmap : rosrun sample_data sample_vector_map __args__ swap_x_y_off
-mobility : rosrun sample_data sample_mobility
-trajectory : rosrun sample_data sample_trajectory __args__ swap_x_y_off
+name :
+subs :
+  - name : Fake Drivers
+    subs :
+      - name : Canera
+        run  : 
+      - name : CAN
+        run  : 
+      - name : GNSS
+        run  : 
+      - name : LIDAR
+        run  : 
+  - name : Simple Map
+    subs :
+      - name : Point
+        subs :
+        - name : Original
+          run  :
+        - name : Filtered
+          run  : 
+      - name : Vector
+        subs :
+        - name : Zebra
+          run  :
+        - name : Lane
+          run  : 
+  - name : Simple Mobility
+    subs :
+      - name : All
+        run  : rosrun sample_data sample_mobility
+
+buttons:
+  rosbag_simu :
+    run : rosbag play
+  pmap :
+    run : rosrun sample_data sample_points_map
+  vmap :
+    run : rosrun sample_data sample_vector_map __args__ swap_x_y_off
+  trajectory :
+    run : rosrun sample_data sample_trajectory __args__ swap_x_y_off
