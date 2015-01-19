@@ -4,12 +4,27 @@ project(runtime_manager)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  message_generation
+)
+find_package(OpenCV REQUIRED)
+
+add_message_files(
+  FILES
+  ConfigCarDpm.msg
+  ConfigPedestrianDpm.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES runtime_manager
-#  CATKIN_DEPENDS rospy
+  CATKIN_DEPENDS rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
+#add_executable(runtime_manager scripts/runtime_manager.py)
+#add_dependencies(runtime_manager runtime_manager_generate_messages_cpp)

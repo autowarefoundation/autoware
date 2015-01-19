@@ -12,7 +12,7 @@ subs :
         probe:
         run  :
       - name : USB Generic
-        probe:
+        probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
         run  : rosrun uvc_camera uvc_camera_node
       - name : IEEE1394
         probe:

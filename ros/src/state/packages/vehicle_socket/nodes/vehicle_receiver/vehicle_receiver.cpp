@@ -81,9 +81,10 @@ static void parseCanValue(const string& value, vehicle_socket::CanInfo& msg){
   msg.cluise = stoi(columns[51]);
 }
 
-void* getCanValue(void *fd){
+void* getCanValue(void *arg){
 
-  int conn_fd =*static_cast<int*>(fd);
+  int *fd = static_cast<int *>(arg);
+  int conn_fd = *fd;
   delete fd;
   char recvdata[1024];
   string result = "";
@@ -119,6 +120,7 @@ void* getCanValue(void *fd){
     fprintf(stderr,"socket close failed in pthread.\n");
   }
 
+  return nullptr;
 }
 
 /*
@@ -133,12 +135,10 @@ int sendSignal(){
 */
 
 void* receiverCaller(void *a){
-  int conn_fd;
   int sock0;
   struct sockaddr_in addr;
   struct sockaddr_in client;
   socklen_t len;
-  int size;
   //  int yes = 1;
   pthread_t th;
 
@@ -172,7 +172,7 @@ void* receiverCaller(void *a){
   }
   close(sock0);
 
-
+  return nullptr;
 }
 
 

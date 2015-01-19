@@ -24,8 +24,19 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pthread.h>
-
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <string.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
+#include <string>
+#include <sys/time.h>
+#include <fstream>
+//#include <iostream>
 
 
 
@@ -219,7 +230,9 @@ private:
     void viewErrCode();
     void updateTime();
     void writeLog();
+    void sendData();
 
+    bool setConfig();
     void logThread();
     static void* LogThreadEntry(void* arg);
 
@@ -275,7 +288,10 @@ private:
     struct selectLogInf _selectLog;
     FILE* _logSave;
 
+    int duration;
+
     pthread_t _logThread;
+    pthread_t _sendData;
 
     GameController _Game;
     bool _gameRes;
@@ -285,5 +301,7 @@ private:
     int _drvTargetVeloc;
     int _drvTargetStroke;
 };
+
+void* SendData(void *arg);
 
 #endif // MAINWINDOW_H
