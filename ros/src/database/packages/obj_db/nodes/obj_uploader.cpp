@@ -102,7 +102,7 @@ void* wrapSender(void *tsd){
   char magic[5] = "MPWC";
   short major = 1;
   short minor = 0;
-  int sql_num = global_cp_vector.size();
+  int sql_num = global_cp_vector.size()+1;
   char header[12];
   memcpy(header,magic,4);
   memcpy(&header[4],&major,2);
@@ -184,18 +184,18 @@ void* wrapSender(void *tsd){
     //And if setting the other number of value , sendData will be failed.
 
     //    oss << "\"INSERT INTO POS(id,x,y,area,type,self) ";
-    //oss << "values(0," << rescoord.X << "," << rescoord.Y << ",0,0,1" << ");\"";
+    //oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1" << ");\"";
 
-    oss << "0 " << rescoord.X << " " << rescoord.Y << " 0,";
+    oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
 
     cp_iterator++;
   
   }
 
   //oss << "\"INSERT INTO POS(id,x,y,area,type,self) ";
-  //oss << "values(0," << rescoord.X << "," << rescoord.Y << ",0,0,1" << ");\"";
+  //oss << "values(0," <<  fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1" << ");\"";
 
-  oss << "0 " << geo.x() << " " << geo.y() << " 0,";
+  oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
 
   printf("geo : %f\t%f\n",geo.x(),geo.y());
 
@@ -357,7 +357,7 @@ int main(int argc, char **argv){
 
   sl.setCameraParam(fkx,fky,Ox,Oy);
 
-  //set_car_position_xyz();
+  set_car_position_xyz();
 
   sd = SendData(const_cast<char*>(serverName),5777);
 
