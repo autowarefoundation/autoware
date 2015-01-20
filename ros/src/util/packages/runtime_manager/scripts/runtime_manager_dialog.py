@@ -692,8 +692,9 @@ class MyFrame(rtmgr.MyFrame):
 			if not cmd:
 				return # cancel
 
+                info = self.get_cfg_info(obj)
 		pdic = self.get_cfg_pdic(obj)
-		if pdic:
+		if pdic and 'path' in info:
 			add_args = [] if add_args is None else add_args
 			add_args += [ k + ":=" + str(val) for (k,val) in pdic.items() ]
 
