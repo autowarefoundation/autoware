@@ -19,7 +19,10 @@
 
 #include "std_msgs/String.h"
 #include "ros/ros.h"
-#include "CarPositionXYZ.h"
+
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CompressedImage.h>
+#include "car_detector/FusedObjects.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -51,19 +54,21 @@ using namespace std;
 const double LAT_PLANE = 36;//136.906565;
 const double LON_PLANE = 137.1;//35.180188;
 
-typedef struct _CARPOS{
+typedef struct _OBJPOS{
   int x1;
   int y1;
   int x2;
   int y2;
   float distance;
-}CARPOS;
+}OBJPOS;
 
 pthread_mutex_t mutex;
+pthread_mutex_t ped_mutex;
 pthread_mutex_t pos_mutex;
 
 selfLocation sl;
-vector<CARPOS> global_cp_vector;
+vector<OBJPOS> global_cp_vector;
+vector<OBJPOS> global_pp_vector;
 
 const char serverName[100] = "db1.ertl.jp";
 string dbres;
@@ -92,8 +97,8 @@ void* wrapSender(void *tsd){
   
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
-  vector<CARPOS> car_position_vector(global_cp_vector.size());
-  vector<CARPOS>::iterator cp_iterator;
+  vector<OBJPOS> car_position_vector(global_cp_vector.size());
+  vector<OBJPOS>::iterator cp_iterator;
   string value = "";
   LOCATION rescoord;
   geo_pos_conv geo;
@@ -231,20 +236,21 @@ void* intervalCall(void *a){
   }
 }
 
-void car_position_xyzCallback(const sensors_fusion::CarPositionXYZ& car_position_xyz)
+
+void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
-  int i;
-  CARPOS cp;
+  OBJPOS cp;
 
   pthread_mutex_lock( &mutex );
 
   //認識した車の数だけ繰り返す
-  for (i = 0; i < car_position_xyz.car_num; i++){
-    cp.x1 = car_position_xyz.corner_point.at(0+i*4);//x-axis of the upper left
-    cp.y1 = car_position_xyz.corner_point.at(1+i*4);//y-axis of the upper left
-    cp.x2 = car_position_xyz.corner_point.at(2+i*4);//x-axis of the lower right
-    cp.y2 = car_position_xyz.corner_point.at(3+i*4);//y-axis of the lower right
-    cp.distance = car_position_xyz.distance.at(i);
+  for (int i = 0; i < fused_objects.car_num; i++){
+    cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
+    cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
+    cp.x2 = fused_objects.corner_point[0+i*4] + fused_objects.corner_point[2+i*4];//x-axis of the upper right
+    cp.y2 = fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4];//x-axis of the lower left
+
+    cp.distance = fused_objects.distance.at(i);
 
     printf("\n%d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
@@ -256,6 +262,34 @@ void car_position_xyzCallback(const sensors_fusion::CarPositionXYZ& car_position
   printf("car position get\n\n");
 
 }
+
+void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+{
+  OBJPOS cp;
+  
+  pthread_mutex_lock( &ped_mutex );
+
+  for(int i = 0; i < fused_objects.car_num; i++) { //fused_objects.car_num は障害物の個数
+
+    cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
+    cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
+    cp.x2 = fused_objects.corner_point[0+i*4] + fused_objects.corner_point[2+i*4];//x-axis of the upper right
+    cp.y2 = fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4];//x-axis of the lower left
+
+    cp.distance = fused_objects.distance.at(i);
+
+    printf("\n%d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
+
+    global_pp_vector.push_back(cp);
+
+  }
+    
+  pthread_mutex_unlock( &ped_mutex );
+
+  printf("pedestrian position get\n\n");
+}
+
+
 
 void azimuth_getter(const geometry_msgs::TwistStamped& azi)
 {
@@ -286,7 +320,7 @@ void position_getter(const sensor_msgs::NavSatFix& pos)
 void set_car_position_xyz()
 {
   int i;
-  CARPOS cp;
+  OBJPOS cp;
 
   pthread_mutex_lock( &mutex );
 
@@ -325,7 +359,8 @@ int main(int argc, char **argv){
   //car_pos_xyzトピックが更新されるとcar_position_xyzCallback関数が呼ばれる
   //第二引数の100は受信側のバッファであり、最新の100個を保持している。自由に変更可能です。
   //100個以上になると古いものから欠損します
-  ros::Subscriber car_pos = n.subscribe("car_pos_xyz", 10, car_position_xyzCallback);
+  ros::Subscriber car_pos_xyz = n.subscribe("/car_pos_xyz", 5, car_pos_xyzCallback);
+
   ros::Subscriber azm = n.subscribe("vel", 10, azimuth_getter);
   ros::Subscriber my_pos = n.subscribe("fix", 10, position_getter);
 
