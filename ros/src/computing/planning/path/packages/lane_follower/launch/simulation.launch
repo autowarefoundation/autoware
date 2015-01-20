@@ -6,10 +6,6 @@
 	<arg name="lookahead_threshold" default="4" /> <!-- meter -->
 	<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path3.txt" />
 
-	<!-- transform path coordinate to global coordinate -->
-	<node pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /odom /path 100"
-		name="odom_to_path" />
-
 
 	<node pkg="lane_follower" type="odometry_pub" name="odometry_simu" />
 
@@ -19,8 +15,7 @@
 		<param name="filename" value="$(arg waypoint_filename)" />
 	</node>
 
-<!-- rosrun lane_follower lane_follower _current_pose_topic:="topic" _mobility_frame:="/frame" 
-		_velocity_kmh:=0 _lookahead_threshold:=0 -->
+	<!-- rosrun lane_follower lane_follower _current_pose_topic:="topic" _mobility_frame:="/frame" _velocity_kmh:=0 _lookahead_threshold:=0 -->
 	<node pkg="lane_follower" type="lane_follower" name="lane_follower">
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
 		<param name="mobility_frame" value="$(arg mobility_frame)" />

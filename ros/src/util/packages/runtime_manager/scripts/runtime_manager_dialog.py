@@ -7,6 +7,7 @@ import os
 import socket
 import struct
 import shlex
+import signal
 import subprocess
 import psutil
 import yaml
@@ -35,9 +36,9 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Version tab
 		#
-		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
-		self.bitmap_1 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "nagoya_university.png", wx.BITMAP_TYPE_ANY))
-		self.bitmap_2 = wx.StaticBitmap(self.tab_version, wx.ID_ANY, wx.Bitmap(dir + "axe.png", wx.BITMAP_TYPE_ANY))
+		tab = self.notebook_1_pane_1
+		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
+		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", 0.5)
 
 		#
 		# for Computing tab
@@ -90,17 +91,17 @@ class MyFrame(rtmgr.MyFrame):
 		self.drv_probe_cmd = {}
 		self.sensing_cmd = {}
 		dic = self.load_yaml('sensing.yaml')
-		self.load_yaml_sensing(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd)
+		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
-		# for button_fusion
-		tc = self.text_ctrl_calibration
+		# for button_calibration
+		tc = self.text_ctrl_sensor_fusion
 		path = os.path.expanduser("~") + '/.ros/autoware'
 		tc.SetValue(path)
 		tc.SetInsertionPointEnd()
-		self.text_ctrl_fusion = tc
-		self.button_ref_fusion = self.button_ref_calibration
+		self.text_ctrl_calibration = tc
+		self.button_ref_calibration = self.button_ref_sensor_fusion
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -112,14 +113,16 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Simulation Tab
 		#
-		self.simulation_cmd = self.load_yaml_dic('simulation_launch_cmd.yaml')
+		self.simulation_cmd = {}
+		dic = self.load_yaml('simulation_launch_cmd.yaml')
+		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
+		if 'buttons' in dic:
+			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
+
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
 		self.sel_multi_ks = [ 'pmap' ]
 		self.sel_dir_ks = [ 'vmap', 'calibration' ]
-
-		self.text_ctrl_rviz_simu.Disable()
-		self.button_ref_rviz_simu.Disable()
 
 		#
 		# for Database Tab
@@ -158,21 +161,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub.publish(data.data)
 		r.sleep()
 
-	def load_yaml_dic(self, filename):
-		d = self.load_yaml(filename)
-		ret_dic = {}
-		for (k,v) in d.items():
-			pf = get_top( [ pfix for pfix in ['checkbox_','button_'] if self.obj_get(pfix + k) ] )
-			if pf is None:
-				print(k + ' in file ' + filename + ', not found correspoinding widget.')
-				continue
-			obj = self.obj_get(pf + k)
-			ret_dic[obj] = (v, None)
-		return ret_dic
-
 	def load_yaml_button_run(self, d, run_dic):
 		for (k,d2) in d.items():
-			obj = self.obj_get('button_' + k)
+			obj = get_top( self.key_objs_get([ 'button_', 'button_launch_' ], k) )
 			if not obj:
 				print('button_' + k + ' not found correspoinding widget.')
 				continue
@@ -376,20 +367,8 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSensingDriver(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
-	def OnFusion(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
-
-	def OnRosbag(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
-		
 	def OnCalib(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
-
-	def OnTf(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
-
-	def OnRviz(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
 
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
@@ -422,19 +401,24 @@ class MyFrame(rtmgr.MyFrame):
 				if cfg_obj:
 					cfg_obj.Hide()
 
-	def load_yaml_sensing(self, dic, panel, sizer, probe_dic, run_dic):
+	def create_checkboxes(self, dic, panel, sizer, probe_dic, run_dic, bind_handler):
 		if 'name' not in dic:
 			return
 		obj = None
+		bdr_flg = wx.ALL
 		if 'subs' in dic:
-			sb = wx.StaticBox(panel, wx.ID_ANY, dic['name'])
-			sb.Lower()
-			obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+			if dic['name']:
+				sb = wx.StaticBox(panel, wx.ID_ANY, dic['name'])
+				sb.Lower()
+				obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+			else:
+				obj = wx.BoxSizer(wx.VERTICAL)
 			for d in dic['subs']:
-				self.load_yaml_sensing(d, panel, obj, probe_dic, run_dic)
+				self.create_checkboxes(d, panel, obj, probe_dic, run_dic, bind_handler)
 		else:
 			obj = wx.CheckBox(panel, wx.ID_ANY, dic['name'])
-			self.Bind(wx.EVT_CHECKBOX, self.OnSensingDriver, obj)
+			self.Bind(wx.EVT_CHECKBOX, bind_handler, obj)
+			bdr_flg = wx.LEFT | wx.RIGHT
 			if 'probe' in dic:
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
@@ -442,7 +426,7 @@ class MyFrame(rtmgr.MyFrame):
 			if 'path' in dic:
 				obj = self.add_config_link(dic, panel, obj)
 		if sizer:
-			sizer.Add(obj, 0, wx.EXPAND, 0)
+			sizer.Add(obj, 0, wx.EXPAND | bdr_flg, 4)
 		else:
 			panel.SetSizer(obj)
 
@@ -465,23 +449,8 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Simulation Tab
 	#
-	def OnRvizSimu(self, event):
+	def OnSimulation(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
-
-	def OnRosbagSimu(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
-
-	def OnPmap(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
-
-	def OnVmap(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd, names=self.vmap_names)
-
-	def OnMobility(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
-
-	def OnTrajectory(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.simulation_cmd)
 
 	#
 	# Database Tab
@@ -574,6 +543,69 @@ class MyFrame(rtmgr.MyFrame):
 		targ_info['pdic'] = pdic
 		self.load_dic[ targ_info['name'] ] = pdic
 
+	def get_cmd_dic(self, key):
+		dic = { 'tf'		: self.sensing_cmd,
+			'sensor_fusion'	: self.sensing_cmd,
+			'rosbag_record' : self.sensing_cmd,
+			'rosbag_play'	: self.simulation_cmd,
+			'pmap'		: self.simulation_cmd,
+			'vmap'		: self.simulation_cmd,
+			'trajectory'	: self.simulation_cmd,
+		}
+		return dic.get(key, None)
+
+	def OnLaunch(self, event):
+		obj = event.GetEventObject()
+		key = self.obj_key_get(obj, ['button_launch_'])
+		if not key:
+			return
+		tc = self.obj_get('text_ctrl_' + key) 
+		path = tc.GetValue() if tc else None
+
+		if key == 'tf' and not path:
+			# TF default setting
+			path = 'runtime_manager,tf.launch' # !
+
+		if tc and not path:
+			return
+
+		cmd_dic = self.get_cmd_dic(key)
+		if obj not in cmd_dic:
+			return
+		(cmd, proc) = cmd_dic[obj]
+
+		add_args = None
+		if path:
+			# Vector Map default setting
+			names = self.vmap_names if key == 'vmap' else None
+			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
+
+		proc = self.launch_kill(True, cmd, proc, add_args)
+		cmd_dic[obj] = (cmd, proc)
+
+		self.enable_key_objs([ 'button_kill_' ], key)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key, en=False)
+
+	def OnKill(self, event):
+		kill_obj = event.GetEventObject()
+		key = self.obj_key_get(kill_obj, ['button_kill_'])
+		if not key:
+			return
+		obj = self.obj_get('button_launch_' + key)
+		cmd_dic = self.get_cmd_dic(key)
+		if obj not in cmd_dic:
+			return
+		(cmd, proc) = cmd_dic[obj]
+
+		# ROSBAG Record modify
+		sigint = (key == 'rosbag_record')
+
+		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
+		cmd_dic[obj] = (cmd, proc)
+
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key)
+		self.enable_key_objs([ 'button_kill_' ], key, en=False)
+
 	def OnRef(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_ref_xxx
@@ -584,17 +616,18 @@ class MyFrame(rtmgr.MyFrame):
 		path = tc.GetValue()
 		multi = k in self.sel_multi_ks
 		dir = k in self.sel_dir_ks
-		path = self.file_dialog(path, dir, multi)
+		save = k in [ 'rosbag_record' ]
+		path = self.file_dialog(path, dir, multi, save)
 		if path:
 			tc.SetValue(path)
 			tc.SetInsertionPointEnd()
 
-	def file_dialog(self, defaultPath='', dir=False, multi=False):
+	def file_dialog(self, defaultPath='', dir=False, multi=False, save=False):
 		if dir:
 			dlg = wx.DirDialog(self, defaultPath=defaultPath);
 		else:
 			(dn, fn) = os.path.split(defaultPath)
-			style = wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
+			style = wx.FD_SAVE if save else wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
 			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
 		path = None
 		if dlg.ShowModal() == wx.ID_OK:
@@ -627,9 +660,7 @@ class MyFrame(rtmgr.MyFrame):
 		item.SetHyperText()
 
 	def launch_kill_proc_file(self, obj, cmd_dic, names=None):
-		name = self.name_get(obj)
-		pfs = [ 'button_', 'checkbox_' ]
-		key = get_top( [ name[len(pf):] for pf in pfs if name[0:len(pf)] == pf ] )
+		key = self.obj_key_get(obj, [ 'button_', 'checkbox_' ])
 		if key is None:
 			return
 		v = obj.GetValue()
@@ -679,7 +710,7 @@ class MyFrame(rtmgr.MyFrame):
 		for proc in all:
 			self.launch_kill(False, 'dmy', proc)
 
-	def launch_kill(self, v, cmd, proc, add_args=None):
+	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
@@ -705,8 +736,8 @@ class MyFrame(rtmgr.MyFrame):
 			proc = subprocess.Popen(args)
 			self.all_procs.append(proc)
 		else:
-			terminate_children(proc.pid)
-			proc.terminate()
+			terminate_children(proc, sigint)
+			terminate(proc, sigint)
 			proc.wait()
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
@@ -723,6 +754,15 @@ class MyFrame(rtmgr.MyFrame):
 			obj.SetValue(False)
 		return cmds[r] if ok else None
 
+	def get_static_bitmap(self, parent, filename, scale):
+		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
+		(w, h) = bm.GetSize()
+		img = wx.ImageFromBitmap(bm)
+		img = img.Scale(w * scale, h * scale, wx.IMAGE_QUALITY_HIGH)
+		bm = wx.BitmapFromImage(img)
+		return wx.StaticBitmap(parent, wx.ID_ANY, bm)
+
 	def load_yaml(self, filename, def_ret=None):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		path = dir + filename
@@ -732,6 +772,17 @@ class MyFrame(rtmgr.MyFrame):
 		d = yaml.load(f)
 		f.close()
 		return d
+
+	def enable_key_objs(self, pfs, key, en=True):
+                for obj in self.key_objs_get(pfs, key):
+			obj.Enable(en)
+
+	def obj_key_get(self, obj, pfs):
+		name = self.name_get(obj)
+		return get_top( [ name[len(pf):] for pf in pfs if name[:len(pf)] == pf ] )
+
+	def key_objs_get(self, pfs, key):
+		return [ self.obj_get(pf + key) for pf in pfs if self.obj_get(pf + key) ]
 
 	def name_get(self, obj):
 		return get_top( [ nm for nm in dir(self) if getattr(self, nm) is obj ] )
@@ -881,9 +932,15 @@ class MyApp(wx.App):
 		frame_1.Show()
 		return 1
 
-def terminate_children(pid):
-	for child in psutil.Process(pid).get_children():
-		child.terminate()
+def terminate_children(proc, sigint=False):
+	for child in psutil.Process(proc.pid).get_children():
+		terminate(child, sigint)
+
+def terminate(proc, sigint=False):
+	if sigint:
+		proc.send_signal(signal.SIGINT)
+	else:
+		proc.terminate()
 
 def str_to_rosval(str, type_str, def_ret=None):
 	cvt_dic = {
