@@ -37,7 +37,7 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
     geometry_msgs::PoseStamped pose;
     pose.header = msg->header;
     pose.header.stamp = ros::Time::now();
-    pose.header.frame_id = "gps";
+    pose.header.frame_id = "gps_frame";
     pose.pose.position.x = geo.y();
     pose.pose.position.y = geo.x();
     pose.pose.position.z = geo.z();
