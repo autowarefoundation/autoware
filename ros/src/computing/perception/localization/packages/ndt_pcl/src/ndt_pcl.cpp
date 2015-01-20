@@ -27,12 +27,22 @@
 #include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
+// Initial position for Moriyama
+/*
 #define INITIAL_X -14771
 #define INITIAL_Y -84757
 #define INITIAL_Z 39.8
 #define INITIAL_ROLL 0
 #define INITIAL_PITCH 0
 #define INITIAL_YAW 2.324
+*/
+// Initial position for Toyota
+#define INITIAL_X 3702
+#define INITIAL_Y -99425
+#define INITIAL_Z 88
+#define INITIAL_ROLL 0
+#define INITIAL_PITCH 0
+#define INITIAL_YAW 0
 
 typedef struct{
   double x;
@@ -121,6 +131,15 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   scan.header = input->header;
   scan.header.frame_id = "velodyne_scan_frame";
 
+  ros::Time scan_time;
+  scan_time.sec = scan.header.stamp / 1000000.0;
+  scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
+
+  std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
+  std::cout << "scan_time: " << scan_time << std::endl;
+  std::cout << "scan_time.sec: " << scan_time.sec << std::endl;
+  std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
+
   t1_start = ros::Time::now();
   for(pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++)
     {
@@ -203,7 +222,21 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
   transform.setRotation(q);
 
-  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "velodyne"));
+  std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
+  std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
+  std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
+
+  //  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "velodyne"));
+  br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
+
+  static tf::TransformBroadcaster pose_broadcaster;
+  tf::Transform pose_transform;
+  tf::Quaternion pose_q;
+
+  pose_transform.setOrigin(tf::Vector3(0, 0, 0));
+  pose_q.setRPY(0, 0, 0);
+  pose_transform.setRotation(pose_q);
+  pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
 
   // publish the position
   pose_msg.header.frame_id = "/ndt_frame";
@@ -214,6 +247,10 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   pose_msg.pose.orientation.y = q.y();
   pose_msg.pose.orientation.z = q.z();
   pose_msg.pose.orientation.w = q.w();
+
+  std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
+  std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
+  std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
 
   pose_pub.publish(pose_msg);
 
@@ -279,6 +316,14 @@ int main(int argc, char **argv)
   std::cout << "---------------------------------------" << std::endl; 
   std::cout << "NDT_PCL program coded by Yuki KITSUKAWA" << std::endl;
   std::cout << "---------------------------------------" << std::endl; 
+
+  std::cout << "Initial Position" << std::endl;
+  std::cout << "INITIAL_X: " << INITIAL_X << std::endl;
+  std::cout << "INITIAL_Y: " << INITIAL_Y << std::endl;
+  std::cout << "INITIAL_Z: " << INITIAL_Z << std::endl;
+  std::cout << "INITIAL_ROLL: " << INITIAL_ROLL << std::endl;
+  std::cout << "INITIAL_PITCH: " << INITIAL_PITCH << std::endl;
+  std::cout << "INITIAL_YAW: " << INITIAL_YAW << std::endl;
 
   ros::init(argc, argv, "ndt_pcl");
   ros::NodeHandle n;
