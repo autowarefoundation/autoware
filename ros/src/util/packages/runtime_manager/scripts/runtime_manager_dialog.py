@@ -198,18 +198,18 @@ class MyFrame(rtmgr.MyFrame):
 			tc.SetValue(s)
 		self.update_button_conn_stat(t)
 
-	def OnConnTablet(self, event):
-		cmd = 'sh -c "rosparam set ui_receiver/port 5666 ; rosrun ui_socket ui_receiver"'
-		proc = self.launch_kill(True, cmd, None)
-
 	def OnConn(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_conn_a
 		t = nm[-1:] # a
-		ipaddr = '.'.join([ self.text_ip_get(t, s).GetValue() for s in ['0','1','2','3'] ])
-		port = 12345
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.connect((ipaddr, port))
+		if t == 'b': # tablet
+			cmd = 'roslaunch runtime_manager ui_socket.launch'
+			sock = self.launch_kill(True, cmd, None)
+		else:
+			ipaddr = '.'.join([ self.text_ip_get(t, s).GetValue() for s in ['0','1','2','3'] ])
+			port = 12345
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			sock.connect((ipaddr, port))
 		setattr(self, 'sock_' + t, sock)
 
 		b.Disable()
@@ -222,7 +222,10 @@ class MyFrame(rtmgr.MyFrame):
 		t = nm[-1:] # a
 		sock = self.obj_get('sock_' + t)
 		if sock:
-			sock.close()
+			if t == 'b': # tablet
+				self.launch_kill(False, 'dmy', sock)
+			else:
+				sock.close()
 			setattr(self, 'sock_' + t, None)
 		b.Disable()
 		self.text_ip_stat_set(t, True)
