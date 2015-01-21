@@ -855,35 +855,44 @@ class VarPanel(wx.Panel):
 		v = kwds.pop('v')
 		wx.Panel.__init__(self, *args, **kwds)
 
-		self.min = self.var['min']
-		self.max = self.var['max']
-		self.w = self.max - self.min
+		self.min = self.var.get('min', None)
+		self.max = self.var.get('max', None)
+		self.has_slider = self.min is not None and self.max is not None
 
-		vlst = [ v, self.min, self.max, self.var['v'] ]
-		self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
-
-		self.int_max = 1000 if self.is_float else self.max
-		self.int_min = 0 if self.is_float else self.min
+		szr = wx.BoxSizer(wx.HORIZONTAL)
 
 		lb = wx.StaticText(self, wx.ID_ANY, self.var['label'])
+		flag = wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+		szr.Add(lb, 0, flag, 4)
+
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter, self.tc)
 
-		self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
-		self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
-		self.slider.SetMinSize((82, 27))
+		if self.has_slider:
+			self.w = self.max - self.min
+			vlst = [ v, self.min, self.max, self.var['v'] ]
+			self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
+			self.int_max = 1000 if self.is_float else self.max
+			self.int_min = 0 if self.is_float else self.min
 
-		szr = wx.BoxSizer(wx.HORIZONTAL)
-		szr.Add(lb, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
-		szr.Add(self.slider, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
-		szr.Add(self.tc, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+			self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
+			self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
+			self.slider.SetMinSize((82, 27))
+			szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+		else:
+			self.is_float = type(self.var['v']) is not int
+			self.tc.SetMinSize((40,27))
+
+		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
+		szr.Add(self.tc, 0, flag, 4)
 		self.SetSizer(szr)
 
 	def get_tc_v(self):
 		s = self.tc.GetValue()
 		v = float(s) if self.is_float else int(s)
-		v = self.min if v < self.min else v
-		v = self.max if v > self.max else v
+		if self.has_slider:
+			v = self.min if v < self.min else v
+			v = self.max if v > self.max else v
 		self.tc.SetValue(str(v))
 		return v
 
@@ -902,7 +911,8 @@ class VarPanel(wx.Panel):
 		self.tc.SetValue(s)
 
 	def OnTextEnter(self, event):
-		self.slider.SetValue(self.get_int_v())
+		if self.has_slider:
+			self.slider.SetValue(self.get_int_v())
 
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
@@ -910,12 +920,20 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
 
+		hszr = None
 		self.vps = []
 		for var in self.prm['vars']:
 			v = self.pdic[ var['name'] ]
 			vp = VarPanel(self.panel_v, var=var, v=v)
-			self.sizer_v.Add(vp, 0, wx.EXPAND)
-			self.vps.append(vp)
+			if vp.has_slider:
+				hszr = None if hszr else hszr
+				self.sizer_v.Add(vp, 0, wx.EXPAND)
+			else:
+				if hszr is None:
+                                        hszr = wx.BoxSizer(wx.HORIZONTAL)
+                                        self.sizer_v.Add(hszr, 0, wx.EXPAND)
+				hszr.Add(vp, 0, 0)
+                	self.vps.append(vp)
 
 		self.SetTitle(self.prm['name'])
 
