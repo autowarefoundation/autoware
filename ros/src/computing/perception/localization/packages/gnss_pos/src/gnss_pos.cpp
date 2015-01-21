@@ -31,13 +31,13 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
     pose_q.setRPY(0, 0, 0);
     pose_transform.setRotation(pose_q);
     pose_broadcaster.sendTransform(
-            tf::StampedTransform(pose_transform, ros::Time::now(), "map",
-                    "gps"));
+            tf::StampedTransform(pose_transform,msg->header.stamp, "map",
+                    "gps_frame"));
 
     geometry_msgs::PoseStamped pose;
     pose.header = msg->header;
-    pose.header.stamp = ros::Time::now();
-    pose.header.frame_id = "gps";
+   // pose.header.stamp = ros::Time::now();
+    pose.header.frame_id = "gps_frame";
     pose.pose.position.x = geo.y();
     pose.pose.position.y = geo.x();
     pose.pose.position.z = geo.z();
@@ -68,8 +68,8 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
     q.setRPY(0, 0, yaw);
     transform.setRotation(q);
     br.sendTransform(
-            tf::StampedTransform(transform, ros::Time::now(), "map",
-                    "gps_frame"));
+            tf::StampedTransform(transform, msg->header.stamp, "map",
+                    "gps"));
 }
 
 int main(int argc, char **argv)

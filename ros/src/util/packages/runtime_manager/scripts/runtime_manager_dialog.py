@@ -17,6 +17,7 @@ import std_msgs.msg
 from decimal import Decimal
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
+from runtime_manager.msg import ConfigNdt
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -34,7 +35,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#
-		# for Version tab
+		# for Main tab (version)
 		#
 		tab = self.notebook_1_pane_1
 		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
@@ -43,8 +44,9 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Computing tab
 		#
-		parent = self.tree_ctrl.GetParent()
-		self.tree_ctrl.Destroy()
+		parent = self.tree_ctrl_0.GetParent()
+		for i in range(3):
+			self.obj_get('tree_ctrl_' + str(i)).Destroy()
 		items = self.load_yaml('computing_launch_cmd.yaml')
 
 		self.params = items.get('params', [])
@@ -54,26 +56,16 @@ class MyFrame(rtmgr.MyFrame):
 				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
 
 		self.computing_cmd = {}
-		self.tree_ctrl = self.create_tree(parent, items, None, None, self.computing_cmd)
+		for i in range(3):
+			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
+			tree_ctrl.ExpandAll()
+			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
 
 		self.setup_config_param_pdic()
 
-		self.tree_ctrl.ExpandAll()
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
-		self.tree_ctrl.SetHyperTextVisitedColour(self.tree_ctrl.GetHyperTextNewColour()) # no change
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
-
-		self.compu_viewer_cmd = {}
-		for (k, v) in self.load_yaml('computing_viewer.yaml').items():
-			obj = self.obj_get('button_' + k)
-			if not obj:
-				print ('not found button_' + k)
-				continue
-			if not v or 'name' not in v or 'cmd' not in v:
-				continue
-			obj.SetLabel(v['name'])
-			obj.Show()
-			self.compu_viewer_cmd[obj] = (v['cmd'], None)
 
 		rtmgr.MyFrame.__do_layout(self)
 
@@ -131,6 +123,18 @@ class MyFrame(rtmgr.MyFrame):
 		dic = self.load_yaml('database.yaml')
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.database_cmd)
+
+		#
+		# for Viewer Tab
+		#
+		self.viewer_cmd = {}
+		parent = self.panel_viewer
+		sizer = self.sizer_viewer
+		for viewer in self.load_yaml('viewer.yaml', {}).get('viewers', []):
+			obj = wx.ToggleButton(parent, wx.ID_ANY, viewer['label'])
+			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
+			sizer.Add(obj, 0, wx.EXPAND | wx.ALL, 4)
+			self.viewer_cmd[obj] = (viewer['cmd'], None)
 
 	def __do_layout(self):
 		pass
@@ -194,18 +198,18 @@ class MyFrame(rtmgr.MyFrame):
 			tc.SetValue(s)
 		self.update_button_conn_stat(t)
 
-	def OnConnTablet(self, event):
-		cmd = 'sh -c "rosparam set ui_receiver/port 5666 ; rosrun ui_socket ui_receiver"'
-		proc = self.launch_kill(True, cmd, None)
-
 	def OnConn(self, event):
 		b = event.GetEventObject()
 		nm = self.name_get(b) # button_conn_a
 		t = nm[-1:] # a
-		ipaddr = '.'.join([ self.text_ip_get(t, s).GetValue() for s in ['0','1','2','3'] ])
-		port = 12345
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.connect((ipaddr, port))
+		if t == 'b': # tablet
+			cmd = 'roslaunch runtime_manager ui_socket.launch'
+			sock = self.launch_kill(True, cmd, None)
+		else:
+			ipaddr = '.'.join([ self.text_ip_get(t, s).GetValue() for s in ['0','1','2','3'] ])
+			port = 12345
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			sock.connect((ipaddr, port))
 		setattr(self, 'sock_' + t, sock)
 
 		b.Disable()
@@ -218,7 +222,10 @@ class MyFrame(rtmgr.MyFrame):
 		t = nm[-1:] # a
 		sock = self.obj_get('sock_' + t)
 		if sock:
-			sock.close()
+			if t == 'b': # tablet
+				self.launch_kill(False, 'dmy', sock)
+			else:
+				sock.close()
 			setattr(self, 'sock_' + t, None)
 		b.Disable()
 		self.text_ip_stat_set(t, True)
@@ -358,8 +365,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		pub.publish(msg)
 
-	def OnCompuViewer(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.compu_viewer_cmd)
+	def OnViewer(self, event):
+		self.launch_kill_proc(event.GetEventObject(), self.viewer_cmd)
 
 	#
 	# Sensing Tab
@@ -396,7 +403,7 @@ class MyFrame(rtmgr.MyFrame):
 				v = obj.GetValue()
 				if v:
 					obj.SetValue(False)	
-					self.launch_kill_proc(obj)
+					self.launch_kill_proc(obj, self.sensing_cmd)
 				obj.Hide()
 				if cfg_obj:
 					cfg_obj.Hide()
@@ -625,6 +632,7 @@ class MyFrame(rtmgr.MyFrame):
 	def file_dialog(self, defaultPath='', dir=False, multi=False, save=False):
 		if dir:
 			dlg = wx.DirDialog(self, defaultPath=defaultPath);
+			multi = False
 		else:
 			(dn, fn) = os.path.split(defaultPath)
 			style = wx.FD_SAVE if save else wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
@@ -692,7 +700,7 @@ class MyFrame(rtmgr.MyFrame):
 			if not cmd:
 				return # cancel
 
-                info = self.get_cfg_info(obj)
+		info = self.get_cfg_info(obj)
 		pdic = self.get_cfg_pdic(obj)
 		if pdic and 'path' in info:
 			add_args = [] if add_args is None else add_args
@@ -719,6 +727,11 @@ class MyFrame(rtmgr.MyFrame):
 		if msg is not None:
 			print(msg)
 			return proc
+
+		if v and type(cmd) is dict:
+			selobj = self.obj_get(cmd['selobj'])
+			selkey = selobj.GetValue() if selobj else None
+			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
 		if v:
 			t = cmd
 			# for replace
@@ -775,7 +788,7 @@ class MyFrame(rtmgr.MyFrame):
 		return d
 
 	def enable_key_objs(self, pfs, key, en=True):
-                for obj in self.key_objs_get(pfs, key):
+		for obj in self.key_objs_get(pfs, key):
 			obj.Enable(en)
 
 	def obj_key_get(self, obj, pfs):
@@ -851,35 +864,44 @@ class VarPanel(wx.Panel):
 		v = kwds.pop('v')
 		wx.Panel.__init__(self, *args, **kwds)
 
-		self.min = self.var['min']
-		self.max = self.var['max']
-		self.w = self.max - self.min
+		self.min = self.var.get('min', None)
+		self.max = self.var.get('max', None)
+		self.has_slider = self.min is not None and self.max is not None
 
-		vlst = [ v, self.min, self.max, self.var['v'] ]
-		self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
-
-		self.int_max = 1000 if self.is_float else self.max
-		self.int_min = 0 if self.is_float else self.min
+		szr = wx.BoxSizer(wx.HORIZONTAL)
 
 		lb = wx.StaticText(self, wx.ID_ANY, self.var['label'])
+		flag = wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+		szr.Add(lb, 0, flag, 4)
+
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter, self.tc)
 
-		self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
-		self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
-		self.slider.SetMinSize((82, 27))
+		if self.has_slider:
+			self.w = self.max - self.min
+			vlst = [ v, self.min, self.max, self.var['v'] ]
+			self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
+			self.int_max = 1000 if self.is_float else self.max
+			self.int_min = 0 if self.is_float else self.min
 
-		szr = wx.BoxSizer(wx.HORIZONTAL)
-		szr.Add(lb, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
-		szr.Add(self.slider, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
-		szr.Add(self.tc, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+			self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
+			self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
+			self.slider.SetMinSize((82, 27))
+			szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+		else:
+			self.is_float = type(self.var['v']) is not int
+			self.tc.SetMinSize((40,27))
+
+		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
+		szr.Add(self.tc, 0, flag, 4)
 		self.SetSizer(szr)
 
 	def get_tc_v(self):
 		s = self.tc.GetValue()
 		v = float(s) if self.is_float else int(s)
-		v = self.min if v < self.min else v
-		v = self.max if v > self.max else v
+		if self.has_slider:
+			v = self.min if v < self.min else v
+			v = self.max if v > self.max else v
 		self.tc.SetValue(str(v))
 		return v
 
@@ -898,7 +920,8 @@ class VarPanel(wx.Panel):
 		self.tc.SetValue(s)
 
 	def OnTextEnter(self, event):
-		self.slider.SetValue(self.get_int_v())
+		if self.has_slider:
+			self.slider.SetValue(self.get_int_v())
 
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
@@ -906,11 +929,19 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
 
+		hszr = None
 		self.vps = []
 		for var in self.prm['vars']:
 			v = self.pdic[ var['name'] ]
-			vp = VarPanel(self, var=var, v=v)
-			self.sizer_v.Add(vp, 0, wx.EXPAND)
+			vp = VarPanel(self.panel_v, var=var, v=v)
+			if vp.has_slider:
+				hszr = None if hszr else hszr
+				self.sizer_v.Add(vp, 0, wx.EXPAND)
+			else:
+				if hszr is None:
+					hszr = wx.BoxSizer(wx.HORIZONTAL)
+					self.sizer_v.Add(hszr, 0, wx.EXPAND)
+				hszr.Add(vp, 0, 0)
 			self.vps.append(vp)
 
 		self.SetTitle(self.prm['name'])
@@ -918,7 +949,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def OnOk(self, event):
 		vars = self.prm['vars']
 		for var in vars:
-                	v = self.vps[ vars.index(var) ].get_tc_v()
+			v = self.vps[ vars.index(var) ].get_tc_v()
 			self.pdic[ var['name'] ] = v
 		self.EndModal(0)
 

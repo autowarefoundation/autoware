@@ -1,0 +1,11 @@
+viewers :
+  - label : ROS Rviz
+    cmd   : rosrun rviz rviz
+  - label : Image
+    cmd   :  rosrun viewers points_image_viewer
+  - label : Image with Distance
+    cmd   : rosrun viewers image_d_viewer
+  - label : Points Image with Distance
+    cmd   : rosrun viewers points_image_d_viewer
+  - label : CAN
+    cmd   : echo can

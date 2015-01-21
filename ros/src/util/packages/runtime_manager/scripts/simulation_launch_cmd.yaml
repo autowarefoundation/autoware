@@ -33,8 +33,11 @@ buttons:
   rosbag_play :
     run : rosbag play
   pmap :
-    run : rosrun sample_data sample_points_map
+    run :
+      selobj : checkbox_point_map_update
+      False  : rosrun sample_data sample_points_map
+      True   : rosrun sample_data sample_points_map_update swap_x_y_on
   vmap :
-    run : rosrun sample_data sample_vector_map __args__ swap_x_y_off
+    run : rosrun sample_data sample_vector_map __args__ swap_x_y_on
   trajectory :
     run : rosrun sample_data sample_trajectory __args__ swap_x_y_off
