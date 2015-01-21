@@ -400,7 +400,7 @@ class MyFrame(rtmgr.MyFrame):
 				v = obj.GetValue()
 				if v:
 					obj.SetValue(False)	
-					self.launch_kill_proc(obj)
+					self.launch_kill_proc(obj, self.sensing_cmd)
 				obj.Hide()
 				if cfg_obj:
 					cfg_obj.Hide()
@@ -629,6 +629,7 @@ class MyFrame(rtmgr.MyFrame):
 	def file_dialog(self, defaultPath='', dir=False, multi=False, save=False):
 		if dir:
 			dlg = wx.DirDialog(self, defaultPath=defaultPath);
+			multi = False
 		else:
 			(dn, fn) = os.path.split(defaultPath)
 			style = wx.FD_SAVE if save else wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
