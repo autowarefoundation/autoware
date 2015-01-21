@@ -14,10 +14,17 @@
         android:onClick="startCanGather" />
 
     <Button
-        android:id="@+id/buttonCarLink"
+        android:id="@+id/buttonCarLinkBluetooth"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/car_link"
-        android:onClick="startCarLink" />
+        android:text="@string/car_link_bluetooth"
+        android:onClick="startCarLinkBluetooth" />
+
+    <Button
+        android:id="@+id/buttonCarLinkUSB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/car_link_usb"
+        android:onClick="startCarLinkUSB" />
 
 </LinearLayout>
