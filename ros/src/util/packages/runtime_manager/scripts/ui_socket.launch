@@ -1,0 +1,7 @@
+<launch>
+  <param name="ui_receiver/port" value="5666" />
+  <node pkg="ui_socket" type="ui_receiver" name="ui_receiver" />
+
+  <param name="ui_sender/port" value="5777" />
+  <node pkg="ui_socket" type="ui_sender" name="ui_sender" />
+</launch>
