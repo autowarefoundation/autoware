@@ -17,6 +17,7 @@ import std_msgs.msg
 from decimal import Decimal
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
+from runtime_manager.msg import ConfigNdt
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -692,7 +693,7 @@ class MyFrame(rtmgr.MyFrame):
 			if not cmd:
 				return # cancel
 
-                info = self.get_cfg_info(obj)
+		info = self.get_cfg_info(obj)
 		pdic = self.get_cfg_pdic(obj)
 		if pdic and 'path' in info:
 			add_args = [] if add_args is None else add_args
@@ -775,7 +776,7 @@ class MyFrame(rtmgr.MyFrame):
 		return d
 
 	def enable_key_objs(self, pfs, key, en=True):
-                for obj in self.key_objs_get(pfs, key):
+		for obj in self.key_objs_get(pfs, key):
 			obj.Enable(en)
 
 	def obj_key_get(self, obj, pfs):
@@ -909,7 +910,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.vps = []
 		for var in self.prm['vars']:
 			v = self.pdic[ var['name'] ]
-			vp = VarPanel(self, var=var, v=v)
+			vp = VarPanel(self.panel_v, var=var, v=v)
 			self.sizer_v.Add(vp, 0, wx.EXPAND)
 			self.vps.append(vp)
 
@@ -918,7 +919,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def OnOk(self, event):
 		vars = self.prm['vars']
 		for var in vars:
-                	v = self.vps[ vars.index(var) ].get_tc_v()
+			v = self.vps[ vars.index(var) ].get_tc_v()
 			self.pdic[ var['name'] ] = v
 		self.EndModal(0)
 
