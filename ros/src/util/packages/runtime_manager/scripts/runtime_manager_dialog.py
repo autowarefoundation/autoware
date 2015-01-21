@@ -35,7 +35,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#
-		# for Version tab
+		# for Main tab (version)
 		#
 		tab = self.notebook_1_pane_1
 		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
@@ -63,18 +63,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 		self.tree_ctrl.SetHyperTextVisitedColour(self.tree_ctrl.GetHyperTextNewColour()) # no change
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
-
-		self.compu_viewer_cmd = {}
-		for (k, v) in self.load_yaml('computing_viewer.yaml').items():
-			obj = self.obj_get('button_' + k)
-			if not obj:
-				print ('not found button_' + k)
-				continue
-			if not v or 'name' not in v or 'cmd' not in v:
-				continue
-			obj.SetLabel(v['name'])
-			obj.Show()
-			self.compu_viewer_cmd[obj] = (v['cmd'], None)
 
 		rtmgr.MyFrame.__do_layout(self)
 
@@ -132,6 +120,18 @@ class MyFrame(rtmgr.MyFrame):
 		dic = self.load_yaml('database.yaml')
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.database_cmd)
+
+		#
+		# for Viewer Tab
+		#
+		self.viewer_cmd = {}
+		parent = self.panel_viewer
+		sizer = self.sizer_viewer
+		for viewer in self.load_yaml('viewer.yaml', {}).get('viewers', []):
+			obj = wx.ToggleButton(parent, wx.ID_ANY, viewer['label'])
+			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
+			sizer.Add(obj, 0, wx.EXPAND | wx.ALL, 4)
+			self.viewer_cmd[obj] = (viewer['cmd'], None)
 
 	def __do_layout(self):
 		pass
@@ -359,8 +359,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		pub.publish(msg)
 
-	def OnCompuViewer(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.compu_viewer_cmd)
+	def OnViewer(self, event):
+		self.launch_kill_proc(event.GetEventObject(), self.viewer_cmd)
 
 	#
 	# Sensing Tab
