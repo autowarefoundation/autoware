@@ -92,55 +92,16 @@ void printDiff(struct timeval begin, struct timeval end){
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
 
-//wrap SendData class
-void* wrapSender(void *tsd){
-  
-  //get values from sample_corner_point , convert latitude and longitude,
-  //and send database server.
-  vector<OBJPOS> car_position_vector(global_cp_vector.size());
-  vector<OBJPOS>::iterator cp_iterator;
-  string value = "";
-  LOCATION rescoord;
-  geo_pos_conv geo;
+string makeData(vector<OBJPOS> car_position_vector,vector<OBJPOS>::iterator cp_iterator,geo_pos_conv geo){
+
   ostringstream oss;
+  LOCATION rescoord;
 
-  char magic[5] = "MPWC";
-  short major = 1;
-  short minor = 0;
-  int sql_num = global_cp_vector.size()+1;
-  char header[12];
-  memcpy(header,magic,4);
-  memcpy(&header[4],&major,2);
-  memcpy(&header[6],&minor,2);
-  memcpy(&header[8],&sql_num,4);
-  //value.append(header,12);
-
-  //thread safe process for vector
-
-  pthread_mutex_lock( &mutex );
-  std::copy(global_cp_vector.begin(), global_cp_vector.end(), car_position_vector.begin());
-  global_cp_vector.clear();
-  pthread_mutex_unlock( &mutex );
-  cp_iterator = car_position_vector.begin();
-
-  pthread_mutex_lock( &pos_mutex );
-  double my_xloc = my_loc.X;
-  double my_yloc = my_loc.Y;
-  double my_zloc = my_loc.Z;
-  pthread_mutex_unlock( &pos_mutex );
-  //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
-
-  printf("position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
-  geo.set_plane(7);
-  geo.set_llh_nmea_degrees(my_xloc,my_yloc,my_zloc);
-  printf("X,Y,Z = %f,%f,%f\n",geo.x(),geo.y(),geo.z());
-
-  while(cp_iterator != car_position_vector.end()){
+  for(int i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
     //middle of right-lower and left-upper
     double U = (cp_iterator->x1 + cp_iterator->x2)/2;
     double V = (cp_iterator->y1 + cp_iterator->y2)/2;
-
 
     //convert
     sl.setOriginalValue(U,V,cp_iterator->distance);
@@ -162,7 +123,7 @@ void* wrapSender(void *tsd){
     rescoord.Y = anglefixed.Z;
     rescoord.Z = anglefixed.Y;
 
-    printf("obj position:%f,%f,%f\n",rescoord.X,rescoord.Y,rescoord.Z);
+    //printf("obj position:%f,%f,%f\n",rescoord.X,rescoord.Y,rescoord.Z);
 
     /*
       I got my GPS location too.it`s my_xloc,my_yloc.
@@ -174,7 +135,7 @@ void* wrapSender(void *tsd){
     rescoord.Y += geo.y();
     rescoord.Z += 0;
 
-    printf("geo : %f\t%f\n",rescoord.X,rescoord.Y);
+    //printf("geo : %f\t%f\n",rescoord.X,rescoord.Y);
 
 
     //covert plane rectangular coordinate to latitude and longitude.
@@ -193,8 +154,77 @@ void* wrapSender(void *tsd){
 
     oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
 
-    cp_iterator++;
   
+  }
+
+  return oss.str();
+
+}
+
+
+
+
+//wrap SendData class
+void* wrapSender(void *tsd){
+  
+  //get values from sample_corner_point , convert latitude and longitude,
+  //and send database server.
+  vector<OBJPOS> car_position_vector(global_cp_vector.size());
+  vector<OBJPOS>::iterator cp_iterator;
+  vector<OBJPOS> pedestrian_position_vector(global_pp_vector.size());
+  vector<OBJPOS>::iterator pp_iterator;
+
+  string value = "";
+  geo_pos_conv geo;
+  ostringstream oss;
+
+  char magic[5] = "MPWC";
+  short major = 1;
+  short minor = 0;
+  int sql_num = global_cp_vector.size()+global_pp_vector.size()+1;
+  char header[12];
+  memcpy(header,magic,4);
+  memcpy(&header[4],&major,2);
+  memcpy(&header[6],&minor,2);
+  memcpy(&header[8],&sql_num,4);
+  //value.append(header,12);
+
+  //thread safe process for vector
+
+  pthread_mutex_lock( &mutex );
+  std::copy(global_cp_vector.begin(), global_cp_vector.end(), car_position_vector.begin());
+  global_cp_vector.clear();
+  pthread_mutex_unlock( &mutex );
+
+  pthread_mutex_lock( &ped_mutex );
+  std::copy(global_pp_vector.begin(), global_pp_vector.end(), pedestrian_position_vector.begin());
+  global_pp_vector.clear();
+  pthread_mutex_unlock( &ped_mutex );
+
+  cp_iterator = car_position_vector.begin();
+  pp_iterator = pedestrian_position_vector.begin();
+
+  pthread_mutex_lock( &pos_mutex );
+  double my_xloc = my_loc.X;
+  double my_yloc = my_loc.Y;
+  double my_zloc = my_loc.Z;
+  pthread_mutex_unlock( &pos_mutex );
+  //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
+
+  printf("position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
+  geo.set_plane(7);
+  geo.set_llh_nmea_degrees(my_xloc,my_yloc,my_zloc);
+  printf("X,Y,Z = %f,%f,%f\n",geo.x(),geo.y(),geo.z());
+
+  printf("%d\n",car_position_vector.size());
+  printf("%d\n",pedestrian_position_vector.size());
+
+  if(car_position_vector.size() != 0 ){
+    value += makeData(car_position_vector,cp_iterator,geo);
+  }
+
+  if(pedestrian_position_vector.size() != 0){
+    value += makeData(pedestrian_position_vector,pp_iterator,geo);
   }
 
   //oss << "\"INSERT INTO POS(id,x,y,area,type,self) ";
@@ -224,7 +254,7 @@ void* intervalCall(void *a){
   pthread_t th;
 
   while(1){
-    if(global_cp_vector.size()<=0) continue;
+    //if(global_cp_vector.size()<=0) continue;
     //create new thread for socket communication.      
     if(pthread_create(&th, NULL, wrapSender, NULL)){
       printf("thread create error\n");
@@ -360,6 +390,7 @@ int main(int argc, char **argv){
   //第二引数の100は受信側のバッファであり、最新の100個を保持している。自由に変更可能です。
   //100個以上になると古いものから欠損します
   ros::Subscriber car_pos_xyz = n.subscribe("/car_pos_xyz", 5, car_pos_xyzCallback);
+  ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pos_xyz", 5, pedestrian_pos_xyzCallback);
 
   ros::Subscriber azm = n.subscribe("vel", 10, azimuth_getter);
   ros::Subscriber my_pos = n.subscribe("fix", 10, position_getter);
