@@ -105,34 +105,22 @@ params :
     msg   : ConfigNdt
     vars  :
     - name  : x
-      label : x
-      min   : -100
-      max   : 100
+      label : 'Initial Pos x:'
       v     : 0.0
     - name  : y
-      label : y
-      min   : -100
-      max   : 100
+      label : 'y:'
       v     : 0.0
     - name  : z
-      label : z
-      min   : -100
-      max   : 100
+      label : 'z:'
       v     : 0.0
     - name  : roll
-      label : roll
-      min   : -180
-      max   : 180
+      label : 'roll:'
       v     : 0.0
     - name  : pitch
-      label : pitch
-      min   : -180
-      max   : 180
+      label : 'pitch:'
       v     : 0.0
     - name  : yaw
-      label : yaw
-      min   : -180
-      max   : 180
+      label : 'yaw:'
       v     : 0.0
     - name  : resolution
       label : Resolution
