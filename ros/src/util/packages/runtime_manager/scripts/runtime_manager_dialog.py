@@ -692,13 +692,13 @@ class MyFrame(rtmgr.MyFrame):
 
 	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
-			obj.SetValue(False)
+			getattr(obj, 'SetValue', obj.Check)(False)
 			print('not implemented.')
 			return
 		v = obj.GetValue()
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
-			obj.SetValue(False)
+			getattr(obj, 'SetValue', obj.Check)(False)
 		cmd_bak = cmd
 		if v and type(cmd) is list:
 			cmd = self.modal_dialog(obj, cmd)
