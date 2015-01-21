@@ -930,10 +930,10 @@ class MyDialogParam(rtmgr.MyDialogParam):
 				self.sizer_v.Add(vp, 0, wx.EXPAND)
 			else:
 				if hszr is None:
-                                        hszr = wx.BoxSizer(wx.HORIZONTAL)
-                                        self.sizer_v.Add(hszr, 0, wx.EXPAND)
+					hszr = wx.BoxSizer(wx.HORIZONTAL)
+					self.sizer_v.Add(hszr, 0, wx.EXPAND)
 				hszr.Add(vp, 0, 0)
-                	self.vps.append(vp)
+			self.vps.append(vp)
 
 		self.SetTitle(self.prm['name'])
 
