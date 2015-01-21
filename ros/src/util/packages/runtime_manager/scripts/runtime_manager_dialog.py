@@ -724,6 +724,11 @@ class MyFrame(rtmgr.MyFrame):
 		if msg is not None:
 			print(msg)
 			return proc
+
+		if v and type(cmd) is dict:
+			selobj = self.obj_get(cmd['selobj'])
+			selkey = selobj.GetValue() if selobj else None
+			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
 		if v:
 			t = cmd
 			# for replace
