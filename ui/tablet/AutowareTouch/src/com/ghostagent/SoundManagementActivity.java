@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -36,11 +37,6 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 public class SoundManagementActivity extends Activity implements OnClickListener {
-	private static final int COMMAND_EXIT = 0;
-	private static final int COMMAND_GEAR = 1;
-	private static final int COMMAND_RUN = 2;
-	private static final int COMMAND_ROUTE = 3;
-
 	abstract class RadioButton {
 		static final int NONE = 0;
 
@@ -197,9 +193,108 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 	}
 
+	abstract class Client {
+		private int sockfd = -1;
+
+		boolean isClosed() {
+			if (sockfd < 0)
+				return true;
+			else
+				return false;
+		}
+
+		boolean connect(String address, int port) {
+			sockfd = SoundManagementNative.socket();
+			if (sockfd < 0)
+				return false;
+
+			if (SoundManagementNative.connect(sockfd, address, port) < 0) {
+				close();
+				return false;
+			}
+
+			return true;
+		}
+
+		void close() {
+			SoundManagementNative.close(sockfd);
+			sockfd = -1;
+		}
+
+		void sendInt(int arg0) {
+			SoundManagementNative.sendInt(sockfd, arg0);
+		}
+
+		void sendIntTuple(int arg0, int arg1) {
+			SoundManagementNative.sendIntTuple(sockfd, arg0, arg1);
+		}
+
+		void sendDoubleArray(double arg0[]) {
+			SoundManagementNative.sendDoubleArray(sockfd, arg0);
+		}
+
+		int recvInt() {
+			return SoundManagementNative.recvInt(sockfd);
+		}
+	}
+
+	class CommandClient extends Client {
+		static final int EXIT = 0;
+		static final int GEAR = 1;
+		static final int RUN = 2;
+		static final int ROUTE = 3;
+
+		int send(int type, int command) {
+			if (isClosed())
+				return -1;
+
+			sendIntTuple(type, command);
+
+			return recvInt();
+		}
+
+		int sendRoute(double[] latlong) {
+			if (isClosed())
+				return -1;
+
+			sendIntTuple(ROUTE, latlong.length * (Double.SIZE / 8));
+
+			sendDoubleArray(latlong);
+
+			return recvInt();
+		}
+	}
+
+	class InformationClient extends Client {
+		static final int BEACON = 0;
+		static final int ERROR = 1;
+		static final int CAN = 2;
+		static final int MODE = 3;
+
+		int[] recv(int response) {
+			int[] data = new int[2];
+
+			if (isClosed()) {
+				data[0] = -1;
+				data[1] = -1;
+				return data;
+			}
+
+			data[0] = recvInt();
+			data[1] = recvInt();
+
+			sendInt(response);
+
+			return data;
+		}
+	}
+
 	GearButton gearButton;
 	DriveButton driveButton;
 	ApplicationButton applicationButton;
+
+	CommandClient commandClient;
+	InformationClient informationClient;
 
 	/**
 	 * server address
@@ -267,6 +362,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		driveButton = new DriveButton(this);
 		applicationButton = new ApplicationButton(this);
 
+		commandClient = new CommandClient();
+		informationClient = new InformationClient();
+
 		String text = null;
 		try {
 			BufferedInputStream stream = new BufferedInputStream(
@@ -286,22 +384,36 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		if (text != null) {
 			String[] settings = text.split(",");
-			if (validateIpAddress(settings[0]) && validatePortNumber(settings[1]) && validatePortNumber(settings[2])) {
+			if (settings.length == 3 && validateIpAddress(settings[0]) &&
+			    validatePortNumber(settings[1]) && validatePortNumber(settings[2])) {
 				address = settings[0];
 				commandPort = Integer.parseInt(settings[1]);
-				if (SoundManagementNative.connect(address, commandPort) == 0) {
-					bIsServerConnecting = true;
-					SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
-					SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
-				}
 				informationPort = Integer.parseInt(settings[2]);
-				// must start information receiver thread
+
+				if (commandClient.connect(address, commandPort) &&
+				    informationClient.connect(address, informationPort)) {
+					bIsServerConnecting = true;
+
+					commandClient.send(CommandClient.GEAR, gearButton.getMode());
+					commandClient.send(CommandClient.RUN, driveButton.getMode());
+				} else {
+					bIsServerConnecting = false;
+
+					if (!commandClient.isClosed())
+						commandClient.close();
+					if (!informationClient.isClosed())
+						informationClient.close();
+				}
 			}
 		}
 
-		// start recording
 		bIsKnightRiding = true;
+
+		// start recording
 		startKnightRiding();
+
+		// start informationReceiver
+		startInformationReceiver();
 	}
 
 	@Override
@@ -411,19 +523,31 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 						if (bIsServerConnecting) {
 							bIsServerConnecting = false;
-							SoundManagementNative.send(COMMAND_EXIT, 0);
-							SoundManagementNative.close();
+
+							commandClient.send(CommandClient.EXIT, 0);
+
+							commandClient.close();
+							informationClient.close();
 						}
 
 						address = addressString;
 						commandPort = Integer.parseInt(commandPortString);
-						if (SoundManagementNative.connect(address, commandPort) == 0) {
-							bIsServerConnecting = true;
-							SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
-							SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
-						}
 						informationPort = Integer.parseInt(informationPortString);
-						// must start information receiver thread
+
+						if (commandClient.connect(address, commandPort) &&
+						    informationClient.connect(address, informationPort)) {
+							bIsServerConnecting = true;
+
+							commandClient.send(CommandClient.GEAR, gearButton.getMode());
+							commandClient.send(CommandClient.RUN, driveButton.getMode());
+						} else {
+							bIsServerConnecting = false;
+
+							if (!commandClient.isClosed())
+								commandClient.close();
+							if (!informationClient.isClosed())
+								informationClient.close();
+						}
 					}
 				});
 			builder.setNegativeButton(
@@ -468,8 +592,39 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 					try {
 						Thread.sleep(100);
 					} catch (Exception e) {
-						e.printStackTrace();
-						bIsKnightRiding = false;
+					}
+				}
+			}
+		}).start();
+	}
+
+	public void startInformationReceiver() {
+		new Thread(new Runnable() {
+			public void run() {
+				while (bIsKnightRiding) {
+					int[] data = informationClient.recv(0);
+
+					switch (data[0]) {
+					case InformationClient.BEACON:
+						break;
+					case InformationClient.ERROR:
+						switch (data[1]) {
+						case 0:
+							drawLeftView.setColor(Color.RED);
+							drawRightView.setColor(Color.RED);
+							drawCenterView.setColor(Color.RED);
+							break;
+						case 1: // should evaluate mode information
+							drawLeftView.setColor(Color.BLUE);
+							drawRightView.setColor(Color.BLUE);
+							drawCenterView.setColor(Color.BLUE);
+							break;
+						default:
+							drawLeftView.setColor(Color.YELLOW);
+							drawRightView.setColor(Color.YELLOW);
+							drawCenterView.setColor(Color.YELLOW);
+						}
+						break;
 					}
 				}
 			}
@@ -488,8 +643,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		bIsKnightRiding = false;
 		if (bIsServerConnecting) {
 			bIsServerConnecting = false;
-			SoundManagementNative.send(COMMAND_EXIT, 0);
-			SoundManagementNative.close();
+
+			commandClient.send(CommandClient.EXIT, 0);
+
+			commandClient.close();
+			informationClient.close();
 		}
 	}
 
@@ -499,7 +657,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		for (int i = 0; i < wayPoints.size(); i++)
 			way[i] = wayPoints.get(i).doubleValue();
 
-		return SoundManagementNative.sendDoubleArray(COMMAND_ROUTE, way);
+		return commandClient.sendRoute(way);
 	}
 
 	@Override
@@ -544,22 +702,22 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	public void onClick(View v) {
 		if (v == gearButton.drive) {
 			gearButton.updateMode(GearButton.DRIVE);
-			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+			commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.reverse) {
 			gearButton.updateMode(GearButton.REVERSE);
-			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+			commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.brake) {
 			gearButton.updateMode(GearButton.BRAKE);
-			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+			commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.neutral) {
 			gearButton.updateMode(GearButton.NEUTRAL);
-			SoundManagementNative.send(COMMAND_GEAR, gearButton.getMode());
+			commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == driveButton.auto) {
 			driveButton.updateMode(DriveButton.AUTO);
-			SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
+			commandClient.send(CommandClient.RUN, driveButton.getMode());
 		} else if (v == driveButton.normal) {
 			driveButton.updateMode(DriveButton.NORMAL);
-			SoundManagementNative.send(COMMAND_RUN, driveButton.getMode());
+			commandClient.send(CommandClient.RUN, driveButton.getMode());
 		} else if (v == driveButton.pursuit) {
 			driveButton.updateMode(DriveButton.PURSUIT);
 			finish();

@@ -14,6 +14,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 public class DrawRightView extends View{
+	int color;
 	Paint paint;
 	Canvas canvas;
 	Shader topShader, bottomShader;
@@ -32,11 +33,12 @@ public class DrawRightView extends View{
 
 	public DrawRightView(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		color = Color.RED;
 		paint = new Paint();
 		paint.setAntiAlias(true);
 
 
-		paint.setColor(Color.RED);
+		paint.setColor(color);
 
 		left = SoundManagementActivity.viewWidth / 2 - widthSize;
 		top = SoundManagementActivity.viewHeight / 2 + heightSize;
@@ -80,6 +82,10 @@ public class DrawRightView extends View{
 		}
 	}
 
+	public void setColor(int color) {
+		this.color = color;
+	}
+
 	public void drawView(int num){
 		widthSize = SoundManagementActivity.viewWidth / 4;
 		heightSize = SoundManagementActivity.viewHeight / 35;
@@ -93,8 +99,13 @@ public class DrawRightView extends View{
 
 		numberOfRect = num;
 
-		topShader = new  LinearGradient(SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight, SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight/5, Color.RED, Color.BLACK,  Shader.TileMode.CLAMP);  
-		bottomShader = new  LinearGradient(SoundManagementActivity.viewWidth, 0, SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight - SoundManagementActivity.viewHeight/5, Color.RED, Color.BLACK,  Shader.TileMode.CLAMP);  
+		paint.setColor(color);
+		topShader = new LinearGradient(SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight,
+					       SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight / 5,
+					       color, Color.BLACK, Shader.TileMode.CLAMP);
+		bottomShader = new LinearGradient(SoundManagementActivity.viewWidth, 0,
+						  SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight - SoundManagementActivity.viewHeight / 5,
+						  color, Color.BLACK, Shader.TileMode.CLAMP);
 
 		mHandler.post(new Runnable(){
 			@Override
