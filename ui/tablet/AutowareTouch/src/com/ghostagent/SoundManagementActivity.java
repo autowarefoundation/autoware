@@ -632,9 +632,24 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	public void startCanGather(View v) {
+		Intent intent = new Intent(Intent.ACTION_MAIN);
+		intent.setClassName("com.ecsgr.android.cangather",
+				    "com.ecsgr.android.cangather.MainActivity");
+		startActivity(intent);
 	}
 
-	public void startCarLink(View v) {
+	public void startCarLinkBluetooth(View v) {
+		Intent intent = new Intent(Intent.ACTION_MAIN);
+		intent.setClassName("com.metaprotocol.android.carlinkcan232",
+				    "com.metaprotocol.android.carlinkcan232.CarLinkMainActivity");
+		startActivity(intent);
+	}
+
+	public void startCarLinkUSB(View v) {
+		Intent intent = new Intent(Intent.ACTION_MAIN);
+		intent.setClassName("com.metaprotocol.android.carlinkcanusbaccessory",
+				    "com.metaprotocol.android.carlinkcanusbaccessory.CarLinkMainActivity");
+		startActivity(intent);
 	}
 
 	@Override
