@@ -180,7 +180,12 @@ class MyFrame(rtmgr.MyFrame):
 	# Main Tab
 	#
 	def OnStart(self, event):
-		print("start!")
+                cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
+		os.system(cmd)
+
+	def OnStop(self, event):
+		cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
+		os.system(cmd)
 
 	def OnTextIp(self, event):
 		tc = event.GetEventObject()
