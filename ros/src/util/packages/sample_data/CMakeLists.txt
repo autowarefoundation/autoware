@@ -33,6 +33,9 @@ include_directories(
 add_executable(sample_points_map nodes/sample_points_map/sample_points_map.cpp)
 target_link_libraries(sample_points_map ${catkin_LIBRARIES} pcl_io)
 
+add_executable(sample_points_map_update nodes/sample_points_map_update/sample_points_map_update.cpp)
+target_link_libraries(sample_points_map_update ${catkin_LIBRARIES} pcl_io)
+
 add_executable(sample_trajectory nodes/sample_trajectory/sample_trajectory.cpp)
 target_link_libraries(sample_trajectory ${catkin_LIBRARIES} gnss)
 

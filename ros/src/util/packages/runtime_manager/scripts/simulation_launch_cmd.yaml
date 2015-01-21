@@ -40,4 +40,4 @@ buttons:
   vmap :
     run : rosrun sample_data sample_vector_map __args__ swap_x_y_on
   trajectory :
-    run : rosrun sample_data sample_trajectory __args__ swap_x_y_off
+    run : rosrun sample_data sample_trajectory __args__ swap_x_y_on
