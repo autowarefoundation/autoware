@@ -10,7 +10,7 @@ subs :
         run  : 
       - name : LIDAR
         run  : 
-  - name : Simple Map
+  - name : Sample Map
     subs :
       - name : Point
         subs :
@@ -24,7 +24,7 @@ subs :
           run  :
         - name : Lane
           run  : 
-  - name : Simple Mobility
+  - name : Sample Mobility
     subs :
       - name : All
         run  : rosrun sample_data sample_mobility
