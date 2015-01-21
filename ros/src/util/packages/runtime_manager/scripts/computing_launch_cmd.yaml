@@ -10,28 +10,41 @@ subs :
           - name : car_dpm_gpu
             cmd  : rosrun car_detector car_dpm_gpu
             param: car_dpm
-          - name : car_tracking
-            cmd  : rosrun car_detector car_tracking
           - name : car_fusion
             cmd  : rosrun car_detector car_fusion
-          - name : lane_detector
-            cmd  : rosrun lane_detector lane_detector
+          - name : car_tracking
+            cmd  : rosrun car_detector car_tracking
+          - name : hog
+            cmd  : 
+          - name : hog_gpu
+            cmd  : 
+          #- name : lane_detector
+          #  cmd  : rosrun lane_detector lane_detector
+          - name : lane_cannyhough
+            cmd  : 
+          - name : lane_fusion
+            cmd  : 
+          - name : lane_tracking
+            cmd  : 
           - name : pedestrian_dpm
             cmd  : rosrun pedestrian_detector pedestrian_dpm
             param: pedestrian_dpm
           - name : pedestrian_dpm_gpu
             cmd  : rosrun pedestrian_detector pedestrian_dpm_gpu
             param: pedestrian_dpm
-          - name : pedestrian_tracking
-            cmd  : rosrun pedestrian_detector pedestrian_tracking
           - name : pedestrian_fusion
             cmd  : rosrun pedestrian_detector pedestrian_fusion
+          - name : pedestrian_tracking
+            cmd  : rosrun pedestrian_detector pedestrian_tracking
       - name : Localization
         subs :
-          - name : ndt_pcl
-            cmd  : rosrun ndt_pcl ndt_pcl
-          - name : gnss_pos
-            cmd  : rosrun gnss_pos gnss_pos
+          #- name : ndt_pcl
+          #  cmd  : rosrun ndt_pcl ndt_pcl
+          - name : ndt
+            cmd  : echo ndt
+            param: ndt
+          #- name : gnss_pos
+          #  cmd  : rosrun gnss_pos gnss_pos
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning
@@ -85,3 +98,58 @@ params :
       min   : 0
       max   : 50
       v     : 32
+
+  - name  : ndt
+    topic : /config/ndt
+    msg   : ConfigNdt
+    vars  :
+    - name  : x
+      label : x
+      min   : -100
+      max   : 100
+      v     : 0.0
+    - name  : y
+      label : y
+      min   : -100
+      max   : 100
+      v     : 0.0
+    - name  : z
+      label : z
+      min   : -100
+      max   : 100
+      v     : 0.0
+    - name  : roll
+      label : roll
+      min   : -180
+      max   : 180
+      v     : 0.0
+    - name  : pitch
+      label : pitch
+      min   : -180
+      max   : 180
+      v     : 0.0
+    - name  : yaw
+      label : yaw
+      min   : -180
+      max   : 180
+      v     : 0.0
+    - name  : resolution
+      label : Resolution
+      min   : 0
+      max   : 10
+      v     : 1.0
+    - name  : step_size
+      label : Step Size
+      min   : 0
+      max   : 1
+      v     : 0.1
+    - name  : trans_esp
+      label : Trans ESP
+      min   : 0
+      max   : 0.1
+      v     : 0.01
+    - name  : leaf_size
+      label : Leaf Size
+      min   : 0
+      max   : 10
+      v     : 0.1
