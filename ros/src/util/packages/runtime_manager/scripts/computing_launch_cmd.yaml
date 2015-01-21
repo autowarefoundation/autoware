@@ -1,5 +1,6 @@
 name : Computing
 subs :
+  - name : Control
   - name : Perception
     subs :
       - name : Detection

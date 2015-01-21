@@ -44,8 +44,9 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Computing tab
 		#
-		parent = self.tree_ctrl.GetParent()
-		self.tree_ctrl.Destroy()
+		parent = self.tree_ctrl_0.GetParent()
+		for i in range(3):
+			self.obj_get('tree_ctrl_' + str(i)).Destroy()
 		items = self.load_yaml('computing_launch_cmd.yaml')
 
 		self.params = items.get('params', [])
@@ -55,13 +56,15 @@ class MyFrame(rtmgr.MyFrame):
 				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
 
 		self.computing_cmd = {}
-		self.tree_ctrl = self.create_tree(parent, items, None, None, self.computing_cmd)
+		for i in range(3):
+			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
+			tree_ctrl.ExpandAll()
+			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
 
 		self.setup_config_param_pdic()
 
-		self.tree_ctrl.ExpandAll()
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
-		self.tree_ctrl.SetHyperTextVisitedColour(self.tree_ctrl.GetHyperTextNewColour()) # no change
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		rtmgr.MyFrame.__do_layout(self)
