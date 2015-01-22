@@ -1,5 +1,8 @@
 name :
 subs :
+  - name : Lane Navigator
+    run  : rosrun lane_navigator lane_navigator swap_x_y_on
+
   - name : Fake Drivers
     subs :
       - name : Canera
@@ -10,7 +13,7 @@ subs :
         run  : 
       - name : LIDAR
         run  : 
-  - name : Simple Map
+  - name : Sample Map
     subs :
       - name : Point
         subs :
@@ -24,7 +27,7 @@ subs :
           run  :
         - name : Lane
           run  : 
-  - name : Simple Mobility
+  - name : Sample Mobility
     subs :
       - name : All
         run  : rosrun sample_data sample_mobility
@@ -40,4 +43,4 @@ buttons:
   vmap :
     run : rosrun sample_data sample_vector_map __args__ swap_x_y_on
   trajectory :
-    run : rosrun sample_data sample_trajectory __args__ swap_x_y_off
+    run : rosrun sample_data sample_trajectory __args__ swap_x_y_on

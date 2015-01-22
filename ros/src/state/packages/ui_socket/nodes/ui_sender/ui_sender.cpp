@@ -15,6 +15,7 @@
 static constexpr int DEFAULT_PORT = 23456;
 static constexpr int LISTEN_BACKLOG = 10;
 static constexpr uint32_t QUEUE_SIZE = 1000;
+static constexpr double SUBSCRIBE_HZ = 1;
 
 static int port;
 static int connfd;
@@ -120,9 +121,34 @@ static void subscribe_mode_info(const ui_socket::mode_info& msg)
 	}
 }
 
+static bool send_beacon(void)
+{
+	int request[2];
+	int response;
+	ssize_t nbytes;
+
+	memset(request, 0, sizeof(request));
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	nbytes = send(connfd, request, sizeof(request), 0);
+	if (nbytes < 0) {
+		socket_ok = false;
+		return false;
+	}
+
+	nbytes = recv(connfd, &response, sizeof(response), 0);
+	if (nbytes < 0) {
+		socket_ok = false;
+		return false;
+	}
+
+	return true;
+}
+
 int main(int argc, char **argv)
 {
-	int listenfd;
+	int listenfd, on;
 	sockaddr_in addr;
 
 	ros::init(argc, argv, "ui_sender");
@@ -140,13 +166,20 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+	on = 1;
+	if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))
+	    < 0) {
+		ROS_ERROR("setsockopt: %s", strerror(errno));
+		close(listenfd);
+		return -1;
+	}
+
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(listenfd, (const struct sockaddr *)&addr,
-		 sizeof(addr)) < 0) {
+	if (bind(listenfd, (const struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		ROS_ERROR("bind: %s", strerror(errno));
 		close(listenfd);
 		return -1;
@@ -165,6 +198,8 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_mode_info = n.subscribe("mode_info", QUEUE_SIZE,
 						    subscribe_mode_info);
 
+	ros::Rate loop_rate(SUBSCRIBE_HZ);
+
 	while (true) {
 		connfd = accept(listenfd, (struct sockaddr *)nullptr,
 				nullptr);
@@ -175,8 +210,9 @@ int main(int argc, char **argv)
 		}
 
 		socket_ok = true;
-		while (socket_ok) {
+		while (socket_ok && send_beacon()) {
 			ros::spinOnce();
+			loop_rate.sleep();
 		}
 
 		close(connfd);
