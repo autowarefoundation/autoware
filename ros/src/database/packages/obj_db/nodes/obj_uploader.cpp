@@ -213,7 +213,7 @@ void* wrapSender(void *tsd){
 
   printf("position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
   geo.set_plane(7);
-  geo.set_llh_nmea_degrees(my_xloc,my_yloc,my_zloc);
+  geo.set_llh(my_xloc,my_yloc,my_zloc);
   printf("X,Y,Z = %f,%f,%f\n",geo.x(),geo.y(),geo.z());
 
   printf("%d\n",car_position_vector.size());
@@ -423,7 +423,7 @@ int main(int argc, char **argv){
 
   sl.setCameraParam(fkx,fky,Ox,Oy);
 
-  set_car_position_xyz();
+  //set_car_position_xyz();
 
   sd = SendData(const_cast<char*>(serverName),5777);
 
