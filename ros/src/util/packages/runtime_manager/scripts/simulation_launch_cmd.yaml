@@ -1,5 +1,8 @@
 name :
 subs :
+  - name : Lane Navigator
+    run  : rosrun lane_navigator lane_navigator swap_x_y_on
+
   - name : Fake Drivers
     subs :
       - name : Canera
