@@ -5,6 +5,8 @@
 */
 
 #define DEBUG 0
+// #define VIEW_TIME
+#define OUTPUT // If you want to output "position_log.txt", "#define OUTPUT".
 
 #include <iostream>
 #include <sstream>
@@ -27,6 +29,8 @@
 #include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
+#include <runtime_manager/ConfigNdt.h>
+
 // Initial position for Moriyama
 /*
 #define INITIAL_X -14771
@@ -35,7 +39,6 @@
 #define INITIAL_ROLL 0
 #define INITIAL_PITCH 0
 #define INITIAL_YAW 2.324
-*/
 // Initial position for Toyota
 #define INITIAL_X 3702
 #define INITIAL_Y -99425
@@ -43,6 +46,7 @@
 #define INITIAL_ROLL 0
 #define INITIAL_PITCH 0
 #define INITIAL_YAW 0
+*/
 
 typedef struct{
   double x;
@@ -57,6 +61,14 @@ typedef struct{
 Position previous_pos, guess_pos, current_pos;
 double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
 
+// Initial position (updated in param_callback)
+double initial_x = 0.0;
+double initial_y = 0.0;
+double initial_z = 0.0;
+double initial_roll = 0.0;
+double initial_pitch = 0.0;
+double initial_yaw = 0.0;
+
 // Can't load if typed "pcl::PointCloud<pcl::PointXYZRGB> map, add;"
 pcl::PointCloud<pcl::PointXYZ> map, add;
 pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
@@ -65,16 +77,74 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
 int flag = 0;
 
 pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
+// Default values
 int iter = 30; // Maximum iterations
 float ndt_res = 1.0; // Resolution
 double step_size = 0.1; // Step size
 double trans_eps = 0.01; // Transformation epsilon
 
-ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end, t6_start, t6_end;
-ros::Duration d_callback, d1, d2, d3, d4, d5, d6;
+// Leaf size of VoxelGrid filter.
+double voxel_leaf_size = 1.0;
+
+ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
+ros::Duration d_callback, d1, d2, d3, d4, d5;
 
 ros::Publisher pose_pub;
 geometry_msgs::PoseStamped pose_msg;
+
+void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
+{
+
+  initial_x = input->x;
+  initial_y = input->y;
+  initial_z = input->z;
+  initial_roll = input->roll;
+  initial_pitch = input->pitch;
+  initial_yaw = input->yaw;
+  ndt_res = input->resolution;
+  step_size = input->step_size;
+  trans_eps = input->trans_esp;
+
+  voxel_leaf_size = input->leaf_size;
+
+  // Setting position and posture for the fist time.
+  previous_pos.x = initial_x;
+  previous_pos.y = initial_y;
+  previous_pos.z = initial_z;
+  previous_pos.roll = initial_roll;
+  previous_pos.pitch = initial_pitch;
+  previous_pos.yaw = initial_yaw;
+  
+  current_pos.x = initial_x;
+  current_pos.y = initial_y;
+  current_pos.z = initial_z;
+  current_pos.roll = initial_roll;
+  current_pos.pitch = initial_pitch;
+  current_pos.yaw = initial_yaw;
+
+  // Setting parameters
+  ndt.setMaximumIterations(iter);
+  ndt.setResolution(ndt_res);
+  ndt.setStepSize(step_size);
+  ndt.setTransformationEpsilon(trans_eps);
+
+  std::cout << "Parameters" << std::endl;
+  std::cout << "ndt_res: " << ndt_res << std::endl;
+  std::cout << "step_size: " << step_size << std::endl;
+  std::cout << "trans_eps: " << trans_eps << std::endl;
+  std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
+  
+  std::cout << "Initial Position" << std::endl;
+  std::cout << "initial_x: " << initial_x << std::endl;
+  std::cout << "initial_y: " << initial_y << std::endl;
+  std::cout << "initial_z: " << initial_z << std::endl;
+  std::cout << "initial_roll: " << initial_roll << std::endl;
+  std::cout << "initial_pitch: " << initial_pitch << std::endl;
+  std::cout << "initial_yaw: " << initial_yaw << std::endl;
+  
+  std::cout << "NDT ready..." << std::endl;
+
+}
 
 void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
@@ -85,33 +155,11 @@ void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     // Convert the data type(from sensor_msgs to pcl).
     pcl::fromROSMsg(*input, map);
 
-    // Setting parameters
-    ndt.setMaximumIterations(iter);
-    ndt.setResolution(ndt_res);
-    ndt.setStepSize(step_size);
-    ndt.setTransformationEpsilon(trans_eps);
-
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr (new pcl::PointCloud<pcl::PointXYZ>(map));
     // Setting point cloud to be aligned to.
     ndt.setInputTarget(map_ptr);
 
-    // Setting position and posture for the fist time.
-    previous_pos.x = INITIAL_X;
-    previous_pos.y = INITIAL_Y;
-    previous_pos.z = INITIAL_Z;
-    previous_pos.roll = INITIAL_ROLL;
-    previous_pos.pitch = INITIAL_PITCH;
-    previous_pos.yaw = INITIAL_YAW;
-    
-    current_pos.x = INITIAL_X;
-    current_pos.y = INITIAL_Y;
-    current_pos.z = INITIAL_Z;
-    current_pos.roll = INITIAL_ROLL;
-    current_pos.pitch = INITIAL_PITCH;
-    current_pos.yaw = INITIAL_YAW;
-
-    std::cout << "NDT ready..." << std::endl;
-
+    std::cout << "Map loaded..." << std::endl;
     flag = 1;
   }
 }
@@ -135,10 +183,12 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   scan_time.sec = scan.header.stamp / 1000000.0;
   scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
 
+  /*
   std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
   std::cout << "scan_time: " << scan_time << std::endl;
   std::cout << "scan_time.sec: " << scan_time.sec << std::endl;
   std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
+  */
 
   t1_start = ros::Time::now();
   for(pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++)
@@ -160,7 +210,7 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   // Downsampling the velodyne scan using VoxelGrid filter
   t2_start = ros::Time::now();
   pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
-  voxel_grid_filter.setLeafSize(1.0, 1.0, 1.0);
+  voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
   voxel_grid_filter.setInputCloud(scan_ptr);
   voxel_grid_filter.filter(*filtered_scan_ptr);
   t2_end = ros::Time::now();
@@ -222,11 +272,12 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
   transform.setRotation(q);
 
+  /*
   std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
   std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
   std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
+  */
 
-  //  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "velodyne"));
   br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
 
   static tf::TransformBroadcaster pose_broadcaster;
@@ -248,26 +299,27 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   pose_msg.pose.orientation.z = q.z();
   pose_msg.pose.orientation.w = q.w();
 
+  /*
   std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
   std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
   std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
+  */
 
   pose_pub.publish(pose_msg);
 
   t5_end = ros::Time::now();
   d5 = t5_end - t5_start;
 
+#ifdef OUTPUT
   // Writing position to position_log.txt
-  t6_start = ros::Time::now();
-  std::ofstream ofs("/home/kitsukawa/catkin_ws/position_log.txt", std::ios::app);
+  std::ofstream ofs("position_log.txt", std::ios::app);
   if(ofs == NULL){
     std::cerr << "Could not open 'position_log.txt'." << std::endl;
     exit(1);
   }
-
-  ofs << current_pos.x << " " << current_pos.y << " " << current_pos.z << " " << current_pos.roll << " " << current_pos.pitch << " " << current_pos.yaw << std::endl;
-  t6_end = ros::Time::now();
-  d6 = t6_end - t6_start;
+  ofs << current_pos.x << " " << current_pos.y << " " << current_pos.z << " " 
+      << current_pos.roll << " " << current_pos.pitch << " " << current_pos.yaw << std::endl;
+#endif
 
   // Calculate the offset (curren_pos - previous_pos)
   offset_x = current_pos.x - previous_pos.x;
@@ -297,15 +349,14 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
   std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " << current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
   std::cout << "Transformation Matrix:" << std::endl;
   std::cout << t << std::endl;
-  /*
+#ifdef VIEW_TIME
   std::cout << "Duration of velodyne_callback: " << d_callback.toSec() << " secs." << std::endl;
   std::cout << "Adding scan points: " << d1.toSec() << " secs." << std::endl;
   std::cout << "VoxelGrid Filter: " << d2.toSec() << " secs." << std::endl;
   std::cout << "Guessing the initial gross estimation: " << d3.toSec() << " secs." << std::endl;
   std::cout << "NDT: " << d4.toSec() << " secs." << std::endl;
   std::cout << "tf: " << d5.toSec() << " secs." << std::endl;
-  std::cout << "Writing position to file: " << d6.toSec() << " secs." << std::endl;
-  */
+#endif
   std::cout << "-----------------------------------------------------------------" << std::endl;
 
 }
@@ -317,18 +368,13 @@ int main(int argc, char **argv)
   std::cout << "NDT_PCL program coded by Yuki KITSUKAWA" << std::endl;
   std::cout << "---------------------------------------" << std::endl; 
 
-  std::cout << "Initial Position" << std::endl;
-  std::cout << "INITIAL_X: " << INITIAL_X << std::endl;
-  std::cout << "INITIAL_Y: " << INITIAL_Y << std::endl;
-  std::cout << "INITIAL_Z: " << INITIAL_Z << std::endl;
-  std::cout << "INITIAL_ROLL: " << INITIAL_ROLL << std::endl;
-  std::cout << "INITIAL_PITCH: " << INITIAL_PITCH << std::endl;
-  std::cout << "INITIAL_YAW: " << INITIAL_YAW << std::endl;
-
   ros::init(argc, argv, "ndt_pcl");
   ros::NodeHandle n;
 
   pose_pub = n.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
+
+  // sunscribing parameter
+  ros::Subscriber param_sub = n.subscribe("config/ndt", 10, param_callback);
 
   // subscribing map data (only once)
   ros::Subscriber map_sub = n.subscribe("points_map", 10, map_callback);
