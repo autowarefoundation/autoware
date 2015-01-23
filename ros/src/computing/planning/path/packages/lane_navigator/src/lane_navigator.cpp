@@ -8,22 +8,10 @@
 
 #define SELF_TRANS	0
 #define HEIGHT	50
-#define DEBUG_PRINT 
+//#define DEBUG_PRINT 
 int swap_x_y = 0;
 ros::Publisher pub;
 visualization_msgs::Marker marker;
-
-double conv_10_60(double input)
-{
-  double a,b,c,ret;
-
-  a = (int)input;
-  b = (input - a) * 60;
-  c = (b - (int)b) * 60 / 100;
-  ret = a * 100 + (int)b + c;
-
-  return ret;
-}
 
 void set_marker_data(visualization_msgs::Marker* marker,
 		    double px, double py, double pz, double ox, double oy, double oz, double ow,
@@ -89,16 +77,18 @@ void RouteCmdCallback(const ui_socket::route_cmd msg)
 #endif
 
   for(int i = 0; i < msg.point.size(); i++) {
-#if 0
-    x = conv_10_60(msg.point[i].lat);
-    y = conv_10_60(msg.point[i].lon);
-#else
-    x = conv_10_60(msg.point[i].lon);
-    y = conv_10_60(msg.point[i].lat);
-#endif
-    geo.set_llh_nmea_degrees(x, y, HEIGHT);
 #ifdef DEBUG_PRINT
-    fprintf(stderr, "geo.x()=%f, geo.y()=%f, geo.z()=%f\n", geo.x(),geo.y(),geo.z()); 
+    fprintf(stderr, "%d: point[i].lat=%f, point[i].lon=%f\n", i, msg.point[i].lat, msg.point[i].lon);
+#endif 
+
+#if 0
+    geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, HEIGHT);
+#else
+    geo.llh_to_xyz(msg.point[i].lon, msg.point[i].lat, HEIGHT);
+#endif
+
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "  geo.x()=%f, geo.y()=%f, geo.z()=%f\n", geo.x(),geo.y(),geo.z()); 
 #endif
     set_marker_data(&marker,
 		    geo.x()-1.0, 
