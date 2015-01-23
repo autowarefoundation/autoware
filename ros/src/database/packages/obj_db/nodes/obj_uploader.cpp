@@ -117,7 +117,7 @@ string getNowTime(){
   tmp=localtime(&tv.tv_sec);
   qt->tim=mktime(tmp);
   qt->msec=tv.tv_usec/1000;
-  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%3d\n",
+  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%d\n",
     tmp->tm_year + 1900, tmp->tm_mon + 1,
     tmp->tm_mday, tmp->tm_hour,
     tmp->tm_min, tmp->tm_sec,
@@ -184,10 +184,10 @@ string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>
     //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
     //And if setting the other number of value , sendData will be failed.
 
-    //    oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
-    //oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator.tm << "');\"";
+    oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
+    oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator->tm << "');\"";
 
-    oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
+    //oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
 
   
   }
@@ -262,10 +262,10 @@ void* wrapSender(void *tsd){
     value += makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo);
   }
 
-  //oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
-  //oss << "values(0," <<  fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << getNowTime()  << "');\"";
+  oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
+  oss << "values(0," <<  fixed << setprecision(6) << geo.x() << "," << fixed << setprecision(6) << geo.y() << ",0,0,1,'" << getNowTime()  << "');\"";
 
-  oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
+  //oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
 
   printf("geo : %f\t%f\n",geo.x(),geo.y());
 
