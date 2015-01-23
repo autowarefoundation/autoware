@@ -33,6 +33,10 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include<sys/time.h>
+//#include<unistd.h>
+
+
 #include "opencv/cv.h" 
 #include "opencv/highgui.h" 
 #include "opencv/cxcore.h" 
@@ -60,7 +64,14 @@ typedef struct _OBJPOS{
   int x2;
   int y2;
   float distance;
+  string tm;
 }OBJPOS;
+
+//for timestamp
+struct my_tm {
+  time_t tim; // yyyymmddhhmmss
+  long msec;  // milli sec
+};
 
 pthread_mutex_t mutex;
 pthread_mutex_t ped_mutex;
@@ -92,7 +103,31 @@ void printDiff(struct timeval begin, struct timeval end){
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
 
-string makeData(vector<OBJPOS> car_position_vector,vector<OBJPOS>::iterator cp_iterator,geo_pos_conv geo){
+string getNowTime(){
+  struct my_tm *qt;
+  struct tm *tmp;
+  struct timeval tv;
+  char tm[25];
+  string res;
+  ostringstream oss;
+
+  qt=(struct my_tm*)malloc(sizeof(struct my_tm));
+  if(qt == NULL)return NULL;
+  gettimeofday(&tv,NULL);
+  tmp=localtime(&tv.tv_sec);
+  qt->tim=mktime(tmp);
+  qt->msec=tv.tv_usec/1000;
+  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%3d\n",
+    tmp->tm_year + 1900, tmp->tm_mon + 1,
+    tmp->tm_mday, tmp->tm_hour,
+    tmp->tm_min, tmp->tm_sec,
+    tv.tv_usec/1000);
+  res = tm;
+  return res;
+}
+
+
+string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>::iterator cp_iterator,geo_pos_conv geo){
 
   ostringstream oss;
   LOCATION rescoord;
@@ -149,8 +184,8 @@ string makeData(vector<OBJPOS> car_position_vector,vector<OBJPOS>::iterator cp_i
     //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
     //And if setting the other number of value , sendData will be failed.
 
-    //    oss << "\"INSERT INTO POS(id,x,y,area,type,self) ";
-    //oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1" << ");\"";
+    //    oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
+    //oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator.tm << "');\"";
 
     oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
 
@@ -220,15 +255,15 @@ void* wrapSender(void *tsd){
   printf("%d\n",pedestrian_position_vector.size());
 
   if(car_position_vector.size() != 0 ){
-    value += makeData(car_position_vector,cp_iterator,geo);
+    value += makeSendDataDetectedObj(car_position_vector,cp_iterator,geo);
   }
 
   if(pedestrian_position_vector.size() != 0){
-    value += makeData(pedestrian_position_vector,pp_iterator,geo);
+    value += makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo);
   }
 
-  //oss << "\"INSERT INTO POS(id,x,y,area,type,self) ";
-  //oss << "values(0," <<  fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1" << ");\"";
+  //oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
+  //oss << "values(0," <<  fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << getNowTime()  << "');\"";
 
   oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
 
@@ -238,9 +273,11 @@ void* wrapSender(void *tsd){
   //end charactor
   oss << "<E>";
 
+  oss << getNowTime();
+
   value += oss.str();
-  //  printf("%s\n",value.c_str());
-  //  printf("%d\n",value.size());
+  printf("%s\n",value.c_str());
+  //printf("%d\n",value.size());
   
 
   sd.setValue(value);
@@ -281,6 +318,8 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
     cp.y2 = fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4];//x-axis of the lower left
 
     cp.distance = fused_objects.distance.at(i);
+
+    cp.tm = getNowTime();
 
     printf("\n%d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
