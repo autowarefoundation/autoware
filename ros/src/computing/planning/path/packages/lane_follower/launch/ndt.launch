@@ -4,7 +4,7 @@
 	<arg name="mobility_frame" default="/velodyne" />
 	<arg name="velocity_kmh" default="5" /> <!-- set velocity (km/h) -->
 	<arg name="lookahead_threshold" default="4" /> <!-- meter -->
-	<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path.txt" />
+	<arg name="waypoint_filename" default="$(find lane_follower)/path/ndtpath.txt" />
 
 	<!-- rosrun lane_follower test_lane_navigator _filename:="path file" -->
 	<node pkg="lane_follower" type="test_lane_navigator" name="lane_nav">
