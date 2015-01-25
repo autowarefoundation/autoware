@@ -8,13 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   gnss
+  ui_socket
   visualization_msgs
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_navigator
-  DEPENDS gnss
+  DEPENDS gnss ui_socket
 )
 
 ###########
@@ -30,4 +31,4 @@ include_directories(
 
 add_executable(lane_navigator src/lane_navigator.cpp)
 target_link_libraries(lane_navigator gnss ${catkin_LIBRARIES})
-
+add_dependencies(lane_navigator ui_socket_generate_messages_cpp)
