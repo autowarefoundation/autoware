@@ -71,6 +71,9 @@
 #endif
 #include <boost/array.hpp>
 
+#include <runtime_manager/ConfigCarDpm.h>
+#include <runtime_manager/ConfigPedestrianDpm.h>
+
 #if 1 // AXE
 #else
 char ldata_name[]="2010_2_3.txt";
@@ -78,8 +81,8 @@ char WINDOW_NAME[] = "CAR_TRACK";
 #endif
 double ratio = 1;	//resize ratio
 MODEL *MO;
-double overlap = 0.4;
-double thresh = -0.5;	//threshold score of detection (default :0.0)
+double overlap = 0.4;    // threshold overlap parameter (default :0.4)
+double thresh = -0.5;    // threshold score of detection (default :0.0)
 #if 1 // AXE
 static ros::Publisher image_objects;
 #else
@@ -175,6 +178,26 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
 #endif
     cvSaveImage(buf, IM_D);
     k++;
+}
+
+void car_configParamCallback(const runtime_manager::ConfigCarDpm::ConstPtr& param)
+{
+  float score_threshold = param->score_threshold;
+  float group_threshold = param->group_threshold;
+  //  int pyramid_levels = param->pyramid_levels; // not implemented yet
+
+  thresh = score_threshold;
+  overlap = group_threshold;
+}
+
+void pedestrian_configParamCallback(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)
+{
+  float score_threshold = param->score_threshold;
+  float group_threshold = param->group_threshold;
+  //  int pyramid_levels = param->pyramid_levels;　// not implemented yet
+
+  thresh = score_threshold;
+  overlap = group_threshold;
 }
 // %EndTag(CALLBACK)%
 
@@ -291,6 +314,19 @@ subscribe() returns a Subscriber object that you
 #else
   image_and_obstacle_position = n.advertise<sensors_fusion::ObstaclePosition>("obstacle_position", 1);
 #endif
+
+  /* configuration parameter subscribing */
+  ros::Subscriber configParam_sub;
+  if (detection_type == "car") {
+    configParam_sub = n.subscribe("/config/car_dpm", 1, car_configParamCallback);
+  } else if (detection_type == "pedestrian") {
+    configParam_sub = n.subscribe("/config/pedestrian_dpm", 1, pedestrian_configParamCallback);
+  } else {
+    std::cerr << "Invalid detection type: "
+              <<detection_type
+              << std::endl;
+  }
+
 //  image_transport::ImageTransport it(n);
 //  image_transport::Subscriber sub = it.subscribe("imageraw", 1, chatterCallback);
 // %EndTag(SUBSCRIBER)%
