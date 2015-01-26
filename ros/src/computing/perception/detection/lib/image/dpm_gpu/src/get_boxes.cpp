@@ -385,37 +385,37 @@ void calc_a_score_GPU(
 
   gettimeofday(&tv_memcpy_start, NULL);
   /* upload date to GPU */
-  res = cuMemcpyHtoD(ac_score_dev, ac_score, size_A_SCORE);
+  res = cuMemcpyHtoD(ac_score_dev, &ac_score[0], size_A_SCORE);
   if(res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD(ac_score) failed: res = %s\n", conv(res));
     exit(1);
   }
 
-  res = cuMemcpyHtoD(score_dev, score, size_score);
+  res = cuMemcpyHtoD(score_dev, &score[0][0], size_score);
   if(res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD(score) failed: res = %s\n", conv(res));
     exit(1);
   }
 
-  res = cuMemcpyHtoD(ssize_dev, ssize_start, NoC*sizeof(int));
+  res = cuMemcpyHtoD(ssize_dev, &ssize_start[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD(ssize) failed: res = %s\n", conv(res));
     exit(1);
   }
 
-  res = cuMemcpyHtoD(size_score_dev, size_score_array, NoC*sizeof(int));
+  res = cuMemcpyHtoD(size_score_dev, &size_score_array[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD(size_score) failed: res = %s\n", conv(res));
     exit(1);
   }
 
-  res = cuMemcpyHtoD(RY_dev, RY_array, NoC*sizeof(int));
+  res = cuMemcpyHtoD(RY_dev, &RY_array[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD(RY) failed: res = %s\n", conv(res));
     exit(1);
   }
 
-  res = cuMemcpyHtoD(RX_dev, RX_array, NoC*sizeof(int));
+  res = cuMemcpyHtoD(RX_dev, &RX_array[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
     printf("cuMemcpyHtoD(RX) failed: res = %s\n", conv(res));
     exit(1);
