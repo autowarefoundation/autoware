@@ -389,14 +389,20 @@ public class MainActivity extends SmartDKManager implements OnMapListener, OnGes
 										BufferedWriter bw = new BufferedWriter(filewriter);
 										PrintWriter pw = new PrintWriter(bw);
 										
+										int j = 0;
 										for (RouteGuideConnect conn : resultList.mGuideConnect) {
 											Log.w("SampleRoute", "size=" + conn.mGuidePoint.size());
+											int k = 0;
 											for (RouteGuidePoint pt : conn.mGuidePoint) {
-												Location loc = new Location(pt.mLongitude, pt.mLatitude);
-												double[] degree = utility.convert256ToDegree(loc);
-												Log.w("SampleRoute", "  lat=" + degree[0] + ", lon=" + degree[1]);
-												pw.println(degree[0] + "," + degree[1]);
+												if (j == 0 || k != 0) {
+													Location loc = new Location(pt.mLongitude, pt.mLatitude);
+													double[] degree = utility.convert256ToDegree(loc);
+													Log.w("SampleRoute", "  lat=" + degree[1] + ", lon=" + degree[0]);
+													pw.println(degree[1] + "," + degree[0]);
+												}
+												k++;
 											}
+											j++;
 										}
 										pw.close();
 									} catch (Exception e) {
