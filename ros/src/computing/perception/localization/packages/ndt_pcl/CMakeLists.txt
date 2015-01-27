@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   sensor_msgs
   pcl_conversions
+  runtime_manager
 )
 
 ## System dependencies are found with CMake's conventions
@@ -83,7 +84,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS runtime_manager
 #  DEPENDS system_lib
 )
 
@@ -109,6 +110,7 @@ add_executable(ndt_pcl src/ndt_pcl.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(ndt_pcl ${catkin_LIBRARIES})
+add_dependencies(ndt_pcl runtime_manager_generate_messages_cpp)
 
 #############
 ## Install ##

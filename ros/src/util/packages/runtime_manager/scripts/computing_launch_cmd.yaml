@@ -44,8 +44,8 @@ subs :
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt
-          #- name : gnss_pos
-          #  cmd  : rosrun gnss_pos gnss_pos
+          - name : gnss_pos
+            cmd  : rosrun gnss_pos gnss_pos
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning
@@ -54,6 +54,8 @@ subs :
       - name : Motion
       - name : Path
         subs :
+          - name : waypoint_saver
+            cmd : roslaunch lane_follower waypoint_saver.launch
           - name : ndt
             cmd : roslaunch lane_follower ndt.launch
           - name : gnss
