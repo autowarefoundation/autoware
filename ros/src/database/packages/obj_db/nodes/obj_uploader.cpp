@@ -139,8 +139,9 @@ string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>
     double V = (cp_iterator->y1 + cp_iterator->y2)/2;
 
     //convert
-    sl.setOriginalValue(U,V,cp_iterator->distance);
+    sl.setOriginalValue(U,V,cp_iterator->distance*10);
     LOCATION ress = sl.cal();
+    printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
 
     axiMove am;
     //convert axes from camera to velodyne
@@ -184,10 +185,10 @@ string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>
     //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
     //And if setting the other number of value , sendData will be failed.
 
-    oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
-    oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator->tm << "');\"";
+    //oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
+    //oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator->tm << "');\"";
 
-    //oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
+    oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
 
   
   }
@@ -246,13 +247,12 @@ void* wrapSender(void *tsd){
   pthread_mutex_unlock( &pos_mutex );
   //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
 
-  printf("position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
+  printf("my position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
   geo.set_plane(7);
   geo.set_llh(my_xloc,my_yloc,my_zloc);
-  printf("X,Y,Z = %f,%f,%f\n",geo.x(),geo.y(),geo.z());
 
-  printf("%d\n",car_position_vector.size());
-  printf("%d\n",pedestrian_position_vector.size());
+  //printf("%d\n",car_position_vector.size());
+  //printf("%d\n",pedestrian_position_vector.size());
 
   if(car_position_vector.size() != 0 ){
     value += makeSendDataDetectedObj(car_position_vector,cp_iterator,geo);
@@ -262,12 +262,12 @@ void* wrapSender(void *tsd){
     value += makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo);
   }
 
-  oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
-  oss << "values(0," <<  fixed << setprecision(6) << geo.x() << "," << fixed << setprecision(6) << geo.y() << ",0,0,1,'" << getNowTime()  << "');\"";
+  //oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
+  //oss << "values(0," <<  fixed << setprecision(6) << geo.x() << "," << fixed << setprecision(6) << geo.y() << ",0,0,1,'" << getNowTime()  << "');\"";
 
-  //oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
+  oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
 
-  printf("geo : %f\t%f\n",geo.x(),geo.y());
+  //  printf("geo : %f\t%f\n",geo.x(),geo.y());
 
 
   //end charactor
@@ -321,14 +321,14 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 
     cp.tm = getNowTime();
 
-    printf("\n%d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
+    printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
     global_cp_vector.push_back(cp);
       
   }
   pthread_mutex_unlock( &mutex );
 
-  printf("car position get\n\n");
+  //  printf("car position get\n\n");
 
 }
 
@@ -347,7 +347,7 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 
     cp.distance = fused_objects.distance.at(i);
 
-    printf("\n%d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
+    printf("\npedestrian : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
     global_pp_vector.push_back(cp);
 
@@ -355,7 +355,7 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
     
   pthread_mutex_unlock( &ped_mutex );
 
-  printf("pedestrian position get\n\n");
+  //  printf("pedestrian position get\n\n");
 }
 
 
@@ -408,7 +408,6 @@ void set_car_position_xyz()
       
   }
   pthread_mutex_unlock( &mutex );
-  printf("ok\n");
 
 }
 

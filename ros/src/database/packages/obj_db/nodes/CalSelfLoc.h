@@ -27,14 +27,17 @@ public:
 
         LOCATION res;
 
-        double a,b,c;
-        a = U*U/(fkx*fkx) + V*V/(fky*fky) + 1;
-        b = -Ox*U/fkx - Oy*V/fky;
-        c = Ox*Ox/(fkx*fkx) + Oy*Oy/(fky*fky) - distance*distance;
-        
-        res.Z = (-b + sqrt(b*b-a*c))/a;
-        res.X = (U*res.Z-Ox)/fkx;
-        res.Y = (V*res.Z-Oy)/fky;
+	double a = (U-Ox)*(U-Ox)/(fkx*fkx);
+	double b = (V-Oy)*(V-Oy)/(fky*fky);
+
+	res.Y = sqrt((distance*distance/(a+b+1)));
+	res.X = (U-Ox)*res.Y/fkx;
+        res.Z = (V-Oy)*res.Y/fky;
+
+	//mili meter -> meter
+        res.X = res.X/1000;
+        res.Y = res.Y/1000;
+	res.Z = res.Z/1000;
 
         return res;
 
