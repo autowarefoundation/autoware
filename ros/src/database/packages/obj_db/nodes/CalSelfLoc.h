@@ -30,14 +30,14 @@ public:
 	double a = (U-Ox)*(U-Ox)/(fkx*fkx);
 	double b = (V-Oy)*(V-Oy)/(fky*fky);
 
-	res.Y = sqrt((distance*distance/(a+b+1)));
-	res.X = (U-Ox)*res.Y/fkx;
-        res.Z = (V-Oy)*res.Y/fky;
+	res.Z = sqrt((distance*distance/(a+b+1)));
+	res.X = (U-Ox)*res.Z/fkx;
+        res.Y = (V-Oy)*res.Z/fky;
 
 	//mili meter -> meter
-        res.X = res.X/1000;
-        res.Y = res.Y/1000;
-	res.Z = res.Z/1000;
+        res.X = res.X/100;
+        res.Y = res.Y/100;
+	res.Z = res.Z/100;
 
         return res;
 

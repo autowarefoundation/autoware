@@ -135,11 +135,11 @@ string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>
   for(int i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
     //middle of right-lower and left-upper
-    double U = (cp_iterator->x1 + cp_iterator->x2)/2;
-    double V = (cp_iterator->y1 + cp_iterator->y2)/2;
+    double U = cp_iterator->x1 + cp_iterator->x2/2;
+    double V = cp_iterator->y1 + cp_iterator->y2/2;
 
     //convert
-    sl.setOriginalValue(U,V,cp_iterator->distance*10);
+    sl.setOriginalValue(U,V,cp_iterator->distance);
     LOCATION ress = sl.cal();
     printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
 
@@ -273,7 +273,7 @@ void* wrapSender(void *tsd){
   //end charactor
   oss << "<E>";
 
-  oss << getNowTime();
+  //  oss << getNowTime();
 
   value += oss.str();
   printf("%s\n",value.c_str());
@@ -314,8 +314,8 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   for (int i = 0; i < fused_objects.car_num; i++){
     cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
     cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-    cp.x2 = fused_objects.corner_point[0+i*4] + fused_objects.corner_point[2+i*4];//x-axis of the upper right
-    cp.y2 = fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4];//x-axis of the lower left
+    cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
+    cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
 
     cp.distance = fused_objects.distance.at(i);
 
@@ -342,8 +342,8 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 
     cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
     cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-    cp.x2 = fused_objects.corner_point[0+i*4] + fused_objects.corner_point[2+i*4];//x-axis of the upper right
-    cp.y2 = fused_objects.corner_point[1+i*4] + fused_objects.corner_point[3+i*4];//x-axis of the lower left
+    cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
+    cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
 
     cp.distance = fused_objects.distance.at(i);
 
