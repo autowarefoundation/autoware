@@ -41,7 +41,7 @@
 #include "opencv/highgui.h" 
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
-//#include "scan_to_image/ScanImage.h"
+#include "scan_to_image/ScanImage.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "structure.h"
@@ -247,7 +247,7 @@ void* wrapSender(void *tsd){
   pthread_mutex_unlock( &pos_mutex );
   //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
 
-  printf("my position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
+  //printf("my position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
   geo.set_plane(7);
   geo.set_llh(my_xloc,my_yloc,my_zloc);
 
@@ -273,15 +273,15 @@ void* wrapSender(void *tsd){
   //end charactor
   oss << "<E>";
 
-  //  oss << getNowTime();
+  oss << getNowTime();
 
   value += oss.str();
   printf("%s\n",value.c_str());
   //printf("%d\n",value.size());
   
 
-  sd.setValue(value);
-  sd.Sender();
+  //sd.setValue(value);
+  //sd.Sender();
 
 }
 
@@ -424,9 +424,6 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
 
-  //car_pos_xyzトピックが更新されるとcar_position_xyzCallback関数が呼ばれる
-  //第二引数の100は受信側のバッファであり、最新の100個を保持している。自由に変更可能です。
-  //100個以上になると古いものから欠損します
   ros::Subscriber car_pos_xyz = n.subscribe("/car_pos_xyz", 5, car_pos_xyzCallback);
   ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pos_xyz", 5, pedestrian_pos_xyzCallback);
 
@@ -436,7 +433,7 @@ int main(int argc, char **argv){
   /*
   cv::Mat intrinsic;
   std::string camera_yaml; 
-  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,"scan_to_image/camera.yaml"); 
+  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,STR(CAMERA_YAML)); 
   cv::FileStorage fs_auto_file(camera_yaml.c_str(), cv::FileStorage::READ); 
   if(!fs_auto_file.isOpened()){
     fprintf(stderr,"%s, : cannot open file\n",camera_yaml.c_str());
@@ -444,18 +441,16 @@ int main(int argc, char **argv){
   }
   fs_auto_file["intrinsic"] >> intrinsic; 
   fs_auto_file.release(); 
-  */
 
-  /*
   double fkx = intrinsic.at<float>(0,0);  
   double fky = intrinsic.at<float>(1,1); 
   double Ox = intrinsic.at<float>(0,2);
   double Oy = intrinsic.at<float>(1,2); 
   */
 
-  double fkx = 7.97983032e+02;
+  double fkx = (7.97983032e+02)/2;
   double fky = 3.74826355e+02;
-  double Ox =  7.97696411e+02;
+  double Ox =  (7.97696411e+02)/2;
   double Oy = 2.54657837e+02;
 
 
