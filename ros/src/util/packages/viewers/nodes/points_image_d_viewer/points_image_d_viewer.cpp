@@ -321,8 +321,8 @@ int main(int argc, char **argv)
     	}
 	else
 	{
-		ROS_INFO("No car positions node received, defaulting to car_pos_xyz, you can use _car_node:=YOUR_TOPIC");
-		car_node = "/car_pos_xyz";
+		ROS_INFO("No car positions node received, defaulting to car_pixel_xyz, you can use _car_node:=YOUR_TOPIC");
+		car_node = "/car_pixel_xyz";
 	}
 
 	if (private_nh.getParam("pedestrian_node", pedestrian_node))
@@ -331,8 +331,8 @@ int main(int argc, char **argv)
     	}
 	else
 	{
-		ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pos_xyz, you can use _pedestrian_node:=YOUR_TOPIC");
-		pedestrian_node = "/pedestrian_pos_xyz";
+		ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xyz, you can use _pedestrian_node:=YOUR_TOPIC");
+		pedestrian_node = "/pedestrian_pixel_xyz";
 	}
 
 	if (private_nh.getParam("points_node", points_node))
