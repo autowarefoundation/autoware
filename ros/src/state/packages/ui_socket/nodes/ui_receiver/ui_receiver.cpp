@@ -17,7 +17,7 @@
 #define NODE_NAME	"ui_receiver"
 #define TOPIC_NR	(3)
 
-#define DEFAULT_PORT	(12345)
+#define DEFAULT_PORT	(5666)
 
 static int getConnect(int, int *, int *);
 static int getSensorValue(int, ros::Publisher[TOPIC_NR]);

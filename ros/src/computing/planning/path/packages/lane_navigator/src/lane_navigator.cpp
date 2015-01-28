@@ -81,11 +81,7 @@ void RouteCmdCallback(const ui_socket::route_cmd msg)
     fprintf(stderr, "%d: point[i].lat=%f, point[i].lon=%f\n", i, msg.point[i].lat, msg.point[i].lon);
 #endif 
 
-#if 0
     geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, HEIGHT);
-#else
-    geo.llh_to_xyz(msg.point[i].lon, msg.point[i].lat, HEIGHT);
-#endif
 
 #ifdef DEBUG_PRINT
     fprintf(stderr, "  geo.x()=%f, geo.y()=%f, geo.z()=%f\n", geo.x(),geo.y(),geo.z()); 
