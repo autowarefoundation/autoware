@@ -33,8 +33,9 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include<sys/time.h>
-//#include<unistd.h>
+#include <sys/time.h>
+#include <bitset>
+
 
 
 #include "opencv/cv.h" 
@@ -67,6 +68,13 @@ typedef struct _OBJPOS{
   string tm;
 }OBJPOS;
 
+typedef struct _SENDMSG{
+  char magic[4];
+  unsigned short major;
+  unsigned short minor;
+  unsigned int sqlnum;
+}SENDMSG;
+
 //for timestamp
 struct my_tm {
   time_t tim; // yyyymmddhhmmss
@@ -81,7 +89,9 @@ selfLocation sl;
 vector<OBJPOS> global_cp_vector;
 vector<OBJPOS> global_pp_vector;
 
-const char serverName[100] = "db1.ertl.jp";
+char defaultServerName[20] = "db1.ertl.jp";
+const char MAGIC[5] = "MPWC";
+
 string dbres;
 SendData sd;
 
@@ -117,7 +127,7 @@ string getNowTime(){
   tmp=localtime(&tv.tv_sec);
   qt->tim=mktime(tmp);
   qt->msec=tv.tv_usec/1000;
-  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%d\n",
+  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%d",
     tmp->tm_year + 1900, tmp->tm_mon + 1,
     tmp->tm_mday, tmp->tm_hour,
     tmp->tm_min, tmp->tm_sec,
@@ -159,36 +169,16 @@ string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>
     rescoord.Y = anglefixed.Z;
     rescoord.Z = anglefixed.Y;
 
-    //printf("obj position:%f,%f,%f\n",rescoord.X,rescoord.Y,rescoord.Z);
-
-    /*
-      I got my GPS location too.it`s my_xloc,my_yloc.
-      and I convert to plane rectangular coordinate  from latitude and longitude.
-     */
-
     //add plane rectangular coordinate to that of target car.
     rescoord.X += geo.x();
     rescoord.Y += geo.y();
     rescoord.Z += 0;
 
-    //printf("geo : %f\t%f\n",rescoord.X,rescoord.Y);
+    //create sql
+    oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
+    oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator->tm << "');\n";
 
-
-    //covert plane rectangular coordinate to latitude and longitude.
-    /*
-    calcoordinates cc;
-    RESULT res = cc.cal(rescoord.X,rescoord.Z,LAT_PLANE,LON_PLANE);
-
-    printf("object position : lat:%f\tlon:%f\n",res.lat,res.lon);
-    */
-
-    //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
-    //And if setting the other number of value , sendData will be failed.
-
-    //oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
-    //oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator->tm << "');\"";
-
-    oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
+    //oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
 
   
   }
@@ -214,16 +204,28 @@ void* wrapSender(void *tsd){
   geo_pos_conv geo;
   ostringstream oss;
 
+  /*
+  SENDMSG smsg;
+  memcpy(smsg.magic,MAGIC,4);
+  smsg.major = 1;
+  smsg.minor = 0;
+  smsg.sqlnum = global_cp_vector.size()+global_pp_vector.size()+1;
+  value.append(reinterpret_cast<char*>(&smsg),12);
+  */
+
+  //create header
   char magic[5] = "MPWC";
-  short major = 1;
-  short minor = 0;
-  int sql_num = global_cp_vector.size()+global_pp_vector.size()+1;
-  char header[12];
+  u_int16_t major = htons(1);
+  u_int16_t minor = htons(0);
+  u_int32_t sqlinst = htonl(2);
+  u_int32_t sqlnum = htonl(global_cp_vector.size()+global_pp_vector.size()+1);
+  char header[16];
   memcpy(header,magic,4);
   memcpy(&header[4],&major,2);
   memcpy(&header[6],&minor,2);
-  memcpy(&header[8],&sql_num,4);
-  //value.append(header,12);
+  memcpy(&header[8],&sqlinst,4);
+  memcpy(&header[12],&sqlnum,4);
+  value.append(header,16);
 
   //thread safe process for vector
 
@@ -262,26 +264,26 @@ void* wrapSender(void *tsd){
     value += makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo);
   }
 
-  //oss << "\"INSERT INTO POS(id,x,y,area,type,self,tm) ";
-  //oss << "values(0," <<  fixed << setprecision(6) << geo.x() << "," << fixed << setprecision(6) << geo.y() << ",0,0,1,'" << getNowTime()  << "');\"";
+  oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
+  oss << "values(0," <<  fixed << setprecision(6) << geo.x() << "," << fixed << setprecision(6) << geo.y() << ",0,0,1,'" << getNowTime() << "');\n";
 
-  oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
+  //oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
 
   //  printf("geo : %f\t%f\n",geo.x(),geo.y());
 
 
   //end charactor
-  oss << "<E>";
+  //oss << "<E>";
 
-  oss << getNowTime();
+  //oss << getNowTime();
 
   value += oss.str();
-  printf("%s\n",value.c_str());
+  //printf("%s\n",oss.str().c_str());
   //printf("%d\n",value.size());
   
 
-  //sd.setValue(value);
-  //sd.Sender();
+  sd.setValue(value);
+  sd.Sender();
 
 }
 
@@ -458,11 +460,23 @@ int main(int argc, char **argv){
 
   //set_car_position_xyz();
 
-  sd = SendData(const_cast<char*>(serverName),5777);
+  //set server name and port
+  char *serverName;
+  int portNum = 5678;
+  if(argc == 3){
+    serverName = argv[1];
+    portNum = atoi(argv[2]);
+  }else{
+    serverName = defaultServerName;
+  }
+  sd = SendData(serverName,portNum);
+
+  //test
 
   my_loc.X = 3513.1345669;
   my_loc.Y = 13658.9971525;
   my_loc.Z = 0;
+
 
   pthread_t th;
   if(pthread_create(&th, NULL, intervalCall, NULL)){

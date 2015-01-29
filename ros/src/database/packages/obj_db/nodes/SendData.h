@@ -16,7 +16,7 @@ class SendData{
 public:
     
 SendData() : 
-  serverName("db1.ertl.jp"),port(5678),value("")
+  serverName("db1.ertl.jp"),port(5555),value("")
     {
     }
   /*    
