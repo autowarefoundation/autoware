@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  runtime_manager
 )
 find_package(OpenCV REQUIRED)
 
@@ -19,6 +20,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES dpm_gpu
 #  DEPENDS system_lib
+CATKIN_DEPENDS runtime_manager
 )
 
 ###########
@@ -94,7 +96,9 @@ add_custom_command(
 )
 
 add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
-add_dependencies(dpm_gpu cuda_binary)
+add_dependencies(dpm_gpu 
+  cuda_binary
+  runtime_manager_generate_message_cpp)
 
 else()
 message("CUDA is not installed. 'libdpm_gpu' is not built.")
