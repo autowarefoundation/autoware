@@ -9,8 +9,8 @@
 #include <sensor_msgs/image_encodings.h>
 #include "dpm/ImageObjects.h"
 
-#define CAR_NODE "car_pos_xy_tracked"
-#define PED_NODE "pedestrian_pos_xy_tracked"
+#define CAR_NODE "car_pixel_xy_tracked"
+#define PED_NODE "pedestrian_pixel_xy_tracked"
 
 //TRACKING STUFF
 #include "opencv2/core/core.hpp"
@@ -454,13 +454,13 @@ int kf_main(int argc, char* argv[], const std::string& tracking_type)
 	string obj_topic_def;
 	if(tracking_type=="car")
 	{
-		published_node="car_pos_xy_tracked";
-		obj_topic_def="car_pos_xy";
+		published_node="car_pixel_xy_tracked";
+		obj_topic_def="car_pixel_xy";
 	}
 	else if (tracking_type=="pedestrian")
 	{
-		published_node="pedestrian_pos_xy_tracked";
-		obj_topic_def="pedestrian_pos_xy";
+		published_node="pedestrian_pixel_xy_tracked";
+		obj_topic_def="pedestrian_pixel_xy";
 	}
 	else
 	{

@@ -4,8 +4,11 @@
   <version>0.0.0</version>
   <description>The dpm_gpu package</description>
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
+  <maintainer email="hirabayashi@ertl.jp">Manato HIRABAYASHI</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>runtime_manager</build_depend>
+  <run_depend>runtime_manager</run_depend>
   <export>
   </export>
 </package>

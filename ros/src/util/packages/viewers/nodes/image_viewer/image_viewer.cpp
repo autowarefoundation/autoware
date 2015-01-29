@@ -121,8 +121,8 @@ int main(int argc, char **argv)
     	}
 	else
 	{
-		ROS_INFO("No car positions node received, defaulting to car_pos_xy, you can use _car_node:=YOUR_TOPIC");
-		car_node = "/car_pos_xy";
+		ROS_INFO("No car positions node received, defaulting to car_pixel_xy, you can use _car_node:=YOUR_TOPIC");
+		car_node = "/car_pixel_xy";
 	}
 
 	if (private_nh.getParam("pedestrian_node", pedestrian_node))
@@ -131,8 +131,8 @@ int main(int argc, char **argv)
     	}
 	else
 	{
-		ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pos_xy, you can use _pedestrian_node:=YOUR_TOPIC");
-		pedestrian_node = "/pedestrian_pos_xy";
+		ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xy, you can use _pedestrian_node:=YOUR_TOPIC");
+		pedestrian_node = "/pedestrian_pixel_xy";
 	}
 
 	cv::generateColors(_colors, 25);

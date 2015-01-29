@@ -351,12 +351,7 @@ class MyFrame(rtmgr.MyFrame):
 		pdic = info['pdic']
 		prm = self.get_param(info['param'])
 		dlg = MyDialogParam(self, pdic=pdic, prm=prm)
-		if dlg.ShowModal() == 0 and 'pub' in prm:
-			n = 1 #
-			r = rospy.Rate(10)
-			for i in range(n):
-				self.publish_param_topic(pdic, prm)
-				r.sleep()
+		dlg.ShowModal()
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -924,6 +919,11 @@ class VarPanel(wx.Panel):
 			s = str(Decimal(v).quantize(Decimal('.01')))
 		self.tc.SetValue(s)
 
+		panel_v = self.GetParent()
+		dlg = panel_v.GetParent()
+		dlg.update_pdic()
+		dlg.publish()
+
 	def OnTextEnter(self, event):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
@@ -931,6 +931,7 @@ class VarPanel(wx.Panel):
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
+		self.pdic_bak = self.pdic.copy()
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
 
@@ -952,14 +953,25 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.SetTitle(self.prm['name'])
 
 	def OnOk(self, event):
+		self.update_pdic()
+		self.publish()
+		self.EndModal(0)
+
+	def OnCancel(self, event):
+		self.pdic.update(self.pdic_bak) # restore
+		self.publish()
+		self.EndModal(-1)
+
+	def update_pdic(self):
 		vars = self.prm['vars']
 		for var in vars:
 			v = self.vps[ vars.index(var) ].get_tc_v()
 			self.pdic[ var['name'] ] = v
-		self.EndModal(0)
 
-	def OnCancel(self, event):
-		self.EndModal(-1)
+	def publish(self):
+		if 'pub' in self.prm:
+			frame = self.GetParent()
+			frame.publish_param_topic(self.pdic, self.prm)
 
 class MyApp(wx.App):
 	def OnInit(self):
