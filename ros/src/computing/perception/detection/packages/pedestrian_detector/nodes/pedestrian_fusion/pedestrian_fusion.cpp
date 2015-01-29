@@ -104,13 +104,13 @@ int main(int argc, char **argv)
      * away the oldest ones.
      */
 
-    ros::Subscriber pedestrian_pos_xy_sub = n.subscribe("pedestrian_pos_xy_tracked", 1, ImageObjectsCallback);
+    ros::Subscriber pedestrian_pixel_xy_sub = n.subscribe("pedestrian_pixel_xy_tracked", 1, ImageObjectsCallback);
     ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
     ros::Subscriber points_image_sub =n.subscribe("points_image", 1, PointsImageCallback);
 #if _DEBUG
     ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
-    fused_objects = n.advertise<car_detector::FusedObjects>("pedestrian_pos_xyz", 1);
+    fused_objects = n.advertise<car_detector::FusedObjects>("pedestrian_pixel_xyz", 1);
 
     /**
      * ros::spin() will enter a loop, pumping callbacks.  With this version, all

@@ -162,10 +162,10 @@ int main(int argc, char* argv[])
     std::string published_node;
     std::string model_file(STR(OPENCV_MODEL_DIR));
     if (detection_type == "car") {
-        published_node = "car_pos_xy";
+        published_node = "car_pixel_xy";
 	model_file.append("car_2008.xml");
     } else if (detection_type == "pedestrian") {
-	published_node = "pedestrian_pos_xy";
+	published_node = "pedestrian_pixel_xy";
 	model_file.append("person.xml");
     } else {
         std::cerr << "Invalid detection type: " << detection_type

@@ -31,7 +31,7 @@ void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, do
 	}
 }
 
-void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+void car_pixel_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
     if(image == NULL){
       return;
@@ -40,7 +40,7 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
     showImage();
 }
 
-void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+void pedestrian_pixel_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
     if(image == NULL){
       return;
@@ -202,8 +202,8 @@ int main(int argc, char **argv)
      */
 
     ros::Subscriber image_sub = n.subscribe("/image_raw", 1, imageCallback);
-    ros::Subscriber car_pos_xyz_sub = n.subscribe("/car_pos_xyz", 1, car_pos_xyzCallback);
-    ros::Subscriber pedestrian_pos_xyz_sub = n.subscribe("/pedestrian_pos_xyz", 1, pedestrian_pos_xyzCallback);
+    ros::Subscriber car_pixel_xyz_sub = n.subscribe("/car_pixel_xyz", 1, car_pixel_xyzCallback);
+    ros::Subscriber pedestrian_pixel_xyz_sub = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pixel_xyzCallback);
 
     /**
      * ros::spin() will enter a loop, pumping callbacks.  With this version, all
