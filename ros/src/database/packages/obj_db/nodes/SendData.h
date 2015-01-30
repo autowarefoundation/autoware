@@ -116,7 +116,8 @@ SendData() :
       return result;
     }
 
-    printf("send data : %s\n",value.c_str());
+    //    printf("send data : %s\n",value.c_str());
+    std::cout << "send data : " << value << std::endl;
     n = write(sock, value.c_str(), value.size());
     if (n < 0) {
         perror("write");

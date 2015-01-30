@@ -51,13 +51,10 @@
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
 
-using namespace std;
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
 
-/*
-  our rectangular plane is 7 in Japan.
-*/
-const double LAT_PLANE = 36;//136.906565;
-const double LON_PLANE = 137.1;//35.180188;
+using namespace std;
 
 typedef struct _OBJPOS{
   int x1;
@@ -67,13 +64,6 @@ typedef struct _OBJPOS{
   float distance;
   string tm;
 }OBJPOS;
-
-typedef struct _SENDMSG{
-  char magic[4];
-  unsigned short major;
-  unsigned short minor;
-  unsigned int sqlnum;
-}SENDMSG;
 
 //for timestamp
 struct my_tm {
@@ -86,26 +76,38 @@ pthread_mutex_t ped_mutex;
 pthread_mutex_t pos_mutex;
 
 selfLocation sl;
+
+//store subscribed value
 vector<OBJPOS> global_cp_vector;
 vector<OBJPOS> global_pp_vector;
 
+//default server name to send data
 char defaultServerName[20] = "db1.ertl.jp";
+//magic that I am C++
 const char MAGIC[5] = "MPWC";
 
-string dbres;
+//flag for comfirming whether updating angle and position or not
+bool angleGetFlag;
+bool positionGetFlag;
+
+//send to server class
 SendData sd;
 
+//store own position and direction now.updated by position_getter
 LOCATION my_loc;
 ANGLE angle;
 
-double cameraMatrix[4][4] = {
+
+double cameraMatrix[4][4];
+/*
+ = {
   {-7.8577658642752374e-03, -6.2035361880992401e-02,9.9804301981022692e-01, 5.1542126095196206e-01},
   {-9.9821250329813849e-01, 5.9620033356180935e-02,-4.1532977104442731e-03, -2.9214878315161133e-02},
   {-5.9245706805522491e-02, -9.9629165684497312e-01,-6.2392954139163306e-02, -6.6728858508628075e-01},
   {0, 0, 0, 1}
  
 };
-
+*/
 
 void printDiff(struct timeval begin, struct timeval end){
   long diff;
@@ -183,6 +185,9 @@ string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>
   
   }
 
+  //  cout << "recognized obj position : " << endl << oss.str() << endl;
+  
+
   return oss.str();
 
 }
@@ -192,33 +197,40 @@ string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>
 
 //wrap SendData class
 void* wrapSender(void *tsd){
-  
+
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
+  
   vector<OBJPOS> car_position_vector(global_cp_vector.size());
   vector<OBJPOS>::iterator cp_iterator;
   vector<OBJPOS> pedestrian_position_vector(global_pp_vector.size());
   vector<OBJPOS>::iterator pp_iterator;
-
   string value = "";
   geo_pos_conv geo;
   ostringstream oss;
 
-  /*
-  SENDMSG smsg;
-  memcpy(smsg.magic,MAGIC,4);
-  smsg.major = 1;
-  smsg.minor = 0;
-  smsg.sqlnum = global_cp_vector.size()+global_pp_vector.size()+1;
-  value.append(reinterpret_cast<char*>(&smsg),12);
-  */
+  //thread safe process for vector
+  pthread_mutex_lock( &mutex );
+  std::copy(global_cp_vector.begin(), global_cp_vector.end(), car_position_vector.begin());
+  global_cp_vector.clear();
+  vector<OBJPOS>(global_cp_vector).swap(global_cp_vector);
+  pthread_mutex_unlock( &mutex );
+
+  pthread_mutex_lock( &ped_mutex );
+  std::copy(global_pp_vector.begin(), global_pp_vector.end(), pedestrian_position_vector.begin());
+  global_pp_vector.clear();
+  vector<OBJPOS>(global_pp_vector).swap(global_pp_vector);
+  pthread_mutex_unlock( &ped_mutex );
+
+  cp_iterator = car_position_vector.begin();
+  pp_iterator = pedestrian_position_vector.begin();
 
   //create header
   char magic[5] = "MPWC";
   u_int16_t major = htons(1);
   u_int16_t minor = htons(0);
   u_int32_t sqlinst = htonl(2);
-  u_int32_t sqlnum = htonl(global_cp_vector.size()+global_pp_vector.size()+1);
+  u_int32_t sqlnum = htonl(car_position_vector.size()+pedestrian_position_vector.size()+1);
   char header[16];
   memcpy(header,magic,4);
   memcpy(&header[4],&major,2);
@@ -227,40 +239,27 @@ void* wrapSender(void *tsd){
   memcpy(&header[12],&sqlnum,4);
   value.append(header,16);
 
-  //thread safe process for vector
+  cout << "sqlnum : " << car_position_vector.size() + pedestrian_position_vector.size() + 1 << endl;
 
-  pthread_mutex_lock( &mutex );
-  std::copy(global_cp_vector.begin(), global_cp_vector.end(), car_position_vector.begin());
-  global_cp_vector.clear();
-  pthread_mutex_unlock( &mutex );
 
-  pthread_mutex_lock( &ped_mutex );
-  std::copy(global_pp_vector.begin(), global_pp_vector.end(), pedestrian_position_vector.begin());
-  global_pp_vector.clear();
-  pthread_mutex_unlock( &ped_mutex );
-
-  cp_iterator = car_position_vector.begin();
-  pp_iterator = pedestrian_position_vector.begin();
-
+  //calculate own coordinate from own lati and longi value
+  //get my position now
   pthread_mutex_lock( &pos_mutex );
   double my_xloc = my_loc.X;
   double my_yloc = my_loc.Y;
   double my_zloc = my_loc.Z;
   pthread_mutex_unlock( &pos_mutex );
-  //sample Longitude and Latitude 3513.1345669,N,13658.9971525,E
 
-  //printf("my position : %f %f %f\n",my_xloc,my_yloc,my_zloc);
   geo.set_plane(7);
   geo.set_llh(my_xloc,my_yloc,my_zloc);
 
-  //printf("%d\n",car_position_vector.size());
-  //printf("%d\n",pedestrian_position_vector.size());
 
-  if(car_position_vector.size() != 0 ){
+  //get data of car and pedestrian recognizing
+  if(car_position_vector.size() > 0 ){
     value += makeSendDataDetectedObj(car_position_vector,cp_iterator,geo);
   }
 
-  if(pedestrian_position_vector.size() != 0){
+  if(pedestrian_position_vector.size() > 0){
     value += makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo);
   }
 
@@ -271,19 +270,14 @@ void* wrapSender(void *tsd){
 
   //  printf("geo : %f\t%f\n",geo.x(),geo.y());
 
-
-  //end charactor
-  //oss << "<E>";
-
-  //oss << getNowTime();
-
   value += oss.str();
   //printf("%s\n",oss.str().c_str());
   //printf("%d\n",value.size());
   
 
   sd.setValue(value);
-  sd.Sender();
+  string res = sd.Sender();
+  cout << "retrun message from DBserver : " << res << endl;
 
 }
 
@@ -293,7 +287,24 @@ void* intervalCall(void *a){
   pthread_t th;
 
   while(1){
-    //if(global_cp_vector.size()<=0) continue;
+    //If angle and position data is not updated from prevous data send,
+    //data is not sent
+    if(!(angleGetFlag && positionGetFlag)) {
+      sleep(1);
+      continue;
+    }
+    angleGetFlag = false;
+    positionGetFlag = false;
+
+    //If position is over range,skip loop
+    if((my_loc.X > 180.0 && my_loc.X < -180.0 ) || 
+       (my_loc.Y > 180.0 && my_loc.Y < -180.0 ) || 
+       my_loc.Z != 0.0 ){
+      fprintf(stderr,"GNSS value is invalid.\n");
+      sleep(1);
+      continue;
+    }
+
     //create new thread for socket communication.      
     if(pthread_create(&th, NULL, wrapSender, NULL)){
       printf("thread create error\n");
@@ -302,6 +313,7 @@ void* intervalCall(void *a){
     if(pthread_join(th,NULL)){
       printf("thread join error.\n");
     }
+    
   }
 }
 
@@ -309,27 +321,32 @@ void* intervalCall(void *a){
 void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
   OBJPOS cp;
-
-  pthread_mutex_lock( &mutex );
+  
+  pthread_mutex_lock( &mutex );  
 
   //認識した車の数だけ繰り返す
   for (int i = 0; i < fused_objects.car_num; i++){
+
+    //If distance is zero, we cannot calculate position of recognized object
+    //so skip loop
+    if(fused_objects.distance.at(i) <= 0) continue;
+
     cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
     cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
     cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
     cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
 
     cp.distance = fused_objects.distance.at(i);
-
     cp.tm = getNowTime();
 
-    printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
+    //printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
     global_cp_vector.push_back(cp);
       
   }
-  pthread_mutex_unlock( &mutex );
 
+  pthread_mutex_unlock( &mutex );  
+    
   //  printf("car position get\n\n");
 
 }
@@ -337,10 +354,12 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
   OBJPOS cp;
-  
-  pthread_mutex_lock( &ped_mutex );
+
+  pthread_mutex_lock( &ped_mutex );  
 
   for(int i = 0; i < fused_objects.car_num; i++) { //fused_objects.car_num は障害物の個数
+    //If distance is zero, skip loop
+    if(fused_objects.distance.at(i) <= 0) continue;
 
     cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
     cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
@@ -348,15 +367,16 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
     cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
 
     cp.distance = fused_objects.distance.at(i);
+    cp.tm = getNowTime();
 
     printf("\npedestrian : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
     global_pp_vector.push_back(cp);
 
   }
-    
-  pthread_mutex_unlock( &ped_mutex );
 
+  pthread_mutex_unlock( &ped_mutex );  
+    
   //  printf("pedestrian position get\n\n");
 }
 
@@ -368,6 +388,7 @@ void azimuth_getter(const geometry_msgs::TwistStamped& azi)
   angle.thiX = 0;
   angle.thiY = azi.twist.angular.z*180/M_PI;
   angle.thiZ = 0;
+  angleGetFlag = true;
   //printf("azimuth : %f\n",angle.thiY);
   //printf("ok\n");
 
@@ -375,13 +396,12 @@ void azimuth_getter(const geometry_msgs::TwistStamped& azi)
 
 void position_getter(const sensor_msgs::NavSatFix& pos)
 {
-
   pthread_mutex_lock( &pos_mutex );
   my_loc.X = pos.latitude;
   my_loc.Y = pos.longitude;
   my_loc.Z = 0;
+  positionGetFlag = true;
   pthread_mutex_unlock( &pos_mutex );
-  
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 
 }
@@ -392,8 +412,6 @@ void set_car_position_xyz()
 {
   int i;
   OBJPOS cp;
-
-  pthread_mutex_lock( &mutex );
 
   global_cp_vector.clear();
 
@@ -409,7 +427,6 @@ void set_car_position_xyz()
     global_cp_vector.push_back(cp);
       
   }
-  pthread_mutex_unlock( &mutex );
 
 }
 
@@ -426,35 +443,52 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
 
-  ros::Subscriber car_pos_xyz = n.subscribe("/car_pos_xyz", 5, car_pos_xyzCallback);
-  ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pos_xyz", 5, pedestrian_pos_xyzCallback);
+  ros::Subscriber car_pos_xyz = n.subscribe("/car_pixel_xyz", 5, car_pos_xyzCallback);
+  ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 5, pedestrian_pos_xyzCallback);
 
-  ros::Subscriber azm = n.subscribe("vel", 10, azimuth_getter);
-  ros::Subscriber my_pos = n.subscribe("fix", 10, position_getter);
+  ros::Subscriber azm = n.subscribe("/vel", 10, azimuth_getter);
+  ros::Subscriber my_pos = n.subscribe("/fix", 10, position_getter);
 
-  /*
-  cv::Mat intrinsic;
-  std::string camera_yaml; 
-  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,STR(CAMERA_YAML)); 
-  cv::FileStorage fs_auto_file(camera_yaml.c_str(), cv::FileStorage::READ); 
-  if(!fs_auto_file.isOpened()){
+  cv::Mat Cintrinsic;
+  std::string camera_yaml;
+
+  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
+
+  cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ); 
+  if(!camera_file.isOpened()){
     fprintf(stderr,"%s, : cannot open file\n",camera_yaml.c_str());
     exit(EXIT_FAILURE);
   }
-  fs_auto_file["intrinsic"] >> intrinsic; 
-  fs_auto_file.release(); 
+  camera_file["intrinsic"] >> Cintrinsic; 
+  camera_file.release(); 
 
-  double fkx = intrinsic.at<float>(0,0);  
-  double fky = intrinsic.at<float>(1,1); 
-  double Ox = intrinsic.at<float>(0,2);
-  double Oy = intrinsic.at<float>(1,2); 
-  */
+  double fkx = Cintrinsic.at<float>(0,0);
+  double fky = Cintrinsic.at<float>(1,1);
+  double Ox = Cintrinsic.at<float>(0,2);
+  double Oy = Cintrinsic.at<float>(1,2);
 
-  double fkx = (7.97983032e+02)/2;
+  cv::Mat Lintrinsic;
+  std::string lidar_3d_yaml = "/home/auto1/.ros/autoware/camera_lidar_3d.yaml";
+
+  cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ); 
+  if(!lidar_3d_file.isOpened()){
+    fprintf(stderr,"%s, : cannot open file\n",lidar_3d_yaml.c_str());
+    exit(EXIT_FAILURE);
+  }
+  lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic; 
+  lidar_3d_file.release(); 
+
+  for(int i=0; i<4 ; i++){
+    for(int j=0; j<4 ; j++){
+      cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
+    }
+  }
+  /*
+  double fkx = 5.83199829e+02;
   double fky = 3.74826355e+02;
-  double Ox =  (7.97696411e+02)/2;
-  double Oy = 2.54657837e+02;
-
+  double Ox =  5.83989319e+02;
+  double Oy = 2.41745468e+02;
+  */
 
   sl.setCameraParam(fkx,fky,Ox,Oy);
 
@@ -471,12 +505,9 @@ int main(int argc, char **argv){
   }
   sd = SendData(serverName,portNum);
 
-  //test
-
-  my_loc.X = 3513.1345669;
-  my_loc.Y = 13658.9971525;
-  my_loc.Z = 0;
-
+  //set angle and position flag : false at first
+  angleGetFlag = false;
+  positionGetFlag = false;
 
   pthread_t th;
   if(pthread_create(&th, NULL, intervalCall, NULL)){
