@@ -101,10 +101,10 @@ public class DrawLeftView extends View{
 		
 		paint.setColor(color);
 		topShader = new LinearGradient(SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight,
-					       SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight / 5,
+					       SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight / 8,
 					       color, Color.BLACK, Shader.TileMode.CLAMP);
 		bottomShader = new LinearGradient(SoundManagementActivity.viewWidth, 0,
-						  SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight - SoundManagementActivity.viewHeight / 5,
+						  SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight - SoundManagementActivity.viewHeight / 8,
 						  color, Color.BLACK, Shader.TileMode.CLAMP);
 		
 		mHandler.post(new Runnable(){
