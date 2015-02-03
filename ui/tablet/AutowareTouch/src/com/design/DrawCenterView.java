@@ -101,10 +101,10 @@ public class DrawCenterView extends View{
 		
 		paint.setColor(color);
 		topShader = new LinearGradient(SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight,
-					       SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight / 50,
+					       SoundManagementActivity.viewWidth, 0,
 					       color, Color.BLACK, Shader.TileMode.CLAMP);
 		bottomShader = new LinearGradient(SoundManagementActivity.viewWidth, 0,
-						  SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight - SoundManagementActivity.viewHeight / 50,
+						  SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight,
 						  color, Color.BLACK, Shader.TileMode.CLAMP);
 		
 		mHandler.post(new Runnable(){
