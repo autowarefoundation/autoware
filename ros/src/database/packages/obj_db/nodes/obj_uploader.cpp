@@ -443,11 +443,11 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
 
-  ros::Subscriber car_pos_xyz = n.subscribe("/car_pixel_xyz", 5, car_pos_xyzCallback);
-  ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 5, pedestrian_pos_xyzCallback);
+  ros::Subscriber car_pos_xyz = n.subscribe("/car_pixel_xyz", 1, car_pos_xyzCallback);
+  ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
-  ros::Subscriber azm = n.subscribe("/vel", 10, azimuth_getter);
-  ros::Subscriber my_pos = n.subscribe("/fix", 10, position_getter);
+  ros::Subscriber azm = n.subscribe("/vel", 1, azimuth_getter);
+  ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
 
   cv::Mat Cintrinsic;
   std::string camera_yaml;
