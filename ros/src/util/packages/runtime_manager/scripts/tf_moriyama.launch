@@ -1,9 +1,0 @@
-<!---->
-<launch>
-<!-- worldからmapへのtf -->
-<node pkg="tf"  type="static_transform_publisher" name="world_to_map" args="14771 84757 -39 0 0 0 /world /map 10" />
-
-<!-- mapからmobilityへのtf -->
-<node pkg="tf"  type="static_transform_publisher" name="map_to_mobility" args="0 0 0 0 0 0 /map /mobility 10" />
-
-</launch>
