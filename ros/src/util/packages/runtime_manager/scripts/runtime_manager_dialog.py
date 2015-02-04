@@ -561,6 +561,8 @@ class MyFrame(rtmgr.MyFrame):
 			'sensor_fusion'	: self.sensing_cmd,
 			'rosbag_record' : self.sensing_cmd,
 			'rosbag_play'	: self.simulation_cmd,
+			'rosbag_play_clock'
+					: self.simulation_cmd,
 			'pmap'		: self.simulation_cmd,
 			'vmap'		: self.simulation_cmd,
 			'trajectory'	: self.simulation_cmd,
