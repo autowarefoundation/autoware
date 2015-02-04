@@ -152,7 +152,13 @@ class MyFrame(rtmgr.MyFrame):
 			s = yaml.dump(save_dic, default_flow_style=False)
 			print 'save\n', s # for debug
 			f.write(s)
-			f.close()		
+			f.close()
+
+		autoware_dir = os.path.abspath(os.path.dirname(__file__)) + '/../../../../../../'
+		autoware_dir = os.path.abspath(autoware_dir)
+		shutdown_sh = autoware_dir + '/shutdown.sh'
+		if os.path.exists(shutdown_sh):
+			os.system(shutdown_sh)
 
 		self.Destroy()
 
