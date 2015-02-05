@@ -218,12 +218,12 @@ int main(int argc, char **argv)
 #if 1 // AXE
 	std::string published_topic;
 	if (detection_type == "car") {
-		published_topic = "car_pos_xy";
+		published_topic = "car_pixel_xy";
 		com_name = STR(DPM_GPU_ROOT) "car_comp.csv";
 		root_name = STR(DPM_GPU_ROOT) "car_root.csv";
 		part_name = STR(DPM_GPU_ROOT) "car_part.csv";
 	} else if (detection_type == "pedestrian") {
-		published_topic = "pedestrian_pos_xy";
+		published_topic = "pedestrian_pixel_xy";
 		com_name = STR(DPM_GPU_ROOT)  "person_comp.csv";
 		root_name = STR(DPM_GPU_ROOT) "person_root.csv";
 		part_name = STR(DPM_GPU_ROOT) "person_part.csv";

@@ -12,7 +12,7 @@
 
 #include "request.h"
 
-static constexpr int DEFAULT_PORT = 23456;
+static constexpr int DEFAULT_PORT = 5777;
 static constexpr int LISTEN_BACKLOG = 10;
 static constexpr uint32_t QUEUE_SIZE = 1000;
 static constexpr double SUBSCRIBE_HZ = 1;

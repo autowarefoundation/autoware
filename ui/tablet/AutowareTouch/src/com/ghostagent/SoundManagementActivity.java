@@ -194,6 +194,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	abstract class Client {
+		private static final int TIMEOUT = 3;
+
 		private int sockfd = -1;
 
 		boolean isClosed() {
@@ -208,7 +210,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			if (sockfd < 0)
 				return false;
 
-			if (SoundManagementNative.connect(sockfd, address, port) < 0) {
+			if (SoundManagementNative.connect(sockfd, TIMEOUT, address, port) < 0) {
 				close();
 				return false;
 			}
@@ -222,19 +224,19 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 
 		void sendInt(int arg0) {
-			SoundManagementNative.sendInt(sockfd, arg0);
+			SoundManagementNative.sendInt(sockfd, TIMEOUT, arg0);
 		}
 
 		void sendIntTuple(int arg0, int arg1) {
-			SoundManagementNative.sendIntTuple(sockfd, arg0, arg1);
+			SoundManagementNative.sendIntTuple(sockfd, TIMEOUT, arg0, arg1);
 		}
 
 		void sendDoubleArray(double arg0[]) {
-			SoundManagementNative.sendDoubleArray(sockfd, arg0);
+			SoundManagementNative.sendDoubleArray(sockfd, TIMEOUT, arg0);
 		}
 
 		int recvInt() {
-			return SoundManagementNative.recvInt(sockfd);
+			return SoundManagementNative.recvInt(sockfd, TIMEOUT);
 		}
 	}
 
@@ -270,6 +272,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int ERROR = 1;
 		static final int CAN = 2;
 		static final int MODE = 3;
+
+		static final int MISS_BEACON_LIMIT = 10;
 
 		int[] recv(int response) {
 			int[] data = new int[2];
@@ -601,11 +605,14 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	public void startInformationReceiver() {
 		new Thread(new Runnable() {
 			public void run() {
+				int missBeacon = 0;
+
 				while (bIsKnightRiding) {
 					int[] data = informationClient.recv(0);
 
 					switch (data[0]) {
 					case InformationClient.BEACON:
+						missBeacon = 0;
 						break;
 					case InformationClient.ERROR:
 						switch (data[1]) {
@@ -625,6 +632,21 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 							drawCenterView.setColor(Color.YELLOW);
 						}
 						break;
+					default:
+						if (bIsServerConnecting) {
+							if (missBeacon < InformationClient.MISS_BEACON_LIMIT) {
+								missBeacon++;
+							} else {
+								bIsServerConnecting = false;
+
+								commandClient.send(CommandClient.EXIT, 0);
+
+								commandClient.close();
+								informationClient.close();
+
+								missBeacon = 0;
+							}
+						}
 					}
 				}
 			}

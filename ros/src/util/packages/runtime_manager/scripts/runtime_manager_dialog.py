@@ -152,7 +152,13 @@ class MyFrame(rtmgr.MyFrame):
 			s = yaml.dump(save_dic, default_flow_style=False)
 			print 'save\n', s # for debug
 			f.write(s)
-			f.close()		
+			f.close()
+
+		autoware_dir = os.path.abspath(os.path.dirname(__file__)) + '/../../../../../../'
+		autoware_dir = os.path.abspath(autoware_dir)
+		shutdown_sh = autoware_dir + '/shutdown.sh'
+		if os.path.exists(shutdown_sh):
+			os.system(shutdown_sh)
 
 		self.Destroy()
 
@@ -180,7 +186,7 @@ class MyFrame(rtmgr.MyFrame):
 	# Main Tab
 	#
 	def OnStart(self, event):
-                cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
+		cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
 		os.system(cmd)
 
 	def OnStop(self, event):
@@ -351,12 +357,7 @@ class MyFrame(rtmgr.MyFrame):
 		pdic = info['pdic']
 		prm = self.get_param(info['param'])
 		dlg = MyDialogParam(self, pdic=pdic, prm=prm)
-		if dlg.ShowModal() == 0 and 'pub' in prm:
-			n = 1 #
-			r = rospy.Rate(10)
-			for i in range(n):
-				self.publish_param_topic(pdic, prm)
-				r.sleep()
+		dlg.ShowModal()
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -560,6 +561,8 @@ class MyFrame(rtmgr.MyFrame):
 			'sensor_fusion'	: self.sensing_cmd,
 			'rosbag_record' : self.sensing_cmd,
 			'rosbag_play'	: self.simulation_cmd,
+			'rosbag_play_clock'
+					: self.simulation_cmd,
 			'pmap'		: self.simulation_cmd,
 			'vmap'		: self.simulation_cmd,
 			'trajectory'	: self.simulation_cmd,
@@ -592,11 +595,17 @@ class MyFrame(rtmgr.MyFrame):
 			names = self.vmap_names if key == 'vmap' else None
 			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
 
+		if key == 'rosbag_play':
+			rate = self.val_get('text_ctrl_rate_' + key)
+			if rate and rate is not '':
+				add_args = add_args if add_args else []
+				add_args = [ '-r', rate ] + add_args
+
 		proc = self.launch_kill(True, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd, proc)
 
-		self.enable_key_objs([ 'button_kill_' ], key)
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key, en=False)
+		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_' ], key, en=False)
 
 	def OnKill(self, event):
 		kill_obj = event.GetEventObject()
@@ -615,8 +624,20 @@ class MyFrame(rtmgr.MyFrame):
 		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
 		cmd_dic[obj] = (cmd, proc)
 
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key)
-		self.enable_key_objs([ 'button_kill_' ], key, en=False)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_' ], key)
+		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
+
+	def OnPause(self, event):
+		pause_obj = event.GetEventObject()
+		key = self.obj_key_get(pause_obj, ['button_pause_'])
+		if not key:
+			return
+		obj = self.obj_get('button_launch_' + key)
+		cmd_dic = self.get_cmd_dic(key)
+		if obj not in cmd_dic:
+			return
+		(cmd, proc) = cmd_dic[obj]
+		proc.stdin.write(' ')
 
 	def OnRef(self, event):
 		b = event.GetEventObject()
@@ -752,7 +773,7 @@ class MyFrame(rtmgr.MyFrame):
 				pos = args.index(s) if s in args else -1
 				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
 			print(args) # for debug
-			proc = subprocess.Popen(args)
+			proc = subprocess.Popen(args, stdin=subprocess.PIPE)
 			self.all_procs.append(proc)
 		else:
 			terminate_children(proc, sigint)
@@ -805,6 +826,12 @@ class MyFrame(rtmgr.MyFrame):
 
 	def name_get(self, obj):
 		return get_top( [ nm for nm in dir(self) if getattr(self, nm) is obj ] )
+
+	def val_get(self, name):
+		obj = self.obj_get(name)
+		if obj is None:
+			return None
+		return obj.GetValue() if getattr(obj, 'GetValue', None) else None
 
 	def obj_get(self, name):
 		return getattr(self, name, None)
@@ -924,6 +951,11 @@ class VarPanel(wx.Panel):
 			s = str(Decimal(v).quantize(Decimal('.01')))
 		self.tc.SetValue(s)
 
+		panel_v = self.GetParent()
+		dlg = panel_v.GetParent()
+		dlg.update_pdic()
+		dlg.publish()
+
 	def OnTextEnter(self, event):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
@@ -931,6 +963,7 @@ class VarPanel(wx.Panel):
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
+		self.pdic_bak = self.pdic.copy()
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
 
@@ -952,14 +985,25 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.SetTitle(self.prm['name'])
 
 	def OnOk(self, event):
+		self.update_pdic()
+		self.publish()
+		self.EndModal(0)
+
+	def OnCancel(self, event):
+		self.pdic.update(self.pdic_bak) # restore
+		self.publish()
+		self.EndModal(-1)
+
+	def update_pdic(self):
 		vars = self.prm['vars']
 		for var in vars:
 			v = self.vps[ vars.index(var) ].get_tc_v()
 			self.pdic[ var['name'] ] = v
-		self.EndModal(0)
 
-	def OnCancel(self, event):
-		self.EndModal(-1)
+	def publish(self):
+		if 'pub' in self.prm:
+			frame = self.GetParent()
+			frame.publish_param_topic(self.pdic, self.prm)
 
 class MyApp(wx.App):
 	def OnInit(self):
