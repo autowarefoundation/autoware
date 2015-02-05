@@ -596,7 +596,7 @@ class MyFrame(rtmgr.MyFrame):
 			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
 
 		if key == 'rosbag_play':
-			rate = self.val_get('text_ctrl_' + key + '_rate')
+			rate = self.val_get('text_ctrl_rate_' + key)
 			if rate and rate is not '':
 				add_args = add_args if add_args else []
 				add_args = [ '-r', rate ] + add_args
@@ -605,7 +605,7 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key)
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key, en=False)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_' ], key, en=False)
 
 	def OnKill(self, event):
 		kill_obj = event.GetEventObject()
@@ -624,7 +624,7 @@ class MyFrame(rtmgr.MyFrame):
 		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
 		cmd_dic[obj] = (cmd, proc)
 
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_' ], key)
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
 
 	def OnPause(self, event):
