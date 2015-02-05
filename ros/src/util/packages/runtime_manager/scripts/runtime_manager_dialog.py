@@ -595,6 +595,12 @@ class MyFrame(rtmgr.MyFrame):
 			names = self.vmap_names if key == 'vmap' else None
 			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
 
+		if key == 'rosbag_play':
+			rate = self.val_get('text_ctrl_' + key + '_rate')
+			if rate and rate is not '':
+				add_args = add_args if add_args else []
+				add_args = [ '-r', rate ] + add_args
+
 		proc = self.launch_kill(True, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd, proc)
 
@@ -820,6 +826,12 @@ class MyFrame(rtmgr.MyFrame):
 
 	def name_get(self, obj):
 		return get_top( [ nm for nm in dir(self) if getattr(self, nm) is obj ] )
+
+	def val_get(self, name):
+		obj = self.obj_get(name)
+		if obj is None:
+			return None
+		return obj.GetValue() if getattr(obj, 'GetValue', None) else None
 
 	def obj_get(self, name):
 		return getattr(self, name, None)
