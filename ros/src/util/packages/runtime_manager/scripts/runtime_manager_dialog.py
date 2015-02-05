@@ -186,7 +186,7 @@ class MyFrame(rtmgr.MyFrame):
 	# Main Tab
 	#
 	def OnStart(self, event):
-                cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
+		cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
 		os.system(cmd)
 
 	def OnStop(self, event):
@@ -598,7 +598,7 @@ class MyFrame(rtmgr.MyFrame):
 		proc = self.launch_kill(True, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd, proc)
 
-		self.enable_key_objs([ 'button_kill_' ], key)
+		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key)
 		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key, en=False)
 
 	def OnKill(self, event):
@@ -619,7 +619,19 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 
 		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_' ], key)
-		self.enable_key_objs([ 'button_kill_' ], key, en=False)
+		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
+
+	def OnPause(self, event):
+		pause_obj = event.GetEventObject()
+		key = self.obj_key_get(pause_obj, ['button_pause_'])
+		if not key:
+			return
+		obj = self.obj_get('button_launch_' + key)
+		cmd_dic = self.get_cmd_dic(key)
+		if obj not in cmd_dic:
+			return
+		(cmd, proc) = cmd_dic[obj]
+		proc.stdin.write(' ')
 
 	def OnRef(self, event):
 		b = event.GetEventObject()
@@ -755,7 +767,7 @@ class MyFrame(rtmgr.MyFrame):
 				pos = args.index(s) if s in args else -1
 				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
 			print(args) # for debug
-			proc = subprocess.Popen(args)
+			proc = subprocess.Popen(args, stdin=subprocess.PIPE)
 			self.all_procs.append(proc)
 		else:
 			terminate_children(proc, sigint)
