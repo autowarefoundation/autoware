@@ -35,8 +35,6 @@ subs :
 buttons:
   rosbag_play :
     run : rosbag play
-  rosbag_play_clock :
-    run : rosbag play
   pmap :
     run :
       selobj : checkbox_point_map_update

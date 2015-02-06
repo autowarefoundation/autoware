@@ -561,8 +561,6 @@ class MyFrame(rtmgr.MyFrame):
 			'sensor_fusion'	: self.sensing_cmd,
 			'rosbag_record' : self.sensing_cmd,
 			'rosbag_play'	: self.simulation_cmd,
-			'rosbag_play_clock'
-					: self.simulation_cmd,
 			'pmap'		: self.simulation_cmd,
 			'vmap'		: self.simulation_cmd,
 			'trajectory'	: self.simulation_cmd,
@@ -598,14 +596,16 @@ class MyFrame(rtmgr.MyFrame):
 		if key == 'rosbag_play':
 			rate = self.val_get('text_ctrl_rate_' + key)
 			if rate and rate is not '':
-				add_args = add_args if add_args else []
-				add_args = [ '-r', rate ] + add_args
+				add_args = [ '-r', rate ] + ( add_args if add_args else [] )
+			if self.val_get('checkbox_clock_' + key):
+				add_args = [ '--clock' ] + ( add_args if add_args else [] )
 
 		proc = self.launch_kill(True, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd, proc)
 
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key)
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_' ], key, en=False)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_', 
+				       'checkbox_clock_', 'checkbox_sim_time_' ], key, en=False)
 
 	def OnKill(self, event):
 		kill_obj = event.GetEventObject()
@@ -624,7 +624,8 @@ class MyFrame(rtmgr.MyFrame):
 		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
 		cmd_dic[obj] = (cmd, proc)
 
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_' ], key)
+		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_', 
+				       'checkbox_clock_', 'checkbox_sim_time_' ], key)
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
 
 	def OnPause(self, event):
