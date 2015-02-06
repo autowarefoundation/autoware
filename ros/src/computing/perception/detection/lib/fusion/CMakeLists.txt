@@ -3,12 +3,14 @@ project(fusion)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
+  dpm
 )
 find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES fusion
+  CATKIN_DEPENDS dpm
 )
 
 include_directories(
@@ -24,6 +26,7 @@ target_link_libraries(fusion
   ${OpenCV_LIBS}
   dpm
 )
+add_dependencies(fusion dpm_generate_messages_cpp)
 
 # Mark cpp header files for installation
 install(DIRECTORY include

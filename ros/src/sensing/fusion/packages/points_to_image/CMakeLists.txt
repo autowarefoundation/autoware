@@ -38,3 +38,5 @@ add_executable(points_to_image nodes/points_to_image/points_to_image.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(points_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+add_dependencies(points_to_image points_to_image_generate_messages_cpp)
