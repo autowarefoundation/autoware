@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   gnss
   ui_socket
+  nav_msgs
   visualization_msgs
 )
 
