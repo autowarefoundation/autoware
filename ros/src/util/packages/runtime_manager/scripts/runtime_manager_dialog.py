@@ -119,12 +119,27 @@ class MyFrame(rtmgr.MyFrame):
 		self.sel_dir_ks = [ 'vmap', 'calibration' ]
 
 		#
-		# for Database Tab
+		# for Data Tab
 		#
-		self.database_cmd = {}
-		dic = self.load_yaml('database.yaml')
+		self.data_cmd = {}
+		dic = self.load_yaml('data.yaml')
 		if 'buttons' in dic:
-			self.load_yaml_button_run(dic['buttons'], self.database_cmd)
+			self.load_yaml_button_run(dic['buttons'], self.data_cmd)
+
+		vehicle_cbxs = dic.get('vehicle', [])
+		szr = None
+		for d in vehicle_cbxs:
+			name = d.get('name', None)
+			if not name:
+				continue
+			if not szr:
+				szr = wx.BoxSizer(wx.HORIZONTAL)
+				self.sizer_on_the_vehicle.Add(szr, 0, wx.ALL, 4)
+			cbx = wx.CheckBox(self.notebook_1_pane_4, wx.ID_ANY, d.get('label', ''))
+			szr.Add(cbx, 0, wx.ALL, 4)
+			setattr(self, name, cbx)
+			if vehicle_cbxs.index(d) % 3 == 2:
+				szr = None
 
 		#
 		# for Viewer Tab
@@ -478,29 +493,18 @@ class MyFrame(rtmgr.MyFrame):
 			os.system(cmd)
 
 	#
-	# Database Tab
+	# Data Tab
 	#
 	def OnTextArea(self, event):
 		pf = 'text_ctrl_moving_objects_route_'
 		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
 		yet = [ nm for nm in lst if self.obj_get(pf + nm).GetValue() == '' ]
 		en = len(yet) <= 0
-		btn = self.button_moving_objects
+		btn = self.button_launch_download
 		if btn.IsEnabled() is not en:
 			btn.Enable(en)
 
-	def OnMovingObjects(self, event):
-		btn = event.GetEventObject()
-		pf = 'text_ctrl_moving_objects_route_'
-		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
-		tcs = [ self.obj_get(pf + nm) for nm in lst ]
-		add_args = [ tc.GetValue() for tc in tcs ]
-
-		if self.check_moving_objects_stat(btn, tcs, add_args):
-			self.launch_kill_proc(btn, self.database_cmd, add_args)
-
-	def check_moving_objects_stat(self, btn, tcs, add_args):
-		v = btn.GetValue()
+	def check_download_objects_stat(self, btn, v, tcs, add_args):
 		ngs = []
 		if v:
 			for s in add_args:
@@ -576,6 +580,8 @@ class MyFrame(rtmgr.MyFrame):
 			'pmap'		: self.simulation_cmd,
 			'vmap'		: self.simulation_cmd,
 			'trajectory'	: self.simulation_cmd,
+			'download'	: self.data_cmd,
+			'upload'	: self.data_cmd,
 		}
 		return dic.get(key, None)
 
@@ -612,6 +618,14 @@ class MyFrame(rtmgr.MyFrame):
 			if self.val_get('checkbox_clock_' + key):
 				add_args = [ '--clock' ] + ( add_args if add_args else [] )
 
+		if key == 'download':
+			pf = 'text_ctrl_moving_objects_route_'
+			lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
+			tcs = [ self.obj_get(pf + nm) for nm in lst ]
+			add_args = [ tc.GetValue() for tc in tcs ]
+			if not self.check_download_objects_stat(obj, True, tcs, add_args):
+				return
+
 		proc = self.launch_kill(True, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd, proc)
 
@@ -635,6 +649,12 @@ class MyFrame(rtmgr.MyFrame):
 
 		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
 		cmd_dic[obj] = (cmd, proc)
+
+		if key == 'download':
+			pf = 'text_ctrl_moving_objects_route_'
+			lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
+			tcs = [ self.obj_get(pf + nm) for nm in lst ]
+			self.check_download_objects_stat(obj, False, tcs, [])
 
 		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_', 
 				       'checkbox_clock_' ], key)
