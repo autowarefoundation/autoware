@@ -110,6 +110,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
+		if 'checkboxs' in dic:
+			self.load_yaml_button_run(dic['checkboxs'], self.simulation_cmd)
 
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
@@ -173,9 +175,9 @@ class MyFrame(rtmgr.MyFrame):
 
 	def load_yaml_button_run(self, d, run_dic):
 		for (k,d2) in d.items():
-			obj = get_top( self.key_objs_get([ 'button_', 'button_launch_' ], k) )
+			obj = get_top( self.key_objs_get([ 'button_', 'button_launch_', 'checkbox_' ], k) )
 			if not obj:
-				print('button_' + k + ' not found correspoinding widget.')
+				print('xxx_' + k + ' not found correspoinding widget.')
 				continue
 			if not d2 or type(d2) is not dict:
 				continue
@@ -465,6 +467,16 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSimulation(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
 
+	def OnSimTime(self, event):
+		obj = event.GetEventObject()
+		cmd_dic = self.simulation_cmd
+		(cmd, proc) = cmd_dic.get(obj, (None, None));
+		if cmd and type(cmd) is dict:
+			cmd = cmd.get(obj.GetValue(), None)
+		if cmd:
+			print(cmd)
+			os.system(cmd)
+
 	#
 	# Database Tab
 	#
@@ -605,7 +617,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key)
 		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_', 
-				       'checkbox_clock_', 'checkbox_sim_time_' ], key, en=False)
+				       'checkbox_clock_' ], key, en=False)
 
 	def OnKill(self, event):
 		kill_obj = event.GetEventObject()
@@ -625,7 +637,7 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 
 		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_', 
-				       'checkbox_clock_', 'checkbox_sim_time_' ], key)
+				       'checkbox_clock_' ], key)
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
 
 	def OnPause(self, event):
