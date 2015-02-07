@@ -80,7 +80,7 @@ int main(int argc, char **argv)
             waypoint.pose.pose.position.y = Pose[i].y;
             waypoint.pose.pose.position.z = Pose[i].z;
             waypoint.pose.pose.orientation.w = 1.0;
-            waypoint.twist.twist.linear.x = Pose[i].velocity_kmh;
+            waypoint.twist.twist.linear.x = Pose[i].velocity_kmh /3.6;
 
             std::cout << waypoint.pose.pose.position.x << " " << waypoint.pose.pose.position.y << " " << waypoint.pose.pose.position.z << " " << waypoint.twist.twist.linear.x << std::endl;
             lane_cmd.waypoints.push_back(waypoint);

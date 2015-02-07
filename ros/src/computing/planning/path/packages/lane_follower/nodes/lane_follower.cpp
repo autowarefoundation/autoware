@@ -18,7 +18,8 @@
 //parameter server
 //double _initial_velocity_kmh = 5; // km/h
 //double _lookahead_threshold = 4.0;
-double _threshold_ratio = 1.0;
+double _threshold_ratio = 0.001;
+double _end_distance = 2.0;
 std::string _mobility_frame = "/base_link";
 std::string _current_pose_topic = "odometry";
 
@@ -110,7 +111,7 @@ double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
     if (_current_path.waypoints[_next_waypoint].twist.twist.linear.x > 0)
-        return _current_path.waypoints[_next_waypoint].twist.twist.linear.x * _threshold_ratio;
+        return _current_path.waypoints[_next_waypoint].twist.twist.linear.x *1000 *3.6 * _threshold_ratio;
     else
         return _threshold_ratio;
 }
@@ -213,9 +214,9 @@ geometry_msgs::Twist CalculateCmdTwist()
 
     double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.pose.position.y);
 
-    std::cout << "set velocity kmh =" << _current_path.waypoints[_next_waypoint].twist.twist.linear.x << std::endl;
+    std::cout << "set velocity kmh =" << _current_path.waypoints[_next_waypoint].twist.twist.linear.x * 3.6 << std::endl;
 
-    double initial_velocity_ms = _current_path.waypoints[_next_waypoint].twist.twist.linear.x / 3.6;
+    double initial_velocity_ms = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
     //std::cout << "initial_velocity_ms : " << initial_velocity_ms << std::endl;
     double angular_velocity;
 
@@ -244,10 +245,10 @@ geometry_msgs::Twist EndControl()
 
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
-    double initial_velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x - end_ratio * end_loop);
+    double initial_velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
     double initial_velocity_ms = initial_velocity_kmh / 3.6;
 
-    if (lookahead_distance < 2.0) {
+    if (lookahead_distance < _end_distance) {
         twist.linear.x = 0;
         twist.angular.z = 0;
     } else {
@@ -302,6 +303,10 @@ int main(int argc, char **argv)
      */
     private_nh.getParam("threshold_ratio", _threshold_ratio);
     std::cout << "threshold_ratio : " << _threshold_ratio << std::endl;
+
+  private_nh.getParam("end_distance", _end_distance);
+    std::cout << "end_distance : " << _end_distance << std::endl;
+
 //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
