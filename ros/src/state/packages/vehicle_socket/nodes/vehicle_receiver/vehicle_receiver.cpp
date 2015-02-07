@@ -113,6 +113,8 @@ void* getCanValue(void *arg){
 
   if(result.compare("")!=0){
     parseCanValue(result, msg);
+    msg.header.frame_id = "/can";
+    msg.header.stamp = ros::Time::now();
     pub.publish(msg);
   }
 
