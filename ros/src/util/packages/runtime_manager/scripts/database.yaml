@@ -1,3 +1,0 @@
-buttons:
-  moving_objects:
-    run : rosrun obj_db obj_downloader

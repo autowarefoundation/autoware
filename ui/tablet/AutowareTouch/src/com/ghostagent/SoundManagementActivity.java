@@ -699,8 +699,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	@Override
 	public void onRestart() {
-		if (applicationButton.getMode() == ApplicationButton.MAP) {
-			applicationButton.updateMode(ApplicationButton.MAP);
+		if (applicationButton.getMode() == ApplicationButton.NAVIGATION) {
+			applicationButton.updateMode(ApplicationButton.NAVIGATION);
 			File file = new File(
 				Environment.getExternalStorageDirectory().getPath() + "/MapRoute.txt");
 			try {
@@ -760,12 +760,12 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			finish();
 		} else if (v == applicationButton.navigation) {
 			applicationButton.updateMode(ApplicationButton.NAVIGATION);
-		} else if (v == applicationButton.map) {
-			applicationButton.updateMode(ApplicationButton.MAP);
 			Intent intent = new Intent(Intent.ACTION_MAIN);
 			intent.setClassName("com.example.sampleroute",
 					    "com.example.sampleroute.MainActivity");
 			startActivity(intent);
+		} else if (v == applicationButton.map) {
+			applicationButton.updateMode(ApplicationButton.MAP);
 		} else if (v == applicationButton.display) {
 			applicationButton.updateMode(ApplicationButton.DISPLAY);
 		} else if (v == applicationButton.information) {
