@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
+  message_generation
   gnss
 )
 
@@ -46,11 +47,12 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   lane.msg
+   waypoint.msg
+
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +69,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs 
+   geometry_msgs # Or other packages containing msgs
+ )
 
 
 ###################################
@@ -118,16 +121,16 @@ include_directories(
 # )
 
 
-add_executable(lane_follower src/lane_follower.cpp)
+add_executable(lane_follower nodes/lane_follower.cpp)
 target_link_libraries(lane_follower gnss ${catkin_LIBRARIES})
 
-add_executable(odometry_pub src/odometry_pub.cpp)
+add_executable(odometry_pub nodes/odometry_pub.cpp)
 target_link_libraries(odometry_pub ${catkin_LIBRARIES})
 
-add_executable(test_lane_navigator src/test_lane_navigator.cpp)
+add_executable(test_lane_navigator nodes/test_lane_navigator.cpp)
 target_link_libraries(test_lane_navigator ${catkin_LIBRARIES})
 
-add_executable(waypoint_saver src/waypoint_saver.cpp)
+add_executable(waypoint_saver nodes/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
 
 #############
