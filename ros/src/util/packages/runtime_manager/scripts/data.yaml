@@ -1,0 +1,19 @@
+buttons:
+  download:
+    run : rosrun obj_db obj_downloader
+  upload:
+    run : echo upload
+
+vehicle:
+  - name  : can
+    label : CAN
+  - name  : position
+    label : Position
+  - name  : detected_objects
+    label : Detected Objects
+  - name  : image
+    label : Image
+  - name  : point_cloud
+    label : Point Could
+  - name  : traffic_info
+    label : Traffic Info
