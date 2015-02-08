@@ -1,5 +1,5 @@
 
-/*#include "ros/ros.h"
+#include "ros/ros.h"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -15,26 +15,23 @@
 #include <vehicle_socket/CanInfo.h>
 
 #include "SendData.h"
-using namespace std;
 
 
 
-void CMDCallback(const string a)
+void CMDCallback(const geometry_msgs::TwistConstPtr &msg)
 {
-
-
+ double linear_x = msg->linear.x;
+ double angular_z = msg->angular.z;
 
 
 }
 
-void GearCallback(const ui_socket::gear_cmdConstPtr &gear)
+//void ModeCallback(){}
+
+/*void GearCallback(const ui_socket::gear_cmdConstPtr &gear)
 {
-
-
-
-
 }
-
+*/
 
 int main(int argc, char **argv){
 
@@ -42,17 +39,18 @@ int main(int argc, char **argv){
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub[5];
-  sub[0] = nh.subscribe("auto_cmd", 100,CMDCallback);
-  sub[0] = nh.subscribe("gear_cmd", 100,GearCallback);
+  ros::Subscriber sub[1];
+  sub[0] = nh.subscribe("cmd_vel", 100,CMDCallback);
+//sub[1] = nh.subscribe("",100,ModeCallback);
+  //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
 
-  pthread_t th;
+ /* pthread_t th;
   if(pthread_create(&th, NULL, senderCaller, NULL)){
     printf("thread create error\n");
   }
   pthread_detach(th);
-
+*/
   ros::spin();
 
   return 0;
-}*/
+}
