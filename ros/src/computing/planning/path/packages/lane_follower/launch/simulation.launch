@@ -2,7 +2,8 @@
 <launch>
 	<arg name="current_pose_topic" default="odometry" />
 	<arg name="mobility_frame" default="/base_link" />
-	<arg name="threshold_ratio" default="1" /> 
+	<arg name="threshold_ratio" default="0.001" /> 
+	<arg name="end_distance" default="1.0" /> 
 	<arg name="waypoint_filename" default="/home/h_ohta/catkin_ws/path3.txt" />
 
 <arg name="frame" default="/odom" /> 
@@ -23,6 +24,7 @@
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
 		<param name="mobility_frame" value="$(arg mobility_frame)" />
 			<param name="threshold_ratio" value="$(arg threshold_ratio)" />
+			<param name="end_distance" value="$(arg end_distance)" />
 	</node>
 
 </launch>

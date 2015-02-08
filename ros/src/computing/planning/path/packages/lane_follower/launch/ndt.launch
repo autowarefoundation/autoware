@@ -2,8 +2,8 @@
 <launch>
 	<arg name="current_pose_topic" default="ndt" />
 	<arg name="mobility_frame" default="/velodyne" />
-	<arg name="lookahead_ratio" default="0.001" /> 	
-        <arg name="end_distance" default="2" /> <!-- meter -->
+	<arg name="threshold_ratio" default="0.001" />
+	<arg name="end_distance" default="2.0" /> <!-- meter -->
 
 	<arg name="waypoint_filename" default="$(find lane_follower)/path/ndtpath.txt" />
 
@@ -18,7 +18,7 @@
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
 		<param name="mobility_frame" value="$(arg mobility_frame)" />
 		<param name="end_distance" value="$(arg end_distance)" />
-		<param name="lookahead_ratio" value="$(arg lookahead_ratio)" />
+		<param name="threshold_ratio" value="$(arg threshold_ratio)" />
 	</node>
 
 </launch>

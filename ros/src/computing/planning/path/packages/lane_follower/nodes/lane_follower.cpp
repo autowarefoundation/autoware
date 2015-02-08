@@ -29,7 +29,6 @@ geometry_msgs::PoseStamped _current_pose; //グローバル座標系での現在
 geometry_msgs::Twist _current_velocity;
 lane_follower::lane _current_path;
 
-
 //参照するwaypointの番号
 int _next_waypoint = 0;
 
@@ -111,7 +110,7 @@ double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
     if (_current_path.waypoints[_next_waypoint].twist.twist.linear.x > 0)
-        return _current_path.waypoints[_next_waypoint].twist.twist.linear.x *1000 *3.6 * _threshold_ratio;
+        return _current_path.waypoints[_next_waypoint].twist.twist.linear.x * 1000 * 3.6 * _threshold_ratio;
     else
         return _threshold_ratio;
 }
@@ -169,8 +168,10 @@ int GetNextWayPoint()
             }
         }
 
+        //しきい値取得
         double lookahead_threshold = GetLookAheadThreshold();
 
+        //waypoint探索
         for (int i = _next_waypoint; i < _current_path.waypoints.size(); i++) {
 
             double Distance = GetLookAheadDistance(i);
@@ -193,8 +194,6 @@ int GetNextWayPoint()
         return 0;
 }
 
-
-
 //waypointまで到達するための速度を計算
 geometry_msgs::Twist CalculateCmdTwist()
 {
@@ -209,8 +208,7 @@ geometry_msgs::Twist CalculateCmdTwist()
     //車の座標系に変換したwaypoint
     geometry_msgs::PoseStamped transformed_waypoint = TransformWaypoint(_next_waypoint);
 
-       std::cout << "current path (" << _current_path.waypoints[_next_waypoint].pose.pose.position.x << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.y << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.z
-               << ") ---> transformed_path : (" << transformed_waypoint.pose.position.x << " " << transformed_waypoint.pose.position.y << " " << transformed_waypoint.pose.position.z << ")" << std::endl;
+    std::cout << "current path (" << _current_path.waypoints[_next_waypoint].pose.pose.position.x << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.y << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.z << ") ---> transformed_path : (" << transformed_waypoint.pose.position.x << " " << transformed_waypoint.pose.position.y << " " << transformed_waypoint.pose.position.z << ")" << std::endl;
 
     double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.pose.position.y);
 
@@ -236,16 +234,18 @@ geometry_msgs::Twist CalculateCmdTwist()
 }
 
 static int end_loop = 1;
-static double end_ratio = 0.05;
+static double end_ratio = 0.1;
 static double end_velocity_kmh = 2.0;
 geometry_msgs::Twist EndControl()
 {
     std::cout << "end control" << std::endl;
     geometry_msgs::Twist twist;
 
+    std::cout << "End Distance = " << _end_distance << std::endl;
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
     double initial_velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
+    std::cout << "set velocity (kmh) = " << initial_velocity_kmh << std::endl;
     double initial_velocity_ms = initial_velocity_kmh / 3.6;
 
     if (lookahead_distance < _end_distance) {
@@ -304,7 +304,7 @@ int main(int argc, char **argv)
     private_nh.getParam("threshold_ratio", _threshold_ratio);
     std::cout << "threshold_ratio : " << _threshold_ratio << std::endl;
 
-  private_nh.getParam("end_distance", _end_distance);
+    private_nh.getParam("end_distance", _end_distance);
     std::cout << "end_distance : " << _end_distance << std::endl;
 
 //publish topic
