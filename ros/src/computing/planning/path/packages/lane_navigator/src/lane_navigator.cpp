@@ -11,8 +11,8 @@
 #define HEIGHT	50
 //#define DEBUG_PRINT 
 int swap_x_y = 0;
-ros::Publisher pub_nav;
-ros::Publisher pub_trajectory;
+static ros::Publisher pub_nav;
+static ros::Publisher pub_trajectory;
 visualization_msgs::Marker marker;
 
 void set_marker_data(visualization_msgs::Marker* marker,
