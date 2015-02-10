@@ -875,31 +875,32 @@ calc_a_score(
 
   if(0<=component_jj && component_jj < NoC) 
     {
-
-      unsigned long long int pointer_score = (unsigned long long int)score_array;
-      unsigned long long int pointer_ssize = (unsigned long long int)ssize_array;
-      unsigned long long int pointer_RX = (unsigned long long int)RX_array;
-      unsigned long long int pointer_RY = (unsigned long long int)RY_array;
-      for(int k=0; k<component_jj; k++) {
-        pointer_score += (unsigned long long int)size_score_array[k];
-        pointer_ssize += (unsigned long long int)(sizeof(int));
-        pointer_RX += (unsigned long long int)(sizeof(int));
-        pointer_RY += (unsigned long long int)(sizeof(int));
-      }
-
-      FLOAT *score = (FLOAT *)pointer_score;
-      int ssize0 = *((int *)pointer_ssize);
-      int ssize1 = *((int *)pointer_ssize + sizeof(int));
-      int RX = *((int *)pointer_RX);
-      int RY = *((int *)pointer_RY);
-
-
-
       if(0<=ii && ii<IWID && 0<=jj && jj<IHEI)
         {
+          unsigned long long int pointer_score = (unsigned long long int)score_array;
+          unsigned long long int pointer_ssize = (unsigned long long int)ssize_array;
+          unsigned long long int pointer_RX = (unsigned long long int)RX_array;
+          unsigned long long int pointer_RY = (unsigned long long int)RY_array;
+          for(int k=0; k<component_jj; k++) {
+            pointer_score += (unsigned long long int)size_score_array[k];
+            pointer_ssize += (unsigned long long int)(sizeof(int));
+            pointer_RX += (unsigned long long int)(sizeof(int));
+            pointer_RY += (unsigned long long int)(sizeof(int));
+          }
+          
+          FLOAT *score = (FLOAT *)pointer_score;
+          int ssize0 = *((int *)pointer_ssize);
+          int ssize1 = *((int *)pointer_ssize + sizeof(int));
+          int RX = *((int *)pointer_RX);
+          int RY = *((int *)pointer_RY);
+          
+          
+          
+          // if(0<=ii && ii<IWID && 0<=jj && jj<IHEI)
+          //   {
           int Xn = (int)((FLOAT)ii/scale+padx_n);
           int Yn = (int)((FLOAT)jj/scale+pady_n);
-
+          
           
           if(Yn<ssize0 && Xn<ssize1)
             {
