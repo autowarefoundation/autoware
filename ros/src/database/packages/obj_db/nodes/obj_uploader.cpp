@@ -39,11 +39,15 @@
 
 
 #include "opencv/cv.h" 
-#include "opencv/highgui.h" 
+#include "opencv/highgui.h"
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
 #include "scan_to_image/ScanImage.h"
 #include "geometry_msgs/TwistStamped.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "tf/tf.h"
+#include "tf/transform_listener.h"
+//#include "LinearMath/btTransform.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "structure.h"
 #include "SendData.h"
@@ -113,6 +117,15 @@ void printDiff(struct timeval begin, struct timeval end){
   long diff;
   diff = (end.tv_sec - begin.tv_sec)*1000*1000 + (end.tv_usec - begin.tv_usec);
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
+}
+
+void GetRPY(const geometry_msgs::Pose &pose,
+	    double &roll,
+	    double &pitch,
+	    double &yaw){
+  tf::Quaternion q;
+  tf::quaternionMsgToTF(pose.orientation,q);
+  tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
 }
 
 string getNowTime(){
@@ -289,7 +302,8 @@ void* intervalCall(void *a){
   while(1){
     //If angle and position data is not updated from prevous data send,
     //data is not sent
-    if(!(angleGetFlag && positionGetFlag)) {
+    if(1){
+      //    if(!(angleGetFlag && positionGetFlag)) {
       sleep(1);
       continue;
     }
@@ -389,7 +403,7 @@ void azimuth_getter(const geometry_msgs::TwistStamped& azi)
   angle.thiY = azi.twist.angular.z*180/M_PI;
   angle.thiZ = 0;
   angleGetFlag = true;
-  //printf("azimuth : %f\n",angle.thiY);
+  printf("azimuth : %f\n",angle.thiY);
   //printf("ok\n");
 
 }
@@ -406,6 +420,21 @@ void position_getter(const sensor_msgs::NavSatFix& pos)
 
 }
 
+void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
+
+  my_loc.X = pose.pose.position.x;
+  my_loc.Y = pose.pose.position.y;
+  my_loc.Z = pose.pose.position.z;
+
+  GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
+  printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
+
+  angleGetFlag = true;
+  positionGetFlag = true;
+  //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
+
+  
+}
 
 //test
 void set_car_position_xyz()
@@ -448,6 +477,7 @@ int main(int argc, char **argv){
 
   ros::Subscriber azm = n.subscribe("/vel", 1, azimuth_getter);
   ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
+  ros::Subscriber ndt = n.subscribe("ndt_pose", 1, position_getter_ndt);
 
   cv::Mat Cintrinsic;
   std::string camera_yaml;

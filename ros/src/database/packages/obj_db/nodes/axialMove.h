@@ -66,7 +66,7 @@ and axial x is left and right.
         loc.X = newloc.X;
         loc.Z = newloc.Z;
 
-        //rotation around Y
+        //rotation around Z
         newloc.X = loc.X*cos(ang.thiZ) - loc.Y*sin(ang.thiZ);
         newloc.Y = loc.Y*sin(ang.thiZ) + loc.Y*cos(ang.thiZ);
         loc.X = newloc.X;

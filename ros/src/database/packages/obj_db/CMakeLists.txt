@@ -9,6 +9,10 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
 )
 
+
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(BULLET bullet)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -94,6 +98,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+#  ${BULLET_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -124,6 +129,7 @@ target_link_libraries(obj_uploader
   ${catkin_LIBRARIES} 
   ${CVCORE_LIBRARY}
   ${CVHIGHGUI_LIBRARY}
+#  ${BULLET_LIBRARIES}
 )
 
 set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
