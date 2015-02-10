@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_navigator
