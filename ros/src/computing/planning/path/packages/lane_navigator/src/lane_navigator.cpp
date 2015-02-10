@@ -19,7 +19,10 @@
 #define SEARCH_NEAREST_POINTS	0
 
 static constexpr double LLH_HEIGHT = 50;
+static constexpr double ORIENTATION_W = 1.0;
+
 static constexpr double PUBLISH_HZ = 1000;
+
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool ADVERTISE_LATCH = true;
@@ -610,6 +613,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		posestamped.pose.position.x = nearest.bx();
 		posestamped.pose.position.y = nearest.ly();
 		posestamped.pose.position.z = geo.z();
+		posestamped.pose.orientation.w = ORIENTATION_W;
 
 		path.poses.push_back(posestamped);
 	}
@@ -644,6 +648,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		posestamped.pose.position.x = point.bx();
 		posestamped.pose.position.y = point.ly();
 		posestamped.pose.position.z = z;
+		posestamped.pose.orientation.w = ORIENTATION_W;
 
 		path.poses.push_back(posestamped);
 
@@ -660,6 +665,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 			posestamped.pose.position.x = point.bx();
 			posestamped.pose.position.y = point.ly();
 			posestamped.pose.position.z = z;
+			posestamped.pose.orientation.w = ORIENTATION_W;
 
 			path.poses.push_back(posestamped);
 
