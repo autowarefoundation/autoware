@@ -184,20 +184,26 @@ void car_configParamCallback(const runtime_manager::ConfigCarDpm::ConstPtr& para
 {
   float score_threshold = param->score_threshold;
   float group_threshold = param->group_threshold;
-  //  int pyramid_levels = param->pyramid_levels; // not implemented yet
+  int lambda = param->Lambda;
+  int numCells = param->num_cells;
 
   thresh = score_threshold;
   overlap = group_threshold;
+  MO->MI->interval = lambda;
+  MO->MI->sbin = numCells;
 }
 
 void pedestrian_configParamCallback(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)
 {
   float score_threshold = param->score_threshold;
   float group_threshold = param->group_threshold;
-  //  int pyramid_levels = param->pyramid_levels;　// not implemented yet
+  int lambda = param->Lambda;
+  int numCells = param->num_cells;
 
   thresh = score_threshold;
   overlap = group_threshold;
+  MO->MI->interval = lambda;
+  MO->MI->sbin = numCells;
 }
 // %EndTag(CALLBACK)%
 
