@@ -51,6 +51,9 @@ subs :
   - name : Planning
     subs :
       - name : Mission
+        subs :
+        - name : Lane Navigator
+          cmd  : rosrun lane_navigator lane_navigator swap_x_y_on
       - name : Motion
       - name : Path
         subs :
