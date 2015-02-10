@@ -1099,16 +1099,18 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 	def refresh(self):
 		lst = subprocess.check_output([ 'rostopic', 'list' ]).split('\n')
 		lst = [ 'All' ] + lst[:-1] # add All , remove last ''
+		panel = self.panel_1
+		szr = self.sizer_topic
 		for obj in self.cbs:
-			obj.Destroy()
-		self.sizer_topic.Clear()
+			szr.Remove(obj)
 		self.cbs = []
 		for topic in lst:
-			obj = wx.CheckBox(self.panel_1, wx.ID_ANY, topic)
+			obj = wx.CheckBox(panel, wx.ID_ANY, topic)
 			bdr = 4 if topic == 'All' else 4 * 4
-			self.sizer_topic.Add(obj, 0, wx.LEFT, bdr)
+			szr.Add(obj, 0, wx.LEFT, bdr)
 			self.cbs.append(obj)
-		self.sizer_topic.Layout()
+		szr.Layout()
+		panel.SetVirtualSize(szr.GetMinSize())
 
 def terminate_children(proc, sigint=False):
 	for child in psutil.Process(proc.pid).get_children():
