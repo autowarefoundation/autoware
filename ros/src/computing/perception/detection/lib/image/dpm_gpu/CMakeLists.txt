@@ -98,7 +98,7 @@ add_custom_command(
 add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
 add_dependencies(dpm_gpu 
   cuda_binary
-  runtime_manager_generate_message_cpp)
+  runtime_manager_generate_messages_cpp)
 
 else()
 message("CUDA is not installed. 'libdpm_gpu' is not built.")

@@ -1,5 +1,6 @@
 #include <fstream>
 #include "ros/ros.h"
+#include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
 #include <geo_pos_conv.hh>
 
@@ -10,7 +11,8 @@
 #define HEIGHT	50
 //#define DEBUG_PRINT 
 int swap_x_y = 0;
-ros::Publisher pub;
+static ros::Publisher pub_nav;
+static ros::Publisher pub_trajectory;
 visualization_msgs::Marker marker;
 
 void set_marker_data(visualization_msgs::Marker* marker,
@@ -76,6 +78,22 @@ void RouteCmdCallback(const ui_socket::route_cmd msg)
   fprintf(stderr, "point.size()=%d\n", (int)msg.point.size());
 #endif
 
+  nav_msgs::Path path;
+  path.header.stamp = ros::Time::now();
+  path.header.frame_id = "path";
+  for(int i = 0; i < msg.point.size(); i++) {
+    geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, HEIGHT);
+
+    geometry_msgs::PoseStamped posestamped;
+    posestamped.header = path.header;
+    posestamped.pose.position.x = geo.x();
+    posestamped.pose.position.y = geo.y();
+    posestamped.pose.position.z = geo.z();
+
+    path.poses.push_back(posestamped);
+  }
+  pub_nav.publish(path);
+
   for(int i = 0; i < msg.point.size(); i++) {
 #ifdef DEBUG_PRINT
     fprintf(stderr, "%d: point[i].lat=%f, point[i].lon=%f\n", i, msg.point[i].lat, msg.point[i].lon);
@@ -93,7 +111,7 @@ void RouteCmdCallback(const ui_socket::route_cmd msg)
 		    0, 0, 0, 1,
 		    2.0, 2.0, 2.0,
 		    1, 0, 0, 1);
-    publish_marker(&marker, pub, rate);
+    publish_marker(&marker, pub_trajectory, rate);
     sleep(1);
   }
 }
@@ -113,7 +131,8 @@ rosrun lane_navigator lane_navigator <swap_x_y_off|swap_x_y_on>
   ros::init(argc, argv, "lane_navigator");
   ros::NodeHandle n;
   ros::Subscriber sub = n.subscribe("route_cmd", 1000, RouteCmdCallback);
-  pub = n.advertise<visualization_msgs::Marker>("/lane_navigator", 10, true);
+  pub_nav = n.advertise<nav_msgs::Path>("/lane_navigator", 10, true);
+  pub_trajectory = n.advertise<visualization_msgs::Marker>("/_trajectory", 10, true);
 
 
 

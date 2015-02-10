@@ -3,6 +3,8 @@ viewers :
     cmd   : rosrun rviz rviz
   - label : Image
     cmd   :  rosrun viewers image_viewer
+  - label : Points Image
+    cmd   :  rosrun viewers points_image_viewer
   - label : Image with Distance
     cmd   : rosrun viewers image_d_viewer
   - label : Points Image with Distance

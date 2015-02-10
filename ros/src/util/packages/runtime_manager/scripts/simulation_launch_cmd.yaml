@@ -44,3 +44,9 @@ buttons:
     run : rosrun sample_data sample_vector_map __args__ swap_x_y_on
   trajectory :
     run : rosrun sample_data sample_trajectory __args__ swap_x_y_on
+
+checkboxs:
+  sim_time :
+    run :
+      False  : rosparam set use_sim_time false
+      True   : rosparam set use_sim_time true

@@ -76,11 +76,16 @@ params :
       min   : 0
       max   : 1
       v     : 0.1
-    - name  : pyramid_levels
-      label : Pyramid Levels
-      min   : 0
-      max   : 50
-      v     : 32
+    - name  : Lambda
+      label : Lambda
+      min   : 1
+      max   : 20
+      v     : 10
+    - name  : num_cells
+      label : Num Cells
+      min   : 2
+      max   : 10
+      v     : 8
 
   - name  : pedestrian_dpm
     topic : /config/pedestrian_dpm
@@ -96,11 +101,16 @@ params :
       min   : 0
       max   : 1
       v     : 0.3
-    - name  : pyramid_levels
-      label : Pyramid Levels
-      min   : 0
-      max   : 50
-      v     : 32
+    - name  : Lambda
+      label : Lambda
+      min   : 1
+      max   : 20
+      v     : 10
+    - name  : num_cells
+      label : Num Cells
+      min   : 2
+      max   : 10
+      v     : 8
 
   - name  : ndt
     topic : /config/ndt
