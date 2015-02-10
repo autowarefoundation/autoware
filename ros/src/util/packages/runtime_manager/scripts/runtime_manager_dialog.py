@@ -19,6 +19,7 @@ from decimal import Decimal
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
+from runtime_manager.msg import ConfigLaneFollower
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
