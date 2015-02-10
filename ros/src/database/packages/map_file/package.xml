@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package>
+  <name>map_file</name>
+  <version>0.0.0</version>
+  <description>The map_file package</description>
+  <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gnss</build_depend>
+  <run_depend>gnss</run_depend>
+  <export>
+  </export>
+</package>
