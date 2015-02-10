@@ -90,16 +90,16 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 	pub.publish(pub_msg);
 
 	//publish calibration value
-	//	std::vector<int>::iterator iterator = cpub_msg.calibration.begin();
-	
+	std::vector<float> cali;
 	for(int i=0; i<cpub_msg.ysize ; i++){
 	  for(int j=0; j<cpub_msg.xsize ; j++){
-	    cpub_msg.calibration[i*cpub_msg.xsize+j] = 1;//cameraExtrinsicMat.at<float>(i,j);
+	    cali.push_back(cameraExtrinsicMat.at<float>(i,j));
 	  }
 	}
-	//cpub.publish(cpub_msg);
-	
+	cpub_msg.calibration = cali;
 
+	cpub.publish(cpub_msg);
+       
 }
 
 int main(int argc, char *argv[])
