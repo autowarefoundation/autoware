@@ -1105,7 +1105,6 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			szr.Remove(obj)
 		self.cbs = []
 		for topic in lst:
-			print topic #!
 			obj = wx.CheckBox(panel, wx.ID_ANY, topic)
 			bdr = 4 if topic == 'All' else 4 * 4
 			szr.Add(obj, 0, wx.LEFT, bdr)
