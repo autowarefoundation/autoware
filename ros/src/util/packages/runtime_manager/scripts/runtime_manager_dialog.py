@@ -1075,13 +1075,13 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		if self.cbs[0].GetValue(): # 'All'
 			topic_opt = [ '-a' ]
 		else:
-                        for obj in self.cbs:
+			for obj in self.cbs:
 				if obj.GetValue():
 					topic_opt += [ obj.GetLabel() ]
 		if topic_opt == []:
 			print('topic=[]')
 			return
-                args = [ 'rosbag', 'record' ] + topic_opt + [ '-O', path ]
+		args = [ 'rosbag', 'record' ] + topic_opt + [ '-O', path ]
 		print(args)
 		self.proc = subprocess.Popen(args)
 
@@ -1106,7 +1106,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		for topic in lst:
 			obj = wx.CheckBox(self.panel_1, wx.ID_ANY, topic)
 			bdr = 4 if topic == 'All' else 4 * 4
-                        self.sizer_topic.Add(obj, 0, wx.LEFT, bdr)
+			self.sizer_topic.Add(obj, 0, wx.LEFT, bdr)
 			self.cbs.append(obj)
 		self.sizer_topic.Layout()
 
