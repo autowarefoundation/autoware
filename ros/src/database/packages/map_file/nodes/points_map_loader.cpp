@@ -78,7 +78,6 @@ void gnssposeCallback(const geometry_msgs::PoseStamped msg)
 
 	if(show++%UPDATE_RATE != 0) return;
 
-	fprintf(stderr, "x=%f, y=%f, z=%f\n", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z);
 	sensor_msgs::PointCloud2 pcd, add;
 	int loaded = 0;
 
