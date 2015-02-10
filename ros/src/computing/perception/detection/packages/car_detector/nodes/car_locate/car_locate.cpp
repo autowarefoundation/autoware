@@ -207,6 +207,7 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
     printf("ok3\n");
     */
     pose_msg.header.stamp = ros::Time::now();
+    pose_msg.header.frame_id = "map";
     pose_msg.pose.position.x = geo.x();
     pose_msg.pose.position.y = geo.y();
     pub.publish(pose_msg);
