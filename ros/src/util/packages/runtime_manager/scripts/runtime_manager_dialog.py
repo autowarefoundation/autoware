@@ -11,6 +11,7 @@ import signal
 import subprocess
 import psutil
 import yaml
+import datetime
 import rtmgr
 import rospy
 import std_msgs.msg
@@ -1103,6 +1104,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		szr = self.sizer_topic
 		for obj in self.cbs:
 			szr.Remove(obj)
+			obj.Destroy()
 		self.cbs = []
 		for topic in lst:
 			obj = wx.CheckBox(panel, wx.ID_ANY, topic)
@@ -1111,6 +1113,18 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			self.cbs.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
+		self.update_filename();
+
+	def update_filename(self):
+		tc = self.text_ctrl
+		path = tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		now = datetime.datetime.now()
+		fn = 'autoware-%04d%02d%02d%02d%02d%02d.rosbag' % (
+			now.year, now.month, now.day, now.hour, now.minute, now.second)
+		path = os.path.join(dn, fn)
+		tc.SetValue(path)
+		tc.SetInsertionPointEnd()
 
 def terminate_children(proc, sigint=False):
 	for child in psutil.Process(proc.pid).get_children():
