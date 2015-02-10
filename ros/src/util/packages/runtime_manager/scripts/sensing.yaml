@@ -62,8 +62,6 @@ subs :
 buttons:
   sensor_fusion :
     run : "'roslaunch sensing_fusions sensing_fusions.launch dir:=$'.replace('$', add_args[0])"
-  rosbag_record :
-    run : rosbag record -a -O
   calibration :
     run :
       - [ LIDAR2D , "'roslaunch camera_lidar2d camera_lidar2d_offline_calib.launch dir:=$'.replace('$', add_args[0])" ]

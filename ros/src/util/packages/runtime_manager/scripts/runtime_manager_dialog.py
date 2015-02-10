@@ -102,6 +102,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.OnProbe(None)
 			self.timer.Start(self.probe_interval)
 
+		self.dlg_rosbag_record = MyDialogRosbagRecord(self)
+
 		#
 		# for Simulation Tab
 		#
@@ -431,6 +433,9 @@ class MyFrame(rtmgr.MyFrame):
 				if cfg_obj:
 					cfg_obj.Hide()
 
+	def OnRosbagRecord(self, event):
+		self.dlg_rosbag_record.Show()
+
 	def create_checkboxes(self, dic, panel, sizer, probe_dic, run_dic, bind_handler):
 		if 'name' not in dic:
 			return
@@ -575,7 +580,6 @@ class MyFrame(rtmgr.MyFrame):
 	def get_cmd_dic(self, key):
 		dic = { 'tf'		: self.sensing_cmd,
 			'sensor_fusion'	: self.sensing_cmd,
-			'rosbag_record' : self.sensing_cmd,
 			'rosbag_play'	: self.simulation_cmd,
 			'pmap'		: self.simulation_cmd,
 			'vmap'		: self.simulation_cmd,
@@ -695,7 +699,7 @@ class MyFrame(rtmgr.MyFrame):
 		else:
 			(dn, fn) = os.path.split(defaultPath)
 			style = wx.FD_SAVE if save else wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
-			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style)
 		path = None
 		if dlg.ShowModal() == wx.ID_OK:
 			path = ','.join(dlg.GetPaths()) if multi else dlg.GetPath()
@@ -1045,6 +1049,66 @@ class MyApp(wx.App):
 		self.SetTopWindow(frame_1)
 		frame_1.Show()
 		return 1
+
+class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
+	def __init__(self, *args, **kwds):
+		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
+		self.cbs = []
+		self.refresh()
+		self.proc = None
+
+	def OnRef(self, event):
+		tc = self.text_ctrl
+		path = tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=wx.FD_SAVE)
+		if dlg.ShowModal() == wx.ID_OK:
+			tc.SetValue(dlg.GetPath())
+			tc.SetInsertionPointEnd()
+
+	def OnStart(self, event):
+		path = self.text_ctrl.GetValue()
+		if path == '':
+			print('path=""')
+			return
+		topic_opt = []
+		if self.cbs[0].GetValue(): # 'All'
+			topic_opt = [ '-a' ]
+		else:
+                        for obj in self.cbs:
+				if obj.GetValue():
+					topic_opt += [ obj.GetLabel() ]
+		if topic_opt == []:
+			print('topic=[]')
+			return
+                args = [ 'rosbag', 'record' ] + topic_opt + [ '-O', path ]
+		print(args)
+		self.proc = subprocess.Popen(args)
+
+	def OnStop(self, event):
+		if self.proc:
+			terminate_children(self.proc, sigint=True)
+			terminate(self.proc, sigint=True)
+			self.proc.wait()
+			self.proc = None		
+		self.Hide()
+
+	def OnRefresh(self, event):
+		self.refresh()
+
+	def refresh(self):
+		lst = subprocess.check_output([ 'rostopic', 'list' ]).split('\n')
+		lst = [ 'All' ] + lst[:-1] # add All , remove last ''
+		for obj in self.cbs:
+			obj.Destroy()
+		self.sizer_topic.Clear()
+		self.cbs = []
+		for topic in lst:
+			obj = wx.CheckBox(self.panel_1, wx.ID_ANY, topic)
+			bdr = 4 if topic == 'All' else 4 * 4
+                        self.sizer_topic.Add(obj, 0, wx.LEFT, bdr)
+			self.cbs.append(obj)
+		self.sizer_topic.Layout()
 
 def terminate_children(proc, sigint=False):
 	for child in psutil.Process(proc.pid).get_children():
