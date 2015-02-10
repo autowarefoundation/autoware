@@ -150,11 +150,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.viewer_cmd = {}
 		parent = self.panel_viewer
 		sizer = self.sizer_viewer
-		for viewer in self.load_yaml('viewer.yaml', {}).get('viewers', []):
-			obj = wx.ToggleButton(parent, wx.ID_ANY, viewer['label'])
-			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
-			sizer.Add(obj, 0, wx.EXPAND | wx.ALL, 4)
-			self.viewer_cmd[obj] = (viewer['cmd'], None)
+		lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
+		self.create_viewer_btns(parent, sizer, lst)
 
 	def __do_layout(self):
 		pass
@@ -390,6 +387,25 @@ class MyFrame(rtmgr.MyFrame):
 			setattr(msg, name, str_to_rosval(s, type_str, s))
 
 		pub.publish(msg)
+
+	#
+	# Viewer Tab
+	#
+	def create_viewer_btns(self, parent, sizer, lst):
+		for dic in lst:
+			lb = dic['label']
+			flag = wx.ALL
+			if 'subs' in dic:
+				sb = wx.StaticBox(parent, wx.ID_ANY, lb)
+				sb.Lower()
+				obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+				self.create_viewer_btns(parent, obj, dic['subs'])
+			else:
+				obj = wx.ToggleButton(parent, wx.ID_ANY, lb)
+				self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
+				self.viewer_cmd[obj] = (dic['cmd'], None)
+				flag |= wx.EXPAND
+			sizer.Add(obj, 0, flag, 4)
 
 	def OnViewer(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.viewer_cmd)
