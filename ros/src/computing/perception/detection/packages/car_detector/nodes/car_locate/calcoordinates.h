@@ -96,11 +96,11 @@ public:
 private:
 
 
-    static const double a = 6378137;
-    static const double F = 1/298.257222101;
+    const double a = 6378137;
+    const double F = 1/298.257222101;
 
-    static const double m0 = 0.9999;
-    static const double rowdd = (180/M_PI)*3600;
+    const double m0 = 0.9999;
+    const double rowdd = (180/M_PI)*3600;
 
     double x,y;
     double phi0,lam0;

@@ -16,7 +16,6 @@ find_package(OpenCV REQUIRED)
 add_message_files(
   FILES
   FusedObjects.msg
-  CarPose.msg
 )
 
 generate_messages(
@@ -105,4 +104,8 @@ target_link_libraries(car_locate
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
-#add_dependencies(car_locate dpm_generate_messages_cpp)
+set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
+
+set_target_properties(car_locate
+  PROPERTIES COMPILE_FLAGS
+  "-DCAMERA_YAML=${CAMERA_YAML}")

@@ -23,6 +23,7 @@
 #include "scan_to_image/ScanImage.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/PoseStamped.h"
 #include "tf/tf.h"
 #include "tf/transform_listener.h"
 #include "sensor_msgs/NavSatFix.h"
@@ -43,14 +44,15 @@ typedef struct _OBJPOS{
   int x2;
   int y2;
   float distance;
-  string tm;
 }OBJPOS;
 
 //for timestamp
+/*
 struct my_tm {
   time_t tim; // yyyymmddhhmmss
   long msec;  // milli sec
 };
+*/
 
 selfLocation sl;
 
@@ -93,6 +95,7 @@ void GetRPY(const geometry_msgs::Pose &pose,
 }
 */
 
+/*
 string getNowTime(){
   struct my_tm *qt;
   struct tm *tmp;
@@ -115,14 +118,13 @@ string getNowTime(){
   res = tm;
   return res;
 }
-
+*/
 
 void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 			       vector<OBJPOS>::iterator cp_iterator,
 			       geo_pos_conv geo,
 			       vector<float> &x,
-			       vector<float> &y,
-			       vector<string> &tm){
+			       vector<float> &y){
 
   LOCATION rescoord;
 
@@ -160,7 +162,6 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 
     x.push_back(rescoord.X);
     y.push_back(rescoord.Y);
-    tm.push_back(getNowTime());
   }
 
 }
@@ -174,10 +175,9 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
   
-  car_detector::CarPose cp_msg;
+  geometry_msgs::PoseStamped pose_msg;
   vector<float> x;
   vector<float> y;
-  vector<string> tm;
   vector<OBJPOS>::iterator cp_iterator;
   geo_pos_conv geo;
 
@@ -194,14 +194,24 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
 
   //get data of car and pedestrian recognizing
   if(car_position_vector.size() > 0 ){
-    makeSendDataDetectedObj(car_position_vector,cp_iterator,geo,x,y,tm);
+    makeSendDataDetectedObj(car_position_vector,cp_iterator,geo,x,y);
   }
 
-  cp_msg.x = x;
-  cp_msg.y = y;
-  cp_msg.tm = tm;
+  printf("ok1\n");
+  if(x.size() != 0 && y.size() != 0){
+    /*
+    cp_msg.x = x;
+    cp_msg.y = y;
+    printf("ok2\n");
+    pub.publish(cp_msg);
+    printf("ok3\n");
+    */
+    pose_msg.header.stamp = ros::Time::now();
+    pose_msg.pose.position.x = geo.x();
+    pose_msg.pose.position.y = geo.y();
+    pub.publish(pose_msg);
 
-  pub.publish(cp_msg);
+  }
 
 }
 
@@ -214,7 +224,8 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   
   //If angle and position data is not updated from prevous data send,
   //data is not sent
-  if(angleGetFlag && positionGetFlag) {
+  if(1){
+    //  if(angleGetFlag && positionGetFlag) {
     angleGetFlag = false;
     positionGetFlag = false;
 
@@ -237,7 +248,6 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 	cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
 
 	cp.distance = fused_objects.distance.at(i);
-	cp.tm = getNowTime();
 
 	//printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
@@ -291,7 +301,7 @@ void azimuth_getter(const geometry_msgs::TwistStamped& azi)
   angle.thiY = azi.twist.angular.z*180/M_PI;
   angle.thiZ = 0;
   angleGetFlag = true;
-  printf("azimuth : %f\n",angle.thiY);
+  //printf("azimuth : %f\n",angle.thiY);
   //printf("ok\n");
 
 }
@@ -324,8 +334,8 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
 int main(int argc, char **argv){
   
-  ros::init(argc ,argv, "obj_uploader") ;  
-  cout << "obj_uploader" << endl;
+  ros::init(argc ,argv, "car_locate") ;  
+  cout << "car_locate" << endl;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -341,7 +351,7 @@ int main(int argc, char **argv){
   ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
   //  ros::Subscriber ndt = n.subscribe("ndt_pose", 1, position_getter_ndt);
 
-  pub = n.advertise<std_msgs::String>("car_pose",1); 
+  pub = n.advertise<geometry_msgs::PoseStamped>("car_pose",1); 
 
   //read calibration value
   //TO DO : subscribe from topic
