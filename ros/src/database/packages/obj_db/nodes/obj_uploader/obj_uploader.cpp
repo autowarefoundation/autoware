@@ -50,7 +50,7 @@
 //#include "LinearMath/btTransform.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "structure.h"
-#include "SendData.h"
+#include "../SendData.h"
 #include "calcoordinates.h"
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
@@ -302,8 +302,8 @@ void* intervalCall(void *a){
   while(1){
     //If angle and position data is not updated from prevous data send,
     //data is not sent
-    if(1){
-      //    if(!(angleGetFlag && positionGetFlag)) {
+    //if(1){
+    if(!(angleGetFlag && positionGetFlag)) {
       sleep(1);
       continue;
     }

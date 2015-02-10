@@ -16,6 +16,7 @@ find_package(OpenCV REQUIRED)
 add_message_files(
   FILES
   FusedObjects.msg
+  CarPose.msg
 )
 
 generate_messages(
@@ -96,3 +97,12 @@ target_link_libraries(car_tracking
   kf
 )
 add_dependencies(car_tracking dpm_generate_messages_cpp)
+
+add_executable(car_locate
+  nodes/car_locate/car_locate.cpp
+)
+target_link_libraries(car_locate
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+#add_dependencies(car_locate dpm_generate_messages_cpp)
