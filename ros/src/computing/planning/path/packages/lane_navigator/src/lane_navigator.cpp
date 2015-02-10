@@ -464,7 +464,7 @@ static Point search_nearest(const std::vector<Point>& points,
 {
 	Point nearest_point = points[0];
 	double min = hypot(x - points[0].bx(), y - points[0].ly());
-	for (Point point : points) {
+	for (const Point& point : points) {
 		double distance = hypot(x - point.bx(), y - point.ly());
 		if (distance < min) {
 			min = distance;
@@ -730,14 +730,14 @@ int main(int argc, char **argv)
 	nodes = read_node(node_csv);
 	points = read_point(point_csv);
 
-	for (Lane lane : lanes) {
+	for (const Lane& lane : lanes) {
 		if (lane.lno() != 1)
 			continue;
-		for (Node node : nodes) {
+		for (const Node& node : nodes) {
 			if (node.nid() != lane.bnid() &&
 			    node.nid() != lane.fnid())
 				continue;
-			for (Point point : points) {
+			for (const Point& point : points) {
 				if (point.pid() != node.pid())
 					continue;
 				left_lane_points.push_back(point);
