@@ -711,7 +711,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 
 int main(int argc, char **argv)
 {
-	if (argc < 5) {
+	if (argc < 4) {
 		ROS_ERROR_STREAM("Usage: " << argv[0]
 				 << " lane.csv node.csv point.csv");
 		std::exit(1);
