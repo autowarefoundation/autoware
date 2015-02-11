@@ -17,6 +17,7 @@
 
 #define SELF_TRANS		0
 #define SEARCH_NEAREST_POINTS	0
+#define SWAP_X_Y		1
 
 static constexpr double LLH_HEIGHT = 50;
 static constexpr double ORIENTATION_W = 1.0;
@@ -334,8 +335,6 @@ Point::Point(int pid, double b, double l, double h, double bx,
 {
 }
 
-static int swap_x_y;
-
 static ros::Publisher pub_nav;
 static ros::Publisher pub_trajectory;
 static visualization_msgs::Marker pub_marker;
@@ -540,19 +539,19 @@ static void set_marker_data(visualization_msgs::Marker* marker,
 			    double sx, double sy, double sz,
 			    double r, double g, double b, double a)
 {
-	if (swap_x_y) {
-		marker->pose.position.x = py;
-		marker->pose.position.y = px;
+#if SWAP_X_Y
+	marker->pose.position.x = py;
+	marker->pose.position.y = px;
 
-		marker->pose.orientation.x = oy;
-		marker->pose.orientation.y = ox;
-	} else {
-		marker->pose.position.x = px;
-		marker->pose.position.y = py;
+	marker->pose.orientation.x = oy;
+	marker->pose.orientation.y = ox;
+#else /* !SWAP_X_Y */
+	marker->pose.position.x = px;
+	marker->pose.position.y = py;
 
-		marker->pose.orientation.x = ox;
-		marker->pose.orientation.y = oy;
-	}
+	marker->pose.orientation.x = ox;
+	marker->pose.orientation.y = oy;
+#endif /* SWAP_X_Y */
 
 	marker->pose.position.z = pz;
 
@@ -573,13 +572,13 @@ static void publish_marker(visualization_msgs::Marker* marker,
 			   ros::Publisher& pub, ros::Rate& rate)
 {
 #if SELF_TRANS
-	if (swap_x_y) {
-		marker->pose.position.x += 16635;
-		marker->pose.position.y += 86432;
-	} else {
-		marker->pose.position.x += 86432;
-		marker->pose.position.y += 16635;
-	}
+#if SWAP_X_Y
+	marker->pose.position.x += 16635;
+	marker->pose.position.y += 86432;
+#else /* !SWAP_X_Y */
+	marker->pose.position.x += 86432;
+	marker->pose.position.y += 16635;
+#endif /* SWAP_X_Y */
 	marker->pose.position.z += -50;
 #endif /* SELF_TRANS */
 
@@ -714,23 +713,13 @@ int main(int argc, char **argv)
 {
 	if (argc < 5) {
 		ROS_ERROR_STREAM("Usage: " << argv[0]
-				 << " <swap_x_y_on|swap_x_y_off>"
 				 << " lane.csv node.csv point.csv");
 		std::exit(1);
 	}
 
-	const char *swap_option = static_cast<const char *>(argv[1]);
-	const char *lane_csv = static_cast<const char *>(argv[2]);
-	const char *node_csv = static_cast<const char *>(argv[3]);
-	const char *point_csv = static_cast<const char *>(argv[4]);
-
-	if (std::string(swap_option) == "swap_x_y_on") {
-		ROS_INFO("swap_x_y: on");
-		swap_x_y = 1;
-	} else {
-		ROS_INFO("swap_x_y: off");
-		swap_x_y = 0;
-	}
+	const char *lane_csv = static_cast<const char *>(argv[1]);
+	const char *node_csv = static_cast<const char *>(argv[2]);
+	const char *point_csv = static_cast<const char *>(argv[3]);
 
 	lanes = read_lane(lane_csv);
 	nodes = read_node(node_csv);
