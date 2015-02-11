@@ -52,7 +52,7 @@ subs :
     subs :
       - name : Mission
         subs :
-        - name : Lane Navigator
+        - name : lane_navigator
           cmd  : rosrun lane_navigator lane_navigator swap_x_y_on
       - name : Motion
       - name : Path
