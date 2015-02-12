@@ -29,7 +29,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 	points_to_image::PointsImage pub_msg;
 	points_to_image::CameraExtrinsic cpub_msg;
 
-	//pub_msg.header = msg->header;
+	pub_msg.header = msg->header;
 
 	pub_msg.intensity.assign(w * h, 0);
 	pub_msg.distance.assign(w * h, 0);
@@ -63,7 +63,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 				+ distCoeff.at<double>(4) * r2 * r2 * r2;
 
 			cv::Point2d imagepoint;
-			imagepoint.x = tmpx * tmpdist 
+			imagepoint.x = tmpx * tmpdist
 				+ 2 * distCoeff.at<double>(2) * tmpx * tmpy
 				+ distCoeff.at<double>(3) * (r2 + 2 * tmpx * tmpx);
 			imagepoint.y = tmpy * tmpdist
@@ -99,7 +99,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 	cpub_msg.calibration = cali;
 
 	cpub.publish(cpub_msg);
-       
+
 }
 
 int main(int argc, char *argv[])
