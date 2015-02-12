@@ -61,9 +61,11 @@ subs :
             param: lane_follower
           - name : waypoint_saver
             cmd : roslaunch lane_follower waypoint_saver.launch
-          - name : ndt
+          - name : lane_folloer(simulation)
+            cmd : roslaunch lane_follower simulation.launch
+          - name : lane_follower(ndt)
             cmd : roslaunch lane_follower ndt.launch
-          - name : gnss
+          - name : lane_folloer(gnss)
             cmd : roslaunch lane_follower gnss.launch
 
 params :
