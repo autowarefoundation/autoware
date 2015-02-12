@@ -4,7 +4,7 @@ viewers :
     - label : Rviz
       cmd   : rosrun rviz rviz
     - label : Topics
-      cmd   : echo rqt_graph
+      cmd   : rosrun rqt_graph rqt_graph
   - label : Vehicle
     subs  :
     - label : CAN
