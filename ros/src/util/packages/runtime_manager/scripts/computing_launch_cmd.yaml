@@ -121,8 +121,14 @@ params :
     topic : /config/ndt
     msg   : ConfigNdt
     vars  :
+    - name  : init_pos_gnss
+      kind  : radio_box
+      choices:
+      - Initial Pos
+      - GNSS
+      v     : 1
     - name  : x
-      label : 'Initial Pos x:'
+      label : 'x:'
       v     : 0.0
     - name  : y
       label : 'y:'

@@ -955,6 +955,14 @@ class VarPanel(wx.Panel):
 		self.max = self.var.get('max', None)
 		self.has_slider = self.min is not None and self.max is not None
 
+		self.kind = self.var.get('kind', None)
+		if self.kind == 'radio_box':
+			label = self.var.get('label', '')
+			choices = self.var.get('choices', [])
+			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
+			self.obj.SetSelection(v)
+			return
+
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
 		lb = wx.StaticText(self, wx.ID_ANY, self.var['label'])
@@ -982,6 +990,11 @@ class VarPanel(wx.Panel):
 		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
 		szr.Add(self.tc, 0, flag, 4)
 		self.SetSizer(szr)
+
+	def get_v(self):
+		if self.kind == 'radio_box':
+			return self.obj.GetSelection()
+		return self.get_tc_v()
 
 	def get_tc_v(self):
 		s = self.tc.GetValue()
@@ -1038,6 +1051,11 @@ class MyDialogParam(rtmgr.MyDialogParam):
 			self.vps.append(vp)
 
 		self.SetTitle(self.prm['name'])
+		(w,h) = self.GetSize()
+		(w2,_) = self.sizer_v.GetMinSize()
+		w2 += 20
+		if w2 > w:
+			self.SetSize((w2,h))
 
 	def OnOk(self, event):
 		self.update_pdic()
@@ -1052,7 +1070,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def update_pdic(self):
 		vars = self.prm['vars']
 		for var in vars:
-			v = self.vps[ vars.index(var) ].get_tc_v()
+			v = self.vps[ vars.index(var) ].get_v()
 			self.pdic[ var['name'] ] = v
 
 	def publish(self):
