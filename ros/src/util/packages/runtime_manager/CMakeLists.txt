@@ -13,6 +13,7 @@ add_message_files(
   ConfigCarDpm.msg
   ConfigPedestrianDpm.msg
   ConfigNdt.msg
+  ConfigLaneFollower.msg
 )
 
 generate_messages(

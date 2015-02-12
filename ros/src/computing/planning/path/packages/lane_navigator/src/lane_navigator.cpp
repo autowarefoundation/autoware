@@ -15,10 +15,14 @@
 
 #include <geo_pos_conv.hh>
 
-#define SELF_TRANS	0
+#define SEARCH_NEAREST_POINTS	0
+#define SWAP_X_Y		1
 
 static constexpr double LLH_HEIGHT = 50;
+static constexpr double ORIENTATION_W = 1.0;
+
 static constexpr double PUBLISH_HZ = 1000;
+
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool ADVERTISE_LATCH = true;
@@ -330,11 +334,13 @@ Point::Point(int pid, double b, double l, double h, double bx,
 {
 }
 
-static int swap_x_y;
-
 static ros::Publisher pub_nav;
 static ros::Publisher pub_trajectory;
 static visualization_msgs::Marker pub_marker;
+
+static std::vector<Lane> lanes;
+static std::vector<Node> nodes;
+static std::vector<Point> points;
 
 static std::vector<Point> left_lane_points;
 
@@ -459,7 +465,7 @@ static Point search_nearest(const std::vector<Point>& points,
 {
 	Point nearest_point = points[0];
 	double min = hypot(x - points[0].bx(), y - points[0].ly());
-	for (Point point : points) {
+	for (const Point& point : points) {
 		double distance = hypot(x - point.bx(), y - point.ly());
 		if (distance < min) {
 			min = distance;
@@ -470,25 +476,81 @@ static Point search_nearest(const std::vector<Point>& points,
 	return nearest_point;
 }
 
+static int point_to_lane_index(const Point& point)
+{
+	for (const Node& node : nodes) {
+		if (node.pid() != point.pid())
+			continue;
+		for (int i = 0; i < static_cast<int>(lanes.size()); i++) {
+			if (lanes[i].bnid() != node.nid())
+				continue;
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+static int lane_to_next_lane_index(const Lane& lane)
+{
+	for (int i = 0; i < static_cast<int>(lanes.size()); i++) {
+		if (lanes[i].lnid() != lane.flid())
+			continue;
+		return i;
+	}
+
+	return -1;
+}
+
+static int lane_to_beginning_point_index(const Lane& lane)
+{
+	for (const Node& node : nodes) {
+		if (node.nid() != lane.bnid())
+			continue;
+		for (int i = 0; i < static_cast<int>(points.size()); i++) {
+			if (points[i].pid() != node.pid())
+				continue;
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+static int lane_to_finishing_point_index(const Lane& lane)
+{
+	for (const Node& node : nodes) {
+		if (node.nid() != lane.fnid())
+			continue;
+		for (int i = 0; i < static_cast<int>(points.size()); i++) {
+			if (points[i].pid() != node.pid())
+				continue;
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 static void set_marker_data(visualization_msgs::Marker* marker,
 			    double px, double py, double pz,
 			    double ox, double oy, double oz, double ow,
 			    double sx, double sy, double sz,
 			    double r, double g, double b, double a)
 {
-	if (swap_x_y) {
-		marker->pose.position.x = py;
-		marker->pose.position.y = px;
+#if SWAP_X_Y
+	marker->pose.position.x = py;
+	marker->pose.position.y = px;
 
-		marker->pose.orientation.x = oy;
-		marker->pose.orientation.y = ox;
-	} else {
-		marker->pose.position.x = px;
-		marker->pose.position.y = py;
+	marker->pose.orientation.x = oy;
+	marker->pose.orientation.y = ox;
+#else /* !SWAP_X_Y */
+	marker->pose.position.x = px;
+	marker->pose.position.y = py;
 
-		marker->pose.orientation.x = ox;
-		marker->pose.orientation.y = oy;
-	}
+	marker->pose.orientation.x = ox;
+	marker->pose.orientation.y = oy;
+#endif /* SWAP_X_Y */
 
 	marker->pose.position.z = pz;
 
@@ -508,17 +570,6 @@ static void set_marker_data(visualization_msgs::Marker* marker,
 static void publish_marker(visualization_msgs::Marker* marker,
 			   ros::Publisher& pub, ros::Rate& rate)
 {
-#if SELF_TRANS
-	if (swap_x_y) {
-		marker->pose.position.x += 16635;
-		marker->pose.position.y += 86432;
-	} else {
-		marker->pose.position.x += 86432;
-		marker->pose.position.y += 16635;
-	}
-	marker->pose.position.z += -50;
-#endif /* SELF_TRANS */
-
 	ros::ok();
 	pub.publish(*marker);
 	rate.sleep();
@@ -536,7 +587,8 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 
 	nav_msgs::Path path;
 	path.header.stamp = ros::Time::now();
-	path.header.frame_id = "path";
+	path.header.frame_id = "/map";
+#if SEARCH_NEAREST_POINTS
 	for (int i = 0; i < static_cast<int>(msg.point.size()); i++) {
 		geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, LLH_HEIGHT);
 
@@ -545,12 +597,96 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 
 		geometry_msgs::PoseStamped posestamped;
 		posestamped.header = path.header;
+#if SWAP_X_Y
+		posestamped.pose.position.x = nearest.ly();
+		posestamped.pose.position.y = nearest.bx();
+#else /* !SWAP_X_Y */
 		posestamped.pose.position.x = nearest.bx();
 		posestamped.pose.position.y = nearest.ly();
+#endif /* SWAP_X_Y */
 		posestamped.pose.position.z = geo.z();
+		posestamped.pose.orientation.w = ORIENTATION_W;
 
 		path.poses.push_back(posestamped);
 	}
+#else /* !SEARCH_NEAREST_POINTS */
+	geo.llh_to_xyz(msg.point.front().lat, msg.point.front().lon,
+		       LLH_HEIGHT);
+	Point start_point = search_nearest(left_lane_points, geo.x(), geo.y());
+
+	geo.llh_to_xyz(msg.point.back().lat, msg.point.back().lon,
+		       LLH_HEIGHT);
+	Point end_point = search_nearest(left_lane_points, geo.x(), geo.y());
+
+	int lane_index = point_to_lane_index(start_point);
+	if (lane_index < 0) {
+		ROS_ERROR("start lane is not found");
+		return;
+	}
+	Lane lane = lanes[lane_index];
+
+	int point_index = lane_to_beginning_point_index(lane);
+	if (point_index < 0) {
+		ROS_ERROR("start beginning point is not found");
+		return;
+	}
+	Point point = points[point_index];
+
+	while (1) {
+		geometry_msgs::PoseStamped posestamped;
+		posestamped.header = path.header;
+#if SWAP_X_Y
+		posestamped.pose.position.x = point.ly();
+		posestamped.pose.position.y = point.bx();
+#else /* !SWAP_X_Y */
+		posestamped.pose.position.x = point.bx();
+		posestamped.pose.position.y = point.ly();
+#endif /* SWAP_X_Y */
+		posestamped.pose.position.z = point.h();
+		posestamped.pose.orientation.w = ORIENTATION_W;
+
+		path.poses.push_back(posestamped);
+
+		point_index = lane_to_finishing_point_index(lane);
+		if (point_index < 0) {
+			ROS_ERROR("finishing point is not found");
+			return;
+		}
+		point = points[point_index];
+
+		if (point.bx() == end_point.bx() &&
+		    point.ly() == end_point.ly()) {
+			posestamped.header = path.header;
+#if SWAP_X_Y
+			posestamped.pose.position.x = point.ly();
+			posestamped.pose.position.y = point.bx();
+#else /* !SWAP_X_Y */
+			posestamped.pose.position.x = point.bx();
+			posestamped.pose.position.y = point.ly();
+#endif /* SWAP_X_Y */
+			posestamped.pose.position.z = point.h();
+			posestamped.pose.orientation.w = ORIENTATION_W;
+
+			path.poses.push_back(posestamped);
+
+			break;
+		}
+
+		lane_index = lane_to_next_lane_index(lane);
+		if (lane_index < 0) {
+			ROS_ERROR("next lane is not found");
+			return;
+		}
+		lane = lanes[lane_index];
+
+		point_index = lane_to_beginning_point_index(lane);
+		if (point_index < 0) {
+			ROS_ERROR("beginning point is not found");
+			return;
+		}
+		point = points[point_index];
+	}
+#endif /* SEARCH_NEAREST_POINTS */
 
 	pub_nav.publish(path);
 
@@ -576,39 +712,28 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 
 int main(int argc, char **argv)
 {
-	if (argc < 5) {
-		std::cerr << "Usage: " << argv[0]
-			  << " <swap_x_y_on|swap_x_y_off>"
-			  << " lane.csv node.csv point.csv"
-			  << std::endl;
+	if (argc < 4) {
+		ROS_ERROR_STREAM("Usage: " << argv[0]
+				 << " lane.csv node.csv point.csv");
 		std::exit(1);
 	}
 
-	const char *swap_option = static_cast<const char *>(argv[1]);
-	const char *lane_csv = static_cast<const char *>(argv[2]);
-	const char *node_csv = static_cast<const char *>(argv[3]);
-	const char *point_csv = static_cast<const char *>(argv[4]);
+	const char *lane_csv = static_cast<const char *>(argv[1]);
+	const char *node_csv = static_cast<const char *>(argv[2]);
+	const char *point_csv = static_cast<const char *>(argv[3]);
 
-	if (std::string(swap_option) == "swap_x_y_on") {
-		ROS_INFO("swap_x_y: on");
-		swap_x_y = 1;
-	} else {
-		ROS_INFO("swap_x_y: off");
-		swap_x_y = 0;
-	}
+	lanes = read_lane(lane_csv);
+	nodes = read_node(node_csv);
+	points = read_point(point_csv);
 
-	std::vector<Lane> lanes = read_lane(lane_csv);
-	std::vector<Node> nodes = read_node(node_csv);
-	std::vector<Point> points = read_point(point_csv);
-
-	for (Lane lane : lanes) {
+	for (const Lane& lane : lanes) {
 		if (lane.lno() != 1)
 			continue;
-		for (Node node : nodes) {
+		for (const Node& node : nodes) {
 			if (node.nid() != lane.bnid() &&
 			    node.nid() != lane.fnid())
 				continue;
-			for (Point point : points) {
+			for (const Point& point : points) {
 				if (point.pid() != node.pid())
 					continue;
 				left_lane_points.push_back(point);
@@ -630,11 +755,7 @@ int main(int argc, char **argv)
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 
-#if SELF_TRANS
-	pub_marker.header.frame_id = "/map2";
-#else /* !SELF_TRANS */
 	pub_marker.header.frame_id = "/map";
-#endif /* SELF_TRANS */
 	pub_marker.header.stamp = ros::Time::now();
 
 	pub_marker.ns = "vector_map";
