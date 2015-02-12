@@ -57,16 +57,16 @@ subs :
       - name : Motion
       - name : Path
         subs :
-          - name : lane_follower
-            param: lane_follower
-          - name : waypoint_saver
-            cmd : roslaunch lane_follower waypoint_saver.launch
-          - name : lane_folloer(simulation)
+         # - name : lane_follower
+         #   param: lane_follower
+          - name : lane_follower(sim)
             cmd : roslaunch lane_follower simulation.launch
           - name : lane_follower(ndt)
             cmd : roslaunch lane_follower ndt.launch
           - name : lane_folloer(gnss)
             cmd : roslaunch lane_follower gnss.launch
+          - name : waypoint_saver
+            cmd : roslaunch lane_follower waypoint_saver.launch
 
 params :
   - name  : car_dpm
