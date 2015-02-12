@@ -56,10 +56,6 @@ struct my_tm {
 
 selfLocation sl;
 
-//store subscribed value
-vector<OBJPOS> global_cp_vector;
-//vector<OBJPOS> global_pp_vector;
-
 //flag for comfirming whether updating angle and position or not
 bool angleGetFlag;
 bool positionGetFlag;
@@ -120,8 +116,8 @@ string getNowTime(){
 }
 */
 
-void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
-			     vector<OBJPOS>::iterator cp_iterator,
+void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
+			     vector<OBJPOS>::iterator pp_iterator,
 			     geo_pos_conv geo,
 			     vector<float> &x,
 			     vector<float> &y,
@@ -129,14 +125,14 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 
   LOCATION rescoord;
 
-  for(uint i=0; i<car_position_vector.size() ; i++, cp_iterator++){
+  for(uint i=0; i<pedestrian_position_vector.size() ; i++, pp_iterator++){
 
     //middle of right-lower and left-upper
-    double U = cp_iterator->x1 + cp_iterator->x2/2;
-    double V = cp_iterator->y1 + cp_iterator->y2/2;
+    double U = pp_iterator->x1 + pp_iterator->x2/2;
+    double V = pp_iterator->y1 + pp_iterator->y2/2;
 
     //convert
-    sl.setOriginalValue(U,V,cp_iterator->distance);
+    sl.setOriginalValue(U,V,pp_iterator->distance);
     LOCATION ress = sl.cal();
     printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
 
@@ -169,8 +165,10 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 }
 
 
+
+
 //wrap SendData class
-void locatePublisher(vector<OBJPOS> car_position_vector){
+void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
 
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
@@ -183,10 +181,10 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   vector<float>::iterator y_iterator;
   vector<float>::iterator z_iterator;
 
-  vector<OBJPOS>::iterator cp_iterator;
+  vector<OBJPOS>::iterator pp_iterator;
   geo_pos_conv geo;
 
-  cp_iterator = car_position_vector.begin();
+  pp_iterator = pedestrian_position_vector.begin();
 
   //calculate own coordinate from own lati and longi value
   //get my position now
@@ -198,34 +196,38 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   geo.set_llh(my_xloc,my_yloc,my_zloc);
 
   //get data of car and pedestrian recognizing
-  if(car_position_vector.size() > 0 ){
-    makeSendDataDetectedObj(car_position_vector,cp_iterator,geo,x,y,z);
+  if(pedestrian_position_vector.size() > 0 ){
+    makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo,x,y,z);
   }
 
-  printf("ok1\n");
+  //publish recognized object data
   if(x.size() != 0 && y.size() != 0){
     x_iterator = x.begin();
     y_iterator = y.begin();
     z_iterator = z.begin();
 
-    for(int i=0; i<x.size()&&i<y.size()&&i<z.size(); i++,x_iterator++,y_iterator++,z_iterator++){
-      pose_msg.header.stamp = ros::Time::now();
-      pose_msg.header.frame_id = "map";
+    //time and frame_id is the same of all
+    pose_msg.header.stamp = ros::Time::now();
+    pose_msg.header.frame_id = "map";
+
+    for(uint i=0; i<x.size()&&i<y.size()&&i<z.size(); i++,x_iterator++,y_iterator++,z_iterator++){
       pose_msg.pose.position.x = *x_iterator;
       pose_msg.pose.position.y = *y_iterator;
       pose_msg.pose.position.z = 0;//*z_iterator;
       pub.publish(pose_msg);
     }
+
+
   }
 
 }
 
 
-void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
 
-  vector<OBJPOS> cp_vector;
-  OBJPOS cp;
+  vector<OBJPOS> pp_vector;
+  OBJPOS pp;
   
   //If angle and position data is not updated from prevous data send,
   //data is not sent
@@ -247,57 +249,24 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 	//so skip loop
 	if(fused_objects.distance.at(i) <= 0) continue;
 
-	cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
-	cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-	cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
-	cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
+	pp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
+	pp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
+	pp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
+	pp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
 
-	cp.distance = fused_objects.distance.at(i);
+	pp.distance = fused_objects.distance.at(i);
 
 	//printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
 
-	cp_vector.push_back(cp);      
+	pp_vector.push_back(pp);      
       }
 
-      locatePublisher(cp_vector);
+      locatePublisher(pp_vector);
 
     }
   }
-  //  printf("car position get\n\n");
 
 }
-
-/*
-void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
-{
-  OBJPOS cp;
-
-  pthread_mutex_lock( &ped_mutex );  
-
-  for(int i = 0; i < fused_objects.car_num; i++) { //fused_objects.car_num は障害物の個数
-    //If distance is zero, skip loop
-    if(fused_objects.distance.at(i) <= 0) continue;
-
-    cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
-    cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-    cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
-    cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
-
-    cp.distance = fused_objects.distance.at(i);
-    cp.tm = getNowTime();
-
-    printf("\npedestrian : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
-
-    global_pp_vector.push_back(cp);
-
-  }
-
-  pthread_mutex_unlock( &ped_mutex );  
-    
-  //  printf("pedestrian position get\n\n");
-}
-*/
-
 
 void azimuth_getter(const geometry_msgs::TwistStamped& azi)
 {
@@ -339,8 +308,8 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
 int main(int argc, char **argv){
   
-  ros::init(argc ,argv, "car_locate") ;  
-  cout << "car_locate" << endl;
+  ros::init(argc ,argv, "pedestrian_locate") ;  
+  cout << "pedestrian_locate" << endl;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -349,14 +318,13 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
 
-  ros::Subscriber car_pos_xyz = n.subscribe("/car_pixel_xyz", 1, car_pos_xyzCallback);
-  //ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
+  ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
   ros::Subscriber azm = n.subscribe("/vel", 1, azimuth_getter);
   ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
   //  ros::Subscriber ndt = n.subscribe("ndt_pose", 1, position_getter_ndt);
 
-  pub = n.advertise<geometry_msgs::PoseStamped>("car_pose",1); 
+  pub = n.advertise<geometry_msgs::PoseStamped>("pedestrian_pose",1); 
 
   //read calibration value
   //TO DO : subscribe from topic
