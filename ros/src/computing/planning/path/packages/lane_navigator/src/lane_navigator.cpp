@@ -15,7 +15,6 @@
 
 #include <geo_pos_conv.hh>
 
-#define SELF_TRANS		0
 #define SEARCH_NEAREST_POINTS	0
 #define SWAP_X_Y		1
 
@@ -571,17 +570,6 @@ static void set_marker_data(visualization_msgs::Marker* marker,
 static void publish_marker(visualization_msgs::Marker* marker,
 			   ros::Publisher& pub, ros::Rate& rate)
 {
-#if SELF_TRANS
-#if SWAP_X_Y
-	marker->pose.position.x += 16635;
-	marker->pose.position.y += 86432;
-#else /* !SWAP_X_Y */
-	marker->pose.position.x += 86432;
-	marker->pose.position.y += 16635;
-#endif /* SWAP_X_Y */
-	marker->pose.position.z += -50;
-#endif /* SELF_TRANS */
-
 	ros::ok();
 	pub.publish(*marker);
 	rate.sleep();
@@ -599,7 +587,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 
 	nav_msgs::Path path;
 	path.header.stamp = ros::Time::now();
-	path.header.frame_id = "path";
+	path.header.frame_id = "/map";
 #if SEARCH_NEAREST_POINTS
 	for (int i = 0; i < static_cast<int>(msg.point.size()); i++) {
 		geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, LLH_HEIGHT);
@@ -609,8 +597,13 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 
 		geometry_msgs::PoseStamped posestamped;
 		posestamped.header = path.header;
+#if SWAP_X_Y
+		posestamped.pose.position.x = nearest.ly();
+		posestamped.pose.position.y = nearest.bx();
+#else /* !SWAP_X_Y */
 		posestamped.pose.position.x = nearest.bx();
 		posestamped.pose.position.y = nearest.ly();
+#endif /* SWAP_X_Y */
 		posestamped.pose.position.z = geo.z();
 		posestamped.pose.orientation.w = ORIENTATION_W;
 
@@ -624,8 +617,6 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	geo.llh_to_xyz(msg.point.back().lat, msg.point.back().lon,
 		       LLH_HEIGHT);
 	Point end_point = search_nearest(left_lane_points, geo.x(), geo.y());
-
-	double z = geo.z();
 
 	int lane_index = point_to_lane_index(start_point);
 	if (lane_index < 0) {
@@ -644,9 +635,14 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	while (1) {
 		geometry_msgs::PoseStamped posestamped;
 		posestamped.header = path.header;
+#if SWAP_X_Y
+		posestamped.pose.position.x = point.ly();
+		posestamped.pose.position.y = point.bx();
+#else /* !SWAP_X_Y */
 		posestamped.pose.position.x = point.bx();
 		posestamped.pose.position.y = point.ly();
-		posestamped.pose.position.z = z;
+#endif /* SWAP_X_Y */
+		posestamped.pose.position.z = point.h();
 		posestamped.pose.orientation.w = ORIENTATION_W;
 
 		path.poses.push_back(posestamped);
@@ -661,9 +657,14 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		if (point.bx() == end_point.bx() &&
 		    point.ly() == end_point.ly()) {
 			posestamped.header = path.header;
+#if SWAP_X_Y
+			posestamped.pose.position.x = point.ly();
+			posestamped.pose.position.y = point.bx();
+#else /* !SWAP_X_Y */
 			posestamped.pose.position.x = point.bx();
 			posestamped.pose.position.y = point.ly();
-			posestamped.pose.position.z = z;
+#endif /* SWAP_X_Y */
+			posestamped.pose.position.z = point.h();
 			posestamped.pose.orientation.w = ORIENTATION_W;
 
 			path.poses.push_back(posestamped);
@@ -754,11 +755,7 @@ int main(int argc, char **argv)
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 
-#if SELF_TRANS
-	pub_marker.header.frame_id = "/map2";
-#else /* !SELF_TRANS */
 	pub_marker.header.frame_id = "/map";
-#endif /* SELF_TRANS */
 	pub_marker.header.stamp = ros::Time::now();
 
 	pub_marker.ns = "vector_map";

@@ -1,4 +1,5 @@
 Header header
+int32 init_pos_gnss
 float32 x
 float32 y
 float32 z
