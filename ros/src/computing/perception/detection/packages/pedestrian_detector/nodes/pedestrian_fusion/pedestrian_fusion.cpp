@@ -25,10 +25,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "fusion_func.h"
+#include "std_msgs/Header.h"
 
 void publishTopic();
 ros::Publisher fused_objects;
-
+std_msgs::Header sensor_header;
 
 void ImageObjectsCallback(const dpm::ImageObjects& image_object)
 {
@@ -41,6 +42,7 @@ void ImageObjectsCallback(const dpm::ImageObjects& image_object)
 void ScanImageCallback(const scan_to_image::ScanImage& scan_image)
 {
     setScanImage(scan_image);
+    sensor_header = scan_image.header;
 
     calcDistance();
     publishTopic();
@@ -49,6 +51,7 @@ void ScanImageCallback(const scan_to_image::ScanImage& scan_image)
 void PointsImageCallback(const points_to_image::PointsImage& points_image)
 {
     setPointsImage(points_image);
+    sensor_header = points_image.header;
 
     calcDistance();
     publishTopic();
@@ -59,7 +62,7 @@ void publishTopic()
      * Publish topic(Pedestrian position xyz).
      */
     car_detector::FusedObjects fused_objects_msg;
-
+    fused_objects_msg.header = sensor_header;
     fused_objects_msg.car_num = getObjectNum();
     fused_objects_msg.corner_point = getCornerPoint();
     fused_objects_msg.distance = getDistance();
