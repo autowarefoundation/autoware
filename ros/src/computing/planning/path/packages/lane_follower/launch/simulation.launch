@@ -1,24 +1,44 @@
 <!-- -->
 <launch>
+	<arg name="global_frame" default="/map" />
+	<arg name="odometry_frame" default="/odom"/>
+	<arg name="path_frame" default="/path"/>
 	<arg name="current_pose_topic" default="odometry" />
 	<arg name="mobility_frame" default="/base_link" />
 	<arg name="velocity_kmh" default="5" /> <!-- set velocity (km/h) -->
 	<arg name="lookahead_threshold" default="4" /> <!-- meter -->
-	<arg name="waypoint_filename" default="/home/h_ohta/auto_ws/path3.txt" />
+	<arg name="waypoint_filename" default="/home/h_ohta/data/log/path/ndt/ndtpath_150209.txt" />
+	<arg name="position_x" default="3752.7" />
+	<arg name="position_y" default="-99435.4" />
+	<arg name="position_z" default="87.4" />
+	<arg name="orientation_x" default="0" />
+	<arg name="orientation_y" default="0" />
+	<arg name="orientation_z" default="0.7" />
+	<arg name="orientation_w" default="0.71" />
 
-<arg name="frame" default="/odom" /> 
+
 	<!-- transform path coordinate to global coordinate -->
-	<node pkg="tf" type="static_transform_publisher" name="path_tf" args="0 0 0 0 0 0 $(arg frame) /path 100" />
+	<node pkg="tf" type="static_transform_publisher" name="global2path" args="0 0 0 0 0 0 $(arg global_frame) $(arg path_frame) 100" /> 
 
 
-	<node pkg="lane_follower" type="odometry_pub" name="odometry_simu" />
+	<!-- transform path coordinate to global coordinate -->
+	 <node pkg="tf" type="static_transform_publisher" name="global2odom" args="0 0 0 0 0 0 $(arg global_frame) $(arg odometry_frame) 100" /> 
 
+	<node pkg="lane_follower" type="odometry_pub" name="odometry_simu">
+		<param name="px" value="$(arg position_x)" />
+		<param name="py" value="$(arg position_y)" />
+		<param name="pz" value="$(arg position_z)" />
+		<param name="ox" value="$(arg orientation_x)" />
+		<param name="oy" value="$(arg orientation_y)" />
+		<param name="oz" value="$(arg orientation_z)" />
+		<param name="ow" value="$(arg orientation_w)" />
+	</node>
 
 	<!-- rosrun lane_follower test_lane_navigator _filename:="path file" -->
 	<node pkg="lane_follower" type="test_lane_navigator" name="lane_nav">
 		<param name="filename" value="$(arg waypoint_filename)" />
 	</node>
-
+	
 	<!-- rosrun lane_follower lane_follower _current_pose_topic:="topic" _mobility_frame:="/frame" _velocity_kmh:=0 _lookahead_threshold:=0 -->
 	<node pkg="lane_follower" type="lane_follower" name="lane_follower" output="screen">
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
@@ -26,5 +46,4 @@
 		<param name="velocity_kmh" value="$(arg velocity_kmh)" />
 		<param name="lookahead_threshold" value="$(arg lookahead_threshold)" />
 	</node>
-
 </launch>

@@ -4,7 +4,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
-
+#include <tf/tf.h>
 #include <iostream>
 
 geometry_msgs::Twist _current_velocity;
@@ -20,10 +20,9 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "odom_pub");
 
     ros::NodeHandle nh;
-
+    ros::NodeHandle private_nh("~");
     //publish topic
-    ros::Publisher odometry_publisher = nh.advertise<nav_msgs::Odometry>("pose",
-            1000);
+    ros::Publisher odometry_publisher = nh.advertise<nav_msgs::Odometry>("pose", 1000);
 
     //subscribe topic 
     ros::Subscriber cmd_subscriber = nh.subscribe("cmd_vel", 1000, CmdCallBack);
@@ -34,14 +33,37 @@ int main(int argc, char **argv)
     ros::Time current_time, last_time;
     current_time = ros::Time::now();
     last_time = ros::Time::now();
+    /*
+     double x = 0.0;
+     double y = 0.0;
+     double th = 0.0;
+     */
 
-    double x = 0.0;
-    double y = 0.0;
-    double th = 0.0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
+    double ox = 0;
+    double oy = 0;
+    double oz = 0;
+    double ow = 1;
+    private_nh.getParam("px", x);
+    private_nh.getParam("py", y);
+    private_nh.getParam("pz", z);
+    private_nh.getParam("ox", ox);
+    private_nh.getParam("oy", oy);
+    private_nh.getParam("oz", oz);
+    private_nh.getParam("ow", ow);
 
-   // double vx = 5.0;
+
+    tf::Quaternion q(ox, oy, oz, ow);
+    tf::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    double th = yaw;
+
+    // double vx = 5.0;
     //  double vth = -0.230769;
-
 
     //10Hzでループ
     ros::Rate loop_rate(10);
@@ -49,7 +71,7 @@ int main(int argc, char **argv)
         ros::spinOnce(); //check subscribe topic
 
         double vx = _current_velocity.linear.x;
-          double vth = _current_velocity.angular.z;
+        double vth = _current_velocity.angular.z;
         current_time = ros::Time::now();
 
         //compute odometry in a typical way given the velocities of the robot
@@ -63,14 +85,11 @@ int main(int argc, char **argv)
         th += delta_th;
 
         std::cout << "delta : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
-        std::cout << "current_velocity : " << _current_velocity.linear.x << " "
-                << _current_velocity.angular.z << std::endl;
-        std::cout << "current_pose : (" << x << " " << y << " " << th << ")"
-                << std::endl << std::endl;
+        std::cout << "current_velocity : " << _current_velocity.linear.x << " " << _current_velocity.angular.z << std::endl;
+        std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl << std::endl;
 
 //since all odometry is 6DOF we'll need a quaternion created from yaw
-        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(
-                th);
+        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
 
         //first, we'll publish the transform over tf
         geometry_msgs::TransformStamped odom_trans;
@@ -80,7 +99,7 @@ int main(int argc, char **argv)
 
         odom_trans.transform.translation.x = x;
         odom_trans.transform.translation.y = y;
-        odom_trans.transform.translation.z = 0.0;
+        odom_trans.transform.translation.z = z;
         odom_trans.transform.rotation = odom_quat;
 
         //send the transform
@@ -94,7 +113,7 @@ int main(int argc, char **argv)
         //set the position
         odom.pose.pose.position.x = x;
         odom.pose.pose.position.y = y;
-        odom.pose.pose.position.z = 0.0;
+        odom.pose.pose.position.z = z;
         odom.pose.pose.orientation = odom_quat;
 
         //set the velocity

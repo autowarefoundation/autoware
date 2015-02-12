@@ -8,6 +8,7 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
+#include <visualization_msgs/Marker.h>
 
 #include <iostream>
 #include <sstream>
@@ -26,6 +27,8 @@ geometry_msgs::PoseStamped _current_pose; //グローバル座標系での現在
 geometry_msgs::Twist _current_velocity;
 nav_msgs::Path _current_path;
 geometry_msgs::PoseStamped _transformed_waypoint; //車の座標系に変換したwaypoint
+
+ros::Publisher vis_pub;
 
 //参照するwaypointの番号
 int _next_waypoint = 0;
@@ -189,6 +192,27 @@ geometry_msgs::Twist CalculateCmdTwist()
   std::cout << "calculate" << std::endl;
   geometry_msgs::Twist twist;
 
+
+  //waypoint をマーカーで表示
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = PATH_FRAME;
+  marker.header.stamp = ros::Time::now();
+  marker.ns = "my_namespace";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::SPHERE;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.position = _current_path.poses[_next_waypoint].pose.position;
+  marker.pose.orientation = _current_path.poses[_next_waypoint].pose.orientation;
+  marker.scale.x = 0.5;
+  marker.scale.y = 0.5;
+  marker.scale.z = 0.5;
+  marker.color.a = 1.0;
+  marker.color.r = 0.0;
+  marker.color.g = 0.0;
+  marker.color.b = 1.0;
+  vis_pub.publish( marker );
+    //ここまで
+
   double lookahead_distance = GetLookAheadDistance();
 
   std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
@@ -214,6 +238,8 @@ geometry_msgs::Twist CalculateCmdTwist()
   return twist;
 
 }
+
+
 
 int main(int argc, char **argv)
 {
@@ -242,6 +268,9 @@ int main(int argc, char **argv)
   //publish topic
   ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::Twist>(
 									     "cmd_vel", 1000);
+
+  vis_pub = nh.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
+
 
   //subscribe topic
   ros::Subscriber waypoint_subcscriber = nh.subscribe("lane_waypoint", 1000,
