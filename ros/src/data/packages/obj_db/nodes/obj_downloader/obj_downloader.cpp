@@ -21,6 +21,8 @@
 
 using namespace std;
 
+#define PORT 5700
+
 enum TYPE{
   NORMAL,
   RANGE,
@@ -196,7 +198,7 @@ int main(int argc, char **argv){
     return 0;
   }
 
-  sd = SendData(serverName,5678);
+  sd = SendData(serverName,PORT);
   counter = 0;
 
   pthread_t th;
