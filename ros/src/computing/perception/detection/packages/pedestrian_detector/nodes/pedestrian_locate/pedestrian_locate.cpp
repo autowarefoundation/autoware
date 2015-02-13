@@ -80,7 +80,6 @@ void printDiff(struct timeval begin, struct timeval end){
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
 
-/*
 void GetRPY(const geometry_msgs::Pose &pose,
 	    double &roll,
 	    double &pitch,
@@ -89,7 +88,6 @@ void GetRPY(const geometry_msgs::Pose &pose,
   tf::quaternionMsgToTF(pose.orientation,q);
   tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
 }
-*/
 
 /*
 string getNowTime(){
@@ -118,7 +116,7 @@ string getNowTime(){
 
 void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
 			     vector<OBJPOS>::iterator pp_iterator,
-			     geo_pos_conv geo,
+			     LOCATION mloc,
 			     vector<float> &x,
 			     vector<float> &y,
 			     vector<float> &z){
@@ -134,7 +132,7 @@ void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
     //convert
     sl.setOriginalValue(U,V,pp_iterator->distance);
     LOCATION ress = sl.cal();
-    printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
+    //printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
 
     axiMove am;
     //convert axes from camera to velodyne
@@ -148,14 +146,14 @@ void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
       axial y is the direction to front and backend and axial z is the direction to upper and lower.
       So convert them.
      */
-    rescoord.X = anglefixed.X;
-    rescoord.Y = anglefixed.Z;
-    rescoord.Z = anglefixed.Y;
+    rescoord.X = anglefixed.Y;
+    rescoord.Y = anglefixed.X;
+    rescoord.Z = anglefixed.Z;
 
     //add plane rectangular coordinate to that of target car.
-    rescoord.X += geo.x();
-    rescoord.Y += geo.y();
-    rescoord.Z += geo.z();
+    rescoord.X += mloc.X;
+    rescoord.Y += mloc.Y;
+    rescoord.Z += mloc.Z;
 
     x.push_back(rescoord.X);
     y.push_back(rescoord.Y);
@@ -182,23 +180,27 @@ void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
   vector<float>::iterator z_iterator;
 
   vector<OBJPOS>::iterator pp_iterator;
-  geo_pos_conv geo;
+  LOCATION mloc;
 
   pp_iterator = pedestrian_position_vector.begin();
 
   //calculate own coordinate from own lati and longi value
   //get my position now
-  double my_xloc = my_loc.X;
-  double my_yloc = my_loc.Y;
-  double my_zloc = my_loc.Z;
 
+  mloc.X = my_loc.X;
+  mloc.Y = my_loc.Y;
+  mloc.Z = my_loc.Z;
+  /*
   geo.set_plane(7);
   geo.set_llh(my_xloc,my_yloc,my_zloc);
+  */
 
   //get data of car and pedestrian recognizing
   if(pedestrian_position_vector.size() > 0 ){
-    makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo,x,y,z);
+    makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,mloc,x,y,z);
   }
+
+  printf("%f %f %f\n",mloc.X,mloc.Y,mloc.Z);
 
   //publish recognized object data
   if(x.size() != 0 && y.size() != 0){
@@ -211,13 +213,11 @@ void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
     pose_msg.header.frame_id = "map";
 
     for(uint i=0; i<x.size()&&i<y.size()&&i<z.size(); i++,x_iterator++,y_iterator++,z_iterator++){
-      pose_msg.pose.position.x = *x_iterator;
-      pose_msg.pose.position.y = *y_iterator;
-      pose_msg.pose.position.z = 0;//*z_iterator;
+      pose_msg.pose.position.x = *y_iterator;
+      pose_msg.pose.position.y = *x_iterator;
+      pose_msg.pose.position.z = *z_iterator;
       pub.publish(pose_msg);
     }
-
-
   }
 
 }
@@ -268,6 +268,7 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 
 }
 
+/*
 void azimuth_getter(const geometry_msgs::TwistStamped& azi)
 {
 
@@ -284,12 +285,12 @@ void position_getter(const sensor_msgs::NavSatFix& pos)
 {
   my_loc.X = pos.latitude;
   my_loc.Y = pos.longitude;
-  my_loc.Z = 0;
+  my_loc.Z = pos.altitude;
   positionGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 
 }
-
+*/
 /*
 void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
@@ -306,6 +307,22 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 */
 
+void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
+
+  //In Autoware axel x and axel y is opposite
+  //but once they is converted to calculate.
+  my_loc.X = pose.pose.position.y;
+  my_loc.Y = pose.pose.position.x;
+  my_loc.Z = pose.pose.position.z;
+
+  GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
+  printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
+
+  angleGetFlag = true;
+  positionGetFlag = true;
+  //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
+}
+
 int main(int argc, char **argv){
   
   ros::init(argc ,argv, "pedestrian_locate") ;  
@@ -320,9 +337,12 @@ int main(int argc, char **argv){
 
   ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
+  /*
   ros::Subscriber azm = n.subscribe("/vel", 1, azimuth_getter);
   ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
-  //  ros::Subscriber ndt = n.subscribe("ndt_pose", 1, position_getter_ndt);
+  ros::Subscriber ndt = n.subscribe("ndt_pose", 1, position_getter_ndt);
+  */
+  ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
 
   pub = n.advertise<geometry_msgs::PoseStamped>("pedestrian_pose",1); 
 

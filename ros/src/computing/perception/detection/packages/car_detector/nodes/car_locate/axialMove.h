@@ -6,7 +6,6 @@
 #include "CalSelfLoc.h"
 #include"structure.h"
 
-
 class axiMove{
 
 public:
