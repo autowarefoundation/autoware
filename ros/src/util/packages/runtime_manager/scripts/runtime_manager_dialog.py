@@ -43,6 +43,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
 		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", 0.5)
 
+		for nm in [ 'tablet', 'mobile', 'vehicle', 'database' ]:
+			setattr(self, 'bitmap_'+nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
+
 		#
 		# for Computing tab
 		#
