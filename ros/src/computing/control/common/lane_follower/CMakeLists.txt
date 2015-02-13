@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(gnss_pos)
+project(lane_follower)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -117,8 +117,14 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(gnss_pos src/gnss_pos.cpp)
-target_link_libraries(gnss_pos ${catkin_LIBRARIES})
+
+add_executable(pure_pursuit src/pure_pursuit.cpp)
+target_link_libraries(pure_pursuit gnss ${catkin_LIBRARIES})
+
+add_executable(odometry_pub src/odometry_pub.cpp)
+target_link_libraries(odometry_pub ${catkin_LIBRARIES})
+
+
 
 #############
 ## Install ##

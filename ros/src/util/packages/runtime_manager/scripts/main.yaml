@@ -1,0 +1,15 @@
+buttons:
+  tablet:
+    run : roslaunch runtime_manager ui_socket.launch
+  mobile:
+    run : echo 'mobile ui'
+  vehicle:
+    run : echo 'vehicle control'
+  database:
+    run : rosrun obj_db obj_downloader
+
+ipaddress:
+  tablet:   127.0.0.1
+  mobile:   127.0.0.1
+  vehicle:  127.0.0.1
+  database: 127.0.0.1
