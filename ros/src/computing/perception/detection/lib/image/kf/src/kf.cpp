@@ -367,7 +367,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 }
 
 void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::ObjectDetection> detections,
-	vector<kstate>& kstates, vector<bool>& active, vector<Scalar> colors)
+	vector<kstate>& kstates, vector<bool>& active, vector<Scalar> colors, sensor_msgs::Image image_source)
 {
 	vector<kstate> tracked_detections;
 
@@ -405,22 +405,28 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 	image_objects_msg.corner_point = corner_point_array;
 	image_objects_msg.car_type = car_type_array;
 
+	image_objects_msg.header = image_source.header;
+	image_objects_msg.header.stamp = image_source.header.stamp;
+
 	image_objects.publish(image_objects_msg);
 }
 
-void image_callback(const sensor_msgs::ImageConstPtr& image_source)
+void image_callback(const sensor_msgs::Image& image_source)
 {
 	if (!_ready)
 		return;
 	_ready=false;
-	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
-	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
-							     encoding);
-	IplImage frame = cv_image->image;
+	//const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
+	//cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
+	//						     encoding);
+	//IplImage frame = cv_image->image;
 	
-	Mat imageTrack(&frame, true);
+	//Mat imageTrack(&frame, true);
 
-	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors);	
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
+  	Mat imageTrack = cv_image->image;
+
+	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);	
 
 	imshow("Tracked", imageTrack);
 	
@@ -507,4 +513,3 @@ int kf_main(int argc, char* argv[], const std::string& tracking_type)
 	ros::spin();
 	return 0;
 }
-
