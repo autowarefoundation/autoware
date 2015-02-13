@@ -367,7 +367,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 }
 
 void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::ObjectDetection> detections,
-	vector<kstate>& kstates, vector<bool>& active, vector<Scalar> colors, sensor_msgs::Image image_source)
+	vector<kstate>& kstates, vector<bool>& active, vector<Scalar> colors, const sensor_msgs::Image& image_source)
 {
 	vector<kstate> tracked_detections;
 
@@ -406,7 +406,6 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 	image_objects_msg.car_type = car_type_array;
 
 	image_objects_msg.header = image_source.header;
-	image_objects_msg.header.stamp = image_source.header.stamp;
 
 	image_objects.publish(image_objects_msg);
 }
