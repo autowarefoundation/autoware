@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(gnss_pos)
+project(gnss_localizer)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -117,8 +117,8 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(gnss_pos src/gnss_pos.cpp)
-target_link_libraries(gnss_pos ${catkin_LIBRARIES})
+add_executable(gnss_localizer node/gnss_localizer.cpp)
+target_link_libraries(gnss_localizer ${catkin_LIBRARIES})
 
 #############
 ## Install ##
