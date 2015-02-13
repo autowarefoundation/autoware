@@ -3,20 +3,24 @@
 #include <algorithm>
 
 #include <cuda.h>
-#include <cuda_runtime.h>
 
 int main(void)
 {
 	int deviceCount;
-	cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
+	CUresult error_id = cuInit(0);
 
-	if (error_id != cudaSuccess) {
-		std::cerr << "Failed: cudaGetDeviceCount(%d)"
-			  << static_cast<int>(error_id)
-			  << " -> "
-			  << cudaGetErrorString(error_id)
-			  << std::endl;
-		return -1;
+    error_id = cuDeviceGetCount(&deviceCount);
+
+	if (error_id != CUDA_SUCCESS) {
+      const char* error_string;
+      cuGetErrorString(error_id, &error_string);
+      std::cerr << "Failed: cuDeviceGetCount("
+                << static_cast<int>(error_id)
+                << ")"
+                << " -> "
+                << error_string
+                << std::endl;
+      return -1;
 	}
 
 	if (deviceCount == 0) {
@@ -26,12 +30,14 @@ int main(void)
 
 	std::vector<int> capability_versions;
 	for (int device = 0; device < deviceCount; ++device) {
-		cudaDeviceProp deviceProp;
+      CUdevice devHandle;
 
-		cudaSetDevice(device);
-		cudaGetDeviceProperties(&deviceProp, device);
+      cuDeviceGet(&devHandle, device);
 
-		int capability_version = (10 * deviceProp.major) + deviceProp.minor;
+      int major = 0, minor = 0;
+      cuDeviceComputeCapability(&major, &minor, devHandle);
+
+		int capability_version = (10 * major) + minor;
 		capability_versions.push_back(capability_version);
 	}
 
