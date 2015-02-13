@@ -69,6 +69,7 @@ execute_process(
   ${CUDA_COMPILER}
   "-o" ${CUDA_CAPABILITY_VERSION_CHECKER}
   "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
+  "-lcuda"
 )
 
 execute_process(
