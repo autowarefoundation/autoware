@@ -52,9 +52,9 @@ class MyFrame(rtmgr.MyFrame):
 			setattr(self, 'bitmap_' + nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
 
 			getattr(self, 'button_' + nm).Destroy()
-                        btn = wx.lib.buttons.GenBitmapToggleButton(tab, wx.ID_ANY, bm_off)
-                        btn.SetBitmapSelected(bm_on)
-                        self.Bind(wx.EVT_BUTTON, self.OnNetConn, btn)
+			btn = wx.lib.buttons.GenBitmapToggleButton(tab, wx.ID_ANY, bm_off)
+			btn.SetBitmapSelected(bm_on)
+			self.Bind(wx.EVT_BUTTON, self.OnNetConn, btn)
 			setattr(self, 'button_' + nm, btn)
 
 		self.main_cmd = {}
@@ -255,7 +255,7 @@ class MyFrame(rtmgr.MyFrame):
 			auto = self.checkbox_auto_update.GetValue()
 
 			cmd = None
-                        if auto and path_area_list != '':
+			if auto and path_area_list != '':
 				cmd = 'rosrun map_file points_map_loader'
 			if not auto and path_pcd != []:
 				cmd = 'rosrun sample_data sample_points_map'
