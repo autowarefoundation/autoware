@@ -149,6 +149,10 @@ SendData() :
     return result;
     
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> e1e8f2d78e3629e5b1cf47387f343a1b1ab7e4c3
   void setServerName(std::string server){
     serverName = server;
   }
@@ -157,7 +161,10 @@ SendData() :
     port = pt;
   }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> e1e8f2d78e3629e5b1cf47387f343a1b1ab7e4c3
 private:
 
 /*
