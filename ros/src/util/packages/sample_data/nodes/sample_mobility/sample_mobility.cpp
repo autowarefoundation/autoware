@@ -72,8 +72,9 @@ void db_callback(const std_msgs::String::ConstPtr &msg)
     a.x = geo.x();
     a.y = geo.y();
     a.z = geo.z();
-    p.x = a.x;
-    p.y = a.y;
+    // swap x and y
+    p.x = a.y;
+    p.y = a.x;
     p.z = a.z;
     cars.push_back(a);
     sphere_list.points.push_back(p);
