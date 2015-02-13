@@ -117,7 +117,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(gnss_localizer node/gnss_localizer.cpp)
+add_executable(gnss_localizer nodes/gnss_localizer.cpp)
 target_link_libraries(gnss_localizer ${catkin_LIBRARIES})
 
 #############
