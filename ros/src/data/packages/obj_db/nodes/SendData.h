@@ -26,7 +26,7 @@ SendData() :
   }
   */
 
- SendData(char *server,int pt) : 
+ SendData(std::string server,int pt) : 
   serverName(server),port(pt)
   {
   }
