@@ -140,7 +140,7 @@ int main(int argc, char **argv){
   
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
-  char serverName[100] = "db1.ertl.jp";
+  string serverName = "db1.ertl.jp";
   
   cout << "obj_downloader" << endl;
 
