@@ -2,6 +2,7 @@
 
 import wx
 import wx.lib.agw.customtreectrl as CT
+import wx.lib.buttons
 import gettext
 import os
 import socket
@@ -43,8 +44,18 @@ class MyFrame(rtmgr.MyFrame):
 		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
 		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", 0.5)
 
+		scale = 0.5
+		bm_on = self.get_bitmap('btnon.png', scale)
+		bm_off = self.get_bitmap('btnoff.png', scale)
+
 		for nm in [ 'tablet', 'mobile', 'vehicle', 'database' ]:
-			setattr(self, 'bitmap_'+nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
+			setattr(self, 'bitmap_' + nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
+
+			getattr(self, 'button_' + nm).Destroy()
+                        btn = wx.lib.buttons.GenBitmapToggleButton(tab, wx.ID_ANY, bm_off)
+                        btn.SetBitmapSelected(bm_on)
+                        self.Bind(wx.EVT_BUTTON, self.OnNetConn, btn)
+			setattr(self, 'button_' + nm, btn)
 
 		self.main_cmd = {}
 		self.main_dic = self.load_yaml('main.yaml')
@@ -911,13 +922,17 @@ class MyFrame(rtmgr.MyFrame):
 		return os.path.abspath(dir)
 
 	def get_static_bitmap(self, parent, filename, scale):
+		bm = self.get_bitmap(filename, scale)
+		return wx.StaticBitmap(parent, wx.ID_ANY, bm)
+
+	def get_bitmap(self, filename, scale):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
 		(w, h) = bm.GetSize()
 		img = wx.ImageFromBitmap(bm)
 		img = img.Scale(w * scale, h * scale, wx.IMAGE_QUALITY_HIGH)
 		bm = wx.BitmapFromImage(img)
-		return wx.StaticBitmap(parent, wx.ID_ANY, bm)
+		return bm
 
 	def load_yaml(self, filename, def_ret=None):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
