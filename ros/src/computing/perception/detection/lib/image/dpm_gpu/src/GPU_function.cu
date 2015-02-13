@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdint.h>
 #include "for_use_GPU.h"
 #include "calc_feature_conf.h"
 #include "switch_release.h"
@@ -87,7 +88,7 @@ process_root
     
     /* adjust the location of pointer of C */
     FLOAT *dst;
-    unsigned long long int pointer = (unsigned long long int)C;
+    uintptr_t pointer = (uintptr_t)C;
 
     for(int a=interval; a<level; a++) {
       for(int b=0; b<len; b++) {
@@ -100,7 +101,7 @@ process_root
           return;
         }
         
-        pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
+        pointer += (uintptr_t)(height*width*sizeof(FLOAT));
        
       }
     }
@@ -115,7 +116,7 @@ process_root
         return;
       }
       
-      pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
+      pointer += (uintptr_t)(height*width*sizeof(FLOAT));
     }
     
     dst = (FLOAT *)pointer;
@@ -260,7 +261,7 @@ process_part
     
     /* adjust the location of pointer of C */
     FLOAT *dst;
-    unsigned long long int pointer = (unsigned long long int)C;
+    uintptr_t pointer = (uintptr_t)C;
     for(int a=0; a<level; a++) {
       for(int b=0; b<len; b++){
         int height = A_dims_array[a*3] - B_dims_array[b*3] + 1;
@@ -272,7 +273,7 @@ process_part
           return;
         }
         
-        pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
+        pointer += (uintptr_t)(height*width*sizeof(FLOAT));
       }
     }
 
@@ -286,7 +287,7 @@ process_part
           return;
         }
 
-      pointer += (unsigned long long int)(height*width*sizeof(FLOAT));
+      pointer += (uintptr_t)(height*width*sizeof(FLOAT));
     }
     
 
@@ -431,7 +432,7 @@ inverse_Q(
 
               /* pointer adjustment */
           FLOAT *src;
-          unsigned long long int ptr_adjuster = (unsigned long long int)src_start;
+          uintptr_t ptr_adjuster = (uintptr_t)src_start;
           for(int i=0; i<L; i++) {
                 
                 /* apply error condition */
@@ -449,7 +450,7 @@ inverse_Q(
             for(int j=0; j<NoP; j++) {
               int height = size_array[i*NoP*2 + j*2];
               int width = size_array[i*NoP*2 + j*2+1];
-              ptr_adjuster += (unsigned long long int)(height*width*sizeof(FLOAT));
+              ptr_adjuster += (uintptr_t)(height*width*sizeof(FLOAT));
                   
             }
           }
@@ -459,7 +460,7 @@ inverse_Q(
           for(int j=0; j<PIDX; j++) {
             int height = size_array[L*NoP*2 + j*2];
             int width = size_array[L*NoP*2 + j*2+1];
-            ptr_adjuster += (unsigned long long int)(height*width*sizeof(FLOAT));
+            ptr_adjuster += (uintptr_t)(height*width*sizeof(FLOAT));
           }
               
           src = (FLOAT *)ptr_adjuster;  
@@ -584,9 +585,9 @@ dt1d_x(
           FLOAT b = def_array[DID_4+3];
              
           /* pointer adjustment */
-          unsigned long long int adj_src = (unsigned long long int)src_start;
-          unsigned long long int adj_dst = (unsigned long long int)dst_start;
-          unsigned long long int adj_ptr = (unsigned long long int)ptr_start;
+          uintptr_t adj_src = (uintptr_t)src_start;
+          uintptr_t adj_dst = (uintptr_t)dst_start;
+          uintptr_t adj_ptr = (uintptr_t)ptr_start;
           /* for src */
           for(int i=0; i<L; i++) {
                 
@@ -604,7 +605,7 @@ dt1d_x(
             for(int j=0; j<NoP; j++) {
               int height = size_array[i*NoP*2 + j*2];
               int width = size_array[i*NoP*2 + j*2+1];
-              adj_src += (unsigned long long int)(height*width*sizeof(FLOAT));
+              adj_src += (uintptr_t)(height*width*sizeof(FLOAT));
                   
             }
           }
@@ -613,7 +614,7 @@ dt1d_x(
           for(int j=0; j<PIDX; j++) {
             int height = size_array[L*NoP*2 + j*2];
             int width = size_array[L*NoP*2 + j*2+1];
-            adj_src += (unsigned long long int)(height*width*sizeof(FLOAT));
+            adj_src += (uintptr_t)(height*width*sizeof(FLOAT));
           }
               
               /* for dst, ptr */
@@ -639,8 +640,8 @@ dt1d_x(
                 int dims1_tmp = size_array[i*NoP*2 + PIDX_tmp*2+1];
 
                     
-                adj_dst += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-                adj_ptr += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(int));
+                adj_dst += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+                adj_ptr += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(int));
                     
                     
               }
@@ -654,8 +655,8 @@ dt1d_x(
               int dims0_tmp = size_array[L*NoP*2 + PIDX_tmp*2]; // size_array[L][PIDX_tmp*2]
               int dims1_tmp = size_array[L*NoP*2 + PIDX_tmp*2+1]; // size_array[L][PIDX_tmp*2+1]
                   
-              adj_dst += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-              adj_ptr += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(int));
+              adj_dst += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+              adj_ptr += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(int));
                   
             }
           }
@@ -665,8 +666,8 @@ dt1d_x(
             int dims0_tmp = size_array[L*NoP*2 + PIDX_tmp*2]; // size_array[L][PIDX_tmp*2]
             int dims1_tmp = size_array[L*NoP*2 + PIDX_tmp*2+1]; // size_array[L][PIDX_tmp*2+1]
                 
-            adj_dst += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-            adj_ptr += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(int));
+            adj_dst += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+            adj_ptr += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(int));
           }
               
               
@@ -760,9 +761,9 @@ dt1d_y(
           FLOAT b = def_array[DID_4+1]; // bx
               
               /* pointer adjustment */
-          unsigned long long int adj_src = (unsigned long long int)src_start;
-          unsigned long long int adj_dst = (unsigned long long int)dst_start;
-          unsigned long long int adj_ptr = (unsigned long long int)ptr_start;
+          uintptr_t adj_src = (uintptr_t)src_start;
+          uintptr_t adj_dst = (uintptr_t)dst_start;
+          uintptr_t adj_ptr = (uintptr_t)ptr_start;
               /* for src, dst, ptr */
               /* adjust "src" to tmpM[L][jj][kk] */
               /* adjust "dst" to M[L][jj][kk] */
@@ -787,9 +788,9 @@ dt1d_y(
                 int dims0_tmp = size_array[i*NoP*2 + PIDX_tmp*2];
                 int dims1_tmp = size_array[i*NoP*2 + PIDX_tmp*2+1];
                     
-                adj_src += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-                adj_dst += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-                adj_ptr += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(int));
+                adj_src += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+                adj_dst += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+                adj_ptr += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(int));
                     
               }
             }
@@ -802,9 +803,9 @@ dt1d_y(
               int dims0_tmp = size_array[L*NoP*2 + PIDX_tmp*2]; // size_array[L][PIDX_tmp*2]
               int dims1_tmp = size_array[L*NoP*2 + PIDX_tmp*2+1]; // size_array[L][PIDX_tmp*2+1]
                   
-              adj_src += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-              adj_dst += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-              adj_ptr += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(int));
+              adj_src += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+              adj_dst += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+              adj_ptr += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(int));
                   
             }
           }
@@ -814,9 +815,9 @@ dt1d_y(
             int dims0_tmp = size_array[L*NoP*2 + PIDX_tmp*2];
             int dims1_tmp = size_array[L*NoP*2 + PIDX_tmp*2+1];
                 
-            adj_src += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-            adj_dst += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
-            adj_ptr += (unsigned long long int)(dims0_tmp*dims1_tmp*sizeof(int));
+            adj_src += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+            adj_dst += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(FLOAT));
+            adj_ptr += (uintptr_t)(dims0_tmp*dims1_tmp*sizeof(int));
           }
               
               
@@ -877,15 +878,15 @@ calc_a_score(
     {
       if(0<=ii && ii<IWID && 0<=jj && jj<IHEI)
         {
-          unsigned long long int pointer_score = (unsigned long long int)score_array;
-          unsigned long long int pointer_ssize = (unsigned long long int)ssize_array;
-          unsigned long long int pointer_RX = (unsigned long long int)RX_array;
-          unsigned long long int pointer_RY = (unsigned long long int)RY_array;
+          uintptr_t pointer_score = (uintptr_t)score_array;
+          uintptr_t pointer_ssize = (uintptr_t)ssize_array;
+          uintptr_t pointer_RX = (uintptr_t)RX_array;
+          uintptr_t pointer_RY = (uintptr_t)RY_array;
           for(int k=0; k<component_jj; k++) {
-            pointer_score += (unsigned long long int)size_score_array[k];
-            pointer_ssize += (unsigned long long int)(sizeof(int));
-            pointer_RX += (unsigned long long int)(sizeof(int));
-            pointer_RY += (unsigned long long int)(sizeof(int));
+            pointer_score += (uintptr_t)size_score_array[k];
+            pointer_ssize += (uintptr_t)(sizeof(int));
+            pointer_RX += (uintptr_t)(sizeof(int));
+            pointer_RY += (uintptr_t)(sizeof(int));
           }
           
           FLOAT *score = (FLOAT *)pointer_score;
@@ -973,8 +974,8 @@ static inline double
 atomicAdd_double
 (double *address, double val)
 {
-  unsigned long long int *address_as_ull = (unsigned long long int *)address;
-  unsigned long long int old = *address_as_ull, assumed;
+  uintptr_t *address_as_ull = (uintptr_t *)address;
+  uintptr_t old = *address_as_ull, assumed;
   do {
     assumed = old;
     old = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed)));
@@ -1032,7 +1033,7 @@ calc_hist
   /* adjust pointer position */
   int   base_index     = tex1Dfetch(image_idx_incrementer, level);
   uint2 ptr_hist_uint2 = tex1Dfetch(hist_ptr_incrementer, level);
-  unsigned long long int ptr_hist = (unsigned long long int)hist_top + hiloint2uint64(ptr_hist_uint2.x, ptr_hist_uint2.y); // convert uint2 -> unsigned long long int
+  uintptr_t ptr_hist = (uintptr_t)hist_top + hiloint2uint64(ptr_hist_uint2.x, ptr_hist_uint2.y); // convert uint2 -> unsigned long long int
   FLOAT *hist = (FLOAT *)ptr_hist;
   
   /* input size */
@@ -1360,11 +1361,11 @@ calc_norm
     {
       /* adjust pointer position */
       uint2 ptr_uint2 = tex1Dfetch(hist_ptr_incrementer, level);
-      unsigned long long int ptr_hist = (unsigned long long int)hist_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
+      uintptr_t ptr_hist = (uintptr_t)hist_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
       
       
       ptr_uint2 = tex1Dfetch(norm_ptr_incrementer, level);
-      unsigned long long int ptr_norm = (unsigned long long int)norm_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
+      uintptr_t ptr_norm = (uintptr_t)norm_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
       FLOAT *dst = (FLOAT *)(ptr_norm + (x*blocks_0 + y)*sizeof(FLOAT));
       
       
@@ -1432,15 +1433,15 @@ calc_feat
 
   /* adjust pointer position */
   uint2 ptr_uint2 = tex1Dfetch(hist_ptr_incrementer, level);
-  unsigned long long int ptr_hist = (unsigned long long int)hist_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
+  uintptr_t ptr_hist = (uintptr_t)hist_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
   FLOAT *hist = (FLOAT *)ptr_hist;
   
   ptr_uint2 = tex1Dfetch(norm_ptr_incrementer, level);
-  unsigned long long int ptr_norm = (unsigned long long int)norm_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
+  uintptr_t ptr_norm = (uintptr_t)norm_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
   FLOAT *norm = (FLOAT *)ptr_norm;
 
   ptr_uint2 = tex1Dfetch(feat_ptr_incrementer, level);
-  unsigned long long int ptr_feat = (unsigned long long int)feat_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
+  uintptr_t ptr_feat = (uintptr_t)feat_top + hiloint2uint64(ptr_uint2.x, ptr_uint2.y); // convert uint2 -> unsigned long long int
   FLOAT *feat = (FLOAT *)ptr_feat;
   
   if (x<out_1 && y<out_0)
