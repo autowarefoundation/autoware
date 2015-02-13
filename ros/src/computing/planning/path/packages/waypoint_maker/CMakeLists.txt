@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(gnss_pos)
+project(waypoint_maker)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  gnss
   roscpp
   rospy
   std_msgs
   tf
-  gnss
 )
 
 ## System dependencies are found with CMake's conventions
@@ -69,9 +69,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
+#   std_msgs
 # )
-
 
 ###################################
 ## catkin specific configuration ##
@@ -101,24 +100,27 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(lane_follower
-#   src/${PROJECT_NAME}/lane_follower.cpp
+# add_library(waypoint_maker
+#   src/${PROJECT_NAME}/waypoint_maker.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(lane_follower_node src/lane_follower_node.cpp)
+# add_executable(waypoint_maker_node src/waypoint_maker_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(lane_follower_node lane_follower_generate_messages_cpp)
+# add_dependencies(waypoint_maker_node waypoint_maker_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(lane_follower_node
+# target_link_libraries(waypoint_maker_node
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(gnss_pos src/gnss_pos.cpp)
-target_link_libraries(gnss_pos ${catkin_LIBRARIES})
+add_executable(waypoint_loader nodes/waypoint_loader.cpp)
+target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
+
+add_executable(waypoint_saver nodes/waypoint_saver.cpp)
+target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -135,7 +137,7 @@ target_link_libraries(gnss_pos ${catkin_LIBRARIES})
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS lane_follower lane_follower_node
+# install(TARGETS waypoint_maker waypoint_maker_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -160,7 +162,7 @@ target_link_libraries(gnss_pos ${catkin_LIBRARIES})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_lane_follower.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_waypoint_maker.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

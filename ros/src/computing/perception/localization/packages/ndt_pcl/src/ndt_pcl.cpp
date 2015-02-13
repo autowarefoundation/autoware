@@ -15,11 +15,13 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <velodyne_pointcloud/rawdata.h>
 
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
@@ -75,6 +77,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
 
 // If the map is loaded, map_loaded will be 1.
 int map_loaded = 0;
+int use_gnss = 1;
+int gnss_loaded = 0;
 
 pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 // Default values
@@ -91,6 +95,8 @@ ros::Duration d_callback, d1, d2, d3, d4, d5;
 
 ros::Publisher pose_pub;
 geometry_msgs::PoseStamped pose_msg;
+
+bool init_pos_gnss_msg = true; 
 
 void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -164,9 +170,56 @@ void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
 }
 
+void use_gnss_callback(const std_msgs::Bool::ConstPtr& input)
+{
+  if(use_gnss == 0){
+  init_pos_gnss_msg = input->data;
+  use_gnss = 1;
+  }
+  //  std::cout << "init_pos_gnss_msg = " << init_pos_gnss_msg << std::endl;
+}
+
+void gnss_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+{
+  if(init_pos_gnss_msg == true && gnss_loaded == 0){
+    tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    initial_x = input->pose.position.x;
+    initial_y = input->pose.position.y;
+    initial_z = input->pose.position.z;
+    m.getRPY(initial_roll, initial_pitch, initial_yaw);
+
+    // Setting position and posture for the fist time.
+    previous_pos.x = initial_x;
+    previous_pos.y = initial_y;
+    previous_pos.z = initial_z;
+    previous_pos.roll = initial_roll;
+    previous_pos.pitch = initial_pitch;
+    previous_pos.yaw = initial_yaw;
+    
+    current_pos.x = initial_x;
+    current_pos.y = initial_y;
+    current_pos.z = initial_z;
+    current_pos.roll = initial_roll;
+    current_pos.pitch = initial_pitch;
+    current_pos.yaw = initial_yaw;
+
+    std::cout << "set gnss position" << std::endl;
+    std::cout << "Initial Position" << std::endl;
+    std::cout << "initial_x: " << initial_x << std::endl;
+    std::cout << "initial_y: " << initial_y << std::endl;
+    std::cout << "initial_z: " << initial_z << std::endl;
+    std::cout << "initial_roll: " << initial_roll << std::endl;
+    std::cout << "initial_pitch: " << initial_pitch << std::endl;
+    std::cout << "initial_yaw: " << initial_yaw << std::endl;
+
+    gnss_loaded = 1;
+  }
+}
+
 void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
 {
-  if(map_loaded == 1){
+  if(map_loaded == 1 && gnss_loaded == 1){
     callback_start = ros::Time::now();
     
     static tf::TransformBroadcaster br;
@@ -374,8 +427,14 @@ int main(int argc, char **argv)
 
   pose_pub = n.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
 
-  // sunscribing parameter
+  // subscribing parameter
   ros::Subscriber param_sub = n.subscribe("config/ndt", 10, param_callback);
+
+  // subscribing init_pos_gnss
+  ros::Subscriber use_gnss_sub = n.subscribe("init_pos_gnss", 10, use_gnss_callback);
+
+  // subscribing gnss position
+  ros::Subscriber gnss_pose_sub = n.subscribe("gnss_pose", 10, gnss_pose_callback);
 
   // subscribing map data (only once)
   ros::Subscriber map_sub = n.subscribe("points_map", 10, map_callback);

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>gnss_pos</name>
+  <name>gnss_localizer</name>
   <version>0.0.0</version>
-  <description>The gnss_pos package</description>
+  <description>The gnss_localizer package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
