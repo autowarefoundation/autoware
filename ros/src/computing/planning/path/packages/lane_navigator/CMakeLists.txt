@@ -9,8 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   gnss
   ui_socket
+  nav_msgs
   visualization_msgs
 )
+
+set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
 #  INCLUDE_DIRS include

@@ -51,15 +51,22 @@ subs :
   - name : Planning
     subs :
       - name : Mission
+        subs :
+        - name : lane_navigator
+          cmd  : rosrun lane_navigator lane_navigator /tmp/lane.csv /tmp/node.csv /tmp/point.csv
       - name : Motion
       - name : Path
         subs :
+         # - name : lane_follower
+         #   param: lane_follower
+          - name : lane_follower(sim)
+            cmd : roslaunch lane_follower simulation.launch
+          - name : lane_follower(ndt)
+            cmd : roslaunch lane_follower ndt.launch
+          - name : lane_folloer(gnss)
+            cmd : roslaunch lane_follower gnss.launch
           - name : waypoint_saver
             cmd : roslaunch lane_follower waypoint_saver.launch
-          - name : ndt
-            cmd : roslaunch lane_follower ndt.launch
-          - name : gnss
-            cmd : roslaunch lane_follower gnss.launch
 
 params :
   - name  : car_dpm
@@ -116,8 +123,14 @@ params :
     topic : /config/ndt
     msg   : ConfigNdt
     vars  :
+    - name  : init_pos_gnss
+      kind  : radio_box
+      choices:
+      - Initial Pos
+      - GNSS
+      v     : 1
     - name  : x
-      label : 'Initial Pos x:'
+      label : 'x:'
       v     : 0.0
     - name  : y
       label : 'y:'
@@ -154,3 +167,18 @@ params :
       min   : 0
       max   : 10
       v     : 0.1
+
+  - name  : lane_follower
+    topic : /config/lane_follower
+    msg   : ConfigLaneFollower
+    vars  :
+    - name  : velocity
+      label : Velocity
+      min   : 0
+      max   : 100
+      v     : 30.0
+    - name  : lookahead_threshold
+      label : Lookahead Threshold
+      min   : 0
+      max   : 100
+      v     : 50.0

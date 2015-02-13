@@ -113,7 +113,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(obj_downloader nodes/obj_downloader.cpp)
+add_executable(obj_downloader nodes/obj_downloader/obj_downloader.cpp)
 target_link_libraries(obj_downloader ${catkin_LIBRARIES} )
 
 

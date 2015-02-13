@@ -1,0 +1,4 @@
+dm,,/msg/nmea/GGA
+dm,,/msg/nmea/VTG
+dm,,/msg/jps/QQ
+dm,,/msg/jps/WW

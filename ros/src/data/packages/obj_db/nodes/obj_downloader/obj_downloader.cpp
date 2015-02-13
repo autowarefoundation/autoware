@@ -17,9 +17,11 @@
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
 //#include "scan_to_image/ScanImage.h"
-#include "SendData.h"
+#include "../SendData.h"
 
 using namespace std;
+
+#define PORT 5700
 
 enum TYPE{
   NORMAL,
@@ -196,7 +198,7 @@ int main(int argc, char **argv){
     return 0;
   }
 
-  sd = SendData(serverName,5678);
+  sd = SendData(serverName,PORT);
   counter = 0;
 
   pthread_t th;

@@ -46,6 +46,7 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 #endif
+#define _MANUAL 0
 
 ros::Publisher transformed_point_data;
 cv::Mat translation_global2lrf, translation_global2camera, rotation, intrinsic; //for auto mode
@@ -190,11 +191,15 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     /*
      * Change from laser range finder coordinate to image coordinate
      */
+#if _MANUAL
     if(manual_mode == 1) {
         manual_trans_depth_points_to_image_points(&scan_points_dataset, &image_points_dataset);
     } else {
         auto_trans_depth_points_to_image_points(&scan_points_dataset, &image_points_dataset);
     }
+#else
+    auto_trans_depth_points_to_image_points(&scan_points_dataset, &image_points_dataset);
+#endif
 
     /*
      * Judge out of image frame. And Determine max_y and min_y
@@ -231,6 +236,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
      * Create message(Topic)
      */
     scan_to_image::ScanImage scan_image_msg;
+    scan_image_msg.header = msg->header;
     scan_image_msg.distance.assign(scan_image.distance[0], scan_image.distance[0] + IMAGE_WIDTH * IMAGE_HEIGHT);
     scan_image_msg.intensity.assign(scan_image.intensity[0], scan_image.intensity[0] + IMAGE_WIDTH * IMAGE_HEIGHT);
     scan_image_msg.max_y = scan_image.max_y;
@@ -282,6 +288,7 @@ int main(int argc, char **argv)
     fs_auto_file["intrinsic"] >> intrinsic;
     fs_auto_file.release();
 
+#if _MANUAL
     std::string manual_yaml;
     n.param<std::string>("/scan_to_image/manual_yaml", manual_yaml, STR(MANUAL_YAML));
     cv::FileStorage fs_manual_file(manual_yaml.c_str(), cv::FileStorage::READ);
@@ -307,6 +314,7 @@ int main(int argc, char **argv)
     else {
         std::cout << "auto mode" << std::endl;
     }
+#endif
 
   /**
    * The subscribe() call is how you tell ROS that you want to receive messages

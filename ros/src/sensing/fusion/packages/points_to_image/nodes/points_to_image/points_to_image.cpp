@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include "points_to_image/PointsImage.h"
+#include "points_to_image/CameraExtrinsic.h"
 
 #define CAMERAEXTRINSICMAT "CameraExtrinsicMat"
 #define CAMERAMAT "CameraMat"
@@ -18,6 +19,7 @@ cv::Mat distCoeff;
 cv::Size imageSize;
 
 ros::Publisher pub;
+ros::Publisher cpub;
 
 void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
@@ -25,8 +27,9 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 	int h = imageSize.height;
 
 	points_to_image::PointsImage pub_msg;
+	points_to_image::CameraExtrinsic cpub_msg;
 
-	//pub_msg.header = msg->header;
+	pub_msg.header = msg->header;
 
 	pub_msg.intensity.assign(w * h, 0);
 	pub_msg.distance.assign(w * h, 0);
@@ -60,7 +63,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 				+ distCoeff.at<double>(4) * r2 * r2 * r2;
 
 			cv::Point2d imagepoint;
-			imagepoint.x = tmpx * tmpdist 
+			imagepoint.x = tmpx * tmpdist
 				+ 2 * distCoeff.at<double>(2) * tmpx * tmpy
 				+ distCoeff.at<double>(3) * (r2 + 2 * tmpx * tmpx);
 			imagepoint.y = tmpy * tmpdist
@@ -85,6 +88,18 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 		}
 	}
 	pub.publish(pub_msg);
+
+	//publish calibration value
+	std::vector<float> cali;
+	for(int y=0; y<cpub_msg.ysize ; y++){
+	  for(int x=0; x<cpub_msg.xsize ; x++){
+	    cali.push_back(cameraExtrinsicMat.at<float>(y,x));
+	  }
+	}
+	cpub_msg.calibration = cali;
+
+	cpub.publish(cpub_msg);
+
 }
 
 int main(int argc, char *argv[])
@@ -111,6 +126,7 @@ int main(int argc, char *argv[])
 	imageSize.height = IMAGE_HEIGHT;
 
 	pub = n.advertise<points_to_image::PointsImage>("points_image", 10);
+	cpub = n.advertise<points_to_image::CameraExtrinsic>("camera_calibration", 1);
 	ros::Subscriber sub = n.subscribe("velodyne_points", 1, callback);
 
 	ros::spin();

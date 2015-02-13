@@ -11,6 +11,7 @@ import signal
 import subprocess
 import psutil
 import yaml
+import datetime
 import rtmgr
 import rospy
 import std_msgs.msg
@@ -18,6 +19,7 @@ from decimal import Decimal
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
+from runtime_manager.msg import ConfigLaneFollower
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -102,6 +104,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.OnProbe(None)
 			self.timer.Start(self.probe_interval)
 
+		self.dlg_rosbag_record = MyDialogRosbagRecord(self)
+
 		#
 		# for Simulation Tab
 		#
@@ -147,11 +151,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.viewer_cmd = {}
 		parent = self.panel_viewer
 		sizer = self.sizer_viewer
-		for viewer in self.load_yaml('viewer.yaml', {}).get('viewers', []):
-			obj = wx.ToggleButton(parent, wx.ID_ANY, viewer['label'])
-			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
-			sizer.Add(obj, 0, wx.EXPAND | wx.ALL, 4)
-			self.viewer_cmd[obj] = (viewer['cmd'], None)
+		lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
+		self.create_viewer_btns(parent, sizer, lst)
 
 	def __do_layout(self):
 		pass
@@ -388,6 +389,25 @@ class MyFrame(rtmgr.MyFrame):
 
 		pub.publish(msg)
 
+	#
+	# Viewer Tab
+	#
+	def create_viewer_btns(self, parent, sizer, lst):
+		for dic in lst:
+			lb = dic['label']
+			flag = wx.ALL
+			if 'subs' in dic:
+				sb = wx.StaticBox(parent, wx.ID_ANY, lb)
+				sb.Lower()
+				obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+				self.create_viewer_btns(parent, obj, dic['subs'])
+			else:
+				obj = wx.ToggleButton(parent, wx.ID_ANY, lb)
+				self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
+				self.viewer_cmd[obj] = (dic['cmd'], None)
+				flag |= wx.EXPAND
+			sizer.Add(obj, 0, flag, 4)
+
 	def OnViewer(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.viewer_cmd)
 
@@ -430,6 +450,9 @@ class MyFrame(rtmgr.MyFrame):
 				obj.Hide()
 				if cfg_obj:
 					cfg_obj.Hide()
+
+	def OnRosbagRecord(self, event):
+		self.dlg_rosbag_record.Show()
 
 	def create_checkboxes(self, dic, panel, sizer, probe_dic, run_dic, bind_handler):
 		if 'name' not in dic:
@@ -575,7 +598,6 @@ class MyFrame(rtmgr.MyFrame):
 	def get_cmd_dic(self, key):
 		dic = { 'tf'		: self.sensing_cmd,
 			'sensor_fusion'	: self.sensing_cmd,
-			'rosbag_record' : self.sensing_cmd,
 			'rosbag_play'	: self.simulation_cmd,
 			'pmap'		: self.simulation_cmd,
 			'vmap'		: self.simulation_cmd,
@@ -695,7 +717,7 @@ class MyFrame(rtmgr.MyFrame):
 		else:
 			(dn, fn) = os.path.split(defaultPath)
 			style = wx.FD_SAVE if save else wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
-			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style);
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style)
 		path = None
 		if dlg.ShowModal() == wx.ID_OK:
 			path = ','.join(dlg.GetPaths()) if multi else dlg.GetPath()
@@ -933,6 +955,14 @@ class VarPanel(wx.Panel):
 		self.max = self.var.get('max', None)
 		self.has_slider = self.min is not None and self.max is not None
 
+		self.kind = self.var.get('kind', None)
+		if self.kind == 'radio_box':
+			label = self.var.get('label', '')
+			choices = self.var.get('choices', [])
+			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
+			self.obj.SetSelection(v)
+			return
+
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
 		lb = wx.StaticText(self, wx.ID_ANY, self.var['label'])
@@ -960,6 +990,11 @@ class VarPanel(wx.Panel):
 		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
 		szr.Add(self.tc, 0, flag, 4)
 		self.SetSizer(szr)
+
+	def get_v(self):
+		if self.kind == 'radio_box':
+			return self.obj.GetSelection()
+		return self.get_tc_v()
 
 	def get_tc_v(self):
 		s = self.tc.GetValue()
@@ -1016,6 +1051,11 @@ class MyDialogParam(rtmgr.MyDialogParam):
 			self.vps.append(vp)
 
 		self.SetTitle(self.prm['name'])
+		(w,h) = self.GetSize()
+		(w2,_) = self.sizer_v.GetMinSize()
+		w2 += 20
+		if w2 > w:
+			self.SetSize((w2,h))
 
 	def OnOk(self, event):
 		self.update_pdic()
@@ -1030,7 +1070,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def update_pdic(self):
 		vars = self.prm['vars']
 		for var in vars:
-			v = self.vps[ vars.index(var) ].get_tc_v()
+			v = self.vps[ vars.index(var) ].get_v()
 			self.pdic[ var['name'] ] = v
 
 	def publish(self):
@@ -1045,6 +1085,81 @@ class MyApp(wx.App):
 		self.SetTopWindow(frame_1)
 		frame_1.Show()
 		return 1
+
+class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
+	def __init__(self, *args, **kwds):
+		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
+		self.cbs = []
+		self.refresh()
+		self.proc = None
+
+	def OnRef(self, event):
+		tc = self.text_ctrl
+		path = tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=wx.FD_SAVE)
+		if dlg.ShowModal() == wx.ID_OK:
+			tc.SetValue(dlg.GetPath())
+			tc.SetInsertionPointEnd()
+
+	def OnStart(self, event):
+		path = self.text_ctrl.GetValue()
+		if path == '':
+			print('path=""')
+			return
+		topic_opt = []
+		if self.cbs[0].GetValue(): # 'All'
+			topic_opt = [ '-a' ]
+		else:
+			for obj in self.cbs:
+				if obj.GetValue():
+					topic_opt += [ obj.GetLabel() ]
+		if topic_opt == []:
+			print('topic=[]')
+			return
+		args = [ 'rosbag', 'record' ] + topic_opt + [ '-O', path ]
+		print(args)
+		self.proc = subprocess.Popen(args)
+
+	def OnStop(self, event):
+		if self.proc:
+			terminate_children(self.proc, sigint=True)
+			terminate(self.proc, sigint=True)
+			self.proc.wait()
+			self.proc = None		
+		self.Hide()
+
+	def OnRefresh(self, event):
+		self.refresh()
+
+	def refresh(self):
+		lst = subprocess.check_output([ 'rostopic', 'list' ]).split('\n')
+		lst = [ 'All' ] + lst[:-1] # add All , remove last ''
+		panel = self.panel_1
+		szr = self.sizer_topic
+		for obj in self.cbs:
+			szr.Remove(obj)
+			obj.Destroy()
+		self.cbs = []
+		for topic in lst:
+			obj = wx.CheckBox(panel, wx.ID_ANY, topic)
+			bdr = 4 if topic == 'All' else 4 * 4
+			szr.Add(obj, 0, wx.LEFT, bdr)
+			self.cbs.append(obj)
+		szr.Layout()
+		panel.SetVirtualSize(szr.GetMinSize())
+		self.update_filename();
+
+	def update_filename(self):
+		tc = self.text_ctrl
+		path = tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		now = datetime.datetime.now()
+		fn = 'autoware-%04d%02d%02d%02d%02d%02d.rosbag' % (
+			now.year, now.month, now.day, now.hour, now.minute, now.second)
+		path = os.path.join(dn, fn)
+		tc.SetValue(path)
+		tc.SetInsertionPointEnd()
 
 def terminate_children(proc, sigint=False):
 	for child in psutil.Process(proc.pid).get_children():

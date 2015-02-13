@@ -1,0 +1,4 @@
+em,,/msg/nmea/GGA:0.1
+em,,/msg/nmea/VTG:0.1
+em,,/msg/jps/QQ:0.1
+em,,/msg/jps/WW:0.1
