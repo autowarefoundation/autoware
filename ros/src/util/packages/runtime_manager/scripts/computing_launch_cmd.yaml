@@ -1,6 +1,16 @@
 name : Computing
 subs :
   - name : Control
+    subs :
+      - name : common
+        subs :
+          - name : lane_follower(sim)
+            cmd : roslaunch lane_follower simulation.launch
+          - name : lane_follower(ndt)
+            cmd : roslaunch lane_follower ndt.launch
+          - name : lane_folloer(gnss)
+            cmd : roslaunch lane_follower gnss.launch
+  
   - name : Perception
     subs :
       - name : Detection
@@ -59,14 +69,10 @@ subs :
         subs :
          # - name : lane_follower
          #   param: lane_follower
-          - name : lane_follower(sim)
-            cmd : roslaunch lane_follower simulation.launch
-          - name : lane_follower(ndt)
-            cmd : roslaunch lane_follower ndt.launch
-          - name : lane_folloer(gnss)
-            cmd : roslaunch lane_follower gnss.launch
           - name : waypoint_saver
-            cmd : roslaunch lane_follower waypoint_saver.launch
+            cmd : roslaunch waypoint_maker waypoint_saver.launch
+          - name : waypoint_loader
+            cmd : roslaunch waypoint_maker waypoint_loader.launch
 
 params :
   - name  : car_dpm
