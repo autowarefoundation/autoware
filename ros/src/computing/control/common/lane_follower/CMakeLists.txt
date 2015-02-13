@@ -124,11 +124,7 @@ target_link_libraries(lane_follower gnss ${catkin_LIBRARIES})
 add_executable(odometry_pub src/odometry_pub.cpp)
 target_link_libraries(odometry_pub ${catkin_LIBRARIES})
 
-add_executable(test_lane_navigator src/test_lane_navigator.cpp)
-target_link_libraries(test_lane_navigator ${catkin_LIBRARIES})
 
-add_executable(waypoint_saver src/waypoint_saver.cpp)
-target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
 
 #############
 ## Install ##
