@@ -56,8 +56,7 @@ struct my_tm {
 
 selfLocation sl;
 
-//flag for comfirming whether updating angle and position or not
-bool angleGetFlag;
+//flag for comfirming whether updating position or not
 bool positionGetFlag;
 
 //store own position and direction now.updated by position_getter
@@ -231,9 +230,7 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   
   //If angle and position data is not updated from prevous data send,
   //data is not sent
-  if(1){
-    //  if(angleGetFlag && positionGetFlag) {
-    angleGetFlag = false;
+  if(positionGetFlag) {
     positionGetFlag = false;
 
   
@@ -269,29 +266,6 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 }
 
 /*
-void azimuth_getter(const geometry_msgs::TwistStamped& azi)
-{
-
-  angle.thiX = 0;
-  angle.thiY = azi.twist.angular.z*180/M_PI;
-  angle.thiZ = 0;
-  angleGetFlag = true;
-  //printf("azimuth : %f\n",angle.thiY);
-  //printf("ok\n");
-
-}
-
-void position_getter(const sensor_msgs::NavSatFix& pos)
-{
-  my_loc.X = pos.latitude;
-  my_loc.Y = pos.longitude;
-  my_loc.Z = pos.altitude;
-  positionGetFlag = true;
-  //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
-
-}
-*/
-/*
 void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
   my_loc.X = pose.pose.position.x;
@@ -301,7 +275,6 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
   printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
 
-  angleGetFlag = true;
   positionGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
@@ -318,7 +291,6 @@ void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
   GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
   printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
 
-  angleGetFlag = true;
   positionGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
@@ -337,11 +309,6 @@ int main(int argc, char **argv){
 
   ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
-  /*
-  ros::Subscriber azm = n.subscribe("/vel", 1, azimuth_getter);
-  ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
-  ros::Subscriber ndt = n.subscribe("ndt_pose", 1, position_getter_ndt);
-  */
   ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
 
   pub = n.advertise<geometry_msgs::PoseStamped>("pedestrian_pose",1); 
@@ -394,7 +361,6 @@ int main(int argc, char **argv){
   sl.setCameraParam(fkx,fky,Ox,Oy);
 
   //set angle and position flag : false at first
-  angleGetFlag = false;
   positionGetFlag = false;
 
   ros::spin();

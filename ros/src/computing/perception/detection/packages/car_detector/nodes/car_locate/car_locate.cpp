@@ -60,8 +60,7 @@ selfLocation sl;
 vector<OBJPOS> global_cp_vector;
 //vector<OBJPOS> global_pp_vector;
 
-//flag for comfirming whether updating angle and position or not
-bool angleGetFlag;
+//flag for comfirming whether updating position or not
 bool positionGetFlag;
 
 //store own position and direction now.updated by position_getter
@@ -197,14 +196,15 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
     makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,x,y,z);
   }
 
+  //publish recognized car data
   if(x.size() != 0 && y.size() != 0){
     x_iterator = x.begin();
     y_iterator = y.begin();
     z_iterator = z.begin();
 
+    pose_msg.header.stamp = ros::Time::now();
+    pose_msg.header.frame_id = "map";
     for(uint i=0; i<x.size()&&i<y.size()&&i<z.size(); i++,x_iterator++,y_iterator++,z_iterator++){
-      pose_msg.header.stamp = ros::Time::now();
-      pose_msg.header.frame_id = "map";
       pose_msg.pose.position.x = *y_iterator;
       pose_msg.pose.position.y = *x_iterator;
       pose_msg.pose.position.z = *z_iterator;
@@ -223,9 +223,7 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   
   //If angle and position data is not updated from prevous data send,
   //data is not sent
-  if(1){
-    //  if(angleGetFlag && positionGetFlag) {
-    angleGetFlag = false;
+  if(positionGetFlag) {
     positionGetFlag = false;
 
   
@@ -270,7 +268,6 @@ void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
   GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
   printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
 
-  angleGetFlag = true;
   positionGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
@@ -347,7 +344,6 @@ int main(int argc, char **argv){
   sl.setCameraParam(fkx,fky,Ox,Oy);
 
   //set angle and position flag : false at first
-  angleGetFlag = false;
   positionGetFlag = false;
 
   ros::spin();

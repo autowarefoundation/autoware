@@ -36,8 +36,6 @@
 #include <sys/time.h>
 #include <bitset>
 
-
-
 #include "opencv/cv.h" 
 #include "opencv/highgui.h"
 #include "opencv/cxcore.h" 
@@ -47,27 +45,20 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "tf/tf.h"
 #include "tf/transform_listener.h"
-//#include "LinearMath/btTransform.h"
 #include "sensor_msgs/NavSatFix.h"
-#include "structure.h"
 #include "../SendData.h"
+
+/*
+#include "structure.h"
 #include "calcoordinates.h"
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
+*/
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
 using namespace std;
-
-typedef struct _OBJPOS{
-  int x1;
-  int y1;
-  int x2;
-  int y2;
-  float distance;
-  string tm;
-}OBJPOS;
 
 //for timestamp
 struct my_tm {
@@ -79,28 +70,24 @@ pthread_mutex_t mutex;
 pthread_mutex_t ped_mutex;
 pthread_mutex_t pos_mutex;
 
-selfLocation sl;
-
 //store subscribed value
-vector<OBJPOS> global_cp_vector;
-vector<OBJPOS> global_pp_vector;
+vector<geometry_msgs::PoseStamped> global_cp_vector;
+vector<geometry_msgs::PoseStamped> global_pp_vector;
 
-//default server name to send data
-char defaultServerName[20] = "db1.ertl.jp";
+//default server name and port to send data
+const string defaultServerName = "db1.ertl.jp";
+const int PORT = 5678;
 //magic that I am C++
 const char MAGIC[5] = "MPWC";
 
-//flag for comfirming whether updating angle and position or not
-bool angleGetFlag;
+//flag for comfirming whether updating position or not
 bool positionGetFlag;
 
 //send to server class
 SendData sd;
 
 //store own position and direction now.updated by position_getter
-LOCATION my_loc;
-ANGLE angle;
-
+geometry_msgs::PoseStamped my_loc;
 
 double cameraMatrix[4][4];
 /*
@@ -119,6 +106,7 @@ void printDiff(struct timeval begin, struct timeval end){
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
 
+/*
 void GetRPY(const geometry_msgs::Pose &pose,
 	    double &roll,
 	    double &pitch,
@@ -127,85 +115,51 @@ void GetRPY(const geometry_msgs::Pose &pose,
   tf::quaternionMsgToTF(pose.orientation,q);
   tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
 }
+*/
 
-string getNowTime(){
-  struct my_tm *qt;
+string getTimeStamp(long sec,long nsec){
   struct tm *tmp;
   struct timeval tv;
-  char tm[25];
+  char temp[30];
   string res;
-  ostringstream oss;
 
-  qt=(struct my_tm*)malloc(sizeof(struct my_tm));
-  if(qt == NULL)return NULL;
-  gettimeofday(&tv,NULL);
+  tv.tv_sec = sec;
+  tv.tv_usec = nsec/1000;
+
   tmp=localtime(&tv.tv_sec);
-  qt->tim=mktime(tmp);
-  qt->msec=tv.tv_usec/1000;
-  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%d",
-    tmp->tm_year + 1900, tmp->tm_mon + 1,
-    tmp->tm_mday, tmp->tm_hour,
-    tmp->tm_min, tmp->tm_sec,
-    tv.tv_usec/1000);
-  res = tm;
+  sprintf(temp,"%04d-%02d-%02d %02d:%02d:%02d.%d",
+	  tmp->tm_year + 1900, tmp->tm_mon + 1,
+	  tmp->tm_mday, tmp->tm_hour,
+	  tmp->tm_min, tmp->tm_sec,
+	  static_cast<int>(tv.tv_usec/1000));
+  res = temp;
   return res;
 }
 
 
-string makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,vector<OBJPOS>::iterator cp_iterator,geo_pos_conv geo){
+string makeSendDataDetectedObj(vector<geometry_msgs::PoseStamped> car_position_vector){
 
   ostringstream oss;
-  LOCATION rescoord;
+  vector<geometry_msgs::PoseStamped>::iterator cp_iterator;
+  cp_iterator = car_position_vector.begin();
 
   for(int i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
-    //middle of right-lower and left-upper
-    double U = cp_iterator->x1 + cp_iterator->x2/2;
-    double V = cp_iterator->y1 + cp_iterator->y2/2;
-
-    //convert
-    sl.setOriginalValue(U,V,cp_iterator->distance);
-    LOCATION ress = sl.cal();
-    printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
-
-    axiMove am;
-    //convert axes from camera to velodyne
-    LOCATION velocoordinate = am.cal(ress,cameraMatrix);
-
-    //convert axes to north direction 0 angle.
-    LOCATION anglefixed = am.cal(velocoordinate,angle);
+    //create sql
+    //In Autoware, x and y is oppsite.So reverse these when sending.
+    oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
+    oss << "values(0," << fixed << setprecision(6) << cp_iterator->pose.position.y << "," << fixed << setprecision(6) << cp_iterator->pose.position.x << ",0,0,1,'" << getTimeStamp(cp_iterator->header.stamp.sec,cp_iterator->header.stamp.nsec) << "');\n";
 
     /*
-      rectangular coordinate is that axial x is the direction to left and right,
-      axial y is the direction to front and backend and axial z is the direction to upper and lower.
-      So convert them.
-     */
-    rescoord.X = anglefixed.X;
-    rescoord.Y = anglefixed.Z;
-    rescoord.Z = anglefixed.Y;
+    oss << "INSERT INTO POS_NOUNIQUE(id,sender_id,x,y,area,type,self,tm) ";
+    oss << "values(0,0," << fixed << setprecision(6) << cp_iterator->pose.position.y << "," << fixed << setprecision(6) << cp_iterator->pose.position.x << ",0,0,1,'" << getTimeStamp(cp_iterator->header.stamp.sec,cp_iterator->header.stamp.nsec) << "');\n";
+    */
 
-    //add plane rectangular coordinate to that of target car.
-    rescoord.X += geo.x();
-    rescoord.Y += geo.y();
-    rescoord.Z += 0;
-
-    //create sql
-    oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
-    oss << "values(0," << fixed << setprecision(6) << rescoord.X << "," << fixed << setprecision(6) << rescoord.Y << ",0,0,1,'" << cp_iterator->tm << "');\n";
-
-    //oss << "0 " << fixed << setprecision(6) << rescoord.X << " " << fixed << setprecision(6) << rescoord.Y << " 0,";
-
-  
   }
-
-  //  cout << "recognized obj position : " << endl << oss.str() << endl;
-  
 
   return oss.str();
 
 }
-
-
 
 
 //wrap SendData class
@@ -214,30 +168,27 @@ void* wrapSender(void *tsd){
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
   
-  vector<OBJPOS> car_position_vector(global_cp_vector.size());
-  vector<OBJPOS>::iterator cp_iterator;
-  vector<OBJPOS> pedestrian_position_vector(global_pp_vector.size());
-  vector<OBJPOS>::iterator pp_iterator;
+
+  printf("ok\n");
+  vector<geometry_msgs::PoseStamped> car_position_vector(global_cp_vector.size());
+  vector<geometry_msgs::PoseStamped> pedestrian_position_vector(global_pp_vector.size());
   string value = "";
-  geo_pos_conv geo;
   ostringstream oss;
 
   //thread safe process for vector
   pthread_mutex_lock( &mutex );
   std::copy(global_cp_vector.begin(), global_cp_vector.end(), car_position_vector.begin());
   global_cp_vector.clear();
-  vector<OBJPOS>(global_cp_vector).swap(global_cp_vector);
+  vector<geometry_msgs::PoseStamped>(global_cp_vector).swap(global_cp_vector);
   pthread_mutex_unlock( &mutex );
 
   pthread_mutex_lock( &ped_mutex );
   std::copy(global_pp_vector.begin(), global_pp_vector.end(), pedestrian_position_vector.begin());
   global_pp_vector.clear();
-  vector<OBJPOS>(global_pp_vector).swap(global_pp_vector);
+  vector<geometry_msgs::PoseStamped>(global_pp_vector).swap(global_pp_vector);
   pthread_mutex_unlock( &ped_mutex );
 
-  cp_iterator = car_position_vector.begin();
-  pp_iterator = pedestrian_position_vector.begin();
-
+  printf("ok\n");
   //create header
   char magic[5] = "MPWC";
   u_int16_t major = htons(1);
@@ -254,42 +205,32 @@ void* wrapSender(void *tsd){
 
   cout << "sqlnum : " << car_position_vector.size() + pedestrian_position_vector.size() + 1 << endl;
 
-
-  //calculate own coordinate from own lati and longi value
-  //get my position now
-  pthread_mutex_lock( &pos_mutex );
-  double my_xloc = my_loc.X;
-  double my_yloc = my_loc.Y;
-  double my_zloc = my_loc.Z;
-  pthread_mutex_unlock( &pos_mutex );
-
+  /*
   geo.set_plane(7);
   geo.set_llh(my_xloc,my_yloc,my_zloc);
-
-
+  */
+  printf("ok\n");
   //get data of car and pedestrian recognizing
   if(car_position_vector.size() > 0 ){
-    value += makeSendDataDetectedObj(car_position_vector,cp_iterator,geo);
+    value += makeSendDataDetectedObj(car_position_vector);
   }
 
   if(pedestrian_position_vector.size() > 0){
-    value += makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,geo);
+    value += makeSendDataDetectedObj(pedestrian_position_vector);
   }
 
   oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
-  oss << "values(0," <<  fixed << setprecision(6) << geo.x() << "," << fixed << setprecision(6) << geo.y() << ",0,0,1,'" << getNowTime() << "');\n";
+  oss << "values(0," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << ",0,0,1,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
 
-  //oss << "0 " << fixed << setprecision(6) << geo.x() << " " << fixed << setprecision(6) << geo.y() << " 0,";
-
-  //  printf("geo : %f\t%f\n",geo.x(),geo.y());
+  /*
+    oss << "INSERT INTO POS_NOUNIQUE(id,sender_id,x,y,area,type,self,tm) ";
+    oss << "values(0,0," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << ",0,0,1,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
+  */
 
   value += oss.str();
-  //printf("%s\n",oss.str().c_str());
-  //printf("%d\n",value.size());
-  
+  //cout << value;
 
-  sd.setValue(value);
-  string res = sd.Sender();
+  string res = sd.Sender(value);
   cout << "retrun message from DBserver : " << res << endl;
 
 }
@@ -303,23 +244,13 @@ void* intervalCall(void *a){
     //If angle and position data is not updated from prevous data send,
     //data is not sent
     //if(1){
-    if(!(angleGetFlag && positionGetFlag)) {
+    if(!positionGetFlag) {
       sleep(1);
       continue;
     }
-    angleGetFlag = false;
     positionGetFlag = false;
 
-    //If position is over range,skip loop
-    if((my_loc.X > 180.0 && my_loc.X < -180.0 ) || 
-       (my_loc.Y > 180.0 && my_loc.Y < -180.0 ) || 
-       my_loc.Z != 0.0 ){
-      fprintf(stderr,"GNSS value is invalid.\n");
-      sleep(1);
-      continue;
-    }
-
-    //create new thread for socket communication.      
+    //create new thread for socket communication.
     if(pthread_create(&th, NULL, wrapSender, NULL)){
       printf("thread create error\n");
     }
@@ -332,94 +263,42 @@ void* intervalCall(void *a){
 }
 
 
-void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+void car_locateCallback(const geometry_msgs::PoseStamped car_locate)
 {
-  OBJPOS cp;
-  
-  pthread_mutex_lock( &mutex );  
-
-  //認識した車の数だけ繰り返す
-  for (int i = 0; i < fused_objects.car_num; i++){
-
-    //If distance is zero, we cannot calculate position of recognized object
-    //so skip loop
-    if(fused_objects.distance.at(i) <= 0) continue;
-
-    cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
-    cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-    cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
-    cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
-
-    cp.distance = fused_objects.distance.at(i);
-    cp.tm = getNowTime();
-
-    //printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
-
-    global_cp_vector.push_back(cp);
-      
+  if(global_cp_vector.size() == 0 || 
+     (car_locate.header.stamp.sec == global_cp_vector.back().header.stamp.sec&&
+      car_locate.header.stamp.nsec == global_cp_vector.back().header.stamp.nsec)){
+    global_cp_vector.push_back(car_locate);
+  }else{
+    global_cp_vector.clear();
+    vector<geometry_msgs::PoseStamped>(global_cp_vector).swap(global_cp_vector);
+    global_cp_vector.push_back(car_locate);
   }
 
-  pthread_mutex_unlock( &mutex );  
-    
-  //  printf("car position get\n\n");
+  printf("car ok\n");
 
 }
 
-void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+void pedestrian_locateCallback(const geometry_msgs::PoseStamped pedestrian_locate)
 {
-  OBJPOS cp;
 
-  pthread_mutex_lock( &ped_mutex );  
-
-  for(int i = 0; i < fused_objects.car_num; i++) { //fused_objects.car_num は障害物の個数
-    //If distance is zero, skip loop
-    if(fused_objects.distance.at(i) <= 0) continue;
-
-    cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
-    cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-    cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
-    cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
-
-    cp.distance = fused_objects.distance.at(i);
-    cp.tm = getNowTime();
-
-    printf("\npedestrian : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
-
-    global_pp_vector.push_back(cp);
-
+  printf("ped start\n");
+  if(global_pp_vector.size() == 0 || 
+     (pedestrian_locate.header.stamp.sec == global_pp_vector.back().header.stamp.sec&&
+      pedestrian_locate.header.stamp.nsec == global_pp_vector.back().header.stamp.nsec)
+){ 
+    global_pp_vector.push_back(pedestrian_locate);
+  }else{
+    global_pp_vector.clear();
+    vector<geometry_msgs::PoseStamped>(global_pp_vector).swap(global_pp_vector);
+    global_pp_vector.push_back(pedestrian_locate);
   }
 
-  pthread_mutex_unlock( &ped_mutex );  
-    
-  //  printf("pedestrian position get\n\n");
-}
-
-
-
-void azimuth_getter(const geometry_msgs::TwistStamped& azi)
-{
-
-  angle.thiX = 0;
-  angle.thiY = azi.twist.angular.z*180/M_PI;
-  angle.thiZ = 0;
-  angleGetFlag = true;
-  printf("azimuth : %f\n",angle.thiY);
-  //printf("ok\n");
+  printf("pedestrian ok\n");
 
 }
 
-void position_getter(const sensor_msgs::NavSatFix& pos)
-{
-  pthread_mutex_lock( &pos_mutex );
-  my_loc.X = pos.latitude;
-  my_loc.Y = pos.longitude;
-  my_loc.Z = 0;
-  positionGetFlag = true;
-  pthread_mutex_unlock( &pos_mutex );
-  //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
-
-}
-
+/*
 void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
   my_loc.X = pose.pose.position.x;
@@ -429,36 +308,19 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
   printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
 
-  angleGetFlag = true;
   positionGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
+}
+*/
 
+void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
+
+  my_loc = pose;
+  positionGetFlag = true;
+
+  printf("gnss ok\n");
   
 }
-
-//test
-void set_car_position_xyz()
-{
-  int i;
-  OBJPOS cp;
-
-  global_cp_vector.clear();
-
-  //認識した車の数だけ繰り返す
-  //    for (i = 0; i < car_position_xyz.car_num; i++){
-  for (i = 0; i < 3; i++){
-    //各認識した車へのデータのアクセス例
-    cp.x1 = 10*i;
-    cp.y1 = 20*i;
-    cp.x2 = 30*i;
-    cp.y2 = 40*i;
-    cp.distance = 20;
-    global_cp_vector.push_back(cp);
-      
-  }
-
-}
-
 
 int main(int argc, char **argv){
   
@@ -472,13 +334,11 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
 
-  ros::Subscriber car_pos_xyz = n.subscribe("/car_pixel_xyz", 1, car_pos_xyzCallback);
-  ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
+  ros::Subscriber car_locate = n.subscribe("/car_pose", 5, car_locateCallback);
+  ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 5, pedestrian_locateCallback);
+ ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
 
-  ros::Subscriber azm = n.subscribe("/vel", 1, azimuth_getter);
-  ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
-  ros::Subscriber ndt = n.subscribe("ndt_pose", 1, position_getter_ndt);
-
+  /*
   cv::Mat Cintrinsic;
   std::string camera_yaml;
 
@@ -513,37 +373,26 @@ int main(int argc, char **argv){
       cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
     }
   }
-  /*
-  double fkx = 5.83199829e+02;
-  double fky = 3.74826355e+02;
-  double Ox =  5.83989319e+02;
-  double Oy = 2.41745468e+02;
+  sl.setCameraParam(fkx,fky,Ox,Oy);
   */
 
-  sl.setCameraParam(fkx,fky,Ox,Oy);
-
-  //set_car_position_xyz();
-
   //set server name and port
-  char *serverName;
-  int portNum = 5678;
+  string serverName = defaultServerName;
+  int portNum = PORT;
   if(argc == 3){
     serverName = argv[1];
     portNum = atoi(argv[2]);
-  }else{
-    serverName = defaultServerName;
   }
+
   sd = SendData(serverName,portNum);
 
   //set angle and position flag : false at first
-  angleGetFlag = false;
   positionGetFlag = false;
 
   pthread_t th;
   if(pthread_create(&th, NULL, intervalCall, NULL)){
     printf("thread create error\n");
   }
-
   pthread_detach(th);
 
   ros::spin();
