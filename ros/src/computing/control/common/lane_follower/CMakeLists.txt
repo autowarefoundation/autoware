@@ -118,8 +118,8 @@ include_directories(
 # )
 
 
-add_executable(lane_follower src/lane_follower.cpp)
-target_link_libraries(lane_follower gnss ${catkin_LIBRARIES})
+add_executable(pure_pursuit src/pure_pursuit.cpp)
+target_link_libraries(pure_pursuit gnss ${catkin_LIBRARIES})
 
 add_executable(odometry_pub src/odometry_pub.cpp)
 target_link_libraries(odometry_pub ${catkin_LIBRARIES})
