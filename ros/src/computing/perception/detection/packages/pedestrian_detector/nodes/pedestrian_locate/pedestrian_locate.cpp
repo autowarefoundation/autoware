@@ -147,7 +147,7 @@ void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
      */
     rescoord.X = anglefixed.Y;
     rescoord.Y = anglefixed.X;
-    rescoord.Z = anglefixed.Z;
+    rescoord.Z = -anglefixed.Z;
 
     //add plane rectangular coordinate to that of target car.
     rescoord.X += mloc.X;

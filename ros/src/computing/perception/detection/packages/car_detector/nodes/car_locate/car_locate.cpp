@@ -149,9 +149,9 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
       axial y is the direction to front and backend and axial z is the direction to upper and lower.
       So convert them.
      */
-    rescoord.X = anglefixed.X;
-    rescoord.Y = anglefixed.Z;
-    rescoord.Z = anglefixed.Y;
+    rescoord.X = anglefixed.Y;
+    rescoord.Y = anglefixed.X;
+    rescoord.Z = -anglefixed.Z;
 
     //add plane rectangular coordinate to that of target car.
     rescoord.X += mloc.X;
@@ -266,7 +266,7 @@ void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
   my_loc.Z = pose.pose.position.z;
 
   GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
-  printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
+  //printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
 
   positionGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
