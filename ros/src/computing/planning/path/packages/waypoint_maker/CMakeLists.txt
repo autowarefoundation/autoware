@@ -116,10 +116,10 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(waypoint_loader node/waypoint_loader.cpp)
+add_executable(waypoint_loader nodes/waypoint_loader.cpp)
 target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
 
-add_executable(waypoint_saver node/waypoint_saver.cpp)
+add_executable(waypoint_saver nodes/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
 
 #############
