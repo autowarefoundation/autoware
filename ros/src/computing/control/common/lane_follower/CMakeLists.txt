@@ -9,8 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
-  message_generation
   gnss
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -51,7 +51,6 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    lane.msg
    waypoint.msg
-
  )
 
 ## Generate services in the 'srv' folder
@@ -72,7 +71,7 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    std_msgs 
-   geometry_msgs # Or other packages containing msgs
+   geometry_msgs
  )
 
 
@@ -121,17 +120,13 @@ include_directories(
 # )
 
 
-add_executable(lane_follower nodes/lane_follower.cpp)
-target_link_libraries(lane_follower gnss ${catkin_LIBRARIES})
+add_executable(pure_pursuit nodes/pure_pursuit.cpp)
+target_link_libraries(pure_pursuit gnss ${catkin_LIBRARIES})
 
 add_executable(odometry_pub nodes/odometry_pub.cpp)
 target_link_libraries(odometry_pub ${catkin_LIBRARIES})
 
-add_executable(test_lane_navigator nodes/test_lane_navigator.cpp)
-target_link_libraries(test_lane_navigator ${catkin_LIBRARIES})
 
-add_executable(waypoint_saver nodes/waypoint_saver.cpp)
-target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
 
 #############
 ## Install ##

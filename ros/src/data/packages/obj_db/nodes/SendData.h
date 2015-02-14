@@ -16,7 +16,7 @@ class SendData{
 public:
     
 SendData() : 
-  serverName("db1.ertl.jp"),port(5700),value("")
+  serverName("db1.ertl.jp"),port(5700)
     {
     }
   /*    
@@ -26,15 +26,15 @@ SendData() :
   }
   */
 
- SendData(char *server,int pt) : 
-  serverName(server),port(pt),value("")
+ SendData(std::string server,int pt) : 
+  serverName(server),port(pt)
   {
   }
 
     
   ~SendData(){}
     
-  std::string Sender(){
+  std::string Sender(std::string value){
         
       
     /*********************************************
@@ -57,18 +57,18 @@ SendData() :
     server.sin_family = AF_INET;
     server.sin_port = htons(port); // HTTP port is 80 
 
-    server.sin_addr.s_addr = inet_addr(serverName);
+    server.sin_addr.s_addr = inet_addr(serverName.c_str());
     if (server.sin_addr.s_addr == 0xffffffff) {
       struct hostent *host;
 
-      host = gethostbyname(serverName);
+      host = gethostbyname(serverName.c_str());
       if (host == NULL) {
         if (h_errno == HOST_NOT_FOUND) {
           // h_errno is defined in extern 
-          printf("host not found : %s\n", serverName);
+          printf("host not found : %s\n", serverName.c_str());
         } else {
 
-          printf("%s : %s\n", hstrerror(h_errno), serverName);
+          printf("%s : %s\n", hstrerror(h_errno), serverName.c_str());
         }
         return result;
       }
@@ -148,16 +148,13 @@ SendData() :
     return result;
     
   }
-  void setServerName(char * server){
+
+  void setServerName(std::string server){
     serverName = server;
   }
 
   void setPort(int pt){
     port = pt;
-  }
-
-  void setValue(std::string v){
-    value = v;
   }
 
 private:
@@ -180,8 +177,7 @@ private:
 //start time by seconds
   //long startTime[10];
 
-  char *serverName;
+  std::string serverName;
   int port;
-  std::string value;
  
 };

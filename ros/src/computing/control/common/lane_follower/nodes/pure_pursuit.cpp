@@ -9,6 +9,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <lane_follower/lane.h>
+#include <visualization_msgs/Marker.h>
 
 #include <iostream>
 #include <sstream>
@@ -31,6 +32,9 @@ lane_follower::lane _current_path;
 
 //参照するwaypointの番号
 int _next_waypoint = 0;
+
+ros::Publisher vis_pub;
+
 
 void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
@@ -110,7 +114,7 @@ double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
     if (_current_path.waypoints[_next_waypoint].twist.twist.linear.x > 0)
-        return _current_path.waypoints[_next_waypoint].twist.twist.linear.x * 1000 * 3.6 * _threshold_ratio;
+        return _current_path.waypoints[_next_waypoint].twist.twist.linear.x * 3.6 * _threshold_ratio;
     else
         return _threshold_ratio;
 }
@@ -182,6 +186,27 @@ int GetNextWayPoint()
             if (Distance > lookahead_threshold) {
                 std::cout << "threshold = " << lookahead_threshold << std::endl;
                 std::cout << "distance = " << Distance << std::endl;
+
+                //waypoint をマーカーで表示
+                visualization_msgs::Marker marker;
+                marker.header.frame_id = PATH_FRAME;
+                marker.header.stamp = ros::Time::now();
+                marker.ns = "my_namespace";
+                marker.id = 0;
+                marker.type = visualization_msgs::Marker::SPHERE;
+                marker.action = visualization_msgs::Marker::ADD;
+                marker.pose.position = _current_path.waypoints[i].pose.pose.position;
+                marker.pose.orientation = _current_path.waypoints[i].pose.pose.orientation;
+                marker.scale.x = 0.5;
+                marker.scale.y = 0.5;
+                marker.scale.z = 0.5;
+                marker.color.a = 1.0;
+                marker.color.r = 0.0;
+                marker.color.g = 0.0;
+                marker.color.b = 1.0;
+                vis_pub.publish( marker );
+                //ここまで
+
                 return i;
 
             }
@@ -309,6 +334,9 @@ int main(int argc, char **argv)
 
 //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+
+vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
+
 
 //subscribe topic
     ros::Subscriber waypoint_subcscriber = nh.subscribe("lane", 1000, WayPointCallback);

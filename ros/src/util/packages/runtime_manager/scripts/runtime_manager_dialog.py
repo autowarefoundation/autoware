@@ -2,6 +2,7 @@
 
 import wx
 import wx.lib.agw.customtreectrl as CT
+import wx.lib.buttons
 import gettext
 import os
 import socket
@@ -42,6 +43,25 @@ class MyFrame(rtmgr.MyFrame):
 		tab = self.notebook_1_pane_1
 		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
 		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", 0.5)
+
+		scale = 0.5
+		bm_on = self.get_bitmap('btnon.png', scale)
+		bm_off = self.get_bitmap('btnoff.png', scale)
+
+		for nm in [ 'tablet', 'mobile', 'vehicle', 'database' ]:
+			setattr(self, 'bitmap_' + nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
+
+			getattr(self, 'button_' + nm).Destroy()
+			btn = wx.lib.buttons.GenBitmapToggleButton(tab, wx.ID_ANY, bm_off)
+			btn.SetBitmapSelected(bm_on)
+			self.Bind(wx.EVT_BUTTON, self.OnNetConn, btn)
+			setattr(self, 'button_' + nm, btn)
+
+		self.main_cmd = {}
+		self.main_dic = self.load_yaml('main.yaml')
+		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
+
+		self.main_cmd[ self.button_load_map ] = []
 
 		#
 		# for Computing tab
@@ -119,8 +139,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
-		self.sel_multi_ks = [ 'pmap' ]
-		self.sel_dir_ks = [ 'vmap', 'calibration' ]
+		self.sel_multi_ks = [ 'pmap', 'point_cloud' ]
+		self.sel_dir_ks = [ 'vmap', 'calibration', 'vector_map' ]
 
 		#
 		# for Data Tab
@@ -172,9 +192,7 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.close()
 
-		autoware_dir = os.path.abspath(os.path.dirname(__file__)) + '/../../../../../../'
-		autoware_dir = os.path.abspath(autoware_dir)
-		shutdown_sh = autoware_dir + '/shutdown.sh'
+		shutdown_sh = self.get_autoware_dir() + '/shutdown.sh'
 		if os.path.exists(shutdown_sh):
 			os.system(shutdown_sh)
 
@@ -204,12 +222,62 @@ class MyFrame(rtmgr.MyFrame):
 	# Main Tab
 	#
 	def OnStart(self, event):
-		cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
+		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
+		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_start.launch'
+		print(cmd)
 		os.system(cmd)
 
 	def OnStop(self, event):
-		cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
+		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
+		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_stop.launch'
+		print(cmd)
 		os.system(cmd)
+
+	def OnSet(self, event):
+		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_set.launch'
+		print(cmd)
+		os.system(cmd)
+
+	def OnNetConn(self, event):
+		self.launch_kill_proc(event.GetEventObject(), self.main_cmd)
+
+	def OnLoadMap(self, event):
+		obj = event.GetEventObject()
+		v = obj.GetValue()
+		procs = self.main_cmd.get(obj, [])
+		if (v and procs != []) or (not v and procs == []):
+			obj.SetValue(not v)
+			return
+		if v:
+			path_area_list = self.text_ctrl_area_list.GetValue()
+			path_pcd = self.text_ctrl_point_cloud.GetValue()
+			path_pcd = path_pcd.split(',')
+			auto = self.checkbox_auto_update.GetValue()
+
+			cmd = None
+			if auto and path_area_list != '':
+				cmd = 'rosrun map_file points_map_loader'
+			if not auto and path_pcd != []:
+				cmd = 'rosrun sample_data sample_points_map'
+			if cmd:
+				add_args = [ path_area_list ] + path_pcd
+				print cmd, add_args
+				proc = self.launch_kill(v, cmd, None, add_args)
+				procs += [ proc ]
+
+			path_vec = self.text_ctrl_vector_map.GetValue()
+			if path_vec != '':
+				path_vec = [ path_vec + '/' + nm for nm in self.vmap_names ]
+				cmd = 'rosrun sample_data sample_vector_map'
+				add_args = path_vec + [ 'swap_x_y_on' ]
+				print cmd, add_args
+				proc = self.launch_kill(v, cmd, None, add_args)
+				procs += [ proc ]
+		else:
+			for proc in procs:
+				self.launch_kill(v, 'dmy', proc)
+			procs = []
+		self.main_cmd[ obj ] = procs
 
 	def OnTextIp(self, event):
 		tc = event.GetEventObject()
@@ -849,14 +917,22 @@ class MyFrame(rtmgr.MyFrame):
 			obj.SetValue(False)
 		return cmds[r] if ok else None
 
+	def get_autoware_dir(self):
+		dir = os.path.abspath(os.path.dirname(__file__)) + '/../../../../../../'
+		return os.path.abspath(dir)
+
 	def get_static_bitmap(self, parent, filename, scale):
+		bm = self.get_bitmap(filename, scale)
+		return wx.StaticBitmap(parent, wx.ID_ANY, bm)
+
+	def get_bitmap(self, filename, scale):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
 		(w, h) = bm.GetSize()
 		img = wx.ImageFromBitmap(bm)
 		img = img.Scale(w * scale, h * scale, wx.IMAGE_QUALITY_HIGH)
 		bm = wx.BitmapFromImage(img)
-		return wx.StaticBitmap(parent, wx.ID_ANY, bm)
+		return bm
 
 	def load_yaml(self, filename, def_ret=None):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"

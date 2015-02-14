@@ -1,0 +1,12 @@
+<!-- -->
+<launch>
+	<!-- <arg name="waypoint_filename" default="/home/pdsljp/data/path/ndt/ndtpath_150209.txt" />-->
+<arg name="waypoint_filename" default="/home/h_ohta/data/log/path/ndt/ndtpath_150209.txt" />
+
+	<!-- rosrun waypoint_maker waypoint_speed_loader _filename:="path file" -->
+	<node pkg="waypoint_maker" type="waypoint_speed_loader" name="waypoint_speed_loader">
+		<param name="filename" value="$(arg waypoint_filename)" />
+	</node>
+
+
+</launch>

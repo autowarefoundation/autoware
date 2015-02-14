@@ -2,7 +2,7 @@ name :
 subs :
   - name : Fake Drivers
     subs :
-      - name : Canera
+      - name : Camera
         run  : 
       - name : CAN
         run  : 
@@ -10,6 +10,10 @@ subs :
         run  : 
       - name : LIDAR
         run  : 
+  - name : Topic Drivers
+    subs :
+      - name : nmea_sentence
+        run  : rosrun javad_navsat_driver javad_topic_driver
   - name : Sample Map
     subs :
       - name : Point
