@@ -4,12 +4,14 @@ subs :
     subs :
       - name : common
         subs :
-          - name : lane_follower(sim)
+          - name : pure_pursuit(sim)
             cmd : roslaunch lane_follower simulation.launch
-          - name : lane_follower(ndt)
+          - name : pure_pursuit_fixvel(sim)
+            cmd : roslaunch lane_follower simulation_fixvel.launch
+          - name : pure_pursuit(NDT)
             cmd : roslaunch lane_follower ndt.launch
-          - name : lane_folloer(gnss)
-            cmd : roslaunch lane_follower gnss.launch
+          - name : pure_pursuit_fixvel(NDT)
+            cmd : roslaunch lane_follower ndt_fixvel.launch
   
   - name : Perception
     subs :
@@ -73,6 +75,10 @@ subs :
             cmd : roslaunch waypoint_maker waypoint_saver.launch
           - name : waypoint_loader
             cmd : roslaunch waypoint_maker waypoint_loader.launch
+          - name : waypoint_velocity_saver
+            cmd : roslaunch waypoint_maker waypoint_velocity_saver.launch
+          - name : waypoint_velocity_loader
+            cmd : roslaunch waypoint_maker waypoint_velocity_loader.launch
 
 params :
   - name  : car_dpm
