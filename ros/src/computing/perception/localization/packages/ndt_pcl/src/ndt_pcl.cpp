@@ -77,8 +77,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
 
 // If the map is loaded, map_loaded will be 1.
 int map_loaded = 0;
-int use_gnss = 1;
-int gnss_loaded = 0;
+int use_gnss = 0;
+int init_pos_set = 0;
 
 pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 // Default values
@@ -88,7 +88,7 @@ double step_size = 0.1; // Step size
 double trans_eps = 0.01; // Transformation epsilon
 
 // Leaf size of VoxelGrid filter.
-double voxel_leaf_size = 1.0;
+double voxel_leaf_size = 2.0;
 
 ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
 ros::Duration d_callback, d1, d2, d3, d4, d5;
@@ -96,37 +96,15 @@ ros::Duration d_callback, d1, d2, d3, d4, d5;
 ros::Publisher pose_pub;
 geometry_msgs::PoseStamped pose_msg;
 
-bool init_pos_gnss_msg = true; 
-
 void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
+  use_gnss = input->init_pos_gnss;
 
-  initial_x = input->x;
-  initial_y = input->y;
-  initial_z = input->z;
-  initial_roll = input->roll;
-  initial_pitch = input->pitch;
-  initial_yaw = input->yaw;
   ndt_res = input->resolution;
   step_size = input->step_size;
   trans_eps = input->trans_esp;
 
   voxel_leaf_size = input->leaf_size;
-
-  // Setting position and posture for the fist time.
-  previous_pos.x = initial_x;
-  previous_pos.y = initial_y;
-  previous_pos.z = initial_z;
-  previous_pos.roll = initial_roll;
-  previous_pos.pitch = initial_pitch;
-  previous_pos.yaw = initial_yaw;
-  
-  current_pos.x = initial_x;
-  current_pos.y = initial_y;
-  current_pos.z = initial_z;
-  current_pos.roll = initial_roll;
-  current_pos.pitch = initial_pitch;
-  current_pos.yaw = initial_yaw;
 
   // Setting parameters
   ndt.setMaximumIterations(iter);
@@ -134,28 +112,49 @@ void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
   ndt.setStepSize(step_size);
   ndt.setTransformationEpsilon(trans_eps);
 
-  std::cout << "Parameters" << std::endl;
+  std::cout << "--- Parameters ---" << std::endl;
   std::cout << "ndt_res: " << ndt_res << std::endl;
   std::cout << "step_size: " << step_size << std::endl;
   std::cout << "trans_eps: " << trans_eps << std::endl;
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
-  
-  std::cout << "Initial Position" << std::endl;
-  std::cout << "initial_x: " << initial_x << std::endl;
-  std::cout << "initial_y: " << initial_y << std::endl;
-  std::cout << "initial_z: " << initial_z << std::endl;
-  std::cout << "initial_roll: " << initial_roll << std::endl;
-  std::cout << "initial_pitch: " << initial_pitch << std::endl;
-  std::cout << "initial_yaw: " << initial_yaw << std::endl;
-  
-  std::cout << "NDT ready..." << std::endl;
 
+  if(use_gnss == 0 && init_pos_set == 0){
+    initial_x = input->x;
+    initial_y = input->y;
+    initial_z = input->z;
+    initial_roll = input->roll;
+    initial_pitch = input->pitch;
+    initial_yaw = input->yaw;
+    // Setting position and posture for the fist time.
+    previous_pos.x = initial_x;
+    previous_pos.y = initial_y;
+    previous_pos.z = initial_z;
+    previous_pos.roll = initial_roll;
+    previous_pos.pitch = initial_pitch;
+    previous_pos.yaw = initial_yaw;
+    current_pos.x = initial_x;
+    current_pos.y = initial_y;
+    current_pos.z = initial_z;
+    current_pos.roll = initial_roll;
+    current_pos.pitch = initial_pitch;
+    current_pos.yaw = initial_yaw;
+
+    init_pos_set = 1;
+    std::cout << "--- Initial Position (static) ---" << std::endl;
+    std::cout << "initial_x: " << initial_x << std::endl;
+    std::cout << "initial_y: " << initial_y << std::endl;
+    std::cout << "initial_z: " << initial_z << std::endl;
+    std::cout << "initial_roll: " << initial_roll << std::endl;
+    std::cout << "initial_pitch: " << initial_pitch << std::endl;
+    std::cout << "initial_yaw: " << initial_yaw << std::endl;
+    std::cout << "NDT ready..." << std::endl;
+  }
 }
 
 void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
   if(map_loaded == 0){
-    std::cout << "Loading map data..." << std::endl;
+    std::cout << "Loading map data... ";
     map.header.frame_id = "/pointcloud_map_frame";
 
     // Convert the data type(from sensor_msgs to pcl).
@@ -165,23 +164,21 @@ void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     // Setting point cloud to be aligned to.
     ndt.setInputTarget(map_ptr);
 
-    std::cout << "Map loaded..." << std::endl;
+    // Setting NDT parameters to default values
+    ndt.setMaximumIterations(iter);
+    ndt.setResolution(ndt_res);
+    ndt.setStepSize(step_size);
+    ndt.setTransformationEpsilon(trans_eps);
+
     map_loaded = 1;
+    std::cout << "Done." << std::endl;
+    std::cout << "Open config window and set the parameters." << std::endl;
   }
 }
 
-void use_gnss_callback(const std_msgs::Bool::ConstPtr& input)
+void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
-  if(use_gnss == 0){
-  init_pos_gnss_msg = input->data;
-  use_gnss = 1;
-  }
-  //  std::cout << "init_pos_gnss_msg = " << init_pos_gnss_msg << std::endl;
-}
-
-void gnss_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
-{
-  if(init_pos_gnss_msg == true && gnss_loaded == 0){
+  if(use_gnss == 1 && init_pos_set == 0){
     tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
     tf::Matrix3x3 m(q);
     initial_x = input->pose.position.x;
@@ -204,22 +201,21 @@ void gnss_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
     current_pos.pitch = initial_pitch;
     current_pos.yaw = initial_yaw;
 
-    std::cout << "set gnss position" << std::endl;
-    std::cout << "Initial Position" << std::endl;
+    init_pos_set = 1;
+    std::cout << "--- Initial Position (gnss) ---" << std::endl;
     std::cout << "initial_x: " << initial_x << std::endl;
     std::cout << "initial_y: " << initial_y << std::endl;
     std::cout << "initial_z: " << initial_z << std::endl;
     std::cout << "initial_roll: " << initial_roll << std::endl;
     std::cout << "initial_pitch: " << initial_pitch << std::endl;
     std::cout << "initial_yaw: " << initial_yaw << std::endl;
-
-    gnss_loaded = 1;
+    std::cout << "NDT ready..." << std::endl;    
   }
 }
 
 void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
 {
-  if(map_loaded == 1 && gnss_loaded == 1){
+  if(map_loaded == 1 && init_pos_set == 1){
     callback_start = ros::Time::now();
     
     static tf::TransformBroadcaster br;
@@ -430,11 +426,8 @@ int main(int argc, char **argv)
   // subscribing parameter
   ros::Subscriber param_sub = n.subscribe("config/ndt", 10, param_callback);
 
-  // subscribing init_pos_gnss
-  ros::Subscriber use_gnss_sub = n.subscribe("init_pos_gnss", 10, use_gnss_callback);
-
   // subscribing gnss position
-  ros::Subscriber gnss_pose_sub = n.subscribe("gnss_pose", 10, gnss_pose_callback);
+  ros::Subscriber gnss_sub = n.subscribe("gnss_pose", 10, gnss_callback);
 
   // subscribing map data (only once)
   ros::Subscriber map_sub = n.subscribe("points_map", 10, map_callback);

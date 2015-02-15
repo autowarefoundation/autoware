@@ -1,14 +1,11 @@
 <!-- -->
 <launch>
-	<arg name="save_finename" default="$(find waypoint_maker)/path/ndtpath.txt" />
+	<arg name="save_finename" default="$(find lane_follower)/path/ndtpath.txt" />
 	<arg name="save_topic" default="ndt" /> <!--  amcl or ndt or gnss -->
-<arg name="interval" default="4" /> 
 
-<!-- rosrun waypoint_maker waypoint_saver _save_topic:=[topic] _interval:=[value] _save_filename:="[save file]" -->
 	<node pkg="waypoint_maker" type="waypoint_saver" name="waypoint_saver">
 		<param name="save_filename" value="$(arg save_finename)" />
 		<param name="save_topic" value="$(arg save_topic)" />
-		<param name="interval" value="$(arg interval)" />
 	</node>
 
 </launch>
