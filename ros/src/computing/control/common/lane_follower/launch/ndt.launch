@@ -2,15 +2,16 @@
 <launch>
 	<arg name="current_pose_topic" default="ndt" />
 	<arg name="mobility_frame" default="/velodyne" />
-	<arg name="velocity_kmh" default="5" /> <!-- set velocity (km/h) -->
-	<arg name="lookahead_threshold" default="4" /> <!-- meter -->
-	
-	<!-- rosrun lane_follower lane_follower _current_pose_topic:="topic" _mobility_frame:="/frame" _velocity_kmh:=0 _lookahead_threshold:=0 -->
+	<arg name="threshold_ratio" default="1.0" />
+	<arg name="end_distance" default="2.0" /> <!-- meter -->
+	<arg name="waypoint_filename" default="$(find lane_follower)/path/ndtpath.txt" />
+
+	<!-- rosrun lane_follower pure_pursuit _current_pose_topic:="topic" _mobility_frame:="/frame" _end_distance:=0 _lookahead_ratio:=0 -->
 	<node pkg="lane_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
 		<param name="mobility_frame" value="$(arg mobility_frame)" />
-		<param name="velocity_kmh" value="$(arg velocity_kmh)" />
-		<param name="lookahead_threshold" value="$(arg lookahead_threshold)" />
+		<param name="end_distance" value="$(arg end_distance)" />
+		<param name="threshold_ratio" value="$(arg threshold_ratio)" />
 	</node>
 
 </launch>
