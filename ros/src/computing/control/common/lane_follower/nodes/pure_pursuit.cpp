@@ -19,7 +19,7 @@
 //parameter server
 //double _initial_velocity_kmh = 5; // km/h
 //double _lookahead_threshold = 4.0;
-double _threshold_ratio = 0.001;
+double _threshold_ratio = 1.0;
 double _end_distance = 2.0;
 std::string _mobility_frame = "/base_link";
 std::string _current_pose_topic = "odometry";
@@ -113,10 +113,26 @@ void WayPointCallback(const lane_follower::laneConstPtr &msg)
 double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
-    if (_current_path.waypoints[_next_waypoint].twist.twist.linear.x > 0)
-        return _current_path.waypoints[_next_waypoint].twist.twist.linear.x * 3.6 * _threshold_ratio;
+
+
+    double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
+    double current_velocity_kmph = current_velocity_mps * 3.6;
+
+
+    if ( current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
+        return 2.0 * _threshold_ratio;
+    else if( current_velocity_kmph >= 5.0 && current_velocity_kmph < 10)
+        return 3.0 * _threshold_ratio;
+    else if( current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
+            return 6.0 * _threshold_ratio;
+    else if( current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
+            return 9.0 * _threshold_ratio;
+    else if( current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
+            return 12.0 * _threshold_ratio;
+    else if( current_velocity_kmph >= 40.0)
+            return current_velocity_mps * _threshold_ratio;
     else
-        return _threshold_ratio;
+        return 0;
 }
 
 //車の座標系に変換
@@ -350,8 +366,8 @@ vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
 
     geometry_msgs::Twist twist;
 
-//5Hzでループ
-    ros::Rate loop_rate(5);
+
+    ros::Rate loop_rate(10); //Hzで指定
     bool endflag = false;
     while (ros::ok()) {
         ros::spinOnce();
