@@ -122,11 +122,11 @@ target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
 add_executable(waypoint_saver nodes/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
 
-add_executable(waypoint_speed_loader nodes/waypoint_speed_loader.cpp)
-target_link_libraries(waypoint_speed_loader ${catkin_LIBRARIES})
+add_executable(waypoint_velocity_loader nodes/waypoint_velocity_loader.cpp)
+target_link_libraries(waypoint_velocity_loader ${catkin_LIBRARIES})
 
-add_executable(waypoint_speed_saver nodes/waypoint_speed_saver.cpp)
-target_link_libraries(waypoint_speed_saver gnss ${catkin_LIBRARIES})
+add_executable(waypoint_velocity_saver nodes/waypoint_velocity_saver.cpp)
+target_link_libraries(waypoint_velocity_saver gnss ${catkin_LIBRARIES})
 
 #############
 ## Install ##
