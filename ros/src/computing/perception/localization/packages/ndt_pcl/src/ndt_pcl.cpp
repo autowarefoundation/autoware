@@ -341,6 +341,7 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
     
     // publish the position
     pose_msg.header.frame_id = "/ndt_frame";
+    pose_msg.header.stamp = scan_time;
     pose_msg.pose.position.x = current_pos.x;
     pose_msg.pose.position.y = current_pos.y;
     pose_msg.pose.position.z = current_pos.z;
