@@ -1,7 +1,16 @@
 <!-- -->
 <launch>
-	<!-- <arg name="waypoint_filename" default="/home/pdsljp/data/path/ndt/ndtpath_150209.txt" />-->
-<arg name="waypoint_filename" default="/home/h_ohta/data/log/path/ndt/ndtpath_150209.txt" />
+
+
+	<arg name="path_frame" default="/path" />
+	<arg name="map_frame" default="/map" />
+
+	<!-- <arg name="waypoint_filename" default="/home/pdsljp/data/path/ndt/ndtpath_150209.txt" /> -->
+	<arg name="waypoint_filename" default="/home/h_ohta/data/log/path/ndt/ndtpath_150209.txt" />
+
+	<!-- transform path coordinate to global coordinate -->
+	<node pkg="tf" type="static_transform_publisher" name="path2map" args="0 0 0 0 0 0 $(arg map_frame) $(arg path_frame) 100" />
+
 
 	<!-- rosrun waypoint_maker waypoint_loader _filename:="path file" -->
 	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader">
