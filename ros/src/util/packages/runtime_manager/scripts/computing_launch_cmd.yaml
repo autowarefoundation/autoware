@@ -54,8 +54,8 @@ subs :
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt
-          - name : gnss_pos
-            cmd  : rosrun gnss_pos gnss_pos
+          - name : gnss_localizer
+            cmd  : rosrun gnss_localizer gnss_localizer
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning
