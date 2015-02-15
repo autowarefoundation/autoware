@@ -269,7 +269,7 @@ int main(int argc, char **argv)
   ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::Twist>(
 									     "cmd_vel", 1000);
 
-  vis_pub = nh.advertise<visualization_msgs::Marker>( "visualization_marker", 0 );
+  vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
 
 
   //subscribe topic
