@@ -122,6 +122,7 @@ include_directories(
 
 add_executable(pure_pursuit nodes/pure_pursuit.cpp)
 target_link_libraries(pure_pursuit gnss ${catkin_LIBRARIES})
+add_dependencies(pure_pursuit lane_follower_generate_messages_cpp)
 
 
 add_executable(pure_pursuit_fixvel nodes/pure_pursuit_fixvel.cpp)
