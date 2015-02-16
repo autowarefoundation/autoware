@@ -169,7 +169,6 @@ void* wrapSender(void *tsd){
   //and send database server.
   
 
-  printf("ok\n");
   vector<geometry_msgs::PoseStamped> car_position_vector(global_cp_vector.size());
   vector<geometry_msgs::PoseStamped> pedestrian_position_vector(global_pp_vector.size());
   string value = "";
@@ -188,7 +187,6 @@ void* wrapSender(void *tsd){
   vector<geometry_msgs::PoseStamped>(global_pp_vector).swap(global_pp_vector);
   pthread_mutex_unlock( &ped_mutex );
 
-  printf("ok\n");
   //create header
   char magic[5] = "MPWC";
   u_int16_t major = htons(1);
@@ -209,7 +207,7 @@ void* wrapSender(void *tsd){
   geo.set_plane(7);
   geo.set_llh(my_xloc,my_yloc,my_zloc);
   */
-  printf("ok\n");
+
   //get data of car and pedestrian recognizing
   if(car_position_vector.size() > 0 ){
     value += makeSendDataDetectedObj(car_position_vector);
@@ -282,7 +280,6 @@ void car_locateCallback(const geometry_msgs::PoseStamped car_locate)
 void pedestrian_locateCallback(const geometry_msgs::PoseStamped pedestrian_locate)
 {
 
-  printf("ped start\n");
   if(global_pp_vector.size() == 0 || 
      (pedestrian_locate.header.stamp.sec == global_pp_vector.back().header.stamp.sec&&
       pedestrian_locate.header.stamp.nsec == global_pp_vector.back().header.stamp.nsec)
