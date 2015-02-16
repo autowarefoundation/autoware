@@ -51,13 +51,13 @@ subs :
             cmd  : rosrun pedestrian_detector pedestrian_tracking
       - name : Localization
         subs :
-          - name : ndt_pcl
-            cmd  : rosrun ndt_pcl ndt_pcl
+          - name : points_localizer
+            cmd  : rosrun points_localizer ndt_pcl
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt
           - name : gnss_localizer
-            cmd  : rosrun gnss_localizer gnss_localizer
+            cmd  : rosrun gnss_localizer pos2pose
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning
