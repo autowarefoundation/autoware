@@ -1,7 +1,6 @@
 <!-- -->
 <launch>
 
-
 	<arg name="path_frame" default="/path" />
 	<arg name="map_frame" default="/map" />
 
@@ -12,8 +11,8 @@
 	<node pkg="tf" type="static_transform_publisher" name="path2map" args="0 0 0 0 0 0 $(arg map_frame) $(arg path_frame) 100" />
 
 
-	<!-- rosrun waypoint_maker waypoint_loader _filename:="path file" -->
-	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader">
+	<!-- rosrun waypoint_maker waypoint_velocity_loader _filename:="path file" -->
+	<node pkg="waypoint_maker" type="waypoint_velocity_loader" name="waypoint_velocity_loader">
 		<param name="filename" value="$(arg waypoint_filename)" />
 	</node>
 
