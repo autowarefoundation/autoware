@@ -31,7 +31,7 @@
 #include "calcoordinates.h"
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
-#include "car_detector/CarPose.h"
+//#include "car_detector/CarPose.h"
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
