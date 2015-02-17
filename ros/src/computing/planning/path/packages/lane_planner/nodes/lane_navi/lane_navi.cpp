@@ -335,6 +335,7 @@ Point::Point(int pid, double b, double l, double h, double bx,
 }
 
 static ros::Publisher pub_centerline;
+static ros::Publisher pub_waypoint;
 static ros::Publisher pub_trajectory;
 static visualization_msgs::Marker pub_marker;
 
@@ -588,6 +589,17 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	nav_msgs::Path path;
 	path.header.stamp = ros::Time::now();
 	path.header.frame_id = "/map";
+	visualization_msgs::Marker marker;
+	marker.header = path.header;
+	marker.ns = "points";
+	marker.id = 0;
+	marker.action = visualization_msgs::Marker::ADD;
+	marker.lifetime = ros::Duration();
+	marker.type = visualization_msgs::Marker::POINTS;
+	marker.scale.x = 0.1;
+	marker.scale.y = 0.1;
+	marker.color.r = 1;
+	marker.color.a = 1;
 #if SEARCH_NEAREST_POINTS
 	for (int i = 0; i < static_cast<int>(msg.point.size()); i++) {
 		geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, LLH_HEIGHT);
@@ -608,6 +620,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		posestamped.pose.orientation.w = ORIENTATION_W;
 
 		path.poses.push_back(posestamped);
+		marker.points.push_back(posestamped.pose.position);
 	}
 #else /* !SEARCH_NEAREST_POINTS */
 	geo.llh_to_xyz(msg.point.front().lat, msg.point.front().lon,
@@ -646,6 +659,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		posestamped.pose.orientation.w = ORIENTATION_W;
 
 		path.poses.push_back(posestamped);
+		marker.points.push_back(posestamped.pose.position);
 
 		point_index = lane_to_finishing_point_index(lane);
 		if (point_index < 0) {
@@ -668,6 +682,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 			posestamped.pose.orientation.w = ORIENTATION_W;
 
 			path.poses.push_back(posestamped);
+			marker.points.push_back(posestamped.pose.position);
 
 			break;
 		}
@@ -689,6 +704,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 #endif /* SEARCH_NEAREST_POINTS */
 
 	pub_centerline.publish(path);
+	pub_waypoint.publish(marker);
 
 	for (int i = 0; i < static_cast<int>(msg.point.size()); i++) {
 		ROS_DEBUG("%d: point[i].lat=%lf, point[i].lon=%lf",
@@ -750,6 +766,10 @@ int main(int argc, char **argv)
 	pub_centerline = n.advertise<nav_msgs::Path>("/lane_centerline",
 						     ADVERTISE_QUEUE_SIZE,
 						     ADVERTISE_LATCH);
+	pub_waypoint = n.advertise<visualization_msgs::Marker>(
+		"/lane_waypoint",
+		ADVERTISE_QUEUE_SIZE,
+		ADVERTISE_LATCH);
 	pub_trajectory = n.advertise<visualization_msgs::Marker>(
 		"/_trajectory",
 		ADVERTISE_QUEUE_SIZE,
