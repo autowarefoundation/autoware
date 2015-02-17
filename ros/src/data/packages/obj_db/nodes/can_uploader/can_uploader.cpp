@@ -111,12 +111,10 @@ void* wrapSender(void *tsd){
   value.append(header,16);
 
   value += CanSql;
-  cout << value;
+  //cout << value;
 
-  /*
   string res = sd.Sender(value);
   cout << "retrun message from DBserver : " << res << endl;
-  */
 
 }
 
@@ -153,7 +151,7 @@ void can_infoCallback(const vehicle_socket::CanInfo& can)
 
   ostringstream oss;
 
-  oss << "INSERT INTO CAN( ";
+  oss << "INSERT INTO CAN(";
 
 
   oss << "tm,";
@@ -162,7 +160,7 @@ void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << "drvoverridemode,";
   oss << "drvservo,";
   oss << "drivepedal,";
-  oss << "targetpedalst,";
+  oss << "targetpedalstr,";
   oss << "inputpedalstr,";
   oss << "targetveloc,";
   oss << "speed,";
@@ -209,9 +207,8 @@ void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << "door,";
   oss << "cluise";
 
-  oss << " VALUES(";
+  oss << ") VALUES(";
 
-  oss << can.tm << ",";
   oss << "'" << can.tm << "',";
   oss << can.devmode << ",";
   oss << can.drvcontmode << ",";
@@ -249,6 +246,7 @@ void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << fixed << setprecision(6) << can.anglefromp << ",";
   oss << fixed << setprecision(6) << can.brakepedalfromp << ",";
   oss << fixed << setprecision(6) << can.speedfr << ",";
+  oss << fixed << setprecision(6) << can.speedfl << ",";
   oss << fixed << setprecision(6) << can.speedrr << ",";
   oss << fixed << setprecision(6) << can.speedrl << ",";
   oss << fixed << setprecision(6) << can.velocfromp2 << ",";
@@ -267,6 +265,8 @@ void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << ");\n";
 
   CanSql = oss.str();
+  
+  canGetFlag = true;
 
 }
 
@@ -284,44 +284,6 @@ int main(int argc, char **argv){
   ros::NodeHandle n;
 
   ros::Subscriber can = n.subscribe("/can_info", 1, can_infoCallback);
-
-  /*
-  cv::Mat Cintrinsic;
-  std::string camera_yaml;
-
-  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
-
-  cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ); 
-  if(!camera_file.isOpened()){
-    fprintf(stderr,"%s, : cannot open file\n",camera_yaml.c_str());
-    exit(EXIT_FAILURE);
-  }
-  camera_file["intrinsic"] >> Cintrinsic; 
-  camera_file.release(); 
-
-  double fkx = Cintrinsic.at<float>(0,0);
-  double fky = Cintrinsic.at<float>(1,1);
-  double Ox = Cintrinsic.at<float>(0,2);
-  double Oy = Cintrinsic.at<float>(1,2);
-
-  cv::Mat Lintrinsic;
-  std::string lidar_3d_yaml = "/home/auto1/.ros/autoware/camera_lidar_3d.yaml";
-
-  cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ); 
-  if(!lidar_3d_file.isOpened()){
-    fprintf(stderr,"%s, : cannot open file\n",lidar_3d_yaml.c_str());
-    exit(EXIT_FAILURE);
-  }
-  lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic; 
-  lidar_3d_file.release(); 
-
-  for(int i=0; i<4 ; i++){
-    for(int j=0; j<4 ; j++){
-      cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
-    }
-  }
-  sl.setCameraParam(fkx,fky,Ox,Oy);
-  */
 
   //set server name and port
   string serverName = defaultServerName;
