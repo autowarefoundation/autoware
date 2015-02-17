@@ -32,6 +32,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(lane_navigator src/lane_navigator.cpp)
-target_link_libraries(lane_navigator gnss ${catkin_LIBRARIES})
-add_dependencies(lane_navigator ui_socket_generate_messages_cpp)
+add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
+target_link_libraries(lane_navi gnss ${catkin_LIBRARIES})
+add_dependencies(lane_navi ui_socket_generate_messages_cpp)

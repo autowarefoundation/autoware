@@ -741,7 +741,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	ros::init(argc, argv, "lane_navigator");
+	ros::init(argc, argv, "lane_navi");
 
 	ros::NodeHandle n;
 	ros::Subscriber sub = n.subscribe("route_cmd",
