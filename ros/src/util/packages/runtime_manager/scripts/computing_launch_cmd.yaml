@@ -65,7 +65,7 @@ subs :
       - name : Mission
         subs :
         - name : lane_navigator
-          cmd  : rosrun lane_navigator lane_navigator /tmp/lane.csv /tmp/node.csv /tmp/point.csv
+          cmd  : rosrun lane_planner lane_navigator /tmp/lane.csv /tmp/node.csv /tmp/point.csv
       - name : Motion
       - name : Path
         subs :
