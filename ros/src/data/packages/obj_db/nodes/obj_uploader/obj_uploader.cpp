@@ -22,7 +22,7 @@
 
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CompressedImage.h>
-#include "car_detector/FusedObjects.h"
+//#include "car_detector/FusedObjects.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -35,17 +35,18 @@
 #include <sstream>
 #include <sys/time.h>
 #include <bitset>
-
+/*
 #include "opencv/cv.h" 
 #include "opencv/highgui.h"
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
-#include "scan_to_image/ScanImage.h"
-#include "geometry_msgs/TwistStamped.h"
+*/
+//#include "scan_to_image/ScanImage.h"
+//#include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "tf/tf.h"
-#include "tf/transform_listener.h"
-#include "sensor_msgs/NavSatFix.h"
+//#include "tf/tf.h"
+//#include "tf/transform_listener.h"
+//#include "sensor_msgs/NavSatFix.h"
 #include "../SendData.h"
 
 /*
@@ -88,17 +89,6 @@ SendData sd;
 
 //store own position and direction now.updated by position_getter
 geometry_msgs::PoseStamped my_loc;
-
-double cameraMatrix[4][4];
-/*
- = {
-  {-7.8577658642752374e-03, -6.2035361880992401e-02,9.9804301981022692e-01, 5.1542126095196206e-01},
-  {-9.9821250329813849e-01, 5.9620033356180935e-02,-4.1532977104442731e-03, -2.9214878315161133e-02},
-  {-5.9245706805522491e-02, -9.9629165684497312e-01,-6.2392954139163306e-02, -6.6728858508628075e-01},
-  {0, 0, 0, 1}
- 
-};
-*/
 
 void printDiff(struct timeval begin, struct timeval end){
   long diff;
@@ -203,11 +193,6 @@ void* wrapSender(void *tsd){
 
   cout << "sqlnum : " << car_position_vector.size() + pedestrian_position_vector.size() + 1 << endl;
 
-  /*
-  geo.set_plane(7);
-  geo.set_llh(my_xloc,my_yloc,my_zloc);
-  */
-
   //get data of car and pedestrian recognizing
   if(car_position_vector.size() > 0 ){
     value += makeSendDataDetectedObj(car_position_vector);
@@ -221,7 +206,7 @@ void* wrapSender(void *tsd){
   oss << "values(0," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << ",0,0,1,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
 
   /*
-    oss << "INSERT INTO POS_NOUNIQUE(id,sender_id,x,y,area,type,self,tm) ";
+    oss << "INSERT INTO POS(id,sender_id,x,y,area,type,self,tm) ";
     oss << "values(0,0," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << ",0,0,1,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
   */
 
@@ -334,44 +319,6 @@ int main(int argc, char **argv){
   ros::Subscriber car_locate = n.subscribe("/car_pose", 5, car_locateCallback);
   ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 5, pedestrian_locateCallback);
  ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
-
-  /*
-  cv::Mat Cintrinsic;
-  std::string camera_yaml;
-
-  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
-
-  cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ); 
-  if(!camera_file.isOpened()){
-    fprintf(stderr,"%s, : cannot open file\n",camera_yaml.c_str());
-    exit(EXIT_FAILURE);
-  }
-  camera_file["intrinsic"] >> Cintrinsic; 
-  camera_file.release(); 
-
-  double fkx = Cintrinsic.at<float>(0,0);
-  double fky = Cintrinsic.at<float>(1,1);
-  double Ox = Cintrinsic.at<float>(0,2);
-  double Oy = Cintrinsic.at<float>(1,2);
-
-  cv::Mat Lintrinsic;
-  std::string lidar_3d_yaml = "/home/auto1/.ros/autoware/camera_lidar_3d.yaml";
-
-  cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ); 
-  if(!lidar_3d_file.isOpened()){
-    fprintf(stderr,"%s, : cannot open file\n",lidar_3d_yaml.c_str());
-    exit(EXIT_FAILURE);
-  }
-  lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic; 
-  lidar_3d_file.release(); 
-
-  for(int i=0; i<4 ; i++){
-    for(int j=0; j<4 ; j++){
-      cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
-    }
-  }
-  sl.setCameraParam(fkx,fky,Ox,Oy);
-  */
 
   //set server name and port
   string serverName = defaultServerName;
