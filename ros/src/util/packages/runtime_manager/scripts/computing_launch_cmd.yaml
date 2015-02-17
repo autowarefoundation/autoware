@@ -2,7 +2,7 @@ name : Computing
 subs :
   - name : Control
     subs :
-      - name : common
+      - name : motion
         subs :
           - name : pure_pursuit(sim)
             cmd : roslaunch lane_follower simulation.launch
