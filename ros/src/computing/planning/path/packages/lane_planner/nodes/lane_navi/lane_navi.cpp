@@ -334,7 +334,7 @@ Point::Point(int pid, double b, double l, double h, double bx,
 {
 }
 
-static ros::Publisher pub_nav;
+static ros::Publisher pub_centerline;
 static ros::Publisher pub_trajectory;
 static visualization_msgs::Marker pub_marker;
 
@@ -688,7 +688,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	}
 #endif /* SEARCH_NEAREST_POINTS */
 
-	pub_nav.publish(path);
+	pub_centerline.publish(path);
 
 	for (int i = 0; i < static_cast<int>(msg.point.size()); i++) {
 		ROS_DEBUG("%d: point[i].lat=%lf, point[i].lon=%lf",
@@ -747,9 +747,9 @@ int main(int argc, char **argv)
 	ros::Subscriber sub = n.subscribe("route_cmd",
 					  SUBSCRIBE_QUEUE_SIZE,
 					  route_cmd_callback);
-	pub_nav = n.advertise<nav_msgs::Path>("/lane_navigator",
-					      ADVERTISE_QUEUE_SIZE,
-					      ADVERTISE_LATCH);
+	pub_centerline = n.advertise<nav_msgs::Path>("/lane_centerline",
+						     ADVERTISE_QUEUE_SIZE,
+						     ADVERTISE_LATCH);
 	pub_trajectory = n.advertise<visualization_msgs::Marker>(
 		"/_trajectory",
 		ADVERTISE_QUEUE_SIZE,
