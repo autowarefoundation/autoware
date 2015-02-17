@@ -127,18 +127,6 @@ add_dependencies(waypoint_saver
   lane_follower_generate_messages_cpp
   vehicle_socket_generate_messages_cpp)
 
-add_executable(waypoint_velocity_loader nodes/waypoint_velocity_loader.cpp)
-target_link_libraries(waypoint_velocity_loader ${catkin_LIBRARIES})
-add_dependencies(waypoint_velocity_loader
-  lane_follower_generate_messages_cpp
-  vehicle_socket_generate_messages_cpp)
-
-add_executable(waypoint_velocity_saver nodes/waypoint_velocity_saver.cpp)
-target_link_libraries(waypoint_velocity_saver gnss ${catkin_LIBRARIES})
-add_dependencies(waypoint_velocity_saver
-  lane_follower_generate_messages_cpp
-  vehicle_socket_generate_messages_cpp)
-
 #############
 ## Install ##
 #############

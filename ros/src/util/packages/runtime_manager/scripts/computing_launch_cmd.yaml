@@ -75,10 +75,6 @@ subs :
             cmd : roslaunch waypoint_maker waypoint_saver.launch
           - name : waypoint_loader
             cmd : roslaunch waypoint_maker waypoint_loader.launch
-          - name : waypoint_velocity_saver
-            cmd : roslaunch waypoint_maker waypoint_velocity_saver.launch
-          - name : waypoint_velocity_loader
-            cmd : roslaunch waypoint_maker waypoint_velocity_loader.launch
 
 params :
   - name  : car_dpm
