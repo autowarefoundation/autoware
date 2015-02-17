@@ -11,18 +11,14 @@
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
 
-#include <ui_socket/route_cmd.h>
-
 #include <geo_pos_conv.hh>
+
+#include <ui_socket/route_cmd.h>
 
 // #define PUBLISH_TRAJECTORY
 
-static constexpr double LLH_HEIGHT = 50;
-static constexpr double ORIENTATION_W = 1.0;
-
-static constexpr double PUBLISH_HZ = 1000;
-
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
+
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool ADVERTISE_LATCH = true;
 
@@ -536,31 +532,12 @@ static int lane_to_finishing_point_index(const Lane& lane)
 static void route_cmd_callback(const ui_socket::route_cmd msg)
 {
 	geo_pos_conv geo;
-
 	geo.set_plane(7);
 
-	ROS_DEBUG("point.size()=%zu", msg.point.size());
-
-	nav_msgs::Path path;
-	path.header.stamp = ros::Time::now();
-	path.header.frame_id = "/map";
-	visualization_msgs::Marker marker;
-	marker.header = path.header;
-	marker.ns = "points";
-	marker.id = 0;
-	marker.action = visualization_msgs::Marker::ADD;
-	marker.lifetime = ros::Duration();
-	marker.type = visualization_msgs::Marker::POINTS;
-	marker.scale.x = 0.1;
-	marker.scale.y = 0.1;
-	marker.color.r = 1;
-	marker.color.a = 1;
-	geo.llh_to_xyz(msg.point.front().lat, msg.point.front().lon,
-		       LLH_HEIGHT);
+	geo.llh_to_xyz(msg.point.front().lat, msg.point.front().lon, 0);
 	Point start_point = search_nearest(left_lane_points, geo.x(), geo.y());
 
-	geo.llh_to_xyz(msg.point.back().lat, msg.point.back().lon,
-		       LLH_HEIGHT);
+	geo.llh_to_xyz(msg.point.back().lat, msg.point.back().lon, 0);
 	Point end_point = search_nearest(left_lane_points, geo.x(), geo.y());
 
 	int lane_index = point_to_lane_index(start_point);
@@ -577,16 +554,36 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	}
 	Point point = points[point_index];
 
+	std_msgs::Header header;
+	header.stamp = ros::Time::now();
+	header.frame_id = "/map";
+
+	nav_msgs::Path centerline;
+	centerline.header = header;
+
+	visualization_msgs::Marker waypoint;
+	waypoint.header = header;
+	waypoint.ns = "waypoint";
+	waypoint.id = 0;
+	waypoint.action = visualization_msgs::Marker::ADD;
+	waypoint.lifetime = ros::Duration();
+	waypoint.type = visualization_msgs::Marker::POINTS;
+	waypoint.scale.x = 0.1;
+	waypoint.scale.y = 0.1;
+	waypoint.color.r = 1;
+	waypoint.color.a = 1;
+
+	geometry_msgs::PoseStamped posestamped;
+	posestamped.header = header;
+	posestamped.pose.orientation.w = 1;
+
 	while (1) {
-		geometry_msgs::PoseStamped posestamped;
-		posestamped.header = path.header;
 		posestamped.pose.position.x = point.ly();
 		posestamped.pose.position.y = point.bx();
 		posestamped.pose.position.z = point.h();
-		posestamped.pose.orientation.w = ORIENTATION_W;
 
-		path.poses.push_back(posestamped);
-		marker.points.push_back(posestamped.pose.position);
+		centerline.poses.push_back(posestamped);
+		waypoint.points.push_back(posestamped.pose.position);
 
 		point_index = lane_to_finishing_point_index(lane);
 		if (point_index < 0) {
@@ -597,14 +594,12 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 
 		if (point.bx() == end_point.bx() &&
 		    point.ly() == end_point.ly()) {
-			posestamped.header = path.header;
 			posestamped.pose.position.x = point.ly();
 			posestamped.pose.position.y = point.bx();
 			posestamped.pose.position.z = point.h();
-			posestamped.pose.orientation.w = ORIENTATION_W;
 
-			path.poses.push_back(posestamped);
-			marker.points.push_back(posestamped.pose.position);
+			centerline.poses.push_back(posestamped);
+			waypoint.points.push_back(posestamped.pose.position);
 
 			break;
 		}
@@ -624,22 +619,27 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		point = points[point_index];
 	}
 
-	pub_centerline.publish(path);
-	pub_waypoint.publish(marker);
+	pub_centerline.publish(centerline);
+	pub_waypoint.publish(waypoint);
 
 #ifdef PUBLISH_TRAJECTORY
-	marker.ns = "point";
-	marker.type = visualization_msgs::Marker::SPHERE;
-	marker.pose.orientation.x = 0;
-	marker.pose.orientation.y = 0;
-	marker.pose.orientation.z = 0;
-	marker.pose.orientation.w = 1;
-	marker.scale.x = 0.2;
-	marker.scale.y = 0.2;
-	marker.scale.z = 0.2;
-	for (const geometry_msgs::Point& point : marker.points) {
-		marker.pose.position = point;
-		pub_trajectory.publish(marker);
+	visualization_msgs::Marker trajectory;
+	trajectory.header = header;
+	trajectory.ns = "trajectory";
+	trajectory.id = 0;
+	trajectory.action = visualization_msgs::Marker::ADD;
+	trajectory.lifetime = ros::Duration();
+	trajectory.type = visualization_msgs::Marker::SPHERE;
+	trajectory.pose.orientation.w = 1;
+	trajectory.scale.x = 0.2;
+	trajectory.scale.y = 0.2;
+	trajectory.scale.z = 0.2;
+	trajectory.color.r = 1;
+	trajectory.color.a = 1;
+
+	for (const geometry_msgs::Point& position : waypoint.points) {
+		trajectory.pose.position = position;
+		pub_trajectory.publish(trajectory);
 		sleep(1);
 	}
 #endif /* PUBLISH_TRAJECTORY */
@@ -679,9 +679,11 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "lane_navi");
 
 	ros::NodeHandle n;
+
 	ros::Subscriber sub = n.subscribe("route_cmd",
 					  SUBSCRIBE_QUEUE_SIZE,
 					  route_cmd_callback);
+
 	pub_centerline = n.advertise<nav_msgs::Path>("/lane_centerline",
 						     ADVERTISE_QUEUE_SIZE,
 						     ADVERTISE_LATCH);
