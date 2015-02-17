@@ -15,8 +15,7 @@
 
 #include <geo_pos_conv.hh>
 
-#define SEARCH_NEAREST_POINTS	0
-#define SWAP_X_Y		1
+// #define PUBLISH_TRAJECTORY
 
 static constexpr double LLH_HEIGHT = 50;
 static constexpr double ORIENTATION_W = 1.0;
@@ -336,8 +335,9 @@ Point::Point(int pid, double b, double l, double h, double bx,
 
 static ros::Publisher pub_centerline;
 static ros::Publisher pub_waypoint;
+#ifdef PUBLISH_TRAJECTORY
 static ros::Publisher pub_trajectory;
-static visualization_msgs::Marker pub_marker;
+#endif /* PUBLISH_TRAJECTORY */
 
 static std::vector<Lane> lanes;
 static std::vector<Node> nodes;
@@ -533,54 +533,9 @@ static int lane_to_finishing_point_index(const Lane& lane)
 	return -1;
 }
 
-static void set_marker_data(visualization_msgs::Marker* marker,
-			    double px, double py, double pz,
-			    double ox, double oy, double oz, double ow,
-			    double sx, double sy, double sz,
-			    double r, double g, double b, double a)
-{
-#if SWAP_X_Y
-	marker->pose.position.x = py;
-	marker->pose.position.y = px;
-
-	marker->pose.orientation.x = oy;
-	marker->pose.orientation.y = ox;
-#else /* !SWAP_X_Y */
-	marker->pose.position.x = px;
-	marker->pose.position.y = py;
-
-	marker->pose.orientation.x = ox;
-	marker->pose.orientation.y = oy;
-#endif /* SWAP_X_Y */
-
-	marker->pose.position.z = pz;
-
-	marker->pose.orientation.z = oz;
-	marker->pose.orientation.w = ow;
-
-	marker->scale.x = sx;
-	marker->scale.y = sy;
-	marker->scale.z = sz;
-
-	marker->color.r = r;
-	marker->color.g = g;
-	marker->color.b = b;
-	marker->color.a = a;
-}
-
-static void publish_marker(visualization_msgs::Marker* marker,
-			   ros::Publisher& pub, ros::Rate& rate)
-{
-	ros::ok();
-	pub.publish(*marker);
-	rate.sleep();
-	// marker->id++;
-}
-
 static void route_cmd_callback(const ui_socket::route_cmd msg)
 {
 	geo_pos_conv geo;
-	ros::Rate rate(PUBLISH_HZ);
 
 	geo.set_plane(7);
 
@@ -600,29 +555,6 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	marker.scale.y = 0.1;
 	marker.color.r = 1;
 	marker.color.a = 1;
-#if SEARCH_NEAREST_POINTS
-	for (int i = 0; i < static_cast<int>(msg.point.size()); i++) {
-		geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, LLH_HEIGHT);
-
-		Point nearest = search_nearest(left_lane_points,
-					       geo.x(), geo.y());
-
-		geometry_msgs::PoseStamped posestamped;
-		posestamped.header = path.header;
-#if SWAP_X_Y
-		posestamped.pose.position.x = nearest.ly();
-		posestamped.pose.position.y = nearest.bx();
-#else /* !SWAP_X_Y */
-		posestamped.pose.position.x = nearest.bx();
-		posestamped.pose.position.y = nearest.ly();
-#endif /* SWAP_X_Y */
-		posestamped.pose.position.z = geo.z();
-		posestamped.pose.orientation.w = ORIENTATION_W;
-
-		path.poses.push_back(posestamped);
-		marker.points.push_back(posestamped.pose.position);
-	}
-#else /* !SEARCH_NEAREST_POINTS */
 	geo.llh_to_xyz(msg.point.front().lat, msg.point.front().lon,
 		       LLH_HEIGHT);
 	Point start_point = search_nearest(left_lane_points, geo.x(), geo.y());
@@ -648,13 +580,8 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	while (1) {
 		geometry_msgs::PoseStamped posestamped;
 		posestamped.header = path.header;
-#if SWAP_X_Y
 		posestamped.pose.position.x = point.ly();
 		posestamped.pose.position.y = point.bx();
-#else /* !SWAP_X_Y */
-		posestamped.pose.position.x = point.bx();
-		posestamped.pose.position.y = point.ly();
-#endif /* SWAP_X_Y */
 		posestamped.pose.position.z = point.h();
 		posestamped.pose.orientation.w = ORIENTATION_W;
 
@@ -671,13 +598,8 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		if (point.bx() == end_point.bx() &&
 		    point.ly() == end_point.ly()) {
 			posestamped.header = path.header;
-#if SWAP_X_Y
 			posestamped.pose.position.x = point.ly();
 			posestamped.pose.position.y = point.bx();
-#else /* !SWAP_X_Y */
-			posestamped.pose.position.x = point.bx();
-			posestamped.pose.position.y = point.ly();
-#endif /* SWAP_X_Y */
 			posestamped.pose.position.z = point.h();
 			posestamped.pose.orientation.w = ORIENTATION_W;
 
@@ -701,29 +623,26 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		}
 		point = points[point_index];
 	}
-#endif /* SEARCH_NEAREST_POINTS */
 
 	pub_centerline.publish(path);
 	pub_waypoint.publish(marker);
 
-	for (int i = 0; i < static_cast<int>(msg.point.size()); i++) {
-		ROS_DEBUG("%d: point[i].lat=%lf, point[i].lon=%lf",
-			  i, msg.point[i].lat, msg.point[i].lon);
-
-		geo.llh_to_xyz(msg.point[i].lat, msg.point[i].lon, LLH_HEIGHT);
-		ROS_DEBUG("%d: geo.x()=%lf, geo.y()=%lf, geo.z()=%lf",
-			  i, geo.x(), geo.y(), geo.z());
-
-		set_marker_data(&pub_marker,
-				geo.x() - 1.0,
-				geo.y() - 1.0,
-				geo.z() - 1.0,
-				0, 0, 0, 1,
-				2.0, 2.0, 2.0,
-				1, 0, 0, 1);
-		publish_marker(&pub_marker, pub_trajectory, rate);
+#ifdef PUBLISH_TRAJECTORY
+	marker.ns = "point";
+	marker.type = visualization_msgs::Marker::SPHERE;
+	marker.pose.orientation.x = 0;
+	marker.pose.orientation.y = 0;
+	marker.pose.orientation.z = 0;
+	marker.pose.orientation.w = 1;
+	marker.scale.x = 0.2;
+	marker.scale.y = 0.2;
+	marker.scale.z = 0.2;
+	for (const geometry_msgs::Point& point : marker.points) {
+		marker.pose.position = point;
+		pub_trajectory.publish(marker);
 		sleep(1);
 	}
+#endif /* PUBLISH_TRAJECTORY */
 }
 
 int main(int argc, char **argv)
@@ -770,19 +689,12 @@ int main(int argc, char **argv)
 		"/lane_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
+#ifdef PUBLISH_TRAJECTORY
 	pub_trajectory = n.advertise<visualization_msgs::Marker>(
 		"/_trajectory",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
-
-	pub_marker.header.frame_id = "/map";
-	pub_marker.header.stamp = ros::Time::now();
-
-	pub_marker.ns = "vector_map";
-	pub_marker.id = 0;
-	pub_marker.action = visualization_msgs::Marker::ADD;
-	pub_marker.lifetime = ros::Duration();
-	pub_marker.type = visualization_msgs::Marker::SPHERE;
+#endif /* PUBLISH_TRAJECTORY */
 
 	ros::spin();
 
