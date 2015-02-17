@@ -52,20 +52,20 @@ subs :
       - name : Localization
         subs :
           - name : ndt_pcl
-            cmd  : rosrun ndt_pcl ndt_pcl
+            cmd  : rosrun points_localizer ndt_pcl
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt
-          - name : gnss_localizer
-            cmd  : rosrun gnss_localizer gnss_localizer
+          - name : pos2pose
+            cmd  : rosrun gnss_localizer pos2pose
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning
     subs :
       - name : Mission
         subs :
-        - name : lane_navigator
-          cmd  : rosrun lane_navigator lane_navigator /tmp/lane.csv /tmp/node.csv /tmp/point.csv
+        - name : lane_navi
+          cmd  : rosrun lane_planner lane_navi /tmp/lane.csv /tmp/node.csv /tmp/point.csv
       - name : Motion
       - name : Path
         subs :

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lane_navigator)
+project(lane_planner)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -17,7 +17,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES lane_navigator
+#  LIBRARIES lane_planner
   DEPENDS gnss ui_socket
 )
 
@@ -32,6 +32,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(lane_navigator src/lane_navigator.cpp)
-target_link_libraries(lane_navigator gnss ${catkin_LIBRARIES})
-add_dependencies(lane_navigator ui_socket_generate_messages_cpp)
+add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
+target_link_libraries(lane_navi gnss ${catkin_LIBRARIES})
+add_dependencies(lane_navi ui_socket_generate_messages_cpp)
