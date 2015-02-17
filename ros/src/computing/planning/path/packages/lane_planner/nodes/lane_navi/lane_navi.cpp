@@ -329,8 +329,8 @@ Point::Point(int pid, double b, double l, double h, double bx,
 {
 }
 
-static ros::Publisher pub_centerline;
 static ros::Publisher pub_waypoint;
+static ros::Publisher pub_centerline;
 #ifdef PUBLISH_TRAJECTORY
 static ros::Publisher pub_trajectory;
 #endif /* PUBLISH_TRAJECTORY */
@@ -558,20 +558,20 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	header.stamp = ros::Time::now();
 	header.frame_id = "/map";
 
-	nav_msgs::Path centerline;
-	centerline.header = header;
-
-	visualization_msgs::Marker waypoint;
+	nav_msgs::Path waypoint;
 	waypoint.header = header;
-	waypoint.ns = "waypoint";
-	waypoint.id = 0;
-	waypoint.action = visualization_msgs::Marker::ADD;
-	waypoint.lifetime = ros::Duration();
-	waypoint.type = visualization_msgs::Marker::POINTS;
-	waypoint.scale.x = 0.1;
-	waypoint.scale.y = 0.1;
-	waypoint.color.r = 1;
-	waypoint.color.a = 1;
+
+	visualization_msgs::Marker centerline;
+	centerline.header = header;
+	centerline.ns = "centerline";
+	centerline.id = 0;
+	centerline.action = visualization_msgs::Marker::ADD;
+	centerline.lifetime = ros::Duration();
+	centerline.type = visualization_msgs::Marker::POINTS;
+	centerline.scale.x = 0.1;
+	centerline.scale.y = 0.1;
+	centerline.color.r = 1;
+	centerline.color.a = 1;
 
 	geometry_msgs::PoseStamped posestamped;
 	posestamped.header = header;
@@ -582,8 +582,8 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		posestamped.pose.position.y = point.bx();
 		posestamped.pose.position.z = point.h();
 
-		centerline.poses.push_back(posestamped);
-		waypoint.points.push_back(posestamped.pose.position);
+		waypoint.poses.push_back(posestamped);
+		centerline.points.push_back(posestamped.pose.position);
 
 		point_index = lane_to_finishing_point_index(lane);
 		if (point_index < 0) {
@@ -598,8 +598,8 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 			posestamped.pose.position.y = point.bx();
 			posestamped.pose.position.z = point.h();
 
-			centerline.poses.push_back(posestamped);
-			waypoint.points.push_back(posestamped.pose.position);
+			waypoint.poses.push_back(posestamped);
+			centerline.points.push_back(posestamped.pose.position);
 
 			break;
 		}
@@ -619,8 +619,8 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 		point = points[point_index];
 	}
 
-	pub_centerline.publish(centerline);
 	pub_waypoint.publish(waypoint);
+	pub_centerline.publish(centerline);
 
 #ifdef PUBLISH_TRAJECTORY
 	visualization_msgs::Marker trajectory;
@@ -637,7 +637,7 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	trajectory.color.r = 1;
 	trajectory.color.a = 1;
 
-	for (const geometry_msgs::Point& position : waypoint.points) {
+	for (const geometry_msgs::Point& position : centerline.points) {
 		trajectory.pose.position = position;
 		pub_trajectory.publish(trajectory);
 		sleep(1);
@@ -684,11 +684,11 @@ int main(int argc, char **argv)
 					  SUBSCRIBE_QUEUE_SIZE,
 					  route_cmd_callback);
 
-	pub_centerline = n.advertise<nav_msgs::Path>("/lane_centerline",
-						     ADVERTISE_QUEUE_SIZE,
-						     ADVERTISE_LATCH);
-	pub_waypoint = n.advertise<visualization_msgs::Marker>(
-		"/lane_waypoint",
+	pub_waypoint = n.advertise<nav_msgs::Path>("/lane_waypoint",
+						   ADVERTISE_QUEUE_SIZE,
+						   ADVERTISE_LATCH);
+	pub_centerline = n.advertise<visualization_msgs::Marker>(
+		"/lane_centerline",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 #ifdef PUBLISH_TRAJECTORY
