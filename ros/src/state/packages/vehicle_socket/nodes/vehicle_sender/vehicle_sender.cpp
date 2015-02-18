@@ -1,5 +1,6 @@
 
 #include "ros/ros.h"
+#include <geometry_msgs/TwistStamped.h>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -18,10 +19,10 @@
 
 
 
-void CMDCallback(const geometry_msgs::TwistConstPtr &msg)
+void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
- double linear_x = msg->linear.x;
- double angular_z = msg->angular.z;
+ double linear_x = msg->twist.linear.x;
+ double angular_z = msg->twist.angular.z;
 
 
 }
@@ -121,7 +122,7 @@ int main(int argc, char **argv){
 
   std::cout << "vehicle sender" << std::endl;
   ros::Subscriber sub[1];
-  sub[0] = nh.subscribe("cmd_vel", 100,CMDCallback);
+  sub[0] = nh.subscribe("twist_cmd", 100,CMDCallback);
 //sub[1] = nh.subscribe("",100,ModeCallback);
   //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
 
