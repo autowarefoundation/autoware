@@ -47,22 +47,28 @@ void* returnCMDValue(void *arg){
   int conn_fd = *fd;
   delete fd;
   char recvdata[12];
-  string result = "";
+  // string result = "";
   int n;
 
+  /*
   while(true){
     n = recv(conn_fd, recvdata, sizeof(recvdata), 0);
 
     if(n<0){
       printf("ERROR: can not recieve message\n");
       return nullptr;
+    }else if(n == 0){
+      break;
     }
 
     result.append(recvdata,n);
 
     //if receive data is bigger than 12 byte, exit loop
-    if(result.size() > 12){
+    if(result.size() == 12){
       break;
+    }else if(result.size() > 12){
+      fprintf(stderr,"recv size is too big\n");
+      return nullptr;
     }
   }
 
@@ -73,6 +79,16 @@ void* returnCMDValue(void *arg){
       return nullptr;
     }
   }
+
+  */
+
+  n = write(conn_fd, value.c_str(), value.size());
+  if(n < 0){
+    fprintf(stderr,"data return error\nmiss to send cmd data\n");
+    return nullptr;
+  }
+  
+  printf("%s\n",value.c_str());
 
   if(close(conn_fd)<0){
     fprintf(stderr,"socket close failed in pthread.\n");
@@ -134,6 +150,8 @@ int main(int argc, char **argv){
   sub[0] = nh.subscribe("twist_cmd", 100,CMDCallback);
   //sub[1] = nh.subscribe("",100,ModeCallback);
   //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
+
+  value = "request test data";
 
   pthread_t th;
   if(pthread_create(&th, NULL, receiverCaller, NULL)){
