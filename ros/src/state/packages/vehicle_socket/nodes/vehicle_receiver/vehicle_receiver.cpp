@@ -17,7 +17,7 @@ using namespace std;
 
 ros::Publisher pub;
 
-int PORT = 11111;
+int PORT = 10000;
 
 static void parseCanValue(const string& value, vehicle_socket::CanInfo& msg){
   istringstream ss(value);
