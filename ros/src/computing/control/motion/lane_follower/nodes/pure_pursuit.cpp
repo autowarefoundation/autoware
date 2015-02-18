@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
@@ -173,7 +174,6 @@ double GetLookAheadDistance(int waypoint)
 int GetNextWayPoint()
 {
     // std::cout << "get nextwaypoint" << std::endl;
-    static tf::TransformListener tfListener;
 
     if (_current_path.waypoints.empty() == false) {
 
@@ -349,7 +349,7 @@ int main(int argc, char **argv)
     std::cout << "end_distance : " << _end_distance << std::endl;
 
 //publish topic
-    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
 vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
 
@@ -364,7 +364,7 @@ vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
 
     ros::Subscriber ndt_subscriber = nh.subscribe("ndt_pose", 1000, NDTCallback);
 
-    geometry_msgs::Twist twist;
+    geometry_msgs::TwistStamped twist;
 
 
     ros::Rate loop_rate(10); //Hzで指定
@@ -382,20 +382,22 @@ vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
             if (_next_waypoint > 0) {
 
                 //速度を計算
-                twist = CalculateCmdTwist();
+                twist.twist = CalculateCmdTwist();
 
             } else {
-                twist.linear.x = 0;
-                twist.angular.z = 0;
+                twist.twist.linear.x = 0;
+                twist.twist.angular.z = 0;
             }
 
         } else
-            twist = EndControl();
+            twist.twist = EndControl();
 
         if (_next_waypoint == _current_path.waypoints.size() - 1)
             endflag = true;
 
-        std::cout << "linear.x = " << twist.linear.x << " angular.z = " << twist.angular.z << std::endl << std::endl;
+
+        std::cout << "linear.x = " << twist.twist.linear.x << " angular.z = " << twist.twist.angular.z << std::endl << std::endl;
+        twist.header.stamp = ros::Time::now();
         cmd_velocity_publisher.publish(twist);
 
         loop_rate.sleep();
