@@ -11,6 +11,7 @@
 #include <tf/transform_listener.h>
 #include <lane_follower/lane.h>
 #include <visualization_msgs/Marker.h>
+#include <runtime_manager/ConfigLaneFollower.h>
 
 #include <iostream>
 #include <sstream>
@@ -18,8 +19,8 @@
 #include "geo_pos_conv.hh"
 
 //parameter server
-//double _initial_velocity_kmh = 5; // km/h
-//double _lookahead_threshold = 4.0;
+double _initial_velocity_kmh = 5; // km/h
+double _lookahead_threshold = 4.0;
 double _threshold_ratio = 1.0;
 double _end_distance = 2.0;
 std::string _mobility_frame = "/base_link";
@@ -35,7 +36,14 @@ lane_follower::lane _current_path;
 int _next_waypoint = 0;
 
 ros::Publisher vis_pub;
+bool _fix_flag = false;
 
+
+void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
+{
+    _initial_velocity_kmh = config->velocity;
+    _lookahead_threshold = config->lookahead_threshold;
+}
 
 void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
@@ -92,15 +100,6 @@ void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
 }
 
-void AmclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
-{
-    if (_current_pose_topic == "amcl") {
-        _current_pose.header = msg->header;
-        _current_pose.pose = msg->pose.pose;
-    }// else
-      //  std::cout << "pose is not amcl" << std::endl;
-}
-
 void WayPointCallback(const lane_follower::laneConstPtr &msg)
 {
     //std::cout << "waypoint callback" << std::endl;
@@ -115,10 +114,9 @@ double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
 
-
+    if(_fix_flag == false){
     double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
     double current_velocity_kmph = current_velocity_mps * 3.6;
-
 
     if ( current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
         return 2.0 * _threshold_ratio;
@@ -134,6 +132,10 @@ double GetLookAheadThreshold()
             return current_velocity_mps * _threshold_ratio;
     else
         return 0;
+
+    }else{
+        return _lookahead_threshold = 4.0;
+    }
 }
 
 //車の座標系に変換
@@ -253,9 +255,14 @@ geometry_msgs::Twist CalculateCmdTwist()
 
     double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.pose.position.y);
 
-    std::cout << "set velocity kmh =" << _current_path.waypoints[_next_waypoint].twist.twist.linear.x * 3.6 << std::endl;
 
-    double initial_velocity_ms = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
+    double initial_velocity_ms = 0;
+    if(_fix_flag == false)
+        initial_velocity_ms = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
+    else
+        initial_velocity_ms = _initial_velocity_kmh / 3.6;
+
+    std::cout << "set velocity kmh =" << initial_velocity_ms * 3.6 << std::endl;
     //std::cout << "initial_velocity_ms : " << initial_velocity_ms << std::endl;
     double angular_velocity;
 
@@ -283,10 +290,11 @@ geometry_msgs::Twist EndControl()
     geometry_msgs::Twist twist;
 
     std::cout << "End Distance = " << _end_distance << std::endl;
+
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
+
     double initial_velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
-    std::cout << "set velocity (kmh) = " << initial_velocity_kmh << std::endl;
     double initial_velocity_ms = initial_velocity_kmh / 3.6;
 
     if (lookahead_distance < _end_distance) {
@@ -297,6 +305,7 @@ geometry_msgs::Twist EndControl()
         if (initial_velocity_kmh < end_velocity_kmh)
             initial_velocity_ms = end_velocity_kmh / 3.6;
 
+        std::cout << "set velocity (kmh) = " << initial_velocity_ms * 3.6 << std::endl;
         //車の座標系に変換したwaypoint
         geometry_msgs::PoseStamped transformed_waypoint = TransformWaypoint(_current_path.waypoints.size() - 1);
 
@@ -336,6 +345,9 @@ int main(int argc, char **argv)
     private_nh.getParam("mobility_frame", _mobility_frame);
     std::cout << "mobility_frame : " << _mobility_frame << std::endl;
 
+    private_nh.getParam("fix_flag", _fix_flag);
+        std::cout << "fix_flag : " << _fix_flag << std::endl;
+
     /* private_nh.getParam("velocity_kmh", _initial_velocity_kmh);
      std::cout << "initial_velocity : " << _initial_velocity_kmh << std::endl;
 
@@ -360,9 +372,9 @@ vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
 
     ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
 
-    ros::Subscriber amcl_subscriber = nh.subscribe("amcl_pose", 1000, AmclCallback);
-
     ros::Subscriber ndt_subscriber = nh.subscribe("ndt_pose", 1000, NDTCallback);
+
+    ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
 
     geometry_msgs::TwistStamped twist;
 

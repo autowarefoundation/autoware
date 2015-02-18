@@ -2,8 +2,6 @@
 <launch>
 	<arg name="map_frame" default="/map" />
 	<arg name="odometry_frame" default="/odom" />
-	<arg name="current_pose_topic" default="odometry" />
-	<arg name="mobility_frame" default="/base_link" />
 	<arg name="position_x" default="3752.7" />
 	<arg name="position_y" default="-99435.4" />
 	<arg name="position_z" default="87.4" />
@@ -25,9 +23,5 @@
 		<param name="ow" value="$(arg orientation_w)" />
 	</node>
 
-	<!-- rosrun lane_follower pure_pursuit_fixvel _current_pose_topic:="topic" _mobility_frame:="/frame" _velocity_kmh:=0 _lookahead_threshold:=0 -->
-	<node pkg="lane_follower" type="pure_pursuit_fixvel" name="pure_pursuit_fixvel" output="screen">
-		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
-		<param name="mobility_frame" value="$(arg mobility_frame)" />
-	</node>
+
 </launch>
