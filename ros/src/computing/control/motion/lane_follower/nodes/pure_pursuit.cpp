@@ -46,8 +46,8 @@ void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
     if (_current_pose_topic == "odometry") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose.pose;
-    } else
-        std::cout << "pose is not odometry" << std::endl;
+    } //else
+  //      std::cout << "pose is not odometry" << std::endl;
 
 }
 
@@ -74,8 +74,8 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
         }
         _current_pose.pose.orientation = _quat;
 
-    } else
-        std::cout << "pose is not gnss" << std::endl;
+    } //else
+  //      std::cout << "pose is not gnss" << std::endl;
 
 }
 
@@ -86,8 +86,8 @@ void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
 
-    } else
-        std::cout << "pose is not ndt" << std::endl;
+    } //else
+   //     std::cout << "pose is not ndt" << std::endl;
 
 }
 
@@ -96,8 +96,8 @@ void AmclCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
     if (_current_pose_topic == "amcl") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose.pose;
-    } else
-        std::cout << "pose is not amcl" << std::endl;
+    }// else
+      //  std::cout << "pose is not amcl" << std::endl;
 }
 
 void WayPointCallback(const lane_follower::laneConstPtr &msg)
@@ -355,7 +355,7 @@ vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
 
 
 //subscribe topic
-    ros::Subscriber waypoint_subcscriber = nh.subscribe("lane", 1000, WayPointCallback);
+    ros::Subscriber waypoint_subcscriber = nh.subscribe("ruled_waypoint", 1000, WayPointCallback);
     ros::Subscriber odometry_subscriber = nh.subscribe("pose", 1000, OdometryPoseCallback);
 
     ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
