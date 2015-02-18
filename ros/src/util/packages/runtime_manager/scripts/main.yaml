@@ -4,7 +4,7 @@ buttons:
   mobile:
     run : echo 'mobile ui'
   vehicle:
-    run : echo 'vehicle control'
+    run : rosrun vehicle_socket vehicle_receiver
   database:
     run : rosrun obj_db obj_downloader
 

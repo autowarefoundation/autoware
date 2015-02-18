@@ -17,6 +17,7 @@ using namespace std;
 
 ros::Publisher pub;
 
+int PORT = 10000;
 
 static void parseCanValue(const string& value, vehicle_socket::CanInfo& msg){
   istringstream ss(value);
@@ -146,7 +147,7 @@ void* receiverCaller(void *a){
 
   sock0 = socket(AF_INET, SOCK_STREAM, 0);
   addr.sin_family = PF_INET;
-  addr.sin_port = htons(11111);
+  addr.sin_port = htons(PORT);
   addr.sin_addr.s_addr = INADDR_ANY;
   //make it available immediately to connect
   //setsockopt(sock0,SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
