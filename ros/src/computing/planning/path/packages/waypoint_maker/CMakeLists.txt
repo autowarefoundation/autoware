@@ -120,6 +120,8 @@ include_directories(
 
 add_executable(waypoint_loader nodes/waypoint_loader.cpp)
 target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
+add_dependencies(waypoint_loader
+  lane_follower_generate_messages_cpp)
 
 add_executable(waypoint_saver nodes/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
