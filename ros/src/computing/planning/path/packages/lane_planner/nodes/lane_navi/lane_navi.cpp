@@ -10,10 +10,9 @@
 
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
+#include <ui_socket/route_cmd.h>
 
 #include <geo_pos_conv.hh>
-
-#include <ui_socket/route_cmd.h>
 
 // #define PUBLISH_TRAJECTORY
 
@@ -684,16 +683,17 @@ int main(int argc, char **argv)
 					  SUBSCRIBE_QUEUE_SIZE,
 					  route_cmd_callback);
 
-	pub_waypoint = n.advertise<nav_msgs::Path>("/lane_waypoint",
-						   ADVERTISE_QUEUE_SIZE,
-						   ADVERTISE_LATCH);
+	pub_waypoint = n.advertise<nav_msgs::Path>(
+		"lane_waypoint",
+		ADVERTISE_QUEUE_SIZE,
+		ADVERTISE_LATCH);
 	pub_centerline = n.advertise<visualization_msgs::Marker>(
-		"/lane_centerline",
+		"lane_centerline",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 #ifdef PUBLISH_TRAJECTORY
 	pub_trajectory = n.advertise<visualization_msgs::Marker>(
-		"/_trajectory",
+		"_trajectory",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 #endif /* PUBLISH_TRAJECTORY */
