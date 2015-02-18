@@ -118,7 +118,10 @@ include_directories(
 # )
 
 add_executable(pos2pose nodes/pos2pose.cpp)
-target_link_libraries(pos2pose ${catkin_LIBRARIES})
+target_link_libraries(pos2pose gnss ${catkin_LIBRARIES})
+
+add_executable(nmea2tfpose nodes/nmea2tfpose.cpp)
+target_link_libraries(nmea2tfpose gnss ${catkin_LIBRARIES})
 
 #############
 ## Install ##
