@@ -13,17 +13,24 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-#include <vehicle_socket/CanInfo.h>
+int PORT = 10001;
 
-#include "SendData.h"
+using namespace std;
 
-
+string value;//cmd value
 
 void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+ ostringstream oss;
+ /*
  double linear_x = msg->twist.linear.x;
  double angular_z = msg->twist.angular.z;
+ oss << linear_x << ",";
+ oss << angular_z;
+ */ 
 
+ oss << "test cmd data\n";
+ value = oss.str();
 
 }
 
@@ -34,34 +41,36 @@ void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 }
 */
 
-/*
 void* returnCMDValue(void *arg){
 
   int *fd = static_cast<int *>(arg);
   int conn_fd = *fd;
   delete fd;
-  char recvdata[1024];
+  char recvdata[12];
   string result = "";
   int n;
-  vehicle_socket::CanInfo msg;
 
   while(true){
     n = recv(conn_fd, recvdata, sizeof(recvdata), 0);
 
     if(n<0){
       printf("ERROR: can not recieve message\n");
-      result = "";
-      break;
-    }else if(n == 0){
-      break;
+      return nullptr;
     }
+
     result.append(recvdata,n);
 
-    //recv data is bigger than 1M,return error
-    if(result.size() > 1024 * 1024){
-      fprintf(stderr,"recv data is too big.\n");
-      result = "";
+    //if receive data is bigger than 12 byte, exit loop
+    if(result.size() > 12){
       break;
+    }
+  }
+
+  if(result.compare("cmd request")){
+    n = write(conn_fd, value.c_str(), value.size());
+    if(n < 0){
+      fprintf(stderr,"data return error\nmiss to send cmd data\n");
+      return nullptr;
     }
   }
 
@@ -70,7 +79,9 @@ void* returnCMDValue(void *arg){
   }
 
   return nullptr;
+
 }
+
 
 void* receiverCaller(void *a){
   int sock0;
@@ -112,8 +123,6 @@ void* receiverCaller(void *a){
 
   return nullptr;
 }
-*/
-
 
 int main(int argc, char **argv){
 
@@ -123,7 +132,7 @@ int main(int argc, char **argv){
   std::cout << "vehicle sender" << std::endl;
   ros::Subscriber sub[1];
   sub[0] = nh.subscribe("twist_cmd", 100,CMDCallback);
-//sub[1] = nh.subscribe("",100,ModeCallback);
+  //sub[1] = nh.subscribe("",100,ModeCallback);
   //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
 
   pthread_t th;
