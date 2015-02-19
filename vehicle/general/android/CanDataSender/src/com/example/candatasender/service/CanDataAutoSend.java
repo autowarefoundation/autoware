@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import com.example.candatasender.R;
 import com.example.candatasender.CanGatherData.EnvData;
@@ -26,7 +27,10 @@ import com.example.candatasender.CarLinkData.LocData;
 import com.example.candatasender.CarLinkData.PoseData;
 import com.example.candatasender.sender.ClientInstruction;
 import com.example.candatasender.sender.DataType;
+import com.example.candatasender.portforward.PortforwardData;
+import com.example.candatasender.portforward.SshTunnel;
 import com.example.candatasender.toserver.DataCommunications;
+import com.example.candatasender.toserver.ToServer;
 import com.metaprotocol.android.carlink_sample_receiver_service.ICarLinkDataReceiverService;
 import com.metaprotocol.android.carlink_sample_receiver_service.ICarLinkDataReceiverServiceCallbackListener;
 
@@ -69,6 +73,10 @@ public class CanDataAutoSend extends Service {
 	 */
 	private String tableName;
 	/**
+	 * the flag to enable use of extra port forward data.
+	 */
+	private Boolean isPortforwardData;
+	/**
 	 * the callback listener of CarLink.
 	 */
 	ICarLinkDataReceiverServiceCallbackListener viewUpdateEventListener;
@@ -93,6 +101,37 @@ public class CanDataAutoSend extends Service {
 		tableName = intent.getStringExtra("table");
 		terminal = intent.getStringExtra("terminal");
 		dbgLog("table=" + tableName + ",terminal=" + terminal);
+		isPortforwardData = intent.getBooleanExtra("pfd", false);
+		if (isPortforwardData) {
+			if (!PortforwardData.GetConnectedSetting().equals("")) {
+				ToServer.getInstance().disConnect();
+				SshTunnel.getInstance().disConnect();
+				PortforwardData.SetConnectedSetting("");
+			}
+
+			PortforwardData pfd = new PortforwardData(intent.getStringExtra("str"),
+								  intent.getStringExtra("sp"),
+								  intent.getStringExtra("sh"),
+								  intent.getStringExtra("su"),
+								  intent.getStringExtra("spss"),
+								  intent.getStringExtra("lp"),
+								  intent.getStringExtra("fh"),
+								  intent.getStringExtra("fp"));
+			if (SshTunnel.getInstance().connect(pfd)) {
+				String host = "127.0.0.1";
+				int port = Integer.valueOf(pfd.getLocalPort()).intValue();
+				ToServer.getInstance().setServerData(host, port);
+
+				Map<String, String> rd = ToServer.getInstance().connect();
+				if (((String)rd.get("TYPE")).equals(DataType.DT_CONNECTION_SUCCESS.getType()))
+					PortforwardData.SetConnectedSetting(pfd.getString());
+				else {
+					ToServer.getInstance().disConnect();
+					SshTunnel.getInstance().disConnect();
+					return START_STICKY;
+				}
+			}
+		}
 		try {
 			acceptThread = new AcceptThread(SERVER_SOCKET_NAME);
 			acceptThread.start();
@@ -123,6 +162,11 @@ public class CanDataAutoSend extends Service {
 		if (acceptThread != null) {
 			acceptThread.close();
 			acceptThread = null;
+		}
+		if (isPortforwardData && !PortforwardData.GetConnectedSetting().equals("")) {
+			ToServer.getInstance().disConnect();
+			SshTunnel.getInstance().disConnect();
+			PortforwardData.SetConnectedSetting("");
 		}
 		super.onDestroy();
 	}
