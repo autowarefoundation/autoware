@@ -78,11 +78,11 @@ void* returnCMDValue(void *arg){
     return nullptr;
   }
   
-  printf("%s\n",value.c_str());
-
   if(close(conn_fd)<0){
     fprintf(stderr,"socket close failed in pthread.\n");
   }
+
+  printf("%s\n",value.c_str());
 
   return nullptr;
 
@@ -117,13 +117,13 @@ void* receiverCaller(void *a){
       break;
     }
 
-    printf("get connect.\n");
-    //printf("count: %d\n", count);
-
     if(pthread_create(&th, NULL, returnCMDValue, (void *)conn_fd)){
       printf("thread create error\n");
     }
     pthread_detach(th);
+
+    printf("get connect.\n");
+
   }
   close(sock0);
 

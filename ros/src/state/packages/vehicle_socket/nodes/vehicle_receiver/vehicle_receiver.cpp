@@ -121,16 +121,16 @@ void* getCanValue(void *arg){
     }
   }
 
+  if(close(conn_fd)<0){
+    fprintf(stderr,"socket close failed in pthread.\n");
+  }
+
   if(result.compare("")!=0){
     if(parseCanValue(result, msg)){
        msg.header.frame_id = "/can";
       msg.header.stamp = ros::Time::now();
       pub.publish(msg);
     }
-  }
-
-  if(close(conn_fd)<0){
-    fprintf(stderr,"socket close failed in pthread.\n");
   }
 
   return nullptr;
