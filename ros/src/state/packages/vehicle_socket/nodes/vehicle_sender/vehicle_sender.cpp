@@ -13,11 +13,16 @@
 #include <pthread.h>
 #include <sys/time.h>
 
+//default message
+#define DEFAULT_MESSAGE "no command data"
+//#define DEFAULT_MESSAGE "0,100"
+
 int PORT = 10001;
 
 using namespace std;
 
 string value;//cmd value
+bool updateFlag;
 
 void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
@@ -26,8 +31,8 @@ void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
  double angular_z = msg->twist.angular.z;
  oss << linear_x << ",";
  oss << angular_z;
-
  value = oss.str();
+ updateFlag = true;
 
 }
 
@@ -70,6 +75,10 @@ void* returnCMDValue(void *arg){
   }
   */
 
+  if(!updateFlag){
+    value = DEFAULT_MESSAGE;
+  }
+
   n = write(conn_fd, value.c_str(), value.size());
   if(n < 0){
     fprintf(stderr,"data return error\nmiss to send cmd data\n");
@@ -81,6 +90,7 @@ void* returnCMDValue(void *arg){
   }
 
   printf("%s\n",value.c_str());
+  updateFlag = false;
 
   return nullptr;
 
@@ -102,7 +112,7 @@ void* receiverCaller(void *a){
   //make it available immediately to connect
   //setsockopt(sock0,SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
   bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
-  listen(sock0, 5);
+  listen(sock0, 20);
   len = sizeof(client);
 
   while(true){
@@ -139,7 +149,9 @@ int main(int argc, char **argv){
   //sub[1] = nh.subscribe("",100,ModeCallback);
   //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
 
-  value = "no command data";
+  //default message
+  value = DEFAULT_MESSAGE;
+  updateFlag = false;
 
   pthread_t th;
   if(pthread_create(&th, NULL, receiverCaller, NULL)){
