@@ -36,7 +36,6 @@ void* returnCMDValue(void *arg){
   int *fd = static_cast<int *>(arg);
   int conn_fd = *fd;
   delete fd;
-  char recvdata[12];
   // string result = "";
   int n;
 
@@ -69,7 +68,6 @@ void* returnCMDValue(void *arg){
       return nullptr;
     }
   }
-
   */
 
   n = write(conn_fd, value.c_str(), value.size());
