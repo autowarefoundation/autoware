@@ -136,10 +136,11 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	trajectory.color.r = 1;
 	trajectory.color.a = 1;
 
+	ros::Rate rate(1);
 	for (const geometry_msgs::Point& position : centerline.points) {
 		trajectory.pose.position = position;
 		pub_trajectory.publish(trajectory);
-		sleep(1);
+		rate.sleep();
 	}
 #endif /* PUBLISH_TRAJECTORY */
 }
