@@ -18,7 +18,7 @@ Open-source software for autonomous driving
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-velodyne-pointcloud
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-velodyne-pointcloud ros-indigo-nmea-msgs
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev
 ```
 
