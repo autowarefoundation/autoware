@@ -27,20 +27,28 @@ void csv_div(string str, std::vector<std::string> *items)
     }
     //  printf("\n");
 }
+/*
+ double str2double(std::string str)
+ {
+ stringstream ss;
+ double val;
+ ss << str;
+ ss >> val;
+ return val;
+ }
+ */
 
 double str2double(std::string str)
 {
-    stringstream ss;
-    double val;
-    ss << str;
-    ss >> val;
-    return val;
+    double dbl = stod(str);
+    return dbl;
 }
 
 void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
 {
     static double qq_time, roll, pitch, yaw;
-    static double gga_time, x, y, z;
+    //static double gga_time, x, y, z;
+    static double gga_time;
     static tf::TransformBroadcaster br;
     static ros::Time pc_time;
     std::vector<std::string> nmea;
