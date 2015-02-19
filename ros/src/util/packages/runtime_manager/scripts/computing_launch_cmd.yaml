@@ -2,14 +2,16 @@ name : Computing
 subs :
   - name : Control
     subs :
-      - name : common
+      - name : motion
         subs :
-          - name : lane_follower(sim)
+          - name : pure_pursuit(sim)
             cmd : roslaunch lane_follower simulation.launch
-          - name : lane_follower(ndt)
+          - name : pure_pursuit_fixvel(sim)
+            cmd : roslaunch lane_follower simulation_fixvel.launch
+          - name : pure_pursuit(NDT)
             cmd : roslaunch lane_follower ndt.launch
-          - name : lane_folloer(gnss)
-            cmd : roslaunch lane_follower gnss.launch
+          - name : pure_pursuit_fixvel(NDT)
+            cmd : roslaunch lane_follower ndt_fixvel.launch
   
   - name : Perception
     subs :
@@ -50,20 +52,20 @@ subs :
       - name : Localization
         subs :
           - name : ndt_pcl
-            cmd  : rosrun ndt_pcl ndt_pcl
+            cmd  : rosrun points_localizer ndt_pcl
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt
-          - name : gnss_pos
-            cmd  : rosrun gnss_pos gnss_pos
+          - name : pos2pose
+            cmd  : rosrun gnss_localizer pos2pose
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning
     subs :
       - name : Mission
         subs :
-        - name : lane_navigator
-          cmd  : rosrun lane_navigator lane_navigator /tmp/lane.csv /tmp/node.csv /tmp/point.csv
+        - name : lane_navi
+          cmd  : rosrun lane_planner lane_navi /tmp/lane.csv /tmp/node.csv /tmp/point.csv
       - name : Motion
       - name : Path
         subs :

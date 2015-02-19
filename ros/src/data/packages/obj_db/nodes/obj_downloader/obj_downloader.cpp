@@ -88,8 +88,7 @@ void* wrapSender(void *tsd){
     data = "select order<E>";
   }
 
-  sd.setValue(data);
-  dbres = sd.Sender();
+  dbres = sd.Sender(data);
 
   printf("%lu\n",dbres.size());
 
@@ -141,7 +140,7 @@ int main(int argc, char **argv){
   
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
-  char serverName[100] = "db1.ertl.jp";
+  string serverName = "db1.ertl.jp";
   
   cout << "obj_downloader" << endl;
 

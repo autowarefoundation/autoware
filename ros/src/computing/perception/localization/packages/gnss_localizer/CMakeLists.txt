@@ -117,8 +117,11 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(gnss_localizer nodes/gnss_localizer.cpp)
-target_link_libraries(gnss_localizer ${catkin_LIBRARIES})
+add_executable(pos2pose nodes/pos2pose.cpp)
+target_link_libraries(pos2pose gnss ${catkin_LIBRARIES})
+
+add_executable(nmea2tfpose nodes/nmea2tfpose.cpp)
+target_link_libraries(nmea2tfpose gnss ${catkin_LIBRARIES})
 
 #############
 ## Install ##
