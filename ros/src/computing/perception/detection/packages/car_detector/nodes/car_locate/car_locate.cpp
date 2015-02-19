@@ -22,8 +22,8 @@
 #include "std_msgs/Float64.h"
 #include "scan_to_image/ScanImage.h"
 #include "geometry_msgs/TwistStamped.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/Pose.h"
+#include "geometry_msgs/PoseArray.h"
 #include "tf/tf.h"
 #include "tf/transform_listener.h"
 #include "sensor_msgs/NavSatFix.h"
@@ -172,7 +172,8 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
   
-  geometry_msgs::PoseStamped pose_msg;
+  geometry_msgs::Pose pose;
+  geometry_msgs::PoseArray pose_msg;
   vector<float> x;
   vector<float> y;
   vector<float> z;
@@ -205,11 +206,13 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
     pose_msg.header.stamp = ros::Time::now();
     pose_msg.header.frame_id = "map";
     for(uint i=0; i<x.size()&&i<y.size()&&i<z.size(); i++,x_iterator++,y_iterator++,z_iterator++){
-      pose_msg.pose.position.x = *y_iterator;
-      pose_msg.pose.position.y = *x_iterator;
-      pose_msg.pose.position.z = *z_iterator;
-      pub.publish(pose_msg);
+      pose.position.x = *y_iterator;
+      pose.position.y = *x_iterator;
+      pose.position.z = *z_iterator;
+      pose_msg.poses.push_back(pose);
     }
+    pub.publish(pose_msg);
+
   }
 
 }
@@ -294,7 +297,7 @@ int main(int argc, char **argv){
   */
   ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
 
-  pub = n.advertise<geometry_msgs::PoseStamped>("car_pose",1); 
+  pub = n.advertise<geometry_msgs::PoseArray>("car_pose",1); 
 
   //read calibration value
   //TO DO : subscribe from topic
