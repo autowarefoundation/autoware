@@ -22,24 +22,14 @@ string value;//cmd value
 void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
  ostringstream oss;
- /*
  double linear_x = msg->twist.linear.x;
  double angular_z = msg->twist.angular.z;
  oss << linear_x << ",";
  oss << angular_z;
- */ 
 
- oss << "test cmd data\n";
  value = oss.str();
 
 }
-
-//void ModeCallback(){}
-
-/*void GearCallback(const ui_socket::gear_cmdConstPtr &gear)
-{
-}
-*/
 
 void* returnCMDValue(void *arg){
 
@@ -151,7 +141,7 @@ int main(int argc, char **argv){
   //sub[1] = nh.subscribe("",100,ModeCallback);
   //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
 
-  value = "request test data";
+  value = "no command data";
 
   pthread_t th;
   if(pthread_create(&th, NULL, receiverCaller, NULL)){
