@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-#include <vehicle_socket/CanInfo.h>
+#include "vehicle_socket/CanInfo.h"
 
 #define CAN_DATA_NUM 52
 
