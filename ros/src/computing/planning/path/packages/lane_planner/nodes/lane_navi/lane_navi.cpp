@@ -28,7 +28,7 @@ static std::vector<Point> points;
 
 static std::vector<Point> left_lane_points;
 
-static void route_cmd_callback(const ui_socket::route_cmd msg)
+static void route_cmd_callback(const ui_socket::route_cmd& msg)
 {
 	geo_pos_conv geo;
 	geo.set_plane(7);
@@ -136,10 +136,11 @@ static void route_cmd_callback(const ui_socket::route_cmd msg)
 	trajectory.color.r = 1;
 	trajectory.color.a = 1;
 
+	ros::Rate rate(1);
 	for (const geometry_msgs::Point& position : centerline.points) {
 		trajectory.pose.position = position;
 		pub_trajectory.publish(trajectory);
-		sleep(1);
+		rate.sleep();
 	}
 #endif /* PUBLISH_TRAJECTORY */
 }
