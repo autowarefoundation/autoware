@@ -75,7 +75,7 @@ void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
 */
         gga_time = stod(nmea[1]);
         double lat = stod(nmea[2]);
-        double lon = stod(nmea[4]);git s
+        double lon = stod(nmea[4]);
         double h = stod(nmea[9]);
 
         geo.set_llh_nmea_degrees(lat, lon, h);
