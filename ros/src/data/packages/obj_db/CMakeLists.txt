@@ -85,7 +85,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES obj_db
-#  CATKIN_DEPENDS roscpp rospy
+   CATKIN_DEPENDS roscpp vehicle_socket
 #  DEPENDS system_lib
 )
 
@@ -140,7 +140,7 @@ set_target_properties(obj_uploader
 
 add_executable(can_uploader nodes/can_uploader/can_uploader.cpp)
 target_link_libraries(can_uploader ${catkin_LIBRARIES} )
-
+add_dependencies(can_uploader vehicle_socket_generate_messages_cpp)
 
 #############
 ## Install ##
