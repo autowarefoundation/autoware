@@ -25,7 +25,7 @@ Open-source software for autonomous driving
 ### Install dependencies for Ubuntu 13.10 indigo and Ubuntu 13.04 hydro
 
 ```
-% sudo apt-get install ros-hydro-desktop-full ros-hydro-velodyne-pointcloud
+% sudo apt-get install ros-hydro-desktop-full ros-hydro-velodyne-pointcloud ros-indigo-nmea-msgs
 % sudo apt-get install libnlopt-dev freeglut3-dev
 ```
 
