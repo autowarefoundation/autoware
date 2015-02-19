@@ -27,17 +27,10 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
     tf::Transform pose_transform;
     tf::Quaternion pose_q;
 
-    pose_transform.setOrigin(tf::Vector3(0, 0, 0));
-    pose_q.setRPY(0, 0, 0);
-    pose_transform.setRotation(pose_q);
-    pose_broadcaster.sendTransform(
-            tf::StampedTransform(pose_transform,msg->header.stamp, "map",
-                    "gps_frame"));
-
     geometry_msgs::PoseStamped pose;
     pose.header = msg->header;
    // pose.header.stamp = ros::Time::now();
-    pose.header.frame_id = "gps_frame";
+    pose.header.frame_id = "map";
     pose.pose.position.x = geo.y();
     pose.pose.position.y = geo.x();
     pose.pose.position.z = geo.z();
