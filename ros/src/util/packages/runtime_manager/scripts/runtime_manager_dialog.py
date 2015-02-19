@@ -41,8 +41,9 @@ class MyFrame(rtmgr.MyFrame):
 		# for Main tab (version)
 		#
 		tab = self.notebook_1_pane_1
-		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", 0.5)
-		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", 0.5)
+		scale = 0.3
+		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", scale)
+		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", scale)
 
 		scale = 0.5
 		bm_on = self.get_bitmap('btnon.png', scale)
@@ -221,6 +222,12 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Main Tab
 	#
+	def OnMainButton(self, event):
+		obj = event.GetEventObject()
+		(cmd, _) = self.main_cmd.get(obj, (None, None))
+		print(cmd)
+		os.system(cmd)
+
 	def OnStart(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
 		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_start.launch'

@@ -8,6 +8,19 @@ buttons:
   database:
     run : rosrun obj_db obj_downloader
 
+  init:
+    run : echo init
+  set:
+    run : echo set
+  ready:
+    run : echo ready
+  go:
+    run : echo go
+  pause:
+    run : echo pause
+  stop:
+    run : echo stop
+
 ipaddress:
   tablet:   127.0.0.1
   mobile:   127.0.0.1
