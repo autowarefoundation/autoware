@@ -2,6 +2,7 @@
 <launch>
 	<arg name="map_frame" default="/map" />
 	<arg name="odometry_frame" default="/odom" />
+	<arg name="use_gnss" default="true" />
 	<arg name="position_x" default="3752.7" />
 	<arg name="position_y" default="-99435.4" />
 	<arg name="position_z" default="87.4" />
@@ -13,7 +14,8 @@
 	<!-- transform path coordinate to global coordinate -->
 	<node pkg="tf" type="static_transform_publisher" name="odom2map" args="0 0 0 0 0 0 $(arg map_frame) $(arg odometry_frame) 100" />
 
-	<node pkg="lane_follower" type="odometry_pub" name="odometry_sim">
+	<node pkg="lane_follower" type="odometry_pub" name="odometry_sim" output="screen">
+		<param name="use_gnss" value="$(arg use_gnss)" />
 		<param name="px" value="$(arg position_x)" />
 		<param name="py" value="$(arg position_y)" />
 		<param name="pz" value="$(arg position_z)" />
