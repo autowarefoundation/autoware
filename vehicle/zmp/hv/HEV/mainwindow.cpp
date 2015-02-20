@@ -210,7 +210,7 @@ MainWindow::MainWindow(QWidget *parent) :
       printf("read config error\n");    
     }
 
-    pthread_create(&_cmdgetter, NULL, CMDGetterEntry, NULL);
+    pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
     pthread_detach(_cmdgetter);
     pthread_create(&_logThread, NULL, LogThreadEntry, this);
 
@@ -284,7 +284,7 @@ void MainWindow::logThread()
         //writeLog();
         sendDataGetAndSend();
       }
-      usleep(duration*1000);
+      //usleep(canduration*1000);
     }
 }
 

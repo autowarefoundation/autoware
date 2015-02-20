@@ -297,7 +297,8 @@ private:
     int _drvTargetStroke;
 
 //function of autoware socket
-    int duration;
+    int canduration;
+    int cmdduration;
     pthread_t _cmdgetter;
 
     void sendDataGetAndSend();

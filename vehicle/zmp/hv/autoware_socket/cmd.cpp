@@ -84,7 +84,6 @@ void Getter(){
       return;
     }
   }
-
   int n;
 
   while (true) {
@@ -99,25 +98,36 @@ void Getter(){
     cmdRes.append(recvdata,n);
   }
 
-  if(cmdRes.compare("no command data") == 0){
-    fprintf(stderr,"cmd : Command data is not received.\ncmd : Check autoware topic\n");
+  //string version
+  std::vector<std::string> cmdVector;
+  cmdVector = split(cmdRes,',');
+  if(cmdVector.size() == 7){
+    cmddata.linear_x = atof(cmdVector[0].c_str());
+    cmddata.angular_z = atof(cmdVector[1].c_str());
+    cmddata.mode = atoi(cmdVector[2].c_str());
+    cmddata.gear = atoi(cmdVector[3].c_str());
+    cmddata.accell = atoi(cmdVector[4].c_str());
+    cmddata.steer = atoi(cmdVector[5].c_str());
+    cmddata.brake = atoi(cmdVector[6].c_str());
+    
+    printf("cmd : linear:%f angular:%f\n",cmddata.linear_x,cmddata.angular_z);
   }else{
-    std::vector<std::string> cmdVector;
-    cmdVector = split(cmdRes,',');
-    if(cmdVector.size() == 2){
-      cmddata.linear_x = atof(cmdVector[0].c_str());
-      cmddata.angular_z = atof(cmdVector[1].c_str());
-      printf("cmd : linear:%f angular:%f\n",cmddata.linear_x,cmddata.angular_z);
-    }else{
-      fprintf(stderr,"cmd : Recv data is invalid\n");
-    }
-
-
+    fprintf(stderr,"cmd : Recv data is invalid\n");
   }
+  printf("cmd : return data : %s\n",cmdRes.c_str());
+
+  //struct version
+  /*
+  if(cmdRes.size() == sizeof(CMDDATA)){
+    memcpy(&cmddata,cmdRes.data(),sizeof(CMDDATA));
+    printf("cmd : linear:%f angular:%f\n",cmddata.linear_x,cmddata.angular_z);
+  }else{
+    fprintf(stderr,"cmd : Recv data is invalid %u\n",sizeof(CMDDATA));
+  }
+  */
 
   close(sock);
 
-  printf("cmd : return data : %s\n",cmdRes.c_str());
   return;
 }
 
@@ -137,11 +147,11 @@ void CMDGetter(){
 */
 
 void *MainWindow::CMDGetterEntry(void *a){
-  //MainWindow* main = (MainWindow*)a;
+  MainWindow* main = (MainWindow*)a;
   //main->CMDGetter();
   while(1){
     Getter();
-    usleep(20*1000);
+    usleep(main->cmdduration*1000);
   }
   return NULL;
 }

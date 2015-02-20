@@ -25,6 +25,7 @@ int drvmode;
 DrvState _drv_state;
 
 void *SendData(void *a){
+//void SendData(){
 
   struct sockaddr_in server;
   int sock;
@@ -67,12 +68,12 @@ void *SendData(void *a){
 
     while (*addrptr != NULL) {
       server.sin_addr.s_addr = *(*addrptr);
-
+      
       /* connect()が成功したらloopを抜けます */
       if (connect(sock,
-		  (struct sockaddr *)&server,
-		  sizeof(server)) == 0) {
-	break;
+                  (struct sockaddr *)&server,
+                  sizeof(server)) == 0) {
+        break;
       }
 
       addrptr++;
@@ -116,7 +117,6 @@ void *SendData(void *a){
   return NULL;
 }
 
-
 void MainWindow::wrapSender(void){
 
   pthread_t _sendData;
@@ -125,7 +125,9 @@ void MainWindow::wrapSender(void){
     fprintf(stderr,"info : pthread create error");
     return;
   }
-  pthread_detach(_sendData);
+
+  usleep(canduration*1000);
+  pthread_join(_sendData,NULL);
 }
 
 void MainWindow::sendDataGetAndSend()
@@ -228,7 +230,8 @@ void MainWindow::sendDataGetAndSend()
 
 bool MainWindow::setConfig(){
   
-  duration = 1000; //ログをとる間隔はデフォルトで1000ms
+  canduration = 10; //ログをとる間隔はデフォルトで10ms
+  cmdduration = 10;
   rosServerIP = "192.168.1.101";
 
   std::ifstream ifs("./config");
@@ -238,7 +241,7 @@ bool MainWindow::setConfig(){
   }
 
   if(getline(ifs,str)){
-    duration = atoi(str.c_str());
+    canduration = atoi(str.c_str());
   }else{
     return false;
   }

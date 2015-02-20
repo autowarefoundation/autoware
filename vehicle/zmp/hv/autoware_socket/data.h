@@ -12,6 +12,11 @@ using namespace zmp::hev;
 typedef struct _CMDDATA{
     double linear_x;
     double angular_z;
+    int mode;
+    int gear;
+    int accell;
+    int steer;
+    int brake;
 } CMDDATA;
 
 //Structure to store HEV State
