@@ -105,7 +105,7 @@ int main(int argc, char **argv)
         lane_cmd.header.frame_id = PATH_FRAME;
         lane_cmd.header.stamp = now;
 
-        for (int i = 0; i < Pose.size(); i++) {
+        for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
 
             //Path用
             geometry_msgs::PoseStamped posestamped;
