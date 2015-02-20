@@ -225,8 +225,10 @@ class MyFrame(rtmgr.MyFrame):
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
 		(cmd, _) = self.main_cmd.get(obj, (None, None))
-		print(cmd)
-		os.system(cmd)
+		args = shlex.split(cmd)
+		print(args)
+		proc = subprocess.Popen(args, stdin=subprocess.PIPE)
+		self.all_procs.append(proc)
 
 	def OnStart(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
@@ -843,13 +845,13 @@ class MyFrame(rtmgr.MyFrame):
 
 	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
-			getattr(obj, 'SetValue', obj.Check)(False)
+			set_check(obj, False)
 			print('not implemented.')
 			return
 		v = obj.GetValue()
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
-			getattr(obj, 'SetValue', obj.Check)(False)
+			set_check(obj, False)
 		cmd_bak = cmd
 		if v and type(cmd) is list:
 			cmd = self.modal_dialog(obj, cmd)
@@ -1203,13 +1205,17 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		args = [ 'rosbag', 'record' ] + topic_opt + [ '-O', path ]
 		print(args)
 		self.proc = subprocess.Popen(args)
+		self.GetParent().all_procs.append(self.proc)
 
 	def OnStop(self, event):
 		if self.proc:
 			terminate_children(self.proc, sigint=True)
 			terminate(self.proc, sigint=True)
 			self.proc.wait()
-			self.proc = None		
+			parent = self.GetParent()
+			if self.proc in parent.all_procs:
+				parent.all_procs.remove(self.proc)
+			self.proc = None
 		self.Hide()
 
 	def OnRefresh(self, event):
@@ -1263,6 +1269,11 @@ def str_to_rosval(str, type_str, def_ret=None):
 	}
 	t = cvt_dic.get(type_str, None)
 	return t(str) if t else def_ret
+
+def set_check(obj, v):
+	func = getattr(obj, 'SetValue', getattr(obj, 'Check', None))
+	if func:
+		func(v)
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret
