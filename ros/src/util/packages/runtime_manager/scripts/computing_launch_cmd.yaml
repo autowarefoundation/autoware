@@ -10,6 +10,8 @@ subs :
           - name : pure_pursuit
             cmd : roslaunch lane_follower pure_pursuit.launch
             param: lane_follower
+          - name : odom_gen
+            cmd : roslaunch lane_follower odometry_sim.launch  
   
   - name : Perception
     subs :
