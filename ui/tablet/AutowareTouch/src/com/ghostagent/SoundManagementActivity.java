@@ -19,9 +19,12 @@ import com.ghostagent.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -293,12 +296,104 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 	}
 
+	class CanDataSender {
+		private boolean isRunning = false;
+
+		private String table;
+		private String terminal;
+		private String str;
+		private String sp;
+		private String sh;
+		private String su;
+		private String spss;
+		private String lp;
+		private String fh;
+		private String fp;
+		private Intent intent;
+
+		CanDataSender(String table, String terminal, String str, String sp, String sh,
+			      String su, String spss, String lp, String fh, String fp) {
+			this.table = table;
+			this.terminal = terminal;
+			this.str = str;
+			this.sp = sp;
+			this.sh = sh;
+			this.su = su;
+			this.spss = spss;
+			this.lp = lp;
+			this.fh = fh;
+			this.fp = fp;
+
+			intent = new Intent(Intent.ACTION_MAIN);
+			intent.setClassName("com.example.candatasender",
+					    "com.example.candatasender.service.CanDataAutoSend");
+		}
+
+		boolean isRunning() {
+			return isRunning;
+		}
+
+		void start() {
+			intent.putExtra("table", table);
+			intent.putExtra("terminal", terminal);
+			intent.putExtra("pfd", true);
+			intent.putExtra("str", str);
+			intent.putExtra("sp", sp);
+			intent.putExtra("sh", sh);
+			intent.putExtra("su", su);
+			intent.putExtra("spss", spss);
+			intent.putExtra("lp", lp);
+			intent.putExtra("fh", fh);
+			intent.putExtra("fp", fp);
+
+			startService(intent);
+			isRunning = true;
+		}
+
+		void stop() {
+			isRunning = false;
+			stopService(intent);
+		}
+	}
+
+	class CanDataGather {
+		static final int CAN_GATHER = 0;
+		static final int CAR_LINK_BLUETOOTH = 1;
+		static final int CAR_LINK_USB = 2;
+
+		private Intent intent;
+
+		CanDataGather(int type) {
+			intent = new Intent(Intent.ACTION_MAIN);
+			switch (type) {
+			case CAN_GATHER:
+				intent.setClassName("com.ecsgr.android.cangather",
+						    "com.ecsgr.android.cangather.MainActivity");
+				break;
+			case CAR_LINK_BLUETOOTH:
+				intent.setClassName("com.metaprotocol.android.carlinkcan232",
+						    "com.metaprotocol.android.carlinkcan232.CarLinkMainActivity");
+				break;
+			case CAR_LINK_USB:
+				intent.setClassName("com.metaprotocol.android.carlinkcanusbaccessory",
+						    "com.metaprotocol.android.carlinkcanusbaccessory.CarLinkMainActivity");
+				break;
+			}
+		}
+
+		void start() {
+			startActivity(intent);
+		}
+	}
+
 	GearButton gearButton;
 	DriveButton driveButton;
 	ApplicationButton applicationButton;
 
 	CommandClient commandClient;
 	InformationClient informationClient;
+
+	CanDataSender canDataSender;
 
 	/**
 	 * server address
@@ -349,6 +444,12 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	 */
 	private static final int MENU_ID_SETTINGS = 0;
 	private static final int MENU_ID_DATA_GATHERING = 1;
+
+	private String getMacAddress() {
+		WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+		return wifiInfo.getMacAddress();
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -410,6 +511,17 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				}
 			}
 		}
+
+		canDataSender = new CanDataSender("",
+						  getMacAddress(),
+						  "AutowareTouch",
+						  "22",
+						  "",
+						  "",
+						  "",
+						  "5558",
+						  "127.0.0.1",
+						  "5555");
 
 		bIsKnightRiding = true;
 
@@ -476,17 +588,17 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				(ViewGroup)findViewById(R.id.settingsLayout));
 
 			if (address != null) {
-				EditText addressEdit = (EditText)view.findViewById(R.id.ipAddress);
+				EditText addressEdit = (EditText)view.findViewById(R.id.rosIpAddress);
 				addressEdit.setText(address);
 			}
 
 			if (commandPort != 0) {
-				EditText portEdit = (EditText)view.findViewById(R.id.commandPortNumber);
+				EditText portEdit = (EditText)view.findViewById(R.id.rosCommandPortNumber);
 				portEdit.setText(String.valueOf(commandPort));
 			}
 
 			if (informationPort != 0) {
-				EditText portEdit = (EditText)view.findViewById(R.id.informationPortNumber);
+				EditText portEdit = (EditText)view.findViewById(R.id.rosInformationPortNumber);
 				portEdit.setText(String.valueOf(informationPort));
 			}
 
@@ -496,17 +608,17 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				"OK",
 				new DialogInterface.OnClickListener () {
 					public void onClick(DialogInterface dialog, int which) {
-						EditText addressEdit = (EditText)view.findViewById(R.id.ipAddress);
+						EditText addressEdit = (EditText)view.findViewById(R.id.rosIpAddress);
 						String addressString = addressEdit.getText().toString();
 						if (!validateIpAddress(addressString))
 							return;
 
-						EditText commandPortEdit = (EditText)view.findViewById(R.id.commandPortNumber);
+						EditText commandPortEdit = (EditText)view.findViewById(R.id.rosCommandPortNumber);
 						String commandPortString = commandPortEdit.getText().toString();
 						if (!validatePortNumber(commandPortString))
 							return;
 
-						EditText informationPortEdit = (EditText)view.findViewById(R.id.informationPortNumber);
+						EditText informationPortEdit = (EditText)view.findViewById(R.id.rosInformationPortNumber);
 						String informationPortString = informationPortEdit.getText().toString();
 						if (!validatePortNumber(informationPortString))
 							return;
@@ -654,24 +766,24 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	public void startCanGather(View v) {
-		Intent intent = new Intent(Intent.ACTION_MAIN);
-		intent.setClassName("com.ecsgr.android.cangather",
-				    "com.ecsgr.android.cangather.MainActivity");
-		startActivity(intent);
+		canDataSender.start();
+
+		CanDataGather gather = new CanDataGather(CanDataGather.CAN_GATHER);
+		gather.start();
 	}
 
 	public void startCarLinkBluetooth(View v) {
-		Intent intent = new Intent(Intent.ACTION_MAIN);
-		intent.setClassName("com.metaprotocol.android.carlinkcan232",
-				    "com.metaprotocol.android.carlinkcan232.CarLinkMainActivity");
-		startActivity(intent);
+		canDataSender.start();
+
+		CanDataGather gather = new CanDataGather(CanDataGather.CAR_LINK_BLUETOOTH);
+		gather.start();
 	}
 
 	public void startCarLinkUSB(View v) {
-		Intent intent = new Intent(Intent.ACTION_MAIN);
-		intent.setClassName("com.metaprotocol.android.carlinkcanusbaccessory",
-				    "com.metaprotocol.android.carlinkcanusbaccessory.CarLinkMainActivity");
-		startActivity(intent);
+		canDataSender.start();
+
+		CanDataGather gather = new CanDataGather(CanDataGather.CAR_LINK_USB);
+		gather.start();
 	}
 
 	@Override
@@ -721,6 +833,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				e.printStackTrace();
 			}
 		}
+		if (canDataSender.isRunning())
+			canDataSender.stop();
 		super.onStart();
 	}
 

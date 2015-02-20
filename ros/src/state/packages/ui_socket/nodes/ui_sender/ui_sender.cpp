@@ -20,7 +20,7 @@ static constexpr double SUBSCRIBE_HZ = 1;
 static int port;
 static int connfd;
 static volatile bool socket_ok;
-std::mutex mtx;
+static std::mutex mtx;
 
 static void subscribe_error_info(const ui_socket::error_info& msg)
 {

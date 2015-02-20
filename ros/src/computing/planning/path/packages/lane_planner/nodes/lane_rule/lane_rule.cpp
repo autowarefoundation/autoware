@@ -6,23 +6,60 @@
 
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 
-static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
-static constexpr bool ADVERTISE_LATCH = true;
+static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
+static constexpr bool ADVERTISE_LATCH = false;
 
-static constexpr double DEFAULT_VELOCITY = 40; // Unit: km/h
-static constexpr double DEFAULT_VELOCITY_DIFFERENCE = 2; // Unit: km/h
+static double config_velocity = 40; // Unit: km/h
 
 static ros::Publisher pub_velocity;
 static ros::Publisher pub_ruled;
 static ros::Publisher pub_stop;
 
-static void lane_waypoint_callback(const nav_msgs::Path msg)
+static uint32_t waypoint_count;
+
+static void lane_waypoint_callback(const nav_msgs::Path& msg)
 {
-	// double vel = DEFAULT_VELOCITY;
-	// double vel_diff = DEFAULT_VELOCITY_DEIFFERENCE;
+	std_msgs::Header header;
+	header.stamp = ros::Time::now();
+	header.frame_id = "/map";
+
+	ros::Rate rate(1000);
 
 	visualization_msgs::Marker velocity;
-	pub_velocity.publish(velocity);
+	velocity.header = header;
+	velocity.ns = "velocity";
+
+	if (waypoint_count > 0) {
+		velocity.action = visualization_msgs::Marker::DELETE;
+		for (uint32_t i = 0; i < waypoint_count; ++i) {
+			velocity.id = i;
+			pub_velocity.publish(velocity);
+			rate.sleep();
+		}
+	}
+
+	velocity.id = 0;
+	velocity.action = visualization_msgs::Marker::ADD;
+	velocity.lifetime = ros::Duration();
+	velocity.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	velocity.scale.z = 0.4;
+	velocity.color.r = 1;
+	velocity.color.a = 1;
+
+	std::ostringstream ostr;
+	ostr << std::fixed << std::setprecision(0) << config_velocity
+	     << "km/h";
+	velocity.text = ostr.str();
+
+	for (const geometry_msgs::PoseStamped& posestamped : msg.poses) {
+		velocity.pose.position = posestamped.pose.position;
+		velocity.pose.position.z += 0.2;
+		pub_velocity.publish(velocity);
+		++velocity.id;
+		rate.sleep();
+	}
+
+	waypoint_count = velocity.id;
 
 	lane_follower::lane ruled;
 	pub_ruled.publish(ruled);

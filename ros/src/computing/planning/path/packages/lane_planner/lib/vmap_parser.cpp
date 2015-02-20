@@ -233,6 +233,36 @@ int Lane::to_finishing_point_index(const std::vector<Node>& nodes,
 	return -1;
 }
 
+Signal::Signal(int id, int vid, int plid, int type, int linkid)
+	: id_(id), vid_(vid), plid_(plid), type_(type), linkid_(linkid)
+{
+}
+
+int Signal::id() const
+{
+	return id_;
+}
+
+int Signal::vid() const
+{
+	return vid_;
+}
+
+int Signal::plid() const
+{
+	return plid_;
+}
+
+int Signal::type() const
+{
+	return type_;
+}
+
+int Signal::linkid() const
+{
+	return linkid_;
+}
+
 static Point parse_point(const std::string& line)
 {
 	std::istringstream ss(line);
@@ -304,6 +334,25 @@ static Lane parse_lane(const std::string& line)
 		);
 }
 
+static Signal parse_signal(const std::string& line)
+{
+	std::istringstream ss(line);
+	std::vector<std::string> columns;
+
+	std::string column;
+	while (std::getline(ss, column, ',')) {
+		columns.push_back(column);
+	}
+
+	return Signal(
+		std::stoi(columns[0]),
+		std::stoi(columns[1]),
+		std::stoi(columns[2]),
+		std::stoi(columns[3]),
+		std::stoi(columns[4])
+		);
+}
+
 std::vector<Point> read_point(const char *filename)
 {
 	std::ifstream ifs(filename);
@@ -347,6 +396,21 @@ std::vector<Lane> read_lane(const char *filename)
 	}
 
 	return lanes;
+}
+
+std::vector<Signal> read_signal(const char *filename)
+{
+	std::ifstream ifs(filename);
+	std::string line;
+
+	std::getline(ifs, line); // Remove first line
+
+	std::vector<Signal> signals;
+	while (std::getline(ifs, line)) {
+		signals.push_back(parse_signal(line));
+	}
+
+	return signals;
 }
 
 Point search_nearest(const std::vector<Point>& points, double x, double y)

@@ -56,8 +56,8 @@ subs :
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt
-          - name : pos2pose
-            cmd  : rosrun gnss_localizer pos2pose
+          - name : fix2tfpose
+            cmd  : rosrun gnss_localizer fix2tfpose
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning

@@ -6,6 +6,7 @@
 class Point;
 class Node;
 class Lane;
+class Signal;
 
 class Point {
 private:
@@ -103,9 +104,28 @@ public:
 				     const std::vector<Point>& points) const;
 };
 
+class Signal {
+private:
+	int id_;
+	int vid_;
+	int plid_;
+	int type_;
+	int linkid_;
+
+public:
+	explicit Signal(int id, int vid, int plid, int type, int linkid);
+
+	int id() const;
+	int vid() const;
+	int plid() const;
+	int type() const;
+	int linkid() const;
+};
+
 std::vector<Point> read_point(const char *filename);
 std::vector<Node> read_node(const char *filename);
 std::vector<Lane> read_lane(const char *filename);
+std::vector<Signal> read_signal(const char *filename);
 
 Point search_nearest(const std::vector<Point>& points, double x, double y);
 
