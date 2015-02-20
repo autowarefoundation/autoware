@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   gnss
   message_generation
+  runtime_manager
 )
 
 ## System dependencies are found with CMake's conventions
@@ -87,7 +88,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_follower
-  CATKIN_DEPENDS roscpp rospy std_msgs tf 
+  CATKIN_DEPENDS roscpp rospy std_msgs tf runtime_manager
   DEPENDS gnss
 )
 
@@ -122,12 +123,9 @@ include_directories(
 
 add_executable(pure_pursuit nodes/pure_pursuit.cpp)
 target_link_libraries(pure_pursuit gnss ${catkin_LIBRARIES})
-add_dependencies(pure_pursuit lane_follower_generate_messages_cpp)
-
-
-add_executable(pure_pursuit_fixvel nodes/pure_pursuit_fixvel.cpp)
-target_link_libraries(pure_pursuit_fixvel gnss ${catkin_LIBRARIES})
-
+add_dependencies(pure_pursuit 
+lane_follower_generate_messages_cpp
+runtime_manager_generate_messages_cpp)
 
 add_executable(odometry_pub nodes/odometry_pub.cpp)
 target_link_libraries(odometry_pub ${catkin_LIBRARIES})

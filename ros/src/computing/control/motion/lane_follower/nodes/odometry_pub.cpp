@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
@@ -9,9 +10,9 @@
 
 geometry_msgs::Twist _current_velocity;
 
-void CmdCallBack(const geometry_msgs::TwistConstPtr &msg)
+void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-    _current_velocity = *msg;
+    _current_velocity = msg->twist;
 
 }
 
@@ -25,7 +26,7 @@ int main(int argc, char **argv)
     ros::Publisher odometry_publisher = nh.advertise<nav_msgs::Odometry>("pose", 1000);
 
     //subscribe topic 
-    ros::Subscriber cmd_subscriber = nh.subscribe("cmd_vel", 1000, CmdCallBack);
+    ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 1000, CmdCallBack);
 
     //transform
     tf::TransformBroadcaster odom_broadcaster;
