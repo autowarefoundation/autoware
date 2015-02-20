@@ -129,7 +129,7 @@ class MyFrame(rtmgr.MyFrame):
 			self.OnProbe(None)
 			self.timer.Start(self.probe_interval)
 
-		self.dlg_rosbag_record = MyDialogRosbagRecord(self)
+		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
 
 		#
 		# for Simulation Tab
@@ -273,8 +273,10 @@ class MyFrame(rtmgr.MyFrame):
 				cmd = 'rosrun map_file points_map_loader'
 			if not auto and path_pcd != []:
 				cmd = 'rosrun sample_data sample_points_map'
+				path_area_list = ''
 			if cmd:
-				add_args = [ path_area_list ] + path_pcd
+				add_args = [ path_area_list ] if path_area_list != '' else []
+				add_args += path_pcd
 				print cmd, add_args
 				proc = self.launch_kill(v, cmd, None, add_args)
 				procs += [ proc ]
@@ -1180,11 +1182,12 @@ class MyApp(wx.App):
 
 class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 	def __init__(self, *args, **kwds):
+		self.cmd_dic = kwds.pop('cmd_dic')
 		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
 		self.cbs = []
 		self.refresh()
-		self.proc = None
 		self.parent = self.GetParent()
+		self.cmd_dic[ self.button_start ] = ('rosbag record', None)
 
 	def OnRef(self, event):
 		tc = self.text_ctrl
@@ -1196,6 +1199,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			tc.SetInsertionPointEnd()
 
 	def OnStart(self, event):
+		key_obj = self.button_start
 		path = self.text_ctrl.GetValue()
 		if path == '':
 			print('path=""')
@@ -1212,11 +1216,15 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			return
 		args = topic_opt + [ '-O', path ]
 
-		self.proc = self.parent.launch_kill(True, 'rosbag record', None, add_args=args)
+		(cmd, proc) = self.cmd_dic[ key_obj ]
+		proc = self.parent.launch_kill(True, cmd, proc, add_args=args)
+		self.cmd_dic[ key_obj ] = (cmd, proc)
 
 	def OnStop(self, event):
-		if self.proc:
-			self.proc = self.parent.launch_kill(False, 'dmy', self.proc, sigint=True)
+		key_obj = self.button_start
+		(cmd, proc) = self.cmd_dic[ key_obj ]
+		proc = self.parent.launch_kill(False, cmd, proc, sigint=True)
+		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.Hide()
 
 	def OnRefresh(self, event):
