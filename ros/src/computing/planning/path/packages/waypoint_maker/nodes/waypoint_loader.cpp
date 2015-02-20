@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     marker.ns = "waypoint_velocity";
     marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.z = 2;
+    marker.scale.z = 1.5;
     marker.color.a = 1.0;
     marker.color.r = 1.0;
     marker.color.g = 1.0;
@@ -72,10 +72,20 @@ int main(int argc, char **argv)
         marker.pose.orientation.w = 1.0;
 
         //double型からstringに変換
-        std::ostringstream oss;
-        oss << test_pose.velocity_kmh;
-        std::string str(oss.str());
-        marker.text = str;
+        /*     std::ostringstream oss;
+         oss << test_pose.velocity_kmh;
+         std::string velocity(oss.str());
+         std::string kmh = " km/h";
+         std::string text = velocity + kmh;
+         marker.text = text;*/
+
+        //C++11 version
+        std::string velocity = std::to_string(test_pose.velocity_kmh);
+        velocity.erase(velocity.find_first_of(".") + 3);
+        std::string kmh = " km/h";
+        std::string text = velocity + kmh;
+        marker.text = text;
+
         marker_array.markers.push_back(marker);
         Pose.push_back(test_pose);
         id_count++;
