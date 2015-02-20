@@ -38,7 +38,6 @@ int _next_waypoint = 0;
 ros::Publisher vis_pub;
 bool _fix_flag = false;
 
-
 void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
     _initial_velocity_kmh = config->velocity;
@@ -56,7 +55,7 @@ void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose.pose;
     } //else
-  //      std::cout << "pose is not odometry" << std::endl;
+    //      std::cout << "pose is not odometry" << std::endl;
 
 }
 
@@ -84,7 +83,7 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
         _current_pose.pose.orientation = _quat;
 
     } //else
-  //      std::cout << "pose is not gnss" << std::endl;
+    //      std::cout << "pose is not gnss" << std::endl;
 
 }
 
@@ -96,7 +95,7 @@ void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
         _current_pose.pose = msg->pose;
 
     } //else
-   //     std::cout << "pose is not ndt" << std::endl;
+      //     std::cout << "pose is not ndt" << std::endl;
 
 }
 
@@ -114,27 +113,27 @@ double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
 
-    if(_fix_flag == false){
-    double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
-    double current_velocity_kmph = current_velocity_mps * 3.6;
+    if (_fix_flag == false) {
+        double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
+        double current_velocity_kmph = current_velocity_mps * 3.6;
 
-    if ( current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
-        return 2.0 * _threshold_ratio;
-    else if( current_velocity_kmph >= 5.0 && current_velocity_kmph < 10)
-        return 3.0 * _threshold_ratio;
-    else if( current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
+        if (current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
+            return 2.0 * _threshold_ratio;
+        else if (current_velocity_kmph >= 5.0 && current_velocity_kmph < 10)
+            return 3.0 * _threshold_ratio;
+        else if (current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
             return 6.0 * _threshold_ratio;
-    else if( current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
+        else if (current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
             return 9.0 * _threshold_ratio;
-    else if( current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
+        else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
             return 12.0 * _threshold_ratio;
-    else if( current_velocity_kmph >= 40.0)
+        else if (current_velocity_kmph >= 40.0)
             return current_velocity_mps * _threshold_ratio;
-    else
-        return 0;
+        else
+            return 0;
 
-    }else{
-        return _lookahead_threshold = 4.0;
+    } else {
+        return _lookahead_threshold;
     }
 }
 
@@ -222,7 +221,7 @@ int GetNextWayPoint()
                 marker.color.r = 0.0;
                 marker.color.g = 0.0;
                 marker.color.b = 1.0;
-                vis_pub.publish( marker );
+                vis_pub.publish(marker);
                 //ここまで
 
                 return i;
@@ -255,9 +254,8 @@ geometry_msgs::Twist CalculateCmdTwist()
 
     double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.pose.position.y);
 
-
     double initial_velocity_ms = 0;
-    if(_fix_flag == false)
+    if (_fix_flag == false)
         initial_velocity_ms = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
     else
         initial_velocity_ms = _initial_velocity_kmh / 3.6;
@@ -346,7 +344,7 @@ int main(int argc, char **argv)
     std::cout << "mobility_frame : " << _mobility_frame << std::endl;
 
     private_nh.getParam("fix_flag", _fix_flag);
-        std::cout << "fix_flag : " << _fix_flag << std::endl;
+    std::cout << "fix_flag : " << _fix_flag << std::endl;
 
     /* private_nh.getParam("velocity_kmh", _initial_velocity_kmh);
      std::cout << "initial_velocity : " << _initial_velocity_kmh << std::endl;
@@ -363,8 +361,7 @@ int main(int argc, char **argv)
 //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
-vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
-
+    vis_pub = nh.advertise<visualization_msgs::Marker>("waypoint_marker", 0);
 
 //subscribe topic
     ros::Subscriber waypoint_subcscriber = nh.subscribe("ruled_waypoint", 1000, WayPointCallback);
@@ -377,7 +374,6 @@ vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
     ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
 
     geometry_msgs::TwistStamped twist;
-
 
     ros::Rate loop_rate(10); //Hzで指定
     bool endflag = false;
@@ -406,7 +402,6 @@ vis_pub = nh.advertise<visualization_msgs::Marker>( "waypoint_marker", 0 );
 
         if (_next_waypoint == _current_path.waypoints.size() - 1)
             endflag = true;
-
 
         std::cout << "linear.x = " << twist.twist.linear.x << " angular.z = " << twist.twist.angular.z << std::endl << std::endl;
         twist.header.stamp = ros::Time::now();
