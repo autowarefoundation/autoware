@@ -740,7 +740,9 @@ class MyFrame(rtmgr.MyFrame):
 				       'checkbox_clock_' ], key, en=False)
 
 	def OnKill(self, event):
-		kill_obj = event.GetEventObject()
+		self.OnKill_sub(event.GetEventObject())
+
+	def OnKill_kill_obj(self, kill_obj):
 		key = self.obj_key_get(kill_obj, ['button_kill_'])
 		if not key:
 			return
@@ -882,7 +884,35 @@ class MyFrame(rtmgr.MyFrame):
 	def kill_all(self):
 		all = self.all_procs[:] # copy
 		for proc in all:
+			(cmd_dic, obj) = self.proc_to_cmd_dic_obj(proc)
+			if obj:
+				(cmd, _) = cmd_dic[ obj ]
+				if type(cmd) is dict:
+					cmd = self.selobj_cmd_get(cmd)
+				print('kill ' + str(cmd))
+
+				key = self.obj_key_get(obj, [ 'button_launch_' ])
+				if key:
+					self.OnKill_kill_obj(self.obj_get('button_kill_' + key))
+					return
+				self.cmd_dic_obj_off_for_kill(cmd_dic, obj)
 			self.launch_kill(False, 'dmy', proc)
+
+	def cmd_dic_obj_off_for_kill(self, cmd_dic, obj):
+		set_check(obj, False)
+		v = cmd_dic[ obj ]
+		if type(v) is list:
+			v.remove(obj)
+		else:
+			(cmd, _) = cmd_dic[ obj ]
+			cmd_dic[ obj ] = (cmd, None)
+
+	def proc_to_cmd_dic_obj(self, proc):
+		for cmd_dic in self.all_cmd_dics:
+			obj = get_top( [ obj for (obj, v) in cmd_dic.items() if proc in v ] )
+			if obj:
+				return (cmd_dic, obj)
+		return (None, None)
 
 	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False):
 		msg = None
@@ -894,9 +924,7 @@ class MyFrame(rtmgr.MyFrame):
 			return proc
 
 		if v and type(cmd) is dict:
-			selobj = self.obj_get(cmd['selobj'])
-			selkey = selobj.GetValue() if selobj else None
-			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
+			cmd = self.selobj_cmd_get(cmd)
 		if v:
 			t = cmd
 			# for replace
@@ -922,6 +950,14 @@ class MyFrame(rtmgr.MyFrame):
 				self.all_procs.remove(proc)
 			proc = None
 		return proc
+
+	def selobj_cmd_get(self, cmd):
+		if type(cmd) is dict:
+			selobj = self.obj_get(cmd['selobj'])
+			selkey = selobj.GetValue() if selobj else None
+			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
+		return cmd
+		
 
 	def modal_dialog(self, obj, lst):
 		(lbs, cmds) = zip(*lst)
