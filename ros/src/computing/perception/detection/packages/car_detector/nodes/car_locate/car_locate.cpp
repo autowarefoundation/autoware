@@ -158,8 +158,8 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
     rescoord.Y += mloc.Y;
     rescoord.Z += mloc.Z;
 
-    tmpPose.position.x = rescoord.Y;
-    tmpPose.position.y = rescoord.X;
+    tmpPose.position.x = rescoord.X;
+    tmpPose.position.y = rescoord.Y;
     tmpPose.position.z = rescoord.Z;
     pose.poses.push_back(tmpPose);
   }
@@ -247,8 +247,8 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 
 void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
 
-  my_loc.X = pose.pose.position.y;
-  my_loc.Y = pose.pose.position.x;
+  my_loc.X = pose.pose.position.x;
+  my_loc.Y = pose.pose.position.y;
   my_loc.Z = pose.pose.position.z;
 
   GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);

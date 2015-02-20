@@ -55,7 +55,7 @@ struct my_tm {
 };
 */
 
-objLocation sl;
+objLocation ol;
 
 //flag for comfirming whether updating position or not
 bool positionGetFlag;
@@ -129,8 +129,8 @@ void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
     double V = pp_iterator->y1 + pp_iterator->y2/2;
 
     //convert
-    sl.setOriginalValue(U,V,pp_iterator->distance);
-    LOCATION ress = sl.cal();
+    ol.setOriginalValue(U,V,pp_iterator->distance);
+    LOCATION ress = ol.cal();
     //printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
 
     axiMove am;
@@ -147,15 +147,15 @@ void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
      */
     rescoord.X = anglefixed.X;
     rescoord.Y = anglefixed.Y;
-    rescoord.Z = -anglefixed.Z;
+    rescoord.Z = anglefixed.Z;
 
     //add plane rectangular coordinate to that of target car.
     rescoord.X += mloc.X;
     rescoord.Y += mloc.Y;
     rescoord.Z += mloc.Z;
 
-    tmpPose.position.x = rescoord.Y;
-    tmpPose.position.y = rescoord.X;
+    tmpPose.position.x = rescoord.X;
+    tmpPose.position.y = rescoord.Y;
     tmpPose.position.z = rescoord.Z;
     pose.poses.push_back(tmpPose);
   }
@@ -342,7 +342,7 @@ int main(int argc, char **argv){
   double Oy = 2.41745468e+02;
   */
 
-  sl.setCameraParam(fkx,fky,Ox,Oy);
+  ol.setCameraParam(fkx,fky,Ox,Oy);
 
   //set angle and position flag : false at first
   positionGetFlag = false;
