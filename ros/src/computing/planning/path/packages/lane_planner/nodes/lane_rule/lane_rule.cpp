@@ -51,18 +51,28 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	     << "km/h";
 	velocity.text = ostr.str();
 
+	lane_follower::lane ruled;
+	ruled.header = header;
+
+	lane_follower::waypoint waypoint;
+	waypoint.pose.header = header;
+	waypoint.twist.header = header;
+	waypoint.pose.pose.orientation.w = 1;
+
 	for (const geometry_msgs::PoseStamped& posestamped : msg.poses) {
 		velocity.pose.position = posestamped.pose.position;
 		velocity.pose.position.z += 0.2;
 		velocities.markers.push_back(velocity);
 		++velocity.id;
+
+		waypoint.pose.pose.position = posestamped.pose.position;
+		waypoint.twist.twist.linear.x = config_velocity / 3.6;
+		ruled.waypoints.push_back(waypoint);
 	}
 
 	waypoint_count = velocity.id;
 
 	pub_velocity.publish(velocities);
-
-	lane_follower::lane ruled;
 	pub_ruled.publish(ruled);
 
 	lane_follower::lane stop;
