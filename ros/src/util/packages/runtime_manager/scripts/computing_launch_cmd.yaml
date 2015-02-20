@@ -10,6 +10,8 @@ subs :
           - name : pure_pursuit
             cmd : roslaunch lane_follower pure_pursuit.launch
             param: lane_follower
+          - name : odom_gen
+            cmd : roslaunch lane_follower odometry_sim.launch  
   
   - name : Perception
     subs :
@@ -56,6 +58,8 @@ subs :
             param: ndt
           - name : fix2tfpose
             cmd  : rosrun gnss_localizer fix2tfpose
+          - name : nmea2tfpose
+            cmd  : rosrun gnss_localizer nmea2tfpose
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning

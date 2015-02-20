@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+<!-- start NDT -->
+<node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl"/>
+
+<!-- start waypoint_loader -->
+<include file="$(find waypoint_maker)/launch/waypoint_loader.launch"/>
+
+
+</launch>

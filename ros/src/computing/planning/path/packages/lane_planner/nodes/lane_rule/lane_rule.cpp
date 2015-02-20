@@ -2,6 +2,7 @@
 
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <lane_follower/lane.h>
 
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
@@ -23,8 +24,7 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	header.stamp = ros::Time::now();
 	header.frame_id = "/map";
 
-	ros::Rate rate(1000);
-
+	visualization_msgs::MarkerArray velocities;
 	visualization_msgs::Marker velocity;
 	velocity.header = header;
 	velocity.ns = "velocity";
@@ -33,9 +33,9 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 		velocity.action = visualization_msgs::Marker::DELETE;
 		for (uint32_t i = 0; i < waypoint_count; ++i) {
 			velocity.id = i;
-			pub_velocity.publish(velocity);
-			rate.sleep();
+			velocities.markers.push_back(velocity);
 		}
+		pub_velocity.publish(velocities);
 	}
 
 	velocity.id = 0;
@@ -48,20 +48,32 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 	std::ostringstream ostr;
 	ostr << std::fixed << std::setprecision(0) << config_velocity
-	     << "km/h";
+	     << " km/h";
 	velocity.text = ostr.str();
+
+	lane_follower::lane ruled;
+	ruled.header = header;
+
+	lane_follower::waypoint waypoint;
+	waypoint.pose.header = header;
+	waypoint.twist.header = header;
+	waypoint.pose.pose.orientation.w = 1;
 
 	for (const geometry_msgs::PoseStamped& posestamped : msg.poses) {
 		velocity.pose.position = posestamped.pose.position;
-		velocity.pose.position.z += 0.2;
-		pub_velocity.publish(velocity);
+		velocity.pose.position.z += 0.2; // more visible
+		velocities.markers.push_back(velocity);
 		++velocity.id;
-		rate.sleep();
+
+		waypoint.pose.pose.position = posestamped.pose.position;
+		waypoint.twist.twist.linear.x =
+			config_velocity / 3.6; // to m/s
+		ruled.waypoints.push_back(waypoint);
 	}
 
 	waypoint_count = velocity.id;
 
-	lane_follower::lane ruled;
+	pub_velocity.publish(velocities);
 	pub_ruled.publish(ruled);
 
 	lane_follower::lane stop;
@@ -78,7 +90,7 @@ int main(int argc, char **argv)
 					  SUBSCRIBE_QUEUE_SIZE,
 					  lane_waypoint_callback);
 
-	pub_velocity = n.advertise<visualization_msgs::Marker>(
+	pub_velocity = n.advertise<visualization_msgs::MarkerArray>(
 		"waypoint_velocity",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);

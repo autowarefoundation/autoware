@@ -9,11 +9,11 @@ buttons:
     run : rosrun obj_db obj_downloader
 
   init:
-    run : echo init
+    run : roslaunch runtime_manager init.launch  
   set:
-    run : echo set
+    run : roslaunch runtime_manager set.launch
   ready:
-    run : echo ready
+    run : roslaunch runtime_manager ready.launch
   go:
     run : echo go
   pause:

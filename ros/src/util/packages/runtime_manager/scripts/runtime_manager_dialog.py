@@ -26,6 +26,7 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
+		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -59,6 +60,7 @@ class MyFrame(rtmgr.MyFrame):
 			setattr(self, 'button_' + nm, btn)
 
 		self.main_cmd = {}
+		self.all_cmd_dics.append(self.main_cmd)
 		self.main_dic = self.load_yaml('main.yaml')
 		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
 
@@ -79,6 +81,7 @@ class MyFrame(rtmgr.MyFrame):
 				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
 
 		self.computing_cmd = {}
+		self.all_cmd_dics.append(self.computing_cmd)
 		for i in range(3):
 			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
 			tree_ctrl.ExpandAll()
@@ -105,6 +108,7 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		self.drv_probe_cmd = {}
 		self.sensing_cmd = {}
+		self.all_cmd_dics.append(self.sensing_cmd)
 		dic = self.load_yaml('sensing.yaml')
 		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 		if 'buttons' in dic:
@@ -125,12 +129,13 @@ class MyFrame(rtmgr.MyFrame):
 			self.OnProbe(None)
 			self.timer.Start(self.probe_interval)
 
-		self.dlg_rosbag_record = MyDialogRosbagRecord(self)
+		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
 
 		#
 		# for Simulation Tab
 		#
 		self.simulation_cmd = {}
+		self.all_cmd_dics.append(self.simulation_cmd)
 		dic = self.load_yaml('simulation_launch_cmd.yaml')
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
 		if 'buttons' in dic:
@@ -147,6 +152,7 @@ class MyFrame(rtmgr.MyFrame):
 		# for Data Tab
 		#
 		self.data_cmd = {}
+		self.all_cmd_dics.append(self.data_cmd)
 		dic = self.load_yaml('data.yaml')
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.data_cmd)
@@ -170,6 +176,7 @@ class MyFrame(rtmgr.MyFrame):
 		# for Viewer Tab
 		#
 		self.viewer_cmd = {}
+		self.all_cmd_dics.append(self.viewer_cmd)
 		parent = self.panel_viewer
 		sizer = self.sizer_viewer
 		lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
@@ -225,8 +232,10 @@ class MyFrame(rtmgr.MyFrame):
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
 		(cmd, _) = self.main_cmd.get(obj, (None, None))
-		print(cmd)
-		os.system(cmd)
+		args = shlex.split(cmd)
+		print(args)
+		proc = subprocess.Popen(args, stdin=subprocess.PIPE)
+		self.all_procs.append(proc)
 
 	def OnStart(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
@@ -236,9 +245,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnStop(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
-		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_stop.launch'
-		print(cmd)
-		os.system(cmd)
+		self.kill_all()
 
 	def OnSet(self, event):
 		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_set.launch'
@@ -266,8 +273,10 @@ class MyFrame(rtmgr.MyFrame):
 				cmd = 'rosrun map_file points_map_loader'
 			if not auto and path_pcd != []:
 				cmd = 'rosrun sample_data sample_points_map'
+				path_area_list = ''
 			if cmd:
-				add_args = [ path_area_list ] + path_pcd
+				add_args = [ path_area_list ] if path_area_list != '' else []
+				add_args += path_pcd
 				print cmd, add_args
 				proc = self.launch_kill(v, cmd, None, add_args)
 				procs += [ proc ]
@@ -843,13 +852,13 @@ class MyFrame(rtmgr.MyFrame):
 
 	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
-			getattr(obj, 'SetValue', obj.Check)(False)
+			set_check(obj, False)
 			print('not implemented.')
 			return
 		v = obj.GetValue()
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
-			getattr(obj, 'SetValue', obj.Check)(False)
+			set_check(obj, False)
 		cmd_bak = cmd
 		if v and type(cmd) is list:
 			cmd = self.modal_dialog(obj, cmd)
@@ -957,6 +966,8 @@ class MyFrame(rtmgr.MyFrame):
 
 	def obj_key_get(self, obj, pfs):
 		name = self.name_get(obj)
+		if name is None:
+			return None
 		return get_top( [ name[len(pf):] for pf in pfs if name[:len(pf)] == pf ] )
 
 	def key_objs_get(self, pfs, key):
@@ -1171,10 +1182,12 @@ class MyApp(wx.App):
 
 class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 	def __init__(self, *args, **kwds):
+		self.cmd_dic = kwds.pop('cmd_dic')
 		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
 		self.cbs = []
 		self.refresh()
-		self.proc = None
+		self.parent = self.GetParent()
+		self.cmd_dic[ self.button_start ] = ('rosbag record', None)
 
 	def OnRef(self, event):
 		tc = self.text_ctrl
@@ -1186,6 +1199,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			tc.SetInsertionPointEnd()
 
 	def OnStart(self, event):
+		key_obj = self.button_start
 		path = self.text_ctrl.GetValue()
 		if path == '':
 			print('path=""')
@@ -1200,16 +1214,17 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		if topic_opt == []:
 			print('topic=[]')
 			return
-		args = [ 'rosbag', 'record' ] + topic_opt + [ '-O', path ]
-		print(args)
-		self.proc = subprocess.Popen(args)
+		args = topic_opt + [ '-O', path ]
+
+		(cmd, proc) = self.cmd_dic[ key_obj ]
+		proc = self.parent.launch_kill(True, cmd, proc, add_args=args)
+		self.cmd_dic[ key_obj ] = (cmd, proc)
 
 	def OnStop(self, event):
-		if self.proc:
-			terminate_children(self.proc, sigint=True)
-			terminate(self.proc, sigint=True)
-			self.proc.wait()
-			self.proc = None		
+		key_obj = self.button_start
+		(cmd, proc) = self.cmd_dic[ key_obj ]
+		proc = self.parent.launch_kill(False, cmd, proc, sigint=True)
+		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.Hide()
 
 	def OnRefresh(self, event):
@@ -1263,6 +1278,11 @@ def str_to_rosval(str, type_str, def_ret=None):
 	}
 	t = cvt_dic.get(type_str, None)
 	return t(str) if t else def_ret
+
+def set_check(obj, v):
+	func = getattr(obj, 'SetValue', getattr(obj, 'Check', None))
+	if func:
+		func(v)
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret

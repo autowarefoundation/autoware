@@ -127,8 +127,8 @@ add_dependencies(pure_pursuit
 lane_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
-add_executable(odometry_pub nodes/odometry_pub.cpp)
-target_link_libraries(odometry_pub ${catkin_LIBRARIES})
+add_executable(odom_gen nodes/odom_gen.cpp)
+target_link_libraries(odom_gen ${catkin_LIBRARIES})
 
 
 
