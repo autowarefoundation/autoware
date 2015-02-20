@@ -26,6 +26,7 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
+		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -59,6 +60,7 @@ class MyFrame(rtmgr.MyFrame):
 			setattr(self, 'button_' + nm, btn)
 
 		self.main_cmd = {}
+		self.all_cmd_dics.append(self.main_cmd)
 		self.main_dic = self.load_yaml('main.yaml')
 		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
 
@@ -79,6 +81,7 @@ class MyFrame(rtmgr.MyFrame):
 				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
 
 		self.computing_cmd = {}
+		self.all_cmd_dics.append(self.computing_cmd)
 		for i in range(3):
 			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
 			tree_ctrl.ExpandAll()
@@ -105,6 +108,7 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		self.drv_probe_cmd = {}
 		self.sensing_cmd = {}
+		self.all_cmd_dics.append(self.sensing_cmd)
 		dic = self.load_yaml('sensing.yaml')
 		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 		if 'buttons' in dic:
@@ -131,6 +135,7 @@ class MyFrame(rtmgr.MyFrame):
 		# for Simulation Tab
 		#
 		self.simulation_cmd = {}
+		self.all_cmd_dics.append(self.simulation_cmd)
 		dic = self.load_yaml('simulation_launch_cmd.yaml')
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
 		if 'buttons' in dic:
@@ -147,6 +152,7 @@ class MyFrame(rtmgr.MyFrame):
 		# for Data Tab
 		#
 		self.data_cmd = {}
+		self.all_cmd_dics.append(self.data_cmd)
 		dic = self.load_yaml('data.yaml')
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.data_cmd)
@@ -170,6 +176,7 @@ class MyFrame(rtmgr.MyFrame):
 		# for Viewer Tab
 		#
 		self.viewer_cmd = {}
+		self.all_cmd_dics.append(self.viewer_cmd)
 		parent = self.panel_viewer
 		sizer = self.sizer_viewer
 		lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
@@ -238,9 +245,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnStop(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
-		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_stop.launch'
-		print(cmd)
-		os.system(cmd)
+		self.kill_all()
 
 	def OnSet(self, event):
 		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_set.launch'
@@ -959,6 +964,8 @@ class MyFrame(rtmgr.MyFrame):
 
 	def obj_key_get(self, obj, pfs):
 		name = self.name_get(obj)
+		if name is None:
+			return None
 		return get_top( [ name[len(pf):] for pf in pfs if name[:len(pf)] == pf ] )
 
 	def key_objs_get(self, pfs, key):
@@ -1177,6 +1184,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		self.cbs = []
 		self.refresh()
 		self.proc = None
+		self.parent = self.GetParent()
 
 	def OnRef(self, event):
 		tc = self.text_ctrl
@@ -1202,20 +1210,13 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		if topic_opt == []:
 			print('topic=[]')
 			return
-		args = [ 'rosbag', 'record' ] + topic_opt + [ '-O', path ]
-		print(args)
-		self.proc = subprocess.Popen(args)
-		self.GetParent().all_procs.append(self.proc)
+		args = topic_opt + [ '-O', path ]
+
+		self.proc = self.parent.launch_kill(True, 'rosbag record', None, add_args=args)
 
 	def OnStop(self, event):
 		if self.proc:
-			terminate_children(self.proc, sigint=True)
-			terminate(self.proc, sigint=True)
-			self.proc.wait()
-			parent = self.GetParent()
-			if self.proc in parent.all_procs:
-				parent.all_procs.remove(self.proc)
-			self.proc = None
+			self.proc = self.parent.launch_kill(False, 'dmy', self.proc, sigint=True)
 		self.Hide()
 
 	def OnRefresh(self, event):
