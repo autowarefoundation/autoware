@@ -38,7 +38,7 @@
 #include <fstream>
 //#include <iostream>
 
-
+#include "../autoware_socket/data.h"
 
 namespace Ui {
 class MainWindow;
@@ -230,9 +230,7 @@ private:
     void viewErrCode();
     void updateTime();
     void writeLog();
-    void sendData();
 
-    bool setConfig();
     void logThread();
     static void* LogThreadEntry(void* arg);
 
@@ -288,10 +286,7 @@ private:
     struct selectLogInf _selectLog;
     FILE* _logSave;
 
-    int duration;
-
     pthread_t _logThread;
-    pthread_t _sendData;
 
     GameController _Game;
     bool _gameRes;
@@ -300,8 +295,17 @@ private:
 
     int _drvTargetVeloc;
     int _drvTargetStroke;
+
+//function of autoware socket
+    int duration;
+    pthread_t _cmdgetter;
+
+    void sendDataGetAndSend();
+    bool setConfig();
+    void wrapSender();
+    static void* CMDGetterEntry(void *a);
+
 };
 
-void* SendData(void *arg);
 
 #endif // MAINWINDOW_H
