@@ -163,7 +163,7 @@ void* returnCMDValue(void *arg){
     fprintf(stderr,"socket close failed in pthread.\n");
   }
 
-  printf("%s %u\n",value.c_str(),value.size());
+  printf("%s %lu\n",value.c_str(),value.size());
   //printf("%u %u\n",sizeof(cd),sizeof(CMDDATA));
   
   return nullptr;
