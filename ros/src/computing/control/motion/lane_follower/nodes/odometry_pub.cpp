@@ -8,7 +8,33 @@
 #include <tf/tf.h>
 #include <iostream>
 
+#include "geo_pos_conv.hh"
+
 geometry_msgs::Twist _current_velocity;
+static bool _use_gnss = false;
+static bool _init_set = false;
+static bool _gnss_value_set = false;
+
+double _initial_px = 0.0;
+double _initial_py = 0.0;
+double _initial_pz = 0.0;
+double _initial_ox = 0.0;
+double _initial_oy = 0.0;
+double _initial_oz = 0.0;
+double _initial_ow = 0.0;
+
+void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
+{
+    _initial_px = input->pose.position.x;
+    _initial_py = input->pose.position.y;
+    _initial_pz = input->pose.position.z;
+    _initial_ox = input->pose.orientation.x;
+    _initial_oy = input->pose.orientation.y;
+    _initial_oz = input->pose.orientation.z;
+    _initial_ow = input->pose.orientation.w;
+
+    _gnss_value_set = true;
+}
 
 void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
@@ -22,14 +48,17 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
-    //publish topic
+//publish topic
     ros::Publisher odometry_publisher = nh.advertise<nav_msgs::Odometry>("pose", 1000);
 
-    //subscribe topic 
+//subscribe topic
     ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 1000, CmdCallBack);
+    ros::Subscriber gnss_subscriber = nh.subscribe("gnss_pose", 1000, GNSSCallback);
 
-    //transform
+//transform
     tf::TransformBroadcaster odom_broadcaster;
+
+    private_nh.getParam("use_gnss", _use_gnss);
 
     ros::Time current_time, last_time;
     current_time = ros::Time::now();
@@ -39,7 +68,6 @@ int main(int argc, char **argv)
      double y = 0.0;
      double th = 0.0;
      */
-
     double x = 0;
     double y = 0;
     double z = 0;
@@ -47,21 +75,27 @@ int main(int argc, char **argv)
     double oy = 0;
     double oz = 0;
     double ow = 1;
-    private_nh.getParam("px", x);
-    private_nh.getParam("py", y);
-    private_nh.getParam("pz", z);
-    private_nh.getParam("ox", ox);
-    private_nh.getParam("oy", oy);
-    private_nh.getParam("oz", oz);
-    private_nh.getParam("ow", ow);
+    double th = 0;
 
+    std::cout << "checking use_gnss" << std::endl;
 
-    tf::Quaternion q(ox, oy, oz, ow);
-    tf::Matrix3x3 m(q);
-    double roll, pitch, yaw;
-    m.getRPY(roll, pitch, yaw);
-
-    double th = yaw;
+    //初期値はroslaunchから
+    if (_use_gnss == false) {
+        std::cout << "use initial pose" << std::endl;
+        private_nh.getParam("px", x);
+        private_nh.getParam("py", y);
+        private_nh.getParam("pz", z);
+        private_nh.getParam("ox", ox);
+        private_nh.getParam("oy", oy);
+        private_nh.getParam("oz", oz);
+        private_nh.getParam("ow", ow);
+        tf::Quaternion q(ox, oy, oz, ow);
+        tf::Matrix3x3 m(q);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+        th = yaw;
+        _init_set = true;
+    }
 
     // double vx = 5.0;
     //  double vth = -0.230769;
@@ -70,6 +104,33 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(10);
     while (ros::ok()) {
         ros::spinOnce(); //check subscribe topic
+
+        //  std::cout << "waiting value set..." << std::endl;
+
+        //初期値はGNSSから
+        if (_use_gnss == true) {
+            if (_init_set == false) {
+                if (_gnss_value_set == true) {
+                    x = _initial_px;
+                    y = _initial_py;
+                    z = _initial_pz;
+                    ox = _initial_ox;
+                    oy = _initial_oy;
+                    oz = _initial_oz;
+                    ow = _initial_ow;
+                    tf::Quaternion q(ox, oy, oz, ow);
+                    tf::Matrix3x3 m(q);
+                    double roll, pitch, yaw;
+                    m.getRPY(roll, pitch, yaw);
+                    th = yaw;
+
+                    _init_set = true;
+                } else {
+                    //std::cout << "continue" << std::endl;
+                    continue;
+                }
+            }
+        }
 
         double vx = _current_velocity.linear.x;
         double vth = _current_velocity.angular.z;
@@ -87,9 +148,10 @@ int main(int argc, char **argv)
 
         std::cout << "delta : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
         std::cout << "current_velocity : " << _current_velocity.linear.x << " " << _current_velocity.angular.z << std::endl;
-        std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl << std::endl;
+        std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl;
+        std::cout << "current_orientation : (" << ox << " " << oy << " " << oz << " " << ow << ")" << std::endl << std::endl;
 
-//since all odometry is 6DOF we'll need a quaternion created from yaw
+        //since all odometry is 6DOF we'll need a quaternion created from yaw
         geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
 
         //first, we'll publish the transform over tf
