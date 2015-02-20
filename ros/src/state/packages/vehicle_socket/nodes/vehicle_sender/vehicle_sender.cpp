@@ -2,6 +2,7 @@
 #include "ros/ros.h"
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <std_msgs/Int32.h>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -14,16 +15,49 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-//default message
-#define DEFAULT_MESSAGE "no command data"
-//#define DEFAULT_MESSAGE "0,100"
-
 int PORT = 10001;
 
 using namespace std;
 
-string value;//cmd value
-bool updateFlag;
+//cmd data
+/*
+typedef struct _CMDDATA{
+  geometry_msgs::Twist twistValue;
+  int modeValue;
+  int gearValue;
+  int accellValue;
+  int steerValue;
+  int brakeValue;
+}CMDDATA;
+*/
+
+typedef struct _CMDDATA{
+  double linear_x;
+  double angular_z;
+  int modeValue;
+  int gearValue;
+  int accellValue;
+  int steerValue;
+  int brakeValue;
+}CMDDATA;
+
+CMDDATA cd;
+
+//gear is limited by modeFlag,
+//accell, steer and brake is limited by modeFlag and gearFlag.
+bool modeFlag;
+bool gearFlag;
+
+void initCMDDATA(){
+  cd.linear_x = -1;
+  cd.angular_z = -1;
+  cd.modeValue = 0;
+  cd.gearValue = 0;
+  cd.accellValue = 0;
+  cd.steerValue = 0;
+  cd.brakeValue = 0;
+}
+
 
 /*
 void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
@@ -41,59 +75,84 @@ void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 
 void CMDCallback(const geometry_msgs::Twist &msg)
 {
- ostringstream oss;
- double linear_x = msg.linear.x;
- double angular_z = msg.angular.z;
- oss << linear_x << ",";
- oss << angular_z;
- value = oss.str();
- updateFlag = true;
-
+  cd.linear_x = msg.linear.x;
+  cd.angular_z = msg.linear.x;
 }
+
+
+void modeCMDCallback(const std_msgs::Int32 &mode)
+{
+  if(mode.data == 1){//auto mobile mode
+    modeFlag = true;
+  }else{ //manual mode
+    modeFlag = false;
+    gearFlag = false;
+    initCMDDATA();
+  }
+  cd.modeValue = mode.data;
+}
+
+void gearCMDCallback(const std_msgs::Int32 &gear)
+{
+  if(modeFlag){
+    cd.gearValue = gear.data;
+    gearFlag = true;
+  }
+}
+
+
+void accellCMDCallback(const std_msgs::Int32 &accell)
+{
+  if(modeFlag && gearFlag){
+    cd.accellValue = accell.data;
+  }
+}
+
+
+void steerCMDCallback(const std_msgs::Int32 &steer)
+{
+  if(modeFlag && gearFlag){
+    cd.steerValue = steer.data;
+  }
+}
+
+
+void brakeCMDCallback(const std_msgs::Int32 &brake)
+{
+  if(modeFlag && gearFlag){
+    cd.brakeValue = brake.data;
+  }
+}
+
 
 void* returnCMDValue(void *arg){
 
   int *fd = static_cast<int *>(arg);
   int conn_fd = *fd;
   delete fd;
-  // string result = "";
+  string value;
   int n;
 
+  //string version
+  ostringstream oss;
+  oss << cd.linear_x << ",";
+  oss << cd.angular_z << ",";
+  oss << cd.modeValue << ",";
+  oss << cd.gearValue << ",";
+  oss << cd.accellValue << ",";
+  oss << cd.steerValue << ",";
+  oss << cd.brakeValue;
+  value = oss.str();
+
+  //struct version
   /*
-  while(true){
-    n = recv(conn_fd, recvdata, sizeof(recvdata), 0);
-
-    if(n<0){
-      printf("ERROR: can not recieve message\n");
-      return nullptr;
-    }else if(n == 0){
-      break;
-    }
-
-    result.append(recvdata,n);
-
-    //if receive data is bigger than 12 byte, exit loop
-    if(result.size() == 12){
-      break;
-    }else if(result.size() > 12){
-      fprintf(stderr,"recv size is too big\n");
-      return nullptr;
-    }
-  }
-
-  if(result.compare("cmd request")){
-    n = write(conn_fd, value.c_str(), value.size());
-    if(n < 0){
-      fprintf(stderr,"data return error\nmiss to send cmd data\n");
-      return nullptr;
-    }
-  }
+  char *tmpv;
+  tmpv = (char*)malloc(sizeof(CMDDATA));
+  memcpy(tmpv,&cd,sizeof(CMDDATA));
+  value.copy(tmpv,sizeof(CMDDATA),0);
   */
 
-  if(!updateFlag){
-    value = DEFAULT_MESSAGE;
-  }
-
+  //n = write(conn_fd, tmpv, sizeof(CMDDATA));
   n = write(conn_fd, value.c_str(), value.size());
   if(n < 0){
     fprintf(stderr,"data return error\nmiss to send cmd data\n");
@@ -104,9 +163,9 @@ void* returnCMDValue(void *arg){
     fprintf(stderr,"socket close failed in pthread.\n");
   }
 
-  printf("%s\n",value.c_str());
-  updateFlag = false;
-
+  printf("%s %u\n",value.c_str(),value.size());
+  //printf("%u %u\n",sizeof(cd),sizeof(CMDDATA));
+  
   return nullptr;
 
 }
@@ -159,15 +218,22 @@ int main(int argc, char **argv){
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub[1];
+  ros::Subscriber sub[4];
   sub[0] = nh.subscribe("/cmd_vel", 1,CMDCallback);
+  sub[1] = nh.subscribe("/mode_cmd", 1,modeCMDCallback);
+  sub[2] = nh.subscribe("/gear_cmd", 1,gearCMDCallback);
+  sub[3] = nh.subscribe("/accell_cmd", 1,accellCMDCallback);
+  sub[3] = nh.subscribe("/steer_cmd", 1,steerCMDCallback);
+  sub[3] = nh.subscribe("/brake_cmd", 1,brakeCMDCallback);
   //sub[0] = nh.subscribe("twist_cmd", 100,CMDCallback);
   //sub[1] = nh.subscribe("",100,ModeCallback);
   //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
 
   //default message
-  value = DEFAULT_MESSAGE;
-  updateFlag = false;
+  modeFlag = false;
+  gearFlag = false;
+
+  initCMDDATA();
 
   pthread_t th;
   if(pthread_create(&th, NULL, receiverCaller, NULL)){
