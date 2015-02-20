@@ -48,7 +48,7 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 	std::ostringstream ostr;
 	ostr << std::fixed << std::setprecision(0) << config_velocity
-	     << "km/h";
+	     << " km/h";
 	velocity.text = ostr.str();
 
 	lane_follower::lane ruled;
@@ -61,12 +61,13 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 	for (const geometry_msgs::PoseStamped& posestamped : msg.poses) {
 		velocity.pose.position = posestamped.pose.position;
-		velocity.pose.position.z += 0.2;
+		velocity.pose.position.z += 0.2; // more visible
 		velocities.markers.push_back(velocity);
 		++velocity.id;
 
 		waypoint.pose.pose.position = posestamped.pose.position;
-		waypoint.twist.twist.linear.x = config_velocity / 3.6;
+		waypoint.twist.twist.linear.x =
+			config_velocity / 3.6; // to m/s
 		ruled.waypoints.push_back(waypoint);
 	}
 
