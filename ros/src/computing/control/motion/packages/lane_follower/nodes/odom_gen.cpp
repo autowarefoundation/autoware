@@ -11,9 +11,9 @@
 #include "geo_pos_conv.hh"
 
 geometry_msgs::Twist _current_velocity;
-static bool _use_gnss = false;
+static bool _use_pose = false;
 static bool _init_set = false;
-static bool _gnss_value_set = false;
+static bool _pose_value_set = false;
 
 double _initial_px = 0.0;
 double _initial_py = 0.0;
@@ -23,8 +23,11 @@ double _initial_oy = 0.0;
 double _initial_oz = 0.0;
 double _initial_ow = 0.0;
 
+std::string _use_topic;
+
 void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
+    if(_use_topic == "gnss"){
     _initial_px = input->pose.position.x;
     _initial_py = input->pose.position.y;
     _initial_pz = input->pose.position.z;
@@ -33,8 +36,25 @@ void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
     _initial_oz = input->pose.orientation.z;
     _initial_ow = input->pose.orientation.w;
 
-    _gnss_value_set = true;
+    _pose_value_set = true;
+    }
 }
+
+void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
+{
+    if(_use_topic == "ndt"){
+    _initial_px = input->pose.position.x;
+    _initial_py = input->pose.position.y;
+    _initial_pz = input->pose.position.z;
+    _initial_ox = input->pose.orientation.x;
+    _initial_oy = input->pose.orientation.y;
+    _initial_oz = input->pose.orientation.z;
+    _initial_ow = input->pose.orientation.w;
+
+    _pose_value_set = true;
+    }
+}
+
 
 void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
@@ -49,16 +69,18 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
 //publish topic
-    ros::Publisher odometry_publisher = nh.advertise<nav_msgs::Odometry>("pose", 1000);
+    ros::Publisher odometry_publisher = nh.advertise<nav_msgs::Odometry>("odom_pose", 1000);
 
 //subscribe topic
     ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 1000, CmdCallBack);
     ros::Subscriber gnss_subscriber = nh.subscribe("gnss_pose", 1000, GNSSCallback);
+    ros::Subscriber ndt_subscriber = nh.subscribe("ndt_pose", 1000, NDTCallback);
 
 //transform
     tf::TransformBroadcaster odom_broadcaster;
 
-    private_nh.getParam("use_gnss", _use_gnss);
+    private_nh.getParam("use_pose", _use_pose);
+    private_nh.getParam("use_topic", _use_topic);
 
     ros::Time current_time, last_time;
     current_time = ros::Time::now();
@@ -77,10 +99,10 @@ int main(int argc, char **argv)
     double ow = 1;
     double th = 0;
 
-    std::cout << "checking use_gnss" << std::endl;
+    std::cout << "checking use_pose" << std::endl;
 
     //初期値はroslaunchから
-    if (_use_gnss == false) {
+    if (_use_pose == false) {
         std::cout << "use initial pose" << std::endl;
         private_nh.getParam("px", x);
         private_nh.getParam("py", y);
@@ -108,9 +130,9 @@ int main(int argc, char **argv)
         //  std::cout << "waiting value set..." << std::endl;
 
         //初期値はGNSSから
-        if (_use_gnss == true) {
+        if (_use_pose == true) {
             if (_init_set == false) {
-                if (_gnss_value_set == true) {
+                if (_pose_value_set == true) {
                     x = _initial_px;
                     y = _initial_py;
                     z = _initial_pz;
