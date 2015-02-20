@@ -21,6 +21,7 @@ from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigLaneFollower
+from ui_socket.msg import run_cmd
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -242,6 +243,14 @@ class MyFrame(rtmgr.MyFrame):
 		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_start.launch'
 		print(cmd)
 		os.system(cmd)
+
+	def OnGo(self, event):
+		pub = rospy.Publisher('run_cmd', run_cmd, queue_size=10)
+		pub.publish(run_cmd(run=1))
+
+	def OnPause(self, event):
+		pub = rospy.Publisher('run_cmd', run_cmd, queue_size=10)
+		pub.publish(run_cmd(run=0))
 
 	def OnStop(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
@@ -768,7 +777,7 @@ class MyFrame(rtmgr.MyFrame):
 				       'checkbox_clock_' ], key)
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
 
-	def OnPause(self, event):
+	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()
 		key = self.obj_key_get(pause_obj, ['button_pause_'])
 		if not key:
