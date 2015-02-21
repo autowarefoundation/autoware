@@ -749,7 +749,7 @@ class MyFrame(rtmgr.MyFrame):
 				       'checkbox_clock_' ], key, en=False)
 
 	def OnKill(self, event):
-		self.OnKill_sub(event.GetEventObject())
+		self.OnKill_kill_obj(event.GetEventObject())
 
 	def OnKill_kill_obj(self, kill_obj):
 		key = self.obj_key_get(kill_obj, ['button_kill_'])
