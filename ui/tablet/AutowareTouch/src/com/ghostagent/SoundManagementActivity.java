@@ -41,9 +41,9 @@ import android.widget.Toast;
 
 public class SoundManagementActivity extends Activity implements OnClickListener {
 	abstract class RadioButton {
-		static final int NONE = 0;
+		static final int INVALID = -1;
 
-		private int mode = NONE;
+		private int mode = INVALID;
 
 		int getMode() {
 			return mode;
@@ -51,7 +51,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		void updateMode(int mode) {
 			if (mode == this.mode)
-				mode = NONE;
+				mode = INVALID;
 			this.mode = mode;
 
 			refresh();
