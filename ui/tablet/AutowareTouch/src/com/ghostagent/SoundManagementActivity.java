@@ -110,8 +110,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	class DriveButton extends RadioButton {
 		static final int AUTO = 1;
-		static final int NORMAL = 2;
-		static final int PURSUIT = 3;
+		static final int NORMAL = 0;
+		static final int PURSUIT = 2;
 
 		ImageButton auto;
 		ImageButton normal;
