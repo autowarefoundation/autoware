@@ -1,2 +1,2 @@
 Header header
-int32 run
+int32 mode
