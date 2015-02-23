@@ -6,8 +6,6 @@
 	<arg name="end_distance" default="2.0" /> <!-- meter -->
 	<arg name="fix_flag" default="false" />
 
-	<include file="$(find lane_follower)/launch/odometry_sim.launch" />
-
 	<!-- rosrun lane_follower pure_pursuit _current_pose_topic:="topic" _mobility_frame:="/frame" _end_distance:=0 _lookahead_ratio:=0 -->
 	<node pkg="lane_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
