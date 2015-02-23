@@ -21,6 +21,7 @@ from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigLaneFollower
+from ui_socket.msg import run_cmd
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -242,6 +243,14 @@ class MyFrame(rtmgr.MyFrame):
 		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_start.launch'
 		print(cmd)
 		os.system(cmd)
+
+	def OnGo(self, event):
+		pub = rospy.Publisher('run_cmd', run_cmd, queue_size=10)
+		pub.publish(run_cmd(run=1))
+
+	def OnPause(self, event):
+		pub = rospy.Publisher('run_cmd', run_cmd, queue_size=10)
+		pub.publish(run_cmd(run=0))
 
 	def OnStop(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
@@ -740,7 +749,9 @@ class MyFrame(rtmgr.MyFrame):
 				       'checkbox_clock_' ], key, en=False)
 
 	def OnKill(self, event):
-		kill_obj = event.GetEventObject()
+		self.OnKill_kill_obj(event.GetEventObject())
+
+	def OnKill_kill_obj(self, kill_obj):
 		key = self.obj_key_get(kill_obj, ['button_kill_'])
 		if not key:
 			return
@@ -766,7 +777,7 @@ class MyFrame(rtmgr.MyFrame):
 				       'checkbox_clock_' ], key)
 		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
 
-	def OnPause(self, event):
+	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()
 		key = self.obj_key_get(pause_obj, ['button_pause_'])
 		if not key:
@@ -882,7 +893,35 @@ class MyFrame(rtmgr.MyFrame):
 	def kill_all(self):
 		all = self.all_procs[:] # copy
 		for proc in all:
+			(cmd_dic, obj) = self.proc_to_cmd_dic_obj(proc)
+			if obj:
+				(cmd, _) = cmd_dic[ obj ]
+				if type(cmd) is dict:
+					cmd = self.selobj_cmd_get(cmd)
+				print('kill ' + str(cmd))
+
+				key = self.obj_key_get(obj, [ 'button_launch_' ])
+				if key:
+					self.OnKill_kill_obj(self.obj_get('button_kill_' + key))
+					return
+				self.cmd_dic_obj_off_for_kill(cmd_dic, obj)
 			self.launch_kill(False, 'dmy', proc)
+
+	def cmd_dic_obj_off_for_kill(self, cmd_dic, obj):
+		set_check(obj, False)
+		v = cmd_dic[ obj ]
+		if type(v) is list:
+			v.remove(obj)
+		else:
+			(cmd, _) = cmd_dic[ obj ]
+			cmd_dic[ obj ] = (cmd, None)
+
+	def proc_to_cmd_dic_obj(self, proc):
+		for cmd_dic in self.all_cmd_dics:
+			obj = get_top( [ obj for (obj, v) in cmd_dic.items() if proc in v ] )
+			if obj:
+				return (cmd_dic, obj)
+		return (None, None)
 
 	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False):
 		msg = None
@@ -894,9 +933,7 @@ class MyFrame(rtmgr.MyFrame):
 			return proc
 
 		if v and type(cmd) is dict:
-			selobj = self.obj_get(cmd['selobj'])
-			selkey = selobj.GetValue() if selobj else None
-			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
+			cmd = self.selobj_cmd_get(cmd)
 		if v:
 			t = cmd
 			# for replace
@@ -922,6 +959,14 @@ class MyFrame(rtmgr.MyFrame):
 				self.all_procs.remove(proc)
 			proc = None
 		return proc
+
+	def selobj_cmd_get(self, cmd):
+		if type(cmd) is dict:
+			selobj = self.obj_get(cmd['selobj'])
+			selkey = selobj.GetValue() if selobj else None
+			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
+		return cmd
+		
 
 	def modal_dialog(self, obj, lst):
 		(lbs, cmds) = zip(*lst)

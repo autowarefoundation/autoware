@@ -31,6 +31,7 @@
 #include "calcoordinates.h"
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
+#include "CalObjLoc.h"
 //#include "car_detector/CarPose.h"
 
 #define XSTR(x) #x
@@ -54,7 +55,7 @@ struct my_tm {
 };
 */
 
-selfLocation sl;
+objLocation ol;
 
 //store subscribed value
 vector<OBJPOS> global_cp_vector;
@@ -120,11 +121,10 @@ string getNowTime(){
 void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 			     vector<OBJPOS>::iterator cp_iterator,
 			     LOCATION mloc,
-			     vector<float> &x,
-			     vector<float> &y,
-			     vector<float> &z){
+			     geometry_msgs::PoseArray &pose){
 
   LOCATION rescoord;
+  geometry_msgs::Pose tmpPose;
 
   for(uint i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
@@ -133,8 +133,8 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
     double V = cp_iterator->y1 + cp_iterator->y2/2;
 
     //convert
-    sl.setOriginalValue(U,V,cp_iterator->distance);
-    LOCATION ress = sl.cal();
+    ol.setOriginalValue(U,V,cp_iterator->distance);
+    LOCATION ress = ol.cal();
     //printf("coordinate from own:%f,%f,%f\n",ress.X,ress.Y,ress.Z);
 
     axiMove am;
@@ -149,18 +149,19 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
       axial y is the direction to front and backend and axial z is the direction to upper and lower.
       So convert them.
      */
-    rescoord.X = anglefixed.Y;
-    rescoord.Y = anglefixed.X;
-    rescoord.Z = -anglefixed.Z;
+    rescoord.X = anglefixed.X;
+    rescoord.Y = anglefixed.Y;
+    rescoord.Z = anglefixed.Z;
 
     //add plane rectangular coordinate to that of target car.
     rescoord.X += mloc.X;
     rescoord.Y += mloc.Y;
     rescoord.Z += mloc.Z;
 
-    x.push_back(rescoord.X);
-    y.push_back(rescoord.Y);
-    z.push_back(rescoord.Z);
+    tmpPose.position.x = rescoord.X;
+    tmpPose.position.y = rescoord.Y;
+    tmpPose.position.z = rescoord.Z;
+    pose.poses.push_back(tmpPose);
   }
 
 }
@@ -172,14 +173,7 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
   
-  geometry_msgs::Pose pose;
   geometry_msgs::PoseArray pose_msg;
-  vector<float> x;
-  vector<float> y;
-  vector<float> z;
-  vector<float>::iterator x_iterator;
-  vector<float>::iterator y_iterator;
-  vector<float>::iterator z_iterator;
 
   vector<OBJPOS>::iterator cp_iterator;
   LOCATION mloc;
@@ -194,25 +188,14 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
 
   //get data of car and pedestrian recognizing
   if(car_position_vector.size() > 0 ){
-    makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,x,y,z);
+    makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,pose_msg);
   }
 
   //publish recognized car data
-  if(x.size() != 0 && y.size() != 0){
-    x_iterator = x.begin();
-    y_iterator = y.begin();
-    z_iterator = z.begin();
-
+  if(pose_msg.poses.size() != 0){
     pose_msg.header.stamp = ros::Time::now();
     pose_msg.header.frame_id = "map";
-    for(uint i=0; i<x.size()&&i<y.size()&&i<z.size(); i++,x_iterator++,y_iterator++,z_iterator++){
-      pose.position.x = *y_iterator;
-      pose.position.y = *x_iterator;
-      pose.position.z = *z_iterator;
-      pose_msg.poses.push_back(pose);
-    }
     pub.publish(pose_msg);
-
   }
 
 }
@@ -264,8 +247,8 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 
 void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
 
-  my_loc.X = pose.pose.position.y;
-  my_loc.Y = pose.pose.position.x;
+  my_loc.X = pose.pose.position.x;
+  my_loc.Y = pose.pose.position.y;
   my_loc.Z = pose.pose.position.z;
 
   GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
@@ -344,7 +327,7 @@ int main(int argc, char **argv){
   double Oy = 2.41745468e+02;
   */
 
-  sl.setCameraParam(fkx,fky,Ox,Oy);
+  ol.setCameraParam(fkx,fky,Ox,Oy);
 
   //set angle and position flag : false at first
   positionGetFlag = false;
