@@ -292,18 +292,26 @@ geometry_msgs::Twist EndControl()
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
-    double initial_velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
-    double initial_velocity_ms = initial_velocity_kmh / 3.6;
+    double velocity_kmh;
+    if(_fix_flag == true){
+       velocity_kmh = _initial_velocity_kmh - end_ratio*end_loop;
+    }
+    else{
+       velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
+
+    }
+
+    double velocity_ms = velocity_kmh / 3.6;
 
     if (lookahead_distance < _end_distance) {
         twist.linear.x = 0;
         twist.angular.z = 0;
     } else {
 
-        if (initial_velocity_kmh < end_velocity_kmh)
-            initial_velocity_ms = end_velocity_kmh / 3.6;
+        if (velocity_kmh < end_velocity_kmh)
+            velocity_ms = end_velocity_kmh / 3.6;
 
-        std::cout << "set velocity (kmh) = " << initial_velocity_ms * 3.6 << std::endl;
+        std::cout << "set velocity (kmh) = " << velocity_ms * 3.6 << std::endl;
         //車の座標系に変換したwaypoint
         geometry_msgs::PoseStamped transformed_waypoint = TransformWaypoint(_current_path.waypoints.size() - 1);
 
@@ -311,12 +319,12 @@ geometry_msgs::Twist EndControl()
         double angular_velocity;
 
         if (radius > 0 || radius < 0) {
-            angular_velocity = initial_velocity_ms / radius;
+            angular_velocity = velocity_ms / radius;
         } else {
             angular_velocity = 0;
         }
 
-        double linear_velocity = initial_velocity_ms;
+        double linear_velocity = velocity_ms;
 
         twist.linear.x = linear_velocity;
         twist.angular.z = angular_velocity;

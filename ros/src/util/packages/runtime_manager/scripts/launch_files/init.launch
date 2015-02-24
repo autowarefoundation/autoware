@@ -1,0 +1,20 @@
+<!-- -->
+<launch>
+<!-- start javad driver -->
+<node pkg="javad" type="gnss.sh" name="javad_driver"/>
+
+<!-- start nmea2tfpose -->
+<node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/>
+
+<!-- start tf map to world userは適宜変えてください-->
+<include file="/home/user/data/tf/tf_toyota.launch"/>
+
+<!-- start vehicle_reveiver -->
+<node pkg="vehicle_socket" type="vehicle_receiver" name="vehicle_receiver"/>
+
+<!-- start vehicle_reveiver -->
+<node pkg="vehicle_socket" type="vehicle_sender" name="vehicle_sender"/>
+
+<!-- publish pointcloud map -->
+
+</launch>

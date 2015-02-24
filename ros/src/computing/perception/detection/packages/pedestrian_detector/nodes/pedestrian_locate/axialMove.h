@@ -1,9 +1,8 @@
-
 #ifndef AXIALMOVE
 #define AXIALMOVE
 
 #include <math.h>
-#include "CalSelfLoc.h"
+#include "CalObjLoc.h"
 #include"structure.h"
 
 

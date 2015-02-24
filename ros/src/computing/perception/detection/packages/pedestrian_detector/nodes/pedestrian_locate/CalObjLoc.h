@@ -1,14 +1,14 @@
 
-#ifndef CALSELFLOC
-#define CALSELFLOC
+#ifndef CALOBJLOC
+#define CALOBJLOC
 
 #include <math.h>
 #include "structure.h"
 
-class selfLocation{
+class objLocation{
 
 public:
-    selfLocation(){};
+    objLocation(){};
 
     void setCameraParam(double fx,double fy,double ox,double oy){
         fkx = fx;
