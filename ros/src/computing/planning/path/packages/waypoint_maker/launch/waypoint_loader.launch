@@ -4,8 +4,7 @@
 	<arg name="path_frame" default="/path" />
 	<arg name="map_frame" default="/map" />
 
-<!--	<arg name="waypoint_filename" default="/home/pdsljp/data/path/ndtpath_150209_2.txt" />
--->
+	<!--<arg name="waypoint_filename" default="/home/pdsljp/data/path/ndtpath_150209_2.txt" />-->
 	<arg name="waypoint_filename" default="/home/h_ohta/data/path/ndtpath_150209_2.txt" />
 
 	<!-- transform path coordinate to global coordinate -->
