@@ -41,9 +41,9 @@ import android.widget.Toast;
 
 public class SoundManagementActivity extends Activity implements OnClickListener {
 	abstract class RadioButton {
-		static final int NONE = 0;
+		static final int INVALID = -1;
 
-		private int mode = NONE;
+		private int mode = INVALID;
 
 		int getMode() {
 			return mode;
@@ -51,7 +51,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		void updateMode(int mode) {
 			if (mode == this.mode)
-				mode = NONE;
+				mode = INVALID;
 			this.mode = mode;
 
 			refresh();
@@ -110,8 +110,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	class DriveButton extends RadioButton {
 		static final int AUTO = 1;
-		static final int NORMAL = 2;
-		static final int PURSUIT = 3;
+		static final int NORMAL = 0;
+		static final int PURSUIT = 2;
 
 		ImageButton auto;
 		ImageButton normal;
@@ -246,7 +246,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	class CommandClient extends Client {
 		static final int EXIT = 0;
 		static final int GEAR = 1;
-		static final int RUN = 2;
+		static final int MODE = 2;
 		static final int ROUTE = 3;
 
 		int send(int type, int command) {
@@ -500,7 +500,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 					bIsServerConnecting = true;
 
 					commandClient.send(CommandClient.GEAR, gearButton.getMode());
-					commandClient.send(CommandClient.RUN, driveButton.getMode());
+					commandClient.send(CommandClient.MODE, driveButton.getMode());
 				} else {
 					bIsServerConnecting = false;
 
@@ -655,7 +655,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 							bIsServerConnecting = true;
 
 							commandClient.send(CommandClient.GEAR, gearButton.getMode());
-							commandClient.send(CommandClient.RUN, driveButton.getMode());
+							commandClient.send(CommandClient.MODE, driveButton.getMode());
 						} else {
 							bIsServerConnecting = false;
 
@@ -865,10 +865,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == driveButton.auto) {
 			driveButton.updateMode(DriveButton.AUTO);
-			commandClient.send(CommandClient.RUN, driveButton.getMode());
+			commandClient.send(CommandClient.MODE, driveButton.getMode());
 		} else if (v == driveButton.normal) {
 			driveButton.updateMode(DriveButton.NORMAL);
-			commandClient.send(CommandClient.RUN, driveButton.getMode());
+			commandClient.send(CommandClient.MODE, driveButton.getMode());
 		} else if (v == driveButton.pursuit) {
 			driveButton.updateMode(DriveButton.PURSUIT);
 			finish();

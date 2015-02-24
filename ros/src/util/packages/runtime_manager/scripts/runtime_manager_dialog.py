@@ -21,7 +21,7 @@ from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigLaneFollower
-from ui_socket.msg import run_cmd
+from ui_socket.msg import mode_cmd
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -245,12 +245,12 @@ class MyFrame(rtmgr.MyFrame):
 		os.system(cmd)
 
 	def OnGo(self, event):
-		pub = rospy.Publisher('run_cmd', run_cmd, queue_size=10)
-		pub.publish(run_cmd(run=1))
+		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
+		pub.publish(mode_cmd(mode=1))
 
 	def OnPause(self, event):
-		pub = rospy.Publisher('run_cmd', run_cmd, queue_size=10)
-		pub.publish(run_cmd(run=0))
+		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
+		pub.publish(mode_cmd(mode=0))
 
 	def OnStop(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
@@ -365,7 +365,9 @@ class MyFrame(rtmgr.MyFrame):
 		grp = [ self.button_statchk_prog,
 			self.button_statchk_manu ]
 		self.radio_action(event, grp)
-		self.statchk_send_recv()
+		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
+		v = 1 if grp[0].GetValue() else 0
+		pub.publish(mode_cmd(mode=v))
 
 	def OnScAccel(self, event):
 		self.statchk_send_recv()

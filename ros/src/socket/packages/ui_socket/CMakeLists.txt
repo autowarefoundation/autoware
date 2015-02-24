@@ -14,7 +14,7 @@ add_message_files(
   FILES
   Waypoint.msg
   gear_cmd.msg
-  run_cmd.msg
+  mode_cmd.msg
   route_cmd.msg
   error_info.msg
   mode_info.msg
