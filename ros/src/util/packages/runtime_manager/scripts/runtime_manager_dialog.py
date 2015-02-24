@@ -365,7 +365,9 @@ class MyFrame(rtmgr.MyFrame):
 		grp = [ self.button_statchk_prog,
 			self.button_statchk_manu ]
 		self.radio_action(event, grp)
-		self.statchk_send_recv()
+		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
+		v = 1 if grp[0].GetValue() else 0
+		pub.publish(mode_cmd(mode=v))
 
 	def OnScAccel(self, event):
 		self.statchk_send_recv()
