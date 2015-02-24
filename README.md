@@ -85,6 +85,13 @@ $ catkin_make
 
 cleanする場合は `catkin_make clean`, ビルドプロセスの詳細を見たい場合, `catkin_make VERBOSE=1`.
 
+### Release Build
+
+```
+$ cd ~/Autoware/ros
+$ ./catkin_make_release
+```
+
 ## How to Run
 
 ### カメラキャリブレーション
