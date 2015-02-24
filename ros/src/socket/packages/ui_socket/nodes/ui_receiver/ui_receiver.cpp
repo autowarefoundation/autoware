@@ -11,7 +11,7 @@
 
 #include "ros/ros.h"
 #include "ui_socket/gear_cmd.h"
-#include "ui_socket/run_cmd.h"
+#include "ui_socket/mode_cmd.h"
 #include "ui_socket/route_cmd.h"
 
 #define NODE_NAME	"ui_receiver"
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	ros::init(argc, argv, NODE_NAME);
 	ros::NodeHandle node;
 	pub[0] = node.advertise<ui_socket::gear_cmd>("gear_cmd", 1);
-	pub[1] = node.advertise<ui_socket::run_cmd>("run_cmd", 1);
+	pub[1] = node.advertise<ui_socket::mode_cmd>("mode_cmd", 1);
 	pub[2] = node.advertise<ui_socket::route_cmd>("route_cmd", 1);
 	node.param<int>("ui_receiver/port", port, DEFAULT_PORT);
 	fprintf(stderr, "listen port=%d\n", port);
@@ -123,9 +123,9 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 		pub[0].publish(msg);
 		break;
 	}
-	case 2: { // RUN
-		ui_socket::run_cmd msg;
-		msg.run = info[1];
+	case 2: { // MODE
+		ui_socket::mode_cmd msg;
+		msg.mode = info[1];
 		pub[1].publish(msg);
 		break;
 	}
