@@ -1,5 +1,8 @@
 
 #include "ros/ros.h"
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Twist.h>
+#include <std_msgs/Int32.h>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -12,64 +15,161 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-#include <vehicle_socket/CanInfo.h>
+int PORT = 10001;
 
-#include "SendData.h"
+using namespace std;
 
+//cmd data
+/*
+typedef struct _CMDDATA{
+  geometry_msgs::Twist twistValue;
+  int modeValue;
+  int gearValue;
+  int accellValue;
+  int steerValue;
+  int brakeValue;
+}CMDDATA;
+*/
 
+typedef struct _CMDDATA{
+  double linear_x;
+  double angular_z;
+  int modeValue;
+  int gearValue;
+  int accellValue;
+  int steerValue;
+  int brakeValue;
+}CMDDATA;
 
-void CMDCallback(const geometry_msgs::TwistConstPtr &msg)
-{
- double linear_x = msg->linear.x;
- double angular_z = msg->angular.z;
+CMDDATA cd;
 
+//gear is limited by modeFlag,
+//accell, steer and brake is limited by modeFlag and gearFlag.
+bool modeFlag;
+bool gearFlag;
 
+void initCMDDATA(){
+  cd.linear_x = -1;
+  cd.angular_z = -1;
+  cd.modeValue = 0;
+  cd.gearValue = 0;
+  cd.accellValue = 0;
+  cd.steerValue = 0;
+  cd.brakeValue = 0;
 }
 
-//void ModeCallback(){}
 
-/*void GearCallback(const ui_socket::gear_cmdConstPtr &gear)
+/*
+void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+ ostringstream oss;
+ double linear_x = msg->twist.linear.x;
+ double angular_z = msg->twist.angular.z;
+ oss << linear_x << ",";
+ oss << angular_z;
+ value = oss.str();
+ updateFlag = true;
+
 }
 */
 
-/*
+void CMDCallback(const geometry_msgs::Twist &msg)
+{
+  cd.linear_x = msg.linear.x;
+  cd.angular_z = msg.linear.x;
+}
+
+
+void modeCMDCallback(const std_msgs::Int32 &mode)
+{
+  if(mode.data == 1){//auto mobile mode
+    modeFlag = true;
+  }else{ //manual mode
+    modeFlag = false;
+    gearFlag = false;
+    initCMDDATA();
+  }
+  cd.modeValue = mode.data;
+}
+
+void gearCMDCallback(const std_msgs::Int32 &gear)
+{
+  if(modeFlag){
+    cd.gearValue = gear.data;
+    gearFlag = true;
+  }
+}
+
+
+void accellCMDCallback(const std_msgs::Int32 &accell)
+{
+  if(modeFlag && gearFlag){
+    cd.accellValue = accell.data;
+  }
+}
+
+
+void steerCMDCallback(const std_msgs::Int32 &steer)
+{
+  if(modeFlag && gearFlag){
+    cd.steerValue = steer.data;
+  }
+}
+
+
+void brakeCMDCallback(const std_msgs::Int32 &brake)
+{
+  if(modeFlag && gearFlag){
+    cd.brakeValue = brake.data;
+  }
+}
+
+
 void* returnCMDValue(void *arg){
 
   int *fd = static_cast<int *>(arg);
   int conn_fd = *fd;
   delete fd;
-  char recvdata[1024];
-  string result = "";
+  string value;
   int n;
-  vehicle_socket::CanInfo msg;
 
-  while(true){
-    n = recv(conn_fd, recvdata, sizeof(recvdata), 0);
+  //string version
+  ostringstream oss;
+  oss << cd.linear_x << ",";
+  oss << cd.angular_z << ",";
+  oss << cd.modeValue << ",";
+  oss << cd.gearValue << ",";
+  oss << cd.accellValue << ",";
+  oss << cd.steerValue << ",";
+  oss << cd.brakeValue;
+  value = oss.str();
 
-    if(n<0){
-      printf("ERROR: can not recieve message\n");
-      result = "";
-      break;
-    }else if(n == 0){
-      break;
-    }
-    result.append(recvdata,n);
+  //struct version
+  /*
+  char *tmpv;
+  tmpv = (char*)malloc(sizeof(CMDDATA));
+  memcpy(tmpv,&cd,sizeof(CMDDATA));
+  value.copy(tmpv,sizeof(CMDDATA),0);
+  */
 
-    //recv data is bigger than 1M,return error
-    if(result.size() > 1024 * 1024){
-      fprintf(stderr,"recv data is too big.\n");
-      result = "";
-      break;
-    }
+  //n = write(conn_fd, tmpv, sizeof(CMDDATA));
+  n = write(conn_fd, value.c_str(), value.size());
+  if(n < 0){
+    fprintf(stderr,"data return error\nmiss to send cmd data\n");
+    return nullptr;
   }
-
+  
   if(close(conn_fd)<0){
     fprintf(stderr,"socket close failed in pthread.\n");
   }
 
+  printf("%s %lu\n",value.c_str(),value.size());
+  //printf("%u %u\n",sizeof(cd),sizeof(CMDDATA));
+  
   return nullptr;
+
 }
+
 
 void* receiverCaller(void *a){
   int sock0;
@@ -86,7 +186,7 @@ void* receiverCaller(void *a){
   //make it available immediately to connect
   //setsockopt(sock0,SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
   bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
-  listen(sock0, 5);
+  listen(sock0, 20);
   len = sizeof(client);
 
   while(true){
@@ -99,20 +199,18 @@ void* receiverCaller(void *a){
       break;
     }
 
-    printf("get connect.\n");
-    //printf("count: %d\n", count);
-
     if(pthread_create(&th, NULL, returnCMDValue, (void *)conn_fd)){
       printf("thread create error\n");
     }
     pthread_detach(th);
+
+    printf("get connect.\n");
+
   }
   close(sock0);
 
   return nullptr;
 }
-*/
-
 
 int main(int argc, char **argv){
 
@@ -120,10 +218,22 @@ int main(int argc, char **argv){
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub[1];
-  sub[0] = nh.subscribe("cmd_vel", 100,CMDCallback);
-//sub[1] = nh.subscribe("",100,ModeCallback);
+  ros::Subscriber sub[4];
+  sub[0] = nh.subscribe("/cmd_vel", 1,CMDCallback);
+  sub[1] = nh.subscribe("/mode_cmd", 1,modeCMDCallback);
+  sub[2] = nh.subscribe("/gear_cmd", 1,gearCMDCallback);
+  sub[3] = nh.subscribe("/accell_cmd", 1,accellCMDCallback);
+  sub[3] = nh.subscribe("/steer_cmd", 1,steerCMDCallback);
+  sub[3] = nh.subscribe("/brake_cmd", 1,brakeCMDCallback);
+  //sub[0] = nh.subscribe("twist_cmd", 100,CMDCallback);
+  //sub[1] = nh.subscribe("",100,ModeCallback);
   //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
+
+  //default message
+  modeFlag = false;
+  gearFlag = false;
+
+  initCMDDATA();
 
   pthread_t th;
   if(pthread_create(&th, NULL, receiverCaller, NULL)){

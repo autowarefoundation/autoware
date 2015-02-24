@@ -13,13 +13,17 @@
 
 #include "vehicle_socket/CanInfo.h"
 
+#define CAN_DATA_NUM 52
+
 using namespace std;
 
 ros::Publisher pub;
 
+int mode;
+
 int PORT = 10000;
 
-static void parseCanValue(const string& value, vehicle_socket::CanInfo& msg){
+static bool parseCanValue(const string& value, vehicle_socket::CanInfo& msg){
   istringstream ss(value);
   vector<string> columns;
 
@@ -28,58 +32,63 @@ static void parseCanValue(const string& value, vehicle_socket::CanInfo& msg){
     columns.push_back(column);
   }
 
-  msg.tm = columns[0].substr(1, columns[0].length() - 2);
-  msg.devmode = stoi(columns[1]);
-  msg.drvcontmode = stoi(columns[2]);
-  msg.drvoverridemode = stoi(columns[3]);
-  msg.drvservo = stoi(columns[4]);
-  msg.drivepedal = stoi(columns[5]);
-  msg.targetpedalstr = stoi(columns[6]);
-  msg.inputpedalstr = stoi(columns[7]);
-  msg.targetveloc = stod(columns[8]);
-  msg.speed = stod(columns[9]);
-  msg.driveshift = stoi(columns[10]);
-  msg.targetshift = stoi(columns[11]);
-  msg.inputshift = stoi(columns[12]);
-  msg.strmode = stoi(columns[13]);
-  msg.strcontmode = stoi(columns[14]);
-  msg.stroverridemode = stoi(columns[15]);
-  msg.strservo = stoi(columns[16]);
-  msg.targettorque = stoi(columns[17]);
-  msg.torque = stoi(columns[18]);
-  msg.angle = stod(columns[19]);
-  msg.targetangle = stod(columns[20]);
-  msg.bbrakepress = stoi(columns[21]);
-  msg.brakepedal = stoi(columns[22]);
-  msg.brtargetpedalstr = stoi(columns[23]);
-  msg.brinputpedalstr = stoi(columns[24]);
-  msg.battery = stod(columns[25]);
-  msg.voltage = stoi(columns[26]);
-  msg.anp = stod(columns[27]);
-  msg.battmaxtemparature = stoi(columns[28]);
-  msg.battmintemparature = stoi(columns[29]);
-  msg.maxchgcurrent = stod(columns[30]);
-  msg.maxdischgcurrent = stod(columns[31]);
-  msg.sideacc = stod(columns[32]);
-  msg.accellfromp = stod(columns[33]);
-  msg.anglefromp = stod(columns[34]);
-  msg.brakepedalfromp = stod(columns[35]);
-  msg.speedfr = stod(columns[36]);
-  msg.speedfl = stod(columns[37]);
-  msg.speedrr = stod(columns[38]);
-  msg.speedrl = stod(columns[39]);
-  msg.velocfromp2 = stod(columns[40]);
-  msg.drvmode = stoi(columns[41]);
-  msg.devpedalstrfromp = stoi(columns[42]);
-  msg.rpm = stoi(columns[43]);
-  msg.velocflfromp = stod(columns[44]);
-  msg.ev_mode = stoi(columns[45]);
-  msg.temp = stoi(columns[46]);
-  msg.shiftfrmprius = stoi(columns[47]);
-  msg.light = stoi(columns[48]);
-  msg.gaslevel = stoi(columns[49]);
-  msg.door = stoi(columns[50]);
-  msg.cluise = stoi(columns[51]);
+  if(columns.size() == CAN_DATA_NUM+1){
+    msg.tm = columns[0].substr(1, columns[0].length() - 2);
+    msg.devmode = stoi(columns[1]);
+    msg.drvcontmode = stoi(columns[2]);
+    msg.drvoverridemode = stoi(columns[3]);
+    msg.drvservo = stoi(columns[4]);
+    msg.drivepedal = stoi(columns[5]);
+    msg.targetpedalstr = stoi(columns[6]);
+    msg.inputpedalstr = stoi(columns[7]);
+    msg.targetveloc = stod(columns[8]);
+    msg.speed = stod(columns[9]);
+    msg.driveshift = stoi(columns[10]);
+    msg.targetshift = stoi(columns[11]);
+    msg.inputshift = stoi(columns[12]);
+    msg.strmode = stoi(columns[13]);
+    msg.strcontmode = stoi(columns[14]);
+    msg.stroverridemode = stoi(columns[15]);
+    msg.strservo = stoi(columns[16]);
+    msg.targettorque = stoi(columns[17]);
+    msg.torque = stoi(columns[18]);
+    msg.angle = stod(columns[19]);
+    msg.targetangle = stod(columns[20]);
+    msg.bbrakepress = stoi(columns[21]);
+    msg.brakepedal = stoi(columns[22]);
+    msg.brtargetpedalstr = stoi(columns[23]);
+    msg.brinputpedalstr = stoi(columns[24]);
+    msg.battery = stod(columns[25]);
+    msg.voltage = stoi(columns[26]);
+    msg.anp = stod(columns[27]);
+    msg.battmaxtemparature = stoi(columns[28]);
+    msg.battmintemparature = stoi(columns[29]);
+    msg.maxchgcurrent = stod(columns[30]);
+    msg.maxdischgcurrent = stod(columns[31]);
+    msg.sideacc = stod(columns[32]);
+    msg.accellfromp = stod(columns[33]);
+    msg.anglefromp = stod(columns[34]);
+    msg.brakepedalfromp = stod(columns[35]);
+    msg.speedfr = stod(columns[36]);
+    msg.speedfl = stod(columns[37]);
+    msg.speedrr = stod(columns[38]);
+    msg.speedrl = stod(columns[39]);
+    msg.velocfromp2 = stod(columns[40]);
+    msg.drvmode = stoi(columns[41]);
+    msg.devpedalstrfromp = stoi(columns[42]);
+    msg.rpm = stoi(columns[43]);
+    msg.velocflfromp = stod(columns[44]);
+    msg.ev_mode = stoi(columns[45]);
+    msg.temp = stoi(columns[46]);
+    msg.shiftfrmprius = stoi(columns[47]);
+    msg.light = stoi(columns[48]);
+    msg.gaslevel = stoi(columns[49]);
+    msg.door = stoi(columns[50]);
+    msg.cluise = stoi(columns[51]);
+    mode = stoi(columns[52]);
+    return true;
+  }
+  return false;
 }
 
 void* getCanValue(void *arg){
@@ -112,15 +121,16 @@ void* getCanValue(void *arg){
     }
   }
 
-  if(result.compare("")!=0){
-    parseCanValue(result, msg);
-    msg.header.frame_id = "/can";
-    msg.header.stamp = ros::Time::now();
-    pub.publish(msg);
-  }
-
   if(close(conn_fd)<0){
     fprintf(stderr,"socket close failed in pthread.\n");
+  }
+
+  if(result.compare("")!=0){
+    if(parseCanValue(result, msg)){
+       msg.header.frame_id = "/can";
+      msg.header.stamp = ros::Time::now();
+      pub.publish(msg);
+    }
   }
 
   return nullptr;
