@@ -10,16 +10,10 @@ buttons:
 
   init:
     run : roslaunch runtime_manager init.launch  
+  check:
+    run : roslaunch runtime_manager check.launch
   set:
     run : roslaunch runtime_manager set.launch
-  ready:
-    run : roslaunch runtime_manager ready.launch
-  go:
-    run : echo go
-  pause:
-    run : echo pause
-  stop:
-    run : echo stop
 
 ipaddress:
   tablet:   127.0.0.1
