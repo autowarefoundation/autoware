@@ -244,7 +244,7 @@ class MyFrame(rtmgr.MyFrame):
 		print(cmd)
 		os.system(cmd)
 
-	def OnGo(self, event):
+	def OnDrive(self, event):
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=1))
 
@@ -255,11 +255,6 @@ class MyFrame(rtmgr.MyFrame):
 	def OnStop(self, event):
 		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
 		self.kill_all()
-
-	def OnSet(self, event):
-		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_set.launch'
-		print(cmd)
-		os.system(cmd)
 
 	def OnNetConn(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.main_cmd)
