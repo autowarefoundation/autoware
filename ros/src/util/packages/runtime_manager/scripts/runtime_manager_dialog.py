@@ -21,6 +21,8 @@ from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigLaneFollower
+from runtime_manager.msg import ConfigCarKf
+from runtime_manager.msg import ConfigPedestrianKf
 from ui_socket.msg import mode_cmd
 from ui_socket.msg import gear_cmd
 from runtime_manager.msg import accel_cmd

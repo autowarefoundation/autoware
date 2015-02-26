@@ -25,8 +25,9 @@ subs :
             param: car_dpm
           - name : car_fusion
             cmd  : rosrun car_detector car_fusion
-          - name : car_tracking
-            cmd  : rosrun car_detector car_tracking
+          - name : car_kf
+            cmd  : rosrun car_detector car_kf
+            param: car_kf
           - name : hog
             cmd  : 
           - name : hog_gpu
@@ -47,8 +48,9 @@ subs :
             param: pedestrian_dpm
           - name : pedestrian_fusion
             cmd  : rosrun pedestrian_detector pedestrian_fusion
-          - name : pedestrian_tracking
-            cmd  : rosrun pedestrian_detector pedestrian_tracking
+          - name : pedestrian_kf
+            cmd  : rosrun pedestrian_detector pedestrian_kf
+            param: pedestrian_kf
       - name : Localization
         subs :
           - name : ndt_pcl
@@ -190,3 +192,73 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
+
+  - name  : car_kf
+    topic : /config/car_kf
+    msg   : ConfigCarKf
+    vars  :
+    - name  : initial_lifespan
+      label : Initial Lifespan
+      min   : 1
+      max   : 100
+      v     : 2
+    - name  : default_lifespan
+      label : Default Lifespan
+      min   : 1
+      max   : 100
+      v     : 10
+    - name  : noise_covariance
+      label : Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : measurement_noise_covariance
+      label : Measurement Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : error_estimate_covariance
+      label : Error estimate covariance
+      min   : 1
+      max   : 10000000
+      v     : 1000000.0
+    - name  : percentage_of_overlapping
+      label : Percentage of Overlapping
+      min   : 0
+      max   : 100
+      v     : 0.0
+
+  - name  : pedestrian_kf
+    topic : /config/pedestrian_kf
+    msg   : ConfigPedestrianKf
+    vars  :
+    - name  : initial_lifespan
+      label : Initial Lifespan
+      min   : 1
+      max   : 100
+      v     : 2
+    - name  : default_lifespan
+      label : Default Lifespan
+      min   : 1
+      max   : 100
+      v     : 10
+    - name  : noise_covariance
+      label : Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : measurement_noise_covariance
+      label : Measurement Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : error_estimate_covariance
+      label : Error estimate covariance
+      min   : 1
+      max   : 10000000
+      v     : 1000000.0
+    - name  : percentage_of_overlapping
+      label : Percentage of Overlapping
+      min   : 0
+      max   : 100
+      v     : 0.0
