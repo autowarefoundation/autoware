@@ -14,6 +14,8 @@ add_message_files(
   ConfigPedestrianDpm.msg
   ConfigNdt.msg
   ConfigLaneFollower.msg
+  ConfigCarKf.msg
+  ConfigPedestrianKf.msg
   accel_cmd.msg
   steer_cmd.msg
   brake_cmd.msg
