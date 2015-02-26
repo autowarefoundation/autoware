@@ -22,6 +22,10 @@ from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigLaneFollower
 from ui_socket.msg import mode_cmd
+from ui_socket.msg import gear_cmd
+from runtime_manager.msg import accel_cmd
+from runtime_manager.msg import steer_cmd
+from runtime_manager.msg import brake_cmd
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -349,29 +353,43 @@ class MyFrame(rtmgr.MyFrame):
 		self.update_button_conn_stat(t)
 
 	def OnGear(self, event):
-		grp = [ self.button_statchk_d,
-			self.button_statchk_r,
-			self.button_statchk_b,
-			self.button_statchk_n ]
-		self.radio_action(event, grp)
-		self.statchk_send_recv()
+		grp = { self.button_statchk_d : 1,
+			self.button_statchk_r : 2,
+			self.button_statchk_b : 3,
+			self.button_statchk_n : 4 }
+		self.radio_action(event, grp.keys())
+		v = grp.get(event.GetEventObject())
+		if v is not None:
+			pub = rospy.Publisher('gear_cmd', gear_cmd, queue_size=10)
+			pub.publish(gear_cmd(gear=v))
 
 	def OnProgManu(self, event):
-		grp = [ self.button_statchk_prog,
-			self.button_statchk_manu ]
-		self.radio_action(event, grp)
-		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
-		v = 1 if grp[0].GetValue() else 0
-		pub.publish(mode_cmd(mode=v))
+		grp = { self.button_statchk_prog : 1,
+			self.button_statchk_manu : 0 }
+		self.radio_action(event, grp.keys())
+		v = grp.get(event.GetEventObject())
+		if v is not None:
+			pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
+			pub.publish(mode_cmd(mode=v))
 
 	def OnScAccel(self, event):
-		self.statchk_send_recv()
+		self.OnMainSc(event)
 
 	def OnScBrake(self, event):
-		self.statchk_send_recv()
+		self.OnMainSc(event)
 
 	def OnScSteer(self, event):
-		self.statchk_send_recv()
+		self.OnMainSc(event)
+
+	def OnMainSc(self, event):
+		obj = event.GetEventObject()
+		v = obj.GetValue()
+		key = self.obj_key_get(obj, ['slider_statchk_'])
+		msg = key + '_cmd'
+		topic = '/' + msg
+		klass_msg = globals()[msg]
+		pub = rospy.Publisher(topic, klass_msg, queue_size=10)
+		pub.publish( klass_msg(**{ key : v }) )
 
 	def update_button_conn_stat(self, t): # a
 		conn = self.obj_get('button_conn_' + t);
