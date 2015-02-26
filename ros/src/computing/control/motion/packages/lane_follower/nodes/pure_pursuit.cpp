@@ -231,9 +231,9 @@ int GetNextWayPoint()
                 marker.action = visualization_msgs::Marker::ADD;
                 marker.pose.position = _current_path.waypoints[i].pose.pose.position;
                 marker.pose.orientation = _current_path.waypoints[i].pose.pose.orientation;
-                marker.scale.x = 0.5;
-                marker.scale.y = 0.5;
-                marker.scale.z = 0.5;
+                marker.scale.x = 1.0;
+                marker.scale.y = 1.0;
+                marker.scale.z = 1.0;
                 marker.color.a = 1.0;
                 marker.color.r = 0.0;
                 marker.color.g = 0.0;
@@ -391,7 +391,7 @@ int main(int argc, char **argv)
 //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
-    vis_pub = nh.advertise<visualization_msgs::Marker>("waypoint_marker", 0);
+    vis_pub = nh.advertise<visualization_msgs::Marker>("target_waypoint_mark", 0);
 
 //subscribe topic
     ros::Subscriber waypoint_subcscriber = nh.subscribe("ruled_waypoint", 1000, WayPointCallback);
