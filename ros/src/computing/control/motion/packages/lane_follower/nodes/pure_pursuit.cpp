@@ -18,21 +18,22 @@
 
 #include "geo_pos_conv.hh"
 
-//parameter server
+// parameter server
 double _initial_velocity_kmh = 5; // km/h
 double _lookahead_threshold = 4.0;
 double _threshold_ratio = 1.0;
 double _end_distance = 2.0;
+double _error_distance = 2.0;
 std::string _mobility_frame = "/base_link";
 std::string _current_pose_topic = "odometry";
 
 const std::string PATH_FRAME = "/path";
 
-geometry_msgs::PoseStamped _current_pose; //グローバル座標系での現在位置
+geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 geometry_msgs::Twist _current_velocity;
 lane_follower::lane _current_path;
 
-//参照するwaypointの番号
+// ID (index) of the next waypoint.
 int _next_waypoint = 0;
 
 ros::Publisher vis_pub;
@@ -49,8 +50,9 @@ void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
     //std::cout << "odometry callback" << std::endl;
     _current_velocity = msg->twist.twist;
 
-    //テスト版位置情報
-
+    //
+    // effective for testing.
+    //
     if (_current_pose_topic == "odometry") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose.pose;
@@ -65,7 +67,7 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 {
     //std::cout << "gnss callback" << std::endl;
     if (_current_pose_topic == "gnss") {
-        //平面直角座標への変換
+        // transform to the rectangular plane.
         geo_pos_conv geo;
         geo.set_plane(7);
         geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
@@ -108,7 +110,9 @@ void WayPointCallback(const lane_follower::laneConstPtr &msg)
     //       << std::endl;
 }
 
-//しきい値を計算
+/////////////////////////////////////////////////////////////////
+// obtain the threshold where the next waypoint may be selected.
+/////////////////////////////////////////////////////////////////
 double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
@@ -137,13 +141,15 @@ double GetLookAheadThreshold()
     }
 }
 
-//車の座標系に変換
+/////////////////////////////////////////////////////////////////
+// transform the waypoint to the vehicle plane.
+/////////////////////////////////////////////////////////////////
 geometry_msgs::PoseStamped TransformWaypoint(int i)
 {
     static tf::TransformListener tfListener;
     geometry_msgs::PoseStamped transformed_waypoint;
 
-    //waypointを車の座標系に変換
+    // do the transformation!
     try {
         ros::Time now = ros::Time::now();
         tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, now, ros::Duration(0.05));
@@ -157,42 +163,53 @@ geometry_msgs::PoseStamped TransformWaypoint(int i)
     return transformed_waypoint;
 }
 
-//waypointまでの直線距離を計算
+/////////////////////////////////////////////////////////////////
+// obtain the distance to @waypoint.
+/////////////////////////////////////////////////////////////////
 double GetLookAheadDistance(int waypoint)
 {
     //std::cout << "get lookahead distance" << std::endl;
 
-    //現在位置
+    // current position.
     tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, _current_pose.pose.position.z);
 
+    // position of @waypoint.
     tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, _current_path.waypoints[waypoint].pose.pose.position.z);
 
     return tf::tfDistance(v1, v2);
 
 }
 
-//waypoint探索
+/////////////////////////////////////////////////////////////////
+// obtain the next "effective" waypoint. 
+// the vehicle drives itself toward this waypoint.
+/////////////////////////////////////////////////////////////////
 int GetNextWayPoint()
 {
     // std::cout << "get nextwaypoint" << std::endl;
 
     if (_current_path.waypoints.empty() == false) {
 
-        //初期自己位置と経路の最初の点のズレを計算
+        // seek for the first effective waypoint.
         if (_next_waypoint == 0) {
-            double distance = GetLookAheadDistance(_next_waypoint);
-            if (distance < 2.0) {
-                _next_waypoint++;
-            } else {
-                std::cout << "error!! first waypoint is  so far !!" << std::endl;
+            do {
+                if (GetLookAheadDistance(_next_waypoint) < _error_distance) {
+                    _next_waypoint++; // why is this needed?
+                    break;
+                }
+            } while (_next_waypoint++ < _current_path.waypoints.size());
+
+            // if no waypoint founded close enough...
+            if (_next_waypoint == _current_path.waypoints.size()) {
+                std::cout << "error!! waypoints are too far!!" << std::endl;
                 exit(-1);
             }
         }
 
-        //しきい値取得
+        // the next waypoint must be outside of this threthold.
         double lookahead_threshold = GetLookAheadThreshold();
 
-        //waypoint探索
+        // look for the next waypoint.
         for (int i = _next_waypoint; i < _current_path.waypoints.size(); i++) {
 
             double Distance = GetLookAheadDistance(i);
@@ -204,7 +221,7 @@ int GetNextWayPoint()
                 std::cout << "threshold = " << lookahead_threshold << std::endl;
                 std::cout << "distance = " << Distance << std::endl;
 
-                //waypoint をマーカーで表示
+                // display the next waypoint by markers.
                 visualization_msgs::Marker marker;
                 marker.header.frame_id = PATH_FRAME;
                 marker.header.stamp = ros::Time::now();
@@ -222,7 +239,7 @@ int GetNextWayPoint()
                 marker.color.g = 0.0;
                 marker.color.b = 1.0;
                 vis_pub.publish(marker);
-                //ここまで
+                // end here.
 
                 return i;
 
@@ -236,7 +253,9 @@ int GetNextWayPoint()
         return 0;
 }
 
-//waypointまで到達するための速度を計算
+/////////////////////////////////////////////////////////////////
+// obtain the linear/angular velocity toward the next waypoint.
+/////////////////////////////////////////////////////////////////
 geometry_msgs::Twist CalculateCmdTwist()
 {
     std::cout << "calculate" << std::endl;
@@ -247,7 +266,7 @@ geometry_msgs::Twist CalculateCmdTwist()
 
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
-    //車の座標系に変換したwaypoint
+    // transform the waypoint to the car plane.
     geometry_msgs::PoseStamped transformed_waypoint = TransformWaypoint(_next_waypoint);
 
     std::cout << "current path (" << _current_path.waypoints[_next_waypoint].pose.pose.position.x << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.y << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.z << ") ---> transformed_path : (" << transformed_waypoint.pose.position.x << " " << transformed_waypoint.pose.position.y << " " << transformed_waypoint.pose.position.z << ")" << std::endl;
@@ -279,6 +298,9 @@ geometry_msgs::Twist CalculateCmdTwist()
 
 }
 
+/////////////////////////////////////////////////////////////////
+// Safely stop the vehicle.
+/////////////////////////////////////////////////////////////////
 static int end_loop = 1;
 static double end_ratio = 0.1;
 static double end_velocity_kmh = 2.0;
@@ -312,7 +334,7 @@ geometry_msgs::Twist EndControl()
             velocity_ms = end_velocity_kmh / 3.6;
 
         std::cout << "set velocity (kmh) = " << velocity_ms * 3.6 << std::endl;
-        //車の座標系に変換したwaypoint
+        // transform the waypoint to the car plane.
         geometry_msgs::PoseStamped transformed_waypoint = TransformWaypoint(_current_path.waypoints.size() - 1);
 
         double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.pose.position.y);
@@ -383,21 +405,21 @@ int main(int argc, char **argv)
 
     geometry_msgs::TwistStamped twist;
 
-    ros::Rate loop_rate(10); //Hzで指定
+    ros::Rate loop_rate(10); // by Hz
     bool endflag = false;
     while (ros::ok()) {
         ros::spinOnce();
 
         if (endflag == false) {
 
-            //waypoint取得
+            // get the waypoint.
             std::cout << "waypoint count =" << _current_path.waypoints.size() << std::endl;
             _next_waypoint = GetNextWayPoint();
             std::cout << "nextwaypoint = " << _next_waypoint << std::endl;
 
             if (_next_waypoint > 0) {
 
-                //速度を計算
+                // obtain the linear/angular velocity.
                 twist.twist = CalculateCmdTwist();
 
             } else {
