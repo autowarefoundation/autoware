@@ -25,6 +25,8 @@ from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from ui_socket.msg import mode_cmd
 from ui_socket.msg import gear_cmd
+from ui_socket.msg import Waypoint
+from ui_socket.msg import route_cmd
 from runtime_manager.msg import accel_cmd
 from runtime_manager.msg import steer_cmd
 from runtime_manager.msg import brake_cmd
@@ -72,6 +74,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
 
 		self.main_cmd[ self.button_load_map ] = []
+
+		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
+		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
 
 		#
 		# for Computing tab
@@ -264,6 +269,15 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnNetConn(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.main_cmd)
+
+	def OnReadNavi(self, event):
+		self.text_ctrl_route_from_lat.SetValue(str(self.route_cmd_waypoint[0].lat))
+		self.text_ctrl_route_from_lon.SetValue(str(self.route_cmd_waypoint[0].lon))
+		self.text_ctrl_route_to_lat.SetValue(str(self.route_cmd_waypoint[1].lat))
+		self.text_ctrl_route_to_lon.SetValue(str(self.route_cmd_waypoint[1].lon))
+
+	def OnTextRoute(self, event):
+		pass
 
 	def OnLoadMap(self, event):
 		obj = event.GetEventObject()
@@ -470,6 +484,9 @@ class MyFrame(rtmgr.MyFrame):
 			act = False if v != val and ov else act
 			if act is not None:
 				obj.SetValue(act)
+
+	def route_cmd_callback(self, data):
+		self.route_cmd_waypoint = data.point
 
 	#
 	# Computing Tab
