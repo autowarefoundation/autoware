@@ -152,7 +152,7 @@ int main(int argc, char **argv)
         navigation_pub[0].publish(cmd_path);
         navigation_pub[1].publish(lane_cmd);
         navigation_pub[2].publish(marker_array);
-        navigation_pub[3].publish(point);
+        navigation_pub[3].publish(mark);
         ros::spinOnce();
         loop_rate.sleep();
 
