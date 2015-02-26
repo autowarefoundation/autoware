@@ -27,10 +27,11 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
 
-    ros::Publisher navigation_pub[3];
+    ros::Publisher navigation_pub[4];
     navigation_pub[0] = nh.advertise<nav_msgs::Path>("lane_waypoint", 100);
     navigation_pub[1] = nh.advertise<lane_follower::lane>("ruled_waypoint", 100);
     navigation_pub[2] = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 100);
+    navigation_pub[3] = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 100);
     std::vector<pose> Pose;
 
     //waypointの速度 をマーカーで表示
@@ -105,6 +106,17 @@ int main(int argc, char **argv)
         lane_cmd.header.frame_id = PATH_FRAME;
         lane_cmd.header.stamp = now;
 
+        visualization_msgs::Marker mark;
+        mark.header.frame_id = PATH_FRAME;
+        mark.header.stamp = now;
+        mark.ns = "waypoint_mark";
+        mark.type = visualization_msgs::Marker::POINTS;
+        mark.action = visualization_msgs::Marker::ADD;
+        mark.scale.x = 0.1;
+        mark.scale.y = 0.1;
+        mark.color.r = 1.0;
+        mark.color.a = 1.0;
+
         for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
 
             //Path用
@@ -133,10 +145,14 @@ int main(int argc, char **argv)
 
             std::cout << waypoint.pose.pose.position.x << " " << waypoint.pose.pose.position.y << " " << waypoint.pose.pose.position.z << " " << waypoint.twist.twist.linear.x << std::endl;
             lane_cmd.waypoints.push_back(waypoint);
+
+            //Mark用
+            mark.points.push_back(posestamped.pose.position);
         }
         navigation_pub[0].publish(cmd_path);
         navigation_pub[1].publish(lane_cmd);
         navigation_pub[2].publish(marker_array);
+        navigation_pub[3].publish(point);
         ros::spinOnce();
         loop_rate.sleep();
 
