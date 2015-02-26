@@ -12,6 +12,9 @@ Panels:
         - /TF1/Tree1
         - /Pose1
         - /Path1
+        - /MarkerArray1
+        - /Marker1
+        - /Pose2
       Splitter Ratio: 0.5
     Tree Height: 349
   - Class: rviz/Selection
@@ -94,7 +97,7 @@ Visualization Manager:
       Queue Size: 2
       Transport Hint: raw
       Value: false
-    - Alpha: 0.05
+    - Alpha: 0.1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -128,29 +131,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        map:
-          Value: true
-        odom:
-          Value: true
-        path:
-          Value: true
-        world:
-          Value: true
       Marker Scale: 20
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          map:
-            odom:
-              base_link:
-                {}
-            path:
-              {}
+        {}
       Update Interval: 1
       Value: true
     - Alpha: 1
@@ -175,6 +162,36 @@ Visualization Manager:
       Name: Path
       Topic: /lane_waypoint
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /waypoint_velocity
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /vector_map
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Arrow
+      Topic: /gnss_pose
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -198,7 +215,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
+      Angle: 1.9
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
@@ -207,11 +224,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 11.0088
+      Scale: 3.18253
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 32.156
-      Y: -1.18087
+      X: -39.7282
+      Y: -21.3715
     Saved: ~
 Window Geometry:
   Displays:
@@ -231,5 +248,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1426
-  X: 320
-  Y: 84
+  X: 300
+  Y: 64
