@@ -105,6 +105,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
+		self.computing_nodes_dic = self.nodes_dic_get(self.computing_cmd)
+
 		rtmgr.MyFrame.__do_layout(self)
 
 		#
@@ -515,6 +517,18 @@ class MyFrame(rtmgr.MyFrame):
 			setattr(msg, name, str_to_rosval(s, type_str, s))
 
 		pub.publish(msg)
+
+	def OnRefresh(self, event):
+		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
+		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
+
+		run_nodes_set = set(run_nodes)
+		for (obj, nodes) in self.computing_nodes_dic.items():
+			v = nodes and run_nodes_set.issuperset(nodes)
+			if obj.GetValue() != v:
+				set_check(obj, v)
+				obj.Enable(not v)
+		self.notebook_1_pane_3.Refresh()
 
 	#
 	# Viewer Tab
@@ -1012,6 +1026,27 @@ class MyFrame(rtmgr.MyFrame):
 			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
 		return cmd
 		
+	def nodes_dic_get(self, cmd_dic):
+		nodes_dic = {}
+		for (obj, (cmd, _)) in cmd_dic.items():
+			nodes_dic[ obj ] = self.cmd_to_nodes(cmd)
+		return nodes_dic
+
+	def cmd_to_nodes(self, cmd):
+		if not cmd:
+			return None
+		if type(cmd) is list:
+			return reduce(lambda a,b : a+b, [ self.cmd_to_nodes(c) for c in cmd ])
+		if type(cmd) is dict:
+			return self.cmd_to_ndoes(self.selobj_cmd_get(cmd))
+
+		cmd = shlex.split(cmd)
+		if cmd[0] == 'roslaunch':
+			cmd.insert(1, '--node')
+			return subprocess.check_output(cmd).strip().split('\n')
+		elif cmd[0] == 'rosrun':
+			return [ '/' + cmd[2] ]
+		return None
 
 	def modal_dialog(self, obj, lst):
 		(lbs, cmds) = zip(*lst)
@@ -1348,8 +1383,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		self.refresh()
 
 	def refresh(self):
-		lst = subprocess.check_output([ 'rostopic', 'list' ]).split('\n')
-		lst = [ 'All' ] + lst[:-1] # add All , remove last ''
+		lst = [ 'all' ] + subprocess.check_output([ 'rostopic', 'list' ]).strip().split('\n')
 		panel = self.panel_1
 		szr = self.sizer_topic
 		for obj in self.cbs:
