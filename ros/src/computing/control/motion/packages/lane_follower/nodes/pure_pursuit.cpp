@@ -422,6 +422,9 @@ int main(int argc, char **argv)
                 // obtain the linear/angular velocity.
                 twist.twist = CalculateCmdTwist();
 
+		std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
+		std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
+
             } else {
                 twist.twist.linear.x = 0;
                 twist.twist.angular.z = 0;
