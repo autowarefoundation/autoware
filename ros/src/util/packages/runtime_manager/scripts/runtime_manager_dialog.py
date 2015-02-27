@@ -1156,28 +1156,39 @@ class VarPanel(wx.Panel):
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter, self.tc)
 
-		if self.has_slider:
-			self.w = self.max - self.min
-			vlst = [ v, self.min, self.max, self.var['v'] ]
-			self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
-			self.int_max = 1000 if self.is_float else self.max
-			self.int_min = 0 if self.is_float else self.min
+		if self.kind is None:
+			if self.has_slider:
+				self.w = self.max - self.min
+				vlst = [ v, self.min, self.max, self.var['v'] ]
+				self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
+				self.int_max = 1000 if self.is_float else self.max
+				self.int_min = 0 if self.is_float else self.min
 
-			self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
-			self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
-			self.slider.SetMinSize((82, 27))
-			szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
-		else:
-			self.is_float = type(self.var['v']) is not int
-			self.tc.SetMinSize((40,27))
+				self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
+				self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
+				self.slider.SetMinSize((82, 27))
+				szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+			else:
+				self.is_float = type(self.var['v']) is not int
+				self.tc.SetMinSize((40,27))
 
 		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
-		szr.Add(self.tc, 0, flag, 4)
+		prop = 1 if self.kind == 'path' else 0
+		szr.Add(self.tc, prop, flag, 4)
+
+		if self.kind == 'path':
+			self.ref = wx.Button(self, wx.ID_ANY, 'Ref')
+			self.Bind(wx.EVT_BUTTON, self.OnRef, self.ref)
+			self.ref.SetMinSize((40,29))
+			szr.Add(self.ref, 0, flag, 4)
+
 		self.SetSizer(szr)
 
 	def get_v(self):
 		if self.kind == 'radio_box':
 			return self.obj.GetSelection()
+		if self.kind == 'path':
+			return str(self.tc.GetValue())
 		return self.get_tc_v()
 
 	def get_tc_v(self):
@@ -1212,6 +1223,22 @@ class VarPanel(wx.Panel):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
 
+	def OnRef(self, event):
+		path = self.tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		path_type = self.var.get('path_type', None)
+		if path_type == 'dir':
+			dlg = wx.DirDialog(self, defaultPath=path)
+		else:
+			style = wx.FD_SAVE if path_type == 'save' else wx.FD_DEFAULT_STYLE
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style)
+
+		if dlg.ShowModal() == wx.ID_OK:
+			path = dlg.GetPath()
+			self.tc.SetValue(path)
+			self.tc.SetInsertionPointEnd()
+		dlg.Destroy()
+
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
@@ -1224,7 +1251,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		for var in self.prm['vars']:
 			v = self.pdic[ var['name'] ]
 			vp = VarPanel(self.panel_v, var=var, v=v)
-			if vp.has_slider:
+			if vp.has_slider or vp.kind == 'path':
 				hszr = None if hszr else hszr
 				self.sizer_v.Add(vp, 0, wx.EXPAND)
 			else:
