@@ -73,10 +73,10 @@ void CMDCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 }
 */
 
-void CMDCallback(const geometry_msgs::Twist &msg)
+void CMDCallback(const geometry_msgs::TwistStamped &msg)
 {
-  cd.linear_x = msg.linear.x;
-  cd.angular_z = msg.linear.x;
+  cd.linear_x = msg.twist.linear.x;
+  cd.angular_z = msg.twist.angular.z;
 }
 
 
@@ -219,7 +219,8 @@ int main(int argc, char **argv){
 
   std::cout << "vehicle sender" << std::endl;
   ros::Subscriber sub[4];
-  sub[0] = nh.subscribe("/cmd_vel", 1,CMDCallback);
+  sub[0] = nh.subscribe("/twist_cmd", 1,CMDCallback);
+  //sub[0] = nh.subscribe("/cmd_vel", 1,CMDCallback);
   sub[1] = nh.subscribe("/mode_cmd", 1,modeCMDCallback);
   sub[2] = nh.subscribe("/gear_cmd", 1,gearCMDCallback);
   sub[3] = nh.subscribe("/accell_cmd", 1,accellCMDCallback);
