@@ -642,6 +642,15 @@ class MyFrame(rtmgr.MyFrame):
 			print(cmd)
 			os.system(cmd)
 
+	def OnPointMapUpdate(self, event):
+		key = 'pmap'
+		obj = self.obj_get('button_launch_' + key)
+		kill_obj = self.obj_get('button_kill_' + key)
+		if obj.IsEnabled() or not kill_obj.IsEnabled():
+			return
+		self.OnKill_kill_obj(kill_obj)
+		self.OnLaunch_obj(obj)
+
 	#
 	# Data Tab
 	#
@@ -735,7 +744,9 @@ class MyFrame(rtmgr.MyFrame):
 		return dic.get(key, None)
 
 	def OnLaunch(self, event):
-		obj = event.GetEventObject()
+		self.OnLaunch_obj(event.GetEventObject())
+
+	def OnLaunch_obj(self, obj):
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
 			return
