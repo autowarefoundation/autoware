@@ -4,7 +4,7 @@
 using namespace std;
 using namespace zmp::hev;
 
-#include "../hev_base/activate_hev.cpp"
+//#include "../hev_base/activate_hev.cpp"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -209,7 +209,6 @@ MainWindow::MainWindow(QWidget *parent) :
     if(setConfig()) {
       printf("read config error\n");    
     }
-
     pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
     pthread_detach(_cmdgetter);
     pthread_create(&_logThread, NULL, LogThreadEntry, this);
@@ -276,12 +275,12 @@ void* MainWindow::LogThreadEntry(void* arg)
 void MainWindow::logThread()
 {
   //activate hev_base program
-    HevBaseActivate();
+  //HevBaseActivate();
 //    readTimer->start(10);
     while(1){
       updateTime();
       if(_selectLog.start == true){
-        //writeLog();
+         //writeLog();
         sendDataGetAndSend();
       }
       //usleep(canduration*1000);
@@ -1153,6 +1152,8 @@ void MainWindow::updateTime()
     *date += "_" + QString::number(_getTime.tv_usec ,10);
 
     _update = *date;
+    
+    delete(date); //Add by yabuta. Maybe memory leak miss on date value.
 //    ui->textEdit_updateTime->setText(update);
 }
 

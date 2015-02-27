@@ -3,6 +3,12 @@
 
 #include <sstream>
 
+std::string rosServerIP;
+std::string candata;
+int drvmode;
+
+DrvState _drv_state;
+
 int CheckDrvMode()
 {  
   int drv_mode = _drv_state.drvInf.mode; // 0x00 : manual ; 0x10 : program
@@ -17,12 +23,6 @@ int CheckDrvMode()
     return DRVMODE_MANUAL;
   }
 }
-
-std::string rosServerIP;
-std::string candata;
-int drvmode;
-
-DrvState _drv_state;
 
 void *SendData(void *a){
 //void SendData(){
@@ -231,7 +231,7 @@ void MainWindow::sendDataGetAndSend()
 bool MainWindow::setConfig(){
   
   canduration = 10; //ログをとる間隔はデフォルトで10ms
-  cmdduration = 10;
+  cmdduration = 500;
   rosServerIP = "192.168.1.101";
 
   std::ifstream ifs("./config");

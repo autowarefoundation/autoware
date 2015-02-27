@@ -3,15 +3,16 @@
 
 #include <string>
 #include "mainwindow.h"
+#include "../hev_base/common/shm_common.h"
 
 using namespace zmp::hev;
 
 #define DRVMODE_MANUAL 0
 #define DRVMODE_PROGRAM 1
+#define DEBUG 1
 
 typedef struct _CMDDATA{
-    double linear_x;
-    double angular_z;
+    vel_data_t vel;
     int mode;
     int gear;
     int accell;
@@ -26,13 +27,22 @@ typedef struct _DrvState {
   BrakeInf brkInf;
 } DrvState;
 
+
 extern DrvState _drv_state;
 
 extern std::string rosServerIP;
 extern std::string candata;
 extern int drvmode;
 extern CMDDATA cmddata;
+extern double estimate_accel;
+extern double cycle_time;
+extern int ndrv;
+extern int nbrk;
+extern double nstr;
+
 
 int CheckDrvMode();
+double KmhToMs(double v);
+bool Control(vel_data_t vel,vel_data_t &current,void* p);
 
 #endif //_DATA_H

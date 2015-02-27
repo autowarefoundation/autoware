@@ -75,6 +75,7 @@ public:
     void StoppingControl(double current_velocity,double cmd_velocity); //自動運転：停止
     bool Brake(int target_brake, int gain); //ブレーキの関数
     bool Accel(int target_accel, int gain); //アクセルの関数
+    void SetDrvMode(int mode);
 
     /*============ここまで=================*/
 
@@ -217,8 +218,8 @@ private:
 
     /*===========HevBase用関数===================*/ 
 
-    void HevBaseActivate();
-    static void* HevBaseThreadEntry(void* arg);
+    //void HevBaseActivate();
+    //static void* HevBaseThreadEntry(void* arg);
 
     /*============ここまで=================*/
 
@@ -305,6 +306,7 @@ private:
     bool setConfig();
     void wrapSender();
     static void* CMDGetterEntry(void *a);
+    void TestPrint();
 
 };
 
