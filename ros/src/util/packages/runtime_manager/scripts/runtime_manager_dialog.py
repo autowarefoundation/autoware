@@ -86,11 +86,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.obj_get('tree_ctrl_' + str(i)).Destroy()
 		items = self.load_yaml('computing_launch_cmd.yaml')
 
-		self.params = items.get('params', [])
-		for prm in self.params:
-			if 'topic' in prm and 'msg' in prm:
-				klass_msg = globals()[ prm['msg'] ]
-				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
+		self.params = []
+		self.add_params(items.get('params', []))
 
 		self.computing_cmd = {}
 		self.all_cmd_dics.append(self.computing_cmd)
@@ -100,14 +97,8 @@ class MyFrame(rtmgr.MyFrame):
 			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
 			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
 
-		self.setup_config_param_pdic()
-
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
-
-		self.computing_nodes_dic = self.nodes_dic_get(self.computing_cmd)
-
-		rtmgr.MyFrame.__do_layout(self)
 
 		#
 		# for Main Tab
@@ -168,23 +159,22 @@ class MyFrame(rtmgr.MyFrame):
 		self.data_cmd = {}
 		self.all_cmd_dics.append(self.data_cmd)
 		dic = self.load_yaml('data.yaml')
+
+		self.add_params(dic.get('params', []))
+
+		parent = self.tree_ctrl_data.GetParent()
+		self.tree_ctrl_data.Destroy()
+		tree_ctrl = self.create_tree(parent, dic, None, None, self.data_cmd)
+		tree_ctrl.ExpandAll()
+		tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+		self.tree_ctrl_data = tree_ctrl
+
+		self.setup_config_param_pdic()
+
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.data_cmd)
 
-		vehicle_cbxs = dic.get('vehicle', [])
-		szr = None
-		for d in vehicle_cbxs:
-			name = d.get('name', None)
-			if not name:
-				continue
-			if not szr:
-				szr = wx.BoxSizer(wx.HORIZONTAL)
-				self.sizer_on_the_vehicle.Add(szr, 0, wx.ALL, 4)
-			cbx = wx.CheckBox(self.notebook_1_pane_4, wx.ID_ANY, d.get('label', ''))
-			szr.Add(cbx, 0, wx.ALL, 4)
-			setattr(self, name, cbx)
-			if vehicle_cbxs.index(d) % 3 == 2:
-				szr = None
+		rtmgr.MyFrame.__do_layout(self)
 
 		#
 		# for Viewer Tab
@@ -195,6 +185,8 @@ class MyFrame(rtmgr.MyFrame):
 		sizer = self.sizer_viewer
 		lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
 		self.create_viewer_btns(parent, sizer, lst)
+
+		self.nodes_dic = self.nodes_dic_get()
 
 	def __do_layout(self):
 		pass
@@ -494,10 +486,12 @@ class MyFrame(rtmgr.MyFrame):
 	# Computing Tab
 	#
 	def OnTreeChecked(self, event):
-		self.launch_kill_proc(event.GetItem(), self.computing_cmd)
+		obj = event.GetItem()
+		cmd_dic = self.obj_to_cmd_dic(obj)
+		self.launch_kill_proc(obj, cmd_dic)
 
 	def OnTreeHyperlinked(self, event):
-		item = event.GetItem()		
+		item = event.GetItem()
 		info = self.config_dic.get(item, None)
 		if info is None:
 			return
@@ -521,14 +515,13 @@ class MyFrame(rtmgr.MyFrame):
 	def OnRefresh(self, event):
 		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
 		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
-
 		run_nodes_set = set(run_nodes)
-		for (obj, nodes) in self.computing_nodes_dic.items():
+		for (obj, nodes) in self.nodes_dic.items():
 			v = nodes and run_nodes_set.issuperset(nodes)
 			if obj.GetValue() != v:
 				set_check(obj, v)
 				obj.Enable(not v)
-		self.notebook_1_pane_3.Refresh()
+		self.Refresh()
 
 	#
 	# Viewer Tab
@@ -709,6 +702,13 @@ class MyFrame(rtmgr.MyFrame):
 		dlg = MyDialogPath(self, pdic=pdic, path_name=path_name)
 		dlg.ShowModal()
 
+	def add_params(self, params):
+		for prm in params:
+			if 'topic' in prm and 'msg' in prm:
+				klass_msg = globals()[ prm['msg'] ]
+				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
+		self.params += params
+
 	def get_cfg_obj(self, obj):
 		return get_top( [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ] )
 
@@ -756,6 +756,9 @@ class MyFrame(rtmgr.MyFrame):
 			'upload'	: self.data_cmd,
 		}
 		return dic.get(key, None)
+
+	def obj_to_cmd_dic(self, obj):
+		return get_top( [ cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic ] )
 
 	def OnLaunch(self, event):
 		self.OnLaunch_obj(event.GetEventObject())
@@ -1026,10 +1029,12 @@ class MyFrame(rtmgr.MyFrame):
 			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
 		return cmd
 		
-	def nodes_dic_get(self, cmd_dic):
+	def nodes_dic_get(self):
 		nodes_dic = {}
-		for (obj, (cmd, _)) in cmd_dic.items():
-			nodes_dic[ obj ] = self.cmd_to_nodes(cmd)
+		#for cmd_dic in self.all_cmd_dics:
+		for cmd_dic in [ self.computing_cmd, self.data_cmd ]:
+			for (obj, (cmd, _)) in cmd_dic.items():
+				nodes_dic[ obj ] = self.cmd_to_nodes(cmd)
 		return nodes_dic
 
 	def cmd_to_nodes(self, cmd):
@@ -1043,7 +1048,11 @@ class MyFrame(rtmgr.MyFrame):
 		cmd = shlex.split(cmd)
 		if cmd[0] == 'roslaunch':
 			cmd.insert(1, '--node')
-			return subprocess.check_output(cmd).strip().split('\n')
+			try:
+				return subprocess.check_output(cmd).strip().split('\n')
+			except subprocess.CalledProcessError:
+				return None
+			
 		elif cmd[0] == 'rosrun':
 			return [ '/' + cmd[2] ]
 		return None
