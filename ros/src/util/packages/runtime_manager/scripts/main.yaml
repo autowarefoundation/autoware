@@ -4,9 +4,16 @@ buttons:
   mobile:
     run : echo 'mobile ui'
   vehicle:
-    run : echo 'vehicle control'
+    run : roslaunch runtime_manager vehicle_socket.launch
   database:
     run : rosrun obj_db obj_downloader
+
+  init:
+    run : roslaunch runtime_manager init.launch  
+  check:
+    run : roslaunch runtime_manager check.launch
+  set:
+    run : roslaunch runtime_manager set.launch
 
 ipaddress:
   tablet:   127.0.0.1

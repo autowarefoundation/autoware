@@ -21,6 +21,17 @@ find_package(OpenCV REQUIRED)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+
+add_message_files(
+  FILES
+  FusedObjects.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
 #  INCLUDE_DIRS include
    CATKIN_DEPENDS car_detector fusion
@@ -76,10 +87,25 @@ target_link_libraries(pedestrian_fusion
   ${catkin_LIBRARIES} ${OpenCV_LIBS} fusion
 )
 
-add_executable(pedestrian_tracking
-  nodes/pedestrian_tracking/pedestrian_tracking.cpp
+add_executable(pedestrian_kf
+  nodes/pedestrian_kf/pedestrian_kf.cpp
 )
-target_link_libraries(pedestrian_tracking
+target_link_libraries(pedestrian_kf
   ${catkin_LIBRARIES}
   kf
 )
+
+add_executable(pedestrian_locate
+  nodes/pedestrian_locate/pedestrian_locate.cpp
+)
+target_link_libraries(pedestrian_locate
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+
+set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
+
+set_target_properties(pedestrian_locate
+  PROPERTIES COMPILE_FLAGS
+  "-DCAMERA_YAML=${CAMERA_YAML}"
+  )

@@ -2,16 +2,16 @@ name : Computing
 subs :
   - name : Control
     subs :
-      - name : common
+      - name : motion
         subs :
           - name : pure_pursuit(sim)
-            cmd : roslaunch lane_follower simulation.launch
-          - name : pure_pursuit_fixvel(sim)
-            cmd : roslaunch lane_follower simulation_fixvel.launch
-          - name : pure_pursuit(NDT)
-            cmd : roslaunch lane_follower ndt.launch
-          - name : pure_pursuit_fixvel(NDT)
-            cmd : roslaunch lane_follower ndt_fixvel.launch
+            cmd : roslaunch lane_follower pure_pursuit_sim.launch
+            param: lane_follower
+          - name : pure_pursuit
+            cmd : roslaunch lane_follower pure_pursuit.launch
+            param: lane_follower
+          - name : odom_gen
+            cmd : roslaunch lane_follower odometry_sim.launch  
   
   - name : Perception
     subs :
@@ -25,8 +25,9 @@ subs :
             param: car_dpm
           - name : car_fusion
             cmd  : rosrun car_detector car_fusion
-          - name : car_tracking
-            cmd  : rosrun car_detector car_tracking
+          - name : car_kf
+            cmd  : rosrun car_detector car_kf
+            param: car_kf
           - name : hog
             cmd  : 
           - name : hog_gpu
@@ -47,38 +48,35 @@ subs :
             param: pedestrian_dpm
           - name : pedestrian_fusion
             cmd  : rosrun pedestrian_detector pedestrian_fusion
-          - name : pedestrian_tracking
-            cmd  : rosrun pedestrian_detector pedestrian_tracking
+          - name : pedestrian_kf
+            cmd  : rosrun pedestrian_detector pedestrian_kf
+            param: pedestrian_kf
       - name : Localization
         subs :
           - name : ndt_pcl
-            cmd  : rosrun ndt_pcl ndt_pcl
+            cmd  : rosrun points_localizer ndt_pcl
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt
-          - name : gnss_localizer
-            cmd  : rosrun gnss_localizer gnss_localizer
+          - name : fix2tfpose
+            cmd  : rosrun gnss_localizer fix2tfpose
+          - name : nmea2tfpose
+            cmd  : rosrun gnss_localizer nmea2tfpose
           - name : pos_master
             cmd  : echo pos_master
   - name : Planning
     subs :
       - name : Mission
         subs :
-        - name : lane_navigator
-          cmd  : rosrun lane_navigator lane_navigator /tmp/lane.csv /tmp/node.csv /tmp/point.csv
+        - name : lane_navi
+          cmd  : rosrun lane_planner lane_navi /tmp/lane.csv /tmp/node.csv /tmp/point.csv
       - name : Motion
       - name : Path
         subs :
-         # - name : lane_follower
-         #   param: lane_follower
           - name : waypoint_saver
             cmd : roslaunch waypoint_maker waypoint_saver.launch
           - name : waypoint_loader
             cmd : roslaunch waypoint_maker waypoint_loader.launch
-          - name : waypoint_velocity_saver
-            cmd : roslaunch waypoint_maker waypoint_velocity_saver.launch
-          - name : waypoint_velocity_loader
-            cmd : roslaunch waypoint_maker waypoint_velocity_loader.launch
 
 params :
   - name  : car_dpm
@@ -187,10 +185,80 @@ params :
     - name  : velocity
       label : Velocity
       min   : 0
-      max   : 100
-      v     : 30.0
+      max   : 60
+      v     : 5.0
     - name  : lookahead_threshold
       label : Lookahead Threshold
       min   : 0
+      max   : 30
+      v     : 4.0
+
+  - name  : car_kf
+    topic : /config/car_kf
+    msg   : ConfigCarKf
+    vars  :
+    - name  : initial_lifespan
+      label : Initial Lifespan
+      min   : 1
       max   : 100
-      v     : 50.0
+      v     : 2
+    - name  : default_lifespan
+      label : Default Lifespan
+      min   : 1
+      max   : 100
+      v     : 10
+    - name  : noise_covariance
+      label : Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : measurement_noise_covariance
+      label : Measurement Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : error_estimate_covariance
+      label : Error estimate covariance
+      min   : 1
+      max   : 10000000
+      v     : 1000000.0
+    - name  : percentage_of_overlapping
+      label : Percentage of Overlapping
+      min   : 0
+      max   : 100
+      v     : 0.0
+
+  - name  : pedestrian_kf
+    topic : /config/pedestrian_kf
+    msg   : ConfigPedestrianKf
+    vars  :
+    - name  : initial_lifespan
+      label : Initial Lifespan
+      min   : 1
+      max   : 100
+      v     : 2
+    - name  : default_lifespan
+      label : Default Lifespan
+      min   : 1
+      max   : 100
+      v     : 10
+    - name  : noise_covariance
+      label : Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : measurement_noise_covariance
+      label : Measurement Noise Covariance
+      min   : 1
+      max   : 1000
+      v     : 25.0
+    - name  : error_estimate_covariance
+      label : Error estimate covariance
+      min   : 1
+      max   : 10000000
+      v     : 1000000.0
+    - name  : percentage_of_overlapping
+      label : Percentage of Overlapping
+      min   : 0
+      max   : 100
+      v     : 0.0

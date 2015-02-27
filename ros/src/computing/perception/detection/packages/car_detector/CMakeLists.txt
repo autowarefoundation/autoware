@@ -88,11 +88,24 @@ target_link_libraries(car_fusion
 )
 add_dependencies(car_fusion car_detector_generate_messages_cpp)
 
-add_executable(car_tracking
-  nodes/car_tracking/car_tracking.cpp
+add_executable(car_kf
+  nodes/car_kf/car_kf.cpp
 )
-target_link_libraries(car_tracking
+target_link_libraries(car_kf
   ${catkin_LIBRARIES}
   kf
 )
-add_dependencies(car_tracking dpm_generate_messages_cpp)
+add_dependencies(car_kf dpm_generate_messages_cpp)
+
+add_executable(car_locate
+  nodes/car_locate/car_locate.cpp
+)
+target_link_libraries(car_locate
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
+
+set_target_properties(car_locate
+  PROPERTIES COMPILE_FLAGS
+  "-DCAMERA_YAML=${CAMERA_YAML}")

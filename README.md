@@ -18,14 +18,14 @@ Open-source software for autonomous driving
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-velodyne-pointcloud
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-velodyne-pointcloud ros-indigo-nmea-msgs
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev
 ```
 
 ### Install dependencies for Ubuntu 13.10 indigo and Ubuntu 13.04 hydro
 
 ```
-% sudo apt-get install ros-hydro-desktop-full ros-hydro-velodyne-pointcloud
+% sudo apt-get install ros-hydro-desktop-full ros-hydro-velodyne-pointcloud ros-indigo-nmea-msgs
 % sudo apt-get install libnlopt-dev freeglut3-dev
 ```
 
@@ -84,6 +84,13 @@ $ catkin_make
 ```
 
 cleanする場合は `catkin_make clean`, ビルドプロセスの詳細を見たい場合, `catkin_make VERBOSE=1`.
+
+### Release Build
+
+```
+$ cd ~/Autoware/ros
+$ ./catkin_make_release
+```
 
 ## How to Run
 

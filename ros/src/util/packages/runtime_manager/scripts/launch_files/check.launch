@@ -1,0 +1,6 @@
+<!-- -->
+<launch>
+<!-- start pure_pursuit -->
+<include file="$(find lane_follower)/launch/pure_pursuit.launch"/>
+
+</launch>

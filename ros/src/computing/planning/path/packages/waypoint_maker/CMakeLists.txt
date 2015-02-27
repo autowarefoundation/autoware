@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
+  vehicle_socket
+  lane_follower
 )
 
 ## System dependencies are found with CMake's conventions
@@ -84,13 +86,15 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_follower
-  CATKIN_DEPENDS roscpp rospy std_msgs tf 
+  CATKIN_DEPENDS roscpp rospy std_msgs tf vehicle_socket lane_follower
   DEPENDS gnss
 )
 
 ###########
 ## Build ##
 ###########
+
+SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -118,15 +122,14 @@ include_directories(
 
 add_executable(waypoint_loader nodes/waypoint_loader.cpp)
 target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
+add_dependencies(waypoint_loader
+  lane_follower_generate_messages_cpp)
 
 add_executable(waypoint_saver nodes/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
-
-add_executable(waypoint_velocity_loader nodes/waypoint_velocity_loader.cpp)
-target_link_libraries(waypoint_velocity_loader ${catkin_LIBRARIES})
-
-add_executable(waypoint_velocity_saver nodes/waypoint_velocity_saver.cpp)
-target_link_libraries(waypoint_velocity_saver gnss ${catkin_LIBRARIES})
+add_dependencies(waypoint_saver
+  lane_follower_generate_messages_cpp
+  vehicle_socket_generate_messages_cpp)
 
 #############
 ## Install ##

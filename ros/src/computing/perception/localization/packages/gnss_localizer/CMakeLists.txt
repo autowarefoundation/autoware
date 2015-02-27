@@ -93,6 +93,9 @@ catkin_package(
 ## Build ##
 ###########
 
+
+SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
@@ -117,8 +120,12 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(gnss_localizer nodes/gnss_localizer.cpp)
-target_link_libraries(gnss_localizer ${catkin_LIBRARIES})
+
+add_executable(fix2tfpose nodes/fix2tfpose.cpp)
+target_link_libraries(fix2tfpose ${catkin_LIBRARIES})
+
+add_executable(nmea2tfpose nodes/nmea2tfpose.cpp)
+target_link_libraries(nmea2tfpose gnss ${catkin_LIBRARIES})
 
 #############
 ## Install ##
