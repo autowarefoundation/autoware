@@ -231,7 +231,7 @@ void MainWindow::sendDataGetAndSend()
 bool MainWindow::setConfig(){
   
   canduration = 10; //ログをとる間隔はデフォルトで10ms
-  cmdduration = 500;
+  cmdduration = 100;
   rosServerIP = "192.168.1.101";
 
   std::ifstream ifs("./config");

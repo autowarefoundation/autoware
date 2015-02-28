@@ -9,7 +9,8 @@ using namespace zmp::hev;
 
 #define DRVMODE_MANUAL 0
 #define DRVMODE_PROGRAM 1
-#define DEBUG 1
+
+//#define DEBUG 1
 
 typedef struct _CMDDATA{
     vel_data_t vel;
@@ -37,9 +38,11 @@ extern CMDDATA cmddata;
 extern double estimate_accel;
 extern double cycle_time;
 extern int ndrv;
+extern int pdrv;
 extern int nbrk;
+extern int pbrk;
 extern double nstr;
-
+extern double pstr;
 
 int CheckDrvMode();
 double KmhToMs(double v);

@@ -12,6 +12,12 @@ int ndrv = 0;
 int nbrk = 0;
 double nstr = 0.0;
 
+int pdrv = 0;
+int pbrk = 0;
+double pstr = 0.0;
+
+#define VEHICLE_LENGTH 4 //meters
+
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
   std::istringstream stream(input);
@@ -171,11 +177,9 @@ void CMDGetter(){
 }
 */
 
+bool IsAccelerated = false;
 bool Control(vel_data_t vel,vel_data_t &current,void* p) 
 {
-  //こいつグローバル変数だったけど何の意味があるか？
-   bool IsAccelerated = false;
-
   //calculate current time
   vel.tstamp = getTime();
   cycle_time = vel.tstamp - current.tstamp;
@@ -184,18 +188,27 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
 
   queue<double> vel_buffer;
   static uint vel_buffer_size = 10; 
- 
 
   double old_velocity = 0.0;
-  //vel_data_t current = _shared_memory.readCurVel();
 
   //currentは前回更新時の値でよいのか？
   double current_velocity = current.tv*3.6;
   double current_steering_angle = current.sv;
  
   double cmd_velocity = vel.tv*3.6;
-  double cmd_steering_angle = vel.sv;
- 
+  double cmd_steering_angle;
+
+  // We assume that the slope against the entire arc toward the 
+  // next waypoint is almost equal to that against 
+  // $l = 2 \pi r \times \frac{\theta}{360} = r \times \theta$
+  // \theta = cmd_steering_angle
+  // vel.sv/vel.tv = Radius
+  // l \simeq VEHICLE_LENGTH
+  if (vel.tv < 1) // just avoid divided by zero.
+    cmd_steering_angle = 0;
+  else
+    cmd_steering_angle = (vel.sv/vel.tv) * VEHICLE_LENGTH;
+
   // estimate current acceleration
   vel_buffer.push(fabs(current_velocity));
   
@@ -220,8 +233,9 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
   // if in neutral and vel cmd 0
   //    - release brake if pressed
   
+  // removed by shinpei, we don't manage gear shifts here.
   //ギアがNの場合DかRに
-  Main->ChangeShiftMode(cmd_velocity);
+  //Main->ChangeShiftMode(cmd_velocity);
    
   //------------------------------------------------------
   // if shift in drive
@@ -288,14 +302,19 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
 
 void MainWindow::TestPrint(){
 #ifdef DEBUG
-  printf("test print,%d,%d,%f(/10)\n",ndrv,nbrk,nstr);
+  printf("test print,%d,%d,%d,%d,%f,%f,(Str is a 10x value)\n",ndrv,ndrv-pdrv,nbrk,nbrk-pbrk,nstr,nstr-pstr);
 #endif
 }
 
 void initPrintValue(){
-  ndrv = 0;
+  pdrv = ndrv;  
+  pbrk = nbrk;
+  pstr = nstr;
+
+  ndrv = 0;  
   nbrk = 0;
   nstr = 0;
+
 }
 
 
@@ -305,10 +324,13 @@ void *MainWindow::CMDGetterEntry(void *a){
   vel_data_t current;
   //main->CMDGetter();
   memset(&current,0,sizeof(current));
+  printf("test print,accel,diff previous accel,brake,diff previous brake,str,diff previous str,(Str is a 10x value)\n");
   while(1){
-    Getter(cmddata);    
-    main->SetDrvMode(cmddata.mode);
-    if(cmddata.mode == DRVMODE_PROGRAM){
+    Getter(cmddata);
+    //cmddata.mode = 0x00;//test
+    //main->SetDrvMode(cmddata.mode);
+    //    if(cmddata.mode == DRVMODE_PROGRAM){
+    if(true){
       Control(cmddata.vel,current,main);
     }
     main->TestPrint();

@@ -4,8 +4,6 @@
 using namespace std;
 using namespace zmp::hev;
 
-//#include "../hev_base/activate_hev.cpp"
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -206,11 +204,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton_startLog->setEnabled(true);
     ui->pushButton_stopLog->setEnabled(false);
 
-    if(setConfig()) {
+    /////////////////////////////////////////////////////////
+    // Autoware extension
+    if (setConfig()) {
       printf("read config error\n");    
     }
     pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
     pthread_detach(_cmdgetter);
+    ////////////////////////////////////////////////////////
+
     pthread_create(&_logThread, NULL, LogThreadEntry, this);
 
     readTimer->start(100);
@@ -274,16 +276,17 @@ void* MainWindow::LogThreadEntry(void* arg)
 
 void MainWindow::logThread()
 {
-  //activate hev_base program
-  //HevBaseActivate();
 //    readTimer->start(10);
     while(1){
       updateTime();
+      /////////////////////////////////////////////////
+      // Autoware extension
       if(_selectLog.start == true){
-         //writeLog();
+        //writeLog();
         sendDataGetAndSend();
       }
-      //usleep(canduration*1000);
+      //usleep(canduration*1000); //usleep(10*1000);
+      /////////////////////////////////////////////////
     }
 }
 
@@ -1153,7 +1156,10 @@ void MainWindow::updateTime()
 
     _update = *date;
     
-    delete(date); //Add by yabuta. Maybe memory leak miss on date value.
+    /////////////////////////////////////////////////////////
+    // Autoware patch
+    delete(date); // added by yabuta. may cause memory leak?
+    /////////////////////////////////////////////////////////
 //    ui->textEdit_updateTime->setText(update);
 }
 
