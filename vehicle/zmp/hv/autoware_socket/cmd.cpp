@@ -193,21 +193,21 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
 
   //currentは前回更新時の値でよいのか？
   double current_velocity = current.tv*3.6;
-  double current_steering_angle = current.sv;
+  double current_wheel_angle = (current.sv/current.tv) * VEHICLE_LENGTH;
  
   double cmd_velocity = vel.tv*3.6;
-  double cmd_steering_angle;
+  double cmd_wheel_angle;
 
   // We assume that the slope against the entire arc toward the 
   // next waypoint is almost equal to that against 
   // $l = 2 \pi r \times \frac{\theta}{360} = r \times \theta$
-  // \theta = cmd_steering_angle
+  // \theta = cmd_wheel_angle
   // vel.sv/vel.tv = Radius
   // l \simeq VEHICLE_LENGTH
   if (vel.tv < 1) // just avoid divided by zero.
-    cmd_steering_angle = 0;
+    cmd_wheel_angle = 0;
   else
-    cmd_steering_angle = (vel.sv/vel.tv) * VEHICLE_LENGTH;
+    cmd_wheel_angle = (vel.sv/vel.tv) * VEHICLE_LENGTH;
 
   // estimate current acceleration
   vel_buffer.push(fabs(current_velocity));
@@ -218,8 +218,8 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
     estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
     
   }
-  cout << endl << "Current " << "tv : " << current_velocity << " sv : "<< current_steering_angle << endl; 
-  cout << endl << "Command " << "tv : " << cmd_velocity << " sv : "<< cmd_steering_angle << endl; 
+  cout << endl << "Current " << "tv : " << current_velocity << " sv : "<< current_wheel_angle << endl; 
+  cout << endl << "Command " << "tv : " << cmd_velocity << " sv : "<< cmd_wheel_angle << endl; 
   cout << "Estimate Accel : " << estimate_accel << endl; 
 
   // TRY TO INCREASE STEERING
@@ -291,7 +291,7 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
   }
   
   // set steering angle
-  Main->SteeringControl(cmd_steering_angle);
+  Main->SteeringControl(cmd_wheel_angle);
 
   current.tv = vel.tv;
   current.sv = vel.sv; 
