@@ -205,7 +205,7 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
   // vel.sv/vel.tv = Radius
   // l \simeq VEHICLE_LENGTH
   if (vel.tv < 1) // just avoid divided by zero.
-    cmd_wheel_angle = 0;
+    cmd_wheel_angle = current_wheel_angle;
   else
     cmd_wheel_angle = (vel.sv/vel.tv) * VEHICLE_LENGTH;
 
