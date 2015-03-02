@@ -20,3 +20,53 @@ ipaddress:
   mobile:   127.0.0.1
   vehicle:  127.0.0.1
   database: 127.0.0.1
+
+params :
+  - name  : accel
+    topic : /accel_cmd
+    msg   : accel_cmd
+    vars  :
+    - name  : accel
+      label : Accel
+      min   : 0
+      max   : 100
+      v     : 0
+  - name  : brake
+    topic : /brake_cmd
+    msg   : brake_cmd
+    vars  :
+    - name  : brake
+      label : brake
+      min   : 0
+      max   : 10000
+      v     : 0
+  - name  : steer
+    topic : /steer_cmd
+    msg   : steer_cmd
+    vars  :
+    - name  : steer
+      label : Steer
+      min   : -720
+      max   : 720
+      v     : 0
+  - name  : Torque
+    vars  :
+    - name  : torque
+      label : Torque
+      min   : 0
+      max   : 100
+      v     : 0
+  - name  : Veloc
+    topic : /twist_cmd
+    msg   : Twist
+    vars  :
+    - name  : linear.x
+      label : Veloc
+      min   : 0
+      max   : 100
+      v     : 0
+    - name  : angular.z
+      label : Angle
+      min   : 0.00
+      max   : 1.00
+      v     : 0.00

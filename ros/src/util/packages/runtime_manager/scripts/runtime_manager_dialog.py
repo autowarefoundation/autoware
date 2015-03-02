@@ -27,6 +27,8 @@ from ui_socket.msg import mode_cmd
 from ui_socket.msg import gear_cmd
 from ui_socket.msg import Waypoint
 from ui_socket.msg import route_cmd
+from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
 from runtime_manager.msg import steer_cmd
 from runtime_manager.msg import brake_cmd
@@ -78,6 +80,18 @@ class MyFrame(rtmgr.MyFrame):
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
 		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
 
+		self.params = []
+		self.add_params(self.main_dic.get('params', []))
+
+		szr = wx.BoxSizer(wx.VERTICAL)
+		for prm in self.main_dic.get('params', []):
+			pdic = {}
+			for var in prm['vars']:
+				pdic[ var['name'] ] = var['v']
+			mccp = MainCcPanel(self.panel_main_cc, frame=self, pdic=pdic, prm=prm)
+			szr.Add(mccp, 0, wx.EXPAND)
+		self.panel_main_cc.SetSizer(szr)
+
 		#
 		# for Computing tab
 		#
@@ -86,7 +100,6 @@ class MyFrame(rtmgr.MyFrame):
 			self.obj_get('tree_ctrl_' + str(i)).Destroy()
 		items = self.load_yaml('computing_launch_cmd.yaml')
 
-		self.params = []
 		self.add_params(items.get('params', []))
 
 		self.computing_cmd = {}
@@ -382,25 +395,6 @@ class MyFrame(rtmgr.MyFrame):
 			pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 			pub.publish(mode_cmd(mode=v))
 
-	def OnScAccel(self, event):
-		self.OnMainSc(event)
-
-	def OnScBrake(self, event):
-		self.OnMainSc(event)
-
-	def OnScSteer(self, event):
-		self.OnMainSc(event)
-
-	def OnMainSc(self, event):
-		obj = event.GetEventObject()
-		v = obj.GetValue()
-		key = self.obj_key_get(obj, ['slider_statchk_'])
-		msg = key + '_cmd'
-		topic = '/' + msg
-		klass_msg = globals()[msg]
-		pub = rospy.Publisher(topic, klass_msg, queue_size=10)
-		pub.publish( klass_msg(**{ key : v }) )
-
 	def update_button_conn_stat(self, t): # a
 		conn = self.obj_get('button_conn_' + t);
 		en = conn.IsEnabled()
@@ -503,12 +497,16 @@ class MyFrame(rtmgr.MyFrame):
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
 		klass_msg = globals()[ prm['msg'] ]
-		msg = klass_msg(**pdic)
+		msg = klass_msg()
 
-		for name in msg.__slots__[1:]: # skip 'header'
-			type_str = msg._slot_types[ msg.__slots__.index(name) ]
-			s = getattr(msg, name)
-			setattr(msg, name, str_to_rosval(s, type_str, s))
+		for (name, v) in pdic.items():
+			lst = name.split('.')
+			targ = msg
+			for n in lst[:-1]:
+				targ = getattr(targ, n)
+			nm = lst[-1]
+			type_str = targ._slot_types[ targ.__slots__.index(nm) ]
+			setattr(targ, nm, str_to_rosval(v, type_str, v))
 
 		pub.publish(msg)
 
@@ -1173,10 +1171,39 @@ class MyDialogPath(rtmgr.MyDialogPath):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
+class MainCcPanel(wx.Panel):
+	def __init__(self, *args, **kwds):
+		self.frame = kwds.pop('frame')
+		self.pdic = kwds.pop('pdic')
+		self.prm = kwds.pop('prm')
+		wx.Panel.__init__(self, *args, **kwds)
+
+		self.vps = []
+		szr = wx.BoxSizer(wx.VERTICAL)
+		for var in self.prm['vars']:
+			v = self.pdic[ var['name'] ]
+			vp = VarPanel(self, var=var, v=v, 
+				      update_pdic=self.update_pdic, publish=self.publish)
+			szr.Add(vp, 0, wx.EXPAND)
+			self.vps.append(vp)
+		self.SetSizer(szr)
+
+	def update_pdic(self):
+		vars = self.prm['vars']
+		for var in vars:
+			v = self.vps[ vars.index(var) ].get_v()
+			self.pdic[ var['name'] ] = v
+
+	def publish(self):
+		if 'pub' in self.prm:
+			self.frame.publish_param_topic(self.pdic, self.prm)
+
 class VarPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.var = kwds.pop('var')
 		v = kwds.pop('v')
+		self.update_pdic = kwds.pop('update_pdic')
+		self.publish = kwds.pop('publish')
 		wx.Panel.__init__(self, *args, **kwds)
 
 		self.min = self.var.get('min', None)
@@ -1258,14 +1285,15 @@ class VarPanel(wx.Panel):
 			s = str(Decimal(v).quantize(Decimal('.01')))
 		self.tc.SetValue(s)
 
-		panel_v = self.GetParent()
-		dlg = panel_v.GetParent()
-		dlg.update_pdic()
-		dlg.publish()
+		self.update_pdic()
+		self.publish()
 
 	def OnTextEnter(self, event):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
+
+		self.update_pdic()
+		self.publish()
 
 	def OnRef(self, event):
 		path = self.tc.GetValue()
@@ -1294,7 +1322,8 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.vps = []
 		for var in self.prm['vars']:
 			v = self.pdic[ var['name'] ]
-			vp = VarPanel(self.panel_v, var=var, v=v)
+			vp = VarPanel(self.panel_v, var=var, v=v, 
+				      update_pdic=self.update_pdic, publish=self.publish)
 			if vp.has_slider or vp.kind == 'path':
 				hszr = None if hszr else hszr
 				self.sizer_v.Add(vp, 0, wx.EXPAND)
