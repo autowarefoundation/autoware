@@ -2,7 +2,6 @@
 
 import wx
 import wx.lib.agw.customtreectrl as CT
-import wx.lib.buttons
 import gettext
 import os
 import socket
@@ -56,19 +55,6 @@ class MyFrame(rtmgr.MyFrame):
 		scale = 0.3
 		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", scale)
 		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", scale)
-
-		scale = 0.5
-		bm_on = self.get_bitmap('btnon.png', scale)
-		bm_off = self.get_bitmap('btnoff.png', scale)
-
-		for nm in [ 'tablet', 'mobile', 'vehicle', 'database' ]:
-			setattr(self, 'bitmap_' + nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
-
-			getattr(self, 'button_' + nm).Destroy()
-			btn = wx.lib.buttons.GenBitmapToggleButton(tab, wx.ID_ANY, bm_off)
-			btn.SetBitmapSelected(bm_on)
-			self.Bind(wx.EVT_BUTTON, self.OnNetConn, btn)
-			setattr(self, 'button_' + nm, btn)
 
 		self.main_cmd = {}
 		self.all_cmd_dics.append(self.main_cmd)
