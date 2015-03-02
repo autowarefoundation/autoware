@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <ros/ros.h>
 #include <ros/console.h>
 
@@ -12,6 +14,8 @@ static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
 static constexpr bool ADVERTISE_LATCH = true;
+
+static constexpr int PRECISION = 6;
 
 static double config_velocity = 40; // Unit: km/h
 static double config_difference = 2; // Unit: km/h
@@ -28,6 +32,8 @@ static std::vector<Signal> signals;
 static std::vector<Point> left_lane_points;
 
 static int waypoint_count;
+
+static const char *ruled_waypoint_csv;
 
 static std::vector<Point> search_signal_point(const nav_msgs::Path& msg)
 {
@@ -174,6 +180,30 @@ static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
 	return computations;
 }
 
+static void write_waypoint(const geometry_msgs::Point& point, double velocity,
+			   const char *filename, bool first)
+{
+	if (first) {
+		std::ofstream ofs(filename);
+		ofs << std::fixed << std::setprecision(PRECISION) << point.x
+		    << ","
+		    << std::fixed << std::setprecision(PRECISION) << point.y
+		    << ","
+		    << std::fixed << std::setprecision(PRECISION) << point.z
+		    << std::endl;
+	} else {
+		std::ofstream ofs(filename, std::ios_base::app);
+		ofs << std::fixed << std::setprecision(PRECISION) << point.x
+		    << ","
+		    << std::fixed << std::setprecision(PRECISION) << point.y
+		    << ","
+		    << std::fixed << std::setprecision(PRECISION) << point.z
+		    << ","
+		    << std::fixed << std::setprecision(PRECISION) << velocity
+		    << std::endl;
+	}
+}
+
 static void lane_waypoint_callback(const nav_msgs::Path& msg)
 {
 	std_msgs::Header header;
@@ -194,7 +224,6 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 		pub_velocity.publish(velocities);
 	}
 
-	velocity.id = 0;
 	velocity.action = visualization_msgs::Marker::ADD;
 	velocity.lifetime = ros::Duration();
 	velocity.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
@@ -218,6 +247,7 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 	waypoint_count = msg.poses.size();
 	for (int i = 0; i < waypoint_count; ++i) {
+		velocity.id = i;
 		velocity.pose.position = msg.poses[i].pose.position;
 		velocity.pose.position.z += 0.2; // more visible
 
@@ -227,13 +257,15 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 		velocity.text = ostr.str();
 
 		velocities.markers.push_back(velocity);
-		++velocity.id;
 
 		waypoint.pose.pose.position = msg.poses[i].pose.position;
 
 		waypoint.twist.twist.linear.x =
 			config_velocity / 3.6; // to m/s
 		ruled.waypoints.push_back(waypoint);
+
+		write_waypoint(waypoint.pose.pose.position, config_velocity,
+			       ruled_waypoint_csv, (i == 0));
 
 		waypoint.twist.twist.linear.x =
 			computations[i] / 3.6; // to m/s
@@ -247,9 +279,10 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 int main(int argc, char **argv)
 {
-	if (argc < 5) {
+	if (argc < 6) {
 		ROS_ERROR_STREAM("Usage: " << argv[0]
-				 << " lane.csv node.csv point.csv signal.csv");
+				 << " lane.csv node.csv point.csv signal.csv"
+				 << " ruled_waypoint.csv");
 		std::exit(1);
 	}
 
@@ -257,6 +290,8 @@ int main(int argc, char **argv)
 	const char *node_csv = static_cast<const char *>(argv[2]);
 	const char *point_csv = static_cast<const char *>(argv[3]);
 	const char *signal_csv = static_cast<const char *>(argv[4]);
+
+	ruled_waypoint_csv = static_cast<const char *>(argv[5]);
 
 	lanes = read_lane(lane_csv);
 	nodes = read_node(node_csv);
