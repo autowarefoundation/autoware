@@ -14,7 +14,7 @@
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
-static constexpr bool ADVERTISE_LATCH = false;
+static constexpr bool ADVERTISE_LATCH = true;
 
 static ros::Publisher pub_waypoint;
 static ros::Publisher pub_mark;

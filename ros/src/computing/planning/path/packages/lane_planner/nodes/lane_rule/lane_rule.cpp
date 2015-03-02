@@ -11,7 +11,7 @@
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
-static constexpr bool ADVERTISE_LATCH = false;
+static constexpr bool ADVERTISE_LATCH = true;
 
 static double config_velocity = 40; // Unit: km/h
 static double config_difference = 2; // Unit: km/h
