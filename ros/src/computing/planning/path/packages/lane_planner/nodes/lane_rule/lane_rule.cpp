@@ -264,7 +264,7 @@ int main(int argc, char **argv)
 	signals = read_signal(signal_csv);
 
 	for (const Lane& lane : lanes) {
-		if (lane.lno() != 1)
+		if (lane.lno() != 1) // leftmost lane
 			continue;
 		for (const Node& node : nodes) {
 			if (node.nid() != lane.bnid() &&
