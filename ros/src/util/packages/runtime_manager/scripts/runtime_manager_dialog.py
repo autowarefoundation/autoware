@@ -201,6 +201,24 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.nodes_dic = self.nodes_dic_get()
 
+		#
+		# for All
+		#
+		self.alias_grps = [
+			[ self.button_launch_tf, self.button_main_tf, ],
+			[ self.button_kill_tf, self.button_main_tf, ],
+			[ self.button_ref_tf, self.button_ref_main_tf, ],
+			[ self.text_ctrl_tf, self.text_ctrl_main_tf, ],
+			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
+			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
+			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
+			[ self.text_ctrl_rosbag_play, self.text_ctrl_main_rosbag_play, ],
+			[ self.button_ref_rosbag_play, self.button_ref_main_rosbag_play, ],
+			[ self.text_ctrl_rate_rosbag_play, self.text_ctrl_rate_main_rosbag_play, ],
+			[ self.checkbox_clock_rosbag_play, self.checkbox_clock_main_rosbag_play, ],
+			[ self.checkbox_sim_time, self.checkbox_main_sim_time, ],
+		]
+
 	def __do_layout(self):
 		pass
 
@@ -325,6 +343,14 @@ class MyFrame(rtmgr.MyFrame):
 				self.launch_kill(v, 'dmy', proc)
 			procs = []
 		self.main_cmd[ obj ] = procs
+
+	def OnMainTf(self, event):
+		obj = event.GetEventObject()
+		v = obj.GetValue()
+		if v:
+			self.OnLaunch_obj(self.button_launch_tf)
+		else:
+			self.OnKill_kill_obj(self.button_kill_tf)
 
 	def OnTextIp(self, event):
 		tc = event.GetEventObject()
@@ -640,6 +666,8 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnSimTime(self, event):
 		obj = event.GetEventObject()
+		self.alias_sync(obj)
+		obj = self.alias_grp_top_obj(obj)
 		cmd_dic = self.simulation_cmd
 		(cmd, proc) = cmd_dic.get(obj, (None, None));
 		if cmd and type(cmd) is dict:
@@ -763,6 +791,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnLaunch_obj(event.GetEventObject())
 
 	def OnLaunch_obj(self, obj):
+		obj = self.alias_grp_top_obj(obj)
+		self.alias_sync(obj, v=True)
+
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
 			return
@@ -813,6 +844,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnKill_kill_obj(event.GetEventObject())
 
 	def OnKill_kill_obj(self, kill_obj):
+		kill_obj = self.alias_grp_top_obj(kill_obj)
+		self.alias_sync(kill_obj, v=False)
+
 		key = self.obj_key_get(kill_obj, ['button_kill_'])
 		if not key:
 			return
@@ -840,6 +874,8 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()
+		pause_obj = self.alias_grp_top_obj(pause_obj)
+
 		key = self.obj_key_get(pause_obj, ['button_pause_'])
 		if not key:
 			return
@@ -865,6 +901,34 @@ class MyFrame(rtmgr.MyFrame):
 		if path:
 			tc.SetValue(path)
 			tc.SetInsertionPointEnd()
+                        self.alias_sync(tc)
+
+	def OnAliasSync(self, event):
+		obj = event.GetEventObject()
+		self.alias_sync(obj)
+
+	def alias_sync(self, obj, v=None):
+		en = obj.IsEnabled()
+		grp = self.alias_grp_get(obj)
+		if getattr(obj, 'GetValue', None):
+			v = obj.GetValue()
+		for o in grp:
+			if o is obj:
+				continue
+			
+			if o.IsEnabled() != en and not self.is_toggle_button(o):
+				o.Enable(en)
+			if v is not None and getattr(o, 'SetValue', None):
+				o.SetValue(v)
+				if getattr(o, 'SetInsertionPointEnd', None):
+					o.SetInsertionPointEnd()
+			o.GetParent().Refresh()
+
+	def alias_grp_top_obj(self, obj):
+		return get_top(self.alias_grp_get(obj), obj)
+
+	def alias_grp_get(self, obj):
+		return get_top([ grp for grp in self.alias_grps if obj in grp ], [])
 
 	def file_dialog(self, defaultPath='', dir=False, multi=False, save=False):
 		if dir:
@@ -1096,6 +1160,10 @@ class MyFrame(rtmgr.MyFrame):
 	def enable_key_objs(self, pfs, key, en=True):
 		for obj in self.key_objs_get(pfs, key):
 			obj.Enable(en)
+			self.alias_sync(obj)
+
+	def is_toggle_button(self, obj):
+                return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
 
 	def obj_key_get(self, obj, pfs):
 		name = self.name_get(obj)
