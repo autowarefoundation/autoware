@@ -1,19 +1,72 @@
-buttons:
-  download:
-    run : rosrun obj_db obj_downloader
-  upload:
-    run : echo upload
+name : Data
+subs :
+  - name  : behavior_db
+    cmd   : echo befaviro_db
+    param : other
+  - name  : can_db
+    cmd   : echo can_db
+    param : other
+  - name  : image_db
+    cmd   : echo image_db
+    param : other
+  - name  : map_db
+    cmd   : echo map_db
+    param : other
+  - name  : map_file
+    cmd   : echo map_file
+    param : map_file
+  - name  : pointcloud_db
+    cmd   : echo pointcloud_db
+    param : other
+  - name  : pos_db
+    cmd   : rosrun obj_db obj_downloader
+    param : pos_db
+  - name  : traffic_db
+    cmd   : echo traffic_db
+    param : other
 
-vehicle:
-  - name  : can
-    label : CAN
-  - name  : position
-    label : Position
-  - name  : detected_objects
-    label : Detected Objects
-  - name  : image
-    label : Image
-  - name  : point_cloud
-    label : Point Could
-  - name  : traffic_info
-    label : Traffic Info
+params :
+  - name  : map_file
+    vars  :
+    - name  : update_timing
+      label : 'Update Timing:'
+      v     : 0
+    - name  : update_rate
+      label : 'Update Rate:'
+      v     : 1000
+    - name  : point_cloud
+      kind  : path
+      label : 'Point Cloud:'
+      v     : pcd_file
+    - name  : vector_map
+      kind  : path
+      label : 'Vector Map:'
+      v     : vector_file
+    - name  : area_lists
+      kind  : path
+      label : 'Area Lists:'
+      v     : arealists_file
+
+  - name  : pos_db
+    vars  :
+    - name  : from_lat
+      label : 'Area:'
+      v     : 0.0
+    - name  : from_lon
+      label : ''
+      v     : 0.0
+    - name  : to_lat
+      label : ' - '
+      v     : 0.0
+    - name  : to_lon
+      label : ''
+      v     : 0.0
+
+  - name  : other
+    vars  :
+    - name  : upload_rate_ms
+      label : Upload Rate (ms)
+      v     : 1000
+    - name  : download_rate_ms
+      label : Download Rate (ms)
+      v     : 1000
