@@ -10,9 +10,10 @@ using namespace std;
 using namespace zmp::hev;
 
 #define HEV_WHEEL_BASE 2.7 //Prius Tire Size
-#define HANDLE_ANGLE_MAX 600 //ハンドルを最大まで回したときの角度 
+#define HANDLE_ANGLE_MAX 666 //ハンドルを最大まで回したときの角度 
 #define WHEEL_ANGLE_MAX 31.28067 //フロントタイヤの最大角度
-#define PERIOD 100  
+#define ratio 1.5
+#define MILLISECOND 1000  
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
 #define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
@@ -154,7 +155,7 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
           Main->sndDrvModeM();
           Main->sndStrModeM();
           cout << "Fallback to Manual Mode" << endl;
-          usleep(PERIOD*10000);
+          usleep(MILLISECOND*1000);
         }
 
         //loop back to while
@@ -176,7 +177,9 @@ void* MainWindow::HevBaseThreadEntry(void* arg)
       cout << "HEV: Manual Mode" << endl;
     }
     printf("\n\n");
-    usleep(PERIOD*1000);
+
+    //Loop Rate (10ms = 100Hz)
+    usleep(MILLISECOND*100);
   }
 
   return NULL;
@@ -204,7 +207,7 @@ vel_data_t GetCommand()
   long long int cmd_time = TSTAMP();
       
   //check if new command
-  if((cmd_time - cmd.tstamp) > 500){
+  if((cmd_time - cmd.tstamp) > 50000){
     //old command
     cout << "command is old" <<endl;
     cmd = zero_cmd();
@@ -551,6 +554,7 @@ bool MainWindow::Brake(int target_brake, int gain) {
 static int target_accel_level = 0;
 
 double estimate_accel = 0.0;
+static bool IsAccelerated = false;
 
 bool Control(double tv, double sv,void* p) 
 {
@@ -565,8 +569,7 @@ bool Control(double tv, double sv,void* p)
 
   double current_velocity = current.tv*3.6;
   double current_steering_angle = current.sv;
-  
-  
+ 
   double cmd_velocity = tv *3.6;
   double cmd_steering_angle = sv;
  
@@ -623,13 +626,14 @@ bool Control(double tv, double sv,void* p)
       //accelerate !!!!!!!!!!!!!!!!
       cout << "Acceleration" << endl;
       Main->AccelerateControl(current_velocity,cmd_velocity);
-      
+      IsAccelerated = true;
     }else if (fabs(cmd_velocity) < fabs(current_velocity) 
               && fabs(cmd_velocity) > 0.0) 
       {
         //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         cout << "Deceleration" << endl;
         Main->DecelerateControl(current_velocity,cmd_velocity);
+        IsAccelerated = false;
       }
     
     else if (cmd_velocity == 0.0) {
@@ -637,7 +641,7 @@ bool Control(double tv, double sv,void* p)
       //Stopping!!!!!!!!!!!
        
       Main->StoppingControl(current_velocity,cmd_velocity);
-  
+      IsAccelerated = false;
     } // if cmdvel < curvel
     
   } //if shift in drive
@@ -656,18 +660,164 @@ bool Control(double tv, double sv,void* p)
   
 }
 
-void MainWindow::SteeringControl(double cmd_steering_angle){
+double NormalizeStrAngle(double input_angle){
+
+    if (abs(input_angle) > 600) {
+        cout << "steering angle too large : " <<  input_angle << endl;
+        if (input_angle < 0) 
+          return  -600;
+        else 
+          return 600;
+      }
+    else
+      return input_angle;
+}
+
+double SetSteeringAngle(double cmd_steering_degree, int angle_threshold){
+
+  int current_steering_degree = _hev_state.strInf.angle;
+  double sub = cmd_steering_degree - current_steering_degree;
+
+   if( sub > angle_threshold ){
+      double input_angle = cmd_steering_degree + angle_threshold;
     
-  int str = (int)(cmd_steering_angle/M_PI*180.0 * (HANDLE_ANGLE_MAX/WHEEL_ANGLE_MAX));    
-  cout << "setting str angle to " << str << endl;
-  if (abs(str) > 600) {
-    cout << "steering angle too large : " <<  str << endl;
-    if (str < 0) 
-      str = -600;
-    else str = 600;
+      input_angle = NormalizeStrAngle(input_angle);
+      std::cout << "plus input_angle = " << input_angle << std::endl;
+      return input_angle;
+
+    }else if(sub < angle_threshold * (-1)){
+
+      double input_angle = cmd_steering_degree - angle_threshold;
+      input_angle = NormalizeStrAngle(input_angle);
+      std::cout << "minus input_angle = " << input_angle << std::endl;
+      return input_angle;
+
+    }else{
+
+      std::cout << "normal input_angle = " << cmd_steering_degree<< std::endl;
+      return cmd_steering_degree;
+    }
+   
+}
+void MainWindow::SteeringControl(double cmd_steering_angle){
+  /*
+  int cmd_steering_degree = (int)(cmd_steering_angle/M_PI*180.0 * (HANDLE_ANGLE_MAX/WHEEL_ANGLE_MAX) * ratio);
+  double current_velocity = _hev_state.drvInf.veloc;
+  cout << "setting steering degree to " << cmd_steering_degree << endl;
+  int angle_threshold = 0;
+
+  if(current_velocity > 0 && current_velocity < 5.0){
+    angle_threshold  = 5;
+
+  }else if(current_velocity >=5.0 && current_velocity < 10.0){
+     angle_threshold = 10;
+ 
+  }else if(current_velocity >=10.0 && current_velocity < 20.0){
+    angle_threshold = 20;
+
+  }else if(current_velocity >=20.0 && current_velocity < 30.0){
+    angle_threshold = 30;
+
+  }else if(current_velocity >=30.0 && current_velocity < 40.0){
+    angle_threshold = 40;
+
+  }else{
+    angle_threshold = 20;
   }
-  else 
-    hev->SetStrAngle(str*10);
+  double input_angle = SetSteeringAngle(cmd_steering_degree,angle_threshold);
+  hev->SetStrAngle(input_angle*10);
+  */
+
+  
+  
+  //stable version (制御自体は不安定)
+ int str  = (int)(cmd_steering_angle/M_PI*180.0 * (HANDLE_ANGLE_MAX/WHEEL_ANGLE_MAX) * ratio);
+  if (abs(str) > 600) {
+      cout << "steering angle too large : " <<  str << endl;
+      if (str < 0) 
+      str = -600;
+      else 
+      str = 600;
+      }
+      else 
+      hev->SetStrAngle(str*10);
+ 
+
+  /* 
+     int str  = (int)(cmd_steering_angle/M_PI*180.0 * (HANDLE_ANGLE_MAX/WHEEL_ANGLE_MAX) * ratio);
+static double prev_angle = str;
+static int angle_threshold = 10;
+  if(IsAccelerated == false){
+    double sub = str - prev_angle;
+    if( sub > angle_threshold ){
+      double input_angle = prev_angle+angle_threshold;
+    
+      if (abs(input_angle) > 600) {
+        cout << "steering angle too large : " <<  input_angle << endl;
+        if (input_angle < 0) 
+          input_angle  = -600;
+        else input_angle = 600;
+      }
+      std::cout << "plus input_angle = " << input_angle << std::endl;
+      hev->SetStrAngle(input_angle*10);
+      prev_angle = input_angle;
+    }else if(sub < angle_threshold * (-1)){
+      double input_angle = prev_angle-angle_threshold;
+    
+      if (abs(input_angle) > 600) {
+        cout << "steering angle too large : " <<  input_angle << endl;
+        if (input_angle < 0) 
+          input_angle = -600;
+        else input_angle = 600;
+      }
+      std::cout << "minus input_angle = " << input_angle << std::endl;
+      hev->SetStrAngle(input_angle*10);
+      prev_angle = input_angle;
+    }else{
+      std::cout << "normal input_angle = " << str << std::endl;
+      hev->SetStrAngle(str*10);
+      prev_angle = str;
+    }
+  }else{
+    angle_threshold = 25;
+    cout << "Accelerated Steering :" << angle_threshold << std::endl;
+ 
+    double sub = str- prev_angle;
+    if( sub > angle_threshold ){
+      double input_angle = prev_angle+angle_threshold;
+    
+      if (abs(input_angle) > 600) {
+        cout << "steering angle too large : " <<  input_angle << endl;
+        if (input_angle < 0) 
+          input_angle  = -600;
+        else input_angle = 600;
+      }
+      std::cout << "plus input_angle = " << input_angle << std::endl;
+      hev->SetStrAngle(input_angle*10);
+      prev_angle = input_angle;
+    }else if(sub < angle_threshold * (-1)){
+      double input_angle = prev_angle-angle_threshold;
+    
+      if (abs(input_angle) > 600) {
+        cout << "steering angle too large : " <<  input_angle << endl;
+        if (input_angle < 0) 
+          input_angle = -600;
+        else input_angle = 600;
+      }
+      std::cout << "minus input_angle = " << input_angle << std::endl;
+      hev->SetStrAngle(input_angle*10);
+      prev_angle = input_angle;
+    }else{
+      std::cout << "normal input_angle = " << str << std::endl;
+      hev->SetStrAngle(str*10);
+      prev_angle = str;
+    }
+  
+    }
+
+  
+  */
+
 }
 
 void MainWindow::ChangeShiftMode(double cmd_velocity)

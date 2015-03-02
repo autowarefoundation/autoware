@@ -105,6 +105,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
+		self.computing_nodes_dic = self.nodes_dic_get(self.computing_cmd)
+
 		rtmgr.MyFrame.__do_layout(self)
 
 		#
@@ -516,6 +518,18 @@ class MyFrame(rtmgr.MyFrame):
 
 		pub.publish(msg)
 
+	def OnRefresh(self, event):
+		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
+		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
+
+		run_nodes_set = set(run_nodes)
+		for (obj, nodes) in self.computing_nodes_dic.items():
+			v = nodes and run_nodes_set.issuperset(nodes)
+			if obj.GetValue() != v:
+				set_check(obj, v)
+				obj.Enable(not v)
+		self.notebook_1_pane_3.Refresh()
+
 	#
 	# Viewer Tab
 	#
@@ -642,6 +656,15 @@ class MyFrame(rtmgr.MyFrame):
 			print(cmd)
 			os.system(cmd)
 
+	def OnPointMapUpdate(self, event):
+		key = 'pmap'
+		obj = self.obj_get('button_launch_' + key)
+		kill_obj = self.obj_get('button_kill_' + key)
+		if obj.IsEnabled() or not kill_obj.IsEnabled():
+			return
+		self.OnKill_kill_obj(kill_obj)
+		self.OnLaunch_obj(obj)
+
 	#
 	# Data Tab
 	#
@@ -735,7 +758,9 @@ class MyFrame(rtmgr.MyFrame):
 		return dic.get(key, None)
 
 	def OnLaunch(self, event):
-		obj = event.GetEventObject()
+		self.OnLaunch_obj(event.GetEventObject())
+
+	def OnLaunch_obj(self, obj):
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
 			return
@@ -1001,6 +1026,27 @@ class MyFrame(rtmgr.MyFrame):
 			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
 		return cmd
 		
+	def nodes_dic_get(self, cmd_dic):
+		nodes_dic = {}
+		for (obj, (cmd, _)) in cmd_dic.items():
+			nodes_dic[ obj ] = self.cmd_to_nodes(cmd)
+		return nodes_dic
+
+	def cmd_to_nodes(self, cmd):
+		if not cmd:
+			return None
+		if type(cmd) is list:
+			return reduce(lambda a,b : a+b, [ self.cmd_to_nodes(c) for c in cmd ])
+		if type(cmd) is dict:
+			return self.cmd_to_ndoes(self.selobj_cmd_get(cmd))
+
+		cmd = shlex.split(cmd)
+		if cmd[0] == 'roslaunch':
+			cmd.insert(1, '--node')
+			return subprocess.check_output(cmd).strip().split('\n')
+		elif cmd[0] == 'rosrun':
+			return [ '/' + cmd[2] ]
+		return None
 
 	def modal_dialog(self, obj, lst):
 		(lbs, cmds) = zip(*lst)
@@ -1145,28 +1191,39 @@ class VarPanel(wx.Panel):
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter, self.tc)
 
-		if self.has_slider:
-			self.w = self.max - self.min
-			vlst = [ v, self.min, self.max, self.var['v'] ]
-			self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
-			self.int_max = 1000 if self.is_float else self.max
-			self.int_min = 0 if self.is_float else self.min
+		if self.kind is None:
+			if self.has_slider:
+				self.w = self.max - self.min
+				vlst = [ v, self.min, self.max, self.var['v'] ]
+				self.is_float = len( [ v_ for v_ in vlst if type(v_) is not int ] ) > 0
+				self.int_max = 1000 if self.is_float else self.max
+				self.int_min = 0 if self.is_float else self.min
 
-			self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
-			self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
-			self.slider.SetMinSize((82, 27))
-			szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
-		else:
-			self.is_float = type(self.var['v']) is not int
-			self.tc.SetMinSize((40,27))
+				self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
+				self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
+				self.slider.SetMinSize((82, 27))
+				szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+			else:
+				self.is_float = type(self.var['v']) is not int
+				self.tc.SetMinSize((40,27))
 
 		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
-		szr.Add(self.tc, 0, flag, 4)
+		prop = 1 if self.kind == 'path' else 0
+		szr.Add(self.tc, prop, flag, 4)
+
+		if self.kind == 'path':
+			self.ref = wx.Button(self, wx.ID_ANY, 'Ref')
+			self.Bind(wx.EVT_BUTTON, self.OnRef, self.ref)
+			self.ref.SetMinSize((40,29))
+			szr.Add(self.ref, 0, flag, 4)
+
 		self.SetSizer(szr)
 
 	def get_v(self):
 		if self.kind == 'radio_box':
 			return self.obj.GetSelection()
+		if self.kind == 'path':
+			return str(self.tc.GetValue())
 		return self.get_tc_v()
 
 	def get_tc_v(self):
@@ -1201,6 +1258,22 @@ class VarPanel(wx.Panel):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
 
+	def OnRef(self, event):
+		path = self.tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		path_type = self.var.get('path_type', None)
+		if path_type == 'dir':
+			dlg = wx.DirDialog(self, defaultPath=path)
+		else:
+			style = wx.FD_SAVE if path_type == 'save' else wx.FD_DEFAULT_STYLE
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style)
+
+		if dlg.ShowModal() == wx.ID_OK:
+			path = dlg.GetPath()
+			self.tc.SetValue(path)
+			self.tc.SetInsertionPointEnd()
+		dlg.Destroy()
+
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
@@ -1213,7 +1286,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		for var in self.prm['vars']:
 			v = self.pdic[ var['name'] ]
 			vp = VarPanel(self.panel_v, var=var, v=v)
-			if vp.has_slider:
+			if vp.has_slider or vp.kind == 'path':
 				hszr = None if hszr else hszr
 				self.sizer_v.Add(vp, 0, wx.EXPAND)
 			else:
@@ -1310,8 +1383,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		self.refresh()
 
 	def refresh(self):
-		lst = subprocess.check_output([ 'rostopic', 'list' ]).split('\n')
-		lst = [ 'All' ] + lst[:-1] # add All , remove last ''
+		lst = [ 'all' ] + subprocess.check_output([ 'rostopic', 'list' ]).strip().split('\n')
 		panel = self.panel_1
 		szr = self.sizer_topic
 		for obj in self.cbs:

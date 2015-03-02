@@ -53,12 +53,14 @@ SOURCES       = main.cpp \
 		HevCnt.cpp \
 		GameControl.cpp moc_mainwindow.cpp \
 		activate_hev.cpp
-OBJECTS       = main.o \
+
+OBJECTS	= main.o \
 		mainwindow.o \
 		RingBuffer.o \
 		HevCnt.o \
 		GameControl.o \
 		moc_mainwindow.o \
+		autoware_socket.o \
 		$(SHM_OBJ)
 
 DIST          = /opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/common/unix.conf \
@@ -278,8 +280,15 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		/usr/local/include/zmp/DemoSensorInformation.h \
 		/usr/local/include/zmp/CanCommunication.h \
 		/usr/local/include/zmp/HevControlCommon.h \
-		ui_mainwindow.h 		
+		ui_mainwindow.h \
+		../autoware_socket/data.h
+
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp 
+
+autoware_socket.o:../autoware_socket/info.cpp ../autoware_socket/cmd.cpp mainwindow.h ../autoware_socket/data.h ../hev_base/common/shm_common.h ../autoware_socket/input_cmd.cpp
+	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o autoware_socket.o -nostdlib
+
+
 
 RingBuffer.o: RingBuffer.cpp RingBuffer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RingBuffer.o RingBuffer.cpp

@@ -38,7 +38,7 @@
 #include <fstream>
 //#include <iostream>
 
-
+#include "../autoware_socket/data.h"
 
 namespace Ui {
 class MainWindow;
@@ -75,6 +75,7 @@ public:
     void StoppingControl(double current_velocity,double cmd_velocity); //自動運転：停止
     bool Brake(int target_brake, int gain); //ブレーキの関数
     bool Accel(int target_accel, int gain); //アクセルの関数
+    void SetDrvMode(int mode);
 
     /*============ここまで=================*/
 
@@ -217,8 +218,8 @@ private:
 
     /*===========HevBase用関数===================*/ 
 
-    void HevBaseActivate();
-    static void* HevBaseThreadEntry(void* arg);
+    //void HevBaseActivate();
+    //static void* HevBaseThreadEntry(void* arg);
 
     /*============ここまで=================*/
 
@@ -230,9 +231,7 @@ private:
     void viewErrCode();
     void updateTime();
     void writeLog();
-    void sendData();
 
-    bool setConfig();
     void logThread();
     static void* LogThreadEntry(void* arg);
 
@@ -288,10 +287,7 @@ private:
     struct selectLogInf _selectLog;
     FILE* _logSave;
 
-    int duration;
-
     pthread_t _logThread;
-    pthread_t _sendData;
 
     GameController _Game;
     bool _gameRes;
@@ -300,8 +296,19 @@ private:
 
     int _drvTargetVeloc;
     int _drvTargetStroke;
+
+//function of autoware socket
+    int canduration;
+    int cmdduration;
+    pthread_t _cmdgetter;
+
+    void sendDataGetAndSend();
+    bool setConfig();
+    void wrapSender();
+    static void* CMDGetterEntry(void *a);
+    void TestPrint();
+
 };
 
-void* SendData(void *arg);
 
 #endif // MAINWINDOW_H
