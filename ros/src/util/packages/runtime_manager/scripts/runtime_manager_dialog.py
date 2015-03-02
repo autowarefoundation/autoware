@@ -505,8 +505,9 @@ class MyFrame(rtmgr.MyFrame):
 			for n in lst[:-1]:
 				targ = getattr(targ, n)
 			nm = lst[-1]
-			type_str = targ._slot_types[ targ.__slots__.index(nm) ]
-			setattr(targ, nm, str_to_rosval(v, type_str, v))
+			if nm in targ.__slots__:
+				type_str = targ._slot_types[ targ.__slots__.index(nm) ]
+				setattr(targ, nm, str_to_rosval(v, type_str, v))
 
 		pub.publish(msg)
 
