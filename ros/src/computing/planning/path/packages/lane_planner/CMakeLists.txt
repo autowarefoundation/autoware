@@ -30,5 +30,5 @@ target_link_libraries(lane_navi vmap_parser gnss ${catkin_LIBRARIES})
 add_dependencies(lane_navi ui_socket_generate_messages_cpp)
 
 add_executable(lane_rule nodes/lane_rule/lane_rule.cpp)
-target_link_libraries(lane_rule ${catkin_LIBRARIES})
+target_link_libraries(lane_rule vmap_parser ${catkin_LIBRARIES})
 add_dependencies(lane_rule lane_follower_generate_messages_cpp)
