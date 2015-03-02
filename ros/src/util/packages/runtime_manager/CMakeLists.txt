@@ -4,6 +4,7 @@ project(runtime_manager)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  geometry_msgs
   message_generation
 )
 find_package(OpenCV REQUIRED)
@@ -24,6 +25,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
 catkin_package(
