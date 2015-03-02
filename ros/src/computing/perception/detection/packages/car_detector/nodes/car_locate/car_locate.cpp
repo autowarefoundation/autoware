@@ -91,6 +91,12 @@ void GetRPY(const geometry_msgs::Pose &pose,
   tf::Quaternion q;
   tf::quaternionMsgToTF(pose.orientation,q);
   tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
+
+  //reverse angle value
+  roll = -roll;
+  pitch = -pitch;
+  yaw = -yaw;
+
 }
 
 /*

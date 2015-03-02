@@ -87,6 +87,12 @@ void GetRPY(const geometry_msgs::Pose &pose,
   tf::Quaternion q;
   tf::quaternionMsgToTF(pose.orientation,q);
   tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
+
+  //reverse angle value 
+  roll = -roll;
+  pitch = -pitch;
+  yaw = -yaw;
+
 }
 
 /*
@@ -135,8 +141,8 @@ void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
 
     axiMove am;
     //convert axes from camera to velodyne
-    LOCATION velocoordinate = am.cal(ress,cameraMatrix);
 
+    LOCATION velocoordinate = am.cal(ress,cameraMatrix);
     //convert axes to north direction 0 angle.
     LOCATION anglefixed = am.cal(velocoordinate,angle);
 
