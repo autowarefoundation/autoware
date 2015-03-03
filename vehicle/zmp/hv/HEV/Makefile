@@ -285,7 +285,7 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp 
 
-autoware_socket.o:../autoware_socket/info.cpp ../autoware_socket/cmd.cpp mainwindow.h ../autoware_socket/data.h ../hev_base/common/shm_common.h ../autoware_socket/input_cmd.cpp
+autoware_socket.o:../autoware_socket/info.cpp ../autoware_socket/cmd.cpp mainwindow.h ../autoware_socket/data.h ../hev_base/common/shm_common.h ../autoware_socket/actuation.cpp
 	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o autoware_socket.o -nostdlib
 
 
