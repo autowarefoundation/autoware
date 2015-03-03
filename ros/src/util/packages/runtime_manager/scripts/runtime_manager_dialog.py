@@ -494,17 +494,45 @@ class MyFrame(rtmgr.MyFrame):
 	def OnTreeChecked(self, event):
 		obj = event.GetItem()
 		cmd_dic = self.obj_to_cmd_dic(obj)
-		self.launch_kill_proc(obj, cmd_dic)
+		add_args = self.obj_to_add_args(obj)
+		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
 
 	def OnTreeHyperlinked(self, event):
-		item = event.GetItem()
-		info = self.config_dic.get(item, None)
-		if info is None:
+		obj = event.GetItem()
+		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		if pdic is None or prm is None:
 			return
-		pdic = info['pdic']
-		prm = self.get_param(info['param'])
 		dlg = MyDialogParam(self, pdic=pdic, prm=prm)
 		dlg.ShowModal()
+
+	def obj_to_add_args(self, obj):
+		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		if pdic is None or prm is None:
+			return None
+		s = ''
+		for var in prm.get('vars'):
+			cmd_param = var.get('cmd_param')
+			if cmd_param:
+				name = var.get('name')
+				v = pdic.get(name)
+				unpack = cmd_param.get('unpack')
+				if unpack is not None:
+					v = ' '.join( v.split(unpack) )
+				dash = cmd_param.get('dash')
+				if dash is not None:
+					s += dash + name
+				delim = cmd_param.get('delim')
+				if delim is not None:
+					s += delim + v + ' '
+		return s.strip(' ').split(' ') if s != '' else None
+
+	def obj_to_pdic_prm(self, obj):
+		info = self.config_dic.get(obj)
+		if info is None:
+			return (None, None)
+		pdic = info.get('pdic')
+		prm = self.get_param(info.get('param'))
+		return (pdic, prm)
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -1386,11 +1414,11 @@ class VarPanel(wx.Panel):
 		if path_type == 'dir':
 			dlg = wx.DirDialog(self, defaultPath=path)
 		else:
-			style = wx.FD_SAVE if path_type == 'save' else wx.FD_DEFAULT_STYLE
-			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style)
-
+			st_dic = { 'save' : wx.FD_SAVE, 'multi' : wx.FD_MULTIPLE }
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, 
+					    style=st_dic.get(path_type, wx.FD_DEFAULT_STYLE))
 		if dlg.ShowModal() == wx.ID_OK:
-			path = dlg.GetPath()
+			path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
 			self.tc.SetValue(path)
 			self.tc.SetInsertionPointEnd()
 		dlg.Destroy()
@@ -1559,7 +1587,7 @@ def wx_flag_get(flags):
 
 def msg_path_to_obj_attr(msg, path):
 	lst = path.split('.')
-        obj = msg
+	obj = msg
 	for attr in lst[:-1]:
 		obj = getattr(obj, attr, None)
 	return (obj, lst[-1])
