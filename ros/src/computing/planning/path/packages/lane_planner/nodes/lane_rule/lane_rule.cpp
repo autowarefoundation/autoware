@@ -7,6 +7,7 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <lane_follower/lane.h>
+#include <runtime_manager/ConfigLaneRule.h>
 
 #include <vmap_parser.h>
 
@@ -18,7 +19,7 @@ static constexpr bool ADVERTISE_LATCH = true;
 static constexpr int PRECISION = 6;
 
 static double config_velocity = 40; // Unit: km/h
-static double config_difference = 2; // Unit: km/h
+static double config_difference_around_signal = 2; // Unit: km/h
 
 static ros::Publisher pub_velocity;
 static ros::Publisher pub_ruled;
@@ -34,6 +35,12 @@ static std::vector<Point> left_lane_points;
 static int waypoint_count;
 
 static const char *ruled_waypoint_csv;
+
+static void config_callback(const runtime_manager::ConfigLaneRule& msg)
+{
+	config_velocity = msg.velocity;
+	config_difference_around_signal = msg.difference_around_signal;
+}
 
 static std::vector<Point> search_signal_point(const nav_msgs::Path& msg)
 {
@@ -242,8 +249,10 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	waypoint.twist.header = header;
 	waypoint.pose.pose.orientation.w = 1;
 
-	std::vector<double> computations =
-		compute_velocity(msg, config_velocity, config_difference);
+	std::vector<double> computations = compute_velocity(
+		msg,
+		config_velocity,
+		config_difference_around_signal);
 
 	waypoint_count = msg.poses.size();
 	for (int i = 0; i < waypoint_count; ++i) {
@@ -317,9 +326,12 @@ int main(int argc, char **argv)
 
 	ros::NodeHandle n;
 
-	ros::Subscriber sub = n.subscribe("lane_waypoint",
-					  SUBSCRIBE_QUEUE_SIZE,
-					  lane_waypoint_callback);
+	ros::Subscriber sub_config = n.subscribe("config/lane_rule",
+						 SUBSCRIBE_QUEUE_SIZE,
+						 config_callback);
+	ros::Subscriber sub_waypoint = n.subscribe("lane_waypoint",
+						   SUBSCRIBE_QUEUE_SIZE,
+						   lane_waypoint_callback);
 
 	pub_velocity = n.advertise<visualization_msgs::MarkerArray>(
 		"waypoint_velocity",
