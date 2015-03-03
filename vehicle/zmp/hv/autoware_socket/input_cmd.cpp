@@ -184,10 +184,10 @@ void MainWindow::SteeringControl(double cmd_wheel_angle){
 
   if (str - prev_str > TYPICAL_STEERING_THRETHOLD) {
     str = prev_str + TYPICAL_STEERING_THRETHOLD;
-    cout << "steering rounded: str = " <<  str << endl;
+    cout << "steering angle rounded: str = " <<  str << endl;
   } else if (str - prev_str < -TYPICAL_STEERING_THRETHOLD) {
     str = prev_str - TYPICAL_STEERING_THRETHOLD;
-    cout << "steering rounded: str = " <<  str << endl;
+    cout << "steering angle rounded: str = " <<  str << endl;
   }
 
   if (str > STEERING_ANGLE_LIMIT) {

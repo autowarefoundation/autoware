@@ -65,7 +65,7 @@ void Getter(CMDDATA &cmddata){
   }
 
   server.sin_family = AF_INET;
-  server.sin_port = htons(10001); /* HTTPのポートは80番です */
+  server.sin_port = htons(10001);
 
   server.sin_addr.s_addr = inet_addr(rosServerIP.c_str());
   if (server.sin_addr.s_addr == 0xffffffff) {
@@ -74,16 +74,9 @@ void Getter(CMDDATA &cmddata){
     host = gethostbyname(rosServerIP.c_str());
     if (host == NULL) {
       if (h_errno == HOST_NOT_FOUND) {
-        /* h_errnoはexternで宣言されています */
-        //        fprintf(stderr,"cmd : host not found : %s\n", rosServerIP.c_str());
-        fprintf(stdout,"cmd : host not found : %s\n", rosServerIP.c_str());
+        fprintf(stdout,"cmd : ROS PC not found : %s\n", rosServerIP.c_str());
       } else {
-        /*
-          HOST_NOT_FOUNDだけ特別扱いする必要はないですが、
-          とりあえず例として分けてみました
-        */
         fprintf(stdout,"cmd : %s : %s\n", hstrerror(h_errno), rosServerIP.c_str());
-        //fprintf(stderr,"cmd : %s : %s\n", hstrerror(h_errno), rosServerIP.c_str());
       }
       return;
     }
@@ -93,7 +86,7 @@ void Getter(CMDDATA &cmddata){
     while (*addrptr != NULL) {
       server.sin_addr.s_addr = *(*addrptr);
 
-      /* connect()が成功したらloopを抜けます */
+      /* break the loop when connected. */
       if (connect(sock,
 		  (struct sockaddr *)&server,
 		  sizeof(server)) == 0) {
@@ -101,10 +94,10 @@ void Getter(CMDDATA &cmddata){
       }
 
       addrptr++;
-      /* connectが失敗したら次のアドレスで試します */
+      // let's try another IP address if not successfully connected.
     }
    
-    /* connectが全て失敗した場合 */
+    // if all connections failed...
     if (*addrptr == NULL) {
       perror("cmd : connect");
       return;
@@ -130,7 +123,7 @@ void Getter(CMDDATA &cmddata){
     cmdRes.append(recvdata,n);
   }
 
-  //string version
+  // string version
   std::vector<std::string> cmdVector;
   cmdVector = split(cmdRes,',');
   if(cmdVector.size() == 7){
@@ -148,7 +141,7 @@ void Getter(CMDDATA &cmddata){
   }
   printf("cmd : return data : %s\n",cmdRes.c_str());
 
-  //struct version
+  // struct version
   /*
   if(cmdRes.size() == sizeof(CMDDATA)){
     memcpy(&cmddata,cmdRes.data(),sizeof(CMDDATA));
@@ -233,10 +226,6 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
   // if in neutral and vel cmd 0
   //    - release brake if pressed
   
-  // removed by shinpei, we don't manage gear shifts here.
-  //ギアがNの場合DかRに
-  //Main->ChangeShiftMode(cmd_velocity);
-   
   //------------------------------------------------------
   // if shift in drive
   //     - if cmd vel > 0 && brake pressed
