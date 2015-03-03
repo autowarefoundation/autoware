@@ -22,6 +22,7 @@ from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigLaneFollower
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
+from runtime_manager.msg import ConfigLaneRule
 from ui_socket.msg import mode_cmd
 from ui_socket.msg import gear_cmd
 from ui_socket.msg import Waypoint
