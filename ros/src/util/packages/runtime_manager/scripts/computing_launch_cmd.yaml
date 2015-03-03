@@ -69,7 +69,11 @@ subs :
       - name : Mission
         subs :
         - name : lane_navi
-          cmd  : rosrun lane_planner lane_navi /tmp/lane.csv /tmp/node.csv /tmp/point.csv
+          cmd  : rosrun lane_planner lane_navi
+          param: lane_navi
+        - name : lane_rule
+          cmd  : rosrun lane_planner lane_rule
+          param: lane_rule
       - name : Motion
       - name : Path
         subs :
@@ -262,3 +266,39 @@ params :
       min   : 0
       max   : 100
       v     : 0.0
+
+  - name : lane_navi
+    vars :
+    - name      : vector_map
+      label     : Vector Map
+      kind      : path
+      path_type : dir
+      v         : /tmp
+      rosparam  : /lane_navi/vector_map_directory
+
+  - name  : lane_rule
+    topic : /config/lane_rule
+    msg   : ConfigLaneRule
+    vars  :
+    - name      : vector_map
+      label     : Vector Map
+      kind      : path
+      path_type : dir
+      v         : /tmp
+      rosparam  : /lane_rule/vector_map_directory
+    - name      : ruled_waypoint
+      label     : Ruled Waypoint
+      kind      : path
+      path_type : save
+      v         : /tmp/ruled_waypoint.csv
+      rosparam  : /lane_rule/ruled_waypoint_csv
+    - name      : velocity
+      label     : Velocity
+      min       : 0
+      max       : 200
+      v         : 40.0
+    - name      : difference_around_signal
+      label     : Difference around Signal
+      min       : 0
+      max       : 20
+      v         : 2.0
