@@ -100,14 +100,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		#
-		# for Main Tab
-		#
-		self.sock_a = None
-		self.sock_b = None
-		self.sock_c = None
-		self.sock_d = None
-
-		#
 		# for Sensing Tab
 		#
 		self.drv_probe_cmd = {}
@@ -338,55 +330,6 @@ class MyFrame(rtmgr.MyFrame):
 		else:
 			self.OnKill_kill_obj(self.button_kill_tf)
 
-	def OnTextIp(self, event):
-		tc = event.GetEventObject()
-		bak = s = tc.GetValue()
-		nm = self.name_get(tc) # text_ctrl_ip_a_0
-		t = nm[-3:-2] # a
-		if s.isdigit():
-			i = int(s)
-			i = 0 if i < 0 else i
-			i = 255 if i > 255 else i
-			s = str(i)
-		else:
-			s = ''
-		if s != bak:
-			tc.SetValue(s)
-		self.update_button_conn_stat(t)
-
-	def OnConn(self, event):
-		b = event.GetEventObject()
-		nm = self.name_get(b) # button_conn_a
-		t = nm[-1:] # a
-		if t == 'b': # tablet
-			cmd = 'roslaunch runtime_manager ui_socket.launch'
-			sock = self.launch_kill(True, cmd, None)
-		else:
-			ipaddr = '.'.join([ self.text_ip_get(t, s).GetValue() for s in ['0','1','2','3'] ])
-			port = 12345
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			sock.connect((ipaddr, port))
-		setattr(self, 'sock_' + t, sock)
-
-		b.Disable()
-		self.text_ip_stat_set(t, False)
-		self.obj_get('button_disconn_' + t).Enable()
-
-	def OnDisconn(self, event):
-		b = event.GetEventObject()
-		nm = self.name_get(b) # button_disconn_a
-		t = nm[-1:] # a
-		sock = self.obj_get('sock_' + t)
-		if sock:
-			if t == 'b': # tablet
-				self.launch_kill(False, 'dmy', sock)
-			else:
-				sock.close()
-			setattr(self, 'sock_' + t, None)
-		b.Disable()
-		self.text_ip_stat_set(t, True)
-		self.update_button_conn_stat(t)
-
 	def OnGear(self, event):
 		grp = { self.button_statchk_d : 1,
 			self.button_statchk_r : 2,
@@ -407,26 +350,6 @@ class MyFrame(rtmgr.MyFrame):
 			pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 			pub.publish(mode_cmd(mode=v))
 
-	def update_button_conn_stat(self, t): # a
-		conn = self.obj_get('button_conn_' + t);
-		en = conn.IsEnabled()
-		if self.obj_get('sock_' + t) and en:
-			conn.Disable()
-			return
-		yet = [ s for s in ['0','1','2','3'] if self.text_ip_get(t, s).GetValue() == '' ]
-		act = None
-		act = True if len(yet) <= 0 and not en else act
-		act = False if len(yet) > 0 and en else act
-		if act is not None:
-			conn.Enable(act)
-
-	def text_ip_get(self, t, s): # t a, s 0
-		return self.obj_get('text_ctrl_ip_' + t + '_' + s)
-
-	def text_ip_stat_set(self, t, en): # a
-		for s in ['0','1','2','3']:
-			self.text_ip_get(t, s).Enable(en)
-
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
 		for b in grp:
@@ -436,54 +359,6 @@ class MyFrame(rtmgr.MyFrame):
 			act = False if b is not push and v else act
 			if act is not None:
 				b.SetValue(act)
-
-	def statchk_send_recv(self):
-		#
-		# send
-		#
-		sock = self.sock_c # Vehicle conn
-		if sock is None: 
-			print('Not connect !')
-			return
-		steer = self.slider_statchk_steer.GetValue()
-		accel = self.slider_statchk_accel.GetValue()
-		brake = self.slider_statchk_brake.GetValue()
-		gear_dic = { 'b':0 , 'r':1 , 'n':2 , 'd':3 }
-		gear = self.radio_value_get('button_statchk_', gear_dic)
-		mode_dic = { 'prog':0, 'manu':1 }
-		mode = self.radio_value_get('button_statchk_', mode_dic)
-		data = struct.pack('=5i', steer, accel, brake, gear, mode)
-		sock.send(data)
-
-		#
-		# recv
-		#
-		rdata = sock.recv(1024)
-		(r_steer, r_accel, r_brake, r_gear, r_mode) = struct.unpack('=5i', rdata)
-		
-		self.radio_value_set('button_statchk_', gear_dic, r_gear)
-		self.radio_value_set('button_statchk_', mode_dic, r_mode)
-		self.slider_statchk_steer.SetValue(r_steer)
-		self.slider_statchk_accel.SetValue(r_accel)
-		self.slider_statchk_brake.SetValue(r_brake)
-
-		s = self.key_get(gear_dic, r_gear)
-		self.label_gear.SetLabel(s.upper() if s else '?')
-		s = self.key_get(mode_dic, r_mode)
-		self.label_mode.SetLabel(s[0].upper() if s else '?')
-
-	def radio_value_get(self, base_name, dic):
-		return get_top( [ v for (s,v) in dic.items() if self.obj_get(base_name + s).GetValue() ], 0 )
-
-	def radio_value_set(self, base_name, dic, val):
-		for (k,v) in dic.items():
-			obj = self.obj_get(base_name + k)
-			ov = obj.GetValue()
-			act = None
-			act = True if v == val and not ov else act
-			act = False if v != val and ov else act
-			if act is not None:
-				obj.SetValue(act)
 
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
@@ -720,15 +595,6 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Data Tab
 	#
-	def OnTextArea(self, event):
-		pf = 'text_ctrl_moving_objects_route_'
-		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
-		yet = [ nm for nm in lst if self.obj_get(pf + nm).GetValue() == '' ]
-		en = len(yet) <= 0
-		btn = self.button_launch_download
-		if btn.IsEnabled() is not en:
-			btn.Enable(en)
-
 	def check_download_objects_stat(self, btn, v, tcs, add_args):
 		ngs = []
 		if v:
@@ -804,20 +670,15 @@ class MyFrame(rtmgr.MyFrame):
 		targ_info['pdic'] = pdic
 		self.load_dic[ targ_info['name'] ] = pdic
 
-	def get_cmd_dic(self, key):
-		dic = { 'tf'		: self.sensing_cmd,
-			'sensor_fusion'	: self.sensing_cmd,
-			'rosbag_play'	: self.simulation_cmd,
-			'pmap'		: self.simulation_cmd,
-			'vmap'		: self.simulation_cmd,
-			'trajectory'	: self.simulation_cmd,
-			'download'	: self.data_cmd,
-			'upload'	: self.data_cmd,
-		}
-		return dic.get(key, None)
-
 	def obj_to_cmd_dic(self, obj):
 		return get_top( [ cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic ] )
+
+	def obj_to_cmd_dic_cmd_proc(self, obj):
+		cmd_dic = self.obj_to_cmd_dic(obj)
+		if cmd_dic is None:
+			return (None, None, None)
+		(cmd, proc) = cmd_dic.get(obj, (None, None))
+		return (cmd_dic, cmd, proc)
 
 	def OnLaunch(self, event):
 		self.OnLaunch_obj(event.GetEventObject())
@@ -839,10 +700,9 @@ class MyFrame(rtmgr.MyFrame):
 		if tc and not path:
 			return
 
-		cmd_dic = self.get_cmd_dic(key)
-		if obj not in cmd_dic:
+		(cmd_dic, cmd, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if cmd_dic is None or cmd is None:
 			return
-		(cmd, proc) = cmd_dic[obj]
 
 		add_args = None
 		if path:
@@ -883,10 +743,9 @@ class MyFrame(rtmgr.MyFrame):
 		if not key:
 			return
 		obj = self.obj_get('button_launch_' + key)
-		cmd_dic = self.get_cmd_dic(key)
-		if obj not in cmd_dic:
+		(cmd_dic, cmd, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if cmd_dic is None or cmd is None:
 			return
-		(cmd, proc) = cmd_dic[obj]
 
 		# ROSBAG Record modify
 		sigint = (key == 'rosbag_record')
@@ -912,11 +771,9 @@ class MyFrame(rtmgr.MyFrame):
 		if not key:
 			return
 		obj = self.obj_get('button_launch_' + key)
-		cmd_dic = self.get_cmd_dic(key)
-		if obj not in cmd_dic:
-			return
-		(cmd, proc) = cmd_dic[obj]
-		proc.stdin.write(' ')
+		(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if proc:
+			proc.stdin.write(' ')
 
 	def OnRef(self, event):
 		b = event.GetEventObject()
