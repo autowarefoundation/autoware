@@ -523,6 +523,23 @@ class MyFrame(rtmgr.MyFrame):
 
 		pub.publish(msg)
 
+	def rosparam_set(self, pdic, prm):
+		cmd = [ 'rosparam', 'list' ]
+		rosparams = subprocess.check_output(cmd).strip().split('\n')
+		for var in prm['vars']:
+			if 'rosparam' not in var:
+				continue
+			rosparam = var['rosparam']
+			v = pdic[ var['name'] ]
+			if rosparam in rosparams:
+				cmd = [ 'rosparam', 'get', rosparam ]
+				ov = subprocess.check_output(cmd).strip()
+				if ov == v:
+					continue
+			cmd = [ 'rosparam', 'set', rosparam, v ]
+			print(cmd)
+			subprocess.call(cmd)
+
 	def OnRefresh(self, event):
 		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
 		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
@@ -887,7 +904,7 @@ class MyFrame(rtmgr.MyFrame):
 		if path:
 			tc.SetValue(path)
 			tc.SetInsertionPointEnd()
-                        self.alias_sync(tc)
+			self.alias_sync(tc)
 
 	def OnAliasSync(self, event):
 		obj = event.GetEventObject()
@@ -1149,7 +1166,7 @@ class MyFrame(rtmgr.MyFrame):
 			self.alias_sync(obj)
 
 	def is_toggle_button(self, obj):
-                return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
+		return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
 
 	def obj_key_get(self, obj, pfs):
 		name = self.name_get(obj)
@@ -1252,6 +1269,7 @@ class MainCcPanel(wx.Panel):
 	def publish(self):
 		if 'pub' in self.prm:
 			self.frame.publish_param_topic(self.pdic, self.prm)
+		self.frame.rosparam_set(self.pdic, self.prm)
 
 class VarPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
@@ -1413,9 +1431,10 @@ class MyDialogParam(rtmgr.MyDialogParam):
 			self.pdic[ var['name'] ] = v
 
 	def publish(self):
+		frame = self.GetParent()
 		if 'pub' in self.prm:
-			frame = self.GetParent()
 			frame.publish_param_topic(self.pdic, self.prm)
+		frame.rosparam_set(self.pdic, self.prm)
 
 class MyApp(wx.App):
 	def OnInit(self):
