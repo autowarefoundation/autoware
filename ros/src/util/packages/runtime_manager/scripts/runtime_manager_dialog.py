@@ -106,6 +106,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.sensing_cmd = {}
 		self.all_cmd_dics.append(self.sensing_cmd)
 		dic = self.load_yaml('sensing.yaml')
+
+		self.add_params(dic.get('params', []))
+
 		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
@@ -367,13 +370,17 @@ class MyFrame(rtmgr.MyFrame):
 	# Computing Tab
 	#
 	def OnTreeChecked(self, event):
-		obj = event.GetItem()
+		self.OnChecked_obj(event.GetItem())
+
+	def OnChecked_obj(self, obj):
 		cmd_dic = self.obj_to_cmd_dic(obj)
 		add_args = self.obj_to_add_args(obj)
 		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
 
 	def OnTreeHyperlinked(self, event):
-		obj = event.GetItem()
+		self.OnHyperlinked_obj(event.GetItem())
+
+	def OnHyperlinked_obj(self, obj):
 		(pdic, prm) = self.obj_to_pdic_prm(obj)
 		if pdic is None or prm is None:
 			return
@@ -404,7 +411,9 @@ class MyFrame(rtmgr.MyFrame):
 	def obj_to_pdic_prm(self, obj):
 		info = self.config_dic.get(obj)
 		if info is None:
-			return (None, None)
+			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj ])
+			if info is None:
+				return (None, None)
 		pdic = info.get('pdic')
 		prm = self.get_param(info.get('param'))
 		return (pdic, prm)
@@ -481,7 +490,7 @@ class MyFrame(rtmgr.MyFrame):
 	# Sensing Tab
 	#
 	def OnSensingDriver(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
+		self.OnChecked_obj(event.GetEventObject())
 
 	def OnCalib(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
@@ -542,7 +551,7 @@ class MyFrame(rtmgr.MyFrame):
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
 				run_dic[obj] = (dic['run'], None)
-			if 'path' in dic:
+			if 'param' in dic:
 				obj = self.add_config_link(dic, panel, obj)
 		if sizer:
 			sizer.Add(obj, 0, wx.EXPAND | bdr_flg, 4)
@@ -562,14 +571,14 @@ class MyFrame(rtmgr.MyFrame):
 		if pdic is None:
 			pdic = {}
 			self.load_dic[name] = pdic
-		self.add_cfg_info(cfg_obj, obj, name, pdic, True, 'path', dic['path'])
+		self.add_cfg_info(cfg_obj, obj, name, pdic, True, 'param', dic.get('param'))
 		return hszr
 
 	#
 	# Simulation Tab
 	#
 	def OnSimulation(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
+		self.OnChecked_obj(event.GetEventObject())
 
 	def OnSimTime(self, event):
 		obj = event.GetEventObject()
@@ -618,14 +627,7 @@ class MyFrame(rtmgr.MyFrame):
 	# Common Utils
 	#
 	def OnConfig(self, event):
-		cfg_obj = event.GetEventObject()
-		info = self.config_dic.get(cfg_obj, None)
-		if info is None:
-			return
-		pdic = info['pdic']
-		path_name = info['path']
-		dlg = MyDialogPath(self, pdic=pdic, path_name=path_name)
-		dlg.ShowModal()
+		self.OnHyperlinked_obj(event.GetEventObject())
 
 	def add_params(self, params):
 		for prm in params:
@@ -639,14 +641,6 @@ class MyFrame(rtmgr.MyFrame):
 
 	def add_cfg_info(self, cfg_obj, obj, name, pdic, run_disable, key, value):
 		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'run_disable':run_disable , key:value }
-
-	def get_cfg_info(self, obj):
-		cfg_obj = self.get_cfg_obj(obj)
-		return self.config_dic[ cfg_obj ] if cfg_obj else None
-
-	def get_cfg_pdic(self, obj):
-		info = self.get_cfg_info(obj)
-		return info[ 'pdic' ] if info else None
 
 	def get_param(self, prm_name):
 		return get_top( [ prm for prm in self.params if prm['name'] == prm_name ] )
@@ -890,12 +884,6 @@ class MyFrame(rtmgr.MyFrame):
 			if not cmd:
 				return # cancel
 
-		info = self.get_cfg_info(obj)
-		pdic = self.get_cfg_pdic(obj)
-		if pdic and 'path' in info:
-			add_args = [] if add_args is None else add_args
-			add_args += [ k + ":=" + str(val) for (k,val) in pdic.items() ]
-
 		proc = self.launch_kill(v, cmd, proc, add_args)
 
 		cfg_obj = self.get_cfg_obj(obj)
@@ -1102,33 +1090,6 @@ class MyDialog(rtmgr.MyDialog):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
-class MyDialogPath(rtmgr.MyDialogPath):
-	def __init__(self, *args, **kwds):
-		self.pdic = kwds.pop('pdic')
-		self.path_name = kwds.pop('path_name')
-		rtmgr.MyDialogPath.__init__(self, *args, **kwds)
-
-		self.SetTitle(self.path_name)
-		path = self.pdic.get(self.path_name, '')
-		self.text_ctrl.SetValue(path)
-
-	def OnRef(self, event):
-		tc = self.text_ctrl
-		path = tc.GetValue()
-		(dn, fn) = os.path.split(path)
-		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn)
-		if dlg.ShowModal() == wx.ID_OK:
-			tc.SetValue(dlg.GetPath())
-			tc.SetInsertionPointEnd()
-		dlg.Destroy()
-
-	def OnOk(self, event):
-		self.pdic[self.path_name] = str(self.text_ctrl.GetValue())
-		self.EndModal(0)
-
-	def OnCancel(self, event):
-		self.EndModal(-1)
-
 class MainCcPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.frame = kwds.pop('frame')
@@ -1293,19 +1254,20 @@ class MyDialogParam(rtmgr.MyDialogParam):
 			v = self.pdic.get(var['name'], var['v'])
 			vp = VarPanel(self.panel_v, var=var, v=v, 
 				      update_pdic=self.update_pdic, publish=self.publish)
+			prop = var.get('prop', 0)
 			border = var.get('border', 0)
 			flag = wx_flag_get(var.get('flags', []))
 
 			if vp.has_slider or vp.kind == 'path':
 				hszr = None if hszr else hszr
 				flag |= wx.EXPAND
-				self.sizer_v.Add(vp, 0, flag, border)
+				self.sizer_v.Add(vp, prop, flag, border)
 			else:
 				if hszr is None:
 					hszr = wx.BoxSizer(wx.HORIZONTAL)
 					self.sizer_v.Add(hszr, 0, wx.EXPAND)
 				flag |= wx.ALIGN_CENTER_VERTICAL
-				hszr.Add(vp, 0, flag, border)
+				hszr.Add(vp, prop, flag, border)
 
 			if 'nl' in var.get('flags', []):
 				hszr = None
@@ -1438,7 +1400,8 @@ def terminate(proc, sigint=False):
 
 def wx_flag_get(flags):
 	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT, 
-		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE }
+		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE,
+		'center_v' : wx.ALIGN_CENTER_VERTICAL, 'center_h' : wx.ALIGN_CENTER_HORIZONTAL }
 	lst = [ dic.get(f) for f in flags if f in dic ]
 	return reduce(lambda a,b : a+b, [0] + lst)
 

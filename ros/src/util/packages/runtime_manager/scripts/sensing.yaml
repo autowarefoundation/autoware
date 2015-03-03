@@ -35,11 +35,11 @@ subs :
       - name : Velodyne HDL-64e
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
         run  : roslaunch velodyne velodyne_hdl64e.launch
-        path : calibration
+        param: calibration_path
       - name : Velodyne HDL-32e
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
         run  : roslaunch velodyne velodyne_hdl32e.launch
-        path : calibration
+        param: calibration_path
       - name : Hokuyo UTM30LX (USB1)
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo hokuyo_utm30lx.launch
@@ -68,3 +68,15 @@ buttons:
       - [ LIDAR3D , "rosrun camera_lidar3d camera_lidar3d_offline_calib" ]
   tf :
     run : roslaunch
+
+params :
+  - name  : calibration_path
+    vars  :
+    - name  : calibration
+      kind  : path
+      v     : ''
+      prop  : 1
+      flags : [ center_v ]
+      cmd_param :
+        dash : ''
+        delim: ':='
