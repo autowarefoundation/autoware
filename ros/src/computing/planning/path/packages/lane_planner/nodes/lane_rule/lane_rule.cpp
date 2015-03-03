@@ -18,6 +18,9 @@ static constexpr bool ADVERTISE_LATCH = true;
 
 static constexpr int PRECISION = 6;
 
+static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
+static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
+
 static double config_velocity = 40; // Unit: km/h
 static double config_difference_around_signal = 2; // Unit: km/h
 
@@ -34,7 +37,7 @@ static std::vector<Point> left_lane_points;
 
 static int waypoint_count;
 
-static const char *ruled_waypoint_csv;
+static std::string ruled_waypoint_csv;
 
 static void config_callback(const runtime_manager::ConfigLaneRule& msg)
 {
@@ -274,7 +277,7 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 		ruled.waypoints.push_back(waypoint);
 
 		write_waypoint(waypoint.pose.pose.position, config_velocity,
-			       ruled_waypoint_csv, (i == 0));
+			       ruled_waypoint_csv.c_str(), (i == 0));
 
 		waypoint.twist.twist.linear.x =
 			computations[i] / 3.6; // to m/s
@@ -288,24 +291,24 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 int main(int argc, char **argv)
 {
-	if (argc < 6) {
-		ROS_ERROR_STREAM("Usage: " << argv[0]
-				 << " lane.csv node.csv point.csv signal.csv"
-				 << " ruled_waypoint.csv");
-		std::exit(1);
-	}
+	ros::init(argc, argv, "lane_rule");
 
-	const char *lane_csv = static_cast<const char *>(argv[1]);
-	const char *node_csv = static_cast<const char *>(argv[2]);
-	const char *point_csv = static_cast<const char *>(argv[3]);
-	const char *signal_csv = static_cast<const char *>(argv[4]);
+	std::string vector_map_directory;
 
-	ruled_waypoint_csv = static_cast<const char *>(argv[5]);
+	ros::NodeHandle n;
+	n.param<std::string>("lane_rule/vector_map_directory",
+			     vector_map_directory, VECTOR_MAP_DIRECTORY);
+	n.param<std::string>("lane_rule/ruled_waypoint_csv",
+			     ruled_waypoint_csv, RULED_WAYPOINT_CSV);
 
-	lanes = read_lane(lane_csv);
-	nodes = read_node(node_csv);
-	points = read_point(point_csv);
-	signals = read_signal(signal_csv);
+	lanes = read_lane((vector_map_directory +
+			   std::string("lane.csv")).c_str());
+	nodes = read_node((vector_map_directory +
+			   std::string("node.csv")).c_str());
+	points = read_point((vector_map_directory +
+			     std::string("point.csv")).c_str());
+	signals = read_signal((vector_map_directory +
+			       std::string("signaldata.csv")).c_str());
 
 	for (const Lane& lane : lanes) {
 		if (lane.lno() != 1) // leftmost lane
@@ -321,10 +324,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-
-	ros::init(argc, argv, "lane_rule");
-
-	ros::NodeHandle n;
 
 	ros::Subscriber sub_config = n.subscribe("config/lane_rule",
 						 SUBSCRIBE_QUEUE_SIZE,

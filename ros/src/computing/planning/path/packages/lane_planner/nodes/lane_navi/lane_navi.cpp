@@ -16,6 +16,8 @@ static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
 static constexpr bool ADVERTISE_LATCH = true;
 
+static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
+
 static ros::Publisher pub_waypoint;
 static ros::Publisher pub_mark;
 #ifdef PUBLISH_TRAJECTORY
@@ -147,19 +149,20 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 
 int main(int argc, char **argv)
 {
-	if (argc < 4) {
-		ROS_ERROR_STREAM("Usage: " << argv[0]
-				 << " lane.csv node.csv point.csv");
-		std::exit(1);
-	}
+	ros::init(argc, argv, "lane_navi");
 
-	const char *lane_csv = static_cast<const char *>(argv[1]);
-	const char *node_csv = static_cast<const char *>(argv[2]);
-	const char *point_csv = static_cast<const char *>(argv[3]);
+	std::string vector_map_directory;
 
-	lanes = read_lane(lane_csv);
-	nodes = read_node(node_csv);
-	points = read_point(point_csv);
+	ros::NodeHandle n;
+	n.param<std::string>("lane_navi/vector_map_directory",
+			     vector_map_directory, VECTOR_MAP_DIRECTORY);
+
+	lanes = read_lane((vector_map_directory +
+			   std::string("lane.csv")).c_str());
+	nodes = read_node((vector_map_directory +
+			   std::string("node.csv")).c_str());
+	points = read_point((vector_map_directory +
+			     std::string("point.csv")).c_str());
 
 	for (const Lane& lane : lanes) {
 		if (lane.lno() != 1) // leftmost lane
@@ -175,10 +178,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-
-	ros::init(argc, argv, "lane_navi");
-
-	ros::NodeHandle n;
 
 	ros::Subscriber sub = n.subscribe("route_cmd",
 					  SUBSCRIBE_QUEUE_SIZE,
