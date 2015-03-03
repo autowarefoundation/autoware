@@ -158,11 +158,11 @@ int main(int argc, char **argv)
 			     vector_map_directory, VECTOR_MAP_DIRECTORY);
 
 	lanes = read_lane((vector_map_directory +
-			   std::string("lane.csv")).c_str());
+			   std::string("/lane.csv")).c_str());
 	nodes = read_node((vector_map_directory +
-			   std::string("node.csv")).c_str());
+			   std::string("/node.csv")).c_str());
 	points = read_point((vector_map_directory +
-			     std::string("point.csv")).c_str());
+			     std::string("/point.csv")).c_str());
 
 	for (const Lane& lane : lanes) {
 		if (lane.lno() != 1) // leftmost lane
