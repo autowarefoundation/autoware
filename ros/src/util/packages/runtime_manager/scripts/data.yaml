@@ -31,6 +31,8 @@ params :
     - name  : update_timing
       label : 'Update Timing:'
       v     : 0
+      border: 20
+      flags : [ right ]
     - name  : update_rate
       label : 'Update Rate:'
       v     : 1000
@@ -46,6 +48,22 @@ params :
       kind  : path
       label : 'Area Lists:'
       v     : arealists_file
+    - name  : load_map
+      kind  : toggle_button
+      label : Load Map
+      v     : False
+      border: 20
+      flags : [ left, right ]
+    - name  : auto_update
+      kind  : checkbox
+      label : Auto update
+      v     : True
+      border: 20
+      flags : [ right ]
+    - name  : ignore_db
+      kind  : checkbox
+      label : Ignore DB
+      v     : True
 
   - name  : pos_db
     vars  :
@@ -61,12 +79,29 @@ params :
     - name  : to_lon
       label : ''
       v     : 0.0
+      border: 20
+      flags : [ right ]
+    - name  : map_matching
+      kind  : checkbox
+      label : Map Matching
+      v     : True
+      flags : [ nl ]
+    - name  : upload_rate_ms
+      label : Upload Rate (ms)
+      v     : 1000
+      border: 20
+      flags : [ right ]
+    - name  : download_rate_ms
+      label : Download Rate (ms)
+      v     : 1000
 
   - name  : other
     vars  :
     - name  : upload_rate_ms
       label : Upload Rate (ms)
       v     : 1000
+      border: 20
+      flags : [ right ]
     - name  : download_rate_ms
       label : Download Rate (ms)
       v     : 1000
