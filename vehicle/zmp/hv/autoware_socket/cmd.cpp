@@ -4,7 +4,9 @@
 #include <queue>
 
 #include "mainwindow.h"
-#include "data.h"
+#include "autoware_socket.h"
+
+HevState _hev_state;
 
 double cycle_time = 0.0;
 double estimate_accel = 0.0;
@@ -15,8 +17,6 @@ double nstr = 0.0;
 int pdrv = 0;
 int pbrk = 0;
 double pstr = 0.0;
-
-#define VEHICLE_LENGTH 4 //meters
 
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
@@ -29,26 +29,8 @@ std::vector<std::string> split(const std::string& input, char delimiter)
   return result;
 }
 
-//get current time
-long long int getTime() {
-  //returns time in milliseconds 
-  struct timeval current_time;
-  struct timezone ttz;
-  double t;
-  // lock();
-  gettimeofday(&current_time, &ttz);
-  t = ((current_time.tv_sec * 1000.0) +
-       (current_time.tv_usec) / 1000.0);
-  // unlock();
-  return static_cast<long long int>(t);
-}
-
-//convert km/h to m/s
-double KmhToMs(double v) {
-  return (v*1000.0/(60.0*60.0));
-}
-
-void Getter(CMDDATA &cmddata){
+void Getter(CMDDATA &cmddata)
+{
   std::string request;
   std::string cmdRes;
   char recvdata[32];
@@ -170,26 +152,27 @@ void CMDGetter(){
 }
 */
 
-bool IsAccelerated = false;
-bool Control(vel_data_t vel,vel_data_t &current,void* p) 
+bool Control(vel_data_t vel, void* p) 
 {
-  //calculate current time
-  vel.tstamp = getTime();
-  cycle_time = vel.tstamp - current.tstamp;
+  MainWindow* main = (MainWindow*)p;
+  static long long int old_tstamp = 0;
 
-  MainWindow* Main = (MainWindow*)p;
+  // update Hev's drvinf/strinf/brkinf.
+  main->UpdateState();
+
+  // calculate current time
+  cycle_time = (_hev_state.tstamp - old_tstamp) / 1000.0;
 
   queue<double> vel_buffer;
   static uint vel_buffer_size = 10; 
 
   double old_velocity = 0.0;
 
-  //currentは前回更新時の値でよいのか？
-  double current_velocity = current.tv*3.6;
-  double current_wheel_angle = (current.sv/current.tv) * VEHICLE_LENGTH;
+  double current_velocity = _hev_state.drvInf.veloc; // km/h
+  double current_steering_angle = _hev_state.strInf.angle; // degree
  
-  double cmd_velocity = vel.tv*3.6;
-  double cmd_wheel_angle;
+  int cmd_velocity = vel.tv*3.6;
+  int cmd_steering_angle;
 
   // We assume that the slope against the entire arc toward the 
   // next waypoint is almost equal to that against 
@@ -197,22 +180,26 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
   // \theta = cmd_wheel_angle
   // vel.sv/vel.tv = Radius
   // l \simeq VEHICLE_LENGTH
-  if (vel.tv < 1) // just avoid divided by zero.
-    cmd_wheel_angle = current_wheel_angle;
-  else
-    cmd_wheel_angle = (vel.sv/vel.tv) * VEHICLE_LENGTH;
+  if (vel.tv < 1) {// just avoid divided by zero.
+    cmd_steering_angle = current_steering_angle;
+  }
+  else {
+    double wheel_angle_pi = (vel.sv/vel.tv) * WHEEL_BASE + ANGLE_ERROR;
+    int wheel_angle = (int)((wheel_angle_pi / M_PI) * 180.0);
+    cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
+  }
 
-  // estimate current acceleration
+  // estimate current acceleration.
   vel_buffer.push(fabs(current_velocity));
   
   if (vel_buffer.size() > vel_buffer_size) {
     old_velocity = vel_buffer.front();
     vel_buffer.pop();
     estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
-    
   }
-  cout << endl << "Current " << "tv : " << current_velocity << " sv : "<< current_wheel_angle << endl; 
-  cout << endl << "Command " << "tv : " << cmd_velocity << " sv : "<< cmd_wheel_angle << endl; 
+
+  cout << endl << "Current " << "vel : " << current_velocity << " str : "<< current_steering_angle << endl; 
+  cout << endl << "Command " << "vel : " << cmd_velocity << " str : "<< cmd_steering_angle << endl; 
   cout << "Estimate Accel : " << estimate_accel << endl; 
 
   // TRY TO INCREASE STEERING
@@ -238,53 +225,34 @@ bool Control(vel_data_t vel,vel_data_t &current,void* p)
   // now motion if in drift mode and shift is in drive
   
  
-  if (true
-  //if ( _drv_state.drvInf.actualShift == SHIFT_POS_D 
-       //|| _hev_state.drvInf.actualShift == SHIFT_POS_R
-       ) {
-    fprintf(stdout,"In Drive or Reverse\n");
-    //fprintf(stderr,"In Drive or Reverse\n");
-         
-    // if accell 
-    if (fabs(cmd_velocity) >= fabs(current_velocity) 
-        && fabs(cmd_velocity) > 0.0 
-        && fabs(current_velocity) <= KmhToMs(51.0) ) {
-
-      //accelerate !!!!!!!!!!!!!!!!
-      cout << "Acceleration" << endl;
-      Main->AccelerateControl(current_velocity,cmd_velocity);
-      IsAccelerated = true;
-    }else if (fabs(cmd_velocity) < fabs(current_velocity) 
-              && fabs(cmd_velocity) > 0.0) 
-      {
-        //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        cout << "Deceleration" << endl;
-        Main->DecelerateControl(current_velocity,cmd_velocity);
-        IsAccelerated = false;
-      }
-    
-    else if (cmd_velocity == 0.0) {
-	
-      //Stopping!!!!!!!!!!!
-       
-      Main->StoppingControl(current_velocity,cmd_velocity);
-      IsAccelerated = false;
-    } // if cmdvel < curvel
-    
-  } //if shift in drive
-  else if( _drv_state.drvInf.actualShift == SHIFT_POS_N ){
-    cout << "Shift value unknown or Neutral" << endl;
+  //////////////////////////////////////////////////////
+  // Accel and Brake
+  //////////////////////////////////////////////////////
+  if (fabs(cmd_velocity) >= fabs(current_velocity) 
+      && fabs(cmd_velocity) > 0.0 
+      && fabs(current_velocity) <= KmhToMs(SPEED_LIMIT) ) {
+    //accelerate !!!!!!!!!!!!!!!!
+    cout << "Acceleration" << endl;
+    main->AccelerateControl(current_velocity, cmd_velocity);
+  } else if (fabs(cmd_velocity) < fabs(current_velocity) 
+             && fabs(cmd_velocity) > 0.0) {
+    //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cout << "Deceleration" << endl;
+    main->DecelerateControl(current_velocity, cmd_velocity);
   }
-  else {
-    fprintf(stderr,"Shift value unknown.\nGetting shift value is error\n");
+  else if (cmd_velocity == 0.0) {
+    //Stopping!!!!!!!!!!!
+    main->StoppingControl(current_velocity, cmd_velocity);
   }
-  
-  // set steering angle
-  Main->SteeringControl(cmd_wheel_angle);
+    
+  //////////////////////////////////////////////////////
+  // Steering
+  //////////////////////////////////////////////////////
+  main->SteeringControl(current_steering_angle, cmd_steering_angle);
 
-  current.tv = vel.tv;
-  current.sv = vel.sv; 
-  current.tstamp = vel.tstamp;
+  // save the time stamp.
+  old_tstamp = _hev_state.tstamp;
+
   return true;
   
 }
@@ -307,21 +275,14 @@ void initPrintValue(){
 }
 
 
-void *MainWindow::CMDGetterEntry(void *a){
+void *MainWindow::CMDGetterEntry(void *a)
+{
   MainWindow* main = (MainWindow*)a;
   CMDDATA cmddata;
-  vel_data_t current;
-  //main->CMDGetter();
-  memset(&current,0,sizeof(current));
-  printf("test print,accel,diff previous accel,brake,diff previous brake,str,diff previous str,(Str is a 10x value)\n");
+  cout << "test print,accel,diff previous accel,brake,diff previous brake,str,diff previous str,(Str is a 10x value)" << endl;
   while(1){
-    Getter(cmddata);
-    //cmddata.mode = 0x00;//test
-    //main->SetDrvMode(cmddata.mode);
-    //    if(cmddata.mode == DRVMODE_PROGRAM){
-    if(true){
-      Control(cmddata.vel,current,main);
-    }
+    Getter(cmddata); // get commands from ROS.
+    Control(cmddata.vel, main);
     main->TestPrint();
     initPrintValue();
     

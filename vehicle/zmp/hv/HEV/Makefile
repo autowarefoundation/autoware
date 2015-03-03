@@ -6,10 +6,6 @@
 # Command: /opt/QtSDK/Desktop/Qt/4.8.1/gcc/bin/qmake -spec /opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/linux-g++ CONFIG+=debug CONFIG+=declarative_debug -o Makefile HEV.pro
 #############################################################################
 
-BASE_DIR		= ../hev_base
-SHM_OBJ			= $(BASE_DIR)/utils/timer.o $(BASE_DIR)/comms/shm_client.o
-SHM_INC			= -I $(BASE_DIR)/utils -I $(BASE_DIR)/comms -I $(BASE_DIR)/common
-
 ####### Compiler, tools and options
 
 CC            = gcc
@@ -281,11 +277,11 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		/usr/local/include/zmp/CanCommunication.h \
 		/usr/local/include/zmp/HevControlCommon.h \
 		ui_mainwindow.h \
-		../autoware_socket/data.h
+		../autoware_socket/autoware_socket.h
 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp 
 
-autoware_socket.o:../autoware_socket/info.cpp ../autoware_socket/cmd.cpp mainwindow.h ../autoware_socket/data.h ../hev_base/common/shm_common.h ../autoware_socket/actuation.cpp
+autoware_socket.o:../autoware_socket/info.cpp ../autoware_socket/cmd.cpp mainwindow.h ../autoware_socket/autoware_socket.h ../autoware_socket/actuation.cpp
 	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o autoware_socket.o -nostdlib
 
 

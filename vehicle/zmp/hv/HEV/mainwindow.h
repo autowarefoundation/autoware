@@ -38,7 +38,7 @@
 #include <fstream>
 //#include <iostream>
 
-#include "../autoware_socket/data.h"
+#include "../autoware_socket/autoware_socket.h"
 
 namespace Ui {
 class MainWindow;
@@ -65,19 +65,25 @@ public:
     bool GameInit();
     bool GameStart();
 
-   /*===========HevBase用関数===================*/ 
+   /*======Autoware Socket=================*/ 
 
-    void UpdateState();//hevの状態を更新
-    void ChangeShiftMode(double cmd_velocity); //シフトチェック
-    void SteeringControl(double cmd_steering_angle);
-    void AccelerateControl(double current_velocity,double cmd_velocity); //自動運転：加速
-    void DecelerateControl(double current_velocity,double cmd_velocity); //自動運転：減速
-    void StoppingControl(double current_velocity,double cmd_velocity); //自動運転：停止
-    bool Brake(int target_brake, int gain); //ブレーキの関数
-    bool Accel(int target_accel, int gain); //アクセルの関数
+    void UpdateState();
+    void ChangeShiftMode(double cmd_velocity);
+    void SteeringControl(double current_steering_angle, double cmd_steering_angle);
+    void AccelerateControl(double current_velocity,double cmd_velocity);
+    void DecelerateControl(double current_velocity,double cmd_velocity);
+    void StoppingControl(double current_velocity,double cmd_velocity);
+    bool Brake(int target_brake, int gain);
+    bool Accel(int target_accel, int gain);
     void SetDrvMode(int mode);
 
-    /*============ここまで=================*/
+    void sendDataGetAndSend();
+    bool setConfig();
+    void wrapSender();
+    static void* CMDGetterEntry(void *a);
+    void TestPrint();
+
+    /*====================================*/
 
 protected:
     void changeEvent(QEvent *);
@@ -216,13 +222,6 @@ private slots:
  
 private:
 
-    /*===========HevBase用関数===================*/ 
-
-    //void HevBaseActivate();
-    //static void* HevBaseThreadEntry(void* arg);
-
-    /*============ここまで=================*/
-
     void viewBattInf();
     void viewBrakeInf();
     void viewOtherInf();
@@ -297,17 +296,11 @@ private:
     int _drvTargetVeloc;
     int _drvTargetStroke;
 
-//function of autoware socket
+   /*======Autoware Socket=================*/ 
     int canduration;
     int cmdduration;
     pthread_t _cmdgetter;
-
-    void sendDataGetAndSend();
-    bool setConfig();
-    void wrapSender();
-    static void* CMDGetterEntry(void *a);
-    void TestPrint();
-
+    /*====================================*/
 };
 
 
