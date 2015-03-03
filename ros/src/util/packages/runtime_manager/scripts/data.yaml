@@ -46,8 +46,12 @@ params :
       v     : vector_file
     - name  : area_lists
       kind  : path
+      path_type : multi
       label : 'Area Lists:'
       v     : arealists_file
+      cmd_param :
+        dash   : '--'
+        delim  : '='
     - name  : load_map
       kind  : toggle_button
       label : Load Map
