@@ -527,10 +527,11 @@ class MyFrame(rtmgr.MyFrame):
 		cmd = [ 'rosparam', 'list' ]
 		rosparams = subprocess.check_output(cmd).strip().split('\n')
 		for var in prm['vars']:
-			if 'rosparam' not in var:
+			name = var['name']
+			if 'rosparam' not in var or name not in pdic:
 				continue
 			rosparam = var['rosparam']
-			v = pdic[ var['name'] ]
+			v = pdic.get(name)
 			if rosparam in rosparams:
 				cmd = [ 'rosparam', 'get', rosparam ]
 				ov = subprocess.check_output(cmd).strip()
@@ -1253,7 +1254,7 @@ class MainCcPanel(wx.Panel):
 		self.vps = []
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for var in self.prm['vars']:
-			v = self.pdic[ var['name'] ]
+			v = self.pdic.get(var['name'], var['v'])
 			vp = VarPanel(self, var=var, v=v, 
 				      update_pdic=self.update_pdic, publish=self.publish)
 			szr.Add(vp, 0, wx.EXPAND)
@@ -1283,17 +1284,25 @@ class VarPanel(wx.Panel):
 		self.max = self.var.get('max', None)
 		self.has_slider = self.min is not None and self.max is not None
 
+		label = self.var.get('label', '')
 		self.kind = self.var.get('kind', None)
 		if self.kind == 'radio_box':
-			label = self.var.get('label', '')
 			choices = self.var.get('choices', [])
 			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
 			self.obj.SetSelection(v)
 			return
+		if self.kind == 'checkbox':
+			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
+			self.obj.SetValue(v)
+			return
+		if self.kind == 'toggle_button':
+                        self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
+			self.obj.SetValue(v)
+			return
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
-		lb = wx.StaticText(self, wx.ID_ANY, self.var['label'])
+		lb = wx.StaticText(self, wx.ID_ANY, label)
 		flag = wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTER_VERTICAL
 		szr.Add(lb, 0, flag, 4)
 
@@ -1331,6 +1340,8 @@ class VarPanel(wx.Panel):
 	def get_v(self):
 		if self.kind == 'radio_box':
 			return self.obj.GetSelection()
+		if self.kind in [ 'checkbox', 'toggle_button' ]:
+			return self.obj.GetValue()
 		if self.kind == 'path':
 			return str(self.tc.GetValue())
 		return self.get_tc_v()
@@ -1394,17 +1405,25 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		hszr = None
 		self.vps = []
 		for var in self.prm['vars']:
-			v = self.pdic[ var['name'] ]
+			v = self.pdic.get(var['name'], var['v'])
 			vp = VarPanel(self.panel_v, var=var, v=v, 
 				      update_pdic=self.update_pdic, publish=self.publish)
+			border = var.get('border', 0)
+			flag = wx_flag_get(var.get('flags', []))
+
 			if vp.has_slider or vp.kind == 'path':
 				hszr = None if hszr else hszr
-				self.sizer_v.Add(vp, 0, wx.EXPAND)
+				flag |= wx.EXPAND
+				self.sizer_v.Add(vp, 0, flag, border)
 			else:
 				if hszr is None:
 					hszr = wx.BoxSizer(wx.HORIZONTAL)
 					self.sizer_v.Add(hszr, 0, wx.EXPAND)
-				hszr.Add(vp, 0, 0)
+				flag |= wx.ALIGN_CENTER_VERTICAL
+				hszr.Add(vp, 0, flag, border)
+
+			if 'nl' in var.get('flags', []):
+				hszr = None
 			self.vps.append(vp)
 
 		self.SetTitle(self.prm['name'])
@@ -1531,6 +1550,12 @@ def terminate(proc, sigint=False):
 		proc.send_signal(signal.SIGINT)
 	else:
 		proc.terminate()
+
+def wx_flag_get(flags):
+	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT, 
+		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE }
+	lst = [ dic.get(f) for f in flags if f in dic ]
+	return reduce(lambda a,b : a+b, [0] + lst)
 
 def str_to_rosval(str, type_str, def_ret=None):
 	cvt_dic = {
