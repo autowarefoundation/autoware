@@ -26,7 +26,7 @@ from ui_socket.msg import mode_cmd
 from ui_socket.msg import gear_cmd
 from ui_socket.msg import Waypoint
 from ui_socket.msg import route_cmd
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
 from runtime_manager.msg import steer_cmd
@@ -512,14 +512,14 @@ class MyFrame(rtmgr.MyFrame):
 		msg = klass_msg()
 
 		for (name, v) in pdic.items():
-			lst = name.split('.')
-			targ = msg
-			for n in lst[:-1]:
-				targ = getattr(targ, n)
-			nm = lst[-1]
-			if nm in targ.__slots__:
-				type_str = targ._slot_types[ targ.__slots__.index(nm) ]
-				setattr(targ, nm, str_to_rosval(v, type_str, v))
+			(obj, attr) = msg_path_to_obj_attr(msg, name)
+			if attr in obj.__slots__:
+				type_str = obj._slot_types[ obj.__slots__.index(attr) ]
+				setattr(obj, attr, str_to_rosval(v, type_str, v))
+		
+		if 'stamp' in prm.get('flags', []):
+			(obj, attr) = msg_path_to_obj_attr(msg, 'header.stamp')
+			setattr(obj, attr, rospy.get_rostime())
 
 		pub.publish(msg)
 
@@ -1296,7 +1296,7 @@ class VarPanel(wx.Panel):
 			self.obj.SetValue(v)
 			return
 		if self.kind == 'toggle_button':
-                        self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
+			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
 			return
 
@@ -1556,6 +1556,13 @@ def wx_flag_get(flags):
 		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE }
 	lst = [ dic.get(f) for f in flags if f in dic ]
 	return reduce(lambda a,b : a+b, [0] + lst)
+
+def msg_path_to_obj_attr(msg, path):
+	lst = path.split('.')
+        obj = msg
+	for attr in lst[:-1]:
+		obj = getattr(obj, attr, None)
+	return (obj, lst[-1])
 
 def str_to_rosval(str, type_str, def_ret=None):
 	cvt_dic = {
