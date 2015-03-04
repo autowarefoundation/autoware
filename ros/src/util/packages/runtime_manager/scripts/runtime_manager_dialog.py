@@ -32,6 +32,7 @@ from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
 from runtime_manager.msg import steer_cmd
 from runtime_manager.msg import brake_cmd
+from runtime_manager.msg import traffic_light
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -398,7 +399,8 @@ class MyFrame(rtmgr.MyFrame):
 		(pdic, prm) = self.obj_to_pdic_prm(obj)
 		if pdic is None or prm is None:
 			return
-		dlg = MyDialogParam(self, pdic=pdic, prm=prm)
+		klass_dlg = globals().get(prm.get('dialog', 'MyDialogParam'), MyDialogParam)
+		dlg = klass_dlg(self, pdic=pdic, prm=prm)
 		dlg.ShowModal()
 
 	def obj_to_add_args(self, obj):
@@ -1334,6 +1336,27 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		if 'pub' in self.prm:
 			frame.publish_param_topic(self.pdic, self.prm)
 		frame.rosparam_set(self.pdic, self.prm)
+
+class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
+	def __init__(self, *args, **kwds):
+		self.pdic = kwds.pop('pdic')
+		self.prm = kwds.pop('prm')
+		rtmgr.MyDialogLaneStop.__init__(self, *args, **kwds)
+		self.frame = self.GetParent()
+
+	def OnTrafficRedLight(self, event):
+		self.pdic['traffic_light'] = 0
+		self.frame.publish_param_topic(self.pdic, self.prm)
+		
+	def OnTrafficGreenLight(self, event):
+		self.pdic['traffic_light'] = 1
+		self.frame.publish_param_topic(self.pdic, self.prm)
+
+	def OnOk(self, event):
+		self.EndModal(0)
+
+	def OnCancel(self, event):
+		self.EndModal(-1)
 
 class MyApp(wx.App):
 	def OnInit(self):

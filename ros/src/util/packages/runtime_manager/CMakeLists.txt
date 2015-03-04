@@ -21,6 +21,7 @@ add_message_files(
   accel_cmd.msg
   steer_cmd.msg
   brake_cmd.msg
+  traffic_light.msg
 )
 
 generate_messages(
