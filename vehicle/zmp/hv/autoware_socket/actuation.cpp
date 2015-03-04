@@ -3,20 +3,61 @@
 
 static int target_accel_level = 0;
 
-void MainWindow::SetDrvMode(int mode)
+void MainWindow::SetMode(int mode)
 {
-  if(mode == DRVMODE_PROGRAM){
-    hev->SetDrvMode(MODE_PROGRAM);
-    hev->SetStrMode(MODE_PROGRAM);
-    hev->SetDrvServo(SERVO_TRUE);
-    hev->SetStrServo(SERVO_TRUE);
-  }else{
+  switch (mode) {
+  case CMD_MODE_MANUAL:
+    cout << "switching to MANUAL" << endl;
     hev->SetDrvMode(MODE_MANUAL);
+    usleep(100000);
     hev->SetStrMode(MODE_MANUAL);
+    usleep(100000);
     hev->SetDrvServo(SERVO_FALSE);
+    usleep(100000);
     hev->SetStrServo(SERVO_FALSE);
+    break;
+  case CMD_MODE_PROGRAM:
+    cout << "switching to PROGRAM" << endl;
+    hev->SetDrvMode(MODE_PROGRAM);
+    usleep(100000);
+    hev->SetStrMode(MODE_PROGRAM);
+    usleep(100000);
+    hev->SetDrvServo(SERVO_TRUE);
+    usleep(100000);
+    hev->SetStrServo(SERVO_TRUE);
+    break;
+  default:
+    cout << "Unknown mode: " << mode << endl;
   }
+}
 
+void MainWindow::SetGear(int gear)
+{
+  switch (gear) {
+  case CMD_GEAR_D:
+    cout << "shifting to Gear D" << endl;
+    hev->SetDrvStroke(0);
+    hev->SetBrakeStroke(4095);
+    hev->SetDrvShiftMode(SHIFT_POS_D);
+    break;
+  case CMD_GEAR_R:
+    cout << "shifting to Gear R" << endl;
+    hev->SetDrvStroke(0);
+    hev->SetBrakeStroke(4095);
+    hev->SetDrvShiftMode(SHIFT_POS_R);
+    break;
+  case CMD_GEAR_B:
+    cout << "shifting to Gear R" << endl;
+    hev->SetDrvStroke(0);
+    hev->SetBrakeStroke(4095);
+    hev->SetDrvShiftMode(SHIFT_POS_B);
+    break;
+  case CMD_GEAR_N:
+    cout << "shifting to Gear N" << endl;
+    break;
+  default:
+    cout << "Unknown gear: " << gear << endl;    
+  }
 }
 
 void MainWindow::UpdateState()

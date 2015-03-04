@@ -69,10 +69,8 @@ void Getter(CMDDATA &cmddata)
       server.sin_addr.s_addr = *(*addrptr);
 
       /* break the loop when connected. */
-      if (connect(sock,
-		  (struct sockaddr *)&server,
-		  sizeof(server)) == 0) {
-	break;
+      if (connect(sock, (struct sockaddr *)&server, sizeof(server)) == 0) {
+        break;
       }
 
       addrptr++;
@@ -113,25 +111,17 @@ void Getter(CMDDATA &cmddata)
     cmddata.vel.sv = atof(cmdVector[1].c_str());
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
-    cmddata.accell = atoi(cmdVector[4].c_str());
+    cmddata.accel = atoi(cmdVector[4].c_str());
     cmddata.steer = atoi(cmdVector[5].c_str());
     cmddata.brake = atoi(cmdVector[6].c_str());
     
-    printf("cmd : linear:%f angular:%f\n",cmddata.vel.tv,cmddata.vel.sv);
-  }else{
+    cout << endl << endl;
+    cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
+    cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
+  } else{
     fprintf(stderr,"cmd : Recv data is invalid\n");
   }
   printf("cmd : return data : %s\n",cmdRes.c_str());
-
-  // struct version
-  /*
-  if(cmdRes.size() == sizeof(CMDDATA)){
-    memcpy(&cmddata,cmdRes.data(),sizeof(CMDDATA));
-    printf("cmd : linear:%f angular:%f\n",cmddata.linear_x,cmddata.angular_z);
-  }else{
-    fprintf(stderr,"cmd : Recv data is invalid %u\n",sizeof(CMDDATA));
-  }
-  */
 
   close(sock);
 
@@ -151,6 +141,29 @@ void CMDGetter(){
   }
 }
 */
+
+bool Operate(int mode, int gear, int accel, int steer, int brake, void* p) 
+{
+  static int old_mode = -1;
+  static int old_gear = -1;
+  MainWindow* main = (MainWindow*)p;
+
+  if (mode != old_mode) {
+    main->SetMode(mode);
+    old_mode = mode;
+  }
+
+  if (gear != old_gear) {
+    double current_velocity = _hev_state.drvInf.veloc; // km/h
+    // never change the gear when driving!
+    if (current_velocity == 0) {
+      main->SetGear(gear);
+      old_gear = gear;
+    }
+  }
+
+  return true;
+}
 
 bool Control(vel_data_t vel, void* p) 
 {
@@ -198,8 +211,8 @@ bool Control(vel_data_t vel, void* p)
     estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
   }
 
-  cout << endl << "Current " << "vel : " << current_velocity << " str : "<< current_steering_angle << endl; 
-  cout << endl << "Command " << "vel : " << cmd_velocity << " str : "<< cmd_steering_angle << endl; 
+  cout << "Current " << "vel : " << current_velocity << " str : "<< current_steering_angle << endl; 
+  cout << "Command " << "vel : " << cmd_velocity << " str : "<< cmd_steering_angle << endl; 
   cout << "Estimate Accel : " << estimate_accel << endl; 
 
   // TRY TO INCREASE STEERING
@@ -282,6 +295,7 @@ void *MainWindow::CMDGetterEntry(void *a)
   cout << "test print,accel,diff previous accel,brake,diff previous brake,str,diff previous str,(Str is a 10x value)" << endl;
   while(1){
     Getter(cmddata); // get commands from ROS.
+    Operate(cmddata.mode, cmddata.gear, cmddata.accel, cmddata.steer, cmddata.brake, main);
     Control(cmddata.vel, main);
     main->TestPrint();
     initPrintValue();

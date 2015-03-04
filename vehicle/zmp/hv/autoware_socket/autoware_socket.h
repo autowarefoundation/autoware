@@ -6,12 +6,15 @@
 
 using namespace zmp::hev;
 
-#define DRVMODE_MANUAL 0
-#define DRVMODE_PROGRAM 1
-
 #define NO_TSTAMP 0
 
-#define VEHICLE_LENGTH 4 //meters
+#define CMD_MODE_MANUAL 0 
+#define CMD_MODE_PROGRAM 1
+#define CMD_GEAR_D 1
+#define CMD_GEAR_R 2
+#define CMD_GEAR_B 3
+#define CMD_GEAR_N 4
+
 #define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
 #define STEERING_ANGLE_MAX 666 // max angle of steering
 #define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
@@ -35,7 +38,6 @@ using namespace zmp::hev;
 #define ACCEL_PEDAL_RELEASE_STEP 100 //release value for accel pedal
 #define ACCEL_PEDAL_MAX 300 
 #define ACCEL_LIMIT 8.0 // km/h
-
 
 #define HEV_LIGHT_BRAKE 400 //brake pedal
 #define HEV_MED_BRAKE 1000
@@ -99,7 +101,7 @@ typedef struct _CMDDATA {
     vel_data_t vel;
     int mode;
     int gear;
-    int accell;
+    int accel;
     int steer;
     int brake;
 } CMDDATA;
