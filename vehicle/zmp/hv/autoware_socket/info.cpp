@@ -18,9 +18,9 @@ int CheckDrvMode()
 
   // cout <<  "===============CheckHevMode===============" << endl;
   if(drv_mode == 0x10 && drv_servo == 0x10 && str_mode == 0x10 && str_servo == 0x10){
-    return DRVMODE_PROGRAM;
+    return CMD_MODE_PROGRAM;
   }else{
-    return DRVMODE_MANUAL;
+    return CMD_MODE_MANUAL;
   }
 }
 

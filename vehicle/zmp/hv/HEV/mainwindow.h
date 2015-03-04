@@ -75,7 +75,8 @@ public:
     void StoppingControl(double current_velocity,double cmd_velocity);
     bool Brake(int target_brake, int gain);
     bool Accel(int target_accel, int gain);
-    void SetDrvMode(int mode);
+    void SetMode(int mode);
+    void SetGear(int gear);
 
     void sendDataGetAndSend();
     bool setConfig();
