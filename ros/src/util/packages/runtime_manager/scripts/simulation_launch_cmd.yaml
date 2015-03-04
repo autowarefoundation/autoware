@@ -41,13 +41,59 @@ buttons:
       selobj : checkbox_point_map_update
       False  : rosrun sample_data sample_points_map
       True   : rosrun sample_data sample_points_map_update swap_x_y_on
+    param : pmap
+
   vmap :
-    run : rosrun sample_data sample_vector_map __args__ swap_x_y_on
+    run   : rosrun sample_data sample_vector_map
+    param : vmap
   trajectory :
-    run : rosrun sample_data sample_trajectory __args__ swap_x_y_on
+    run   : rosrun sample_data sample_trajectory
+    param : trajectory
 
 checkboxs:
   sim_time :
     run :
       False  : rosparam set use_sim_time false
       True   : rosparam set use_sim_time true
+
+params :
+  - name  : pmap
+    vars  :
+    - name      : data_files
+      kind      : path
+      path_type : multi
+      v         : ''
+      cmd_param :
+        delim : ''
+        unpack: ','
+
+  - name  : vmap
+    vars  :
+    - name      : data_dir
+      label     : ''
+      kind      : path
+      path_type : dir
+      v         : ''
+      cmd_param :
+        delim : ''
+
+    - name      : swap
+      kind      : hide
+      v         : swap_x_y_on
+      cmd_param :
+        delim : ''
+
+  - name  : trajectory
+    vars  :
+    - name      : data_file
+      label     : ''
+      kind      : path
+      v         : ''
+      cmd_param :
+        delim : ''
+
+    - name      : swap
+      kind      : hide
+      v         : swap_x_y_on
+      cmd_param :
+        delim : ''
