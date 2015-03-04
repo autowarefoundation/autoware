@@ -28,4 +28,4 @@ add_dependencies(vehicle_receiver vehicle_socket_generate_messages_cpp)
 
 add_executable(vehicle_sender nodes/vehicle_sender/vehicle_sender.cpp)
 target_link_libraries(vehicle_sender ${catkin_LIBRARIES})
-add_dependencies(vehicle_sender vehicle_socket_generate_messages_cpp)
+add_dependencies(vehicle_sender vehicle_socket_generate_messages_cpp ui_socket_generate_messages_cpp)
