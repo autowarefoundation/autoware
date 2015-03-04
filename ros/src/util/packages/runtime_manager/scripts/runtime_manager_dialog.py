@@ -22,11 +22,12 @@ from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigLaneFollower
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
+from runtime_manager.msg import ConfigLaneRule
 from ui_socket.msg import mode_cmd
 from ui_socket.msg import gear_cmd
 from ui_socket.msg import Waypoint
 from ui_socket.msg import route_cmd
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
 from runtime_manager.msg import steer_cmd
@@ -74,8 +75,8 @@ class MyFrame(rtmgr.MyFrame):
 			pdic = {}
 			for var in prm['vars']:
 				pdic[ var['name'] ] = var['v']
-			mccp = MainCcPanel(self.panel_main_cc, frame=self, pdic=pdic, prm=prm)
-			szr.Add(mccp, 0, wx.EXPAND)
+			panel = ParamPanel(self.panel_main_cc, frame=self, pdic=pdic, prm=prm)
+			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_main_cc.SetSizer(szr)
 
 		#
@@ -100,20 +101,15 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		#
-		# for Main Tab
-		#
-		self.sock_a = None
-		self.sock_b = None
-		self.sock_c = None
-		self.sock_d = None
-
-		#
 		# for Sensing Tab
 		#
 		self.drv_probe_cmd = {}
 		self.sensing_cmd = {}
 		self.all_cmd_dics.append(self.sensing_cmd)
 		dic = self.load_yaml('sensing.yaml')
+
+		self.add_params(dic.get('params', []))
+
 		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
@@ -141,6 +137,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.simulation_cmd = {}
 		self.all_cmd_dics.append(self.simulation_cmd)
 		dic = self.load_yaml('simulation_launch_cmd.yaml')
+
+		self.add_params(dic.get('params', []))
+
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
@@ -149,8 +148,12 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
-		self.sel_multi_ks = [ 'pmap', 'point_cloud' ]
-		self.sel_dir_ks = [ 'vmap', 'calibration', 'vector_map' ]
+		self.sel_multi_ks = [ 'point_cloud' ]
+		self.sel_dir_ks = [ 'calibration', 'vector_map' ]
+
+		self.set_param_panel(self.button_launch_pmap, self.panel_pmap_prm)
+		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
+		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
 		#
 		# for Data Tab
@@ -248,6 +251,12 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
+			if 'param' in d2:
+				pdic = self.load_dic.get(k)
+				if pdic is None:
+					pdic = {}
+					self.load_dic[k] = pdic
+				self.add_cfg_info(obj, obj, k, pdic, False, 'param', d2.get('param'))
 
 	#
 	# Main Tab
@@ -338,55 +347,6 @@ class MyFrame(rtmgr.MyFrame):
 		else:
 			self.OnKill_kill_obj(self.button_kill_tf)
 
-	def OnTextIp(self, event):
-		tc = event.GetEventObject()
-		bak = s = tc.GetValue()
-		nm = self.name_get(tc) # text_ctrl_ip_a_0
-		t = nm[-3:-2] # a
-		if s.isdigit():
-			i = int(s)
-			i = 0 if i < 0 else i
-			i = 255 if i > 255 else i
-			s = str(i)
-		else:
-			s = ''
-		if s != bak:
-			tc.SetValue(s)
-		self.update_button_conn_stat(t)
-
-	def OnConn(self, event):
-		b = event.GetEventObject()
-		nm = self.name_get(b) # button_conn_a
-		t = nm[-1:] # a
-		if t == 'b': # tablet
-			cmd = 'roslaunch runtime_manager ui_socket.launch'
-			sock = self.launch_kill(True, cmd, None)
-		else:
-			ipaddr = '.'.join([ self.text_ip_get(t, s).GetValue() for s in ['0','1','2','3'] ])
-			port = 12345
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			sock.connect((ipaddr, port))
-		setattr(self, 'sock_' + t, sock)
-
-		b.Disable()
-		self.text_ip_stat_set(t, False)
-		self.obj_get('button_disconn_' + t).Enable()
-
-	def OnDisconn(self, event):
-		b = event.GetEventObject()
-		nm = self.name_get(b) # button_disconn_a
-		t = nm[-1:] # a
-		sock = self.obj_get('sock_' + t)
-		if sock:
-			if t == 'b': # tablet
-				self.launch_kill(False, 'dmy', sock)
-			else:
-				sock.close()
-			setattr(self, 'sock_' + t, None)
-		b.Disable()
-		self.text_ip_stat_set(t, True)
-		self.update_button_conn_stat(t)
-
 	def OnGear(self, event):
 		grp = { self.button_statchk_d : 1,
 			self.button_statchk_r : 2,
@@ -407,26 +367,6 @@ class MyFrame(rtmgr.MyFrame):
 			pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 			pub.publish(mode_cmd(mode=v))
 
-	def update_button_conn_stat(self, t): # a
-		conn = self.obj_get('button_conn_' + t);
-		en = conn.IsEnabled()
-		if self.obj_get('sock_' + t) and en:
-			conn.Disable()
-			return
-		yet = [ s for s in ['0','1','2','3'] if self.text_ip_get(t, s).GetValue() == '' ]
-		act = None
-		act = True if len(yet) <= 0 and not en else act
-		act = False if len(yet) > 0 and en else act
-		if act is not None:
-			conn.Enable(act)
-
-	def text_ip_get(self, t, s): # t a, s 0
-		return self.obj_get('text_ctrl_ip_' + t + '_' + s)
-
-	def text_ip_stat_set(self, t, en): # a
-		for s in ['0','1','2','3']:
-			self.text_ip_get(t, s).Enable(en)
-
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
 		for b in grp:
@@ -437,54 +377,6 @@ class MyFrame(rtmgr.MyFrame):
 			if act is not None:
 				b.SetValue(act)
 
-	def statchk_send_recv(self):
-		#
-		# send
-		#
-		sock = self.sock_c # Vehicle conn
-		if sock is None: 
-			print('Not connect !')
-			return
-		steer = self.slider_statchk_steer.GetValue()
-		accel = self.slider_statchk_accel.GetValue()
-		brake = self.slider_statchk_brake.GetValue()
-		gear_dic = { 'b':0 , 'r':1 , 'n':2 , 'd':3 }
-		gear = self.radio_value_get('button_statchk_', gear_dic)
-		mode_dic = { 'prog':0, 'manu':1 }
-		mode = self.radio_value_get('button_statchk_', mode_dic)
-		data = struct.pack('=5i', steer, accel, brake, gear, mode)
-		sock.send(data)
-
-		#
-		# recv
-		#
-		rdata = sock.recv(1024)
-		(r_steer, r_accel, r_brake, r_gear, r_mode) = struct.unpack('=5i', rdata)
-		
-		self.radio_value_set('button_statchk_', gear_dic, r_gear)
-		self.radio_value_set('button_statchk_', mode_dic, r_mode)
-		self.slider_statchk_steer.SetValue(r_steer)
-		self.slider_statchk_accel.SetValue(r_accel)
-		self.slider_statchk_brake.SetValue(r_brake)
-
-		s = self.key_get(gear_dic, r_gear)
-		self.label_gear.SetLabel(s.upper() if s else '?')
-		s = self.key_get(mode_dic, r_mode)
-		self.label_mode.SetLabel(s[0].upper() if s else '?')
-
-	def radio_value_get(self, base_name, dic):
-		return get_top( [ v for (s,v) in dic.items() if self.obj_get(base_name + s).GetValue() ], 0 )
-
-	def radio_value_set(self, base_name, dic, val):
-		for (k,v) in dic.items():
-			obj = self.obj_get(base_name + k)
-			ov = obj.GetValue()
-			act = None
-			act = True if v == val and not ov else act
-			act = False if v != val and ov else act
-			if act is not None:
-				obj.SetValue(act)
-
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
 
@@ -492,19 +384,55 @@ class MyFrame(rtmgr.MyFrame):
 	# Computing Tab
 	#
 	def OnTreeChecked(self, event):
-		obj = event.GetItem()
+		self.OnChecked_obj(event.GetItem())
+
+	def OnChecked_obj(self, obj):
 		cmd_dic = self.obj_to_cmd_dic(obj)
-		self.launch_kill_proc(obj, cmd_dic)
+		add_args = self.obj_to_add_args(obj)
+		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
 
 	def OnTreeHyperlinked(self, event):
-		item = event.GetItem()
-		info = self.config_dic.get(item, None)
-		if info is None:
+		self.OnHyperlinked_obj(event.GetItem())
+
+	def OnHyperlinked_obj(self, obj):
+		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		if pdic is None or prm is None:
 			return
-		pdic = info['pdic']
-		prm = self.get_param(info['param'])
 		dlg = MyDialogParam(self, pdic=pdic, prm=prm)
 		dlg.ShowModal()
+
+	def obj_to_add_args(self, obj):
+		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		if pdic is None or prm is None:
+			return None
+		s = ''
+		for var in prm.get('vars'):
+			cmd_param = var.get('cmd_param')
+			if cmd_param:
+				name = var.get('name')
+				v = pdic.get(name)
+				if var.get('only_enable') and not v:
+					continue
+				unpack = cmd_param.get('unpack')
+				if unpack is not None:
+					v = ' '.join( v.split(unpack) )
+				dash = cmd_param.get('dash')
+				if dash is not None:
+					s += dash + name
+				delim = cmd_param.get('delim')
+				if delim is not None:
+					s += delim + v + ' '
+		return s.strip(' ').split(' ') if s != '' else None
+
+	def obj_to_pdic_prm(self, obj):
+		info = self.config_dic.get(obj)
+		if info is None:
+			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj ])
+			if info is None:
+				return (None, None)
+		pdic = info.get('pdic')
+		prm = self.get_param(info.get('param'))
+		return (pdic, prm)
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -512,14 +440,14 @@ class MyFrame(rtmgr.MyFrame):
 		msg = klass_msg()
 
 		for (name, v) in pdic.items():
-			lst = name.split('.')
-			targ = msg
-			for n in lst[:-1]:
-				targ = getattr(targ, n)
-			nm = lst[-1]
-			if nm in targ.__slots__:
-				type_str = targ._slot_types[ targ.__slots__.index(nm) ]
-				setattr(targ, nm, str_to_rosval(v, type_str, v))
+			(obj, attr) = msg_path_to_obj_attr(msg, name)
+			if attr in obj.__slots__:
+				type_str = obj._slot_types[ obj.__slots__.index(attr) ]
+				setattr(obj, attr, str_to_rosval(v, type_str, v))
+		
+		if 'stamp' in prm.get('flags', []):
+			(obj, attr) = msg_path_to_obj_attr(msg, 'header.stamp')
+			setattr(obj, attr, rospy.get_rostime())
 
 		pub.publish(msg)
 
@@ -527,10 +455,11 @@ class MyFrame(rtmgr.MyFrame):
 		cmd = [ 'rosparam', 'list' ]
 		rosparams = subprocess.check_output(cmd).strip().split('\n')
 		for var in prm['vars']:
-			if 'rosparam' not in var:
+			name = var['name']
+			if 'rosparam' not in var or name not in pdic:
 				continue
 			rosparam = var['rosparam']
-			v = pdic[ var['name'] ]
+			v = pdic.get(name)
 			if rosparam in rosparams:
 				cmd = [ 'rosparam', 'get', rosparam ]
 				ov = subprocess.check_output(cmd).strip()
@@ -577,7 +506,7 @@ class MyFrame(rtmgr.MyFrame):
 	# Sensing Tab
 	#
 	def OnSensingDriver(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.sensing_cmd)
+		self.OnChecked_obj(event.GetEventObject())
 
 	def OnCalib(self, event):
 		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
@@ -638,7 +567,7 @@ class MyFrame(rtmgr.MyFrame):
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
 				run_dic[obj] = (dic['run'], None)
-			if 'path' in dic:
+			if 'param' in dic:
 				obj = self.add_config_link(dic, panel, obj)
 		if sizer:
 			sizer.Add(obj, 0, wx.EXPAND | bdr_flg, 4)
@@ -658,14 +587,14 @@ class MyFrame(rtmgr.MyFrame):
 		if pdic is None:
 			pdic = {}
 			self.load_dic[name] = pdic
-		self.add_cfg_info(cfg_obj, obj, name, pdic, True, 'path', dic['path'])
+		self.add_cfg_info(cfg_obj, obj, name, pdic, True, 'param', dic.get('param'))
 		return hszr
 
 	#
 	# Simulation Tab
 	#
 	def OnSimulation(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.simulation_cmd)
+		self.OnChecked_obj(event.GetEventObject())
 
 	def OnSimTime(self, event):
 		obj = event.GetEventObject()
@@ -691,15 +620,6 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Data Tab
 	#
-	def OnTextArea(self, event):
-		pf = 'text_ctrl_moving_objects_route_'
-		lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
-		yet = [ nm for nm in lst if self.obj_get(pf + nm).GetValue() == '' ]
-		en = len(yet) <= 0
-		btn = self.button_launch_download
-		if btn.IsEnabled() is not en:
-			btn.Enable(en)
-
 	def check_download_objects_stat(self, btn, v, tcs, add_args):
 		ngs = []
 		if v:
@@ -722,15 +642,15 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Common Utils
 	#
+	def set_param_panel(self, obj, parent):
+		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		panel = ParamPanel(parent, frame=self, pdic=pdic, prm=prm)
+		szr = wx.BoxSizer(wx.VERTICAL)
+		szr.Add(panel, 0, wx.EXPAND)
+		parent.SetSizer(szr)
+
 	def OnConfig(self, event):
-		cfg_obj = event.GetEventObject()
-		info = self.config_dic.get(cfg_obj, None)
-		if info is None:
-			return
-		pdic = info['pdic']
-		path_name = info['path']
-		dlg = MyDialogPath(self, pdic=pdic, path_name=path_name)
-		dlg.ShowModal()
+		self.OnHyperlinked_obj(event.GetEventObject())
 
 	def add_params(self, params):
 		for prm in params:
@@ -744,14 +664,6 @@ class MyFrame(rtmgr.MyFrame):
 
 	def add_cfg_info(self, cfg_obj, obj, name, pdic, run_disable, key, value):
 		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'run_disable':run_disable , key:value }
-
-	def get_cfg_info(self, obj):
-		cfg_obj = self.get_cfg_obj(obj)
-		return self.config_dic[ cfg_obj ] if cfg_obj else None
-
-	def get_cfg_pdic(self, obj):
-		info = self.get_cfg_info(obj)
-		return info[ 'pdic' ] if info else None
 
 	def get_param(self, prm_name):
 		return get_top( [ prm for prm in self.params if prm['name'] == prm_name ] )
@@ -775,20 +687,15 @@ class MyFrame(rtmgr.MyFrame):
 		targ_info['pdic'] = pdic
 		self.load_dic[ targ_info['name'] ] = pdic
 
-	def get_cmd_dic(self, key):
-		dic = { 'tf'		: self.sensing_cmd,
-			'sensor_fusion'	: self.sensing_cmd,
-			'rosbag_play'	: self.simulation_cmd,
-			'pmap'		: self.simulation_cmd,
-			'vmap'		: self.simulation_cmd,
-			'trajectory'	: self.simulation_cmd,
-			'download'	: self.data_cmd,
-			'upload'	: self.data_cmd,
-		}
-		return dic.get(key, None)
-
 	def obj_to_cmd_dic(self, obj):
 		return get_top( [ cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic ] )
+
+	def obj_to_cmd_dic_cmd_proc(self, obj):
+		cmd_dic = self.obj_to_cmd_dic(obj)
+		if cmd_dic is None:
+			return (None, None, None)
+		(cmd, proc) = cmd_dic.get(obj, (None, None))
+		return (cmd_dic, cmd, proc)
 
 	def OnLaunch(self, event):
 		self.OnLaunch_obj(event.GetEventObject())
@@ -796,6 +703,8 @@ class MyFrame(rtmgr.MyFrame):
 	def OnLaunch_obj(self, obj):
 		obj = self.alias_grp_top_obj(obj)
 		self.alias_sync(obj, v=True)
+
+		add_args = self.obj_to_add_args(obj)
 
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
@@ -810,16 +719,15 @@ class MyFrame(rtmgr.MyFrame):
 		if tc and not path:
 			return
 
-		cmd_dic = self.get_cmd_dic(key)
-		if obj not in cmd_dic:
+		(cmd_dic, cmd, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if cmd_dic is None or cmd is None:
 			return
-		(cmd, proc) = cmd_dic[obj]
 
-		add_args = None
+		if add_args and key == 'vmap' and self.vmap_names:
+			add_args = [ add_args[0] + '/' + nm for nm in self.vmap_names ] + add_args[1:]
+			
 		if path:
-			# Vector Map default setting
-			names = self.vmap_names if key == 'vmap' else None
-			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
+			add_args = path.split(',')
 
 		if key == 'rosbag_play':
 			rate = self.val_get('text_ctrl_rate_' + key)
@@ -854,10 +762,9 @@ class MyFrame(rtmgr.MyFrame):
 		if not key:
 			return
 		obj = self.obj_get('button_launch_' + key)
-		cmd_dic = self.get_cmd_dic(key)
-		if obj not in cmd_dic:
+		(cmd_dic, cmd, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if cmd_dic is None or cmd is None:
 			return
-		(cmd, proc) = cmd_dic[obj]
 
 		# ROSBAG Record modify
 		sigint = (key == 'rosbag_record')
@@ -883,11 +790,9 @@ class MyFrame(rtmgr.MyFrame):
 		if not key:
 			return
 		obj = self.obj_get('button_launch_' + key)
-		cmd_dic = self.get_cmd_dic(key)
-		if obj not in cmd_dic:
-			return
-		(cmd, proc) = cmd_dic[obj]
-		proc.stdin.write(' ')
+		(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if proc:
+			proc.stdin.write(' ')
 
 	def OnRef(self, event):
 		b = event.GetEventObject()
@@ -1003,12 +908,6 @@ class MyFrame(rtmgr.MyFrame):
 			cmd = self.modal_dialog(obj, cmd)
 			if not cmd:
 				return # cancel
-
-		info = self.get_cfg_info(obj)
-		pdic = self.get_cfg_pdic(obj)
-		if pdic and 'path' in info:
-			add_args = [] if add_args is None else add_args
-			add_args += [ k + ":=" + str(val) for (k,val) in pdic.items() ]
 
 		proc = self.launch_kill(v, cmd, proc, add_args)
 
@@ -1216,34 +1115,7 @@ class MyDialog(rtmgr.MyDialog):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
-class MyDialogPath(rtmgr.MyDialogPath):
-	def __init__(self, *args, **kwds):
-		self.pdic = kwds.pop('pdic')
-		self.path_name = kwds.pop('path_name')
-		rtmgr.MyDialogPath.__init__(self, *args, **kwds)
-
-		self.SetTitle(self.path_name)
-		path = self.pdic.get(self.path_name, '')
-		self.text_ctrl.SetValue(path)
-
-	def OnRef(self, event):
-		tc = self.text_ctrl
-		path = tc.GetValue()
-		(dn, fn) = os.path.split(path)
-		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn)
-		if dlg.ShowModal() == wx.ID_OK:
-			tc.SetValue(dlg.GetPath())
-			tc.SetInsertionPointEnd()
-		dlg.Destroy()
-
-	def OnOk(self, event):
-		self.pdic[self.path_name] = str(self.text_ctrl.GetValue())
-		self.EndModal(0)
-
-	def OnCancel(self, event):
-		self.EndModal(-1)
-
-class MainCcPanel(wx.Panel):
+class ParamPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.frame = kwds.pop('frame')
 		self.pdic = kwds.pop('pdic')
@@ -1253,12 +1125,13 @@ class MainCcPanel(wx.Panel):
 		self.vps = []
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for var in self.prm['vars']:
-			v = self.pdic[ var['name'] ]
+			v = self.pdic.get(var['name'], var['v'])
 			vp = VarPanel(self, var=var, v=v, 
 				      update_pdic=self.update_pdic, publish=self.publish)
 			szr.Add(vp, 0, wx.EXPAND)
 			self.vps.append(vp)
 		self.SetSizer(szr)
+		self.update_pdic()
 
 	def update_pdic(self):
 		vars = self.prm['vars']
@@ -1283,17 +1156,27 @@ class VarPanel(wx.Panel):
 		self.max = self.var.get('max', None)
 		self.has_slider = self.min is not None and self.max is not None
 
+		label = self.var.get('label', '')
 		self.kind = self.var.get('kind', None)
 		if self.kind == 'radio_box':
-			label = self.var.get('label', '')
 			choices = self.var.get('choices', [])
 			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
 			self.obj.SetSelection(v)
 			return
+		if self.kind == 'checkbox':
+			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
+			self.obj.SetValue(v)
+			return
+		if self.kind == 'toggle_button':
+			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
+			self.obj.SetValue(v)
+			return
+		if self.kind == 'hide':
+			return
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
-		lb = wx.StaticText(self, wx.ID_ANY, self.var['label'])
+		lb = wx.StaticText(self, wx.ID_ANY, label)
 		flag = wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTER_VERTICAL
 		szr.Add(lb, 0, flag, 4)
 
@@ -1331,6 +1214,10 @@ class VarPanel(wx.Panel):
 	def get_v(self):
 		if self.kind == 'radio_box':
 			return self.obj.GetSelection()
+		if self.kind in [ 'checkbox', 'toggle_button' ]:
+			return self.obj.GetValue()
+		if self.kind == 'hide':
+			return self.var.get('v')
 		if self.kind == 'path':
 			return str(self.tc.GetValue())
 		return self.get_tc_v()
@@ -1375,13 +1262,16 @@ class VarPanel(wx.Panel):
 		if path_type == 'dir':
 			dlg = wx.DirDialog(self, defaultPath=path)
 		else:
-			style = wx.FD_SAVE if path_type == 'save' else wx.FD_DEFAULT_STYLE
-			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style)
-
+			st_dic = { 'save' : wx.FD_SAVE, 'multi' : wx.FD_MULTIPLE }
+			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, 
+					    style=st_dic.get(path_type, wx.FD_DEFAULT_STYLE))
 		if dlg.ShowModal() == wx.ID_OK:
-			path = dlg.GetPath()
+			path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
 			self.tc.SetValue(path)
 			self.tc.SetInsertionPointEnd()
+
+			self.update_pdic()
+			self.publish()
 		dlg.Destroy()
 
 class MyDialogParam(rtmgr.MyDialogParam):
@@ -1394,17 +1284,26 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		hszr = None
 		self.vps = []
 		for var in self.prm['vars']:
-			v = self.pdic[ var['name'] ]
+			v = self.pdic.get(var['name'], var['v'])
 			vp = VarPanel(self.panel_v, var=var, v=v, 
 				      update_pdic=self.update_pdic, publish=self.publish)
+			prop = var.get('prop', 0)
+			border = var.get('border', 0)
+			flag = wx_flag_get(var.get('flags', []))
+
 			if vp.has_slider or vp.kind == 'path':
 				hszr = None if hszr else hszr
-				self.sizer_v.Add(vp, 0, wx.EXPAND)
+				flag |= wx.EXPAND
+				self.sizer_v.Add(vp, prop, flag, border)
 			else:
 				if hszr is None:
 					hszr = wx.BoxSizer(wx.HORIZONTAL)
 					self.sizer_v.Add(hszr, 0, wx.EXPAND)
-				hszr.Add(vp, 0, 0)
+				flag |= wx.ALIGN_CENTER_VERTICAL
+				hszr.Add(vp, prop, flag, border)
+
+			if 'nl' in var.get('flags', []):
+				hszr = None
 			self.vps.append(vp)
 
 		self.SetTitle(self.prm['name'])
@@ -1531,6 +1430,20 @@ def terminate(proc, sigint=False):
 		proc.send_signal(signal.SIGINT)
 	else:
 		proc.terminate()
+
+def wx_flag_get(flags):
+	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT, 
+		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE,
+		'center_v' : wx.ALIGN_CENTER_VERTICAL, 'center_h' : wx.ALIGN_CENTER_HORIZONTAL }
+	lst = [ dic.get(f) for f in flags if f in dic ]
+	return reduce(lambda a,b : a+b, [0] + lst)
+
+def msg_path_to_obj_attr(msg, path):
+	lst = path.split('.')
+	obj = msg
+	for attr in lst[:-1]:
+		obj = getattr(obj, attr, None)
+	return (obj, lst[-1])
 
 def str_to_rosval(str, type_str, def_ret=None):
 	cvt_dic = {

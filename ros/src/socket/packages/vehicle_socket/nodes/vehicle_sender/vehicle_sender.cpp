@@ -2,6 +2,11 @@
 #include "ros/ros.h"
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Twist.h>
+#include "ui_socket/mode_cmd.h"
+#include "ui_socket/gear_cmd.h"
+#include "runtime_manager/accel_cmd.h"
+#include "runtime_manager/brake_cmd.h"
+#include "runtime_manager/steer_cmd.h"
 #include <std_msgs/Int32.h>
 
 #include <stdio.h>
@@ -14,6 +19,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/time.h>
+
+
 
 int PORT = 10001;
 
@@ -53,9 +60,9 @@ void initCMDDATA(){
   cd.angular_z = 0;
   cd.modeValue = 1;
   cd.gearValue = 0;
-  cd.accellValue = 100;
+  cd.accellValue = 0;
   cd.steerValue = 0;
-  cd.brakeValue = 100;
+  cd.brakeValue = 0;
 }
 
 
@@ -80,48 +87,67 @@ void CMDCallback(const geometry_msgs::TwistStamped &msg)
 }
 
 
-void modeCMDCallback(const std_msgs::Int32 &mode)
+void modeCMDCallback(const ui_socket::mode_cmd &mode)
 {
-  if(mode.data == 1){//auto mobile mode
+
+  /*
+  if(mode.mode == 1){//auto mobile mode
     modeFlag = true;
   }else{ //manual mode
     modeFlag = false;
     gearFlag = false;
     initCMDDATA();
   }
-  cd.modeValue = mode.data;
+  */
+  if(mode.mode == -1 || mode.mode == 0){
+    initCMDDATA();
+  }
+  cd.modeValue = mode.mode;
 }
 
-void gearCMDCallback(const std_msgs::Int32 &gear)
+void gearCMDCallback(const ui_socket::gear_cmd &gear)
 {
+  cd.gearValue = gear.gear;
+  /*
   if(modeFlag){
-    cd.gearValue = gear.data;
+    cd.gearValue = gear.gear;
     gearFlag = true;
   }
+  */
 }
 
 
-void accellCMDCallback(const std_msgs::Int32 &accell)
+void accellCMDCallback(const runtime_manager::accel_cmd &accell)
 {
-  if(modeFlag && gearFlag){
-    cd.accellValue = accell.data;
-  }
+
+  cd.accellValue = accell.accel;
+  /*
+    if(modeFlag && gearFlag){
+    cd.accellValue = accell.accel;
+    }
+  */
 }
 
 
-void steerCMDCallback(const std_msgs::Int32 &steer)
+void steerCMDCallback(const runtime_manager::steer_cmd &steer)
 {
+  cd.steerValue = steer.steer;
+  /*
   if(modeFlag && gearFlag){
-    cd.steerValue = steer.data;
+    cd.steerValue = steer.steer;
   }
+  */
 }
 
 
-void brakeCMDCallback(const std_msgs::Int32 &brake)
+void brakeCMDCallback(const runtime_manager::brake_cmd &brake)
 {
+  cd.brakeValue = brake.brake;
+  /*
   if(modeFlag && gearFlag){
-    cd.brakeValue = brake.data;
+    cd.brakeValue = brake.brake;
   }
+  */
 }
 
 

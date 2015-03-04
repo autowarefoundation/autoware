@@ -8,13 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   ui_socket
   lane_follower
+  runtime_manager
   gnss
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-  CATKIN_DEPENDS ui_socket lane_follower
+  CATKIN_DEPENDS ui_socket lane_follower runtime_manager
   DEPENDS gnss
 )
 
@@ -31,4 +32,7 @@ add_dependencies(lane_navi ui_socket_generate_messages_cpp)
 
 add_executable(lane_rule nodes/lane_rule/lane_rule.cpp)
 target_link_libraries(lane_rule vmap_parser ${catkin_LIBRARIES})
-add_dependencies(lane_rule lane_follower_generate_messages_cpp)
+add_dependencies(lane_rule
+  lane_follower_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
+)
