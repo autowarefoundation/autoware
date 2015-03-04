@@ -75,8 +75,8 @@ class MyFrame(rtmgr.MyFrame):
 			pdic = {}
 			for var in prm['vars']:
 				pdic[ var['name'] ] = var['v']
-			mccp = MainCcPanel(self.panel_main_cc, frame=self, pdic=pdic, prm=prm)
-			szr.Add(mccp, 0, wx.EXPAND)
+			panel = ParamPanel(self.panel_main_cc, frame=self, pdic=pdic, prm=prm)
+			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_main_cc.SetSizer(szr)
 
 		#
@@ -137,6 +137,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.simulation_cmd = {}
 		self.all_cmd_dics.append(self.simulation_cmd)
 		dic = self.load_yaml('simulation_launch_cmd.yaml')
+
+		self.add_params(dic.get('params', []))
+
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
@@ -145,8 +148,12 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
-		self.sel_multi_ks = [ 'pmap', 'point_cloud' ]
-		self.sel_dir_ks = [ 'vmap', 'calibration', 'vector_map' ]
+		self.sel_multi_ks = [ 'point_cloud' ]
+		self.sel_dir_ks = [ 'calibration', 'vector_map' ]
+
+		self.set_param_panel(self.button_launch_pmap, self.panel_pmap_prm)
+		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
+		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
 		#
 		# for Data Tab
@@ -244,6 +251,12 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
+			if 'param' in d2:
+				pdic = self.load_dic.get(k)
+				if pdic is None:
+					pdic = {}
+					self.load_dic[k] = pdic
+				self.add_cfg_info(obj, obj, k, pdic, False, 'param', d2.get('param'))
 
 	#
 	# Main Tab
@@ -398,6 +411,8 @@ class MyFrame(rtmgr.MyFrame):
 			if cmd_param:
 				name = var.get('name')
 				v = pdic.get(name)
+				if var.get('only_enable') and not v:
+					continue
 				unpack = cmd_param.get('unpack')
 				if unpack is not None:
 					v = ' '.join( v.split(unpack) )
@@ -627,6 +642,13 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Common Utils
 	#
+	def set_param_panel(self, obj, parent):
+		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		panel = ParamPanel(parent, frame=self, pdic=pdic, prm=prm)
+		szr = wx.BoxSizer(wx.VERTICAL)
+		szr.Add(panel, 0, wx.EXPAND)
+		parent.SetSizer(szr)
+
 	def OnConfig(self, event):
 		self.OnHyperlinked_obj(event.GetEventObject())
 
@@ -682,6 +704,8 @@ class MyFrame(rtmgr.MyFrame):
 		obj = self.alias_grp_top_obj(obj)
 		self.alias_sync(obj, v=True)
 
+		add_args = self.obj_to_add_args(obj)
+
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
 			return
@@ -699,11 +723,11 @@ class MyFrame(rtmgr.MyFrame):
 		if cmd_dic is None or cmd is None:
 			return
 
-		add_args = None
+		if add_args and key == 'vmap' and self.vmap_names:
+			add_args = [ add_args[0] + '/' + nm for nm in self.vmap_names ] + add_args[1:]
+			
 		if path:
-			# Vector Map default setting
-			names = self.vmap_names if key == 'vmap' else None
-			add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
+			add_args = path.split(',')
 
 		if key == 'rosbag_play':
 			rate = self.val_get('text_ctrl_rate_' + key)
@@ -1091,7 +1115,7 @@ class MyDialog(rtmgr.MyDialog):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
-class MainCcPanel(wx.Panel):
+class ParamPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.frame = kwds.pop('frame')
 		self.pdic = kwds.pop('pdic')
@@ -1107,6 +1131,7 @@ class MainCcPanel(wx.Panel):
 			szr.Add(vp, 0, wx.EXPAND)
 			self.vps.append(vp)
 		self.SetSizer(szr)
+		self.update_pdic()
 
 	def update_pdic(self):
 		vars = self.prm['vars']
@@ -1145,6 +1170,8 @@ class VarPanel(wx.Panel):
 		if self.kind == 'toggle_button':
 			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
+			return
+		if self.kind == 'hide':
 			return
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
@@ -1189,6 +1216,8 @@ class VarPanel(wx.Panel):
 			return self.obj.GetSelection()
 		if self.kind in [ 'checkbox', 'toggle_button' ]:
 			return self.obj.GetValue()
+		if self.kind == 'hide':
+			return self.var.get('v')
 		if self.kind == 'path':
 			return str(self.tc.GetValue())
 		return self.get_tc_v()
@@ -1240,6 +1269,9 @@ class VarPanel(wx.Panel):
 			path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
 			self.tc.SetValue(path)
 			self.tc.SetInsertionPointEnd()
+
+			self.update_pdic()
+			self.publish()
 		dlg.Destroy()
 
 class MyDialogParam(rtmgr.MyDialogParam):
