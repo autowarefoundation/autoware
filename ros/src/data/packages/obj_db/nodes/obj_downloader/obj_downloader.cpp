@@ -65,28 +65,24 @@ void* wrapSender(void *tsd){
   stringstream oss;
 
   switch (SendDataType){
-  case TEST:
-    {
-      oss << "select order\t" << counter << "<E>";
-      data = oss.str();
-      printf("test\n");
-      counter++;
-      break;
-    }
   case RANGE:
     {
-      oss <<  "select order";
+      oss <<  "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";";
+      /*
       for(int i=0; i<4; i++){
 	oss << "\t" << fixed << setprecision(7) <<positionRange[i];
       }
+      */
       oss << "<E>";
       data = oss.str();
       break;
     }
   case NORMAL:
   default:
-    data = "select order<E>";
+    data = "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= 35.2038955 and lat < 35.2711311 and lon >= 136.9813925 and lon < 137.055852;<E>";
   }
+
+  printf("sql : %s\n",data.c_str());
 
   dbres = sd.Sender(data);
 
@@ -150,22 +146,10 @@ int main(int argc, char **argv){
   if(argc == 1){
     printf("normal execution\n");
     SendDataType = NORMAL;
-  }else if(argc == 2){
-    string argFlag = argv[1];
-    if(argFlag.compare("--test") == 0){
-      printf("test access\n");
-      SendDataType = TEST;
-    }else{
-      printf("invalid argment\n");
-      SendDataType = NORMAL;
-    }
   }else if(argc == 5){
     if(static_cast<std::string>(argv[1]).compare("10000")==0){
       printf("normal access\n");
       SendDataType = NORMAL;
-    }else if(static_cast<string>(argv[1]).compare("10001")==0){
-      printf("test access\n");
-      SendDataType = TEST;
     }else if(static_cast<string>(argv[1]).compare("10002")==0){
       printf("fixed range access\n");
       positionRange[0] = 35.2038955;
