@@ -44,8 +44,9 @@ typedef struct _CMDDATA{
   int modeValue;
   int gearValue;
   int accellValue;
-  int steerValue;
   int brakeValue;
+  int steerValue;
+
 }CMDDATA;
 
 CMDDATA cd;
@@ -61,8 +62,9 @@ void initCMDDATA(){
   cd.modeValue = 1;
   cd.gearValue = 0;
   cd.accellValue = 0;
-  cd.steerValue = 0;
   cd.brakeValue = 0;
+  cd.steerValue = 0;
+
 }
 
 
@@ -166,8 +168,9 @@ void* returnCMDValue(void *arg){
   oss << cd.modeValue << ",";
   oss << cd.gearValue << ",";
   oss << cd.accellValue << ",";
-  oss << cd.steerValue << ",";
-  oss << cd.brakeValue;
+  oss << cd.brakeValue << ",";
+  oss << cd.steerValue;
+
   value = oss.str();
 
   //struct version
@@ -244,17 +247,13 @@ int main(int argc, char **argv){
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub[4];
+  ros::Subscriber sub[6];
   sub[0] = nh.subscribe("/twist_cmd", 1,CMDCallback);
-  //sub[0] = nh.subscribe("/cmd_vel", 1,CMDCallback);
   sub[1] = nh.subscribe("/mode_cmd", 1,modeCMDCallback);
   sub[2] = nh.subscribe("/gear_cmd", 1,gearCMDCallback);
-  sub[3] = nh.subscribe("/accell_cmd", 1,accellCMDCallback);
-  sub[3] = nh.subscribe("/steer_cmd", 1,steerCMDCallback);
-  sub[3] = nh.subscribe("/brake_cmd", 1,brakeCMDCallback);
-  //sub[0] = nh.subscribe("twist_cmd", 100,CMDCallback);
-  //sub[1] = nh.subscribe("",100,ModeCallback);
-  //sub[1] = nh.subscribe("gear_cmd", 100,GearCallback);
+  sub[3] = nh.subscribe("/accel_cmd", 1,accellCMDCallback);
+  sub[4] = nh.subscribe("/steer_cmd", 1,steerCMDCallback);
+  sub[5] = nh.subscribe("/brake_cmd", 1,brakeCMDCallback);
 
   //default message
   modeFlag = false;
