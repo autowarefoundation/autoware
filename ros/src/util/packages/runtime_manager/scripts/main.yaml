@@ -36,7 +36,7 @@ params :
     msg   : brake_cmd
     vars  :
     - name  : brake
-      label : brake
+      label : Brake
       min   : 0
       max   : 10000
       v     : 0
