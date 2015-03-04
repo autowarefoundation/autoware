@@ -413,17 +413,21 @@ class MyFrame(rtmgr.MyFrame):
 			if cmd_param:
 				name = var.get('name')
 				v = pdic.get(name)
-				if var.get('only_enable') and not v:
+				name = cmd_param.get('var_name', name)
+				if cmd_param.get('only_enable') and not v:
 					continue
 				unpack = cmd_param.get('unpack')
 				if unpack is not None:
 					v = ' '.join( v.split(unpack) )
+				add = ''
 				dash = cmd_param.get('dash')
 				if dash is not None:
-					s += dash + name
+					add += dash + name
 				delim = cmd_param.get('delim')
 				if delim is not None:
-					s += delim + v + ' '
+					add += delim + str(v)
+				if add != '':
+					s += add + ' '
 		return s.strip(' ').split(' ') if s != '' else None
 
 	def obj_to_pdic_prm(self, obj):
@@ -1124,14 +1128,35 @@ class ParamPanel(wx.Panel):
 		self.prm = kwds.pop('prm')
 		wx.Panel.__init__(self, *args, **kwds)
 
+		hszr = None
 		self.vps = []
 		szr = wx.BoxSizer(wx.VERTICAL)
-		for var in self.prm['vars']:
-			v = self.pdic.get(var['name'], var['v'])
+		for var in self.prm.get('vars'):
+			v = self.pdic.get(var.get('name'), var.get('v'))
+			obj_dic = var.get('obj_dic', {})
+
 			vp = VarPanel(self, var=var, v=v, 
 				      update_pdic=self.update_pdic, publish=self.publish)
-			szr.Add(vp, 0, wx.EXPAND)
 			self.vps.append(vp)
+
+			prop = var.get('prop', 0)
+			border = var.get('border', 0)
+			flag = wx_flag_get(var.get('flags', []))
+
+			if vp.has_slider or vp.kind =='path':
+				hszr = None if hszr else hszr
+				flag |= wx.EXPAND
+				szr.Add(vp, prop, flag, border)
+			else:
+				if hszr is None:
+					hszr = wx.BoxSizer(wx.HORIZONTAL)
+					szr.Add(hszr, 0, wx.EXPAND)
+				flag |= wx.ALIGN_CENTER_VERTICAL
+				hszr.Add(vp, prop, flag, border)
+
+			if 'nl' in var.get('flags', []):
+				hszr = None
+
 		self.SetSizer(szr)
 		self.update_pdic()
 
@@ -1164,16 +1189,20 @@ class VarPanel(wx.Panel):
 			choices = self.var.get('choices', [])
 			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
 			self.obj.SetSelection(v)
+			self.Bind(wx.EVT_RADIOBOX, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
+			self.Bind(wx.EVT_CHECKBOX, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'toggle_button':
 			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
+			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'hide':
+			self.Hide()
 			return
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
@@ -1183,7 +1212,7 @@ class VarPanel(wx.Panel):
 		szr.Add(lb, 0, flag, 4)
 
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
-		self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter, self.tc)
+		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
 
 		if self.kind is None:
 			if self.has_slider:
@@ -1222,6 +1251,9 @@ class VarPanel(wx.Panel):
 			return self.var.get('v')
 		if self.kind == 'path':
 			return str(self.tc.GetValue())
+
+		if not self.has_slider and self.tc.GetValue() == '':
+			return ''
 		return self.get_tc_v()
 
 	def get_tc_v(self):
@@ -1250,7 +1282,7 @@ class VarPanel(wx.Panel):
 		self.update_pdic()
 		self.publish()
 
-	def OnTextEnter(self, event):
+	def OnUpdate(self, event):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
 
@@ -1278,64 +1310,34 @@ class VarPanel(wx.Panel):
 
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
-		self.pdic = kwds.pop('pdic')
-		self.pdic_bak = self.pdic.copy()
-		self.prm = kwds.pop('prm')
+		pdic = kwds.pop('pdic')
+		self.pdic_bak = pdic.copy()
+		prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
 
-		hszr = None
-		self.vps = []
-		for var in self.prm['vars']:
-			v = self.pdic.get(var['name'], var['v'])
-			vp = VarPanel(self.panel_v, var=var, v=v, 
-				      update_pdic=self.update_pdic, publish=self.publish)
-			prop = var.get('prop', 0)
-			border = var.get('border', 0)
-			flag = wx_flag_get(var.get('flags', []))
+		parent = self.panel_v
+		frame = self.GetParent()
+		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, prm=prm)
+		szr = wx.BoxSizer(wx.VERTICAL)
+		szr.Add(self.panel, 1, wx.EXPAND)
+		parent.SetSizer(szr)
 
-			if vp.has_slider or vp.kind == 'path':
-				hszr = None if hszr else hszr
-				flag |= wx.EXPAND
-				self.sizer_v.Add(vp, prop, flag, border)
-			else:
-				if hszr is None:
-					hszr = wx.BoxSizer(wx.HORIZONTAL)
-					self.sizer_v.Add(hszr, 0, wx.EXPAND)
-				flag |= wx.ALIGN_CENTER_VERTICAL
-				hszr.Add(vp, prop, flag, border)
-
-			if 'nl' in var.get('flags', []):
-				hszr = None
-			self.vps.append(vp)
-
-		self.SetTitle(self.prm['name'])
+		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
-		(w2,_) = self.sizer_v.GetMinSize()
+		(w2,_) = szr.GetMinSize()
 		w2 += 20
 		if w2 > w:
 			self.SetSize((w2,h))
 
 	def OnOk(self, event):
-		self.update_pdic()
-		self.publish()
+		self.panel.update_pdic()
+		self.panel.publish()
 		self.EndModal(0)
 
 	def OnCancel(self, event):
-		self.pdic.update(self.pdic_bak) # restore
-		self.publish()
+		self.panel.pdic.update(self.pdic_bak) # restore
+		self.panel.publish()
 		self.EndModal(-1)
-
-	def update_pdic(self):
-		vars = self.prm['vars']
-		for var in vars:
-			v = self.vps[ vars.index(var) ].get_v()
-			self.pdic[ var['name'] ] = v
-
-	def publish(self):
-		frame = self.GetParent()
-		if 'pub' in self.prm:
-			frame.publish_param_topic(self.pdic, self.prm)
-		frame.rosparam_set(self.pdic, self.prm)
 
 class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def __init__(self, *args, **kwds):
