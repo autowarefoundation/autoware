@@ -74,6 +74,9 @@ subs :
         - name : lane_rule
           cmd  : rosrun lane_planner lane_rule
           param: lane_rule
+        - name : lane_stop
+          cmd  : echo lane_stop
+          param: lane_stop
       - name : Motion
       - name : Path
         subs :
@@ -302,3 +305,11 @@ params :
       min       : 0
       max       : 20
       v         : 2.0
+
+  - name  : lane_stop
+    topic : /traffic_light
+    msg   : traffic_light
+    dialog: MyDialogLaneStop
+    vars  :
+      - name  : traffic_light
+        v     : 0
