@@ -78,7 +78,7 @@ class MyFrame(rtmgr.MyFrame):
 			prm = self.get_param(cc.get('param'))
 			for var in prm['vars']:
 				pdic[ var['name'] ] = var['v']
-			gdic = cc.get('gui', {})
+			gdic = self.gdic_get_1st(cc)
 			panel = ParamPanel(self.panel_main_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
 			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_main_cc.SetSizer(szr)
@@ -205,8 +205,8 @@ class MyFrame(rtmgr.MyFrame):
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
-			[ self.text_ctrl_rosbag_play, self.text_ctrl_main_rosbag_play, ],
-			[ self.button_ref_rosbag_play, self.button_ref_main_rosbag_play, ],
+			[ self.text_ctrl_file_rosbag_play, self.text_ctrl_main_rosbag_play, ],
+			[ self.button_ref_file_rosbag_play, self.button_ref_main_rosbag_play, ],
 			[ self.text_ctrl_rate_rosbag_play, self.text_ctrl_rate_main_rosbag_play, ],
 			[ self.checkbox_clock_rosbag_play, self.checkbox_clock_main_rosbag_play, ],
 			[ self.checkbox_sim_time, self.checkbox_main_sim_time, ],
@@ -261,7 +261,7 @@ class MyFrame(rtmgr.MyFrame):
 					pdic = {}
 					self.load_dic[k] = pdic
 				prm = self.get_param(d2.get('param'))
-				gdic = d2.get('gui', {})
+				gdic = self.gdic_get_1st(d2)
 				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
 
 	#
@@ -409,9 +409,10 @@ class MyFrame(rtmgr.MyFrame):
 		dlg.ShowModal()
 
 	def obj_to_add_args(self, obj):
-		(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj)
+		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return None
+		self.update_func(pdic, gdic, prm)
 		s = ''
 		for var in prm.get('vars'):
 			cmd_param = var.get('cmd_param')
@@ -446,6 +447,19 @@ class MyFrame(rtmgr.MyFrame):
 		gdic = info.get('gdic')
 		return (pdic, gdic, prm)
 
+	def update_func(self, pdic, gdic, prm):
+		for var in prm.get('vars', []):
+			name = var.get('name')
+			gdic_v = gdic.get(name, {})
+			func = gdic_v.get('func')
+			if func is None:
+				continue
+			v = eval(func) if type(func) is str else func()
+			pdic[ name ] = v
+		if 'pub' in prm:
+			self.publish_param_topic(pdic, prm)
+		self.rosparam_set(pdic, prm)
+
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
 		klass_msg = globals()[ prm['msg'] ]
@@ -466,7 +480,7 @@ class MyFrame(rtmgr.MyFrame):
 	def rosparam_set(self, pdic, prm):
 		cmd = [ 'rosparam', 'list' ]
 		rosparams = subprocess.check_output(cmd).strip().split('\n')
-		for var in prm['vars']:
+		for var in prm.get('vars', []):
 			name = var['name']
 			if 'rosparam' not in var or name not in pdic:
 				continue
@@ -599,7 +613,7 @@ class MyFrame(rtmgr.MyFrame):
 		if pdic is None:
 			pdic = {}
 			self.load_dic[name] = pdic
-		gdic = dic.get('gui', {})
+		gdic = self.gdic_get_1st(dic)
 		prm = self.get_param(dic.get('param'))
 		self.add_cfg_info(cfg_obj, obj, name, pdic, gdic, True, prm)
 		return hszr
@@ -673,6 +687,11 @@ class MyFrame(rtmgr.MyFrame):
 				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
 		self.params += params
 
+	def gdic_get_1st(self, dic):
+		gdic = dic.get('gui', {})
+		gdic['update_func'] = self.update_func
+		return gdic
+
 	def get_cfg_obj(self, obj):
 		return get_top( [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ] )
 
@@ -741,14 +760,7 @@ class MyFrame(rtmgr.MyFrame):
 			add_args = [ add_args[0] + '/' + nm for nm in self.vmap_names ] + add_args[1:]
 			
 		if path:
-			add_args = path.split(',')
-
-		if key == 'rosbag_play':
-			rate = self.val_get('text_ctrl_rate_' + key)
-			if rate and rate is not '':
-				add_args = [ '-r', rate ] + ( add_args if add_args else [] )
-			if self.val_get('checkbox_clock_' + key):
-				add_args = [ '--clock' ] + ( add_args if add_args else [] )
+			add_args = ( add_args if add_args else [] ) + path.split(',')
 
 		if key == 'download':
 			pf = 'text_ctrl_moving_objects_route_'
@@ -880,7 +892,7 @@ class MyFrame(rtmgr.MyFrame):
 
 			if 'param' in items:
 				prm = self.get_param(items.get('param'))
-				gdic = items.get('gui', {})
+				gdic = self.gdic_get_1st(items)
 				self.add_config_link_tree_item(item, name, gdic, prm)
 
 		for sub in items.get('subs', []):
@@ -1143,14 +1155,19 @@ class ParamPanel(wx.Panel):
 		self.vps = []
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for var in self.prm.get('vars'):
-			v = self.pdic.get(var.get('name'), var.get('v'))
-			obj_dic = var.get('obj_dic', {})
+			name = var.get('name')
+			if name not in self.gdic:
+				self.gdic[ name ] = {}
+			gdic_v = self.gdic.get(name)
+			if gdic_v.get('func'):
+				continue
 
-			vp = VarPanel(self, var=var, v=v, 
-				      update_pdic=self.update_pdic, publish=self.publish)
+			v = self.pdic.get(name, var.get('v'))
+
+			vp = VarPanel(self, var=var, v=v, update=self.update)
 			self.vps.append(vp)
 
-			gdic_v = self.gdic.get(var.get('name'), {})
+			gdic_v['func'] = vp.get_v
 			prop = gdic_v.get('prop', 0)
 			border = gdic_v.get('border', 0)
 			flag = wx_flag_get(gdic_v.get('flags', []))
@@ -1170,25 +1187,25 @@ class ParamPanel(wx.Panel):
 				hszr = None
 
 		self.SetSizer(szr)
-		self.update_pdic()
+		self.update()
 
-	def update_pdic(self):
-		vars = self.prm['vars']
-		for var in vars:
-			v = self.vps[ vars.index(var) ].get_v()
-			self.pdic[ var['name'] ] = v
+	def update(self):
+		update_func = self.gdic.get('update_func')
+		if update_func:
+			update_func(self.pdic, self.gdic, self.prm)
 
-	def publish(self):
-		if 'pub' in self.prm:
-			self.frame.publish_param_topic(self.pdic, self.prm)
-		self.frame.rosparam_set(self.pdic, self.prm)
+	def detach_func(self):
+		for var in self.prm.get('vars'):
+			name = var.get('name')
+			gdic_v = self.gdic.get(name, {})
+			if 'func' in gdic_v:
+				del gdic_v['func']
 
 class VarPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.var = kwds.pop('var')
 		v = kwds.pop('v')
-		self.update_pdic = kwds.pop('update_pdic')
-		self.publish = kwds.pop('publish')
+		self.update = kwds.pop('update')
 		wx.Panel.__init__(self, *args, **kwds)
 
 		self.min = self.var.get('min', None)
@@ -1290,16 +1307,12 @@ class VarPanel(wx.Panel):
 			v = self.min + float(self.w) * iv / self.int_max
 			s = str(Decimal(v).quantize(Decimal('.01')))
 		self.tc.SetValue(s)
-
-		self.update_pdic()
-		self.publish()
+		self.update()
 
 	def OnUpdate(self, event):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
-
-		self.update_pdic()
-		self.publish()
+		self.update()
 
 	def OnRef(self, event):
 		path = self.tc.GetValue()
@@ -1315,9 +1328,7 @@ class VarPanel(wx.Panel):
 			path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
 			self.tc.SetValue(path)
 			self.tc.SetInsertionPointEnd()
-
-			self.update_pdic()
-			self.publish()
+			self.upate()
 		dlg.Destroy()
 
 class MyDialogParam(rtmgr.MyDialogParam):
@@ -1343,13 +1354,13 @@ class MyDialogParam(rtmgr.MyDialogParam):
 			self.SetSize((w2,h))
 
 	def OnOk(self, event):
-		self.panel.update_pdic()
-		self.panel.publish()
+		self.panel.update()
 		self.EndModal(0)
 
 	def OnCancel(self, event):
 		self.panel.pdic.update(self.pdic_bak) # restore
-		self.panel.publish()
+		self.panel.detach_func()
+		self.panel.update()
 		self.EndModal(-1)
 
 class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
@@ -1360,13 +1371,18 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 		rtmgr.MyDialogLaneStop.__init__(self, *args, **kwds)
 		self.frame = self.GetParent()
 
+	def update(self):
+		update_func = self.gdic.get('update_func')
+		if update_func:
+			update_func(self.pdic, self.gdic, self.prm)
+
 	def OnTrafficRedLight(self, event):
 		self.pdic['traffic_light'] = 0
-		self.frame.publish_param_topic(self.pdic, self.prm)
+		self.update()
 		
 	def OnTrafficGreenLight(self, event):
 		self.pdic['traffic_light'] = 1
-		self.frame.publish_param_topic(self.pdic, self.prm)
+		self.update()
 
 	def OnOk(self, event):
 		self.EndModal(0)
