@@ -205,8 +205,8 @@ class MyFrame(rtmgr.MyFrame):
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
-			[ self.text_ctrl_rosbag_play, self.text_ctrl_main_rosbag_play, ],
-			[ self.button_ref_rosbag_play, self.button_ref_main_rosbag_play, ],
+			[ self.text_ctrl_file_rosbag_play, self.text_ctrl_main_rosbag_play, ],
+			[ self.button_ref_file_rosbag_play, self.button_ref_main_rosbag_play, ],
 			[ self.text_ctrl_rate_rosbag_play, self.text_ctrl_rate_main_rosbag_play, ],
 			[ self.checkbox_clock_rosbag_play, self.checkbox_clock_main_rosbag_play, ],
 			[ self.checkbox_sim_time, self.checkbox_main_sim_time, ],
@@ -409,9 +409,10 @@ class MyFrame(rtmgr.MyFrame):
 		dlg.ShowModal()
 
 	def obj_to_add_args(self, obj):
-		(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj)
+		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return None
+		self.update_func(pdic, gdic, prm)
 		s = ''
 		for var in prm.get('vars'):
 			cmd_param = var.get('cmd_param')
@@ -479,7 +480,7 @@ class MyFrame(rtmgr.MyFrame):
 	def rosparam_set(self, pdic, prm):
 		cmd = [ 'rosparam', 'list' ]
 		rosparams = subprocess.check_output(cmd).strip().split('\n')
-		for var in prm['vars']:
+		for var in prm.get('vars', []):
 			name = var['name']
 			if 'rosparam' not in var or name not in pdic:
 				continue
@@ -759,14 +760,7 @@ class MyFrame(rtmgr.MyFrame):
 			add_args = [ add_args[0] + '/' + nm for nm in self.vmap_names ] + add_args[1:]
 			
 		if path:
-			add_args = path.split(',')
-
-		if key == 'rosbag_play':
-			rate = self.val_get('text_ctrl_rate_' + key)
-			if rate and rate is not '':
-				add_args = [ '-r', rate ] + ( add_args if add_args else [] )
-			if self.val_get('checkbox_clock_' + key):
-				add_args = [ '--clock' ] + ( add_args if add_args else [] )
+			add_args = ( add_args if add_args else [] ) + path.split(',')
 
 		if key == 'download':
 			pf = 'text_ctrl_moving_objects_route_'
@@ -1162,14 +1156,17 @@ class ParamPanel(wx.Panel):
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for var in self.prm.get('vars'):
 			name = var.get('name')
+			if name not in self.gdic:
+				self.gdic[ name ] = {}
+			gdic_v = self.gdic.get(name)
+			if gdic_v.get('func'):
+				continue
+
 			v = self.pdic.get(name, var.get('v'))
 
 			vp = VarPanel(self, var=var, v=v, update=self.update)
 			self.vps.append(vp)
 
-			if name not in self.gdic:
-				self.gdic[ name ] = {}
-			gdic_v = self.gdic.get(name)
 			gdic_v['func'] = vp.get_v
 			prop = gdic_v.get('prop', 0)
 			border = gdic_v.get('border', 0)

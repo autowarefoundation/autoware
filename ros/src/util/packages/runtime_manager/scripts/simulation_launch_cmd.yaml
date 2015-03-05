@@ -35,7 +35,16 @@ subs :
 
 buttons:
   rosbag_play :
-    run : rosbag play
+    run   : rosbag play
+    param : rosbag_play
+    gui   :
+      clock :
+        func  : self.checkbox_clock_rosbag_play.GetValue()
+      rate  :
+        func  : self.text_ctrl_rate_rosbag_play.GetValue()
+      file  :
+        func  : self.text_ctrl_file_rosbag_play.GetValue()
+
   pmap :
     run :
       selobj : checkbox_point_map_update
@@ -57,6 +66,27 @@ checkboxs:
       True   : rosparam set use_sim_time true
 
 params :
+  - name  : rosbag_play
+    vars  :
+    - name      : clock
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        only_enable : True
+        dash        : '--'
+    - name      : rate
+      v         : ''
+      cmd_param :
+        only_enable : True
+        dash        : '-'
+        var_name    : r
+        delim       : ' '
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        delim       : ''
+
   - name  : pmap
     vars  :
     - name      : data_files
