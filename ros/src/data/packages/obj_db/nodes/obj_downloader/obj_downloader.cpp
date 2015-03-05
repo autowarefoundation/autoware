@@ -22,7 +22,7 @@
 using namespace std;
 
 string serverName = "db1.ertl.jp";
-int PORT 5678;
+int PORT = 5678;
 
 enum TYPE{
   NORMAL,
@@ -83,7 +83,7 @@ void* wrapSender(void *tsd){
   switch (SendDataType){
   case RANGE:
     {
-      oss <<  "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";";
+      oss << "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";";
       /*
       for(int i=0; i<4; i++){
 	oss << "\t" << fixed << setprecision(7) <<positionRange[i];
@@ -94,7 +94,7 @@ void* wrapSender(void *tsd){
     }
   case DTN:
     {
-      oss <<  "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";";
+      oss << "select terminal,latitude,longitude,azimuth,timestamp from test_map where timestamp = (select max(timestamp) from test_map) and latitude >= " << fixed << setprecision(7) << positionRange[0] << " and latitude < "  << fixed << setprecision(7) << positionRange[1] << " and longitude >= " << fixed << setprecision(7) << positionRange[2] << " and longitude < " << fixed << setprecision(7) << positionRange[3] << ";";
       data += oss.str();
       break;
     }
