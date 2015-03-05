@@ -17,6 +17,7 @@ static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
 static constexpr bool ADVERTISE_LATCH = true;
 
 static constexpr int PRECISION = 6;
+static constexpr double ACCIDENT_ERROR = 0.000001;
 
 static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
 static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
@@ -26,7 +27,8 @@ static double config_difference_around_signal = 2; // Unit: km/h
 
 static ros::Publisher pub_velocity;
 static ros::Publisher pub_ruled;
-static ros::Publisher pub_stop;
+static ros::Publisher pub_red;
+static ros::Publisher pub_green;
 
 static std::vector<Lane> lanes;
 static std::vector<Node> nodes;
@@ -147,14 +149,16 @@ static std::vector<int> search_signal_index(const nav_msgs::Path& msg)
 }
 
 static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
-					    const double& velocity,
-					    const double& difference)
+					    double velocity, double difference)
 {
 	std::vector<double> computations;
 	int loops = msg.poses.size();
 
 	std::vector<int> indexes = search_signal_index(msg);
-	if (indexes.size() == 0) {
+
+	if (indexes.empty() || difference < ACCIDENT_ERROR) {
+		ROS_WARN_COND(difference < ACCIDENT_ERROR,
+			      "too small difference");
 		for (int i = 0; i < loops; ++i)
 			computations.push_back(velocity);
 		return computations;
@@ -244,8 +248,8 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	lane_follower::lane ruled;
 	ruled.header = header;
 
-	lane_follower::lane stop;
-	stop.header = header;
+	lane_follower::lane red;
+	red.header = header;
 
 	lane_follower::waypoint waypoint;
 	waypoint.pose.header = header;
@@ -264,7 +268,7 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 		velocity.pose.position.z += 0.2; // more visible
 
 		std::ostringstream ostr;
-		ostr << std::fixed << std::setprecision(0) << computations[i]
+		ostr << std::fixed << std::setprecision(0) << config_velocity
 		     << " km/h";
 		velocity.text = ostr.str();
 
@@ -281,12 +285,13 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 		waypoint.twist.twist.linear.x =
 			computations[i] / 3.6; // to m/s
-		stop.waypoints.push_back(waypoint);
+		red.waypoints.push_back(waypoint);
 	}
 
 	pub_velocity.publish(velocities);
 	pub_ruled.publish(ruled);
-	pub_stop.publish(stop);
+	pub_red.publish(red);
+	pub_green.publish(ruled);
 }
 
 int main(int argc, char **argv)
@@ -340,8 +345,12 @@ int main(int argc, char **argv)
 		"ruled_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
-	pub_stop = n.advertise<lane_follower::lane>(
-		"stop_waypoint",
+	pub_red = n.advertise<lane_follower::lane>(
+		"red_waypoint",
+		ADVERTISE_QUEUE_SIZE,
+		ADVERTISE_LATCH);
+	pub_green = n.advertise<lane_follower::lane>(
+		"green_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 

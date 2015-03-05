@@ -49,16 +49,16 @@ void Getter(CMDDATA &cmddata)
   server.sin_family = AF_INET;
   server.sin_port = htons(10001);
 
-  server.sin_addr.s_addr = inet_addr(rosServerIP.c_str());
+  server.sin_addr.s_addr = inet_addr(ros_ip_address.c_str());
   if (server.sin_addr.s_addr == 0xffffffff) {
     struct hostent *host;
 
-    host = gethostbyname(rosServerIP.c_str());
+    host = gethostbyname(ros_ip_address.c_str());
     if (host == NULL) {
       if (h_errno == HOST_NOT_FOUND) {
-        fprintf(stdout,"cmd : ROS PC not found : %s\n", rosServerIP.c_str());
+        fprintf(stdout,"cmd : ROS PC not found : %s\n", ros_ip_address.c_str());
       } else {
-        fprintf(stdout,"cmd : %s : %s\n", hstrerror(h_errno), rosServerIP.c_str());
+        fprintf(stdout,"cmd : %s : %s\n", hstrerror(h_errno), ros_ip_address.c_str());
       }
       return;
     }
@@ -197,8 +197,8 @@ bool Control(vel_data_t vel, void* p)
     cmd_steering_angle = current_steering_angle;
   }
   else {
-    double wheel_angle_pi = (vel.sv/vel.tv) * WHEEL_BASE + ANGLE_ERROR;
-    int wheel_angle = (int)((wheel_angle_pi / M_PI) * 180.0);
+    double wheel_angle_pi = (vel.sv/vel.tv) * WHEEL_BASE;// + ANGLE_ERROR;
+    double wheel_angle = (wheel_angle_pi / M_PI) * 180.0;
     cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
   }
 
@@ -211,8 +211,8 @@ bool Control(vel_data_t vel, void* p)
     estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
   }
 
-  cout << "Current " << "vel : " << current_velocity << " str : "<< current_steering_angle << endl; 
-  cout << "Command " << "vel : " << cmd_velocity << " str : "<< cmd_steering_angle << endl; 
+  cout << "Current " << "vel : " << current_velocity << ", str : "<< current_steering_angle << endl; 
+  cout << "Command " << "vel : " << cmd_velocity << ", str : "<< cmd_steering_angle << endl; 
   cout << "Estimate Accel : " << estimate_accel << endl; 
 
   // TRY TO INCREASE STEERING
@@ -253,8 +253,9 @@ bool Control(vel_data_t vel, void* p)
     cout << "Deceleration" << endl;
     main->DecelerateControl(current_velocity, cmd_velocity);
   }
-  else if (cmd_velocity == 0.0) {
+  else if (cmd_velocity == 0.0 && fabs(current_velocity) != 0) {
     //Stopping!!!!!!!!!!!
+    cout << "Stopping" << endl;
     main->StoppingControl(current_velocity, cmd_velocity);
   }
     
@@ -300,7 +301,7 @@ void *MainWindow::CMDGetterEntry(void *a)
     main->TestPrint();
     initPrintValue();
     
-    usleep(main->cmdduration*1000);
+    usleep(cmd_rx_interval*1000);
   }
   return NULL;
 }

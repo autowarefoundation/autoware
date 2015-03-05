@@ -37,19 +37,19 @@ void MainWindow::SetGear(int gear)
   case CMD_GEAR_D:
     cout << "shifting to Gear D" << endl;
     hev->SetDrvStroke(0);
-    hev->SetBrakeStroke(4095);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE);
     hev->SetDrvShiftMode(SHIFT_POS_D);
     break;
   case CMD_GEAR_R:
     cout << "shifting to Gear R" << endl;
     hev->SetDrvStroke(0);
-    hev->SetBrakeStroke(4095);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE);
     hev->SetDrvShiftMode(SHIFT_POS_R);
     break;
   case CMD_GEAR_B:
     cout << "shifting to Gear R" << endl;
     hev->SetDrvStroke(0);
-    hev->SetBrakeStroke(4095);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE);
     hev->SetDrvShiftMode(SHIFT_POS_B);
     break;
   case CMD_GEAR_N:
@@ -179,6 +179,8 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   double delta = cmd_steering_angle - current_steering_angle;
   double str = cmd_steering_angle;
 
+  cout << "cmd_steering_angle = " << cmd_steering_angle << endl;
+
   if (delta > NORMAL_STEERING_THRETHOLD) {
     str = current_steering_angle + NORMAL_STEERING_THRETHOLD;
     cout << "steering angle rounded to: " <<  str << endl;
@@ -196,11 +198,80 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
     str = -STEERING_ANGLE_LIMIT;  
   }
 
+#if 0
   // set the steering angle to HEV.
   // note that we need *10 to input the steering.
   // a unit of steering for "set" is 0.1 degree 
   // while that for "get" is 1 degree.
   hev->SetStrAngle(str*10);
+#else
+  // quick hack to smoothen steering.
+  // if the target steering increase is 10, it is going to be:
+  // 1(1+1), 3(1+2), 6(3+3), 8(6+2), 9(8+1)...
+
+  int delta_tmp = 0; // temporary delta
+  int str_tmp = current_steering_angle; // temporary steering
+  int inc = 0; // increment value
+  int second_half = 0; // just a flag
+  if (delta > 0) {
+    for (int i = 0; i < cmd_rx_interval / STEERING_INTERNAL_PERIOD; i++) {
+      if (delta_tmp < delta / 2) {
+        inc += STEERING_ANGLE_INC_INC;
+      } else {
+        inc += -STEERING_ANGLE_INC_INC;
+        if (second_half == 0) {
+          inc += STEERING_ANGLE_INC_INC;
+        }
+        second_half = 1;
+      }
+
+      if (inc < 0) {
+        hev->SetStrAngle(str*10); // set the target steering in the end
+        break;
+      }
+
+      delta_tmp += inc;
+      str_tmp = current_steering_angle + inc;
+      //str_tmp = str_tmp + inc; // for debug at lab.
+      if (str_tmp < str) {
+        hev->SetStrAngle(str_tmp*10);
+      } else {
+        hev->SetStrAngle(str*10);
+        break;
+      }
+      usleep(STEERING_INTERNAL_PERIOD*1000);
+    }
+  } else {
+    for (int i = 0; i < cmd_rx_interval / STEERING_INTERNAL_PERIOD; i++) {
+      if (delta_tmp > delta / 2) {
+        inc += -STEERING_ANGLE_INC_INC;
+      } else {
+        inc += STEERING_ANGLE_INC_INC;
+        if (second_half == 0) {
+          inc += -STEERING_ANGLE_INC_INC;
+        }
+        second_half = 1;
+      }
+
+      if (inc > 0) {
+        hev->SetStrAngle(str*10); // set the target steering in the end
+        cout << "str = " << str_tmp << endl;
+        break;
+      }
+
+      delta_tmp += inc;
+      str_tmp = current_steering_angle + inc;
+      //str_tmp = str_tmp + inc; // for debug at lab.
+      if (str_tmp > str) {
+        hev->SetStrAngle(str_tmp*10);
+      } else {
+        hev->SetStrAngle(str*10);
+        break;
+      }
+      usleep(STEERING_INTERNAL_PERIOD*1000);
+    }
+  }
+#endif
 
 #ifdef DEBUG
   nstr = str;
@@ -241,6 +312,7 @@ void MainWindow::AccelerateControl(double current_velocity,double cmd_velocity)
           target_accel_level+= ACCEL_PEDAL_STEP;
       }
     }
+
     Accel(target_accel_level, (int)(((double) target_accel_level)/0.5*cycle_time)); 
           
   }

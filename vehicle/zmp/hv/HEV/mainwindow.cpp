@@ -206,8 +206,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /////////////////////////////////////////////////////////
     // Autoware extension
-    if (setConfig()) {
-      printf("read config error\n");    
+    if (!AutowareConfig()) {
+      printf("Error: failed to read Autoware config!\n");    
     }
     pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
     pthread_detach(_cmdgetter);
@@ -285,7 +285,6 @@ void MainWindow::logThread()
         //writeLog();
         sendDataGetAndSend();
       }
-      //usleep(canduration*1000); //usleep(10*1000);
       /////////////////////////////////////////////////
     }
 }

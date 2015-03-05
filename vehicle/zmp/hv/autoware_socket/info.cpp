@@ -3,7 +3,6 @@
 
 #include <sstream>
 
-std::string rosServerIP;
 std::string candata;
 int drvmode;
 
@@ -45,21 +44,21 @@ void *SendData(void *a){
   server.sin_family = AF_INET;
   server.sin_port = htons(10000); /* HTTPのポートは80番です */
 
-  server.sin_addr.s_addr = inet_addr(rosServerIP.c_str());
+  server.sin_addr.s_addr = inet_addr(ros_ip_address.c_str());
   if (server.sin_addr.s_addr == 0xffffffff) {
     struct hostent *host;
 
-    host = gethostbyname(rosServerIP.c_str());
+    host = gethostbyname(ros_ip_address.c_str());
     if (host == NULL) {
       if (h_errno == HOST_NOT_FOUND) {
         /* h_errnoはexternで宣言されています */
-        fprintf(stderr,"info : host not found : %s\n", rosServerIP.c_str());
+        fprintf(stderr,"info : host not found : %s\n", ros_ip_address.c_str());
       } else {
         /*
           HOST_NOT_FOUNDだけ特別扱いする必要はないですが、
           とりあえず例として分けてみました
         */
-        fprintf(stderr,"info : %s : %s\n", hstrerror(h_errno), rosServerIP.c_str());
+        fprintf(stderr,"info : %s : %s\n", hstrerror(h_errno), ros_ip_address.c_str());
       }
       return NULL;
     }
@@ -126,7 +125,7 @@ void MainWindow::wrapSender(void){
     return;
   }
 
-  usleep(canduration*1000);
+  usleep(can_tx_interval*1000);
   pthread_join(_sendData,NULL);
 }
 
@@ -228,32 +227,7 @@ void MainWindow::sendDataGetAndSend()
 
 }
 
-bool MainWindow::setConfig(){
-  
-  canduration = 10; //ログをとる間隔はデフォルトで10ms
-  cmdduration = 100;
-  rosServerIP = "192.168.1.101";
 
-  std::ifstream ifs("./config");
-  std::string str;
-  if(ifs.fail()){
-    return false;
-  }
-
-  if(getline(ifs,str)){
-    canduration = atoi(str.c_str());
-  }else{
-    return false;
-  }
-
-  if(getline(ifs,str)){
-    rosServerIP = str;
-  }else{
-    return false;
-  }
-
-  return true;
-}
 
 
 
