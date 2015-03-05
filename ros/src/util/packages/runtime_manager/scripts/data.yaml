@@ -4,7 +4,7 @@ subs :
     cmd   : echo befaviro_db
     param : other
   - name  : can_db
-    cmd   : echo can_db
+    cmd   : rosrun obj_db can_uploader
     param : other
   - name  : image_db
     cmd   : echo image_db

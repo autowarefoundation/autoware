@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 	imageSize.height = IMAGE_HEIGHT;
 
 	pub = n.advertise<points_to_image::PointsImage>("points_image", 10);
-	cpub = n.advertise<points_to_image::CameraExtrinsic>("3d_calibration", 1);
+	cpub = n.advertise<points_to_image::CameraExtrinsic>("threeD_calibration", 1);
 	ros::Subscriber sub = n.subscribe("velodyne_points", 1, callback);
 
 	ros::spin();
