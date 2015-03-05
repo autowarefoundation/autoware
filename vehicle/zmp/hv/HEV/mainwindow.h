@@ -77,9 +77,9 @@ public:
     bool Accel(int target_accel, int gain);
     void SetMode(int mode);
     void SetGear(int gear);
+    bool AutowareConfig();
 
     void sendDataGetAndSend();
-    bool setConfig();
     void wrapSender();
     static void* CMDGetterEntry(void *a);
     void TestPrint();
@@ -298,8 +298,6 @@ private:
     int _drvTargetStroke;
 
    /*======Autoware Socket=================*/ 
-    int canduration;
-    int cmdduration;
     pthread_t _cmdgetter;
     /*====================================*/
 };

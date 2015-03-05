@@ -20,10 +20,12 @@ using namespace zmp::hev;
 #define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
 #define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
 #define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
-#define NORMAL_STEERING_THRETHOLD 10 // for tuning (degree)
 #define ANGLE_ERROR 0.025 // for tuning when LIDAR is not aligned
 #define MILLISECOND 1000  
 #define SPEED_LIMIT 60.0 // km/h
+#define STEERING_ANGLE_INC_INC 5 // degree
+#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
+#define NORMAL_STEERING_THRETHOLD 60 // for tuning (degree)
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
 #define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
@@ -124,7 +126,9 @@ typedef struct HevState {
 extern DrvState _drv_state;
 extern HevState _hev_state;
 
-extern std::string rosServerIP;
+extern int can_tx_interval; // ms
+extern int cmd_rx_interval; // ms
+extern std::string ros_ip_address;
 extern std::string candata;
 extern int drvmode;
 extern CMDDATA cmddata;
