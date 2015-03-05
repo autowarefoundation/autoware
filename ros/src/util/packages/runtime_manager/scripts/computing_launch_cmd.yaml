@@ -75,7 +75,7 @@ subs :
           cmd  : rosrun lane_planner lane_rule
           param: lane_rule
         - name : lane_stop
-          cmd  : echo lane_stop
+          cmd  : rosrun lane_planner lane_stop
           param: lane_stop
       - name : Motion
       - name : Path

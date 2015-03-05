@@ -36,3 +36,10 @@ add_dependencies(lane_rule
   lane_follower_generate_messages_cpp
   runtime_manager_generate_messages_cpp
 )
+
+add_executable(lane_stop nodes/lane_stop/lane_stop.cpp)
+target_link_libraries(lane_stop ${catkin_LIBRARIES})
+add_dependencies(lane_stop
+  lane_follower_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
+)
