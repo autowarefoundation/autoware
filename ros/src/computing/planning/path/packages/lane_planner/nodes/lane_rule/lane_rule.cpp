@@ -27,7 +27,8 @@ static double config_difference_around_signal = 2; // Unit: km/h
 
 static ros::Publisher pub_velocity;
 static ros::Publisher pub_ruled;
-static ros::Publisher pub_stop;
+static ros::Publisher pub_red;
+static ros::Publisher pub_green;
 
 static std::vector<Lane> lanes;
 static std::vector<Node> nodes;
@@ -247,8 +248,8 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	lane_follower::lane ruled;
 	ruled.header = header;
 
-	lane_follower::lane stop;
-	stop.header = header;
+	lane_follower::lane red;
+	red.header = header;
 
 	lane_follower::waypoint waypoint;
 	waypoint.pose.header = header;
@@ -284,12 +285,13 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 		waypoint.twist.twist.linear.x =
 			computations[i] / 3.6; // to m/s
-		stop.waypoints.push_back(waypoint);
+		red.waypoints.push_back(waypoint);
 	}
 
 	pub_velocity.publish(velocities);
 	pub_ruled.publish(ruled);
-	pub_stop.publish(stop);
+	pub_red.publish(red);
+	pub_green.publish(ruled);
 }
 
 int main(int argc, char **argv)
@@ -343,8 +345,12 @@ int main(int argc, char **argv)
 		"ruled_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
-	pub_stop = n.advertise<lane_follower::lane>(
-		"stop_waypoint",
+	pub_red = n.advertise<lane_follower::lane>(
+		"red_waypoint",
+		ADVERTISE_QUEUE_SIZE,
+		ADVERTISE_LATCH);
+	pub_green = n.advertise<lane_follower::lane>(
+		"green_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 
