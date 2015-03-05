@@ -21,6 +21,18 @@ ipaddress:
   vehicle:  127.0.0.1
   database: 127.0.0.1
 
+control_check :
+  - name  : accel
+    param : accel
+  - name  : brake
+    param : brake
+  - name  : steer
+    param : steer
+  - name  : torque
+    param : torque
+  - name  : veloc
+    param : veloc
+
 params :
   - name  : accel
     topic : /accel_cmd
@@ -49,14 +61,14 @@ params :
       min   : -720
       max   : 720
       v     : 0
-  - name  : Torque
+  - name  : torque
     vars  :
     - name  : torque
       label : Torque
       min   : 0
       max   : 100
       v     : 0
-  - name  : Veloc
+  - name  : veloc
     topic : /twist_cmd
     msg   : TwistStamped
     flags : [ 'stamp' ]

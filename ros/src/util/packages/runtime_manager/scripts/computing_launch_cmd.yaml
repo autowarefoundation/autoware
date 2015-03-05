@@ -77,6 +77,8 @@ subs :
         - name : lane_stop
           cmd  : rosrun lane_planner lane_stop
           param: lane_stop
+          gui  :
+            dialog: MyDialogLaneStop
       - name : Motion
       - name : Path
         subs :
@@ -309,7 +311,6 @@ params :
   - name  : lane_stop
     topic : /traffic_light
     msg   : traffic_light
-    dialog: MyDialogLaneStop
     vars  :
       - name  : traffic_light
         v     : 0

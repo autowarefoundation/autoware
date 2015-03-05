@@ -36,10 +36,18 @@ subs :
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
         run  : roslaunch velodyne velodyne_hdl64e.launch
         param: calibration_path
+        gui  :
+          calibration :
+            prop  : 1
+            flags : [ center_v ]
       - name : Velodyne HDL-32e
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
         run  : roslaunch velodyne velodyne_hdl32e.launch
         param: calibration_path
+        gui  :
+          calibration :
+            prop  : 1
+            flags : [ center_v ]
       - name : Hokuyo UTM30LX (USB1)
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo hokuyo_utm30lx.launch
@@ -75,8 +83,6 @@ params :
     - name  : calibration
       kind  : path
       v     : ''
-      prop  : 1
-      flags : [ center_v ]
       cmd_param :
         dash : ''
         delim: ':='
