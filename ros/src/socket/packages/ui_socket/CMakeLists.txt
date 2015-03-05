@@ -4,8 +4,8 @@ project(ui_socket)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  message_generation
   vehicle_socket
+  message_generation
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -31,7 +31,7 @@ catkin_package(
 
 add_executable(ui_receiver nodes/ui_receiver/ui_receiver.cpp)
 target_link_libraries(ui_receiver ${catkin_LIBRARIES})
-add_dependencies(ui_receiver ui_socket_generate_messages_cpp vehicle_socket_generate_messages_cpp)
+add_dependencies(ui_receiver ui_socket_generate_messages_cpp)
 
 add_executable(ui_sender nodes/ui_sender/ui_sender.cpp)
 target_link_libraries(ui_sender ${catkin_LIBRARIES})

@@ -32,6 +32,7 @@ from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
 from runtime_manager.msg import steer_cmd
 from runtime_manager.msg import brake_cmd
+from runtime_manager.msg import traffic_light
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -60,6 +61,10 @@ class MyFrame(rtmgr.MyFrame):
 		self.main_cmd = {}
 		self.all_cmd_dics.append(self.main_cmd)
 		self.main_dic = self.load_yaml('main.yaml')
+
+		self.params = []
+		self.add_params(self.main_dic.get('params', []))
+
 		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
 
 		self.main_cmd[ self.button_load_map ] = []
@@ -67,15 +72,14 @@ class MyFrame(rtmgr.MyFrame):
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
 		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
 
-		self.params = []
-		self.add_params(self.main_dic.get('params', []))
-
 		szr = wx.BoxSizer(wx.VERTICAL)
-		for prm in self.main_dic.get('params', []):
+		for cc in self.main_dic.get('control_check', []):
 			pdic = {}
+			prm = self.get_param(cc.get('param'))
 			for var in prm['vars']:
 				pdic[ var['name'] ] = var['v']
-			panel = ParamPanel(self.panel_main_cc, frame=self, pdic=pdic, prm=prm)
+			gdic = cc.get('gui', {})
+			panel = ParamPanel(self.panel_main_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
 			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_main_cc.SetSizer(szr)
 
@@ -256,7 +260,9 @@ class MyFrame(rtmgr.MyFrame):
 				if pdic is None:
 					pdic = {}
 					self.load_dic[k] = pdic
-				self.add_cfg_info(obj, obj, k, pdic, False, 'param', d2.get('param'))
+				prm = self.get_param(d2.get('param'))
+				gdic = d2.get('gui', {})
+				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
 
 	#
 	# Main Tab
@@ -395,14 +401,15 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnHyperlinked_obj(event.GetItem())
 
 	def OnHyperlinked_obj(self, obj):
-		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return
-		dlg = MyDialogParam(self, pdic=pdic, prm=prm)
+		klass_dlg = globals().get(gdic.get('dialog', 'MyDialogParam'), MyDialogParam)
+		dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 		dlg.ShowModal()
 
 	def obj_to_add_args(self, obj):
-		(pdic, prm) = self.obj_to_pdic_prm(obj)
+		(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return None
 		s = ''
@@ -411,28 +418,33 @@ class MyFrame(rtmgr.MyFrame):
 			if cmd_param:
 				name = var.get('name')
 				v = pdic.get(name)
-				if var.get('only_enable') and not v:
+				name = cmd_param.get('var_name', name)
+				if cmd_param.get('only_enable') and not v:
 					continue
 				unpack = cmd_param.get('unpack')
 				if unpack is not None:
 					v = ' '.join( v.split(unpack) )
+				add = ''
 				dash = cmd_param.get('dash')
 				if dash is not None:
-					s += dash + name
+					add += dash + name
 				delim = cmd_param.get('delim')
 				if delim is not None:
-					s += delim + v + ' '
+					add += delim + str(v)
+				if add != '':
+					s += add + ' '
 		return s.strip(' ').split(' ') if s != '' else None
 
-	def obj_to_pdic_prm(self, obj):
+	def obj_to_pdic_gdic_prm(self, obj):
 		info = self.config_dic.get(obj)
 		if info is None:
 			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj ])
 			if info is None:
 				return (None, None)
 		pdic = info.get('pdic')
-		prm = self.get_param(info.get('param'))
-		return (pdic, prm)
+		prm = info.get('param')
+		gdic = info.get('gdic')
+		return (pdic, gdic, prm)
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -587,7 +599,9 @@ class MyFrame(rtmgr.MyFrame):
 		if pdic is None:
 			pdic = {}
 			self.load_dic[name] = pdic
-		self.add_cfg_info(cfg_obj, obj, name, pdic, True, 'param', dic.get('param'))
+		gdic = dic.get('gui', {})
+		prm = self.get_param(dic.get('param'))
+		self.add_cfg_info(cfg_obj, obj, name, pdic, gdic, True, prm)
 		return hszr
 
 	#
@@ -643,8 +657,8 @@ class MyFrame(rtmgr.MyFrame):
 	# Common Utils
 	#
 	def set_param_panel(self, obj, parent):
-		(pdic, prm) = self.obj_to_pdic_prm(obj)
-		panel = ParamPanel(parent, frame=self, pdic=pdic, prm=prm)
+		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
+		panel = ParamPanel(parent, frame=self, pdic=pdic, gdic=gdic, prm=prm)
 		szr = wx.BoxSizer(wx.VERTICAL)
 		szr.Add(panel, 0, wx.EXPAND)
 		parent.SetSizer(szr)
@@ -662,8 +676,9 @@ class MyFrame(rtmgr.MyFrame):
 	def get_cfg_obj(self, obj):
 		return get_top( [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ] )
 
-	def add_cfg_info(self, cfg_obj, obj, name, pdic, run_disable, key, value):
-		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'run_disable':run_disable , key:value }
+	def add_cfg_info(self, cfg_obj, obj, name, pdic, gdic, run_disable, prm):
+		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'gdic':gdic, 
+					       'run_disable':run_disable , 'param':prm }
 
 	def get_param(self, prm_name):
 		return get_top( [ prm for prm in self.params if prm['name'] == prm_name ] )
@@ -674,13 +689,12 @@ class MyFrame(rtmgr.MyFrame):
 				self.setup_create_pdic(info)
 
 	def setup_create_pdic(self, targ_info):
-		prm_name = targ_info['param']
-		info = get_top( [ info for info in self.config_dic.values() if info.get('param', None) == prm_name and info['pdic'] ] )
+		prm = targ_info.get('param')
+		info = get_top( [ info for info in self.config_dic.values() if info.get('param', None) == prm and info['pdic'] ] )
 		if info:
 			targ_info['pdic'] = info['pdic']
 			return
 		pdic = {}
-		prm = self.get_param(prm_name)
 		if prm:
 			for var in prm['vars']:
 				pdic[ var['name'] ] = var['v']
@@ -865,15 +879,17 @@ class MyFrame(rtmgr.MyFrame):
 				cmd_dic[item] = (items['cmd'], None)
 
 			if 'param' in items:
-				self.add_config_link_tree_item(item, name, items['param'])
+				prm = self.get_param(items.get('param'))
+				gdic = items.get('gui', {})
+				self.add_config_link_tree_item(item, name, gdic, prm)
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
 
-	def add_config_link_tree_item(self, item, name, prm_name):
+	def add_config_link_tree_item(self, item, name, gdic, prm):
 		pdic = self.load_dic.get(name, None)
-		self.add_cfg_info(item, item, name, pdic, False, 'param', prm_name)
+		self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
 		item.SetHyperText()
 
 	def launch_kill_proc_file(self, obj, cmd_dic, names=None):
@@ -1119,17 +1135,40 @@ class ParamPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.frame = kwds.pop('frame')
 		self.pdic = kwds.pop('pdic')
+		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
 		wx.Panel.__init__(self, *args, **kwds)
 
+		hszr = None
 		self.vps = []
 		szr = wx.BoxSizer(wx.VERTICAL)
-		for var in self.prm['vars']:
-			v = self.pdic.get(var['name'], var['v'])
+		for var in self.prm.get('vars'):
+			v = self.pdic.get(var.get('name'), var.get('v'))
+			obj_dic = var.get('obj_dic', {})
+
 			vp = VarPanel(self, var=var, v=v, 
 				      update_pdic=self.update_pdic, publish=self.publish)
-			szr.Add(vp, 0, wx.EXPAND)
 			self.vps.append(vp)
+
+			gdic_v = self.gdic.get(var.get('name'), {})
+			prop = gdic_v.get('prop', 0)
+			border = gdic_v.get('border', 0)
+			flag = wx_flag_get(gdic_v.get('flags', []))
+
+			if vp.has_slider or vp.kind =='path':
+				hszr = None if hszr else hszr
+				flag |= wx.EXPAND
+				szr.Add(vp, prop, flag, border)
+			else:
+				if hszr is None:
+					hszr = wx.BoxSizer(wx.HORIZONTAL)
+					szr.Add(hszr, 0, wx.EXPAND)
+				flag |= wx.ALIGN_CENTER_VERTICAL
+				hszr.Add(vp, prop, flag, border)
+
+			if 'nl' in var.get('flags', []):
+				hszr = None
+
 		self.SetSizer(szr)
 		self.update_pdic()
 
@@ -1162,16 +1201,20 @@ class VarPanel(wx.Panel):
 			choices = self.var.get('choices', [])
 			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
 			self.obj.SetSelection(v)
+			self.Bind(wx.EVT_RADIOBOX, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
+			self.Bind(wx.EVT_CHECKBOX, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'toggle_button':
 			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
+			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'hide':
+			self.Hide()
 			return
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
@@ -1181,7 +1224,7 @@ class VarPanel(wx.Panel):
 		szr.Add(lb, 0, flag, 4)
 
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
-		self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter, self.tc)
+		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
 
 		if self.kind is None:
 			if self.has_slider:
@@ -1220,6 +1263,9 @@ class VarPanel(wx.Panel):
 			return self.var.get('v')
 		if self.kind == 'path':
 			return str(self.tc.GetValue())
+
+		if not self.has_slider and self.tc.GetValue() == '':
+			return ''
 		return self.get_tc_v()
 
 	def get_tc_v(self):
@@ -1248,7 +1294,7 @@ class VarPanel(wx.Panel):
 		self.update_pdic()
 		self.publish()
 
-	def OnTextEnter(self, event):
+	def OnUpdate(self, event):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
 
@@ -1276,64 +1322,57 @@ class VarPanel(wx.Panel):
 
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
-		self.pdic = kwds.pop('pdic')
-		self.pdic_bak = self.pdic.copy()
-		self.prm = kwds.pop('prm')
+		pdic = kwds.pop('pdic')
+		self.pdic_bak = pdic.copy()
+		gdic = kwds.pop('gdic')
+		prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
 
-		hszr = None
-		self.vps = []
-		for var in self.prm['vars']:
-			v = self.pdic.get(var['name'], var['v'])
-			vp = VarPanel(self.panel_v, var=var, v=v, 
-				      update_pdic=self.update_pdic, publish=self.publish)
-			prop = var.get('prop', 0)
-			border = var.get('border', 0)
-			flag = wx_flag_get(var.get('flags', []))
+		parent = self.panel_v
+		frame = self.GetParent()
+		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
+		szr = wx.BoxSizer(wx.VERTICAL)
+		szr.Add(self.panel, 1, wx.EXPAND)
+		parent.SetSizer(szr)
 
-			if vp.has_slider or vp.kind == 'path':
-				hszr = None if hszr else hszr
-				flag |= wx.EXPAND
-				self.sizer_v.Add(vp, prop, flag, border)
-			else:
-				if hszr is None:
-					hszr = wx.BoxSizer(wx.HORIZONTAL)
-					self.sizer_v.Add(hszr, 0, wx.EXPAND)
-				flag |= wx.ALIGN_CENTER_VERTICAL
-				hszr.Add(vp, prop, flag, border)
-
-			if 'nl' in var.get('flags', []):
-				hszr = None
-			self.vps.append(vp)
-
-		self.SetTitle(self.prm['name'])
+		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
-		(w2,_) = self.sizer_v.GetMinSize()
+		(w2,_) = szr.GetMinSize()
 		w2 += 20
 		if w2 > w:
 			self.SetSize((w2,h))
 
 	def OnOk(self, event):
-		self.update_pdic()
-		self.publish()
+		self.panel.update_pdic()
+		self.panel.publish()
 		self.EndModal(0)
 
 	def OnCancel(self, event):
-		self.pdic.update(self.pdic_bak) # restore
-		self.publish()
+		self.panel.pdic.update(self.pdic_bak) # restore
+		self.panel.publish()
 		self.EndModal(-1)
 
-	def update_pdic(self):
-		vars = self.prm['vars']
-		for var in vars:
-			v = self.vps[ vars.index(var) ].get_v()
-			self.pdic[ var['name'] ] = v
+class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
+	def __init__(self, *args, **kwds):
+		self.pdic = kwds.pop('pdic')
+		self.gdic = kwds.pop('gdic')
+		self.prm = kwds.pop('prm')
+		rtmgr.MyDialogLaneStop.__init__(self, *args, **kwds)
+		self.frame = self.GetParent()
 
-	def publish(self):
-		frame = self.GetParent()
-		if 'pub' in self.prm:
-			frame.publish_param_topic(self.pdic, self.prm)
-		frame.rosparam_set(self.pdic, self.prm)
+	def OnTrafficRedLight(self, event):
+		self.pdic['traffic_light'] = 0
+		self.frame.publish_param_topic(self.pdic, self.prm)
+		
+	def OnTrafficGreenLight(self, event):
+		self.pdic['traffic_light'] = 1
+		self.frame.publish_param_topic(self.pdic, self.prm)
+
+	def OnOk(self, event):
+		self.EndModal(0)
+
+	def OnCancel(self, event):
+		self.EndModal(-1)
 
 class MyApp(wx.App):
 	def OnInit(self):

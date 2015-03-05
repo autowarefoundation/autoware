@@ -3,27 +3,71 @@ subs :
   - name  : behavior_db
     cmd   : echo befaviro_db
     param : other
+    gui   :
+      upload_rate_ms :
+        border : 20
+        flags  : [ right ]
   - name  : can_db
-    cmd   : echo can_db
+    cmd   : rosrun obj_db can_uploader
     param : other
+    gui   :
+      upload_rate_ms :
+        border : 20
+        flags  : [ right ]
   - name  : image_db
     cmd   : echo image_db
     param : other
+    gui   :
+      upload_rate_ms :
+        border : 20
+        flags  : [ right ]
   - name  : map_db
     cmd   : echo map_db
     param : other
+    gui   :
+      upload_rate_ms :
+        border : 20
+        flags  : [ right ]
   - name  : map_file
     cmd   : echo map_file
     param : map_file
+    gui   :
+      update_timing :
+        border: 20
+        flags : [ right ]
+      load_map :
+        border: 20
+        flags : [ left, right ]
+      auto_update :
+        border: 20
+        flags : [ right ]
   - name  : pointcloud_db
     cmd   : echo pointcloud_db
     param : other
+    gui   :
+      upload_rate_ms :
+        border : 20
+        flags  : [ right ]
   - name  : pos_db
     cmd   : rosrun obj_db obj_downloader
     param : pos_db
+    gui   :
+      to_lon :
+        border : 20
+        flags  : [ right ]
+      map_matching :
+        flags : [ nl ]
+      upload_rate_ms :
+        border: 20
+        flags : [ right ]
+
   - name  : traffic_db
     cmd   : echo traffic_db
     param : other
+    gui   :
+      upload_rate_ms :
+        border : 20
+        flags  : [ right ]
 
 params :
   - name  : map_file
@@ -31,8 +75,6 @@ params :
     - name  : update_timing
       label : 'Update Timing:'
       v     : 0
-      border: 20
-      flags : [ right ]
     - name  : update_rate
       label : 'Update Rate:'
       v     : 1000
@@ -56,14 +98,10 @@ params :
       kind  : toggle_button
       label : Load Map
       v     : False
-      border: 20
-      flags : [ left, right ]
     - name  : auto_update
       kind  : checkbox
       label : Auto update
       v     : True
-      border: 20
-      flags : [ right ]
     - name  : ignore_db
       kind  : checkbox
       label : Ignore DB
@@ -83,18 +121,13 @@ params :
     - name  : to_lon
       label : ''
       v     : 0.0
-      border: 20
-      flags : [ right ]
     - name  : map_matching
       kind  : checkbox
       label : Map Matching
       v     : True
-      flags : [ nl ]
     - name  : upload_rate_ms
       label : Upload Rate (ms)
       v     : 1000
-      border: 20
-      flags : [ right ]
     - name  : download_rate_ms
       label : Download Rate (ms)
       v     : 1000
@@ -104,8 +137,6 @@ params :
     - name  : upload_rate_ms
       label : Upload Rate (ms)
       v     : 1000
-      border: 20
-      flags : [ right ]
     - name  : download_rate_ms
       label : Download Rate (ms)
       v     : 1000
