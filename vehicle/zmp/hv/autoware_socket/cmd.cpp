@@ -108,7 +108,7 @@ void Getter(CMDDATA &cmddata)
   cmdVector = split(cmdRes,',');
   if(cmdVector.size() == 7){
     cmddata.vel.tv = atof(cmdVector[0].c_str());
-    cmddata.vel.sv = atof(cmdVector[1].c_str());
+    cmddata.vel.sv = -atof(cmdVector[1].c_str()); //  swap + and -
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
     cmddata.accel = atoi(cmdVector[4].c_str());
