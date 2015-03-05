@@ -404,7 +404,7 @@ class MyFrame(rtmgr.MyFrame):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return
-		klass_dlg = globals().get(prm.get('dialog', 'MyDialogParam'), MyDialogParam)
+		klass_dlg = globals().get(gdic.get('dialog', 'MyDialogParam'), MyDialogParam)
 		dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 		dlg.ShowModal()
 
