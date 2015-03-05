@@ -17,6 +17,7 @@ static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
 static constexpr bool ADVERTISE_LATCH = true;
 
 static constexpr int PRECISION = 6;
+static constexpr double ACCIDENT_ERROR = 0.000001;
 
 static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
 static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
@@ -147,14 +148,16 @@ static std::vector<int> search_signal_index(const nav_msgs::Path& msg)
 }
 
 static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
-					    const double& velocity,
-					    const double& difference)
+					    double velocity, double difference)
 {
 	std::vector<double> computations;
 	int loops = msg.poses.size();
 
 	std::vector<int> indexes = search_signal_index(msg);
-	if (indexes.size() == 0) {
+
+	if (indexes.empty() || difference < ACCIDENT_ERROR) {
+		ROS_WARN_COND(difference < ACCIDENT_ERROR,
+			      "too small difference");
 		for (int i = 0; i < loops; ++i)
 			computations.push_back(velocity);
 		return computations;
@@ -264,7 +267,7 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 		velocity.pose.position.z += 0.2; // more visible
 
 		std::ostringstream ostr;
-		ostr << std::fixed << std::setprecision(0) << computations[i]
+		ostr << std::fixed << std::setprecision(0) << config_velocity
 		     << " km/h";
 		velocity.text = ostr.str();
 
