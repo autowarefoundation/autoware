@@ -58,11 +58,14 @@ struct my_tm {
 objLocation ol;
 
 //flag for comfirming whether updating position or not
-bool positionGetFlag;
+bool gnssGetFlag;
+bool ndtGetFlag;
 
 //store own position and direction now.updated by position_getter
-LOCATION my_loc;
-ANGLE angle;
+LOCATION gnss_loc;
+LOCATION ndt_loc;
+ANGLE gnss_angle;
+ANGLE ndt_angle;
 
 double cameraMatrix[4][4] = {
   {-7.8577658642752374e-03, -6.2035361880992401e-02,9.9804301981022692e-01, 5.1542126095196206e-01},
@@ -123,6 +126,7 @@ string getNowTime(){
 void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
 			     vector<OBJPOS>::iterator pp_iterator,
 			     LOCATION mloc,
+			     ANGLE angle,
 			     geometry_msgs::PoseArray &pose){
 
   LOCATION rescoord;
@@ -181,32 +185,40 @@ void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
 
   vector<OBJPOS>::iterator pp_iterator;
   LOCATION mloc;
+  ANGLE mang;
 
   pp_iterator = pedestrian_position_vector.begin();
 
   //calculate own coordinate from own lati and longi value
   //get my position now
 
-  mloc.X = my_loc.X;
-  mloc.Y = my_loc.Y;
-  mloc.Z = my_loc.Z;
-  /*
-  geo.set_plane(7);
-  geo.set_llh(my_xloc,my_yloc,my_zloc);
-  */
-
-  //get data of car and pedestrian recognizing
-  if(pedestrian_position_vector.size() > 0 ){
-    makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,mloc,pose_msg);
+  if(ndtGetFlag){
+    mloc = ndt_loc;
+    mang = ndt_angle;
+  }else{
+    mloc = gnss_loc;
+    mang = gnss_angle;
   }
 
-  printf("%f %f %f\n",mloc.X,mloc.Y,mloc.Z);
+  
+  //If position is over range,skip loop
+  if((!(mloc.X > 180.0 && mloc.X < -180.0 ) || 
+      (mloc.Y > 180.0 && mloc.Y < -180.0 ) || 
+      mloc.Z < 0.0) ){
 
-  //publish recognized object data
-  if(pose_msg.poses.size() != 0){
-    pose_msg.header.stamp = ros::Time::now();
-    pose_msg.header.frame_id = "map";
-    pub.publish(pose_msg);
+    //get data of car and pedestrian recognizing
+    if(pedestrian_position_vector.size() > 0 ){
+      makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,mloc,mang,pose_msg);
+    }
+
+    printf("%f %f %f\n",mloc.X,mloc.Y,mloc.Z);
+
+    //publish recognized object data
+    if(pose_msg.poses.size() != 0){
+      pose_msg.header.stamp = ros::Time::now();
+      pose_msg.header.frame_id = "map";
+      pub.publish(pose_msg);
+    }
   }
 
 }
@@ -220,40 +232,33 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   
   //If angle and position data is not updated from prevous data send,
   //data is not sent
-  if(positionGetFlag) {
-    positionGetFlag = false;
-
-  
-    //If position is over range,skip loop
-    if((!(my_loc.X > 180.0 && my_loc.X < -180.0 ) || 
-       (my_loc.Y > 180.0 && my_loc.Y < -180.0 ) || 
-	my_loc.Z != 0.0) ){
-
-      //認識した車の数だけ繰り返す
-      for (int i = 0; i < fused_objects.car_num; i++){
-	
-	//If distance is zero, we cannot calculate position of recognized object
-	//so skip loop
-	if(fused_objects.distance.at(i) <= 0) continue;
-
-	pp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
-	pp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-	pp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
-	pp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
-
-	pp.distance = fused_objects.distance.at(i);
-
-	//printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
-
-	pp_vector.push_back(pp);      
-      }
-
-      locatePublisher(pp_vector);
-
+  if(gnssGetFlag || ndtGetFlag) {
+    gnssGetFlag = false;
+    ndtGetFlag = false;
+    //認識した車の数だけ繰り返す
+    for (int i = 0; i < fused_objects.car_num; i++){
+      
+      //If distance is zero, we cannot calculate position of recognized object
+      //so skip loop
+      if(fused_objects.distance.at(i) <= 0) continue;
+      
+      pp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
+      pp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
+      pp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
+      pp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
+      
+      pp.distance = fused_objects.distance.at(i);
+      
+      //printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
+      
+      pp_vector.push_back(pp);      
     }
+    
+    locatePublisher(pp_vector);
+    
   }
-
 }
+
 
 /*
 void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
@@ -274,14 +279,29 @@ void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
 
   //In Autoware axel x and axel y is opposite
   //but once they is converted to calculate.
-  my_loc.X = pose.pose.position.x;
-  my_loc.Y = pose.pose.position.y;
-  my_loc.Z = pose.pose.position.z;
+  gnss_loc.X = pose.pose.position.x;
+  gnss_loc.Y = pose.pose.position.y;
+  gnss_loc.Z = pose.pose.position.z;
 
-  GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
-  printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
+  GetRPY(pose.pose,gnss_angle.thiX,gnss_angle.thiY,gnss_angle.thiZ);
+  printf("quaternion angle : %f\n",gnss_angle.thiZ*180/M_PI);
 
-  positionGetFlag = true;
+  gnssGetFlag = true;
+  //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
+}
+
+void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
+
+  //In Autoware axel x and axel y is opposite
+  //but once they is converted to calculate.
+  ndt_loc.X = pose.pose.position.x;
+  ndt_loc.Y = pose.pose.position.y;
+  ndt_loc.Z = pose.pose.position.z;
+
+  GetRPY(pose.pose,ndt_angle.thiX,ndt_angle.thiY,ndt_angle.thiZ);
+  printf("quaternion angle : %f\n",ndt_angle.thiZ*180/M_PI);
+
+  ndtGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
 
@@ -300,6 +320,7 @@ int main(int argc, char **argv){
   ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
   ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
+  ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
 
   pub = n.advertise<geometry_msgs::PoseArray>("pedestrian_pose",1); 
 
@@ -351,7 +372,8 @@ int main(int argc, char **argv){
   ol.setCameraParam(fkx,fky,Ox,Oy);
 
   //set angle and position flag : false at first
-  positionGetFlag = false;
+  gnssGetFlag = false;
+  ndtGetFlag = false;
 
   ros::spin();
 

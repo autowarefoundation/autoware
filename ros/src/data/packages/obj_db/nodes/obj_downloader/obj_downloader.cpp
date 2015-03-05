@@ -21,12 +21,14 @@
 
 using namespace std;
 
-#define PORT 5700
+string serverName = "db1.ertl.jp";
+int PORT 5678;
 
 enum TYPE{
   NORMAL,
   RANGE,
-  TEST
+  TEST,
+  DTN
 };
 
 
@@ -64,6 +66,20 @@ void* wrapSender(void *tsd){
   string data;
   stringstream oss;
 
+  //create header
+  char magic[5] = "MPWC";
+  u_int16_t major = htons(1);
+  u_int16_t minor = htons(0);
+  u_int32_t sqlinst = htonl(1);
+  u_int32_t sqlnum = htonl(1);
+  char header[16];
+  memcpy(header,magic,4);
+  memcpy(&header[4],&major,2);
+  memcpy(&header[6],&minor,2);
+  memcpy(&header[8],&sqlinst,4);
+  memcpy(&header[12],&sqlnum,4);
+  data.append(header,16);
+
   switch (SendDataType){
   case RANGE:
     {
@@ -73,16 +89,24 @@ void* wrapSender(void *tsd){
 	oss << "\t" << fixed << setprecision(7) <<positionRange[i];
       }
       */
-      oss << "<E>";
-      data = oss.str();
+      data += oss.str();
+      break;
+    }
+  case DTN:
+    {
+      oss <<  "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";";
+      data += oss.str();
       break;
     }
   case NORMAL:
   default:
-    data = "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= 35.2038955 and lat < 35.2711311 and lon >= 136.9813925 and lon < 137.055852;<E>";
+    data += "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= 35.2038955 and lat < 35.2711311 and lon >= 136.9813925 and lon < 137.055852;";
   }
 
-  printf("sql : %s\n",data.c_str());
+  data += "\n";
+
+  cout << "sql : " << data << endl;
+  //printf("sql : %s\n",data.c_str());
 
   dbres = sd.Sender(data);
 
@@ -91,27 +115,10 @@ void* wrapSender(void *tsd){
   std_msgs::String msg;
   msg.data = dbres.c_str();
 
-  /*
-  ostringstream ss;
-  ss << dbres;
-  msg.data = ss.str();
-  */
-
   if(msg.data.compare("") != 0){
     ROS_INFO("test\t%s",msg.data.c_str());
     pub.publish(msg);
   }
-
-  /*
-  std::vector<std::string>::iterator itr = dbres.begin();
-  while(itr != dbres.end()){
-    std::string temp = *itr;
-    separateData = split(temp,'\t');
-    std::cout << separateData[1] << std::endl;
-    std::cout << *itr << std::endl;
-    itr++;
-  }
-  */
 
 }
 
@@ -136,7 +143,6 @@ int main(int argc, char **argv){
   
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
-  string serverName = "db1.ertl.jp";
   
   cout << "obj_downloader" << endl;
 
@@ -158,6 +164,15 @@ int main(int argc, char **argv){
       positionRange[3] = 137.055852;
 
       SendDataType = RANGE;
+    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
+      printf("fixed range access\n");
+      positionRange[0] = 30;
+      positionRange[1] = 40;
+      positionRange[2] = 130;
+      positionRange[3] = 140;
+      PORT = 5678;
+      serverName = "db3.ertl.jp";
+      SendDataType = DTN;
     }else{
       printf("range access\n");
       string arg;
