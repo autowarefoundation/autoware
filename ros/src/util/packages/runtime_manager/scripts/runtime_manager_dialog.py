@@ -61,15 +61,16 @@ class MyFrame(rtmgr.MyFrame):
 		self.main_cmd = {}
 		self.all_cmd_dics.append(self.main_cmd)
 		self.main_dic = self.load_yaml('main.yaml')
+
+		self.params = []
+		self.add_params(self.main_dic.get('params', []))
+
 		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
 
 		self.main_cmd[ self.button_load_map ] = []
 
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
 		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
-
-		self.params = []
-		self.add_params(self.main_dic.get('params', []))
 
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for prm in self.main_dic.get('params', []):
@@ -257,7 +258,8 @@ class MyFrame(rtmgr.MyFrame):
 				if pdic is None:
 					pdic = {}
 					self.load_dic[k] = pdic
-				self.add_cfg_info(obj, obj, k, pdic, False, 'param', d2.get('param'))
+				prm = self.get_param(d2.get('param'))
+				self.add_cfg_info(obj, obj, k, pdic, False, prm)
 
 	#
 	# Main Tab
@@ -437,7 +439,7 @@ class MyFrame(rtmgr.MyFrame):
 			if info is None:
 				return (None, None)
 		pdic = info.get('pdic')
-		prm = self.get_param(info.get('param'))
+		prm = info.get('param')
 		return (pdic, prm)
 
 	def publish_param_topic(self, pdic, prm):
@@ -593,7 +595,8 @@ class MyFrame(rtmgr.MyFrame):
 		if pdic is None:
 			pdic = {}
 			self.load_dic[name] = pdic
-		self.add_cfg_info(cfg_obj, obj, name, pdic, True, 'param', dic.get('param'))
+		prm = self.get_param(dic.get('param'))
+		self.add_cfg_info(cfg_obj, obj, name, pdic, True, prm)
 		return hszr
 
 	#
@@ -668,8 +671,8 @@ class MyFrame(rtmgr.MyFrame):
 	def get_cfg_obj(self, obj):
 		return get_top( [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ] )
 
-	def add_cfg_info(self, cfg_obj, obj, name, pdic, run_disable, key, value):
-		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'run_disable':run_disable , key:value }
+	def add_cfg_info(self, cfg_obj, obj, name, pdic, run_disable, prm):
+		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'run_disable':run_disable , 'param':prm }
 
 	def get_param(self, prm_name):
 		return get_top( [ prm for prm in self.params if prm['name'] == prm_name ] )
@@ -680,13 +683,12 @@ class MyFrame(rtmgr.MyFrame):
 				self.setup_create_pdic(info)
 
 	def setup_create_pdic(self, targ_info):
-		prm_name = targ_info['param']
-		info = get_top( [ info for info in self.config_dic.values() if info.get('param', None) == prm_name and info['pdic'] ] )
+		prm = targ_info.get('param')
+		info = get_top( [ info for info in self.config_dic.values() if info.get('param', None) == prm and info['pdic'] ] )
 		if info:
 			targ_info['pdic'] = info['pdic']
 			return
 		pdic = {}
-		prm = self.get_param(prm_name)
 		if prm:
 			for var in prm['vars']:
 				pdic[ var['name'] ] = var['v']
@@ -871,15 +873,16 @@ class MyFrame(rtmgr.MyFrame):
 				cmd_dic[item] = (items['cmd'], None)
 
 			if 'param' in items:
-				self.add_config_link_tree_item(item, name, items['param'])
+				prm = self.get_param(items.get('param'))
+				self.add_config_link_tree_item(item, name, prm)
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
 
-	def add_config_link_tree_item(self, item, name, prm_name):
+	def add_config_link_tree_item(self, item, name, prm):
 		pdic = self.load_dic.get(name, None)
-		self.add_cfg_info(item, item, name, pdic, False, 'param', prm_name)
+		self.add_cfg_info(item, item, name, pdic, False, prm)
 		item.SetHyperText()
 
 	def launch_kill_proc_file(self, obj, cmd_dic, names=None):
