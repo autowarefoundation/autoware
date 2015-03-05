@@ -80,6 +80,6 @@ params :
       v     : 0
     - name  : twist.angular.z
       label : Angle
-      min   : 0.00
+      min   : -1.00
       max   : 1.00
       v     : 0.00
