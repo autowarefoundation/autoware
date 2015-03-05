@@ -59,7 +59,7 @@ bool gearFlag;
 void initCMDDATA(){
   cd.linear_x = 0;
   cd.angular_z = 0;
-  cd.modeValue = 1;
+  cd.modeValue = 0;
   cd.gearValue = 0;
   cd.accellValue = 0;
   cd.brakeValue = 0;
