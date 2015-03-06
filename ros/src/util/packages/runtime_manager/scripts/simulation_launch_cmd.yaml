@@ -85,6 +85,7 @@ params :
       kind      : path
       v         : ''
       cmd_param :
+        must        : True
         delim       : ''
 
   - name  : pmap
