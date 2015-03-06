@@ -109,48 +109,29 @@ typedef struct _CMDDATA {
 } CMDDATA;
 
 // Structure to store HEV State
-typedef struct _DrvState {
-  DrvInf drvInf;
-  StrInf strInf;
-  BrakeInf brkInf;
-} DrvState;
-
-// Structure to store HEV State
-typedef struct HevState {
+typedef struct _HevState {
   DrvInf drvInf;
   StrInf strInf;
   BrakeInf brkInf;
   long long int tstamp;
 } HevState;
 
-extern DrvState _drv_state;
 extern HevState _hev_state;
-
 extern int can_tx_interval; // ms
 extern int cmd_rx_interval; // ms
 extern std::string ros_ip_address;
-extern std::string candata;
-extern int drvmode;
-extern CMDDATA cmddata;
 extern double estimate_accel;
 extern double cycle_time;
-extern int ndrv;
-extern int pdrv;
-extern int nbrk;
-extern int pbrk;
-extern double nstr;
-extern double pstr;
-
-int CheckDrvMode();
-bool Control(vel_data_t vel,vel_data_t &current,void* p);
 
 // convert km/h to m/s
-static inline double KmhToMs(double v) {
+static inline double KmhToMs(double v)
+{
   return (v*1000.0/(60.0*60.0));
 }
 
 // get current time
-static inline long long int getTime() {
+static inline long long int getTime(void)
+{
   //returns time in milliseconds 
   struct timeval current_time;
   struct timezone ttz;
@@ -162,8 +143,6 @@ static inline long long int getTime() {
   // unlock();
   return static_cast<long long int>(t);
 }
-
-
 
 #endif //__AUTOWARE_SOCKET_H__
 

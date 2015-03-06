@@ -206,8 +206,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /////////////////////////////////////////////////////////
     // Autoware extension
-    if (!AutowareConfig()) {
-      printf("Error: failed to read Autoware config!\n");    
+    if (!ConfigSocket()) {
+      printf("Error: failed to configure Autoware socket!\n");    
     }
     pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
     pthread_detach(_cmdgetter);
@@ -283,7 +283,7 @@ void MainWindow::logThread()
       // Autoware extension
       if(_selectLog.start == true){
         //writeLog();
-        sendDataGetAndSend();
+        SendCAN();
       }
       /////////////////////////////////////////////////
     }

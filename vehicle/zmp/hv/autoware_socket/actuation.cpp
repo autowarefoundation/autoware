@@ -60,14 +60,6 @@ void MainWindow::SetGear(int gear)
   }
 }
 
-void MainWindow::UpdateState()
-{
-  _hev_state.tstamp = (long long int) (getTime());
-  hev->GetDrvInf(&_hev_state.drvInf);
-  hev->GetStrInf(&_hev_state.strInf);
-  hev->GetBrakeInf(&_hev_state.brkInf);
-}
-
 bool MainWindow::Accel(int target_accel, int gain)
 {
   static int old_accel = -1;
@@ -342,7 +334,7 @@ void MainWindow::DecelerateControl(double current_velocity,double cmd_velocity)
   cout << "actual pedal = " << _hev_state.drvInf.actualPedalStr << endl;
 
   // check if pedal nearly released, if so need to apply brakes to slow
-  if (_drv_state.drvInf.actualPedalStr < 200  || vel_diff > vel_diff_limit) {
+  if (_hev_state.drvInf.actualPedalStr < 200  || vel_diff > vel_diff_limit) {
     // try to brake proportionally to difference in vel
     double w = vel_diff/max_vel_diff;
     int br = HEV_LIGHT_BRAKE + (int)(w*(((double)(HEV_MED2_BRAKE-HEV_LIGHT_BRAKE))));

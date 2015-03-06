@@ -65,9 +65,9 @@ public:
     bool GameInit();
     bool GameStart();
 
-   /*======Autoware Socket=================*/ 
+    /*======Autoware Socket=================*/ 
 
-    void UpdateState();
+    // actuation
     void ChangeShiftMode(double cmd_velocity);
     void SteeringControl(double current_steering_angle, double cmd_steering_angle);
     void AccelerateControl(double current_velocity,double cmd_velocity);
@@ -77,12 +77,16 @@ public:
     bool Accel(int target_accel, int gain);
     void SetMode(int mode);
     void SetGear(int gear);
-    bool AutowareConfig();
 
-    void sendDataGetAndSend();
-    void wrapSender();
+    // cmd
     static void* CMDGetterEntry(void *a);
-    void TestPrint();
+
+    // can
+    void SendCAN(void);
+
+    // common
+    bool ConfigSocket(void);
+    void UpdateState(void);
 
     /*====================================*/
 
