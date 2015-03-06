@@ -7,7 +7,9 @@ int can_tx_interval = 10; // ms
 int cmd_rx_interval = 100; // ms
 std::string ros_ip_address = "192.168.1.101";
 
-bool MainWindow::AutowareConfig()
+HevState _hev_state;
+
+bool MainWindow::ConfigSocket(void)
 {
   std::ifstream ifs("./config");
   std::string str;
@@ -37,4 +39,12 @@ bool MainWindow::AutowareConfig()
   }
 
   return true;
+}
+
+void MainWindow::UpdateState(void)
+{
+  _hev_state.tstamp = (long long int) (getTime());
+  hev->GetDrvInf(&_hev_state.drvInf);
+  hev->GetStrInf(&_hev_state.strInf);
+  hev->GetBrakeInf(&_hev_state.brkInf);
 }

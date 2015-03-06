@@ -6,17 +6,8 @@
 #include "mainwindow.h"
 #include "autoware_socket.h"
 
-HevState _hev_state;
-
 double cycle_time = 0.0;
 double estimate_accel = 0.0;
-int ndrv = 0;
-int nbrk = 0;
-double nstr = 0.0;
-
-int pdrv = 0;
-int pbrk = 0;
-double pstr = 0.0;
 
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
@@ -142,7 +133,15 @@ void CMDGetter(){
 }
 */
 
-bool Operate(int mode, int gear, int accel, int steer, int brake, void* p) 
+void Update(void *p)
+{
+  MainWindow* main = (MainWindow*)p;
+
+  // update Hev's drvinf/strinf/brkinf.
+  main->UpdateState();
+}
+
+void Prepare(int mode, int gear, void* p) 
 {
   static int old_mode = -1;
   static int old_gear = -1;
@@ -161,17 +160,12 @@ bool Operate(int mode, int gear, int accel, int steer, int brake, void* p)
       old_gear = gear;
     }
   }
-
-  return true;
 }
 
-bool Control(vel_data_t vel, void* p) 
+void Control(vel_data_t vel, void* p) 
 {
   MainWindow* main = (MainWindow*)p;
   static long long int old_tstamp = 0;
-
-  // update Hev's drvinf/strinf/brkinf.
-  main->UpdateState();
 
   // calculate current time
   cycle_time = (_hev_state.tstamp - old_tstamp) / 1000.0;
@@ -266,41 +260,31 @@ bool Control(vel_data_t vel, void* p)
 
   // save the time stamp.
   old_tstamp = _hev_state.tstamp;
-
-  return true;
-  
 }
-
-void MainWindow::TestPrint(){
-#ifdef DEBUG
-  printf("test print,%d,%d,%d,%d,%f,%f,(Str is a 10x value)\n",ndrv,ndrv-pdrv,nbrk,nbrk-pbrk,nstr,nstr-pstr);
-#endif
-}
-
-void initPrintValue(){
-  pdrv = ndrv;  
-  pbrk = nbrk;
-  pstr = nstr;
-
-  ndrv = 0;  
-  nbrk = 0;
-  nstr = 0;
-
-}
-
 
 void *MainWindow::CMDGetterEntry(void *a)
 {
   MainWindow* main = (MainWindow*)a;
   CMDDATA cmddata;
-  cout << "test print,accel,diff previous accel,brake,diff previous brake,str,diff previous str,(Str is a 10x value)" << endl;
+
   while(1){
-    Getter(cmddata); // get commands from ROS.
-    Operate(cmddata.mode, cmddata.gear, cmddata.accel, cmddata.steer, cmddata.brake, main);
+    // get commands from ROS.
+    Getter(cmddata);
+
+    // update HEV state.
+    Update(main);
+
+    // set mode and gear.
+    Prepare(cmddata.mode, cmddata.gear, main);
+
+#ifdef DIRECT_CONTROL
+    // directly set accel, brake, and steer.
+    Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);
+#else
+    // control accel, brake, and steer.
     Control(cmddata.vel, main);
-    main->TestPrint();
-    initPrintValue();
-    
+#endif
+
     usleep(cmd_rx_interval*1000);
   }
   return NULL;
