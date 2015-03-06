@@ -974,15 +974,7 @@ class MyFrame(rtmgr.MyFrame):
 		if v and type(cmd) is dict:
 			cmd = self.selobj_cmd_get(cmd)
 		if v:
-			t = cmd
-			# for replace
-			if t.find('replace') >= 0:
-				t2 = eval(t)
-				if t2 != t:
-					t = t2
-					add_args = None
-
-			args = shlex.split(t)
+			args = shlex.split(cmd)
 			if add_args:
 				args += add_args
 			print(args) # for debug
