@@ -395,6 +395,8 @@ class MyFrame(rtmgr.MyFrame):
 	def OnChecked_obj(self, obj):
 		cmd_dic = self.obj_to_cmd_dic(obj)
 		add_args = self.obj_to_add_args(obj)
+		if add_args is False:
+			return
 		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
 
 	def OnTreeHyperlinked(self, event):
@@ -419,9 +421,12 @@ class MyFrame(rtmgr.MyFrame):
 			if cmd_param:
 				name = var.get('name')
 				v = pdic.get(name)
-				name = cmd_param.get('var_name', name)
+				if cmd_param.get('must') and (v is None or v == ''):
+					print 'cmd_param', name, 'is must'
+					return False
 				if cmd_param.get('only_enable') and not v:
 					continue
+				name = cmd_param.get('var_name', name)
 				unpack = cmd_param.get('unpack')
 				if unpack is not None:
 					v = ' '.join( v.split(unpack) )
@@ -738,6 +743,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_sync(obj, v=True)
 
 		add_args = self.obj_to_add_args(obj)
+		if add_args is False:
+			return
 
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
