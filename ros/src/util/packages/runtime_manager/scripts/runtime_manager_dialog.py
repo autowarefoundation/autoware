@@ -119,12 +119,12 @@ class MyFrame(rtmgr.MyFrame):
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
 		# for button_calibration
-		tc = self.text_ctrl_sensor_fusion
+		tc = self.text_ctrl_dir_sensor_fusion
 		path = os.path.expanduser("~") + '/.ros/autoware'
 		tc.SetValue(path)
 		tc.SetInsertionPointEnd()
 		self.text_ctrl_calibration = tc
-		self.button_ref_calibration = self.button_ref_sensor_fusion
+		self.button_ref_calibration = self.button_ref_dir_sensor_fusion
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -200,8 +200,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_grps = [
 			[ self.button_launch_tf, self.button_main_tf, ],
 			[ self.button_kill_tf, self.button_main_tf, ],
-			[ self.button_ref_tf, self.button_ref_main_tf, ],
-			[ self.text_ctrl_tf, self.text_ctrl_main_tf, ],
+			[ self.button_ref_file_tf, self.button_ref_main_tf, ],
+			[ self.text_ctrl_file_tf, self.text_ctrl_main_tf, ],
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
@@ -421,6 +421,8 @@ class MyFrame(rtmgr.MyFrame):
 			if cmd_param:
 				name = var.get('name')
 				v = pdic.get(name)
+				if (v is None or v == '') and 'default' in cmd_param:
+					v = cmd_param.get('default')					
 				if cmd_param.get('must') and (v is None or v == ''):
 					print 'cmd_param', name, 'is must'
 					return False
@@ -756,9 +758,12 @@ class MyFrame(rtmgr.MyFrame):
 		tc = self.obj_get('text_ctrl_' + key) 
 		path = tc.GetValue() if tc else None
 
-		if key == 'tf' and not path:
-			# TF default setting
-			path = 'runtime_manager,tf.launch' # !
+		# below TF default setting is reflected to sensing.yaml
+		# (params:/name:tf/name:file/cmd_param:/default:)
+		#
+		#if key == 'tf' and not path:
+		#	# TF default setting
+		#	path = 'runtime_manager,tf.launch' # !
 
 		if tc and not path:
 			return

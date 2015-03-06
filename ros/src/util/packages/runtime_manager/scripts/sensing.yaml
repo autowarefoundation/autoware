@@ -69,13 +69,21 @@ subs :
 
 buttons:
   sensor_fusion :
-    run : "'roslaunch sensing_fusions sensing_fusions.launch dir:=$'.replace('$', add_args[0])"
+    run   : roslaunch sensing_fusions sensing_fusions.launch
+    param : sensor_fusion
+    gui   :
+      dir :
+        func : self.text_ctrl_dir_sensor_fusion.GetValue()
   calibration :
     run :
       - [ LIDAR2D , "'roslaunch camera_lidar2d camera_lidar2d_offline_calib.launch dir:=$'.replace('$', add_args[0])" ]
       - [ LIDAR3D , "rosrun camera_lidar3d camera_lidar3d_offline_calib" ]
   tf :
-    run : roslaunch
+    run   : roslaunch
+    param : tf
+    gui   :
+      file :
+        func : self.text_ctrl_file_tf.GetValue()
 
 params :
   - name  : calibration_path
@@ -86,3 +94,22 @@ params :
       cmd_param :
         dash : ''
         delim: ':='
+
+  - name  : sensor_fusion
+    vars  :
+    - name  : dir
+      kind  : path
+      path_type : dir
+      v     : ''
+      cmd_param :
+        dash : ''
+        delim : ':='
+
+  - name  : tf
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        delim     : ''
+        default   : runtime_manager tf.launch
