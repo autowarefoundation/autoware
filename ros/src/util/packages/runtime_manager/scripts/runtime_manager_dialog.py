@@ -119,12 +119,12 @@ class MyFrame(rtmgr.MyFrame):
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
 		# for button_calibration
-		tc = self.text_ctrl_sensor_fusion
+		tc = self.text_ctrl_dir_sensor_fusion
 		path = os.path.expanduser("~") + '/.ros/autoware'
 		tc.SetValue(path)
 		tc.SetInsertionPointEnd()
 		self.text_ctrl_calibration = tc
-		self.button_ref_calibration = self.button_ref_sensor_fusion
+		self.button_ref_calibration = self.button_ref_dir_sensor_fusion
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -200,8 +200,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_grps = [
 			[ self.button_launch_tf, self.button_main_tf, ],
 			[ self.button_kill_tf, self.button_main_tf, ],
-			[ self.button_ref_tf, self.button_ref_main_tf, ],
-			[ self.text_ctrl_tf, self.text_ctrl_main_tf, ],
+			[ self.button_ref_file_tf, self.button_ref_main_tf, ],
+			[ self.text_ctrl_file_tf, self.text_ctrl_main_tf, ],
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
@@ -421,6 +421,8 @@ class MyFrame(rtmgr.MyFrame):
 			if cmd_param:
 				name = var.get('name')
 				v = pdic.get(name)
+				if (v is None or v == '') and 'default' in cmd_param:
+					v = cmd_param.get('default')					
 				if cmd_param.get('must') and (v is None or v == ''):
 					print 'cmd_param', name, 'is must'
 					return False
@@ -544,7 +546,20 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetEventObject())
 
 	def OnCalib(self, event):
-		self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
+		#self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
+
+		obj = event.GetEventObject()
+		v = obj.GetValue()
+		cmd_dic = self.obj_to_cmd_dic(obj)
+
+		add_args = self.obj_to_add_args(obj)
+		if add_args is False:
+			return
+
+		self.launch_kill_proc(obj, cmd_dic, add_args)
+
+		if obj.GetValue() == v:
+			self.toggle_enable_obj(obj)
 
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
@@ -657,24 +672,6 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Data Tab
 	#
-	def check_download_objects_stat(self, btn, v, tcs, add_args):
-		ngs = []
-		if v:
-			for s in add_args:
-				try:
-					float(s)
-				except ValueError:
-					ngs.append(tcs[ add_args.index(s) ])
-		if len(ngs) == 0:
-			for tc in tcs:
-				tc.Enable(not v)
-			return True
-
-		for tc in ngs:
-			tc.SetValue('')
-		btn.SetValue(False)
-		btn.Disable()
-		return False
 
 	#
 	# Common Utils
@@ -685,6 +682,8 @@ class MyFrame(rtmgr.MyFrame):
 		szr = wx.BoxSizer(wx.VERTICAL)
 		szr.Add(panel, 0, wx.EXPAND)
 		parent.SetSizer(szr)
+		k = 'ext_toggle_enables'
+		gdic[ k ] = gdic.get(k, []) + [ panel ]
 
 	def OnConfig(self, event):
 		self.OnHyperlinked_obj(event.GetEventObject())
@@ -747,6 +746,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_sync(obj, v=True)
 
 		add_args = self.obj_to_add_args(obj)
+		#print 'add_args', add_args
 		if add_args is False:
 			return
 
@@ -756,9 +756,12 @@ class MyFrame(rtmgr.MyFrame):
 		tc = self.obj_get('text_ctrl_' + key) 
 		path = tc.GetValue() if tc else None
 
-		if key == 'tf' and not path:
-			# TF default setting
-			path = 'runtime_manager,tf.launch' # !
+		# below TF default setting is reflected to sensing.yaml
+		# (params:/name:tf/name:file/cmd_param:/default:)
+		#
+		#if key == 'tf' and not path:
+		#	# TF default setting
+		#	path = 'runtime_manager,tf.launch' # !
 
 		if tc and not path:
 			return
@@ -773,20 +776,10 @@ class MyFrame(rtmgr.MyFrame):
 		if path:
 			add_args = ( add_args if add_args else [] ) + path.split(',')
 
-		if key == 'download':
-			pf = 'text_ctrl_moving_objects_route_'
-			lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
-			tcs = [ self.obj_get(pf + nm) for nm in lst ]
-			add_args = [ tc.GetValue() for tc in tcs ]
-			if not self.check_download_objects_stat(obj, True, tcs, add_args):
-				return
-
 		proc = self.launch_kill(True, cmd, proc, add_args)
 		cmd_dic[obj] = (cmd, proc)
 
-		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key)
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_', 
-				       'checkbox_clock_' ], key, en=False)
+		self.toggle_enable_obj(obj)
 
 	def OnKill(self, event):
 		self.OnKill_kill_obj(event.GetEventObject())
@@ -809,15 +802,7 @@ class MyFrame(rtmgr.MyFrame):
 		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
 		cmd_dic[obj] = (cmd, proc)
 
-		if key == 'download':
-			pf = 'text_ctrl_moving_objects_route_'
-			lst = [ 'to_lat', 'to_lon', 'from_lat', 'from_lon' ]
-			tcs = [ self.obj_get(pf + nm) for nm in lst ]
-			self.check_download_objects_stat(obj, False, tcs, [])
-
-		self.enable_key_objs([ 'button_launch_', 'text_ctrl_', 'button_ref_', 'text_ctrl_rate_', 
-				       'checkbox_clock_' ], key)
-		self.enable_key_objs([ 'button_kill_', 'button_pause_' ], key, en=False)
+		self.toggle_enable_obj(obj)
 
 	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()
@@ -915,24 +900,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
 		item.SetHyperText()
 
-	def launch_kill_proc_file(self, obj, cmd_dic, names=None):
-		key = self.obj_key_get(obj, [ 'button_', 'checkbox_' ])
-		if key is None:
-			return
-		v = obj.GetValue()
-		tc = self.obj_get('text_ctrl_' + key)
-
-		path = tc.GetValue()
-		if v and not path:
-			obj.SetValue(False)
-			return
-		add_args = [ path + '/' + nm for nm in names ] if names else path.split(',')
-		self.launch_kill_proc(obj, cmd_dic, add_args)
-		en = not obj.GetValue()
-		tc.Enable(en)
-		ref = self.obj_get('button_ref_' + key)
-		ref.Enable(en)
-
 	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
 			set_check(obj, False)
@@ -946,7 +913,10 @@ class MyFrame(rtmgr.MyFrame):
 		if v and type(cmd) is list:
 			cmd = self.modal_dialog(obj, cmd)
 			if not cmd:
+				set_check(obj, False)
 				return # cancel
+			if cmd == cmd_bak[1][1]: # LIDAR3D
+				add_args = None
 
 		proc = self.launch_kill(v, cmd, proc, add_args)
 
@@ -968,7 +938,7 @@ class MyFrame(rtmgr.MyFrame):
 	def kill_obj(self, obj, cmd_dic=None, proc=None):
 		key = self.obj_key_get(obj, [ 'button_launch_' ])
 		if key:
-			self.OnKill_kil_obj(self.obj_get('button_kill_' + key))
+			self.OnKill_kill_obj(self.obj_get('button_kill_' + key))
 			return
 		set_check(obj, False)
 		if cmd_dic is None:
@@ -1014,9 +984,7 @@ class MyFrame(rtmgr.MyFrame):
 
 			args = shlex.split(t)
 			if add_args:
-				s = '__args__'
-				pos = args.index(s) if s in args else -1
-				args = args[0:pos] + add_args + args[pos+1:] if pos >= 0 else args + add_args
+				args += add_args
 			print(args) # for debug
 			proc = subprocess.Popen(args, stdin=subprocess.PIPE)
 			self.all_procs.append(proc)
@@ -1101,9 +1069,21 @@ class MyFrame(rtmgr.MyFrame):
 		f.close()
 		return d
 
-	def enable_key_objs(self, pfs, key, en=True):
-		for obj in self.key_objs_get(pfs, key):
-			obj.Enable(en)
+	def toggle_enable_obj(self, obj):
+		objs = []
+		pfs = [ 'button_launch_', 'button_kill_', 'button_pause_', 'button_ref_', 'text_ctrl_' ]
+		key = self.obj_key_get(obj, pfs)
+		if key:
+			objs += self.key_objs_get(pfs, key)
+			
+		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
+		objs += [ (eval(e) if type(e) is str else e) for e in gdic.get('ext_toggle_enables', []) ]
+
+		self.toggle_enables(objs)
+
+	def toggle_enables(self, objs):
+		for obj in objs:
+			obj.Enable(not obj.IsEnabled())
 			self.alias_sync(obj)
 
 	def is_toggle_button(self, obj):
