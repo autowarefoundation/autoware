@@ -1255,7 +1255,20 @@ class VarPanel(wx.Panel):
 			self.ref.SetMinSize((40,29))
 			szr.Add(self.ref, 0, flag, 4)
 
+		if self.has_slider:
+			vszr = wx.BoxSizer(wx.VERTICAL)
+                        vszr.Add( self.create_bmbtn("inc.png", self.OnIncBtn) )
+                        vszr.Add( self.create_bmbtn("dec.png", self.OnDecBtn) )
+			szr.Add(vszr)
+
 		self.SetSizer(szr)
+
+	def create_bmbtn(self, filename, hdr):
+		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
+		obj = wx.BitmapButton(self, wx.ID_ANY, bm)
+		self.Bind(wx.EVT_BUTTON, hdr, obj)
+		return obj
 
 	def get_v(self):
 		if self.kind == 'radio_box':
@@ -1294,6 +1307,21 @@ class VarPanel(wx.Panel):
 			s = str(Decimal(v).quantize(Decimal('.01')))
 		self.tc.SetValue(s)
 		self.update()
+
+	def OnIncBtn(self, event):
+		step = 0.01 if self.is_float else 1
+		self.add_v(step)
+
+	def OnDecBtn(self, event):
+		step = 0.01 if self.is_float else 1
+		self.add_v(-step)
+
+	def add_v(self, step):
+		ov = self.get_v()
+		self.tc.SetValue(str(ov + step))
+		v = self.get_v()
+		if v != ov:
+			self.update()
 
 	def OnUpdate(self, event):
 		if self.has_slider:
