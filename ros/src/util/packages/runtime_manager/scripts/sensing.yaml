@@ -74,16 +74,31 @@ buttons:
     gui   :
       dir :
         func : self.text_ctrl_dir_sensor_fusion.GetValue()
+      ext_toggle_enables :
+      - self.text_ctrl_dir_sensor_fusion
+      - self.button_ref_dir_sensor_fusion
+
   calibration :
     run :
-      - [ LIDAR2D , "'roslaunch camera_lidar2d camera_lidar2d_offline_calib.launch dir:=$'.replace('$', add_args[0])" ]
-      - [ LIDAR3D , "rosrun camera_lidar3d camera_lidar3d_offline_calib" ]
+    - [ LIDAR2D , 'roslaunch camera_lidar2d camera_lidar2d_offline_calib.launch' ]
+    - [ LIDAR3D , 'rosrun camera_lidar3d camera_lidar3d_offline_calib' ]
+    param : sensor_fusion # common, calibration_2d
+    gui   :
+      dir :
+        func : self.text_ctrl_dir_sensor_fusion.GetValue()
+      ext_toggle_enables :
+      - self.text_ctrl_dir_sensor_fusion
+      - self.button_ref_dir_sensor_fusion
+
   tf :
     run   : roslaunch
     param : tf
     gui   :
       file :
         func : self.text_ctrl_file_tf.GetValue()
+      ext_toggle_enables :
+      - self.text_ctrl_file_tf
+      - self.button_ref_file_tf
 
 params :
   - name  : calibration_path
@@ -97,10 +112,10 @@ params :
 
   - name  : sensor_fusion
     vars  :
-    - name  : dir
-      kind  : path
+    - name      : dir
+      kind      : path
       path_type : dir
-      v     : ''
+      v         : ''
       cmd_param :
         dash : ''
         delim : ':='

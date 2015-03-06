@@ -38,12 +38,17 @@ buttons:
     run   : rosbag play
     param : rosbag_play
     gui   :
+      file  :
+        func  : self.text_ctrl_file_rosbag_play.GetValue()
       clock :
         func  : self.checkbox_clock_rosbag_play.GetValue()
       rate  :
         func  : self.text_ctrl_rate_rosbag_play.GetValue()
-      file  :
-        func  : self.text_ctrl_file_rosbag_play.GetValue()
+      ext_toggle_enables :
+      - self.text_ctrl_file_rosbag_play
+      - self.button_ref_file_rosbag_play
+      - self.text_ctrl_rate_rosbag_play
+      - self.checkbox_clock_rosbag_play
 
   pmap :
     run :
