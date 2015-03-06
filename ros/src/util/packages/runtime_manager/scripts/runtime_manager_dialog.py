@@ -1328,7 +1328,7 @@ class VarPanel(wx.Panel):
 			path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
 			self.tc.SetValue(path)
 			self.tc.SetInsertionPointEnd()
-			self.upate()
+			self.update()
 		dlg.Destroy()
 
 class MyDialogParam(rtmgr.MyDialogParam):
@@ -1355,6 +1355,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 
 	def OnOk(self, event):
 		self.panel.update()
+		self.panel.detach_func()
 		self.EndModal(0)
 
 	def OnCancel(self, event):

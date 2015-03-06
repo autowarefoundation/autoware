@@ -83,9 +83,17 @@ subs :
       - name : Path
         subs :
           - name : waypoint_saver
-            cmd : roslaunch waypoint_maker waypoint_saver.launch
-          - name : waypoint_loader
-            cmd : roslaunch waypoint_maker waypoint_loader.launch
+            cmd  : roslaunch waypoint_maker waypoint_saver.launch
+            param: waypoint_saver
+            gui  :
+              save_filename :
+                prop  : 1
+          - name : waypoint_saver
+            cmd  : roslaunch waypoint_maker waypoint_loader.launch
+            param: waypoint_loader
+            gui  :
+              waypoint_filename :
+                prop  : 1
 
 params :
   - name  : car_dpm
@@ -312,5 +320,26 @@ params :
     topic : /traffic_light
     msg   : traffic_light
     vars  :
-      - name  : traffic_light
-        v     : 0
+    - name  : traffic_light
+      v     : 0
+
+  - name  : waypoint_saver
+    vars  :
+    - name      : save_filename
+      kind      : path
+      path_type : save
+      v         : ''
+      cmd_param :
+        only_enable : True
+        dash        : ''
+        delim       : ':='
+
+  - name  : waypoint_loader
+    vars  :
+    - name      : waypoint_filename
+      kind      : path
+      v         : ''
+      cmd_param :
+        only_enable : True
+        dash        : ''
+        delim       : ':='
