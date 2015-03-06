@@ -95,6 +95,8 @@ void* wrapSender(void *tsd){
   case DTN:
     {
       oss << "select terminal,latitude,longitude,azimuth,timestamp from test_map where timestamp = (select max(timestamp) from test_map) and latitude >= " << fixed << setprecision(7) << positionRange[0] << " and latitude < "  << fixed << setprecision(7) << positionRange[1] << " and longitude >= " << fixed << setprecision(7) << positionRange[2] << " and longitude < " << fixed << setprecision(7) << positionRange[3] << ";";
+      //oss << "select tm,id,x,y,type,self,area from pos_nounique where tm = (select max(tm) from pos_nounique);";
+      //oss << "select * from pos_nounique limit 1;";
       data += oss.str();
       break;
     }
@@ -103,7 +105,7 @@ void* wrapSender(void *tsd){
     data += "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= 35.2038955 and lat < 35.2711311 and lon >= 136.9813925 and lon < 137.055852;";
   }
 
-  data += "\n";
+  data += "\r\n";
 
   cout << "sql : " << data << endl;
   //printf("sql : %s\n",data.c_str());

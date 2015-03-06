@@ -199,7 +199,8 @@ void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
     mloc = gnss_loc;
     mang = gnss_angle;
   }
-
+  gnssGetFlag = false;
+  ndtGetFlag = false;
   
   //If position is over range,skip loop
   if((!(mloc.X > 180.0 && mloc.X < -180.0 ) || 
@@ -210,8 +211,6 @@ void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
     if(pedestrian_position_vector.size() > 0 ){
       makeSendDataDetectedObj(pedestrian_position_vector,pp_iterator,mloc,mang,pose_msg);
     }
-
-    printf("%f %f %f\n",mloc.X,mloc.Y,mloc.Z);
 
     //publish recognized object data
     if(pose_msg.poses.size() != 0){
@@ -233,8 +232,6 @@ void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   if(gnssGetFlag || ndtGetFlag) {
-    gnssGetFlag = false;
-    ndtGetFlag = false;
     //認識した車の数だけ繰り返す
     for (int i = 0; i < fused_objects.car_num; i++){
       
@@ -300,6 +297,7 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
   GetRPY(pose.pose,ndt_angle.thiX,ndt_angle.thiY,ndt_angle.thiZ);
   printf("quaternion angle : %f\n",ndt_angle.thiZ*180/M_PI);
+  printf("location : %f %f %f\n",ndt_loc.X,ndt_loc.Y,ndt_loc.Z);
 
   ndtGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
@@ -319,11 +317,12 @@ int main(int argc, char **argv){
 
   ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
-  ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
+  //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
 
   pub = n.advertise<geometry_msgs::PoseArray>("pedestrian_pose",1); 
 
+  /*
   //read calibration value
   //TO DO : subscribe from topic
   cv::Mat Cintrinsic;
@@ -343,6 +342,12 @@ int main(int argc, char **argv){
   double fky = Cintrinsic.at<float>(1,1);
   double Ox = Cintrinsic.at<float>(0,2);
   double Oy = Cintrinsic.at<float>(1,2);
+  */
+
+  double fkx = 1360.260477;
+  double fky = 1360.426247;
+  double Ox = 440.017336;
+  double Oy = 335.274106;
 
   /*
   cv::Mat Lintrinsic;
