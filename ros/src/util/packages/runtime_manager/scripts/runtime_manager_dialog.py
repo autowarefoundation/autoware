@@ -1257,8 +1257,8 @@ class VarPanel(wx.Panel):
 
 		if self.has_slider:
 			vszr = wx.BoxSizer(wx.VERTICAL)
-                        vszr.Add( self.create_bmbtn("inc.png", self.OnIncBtn) )
-                        vszr.Add( self.create_bmbtn("dec.png", self.OnDecBtn) )
+			vszr.Add( self.create_bmbtn("inc.png", self.OnIncBtn) )
+			vszr.Add( self.create_bmbtn("dec.png", self.OnDecBtn) )
 			szr.Add(vszr)
 
 		self.SetSizer(szr)
@@ -1321,6 +1321,7 @@ class VarPanel(wx.Panel):
 		self.tc.SetValue(str(ov + step))
 		v = self.get_v()
 		if v != ov:
+			self.slider.SetValue(self.get_int_v())
 			self.update()
 
 	def OnUpdate(self, event):
