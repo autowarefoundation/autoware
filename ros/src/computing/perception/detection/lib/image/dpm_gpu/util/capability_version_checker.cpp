@@ -14,10 +14,11 @@ int main(void)
 	error_id = cuDeviceGetCount(&deviceCount);
 
 	if (error_id != CUDA_SUCCESS) {
-        std::string error_string;
 #if CUDA_VERSION < 6000         // if CUDA version is under 6.0
+        std::string error_string;
         getDrvErrorCode(error_id, &error_string);
 #else
+		const char *error_string;
 		cuGetErrorString(error_id, &error_string);
 #endif
 		std::cerr << "Failed: cuDeviceGetCount()"
