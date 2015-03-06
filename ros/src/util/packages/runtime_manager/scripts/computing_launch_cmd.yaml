@@ -331,6 +331,7 @@ params :
       v         : ''
       cmd_param :
         only_enable : True
+        var_name    : save_finename
         dash        : ''
         delim       : ':='
 
