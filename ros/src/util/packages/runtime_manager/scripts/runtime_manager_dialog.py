@@ -446,7 +446,7 @@ class MyFrame(rtmgr.MyFrame):
 		if info is None:
 			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj ])
 			if info is None:
-				return (None, None)
+				return (None, None, None)
 		pdic = info.get('pdic')
 		prm = info.get('param')
 		gdic = info.get('gdic')
@@ -505,8 +505,12 @@ class MyFrame(rtmgr.MyFrame):
 		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
 		run_nodes_set = set(run_nodes)
 		for (obj, nodes) in self.nodes_dic.items():
+			if nodes is None:
+				continue
 			v = nodes and run_nodes_set.issuperset(nodes)
 			if obj.GetValue() != v:
+				if obj.IsEnabled() and not v:
+					self.kill_obj(obj)
 				set_check(obj, v)
 				obj.Enable(not v)
 		self.Refresh()
@@ -955,28 +959,31 @@ class MyFrame(rtmgr.MyFrame):
 	def kill_all(self):
 		all = self.all_procs[:] # copy
 		for proc in all:
-			(cmd_dic, obj) = self.proc_to_cmd_dic_obj(proc)
-			if obj:
-				(cmd, _) = cmd_dic[ obj ]
-				if type(cmd) is dict:
-					cmd = self.selobj_cmd_get(cmd)
-				print('kill ' + str(cmd))
+			self.kill_proc(proc)
 
-				key = self.obj_key_get(obj, [ 'button_launch_' ])
-				if key:
-					self.OnKill_kill_obj(self.obj_get('button_kill_' + key))
-					return
-				self.cmd_dic_obj_off_for_kill(cmd_dic, obj)
-			self.launch_kill(False, 'dmy', proc)
+	def kill_proc(self, proc):
+		(cmd_dic, obj) = self.proc_to_cmd_dic_obj(proc)
+		self.kill_obj(obj, cmd_dic, proc)
 
-	def cmd_dic_obj_off_for_kill(self, cmd_dic, obj):
+	def kill_obj(self, obj, cmd_dic=None, proc=None):
+		key = self.obj_key_get(obj, [ 'button_launch_' ])
+		if key:
+			self.OnKill_kil_obj(self.obj_get('button_kill_' + key))
+			return
 		set_check(obj, False)
-		v = cmd_dic[ obj ]
+		if cmd_dic is None:
+			cmd_dic = self.obj_to_cmd_dic(obj)
+		v = cmd_dic.get(obj)
+		if v is None:
+			return
 		if type(v) is list:
-			v.remove(obj)
+			for proc in [ proc ] if proc else v:
+				v.remove(proc)
+				self.launch_kill(False, 'dmy', proc)
 		else:
-			(cmd, _) = cmd_dic[ obj ]
+			(cmd, proc) = (v[0], proc) if proc else v
 			cmd_dic[ obj ] = (cmd, None)
+			self.launch_kill(False, 'dmy', proc)
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
