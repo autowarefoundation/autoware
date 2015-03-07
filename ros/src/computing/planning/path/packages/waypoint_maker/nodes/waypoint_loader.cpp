@@ -23,7 +23,7 @@ std::string PATH_FRAME = "/path";
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "test_lane_navigator");
+    ros::init(argc, argv, "waypoint_loader");
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     navigation_pub[3] = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 100);
     std::vector<pose> Pose;
 
-    //waypointの速度 をマーカーで表示
+    // display by markers the velocity of each waypoint.
     visualization_msgs::MarkerArray marker_array;
     visualization_msgs::Marker marker;
     marker.header.frame_id = PATH_FRAME;
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     std::string filename = "";
     if (private_nh.getParam("filename", filename) == false) {
-        std::cout << "error! usage : rosrun lane_follower test_lane_navigator _filename:=\"[path file]\"" << std::endl;
+        std::cout << "error! usage : rosrun waypoint_maker waypoint_loader _filename:=\"[path file]\"" << std::endl;
         exit(-1);
     }
     std::cout << "filename : " << filename << std::endl;
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
         marker.pose.orientation.z = 0.0;
         marker.pose.orientation.w = 1.0;
 
-        //double型からstringに変換
+        // double to string
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(0) << test_pose.velocity_kmh
             << " km/h";
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
         for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
 
-            //Path用
+            // for Path
             geometry_msgs::PoseStamped posestamped;
             posestamped.header = cmd_path.header;
             //      geometry_msgs::Quaternion quat = tf::createQuaternionMsgFromYaw(
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
             std::cout << posestamped.pose.position.x << " " << posestamped.pose.position.y << " " << posestamped.pose.position.z << std::endl;
             cmd_path.poses.push_back(posestamped);
 
-            //Ruled用
+            // for Ruled
             lane_follower::waypoint waypoint;
             waypoint.pose.header = lane_cmd.header;
             waypoint.twist.header = lane_cmd.header;
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
             std::cout << waypoint.pose.pose.position.x << " " << waypoint.pose.pose.position.y << " " << waypoint.pose.pose.position.z << " " << waypoint.twist.twist.linear.x << std::endl;
             lane_cmd.waypoints.push_back(waypoint);
 
-            //Mark用
+            // for Mark
             mark.points.push_back(posestamped.pose.position);
         }
         navigation_pub[0].publish(cmd_path);
