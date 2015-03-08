@@ -65,7 +65,7 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
 {
     ros::NodeHandle n_private_("~");
 
-    double interval = 4.0;
+    double interval = 1.0;
     n_private_.getParam("interval", interval);
     std::cout << "interval = " << interval << std::endl;
 
