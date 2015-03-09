@@ -216,6 +216,8 @@ void* wrapSender(void *tsd){
   string res = sd.Sender(value);
   cout << "retrun message from DBserver : " << res << endl;
 
+  return nullptr;
+
 }
 
 
@@ -240,9 +242,10 @@ void* intervalCall(void *a){
     sleep(1);
     if(pthread_join(th,NULL)){
       printf("thread join error.\n");
-    }
-    
+    }    
   }
+
+  return nullptr;
 }
 
 

@@ -115,6 +115,8 @@ void* wrapSender(void *tsd){
 
   string res = sd.Sender(value);
   cout << "retrun message from DBserver : " << res << endl;
+  
+  return nullptr;
 
 }
 
@@ -143,6 +145,8 @@ void* intervalCall(void *a){
     }
     
   }
+
+  return nullptr;
 }
 
 

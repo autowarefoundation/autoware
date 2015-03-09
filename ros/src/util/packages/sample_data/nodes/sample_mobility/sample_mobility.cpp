@@ -55,7 +55,7 @@ void db_callback(const std_msgs::String::ConstPtr &msg)
   geo_pos_conv geo;
   geo.set_plane(7);
   // Loading data.
-  db_data = split(msg->data.c_str(),',');
+  db_data = split(msg->data.c_str(),'\n');
   for(int i = 0; i < (int)db_data.size(); i++){
     geometry_msgs::Point p;
     if(db_data[i].compare("")==0) continue;

@@ -7,8 +7,11 @@ project(obj_db)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  gnss
+  visualization_msgs
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 #find_package(PkgConfig REQUIRED)
 #pkg_check_modules(BULLET bullet)
@@ -122,7 +125,7 @@ find_library(CVCORE_LIBRARY opencv_core /usr/local/lib)
 find_library(CVHIGHGUI_LIBRARY opencv_highgui /usr/local/lib)
 
 add_executable(obj_downloader nodes/obj_downloader/obj_downloader.cpp)
-target_link_libraries(obj_downloader ${catkin_LIBRARIES} )
+target_link_libraries(obj_downloader ${catkin_LIBRARIES} gnss)
 
 add_executable(obj_uploader nodes/obj_uploader/obj_uploader.cpp)
 target_link_libraries(obj_uploader 
