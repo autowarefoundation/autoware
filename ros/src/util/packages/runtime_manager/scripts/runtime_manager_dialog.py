@@ -1206,6 +1206,12 @@ class VarPanel(wx.Panel):
 			self.obj.SetSelection(v)
 			self.Bind(wx.EVT_RADIOBOX, self.OnUpdate, self.obj)
 			return
+		if self.kind == 'menu':
+			choices = self.var.get('choices', [])
+			slef.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
+			self.obj.SetSelection(v)
+                        self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
+			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
@@ -1272,7 +1278,7 @@ class VarPanel(wx.Panel):
 		return obj
 
 	def get_v(self):
-		if self.kind == 'radio_box':
+		if self.kind in [ 'radio_box', 'menu' ]:
 			return self.obj.GetSelection()
 		if self.kind in [ 'checkbox', 'toggle_button' ]:
 			return self.obj.GetValue()
