@@ -1170,7 +1170,7 @@ class ParamPanel(wx.Panel):
 				flag |= wx.ALIGN_CENTER_VERTICAL
 				hszr.Add(vp, prop, flag, border)
 
-			if 'nl' in var.get('flags', []):
+			if 'nl' in gdic_v.get('flags', []):
 				hszr = None
 
 		self.SetSizer(szr)
@@ -1292,7 +1292,7 @@ class VarPanel(wx.Panel):
 		if self.has_slider:
 			v = self.min if v < self.min else v
 			v = self.max if v > self.max else v
-		self.tc.SetValue(str(v))
+		self.tc.SetValue(adjust_num_str(str(v)))
 		return v
 
 	def get_int_v(self):
@@ -1539,6 +1539,14 @@ def set_check(obj, v):
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret
+
+def adjust_num_str(s):
+	if '.' in s:
+		while s[-1] == '0':
+			s = s[:-1]
+		if s[-1] == '.':
+			s = s[:-1]
+	return s
 
 def prn_dict(dic):
 	for (k,v) in dic.items():

@@ -57,7 +57,7 @@ subs :
         flags  : [ right ]
       map_matching :
         flags : [ nl ]
-      upload_rate_ms :
+      download_rate_ms :
         border: 20
         flags : [ right ]
 
@@ -125,9 +125,6 @@ params :
       kind  : checkbox
       label : Map Matching
       v     : True
-    - name  : upload_rate_ms
-      label : Upload Rate (ms)
-      v     : 1000
     - name  : download_rate_ms
       label : Download Rate (ms)
       v     : 1000
