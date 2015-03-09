@@ -1304,17 +1304,21 @@ class VarPanel(wx.Panel):
 		s = str(iv)
 		if self.is_float:
 			v = self.min + float(self.w) * iv / self.int_max
-			s = str(Decimal(v).quantize(Decimal('.01')))
+			s = str(Decimal(v).quantize(Decimal(str(self.get_step()))))
 		self.tc.SetValue(s)
 		self.update()
 
 	def OnIncBtn(self, event):
-		step = 0.01 if self.is_float else 1
+		step = self.get_step()
 		self.add_v(step)
 
 	def OnDecBtn(self, event):
-		step = 0.01 if self.is_float else 1
+		step = self.get_step()
 		self.add_v(-step)
+
+	def get_step(self):
+		step = self.var.get('step')
+		return step if step else 0.01 if self.is_float else 1
 
 	def add_v(self, step):
 		ov = self.get_v()
