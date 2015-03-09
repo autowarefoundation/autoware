@@ -247,9 +247,11 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 	lane_follower::lane ruled;
 	ruled.header = header;
+	ruled.increment = 1;
 
 	lane_follower::lane red;
 	red.header = header;
+	red.increment = 1;
 
 	lane_follower::waypoint waypoint;
 	waypoint.pose.header = header;

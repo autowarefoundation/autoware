@@ -101,6 +101,7 @@ int main(int argc, char **argv)
         lane_follower::lane lane_cmd;
         lane_cmd.header.frame_id = PATH_FRAME;
         lane_cmd.header.stamp = now;
+        lane_cmd.increment = 1;
 
         visualization_msgs::Marker mark;
         mark.header.frame_id = PATH_FRAME;
