@@ -10,4 +10,7 @@ float32 resolution
 float32 step_size
 float32 trans_esp
 float32 leaf_size
-float32 velodyne_angle
+float32 angle_error
+float32 shift_x
+float32 shift_y
+float32 shift_z
