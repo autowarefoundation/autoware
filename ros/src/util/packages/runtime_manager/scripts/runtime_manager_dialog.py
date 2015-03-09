@@ -165,8 +165,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
-		self.sel_multi_ks = [ 'point_cloud', 'pmap' ]
-		self.sel_dir_ks = [ 'calibration', 'vector_map' ]
+		self.sel_multi_ks = [ 'point_cloud', 'pmap', 'vector_map' ]
+		self.sel_dir_ks = [ 'calibration' ]
 
 		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
 		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
@@ -345,9 +345,8 @@ class MyFrame(rtmgr.MyFrame):
 
 			path_vec = self.text_ctrl_vector_map.GetValue()
 			if path_vec != '':
-				path_vec = [ path_vec + '/' + nm for nm in self.vmap_names ]
-				cmd = 'rosrun sample_data sample_vector_map'
-				add_args = path_vec + [ 'swap_x_y_on' ]
+				cmd = 'rosrun map_file vector_map_loader'
+				add_args = path_vec.split(',')
 				print cmd, add_args
 				proc = self.launch_kill(v, cmd, None, add_args)
 				procs += [ proc ]
