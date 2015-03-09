@@ -21,14 +21,14 @@
 
 using namespace std;
 
-string serverName = "db1.ertl.jp";
+string serverName = "db3.ertl.jp";
 int PORT = 5678;
 
 enum TYPE{
   NORMAL,
   RANGE,
   TEST,
-  DTN
+  DB1
 };
 
 
@@ -83,29 +83,31 @@ void* wrapSender(void *tsd){
   switch (SendDataType){
   case RANGE:
     {
-      oss << "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";";
-      /*
-      for(int i=0; i<4; i++){
-	oss << "\t" << fixed << setprecision(7) <<positionRange[i];
-      }
-      */
+      oss << "select terminal,latitude,longitude,azimuth,timestamp from test_map where latitude >= " << fixed << setprecision(7) << positionRange[0] << " and latitude < "  << fixed << setprecision(7) << positionRange[1] << " and longitude >= " << fixed << setprecision(7) << positionRange[2] << " and longitude < " << fixed << setprecision(7) << positionRange[3] << " and timestamp > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and timestamp <= current_timestamp;";
       data += oss.str();
       break;
     }
-  case DTN:
+  case TEST:
     {
-      oss << "select terminal,latitude,longitude,azimuth,timestamp from test_map where timestamp = (select max(timestamp) from test_map) and latitude >= " << fixed << setprecision(7) << positionRange[0] << " and latitude < "  << fixed << setprecision(7) << positionRange[1] << " and longitude >= " << fixed << setprecision(7) << positionRange[2] << " and longitude < " << fixed << setprecision(7) << positionRange[3] << ";";
+      oss << "select terminal,latitude,longitude,azimuth,timestamp from test_map where latitude >= " << fixed << setprecision(7) << positionRange[0] << " and latitude < "  << fixed << setprecision(7) << positionRange[1] << " and longitude >= " << fixed << setprecision(7) << positionRange[2] << " and longitude < " << fixed << setprecision(7) << positionRange[3] << " order by timestamp desc limit 1";
       //oss << "select tm,id,x,y,type,self,area from pos_nounique where tm = (select max(tm) from pos_nounique);";
       //oss << "select * from pos_nounique limit 1;";
       data += oss.str();
       break;
     }
+  case DB1:
+    {
+      oss << "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";";
+      data += oss.str();
+      break;
+    }
   case NORMAL:
   default:
-    data += "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= 35.2038955 and lat < 35.2711311 and lon >= 136.9813925 and lon < 137.055852;";
+    oss << "select terminal,latitude,longitude,azimuth,timestamp from test_map where latitude >= 30 and latitude < 40 and longitude >= 130 and longitude < 140 and timestamp > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and timestamp <= cuurent_timestamp;";
+    //data += "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= 35.2038955 and lat < 35.2711311 and lon >= 136.9813925 and lon < 137.055852;";
   }
 
-  data += "\r\n";
+  data += "\n";
 
   cout << "sql : " << data << endl;
   //printf("sql : %s\n",data.c_str());
@@ -158,23 +160,30 @@ int main(int argc, char **argv){
     if(static_cast<std::string>(argv[1]).compare("10000")==0){
       printf("normal access\n");
       SendDataType = NORMAL;
-    }else if(static_cast<string>(argv[1]).compare("10002")==0){
+    }else if(static_cast<string>(argv[1]).compare("10001")==0){
       printf("fixed range access\n");
       positionRange[0] = 35.2038955;
       positionRange[1] = 35.2711311;
       positionRange[2] = 136.9813925;
       positionRange[3] = 137.055852;
+      serverName = "db1.ertl.jp";
+      SendDataType = DB1;
 
-      SendDataType = RANGE;
-    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
-      printf("fixed range access\n");
+    }else if(static_cast<string>(argv[1]).compare("10002") == 0){
+      printf("test access\n");
       positionRange[0] = 30;
       positionRange[1] = 40;
       positionRange[2] = 130;
       positionRange[3] = 140;
-      PORT = 5678;
-      serverName = "db3.ertl.jp";
-      SendDataType = DTN;
+      SendDataType = TEST;
+    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
+      printf("current data get test access\n");
+      positionRange[0] = 30;
+      positionRange[1] = 40;
+      positionRange[2] = 130;
+      positionRange[3] = 140;
+      SendDataType = RANGE;
+
     }else{
       printf("range access\n");
       string arg;
