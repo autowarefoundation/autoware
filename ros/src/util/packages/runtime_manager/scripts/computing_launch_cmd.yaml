@@ -334,6 +334,13 @@ params :
         var_name    : save_finename
         dash        : ''
         delim       : ':='
+    - name      : interval
+      label     : Interval
+      v         : 4.0
+      cmd_param :
+        only_enable : True
+        dash        : ''
+        delim       : ':='
 
   - name  : waypoint_loader
     vars  :
