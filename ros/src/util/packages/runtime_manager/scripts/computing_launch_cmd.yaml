@@ -194,6 +194,12 @@ params :
       min   : 0
       max   : 10
       v     : 0.1
+    - name  : velodyne_angle
+      label : Velodyne Angle
+      min   : -180.0
+      max   : 180.0
+      step  : 0.1
+      v     : 0
 
   - name  : lane_follower
     topic : /config/lane_follower
