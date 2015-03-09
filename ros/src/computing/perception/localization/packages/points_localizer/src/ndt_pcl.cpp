@@ -14,7 +14,6 @@
 #include <string>
 
 #include <ros/ros.h>
-#include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -61,10 +60,7 @@ typedef struct {
 } Position;
 
 // global variables
-Position previous_pos, guess_pos, current_pos;
-
-// Fixed later
-Position current_pos_control;
+Position previous_pos, guess_pos, current_pos, current_pos_control;
 
 double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
 
@@ -76,11 +72,9 @@ double initial_roll = 0.0;
 double initial_pitch = 0.0;
 double initial_yaw = 0.0;
 
-// Can't load if typed "pcl::PointCloud<pcl::PointXYZRGB> map, add;"
+//Can't load if typed "pcl::PointCloud<pcl::PointXYZRGB> map, add;"
 pcl::PointCloud<pcl::PointXYZ> map, add;
 pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
-
-pcl::PointCloud<pcl::PointXYZ> velodyne_map;
 
 // If the map is loaded, map_loaded will be 1.
 int map_loaded = 0;
@@ -262,8 +256,6 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         // 1 scan
         pcl::PointCloud<pcl::PointXYZ> scan;
         pcl::PointXYZ p;
-
-	pcl::PointCloud<pcl::PointXYZ> transformed_scan;
 
         scan.header = input->header;
         scan.header.frame_id = "velodyne_scan_frame";
