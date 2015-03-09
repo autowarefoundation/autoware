@@ -179,7 +179,7 @@ void* wrapSender(void *tsd){
     }
   case NORMAL:
   default:
-    oss << "select 0,latitude,longitude,azimuth,timestamp from test_map where latitude >= 30 and latitude < 40 and longitude >= 130 and longitude < 140 and timestamp > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and timestamp <= cuurent_timestamp;";
+    oss << "select 0,latitude,longitude,azimuth,timestamp from test_map where latitude >= 30 and latitude < 40 and longitude >= 130 and longitude < 140 and timestamp > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and timestamp <= current_timestamp;";
   }
 
   data += "\n";
