@@ -152,6 +152,12 @@ class MyFrame(rtmgr.MyFrame):
 		self.add_params(dic.get('params', []))
 
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
+
+		self.button_launch_pmap_normal = 'launch_pmap_normal'
+		self.button_kill_pmap_normal = 'kill_pmap_normal'
+		self.button_launch_pmap_update = 'launch_pmap_update'
+		self.button_kill_pmap_update = 'kill_pmap_update'
+		self.pmap_run = None
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
 		if 'checkboxs' in dic:
@@ -159,10 +165,9 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
-		self.sel_multi_ks = [ 'point_cloud' ]
+		self.sel_multi_ks = [ 'point_cloud', 'pmap' ]
 		self.sel_dir_ks = [ 'calibration', 'vector_map' ]
 
-		self.set_param_panel(self.button_launch_pmap, self.panel_pmap_prm)
 		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
 		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
@@ -346,6 +351,8 @@ class MyFrame(rtmgr.MyFrame):
 				print cmd, add_args
 				proc = self.launch_kill(v, cmd, None, add_args)
 				procs += [ proc ]
+				if procs == []:
+					obj.SetValue(False)
 		else:
 			for proc in procs:
 				self.launch_kill(v, 'dmy', proc)
@@ -563,6 +570,7 @@ class MyFrame(rtmgr.MyFrame):
 			self.OnLaunch_obj( self.obj_get('button_launch_' + self.calib_run) )
 		else:
 			self.OnKill_kill_obj( self.obj_get('button_kill_' + self.calib_run) )
+			self.calib_run = None
 
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
@@ -663,14 +671,21 @@ class MyFrame(rtmgr.MyFrame):
 			print(cmd)
 			os.system(cmd)
 
-	def OnPointMapUpdate(self, event):
-		key = 'pmap'
-		obj = self.obj_get('button_launch_' + key)
+	def OnLaunchPmap(self, event):
+		v = self.checkbox_point_map_update.GetValue()
+		self.pmap_run = self.button_launch_pmap_update if v else self.button_launch_pmap_normal
+		self.OnLaunch_obj(self.pmap_run)
+
+	def OnKillPmap(self, event):
+		key = self.obj_key_get(self.pmap_run, ['button_launch_'])
 		kill_obj = self.obj_get('button_kill_' + key)
-		if obj.IsEnabled() or not kill_obj.IsEnabled():
-			return
 		self.OnKill_kill_obj(kill_obj)
-		self.OnLaunch_obj(obj)
+		self.pmap_run = None
+
+	def OnPointMapUpdate(self, event):
+		if self.pmap_run:
+			self.OnKillPmap(None)
+			self.OnLaunchPmap(None)
 
 	#
 	# Data Tab
@@ -968,8 +983,6 @@ class MyFrame(rtmgr.MyFrame):
 			print(msg)
 			return proc
 
-		if v and type(cmd) is dict:
-			cmd = self.selobj_cmd_get(cmd)
 		if v:
 			args = shlex.split(cmd)
 			if add_args:
@@ -986,13 +999,6 @@ class MyFrame(rtmgr.MyFrame):
 			proc = None
 		return proc
 
-	def selobj_cmd_get(self, cmd):
-		if type(cmd) is dict:
-			selobj = self.obj_get(cmd['selobj'])
-			selkey = selobj.GetValue() if selobj else None
-			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
-		return cmd
-		
 	def nodes_dic_get(self):
 		nodes_dic = {}
 		#for cmd_dic in self.all_cmd_dics:
@@ -1004,8 +1010,6 @@ class MyFrame(rtmgr.MyFrame):
 	def cmd_to_nodes(self, cmd):
 		if not cmd:
 			return None
-		if type(cmd) is dict:
-			return self.cmd_to_ndoes(self.selobj_cmd_get(cmd))
 
 		cmd = shlex.split(cmd)
 		if cmd[0] == 'roslaunch':

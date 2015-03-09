@@ -50,12 +50,31 @@ buttons:
       - self.text_ctrl_rate_rosbag_play
       - self.checkbox_clock_rosbag_play
 
-  pmap :
-    run :
-      selobj : checkbox_point_map_update
-      False  : rosrun sample_data sample_points_map
-      True   : rosrun sample_data sample_points_map_update swap_x_y_on
-    param : pmap
+  pmap_normal :
+    run   : rosrun sample_data sample_points_map
+    param : pmap_normal
+    gui   :
+      data_files :
+        func : self.text_ctrl_pmap.GetValue()
+      ext_toggle_enables :
+      - self.button_launch_pmap
+      - self.button_kill_pmap
+      - self.button_ref_pmap
+      - self.text_ctrl_pmap
+
+  pmap_update :
+    run   : rosrun sample_data sample_points_map_update
+    param : pmap_update
+    gui   :
+      swap       :
+        func : str('swap_x_y_on')
+      data_files :
+        func : self.text_ctrl_pmap.GetValue()
+      ext_toggle_enables :
+      - self.button_launch_pmap
+      - self.button_kill_pmap
+      - self.button_ref_pmap
+      - self.text_ctrl_pmap
 
   vmap :
     run   : rosrun sample_data sample_vector_map
@@ -93,12 +112,24 @@ params :
         must        : True
         delim       : ''
 
-  - name  : pmap
+  - name  : pmap_normal
     vars  :
     - name      : data_files
       kind      : path
       path_type : multi
-      v         : ''
+      cmd_param :
+        delim : ''
+        unpack: ','
+
+  - name  : pmap_update
+    vars  :
+    - name      : swap
+      cmd_param :
+        delim : ''
+
+    - name      : data_files
+      kind      : path
+      path_type : multi
       cmd_param :
         delim : ''
         unpack: ','
@@ -111,6 +142,7 @@ params :
       path_type : dir
       v         : ''
       cmd_param :
+        must  : True
         delim : ''
 
     - name      : swap
