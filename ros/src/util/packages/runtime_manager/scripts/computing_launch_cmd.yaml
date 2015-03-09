@@ -327,12 +327,12 @@ params :
       v         : /tmp/ruled_waypoint.csv
       rosparam  : /lane_rule/ruled_waypoint_csv
     - name      : velocity
-      label     : Velocity
+      label     : Velocity (km/h)
       min       : 0
       max       : 200
       v         : 40.0
     - name      : difference_around_signal
-      label     : Difference around Signal
+      label     : Difference around Signal (km/h)
       min       : 0
       max       : 20
       v         : 2.0
