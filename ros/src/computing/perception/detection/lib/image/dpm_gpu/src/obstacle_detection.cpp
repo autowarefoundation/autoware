@@ -178,6 +178,9 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
 #endif
     cvSaveImage(buf, IM_D);
     k++;
+
+    s_free(CUR);
+    s_free(A_SCORE);
 }
 
 void car_configParamCallback(const runtime_manager::ConfigCarDpm::ConstPtr& param)

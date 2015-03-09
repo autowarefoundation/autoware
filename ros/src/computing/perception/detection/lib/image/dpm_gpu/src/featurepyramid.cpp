@@ -232,6 +232,8 @@ FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 	{
 		interval = MI->interval;
 		max_scale = MI->max_scale;
+        MI->IM_HEIGHT = IM->height;
+        MI->IM_WIDTH = IM->width;
 	}
 
 	//return
@@ -728,11 +730,14 @@ void calc_feature_byGPU
     out[1] : sqrt(max_thread_num);
   thread_num_y = (out[0] < sqrt(max_thread_num)) ? 
     out[0] : sqrt(max_thread_num);
+
+  if (thread_num_x == 0) thread_num_x++;
+  if (thread_num_y == 0) thread_num_y++;
   
   block_num_x = out[1] / thread_num_x;
   block_num_y = out[0] / thread_num_y;
-  if (out[1] % thread_num_x != 0) block_num_x++;
-  if (out[0] % thread_num_y != 0) block_num_y++;
+  if (out[1] % thread_num_x != 0 || block_num_x == 0) block_num_x++;
+  if (out[0] % thread_num_y != 0 || block_num_y == 0) block_num_y++;
   
   sharedMemBytes = 0;
   
@@ -1541,7 +1546,6 @@ FLOAT **calc_f_pyramid
 #endif
       memcpy(&FTSIZE[td[ss].F_C*2], td[ss].FSIZE, sizeof(int)*2);
 
-      close(ts[ss]);
     }
 
 #ifndef ORIGINAL
