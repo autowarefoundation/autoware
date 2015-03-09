@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import wx
+import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
 import gettext
 import os
@@ -1255,14 +1256,15 @@ class VarPanel(wx.Panel):
 			vszr = wx.BoxSizer(wx.VERTICAL)
 			vszr.Add( self.create_bmbtn("inc.png", self.OnIncBtn) )
 			vszr.Add( self.create_bmbtn("dec.png", self.OnDecBtn) )
-			szr.Add(vszr)
+			szr.Add(vszr, 0, wx.ALIGN_CENTER_VERTICAL)
 
 		self.SetSizer(szr)
 
 	def create_bmbtn(self, filename, hdr):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
-		obj = wx.BitmapButton(self, wx.ID_ANY, bm)
+		style = wx.BORDER_NONE | wx.BU_EXACTFIT
+		obj = wx.lib.buttons.GenBitmapButton(self, wx.ID_ANY, bm, style=style)
 		self.Bind(wx.EVT_BUTTON, hdr, obj)
 		return obj
 
