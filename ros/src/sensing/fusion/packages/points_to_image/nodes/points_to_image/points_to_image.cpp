@@ -51,7 +51,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 			point.at<double>(2) = double(fp[2]);
 			point = point * invR.t() + invT.t();
 
-			if (point.at<double>(2) <= 0) {
+			if (point.at<double>(2) <= 2.5) {
 				continue;
 			}
 

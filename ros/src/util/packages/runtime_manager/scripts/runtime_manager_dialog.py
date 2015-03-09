@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import wx
+import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
 import gettext
 import os
@@ -115,6 +116,12 @@ class MyFrame(rtmgr.MyFrame):
 		self.add_params(dic.get('params', []))
 
 		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
+
+		self.button_launch_calib_2d = 'launch_calib_2d'
+		self.button_kill_calib_2d = 'kill_calib_2d'
+		self.button_launch_calib_3d = 'launch_calib_3d'
+		self.button_kill_calib_3d = 'kill_calib_3d'
+		self.calib_run = None
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
@@ -145,6 +152,12 @@ class MyFrame(rtmgr.MyFrame):
 		self.add_params(dic.get('params', []))
 
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
+
+		self.button_launch_pmap_normal = 'launch_pmap_normal'
+		self.button_kill_pmap_normal = 'kill_pmap_normal'
+		self.button_launch_pmap_update = 'launch_pmap_update'
+		self.button_kill_pmap_update = 'kill_pmap_update'
+		self.pmap_run = None
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
 		if 'checkboxs' in dic:
@@ -152,10 +165,9 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.vmap_names = self.load_yaml('vector_map_files.yaml')
 
-		self.sel_multi_ks = [ 'point_cloud' ]
+		self.sel_multi_ks = [ 'point_cloud', 'pmap' ]
 		self.sel_dir_ks = [ 'calibration', 'vector_map' ]
 
-		self.set_param_panel(self.button_launch_pmap, self.panel_pmap_prm)
 		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
 		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
@@ -339,6 +351,8 @@ class MyFrame(rtmgr.MyFrame):
 				print cmd, add_args
 				proc = self.launch_kill(v, cmd, None, add_args)
 				procs += [ proc ]
+				if procs == []:
+					obj.SetValue(False)
 		else:
 			for proc in procs:
 				self.launch_kill(v, 'dmy', proc)
@@ -546,20 +560,17 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetEventObject())
 
 	def OnCalib(self, event):
-		#self.launch_kill_proc_file(event.GetEventObject(), self.sensing_cmd)
-
 		obj = event.GetEventObject()
 		v = obj.GetValue()
-		cmd_dic = self.obj_to_cmd_dic(obj)
-
-		add_args = self.obj_to_add_args(obj)
-		if add_args is False:
-			return
-
-		self.launch_kill_proc(obj, cmd_dic, add_args)
-
-		if obj.GetValue() == v:
-			self.toggle_enable_obj(obj)
+		if v:
+			lst = ( ( 'LIDAR2D', 'calib_2d' ), ( 'LIDAR3D', 'calib_3d' ) )
+			self.calib_run = self.modal_dialog(obj, lst)
+			if self.calib_run is None:
+				return # cancel
+			self.OnLaunch_obj( self.obj_get('button_launch_' + self.calib_run) )
+		else:
+			self.OnKill_kill_obj( self.obj_get('button_kill_' + self.calib_run) )
+			self.calib_run = None
 
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
@@ -660,14 +671,21 @@ class MyFrame(rtmgr.MyFrame):
 			print(cmd)
 			os.system(cmd)
 
-	def OnPointMapUpdate(self, event):
-		key = 'pmap'
-		obj = self.obj_get('button_launch_' + key)
+	def OnLaunchPmap(self, event):
+		v = self.checkbox_point_map_update.GetValue()
+		self.pmap_run = self.button_launch_pmap_update if v else self.button_launch_pmap_normal
+		self.OnLaunch_obj(self.pmap_run)
+
+	def OnKillPmap(self, event):
+		key = self.obj_key_get(self.pmap_run, ['button_launch_'])
 		kill_obj = self.obj_get('button_kill_' + key)
-		if obj.IsEnabled() or not kill_obj.IsEnabled():
-			return
 		self.OnKill_kill_obj(kill_obj)
-		self.OnLaunch_obj(obj)
+		self.pmap_run = None
+
+	def OnPointMapUpdate(self, event):
+		if self.pmap_run:
+			self.OnKillPmap(None)
+			self.OnLaunchPmap(None)
 
 	#
 	# Data Tab
@@ -838,7 +856,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_sync(obj)
 
 	def alias_sync(self, obj, v=None):
-		en = obj.IsEnabled()
+		en = None
+		if getattr(obj, 'IsEnabled', None):
+			en = obj.IsEnabled()
 		grp = self.alias_grp_get(obj)
 		if getattr(obj, 'GetValue', None):
 			v = obj.GetValue()
@@ -846,7 +866,7 @@ class MyFrame(rtmgr.MyFrame):
 			if o is obj:
 				continue
 			
-			if o.IsEnabled() != en and not self.is_toggle_button(o):
+			if en is not None and o.IsEnabled() != en and not self.is_toggle_button(o):
 				o.Enable(en)
 			if v is not None and getattr(o, 'SetValue', None):
 				o.SetValue(v)
@@ -909,14 +929,6 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			set_check(obj, False)
-		cmd_bak = cmd
-		if v and type(cmd) is list:
-			cmd = self.modal_dialog(obj, cmd)
-			if not cmd:
-				set_check(obj, False)
-				return # cancel
-			if cmd == cmd_bak[1][1]: # LIDAR3D
-				add_args = None
 
 		proc = self.launch_kill(v, cmd, proc, add_args)
 
@@ -924,7 +936,7 @@ class MyFrame(rtmgr.MyFrame):
 		if cfg_obj and self.config_dic[ cfg_obj ]['run_disable']:
 			cfg_obj.Enable(not v)
 
-		cmd_dic[obj] = (cmd_bak, proc)
+		cmd_dic[obj] = (cmd, proc)
 
 	def kill_all(self):
 		all = self.all_procs[:] # copy
@@ -971,8 +983,6 @@ class MyFrame(rtmgr.MyFrame):
 			print(msg)
 			return proc
 
-		if v and type(cmd) is dict:
-			cmd = self.selobj_cmd_get(cmd)
 		if v:
 			args = shlex.split(cmd)
 			if add_args:
@@ -989,13 +999,6 @@ class MyFrame(rtmgr.MyFrame):
 			proc = None
 		return proc
 
-	def selobj_cmd_get(self, cmd):
-		if type(cmd) is dict:
-			selobj = self.obj_get(cmd['selobj'])
-			selkey = selobj.GetValue() if selobj else None
-			cmd = cmd.get(selkey, 'not found selkey=' + str(selkey))
-		return cmd
-		
 	def nodes_dic_get(self):
 		nodes_dic = {}
 		#for cmd_dic in self.all_cmd_dics:
@@ -1007,10 +1010,6 @@ class MyFrame(rtmgr.MyFrame):
 	def cmd_to_nodes(self, cmd):
 		if not cmd:
 			return None
-		if type(cmd) is list:
-			return reduce(lambda a,b : a+b, [ self.cmd_to_nodes(c) for c in cmd ])
-		if type(cmd) is dict:
-			return self.cmd_to_ndoes(self.selobj_cmd_get(cmd))
 
 		cmd = shlex.split(cmd)
 		if cmd[0] == 'roslaunch':
@@ -1069,14 +1068,16 @@ class MyFrame(rtmgr.MyFrame):
 			objs += self.key_objs_get(pfs, key)
 			
 		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
-		objs += [ (eval(e) if type(e) is str else e) for e in gdic.get('ext_toggle_enables', []) ]
+		if gdic:
+			objs += [ (eval(e) if type(e) is str else e) for e in gdic.get('ext_toggle_enables', []) ]
 
 		self.toggle_enables(objs)
 
 	def toggle_enables(self, objs):
 		for obj in objs:
-			obj.Enable(not obj.IsEnabled())
-			self.alias_sync(obj)
+			if getattr(obj, 'IsEnabled', None):
+				obj.Enable(not obj.IsEnabled())
+				self.alias_sync(obj)
 
 	def is_toggle_button(self, obj):
 		return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
@@ -1259,14 +1260,15 @@ class VarPanel(wx.Panel):
 			vszr = wx.BoxSizer(wx.VERTICAL)
 			vszr.Add( self.create_bmbtn("inc.png", self.OnIncBtn) )
 			vszr.Add( self.create_bmbtn("dec.png", self.OnDecBtn) )
-			szr.Add(vszr)
+			szr.Add(vszr, 0, wx.ALIGN_CENTER_VERTICAL)
 
 		self.SetSizer(szr)
 
 	def create_bmbtn(self, filename, hdr):
 		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
 		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
-		obj = wx.BitmapButton(self, wx.ID_ANY, bm)
+		style = wx.BORDER_NONE | wx.BU_EXACTFIT
+		obj = wx.lib.buttons.GenBitmapButton(self, wx.ID_ANY, bm, style=style)
 		self.Bind(wx.EVT_BUTTON, hdr, obj)
 		return obj
 
