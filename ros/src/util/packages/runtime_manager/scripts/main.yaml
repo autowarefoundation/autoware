@@ -1,3 +1,10 @@
+selector :
+  load_map :
+    sel   : '[ self.checkbox_auto_update.GetValue(), "vmap" ]'
+    False : sample_points_map
+    True  : points_map_loader
+    vmap  : vector_map_loader
+
 buttons:
   tablet:
     run : roslaunch runtime_manager ui_socket.launch
@@ -14,6 +21,29 @@ buttons:
     run : roslaunch runtime_manager check.launch
   set:
     run : roslaunch runtime_manager set.launch
+
+  points_map_loader :
+    run   : rosrun map_file points_map_loader
+    param : points_map_loader
+    gui   :
+      path_area_list :
+        func : self.text_ctrl_area_list.GetValue()
+      path_pcd :
+        func : self.text_ctrl_point_cloud.GetValue()
+
+  sample_points_map :
+    run   : rosrun sample_data sample_points_map
+    param : sample_points_map
+    gui   :
+      path_pcd :
+        func : self.text_ctrl_point_cloud.GetValue()
+
+  vector_map_loader :
+    run   : rosrun map_file vector_map_loader
+    param : vector_map_loader
+    gui   :
+      path_vec :
+        func : self.text_ctrl_vector_map.GetValue()
 
 ipaddress:
   tablet:   127.0.0.1
@@ -83,3 +113,35 @@ params :
       min   : -1.00
       max   : 1.00
       v     : 0.00
+
+  - name  : points_map_loader
+    vars  :
+    - name  : path_area_list
+      kind  : path
+      cmd_param :
+        delim     : ''
+        must      : True
+    - name  : path_pcd
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+        must      : True
+
+  - name  : sample_points_map
+    vars  :
+    - name  : path_pcd
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+        must      : True
+
+  - name  : vector_map_loader
+    vars  :
+    - name  : path_vec
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+        must      : True
