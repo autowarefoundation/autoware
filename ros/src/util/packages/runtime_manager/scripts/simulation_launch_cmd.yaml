@@ -33,6 +33,12 @@ subs :
       - name : All
         run  : rosrun sample_data sample_mobility
 
+selector :
+  pmap :
+    sel   : '[ self.checkbox_point_map_update.GetValue() ]'
+    False : pmap_normal
+    True  : pmap_update
+
 buttons:
   rosbag_play :
     run   : rosbag play

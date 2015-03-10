@@ -42,6 +42,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
+		self.selector = {}
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		#
@@ -114,14 +115,10 @@ class MyFrame(rtmgr.MyFrame):
 		dic = self.load_yaml('sensing.yaml')
 
 		self.add_params(dic.get('params', []))
+		self.selector.update(dic.get('selector', {}))
 
 		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 
-		self.button_launch_calib_2d = 'launch_calib_2d'
-		self.button_kill_calib_2d = 'kill_calib_2d'
-		self.button_launch_calib_3d = 'launch_calib_3d'
-		self.button_kill_calib_3d = 'kill_calib_3d'
-		self.calib_run = None
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
 
@@ -150,14 +147,10 @@ class MyFrame(rtmgr.MyFrame):
 		dic = self.load_yaml('simulation_launch_cmd.yaml')
 
 		self.add_params(dic.get('params', []))
+		self.selector.update(dic.get('selector', {}))
 
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
 
-		self.button_launch_pmap_normal = 'launch_pmap_normal'
-		self.button_kill_pmap_normal = 'kill_pmap_normal'
-		self.button_launch_pmap_update = 'launch_pmap_update'
-		self.button_kill_pmap_update = 'kill_pmap_update'
-		self.pmap_run = None
 		if 'buttons' in dic:
 			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
 		if 'checkboxs' in dic:
@@ -262,8 +255,11 @@ class MyFrame(rtmgr.MyFrame):
 		for (k,d2) in d.items():
 			obj = get_top( self.key_objs_get([ 'button_', 'button_launch_', 'checkbox_' ], k) )
 			if not obj:
-				print('xxx_' + k + ' not found correspoinding widget.')
-				continue
+				s = 'button_launch_' + k
+				setattr(self, s, s)
+				obj = s
+				s = 'button_kill_' + k
+				setattr(self, s, s)
 			if not d2 or type(d2) is not dict:
 				continue
 			if 'run' in d2:
@@ -565,16 +561,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnCalib(self, event):
 		obj = event.GetEventObject()
-		v = obj.GetValue()
-		if v:
-			lst = ( ( 'LIDAR2D', 'calib_2d' ), ( 'LIDAR3D', 'calib_3d' ) )
-			self.calib_run = self.modal_dialog(obj, lst)
-			if self.calib_run is None:
-				return # cancel
-			self.OnLaunch_obj( self.obj_get('button_launch_' + self.calib_run) )
-		else:
-			self.OnKill_kill_obj( self.obj_get('button_kill_' + self.calib_run) )
-			self.calib_run = None
+		self.OnSelector_obj(obj)
 
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
@@ -676,18 +663,14 @@ class MyFrame(rtmgr.MyFrame):
 			os.system(cmd)
 
 	def OnLaunchPmap(self, event):
-		v = self.checkbox_point_map_update.GetValue()
-		self.pmap_run = self.button_launch_pmap_update if v else self.button_launch_pmap_normal
-		self.OnLaunch_obj(self.pmap_run)
+		self.OnSelector_obj(self.button_launch_pmap)
 
 	def OnKillPmap(self, event):
-		key = self.obj_key_get(self.pmap_run, ['button_launch_'])
-		kill_obj = self.obj_get('button_kill_' + key)
-		self.OnKill_kill_obj(kill_obj)
-		self.pmap_run = None
+		self.OnSelector_obj(self.button_kill_pmap)
 
 	def OnPointMapUpdate(self, event):
-		if self.pmap_run:
+		sdic = self.selector.get('pmap', {})
+		if sdic.get('launched'):
 			self.OnKillPmap(None)
 			self.OnLaunchPmap(None)
 
@@ -698,6 +681,52 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Common Utils
 	#
+	def OnSelecotr(self, event):
+		self.OnSelector_obj(self, event.GetEventObject())
+
+	def OnSelector_obj(self, obj):
+		pfs = ('button_launch_', 'button_kill_', 'button_', 'checkbox_')
+		vs = (True, False, None, None)
+		pfinf = dict(zip(pfs, vs))
+
+		(pf, key) = self.obj_name_split(obj, pfs)
+		if key is None:
+			return
+		v = pfinf.get(pf)
+		if v is None and getattr(obj, 'GetValue', None):
+			v = obj.GetValue()
+		if v is None:
+			return
+		if self.OnSelector_name(key, v) is None:
+			if getattr(obj, 'SetValue', None):
+				set_check(obj, not v)
+
+	def OnSelector_name(self, key, v):
+		sdic = self.selector.get(key)
+		if sdic is None:
+			return None
+		if v:
+			sels = eval(sdic.get('sel', 'None'))
+			if sels is None or sels == []:
+				return None
+			for sel in sels:
+				name = sdic.get(sel)
+				if name is None:
+					continue
+				obj = self.obj_get('button_launch_' + name)
+				self.OnLaunch_obj(obj)
+			sdic['launched'] = sels
+		else:
+			sels = sdic.get('launched', [])
+			for sel in sels:
+				name = sdic.get(sel)
+				if name is None:
+					continue
+				kill_obj = self.obj_get('button_kill_' + name)
+				self.OnKill_kill_obj(kill_obj)
+			sdic['launched'] = None
+		return True
+
 	def set_param_panel(self, obj, parent):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		panel = ParamPanel(parent, frame=self, pdic=pdic, gdic=gdic, prm=prm)
@@ -1027,14 +1056,12 @@ class MyFrame(rtmgr.MyFrame):
 			return [ '/' + cmd[2] ]
 		return None
 
-	def modal_dialog(self, obj, lst):
+	def modal_dialog(self, lst, title=''):
 		(lbs, cmds) = zip(*lst)
 		dlg = MyDialog(self, lbs=lbs)
-		dlg.SetTitle(obj.GetLabel())
+		dlg.SetTitle(title)
 		r = dlg.ShowModal()
 		ok = (0 <= r and r < len(cmds))
-		if not ok:
-			obj.SetValue(False)
 		return cmds[r] if ok else None
 
 	def get_autoware_dir(self):
@@ -1086,6 +1113,12 @@ class MyFrame(rtmgr.MyFrame):
 
 	def is_toggle_button(self, obj):
 		return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
+
+	def obj_name_split(self, obj, pfs):
+		name = self.name_get(obj)
+		if name is None:
+			return (None, None)
+		return get_top( [ ( name[:len(pf)], name[len(pf):] ) for pf in pfs if name[:len(pf)] == pf ] )
 
 	def obj_key_get(self, obj, pfs):
 		name = self.name_get(obj)
@@ -1216,7 +1249,7 @@ class VarPanel(wx.Panel):
 			choices = self.var.get('choices', [])
 			slef.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
 			self.obj.SetSelection(v)
-                        self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
+			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)

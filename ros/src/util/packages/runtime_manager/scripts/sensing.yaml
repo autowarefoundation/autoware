@@ -67,6 +67,12 @@ subs :
         probe: 'true'
         run  : rosrun turtlesim turtlesim_node # for debug
 
+selector :
+  calibration :
+    sel : self.modal_dialog( (('LIDAR2D', [2]), ('LIDAR3D', [3])), 'Calibration' )
+    2   : calib_2d
+    3   : calib_3d
+
 buttons:
   sensor_fusion :
     run   : roslaunch sensing_fusions sensing_fusions.launch
