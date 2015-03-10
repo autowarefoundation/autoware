@@ -451,7 +451,10 @@ class MyFrame(rtmgr.MyFrame):
 					add += dash + name
 				delim = cmd_param.get('delim')
 				if delim is not None:
-					add += delim + str(v)
+					str_v = str(v)
+					if var.get('kind') is None:
+						str_v = adjust_num_str(str_v)
+					add += delim + str_v
 				if add != '':
 					s += add + ' '
 		return s.strip(' ').split(' ') if s != '' else None
