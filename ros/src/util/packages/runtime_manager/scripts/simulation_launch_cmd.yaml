@@ -146,6 +146,7 @@ params :
       label     : ''
       kind      : path
       path_type : dir
+      filenames : vector_map_files.yaml
       v         : ''
       cmd_param :
         must  : True
