@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:text="AutowareTouch"
+        android:text="AutowareRider"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView

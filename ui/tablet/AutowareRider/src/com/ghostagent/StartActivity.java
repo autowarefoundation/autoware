@@ -42,7 +42,7 @@ public class StartActivity extends Activity implements OnClickListener {
 	/**
 	 * connect info file
 	 */
-	String path = "/autowaretouch.txt";
+	String path = "/autowarerider.txt";
 	/**
 	 * input stream
 	 */
