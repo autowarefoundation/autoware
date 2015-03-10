@@ -280,6 +280,53 @@ int main(int argc, char **argv){
       }
       SendDataType = RANGE;
     }
+  }else if(argc == 7){
+    if(static_cast<std::string>(argv[1]).compare("10000")==0){
+      printf("normal access\n");
+      SendDataType = NORMAL;
+    }else if(static_cast<string>(argv[1]).compare("10001")==0){
+      printf("fixed range access\n");
+      positionRange[0] = 35.2038955;
+      positionRange[1] = 35.2711311;
+      positionRange[2] = 136.9813925;
+      positionRange[3] = 137.055852;
+      serverName = "db1.ertl.jp";
+      PORT = 5700;
+      SendDataType = DB1;
+
+    }else if(static_cast<string>(argv[1]).compare("10002") == 0){
+      printf("test access\n");
+      positionRange[0] = 30;
+      positionRange[1] = 40;
+      positionRange[2] = 130;
+      positionRange[3] = 140;
+      SendDataType = TEST;
+    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
+      printf("current data get test access\n");
+      positionRange[0] = 30;
+      positionRange[1] = 40;
+      positionRange[2] = 130;
+      positionRange[3] = 140;
+      SendDataType = RANGE;
+
+    }else{
+      printf("range access\n");
+      string arg;
+      for(int i=1; i<5 ;i++){
+	arg = argv[i];
+	if(!isNumeric(arg)){
+	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
+	  exit(1);
+	}
+	positionRange[i-1] = atof(arg.c_str());
+
+	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
+	  fprintf(stderr,"error.\ninvalid range.\n");
+	  exit(1);
+	}
+      }
+      SendDataType = RANGE;
+    }
   }else{
     fprintf(stderr,"The number of argment is invalid.\n");
     return 0;
