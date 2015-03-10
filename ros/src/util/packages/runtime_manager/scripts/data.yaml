@@ -112,22 +112,36 @@ params :
     - name  : from_lat
       label : 'Area:'
       v     : 0.0
+      cmd_param :
+        delim     : ''
     - name  : from_lon
       label : ''
       v     : 0.0
+      cmd_param :
+        delim     : ''
     - name  : to_lat
       label : ' - '
       v     : 0.0
+      cmd_param :
+        delim     : ''
     - name  : to_lon
       label : ''
       v     : 0.0
+      cmd_param :
+        delim     : ''
     - name  : map_matching
       kind  : checkbox
       label : Map Matching
       v     : True
+      cmd_param :
+        dash      : '--'
+        delim     : '='
     - name  : download_rate_ms
       label : Download Rate (ms)
       v     : 1000
+      cmd_param :
+        dash      : '--'
+        delim     : '='
 
   - name  : other
     vars  :
