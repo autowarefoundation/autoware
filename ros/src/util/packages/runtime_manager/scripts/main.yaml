@@ -28,6 +28,8 @@ buttons:
     gui   :
       path_area_list :
         func : self.text_ctrl_area_list.GetValue()
+      scene_num :
+        func : self.choice_scene_num.GetStringSelection()
       path_pcd :
         func : self.text_ctrl_point_cloud.GetValue()
 
@@ -121,6 +123,10 @@ params :
       cmd_param :
         delim     : ''
         must      : True
+#    - name  : scene_num
+#      kind  : menu
+#      cmd_param :
+#        delim     : ''
     - name  : path_pcd
       kind  : path
       cmd_param :
