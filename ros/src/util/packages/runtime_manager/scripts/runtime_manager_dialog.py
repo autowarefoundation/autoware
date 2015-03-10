@@ -157,11 +157,6 @@ class MyFrame(rtmgr.MyFrame):
 		if 'checkboxs' in dic:
 			self.load_yaml_button_run(dic['checkboxs'], self.simulation_cmd)
 
-		self.vmap_names = self.load_yaml('vector_map_files.yaml')
-
-		self.sel_multi_ks = [ 'point_cloud', 'pmap', 'vector_map' ]
-		self.sel_dir_ks = [ 'calibration' ]
-
 		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
 		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
@@ -826,9 +821,6 @@ class MyFrame(rtmgr.MyFrame):
 		if cmd_dic is None or cmd is None:
 			return
 
-		if add_args and key == 'vmap' and self.vmap_names:
-			add_args = [ add_args[0] + '/' + nm for nm in self.vmap_names ] + add_args[1:]
-			
 		if path:
 			add_args = ( add_args if add_args else [] ) + path.split(',')
 
@@ -873,20 +865,20 @@ class MyFrame(rtmgr.MyFrame):
 			proc.stdin.write(' ')
 
 	def OnRef(self, event):
-		b = event.GetEventObject()
-		nm = self.name_get(b) # button_ref_xxx
-		k = nm[ len('button_ref_'): ] # xxx
-		tc = self.obj_get('text_ctrl_' + k)
+		btn_ref_inf = {
+			'point_cloud'   : { 'path_type' : 'multi' },
+			'pmap'          : { 'path_type' : 'multi' },
+			'vector_map'    : { 'path_type' : 'multi' },
+			'calibration'   : { 'path_type' : 'dir'   },
+			'rosbag_record' : { 'path_type' : 'save'  } }
+		obj = event.GetEventObject()
+		key = self.obj_key_get(obj, [ 'button_ref_' ])
+		if key is None:
+			return
+		tc = self.obj_get('text_ctrl_' + key)
 		if tc is None:
 			return
-		path = tc.GetValue()
-		multi = k in self.sel_multi_ks
-		dir = k in self.sel_dir_ks
-		save = k in [ 'rosbag_record' ]
-		path = self.file_dialog(path, dir, multi, save)
-		if path:
-			tc.SetValue(path)
-			tc.SetInsertionPointEnd()
+		if file_dialog(self, tc, btn_ref_inf.get(key, {})) == wx.ID_OK:
 			self.alias_sync(tc)
 
 	def OnAliasSync(self, event):
@@ -917,20 +909,6 @@ class MyFrame(rtmgr.MyFrame):
 
 	def alias_grp_get(self, obj):
 		return get_top([ grp for grp in self.alias_grps if obj in grp ], [])
-
-	def file_dialog(self, defaultPath='', dir=False, multi=False, save=False):
-		if dir:
-			dlg = wx.DirDialog(self, defaultPath=defaultPath);
-			multi = False
-		else:
-			(dn, fn) = os.path.split(defaultPath)
-			style = wx.FD_SAVE if save else wx.FD_MULTIPLE if multi else wx.FD_DEFAULT_STYLE 
-			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=style)
-		path = None
-		if dlg.ShowModal() == wx.ID_OK:
-			path = ','.join(dlg.GetPaths()) if multi else dlg.GetPath()
-		dlg.Destroy()
-		return path
 
 	def create_tree(self, parent, items, tree, item, cmd_dic):
 		name = items.get('name', '')
@@ -1087,15 +1065,7 @@ class MyFrame(rtmgr.MyFrame):
 		return bm
 
 	def load_yaml(self, filename, def_ret=None):
-		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
-		path = dir + filename
-		if not os.path.isfile(path):
-			return def_ret
-		print('loading ' + filename)
-		f = open(dir + filename, 'r')
-		d = yaml.load(f)
-		f.close()
-		return d
+		return load_yaml(filename, def_ret)
 
 	def toggle_enable_obj(self, obj):
 		objs = []
@@ -1385,21 +1355,8 @@ class VarPanel(wx.Panel):
 		self.update()
 
 	def OnRef(self, event):
-		path = self.tc.GetValue()
-		(dn, fn) = os.path.split(path)
-		path_type = self.var.get('path_type', None)
-		if path_type == 'dir':
-			dlg = wx.DirDialog(self, defaultPath=path)
-		else:
-			st_dic = { 'save' : wx.FD_SAVE, 'multi' : wx.FD_MULTIPLE }
-			dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, 
-					    style=st_dic.get(path_type, wx.FD_DEFAULT_STYLE))
-		if dlg.ShowModal() == wx.ID_OK:
-			path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
-			self.tc.SetValue(path)
-			self.tc.SetInsertionPointEnd()
+		if file_dialog(self, self.tc, self.var) == wx.ID_OK:
 			self.update()
-		dlg.Destroy()
 
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
@@ -1480,12 +1437,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 
 	def OnRef(self, event):
 		tc = self.text_ctrl
-		path = tc.GetValue()
-		(dn, fn) = os.path.split(path)
-		dlg = wx.FileDialog(self, defaultDir=dn, defaultFile=fn, style=wx.FD_SAVE)
-		if dlg.ShowModal() == wx.ID_OK:
-			tc.SetValue(dlg.GetPath())
-			tc.SetInsertionPointEnd()
+		file_dialog(self, tc, { 'path_type' : 'save' } )
 
 	def OnStart(self, event):
 		key_obj = self.button_start
@@ -1546,6 +1498,43 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		path = os.path.join(dn, fn)
 		tc.SetValue(path)
 		tc.SetInsertionPointEnd()
+
+def file_dialog(parent, tc, path_inf_dic={}):
+	path = tc.GetValue()
+	(dn, fn) = os.path.split(path)
+        path_type = path_inf_dic.get('path_type')
+	if path_type == 'dir':
+		fns = path_inf_dic.get('filenames')
+		if type(fns) is str and fns[-5:] == '.yaml':
+			fns = load_yaml(fns)
+			if type(fns) is not list:
+				fns = None
+			path_inf_dic['filenames'] = fns
+		dlg = wx.DirDialog(parent, defaultPath=path)
+	else:
+		st_dic = { 'save' : wx.FD_SAVE, 'multi' : wx.FD_MULTIPLE }
+		dlg = wx.FileDialog(parent, defaultDir=dn, defaultFile=fn, 
+				    style=st_dic.get(path_type, wx.FD_DEFAULT_STYLE))
+	ret = dlg.ShowModal()
+	if ret == wx.ID_OK:
+		path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
+		if path_type == 'dir' and fns:
+			path = ','.join([ path + '/' + fn for fn in fns ])
+		tc.SetValue(path)
+		tc.SetInsertionPointEnd()
+	dlg.Destroy()
+	return ret
+
+def load_yaml(filename, def_ret=None):
+	dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+	path = dir + filename
+	if not os.path.isfile(path):
+		return def_ret
+	print('loading ' + filename)
+	f = open(dir + filename, 'r')
+	d = yaml.load(f)
+	f.close()
+	return d
 
 def terminate_children(proc, sigint=False):
 	for child in psutil.Process(proc.pid).get_children():
