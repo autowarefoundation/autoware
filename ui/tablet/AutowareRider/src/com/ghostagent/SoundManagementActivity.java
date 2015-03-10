@@ -474,7 +474,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		try {
 			BufferedInputStream stream = new BufferedInputStream(
 				new FileInputStream(Environment.getExternalStorageDirectory().getPath() +
-						    "/autowaretouch.txt"));
+						    "/autowarerider.txt"));
 
 			byte[] buffer = new byte[256];
 			stream.read(buffer);
@@ -514,7 +514,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		canDataSender = new CanDataSender("",
 						  getMacAddress(),
-						  "AutowareTouch",
+						  "AutowareRider",
 						  "22",
 						  "",
 						  "",
@@ -628,7 +628,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 							BufferedOutputStream stream = new BufferedOutputStream(
 								new FileOutputStream(
 									Environment.getExternalStorageDirectory().getPath() +
-									"/autowaretouch.txt"));
+									"/autowarerider.txt"));
 
 							stream.write(text.getBytes("UTF-8"));
 
