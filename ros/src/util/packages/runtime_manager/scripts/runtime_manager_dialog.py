@@ -329,6 +329,7 @@ class MyFrame(rtmgr.MyFrame):
 			path_pcd = self.text_ctrl_point_cloud.GetValue()
 			path_pcd = path_pcd.split(',')
 			auto = self.checkbox_auto_update.GetValue()
+			print 'scene_num', self.choice_scene_num.GetSelection(), self.choice_scene_num.GetStringSelection()
 
 			cmd = None
 			if auto and path_area_list != '':
