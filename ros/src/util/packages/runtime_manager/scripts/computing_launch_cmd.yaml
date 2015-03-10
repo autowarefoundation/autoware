@@ -66,7 +66,7 @@ subs :
             cmd  : echo pos_master
   - name : Planning
     subs :
-      - name : Mission
+      - name : Path
         subs :
         - name : lane_navi
           cmd  : rosrun lane_planner lane_navi
@@ -79,21 +79,18 @@ subs :
           param: lane_stop
           gui  :
             dialog: MyDialogLaneStop
-      - name : Motion
-      - name : Path
-        subs :
-          - name : waypoint_saver
-            cmd  : roslaunch waypoint_maker waypoint_saver.launch
-            param: waypoint_saver
-            gui  :
-              save_filename :
-                prop  : 1
-          - name : waypoint_loader
-            cmd  : roslaunch waypoint_maker waypoint_loader.launch
-            param: waypoint_loader
-            gui  :
-              waypoint_filename :
-                prop  : 1
+        - name : waypoint_saver
+          cmd  : roslaunch waypoint_maker waypoint_saver.launch
+          param: waypoint_saver
+          gui  :
+            save_filename :
+              prop  : 1
+        - name : waypoint_loader
+          cmd  : roslaunch waypoint_maker waypoint_loader.launch
+          param: waypoint_loader
+          gui  :
+            waypoint_filename :
+              prop  : 1
 
 params :
   - name  : car_dpm
