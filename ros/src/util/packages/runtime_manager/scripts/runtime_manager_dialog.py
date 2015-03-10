@@ -66,6 +66,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.params = []
 		self.add_params(self.main_dic.get('params', []))
+		self.selector.update(self.main_dic.get('selector', {}))
 
 		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
 
@@ -315,6 +316,10 @@ class MyFrame(rtmgr.MyFrame):
 		pass
 
 	def OnLoadMap(self, event):
+		obj = event.GetEventObject()
+		self.OnSelector_obj(obj)
+
+	def OnLoadMap_old(self, event):
 		obj = event.GetEventObject()
 		v = obj.GetValue()
 		procs = self.main_cmd.get(obj, [])
