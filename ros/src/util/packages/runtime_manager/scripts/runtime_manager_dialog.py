@@ -236,9 +236,10 @@ class MyFrame(rtmgr.MyFrame):
 				save_dic[name] = pdic
 		if save_dic != {}:
 			dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+			print('saving param.yaml')
 			f = open(dir + 'param.yaml', 'w')
 			s = yaml.dump(save_dic, default_flow_style=False)
-			print 'save\n', s # for debug
+			#print 'save\n', s # for debug
 			f.write(s)
 			f.close()
 
@@ -1058,6 +1059,7 @@ class MyFrame(rtmgr.MyFrame):
 		path = dir + filename
 		if not os.path.isfile(path):
 			return def_ret
+		print('loading ' + filename)
 		f = open(dir + filename, 'r')
 		d = yaml.load(f)
 		f.close()
