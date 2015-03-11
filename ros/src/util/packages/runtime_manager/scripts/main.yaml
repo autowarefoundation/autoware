@@ -71,14 +71,28 @@ ipaddress:
 control_check :
   - name  : accel
     param : accel
+    gui   :
+      accel :
+        flags : [ no_category ]
   - name  : brake
     param : brake
+    gui   :
+      brake :
+        flags : [ no_category ]
   - name  : steer
     param : steer
+    gui   :
+      steer :
+        flags : [ no_category ]
   - name  : torque
     param : torque
   - name  : veloc
     param : veloc
+    gui   :
+      twist.linear.x :
+        flags : [ no_category ]
+      twist.angular.z :
+        flags : [ no_category ]
 
 params :
   - name  : accel
