@@ -63,9 +63,7 @@ subs :
 
   - name : Other Sensors
     subs :
-      - name : XXXX (TTY1)
-        probe: 'true'
-        run  : rosrun turtlesim turtlesim_node # for debug
+      - {}
 
 buttons:
   points_image :
