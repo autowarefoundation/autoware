@@ -79,7 +79,8 @@ buttons:
     param : sensor_fusion
     gui   :
       dir :
-        func : self.text_ctrl_dir_sensor_fusion.GetValue()
+        func    : self.text_ctrl_dir_sensor_fusion.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_dir_sensor_fusion : set_path(tc, v)'
       ext_toggle_enables :
       - self.text_ctrl_dir_sensor_fusion
       - self.button_ref_dir_sensor_fusion
@@ -102,7 +103,8 @@ buttons:
     param : tf
     gui   :
       file :
-        func : self.text_ctrl_file_tf.GetValue()
+        func    : self.text_ctrl_file_tf.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_file_tf : set_path(tc, v)'
       ext_toggle_enables :
       - self.text_ctrl_file_tf
       - self.button_ref_file_tf

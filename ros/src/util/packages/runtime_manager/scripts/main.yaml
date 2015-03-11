@@ -27,11 +27,14 @@ buttons:
     param : points_map_loader
     gui   :
       path_area_list :
-        func : self.text_ctrl_area_list.GetValue()
+        func    : self.text_ctrl_area_list.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_area_list : set_path(tc, v)'
       scene_num :
-        func : self.choice_scene_num.GetStringSelection()
+        func    : self.choice_scene_num.GetStringSelection()
+        restore : self.choice_scene_num.SetStringSelection
       path_pcd :
-        func : self.text_ctrl_point_cloud.GetValue()
+        func    : self.text_ctrl_point_cloud.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
 
   sample_points_map :
     run   : rosrun sample_data sample_points_map
@@ -45,7 +48,8 @@ buttons:
     param : vector_map_loader
     gui   :
       path_vec :
-        func : self.text_ctrl_vector_map.GetValue()
+        func    : self.text_ctrl_vector_map.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_vector_map : set_path(tc, v)'
 
 ipaddress:
   tablet:   127.0.0.1
