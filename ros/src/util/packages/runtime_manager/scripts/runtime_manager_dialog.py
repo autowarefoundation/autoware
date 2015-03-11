@@ -68,9 +68,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.add_params(self.main_dic.get('params', []))
 		self.selector.update(self.main_dic.get('selector', {}))
 
-		self.load_yaml_button_run(self.main_dic.get('buttons', {}), self.main_cmd)
-
-		self.main_cmd[ self.button_load_map ] = []
+		self.setup_buttons(self.main_dic.get('buttons', {}), self.main_cmd)
 
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
 		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
@@ -121,7 +119,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
 
 		if 'buttons' in dic:
-			self.load_yaml_button_run(dic['buttons'], self.sensing_cmd)
+			self.setup_buttons(dic['buttons'], self.sensing_cmd)
 
 		# for button_calibration
 		tc = self.text_ctrl_dir_sensor_fusion
@@ -153,9 +151,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
 
 		if 'buttons' in dic:
-			self.load_yaml_button_run(dic['buttons'], self.simulation_cmd)
+			self.setup_buttons(dic['buttons'], self.simulation_cmd)
 		if 'checkboxs' in dic:
-			self.load_yaml_button_run(dic['checkboxs'], self.simulation_cmd)
+			self.setup_buttons(dic['checkboxs'], self.simulation_cmd)
 
 		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
 		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
@@ -179,7 +177,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.setup_config_param_pdic()
 
 		if 'buttons' in dic:
-			self.load_yaml_button_run(dic['buttons'], self.data_cmd)
+			self.setup_buttons(dic['buttons'], self.data_cmd)
 
 		rtmgr.MyFrame.__do_layout(self)
 
@@ -249,7 +247,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub.publish(data.data)
 		r.sleep()
 
-	def load_yaml_button_run(self, d, run_dic):
+	def setup_buttons(self, d, run_dic):
 		for (k,d2) in d.items():
 			obj = get_top( self.key_objs_get([ 'button_', 'button_launch_', 'checkbox_' ], k) )
 			if not obj:
@@ -263,10 +261,8 @@ class MyFrame(rtmgr.MyFrame):
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
 			if 'param' in d2:
-				pdic = self.load_dic.get(k)
-				if pdic is None:
-					pdic = {}
-					self.load_dic[k] = pdic
+				pdic = self.load_dic.get(k, {})
+				self.load_dic[k] = pdic
 				prm = self.get_param(d2.get('param'))
 				gdic = self.gdic_get_1st(d2)
 				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
@@ -285,12 +281,6 @@ class MyFrame(rtmgr.MyFrame):
 		print(args)
 		proc = subprocess.Popen(args, stdin=subprocess.PIPE)
 		self.all_procs.append(proc)
-
-	def OnStart(self, event):
-		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 1}\''
-		cmd = 'roslaunch ' + self.get_autoware_dir() + '/autoware_start.launch'
-		print(cmd)
-		os.system(cmd)
 
 	def OnDrive(self, event):
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
@@ -319,48 +309,6 @@ class MyFrame(rtmgr.MyFrame):
 	def OnLoadMap(self, event):
 		obj = event.GetEventObject()
 		self.OnSelector_obj(obj)
-
-	def OnLoadMap_old(self, event):
-		obj = event.GetEventObject()
-		v = obj.GetValue()
-		procs = self.main_cmd.get(obj, [])
-		if (v and procs != []) or (not v and procs == []):
-			obj.SetValue(not v)
-			return
-		if v:
-			path_area_list = self.text_ctrl_area_list.GetValue()
-			path_pcd = self.text_ctrl_point_cloud.GetValue()
-			path_pcd = path_pcd.split(',')
-			auto = self.checkbox_auto_update.GetValue()
-			print 'scene_num', self.choice_scene_num.GetSelection(), self.choice_scene_num.GetStringSelection()
-
-			cmd = None
-			if auto and path_area_list != '':
-				cmd = 'rosrun map_file points_map_loader'
-			if not auto and path_pcd != []:
-				cmd = 'rosrun sample_data sample_points_map'
-				path_area_list = ''
-			if cmd:
-				add_args = [ path_area_list ] if path_area_list != '' else []
-				add_args += path_pcd
-				print cmd, add_args
-				proc = self.launch_kill(v, cmd, None, add_args)
-				procs += [ proc ]
-
-			path_vec = self.text_ctrl_vector_map.GetValue()
-			if path_vec != '':
-				cmd = 'rosrun map_file vector_map_loader'
-				add_args = path_vec.split(',')
-				print cmd, add_args
-				proc = self.launch_kill(v, cmd, None, add_args)
-				procs += [ proc ]
-				if procs == []:
-					obj.SetValue(False)
-		else:
-			for proc in procs:
-				self.launch_kill(v, 'dmy', proc)
-			procs = []
-		self.main_cmd[ obj ] = procs
 
 	def OnMainTf(self, event):
 		obj = event.GetEventObject()
@@ -641,10 +589,8 @@ class MyFrame(rtmgr.MyFrame):
 		hszr.Add(wx.StaticText(panel, wx.ID_ANY, '  '))
 		hszr.Add(cfg_obj)
 		name = dic['name']
-		pdic = self.load_dic.get(name, None)
-		if pdic is None:
-			pdic = {}
-			self.load_dic[name] = pdic
+		pdic = self.load_dic.get(name, {})
+		self.load_dic[name] = pdic
 		gdic = self.gdic_get_1st(dic)
 		prm = self.get_param(dic.get('param'))
 		self.add_cfg_info(cfg_obj, obj, name, pdic, gdic, True, prm)
@@ -663,7 +609,7 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic = self.simulation_cmd
 		(cmd, proc) = cmd_dic.get(obj, (None, None));
 		if cmd and type(cmd) is dict:
-			cmd = cmd.get(obj.GetValue(), None)
+			cmd = cmd.get(obj.GetValue())
 		if cmd:
 			print(cmd)
 			os.system(cmd)
@@ -938,7 +884,7 @@ class MyFrame(rtmgr.MyFrame):
 		return tree
 
 	def add_config_link_tree_item(self, item, name, gdic, prm):
-		pdic = self.load_dic.get(name, None)
+		pdic = self.load_dic.get(name)
 		self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
 		item.SetHyperText()
 
@@ -980,14 +926,9 @@ class MyFrame(rtmgr.MyFrame):
 		v = cmd_dic.get(obj)
 		if v is None:
 			return
-		if type(v) is list:
-			for proc in [ proc ] if proc else v:
-				v.remove(proc)
-				self.launch_kill(False, 'dmy', proc)
-		else:
-			(cmd, proc) = (v[0], proc) if proc else v
-			cmd_dic[ obj ] = (cmd, None)
-			self.launch_kill(False, 'dmy', proc)
+		(cmd, proc) = (v[0], proc) if proc else v
+		cmd_dic[ obj ] = (cmd, None)
+		self.launch_kill(False, 'dmy', proc)
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
@@ -1214,12 +1155,12 @@ class VarPanel(wx.Panel):
 		self.update = kwds.pop('update')
 		wx.Panel.__init__(self, *args, **kwds)
 
-		self.min = self.var.get('min', None)
-		self.max = self.var.get('max', None)
+		self.min = self.var.get('min')
+		self.max = self.var.get('max')
 		self.has_slider = self.min is not None and self.max is not None
 
 		label = self.var.get('label', '')
-		self.kind = self.var.get('kind', None)
+		self.kind = self.var.get('kind')
 		if self.kind == 'radio_box':
 			choices = self.var.get('choices', [])
 			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
@@ -1571,7 +1512,7 @@ def str_to_rosval(str, type_str, def_ret=None):
 		'int64':long , 'uint64':long,
 		'float32':float, 'float64':float,
 	}
-	t = cvt_dic.get(type_str, None)
+	t = cvt_dic.get(type_str)
 	return t(str) if t else def_ret
 
 def set_path(tc, v):
