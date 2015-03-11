@@ -72,13 +72,13 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		ImageButton neutral;
 
 		GearButton(OnClickListener listener) {
-			drive = (ImageButton)findViewById(R.id.s1);
+			drive = (ImageButton)findViewById(R.id.p3);
 			drive.setOnClickListener(listener);
-			reverse = (ImageButton)findViewById(R.id.s2);
+			reverse = (ImageButton)findViewById(R.id.p4);
 			reverse.setOnClickListener(listener);
-			brake = (ImageButton)findViewById(R.id.p3);
+			brake = (ImageButton)findViewById(R.id.p1);
 			brake.setOnClickListener(listener);
-			neutral = (ImageButton)findViewById(R.id.p4);
+			neutral = (ImageButton)findViewById(R.id.p2);
 			neutral.setOnClickListener(listener);
 
 			refresh();
@@ -130,16 +130,16 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		@Override
 		void refresh() {
-			auto.setImageResource(R.drawable.autodrive);
-			normal.setImageResource(R.drawable.normaldrive);
+			auto.setImageResource(R.drawable.autocruise);
+			normal.setImageResource(R.drawable.normalcruise);
 			pursuit.setImageResource(R.drawable.pursuit);
 
 			switch (getMode()) {
 			case AUTO:
-				auto.setImageResource(R.drawable.pressed_autodrive);
+				auto.setImageResource(R.drawable.pressed_autocruise);
 				break;
 			case NORMAL:
-				normal.setImageResource(R.drawable.pressed_normaldrive);
+				normal.setImageResource(R.drawable.pressed_normalcruise);
 				break;
 			case PURSUIT:
 				pursuit.setImageResource(R.drawable.pressed_pursuit);
@@ -151,23 +151,23 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	class ApplicationButton extends RadioButton {
 		static final int NAVIGATION = 1;
 		static final int MAP = 2;
-		static final int DISPLAY = 3;
-		static final int INFORMATION = 4;
+		static final int S1 = 3;
+		static final int S2 = 4;
 
 		ImageButton navigation;
 		ImageButton map;
-		ImageButton display;
-		ImageButton information;
+		ImageButton s1;
+		ImageButton s2;
 
 		ApplicationButton(OnClickListener listener) {
 			navigation = (ImageButton)findViewById(R.id.air);
 			navigation.setOnClickListener(listener);
 			map = (ImageButton)findViewById(R.id.oil);
 			map.setOnClickListener(listener);
-			display = (ImageButton)findViewById(R.id.p1);
-			display.setOnClickListener(listener);
-			information = (ImageButton)findViewById(R.id.p2);
-			information.setOnClickListener(listener);
+			s1 = (ImageButton)findViewById(R.id.s1);
+			s1.setOnClickListener(listener);
+			s2 = (ImageButton)findViewById(R.id.s2);
+			s2.setOnClickListener(listener);
 
 			refresh();
 		}
@@ -176,8 +176,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		void refresh() {
 			navigation.setImageResource(R.drawable.app_navi);
 			map.setImageResource(R.drawable.app_map);
-			display.setImageResource(R.drawable.app_disp);
-			information.setImageResource(R.drawable.app_info);
+			s1.setImageResource(R.drawable.app_s1);
+			s2.setImageResource(R.drawable.app_s2);
 
 			switch (getMode()) {
 			case NAVIGATION:
@@ -186,11 +186,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			case MAP:
 				map.setImageResource(R.drawable.pressed_app_map);
 				break;
-			case DISPLAY:
-				display.setImageResource(R.drawable.pressed_app_disp);
+			case S1:
+				s1.setImageResource(R.drawable.pressed_app_s1);
 				break;
-			case INFORMATION:
-				information.setImageResource(R.drawable.pressed_app_info);
+			case S2:
+				s2.setImageResource(R.drawable.pressed_app_s2);
 				break;
 			}
 		}
@@ -880,10 +880,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			startActivity(intent);
 		} else if (v == applicationButton.map) {
 			applicationButton.updateMode(ApplicationButton.MAP);
-		} else if (v == applicationButton.display) {
-			applicationButton.updateMode(ApplicationButton.DISPLAY);
-		} else if (v == applicationButton.information) {
-			applicationButton.updateMode(ApplicationButton.INFORMATION);
+		} else if (v == applicationButton.s1) {
+			applicationButton.updateMode(ApplicationButton.S1);
+		} else if (v == applicationButton.s2) {
+			applicationButton.updateMode(ApplicationButton.S2);
 		}
 	}
 }
