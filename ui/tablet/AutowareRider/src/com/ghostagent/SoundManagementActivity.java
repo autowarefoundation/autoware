@@ -875,8 +875,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		} else if (v == applicationButton.navigation) {
 			applicationButton.updateMode(ApplicationButton.NAVIGATION);
 			Intent intent = new Intent(Intent.ACTION_MAIN);
-			intent.setClassName("com.example.sampleroute",
-					    "com.example.sampleroute.MainActivity");
+			intent.setClassName("com.example.autowareroute",
+					    "com.example.autowareroute.MainActivity");
 			startActivity(intent);
 		} else if (v == applicationButton.map) {
 			applicationButton.updateMode(ApplicationButton.MAP);

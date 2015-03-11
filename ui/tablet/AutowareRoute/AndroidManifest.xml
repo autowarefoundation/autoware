@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.sampleroute"
+    package="com.example.autowareroute"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.example.sampleroute.MainActivity"
+            android:name="com.example.autowareroute.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|fontScale"
             android:label="@string/app_name" >
             <intent-filter>

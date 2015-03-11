@@ -1,5 +1,5 @@
 //***********************************************************
-// [SmartDK] SampleRoute
+// [SmartDK] AutowareRoute
 //
 //【内　　容】
 //	ポップアップメニュー用のフラグメント
@@ -9,7 +9,7 @@
 //
 // Copyright(C) 2014 INCREMENT P CORP.
 //***********************************************************
-package com.example.sampleroute;
+package com.example.autowareroute;
 
 
 import android.app.DialogFragment;

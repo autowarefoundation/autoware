@@ -1,5 +1,5 @@
 //***********************************************************
-// [SmartDK] SampleRoute
+// [SmartDK] AutowareRoute
 //
 //【内　　容】
 //	経路機能のサンプル
@@ -9,7 +9,7 @@
 //
 // Copyright(C) 2014 INCREMENT P CORP.
 //***********************************************************
-package com.example.sampleroute;
+package com.example.autowareroute;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -391,13 +391,13 @@ public class MainActivity extends SmartDKManager implements OnMapListener, OnGes
 										
 										int j = 0;
 										for (RouteGuideConnect conn : resultList.mGuideConnect) {
-											Log.w("SampleRoute", "size=" + conn.mGuidePoint.size());
+											Log.w("AutowareRoute", "size=" + conn.mGuidePoint.size());
 											int k = 0;
 											for (RouteGuidePoint pt : conn.mGuidePoint) {
 												if (j == 0 || k != 0) {
 													Location loc = new Location(pt.mLongitude, pt.mLatitude);
 													double[] degree = utility.convert256ToDegree(loc);
-													Log.w("SampleRoute", "  lat=" + degree[1] + ", lon=" + degree[0]);
+													Log.w("AutowareRoute", "  lat=" + degree[1] + ", lon=" + degree[0]);
 													pw.println(degree[1] + "," + degree[0]);
 												}
 												k++;
