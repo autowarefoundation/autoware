@@ -23,7 +23,7 @@ double _initial_velocity_kmh = 5; // km/h
 double _lookahead_threshold = 4.0;
 double _threshold_ratio = 1.0;
 double _end_distance = 2.0;
-double _error_distance = 2.0;
+double _error_distance = 2.5;
 std::string _mobility_frame = "/base_link";
 std::string _current_pose_topic = "odometry";
 
@@ -387,6 +387,9 @@ int main(int argc, char **argv)
 
     private_nh.getParam("end_distance", _end_distance);
     std::cout << "end_distance : " << _end_distance << std::endl;
+
+    private_nh.getParam("error_distance", _error_distance);
+        std::cout << "error_distance : " << _error_distance << std::endl;
 
 //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
