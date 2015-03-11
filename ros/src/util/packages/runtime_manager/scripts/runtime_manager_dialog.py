@@ -53,12 +53,12 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#
-		# for Main tab (version)
+		# for Main tab
 		#
 		tab = self.notebook_1_pane_1
-		scale = 0.3
-		self.bitmap_1 = self.get_static_bitmap(tab, "nagoya_university.png", scale)
-		self.bitmap_2 = self.get_static_bitmap(tab, "axe.png", scale)
+
+		for nm in [ 'tablet', 'mobile', 'vehicle', 'database' ]:
+			setattr(self, 'bitmap_' + nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
 
 		self.main_cmd = {}
 		self.all_cmd_dics.append(self.main_cmd)
