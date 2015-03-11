@@ -121,13 +121,8 @@ class MyFrame(rtmgr.MyFrame):
 		if 'buttons' in dic:
 			self.setup_buttons(dic['buttons'], self.sensing_cmd)
 
-		# for button_calibration
-		tc = self.text_ctrl_dir_sensor_fusion
-		if tc.GetValue() == '':
-			path = os.path.expanduser("~") + '/.ros/autoware'
-			set_path(tc, path)
-		self.text_ctrl_calibration = tc
-		self.button_ref_calibration = self.button_ref_dir_sensor_fusion
+		self.set_param_panel(self.button_points_image, self.panel_points_image)
+		self.set_param_panel(self.button_scan_image, self.panel_scan_image)
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
@@ -197,10 +192,6 @@ class MyFrame(rtmgr.MyFrame):
 		# for All
 		#
 		self.alias_grps = [
-			[ self.button_launch_tf, self.button_main_tf, ],
-			[ self.button_kill_tf, self.button_main_tf, ],
-			[ self.button_ref_file_tf, self.button_ref_main_tf, ],
-			[ self.text_ctrl_file_tf, self.text_ctrl_main_tf, ],
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
@@ -309,14 +300,6 @@ class MyFrame(rtmgr.MyFrame):
 	def OnLoadMap(self, event):
 		obj = event.GetEventObject()
 		self.OnSelector_obj(obj)
-
-	def OnMainTf(self, event):
-		obj = event.GetEventObject()
-		v = obj.GetValue()
-		if v:
-			self.OnLaunch_obj(self.button_launch_tf)
-		else:
-			self.OnKill_kill_obj(self.button_kill_tf)
 
 	def OnGear(self, event):
 		grp = { self.button_statchk_d : 1,
@@ -461,12 +444,15 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			rosparam = var['rosparam']
 			v = pdic.get(name)
-			if rosparam in rosparams:
+			exist = rosparam in rosparams
+			if exist:
 				cmd = [ 'rosparam', 'get', rosparam ]
 				ov = subprocess.check_output(cmd).strip()
 				if ov == v:
 					continue
-			cmd = [ 'rosparam', 'set', rosparam, v ]
+			elif v == '':
+				continue				
+			cmd = [ 'rosparam', 'set', rosparam, v ] if v != '' else [ 'rosparam', 'delete', rosparam ]
 			print(cmd)
 			subprocess.call(cmd)
 
@@ -512,10 +498,6 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	def OnSensingDriver(self, event):
 		self.OnChecked_obj(event.GetEventObject())
-
-	def OnCalib(self, event):
-		obj = event.GetEventObject()
-		self.OnSelector_obj(obj)
 
 	def OnAutoProbe(self, event):
 		if event.GetEventObject().GetValue():
@@ -759,13 +741,6 @@ class MyFrame(rtmgr.MyFrame):
 		tc = self.obj_get('text_ctrl_' + key) 
 		path = tc.GetValue() if tc else None
 
-		# below TF default setting is reflected to sensing.yaml
-		# (params:/name:tf/name:file/cmd_param:/default:)
-		#
-		#if key == 'tf' and not path:
-		#	# TF default setting
-		#	path = 'runtime_manager,tf.launch' # !
-
 		if tc and not path:
 			return
 
@@ -803,6 +778,21 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
+
+	def OnLaunchKill(self, event):
+		self.OnLaunchKill_obj(event.GetEventObject())
+
+	def OnLaunchKill_obj(self, obj):
+		v = obj.GetValue()
+		add_args = self.obj_to_add_args(obj)
+		if add_args is False:
+			obj.SetValue(not v)
+			return
+		(cmd_dic, _, proc_bak) = self.obj_to_cmd_dic_cmd_proc(obj)
+		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
+		(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if proc != proc_bak:
+			self.toggle_enable_obj(obj)
 
 	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()

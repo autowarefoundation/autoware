@@ -51,6 +51,17 @@ buttons:
         func    : self.text_ctrl_vector_map.GetValue()
         restore : 'lambda v, tc=self.text_ctrl_vector_map : set_path(tc, v)'
 
+  main_tf :
+    run    : roslaunch
+    param  : main_tf
+    gui    :
+      file  :
+        func    : self.text_ctrl_main_tf.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_main_tf : set_path(tc, v)'
+      ext_toggle_enables :
+      - self.text_ctrl_main_tf
+      - self.button_ref_main_tf
+
 ipaddress:
   tablet:   127.0.0.1
   mobile:   127.0.0.1
@@ -155,3 +166,12 @@ params :
         delim     : ''
         unpack    : ','
         must      : True
+
+  - name  : main_tf
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        delim     : ''
+        default   : runtime_manager tf.launch

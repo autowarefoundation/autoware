@@ -67,47 +67,17 @@ subs :
         probe: 'true'
         run  : rosrun turtlesim turtlesim_node # for debug
 
-selector :
-  calibration :
-    sel : self.modal_dialog( (('LIDAR2D', [2]), ('LIDAR3D', [3])), 'Calibration' )
-    2   : calib_2d
-    3   : calib_3d
-
 buttons:
-  sensor_fusion :
-    run   : roslaunch sensing_fusions sensing_fusions.launch
-    param : sensor_fusion
-    gui   :
-      dir :
-        func    : self.text_ctrl_dir_sensor_fusion.GetValue()
-        restore : 'lambda v, tc=self.text_ctrl_dir_sensor_fusion : set_path(tc, v)'
-      ext_toggle_enables :
-      - self.text_ctrl_dir_sensor_fusion
-      - self.button_ref_dir_sensor_fusion
+  points_image :
+    run   : rosrun points_to_image points_to_image
+    param : points_image
 
-  calib_2d :
-    run   : roslaunch camera_lidar2d camera_lidar2d_offline_calib.launch
-    param : sensor_fusion
-    gui   :
-      dir  :
-        func : self.text_ctrl_dir_sensor_fusion.GetValue()
-      ext_toggle_enables :
-      - self.text_ctrl_dir_sensor_fusion
-      - self.button_ref_dir_sensor_fusion
+  scan_image :
+    run   : rosrun scan_to_image scan_to_image
+    param : scan_image
 
-  calib_3d :
+  calibration :
     run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
-
-  tf :
-    run   : roslaunch
-    param : tf
-    gui   :
-      file :
-        func    : self.text_ctrl_file_tf.GetValue()
-        restore : 'lambda v, tc=self.text_ctrl_file_tf : set_path(tc, v)'
-      ext_toggle_enables :
-      - self.text_ctrl_file_tf
-      - self.button_ref_file_tf
 
 params :
   - name  : calibration_path
@@ -119,21 +89,17 @@ params :
         dash : ''
         delim: ':='
 
-  - name  : sensor_fusion
-    vars  :
-    - name      : dir
-      kind      : path
-      path_type : dir
-      v         : ''
-      cmd_param :
-        dash : ''
-        delim : ':='
-
-  - name  : tf
+  - name  : points_image
     vars  :
     - name      : file
       kind      : path
       v         : ''
       cmd_param :
-        delim     : ''
-        default   : runtime_manager tf.launch
+        delim : ''
+
+  - name  : scan_image
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      rosparam  : /scan_to_image/camera_yaml
