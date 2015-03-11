@@ -125,9 +125,9 @@ class MyFrame(rtmgr.MyFrame):
 
 		# for button_calibration
 		tc = self.text_ctrl_dir_sensor_fusion
-		path = os.path.expanduser("~") + '/.ros/autoware'
-		tc.SetValue(path)
-		tc.SetInsertionPointEnd()
+		if tc.GetValue() == '':
+			path = os.path.expanduser("~") + '/.ros/autoware'
+			set_path(tc, path)
 		self.text_ctrl_calibration = tc
 		self.button_ref_calibration = self.button_ref_dir_sensor_fusion
 
@@ -212,6 +212,8 @@ class MyFrame(rtmgr.MyFrame):
 			[ self.checkbox_clock_rosbag_play, self.checkbox_clock_main_rosbag_play, ],
 			[ self.checkbox_sim_time, self.checkbox_main_sim_time, ],
 		]
+		for grp in self.alias_grps:
+			wx.CallAfter(self.alias_sync, get_top(grp))
 
 	def __do_layout(self):
 		pass
@@ -268,6 +270,10 @@ class MyFrame(rtmgr.MyFrame):
 				prm = self.get_param(d2.get('param'))
 				gdic = self.gdic_get_1st(d2)
 				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
+
+				for (name, v) in pdic.items():
+					restore = eval( gdic.get(name, {}).get('restore', 'lambda a : None') )
+					restore(v)
 
 	#
 	# Main Tab
@@ -527,7 +533,7 @@ class MyFrame(rtmgr.MyFrame):
 			if obj.GetValue() != v:
 				if obj.IsEnabled() and not v:
 					self.kill_obj(obj)
-				set_check(obj, v)
+				set_val(obj, v)
 				obj.Enable(not v)
 		self.Refresh()
 
@@ -699,7 +705,7 @@ class MyFrame(rtmgr.MyFrame):
 			return
 		if self.OnSelector_name(key, v) is None:
 			if getattr(obj, 'SetValue', None):
-				set_check(obj, not v)
+				set_val(obj, not v)
 
 	def OnSelector_name(self, key, v):
 		sdic = self.selector.get(key)
@@ -866,10 +872,10 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnRef(self, event):
 		btn_ref_inf = {
-			'point_cloud'   : { 'path_type' : 'multi' },
-			'pmap'          : { 'path_type' : 'multi' },
-			'vector_map'    : { 'path_type' : 'multi' },
-			'calibration'   : { 'path_type' : 'dir'   },
+			'point_cloud'	: { 'path_type' : 'multi' },
+			'pmap'		: { 'path_type' : 'multi' },
+			'vector_map'	: { 'path_type' : 'multi' },
+			'calibration'	: { 'path_type' : 'dir'	  },
 			'rosbag_record' : { 'path_type' : 'save'  } }
 		obj = event.GetEventObject()
 		key = self.obj_key_get(obj, [ 'button_ref_' ])
@@ -938,13 +944,13 @@ class MyFrame(rtmgr.MyFrame):
 
 	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
-			set_check(obj, False)
+			set_val(obj, False)
 			print('not implemented.')
 			return
 		v = obj.GetValue()
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
-			set_check(obj, False)
+			set_val(obj, False)
 
 		proc = self.launch_kill(v, cmd, proc, add_args)
 
@@ -968,7 +974,7 @@ class MyFrame(rtmgr.MyFrame):
 		if key:
 			self.OnKill_kill_obj(self.obj_get('button_kill_' + key))
 			return
-		set_check(obj, False)
+		set_val(obj, False)
 		if cmd_dic is None:
 			cmd_dic = self.obj_to_cmd_dic(obj)
 		v = cmd_dic.get(obj)
@@ -1496,13 +1502,12 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		fn = 'autoware-%04d%02d%02d%02d%02d%02d.rosbag' % (
 			now.year, now.month, now.day, now.hour, now.minute, now.second)
 		path = os.path.join(dn, fn)
-		tc.SetValue(path)
-		tc.SetInsertionPointEnd()
+		set_path(tc, path)
 
 def file_dialog(parent, tc, path_inf_dic={}):
 	path = tc.GetValue()
 	(dn, fn) = os.path.split(path)
-        path_type = path_inf_dic.get('path_type')
+	path_type = path_inf_dic.get('path_type')
 	if path_type == 'dir':
 		fns = path_inf_dic.get('filenames')
 		if type(fns) is str and fns[-5:] == '.yaml':
@@ -1520,8 +1525,7 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
 		if path_type == 'dir' and fns:
 			path = ','.join([ path + '/' + fn for fn in fns ])
-		tc.SetValue(path)
-		tc.SetInsertionPointEnd()
+		set_path(tc, path)
 	dlg.Destroy()
 	return ret
 
@@ -1570,7 +1574,11 @@ def str_to_rosval(str, type_str, def_ret=None):
 	t = cvt_dic.get(type_str, None)
 	return t(str) if t else def_ret
 
-def set_check(obj, v):
+def set_path(tc, v):
+	tc.SetValue(v)
+	tc.SetInsertionPointEnd()
+
+def set_val(obj, v):
 	func = getattr(obj, 'SetValue', getattr(obj, 'Check', None))
 	if func:
 		func(v)

@@ -45,11 +45,14 @@ buttons:
     param : rosbag_play
     gui   :
       file  :
-        func  : self.text_ctrl_file_rosbag_play.GetValue()
+        func    : self.text_ctrl_file_rosbag_play.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_file_rosbag_play : set_path(tc, v)'
       clock :
-        func  : self.checkbox_clock_rosbag_play.GetValue()
+        func    : self.checkbox_clock_rosbag_play.GetValue()
+        restore : self.checkbox_clock_rosbag_play.SetValue
       rate  :
-        func  : self.text_ctrl_rate_rosbag_play.GetValue()
+        func    : self.text_ctrl_rate_rosbag_play.GetValue()
+        restore : self.text_ctrl_rate_rosbag_play.SetValue
       ext_toggle_enables :
       - self.text_ctrl_file_rosbag_play
       - self.button_ref_file_rosbag_play
@@ -61,7 +64,8 @@ buttons:
     param : pmap_normal
     gui   :
       data_files :
-        func : self.text_ctrl_pmap.GetValue()
+        func    : self.text_ctrl_pmap.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_pmap : set_path(tc, v)'
       ext_toggle_enables :
       - self.button_launch_pmap
       - self.button_kill_pmap
