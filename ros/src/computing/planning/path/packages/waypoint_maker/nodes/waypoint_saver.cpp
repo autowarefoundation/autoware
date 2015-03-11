@@ -13,21 +13,19 @@
 
 bool RecieveOnce = false;
 
+static bool IsNearlyZero(geometry_msgs::Point pose)
+{
 
+    double abs_x = fabs(pose.x);
+    double abs_y = fabs(pose.y);
+    double abs_z = fabs(pose.z);
 
-static bool IsNearlyZero(geometry_msgs::Point pose){
-
-  double abs_x = fabs(pose.x);
-  double abs_y = fabs(pose.y);
-  double abs_z = fabs(pose.z);
-
-  if(abs_x < DBL_MIN * 100 && abs_y <  DBL_MIN * 100 && abs_z < DBL_MIN * 100)
-    return true;
-  else
-    return false;
+    if (abs_x < DBL_MIN * 100 && abs_y < DBL_MIN * 100 && abs_z < DBL_MIN * 100)
+        return true;
+    else
+        return false;
 
 }
-
 
 class WAYPOINT_SAVER {
 private:
@@ -44,19 +42,18 @@ private:
     geometry_msgs::Point current_pose_;
     geometry_msgs::Point last_pose_;
     double velocity_;
+    bool no_velocity_;
     int pose_time_sec_;
     int pose_time_nsec_;
     int can_time_sec_;
     int can_time_nsec_;
 
-  
 public:
     void GNSSPoseCB(const sensor_msgs::NavSatFixConstPtr &pose);
     void NDTPoseCB(const geometry_msgs::PoseStampedConstPtr &pose);
     void CanInfoCB(const vehicle_socket::CanInfoConstPtr &info);
     void MainLoop();
-  
-  
+
     WAYPOINT_SAVER();
     ~WAYPOINT_SAVER();
 };
@@ -68,6 +65,9 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
     double interval = 1.0;
     n_private_.getParam("interval", interval);
     std::cout << "interval = " << interval << std::endl;
+
+    n_private_.getParam("no_velocity", no_velocity_);
+    std::cout << "no_velocity = " << no_velocity_ << std::endl;
 
     std::string filename = "";
     if (n_private_.getParam("save_filename", filename) == false) {
@@ -87,31 +87,39 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
     while (ros::ok()) {
         ros::spinOnce();
 
-	if(IsNearlyZero(current_pose_) == true)
-	  continue;
+        if (IsNearlyZero(current_pose_) == true)
+            continue;
 
         if (RecieveOnce != true) {
 
             ofs_ << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << std::endl;
             RecieveOnce = true;
-  last_pose_ = current_pose_;
+            last_pose_ = current_pose_;
         } else {
+            std::cout << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << std::endl;
+            std::cout << last_pose_.x << "," << last_pose_.y << "," << last_pose_.z << std::endl;
 
             double distance = sqrt(pow((current_pose_.x - last_pose_.x), 2) + pow((current_pose_.y - last_pose_.y), 2) + pow((current_pose_.z - last_pose_.z), 2));
-std::cout << "distance = " << distance << std::endl;
-	      
-	      std::cout << "can_time_sec = " << can_time_sec_ << std::endl;
-	      std::cout << "pose_time_sec = " << pose_time_sec_ << std::endl;
-	      std::cout << "can_time_nsec_ = " << can_time_nsec_ << std::endl;
-	      std::cout << "pose_time_nsec_ = " << pose_time_nsec_ << std::endl;
-	      std::cout << "nsec sub = " << fabs(can_time_nsec_ - pose_time_nsec_) * NSEC_TO_SEC << std::endl;
-            if (distance > interval) {
+            std::cout << "distance = " << distance << std::endl;
 
-	      
-                if (can_time_sec_ == pose_time_sec_ && fabs(can_time_nsec_ - pose_time_nsec_) * NSEC_TO_SEC < 0.1 ) {
-		   std::cout << "waypoint_saved"<< std::endl;
+            std::cout << "can_time_sec = " << can_time_sec_ << std::endl;
+            std::cout << "pose_time_sec = " << pose_time_sec_ << std::endl;
+            std::cout << "can_time_nsec_ = " << can_time_nsec_ << std::endl;
+            std::cout << "pose_time_nsec_ = " << pose_time_nsec_ << std::endl;
+            std::cout << "nsec sub = " << fabs(can_time_nsec_ - pose_time_nsec_) * NSEC_TO_SEC << std::endl;
+
+            if (distance > interval) {
+                std::cout << "save sequence" << std::endl;
+                if (no_velocity_ == false) {
+                    if (can_time_sec_ == pose_time_sec_ && fabs(can_time_nsec_ - pose_time_nsec_) * NSEC_TO_SEC < 0.1) {
+                        std::cout << "waypoint_velocity_saved" << std::endl;
+                        last_pose_ = current_pose_;
+                        ofs_ << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << velocity_ << std::endl;
+                    }
+                } else {
+                    std::cout << "waypoint_saved" << std::endl;
                     last_pose_ = current_pose_;
-                    ofs_ << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << velocity_ << std::endl;
+                    ofs_ << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << 0 << std::endl;
                 }
             }
 
@@ -120,7 +128,6 @@ std::cout << "distance = " << distance << std::endl;
         loop_rate.sleep();
     }
 
-    
 }
 
 WAYPOINT_SAVER::~WAYPOINT_SAVER()
@@ -137,7 +144,7 @@ void WAYPOINT_SAVER::CanInfoCB(const vehicle_socket::CanInfoConstPtr &info)
 
 void WAYPOINT_SAVER::NDTPoseCB(const geometry_msgs::PoseStampedConstPtr &pose)
 {
-  
+
     if (save_topic == "ndt") {
         current_pose_ = pose->pose.position;
         pose_time_sec_ = pose->header.stamp.sec;
@@ -162,7 +169,7 @@ void WAYPOINT_SAVER::GNSSPoseCB(const sensor_msgs::NavSatFixConstPtr &pose)
         pose_time_sec_ = pose->header.stamp.sec;
         pose_time_nsec_ = pose->header.stamp.nsec;
     } else {
-      //  std::cout << "save_topic is not gnss" << std::endl;
+        //  std::cout << "save_topic is not gnss" << std::endl;
     }
 }
 
