@@ -42,6 +42,8 @@ vector<Scalar> 	_colors;
 #define	IMAGE_WIDTH	800
 #define	IMAGE_HEIGHT	600
 
+static const int OBJ_RECT_THICKNESS = 3;
+
 void drawRects(IplImage *Image,
                int object_num,
                std::vector<int> corner_point,
@@ -54,7 +56,7 @@ void drawRects(IplImage *Image,
         {
           CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
           CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
-          cvRectangle(Image,p1,p2,color,3);
+          cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
         }
     }
 }
@@ -91,8 +93,8 @@ void putDistance(IplImage *Image,
             {
 
               /*put label */
-              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - 3,
-                                         objects.corner_point[1+i*4] - baseline - 3);
+              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                         objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
 
               cvRectangle(Image,
                           cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
@@ -136,8 +138,8 @@ void putDistance(IplImage *Image,
             {
 
               /*put label */
-              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - 3,
-                                         objects.corner_point[1+i*4] - baseline - 3);
+              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                         objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
 
               cvRectangle(Image,
                           cvPoint(labelOrg.x + 0, labelOrg.y + baseline),

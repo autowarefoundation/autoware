@@ -19,6 +19,8 @@ double ratio = 1;	//resize ratio
 car_detector::FusedObjects car_fused_objects;
 car_detector::FusedObjects pedestrian_fused_objects;
 
+static const int OBJ_RECT_THICKNESS = 3;
+
 void showImage();
 
 void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, double ratio, CvScalar col)
@@ -27,7 +29,7 @@ void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, do
 	{
 		CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
 		CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
-		cvRectangle(Image,p1,p2,col,3);
+		cvRectangle(Image,p1,p2,col,OBJ_RECT_THICKNESS);
 	}
 }
 
@@ -96,8 +98,8 @@ void showImage()
         if(car_fused_objects.distance.at(i) != NO_DATA) {
 
           /* put label */
-          CvPoint labelOrg = cvPoint(car_fused_objects.corner_point[0+i*4] - 3,
-                                     car_fused_objects.corner_point[1+i*4] - baseline - 3);
+          CvPoint labelOrg = cvPoint(car_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     car_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
           cvRectangle(image_clone,
                       cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
                       cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
@@ -129,8 +131,8 @@ void showImage()
         } else {
 
           /* put label */
-          CvPoint labelOrg = cvPoint(car_fused_objects.corner_point[0+i*4] - 3,
-                                     car_fused_objects.corner_point[1+i*4] - baseline - 3);
+          CvPoint labelOrg = cvPoint(car_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     car_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
           cvRectangle(image_clone,
                       cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
                       cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
@@ -175,8 +177,8 @@ void showImage()
         if(pedestrian_fused_objects.distance.at(i) != NO_DATA) {
 
           /* put label */
-          CvPoint labelOrg = cvPoint(pedestrian_fused_objects.corner_point[0+i*4] - 3,
-                                     pedestrian_fused_objects.corner_point[1+i*4] - baseline - 3);
+          CvPoint labelOrg = cvPoint(pedestrian_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     pedestrian_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
           cvRectangle(image_clone,
                       cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
                       cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
@@ -208,8 +210,8 @@ void showImage()
         } else {
 
           /* put label */
-          CvPoint labelOrg = cvPoint(pedestrian_fused_objects.corner_point[0+i*4] - 3,
-                                     pedestrian_fused_objects.corner_point[1+i*4] - baseline - 3);
+          CvPoint labelOrg = cvPoint(pedestrian_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     pedestrian_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
           cvRectangle(image_clone,
                       cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
                       cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),

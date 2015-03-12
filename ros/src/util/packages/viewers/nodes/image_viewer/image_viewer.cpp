@@ -18,6 +18,8 @@ vector<Rect> peds;
 
 vector<Scalar> 	_colors;
 
+static const int OBJ_RECT_THICKNESS = 3;
+
 static void image_viewer_callback(const sensor_msgs::Image& image_source)
 {
 	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
@@ -52,10 +54,10 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 			cvRectangle( &frame,
 				cvPoint(cars[i].x, cars[i].y),
 				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
-				_colors[0], 3, CV_AA, 0);
+				_colors[0], OBJ_RECT_THICKNESS, CV_AA, 0);
 
             /* put object label */
-            CvPoint textOrg = cvPoint(cars[i].x - 3, cars[i].y - baseline - 3);
+            CvPoint textOrg = cvPoint(cars[i].x - OBJ_RECT_THICKNESS, cars[i].y - baseline - OBJ_RECT_THICKNESS);
 
             cvRectangle(&frame,
                         cvPoint(textOrg.x + 0 , textOrg.y + baseline),
@@ -86,10 +88,10 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 			cvRectangle( &frame,
 				cvPoint(peds[i].x, peds[i].y),
 				cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
-				_colors[1], 3, CV_AA, 0);
+				_colors[1], OBJ_RECT_THICKNESS, CV_AA, 0);
 
             /* put object label */
-            CvPoint textOrg = cvPoint(peds[i].x - 3, peds[i].y - baseline - 3);
+            CvPoint textOrg = cvPoint(peds[i].x - OBJ_RECT_THICKNESS, peds[i].y - baseline - OBJ_RECT_THICKNESS);
             cvRectangle(&frame,
                         cvPoint(textOrg.x + 0 , textOrg.y + baseline),
                         cvPoint(textOrg.x + text_size.width, textOrg.y - text_size.height),
