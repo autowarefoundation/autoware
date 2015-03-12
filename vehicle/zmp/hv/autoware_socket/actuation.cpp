@@ -22,6 +22,8 @@ void MainWindow::SetMode(int mode)
     usleep(100000);
     hev->SetStrMode(MODE_PROGRAM);
     usleep(100000);
+    hev->SetStrCMode(CONT_MODE_ANGLE);
+    usleep(100000);
     hev->SetDrvServo(SERVO_TRUE);
     usleep(100000);
     hev->SetStrServo(SERVO_TRUE);
@@ -204,15 +206,23 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   int delta_tmp = 0; // temporary delta
   int str_tmp = current_steering_angle; // temporary steering
   int inc = 0; // increment value
+  int inc_inc = 0;
   int second_half = 0; // just a flag
+
+  if (fabs(delta) < 180) {
+    inc_inc = STEERING_ANGLE_INC_INC;
+  } else {
+    inc_inc = STEERING_ANGLE_INC_INC * 2;
+  }
+
   if (delta > 0) {
     for (int i = 0; i < cmd_rx_interval / STEERING_INTERNAL_PERIOD; i++) {
       if (delta_tmp < delta / 2) {
-        inc += STEERING_ANGLE_INC_INC;
+        inc += inc_inc;
       } else {
-        inc += -STEERING_ANGLE_INC_INC;
+        inc += -inc_inc;
         if (second_half == 0) {
-          inc += STEERING_ANGLE_INC_INC;
+          inc += inc_inc;
         }
         second_half = 1;
       }
@@ -236,11 +246,11 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   } else {
     for (int i = 0; i < cmd_rx_interval / STEERING_INTERNAL_PERIOD; i++) {
       if (delta_tmp > delta / 2) {
-        inc += -STEERING_ANGLE_INC_INC;
+        inc += -inc_inc;
       } else {
-        inc += STEERING_ANGLE_INC_INC;
+        inc += inc_inc;
         if (second_half == 0) {
-          inc += -STEERING_ANGLE_INC_INC;
+          inc += -inc_inc;
         }
         second_half = 1;
       }
