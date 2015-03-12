@@ -134,14 +134,14 @@ void showImage()
           cvRectangle(image_clone,
                       cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
                       cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
-                      CV_RGB(0, 0, 0), // label back is black
+                      CV_RGB(0, 0, 0), // label background color is black
                       -1, 8, 0
                       );
           cvPutText(image_clone,
                     objectLabel.data(),
                     labelOrg,
                     &dfont_label,
-                    CV_RGB(255, 255, 255) // label text color is black
+                    CV_RGB(255, 255, 255) // label text color is white
                     );
 
           /* put distance data */
@@ -180,14 +180,14 @@ void showImage()
           cvRectangle(image_clone,
                       cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
                       cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
-                      CV_RGB(0, 0, 0), // label back is black
+                      CV_RGB(0, 0, 0), // label background color is black
                       -1, 8, 0
                       );
           cvPutText(image_clone,
                     objectLabel.data(),
                     labelOrg,
                     &dfont_label,
-                    CV_RGB(255, 255, 255) // label text color is black
+                    CV_RGB(255, 255, 255) // label text color is white
                     );
 
           /* put distance data */
@@ -213,14 +213,14 @@ void showImage()
           cvRectangle(image_clone,
                       cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
                       cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
-                      CV_RGB(0, 0, 0), // label back is black
+                      CV_RGB(0, 0, 0), // label background color is black
                       -1, 8, 0
                       );
           cvPutText(image_clone,
                     objectLabel.data(),
                     labelOrg,
                     &dfont_label,
-                    CV_RGB(255, 255, 255) // label text color is black
+                    CV_RGB(255, 255, 255) // label text color is white
                     );
 
           /* put distance data */
