@@ -341,17 +341,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetItem())
 
 	def OnChecked_obj(self, obj):
-		#cmd_dic = self.obj_to_cmd_dic(obj)
-		add_args = self.obj_to_add_args(obj)
-		if add_args is False:
-			return
-		#self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
-		(cmd_dic, _, proc_bak) = self.obj_to_cmd_dic_cmd_proc(obj)
-		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
-		(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
-		if proc != proc_bak:
-			self.toggle_enable_obj(obj)
-
+		self.OnLaunchKill_obj(obj)
 
 	def OnTreeHyperlinked(self, event):
 		self.OnHyperlinked_obj(event.GetItem())
@@ -796,7 +786,7 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		add_args = self.obj_to_add_args(obj)
 		if add_args is False:
-			obj.SetValue(not v)
+			set_val(obj, not v)
 			return
 		(cmd_dic, _, proc_bak) = self.obj_to_cmd_dic_cmd_proc(obj)
 		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
