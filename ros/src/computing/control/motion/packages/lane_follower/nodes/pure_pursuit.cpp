@@ -12,7 +12,7 @@
 #include <lane_follower/lane.h>
 #include <visualization_msgs/Marker.h>
 #include <runtime_manager/ConfigLaneFollower.h>
-
+#include <std_msgs/Bool.h>
 #include <iostream>
 #include <sstream>
 
@@ -36,7 +36,9 @@ lane_follower::lane _current_path;
 // ID (index) of the next waypoint.
 int _next_waypoint = 0;
 
-ros::Publisher vis_pub;
+ros::Publisher _vis_pub;
+ros::Publisher _stat_pub;
+std_msgs::Bool _lf_stat;
 bool _fix_flag = false;
 
 void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
@@ -57,7 +59,7 @@ void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose.pose;
     } //else
-    //      std::cout << "pose is not odometry" << std::endl;
+      //      std::cout << "pose is not odometry" << std::endl;
 
 }
 
@@ -85,7 +87,7 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
         _current_pose.pose.orientation = _quat;
 
     } //else
-    //      std::cout << "pose is not gnss" << std::endl;
+      //      std::cout << "pose is not gnss" << std::endl;
 
 }
 
@@ -193,6 +195,7 @@ int GetNextWayPoint()
         // seek for the first effective waypoint.
         if (_next_waypoint == 0) {
             do {
+                //std::cout << GetLookAheadDistance(_next_waypoint) << " : " << _error_distance << std::endl;
                 if (GetLookAheadDistance(_next_waypoint) < _error_distance) {
                     _next_waypoint++; // why is this needed?
                     break;
@@ -238,19 +241,30 @@ int GetNextWayPoint()
                 marker.color.r = 0.0;
                 marker.color.g = 0.0;
                 marker.color.b = 1.0;
-                vis_pub.publish(marker);
-                // end here.
+                _vis_pub.publish(marker);
+
+                //status turns true
+                _lf_stat.data = true;
+                _stat_pub.publish(_lf_stat);
 
                 return i;
 
             }
 
         }
+
+        //status turns false
+        _lf_stat.data = false;
+        _stat_pub.publish(_lf_stat);
         return 0;
 
-    } else
-        // std::cout << "nothing waypoint" << std::endl;
-        return 0;
+    }
+    // std::cout << "nothing waypoint" << std::endl;
+
+    //status turns false
+    _lf_stat.data = false;
+    _stat_pub.publish(_lf_stat);
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -315,11 +329,10 @@ geometry_msgs::Twist EndControl()
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
     double velocity_kmh;
-    if(_fix_flag == true){
-       velocity_kmh = _initial_velocity_kmh - end_ratio*end_loop;
-    }
-    else{
-       velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
+    if (_fix_flag == true) {
+        velocity_kmh = _initial_velocity_kmh - end_ratio * end_loop;
+    } else {
+        velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
 
     }
 
@@ -328,6 +341,11 @@ geometry_msgs::Twist EndControl()
     if (lookahead_distance < _end_distance) {
         twist.linear.x = 0;
         twist.angular.z = 0;
+
+        //status turns false
+        _lf_stat.data = false;
+        _stat_pub.publish(_lf_stat);
+
     } else {
 
         if (velocity_kmh < end_velocity_kmh)
@@ -389,16 +407,16 @@ int main(int argc, char **argv)
     std::cout << "end_distance : " << _end_distance << std::endl;
 
     private_nh.getParam("error_distance", _error_distance);
-        std::cout << "error_distance : " << _error_distance << std::endl;
+    std::cout << "error_distance : " << _error_distance << std::endl;
 
 //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
-    vis_pub = nh.advertise<visualization_msgs::Marker>("target_waypoint_mark", 0);
-
+    _vis_pub = nh.advertise<visualization_msgs::Marker>("target_waypoint_mark", 0);
+    _stat_pub = nh.advertise<std_msgs::Bool>("lf_stat", 0);
 //subscribe topic
     ros::Subscriber waypoint_subcscriber = nh.subscribe("ruled_waypoint", 1000, WayPointCallback);
-    ros::Subscriber odometry_subscriber = nh.subscribe("pose", 1000, OdometryPoseCallback);
+    ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1000, OdometryPoseCallback);
 
     ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
 
@@ -425,16 +443,17 @@ int main(int argc, char **argv)
                 // obtain the linear/angular velocity.
                 twist.twist = CalculateCmdTwist();
 
-		std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
-		std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
+                std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
+                std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
 
             } else {
                 twist.twist.linear.x = 0;
                 twist.twist.angular.z = 0;
             }
 
-        } else
+        } else {
             twist.twist = EndControl();
+        }
 
         if (_next_waypoint == _current_path.waypoints.size() - 1)
             endflag = true;
