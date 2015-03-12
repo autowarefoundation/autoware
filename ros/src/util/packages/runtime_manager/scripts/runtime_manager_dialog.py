@@ -341,11 +341,17 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetItem())
 
 	def OnChecked_obj(self, obj):
-		cmd_dic = self.obj_to_cmd_dic(obj)
+		#cmd_dic = self.obj_to_cmd_dic(obj)
 		add_args = self.obj_to_add_args(obj)
 		if add_args is False:
 			return
+		#self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
+		(cmd_dic, _, proc_bak) = self.obj_to_cmd_dic_cmd_proc(obj)
 		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
+		(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if proc != proc_bak:
+			self.toggle_enable_obj(obj)
+
 
 	def OnTreeHyperlinked(self, event):
 		self.OnHyperlinked_obj(event.GetItem())
@@ -1084,6 +1090,9 @@ class ParamPanel(wx.Panel):
 		self.prm = kwds.pop('prm')
 		wx.Panel.__init__(self, *args, **kwds)
 
+		obj = get_top( [ v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm ] )
+		(_, _, proc) = self.frame.obj_to_cmd_dic_cmd_proc(obj)
+
 		hszr = None
 		self.vps = []
 		self.tmp_msg = None
@@ -1139,6 +1148,11 @@ class ParamPanel(wx.Panel):
 			if do_category and self.in_msg(var):
 				topic_szrs = (szr, hszr)
 				(szr, hszr) = bak
+
+			if not self.in_msg(var) and var.get('rosparam'):
+				k = 'ext_toggle_enables'
+				self.gdic[ k ] = self.gdic.get(k, []) + [ vp ]
+				vp.Enable(proc is None)
 
 		self.SetSizer(szr)
 		self.update()
