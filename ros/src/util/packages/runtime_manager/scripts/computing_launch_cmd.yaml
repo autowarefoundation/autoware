@@ -74,11 +74,6 @@ subs :
         - name : lane_rule
           cmd  : rosrun lane_planner lane_rule
           param: lane_rule
-#          gui  :
-#            vector_map :
-#              flags : [ no_category ]
-#            ruled_waypoint :
-#              flags : [ no_category ]
         - name : lane_stop
           cmd  : rosrun lane_planner lane_stop
           param: lane_stop
@@ -306,7 +301,6 @@ params :
   - name : lane_navi
     vars :
     - name      : vector_map
-      label     : Vector Map
       kind      : path
       path_type : dir
       v         : /tmp
@@ -317,13 +311,11 @@ params :
     msg   : ConfigLaneRule
     vars  :
     - name      : vector_map
-#      label     : Vector Map
       kind      : path
       path_type : dir
       v         : /tmp
       rosparam  : /lane_rule/vector_map_directory
     - name      : ruled_waypoint
-#      label     : Ruled Waypoint
       kind      : path
       path_type : save
       v         : /tmp/ruled_waypoint.csv
