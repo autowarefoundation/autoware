@@ -1,14 +1,15 @@
 viewers :
-  - label : ROS
-    subs  :
-    - label : Rviz
-      cmd   : rosrun rviz rviz
-    - label : Topics
-      cmd   : rosrun rqt_graph rqt_graph
-  - label : Vehicle
-    subs  :
-    - label : CAN
-      cmd   : echo can
+  - subs  :
+    - label : ROS
+      subs  :
+      - label : Rviz
+        cmd   : rosrun rviz rviz
+      - label : Topics
+        cmd   : rosrun rqt_graph rqt_graph
+    - label : Vehicle
+      subs  :
+      - label : CAN
+        cmd   : echo can
   - label : Sensor
     subs  :
     - label : Image
