@@ -19,6 +19,8 @@ double ratio = 1;	//resize ratio
 car_detector::FusedObjects car_fused_objects;
 car_detector::FusedObjects pedestrian_fused_objects;
 
+static const int OBJ_RECT_THICKNESS = 3;
+
 void showImage();
 
 void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, double ratio, CvScalar col)
@@ -27,7 +29,7 @@ void showRects(IplImage *Image,int object_num, std::vector<int> corner_point, do
 	{
 		CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
 		CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
-		cvRectangle(Image,p1,p2,col,3);
+		cvRectangle(Image,p1,p2,col,OBJ_RECT_THICKNESS);
 	}
 }
 
@@ -69,6 +71,20 @@ void showImage()
     float italicscale = 0.0f;
     int  thickness    = 1;
 
+    std::string objectLabel;
+    CvFont      dfont_label;
+    float       hscale_label = 0.5f;
+    float       vscale_label = 0.5f;
+    CvSize      text_size;
+    int         baseline     = 0;
+
+    cvInitFont(&dfont_label, CV_FONT_HERSHEY_COMPLEX, hscale_label, vscale_label, italicscale, thickness, CV_AA);
+    objectLabel = "car";
+    cvGetTextSize(objectLabel.data(),
+                  &dfont_label,
+                  &text_size,
+                  &baseline);
+
     /*
      * Plot obstacle frame
      */
@@ -80,6 +96,24 @@ void showImage()
      */
     for (i = 0; i < car_fused_objects.car_num; i++) {
         if(car_fused_objects.distance.at(i) != NO_DATA) {
+
+          /* put label */
+          CvPoint labelOrg = cvPoint(car_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     car_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
+          cvRectangle(image_clone,
+                      cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
+                      cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
+                      CV_RGB(0, 0, 0), // label background color is black
+                      -1, 8, 0
+                      );
+          cvPutText(image_clone,
+                    objectLabel.data(),
+                    labelOrg,
+                    &dfont_label,
+                    CV_RGB(255, 255, 255) // label text color is white
+                    );
+
+          /* put distance data */
             cvRectangle(image_clone,
                         cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - (((int)log10(car_fused_objects.distance.at(i)/100)+1) * 5 + 45),
                                   car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 5),
@@ -95,6 +129,24 @@ void showImage()
                       &dfont,
                       CV_RGB(255, 0, 0));
         } else {
+
+          /* put label */
+          CvPoint labelOrg = cvPoint(car_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     car_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
+          cvRectangle(image_clone,
+                      cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
+                      cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
+                      CV_RGB(0, 0, 0), // label background color is black
+                      -1, 8, 0
+                      );
+          cvPutText(image_clone,
+                    objectLabel.data(),
+                    labelOrg,
+                    &dfont_label,
+                    CV_RGB(255, 255, 255) // label text color is white
+                    );
+
+          /* put distance data */
             cvRectangle(image_clone,
                         cv::Point(car_fused_objects.corner_point[0+i*4] + (car_fused_objects.corner_point[2+i*4]/2) - 50,
                                   car_fused_objects.corner_point[1+i*4] + car_fused_objects.corner_point[3+i*4] + 5),
@@ -112,11 +164,35 @@ void showImage()
         }
     }
 
+    objectLabel = "pedestrian";
+    cvGetTextSize(objectLabel.data(),
+                  &dfont_label,
+                  &text_size,
+                  &baseline);
+
     /*
      * Plot pedestrian distance data on image
      */
     for (i = 0; i < pedestrian_fused_objects.car_num; i++) {
         if(pedestrian_fused_objects.distance.at(i) != NO_DATA) {
+
+          /* put label */
+          CvPoint labelOrg = cvPoint(pedestrian_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     pedestrian_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
+          cvRectangle(image_clone,
+                      cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
+                      cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
+                      CV_RGB(0, 0, 0), // label background color is black
+                      -1, 8, 0
+                      );
+          cvPutText(image_clone,
+                    objectLabel.data(),
+                    labelOrg,
+                    &dfont_label,
+                    CV_RGB(255, 255, 255) // label text color is white
+                    );
+
+          /* put distance data */
             cvRectangle(image_clone,
                         cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - (((int)log10(pedestrian_fused_objects.distance.at(i)/100)+1) * 5 + 45),
                                   pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 5),
@@ -132,6 +208,24 @@ void showImage()
                       &dfont,
                       CV_RGB(255, 0, 0));
         } else {
+
+          /* put label */
+          CvPoint labelOrg = cvPoint(pedestrian_fused_objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
+                                     pedestrian_fused_objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
+          cvRectangle(image_clone,
+                      cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
+                      cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
+                      CV_RGB(0, 0, 0), // label background color is black
+                      -1, 8, 0
+                      );
+          cvPutText(image_clone,
+                    objectLabel.data(),
+                    labelOrg,
+                    &dfont_label,
+                    CV_RGB(255, 255, 255) // label text color is white
+                    );
+
+          /* put distance data */
             cvRectangle(image_clone,
                         cv::Point(pedestrian_fused_objects.corner_point[0+i*4] + (pedestrian_fused_objects.corner_point[2+i*4]/2) - 50,
                                   pedestrian_fused_objects.corner_point[1+i*4] + pedestrian_fused_objects.corner_point[3+i*4] + 5),
