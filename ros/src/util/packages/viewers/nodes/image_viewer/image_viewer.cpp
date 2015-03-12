@@ -24,17 +24,17 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 							     encoding);
 	IplImage frame = cv_image->image;
-	
-	Mat matImage(&frame, false);	
+
+	Mat matImage(&frame, false);
 	cvtColor(matImage, matImage, CV_BGR2RGB);
 
-	
-	
+
+
 	for(std::size_t i=0; i<cars.size();i++)
 	{
 		if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
 		{
-			cvRectangle( &frame, 
+			cvRectangle( &frame,
 				cvPoint(cars[i].x, cars[i].y),
 				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
 				_colors[0], 3, 8,0 );
@@ -44,13 +44,13 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	{
 		if(peds[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
 		{
-			cvRectangle( &frame, 
+			cvRectangle( &frame,
 				cvPoint(peds[i].x, peds[i].y),
 				cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
 				_colors[1], 3, 8,0 );
 		}
 	}
-	
+
 
 	cvShowImage("Image Viewer", &frame);
 	cvWaitKey(2);
@@ -59,10 +59,10 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 void car_updater_callback(dpm::ImageObjects image_objects_msg)
 {
 	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point; 
+	vector<int> points = image_objects_msg.corner_point;
 	//points are X,Y,W,H and repeat for each instance
 	cars.clear();
-	
+
 	for (int i=0; i<num;i++)
 	{
 		Rect tmp;
@@ -71,17 +71,17 @@ void car_updater_callback(dpm::ImageObjects image_objects_msg)
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		cars.push_back(tmp);
-		
+
 	}
-	
+
 }
 void ped_updater_callback(dpm::ImageObjects image_objects_msg)
 {
 	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point; 
+	vector<int> points = image_objects_msg.corner_point;
 	//points are X,Y,W,H and repeat for each instance
 	peds.clear();
-	
+
 	for (int i=0; i<num;i++)
 	{
 		Rect tmp;
@@ -90,9 +90,9 @@ void ped_updater_callback(dpm::ImageObjects image_objects_msg)
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		peds.push_back(tmp);
-		
+
 	}
-	
+
 }
 
 int main(int argc, char **argv)
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 	ros::Subscriber scriber_car = n.subscribe(car_node, 1,
 					      car_updater_callback);
 	ros::Subscriber scriber_ped = n.subscribe(pedestrian_node, 1,
-					      ped_updater_callback); 
+					      ped_updater_callback);
 
 	ros::spin();
 	return 0;
