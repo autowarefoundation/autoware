@@ -28,7 +28,22 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	Mat matImage(&frame, false);
 	cvtColor(matImage, matImage, CV_BGR2RGB);
 
+    /* variables for object label */
+    std::string objectLabel;
+    CvFont      font;
+    const float hscale      = 0.5f;
+    const float vscale      = 0.5f;
+    const float italicScale = 0.0f;
+    const int   thickness   = 1;
+    CvSize      text_size;
+    int         baseline    = 0;
 
+    cvInitFont(&font, CV_FONT_HERSHEY_COMPLEX, hscale, vscale, italicScale, thickness, CV_AA);
+    objectLabel = "car";
+    cvGetTextSize(objectLabel.data(),
+                  &font,
+                  &text_size,
+                  &baseline);
 
 	for(std::size_t i=0; i<cars.size();i++)
 	{
@@ -37,9 +52,33 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 			cvRectangle( &frame,
 				cvPoint(cars[i].x, cars[i].y),
 				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
-				_colors[0], 3, 8,0 );
+				_colors[0], 3, CV_AA, 0);
+
+            /* put object label */
+            CvPoint textOrg = cvPoint(cars[i].x - 3, cars[i].y - baseline - 3);
+
+            cvRectangle(&frame,
+                        cvPoint(textOrg.x + 0 , textOrg.y + baseline),
+                        cvPoint(textOrg.x + text_size.width, textOrg.y - text_size.height),
+                        CV_RGB(0, 0, 0), // text background is black
+                        -1, 8, 0
+                        );
+            cvPutText(&frame,
+                      objectLabel.data(),
+                      textOrg,
+                      &font,
+                      CV_RGB(255, 255, 255) // text color is black
+                      );
+
 		}
 	}
+
+    objectLabel = "pedestrian";
+    cvGetTextSize(objectLabel.data(),
+                  &font,
+                  &text_size,
+                  &baseline);
+
 	for(std::size_t i=0; i<peds.size();i++)
 	{
 		if(peds[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
@@ -47,7 +86,23 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 			cvRectangle( &frame,
 				cvPoint(peds[i].x, peds[i].y),
 				cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
-				_colors[1], 3, 8,0 );
+				_colors[1], 3, CV_AA, 0);
+
+            /* put object label */
+            CvPoint textOrg = cvPoint(peds[i].x - 3, peds[i].y - baseline - 3);
+            cvRectangle(&frame,
+                        cvPoint(textOrg.x + 0 , textOrg.y + baseline),
+                        cvPoint(textOrg.x + text_size.width, textOrg.y - text_size.height),
+                        CV_RGB(0, 0, 0), // text background is black
+                        -1, 8, 0
+                        );
+            cvPutText(&frame,
+                      objectLabel.data(),
+                      textOrg,
+                      &font,
+                      CV_RGB(255, 255, 255) // text color is black
+                      );
+
 		}
 	}
 
