@@ -476,19 +476,27 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	def create_viewer_btns(self, parent, sizer, lst):
 		for dic in lst:
-			lb = dic['label']
-			flag = wx.ALL
+			lb = dic.get('label')
+			prop = 0
+			flag = wx.ALL | wx.EXPAND
+			border = 4
 			if 'subs' in dic:
-				sb = wx.StaticBox(parent, wx.ID_ANY, lb)
-				sb.Lower()
-				obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+				if lb:
+					sb = wx.StaticBox(parent, wx.ID_ANY, lb)
+					sb.Lower()
+					obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+				else:
+					obj = wx.BoxSizer(wx.VERTICAL)
 				self.create_viewer_btns(parent, obj, dic['subs'])
 			else:
 				obj = wx.ToggleButton(parent, wx.ID_ANY, lb)
 				self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
 				self.viewer_cmd[obj] = (dic['cmd'], None)
-				flag |= wx.EXPAND
-			sizer.Add(obj, 0, flag, 4)
+
+			if sizer is self.sizer_viewer:
+				prop = 1
+				flag = wx.ALL | wx.ALIGN_CENTER_VERTICAL
+			sizer.Add(obj, prop, flag, border)
 
 	def OnViewer(self, event):
 		self.launch_kill_proc(event.GetEventObject(), self.viewer_cmd)
