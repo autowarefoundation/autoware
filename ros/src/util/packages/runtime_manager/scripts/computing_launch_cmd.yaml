@@ -301,7 +301,6 @@ params :
   - name : lane_navi
     vars :
     - name      : vector_map
-      label     : Vector Map
       kind      : path
       path_type : dir
       v         : /tmp
@@ -312,13 +311,11 @@ params :
     msg   : ConfigLaneRule
     vars  :
     - name      : vector_map
-      label     : Vector Map
       kind      : path
       path_type : dir
       v         : /tmp
       rosparam  : /lane_rule/vector_map_directory
     - name      : ruled_waypoint
-      label     : Ruled Waypoint
       kind      : path
       path_type : save
       v         : /tmp/ruled_waypoint.csv

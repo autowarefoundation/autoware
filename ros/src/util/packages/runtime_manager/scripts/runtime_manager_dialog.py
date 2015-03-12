@@ -341,11 +341,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetItem())
 
 	def OnChecked_obj(self, obj):
-		cmd_dic = self.obj_to_cmd_dic(obj)
-		add_args = self.obj_to_add_args(obj)
-		if add_args is False:
-			return
-		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
+		self.OnLaunchKill_obj(obj)
 
 	def OnTreeHyperlinked(self, event):
 		self.OnHyperlinked_obj(event.GetItem())
@@ -425,7 +421,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		for (name, v) in pdic.items():
 			(obj, attr) = msg_path_to_obj_attr(msg, name)
-			if attr in obj.__slots__:
+			if obj and attr in obj.__slots__:
 				type_str = obj._slot_types[ obj.__slots__.index(attr) ]
 				setattr(obj, attr, str_to_rosval(v, type_str, v))
 		
@@ -482,9 +478,7 @@ class MyFrame(rtmgr.MyFrame):
 			border = 4
 			if 'subs' in dic:
 				if lb:
-					sb = wx.StaticBox(parent, wx.ID_ANY, lb)
-					sb.Lower()
-					obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+					obj = static_box_sizer(parent, lb)
 				else:
 					obj = wx.BoxSizer(wx.VERTICAL)
 				self.create_viewer_btns(parent, obj, dic['subs'])
@@ -548,9 +542,7 @@ class MyFrame(rtmgr.MyFrame):
 		bdr_flg = wx.ALL
 		if 'subs' in dic:
 			if dic['name']:
-				sb = wx.StaticBox(panel, wx.ID_ANY, dic['name'])
-				sb.Lower()
-				obj = wx.StaticBoxSizer(sb, wx.VERTICAL)
+				obj = static_box_sizer(panel, dic.get('name'))
 			else:
 				obj = wx.BoxSizer(wx.VERTICAL)
 			for d in dic['subs']:
@@ -794,7 +786,7 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		add_args = self.obj_to_add_args(obj)
 		if add_args is False:
-			obj.SetValue(not v)
+			set_val(obj, not v)
 			return
 		(cmd_dic, _, proc_bak) = self.obj_to_cmd_dic_cmd_proc(obj)
 		self.launch_kill_proc(obj, cmd_dic, add_args=add_args)
@@ -1096,9 +1088,15 @@ class ParamPanel(wx.Panel):
 		self.prm = kwds.pop('prm')
 		wx.Panel.__init__(self, *args, **kwds)
 
+		obj = get_top( [ v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm ] )
+		(_, _, proc) = self.frame.obj_to_cmd_dic_cmd_proc(obj)
+
 		hszr = None
 		self.vps = []
+		self.tmp_msg = None
 		szr = wx.BoxSizer(wx.VERTICAL)
+
+		topic_szrs = (None, None)
 		for var in self.prm.get('vars'):
 			name = var.get('name')
 			if name not in self.gdic:
@@ -1117,19 +1115,42 @@ class ParamPanel(wx.Panel):
 			border = gdic_v.get('border', 0)
 			flag = wx_flag_get(gdic_v.get('flags', []))
 
+			do_category = 'no_category' not in gdic_v.get('flags', [])
+			if do_category and self.in_msg(var):
+				bak = (szr, hszr)
+				(szr, hszr) = topic_szrs
+				if szr is None:
+					szr = static_box_sizer(self, 'topic : ' + self.prm.get('topic'))
+					bak[0].Add(szr, 0, wx.EXPAND | wx.ALL, 4)
+			targ_szr = szr
 			if vp.has_slider or vp.kind =='path':
 				hszr = None if hszr else hszr
 				flag |= wx.EXPAND
-				szr.Add(vp, prop, flag, border)
 			else:
 				if hszr is None:
 					hszr = wx.BoxSizer(wx.HORIZONTAL)
 					szr.Add(hszr, 0, wx.EXPAND)
 				flag |= wx.ALIGN_CENTER_VERTICAL
-				hszr.Add(vp, prop, flag, border)
+				targ_szr = hszr
+
+			if do_category and 'rosparam' in var:
+				rp_szr = static_box_sizer(self, 'rosparam : ' + var.get('rosparam'))
+				targ_szr.Add(rp_szr, 0, wx.EXPAND | wx.ALL, 4)
+				targ_szr = rp_szr
+
+			targ_szr.Add(vp, prop, flag, border)
 
 			if 'nl' in gdic_v.get('flags', []):
 				hszr = None
+
+			if do_category and self.in_msg(var):
+				topic_szrs = (szr, hszr)
+				(szr, hszr) = bak
+
+			if not self.in_msg(var) and var.get('rosparam'):
+				k = 'ext_toggle_enables'
+				self.gdic[ k ] = self.gdic.get(k, []) + [ vp ]
+				vp.Enable(proc is None)
 
 		self.SetSizer(szr)
 		self.update()
@@ -1145,6 +1166,17 @@ class ParamPanel(wx.Panel):
 			gdic_v = self.gdic.get(name, {})
 			if 'func' in gdic_v:
 				del gdic_v['func']
+
+	def in_msg(self, var):
+		if 'topic' not in self.prm or 'msg' not in self.prm:
+			return False
+		if self.tmp_msg is None:
+			klass_msg = globals().get( self.prm.get('msg') )
+			if klass_msg is None:
+				return False
+			self.tmp_msg = klass_msg()
+		(obj, attr) = msg_path_to_obj_attr(self.tmp_msg, var.get('name'))
+		return obj and attr in obj.__slots__
 
 class VarPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
@@ -1488,6 +1520,11 @@ def terminate(proc, sigint=False):
 		proc.send_signal(signal.SIGINT)
 	else:
 		proc.terminate()
+
+def static_box_sizer(parent, s, orient=wx.VERTICAL):
+	sb = wx.StaticBox(parent, wx.ID_ANY, s)
+	sb.Lower()
+	return wx.StaticBoxSizer(sb, orient)
 
 def wx_flag_get(flags):
 	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT, 

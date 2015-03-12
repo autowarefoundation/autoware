@@ -1632,7 +1632,7 @@
     <object class="MyDialogParam" name="dialog_3" base="EditDialog">
         <style>wxDEFAULT_DIALOG_STYLE</style>
         <title>dialog_3</title>
-        <size>470, 246</size>
+        <size>470, 300</size>
         <object class="wxBoxSizer" name="sizer_30" base="EditBoxSizer">
             <orient>wxVERTICAL</orient>
             <object class="sizeritem">

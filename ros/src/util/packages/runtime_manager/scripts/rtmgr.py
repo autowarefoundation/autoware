@@ -681,7 +681,7 @@ class MyDialogParam(wx.Dialog):
 	def __set_properties(self):
 		# begin wxGlade: MyDialogParam.__set_properties
 		self.SetTitle(_("dialog_3"))
-		self.SetSize((470, 246))
+		self.SetSize((470, 300))
 		self.panel_v.SetScrollRate(10, 10)
 		# end wxGlade
 
