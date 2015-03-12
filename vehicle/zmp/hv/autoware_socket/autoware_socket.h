@@ -25,7 +25,7 @@ using namespace zmp::hev;
 #define SPEED_LIMIT 60.0 // km/h
 #define STEERING_ANGLE_INC_INC 5 // degree
 #define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
-#define NORMAL_STEERING_THRETHOLD 60 // for tuning (degree)
+#define NORMAL_STEERING_THRETHOLD 90 // for tuning (degree)
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
 #define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
