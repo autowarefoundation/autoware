@@ -99,7 +99,7 @@ void Getter(CMDDATA &cmddata)
   cmdVector = split(cmdRes,',');
   if(cmdVector.size() == 7){
     cmddata.vel.tv = atof(cmdVector[0].c_str());
-    cmddata.vel.sv = -atof(cmdVector[1].c_str()); //  swap + and -
+    cmddata.vel.sv = atof(cmdVector[1].c_str()); //  swap + and -
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
     cmddata.accel = atoi(cmdVector[4].c_str());
@@ -187,7 +187,7 @@ void Control(vel_data_t vel, void* p)
   // \theta = cmd_wheel_angle
   // vel.sv/vel.tv = Radius
   // l \simeq VEHICLE_LENGTH
-  if (vel.tv < 1) {// just avoid divided by zero.
+  if (vel.tv < 0.1) {// just avoid divided by zero.
     cmd_steering_angle = current_steering_angle;
   }
   else {
