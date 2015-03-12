@@ -61,7 +61,8 @@ void drawRects(IplImage *Image,
 
 void putDistance(IplImage *Image,
                  car_detector::FusedObjects objects,
-                 int threshold_height)
+                 int threshold_height,
+                 const char* objectLabel)
 {
   char distance_string[32];
   CvFont dfont;
@@ -70,12 +71,43 @@ void putDistance(IplImage *Image,
   float italicscale = 0.0f;
   int	thickness   = 1;
 
+  CvFont      dfont_label;
+  float       hscale_label = 0.5f;
+  float       vscale_label = 0.5f;
+  CvSize      text_size;
+  int         baseline     = 0;
+
+  cvInitFont(&dfont_label, CV_FONT_HERSHEY_COMPLEX, hscale_label, vscale_label, italicscale, thickness, CV_AA);
+  cvGetTextSize(objectLabel,
+                &dfont_label,
+                &text_size,
+                &baseline);
+
   for (int i=0; i<objects.car_num; i++)
     {
       if (objects.corner_point[1+i*4] > threshold_height) // temporal way to avoid drawing detections in the sky
         {
           if (objects.distance.at(i) != NO_DATA)
             {
+
+              /*put label */
+              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - 3,
+                                         objects.corner_point[1+i*4] - baseline - 3);
+
+              cvRectangle(Image,
+                          cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
+                          cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
+                          CV_RGB(0, 0, 0), // label background is black
+                          -1, 8, 0
+                          );
+              cvPutText(Image,
+                        objectLabel,
+                        labelOrg,
+                        &dfont_label,
+                        CV_RGB(255, 255, 255) // label text color is white
+                        );
+
+              /* put distance data */
               cvRectangle(Image,
                           cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - (((int)log10(objects.distance.at(i)/100)+1) * 5 + 45),
                                     objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 5),
@@ -102,6 +134,25 @@ void putDistance(IplImage *Image,
             }
           else 			// object has no distance information
             {
+
+              /*put label */
+              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - 3,
+                                         objects.corner_point[1+i*4] - baseline - 3);
+
+              cvRectangle(Image,
+                          cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
+                          cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
+                          CV_RGB(0, 0, 0), // label background is black
+                          -1, 8, 0
+                          );
+              cvPutText(Image,
+                        objectLabel,
+                        labelOrg,
+                        &dfont_label,
+                        CV_RGB(255, 255, 255) // label text color is white
+                        );
+
+              /* put distance data */
               cvRectangle(Image,
                           cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - 50,
                                     objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 5),
@@ -181,10 +232,12 @@ void show(void)
   /* PUT DISTANCE text on image */
   putDistance(&frame,
               car_fused_objects,
-              matImage.rows*.3);
+              matImage.rows*.3,
+              "car");
   putDistance(&frame,
               pedestrian_fused_objects,
-              matImage.rows*.3);
+              matImage.rows*.3,
+              "pedestrian");
 
   /* DRAW POINTS of lidar scanning */
   int w = IMAGE_WIDTH;
