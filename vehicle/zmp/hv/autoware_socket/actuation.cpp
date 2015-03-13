@@ -20,11 +20,13 @@ void MainWindow::SetMode(int mode)
     cout << "switching to PROGRAM" << endl;
     hev->SetDrvMode(MODE_PROGRAM);
     usleep(100000);
-    hev->SetStrMode(MODE_PROGRAM);
-    usleep(100000);
-    hev->SetStrCMode(CONT_MODE_ANGLE);
+    hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity
     usleep(100000);
     hev->SetDrvServo(SERVO_TRUE);
+    usleep(100000);
+    hev->SetStrMode(MODE_PROGRAM);
+    usleep(100000);
+    hev->SetStrCMode(CONT_MODE_ANGLE); // angle mode not torque
     usleep(100000);
     hev->SetStrServo(SERVO_TRUE);
     break;
@@ -35,27 +37,33 @@ void MainWindow::SetMode(int mode)
 
 void MainWindow::SetGear(int gear)
 {
+  double current_velocity = _hev_state.drvInf.veloc; // km/h
+
+  // double check if the velocity is zero or not,
+  // though SetGear() should not be called when driving.
+  if (current_velocity != 0) {
+    return;
+  }
+
+  hev->SetDrvStroke(0);
+  hev->SetBrakeStroke(HEV_MAX_BRAKE);
+
   switch (gear) {
   case CMD_GEAR_D:
     cout << "shifting to Gear D" << endl;
-    hev->SetDrvStroke(0);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE);
     hev->SetDrvShiftMode(SHIFT_POS_D);
     break;
   case CMD_GEAR_R:
     cout << "shifting to Gear R" << endl;
-    hev->SetDrvStroke(0);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE);
     hev->SetDrvShiftMode(SHIFT_POS_R);
     break;
   case CMD_GEAR_B:
-    cout << "shifting to Gear R" << endl;
-    hev->SetDrvStroke(0);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE);
+    cout << "shifting to Gear B" << endl;
     hev->SetDrvShiftMode(SHIFT_POS_B);
     break;
   case CMD_GEAR_N:
     cout << "shifting to Gear N" << endl;
+    hev->SetDrvShiftMode(SHIFT_POS_N);
     break;
   default:
     cout << "Unknown gear: " << gear << endl;    
@@ -98,7 +106,7 @@ bool MainWindow::Accel(int target_accel, int gain)
   cout << "setting accel pedal to " << cmd_accel << endl;
 
   if (cmd_accel >= 0 && cmd_accel < ACCEL_PEDAL_MAX) {
-    cout << "calling SetPedalStroke()" << endl;
+    cout << "calling SetDrvStroke()" << endl;
 
     hev->SetDrvStroke(cmd_accel);
 #ifdef DEBUG
@@ -209,10 +217,10 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   int inc_inc = 0;
   int second_half = 0; // just a flag
 
-  if (fabs(delta) < 180) {
-    inc_inc = STEERING_ANGLE_INC_INC;
+  if (fabs(delta) < STEERING_INC_INC_THRETHOLD) {
+    inc_inc = STEERING_ANGLE_INC_INC; // slow rotation
   } else {
-    inc_inc = STEERING_ANGLE_INC_INC * 2;
+    inc_inc = STEERING_ANGLE_INC_INC * 2; // fast rotation
   }
 
   if (delta > 0) {
@@ -234,7 +242,7 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
 
       delta_tmp += inc;
       str_tmp = current_steering_angle + inc;
-      //str_tmp = str_tmp + inc; // for debug at lab.
+
       if (str_tmp < str) {
         hev->SetStrAngle(str_tmp*10);
       } else {
@@ -263,7 +271,7 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
 
       delta_tmp += inc;
       str_tmp = current_steering_angle + inc;
-      //str_tmp = str_tmp + inc; // for debug at lab.
+
       if (str_tmp > str) {
         hev->SetStrAngle(str_tmp*10);
       } else {

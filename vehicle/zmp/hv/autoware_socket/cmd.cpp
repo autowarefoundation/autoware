@@ -28,7 +28,7 @@ void Getter(CMDDATA &cmddata)
 
   struct sockaddr_in server;
   int sock;
-  //  char deststr[80] = serverIP.c_str();
+  // char deststr[80] = serverIP.c_str();
   unsigned int **addrptr;
 
   sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,6 +80,7 @@ void Getter(CMDDATA &cmddata)
       return;
     }
   }
+
   int n;
 
   while (true) {
@@ -88,7 +89,7 @@ void Getter(CMDDATA &cmddata)
     if (n < 0) {
       perror("cmd : read erro");
       return;
-    }else if(n == 0){
+    } else if (n == 0) {
       break;
     }
     cmdRes.append(recvdata,n);
@@ -97,9 +98,9 @@ void Getter(CMDDATA &cmddata)
   // string version
   std::vector<std::string> cmdVector;
   cmdVector = split(cmdRes,',');
-  if(cmdVector.size() == 7){
+  if (cmdVector.size() == 7) {
     cmddata.vel.tv = atof(cmdVector[0].c_str());
-    cmddata.vel.sv = atof(cmdVector[1].c_str()); //  swap + and -
+    cmddata.vel.sv = atof(cmdVector[1].c_str());
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
     cmddata.accel = atoi(cmdVector[4].c_str());
@@ -109,29 +110,15 @@ void Getter(CMDDATA &cmddata)
     cout << endl << endl;
     cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
     cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
-  } else{
+  } else {
     fprintf(stderr,"cmd : Recv data is invalid\n");
   }
-  printf("cmd : return data : %s\n",cmdRes.c_str());
+  cout << "cmd : return data : " << cmdRes.c_str() << endl;
 
   close(sock);
 
   return;
 }
-
-/*
-void CMDGetter(){
-  pthread_t _getter;
-  while(1){
-    if(pthread_create(&_getter, NULL, Getter, NULL)){
-      fprintf(stderr,"cmd : pthread create error");
-      return;
-    }
-    pthread_detach(_getter);
-    usleep(10*1000);
-  }
-}
-*/
 
 void Update(void *p)
 {
@@ -205,8 +192,10 @@ void Control(vel_data_t vel, void* p)
     estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
   }
 
-  cout << "Current " << "vel : " << current_velocity << ", str : "<< current_steering_angle << endl; 
-  cout << "Command " << "vel : " << cmd_velocity << ", str : "<< cmd_steering_angle << endl; 
+  cout << "Current " << "vel : " << current_velocity 
+       << ", str : " << current_steering_angle << endl; 
+  cout << "Command " << "vel : " << cmd_velocity 
+       << ", str : " << cmd_steering_angle << endl; 
   cout << "Estimate Accel : " << estimate_accel << endl; 
 
   // TRY TO INCREASE STEERING
@@ -285,7 +274,7 @@ void *MainWindow::CMDGetterEntry(void *a)
     Control(cmddata.vel, main);
 #endif
 
-    usleep(cmd_rx_interval*1000);
+    usleep(cmd_rx_interval*1000); // not real-time...
   }
   return NULL;
 }
