@@ -15,6 +15,8 @@
 #endif
 #include <vector>
 #include <iostream>
+#include <math.h>
+#include <float.h>
 
 using namespace std;
 using namespace cv;
@@ -36,6 +38,13 @@ car_detector::FusedObjects car_fused_objects;
 car_detector::FusedObjects pedestrian_fused_objects;
 #endif
 
+/* check whether floating value x is nearly 0 or not */
+static inline bool isNearlyNODATA(float x)
+{
+  float abs_x  = (float)fabs(x);
+  const int rangeScale = 100;
+  return(abs_x < FLT_MIN*rangeScale);
+}
 
 vector<Scalar> 	_colors;
 
@@ -48,11 +57,12 @@ void drawRects(IplImage *Image,
                int object_num,
                std::vector<int> corner_point,
                CvScalar color,
-               int threshold_height)
+               int threshold_height,
+               std::vector<float> distance)
 {
   for(int i = 0; i < object_num; i++)
     {
-      if (corner_point[1+i*4] > threshold_height) // temporal way to avoid drawing detections in the sky
+      if (corner_point[1+i*4] > threshold_height && !isNearlyNODATA(distance.at(i))) // temporal way to avoid drawing detections in the sky
         {
           CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
           CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
@@ -89,7 +99,7 @@ void putDistance(IplImage *Image,
     {
       if (objects.corner_point[1+i*4] > threshold_height) // temporal way to avoid drawing detections in the sky
         {
-          if (objects.distance.at(i) != NO_DATA)
+          if (!isNearlyNODATA(objects.distance.at(i)))
             {
 
               /*put label */
@@ -134,51 +144,7 @@ void putDistance(IplImage *Image,
                         &dfont,
                         CV_RGB(255, 0, 0));
             }
-          else 			// object has no distance information
-            {
 
-              /*put label */
-              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
-                                         objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
-
-              cvRectangle(Image,
-                          cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
-                          cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
-                          CV_RGB(0, 0, 0), // label background is black
-                          -1, 8, 0
-                          );
-              cvPutText(Image,
-                        objectLabel,
-                        labelOrg,
-                        &dfont_label,
-                        CV_RGB(255, 255, 255) // label text color is white
-                        );
-
-              /* put distance data */
-              cvRectangle(Image,
-                          cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - 50,
-                                    objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 5),
-                          cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) + 55,
-                                    objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 30),
-                          cv::Scalar(255,255,255), -1);
-
-              cvInitFont(&dfont,
-                         CV_FONT_HERSHEY_COMPLEX,
-                         hscale,
-                         vscale,
-                         italicscale,
-                         thickness,
-                         CV_AA);
-
-              sprintf(distance_string, "No data");
-
-              cvPutText(Image,
-                        distance_string,
-                        cvPoint(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - 45,
-                                objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 25),
-                        &dfont,
-                        CV_RGB(255, 0, 0));
-            }
         }
     }
 }
@@ -223,13 +189,15 @@ void show(void)
             car_fused_objects.car_num,
             car_fused_objects.corner_point,
             cvScalar(255.0, 255.0, 0,0),
-            matImage.rows*.3);
+            matImage.rows*.3,
+            car_fused_objects.distance);
 
   drawRects(&frame,
             pedestrian_fused_objects.car_num,
             pedestrian_fused_objects.corner_point,
             cvScalar(0.0, 255.0, 0,0),
-            matImage.rows*.3);
+            matImage.rows*.3,
+            pedestrian_fused_objects.distance);
 #endif
   /* PUT DISTANCE text on image */
   putDistance(&frame,
