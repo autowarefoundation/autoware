@@ -420,7 +420,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
 
-    ros::Subscriber ndt_subscriber = nh.subscribe("ndt_pose", 1000, NDTCallback);
+    ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
 
     ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
 

@@ -6,7 +6,9 @@
 
 #define DEBUG 0
 // #define VIEW_TIME
-#define OUTPUT // If you want to output "position_log.txt", "#define OUTPUT".
+
+// If you want to output "position_log.txt", "#define OUTPUT".
+//#define OUTPUT 
 
 #include <iostream>
 #include <sstream>
@@ -32,23 +34,6 @@
 #include <pcl/filters/voxel_grid.h>
 
 #include <runtime_manager/ConfigNdt.h>
-
-// Initial position for Moriyama
-/*
- #define INITIAL_X -14771
- #define INITIAL_Y -84757
- #define INITIAL_Z 39.8
- #define INITIAL_ROLL 0
- #define INITIAL_PITCH 0
- #define INITIAL_YAW 2.324
- // Initial position for Toyota
- #define INITIAL_X 3702
- #define INITIAL_Y -99425
- #define INITIAL_Z 88
- #define INITIAL_ROLL 0
- #define INITIAL_PITCH 0
- #define INITIAL_YAW 0
- */
 
 typedef struct {
     double x;
@@ -110,7 +95,7 @@ std_msgs::Bool ndt_stat_msg;
 
 void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
-    if (use_gnss != input->init_pos_gnss){
+    if (use_gnss != input->init_pos_gnss) {
         init_pos_set = 0;
     } else if (use_gnss == 0 && (initial_x != input->x || initial_y != input->y || initial_z != input->z || initial_roll != input->roll || initial_pitch != input->pitch || initial_yaw != input->yaw)) {
         init_pos_set = 0;
@@ -419,10 +404,10 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         control_pose_pub.publish(control_pose_msg);
 
 	int iter_num = ndt.getFinalNumIteration();
-	if(iter_num <= 3){
-	  ndt_stat_msg.data = true;
-	}else{
+	if(iter_num > 5){
 	  ndt_stat_msg.data = false;
+	}else{
+	  ndt_stat_msg.data = true;
 	}
 	ndt_stat_pub.publish(ndt_stat_msg);
 
