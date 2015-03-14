@@ -340,9 +340,15 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
 	current_pos_control.z = current_pos.z - control_shift_z;
 
         // transform
+#if 0
         transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
         q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
         transform.setRotation(q);
+#else
+        transform.setOrigin(tf::Vector3(current_pos_control.x, current_pos_control.y, current_pos_control.z));
+        q.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
+        transform.setRotation(q);
+#endif
 
 	q_control.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
 
@@ -393,7 +399,7 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         control_pose_msg.pose.orientation.y = q_control.y();
         control_pose_msg.pose.orientation.z = q_control.z();
         control_pose_msg.pose.orientation.w = q_control.w();
-
+	
         /*
          std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
          std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;

@@ -25,7 +25,7 @@ double _threshold_ratio = 1.0;
 double _end_distance = 2.0;
 double _error_distance = 2.5;
 std::string _mobility_frame = "/base_link";
-std::string _current_pose_topic = "odometry";
+std::string _current_pose_topic = "ndt";
 
 const std::string PATH_FRAME = "/path";
 

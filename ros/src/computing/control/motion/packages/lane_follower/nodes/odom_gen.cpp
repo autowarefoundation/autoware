@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 //subscribe topic
     ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 1000, CmdCallBack);
     ros::Subscriber gnss_subscriber = nh.subscribe("gnss_pose", 1000, GNSSCallback);
-    ros::Subscriber ndt_subscriber = nh.subscribe("ndt_pose", 1000, NDTCallback);
+    ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
 
 //transform
     tf::TransformBroadcaster odom_broadcaster;
