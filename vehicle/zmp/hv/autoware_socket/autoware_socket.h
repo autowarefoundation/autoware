@@ -15,6 +15,7 @@ using namespace zmp::hev;
 #define CMD_GEAR_B 3
 #define CMD_GEAR_N 4
 
+#define ANGULAR_CORRECTION 1.2
 #define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
 #define STEERING_ANGLE_MAX 666 // max angle of steering
 #define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
@@ -25,6 +26,7 @@ using namespace zmp::hev;
 #define SPEED_LIMIT 60.0 // km/h
 #define STEERING_ANGLE_INC_INC 5 // degree
 #define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
+#define STRICT_STEERING_THRETHOLD 20 // for tuning (degree)
 #define NORMAL_STEERING_THRETHOLD 90 // for tuning (degree)
 #define STEERING_INC_INC_THRETHOLD 270 // for tuning (degree)
 
