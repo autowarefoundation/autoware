@@ -3,18 +3,35 @@
 
 static int target_accel_level = 0;
 
-#define MOD_TKU
+
+//#define MOD_TKU
+#define OUTPUT_LOG
 
 #ifdef MOD_TKU
+//#define PI_CONTROL_MODE
 
-#define K_STEERING_SPEED     5    //danger
-#define STEERING_MAXANGVEL 300    //deg/s
-#define STEERING_MAXACC 300     //deg/s^2
-#define STEERING_PERIOD 0.1      //s
+//for P control
+#define K_STEERING_SPEED     8    //danger      (deg/s)/deg
+
+//for PI control
+#define K_STEERING_SPEED_I   0.5 //danger!!!!  (deg/s)/(deg*0.1s)  
+#define STEERING_MAX_SUM    100   //deg*0.1s for I control
+////K_STEERING_SPEED_I*STEERING_MAX_SUM is max offset angle
+////small K_STEERING_SPEED_I and large STEERING_MAX_SUM -> slow fit and stable
+////large K_STEERING_SPEED_I and small STEERING_MAX_SUM -> fast fit and unstable
+
+//for steering speed limitation
+#define STEERING_MAXANGVEL 300    //deg/s   limit for steering angular velocity
+#define STEERING_MAXACC 500     //deg/s^2   limit for steering angular acceleration
+#define STEERING_MAX_OFFSET 30    // deg    limit for steering angle (between current angle and target angle )
+
+#define STEERING_PERIOD 0.1      //s        control period
 
 static double g_prev_steering_angle=0;
 static double g_prev_steering_angvel=0;
+static double g_steering_diff_sum=0;
 #endif
+
 
 void MainWindow::SetMode(int mode)
 {
@@ -121,8 +138,7 @@ bool MainWindow::Accel(int target_accel, int gain)
   cout << "setting accel pedal to " << cmd_accel << endl;
 
   if (cmd_accel >= 0 && cmd_accel < ACCEL_PEDAL_MAX) {
-    cout << "calling SetDrvStroke(" << cmd_accel << ")" << endl;
-
+    cout << "SetDrvStroke(" << cmd_accel << ")" << endl;
     hev->SetDrvStroke(cmd_accel);
 #ifdef DEBUG
     ndrv = cmd_accel;
@@ -195,12 +211,13 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
 
   double delta = cmd_steering_angle - current_steering_angle;
   double str = cmd_steering_angle;
+  static double prev_steering_angle = 0;
 
-  if (delta > NORMAL_STEERING_THRETHOLD) {
-    str = current_steering_angle + NORMAL_STEERING_THRETHOLD;
+  if (delta > NORMAL_STEERING_THRESHOLD) {
+    str = current_steering_angle + NORMAL_STEERING_THRESHOLD;
     cout << "steering angle rounded to: " <<  str << endl;
-  } else if (delta < -NORMAL_STEERING_THRETHOLD) {
-    str = current_steering_angle - NORMAL_STEERING_THRETHOLD;
+  } else if (delta < -NORMAL_STEERING_THRESHOLD) {
+    str = current_steering_angle - NORMAL_STEERING_THRESHOLD;
     cout << "steering angle rounded to: " <<  str << endl;
   }
 
@@ -213,12 +230,12 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
     str = -STEERING_ANGLE_LIMIT;  
   }
 
-#if 0
-  if (delta > STRICT_STEERING_THRETHOLD) {
-    str = current_steering_angle + STRICT_STEERING_THRETHOLD;
+#if 1
+  if (delta > STRICT_STEERING_THRESHOLD) {
+    str = current_steering_angle + STRICT_STEERING_THRESHOLD;
     cout << "steering angle re-rounded to: " <<  str << endl;
-  } else if (delta < -STRICT_STEERING_THRETHOLD) {
-    str = current_steering_angle - STRICT_STEERING_THRETHOLD;
+  } else if (delta < -STRICT_STEERING_THRESHOLD) {
+    str = current_steering_angle - STRICT_STEERING_THRESHOLD;
     cout << "steering angle re-rounded to: " <<  str << endl;
   }
 
@@ -226,7 +243,7 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   // note that we need *10 to input the steering.
   // a unit of steering for "set" is 0.1 degree 
   // while that for "get" is 1 degree.
-  hev->SetStrAngle(str*10);
+  hev->SetStrAngle(str*10.0);
 #else
   // quick hack to smoothen steering.
   // if the target steering increase is 10, it is going to be:
@@ -238,14 +255,14 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   int inc_inc = 0;
   int second_half = 0; // just a flag
 
-  if (fabs(delta) < STEERING_INC_INC_THRETHOLD) {
+  if (fabs(delta) < STEERING_INC_INC_THRESHOLD) {
     inc_inc = STEERING_ANGLE_INC_INC; // slow rotation
   } else {
     inc_inc = STEERING_ANGLE_INC_INC * 2; // fast rotation
   }
 
-  if (delta > 0 && delta < inc_inc || delta < 0 && delta > -inc_inc) {
-    hev->SetStrAngle(str*10);
+  if ((delta > 0 && delta < inc_inc) || (delta < 0 && delta > -inc_inc)) {
+    hev->SetStrAngle(str*10.0);
   } else if (delta > 0) {
     for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
       if (delta_tmp < delta / 2) {
@@ -259,8 +276,8 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
       }
 
       if (inc < 0) {
-        if (delta > delta_tmp) {
-          hev->SetStrAngle(str*10); // set the target steering in the end
+        if (delta > delta_tmp + 1) {
+          hev->SetStrAngle(str*10.0); // set the target steering in the end
         }
         break;
       }
@@ -269,9 +286,9 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
       str_tmp = current_steering_angle + inc;
 
       if (str_tmp < str) {
-        hev->SetStrAngle(str_tmp*10);
+        hev->SetStrAngle(str_tmp*10.0);
       } else {
-        hev->SetStrAngle(str*10);
+        hev->SetStrAngle(str*10.0);
         break;
       }
       usleep(STEERING_INTERNAL_PERIOD*1000);
@@ -289,8 +306,8 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
       }
 
       if (inc > 0) {
-        if (delta < delta_tmp) {
-          hev->SetStrAngle(str*10); // set the target steering in the end
+        if (delta < delta_tmp - 1) {
+          hev->SetStrAngle(str*10.0); // set the target steering in the end
         }
         break;
       }
@@ -299,9 +316,9 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
       str_tmp = current_steering_angle + inc;
 
       if (str_tmp > str) {
-        hev->SetStrAngle(str_tmp*10);
+        hev->SetStrAngle(str_tmp*10.0);
       } else {
-        hev->SetStrAngle(str*10);
+        hev->SetStrAngle(str*10.0);
         break;
       }
       usleep(STEERING_INTERNAL_PERIOD*1000);
@@ -315,13 +332,17 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   nstr = str;
 #endif
 
+  prev_steering_angle = cmd_steering_angle;
+
+  ofstream ofs("/tmp/steering.log", ios::app);
+  ofs << str << " " << current_steering_angle << " " << cmd_steering_angle << endl;
+
 #else  //TKU_MODE
-  
+
+#ifndef PI_CONTROL_MODE // P control ( target value)  
   //docchi ga ii ka...
   //  double prev_steering_angle = current_steering_angle;   //use current angle  
   double prev_steering_angle = g_prev_steering_angle;  //use previous target angle
-  if(prev_steering_angle > current_steering_angle+10)prev_steering_angle=current_steering_angle+10;
-  if(prev_steering_angle < current_steering_angle-10)prev_steering_angle=current_steering_angle-10;
   
   double steering_diff = cmd_steering_angle - prev_steering_angle; 
   double target_steering_angvel = steering_diff * K_STEERING_SPEED; //P_Control
@@ -330,7 +351,7 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   if(target_steering_angvel > STEERING_MAXANGVEL)target_steering_angvel=STEERING_MAXANGVEL;
   if(target_steering_angvel <-STEERING_MAXANGVEL)target_steering_angvel=-STEERING_MAXANGVEL;
 
-  //nanchatte velocity control
+  //acceleration limit
   double steering_angvel;
   steering_angvel=g_prev_steering_angvel;
   if(steering_angvel < target_steering_angvel){//accel
@@ -348,12 +369,75 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   //set target angle 
   double steering_angle=prev_steering_angle+steering_angvel*STEERING_PERIOD * 1;
 
+  //clipping
+  if(steering_angle > current_steering_angle+STEERING_MAX_OFFSET)steering_angle=current_steering_angle+STEERING_MAX_OFFSET;
+  if(steering_angle < current_steering_angle-STEERING_MAX_OFFSET)steering_angle=current_steering_angle-STEERING_MAX_OFFSET;
+
+
   cout << "steering_angle = " << steering_angle << endl;
   cout << "steering_angvel = " << steering_angvel << endl;
   hev->SetStrAngle(steering_angle*10);
   g_prev_steering_angle=steering_angle;
   g_prev_steering_angvel=steering_angvel;
+#ifdef OUTPUT_LOG
+  ofstream ofs("/tmp/steering.log", ios::app);
+  ofs << steering_angle << " " << steering_angvel << " " << current_steering_angle << " " << cmd_steering_angle << endl;
 #endif
+
+#else //PI (current angle)
+  //docchi ga ii ka...
+  double prev_steering_angle = current_steering_angle;   //use current angle  
+  //double prev_steering_angle = g_prev_steering_angle;  //use previous target angle
+  
+  double steering_diff = cmd_steering_angle - prev_steering_angle; 
+  g_steering_diff_sum+=steering_diff;
+  if(g_steering_diff_sum > STEERING_MAX_SUM)g_steering_diff_sum=STEERING_MAX_SUM;
+  if(g_steering_diff_sum <-STEERING_MAX_SUM)g_steering_diff_sum=STEERING_MAX_SUM;
+
+  double target_steering_angvel = steering_diff * K_STEERING_SPEED + g_steering_diff_sum*K_STEERING_SPEED_I; //P_Control
+  
+  //clip
+  if(target_steering_angvel > STEERING_MAXANGVEL)target_steering_angvel=STEERING_MAXANGVEL;
+  if(target_steering_angvel <-STEERING_MAXANGVEL)target_steering_angvel=-STEERING_MAXANGVEL;
+
+  //acceleration limit
+  double steering_angvel;
+  steering_angvel=g_prev_steering_angvel;
+  if(steering_angvel < target_steering_angvel){//accel
+    if(steering_angvel+STEERING_MAXACC*STEERING_PERIOD <target_steering_angvel)
+      steering_angvel+=STEERING_MAXACC*STEERING_PERIOD;
+    else 
+      steering_angvel=target_steering_angvel;
+  }else{
+    if(steering_angvel-STEERING_MAXACC*STEERING_PERIOD >target_steering_angvel)
+      steering_angvel-=STEERING_MAXACC*STEERING_PERIOD;
+    else 
+      steering_angvel=target_steering_angvel;
+  }
+
+  //set target angle 
+  double steering_angle=prev_steering_angle+steering_angvel*STEERING_PERIOD;
+  //clipping
+  if(steering_angle > current_steering_angle+STEERING_MAX_OFFSET)steering_angle=current_steering_angle+STEERING_MAX_OFFSET;
+  if(steering_angle < current_steering_angle-STEERING_MAX_OFFSET)steering_angle=current_steering_angle-STEERING_MAX_OFFSET;
+
+
+  cout << "steering_angle = " << steering_angle << endl;
+  cout << "steering_angvel = " << steering_angvel << endl;
+  hev->SetStrAngle(steering_angle*10);
+  g_prev_steering_angle=steering_angle;
+  g_prev_steering_angvel=steering_angvel;
+
+#ifdef OUTPUT_LOG
+  ofstream ofs("/tmp/steering.log", ios::app);
+  ofs << steering_angle << " " << steering_angvel << " " << current_steering_angle << " " << cmd_steering_angle << endl;
+#endif
+
+#endif
+
+#endif
+
+
 }
 
 void MainWindow::AccelerateControl(double current_velocity,double cmd_velocity)

@@ -26,9 +26,9 @@ using namespace zmp::hev;
 #define SPEED_LIMIT 60.0 // km/h
 #define STEERING_ANGLE_INC_INC 5 // degree
 #define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
-#define STRICT_STEERING_THRETHOLD 20 // for tuning (degree)
-#define NORMAL_STEERING_THRETHOLD 90 // for tuning (degree)
-#define STEERING_INC_INC_THRETHOLD 270 // for tuning (degree)
+#define STRICT_STEERING_THRESHOLD 10 // for tuning (degree)
+#define NORMAL_STEERING_THRESHOLD 90 // for tuning (degree)
+#define STEERING_INC_INC_THRESHOLD 270 // for tuning (degree)
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
 #define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
@@ -39,9 +39,9 @@ using namespace zmp::hev;
 #define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
 #define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 
 #define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 
-#define ACCEL_PEDAL_STEP_BIG 5
+#define ACCEL_PEDAL_STEP_BIG 10
 #define ACCEL_PEDAL_RELEASE_STEP 100 //release value for accel pedal
-#define ACCEL_PEDAL_MAX 300 
+#define ACCEL_PEDAL_MAX 1000 
 #define ACCEL_LIMIT 8.0 // km/h
 
 #define HEV_LIGHT_BRAKE 400 //brake pedal

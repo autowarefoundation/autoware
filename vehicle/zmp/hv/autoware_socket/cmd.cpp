@@ -9,6 +9,8 @@
 double cycle_time = 0.0;
 double estimate_accel = 0.0;
 
+#define OUTPUT_LOG
+
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
   std::istringstream stream(input);
@@ -235,7 +237,8 @@ void Control(vel_data_t vel, void* p)
     cout << "AccelerateControl(current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << ")" << endl;
     main->AccelerateControl(current_velocity, cmd_velocity);
-  } else if (fabs(cmd_velocity) < fabs(current_velocity) 
+  } 
+  else if (fabs(cmd_velocity) < fabs(current_velocity) 
              && fabs(cmd_velocity) > 0.0) {
     //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     cout << "DecelerateControl(current_velocity=" << current_velocity 
@@ -247,6 +250,10 @@ void Control(vel_data_t vel, void* p)
     cout << "StoppingControl(current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << ")" << endl;
     main->StoppingControl(current_velocity, cmd_velocity);
+  }
+  else {
+    cout << "NoAccelBrake(current_velocity=" << current_velocity 
+         << ", cmd_velocity=" << cmd_velocity << ")" << endl;
   }
     
   //////////////////////////////////////////////////////
@@ -290,6 +297,7 @@ void *MainWindow::CMDGetterEntry(void *a)
     interval = cmd_rx_interval - (getTime() - tstamp);
 
     if (interval > 0) {
+      cout << "sleeping for " << interval << "ms" << endl;
       usleep(interval * 1000); // not really real-time...
     }
   }
