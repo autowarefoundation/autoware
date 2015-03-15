@@ -338,7 +338,7 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
 	current_pos_control.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pos.y;
 	current_pos_control.z = current_pos.z - control_shift_z;
 
-        // transform to "/velodyne" frame
+        // transform "/velodyne" to "/map"
 #if 0
         transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
         q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
@@ -346,13 +346,14 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
 #else
 	//
 	// FIXME:
-	// We corrected the angle of /velodyne so that pure_pursuit
+	// We corrected the angle of "/velodyne" so that pure_pursuit
 	// can read this frame for the control.
 	// However, this is not what we want because the scan of Velodyne
 	// looks unmatched for the 3-D map on Rviz.
-	// What we really want is to make another TF transforming /velodyne
-	// to a new "/corrected_velodyne" frame and modify pure_pursuit to
-	// read this new frame instead of /velodyne.
+	// What we really want is to make another TF transforming "/velodyne"
+	// to a new "/ndt_points" frame and modify pure_pursuit to
+	// read this frame instead of "/velodyne".
+	// Otherwise, can pure_pursuit just use "/ndt_frame"?
 	//
         transform.setOrigin(tf::Vector3(current_pos_control.x, current_pos_control.y, current_pos_control.z));
         q.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
