@@ -4,7 +4,6 @@
  Yuki KITSUKAWA
  */
 
-#define DEBUG 0
 // #define VIEW_TIME
 
 // If you want to output "position_log.txt", "#define OUTPUT".
@@ -339,12 +338,22 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
 	current_pos_control.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pos.y;
 	current_pos_control.z = current_pos.z - control_shift_z;
 
-        // transform
+        // transform to "/velodyne" frame
 #if 0
         transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
         q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
         transform.setRotation(q);
 #else
+	//
+	// FIXME:
+	// We corrected the angle of /velodyne so that pure_pursuit
+	// can read this frame for the control.
+	// However, this is not what we want because the scan of Velodyne
+	// looks unmatched for the 3-D map on Rviz.
+	// What we really want is to make another TF transforming /velodyne
+	// to a new "/corrected_velodyne" frame and modify pure_pursuit to
+	// read this new frame instead of /velodyne.
+	//
         transform.setOrigin(tf::Vector3(current_pos_control.x, current_pos_control.y, current_pos_control.z));
         q.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
         transform.setRotation(q);
@@ -399,7 +408,7 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         control_pose_msg.pose.orientation.y = q_control.y();
         control_pose_msg.pose.orientation.z = q_control.z();
         control_pose_msg.pose.orientation.w = q_control.w();
-	
+
         /*
          std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
          std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
@@ -472,7 +481,6 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
 
 int main(int argc, char **argv)
 {
-
     std::cout << "---------------------------------------" << std::endl;
     std::cout << "NDT_PCL program coded by Yuki KITSUKAWA" << std::endl;
     std::cout << "---------------------------------------" << std::endl;

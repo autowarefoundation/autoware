@@ -134,7 +134,7 @@ double GetLookAheadThreshold()
         else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
             return 20.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 40.0)
-            return current_velocity_mps * _threshold_ratio;
+	  return current_velocity_kmph * _threshold_ratio;
         else
             return 0;
 
@@ -251,7 +251,7 @@ int GetNextWayPoint()
 	    marker.color.b = 1.0;
 
 	    _vis_pub.publish(marker);
-	    
+
 	    //status turns true
 	    _lf_stat.data = true;
 	    _stat_pub.publish(_lf_stat);
@@ -340,11 +340,23 @@ geometry_msgs::Twist EndControl()
 
     double velocity_ms = velocity_kmh / 3.6;
 
-    if (lookahead_distance < _end_distance) {
+    if (lookahead_distance < _end_distance) { // EndControl completed
+
         twist.linear.x = 0;
         twist.angular.z = 0;
 
-        //status turns false
+        _next_waypoint = 0;
+
+        _lf_stat.data = false;
+        _stat_pub.publish(_lf_stat);
+
+    } else if (lookahead_distance > _error_distance) { // EndControl terminated
+
+        twist.linear.x = 0;
+        twist.angular.z = 0;
+
+        _next_waypoint = 0;
+
         _lf_stat.data = false;
         _stat_pub.publish(_lf_stat);
 
@@ -451,15 +463,15 @@ int main(int argc, char **argv)
         } else {
             twist.twist = EndControl();
 
-	    // after stopping, let's get ready for the restart.
-	    if (twist.twist.linear.x == 0 && twist.twist.angular.z == 0) {
-	        endflag = true;
-		_next_waypoint = 0;
+	    // after stopped or fed out, let's get ready for the restart.
+	    if (_next_waypoint == 0) {
+	        endflag = false;
 	    }
         }
 
-        if (_next_waypoint == _current_path.waypoints.size() - 1)
+        if (_next_waypoint == _current_path.waypoints.size() - 1) {
             endflag = true;
+	}
 
         std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
 	std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
