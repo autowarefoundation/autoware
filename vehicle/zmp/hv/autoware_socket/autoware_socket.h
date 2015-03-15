@@ -17,18 +17,13 @@ using namespace zmp::hev;
 
 #define ANGULAR_CORRECTION 1.2
 #define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
-#define STEERING_ANGLE_MAX 666 // max angle of steering
-#define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
 #define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
 #define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
-#define ANGLE_ERROR 0.025 // for tuning when LIDAR is not aligned
+#define STEERING_ANGLE_MAX 666 // max angle of steering
+#define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
+#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
 #define MILLISECOND 1000  
 #define SPEED_LIMIT 60.0 // km/h
-#define STEERING_ANGLE_INC_INC 5 // degree
-#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
-#define STRICT_STEERING_THRESHOLD 10 // for tuning (degree)
-#define NORMAL_STEERING_THRESHOLD 90 // for tuning (degree)
-#define STEERING_INC_INC_THRESHOLD 270 // for tuning (degree)
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
 #define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
@@ -48,6 +43,9 @@ using namespace zmp::hev;
 #define HEV_MED_BRAKE 1000
 #define HEV_MED2_BRAKE 2000
 #define HEV_MAX_BRAKE 4096 //max brake pedal value 
+
+#define CURRENT_ACCEL_STROKE() _hev_state.drvInf.actualPedalStr
+#define CURRENT_BRAKE_STROKE() _hev_state.brkInf.actualPedalStr
 
 typedef struct pose_data_t {
   double x;
