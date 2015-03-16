@@ -190,7 +190,7 @@ void* wrapSender(void *tsd){
 
   dbres = sd.Sender(data);
 
-  printf("%lu\n",dbres.size());
+  printf("%zd\n",dbres.size());
 
   std_msgs::String msg;
   msg.data = dbres.c_str();
