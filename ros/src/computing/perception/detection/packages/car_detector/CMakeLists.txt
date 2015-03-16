@@ -12,6 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 ## Generate added messages and services with any dependencies listed here
 add_message_files(
   FILES
@@ -60,6 +66,11 @@ target_link_libraries(car_dpm
 
 if(EXISTS "/usr/local/cuda")
 include_directories(/usr/local/cuda/include)
+
+if("${ARCHITECTURE}" MATCHES "^arm")
+LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+endif()
+
 add_executable(car_dpm_gpu
   nodes/car_dpm_gpu/car_dpm_gpu.cpp
 )

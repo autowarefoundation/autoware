@@ -12,6 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -35,6 +40,10 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 include_directories(/usr/local/cuda/include)
 include_directories(src)
+
+if("${ARCHITECTURE}" MATCHES "^arm")
+LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+endif()
 
 file(GLOB DPM_GPU_CXX_SOURCES "src/*.cpp")
 file(GLOB DPM_GPU_CC_SOURCES "src/*.cc")
@@ -60,6 +69,13 @@ target_link_libraries(dpm_gpu
 )
 
 set(CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+
+if("${ARCHITECTURE}" MATCHES "^arm")
+set(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)
+else()
+set(CUDA_LDFLAGS -lcuda)
+endif()
+
 set(CUDA_CAPABILITY_VERSION_CHECKER
   "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
 )
@@ -67,9 +83,9 @@ set(CUDA_CAPABILITY_VERSION_CHECKER
 execute_process(
   COMMAND
   ${CUDA_COMPILER}
-  "-o" ${CUDA_CAPABILITY_VERSION_CHECKER}
+  -o ${CUDA_CAPABILITY_VERSION_CHECKER}
   "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
-  "-lcuda"
+  ${CUDA_LDFLAGS}
 )
 
 execute_process(
