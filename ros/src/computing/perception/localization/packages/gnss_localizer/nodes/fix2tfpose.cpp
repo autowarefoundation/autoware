@@ -3,6 +3,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <geometry_msgs/Twist.h>
+#include <std_msgs/Bool.h>
 #include <tf/transform_broadcaster.h>
 
 #include <iostream>
@@ -10,6 +11,9 @@
 #include "geo_pos_conv.hh"
 
 ros::Publisher pose_publisher;
+
+ros::Publisher stat_publisher;
+std_msgs::Bool gnss_stat_msg;
 
 geometry_msgs::PoseStamped _prev_pose;
 geometry_msgs::Quaternion _quat;
@@ -35,6 +39,13 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
     pose.pose.position.y = geo.x();
     pose.pose.position.z = geo.z();
 
+    // set gnss_stat
+    if(pose.pose.position.x == 0.0 || pose.pose.position.y == 0.0 || pose.pose.position.z == 0.0){
+      gnss_stat_msg.data = false;
+    }else{
+      gnss_stat_msg.data = true;
+    }
+    
     double distance = sqrt(
             pow(pose.pose.position.y - _prev_pose.pose.position.y, 2)
                     + pow(pose.pose.position.x - _prev_pose.pose.position.x,
@@ -50,6 +61,7 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 
     pose.pose.orientation = _quat;
     pose_publisher.publish(pose);
+    stat_publisher.publish(gnss_stat_msg);
 
     //座標変換
     static tf::TransformBroadcaster br;
@@ -71,6 +83,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("gnss_pose",
             1000);
+    stat_publisher = nh.advertise<std_msgs::Bool>("/gnss_stat", 1000);
     ros::Subscriber gnss_pose_subscriber = nh.subscribe("fix", 100,
             GNSSCallback);
 

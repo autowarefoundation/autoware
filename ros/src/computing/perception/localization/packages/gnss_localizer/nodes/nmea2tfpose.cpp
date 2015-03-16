@@ -7,11 +7,14 @@
 #include <nmea_msgs/Sentence.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Bool.h>
 
 #include "geo_pos_conv.hh"
 
 geo_pos_conv geo;
 ros::Publisher pose_publisher;
+ros::Publisher stat_publisher;
+std_msgs::Bool gnss_stat_msg;
 
 using namespace std;
 
@@ -105,7 +108,15 @@ void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
         pose.pose.orientation.z = q.z();
         pose.pose.orientation.w = q.w();
 
+	// set gnss_stat
+	if(pose.pose.position.x == 0.0 || pose.pose.position.y == 0.0 || pose.pose.position.z == 0.0){
+	  gnss_stat_msg.data = false;
+	}else{
+	  gnss_stat_msg.data = true;
+	}
+
         pose_publisher.publish(pose);
+	stat_publisher.publish(gnss_stat_msg);
 
     }
 }
@@ -118,6 +129,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe("nmea_sentence", 1000, NmeaCallback);
     pose_publisher = n.advertise<geometry_msgs::PoseStamped>("gnss_pose", 1000);
+    stat_publisher = n.advertise<std_msgs::Bool>("/gnss_stat", 100);
     ros::spin();
 
     return 0;
