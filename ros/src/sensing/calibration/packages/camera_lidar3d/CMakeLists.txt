@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(camera_lidar3d)
 
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if("${ARCHITECTURE}" STREQUAL "x86_64")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
@@ -10,6 +17,16 @@ find_package(catkin REQUIRED COMPONENTS
   rosinterface
   pcl_ros
 )
+else()
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rosconsole
+  std_msgs
+  sensor_msgs
+  rosinterface
+  pcl_ros
+)
+endif()
 find_package(OpenCV REQUIRED)
 
 ###################################
@@ -43,6 +60,8 @@ set(Qt5INCLUDE "/usr/include/qt5")
 set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
 set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
 endif()
+
+if("${ARCHITECTURE}" STREQUAL "x86_64")
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -149,3 +168,4 @@ target_link_libraries(camera_lidar3d_offline_calib
   ${Qt5LIBROOT}/libQt5Widgets.so
   nlopt
 )
+endif()

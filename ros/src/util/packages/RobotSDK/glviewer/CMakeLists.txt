@@ -26,6 +26,12 @@ catkin_package(
 ## Build ##
 ###########
 
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 if(EXISTS /usr/local/qtbase5)
 # Self install version
 set(Qt5INCLUDE "/usr/local/qtbase5/include")
@@ -38,6 +44,7 @@ set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
 set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
 endif()
 
+if("${ARCHITECTURE}" STREQUAL "x86_64")
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include/glviewer
@@ -73,3 +80,4 @@ install(
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
+endif()
