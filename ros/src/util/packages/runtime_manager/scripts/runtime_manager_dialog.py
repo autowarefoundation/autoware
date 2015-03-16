@@ -424,6 +424,8 @@ class MyFrame(rtmgr.MyFrame):
 		msg = klass_msg()
 
 		for (name, v) in pdic.items():
+			if prm.get('topic') == '/twist_cmd' and name == 'twist.angular.z':
+				v = -v
 			(obj, attr) = msg_path_to_obj_attr(msg, name)
 			if obj and attr in obj.__slots__:
 				type_str = obj._slot_types[ obj.__slots__.index(attr) ]
