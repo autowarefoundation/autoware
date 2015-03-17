@@ -267,19 +267,13 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
-		cmd_dic = self.main_cmd
-		(cmd, proc) = cmd_dic.get(obj, (None, None))
-		if proc:
-			self.kill_proc(proc)
-		args = shlex.split(cmd)
-		print(args)
-		proc = subprocess.Popen(args, stdin=subprocess.PIPE)
-		self.all_procs.append(proc)
-		cmd_dic[ obj ] = (cmd, proc)
+		self.OnLaunchKill_obj(obj)
 
 	def OnDrive(self, event):
+		obj = event.GetEventObject()
+		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
-		pub.publish(mode_cmd(mode=1))
+		pub.publish(mode_cmd(mode=v))
 
 	def OnPause(self, event):
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
