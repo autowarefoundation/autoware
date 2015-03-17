@@ -35,6 +35,7 @@ import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
 import gettext
 import os
+import sys
 import socket
 import struct
 import shlex
@@ -69,6 +70,7 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
+		self.all_procs_nodes = {}
 		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
@@ -328,7 +330,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.kill_all()
 
 	def OnNetConn(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.main_cmd)
+		obj = event.GetEventObject()
+		self.launch_kill_proc(obj, self.main_cmd)
 
 	def OnReadNavi(self, event):
 		self.text_ctrl_route_from_lat.SetValue(str(self.route_cmd_waypoint[0].lat))
@@ -519,16 +522,21 @@ class MyFrame(rtmgr.MyFrame):
 		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
 		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
 		run_nodes_set = set(run_nodes)
+		targ_objs = self.computing_cmd.keys() + self.data_cmd.keys()
 		for (obj, nodes) in self.nodes_dic.items():
-			if nodes is None:
+			if obj not in targ_objs:
 				continue
-			v = nodes and run_nodes_set.issuperset(nodes)
+			if getattr(obj, 'GetValue', None) is None:
+				continue
+			if nodes is None or nodes == []:
+				continue
+			#v = nodes and run_nodes_set.issuperset(nodes)
+			v = len(run_nodes_set.intersection(nodes)) != 0
 			if obj.GetValue() != v:
 				if obj.IsEnabled() and not v:
 					self.kill_obj(obj)
 				set_val(obj, v)
 				obj.Enable(not v)
-		self.Refresh()
 
 	#
 	# Viewer Tab
@@ -797,6 +805,9 @@ class MyFrame(rtmgr.MyFrame):
 		#print 'add_args', add_args
 		if add_args is False:
 			return
+		if v and self.is_boot(obj):
+			wx.MessageBox('Already, booted')
+			return
 
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
@@ -814,7 +825,7 @@ class MyFrame(rtmgr.MyFrame):
 		if path:
 			add_args = ( add_args if add_args else [] ) + path.split(',')
 
-		proc = self.launch_kill(True, cmd, proc, add_args)
+		proc = self.launch_kill(True, cmd, proc, add_args, obj=obj)
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
@@ -837,7 +848,7 @@ class MyFrame(rtmgr.MyFrame):
 		# ROSBAG Record modify
 		sigint = (key == 'rosbag_record')
 
-		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
+		proc = self.launch_kill(False, cmd, proc, sigint=sigint, obj=obj)
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
@@ -907,7 +918,6 @@ class MyFrame(rtmgr.MyFrame):
 				o.SetValue(v)
 				if getattr(o, 'SetInsertionPointEnd', None):
 					o.SetInsertionPointEnd()
-			o.GetParent().Refresh()
 
 	def alias_grp_top_obj(self, obj):
 		return get_top(self.alias_grp_get(obj), obj)
@@ -920,7 +930,7 @@ class MyFrame(rtmgr.MyFrame):
 		if tree is None:
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
-			item = tree.AddRoot(name)
+			item = tree.AddRoot(name, data=tree)
 		else:
 			ct_type = 1 if 'cmd' in items else 0 # 1:checkbox type
 			item = tree.AppendItem(item, name, ct_type=ct_type)
@@ -947,11 +957,16 @@ class MyFrame(rtmgr.MyFrame):
 			print('not implemented.')
 			return
 		v = obj.GetValue()
+		if v and self.is_boot(obj):
+			wx.MessageBox('Already, booted')
+			set_val(obj, not v)
+			return
+
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			set_val(obj, False)
 
-		proc = self.launch_kill(v, cmd, proc, add_args)
+		proc = self.launch_kill(v, cmd, proc, add_args, obj=obj)
 
 		cfg_obj = self.get_cfg_obj(obj)
 		if cfg_obj and self.config_dic[ cfg_obj ]['run_disable']:
@@ -981,7 +996,7 @@ class MyFrame(rtmgr.MyFrame):
 			return
 		(cmd, proc) = (v[0], proc) if proc else v
 		cmd_dic[ obj ] = (cmd, None)
-		self.launch_kill(False, 'dmy', proc)
+		self.launch_kill(False, 'dmy', proc, obj=obj)
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
@@ -990,7 +1005,7 @@ class MyFrame(rtmgr.MyFrame):
 				return (cmd_dic, obj)
 		return (None, None)
 
-	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False):
+	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False, obj=None):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
@@ -1006,38 +1021,59 @@ class MyFrame(rtmgr.MyFrame):
 			print(args) # for debug
 			proc = subprocess.Popen(args, stdin=subprocess.PIPE)
 			self.all_procs.append(proc)
+			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 		else:
 			terminate_children(proc, sigint)
 			terminate(proc, sigint)
 			proc.wait()
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
+				self.all_procs_nodes.pop(proc, None)
 			proc = None
 		return proc
 
+	def is_boot(self, obj):
+		nodes = self.nodes_dic.get(obj)
+		if nodes is None:
+			return False
+		boot_nodes = reduce(lambda a,b:a+b, [[]] + self.all_procs_nodes.values())
+		boot_nodes_set = set(boot_nodes)
+		return nodes and boot_nodes_set.issuperset(nodes)
+
 	def nodes_dic_get(self):
+		print 'creating item node list ',
 		nodes_dic = {}
 		#for cmd_dic in self.all_cmd_dics:
-		for cmd_dic in [ self.computing_cmd, self.data_cmd ]:
+		for cmd_dic in [ self.main_cmd, self.computing_cmd, self.data_cmd, self.sensing_cmd ]:
+			sys.stdout.write('.')
+			sys.stdout.flush()
 			for (obj, (cmd, _)) in cmd_dic.items():
-				nodes_dic[ obj ] = self.cmd_to_nodes(cmd)
+				if not cmd:
+					continue
+				nodes = None
+				cmd = shlex.split(cmd)
+				cmd2 = cmd
+				if cmd[0] == 'sh' and cmd[1] == '-c':
+					cmd2 = cmd[2].split(' ') + cmd[3:] # split ' '
+				if cmd2[0] == 'roslaunch':
+					add_args = self.obj_to_add_args(obj)
+					if add_args:
+						cmd2 += add_args
+					cmd2.insert(1, '--node')
+					if cmd[0] == 'sh' and cmd[1] == '-c':
+						cmd[2] = ' '.join(cmd2)
+					nodes = self.roslaunch_to_nodes(cmd)
+				elif cmd2[0] == 'rosrun':
+					nodes = [ '/' + cmd2[2] ]
+				nodes_dic[ obj ] = nodes
+		print ''
 		return nodes_dic
 
-	def cmd_to_nodes(self, cmd):
-		if not cmd:
+	def roslaunch_to_nodes(self, cmd):
+		try:
+			return subprocess.check_output(cmd).strip().split('\n')
+		except subprocess.CalledProcessError:
 			return None
-
-		cmd = shlex.split(cmd)
-		if cmd[0] == 'roslaunch':
-			cmd.insert(1, '--node')
-			try:
-				return subprocess.check_output(cmd).strip().split('\n')
-			except subprocess.CalledProcessError:
-				return None
-			
-		elif cmd[0] == 'rosrun':
-			return [ '/' + cmd[2] ]
-		return None
 
 	def modal_dialog(self, lst, title=''):
 		(lbs, cmds) = zip(*lst)
@@ -1498,13 +1534,13 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		args = topic_opt + [ '-O', path ]
 
 		(cmd, proc) = self.cmd_dic[ key_obj ]
-		proc = self.parent.launch_kill(True, cmd, proc, add_args=args)
+		proc = self.parent.launch_kill(True, cmd, proc, add_args=args, obj=key_obj)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 
 	def OnStop(self, event):
 		key_obj = self.button_start
 		(cmd, proc) = self.cmd_dic[ key_obj ]
-		proc = self.parent.launch_kill(False, cmd, proc, sigint=True)
+		proc = self.parent.launch_kill(False, cmd, proc, sigint=True, obj=key_obj)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.Hide()
 
@@ -1621,6 +1657,14 @@ def set_val(obj, v):
 	func = getattr(obj, 'SetValue', getattr(obj, 'Check', None))
 	if func:
 		func(v)
+		obj_refresh(obj)
+
+def obj_refresh(obj):
+	if type(obj) is wx.lib.agw.customtreectrl.GenericTreeItem:
+		while obj.GetParent():
+			obj = obj.GetParent()
+		tree = obj.GetData()
+		tree.Refresh()
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret
