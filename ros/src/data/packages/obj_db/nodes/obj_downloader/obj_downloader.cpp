@@ -127,7 +127,7 @@ void marker_publisher(const std_msgs::String msg)
   geo.set_plane(7);
   // Loading data.
   db_data = split(msg.data.c_str(),'\n');
-  for(uint i = 0; i < (int)db_data.size(); i++){
+  for(int i = 0; i < static_cast<int>(db_data.size()); i++){
     geometry_msgs::Point p;
     if(db_data[i].compare("")==0) continue;
     tmp = split(db_data[i], '\t');
@@ -374,4 +374,5 @@ int main(int argc, char **argv){
 
   ros::spin();
 
+  return 0;
 }
