@@ -1,10 +1,7 @@
 <!-- -->
 <launch>
-<!-- start NDT -->
-<node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl"/>
 
-<!-- start waypoint_loader -->
-<include file="$(find waypoint_maker)/launch/waypoint_loader.launch"/>
-
+<!-- pure_pursuit -->
+<include file="$(find lane_follower)/launch/pure_pursuit.launch"/>
 
 </launch>
