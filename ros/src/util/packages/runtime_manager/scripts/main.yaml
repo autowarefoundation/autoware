@@ -16,7 +16,10 @@ buttons:
     run : rosrun obj_db obj_downloader
 
   init:
-    run : roslaunch runtime_manager init.launch  
+    run : 'sh -c "roslaunch runtime_manager init.launch
+           tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
+           pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
+           csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
   check:
     run : roslaunch runtime_manager check.launch
   set:
