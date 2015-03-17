@@ -12,6 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -59,6 +65,10 @@ target_link_libraries(pedestrian_dpm
 
 if(EXISTS "/usr/local/cuda")
 include_directories(/usr/local/cuda/include)
+
+if("${ARCHITECTURE}" MATCHES "^arm")
+LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+endif()
 
 add_executable(pedestrian_dpm_gpu
   nodes/pedestrian_dpm_gpu/pedestrian_dpm_gpu.cpp

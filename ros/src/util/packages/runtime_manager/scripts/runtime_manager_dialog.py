@@ -267,11 +267,15 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
-		(cmd, _) = self.main_cmd.get(obj, (None, None))
+		cmd_dic = self.main_cmd
+		(cmd, proc) = cmd_dic.get(obj, (None, None))
+		if proc:
+			self.kill_proc(proc)
 		args = shlex.split(cmd)
 		print(args)
 		proc = subprocess.Popen(args, stdin=subprocess.PIPE)
 		self.all_procs.append(proc)
+		cmd_dic[ obj ] = (cmd, proc)
 
 	def OnDrive(self, event):
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
@@ -420,6 +424,8 @@ class MyFrame(rtmgr.MyFrame):
 		msg = klass_msg()
 
 		for (name, v) in pdic.items():
+			if prm.get('topic') == '/twist_cmd' and name == 'twist.angular.z':
+				v = -v
 			(obj, attr) = msg_path_to_obj_attr(msg, name)
 			if obj and attr in obj.__slots__:
 				type_str = obj._slot_types[ obj.__slots__.index(attr) ]

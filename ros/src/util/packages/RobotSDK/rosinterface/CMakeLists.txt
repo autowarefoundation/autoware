@@ -23,16 +23,29 @@ catkin_package(
 ## Build ##
 ###########
 
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 if(EXISTS /usr/local/qtbase5)
 # Self install version
 set(Qt5INCLUDE "/usr/local/qtbase5/include")
 set(Qt5BIN "/usr/local/qtbase5/bin")
 set(Qt5LIBROOT "/usr/local/qtbase5/lib")
 else()
+
 # Ubuntu Qt5 package
 set(Qt5INCLUDE "/usr/include/qt5")
-set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
-set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
+if("${ARCHITECTURE}" STREQUAL "x86_64")
+  set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
+  set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
+elseif("${ARCHITECTURE}" MATCHES "^arm")
+  set(Qt5LIBROOT "/usr/lib/arm-linux-gnueabihf")
+  set(Qt5BIN "/usr/lib/arm-linux-gnueabihf/qt5/bin")
+endif()
+
 endif()
 
 ## Specify additional locations of header files

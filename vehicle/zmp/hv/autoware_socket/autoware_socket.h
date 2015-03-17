@@ -15,17 +15,15 @@ using namespace zmp::hev;
 #define CMD_GEAR_B 3
 #define CMD_GEAR_N 4
 
+#define ANGULAR_CORRECTION 1.2
 #define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
-#define STEERING_ANGLE_MAX 666 // max angle of steering
-#define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
 #define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
 #define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
-#define ANGLE_ERROR 0.025 // for tuning when LIDAR is not aligned
+#define STEERING_ANGLE_MAX 666 // max angle of steering
+#define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
+#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
 #define MILLISECOND 1000  
 #define SPEED_LIMIT 60.0 // km/h
-#define STEERING_ANGLE_INC_INC 5 // degree
-#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
-#define NORMAL_STEERING_THRETHOLD 60 // for tuning (degree)
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
 #define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
@@ -36,15 +34,18 @@ using namespace zmp::hev;
 #define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
 #define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 
 #define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 
-#define ACCEL_PEDAL_STEP_BIG 5
+#define ACCEL_PEDAL_STEP_BIG 10
 #define ACCEL_PEDAL_RELEASE_STEP 100 //release value for accel pedal
-#define ACCEL_PEDAL_MAX 300 
+#define ACCEL_PEDAL_MAX 1000 
 #define ACCEL_LIMIT 8.0 // km/h
 
 #define HEV_LIGHT_BRAKE 400 //brake pedal
 #define HEV_MED_BRAKE 1000
 #define HEV_MED2_BRAKE 2000
 #define HEV_MAX_BRAKE 4096 //max brake pedal value 
+
+#define CURRENT_ACCEL_STROKE() _hev_state.drvInf.actualPedalStr
+#define CURRENT_BRAKE_STROKE() _hev_state.brkInf.actualPedalStr
 
 typedef struct pose_data_t {
   double x;

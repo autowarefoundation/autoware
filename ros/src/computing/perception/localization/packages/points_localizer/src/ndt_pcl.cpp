@@ -4,9 +4,10 @@
  Yuki KITSUKAWA
  */
 
-#define DEBUG 0
 // #define VIEW_TIME
-#define OUTPUT // If you want to output "position_log.txt", "#define OUTPUT".
+
+// If you want to output "position_log.txt", "#define OUTPUT".
+//#define OUTPUT 
 
 #include <iostream>
 #include <sstream>
@@ -33,23 +34,6 @@
 
 #include <runtime_manager/ConfigNdt.h>
 
-// Initial position for Moriyama
-/*
- #define INITIAL_X -14771
- #define INITIAL_Y -84757
- #define INITIAL_Z 39.8
- #define INITIAL_ROLL 0
- #define INITIAL_PITCH 0
- #define INITIAL_YAW 2.324
- // Initial position for Toyota
- #define INITIAL_X 3702
- #define INITIAL_Y -99425
- #define INITIAL_Z 88
- #define INITIAL_ROLL 0
- #define INITIAL_PITCH 0
- #define INITIAL_YAW 0
- */
-
 typedef struct {
     double x;
     double y;
@@ -60,7 +44,8 @@ typedef struct {
 } Position;
 
 // global variables
-Position previous_pos, guess_pos, current_pos;
+Position previous_pos, guess_pos, current_pos, current_pos_control;
+
 double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
 
 // Initial position (updated in param_callback)
@@ -71,7 +56,7 @@ double initial_roll = 0.0;
 double initial_pitch = 0.0;
 double initial_yaw = 0.0;
 
-// Can't load if typed "pcl::PointCloud<pcl::PointXYZRGB> map, add;"
+//Can't load if typed "pcl::PointCloud<pcl::PointXYZRGB> map, add;"
 pcl::PointCloud<pcl::PointXYZ> map, add;
 pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
 
@@ -93,12 +78,23 @@ double voxel_leaf_size = 2.0;
 ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
 ros::Duration d_callback, d1, d2, d3, d4, d5;
 
-ros::Publisher pose_pub;
-geometry_msgs::PoseStamped pose_msg;
+ros::Publisher ndt_pose_pub;
+geometry_msgs::PoseStamped ndt_pose_msg;
+
+ros::Publisher control_pose_pub;
+geometry_msgs::PoseStamped control_pose_msg;
+
+double angle = 0.0;
+double control_shift_x = 0.0;
+double control_shift_y = 0.0;
+double control_shift_z = 0.0;
+
+ros::Publisher ndt_stat_pub;
+std_msgs::Bool ndt_stat_msg;
 
 void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
-    if (use_gnss != input->init_pos_gnss){
+    if (use_gnss != input->init_pos_gnss) {
         init_pos_set = 0;
     } else if (use_gnss == 0 && (initial_x != input->x || initial_y != input->y || initial_z != input->z || initial_roll != input->roll || initial_pitch != input->pitch || initial_yaw != input->yaw)) {
         init_pos_set = 0;
@@ -131,7 +127,7 @@ void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
         initial_roll = input->roll;
         initial_pitch = input->pitch;
         initial_yaw = input->yaw;
-        // Setting position and posture for the fist time.
+        // Setting position and posture for the first time.
         previous_pos.x = initial_x;
         previous_pos.y = initial_y;
         previous_pos.z = initial_z;
@@ -155,6 +151,17 @@ void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
         std::cout << "initial_yaw: " << initial_yaw << std::endl;
         std::cout << "NDT ready..." << std::endl;
     }
+
+    angle = input->angle_error;
+    control_shift_x = input->shift_x;
+    control_shift_y = input->shift_y;
+    control_shift_z = input->shift_z;
+
+    std::cout << "angle_error: " << angle << "." << std::endl;
+    std::cout << "control_shift_x: " << control_shift_x << "." << std::endl;
+    std::cout << "control_shift_y: " << control_shift_y << "." << std::endl;
+    std::cout << "control_shift_z: " << control_shift_z << "." << std::endl;
+
 }
 
 void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -227,6 +234,8 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         static tf::TransformBroadcaster br;
         tf::Transform transform;
         tf::Quaternion q;
+
+        tf::Quaternion q_control;
 
         // 1 scan
         pcl::PointCloud<pcl::PointXYZ> scan;
@@ -320,10 +329,38 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         current_pos.z = t(2, 3);
         tf3d.getRPY(current_pos.roll, current_pos.pitch, current_pos.yaw, 1);
 
-        // transform
+	// control_pose
+	current_pos_control.roll = current_pos.roll;
+	current_pos_control.pitch = current_pos.pitch;
+	current_pos_control.yaw = current_pos.yaw - angle / 180.0 * M_PI;
+	double theta = current_pos_control.yaw;
+	current_pos_control.x = cos(theta) * (-control_shift_x) + sin(theta) * (-control_shift_y) + current_pos.x;
+	current_pos_control.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pos.y;
+	current_pos_control.z = current_pos.z - control_shift_z;
+
+        // transform "/velodyne" to "/map"
+#if 0
         transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
         q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
         transform.setRotation(q);
+#else
+	//
+	// FIXME:
+	// We corrected the angle of "/velodyne" so that pure_pursuit
+	// can read this frame for the control.
+	// However, this is not what we want because the scan of Velodyne
+	// looks unmatched for the 3-D map on Rviz.
+	// What we really want is to make another TF transforming "/velodyne"
+	// to a new "/ndt_points" frame and modify pure_pursuit to
+	// read this frame instead of "/velodyne".
+	// Otherwise, can pure_pursuit just use "/ndt_frame"?
+	//
+        transform.setOrigin(tf::Vector3(current_pos_control.x, current_pos_control.y, current_pos_control.z));
+        q.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
+        transform.setRotation(q);
+#endif
+
+	q_control.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
 
         /*
          std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
@@ -343,15 +380,35 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
 
         // publish the position
-        pose_msg.header.frame_id = "/ndt_frame";
-        pose_msg.header.stamp = scan_time;
-        pose_msg.pose.position.x = current_pos.x;
-        pose_msg.pose.position.y = current_pos.y;
-        pose_msg.pose.position.z = current_pos.z;
-        pose_msg.pose.orientation.x = q.x();
-        pose_msg.pose.orientation.y = q.y();
-        pose_msg.pose.orientation.z = q.z();
-        pose_msg.pose.orientation.w = q.w();
+        ndt_pose_msg.header.frame_id = "/ndt_frame";
+        ndt_pose_msg.header.stamp = scan_time;
+        ndt_pose_msg.pose.position.x = current_pos.x;
+        ndt_pose_msg.pose.position.y = current_pos.y;
+        ndt_pose_msg.pose.position.z = current_pos.z;
+        ndt_pose_msg.pose.orientation.x = q.x();
+        ndt_pose_msg.pose.orientation.y = q.y();
+        ndt_pose_msg.pose.orientation.z = q.z();
+        ndt_pose_msg.pose.orientation.w = q.w();
+
+        static tf::TransformBroadcaster pose_broadcaster_control;
+        tf::Transform pose_transform_control;
+        tf::Quaternion pose_q_control;
+
+        pose_transform_control.setOrigin(tf::Vector3(0, 0, 0));
+        pose_q_control.setRPY(0, 0, 0);
+        pose_transform_control.setRotation(pose_q_control);
+        pose_broadcaster_control.sendTransform(tf::StampedTransform(pose_transform_control, scan_time, "map", "ndt_frame"));
+
+        // publish the position
+        control_pose_msg.header.frame_id = "/ndt_frame";
+        control_pose_msg.header.stamp = scan_time;
+        control_pose_msg.pose.position.x = current_pos_control.x;
+        control_pose_msg.pose.position.y = current_pos_control.y;
+        control_pose_msg.pose.position.z = current_pos_control.z;
+        control_pose_msg.pose.orientation.x = q_control.x();
+        control_pose_msg.pose.orientation.y = q_control.y();
+        control_pose_msg.pose.orientation.z = q_control.z();
+        control_pose_msg.pose.orientation.w = q_control.w();
 
         /*
          std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
@@ -359,7 +416,16 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
          std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
          */
 
-        pose_pub.publish(pose_msg);
+        ndt_pose_pub.publish(ndt_pose_msg);
+        control_pose_pub.publish(control_pose_msg);
+
+	int iter_num = ndt.getFinalNumIteration();
+	if(iter_num > 5){
+	  ndt_stat_msg.data = false;
+	}else{
+	  ndt_stat_msg.data = true;
+	}
+	ndt_stat_pub.publish(ndt_stat_msg);
 
         t5_end = ros::Time::now();
         d5 = t5_end - t5_start;
@@ -416,7 +482,6 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
 
 int main(int argc, char **argv)
 {
-
     std::cout << "---------------------------------------" << std::endl;
     std::cout << "NDT_PCL program coded by Yuki KITSUKAWA" << std::endl;
     std::cout << "---------------------------------------" << std::endl;
@@ -424,7 +489,11 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "ndt_pcl");
     ros::NodeHandle n;
 
-    pose_pub = n.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
+    ndt_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
+
+    control_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
+
+    ndt_stat_pub = n.advertise<std_msgs::Bool>("/ndt_stat", 1000);
 
     // subscribing parameter
     ros::Subscriber param_sub = n.subscribe("config/ndt", 10, param_callback);

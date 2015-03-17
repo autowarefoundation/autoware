@@ -73,8 +73,6 @@ public:
     void AccelerateControl(double current_velocity,double cmd_velocity);
     void DecelerateControl(double current_velocity,double cmd_velocity);
     void StoppingControl(double current_velocity,double cmd_velocity);
-    bool Brake(int target_brake, int gain);
-    bool Accel(int target_accel, int gain);
     void SetMode(int mode);
     void SetGear(int gear);
 
