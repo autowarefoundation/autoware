@@ -204,6 +204,14 @@ class MyFrame(rtmgr.MyFrame):
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
 
+		# for init button
+		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
+			  os.environ['HOME'] + '/.autoware/data/map/pointcloud_map',
+			  os.environ['HOME'] + '/.autoware/data/map/vector_map' ]
+		for path in paths:
+			if not os.path.exists(path):
+				subprocess.call([ 'mkdir', '-p', path ])
+
 	def __do_layout(self):
 		pass
 
