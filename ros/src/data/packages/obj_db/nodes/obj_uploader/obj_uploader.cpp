@@ -133,7 +133,7 @@ string makeSendDataDetectedObj(vector<geometry_msgs::PoseStamped> car_position_v
   vector<geometry_msgs::PoseStamped>::iterator cp_iterator;
   cp_iterator = car_position_vector.begin();
 
-  for(int i=0; i<car_position_vector.size() ; i++, cp_iterator++){
+  for(uint i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
     //create sql
     //In Autoware, x and y is oppsite.So reverse these when sending.

@@ -97,7 +97,7 @@ void marker_publisher(const std_msgs::String msg)
   geo.set_plane(7);
   // Loading data.
   db_data = split(msg.data.c_str(),'\n');
-  for(uint i = 0; i < (int)db_data.size(); i++){
+  for(uint i = 0; i < db_data.size(); i++){
     geometry_msgs::Point p;
     if(db_data[i].compare("")==0) continue;
     tmp = split(db_data[i], '\t');
@@ -161,13 +161,13 @@ void* wrapSender(void *tsd){
   switch (SendDataType){
   case RANGE://first argument is 10003
     {
-      oss << "select 0,latitude,longitude,azimuth,timestamp from test_map where latitude >= " << fixed << setprecision(7) << positionRange[0] << " and latitude < "  << fixed << setprecision(7) << positionRange[1] << " and longitude >= " << fixed << setprecision(7) << positionRange[2] << " and longitude < " << fixed << setprecision(7) << positionRange[3] << " and timestamp > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and timestamp <= current_timestamp;";
+      oss << "select 0,lat,lon,0,tm from pos where lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << " and tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
       data += oss.str();
       break;
     }
   case TEST://first argument is 10002
     {
-      oss << "select 0,latitude,longitude,azimuth,timestamp from test_map where latitude >= " << fixed << setprecision(7) << positionRange[0] << " and latitude < "  << fixed << setprecision(7) << positionRange[1] << " and longitude >= " << fixed << setprecision(7) << positionRange[2] << " and longitude < " << fixed << setprecision(7) << positionRange[3] << " order by timestamp desc limit 1";
+      oss << "select 0,lat,lon,0,tm from pos where lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << " order by tm desc limit 1";
       data += oss.str();
       break;
     }
@@ -179,7 +179,7 @@ void* wrapSender(void *tsd){
     }
   case NORMAL:
   default:
-    oss << "select 0,latitude,longitude,azimuth,timestamp from test_map where latitude >= 30 and latitude < 40 and longitude >= 130 and longitude < 140 and timestamp > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and timestamp <= current_timestamp;";
+    oss << "select 0,lat,lon,0,tm from pos where lat >= 30 and lat < 40 and lon >= 130 and lon < 140 and tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
     data += oss.str();
   }
 
@@ -190,7 +190,7 @@ void* wrapSender(void *tsd){
 
   dbres = sd.Sender(data);
 
-  printf("%lu\n",dbres.size());
+  printf("%s\n",dbres.c_str());
 
   std_msgs::String msg;
   msg.data = dbres.c_str();
