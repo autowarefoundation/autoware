@@ -57,6 +57,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -347,6 +348,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int ERROR = 1;
 		static final int CAN = 2;
 		static final int MODE = 3;
+		static final int NDT = 4;
+		static final int LF = 5;
 
 		static final int MISS_BEACON_LIMIT = 10;
 
@@ -464,6 +467,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	S1Button s1Button;
 	S2Button s2Button;
 
+	Handler buttonHandler;
+
 	CommandClient commandClient;
 	InformationClient informationClient;
 
@@ -542,6 +547,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		applicationButton = new ApplicationButton(this);
 		s1Button = new S1Button(this);
 		s2Button = new S2Button(this);
+
+		buttonHandler = new Handler();
 
 		commandClient = new CommandClient();
 		informationClient = new InformationClient();
@@ -822,6 +829,50 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 							drawLeftView.setColor(Color.YELLOW);
 							drawRightView.setColor(Color.YELLOW);
 							drawCenterView.setColor(Color.YELLOW);
+						}
+						break;
+					case InformationClient.NDT:
+						switch (data[1]) {
+						case 0:
+							if (s1Button.getMode() == S1Button.OK) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.NG);
+									}
+								});
+							}
+							break;
+						case 1:
+							if (s1Button.getMode() == S1Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.OK);
+									}
+								});
+							}
+							break;
+						}
+						break;
+					case InformationClient.LF:
+						switch (data[1]) {
+						case 0:
+							if (s2Button.getMode() == S2Button.OK) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.NG);
+									}
+								});
+							}
+							break;
+						case 1:
+							if (s2Button.getMode() == S2Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.OK);
+									}
+								});
+							}
+							break;
 						}
 						break;
 					default:
