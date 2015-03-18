@@ -35,22 +35,176 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
+#include <std_msgs/Bool.h>
 #include <ui_socket/error_info.h>
 #include <ui_socket/mode_info.h>
-
 #include <vehicle_socket/CanInfo.h>
-
-#include "request.h"
 
 static constexpr int DEFAULT_PORT = 5777;
 static constexpr int LISTEN_BACKLOG = 10;
-static constexpr uint32_t QUEUE_SIZE = 1000;
+static constexpr uint32_t QUEUE_SIZE = 1;
 static constexpr double SUBSCRIBE_HZ = 1;
+
+static constexpr int32_t ERROR_INFO_TYPE = 1;
+static constexpr int32_t CAN_INFO_TYPE = 2;
+static constexpr int32_t MODE_INFO_TYPE = 3;
+static constexpr int32_t NDT_STAT_TYPE = 4;
+static constexpr int32_t LF_STAT_TYPE = 5;
 
 static int port;
 static int connfd;
 static volatile bool socket_ok;
 static std::mutex mtx;
+
+struct error_request {
+	int32_t type;
+	int32_t error;
+
+	error_request(const ui_socket::error_info& msg)
+	: type(ERROR_INFO_TYPE), error(msg.error) {
+	}
+};
+
+struct can_request {
+	int32_t type;
+	char tm[32];
+	int32_t devmode;
+	int32_t drvcontmode;
+	int32_t drvoverridemode;
+	int32_t drvservo;
+	int32_t drivepedal;
+	int32_t targetpedalstr;
+	int32_t inputpedalstr;
+	double targetveloc;
+	double speed;
+	int32_t driveshift;
+	int32_t targetshift;
+	int32_t inputshift;
+	int32_t strmode;
+	int32_t strcontmode;
+	int32_t stroverridemode;
+	int32_t strservo;
+	int32_t targettorque;
+	int32_t torque;
+	double angle;
+	double targetangle;
+	int32_t bbrakepress;
+	int32_t brakepedal;
+	int32_t brtargetpedalstr;
+	int32_t brinputpedalstr;
+	double battery;
+	int32_t voltage;
+	double anp;
+	int32_t battmaxtemparature;
+	int32_t battmintemparature;
+	double maxchgcurrent;
+	double maxdischgcurrent;
+	double sideacc;
+	double accellfromp;
+	double anglefromp;
+	double brakepedalfromp;
+	double speedfr;
+	double speedfl;
+	double speedrr;
+	double speedrl;
+	double velocfromp2;
+	int32_t drvmode;
+	int32_t devpedalstrfromp;
+	int32_t rpm;
+	double velocflfromp;
+	int32_t ev_mode;
+	int32_t temp;
+	int32_t shiftfrmprius;
+	int32_t light;
+	int32_t gaslevel;
+	int32_t door;
+	int32_t cluise;
+
+	can_request(const vehicle_socket::CanInfo& msg) {
+		type = CAN_INFO_TYPE;
+		msg.tm.copy(tm, 32, 0);
+		devmode = msg.devmode;
+		drvcontmode = msg.drvcontmode;
+		drvoverridemode = msg.drvoverridemode;
+		drvservo = msg.drvservo;
+		drivepedal = msg.drivepedal;
+		targetpedalstr = msg.targetpedalstr;
+		inputpedalstr = msg.inputpedalstr;
+		targetveloc = msg.targetveloc;
+		speed = msg.speed;
+		driveshift = msg.driveshift;
+		targetshift = msg.targetshift;
+		inputshift = msg.inputshift;
+		strmode = msg.strmode;
+		strcontmode = msg.strcontmode;
+		stroverridemode = msg.stroverridemode;
+		strservo = msg.strservo;
+		targettorque = msg.targettorque;
+		torque = msg.torque;
+		angle = msg.angle;
+		targetangle = msg.targetangle;
+		bbrakepress = msg.bbrakepress;
+		brakepedal = msg.brakepedal;
+		brtargetpedalstr = msg.brtargetpedalstr;
+		brinputpedalstr = msg.brinputpedalstr;
+		battery = msg.battery;
+		voltage = msg.voltage;
+		anp = msg.anp;
+		battmaxtemparature = msg.battmaxtemparature;
+		battmintemparature = msg.battmintemparature;
+		maxchgcurrent = msg.maxchgcurrent;
+		maxdischgcurrent = msg.maxdischgcurrent;
+		sideacc = msg.sideacc;
+		accellfromp = msg.accellfromp;
+		anglefromp = msg.anglefromp;
+		brakepedalfromp = msg.brakepedalfromp;
+		speedfr = msg.speedfr;
+		speedfl = msg.speedfl;
+		speedrr = msg.speedrr;
+		speedrl = msg.speedrl;
+		velocfromp2 = msg.velocfromp2;
+		drvmode = msg.drvmode;
+		devpedalstrfromp = msg.devpedalstrfromp;
+		rpm = msg.rpm;
+		velocflfromp = msg.velocflfromp;
+		ev_mode = msg.ev_mode;
+		temp = msg.temp;
+		shiftfrmprius = msg.shiftfrmprius;
+		light = msg.light;
+		gaslevel = msg.gaslevel;
+		door = msg.door;
+		cluise = msg.cluise;
+	}
+};
+
+struct mode_request {
+	int32_t type;
+	int32_t mode;
+
+	mode_request(const ui_socket::mode_info& msg)
+	: type(MODE_INFO_TYPE), mode(msg.mode) {
+	}
+};
+
+struct ndt_request {
+	int32_t type;
+	int32_t data;
+
+	ndt_request(const std_msgs::Bool& msg) {
+		type = NDT_STAT_TYPE;
+		data = msg.data ? 1 : 0;
+	}
+};
+
+struct lf_request {
+	int32_t type;
+	int32_t data;
+
+	lf_request(const std_msgs::Bool& msg) {
+		type = LF_STAT_TYPE;
+		data = msg.data ? 1 : 0;
+	}
+};
 
 static void subscribe_error_info(const ui_socket::error_info& msg)
 {
@@ -121,6 +275,72 @@ static void subscribe_can_info(const vehicle_socket::CanInfo& msg)
 static void subscribe_mode_info(const ui_socket::mode_info& msg)
 {
 	mode_request request(msg);
+	int response;
+	ssize_t nbytes;
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	nbytes = send(connfd, &request, sizeof(request), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("send: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(request)) {
+		ROS_WARN("send: %zd bytes remaining",
+			 sizeof(request) - nbytes);
+		return;
+	}
+
+	nbytes = recv(connfd, &response, sizeof(response), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("recv: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(response)) {
+		ROS_WARN("recv: %zd bytes remaining",
+			 sizeof(response) - nbytes);
+		return;
+	}
+}
+
+static void subscribe_ndt_stat(const std_msgs::Bool& msg)
+{
+	ndt_request request(msg);
+	int response;
+	ssize_t nbytes;
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	nbytes = send(connfd, &request, sizeof(request), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("send: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(request)) {
+		ROS_WARN("send: %zd bytes remaining",
+			 sizeof(request) - nbytes);
+		return;
+	}
+
+	nbytes = recv(connfd, &response, sizeof(response), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("recv: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(response)) {
+		ROS_WARN("recv: %zd bytes remaining",
+			 sizeof(response) - nbytes);
+		return;
+	}
+}
+
+static void subscribe_lf_stat(const std_msgs::Bool& msg)
+{
+	lf_request request(msg);
 	int response;
 	ssize_t nbytes;
 
@@ -227,6 +447,10 @@ int main(int argc, char **argv)
 						   subscribe_can_info);
 	ros::Subscriber sub_mode_info = n.subscribe("mode_info", QUEUE_SIZE,
 						    subscribe_mode_info);
+	ros::Subscriber sub_ndt_stat = n.subscribe("ndt_stat", QUEUE_SIZE,
+						   subscribe_ndt_stat);
+	ros::Subscriber sub_lf_stat = n.subscribe("lf_stat", QUEUE_SIZE,
+						  subscribe_lf_stat);
 
 	ros::Rate loop_rate(SUBSCRIBE_HZ);
 
