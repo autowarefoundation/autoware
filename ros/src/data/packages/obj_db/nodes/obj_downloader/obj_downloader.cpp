@@ -51,6 +51,8 @@ typedef struct{
 ros::Publisher pub;
 
 double positionRange[4];
+double geoPosition[4];//rectangular coordinate for sql condition
+
 SendData sd;
 TYPE SendDataType;
 int counter;
@@ -101,23 +103,30 @@ void marker_publisher(const std_msgs::String msg)
     geometry_msgs::Point p;
     if(db_data[i].compare("")==0) continue;
     tmp = split(db_data[i], '\t');
-    if(tmp.size()!=5) continue;
+    if(tmp.size()!=8) continue;
     a.gps_id = std::stoi(tmp[0]);
     a.lat = std::stod(tmp[1].c_str());
     a.lon = std::stod(tmp[2].c_str());
     a.ele = std::stod(tmp[3].c_str());
-    a.timestamp = tmp[4];
+    a.x = std::stod(tmp[4].c_str());
+    a.y = std::stod(tmp[5].c_str());
+    a.z = std::stod(tmp[6].c_str());
+    a.timestamp = tmp[7];
+
     // Convert from lat,lon to x,y
     // geo.set_llh_nmea_degrees(a.lat, a.lon, a.ele);
-    geo.llh_to_xyz(a.lat, a.lon, a.ele);
-    a.x = geo.x();
-    a.y = geo.y();
-    a.z = geo.z();
+    if(a.lat >= -180 && a.lat <= 180 && a.lon >= -180 && a.lon <= 180){
+      geo.llh_to_xyz(a.lat, a.lon, a.ele);
+      a.x = geo.x();
+      a.y = geo.y();
+      a.z = geo.z();
+    }
     // swap x and y
     p.x = a.y;
     p.y = a.x;
     p.z = a.z;
-    cars.push_back(a);
+
+    cars.push_back(a);    
     sphere_list.points.push_back(p);
     std::cout << "gps_id: " << cars[i].gps_id << std::endl;
     std::cout << "lat: " << cars[i].lat << std::endl;
@@ -159,15 +168,23 @@ void* wrapSender(void *tsd){
   data.append(header,16);
 
   switch (SendDataType){
-  case RANGE://first argument is 10003
+  case RANGE://first argument is 10003 or within correct range
     {
+     oss << "select 0,lat,lon,x,y,z,tm from pos where ((lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ") or (x >= " << fixed << setprecision(7) << geoPosition[0] << " and x < "  << fixed << setprecision(7) << geoPosition[1] << " and y >= " << fixed << setprecision(7) << geoPosition[2] << " and y < " << fixed << setprecision(7) << geoPosition[3] << ")) and tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
+
+     /*
       oss << "select 0,lat,lon,0,tm from pos where lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << " and tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
+     */
       data += oss.str();
       break;
     }
   case TEST://first argument is 10002
     {
+      oss << "select 0,lat,lon,0,x,y,z,tm from pos where ((lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ") or (x >= " << fixed << setprecision(7) << geoPosition[0] << " and x < "  << fixed << setprecision(7) << geoPosition[1] << " and y >= " << fixed << setprecision(7) << geoPosition[2] << " and y < " << fixed << setprecision(7) << geoPosition[3] << ")) and id = '0' order by tm desc limit 1";
+
+      /*
       oss << "select 0,lat,lon,0,tm from pos where lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << " order by tm desc limit 1";
+      */
       data += oss.str();
       break;
     }
@@ -185,12 +202,12 @@ void* wrapSender(void *tsd){
 
   data += "\n";
 
-  cout << "sql : " << data << endl;
+  //cout << "sql : " << data << endl;
   //printf("sql : %s\n",data.c_str());
 
   dbres = sd.Sender(data);
 
-  printf("%s\n",dbres.c_str());
+  printf("return data : %s\n",dbres.c_str());
 
   std_msgs::String msg;
   msg.data = dbres.c_str();
@@ -249,17 +266,17 @@ int main(int argc, char **argv){
 
     }else if(static_cast<string>(argv[1]).compare("10002") == 0){
       printf("test access\n");
-      positionRange[0] = 30;
-      positionRange[1] = 40;
-      positionRange[2] = 130;
-      positionRange[3] = 140;
+      positionRange[0] = 34.5;
+      positionRange[1] = 35.4;
+      positionRange[2] = 136.6;
+      positionRange[3] = 137.8;
       SendDataType = TEST;
     }else if(static_cast<string>(argv[1]).compare("10003") == 0){
       printf("current data get test access\n");
-      positionRange[0] = 30;
-      positionRange[1] = 40;
-      positionRange[2] = 130;
-      positionRange[3] = 140;
+      positionRange[0] = 34.5;
+      positionRange[1] = 35.4;
+      positionRange[2] = 136.6;
+      positionRange[3] = 137.8;
       SendDataType = RANGE;
 
     }else{
@@ -296,17 +313,17 @@ int main(int argc, char **argv){
 
     }else if(static_cast<string>(argv[1]).compare("10002") == 0){
       printf("test access\n");
-      positionRange[0] = 30;
-      positionRange[1] = 40;
-      positionRange[2] = 130;
-      positionRange[3] = 140;
+      positionRange[0] = 34.5;
+      positionRange[1] = 35.4;
+      positionRange[2] = 136.6;
+      positionRange[3] = 137.8;
       SendDataType = TEST;
     }else if(static_cast<string>(argv[1]).compare("10003") == 0){
       printf("current data get test access\n");
-      positionRange[0] = 30;
-      positionRange[1] = 40;
-      positionRange[2] = 130;
-      positionRange[3] = 140;
+      positionRange[0] = 34.5;
+      positionRange[1] = 35.4;
+      positionRange[2] = 136.6;
+      positionRange[3] = 137.8;
       SendDataType = RANGE;
 
     }else{
@@ -331,6 +348,16 @@ int main(int argc, char **argv){
     fprintf(stderr,"The number of argment is invalid.\n");
     return 0;
   }
+
+  geo_pos_conv geo;
+  geo.set_plane(7);
+  geo.llh_to_xyz(positionRange[0], positionRange[2], 0);
+  geoPosition[0] = geo.x();
+  geoPosition[2] = geo.y();
+
+  geo.llh_to_xyz(positionRange[1], positionRange[3], 0);
+  geoPosition[1] = geo.x();
+  geoPosition[3] = geo.y();
 
   sd = SendData(serverName,PORT);
   counter = 0;

@@ -98,31 +98,6 @@ void GetRPY(const geometry_msgs::Pose &pose,
 
 }
 
-/*
-string getNowTime(){
-  struct my_tm *qt;
-  struct tm *tmp;
-  struct timeval tv;
-  char tm[25];
-  string res;
-  ostringstream oss;
-
-  qt=(struct my_tm*)malloc(sizeof(struct my_tm));
-  if(qt == NULL)return NULL;
-  gettimeofday(&tv,NULL);
-  tmp=localtime(&tv.tv_sec);
-  qt->tim=mktime(tmp);
-  qt->msec=tv.tv_usec/1000;
-  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%d",
-    tmp->tm_year + 1900, tmp->tm_mon + 1,
-    tmp->tm_mday, tmp->tm_hour,
-    tmp->tm_min, tmp->tm_sec,
-    tv.tv_usec/1000);
-  res = tm;
-  return res;
-}
-*/
-
 void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
 			     vector<OBJPOS>::iterator pp_iterator,
 			     LOCATION mloc,
@@ -349,7 +324,7 @@ int main(int argc, char **argv){
   double Ox = 440.017336;
   double Oy = 335.274106;
 
-  /*
+
   cv::Mat Lintrinsic;
   std::string lidar_3d_yaml = "/home/auto1/.ros/autoware/camera_lidar_3d.yaml";
 
@@ -366,7 +341,7 @@ int main(int argc, char **argv){
       cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
     }
   }
-  */
+
   /*
   double fkx = 5.83199829e+02;
   double fky = 3.74826355e+02;
