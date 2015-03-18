@@ -151,23 +151,15 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	class ApplicationButton extends RadioButton {
 		static final int NAVIGATION = 1;
 		static final int MAP = 2;
-		static final int S1 = 3;
-		static final int S2 = 4;
 
 		ImageButton navigation;
 		ImageButton map;
-		ImageButton s1;
-		ImageButton s2;
 
 		ApplicationButton(OnClickListener listener) {
 			navigation = (ImageButton)findViewById(R.id.air);
 			navigation.setOnClickListener(listener);
 			map = (ImageButton)findViewById(R.id.oil);
 			map.setOnClickListener(listener);
-			s1 = (ImageButton)findViewById(R.id.s1);
-			s1.setOnClickListener(listener);
-			s2 = (ImageButton)findViewById(R.id.s2);
-			s2.setOnClickListener(listener);
 
 			refresh();
 		}
@@ -176,8 +168,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		void refresh() {
 			navigation.setImageResource(R.drawable.app_navi);
 			map.setImageResource(R.drawable.app_map);
-			s1.setImageResource(R.drawable.app_s1);
-			s2.setImageResource(R.drawable.app_s2);
 
 			switch (getMode()) {
 			case NAVIGATION:
@@ -185,12 +175,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				break;
 			case MAP:
 				map.setImageResource(R.drawable.pressed_app_map);
-				break;
-			case S1:
-				s1.setImageResource(R.drawable.pressed_app_s1);
-				break;
-			case S2:
-				s2.setImageResource(R.drawable.pressed_app_s2);
 				break;
 			}
 		}
@@ -880,10 +864,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			startActivity(intent);
 		} else if (v == applicationButton.map) {
 			applicationButton.updateMode(ApplicationButton.MAP);
-		} else if (v == applicationButton.s1) {
-			applicationButton.updateMode(ApplicationButton.S1);
-		} else if (v == applicationButton.s2) {
-			applicationButton.updateMode(ApplicationButton.S2);
 		}
 	}
 }
