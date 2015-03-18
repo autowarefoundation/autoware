@@ -99,7 +99,7 @@ void Launch::stop()
 	if (!running_)
 		return;
 
-	kill(pid_, SIGKILL);
+	kill(pid_, SIGINT);
 	waitpid(pid_, NULL, 0);
 
 	running_ = false;
