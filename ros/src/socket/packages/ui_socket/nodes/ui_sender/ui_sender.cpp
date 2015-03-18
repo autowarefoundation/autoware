@@ -42,7 +42,7 @@
 
 static constexpr int DEFAULT_PORT = 5777;
 static constexpr int LISTEN_BACKLOG = 10;
-static constexpr uint32_t QUEUE_SIZE = 1000;
+static constexpr uint32_t QUEUE_SIZE = 1;
 static constexpr double SUBSCRIBE_HZ = 1;
 
 static constexpr int32_t ERROR_INFO_TYPE = 1;
