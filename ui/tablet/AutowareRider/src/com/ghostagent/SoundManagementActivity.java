@@ -819,21 +819,22 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 					switch (data[0]) {
 					case InformationClient.ERROR:
+						drawLeftView.setColor(Color.YELLOW);
+						drawRightView.setColor(Color.YELLOW);
+						drawCenterView.setColor(Color.YELLOW);
+						break;
+					case InformationClient.MODE:
 						switch (data[1]) {
 						case 0:
 							drawLeftView.setColor(Color.RED);
 							drawRightView.setColor(Color.RED);
 							drawCenterView.setColor(Color.RED);
 							break;
-						case 1: // should evaluate mode information
+						case 1:
 							drawLeftView.setColor(Color.BLUE);
 							drawRightView.setColor(Color.BLUE);
 							drawCenterView.setColor(Color.BLUE);
 							break;
-						default:
-							drawLeftView.setColor(Color.YELLOW);
-							drawRightView.setColor(Color.YELLOW);
-							drawCenterView.setColor(Color.YELLOW);
 						}
 						break;
 					case InformationClient.NDT:
