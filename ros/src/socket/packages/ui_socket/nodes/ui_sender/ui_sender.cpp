@@ -35,9 +35,9 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
+#include <std_msgs/Bool.h>
 #include <ui_socket/error_info.h>
 #include <ui_socket/mode_info.h>
-
 #include <vehicle_socket/CanInfo.h>
 
 static constexpr int DEFAULT_PORT = 5777;
@@ -305,6 +305,72 @@ static void subscribe_mode_info(const ui_socket::mode_info& msg)
 	}
 }
 
+static void subscribe_ndt_stat(const std_msgs::Bool& msg)
+{
+	ndt_request request(msg);
+	int response;
+	ssize_t nbytes;
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	nbytes = send(connfd, &request, sizeof(request), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("send: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(request)) {
+		ROS_WARN("send: %zd bytes remaining",
+			 sizeof(request) - nbytes);
+		return;
+	}
+
+	nbytes = recv(connfd, &response, sizeof(response), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("recv: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(response)) {
+		ROS_WARN("recv: %zd bytes remaining",
+			 sizeof(response) - nbytes);
+		return;
+	}
+}
+
+static void subscribe_lf_stat(const std_msgs::Bool& msg)
+{
+	lf_request request(msg);
+	int response;
+	ssize_t nbytes;
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	nbytes = send(connfd, &request, sizeof(request), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("send: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(request)) {
+		ROS_WARN("send: %zd bytes remaining",
+			 sizeof(request) - nbytes);
+		return;
+	}
+
+	nbytes = recv(connfd, &response, sizeof(response), 0);
+	if (nbytes < 0) {
+		ROS_ERROR("recv: %s", strerror(errno));
+		socket_ok = false;
+		return;
+	}
+	if ((size_t)nbytes < sizeof(response)) {
+		ROS_WARN("recv: %zd bytes remaining",
+			 sizeof(response) - nbytes);
+		return;
+	}
+}
+
 static bool send_beacon(void)
 {
 	int request[2];
@@ -381,6 +447,10 @@ int main(int argc, char **argv)
 						   subscribe_can_info);
 	ros::Subscriber sub_mode_info = n.subscribe("mode_info", QUEUE_SIZE,
 						    subscribe_mode_info);
+	ros::Subscriber sub_ndt_stat = n.subscribe("ndt_stat", QUEUE_SIZE,
+						   subscribe_ndt_stat);
+	ros::Subscriber sub_lf_stat = n.subscribe("lf_stat", QUEUE_SIZE,
+						  subscribe_lf_stat);
 
 	ros::Rate loop_rate(SUBSCRIBE_HZ);
 
