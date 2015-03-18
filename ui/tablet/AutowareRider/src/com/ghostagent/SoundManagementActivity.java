@@ -268,7 +268,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	abstract class Client {
-		private static final int TIMEOUT = 3;
+		private static final int TIMEOUT = 5;
 
 		private int sockfd = -1;
 
@@ -350,8 +350,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int MODE = 3;
 		static final int NDT = 4;
 		static final int LF = 5;
-
-		static final int MISS_BEACON_LIMIT = 10;
 
 		int[] recv(int response) {
 			int[] data = new int[2];
@@ -804,15 +802,22 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	public void startInformationReceiver() {
 		new Thread(new Runnable() {
 			public void run() {
-				int missBeacon = 0;
-
 				while (bIsKnightRiding) {
 					int[] data = informationClient.recv(0);
 
+					if (data[0] < 0 || data[1] < 0) {
+						if (bIsServerConnecting) {
+							bIsServerConnecting = false;
+
+							commandClient.send(CommandClient.EXIT, 0);
+
+							commandClient.close();
+							informationClient.close();
+						}
+						continue;
+					}
+
 					switch (data[0]) {
-					case InformationClient.BEACON:
-						missBeacon = 0;
-						break;
 					case InformationClient.ERROR:
 						switch (data[1]) {
 						case 0:
@@ -875,21 +880,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 							break;
 						}
 						break;
-					default:
-						if (bIsServerConnecting) {
-							if (missBeacon < InformationClient.MISS_BEACON_LIMIT) {
-								missBeacon++;
-							} else {
-								bIsServerConnecting = false;
-
-								commandClient.send(CommandClient.EXIT, 0);
-
-								commandClient.close();
-								informationClient.close();
-
-								missBeacon = 0;
-							}
-						}
 					}
 				}
 			}
