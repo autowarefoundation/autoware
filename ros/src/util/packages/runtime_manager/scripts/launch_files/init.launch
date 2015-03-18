@@ -1,20 +1,31 @@
 <!-- -->
 <launch>
-<!-- start javad driver -->
+
+<!-- Tablet UI -->
+<include file="$(find runtime_manager)/scripts/ui_socket.launch"/>
+
+<!-- Vehicle Contorl -->
+<include file="$(find runtime_manager)/scripts/vehicle_socket.launch"/>
+
+<!-- TF -->
+<include file="$(arg tf_launch)"/>
+
+<!-- Point Cloud -->
+<node pkg="sample_data" type="sample_points_map" name="sample_points_map" args="$(arg pcd_files)"/>
+
+<!-- Vector Map -->
+<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(arg csv_files)"/>
+
+<!-- HDL-32e -->
+<include file="$(find velodyne)/scripts/velodyne_hdl32e.launch"/>
+
+<!-- Javad Delta 3 -->
 <node pkg="javad" type="gnss.sh" name="javad_driver"/>
 
-<!-- start nmea2tfpose -->
+<!-- PointGrey Grasshopper3 -->
+<include file="$(find pointgrey)/scripts/grasshopper3.launch"/>
+
+<!-- nmea2tfpose -->
 <node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/>
-
-<!-- start tf map to world userは適宜変えてください-->
-<include file="/home/pdsljp/data/tf/tf_toyota.launch"/>
-
-<!-- start vehicle_reveiver -->
-<node pkg="vehicle_socket" type="vehicle_receiver" name="vehicle_receiver"/>
-
-<!-- start vehicle_reveiver -->
-<node pkg="vehicle_socket" type="vehicle_sender" name="vehicle_sender"/>
-
-<!-- publish pointcloud map -->
 
 </launch>
