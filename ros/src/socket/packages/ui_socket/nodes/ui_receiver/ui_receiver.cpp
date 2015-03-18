@@ -35,6 +35,8 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/time.h>
+#include <signal.h>
+#include <wait.h>
 
 //#undef NDEBUG
 #include <assert.h>
@@ -52,6 +54,58 @@
 static int getConnect(int, int *, int *);
 static int getSensorValue(int, ros::Publisher[TOPIC_NR]);
 static int sendSignal(int);
+
+class Launch {
+private:
+	std::string launch_;
+	bool running_;
+	pid_t pid_;
+
+public:
+	explicit Launch(const char *launch);
+
+	void start();
+	void stop();
+};
+
+Launch::Launch(const char *launch)
+{
+	launch_ = launch;
+	running_ = false;
+}
+
+void Launch::start()
+{
+	if (running_)
+		return;
+
+	running_ = true;
+
+	pid_t pid = fork();
+	if (pid > 0)
+		pid_ = pid;
+	else if (pid == 0) {
+		execlp("roslaunch", "roslaunch", "runtime_manager",
+		       launch_.c_str(), NULL);
+		running_ = false;
+		exit(EXIT_FAILURE);
+	}
+	else
+		running_ = false;
+}
+
+void Launch::stop()
+{
+	if (!running_)
+		return;
+
+	kill(pid_, SIGKILL);
+	waitpid(pid_, NULL, 0);
+
+	running_ = false;
+}
+
+static Launch s1("check.launch"), s2("set.launch");
 
 int main(int argc, char *argv[])
 {
@@ -199,6 +253,20 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 		free(points);
 
 		pub[2].publish(msg);
+		break;
+	}
+	case 4: { // S1
+		if (info[1] >= 0)
+			s1.start();
+		else
+			s1.stop();
+		break;
+	}
+	case 5: { // S2
+		if (info[1] >= 0)
+			s2.start();
+		else
+			s2.stop();
 		break;
 	}
 	default: // TERMINATOR

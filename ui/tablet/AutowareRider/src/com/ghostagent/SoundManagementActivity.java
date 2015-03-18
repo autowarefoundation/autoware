@@ -181,23 +181,15 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	class ApplicationButton extends RadioButton {
 		static final int NAVIGATION = 1;
 		static final int MAP = 2;
-		static final int S1 = 3;
-		static final int S2 = 4;
 
 		ImageButton navigation;
 		ImageButton map;
-		ImageButton s1;
-		ImageButton s2;
 
 		ApplicationButton(OnClickListener listener) {
 			navigation = (ImageButton)findViewById(R.id.air);
 			navigation.setOnClickListener(listener);
 			map = (ImageButton)findViewById(R.id.oil);
 			map.setOnClickListener(listener);
-			s1 = (ImageButton)findViewById(R.id.s1);
-			s1.setOnClickListener(listener);
-			s2 = (ImageButton)findViewById(R.id.s2);
-			s2.setOnClickListener(listener);
 
 			refresh();
 		}
@@ -206,8 +198,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		void refresh() {
 			navigation.setImageResource(R.drawable.app_navi);
 			map.setImageResource(R.drawable.app_map);
-			s1.setImageResource(R.drawable.app_s1);
-			s2.setImageResource(R.drawable.app_s2);
 
 			switch (getMode()) {
 			case NAVIGATION:
@@ -216,11 +206,61 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			case MAP:
 				map.setImageResource(R.drawable.pressed_app_map);
 				break;
-			case S1:
-				s1.setImageResource(R.drawable.pressed_app_s1);
+			}
+		}
+	}
+
+	class S1Button extends RadioButton {
+		static final int NG = 1;
+		static final int OK = 2;
+
+		ImageButton s1;
+
+		S1Button(OnClickListener listener) {
+			s1 = (ImageButton)findViewById(R.id.s1);
+			s1.setOnClickListener(listener);
+
+			refresh();
+		}
+
+		@Override
+		void refresh() {
+			s1.setImageResource(R.drawable.app_s1);
+
+			switch (getMode()) {
+			case NG:
+				s1.setImageResource(R.drawable.pressed_app_s1_ng);
 				break;
-			case S2:
-				s2.setImageResource(R.drawable.pressed_app_s2);
+			case OK:
+				s1.setImageResource(R.drawable.pressed_app_s1_ok);
+				break;
+			}
+		}
+	}
+
+	class S2Button extends RadioButton {
+		static final int NG = 1;
+		static final int OK = 2;
+
+		ImageButton s2;
+
+		S2Button(OnClickListener listener) {
+			s2 = (ImageButton)findViewById(R.id.s2);
+			s2.setOnClickListener(listener);
+
+			refresh();
+		}
+
+		@Override
+		void refresh() {
+			s2.setImageResource(R.drawable.app_s2);
+
+			switch (getMode()) {
+			case NG:
+				s2.setImageResource(R.drawable.pressed_app_s2_ng);
+				break;
+			case OK:
+				s2.setImageResource(R.drawable.pressed_app_s2_ok);
 				break;
 			}
 		}
@@ -278,6 +318,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int GEAR = 1;
 		static final int MODE = 2;
 		static final int ROUTE = 3;
+		static final int S1 = 4;
+		static final int S2 = 5;
 
 		int send(int type, int command) {
 			if (isClosed())
@@ -419,6 +461,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	GearButton gearButton;
 	DriveButton driveButton;
 	ApplicationButton applicationButton;
+	S1Button s1Button;
+	S2Button s2Button;
 
 	CommandClient commandClient;
 	InformationClient informationClient;
@@ -496,6 +540,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		gearButton = new GearButton(this);
 		driveButton = new DriveButton(this);
 		applicationButton = new ApplicationButton(this);
+		s1Button = new S1Button(this);
+		s2Button = new S2Button(this);
 
 		commandClient = new CommandClient();
 		informationClient = new InformationClient();
@@ -531,6 +577,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 					commandClient.send(CommandClient.GEAR, gearButton.getMode());
 					commandClient.send(CommandClient.MODE, driveButton.getMode());
+					commandClient.send(CommandClient.S1, s1Button.getMode());
+					commandClient.send(CommandClient.S2, s2Button.getMode());
 				} else {
 					bIsServerConnecting = false;
 
@@ -686,6 +734,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 							commandClient.send(CommandClient.GEAR, gearButton.getMode());
 							commandClient.send(CommandClient.MODE, driveButton.getMode());
+							commandClient.send(CommandClient.S1, s1Button.getMode());
+							commandClient.send(CommandClient.S2, s2Button.getMode());
 						} else {
 							bIsServerConnecting = false;
 
@@ -910,10 +960,18 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			startActivity(intent);
 		} else if (v == applicationButton.map) {
 			applicationButton.updateMode(ApplicationButton.MAP);
-		} else if (v == applicationButton.s1) {
-			applicationButton.updateMode(ApplicationButton.S1);
-		} else if (v == applicationButton.s2) {
-			applicationButton.updateMode(ApplicationButton.S2);
+		} else if (v == s1Button.s1) {
+			if (s1Button.getMode() == S1Button.OK)
+				s1Button.updateMode(S1Button.OK);
+			else
+				s1Button.updateMode(S1Button.NG);
+			commandClient.send(CommandClient.S1, s1Button.getMode());
+		} else if (v == s2Button.s2) {
+			if (s2Button.getMode() == S2Button.OK)
+				s2Button.updateMode(S2Button.OK);
+			else
+				s2Button.updateMode(S2Button.NG);
+			commandClient.send(CommandClient.S2, s2Button.getMode());
 		}
 	}
 }
