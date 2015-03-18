@@ -29,18 +29,89 @@
 */
 
 #include <string>
-#include "ros/ros.h"
+#include <vector>
+#include <ros/ros.h>
+
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 #include "dpm/ImageObjects.h"
 
-extern int dpm_ocv_main(int argc, char* argv[],
-			const std::string& detection_type);
+#include <dpm.hpp>
 
-int main(int argc, char **argv)
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+static float overlap_threshold;
+static int num_threads;
+static std::vector<std::string> model_files;
+static ros::Publisher car_pixel_publisher;
+
+static void image_raw_cb(const sensor_msgs::Image& image)
+{
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
+	cv::Mat mat = cv_image->image;
+
+	std::vector<DPMObject> cars = dpm_detect_objects(mat, model_files,
+							 num_threads, overlap_threshold);
+
+	size_t car_num = cars.size();
+	std::vector<int> corner_point_array(car_num);
+	std::vector<int> car_type_array(car_num);
+
+	for (int i = 0; i < static_cast<int>(car_num); ++i) {
+		car_type_array[i] = cars[i].class_id;
+
+		int base = i * 4;
+		corner_point_array[base + 0] = cars[i].rect.x;
+		corner_point_array[base + 1] = cars[i].rect.y;
+		corner_point_array[base + 2] = cars[i].rect.width;
+		corner_point_array[base + 3] = cars[i].rect.height;
+	}
+
+	dpm::ImageObjects message;
+	message.car_num = car_num;
+	message.corner_point = corner_point_array;
+	message.car_type = car_type_array;
+
+	message.header = image.header;
+	message.header.stamp = image.header.stamp;
+
+	car_pixel_publisher.publish(message);
+}
+
+static void set_default_parameters(const ros::NodeHandle& n)
+{
+	if (n.hasParam("/car_detector/threshold")){
+		double val;
+		n.getParam("/car_detector/threshold", val);
+		overlap_threshold = static_cast<float>(val);
+	} else {
+		overlap_threshold = 0.1f;
+	}
+
+	if (n.hasParam("/car_detector/threads")){
+		int val;
+		n.getParam("/car_detector/threads", val);
+		num_threads = val;
+	} else {
+		num_threads = 8;
+	}
+}
+
+int main(int argc, char *argv[])
 {
 	ros::init(argc, argv, "car_dpm");
 
 	ros::NodeHandle n;
-	std::string detection_type("car");
+	set_default_parameters(n);
 
-	return dpm_ocv_main(argc, argv, detection_type);
+	ros::Subscriber sub = n.subscribe("/image_raw", 1, image_raw_cb);
+	car_pixel_publisher = n.advertise<dpm::ImageObjects>("car_pixel_xy", 1);
+
+	std::string model_file(STR(MODEL_DIR) "car_2008.xml");
+	model_files.push_back(model_file);
+
+	ros::spin();
+	return 0;
 }

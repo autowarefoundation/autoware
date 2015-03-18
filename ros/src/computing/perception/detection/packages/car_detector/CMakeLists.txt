@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  dpm
   fusion
 )
 find_package(OpenCV REQUIRED)
@@ -56,6 +57,10 @@ include_directories(/usr/include/opencv2/legacy)
 
 add_executable(car_dpm
   nodes/car_dpm/car_dpm.cpp
+)
+
+set_target_properties(car_dpm PROPERTIES
+  COMPILE_FLAGS "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
 )
 
 target_link_libraries(car_dpm
