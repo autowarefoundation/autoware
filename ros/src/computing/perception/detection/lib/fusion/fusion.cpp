@@ -67,7 +67,7 @@ void setImageObjects(const dpm::ImageObjects& image_objects)
     }
 }
 
-void setScanImage(const scan_to_image::ScanImage& scan_image)
+void setScanImage(const scan2image::ScanImage& scan_image)
 {
     int i;
 #if _DEBUG

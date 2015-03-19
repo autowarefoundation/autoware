@@ -43,7 +43,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  CATKIN_DEPENDS dpm dpm_gpu scan_to_image fusion
+  CATKIN_DEPENDS dpm dpm_gpu scan2image fusion
 #  DEPENDS system_lib
 )
 

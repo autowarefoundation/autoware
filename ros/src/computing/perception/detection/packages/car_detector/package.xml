@@ -9,12 +9,12 @@
   <build_depend>dpm</build_depend>
   <build_depend>dpm_gpu</build_depend>
   <build_depend>kf</build_depend>
-  <build_depend>scan_to_image</build_depend>
+  <build_depend>scan2image</build_depend>
   <build_depend>fusion</build_depend>
   <run_depend>dpm</run_depend>
   <run_depend>dpm_gpu</run_depend>
   <run_depend>kf</run_depend>
-  <run_depend>scan_to_image</run_depend>
+  <run_depend>scan2image</run_depend>
   <run_depend>fusion</run_depend>
   <export>
   </export>

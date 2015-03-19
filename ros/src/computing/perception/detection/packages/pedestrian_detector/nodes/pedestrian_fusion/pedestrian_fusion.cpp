@@ -39,7 +39,7 @@ void ImageObjectsCallback(const dpm::ImageObjects& image_object)
     publishTopic();
 }
 
-void ScanImageCallback(const scan_to_image::ScanImage& scan_image)
+void ScanImageCallback(const scan2image::ScanImage& scan_image)
 {
     setScanImage(scan_image);
     sensor_header = scan_image.header;
