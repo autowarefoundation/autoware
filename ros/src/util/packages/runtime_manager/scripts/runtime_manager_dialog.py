@@ -302,11 +302,12 @@ class MyFrame(rtmgr.MyFrame):
 				self.load_dic[k] = pdic
 				prm = self.get_param(d2.get('param'))
 				gdic = self.gdic_get_1st(d2)
-				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
 
 				for (name, v) in pdic.items():
 					restore = eval( gdic.get(name, {}).get('restore', 'lambda a : None') )
 					restore(v)
+
+				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
 
 	#
 	# Main Tab
@@ -947,7 +948,7 @@ class MyFrame(rtmgr.MyFrame):
 		return tree
 
 	def add_config_link_tree_item(self, item, name, gdic, prm):
-		pdic = self.load_dic.get(name)
+		pdic = self.load_dic.get(name, {})
 		self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
 		item.SetHyperText()
 
