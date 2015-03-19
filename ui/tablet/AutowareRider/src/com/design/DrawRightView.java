@@ -63,7 +63,8 @@ public class DrawRightView extends View{
 
 	public DrawRightView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		color = Color.RED;
+		// dark red
+		color = 0xff5b1100;
 		paint = new Paint();
 		paint.setAntiAlias(true);
 
@@ -85,8 +86,7 @@ public class DrawRightView extends View{
 		//back color
 		canvas.drawColor(Color.BLACK);
 
-		if(SoundManagementActivity.getSizeFlag == true &&
-		   SoundManagementActivity.bIsServerConnecting == true){
+		if(SoundManagementActivity.getSizeFlag == true){
 			//center rect
 			//rect = new Rect(left, top, right, bottom);
 			rect = new Rect(left, bottom, right, top);
@@ -98,7 +98,8 @@ public class DrawRightView extends View{
 
 				//upper rect
 				//rect = new Rect(left, top + space * (counter - 1), right, bottom + space * (counter - 1));
-				rect = new Rect(left + bulge * counter, bottom + space * (counter - 1), right - bulge * counter, top + space * (counter - 1));
+				//rect = new Rect(left + bulge * counter, bottom + space * (counter - 1), right - bulge * counter, top + space * (counter - 1));
+				rect = new Rect(left, bottom + space * (counter - 1), right, top + space * (counter - 1));
 				canvas.drawRect(rect, paint);
 
 				// set shader(bottom)
@@ -106,7 +107,8 @@ public class DrawRightView extends View{
 
 				//under rect
 				//rect = new Rect(left, top - space * (counter - 1), right, bottom - space * (counter - 1));
-				rect = new Rect(left + bulge * counter, bottom - space * (counter - 1), right - bulge * counter, top - space * (counter - 1));
+				//rect = new Rect(left + bulge * counter, bottom - space * (counter - 1), right - bulge * counter, top - space * (counter - 1));
+				rect = new Rect(left, bottom - space * (counter - 1), right, top - space * (counter - 1));
 				canvas.drawRect(rect, paint);
 			}
 		}
@@ -132,10 +134,10 @@ public class DrawRightView extends View{
 		paint.setColor(color);
 		topShader = new LinearGradient(SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight,
 					       SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight / 8,
-					       color, Color.BLACK, Shader.TileMode.CLAMP);
+					       color, color, Shader.TileMode.CLAMP);
 		bottomShader = new LinearGradient(SoundManagementActivity.viewWidth, 0,
 						  SoundManagementActivity.viewWidth, SoundManagementActivity.viewHeight - SoundManagementActivity.viewHeight / 8,
-						  color, Color.BLACK, Shader.TileMode.CLAMP);
+						  color, color, Shader.TileMode.CLAMP);
 
 		mHandler.post(new Runnable(){
 			@Override
