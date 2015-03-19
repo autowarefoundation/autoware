@@ -36,7 +36,7 @@
 
 #include "ros/ros.h"
 #include <sensor_msgs/image_encodings.h>
-#include "points_to_image/PointsImage.h"
+#include "points2image/PointsImage.h"
 
 #if 0
 #include "dpm/ImageObjects.h"
@@ -57,7 +57,7 @@ static char window_name[] = "points_image_d_viewer";
 bool existImage = false;
 bool existPoints = false;
 sensor_msgs::Image image_msg;
-points_to_image::PointsImageConstPtr points_msg;
+points2image::PointsImageConstPtr points_msg;
 cv::Mat colormap;
 
 #if 0
@@ -340,7 +340,7 @@ void image_cb(const sensor_msgs::Image& msg)
   show();
 }
 
-void points_cb(const points_to_image::PointsImageConstPtr& msg)
+void points_cb(const points2image::PointsImageConstPtr& msg)
 {
   points_msg = msg;
   existPoints = true;

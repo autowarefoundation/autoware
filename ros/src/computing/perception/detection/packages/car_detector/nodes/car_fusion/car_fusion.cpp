@@ -48,7 +48,7 @@ void ScanImageCallback(const scan_to_image::ScanImage& scan_image)
     publishTopic();
 }
 
-void PointsImageCallback(const points_to_image::PointsImage& points_image)
+void PointsImageCallback(const points2image::PointsImage& points_image)
 {
     setPointsImage(points_image);
     sensor_header = points_image.header;

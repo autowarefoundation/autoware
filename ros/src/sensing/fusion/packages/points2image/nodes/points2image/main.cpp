@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
     fs[DISTCOEFF]>>distcoeff;
     fs[IMAGESIZE]>>imagesize;
 
-    ROSSub<sensor_msgs::PointCloud2ConstPtr> * velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("velodyne_points",1000,10,"points_to_image");
- //   ROSPub<POINTS2IMAGEPtr> * publisher=new ROSPub<POINTS2IMAGEPtr>("points_image",1000,"points_to_image");
+    ROSSub<sensor_msgs::PointCloud2ConstPtr> * velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("velodyne_points",1000,10,"points2image");
+ //   ROSPub<POINTS2IMAGEPtr> * publisher=new ROSPub<POINTS2IMAGEPtr>("points_image",1000,"points2image");
 
     while(ros::ok())
     {

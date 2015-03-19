@@ -67,7 +67,7 @@ subs :
 
 buttons:
   points_image :
-    run   : rosrun points_to_image points_to_image
+    run   : rosrun points2image points2image
     param : points_image
 
   scan_image :

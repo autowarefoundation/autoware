@@ -45,7 +45,7 @@ target_link_libraries(points_image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(points_image_viewer points_to_image_generate_messages_cpp)
+add_dependencies(points_image_viewer points2image_generate_messages_cpp)
 
 add_executable(image_d_viewer nodes/image_d_viewer/image_d_viewer.cpp)
 target_link_libraries(image_d_viewer
@@ -59,4 +59,4 @@ target_link_libraries(points_image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(points_image_d_viewer points_to_image_generate_messages_cpp)
+add_dependencies(points_image_d_viewer points2image_generate_messages_cpp)

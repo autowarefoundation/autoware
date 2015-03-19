@@ -32,8 +32,8 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
-#include "points_to_image/PointsImage.h"
-#include "points_to_image/CameraExtrinsic.h"
+#include "points2image/PointsImage.h"
+#include "points2image/CameraExtrinsic.h"
 
 #define CAMERAEXTRINSICMAT "CameraExtrinsicMat"
 #define CAMERAMAT "CameraMat"
@@ -56,8 +56,8 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 	int w = imageSize.width;
 	int h = imageSize.height;
 
-	points_to_image::PointsImage pub_msg;
-	points_to_image::CameraExtrinsic cpub_msg;
+	points2image::PointsImage pub_msg;
+	points2image::CameraExtrinsic cpub_msg;
 
 	pub_msg.header = msg->header;
 
@@ -155,8 +155,8 @@ int main(int argc, char *argv[])
 	imageSize.width = IMAGE_WIDTH;
 	imageSize.height = IMAGE_HEIGHT;
 
-	pub = n.advertise<points_to_image::PointsImage>("points_image", 10);
-	cpub = n.advertise<points_to_image::CameraExtrinsic>("threeD_calibration", 1);
+	pub = n.advertise<points2image::PointsImage>("points_image", 10);
+	cpub = n.advertise<points2image::CameraExtrinsic>("threeD_calibration", 1);
 	ros::Subscriber sub = n.subscribe("velodyne_points", 1, callback);
 
 	ros::spin();
