@@ -52,7 +52,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -351,6 +350,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int NDT = 4;
 		static final int LF = 5;
 
+		static final int MISS_BEACON_LIMIT = 3;
+
 		int[] recv(int response) {
 			int[] data = new int[2];
 
@@ -361,7 +362,14 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			}
 
 			data[0] = recvInt();
+			if (data[0] < 0) {
+				data[1] = -1;
+				return data;
+			}
+
 			data[1] = recvInt();
+			if (data[1] < 0)
+				return data;
 
 			sendInt(response);
 
@@ -515,7 +523,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	/**
 	 * flag for server connecting
 	 */
-	public static boolean bIsServerConnecting = false;
+	boolean bIsServerConnecting = false;
 	/**
 	 * menu item id
 	 */
@@ -526,6 +534,40 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
 		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 		return wifiInfo.getMacAddress();
+	}
+
+	private boolean startServerConnecting() {
+		bIsServerConnecting = true;
+
+		// red
+		drawLeftView.setColor(0xffb62200);
+		drawRightView.setColor(0xffb62200);
+		drawCenterView.setColor(0xffb62200);
+
+		if (commandClient.send(CommandClient.GEAR, gearButton.getMode()) < 0)
+			return false;
+		if (commandClient.send(CommandClient.MODE, driveButton.getMode()) < 0)
+			return false;
+		if (commandClient.send(CommandClient.S1, s1Button.getMode()) < 0)
+			return false;
+		if (commandClient.send(CommandClient.S2, s2Button.getMode()) < 0)
+			return false;
+
+		return true;
+	}
+
+	private void stopServerConnecting() {
+		// dark red
+		drawLeftView.setColor(0xff5b1100);
+		drawRightView.setColor(0xff5b1100);
+		drawCenterView.setColor(0xff5b1100);
+
+		bIsServerConnecting = false;
+
+		if (!commandClient.isClosed())
+			commandClient.close();
+		if (!informationClient.isClosed())
+			informationClient.close();
 	}
 
 	@Override
@@ -578,20 +620,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 				if (commandClient.connect(address, commandPort) &&
 				    informationClient.connect(address, informationPort)) {
-					bIsServerConnecting = true;
-
-					commandClient.send(CommandClient.GEAR, gearButton.getMode());
-					commandClient.send(CommandClient.MODE, driveButton.getMode());
-					commandClient.send(CommandClient.S1, s1Button.getMode());
-					commandClient.send(CommandClient.S2, s2Button.getMode());
-				} else {
-					bIsServerConnecting = false;
-
-					if (!commandClient.isClosed())
-						commandClient.close();
-					if (!informationClient.isClosed())
-						informationClient.close();
-				}
+					if (!startServerConnecting())
+						stopServerConnecting();
+				} else
+					stopServerConnecting();
 			}
 		}
 
@@ -721,12 +753,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						}
 
 						if (bIsServerConnecting) {
-							bIsServerConnecting = false;
-
 							commandClient.send(CommandClient.EXIT, 0);
-
-							commandClient.close();
-							informationClient.close();
+							stopServerConnecting();
 						}
 
 						address = addressString;
@@ -735,20 +763,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 						if (commandClient.connect(address, commandPort) &&
 						    informationClient.connect(address, informationPort)) {
-							bIsServerConnecting = true;
-
-							commandClient.send(CommandClient.GEAR, gearButton.getMode());
-							commandClient.send(CommandClient.MODE, driveButton.getMode());
-							commandClient.send(CommandClient.S1, s1Button.getMode());
-							commandClient.send(CommandClient.S2, s2Button.getMode());
-						} else {
-							bIsServerConnecting = false;
-
-							if (!commandClient.isClosed())
-								commandClient.close();
-							if (!informationClient.isClosed())
-								informationClient.close();
-						}
+							if (!startServerConnecting())
+								stopServerConnecting();
+						} else
+							stopServerConnecting();
 					}
 				});
 			builder.setNegativeButton(
@@ -787,9 +805,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			public void run() {
 				while (bIsKnightRiding) {
 					Random rnd = new Random();
-					drawLeftView.drawView(rnd.nextInt(10));
-					drawRightView.drawView(rnd.nextInt(10));
-					drawCenterView.drawView(rnd.nextInt(10) + 4);
+					drawLeftView.drawView(rnd.nextInt(4) + 1);
+					drawRightView.drawView(rnd.nextInt(4) + 1);
+					drawCenterView.drawView(rnd.nextInt(7) + 1);
 					try {
 						Thread.sleep(100);
 					} catch (Exception e) {
@@ -802,38 +820,70 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	public void startInformationReceiver() {
 		new Thread(new Runnable() {
 			public void run() {
+				int missBeacon = 0;
+
 				while (bIsKnightRiding) {
 					int[] data = informationClient.recv(0);
 
-					if (data[0] < 0 || data[1] < 0) {
+					if (data[0] < 0) {
 						if (bIsServerConnecting) {
-							bIsServerConnecting = false;
-
-							commandClient.send(CommandClient.EXIT, 0);
-
-							commandClient.close();
-							informationClient.close();
+							if (missBeacon < InformationClient.MISS_BEACON_LIMIT)
+								missBeacon++;
+							else {
+								commandClient.send(CommandClient.EXIT, 0);
+								stopServerConnecting();
+								missBeacon = 0;
+							}
 						}
 						continue;
 					}
 
+					if (data[1] < 0) {
+						commandClient.send(CommandClient.EXIT, 0);
+						stopServerConnecting();
+						missBeacon = 0;
+						continue;
+					}
+
 					switch (data[0]) {
+					case InformationClient.BEACON:
+						missBeacon = 0;
+						break;
 					case InformationClient.ERROR:
-						drawLeftView.setColor(Color.YELLOW);
-						drawRightView.setColor(Color.YELLOW);
-						drawCenterView.setColor(Color.YELLOW);
+						switch (data[1]) {
+						case 0:
+							// red
+							drawLeftView.setColor(0xffb62200);
+							drawRightView.setColor(0xffb62200);
+							drawCenterView.setColor(0xffb62200);
+							break;
+						case 1:
+							// yellow
+							drawLeftView.setColor(0xfffffb00);
+							drawRightView.setColor(0xfffffb00);
+							drawCenterView.setColor(0xfffffb00);
+							break;
+						}
 						break;
 					case InformationClient.MODE:
 						switch (data[1]) {
 						case 0:
-							drawLeftView.setColor(Color.RED);
-							drawRightView.setColor(Color.RED);
-							drawCenterView.setColor(Color.RED);
+							// red
+							drawLeftView.setColor(0xffb62200);
+							drawRightView.setColor(0xffb62200);
+							drawCenterView.setColor(0xffb62200);
 							break;
 						case 1:
-							drawLeftView.setColor(Color.BLUE);
-							drawRightView.setColor(Color.BLUE);
-							drawCenterView.setColor(Color.BLUE);
+							// blue
+							drawLeftView.setColor(0xff0000fb);
+							drawRightView.setColor(0xff0000fb);
+							drawCenterView.setColor(0xff0000fb);
+							break;
+						case 2:
+							// yellow
+							drawLeftView.setColor(0xfffffb00);
+							drawRightView.setColor(0xfffffb00);
+							drawCenterView.setColor(0xfffffb00);
 							break;
 						}
 						break;
@@ -913,12 +963,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		super.onDestroy();
 		bIsKnightRiding = false;
 		if (bIsServerConnecting) {
-			bIsServerConnecting = false;
-
 			commandClient.send(CommandClient.EXIT, 0);
-
-			commandClient.close();
-			informationClient.close();
+			stopServerConnecting();
 		}
 	}
 
@@ -950,7 +996,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 					}
 				}
 				breader.close();
-				sendWayPoints(wayPoints);
+				if (sendWayPoints(wayPoints) < 0)
+					stopServerConnecting();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -973,47 +1020,55 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	@Override
 	public void onClick(View v) {
+		int data = -1;
+
 		if (v == gearButton.drive) {
 			gearButton.updateMode(GearButton.DRIVE);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.reverse) {
 			gearButton.updateMode(GearButton.REVERSE);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.brake) {
 			gearButton.updateMode(GearButton.BRAKE);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.neutral) {
 			gearButton.updateMode(GearButton.NEUTRAL);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == driveButton.auto) {
 			driveButton.updateMode(DriveButton.AUTO);
-			commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
 		} else if (v == driveButton.normal) {
 			driveButton.updateMode(DriveButton.NORMAL);
-			commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
 		} else if (v == driveButton.pursuit) {
 			driveButton.updateMode(DriveButton.PURSUIT);
 			finish();
+			data = 0;
 		} else if (v == applicationButton.navigation) {
 			applicationButton.updateMode(ApplicationButton.NAVIGATION);
 			Intent intent = new Intent(Intent.ACTION_MAIN);
 			intent.setClassName("com.example.autowareroute",
 					    "com.example.autowareroute.MainActivity");
 			startActivity(intent);
+			data = 0;
 		} else if (v == applicationButton.map) {
 			applicationButton.updateMode(ApplicationButton.MAP);
+			data = 0;
 		} else if (v == s1Button.s1) {
 			if (s1Button.getMode() == S1Button.OK)
 				s1Button.updateMode(S1Button.OK);
 			else
 				s1Button.updateMode(S1Button.NG);
-			commandClient.send(CommandClient.S1, s1Button.getMode());
+			data = commandClient.send(CommandClient.S1, s1Button.getMode());
 		} else if (v == s2Button.s2) {
 			if (s2Button.getMode() == S2Button.OK)
 				s2Button.updateMode(S2Button.OK);
 			else
 				s2Button.updateMode(S2Button.NG);
-			commandClient.send(CommandClient.S2, s2Button.getMode());
+			data = commandClient.send(CommandClient.S2, s2Button.getMode());
 		}
+
+		if (data < 0)
+			stopServerConnecting();
 	}
 }
