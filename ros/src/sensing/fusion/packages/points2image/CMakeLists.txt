@@ -114,5 +114,24 @@ target_link_libraries(points2vscan
 
 # points2image
 add_executable(points2image nodes/points2image/points2image.cpp)
-target_link_libraries(points2image ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(points2image points2image_generate_messages_cpp)
+target_link_libraries(points2image
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  points_image
+)
+add_dependencies(points2image
+  points_image
+  points2image_generate_messages_cpp
+)
+
+# vscan2image
+add_executable(vscan2image nodes/vscan2image/vscan2image.cpp)
+target_link_libraries(vscan2image
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  points_image
+)
+add_dependencies(vscan2image
+  points_image
+  point2image_generate_messages_cpp
+)
