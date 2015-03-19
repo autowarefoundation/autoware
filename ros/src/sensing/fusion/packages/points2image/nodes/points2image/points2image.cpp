@@ -134,7 +134,7 @@ void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 
 int main(int argc, char *argv[])
 {
-	ros::init(argc, argv, "points_to_image");
+	ros::init(argc, argv, "points2image");
 	ros::NodeHandle n;
 
 	if(argc < 2){
