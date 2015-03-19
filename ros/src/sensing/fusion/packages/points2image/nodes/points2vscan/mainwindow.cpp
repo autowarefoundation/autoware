@@ -15,11 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-<<<<<<< HEAD
     ui->setupUi(this);
-=======
-    ui->setupUi(this)
->>>>>>> 0a868a1fcb6bc510cbf5e5f2a9858aa0e167a85b
     velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("velodyne_points",1000,10);
     connect(velodyne,SIGNAL(receiveMessageSignal()),this,SLOT(generateVirtualScanSlot()));
     vsros=new ROSPub<sensor_msgs::PointCloud2>("/velodyne_points/virtualscan",1000);
