@@ -381,20 +381,27 @@ class MyFrame(rtmgr.MyFrame):
 		self.route_cmd_waypoint = data.point
 
 	def gnss_stat_callback(self, data):
-		self.gnss_stat = data.data
+		self.stat_set('gnss', data.data)
 		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
 
 	def map_stat_callback(self, data):
-		self.map_stat = data.data
+		self.stat_set('map', data.data)
 		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
 
 	def ndt_stat_callback(self, data):
-		self.ndt_stat = data.data
+		self.stat_set('ndt', data.data)
 		self.main_button_update(self.button_check, self.ndt_stat)
 
 	def lf_stat_callback(self, data):
-		self.lf_stat = data.data
+		self.stat_set('lf', data.data)
 		self.main_button_update(self.button_set, self.lf_stat)
+
+	def stat_set(self, k, stat):
+		name = k + '_stat'
+		setattr(self, name, stat)
+		lb = getattr(self, 'label_' + name, None)
+		if lb:
+			lb.Enable(stat)
 
 	def main_button_update(self, obj, ready):
 		obj.SetForegroundColour('blue' if ready else self.bak_main_button_color)
