@@ -805,7 +805,7 @@ class MyFrame(rtmgr.MyFrame):
 		#print 'add_args', add_args
 		if add_args is False:
 			return
-		if v and self.is_boot(obj):
+		if self.is_boot(obj):
 			wx.MessageBox('Already, booted')
 			return
 
