@@ -48,18 +48,11 @@ endif()
 file(GLOB DPM_GPU_CXX_SOURCES "src/*.cpp")
 file(GLOB DPM_GPU_CC_SOURCES "src/*.cc")
 
-set(DPM_GPU_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/models_TTIC/")
-
 ## Declare a cpp library
 add_library(dpm_gpu
   ${DPM_GPU_CXX_SOURCES}
   ${DPM_GPU_CC_SOURCES}
   src/conv.c
-)
-
-SET_TARGET_PROPERTIES(dpm_gpu
-  PROPERTIES COMPILE_FLAGS
-  "-DDPM_GPU_ROOT=${DPM_GPU_ROOT}"
 )
 
 target_link_libraries(dpm_gpu
