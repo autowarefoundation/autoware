@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(points_to_image)
+project(points2image)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -35,9 +35,9 @@ include_directories(
 )
 
 ## Declare a cpp executable
-add_executable(points_to_image nodes/points_to_image/points_to_image.cpp)
+add_executable(points2image nodes/points_to_image/points_to_image.cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(points_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(points2image ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
-add_dependencies(points_to_image points_to_image_generate_messages_cpp)
+add_dependencies(points2image points_to_image_generate_messages_cpp)
