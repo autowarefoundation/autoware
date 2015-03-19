@@ -54,14 +54,19 @@ endif()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  CalibrationToolkit
-  nodes/camera_lidar3d
+  include
   ${Qt5INCLUDE}
   ${Qt5INCLUDE}/QtCore
   ${Qt5INCLUDE}/QtGui
   ${Qt5INCLUDE}/QtOpenGL
   ${Qt5INCLUDE}/QtWidgets
 )
+
+# library
+add_library(points_image
+  lib/points_image/points_image.cpp
+)
+add_dependencies(points_image points2image_generate_messages_cpp)
 
 # points2vscan
 add_custom_command(
