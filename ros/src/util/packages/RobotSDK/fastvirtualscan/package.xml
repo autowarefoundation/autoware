@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <package>
-  <name>points_to_image</name>
+  <name>fastvirtualscan</name>
   <version>0.0.0</version>
-  <description>The points_to_image package</description>
+  <description>The fastvirtualscan package</description>
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rosinterface</build_depend>
-  <run_depend>rosinterface</run_depend>
   <export>
   </export>
 </package>

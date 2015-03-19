@@ -67,7 +67,7 @@ void setImageObjects(const dpm::ImageObjects& image_objects)
     }
 }
 
-void setScanImage(const scan_to_image::ScanImage& scan_image)
+void setScanImage(const scan2image::ScanImage& scan_image)
 {
     int i;
 #if _DEBUG
@@ -92,7 +92,7 @@ void setScanImage(const scan_to_image::ScanImage& scan_image)
     g_scan_image.min_y = scan_image.min_y;
 }
 
-void setPointsImage(const points_to_image::PointsImage& points_image)
+void setPointsImage(const points2image::PointsImage& points_image)
 {
     int i;
 #if _DEBUG

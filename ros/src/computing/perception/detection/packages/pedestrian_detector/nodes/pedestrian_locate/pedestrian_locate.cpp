@@ -50,7 +50,7 @@
 #include "opencv/highgui.h"
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
-#include "scan_to_image/ScanImage.h"
+#include "scan2image/ScanImage.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseArray.h"
@@ -333,7 +333,7 @@ int main(int argc, char **argv){
   cv::Mat Cintrinsic;
   std::string camera_yaml;
 
-  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
+  n.param<std::string>("/scan2image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
 
   cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ); 
   if(!camera_file.isOpened()){

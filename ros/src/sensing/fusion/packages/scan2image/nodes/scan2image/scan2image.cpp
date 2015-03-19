@@ -29,10 +29,10 @@
 #include "opencv/cv.h"
 #include "opencv/highgui.h"
 #include "opencv/cxcore.h"
-#include "scan_to_image.h"
+#include "scan2image.h"
 #include "std_msgs/Float64.h"
 #include "std_msgs/String.h"
-#include "scan_to_image/ScanImage.h"
+#include "scan2image/ScanImage.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -235,7 +235,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     /*
      * Create message(Topic)
      */
-    scan_to_image::ScanImage scan_image_msg;
+    scan2image::ScanImage scan_image_msg;
     scan_image_msg.header = msg->header;
     scan_image_msg.distance.assign(scan_image.distance[0], scan_image.distance[0] + IMAGE_WIDTH * IMAGE_HEIGHT);
     scan_image_msg.intensity.assign(scan_image.intensity[0], scan_image.intensity[0] + IMAGE_WIDTH * IMAGE_HEIGHT);
@@ -262,7 +262,7 @@ int main(int argc, char **argv)
      * part of the ROS system.
      */
 
-    ros::init(argc, argv, "scan_to_image");
+    ros::init(argc, argv, "scan2image");
 
     /**
      * NodeHandle is the main access point to communications with the ROS system.
@@ -276,7 +276,7 @@ int main(int argc, char **argv)
      * Read parameters from yaml file
      */
     std::string camera_yaml;
-    n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml, STR(CAMERA_YAML));
+    n.param<std::string>("/scan2image/camera_yaml", camera_yaml, STR(CAMERA_YAML));
     cv::FileStorage fs_auto_file(camera_yaml.c_str(), cv::FileStorage::READ);
     if(!fs_auto_file.isOpened()){
         fprintf(stderr, "%s : cannot open file\n", camera_yaml.c_str());
@@ -290,7 +290,7 @@ int main(int argc, char **argv)
 
 #if _MANUAL
     std::string manual_yaml;
-    n.param<std::string>("/scan_to_image/manual_yaml", manual_yaml, STR(MANUAL_YAML));
+    n.param<std::string>("/scan2image/manual_yaml", manual_yaml, STR(MANUAL_YAML));
     cv::FileStorage fs_manual_file(manual_yaml.c_str(), cv::FileStorage::READ);
     if(!fs_manual_file.isOpened()){
         fprintf(stderr, "%s : cannot open file\n", manual_yaml.c_str());
@@ -333,7 +333,7 @@ int main(int argc, char **argv)
    */
 
   ros::Subscriber sub = n.subscribe("scan", 1, scanCallback);
-  transformed_point_data = n.advertise<scan_to_image::ScanImage>("scan_image", 1);
+  transformed_point_data = n.advertise<scan2image::ScanImage>("scan_image", 1);
 
   /**
    * ros::spin() will enter a loop, pumping callbacks.  With this version, all

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(scan_to_image)
+project(scan2image)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -86,7 +86,7 @@ find_package(OpenCV REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES scan_to_image
+  LIBRARIES scan2image
   CATKIN_DEPENDS cv_bridge image_transport roscpp rospy sensor_msgs std_msgs
   DEPENDS system_lib
 )
@@ -103,19 +103,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(scan_to_image
-#   src/${PROJECT_NAME}/scan_to_image.cpp
+# add_library(scan2image
+#   src/${PROJECT_NAME}/scan2image.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(scan_to_image_node src/scan_to_image_node.cpp)
+# add_executable(scan2image_node src/scan2image_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(scan_to_image_node scan_to_image_generate_messages_cpp)
+# add_dependencies(scan2image_node scan2image_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(scan_to_image_node
+# target_link_libraries(scan2image_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -134,7 +134,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS scan_to_image scan_to_image_node
+# install(TARGETS scan2image scan2image_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -159,7 +159,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_scan_to_image.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_scan2image.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
@@ -170,14 +170,14 @@ include_directories(
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 
-add_executable(scan_to_image nodes/scan_to_image/scan_to_image.cpp)
+add_executable(scan2image nodes/scan2image/scan2image.cpp)
 
 set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 set(MANUAL_YAML "${CMAKE_CURRENT_SOURCE_DIR}/manual.yaml")
 
-set_target_properties(scan_to_image
+set_target_properties(scan2image
   PROPERTIES COMPILE_FLAGS
   "-DCAMERA_YAML=${CAMERA_YAML} -DMANUAL_YAML=${MANUAL_YAML}")
 
-target_link_libraries(scan_to_image ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(scan_to_image scan_to_image_generate_messages_cpp)
+target_link_libraries(scan2image ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(scan2image scan2image_generate_messages_cpp)

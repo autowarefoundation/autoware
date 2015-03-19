@@ -69,8 +69,8 @@
 #include <sensor_msgs/CompressedImage.h>
 //ROS
 #include "dpm/ImageObjects.h"
-#include "scan_to_image/ScanImage.h"
-#include "points_to_image/PointsImage.h"
+#include "scan2image/ScanImage.h"
+#include "points2image/PointsImage.h"
 #include "car_detector/FusedObjects.h"
 
 #define IMAGE_WIDTH 800
@@ -90,8 +90,8 @@ struct Scan_image{
 
 extern void calcDistance();
 extern void setImageObjects(const dpm::ImageObjects& image_objects);
-extern void setScanImage(const scan_to_image::ScanImage& scan_image);
-extern void setPointsImage(const points_to_image::PointsImage& points_image);
+extern void setScanImage(const scan2image::ScanImage& scan_image);
+extern void setPointsImage(const points2image::PointsImage& points_image);
 extern int getObjectNum();
 extern std::vector<int> getCornerPoint();
 extern std::vector<float> getDistance();

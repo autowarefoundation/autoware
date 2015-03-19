@@ -35,7 +35,7 @@
 
 #include "ros/ros.h"
 #include <sensor_msgs/image_encodings.h>
-#include "points_to_image/PointsImage.h"
+#include "points2image/PointsImage.h"
 
 #define IMAGE_WIDTH 800
 #define IMAGE_HEIGHT 640
@@ -43,7 +43,7 @@
 bool existImage = false;
 bool existPoints = false;
 sensor_msgs::Image image_msg;
-points_to_image::PointsImageConstPtr points_msg;
+points2image::PointsImageConstPtr points_msg;
 cv::Mat colormap;
 
 void show(void)
@@ -55,7 +55,7 @@ void show(void)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
 	IplImage frame = cv_image->image;
 
-	cv::Mat matImage(&frame, false);	
+	cv::Mat matImage(&frame, false);
 	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
 
 	int w = IMAGE_WIDTH;
@@ -98,7 +98,7 @@ void image_cb(const sensor_msgs::Image& msg)
 	show();
 }
 
-void points_cb(const points_to_image::PointsImageConstPtr& msg)
+void points_cb(const points2image::PointsImageConstPtr& msg)
 {
 	points_msg = msg;
 	existPoints = true;
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
 	ros::Subscriber sub_points = n.subscribe("points_image", 1, points_cb);
-	
+
 	cv::Mat grayscale(256,1,CV_8UC1);
 	int i;
 	for(i=0;i<256;i++)
