@@ -26,8 +26,8 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES dpm
+  INCLUDE_DIRS include/dpm
+  LIBRARIES dpm
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -38,7 +38,7 @@ catkin_package(
 
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include/dpm ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 include_directories(src)
 
@@ -48,12 +48,18 @@ add_library(dpm
   ${DPM_OCV_CXX_SOURCES}
 )
 
-set_target_properties(dpm PROPERTIES
-  COMPILE_FLAGS "-DOPENCV_MODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/models_VOC2007/"
-)
-
 target_link_libraries(dpm
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   )
 add_dependencies(dpm dpm_generate_messages_cpp)
+
+#############
+## Install ##
+#############
+
+INSTALL(
+  DIRECTORY include/dpm
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.hpp"
+)

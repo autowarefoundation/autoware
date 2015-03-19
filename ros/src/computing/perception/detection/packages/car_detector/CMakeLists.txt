@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  dpm
+  dpm_gpu
   fusion
 )
 find_package(OpenCV REQUIRED)
@@ -58,6 +60,10 @@ add_executable(car_dpm
   nodes/car_dpm/car_dpm.cpp
 )
 
+set_target_properties(car_dpm PROPERTIES
+  COMPILE_FLAGS "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
+)
+
 target_link_libraries(car_dpm
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
@@ -77,7 +83,8 @@ add_executable(car_dpm_gpu
 
 SET_TARGET_PROPERTIES(car_dpm_gpu
   PROPERTIES
-  COMPILE_FLAGS "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin"
+  COMPILE_FLAGS
+  "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
 )
 
 target_link_libraries(car_dpm_gpu
