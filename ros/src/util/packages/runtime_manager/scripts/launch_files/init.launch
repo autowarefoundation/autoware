@@ -11,7 +11,7 @@
 <include file="$(arg tf_launch)"/>
 
 <!-- Point Cloud -->
-<node pkg="sample_data" type="sample_points_map" name="sample_points_map" args="$(arg pcd_files)"/>
+<node pkg="map_file" type="points_map_loader" name="points_map_loader" args="$(arg scene_num) $(arg area_list) $(arg pcd_files)"/>
 
 <!-- Vector Map -->
 <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(arg csv_files)"/>

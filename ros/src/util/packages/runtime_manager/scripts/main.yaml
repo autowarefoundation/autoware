@@ -1,8 +1,7 @@
 selector :
   load_map :
-    sel   : '[ self.checkbox_auto_update.GetValue(), "vmap" ]'
-    False : sample_points_map
-    True  : points_map_loader
+    sel   : '[ "pmap", "vmap" ]'
+    pmap  : points_map_loader
     vmap  : vector_map_loader
 
 buttons:
@@ -18,8 +17,17 @@ buttons:
   init:
     run : 'sh -c "roslaunch runtime_manager init.launch
            tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
+           scene_num:=$(rosparam get /points_map_loader/scene_num)
+           area_list:=$(rosparam get /points_map_loader/area_list 2> /dev/null || echo dmy)
            pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
            csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
+    param : main_init
+    gui   :
+      scene_num :
+        func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+      area_list :
+        func : self.text_ctrl_area_list.GetValue()
+
   check:
     run : roslaunch runtime_manager check.launch
   set:
@@ -29,12 +37,12 @@ buttons:
     run   : rosrun map_file points_map_loader
     param : points_map_loader
     gui   :
+      scene_num :
+        func    : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+        restore : self.choice_scene_num.SetStringSelection
       path_area_list :
         func    : self.text_ctrl_area_list.GetValue()
         restore : 'lambda v, tc=self.text_ctrl_area_list : set_path(tc, v)'
-      scene_num :
-        func    : self.choice_scene_num.GetStringSelection()
-        restore : self.choice_scene_num.SetStringSelection
       path_pcd :
         func    : self.text_ctrl_point_cloud.GetValue()
         restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
@@ -148,23 +156,29 @@ params :
       max   : 1.00
       v     : 0.00
 
+  - name  : main_init
+    vars  :
+    - name     : scene_num
+      rosparam : /points_map_loader/scene_num
+    - name     : area_list
+      rosparam : /points_map_loader/area_list
+
   - name  : points_map_loader
     vars  :
+    - name  : scene_num
+      kind  : menu
+      cmd_param :
+        delim     : ''
     - name  : path_area_list
       kind  : path
       cmd_param :
         delim     : ''
-        must      : True
-#    - name  : scene_num
-#      kind  : menu
-#      cmd_param :
-#        delim     : ''
+        default   : 'dmy'
     - name  : path_pcd
       kind  : path
       cmd_param :
         delim     : ''
         unpack    : ','
-        must      : True
 
   - name  : sample_points_map
     vars  :
