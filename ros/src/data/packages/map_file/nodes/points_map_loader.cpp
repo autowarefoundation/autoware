@@ -42,7 +42,7 @@
 #include "sensor_msgs/PointCloud2.h"
 
 #define UPDATE_RATE	200
-#define MARGIN		0
+#define MARGIN		100
 #define DEBUG_PRINT
 
 ros::Publisher pub;
@@ -84,19 +84,19 @@ Tbl read_csv(const char* filename)
   return tbl;
 }
 
-std::vector<PcdFileRange> read_pcdfilerange(const char* filename)
+std::vector<PcdFileRange> read_pcdfilerange(const char* filename, double margin)
 {
   Tbl tbl = read_csv(filename);
   size_t i, n = tbl.size();
   std::vector<PcdFileRange> ret(n);
   for (i=0; i<n; i++) {
     ret[i].name = tbl[i][0];
-    ret[i].x_min = std::stod(tbl[i][1]) - MARGIN;
-    ret[i].y_min = std::stod(tbl[i][2]) - MARGIN;
-    ret[i].z_min = std::stod(tbl[i][3]) - MARGIN;
-    ret[i].x_max = std::stod(tbl[i][4]) + MARGIN;
-    ret[i].y_max = std::stod(tbl[i][5]) + MARGIN;
-    ret[i].z_max = std::stod(tbl[i][6]) + MARGIN;
+    ret[i].x_min = std::stod(tbl[i][1]) - margin;
+    ret[i].y_min = std::stod(tbl[i][2]) - margin;
+    ret[i].z_min = std::stod(tbl[i][3]) - margin;
+    ret[i].x_max = std::stod(tbl[i][4]) + margin;
+    ret[i].y_max = std::stod(tbl[i][5]) + margin;
+    ret[i].z_max = std::stod(tbl[i][6]) + margin;
   }
   return ret;
 }
@@ -111,7 +111,7 @@ void gnssposeCallback(const geometry_msgs::PoseStamped msg)
 	sensor_msgs::PointCloud2 pcd, add;
 	int loaded = 0;
 
-	for (int i = 1; i < (int)files.size(); i++) {
+	for (int i = 0; i < (int)files.size(); i++) {
 #if 0
 	  if(files[i].x_min < msg.pose.position.x && msg.pose.position.x < files[i].x_max &&
 	     files[i].y_min < msg.pose.position.y && msg.pose.position.y < files[i].y_max &&
@@ -158,35 +158,95 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "pcd_read");
 	ros::NodeHandle n;
-	ros::Subscriber gnss_pose_sub = n.subscribe("gnss_pose", 1000, gnssposeCallback);
+	ros::Subscriber gnss_pose_sub;
 	pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
+
+	int update = 1;
 
 	// skip argv[0]
 	argc--;
 	argv++;
 
-	if (argc <= 0) {
-	  fprintf(stderr, "file name ?\n");
+	if (argc < 2) {
+	  fprintf(stderr, "Usage: map_file points_map_loader <1x1|3x3|5x5|7x7|9x9|noupdate> <arealist file> [pcd files]\n");
 	  return 0;
 	}
 
-	if(argc == 1) {
-	  files = read_pcdfilerange(argv[0]);
+	double margin = 0;
+	std::string area(argv[0]);
+	if(area == "1x1") {
+	  ;
+	} else if(area == "3x3") {
+	  margin = MARGIN * 1;
+	} else if(area == "5x5") {
+	  margin = MARGIN * 2;
+	} else if(area == "7x7") {
+	  margin = MARGIN * 3;
+	} else if(area == "9x9") {
+	  margin = MARGIN * 4;
+	} else if(area == "noupdate") {
+	  update = 0;
 	} else {
-	  std::vector<PcdFileRange> filelists = read_pcdfilerange(argv[0]);
-	  argc -= 2;
-	  argv += 2;
+	  argc++;
+	  argv--;
+	}
+	argc--;
+	argv++;
+
+	if(argc == 1) {
+	  files = read_pcdfilerange(argv[0], margin);
+	} else {
+	  std::vector<PcdFileRange> filelists = read_pcdfilerange(argv[0], margin);
+	  argc--;
+	  argv++;
 	  while(argc > 0) {
-	  fprintf(stderr, "** %d, name=%s **\n", (int)strlen(*argv), *argv);
+#ifdef DEBUG_PRINT
+	    fprintf(stderr, "** name=%s **\n", *argv);
+#endif
 	    for(int i = 0; i < (int)filelists.size(); i++) {
 	      if(filelists[i].name.compare(*argv) == 0) {
-	        files.push_back(filelists[i]);
+		files.push_back(filelists[i]);
 		continue;
 	      }
 	    }
 	    argc--;
 	    argv++;
 	  }
+	}
+
+	if (update) {
+	  gnss_pose_sub = n.subscribe("gnss_pose", 1000, gnssposeCallback);
+	} else if (update == 0 && (int)files.size() > 0) {
+	  fprintf(stderr, "noupdate files.size()=%d\n", (int)files.size());
+	  sensor_msgs::PointCloud2 pcd, add;
+	  int loaded = 0;
+	  for (int i = 0; i < (int)files.size(); i++) {
+	    if(loaded == 0) {
+	      if(pcl::io::loadPCDFile(files[i].name.c_str(), pcd) == -1) 
+	      {
+		fprintf(stderr, "load failed %s\n", files[i].name.c_str());
+	      } else loaded = 1;
+	    } else {
+	      if(pcl::io::loadPCDFile(files[i].name.c_str(), add) == -1) 
+	      {
+		fprintf(stderr, "load failed %s\n", files[i].name.c_str());
+	      }
+
+	      pcd.width += add.width;
+	      pcd.row_step += add.row_step;
+	      pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
+	    }
+#ifdef DEBUG_PRINT
+	    fprintf(stderr, "load %s\n", files[i].name.c_str());
+#endif
+	  }
+
+	  pcd.header.frame_id = "/map";
+	  pub.publish(pcd);
+	  fprintf(stderr, "\npoint_map published\n");
+	} else {
+	  fprintf(stderr, "  Usage: map_file points_map_loader <1x1|3x3|5x5|7x7|9x9|noupdate> <arealist file> [pcd files]\n");
+	  std::exit(1);
 	}
 
 	ros::spin();
