@@ -37,6 +37,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Bool.h>
 
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
@@ -46,6 +47,8 @@
 #define DEBUG_PRINT
 
 ros::Publisher pub;
+ros::Publisher stat_publisher;
+std_msgs::Bool pmap_stat_msg;
 int show = 0;
 int file_num = 0;
 
@@ -148,7 +151,10 @@ void gnssposeCallback(const geometry_msgs::PoseStamped msg)
 
 	if(loaded == 1) {
 	  pcd.header.frame_id = "/map";
+	  pmap_stat_msg.data = true;
+
 	  pub.publish(pcd);
+	  stat_publisher.publish(pmap_stat_msg);
 	}
 }
 
@@ -160,6 +166,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Subscriber gnss_pose_sub;
 	pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
+	stat_publisher = n.advertise<std_msgs::Bool>("/pmap_stat", 100);
 
 	int update = 1;
 
@@ -241,8 +248,11 @@ int main(int argc, char **argv)
 #endif
 	  }
 
+	  pmap_stat_msg.data = true;
+
 	  pcd.header.frame_id = "/map";
 	  pub.publish(pcd);
+	  stat_publisher.publish(pmap_stat_msg);
 	  fprintf(stderr, "\npoint_map published\n");
 	} else {
 	  fprintf(stderr, "  Usage: map_file points_map_loader <1x1|3x3|5x5|7x7|9x9|noupdate> <arealist file> [pcd files]\n");
