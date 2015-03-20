@@ -111,7 +111,7 @@ void stopChildProcess(int signo)
 {
 	s1.stop();
 	s2.stop();
-	exit(EXIT_SUCCESS);
+	_exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[])
