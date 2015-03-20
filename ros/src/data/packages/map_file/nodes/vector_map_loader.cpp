@@ -32,6 +32,7 @@
 #include <fstream>
 #include "ros/ros.h"
 #include <visualization_msgs/Marker.h>
+#include <std_msgs/Bool.h>
 
 #define INTERVAL_SEC	1
 int swap_x_y = 1;
@@ -721,7 +722,7 @@ int main(int argc, char **argv)
 /*
 
 #!/bin/sh
-rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector.csv point.csv roadsign.csv dtlane.csv node.csv lane.csv whiteline.csv zebrazone.csv area.csv crosswalk.csv line.csv roadedge.csv road_surface_mark.csv
+rosrun map_file vector_map_loader <csv files>
 
 # EOF
 
@@ -730,6 +731,8 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
   ros::init(argc, argv, "sample_vector_map");
   ros::NodeHandle n;
   ros::Publisher pub = n.advertise<visualization_msgs::Marker>("/vector_map", 10, true);
+  ros::Publisher stat_publisher = n.advertise<std_msgs::Bool>("/vmap_stat", 100);;
+  std_msgs::Bool vmap_stat_msg;
 
 
   std::vector<PointClass> pointclasses;
@@ -1198,6 +1201,9 @@ rosrun sample_data sample_vector_map poledata.csv signaldata.csv pole.csv vector
 
       publish_marker(&marker, pub, rate);
     }
+
+    vmap_stat_msg.data = true;
+    stat_publisher.publish(vmap_stat_msg);
 
 #ifdef DEBUG_PRINT
     std::cerr << "publish end" << std::endl;
