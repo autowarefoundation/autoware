@@ -1334,7 +1334,7 @@ class VarPanel(wx.Panel):
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
 		lb = wx.StaticText(self, wx.ID_ANY, label)
-		flag = wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+		flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
 		szr.Add(lb, 0, flag, 4)
 
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
@@ -1351,12 +1351,12 @@ class VarPanel(wx.Panel):
 				self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
 				self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
 				self.slider.SetMinSize((82, 27))
-				szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+				szr.Add(self.slider, 1, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 4)
 			else:
 				self.is_float = type(self.var['v']) is not int
 				self.tc.SetMinSize((40,27))
 
-		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
+		flag = wx.ALIGN_CENTER_VERTICAL
 		prop = 1 if self.kind == 'path' else 0
 		szr.Add(self.tc, prop, flag, 4)
 
