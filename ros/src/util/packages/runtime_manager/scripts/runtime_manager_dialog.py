@@ -105,10 +105,11 @@ class MyFrame(rtmgr.MyFrame):
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
 		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
 
-		for k in [ 'gnss', 'map', 'ndt', 'lf' ]:
+		for k in [ 'gnss', 'pmap', 'vmap', 'ndt', 'lf' ]:
 			name = k + '_stat'
 			setattr(self, name, False)
 			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
+		self.map_stat = False
 		self.bak_main_button_color = self.button_init.GetForegroundColour()
 
 		szr = wx.BoxSizer(wx.VERTICAL)
@@ -384,8 +385,14 @@ class MyFrame(rtmgr.MyFrame):
 		self.stat_set('gnss', data.data)
 		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
 
-	def map_stat_callback(self, data):
-		self.stat_set('map', data.data)
+	def pmap_stat_callback(self, data):
+		self.pmap_stat = data.data
+		self.stat_set('map', self.pmap_stat and self.vmap_stat)
+		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
+
+	def vmap_stat_callback(self, data):
+		self.vmap_stat = data.data
+		self.stat_set('map', self.pmap_stat and self.vmap_stat)
 		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
 
 	def ndt_stat_callback(self, data):
