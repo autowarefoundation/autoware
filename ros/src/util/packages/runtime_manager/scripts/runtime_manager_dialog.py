@@ -335,11 +335,11 @@ class MyFrame(rtmgr.MyFrame):
 		obj = event.GetEventObject()
 		self.launch_kill_proc(obj, self.main_cmd)
 
-	def OnReadNavi(self, event):
-		self.text_ctrl_route_from_lat.SetValue(str(self.route_cmd_waypoint[0].lat))
-		self.text_ctrl_route_from_lon.SetValue(str(self.route_cmd_waypoint[0].lon))
-		self.text_ctrl_route_to_lat.SetValue(str(self.route_cmd_waypoint[1].lat))
-		self.text_ctrl_route_to_lon.SetValue(str(self.route_cmd_waypoint[1].lon))
+	#def OnReadNavi(self, event):
+	#	self.text_ctrl_route_from_lat.SetValue(str(self.route_cmd_waypoint[0].lat))
+	#	self.text_ctrl_route_from_lon.SetValue(str(self.route_cmd_waypoint[0].lon))
+	#	self.text_ctrl_route_to_lat.SetValue(str(self.route_cmd_waypoint[1].lat))
+	#	self.text_ctrl_route_to_lon.SetValue(str(self.route_cmd_waypoint[1].lon))
 
 	def OnTextRoute(self, event):
 		pass
