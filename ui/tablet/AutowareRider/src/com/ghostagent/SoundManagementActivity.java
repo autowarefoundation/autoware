@@ -599,7 +599,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				new FileInputStream(Environment.getExternalStorageDirectory().getPath() +
 						    "/autowarerider.txt"));
 
-			byte[] buffer = new byte[256];
+			byte[] buffer = new byte[1024];
 			stream.read(buffer);
 
 			text = new String(buffer).trim();
