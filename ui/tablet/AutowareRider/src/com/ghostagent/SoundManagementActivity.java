@@ -435,6 +435,46 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			isRunning = false;
 			stopService(intent);
 		}
+
+		String getTable() {
+			return table;
+		}
+
+		String getTerminal() {
+			return terminal;
+		}
+
+		String getStr() {
+			return str;
+		}
+
+		String getSp() {
+			return sp;
+		}
+
+		String getSh() {
+			return sh;
+		}
+
+		String getSu() {
+			return su;
+		}
+
+		String getSpss() {
+			return spss;
+		}
+
+		String getLp() {
+			return lp;
+		}
+
+		String getFh() {
+			return fh;
+		}
+
+		String getFp() {
+			return fp;
+		}
 	}
 
 	class CanDataGather {
@@ -593,13 +633,29 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		commandClient = new CommandClient();
 		informationClient = new InformationClient();
 
+		// default settings
+		address = "";
+		commandPort = 5666;
+		informationPort = 5777;
+		canDataSender = new CanDataSender(
+			"",
+			getMacAddress(),
+			"AutowareRider",
+			"22",
+			"",
+			"",
+			"",
+			"5558",
+			"127.0.0.1",
+			"5555");
+
 		String text = null;
 		try {
 			BufferedInputStream stream = new BufferedInputStream(
 				new FileInputStream(Environment.getExternalStorageDirectory().getPath() +
 						    "/autowarerider.txt"));
 
-			byte[] buffer = new byte[256];
+			byte[] buffer = new byte[1024];
 			stream.read(buffer);
 
 			text = new String(buffer).trim();
@@ -611,32 +667,39 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 
 		if (text != null) {
-			String[] settings = text.split(",");
-			if (settings.length == 3 && validateIpAddress(settings[0]) &&
-			    validatePortNumber(settings[1]) && validatePortNumber(settings[2])) {
-				address = settings[0];
-				commandPort = Integer.parseInt(settings[1]);
-				informationPort = Integer.parseInt(settings[2]);
+			String[] settings = text.split("\n");
+			if (settings.length == 11) {
+				if (validateIpAddress(settings[0]) &&
+				    validatePortNumber(settings[1]) &&
+				    validatePortNumber(settings[2])) {
+					address = settings[0];
+					commandPort = Integer.parseInt(settings[1]);
+					informationPort = Integer.parseInt(settings[2]);
 
-				if (commandClient.connect(address, commandPort) &&
-				    informationClient.connect(address, informationPort)) {
-					if (!startServerConnecting())
+					if (commandClient.connect(address, commandPort) &&
+					    informationClient.connect(address, informationPort)) {
+						if (!startServerConnecting())
+							stopServerConnecting();
+					} else
 						stopServerConnecting();
-				} else
-					stopServerConnecting();
+				}
+				if (validatePortNumber(settings[5]) &&
+				    validatePortNumber(settings[7]) &&
+				    validatePortNumber(settings[9])) {
+					canDataSender = new CanDataSender(
+						settings[3],
+						getMacAddress(),
+						"AutowareRider",
+						settings[5],
+						settings[4],
+						settings[6],
+						"",
+						settings[7],
+						settings[8],
+						settings[9]);
+				}
 			}
 		}
-
-		canDataSender = new CanDataSender("",
-						  getMacAddress(),
-						  "AutowareRider",
-						  "22",
-						  "",
-						  "",
-						  "",
-						  "5558",
-						  "127.0.0.1",
-						  "5555");
 
 		bIsKnightRiding = true;
 
@@ -717,6 +780,46 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				portEdit.setText(String.valueOf(informationPort));
 			}
 
+			if (canDataSender.getTable() != null) {
+				EditText tableEdit = (EditText)view.findViewById(R.id.gatheringTableName);
+				tableEdit.setText(String.valueOf(canDataSender.getTable()));
+			}
+
+			if (canDataSender.getSh() != null) {
+				EditText hostEdit = (EditText)view.findViewById(R.id.sshHostName);
+				hostEdit.setText(String.valueOf(canDataSender.getSh()));
+			}
+
+			if (canDataSender.getSp() != null) {
+				EditText portEdit = (EditText)view.findViewById(R.id.sshPortNumber);
+				portEdit.setText(String.valueOf(canDataSender.getSp()));
+			}
+
+			if (canDataSender.getSu() != null) {
+				EditText userEdit = (EditText)view.findViewById(R.id.sshUserName);
+				userEdit.setText(String.valueOf(canDataSender.getSu()));
+			}
+
+			if (canDataSender.getSpss() != null) {
+				EditText passwordEdit = (EditText)view.findViewById(R.id.sshPassword);
+				passwordEdit.setText(String.valueOf(canDataSender.getSpss()));
+			}
+
+			if (canDataSender.getLp() != null) {
+				EditText portEdit = (EditText)view.findViewById(R.id.forwardingLocalPortNumber);
+				portEdit.setText(String.valueOf(canDataSender.getLp()));
+			}
+
+			if (canDataSender.getFh() != null) {
+				EditText hostEdit = (EditText)view.findViewById(R.id.forwardingRemoteHostName);
+				hostEdit.setText(String.valueOf(canDataSender.getFh()));
+			}
+
+			if (canDataSender.getFp() != null) {
+				EditText portEdit = (EditText)view.findViewById(R.id.forwardingRemotePortNumber);
+				portEdit.setText(String.valueOf(canDataSender.getFp()));
+			}
+
 			builder.setTitle("設定");
 			builder.setView(view);
 			builder.setPositiveButton(
@@ -738,7 +841,49 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						if (!validatePortNumber(informationPortString))
 							return;
 
-						String text = addressString + "," + commandPortString + "," + informationPortString;
+						EditText gatheringTableEdit = (EditText)view.findViewById(R.id.gatheringTableName);
+						String gatheringTableString = gatheringTableEdit.getText().toString();
+
+						EditText sshHostEdit = (EditText)view.findViewById(R.id.sshHostName);
+						String sshHostString = sshHostEdit.getText().toString();
+
+						EditText sshPortEdit = (EditText)view.findViewById(R.id.sshPortNumber);
+						String sshPortString = sshPortEdit.getText().toString();
+						if (!validatePortNumber(sshPortString))
+							return;
+
+						EditText sshUserEdit = (EditText)view.findViewById(R.id.sshUserName);
+						String sshUserString = sshUserEdit.getText().toString();
+
+						EditText sshPasswordEdit = (EditText)view.findViewById(R.id.sshPassword);
+						String sshPasswordString = sshPasswordEdit.getText().toString();
+
+						EditText forwardingLocalPortEdit = (EditText)view.findViewById(R.id.forwardingLocalPortNumber);
+						String forwardingLocalPortString = forwardingLocalPortEdit.getText().toString();
+						if (!validatePortNumber(forwardingLocalPortString))
+							return;
+
+						EditText forwardingRemoteHostEdit = (EditText)view.findViewById(R.id.forwardingRemoteHostName);
+						String forwardingRemoteHostString = forwardingRemoteHostEdit.getText().toString();
+
+						EditText forwardingRemotePortEdit = (EditText)view.findViewById(R.id.forwardingRemotePortNumber);
+						String forwardingRemotePortString = forwardingRemotePortEdit.getText().toString();
+						if (!validatePortNumber(forwardingRemotePortString))
+							return;
+
+						// don't save ssh password
+						String text =
+							addressString + "\n" +
+							commandPortString + "\n" +
+							informationPortString + "\n" +
+							gatheringTableString + "\n" +
+							sshHostString + "\n" +
+							sshPortString + "\n" +
+							sshUserString + "\n" +
+							forwardingLocalPortString + "\n" +
+							forwardingRemoteHostString + "\n" +
+							forwardingRemotePortString + "\n" +
+							"end\n";
 						try {
 							BufferedOutputStream stream = new BufferedOutputStream(
 								new FileOutputStream(
@@ -767,6 +912,18 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 								stopServerConnecting();
 						} else
 							stopServerConnecting();
+
+						canDataSender = new CanDataSender(
+							gatheringTableString,
+							getMacAddress(),
+							"AutowareRider",
+							sshPortString,
+							sshHostString,
+							sshUserString,
+							sshPasswordString,
+							forwardingLocalPortString,
+							forwardingRemoteHostString,
+							forwardingRemotePortString);
 					}
 				});
 			builder.setNegativeButton(
