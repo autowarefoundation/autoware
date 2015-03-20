@@ -18,15 +18,13 @@ buttons:
     run : 'sh -c "roslaunch runtime_manager init.launch
            tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
            scene_num:=$(rosparam get /points_map_loader/scene_num)
-           area_list:=$(rosparam get /points_map_loader/area_list 2> /dev/null || echo dmy)
+           area_list:=$(find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1)
            pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
            csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
     param : main_init
     gui   :
       scene_num :
         func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
-      area_list :
-        func : self.text_ctrl_area_list.GetValue()
 
   check:
     run : roslaunch runtime_manager check.launch
@@ -160,8 +158,6 @@ params :
     vars  :
     - name     : scene_num
       rosparam : /points_map_loader/scene_num
-    - name     : area_list
-      rosparam : /points_map_loader/area_list
 
   - name  : points_map_loader
     vars  :
@@ -173,7 +169,7 @@ params :
       kind  : path
       cmd_param :
         delim     : ''
-        default   : 'dmy'
+        must      : True
     - name  : path_pcd
       kind  : path
       cmd_param :
