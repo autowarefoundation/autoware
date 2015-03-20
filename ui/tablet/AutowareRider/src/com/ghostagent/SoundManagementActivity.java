@@ -611,7 +611,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 
 		if (text != null) {
-			String[] settings = text.split(",");
+			String[] settings = text.split("\n");
 			if (settings.length == 3 && validateIpAddress(settings[0]) &&
 			    validatePortNumber(settings[1]) && validatePortNumber(settings[2])) {
 				address = settings[0];
@@ -738,7 +738,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						if (!validatePortNumber(informationPortString))
 							return;
 
-						String text = addressString + "," + commandPortString + "," + informationPortString;
+						String text = addressString + "\n" + commandPortString + "\n" + informationPortString + "\n";
 						try {
 							BufferedOutputStream stream = new BufferedOutputStream(
 								new FileOutputStream(
