@@ -99,7 +99,7 @@ void Launch::stop()
 	if (!running_)
 		return;
 
-	kill(pid_, SIGINT);
+	kill(pid_, SIGTERM);
 	waitpid(pid_, NULL, 0);
 
 	running_ = false;
@@ -107,11 +107,26 @@ void Launch::stop()
 
 static Launch s1("check.launch"), s2("set.launch");
 
+void stopChildProcess(int signo)
+{
+	s1.stop();
+	s2.stop();
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
 	ros::Publisher pub[TOPIC_NR];
 	int port;
 	int sock, asock;
+
+	struct sigaction act;
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = stopChildProcess;
+	if (sigaction(SIGTERM, &act, NULL) == -1) {
+		perror("sigaction");
+		return -1;
+	}
 
 	ros::init(argc, argv, NODE_NAME);
 	ros::NodeHandle node;
