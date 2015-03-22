@@ -42,10 +42,10 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
-static double config_threshold;
-static double config_overlap;
-static int config_lambda;
-static int config_num_cells;
+static double config_threshold = 0.5;
+static double config_overlap = 0.1;
+static int config_lambda = 10;
+static int config_num_cells = 8;
 
 static ros::Publisher car_pixel_publisher;
 
