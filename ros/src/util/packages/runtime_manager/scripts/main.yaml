@@ -1,7 +1,8 @@
 selector :
   load_map :
-    sel   : '[ "pmap", "vmap" ]'
-    pmap  : points_map_loader
+    sel   : '[ self.checkbox_auto_update.GetValue(), "vmap" ]'
+    False : points_map_loader
+    True  : points_map_loader_update
     vmap  : vector_map_loader
 
 buttons:
@@ -35,8 +36,16 @@ buttons:
     run   : rosrun map_file points_map_loader
     param : points_map_loader
     gui   :
+      path_pcd :
+        func    : self.text_ctrl_point_cloud.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
+
+  points_map_loader_update :
+    run   : rosrun map_file points_map_loader
+    param : points_map_loader_update
+    gui   :
       scene_num :
-        func    : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+        func    : self.choice_scene_num.GetStringSelection()
         restore : self.choice_scene_num.SetStringSelection
       path_area_list :
         func    : self.text_ctrl_area_list.GetValue()
@@ -160,6 +169,19 @@ params :
       rosparam : /points_map_loader/scene_num
 
   - name  : points_map_loader
+    vars  :
+    - name  : scene_num
+      kind  : hide
+      v     : noupdate
+      cmd_param :
+        delim     : ''
+    - name  : path_pcd
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+
+  - name  : points_map_loader_update
     vars  :
     - name  : scene_num
       kind  : menu
