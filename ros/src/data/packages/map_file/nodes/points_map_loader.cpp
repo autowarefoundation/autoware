@@ -200,52 +200,54 @@ int main(int argc, char **argv)
 	argc--;
 	argv++;
 
-	if(argc == 1) {
-	  files = read_pcdfilerange(argv[0], margin);
-	} else {
-	  std::vector<PcdFileRange> filelists = read_pcdfilerange(argv[0], margin);
-	  argc--;
-	  argv++;
-	  while(argc > 0) {
-#ifdef DEBUG_PRINT
-	    fprintf(stderr, "** name=%s **\n", *argv);
-#endif
-	    for(int i = 0; i < (int)filelists.size(); i++) {
-	      if(filelists[i].name.compare(*argv) == 0) {
-		files.push_back(filelists[i]);
-		continue;
-	      }
-	    }
-	    argc--;
-	    argv++;
-	  }
-	}
-
 	if (update) {
 	  gnss_pose_sub = n.subscribe("gnss_pose", 1000, gnssposeCallback);
-	} else if (update == 0 && (int)files.size() > 0) {
-	  fprintf(stderr, "noupdate files.size()=%d\n", (int)files.size());
+	  if(argc == 1) {
+	    files = read_pcdfilerange(argv[0], margin);
+	  } else {
+	    std::vector<PcdFileRange> filelists = read_pcdfilerange(argv[0], margin);
+	    argc--;
+	    argv++;
+	    while(argc > 0) {
+#ifdef DEBUG_PRINT
+	      fprintf(stderr, "** name=%s **\n", *argv);
+#endif
+	      for(int i = 0; i < (int)filelists.size(); i++) {
+		if(filelists[i].name.compare(*argv) == 0) {
+		  files.push_back(filelists[i]);
+		  continue;
+		}
+	      }
+	      argc--;
+	      argv++;
+	    }
+	  }
+
+	} else if (update == 0) {
+	  ///	  fprintf(stderr, "noupdate files.size()=%d\n", (int)files.size());
 	  sensor_msgs::PointCloud2 pcd, add;
 	  int loaded = 0;
-	  for (int i = 0; i < (int)files.size(); i++) {
+	  while (argc > 0) {
+#ifdef DEBUG_PRINT
+	    fprintf(stderr, "load %s\n", *argv);
+#endif
 	    if(loaded == 0) {
-	      if(pcl::io::loadPCDFile(files[i].name.c_str(), pcd) == -1) 
+	      if(pcl::io::loadPCDFile(*argv, pcd) == -1) 
 	      {
-		fprintf(stderr, "load failed %s\n", files[i].name.c_str());
+		fprintf(stderr, "  load failed %s\n", *argv);
 	      } else loaded = 1;
 	    } else {
-	      if(pcl::io::loadPCDFile(files[i].name.c_str(), add) == -1) 
+	      if(pcl::io::loadPCDFile(*argv, add) == -1) 
 	      {
-		fprintf(stderr, "load failed %s\n", files[i].name.c_str());
+		fprintf(stderr, "  load failed %s\n", *argv);
 	      }
 
 	      pcd.width += add.width;
 	      pcd.row_step += add.row_step;
 	      pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
 	    }
-#ifdef DEBUG_PRINT
-	    fprintf(stderr, "load %s\n", files[i].name.c_str());
-#endif
+	    argc--;
+	    argv++;
 	  }
 
 	  pmap_stat_msg.data = true;
