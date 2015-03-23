@@ -408,10 +408,10 @@ class MyFrame(rtmgr.MyFrame):
 		setattr(self, name, stat)
 		lb = getattr(self, 'label_' + name, None)
 		if lb:
-			lb.Enable(stat)
+			wx.CallAfter(lb.Enable, stat)
 
 	def main_button_update(self, obj, ready):
-		obj.SetForegroundColour('blue' if ready else self.bak_main_button_color)
+		wx.CallAfter(obj.SetForegroundColour, 'blue' if ready else self.bak_main_button_color)
 
 	#
 	# Computing Tab
