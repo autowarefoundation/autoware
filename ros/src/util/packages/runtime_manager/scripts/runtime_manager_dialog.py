@@ -1065,7 +1065,7 @@ class MyFrame(rtmgr.MyFrame):
 			for (obj, (cmd, _)) in cmd_dic.items():
 				if not cmd:
 					continue
-				nodes = None
+				nodes = []
 				cmd = shlex.split(cmd)
 				cmd2 = cmd
 				if cmd[0] == 'sh' and cmd[1] == '-c':
@@ -1088,7 +1088,7 @@ class MyFrame(rtmgr.MyFrame):
 		try:
 			return subprocess.check_output(cmd).strip().split('\n')
 		except subprocess.CalledProcessError:
-			return None
+			return []
 
 	def modal_dialog(self, lst, title=''):
 		(lbs, cmds) = zip(*lst)
