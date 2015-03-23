@@ -448,6 +448,7 @@ class MyFrame(rtmgr.MyFrame):
 					v = cmd_param.get('default')					
 				if cmd_param.get('must') and (v is None or v == ''):
 					print 'cmd_param', name, 'is must'
+					wx.MessageBox('cmd_param ' + name + ' is must')
 					return False
 				if cmd_param.get('only_enable') and not v:
 					continue
