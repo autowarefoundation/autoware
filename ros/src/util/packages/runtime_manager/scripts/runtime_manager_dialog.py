@@ -192,6 +192,13 @@ class MyFrame(rtmgr.MyFrame):
 		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
 		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
+		try:
+			cmd = ['rosparam', 'get', '/use_sim_time']
+			if subprocess.check_output(cmd).strip() == 'true':
+				self.checkbox_sim_time.SetValue(True)
+		except subprocess.CalledProcessError:
+			pass
+
 		#
 		# for Data Tab
 		#
