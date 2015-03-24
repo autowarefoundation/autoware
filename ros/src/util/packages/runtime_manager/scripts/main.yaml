@@ -18,8 +18,9 @@ buttons:
   init:
     run : 'sh -c "roslaunch runtime_manager init.launch
            tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
-           scene_num:=$(rosparam get /points_map_loader/scene_num)
-           area_list:=$(find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1)
+           pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
+                         if [ \"$SN\" != \"noupdate\" ] ; then
+                           find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1 ; fi )\"
            pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
            csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
     param : main_init
