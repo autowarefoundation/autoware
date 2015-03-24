@@ -143,7 +143,7 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	cvWaitKey(2);
 }
 
-void car_updater_callback(dpm::ImageObjects image_objects_msg)
+static void car_updater_callback(const dpm::ImageObjects& image_objects_msg)
 {
 	int num = image_objects_msg.car_num;
 	vector<int> points = image_objects_msg.corner_point;
@@ -162,7 +162,8 @@ void car_updater_callback(dpm::ImageObjects image_objects_msg)
 	}
 
 }
-void ped_updater_callback(dpm::ImageObjects image_objects_msg)
+
+static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
 {
 	int num = image_objects_msg.car_num;
 	vector<int> points = image_objects_msg.corner_point;
