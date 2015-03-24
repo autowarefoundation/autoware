@@ -233,6 +233,7 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 	s_free(ac_score);
 
 	DPMGPUResult result;
+	result.num = cars->num;
 	for (int i = 0; i < cars->num; ++i) {
 		result.type[i] = cars->type[i];
 	}
