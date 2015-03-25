@@ -235,20 +235,24 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 	DPMGPUResult result;
 	result.num = cars->num;
 	for (int i = 0; i < cars->num; ++i) {
-		result.type[i] = cars->type[i];
+		result.type.push_back(cars->type[i]);
 	}
 
 	for (int i = 0; i < cars->num; ++i) {
 		int base = i * 4;
 		int *data = &(cars->OR_point[base]);
 
-		result.corner_points[base]   = data[0];
-		result.corner_points[base+1] = data[1];
-		result.corner_points[base+2] = data[2] - data[0];
-		result.corner_points[base+3] = data[3] - data[1];
+		result.corner_points.push_back(data[0]);
+		result.corner_points.push_back(data[1]);
+		result.corner_points.push_back(data[2] - data[0]);
+		result.corner_points.push_back(data[3] - data[1]);
 	}
 
-	release_result(cars);
+	s_free(cars->point);
+	s_free(cars->type);
+	s_free(cars->scale);
+	s_free(cars->score);
+	s_free(cars->IM);
 	return result;
 }
 #else
