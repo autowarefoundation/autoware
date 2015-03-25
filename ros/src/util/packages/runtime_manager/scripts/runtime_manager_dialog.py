@@ -277,7 +277,7 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.close()
 
-		shutdown_sh = self.get_autoware_dir() + '/shutdown.sh'
+		shutdown_sh = self.get_autoware_dir() + '/ros/shutdown'
 		if os.path.exists(shutdown_sh):
 			os.system(shutdown_sh)
 
