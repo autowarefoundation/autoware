@@ -716,6 +716,46 @@ void publish_poleclass(PoleClass& poleclass,
   publish_marker(marker, pub, rate);
 }		  
 
+void publish_areaclass(std::vector<ZebraZone> zones,
+		       double w, 
+		       double r, double g, double b, double a,
+		       std::vector<AreaClass> areaclasses,
+		       std::vector<LineClass> lines,
+		       std::vector<PointClass> pointclasses,
+		       visualization_msgs::Marker* marker,
+		       ros::Publisher& pub,
+		       ros::Rate& rate)
+{
+  marker->type = visualization_msgs::Marker::LINE_STRIP;
+
+  for (int i=0; i<zones.size(); i++) {
+    if (zones[i].id <= 0) {
+      continue;
+    }
+    int aid = zones[i].aid;
+    int slid = areaclasses[aid].slid;
+    int elid = areaclasses[aid].elid;
+
+    set_marker_data(marker,
+		    0, 0, 0,
+		    0, 0, 0, 1,
+		    w, 0, 0,
+		    r, g, b, a);
+    marker->points.clear();
+    for(int lid = slid; ; lid = lines[lid].flid) {
+      int pid = lines[lid].bpid;
+      add_marker_points_pointclass(marker, pointclasses[pid]);
+      if (lid == elid) {
+	pid = lines[lid].fpid;
+	add_marker_points_pointclass(marker, pointclasses[pid]);
+	break;
+      }
+    }
+    publish_marker(marker, pub, rate);
+  }
+}
+
+
 int main(int argc, char **argv)
 {
 
@@ -752,6 +792,13 @@ rosrun map_file vector_map_loader <csv files>
   std::vector<CrossWalk> crosswalks;
   std::vector<RoadEdge> roadedges;
   std::vector<Gutter> roadmarks;
+  std::vector<StopLine> stoplines;
+  std::vector<ZebraZone> crossroads;
+  std::vector<ZebraZone> sidewalks;
+  std::vector<Gutter> gutters;
+  std::vector<Curb> curbs;
+  std::vector<StreetLight> streetlights;
+  std::vector<PoleData> utilitypoles;
 
   std::cerr << "Load csv files" << std::endl;
 
@@ -825,6 +872,36 @@ rosrun map_file vector_map_loader <csv files>
       roadmarks = read_gutter(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", roadmarks.size()=" << roadmarks.size() << std::endl;
+    } else if(name == "stopline.csv") {
+      stoplines = read_stopline(argv[0]);
+      std::cerr << "  load " << argv[0] 
+		<< ", stoplines.size()=" << stoplines.size() << std::endl;
+
+    } else if(name == "crossroads.csv") {
+      crossroads = read_zebrazone(argv[0]);
+      std::cerr << "  load " << argv[0] 
+		<< ", crossroads.size()=" << crossroads.size() << std::endl;
+    } else if(name == "sidewalk.csv") {
+      sidewalks = read_zebrazone(argv[0]);
+      std::cerr << "  load " << argv[0] 
+		<< ", sidewalks.size()=" << sidewalks.size() << std::endl;
+
+    } else if(name == "gutter.csv") {
+      gutters = read_gutter(argv[0]);
+      std::cerr << "  load " << argv[0] 
+		<< ", gutters.size()=" << gutters.size() << std::endl;
+    } else if(name == "curb.csv") {
+      curbs = read_curb(argv[0]);
+      std::cerr << "  load " << argv[0] 
+		<< ", curb.size()=" << curbs.size() << std::endl;
+    } else if(name == "streetlight.csv") {
+      streetlights = read_streetlight(argv[0]);
+      std::cerr << "  load " << argv[0] 
+		<< ", streetlights.size()=" << streetlights.size() << std::endl;
+    } else if(name == "utilitypole.csv") {
+      utilitypoles = read_poledata(argv[0]);
+      std::cerr << "  load " << argv[0] 
+		<< ", utilitypoles.size()=" << utilitypoles.size() << std::endl;
     }
 
     argc--;
@@ -866,13 +943,14 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "pole";
     for (i=0; i<poledatas.size(); i++) {
       if (poledatas[i].id <= 0) {
 	continue;
       }
       int plid = poledatas[i].plid;
       publish_poleclass(poleclasses[plid], 
-			0, 1, 0, 1,
+			1, 1, 1, 1,
 			vectorclasses,
 			pointclasses,
 			&marker, pub, rate);
@@ -886,6 +964,7 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "signal";
     for (i=0; i<signaldatas.size(); i++) {
       if (signaldatas[i].id <= 0) {
 	continue;
@@ -958,6 +1037,7 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "road sign";
     for (i=0; i<roadsigns.size(); i++) {
       if (roadsigns[i].id <= 0) {
 	continue;
@@ -996,6 +1076,7 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "cross walk";
     for (i=0; i<crosswalks.size(); i++) {
       if (crosswalks[i].id <= 0) {
 	continue;
@@ -1033,6 +1114,7 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "lane";
     for (i=0; i<lanes.size(); i++) {
       if (lanes[i].lnid <= 0) {
 	continue;
@@ -1057,39 +1139,22 @@ rosrun map_file vector_map_loader <csv files>
       publish_marker(&marker, pub, rate);
     }
 
-    // zebrazone ?????
+    // zebrazone
     if(zebrazones.size() > 0 && (areaclasses.size() <= 0 || lines.size() <= 0)) {
       std::cerr << "error: area.csv or line.csv is not loaded.\n"
 		<< "\tzebrazone.csv needs area.csv and line.csv."
 		<< std::endl;
       std::exit(1);
     }
-    for (i=0; i<zebrazones.size(); i++) {
-      if (zebrazones[i].id <= 0) {
-	continue;
-      }
-      int aid = zebrazones[i].aid;
-      int slid = areaclasses[aid].slid;
-      int elid = areaclasses[aid].elid;
-      marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.ns = "zebrazone";
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    publish_areaclass(zebrazones, 0.1,
+		      1, 1, 1, 1,
+		      areaclasses,
+		      lines,
+		      pointclasses,
+		      &marker, pub, rate);
 
-      set_marker_data(&marker,
-		      0, 0, 0,
-		      0, 0, 0, 1,
-		      0.1, 0, 0,
-		      1, 1, 1, 1);
-      for(int lid = slid; ; lid = lines[lid].flid) {
-	int pid = lines[lid].bpid;
-	add_marker_points_pointclass(&marker, pointclasses[pid]);
-	if (lid == elid) {
-	  pid = lines[lid].fpid;
-	  add_marker_points_pointclass(&marker, pointclasses[pid]);
-	  break;
-	}
-      }
-
-      publish_marker(&marker, pub, rate);
-    }
 
     // white line
     if(whitelines.size() > 0 && lines.size() <= 0) {
@@ -1098,6 +1163,7 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "white line";
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     for (i=0; i<whitelines.size(); i++) {
       if (whitelines[i].id <= 0) {
@@ -1138,6 +1204,7 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "road edge";
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     for (i=0; i<roadedges.size(); i++) {
       if (roadedges[i].id <= 0) {
@@ -1173,6 +1240,7 @@ rosrun map_file vector_map_loader <csv files>
 		<< std::endl;
       std::exit(1);
     }
+    marker.ns = "road surface mark";
     for (i=0; i<roadmarks.size(); i++) {
       if (roadmarks[i].id <= 0) {
 	continue;
@@ -1201,6 +1269,227 @@ rosrun map_file vector_map_loader <csv files>
 
       publish_marker(&marker, pub, rate);
     }
+
+    // stop line
+    if(stoplines.size() > 0 && lines.size() <= 0) {
+      std::cerr << "error: line.csv is not loaded.\n"
+		<< "\tstoplines.csv needs line.csv"
+		<< std::endl;
+      std::exit(1);
+    }
+    marker.ns = "stop line";
+    for (i=0; i<stoplines.size(); i++) {
+      if (stoplines[i].id <= 0) {
+	continue;
+      }
+      int lid = stoplines[i].lid;
+      double r = 1.0, g = 1.0, b = 1.0;
+      if(lines[lid].blid == 0) {
+	set_marker_data(&marker,
+			0, 0, 0,
+			0, 0, 0, 1,
+			0.4, 0, 0,
+			r, g, b, 1);
+    
+	marker.points.clear();
+      }
+      int pid = lines[lid].bpid;
+      add_marker_points_pointclass(&marker, pointclasses[pid]);
+      if(lines[lid].flid == 0) {
+	pid = lines[lid].fpid;
+	add_marker_points_pointclass(&marker, pointclasses[pid]);
+      }
+
+      publish_marker(&marker, pub, rate);
+    }
+
+    // cross road
+    if(crossroads.size() > 0 && (areaclasses.size() <= 0 || lines.size() <= 0)) {
+      std::cerr << "error: area.csv or line.csv is not loaded.\n"
+		<< "\tcrossroad.csv needs area.csv and line.csv."
+		<< std::endl;
+      std::exit(1);
+    }
+    marker.ns = "cross road";
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    publish_areaclass(crossroads, 0.1,
+		      1, 1, 1, 1,
+		      areaclasses,
+		      lines,
+		      pointclasses,
+		      &marker, pub, rate);
+
+
+    // side walk (hodou) 
+    if(sidewalks.size() > 0 && (areaclasses.size() <= 0 || lines.size() <= 0)) {
+      std::cerr << "error: area.csv or line.csv is not loaded.\n"
+		<< "\tsidewalk.csv needs area.csv and line.csv."
+		<< std::endl;
+      std::exit(1);
+    }
+    marker.ns = "side walk";
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    publish_areaclass(sidewalks, 0.1,
+		      1, 1, 1, 1,
+		      areaclasses,
+		      lines,
+		      pointclasses,
+		      &marker, pub, rate);
+
+    // gutter
+    if(gutters.size() > 0 && (areaclasses.size() <= 0 || lines.size() <= 0)) {
+      std::cerr << "error: area.csv or line.csv is not loaded.\n"
+		<< "\tgutter.csv needs area.csv and line.csv."
+		<< std::endl;
+      std::exit(1);
+    }
+    marker.ns = "gutter";
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+
+    for (i=0; i<gutters.size(); i++) {
+      if (gutters[i].id <= 0) {
+	continue;
+      }
+      int aid = gutters[i].aid;
+      int slid = areaclasses[aid].slid;
+      int elid = areaclasses[aid].elid;
+      double r, g, b;
+
+      switch(gutters[i].type) {
+      case 0:
+	r = 0.7, g = 0.7, b = 0.7;
+	break;
+      case 1:
+	r = 0.8, g = 0.8, b = 0.8;
+	break;
+      case 2:
+	r = 0.5, g = 0.5, b = 0.5;
+	break;
+      default:
+	r = 1.0, g = 1.0, b = 1.0;
+	break;
+      }
+
+      set_marker_data(&marker,
+		      0, 0, 0,
+		      0, 0, 0, 1,
+		      0.2, 0, 0,
+		      r, g, b, 1);
+      marker.points.clear();
+      for(int lid = slid; ; lid = lines[lid].flid) {
+	int pid = lines[lid].bpid;
+	add_marker_points_pointclass(&marker, pointclasses[pid]);
+	if (lid == elid) {
+	  pid = lines[lid].fpid;
+	  add_marker_points_pointclass(&marker, pointclasses[pid]);
+	  break;
+	}
+      }
+      publish_marker(&marker, pub, rate);
+    }
+
+
+    // curb
+    if(curbs.size() > 0 && lines.size() <= 0) {
+      std::cerr << "error: line.csv is not loaded.\n"
+		<< "\tcurb.csv needs line.csv."
+		<< std::endl;
+      std::exit(1);
+    }
+    marker.ns = "curb";
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+
+    for (i=0; i<curbs.size(); i++) {
+      if (curbs[i].id <= 0) {
+	continue;
+      }
+
+      int lid = curbs[i].lid;
+      if(lines[lid].blid == 0) {
+	set_marker_data(&marker,
+			0, 0, 0,
+			0, 0, 0, 1,
+			curbs[i].width, 0, curbs[i].height,
+			0.7, 0.7, 0.7, 1);
+    
+	marker.points.clear();
+      }
+
+      int pid = lines[lid].bpid;
+      add_marker_points_pointclass(&marker, pointclasses[pid]);
+      if(lines[lid].flid == 0) {
+	pid = lines[lid].fpid;
+	add_marker_points_pointclass(&marker, pointclasses[pid]);
+      }
+
+      publish_marker(&marker, pub, rate);
+    }
+
+
+    // streetlight
+    if(streetlights.size() > 0 && (lines.size() <= 0 || poleclasses.size() <= 0 || vectorclasses.size() <= 0)) {
+      std::cerr << "error: line.csv or pole.csv or vector.csv is not loaded.\n"
+		<< "\tcurb.csv needs line.csv, pole.csv and vector.csv."
+		<< std::endl;
+      std::exit(1);
+    }
+    marker.ns = "streetlight";
+
+    for (i=0; i<streetlights.size(); i++) {
+      if (streetlights[i].id <= 0) {
+	continue;
+      }
+
+      marker.type = visualization_msgs::Marker::LINE_STRIP;
+      int lid = streetlights[i].lid;
+      if(lines[lid].blid == 0) {
+	set_marker_data(&marker,
+			0, 0, 0,
+			0, 0, 0, 1,
+			0.2, 0, 0,
+			1, 1, 1, 1);
+	marker.points.clear();
+      }
+
+      int pid = lines[lid].bpid;
+      add_marker_points_pointclass(&marker, pointclasses[pid]);
+      if(lines[lid].flid == 0) {
+	pid = lines[lid].fpid;
+	add_marker_points_pointclass(&marker, pointclasses[pid]);
+      }
+
+      publish_marker(&marker, pub, rate);
+
+      // streetlight pole
+      int plid = streetlights[i].plid;
+      publish_poleclass(poleclasses[plid],
+			1, 1, 1, 1,
+			vectorclasses,
+			pointclasses,
+			&marker, pub, rate);
+    }
+
+    // utilitypole
+    if(utilitypoles.size() > 0 && (poleclasses.size() <= 0 || vectorclasses.size() <= 0)) {
+      std::cerr << "error: pole.csv or vector.csv is not loaded \n"
+		<< "\tutilitypole.csv needs pole.csv and vector.csv "
+		<< std::endl;
+      std::exit(1);
+    }
+    marker.ns = "utilitypole";
+    for (i=0; i<utilitypoles.size(); i++) {
+      if (utilitypoles[i].id <= 0) {
+	continue;
+      }
+      int plid = utilitypoles[i].plid;
+      publish_poleclass(poleclasses[plid], 
+			0.5, 0.5, 0.5, 1,
+			vectorclasses,
+			pointclasses,
+			&marker, pub, rate);
+    }
+    rate.sleep();
+
 
     vmap_stat_msg.data = true;
     stat_publisher.publish(vmap_stat_msg);
