@@ -42,8 +42,8 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
-static double config_threshold = 0.5;
-static double config_overlap = 0.1;
+static double config_threshold = -0.5;
+static double config_overlap = 0.4;
 static int config_lambda = 10;
 static int config_num_cells = 8;
 
