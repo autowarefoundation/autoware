@@ -54,19 +54,21 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 
 	std::vector<DPMObject> cars = dpm_detect_objects(mat, model_files,
 							 num_threads, overlap_threshold);
-
 	size_t car_num = cars.size();
-	std::vector<int> corner_point_array(car_num);
-	std::vector<int> car_type_array(car_num);
+	if (car_num == 0) {
+		return;
+	}
+
+	std::vector<int> corner_point_array;
+	std::vector<int> car_type_array;
 
 	for (int i = 0; i < static_cast<int>(car_num); ++i) {
-		car_type_array[i] = cars[i].class_id;
+		car_type_array.push_back(cars[i].class_id);
 
-		int base = i * 4;
-		corner_point_array[base + 0] = cars[i].rect.x;
-		corner_point_array[base + 1] = cars[i].rect.y;
-		corner_point_array[base + 2] = cars[i].rect.width;
-		corner_point_array[base + 3] = cars[i].rect.height;
+		corner_point_array.push_back(cars[i].rect.x);
+		corner_point_array.push_back(cars[i].rect.y);
+		corner_point_array.push_back(cars[i].rect.width);
+		corner_point_array.push_back(cars[i].rect.height);
 	}
 
 	dpm::ImageObjects message;
