@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#define BEAMNUM 2000
+#define BEAMNUM 1000
 #define STEP ui->step->value()
 #define MINFLOOR -3.0
 #define MAXCEILING 5.0
