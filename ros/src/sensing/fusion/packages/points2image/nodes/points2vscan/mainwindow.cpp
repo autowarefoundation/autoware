@@ -88,7 +88,7 @@ void MainWindow::recalculateSlot()
 {
     double PI=3.141592654;
     QTime start=QTime::currentTime();
-    virtualscan.calculateVirtualScans(BEAMNUM,ui->step->value(),MINFLOOR,MAXCEILING,ui->rotation->value()*PI/180.0,ui->minrange->value());
+    virtualscan.calculateVirtualScans(BEAMNUM,ui->step->value(),MINFLOOR,MAXCEILING,ui->rotation->value()*PI/180.0, 3);
     QTime end=QTime::currentTime();
     virtualscan.getVirtualScan(ROADSLOP*PI/180.0,-1.0,-0.5,2,beams);
     ui->tc->setText(QString("%1").arg(start.msecsTo(end)));
