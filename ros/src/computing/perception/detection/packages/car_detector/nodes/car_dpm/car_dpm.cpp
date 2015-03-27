@@ -53,7 +53,7 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 	cv::Mat mat = cv_image->image;
 
 	std::vector<DPMObject> cars = dpm_detect_objects(mat, model_files,
-							 num_threads, overlap_threshold);
+							 overlap_threshold, num_threads);
 	size_t car_num = cars.size();
 	if (car_num == 0) {
 		return;
