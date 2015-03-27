@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <points_image.hpp>
+#include <stdint.h>
 
 points2image::PointsImage
 pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
@@ -49,13 +50,13 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 
 	cv::Mat invR = cameraExtrinsicMat(cv::Rect(0,0,3,3)).t();
 	cv::Mat invT = -invR*(cameraExtrinsicMat(cv::Rect(3,0,1,3)));
-	char* cp = (char*)pointcloud2->data.data();
+    uintptr_t cp = (uintptr_t)pointcloud2->data.data();
 
 	msg.max_y = -1;
 	msg.min_y = h;
 
 	for (int y = 0; y < pointcloud2->height; ++y) {
-		for (int x = 0; x < pointcloud2->width; ++y) {
+		for (int x = 0; x < pointcloud2->width; ++x) {
 			float* fp = (float *)(cp + pointcloud2->row_step * y + pointcloud2->point_step * x);
 			double intensity = fp[4];
 
