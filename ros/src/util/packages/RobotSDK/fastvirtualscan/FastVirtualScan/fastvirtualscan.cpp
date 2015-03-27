@@ -172,9 +172,16 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
         int candid=0;
         bool roadfilterflag=1;
         bool denoiseflag=1;
-        while(svs[i][candid].height>minCeiling)
+        while(candid<beamnum&&svs[i][candid].height>minCeiling)
         {
             candid++;
+        }
+        if(candid>=beamnum)
+        {
+            virtualScan[i]=0;
+            minheights[i]=0;
+            maxheights[i]=0;
+            continue;
         }
         if(svs[i][candid].height>maxFloor)
         {
@@ -311,6 +318,12 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
                 }
             }
             candid=j;
+        }
+        if(virtualScan[i]<=0)
+        {
+            virtualScan[i]=0;
+            minheights[i]=0;
+            maxheights[i]=0;
         }
     }
 }
