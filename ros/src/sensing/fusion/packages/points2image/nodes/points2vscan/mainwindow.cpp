@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#define BEAMNUM 1000
+#define BEAMNUM 2000
 #define STEP ui->step->value()
 #define MINFLOOR -3.0
 #define MAXCEILING 5.0
@@ -11,6 +11,8 @@
 #define GRIDSIZE 10.0
 #define IMAGESIZE 1000.0
 
+FastVirtualScan MainWindow::virtualscan;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -18,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("velodyne_points",1000,10);
     connect(velodyne,SIGNAL(receiveMessageSignal()),this,SLOT(generateVirtualScanSlot()));
-    vsros=new ROSPub<sensor_msgs::PointCloud2>("vscan_points",1000);
+    vsros=new ROSPub<sensor_msgs::PointCloud2>("/velodyne_points/virtualscan",1000);
 
 
     double PI=3.141592654;
@@ -32,8 +34,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(showMatrixSlot(int)));
     connect(ui->step,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
-    connect(ui->axis,SIGNAL(currentIndexChanged(int)),this,SLOT(recalculateSlot()));
     connect(ui->rotation,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
+    connect(ui->minrange,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
+
 
 
     ui->label->resize(IMAGESIZE,IMAGESIZE);
@@ -87,7 +90,7 @@ void MainWindow::recalculateSlot()
 {
     double PI=3.141592654;
     QTime start=QTime::currentTime();
-    virtualscan.calculateVirtualScans(BEAMNUM,ui->step->value(),MINFLOOR,MAXCEILING,ui->rotation->value()*PI/180.0);
+    virtualscan.calculateVirtualScans(BEAMNUM,ui->step->value(),MINFLOOR,MAXCEILING,ui->rotation->value()*PI/180.0,ui->minrange->value());
     QTime end=QTime::currentTime();
     virtualscan.getVirtualScan(ROADSLOP*PI/180.0,-1.0,-0.5,2,beams);
     ui->tc->setText(QString("%1").arg(start.msecsTo(end)));

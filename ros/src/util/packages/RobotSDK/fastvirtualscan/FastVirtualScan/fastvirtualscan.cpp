@@ -8,6 +8,8 @@ FastVirtualScan::FastVirtualScan()
     step=0.3;
     minfloor=-3;
     maxceiling=3;
+    rotation=0;
+    minrange=0;
 }
 
 FastVirtualScan::~FastVirtualScan()
@@ -27,7 +29,7 @@ bool compareDistance(const SimpleVirtualScan & svs1, const SimpleVirtualScan & s
     }
 }
 
-void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, double minFloor, double maxCeiling, double beamRotation)
+void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, double minFloor, double maxCeiling, double beamRotation, double minRange)
 {
 
     assert(minFloor<maxCeiling);
@@ -37,6 +39,7 @@ void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, doub
     minfloor=minFloor;
     maxceiling=maxCeiling;
     rotation=beamRotation;
+    minrange=minRange;
     double c=cos(rotation);
     double s=sin(rotation);
 
@@ -55,8 +58,10 @@ void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, doub
             for(int j=0;j<size;j++)
             {
                 svs[i][j].rotid=j;
+                svs[i][j].length=MAXVIRTUALSCAN;
                 svs[i][j].rotlength=MAXVIRTUALSCAN;
                 svs[i][j].rotheight=minfloor+(j+0.5)*step;
+                svs[i][j].height=minfloor+(j+0.5)*step;
             }
         }
     }
@@ -85,7 +90,7 @@ void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, doub
                 {
                     beamid=beamnum-1;
                 }
-                if(length>0&&svs[beamid][rotid].rotlength>rotlength)
+                if(length>minrange&&svs[beamid][rotid].rotlength>rotlength)
                 {
                     svs[beamid][rotid].rotlength=rotlength;
                     svs[beamid][rotid].length=svs[beamid][rotid].rotlength*c+svs[beamid][rotid].rotheight*s;
@@ -104,7 +109,7 @@ void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, doub
 #endif
 #endif
         for(int i=0;i<beamnum;i++)
-        {            
+        {
             int j;
             bool flag=1;
             int startid;
@@ -163,7 +168,7 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
 #endif
 #endif
     for(int i=0;i<beamnum;i++)
-    {        
+    {
         int candid=0;
         bool roadfilterflag=1;
         bool denoiseflag=1;

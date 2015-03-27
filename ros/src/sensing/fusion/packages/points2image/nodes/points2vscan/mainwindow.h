@@ -26,7 +26,7 @@ private:
 protected:
     ROSSub<sensor_msgs::PointCloud2ConstPtr> * velodyne;
     ROSPub<sensor_msgs::PointCloud2> * vsros;
-    FastVirtualScan virtualscan;
+    static FastVirtualScan virtualscan;
     QVector<double> beams;
     QVector<double> heights;
     QImage image;

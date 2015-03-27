@@ -25,6 +25,7 @@ public:
     double minfloor;
     double maxceiling;
     double rotation;
+    double minrange;
     QVector<QVector<SimpleVirtualScan> > svs;
     QVector<QVector<SimpleVirtualScan> > svsback;
     QVector<double> minheights;
@@ -33,7 +34,7 @@ public:
     FastVirtualScan();
     virtual ~FastVirtualScan();
 public:
-    void calculateVirtualScans(int beamNum, double heightStep, double minFloor, double maxCeiling, double beamRotation=0);
+    void calculateVirtualScans(int beamNum, double heightStep, double minFloor, double maxCeiling, double beamRotation=0, double minRange=0);
     void getVirtualScan(double theta, double maxFloor, double minCeiling, double passHeight, QVector<double> & virtualScan);
 };
 

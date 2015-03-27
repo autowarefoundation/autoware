@@ -18,10 +18,17 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QComboBox" name="comboBox"/>
+       <widget class="QComboBox" name="comboBox">
+        <property name="toolTip">
+         <string>Beam ID</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="step">
+        <property name="toolTip">
+         <string>Height Grid Step (m)</string>
+        </property>
         <property name="minimum">
          <double>0.010000000000000</double>
         </property>
@@ -37,31 +44,25 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="axis">
-        <item>
-         <property name="text">
-          <string>NoRot</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>RotX</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>RotY</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item>
        <widget class="QDoubleSpinBox" name="rotation">
+        <property name="toolTip">
+         <string>Rotation (degree)</string>
+        </property>
         <property name="minimum">
          <double>-30.000000000000000</double>
         </property>
         <property name="maximum">
          <double>30.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="minrange">
+        <property name="toolTip">
+         <string>Minimum Range (m)</string>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
         </property>
        </widget>
       </item>
