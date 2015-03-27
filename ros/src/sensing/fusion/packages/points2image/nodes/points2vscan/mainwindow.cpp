@@ -11,8 +11,6 @@
 #define GRIDSIZE 10.0
 #define IMAGESIZE 1000.0
 
-FastVirtualScan MainWindow::virtualscan;
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
