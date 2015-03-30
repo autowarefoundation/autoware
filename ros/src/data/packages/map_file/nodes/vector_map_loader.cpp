@@ -728,7 +728,7 @@ void publish_areaclass(std::vector<ZebraZone> zones,
 {
   marker->type = visualization_msgs::Marker::LINE_STRIP;
 
-  for (int i=0; i<zones.size(); i++) {
+  for (int i=0; i<static_cast<int>(zones.size()); i++) {
     if (zones[i].id <= 0) {
       continue;
     }
