@@ -26,7 +26,13 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(camera_lidar2d_offline_calib nodes/camera_lidar2d_offline_calib/camera_lidar2d_offline_calib.cpp)
+add_executable(camera_lidar2d_offline_calib
+  nodes/camera_lidar2d_offline_calib/chessboard.cpp
+  nodes/camera_lidar2d_offline_calib/trans.cpp
+  nodes/camera_lidar2d_offline_calib/scan_window.cpp
+  nodes/camera_lidar2d_offline_calib/common_2d_calib.cpp
+  nodes/camera_lidar2d_offline_calib/image_window.cpp
+  nodes/camera_lidar2d_offline_calib/camera_lidar2d_offline_calib.cpp)
 
 set(PARAM_YAML "${CMAKE_CURRENT_SOURCE_DIR}/param.yaml")
 set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
