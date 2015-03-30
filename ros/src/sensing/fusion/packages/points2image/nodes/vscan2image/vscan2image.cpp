@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	imageSize.width = IMAGE_WIDTH;
 	imageSize.height = IMAGE_HEIGHT;
 
-	pub = n.advertise<points2image::PointsImage>("points_image", 10);
+	pub = n.advertise<points2image::PointsImage>("vscan_image", 10);
 	ros::Subscriber sub = n.subscribe("vscan_points", 1, callback);
 
 	ros::spin();
