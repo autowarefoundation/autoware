@@ -55,9 +55,6 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 	std::vector<DPMObject> cars = dpm_detect_objects(mat, model_files,
 							 overlap_threshold, num_threads);
 	size_t car_num = cars.size();
-	if (car_num == 0) {
-		return;
-	}
 
 	std::vector<int> corner_point_array;
 	std::vector<int> car_type_array;
