@@ -64,6 +64,7 @@ static std::vector<Lane> lanes;
 static std::vector<Node> nodes;
 static std::vector<Point> points;
 static std::vector<Signal> signals;
+static std::vector<StopLine> stoplines;
 
 static std::vector<Point> left_lane_points;
 
@@ -77,9 +78,9 @@ static void config_callback(const runtime_manager::ConfigLaneRule& msg)
 	config_difference_around_signal = msg.difference_around_signal;
 }
 
-static std::vector<Point> search_signal_point(const nav_msgs::Path& msg)
+static std::vector<Point> search_stopline_point(const nav_msgs::Path& msg)
 {
-	std::vector<Point> signal_points;
+	std::vector<Point> stopline_points;
 
 	// msg's X-Y axis is reversed
 	Point start_point = search_nearest(
@@ -96,64 +97,62 @@ static std::vector<Point> search_signal_point(const nav_msgs::Path& msg)
 	int lane_index = start_point.to_lane_index(nodes, lanes);
 	if (lane_index < 0) {
 		ROS_ERROR("start lane is not found");
-		return signal_points;
+		return stopline_points;
 	}
 	Lane lane = lanes[lane_index];
 
 	int point_index = lane.to_beginning_point_index(nodes, points);
 	if (point_index < 0) {
 		ROS_ERROR("start beginning point is not found");
-		return signal_points;
+		return stopline_points;
 	}
 	Point point = points[point_index];
 
 	while (1) {
-		for (const Signal& signal : signals) {
-			if (signal.type() == 1 && // red signal
-			    signal.linkid() == lane.lnid())
-				signal_points.push_back(point);
+		for (const StopLine& stopline : stoplines) {
+			if (stopline.linkid() == lane.lnid())
+				stopline_points.push_back(point);
 		}
 
 		point_index = lane.to_finishing_point_index(nodes, points);
 		if (point_index < 0) {
 			ROS_ERROR("finishing point is not found");
-			return signal_points;
+			return stopline_points;
 		}
 		point = points[point_index];
 
 		if (point.bx() == end_point.bx() &&
 		    point.ly() == end_point.ly()) {
-			for (const Signal& signal : signals) {
-				if (signal.type() == 1 && // red signal
-				    signal.linkid() == lane.lnid())
-					signal_points.push_back(point);
+			for (const StopLine& stopline : stoplines) {
+				if (stopline.linkid() == lane.lnid())
+					stopline_points.push_back(point);
 			}
 
-			return signal_points;
+			return stopline_points;
 		}
 
 		lane_index = lane.to_next_lane_index(lanes);
 		if (lane_index < 0) {
 			ROS_ERROR("next lane is not found");
-			return signal_points;
+			return stopline_points;
 		}
 		lane = lanes[lane_index];
 
 		point_index = lane.to_beginning_point_index(nodes, points);
 		if (point_index < 0) {
 			ROS_ERROR("beginning point is not found");
-			return signal_points;
+			return stopline_points;
 		}
 		point = points[point_index];
 	}
 }
 
-static std::vector<int> search_signal_index(const nav_msgs::Path& msg)
+static std::vector<int> search_stopline_index(const nav_msgs::Path& msg)
 {
 	std::vector<int> indexes;
 
-	std::vector<Point> signal_points = search_signal_point(msg);
-	for (const Point& point : signal_points) {
+	std::vector<Point> stopline_points = search_stopline_point(msg);
+	for (const Point& point : stopline_points) {
 		int i = 0;
 
 		// msg's X-Y axis is reversed
@@ -184,7 +183,7 @@ static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
 	std::vector<double> computations;
 	int loops = msg.poses.size();
 
-	std::vector<int> indexes = search_signal_index(msg);
+	std::vector<int> indexes = search_stopline_index(msg);
 
 	if (indexes.empty() || difference < ACCIDENT_ERROR) {
 		ROS_WARN_COND(difference < ACCIDENT_ERROR,
@@ -346,6 +345,8 @@ int main(int argc, char **argv)
 			     std::string("/point.csv")).c_str());
 	signals = read_signal((vector_map_directory +
 			       std::string("/signaldata.csv")).c_str());
+	stoplines = read_stopline((vector_map_directory +
+			       std::string("/stopline.csv")).c_str());
 
 	for (const Lane& lane : lanes) {
 		if (lane.lno() != 1) // leftmost lane
