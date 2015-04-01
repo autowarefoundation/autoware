@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
     std::cout << "checking use_pose" << std::endl;
 
-    //初期値はroslaunchから
+    // Initial values are set by roslaunch
     if (_use_pose == false) {
         std::cout << "use initial pose" << std::endl;
         private_nh.getParam("px", x);
@@ -152,14 +152,13 @@ int main(int argc, char **argv)
     // double vx = 5.0;
     //  double vth = -0.230769;
 
-    //10Hzでループ
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(10); // 10Hz
     while (ros::ok()) {
         ros::spinOnce(); //check subscribe topic
 
         //  std::cout << "waiting value set..." << std::endl;
 
-        //初期値はGNSSから
+        // Initial values are derived from GNSS
         if (_use_pose == true) {
             if (_init_set == false) {
                 if (_pose_value_set == true) {
