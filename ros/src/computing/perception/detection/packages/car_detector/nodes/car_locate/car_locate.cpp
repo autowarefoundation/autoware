@@ -237,7 +237,6 @@ void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   if(gnssGetFlag || ndtGetFlag) {
-    //認識した車の数だけ繰り返す
     for (int i = 0; i < fused_objects.car_num; i++){
       
       //If distance is zero, we cannot calculate position of recognized object

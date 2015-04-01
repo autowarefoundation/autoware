@@ -154,9 +154,7 @@ SendData() :
         return result;
     }
         
-    //cation : もしサーバ側で一回の通信でクローズするようになっていない場合は
-    //readで0が返ってこないのでループから抜けられなくなる
-    //If server do not close in one communication,loop forever because read() do not return 0.
+    //Caution : If server do not close in one communication,loop forever because read() do not return 0.
     while(1){
       memset(recvdata, 0, sizeof(recvdata));
       n = read(sock, recvdata, sizeof(recvdata));
