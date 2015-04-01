@@ -152,10 +152,29 @@ public:
 	int linkid() const;
 };
 
+class StopLine {
+private:
+	int id_;
+	int lid_;
+	int tlid_;
+	int signid_;
+	int linkid_;
+
+public:
+	explicit StopLine(int id, int lid, int tlid, int signid, int linkid);
+
+	int id() const;
+	int lid() const;
+	int tlid() const;
+	int signid() const;
+	int linkid() const;
+};
+
 std::vector<Point> read_point(const char *filename);
 std::vector<Node> read_node(const char *filename);
 std::vector<Lane> read_lane(const char *filename);
 std::vector<Signal> read_signal(const char *filename);
+std::vector<StopLine> read_stopline(const char *filename);
 
 Point search_nearest(const std::vector<Point>& points, double x, double y);
 

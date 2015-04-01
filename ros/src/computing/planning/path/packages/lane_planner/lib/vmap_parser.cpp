@@ -293,6 +293,36 @@ int Signal::linkid() const
 	return linkid_;
 }
 
+StopLine::StopLine(int id, int lid, int tlid, int signid, int linkid)
+	: id_(id), lid_(lid), tlid_(tlid), signid_(signid), linkid_(linkid)
+{
+}
+
+int StopLine::id() const
+{
+	return id_;
+}
+
+int StopLine::lid() const
+{
+	return lid_;
+}
+
+int StopLine::tlid() const
+{
+	return tlid_;
+}
+
+int StopLine::signid() const
+{
+	return signid_;
+}
+
+int StopLine::linkid() const
+{
+	return linkid_;
+}
+
 static Point parse_point(const std::string& line)
 {
 	std::istringstream ss(line);
@@ -383,6 +413,25 @@ static Signal parse_signal(const std::string& line)
 		);
 }
 
+static StopLine parse_stopline(const std::string& line)
+{
+	std::istringstream ss(line);
+	std::vector<std::string> columns;
+
+	std::string column;
+	while (std::getline(ss, column, ',')) {
+		columns.push_back(column);
+	}
+
+	return StopLine(
+		std::stoi(columns[0]),
+		std::stoi(columns[1]),
+		std::stoi(columns[2]),
+		std::stoi(columns[3]),
+		std::stoi(columns[4])
+		);
+}
+
 std::vector<Point> read_point(const char *filename)
 {
 	std::ifstream ifs(filename);
@@ -441,6 +490,21 @@ std::vector<Signal> read_signal(const char *filename)
 	}
 
 	return signals;
+}
+
+std::vector<StopLine> read_stopline(const char *filename)
+{
+	std::ifstream ifs(filename);
+	std::string line;
+
+	std::getline(ifs, line); // Remove first line
+
+	std::vector<StopLine> stoplines;
+	while (std::getline(ifs, line)) {
+		stoplines.push_back(parse_stopline(line));
+	}
+
+	return stoplines;
 }
 
 Point search_nearest(const std::vector<Point>& points, double x, double y)
