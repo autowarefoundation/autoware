@@ -28,8 +28,8 @@ include_directories(
   /usr/include/pcl-1.7
   /usr/include/eigen3)
 
-add_executable(points_map_loader nodes/points_map_loader.cpp)
+add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} pcl_io)
 
-add_executable(vector_map_loader nodes/vector_map_loader.cpp)
+add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
 target_link_libraries(vector_map_loader ${catkin_LIBRARIES})
