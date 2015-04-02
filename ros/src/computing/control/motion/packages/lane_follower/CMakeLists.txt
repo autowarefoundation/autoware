@@ -121,13 +121,13 @@ include_directories(
 # )
 
 
-add_executable(pure_pursuit nodes/pure_pursuit.cpp)
+add_executable(pure_pursuit nodes/pure_pursuit/pure_pursuit.cpp)
 target_link_libraries(pure_pursuit gnss ${catkin_LIBRARIES})
 add_dependencies(pure_pursuit 
 lane_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
-add_executable(odom_gen nodes/odom_gen.cpp)
+add_executable(odom_gen nodes/odom_gen/odom_gen.cpp)
 target_link_libraries(odom_gen ${catkin_LIBRARIES})
 
 
