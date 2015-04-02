@@ -121,10 +121,10 @@ include_directories(
 # )
 
 
-add_executable(fix2tfpose nodes/fix2tfpose.cpp)
+add_executable(fix2tfpose nodes/fix2tfpose/fix2tfpose.cpp)
 target_link_libraries(fix2tfpose ${catkin_LIBRARIES})
 
-add_executable(nmea2tfpose nodes/nmea2tfpose.cpp)
+add_executable(nmea2tfpose nodes/nmea2tfpose/nmea2tfpose.cpp)
 target_link_libraries(nmea2tfpose gnss ${catkin_LIBRARIES})
 
 #############
