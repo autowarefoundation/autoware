@@ -3,10 +3,6 @@ project(gnss)
 
 find_package(catkin REQUIRED)
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
 ###################################
 ## catkin specific configuration ##
 ###################################
