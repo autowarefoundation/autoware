@@ -16,6 +16,8 @@ catkin_package(
 ## Build ##
 ###########
 
+SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
+
 if(EXISTS /usr/local/qtbase5)
 # Self install version
 set(Qt5INCLUDE "/usr/local/qtbase5/include")
