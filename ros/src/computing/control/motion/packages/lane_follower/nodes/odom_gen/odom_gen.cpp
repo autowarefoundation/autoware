@@ -52,8 +52,10 @@ double _initial_ox = 0.0;
 double _initial_oy = 0.0;
 double _initial_oz = 0.0;
 double _initial_ow = 0.0;
+double _initial_yaw = 0.0;
 
 std::string _use_topic;
+std::string _rotation_set;
 
 void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
@@ -85,7 +87,6 @@ void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
     }
 }
 
-
 void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
     _current_velocity = msg->twist;
@@ -111,15 +112,12 @@ int main(int argc, char **argv)
 
     private_nh.getParam("use_pose", _use_pose);
     private_nh.getParam("use_topic", _use_topic);
+    private_nh.getParam("rotation_set", _rotation_set);
 
     ros::Time current_time, last_time;
     current_time = ros::Time::now();
     last_time = ros::Time::now();
-    /*
-     double x = 0.0;
-     double y = 0.0;
-     double th = 0.0;
-     */
+
     double x = 0;
     double y = 0;
     double z = 0;
@@ -137,15 +135,26 @@ int main(int argc, char **argv)
         private_nh.getParam("px", x);
         private_nh.getParam("py", y);
         private_nh.getParam("pz", z);
-        private_nh.getParam("ox", ox);
-        private_nh.getParam("oy", oy);
-        private_nh.getParam("oz", oz);
-        private_nh.getParam("ow", ow);
-        tf::Quaternion q(ox, oy, oz, ow);
-        tf::Matrix3x3 m(q);
-        double roll, pitch, yaw;
-        m.getRPY(roll, pitch, yaw);
-        th = yaw;
+
+        if (_rotation_set == "Qua") {
+            private_nh.getParam("ox", ox);
+            private_nh.getParam("oy", oy);
+            private_nh.getParam("oz", oz);
+            private_nh.getParam("ow", ow);
+            tf::Quaternion q(ox, oy, oz, ow);
+            tf::Matrix3x3 m(q);
+            double roll, pitch, yaw;
+            m.getRPY(roll, pitch, yaw);
+            th = yaw;
+        } else if (_rotation_set == "RPY") {
+            double yaw = 0;
+            private_nh.getParam("yaw", yaw);
+            th = yaw;
+        } else {
+           std::cout << "set RPY or Qua to rotation_set!!!!!" << std::endl;
+           exit(-1);
+        }
+
         _init_set = true;
     }
 
@@ -158,7 +167,7 @@ int main(int argc, char **argv)
 
         //  std::cout << "waiting value set..." << std::endl;
 
-        // Initial values are derived from GNSS
+        // Initial values are derived from GNSS or NDT
         if (_use_pose == true) {
             if (_init_set == false) {
                 if (_pose_value_set == true) {
@@ -197,10 +206,10 @@ int main(int argc, char **argv)
         y += delta_y;
         th += delta_th;
 
-        std::cout << "delta : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
-        std::cout << "current_velocity : " << _current_velocity.linear.x << " " << _current_velocity.angular.z << std::endl;
-        std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl;
-        std::cout << "current_orientation : (" << ox << " " << oy << " " << oz << " " << ow << ")" << std::endl << std::endl;
+        std::cout << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
+        std::cout << "current_velocity(linear.x angular.z) : (" << _current_velocity.linear.x << " " << _current_velocity.angular.z << ")"<< std::endl;
+        std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl << std::endl;
+        //std::cout << "current_orientation : (" << ox << " " << oy << " " << oz << " " << ow << ")" << std::endl << std::endl;
 
         //since all odometry is 6DOF we'll need a quaternion created from yaw
         geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
