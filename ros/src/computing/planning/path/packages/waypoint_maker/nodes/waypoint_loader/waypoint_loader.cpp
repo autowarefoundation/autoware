@@ -118,7 +118,9 @@ int main(int argc, char **argv)
         id_count++;
     }
 
-    ros::Rate loop_rate(1);
+    // 10Hz is necessary to smoothen tf and pure_pursuit.
+    //ros::Rate loop_rate(1);
+    ros::Rate loop_rate(10);
     int count = 0;
     while (ros::ok()) {
         count++;
