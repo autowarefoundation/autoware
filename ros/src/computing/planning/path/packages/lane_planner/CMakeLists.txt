@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES vmap_parser
   CATKIN_DEPENDS ui_socket lane_follower runtime_manager
   DEPENDS gnss
 )
