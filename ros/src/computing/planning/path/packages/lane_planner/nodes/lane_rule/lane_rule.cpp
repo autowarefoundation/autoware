@@ -63,7 +63,6 @@ static ros::Publisher pub_green;
 static std::vector<Lane> lanes;
 static std::vector<Node> nodes;
 static std::vector<Point> points;
-static std::vector<Signal> signals;
 static std::vector<StopLine> stoplines;
 
 static std::vector<Point> left_lane_points;
@@ -343,8 +342,6 @@ int main(int argc, char **argv)
 			   std::string("/node.csv")).c_str());
 	points = read_point((vector_map_directory +
 			     std::string("/point.csv")).c_str());
-	signals = read_signal((vector_map_directory +
-			       std::string("/signaldata.csv")).c_str());
 	stoplines = read_stopline((vector_map_directory +
 			       std::string("/stopline.csv")).c_str());
 
