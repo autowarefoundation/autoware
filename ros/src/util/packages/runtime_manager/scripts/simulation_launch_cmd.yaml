@@ -155,6 +155,7 @@ params :
       cmd_param :
         must  : True
         delim : ''
+        unpack: ','
 
     - name      : swap
       kind      : hide
