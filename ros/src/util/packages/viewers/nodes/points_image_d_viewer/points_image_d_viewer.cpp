@@ -219,24 +219,24 @@ void show(void)
             car_fused_objects.car_num,
             car_fused_objects.corner_point,
             cvScalar(255.0, 255.0, 0,0),
-            matImage.rows*.3,
+            matImage.rows*.25,
             car_fused_objects.distance);
 
   drawRects(&frame,
             pedestrian_fused_objects.car_num,
             pedestrian_fused_objects.corner_point,
             cvScalar(0.0, 255.0, 0,0),
-            matImage.rows*.3,
+            matImage.rows*.25,
             pedestrian_fused_objects.distance);
 #endif
   /* PUT DISTANCE text on image */
   putDistance(&frame,
               car_fused_objects,
-              matImage.rows*.3,
+              matImage.rows*.25,
               "car");
   putDistance(&frame,
               pedestrian_fused_objects,
-              matImage.rows*.3,
+              matImage.rows*.25,
               "pedestrian");
 
   /* DRAW POINTS of lidar scanning */
