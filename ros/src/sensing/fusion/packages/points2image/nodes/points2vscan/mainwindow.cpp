@@ -64,16 +64,16 @@ void MainWindow::showMatrixSlot(int beamid)
         return;
     }
     ui->tableWidget->clear();
-    int i,j,size=int((MAXCEILING-MINFLOOR)/STEP+0.5);
+    int size=int((MAXCEILING-MINFLOOR)/STEP+0.5);
     ui->tableWidget->setRowCount(size);
     ui->tableWidget->setColumnCount(5);
-    for(i=0;i<size;i++)
+    for(int i=0;i<size;i++)
     {
         ui->tableWidget->setVerticalHeaderItem(i,new QTableWidgetItem(QString("%1").arg(MINFLOOR+i*STEP)));
     }
     ui->tableWidget->setHorizontalHeaderLabels(QStringList()<<"RotID"<<"RotLength"<<"RotHeight"<<"Length"<<"Height");
 
-    for(i=0;i<size;i++)
+    for(int i=0;i<size;i++)
     {
         ui->tableWidget->setItem(i,0,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotid)));
         ui->tableWidget->setItem(i,1,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotlength)));
