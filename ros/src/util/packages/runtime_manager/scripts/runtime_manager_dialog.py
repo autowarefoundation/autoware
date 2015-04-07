@@ -1,10 +1,41 @@
 #!/usr/bin/env python
+"""
+  Copyright (c) 2015, Nagoya University
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Autoware nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
 
 import wx
 import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
 import gettext
 import os
+import sys
 import socket
 import struct
 import shlex
@@ -39,6 +70,7 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
+		self.all_procs_nodes = {}
 		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
@@ -72,6 +104,13 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
 		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
+
+		for k in [ 'gnss', 'pmap', 'vmap', 'ndt', 'lf' ]:
+			name = k + '_stat'
+			setattr(self, name, False)
+			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
+		self.map_stat = False
+		self.bak_main_button_color = self.button_init.GetForegroundColour()
 
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for cc in self.main_dic.get('control_check', []):
@@ -153,6 +192,13 @@ class MyFrame(rtmgr.MyFrame):
 		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
 		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
+		try:
+			cmd = ['rosparam', 'get', '/use_sim_time']
+			if subprocess.check_output(cmd).strip() == 'true':
+				self.checkbox_sim_time.SetValue(True)
+		except subprocess.CalledProcessError:
+			pass
+
 		#
 		# for Data Tab
 		#
@@ -204,6 +250,14 @@ class MyFrame(rtmgr.MyFrame):
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
 
+		# for init button
+		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
+			  os.environ['HOME'] + '/.autoware/data/map/pointcloud_map',
+			  os.environ['HOME'] + '/.autoware/data/map/vector_map' ]
+		for path in paths:
+			if not os.path.exists(path):
+				subprocess.call([ 'mkdir', '-p', path ])
+
 	def __do_layout(self):
 		pass
 
@@ -223,7 +277,7 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.close()
 
-		shutdown_sh = self.get_autoware_dir() + '/shutdown.sh'
+		shutdown_sh = self.get_autoware_dir() + '/ros/shutdown'
 		if os.path.exists(shutdown_sh):
 			os.system(shutdown_sh)
 
@@ -256,30 +310,25 @@ class MyFrame(rtmgr.MyFrame):
 				self.load_dic[k] = pdic
 				prm = self.get_param(d2.get('param'))
 				gdic = self.gdic_get_1st(d2)
-				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
 
 				for (name, v) in pdic.items():
 					restore = eval( gdic.get(name, {}).get('restore', 'lambda a : None') )
 					restore(v)
+
+				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
 
 	#
 	# Main Tab
 	#
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
-		cmd_dic = self.main_cmd
-		(cmd, proc) = cmd_dic.get(obj, (None, None))
-		if proc:
-			self.kill_proc(proc)
-		args = shlex.split(cmd)
-		print(args)
-		proc = subprocess.Popen(args, stdin=subprocess.PIPE)
-		self.all_procs.append(proc)
-		cmd_dic[ obj ] = (cmd, proc)
+		self.OnLaunchKill_obj(obj)
 
 	def OnDrive(self, event):
+		obj = event.GetEventObject()
+		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
-		pub.publish(mode_cmd(mode=1))
+		pub.publish(mode_cmd(mode=v))
 
 	def OnPause(self, event):
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
@@ -290,13 +339,14 @@ class MyFrame(rtmgr.MyFrame):
 		self.kill_all()
 
 	def OnNetConn(self, event):
-		self.launch_kill_proc(event.GetEventObject(), self.main_cmd)
+		obj = event.GetEventObject()
+		self.launch_kill_proc(obj, self.main_cmd)
 
-	def OnReadNavi(self, event):
-		self.text_ctrl_route_from_lat.SetValue(str(self.route_cmd_waypoint[0].lat))
-		self.text_ctrl_route_from_lon.SetValue(str(self.route_cmd_waypoint[0].lon))
-		self.text_ctrl_route_to_lat.SetValue(str(self.route_cmd_waypoint[1].lat))
-		self.text_ctrl_route_to_lon.SetValue(str(self.route_cmd_waypoint[1].lon))
+	#def OnReadNavi(self, event):
+	#	self.text_ctrl_route_from_lat.SetValue(str(self.route_cmd_waypoint[0].lat))
+	#	self.text_ctrl_route_from_lon.SetValue(str(self.route_cmd_waypoint[0].lon))
+	#	self.text_ctrl_route_to_lat.SetValue(str(self.route_cmd_waypoint[1].lat))
+	#	self.text_ctrl_route_to_lon.SetValue(str(self.route_cmd_waypoint[1].lon))
 
 	def OnTextRoute(self, event):
 		pass
@@ -338,6 +388,38 @@ class MyFrame(rtmgr.MyFrame):
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
 
+	def gnss_stat_callback(self, data):
+		self.stat_set('gnss', data.data)
+		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
+
+	def pmap_stat_callback(self, data):
+		self.pmap_stat = data.data
+		self.stat_set('map', self.pmap_stat and self.vmap_stat)
+		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
+
+	def vmap_stat_callback(self, data):
+		self.vmap_stat = data.data
+		self.stat_set('map', self.pmap_stat and self.vmap_stat)
+		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
+
+	def ndt_stat_callback(self, data):
+		self.stat_set('ndt', data.data)
+		self.main_button_update(self.button_check, self.ndt_stat)
+
+	def lf_stat_callback(self, data):
+		self.stat_set('lf', data.data)
+		self.main_button_update(self.button_set, self.lf_stat)
+
+	def stat_set(self, k, stat):
+		name = k + '_stat'
+		setattr(self, name, stat)
+		lb = getattr(self, 'label_' + name, None)
+		if lb:
+			wx.CallAfter(lb.Enable, stat)
+
+	def main_button_update(self, obj, ready):
+		wx.CallAfter(obj.SetForegroundColour, 'blue' if ready else self.bak_main_button_color)
+
 	#
 	# Computing Tab
 	#
@@ -373,6 +455,7 @@ class MyFrame(rtmgr.MyFrame):
 					v = cmd_param.get('default')					
 				if cmd_param.get('must') and (v is None or v == ''):
 					print 'cmd_param', name, 'is must'
+					wx.MessageBox('cmd_param ' + name + ' is must')
 					return False
 				if cmd_param.get('only_enable') and not v:
 					continue
@@ -424,6 +507,8 @@ class MyFrame(rtmgr.MyFrame):
 		msg = klass_msg()
 
 		for (name, v) in pdic.items():
+			if prm.get('topic') == '/twist_cmd' and name == 'twist.angular.z':
+				v = -v
 			(obj, attr) = msg_path_to_obj_attr(msg, name)
 			if obj and attr in obj.__slots__:
 				type_str = obj._slot_types[ obj.__slots__.index(attr) ]
@@ -460,16 +545,21 @@ class MyFrame(rtmgr.MyFrame):
 		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
 		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
 		run_nodes_set = set(run_nodes)
+		targ_objs = self.computing_cmd.keys() + self.data_cmd.keys()
 		for (obj, nodes) in self.nodes_dic.items():
-			if nodes is None:
+			if obj not in targ_objs:
 				continue
-			v = nodes and run_nodes_set.issuperset(nodes)
+			if getattr(obj, 'GetValue', None) is None:
+				continue
+			if nodes is None or nodes == []:
+				continue
+			#v = nodes and run_nodes_set.issuperset(nodes)
+			v = len(run_nodes_set.intersection(nodes)) != 0
 			if obj.GetValue() != v:
 				if obj.IsEnabled() and not v:
 					self.kill_obj(obj)
 				set_val(obj, v)
 				obj.Enable(not v)
-		self.Refresh()
 
 	#
 	# Viewer Tab
@@ -738,6 +828,9 @@ class MyFrame(rtmgr.MyFrame):
 		#print 'add_args', add_args
 		if add_args is False:
 			return
+		if self.is_boot(obj):
+			wx.MessageBox('Already, booted')
+			return
 
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
@@ -755,7 +848,7 @@ class MyFrame(rtmgr.MyFrame):
 		if path:
 			add_args = ( add_args if add_args else [] ) + path.split(',')
 
-		proc = self.launch_kill(True, cmd, proc, add_args)
+		proc = self.launch_kill(True, cmd, proc, add_args, obj=obj)
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
@@ -778,7 +871,7 @@ class MyFrame(rtmgr.MyFrame):
 		# ROSBAG Record modify
 		sigint = (key == 'rosbag_record')
 
-		proc = self.launch_kill(False, cmd, proc, sigint=sigint)
+		proc = self.launch_kill(False, cmd, proc, sigint=sigint, obj=obj)
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
@@ -848,7 +941,6 @@ class MyFrame(rtmgr.MyFrame):
 				o.SetValue(v)
 				if getattr(o, 'SetInsertionPointEnd', None):
 					o.SetInsertionPointEnd()
-			o.GetParent().Refresh()
 
 	def alias_grp_top_obj(self, obj):
 		return get_top(self.alias_grp_get(obj), obj)
@@ -861,7 +953,7 @@ class MyFrame(rtmgr.MyFrame):
 		if tree is None:
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
-			item = tree.AddRoot(name)
+			item = tree.AddRoot(name, data=tree)
 		else:
 			ct_type = 1 if 'cmd' in items else 0 # 1:checkbox type
 			item = tree.AppendItem(item, name, ct_type=ct_type)
@@ -878,7 +970,7 @@ class MyFrame(rtmgr.MyFrame):
 		return tree
 
 	def add_config_link_tree_item(self, item, name, gdic, prm):
-		pdic = self.load_dic.get(name)
+		pdic = self.load_dic.get(name, {})
 		self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
 		item.SetHyperText()
 
@@ -888,11 +980,16 @@ class MyFrame(rtmgr.MyFrame):
 			print('not implemented.')
 			return
 		v = obj.GetValue()
+		if v and self.is_boot(obj):
+			wx.MessageBox('Already, booted')
+			set_val(obj, not v)
+			return
+
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
 			set_val(obj, False)
 
-		proc = self.launch_kill(v, cmd, proc, add_args)
+		proc = self.launch_kill(v, cmd, proc, add_args, obj=obj)
 
 		cfg_obj = self.get_cfg_obj(obj)
 		if cfg_obj and self.config_dic[ cfg_obj ]['run_disable']:
@@ -922,7 +1019,7 @@ class MyFrame(rtmgr.MyFrame):
 			return
 		(cmd, proc) = (v[0], proc) if proc else v
 		cmd_dic[ obj ] = (cmd, None)
-		self.launch_kill(False, 'dmy', proc)
+		self.launch_kill(False, 'dmy', proc, obj=obj)
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
@@ -931,7 +1028,7 @@ class MyFrame(rtmgr.MyFrame):
 				return (cmd_dic, obj)
 		return (None, None)
 
-	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False):
+	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False, obj=None):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
@@ -947,38 +1044,59 @@ class MyFrame(rtmgr.MyFrame):
 			print(args) # for debug
 			proc = subprocess.Popen(args, stdin=subprocess.PIPE)
 			self.all_procs.append(proc)
+			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 		else:
 			terminate_children(proc, sigint)
 			terminate(proc, sigint)
 			proc.wait()
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
+				self.all_procs_nodes.pop(proc, None)
 			proc = None
 		return proc
 
+	def is_boot(self, obj):
+		nodes = self.nodes_dic.get(obj)
+		if nodes is None:
+			return False
+		boot_nodes = reduce(lambda a,b:a+b, [[]] + self.all_procs_nodes.values())
+		boot_nodes_set = set(boot_nodes)
+		return nodes and boot_nodes_set.issuperset(nodes)
+
 	def nodes_dic_get(self):
+		print 'creating item node list ',
 		nodes_dic = {}
 		#for cmd_dic in self.all_cmd_dics:
-		for cmd_dic in [ self.computing_cmd, self.data_cmd ]:
+		for cmd_dic in [ self.main_cmd, self.computing_cmd, self.data_cmd, self.sensing_cmd ]:
+			sys.stdout.write('.')
+			sys.stdout.flush()
 			for (obj, (cmd, _)) in cmd_dic.items():
-				nodes_dic[ obj ] = self.cmd_to_nodes(cmd)
+				if not cmd:
+					continue
+				nodes = []
+				cmd = shlex.split(cmd)
+				cmd2 = cmd
+				if cmd[0] == 'sh' and cmd[1] == '-c':
+					cmd2 = cmd[2].split(' ') + cmd[3:] # split ' '
+				if cmd2[0] == 'roslaunch':
+					add_args = self.obj_to_add_args(obj)
+					if add_args:
+						cmd2 += add_args
+					cmd2.insert(1, '--node')
+					if cmd[0] == 'sh' and cmd[1] == '-c':
+						cmd[2] = ' '.join(cmd2)
+					nodes = self.roslaunch_to_nodes(cmd)
+				elif cmd2[0] == 'rosrun':
+					nodes = [ '/' + cmd2[2] ]
+				nodes_dic[ obj ] = nodes
+		print ''
 		return nodes_dic
 
-	def cmd_to_nodes(self, cmd):
-		if not cmd:
-			return None
-
-		cmd = shlex.split(cmd)
-		if cmd[0] == 'roslaunch':
-			cmd.insert(1, '--node')
-			try:
-				return subprocess.check_output(cmd).strip().split('\n')
-			except subprocess.CalledProcessError:
-				return None
-			
-		elif cmd[0] == 'rosrun':
-			return [ '/' + cmd[2] ]
-		return None
+	def roslaunch_to_nodes(self, cmd):
+		try:
+			return subprocess.check_output(cmd).strip().split('\n')
+		except subprocess.CalledProcessError:
+			return []
 
 	def modal_dialog(self, lst, title=''):
 		(lbs, cmds) = zip(*lst)
@@ -1224,7 +1342,7 @@ class VarPanel(wx.Panel):
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
 		lb = wx.StaticText(self, wx.ID_ANY, label)
-		flag = wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+		flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
 		szr.Add(lb, 0, flag, 4)
 
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
@@ -1241,12 +1359,12 @@ class VarPanel(wx.Panel):
 				self.slider = wx.Slider(self, wx.ID_ANY, self.get_int_v(), self.int_min, self.int_max)
 				self.Bind(wx.EVT_COMMAND_SCROLL, self.OnScroll, self.slider)
 				self.slider.SetMinSize((82, 27))
-				szr.Add(self.slider, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+				szr.Add(self.slider, 1, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 4)
 			else:
 				self.is_float = type(self.var['v']) is not int
 				self.tc.SetMinSize((40,27))
 
-		flag = wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL
+		flag = wx.ALIGN_CENTER_VERTICAL
 		prop = 1 if self.kind == 'path' else 0
 		szr.Add(self.tc, prop, flag, 4)
 
@@ -1439,13 +1557,13 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		args = topic_opt + [ '-O', path ]
 
 		(cmd, proc) = self.cmd_dic[ key_obj ]
-		proc = self.parent.launch_kill(True, cmd, proc, add_args=args)
+		proc = self.parent.launch_kill(True, cmd, proc, add_args=args, obj=key_obj)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 
 	def OnStop(self, event):
 		key_obj = self.button_start
 		(cmd, proc) = self.cmd_dic[ key_obj ]
-		proc = self.parent.launch_kill(False, cmd, proc, sigint=True)
+		proc = self.parent.launch_kill(False, cmd, proc, sigint=True, obj=key_obj)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.Hide()
 
@@ -1562,6 +1680,14 @@ def set_val(obj, v):
 	func = getattr(obj, 'SetValue', getattr(obj, 'Check', None))
 	if func:
 		func(v)
+		obj_refresh(obj)
+
+def obj_refresh(obj):
+	if type(obj) is wx.lib.agw.customtreectrl.GenericTreeItem:
+		while obj.GetParent():
+			obj = obj.GetParent()
+		tree = obj.GetData()
+		tree.Refresh()
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret

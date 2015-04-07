@@ -16,6 +16,7 @@
 #include<qsplitter.h>
 #include<qframe.h>
 #include<qmessagebox.h>
+#include<qcombobox.h>
 
 #include<opencv2/opencv.hpp>
 
@@ -24,6 +25,7 @@
 
 #include<sensor_msgs/Image.h>
 #include<sensor_msgs/PointCloud2.h>
+#include<sensor_msgs/LaserScan.h>
 
 #include<nlopt.hpp>
 
@@ -46,6 +48,7 @@
 #define VELODYNENORMALS "VelodyneNormals"
 #define VELODYNEVIEWERPOSE "VelodyneViewerPose"
 #define CALIBRATIONERROR "CalibrationError"
+#define LIDARPOINTS "LidarPoints"
 
 class CalibrationToolkitBase : public QWidget
 {
@@ -137,6 +140,14 @@ protected:
     cv::vector<cv::vector<cv::Point3f> > grid3dpoints;
     cv::vector<cv::vector<cv::Point2f> > grid2dpoints;
 
+    enum CHESSBOARDTYPE
+    {
+        BoxGrid,
+        CircleGrid
+    };
+
+    QComboBox * chessboardtype;
+
     QTabWidget * chessboardtab;
     cv::vector<cv::Mat> chessboardposes;
     QTabWidget * chessboardposeshow;
@@ -210,7 +221,7 @@ protected slots:
     void refreshVelodyneSlot();
 public slots:
     void extractionResultSlot(pcl::PointCloud<pcl::PointXYZI>::Ptr extraction, cv::Mat normal, int id);
-    void projectVelodynePointsSlot();
+    void projectPointsSlot();
 signals:
     void velodyneRefreshedSignal();
     void velodyneRefreshedErrorSignal();
@@ -234,6 +245,67 @@ protected:
 protected:
     bool refreshImage();
     bool refreshVelodyne();
+    bool grabCalibData();
+};
+
+class CalibrateCameraLidarChessboardBase : public CalibrateCameraChessboardBase
+{
+    Q_OBJECT
+public:
+    CalibrateCameraLidarChessboardBase(float maxRange, cv::Size2f patternSize, cv::Size2i patternNum, QWidget * parent=0);
+public:
+    struct CameraLidarCalibrationData
+    {
+        cv::Mat chessboardnormals;   //n*3
+        cv::Mat chessboardpoints;    //n*3
+        QVector<cv::Mat> lidarpoints;
+    };
+protected:
+    float maxrange;
+
+    QTabWidget * caliblidartab;
+
+    QVector<QVector<QPointF> > caliblidarspoints;
+    QTabWidget * caliblidarpointstab;
+
+    double calibrationerror;
+    QLabel * calibrationerrorshow;
+
+    QSplitter * lidarsplitter;
+    QTabWidget * lidartab;
+    QTime lidartimestamp;
+    sensor_msgs::LaserScanConstPtr caliblidar;
+    PointsExtractor * caliblidarviewer;
+
+    QTabWidget * caliblidarsshow;
+protected slots:
+    void refreshLidarSlot();
+public slots:
+    void extractionResultSlot(QVector<QPointF> extraction, int id);
+    void projectPointsSlot();
+signals:
+    void lidarRefreshedSignal();
+    void lidarRefreshedErrorSignal();
+protected:
+    virtual bool refreshLidar();
+    bool removeCalibData();
+    bool calibrateSensor();
+    bool loadCalibResult(cv::FileStorage &fs);
+    bool saveCalibResult(cv::FileStorage &fs);
+};
+
+class CalibrateCameraLidarChessboardROS : public CalibrateCameraLidarChessboardBase
+{
+    Q_OBJECT
+public:
+    CalibrateCameraLidarChessboardROS(QString cameraTopic, u_int32_t cameraQueueSize, int cameraInterval, QString lidarTopic, u_int32_t lidarQueueSize, int lidarInterval, float maxRange, cv::Size2f patternSize, cv::Size2i patternNum, QWidget * parent=0);
+    ~CalibrateCameraLidarChessboardROS();
+protected:
+    ROSSub<sensor_msgs::ImageConstPtr> * camerasub;
+    ROSSub<sensor_msgs::LaserScanConstPtr> * lidarsub;
+protected:
+    bool refreshImage();
+    bool refreshLidar();
     bool grabCalibData();
 };
 

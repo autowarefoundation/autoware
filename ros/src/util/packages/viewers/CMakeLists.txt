@@ -16,12 +16,6 @@ find_package(OpenCV REQUIRED)
 ###################################
 ## catkin specific configuration ##
 ###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES debug
@@ -40,12 +34,26 @@ target_link_libraries(image_viewer
 )
 add_dependencies(image_viewer dpm_generate_messages_cpp)
 
+add_executable(scan_image_viewer nodes/scan_image_viewer/scan_image_viewer.cpp)
+target_link_libraries(scan_image_viewer
+   ${catkin_LIBRARIES}
+   opencv_highgui opencv_core opencv_imgproc
+)
+add_dependencies(scan_image_viewer scan2image_generate_messages_cpp)
+
+add_executable(scan_image_d_viewer nodes/scan_image_d_viewer/scan_image_d_viewer.cpp)
+target_link_libraries(scan_image_d_viewer
+   ${catkin_LIBRARIES}
+   opencv_highgui opencv_core opencv_imgproc
+)
+add_dependencies(scan_image_d_viewer scan2image_generate_messages_cpp)
+
 add_executable(points_image_viewer nodes/points_image_viewer/points_image_viewer.cpp)
 target_link_libraries(points_image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(points_image_viewer points_to_image_generate_messages_cpp)
+add_dependencies(points_image_viewer points2image_generate_messages_cpp)
 
 add_executable(image_d_viewer nodes/image_d_viewer/image_d_viewer.cpp)
 target_link_libraries(image_d_viewer
@@ -59,4 +67,4 @@ target_link_libraries(points_image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(points_image_d_viewer points_to_image_generate_messages_cpp)
+add_dependencies(points_image_d_viewer points2image_generate_messages_cpp)

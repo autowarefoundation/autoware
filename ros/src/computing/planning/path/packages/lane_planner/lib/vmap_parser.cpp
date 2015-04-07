@@ -1,3 +1,33 @@
+/*
+ *  Copyright (c) 2015, Nagoya University
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include <cmath>
 #include <fstream>
 #include <sstream>
@@ -263,6 +293,36 @@ int Signal::linkid() const
 	return linkid_;
 }
 
+StopLine::StopLine(int id, int lid, int tlid, int signid, int linkid)
+	: id_(id), lid_(lid), tlid_(tlid), signid_(signid), linkid_(linkid)
+{
+}
+
+int StopLine::id() const
+{
+	return id_;
+}
+
+int StopLine::lid() const
+{
+	return lid_;
+}
+
+int StopLine::tlid() const
+{
+	return tlid_;
+}
+
+int StopLine::signid() const
+{
+	return signid_;
+}
+
+int StopLine::linkid() const
+{
+	return linkid_;
+}
+
 static Point parse_point(const std::string& line)
 {
 	std::istringstream ss(line);
@@ -353,6 +413,25 @@ static Signal parse_signal(const std::string& line)
 		);
 }
 
+static StopLine parse_stopline(const std::string& line)
+{
+	std::istringstream ss(line);
+	std::vector<std::string> columns;
+
+	std::string column;
+	while (std::getline(ss, column, ',')) {
+		columns.push_back(column);
+	}
+
+	return StopLine(
+		std::stoi(columns[0]),
+		std::stoi(columns[1]),
+		std::stoi(columns[2]),
+		std::stoi(columns[3]),
+		std::stoi(columns[4])
+		);
+}
+
 std::vector<Point> read_point(const char *filename)
 {
 	std::ifstream ifs(filename);
@@ -411,6 +490,21 @@ std::vector<Signal> read_signal(const char *filename)
 	}
 
 	return signals;
+}
+
+std::vector<StopLine> read_stopline(const char *filename)
+{
+	std::ifstream ifs(filename);
+	std::string line;
+
+	std::getline(ifs, line); // Remove first line
+
+	std::vector<StopLine> stoplines;
+	while (std::getline(ifs, line)) {
+		stoplines.push_back(parse_stopline(line));
+	}
+
+	return stoplines;
 }
 
 Point search_nearest(const std::vector<Point>& points, double x, double y)

@@ -12,12 +12,17 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-#  INCLUDE_DIRS include
+   INCLUDE_DIRS include/dpm_gpu
 #  LIBRARIES dpm_gpu
 #  DEPENDS system_lib
 CATKIN_DEPENDS runtime_manager
@@ -31,26 +36,23 @@ SET(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_C_FLAGS}")
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 if(EXISTS "/usr/local/cuda")
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include/dpm_gpu ${catkin_INCLUDE_DIRS})
 include_directories(/usr/include/opencv2/legacy)
 include_directories(/usr/local/cuda/include)
 include_directories(src)
 
+if("${ARCHITECTURE}" MATCHES "^arm")
+LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+endif()
+
 file(GLOB DPM_GPU_CXX_SOURCES "src/*.cpp")
 file(GLOB DPM_GPU_CC_SOURCES "src/*.cc")
-
-set(DPM_GPU_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/models_TTIC/")
 
 ## Declare a cpp library
 add_library(dpm_gpu
   ${DPM_GPU_CXX_SOURCES}
   ${DPM_GPU_CC_SOURCES}
   src/conv.c
-)
-
-SET_TARGET_PROPERTIES(dpm_gpu
-  PROPERTIES COMPILE_FLAGS
-  "-DDPM_GPU_ROOT=${DPM_GPU_ROOT}"
 )
 
 target_link_libraries(dpm_gpu
@@ -60,6 +62,13 @@ target_link_libraries(dpm_gpu
 )
 
 set(CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+
+if("${ARCHITECTURE}" MATCHES "^arm")
+set(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)
+else()
+set(CUDA_LDFLAGS -lcuda)
+endif()
+
 set(CUDA_CAPABILITY_VERSION_CHECKER
   "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
 )
@@ -67,9 +76,9 @@ set(CUDA_CAPABILITY_VERSION_CHECKER
 execute_process(
   COMMAND
   ${CUDA_COMPILER}
-  "-o" ${CUDA_CAPABILITY_VERSION_CHECKER}
+  -o ${CUDA_CAPABILITY_VERSION_CHECKER}
   "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
-  "-lcuda"
+  ${CUDA_LDFLAGS}
 )
 
 execute_process(
@@ -97,10 +106,20 @@ add_custom_command(
 )
 
 add_custom_target(cuda_binary DEPENDS GPU_function.cubin)
-add_dependencies(dpm_gpu 
+add_dependencies(dpm_gpu
   cuda_binary
   runtime_manager_generate_messages_cpp)
 
 else()
 message("CUDA is not installed. 'libdpm_gpu' is not built.")
 endif()
+
+#############
+## Install ##
+#############
+
+INSTALL(
+  DIRECTORY include/dpm_gpu
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.hpp"
+)

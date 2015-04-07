@@ -67,11 +67,11 @@ subs :
 
 buttons:
   points_image :
-    run   : rosrun points_to_image points_to_image
+    run   : rosrun points2image points2image
     param : points_image
 
   scan_image :
-    run   : rosrun scan_to_image scan_to_image
+    run   : rosrun scan2image scan2image
     param : scan_image
 
   calibration :
@@ -100,4 +100,4 @@ params :
     - name      : file
       kind      : path
       v         : ''
-      rosparam  : /scan_to_image/camera_yaml
+      rosparam  : /scan2image/camera_yaml

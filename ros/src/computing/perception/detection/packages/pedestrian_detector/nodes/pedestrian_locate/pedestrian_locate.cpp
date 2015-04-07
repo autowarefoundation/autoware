@@ -1,3 +1,33 @@
+/*
+ *  Copyright (c) 2015, Nagoya University
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include "std_msgs/String.h"
 #include "ros/ros.h"
 
@@ -20,7 +50,7 @@
 #include "opencv/highgui.h"
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
-#include "scan_to_image/ScanImage.h"
+#include "scan2image/ScanImage.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/PoseArray.h"
@@ -97,31 +127,6 @@ void GetRPY(const geometry_msgs::Pose &pose,
   yaw = -yaw;
 
 }
-
-/*
-string getNowTime(){
-  struct my_tm *qt;
-  struct tm *tmp;
-  struct timeval tv;
-  char tm[25];
-  string res;
-  ostringstream oss;
-
-  qt=(struct my_tm*)malloc(sizeof(struct my_tm));
-  if(qt == NULL)return NULL;
-  gettimeofday(&tv,NULL);
-  tmp=localtime(&tv.tv_sec);
-  qt->tim=mktime(tmp);
-  qt->msec=tv.tv_usec/1000;
-  sprintf(tm,"%04d-%02d-%02d %02d:%02d:%02d.%d",
-    tmp->tm_year + 1900, tmp->tm_mon + 1,
-    tmp->tm_mday, tmp->tm_hour,
-    tmp->tm_min, tmp->tm_sec,
-    tv.tv_usec/1000);
-  res = tm;
-  return res;
-}
-*/
 
 void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
 			     vector<OBJPOS>::iterator pp_iterator,
@@ -328,7 +333,7 @@ int main(int argc, char **argv){
   cv::Mat Cintrinsic;
   std::string camera_yaml;
 
-  n.param<std::string>("/scan_to_image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
+  n.param<std::string>("/scan2image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
 
   cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ); 
   if(!camera_file.isOpened()){
@@ -349,7 +354,7 @@ int main(int argc, char **argv){
   double Ox = 440.017336;
   double Oy = 335.274106;
 
-  /*
+
   cv::Mat Lintrinsic;
   std::string lidar_3d_yaml = "/home/auto1/.ros/autoware/camera_lidar_3d.yaml";
 
@@ -366,7 +371,7 @@ int main(int argc, char **argv){
       cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
     }
   }
-  */
+
   /*
   double fkx = 5.83199829e+02;
   double fky = 3.74826355e+02;

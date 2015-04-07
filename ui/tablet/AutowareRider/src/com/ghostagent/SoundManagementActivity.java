@@ -1,3 +1,33 @@
+/*
+ *  Copyright (c) 2015, Nagoya University
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 package com.ghostagent;
 
 import java.io.BufferedInputStream;
@@ -22,11 +52,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -151,23 +181,15 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	class ApplicationButton extends RadioButton {
 		static final int NAVIGATION = 1;
 		static final int MAP = 2;
-		static final int S1 = 3;
-		static final int S2 = 4;
 
 		ImageButton navigation;
 		ImageButton map;
-		ImageButton s1;
-		ImageButton s2;
 
 		ApplicationButton(OnClickListener listener) {
 			navigation = (ImageButton)findViewById(R.id.air);
 			navigation.setOnClickListener(listener);
 			map = (ImageButton)findViewById(R.id.oil);
 			map.setOnClickListener(listener);
-			s1 = (ImageButton)findViewById(R.id.s1);
-			s1.setOnClickListener(listener);
-			s2 = (ImageButton)findViewById(R.id.s2);
-			s2.setOnClickListener(listener);
 
 			refresh();
 		}
@@ -176,8 +198,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		void refresh() {
 			navigation.setImageResource(R.drawable.app_navi);
 			map.setImageResource(R.drawable.app_map);
-			s1.setImageResource(R.drawable.app_s1);
-			s2.setImageResource(R.drawable.app_s2);
 
 			switch (getMode()) {
 			case NAVIGATION:
@@ -186,18 +206,68 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			case MAP:
 				map.setImageResource(R.drawable.pressed_app_map);
 				break;
-			case S1:
-				s1.setImageResource(R.drawable.pressed_app_s1);
+			}
+		}
+	}
+
+	class S1Button extends RadioButton {
+		static final int NG = 1;
+		static final int OK = 2;
+
+		ImageButton s1;
+
+		S1Button(OnClickListener listener) {
+			s1 = (ImageButton)findViewById(R.id.s1);
+			s1.setOnClickListener(listener);
+
+			refresh();
+		}
+
+		@Override
+		void refresh() {
+			s1.setImageResource(R.drawable.app_s1);
+
+			switch (getMode()) {
+			case NG:
+				s1.setImageResource(R.drawable.pressed_app_s1_ng);
 				break;
-			case S2:
-				s2.setImageResource(R.drawable.pressed_app_s2);
+			case OK:
+				s1.setImageResource(R.drawable.pressed_app_s1_ok);
+				break;
+			}
+		}
+	}
+
+	class S2Button extends RadioButton {
+		static final int NG = 1;
+		static final int OK = 2;
+
+		ImageButton s2;
+
+		S2Button(OnClickListener listener) {
+			s2 = (ImageButton)findViewById(R.id.s2);
+			s2.setOnClickListener(listener);
+
+			refresh();
+		}
+
+		@Override
+		void refresh() {
+			s2.setImageResource(R.drawable.app_s2);
+
+			switch (getMode()) {
+			case NG:
+				s2.setImageResource(R.drawable.pressed_app_s2_ng);
+				break;
+			case OK:
+				s2.setImageResource(R.drawable.pressed_app_s2_ok);
 				break;
 			}
 		}
 	}
 
 	abstract class Client {
-		private static final int TIMEOUT = 3;
+		private static final int TIMEOUT = 5;
 
 		private int sockfd = -1;
 
@@ -248,6 +318,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int GEAR = 1;
 		static final int MODE = 2;
 		static final int ROUTE = 3;
+		static final int S1 = 4;
+		static final int S2 = 5;
 
 		int send(int type, int command) {
 			if (isClosed())
@@ -275,8 +347,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int ERROR = 1;
 		static final int CAN = 2;
 		static final int MODE = 3;
+		static final int NDT = 4;
+		static final int LF = 5;
 
-		static final int MISS_BEACON_LIMIT = 10;
+		static final int MISS_BEACON_LIMIT = 3;
 
 		int[] recv(int response) {
 			int[] data = new int[2];
@@ -288,7 +362,14 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			}
 
 			data[0] = recvInt();
+			if (data[0] < 0) {
+				data[1] = -1;
+				return data;
+			}
+
 			data[1] = recvInt();
+			if (data[1] < 0)
+				return data;
 
 			sendInt(response);
 
@@ -354,6 +435,46 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			isRunning = false;
 			stopService(intent);
 		}
+
+		String getTable() {
+			return table;
+		}
+
+		String getTerminal() {
+			return terminal;
+		}
+
+		String getStr() {
+			return str;
+		}
+
+		String getSp() {
+			return sp;
+		}
+
+		String getSh() {
+			return sh;
+		}
+
+		String getSu() {
+			return su;
+		}
+
+		String getSpss() {
+			return spss;
+		}
+
+		String getLp() {
+			return lp;
+		}
+
+		String getFh() {
+			return fh;
+		}
+
+		String getFp() {
+			return fp;
+		}
 	}
 
 	class CanDataGather {
@@ -389,6 +510,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	GearButton gearButton;
 	DriveButton driveButton;
 	ApplicationButton applicationButton;
+	S1Button s1Button;
+	S2Button s2Button;
+
+	Handler buttonHandler;
 
 	CommandClient commandClient;
 	InformationClient informationClient;
@@ -438,7 +563,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	/**
 	 * flag for server connecting
 	 */
-	public static boolean bIsServerConnecting = false;
+	boolean bIsServerConnecting = false;
 	/**
 	 * menu item id
 	 */
@@ -449,6 +574,40 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
 		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 		return wifiInfo.getMacAddress();
+	}
+
+	private boolean startServerConnecting() {
+		bIsServerConnecting = true;
+
+		// red
+		drawLeftView.setColor(0xffb62200);
+		drawRightView.setColor(0xffb62200);
+		drawCenterView.setColor(0xffb62200);
+
+		if (commandClient.send(CommandClient.GEAR, gearButton.getMode()) < 0)
+			return false;
+		if (commandClient.send(CommandClient.MODE, driveButton.getMode()) < 0)
+			return false;
+		if (commandClient.send(CommandClient.S1, s1Button.getMode()) < 0)
+			return false;
+		if (commandClient.send(CommandClient.S2, s2Button.getMode()) < 0)
+			return false;
+
+		return true;
+	}
+
+	private void stopServerConnecting() {
+		// dark red
+		drawLeftView.setColor(0xff5b1100);
+		drawRightView.setColor(0xff5b1100);
+		drawCenterView.setColor(0xff5b1100);
+
+		bIsServerConnecting = false;
+
+		if (!commandClient.isClosed())
+			commandClient.close();
+		if (!informationClient.isClosed())
+			informationClient.close();
 	}
 
 	@Override
@@ -466,9 +625,29 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		gearButton = new GearButton(this);
 		driveButton = new DriveButton(this);
 		applicationButton = new ApplicationButton(this);
+		s1Button = new S1Button(this);
+		s2Button = new S2Button(this);
+
+		buttonHandler = new Handler();
 
 		commandClient = new CommandClient();
 		informationClient = new InformationClient();
+
+		// default settings
+		address = "";
+		commandPort = 5666;
+		informationPort = 5777;
+		canDataSender = new CanDataSender(
+			"",
+			getMacAddress(),
+			"AutowareRider",
+			"22",
+			"",
+			"",
+			"",
+			"5558",
+			"127.0.0.1",
+			"5555");
 
 		String text = null;
 		try {
@@ -476,7 +655,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				new FileInputStream(Environment.getExternalStorageDirectory().getPath() +
 						    "/autowarerider.txt"));
 
-			byte[] buffer = new byte[256];
+			byte[] buffer = new byte[1024];
 			stream.read(buffer);
 
 			text = new String(buffer).trim();
@@ -488,40 +667,39 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}
 
 		if (text != null) {
-			String[] settings = text.split(",");
-			if (settings.length == 3 && validateIpAddress(settings[0]) &&
-			    validatePortNumber(settings[1]) && validatePortNumber(settings[2])) {
-				address = settings[0];
-				commandPort = Integer.parseInt(settings[1]);
-				informationPort = Integer.parseInt(settings[2]);
+			String[] settings = text.split("\n");
+			if (settings.length == 11) {
+				if (validateIpAddress(settings[0]) &&
+				    validatePortNumber(settings[1]) &&
+				    validatePortNumber(settings[2])) {
+					address = settings[0];
+					commandPort = Integer.parseInt(settings[1]);
+					informationPort = Integer.parseInt(settings[2]);
 
-				if (commandClient.connect(address, commandPort) &&
-				    informationClient.connect(address, informationPort)) {
-					bIsServerConnecting = true;
-
-					commandClient.send(CommandClient.GEAR, gearButton.getMode());
-					commandClient.send(CommandClient.MODE, driveButton.getMode());
-				} else {
-					bIsServerConnecting = false;
-
-					if (!commandClient.isClosed())
-						commandClient.close();
-					if (!informationClient.isClosed())
-						informationClient.close();
+					if (commandClient.connect(address, commandPort) &&
+					    informationClient.connect(address, informationPort)) {
+						if (!startServerConnecting())
+							stopServerConnecting();
+					} else
+						stopServerConnecting();
+				}
+				if (validatePortNumber(settings[5]) &&
+				    validatePortNumber(settings[7]) &&
+				    validatePortNumber(settings[9])) {
+					canDataSender = new CanDataSender(
+						settings[3],
+						getMacAddress(),
+						"AutowareRider",
+						settings[5],
+						settings[4],
+						settings[6],
+						"",
+						settings[7],
+						settings[8],
+						settings[9]);
 				}
 			}
 		}
-
-		canDataSender = new CanDataSender("",
-						  getMacAddress(),
-						  "AutowareRider",
-						  "22",
-						  "",
-						  "",
-						  "",
-						  "5558",
-						  "127.0.0.1",
-						  "5555");
 
 		bIsKnightRiding = true;
 
@@ -602,6 +780,46 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				portEdit.setText(String.valueOf(informationPort));
 			}
 
+			if (canDataSender.getTable() != null) {
+				EditText tableEdit = (EditText)view.findViewById(R.id.gatheringTableName);
+				tableEdit.setText(String.valueOf(canDataSender.getTable()));
+			}
+
+			if (canDataSender.getSh() != null) {
+				EditText hostEdit = (EditText)view.findViewById(R.id.sshHostName);
+				hostEdit.setText(String.valueOf(canDataSender.getSh()));
+			}
+
+			if (canDataSender.getSp() != null) {
+				EditText portEdit = (EditText)view.findViewById(R.id.sshPortNumber);
+				portEdit.setText(String.valueOf(canDataSender.getSp()));
+			}
+
+			if (canDataSender.getSu() != null) {
+				EditText userEdit = (EditText)view.findViewById(R.id.sshUserName);
+				userEdit.setText(String.valueOf(canDataSender.getSu()));
+			}
+
+			if (canDataSender.getSpss() != null) {
+				EditText passwordEdit = (EditText)view.findViewById(R.id.sshPassword);
+				passwordEdit.setText(String.valueOf(canDataSender.getSpss()));
+			}
+
+			if (canDataSender.getLp() != null) {
+				EditText portEdit = (EditText)view.findViewById(R.id.forwardingLocalPortNumber);
+				portEdit.setText(String.valueOf(canDataSender.getLp()));
+			}
+
+			if (canDataSender.getFh() != null) {
+				EditText hostEdit = (EditText)view.findViewById(R.id.forwardingRemoteHostName);
+				hostEdit.setText(String.valueOf(canDataSender.getFh()));
+			}
+
+			if (canDataSender.getFp() != null) {
+				EditText portEdit = (EditText)view.findViewById(R.id.forwardingRemotePortNumber);
+				portEdit.setText(String.valueOf(canDataSender.getFp()));
+			}
+
 			builder.setTitle("設定");
 			builder.setView(view);
 			builder.setPositiveButton(
@@ -623,7 +841,49 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						if (!validatePortNumber(informationPortString))
 							return;
 
-						String text = addressString + "," + commandPortString + "," + informationPortString;
+						EditText gatheringTableEdit = (EditText)view.findViewById(R.id.gatheringTableName);
+						String gatheringTableString = gatheringTableEdit.getText().toString();
+
+						EditText sshHostEdit = (EditText)view.findViewById(R.id.sshHostName);
+						String sshHostString = sshHostEdit.getText().toString();
+
+						EditText sshPortEdit = (EditText)view.findViewById(R.id.sshPortNumber);
+						String sshPortString = sshPortEdit.getText().toString();
+						if (!validatePortNumber(sshPortString))
+							return;
+
+						EditText sshUserEdit = (EditText)view.findViewById(R.id.sshUserName);
+						String sshUserString = sshUserEdit.getText().toString();
+
+						EditText sshPasswordEdit = (EditText)view.findViewById(R.id.sshPassword);
+						String sshPasswordString = sshPasswordEdit.getText().toString();
+
+						EditText forwardingLocalPortEdit = (EditText)view.findViewById(R.id.forwardingLocalPortNumber);
+						String forwardingLocalPortString = forwardingLocalPortEdit.getText().toString();
+						if (!validatePortNumber(forwardingLocalPortString))
+							return;
+
+						EditText forwardingRemoteHostEdit = (EditText)view.findViewById(R.id.forwardingRemoteHostName);
+						String forwardingRemoteHostString = forwardingRemoteHostEdit.getText().toString();
+
+						EditText forwardingRemotePortEdit = (EditText)view.findViewById(R.id.forwardingRemotePortNumber);
+						String forwardingRemotePortString = forwardingRemotePortEdit.getText().toString();
+						if (!validatePortNumber(forwardingRemotePortString))
+							return;
+
+						// don't save ssh password
+						String text =
+							addressString + "\n" +
+							commandPortString + "\n" +
+							informationPortString + "\n" +
+							gatheringTableString + "\n" +
+							sshHostString + "\n" +
+							sshPortString + "\n" +
+							sshUserString + "\n" +
+							forwardingLocalPortString + "\n" +
+							forwardingRemoteHostString + "\n" +
+							forwardingRemotePortString + "\n" +
+							"end\n";
 						try {
 							BufferedOutputStream stream = new BufferedOutputStream(
 								new FileOutputStream(
@@ -638,12 +898,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						}
 
 						if (bIsServerConnecting) {
-							bIsServerConnecting = false;
-
 							commandClient.send(CommandClient.EXIT, 0);
-
-							commandClient.close();
-							informationClient.close();
+							stopServerConnecting();
 						}
 
 						address = addressString;
@@ -652,18 +908,22 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 						if (commandClient.connect(address, commandPort) &&
 						    informationClient.connect(address, informationPort)) {
-							bIsServerConnecting = true;
+							if (!startServerConnecting())
+								stopServerConnecting();
+						} else
+							stopServerConnecting();
 
-							commandClient.send(CommandClient.GEAR, gearButton.getMode());
-							commandClient.send(CommandClient.MODE, driveButton.getMode());
-						} else {
-							bIsServerConnecting = false;
-
-							if (!commandClient.isClosed())
-								commandClient.close();
-							if (!informationClient.isClosed())
-								informationClient.close();
-						}
+						canDataSender = new CanDataSender(
+							gatheringTableString,
+							getMacAddress(),
+							"AutowareRider",
+							sshPortString,
+							sshHostString,
+							sshUserString,
+							sshPasswordString,
+							forwardingLocalPortString,
+							forwardingRemoteHostString,
+							forwardingRemotePortString);
 					}
 				});
 			builder.setNegativeButton(
@@ -702,9 +962,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			public void run() {
 				while (bIsKnightRiding) {
 					Random rnd = new Random();
-					drawLeftView.drawView(rnd.nextInt(10));
-					drawRightView.drawView(rnd.nextInt(10));
-					drawCenterView.drawView(rnd.nextInt(10) + 4);
+					drawLeftView.drawView(rnd.nextInt(4) + 1);
+					drawRightView.drawView(rnd.nextInt(4) + 1);
+					drawCenterView.drawView(rnd.nextInt(7) + 1);
 					try {
 						Thread.sleep(100);
 					} catch (Exception e) {
@@ -722,6 +982,26 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				while (bIsKnightRiding) {
 					int[] data = informationClient.recv(0);
 
+					if (data[0] < 0) {
+						if (bIsServerConnecting) {
+							if (missBeacon < InformationClient.MISS_BEACON_LIMIT)
+								missBeacon++;
+							else {
+								commandClient.send(CommandClient.EXIT, 0);
+								stopServerConnecting();
+								missBeacon = 0;
+							}
+						}
+						continue;
+					}
+
+					if (data[1] < 0) {
+						commandClient.send(CommandClient.EXIT, 0);
+						stopServerConnecting();
+						missBeacon = 0;
+						continue;
+					}
+
 					switch (data[0]) {
 					case InformationClient.BEACON:
 						missBeacon = 0;
@@ -729,36 +1009,85 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 					case InformationClient.ERROR:
 						switch (data[1]) {
 						case 0:
-							drawLeftView.setColor(Color.RED);
-							drawRightView.setColor(Color.RED);
-							drawCenterView.setColor(Color.RED);
+							// red
+							drawLeftView.setColor(0xffb62200);
+							drawRightView.setColor(0xffb62200);
+							drawCenterView.setColor(0xffb62200);
 							break;
-						case 1: // should evaluate mode information
-							drawLeftView.setColor(Color.BLUE);
-							drawRightView.setColor(Color.BLUE);
-							drawCenterView.setColor(Color.BLUE);
+						case 1:
+							// yellow
+							drawLeftView.setColor(0xfffffb00);
+							drawRightView.setColor(0xfffffb00);
+							drawCenterView.setColor(0xfffffb00);
 							break;
-						default:
-							drawLeftView.setColor(Color.YELLOW);
-							drawRightView.setColor(Color.YELLOW);
-							drawCenterView.setColor(Color.YELLOW);
 						}
 						break;
-					default:
-						if (bIsServerConnecting) {
-							if (missBeacon < InformationClient.MISS_BEACON_LIMIT) {
-								missBeacon++;
-							} else {
-								bIsServerConnecting = false;
-
-								commandClient.send(CommandClient.EXIT, 0);
-
-								commandClient.close();
-								informationClient.close();
-
-								missBeacon = 0;
-							}
+					case InformationClient.MODE:
+						switch (data[1]) {
+						case 0:
+							// red
+							drawLeftView.setColor(0xffb62200);
+							drawRightView.setColor(0xffb62200);
+							drawCenterView.setColor(0xffb62200);
+							break;
+						case 1:
+							// blue
+							drawLeftView.setColor(0xff0000fb);
+							drawRightView.setColor(0xff0000fb);
+							drawCenterView.setColor(0xff0000fb);
+							break;
+						case 2:
+							// yellow
+							drawLeftView.setColor(0xfffffb00);
+							drawRightView.setColor(0xfffffb00);
+							drawCenterView.setColor(0xfffffb00);
+							break;
 						}
+						break;
+					case InformationClient.NDT:
+						switch (data[1]) {
+						case 0:
+							if (s1Button.getMode() == S1Button.OK) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.NG);
+									}
+								});
+							}
+							break;
+						case 1:
+							if (s1Button.getMode() == S1Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.OK);
+									}
+								});
+							}
+							break;
+						}
+						break;
+					case InformationClient.LF:
+						switch (data[1]) {
+						case 0:
+							if (s2Button.getMode() == S2Button.OK) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.NG);
+									}
+								});
+							}
+							break;
+						case 1:
+							if (s2Button.getMode() == S2Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.OK);
+									}
+								});
+							}
+							break;
+						}
+						break;
 					}
 				}
 			}
@@ -791,12 +1120,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		super.onDestroy();
 		bIsKnightRiding = false;
 		if (bIsServerConnecting) {
-			bIsServerConnecting = false;
-
 			commandClient.send(CommandClient.EXIT, 0);
-
-			commandClient.close();
-			informationClient.close();
+			stopServerConnecting();
 		}
 	}
 
@@ -828,7 +1153,8 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 					}
 				}
 				breader.close();
-				sendWayPoints(wayPoints);
+				if (sendWayPoints(wayPoints) < 0)
+					stopServerConnecting();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -851,39 +1177,55 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 	@Override
 	public void onClick(View v) {
+		int data = -1;
+
 		if (v == gearButton.drive) {
 			gearButton.updateMode(GearButton.DRIVE);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.reverse) {
 			gearButton.updateMode(GearButton.REVERSE);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.brake) {
 			gearButton.updateMode(GearButton.BRAKE);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == gearButton.neutral) {
 			gearButton.updateMode(GearButton.NEUTRAL);
-			commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
 		} else if (v == driveButton.auto) {
 			driveButton.updateMode(DriveButton.AUTO);
-			commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
 		} else if (v == driveButton.normal) {
 			driveButton.updateMode(DriveButton.NORMAL);
-			commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
 		} else if (v == driveButton.pursuit) {
 			driveButton.updateMode(DriveButton.PURSUIT);
 			finish();
+			data = 0;
 		} else if (v == applicationButton.navigation) {
 			applicationButton.updateMode(ApplicationButton.NAVIGATION);
 			Intent intent = new Intent(Intent.ACTION_MAIN);
 			intent.setClassName("com.example.autowareroute",
 					    "com.example.autowareroute.MainActivity");
 			startActivity(intent);
+			data = 0;
 		} else if (v == applicationButton.map) {
 			applicationButton.updateMode(ApplicationButton.MAP);
-		} else if (v == applicationButton.s1) {
-			applicationButton.updateMode(ApplicationButton.S1);
-		} else if (v == applicationButton.s2) {
-			applicationButton.updateMode(ApplicationButton.S2);
+			data = 0;
+		} else if (v == s1Button.s1) {
+			if (s1Button.getMode() == S1Button.OK)
+				s1Button.updateMode(S1Button.OK);
+			else
+				s1Button.updateMode(S1Button.NG);
+			data = commandClient.send(CommandClient.S1, s1Button.getMode());
+		} else if (v == s2Button.s2) {
+			if (s2Button.getMode() == S2Button.OK)
+				s2Button.updateMode(S2Button.OK);
+			else
+				s2Button.updateMode(S2Button.NG);
+			data = commandClient.send(CommandClient.S2, s2Button.getMode());
 		}
+
+		if (data < 0)
+			stopServerConnecting();
 	}
 }

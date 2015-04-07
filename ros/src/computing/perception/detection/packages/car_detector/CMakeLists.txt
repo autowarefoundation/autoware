@@ -8,9 +8,17 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  dpm
+  dpm_gpu
   fusion
 )
 find_package(OpenCV REQUIRED)
+
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 ## Generate added messages and services with any dependencies listed here
 add_message_files(
@@ -27,15 +35,9 @@ generate_messages(
 ###################################
 ## catkin specific configuration ##
 ###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  CATKIN_DEPENDS dpm dpm_gpu scan_to_image fusion
+  CATKIN_DEPENDS dpm dpm_gpu scan2image fusion
 #  DEPENDS system_lib
 )
 
@@ -52,6 +54,10 @@ add_executable(car_dpm
   nodes/car_dpm/car_dpm.cpp
 )
 
+set_target_properties(car_dpm PROPERTIES
+  COMPILE_FLAGS "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
+)
+
 target_link_libraries(car_dpm
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
@@ -60,13 +66,19 @@ target_link_libraries(car_dpm
 
 if(EXISTS "/usr/local/cuda")
 include_directories(/usr/local/cuda/include)
+
+if("${ARCHITECTURE}" MATCHES "^arm")
+LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+endif()
+
 add_executable(car_dpm_gpu
   nodes/car_dpm_gpu/car_dpm_gpu.cpp
 )
 
 SET_TARGET_PROPERTIES(car_dpm_gpu
   PROPERTIES
-  COMPILE_FLAGS "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin"
+  COMPILE_FLAGS
+  "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
 )
 
 target_link_libraries(car_dpm_gpu

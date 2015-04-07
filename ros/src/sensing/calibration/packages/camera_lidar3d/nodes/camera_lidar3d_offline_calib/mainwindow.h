@@ -3,6 +3,13 @@
 
 #include <QMainWindow>
 #include <calibrationtoolkit.h>
+#include <QInputDialog>
+#include <QSettings>
+#include <QString>
+#include <QSize>
+#include <QSizeF>
+#include <QStringList>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;

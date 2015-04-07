@@ -63,7 +63,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CompressedImage.h>
-#if 1 // AXE
+#if defined(ROS) // AXE
 #include "dpm/ImageObjects.h"
 #include "for_use_GPU.h"
 #else
@@ -74,8 +74,9 @@
 #include <runtime_manager/ConfigCarDpm.h>
 #include <runtime_manager/ConfigPedestrianDpm.h>
 
-#if 1 // AXE
-#else
+#include <dpm_gpu.hpp>
+
+#if !defined(ROS) // AXE
 char ldata_name[]="2010_2_3.txt";
 char WINDOW_NAME[] = "CAR_TRACK";
 #endif
@@ -83,9 +84,7 @@ double ratio = 1;	//resize ratio
 MODEL *MO;
 double overlap = 0.4;    // threshold overlap parameter (default :0.4)
 double thresh = -0.5;    // threshold score of detection (default :0.0)
-#if 1 // AXE
-static ros::Publisher image_objects;
-#else
+#if !defined(ROS) // AXE
 ros::Publisher image_and_obstacle_position;
 #endif
 
@@ -112,6 +111,7 @@ double get_processing_time(struct timespec start, struct timespec end)
 
     return (double)sec * 1000 + (double)nsec/1000000;
 }
+#if !defined(ROS)
 int k=1;
 void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
 {
@@ -128,11 +128,7 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
     FLOAT *A_SCORE = ini_ac_score(R_I);	//alloc accum
     RESULT *CUR = car_detection(IM_D,MO,thresh,&D_NUMS,A_SCORE,overlap);	//detect car
     clock_gettime(CLOCK_REALTIME, &end);
-#if 1 // AXE
-    dpm::ImageObjects image_objects_msg;
-#else
     sensors_fusion::ObstaclePosition image_and_obstacle_position_msg;
-#endif
     std::vector<int> corner_point_array(CUR->num * 4,0);
     std::vector<int> car_type_array(CUR->num,0);
     int i;
@@ -146,36 +142,21 @@ void obstacle_detectionCallback(const sensor_msgs::Image& image_source)
     }
 
     /* store data which will be published */
-#if 1 // AXE
-    image_objects_msg.header = image_source.header;
-    image_objects_msg.car_num = CUR->num;
-    image_objects_msg.corner_point = corner_point_array;
-    image_objects_msg.car_type = car_type_array;
-    image_objects_msg.header.stamp = image_source.header.stamp;
-#else
 //    image_and_obstacle_position_msg.image_raw = image_source;
     image_and_obstacle_position_msg.header = image_source.header;
     image_and_obstacle_position_msg.car_num = CUR->num;
     image_and_obstacle_position_msg.corner_point = corner_point_array;
     image_and_obstacle_position_msg.car_type = car_type_array;
-#endif
+
     /* publish data */
-#if 1 // AXE
-    image_objects.publish(image_objects_msg);
-#else
     image_and_obstacle_position.publish(image_and_obstacle_position_msg);
-#endif
 
     /* end processing time */
     clock_gettime(CLOCK_REALTIME, &s_end);
     printf("time:%f msec\n", get_processing_time(start, end));
     fprintf(stderr,"%f, %f\n", get_processing_time(start, end), get_processing_time(s_start, s_end));
     /* save image */
-#if 1 // AXE
-    sprintf(buf, "num_png/%d.png", k);
-#else
     sprintf(buf, "%d.png", k);
-#endif
     cvSaveImage(buf, IM_D);
     k++;
 
@@ -209,41 +190,74 @@ void pedestrian_configParamCallback(const runtime_manager::ConfigPedestrianDpm::
   MO->MI->sbin = numCells;
 }
 // %EndTag(CALLBACK)%
+#endif
 
-#if 1 // AXE
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
+#if defined(ROS)
 
 std::string com_name;
 std::string root_name;
 std::string part_name;
 
-int dpm_ttic_main(int argc, char* argv[], const char *cubin_path,
-		  const std::string& detection_type)
-#else
-int main(int argc, char **argv)
-#endif
+void dpm_gpu_init_cuda(const std::string& cubin_path)
 {
-#if 1 // AXE
-	std::string published_topic;
-	if (detection_type == "car") {
-		published_topic = "car_pixel_xy";
-		com_name = STR(DPM_GPU_ROOT) "car_comp.csv";
-		root_name = STR(DPM_GPU_ROOT) "car_root.csv";
-		part_name = STR(DPM_GPU_ROOT) "car_part.csv";
-	} else if (detection_type == "pedestrian") {
-		published_topic = "pedestrian_pixel_xy";
-		com_name = STR(DPM_GPU_ROOT)  "person_comp.csv";
-		root_name = STR(DPM_GPU_ROOT) "person_root.csv";
-		part_name = STR(DPM_GPU_ROOT) "person_part.csv";
-	} else {
-		std::cerr << "Invalid detection type: "
-			  << detection_type
-			  << std::endl;
+	init_cuda_with_cubin(cubin_path.c_str());
+}
+
+void dpm_gpu_load_models(const std::string& com_csv,
+			 const std::string& root_csv,
+			 const std::string& part_csv)
+{
+	com_name = com_csv;
+	root_name = root_csv;
+	part_name = part_csv;
+	MO = load_model(ratio);
+}
+
+void dpm_gpu_cleanup_cuda()
+{
+	clean_cuda();
+	free_model(MO);
+}
+
+DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
+				    double overlap, int lambda, int num_cells)
+{
+	MO->MI->interval = lambda;
+	MO->MI->sbin     = num_cells;
+
+	int detected_objects;
+	FLOAT *ac_score = ini_ac_score(image);
+	RESULT *cars = car_detection(image, MO, threshold,
+				     &detected_objects, ac_score,
+				     overlap);	//detect car
+	s_free(ac_score);
+
+	DPMGPUResult result;
+	result.num = cars->num;
+	for (int i = 0; i < cars->num; ++i) {
+		result.type.push_back(cars->type[i]);
 	}
 
-	init_cuda_with_cubin(cubin_path);
+	for (int i = 0; i < cars->num; ++i) {
+		int base = i * 4;
+		int *data = &(cars->OR_point[base]);
+
+		result.corner_points.push_back(data[0]);
+		result.corner_points.push_back(data[1]);
+		result.corner_points.push_back(data[2] - data[0]);
+		result.corner_points.push_back(data[3] - data[1]);
+	}
+
+	s_free(cars->point);
+	s_free(cars->type);
+	s_free(cars->scale);
+	s_free(cars->score);
+	s_free(cars->IM);
+	return result;
+}
 #else
+int main(int argc, char **argv)
+{
 	FILE* fp;					//file pointer
 	CvCapture *capt;			//movie file capture
 	fpos_t curpos,fsize;		//file size
@@ -265,7 +279,6 @@ int main(int argc, char **argv)
 
 	//open save file
 	if ((fp = fopen(FPASS,"rb")) == NULL) { printf("file open error!!\n"); exit(EXIT_FAILURE);}
-#endif
 
 	//get car-detector model
 	MO=load_model(ratio);
@@ -273,11 +286,9 @@ int main(int argc, char **argv)
 	//create lesult information
 	RESULT *LR = create_result(0);
 
-#if 1 // AXE
-#else
 	//get file size and current file position
 	get_f_size(fp,&curpos,&fsize);
-	skip_data_2(fp,1,&ss);   
+	skip_data_2(fp,1,&ss);
 
   /**
    * The ros::init() function needs to see argc and argv so that it can perform
@@ -290,7 +301,6 @@ int main(int argc, char **argv)
    * part of the ROS system.
    */
   ros::init(argc, argv, "obstacle_detection");
-#endif
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -305,7 +315,7 @@ int main(int argc, char **argv)
    * on a given topic.  This invokes a call to the ROS
    * master node, which keeps a registry of who is publishing and who
    * is subscribing.  Messages are passed to a callback function, here
-   * called chatterCallback.  
+   * called chatterCallback.
 subscribe() returns a Subscriber object that you
    * must hold on to until you want to unsubscribe.  When all copies of the Subscriber
    * object go out of scope, this callback will automatically be unsubscribed from
@@ -318,11 +328,7 @@ subscribe() returns a Subscriber object that you
    */
 // %Tag(SUBSCRIBER)%
   ros::Subscriber sub = n.subscribe("/image_raw", 1, obstacle_detectionCallback);
-#if 1 // AXE
-  image_objects = n.advertise<dpm::ImageObjects>(published_topic, 1);
-#else
   image_and_obstacle_position = n.advertise<sensors_fusion::ObstaclePosition>("obstacle_position", 1);
-#endif
 
   /* configuration parameter subscribing */
   ros::Subscriber configParam_sub;
@@ -356,14 +362,12 @@ subscribe() returns a Subscriber object that you
   //release detection result
   release_result(LR);
 
-#if 1 // AXE
-#else
   //close and release file information
   fclose(fp);			//close laser_file
   //cvReleaseCapture(&capt);
 
   s_free(FPASS);		//release laser_file pass
-#endif
   return 0;
 }
 // %EndTag(FULLTEXT)%
+#endif

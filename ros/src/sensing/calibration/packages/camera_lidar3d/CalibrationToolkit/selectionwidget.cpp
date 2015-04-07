@@ -341,3 +341,253 @@ void PlaneExtractor::extractPlane(Eigen::Vector3d seed, Eigen::Matrix3d eigenvec
         this->update();
     }
 }
+
+PointsExtractor::PointsExtractor(int imageSize, double maxRange, double gridSize)
+{    
+    pointsid=-1;
+    imagesize=imageSize;
+    maxrange=maxRange;
+    gridsize=gridSize;
+    extracted=0;
+    justshow=1;
+}
+
+PointsExtractor::PointsExtractor(sensor_msgs::LaserScanConstPtr lidarPoints, int id, int imageSize, double maxRange, double gridSize)
+{
+    updateLaserScan(lidarPoints);
+    pointsid=id;
+    imagesize=imageSize;
+    maxrange=maxRange;
+    gridsize=gridSize;
+    extracted=0;
+    justshow=0;
+    setMouseTracking(1);
+}
+
+PointsExtractor::PointsExtractor(QVector<QPointF> lidarPoints, int id, int imageSize, double maxRange, double gridSize)\
+{
+    points=lidarPoints;
+    drawPoints();
+    pointsid=id;
+    imagesize=imageSize;
+    maxrange=maxRange;
+    gridsize=gridSize;
+    extracted=0;
+    justshow=0;
+    setMouseTracking(1);
+}
+
+void PointsExtractor::updateLaserScan(sensor_msgs::LaserScanConstPtr lidarPoints)
+{
+    pointsptr=lidarPoints;
+    int i,pointsnum=(pointsptr->angle_max-pointsptr->angle_min)/pointsptr->angle_increment+1;
+    points.resize(pointsnum);
+    for(i=0;i<pointsnum;i++)
+    {
+        float angle=pointsptr->angle_min+i*pointsptr->angle_increment;
+        points[i]=QPointF(pointsptr->ranges[i]*cos(angle),pointsptr->ranges[i]*sin(angle));
+    }
+    drawPoints();
+}
+
+void PointsExtractor::update()
+{
+    drawPoints();
+    drawRectangle();
+}
+
+void PointsExtractor::mousePressEvent(QMouseEvent *ev)
+{
+    if(!justshow)
+    {
+        switch(ev->button())
+        {
+        case Qt::LeftButton:
+            if(!extracted)
+            {
+                startcorner=ev->pos();
+                endcorner=startcorner;
+                startextraction=1;
+            }
+            break;
+        case Qt::RightButton:
+            extracted=0;
+            startcorner=QPoint(0,0);
+            endcorner=QPoint(0,0);
+            startextraction=0;
+            break;
+        default:
+            break;
+        }
+        drawPoints();
+    }
+    QLabel::mousePressEvent(ev);
+}
+
+void PointsExtractor::mouseMoveEvent(QMouseEvent *ev)
+{
+    if(!justshow)
+    {
+        if(startextraction)
+        {
+            endcorner=ev->pos();
+            drawPoints();
+            drawRectangle();
+        }
+    }
+    QLabel::mouseMoveEvent(ev);
+}
+
+void PointsExtractor::mouseReleaseEvent(QMouseEvent *ev)
+{
+    if(!justshow)
+    {
+        if(ev->button()==Qt::LeftButton)
+        {
+            extracted=1;
+            emit extractionResultSignal(extractPoints(),pointsid);
+            startextraction=0;
+        }
+    }
+    QLabel::mouseReleaseEvent(ev);
+}
+
+void PointsExtractor::wheelEvent(QWheelEvent *ev)
+{
+    if(ev->angleDelta().y()>0)
+    {
+        QPointF tmpstartcorner=convert2RealPoint(startcorner);
+        QPointF tmpendcorder=convert2RealPoint(endcorner);
+        if(ev->modifiers()!=Qt::ControlModifier)
+        {
+            maxrange-=gridsize;
+            if(maxrange<=0)
+            {
+                maxrange=gridsize;
+            }
+        }
+        else
+        {
+            imagesize-=100;
+            if(imagesize<=0)
+            {
+                imagesize=100;
+            }
+        }
+        startcorner=convert2ImagePoint(tmpstartcorner);
+        endcorner=convert2ImagePoint(tmpendcorder);
+    }
+    else
+    {
+        QPointF tmpstartcorner=convert2RealPoint(startcorner);
+        QPointF tmpendcorder=convert2RealPoint(endcorner);
+        if(ev->modifiers()!=Qt::ControlModifier)
+        {
+            maxrange+=gridsize;
+        }
+        else
+        {
+            imagesize+=100;
+        }
+        startcorner=convert2ImagePoint(tmpstartcorner);
+        endcorner=convert2ImagePoint(tmpendcorder);
+    }
+    drawPoints();
+    drawRectangle();
+}
+
+QPoint PointsExtractor::convert2ImagePoint(QPointF point)
+{
+    double ratio=double(imagesize)/(2*maxrange);
+    QPoint result;
+    result.setX(imagesize/2+point.x()*ratio);
+    result.setY(imagesize/2-point.y()*ratio);
+    return result;
+}
+
+QPointF PointsExtractor::convert2RealPoint(QPoint point)
+{
+    double ratio=(2*maxrange)/double(imagesize);
+    QPointF result;
+    result.setX((point.x()-imagesize/2)*ratio);
+    result.setY((imagesize/2-point.y())*ratio);
+    return result;
+}
+
+void PointsExtractor::drawPoints()
+{
+    image=QImage(imagesize,imagesize,QImage::Format_RGB888);
+    this->resize(imagesize,imagesize);
+    image.fill(QColor(255,255,255));
+    QPainter painter;
+    painter.begin(&image);
+
+    painter.setPen(QColor(128,128,128));
+    int i,n=int(maxrange/gridsize);
+    double ratio=double(imagesize)/(2*maxrange);
+    QPoint center(imagesize/2,imagesize/2);
+    for(i=1;i<=n;i++)
+    {
+        painter.drawEllipse(center,int(gridsize*i*ratio),int(gridsize*i*ratio));
+    }
+
+    n=points.size();
+    painter.setPen(QColor(255,0,0));
+    for(i=0;i<n;i++)
+    {
+        painter.drawEllipse(convert2ImagePoint(points[i]),1,1);
+    }
+    painter.end();
+
+    this->setPixmap(QPixmap::fromImage(image));
+}
+
+void PointsExtractor::drawRectangle()
+{
+    if(justshow)
+    {
+        return;
+    }
+    QPainter painter;
+    painter.begin(&image);
+
+    painter.setPen(QColor(0,255,0));
+    int startx=startcorner.x()<endcorner.x()?startcorner.x():endcorner.x();
+    int starty=startcorner.y()<endcorner.y()?startcorner.y():endcorner.y();
+    int endx=startcorner.x()>endcorner.x()?startcorner.x():endcorner.x();
+    int endy=startcorner.y()>endcorner.y()?startcorner.y():endcorner.y();
+    painter.drawRect(startx,starty,endx-startx,endy-starty);
+
+    QVector<QPointF> extraction=extractPoints();
+    int i,n=extraction.size();
+    painter.setPen(QColor(0,0,255));
+    for(i=0;i<n;i++)
+    {
+        painter.drawEllipse(convert2ImagePoint(extraction[i]),1,1);
+    }
+    painter.end();
+
+    this->setPixmap(QPixmap::fromImage(image));
+}
+
+QVector<QPointF> PointsExtractor::extractPoints()
+{
+    int startx=startcorner.x()<endcorner.x()?startcorner.x():endcorner.x();
+    int starty=startcorner.y()<endcorner.y()?startcorner.y():endcorner.y();
+    int endx=startcorner.x()>endcorner.x()?startcorner.x():endcorner.x();
+    int endy=startcorner.y()>endcorner.y()?startcorner.y():endcorner.y();
+    int i,n=points.size();
+    QVector<QPointF> result;
+    for(i=0;i<n;i++)
+    {
+        QPoint tmp=convert2ImagePoint(points[i]);
+        if(tmp.x()>=startx&&tmp.x()<=endx)
+        {
+            if(tmp.y()>=starty&&tmp.y()<=endy)
+            {
+                result.push_back(points[i]);
+            }
+        }
+    }
+    return result;
+}

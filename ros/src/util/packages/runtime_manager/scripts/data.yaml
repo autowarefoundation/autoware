@@ -41,7 +41,7 @@ subs :
           border: 20
           flags : [ right ]
     - name  : pos_upload
-      cmd   : echo pos_upload
+      cmd   : rosrunobj_db obj_uploader
 
   - name : Sensors
     subs :

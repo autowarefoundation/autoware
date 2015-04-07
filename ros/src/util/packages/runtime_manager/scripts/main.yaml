@@ -1,8 +1,8 @@
 selector :
   load_map :
     sel   : '[ self.checkbox_auto_update.GetValue(), "vmap" ]'
-    False : sample_points_map
-    True  : points_map_loader
+    False : points_map_loader
+    True  : points_map_loader_update
     vmap  : vector_map_loader
 
 buttons:
@@ -16,7 +16,18 @@ buttons:
     run : rosrun obj_db obj_downloader
 
   init:
-    run : roslaunch runtime_manager init.launch  
+    run : 'sh -c "roslaunch runtime_manager init.launch
+           tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
+           pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
+                         if [ \"$SN\" != \"noupdate\" ] ; then
+                           find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1 ; fi )\"
+           pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
+           csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
+    param : main_init
+    gui   :
+      scene_num :
+        func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+
   check:
     run : roslaunch runtime_manager check.launch
   set:
@@ -26,12 +37,20 @@ buttons:
     run   : rosrun map_file points_map_loader
     param : points_map_loader
     gui   :
-      path_area_list :
-        func    : self.text_ctrl_area_list.GetValue()
-        restore : 'lambda v, tc=self.text_ctrl_area_list : set_path(tc, v)'
+      path_pcd :
+        func    : self.text_ctrl_point_cloud.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
+
+  points_map_loader_update :
+    run   : rosrun map_file points_map_loader
+    param : points_map_loader_update
+    gui   :
       scene_num :
         func    : self.choice_scene_num.GetStringSelection()
         restore : self.choice_scene_num.SetStringSelection
+      path_area_list :
+        func    : self.text_ctrl_area_list.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_area_list : set_path(tc, v)'
       path_pcd :
         func    : self.text_ctrl_point_cloud.GetValue()
         restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
@@ -145,23 +164,40 @@ params :
       max   : 1.00
       v     : 0.00
 
+  - name  : main_init
+    vars  :
+    - name     : scene_num
+      rosparam : /points_map_loader/scene_num
+
   - name  : points_map_loader
     vars  :
-    - name  : path_area_list
-      kind  : path
+    - name  : scene_num
+      kind  : hide
+      v     : noupdate
       cmd_param :
         delim     : ''
-        must      : True
-#    - name  : scene_num
-#      kind  : menu
-#      cmd_param :
-#        delim     : ''
     - name  : path_pcd
       kind  : path
       cmd_param :
         delim     : ''
         unpack    : ','
+
+  - name  : points_map_loader_update
+    vars  :
+    - name  : scene_num
+      kind  : menu
+      cmd_param :
+        delim     : ''
+    - name  : path_area_list
+      kind  : path
+      cmd_param :
+        delim     : ''
         must      : True
+    - name  : path_pcd
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
 
   - name  : sample_points_map
     vars  :

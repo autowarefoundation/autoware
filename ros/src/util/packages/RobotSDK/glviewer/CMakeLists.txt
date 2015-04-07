@@ -9,12 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
 ###################################
 ## catkin specific configuration ##
 ###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include/glviewer
   LIBRARIES glviewer
@@ -25,6 +19,12 @@ catkin_package(
 ###########
 ## Build ##
 ###########
+
+EXECUTE_PROCESS(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 if(EXISTS /usr/local/qtbase5)
 # Self install version
@@ -38,6 +38,7 @@ set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
 set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
 endif()
 
+if("${ARCHITECTURE}" STREQUAL "x86_64")
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include/glviewer
@@ -73,3 +74,4 @@ install(
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
+endif()
