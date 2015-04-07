@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if(selection==CALIBCAMERA)
     {
-        QString cameratopic="/camera/image_raw";
+        QString cameratopic="/image_raw";
         CalibrateCameraChessboardROS * calibration=new CalibrateCameraChessboardROS(cameratopic,1000,10,cvpatternsize,cvpatternnum);
         ui->tabWidget->addTab(calibration,CALIBCAMERA);
         connect(ui->grab,SIGNAL(clicked()),calibration,SLOT(grabCalibDataSlot()));
@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     else if(selection==CALIBCAMERAVELODYNE)
     {
-        QString cameratopic="/camera/image_raw";
+        QString cameratopic="/image_raw";
         QString velodynetopic="/velodyne_points";
         CalibrateCameraVelodyneChessboardROS * calibration=new CalibrateCameraVelodyneChessboardROS(cameratopic,1000,10,velodynetopic,1000,10,100,cvpatternsize,cvpatternnum);
         ui->tabWidget->addTab(calibration,CALIBCAMERAVELODYNE);
@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     else if(selection==CALIBCAMERA2DLIDAR)
     {
-        QString cameratopic="/camera/image_raw";
+        QString cameratopic="/image_raw";
         QString lidartopic="/scan";
         CalibrateCameraLidarChessboardROS * calibration=new CalibrateCameraLidarChessboardROS(cameratopic,1000,10,lidartopic,1000,10,100,cvpatternsize,cvpatternnum);
         ui->tabWidget->addTab(calibration,CALIBCAMERA2DLIDAR);
