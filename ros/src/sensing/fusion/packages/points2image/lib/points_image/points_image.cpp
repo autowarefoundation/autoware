@@ -55,8 +55,8 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	msg.max_y = -1;
 	msg.min_y = h;
 
-	for (int y = 0; y < pointcloud2->height; ++y) {
-		for (int x = 0; x < pointcloud2->width; ++x) {
+	for (uint32_t y = 0; y < pointcloud2->height; ++y) {
+		for (uint32_t x = 0; x < pointcloud2->width; ++x) {
 			float* fp = (float *)(cp + pointcloud2->row_step * y + pointcloud2->point_step * x);
 			double intensity = fp[4];
 
