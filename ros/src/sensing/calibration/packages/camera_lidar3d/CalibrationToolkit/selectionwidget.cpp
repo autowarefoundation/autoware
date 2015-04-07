@@ -416,6 +416,8 @@ void PointsExtractor::mousePressEvent(QMouseEvent *ev)
             endcorner=QPoint(0,0);
             startextraction=0;
             break;
+        default:
+            break;
         }
         drawPoints();
     }
