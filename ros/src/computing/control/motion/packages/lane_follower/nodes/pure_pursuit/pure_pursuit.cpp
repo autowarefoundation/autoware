@@ -166,7 +166,6 @@ double GetLookAheadThreshold()
         else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
             return 14.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 40.0)
-	  return current_velocity_kmph * _threshold_ratio;
             return 15.0 * _threshold_ratio;
         else
             return 0;
