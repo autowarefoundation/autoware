@@ -70,11 +70,13 @@ ros::Publisher _vis_pub;
 ros::Publisher _stat_pub;
 std_msgs::Bool _lf_stat;
 bool _fix_flag = false;
+bool _param_set = false;
 
 void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
     _initial_velocity_kmh = config->velocity;
     _lookahead_threshold = config->lookahead_threshold;
+    _param_set = true;
 }
 
 void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
@@ -477,6 +479,12 @@ int main(int argc, char **argv)
     while (ros::ok()) {
         ros::spinOnce();
 
+        if (_fix_flag == true && _param_set == false) {
+	  std::cout << "parameter waiting..." << std::endl;
+	  loop_rate.sleep();
+	  continue;
+	}
+        
         if (endflag == false) {
 
             // get the waypoint.
