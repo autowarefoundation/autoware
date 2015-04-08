@@ -57,7 +57,7 @@ double _error_distance = 2.5;
 std::string _mobility_frame = "/base_link"; // why is this default?
 std::string _current_pose_topic = "ndt";
 
-const std::string PATH_FRAME = "/path";
+const std::string PATH_FRAME = "/map";
 
 geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 geometry_msgs::Twist _current_velocity;
@@ -70,11 +70,13 @@ ros::Publisher _vis_pub;
 ros::Publisher _stat_pub;
 std_msgs::Bool _lf_stat;
 bool _fix_flag = false;
+bool _param_set = false;
 
 void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
     _initial_velocity_kmh = config->velocity;
     _lookahead_threshold = config->lookahead_threshold;
+    _param_set = true;
 }
 
 void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
@@ -160,11 +162,11 @@ double GetLookAheadThreshold()
         else if (current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
             return 10.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
-            return 15.0 * _threshold_ratio;
+            return 12.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
-            return 20.0 * _threshold_ratio;
+            return 14.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 40.0)
-	  return current_velocity_kmph * _threshold_ratio;
+            return 15.0 * _threshold_ratio;
         else
             return 0;
 
@@ -183,11 +185,9 @@ geometry_msgs::PoseStamped TransformWaypoint(int i)
 
     // do the transformation!
     try {
-        ros::Time now = ros::Time::now();
-        tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, now, ros::Duration(0.05));
-
-        tfListener.transformPose(_mobility_frame, _current_path.waypoints[i].pose, transformed_waypoint);
-
+        //ros::Time now = ros::Time::now();
+        tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, _current_path.header.stamp, ros::Duration(0.1));
+	tfListener.transformPose(_mobility_frame, ros::Time(0), _current_path.waypoints[i].pose, _current_path.header.frame_id, transformed_waypoint);
     } catch (tf::TransformException &ex) {
         ROS_ERROR("%s", ex.what());
 
@@ -202,11 +202,20 @@ double GetLookAheadDistance(int waypoint)
 {
     //std::cout << "get lookahead distance" << std::endl;
 
-    // current position.
+  /*   // current position.
     tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, _current_pose.pose.position.z);
 
     // position of @waypoint.
     tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, _current_path.waypoints[waypoint].pose.pose.position.z);
+  */
+
+    //ignore z position  version
+
+    // current position.
+    tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, 0);
+
+    // position of @waypoint.
+    tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, 0);
 
     return tf::tfDistance(v1, v2);
 
@@ -348,7 +357,7 @@ geometry_msgs::Twist CalculateCmdTwist()
 // Safely stop the vehicle.
 /////////////////////////////////////////////////////////////////
 static int end_loop = 1;
-static double end_ratio = 0.1;
+static double end_ratio = 0.2;
 static double end_velocity_kmh = 2.0;
 geometry_msgs::Twist EndControl()
 {
@@ -361,10 +370,11 @@ geometry_msgs::Twist EndControl()
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
     double velocity_kmh;
+
     if (_fix_flag == true) {
-        velocity_kmh = _initial_velocity_kmh - end_ratio * end_loop;
+        velocity_kmh = _initial_velocity_kmh - end_ratio * pow(end_loop,2);
     } else {
-        velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
+      velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * pow(end_loop,2));
 
     }
 
@@ -380,7 +390,7 @@ geometry_msgs::Twist EndControl()
         _lf_stat.data = false;
         _stat_pub.publish(_lf_stat);
 
-    } else if (lookahead_distance > _error_distance) { // EndControl terminated
+	} /*else if (lookahead_distance > _error_distance) { // EndControl terminated
 
         twist.linear.x = 0;
         twist.angular.z = 0;
@@ -390,7 +400,7 @@ geometry_msgs::Twist EndControl()
         _lf_stat.data = false;
         _stat_pub.publish(_lf_stat);
 
-    } else {
+	}*/ else {
 
         if (velocity_kmh < end_velocity_kmh)
             velocity_ms = end_velocity_kmh / 3.6;
@@ -475,6 +485,12 @@ int main(int argc, char **argv)
     while (ros::ok()) {
         ros::spinOnce();
 
+        if (_fix_flag == true && _param_set == false) {
+	  std::cout << "parameter waiting..." << std::endl;
+	  loop_rate.sleep();
+	  continue;
+	}
+        
         if (endflag == false) {
 
             // get the waypoint.
