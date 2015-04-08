@@ -920,7 +920,6 @@ rosrun map_file vector_map_loader <csv files>
 
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/map";
-  marker.header.stamp = ros::Time::now();
 
   marker.ns = "vector_map";
   marker.action = visualization_msgs::Marker::ADD;
@@ -935,6 +934,7 @@ rosrun map_file vector_map_loader <csv files>
 
   while(ros::ok()) {
     marker.id = 0;
+    marker.header.stamp = ros::Time::now();
 
     // poledata
     if(poledatas.size() > 0 && (poleclasses.size() <= 0 || vectorclasses.size() <= 0)) {
