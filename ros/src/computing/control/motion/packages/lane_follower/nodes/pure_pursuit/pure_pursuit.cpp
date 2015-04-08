@@ -205,11 +205,20 @@ double GetLookAheadDistance(int waypoint)
 {
     //std::cout << "get lookahead distance" << std::endl;
 
-    // current position.
+  /*   // current position.
     tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, _current_pose.pose.position.z);
 
     // position of @waypoint.
     tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, _current_path.waypoints[waypoint].pose.pose.position.z);
+  */
+
+    //ignore z position  version
+
+    // current position.
+    tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, 0);
+
+    // position of @waypoint.
+    tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, 0);
 
     return tf::tfDistance(v1, v2);
 
