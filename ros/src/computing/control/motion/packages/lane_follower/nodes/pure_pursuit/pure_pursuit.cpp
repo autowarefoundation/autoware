@@ -160,11 +160,12 @@ double GetLookAheadThreshold()
         else if (current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
             return 10.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
-            return 15.0 * _threshold_ratio;
+            return 12.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
-            return 20.0 * _threshold_ratio;
+            return 14.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 40.0)
 	  return current_velocity_kmph * _threshold_ratio;
+            return 15.0 * _threshold_ratio;
         else
             return 0;
 
@@ -348,7 +349,7 @@ geometry_msgs::Twist CalculateCmdTwist()
 // Safely stop the vehicle.
 /////////////////////////////////////////////////////////////////
 static int end_loop = 1;
-static double end_ratio = 0.1;
+static double end_ratio = 0.2;
 static double end_velocity_kmh = 2.0;
 geometry_msgs::Twist EndControl()
 {
@@ -361,10 +362,11 @@ geometry_msgs::Twist EndControl()
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
     double velocity_kmh;
+
     if (_fix_flag == true) {
-        velocity_kmh = _initial_velocity_kmh - end_ratio * end_loop;
+        velocity_kmh = _initial_velocity_kmh - end_ratio * pow(end_loop,2);
     } else {
-        velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * end_loop);
+      velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * pow(end_loop,2));
 
     }
 
@@ -380,7 +382,7 @@ geometry_msgs::Twist EndControl()
         _lf_stat.data = false;
         _stat_pub.publish(_lf_stat);
 
-    } else if (lookahead_distance > _error_distance) { // EndControl terminated
+	} /*else if (lookahead_distance > _error_distance) { // EndControl terminated
 
         twist.linear.x = 0;
         twist.angular.z = 0;
@@ -390,7 +392,7 @@ geometry_msgs::Twist EndControl()
         _lf_stat.data = false;
         _stat_pub.publish(_lf_stat);
 
-    } else {
+	}*/ else {
 
         if (velocity_kmh < end_velocity_kmh)
             velocity_ms = end_velocity_kmh / 3.6;
