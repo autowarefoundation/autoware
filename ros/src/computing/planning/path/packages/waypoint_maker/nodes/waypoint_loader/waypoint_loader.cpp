@@ -26,7 +26,7 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
 
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
@@ -49,7 +49,7 @@ struct pose {
     double velocity_kmh;
 };
 
-std::string PATH_FRAME = "/map";
+std::string PATH_FRAME = "/path";
 
 int main(int argc, char **argv)
 {
@@ -57,15 +57,11 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
 
-    ros::Publisher lane_pub;
-    ros::Publisher ruled_pub;
-    ros::Publisher vel_pub;
-    ros::Publisher mark_pub;
-
-    lane_pub = nh.advertise<nav_msgs::Path>("lane_waypoint", 1000, true);
-    ruled_pub = nh.advertise<lane_follower::lane>("ruled_waypoint", 1000, true);
-    vel_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 1000, true);
-    mark_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 1000, true);
+    ros::Publisher navigation_pub[4];
+    navigation_pub[0] = nh.advertise<nav_msgs::Path>("lane_waypoint", 100);
+    navigation_pub[1] = nh.advertise<lane_follower::lane>("ruled_waypoint", 100);
+    navigation_pub[2] = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 100);
+    navigation_pub[3] = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 100);
     std::vector<pose> Pose;
 
     // display by markers the velocity of each waypoint.
@@ -80,18 +76,6 @@ int main(int argc, char **argv)
     marker.color.a = 1.0;
     marker.color.r = 1.0;
 
-    // display by markers the each waypoint.
-    visualization_msgs::Marker mark;
-    mark.header.frame_id = PATH_FRAME;
-    mark.header.stamp = ros::Time();
-    mark.ns = "waypoint_mark";
-    mark.type = visualization_msgs::Marker::POINTS;
-    mark.action = visualization_msgs::Marker::ADD;
-    mark.scale.x = 0.1;
-    mark.scale.y = 0.1;
-    mark.color.r = 1.0;
-    mark.color.a = 1.0;
-
     std::string filename = "";
     if (private_nh.getParam("filename", filename) == false) {
         std::cout << "error! usage : rosrun waypoint_maker waypoint_loader _filename:=\"[path file]\"" << std::endl;
@@ -103,7 +87,7 @@ int main(int argc, char **argv)
     int id_count = 0;
     while (getline(ifs, str)) {
 
-        //std::cout << str << std::endl;
+        std::cout << str << std::endl;
         pose test_pose;
         sscanf(str.c_str(), "%lf,%lf,%lf,%lf", &test_pose.x, &test_pose.y, &test_pose.z, &test_pose.velocity_kmh);
         //std::cout <<test_pose.x << " "<< test_pose.y << " "<<  std::endl;
@@ -118,7 +102,8 @@ int main(int argc, char **argv)
 
         // double to string
         std::ostringstream oss;
-        oss << std::fixed << std::setprecision(0) << test_pose.velocity_kmh << " km/h";
+        oss << std::fixed << std::setprecision(0) << test_pose.velocity_kmh
+            << " km/h";
         marker.text = oss.str();
 
         //C++11 version
@@ -134,54 +119,72 @@ int main(int argc, char **argv)
     }
 
     // 10Hz is necessary to smoothen tf and pure_pursuit.
+    //ros::Rate loop_rate(1);
+    ros::Rate loop_rate(10);
+    int count = 0;
+    while (ros::ok()) {
+        count++;
+        std::cout << "loop : " << count << std::endl;
+        ros::Time now = ros::Time::now();
+        nav_msgs::Path cmd_path;
+        cmd_path.header.frame_id = PATH_FRAME;
+        cmd_path.header.stamp = now;
 
-    ros::Time now = ros::Time::now();
-    nav_msgs::Path cmd_path;
-    cmd_path.header.frame_id = PATH_FRAME;
-    //cmd_path.header.stamp = now;
+        lane_follower::lane lane_cmd;
+        lane_cmd.header.frame_id = PATH_FRAME;
+        lane_cmd.header.stamp = now;
+        lane_cmd.increment = 1;
 
-    lane_follower::lane lane_cmd;
-    lane_cmd.header.frame_id = PATH_FRAME;
-    lane_cmd.header.stamp = now;
-    lane_cmd.increment = 1;
+        visualization_msgs::Marker mark;
+        mark.header.frame_id = PATH_FRAME;
+        mark.header.stamp = now;
+        mark.ns = "waypoint_mark";
+        mark.type = visualization_msgs::Marker::POINTS;
+        mark.action = visualization_msgs::Marker::ADD;
+        mark.scale.x = 0.1;
+        mark.scale.y = 0.1;
+        mark.color.r = 1.0;
+        mark.color.a = 1.0;
 
-    for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
+        for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
 
-        // for Path
-        geometry_msgs::PoseStamped posestamped;
-        posestamped.header = cmd_path.header;
-        //      geometry_msgs::Quaternion quat = tf::createQuaternionMsgFromYaw(
-        //      Pose[i].theta);
-        //std::cout << Pose[i].x <<  " " << Pose[i].y << std::endl;
-        posestamped.pose.position.x = Pose[i].x;
-        posestamped.pose.position.y = Pose[i].y;
-        posestamped.pose.position.z = Pose[i].z;
-        posestamped.pose.orientation.w = 1.0;
+            // for Path
+            geometry_msgs::PoseStamped posestamped;
+            posestamped.header = cmd_path.header;
+            //      geometry_msgs::Quaternion quat = tf::createQuaternionMsgFromYaw(
+            //      Pose[i].theta);
+            //std::cout << Pose[i].x <<  " " << Pose[i].y << std::endl;
+            posestamped.pose.position.x = Pose[i].x;
+            posestamped.pose.position.y = Pose[i].y;
+            posestamped.pose.position.z = Pose[i].z;
+            posestamped.pose.orientation.w = 1.0;
 
-        //std::cout << posestamped.pose.position.x << " " << posestamped.pose.position.y << " " << posestamped.pose.position.z << std::endl;
-        cmd_path.poses.push_back(posestamped);
+            std::cout << posestamped.pose.position.x << " " << posestamped.pose.position.y << " " << posestamped.pose.position.z << std::endl;
+            cmd_path.poses.push_back(posestamped);
 
-        // for Ruled
-        lane_follower::waypoint waypoint;
-        waypoint.pose.header = lane_cmd.header;
-        waypoint.twist.header = lane_cmd.header;
-        waypoint.pose.pose.position.x = Pose[i].x;
-        waypoint.pose.pose.position.y = Pose[i].y;
-        waypoint.pose.pose.position.z = Pose[i].z;
-        waypoint.pose.pose.orientation.w = 1.0;
-        waypoint.twist.twist.linear.x = Pose[i].velocity_kmh / 3.6;
+            // for Ruled
+            lane_follower::waypoint waypoint;
+            waypoint.pose.header = lane_cmd.header;
+            waypoint.twist.header = lane_cmd.header;
+            waypoint.pose.pose.position.x = Pose[i].x;
+            waypoint.pose.pose.position.y = Pose[i].y;
+            waypoint.pose.pose.position.z = Pose[i].z;
+            waypoint.pose.pose.orientation.w = 1.0;
+            waypoint.twist.twist.linear.x = Pose[i].velocity_kmh / 3.6;
 
-        // std::cout << waypoint.pose.pose.position.x << " " << waypoint.pose.pose.position.y << " " << waypoint.pose.pose.position.z << " " << waypoint.twist.twist.linear.x << std::endl;
-        lane_cmd.waypoints.push_back(waypoint);
+            std::cout << waypoint.pose.pose.position.x << " " << waypoint.pose.pose.position.y << " " << waypoint.pose.pose.position.z << " " << waypoint.twist.twist.linear.x << std::endl;
+            lane_cmd.waypoints.push_back(waypoint);
 
-        // for Mark
-        mark.points.push_back(posestamped.pose.position);
+            // for Mark
+            mark.points.push_back(posestamped.pose.position);
+        }
+        navigation_pub[0].publish(cmd_path);
+        navigation_pub[1].publish(lane_cmd);
+        navigation_pub[2].publish(marker_array);
+        navigation_pub[3].publish(mark);
+        ros::spinOnce();
+        loop_rate.sleep();
+
     }
-
-    lane_pub.publish(cmd_path);
-    ruled_pub.publish(lane_cmd);
-    vel_pub.publish(marker_array);
-    mark_pub.publish(mark);
-    ros::spin();
 
 }
