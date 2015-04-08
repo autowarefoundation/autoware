@@ -57,7 +57,7 @@ double _error_distance = 2.5;
 std::string _mobility_frame = "/base_link"; // why is this default?
 std::string _current_pose_topic = "ndt";
 
-const std::string PATH_FRAME = "/path";
+const std::string PATH_FRAME = "/map";
 
 geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 geometry_msgs::Twist _current_velocity;
@@ -186,11 +186,9 @@ geometry_msgs::PoseStamped TransformWaypoint(int i)
 
     // do the transformation!
     try {
-        ros::Time now = ros::Time::now();
-        tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, now, ros::Duration(0.05));
-
-        tfListener.transformPose(_mobility_frame, _current_path.waypoints[i].pose, transformed_waypoint);
-
+        //ros::Time now = ros::Time::now();
+        tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, _current_path.header.stamp, ros::Duration(0.1));
+	tfListener.transformPose(_mobility_frame, ros::Time(0), _current_path.waypoints[i].pose, _current_path.header.frame_id, transformed_waypoint);
     } catch (tf::TransformException &ex) {
         ROS_ERROR("%s", ex.what());
 
