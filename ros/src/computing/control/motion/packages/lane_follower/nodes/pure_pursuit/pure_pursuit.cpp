@@ -148,6 +148,7 @@ static void WayPointCallback(const lane_follower::laneConstPtr &msg)
 static double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
+
     if (_fix_flag)
         return _lookahead_threshold;
 
@@ -306,6 +307,35 @@ int GetNextWayPoint()
 }
 
 /////////////////////////////////////////////////////////////////
+// obtain the velocity(m/s) waypoint under the vehicle has.
+/////////////////////////////////////////////////////////////////
+double GetWaypointVelocity()
+{
+    std::cout << "get velocity from waypoint under the vehicle" << std::endl;
+    static double prev_velocity = _current_path.waypoints[1].twist.twist.linear.x;
+    double search_radius = 1; //meter
+
+    for (int waypoint = 1; waypoint < _current_path.waypoints.size(); waypoint++) {
+        //std::cout << waypoint << std::endl;
+        // current position.
+        tf::Vector3
+        v1(_current_pose.pose.position.x, _current_pose.pose.position.y, 0);
+
+        // position of @waypoint.
+        tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, 0);
+
+        if (tf::tfDistance(v1, v2) < search_radius) {
+           // std::cout << "velocity detected!!" << _current_path.waypoints[waypoint].twist.twist.linear.x <<std::endl;
+            prev_velocity = _current_path.waypoints[waypoint].twist.twist.linear.x;
+            return _current_path.waypoints[waypoint].twist.twist.linear.x;
+        }
+    }
+    //std::cout << "velocity not detected!!" << std::endl;
+    return prev_velocity;
+}
+
+
+/////////////////////////////////////////////////////////////////
 // obtain the linear/angular velocity toward the next waypoint.
 /////////////////////////////////////////////////////////////////
 static geometry_msgs::Twist CalculateCmdTwist()
@@ -327,7 +357,7 @@ static geometry_msgs::Twist CalculateCmdTwist()
 
     double initial_velocity_ms = 0;
     if (_fix_flag == false)
-        initial_velocity_ms = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
+        initial_velocity_ms = GetWaypointVelocity();
     else
         initial_velocity_ms = _initial_velocity_kmh / 3.6;
 
