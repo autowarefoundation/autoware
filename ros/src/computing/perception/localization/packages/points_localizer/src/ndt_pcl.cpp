@@ -404,13 +404,14 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         tf::Transform pose_transform;
         tf::Quaternion pose_q;
 
-        pose_transform.setOrigin(tf::Vector3(0, 0, 0));
+/*        pose_transform.setOrigin(tf::Vector3(0, 0, 0));
         pose_q.setRPY(0, 0, 0);
         pose_transform.setRotation(pose_q);
         pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
-
+*/
         // publish the position
-        ndt_pose_msg.header.frame_id = "/ndt_frame";
+       // ndt_pose_msg.header.frame_id = "/ndt_frame";
+        ndt_pose_msg.header.frame_id = "/map";
         ndt_pose_msg.header.stamp = scan_time;
         ndt_pose_msg.pose.position.x = current_pos.x;
         ndt_pose_msg.pose.position.y = current_pos.y;
@@ -424,13 +425,14 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
         tf::Transform pose_transform_control;
         tf::Quaternion pose_q_control;
 
-        pose_transform_control.setOrigin(tf::Vector3(0, 0, 0));
+     /*   pose_transform_control.setOrigin(tf::Vector3(0, 0, 0));
         pose_q_control.setRPY(0, 0, 0);
         pose_transform_control.setRotation(pose_q_control);
         pose_broadcaster_control.sendTransform(tf::StampedTransform(pose_transform_control, scan_time, "map", "ndt_frame"));
-
+*/
         // publish the position
-        control_pose_msg.header.frame_id = "/ndt_frame";
+     //   control_pose_msg.header.frame_id = "/ndt_frame";
+        control_pose_msg.header.frame_id = "/map";
         control_pose_msg.header.stamp = scan_time;
         control_pose_msg.pose.position.x = current_pos_control.x;
         control_pose_msg.pose.position.y = current_pos_control.y;
