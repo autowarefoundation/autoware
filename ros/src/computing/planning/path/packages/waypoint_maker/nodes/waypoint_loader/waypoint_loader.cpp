@@ -49,7 +49,7 @@ struct pose {
     double velocity_kmh;
 };
 
-std::string PATH_FRAME = "/path";
+std::string PATH_FRAME = "/map";
 
 int main(int argc, char **argv)
 {
