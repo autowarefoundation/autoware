@@ -52,7 +52,7 @@ using namespace std;
 using namespace cv;
 
 #define NO_DATA 0
-static char window_name[] = "points_image_d_viewer";
+static char window_name[] = "vscan_image_d_viewer";
 
 bool existImage = false;
 bool existPoints = false;
@@ -349,7 +349,7 @@ void points_cb(const points2image::PointsImageConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "points_image_d_viewer");
+  ros::init(argc, argv, "vscan_image_d_viewer");
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
 
@@ -395,7 +395,7 @@ int main(int argc, char **argv)
   else
 	{
       ROS_INFO("No points node received, defaulting to points_image, you can use _points_node:=YOUR_TOPIC");
-      points_node = "/points_image";
+      points_node = "/vscan_image";
 	}
 
   cv::generateColors(_colors, 25);

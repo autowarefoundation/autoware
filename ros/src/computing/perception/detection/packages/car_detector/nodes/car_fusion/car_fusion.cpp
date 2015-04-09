@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber car_pixel_xy_sub = n.subscribe("car_pixel_xy_tracked", 1, ImageObjectsCallback);
     ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
-    ros::Subscriber points_image_sub =n.subscribe("points_image", 1, PointsImageCallback);
+    ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
 #if _DEBUG
     ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
