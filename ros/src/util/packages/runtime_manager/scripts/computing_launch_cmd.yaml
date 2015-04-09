@@ -54,7 +54,8 @@ subs :
       - name : Localization
         subs :
           - name : ndt_pcl
-            cmd  : rosrun points_localizer ndt_pcl
+            cmd  : roslaunch points_localizer ndt_pcl.launch
+           # cmd  : rosrun points_localizer ndt_pcl
           #- name : ndt
           #  cmd  : echo ndt
             param: ndt

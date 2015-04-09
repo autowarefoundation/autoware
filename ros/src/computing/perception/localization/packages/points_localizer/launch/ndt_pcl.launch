@@ -1,0 +1,11 @@
+<!-- -->
+<launch>
+
+
+
+
+	<!-- rosrun points_localizer ndt_pcl  -->
+	<node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl" output="log"/>
+
+
+</launch>
