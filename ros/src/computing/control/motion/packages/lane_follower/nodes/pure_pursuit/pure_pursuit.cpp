@@ -154,13 +154,17 @@ double GetLookAheadThreshold()
     if (_fix_flag == false) {
         double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
         double current_velocity_kmph = current_velocity_mps * 3.6;
-
-        if (current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
+	if(current_velocity_kmph * 0.5 < 5)
+	  return 5;
+	else
+	  return current_velocity_kmph * 0.5;
+ 
+	/* if (current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
             return 4.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 5.0 && current_velocity_kmph < 10)
             return 5.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
-            return 10.0 * _threshold_ratio;
+            return 7.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
             return 12.0 * _threshold_ratio;
         else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
@@ -168,7 +172,7 @@ double GetLookAheadThreshold()
         else if (current_velocity_kmph >= 40.0)
             return 15.0 * _threshold_ratio;
         else
-            return 0;
+	return 0;*/
 
     } else {
         return _lookahead_threshold;
@@ -186,7 +190,7 @@ geometry_msgs::PoseStamped TransformWaypoint(int i)
     // do the transformation!
     try {
         //ros::Time now = ros::Time::now();
-        tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, _current_path.header.stamp, ros::Duration(0.1));
+        tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, _current_path.header.stamp, ros::Duration(0.2));
 	tfListener.transformPose(_mobility_frame, ros::Time(0), _current_path.waypoints[i].pose, _current_path.header.frame_id, transformed_waypoint);
     } catch (tf::TransformException &ex) {
         ROS_ERROR("%s", ex.what());
