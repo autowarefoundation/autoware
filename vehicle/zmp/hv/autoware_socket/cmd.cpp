@@ -131,25 +131,30 @@ void Getter(CMDDATA &cmddata)
   std::vector<std::string> cmdVector;
   cmdVector = split(cmdRes,',');
   if (cmdVector.size() == 7) {
-    cmddata.vel.tv = atof(cmdVector[0].c_str());
-    cmddata.vel.sv = atof(cmdVector[1].c_str());
+    if (fabs(atof(cmdVector[1].c_str())) > 0.00001) { // FIXME!!!
+      cmddata.vel.tv = atof(cmdVector[0].c_str());
+      cmddata.vel.sv = atof(cmdVector[1].c_str());
+      
+      cout << endl << endl;
+      cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
+      cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
+      
+      ofstream ofs("/tmp/cmd.log", ios::app);
+      ofs << cmddata.vel.tv << " " 
+          << cmddata.vel.sv << " " 
+          << endl;
+    }
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
     cmddata.accel = atoi(cmdVector[4].c_str());
     cmddata.steer = atoi(cmdVector[5].c_str());
     cmddata.brake = atoi(cmdVector[6].c_str());
-    
-    cout << endl << endl;
-    cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
-    cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
   } else {
     fprintf(stderr,"cmd : Recv data is invalid\n");
   }
   cout << "cmd : return data : " << cmdRes.c_str() << endl;
 
   close(sock);
-
-  return;
 }
 
 void Update(void *p)
@@ -180,6 +185,7 @@ void Prepare(int mode, int gear, void* p)
     }
   }
 }
+
 
 void Control(vel_data_t vel, void* p) 
 {
@@ -260,6 +266,28 @@ void Control(vel_data_t vel, void* p)
   //////////////////////////////////////////////////////
   // Accel and Brake
   //////////////////////////////////////////////////////
+  double vel_limit = 5.0;
+  double vel_diff = 1;
+
+  //Velocity Version  
+
+  if(fabs((fabs(cmd_velocity) - fabs(current_velocity))) < vel_limit) {
+    std::cout << "limit cleared !! (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
+    main->VelocityControl(cmd_velocity);
+  } else {
+    // if change velocity is too high
+    if (fabs(cmd_velocity) > fabs(current_velocity)){
+      std::cout << "gain too high! limit accelerate (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
+      double increase_velocity = current_velocity + vel_diff;
+      main->VelocityControl(increase_velocity);
+    }else {
+      std::cout << "gain too high! limit decelerate (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
+      double decrease_velocity = current_velocity - vel_diff;
+      main->VelocityControl(decrease_velocity);
+    }
+  }
+    /*
+    //Stroke Version
   if (fabs(cmd_velocity) >= fabs(current_velocity) 
       && fabs(cmd_velocity) > 0.0 
       && fabs(current_velocity) <= KmhToMs(SPEED_LIMIT) ) {
@@ -273,22 +301,28 @@ void Control(vel_data_t vel, void* p)
     //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     cout << "DecelerateControl(current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-    main->DecelerateControl(current_velocity, cmd_velocity);
+        main->DecelerateControl(current_velocity, cmd_velocity); //Stroke version
   }
   else if (cmd_velocity == 0.0 && fabs(current_velocity) != 0) {
     //Stopping!!!!!!!!!!!
     cout << "StoppingControl(current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-    main->StoppingControl(current_velocity, cmd_velocity);
+       main->StoppingControl(current_velocity, cmd_velocity); /Stroke Version
   }
   else {
     cout << "NoAccelBrake(current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << ")" << endl;
   }
-    
+    */    
   //////////////////////////////////////////////////////
   // Steering
   //////////////////////////////////////////////////////
+  for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
+    main->SteeringControl(current_steering_angle, cmd_steering_angle);
+    usleep(STEERING_INTERNAL_PERIOD * 1000);  
+    Update(main);
+    current_steering_angle = _hev_state.strInf.angle; // degree
+  }
   main->SteeringControl(current_steering_angle, cmd_steering_angle);
 
   // save the time stamp.
@@ -303,6 +337,7 @@ void *MainWindow::CMDGetterEntry(void *a)
   long long int interval;
 
   while(1){
+    
     // get commands from ROS.
     Getter(cmddata);
 
@@ -315,12 +350,14 @@ void *MainWindow::CMDGetterEntry(void *a)
     // set mode and gear.
     Prepare(cmddata.mode, cmddata.gear, main);
 
+    
+
 #ifdef DIRECT_CONTROL
     // directly set accel, brake, and steer.
     Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);
 #else
-    // control accel, brake, and steer.
-    Control(cmddata.vel, main);
+      // control accel, brake, and steer.
+      Control(cmddata.vel, main);
 #endif
 
     // get interval in milliseconds.

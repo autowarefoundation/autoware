@@ -100,6 +100,7 @@ public:
     // actuation
     void ChangeShiftMode(double cmd_velocity);
     void SteeringControl(double current_steering_angle, double cmd_steering_angle);
+    void VelocityControl(double cmd_velocity);
     void AccelerateControl(double current_velocity,double cmd_velocity);
     void DecelerateControl(double current_velocity,double cmd_velocity);
     void StoppingControl(double current_velocity,double cmd_velocity);
