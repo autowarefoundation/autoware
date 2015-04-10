@@ -74,6 +74,10 @@ buttons:
     run   : rosrun scan2image scan2image
     param : scan_image
 
+  virtual_scan_image :
+    run   : roslaunch runtime_manager vscan.launch
+    param : virtual_scan_image
+
   calibration :
     run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
 
@@ -101,3 +105,12 @@ params :
       kind      : path
       v         : ''
       rosparam  : /scan2image/camera_yaml
+
+  - name  : virtual_scan_image
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        dash : ''
+        delim: ':='

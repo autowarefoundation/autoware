@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="points2image" type="points2vscan" name="points2vscan" />
+  <node pkg="points2image" type="vscan2image" name="vscan2image" args="$(arg file)"/>
+</launch>
