@@ -34,17 +34,13 @@
 
 #include <math.h>
 #include "CalSelfLoc.h"
-#include"structure.h"
+#include "structure.h"
 
-
-class axiMove{
-
+class axiMove {
 public:
-
     axiMove(){};
 
     LOCATION cal(LOCATION loc,double matrix[4][4]){
-
         
 /**
 calibration file is assumed that 
@@ -75,11 +71,9 @@ and axial x is left and right.
 
         newloc.W = 1;
 
-
         return newloc;
 
     }
-
 
     LOCATION cal(LOCATION loc,ANGLE ang){
 
@@ -105,7 +99,6 @@ and axial x is left and right.
         return loc;
 
     }
-
 };
 
 #endif

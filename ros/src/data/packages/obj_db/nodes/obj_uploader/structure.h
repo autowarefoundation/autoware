@@ -32,26 +32,22 @@
 #define STRUCTURE_H
 
 //converted value to view from above
-typedef struct _LOCATION{
+struct LOCATION {
     double X;
     double Y;
     double Z;
     double W;
-}LOCATION;
+};
 
-typedef struct _ANGLE{
+struct ANGLE {
     double thiX;
     double thiY;
     double thiZ;
+};
 
-}ANGLE;
-
-typedef struct _RESULT{
+struct RESULT {
     double lat;
     double lon;
-
-}RESULT;
-
-
+};
 
 #endif

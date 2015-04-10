@@ -57,8 +57,8 @@ publish data as ractangular plane
 
 using namespace std;
 
-string serverName = "db3.ertl.jp";
-int PORT = 5678;
+static string serverName = "db3.ertl.jp";
+static int PORT = 5678;
 
 enum TYPE{
   NORMAL,
@@ -67,7 +67,7 @@ enum TYPE{
   DB1
 };
 
-typedef struct{
+struct car_info {
   int gps_id;
   double lat;
   double lon;
@@ -76,7 +76,7 @@ typedef struct{
   double x;
   double y;
   double z;
-}car_info;
+};
 
 ros::Publisher pub;
 
@@ -87,7 +87,7 @@ SendData sd;
 TYPE SendDataType;
 int counter;
 
-std::vector<std::string> split(const string& input, char delimiter)
+static std::vector<std::string> split(const string& input, char delimiter)
 {
     std::istringstream stream(input);
 
@@ -99,12 +99,12 @@ std::vector<std::string> split(const string& input, char delimiter)
     return result;
 }
 
-bool isNumeric(const std::string str){
+static bool isNumeric(const std::string str){
   if(str.find_first_not_of("-0123456789. Ee\t") != string::npos) return false;
   return true;
 }
 
-void marker_publisher(const std_msgs::String msg)
+static void marker_publisher(const std_msgs::String msg)
 {
   std::vector<car_info> cars;
   std::vector<std::string> db_data, tmp;
@@ -174,8 +174,8 @@ void marker_publisher(const std_msgs::String msg)
 }
 
 //wrap SendData class
-void* wrapSender(void *tsd){
-
+static void* wrapSender(void *tsd)
+{
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
 
@@ -248,8 +248,8 @@ void* wrapSender(void *tsd){
 
 }
 
-void* intervalCall(void *a){
-
+static void* intervalCall(void *a)
+{
   pthread_t th;
 
   while(1){
@@ -266,9 +266,8 @@ void* intervalCall(void *a){
   return nullptr;
 }
 
-
-int main(int argc, char **argv){
-  
+int main(int argc, char **argv)
+{
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
   
