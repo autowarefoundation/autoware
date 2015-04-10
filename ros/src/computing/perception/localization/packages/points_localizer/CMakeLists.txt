@@ -25,8 +25,8 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_executable(ndt_pcl src/ndt_pcl.cpp)
-add_executable(ndt_slam src/ndt_slam.cpp)
+add_executable(ndt_pcl nodes/ndt_pcl/ndt_pcl.cpp)
+add_executable(ndt_slam nodes/ndt_slam/ndt_slam.cpp)
 
 target_link_libraries(ndt_pcl ${catkin_LIBRARIES})
 target_link_libraries(ndt_slam ${catkin_LIBRARIES})
