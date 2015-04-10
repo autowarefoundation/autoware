@@ -68,6 +68,7 @@ public:
 
     conv_llh2xyz();
   }
+
   void conv_llh2xyz(void){
     double PS;           //
     double PSo;          //
@@ -118,7 +119,6 @@ public:
     
     PI = (double) 765765.0/7516192768.0*pow(Pe,16);
     
-    
     PB1 = (double) AW * (1.0 - pow(Pe,2)) * PA;
     PB2 = (double) AW * (1.0 - pow(Pe,2)) * PB/-2.0;
     PB3 = (double) AW * (1.0 - pow(Pe,2)) * PC/4.0;
@@ -128,7 +128,6 @@ public:
     PB7 = (double) AW * (1.0 - pow(Pe,2)) * PG/12.0;
     PB8 = (double) AW * (1.0 - pow(Pe,2)) * PH/-14.0;
     PB9 = (double) AW * (1.0 - pow(Pe,2)) * PI/16.0;
-    
     
     PS = (double) PB1*m_lat + PB2*sin(2.0*m_lat) + PB3*sin(4.0*m_lat) + PB4*sin(6.0*m_lat) 
       + PB5*sin(8.0*m_lat) + PB6*sin(10.0*m_lat) + PB7*sin(12.0*m_lat) + PB8*sin(14.0*m_lat)
@@ -160,7 +159,5 @@ public:
  
   void conv_xyz2llh(void){}// n/a
 };
-
-  
 
 #endif

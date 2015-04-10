@@ -110,11 +110,13 @@ static double cameraMatrix[4][4] = {
 
 static ros::Publisher pub;
 
+#ifdef NEVER // XXX No one calls this functions
 static void printDiff(struct timeval begin, struct timeval end){
   long diff;
   diff = (end.tv_sec - begin.tv_sec)*1000*1000 + (end.tv_usec - begin.tv_usec);
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
+#endif
 
 void GetRPY(const geometry_msgs::Pose &pose,
 	    double &roll,
@@ -252,6 +254,7 @@ static void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   }
 }
 
+#ifdef NEVER // XXX No one calls this functions. caller is comment out
 static void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
   //In Autoware axel x and axel y is opposite
   //but once they is converted to calculate.
@@ -265,6 +268,7 @@ static void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
   gnssGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
+#endif
 
 static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   //In Autoware axel x and axel y is opposite
