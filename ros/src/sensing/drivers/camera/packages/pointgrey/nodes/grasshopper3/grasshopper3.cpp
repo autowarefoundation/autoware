@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 
     delete [] ppCameras;//clean memory
 
-    iprintf( "Done!\n" );
+    printf( "Done!\n" );
     return 0;
 }
 
