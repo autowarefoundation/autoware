@@ -57,29 +57,29 @@
 #define WINDOW_NAME_SCAN "LRF"
 #define WINDOW_NAME_IMAGE "CAMERA"
 
-int window_scan_width = 1240;
-int window_scan_height = 960;
-int scale = 300;
-int line_division_num = 10;
-double judge_margin = 20.0;
-int pat_row =7 ;
-int pat_col = 11;
-int pat_size = pat_row * pat_col;
-double chess_size = 20.0;
-double paper_width_margin = 30.0;
+static int window_scan_width = 1240;
+static int window_scan_height = 960;
+static int scale = 300;
+static int line_division_num = 10;
+static double judge_margin = 20.0;
+static int pat_row =7 ;
+static int pat_col = 11;
+static int pat_size = pat_row * pat_col;
+static double chess_size = 20.0;
+static double paper_width_margin = 30.0;
 
-bool g_chess_scan_flag = false;
-bool g_chess_camera_flag = false;
-IplImage *image_camera;
-bool g_calib_flag = false;
-bool g_fusion_flag = false;
-bool g_save_flag = false;
-bool g_on_calib_flag = false;
-bool g_on_save_flag = false;
-double g_scan_z;
-Three_dimensional_vector g_3d_scan;
+static bool g_chess_scan_flag = false;
+static bool g_chess_camera_flag = false;
+static IplImage *image_camera;
+static bool g_calib_flag = false;
+static bool g_fusion_flag = false;
+static bool g_save_flag = false;
+static bool g_on_calib_flag = false;
+static bool g_on_save_flag = false;
+static double g_scan_z;
+static Three_dimensional_vector g_3d_scan;
 
-void on_mouse (int event, int x, int y, int flags, void *param = NULL)
+static void on_mouse(int event, int x, int y, int flags, void *param = NULL)
 {
     if (50 < x && x < 320 && 150< y && y < 220) { // calib
         g_on_calib_flag = true;
@@ -109,7 +109,7 @@ void on_mouse (int event, int x, int y, int flags, void *param = NULL)
     }
 }
 
-void print_param(CvMat *matrix)
+static void print_param(CvMat *matrix)
 {
     for (int i = 0; i < matrix->rows; i++) {
         for (int j = 0; j < matrix->cols; j++) {
@@ -119,7 +119,7 @@ void print_param(CvMat *matrix)
     }
 }
 
-void imageCallback(const sensor_msgs::Image& image_raw) {
+static void imageCallback(const sensor_msgs::Image& image_raw) {
     cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_raw, sensor_msgs::image_encodings::BGR8);
     IplImage temp = cv_image->image;
     image_camera = &temp;
@@ -199,20 +199,19 @@ void imageCallback(const sensor_msgs::Image& image_raw) {
     cvWaitKey (2);
 }
 
-void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
+static void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
 {
     IplImage *image_lrf;
     CvPoint pt, center_pt;
 
     image_lrf = cvCreateImage(cvSize(window_scan_width, window_scan_height), IPL_DEPTH_8U, 3);
     cvSetZero(image_lrf);
-    int i;
 
     /* Convert to 3d-axis */
     g_3d_scan.x.resize(scan_msg->ranges.size());
     g_3d_scan.y.resize(scan_msg->ranges.size());
     g_3d_scan.z.resize(scan_msg->ranges.size());
-    for(i = 0; i < (int)scan_msg->ranges.size(); i++) {
+    for(int i = 0; i < (int)scan_msg->ranges.size(); i++) {
         g_3d_scan.x[i] = scan_msg->ranges[i] * sin(scan_msg->angle_min + scan_msg->angle_increment * i);
         g_3d_scan.y[i] = 0;
         g_3d_scan.z[i] = scan_msg->ranges[i] * cos(scan_msg->angle_min + scan_msg->angle_increment * i);
@@ -229,7 +228,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
     /* Plot scan points on image */
     g_chess_scan_flag = true;
     g_scan_z = g_3d_scan.z[scan_msg->ranges.size()/2];
-    for (i = 0; i < (int)scan_msg->ranges.size(); i++) {
+    for (int i = 0; i < (int)scan_msg->ranges.size(); i++) {
         if(0 > g_3d_scan.x[i]*scale+(window_scan_width/2) || g_3d_scan.x[i]*scale+(window_scan_width/2) > window_scan_width) {
             continue;
         }
@@ -337,7 +336,6 @@ int main(int argc, char **argv)
     cvCreateTrackbar ("rad_Y", WINDOW_NAME_IMAGE, &default_rad_trackbar, 360, rad_y_bar);
     cvCreateTrackbar ("rad_Z", WINDOW_NAME_IMAGE, &default_rad_trackbar, 360, rad_z_bar);
 
-
     ros::Subscriber scan_sub = n.subscribe("scan", 1, scanCallback);
     ros::Subscriber image_sub = n.subscribe("image_raw", 1, imageCallback);
 
@@ -348,5 +346,5 @@ int main(int argc, char **argv)
     release_common();
     release_image_window();
 
-  return 0;
+    return 0;
 }
