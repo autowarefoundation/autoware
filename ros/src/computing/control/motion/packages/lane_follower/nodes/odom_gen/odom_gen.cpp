@@ -40,57 +40,56 @@
 
 #include "geo_pos_conv.hh"
 
-geometry_msgs::Twist _current_velocity;
+static geometry_msgs::Twist _current_velocity;
 static bool _use_pose = false;
 static bool _init_set = false;
 static bool _pose_value_set = false;
 
-double _initial_px = 0.0;
-double _initial_py = 0.0;
-double _initial_pz = 0.0;
-double _initial_ox = 0.0;
-double _initial_oy = 0.0;
-double _initial_oz = 0.0;
-double _initial_ow = 0.0;
-double _initial_yaw = 0.0;
+static double _initial_px = 0.0;
+static double _initial_py = 0.0;
+static double _initial_pz = 0.0;
+static double _initial_ox = 0.0;
+static double _initial_oy = 0.0;
+static double _initial_oz = 0.0;
+static double _initial_ow = 0.0;
+static double _initial_yaw = 0.0;
 
-std::string _use_topic;
-std::string _rotation_set;
+static std::string _use_topic;
+static std::string _rotation_set;
 
-void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
+static void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
     if(_use_topic == "gnss"){
-    _initial_px = input->pose.position.x;
-    _initial_py = input->pose.position.y;
-    _initial_pz = input->pose.position.z;
-    _initial_ox = input->pose.orientation.x;
-    _initial_oy = input->pose.orientation.y;
-    _initial_oz = input->pose.orientation.z;
-    _initial_ow = input->pose.orientation.w;
+        _initial_px = input->pose.position.x;
+        _initial_py = input->pose.position.y;
+        _initial_pz = input->pose.position.z;
+        _initial_ox = input->pose.orientation.x;
+        _initial_oy = input->pose.orientation.y;
+        _initial_oz = input->pose.orientation.z;
+        _initial_ow = input->pose.orientation.w;
 
-    _pose_value_set = true;
+        _pose_value_set = true;
     }
 }
 
-void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
+static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
     if(_use_topic == "ndt"){
-    _initial_px = input->pose.position.x;
-    _initial_py = input->pose.position.y;
-    _initial_pz = input->pose.position.z;
-    _initial_ox = input->pose.orientation.x;
-    _initial_oy = input->pose.orientation.y;
-    _initial_oz = input->pose.orientation.z;
-    _initial_ow = input->pose.orientation.w;
+        _initial_px = input->pose.position.x;
+        _initial_py = input->pose.position.y;
+        _initial_pz = input->pose.position.z;
+        _initial_ox = input->pose.orientation.x;
+        _initial_oy = input->pose.orientation.y;
+        _initial_oz = input->pose.orientation.z;
+        _initial_ow = input->pose.orientation.w;
 
-    _pose_value_set = true;
+        _pose_value_set = true;
     }
 }
 
-void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
+static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
     _current_velocity = msg->twist;
-
 }
 
 int main(int argc, char **argv)
@@ -251,4 +250,5 @@ int main(int argc, char **argv)
         loop_rate.sleep();
     }
 
+    return 0;
 }

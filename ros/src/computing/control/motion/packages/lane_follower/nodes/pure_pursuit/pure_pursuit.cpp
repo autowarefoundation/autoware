@@ -49,37 +49,37 @@
 #include "geo_pos_conv.hh"
 
 // parameter servers
-double _initial_velocity_kmh = 5; // km/h
-double _lookahead_threshold = 4.0;
-double _threshold_ratio = 1.0;
-double _end_distance = 2.0;
-double _error_distance = 2.5;
-std::string _mobility_frame = "/base_link"; // why is this default?
-std::string _current_pose_topic = "ndt";
+static double _initial_velocity_kmh = 5; // km/h
+static double _lookahead_threshold = 4.0;
+static double _threshold_ratio = 1.0;
+static double _end_distance = 2.0;
+static double _error_distance = 2.5;
+static std::string _mobility_frame = "/base_link"; // why is this default?
+static std::string _current_pose_topic = "ndt";
 
-const std::string PATH_FRAME = "/map";
+static const std::string PATH_FRAME = "/map";
 
-geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-geometry_msgs::Twist _current_velocity;
-lane_follower::lane _current_path;
+static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
+static geometry_msgs::Twist _current_velocity;
+static lane_follower::lane _current_path;
 
 // ID (index) of the next waypoint.
-int _next_waypoint = 0;
+static int _next_waypoint = 0;
 
-ros::Publisher _vis_pub;
-ros::Publisher _stat_pub;
-std_msgs::Bool _lf_stat;
-bool _fix_flag = false;
-bool _param_set = false;
+static ros::Publisher _vis_pub;
+static ros::Publisher _stat_pub;
+static std_msgs::Bool _lf_stat;
+static bool _fix_flag = false;
+static bool _param_set = false;
 
-void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
+static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
     _initial_velocity_kmh = config->velocity;
     _lookahead_threshold = config->lookahead_threshold;
     _param_set = true;
 }
 
-void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
+static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
     //std::cout << "odometry callback" << std::endl;
     _current_velocity = msg->twist.twist;
@@ -95,9 +95,9 @@ void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
 }
 
-geometry_msgs::PoseStamped _prev_pose;
-geometry_msgs::Quaternion _quat;
-void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
+static geometry_msgs::PoseStamped _prev_pose;
+static geometry_msgs::Quaternion _quat;
+static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 {
     //std::cout << "gnss callback" << std::endl;
     if (_current_pose_topic == "gnss") {
@@ -120,10 +120,9 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 
     } //else
       //      std::cout << "pose is not gnss" << std::endl;
-
 }
 
-void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
     //std::cout << "gnss callback" << std::endl;
     if (_current_pose_topic == "ndt") {
@@ -132,10 +131,9 @@ void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
     } //else
       //     std::cout << "pose is not ndt" << std::endl;
-
 }
 
-void WayPointCallback(const lane_follower::laneConstPtr &msg)
+static void WayPointCallback(const lane_follower::laneConstPtr &msg)
 {
     //std::cout << "waypoint callback" << std::endl;
     _current_path = *msg;
@@ -147,36 +145,33 @@ void WayPointCallback(const lane_follower::laneConstPtr &msg)
 /////////////////////////////////////////////////////////////////
 // obtain the threshold where the next waypoint may be selected.
 /////////////////////////////////////////////////////////////////
-double GetLookAheadThreshold()
+static double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
-
-    if (_fix_flag == false) {
-        double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
-        double current_velocity_kmph = current_velocity_mps * 3.6;
-	if(current_velocity_kmph * 0.5 < 5)
-	  return 5;
-	else
-	  return current_velocity_kmph * 0.5;
- 
-	/* if (current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
-            return 4.0 * _threshold_ratio;
-        else if (current_velocity_kmph >= 5.0 && current_velocity_kmph < 10)
-            return 5.0 * _threshold_ratio;
-        else if (current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
-            return 7.0 * _threshold_ratio;
-        else if (current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
-            return 12.0 * _threshold_ratio;
-        else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
-            return 14.0 * _threshold_ratio;
-        else if (current_velocity_kmph >= 40.0)
-            return 15.0 * _threshold_ratio;
-        else
-	return 0;*/
-
-    } else {
+    if (_fix_flag)
         return _lookahead_threshold;
-    }
+
+    double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
+    double current_velocity_kmph = current_velocity_mps * 3.6;
+    if(current_velocity_kmph * 0.5 < 5)
+        return 5;
+    else
+        return current_velocity_kmph * 0.5;
+
+    /* if (current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
+        return 4.0 * _threshold_ratio;
+    else if (current_velocity_kmph >= 5.0 && current_velocity_kmph < 10)
+        return 5.0 * _threshold_ratio;
+    else if (current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
+        return 7.0 * _threshold_ratio;
+    else if (current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
+        return 12.0 * _threshold_ratio;
+    else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
+        return 14.0 * _threshold_ratio;
+    else if (current_velocity_kmph >= 40.0)
+        return 15.0 * _threshold_ratio;
+    else
+        return 0;*/
 }
 
 /////////////////////////////////////////////////////////////////
@@ -194,7 +189,6 @@ geometry_msgs::PoseStamped TransformWaypoint(int i)
 	tfListener.transformPose(_mobility_frame, ros::Time(0), _current_path.waypoints[i].pose, _current_path.header.frame_id, transformed_waypoint);
     } catch (tf::TransformException &ex) {
         ROS_ERROR("%s", ex.what());
-
     }
     return transformed_waypoint;
 }
@@ -219,10 +213,10 @@ double GetLookAheadDistance(int waypoint)
     tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, 0);
 
     // position of @waypoint.
-    tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, 0);
+    tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x,
+                   _current_path.waypoints[waypoint].pose.pose.position.y, 0);
 
     return tf::tfDistance(v1, v2);
-
 }
 
 /////////////////////////////////////////////////////////////////
@@ -255,8 +249,7 @@ int GetNextWayPoint()
 	    _lf_stat.data = false;
 	    _stat_pub.publish(_lf_stat);
 	    return 0;
-        }
-
+	}
     }
 
     // the next waypoint must be outside of this threthold.
@@ -315,7 +308,7 @@ int GetNextWayPoint()
 /////////////////////////////////////////////////////////////////
 // obtain the linear/angular velocity toward the next waypoint.
 /////////////////////////////////////////////////////////////////
-geometry_msgs::Twist CalculateCmdTwist()
+static geometry_msgs::Twist CalculateCmdTwist()
 {
     std::cout << "calculate" << std::endl;
     geometry_msgs::Twist twist;
@@ -354,7 +347,6 @@ geometry_msgs::Twist CalculateCmdTwist()
     twist.angular.z = angular_velocity;
 
     return twist;
-
 }
 
 /////////////////////////////////////////////////////////////////
@@ -363,7 +355,7 @@ geometry_msgs::Twist CalculateCmdTwist()
 static int end_loop = 1;
 static double end_ratio = 0.2;
 static double end_velocity_kmh = 2.0;
-geometry_msgs::Twist EndControl()
+static geometry_msgs::Twist EndControl()
 {
     std::cout << "end control" << std::endl;
     geometry_msgs::Twist twist;
@@ -378,8 +370,7 @@ geometry_msgs::Twist EndControl()
     if (_fix_flag == true) {
         velocity_kmh = _initial_velocity_kmh - end_ratio * pow(end_loop,2);
     } else {
-      velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * pow(end_loop,2));
-
+        velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * pow(end_loop,2));
     }
 
     double velocity_ms = velocity_kmh / 3.6;
@@ -534,5 +525,4 @@ int main(int argc, char **argv)
     }
 
     return 0;
-
 }
