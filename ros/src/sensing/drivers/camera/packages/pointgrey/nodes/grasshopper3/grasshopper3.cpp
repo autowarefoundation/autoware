@@ -41,17 +41,14 @@ Initial version 2014-11-14
 #include <sys/time.h>
 #include <stdio.h>
 
-
 using namespace FlyCapture2;
 
-void getNumCameras(BusManager* pbusMgr, unsigned int *pNumCameras);
-void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** pCams);
-void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCameras, Image images[]);
-void startCapture(unsigned int numCameras, Camera** ppCameras);
-void PrintError( Error error );
-void PrintCameraInfo( CameraInfo* pCamInfo );
-
-
+static void getNumCameras(BusManager* pbusMgr, unsigned int *pNumCameras);
+static void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** pCams);
+static void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCameras, Image images[]);
+static void startCapture(unsigned int numCameras, Camera** ppCameras);
+static void PrintError( Error error );
+static void PrintCameraInfo( CameraInfo* pCamInfo );
 
 int main(int argc, char **argv)
 {
@@ -73,7 +70,6 @@ int main(int argc, char **argv)
 
     ros::Publisher pub[numCameras];
 
-    
     if (private_nh.getParam("fps", FPS))
     {
         ROS_INFO("FPS set to %.2f", FPS);
@@ -98,8 +94,6 @@ int main(int argc, char **argv)
     	pub[i]= n.advertise<sensor_msgs::Image>(topic_name, 100);//publish as many cameras as we have
     }
     //END ROS STUFF
-
-    
 
     Image images[numCameras];
 
@@ -139,30 +133,27 @@ int main(int argc, char **argv)
     }
 
     //close cameras
-	for ( unsigned int i = 0; i < numCameras; i++ )
-	{
-		ppCameras[i]->StopCapture();
-		ppCameras[i]->Disconnect();
-		delete ppCameras[i];
-	}
+    for ( unsigned int i = 0; i < numCameras; i++ )
+    {
+        ppCameras[i]->StopCapture();
+        ppCameras[i]->Disconnect();
+        delete ppCameras[i];
+    }
 
-	delete [] ppCameras;//clean memory
+    delete [] ppCameras;//clean memory
 
-	printf( "Done!\n" );
-
-	return 0;
-
+    iprintf( "Done!\n" );
+    return 0;
 }
 
-void PrintError( Error error )
+static void PrintError( Error error )
 {
     error.PrintErrorTrace();
 }
 
-void getNumCameras(BusManager* pbusMgr, unsigned int *pNumCameras)
+static void getNumCameras(BusManager* pbusMgr, unsigned int *pNumCameras)
 {
-	Error error;
-	error = (*pbusMgr).GetNumOfCameras(pNumCameras);
+	Error error = (*pbusMgr).GetNumOfCameras(pNumCameras);
 	if (error != PGRERROR_OK)
 	{
 		PrintError( error );
@@ -179,7 +170,7 @@ void getNumCameras(BusManager* pbusMgr, unsigned int *pNumCameras)
 	}
 }
 
-void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** pCams)
+static void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** pCams)
 {
 	Error error;
 	Camera** ppCameras = *pCams;//*unwrap pointers
@@ -252,7 +243,7 @@ void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** p
 	}
 }
 
-void startCapture(unsigned int numCameras, Camera** ppCameras)
+static void startCapture(unsigned int numCameras, Camera** ppCameras)
 {
 	Error error;
 
@@ -260,7 +251,6 @@ void startCapture(unsigned int numCameras, Camera** ppCameras)
 	for (unsigned int i=0; i<numCameras; i++)
 	{
 		error=ppCameras[i]->StartCapture();
-
 		if (error != PGRERROR_OK)
 		{
 			PrintError( error );
@@ -270,7 +260,7 @@ void startCapture(unsigned int numCameras, Camera** ppCameras)
 	return;
 }
 
-void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCameras, Image images[])
+static void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCameras, Image images[])
 {
 	// Display the time stamps for all cameras to show that the image
 	// capture is synchronized for each image
@@ -278,7 +268,6 @@ void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCamera
 	JPEGOption opt;
 	opt.progressive=false;
 	opt.quality=100;
-
 
 	Error error[numCameras];
 
@@ -298,7 +287,7 @@ void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCamera
 	}
 }
 
-void PrintCameraInfo( CameraInfo* pCamInfo )
+static void PrintCameraInfo( CameraInfo* pCamInfo )
 {
     printf(
         "\n*** CAMERA INFORMATION ***\n"
