@@ -23,8 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     double PI=3.141592654;
     double density=2*PI/BEAMNUM;
-    int i;
-    for(i=0;i<BEAMNUM;i++)
+    for(int i=0;i<BEAMNUM;i++)
     {
         ui->comboBox->insertItem(i,QString("%1").arg((i*density-PI)*180.0/PI));
     }
@@ -34,8 +33,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->step,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
     connect(ui->rotation,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
     connect(ui->minrange,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
-
-
 
     ui->label->resize(IMAGESIZE,IMAGESIZE);
     image=QImage(IMAGESIZE,IMAGESIZE,QImage::Format_RGB888);
@@ -104,8 +101,7 @@ void MainWindow::recalculateSlot()
     unsigned char * base=msg.data.data();
 
     double density=2*PI/BEAMNUM;
-    int i;
-    for(i=0;i<BEAMNUM;i++)
+    for(int i=0;i<BEAMNUM;i++)
     {
         double theta=i*density-PI;
         float * data;
@@ -162,10 +158,10 @@ void MainWindow::drawGrid()
     QPainter painter;
     painter.begin(&image);
     painter.setPen(QColor(128,128,128));
-    int i;
+
     QPoint center(IMAGESIZE/2,IMAGESIZE/2);
     double gridstep=(GRIDSIZE/MAXRANGE)*(IMAGESIZE/2);
-    for(i=gridstep;i<=IMAGESIZE/2;i+=gridstep)
+    for(int i=gridstep;i<=IMAGESIZE/2;i+=gridstep)
     {
         painter.drawEllipse(center,i,i);
     }
@@ -180,8 +176,8 @@ void MainWindow::drawPoints()
     painter.setPen(QColor(255,0,0));
     double PI=3.141592654;
     double density=2*PI/BEAMNUM;
-    int i;
-    for(i=0;i<BEAMNUM;i++)
+
+    for(int i=0;i<BEAMNUM;i++)
     {
         double theta=i*density-PI;
         QPoint point=convert2ImagePoint(QPointF(beams[i]*cos(theta),beams[i]*sin(theta)));
