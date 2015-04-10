@@ -41,14 +41,14 @@
 
 #include "geo_pos_conv.hh"
 
-geo_pos_conv geo;
-ros::Publisher pose_publisher;
-ros::Publisher stat_publisher;
-std_msgs::Bool gnss_stat_msg;
+static geo_pos_conv geo;
+static ros::Publisher pose_publisher;
+static ros::Publisher stat_publisher;
+static std_msgs::Bool gnss_stat_msg;
 
 using namespace std;
 
-void csv_div(string str, std::vector<std::string> *items)
+static void csv_div(string str, std::vector<std::string> *items)
 {
     string token;
     istringstream stream(str);
@@ -71,7 +71,7 @@ void csv_div(string str, std::vector<std::string> *items)
  }
  */
 
-void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
+static void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
 {
     static double qq_time, roll, pitch, yaw;
     //static double gga_time, x, y, z;
@@ -147,7 +147,6 @@ void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
 
         pose_publisher.publish(pose);
 	stat_publisher.publish(gnss_stat_msg);
-
     }
 }
 
