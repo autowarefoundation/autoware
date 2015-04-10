@@ -27,11 +27,11 @@
 #include "fusion_func.h"
 #include "std_msgs/Header.h"
 
-void publishTopic();
-ros::Publisher fused_objects;
-std_msgs::Header sensor_header;
+static void publishTopic();
+static ros::Publisher fused_objects;
+static std_msgs::Header sensor_header;
 
-void ImageObjectsCallback(const dpm::ImageObjects& image_object)
+static void ImageObjectsCallback(const dpm::ImageObjects& image_object)
 {
     setImageObjects(image_object);
 
@@ -39,7 +39,7 @@ void ImageObjectsCallback(const dpm::ImageObjects& image_object)
     publishTopic();
 }
 
-void ScanImageCallback(const scan2image::ScanImage& scan_image)
+static void ScanImageCallback(const scan2image::ScanImage& scan_image)
 {
     setScanImage(scan_image);
     sensor_header = scan_image.header;
@@ -48,7 +48,7 @@ void ScanImageCallback(const scan2image::ScanImage& scan_image)
     publishTopic();
 }
 
-void PointsImageCallback(const points2image::PointsImage& points_image)
+static void PointsImageCallback(const points2image::PointsImage& points_image)
 {
     setPointsImage(points_image);
     sensor_header = points_image.header;
@@ -56,7 +56,8 @@ void PointsImageCallback(const points2image::PointsImage& points_image)
     calcDistance();
     publishTopic();
 }
-void publishTopic()
+
+static void publishTopic()
 {
     /*
      * Publish topic(Pedestrian position xyz).

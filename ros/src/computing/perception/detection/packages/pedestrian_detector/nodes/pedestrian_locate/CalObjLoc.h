@@ -27,8 +27,6 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-
 #ifndef CALOBJLOC
 #define CALOBJLOC
 
@@ -36,7 +34,6 @@
 #include "structure.h"
 
 class objLocation{
-
 public:
     objLocation(){};
 
@@ -54,7 +51,6 @@ public:
     }
 
     LOCATION cal(){
-
         LOCATION res;
 
 	double a = (U-Ox)*(U-Ox)/(fkx*fkx);
@@ -70,24 +66,18 @@ public:
 	res.Z = res.Z/100;
 
         return res;
-
     }
 
-    
 private:
-
-
     double U;//X from camera picture
     double V;//Y from camera picture
     double distance;
-
 
     //camera parameter
     double fkx;
     double fky;
     double Ox;
     double Oy;
-
 };
 
 #endif

@@ -33,18 +33,13 @@
 
 #include <math.h>
 #include "CalObjLoc.h"
-#include"structure.h"
-
+#include "structure.h"
 
 class axiMove{
-
 public:
-
     axiMove(){};
 
     LOCATION cal(LOCATION loc,double matrix[4][4]){
-
-        
 /**
 calibration file is assumed that 
 axial z is front of car, 
@@ -74,14 +69,10 @@ and axial x is left and right.
 
         newloc.W = 1;
 
-
         return newloc;
-
     }
 
-
     LOCATION cal(LOCATION loc,ANGLE ang){
-
         LOCATION newloc;
         //rotation around X
         newloc.Y = loc.Y*cos(ang.thiX) + loc.Z*sin(ang.thiX);
@@ -102,9 +93,7 @@ and axial x is left and right.
         loc.Y = newloc.Y;
 
         return loc;
-
     }
-
 };
 
 #endif
