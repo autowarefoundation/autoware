@@ -34,10 +34,8 @@
  *
  */
 
-
 #ifndef SENSORS_FUSION_MESSAGE_CARPOSITIONXYZ_H
 #define SENSORS_FUSION_MESSAGE_CARPOSITIONXYZ_H
-
 
 #include <string>
 #include <vector>
@@ -72,8 +70,6 @@ struct CarPositionXYZ_
     , distance(_alloc)  {
     }
 
-
-
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
 
@@ -89,9 +85,6 @@ struct CarPositionXYZ_
    typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _distance_type;
   _distance_type distance;
 
-
-
-
   typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> > Ptr;
   typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const> ConstPtr;
   boost::shared_ptr<std::map<std::string, std::string> > __connection_header;
@@ -104,8 +97,6 @@ typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ > CarPositionXYZPtr;
 typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ const> CarPositionXYZConstPtr;
 
 // constants requiring out of line definition
-
-
 
 template<typename ContainerAllocator>
 std::ostream& operator<<(std::ostream& s, const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> & v)
@@ -121,15 +112,10 @@ namespace ros
 namespace message_traits
 {
 
-
-
 // BOOLTRAITS {'IsFixedSize': False, 'IsMessage': True, 'HasHeader': True}
 // {'sensor_msgs': ['/opt/ros/hydro/share/sensor_msgs/cmake/../msg'], 'sensors_fusion': ['/home/yukky/catkin_ws/src/sensors_fusion/msg'], 'std_msgs': ['/opt/ros/hydro/share/std_msgs/cmake/../msg'], 'geometry_msgs': ['/opt/ros/hydro/share/geometry_msgs/cmake/../msg']}
 
 // !!!!!!!!!!! ['__class__', '__delattr__', '__dict__', '__doc__', '__eq__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_parsed_fields', 'constants', 'fields', 'full_name', 'has_header', 'header_present', 'names', 'package', 'parsed_fields', 'short_name', 'text', 'types']
-
-
-
 
 template <class ContainerAllocator>
 struct IsFixedSize< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >

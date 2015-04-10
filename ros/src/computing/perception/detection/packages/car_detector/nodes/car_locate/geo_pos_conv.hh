@@ -68,6 +68,7 @@ public:
 
     conv_llh2xyz();
   }
+
   void conv_llh2xyz(void){
     double PS;           //
     double PSo;          //
@@ -118,7 +119,6 @@ public:
     
     PI = (double) 765765.0/7516192768.0*pow(Pe,16);
     
-    
     PB1 = (double) AW * (1.0 - pow(Pe,2)) * PA;
     PB2 = (double) AW * (1.0 - pow(Pe,2)) * PB/-2.0;
     PB3 = (double) AW * (1.0 - pow(Pe,2)) * PC/4.0;
@@ -160,7 +160,5 @@ public:
  
   void conv_xyz2llh(void){}// n/a
 };
-
-  
 
 #endif

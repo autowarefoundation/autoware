@@ -43,7 +43,6 @@ typedef struct _ANGLE{
     double thiX;
     double thiY;
     double thiZ;
-
 }ANGLE;
 
 typedef struct _RESULT{
@@ -51,7 +50,5 @@ typedef struct _RESULT{
     double lon;
 
 }RESULT;
-
-
 
 #endif
