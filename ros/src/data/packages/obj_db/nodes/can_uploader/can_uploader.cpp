@@ -78,52 +78,23 @@ struct my_tm {
   long msec;  // milli sec
 };
 
-pthread_mutex_t mutex;
-
 //default server name and port to send data
-const string defaultServerName = "db1.ertl.jp";
-const int PORT = 5678;
+static const string defaultServerName = "db1.ertl.jp";
+static const int PORT = 5678;
 //magic that I am C++
-const char MAGIC[5] = "MPWC";
+static const char MAGIC[5] = "MPWC";
 
 //flag for comfirming whether updating position or not
-bool canGetFlag;
+static bool canGetFlag;
 
 //send to server class
-SendData sd;
+static SendData sd;
 
 //send data
-string CanSql;
-
-void printDiff(struct timeval begin, struct timeval end){
-  long diff;
-  diff = (end.tv_sec - begin.tv_sec)*1000*1000 + (end.tv_usec - begin.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
-}
-
-string getTimeStamp(long sec,long nsec){
-  struct tm *tmp;
-  struct timeval tv;
-  char temp[30];
-  string res;
-
-  tv.tv_sec = sec;
-  tv.tv_usec = nsec/1000;
-
-  tmp=localtime(&tv.tv_sec);
-  sprintf(temp,"%04d-%02d-%02d %02d:%02d:%02d.%d",
-	  tmp->tm_year + 1900, tmp->tm_mon + 1,
-	  tmp->tm_mday, tmp->tm_hour,
-	  tmp->tm_min, tmp->tm_sec,
-	  static_cast<int>(tv.tv_usec/1000));
-  res = temp;
-  return res;
-}
-
+static string CanSql;
 
 //wrap SendData class
-void* wrapSender(void *tsd){
-
+static void* wrapSender(void *tsd){
   string value;
 
   //create header
@@ -147,12 +118,9 @@ void* wrapSender(void *tsd){
   cout << "retrun message from DBserver : " << res << endl;
   
   return nullptr;
-
 }
 
-
-void* intervalCall(void *a){
-
+static void* intervalCall(void *a){
   pthread_t th;
 
   while(1){
@@ -173,20 +141,16 @@ void* intervalCall(void *a){
     if(pthread_join(th,NULL)){
       printf("thread join error.\n");
     }
-    
   }
 
   return nullptr;
 }
 
-
-void can_infoCallback(const vehicle_socket::CanInfo& can)
+static void can_infoCallback(const vehicle_socket::CanInfo& can)
 {
-
   ostringstream oss;
 
   oss << "INSERT INTO CAN(";
-
 
   oss << "tm,";
   oss << "devmode,";
@@ -301,12 +265,10 @@ void can_infoCallback(const vehicle_socket::CanInfo& can)
   CanSql = oss.str();
   
   canGetFlag = true;
-
 }
 
-
-int main(int argc, char **argv){
-  
+int main(int argc, char **argv)
+{
   ros::init(argc ,argv, "can_uploader") ;  
   cout << "can_uploader" << endl;
 
@@ -340,4 +302,5 @@ int main(int argc, char **argv){
 
   ros::spin();
 
+  return 0;
 }

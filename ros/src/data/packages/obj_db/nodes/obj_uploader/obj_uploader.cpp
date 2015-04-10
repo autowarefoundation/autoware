@@ -46,7 +46,6 @@
 
 */
 
-
 #include "std_msgs/String.h"
 #include "ros/ros.h"
 
@@ -88,26 +87,26 @@ struct my_tm {
 };
 
 //store subscribed value
-geometry_msgs::PoseArray car_position_array;
-geometry_msgs::PoseArray pedestrian_position_array;
+static geometry_msgs::PoseArray car_position_array;
+static geometry_msgs::PoseArray pedestrian_position_array;
 
 //default server name and port to send data
-const string defaultServerName = "db3.ertl.jp";
-const int PORT = 5678;
+static const string defaultServerName = "db3.ertl.jp";
+static const int PORT = 5678;
 //magic that I am C++
-const char MAGIC[5] = "MPWC";
-int area = 7;
+static const char MAGIC[5] = "MPWC";
+static const int area = 7;
 
 //flag for comfirming whether updating position or not
-bool positionGetFlag;
+static bool positionGetFlag;
 
 //send to server class
-SendData sd;
+static SendData sd;
 
 //store own position and direction now.updated by position_getter
-geometry_msgs::PoseStamped my_loc;
+static geometry_msgs::PoseStamped my_loc;
 
-void printDiff(struct timeval begin, struct timeval end){
+static void printDiff(struct timeval begin, struct timeval end){
   long diff;
   diff = (end.tv_sec - begin.tv_sec)*1000*1000 + (end.tv_usec - begin.tv_usec);
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
@@ -124,7 +123,7 @@ void GetRPY(const geometry_msgs::Pose &pose,
 }
 */
 
-string getTimeStamp(long sec,long nsec){
+static string getTimeStamp(long sec,long nsec){
   struct tm *tmp;
   struct timeval tv;
   char temp[30];
@@ -143,9 +142,7 @@ string getTimeStamp(long sec,long nsec){
   return res;
 }
 
-
-string makeSendDataDetectedObj(geometry_msgs::PoseArray cp_array){
-
+static string makeSendDataDetectedObj(geometry_msgs::PoseArray cp_array){
   ostringstream oss;
   vector<geometry_msgs::Pose>::iterator cp_iterator;
   cp_iterator = cp_array.poses.begin();
@@ -158,18 +155,18 @@ string makeSendDataDetectedObj(geometry_msgs::PoseArray cp_array){
     oss << "values(0," << fixed << setprecision(6) << cp_iterator->pose.position.y << "," << fixed << setprecision(6) << cp_iterator->pose.position.x << ",0,0,1,'" << getTimeStamp(cp_iterator->header.stamp.sec,cp_iterator->header.stamp.nsec) << "');\n";
     */
     oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
-    oss << "values('0'," << fixed << setprecision(6) << cp_iterator->position.y << "," << fixed << setprecision(6) << cp_iterator->position.x << "," << fixed << setprecision(6) << cp_iterator->position.z << "," << area << ",0,'" << getTimeStamp(cp_array.header.stamp.sec,cp_array.header.stamp.nsec) << "');\n";
+    oss << "values('0'," << fixed << setprecision(6) << cp_iterator->position.y << ","
+	<< fixed << setprecision(6) << cp_iterator->position.x << ","
+	<< fixed << setprecision(6) << cp_iterator->position.z << ","
+	<< area << ",0,'" << getTimeStamp(cp_array.header.stamp.sec,cp_array.header.stamp.nsec) << "');\n";
 
   }
 
   return oss.str();
-
 }
 
-
 //wrap SendData class
-void* wrapSender(void *tsd){
-
+static void* wrapSender(void *tsd){
   ostringstream oss;
   string value;
 
@@ -204,8 +201,11 @@ void* wrapSender(void *tsd){
   */
 
   oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
-  oss << "values('0'," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << "," << fixed << setprecision(6) << my_loc.pose.position.z << "," << area << ",0,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
-
+  oss << "values('0'," <<  fixed << setprecision(6) << my_loc.pose.position.y << ","
+      << fixed << setprecision(6) << my_loc.pose.position.x << ","
+      << fixed << setprecision(6) << my_loc.pose.position.z << ","
+      << area << ",0,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
+ 
   value += oss.str();
   cout << value << endl;
 
@@ -216,9 +216,7 @@ void* wrapSender(void *tsd){
 
 }
 
-
-void* intervalCall(void *a){
-
+static void* intervalCall(void *a){
   pthread_t th;
 
   while(1){
@@ -244,19 +242,14 @@ void* intervalCall(void *a){
   return nullptr;
 }
 
-
-void car_locateCallback(const geometry_msgs::PoseArray car_locate)
+static void car_locateCallback(const geometry_msgs::PoseArray car_locate)
 {
-
   car_position_array = car_locate;
-
 }
 
-void pedestrian_locateCallback(const geometry_msgs::PoseArray pedestrian_locate)
+static void pedestrian_locateCallback(const geometry_msgs::PoseArray pedestrian_locate)
 {
-
   pedestrian_position_array = pedestrian_locate;
-
 }
 
 /*
@@ -274,23 +267,17 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 */
 
-void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
-
+static void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
   my_loc = pose;
   positionGetFlag = true;
-
 }
 
-void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
-
+static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   my_loc = pose;
   positionGetFlag = true;
-
 }
-
 
 int main(int argc, char **argv){
-  
   ros::init(argc ,argv, "obj_uploader") ;  
   cout << "obj_uploader" << endl;
 
@@ -303,7 +290,7 @@ int main(int argc, char **argv){
 
   ros::Subscriber car_locate = n.subscribe("/car_pose", 1, car_locateCallback);
   ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locateCallback);
- ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
+  ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
 
   //set server name and port
   string serverName = defaultServerName;
@@ -325,5 +312,5 @@ int main(int argc, char **argv){
   pthread_detach(th);
 
   ros::spin();
-
+  return 0;
 }

@@ -28,7 +28,6 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #ifndef CALSELFLOC
 #define CALSELFLOC
 
@@ -36,7 +35,6 @@
 #include "structure.h"
 
 class selfLocation{
-
 public:
     selfLocation(){};
 
@@ -54,7 +52,6 @@ public:
     }
 
     LOCATION cal(){
-
         LOCATION res;
 
 	double a = (U-Ox)*(U-Ox)/(fkx*fkx);
@@ -70,24 +67,18 @@ public:
 	res.Z = res.Z/100;
 
         return res;
-
     }
 
-    
 private:
-
-
     double U;//X from camera picture
     double V;//Y from camera picture
     double distance;
-
 
     //camera parameter
     double fkx;
     double fky;
     double Ox;
     double Oy;
-
 };
 
 #endif
