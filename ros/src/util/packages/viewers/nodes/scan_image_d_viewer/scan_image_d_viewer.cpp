@@ -1,3 +1,33 @@
+/*
+ *  Copyright (c) 2015, Nagoya University
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 //openCV library
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -35,15 +65,15 @@ static const int OBJ_RECT_THICKNESS = 3;
 /* check whether floating value x is nearly 0 or not */
 static inline bool isNearlyNODATA(float x)
 {
-  float abs_x  = (float)fabs(x);
-  const int rangeScale = 100;
-  return(abs_x < FLT_MIN*rangeScale);
+    float abs_x  = (float)fabs(x);
+    const int rangeScale = 100;
+    return(abs_x < FLT_MIN*rangeScale);
 }
 
-void putDistance(IplImage *Image,
-                 car_detector::FusedObjects objects,
-                 int threshold_height,
-                 const char* objectLabel)
+static void putDistance(IplImage *Image,
+                        car_detector::FusedObjects objects,
+                        int threshold_height,
+                        const char* objectLabel)
 {
   char distance_string[32];
   CvFont dfont;
@@ -116,25 +146,25 @@ void putDistance(IplImage *Image,
     }
 }
 
-void drawRects(IplImage *Image,
-               int object_num,
-               std::vector<int> corner_point,
-               CvScalar color,
-               int threshold_height,
-               std::vector<float> distance)
+static void drawRects(IplImage *Image,
+                      int object_num,
+                      std::vector<int> corner_point,
+                      CvScalar color,
+                      int threshold_height,
+                      std::vector<float> distance)
 {
-  for(int i = 0; i < object_num; i++)
+    for(int i = 0; i < object_num; i++)
     {
-      if (corner_point[1+i*4] > threshold_height && !isNearlyNODATA(distance.at(i))) // temporal way to avoid drawing detections in the sky
+        if (corner_point[1+i*4] > threshold_height && !isNearlyNODATA(distance.at(i))) // temporal way to avoid drawing detections in the sky
         {
-          CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
-          CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
-          cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
+            CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
+            CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
+            cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
         }
     }
 }
 
-void show()
+static void show()
 {
     if(!exist_image || !exist_scan){
         return;
@@ -204,27 +234,26 @@ void show()
     cvReleaseImage(&image_view);
 }
 
-void scan_image_callback(const scan2image::ScanImage& scan_image_msg)
+static void scan_image_callback(const scan2image::ScanImage& scan_image_msg)
 {
     scan_image = scan_image_msg;
     exist_scan = true;
     show();
 }
 
-void car_fusion_callback(const car_detector::FusedObjects& fused_car_msg)
+static void car_fusion_callback(const car_detector::FusedObjects& fused_car_msg)
 {
   car_fused_objects = fused_car_msg;
 //  show();
 }
 
-void ped_fusion_callback(const car_detector::FusedObjects& fused_pds_msg)
+static void ped_fusion_callback(const car_detector::FusedObjects& fused_pds_msg)
 {
   pedestrian_fused_objects = fused_pds_msg;
 //  show();
 }
 
-
-void image_callback(const sensor_msgs::Image& image_msg)
+static void image_callback(const sensor_msgs::Image& image_msg)
 {
     cv_image = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
     image = cv_image->image;
@@ -242,10 +271,10 @@ int main(int argc, char **argv)
     ros::Subscriber car_fusion_sub = n.subscribe("/car_pixel_xyz", 1, car_fusion_callback);
     ros::Subscriber pedestrian_fusion_sub = n.subscribe("/pedestrian_pixel_xyz", 1, ped_fusion_callback);
 
-	cv::Mat grayscale(256,1,CV_8UC1);
-	for(int i = 0; i < 256; i++) {
-		grayscale.at<uchar>(i)=i;
-	}
+    cv::Mat grayscale(256,1,CV_8UC1);
+    for(int i = 0; i < 256; i++) {
+        grayscale.at<uchar>(i)=i;
+    }
     cv::applyColorMap(grayscale, colormap, cv::COLORMAP_JET);
     cvNamedWindow(window_name, 2);
 

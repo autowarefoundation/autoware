@@ -43,10 +43,9 @@
 using namespace std;
 using namespace cv;
 
-vector<Rect> cars;
-vector<Rect> peds;
-
-vector<Scalar> 	_colors;
+static vector<Rect> cars;
+static vector<Rect> peds;
+static vector<Scalar> _colors;
 
 static const int OBJ_RECT_THICKNESS = 3;
 
@@ -60,84 +59,82 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	Mat matImage(&frame, false);
 	cvtColor(matImage, matImage, CV_BGR2RGB);
 
-    /* variables for object label */
-    std::string objectLabel;
-    CvFont      font;
-    const float hscale      = 0.5f;
-    const float vscale      = 0.5f;
-    const float italicScale = 0.0f;
-    const int   thickness   = 1;
-    CvSize      text_size;
-    int         baseline    = 0;
+	/* variables for object label */
+	std::string objectLabel;
+	CvFont      font;
+	const float hscale      = 0.5f;
+	const float vscale      = 0.5f;
+	const float italicScale = 0.0f;
+	const int   thickness   = 1;
+	CvSize      text_size;
+	int         baseline    = 0;
 
-    cvInitFont(&font, CV_FONT_HERSHEY_COMPLEX, hscale, vscale, italicScale, thickness, CV_AA);
-    objectLabel = "car";
-    cvGetTextSize(objectLabel.data(),
-                  &font,
-                  &text_size,
-                  &baseline);
+	cvInitFont(&font, CV_FONT_HERSHEY_COMPLEX, hscale, vscale, italicScale, thickness, CV_AA);
+	objectLabel = "car";
+	cvGetTextSize(objectLabel.data(),
+		      &font,
+		      &text_size,
+		      &baseline);
 
 	for(std::size_t i=0; i<cars.size();i++)
 	{
 		if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
 		{
 			cvRectangle( &frame,
-				cvPoint(cars[i].x, cars[i].y),
-				cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
-				_colors[0], OBJ_RECT_THICKNESS, CV_AA, 0);
+				     cvPoint(cars[i].x, cars[i].y),
+				     cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
+				     _colors[0], OBJ_RECT_THICKNESS, CV_AA, 0);
 
-            /* put object label */
-            CvPoint textOrg = cvPoint(cars[i].x - OBJ_RECT_THICKNESS, cars[i].y - baseline - OBJ_RECT_THICKNESS);
+			/* put object label */
+			CvPoint textOrg = cvPoint(cars[i].x - OBJ_RECT_THICKNESS, cars[i].y - baseline - OBJ_RECT_THICKNESS);
 
-            cvRectangle(&frame,
-                        cvPoint(textOrg.x + 0 , textOrg.y + baseline),
-                        cvPoint(textOrg.x + text_size.width, textOrg.y - text_size.height),
-                        CV_RGB(0, 0, 0), // text background is black
-                        -1, 8, 0
-                        );
-            cvPutText(&frame,
-                      objectLabel.data(),
-                      textOrg,
-                      &font,
-                      CV_RGB(255, 255, 255) // text color is black
-                      );
+			cvRectangle(&frame,
+				    cvPoint(textOrg.x + 0 , textOrg.y + baseline),
+				    cvPoint(textOrg.x + text_size.width, textOrg.y - text_size.height),
+				    CV_RGB(0, 0, 0), // text background is black
+				    -1, 8, 0
+				);
+			cvPutText(&frame,
+				  objectLabel.data(),
+				  textOrg,
+				  &font,
+				  CV_RGB(255, 255, 255) // text color is black
+				);
 
 		}
 	}
 
-    objectLabel = "pedestrian";
-    cvGetTextSize(objectLabel.data(),
-                  &font,
-                  &text_size,
-                  &baseline);
+	objectLabel = "pedestrian";
+	cvGetTextSize(objectLabel.data(),
+		      &font,
+		      &text_size,
+		      &baseline);
 
 	for(std::size_t i=0; i<peds.size();i++)
 	{
 		if(peds[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
 		{
 			cvRectangle( &frame,
-				cvPoint(peds[i].x, peds[i].y),
-				cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
-				_colors[1], OBJ_RECT_THICKNESS, CV_AA, 0);
+				     cvPoint(peds[i].x, peds[i].y),
+				     cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
+				     _colors[1], OBJ_RECT_THICKNESS, CV_AA, 0);
 
-            /* put object label */
-            CvPoint textOrg = cvPoint(peds[i].x - OBJ_RECT_THICKNESS, peds[i].y - baseline - OBJ_RECT_THICKNESS);
-            cvRectangle(&frame,
-                        cvPoint(textOrg.x + 0 , textOrg.y + baseline),
-                        cvPoint(textOrg.x + text_size.width, textOrg.y - text_size.height),
-                        CV_RGB(0, 0, 0), // text background is black
-                        -1, 8, 0
-                        );
-            cvPutText(&frame,
-                      objectLabel.data(),
-                      textOrg,
-                      &font,
-                      CV_RGB(255, 255, 255) // text color is black
-                      );
-
+			/* put object label */
+			CvPoint textOrg = cvPoint(peds[i].x - OBJ_RECT_THICKNESS, peds[i].y - baseline - OBJ_RECT_THICKNESS);
+			cvRectangle(&frame,
+				    cvPoint(textOrg.x + 0 , textOrg.y + baseline),
+				    cvPoint(textOrg.x + text_size.width, textOrg.y - text_size.height),
+				    CV_RGB(0, 0, 0), // text background is black
+				    -1, 8, 0
+				);
+			cvPutText(&frame,
+				  objectLabel.data(),
+				  textOrg,
+				  &font,
+				  CV_RGB(255, 255, 255) // text color is black
+				);
 		}
 	}
-
 
 	cvShowImage("Image Viewer", &frame);
 	cvWaitKey(2);
@@ -160,7 +157,6 @@ static void car_updater_callback(const dpm::ImageObjects& image_objects_msg)
 		cars.push_back(tmp);
 
 	}
-
 }
 
 static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
@@ -180,7 +176,6 @@ static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
 		peds.push_back(tmp);
 
 	}
-
 }
 
 int main(int argc, char **argv)
