@@ -1,4 +1,34 @@
 /*
+ *  Copyright (c) 2015, Nagoya University
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/*
  Localization and mapping program using Normal Distributions Transform
 
  Yuki KITSUKAWA
@@ -39,59 +69,48 @@ $: rostopic pub --once /output std_msgs/Float32 0.2
 
 #include <runtime_manager/ConfigNdt.h>
 
-typedef struct {
+struct Position {
     double x;
     double y;
     double z;
     double roll;
     double pitch;
     double yaw;
-} Position;
+};
 
 // global variables
-Position previous_pos, guess_pos, current_pos, current_pos_control, gnss_pos, added_pos;
+static Position previous_pos, guess_pos, current_pos, added_pos;
 
-double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
+static double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
 
-pcl::PointCloud<pcl::PointXYZI> map;
+static pcl::PointCloud<pcl::PointXYZI> map;
 
-// If the map is loaded, map_loaded will be 1.
-int map_loaded = 0;
-int use_gnss = 1;
-int init_pos_set = 0;
-
-pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
+static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
 // Default values
-int iter = 30; // Maximum iterations
-float ndt_res = 1.0; // Resolution
-double step_size = 0.1; // Step size
-double trans_eps = 0.01; // Transformation epsilon
+static int iter = 30; // Maximum iterations
+static float ndt_res = 1.0; // Resolution
+static double step_size = 0.1; // Step size
+static double trans_eps = 0.01; // Transformation epsilon
 
 // Leaf size of VoxelGrid filter.
-double voxel_leaf_size = 2.0;
+static double voxel_leaf_size = 2.0;
 
-ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
-ros::Duration d_callback, d1, d2, d3, d4, d5;
+static ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
+static ros::Duration d_callback, d1, d2, d3, d4, d5;
 
-ros::Publisher ndt_map_pub;
-ros::Publisher ndt_pose_pub;
-geometry_msgs::PoseStamped ndt_pose_msg;
+static ros::Publisher ndt_map_pub;
+static ros::Publisher ndt_pose_pub;
+static geometry_msgs::PoseStamped ndt_pose_msg;
 
-double angle = 0.0;
-double control_shift_x = 0.0;
-double control_shift_y = 0.0;
-double control_shift_z = 0.0;
+static ros::Publisher ndt_stat_pub;
+static std_msgs::Bool ndt_stat_msg;
 
-ros::Publisher ndt_stat_pub;
-std_msgs::Bool ndt_stat_msg;
+static int count = 0;
+static int initial_scan_loaded = 0;
 
-int count = 0;
+static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
-int initial_scan_loaded = 0;
-
-Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
-
-void output_callback(const std_msgs::Float32::ConstPtr& input)
+static void output_callback(const std_msgs::Float32::ConstPtr& input)
 {
   double voxel_leaf_size = input->data;
 
@@ -119,36 +138,7 @@ void output_callback(const std_msgs::Float32::ConstPtr& input)
 
 }
 
-void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
-{
-  tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
-  tf::Matrix3x3 m(q);
-  gnss_pos.x = input->pose.position.x;
-  gnss_pos.y = input->pose.position.y;
-  gnss_pos.z = input->pose.position.z;
-  m.getRPY(gnss_pos.roll, gnss_pos.pitch, gnss_pos.yaw);
-  
-  // Get transformation matrix from GNSS
-  gnss_transform(0,0) = m[0][0];
-  gnss_transform(0,1) = m[0][1];
-  gnss_transform(0,2) = m[0][2];
-  gnss_transform(0,3) = input->pose.position.x;
-  gnss_transform(1,0) = m[1][0];
-  gnss_transform(1,1) = m[1][1];
-  gnss_transform(1,2) = m[1][2];
-  gnss_transform(1,3) = input->pose.position.y;
-  gnss_transform(2,0) = m[2][0];
-  gnss_transform(2,1) = m[2][1];
-  gnss_transform(2,2) = m[2][2];
-  gnss_transform(2,3) = input->pose.position.z;
-  
-  count++;
-
-  std::cout << "Transformation Matrix (GNSS) (" << count << ")" << std::endl;
-  std::cout << gnss_transform << std::endl;
-}
-
-void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
+static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
 {
   ros::Time scan_time;
 
@@ -324,7 +314,6 @@ void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::C
 
 int main(int argc, char **argv)
 {
-
     std::cout << "----------------------------------------" << std::endl;
     std::cout << "NDT_SLAM program coded by Yuki KITSUKAWA" << std::endl;
     std::cout << "----------------------------------------" << std::endl;

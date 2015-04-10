@@ -64,65 +64,65 @@
 
 #include <runtime_manager/ConfigNdt.h>
 
-typedef struct {
+struct Position {
     double x;
     double y;
     double z;
     double roll;
     double pitch;
     double yaw;
-} Position;
+};
 
 // global variables
-Position previous_pos, guess_pos, current_pos, current_pos_control;
+static Position previous_pos, guess_pos, current_pos, current_pos_control;
 
-double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
+static double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
 
 // Initial position (updated in param_callback)
-double initial_x = 0.0;
-double initial_y = 0.0;
-double initial_z = 0.0;
-double initial_roll = 0.0;
-double initial_pitch = 0.0;
-double initial_yaw = 0.0;
+static double initial_x = 0.0;
+static double initial_y = 0.0;
+static double initial_z = 0.0;
+static double initial_roll = 0.0;
+static double initial_pitch = 0.0;
+static double initial_yaw = 0.0;
 
 //Can't load if typed "pcl::PointCloud<pcl::PointXYZRGB> map, add;"
-pcl::PointCloud<pcl::PointXYZ> map, add;
-pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
+static pcl::PointCloud<pcl::PointXYZ> map, add;
+static pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
 
 // If the map is loaded, map_loaded will be 1.
-int map_loaded = 0;
-int use_gnss = 1;
-int init_pos_set = 0;
+static int map_loaded = 0;
+static int use_gnss = 1;
+static int init_pos_set = 0;
 
-pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
+static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 // Default values
-int iter = 30; // Maximum iterations
-float ndt_res = 1.0; // Resolution
-double step_size = 0.1; // Step size
-double trans_eps = 0.01; // Transformation epsilon
+static int iter = 30; // Maximum iterations
+static float ndt_res = 1.0; // Resolution
+static double step_size = 0.1; // Step size
+static double trans_eps = 0.01; // Transformation epsilon
 
 // Leaf size of VoxelGrid filter.
-double voxel_leaf_size = 2.0;
+static double voxel_leaf_size = 2.0;
 
-ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
-ros::Duration d_callback, d1, d2, d3, d4, d5;
+static ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
+static ros::Duration d_callback, d1, d2, d3, d4, d5;
 
-ros::Publisher ndt_pose_pub;
-geometry_msgs::PoseStamped ndt_pose_msg;
+static ros::Publisher ndt_pose_pub;
+static geometry_msgs::PoseStamped ndt_pose_msg;
 
-ros::Publisher control_pose_pub;
-geometry_msgs::PoseStamped control_pose_msg;
+static ros::Publisher control_pose_pub;
+static geometry_msgs::PoseStamped control_pose_msg;
 
-double angle = 0.0;
-double control_shift_x = 0.0;
-double control_shift_y = 0.0;
-double control_shift_z = 0.0;
+static double angle = 0.0;
+static double control_shift_x = 0.0;
+static double control_shift_y = 0.0;
+static double control_shift_z = 0.0;
 
-ros::Publisher ndt_stat_pub;
-std_msgs::Bool ndt_stat_msg;
+static ros::Publisher ndt_stat_pub;
+static std_msgs::Bool ndt_stat_msg;
 
-void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
+static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
     if (use_gnss != input->init_pos_gnss) {
         init_pos_set = 0;
@@ -191,10 +191,9 @@ void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     std::cout << "control_shift_x: " << control_shift_x << "." << std::endl;
     std::cout << "control_shift_y: " << control_shift_y << "." << std::endl;
     std::cout << "control_shift_z: " << control_shift_z << "." << std::endl;
-
 }
 
-void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
+static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
     if (map_loaded == 0) {
         std::cout << "Loading map data... ";
@@ -219,7 +218,7 @@ void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 }
 
-void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
     if (use_gnss == 1 && init_pos_set == 0) {
         tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
@@ -256,7 +255,7 @@ void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
     }
 }
 
-void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
+static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
 {
     if (map_loaded == 1 && init_pos_set == 1) {
         callback_start = ros::Time::now();
