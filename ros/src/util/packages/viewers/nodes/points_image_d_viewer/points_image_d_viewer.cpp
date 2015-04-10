@@ -54,18 +54,18 @@ using namespace cv;
 #define NO_DATA 0
 static char window_name[] = "points_image_d_viewer";
 
-bool existImage = false;
-bool existPoints = false;
-sensor_msgs::Image image_msg;
-points2image::PointsImageConstPtr points_msg;
-cv::Mat colormap;
+static bool existImage = false;
+static bool existPoints = false;
+static sensor_msgs::Image image_msg;
+static points2image::PointsImageConstPtr points_msg;
+static cv::Mat colormap;
 
 #if 0
-vector<Rect> cars;
-vector<Rect> peds;
+static vector<Rect> cars;
+static vector<Rect> peds;
 #else
-car_detector::FusedObjects car_fused_objects;
-car_detector::FusedObjects pedestrian_fused_objects;
+static car_detector::FusedObjects car_fused_objects;
+static car_detector::FusedObjects pedestrian_fused_objects;
 #endif
 
 /* check whether floating value x is nearly 0 or not */
@@ -76,35 +76,33 @@ static inline bool isNearlyNODATA(float x)
   return(abs_x < FLT_MIN*rangeScale);
 }
 
-vector<Scalar> 	_colors;
+static vector<Scalar> _colors;
 
 #define	IMAGE_WIDTH	800
 #define	IMAGE_HEIGHT	600
 
 static const int OBJ_RECT_THICKNESS = 3;
 
-void drawRects(IplImage *Image,
-               int object_num,
-               std::vector<int> corner_point,
-               CvScalar color,
-               int threshold_height,
-               std::vector<float> distance)
+static void drawRects(IplImage *Image,
+                      int object_num,
+                      std::vector<int> corner_point,
+                      CvScalar color,
+                      int threshold_height,
+                      std::vector<float> distance)
 {
-  for(int i = 0; i < object_num; i++)
-    {
-      if (corner_point[1+i*4] > threshold_height && !isNearlyNODATA(distance.at(i))) // temporal way to avoid drawing detections in the sky
-        {
-          CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
-          CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
-          cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
-        }
+  for(int i = 0; i < object_num; i++) {
+    if (corner_point[1+i*4] > threshold_height && !isNearlyNODATA(distance.at(i))) {  // temporal way to avoid drawing detections in the sky
+      CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
+      CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
+      cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
     }
+  }
 }
 
-void putDistance(IplImage *Image,
-                 car_detector::FusedObjects objects,
-                 int threshold_height,
-                 const char* objectLabel)
+static void putDistance(IplImage *Image,
+                        car_detector::FusedObjects objects,
+                        int threshold_height,
+                        const char* objectLabel)
 {
   char distance_string[32];
   CvFont dfont;
@@ -193,27 +191,22 @@ void show(void)
 
   /* DRAW RECTANGLES of detected objects */
 #if 0
-  for(std::size_t i=0; i<cars.size();i++)
-	{
-
-      if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
-		{
+  for(std::size_t i=0; i<cars.size();i++) {
+      if(cars[i].y > matImage.rows*.3) { //temporal way to avoid drawing detections in the sky
           cvRectangle( &frame,
                        cvPoint(cars[i].x, cars[i].y),
                        cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
                        _colors[0], 3, 8,0 );
-		}
-	}
-  for(std::size_t i=0; i<peds.size();i++)
-	{
-      if(peds[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
-		{
-          cvRectangle( &frame,
-                       cvPoint(peds[i].x, peds[i].y),
-                       cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
-                       _colors[1], 3, 8,0 );
-		}
-	}
+    }
+  }
+  for(std::size_t i=0; i<peds.size();i++) {
+    if(peds[i].y > matImage.rows*.3) {
+      cvRectangle( &frame,
+                   cvPoint(peds[i].x, peds[i].y),
+                   cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
+                   _colors[1], 3, 8,0 );
+    }
+  }
 #else
   drawRects(&frame,
             car_fused_objects.car_num,
@@ -243,10 +236,10 @@ void show(void)
   int w = IMAGE_WIDTH;
   int h = IMAGE_HEIGHT;
 
-  int i, n = w * h;
+  int n = w * h;
   float min_d = 1<<16, max_d = -1;
   //	int min_i = 1<<8, max_i = -1;
-  for(i=0; i<n; i++){
+  for(int i=0; i<n; i++){
     int di = points_msg->distance[i];
     max_d = di > max_d ? di : max_d;
     min_d = di < min_d ? di : min_d;
@@ -256,11 +249,10 @@ void show(void)
   }
   float wid_d = max_d - min_d;
 
-  int x, y;
-  for(y=0; y<h; y++){
-    for(x=0; x<w; x++){
-      int i = y * w + x;
-      double distance = points_msg->distance[i];
+  for(int y=0; y<h; y++){
+    for(int x=0; x<w; x++){
+      int j = y * w + x;
+      double distance = points_msg->distance[j];
       if(distance == 0){
         continue;
       }
@@ -277,27 +269,24 @@ void show(void)
 }
 
 #if 0
-void car_updater_callback(dpm::ImageObjects image_objects_msg)
+static void car_updater_callback(dpm::ImageObjects image_objects_msg)
 {
   int num = image_objects_msg.car_num;
   vector<int> points = image_objects_msg.corner_point;
   //points are X,Y,W,H and repeat for each instance
   cars.clear();
 
-  for (int i=0; i<num;i++)
-	{
-      Rect tmp;
-      tmp.x = points[i*4 + 0];
-      tmp.y = points[i*4 + 1];
-      tmp.width = points[i*4 + 2];
-      tmp.height = points[i*4 + 3];
-      cars.push_back(tmp);
-	}
-
-
+  for (int i=0; i<num;i++) {
+    Rect tmp;
+    tmp.x = points[i*4 + 0];
+    tmp.y = points[i*4 + 1];
+    tmp.width = points[i*4 + 2];
+    tmp.height = points[i*4 + 3];
+    cars.push_back(tmp);
+  }
 }
 #else
-void car_updater_callback(const car_detector::FusedObjects& fused_car_msg)
+static void car_updater_callback(const car_detector::FusedObjects& fused_car_msg)
 {
   car_fused_objects = fused_car_msg;
   //  show();
@@ -305,42 +294,38 @@ void car_updater_callback(const car_detector::FusedObjects& fused_car_msg)
 #endif
 
 #if 0
-void ped_updater_callback(dpm::ImageObjects image_objects_msg)
+static void ped_updater_callback(dpm::ImageObjects image_objects_msg)
 {
   int num = image_objects_msg.car_num;
   vector<int> points = image_objects_msg.corner_point;
   //points are X,Y,W,H and repeat for each instance
   peds.clear();
 
-  for (int i=0; i<num;i++)
-	{
-      Rect tmp;
-      tmp.x = points[i*4 + 0];
-      tmp.y = points[i*4 + 1];
-      tmp.width = points[i*4 + 2];
-      tmp.height = points[i*4 + 3];
-      peds.push_back(tmp);
-	}
-
+  for (int i=0; i<num;i++) {
+    Rect tmp;
+    tmp.x = points[i*4 + 0];
+    tmp.y = points[i*4 + 1];
+    tmp.width = points[i*4 + 2];
+    tmp.height = points[i*4 + 3];
+    peds.push_back(tmp);
+  }
 }
 #else
-void ped_updater_callback(const car_detector::FusedObjects& fused_pds_msg)
+static void ped_updater_callback(const car_detector::FusedObjects& fused_pds_msg)
 {
   pedestrian_fused_objects = fused_pds_msg;
   //  show();
 }
 #endif
 
-
-
-void image_cb(const sensor_msgs::Image& msg)
+static void image_cb(const sensor_msgs::Image& msg)
 {
   image_msg = msg;
   existImage = true;
   show();
 }
 
-void points_cb(const points2image::PointsImageConstPtr& msg)
+static void points_cb(const points2image::PointsImageConstPtr& msg)
 {
   points_msg = msg;
   existPoints = true;
@@ -358,45 +343,33 @@ int main(int argc, char **argv)
   string pedestrian_node;
   string points_node;
 
-  if (private_nh.getParam("image_node", image_node))
-    {
-      ROS_INFO("Setting image node to %s", image_node.c_str());
-    }
-  else
-	{
-      ROS_INFO("No image node received, defaulting to image_raw, you can use _image_node:=YOUR_NODE");
-      image_node = "/image_raw";
-	}
+  if (private_nh.getParam("image_node", image_node)) {
+    ROS_INFO("Setting image node to %s", image_node.c_str());
+  } else {
+    ROS_INFO("No image node received, defaulting to image_raw, you can use _image_node:=YOUR_NODE");
+    image_node = "/image_raw";
+  }
 
-  if (private_nh.getParam("car_node", car_node))
-    {
-      ROS_INFO("Setting car positions node to %s", car_node.c_str());
-    }
-  else
-	{
-      ROS_INFO("No car positions node received, defaulting to car_pixel_xyz, you can use _car_node:=YOUR_TOPIC");
-      car_node = "/car_pixel_xyz";
-	}
+  if (private_nh.getParam("car_node", car_node)) {
+    ROS_INFO("Setting car positions node to %s", car_node.c_str());
+  } else {
+    ROS_INFO("No car positions node received, defaulting to car_pixel_xyz, you can use _car_node:=YOUR_TOPIC");
+    car_node = "/car_pixel_xyz";
+  }
 
-  if (private_nh.getParam("pedestrian_node", pedestrian_node))
-    {
-      ROS_INFO("Setting pedestrian positions node to %s", pedestrian_node.c_str());
-    }
-  else
-	{
-      ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xyz, you can use _pedestrian_node:=YOUR_TOPIC");
-      pedestrian_node = "/pedestrian_pixel_xyz";
-	}
+  if (private_nh.getParam("pedestrian_node", pedestrian_node)) {
+    ROS_INFO("Setting pedestrian positions node to %s", pedestrian_node.c_str());
+  } else {
+    ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xyz, you can use _pedestrian_node:=YOUR_TOPIC");
+    pedestrian_node = "/pedestrian_pixel_xyz";
+  }
 
-  if (private_nh.getParam("points_node", points_node))
-    {
-      ROS_INFO("Setting pedestrian positions node to %s", points_node.c_str());
-    }
-  else
-	{
-      ROS_INFO("No points node received, defaulting to points_image, you can use _points_node:=YOUR_TOPIC");
-      points_node = "/points_image";
-	}
+  if (private_nh.getParam("points_node", points_node)) {
+    ROS_INFO("Setting pedestrian positions node to %s", points_node.c_str());
+  } else {
+    ROS_INFO("No points node received, defaulting to points_image, you can use _points_node:=YOUR_TOPIC");
+    points_node = "/points_image";
+  }
 
   cv::generateColors(_colors, 25);
 
@@ -410,11 +383,9 @@ int main(int argc, char **argv)
                                                points_cb);
 
   cv::Mat grayscale(256,1,CV_8UC1);
-  int i;
-  for(i=0;i<256;i++)
-	{
-      grayscale.at<uchar>(i)=i;
-	}
+  for(int i=0;i<256;i++) {
+    grayscale.at<uchar>(i)=i;
+  }
   cv::applyColorMap(grayscale,colormap,cv::COLORMAP_JET);
 
   ros::spin();

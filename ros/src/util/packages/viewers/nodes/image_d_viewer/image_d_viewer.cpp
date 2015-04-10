@@ -41,17 +41,18 @@
 #include <float.h>
 #define NO_DATA 0
 
-char window_name[] = "image_d_viewer";
+static char window_name[] = "image_d_viewer";
 //for imageCallback
-cv_bridge::CvImagePtr cv_image;
-IplImage temp;
-IplImage *image;
-double ratio = 1;	//resize ratio
+static cv_bridge::CvImagePtr cv_image;
+static IplImage temp;
+static IplImage *image;
+static double ratio = 1;	//resize ratio
 
-car_detector::FusedObjects car_fused_objects;
-car_detector::FusedObjects pedestrian_fused_objects;
+static car_detector::FusedObjects car_fused_objects;
+static car_detector::FusedObjects pedestrian_fused_objects;
 
 static const int OBJ_RECT_THICKNESS = 3;
+static void showImage();
 
 /* check whether floating value x is nearly 0 or not */
 static inline bool isNearlyNODATA(float x)
@@ -61,9 +62,6 @@ static inline bool isNearlyNODATA(float x)
   return(abs_x < FLT_MIN*rangeScale);
 }
 
-
-void showImage();
-
 void showRects(IplImage *Image,
                int object_num,
                std::vector<int> corner_point,
@@ -71,18 +69,18 @@ void showRects(IplImage *Image,
                CvScalar col,
                std::vector<float> distance)
 {
-	for(int i = 0; i < object_num; i++)
-	{
-      if (!isNearlyNODATA(distance.at(i)))
+    for(int i = 0; i < object_num; i++)
+    {
+        if (!isNearlyNODATA(distance.at(i)))
         {
-          CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
-          CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
-          cvRectangle(Image,p1,p2,col,OBJ_RECT_THICKNESS);
+            CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
+            CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
+            cvRectangle(Image,p1,p2,col,OBJ_RECT_THICKNESS);
         }
-	}
+    }
 }
 
-void car_pixel_xyzCallback(const car_detector::FusedObjects& fused_objects)
+static void car_pixel_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
     if(image == NULL){
       return;
@@ -91,7 +89,7 @@ void car_pixel_xyzCallback(const car_detector::FusedObjects& fused_objects)
     showImage();
 }
 
-void pedestrian_pixel_xyzCallback(const car_detector::FusedObjects& fused_objects)
+static void pedestrian_pixel_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
     if(image == NULL){
       return;
@@ -100,8 +98,7 @@ void pedestrian_pixel_xyzCallback(const car_detector::FusedObjects& fused_object
     showImage();
 }
 
-
-void imageCallback(const sensor_msgs::Image& image_source)
+static void imageCallback(const sensor_msgs::Image& image_source)
 {
     cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
     temp = cv_image->image;
@@ -109,9 +106,8 @@ void imageCallback(const sensor_msgs::Image& image_source)
     showImage();
 }
 
-void showImage()
+static void showImage()
 {
-    int i;
     IplImage* image_clone = cvCloneImage(image);
     char distance_string[32];
     CvFont dfont;
@@ -153,7 +149,7 @@ void showImage()
     /*
      * Plot car distance data on image
      */
-    for (i = 0; i < car_fused_objects.car_num; i++) {
+    for (int i = 0; i < car_fused_objects.car_num; i++) {
       if(!isNearlyNODATA(car_fused_objects.distance.at(i))) {
 
           /* put label */
@@ -199,7 +195,7 @@ void showImage()
     /*
      * Plot pedestrian distance data on image
      */
-    for (i = 0; i < pedestrian_fused_objects.car_num; i++) {
+    for (int i = 0; i < pedestrian_fused_objects.car_num; i++) {
       if(!isNearlyNODATA(pedestrian_fused_objects.distance.at(i))) {
 
           /* put label */
@@ -243,7 +239,6 @@ void showImage()
     cvWaitKey(2);
     cvReleaseImage(&image_clone);
 }
-
 
 int main(int argc, char **argv)
 {
@@ -301,5 +296,4 @@ int main(int argc, char **argv)
     cvDestroyWindow(window_name);
 
     return 0;
-
 }
