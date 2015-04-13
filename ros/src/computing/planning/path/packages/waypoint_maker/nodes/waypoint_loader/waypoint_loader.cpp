@@ -80,6 +80,10 @@ ros::Publisher mark_pub;
 ros::Publisher red_pub;
 ros::Publisher green_pub;
 
+lane_follower::lane lane_cmd;
+nav_msgs::Path cmd_path;
+std::vector<pose> Pose;
+
 static std::vector<Point> search_stopline_point(const nav_msgs::Path& msg)
 {
     std::vector<Point> stopline_points;
@@ -225,10 +229,46 @@ static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
     return computations;
 }
 
+static void publish_signal_waypoint()
+{
+    lane_follower::lane red_cmd;
+    red_cmd.header = lane_cmd.header;
+    red_cmd.increment = 1;
+
+    lane_follower::lane green_cmd;
+    green_cmd.header = lane_cmd.header;
+    green_cmd.increment = 1;
+
+    std::vector<double> computations =
+        compute_velocity(cmd_path, config_velocity, config_difference_around_signal);
+
+    for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
+
+        // for Red
+        lane_follower::waypoint waypoint;
+        waypoint.pose.header = lane_cmd.header;
+        waypoint.twist.header = lane_cmd.header;
+        waypoint.pose.pose.position.x = Pose[i].x;
+        waypoint.pose.pose.position.y = Pose[i].y;
+        waypoint.pose.pose.position.z = Pose[i].z;
+        waypoint.pose.pose.orientation.w = 1.0;
+        waypoint.twist.twist.linear.x = computations[i] / 3.6;
+        red_cmd.waypoints.push_back(waypoint);
+
+        // for Green
+        waypoint.twist.twist.linear.x = config_velocity / 3.6;
+        green_cmd.waypoints.push_back(waypoint);
+    }
+    red_pub.publish(red_cmd);
+    green_pub.publish(green_cmd);
+}
+
 static void config_callback(const runtime_manager::ConfigWaypointLoader& msg)
 {
     config_velocity = msg.velocity;
     config_difference_around_signal = msg.difference_around_signal;
+
+    publish_signal_waypoint();
 }
 
 int main(int argc, char **argv)
@@ -269,7 +309,6 @@ int main(int argc, char **argv)
     mark_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 1000, true);
     red_pub = nh.advertise<lane_follower::lane>("red_waypoint", 1000, true);
     green_pub = nh.advertise<lane_follower::lane>("green_waypoint", 1000, true);
-    std::vector<pose> Pose;
 
     // display by markers the velocity of each waypoint.
     visualization_msgs::MarkerArray marker_array;
@@ -332,11 +371,9 @@ int main(int argc, char **argv)
     }
     
     ros::Time now = ros::Time::now();
-    nav_msgs::Path cmd_path;
     cmd_path.header.frame_id = PATH_FRAME;
     //cmd_path.header.stamp = now;
     
-    lane_follower::lane lane_cmd;
     lane_cmd.header.frame_id = PATH_FRAME;
     lane_cmd.header.stamp = now;
     lane_cmd.increment = 1;
@@ -379,38 +416,7 @@ int main(int argc, char **argv)
     ruled_pub.publish(lane_cmd);
     vel_pub.publish(marker_array);
     mark_pub.publish(mark);
-
-    lane_follower::lane red_cmd;
-    red_cmd.header = lane_cmd.header;
-    red_cmd.increment = 1;
-
-    lane_follower::lane green_cmd;
-    green_cmd.header = lane_cmd.header;
-    green_cmd.increment = 1;
-
-    std::vector<double> computations =
-        compute_velocity(cmd_path, config_velocity, config_difference_around_signal);
-
-    for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
-
-        // for Red
-        lane_follower::waypoint waypoint;
-        waypoint.pose.header = lane_cmd.header;
-        waypoint.twist.header = lane_cmd.header;
-        waypoint.pose.pose.position.x = Pose[i].x;
-        waypoint.pose.pose.position.y = Pose[i].y;
-        waypoint.pose.pose.position.z = Pose[i].z;
-        waypoint.pose.pose.orientation.w = 1.0;
-        waypoint.twist.twist.linear.x = computations[i] / 3.6;
-        red_cmd.waypoints.push_back(waypoint);
-
-        // for Green
-        waypoint.twist.twist.linear.x = config_velocity / 3.6;
-        green_cmd.waypoints.push_back(waypoint);
-    }
-    red_pub.publish(red_cmd);
-    green_pub.publish(green_cmd);
-
+    publish_signal_waypoint();
     ros::spin();
     
     
