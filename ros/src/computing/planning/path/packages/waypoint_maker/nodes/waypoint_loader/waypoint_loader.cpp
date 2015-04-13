@@ -60,8 +60,8 @@ static constexpr double ACCIDENT_ERROR = 0.000001;
 static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
 static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
 
-static volatile double config_velocity = 40; // Unit: km/h
-static volatile double config_difference_around_signal = 2; // Unit: km/h
+static double config_velocity = 40; // Unit: km/h
+static double config_difference_around_signal = 2; // Unit: km/h
 
 static std::vector<Lane> lanes;
 static std::vector<Node> nodes;
@@ -70,19 +70,12 @@ static std::vector<StopLine> stoplines;
 
 static std::vector<Point> left_lane_points;
 
-std::string vector_map_directory;
-std::string ruled_waypoint_csv;
+static ros::Publisher red_pub;
+static ros::Publisher green_pub;
 
-ros::Publisher lane_pub;
-ros::Publisher ruled_pub;
-ros::Publisher vel_pub;
-ros::Publisher mark_pub;
-ros::Publisher red_pub;
-ros::Publisher green_pub;
-
-lane_follower::lane lane_cmd;
-nav_msgs::Path cmd_path;
-std::vector<pose> Pose;
+static lane_follower::lane lane_cmd;
+static nav_msgs::Path cmd_path;
+static std::vector<pose> Pose;
 
 static std::vector<Point> search_stopline_point(const nav_msgs::Path& msg)
 {
@@ -276,9 +269,11 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "waypoint_loader");
     ros::NodeHandle nh;
 
+    std::string vector_map_directory;
     nh.param<std::string>("waypoint_loader/vector_map_directory",
                           vector_map_directory, VECTOR_MAP_DIRECTORY);
 
+    std::string ruled_waypoint_csv;
     nh.param<std::string>("waypoint_loader/ruled_waypoint_csv",
                           ruled_waypoint_csv, RULED_WAYPOINT_CSV);
 
@@ -303,10 +298,10 @@ int main(int argc, char **argv)
 
     ros::Subscriber config_sub = nh.subscribe("config/waypoint_loader", 1000, config_callback);
 
-    lane_pub = nh.advertise<nav_msgs::Path>("lane_waypoint", 1000, true);
-    ruled_pub = nh.advertise<lane_follower::lane>("ruled_waypoint", 1000, true);
-    vel_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 1000, true);
-    mark_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 1000, true);
+    ros::Publisher lane_pub = nh.advertise<nav_msgs::Path>("lane_waypoint", 1000, true);
+    ros::Publisher ruled_pub = nh.advertise<lane_follower::lane>("ruled_waypoint", 1000, true);
+    ros::Publisher vel_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 1000, true);
+    ros::Publisher mark_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 1000, true);
     red_pub = nh.advertise<lane_follower::lane>("red_waypoint", 1000, true);
     green_pub = nh.advertise<lane_follower::lane>("green_waypoint", 1000, true);
 
