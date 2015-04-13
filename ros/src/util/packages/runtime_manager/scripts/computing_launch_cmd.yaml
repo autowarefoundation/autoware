@@ -359,11 +359,25 @@ params :
         delim       : ':='
 
   - name  : waypoint_loader
+    topic : /config/waypoint_loader
+    msg   : ConfigWaypointLoader
     vars  :
-    - name      : waypoint_filename
+    - name      : vector_map
       kind      : path
-      v         : ''
-      cmd_param :
-        only_enable : True
-        dash        : ''
-        delim       : ':='
+      path_type : dir
+      v         : /tmp
+      rosparam  : /waypoint_loader/vector_map_directory
+    - name      : ruled_waypoint
+      kind      : path
+      v         : /tmp/ruled_waypoint.csv
+      rosparam  : /waypoint_loader/ruled_waypoint_csv
+    - name      : velocity
+      label     : Velocity (km/h)
+      min       : 0
+      max       : 200
+      v         : 40.0
+    - name      : difference_around_signal
+      label     : Difference around Signal (km/h)
+      min       : 0
+      max       : 20
+      v         : 2.0

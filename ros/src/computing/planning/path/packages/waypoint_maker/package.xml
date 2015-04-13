@@ -12,12 +12,16 @@
   <build_depend>tf</build_depend>
   <build_depend>vehicle_socket</build_depend>
   <build_depend>lane_follower</build_depend>
+  <build_depend>lane_planner</build_depend>
+  <build_depend>runtime_manager</build_depend>
   <run_depend>gnss</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>vehicle_socket</run_depend>
   <run_depend>lane_follower</run_depend>
+  <run_depend>lane_planner</run_depend>
+  <run_depend>runtime_manager</run_depend>
   <export>
   </export>
 </package>
