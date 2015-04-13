@@ -1,0 +1,3 @@
+Header header
+float32 velocity
+float32 difference_around_signal

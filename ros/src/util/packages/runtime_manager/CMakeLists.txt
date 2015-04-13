@@ -18,6 +18,7 @@ add_message_files(
   ConfigCarKf.msg
   ConfigPedestrianKf.msg
   ConfigLaneRule.msg
+  ConfigWaypointLoader.msg
   ConfigPoints2Polygon.msg
   accel_cmd.msg
   steer_cmd.msg
