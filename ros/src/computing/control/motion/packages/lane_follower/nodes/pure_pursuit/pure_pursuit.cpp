@@ -197,29 +197,61 @@ geometry_msgs::Point TransformWaypoint(int i)
 }
 
 /////////////////////////////////////////////////////////////////
-// obtain the distance to @waypoint.
+// obtain the distance to @waypoint. ignore z position
 /////////////////////////////////////////////////////////////////
 double GetLookAheadDistance(int waypoint)
 {
     //std::cout << "get lookahead distance" << std::endl;
 
-  /*   // current position.
-    tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, _current_pose.pose.position.z);
-
     // position of @waypoint.
     tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, _current_path.waypoints[waypoint].pose.pose.position.z);
-  */
+    tf::Vector3 tf_v2 = _transform * v2;
+    tf_v2.setZ(0);
+     //std::cout << "tf_v2 : (" << tf_v2.getX() << " " << tf_v2.getY() << " " << tf_v2.getZ() << ")" << std::endl;
 
-    //ignore z position  version
+    //return tf::tfDistance(v1, v2);
+    return tf::tfDistance(_origin_v, tf_v2);
+}
 
-    // current position.
-    tf::Vector3 v1(_current_pose.pose.position.x, _current_pose.pose.position.y, 0);
+/////////////////////////////////////////////////////////////////
+// obtain the velocity(m/s) waypoint under the vehicle has.
+/////////////////////////////////////////////////////////////////
+int GetClosestWaypointNum()
+{
+    //std::cout << "search waypoint nearest the vehicle" << std::endl;
+    double distance = 10000; //meter
+    double waypoint = 0;
 
-    // position of @waypoint.
-    tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x,
-                   _current_path.waypoints[waypoint].pose.pose.position.y, 0);
+    for (int i = 1; i < _current_path.waypoints.size(); i++) {
+        //std::cout << waypoint << std::endl;
 
-    return tf::tfDistance(v1, v2);
+        // position of @waypoint.
+        tf::Vector3 v2(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, 0);
+        tf::Vector3 tf_v2 = _transform * v2;
+        tf_v2.setZ(0);
+        //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+
+        //double dt = tf::tfDistance(v1, v2);
+        double dt = tf::tfDistance(_origin_v, tf_v2);
+        //  std::cout << i  << " "<< dt << std::endl;
+        if (dt < distance) {
+            distance = dt;
+            waypoint = i;
+            // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+        }
+    }
+    return waypoint;
+}
+
+/////////////////////////////////////////////////////////////////
+// obtain the velocity(m/s) waypoint under the vehicle has.
+/////////////////////////////////////////////////////////////////
+double GetWaypointVelocity()
+{
+    //std::cout << "get velocity from waypoint near the vehicle" << std::endl;
+    static double velocity = _current_path.waypoints[1].twist.twist.linear.x;
+
+    return _current_path.waypoints[GetClosestWaypointNum()].twist.twist.linear.x;
 }
 
 /////////////////////////////////////////////////////////////////
