@@ -6,22 +6,21 @@
 	<arg name="use_topic" default="ndt" />
 	<arg name="rotation_set" default="RPY" /> <!-- RPY or Qua(Quaternion) -->
 	<!-- moriyama -->
-<!--<arg name="position_x" default="-14876.8" />
+<arg name="position_x" default="-14876.8" />
 	<arg name="position_y" default="-84717.8" />
 	<arg name="position_z" default="40.4" />
 	<arg name="yaw" default="3.5" />  
-	 -->
-	<!-- moriyama -->
+	<!-- toyota -->
 <!-- 	<arg name="position_x" default="3752.5" />
 	<arg name="position_y" default="-99434.7" />
 	<arg name="position_z" default="87.6" />
 	<arg name="yaw" default="1.6" />  -->
 	<!-- vbl -->
- <arg name="position_x" default="-18411" />
+<!-- <arg name="position_x" default="-18411" />
 	<arg name="position_y" default="-93544.6" />
 	<arg name="position_z" default="37" />
 	<arg name="yaw" default="-0.5" />  
-	
+	-->
 	<!-- <arg name="orientation_x" default="0" />
 	<arg name="orientation_y" default="0" />
 	<arg name="orientation_z" default="0" />
