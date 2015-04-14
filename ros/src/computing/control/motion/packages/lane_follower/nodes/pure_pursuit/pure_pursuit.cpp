@@ -433,34 +433,6 @@ int GetNextWayPoint()
     return 0;
 }
 
-/////////////////////////////////////////////////////////////////
-// obtain the velocity(m/s) waypoint under the vehicle has.
-/////////////////////////////////////////////////////////////////
-double GetWaypointVelocity()
-{
-    std::cout << "get velocity from waypoint under the vehicle" << std::endl;
-    static double prev_velocity = _current_path.waypoints[1].twist.twist.linear.x;
-    double search_radius = 1; //meter
-
-    for (int waypoint = 1; waypoint < _current_path.waypoints.size(); waypoint++) {
-        //std::cout << waypoint << std::endl;
-        // current position.
-        tf::Vector3
-        v1(_current_pose.pose.position.x, _current_pose.pose.position.y, 0);
-
-        // position of @waypoint.
-        tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, 0);
-
-        if (tf::tfDistance(v1, v2) < search_radius) {
-           // std::cout << "velocity detected!!" << _current_path.waypoints[waypoint].twist.twist.linear.x <<std::endl;
-            prev_velocity = _current_path.waypoints[waypoint].twist.twist.linear.x;
-            return _current_path.waypoints[waypoint].twist.twist.linear.x;
-        }
-    }
-    //std::cout << "velocity not detected!!" << std::endl;
-    return prev_velocity;
-}
-
 
 /////////////////////////////////////////////////////////////////
 // obtain the linear/angular velocity toward the next waypoint.
@@ -468,20 +440,10 @@ double GetWaypointVelocity()
 static geometry_msgs::Twist CalculateCmdTwist()
 {
     std::cout << "calculate" << std::endl;
+
     geometry_msgs::Twist twist;
 
-    //  std::cout << "current_pose : (" << _current_pose.pose.position.x << " " << _current_pose.pose.position.y << " " << _current_pose.pose.position.z << ")" << std::endl;
-    double lookahead_distance = GetLookAheadDistance(_next_waypoint);
-
-    std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
-
-    // transform the waypoint to the car plane.
-    geometry_msgs::PoseStamped transformed_waypoint = TransformWaypoint(_next_waypoint);
-
-    std::cout << "current path (" << _current_path.waypoints[_next_waypoint].pose.pose.position.x << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.y << " " << _current_path.waypoints[_next_waypoint].pose.pose.position.z << ") ---> transformed_path : (" << transformed_waypoint.pose.position.x << " " << transformed_waypoint.pose.position.y << " " << transformed_waypoint.pose.position.z << ")" << std::endl;
-
-    double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.pose.position.y);
-
+    double radius = CalcRadius(_next_waypoint);
     double initial_velocity_ms = 0;
     if (_fix_flag == false)
         initial_velocity_ms = GetWaypointVelocity();
@@ -542,26 +504,14 @@ static geometry_msgs::Twist EndControl()
         _lf_stat.data = false;
         _stat_pub.publish(_lf_stat);
 
-	} /*else if (lookahead_distance > _error_distance) { // EndControl terminated
-
-        twist.linear.x = 0;
-        twist.angular.z = 0;
-
-        _next_waypoint = 0;
-
-        _lf_stat.data = false;
-        _stat_pub.publish(_lf_stat);
-
-	}*/ else {
+	} else {
 
         if (velocity_kmh < end_velocity_kmh)
             velocity_ms = end_velocity_kmh / 3.6;
 
         std::cout << "set velocity (kmh) = " << velocity_ms * 3.6 << std::endl;
-        // transform the waypoint to the car plane.
-        geometry_msgs::PoseStamped transformed_waypoint = TransformWaypoint(_current_path.waypoints.size() - 1);
 
-        double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.pose.position.y);
+        double radius = CalcRadius(_next_waypoint);
         double angular_velocity;
 
         if (radius > 0 || radius < 0) {
@@ -625,7 +575,7 @@ int main(int argc, char **argv)
     ros::Subscriber waypoint_subcscriber = nh.subscribe("ruled_waypoint", 1000, WayPointCallback);
     ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1000, OdometryPoseCallback);
 
-    ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
+    //ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
 
     ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
 
@@ -639,11 +589,11 @@ int main(int argc, char **argv)
         ros::spinOnce();
 
         if (_fix_flag == true && _param_set == false) {
-	  std::cout << "parameter waiting..." << std::endl;
-	  loop_rate.sleep();
-	  continue;
-	}
-        
+            std::cout << "parameter waiting..." << std::endl;
+            loop_rate.sleep();
+            continue;
+        }
+
         if (endflag == false) {
 
             // get the waypoint.
@@ -662,19 +612,19 @@ int main(int argc, char **argv)
         } else {
             twist.twist = EndControl();
 
-	    // after stopped or fed out, let's get ready for the restart.
-	    if (_next_waypoint == 0) {
-	        endflag = false;
-	    }
+            // after stopped or fed out, let's get ready for the restart.
+            if (_next_waypoint == 0) {
+                endflag = false;
+            }
         }
 
         if (_next_waypoint == _current_path.waypoints.size() - 1) {
             endflag = true;
-	}
+        }
 
         std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
-	std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
-	std::cout << std::endl;
+        std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
+        std::cout << std::endl;
 
         twist.header.stamp = ros::Time::now();
         cmd_velocity_publisher.publish(twist);
