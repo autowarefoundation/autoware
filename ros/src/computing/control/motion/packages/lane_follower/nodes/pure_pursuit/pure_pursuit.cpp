@@ -254,6 +254,25 @@ double GetWaypointVelocity()
     return _current_path.waypoints[GetClosestWaypointNum()].twist.twist.linear.x;
 }
 
+double CalcRadius(int waypoint)
+{
+    //  std::cout << "current_pose : (" << _current_pose.pose.position.x << " " << _current_pose.pose.position.y << " " << _current_pose.pose.position.z << ")" << std::endl;
+    double lookahead_distance = GetLookAheadDistance(waypoint);
+
+    //std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
+
+    // transform the waypoint to the car plane.
+    geometry_msgs::Point transformed_waypoint = TransformWaypoint(waypoint);
+
+    //std::cout << "current path (" << _current_path.waypoints[waypoint].pose.pose.position.x << " " << _current_path.waypoints[waypoint].pose.pose.position.y << " " << _current_path.waypoints[waypoint].pose.pose.position.z << ") ---> transformed_path : (" << transformed_waypoint.x << " " << transformed_waypoint.y << " " << transformed_waypoint.z << ")" << std::endl;
+
+    double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.y);
+    //std::cout << "radius = " << radius << std::endl;
+    return radius;
+
+}
+
+
 /////////////////////////////////////////////////////////////////
 // obtain the next "effective" waypoint. 
 // the vehicle drives itself toward this waypoint.
