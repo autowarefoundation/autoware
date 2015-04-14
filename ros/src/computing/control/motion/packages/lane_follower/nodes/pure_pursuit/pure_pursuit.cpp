@@ -166,21 +166,13 @@ static double GetLookAheadThreshold()
         return 5;
     else
         return current_velocity_kmph * 0.5;
+}
 
-    /* if (current_velocity_kmph > 0 && current_velocity_kmph < 5.0)
-        return 4.0 * _threshold_ratio;
-    else if (current_velocity_kmph >= 5.0 && current_velocity_kmph < 10)
-        return 5.0 * _threshold_ratio;
-    else if (current_velocity_kmph >= 10.0 && current_velocity_kmph < 20.0)
-        return 7.0 * _threshold_ratio;
-    else if (current_velocity_kmph >= 20.0 && current_velocity_kmph < 30.0)
-        return 12.0 * _threshold_ratio;
-    else if (current_velocity_kmph >= 30.0 && current_velocity_kmph < 40.0)
-        return 14.0 * _threshold_ratio;
-    else if (current_velocity_kmph >= 40.0)
-        return 15.0 * _threshold_ratio;
-    else
-        return 0;*/
+static double GetEvaluation(int closest, int i)
+{
+    int num = i - closest;
+    double ratio = 0.05;
+    return num * ratio;
 }
 
 /////////////////////////////////////////////////////////////////
