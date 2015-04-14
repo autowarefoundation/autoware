@@ -90,12 +90,17 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
     if (_current_pose_topic == "odometry") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose.pose;
+
+        tf::Transform inverse;
+        tf::poseMsgToTF(msg->pose.pose,inverse);
+_transform = inverse.inverse();
+     //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
     } //else
       //      std::cout << "pose is not odometry" << std::endl;
 
 }
 
-static geometry_msgs::PoseStamped _prev_pose;
+/*static geometry_msgs::PoseStamped _prev_pose;
 static geometry_msgs::Quaternion _quat;
 static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 {
@@ -121,13 +126,16 @@ static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
     } //else
       //      std::cout << "pose is not gnss" << std::endl;
 }
-
+*/
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
     //std::cout << "gnss callback" << std::endl;
     if (_current_pose_topic == "ndt") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
+        tf::Transform inverse;
+        tf::poseMsgToTF(msg->pose,inverse);
+        _transform = inverse.inverse();
 
     } //else
       //     std::cout << "pose is not ndt" << std::endl;
