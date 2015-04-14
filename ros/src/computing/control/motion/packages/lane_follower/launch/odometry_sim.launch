@@ -5,11 +5,23 @@
 	<arg name="use_pose" default="false" />
 	<arg name="use_topic" default="ndt" />
 	<arg name="rotation_set" default="RPY" /> <!-- RPY or Qua(Quaternion) -->
-	<arg name="position_x" default="-14876.8" />
+	<!-- moriyama -->
+<arg name="position_x" default="-14876.8" />
 	<arg name="position_y" default="-84717.8" />
 	<arg name="position_z" default="40.4" />
-	<arg name="yaw" default="3.5" />
-	<arg name="orientation_x" default="0" />
+	<arg name="yaw" default="3.5" />  
+	<!-- toyota -->
+<!-- 	<arg name="position_x" default="3752.5" />
+	<arg name="position_y" default="-99434.7" />
+	<arg name="position_z" default="87.6" />
+	<arg name="yaw" default="1.6" />  -->
+	<!-- vbl -->
+<!-- <arg name="position_x" default="-18411" />
+	<arg name="position_y" default="-93544.6" />
+	<arg name="position_z" default="37" />
+	<arg name="yaw" default="-0.5" />  
+	-->
+	<!-- <arg name="orientation_x" default="0" />
 	<arg name="orientation_y" default="0" />
 	<arg name="orientation_z" default="0" />
 	<arg name="orientation_w" default="1" />
@@ -25,11 +37,11 @@
 		<param name="py" value="$(arg position_y)" />
 		<param name="pz" value="$(arg position_z)" />
 		<param name="yaw" value="$(arg yaw)" />
-		 <param name="ox" value="$(arg orientation_x)" />
+	<!-- 	 <param name="ox" value="$(arg orientation_x)" />
 		<param name="oy" value="$(arg orientation_y)" />
 		<param name="oz" value="$(arg orientation_z)" />
 		<param name="ow" value="$(arg orientation_w)" /> 
-		
+		 -->
 	</node>
 
 

@@ -205,9 +205,9 @@ int main(int argc, char **argv)
         y += delta_y;
         th += delta_th;
 
-        std::cout << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
-        std::cout << "current_velocity(linear.x angular.z) : (" << _current_velocity.linear.x << " " << _current_velocity.angular.z << ")"<< std::endl;
-        std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl << std::endl;
+       // std::cout << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
+        //std::cout << "current_velocity(linear.x angular.z) : (" << _current_velocity.linear.x << " " << _current_velocity.angular.z << ")"<< std::endl;
+       // std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl << std::endl;
         //std::cout << "current_orientation : (" << ox << " " << oy << " " << oz << " " << ow << ")" << std::endl << std::endl;
 
         //since all odometry is 6DOF we'll need a quaternion created from yaw
