@@ -71,6 +71,8 @@ static ros::Publisher _stat_pub;
 static std_msgs::Bool _lf_stat;
 static bool _fix_flag = false;
 static bool _param_set = false;
+static tf::Transform _transform;
+static tf::Vector3 _origin_v(0, 0, 0);
 
 static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
@@ -178,20 +180,20 @@ static double GetEvaluation(int closest, int i)
 /////////////////////////////////////////////////////////////////
 // transform the waypoint to the vehicle plane.
 /////////////////////////////////////////////////////////////////
-geometry_msgs::PoseStamped TransformWaypoint(int i)
+geometry_msgs::Point TransformWaypoint(int i)
 {
-    static tf::TransformListener tfListener;
-    geometry_msgs::PoseStamped transformed_waypoint;
+    tf::Vector3 original(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
 
-    // do the transformation!
-    try {
-        //ros::Time now = ros::Time::now();
-        tfListener.waitForTransform(_mobility_frame, _current_path.header.frame_id, _current_path.header.stamp, ros::Duration(0.2));
-	tfListener.transformPose(_mobility_frame, ros::Time(0), _current_path.waypoints[i].pose, _current_path.header.frame_id, transformed_waypoint);
-    } catch (tf::TransformException &ex) {
-        ROS_ERROR("%s", ex.what());
-    }
-    return transformed_waypoint;
+    geometry_msgs::Point point;
+    tf::Vector3 transformed = _transform * original;
+    point.x = transformed.getX();
+    point.y = transformed.getY();
+    point.z = transformed.getZ();
+
+   // std::cout << "transformed pose (" << point.x << " " << point.y << " " << point.z << ") transformed2 pose : (" << point2.x << " " << point2.y << " " << point2.z << ")" << std::endl;
+
+    return point;
+
 }
 
 /////////////////////////////////////////////////////////////////
