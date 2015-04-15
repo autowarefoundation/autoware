@@ -190,12 +190,13 @@ static void* intervalCall(void *a){
 
     //create new thread for socket communication.
     if(pthread_create(&th, nullptr, wrapSender, nullptr)){
-      printf("thread create error\n");
+      std::perror("pthread_create");
+      continue;
     }
     sleep(1);
     if(pthread_join(th,nullptr)){
-      printf("thread join error.\n");
-    }    
+      std::perror("pthread_join");
+    }
   }
 
   return nullptr;

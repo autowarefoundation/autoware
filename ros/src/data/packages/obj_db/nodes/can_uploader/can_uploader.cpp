@@ -113,7 +113,6 @@ static void* intervalCall(void *a){
   while(1){
     //If angle and position data is not updated from prevous data send,
     //data is not sent
-    //if(1){
     if(!canGetFlag) {
       sleep(1);
       continue;
@@ -122,11 +121,12 @@ static void* intervalCall(void *a){
 
     //create new thread for socket communication.
     if(pthread_create(&th, nullptr, wrapSender, nullptr)){
-      printf("thread create error\n");
+      std::perror("pthread_create");
+      continue;
     }
     sleep(1);
     if(pthread_join(th,nullptr)){
-      printf("thread join error.\n");
+      std::perror("pthread_join");
     }
   }
 

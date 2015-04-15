@@ -386,7 +386,8 @@ int main(int argc, char **argv)
 
   pthread_t th;
   if(pthread_create(&th, nullptr, intervalCall, nullptr)){
-    printf("thread create error\n");
+    std::perror("pthread_create");
+    std::exit(1);
   }
 
   pthread_detach(th);
