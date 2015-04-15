@@ -41,18 +41,12 @@ publish data as ractangular plane
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <math.h>
 #include <pthread.h>
 #include <vector>
-#include <boost/array.hpp>
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "opencv/cv.h" 
-#include "opencv/highgui.h" 
-#include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
-//#include "scan2image/ScanImage.h"
 #include <SendData.h>
 
 using namespace std;
@@ -274,7 +268,6 @@ int main(int argc, char **argv)
   cout << "obj_downloader" << endl;
 
   pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1); 
-  //ros::Subscriber subscriber = nh,subscribe("topic_name",1000,Callback_Name)
 
   if(argc == 1){
     printf("normal execution\n");

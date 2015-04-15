@@ -13,10 +13,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES obj_db
    CATKIN_DEPENDS roscpp vehicle_socket
-#  DEPENDS system_lib
 )
 
 ###########
@@ -35,12 +32,7 @@ add_executable(obj_downloader nodes/obj_downloader/obj_downloader.cpp)
 target_link_libraries(obj_downloader ${catkin_LIBRARIES} gnss)
 
 add_executable(obj_uploader nodes/obj_uploader/obj_uploader.cpp)
-target_link_libraries(obj_uploader 
-  ${catkin_LIBRARIES} 
-#  ${CVCORE_LIBRARY}
-#  ${CVHIGHGUI_LIBRARY}
-#  ${BULLET_LIBRARIES}
-)
+target_link_libraries(obj_uploader ${catkin_LIBRARIES})
 
 set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 

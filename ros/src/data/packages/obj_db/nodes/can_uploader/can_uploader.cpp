@@ -56,27 +56,15 @@
 #include <math.h>
 #include <pthread.h>
 #include <vector>
-#include <boost/array.hpp>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <sys/time.h>
-#include <bitset>
 
 #include <SendData.h>
 #include "vehicle_socket/CanInfo.h"
 
-
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
-
 using namespace std;
-
-//for timestamp
-struct my_tm {
-  time_t tim; // yyyymmddhhmmss
-  long msec;  // milli sec
-};
 
 //default server name and port to send data
 static const string defaultServerName = "db1.ertl.jp";
@@ -98,13 +86,13 @@ static void* wrapSender(void *tsd){
   string value;
 
   //create header
-  char magic[5] = "MPWC";
   u_int16_t major = htons(1);
   u_int16_t minor = htons(0);
   u_int32_t sqlinst = htonl(2);
   u_int32_t sqlnum = htonl(1);
   char header[16];
-  memcpy(header,magic,4);
+
+  memcpy(header, MAGIC,4);
   memcpy(&header[4],&major,2);
   memcpy(&header[6],&minor,2);
   memcpy(&header[8],&sqlinst,4);
@@ -112,7 +100,6 @@ static void* wrapSender(void *tsd){
   value.append(header,16);
 
   value += CanSql;
-  //cout << value;
 
   string res = sd.Sender(value);
   cout << "retrun message from DBserver : " << res << endl;
@@ -278,7 +265,6 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n;
-
   ros::Subscriber can = n.subscribe("/can_info", 1, can_infoCallback);
 
   //set server name and port
