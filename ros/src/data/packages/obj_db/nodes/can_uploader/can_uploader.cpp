@@ -270,7 +270,7 @@ int main(int argc, char **argv)
   //set server name and port
   string serverName = defaultServerName;
   int portNum = PORT;
-  if(argc == 3){
+  if(argc >= 3){
     serverName = argv[1];
     portNum = atoi(argv[2]);
   }
