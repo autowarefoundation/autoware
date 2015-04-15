@@ -52,14 +52,13 @@ SendData::SendData(const std::string& host_name, int port)
 {
 }
 
-std::string SendData::Sender(const std::string& value) const
+int SendData::Sender(const std::string& value, std::string& res) const
 {
 	/*********************************************
 	   format data to send
 	*******************************************/
 	char recvdata[1024];
 	int n;
-	std::string result = "";
 
 	struct sockaddr_in server;
 	unsigned int **addrptr;
@@ -67,7 +66,7 @@ std::string SendData::Sender(const std::string& value) const
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		perror("socket");
-		return result;
+		return -1;
 	}
 
 	server.sin_family = AF_INET;
@@ -86,7 +85,7 @@ std::string SendData::Sender(const std::string& value) const
 
 				printf("%s : %s\n", hstrerror(h_errno), host_name_.c_str());
 			}
-			return result;
+			return -1;
 		}
 
 		addrptr = (unsigned int **)host->h_addr_list;
@@ -108,19 +107,19 @@ std::string SendData::Sender(const std::string& value) const
 		// the case of connection failed
 		if (*addrptr == nullptr) {
 			perror("connect");
-			return result;
+			return -1;
 		}
 	} else {
 		if (connect(sock,
 			    (struct sockaddr *)&server, sizeof(server)) != 0) {
 			perror("connect");
-			return result;
+			return -1;
 		}
 	}
 
 	if(value == ""){
 		fprintf(stderr,"no data\n");
-		return result;
+		return -1;
 	}
 
 	//    printf("send data : %s\n",value.c_str());
@@ -128,7 +127,7 @@ std::string SendData::Sender(const std::string& value) const
 	n = write(sock, value.c_str(), value.size());
 	if (n < 0) {
 		perror("write");
-		return result;
+		return -1;
 	}
 
 	//Caution : If server do not close in one communication,loop forever because read() do not return 0.
@@ -137,18 +136,18 @@ std::string SendData::Sender(const std::string& value) const
 		n = read(sock, recvdata, sizeof(recvdata));
 		if (n < 0) {
 			perror("recv error");
-			return result;
+			return -1;
 		}else if(n==0){
 			break;
 		}
 
 		if(strlen(recvdata)>=sizeof(recvdata)){
-			result.append(recvdata,sizeof(recvdata));
+			res.append(recvdata,sizeof(recvdata));
 		}else{
-			result.append(recvdata,strlen(recvdata));
+			res.append(recvdata,strlen(recvdata));
 		}
 	}
 
 	close(sock);
-	return result;
+	return 0;
 }

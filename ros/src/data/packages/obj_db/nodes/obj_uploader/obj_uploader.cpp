@@ -171,7 +171,12 @@ static void* wrapSender(void *tsd){
   value += oss.str();
   cout << value << endl;
 
-  string res = sd.Sender(value);
+  string res;
+  int ret = sd.Sender(value, res);
+  if (ret == -1) {
+    std::cerr << "Failed: sd.Sender" << std::endl;
+    return nullptr;
+  }
   cout << "retrun message from DBserver : " << res << endl;
 
   return nullptr;

@@ -174,7 +174,6 @@ static void* wrapSender(void *tsd)
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
 
-  string dbres;
   string data;
   stringstream oss;
 
@@ -230,9 +229,14 @@ static void* wrapSender(void *tsd)
   //cout << "sql : " << data << endl;
   //printf("sql : %s\n",data.c_str());
 
-  dbres = sd.Sender(data);
+  string dbres;
+  int ret = sd.Sender(data, dbres);
+  if (ret == -1) {
+    std::cerr << "Failed: sd.Sender" << std::endl;
+    return nullptr;
+  }
 
-  printf("return data : %s\n",dbres.c_str());
+  std::cout << "return data: " << dbres << std::endl;
 
   std_msgs::String msg;
   msg.data = dbres.c_str();

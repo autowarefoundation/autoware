@@ -42,7 +42,7 @@ public:
 	SendData();
 	explicit SendData(const std::string& host_name, int port);
 
-	std::string Sender(const std::string& value) const;
+	int Sender(const std::string& value, std::string& res) const;
 };
 
 #endif /* _SEND_DATA_H_ */
