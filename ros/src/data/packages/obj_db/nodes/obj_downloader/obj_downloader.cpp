@@ -73,14 +73,13 @@ struct car_info {
   double z;
 };
 
-ros::Publisher pub;
+static ros::Publisher pub;
 
-double positionRange[4];
-double geoPosition[4];//rectangular coordinate for sql condition
+static double positionRange[4];
+static double geoPosition[4];//rectangular coordinate for sql condition
 
-SendData sd;
-TYPE SendDataType;
-int counter;
+static SendData sd;
+static TYPE SendDataType;
 
 static std::vector<std::string> split(const string& input, char delimiter)
 {
@@ -387,7 +386,6 @@ int main(int argc, char **argv)
   geoPosition[3] = geo.y();
 
   sd = SendData(serverName,PORT);
-  counter = 0;
 
   pthread_t th;
   if(pthread_create(&th, nullptr, intervalCall, nullptr)){
