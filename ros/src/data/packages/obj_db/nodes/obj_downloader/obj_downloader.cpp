@@ -248,11 +248,11 @@ static void* intervalCall(void *a)
 
   while(1){
     //create new thread for socket communication.
-    if(pthread_create(&th, NULL, wrapSender, NULL)){
+    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
       printf("thread create error\n");
     }
     sleep(1);
-    if(pthread_join(th,NULL)){
+    if(pthread_join(th,nullptr)){
       printf("thread join error.\n");
     }
   }
@@ -385,7 +385,7 @@ int main(int argc, char **argv)
   counter = 0;
 
   pthread_t th;
-  if(pthread_create(&th, NULL, intervalCall, NULL)){
+  if(pthread_create(&th, nullptr, intervalCall, nullptr)){
     printf("thread create error\n");
   }
 

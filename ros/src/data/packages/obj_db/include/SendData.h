@@ -51,7 +51,7 @@ SendData() :
     }
   /*    
  SendData(int flag,char server,int pt) : 
-  counter(0),testFlag(flag),serverName(server),port(pt),value(NULL),valueSize(0)
+  counter(0),testFlag(flag),serverName(server),port(pt),value(nullptr),valueSize(0)
   {
   }
   */
@@ -92,7 +92,7 @@ SendData() :
       struct hostent *host;
 
       host = gethostbyname(serverName.c_str());
-      if (host == NULL) {
+      if (host == nullptr) {
         if (h_errno == HOST_NOT_FOUND) {
           // h_errno is defined in extern 
           printf("host not found : %s\n", serverName.c_str());
@@ -105,7 +105,7 @@ SendData() :
 
       addrptr = (unsigned int **)host->h_addr_list;
 
-      while (*addrptr != NULL) {
+      while (*addrptr != nullptr) {
         server.sin_addr.s_addr = *(*addrptr);
 
         // if connect() is succeed , exit loop 
@@ -120,7 +120,7 @@ SendData() :
       }
 
       // the case of connection failed 
-      if (*addrptr == NULL) {
+      if (*addrptr == nullptr) {
         perror("connect");
         return result;
       }
