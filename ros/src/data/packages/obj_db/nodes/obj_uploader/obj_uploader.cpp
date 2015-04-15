@@ -66,7 +66,7 @@
 #include <bitset>
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseArray.h"
-#include "../SendData.h"
+#include <SendData.h>
 
 /*
 #include "structure.h"

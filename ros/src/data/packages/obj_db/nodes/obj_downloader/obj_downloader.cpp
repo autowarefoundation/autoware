@@ -53,7 +53,7 @@ publish data as ractangular plane
 #include "opencv/cxcore.h" 
 #include "std_msgs/Float64.h"
 //#include "scan2image/ScanImage.h"
-#include "../SendData.h"
+#include <SendData.h>
 
 using namespace std;
 

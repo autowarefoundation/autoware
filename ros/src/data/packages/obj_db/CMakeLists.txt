@@ -24,8 +24,8 @@ catkin_package(
 ###########
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
-#  ${BULLET_INCLUDE_DIRS}
 )
 
 #find_library(CVCORE_LIBRARY opencv_core /usr/local/lib)
