@@ -37,35 +37,24 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <vector>
 #include <string>
 
-
 class SendData{
-
 public:
 
 SendData() :
   serverName("db1.ertl.jp"),port(5700)
     {
     }
-  /*
- SendData(int flag,char server,int pt) :
-  counter(0),testFlag(flag),serverName(server),port(pt),value(nullptr),valueSize(0)
-  {
-  }
-  */
 
  SendData(std::string server,int pt) :
   serverName(server),port(pt)
   {
   }
 
-
   ~SendData(){}
 
   std::string Sender(std::string value){
-
 
     /*********************************************
    format data to send
@@ -132,15 +121,6 @@ SendData() :
       }
     }
 
-    /*
-    if(testFlag == 1){
-        sprintf(data,"select order\t%d",counter);
-        printf("test");
-    }else{
-        sprintf(data,"select order");
-    }
-    */
-
     if(value == ""){
       fprintf(stderr,"no data\n");
       return result;
@@ -175,37 +155,9 @@ SendData() :
     close(sock);
 
     return result;
-
-  }
-  void setServerName(std::string server){
-    serverName = server;
-  }
-
-  void setPort(int pt){
-    port = pt;
   }
 
 private:
-
-/*
-  int gpx_id[10] = {
-      545340,
-      545531,
-      666356,
-      666357,
-      666358,
-      666359,
-      666360,
-      666361,
-      666362,
-      666363
-  };
-*/
-
-//start time by seconds
-  //long startTime[10];
-
   std::string serverName;
   int port;
-
 };
