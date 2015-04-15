@@ -243,7 +243,6 @@ static void* wrapSender(void *unused)
   marker_publisher(msg);
 
   return nullptr;
-
 }
 
 static void* intervalCall(void *unused)
@@ -307,14 +306,13 @@ int main(int argc, char **argv)
 
     }else{
       printf("range access\n");
-      string arg;
       for(int i=1; i<5 ;i++){
-	arg = argv[i];
+	std::string arg(argv[i]);
 	if(!isNumeric(arg)){
 	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
 	  exit(1);
 	}
-	positionRange[i-1] = atof(arg.c_str());
+	positionRange[i-1] = std::stod(arg);
 
 	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
 	  fprintf(stderr,"error.\ninvalid range.\n");
@@ -354,14 +352,13 @@ int main(int argc, char **argv)
 
     }else{
       printf("range access\n");
-      string arg;
       for(int i=1; i<5 ;i++){
-	arg = argv[i];
+	std::string arg(argv[i]);
 	if(!isNumeric(arg)){
 	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
 	  exit(1);
 	}
-	positionRange[i-1] = atof(arg.c_str());
+	positionRange[i-1] = std::stod(arg);
 
 	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
 	  fprintf(stderr,"error.\ninvalid range.\n");
