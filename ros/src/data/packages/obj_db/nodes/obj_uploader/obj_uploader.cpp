@@ -106,12 +106,6 @@ static SendData sd;
 //store own position and direction now.updated by position_getter
 static geometry_msgs::PoseStamped my_loc;
 
-static void printDiff(struct timeval begin, struct timeval end){
-  long diff;
-  diff = (end.tv_sec - begin.tv_sec)*1000*1000 + (end.tv_usec - begin.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
-}
-
 /*
 void GetRPY(const geometry_msgs::Pose &pose,
 	    double &roll,
@@ -266,11 +260,6 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
 */
-
-static void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
-  my_loc = pose;
-  positionGetFlag = true;
-}
 
 static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   my_loc = pose;
