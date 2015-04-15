@@ -42,31 +42,31 @@
 
 
 class SendData{
-    
+
 public:
-    
-SendData() : 
+
+SendData() :
   serverName("db1.ertl.jp"),port(5700)
     {
     }
-  /*    
- SendData(int flag,char server,int pt) : 
+  /*
+ SendData(int flag,char server,int pt) :
   counter(0),testFlag(flag),serverName(server),port(pt),value(nullptr),valueSize(0)
   {
   }
   */
 
- SendData(std::string server,int pt) : 
+ SendData(std::string server,int pt) :
   serverName(server),port(pt)
   {
   }
 
-    
+
   ~SendData(){}
-    
+
   std::string Sender(std::string value){
-        
-      
+
+
     /*********************************************
    format data to send
     *******************************************/
@@ -85,7 +85,7 @@ SendData() :
     }
 
     server.sin_family = AF_INET;
-    server.sin_port = htons(port); // HTTP port is 80 
+    server.sin_port = htons(port); // HTTP port is 80
 
     server.sin_addr.s_addr = inet_addr(serverName.c_str());
     if (server.sin_addr.s_addr == 0xffffffff) {
@@ -94,7 +94,7 @@ SendData() :
       host = gethostbyname(serverName.c_str());
       if (host == nullptr) {
         if (h_errno == HOST_NOT_FOUND) {
-          // h_errno is defined in extern 
+          // h_errno is defined in extern
           printf("host not found : %s\n", serverName.c_str());
         } else {
 
@@ -108,7 +108,7 @@ SendData() :
       while (*addrptr != nullptr) {
         server.sin_addr.s_addr = *(*addrptr);
 
-        // if connect() is succeed , exit loop 
+        // if connect() is succeed , exit loop
         if (connect(sock,
                     (struct sockaddr *)&server,
                     sizeof(server)) == 0) {
@@ -119,7 +119,7 @@ SendData() :
         // if connect is failed, try next address
       }
 
-      // the case of connection failed 
+      // the case of connection failed
       if (*addrptr == nullptr) {
         perror("connect");
         return result;
@@ -153,7 +153,7 @@ SendData() :
         perror("write");
         return result;
     }
-        
+
     //Caution : If server do not close in one communication,loop forever because read() do not return 0.
     while(1){
       memset(recvdata, 0, sizeof(recvdata));
@@ -171,11 +171,11 @@ SendData() :
 	result.append(recvdata,strlen(recvdata));
       }
     }
-    
+
     close(sock);
-    
+
     return result;
-    
+
   }
   void setServerName(std::string server){
     serverName = server;
@@ -207,5 +207,5 @@ private:
 
   std::string serverName;
   int port;
- 
+
 };

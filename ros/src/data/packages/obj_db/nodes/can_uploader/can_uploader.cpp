@@ -103,7 +103,7 @@ static void* wrapSender(void *tsd){
 
   string res = sd.Sender(value);
   cout << "retrun message from DBserver : " << res << endl;
-  
+
   return nullptr;
 }
 
@@ -155,7 +155,7 @@ static void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << "strmode,";
   oss << "strcontmode,";
   oss << "stroverridemode,";
-  oss << "strservo,";  
+  oss << "strservo,";
   oss << "targettorque,";
   oss << "torque,";
   oss << "angle,";
@@ -250,13 +250,13 @@ static void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << ");\n";
 
   CanSql = oss.str();
-  
+
   canGetFlag = true;
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc ,argv, "can_uploader") ;  
+  ros::init(argc ,argv, "can_uploader") ;
   cout << "can_uploader" << endl;
 
   /**

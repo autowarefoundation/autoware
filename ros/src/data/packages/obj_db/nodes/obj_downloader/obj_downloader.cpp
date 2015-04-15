@@ -30,7 +30,7 @@
 
 /*
 obj_downloader
-This node get location data from db server and 
+This node get location data from db server and
 publish data as ractangular plane
 */
 
@@ -150,7 +150,7 @@ static void marker_publisher(const std_msgs::String msg)
     p.y = a.x;
     p.z = a.z;
 
-    cars.push_back(a);    
+    cars.push_back(a);
     sphere_list.points.push_back(p);
     std::cout << "gps_id: " << cars[i].gps_id << std::endl;
     std::cout << "lat: " << cars[i].lat << std::endl;
@@ -235,7 +235,7 @@ static void* wrapSender(void *tsd)
 
   std_msgs::String msg;
   msg.data = dbres.c_str();
-  
+
   marker_publisher(msg);
 
   return nullptr;
@@ -264,10 +264,10 @@ int main(int argc, char **argv)
 {
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
-  
+
   cout << "obj_downloader" << endl;
 
-  pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1); 
+  pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1);
 
   if(argc == 1){
     printf("normal execution\n");

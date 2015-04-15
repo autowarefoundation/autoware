@@ -166,7 +166,7 @@ static void* wrapSender(void *tsd){
       << fixed << setprecision(6) << my_loc.pose.position.x << ","
       << fixed << setprecision(6) << my_loc.pose.position.z << ","
       << area << ",0,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
- 
+
   value += oss.str();
   cout << value << endl;
 
@@ -218,7 +218,7 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 
 int main(int argc, char **argv){
-  ros::init(argc ,argv, "obj_uploader") ;  
+  ros::init(argc ,argv, "obj_uploader");
   cout << "obj_uploader" << endl;
 
   /**
