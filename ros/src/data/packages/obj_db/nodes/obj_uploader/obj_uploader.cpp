@@ -115,9 +115,9 @@ static string getTimeStamp(long sec,long nsec){
   return res;
 }
 
-static string makeSendDataDetectedObj(geometry_msgs::PoseArray cp_array){
+static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array){
   ostringstream oss;
-  vector<geometry_msgs::Pose>::iterator cp_iterator;
+  vector<geometry_msgs::Pose>::const_iterator cp_iterator;
   cp_iterator = cp_array.poses.begin();
 
   for(uint i=0; i<cp_array.poses.size() ; i++, cp_iterator++){
@@ -133,7 +133,7 @@ static string makeSendDataDetectedObj(geometry_msgs::PoseArray cp_array){
 }
 
 //wrap SendData class
-static void* wrapSender(void *tsd){
+static void* wrapSender(void *unused){
   ostringstream oss;
   string value;
 
@@ -182,7 +182,7 @@ static void* wrapSender(void *tsd){
   return nullptr;
 }
 
-static void* intervalCall(void *a){
+static void* intervalCall(void *unused){
   pthread_t th;
 
   while(1){
@@ -208,12 +208,12 @@ static void* intervalCall(void *a){
   return nullptr;
 }
 
-static void car_locateCallback(const geometry_msgs::PoseArray car_locate)
+static void car_locateCallback(const geometry_msgs::PoseArray& car_locate)
 {
   car_position_array = car_locate;
 }
 
-static void pedestrian_locateCallback(const geometry_msgs::PoseArray pedestrian_locate)
+static void pedestrian_locateCallback(const geometry_msgs::PoseArray& pedestrian_locate)
 {
   pedestrian_position_array = pedestrian_locate;
 }

@@ -83,7 +83,7 @@ static SendData sd;
 static string CanSql;
 
 //wrap SendData class
-static void* wrapSender(void *tsd){
+static void* wrapSender(void *unused){
   string value;
 
   //create header
@@ -113,7 +113,7 @@ static void* wrapSender(void *tsd){
   return nullptr;
 }
 
-static void* intervalCall(void *a){
+static void* intervalCall(void *unused){
   pthread_t th;
 
   while(1){

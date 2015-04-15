@@ -94,12 +94,12 @@ static std::vector<std::string> split(const string& input, char delimiter)
     return result;
 }
 
-static bool isNumeric(const std::string str){
+static bool isNumeric(const std::string& str){
   if(str.find_first_not_of("-0123456789. Ee\t") != string::npos) return false;
   return true;
 }
 
-static void marker_publisher(const std_msgs::String msg)
+static void marker_publisher(const std_msgs::String& msg)
 {
   std::vector<car_info> cars;
   std::vector<std::string> db_data, tmp;
@@ -123,7 +123,7 @@ static void marker_publisher(const std_msgs::String msg)
   geo_pos_conv geo;
   geo.set_plane(7);
   // Loading data.
-  db_data = split(msg.data.c_str(),'\n');
+  db_data = split(msg.data,'\n');
   for(uint i = 0; i < db_data.size(); i++){
     geometry_msgs::Point p;
     if(db_data[i].compare("")==0) continue;
@@ -169,7 +169,7 @@ static void marker_publisher(const std_msgs::String msg)
 }
 
 //wrap SendData class
-static void* wrapSender(void *tsd)
+static void* wrapSender(void *unused)
 {
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
@@ -247,7 +247,7 @@ static void* wrapSender(void *tsd)
 
 }
 
-static void* intervalCall(void *a)
+static void* intervalCall(void *unused)
 {
   pthread_t th;
 
