@@ -62,6 +62,7 @@
 #include <string>
 #include <sstream>
 #include <sys/time.h>
+#include <arpa/inet.h>
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseArray.h"
 #include <SendData.h>

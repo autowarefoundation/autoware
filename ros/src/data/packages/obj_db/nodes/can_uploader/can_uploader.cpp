@@ -60,6 +60,7 @@
 #include <string>
 #include <sstream>
 #include <sys/time.h>
+#include <arpa/inet.h>
 
 #include <SendData.h>
 #include "vehicle_socket/CanInfo.h"

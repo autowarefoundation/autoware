@@ -46,6 +46,7 @@ publish data as ractangular plane
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <arpa/inet.h>
 #include "std_msgs/Float64.h"
 #include <SendData.h>
 
