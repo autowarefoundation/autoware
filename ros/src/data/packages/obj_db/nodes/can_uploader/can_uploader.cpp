@@ -56,27 +56,16 @@
 #include <math.h>
 #include <pthread.h>
 #include <vector>
-#include <boost/array.hpp>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <sys/time.h>
-#include <bitset>
+#include <arpa/inet.h>
 
-#include "../SendData.h"
+#include <SendData.h>
 #include "vehicle_socket/CanInfo.h"
 
-
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
-
 using namespace std;
-
-//for timestamp
-struct my_tm {
-  time_t tim; // yyyymmddhhmmss
-  long msec;  // milli sec
-};
 
 //default server name and port to send data
 static const string defaultServerName = "db1.ertl.jp";
@@ -94,17 +83,17 @@ static SendData sd;
 static string CanSql;
 
 //wrap SendData class
-static void* wrapSender(void *tsd){
+static void* wrapSender(void *unused){
   string value;
 
   //create header
-  char magic[5] = "MPWC";
   u_int16_t major = htons(1);
   u_int16_t minor = htons(0);
   u_int32_t sqlinst = htonl(2);
   u_int32_t sqlnum = htonl(1);
   char header[16];
-  memcpy(header,magic,4);
+
+  memcpy(header, MAGIC,4);
   memcpy(&header[4],&major,2);
   memcpy(&header[6],&minor,2);
   memcpy(&header[8],&sqlinst,4);
@@ -112,21 +101,24 @@ static void* wrapSender(void *tsd){
   value.append(header,16);
 
   value += CanSql;
-  //cout << value;
 
-  string res = sd.Sender(value);
+  string res;
+  int ret = sd.Sender(value, res);
+  if (ret == -1) {
+    std::cerr << "Failed: sd.Sender" << std::endl;
+    return nullptr;
+  }
   cout << "retrun message from DBserver : " << res << endl;
-  
+
   return nullptr;
 }
 
-static void* intervalCall(void *a){
+static void* intervalCall(void *unused){
   pthread_t th;
 
   while(1){
     //If angle and position data is not updated from prevous data send,
     //data is not sent
-    //if(1){
     if(!canGetFlag) {
       sleep(1);
       continue;
@@ -134,12 +126,13 @@ static void* intervalCall(void *a){
     canGetFlag = false;
 
     //create new thread for socket communication.
-    if(pthread_create(&th, NULL, wrapSender, NULL)){
-      printf("thread create error\n");
+    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
+      std::perror("pthread_create");
+      continue;
     }
     sleep(1);
-    if(pthread_join(th,NULL)){
-      printf("thread join error.\n");
+    if(pthread_join(th,nullptr)){
+      std::perror("pthread_join");
     }
   }
 
@@ -168,7 +161,7 @@ static void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << "strmode,";
   oss << "strcontmode,";
   oss << "stroverridemode,";
-  oss << "strservo,";  
+  oss << "strservo,";
   oss << "targettorque,";
   oss << "torque,";
   oss << "angle,";
@@ -263,13 +256,13 @@ static void can_infoCallback(const vehicle_socket::CanInfo& can)
   oss << ");\n";
 
   CanSql = oss.str();
-  
+
   canGetFlag = true;
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc ,argv, "can_uploader") ;  
+  ros::init(argc ,argv, "can_uploader") ;
   cout << "can_uploader" << endl;
 
   /**
@@ -278,13 +271,12 @@ int main(int argc, char **argv)
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n;
-
   ros::Subscriber can = n.subscribe("/can_info", 1, can_infoCallback);
 
   //set server name and port
   string serverName = defaultServerName;
   int portNum = PORT;
-  if(argc == 3){
+  if(argc >= 3){
     serverName = argv[1];
     portNum = atoi(argv[2]);
   }
@@ -295,7 +287,7 @@ int main(int argc, char **argv)
   canGetFlag = false;
 
   pthread_t th;
-  if(pthread_create(&th, NULL, intervalCall, NULL)){
+  if(pthread_create(&th, nullptr, intervalCall, nullptr)){
     printf("thread create error\n");
   }
   pthread_detach(th);

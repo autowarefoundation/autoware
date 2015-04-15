@@ -30,7 +30,7 @@
 
 /*
 obj_downloader
-This node get location data from db server and 
+This node get location data from db server and
 publish data as ractangular plane
 */
 
@@ -41,19 +41,14 @@ publish data as ractangular plane
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <math.h>
 #include <pthread.h>
 #include <vector>
-#include <boost/array.hpp>
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "opencv/cv.h" 
-#include "opencv/highgui.h" 
-#include "opencv/cxcore.h" 
+#include <arpa/inet.h>
 #include "std_msgs/Float64.h"
-//#include "scan2image/ScanImage.h"
-#include "../SendData.h"
+#include <SendData.h>
 
 using namespace std;
 
@@ -78,14 +73,13 @@ struct car_info {
   double z;
 };
 
-ros::Publisher pub;
+static ros::Publisher pub;
 
-double positionRange[4];
-double geoPosition[4];//rectangular coordinate for sql condition
+static double positionRange[4];
+static double geoPosition[4];//rectangular coordinate for sql condition
 
-SendData sd;
-TYPE SendDataType;
-int counter;
+static SendData sd;
+static TYPE SendDataType;
 
 static std::vector<std::string> split(const string& input, char delimiter)
 {
@@ -99,12 +93,12 @@ static std::vector<std::string> split(const string& input, char delimiter)
     return result;
 }
 
-static bool isNumeric(const std::string str){
+static bool isNumeric(const std::string& str){
   if(str.find_first_not_of("-0123456789. Ee\t") != string::npos) return false;
   return true;
 }
 
-static void marker_publisher(const std_msgs::String msg)
+static void marker_publisher(const std_msgs::String& msg)
 {
   std::vector<car_info> cars;
   std::vector<std::string> db_data, tmp;
@@ -128,7 +122,7 @@ static void marker_publisher(const std_msgs::String msg)
   geo_pos_conv geo;
   geo.set_plane(7);
   // Loading data.
-  db_data = split(msg.data.c_str(),'\n');
+  db_data = split(msg.data,'\n');
   for(uint i = 0; i < db_data.size(); i++){
     geometry_msgs::Point p;
     if(db_data[i].compare("")==0) continue;
@@ -156,7 +150,7 @@ static void marker_publisher(const std_msgs::String msg)
     p.y = a.x;
     p.z = a.z;
 
-    cars.push_back(a);    
+    cars.push_back(a);
     sphere_list.points.push_back(p);
     std::cout << "gps_id: " << cars[i].gps_id << std::endl;
     std::cout << "lat: " << cars[i].lat << std::endl;
@@ -174,12 +168,11 @@ static void marker_publisher(const std_msgs::String msg)
 }
 
 //wrap SendData class
-static void* wrapSender(void *tsd)
+static void* wrapSender(void *unused)
 {
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
 
-  string dbres;
   string data;
   stringstream oss;
 
@@ -235,30 +228,34 @@ static void* wrapSender(void *tsd)
   //cout << "sql : " << data << endl;
   //printf("sql : %s\n",data.c_str());
 
-  dbres = sd.Sender(data);
+  string dbres;
+  int ret = sd.Sender(data, dbres);
+  if (ret == -1) {
+    std::cerr << "Failed: sd.Sender" << std::endl;
+    return nullptr;
+  }
 
-  printf("return data : %s\n",dbres.c_str());
+  std::cout << "return data: " << dbres << std::endl;
 
   std_msgs::String msg;
   msg.data = dbres.c_str();
-  
+
   marker_publisher(msg);
 
   return nullptr;
-
 }
 
-static void* intervalCall(void *a)
+static void* intervalCall(void *unused)
 {
   pthread_t th;
 
   while(1){
     //create new thread for socket communication.
-    if(pthread_create(&th, NULL, wrapSender, NULL)){
+    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
       printf("thread create error\n");
     }
     sleep(1);
-    if(pthread_join(th,NULL)){
+    if(pthread_join(th,nullptr)){
       printf("thread join error.\n");
     }
   }
@@ -270,11 +267,10 @@ int main(int argc, char **argv)
 {
   ros::init(argc ,argv, "obj_downloader") ;
   ros::NodeHandle nh;
-  
+
   cout << "obj_downloader" << endl;
 
-  pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1); 
-  //ros::Subscriber subscriber = nh,subscribe("topic_name",1000,Callback_Name)
+  pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1);
 
   if(argc == 1){
     printf("normal execution\n");
@@ -310,14 +306,13 @@ int main(int argc, char **argv)
 
     }else{
       printf("range access\n");
-      string arg;
       for(int i=1; i<5 ;i++){
-	arg = argv[i];
+	std::string arg(argv[i]);
 	if(!isNumeric(arg)){
 	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
 	  exit(1);
 	}
-	positionRange[i-1] = atof(arg.c_str());
+	positionRange[i-1] = std::stod(arg);
 
 	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
 	  fprintf(stderr,"error.\ninvalid range.\n");
@@ -357,14 +352,13 @@ int main(int argc, char **argv)
 
     }else{
       printf("range access\n");
-      string arg;
       for(int i=1; i<5 ;i++){
-	arg = argv[i];
+	std::string arg(argv[i]);
 	if(!isNumeric(arg)){
 	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
 	  exit(1);
 	}
-	positionRange[i-1] = atof(arg.c_str());
+	positionRange[i-1] = std::stod(arg);
 
 	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
 	  fprintf(stderr,"error.\ninvalid range.\n");
@@ -389,11 +383,11 @@ int main(int argc, char **argv)
   geoPosition[3] = geo.y();
 
   sd = SendData(serverName,PORT);
-  counter = 0;
 
   pthread_t th;
-  if(pthread_create(&th, NULL, intervalCall, NULL)){
-    printf("thread create error\n");
+  if(pthread_create(&th, nullptr, intervalCall, nullptr)){
+    std::perror("pthread_create");
+    std::exit(1);
   }
 
   pthread_detach(th);

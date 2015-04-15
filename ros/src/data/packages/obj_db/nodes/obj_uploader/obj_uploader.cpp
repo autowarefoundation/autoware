@@ -58,15 +58,14 @@
 #include <math.h>
 #include <pthread.h>
 #include <vector>
-#include <boost/array.hpp>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <sys/time.h>
-#include <bitset>
+#include <arpa/inet.h>
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseArray.h"
-#include "../SendData.h"
+#include <SendData.h>
 
 /*
 #include "structure.h"
@@ -75,16 +74,7 @@
 #include "geo_pos_conv.hh"
 */
 
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
-
 using namespace std;
-
-//for timestamp
-struct my_tm {
-  time_t tim; // yyyymmddhhmmss
-  long msec;  // milli sec
-};
 
 //store subscribed value
 static geometry_msgs::PoseArray car_position_array;
@@ -106,17 +96,6 @@ static SendData sd;
 //store own position and direction now.updated by position_getter
 static geometry_msgs::PoseStamped my_loc;
 
-/*
-void GetRPY(const geometry_msgs::Pose &pose,
-	    double &roll,
-	    double &pitch,
-	    double &yaw){
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(pose.orientation,q);
-  tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
-}
-*/
-
 static string getTimeStamp(long sec,long nsec){
   struct tm *tmp;
   struct timeval tv;
@@ -136,31 +115,25 @@ static string getTimeStamp(long sec,long nsec){
   return res;
 }
 
-static string makeSendDataDetectedObj(geometry_msgs::PoseArray cp_array){
+static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array){
   ostringstream oss;
-  vector<geometry_msgs::Pose>::iterator cp_iterator;
+  vector<geometry_msgs::Pose>::const_iterator cp_iterator;
   cp_iterator = cp_array.poses.begin();
 
   for(uint i=0; i<cp_array.poses.size() ; i++, cp_iterator++){
     //create sql
-    //In Autoware, x and y is oppsite.So reverse these when sending.
-    /*
-    oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
-    oss << "values(0," << fixed << setprecision(6) << cp_iterator->pose.position.y << "," << fixed << setprecision(6) << cp_iterator->pose.position.x << ",0,0,1,'" << getTimeStamp(cp_iterator->header.stamp.sec,cp_iterator->header.stamp.nsec) << "');\n";
-    */
     oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
     oss << "values('0'," << fixed << setprecision(6) << cp_iterator->position.y << ","
 	<< fixed << setprecision(6) << cp_iterator->position.x << ","
 	<< fixed << setprecision(6) << cp_iterator->position.z << ","
 	<< area << ",0,'" << getTimeStamp(cp_array.header.stamp.sec,cp_array.header.stamp.nsec) << "');\n";
-
   }
 
   return oss.str();
 }
 
 //wrap SendData class
-static void* wrapSender(void *tsd){
+static void* wrapSender(void *unused){
   ostringstream oss;
   string value;
 
@@ -189,34 +162,32 @@ static void* wrapSender(void *tsd){
     value += makeSendDataDetectedObj(pedestrian_position_array);
   }
 
-  /*
-  oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
-  oss << "values(0," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << ",0,0,1,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
-  */
-
   oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
   oss << "values('0'," <<  fixed << setprecision(6) << my_loc.pose.position.y << ","
       << fixed << setprecision(6) << my_loc.pose.position.x << ","
       << fixed << setprecision(6) << my_loc.pose.position.z << ","
       << area << ",0,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
- 
+
   value += oss.str();
   cout << value << endl;
 
-  string res = sd.Sender(value);
+  string res;
+  int ret = sd.Sender(value, res);
+  if (ret == -1) {
+    std::cerr << "Failed: sd.Sender" << std::endl;
+    return nullptr;
+  }
   cout << "retrun message from DBserver : " << res << endl;
 
   return nullptr;
-
 }
 
-static void* intervalCall(void *a){
+static void* intervalCall(void *unused){
   pthread_t th;
 
   while(1){
     //If angle and position data is not updated from prevous data send,
     //data is not sent
-    //if(1){
     if(!positionGetFlag) {
       sleep(1);
       continue;
@@ -224,42 +195,28 @@ static void* intervalCall(void *a){
     positionGetFlag = false;
 
     //create new thread for socket communication.
-    if(pthread_create(&th, NULL, wrapSender, NULL)){
-      printf("thread create error\n");
+    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
+      std::perror("pthread_create");
+      continue;
     }
     sleep(1);
-    if(pthread_join(th,NULL)){
-      printf("thread join error.\n");
-    }    
+    if(pthread_join(th,nullptr)){
+      std::perror("pthread_join");
+    }
   }
 
   return nullptr;
 }
 
-static void car_locateCallback(const geometry_msgs::PoseArray car_locate)
+static void car_locateCallback(const geometry_msgs::PoseArray& car_locate)
 {
   car_position_array = car_locate;
 }
 
-static void pedestrian_locateCallback(const geometry_msgs::PoseArray pedestrian_locate)
+static void pedestrian_locateCallback(const geometry_msgs::PoseArray& pedestrian_locate)
 {
   pedestrian_position_array = pedestrian_locate;
 }
-
-/*
-void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
-
-  my_loc.X = pose.pose.position.x;
-  my_loc.Y = pose.pose.position.y;
-  my_loc.Z = pose.pose.position.z;
-
-  GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
-  printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
-
-  positionGetFlag = true;
-  //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
-}
-*/
 
 static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   my_loc = pose;
@@ -267,7 +224,7 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 
 int main(int argc, char **argv){
-  ros::init(argc ,argv, "obj_uploader") ;  
+  ros::init(argc ,argv, "obj_uploader");
   cout << "obj_uploader" << endl;
 
   /**
@@ -284,7 +241,7 @@ int main(int argc, char **argv){
   //set server name and port
   string serverName = defaultServerName;
   int portNum = PORT;
-  if(argc == 3){
+  if(argc >= 3){
     serverName = argv[1];
     portNum = atoi(argv[2]);
   }
@@ -295,7 +252,7 @@ int main(int argc, char **argv){
   positionGetFlag = false;
 
   pthread_t th;
-  if(pthread_create(&th, NULL, intervalCall, NULL)){
+  if(pthread_create(&th, nullptr, intervalCall, nullptr)){
     printf("thread create error\n");
   }
   pthread_detach(th);

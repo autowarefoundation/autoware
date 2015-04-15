@@ -45,9 +45,9 @@ public:
         y = y0;
         phi0 = phizero*M_PI/180;
         lam0 = lamzero*M_PI/180;
-        
+
         //circle n depend on previous number circle.
-         
+
         //circle 1
         double n = 1/(2*F-1); //*
 
@@ -67,7 +67,7 @@ public:
         A[3] = -(35/48)*(pow(n,3)-(5/16)*pow(n,5));
         A[4] = (315/512)*pow(n,4);
         A[5] = -(693/1280)*pow(n,5);
-        
+
         double delta[7];
         delta[0] = 0;
         delta[1] = 2*n - (2/3)*n*n - 2*pow(n,3) + (116/45)*pow(n,4) + (26/45)*pow(n,5) - (2854/675)*pow(n,6);
@@ -89,17 +89,17 @@ public:
         //circle 4
         double xi = (x+Spbar)/Abar;
         double eta = y/Abar;
-        
+
         //circle 5
         double xid = xi;
         for(int j=1 ; j<6 ; j++){
-            xid -= B[j]*sin(2*j*xi)*cosh(2*j*eta); 
+            xid -= B[j]*sin(2*j*xi)*cosh(2*j*eta);
         }
         printf("%f %f\n",xi,xid);
 
         double etad = eta;
         for(int j=1 ; j<6 ; j++){
-            etad -= B[j]*cos(2*j*xi)*sinh(2*j*eta); 
+            etad -= B[j]*cos(2*j*xi)*sinh(2*j*eta);
         }
 
         //circle 6
@@ -115,7 +115,7 @@ public:
 
         res.lon = (lam0 + atan(sinh(etad)/cos(xid)))*180/M_PI;
         //printf("%f\n",atan(sinh(etad)/cos(xid)));
-        
+
         return res;
     }
 
