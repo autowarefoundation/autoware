@@ -79,7 +79,8 @@ static SendData sd;
 static string CanSql;
 
 //wrap SendData class
-static void* wrapSender(void *unused){
+static void* wrapSender(void *unused)
+{
   std::string value = make_header(2, 1);
 
   value += CanSql;
@@ -95,7 +96,8 @@ static void* wrapSender(void *unused){
   return nullptr;
 }
 
-static void* intervalCall(void *unused){
+static void* intervalCall(void *unused)
+{
   pthread_t th;
 
   while(1){
