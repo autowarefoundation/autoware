@@ -34,35 +34,33 @@ This node get location data from db server and
 publish data as ractangular plane
 */
 
+#include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <visualization_msgs/Marker.h>
 #include <geo_pos_conv.hh>
-#include "ros/ros.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
+#include <cstdio>
+#include <cstdlib>
 #include <vector>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 #include <arpa/inet.h>
-#include "std_msgs/Float64.h"
+#include <pthread.h>
 #include <SendData.h>
 
 using namespace std;
 
-static string serverName = "db3.ertl.jp";
-static int PORT = 5678;
+static string host_name = "db3.ertl.jp";
+static int db_port = 5678;
 
-enum TYPE{
-  NORMAL,
-  RANGE,
-  TEST,
-  DB1
+enum DataType {
+  NORMAL = 10000,
+  DB1    = 10001,
+  TEST   = 10002,
+  RANGE  = 10003,
 };
 
-struct car_info {
+struct CarInformation {
   int gps_id;
   double lat;
   double lon;
@@ -71,7 +69,21 @@ struct car_info {
   double x;
   double y;
   double z;
+
+  void dump() const;
 };
+
+void CarInformation::dump() const
+{
+  std::cout << "gps_id: " << gps_id << std::endl;
+  std::cout << "lat: " << lat << std::endl;
+  std::cout << "lon: " << lon << std::endl;
+  std::cout << "ele: " << ele << std::endl;
+  std::cout << "timestamp: " << timestamp << std::endl;
+  std::cout << "x: " << x << std::endl;
+  std::cout << "y: " << y << std::endl;
+  std::cout << "z: " << z << std::endl;
+}
 
 static ros::Publisher pub;
 
@@ -79,7 +91,7 @@ static double positionRange[4];
 static double geoPosition[4];//rectangular coordinate for sql condition
 
 static SendData sd;
-static TYPE SendDataType;
+static DataType send_data_type;
 
 static std::vector<std::string> split(const string& input, char delimiter)
 {
@@ -98,12 +110,27 @@ static bool isNumeric(const std::string& str){
   return true;
 }
 
+static int result_to_car_info(const std::string& result, CarInformation& car)
+{
+  std::vector<std::string> columns = split(result, '\t');
+  if(columns.size() != 8)
+    return -1;
+
+  car.gps_id = std::stoi(columns[0]);
+  car.lat = std::stod(columns[1]);
+  car.lon = std::stod(columns[2]);
+  car.ele = std::stod(columns[3]);
+  car.x = std::stod(columns[4]);
+  car.y = std::stod(columns[5]);
+  car.z = std::stod(columns[6]);
+  car.timestamp = columns[7];
+
+  return 0;
+}
+
 static void marker_publisher(const std_msgs::String& msg)
 {
-  std::vector<car_info> cars;
-  std::vector<std::string> db_data, tmp;
   visualization_msgs::Marker sphere_list;
-  car_info a;
   sphere_list.header.frame_id = "/mobility";
   sphere_list.header.stamp = ros::Time::now();
   sphere_list.ns = "mo_marker";
@@ -118,53 +145,93 @@ static void marker_publisher(const std_msgs::String& msg)
   sphere_list.scale.x = 10.0;
   sphere_list.scale.y = 10.0;
   sphere_list.scale.z = 10.0;
-  ros::Rate rate(50);
+
   geo_pos_conv geo;
   geo.set_plane(7);
   // Loading data.
-  db_data = split(msg.data,'\n');
-  for(uint i = 0; i < db_data.size(); i++){
-    geometry_msgs::Point p;
-    if(db_data[i].compare("")==0) continue;
-    tmp = split(db_data[i], '\t');
-    if(tmp.size()!=8) continue;
-    a.gps_id = std::stoi(tmp[0]);
-    a.lat = std::stod(tmp[1].c_str());
-    a.lon = std::stod(tmp[2].c_str());
-    a.ele = std::stod(tmp[3].c_str());
-    a.x = std::stod(tmp[4].c_str());
-    a.y = std::stod(tmp[5].c_str());
-    a.z = std::stod(tmp[6].c_str());
-    a.timestamp = tmp[7];
+  std::vector<std::string> db_data = split(msg.data,'\n');
+
+  std::vector<CarInformation> cars;
+  for(const std::string& row : db_data) {
+    if(row.empty())
+      continue;
+
+    CarInformation car;
+    int ret = result_to_car_info(row, car);
+    if (ret != 0)
+      continue;
 
     // Convert from lat,lon to x,y
-    // geo.set_llh_nmea_degrees(a.lat, a.lon, a.ele);
-    if(a.lat >= -180 && a.lat <= 180 && a.lon >= -180 && a.lon <= 180){
-      geo.llh_to_xyz(a.lat, a.lon, a.ele);
-      a.x = geo.x();
-      a.y = geo.y();
-      a.z = geo.z();
+    // geo.set_llh_nmea_degrees(car.lat, car.lon, car.ele);
+    if(car.lat >= -180 && car.lat <= 180 && car.lon >= -180 && car.lon <= 180){
+      geo.llh_to_xyz(car.lat, car.lon, car.ele);
+      car.x = geo.x();
+      car.y = geo.y();
+      car.z = geo.z();
     }
-    // swap x and y
-    p.x = a.y;
-    p.y = a.x;
-    p.z = a.z;
 
-    cars.push_back(a);
+    geometry_msgs::Point p;
+    // swap x and y
+    p.x = car.y;
+    p.y = car.x;
+    p.z = car.z;
+
+    cars.push_back(car);
     sphere_list.points.push_back(p);
-    std::cout << "gps_id: " << cars[i].gps_id << std::endl;
-    std::cout << "lat: " << cars[i].lat << std::endl;
-    std::cout << "lon: " << cars[i].lon << std::endl;
-    std::cout << "ele: " << cars[i].ele << std::endl;
-    std::cout << "timestamp: " << cars[i].timestamp << std::endl;
-    std::cout << "x: " << cars[i].x << std::endl;
-    std::cout << "y: " << cars[i].y << std::endl;
-    std::cout << "z: " << cars[i].z << std::endl;
+
+    car.dump();
   }
 
   pub.publish(sphere_list);
-  // Free vector
-  std::vector<car_info>().swap(cars);
+}
+
+static std::string construct_select_statement(DataType type)
+{
+  std::stringstream ss;
+
+  switch (type) {
+  case RANGE:
+     ss << "SELECT 0,lat,lon,x,y,z,tm FROM pos"
+        << " WHERE ((lat >= "<< fixed << setprecision(7) << positionRange[0]
+        << " AND lat < " << fixed << setprecision(7) << positionRange[1]
+        << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
+        << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ")"
+        << " OR (x >= " << fixed << setprecision(7) << geoPosition[0]
+        << " AND x < "  << fixed << setprecision(7) << geoPosition[1]
+        << " AND y >= " << fixed << setprecision(7) << geoPosition[2]
+        << " AND y < " << fixed << setprecision(7) << geoPosition[3] << "))"
+        << " AND tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
+      break;
+  case TEST:
+     ss << "SELECT 0,lat,lon,0,x,y,z,tm FROM pos"
+        << " WHERE ((lat >= " << fixed << setprecision(7) << positionRange[0]
+        << " AND lat < " << fixed << setprecision(7) << positionRange[1]
+        << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
+        << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ")"
+        << " OR (x >= " << fixed << setprecision(7) << geoPosition[0]
+        << " AND x < " << fixed << setprecision(7) << geoPosition[1]
+        << " AND y >= " << fixed << setprecision(7) << geoPosition[2]
+        << " AND y < " << fixed << setprecision(7) << geoPosition[3] << "))"
+        << " AND id = '0' ORDER BY tm DESC LIMIT 1;";
+      break;
+  case DB1:
+    ss << "SELECT id,lat,lon,ele,timestamp FROM select_test"
+       << " WHERE timestamp = (select max(timestamp) from select_test)"
+       << " AND lat >= " << fixed << setprecision(7) << positionRange[0]
+       << " AND lat < " << fixed << setprecision(7) << positionRange[1]
+       << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
+       << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ";<E>";
+    break;
+  case NORMAL:
+  default:
+    ss << "SELECT 0,lat,lon,0,tm FROM pos"
+       << " WHERE lat >= 30 AND lat < 40"
+       << " AND lon >= 130 AND lon < 140"
+       << " AND tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) AND tm <= current_timestamp;";
+    break;
+  }
+
+  return ss.str();
 }
 
 //wrap SendData class
@@ -174,7 +241,6 @@ static void* wrapSender(void *unused)
   //And if setting the other number of value , sendData will be failed.
 
   string data;
-  stringstream oss;
 
   //create header
   char magic[5] = "MPWC";
@@ -190,58 +256,22 @@ static void* wrapSender(void *unused)
   memcpy(&header[12],&sqlnum,4);
   data.append(header,16);
 
-  switch (SendDataType){
-  case RANGE://first argument is 10003 or within correct range
-    {
-     oss << "select 0,lat,lon,x,y,z,tm from pos where ((lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ") or (x >= " << fixed << setprecision(7) << geoPosition[0] << " and x < "  << fixed << setprecision(7) << geoPosition[1] << " and y >= " << fixed << setprecision(7) << geoPosition[2] << " and y < " << fixed << setprecision(7) << geoPosition[3] << ")) and tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
-
-     /*
-      oss << "select 0,lat,lon,0,tm from pos where lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << " and tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
-     */
-      data += oss.str();
-      break;
-    }
-  case TEST://first argument is 10002
-    {
-      oss << "select 0,lat,lon,0,x,y,z,tm from pos where ((lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ") or (x >= " << fixed << setprecision(7) << geoPosition[0] << " and x < "  << fixed << setprecision(7) << geoPosition[1] << " and y >= " << fixed << setprecision(7) << geoPosition[2] << " and y < " << fixed << setprecision(7) << geoPosition[3] << ")) and id = '0' order by tm desc limit 1";
-
-      /*
-      oss << "select 0,lat,lon,0,tm from pos where lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << " order by tm desc limit 1";
-      */
-      data += oss.str();
-      break;
-    }
-  case DB1://first argument is 10001
-    {
-      oss << "select id,lat,lon,ele,timestamp from select_test where timestamp = (select max(timestamp) from select_test) and lat >= " << fixed << setprecision(7) << positionRange[0] << " and lat < "  << fixed << setprecision(7) << positionRange[1] << " and lon >= " << fixed << setprecision(7) << positionRange[2] << " and lon < " << fixed << setprecision(7) << positionRange[3] << ";<E>";
-      data = oss.str();
-      break;
-    }
-  case NORMAL:
-  default:
-    oss << "select 0,lat,lon,0,tm from pos where lat >= 30 and lat < 40 and lon >= 130 and lon < 140 and tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
-    data += oss.str();
-  }
-
+  data += construct_select_statement(send_data_type);
   data += "\n";
 
-  //cout << "sql : " << data << endl;
-  //printf("sql : %s\n",data.c_str());
-
-  string dbres;
-  int ret = sd.Sender(data, dbres);
+  string db_response;
+  int ret = sd.Sender(data, db_response);
   if (ret == -1) {
     std::cerr << "Failed: sd.Sender" << std::endl;
     return nullptr;
   }
 
-  std::cout << "return data: " << dbres << std::endl;
+  std::cout << "return data: " << db_response << std::endl;
 
   std_msgs::String msg;
-  msg.data = dbres.c_str();
+  msg.data = db_response.c_str();
 
   marker_publisher(msg);
-
   return nullptr;
 }
 
@@ -273,103 +303,62 @@ int main(int argc, char **argv)
   pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1);
 
   if(argc == 1){
-    printf("normal execution\n");
-    SendDataType = NORMAL;
-  }else if(argc == 5){
-    if(static_cast<std::string>(argv[1]).compare("10000")==0){
-      printf("normal access\n");
-      SendDataType = NORMAL;
-    }else if(static_cast<string>(argv[1]).compare("10001")==0){
-      printf("fixed range access\n");
+    std::cout << "normal execution" << std::endl;
+    send_data_type = NORMAL;
+  } else if(argc == 5){
+    DataType type = static_cast<DataType>(std::atoi(argv[1]));
+    switch (type) {
+    case NORMAL:
+      std::cout << "normal access" << std::endl;
+      send_data_type = NORMAL;
+      break;
+    case DB1:
+      std::cout << "fixed range access" << std::endl;
       positionRange[0] = 35.2038955;
       positionRange[1] = 35.2711311;
       positionRange[2] = 136.9813925;
       positionRange[3] = 137.055852;
-      serverName = "db1.ertl.jp";
-      PORT = 5700;
-      SendDataType = DB1;
-
-    }else if(static_cast<string>(argv[1]).compare("10002") == 0){
-      printf("test access\n");
+      host_name = "db1.ertl.jp";
+      db_port = 5700;
+      send_data_type = DB1;
+      break;
+    case TEST:
+      std::cout << "test access" << std::endl;
       positionRange[0] = 34.5;
       positionRange[1] = 35.4;
       positionRange[2] = 136.6;
       positionRange[3] = 137.8;
-      SendDataType = TEST;
-    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
-      printf("current data get test access\n");
+      send_data_type = TEST;
+      break;
+    case RANGE:
+      std::cout << "current data get test access\n" << std::endl;
       positionRange[0] = 34.5;
       positionRange[1] = 35.4;
       positionRange[2] = 136.6;
       positionRange[3] = 137.8;
-      SendDataType = RANGE;
-
-    }else{
+      send_data_type = RANGE;
+      break;
+    default:
       printf("range access\n");
       for(int i=1; i<5 ;i++){
-	std::string arg(argv[i]);
-	if(!isNumeric(arg)){
-	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
-	  exit(1);
-	}
-	positionRange[i-1] = std::stod(arg);
+        std::string arg(argv[i]);
+        if(!isNumeric(arg)){
+          std::cerr << "argment '" << arg << "' is not numeric" << std::endl;
+          return -1;
+        }
+        positionRange[i-1] = std::stod(arg);
 
-	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
-	  fprintf(stderr,"error.\ninvalid range.\n");
-	  exit(1);
-	}
+        if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
+          std::cerr << "Error: invalid range" << std::endl;
+          return -1;
+        }
       }
-      SendDataType = RANGE;
+      send_data_type = RANGE;
+      break;
     }
-  }else if(argc == 7){
-    if(static_cast<std::string>(argv[1]).compare("10000")==0){
-      printf("normal access\n");
-      SendDataType = NORMAL;
-    }else if(static_cast<string>(argv[1]).compare("10001")==0){
-      printf("fixed range access\n");
-      positionRange[0] = 35.2038955;
-      positionRange[1] = 35.2711311;
-      positionRange[2] = 136.9813925;
-      positionRange[3] = 137.055852;
-      serverName = "db1.ertl.jp";
-      PORT = 5700;
-      SendDataType = DB1;
-
-    }else if(static_cast<string>(argv[1]).compare("10002") == 0){
-      printf("test access\n");
-      positionRange[0] = 34.5;
-      positionRange[1] = 35.4;
-      positionRange[2] = 136.6;
-      positionRange[3] = 137.8;
-      SendDataType = TEST;
-    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
-      printf("current data get test access\n");
-      positionRange[0] = 34.5;
-      positionRange[1] = 35.4;
-      positionRange[2] = 136.6;
-      positionRange[3] = 137.8;
-      SendDataType = RANGE;
-
-    }else{
-      printf("range access\n");
-      for(int i=1; i<5 ;i++){
-	std::string arg(argv[i]);
-	if(!isNumeric(arg)){
-	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
-	  exit(1);
-	}
-	positionRange[i-1] = std::stod(arg);
-
-	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
-	  fprintf(stderr,"error.\ninvalid range.\n");
-	  exit(1);
-	}
-      }
-      SendDataType = RANGE;
-    }
-  }else{
-    fprintf(stderr,"The number of argment is invalid.\n");
-    return 0;
+  } else{
+    std::cerr << "The number of argment is invalid." << std::endl;
+    return -1;
   }
 
   geo_pos_conv geo;
@@ -382,7 +371,7 @@ int main(int argc, char **argv)
   geoPosition[1] = geo.x();
   geoPosition[3] = geo.y();
 
-  sd = SendData(serverName,PORT);
+  sd = SendData(host_name,db_port);
 
   pthread_t th;
   if(pthread_create(&th, nullptr, intervalCall, nullptr)){
