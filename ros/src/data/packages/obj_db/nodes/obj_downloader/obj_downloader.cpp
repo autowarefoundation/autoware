@@ -235,7 +235,7 @@ static std::string construct_select_statement(DataType type)
 }
 
 //wrap SendData class
-static void wrapSender()
+static void send_sql()
 {
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
@@ -264,7 +264,7 @@ static void wrapSender()
 static void* intervalCall(void *unused)
 {
   while(1){
-    wrapSender();
+    send_sql();
     sleep(1);
   }
 

@@ -138,7 +138,7 @@ static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
 }
 
 //wrap SendData class
-static void wrapSender()
+static void send_sql()
 {
   size_t car_num = car_position_array.poses.size();
   size_t pedestrian_num = pedestrian_position_array.poses.size();
@@ -185,7 +185,8 @@ static void* intervalCall(void *unused)
 
     is_subscribed_ndt_pose = false;
 
-    wrapSender();
+    send_sql();
+    sleep(1);
   }
 
   return nullptr;

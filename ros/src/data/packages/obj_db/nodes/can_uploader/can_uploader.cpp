@@ -79,7 +79,7 @@ static SendData sd;
 static string CanSql;
 
 //wrap SendData class
-static void wrapSender()
+static void send_sql()
 {
   std::string value = make_header(2, 1);
 
@@ -106,7 +106,7 @@ static void* intervalCall(void *unused)
     }
     canGetFlag = false;
 
-    wrapSender();
+    send_sql();
     sleep(1);
   }
 
