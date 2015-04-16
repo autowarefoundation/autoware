@@ -79,7 +79,7 @@ static SendData sd;
 static string CanSql;
 
 //wrap SendData class
-static void* wrapSender(void *unused)
+static void wrapSender()
 {
   std::string value = make_header(2, 1);
 
@@ -89,17 +89,14 @@ static void* wrapSender(void *unused)
   int ret = sd.Sender(value, res);
   if (ret == -1) {
     std::cerr << "Failed: sd.Sender" << std::endl;
-    return nullptr;
+    return;
   }
-  cout << "retrun message from DBserver : " << res << endl;
 
-  return nullptr;
+  std::cout << "retrun message from DBserver : " << res << std::endl;
 }
 
 static void* intervalCall(void *unused)
 {
-  pthread_t th;
-
   while(1){
     //If angle and position data is not updated from prevous data send,
     //data is not sent
@@ -109,15 +106,8 @@ static void* intervalCall(void *unused)
     }
     canGetFlag = false;
 
-    //create new thread for socket communication.
-    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
-      std::perror("pthread_create");
-      continue;
-    }
+    wrapSender();
     sleep(1);
-    if(pthread_join(th,nullptr)){
-      std::perror("pthread_join");
-    }
   }
 
   return nullptr;

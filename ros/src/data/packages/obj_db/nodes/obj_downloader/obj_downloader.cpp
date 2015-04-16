@@ -235,7 +235,7 @@ static std::string construct_select_statement(DataType type)
 }
 
 //wrap SendData class
-static void* wrapSender(void *unused)
+static void wrapSender()
 {
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
@@ -250,7 +250,7 @@ static void* wrapSender(void *unused)
   int ret = sd.Sender(data, db_response);
   if (ret == -1) {
     std::cerr << "Failed: sd.Sender" << std::endl;
-    return nullptr;
+    return;
   }
 
   std::cout << "return data: " << db_response << std::endl;
@@ -259,22 +259,13 @@ static void* wrapSender(void *unused)
   msg.data = db_response.c_str();
 
   marker_publisher(msg);
-  return nullptr;
 }
 
 static void* intervalCall(void *unused)
 {
-  pthread_t th;
-
   while(1){
-    //create new thread for socket communication.
-    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
-      printf("thread create error\n");
-    }
+    wrapSender();
     sleep(1);
-    if(pthread_join(th,nullptr)){
-      printf("thread join error.\n");
-    }
   }
 
   return nullptr;
