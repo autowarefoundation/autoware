@@ -130,7 +130,7 @@ static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
 }
 
 //wrap SendData class
-static void* wrapSender(void *unused)
+static void wrapSender()
 {
   ostringstream oss;
   string value;
@@ -177,17 +177,15 @@ static void* wrapSender(void *unused)
   int ret = sd.Sender(value, res);
   if (ret == -1) {
     std::cerr << "Failed: sd.Sender" << std::endl;
-    return nullptr;
+    return;
   }
   cout << "retrun message from DBserver : " << res << endl;
 
-  return nullptr;
+  return;
 }
 
 static void* intervalCall(void *unused)
 {
-  pthread_t th;
-
   while(1){
     //If angle and position data is not updated from previous data send,
     //data is not sent
@@ -195,17 +193,10 @@ static void* intervalCall(void *unused)
       sleep(1);
       continue;
     }
+
     is_subscribed_ndt_pose = false;
 
-    //create new thread for socket communication.
-    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
-      std::perror("pthread_create");
-      continue;
-    }
-    sleep(1);
-    if(pthread_join(th,nullptr)){
-      std::perror("pthread_join");
-    }
+    wrapSender();
   }
 
   return nullptr;
