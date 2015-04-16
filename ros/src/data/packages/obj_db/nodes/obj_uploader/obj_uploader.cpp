@@ -79,11 +79,11 @@ static geometry_msgs::PoseArray car_position_array;
 static geometry_msgs::PoseArray pedestrian_position_array;
 
 //default server name and port to send data
-static const string defaultServerName = "db3.ertl.jp";
-static const int PORT = 5678;
+static const string default_host_name = "db3.ertl.jp";
+static constexpr int db_port = 5678;
 //magic that I am C++
 static const char MAGIC[5] = "MPWC";
-static const int area = 7;
+static constexpr int AREA = 7;
 
 //flag for comfirming whether updating position or not
 static bool positionGetFlag;
@@ -237,14 +237,14 @@ int main(int argc, char **argv){
   ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
 
   //set server name and port
-  string serverName = defaultServerName;
-  int portNum = PORT;
+  string host_name = default_host_name;
+  int port = db_port;
   if(argc >= 3){
-    serverName = argv[1];
-    portNum = atoi(argv[2]);
+    host_name = argv[1];
+    port = std::atoi(argv[2]);
   }
 
-  sd = SendData(serverName,portNum);
+  sd = SendData(host_name, port);
 
   //set angle and position flag : false at first
   positionGetFlag = false;
