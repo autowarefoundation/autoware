@@ -50,8 +50,8 @@ publish data as ractangular plane
 
 using namespace std;
 
-static string serverName = "db3.ertl.jp";
-static int PORT = 5678;
+static string host_name = "db3.ertl.jp";
+static int db_port = 5678;
 
 enum DataType {
   NORMAL = 10000,
@@ -91,7 +91,7 @@ static double positionRange[4];
 static double geoPosition[4];//rectangular coordinate for sql condition
 
 static SendData sd;
-static DataType SendDataType;
+static DataType send_data_type;
 
 static std::vector<std::string> split(const string& input, char delimiter)
 {
@@ -256,7 +256,7 @@ static void* wrapSender(void *unused)
   memcpy(&header[12],&sqlnum,4);
   data.append(header,16);
 
-  data += construct_select_statement(SendDataType);
+  data += construct_select_statement(send_data_type);
   data += "\n";
 
   string db_response;
@@ -304,13 +304,13 @@ int main(int argc, char **argv)
 
   if(argc == 1){
     std::cout << "normal execution" << std::endl;
-    SendDataType = NORMAL;
+    send_data_type = NORMAL;
   } else if(argc == 5){
     DataType type = static_cast<DataType>(std::atoi(argv[1]));
     switch (type) {
     case NORMAL:
       std::cout << "normal access" << std::endl;
-      SendDataType = NORMAL;
+      send_data_type = NORMAL;
       break;
     case DB1:
       std::cout << "fixed range access" << std::endl;
@@ -318,9 +318,9 @@ int main(int argc, char **argv)
       positionRange[1] = 35.2711311;
       positionRange[2] = 136.9813925;
       positionRange[3] = 137.055852;
-      serverName = "db1.ertl.jp";
-      PORT = 5700;
-      SendDataType = DB1;
+      host_name = "db1.ertl.jp";
+      db_port = 5700;
+      send_data_type = DB1;
       break;
     case TEST:
       std::cout << "test access" << std::endl;
@@ -328,7 +328,7 @@ int main(int argc, char **argv)
       positionRange[1] = 35.4;
       positionRange[2] = 136.6;
       positionRange[3] = 137.8;
-      SendDataType = TEST;
+      send_data_type = TEST;
       break;
     case RANGE:
       std::cout << "current data get test access\n" << std::endl;
@@ -336,7 +336,7 @@ int main(int argc, char **argv)
       positionRange[1] = 35.4;
       positionRange[2] = 136.6;
       positionRange[3] = 137.8;
-      SendDataType = RANGE;
+      send_data_type = RANGE;
       break;
     default:
       printf("range access\n");
@@ -353,7 +353,7 @@ int main(int argc, char **argv)
           return -1;
         }
       }
-      SendDataType = RANGE;
+      send_data_type = RANGE;
       break;
     }
   } else{
@@ -371,7 +371,7 @@ int main(int argc, char **argv)
   geoPosition[1] = geo.x();
   geoPosition[3] = geo.y();
 
-  sd = SendData(serverName,PORT);
+  sd = SendData(host_name,db_port);
 
   pthread_t th;
   if(pthread_create(&th, nullptr, intervalCall, nullptr)){
