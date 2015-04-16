@@ -1,0 +1,17 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="model" default="$(find points_localizer)/urdf/prius_model.urdf"/>
+  <arg name="gui" default="False" />
+  
+  <param name="robot_description" textfile="$(arg model)" />	
+  <param name="use_gui" value="$(arg gui)"/>
+  
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" /> 
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" /> 
+  
+  <!-- rosrun points_localizer ndt_pcl  -->
+  <node pkg="points_localizer" type="ndt_slam" name="ndt_slam" output="screen"/>
+  
+</launch>

@@ -148,6 +148,8 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
   pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
   tf::Quaternion q;
   Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
+  static tf::TransformBroadcaster br;
+  tf::Transform transform;
 
   scan.header = input->header;
   scan_time.sec = scan.header.stamp / 1000000.0;
@@ -199,8 +201,23 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
   ndt.setInputSource(filtered_scan_ptr);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
-
   map_ptr->header.frame_id = "map";
+
+  // For future improvement
+  // Apply VoxelGrid Filter if # of map points > 500,000
+  /*
+  std::cout << "Map points: " << map.points.size() << std::endl;
+  if(map.points.size() > 500000){
+    pcl::VoxelGrid<pcl::PointXYZI> map_filter;
+    map_filter.setLeafSize(0.2, 0.2, 0.2);
+    map_filter.setInputCloud(map_ptr);
+    map_filter.filter(*map_ptr);
+    map.clear();
+    std::cout << "Map cleared" << std::endl;
+    map += *map_ptr;
+  }
+  */
+
   // Setting point cloud to be aligned to.
   ndt.setInputTarget(map_ptr);
 
@@ -240,11 +257,17 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 		static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
 		static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
     
-    // Update current_pos.
+  // Update current_pos.
   current_pos.x = t(0, 3);
   current_pos.y = t(1, 3);
   current_pos.z = t(2, 3);
   tf3d.getRPY(current_pos.roll, current_pos.pitch, current_pos.yaw, 1);
+
+  transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
+  q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
+  transform.setRotation(q);
+
+  br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
 
   // Calculate the offset (curren_pos - previous_pos)
   offset_x = current_pos.x - previous_pos.x;
