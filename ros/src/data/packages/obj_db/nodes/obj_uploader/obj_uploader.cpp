@@ -115,16 +115,20 @@ static string getTimeStamp(long sec,long nsec){
 
 static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array){
   ostringstream oss;
-  vector<geometry_msgs::Pose>::const_iterator cp_iterator;
-  cp_iterator = cp_array.poses.begin();
+  std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
 
-  for(uint i=0; i<cp_array.poses.size() ; i++, cp_iterator++){
+  for(const auto& pose : cp_array.poses){
     //create sql
-    oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
-    oss << "values('0'," << fixed << setprecision(6) << cp_iterator->position.y << ","
-	<< fixed << setprecision(6) << cp_iterator->position.x << ","
-	<< fixed << setprecision(6) << cp_iterator->position.z << ","
-	<< area << ",0,'" << getTimeStamp(cp_array.header.stamp.sec,cp_array.header.stamp.nsec) << "');\n";
+    oss << "INSERT INTO POS(id,x,y,z,AREA,type,tm) "
+        << "VALUES("
+        << "'0',"
+        << fixed << setprecision(6) << pose.position.y << ","
+        << fixed << setprecision(6) << pose.position.x << ","
+        << fixed << setprecision(6) << pose.position.z << ","
+        << AREA << ","
+        << "0,"
+        << "'" << timestamp << "'"
+        << ");\n";
   }
 
   return oss.str();
