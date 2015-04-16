@@ -46,7 +46,8 @@ publish data as ractangular plane
 #include <string>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include <SendData.h>
+
+#include <obj_db.h>
 
 using namespace std;
 
