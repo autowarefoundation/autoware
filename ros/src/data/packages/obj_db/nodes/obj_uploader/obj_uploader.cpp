@@ -94,24 +94,17 @@ static SendData sd;
 //store own position and direction now.updated by position_getter
 static geometry_msgs::PoseStamped my_location;
 
-static string getTimeStamp(long sec,long nsec)
+static string getTimeStamp(time_t sec, time_t nsec)
 {
-  struct tm *tmp;
-  struct timeval tv;
-  char temp[30];
-  string res;
+  char buf[30];
+  int msec = static_cast<int>(nsec / (1000 * 1000));
 
-  tv.tv_sec = sec;
-  tv.tv_usec = nsec/1000;
+  tm *t = localtime(&sec);
+  sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%d",
+          t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+          t->tm_hour, t->tm_min, t->tm_sec, msec);
 
-  tmp=localtime(&tv.tv_sec);
-  sprintf(temp,"%04d-%02d-%02d %02d:%02d:%02d.%d",
-	  tmp->tm_year + 1900, tmp->tm_mon + 1,
-	  tmp->tm_mday, tmp->tm_hour,
-	  tmp->tm_min, tmp->tm_sec,
-	  static_cast<int>(tv.tv_usec/1000));
-  res = temp;
-  return res;
+  return std::string(static_cast<const char*>(buf));
 }
 
 static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
