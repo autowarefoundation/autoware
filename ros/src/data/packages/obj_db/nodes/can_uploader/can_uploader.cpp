@@ -46,7 +46,6 @@
 
 */
 
-
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <vehicle_socket/CanInfo.h>
@@ -67,8 +66,8 @@
 using namespace std;
 
 //default server name and port to send data
-static const string defaultServerName = "db1.ertl.jp";
-static const int PORT = 5678;
+static const string default_db_host = "db1.ertl.jp";
+static const int default_db_port = 5678;
 
 //flag for comfirming whether updating position or not
 static bool canGetFlag;
@@ -257,14 +256,14 @@ int main(int argc, char **argv)
   ros::Subscriber can = n.subscribe("/can_info", 1, can_infoCallback);
 
   //set server name and port
-  string serverName = defaultServerName;
-  int portNum = PORT;
+  string host_name = default_db_host;
+  int port = default_db_port;
   if(argc >= 3){
-    serverName = argv[1];
-    portNum = atoi(argv[2]);
+    host_name = argv[1];
+    port = std::atoi(argv[2]);
   }
 
-  sd = SendData(serverName,portNum);
+  sd = SendData(host_name, port);
 
   //set angle and position flag : false at first
   canGetFlag = false;
