@@ -165,6 +165,55 @@ static void marker_publisher(const std_msgs::String& msg)
   std::vector<car_info>().swap(cars);
 }
 
+static std::string construct_select_statement(DataType type)
+{
+  std::stringstream ss;
+
+  switch (type) {
+  case RANGE:
+     ss << "SELECT 0,lat,lon,x,y,z,tm FROM pos"
+        << " WHERE ((lat >= "<< fixed << setprecision(7) << positionRange[0]
+        << " AND lat < " << fixed << setprecision(7) << positionRange[1]
+        << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
+        << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ")"
+        << " OR (x >= " << fixed << setprecision(7) << geoPosition[0]
+        << " AND x < "  << fixed << setprecision(7) << geoPosition[1]
+        << " AND y >= " << fixed << setprecision(7) << geoPosition[2]
+        << " AND y < " << fixed << setprecision(7) << geoPosition[3] << "))"
+        << " AND tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
+      break;
+  case TEST:
+     ss << "SELECT 0,lat,lon,0,x,y,z,tm FROM pos"
+        << " WHERE ((lat >= " << fixed << setprecision(7) << positionRange[0]
+        << " AND lat < " << fixed << setprecision(7) << positionRange[1]
+        << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
+        << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ")"
+        << " OR (x >= " << fixed << setprecision(7) << geoPosition[0]
+        << " AND x < " << fixed << setprecision(7) << geoPosition[1]
+        << " AND y >= " << fixed << setprecision(7) << geoPosition[2]
+        << " AND y < " << fixed << setprecision(7) << geoPosition[3] << "))"
+        << " AND id = '0' ORDER BY tm DESC LIMIT 1;";
+      break;
+  case DB1:
+    ss << "SELECT id,lat,lon,ele,timestamp FROM select_test"
+       << " WHERE timestamp = (select max(timestamp) from select_test)"
+       << " AND lat >= " << fixed << setprecision(7) << positionRange[0]
+       << " AND lat < " << fixed << setprecision(7) << positionRange[1]
+       << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
+       << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ";<E>";
+    break;
+  case NORMAL:
+  default:
+    ss << "SELECT 0,lat,lon,0,tm FROM pos"
+       << " WHERE lat >= 30 AND lat < 40"
+       << " AND lon >= 130 AND lon < 140"
+       << " AND tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) AND tm <= current_timestamp;";
+    break;
+  }
+
+  return ss.str();
+}
+
 //wrap SendData class
 static void* wrapSender(void *unused)
 {
@@ -172,7 +221,6 @@ static void* wrapSender(void *unused)
   //And if setting the other number of value , sendData will be failed.
 
   string data;
-  stringstream oss;
 
   //create header
   char magic[5] = "MPWC";
@@ -188,53 +236,7 @@ static void* wrapSender(void *unused)
   memcpy(&header[12],&sqlnum,4);
   data.append(header,16);
 
-  switch (SendDataType){
-  case RANGE:
-     oss << "SELECT 0,lat,lon,x,y,z,tm FROM pos"
-         << " WHERE ((lat >= "<< fixed << setprecision(7) << positionRange[0]
-         << " AND lat < " << fixed << setprecision(7) << positionRange[1]
-         << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
-         << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ")"
-         << " OR (x >= " << fixed << setprecision(7) << geoPosition[0]
-         << " AND x < "  << fixed << setprecision(7) << geoPosition[1]
-         << " AND y >= " << fixed << setprecision(7) << geoPosition[2]
-         << " AND y < " << fixed << setprecision(7) << geoPosition[3] << "))"
-         << " AND tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) and tm <= current_timestamp;";
-      data += oss.str();
-      break;
-  case TEST:
-      oss << "SELECT 0,lat,lon,0,x,y,z,tm FROM pos"
-          << " WHERE ((lat >= " << fixed << setprecision(7) << positionRange[0]
-          << " AND lat < " << fixed << setprecision(7) << positionRange[1]
-          << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
-          << " AND lon < " << fixed << setprecision(7) << positionRange[3] << ")"
-          << " OR (x >= " << fixed << setprecision(7) << geoPosition[0]
-          << " AND x < " << fixed << setprecision(7) << geoPosition[1]
-          << " AND y >= " << fixed << setprecision(7) << geoPosition[2]
-          << " AND y < " << fixed << setprecision(7) << geoPosition[3] << "))"
-          << " AND id = '0' ORDER BY tm DESC LIMIT 1;";
-
-      data += oss.str();
-      break;
-  case DB1:
-    oss << "SELECT id,lat,lon,ele,timestamp FROM select_test"
-        << " WHERE timestamp = (select max(timestamp) from select_test)"
-        << " AND lat >= " << fixed << setprecision(7) << positionRange[0]
-        << " AND lat < "  << fixed << setprecision(7) << positionRange[1]
-        << " AND lon >= " << fixed << setprecision(7) << positionRange[2]
-        << " AND lon < "  << fixed << setprecision(7) << positionRange[3] << ";<E>";
-    data = oss.str();
-    break;
-  case NORMAL:
-  default:
-    oss << "SELECT 0,lat,lon,0,tm FROM pos"
-        << " WHERE lat >= 30 AND lat < 40"
-        << " AND lon >= 130 AND lon < 140"
-        << " AND tm > TO_TIMESTAMP(Second,SINCE_EPOCH(Second,current_timestamp)-1) AND tm <= current_timestamp;";
-    data += oss.str();
-    break;
-  }
-
+  data += construct_select_statement(SendDataType);
   data += "\n";
 
   string dbres;
