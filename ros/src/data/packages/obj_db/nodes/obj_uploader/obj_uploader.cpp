@@ -107,32 +107,41 @@ static string getTimeStamp(time_t sec, time_t nsec)
   return std::string(static_cast<const char*>(buf));
 }
 
-static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
+static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, const std::string& timestamp)
 {
-  ostringstream oss;
-  std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
+  std::ostringstream oss;
 
-  for(const auto& pose : cp_array.poses){
-    //create sql
-    oss << "INSERT INTO POS(id,x,y,z,AREA,type,tm) "
-        << "VALUES("
-        << "'0',"
-        << fixed << setprecision(6) << pose.position.y << ","
-        << fixed << setprecision(6) << pose.position.x << ","
-        << fixed << setprecision(6) << pose.position.z << ","
-        << AREA << ","
-        << "0,"
-        << "'" << timestamp << "'"
-        << ");\n";
-  }
+  oss << "INSERT INTO POS(id,x,y,z,AREA,type,tm) "
+      << "VALUES("
+      << "'0',"
+      << fixed << setprecision(6) << pose.position.y << ","
+      << fixed << setprecision(6) << pose.position.x << ","
+      << fixed << setprecision(6) << pose.position.z << ","
+      << AREA << ","
+      << "0,"
+      << "'" << timestamp << "'"
+      << ");";
 
   return oss.str();
+}
+
+static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
+{
+  std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
+
+  std::string ret;
+  for(const auto& pose : cp_array.poses){
+    //create sql
+    ret += pose_to_insert_statement(pose, timestamp);
+    ret += "\n";
+  }
+
+  return ret;
 }
 
 //wrap SendData class
 static void wrapSender()
 {
-  ostringstream oss;
   string value;
   size_t car_num = car_position_array.poses.size();
   size_t pedestrian_num = pedestrian_position_array.poses.size();
@@ -162,18 +171,11 @@ static void wrapSender()
     value += makeSendDataDetectedObj(pedestrian_position_array);
   }
 
-  oss << "INSERT INTO POS(id,x,y,z,AREA,type,tm) "
-      << " VALUES('0',"
-      << fixed << setprecision(6) << my_location.pose.position.y << ","
-      << fixed << setprecision(6) << my_location.pose.position.x << ","
-      << fixed << setprecision(6) << my_location.pose.position.z << ","
-      << AREA << ","
-      << "0,"
-      << "'" << getTimeStamp(my_location.header.stamp.sec,my_location.header.stamp.nsec) << "'"
-      << ");\n";
+  std::string timestamp = getTimeStamp(my_location.header.stamp.sec,my_location.header.stamp.nsec);
+  value += pose_to_insert_statement(my_location.pose, timestamp);
+  value += "\n";
 
-  value += oss.str();
-  cout << value << endl;
+  std::cout << value << std::endl;
 
   string res;
   int ret = sd.Sender(value, res);
