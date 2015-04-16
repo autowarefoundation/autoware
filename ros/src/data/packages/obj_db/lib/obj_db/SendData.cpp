@@ -40,7 +40,7 @@
 #include <unistd.h>
 #include <string>
 
-#include <SendData.h>
+#include <obj_db.h>
 
 SendData::SendData()
 	: SendData("db1.ertl.jp", 5700)

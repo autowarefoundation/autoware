@@ -28,12 +28,13 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _SEND_DATA_H_
-#define _SEND_DATA_H_
+#ifndef _OBJ_DB_H_
+#define _OBJ_DB_H_
 
+#include <cstdint>
 #include <string>
 
-class SendData{
+class SendData {
 private:
 	std::string host_name_;
 	int port_;
@@ -45,4 +46,6 @@ public:
 	int Sender(const std::string& value, std::string& res) const;
 };
 
-#endif /* _SEND_DATA_H_ */
+extern std::string make_header(int32_t sql_inst, int32_t sql_num);
+
+#endif /* _OBJ_DB_H_ */

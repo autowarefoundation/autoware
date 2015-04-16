@@ -44,9 +44,9 @@ publish data as ractangular plane
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <arpa/inet.h>
 #include <pthread.h>
-#include <SendData.h>
+
+#include <obj_db.h>
 
 using namespace std;
 
@@ -235,26 +235,13 @@ static std::string construct_select_statement(DataType type)
 }
 
 //wrap SendData class
-static void* wrapSender(void *unused)
+static void send_sql()
 {
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
 
-  string data;
-
   //create header
-  char magic[5] = "MPWC";
-  u_int16_t major = htons(1);
-  u_int16_t minor = htons(0);
-  u_int32_t sqlinst = htonl(1);
-  u_int32_t sqlnum = htonl(1);
-  char header[16];
-  memcpy(header,magic,4);
-  memcpy(&header[4],&major,2);
-  memcpy(&header[6],&minor,2);
-  memcpy(&header[8],&sqlinst,4);
-  memcpy(&header[12],&sqlnum,4);
-  data.append(header,16);
+  std::string data = make_header(1, 1);
 
   data += construct_select_statement(send_data_type);
   data += "\n";
@@ -263,7 +250,7 @@ static void* wrapSender(void *unused)
   int ret = sd.Sender(data, db_response);
   if (ret == -1) {
     std::cerr << "Failed: sd.Sender" << std::endl;
-    return nullptr;
+    return;
   }
 
   std::cout << "return data: " << db_response << std::endl;
@@ -272,22 +259,13 @@ static void* wrapSender(void *unused)
   msg.data = db_response.c_str();
 
   marker_publisher(msg);
-  return nullptr;
 }
 
 static void* intervalCall(void *unused)
 {
-  pthread_t th;
-
   while(1){
-    //create new thread for socket communication.
-    if(pthread_create(&th, nullptr, wrapSender, nullptr)){
-      printf("thread create error\n");
-    }
+    send_sql();
     sleep(1);
-    if(pthread_join(th,nullptr)){
-      printf("thread join error.\n");
-    }
   }
 
   return nullptr;
