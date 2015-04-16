@@ -34,20 +34,18 @@ This node get location data from db server and
 publish data as ractangular plane
 */
 
+#include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <visualization_msgs/Marker.h>
 #include <geo_pos_conv.hh>
-#include "ros/ros.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
+#include <cstdio>
+#include <cstdlib>
 #include <vector>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 #include <arpa/inet.h>
-#include "std_msgs/Float64.h"
+#include <pthread.h>
 #include <SendData.h>
 
 using namespace std;
