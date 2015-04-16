@@ -134,13 +134,15 @@ static void wrapSender()
 {
   ostringstream oss;
   string value;
+  size_t car_num = car_position_array.poses.size();
+  size_t pedestrian_num = pedestrian_position_array.poses.size();
 
   //create header
   char magic[5] = "MPWC";
   u_int16_t major = htons(1);
   u_int16_t minor = htons(0);
   u_int32_t sqlinst = htonl(2);
-  u_int32_t sqlnum = htonl(car_position_array.poses.size()+pedestrian_position_array.poses.size()+1);
+  u_int32_t sqlnum = htonl(car_num + pedestrian_num);
   char header[16];
   memcpy(header,magic,4);
   memcpy(&header[4],&major,2);
@@ -149,14 +151,14 @@ static void wrapSender()
   memcpy(&header[12],&sqlnum,4);
   value.append(header,16);
 
-  cout << "sqlnum : " << car_position_array.poses.size() + pedestrian_position_array.poses.size() + 1 << endl;
+  cout << "sqlnum : " << sqlnum << endl;
 
   //get data of car and pedestrian recognizing
-  if(car_position_array.poses.size() > 0 ){
+  if(car_num > 0){
     value += makeSendDataDetectedObj(car_position_array);
   }
 
-  if(pedestrian_position_array.poses.size() > 0){
+  if(pedestrian_num > 0){
     value += makeSendDataDetectedObj(pedestrian_position_array);
   }
 
