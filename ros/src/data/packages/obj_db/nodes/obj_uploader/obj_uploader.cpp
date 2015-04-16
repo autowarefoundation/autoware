@@ -86,13 +86,13 @@ static const char MAGIC[5] = "MPWC";
 static constexpr int AREA = 7;
 
 //flag for comfirming whether updating position or not
-static bool positionGetFlag;
+static bool is_subscribed_ndt_pose;
 
 //send to server class
 static SendData sd;
 
 //store own position and direction now.updated by position_getter
-static geometry_msgs::PoseStamped my_loc;
+static geometry_msgs::PoseStamped my_location;
 
 static string getTimeStamp(long sec,long nsec)
 {
@@ -169,12 +169,12 @@ static void* wrapSender(void *unused)
 
   oss << "INSERT INTO POS(id,x,y,z,AREA,type,tm) "
       << " VALUES('0',"
-      << fixed << setprecision(6) << my_loc.pose.position.y << ","
-      << fixed << setprecision(6) << my_loc.pose.position.x << ","
-      << fixed << setprecision(6) << my_loc.pose.position.z << ","
+      << fixed << setprecision(6) << my_location.pose.position.y << ","
+      << fixed << setprecision(6) << my_location.pose.position.x << ","
+      << fixed << setprecision(6) << my_location.pose.position.z << ","
       << AREA << ","
       << "0,"
-      << "'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "'"
+      << "'" << getTimeStamp(my_location.header.stamp.sec,my_location.header.stamp.nsec) << "'"
       << ");\n";
 
   value += oss.str();
@@ -196,13 +196,13 @@ static void* intervalCall(void *unused)
   pthread_t th;
 
   while(1){
-    //If angle and position data is not updated from prevous data send,
+    //If angle and position data is not updated from previous data send,
     //data is not sent
-    if(!positionGetFlag) {
+    if(!is_subscribed_ndt_pose) {
       sleep(1);
       continue;
     }
-    positionGetFlag = false;
+    is_subscribed_ndt_pose = false;
 
     //create new thread for socket communication.
     if(pthread_create(&th, nullptr, wrapSender, nullptr)){
@@ -218,20 +218,20 @@ static void* intervalCall(void *unused)
   return nullptr;
 }
 
-static void car_locateCallback(const geometry_msgs::PoseArray& car_locate)
+static void car_locate_cb(const geometry_msgs::PoseArray& car_locate)
 {
   car_position_array = car_locate;
 }
 
-static void pedestrian_locateCallback(const geometry_msgs::PoseArray& pedestrian_locate)
+static void pedestrian_locate_cb(const geometry_msgs::PoseArray& pedestrian_locate)
 {
   pedestrian_position_array = pedestrian_locate;
 }
 
-static void position_getter_ndt(const geometry_msgs::PoseStamped &pose)
+static void ndt_pose_cb(const geometry_msgs::PoseStamped &pose)
 {
-  my_loc = pose;
-  positionGetFlag = true;
+  my_location = pose;
+  is_subscribed_ndt_pose = true;
 }
 
 int main(int argc, char **argv)
@@ -246,9 +246,9 @@ int main(int argc, char **argv)
    */
   ros::NodeHandle n;
 
-  ros::Subscriber car_locate = n.subscribe("/car_pose", 1, car_locateCallback);
-  ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locateCallback);
-  ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
+  ros::Subscriber car_locate = n.subscribe("/car_pose", 1, car_locate_cb);
+  ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
+  ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, ndt_pose_cb);
 
   //set server name and port
   string host_name = default_host_name;
@@ -261,7 +261,7 @@ int main(int argc, char **argv)
   sd = SendData(host_name, port);
 
   //set angle and position flag : false at first
-  positionGetFlag = false;
+  is_subscribed_ndt_pose = false;
 
   pthread_t th;
   if(pthread_create(&th, nullptr, intervalCall, nullptr)){
