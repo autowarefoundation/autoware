@@ -60,7 +60,6 @@
 #include <string>
 #include <sstream>
 #include <sys/time.h>
-#include <arpa/inet.h>
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseArray.h"
 
@@ -82,9 +81,6 @@ static geometry_msgs::PoseArray pedestrian_position_array;
 //default server name and port to send data
 static const string default_host_name = "db3.ertl.jp";
 static constexpr int db_port = 5678;
-//magic that I am C++
-static const char MAGIC[5] = "MPWC";
-static constexpr int AREA = 7;
 
 //flag for comfirming whether updating position or not
 static bool is_subscribed_ndt_pose;
@@ -111,8 +107,9 @@ static string getTimeStamp(time_t sec, time_t nsec)
 static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, const std::string& timestamp)
 {
   std::ostringstream oss;
+  constexpr int AREA = 7;
 
-  oss << "INSERT INTO POS(id,x,y,z,AREA,type,tm) "
+  oss << "INSERT INTO POS(id,x,y,z,area,type,tm) "
       << "VALUES("
       << "'0',"
       << fixed << setprecision(6) << pose.position.y << ","
@@ -143,25 +140,12 @@ static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
 //wrap SendData class
 static void wrapSender()
 {
-  string value;
   size_t car_num = car_position_array.poses.size();
   size_t pedestrian_num = pedestrian_position_array.poses.size();
+  std::cout << "sqlnum : " << (car_num + pedestrian_num) << std::endl;
 
   //create header
-  char magic[5] = "MPWC";
-  u_int16_t major = htons(1);
-  u_int16_t minor = htons(0);
-  u_int32_t sqlinst = htonl(2);
-  u_int32_t sqlnum = htonl(car_num + pedestrian_num);
-  char header[16];
-  memcpy(header,magic,4);
-  memcpy(&header[4],&major,2);
-  memcpy(&header[6],&minor,2);
-  memcpy(&header[8],&sqlinst,4);
-  memcpy(&header[12],&sqlnum,4);
-  value.append(header,16);
-
-  cout << "sqlnum : " << sqlnum << endl;
+  std::string value = make_header(2, car_num + pedestrian_num);
 
   //get data of car and pedestrian recognizing
   if(car_num > 0){

@@ -44,7 +44,6 @@ publish data as ractangular plane
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <arpa/inet.h>
 #include <pthread.h>
 
 #include <obj_db.h>
@@ -241,21 +240,8 @@ static void* wrapSender(void *unused)
   //I assume that values has 4 value ex: "0 0 0 0"   "1 2 3 4"
   //And if setting the other number of value , sendData will be failed.
 
-  string data;
-
   //create header
-  char magic[5] = "MPWC";
-  u_int16_t major = htons(1);
-  u_int16_t minor = htons(0);
-  u_int32_t sqlinst = htonl(1);
-  u_int32_t sqlnum = htonl(1);
-  char header[16];
-  memcpy(header,magic,4);
-  memcpy(&header[4],&major,2);
-  memcpy(&header[6],&minor,2);
-  memcpy(&header[8],&sqlinst,4);
-  memcpy(&header[12],&sqlnum,4);
-  data.append(header,16);
+  std::string data = make_header(1, 1);
 
   data += construct_select_statement(send_data_type);
   data += "\n";

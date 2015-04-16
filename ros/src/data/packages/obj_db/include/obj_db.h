@@ -46,6 +46,6 @@ public:
 	int Sender(const std::string& value, std::string& res) const;
 };
 
-extern int make_header(char *header, int32_t sql_inst, int32_t sql_num);
+extern std::string make_header(int32_t sql_inst, int32_t sql_num);
 
 #endif /* _OBJ_DB_H_ */
