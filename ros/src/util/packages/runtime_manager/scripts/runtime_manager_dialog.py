@@ -311,6 +311,10 @@ class MyFrame(rtmgr.MyFrame):
 				pdic = self.load_dic.get(k, {})
 				self.load_dic[k] = pdic
 				prm = self.get_param(d2.get('param'))
+				for var in prm.get('vars'):
+					name = var.get('name')
+					if name not in pdic and 'v' in var:
+						pdic[name] = var.get('v')
 				gdic = self.gdic_get_1st(d2)
 
 				for (name, v) in pdic.items():
