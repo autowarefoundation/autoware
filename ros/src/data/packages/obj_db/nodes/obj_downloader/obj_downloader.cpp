@@ -60,7 +60,7 @@ enum DataType {
   RANGE  = 10003,
 };
 
-struct car_info {
+struct CarInformation {
   int gps_id;
   double lat;
   double lon;
@@ -73,7 +73,7 @@ struct car_info {
   void dump() const;
 };
 
-void car_info::dump() const
+void CarInformation::dump() const
 {
   std::cout << "gps_id: " << gps_id << std::endl;
   std::cout << "lat: " << lat << std::endl;
@@ -110,7 +110,7 @@ static bool isNumeric(const std::string& str){
   return true;
 }
 
-static int result_to_car_info(const std::string& result, car_info& car)
+static int result_to_car_info(const std::string& result, CarInformation& car)
 {
   std::vector<std::string> columns = split(result, '\t');
   if(columns.size() != 8)
@@ -151,12 +151,12 @@ static void marker_publisher(const std_msgs::String& msg)
   // Loading data.
   std::vector<std::string> db_data = split(msg.data,'\n');
 
-  std::vector<car_info> cars;
+  std::vector<CarInformation> cars;
   for(const std::string& row : db_data) {
     if(row.empty())
       continue;
 
-    car_info car;
+    CarInformation car;
     int ret = result_to_car_info(row, car);
     if (ret != 0)
       continue;
