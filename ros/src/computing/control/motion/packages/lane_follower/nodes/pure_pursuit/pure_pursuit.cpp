@@ -274,8 +274,6 @@ double CalcRadius(int waypoint)
 }
 
 
-
-
 /////////////////////////////////////////////////////////////////
 // obtain the next "effective" waypoint. 
 // the vehicle drives itself toward this waypoint.
