@@ -167,11 +167,15 @@ static void* wrapSender(void *unused)
     value += makeSendDataDetectedObj(pedestrian_position_array);
   }
 
-  oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
-  oss << "values('0'," <<  fixed << setprecision(6) << my_loc.pose.position.y << ","
+  oss << "INSERT INTO POS(id,x,y,z,AREA,type,tm) "
+      << " VALUES('0',"
+      << fixed << setprecision(6) << my_loc.pose.position.y << ","
       << fixed << setprecision(6) << my_loc.pose.position.x << ","
       << fixed << setprecision(6) << my_loc.pose.position.z << ","
-      << area << ",0,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
+      << AREA << ","
+      << "0,"
+      << "'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "'"
+      << ");\n";
 
   value += oss.str();
   cout << value << endl;
