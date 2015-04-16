@@ -55,11 +55,11 @@ using namespace std;
 static string serverName = "db3.ertl.jp";
 static int PORT = 5678;
 
-enum TYPE{
-  NORMAL,
-  RANGE,
-  TEST,
-  DB1
+enum DataType {
+  NORMAL = 10000,
+  DB1    = 10001,
+  TEST   = 10002,
+  RANGE  = 10003,
 };
 
 struct car_info {
@@ -79,7 +79,7 @@ static double positionRange[4];
 static double geoPosition[4];//rectangular coordinate for sql condition
 
 static SendData sd;
-static TYPE SendDataType;
+static DataType SendDataType;
 
 static std::vector<std::string> split(const string& input, char delimiter)
 {
@@ -273,14 +273,17 @@ int main(int argc, char **argv)
   pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1);
 
   if(argc == 1){
-    printf("normal execution\n");
+    std::cout << "normal execution" << std::endl;
     SendDataType = NORMAL;
-  }else if(argc == 5){
-    if(static_cast<std::string>(argv[1]).compare("10000")==0){
-      printf("normal access\n");
+  } else if(argc == 5){
+    DataType type = static_cast<DataType>(std::atoi(argv[1]));
+    switch (type) {
+    case NORMAL:
+      std::cout << "normal access" << std::endl;
       SendDataType = NORMAL;
-    }else if(static_cast<string>(argv[1]).compare("10001")==0){
-      printf("fixed range access\n");
+      break;
+    case DB1:
+      std::cout << "fixed range access" << std::endl;
       positionRange[0] = 35.2038955;
       positionRange[1] = 35.2711311;
       positionRange[2] = 136.9813925;
@@ -288,88 +291,44 @@ int main(int argc, char **argv)
       serverName = "db1.ertl.jp";
       PORT = 5700;
       SendDataType = DB1;
-
-    }else if(static_cast<string>(argv[1]).compare("10002") == 0){
-      printf("test access\n");
+      break;
+    case TEST:
+      std::cout << "test access" << std::endl;
       positionRange[0] = 34.5;
       positionRange[1] = 35.4;
       positionRange[2] = 136.6;
       positionRange[3] = 137.8;
       SendDataType = TEST;
-    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
-      printf("current data get test access\n");
+      break;
+    case RANGE:
+      std::cout << "current data get test access\n" << std::endl;
       positionRange[0] = 34.5;
       positionRange[1] = 35.4;
       positionRange[2] = 136.6;
       positionRange[3] = 137.8;
       SendDataType = RANGE;
-
-    }else{
+      break;
+    default:
       printf("range access\n");
       for(int i=1; i<5 ;i++){
-	std::string arg(argv[i]);
-	if(!isNumeric(arg)){
-	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
-	  exit(1);
-	}
-	positionRange[i-1] = std::stod(arg);
+        std::string arg(argv[i]);
+        if(!isNumeric(arg)){
+          std::cerr << "argment '" << arg << "' is not numeric" << std::endl;
+          return -1;
+        }
+        positionRange[i-1] = std::stod(arg);
 
-	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
-	  fprintf(stderr,"error.\ninvalid range.\n");
-	  exit(1);
-	}
+        if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
+          std::cerr << "Error: invalid range" << std::endl;
+          return -1;
+        }
       }
       SendDataType = RANGE;
+      break;
     }
-  }else if(argc == 7){
-    if(static_cast<std::string>(argv[1]).compare("10000")==0){
-      printf("normal access\n");
-      SendDataType = NORMAL;
-    }else if(static_cast<string>(argv[1]).compare("10001")==0){
-      printf("fixed range access\n");
-      positionRange[0] = 35.2038955;
-      positionRange[1] = 35.2711311;
-      positionRange[2] = 136.9813925;
-      positionRange[3] = 137.055852;
-      serverName = "db1.ertl.jp";
-      PORT = 5700;
-      SendDataType = DB1;
-
-    }else if(static_cast<string>(argv[1]).compare("10002") == 0){
-      printf("test access\n");
-      positionRange[0] = 34.5;
-      positionRange[1] = 35.4;
-      positionRange[2] = 136.6;
-      positionRange[3] = 137.8;
-      SendDataType = TEST;
-    }else if(static_cast<string>(argv[1]).compare("10003") == 0){
-      printf("current data get test access\n");
-      positionRange[0] = 34.5;
-      positionRange[1] = 35.4;
-      positionRange[2] = 136.6;
-      positionRange[3] = 137.8;
-      SendDataType = RANGE;
-
-    }else{
-      printf("range access\n");
-      for(int i=1; i<5 ;i++){
-	std::string arg(argv[i]);
-	if(!isNumeric(arg)){
-	  fprintf(stderr,"argment is not numeric.%s\n",arg.c_str());
-	  exit(1);
-	}
-	positionRange[i-1] = std::stod(arg);
-
-	if(!(positionRange[i-1]>=-360 && positionRange[i-1]<=360)){
-	  fprintf(stderr,"error.\ninvalid range.\n");
-	  exit(1);
-	}
-      }
-      SendDataType = RANGE;
-    }
-  }else{
-    fprintf(stderr,"The number of argment is invalid.\n");
-    return 0;
+  } else{
+    std::cerr << "The number of argment is invalid." << std::endl;
+    return -1;
   }
 
   geo_pos_conv geo;
