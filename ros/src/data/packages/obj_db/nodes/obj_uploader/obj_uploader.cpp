@@ -94,7 +94,8 @@ static SendData sd;
 //store own position and direction now.updated by position_getter
 static geometry_msgs::PoseStamped my_loc;
 
-static string getTimeStamp(long sec,long nsec){
+static string getTimeStamp(long sec,long nsec)
+{
   struct tm *tmp;
   struct timeval tv;
   char temp[30];
@@ -113,7 +114,8 @@ static string getTimeStamp(long sec,long nsec){
   return res;
 }
 
-static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array){
+static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
+{
   ostringstream oss;
   std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
 
@@ -135,7 +137,8 @@ static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array){
 }
 
 //wrap SendData class
-static void* wrapSender(void *unused){
+static void* wrapSender(void *unused)
+{
   ostringstream oss;
   string value;
 
@@ -184,7 +187,8 @@ static void* wrapSender(void *unused){
   return nullptr;
 }
 
-static void* intervalCall(void *unused){
+static void* intervalCall(void *unused)
+{
   pthread_t th;
 
   while(1){
@@ -220,12 +224,14 @@ static void pedestrian_locateCallback(const geometry_msgs::PoseArray& pedestrian
   pedestrian_position_array = pedestrian_locate;
 }
 
-static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
+static void position_getter_ndt(const geometry_msgs::PoseStamped &pose)
+{
   my_loc = pose;
   positionGetFlag = true;
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
   ros::init(argc ,argv, "obj_uploader");
   cout << "obj_uploader" << endl;
 
