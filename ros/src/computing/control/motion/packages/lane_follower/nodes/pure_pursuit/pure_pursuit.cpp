@@ -320,79 +320,79 @@ int GetNextWayPoint()
 
         // if there exists an effective waypoint
         if (Distance > lookahead_threshold) {
-            double radius = CalcRadius(i);
-            if (radius < 0)
-                radius = (-1) * radius;
-            //std::cout << "waypoint = " << i << std::endl;
-            //std::cout << "threshold = " << lookahead_threshold << std::endl;
-            //std::cout << "distance = " << Distance << std::endl;
 
-            tf::Vector3 center;
+            if (!_fix_flag) {
 
-            if (TransformWaypoint(i).y > 0) {
-                center = tf::Vector3(0, 0 + radius, 0);
-            } else {
-                center = tf::Vector3(0, 0 - radius, 0);
-            }
+                double radius = CalcRadius(i);
+                if (radius < 0)
+                    radius = (-1) * radius;
+                //std::cout << "waypoint = " << i << std::endl;
+                //std::cout << "threshold = " << lookahead_threshold << std::endl;
+                //std::cout << "distance = " << Distance << std::endl;
 
-            geometry_msgs::Point point;
-            tf::Vector3 inv_center = _transform.inverse() * center;
+                tf::Vector3 center;
 
-            point.x = inv_center.getX();
-            point.y = inv_center.getY();
-            point.z = inv_center.getZ();
-            // display the next waypoint by markers.
-            visualization_msgs::Marker circle;
-            circle.header.frame_id = PATH_FRAME;
-            circle.header.stamp = ros::Time::now();
-            circle.ns = "circle";
-            circle.id = 0;
-            circle.type = visualization_msgs::Marker::SPHERE;
-            circle.action = visualization_msgs::Marker::ADD;
-            circle.pose.position = point;
-            circle.scale.x = radius * 2;
-            circle.scale.y = radius * 2;
-            circle.scale.z = 1.0;
-            circle.color.a = 0.3;
-            circle.color.r = 1.0;
-            circle.color.g = 0.0;
-            circle.color.b = 0.0;
-            _circle_pub.publish(circle);
+                if (TransformWaypoint(i).y > 0) {
+                    center = tf::Vector3(0, 0 + radius, 0);
+                } else {
+                    center = tf::Vector3(0, 0 - radius, 0);
+                }
 
+                geometry_msgs::Point point;
+                tf::Vector3 inv_center = _transform.inverse() * center;
 
-            //evaluation waypoint
-            double evaluation = 0;
-            for (int j = closest + 1; j < i; j++) {
-                tf::Vector3 waypoint(_current_path.waypoints[j].pose.pose.position.x, _current_path.waypoints[j].pose.pose.position.y, _current_path.waypoints[j].pose.pose.position.z);
+                point.x = inv_center.getX();
+                point.y = inv_center.getY();
+                point.z = inv_center.getZ();
+                // display the next waypoint by markers.
+                visualization_msgs::Marker circle;
+                circle.header.frame_id = PATH_FRAME;
+                circle.header.stamp = ros::Time::now();
+                circle.ns = "circle";
+                circle.id = 0;
+                circle.type = visualization_msgs::Marker::SPHERE;
+                circle.action = visualization_msgs::Marker::ADD;
+                circle.pose.position = point;
+                circle.scale.x = radius * 2;
+                circle.scale.y = radius * 2;
+                circle.scale.z = 1.0;
+                circle.color.a = 0.3;
+                circle.color.r = 1.0;
+                circle.color.g = 0.0;
+                circle.color.b = 0.0;
+                _circle_pub.publish(circle);
 
-                //  std::cout << "center(" << center.x() << " " << center.y() << " " << center.z() << ")" << std::endl;
-                //  std::cout << "waypoint (" << waypoint.x() << " " << waypoint.y() << " " << waypoint.z() << ")" << std::endl;
+                //evaluation waypoint
+                double evaluation = 0;
+                for (int j = closest + 1; j < i; j++) {
+                    tf::Vector3 waypoint(_current_path.waypoints[j].pose.pose.position.x, _current_path.waypoints[j].pose.pose.position.y, _current_path.waypoints[j].pose.pose.position.z);
 
-                tf::Vector3 tf_w = _transform * waypoint;
-                tf::Vector3 tf_waypoint;
-                tf_waypoint.setX(tf_w.getX());
-                tf_waypoint.setY(tf_w.getY());
-                tf_waypoint.setZ(0);
-                double dt = fabs(tf::tfDistance(center, tf_waypoint));
-                double dt_diff = fabs(dt - radius);
+                    //  std::cout << "center(" << center.x() << " " << center.y() << " " << center.z() << ")" << std::endl;
+                    //  std::cout << "waypoint (" << waypoint.x() << " " << waypoint.y() << " " << waypoint.z() << ")" << std::endl;
 
-                evaluation += dt_diff;
-            }
+                    tf::Vector3 tf_waypoint  = _transform * waypoint;
+                    tf_waypoint.setZ(0);
+                    double dt = fabs(tf::tfDistance(center, tf_waypoint));
+                    double dt_diff = fabs(dt - radius);
 
-            double eval_value = GetEvaluation(closest, i);
-            //std::cout << "evaluation (" << evaluation << " " << eval_value << "）" << std::endl;
+                    evaluation += dt_diff;
+                }
 
-            if (evaluation < eval_value) {
-                //     std::cout << "ok!" << std::endl;
-            } else {
-                //     std::cout << "bad" << std::endl;
+                double eval_value = GetEvaluation(closest, i);
+                //std::cout << "evaluation (" << evaluation << " " << eval_value << "）" << std::endl;
 
-                if (lookahead_threshold > minimum_th) {
-                    lookahead_threshold -= 0.1;
-                    i = closest;
-                    continue;
-                } else
-                    lookahead_threshold = minimum_th;
+                if (evaluation < eval_value) {
+                    //     std::cout << "ok!" << std::endl;
+                } else {
+                    //     std::cout << "bad" << std::endl;
+
+                    if (lookahead_threshold > minimum_th) {
+                        lookahead_threshold -= 0.1;
+                        i = closest;
+                        continue;
+                    } else
+                        lookahead_threshold = minimum_th;
+                }
             }
 
             std::cout << "threshold = " << lookahead_threshold << std::endl;
