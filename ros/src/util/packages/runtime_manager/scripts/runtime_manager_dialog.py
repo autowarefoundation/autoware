@@ -1523,6 +1523,31 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
+class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
+	def __init__(self, *args, **kwds):
+		self.pdic = kwds.pop('pdic')
+		self.gdic = kwds.pop('gdic')
+		self.prm = kwds.pop('prm')
+		rtmgr.MyDialogNdtSlam.__init__(self, *args, **kwds)
+
+		self.name = 'map_resolution'
+		self.var = get_top([ var for var in self.prm.get('vars') if var.get('name') == self.name ])
+		v = self.pdic.get(self.name, self.var.get('v'))
+		self.text_ctrl_map_resolution.SetValue(str(v))
+
+	def OnPcdOutput(self, event):
+		v = self.text_ctrl_map_resolution.GetValue()
+		if v is None or v == '':
+			v = self.pdic.get(self.name, self.var.get('v'))
+			self.text_ctrl_map_resolution.SetValue(str(v))
+		self.pdic[ self.name ] = v
+		cmd = shlex.split(self.var.get('cmd')) + [ v ]
+		print cmd
+		subprocess.call(cmd)
+		
+	def OnOk(self, event):
+		self.EndModal(0)
+
 class MyApp(wx.App):
 	def OnInit(self):
 		wx.InitAllImageHandlers()

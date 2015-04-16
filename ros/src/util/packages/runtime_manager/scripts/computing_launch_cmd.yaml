@@ -65,6 +65,12 @@ subs :
             cmd  : rosrun gnss_localizer nmea2tfpose
           - name : pos_master
             cmd  : echo pos_master
+          - name : ndt_slam
+            cmd  : roslaunch points_localizer ndt_slam.launch
+            param: ndt_slam
+            gui  :
+              dialog : MyDialogNdtSlam
+
   - name : Planning
     subs :
       - name : Path
@@ -381,3 +387,9 @@ params :
       min       : 0
       max       : 20
       v         : 2.0
+
+  - name  : ndt_slam
+    vars  :
+    - name      : map_resolution
+      v         : 0.2
+      cmd       : rostopic pub --once /output std_msgs/Float32
