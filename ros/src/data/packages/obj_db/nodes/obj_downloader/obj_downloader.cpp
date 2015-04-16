@@ -69,7 +69,21 @@ struct car_info {
   double x;
   double y;
   double z;
+
+  void dump() const;
 };
+
+void car_info::dump() const
+{
+  std::cout << "gps_id: " << gps_id << std::endl;
+  std::cout << "lat: " << lat << std::endl;
+  std::cout << "lon: " << lon << std::endl;
+  std::cout << "ele: " << ele << std::endl;
+  std::cout << "timestamp: " << timestamp << std::endl;
+  std::cout << "x: " << x << std::endl;
+  std::cout << "y: " << y << std::endl;
+  std::cout << "z: " << z << std::endl;
+}
 
 static ros::Publisher pub;
 
@@ -96,12 +110,27 @@ static bool isNumeric(const std::string& str){
   return true;
 }
 
+static int result_to_car_info(const std::string& result, car_info& car)
+{
+  std::vector<std::string> columns = split(result, '\t');
+  if(columns.size() != 8)
+    return -1;
+
+  car.gps_id = std::stoi(columns[0]);
+  car.lat = std::stod(columns[1]);
+  car.lon = std::stod(columns[2]);
+  car.ele = std::stod(columns[3]);
+  car.x = std::stod(columns[4]);
+  car.y = std::stod(columns[5]);
+  car.z = std::stod(columns[6]);
+  car.timestamp = columns[7];
+
+  return 0;
+}
+
 static void marker_publisher(const std_msgs::String& msg)
 {
-  std::vector<car_info> cars;
-  std::vector<std::string> db_data, tmp;
   visualization_msgs::Marker sphere_list;
-  car_info a;
   sphere_list.header.frame_id = "/mobility";
   sphere_list.header.stamp = ros::Time::now();
   sphere_list.ns = "mo_marker";
@@ -116,53 +145,44 @@ static void marker_publisher(const std_msgs::String& msg)
   sphere_list.scale.x = 10.0;
   sphere_list.scale.y = 10.0;
   sphere_list.scale.z = 10.0;
-  ros::Rate rate(50);
+
   geo_pos_conv geo;
   geo.set_plane(7);
   // Loading data.
-  db_data = split(msg.data,'\n');
-  for(uint i = 0; i < db_data.size(); i++){
-    geometry_msgs::Point p;
-    if(db_data[i].compare("")==0) continue;
-    tmp = split(db_data[i], '\t');
-    if(tmp.size()!=8) continue;
-    a.gps_id = std::stoi(tmp[0]);
-    a.lat = std::stod(tmp[1].c_str());
-    a.lon = std::stod(tmp[2].c_str());
-    a.ele = std::stod(tmp[3].c_str());
-    a.x = std::stod(tmp[4].c_str());
-    a.y = std::stod(tmp[5].c_str());
-    a.z = std::stod(tmp[6].c_str());
-    a.timestamp = tmp[7];
+  std::vector<std::string> db_data = split(msg.data,'\n');
+
+  std::vector<car_info> cars;
+  for(const std::string& row : db_data) {
+    if(row.empty())
+      continue;
+
+    car_info car;
+    int ret = result_to_car_info(row, car);
+    if (ret != 0)
+      continue;
 
     // Convert from lat,lon to x,y
-    // geo.set_llh_nmea_degrees(a.lat, a.lon, a.ele);
-    if(a.lat >= -180 && a.lat <= 180 && a.lon >= -180 && a.lon <= 180){
-      geo.llh_to_xyz(a.lat, a.lon, a.ele);
-      a.x = geo.x();
-      a.y = geo.y();
-      a.z = geo.z();
+    // geo.set_llh_nmea_degrees(car.lat, car.lon, car.ele);
+    if(car.lat >= -180 && car.lat <= 180 && car.lon >= -180 && car.lon <= 180){
+      geo.llh_to_xyz(car.lat, car.lon, car.ele);
+      car.x = geo.x();
+      car.y = geo.y();
+      car.z = geo.z();
     }
-    // swap x and y
-    p.x = a.y;
-    p.y = a.x;
-    p.z = a.z;
 
-    cars.push_back(a);
+    geometry_msgs::Point p;
+    // swap x and y
+    p.x = car.y;
+    p.y = car.x;
+    p.z = car.z;
+
+    cars.push_back(car);
     sphere_list.points.push_back(p);
-    std::cout << "gps_id: " << cars[i].gps_id << std::endl;
-    std::cout << "lat: " << cars[i].lat << std::endl;
-    std::cout << "lon: " << cars[i].lon << std::endl;
-    std::cout << "ele: " << cars[i].ele << std::endl;
-    std::cout << "timestamp: " << cars[i].timestamp << std::endl;
-    std::cout << "x: " << cars[i].x << std::endl;
-    std::cout << "y: " << cars[i].y << std::endl;
-    std::cout << "z: " << cars[i].z << std::endl;
+
+    car.dump();
   }
 
   pub.publish(sphere_list);
-  // Free vector
-  std::vector<car_info>().swap(cars);
 }
 
 static std::string construct_select_statement(DataType type)
@@ -239,20 +259,19 @@ static void* wrapSender(void *unused)
   data += construct_select_statement(SendDataType);
   data += "\n";
 
-  string dbres;
-  int ret = sd.Sender(data, dbres);
+  string db_response;
+  int ret = sd.Sender(data, db_response);
   if (ret == -1) {
     std::cerr << "Failed: sd.Sender" << std::endl;
     return nullptr;
   }
 
-  std::cout << "return data: " << dbres << std::endl;
+  std::cout << "return data: " << db_response << std::endl;
 
   std_msgs::String msg;
-  msg.data = dbres.c_str();
+  msg.data = db_response.c_str();
 
   marker_publisher(msg);
-
   return nullptr;
 }
 
