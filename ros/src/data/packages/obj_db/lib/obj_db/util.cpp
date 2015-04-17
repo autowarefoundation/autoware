@@ -4,7 +4,7 @@
 #include <obj_db.h>
 
 // magic that I am C++
-static constexpr char *MAGIC = "MPWC";
+static constexpr const char *MAGIC = "MPWC";
 static constexpr int MAJOR_VERSION = 1;
 static constexpr int MINOR_VERSION = 0;
 
