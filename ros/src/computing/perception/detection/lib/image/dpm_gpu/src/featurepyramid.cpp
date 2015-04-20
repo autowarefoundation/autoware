@@ -1,40 +1,17 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////featurepyramid.cpp   calculate HOG-feature pyramid ///////////////////////////////////////////////////////////
 
-//OpenCV library
-//#include "cv.h"			
-//#include "cxcore.h"
-//#include "highgui.h"	
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib") 
-    #pragma comment(lib,"cxcore200d.lib") 
-    #pragma comment(lib,"cvaux200d.lib") 
-    #pragma comment(lib,"highgui200d.lib") 
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib") 
-    #pragma comment(lib,"cxcore200.lib") 
-    #pragma comment(lib,"cvaux200.lib") 
-    #pragma comment(lib,"highgui200.lib") 
-#endif
-#endif
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
-//#include <windows.h>
-//#include <process.h>
+
 #include <time.h>
 #include <iostream>
 using namespace std;
@@ -55,21 +32,12 @@ extern CUfunction *func_calc_norm;
 extern CUfunction *func_calc_feat;
 extern CUmodule *module;
 
-
 #ifndef WIN32
 #define __stdcall void*
 typedef void *HANDLE;
 typedef long LONG_PTR;
 #define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
 #endif
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //definition of constant
 #define eps 0.0001
@@ -105,7 +73,7 @@ static inline int   max_i(int x,int y); //return maximum number (integer)
 static inline int   min_i(int x,int y); //return minimum number (integer)
 static inline FLOAT min_2(FLOAT x);     //compare FLOAT with 0.2
 
-//initialization functions 
+//initialization functions
 FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y); //initialize scales (extended to main)
 int   *ini_featsize(Model_info *MI);                        //initialize feature size information matrix (extended to main)
 
@@ -119,7 +87,7 @@ void calc_feature_byGPU(int *ISIZE,int *FTSIZE,int sbin, int level, CUdeviceptr 
 void   ini_thread_data(thread_data *TD,FLOAT *IM,int *INSIZE,int sbin,int level); //for thread-initialization
 //void   ini_thread_data_fouGPU(thread_data_forGPU *TD,FLOAT *IM,int *INSIZE,int sbin,int level, CUdeviceptr hist_dev, CUdeviceptr norm_dev, CUdeviceptr feat_dev, CUstream stream); //for thread-initialization
 void   ini_thread_data_fouGPU(thread_data_forGPU *TD,int *INSIZE,int sbin,int level, CUdeviceptr hist_dev, CUdeviceptr norm_dev, CUdeviceptr feat_dev, CUstream stream); //for thread-initialization
-//unsigned __stdcall feat_calc(void *thread_arg);												//for thread_process													
+//unsigned __stdcall feat_calc(void *thread_arg);												//for thread_process
 void* feat_calc(void *thread_arg); //for thread_process
 void* feat_calc_forGPU(void *thread_arg); //for thread_process
 
@@ -128,30 +96,22 @@ FLOAT **calc_f_pyramid(IplImage *Image,Model_info *MI,int *FTSIZE,FLOAT *scale);
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //external function
 
 //resize.cc
-extern FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale); //resize image 
+extern FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale); //resize image
 
 // resize_GPU.cc
-//extern FLOAT *resize_byGPU(FLOAT *org_image, int *org_image_size, FLOAT **resized_iamge, int *resized_image_size, int interval, int LEN, CUstream *stream_array); //resize image 
-extern FLOAT *resize_byGPU(FLOAT *org_image, int *org_image_size, int *resized_image_size, int interval, int LEN, CUstream *stream_array); //resize image 
+//extern FLOAT *resize_byGPU(FLOAT *org_image, int *org_image_size, FLOAT **resized_iamge, int *resized_image_size, int interval, int LEN, CUstream *stream_array); //resize image
+extern FLOAT *resize_byGPU(FLOAT *org_image, int *org_image_size, int *resized_image_size, int interval, int LEN, CUstream *stream_array); //resize image
 extern void *calc_resized_image_size(int *org_image_size, int *resized_image_size, int interval, FLOAT sc, int max_scale, FLOAT *scale_array); // calculate resized image size
 extern void create_resized_image_texref(void); // create resized image texture reference
-extern void cleanup_about_resize(void); // Free GPU memory about resizing image 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+extern void cleanup_about_resize(void); // Free GPU memory about resizing image
 
 
-//inline functions 
+
+//inline functions
 
 //return maximum number (integer)
 static inline int max_i(int x,int y) {return (x >= y ? x : y); }
@@ -163,17 +123,11 @@ static inline int min_i(int x,int y) {return (x <= y ? x : y); }
 static inline FLOAT min_2(FLOAT x) {return (x <= 0.2 ? x :0.2); }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //initialization functions
 
 //initialize scales
-FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image 
+FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 {
 
 	int interval,max_scale;
@@ -192,7 +146,7 @@ FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 
 		FLOAT MRY =(FLOAT)MI->rsize[0];
 		FLOAT MRX =(FLOAT)MI->rsize[1];
-		   
+
 		for(int kk=1;kk<numcomponent;kk++)
 		{
 			if(MI->rsize[kk*2]<MRY) MRY=MI->rsize[kk*2];
@@ -241,9 +195,6 @@ FLOAT *ini_scales(Model_info *MI,IplImage *IM,int X,int Y) //X,Y length of image
 	return(scales);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //initialize feature size matrix
 
@@ -254,12 +205,6 @@ int *ini_featsize(Model_info *MI)
 	return(featsize);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //calculate HOG features from Image
 //HOG features are calculated for each block(BSL*BSL pixels)
@@ -275,56 +220,56 @@ FLOAT *calc_feature
   const int height  = ISIZE[0]; //{268,268,134,67,233,117,203,203,177,154,89,203,154,77}
   const int width   = ISIZE[1]; //{448,112,224,390,195,340,170,296,257,148,340,257,129}
   const int dims[2] = {height, width};
-  
+
   /* size of Histgrams and Norm calculation space size */
   const int blocks[2] = {(int)floor(double(height)/double(sbin)+0.5), (int)floor(double(width)/double(sbin)+0.5)}; //{67,112}....sbine=4
-  
-  
+
+
   /* Output features size(Output) */
   int out[3] = {max_i(blocks[0]-2, 0), max_i(blocks[1]-2, 0), 27+4};
-  
+
   /* Visible range (eliminate border blocks) */
   const int visible[2] = {blocks[0]*sbin, blocks[1]*sbin};
-  
+
   /* HOG Histgram and Norm */
   FLOAT *hist = (FLOAT *)calloc(blocks[0]*blocks[1]*18, sizeof(FLOAT)); // HOG histgram
   FLOAT *norm = (FLOAT *)calloc(blocks[0]*blocks[1], sizeof(FLOAT));    // Norm
-  
+
   /* feature(Output) */
   FLOAT *feat = (FLOAT *)calloc(out[0]*out[1]*out[2], sizeof(FLOAT));
-  
+
   /*****************************************************************/
   // for time measurement
   /*****************************************************************/
   struct timeval hist_start, hist_end;
   struct timeval tv;
   float histCreate = 0.;
-  
+
   gettimeofday(&hist_start, NULL);
   /*****************************************************************/
   /*****************************************************************/
-  
+
   for (int x=1; x<visible[1]-1; x++) {
     for (int y=1; y<visible[0]-1; y++) {
-      
+
       /* first color channel */
       FLOAT *s  = SRC + min_i(x, dims[1]-2)*dims[0] + min_i(y, dims[0]-2);
       FLOAT  dy = *(s+1) - *(s-1);
       FLOAT  dx = *(s+dims[0]) - *(s-dims[0]);
       FLOAT  v  = dx*dx + dy*dy;
-      
+
       /* second color channel */
       s += dims[0]*dims[1];
       FLOAT dy2 = *(s+1) - *(s-1);
       FLOAT dx2 = *(s+dims[0]) - *(s-dims[0]);
       FLOAT v2  = dx2*dx2 + dy2*dy2;
-      
+
       /* third color channel */
       s += dims[0]*dims[1];
       FLOAT dy3 = *(s+1) - *(s-1);
       FLOAT dx3 = *(s+dims[0]) - *(s-dims[0]);
       FLOAT v3  = dx3*dx3 + dy3*dy3;
-      
+
       /* pick channel with strongest gradient */
       if (v2 > v) {
         v  = v2;
@@ -336,13 +281,13 @@ FLOAT *calc_feature
         dx = dx3;
         dy = dy3;
       }
-      
+
       /* snap to one of 18 orientations */
       FLOAT best_dot = 0;
       int   best_o   = 0;
       for (int o=0; o<9; o++)
         {
-          FLOAT dot = Hcos[o]*dx + Hsin[o]*dy; 
+          FLOAT dot = Hcos[o]*dx + Hsin[o]*dy;
           if (dot > best_dot) {
             best_dot = dot;
             best_o   = o;
@@ -352,7 +297,7 @@ FLOAT *calc_feature
             best_o   = o + 9;
           }
         }
-      
+
       /*add to 4 histgrams aroud pixel using linear interpolation*/
       FLOAT xp  = ((FLOAT)x+0.5)/(FLOAT)sbin - 0.5;
       FLOAT yp  = ((FLOAT)y+0.5)/(FLOAT)sbin - 0.5;
@@ -489,7 +434,7 @@ FLOAT *calc_feature
       *dst = 0.2357 * t4;
     }
   }
-      
+
   free(hist);
   free(norm);
 
@@ -497,7 +442,7 @@ FLOAT *calc_feature
   *FTSIZE     = out[0];
   *(FTSIZE+1) = out[1];
 
-	
+
   //	printf("feat%f\n",*(feat));
   return(feat);
 
@@ -538,10 +483,10 @@ void calc_feature_byGPU
 
   /* size of Histgrams and Norm calculation space size */
   const int blocks[2] = {(int)floor(double(height)/double(sbin)+0.5), (int)floor(double(width)/double(sbin)+0.5)}; //{67,112}....sbine=4
-  
+
   /* Output features size(Output) */
   int out[3] = {max_i(blocks[0]-2, 0), max_i(blocks[1]-2, 0), 27+4};
-  
+
   /* Visible range (eliminate border blocks) */
   const int visible[2] = {blocks[0]*sbin, blocks[1]*sbin};
 
@@ -551,7 +496,7 @@ void calc_feature_byGPU
   MY_CUDA_CHECK(res, "cuCtxSetCurrent(ctx[0])");
 
 
-  
+
 
   void *kernel_args_hist[] = {
     &hist_dev,
@@ -560,32 +505,32 @@ void calc_feature_byGPU
     (void *)&visible[1],
     (void *)&level
   };
-  
-  
+
+
   /* decide CUDA block shape */
   int max_thread_num = 0;
   // res =cuDeviceGetAttribute(&max_thread_num, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev[0]);
   // MY_CUDA_CHECK(res, "cuDeviceGetAttribure()");
-  
+
   //  max_thread_num = 128;
   max_thread_num = 1024;
 
-  int thread_num_x = (visible[1]-1 < sqrt(max_thread_num)) ? 
+  int thread_num_x = (visible[1]-1 < sqrt(max_thread_num)) ?
     visible[1]-1 : sqrt(max_thread_num);
-  int thread_num_y = (visible[0]-1 < sqrt(max_thread_num)) ? 
+  int thread_num_y = (visible[0]-1 < sqrt(max_thread_num)) ?
     visible[0]-1 : sqrt(max_thread_num);
-  
+
   int block_num_x = (visible[1]-1) / thread_num_x;
   int block_num_y = (visible[0]-1) / thread_num_y;
   if ((visible[1]-1) % thread_num_x != 0) block_num_x++;
   if ((visible[0]-1) % thread_num_y != 0) block_num_y++;
-  
+
   int sharedMemBytes = 0;
-  
-  /* p-thread barrier */  
+
+  /* p-thread barrier */
   pthread_barrier_wait(&barrier);
 
-  /* execute GPU function */ 
+  /* execute GPU function */
 #ifdef USE_STREAM
   res = cuLaunchKernel(
                        func_calc_hist[0], // call function
@@ -614,19 +559,19 @@ void calc_feature_byGPU
                        kernel_args_hist,  // kernel Parameter
                        NULL               // extra
                        );
-  
+
 #endif
   MY_CUDA_CHECK(res, "cuLaunchKernel(calc_hist)");
-  
+
 #ifdef USE_STREAM
-  /* p-thread barrier in order to enqueue Launch command in breadth first order */  
+  /* p-thread barrier in order to enqueue Launch command in breadth first order */
   pthread_barrier_wait(&barrier);
 
   /* synchronize CUDA Stream */
-  /* 
+  /*
      A CUDA operation is dispatched from the engine queue
      if preceding calls in the same stream have completed.
-     So, there is no need to synchronize CUDA Stream here. 
+     So, there is no need to synchronize CUDA Stream here.
   */
   // res = cuStreamSynchronize(stream);
   // MY_CUDA_CHECK(res, "cuStreamSynchronize(stream)");
@@ -635,7 +580,7 @@ void calc_feature_byGPU
   res = cuCtxSynchronize();
   MY_CUDA_CHECK(res, "cuCtxSynchronize(calc_hist)");
 #endif
-  
+
 
 
 
@@ -647,21 +592,21 @@ void calc_feature_byGPU
     (void *)&blocks[1],
     (void *)&level
   };
-  
+
   /* decide CUDA block shape */
-  thread_num_x = (blocks[1] < sqrt(max_thread_num)) ? 
+  thread_num_x = (blocks[1] < sqrt(max_thread_num)) ?
     blocks[1] : sqrt(max_thread_num);
-  thread_num_y = (blocks[0] < sqrt(max_thread_num)) ? 
+  thread_num_y = (blocks[0] < sqrt(max_thread_num)) ?
     blocks[0] : sqrt(max_thread_num);
-  
+
   block_num_x = blocks[1] / thread_num_x;
   block_num_y = blocks[0] / thread_num_y;
   if (blocks[1] % thread_num_x != 0) block_num_x++;
   if (blocks[0] % thread_num_y != 0) block_num_y++;
-  
+
   sharedMemBytes = 0;
-  
-  /* execute GPU function */ 
+
+  /* execute GPU function */
 #ifdef USE_STREAM
   res = cuLaunchKernel(
                        func_calc_norm[0], // call function
@@ -692,16 +637,16 @@ void calc_feature_byGPU
                        );
 #endif
   MY_CUDA_CHECK(res, "cuLaunchKernel(calc_norm)");
-  
+
 #ifdef USE_STREAM
-  /* p-thread barrier in order to enqueue Launch command in breadth first order */  
+  /* p-thread barrier in order to enqueue Launch command in breadth first order */
   pthread_barrier_wait(&barrier);
 
   /* synchronize CUDA Stream */
-  /* 
+  /*
      A CUDA operation is dispatched from the engine queue
      if preceding calls in the same stream have completed.
-     So, there is no need to synchronize CUDA Stream here. 
+     So, there is no need to synchronize CUDA Stream here.
   */
   // res = cuStreamSynchronize(stream);
   // MY_CUDA_CHECK(res, "cuStreamSynchronize(stream)");
@@ -710,9 +655,9 @@ void calc_feature_byGPU
   res = cuCtxSynchronize();
   MY_CUDA_CHECK(res, "cuCtxSynchronize(calc_norm)");
 #endif
-  
 
-  
+
+
   /* compute featuers */
   void *kernel_args_feat[] = {
     &hist_dev,
@@ -724,24 +669,24 @@ void calc_feature_byGPU
     (void *)&blocks[1],
     (void *)&level
   };
-  
+
   /* decide CUDA block shape */
-  thread_num_x = (out[1] < sqrt(max_thread_num)) ? 
+  thread_num_x = (out[1] < sqrt(max_thread_num)) ?
     out[1] : sqrt(max_thread_num);
-  thread_num_y = (out[0] < sqrt(max_thread_num)) ? 
+  thread_num_y = (out[0] < sqrt(max_thread_num)) ?
     out[0] : sqrt(max_thread_num);
 
   if (thread_num_x == 0) thread_num_x++;
   if (thread_num_y == 0) thread_num_y++;
-  
+
   block_num_x = out[1] / thread_num_x;
   block_num_y = out[0] / thread_num_y;
   if (out[1] % thread_num_x != 0 || block_num_x == 0) block_num_x++;
   if (out[0] % thread_num_y != 0 || block_num_y == 0) block_num_y++;
-  
+
   sharedMemBytes = 0;
-  
-  /* execute GPU function */ 
+
+  /* execute GPU function */
 #ifdef USE_STREAM
   res = cuLaunchKernel(
                        func_calc_feat[0], // call function
@@ -772,9 +717,9 @@ void calc_feature_byGPU
                        );
 #endif
   MY_CUDA_CHECK(res, "cuLaunchKernel(calc_feat)");
-  
+
 #ifdef USE_STREAM
-  /* p-thread barrier in order to enqueue Launch command in breadth first order */  
+  /* p-thread barrier in order to enqueue Launch command in breadth first order */
   pthread_barrier_wait(&barrier);
 
   /* synchronize CUDA Stream */
@@ -785,30 +730,24 @@ void calc_feature_byGPU
   res = cuCtxSynchronize();
   MY_CUDA_CHECK(res, "cuCtxSynchronize(calc_feat)");
 #endif
-  
 
-  
-  
+
+
+
   //    free(hist);
   //    free(norm);
-  
+
   /* size of feature(output) */
   *FTSIZE     = out[0];
   *(FTSIZE+1) = out[1];
-  
-  
+
+
   //	printf("feat%f\n",*(feat));
   //  return(feat);
-  
+
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //sub functions
 
@@ -860,28 +799,22 @@ FLOAT *Ipl_to_FLOAT(IplImage *Input)	//get intensity data (FLOAT) of input
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // feature calculation
-//unsigned __stdcall feat_calc(void *thread_arg) 
-void* feat_calc(void *thread_arg) 
+//unsigned __stdcall feat_calc(void *thread_arg)
+void* feat_calc(void *thread_arg)
 {
   thread_data *args  = (thread_data *)thread_arg;
-  FLOAT       *Out   = calc_feature(args->IM, args->ISIZE, args->FSIZE, args->sbin);			
-  // FLOAT       *Out   = calc_feature_byGPU(args->IM, args->ISIZE, args->FSIZE, args->sbin);			
-  args->Out = Out;			
+  FLOAT       *Out   = calc_feature(args->IM, args->ISIZE, args->FSIZE, args->sbin);
+  // FLOAT       *Out   = calc_feature_byGPU(args->IM, args->ISIZE, args->FSIZE, args->sbin);
+  args->Out = Out;
   //_endthreadex(0);
   //return(0);
   pthread_exit((void*)thread_arg);
 }
 
-void* feat_calc_forGPU(void *thread_arg) 
+void* feat_calc_forGPU(void *thread_arg)
 {
   thread_data_forGPU *args     = (thread_data_forGPU *)thread_arg;
   //  FLOAT       *IM       = args->IM;
@@ -895,7 +828,7 @@ void* feat_calc_forGPU(void *thread_arg)
   CUstream     stream   = args->stream;
   calc_feature_byGPU(//IM,
                      ISIZE,
-                     FSIZE, 
+                     FSIZE,
                      sbin,
                      level,
                      hist_dev,
@@ -903,7 +836,7 @@ void* feat_calc_forGPU(void *thread_arg)
                      feat_dev,
                      stream
                      );
- 
+
   pthread_exit((void*)thread_arg);
 }
 
@@ -911,7 +844,7 @@ void* feat_calc_forGPU(void *thread_arg)
 //void initialize thread data
 void ini_thread_data(thread_data *TD,FLOAT *IM,int *INSIZE,int sbin,int level)
 {
-	TD->IM       = IM; 
+	TD->IM       = IM;
     memcpy(TD->ISIZE, INSIZE, sizeof(int)*3);
 	TD->FSIZE[0] = 0;
 	TD->FSIZE[1] = 0;
@@ -930,7 +863,7 @@ void ini_thread_data_fouGPU(thread_data_forGPU *TD,
                             CUstream stream
                             )
 {
-  //  TD->IM       = IM; 
+  //  TD->IM       = IM;
   memcpy(TD->ISIZE, INSIZE, sizeof(int)*3);
   TD->FSIZE[0] = 0;
   TD->FSIZE[1] = 0;
@@ -944,12 +877,6 @@ void ini_thread_data_fouGPU(thread_data_forGPU *TD,
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#define ORIGINAL
 //calculate feature pyramid (extended to main.cpp)
 
@@ -971,32 +898,32 @@ FLOAT **calc_f_pyramid
   const FLOAT sc        = pow(2, (1.0/(double)interval));
 
   int org_image_size[3]  = {Image->height, Image->width, Image->nChannels}; // original image size // (元INSIZE)
-  
+
   /* Original image (FLOAT) */
 //  FLOAT *org_image = Ipl_to_FLOAT(Image); // pickup brightness values of each channel from IplImage // (originally D_I)
   FLOAT *org_image = Ipl_to_FLOAT_forGPU(Image); // pickup brightness values of each channel from IplImage // (originally D_I)
-  
+
 #ifdef ORIGINAL
   /* features */
   FLOAT **feat = (FLOAT**)malloc(sizeof(FLOAT*)*LEN); //Model information
 #endif
-  
+
   /* thread for feature calculation */
 #ifdef ORIGINAL
   thread_data *td = (thread_data *)calloc(LEN, sizeof(thread_data));
 #else
   thread_data_forGPU *td = (thread_data_forGPU *)calloc(LEN, sizeof(thread_data_forGPU));
 #endif
-  pthread_t   *ts = (pthread_t *)calloc(LEN, sizeof(HANDLE));	
-  
+  pthread_t   *ts = (pthread_t *)calloc(LEN, sizeof(HANDLE));
+
   //  FLOAT **resized_image      = (FLOAT**)calloc(LEN, sizeof(FLOAT*)); // resized image // (originally RIM_S)
   int    *resized_image_size = (int*)calloc(LEN*3, sizeof(int));     // resized image size // (originally RI_S)
   int     t_count            = 0;
-  
+
   CUresult res;
   res = cuCtxSetCurrent(ctx[0]);
   MY_CUDA_CHECK(res, "cuCtxCurrent(ctx[0])");
-  
+
 
   /*****************************************************************/
   // for time measurement
@@ -1015,13 +942,13 @@ FLOAT **calc_f_pyramid
 
   /* calculate resized image */
   /* interval pieces resized image will be created */
-  // for(int ii=0; ii<interval; ii++) 
+  // for(int ii=0; ii<interval; ii++)
   //   {
   //     FLOAT st = 1.0/pow(sc, ii);
 
   //     resized_image[ii] = resize(
   //                                org_image,
-  //                                org_image_size, 
+  //                                org_image_size,
   //                                resized_image_size + ii*3,
   //                                st
   //                                );
@@ -1034,7 +961,7 @@ FLOAT **calc_f_pyramid
 
   //     /* remained resolutions (for root_only) */
   //     for(int jj=ii+interval; jj<max_scale; jj+=interval)
-  //       {	
+  //       {
   //         resized_image[jj+interval] = resize(
   //                                             resized_image[jj],
   //                                             resized_image_size + (jj)*3,
@@ -1049,10 +976,10 @@ FLOAT **calc_f_pyramid
 
 
   /* calculate resized image size */
-  calc_resized_image_size(org_image_size, 
-                          resized_image_size, 
+  calc_resized_image_size(org_image_size,
+                          resized_image_size,
                           interval,
-                          sc, 
+                          sc,
                           max_scale,
                           scale
                           );
@@ -1066,19 +993,19 @@ FLOAT **calc_f_pyramid
       MY_CUDA_CHECK(res, "cuStreamCreate(stream)");
     }
 #endif
-  
-  
+
+
   /* image resizing on GPU */
   resize_byGPU(org_image,
                org_image_size,
-    //             resized_image, 
-               resized_image_size, 
+    //             resized_image,
+               resized_image_size,
                interval,
                LEN,
                stream);
-      
-  
-  
+
+
+
   /*****************************************************************/
   // for time measurement
   /*****************************************************************/
@@ -1130,22 +1057,22 @@ FLOAT **calc_f_pyramid
   //                      LEN*sizeof(int),
   //                      CU_MEMHOSTALLOC_PORTABLE);
   // MY_CUDA_CHECK(res, "cuMemHostAlloc(image_idx_incrementer)");
-  
+
   res = cuMemHostAlloc((void **)&hist_ptr_incrementer,
                        LEN*sizeof(unsigned long long int),
                        CU_MEMHOSTALLOC_PORTABLE);
   MY_CUDA_CHECK(res, "cuMemHostAlloc(hist_ptr_incrementer)");
-  
+
   res = cuMemHostAlloc((void **)&norm_ptr_incrementer,
                        LEN*sizeof(unsigned long long int),
                        CU_MEMHOSTALLOC_PORTABLE);
   MY_CUDA_CHECK(res, "cuMemHostAlloc(norm_ptr_incrementer)");
-  
+
   res = cuMemHostAlloc((void **)&feat_ptr_incrementer,
                        LEN*sizeof(unsigned long long int),
                        CU_MEMHOSTALLOC_PORTABLE);
   MY_CUDA_CHECK(res, "cuMemHostAlloc(feat_ptr_incrementer)");
-  
+
   //  int sum_size_image = 0;
   int sum_size_hist = 0;
   int sum_size_norm = 0;
@@ -1169,7 +1096,7 @@ FLOAT **calc_f_pyramid
       /* size of Output features size */
       int out_size[3] = {
         max_i(blocks_inner[0]-2, 0),
-        max_i(blocks_inner[1]-2, 0), 
+        max_i(blocks_inner[1]-2, 0),
         27+4
       };
 
@@ -1178,7 +1105,7 @@ FLOAT **calc_f_pyramid
       hist_ptr_incrementer[level]  = sum_size_hist;
       norm_ptr_incrementer[level]  = sum_size_norm;
       feat_ptr_incrementer[level]  = sum_size_feat;
-      
+
       /* increment this level's size */
       //      sum_size_image += height_inner*width_inner*depth_inner*sizeof(FLOAT);
       sum_size_hist  += blocks_inner[0]*blocks_inner[1]*18*sizeof(FLOAT);
@@ -1194,15 +1121,15 @@ FLOAT **calc_f_pyramid
   memset(dst_norm, 0, sum_size_norm); // zero clear
   FLOAT *dst_feat = (FLOAT *)calloc(sum_size_feat, 1);
   memset(dst_feat, 0, sum_size_feat); // zero clear
-  
-  FLOAT **hist = (FLOAT **)calloc(LEN, sizeof(FLOAT *)); // histgram 
+
+  FLOAT **hist = (FLOAT **)calloc(LEN, sizeof(FLOAT *)); // histgram
   FLOAT **norm = (FLOAT **)calloc(LEN, sizeof(FLOAT *)); // norm
   FLOAT **feat = (FLOAT **)calloc(LEN, sizeof(FLOAT *)); // Model information
-  
+
   unsigned long long int ptr_hist = (unsigned long long int)dst_hist;
   unsigned long long int ptr_norm = (unsigned long long int)dst_norm;
   unsigned long long int ptr_feat = (unsigned long long int)dst_feat;
-  
+
   for (int level=0; level<LEN; level++)
     {
       /* distribute memory regions */
@@ -1210,7 +1137,7 @@ FLOAT **calc_f_pyramid
       norm[level] = (FLOAT *)(ptr_norm + norm_ptr_incrementer[level]);
       feat[level] = (FLOAT *)(ptr_feat + feat_ptr_incrementer[level]);
     }
-  
+
 
   /* allocate GPU memory */
   // CUdeviceptr resized_image_dev;
@@ -1232,7 +1159,7 @@ FLOAT **calc_f_pyramid
   CUdeviceptr hist_ptr_incrementer_dev;
   res = cuMemAlloc(&hist_ptr_incrementer_dev, LEN*sizeof(unsigned long long int));
   MY_CUDA_CHECK(res, "cuMemAlloc(hist_ptr_incrementer_dev)");
-  
+
   CUdeviceptr norm_dev;
   res = cuMemAlloc(&norm_dev, sum_size_norm);
   MY_CUDA_CHECK(res, "cuMemAlloc(norm_dev)");
@@ -1257,7 +1184,7 @@ FLOAT **calc_f_pyramid
   //     int width_inner  = resized_image_size[level*3 + 1];
   //     int depth_inner  = resized_image_size[level*3 + 2];
 
-  //     res = cuMemcpyHtoD((CUdeviceptr)ptr_resized_image_dev, 
+  //     res = cuMemcpyHtoD((CUdeviceptr)ptr_resized_image_dev,
   //                        (void *)(&resized_image[level][0]),
   //                        height_inner*width_inner*depth_inner*sizeof(FLOAT)
   //                        );
@@ -1273,10 +1200,10 @@ FLOAT **calc_f_pyramid
   /* upload other data to GPU */
   res = cuMemcpyHtoD(hist_dev, &hist[0][0], sum_size_hist);
   MY_CUDA_CHECK(res, "cuMemcpyHtoD(hist_dev)");
-  
+
   // res = cuMemcpyHtoD(image_idx_incrementer_dev, image_idx_incrementer, LEN*sizeof(int));
   // MY_CUDA_CHECK(res, "cuMemcpyHtoD(image_idx_incrementer_dev)");
-  
+
   res = cuMemcpyHtoD(hist_ptr_incrementer_dev, hist_ptr_incrementer, LEN*sizeof(unsigned long long int));
   MY_CUDA_CHECK(res, "cuMemcpyHtoD(hist_ptr_incrementer_dev)");
 
@@ -1370,7 +1297,7 @@ FLOAT **calc_f_pyramid
   //  res = cuTexRefSetFlags(feat_ptr_incrementer_texref, CU_TRSF_NORMALIZED_COORDINATES);
   res = cuTexRefSetFlags(feat_ptr_incrementer_texref, CU_TRSF_READ_AS_INTEGER);
   MY_CUDA_CHECK(res, "cuTexRefSetFlags(feat_ptr_incrementer_texref)");
-  
+
 // #ifdef USE_FLOAT_AS_DECIMAL
 //   {
 //     res = cuTexRefSetFormat(resized_image_texref, CU_AD_FORMAT_FLOAT, 1);
@@ -1382,13 +1309,13 @@ FLOAT **calc_f_pyramid
 //     MY_CUDA_CHECK(res, "cuTexRefSetFormat(resized_image_texref)");
 //   }
 // #endif
-  
+
   res = cuTexRefSetFormat(resized_image_size_texref, CU_AD_FORMAT_SIGNED_INT32, 1);
   MY_CUDA_CHECK(res, "cuTexRefSetFormat(resized_image_size_texref)");
-  
+
   // res = cuTexRefSetFormat(image_idx_incrementer_texref, CU_AD_FORMAT_SIGNED_INT32, 1);
   // MY_CUDA_CHECK(res, "cuTexRefSetFormat(image_idx_incrementer_texref)");
-  
+
   res = cuTexRefSetFormat(hist_ptr_incrementer_texref, CU_AD_FORMAT_UNSIGNED_INT32, 2);
   MY_CUDA_CHECK(res, "cuTexRefSetFormat(hist_ptr_incrementer_texref)");
 
@@ -1438,18 +1365,18 @@ FLOAT **calc_f_pyramid
       /* "first" 2x interval */
 #ifdef ORIGINAL
       ini_thread_data(
-                      &td[t_count], 
-                      resized_image[ii], 
+                      &td[t_count],
+                      resized_image[ii],
                       resized_image_size + ii*3,
-                      sbin2, 
+                      sbin2,
                       ii
                       );  //initialize thread
 #else
       ini_thread_data_fouGPU(
-                             &td[t_count], 
-                             //                             resized_image[ii], 
+                             &td[t_count],
+                             //                             resized_image[ii],
                              resized_image_size + ii*3,
-                             sbin2, 
+                             sbin2,
                              ii,
                              hist_dev,
                              norm_dev,
@@ -1466,23 +1393,23 @@ FLOAT **calc_f_pyramid
           {printf("Error thread\n"); exit(0);}
       //      feat_calc((void *)&td[t_count]);
       t_count++;
-      
+
       /* features for part filter(local features)? */
       /* "second" 1x interval */
 #ifdef ORIGINAL
       ini_thread_data(
-                      &td[t_count], 
-                      resized_image[ii+interval], 
+                      &td[t_count],
+                      resized_image[ii+interval],
                       resized_image_size + ii*3,
-                      sbin, 
+                      sbin,
                       ii+interval
                       );	//initialize thread
 #else
       ini_thread_data_fouGPU(
-                             &td[t_count], 
-                             //                             resized_image[ii+interval], 
+                             &td[t_count],
+                             //                             resized_image[ii+interval],
                              resized_image_size + ii*3,
-                             sbin, 
+                             sbin,
                              ii+interval,
                              hist_dev,
                              norm_dev,
@@ -1499,24 +1426,24 @@ FLOAT **calc_f_pyramid
       {printf("Error thread\n"); exit(0);}
       //      feat_calc((void *)&td[t_count]);
       t_count++;
-      
+
       /* remained resolutions (for root_only) */
       for(int jj=ii+interval; jj<max_scale; jj+=interval)
-        {	
+        {
 #ifdef ORIGINAL
           ini_thread_data(
-                          &td[t_count], 
-                          resized_image[jj+interval], 
+                          &td[t_count],
+                          resized_image[jj+interval],
                           resized_image_size + (jj+interval)*3,
-                          sbin, 
+                          sbin,
                           jj+interval
                           ); //initialize thread
 #else
           ini_thread_data_fouGPU(
-                                 &td[t_count], 
-                                 //                                 resized_image[jj+interval], 
+                                 &td[t_count],
+                                 //                                 resized_image[jj+interval],
                                  resized_image_size + (jj+interval)*3,
-                                 sbin, 
+                                 sbin,
                                  jj+interval,
                                  hist_dev,
                                  norm_dev,
@@ -1531,7 +1458,7 @@ FLOAT **calc_f_pyramid
               if(pthread_create(&ts[t_count], NULL, feat_calc_forGPU, (void*)&td[t_count]))
 #endif
             {printf("Error thread\n"); exit(0);}
-          //          feat_calc((void *)&td[t_count]);          
+          //          feat_calc((void *)&td[t_count]);
           t_count++;
         }
     }
@@ -1567,10 +1494,10 @@ FLOAT **calc_f_pyramid
   res = cuMemcpyDtoH((void *)&feat[0][0], feat_dev, sum_size_feat);
   MY_CUDA_CHECK(res, "cuMemcpyDtoH(feat_dev)");
 #endif
-  
+
   /* release original image */
   s_free(org_image);
-  
+
   /* release resized image */
 //  for(int ss=0; ss<interval; ss++) s_free(resized_image[ss]);
 //  free(&resized_image[0][0]);
@@ -1591,14 +1518,14 @@ FLOAT **calc_f_pyramid
 
   res = cuMemFreeHost(feat_ptr_incrementer);
   MY_CUDA_CHECK(res, "cuMemFreeHost(feat_ptr_incrementer)");
-  
+
   /* release GPU memory */
   // res = cuMemFree(resized_image_dev);
   // MY_CUDA_CHECK(res, "cuMemFree(resized_image_dev)");
 
   res = cuMemFree(resized_image_size_dev);
   MY_CUDA_CHECK(res, "cuMemFree(resized_image_size_dev)");
-    
+
   res = cuMemFree(hist_dev);
   MY_CUDA_CHECK(res, "cuMemFree(hist_dev)");
 
@@ -1631,19 +1558,12 @@ FLOAT **calc_f_pyramid
   free(norm);
 
   /* release thread information */
-  s_free(td);		
-  s_free(ts);		
-  
-  return(feat);
+  s_free(td);
+  s_free(ts);
 
+  return(feat);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //release function
 //release feature pyramid
 
@@ -1651,17 +1571,7 @@ void free_features(FLOAT **features,Model_info *MI)
 {
 	if(features != NULL)
 	{
-#if 0
-		for (int ii=0; ii<LofFeat; ii++)
-		{
-			s_free(features[ii]);
-		}
-#else
-        free(&features[0][0]);
-#endif
+		free(&features[0][0]);
 		s_free(features);
 	}
 }
-
-
-

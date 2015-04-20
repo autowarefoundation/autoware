@@ -1,35 +1,12 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////Laser_info.h   Laser_radar information & definition header  /////////////////////////////////////////
 
-//OpenCV library
-//#include "cv.h"			
-//#include "cxcore.h"
-//#include "highgui.h"
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib") 
-    #pragma comment(lib,"cxcore200d.lib") 
-    #pragma comment(lib,"cvaux200d.lib") 
-    #pragma comment(lib,"highgui200d.lib") 
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib") 
-    #pragma comment(lib,"cxcore200.lib") 
-    #pragma comment(lib,"cvaux200.lib") 
-    #pragma comment(lib,"highgui200.lib") 
-#endif
-#endif
-//C++ library
-#include <stdio.h>	
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+#include <cstdio>
 
 #include "switch_float.h"
 
@@ -38,7 +15,7 @@
 
 #define m_PI 3.1415926535
 
-//camera parameter 
+//camera parameter
 #define VA 59.5
 #define cxp 0.135
 #define cyp -0.005
