@@ -42,7 +42,7 @@
 #define _MODEL_INFO
 //struct for model component information
 typedef struct {
-    
+
     //basic information
     //from xxxcomp.csv
     int numcomponent;           //number of component
@@ -57,7 +57,7 @@ typedef struct {
     //image size information
     int IM_WIDTH;
     int IM_HEIGHT;
-    
+
 //per root
     int *ridx;                  //root index information
     int *oidx;                  //offsetindex information
@@ -81,7 +81,7 @@ typedef struct {
     FLOAT **y2;
 
     bool ini;                   //flag for initialization
-    FLOAT ratio;                //ratio of zooming image 
+    FLOAT ratio;                //ratio of zooming image
 
 }Model_info;
 
@@ -128,8 +128,8 @@ struct thread_data {
     int B_dims[3];
     int C_dims[2];
 };
-    
-        
+
+
 /* define variables for using GPU */
 
 extern CUdevice *dev;
@@ -154,7 +154,7 @@ extern CUdeviceptr *pm_size_array_dev;
 extern CUdeviceptr *PIDX_array_dev;
 extern CUdeviceptr *def_array_dev;
 extern int sum_size_def_array;
-extern CUdeviceptr *DID_4_array_dev;   
+extern CUdeviceptr *DID_4_array_dev;
 extern CUdeviceptr *numpart_dev;
 extern int max_numpart;
 extern int max_RL_S;
@@ -168,37 +168,37 @@ extern void init_cuda(void);
 extern void init_cuda_with_cubin(const char *cubin_path);
 
 extern void clean_cuda(void);
-    
+
 /* function to convert CUDA error to string */
 extern char *conv(unsigned int res);
 
 /* function for GPU execution correspond to fconvsMT */
-extern 
+extern
 FLOAT ***fconvsMT_GPU(
     FLOAT **featp2,
-    size_t SUM_SIZE_feat, 
+    size_t SUM_SIZE_feat,
     FLOAT **filter,
     int *sym_info,
     int start,
     int end,
-    int *A_SIZE, 
+    int *A_SIZE,
     int **B_SIZE,
-    int **M_size_array, 
-    int L_MAX, 
-    int interval, 
-    int *FSIZE, 
-    int padx, 
-    int pady, 
+    int **M_size_array,
+    int L_MAX,
+    int interval,
+    int *FSIZE,
+    int padx,
+    int pady,
     int max_X,
-    int max_Y, 
+    int max_Y,
     int calc_flag
     );
-    
-/* definition of calc_flag */ 
+
+/* definition of calc_flag */
 #define ROOT 0
 #define PART 1
 
-extern 
+extern
 FLOAT ****dt_GPU(
     int ****Ix_array,
     int ****Iy_array,
@@ -228,8 +228,7 @@ FLOAT ****dt_GPU(
 //#define SEPARETE_MEM
 
 
-    
+
 #ifdef __cplusplus
 }
 #endif
-

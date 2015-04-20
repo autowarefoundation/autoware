@@ -36,7 +36,6 @@
 #ifndef MULTITHREADING_H
 #define MULTITHREADING_H
 
-
 //Simple portable thread library.
 
 #if _WIN32
@@ -57,7 +56,7 @@
     typedef void *(*CUT_THREADROUTINE)(void *);
 
     #define CUT_THREADPROC void
-    #define  CUT_THREADEND 
+    #define  CUT_THREADEND
 #endif
 
 

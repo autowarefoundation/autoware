@@ -103,7 +103,6 @@
 #define FOR_INPUT 0
 #define FOR_OUTPUT 1
 
-
 /*************************************/
 /* information for semaphore control */
 /*************************************/
@@ -147,13 +146,9 @@ void My_sem_operation(int p_semid, int p_op)
 #define RWLOCK_SHM_PATH "/home/hirabayashi/demo/autonomous_driving_system/rwlock"
 #endif  /* ifdef RELEASE */
 
-
 /************************************************************************************/
 /* data and operation for ring buffer which contains coordinates of detected object */
 /************************************************************************************/
-/* #define RBUF_PATH "/home/hirabayashi/dev/autonomous_driving_system/rbuf" */
-/* #define RBUF_HEAD_PATH "/home/hirabayashi/dev/autonomous_driving_system/rbuf_head" */
-/* #define RBUF_TAIL_PATH "/home/hirabayashi/dev/autonomous_driving_system/rbuf_tail" */
 #ifdef RELEASE
 #define RBUF_PATH "/usr/local/geye_with_cam/shared_memory/rbuf"
 #define RBUF_HEAD_PATH "/usr/local/geye_with_cam/shared_memory/rbuf_head"
@@ -163,7 +158,6 @@ void My_sem_operation(int p_semid, int p_op)
 #define RBUF_HEAD_PATH "/home/hirabayashi/demo/autonomous_driving_system/rbuf_head"
 #define RBUF_TAIL_PATH "/home/hirabayashi/demo/autonomous_driving_system/rbuf_tail"
 #endif
-
 
 #define MAX_OBJECT_NUM 64 /* # of max ofjects detected at the same time */
 //#define CO_NUM 4   /* # of coordinates needed to draw one rectangle */
@@ -175,7 +169,7 @@ void My_sem_operation(int p_semid, int p_op)
 #define BOTTOM 3                /* bottom side of rectangle */
 
 /* object type definition*/
-#define CAR 1 
+#define CAR 1
 #define SIGN 2
 #define PEDESTRIAN 3
 #define UNKNOWN_OBJECT 4
@@ -196,28 +190,20 @@ typedef struct {
     int obj_type;
 } obj_coordinate;
 
-
 /* the function to enqueue(set) the data */
 //void apSetCoordinate(int **queue, int data, int *head, int *tail, int location)
-void apSetCoordinate(obj_coordinate *queue, 
-                     int *head, 
-                     int *tail, 
-                     int left, 
-                     int upper, 
-                     int right, 
+void apSetCoordinate(obj_coordinate *queue,
+                     int *head,
+                     int *tail,
+                     int left,
+                     int upper,
+                     int right,
                      int bottom,
                      int type
     )
 {
-//    if(*head % RBUF_ELEMENT_NUM != ( *tail + 1) % RBUF_ELEMENT_NUM)
     if(*head % MAX_OBJECT_NUM != ( *tail + 1) % MAX_OBJECT_NUM)
     {
-//        queue[(*tail)++ % RBUF_ELEMENT_NUM][location] = data;
-//        queue[(*tail)++ % MAX_OBJECT_NUM][location] = data;
-        /* if(location==BOTTOM) */
-        /*     queue[(*tail)++ % MAX_OBJECT_NUM][location] = data; */
-        /* else */
-        /*     queue[(*tail) % MAX_OBJECT_NUM][location] = data; */
         queue[(*tail) % MAX_OBJECT_NUM].left = left;
         queue[(*tail) % MAX_OBJECT_NUM].upper = upper;
         queue[(*tail) % MAX_OBJECT_NUM].right = right;
@@ -226,22 +212,17 @@ void apSetCoordinate(obj_coordinate *queue,
 
         (*tail)++;
         if(*tail == MAX_OBJECT_NUM) *tail = 0;  // overflow guard
-        //      (*tail) = ((*tail)+1) % MAX_OBJECT_NUM;
-
     }
-
-//    if(*tail == RBUF_ELEMENT_NUM) *tail = 0;  // overflow guard
-//    if(*tail == MAX_OBJECT_NUM) *tail = 0;  // overflow guard
 }
 
 /* the function to dequeue(get) the data */
 //int apGetCoordinate(int **queue, int *head, int *tail, int location)
-void apGetCoordinate(obj_coordinate *queue, 
-                     int *head, 
-                     int *tail, 
-                     int *left, 
-                     int *upper, 
-                     int *right, 
+void apGetCoordinate(obj_coordinate *queue,
+                     int *head,
+                     int *tail,
+                     int *left,
+                     int *upper,
+                     int *right,
                      int *bottom,
                      int *type
     )
@@ -250,12 +231,6 @@ void apGetCoordinate(obj_coordinate *queue,
 
     if(*head != *tail)
     {
-//        ret_val = queue[(*head)++ % RBUF_ELEMENT_NUM][location];
-//        ret_val = queue[(*head)++ % MAX_OBJECT_NUM][location];
-        /* if(location==BOTTOM) */
-        /*     ret_val = queue[(*head)++ % MAX_OBJECT_NUM][location]; */
-        /* else */
-        /*     ret_val = queue[(*head) % MAX_OBJECT_NUM][location]; */
         *left = queue[(*head) % MAX_OBJECT_NUM].left;
         *upper = queue[(*head) % MAX_OBJECT_NUM].upper;
         *right = queue[(*head) % MAX_OBJECT_NUM].right;
@@ -266,8 +241,7 @@ void apGetCoordinate(obj_coordinate *queue,
         if(*head == MAX_OBJECT_NUM) *head = 0;  // overflow guard
 //       (*head) = ((*head)+1) % MAX_OBJECT_NUM;
 
-    }else{
-        //      ret_val = -1;
+    } else{
         /* no rectangle will be drawn */
         *left = -1;
         *upper = -1;
@@ -275,12 +249,6 @@ void apGetCoordinate(obj_coordinate *queue,
         *bottom = -1;
         *type = UNKNOWN_OBJECT;
     }
-
-//    if(*head == RBUF_ELEMENT_NUM) *head = 0;  // overflow guard
-//    if(*head == MAX_OBJECT_NUM) *head = 0;  // overflow guard
-
-//    return ret_val;
-
 }
 
 

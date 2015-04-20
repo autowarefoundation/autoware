@@ -76,17 +76,17 @@ CUdeviceptr *A_SIZE_dev, *featp2_dev, *B_dev, *B_dims_dev, *fconvs_error_array_d
 #define _MAX_PATH 256
 #define _MAX_DIR 256
 #define _MAX_DRIVE 8 */
-                  
+
 //TCHAR szAppDir[_MAX_PATH];  // directory in which application is executed
 //TCHAR szFull[_MAX_PATH];    // full path name of executed application
 //TCHAR szDrive[_MAX_DRIVE];  // drive name of executed application
 //TCHAR szDir[_MAX_DIR];      // directory name of executed application
-                  
+
 
 /*****************************************************************/
 /* init_cuda
 
-   initialization device to use CUDA function 
+   initialization device to use CUDA function
 */
 /*****************************************************************/
 void init_cuda(void)
@@ -141,13 +141,13 @@ void init_cuda_with_cubin(const char *cubin_path)
   if(canAccessPeer ==1 )
     printf("p2p access dev[0] -> dev[1] is ENable\n");
   else
-    printf("p2p access dev[0] -> dev[1] is DISable\n"); 
+    printf("p2p access dev[0] -> dev[1] is DISable\n");
 
   cudaDeviceCanAccessPeer(&canAccessPeer, dev[1], dev[0]);
   if(canAccessPeer ==1 )
     printf("p2p access dev[1] -> dev[0] is ENable\n");
   else
-    printf("p2p access dev[1] -> dev[0] is DISable\n"); 
+    printf("p2p access dev[1] -> dev[0] is DISable\n");
 #endif
 
 
@@ -193,16 +193,16 @@ void init_cuda_with_cubin(const char *cubin_path)
     res = cuModuleLoad(&module[i], cubin_path);
     if(res != CUDA_SUCCESS){
       printf("\ncuModuleLoad failed: res = %s\n", conv(res));
-      /*** for debug(windows) ***//*  
+      /*** for debug(windows) ***//*
                          // get full path name of executed application
                          ::GetModuleFileName(NULL, szFull, sizeof(szFull) / sizeof(TCHAR));
-                         
+
                          // separate full path name into drive name and directory name
                          _tsplitpath(szFull, szDrive, szDir, NULL, NULL);
-                         
+
                          // concatenate drive name and directory name
                          _tmakepath(szAppDir, szDrive, szDir, NULL, NULL);
-                         
+
                          MessageBox(NULL, szAppDir, (LPCWSTR)" ", MB_OK);*/
       /*** for debug(Linux) ***//*
            char pathname[512]="";
@@ -406,7 +406,7 @@ void init_cuda_with_cubin(const char *cubin_path)
       printf("cuMemAlloc(tmpIx_dev) failed: res = %s\n", conv(res));
       exit(1);
     }
-  
+
     res = cuMemAlloc(&tmpIy_dev[i], SIZE_TMPIY);
     if(res != CUDA_SUCCESS){
       printf("cuMemAlloc(tmpIy_dev) failed: res = %s\n", conv(res));
@@ -425,7 +425,7 @@ void init_cuda_with_cubin(const char *cubin_path)
 
 
   for(int i=0; i<device_num; i++) {
-    
+
     /* get max thread num per block */
     int max_threads_num = 0;
     res = cuDeviceGetAttribute(&max_threads_num, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev[i]);
@@ -433,7 +433,7 @@ void init_cuda_with_cubin(const char *cubin_path)
       printf("\ncuDeviceGetAttribute() failed: res = %s\n", conv(res));
       exit(1);
     }
-    
+
     NR_MAXTHREADS_X[i] = (int)sqrt((double)max_threads_num);
     NR_MAXTHREADS_Y[i] = (int)sqrt((double)max_threads_num);
 
@@ -516,7 +516,7 @@ void clean_cuda(void)
 #endif
 
 
-  
+
   for(int i=0; i<device_num; i++){
 
     res = cuCtxSetCurrent(ctx[i]);
@@ -597,19 +597,19 @@ void clean_cuda(void)
         printf("cuMemFree(M_dev) failed: res = %s\n", conv(res));
         exit(1);
       }
-  
+
       res = cuMemFree(tmpM_dev[i]);
       if(res != CUDA_SUCCESS) {
         printf("cuMemFree(tmpM_dev) failed: res = %s\n", conv(res));
         exit(1);
       }
-  
+
       res = cuMemFree(tmpIx_dev[i]);
       if(res != CUDA_SUCCESS) {
         printf("cuMemFree(tmpIx_dev) failed: res = %s\n", conv(res));
         exit(1);
       }
-  
+
       res = cuMemFree(tmpIy_dev[i]);
       if(res != CUDA_SUCCESS) {
         printf("cuMemFree(tmpIy_dev) failed: res = %s\n", conv(res));
@@ -646,7 +646,7 @@ void clean_cuda(void)
     free(NR_MAXTHREADS_Y);
     free(func_process_root);
     free(func_process_part);
-    free(func_dt1d_x); 
+    free(func_dt1d_x);
     free(func_dt1d_y);
     free(func_calc_a_score);
     free(func_inverse_Q);
@@ -660,11 +660,11 @@ void clean_cuda(void)
     free(def_array_dev);
     free(numpart_dev);
     free(DID_4_array_dev);
-    free(PIDX_array_dev); 
+    free(PIDX_array_dev);
     free(M_dev);
     free(tmpM_dev);
-    free(tmpIx_dev); 
-    free(tmpIy_dev); 
+    free(tmpIx_dev);
+    free(tmpIy_dev);
     free(module);
     free(dev);
     free(ctx);

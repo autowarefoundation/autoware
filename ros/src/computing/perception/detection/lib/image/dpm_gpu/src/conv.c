@@ -38,7 +38,7 @@
 char *conv(unsigned int res)
 {
     static char return_str[256];
-    
+
     switch(res){
     case 0:
         sprintf(return_str, "CUDA_SUCCESS");
@@ -176,4 +176,4 @@ char *conv(unsigned int res)
     }
     return return_str;
 
-}/* conv() */ 
+}/* conv() */
