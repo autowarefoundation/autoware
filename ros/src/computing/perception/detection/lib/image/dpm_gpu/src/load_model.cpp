@@ -16,6 +16,8 @@
 #include "switch_float.h"
 #include "switch_release.h"
 
+#include <cuda_util.hpp>
+
 #ifndef WIN32
 typedef int errno_t;
 #endif
@@ -54,7 +56,6 @@ MODEL *load_model(FLOAT ratio);				//load MODEL(filter) (extended to main.cpp)
 
 //release function
 void free_model(MODEL *MO);						//release model-information (externed to main.cpp)
-
 
 //subfunctions
 
@@ -220,7 +221,7 @@ Model_info * load_modelinfo(char *filename)
   //MI->def = (FLOAT*)malloc(sizeof(FLOAT)*DefL*4);
   res = cuMemHostAlloc((void **)&(MI->def), sizeof(FLOAT)*DefL*4, CU_MEMHOSTALLOC_DEVICEMAP);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemHostAlloc(MI->def) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(MI->def) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
   sum_size_def_array = sizeof(FLOAT)*DefL*4;
@@ -375,7 +376,7 @@ Rootfilters *load_rootfilter(char *filename)
 #ifdef SEPARETE_MEM
       res = cuMemHostAlloc((void **)&(RF->rootfilter[ii]), sizeof(FLOAT)*NUMB, CU_MEMHOSTALLOC_DEVICEMAP);
       if(res != CUDA_SUCCESS){
-        printf("cuMemHostAlloc(RF->rootfilter) failed: res = %s\n", conv(res));
+        printf("cuMemHostAlloc(RF->rootfilter) failed: res = %s\n", cuda_response_to_string(res));
         exit(1);
       }
 #else
@@ -403,7 +404,7 @@ Rootfilters *load_rootfilter(char *filename)
     FLOAT *dst_root;
     res = cuMemHostAlloc((void **)&dst_root, SUM_SIZE_ROOT, CU_MEMHOSTALLOC_DEVICEMAP);
     if(res != CUDA_SUCCESS){
-      printf("cuMemHostAlloc(dst_root) failed: res = %s\n", conv(res));
+      printf("cuMemHostAlloc(dst_root) failed: res = %s\n", cuda_response_to_string(res));
       exit(1);
     }
 
@@ -535,7 +536,7 @@ Partfilters *load_partfilter(char *filename)
 #ifdef SEPARETE_MEM
       res = cuMemHostAlloc((void **)&(PF->partfilter[ii]), sizeof(FLOAT)*NUMB, CU_MEMHOSTALLOC_DEVICEMAP);
       if(res != CUDA_SUCCESS){
-        printf("cuMemHostAlloc(PF->partfilter) failed: res = %s\n", conv(res));
+        printf("cuMemHostAlloc(PF->partfilter) failed: res = %s\n", cuda_response_to_string(res));
         exit(1);
       }
 #else
@@ -573,7 +574,7 @@ Partfilters *load_partfilter(char *filename)
   FLOAT *dst_part;
   res = cuMemHostAlloc((void **)&dst_part, SUM_SIZE_PART, CU_MEMHOSTALLOC_DEVICEMAP);
   if(res != CUDA_SUCCESS){
-    printf("cuMemHostAlloc(dst_part) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(dst_part) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -688,7 +689,7 @@ void free_model(MODEL *MO)
   //  s_free(MO->MI->def);
   res = cuMemFreeHost((void *)MO->MI->def);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFreeHost(MO->MI->def) failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(MO->MI->def) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -713,7 +714,7 @@ void free_model(MODEL *MO)
 #ifdef SEPARETE_MEM
       res = cuMemFreeHost((void *)MO->RF->rootfilter[ii]);
       if(res != CUDA_SUCCESS){
-        printf("cuMemFreeHost(MO->RF->rootfilter) failed: res = %s\n", conv(res));
+        printf("cuMemFreeHost(MO->RF->rootfilter) failed: res = %s\n", cuda_response_to_string(res));
         exit(1);
       }
 #endif
@@ -726,7 +727,7 @@ void free_model(MODEL *MO)
   /* free heap region in a lump */
   res = cuMemFreeHost((void *)MO->RF->rootfilter[0]);
   if(res != CUDA_SUCCESS){
-    printf("cuMemFreeHost(MO->RF->rootfilter[0]) failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(MO->RF->rootfilter[0]) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 #endif
@@ -745,7 +746,7 @@ void free_model(MODEL *MO)
 #ifdef SEPARETE_MEM
       res = cuMemFreeHost((void *)MO->PF->partfilter[ii]);
       if(res != CUDA_SUCCESS){
-        printf("cuMemFreeHost(MO->PF->partfilter) failed: res = %s\n", conv(res));
+        printf("cuMemFreeHost(MO->PF->partfilter) failed: res = %s\n", cuda_response_to_string(res));
         exit(1);
       }
 #endif
@@ -757,7 +758,7 @@ void free_model(MODEL *MO)
   /* free heap region in a lump */
   res = cuMemFreeHost((void *)MO->PF->partfilter[0]);
   if(res != CUDA_SUCCESS){
-    printf("cuMemFreeHost(MO->PF->partfilter[0] failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(MO->PF->partfilter[0] failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 #endif

@@ -52,7 +52,6 @@ file(GLOB DPM_GPU_CC_SOURCES "src/*.cc")
 add_library(dpm_gpu
   ${DPM_GPU_CXX_SOURCES}
   ${DPM_GPU_CC_SOURCES}
-  src/conv.c
 )
 
 target_link_libraries(dpm_gpu

@@ -34,6 +34,8 @@
 #include "multithreading.h"
 #include "for_use_GPU.h"
 
+#include <cuda_util.hpp>
+
 #define s_free(a) {free(a);a=NULL;}
 
 typedef struct {
@@ -76,7 +78,7 @@ CUT_THREADPROC dt_thread_func(void *p){
 
   res = cuCtxSetCurrent(ctx[pt->pid]);
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSetCurrent(ctx[%d]) failed: res = %s\n", pt->pid, conv(res));
+    printf("cuCtxSetCurrent(ctx[%d]) failed: res = %s\n", pt->pid, cuda_response_to_string(res));
     exit(1);
   }
 
@@ -91,43 +93,43 @@ CUT_THREADPROC dt_thread_func(void *p){
 
   res = cuMemcpyHtoD(part_C_dev[pt->pid], dst_C, SUM_SIZE_C);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(part_C_dev) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(part_C_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(part_error_array_dev[pt->pid], part_error_array, part_error_array_num*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(part_error_array_dev) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(part_error_array_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(pm_size_array_dev[pt->pid], &pt->size_array[0][0], pt->NoP*2*pt->L_MAX*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(pm_size_array_dev) falied: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(pm_size_array_dev) falied: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(def_array_dev[pt->pid], pt->def, sum_size_def_array);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(def_array_dev) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(def_array_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(numpart_dev[pt->pid], pt->numpart, pt->NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(cuMemcpyHtoD(numpart_dev) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(cuMemcpyHtoD(numpart_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(PIDX_array_dev[pt->pid], pt->dst_PIDX, pt->tmp_array_size);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(PIDX_array) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(PIDX_array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(DID_4_array_dev[pt->pid], pt->dst_DID_4, pt->tmp_array_size);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(DID_4__array) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(DID_4__array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -146,7 +148,7 @@ CUT_THREADPROC dt_thread_func(void *p){
   int max_threads_num = 0;
   res = cuDeviceGetAttribute(&max_threads_num, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev[pt->pid]);
   if(res != CUDA_SUCCESS){
-    printf("\ncuDeviceGetAttribute() failed: res = %s\n", conv(res));
+    printf("\ncuDeviceGetAttribute() failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -208,13 +210,13 @@ CUT_THREADPROC dt_thread_func(void *p){
                        );
   if(res != CUDA_SUCCESS) {
     printf("block_num_x %d, block_num_y %d, thread_num_x %d, thread_num_y %d\n", block_num_x, block_num_y, thread_num_x, thread_num_y);
-    printf("cuLaunchKernel(inverse_Q) failed : res = %s\n", conv(res));
+    printf("cuLaunchKernel(inverse_Q) failed : res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(inverse_Q) failed: res = %s\n", conv(res));
+    printf("cuCtxSynchronize(inverse_Q) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -285,13 +287,13 @@ CUT_THREADPROC dt_thread_func(void *p){
 
     printf("block_num_x %d, block_num_y %d, thread_num_x %d, thread_num_y %d\n", block_num_x, block_num_y, thread_num_x, thread_num_y);
 
-    printf("cuLaunchKernel(dt1d_x) failed : res = %s\n", conv(res));
+    printf("cuLaunchKernel(dt1d_x) failed : res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(dt1d_x) failed: res = %s\n", conv(res));
+    printf("cuCtxSynchronize(dt1d_x) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -356,14 +358,14 @@ CUT_THREADPROC dt_thread_func(void *p){
                        NULL            // extra
                        );
   if(res != CUDA_SUCCESS) {
-    printf("cuLaunchKernel(dt1d_y failed : res = %s\n", conv(res));
+    printf("cuLaunchKernel(dt1d_y failed : res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
 
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(dt1d_y) failed: res = %s\n", conv(res));
+    printf("cuCtxSynchronize(dt1d_y) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -460,7 +462,7 @@ CUT_THREADPROC dt_thread_func(void *p){
 	res = cuMemcpyDtoH((void *)(pointer_dst_M+(unsigned long long int)(pointer_size*sizeof(FLOAT))), (CUdeviceptr)(pointer_M_dev+(unsigned long long int)(pointer_size*sizeof(FLOAT))), part_size*sizeof(FLOAT));
 	if(res != CUDA_SUCCESS) {
 	  printf("error pid = %d\n",pt->pid);
-	  printf("cuMemcpyDtoH(dst_M) failed: res = %s\n", conv(res));
+	  printf("cuMemcpyDtoH(dst_M) failed: res = %s\n", cuda_response_to_string(res));
 	  exit(1);
 	}
 
@@ -565,7 +567,7 @@ CUT_THREADPROC dt_thread_func(void *p){
        res = cuMemcpyDtoH((void *)(pointer_dst_tmpIx+(unsigned long long int)(pointer_size*sizeof(int))), (CUdeviceptr)(pointer_tmpIx_dev+(unsigned long long int)(pointer_size*sizeof(int))), part_size*sizeof(int));
        if(res != CUDA_SUCCESS) {
 	 printf("error pid = %d\n",pt->pid);
-	 printf("cuMemcpyDtoH(tmpIx) failed: res = %s\n", conv(res));
+	 printf("cuMemcpyDtoH(tmpIx) failed: res = %s\n", cuda_response_to_string(res));
 	 exit(1);
        }
 
@@ -665,7 +667,7 @@ CUT_THREADPROC dt_thread_func(void *p){
        res = cuMemcpyDtoH((void *)(pointer_dst_tmpIy+(unsigned long long int)(pointer_size*sizeof(int))), (CUdeviceptr)(pointer_tmpIy_dev+(unsigned long long int)(pointer_size*sizeof(int))), part_size*sizeof(int));
        if(res != CUDA_SUCCESS) {
 	 printf("error pid = %d\n",pt->pid);
-	 printf("cuMemcpyDtoH(tmpIy) failed: res = %s\n", conv(res));
+	 printf("cuMemcpyDtoH(tmpIy) failed: res = %s\n", cuda_response_to_string(res));
 	 exit(1);
        }
 
@@ -691,12 +693,7 @@ CUT_THREADPROC dt_thread_func(void *p){
 
   /* end of thread */
   CUT_THREADEND;
-
 }
-
-
-
-
 
 FLOAT ****dt_GPU(
   int ****Ix_array,
@@ -719,7 +716,6 @@ FLOAT ****dt_GPU(
   int *dst_DID_4
                )
 {
-
   dt_partition *p = (dt_partition *)malloc(device_num*sizeof(dt_partition));
 
   int max_dim0 = 0, max_dim1 = 0;
@@ -729,14 +725,11 @@ FLOAT ****dt_GPU(
 
   for(int level=interval; level<L_MAX; level++) {
     int L = level - interval;
-    /**************************************************************************/
-    /* loop condition */
+
     if( (FSIZE[level*2]+2*pady < max_Y) || (FSIZE[level*2+1]+2*padx < max_X) )
       {
         continue;
       }
-    /* loop conditon */
-    /**************************************************************************/
 
     for(int jj=0; jj<NoC; jj++) {
       for(int kk=0; kk<numpart[jj]; kk++) {
@@ -749,7 +742,6 @@ FLOAT ****dt_GPU(
         /* search max values */
         max_dim0 = (max_dim0 < dims0) ? dims0 : max_dim0;
         max_dim1 = (max_dim1 < dims1) ? dims1 : max_dim1;
-
       }
       sum_numpart += numpart[jj];
     }
@@ -761,24 +753,20 @@ FLOAT ****dt_GPU(
   FLOAT **sub_dst_M = (FLOAT **)malloc(sum_numpart*sizeof(FLOAT*));
   FLOAT *dst_M =  (FLOAT *)malloc(sum_size_SQ*sizeof(FLOAT));
 
-
   FLOAT ****tmpM_array = (FLOAT ****)malloc((L_MAX-interval)*sizeof(FLOAT***));
   FLOAT ***sub_sub_dst_tmpM = (FLOAT ***)malloc(NoC*(L_MAX-interval)*sizeof(FLOAT**));
   FLOAT **sub_dst_tmpM = (FLOAT **)malloc(sum_numpart*sizeof(FLOAT*));
   FLOAT *dst_tmpM = (FLOAT *)malloc(sum_size_SQ*sizeof(FLOAT));
-
 
   int ****tmpIx_array = (int ****)malloc((L_MAX-interval)*sizeof(int***));
   int ***sub_sub_dst_tmpIx = (int ***)malloc(NoC*(L_MAX-interval)*sizeof(int**));
   int **sub_dst_tmpIx = (int **)malloc(sum_numpart*sizeof(int*));
   int *dst_tmpIx = (int *)malloc(sum_size_SQ*sizeof(int));
 
-
   int ****tmpIy_array = (int ****)malloc((L_MAX-interval)*sizeof(int***));
   int ***sub_sub_dst_tmpIy = (int ***)malloc(NoC*(L_MAX-interval)*sizeof(int**));
   int **sub_dst_tmpIy = (int **)malloc(sum_numpart*sizeof(int*));
   int *dst_tmpIy = (int *)malloc(sum_size_SQ*sizeof(int));
-
 
   /* distribute allocated region */
   unsigned long long int pointer_M = (unsigned long long int)sub_sub_dst_M;
@@ -787,14 +775,12 @@ FLOAT ****dt_GPU(
   unsigned long long int pointer_tmpIy = (unsigned long long int)sub_sub_dst_tmpIy;
   for(int level=interval; level<L_MAX; level++) {
     int L = level - interval;
-    /**************************************************************************/
-    /* loop condition */
+
     if( (FSIZE[level*2]+2*pady < max_Y) || (FSIZE[level*2+1]+2*padx < max_X) )
       {
         continue;
       }
-    /* loop conditon */
-    /**************************************************************************/
+
     M_array[L] = (FLOAT ***)pointer_M;
     pointer_M += (unsigned long long int)(NoC*sizeof(FLOAT**));
 
@@ -808,22 +794,16 @@ FLOAT ****dt_GPU(
     pointer_tmpIy += (unsigned long long int)(NoC*sizeof(int**));
   }
 
-
-
   pointer_M = (unsigned long long int)sub_dst_M;
   pointer_tmpM = (unsigned long long int)sub_dst_tmpM;
   pointer_tmpIx = (unsigned long long int)sub_dst_tmpIx;
   pointer_tmpIy = (unsigned long long int)sub_dst_tmpIy;
   for(int level=interval; level<L_MAX; level++) {
     int L = level - interval;
-    /**************************************************************************/
-    /* loop condition */
     if( (FSIZE[level*2]+2*pady < max_Y) || (FSIZE[level*2+1]+2*padx < max_X) )
       {
         continue;
       }
-    /* loop conditon */
-    /**************************************************************************/
 
     for(int jj=0; jj<NoC; jj++) {
       int numpart_jj = numpart[jj];
@@ -842,25 +822,18 @@ FLOAT ****dt_GPU(
     }
   }
 
-
   pointer_M = (unsigned long long int)dst_M;
   pointer_tmpM = (unsigned long long int)dst_tmpM;
   pointer_tmpIx = (unsigned long long int)dst_tmpIx;
   pointer_tmpIy = (unsigned long long int)dst_tmpIy;
 
-
-
   for(int level=interval; level<L_MAX; level++) {
     int L = level - interval;
-    /**************************************************************************/
-    /* loop condition */
+
     if( (FSIZE[level*2]+2*pady < max_Y) || (FSIZE[level*2+1]+2*padx < max_X) )
       {
         continue;
       }
-    /* loop conditon */
-    /**************************************************************************/
-
 
     for(int jj=0; jj<NoC; jj++) {
       for(int kk=0; kk<numpart[jj]; kk++) {
@@ -885,12 +858,7 @@ FLOAT ****dt_GPU(
     }
   }
 
-
-  //part_error_array_dev = (CUdeviceptr *)malloc(sizeof(CUdeviceptr) * device_num);
-  //part_C_dev = (CUdeviceptr *)malloc(sizeof(CUdeviceptr) * device_num);
-
    /* start threads */
-
   CUTThread* threads = (CUTThread *)malloc(sizeof(CUTThread) * device_num);
 
   for(int i = 0; i < device_num; i++){
@@ -926,21 +894,16 @@ FLOAT ****dt_GPU(
   free(threads);
   free(p);
 
-
   for(int level=interval; level<L_MAX; level++) {
     int L = level - interval;
-    /**************************************************************************/
+
     /* loop condition */
     if( (FSIZE[level*2]+2*pady < max_Y) || (FSIZE[level*2+1]+2*padx < max_X) )
       {
         continue;
       }
-    /* loop conditon */
-    /**************************************************************************/
-
 
     for(int jj=0; jj<NoC; jj++) {
-
       for(int kk=0; kk<numpart[jj]; kk++) {
 
         int *IX_P = Ix_array[L][jj][kk];
@@ -964,7 +927,6 @@ FLOAT ****dt_GPU(
     }
   }
 
-
   /* free CPU memory */
   free(part_error_array);
   s_free(dst_tmpM);
@@ -981,7 +943,6 @@ FLOAT ****dt_GPU(
   s_free(sub_dst_tmpIy);
   s_free(sub_sub_dst_tmpIy);
   s_free(tmpIy_array);
-
 
   return(M_array);
 }

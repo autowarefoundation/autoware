@@ -16,6 +16,8 @@
 #include "switch_float.h"
 #include "switch_release.h"
 
+#include <cuda_util.hpp>
+
 int max_numpart = 0;
 int max_RL_S = 0;
 
@@ -61,7 +63,7 @@ FLOAT *padarray(FLOAT *feature,int *size,int padx,int pady)
 
   res = cuMemHostAlloc((void **)&new_feature, NEW_Y*NEW_X * size[2] * sizeof(FLOAT), CU_MEMHOSTALLOC_DEVICEMAP); // feature (pad-added)
   if(res != CUDA_SUCCESS) {
-    printf("cuMemHostAlloc(new_feature) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(new_feature) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -101,7 +103,7 @@ FLOAT *flip_feat(FLOAT *feat,int *size)
 #if 0
     res = cuCtxPushCurrent(ctx);
     if(res != CUDA_SUCCESS){
-      printf("cuCtxPushCurrent() failed: res = %s\n", conv(res));
+      printf("cuCtxPushCurrent() failed: res = %s\n", cuda_response_to_string(res));
       exit(1);
     }
 #endif
@@ -113,7 +115,7 @@ FLOAT *flip_feat(FLOAT *feat,int *size)
     FLOAT *fliped;
     res = cuMemHostAlloc((void **)&fliped, size[0]*size[1]*size[2]*sizeof(FLOAT), CU_MEMHOSTALLOC_DEVICEMAP);
     if(res != CUDA_SUCCESS){
-      printf("cuMemHostAlloc(fliped) failed: res = %s\n", conv(res));
+      printf("cuMemHostAlloc(fliped) failed: res = %s\n", cuda_response_to_string(res));
       exit(1);
     }
 
@@ -141,7 +143,7 @@ FLOAT *flip_feat(FLOAT *feat,int *size)
 #if 0
     res = cuCtxPopCurrent(&ctx);
     if(res != CUDA_SUCCESS){
-      printf("cuCtxPopCurrent(ctx) failed: res = %s\n", conv(res));
+      printf("cuCtxPopCurrent(ctx) failed: res = %s\n", cuda_response_to_string(res));
       exit(1);
     }
 #endif
@@ -284,13 +286,13 @@ void calc_a_score_GPU(
   int *RY_array, *RX_array;
   res = cuMemHostAlloc((void**)&RY_array, NoC*sizeof(int), CU_MEMHOSTALLOC_DEVICEMAP);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemHostAlloc(RY_array) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(RY_array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemHostAlloc((void**)&RX_array, NoC*sizeof(int), CU_MEMHOSTALLOC_DEVICEMAP);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemHostAlloc(RX_array) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(RX_array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -314,37 +316,37 @@ void calc_a_score_GPU(
   /* allocate GPU memory */
   res = cuMemAlloc(&ac_score_dev, size_A_SCORE);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemAlloc(ac_score) failed: res = %s\n", conv(res));
+    printf("cuMemAlloc(ac_score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemAlloc(&score_dev, size_score);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemAlloc(score) failed: res = %s\n", conv(res));
+    printf("cuMemAlloc(score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemAlloc(&ssize_dev, NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemAlloc(ssize) failed: res = %s\n", conv(res));
+    printf("cuMemAlloc(ssize) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemAlloc(&size_score_dev, NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemAlloc(size_score) failed: res = %s\n", conv(res));
+    printf("cuMemAlloc(size_score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemAlloc(&RY_dev, NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemAlloc(RY) failed: res = %s\n", conv(res));
+    printf("cuMemAlloc(RY) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemAlloc(&RX_dev, NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemAlloc(RX) failed: res = %s\n", conv(res));
+    printf("cuMemAlloc(RX) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -352,37 +354,37 @@ void calc_a_score_GPU(
   /* upload date to GPU */
   res = cuMemcpyHtoD(ac_score_dev, &ac_score[0], size_A_SCORE);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(ac_score) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(ac_score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(score_dev, &score[0][0], size_score);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(score) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(ssize_dev, &ssize_start[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(ssize) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(ssize) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(size_score_dev, &size_score_array[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(size_score) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(size_score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(RY_dev, &RY_array[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(RY) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(RY) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(RX_dev, &RX_array[0], NoC*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(RX) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(RX) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -418,7 +420,7 @@ void calc_a_score_GPU(
 
   res = cuDeviceGetAttribute(&max_threads_num, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev[0]);
   if(res != CUDA_SUCCESS){
-    printf("\ncuDeviceGetAttribute() failed: res = %s\n", conv(res));
+    printf("\ncuDeviceGetAttribute() failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -449,13 +451,13 @@ void calc_a_score_GPU(
                        NULL               // extra
                        );
   if(res != CUDA_SUCCESS) {
-    printf("cuLaunchKernel(calc_a_score) failed : res = %s\n", conv(res));
+    printf("cuLaunchKernel(calc_a_score) failed : res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSynchronize(calc_a_score) failed: res = %s\n", conv(res));
+    printf("cuCtxSynchronize(calc_a_score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
   gettimeofday(&tv_kernel_end, NULL);
@@ -467,7 +469,7 @@ void calc_a_score_GPU(
   /* download data from GPU */
   res = cuMemcpyDtoH(ac_score, ac_score_dev, size_A_SCORE);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyDtoH(ac_score) failed: res = %s\n", conv(res));
+    printf("cuMemcpyDtoH(ac_score) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
   gettimeofday(&tv_memcpy_end, NULL);
@@ -478,50 +480,50 @@ void calc_a_score_GPU(
   /* free GPU memory */
   res = cuMemFree(ac_score_dev);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFree(ac_score_dev) failed: res = %s\n", conv(res));
+    printf("cuMemFree(ac_score_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemFree(score_dev);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFree(score_dev) failed: res = %s\n", conv(res));
+    printf("cuMemFree(score_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemFree(ssize_dev);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFree(ssize_dev) failed: res = %s\n", conv(res));
+    printf("cuMemFree(ssize_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemFree(size_score_dev);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFree(size_score_dev) failed: res = %s\n", conv(res));
+    printf("cuMemFree(size_score_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemFree(RY_dev);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFree(RY_dev) failed: res = %s\n", conv(res));
+    printf("cuMemFree(RY_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemFree(RX_dev);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFree(RX_dev) failed: res = %s\n", conv(res));
+    printf("cuMemFree(RX_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   /* free CPU memory */
   res = cuMemFreeHost(RY_array);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFreeHost(RY_array) failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(RY_array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemFreeHost(RX_array);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFreeHost(RX_array) failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(RX_array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -620,7 +622,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
   FLOAT *dst_feat;
   res = cuMemHostAlloc((void **)&dst_feat, SUM_SIZE_feat, CU_MEMHOSTALLOC_DEVICEMAP);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemHostAlloc(dst_feat) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(dst_feat) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -789,7 +791,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
 
   res = cuCtxSetCurrent(ctx[0]);
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSetCurrent(ctx[0]) failed: res = %s\n", conv(res));
+    printf("cuCtxSetCurrent(ctx[0]) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -1078,7 +1080,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
           int *dst_DID_4;
           res = cuMemHostAlloc((void **)&dst_DID_4, tmp_array_size, CU_MEMHOSTALLOC_DEVICEMAP);
           if(res != CUDA_SUCCESS) {
-            printf("cuMemHostAlloc(dst_DID_4) failed: res = %s\n", conv(res));
+            printf("cuMemHostAlloc(dst_DID_4) failed: res = %s\n", cuda_response_to_string(res));
             exit(1);
           }
 
@@ -1088,7 +1090,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
           int *dst_PIDX;
           res = cuMemHostAlloc((void **)&dst_PIDX, tmp_array_size, CU_MEMHOSTALLOC_DEVICEMAP);
           if(res != CUDA_SUCCESS) {
-            printf("cuMemHostAlloc(dst_PIDX) failed: res = %s\n", conv(res));
+            printf("cuMemHostAlloc(dst_PIDX) failed: res = %s\n", cuda_response_to_string(res));
             exit(1);
           }
 
@@ -1292,7 +1294,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
 
           res = cuMemFreeHost(dst_DID_4);
           if(res != CUDA_SUCCESS) {
-            printf("cuMemFreeHost(dst_DID_4) failed: res = %s\n", conv(res));
+            printf("cuMemFreeHost(dst_DID_4) failed: res = %s\n", cuda_response_to_string(res));
             exit(1);
           }
           free(sub_dst_DID_4);
@@ -1301,7 +1303,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
 
           res = cuMemFreeHost(dst_PIDX);
           if(res != CUDA_SUCCESS) {
-            printf("cuMemFreeHost(dst_PIDX) failed: res = %s\n", conv(res));
+            printf("cuMemFreeHost(dst_PIDX) failed: res = %s\n", cuda_response_to_string(res));
             exit(1);
           }
 
@@ -1312,7 +1314,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
 
           res = cuCtxSetCurrent(ctx[0]);
           if(res != CUDA_SUCCESS) {
-            printf("cuCtxSetCurrent(ctx[0]) failed: res = %s\n", conv(res));
+            printf("cuCtxSetCurrent(ctx[0]) failed: res = %s\n", cuda_response_to_string(res));
             exit(1);
            }
 
@@ -1545,14 +1547,14 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
 
   res = cuCtxSetCurrent(ctx[0]);
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSetCurrent(ctx[0]) failed: res = %s\n",conv(res));
+    printf("cuCtxSetCurrent(ctx[0]) failed: res = %s\n",cuda_response_to_string(res));
     exit(1);
   }
 
   /* free memory regions */
   res = cuMemFreeHost((void *)featp2[0]);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFreeHost(featp2[0]) failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(featp2[0]) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -1561,7 +1563,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
 
   res = cuMemFreeHost((void *)rootmatch[interval][0]);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFreeHost(rootmatch[0][0]) failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(rootmatch[0][0]) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
   s_free(rootmatch[0]);
@@ -1570,7 +1572,7 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
   if (partmatch != nullptr) {
     res = cuMemFreeHost((void *)partmatch[0][0]);
     if(res != CUDA_SUCCESS) {
-      printf("cuMemFreeHost(partmatch[0][0]) failed: res = %s\n", conv(res));
+      printf("cuMemFreeHost(partmatch[0][0]) failed: res = %s\n", cuda_response_to_string(res));
       exit(1);
     }
 
@@ -1658,7 +1660,7 @@ void free_rootmatch(FLOAT **rootmatch, MODEL *MO)
 #else
           res = cuMemFreeHost((void *)rootmatch[ii]);
           if(res != CUDA_SUCCESS){
-            printf("cuMemFreeHost(rootmatch) failed: res = %s\n", conv(res));
+            printf("cuMemFreeHost(rootmatch) failed: res = %s\n", cuda_response_to_string(res));
             exit(1);
           }
 #endif
@@ -1685,7 +1687,7 @@ void free_partmatch(FLOAT **partmatch, MODEL *MO)
 #else
           res = cuMemFreeHost((void *)partmatch[ii]);
           if(res != CUDA_SUCCESS){
-            printf("cuMemFreeHost(partmatch) failed: res = %s\n", conv(res));
+            printf("cuMemFreeHost(partmatch) failed: res = %s\n", cuda_response_to_string(res));
             exit(1);
           }
 #endif

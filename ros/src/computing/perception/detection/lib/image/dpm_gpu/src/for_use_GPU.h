@@ -169,9 +169,6 @@ extern void init_cuda_with_cubin(const char *cubin_path);
 
 extern void clean_cuda(void);
 
-/* function to convert CUDA error to string */
-extern char *conv(unsigned int res);
-
 /* function for GPU execution correspond to fconvsMT */
 extern
 FLOAT ***fconvsMT_GPU(

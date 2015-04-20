@@ -43,6 +43,8 @@
 #include "drvapi_error_string.h"
 #include "switch_release.h"
 
+#include <cuda_util.hpp>
+
 // use for dt_GPU
 int part_error_array_num;
 int *part_error_array;
@@ -101,7 +103,7 @@ CUT_THREADPROC fconvs_thread_func(void *p){
   /* set CUDA context to this CPU thread */
   res = cuCtxSetCurrent(ctx[pt->pid]);
   if(res != CUDA_SUCCESS) {
-    printf("cuCtxSetCurrent(ctx[%d]) failed: res = %s\n", pt->pid, conv(res));
+    printf("cuCtxSetCurrent(ctx[%d]) failed: res = %s\n", pt->pid, cuda_response_to_string(res));
     exit(1);
   }
 
@@ -109,7 +111,7 @@ CUT_THREADPROC fconvs_thread_func(void *p){
   int max_threads_num = 0;
   res = cuDeviceGetAttribute(&max_threads_num, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev[pt->pid]);
   if(res != CUDA_SUCCESS){
-    printf("\ncuDeviceGetAttribute() failed: res = %s\n", conv(res));
+    printf("\ncuDeviceGetAttribute() failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -148,28 +150,28 @@ CUT_THREADPROC fconvs_thread_func(void *p){
   /* upload resized source images to GPU */
   res = cuMemcpyHtoD(featp2_dev[pt->pid], pt->featp2[0], pt->SUM_SIZE_feat);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(featp2) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(featp2) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   /* upload resize image sizes to GPU */
   res = cuMemcpyHtoD(A_SIZE_dev[pt->pid], pt->A_SIZE, pt->L_MAX*3*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(new_PADsize) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(new_PADsize) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   /* upload filter to GPU */
   res = cuMemcpyHtoD(B_dev[pt->pid], pt->filter[pt->start],  pt->SUM_SIZE_B);
   if(res != CUDA_SUCCESS){
-    printf("cuMemcpyHtoD(B_dev) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(B_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   /* upload error condition to GPU */
   res = cuMemcpyHtoD(fconvs_error_array_dev[pt->pid], pt->error_array, pt->error_array_num*sizeof(int));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(part_error_array_dev) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(part_error_array_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -293,13 +295,13 @@ CUT_THREADPROC fconvs_thread_func(void *p){
 
   res = cuMemcpyHtoD(fconvs_C_dev[pt->pid], pt->dst_C, pt->SUM_SIZE_C);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemcpyHtoD(part_C_dev) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(part_C_dev) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
   res = cuMemcpyHtoD(B_dims_dev[pt->pid], pt->B_dimension, 3*pt->len*sizeof(int));
   if(res != CUDA_SUCCESS){
-    printf("cuMemcpyHtoD(B_dims) failed: res = %s\n", conv(res));
+    printf("cuMemcpyHtoD(B_dims) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -376,7 +378,7 @@ CUT_THREADPROC fconvs_thread_func(void *p){
                          NULL                        // extra
                          );
     if(res != CUDA_SUCCESS){
-      printf("cuLaunchKernel(root) failed: res = %s\n", conv(res));
+      printf("cuLaunchKernel(root) failed: res = %s\n", cuda_response_to_string(res));
       exit(1);
     }
     break;
@@ -396,7 +398,7 @@ CUT_THREADPROC fconvs_thread_func(void *p){
                          NULL                        // extra
                          );
     if(res != CUDA_SUCCESS){
-      printf("cuLaunchKernel(part) failed: res = %s\n", conv(res));
+      printf("cuLaunchKernel(part) failed: res = %s\n", cuda_response_to_string(res));
       exit(1);
     }
     break;
@@ -411,7 +413,7 @@ CUT_THREADPROC fconvs_thread_func(void *p){
   res = cuCtxSynchronize();
   if(res != CUDA_SUCCESS){
     printf("pid = %d, calc_flag = %d\n",pt->pid, pt->calc_flag);
-    printf("cuCtxSynchronize(process) failed: res = %s\n", conv(res));
+    printf("cuCtxSynchronize(process) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -484,7 +486,7 @@ CUT_THREADPROC fconvs_thread_func(void *p){
 
 	  res = cuMemcpyDtoH((void *)(pointer_C+(unsigned long long int)(pt->pid*C_x*C_dims0*sizeof(FLOAT))), (CUdeviceptr)(root_pointer_dev+(unsigned long long int)(pt->pid*C_x*C_dims0*sizeof(FLOAT))), x_size);
 	  if(res != CUDA_SUCCESS) {
-	    printf("cuMemcpyDtoH(dst_C root) failed: res = %s\n", conv(res));
+	    printf("cuMemcpyDtoH(dst_C root) failed: res = %s\n", cuda_response_to_string(res));
 	    exit(1);
 	  }
 
@@ -542,7 +544,7 @@ CUT_THREADPROC fconvs_thread_func(void *p){
 
 	  res = cuMemcpyDtoH((void *)(pointer_C+(unsigned long long int)(pt->pid*C_x*C_dims0*sizeof(FLOAT))), (CUdeviceptr)(part_pointer_dev+(unsigned long long int)(pt->pid*C_x*C_dims0*sizeof(FLOAT))), x_size);
 	  if(res != CUDA_SUCCESS) {
-	    printf("cuMemcpyDtoH(dst_C root) failed: res = %s\n", conv(res));
+	    printf("cuMemcpyDtoH(dst_C root) failed: res = %s\n", cuda_response_to_string(res));
 	    exit(1);
 	  }
 
@@ -794,7 +796,7 @@ FLOAT ***fconvsMT_GPU(
   /* save loop condition */
   res = cuMemHostAlloc((void **)&(error_array), error_array_num*sizeof(int), CU_MEMHOSTALLOC_DEVICEMAP);
   if(res != CUDA_SUCCESS) {
-    printf("cuMemHostAlloc(error_array) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(error_array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -838,7 +840,7 @@ FLOAT ***fconvsMT_GPU(
   /* allocate output region on CPU memory */
   res = cuMemHostAlloc((void **)&(dst_C), SUM_SIZE_C, CU_MEMHOSTALLOC_DEVICEMAP);
   if(res != CUDA_SUCCESS){
-    printf("cuMemHostAlloc(dst_C) failed: res = %s\n", conv(res));
+    printf("cuMemHostAlloc(dst_C) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
@@ -923,7 +925,7 @@ FLOAT ***fconvsMT_GPU(
   /* free CPU memory */
   res = cuMemFreeHost((void *)(error_array));
   if(res != CUDA_SUCCESS) {
-    printf("cuMemFreeHost(error_array) failed: res = %s\n", conv(res));
+    printf("cuMemFreeHost(error_array) failed: res = %s\n", cuda_response_to_string(res));
     exit(1);
   }
 
