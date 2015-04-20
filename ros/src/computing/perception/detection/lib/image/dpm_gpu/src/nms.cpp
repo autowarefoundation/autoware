@@ -3,6 +3,7 @@
 
 /////nms.cpp   non_maximum suppression of detected box ////////////////////////////////////////////////////////////
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -14,10 +15,6 @@
 
 //definiton of functions//
 
-//inline function
-static inline FLOAT max_d(FLOAT x,FLOAT y);
-static inline FLOAT min_d(FLOAT x,FLOAT y);
-
 //sub functions
 inline void exchangeOfValues(FLOAT *x , FLOAT *y);		//sub function for quick-sort
 inline void exchangeOfOrders(int *x , int *y);				//sub function for quick-sort
@@ -25,10 +22,6 @@ void  quickSort(FLOAT *ary , int *Order, int first_index , int last_index);		//q
 
 //Non_maximum suppression function (extended to detect.cc)
 FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO);
-
-//inline function
-static inline FLOAT max_d(FLOAT x,FLOAT y) {return (x >= y ? x : y); }
-static inline FLOAT min_d(FLOAT x,FLOAT y) {return (x <= y ? x : y); }
 
 //sub functions
 
@@ -114,13 +107,13 @@ FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO)
               if(checked[B]!=0) continue;
 
               P=boxes+GL*B;
-              FLOAT yy1 = max_d(Ay1,P[0]);
-              FLOAT xx1 = max_d(Ax1,P[1]);
-              FLOAT yy2 = min_d(Ay2,P[2]);
-              FLOAT xx2 = min_d(Ax2,P[3]);
+              FLOAT yy1 = std::max(Ay1,P[0]);
+              FLOAT xx1 = std::max(Ax1,P[1]);
+              FLOAT yy2 = std::min(Ay2,P[2]);
+              FLOAT xx2 = std::min(Ax2,P[3]);
               FLOAT w = xx2-xx1+1.0;
               FLOAT h = yy2-yy1+1.0;
-              FLOAT R_AREA = min_d(area[A],area[B]);
+              FLOAT R_AREA = std::min(area[A],area[B]);
 
               //eliminate over-lap rectangles
               //over-lap(normal)
