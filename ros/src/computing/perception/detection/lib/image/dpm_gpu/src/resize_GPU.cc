@@ -261,60 +261,6 @@ void *bilinear_resizing(void *arg)
   const FLOAT hfactor = (FLOAT)src_height/dst_height;
   const FLOAT wfactor = (FLOAT)src_width/dst_width;
 
-#if 0
-  for (int channel = 0; channel<dst_size[2]; channel++)
-    {
-      /*
-        The function "Ipl_to_FLOAT"(defined in featurepyramid.cpp)
-        break input image down by each color channel.
-        So, we have to adjust the pointer location to refer
-        each color values.
-      */
-      FLOAT *src = src_top + channel*src_height*src_width;
-      FLOAT *dst = dst_top + channel*dst_height*dst_width;
-
-      for (int dst_x=0; dst_x<dst_width; dst_x++)
-        {
-          /* pixel position on "src" correspond to "dst"(true value) */
-          FLOAT src_x_decimal = wfactor * (FLOAT)dst_x;
-          /* pixel position on "src" correspond to "dst"(truncated integer value) */
-          int   src_x         = (int)src_x_decimal;
-
-          for (int dst_y=0; dst_y<dst_height; dst_y++)
-            {
-              /* pixel position on "src" correspond to "dst"(true value) */
-              FLOAT src_y_decimal = hfactor * (FLOAT)dst_y;
-              /* pixel position on "src" correspond to "dst"(truncated integer value) */
-              int   src_y         = (int)src_y_decimal;
-
-              /* bilinear interpolation */
-              FLOAT src_val[4] = {
-                (FLOAT)getPixelVal(src, src_x, src_y, src_width, src_height),
-                (FLOAT)getPixelVal(src, src_x+1, src_y, src_width, src_height),
-                (FLOAT)getPixelVal(src, src_x, src_y+1, src_width, src_height),
-                (FLOAT)getPixelVal(src, src_x+1, src_y+1, src_width, src_height)
-              };
-
-              FLOAT c_element[4] = {0};
-              FLOAT newval = 0;
-
-              for (int i=0; i<4; i++)
-                {
-                  c_element[i] = (FLOAT)((unsigned int)src_val[i] & 0xffffffff);
-                }
-
-              FLOAT new_element = (FLOAT)(
-                                          (src_x + 1 - src_x_decimal)*(src_y + 1 - src_y_decimal)*c_element[0] +
-                                          (src_x_decimal - src_x)*(src_y + 1 - src_y_decimal)*c_element[1] +
-                                          (src_x + 1 - src_x_decimal)*(src_y_decimal - src_y)*c_element[2] +
-                                          (src_x_decimal - src_x)*(src_y_decimal - src_y)*c_element[3]
-                                          );
-
-              dst[dst_x*dst_height + dst_y] = (FLOAT)(new_element);
-            }
-        }
-    }
-#else
   CUresult res;
 
   /* attach CUDA Context 0 on this pthread */
@@ -368,8 +314,6 @@ void *bilinear_resizing(void *arg)
 
   // res = cuStreamSynchronize(stream);
   // MY_CUDA_CHECK(res, "cuStreamSynchronize(stream)");
-
-#endif
 
   return (void *)NULL;
 } /* bilinear_resizing() */

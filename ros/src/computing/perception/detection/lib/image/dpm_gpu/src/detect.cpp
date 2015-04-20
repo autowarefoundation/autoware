@@ -169,11 +169,6 @@ RESULT *car_detection(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_S
   /* for measurement */
   struct timeval tv_detect_start, tv_detect_end;
   struct timeval tv_nms_start, tv_nms_end;
-#if 0
-  struct timeval tv;
-  float time_detect;
-  float time_nms;
-#endif
   struct timeval tv_get_new_rects_start, tv_get_new_rects_end;
 
   gettimeofday(&tv_detect_start, NULL);
@@ -187,23 +182,6 @@ RESULT *car_detection(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_S
   gettimeofday(&tv_get_new_rects_start, NULL);
   RESULT *CUR = get_new_rects(IM,MO,rects,D_NUMS);		//get current result
   gettimeofday(&tv_get_new_rects_end, NULL);
-
-
-#if 0
-  tvsub(&tv_detect_end, &tv_detect_start, &tv);
-  time_detect = tv.tv_sec * 1000.0 + (float)tv.tv_usec / 1000.0;
-
-  tvsub(&tv_nms_end, &tv_nms_start, &tv);
-  time_nms = tv.tv_sec * 1000.0 + (float)tv.tv_usec / 1000.0;
-
-  tvsub(&tv_get_new_rects_end, &tv_get_new_rects_start, &tv);
-  time_get_new_rects = tv.tv_sec * 1000.0 + (float)tv.tv_usec / 1000.0;
-
-  printf("detect : %f\n", time_detect);
-  printf("nms : %f\n", time_nms);
-  printf("get_new_rects : %f\n", time_get_new_rects);
-#endif
-
 
   s_free(boxes);
   s_free(rects);

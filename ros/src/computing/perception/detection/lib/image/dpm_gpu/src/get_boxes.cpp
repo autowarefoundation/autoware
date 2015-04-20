@@ -100,13 +100,6 @@ FLOAT *flip_feat(FLOAT *feat,int *size)
 
 #ifndef ORIGINAL
     CUresult res;
-#if 0
-    res = cuCtxPushCurrent(ctx);
-    if(res != CUDA_SUCCESS){
-      printf("cuCtxPushCurrent() failed: res = %s\n", cuda_response_to_string(res));
-      exit(1);
-    }
-#endif
 #endif
 
 #ifdef ORIGINAL
@@ -138,16 +131,6 @@ FLOAT *flip_feat(FLOAT *feat,int *size)
 			P+=*size;
 		}
 	}
-
-#ifndef ORIGINAL
-#if 0
-    res = cuCtxPopCurrent(&ctx);
-    if(res != CUDA_SUCCESS){
-      printf("cuCtxPopCurrent(ctx) failed: res = %s\n", cuda_response_to_string(res));
-      exit(1);
-    }
-#endif
-#endif
 
 	return(fliped);
 }

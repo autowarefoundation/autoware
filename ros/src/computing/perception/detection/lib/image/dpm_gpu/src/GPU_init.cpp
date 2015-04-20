@@ -135,23 +135,6 @@ void init_cuda_with_cubin(const char *cubin_path)
       printf("car detection use GPU[No.%d]\n", i);
   }
 
-#if 0
-  /* check whether peer-to-peer access between GPUs is possible */
-  int canAccessPeer=0;
-  cudaDeviceCanAccessPeer(&canAccessPeer, dev[0], dev[1]);
-  if(canAccessPeer ==1 )
-    printf("p2p access dev[0] -> dev[1] is ENable\n");
-  else
-    printf("p2p access dev[0] -> dev[1] is DISable\n");
-
-  cudaDeviceCanAccessPeer(&canAccessPeer, dev[1], dev[0]);
-  if(canAccessPeer ==1 )
-    printf("p2p access dev[1] -> dev[0] is ENable\n");
-  else
-    printf("p2p access dev[1] -> dev[0] is DISable\n");
-#endif
-
-
   ctx = (CUcontext*)malloc(device_num*sizeof(CUcontext));
 
   module = (CUmodule*)malloc(device_num*sizeof(CUmodule));
@@ -444,57 +427,7 @@ void init_cuda_with_cubin(const char *cubin_path)
     if(res != CUDA_SUCCESS) {
        printf("cuCtxSetCurrent(ctx[%d]) failed: res = %s\n", i, conv(res));
        exit(1);
-     }
-#if 0
-    /*** for debug ***/
-    /* show device information */
-    printf("************ device information ************\n");
-    char devname[256];
-    cuDeviceGetName(devname, sizeof(devname), dev);
-    printf("Device Name : %s\n", devname);
-    printf("--------------------------------------------\n");
-
-    int pi;
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev);
-    printf("Max Threads per Block : %d\n", pi);
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_INTEGRATED, dev);
-    if(pi != 0) printf("device is integrated with the host memory system\n");
-    else printf("device is NOT integrated with the host memory system\n");
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, dev);
-    if(pi != 0) printf("device can map host memory\n");
-    else printf("device CANNOT map host memory\n");
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, dev);
-    if(pi != 0) printf("device shares a unified address space\n");
-    else printf("device DOES NOT share a unified address space\n");
-    printf("--------------------------------------------\n");
-
-    cuDeviceCanAccessPeer(&pi, dev2, dev);
-    if(pi != 0) printf("dev are capable of directly accessing memory from dev2\n");
-    else printf("dev are NOT capable of directly accessing memory from dev2\n");
-    printf("--------------------------------------------\n");
-
-    int major = 0, minor = 0;
-    cuDeviceComputeCapability(&major, &minor, dev);
-    printf("Compute Capability : major = %d, minor = %d\n", major, minor);
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetCount(&pi);
-    printf("Available device number : %d\n", pi);
-
-    printf("********************************************\n");
-
-    printf("if you want to exit, type 'q' then Push Enter key\n");
-    char check_exit;
-    check_exit = getchar();
-    if(check_exit == 'q') exit(1);
-
-#endif
+    }
 }
 
 
@@ -507,16 +440,6 @@ void init_cuda_with_cubin(const char *cubin_path)
 void clean_cuda(void)
 {
     CUresult res;
-
-#if 0
-    res = cuCtxPushCurrent(ctx);
-    if(res != CUDA_SUCCESS){
-      printf("cuCtxPushCurrent(ctx) failed: res = %s\n", conv(res));
-      exit(1);
-    }
-#endif
-
-
 
   for(int i=0; i<device_num; i++){
 

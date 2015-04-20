@@ -390,9 +390,6 @@ CUT_THREADPROC dt_thread_func(void *p){
   int move_size = 0;
   int start_kk = 0;
   int end_kk = 0;
-#if 0
-  int part_start_kk = 0;
-#endif
   int part_end_kk = 0;
   unsigned long long int pointer_dst_M = (unsigned long long int)pt->dst_M;
   unsigned long long int pointer_M_dev = (unsigned long long int)M_dev[pt->pid];
@@ -425,9 +422,6 @@ CUT_THREADPROC dt_thread_func(void *p){
       }
 
       if(pt->pid > 0){
-#if 0
-        part_start_kk = part_y * (pt->pid - 1);
-#endif
         part_end_kk = part_y * pt->pid;
       }
 
@@ -496,9 +490,6 @@ CUT_THREADPROC dt_thread_func(void *p){
   move_size = 0;
   start_kk = 0;
   end_kk = 0;
-#if 0
-  part_start_kk = 0;
-#endif
   part_end_kk = 0;
   unsigned long long int pointer_dst_tmpIx = (unsigned long long int)pt->dst_tmpIx;
   unsigned long long int pointer_tmpIx_dev = (unsigned long long int)tmpIx_dev[pt->pid];
@@ -531,9 +522,6 @@ CUT_THREADPROC dt_thread_func(void *p){
       }
 
       if(pt->pid > 0){
-#if 0
-        part_start_kk = part_y * (pt->pid - 1);
-#endif
         part_end_kk = part_y * pt->pid;
       }
 
@@ -601,9 +589,6 @@ CUT_THREADPROC dt_thread_func(void *p){
   move_size = 0;
   start_kk = 0;
   end_kk = 0;
-#if 0
-  part_start_kk = 0;
-#endif
   part_end_kk = 0;
   unsigned long long int pointer_dst_tmpIy = (unsigned long long int)pt->dst_tmpIy;
   unsigned long long int pointer_tmpIy_dev = (unsigned long long int)tmpIy_dev[pt->pid];

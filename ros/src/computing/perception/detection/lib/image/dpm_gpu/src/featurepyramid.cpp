@@ -1571,14 +1571,7 @@ void free_features(FLOAT **features,Model_info *MI)
 {
 	if(features != NULL)
 	{
-#if 0
-		for (int ii=0; ii<LofFeat; ii++)
-		{
-			s_free(features[ii]);
-		}
-#else
-        free(&features[0][0]);
-#endif
+		free(&features[0][0]);
 		s_free(features);
 	}
 }
