@@ -28,10 +28,14 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <cstdlib>
+#include <cstdint>
+#include <iostream>
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
 
@@ -40,31 +44,30 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "fake_camera");
 	ros::NodeHandle n;
 
-	if(argc < 2){
-		fprintf(stderr, "image file name ?\n");
-		exit(1);
+	if (argc < 2) {
+		std::cerr << "Usage: fake_driver image_file" << std::endl;
+		std::exit(1);
 	}
-	const char* fn = argv[1];
-	fprintf(stderr, "fn='%s'\n", fn);
 
-	IplImage* img = cvLoadImage(fn, CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
-	if(img == NULL){
-		fprintf(stderr, "Can't load '%s'\n", fn);
-		exit(1);
+	const char *image_file = argv[1];
+	std::cerr << "Image='" << image_file << "'" << std::endl;
+
+	IplImage* img = cvLoadImage(image_file, CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+	if (img == nullptr) {
+		std::cerr << "Can't load " << image_file << "'" << std::endl;
+		std::exit(1);
 	}
 
 	ros::Publisher pub = n.advertise<sensor_msgs::Image>("image_raw", 1000);
 
 	sensor_msgs::Image msg;
-
 	msg.width = img->width;
 	msg.height = img->height;
 	msg.is_bigendian = 0;
 	msg.step = img->widthStep;
 
-
-	uint8_t* dataPtr = (uint8_t*)img->imageData;
-	std::vector<uint8_t> data(dataPtr, dataPtr + img->imageSize);
+	uint8_t *data_ptr = reinterpret_cast<uint8_t*>(img->imageData);
+	std::vector<uint8_t> data(data_ptr, data_ptr + img->imageSize);
 	msg.data = data;
 
 	msg.encoding = (img->nChannels == 1) ? 
@@ -76,12 +79,12 @@ int main(int argc, char **argv)
 	fprintf(stderr, "%d fps\n", fps);
 	ros::Rate loop_rate(fps); // Hz
 
-	long int count=0;
-	while(ros::ok()){
-		msg.header.seq=count;
-	    	msg.header.frame_id=count;
-	    	msg.header.stamp.sec=ros::Time::now().toSec();
-	    	msg.header.stamp.nsec=ros::Time::now().toNSec();
+	uint32_t count = 0;
+	while (ros::ok()) {
+		msg.header.seq = count;
+		msg.header.frame_id = count;
+		msg.header.stamp.sec = ros::Time::now().toSec();
+		msg.header.stamp.nsec = ros::Time::now().toNSec();
 		pub.publish(msg);
 		ros::spinOnce();
 		loop_rate.sleep();
