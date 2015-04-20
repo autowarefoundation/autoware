@@ -70,7 +70,6 @@ typedef struct {
 }Two_dimensional_vector;
 
 extern void trans_depth_points_to_image_points(Three_dimensional_vector* depth_points, Two_dimensional_vector* image_points, std::vector<float> *distance);
-extern double get_processing_time(struct timespec start, struct timespec end);
 extern void write_file_processing_time(struct timespec start, struct timespec end);
 extern void init_depth_points(Three_dimensional_vector* depth_points);
 extern void print_all_point(double *x_src, double *y_src, double *z_src, double *x_dst, double *y_dst, double *z_dst, double *u, double *v);
