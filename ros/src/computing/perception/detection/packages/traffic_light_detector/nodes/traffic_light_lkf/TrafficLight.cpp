@@ -8,7 +8,8 @@
 #include <float.h>
 #include <math.h>
 #include <sstream>
-#include "traffic_light_detector/ExtractedPosition.h"
+//#include "traffic_light_detector/ExtractedPosition.h"
+#include "traffic_light_detector/Signals.h"
 
 using namespace cv;
 // Variables
@@ -33,7 +34,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 
 }
 
-static void extractedPos_cb(const traffic_light_detector::ExtractedPosition::ConstPtr& extractedPos)
+static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& extractedPos)
 {
   setContexts(detector);
 
