@@ -4,7 +4,7 @@
 
 /////detect_func.h functions about object-detection (to extend detect.cc) /////////////////////////////////////////
 
-#include <stdio.h>
+#include <cstdio>
 #include "MODEL_info.h"		//File information
 
 #ifndef INCLUDED_DFunctions_

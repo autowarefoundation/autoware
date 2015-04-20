@@ -31,10 +31,8 @@
 #ifndef _Depth_points_func_
 #define _Depth_points_func_
 
-// custom ros version
-/* #include "MODEL_info.h"		//File information */
-/* #include "Laser_info.h" */
-/* #include "Common.h" */
+#include <vector>
+#include <time.h>
 
 #define X_THETA 0.0
 #define Y_THETA 0.0

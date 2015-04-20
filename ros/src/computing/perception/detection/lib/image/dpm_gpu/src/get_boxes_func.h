@@ -3,7 +3,7 @@
 
 /////get_boxes_func.h functions about get boundary boxes (to extend get_boxes.cc) /////////////////////////////////
 
-#include <stdio.h>
+#include <cstdio>
 #include "MODEL_info.h"		//File information
 
 #ifndef INCLUDED_GET_BOXES_Functions_

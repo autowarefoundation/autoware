@@ -28,8 +28,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
+
 #include "for_use_GPU.h"
 #include "cutil.h"
 #include "drvapi_error_string.h"

@@ -3,10 +3,9 @@
 
 /////get_boxes.cpp  detect boundary-boxes-coordinate of oject /////////////////////////////////////////////////////
 
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 //Header files
 #include "MODEL_info.h"				//File information

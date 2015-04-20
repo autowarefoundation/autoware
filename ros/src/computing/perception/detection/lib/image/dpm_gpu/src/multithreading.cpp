@@ -13,7 +13,6 @@
  *
  */
 
-//#include <multithreading.h>
 #include "multithreading.h"
 
 #if _WIN32

@@ -12,9 +12,9 @@
 #ifndef _DRVAPI_ERROR_STRING_H_
 #define _DRVAPI_ERROR_STRING_H_
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 // Error Code string definitions here
 typedef struct

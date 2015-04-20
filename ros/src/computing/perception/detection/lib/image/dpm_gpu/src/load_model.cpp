@@ -4,9 +4,9 @@
 /////load_model.cpp   load detection-model information ////////////////////////////////////////////////////////////
 
 //C++ library
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 
 //Header files
 #include "MODEL_info.h"		//Model-structure definition

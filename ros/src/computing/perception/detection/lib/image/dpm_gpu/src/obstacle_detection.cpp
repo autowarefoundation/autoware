@@ -26,30 +26,15 @@
  */
 
 // %Tag(FULLTEXT)%
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-// case of Debug mode
-#pragma comment(lib,"cv200d.lib")
-#pragma comment(lib,"cxcore200d.lib")
-#pragma comment(lib,"cvaux200d.lib")
-#pragma comment(lib,"highgui200d.lib")
-#else
-// case of Release mode
-#pragma comment(lib,"cv200.lib")
-#pragma comment(lib,"cxcore200.lib")
-#pragma comment(lib,"cvaux200.lib")
-#pragma comment(lib,"highgui200.lib")
-#endif
-#endif
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <math.h>
 
 //ORIGINAL header files
 #include "Laser_func.h"
@@ -57,14 +42,14 @@
 #include "Common.h"
 #include "Depth_points_func.h"
 
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-#include <image_transport/image_transport.h>//C++ library
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+#include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CompressedImage.h>
 #if defined(ROS) // AXE
-#include "dpm/ImageObjects.h"
+#include <dpm/ImageObjects.h>
 #include "for_use_GPU.h"
 #else
 #include "sensors_fusion/ObstaclePosition.h"

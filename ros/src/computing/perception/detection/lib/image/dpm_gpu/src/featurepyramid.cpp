@@ -3,35 +3,15 @@
 
 /////featurepyramid.cpp   calculate HOG-feature pyramid ///////////////////////////////////////////////////////////
 
-//OpenCV library
-//#include "cv.h"
-//#include "cxcore.h"
-//#include "highgui.h"
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib")
-    #pragma comment(lib,"cxcore200d.lib")
-    #pragma comment(lib,"cvaux200d.lib")
-    #pragma comment(lib,"highgui200d.lib")
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib")
-    #pragma comment(lib,"cxcore200.lib")
-    #pragma comment(lib,"cvaux200.lib")
-    #pragma comment(lib,"highgui200.lib")
-#endif
-#endif
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
-//#include <windows.h>
-//#include <process.h>
+
 #include <time.h>
 #include <iostream>
 using namespace std;
@@ -52,15 +32,12 @@ extern CUfunction *func_calc_norm;
 extern CUfunction *func_calc_feat;
 extern CUmodule *module;
 
-
 #ifndef WIN32
 #define __stdcall void*
 typedef void *HANDLE;
 typedef long LONG_PTR;
 #define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
 #endif
-
-
 
 //definition of constant
 #define eps 0.0001

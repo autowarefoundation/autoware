@@ -3,30 +3,12 @@
 
 /////main.cpp   main function of car tracking /////////////////////////////////////////////////////////////////////
 
-//OpenCV library
-/*#include "cv.h"
-#include "cxcore.h"
-#include "highgui.h"*/
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib")
-    #pragma comment(lib,"cxcore200d.lib")
-    #pragma comment(lib,"\cvaux200d.lib")
-    #pragma comment(lib,"highgui200d.lib")
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib")
-    #pragma comment(lib,"cxcore200.lib")
-    #pragma comment(lib,"cvaux200.lib")
-    #pragma comment(lib,"highgui200.lib")
-#endif
-#endif
-//C++ library
-#include <stdio.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
+#include <cstdio>
+
 #include "Laser_info.h"
 #include "MODEL_info.h"
 

@@ -29,12 +29,10 @@
 */
 
 //C++ library (thread-functions are only supported by windows)
-#include <stdio.h>
-#include <stdlib.h>
-//#include <windows.h>
-//#include <process.h>
-#include <math.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
 
 //Original header
 #include "MODEL_info.h"		//File information

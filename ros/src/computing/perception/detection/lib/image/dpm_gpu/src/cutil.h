@@ -19,8 +19,8 @@
 #   pragma warning( disable : 4996 ) // disable deprecated warning
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #ifdef __cplusplus
 extern "C" {

@@ -3,7 +3,7 @@
 
 /////detect_func.h functions about car-detection (to extend main.cc) //////////////////////////////////////////////
 
-#include <stdio.h>
+#include <cstdio>
 #include "MODEL_info.h"		//File information
 
 #include "switch_float.h"

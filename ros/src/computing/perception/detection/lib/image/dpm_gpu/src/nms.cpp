@@ -3,10 +3,9 @@
 
 /////nms.cpp   non_maximum suppression of detected box ////////////////////////////////////////////////////////////
 
-//C++ include header
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "MODEL_info.h"		//File information
 #include "Common.h"

@@ -3,9 +3,8 @@
 
 /////dt.cpp   Decide best filter position by dynamic programing  //////////////////////////////////////////////////
 
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "switch_float.h"
 

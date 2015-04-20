@@ -3,15 +3,15 @@
 
 /////resize.cpp   resize image (Input and Output must be double-array) ////////////////////////////////////////////
 
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <pthread.h>
 #include <cuda.h>
-#include <cv.h>
-#include <highgui.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+
 //ORIGINAL header files
 #include "Common.h"
 

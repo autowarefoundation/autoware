@@ -3,39 +3,14 @@
 
 /////detect.cpp   Detect car from an image  ///////////////////////////////////////////////////////////////////////
 
-
-//OpenCV library
-//#include "cv.h"
-//#include "cxcore.h"
-//#include "highgui.h"
-/*
-#include "C:\OpenCV2.0\include\opencv\cv.h"
-#include "C:\OpenCV2.0\include\opencv\highgui.h"
-#include "C:\OpenCV2.0\include\opencv\cxcore.h"
-*/
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib")
-    #pragma comment(lib,"cxcore200d.lib")
-    #pragma comment(lib,"cvaux200d.lib")
-    #pragma comment(lib,"highgui200d.lib")
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib")
-    #pragma comment(lib,"cxcore200.lib")
-    #pragma comment(lib,"cvaux200.lib")
-    #pragma comment(lib,"highgui200.lib")
-#endif
-#endif
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
 #include <opencv2/legacy/legacy.hpp>
+
+#include <cstdio>
+#include <cstdlib>
+#include <time.h>
 
 //ORIGINAL header files
 #include "MODEL_info.h"		//File information
@@ -44,7 +19,6 @@
 
 #include "switch_float.h"
 #include "switch_release.h"
-
 
 //definiton of functions//
 
@@ -62,10 +36,6 @@ FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE);
 
 //detect car-boundary-boxes
 RESULT *car_detection(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE,FLOAT overlap);
-
-
-
-
 
 //resize Image (IplImage)
 IplImage *ipl_resize(IplImage *IM,FLOAT ratio)

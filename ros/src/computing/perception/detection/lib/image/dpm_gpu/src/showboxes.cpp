@@ -3,32 +3,17 @@
 
 /////showboxes.cpp   show object_rectangle_box (write to IplImage) ////////////////////////////////////////////////
 
-//OpenCV library
-//#include "cv.h"
-//#include "cxcore.h"
-//#include "highgui.h"
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib")
-    #pragma comment(lib,"cxcore200d.lib")
-    #pragma comment(lib,"cvaux200d.lib")
-    #pragma comment(lib,"highgui200d.lib")
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib")
-    #pragma comment(lib,"cxcore200.lib")
-    #pragma comment(lib,"cvaux200.lib")
-    #pragma comment(lib,"highgui200.lib")
-#endif
-#endif
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+
+// for use shared memory
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 //Header files
 #include "MODEL_info.h"		//File information
@@ -36,11 +21,6 @@
 #include "Common.h"
 
 #include "switch_float.h"
-
-// for use shared memory
-#include <sys/ipc.h>
-#include <sys/shm.h>
-
 #include "data_for_shm.h"
 
 #define MAXLINE 256
