@@ -13,48 +13,43 @@
 
 #include "switch_float.h"
 
-//definiton of functions//
-
-//sub functions
-inline void exchangeOfValues(FLOAT *x , FLOAT *y);		//sub function for quick-sort
-inline void exchangeOfOrders(int *x , int *y);				//sub function for quick-sort
-void  quickSort(FLOAT *ary , int *Order, int first_index , int last_index);		//quick sort function
-
 //Non_maximum suppression function (extended to detect.cc)
 FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO);
 
-//sub functions
-
-inline void exchangeOfValues(FLOAT *x , FLOAT *y) {
-	FLOAT tmp;
-	tmp = *x; *x = *y ; *y = tmp;
-	return;
-}
-
-inline void exchangeOfOrders(int *x , int *y) {
-	int TMP;
-	TMP = *x; *x = *y ; *y = TMP;
-	return;
+template<typename T>
+static inline void swap(T *a, T *b)
+{
+	T tmp = *a;
+	*a = *b;
+	*b = tmp;
 }
 
 //Quick sort function
-void  quickSort(FLOAT *ary , int *Order, int first_index , int last_index) {
+static void quickSort(FLOAT *data , int *Order, int first_index , int last_index)
+{
 	int i = first_index, j = last_index;
-	FLOAT key = *(ary + (first_index + last_index) / 2);
+	FLOAT pivot = *(data + (first_index + last_index) / 2);
 
-	while(1) {
-		while (*(ary + i ) > key) i++;
-		while (*(ary + j ) < key) j--;
-		if (i >= j) break;
-		exchangeOfValues(ary + i , ary + j);
-		exchangeOfOrders(&Order[i],&Order[j]);
-		i++; j--;
+	while (1) {
+		while (data[i] > pivot) i++;
+		while (data[j] < pivot) j--;
+
+		if (i >= j)
+			break;
+
+		swap(&data[i], &data[j]);
+		swap(&Order[i],&Order[j]);
+
+		i++;
+		j--;
 	}
-	if (first_index < i - 1) quickSort(ary , Order,first_index , i - 1);
-	if (last_index > j + 1) quickSort(ary , Order,j + 1 , last_index);
+
+	if (first_index < i - 1)
+		quickSort(data , Order,first_index , i - 1);
+
+	if (last_index > j + 1)
+		quickSort(data , Order,j + 1 , last_index);
 }
-
-
 
 FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO)
 {
