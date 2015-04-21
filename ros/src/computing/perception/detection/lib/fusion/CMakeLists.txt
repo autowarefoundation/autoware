@@ -13,6 +13,8 @@ catkin_package(
   CATKIN_DEPENDS dpm
 )
 
+SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+
 include_directories(
   include
 )
