@@ -46,12 +46,6 @@
 
 */
 
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-//#include "car_detector/FusedObjects.h"
 #include <cstdio>
 #include <time.h>
 #include <pthread.h>
@@ -60,17 +54,16 @@
 #include <string>
 #include <sstream>
 #include <sys/time.h>
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/PoseArray.h"
+
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CompressedImage.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
 
 #include <obj_db.h>
-
-/*
-#include "structure.h"
-#include "calcoordinates.h"
-#include "axialMove.h"
-#include "geo_pos_conv.hh"
-*/
 
 using namespace std;
 
