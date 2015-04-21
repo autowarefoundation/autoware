@@ -46,12 +46,6 @@
 
 */
 
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-//#include "car_detector/FusedObjects.h"
 #include <cstdio>
 #include <time.h>
 #include <pthread.h>
@@ -60,26 +54,23 @@
 #include <string>
 #include <sstream>
 #include <sys/time.h>
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/PoseArray.h"
+
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CompressedImage.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
 
 #include <obj_db.h>
-
-/*
-#include "structure.h"
-#include "calcoordinates.h"
-#include "axialMove.h"
-#include "geo_pos_conv.hh"
-*/
-
-using namespace std;
 
 //store subscribed value
 static geometry_msgs::PoseArray car_position_array;
 static geometry_msgs::PoseArray pedestrian_position_array;
 
 //default server name and port to send data
-static const string default_host_name = "db3.ertl.jp";
+static const std::string default_host_name = "db3.ertl.jp";
 static constexpr int db_port = 5678;
 
 //flag for comfirming whether updating position or not
@@ -91,7 +82,7 @@ static SendData sd;
 //store own position and direction now.updated by position_getter
 static geometry_msgs::PoseStamped my_location;
 
-static string getTimeStamp(time_t sec, time_t nsec)
+static std::string getTimeStamp(time_t sec, time_t nsec)
 {
   char buf[30];
   int msec = static_cast<int>(nsec / (1000 * 1000));
@@ -112,9 +103,9 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
   oss << "INSERT INTO POS(id,x,y,z,area,type,tm) "
       << "VALUES("
       << "'0',"
-      << fixed << setprecision(6) << pose.position.y << ","
-      << fixed << setprecision(6) << pose.position.x << ","
-      << fixed << setprecision(6) << pose.position.z << ","
+      << std::fixed << std::setprecision(6) << pose.position.y << ","
+      << std::fixed << std::setprecision(6) << pose.position.x << ","
+      << std::fixed << std::setprecision(6) << pose.position.z << ","
       << AREA << ","
       << "0,"
       << "'" << timestamp << "'"
@@ -123,7 +114,7 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
   return oss.str();
 }
 
-static string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
+static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
 {
   std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
 
@@ -162,14 +153,14 @@ static void send_sql()
 
   std::cout << value << std::endl;
 
-  string res;
+  std::string res;
   int ret = sd.Sender(value, res);
   if (ret == -1) {
     std::cerr << "Failed: sd.Sender" << std::endl;
     return;
   }
-  cout << "retrun message from DBserver : " << res << endl;
 
+  std::cout << "retrun message from DBserver : " << res << std::endl;
   return;
 }
 
@@ -211,7 +202,7 @@ static void ndt_pose_cb(const geometry_msgs::PoseStamped &pose)
 int main(int argc, char **argv)
 {
   ros::init(argc ,argv, "obj_uploader");
-  cout << "obj_uploader" << endl;
+  std::cout << "obj_uploader" << std::endl;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -225,7 +216,7 @@ int main(int argc, char **argv)
   ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, ndt_pose_cb);
 
   //set server name and port
-  string host_name = default_host_name;
+  std::string host_name = default_host_name;
   int port = db_port;
   if(argc >= 3){
     host_name = argv[1];
