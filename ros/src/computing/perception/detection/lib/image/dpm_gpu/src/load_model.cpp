@@ -30,12 +30,6 @@
 
 int sum_size_def_array;
 
-//definiton of functions//
-
-Model_info * load_modelinfo(const char *filename);	//load model basic information
-Rootfilters *load_rootfilter(const char *filename);	//load root filter information
-Partfilters *load_partfilter(const char *filename);	//load part filter information
-
 //load model information
 MODEL *load_model(FLOAT ratio);				//load MODEL(filter) (extended to main.cpp)
 
@@ -45,7 +39,7 @@ void free_model(MODEL *MO);						//release model-information (externed to main.c
 //subfunctions
 
 //load model basic information
-Model_info * load_modelinfo(const char *filename)
+static Model_info * load_modelinfo(const char *filename)
 {
   CUresult res;
 
@@ -170,7 +164,7 @@ Model_info * load_modelinfo(const char *filename)
   return(MI);
 }
 
-Rootfilters *load_rootfilter(const char *filename)
+static Rootfilters *load_rootfilter(const char *filename)
 {
   FILE *file;		//File
   CUresult res;
@@ -279,7 +273,7 @@ Rootfilters *load_rootfilter(const char *filename)
     return(RF);
 }
 
-Partfilters *load_partfilter(const char *filename)
+static Partfilters *load_partfilter(const char *filename)
 {
   FILE *file;
   CUresult res;
@@ -462,7 +456,6 @@ void free_model(MODEL *MO)
 #endif
 #endif
     }
-
 
 #ifndef ORIGINAL
 #ifndef SEPARETE_MEM
