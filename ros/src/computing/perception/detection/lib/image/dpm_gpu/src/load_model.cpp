@@ -42,12 +42,9 @@ void free_model(MODEL *MO);						//release model-information (externed to main.c
 static Model_info * load_modelinfo(const char *filename)
 {
 	CUresult res;
-
-	FILE *file;		//File
+	FILE *file;
 	Model_info *MI=(Model_info*)malloc(sizeof(Model_info));		//Model information
 
-	//fopen
-	//if( (err = fopen_s( &file,filename, "r"))!=0 )
 	if( (file=fopen(filename, "r"))==NULL )
 	{
 		printf("Model information file not found \n");
@@ -166,13 +163,11 @@ static Model_info * load_modelinfo(const char *filename)
 
 static Rootfilters *load_rootfilter(const char *filename)
 {
-	FILE *file;		//File
+	FILE *file;
 	CUresult res;
 
 	Rootfilters *RF=(Rootfilters*)malloc(sizeof(Rootfilters));		//Root filter
 
-	//fopen
-	//if( (err = fopen_s( &file,filename, "r"))!=0 )
 	if( (file=fopen(filename, "r"))==NULL)
 	{
 		printf("Root-filter file not found \n");
@@ -189,7 +184,6 @@ static Rootfilters *load_rootfilter(const char *filename)
 	RF->root_size=(int**)malloc(sizeof(int*)*RF->NoR);				//size of root filter
 	RF->rootfilter=(FLOAT**)malloc(sizeof(FLOAT*)*RF->NoR);		//weight of root filter
 	RF->rootsym=(int*)malloc(sizeof(int)*RF->NoR);					//symmetric information of root
-
 
 	/* keep file pointer location */
 	long before_loop_location = ftell(file);
@@ -218,7 +212,6 @@ static Rootfilters *load_rootfilter(const char *filename)
 		SUM_SIZE_ROOT += NUMB*sizeof(FLOAT);
 #endif
 #endif
-
 		/* adjust the location of file-pointer */
 		for(int jj=0; jj<NUMB; jj++) {
 			fscanf(file,FLOAT_SCAN_FMT,&dummy_t1);  // this is dummy scan
@@ -247,7 +240,6 @@ static Rootfilters *load_rootfilter(const char *filename)
 
 	/* reset the location of file pointer */
 	fseek(file, before_loop_location, SEEK_SET);
-
 
 	for(int ii=0; ii<RF->NoR; ii++) {
 
@@ -327,7 +319,6 @@ static Partfilters *load_partfilter(const char *filename)
 		SUM_SIZE_PART += NUMB*sizeof(FLOAT);
 #endif
 #endif
-
 		/* adjust the location of file-pointer */
 		for(int jj=0; jj<NUMB; jj++) {
 			fscanf(file,FLOAT_SCAN_FMT,&dummy_t1);  // this is dummy scan
@@ -354,8 +345,6 @@ static Partfilters *load_partfilter(const char *filename)
 	}
 #endif
 #endif
-
-
 	/* reset the location of file-pointer */
 	fseek(file, before_loop_location, SEEK_SET);
 
@@ -498,7 +487,6 @@ void free_model(MODEL *MO)
 	}
 #endif
 #endif
-
 	s_free(MO->PF->part_partner);
 	s_free(MO->PF->part_sym);
 	s_free(MO->PF);
