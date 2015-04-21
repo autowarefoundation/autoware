@@ -157,7 +157,6 @@ extern int sum_size_def_array;
 extern CUdeviceptr *DID_4_array_dev;
 extern CUdeviceptr *numpart_dev;
 extern int max_numpart;
-extern int max_RL_S;
 extern int device_num;
 extern int *part_error_array;
 extern size_t SUM_SIZE_C;
