@@ -54,40 +54,38 @@ static void print_camera_info(FlyCapture2::CameraInfo* info)
 		  << std::endl;
 }
 
-static void initializeCameras(FlyCapture2::BusManager* pbusMgr, int numCameras,
-			      FlyCapture2::Camera*** pCams)
+static std::vector<FlyCapture2::Camera*>
+initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
 {
-	FlyCapture2::Error error;
-	FlyCapture2::Camera** ppCameras = *pCams;//*unwrap pointers
-
 	// Connect to all detected cameras and attempt to set them to
 	// a common video mode and frame rate
-	for (int i = 0; i < numCameras; i++) {
-		ppCameras[i] = new FlyCapture2::Camera();
+
+	std::vector<FlyCapture2::Camera*> cameras;
+	for (int i = 0; i < camera_num; i++) {
+		FlyCapture2::Camera *camera = new FlyCapture2::Camera();
 
 		FlyCapture2::PGRGuid guid;
-		error = pbusMgr->GetCameraFromIndex(i, &guid);
+		FlyCapture2::Error error = bus_manger->GetCameraFromIndex(i, &guid);
 		if (error != FlyCapture2::PGRERROR_OK) {
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
 
-		// Connect to a camera
-		error = ppCameras[i]->Connect( &guid );
+		error = camera->Connect( &guid );
 		if (error != FlyCapture2::PGRERROR_OK) {
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
 
 		FlyCapture2::EmbeddedImageInfo image_info;
-		error = ppCameras[i]->GetEmbeddedImageInfo(&image_info);
+		error = camera->GetEmbeddedImageInfo(&image_info);
 		if (error != FlyCapture2::PGRERROR_OK) {
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
 
 		image_info.timestamp.onOff = true;
-		error = ppCameras[i]->SetEmbeddedImageInfo(&image_info);
+		error = camera->SetEmbeddedImageInfo(&image_info);
 		if (error != FlyCapture2::PGRERROR_OK) {
 			error.PrintErrorTrace();
 			std::exit(-1);
@@ -95,33 +93,20 @@ static void initializeCameras(FlyCapture2::BusManager* pbusMgr, int numCameras,
 
 		// Get the camera information
 		FlyCapture2::CameraInfo camera_info;
-		error = ppCameras[i]->GetCameraInfo(&camera_info);
+		error = camera->GetCameraInfo(&camera_info);
 		if (error != FlyCapture2::PGRERROR_OK) {
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
 
 		print_camera_info(&camera_info);
+		cameras.push_back(camera);
 	}
+
+	return cameras;
 }
 
-static void captureImage(FlyCapture2::Camera **ppCameras,
-			 int numCameras, FlyCapture2::Image images[])
-{
-	// Display the time stamps for all cameras to show that the image
-	// capture is synchronized for each image
-
-	//retrieve images continuously
-	for (int i = 0; i< numCameras; i++) {
-		FlyCapture2::Error error = ppCameras[i]->RetrieveBuffer(&(images[i]));
-		if (error != FlyCapture2::PGRERROR_OK) {
-			error.PrintErrorTrace();
-			std::exit(-1);
-		}
-	}
-}
-
-static int getNumCameras(FlyCapture2::BusManager* bus_manager)
+static int getNumCameras(FlyCapture2::BusManager *bus_manager)
 {
 	unsigned int cameras;
 	FlyCapture2::Error error = bus_manager->GetNumOfCameras(&cameras);
@@ -140,15 +125,16 @@ static int getNumCameras(FlyCapture2::BusManager* bus_manager)
 	return static_cast<int>(cameras);
 }
 
-static void startCapture(int numCameras, FlyCapture2::Camera** ppCameras)
+static void startCapture(std::vector<FlyCapture2::Camera*>& cameras)
 {
-	for (int i = 0; i < numCameras; i++) {
-		FlyCapture2::Error error = ppCameras[i]->StartCapture();
+	for (auto *camera : cameras) {
+		FlyCapture2::Error error = camera->StartCapture();
 		if (error != FlyCapture2::PGRERROR_OK) {
 			error.PrintErrorTrace();
 			return;
 		}
 	}
+
 	return;
 }
 
@@ -157,8 +143,7 @@ int main(int argc, char **argv)
 	FlyCapture2::BusManager busMgr;
 
 	int camera_num = getNumCameras(&busMgr);
-	FlyCapture2::Camera** ppCameras = new FlyCapture2::Camera*[camera_num];
-	initializeCameras(&busMgr, camera_num, &ppCameras);
+	std::vector<FlyCapture2::Camera*> cameras = initializeCameras(&busMgr, camera_num);
 
 	ros::init(argc, argv, "grasshopper3");
 	ros::NodeHandle n;
@@ -178,45 +163,51 @@ int main(int argc, char **argv)
 		pub[i] = n.advertise<sensor_msgs::Image>(topic, 100);
 	}
 
-	FlyCapture2::Image images[camera_num];
-	startCapture(camera_num, ppCameras);
+	startCapture(cameras);
 
 	std::cout << "Capturing by " << camera_num << " cameras..." << std::endl;
 
 	int count = 0;
 	ros::Rate loop_rate(fps); // Hz
 	while (ros::ok()) {
-		sensor_msgs::Image imagemsg[camera_num];
-		for (int i = 0; i < camera_num; i++) {
-			captureImage(ppCameras, camera_num, images);//Get image from camera
+		int i = 0;
+		for (auto *camera : cameras) {
+			FlyCapture2::Image image;
+			FlyCapture2::Error error = camera->RetrieveBuffer(&image);
+			if (error != FlyCapture2::PGRERROR_OK) {
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
 
-			//fill ROS Message structure
-			imagemsg[i].header.seq=count;
-			imagemsg[i].header.frame_id=count;
-			imagemsg[i].header.stamp.sec=ros::Time::now().toSec();
-			imagemsg[i].header.stamp.nsec=ros::Time::now().toNSec();
-			imagemsg[i].height= images[i].GetRows();
-			imagemsg[i].width= images[i].GetCols();
-			imagemsg[i].encoding = "rgb8";
-			imagemsg[i].step = images[i].GetStride();
-			imagemsg[i].data.resize(images[i].GetDataSize());
-			memcpy(imagemsg[i].data.data(),images[i].GetData(), images[i].GetDataSize());
+			sensor_msgs::Image msg;
+			msg.header.seq = count;
+			msg.header.frame_id = count;
+			msg.header.stamp.sec = ros::Time::now().toSec();
+			msg.header.stamp.nsec = ros::Time::now().toNSec();
+			msg.height = image.GetRows();
+			msg.width  = image.GetCols();
+			msg.encoding = "rgb8";
+			msg.step = image.GetStride();
 
-			pub[i].publish(imagemsg[i]);//publish
+			size_t image_size = image.GetDataSize();
+			msg.data.resize(image_size);
+			memcpy(msg.data.data(), image.GetData(), image_size);
+
+			pub[i].publish(msg);
+			i++;
 		}
+
 		ros::spinOnce();
 		loop_rate.sleep();
 		count++;
 	}
 
 	//close cameras
-	for (int i = 0; i < camera_num; i++) {
-		ppCameras[i]->StopCapture();
-		ppCameras[i]->Disconnect();
-		delete ppCameras[i];
+	for (auto *camera : cameras) {
+		camera->StopCapture();
+		camera->Disconnect();
+		delete camera;
 	}
-
-	delete [] ppCameras;
 
 	std::cout << "Done!" << std::endl;
 	return 0;
