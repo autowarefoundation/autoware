@@ -51,7 +51,7 @@ static Scan_image g_scan_image;
 /* for common Callback */
 static std::vector<float> g_distance;
 
-#ifdef _DEBUG
+#if _DEBUG
 static constexpr CvScalar COLOR_CYAN = {255, 255, 0};
 
 static void showRects(IplImage *image, int object_num, const std::vector<int>& corner_point)
