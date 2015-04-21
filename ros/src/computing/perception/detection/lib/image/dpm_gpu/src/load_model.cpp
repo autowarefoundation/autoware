@@ -4,8 +4,10 @@
 /////load_model.cpp   load detection-model information ////////////////////////////////////////////////////////////
 
 //C++ library
-#include <cstdlib>
+#include <iostream>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <cmath>
 
 //Header files
@@ -41,15 +43,14 @@ void free_model(MODEL *MO);						//release model-information (externed to main.c
 //load model basic information
 static Model_info * load_modelinfo(const char *filename)
 {
-	CUresult res;
-	FILE *file;
 	Model_info *MI=(Model_info*)malloc(sizeof(Model_info));		//Model information
 
-	if( (file=fopen(filename, "r"))==NULL )
-	{
-		printf("Model information file not found \n");
-		exit(-1);
+	FILE *file = fopen(filename, "r");
+	if (file == nullptr) {
+		std::cerr << std::strerror(errno) << std::endl;
+		std::exit(-1);
 	}
+
 	FLOAT t1,t2,t3,t4;
 
 	//load basic information
@@ -76,33 +77,33 @@ static Model_info * load_modelinfo(const char *filename)
 	MI->didx = (int**)malloc(sizeof(int*)*MI->numcomponent);
 	MI->psize = (int**)malloc(sizeof(int*)*MI->numcomponent);
 
-	for(int ii=0;ii<MI->numcomponent;ii++)	//LOOP (component)
-	{
+	for(int i = 0; i < MI->numcomponent; i++) {
 		fscanf(file,FLOAT_SCAN_FMT,&t1);
-		MI->ridx[ii]=(int)t1-1; //root index
+		MI->ridx[i]=(int)t1-1; //root index
 		fscanf(file,FLOAT_SCAN_FMT,&t1);
-		MI->oidx[ii]=(int)t1-1; //offset index
+		MI->oidx[i]=(int)t1-1; //offset index
 		fscanf(file,FLOAT_SCAN_FMT,&t1);
-		MI->offw[ii]=t1;        //offset weight (FLOAT)
+		MI->offw[i]=t1;        //offset weight (FLOAT)
 		fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
-		MI->rsize[ii*2]=(int)t1;   //rsize (Y)
-		MI->rsize[ii*2+1]=(int)t2; //rsize (X)
+		MI->rsize[i*2]=(int)t1;   //rsize (Y)
+		MI->rsize[i*2+1]=(int)t2; //rsize (X)
 		fscanf(file,FLOAT_SCAN_FMT,&t1);
-		MI->numpart[ii]=(int)t1; //number of part filter
+		MI->numpart[i]=(int)t1; //number of part filter
 
-		MI->pidx[ii]=(int*)malloc(sizeof(int)*MI->numpart[ii]);
-		MI->didx[ii]=(int*)malloc(sizeof(int)*MI->numpart[ii]);
-		MI->psize[ii]=(int*)malloc(sizeof(int)*MI->numpart[ii]*2);
+		MI->pidx[i]=(int*)malloc(sizeof(int)*MI->numpart[i]);
+		MI->didx[i]=(int*)malloc(sizeof(int)*MI->numpart[i]);
+		MI->psize[i]=(int*)malloc(sizeof(int)*MI->numpart[i]*2);
 
-		for(int jj=0;jj<MI->numpart[ii];jj++)	//LOOP (part-filter)
+		//LOOP (part-filter)
+		for(int j = 0;j < MI->numpart[i]; j++)
 		{
 			fscanf(file,FLOAT_SCAN_FMT,&t1);
-			MI->pidx[ii][jj]=(int)t1-1; //part index
+			MI->pidx[i][j]=(int)t1-1; //part index
 			fscanf(file,FLOAT_SCAN_FMT,&t1);
-			MI->didx[ii][jj]=(int)t1-1; //define-index of part
+			MI->didx[i][j]=(int)t1-1; //define-index of part
 			fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
-			MI->psize[ii][jj*2]=(int)t1;
-			MI->psize[ii][jj*2+1]=(int)t2;
+			MI->psize[i][j*2]=(int)t1;
+			MI->psize[i][j*2+1]=(int)t2;
 		}
 	}
 
@@ -110,26 +111,26 @@ static Model_info * load_modelinfo(const char *filename)
 	fscanf(file,FLOAT_SCAN_FMT,&t1);
 
 	int DefL = int(t1);
-	//MI->def = (FLOAT*)malloc(sizeof(FLOAT)*DefL*4);
-	res = cuMemHostAlloc((void **)&(MI->def), sizeof(FLOAT)*DefL*4, CU_MEMHOSTALLOC_DEVICEMAP);
+
+	CUresult res = cuMemHostAlloc((void **)&(MI->def), sizeof(FLOAT)*DefL*4, CU_MEMHOSTALLOC_DEVICEMAP);
 	if(res != CUDA_SUCCESS) {
-		printf("cuMemHostAlloc(MI->def) failed: res = %s\n", cuda_response_to_string(res));
-		exit(1);
+		std::cerr << "Failed: cuMemHostAlloc(MI->def) : "
+			  << cuda_response_to_string(res) << std::endl;
+		std::exit(1);
 	}
 	sum_size_def_array = sizeof(FLOAT)*DefL*4;
 
 	MI->anchor = (int*)malloc(sizeof(int)*DefL*2);
 
-	for (int kk=0;kk<DefL;kk++)
-	{
+	for (int i = 0; i < DefL; i++) {
 		fscanf(file,FLOAT_SCAN_FMT4,&t1,&t2,&t3,&t4);
-		MI->def[kk*4]=t1;
-		MI->def[kk*4+1]=t2;
-		MI->def[kk*4+2]=t3;
-		MI->def[kk*4+3]=t4;
+		MI->def[i*4]=t1;
+		MI->def[i*4+1]=t2;
+		MI->def[i*4+2]=t3;
+		MI->def[i*4+3]=t4;
 		fscanf(file,FLOAT_SCAN_FMT2,&t1,&t2);
-		MI->anchor[kk*2]=(int)t1;
-		MI->anchor[kk*2+1]=(int)t2;
+		MI->anchor[i*2]=(int)t1;
+		MI->anchor[i*2+1]=(int)t2;
 	}
 
 	//get least_square information
@@ -138,18 +139,31 @@ static Model_info * load_modelinfo(const char *filename)
 	MI->y1 = (FLOAT **)malloc(sizeof(FLOAT*)*MI->numcomponent);
 	MI->y2 = (FLOAT **)malloc(sizeof(FLOAT*)*MI->numcomponent);
 
-	for(int ii=0;ii<MI->numcomponent;ii++)
-	{
-		int GL = 1+2*(1+MI->numpart[ii]);
-		MI->x1[ii] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
-		MI->y1[ii] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
-		MI->x2[ii] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
-		MI->y2[ii] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
+	for(int i = 0; i < MI->numcomponent; i++) {
+		int GL = 1+2*(1+MI->numpart[i]);
+		MI->x1[i] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
+		MI->y1[i] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
+		MI->x2[i] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
+		MI->y2[i] =(FLOAT *)malloc(sizeof(FLOAT)*GL);
 
-		for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->x1[ii][jj]=t1;}
-		for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->y1[ii][jj]=t1;}
-		for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->x2[ii][jj]=t1;}
-		for (int jj=0;jj<GL;jj++){fscanf(file,FLOAT_SCAN_FMT,&t1);	MI->y2[ii][jj]=t1;}
+		for (int j = 0; j < GL; j++) {
+			fscanf(file,FLOAT_SCAN_FMT,&t1);
+			MI->x1[i][j] = t1;
+		}
+		for (int j = 0; j < GL; j++) {
+			fscanf(file,FLOAT_SCAN_FMT,&t1);
+			MI->y1[i][j] = t1;
+		}
+
+		for (int j = 0; j < GL; j++){
+			fscanf(file,FLOAT_SCAN_FMT,&t1);
+			MI->x2[i][j] = t1;
+		}
+
+		for (int j = 0; j < GL; j++){
+			fscanf(file,FLOAT_SCAN_FMT,&t1);
+			MI->y2[i][j] = t1;
+		}
 	}
 
 	MI->padx=(int)ceil((double)MI->max_X/2.0+1.0);	//padx
@@ -163,15 +177,10 @@ static Model_info * load_modelinfo(const char *filename)
 
 static Rootfilters *load_rootfilter(const char *filename)
 {
-	FILE *file;
-	CUresult res;
-
-	Rootfilters *RF=(Rootfilters*)malloc(sizeof(Rootfilters));		//Root filter
-
-	if( (file=fopen(filename, "r"))==NULL)
-	{
-		printf("Root-filter file not found \n");
-		exit(-1);
+	FILE *file = fopen(filename, "r");
+	if (file == nullptr) {
+		std::cerr << std::strerror(errno) << std::endl;
+		std::exit(-1);
 	}
 
 	FLOAT t1,t2,t3;
@@ -179,7 +188,8 @@ static Rootfilters *load_rootfilter(const char *filename)
 
 	fscanf(file,FLOAT_SCAN_FMT,&t1);
 
-	RF->NoR=(int)t1;												//number of root filter
+	Rootfilters *RF=(Rootfilters*)malloc(sizeof(Rootfilters));
+	RF->NoR=(int)t1; //number of root filter
 
 	RF->root_size=(int**)malloc(sizeof(int*)*RF->NoR);				//size of root filter
 	RF->rootfilter=(FLOAT**)malloc(sizeof(FLOAT*)*RF->NoR);		//weight of root filter
@@ -188,9 +198,9 @@ static Rootfilters *load_rootfilter(const char *filename)
 	/* keep file pointer location */
 	long before_loop_location = ftell(file);
 
-	size_t SUM_SIZE_ROOT=0;
-	for (int i=0;i<RF->NoR;i++)
-	{
+	CUresult res;
+	size_t sum_size_root = 0;
+	for (int i = 0; i < RF-> NoR; i++) {
 		fscanf(file,FLOAT_SCAN_FMT3,&t1,&t2,&t3);				//number of components
 
 		RF->root_size[i]=(int*)malloc(sizeof(int)*3);
@@ -205,15 +215,16 @@ static Rootfilters *load_rootfilter(const char *filename)
 #ifdef SEPARETE_MEM
 		res = cuMemHostAlloc((void **)&(RF->rootfilter[i]), sizeof(FLOAT)*NUMB, CU_MEMHOSTALLOC_DEVICEMAP);
 		if(res != CUDA_SUCCESS){
-			printf("cuMemHostAlloc(RF->rootfilter) failed: res = %s\n", cuda_response_to_string(res));
-			exit(1);
+			std::cerr << "Failed: cuMemHostAlloc(RF->rootfilter): "
+				  << cuda_response_to_string(res) << std::endl;
+			std::exit(1);
 		}
 #else
-		SUM_SIZE_ROOT += NUMB*sizeof(FLOAT);
+		sum_size_root += NUMB*sizeof(FLOAT);
 #endif
 #endif
 		/* adjust the location of file-pointer */
-		for(int j=0; j<NUMB; j++) {
+		for(int j = 0; j < NUMB; j++) {
 			fscanf(file,FLOAT_SCAN_FMT,&dummy_t1);  // this is dummy scan
 		}
 	}
@@ -222,15 +233,16 @@ static Rootfilters *load_rootfilter(const char *filename)
 #ifndef SEPARETE_MEM
 	/* allocate memory for root in a lump */
 	FLOAT *dst_root;
-	res = cuMemHostAlloc((void **)&dst_root, SUM_SIZE_ROOT, CU_MEMHOSTALLOC_DEVICEMAP);
+	res = cuMemHostAlloc((void **)&dst_root, sum_size_root , CU_MEMHOSTALLOC_DEVICEMAP);
 	if(res != CUDA_SUCCESS){
-		printf("cuMemHostAlloc(dst_root) failed: res = %s\n", cuda_response_to_string(res));
-		exit(1);
+		std::cerr << "Failed: cuMemHostAlloc(dst_root): "
+			  << cuda_response_to_string(res) << std::endl;
+		std::exit(1);
 	}
 
 	/* distribution */
 	unsigned long long int pointer = (unsigned long long int)dst_root;
-	for(int i=0; i<RF->NoR; i++) {
+	for(int i = 0; i < RF->NoR; i++) {
 		RF->rootfilter[i] = (FLOAT *)pointer;
 		int NUMB=RF->root_size[i][0]*RF->root_size[i][1]*RF->root_size[i][2];
 		pointer += NUMB*sizeof(FLOAT);
@@ -241,19 +253,17 @@ static Rootfilters *load_rootfilter(const char *filename)
 	/* reset the location of file pointer */
 	fseek(file, before_loop_location, SEEK_SET);
 
-	for(int i=0; i<RF->NoR; i++) {
-
-		int NUMB=RF->root_size[i][0]*RF->root_size[i][1]*RF->root_size[i][2];
+	for(int i = 0; i < RF->NoR; i++) {
+		int NUMB = RF->root_size[i][0]*RF->root_size[i][1]*RF->root_size[i][2];
 
 		/* adjust the location of file-pointer */
 		fscanf(file,FLOAT_SCAN_FMT3,&dummy_t1,&dummy_t2,&dummy_t3);  // this is dummy scan
 
-		for (int j=0;j<NUMB;j++)
-		{
+		for (int j = 0; j < NUMB;j++) {
 			fscanf(file,FLOAT_SCAN_FMT,&t1);
 			RF->rootfilter[i][j]=t1;
 		}
-		RF->rootsym[i]=1;
+		RF->rootsym[i] = 1;
 
 #ifdef PRINT_INFO
 		printf("root No.%d size %d %d \n",i,RF->root_size[i][0],RF->root_size[i][1]);
@@ -266,15 +276,14 @@ static Rootfilters *load_rootfilter(const char *filename)
 
 static Partfilters *load_partfilter(const char *filename)
 {
-	FILE *file;
 	CUresult res;
 
 	Partfilters *PF=(Partfilters*)malloc(sizeof(Partfilters));		//Part filter
 
-	if( (file=fopen(filename, "r"))==NULL )
-	{
-		printf("Part-filter file not found \n");
-		exit(-1);
+	FILE *file = fopen(filename, "r");
+	if (file == nullptr) {
+		std::cerr << std::strerror(errno) << std::endl;
+		std::exit(-1);
 	}
 
 	FLOAT t1,t2,t3;
@@ -293,8 +302,7 @@ static Partfilters *load_partfilter(const char *filename)
 	long before_loop_location = ftell(file);
 
 	int SUM_SIZE_PART = 0;
-	for (int i=0;i<PF->NoP;i++)
-	{
+	for (int i = 0; i < PF->NoP; i++) {
 		fscanf(file,FLOAT_SCAN_FMT3,&t1,&t2,&t3);			//number of components
 
 		PF->part_size[i]=(int*)malloc(sizeof(int)*3);
@@ -309,15 +317,16 @@ static Partfilters *load_partfilter(const char *filename)
 #ifdef SEPARETE_MEM
 		res = cuMemHostAlloc((void **)&(PF->partfilter[i]), sizeof(FLOAT)*NUMB, CU_MEMHOSTALLOC_DEVICEMAP);
 		if(res != CUDA_SUCCESS){
-			printf("cuMemHostAlloc(PF->partfilter) failed: res = %s\n", cuda_response_to_string(res));
-			exit(1);
+			std::cerr << "Failed: cuMemHostAlloc(PF->partfilter): "
+				  << cuda_response_to_string(res) << std::endl;
+			std::exit(1);
 		}
 #else
 		SUM_SIZE_PART += NUMB*sizeof(FLOAT);
 #endif
 #endif
 		/* adjust the location of file-pointer */
-		for(int j=0; j<NUMB; j++) {
+		for(int j = 0; j < NUMB; j++) {
 			fscanf(file,FLOAT_SCAN_FMT,&dummy_t1);  // this is dummy scan
 		}
 		fscanf(file,FLOAT_SCAN_FMT,&dummy_t1); // this is dummy scan
@@ -329,13 +338,14 @@ static Partfilters *load_partfilter(const char *filename)
 	FLOAT *dst_part;
 	res = cuMemHostAlloc((void **)&dst_part, SUM_SIZE_PART, CU_MEMHOSTALLOC_DEVICEMAP);
 	if(res != CUDA_SUCCESS){
-		printf("cuMemHostAlloc(dst_part) failed: res = %s\n", cuda_response_to_string(res));
-		exit(1);
+		std::cerr << "Failed: cuMemHostAlloc(dst_part): "
+			  << cuda_response_to_string(res) << std::endl;
+		std::exit(1);
 	}
 
 	/* distribution */
-	unsigned long long int pointer = (unsigned long long int)dst_part;
-	for(int i=0; i<PF->NoP; i++) {
+	uintptr_t pointer = (uintptr_t)dst_part;
+	for(int i = 0; i < PF->NoP; i++) {
 		PF->partfilter[i] = (FLOAT *)pointer;
 		int NUMB=PF->part_size[i][0]*PF->part_size[i][1]*PF->part_size[i][2];
 		pointer += NUMB*sizeof(FLOAT);
@@ -351,8 +361,7 @@ static Partfilters *load_partfilter(const char *filename)
 		/* adjust the location of file-pointer */
 		fscanf(file,FLOAT_SCAN_FMT3,&dummy_t1,&dummy_t2,&dummy_t3);  // this is dummy scan
 
-		for (int j = 0; j < NUMB;j++)
-		{
+		for (int j = 0; j < NUMB; j++) {
 			fscanf(file,FLOAT_SCAN_FMT,&t1);
 			PF->partfilter[i][j]=t1;
 		}
@@ -396,11 +405,8 @@ MODEL *load_model(FLOAT ratio)
 //release model
 void free_model(MODEL *MO)
 {
-	CUresult res;
-
 	//free model information
-	for(int i=0; i < MO->MI->numcomponent; i++)
-	{
+	for(int i=0; i < MO->MI->numcomponent; i++) {
 		s_free(MO->MI->didx[i]);
 		s_free(MO->MI->pidx[i]);
 		s_free(MO->MI->psize[i]);
@@ -412,10 +418,11 @@ void free_model(MODEL *MO)
 	s_free(MO->MI->anchor);
 
 	//  s_free(MO->MI->def);
-	res = cuMemFreeHost((void *)MO->MI->def);
+	CUresult res = cuMemFreeHost((void *)MO->MI->def);
 	if(res != CUDA_SUCCESS) {
-		printf("cuMemFreeHost(MO->MI->def) failed: res = %s\n", cuda_response_to_string(res));
-		exit(1);
+		std::cerr << "Failed: cuMemFreeHost(MO->MI->def): "
+			  << cuda_response_to_string(res) << std::endl;
+		std::exit(1);
 	}
 
 	s_free(MO->MI->numpart);
@@ -430,8 +437,7 @@ void free_model(MODEL *MO)
 	s_free(MO->MI);
 
 	//free root-filter information
-	for(int i=0; i < MO->RF->NoR; i++)
-	{
+	for(int i = 0; i < MO->RF->NoR; i++) {
 		s_free(MO->RF->root_size[i]);
 #ifdef ORIGINAL
 		s_free(MO->RF->rootfilter[i]);
@@ -439,8 +445,9 @@ void free_model(MODEL *MO)
 #ifdef SEPARETE_MEM
 		res = cuMemFreeHost((void *)MO->RF->rootfilter[i]);
 		if(res != CUDA_SUCCESS){
-			printf("cuMemFreeHost(MO->RF->rootfilter) failed: res = %s\n", cuda_response_to_string(res));
-			exit(1);
+			std::cerr << "Failed: cuMemFreeHost(MO->RF->rootfilter): "
+				  << cuda_response_to_string(res) << std::endl;
+			std::exit(1);
 		}
 #endif
 #endif
@@ -451,12 +458,12 @@ void free_model(MODEL *MO)
 	/* free heap region in a lump */
 	res = cuMemFreeHost((void *)MO->RF->rootfilter[0]);
 	if(res != CUDA_SUCCESS){
-		printf("cuMemFreeHost(MO->RF->rootfilter[0]) failed: res = %s\n", cuda_response_to_string(res));
-		exit(1);
+		std::cerr << "Failed: cuMemFreeHost(MO->RF->rootfilter[0]): "
+			  << cuda_response_to_string(res) << std::endl;
+		std::exit(1);
 	}
 #endif
 #endif
-
 	s_free(MO->RF->rootsym);
 	s_free(MO->RF);
 
@@ -470,8 +477,9 @@ void free_model(MODEL *MO)
 #ifdef SEPARETE_MEM
 		res = cuMemFreeHost((void *)MO->PF->partfilter[i]);
 		if(res != CUDA_SUCCESS){
-			printf("cuMemFreeHost(MO->PF->partfilter) failed: res = %s\n", cuda_response_to_string(res));
-			exit(1);
+			std::cerr << "Failed: cuMemFreeHost(MO->PF->partfilter): "
+				  << cuda_response_to_string(res) << std::endl;
+			std::exit(1);
 		}
 #endif
 #endif
@@ -482,8 +490,9 @@ void free_model(MODEL *MO)
 	/* free heap region in a lump */
 	res = cuMemFreeHost((void *)MO->PF->partfilter[0]);
 	if(res != CUDA_SUCCESS){
-		printf("cuMemFreeHost(MO->PF->partfilter[0] failed: res = %s\n", cuda_response_to_string(res));
-		exit(1);
+		std::cerr << "Failed: cuMemFreeHost(MO->PF->partfilter[0]): "
+			  << cuda_response_to_string(res) << std::endl;
+		std::exit(1);
 	}
 #endif
 #endif
