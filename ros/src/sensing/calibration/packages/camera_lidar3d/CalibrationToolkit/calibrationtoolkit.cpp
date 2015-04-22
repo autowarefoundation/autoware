@@ -523,7 +523,7 @@ bool CalibrateCameraChessboardROS::grabCalibData()
     camerasub->stopReceiveSlot();
     cv::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
-    bool found;
+    bool found=false;
     switch(boardtype)
     {
     case BoxGrid:
@@ -1200,7 +1200,7 @@ bool CalibrateCameraVelodyneChessboardROS::grabCalibData()
 
     cv::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
-    bool found;
+    bool found=false;
     switch(boardtype)
     {
     case BoxGrid:
@@ -1696,7 +1696,7 @@ bool CalibrateCameraLidarChessboardROS::grabCalibData()
 
     cv::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
-    bool found;
+    bool found=false;
     switch(boardtype)
     {
     case BoxGrid:
