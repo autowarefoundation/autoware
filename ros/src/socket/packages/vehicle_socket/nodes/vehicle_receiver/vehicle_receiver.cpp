@@ -37,7 +37,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <sys/types.h> 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
@@ -119,118 +119,139 @@ static bool parseCanValue(const std::string& can_data, vehicle_socket::CanInfo& 
   return true;
 }
 
-void* getCanValue(void *arg){
+static void* getCanValue(void *arg)
+{
+  int *client_sockp = static_cast<int*>(arg);
+  int sock = *client_sockp;
+  delete client_sockp;
 
-  int *fd = static_cast<int *>(arg);
-  int conn_fd = *fd;
-  delete fd;
   char recvdata[1024];
-  string result = "";
-  int n;
-  vehicle_socket::CanInfo msg;
+  std::string can_data("");
+  constexpr int LIMIT = 1024 * 1024;
 
   while(true){
-    n = recv(conn_fd, recvdata, sizeof(recvdata), 0);
+    ssize_t n = recv(sock, recvdata, sizeof(recvdata), 0);
 
     if(n<0){
-      printf("ERROR: can not recieve message\n");
-      result = "";
+      std::perror("recv");
+      can_data = "";
       break;
     }else if(n == 0){
       break;
     }
-    result.append(recvdata,n);
+    can_data.append(recvdata,n);
 
     //recv data is bigger than 1M,return error
-    if(result.size() > 1024 * 1024){
-      fprintf(stderr,"recv data is too big.\n");
-      result = "";
+    if(can_data.size() > LIMIT){
+      std::cerr << "recv data is too big." << std::endl;
+      can_data = "";
       break;
     }
   }
 
-  if(close(conn_fd)<0){
-    fprintf(stderr,"socket close failed in pthread.\n");
+  if(close(sock)<0){
+    std::perror("close");
+    return nullptr;
   }
 
-  if(result.compare("")!=0){
-    if(parseCanValue(result, msg)){
-       msg.header.frame_id = "/can";
-      msg.header.stamp = ros::Time::now();
-      pub.publish(msg);
-    }
-  }
+  if(can_data.empty())
+    return nullptr;
+
+  vehicle_socket::CanInfo msg;
+  bool ret = parseCanValue(can_data, msg);
+  if(!ret)
+    return nullptr;
+
+  msg.header.frame_id = "/can";
+  msg.header.stamp = ros::Time::now();
+  pub.publish(msg);
 
   return nullptr;
 }
 
-/*
-int sendSignal(){
-  int signal = 0;
-  if(send(sock_num, &signal, 4, 0) == -1){
-    printf("ERROR: can not send signal\n");
-    return -1;
+static void* receiverCaller(void *unused)
+{
+  constexpr int listen_port = 10000;
+
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if(sock == -1){
+    std::perror("socket");
+    return nullptr;
   }
-  return 0;
-}
-*/
 
-void* receiverCaller(void *a){
-  int sock0;
-  struct sockaddr_in addr;
-  struct sockaddr_in client;
-  socklen_t len;
-  //  int yes = 1;
-  pthread_t th;
+  sockaddr_in client;
+  socklen_t len = sizeof(client);
+  sockaddr_in addr;
 
-  sock0 = socket(AF_INET, SOCK_STREAM, 0);
+  std::memset(&addr, 0, sizeof(sockaddr_in));
   addr.sin_family = PF_INET;
-  addr.sin_port = htons(PORT);
+  addr.sin_port = htons(listen_port);
   addr.sin_addr.s_addr = INADDR_ANY;
   //make it available immediately to connect
-  //setsockopt(sock0,SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
-  bind(sock0, (struct sockaddr *)&addr, sizeof(addr));
-  listen(sock0, 5);
-  len = sizeof(client);
+  //setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&yes, sizeof(yes));
+  int ret = bind(sock, (sockaddr*)&addr, sizeof(addr));
+  if(ret == -1){
+    std::perror("bind");
+    goto error;
+  }
+
+  ret = listen(sock, 5);
+  if(ret == -1) {
+    std::perror("listen");
+    goto error;
+  }
 
   while(true){
     //get connect to android
-    printf("Waiting access...\n");
-    int *conn_fd = new int();
-    *conn_fd = accept(sock0, (struct sockaddr *)&client, &len);
-    if(*conn_fd == -1){
-      printf("ERROR: cannot accept\n");
+    std::cout << "Waiting access..." << std::endl;
+    int *client_sock = new int();
+    *client_sock = accept(sock, reinterpret_cast<sockaddr*>(&client), &len);
+    if(*client_sock == -1){
+      std::perror("accept");
       break;
     }
 
-    printf("get connect.\n");
-    //printf("count: %d\n", count);
+    std::cout << "Get connect" << std::endl;
 
-    if(pthread_create(&th, NULL, getCanValue, (void *)conn_fd)){
-      printf("thread create error\n");
+    pthread_t th;
+    if(pthread_create(&th, nullptr, getCanValue, static_cast<void*>(client_sock))){
+      std::perror("pthread_create");
+      break;
     }
-    pthread_detach(th);
-  }
-  close(sock0);
 
+    ret = pthread_detach(th);
+    if(ret != 0){
+      std::perror("pthread_detach");
+      break;
+    }
+  }
+
+error:
+  close(sock);
   return nullptr;
 }
 
-
-int main(int argc, char **argv){
-  
-  ros::init(argc ,argv, "vehicle_receiver") ;
+int main(int argc, char **argv)
+{
+  ros::init(argc ,argv, "vehicle_receiver");
   ros::NodeHandle nh;
-  
+
   std::cout << "vehicle receiver" << std::endl;
 
   pub = nh.advertise<vehicle_socket::CanInfo>("can_info", 100);
 
   pthread_t th;
-  if(pthread_create(&th, NULL, receiverCaller, NULL)){
-    printf("thread create error\n");
+  int ret = pthread_create(&th, nullptr, receiverCaller, nullptr);
+  if (ret != 0) {
+    std::perror("pthread_create");
+    std::exit(1);
   }
-  pthread_detach(th);
+
+  ret = pthread_detach(th);
+  if(ret != 0){
+    std::perror("pthread_detach");
+    std::exit(1);
+  }
 
   ros::spin();
 
