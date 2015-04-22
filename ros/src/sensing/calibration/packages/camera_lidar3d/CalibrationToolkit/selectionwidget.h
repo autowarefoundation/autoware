@@ -12,7 +12,10 @@
 
 #include<opencv2/opencv.hpp>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include<Eigen/Dense>
+#pragma GCC diagnostic pop
 #include<pcl/point_cloud.h>
 #include<pcl/point_types.h>
 #include<pcl/kdtree/kdtree_flann.h>

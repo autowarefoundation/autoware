@@ -769,7 +769,7 @@ void HOGCache::normalizeBlockHistogram(float* _hist) const
 #ifdef HAVE_IPP
     ippsMulC_32f_I(scale,hist,sz);
 #else
-    for(int i = 0; i < sz; i++ )
+    for(size_t i = 0; i < sz; i++ )
         hist[i] *= scale;
 #endif
 }
