@@ -34,7 +34,6 @@
 int allocFilterObject(CvLSVMFilterObject **obj, const int sizeX,
                       const int sizeY, const int numFeatures)
 {
-    int i;
     (*obj) = (CvLSVMFilterObject *)malloc(sizeof(CvLSVMFilterObject));
     (*obj)->sizeX           = sizeX;
     (*obj)->sizeY           = sizeY;
@@ -48,12 +47,13 @@ int allocFilterObject(CvLSVMFilterObject **obj, const int sizeX,
     (*obj)->V.l         = 0;
     (*obj)->H = (float *) malloc(sizeof (float) *
                                 (sizeX * sizeY  * numFeatures));
-    for(i = 0; i < sizeX * sizeY * numFeatures; i++)
+    for(int i = 0; i < sizeX * sizeY * numFeatures; i++)
     {
         (*obj)->H[i] = 0.0f;
     }
     return LATENT_SVM_OK;
 }
+
 int freeFilterObject (CvLSVMFilterObject **obj)
 {
     if(*obj == NULL) return LATENT_SVM_MEM_NULL;
@@ -66,14 +66,13 @@ int freeFilterObject (CvLSVMFilterObject **obj)
 int allocFeatureMapObject(CvLSVMFeatureMap **obj, const int sizeX,
                           const int sizeY, const int numFeatures)
 {
-    int i;
     (*obj) = (CvLSVMFeatureMap *)malloc(sizeof(CvLSVMFeatureMap));
     (*obj)->sizeX       = sizeX;
     (*obj)->sizeY       = sizeY;
     (*obj)->numFeatures = numFeatures;
     (*obj)->map = (float *) malloc(sizeof (float) *
                                   (sizeX * sizeY  * numFeatures));
-    for(i = 0; i < sizeX * sizeY * numFeatures; i++)
+    for(int i = 0; i < sizeX * sizeY * numFeatures; i++)
     {
         (*obj)->map[i] = 0.0f;
     }
@@ -113,17 +112,16 @@ int freeFeaturePyramidObject (CvLSVMFeaturePyramid **obj)
 
 int allocFFTImage(CvLSVMFftImage **image, int numFeatures, int dimX, int dimY)
 {
-    int i, j, size;
     *image = (CvLSVMFftImage *)malloc(sizeof(CvLSVMFftImage));
     (*image)->numFeatures = numFeatures;
     (*image)->dimX         = dimX;
     (*image)->dimY         = dimY;
     (*image)->channels     = (float **)malloc(sizeof(float *) * numFeatures);
-    size = 2 * dimX * dimY;
-    for (i = 0; i < numFeatures; i++)
+    int size = 2 * dimX * dimY;
+    for (int i = 0; i < numFeatures; i++)
     {
         (*image)->channels[i] = (float *)malloc(sizeof(float) * size);
-        for (j = 0; j < size; j++)
+        for (int j = 0; j < size; j++)
         {
             (*image)->channels[i][j] = 0.0f;
         }
@@ -133,9 +131,8 @@ int allocFFTImage(CvLSVMFftImage **image, int numFeatures, int dimX, int dimY)
 
 int freeFFTImage(CvLSVMFftImage **image)
 {
-    int i;
     if (*image == NULL) return LATENT_SVM_OK;
-    for (i = 0; i < (*image)->numFeatures; i++)
+    for (int i = 0; i < (*image)->numFeatures; i++)
     {
         free((*image)->channels[i]);
         (*image)->channels[i] = NULL;
