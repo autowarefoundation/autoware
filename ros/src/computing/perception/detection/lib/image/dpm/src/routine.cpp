@@ -56,10 +56,10 @@ int allocFilterObject(CvLSVMFilterObject **obj, const int sizeX,
 
 int freeFilterObject (CvLSVMFilterObject **obj)
 {
-    if(*obj == NULL) return LATENT_SVM_MEM_NULL;
+    if(*obj == nullptr) return LATENT_SVM_MEM_NULL;
     free((*obj)->H);
     free(*obj);
-    (*obj) = NULL;
+    (*obj) = nullptr;
     return LATENT_SVM_OK;
 }
 
@@ -80,10 +80,10 @@ int allocFeatureMapObject(CvLSVMFeatureMap **obj, const int sizeX,
 }
 int freeFeatureMapObject (CvLSVMFeatureMap **obj)
 {
-    if(*obj == NULL) return LATENT_SVM_MEM_NULL;
+    if(*obj == nullptr) return LATENT_SVM_MEM_NULL;
     free((*obj)->map);
     free(*obj);
-    (*obj) = NULL;
+    (*obj) = nullptr;
     return LATENT_SVM_OK;
 }
 
@@ -99,14 +99,14 @@ int allocFeaturePyramidObject(CvLSVMFeaturePyramid **obj,
 
 int freeFeaturePyramidObject (CvLSVMFeaturePyramid **obj)
 {
-    if(*obj == NULL) return LATENT_SVM_MEM_NULL;
+    if(*obj == nullptr) return LATENT_SVM_MEM_NULL;
     for(int i = 0; i < (*obj)->numLevels; i++)
     {
         freeFeatureMapObject(&((*obj)->pyramid[i]));
     }
     free((*obj)->pyramid);
     free(*obj);
-    (*obj) = NULL;
+    (*obj) = nullptr;
     return LATENT_SVM_OK;
 }
 
@@ -131,13 +131,13 @@ int allocFFTImage(CvLSVMFftImage **image, int numFeatures, int dimX, int dimY)
 
 int freeFFTImage(CvLSVMFftImage **image)
 {
-    if (*image == NULL) return LATENT_SVM_OK;
+    if (*image == nullptr) return LATENT_SVM_OK;
     for (int i = 0; i < (*image)->numFeatures; i++)
     {
         free((*image)->channels[i]);
-        (*image)->channels[i] = NULL;
+        (*image)->channels[i] = nullptr;
     }
     free((*image)->channels);
-    (*image)->channels = NULL;
+    (*image)->channels = nullptr;
     return LATENT_SVM_OK;
 }
