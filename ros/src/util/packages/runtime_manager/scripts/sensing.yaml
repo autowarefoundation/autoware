@@ -50,10 +50,10 @@ subs :
             flags : [ center_v ]
       - name : Hokuyo TOP-URG
         probe: 'lsusb -d 15d1: > /dev/null'
-        run  : roslaunch top_urg top_urg.launch
+        run  : roslaunch hokuyo top_urg.launch
       - name : Hokuyo 3D-URG
         probe: 
-        run  : rosrun 
+        run  : rosrun hokuyo hokuyo3d
       - name : SICK LMS511
         probe:
         run  :
