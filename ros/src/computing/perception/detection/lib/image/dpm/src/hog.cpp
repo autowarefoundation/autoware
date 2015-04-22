@@ -184,17 +184,16 @@ void HOGDescriptor::computeGradient(const Mat& img, Mat& grad, Mat& qangle,
     Point roiofs;
     img.locateROI(wholeSize, roiofs);
 
-    int i, x, y;
     int cn = img.channels();
 
     Mat_<float> _lut(1, 256);
     const float* lut = &_lut(0,0);
 
     if( gammaCorrection )
-        for( i = 0; i < 256; i++ )
+        for(int i = 0; i < 256; i++ )
             _lut(0,i) = std::sqrt((float)i);
     else
-        for( i = 0; i < 256; i++ )
+        for(int i = 0; i < 256; i++ )
             _lut(0,i) = (float)i;
 
     AutoBuffer<int> mapbuf(gradsize.width + gradsize.height + 4);
@@ -203,10 +202,10 @@ void HOGDescriptor::computeGradient(const Mat& img, Mat& grad, Mat& qangle,
 
     const int borderType = (int)BORDER_REFLECT_101;
 
-    for( x = -1; x < gradsize.width + 1; x++ )
+    for(int x = -1; x < gradsize.width + 1; x++ )
         xmap[x] = borderInterpolate(x - paddingTL.width + roiofs.x,
                         wholeSize.width, borderType) - roiofs.x;
-    for( y = -1; y < gradsize.height + 1; y++ )
+    for(int y = -1; y < gradsize.height + 1; y++ )
         ymap[y] = borderInterpolate(y - paddingTL.height + roiofs.y,
                         wholeSize.height, borderType) - roiofs.y;
 
@@ -231,19 +230,19 @@ void HOGDescriptor::computeGradient(const Mat& img, Mat& grad, Mat& qangle,
     roiSize.width = img.cols;
     roiSize.height = img.rows;
 
-    for( y = 0; y < roiSize.height; y++ )
+    for(int y = 0; y < roiSize.height; y++ )
     {
        const uchar* imgPtr = img.data + y*img.step;
        float* imglutPtr = (float*)(lutimg.data + y*lutimg.step);
 
-       for( x = 0; x < roiSize.width*cn; x++ )
+       for(int x = 0; x < roiSize.width*cn; x++ )
        {
           imglutPtr[x] = lut[imgPtr[x]];
        }
     }
 
 #endif
-    for( y = 0; y < gradsize.height; y++ )
+    for(int y = 0; y < gradsize.height; y++ )
     {
 #ifdef HAVE_IPP
         const float* imgPtr  = (float*)(lutimg.data + lutimg.step*ymap[y]);
@@ -259,7 +258,7 @@ void HOGDescriptor::computeGradient(const Mat& img, Mat& grad, Mat& qangle,
 
         if( cn == 1 )
         {
-            for( x = 0; x < width; x++ )
+            for(int x = 0; x < width; x++ )
             {
                 int x1 = xmap[x];
 #ifdef HAVE_IPP
@@ -273,7 +272,7 @@ void HOGDescriptor::computeGradient(const Mat& img, Mat& grad, Mat& qangle,
         }
         else
         {
-            for( x = 0; x < width; x++ )
+            for(int x = 0; x < width; x++ )
             {
                 int x1 = xmap[x]*3;
                 float dx0, dy0, dx, dy, mag0, mag;
@@ -335,7 +334,7 @@ void HOGDescriptor::computeGradient(const Mat& img, Mat& grad, Mat& qangle,
         }
 #ifdef HAVE_IPP
         ippsCartToPolar_32f((const Ipp32f*)Dx.data, (const Ipp32f*)Dy.data, (Ipp32f*)Mag.data, pAngles, width);
-        for( x = 0; x < width; x++ )
+        for(int x = 0; x < width; x++ )
         {
            if(pAngles[x] < 0.f)
              pAngles[x] += (Ipp32f)(CV_PI*2.);
@@ -351,7 +350,7 @@ void HOGDescriptor::computeGradient(const Mat& img, Mat& grad, Mat& qangle,
 #else
         cartToPolar( Dx, Dy, Mag, Angle, false );
 #endif
-        for( x = 0; x < width; x++ )
+        for(int x = 0; x < width; x++ )
         {
 #ifdef HAVE_IPP
             int hidx = (int)pHidxs[x];
@@ -456,7 +455,7 @@ void HOGCache::init(const HOGDescriptor* _descriptor,
     Size blockSize = descriptor->blockSize;
     Size blockStride = descriptor->blockStride;
     Size cellSize = descriptor->cellSize;
-    int i, j, nbins = descriptor->nbins;
+    int nbins = descriptor->nbins;
     int rawBlockSize = blockSize.width*blockSize.height;
 
     nblocks = Size((winSize.width - blockSize.width)/blockStride.width + 1,
@@ -480,8 +479,8 @@ void HOGCache::init(const HOGDescriptor* _descriptor,
     float sigma = (float)descriptor->getWinSigma();
     float scale = 1.f/(sigma*sigma*2);
 
-    for(i = 0; i < blockSize.height; i++)
-        for(j = 0; j < blockSize.width; j++)
+    for(int i = 0; i < blockSize.height; i++)
+        for(int j = 0; j < blockSize.width; j++)
         {
             float di = i - blockSize.height*0.5f;
             float dj = j - blockSize.width*0.5f;
@@ -516,8 +515,8 @@ void HOGCache::init(const HOGDescriptor* _descriptor,
     //      update the histogram
     //
     count1 = count2 = count4 = 0;
-    for( j = 0; j < blockSize.width; j++ )
-        for( i = 0; i < blockSize.height; i++ )
+    for(int j = 0; j < blockSize.width; j++ )
+        for(int i = 0; i < blockSize.height; i++ )
         {
             PixData* data = 0;
             float cellX = (j+0.5f)/cellSize.width - 0.5f;
@@ -600,16 +599,16 @@ void HOGCache::init(const HOGDescriptor* _descriptor,
 
     assert( count1 + count2 + count4 == rawBlockSize );
     // defragment pixData
-    for( j = 0; j < count2; j++ )
+    for(int j = 0; j < count2; j++ )
         pixData[j + count1] = pixData[j + rawBlockSize];
-    for( j = 0; j < count4; j++ )
+    for(int j = 0; j < count4; j++ )
         pixData[j + count1 + count2] = pixData[j + rawBlockSize*2];
     count2 += count1;
     count4 += count2;
 
     // initialize blockData
-    for( j = 0; j < nblocks.width; j++ )
-        for( i = 0; i < nblocks.height; i++ )
+    for(int j = 0; j < nblocks.width; j++ )
+        for(int i = 0; i < nblocks.height; i++ )
         {
             BlockData& data = blockData[j*nblocks.height + i];
             data.histOfs = (j*nblocks.height + i)*blockHistogramSize;
@@ -742,14 +741,14 @@ void HOGCache::normalizeBlockHistogram(float* _hist) const
 #ifdef HAVE_IPP
     size_t sz = blockHistogramSize;
 #else
-    size_t i, sz = blockHistogramSize;
+    size_t sz = blockHistogramSize;
 #endif
 
     float sum = 0;
 #ifdef HAVE_IPP
     ippsDotProd_32f(hist,hist,sz,&sum);
 #else
-    for( i = 0; i < sz; i++ )
+    for(size_t i = 0; i < sz; i++ )
         sum += hist[i]*hist[i];
 #endif
 
@@ -759,7 +758,7 @@ void HOGCache::normalizeBlockHistogram(float* _hist) const
     ippsThreshold_32f_I( hist, sz, thresh, ippCmpGreater );
     ippsDotProd_32f(hist,hist,sz,&sum);
 #else
-    for( i = 0, sum = 0; i < sz; i++ )
+    for(size_t i = 0, sum = 0; i < sz; i++ )
     {
         hist[i] = std::min(hist[i]*scale, thresh);
         sum += hist[i]*hist[i];
@@ -770,7 +769,7 @@ void HOGCache::normalizeBlockHistogram(float* _hist) const
 #ifdef HAVE_IPP
     ippsMulC_32f_I(scale,hist,sz);
 #else
-    for( i = 0; i < sz; i++ )
+    for(int i = 0; i < sz; i++ )
         hist[i] *= scale;
 #endif
 }
@@ -901,12 +900,10 @@ void HOGDescriptor::detect(const Mat& img,
         }
         double s = rho;
         const float* svmVec = &svmDetector[0];
-#ifdef HAVE_IPP
-        int j;
-#else
-        int j, k;
+#ifndef HAVE_IPP
+        int  k;
 #endif
-        for( j = 0; j < nblocks; j++, svmVec += blockHistogramSize )
+        for (int j = 0; j < nblocks; j++, svmVec += blockHistogramSize )
         {
             const HOGCache::BlockData& bj = blockData[j];
             Point pt = pt0 + bj.imgOffset;
@@ -961,14 +958,14 @@ public:
 
     void operator()( const Range& range ) const
     {
-        int i, i1 = range.start, i2 = range.end;
+        int i1 = range.start, i2 = range.end;
         double minScale = i1 > 0 ? levelScale[i1] : i2 > 1 ? levelScale[i1+1] : std::max(img.cols, img.rows);
         Size maxSz(cvCeil(img.cols/minScale), cvCeil(img.rows/minScale));
         Mat smallerImgBuf(maxSz, img.type());
         vector<Point> locations;
         vector<double> hitsWeights;
 
-        for( i = i1; i < i2; i++ )
+        for(int i = i1; i < i2; i++ )
         {
             double scale = levelScale[i];
             Size sz(cvRound(img.cols/scale), cvRound(img.rows/scale));
@@ -2411,13 +2408,13 @@ public:
 
        void operator()( const Range& range ) const
        {
-               int i, i1 = range.start, i2 = range.end;
+               int i1 = range.start, i2 = range.end;
 
                Size maxSz(cvCeil(img.cols/(*locations)[0].scale), cvCeil(img.rows/(*locations)[0].scale));
                Mat smallerImgBuf(maxSz, img.type());
                vector<Point> dets;
 
-               for( i = i1; i < i2; i++ )
+               for(int i = i1; i < i2; i++ )
                {
                        double scale = (*locations)[i].scale;
 
@@ -2505,14 +2502,14 @@ void HOGDescriptor::detectROI(const cv::Mat& img, const vector<cv::Point> &locat
 
            double s = rho;
            const float* svmVec = &svmDetector[0];
-           int j, k;
 
-           for( j = 0; j < nblocks; j++, svmVec += blockHistogramSize )
+           for(int  j = 0; j < nblocks; j++, svmVec += blockHistogramSize )
            {
                    const HOGCache::BlockData& bj = blockData[j];
                    Point pt = pt0 + bj.imgOffset;
                    // need to devide this into 4 parts!
                    const float* vec = cache.getBlock(pt, &blockHist[0]);
+                   int k;
                    for( k = 0; k <= blockHistogramSize - 4; k += 4 )
                            s += vec[k]*svmVec[k] + vec[k+1]*svmVec[k+1] +
                                    vec[k+2]*svmVec[k+2] + vec[k+3]*svmVec[k+3];
@@ -2651,9 +2648,9 @@ void HOGDescriptor::groupRectangles(vector<cv::Rect>& rectList, vector<double>& 
     vector<cv::Rect_<double> > rrects(nclasses);
     vector<int> numInClass(nclasses, 0);
     vector<double> foundWeights(nclasses, DBL_MIN);
-    int i, j, nlabels = (int)labels.size();
+    int nlabels = (int)labels.size();
 
-    for( i = 0; i < nlabels; i++ )
+    for(int i = 0; i < nlabels; i++ )
     {
         int cls = labels[i];
         rrects[cls].x += rectList[i].x;
@@ -2664,7 +2661,7 @@ void HOGDescriptor::groupRectangles(vector<cv::Rect>& rectList, vector<double>& 
         numInClass[cls]++;
     }
 
-    for( i = 0; i < nclasses; i++ )
+    for(int i = 0; i < nclasses; i++ )
     {
         // find the average of all ROI in the cluster
         cv::Rect_<double> r = rrects[i];
@@ -2678,7 +2675,7 @@ void HOGDescriptor::groupRectangles(vector<cv::Rect>& rectList, vector<double>& 
     rectList.clear();
     weights.clear();
 
-    for( i = 0; i < nclasses; i++ )
+    for(int  i = 0; i < nclasses; i++ )
     {
         cv::Rect r1 = rrects[i];
         int n1 = numInClass[i];
@@ -2686,6 +2683,7 @@ void HOGDescriptor::groupRectangles(vector<cv::Rect>& rectList, vector<double>& 
         if( n1 <= groupThreshold )
             continue;
         // filter out small rectangles inside large rectangles
+        int j;
         for( j = 0; j < nclasses; j++ )
         {
             int n2 = numInClass[j];

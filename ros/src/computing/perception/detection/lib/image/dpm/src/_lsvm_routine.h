@@ -34,7 +34,6 @@
 #include "_lsvm_types.h"
 #include "_lsvm_error.h"
 
-
 //////////////////////////////////////////////////////////////
 // Memory management routines
 // All paramaters names correspond to previous data structures description
