@@ -43,8 +43,10 @@
 #include <visualization_msgs/Marker.h>
 #include <runtime_manager/ConfigLaneFollower.h>
 #include <std_msgs/Bool.h>
+
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include "geo_pos_conv.hh"
 
@@ -74,6 +76,8 @@ static bool _fix_flag = false;
 static bool _param_set = false;
 static tf::Transform _transform;
 static tf::Vector3 _origin_v(0, 0, 0);
+
+//std::ofstream _ofs;
 
 static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
@@ -174,7 +178,7 @@ static double GetLookAheadThreshold()
 static double GetEvaluation(int closest, int i)
 {
     int num = i - closest;
-    double ratio = 0.05;
+    double ratio = 0.2;
     return num * ratio;
 }
 
@@ -465,6 +469,8 @@ static geometry_msgs::Twist CalculateCmdTwist()
     twist.linear.x = linear_velocity;
     twist.angular.z = angular_velocity;
 
+    //_ofs << angular_velocity << std::endl;
+
     return twist;
 }
 
@@ -580,6 +586,9 @@ int main(int argc, char **argv)
     ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
 
     ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
+
+ //   std::string filename = "/home/h_ohta/gnuplot/output_zure_0.2.txt";
+ //   _ofs.open(filename.c_str());
 
     geometry_msgs::TwistStamped twist;
 

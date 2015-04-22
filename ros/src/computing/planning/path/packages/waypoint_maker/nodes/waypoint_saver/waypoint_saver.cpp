@@ -129,7 +129,7 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
             std::cout << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << std::endl;
             std::cout << last_pose_.x << "," << last_pose_.y << "," << last_pose_.z << std::endl;
 
-            double distance = sqrt(pow((current_pose_.x - last_pose_.x), 2) + pow((current_pose_.y - last_pose_.y), 2) + pow((current_pose_.z - last_pose_.z), 2));
+            double distance = sqrt(pow((current_pose_.x - last_pose_.x), 2) + pow((current_pose_.y - last_pose_.y), 2));
             std::cout << "distance = " << distance << std::endl;
 
             std::cout << "can_time_sec = " << can_time_sec_ << std::endl;
