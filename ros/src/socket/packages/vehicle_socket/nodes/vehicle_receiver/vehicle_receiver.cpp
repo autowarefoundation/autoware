@@ -28,20 +28,21 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <vehicle_socket/CanInfo.h>
 
-#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <iostream>
-#include <string>
 #include <sys/types.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <sys/time.h>
-
-#include "vehicle_socket/CanInfo.h"
 
 #define CAN_DATA_NUM 52
 
