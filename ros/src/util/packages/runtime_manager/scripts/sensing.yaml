@@ -48,12 +48,12 @@ subs :
           calibration :
             prop  : 1
             flags : [ center_v ]
-      - name : Hokuyo UTM30LX (USB1)
+      - name : Hokuyo TOP-URG
         probe: 'lsusb -d 15d1: > /dev/null'
-        run  : roslaunch hokuyo hokuyo_utm30lx.launch
-      - name : Hokuyo UTM30LX (USB2)
-        probe:
-        run  :
+        run  : roslaunch hokuyo top_urg.launch
+      - name : Hokuyo 3D-URG
+        probe: 
+        run  : rosrun hokuyo hokuyo3d
       - name : SICK LMS511
         probe:
         run  :
