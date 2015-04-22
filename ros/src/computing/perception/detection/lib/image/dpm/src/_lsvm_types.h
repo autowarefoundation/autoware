@@ -67,21 +67,21 @@
 //                   to set and get feature vectors (i,j)
 //                   used formula map[(j * sizeX + i) * p + k], where
 //                   k - component of feature vector in cell (i, j)
-typedef struct{
+struct CvLSVMFeatureMap{
     int sizeX;
     int sizeY;
     int numFeatures;
     float *map;
-} CvLSVMFeatureMap;
+};
 
 // DataType: STRUCT featurePyramid
 //
 // numLevels    - number of levels in the feature pyramid
 // pyramid      - array of pointers to feature map at different levels
-typedef struct{
+struct CvLSVMFeaturePyramid{
     int numLevels;
     CvLSVMFeatureMap **pyramid;
-} CvLSVMFeaturePyramid;
+};
 
 // DataType: STRUCT filterDisposition
 // The structure stores preliminary results in optimization process
@@ -90,11 +90,11 @@ typedef struct{
 // x            - array with X coordinates of optimization problems solutions
 // y            - array with Y coordinates of optimization problems solutions
 // score        - array with optimal objective values
-typedef struct{
+struct CvLSVMFilterDisposition{
     float *score;
     int *x;
     int *y;
-} CvLSVMFilterDisposition;
+};
 
 // DataType: STRUCT fftImage
 // The structure stores FFT image
@@ -103,11 +103,11 @@ typedef struct{
 // x            - array of FFT images for 2d signals
 // n            - number of rows
 // m            - number of collums
-typedef struct{
+struct CvLSVMFftImage {
     int numFeatures;
     int dimX;
     int dimY;
     float **channels;
-} CvLSVMFftImage;
+};
 
 #endif
