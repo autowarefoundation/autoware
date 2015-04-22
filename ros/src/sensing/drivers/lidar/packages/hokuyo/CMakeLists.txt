@@ -23,5 +23,5 @@ endif()
 
 include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
-add_executable(hokuyo3d nodes/hokuyo3d/hokuyo3d.cpp nodes/hokuyo3d/vssp.hpp)
-target_link_libraries(hokuyo3d ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(hokuyo_3d nodes/hokuyo_3d/hokuyo_3d.cpp nodes/hokuyo_3d/vssp.hpp)
+target_link_libraries(hokuyo_3d ${catkin_LIBRARIES} ${Boost_LIBRARIES})

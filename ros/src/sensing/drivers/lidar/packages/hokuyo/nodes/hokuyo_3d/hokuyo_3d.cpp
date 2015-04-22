@@ -325,7 +325,7 @@ private:
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "hokuyo3d");
+    ros::init(argc, argv, "hokuyo_3d");
     hokuyo3d_node node;
 
     ros::Rate wait(200);
