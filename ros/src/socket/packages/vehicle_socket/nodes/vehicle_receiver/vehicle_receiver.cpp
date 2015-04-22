@@ -44,9 +44,10 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#define CAN_DATA_NUM 52
+static constexpr int CAN_DATA_NUM = 52;
 
-using namespace std;
+static ros::Publisher pub;
+static int mode;
 
 ros::Publisher pub;
 
