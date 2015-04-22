@@ -30,15 +30,9 @@
 
 #include "precomp.hpp"
 #include "_lsvm_matching.h"
+
+#include <algorithm>
 #include <stdio.h>
-
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
 
 /*
 // Function for convolution computation
@@ -1481,8 +1475,8 @@ static int createSchedule(const CvLSVMFeaturePyramid *H, const CvLSVMFilterObjec
             maxValue = weights[0];
             for (k = 1; k < threadsNum; k++)
             {
-                minValue = min(minValue, weights[k]);
-                maxValue = max(maxValue, weights[k]);
+                minValue = std::min(minValue, weights[k]);
+                maxValue = std::max(maxValue, weights[k]);
             }
             disp[j] = maxValue - minValue;
             weights[j] -= dotProd[i];
@@ -1521,8 +1515,8 @@ static int createSchedule(const CvLSVMFeaturePyramid *H, const CvLSVMFilterObjec
             maxValue = weights[0];
             for (k = 1; k < threadsNum; k++)
             {
-                minValue = min(minValue, weights[k]);
-                maxValue = max(maxValue, weights[k]);
+                minValue = std::min(minValue, weights[k]);
+                maxValue = std::max(maxValue, weights[k]);
             }
             disp[j] = maxValue - minValue;
             weights[j] -= dotProd[i];
@@ -1776,10 +1770,10 @@ int nonMaximumSuppression(int numBoxes, const CvPoint *points,
             {
                 if (!is_suppressed[indices[j]])
                 {
-                    int x1max = max(points[indices[i]].x, points[indices[j]].x);
-                    int x2min = min(oppositePoints[indices[i]].x, oppositePoints[indices[j]].x);
-                    int y1max = max(points[indices[i]].y, points[indices[j]].y);
-                    int y2min = min(oppositePoints[indices[i]].y, oppositePoints[indices[j]].y);
+                    int x1max = std::max(points[indices[i]].x, points[indices[j]].x);
+                    int x2min = std::min(oppositePoints[indices[i]].x, oppositePoints[indices[j]].x);
+                    int y1max = std::max(points[indices[i]].y, points[indices[j]].y);
+                    int y2min = std::min(oppositePoints[indices[i]].y, oppositePoints[indices[j]].y);
                     int overlapWidth = x2min - x1max + 1;
                     int overlapHeight = y2min - y1max + 1;
                     if (overlapWidth > 0 && overlapHeight > 0)
