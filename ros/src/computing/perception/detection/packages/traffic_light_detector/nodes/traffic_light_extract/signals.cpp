@@ -20,17 +20,16 @@
 
 
 
-VectorMap vmap;
+static VectorMap vmap;
 
-Eigen::Vector3f position;
-Eigen::Quaternionf orientation;
-float	fx,
-		fy,
-		imageWidth,
-		imageHeight,
-		cx,
-		cy;
-
+static Eigen::Vector3f position;
+static Eigen::Quaternionf orientation;
+static  float fx,
+              fy,
+              imageWidth,
+              imageHeight,
+              cx,
+              cy;
 tf::StampedTransform trf;
 
 
@@ -44,7 +43,7 @@ void cameraInfoCallback (const sensor_msgs::CameraInfo::ConstPtr camInfoMsg)
 	imageWidth = camInfoMsg->width, imageHeight = camInfoMsg->height,
 	cx = camInfoMsg->P[2],
 	cy = camInfoMsg->P[6];
-	std::cout << fx << " " << fy << " " << cx << " " << cy << std::endl;
+    //	std::cout << fx << " " << fy << " " << cx << " " << cy << std::endl;
 }
 
 
@@ -52,15 +51,11 @@ void getTransform (Eigen::Quaternionf &ori, Point3 &pos)
 {
 	static tf::TransformListener listener;
 
-    std::cout << "listener before" << std::endl;
-
 	// target_frame    source_frame
 //	listener.waitForTransform ("japan_7", "camera", ros::Time(), ros::Duration(10.0));
 //	listener.lookupTransform ("japan_7", "camera", ros::Time(), trf);
-	listener.waitForTransform ("camera", "japan_7", ros::Time(), ros::Duration(10.0));
-	listener.lookupTransform ("camera", "japan_7", ros::Time(), trf);
-
-    std::cout << "listener after" << std::endl;
+	listener.waitForTransform ("camera", "map", ros::Time(), ros::Duration(10.0));
+	listener.lookupTransform ("camera", "map", ros::Time(), trf);
 
 	tf::Vector3 &p = trf.getOrigin();
 	tf::Quaternion o = trf.getRotation();
@@ -159,8 +154,14 @@ void interrupt (int s)
 
 int main (int argc, char *argv[])
 {
+  if (argc < 2)
+    {
+      std::cout << "Usage: traffic_light_extract <vector-map-dir>" << std::endl;
+      return -1;
+    }
+
 	vmap.loadAll(argv[1]);
-	ros::init(argc, argv, "signals", ros::init_options::AnonymousName);
+	ros::init(argc, argv, "traffic_light_extract");
 	ros::NodeHandle rosnode;
 
 	ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
@@ -171,19 +172,15 @@ int main (int argc, char *argv[])
     Rate loop (25);
     while (true) {
 
-      std::cout << "spinOnce before" << std::endl;
       ros::spinOnce();
-      std::cout << "spinOnce after" << std::endl;
 
       try {
         getTransform (orientation, position);
       } catch (tf::TransformException &exc) {
       }
 
-      std::cout << "try after" << std::endl;
-
       echoSignals2 (signalPublisher, true);
-      loop.sleep();
+      //      loop.sleep();
     }
 
 
