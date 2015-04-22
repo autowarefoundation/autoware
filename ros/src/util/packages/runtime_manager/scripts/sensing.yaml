@@ -53,7 +53,7 @@ subs :
         run  : roslaunch hokuyo top_urg.launch
       - name : Hokuyo 3D-URG
         probe: 
-        run  : rosrun hokuyo hokuyo3d
+        run  : rosrun hokuyo hokuyo_3d
       - name : SICK LMS511
         probe:
         run  :
