@@ -49,78 +49,74 @@ static constexpr int CAN_DATA_NUM = 52;
 static ros::Publisher pub;
 static int mode;
 
-ros::Publisher pub;
+static bool parseCanValue(const std::string& can_data, vehicle_socket::CanInfo& msg)
+{
+  std::istringstream ss(can_data);
+  std::vector<std::string> columns;
 
-int mode;
-
-int PORT = 10000;
-
-static bool parseCanValue(const string& value, vehicle_socket::CanInfo& msg){
-  istringstream ss(value);
-  vector<string> columns;
-
-  string column;
-  while(getline(ss, column, ',')){
+  std::string column;
+  while(std::getline(ss, column, ',')){
     columns.push_back(column);
   }
 
-  if(columns.size() == CAN_DATA_NUM+1){
-    msg.tm = columns[0].substr(1, columns[0].length() - 2);
-    msg.devmode = stoi(columns[1]);
-    msg.drvcontmode = stoi(columns[2]);
-    msg.drvoverridemode = stoi(columns[3]);
-    msg.drvservo = stoi(columns[4]);
-    msg.drivepedal = stoi(columns[5]);
-    msg.targetpedalstr = stoi(columns[6]);
-    msg.inputpedalstr = stoi(columns[7]);
-    msg.targetveloc = stod(columns[8]);
-    msg.speed = stod(columns[9]);
-    msg.driveshift = stoi(columns[10]);
-    msg.targetshift = stoi(columns[11]);
-    msg.inputshift = stoi(columns[12]);
-    msg.strmode = stoi(columns[13]);
-    msg.strcontmode = stoi(columns[14]);
-    msg.stroverridemode = stoi(columns[15]);
-    msg.strservo = stoi(columns[16]);
-    msg.targettorque = stoi(columns[17]);
-    msg.torque = stoi(columns[18]);
-    msg.angle = stod(columns[19]);
-    msg.targetangle = stod(columns[20]);
-    msg.bbrakepress = stoi(columns[21]);
-    msg.brakepedal = stoi(columns[22]);
-    msg.brtargetpedalstr = stoi(columns[23]);
-    msg.brinputpedalstr = stoi(columns[24]);
-    msg.battery = stod(columns[25]);
-    msg.voltage = stoi(columns[26]);
-    msg.anp = stod(columns[27]);
-    msg.battmaxtemparature = stoi(columns[28]);
-    msg.battmintemparature = stoi(columns[29]);
-    msg.maxchgcurrent = stod(columns[30]);
-    msg.maxdischgcurrent = stod(columns[31]);
-    msg.sideacc = stod(columns[32]);
-    msg.accellfromp = stod(columns[33]);
-    msg.anglefromp = stod(columns[34]);
-    msg.brakepedalfromp = stod(columns[35]);
-    msg.speedfr = stod(columns[36]);
-    msg.speedfl = stod(columns[37]);
-    msg.speedrr = stod(columns[38]);
-    msg.speedrl = stod(columns[39]);
-    msg.velocfromp2 = stod(columns[40]);
-    msg.drvmode = stoi(columns[41]);
-    msg.devpedalstrfromp = stoi(columns[42]);
-    msg.rpm = stoi(columns[43]);
-    msg.velocflfromp = stod(columns[44]);
-    msg.ev_mode = stoi(columns[45]);
-    msg.temp = stoi(columns[46]);
-    msg.shiftfrmprius = stoi(columns[47]);
-    msg.light = stoi(columns[48]);
-    msg.gaslevel = stoi(columns[49]);
-    msg.door = stoi(columns[50]);
-    msg.cluise = stoi(columns[51]);
-    mode = stoi(columns[52]);
-    return true;
-  }
-  return false;
+  if(columns.size() != (CAN_DATA_NUM + 1))
+    return false;
+
+  msg.tm = columns[0].substr(1, columns[0].length() - 2);
+  msg.devmode = std::stoi(columns[1]);
+  msg.drvcontmode = std::stoi(columns[2]);
+  msg.drvoverridemode = std::stoi(columns[3]);
+  msg.drvservo = std::stoi(columns[4]);
+  msg.drivepedal = std::stoi(columns[5]);
+  msg.targetpedalstr = std::stoi(columns[6]);
+  msg.inputpedalstr = std::stoi(columns[7]);
+  msg.targetveloc = std::stod(columns[8]);
+  msg.speed = std::stod(columns[9]);
+  msg.driveshift = std::stoi(columns[10]);
+  msg.targetshift = std::stoi(columns[11]);
+  msg.inputshift = std::stoi(columns[12]);
+  msg.strmode = std::stoi(columns[13]);
+  msg.strcontmode = std::stoi(columns[14]);
+  msg.stroverridemode = std::stoi(columns[15]);
+  msg.strservo = std::stoi(columns[16]);
+  msg.targettorque = std::stoi(columns[17]);
+  msg.torque = std::stoi(columns[18]);
+  msg.angle = std::stod(columns[19]);
+  msg.targetangle = std::stod(columns[20]);
+  msg.bbrakepress = std::stoi(columns[21]);
+  msg.brakepedal = std::stoi(columns[22]);
+  msg.brtargetpedalstr = std::stoi(columns[23]);
+  msg.brinputpedalstr = std::stoi(columns[24]);
+  msg.battery = std::stod(columns[25]);
+  msg.voltage = std::stoi(columns[26]);
+  msg.anp = std::stod(columns[27]);
+  msg.battmaxtemparature = std::stoi(columns[28]);
+  msg.battmintemparature = std::stoi(columns[29]);
+  msg.maxchgcurrent = std::stod(columns[30]);
+  msg.maxdischgcurrent = std::stod(columns[31]);
+  msg.sideacc = std::stod(columns[32]);
+  msg.accellfromp = std::stod(columns[33]);
+  msg.anglefromp = std::stod(columns[34]);
+  msg.brakepedalfromp = std::stod(columns[35]);
+  msg.speedfr = std::stod(columns[36]);
+  msg.speedfl = std::stod(columns[37]);
+  msg.speedrr = std::stod(columns[38]);
+  msg.speedrl = std::stod(columns[39]);
+  msg.velocfromp2 = std::stod(columns[40]);
+  msg.drvmode = std::stoi(columns[41]);
+  msg.devpedalstrfromp = std::stoi(columns[42]);
+  msg.rpm = std::stoi(columns[43]);
+  msg.velocflfromp = std::stod(columns[44]);
+  msg.ev_mode = std::stoi(columns[45]);
+  msg.temp = std::stoi(columns[46]);
+  msg.shiftfrmprius = std::stoi(columns[47]);
+  msg.light = std::stoi(columns[48]);
+  msg.gaslevel = std::stoi(columns[49]);
+  msg.door = std::stoi(columns[50]);
+  msg.cluise = std::stoi(columns[51]);
+  mode = std::stoi(columns[52]);
+
+  return true;
 }
 
 void* getCanValue(void *arg){
