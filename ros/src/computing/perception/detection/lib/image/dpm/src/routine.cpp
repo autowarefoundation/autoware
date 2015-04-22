@@ -100,9 +100,8 @@ int allocFeaturePyramidObject(CvLSVMFeaturePyramid **obj,
 
 int freeFeaturePyramidObject (CvLSVMFeaturePyramid **obj)
 {
-    int i;
     if(*obj == NULL) return LATENT_SVM_MEM_NULL;
-    for(i = 0; i < (*obj)->numLevels; i++)
+    for(int i = 0; i < (*obj)->numLevels; i++)
     {
         freeFeatureMapObject(&((*obj)->pyramid[i]));
     }
