@@ -6,17 +6,13 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /PointCloud22
-        - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
-        - /Pose1
-        - /Path1
-        - /MarkerArray1
-        - /Marker1
-        - /Pose2
+        - /NDT Pose1
+        - /Lane Waypoint1
+        - /Control Pose1
       Splitter Ratio: 0.5
-    Tree Height: 205
+    Tree Height: 456
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -35,7 +31,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: Points Map
 Visualization Manager:
   Class: ""
   Displays:
@@ -87,7 +83,7 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Image
-      Enabled: true
+      Enabled: false
       Image Topic: /image_raw
       Max Value: 1
       Median window: 5
@@ -96,8 +92,8 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: raw
-      Value: true
-    - Alpha: 0.1
+      Value: false
+    - Alpha: 0.05
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -115,7 +111,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Points Map
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -131,8 +127,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        gps:
-          Value: true
         map:
           Value: true
         mobility:
@@ -147,55 +141,31 @@ Visualization Manager:
       Tree:
         world:
           map:
-            gps:
-              {}
             mobility:
               {}
-      Update Interval: 0
+      Update Interval: 1
       Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.1
       Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 5
-      Head Radius: 5
-      Name: Pose
-      Shaft Length: 5
-      Shaft Radius: 3
+      Color: 255; 170; 255
+      Enabled: false
+      Head Length: 2
+      Head Radius: 2
+      Name: NDT Pose
+      Shaft Length: 2
+      Shaft Radius: 1
       Shape: Arrow
       Topic: /ndt_pose
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 25; 255; 0
       Enabled: true
-      Line Style: Lines
-      Line Width: 0.03
-      Name: Path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
+      Name: Lane Waypoint
       Topic: /lane_waypoint
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /waypoint_velocity
-      Name: MarkerArray
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /vector_map
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
       Value: true
     - Alpha: 1
       Axes Length: 1
@@ -203,20 +173,35 @@ Visualization Manager:
       Class: rviz/Pose
       Color: 255; 25; 0
       Enabled: true
-      Head Length: 0.3
-      Head Radius: 0.1
-      Name: Pose
-      Shaft Length: 1
-      Shaft Radius: 0.05
+      Head Length: 2
+      Head Radius: 2
+      Name: Control Pose
+      Shaft Length: 2
+      Shaft Radius: 1
       Shape: Arrow
-      Topic: /gnss_pose
+      Topic: /control_pose
       Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /target_waypoint_mark
-      Name: Marker
+      Name: Target Waypoint Mark
       Namespaces:
         {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /vector_map
+      Name: Marker
+      Namespaces:
+        curb: true
+        gutter: true
+        road edge: true
+        road surface mark: true
+        stop line: true
+        streetlight: true
+        utilitypole: true
+        white line: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -242,7 +227,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
+      Angle: 0.855001
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
@@ -251,21 +236,21 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 3.97776
+      Scale: 2.88442
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: -1963.43
-      Y: -2119.25
+      X: 2.51273
+      Y: -2.74873
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 744
+  Height: 1056
   Hide Left Dock: false
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000013c0000025efc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007301000000280000015c000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fc0000018a000000b0000000b000fffffffa000000000100000002fb0000000a005600690065007700730100000000ffffffff0000010f00fffffffb0000000a0049006d00610067006500000000000000013c0000000000000000fb0000000a0049006d0061006700650100000240000000460000001600ffffff000000010000010f0000025efc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003bf0000003efc0100000002fb0000000800540069006d00650100000000000003bf000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000027d0000025e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000010f00000396fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000257000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fc0000028500000139000000b000fffffffa000000000100000002fb0000000a005600690065007700730100000000ffffffff0000010f00fffffffb0000000a0049006d00610067006500000000000000013c0000005c00ffffff000000010000010f0000025efc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006501000000000000073f000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000062a0000039600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -274,6 +259,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 959
+  Width: 1855
   X: 65
   Y: 24
