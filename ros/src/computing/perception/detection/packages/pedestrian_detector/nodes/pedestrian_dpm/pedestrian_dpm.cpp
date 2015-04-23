@@ -53,20 +53,19 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 	cv::Mat mat = cv_image->image;
 
 	std::vector<DPMObject> pedestrians = dpm_detect_objects(mat, model_files,
-							 num_threads, overlap_threshold);
+							 overlap_threshold, num_threads);
 
 	size_t pedestrian_num = pedestrians.size();
-	std::vector<int> corner_point_array(pedestrian_num);
-	std::vector<int> pedestrian_type_array(pedestrian_num);
+	std::vector<int> corner_point_array;
+	std::vector<int> pedestrian_type_array;
 
 	for (int i = 0; i < static_cast<int>(pedestrian_num); ++i) {
-		pedestrian_type_array[i] = pedestrians[i].class_id;
+      pedestrian_type_array.push_back(pedestrians[i].class_id);
 
-		int base = i * 4;
-		corner_point_array[base + 0] = pedestrians[i].rect.x;
-		corner_point_array[base + 1] = pedestrians[i].rect.y;
-		corner_point_array[base + 2] = pedestrians[i].rect.width;
-		corner_point_array[base + 3] = pedestrians[i].rect.height;
+		corner_point_array.push_back(pedestrians[i].rect.x);
+		corner_point_array.push_back(pedestrians[i].rect.y);
+		corner_point_array.push_back(pedestrians[i].rect.width);
+		corner_point_array.push_back(pedestrians[i].rect.height);
 	}
 
 	dpm::ImageObjects message;
@@ -99,6 +98,11 @@ static void set_default_parameters(const ros::NodeHandle& n)
 	}
 }
 
+static void pedestrian_config_cb(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)
+{
+
+}
+
 int main(int argc, char *argv[])
 {
 	ros::init(argc, argv, "pedestrian_dpm");
@@ -108,6 +112,9 @@ int main(int argc, char *argv[])
 
 	ros::Subscriber sub = n.subscribe("/image_raw", 1, image_raw_cb);
 	pedestrian_pixel_publisher = n.advertise<dpm::ImageObjects>("pedestrian_pixel_xy", 1);
+
+    ros::Subscriber config_subscriber;
+    config_subscriber = n.subscribe("/config/pedestrian_dpm", 1, pedestrian_config_cb);
 
 	std::string model_file(STR(MODEL_DIR) "person.xml");
 	model_files.push_back(model_file);
