@@ -329,6 +329,13 @@ class MyFrame(rtmgr.MyFrame):
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
 		self.OnLaunchKill_obj(obj)
+		if obj.GetValue() is False:
+			ks = { self.button_init:[ 'gnss', 'map' ], 
+			       self.button_check:[ 'ndt' ], 
+			       self.button_set:[ 'lf' ] }.get(obj, [])
+			for k in ks:
+				self.stat_set(k, False)
+			self.main_button_update(obj, False)
 
 	def OnDrive(self, event):
 		obj = event.GetEventObject()
