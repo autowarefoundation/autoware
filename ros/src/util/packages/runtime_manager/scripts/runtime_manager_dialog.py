@@ -196,7 +196,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		try:
 			cmd = ['rosparam', 'get', '/use_sim_time']
-			if subprocess.check_output(cmd).strip() == 'true':
+			if subprocess.check_output(cmd, stderr=open(os.devnull, 'wb')).strip() == 'true':
 				self.checkbox_sim_time.SetValue(True)
 		except subprocess.CalledProcessError:
 			pass
