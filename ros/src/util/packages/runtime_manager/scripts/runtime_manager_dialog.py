@@ -35,6 +35,7 @@ import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
 import gettext
 import os
+import re
 import sys
 import socket
 import struct
@@ -485,6 +486,8 @@ class MyFrame(rtmgr.MyFrame):
 					str_v = str(v)
 					if var.get('kind') is None:
 						str_v = adjust_num_str(str_v)
+					if var.get('kind') == 'path':
+						str_v = re.sub('^\$HOME/|^~/', os.environ['HOME'] + '/', str_v)
 					add += delim + str_v
 				if add != '':
 					s += add + ' '
