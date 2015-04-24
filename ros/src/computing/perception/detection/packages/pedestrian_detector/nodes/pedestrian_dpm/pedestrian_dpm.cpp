@@ -35,7 +35,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include "dpm/ImageObjects.h"
+#include <dpm/ImageObjects.h>
 
 #include <dpm.hpp>
 
