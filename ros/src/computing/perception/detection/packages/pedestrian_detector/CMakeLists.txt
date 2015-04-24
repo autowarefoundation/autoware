@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   dpm
   dpm_gpu
+  runtime_manager
   fusion
 )
 find_package(OpenCV REQUIRED)
@@ -72,6 +73,8 @@ endif()
 add_executable(pedestrian_dpm_gpu
   nodes/pedestrian_dpm_gpu/pedestrian_dpm_gpu.cpp
 )
+
+add_dependencies(pedestrian_dpm_gpu runtime_manager_generate_messages_cpp)
 
 SET_TARGET_PROPERTIES(pedestrian_dpm_gpu
   PROPERTIES

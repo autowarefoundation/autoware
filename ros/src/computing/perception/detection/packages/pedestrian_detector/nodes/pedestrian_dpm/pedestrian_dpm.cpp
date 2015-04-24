@@ -35,7 +35,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include "dpm/ImageObjects.h"
+#include <dpm/ImageObjects.h>
+#include <runtime_manager/ConfigPedestrianDpm.h>
 
 #include <dpm.hpp>
 
@@ -60,7 +61,7 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 	std::vector<int> pedestrian_type_array;
 
 	for (int i = 0; i < static_cast<int>(pedestrian_num); ++i) {
-      pedestrian_type_array.push_back(pedestrians[i].class_id);
+		pedestrian_type_array.push_back(pedestrians[i].class_id);
 
 		corner_point_array.push_back(pedestrians[i].rect.x);
 		corner_point_array.push_back(pedestrians[i].rect.y);
@@ -113,8 +114,8 @@ int main(int argc, char *argv[])
 	ros::Subscriber sub = n.subscribe("/image_raw", 1, image_raw_cb);
 	pedestrian_pixel_publisher = n.advertise<dpm::ImageObjects>("pedestrian_pixel_xy", 1);
 
-    ros::Subscriber config_subscriber;
-    config_subscriber = n.subscribe("/config/pedestrian_dpm", 1, pedestrian_config_cb);
+	ros::Subscriber config_subscriber;
+	config_subscriber = n.subscribe("/config/pedestrian_dpm", 1, pedestrian_config_cb);
 
 	std::string model_file(STR(MODEL_DIR) "person.xml");
 	model_files.push_back(model_file);
