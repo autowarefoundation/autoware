@@ -487,7 +487,7 @@ class MyFrame(rtmgr.MyFrame):
 					if var.get('kind') is None:
 						str_v = adjust_num_str(str_v)
 					if var.get('kind') == 'path':
-						str_v = re.sub('^\$HOME/|^~/', os.environ['HOME'] + '/', str_v)
+						str_v = os.path.expandvars(os.path.expanduser(str_v))
 					add += delim + str_v
 				if add != '':
 					s += add + ' '
