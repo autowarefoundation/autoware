@@ -100,17 +100,17 @@ static void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
         yaw = -1 * stod(nmea[6]) * M_PI / 180. + M_PI / 2;
 
         // new QQ message
-        if (nmea.size() == NEW_QQ_SIZE) {
+   /*     if (nmea.size() == NEW_QQ_SIZE) {
             if (stod(nmea[7]) == 1 && stod(nmea[8]) == 1 && stod(nmea[9]) == 1) {
                 calibration_flag = true;
             } else {
                 calibration_flag = false;
             }
-        }
+        }*/
         //printf("angle %f  %f %f %f\n",qq_time,roll,pitch,yaw);
     }
 
-    if (calibration_flag == true) {
+//    if (calibration_flag == true) {
         if (nmea[0] == "$GPGGA") {
             pc_time = msg->header.stamp;
             /*
@@ -161,9 +161,9 @@ static void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
             pose_publisher.publish(pose);
             stat_publisher.publish(gnss_stat_msg);
         }
-    } else {
+ /*   } else {
         std::cout << "not calibrated!!" << std::endl;
-    }
+    }*/
 }
 
 int main(int argc, char **argv)
