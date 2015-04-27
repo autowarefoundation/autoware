@@ -40,7 +40,7 @@ void cameraInfo_sender(const cv::Mat  &camMat,
   sensor_msgs::CameraInfo msg;
 
   msg.header.frame_id = "camera";
-  msg.header.stamp    = ros::Time::now();
+  //  msg.header.stamp    = ros::Time::now();
 
   msg.height = imgSize.height;
   msg.width  = imgSize.width;
@@ -54,9 +54,9 @@ void cameraInfo_sender(const cv::Mat  &camMat,
   for (int row=0; row<3; row++) {
     for (int col=0; col<4; col++) {
       if (col == 3) {
-        msg.P[row * 3 + col] = 0.0f;
+        msg.P[row * 4 + col] = 0.0f;
       } else {
-        msg.K[row * 3 + col] = camMat.at<double>(row, col);
+        msg.P[row * 4 + col] = camMat.at<double>(row, col);
       }
     }
   }
