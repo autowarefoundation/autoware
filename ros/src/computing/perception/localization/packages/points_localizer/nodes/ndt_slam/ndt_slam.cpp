@@ -113,29 +113,37 @@ static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 static void output_callback(const std_msgs::Float32::ConstPtr& input)
 {
   double voxel_leaf_size = input->data;
+  std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_filtered(new pcl::PointCloud<pcl::PointXYZI>());
   map_ptr->header.frame_id = "map";
   map_filtered->header.frame_id = "map";
+  sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
 
   // Apply voxelgrid filter
-  pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
-  voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-  voxel_grid_filter.setInputCloud(map_ptr);
-  voxel_grid_filter.filter(*map_filtered);
-  std::cout << "Original: " << map_ptr->points.size() << " points." << std::endl;
-  std::cout << "Filtered: " << map_filtered->points.size() << " points." << std::endl;
-
-  sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
-  pcl::toROSMsg(*map_filtered, *map_msg_ptr);
+  if(voxel_leaf_size == 0.0){
+    pcl::toROSMsg(*map_ptr, *map_msg_ptr);
+  }else{
+    pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
+    voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+    voxel_grid_filter.setInputCloud(map_ptr);
+    voxel_grid_filter.filter(*map_filtered);
+    std::cout << "Original: " << map_ptr->points.size() << " points." << std::endl;
+    std::cout << "Filtered: " << map_filtered->points.size() << " points." << std::endl;
+    pcl::toROSMsg(*map_filtered, *map_msg_ptr);
+  }
 
   ndt_map_pub.publish(*map_msg_ptr);
 
   // Writing Point Cloud data to PCD file
-  pcl::io::savePCDFileASCII("local_map.pcd", *map_filtered);
-  std::cout << "Saved " << map_filtered->points.size() << " data points to local_map.pcd." << std::endl;
-
+  if(voxel_leaf_size == 0.0){
+    pcl::io::savePCDFileASCII("local_map_original.pcd", *map_ptr);
+    std::cout << "Saved " << map_ptr->points.size() << " data points to local_map.pcd." << std::endl;
+  }else{
+    pcl::io::savePCDFileASCII("local_map_filtered.pcd", *map_filtered);
+    std::cout << "Saved " << map_filtered->points.size() << " data points to local_map.pcd." << std::endl;
+  }    
 }
 
 static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
