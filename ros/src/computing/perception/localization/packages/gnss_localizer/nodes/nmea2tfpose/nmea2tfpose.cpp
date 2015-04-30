@@ -82,7 +82,7 @@ static void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
     static ros::Time pc_time;
     std::vector<std::string> nmea;
     csv_div(msg->sentence, &nmea);
-    static bool calibration_flag = true;
+    //static bool calibration_flag = true;
 
     // printf("%s\n",msg->sentence.c_str());
 
