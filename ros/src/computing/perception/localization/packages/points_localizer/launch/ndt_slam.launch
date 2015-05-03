@@ -2,6 +2,7 @@
 <launch>
 
   <!-- send table.xml to param server -->
+  <arg name="scanner" default="velodyne" />
   <arg name="model" default="$(find points_localizer)/urdf/prius_model.urdf"/>
   <arg name="gui" default="False" />
   
@@ -12,6 +13,8 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" /> 
   
   <!-- rosrun points_localizer ndt_pcl  -->
-  <node pkg="points_localizer" type="ndt_slam" name="ndt_slam" output="screen"/>
+  <node pkg="points_localizer" type="ndt_slam" name="ndt_slam" output="screen">
+    <param name="scanner" value="$(arg scanner)" />
+  </node>
   
 </launch>
