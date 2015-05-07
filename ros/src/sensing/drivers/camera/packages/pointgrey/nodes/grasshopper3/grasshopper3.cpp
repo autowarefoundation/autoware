@@ -56,6 +56,7 @@ static volatile int running = 1;
 void signalHandler(int) 
 {
     running = 0;
+	ros::shutdown();
 }
 
 void tfRegistration (const cv::Mat &camExtMat)
@@ -272,8 +273,6 @@ void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo
 
 int main(int argc, char **argv)
 {
-	signal(SIGINT, signalHandler);//detect closing
-	
 	////////////////POINT GREY CAMERA /////////////////////////////
 	FlyCapture2::BusManager busMgr;
 
@@ -284,6 +283,8 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "grasshopper3");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
+	
+	signal(SIGTERM, signalHandler);//detect closing
 
 	double fps;
 	if (private_nh.getParam("fps", fps)) 
