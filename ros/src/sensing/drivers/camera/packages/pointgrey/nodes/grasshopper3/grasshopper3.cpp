@@ -31,7 +31,9 @@
 /*
   This program requires ROS and Flycapture SDK installed
   Author: Abraham Monrroy (amonrroy@ertl.jp)
-  Initial version 2014-11-14
+  Initial version 		2014-11-14
+  Added signal handler 		2015-05-01
+  Added CameraInfo msg 		2015-05-01
 */
 
 #include <iostream>
@@ -40,6 +42,90 @@
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
+
+#include <sensor_msgs/CameraInfo.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#include <signal.h>
+
+static volatile int running = 1;
+
+void signalHandler(int) 
+{
+    running = 0;
+	ros::shutdown();
+}
+
+void tfRegistration (const cv::Mat &camExtMat)
+{
+	tf::Matrix3x3 rotation_mat;
+	double roll = 0, pitch = 0, yaw = 0;
+	tf::Quaternion quaternion;
+	tf::Transform transform;
+	static tf::TransformBroadcaster broadcaster;
+
+	rotation_mat.setValue(camExtMat.at<double>(0, 0), camExtMat.at<double>(0, 1), camExtMat.at<double>(0, 2),
+                        camExtMat.at<double>(1, 0), camExtMat.at<double>(1, 1), camExtMat.at<double>(1, 2),
+                        camExtMat.at<double>(2, 0), camExtMat.at<double>(2, 1), camExtMat.at<double>(2, 2));
+
+	rotation_mat.getRPY(roll, pitch, yaw, 1);
+
+	quaternion.setRPY(roll, pitch, yaw);
+
+	transform.setOrigin(tf::Vector3(camExtMat.at<double>(0, 3),
+                                  camExtMat.at<double>(1, 3),
+                                  camExtMat.at<double>(2, 3)));
+
+	transform.setRotation(quaternion);
+
+	broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
+}
+
+void parseCameraInfo(const cv::Mat  &camMat,
+                       const cv::Mat  &disCoeff,
+                       const cv::Size &imgSize,
+                       sensor_msgs::CameraInfo &msg)
+{
+	msg.header.frame_id = "camera";
+	//  msg.header.stamp    = ros::Time::now();
+
+	msg.height = imgSize.height;
+	msg.width  = imgSize.width;
+	
+	for (int row=0; row<3; row++)
+	{
+		for (int col=0; col<3; col++)
+		{
+			msg.K[row * 3 + col] = camMat.at<double>(row, col);
+		}
+	}
+
+	for (int row=0; row<3; row++)
+	{
+		for (int col=0; col<4; col++)
+		{
+			if (col == 3)
+			{
+				msg.P[row * 4 + col] = 0.0f;
+		      	} else 
+		      	{
+				msg.P[row * 4 + col] = camMat.at<double>(row, col);
+      			}
+    		}
+	}
+
+	for (int row=0; row<disCoeff.rows; row++) 
+	{
+		for (int col=0; col<disCoeff.cols; col++) 
+		{
+			msg.D.push_back(disCoeff.at<double>(row, col));
+		}
+	}
+}
+
 
 static void print_camera_info(FlyCapture2::CameraInfo* info)
 {
@@ -55,38 +141,44 @@ static void print_camera_info(FlyCapture2::CameraInfo* info)
 }
 
 static std::vector<FlyCapture2::Camera*>
+
 initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
 {
 	// Connect to all detected cameras and attempt to set them to
 	// a common video mode and frame rate
 
 	std::vector<FlyCapture2::Camera*> cameras;
-	for (int i = 0; i < camera_num; i++) {
+	for (int i = 0; i < camera_num; i++)
+	{
 		FlyCapture2::Camera *camera = new FlyCapture2::Camera();
 
 		FlyCapture2::PGRGuid guid;
 		FlyCapture2::Error error = bus_manger->GetCameraFromIndex(i, &guid);
-		if (error != FlyCapture2::PGRERROR_OK) {
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
 
 		error = camera->Connect( &guid );
-		if (error != FlyCapture2::PGRERROR_OK) {
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
 
 		FlyCapture2::EmbeddedImageInfo image_info;
 		error = camera->GetEmbeddedImageInfo(&image_info);
-		if (error != FlyCapture2::PGRERROR_OK) {
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
 
 		image_info.timestamp.onOff = true;
 		error = camera->SetEmbeddedImageInfo(&image_info);
-		if (error != FlyCapture2::PGRERROR_OK) {
+		if (error != FlyCapture2::PGRERROR_OK) 
+		{
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
@@ -94,7 +186,8 @@ initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
 		// Get the camera information
 		FlyCapture2::CameraInfo camera_info;
 		error = camera->GetCameraInfo(&camera_info);
-		if (error != FlyCapture2::PGRERROR_OK) {
+		if (error != FlyCapture2::PGRERROR_OK) 
+		{
 			error.PrintErrorTrace();
 			std::exit(-1);
 		}
@@ -110,14 +203,16 @@ static int getNumCameras(FlyCapture2::BusManager *bus_manager)
 {
 	unsigned int cameras;
 	FlyCapture2::Error error = bus_manager->GetNumOfCameras(&cameras);
-	if (error != FlyCapture2::PGRERROR_OK) {
+	if (error != FlyCapture2::PGRERROR_OK) 
+	{
 		error.PrintErrorTrace();
 		std::exit(-1);
 	}
 
 	std::cout << "Number of cameras detected: " << cameras << std::endl;
 
-	if (cameras < 1) {
+	if (cameras < 1) 
+	{
 		std::cerr << "Error: This program requires at least 1 camera." << std::endl;
 		std::exit(-1);
 	}
@@ -127,9 +222,11 @@ static int getNumCameras(FlyCapture2::BusManager *bus_manager)
 
 static void startCapture(std::vector<FlyCapture2::Camera*>& cameras)
 {
-	for (auto *camera : cameras) {
+	for (auto *camera : cameras) 
+	{
 		FlyCapture2::Error error = camera->StartCapture();
-		if (error != FlyCapture2::PGRERROR_OK) {
+		if (error != FlyCapture2::PGRERROR_OK) 
+		{
 			error.PrintErrorTrace();
 			return;
 		}
@@ -138,27 +235,78 @@ static void startCapture(std::vector<FlyCapture2::Camera*>& cameras)
 	return;
 }
 
+void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo_msg)
+{
+	//////////////////CAMERA INFO/////////////////////////////////////////
+	cv::Mat  cameraExtrinsicMat;
+  	cv::Mat  cameraMat;
+  	cv::Mat  distCoeff;
+  	cv::Size imageSize;
+  	std::string filename;
+  	
+  	if (nh.getParam("calibrationfile", filename)) 
+	{
+		ROS_INFO("Trying to parse calibrationfile %s", filename.c_str());
+	}
+	else
+	{
+		ROS_INFO("No calibrationfile param was received");
+	}
+  	
+  	cv::FileStorage fs(filename, cv::FileStorage::READ);
+  	if (!fs.isOpened())
+    	{
+      		ROS_INFO("Cannot open %s", filename.c_str());;
+      		return;
+    	}
+    	else
+  	{
+	  	fs["CameraExtrinsicMat"] >> cameraExtrinsicMat;
+		fs["CameraMat"] >> cameraMat;
+		fs["DistCoeff"] >> distCoeff;
+		fs["ImageSize"] >> imageSize;
+  	}
+  	tfRegistration(cameraExtrinsicMat);
+  	parseCameraInfo(cameraMat, distCoeff, imageSize, camerainfo_msg);
+	
+}
+
 int main(int argc, char **argv)
 {
+	////////////////POINT GREY CAMERA /////////////////////////////
 	FlyCapture2::BusManager busMgr;
 
 	int camera_num = getNumCameras(&busMgr);
 	std::vector<FlyCapture2::Camera*> cameras = initializeCameras(&busMgr, camera_num);
 
+	////ROS STUFF////
 	ros::init(argc, argv, "grasshopper3");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
+	
+	signal(SIGTERM, signalHandler);//detect closing
 
 	double fps;
-	if (private_nh.getParam("fps", fps)) {
+	if (private_nh.getParam("fps", fps)) 
+	{
 		ROS_INFO("fps set to %.2f", fps);
 	} else {
 		fps = 15.0;
 		ROS_INFO("No param received, defaulting to %.2f", fps);
 	}
-
+	
+	///////calibration data
+	sensor_msgs::CameraInfo camerainfo_msg;
+	getMatricesFromFile(private_nh, camerainfo_msg);
+	
+	
 	ros::Publisher pub[camera_num];
-	for (int i = 0; i < camera_num; i++) {
+	ros::Publisher camera_info_pub;
+	
+	camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10);
+	
+	for (int i = 0; i < camera_num; i++)
+	{
 		std::string topic(std::string("image_raw") + std::to_string(i));
 		pub[i] = n.advertise<sensor_msgs::Image>(topic, 100);
 	}
@@ -169,17 +317,22 @@ int main(int argc, char **argv)
 
 	int count = 0;
 	ros::Rate loop_rate(fps); // Hz
-	while (ros::ok()) {
+	while (running && ros::ok()) 
+	{
 		int i = 0;
-		for (auto *camera : cameras) {
+		for (auto *camera : cameras)
+		{
 			FlyCapture2::Image image;
 			FlyCapture2::Error error = camera->RetrieveBuffer(&image);
-			if (error != FlyCapture2::PGRERROR_OK) {
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
 				error.PrintErrorTrace();
 				std::exit(-1);
 			}
 
 			sensor_msgs::Image msg;
+			//publish*******************
+			
 			msg.header.seq = count;
 			msg.header.frame_id = count;
 			msg.header.stamp.sec = ros::Time::now().toSec();
@@ -203,12 +356,13 @@ int main(int argc, char **argv)
 	}
 
 	//close cameras
-	for (auto *camera : cameras) {
+	for (auto *camera : cameras)
+	{
 		camera->StopCapture();
 		camera->Disconnect();
 		delete camera;
 	}
 
-	std::cout << "Done!" << std::endl;
+	ROS_INFO("Camera node closed correctly");
 	return 0;
 }
