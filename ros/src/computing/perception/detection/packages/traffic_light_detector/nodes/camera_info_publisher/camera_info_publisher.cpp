@@ -14,7 +14,7 @@ void tfRegistration (const cv::Mat &camExtMat)
   tf::Quaternion quaternion;
   tf::Transform transform;
   static tf::TransformBroadcaster broadcaster;
- 
+
  rotation_mat.setValue(camExtMat.at<double>(0, 0), camExtMat.at<double>(0, 1), camExtMat.at<double>(0, 2),
                         camExtMat.at<double>(1, 0), camExtMat.at<double>(1, 1), camExtMat.at<double>(1, 2),
                         camExtMat.at<double>(2, 0), camExtMat.at<double>(2, 1), camExtMat.at<double>(2, 2));
@@ -40,7 +40,6 @@ void cameraInfo_sender(const cv::Mat  &camMat,
   sensor_msgs::CameraInfo msg;
 
   msg.header.frame_id = "camera";
-  //  msg.header.stamp    = ros::Time::now();
 
   msg.height = imgSize.height;
   msg.width  = imgSize.width;
