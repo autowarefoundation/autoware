@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   message_generation
+  tf
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -25,11 +26,14 @@ catkin_package(
 ###########
 
 if(EXISTS "/usr/include/flycapture")
-include_directories(/usr/include/flycapture)
+include_directories(
+	/usr/include/flycapture
+	${OpenCV_INCLUDE_DIRS}
+)
 add_executable(grasshopper3 nodes/grasshopper3/grasshopper3.cpp)
 
 target_link_libraries(grasshopper3
-   ${catkin_LIBRARIES} flycapture
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} flycapture
 )
 else()
 message("'flycapture2' is not installed. 'grasshopper3' is not built.")
