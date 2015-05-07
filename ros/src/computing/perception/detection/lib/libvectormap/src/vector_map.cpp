@@ -53,11 +53,11 @@ int VectorMap::load_points(char *name) {
     {
       Point tmp_p;
       tmp_p.pid    = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_p.bx     = atof((const char*)(fileContents[i][1].c_str()));
-      tmp_p.ly     = atof((const char*)(fileContents[i][2].c_str()));
+      tmp_p.b      = atof((const char*)(fileContents[i][1].c_str()));
+      tmp_p.l      = atof((const char*)(fileContents[i][2].c_str()));
       tmp_p.h      = atof((const char*)(fileContents[i][3].c_str()));
-      tmp_p.b      = atof((const char*)(fileContents[i][4].c_str()));
-      tmp_p.l      = atof((const char*)(fileContents[i][5].c_str()));
+      tmp_p.ly     = atof((const char*)(fileContents[i][4].c_str()));
+      tmp_p.bx     = atof((const char*)(fileContents[i][5].c_str()));
       tmp_p.ref    = atoi((const char*)(fileContents[i][6].c_str()));
       tmp_p.mcode1 = atoi((const char*)(fileContents[i][7].c_str()));
       tmp_p.mcode2 = atoi((const char*)(fileContents[i][8].c_str()));
@@ -80,7 +80,7 @@ int VectorMap::load_lines(char *name) {
   for (int i=0; i<line_num; i++)
     {
       Line tmp_l;
-      tmp_l.lid = atoi((const char*)(fileContents[i][0].c_str()));
+      tmp_l.lid  = atoi((const char*)(fileContents[i][0].c_str()));
       tmp_l.bpid = atoi((const char*)(fileContents[i][1].c_str()));
       tmp_l.fpid = atoi((const char*)(fileContents[i][2].c_str()));
       tmp_l.blid = atoi((const char*)(fileContents[i][3].c_str()));

@@ -30,19 +30,22 @@ static  float fx,
               imageHeight,
               cx,
               cy;
-tf::StampedTransform trf;
-
+static tf::StampedTransform trf;
+//static std::vector<double> distCoeff;
 
 #define SignalLampRadius 0.3
 
 
 void cameraInfoCallback (const sensor_msgs::CameraInfo::ConstPtr camInfoMsg)
 {
-	fx = camInfoMsg->P[0],
-	fy = camInfoMsg->P[5],
-	imageWidth = camInfoMsg->width, imageHeight = camInfoMsg->height,
-	cx = camInfoMsg->P[2],
-	cy = camInfoMsg->P[6];
+  fx = static_cast<float>(camInfoMsg->P[0]);
+  fy = static_cast<float>(camInfoMsg->P[5]);
+  imageWidth = camInfoMsg->width;
+  imageHeight = camInfoMsg->height;
+  cx = static_cast<float>(camInfoMsg->P[2]);
+  cy = static_cast<float>(camInfoMsg->P[6]);
+  // distCoeff.resize(camInfoMsg->D.size());
+  // std::copy(camInfoMsg->D.begin(), camInfoMsg->D.end(), distCoeff.begin());
     //	std::cout << fx << " " << fy << " " << cx << " " << cy << std::endl;
 }
 
@@ -54,8 +57,9 @@ void getTransform (Eigen::Quaternionf &ori, Point3 &pos)
 	// target_frame    source_frame
 //	listener.waitForTransform ("japan_7", "camera", ros::Time(), ros::Duration(10.0));
 //	listener.lookupTransform ("japan_7", "camera", ros::Time(), trf);
-	listener.waitForTransform ("camera", "map", ros::Time(), ros::Duration(10.0));
-	listener.lookupTransform ("camera", "map", ros::Time(), trf);
+    ros::Time now = ros::Time();
+	listener.waitForTransform ("camera", "map", now, ros::Duration(10.0));
+	listener.lookupTransform ("camera", "map", now, trf);
 
 	tf::Vector3 &p = trf.getOrigin();
 	tf::Quaternion o = trf.getRotation();
@@ -78,14 +82,34 @@ Point3 transform (const Point3 &psrc, tf::StampedTransform &tfsource)
 bool project2 (const Point3 &pt, int &u, int &v, bool useOpenGLCoord=false)
 {
 	float nearPlane = 1.0;
-	float farPlane = 100.0;
-
-	Point3 _pt = transform (pt, trf);
+	float farPlane = 200.0;
+    // if (distCoeff.empty())
+    //   return false;
+    Point3 _pt = transform (pt, trf);
 	float _u = _pt.x()*fx/_pt.z() + cx;
 	float _v = _pt.y()*fy/_pt.z() + cy;
-	u = (int)_u;
-	v = (int)_v;
-	if (u<0 or u>imageWidth or v<0 or v>imageHeight or _pt.z()<nearPlane or _pt.z()>farPlane) {
+
+    // double tmpx = _pt.x() / _pt.z();
+    // double tmpy = _pt.y() / _pt.z();
+    // double r2 = tmpx * tmpx + tmpy * tmpy;
+    // double tmpdist =  1 + distCoeff.at(0) * r2
+    //   + distCoeff.at(1) * r2 * r2
+    //   + distCoeff.at(4) * r2 * r2 * r2;
+
+    // double _u = tmpx * tmpdist
+    //   + 2 * distCoeff.at(2) * tmpx * tmpy
+    //   + distCoeff.at(3) * (r2 + 2 * tmpx * tmpx);
+
+    // double _v = tmpy * tmpdist
+    //   + distCoeff.at(2) * (r2 + 2 * tmpy * tmpy)
+    //   + 2 * distCoeff.at(3) * tmpx * tmpy;
+
+    // _u = fx * _u + cx;
+    // _v = fy * _v + cy;
+
+    u = static_cast<int>(_u);
+    v = static_cast<int>(_v);
+	if ( u < 0 || imageWidth < u || v < 0 || imageHeight < v || _pt.z() < nearPlane || farPlane < _pt.z() ) {
 		u = -1, v = -1;
 		return false;
 	}
@@ -104,7 +128,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
     //	signal_pub_node::Signals signalsInFrame;
     traffic_light_detector::Signals signalsInFrame;
 
-	for (int i=1; i<vmap.signals.size()-1; i++) {
+	for (int i=1; i<=vmap.signals.size(); i++) {
 		Signal signal = vmap.signals[i];
 		int pid = vmap.vectors[signal.vid].pid;
 
@@ -180,7 +204,7 @@ int main (int argc, char *argv[])
       }
 
       echoSignals2 (signalPublisher, true);
-      //      loop.sleep();
+      loop.sleep();
     }
 
 
