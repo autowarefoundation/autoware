@@ -14,8 +14,8 @@ void tfRegistration (const cv::Mat &camExtMat)
   tf::Quaternion quaternion;
   tf::Transform transform;
   static tf::TransformBroadcaster broadcaster;
-
-  rotation_mat.setValue(camExtMat.at<double>(0, 0), camExtMat.at<double>(0, 1), camExtMat.at<double>(0, 2),
+ 
+ rotation_mat.setValue(camExtMat.at<double>(0, 0), camExtMat.at<double>(0, 1), camExtMat.at<double>(0, 2),
                         camExtMat.at<double>(1, 0), camExtMat.at<double>(1, 1), camExtMat.at<double>(1, 2),
                         camExtMat.at<double>(2, 0), camExtMat.at<double>(2, 1), camExtMat.at<double>(2, 2));
 
@@ -34,7 +34,7 @@ void tfRegistration (const cv::Mat &camExtMat)
 
 
 void cameraInfo_sender(const cv::Mat  &camMat,
-                       const cv::Mat  &disCoeff,
+                       const cv::Mat  &distCoeff,
                        const cv::Size &imgSize)
 {
   sensor_msgs::CameraInfo msg;
@@ -58,6 +58,12 @@ void cameraInfo_sender(const cv::Mat  &camMat,
       } else {
         msg.P[row * 4 + col] = camMat.at<double>(row, col);
       }
+    }
+  }
+
+  for (int row=0; row<distCoeff.rows; row++) {
+    for (int col=0; col<distCoeff.cols; col++) {
+      msg.D.push_back(distCoeff.at<double>(row, col));
     }
   }
 
@@ -95,6 +101,8 @@ int main(int argc, char* argv[])
   fs["DistCoeff"] >> distCoeff;
   fs["ImageSize"] >> imageSize;
 
+  ros::Rate loop (100);
+
   while(ros::ok())
     {
       /* create tf between velodyne and camera */
@@ -102,6 +110,8 @@ int main(int argc, char* argv[])
 
       /* publish camera_info */
       cameraInfo_sender(cameraMat, distCoeff, imageSize);
+
+      loop.sleep();
     }
 
 }
