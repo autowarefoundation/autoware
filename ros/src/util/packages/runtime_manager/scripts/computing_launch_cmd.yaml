@@ -253,7 +253,7 @@ params :
       label : Noise Covariance
       min   : 1
       max   : 1000
-      v     : 25.0
+      v     : 1.0
     - name  : measurement_noise_covariance
       label : Measurement Noise Covariance
       min   : 1
@@ -288,7 +288,7 @@ params :
       label : Noise Covariance
       min   : 1
       max   : 1000
-      v     : 25.0
+      v     : 1.0
     - name  : measurement_noise_covariance
       label : Measurement Noise Covariance
       min   : 1
