@@ -5,9 +5,6 @@
 
 using namespace cv;
 
-#if 0
-//enum LightState { GREEN, YELLOW, RED, REDYELLOW, UNDEFINED };
-#endif
 enum LightState { GREEN, YELLOW, RED, UNDEFINED };
 
 class Context {

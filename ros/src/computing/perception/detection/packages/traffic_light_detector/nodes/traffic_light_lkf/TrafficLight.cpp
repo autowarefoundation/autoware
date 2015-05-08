@@ -3,8 +3,6 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include "TrafficLight.h"
-//#include "TLVideoWriter.h"
-//#include "VideoSettingsLocal.h"
 #include <float.h>
 #include <math.h>
 #include <sstream>
@@ -14,8 +12,6 @@ using namespace cv;
 static TrafficLightDetector detector;
 
 static Mat frame;
-//static int TL_COUNT = 1;
-
 
 static inline bool IsNearlyZero(double x)
 {
@@ -90,17 +86,10 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   if (frame.empty())
     return;
 
-  /* test output */
-  // imshow("subscribed", frame);
-  // waitKey(5);
-
   /* reset contexts */
   detector.contexts.clear();
 
   setContexts(detector, extractedPos);
-
-  // if (detector.contexts.size()==0)
-  //   return;
 
   /* test output */
   Mat targetScope;
@@ -122,27 +111,6 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
 
   /* test output */
   putResult_inText(&targetScope, detector.contexts);
-  // for (unsigned int i=0; i<detector.contexts.size(); i++)
-  //   {
-  //     Context ctx = detector.contexts.at(i);
-  //     if (ctx.lampRadius < MINIMAM_RADIUS)
-  //       continue;
-
-  //     switch(ctx.lightState) {
-  //     case GREEN:
-  //       putText(targetScope, "GREEN", Point(ctx.topLeft.x, ctx.botRight.y), FONT_HERSHEY_COMPLEX_SMALL, 1.0, CV_RGB(0,255,0), 2, CV_AA);
-  //       break;
-  //     case YELLOW:
-  //       putText(targetScope, "YELLOW", Point(ctx.topLeft.x, ctx.botRight.y), FONT_HERSHEY_COMPLEX_SMALL, 1.0, CV_RGB(255,255,0), 2, CV_AA);
-  //       break;
-  //     case RED:
-  //       putText(targetScope, "RED", Point(ctx.topLeft.x, ctx.botRight.y), FONT_HERSHEY_COMPLEX_SMALL, 1.0, CV_RGB(255,0,0), 2, CV_AA);
-  //       break;
-  //     case UNDEFINED:
-  //       putText(targetScope, "UNDEFINED", Point(ctx.topLeft.x, ctx.botRight.y), FONT_HERSHEY_COMPLEX_SMALL, 1.0, CV_RGB(0,0,0), 2, CV_AA);
-  //       break;
-  //     }
-  //   }
 
   imshow("target scope", targetScope);
   waitKey(5);
@@ -151,8 +119,6 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
 int main(int argc, char* argv[]) {
 
   //	printf("***** Traffic lights app *****\n");
-
-  //setContexts(detector);
 
   ros::init(argc, argv, "traffic_light_lkf");
 
@@ -164,68 +130,6 @@ int main(int argc, char* argv[]) {
   ros::spin();
 
   return 0;
-  //  namedWindow(MAIN_WINDOW_NAME);
-  //setMouseCallback(MAIN_WINDOW_NAME, mouseCallback);
-
-#if 0
-  setContexts(detector);
-
-
-  Mat previous, resultImage;
-  int image_num = 1;
-
-  while (1) {
-    std::stringstream ss;
-    ss << SRC_PATH << "/Data/TrafficLight/" << image_num++ << ".png";
-    std::string image_path = ss.str();
-    Mat frame = imread(image_path);
-    if (frame.empty())
-      {
-        std::cout << "cannot open file:" << image_path << std::endl;
-        std::cout << "detection finish." << std::endl;
-        break;
-      }
-    frame.copyTo(resultImage);
-
-    Mat vehicleResult;
-    cvtColor(frame, frame, CV_RGB2GRAY);
-    LightState lightState = detector.brightnessDetect(frame);
-    vector<Rect> boundedRects;
-
-
-    /* test output */
-    std::cout << "lightState: ";
-    switch(lightState) {
-    case GREEN:
-      std::cout << "GREEN" << std::endl;
-      break;
-    case YELLOW:
-      std::cout << "YELLOW" << std::endl;
-      break;
-    case RED:
-      std::cout << "RED" << std::endl;
-      break;
-    case UNDEFINED:
-      std::cout << "UNDEFINED" << std::endl;
-      break;
-    }
-    cv::rectangle(resultImage, contexts[0].topLeft, contexts[0].botRight, CV_RGB(255, 0, 0), 5, 8);
-    cv::circle(resultImage, contexts[0].redCenter, contexts[0].lampRadius, CV_RGB(255, 0, 0), -1, 0);
-    cv::circle(resultImage, contexts[0].yellowCenter, contexts[0].lampRadius, CV_RGB(255, 255, 0), -1, 0);
-    cv::circle(resultImage, contexts[0].greenCenter, contexts[0].lampRadius, CV_RGB(0, 255, 0), -1, 0);
-
-
-    imshow(MAIN_WINDOW_NAME, resultImage);
-
-    char c = waitKey(0);
-    if (c == 27) break;
-
-    previous.release();
-    previous.data = frame.data;
-  }
-
-  return 0;
-#endif
 }
 
 
@@ -304,54 +208,3 @@ void setContexts(TrafficLightDetector &detector,
       detector.contexts.push_back(ctx);
     }
 }
-#if 0
-void drawTrafficLights(Mat &targetImg, LightState lightState) {
-  switch (lightState) {
-  case GREEN:
-    circle(targetImg, GREEN_DRAW_CENTER, LIGHT_DRAW_RADIUS, MY_COLOR_GREEN, -1);
-    break;
-  case YELLOW:
-    circle(targetImg, YELLOW_DRAW_CENTER, LIGHT_DRAW_RADIUS, MY_COLOR_YELLOW, -1);
-    break;
-  case RED:
-    circle(targetImg, RED_DRAW_CENTER, LIGHT_DRAW_RADIUS, MY_COLOR_RED, -1);
-    break;
-  }
-}
-
-static Mat showMask, redMask, blueMask, greenMask;
-void initMasks(char *pathToShowMask) {
-  /* Initialize show mask */
-  showMask = loadMask(pathToShowMask);
-  Mat grayMask(showMask);
-  cvtColor(showMask, showMask, CV_GRAY2RGB);
-  showMask.copyTo(redMask);
-  showMask.copyTo(blueMask);
-  showMask.copyTo(greenMask);
-  redMask.setTo(MY_COLOR_RED, grayMask);
-  blueMask.setTo(MY_COLOR_BLUE, grayMask);
-  greenMask.setTo(MY_COLOR_GREEN, grayMask);
-}
-
-void drawEnforcement(Mat &targetImg, bool isEnforced, LightState lightState) {
-
-  addWeighted(targetImg, 1.0, showMask, -0.5, 0, targetImg);
-  if (isEnforced) {
-    if (lightState == GREEN)
-      addWeighted(targetImg, 1.0, greenMask, 2.0, 0, targetImg);
-    else
-      addWeighted(targetImg, 1.0, redMask, 2.0, 0, targetImg);
-  } else {
-    addWeighted(targetImg, 1.0, blueMask, 2.0, 0, targetImg);
-  }
-
-}
-
-void drawBoundedRects(Mat &targetImg, vector<Rect> boundedRects) {
-  for (int i = 0; i< boundedRects.size(); i++) {
-    if (boundedRects[i].width >= MIN_WIDTH && boundedRects[i].width <= MAX_WIDTH && boundedRects[i].height >= MIN_HEIGHT && boundedRects[i].height <= MAX_HEIGHT) {
-      rectangle(targetImg, boundedRects[i].tl(), boundedRects[i].br(), MY_COLOR_PURPLE, 2, 8, 0);
-    }
-  }
-}
-#endif

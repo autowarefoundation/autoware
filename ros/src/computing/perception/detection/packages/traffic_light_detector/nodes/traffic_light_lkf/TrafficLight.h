@@ -10,8 +10,6 @@
 
 /* Internal includes */
 #include "TrafficLightDetector.h"
-//#include "LucasKanadeTracker.h"
-//#include "VehicleDetector.h"
 
 /* Extra includes */
 #include "traffic_light_detector/Signals.h"
@@ -20,7 +18,6 @@
 #define SETTINGS_WINDOW_NAME "Settings"
 
 /* Functions declarations */
-//void mouseCallback(int event, int x, int y, int flags, void* userdata);
 void setContexts(TrafficLightDetector &detector, const traffic_light_detector::Signals::ConstPtr& extractedPos);
 void initMasks(char *pathToShowMask);
 void drawTrafficLights(Mat &targetImg, LightState lightState);

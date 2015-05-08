@@ -16,15 +16,6 @@ using namespace cv;
 #define MY_COLOR_BLUE Scalar(255,0,0)
 #define MY_COLOR_WHITE Scalar(255,255,255)
 
-#if 0
-/* const LightState STATE_TRANSITION_MATRIX[5][8] = {  */
-/* 	{ GREEN, RED, YELLOW, REDYELLOW, GREEN, GREEN, GREEN, UNDEFINED }, */
-/* 	{ YELLOW, RED, YELLOW, REDYELLOW, GREEN, GREEN, GREEN, UNDEFINED }, */
-/* 	{ RED, RED, REDYELLOW, REDYELLOW, GREEN, GREEN, GREEN, UNDEFINED }, */
-/* 	{ REDYELLOW, REDYELLOW, REDYELLOW, REDYELLOW, GREEN, GREEN, GREEN, UNDEFINED }, */
-/* 	{ UNDEFINED, RED, YELLOW, REDYELLOW, GREEN, GREEN, GREEN, UNDEFINED } */
-/* }; */
-#endif
 const LightState STATE_TRANSITION_MATRIX[4][8] = {
 	{ GREEN,     RED, YELLOW, YELLOW, GREEN, GREEN, YELLOW, UNDEFINED },
 	{ YELLOW,    RED, YELLOW, RED,    GREEN, RED,   YELLOW, UNDEFINED },
@@ -39,7 +30,7 @@ LightState determineState(LightState previousState, int currentLightsCode);
 class TrafficLightDetector {
 public:
 	TrafficLightDetector();
-	LightState brightnessDetect(const Mat &input);
+	void brightnessDetect(const Mat &input);
 	void colorDetect(const Mat &input, Mat &output, const Rect coords, int Hmin, int Hmax);
 	vector<Context> contexts;
 };
