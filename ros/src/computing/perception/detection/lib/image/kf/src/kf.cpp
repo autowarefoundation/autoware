@@ -29,7 +29,7 @@
 */
 
 //ROS STUFF
-#include "ros/ros.h"
+#include <ros/ros.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
@@ -38,18 +38,14 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <runtime_manager/ConfigCarKf.h>
-#include "dpm/ImageObjects.h"
-
-
-#define CAR_NODE "car_pixel_xy_tracked"
-#define PED_NODE "pedestrian_pixel_xy_tracked"
+#include <dpm/ImageObjects.h>
 
 //TRACKING STUFF
-#include "opencv2/core/core.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/contrib/contrib.hpp"
-#include "opencv2/video/tracking.hpp"
+#include <opencv2/core/core.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/contrib/contrib.hpp>
+#include <opencv2/video/tracking.hpp>
 
 #include <iostream>
 #include <stdio.h>
@@ -61,9 +57,6 @@
 
 using namespace std;
 using namespace cv;
-
-using namespace sensor_msgs;
-using namespace message_filters;
 
 ros::Publisher image_objects;//ROS
 
@@ -175,7 +168,6 @@ bool crossCorr(Mat im1, Mat im2)
 
 void posScaleToBbox(vector<kstate> kstates, vector<kstate>& trackedDetections)
 {
-
 	for (unsigned int i = 0; i < kstates.size(); i++)
 	{
 		if (kstates[i].active)
@@ -210,7 +202,7 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 	kstate new_state;
 	//KalmanFilter KF(4, 2, 0);//XY Only
 	KalmanFilter KF(8, 4, 0);
-	
+
 	/*Mat_<float> measurement = (Mat_<float>(2, 1) << object.rect.x,//XY Only
 		object.rect.y);*/
 	Mat_<float> measurement = (Mat_<float>(4, 1) << object.rect.x,
@@ -333,7 +325,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			cv::setIdentity(kstates[i].KF.processNoiseCov, Scalar::all(NOISE_COV));//1e-4
 			cv::setIdentity(kstates[i].KF.measurementNoiseCov, Scalar::all(MEAS_NOISE_COV));//1e-3
 			cv::setIdentity(kstates[i].KF.errorCovPost, Scalar::all(ERROR_ESTIMATE_COV));//100
-			
+
 			Mat prediction = kstates[i].KF.predict();
 			kstates[i].pos.x = prediction.at<float>(0);
 			kstates[i].pos.y = prediction.at<float>(1);
@@ -349,11 +341,11 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 				kstates[i].pos.y = 0;
 			if (kstates[i].pos.y > image.rows)
 				kstates[i].pos.y = image.rows;
-				
+
 			//remove those where the dimensions of are unlikely to be real
 			if (kstates[i].pos.width > kstates[i].pos.height*4)
 				kstates[i].active = false;
-			
+
 			if (kstates[i].pos.height > kstates[i].pos.width*2)
 				kstates[i].active = false;
 
@@ -440,7 +432,7 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 		//od.rect contains x,y, width, height
 		rectangle(image, od.pos, od.color, 3);
 		putText(image, SSTR(od.id), Point(od.pos.x + 4, od.pos.y + 13), FONT_HERSHEY_SIMPLEX, 0.55, od.color, 2);
-		//ROS		
+		//ROS
 		car_type_array[i] = od.id; // ?
 		corner_point_array[0+i*4] = od.pos.x;
 		corner_point_array[1+i*4] = od.pos.y;
@@ -468,23 +460,23 @@ void image_callback(const sensor_msgs::Image& image_source)
 	//cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 	//						     encoding);
 	//IplImage frame = cv_image->image;
-	
+
 	//Mat imageTrack(&frame, true);
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
   	Mat imageTrack = cv_image->image;
 
-	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);	
+	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);
 
 	imshow("Tracked", imageTrack);
-	
+
 	_counter++;
 }
 
 void detections_callback(dpm::ImageObjects image_objects_msg)
 {
 	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point; 
+	vector<int> points = image_objects_msg.corner_point;
 	//points are X,Y,W,H and repeat for each instance
 	_dpm_detections.clear();
 	cv::generateColors(_colors, num);
@@ -496,7 +488,7 @@ void detections_callback(dpm::ImageObjects image_objects_msg)
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		_dpm_detections.push_back(LatentSvmDetector::ObjectDetection(tmp, 0));
-		
+
 	}
 	_ready = true;
 	cout << "received pos" << endl;
@@ -559,17 +551,15 @@ int kf_main(int argc, char* argv[], const std::string& tracking_type)
 		ROS_INFO("No object node received, defaulting to %s, you can use _object_node:=YOUR_TOPIC", obj_topic_def.c_str());
 		obj_topic = obj_topic_def;
 	}
-	
 
 	ros::Subscriber sub_image = n.subscribe(image_topic, 1, image_callback);
 	ros::Subscriber sub_dpm = n.subscribe(obj_topic, 1, detections_callback);
-	
+
 	ros::Subscriber config_subscriber = n.subscribe("/config/car_kf", 1, kf_config_cb);
-	
+
 	//TimeSynchronizer<Image, dpm::ImageObjects> sync(image_sub, pos_sub, 10);
-	
+
 	//sync.registerCallback(boost::bind(&sync_callback, _1, _2));
-	
 
 	ros::spin();
 	return 0;
