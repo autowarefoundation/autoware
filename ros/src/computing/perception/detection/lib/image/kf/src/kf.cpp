@@ -37,7 +37,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
+#include <runtime_manager/ConfigCarKf.h>
 #include "dpm/ImageObjects.h"
+
 
 #define CAR_NODE "car_pixel_xy_tracked"
 #define PED_NODE "pedestrian_pixel_xy_tracked"
@@ -57,9 +59,6 @@
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
 
-#define DEFAULT_LIFESPAN 4 //LIFESPAN of objects before stop being tracked, in frames
-#define INITIAL_LIFESPAN 3 //LIFESPAN of objects before stop being tracked, in frames
-
 using namespace std;
 using namespace cv;
 
@@ -68,15 +67,22 @@ using namespace message_filters;
 
 ros::Publisher image_objects;//ROS
 
+int 		DEFAULT_LIFESPAN = 4; //LIFESPAN of objects before stop being tracked, in frames
+int 		INITIAL_LIFESPAN = 3; //LIFESPAN of objects before stop being tracked, in frames
+float 		NOISE_COV = 1;
+float 		MEAS_NOISE_COV = 25;
+float 		ERROR_ESTIMATE_COV = 1000000;
+float 		OVERLAPPING_PERC = 0.0;
+
 struct kstate
 {
-	KalmanFilter		KF;//KalmanFilter for this object
+	KalmanFilter	KF;//KalmanFilter for this object
 	Rect			pos;//position of the object centerx, centery, width, height
 	float			score;//DPM score
 	bool			active;//if too old (lifespan) don't use
-	int			id;//id of this tracked object
-	Mat			image;//image containing the detected and tracked object
-	int			lifespan;//remaining lifespan before deprecate
+	int				id;//id of this tracked object
+	Mat				image;//image containing the detected and tracked object
+	int				lifespan;//remaining lifespan before deprecate
 	LatentSvmDetector::ObjectDetection obj;//currently not used
 	Scalar			color;
 };
@@ -236,9 +242,9 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 	KF.statePost.at<float>(3) = object.rect.height;//XY Only
 	//KF.measurementMatrix = measurement;
 	cv::setIdentity(KF.measurementMatrix);
-	cv::setIdentity(KF.processNoiseCov, Scalar::all(1));//1e-4
-	cv::setIdentity(KF.measurementNoiseCov, Scalar::all(25));//1e-3
-	cv::setIdentity(KF.errorCovPost, Scalar::all(1000000));//100
+	cv::setIdentity(KF.processNoiseCov, Scalar::all(NOISE_COV));//1e-4
+	cv::setIdentity(KF.measurementNoiseCov, Scalar::all(MEAS_NOISE_COV));//1e-3
+	cv::setIdentity(KF.errorCovPost, Scalar::all(ERROR_ESTIMATE_COV));//100
 	//setIdentity(KF.processNoiseCov, Scalar::all(1e-4));
 	//setIdentity(KF.measurementNoiseCov, Scalar::all(1e-3));
 	//setIdentity(KF.errorCovPost, Scalar::all(100));
@@ -302,14 +308,14 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 
 				Rect intersect = detections[j].rect & kstates[i].pos;//check overlapping
 
-				if (intersect.width > 0
+				if (intersect.width > (kstates[i].image.cols * OVERLAPPING_PERC)//overlapping percentage
 					&& crossCorr(kstates[i].image, currentObjectROI)
 					)
 				{
 					correct_indices[i] = true;//if ROI on this frame is matched to a previous object, correct
 					correct_detection_indices[i] = j;//store the index of the detection corresponding to matched kstate
 					add_as_new_indices[j] = false;//if matched do not add as new
-					kstates[i].image = currentObjectROI;//update image with current frame data
+					//kstates[i].image = currentObjectROI;//update image with current frame data
 					kstates[i].score = detections[j].score;
 				}//crossCorr
 
@@ -322,6 +328,12 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 	{
 		if (kstates[i].active)//predict and correct only active states
 		{
+			//update params before predicting
+			cv::setIdentity(kstates[i].KF.measurementMatrix);
+			cv::setIdentity(kstates[i].KF.processNoiseCov, Scalar::all(NOISE_COV));//1e-4
+			cv::setIdentity(kstates[i].KF.measurementNoiseCov, Scalar::all(MEAS_NOISE_COV));//1e-3
+			cv::setIdentity(kstates[i].KF.errorCovPost, Scalar::all(ERROR_ESTIMATE_COV));//100
+			
 			Mat prediction = kstates[i].KF.predict();
 			kstates[i].pos.x = prediction.at<float>(0);
 			kstates[i].pos.y = prediction.at<float>(1);
@@ -337,6 +349,13 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 				kstates[i].pos.y = 0;
 			if (kstates[i].pos.y > image.rows)
 				kstates[i].pos.y = image.rows;
+				
+			//remove those where the dimensions of are unlikely to be real
+			if (kstates[i].pos.width > kstates[i].pos.height*4)
+				kstates[i].active = false;
+			
+			if (kstates[i].pos.height > kstates[i].pos.width*2)
+				kstates[i].active = false;
 
 			kstates[i].lifespan--;//reduce lifespan
 			if (kstates[i].lifespan <= 0)
@@ -483,6 +502,16 @@ void detections_callback(dpm::ImageObjects image_objects_msg)
 	cout << "received pos" << endl;
 }
 
+static void kf_config_cb(const runtime_manager::ConfigCarKf::ConstPtr& param)
+{
+	INITIAL_LIFESPAN = param->initial_lifespan;
+	DEFAULT_LIFESPAN   = param->default_lifespan;
+	NOISE_COV    = param->noise_covariance;
+	MEAS_NOISE_COV = param->measurement_noise_covariance;
+	ERROR_ESTIMATE_COV = param->error_estimate_covariance;
+	OVERLAPPING_PERC = param->percentage_of_overlapping;
+}
+
 int kf_main(int argc, char* argv[], const std::string& tracking_type)
 {
 	std::string published_node;
@@ -534,6 +563,9 @@ int kf_main(int argc, char* argv[], const std::string& tracking_type)
 
 	ros::Subscriber sub_image = n.subscribe(image_topic, 1, image_callback);
 	ros::Subscriber sub_dpm = n.subscribe(obj_topic, 1, detections_callback);
+	
+	ros::Subscriber config_subscriber = n.subscribe("/config/car_kf", 1, kf_config_cb);
+	
 	//TimeSynchronizer<Image, dpm::ImageObjects> sync(image_sub, pos_sub, 10);
 	
 	//sync.registerCallback(boost::bind(&sync_callback, _1, _2));
