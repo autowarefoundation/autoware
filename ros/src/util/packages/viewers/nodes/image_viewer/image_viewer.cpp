@@ -32,13 +32,13 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "opencv2/contrib/contrib.hpp"
+#include <opencv2/contrib/contrib.hpp>
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "dpm/ImageObjects.h"
+#include <dpm/ImageObjects.h>
 
 using namespace std;
 using namespace cv;
@@ -67,7 +67,7 @@ void drawDetections(vector<Rect> dets, std::string objectLabel, IplImage frame)
 			&font,
 			&text_size,
 			&baseline);
-	//UNTRACKED		  
+	//UNTRACKED
 	for(std::size_t i=0; i<dets.size();i++)
 	{
 		if(dets[i].y > frame.height*.3)//temporal way to avoid drawing detections in the sky
@@ -95,7 +95,7 @@ void drawDetections(vector<Rect> dets, std::string objectLabel, IplImage frame)
 
 		}
 	}
-	
+
 	////
 }
 
@@ -126,15 +126,15 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	putText(matImage, "PIXEL_XY", Point(10,10), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 0, 255), 2);
 	drawDetections(cars, "car", frame);
 	drawDetections(peds, "pedestrian", frame);
-	
+
 	//TRACKED
 	putText(imageTrack, "PIXEL_XY_TRACKED", Point(10,10), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 255, 0), 2);
 	drawTracked(cars_tracked, "car", imageTrack);
 	drawTracked(peds_tracked, "pedestrian", imageTrack);
 	////////////////////
-	
+
 	Mat merged;
-	
+
 	hconcat(matImage, imageTrack, merged);
 	imshow("Image Viewer", merged);
 	//cvShowImage("Image Viewer", &frame);
@@ -210,7 +210,6 @@ static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		peds.push_back(tmp);
-
 	}
 }
 
@@ -241,7 +240,7 @@ int main(int argc, char **argv)
 						car_updater_callback);
 	ros::Subscriber scriber_ped = n.subscribe("/pedestrian_pixel_xy", 1,
 						ped_updater_callback);
-						
+
 	ros::Subscriber scriber_ped_tracked = n.subscribe("/pedestrian_pixel_xy_tracked", 1,
 						ped_updater_callback_tracked);
 	ros::Subscriber scriber_car_tracked = n.subscribe("/car_pixel_xy_tracked", 1,
