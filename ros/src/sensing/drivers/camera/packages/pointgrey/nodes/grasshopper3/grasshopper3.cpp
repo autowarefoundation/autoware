@@ -59,31 +59,6 @@ static void signalHandler(int)
 	ros::shutdown();
 }
 
-static void tfRegistration(const cv::Mat &camExtMat)
-{
-	tf::Matrix3x3 rotation_mat;
-	double roll = 0, pitch = 0, yaw = 0;
-	tf::Quaternion quaternion;
-	tf::Transform transform;
-	static tf::TransformBroadcaster broadcaster;
-
-	rotation_mat.setValue(camExtMat.at<double>(0, 0), camExtMat.at<double>(0, 1), camExtMat.at<double>(0, 2),
-			      camExtMat.at<double>(1, 0), camExtMat.at<double>(1, 1), camExtMat.at<double>(1, 2),
-			      camExtMat.at<double>(2, 0), camExtMat.at<double>(2, 1), camExtMat.at<double>(2, 2));
-
-	rotation_mat.getRPY(roll, pitch, yaw, 1);
-
-	quaternion.setRPY(roll, pitch, yaw);
-
-	transform.setOrigin(tf::Vector3(camExtMat.at<double>(0, 3),
-                                  camExtMat.at<double>(1, 3),
-                                  camExtMat.at<double>(2, 3)));
-
-	transform.setRotation(quaternion);
-
-	broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
-}
-
 void parseCameraInfo(const cv::Mat  &camMat,
                        const cv::Mat  &disCoeff,
                        const cv::Size &imgSize,
@@ -260,14 +235,11 @@ void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo
 	}
 	else
 	{
-		fs["CameraExtrinsicMat"] >> cameraExtrinsicMat;
 		fs["CameraMat"] >> cameraMat;
 		fs["DistCoeff"] >> distCoeff;
 		fs["ImageSize"] >> imageSize;
 	}
-	tfRegistration(cameraExtrinsicMat);
 	parseCameraInfo(cameraMat, distCoeff, imageSize, camerainfo_msg);
-
 }
 
 int main(int argc, char **argv)
