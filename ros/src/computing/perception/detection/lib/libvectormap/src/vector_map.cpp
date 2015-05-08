@@ -232,18 +232,21 @@ void VectorMap::loadAll (const std::string &dirname)
 
 	string ptname = dirname + "/point.csv";
 	if (load_points((char*)ptname.c_str()) == EXIT_FAILURE) {
+      std::cerr << ptname << "\t load fail." << std::endl;
       exit(EXIT_FAILURE);
     }
     std::cout << ptname << "\t load complete." << std::endl;
 
 	string linename = dirname + "/line.csv";
 	if (load_lines ((char*)linename.c_str()) == EXIT_FAILURE) {
+      std::cerr << linename << "\t load fail." << std::endl;
       exit(EXIT_FAILURE);
     }
     std::cout << linename << "\t load complete." << std::endl;
 
 	string dtlanename = dirname + "/dtlane.csv";
 	if (load_dtlanes ((char*)dtlanename.c_str()) == EXIT_FAILURE) {
+      std::cerr << dtlanename << "\t load fail." << std::endl;
       exit(EXIT_FAILURE);
     }
     std::cout << dtlanename << "\t load complete." << std::endl;
@@ -251,12 +254,14 @@ void VectorMap::loadAll (const std::string &dirname)
 	//string clinename = dirname + "/cline.csv";
     string clinename = dirname + "/whiteline.csv";
 	if (load_clines ((char*)clinename.c_str()) == EXIT_FAILURE) {
+      std::cerr << clinename << "\t load fail." << std::endl;
       exit(EXIT_FAILURE);
     }
     std::cout << clinename << "\t load complete." << std::endl;
 
 	string vectorname = dirname + "/vector.csv";
 	if (load_vectors ((char*)vectorname.c_str()) == EXIT_FAILURE) {
+      std::cerr << vectorname << "\t load fail." << std::endl;
       exit(EXIT_FAILURE);
     }
     std::cout << vectorname << "\t load complete." << std::endl;
@@ -264,12 +269,14 @@ void VectorMap::loadAll (const std::string &dirname)
 	//string signalname = dirname + "/signal.csv";
     string signalname = dirname + "/signaldata.csv";
 	if (load_signals ((char*)signalname.c_str()) == EXIT_FAILURE) {
+      std::cerr << signalname << "\t load fail." << std::endl;
       exit(EXIT_FAILURE);
     }
     std::cout << signalname << "\t load complete." << std::endl;
 
 	string lanename = dirname + "/lane.csv";
 	if (load_lanes ((char*)lanename.c_str()) == EXIT_FAILURE) {
+      std::cerr << lanename << "\t load fail." << std::endl;
       exit(EXIT_FAILURE);
     }
     std::cout << lanename << "\t load complete." << std::endl;
