@@ -193,6 +193,7 @@ int VectorMap::load_clines(char *name) {
       clines.insert( std::map<int, CLine>::value_type(tmp_l.id, tmp_l) );
     }
 
+  return EXIT_SUCCESS;
 }
 
 
