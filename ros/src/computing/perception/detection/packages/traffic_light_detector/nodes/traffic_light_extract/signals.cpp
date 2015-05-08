@@ -111,6 +111,8 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 		int u, v;
 		if (project2 (signalcenter, u, v, useOpenGLCoord) == true) {
 			countPoint++;
+            std::cout << u << ", " << v << ", " << std::endl;
+
 
 			int radius;
 			int ux, vx;
@@ -119,7 +121,10 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 
 			traffic_light_detector::ExtractedPosition sign;
 			sign.signalId = signal.id;
-			sign.u = u, sign.v = v, sign.radius = radius;
+			//sign.u = u, sign.v = v, sign.radius = radius;
+            sign.u = u;
+            sign.v = v - 25;    /* temporaly correction of calibration data */
+            sign.radius = radius;
 			sign.x = signalcenter.x(), sign.y = signalcenter.y(), sign.z = signalcenter.z();
 			sign.hang = vmap.vectors[signal.vid].hang;
 			sign.type = signal.type, sign.linkId = signal.linkid;
@@ -166,7 +171,8 @@ int main (int argc, char *argv[])
       } catch (tf::TransformException &exc) {
       }
 
-      echoSignals2 (signalPublisher, true);
+      //echoSignals2 (signalPublisher, true);
+      echoSignals2 (signalPublisher, false);
       loop.sleep();
     }
 

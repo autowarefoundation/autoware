@@ -12,6 +12,7 @@ enum LightState { GREEN, YELLOW, RED, UNDEFINED };
 
 class Context {
 public:
+	Context(){};
 	Context(Point aRedCenter, Point aYellowCenter, Point aGreenCenter, int aLampRadius, Point aTopLeft, Point aBotRight);
 	Point redCenter;
 	Point yellowCenter;

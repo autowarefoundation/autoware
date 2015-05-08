@@ -42,37 +42,27 @@ LightState TrafficLightDetector::brightnessDetect(const Mat &input) {
 	for (int i = 0; i < contexts.size(); i++) {
       //		Context context = contexts[i];
       Context context = contexts.at(i);
-#if 0
-		// Mat roi = tmpImage(Rect(context.topLeft, context.botRight));
-#endif
-        Mat roi;
-        tmpImage.copyTo(roi);
+
+      if (context.lampRadius < MINIMAM_RADIUS || context.topLeft.x > context.botRight.x)
+        continue;
+
+      Mat roi = tmpImage(Rect(context.topLeft, context.botRight));
 
         UnsharpMasking(&roi, &roi, 3.0f);
 
-        imshow("unsharped", roi);
+        //        imshow("unsharped", roi);
 
 		threshold(roi, roi, 0, 255, THRESH_BINARY | THRESH_OTSU);
 
-        imshow("binalized", roi);
+        //imshow("binalized", roi);
 
         remove_SoltPepperNoise(&roi, 1);
 
-        imshow("remove_noize", roi);
-        //        waitKey(5);
+        //        imshow("remove_noize", roi);
 
-        // std::cout << "red:" << std::endl;
-        // std::cout << "center = (" << context.redCenter.x << ", " << context.redCenter.y << ")" << std::endl;
-        //		bool display_red = (getBrightnessRatioInCircle(tmpImage, context.redCenter, context.lampRadius) > 0.5);
-        bool display_red = (getBrightnessRatioInCircle(roi, context.redCenter, context.lampRadius) > 0.5);
-        // std::cout << "yellow:" << std::endl;
-        // std::cout << "center = (" << context.yellowCenter.x << ", " << context.yellowCenter.y << ")" << std::endl;
-        //		bool display_yellow = (getBrightnessRatioInCircle(tmpImage, context.yellowCenter, context.lampRadius) > 0.5);
-		bool display_yellow = (getBrightnessRatioInCircle(roi, context.yellowCenter, context.lampRadius) > 0.5);
-        // std::cout << "green:" << std::endl;
-        // std::cout << "center = (" << context.greenCenter.x << ", " << context.greenCenter.y << ")" << std::endl;
-        //		bool display_green = (getBrightnessRatioInCircle(tmpImage, context.greenCenter, context.lampRadius) > 0.5);
-        bool display_green = (getBrightnessRatioInCircle(roi, context.greenCenter, context.lampRadius) > 0.5);
+        bool display_red    = (getBrightnessRatioInCircle(tmpImage, context.redCenter, context.lampRadius) > 0.5);
+        bool display_yellow = (getBrightnessRatioInCircle(tmpImage, context.yellowCenter, context.lampRadius) > 0.5);
+        bool display_green  = (getBrightnessRatioInCircle(tmpImage, context.greenCenter, context.lampRadius) > 0.5);
 
 #if 0
         std::cout << "display_red: " << display_red << std::endl;
@@ -88,7 +78,7 @@ LightState TrafficLightDetector::brightnessDetect(const Mat &input) {
 		roi.setTo(Scalar(0));
 	}
     //	return contexts[0].lightState;
-    return contexts.at(0).lightState;
+    //    return contexts.at(0).lightState;
 }
 
 double getBrightnessRatioInCircle(const Mat &input, const Point center, const int radius) {
@@ -104,7 +94,7 @@ double getBrightnessRatioInCircle(const Mat &input, const Point center, const in
 		}
 	}
 	//printf("Ratio: %f\n", ((double)whitePoints) / (whitePoints + blackPoints));
-    std::cout << "  white:" << whitePoints << " black: " << blackPoints << std::endl;
+    //std::cout << "(" << center.x << ", " << center.y << ") "<< "  white:" << whitePoints << " black: " << blackPoints << std::endl;
 	return ((double)whitePoints) / (whitePoints + blackPoints);
 }
 
