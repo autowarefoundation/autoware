@@ -108,7 +108,7 @@ params :
       label : Score Threshold
       min   : -2
       max   : 2
-      v     : 0.5
+      v     : -0.5
     - name  : group_threshold
       label : Group Threshold
       min   : 0
@@ -124,6 +124,11 @@ params :
       min   : 2
       max   : 10
       v     : 8
+    - name  : num_bins
+      label : Num Bins
+      min   : 2
+      max   : 10
+      v     : 9
 
   - name  : pedestrian_dpm
     topic : /config/pedestrian_dpm
@@ -149,6 +154,11 @@ params :
       min   : 2
       max   : 10
       v     : 8
+    - name  : num_bins
+      label : Num Bins
+      min   : 2
+      max   : 10
+      v     : 9
 
   - name  : ndt
     topic : /config/ndt

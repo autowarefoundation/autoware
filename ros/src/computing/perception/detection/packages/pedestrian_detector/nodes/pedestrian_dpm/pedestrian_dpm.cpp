@@ -43,18 +43,33 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
-static float overlap_threshold;
-static int num_threads;
-static std::vector<std::string> model_files;
-static ros::Publisher pedestrian_pixel_publisher;
+double config_overlap = 0.4;
+double config_threshold = -0.5;
+int config_lambda = 10;
+int config_num_cells = 8;
+int config_num_bins = 9;
+
+int num_threads;
+std::vector<std::string> model_files;
+ros::Publisher pedestrian_pixel_publisher;
 
 static void image_raw_cb(const sensor_msgs::Image& image)
 {
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
 	cv::Mat mat = cv_image->image;
 
-	std::vector<DPMObject> pedestrians = dpm_detect_objects(mat, model_files,
-							 overlap_threshold, num_threads);
+	ROS_INFO("num_cells %d", config_num_cells);
+	ROS_INFO("num_bins %d", config_num_bins);
+	ROS_INFO("threshold %f", config_threshold);
+	std::vector<DPMObject> pedestrians = dpm_detect_objects(mat,
+													model_files,
+													config_overlap,
+													num_threads,
+													config_threshold,
+													config_lambda,
+													config_num_cells,
+													config_num_bins
+													);
 
 	size_t pedestrian_num = pedestrians.size();
 	std::vector<int> corner_point_array;
@@ -82,14 +97,6 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 
 static void set_default_parameters(const ros::NodeHandle& n)
 {
-	if (n.hasParam("/pedestrian_detector/threshold")){
-		double val;
-		n.getParam("/pedestrian_detector/threshold", val);
-		overlap_threshold = static_cast<float>(val);
-	} else {
-		overlap_threshold = 0.1f;
-	}
-
 	if (n.hasParam("/pedestrian_detector/threads")){
 		int val;
 		n.getParam("/pedestrian_detector/threads", val);
@@ -101,7 +108,10 @@ static void set_default_parameters(const ros::NodeHandle& n)
 
 static void pedestrian_config_cb(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)
 {
-
+	config_threshold = param->score_threshold;
+	config_overlap   = param->group_threshold;
+	config_lambda    = param->Lambda;
+	config_num_cells = param->num_cells;
 }
 
 int main(int argc, char *argv[])

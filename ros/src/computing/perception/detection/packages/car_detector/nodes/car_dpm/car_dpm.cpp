@@ -36,24 +36,36 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include "dpm/ImageObjects.h"
+#include <runtime_manager/ConfigCarDpm.h>
 
 #include <dpm.hpp>
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
-static float overlap_threshold;
-static int num_threads;
-static std::vector<std::string> model_files;
-static ros::Publisher car_pixel_publisher;
+double config_overlap = 0.4;
+double config_threshold = -0.5;
+int config_lambda = 10;
+int config_num_cells = 8;
+int config_num_bins = 9;
+
+int num_threads;
+std::vector<std::string> model_files;
+ros::Publisher car_pixel_publisher;
 
 static void image_raw_cb(const sensor_msgs::Image& image)
 {
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
 	cv::Mat mat = cv_image->image;
-
-	std::vector<DPMObject> cars = dpm_detect_objects(mat, model_files,
-							 overlap_threshold, num_threads);
+	std::vector<DPMObject> cars = dpm_detect_objects(mat,
+													model_files,
+													config_overlap,
+													num_threads,
+													config_threshold,
+													config_lambda,
+													config_num_cells,
+													config_num_bins
+													);
 	size_t car_num = cars.size();
 
 	std::vector<int> corner_point_array;
@@ -81,14 +93,6 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 
 static void set_default_parameters(const ros::NodeHandle& n)
 {
-	if (n.hasParam("/car_detector/threshold")){
-		double val;
-		n.getParam("/car_detector/threshold", val);
-		overlap_threshold = static_cast<float>(val);
-	} else {
-		overlap_threshold = 0.1f;
-	}
-
 	if (n.hasParam("/car_detector/threads")){
 		int val;
 		n.getParam("/car_detector/threads", val);
@@ -96,6 +100,14 @@ static void set_default_parameters(const ros::NodeHandle& n)
 	} else {
 		num_threads = 8;
 	}
+}
+
+void car_config_cb(const runtime_manager::ConfigCarDpm::ConstPtr& param)
+{
+	config_threshold = param->score_threshold;
+	config_overlap   = param->group_threshold;
+	config_lambda    = param->Lambda;
+	config_num_cells = param->num_cells;
 }
 
 int main(int argc, char *argv[])
@@ -110,6 +122,9 @@ int main(int argc, char *argv[])
 
 	std::string model_file(STR(MODEL_DIR) "car_2008.xml");
 	model_files.push_back(model_file);
+	
+	ros::Subscriber config_subscriber;
+	config_subscriber = n.subscribe("/config/car_dpm", 1, car_config_cb);
 
 	ros::spin();
 	return 0;

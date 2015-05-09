@@ -30,7 +30,7 @@
 
 #include <iostream>
 #include <sstream>
-#include <opencv2/objdetect/objdetect.hpp>
+#include "objdetect.hpp"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/contrib/contrib.hpp>
 #include <cstdio>
@@ -40,14 +40,22 @@
 #include <dpm.hpp>
 #include "objdetect.hpp"
 
-std::vector<DPMObject> dpm_detect_objects(const cv::Mat& image,
-					  const std::vector<std::string>& model_files,
-					  float overlap_threshold, int threads)
+std::vector<DPMObject> dpm_detect_objects(const cv::Mat& image,							//opencv image
+										  const std::vector<std::string>& model_files,	//dpm model xml files
+										  float overlap_threshold,						//overlap threshold
+										  int threads,									//threads to execute
+										  double score_threshold,						//detection score threshold
+										  int lambda,									//used to calculate the pyramid levels
+										  int num_cells,								//hog num cells to divide the image
+										  int num_bins									//num of bins for hog
+										  )
 {
 	cv::LatentSvmDetector detector(model_files);
-	if (detector.empty()) {
+	if (detector.empty())
+	{
 		std::cerr << "Model files can't be loaded" << std::endl;
-		for (const auto& file : model_files) {
+		for (const auto& file : model_files)
+		{
 			std::cerr << "\t File: " << file << std::endl;
 		}
 		std::exit(1);
@@ -57,7 +65,8 @@ std::vector<DPMObject> dpm_detect_objects(const cv::Mat& image,
 	size_t class_num = classes.size();
 
 	std::cout << "Load: " << class_num << " models" << std::endl;
-	for (int i = 0; i < static_cast<int>(class_num); ++i) {
+	for (int i = 0; i < static_cast<int>(class_num); ++i)
+	{
 		std::cout << "(" << i << ") " << classes[i] << std::endl;
 	}
 
@@ -65,10 +74,11 @@ std::vector<DPMObject> dpm_detect_objects(const cv::Mat& image,
 	cv::generateColors(colors, class_num);
 
 	std::vector<cv::LatentSvmDetector::ObjectDetection> detections;
-	detector.detect(image, detections, overlap_threshold, threads);
+	detector.detect(image, detections, overlap_threshold, threads, score_threshold, lambda, num_cells, num_bins);
 
 	std::vector<DPMObject> results(detections.size());
-	for (int i = 0; i < static_cast<int>(detections.size()); ++i) {
+	for (int i = 0; i < static_cast<int>(detections.size()); ++i)
+	{
 		results[i].rect = detections[i].rect;
 		results[i].class_id = detections[i].classID;
 	}

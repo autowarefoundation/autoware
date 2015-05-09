@@ -44,18 +44,20 @@
 #define __OPENCV_PRECOMP_H__
 
 #include <iostream>
-#include <opencv2/contrib/contrib.hpp>
+#include "contrib.hpp"
 
 using namespace std;
-using namespace cv;
+
 
 #include "cvconfig.h"
 
-#include <opencv2/objdetect/objdetect.hpp>
+#include "objdetect.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/core/core_c.h>
 #include <opencv2/core/internal.hpp>
+
+using namespace cv;
 
 #include <opencv2/opencv_modules.hpp>
 #ifdef HAVE_OPENCV_HIGHGUI
