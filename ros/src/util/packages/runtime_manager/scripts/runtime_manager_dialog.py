@@ -516,6 +516,24 @@ class MyFrame(rtmgr.MyFrame):
 		if 'pub' in prm:
 			self.publish_param_topic(pdic, prm)
 		self.rosparam_set(pdic, prm)
+		self.update_depend_enable(pdic, gdic, prm)
+
+	def update_depend_enable(self, pdic, gdic, prm):
+		for var in prm.get('vars', []):
+			name = var.get('name')
+			gdic_v = gdic.get(name, {})
+			depend = gdic_v.get('depend')
+			if depend is None:
+				continue
+			vp = gdic_v.get('var')
+			if vp is None:
+				continue
+			v = pdic.get(depend)
+			if v is None:
+				continue
+			v = bool(v)
+                        if vp.IsEnabled() != v:
+				vp.Enable(v)
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -1248,6 +1266,7 @@ class ParamPanel(wx.Panel):
 			vp = VarPanel(self, var=var, v=v, update=self.update)
 			self.vps.append(vp)
 
+			gdic_v['var'] = vp
 			gdic_v['func'] = vp.get_v
 			prop = gdic_v.get('prop', 0)
 			border = gdic_v.get('border', 0)
