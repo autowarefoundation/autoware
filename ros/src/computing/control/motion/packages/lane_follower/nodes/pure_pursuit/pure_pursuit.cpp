@@ -72,10 +72,12 @@ static ros::Publisher _vis_pub;
 static ros::Publisher _circle_pub;
 static ros::Publisher _stat_pub;
 static std_msgs::Bool _lf_stat;
-static bool _fix_flag = false;
+static int _param_flag = 0; //0 = waypoint, 1 = Dialog
 static bool _param_set = false;
 static tf::Transform _transform;
 static tf::Vector3 _origin_v(0, 0, 0);
+
+
 
 //std::ofstream _ofs;
 
@@ -83,6 +85,7 @@ static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr con
 {
     _initial_velocity_kmh = config->velocity;
     _lookahead_threshold = config->lookahead_threshold;
+    _param_flag = config->param_flag;
     _param_set = true;
 }
 
@@ -164,7 +167,7 @@ static double GetLookAheadThreshold()
 {
     //  std::cout << "get lookahead threshold" << std::endl;
 
-    if (_fix_flag)
+    if (_param_flag)
         return _lookahead_threshold;
 
     double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
@@ -321,7 +324,7 @@ int GetNextWayPoint()
         // if there exists an effective waypoint
         if (Distance > lookahead_threshold) {
 
-            if (!_fix_flag) {
+            if (!_param_flag) {
 
                 double radius = CalcRadius(i);
                 if (radius < 0)
@@ -449,7 +452,7 @@ static geometry_msgs::Twist CalculateCmdTwist()
 
     double radius = CalcRadius(_next_waypoint);
     double initial_velocity_ms = 0;
-    if (_fix_flag == false)
+    if (!_param_flag)
         initial_velocity_ms = GetWaypointVelocity();
     else
         initial_velocity_ms = _initial_velocity_kmh / 3.6;
@@ -492,7 +495,7 @@ static geometry_msgs::Twist EndControl()
 
     double velocity_kmh;
 
-    if (_fix_flag == true) {
+    if (_param_flag) {
         velocity_kmh = _initial_velocity_kmh - end_ratio * pow(end_loop,2);
     } else {
         velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * pow(end_loop,2));
@@ -552,9 +555,6 @@ int main(int argc, char **argv)
     private_nh.getParam("mobility_frame", _mobility_frame);
     std::cout << "mobility_frame : " << _mobility_frame << std::endl;
 
-    private_nh.getParam("fix_flag", _fix_flag);
-    std::cout << "fix_flag : " << _fix_flag << std::endl;
-
     // private_nh.getParam("velocity_kmh", _initial_velocity_kmh);
     // std::cout << "initial_velocity : " << _initial_velocity_kmh << std::endl;
     //
@@ -597,7 +597,7 @@ int main(int argc, char **argv)
     while (ros::ok()) {
         ros::spinOnce();
 
-        if (_fix_flag == true && _param_set == false) {
+        if (_param_set == false) {
             std::cout << "parameter waiting..." << std::endl;
             loop_rate.sleep();
             continue;
@@ -606,6 +606,12 @@ int main(int argc, char **argv)
         if (endflag == false) {
 
             // get the waypoint.
+            std::cout << "velocity : ";
+            if (!_param_flag)
+                std::cout << "waypoint" << std::endl;
+            else
+                std::cout << "dialog" << std::endl;
+
             _closest_waypoint = GetClosestWaypointNum();
             _next_waypoint = GetNextWayPoint();
             std::cout << "next waypoint = " << _next_waypoint;
