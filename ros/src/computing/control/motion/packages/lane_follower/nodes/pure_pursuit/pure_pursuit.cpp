@@ -397,6 +397,7 @@ int GetNextWayPoint()
                      //   std::cout << lookahead_threshold << std::endl;
                     }
                 }
+            }
 
             std::cout << "threshold = " << lookahead_threshold << std::endl;
             // display the next waypoint by markers.
