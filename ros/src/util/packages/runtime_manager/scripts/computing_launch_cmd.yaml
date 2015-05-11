@@ -7,9 +7,19 @@ subs :
           - name : pure_pursuit(sim)
             cmd : roslaunch lane_follower pure_pursuit_sim.launch
             param: lane_follower
+            gui  :
+              velocity:
+                depend : param_flag
+              lookahead_threshold:
+                depend : param_flag
           - name : pure_pursuit
             cmd : roslaunch lane_follower pure_pursuit.launch
             param: lane_follower
+            gui  :
+              velocity:
+                depend : param_flag
+              lookahead_threshold:
+                depend : param_flag
           - name : odom_gen
             cmd : roslaunch lane_follower odometry_sim.launch  
   
@@ -224,6 +234,12 @@ params :
     topic : /config/lane_follower
     msg   : ConfigLaneFollower
     vars  :
+    - name  : param_flag
+      kind  : radio_box
+      choices:
+      - Waypoint
+      - Dialog
+      v     : 1
     - name  : velocity
       label : Velocity
       min   : 0
