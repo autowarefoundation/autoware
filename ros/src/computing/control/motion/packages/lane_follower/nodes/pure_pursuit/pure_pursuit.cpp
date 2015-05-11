@@ -65,8 +65,8 @@ static geometry_msgs::PoseStamped _current_pose; // current pose by the global p
 static geometry_msgs::Twist _current_velocity;
 static lane_follower::lane _current_path;
 
-// ID (index) of the next waypoint.
-static int _next_waypoint = 0;
+static int _next_waypoint = 0; // ID (index) of the next waypoint.
+static int _closest_waypoint = 0; // ID (index) of the closest waypoint.
 
 static ros::Publisher _vis_pub;
 static ros::Publisher _circle_pub;
@@ -212,9 +212,7 @@ double GetLookAheadDistance(int waypoint)
     tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, _current_path.waypoints[waypoint].pose.pose.position.z);
     tf::Vector3 tf_v2 = _transform * v2;
     tf_v2.setZ(0);
-     //std::cout << "tf_v2 : (" << tf_v2.getX() << " " << tf_v2.getY() << " " << tf_v2.getZ() << ")" << std::endl;
 
-    //return tf::tfDistance(v1, v2);
     return tf::tfDistance(_origin_v, tf_v2);
 }
 
@@ -225,9 +223,9 @@ int GetClosestWaypointNum()
 {
     //std::cout << "search waypoint nearest the vehicle" << std::endl;
     double distance = 10000; //meter
-    double waypoint = 0;
+    double waypoint = 1;
 
-    for (int i = 1; i < _current_path.waypoints.size(); i++) {
+    for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
         //std::cout << waypoint << std::endl;
 
         // position of @waypoint.
@@ -254,9 +252,8 @@ int GetClosestWaypointNum()
 double GetWaypointVelocity()
 {
     //std::cout << "get velocity from waypoint near the vehicle" << std::endl;
-    static double velocity = _current_path.waypoints[1].twist.twist.linear.x;
 
-    return _current_path.waypoints[GetClosestWaypointNum()].twist.twist.linear.x;
+    return _current_path.waypoints[_closest_waypoint].twist.twist.linear.x;
 }
 
 double CalcRadius(int waypoint)
@@ -299,10 +296,10 @@ int GetNextWayPoint()
                 _next_waypoint++; // why is this needed?
                 break;
             }
-        } while (_next_waypoint++ < _current_path.waypoints.size());
+        } while (_next_waypoint++ < static_cast<int>(_current_path.waypoints.size()));
 
         // if no waypoint founded close enough, fall back!
-        if (_next_waypoint == _current_path.waypoints.size()) {
+        if (_next_waypoint == static_cast<int>(_current_path.waypoints.size())) {
             std::cout << "no waypoint on the path!" << std::endl;
             _next_waypoint = 0;
             _lf_stat.data = false;
@@ -314,11 +311,10 @@ int GetNextWayPoint()
 
     int minimum_th = 3;
     double lookahead_threshold = GetLookAheadThreshold();
-    int closest = GetClosestWaypointNum();
-    std::cout << "nearest waypoint = " << closest << std::endl;
+    std::cout << "nearest waypoint = " << _closest_waypoint << std::endl;
 
     // look for the next waypoint.
-    for (int i = closest; i < _current_path.waypoints.size(); i++) {
+    for (unsigned int i = _closest_waypoint; i < _current_path.waypoints.size(); i++) {
 
         double Distance = GetLookAheadDistance(i);
 
@@ -368,13 +364,13 @@ int GetNextWayPoint()
 
                 //evaluation waypoint
                 double evaluation = 0;
-                for (int j = closest + 1; j < i; j++) {
+                for (unsigned int j = _closest_waypoint + 1; j < i; j++) {
                     tf::Vector3 waypoint(_current_path.waypoints[j].pose.pose.position.x, _current_path.waypoints[j].pose.pose.position.y, _current_path.waypoints[j].pose.pose.position.z);
 
                     //  std::cout << "center(" << center.x() << " " << center.y() << " " << center.z() << ")" << std::endl;
                     //  std::cout << "waypoint (" << waypoint.x() << " " << waypoint.y() << " " << waypoint.z() << ")" << std::endl;
 
-                    tf::Vector3 tf_waypoint  = _transform * waypoint;
+                    tf::Vector3 tf_waypoint = _transform * waypoint;
                     tf_waypoint.setZ(0);
                     double dt = fabs(tf::tfDistance(center, tf_waypoint));
                     double dt_diff = fabs(dt - radius);
@@ -382,22 +378,25 @@ int GetNextWayPoint()
                     evaluation += dt_diff;
                 }
 
-                double eval_value = GetEvaluation(closest, i);
+                double eval_value = GetEvaluation(_closest_waypoint, i);
                 //std::cout << "evaluation (" << evaluation << " " << eval_value << "）" << std::endl;
 
                 if (evaluation < eval_value) {
                     //     std::cout << "ok!" << std::endl;
                 } else {
-                    //     std::cout << "bad" << std::endl;
+                    //std::cout << "threshold correction to ";
 
                     if (lookahead_threshold > minimum_th) {
                         lookahead_threshold -= 0.1;
-                        i = closest;
+
+                      //  std::cout << lookahead_threshold << std::endl;
+                        i = _closest_waypoint;
                         continue;
-                    } else
+                    } else {
                         lookahead_threshold = minimum_th;
+                     //   std::cout << lookahead_threshold << std::endl;
+                    }
                 }
-            }
 
             std::cout << "threshold = " << lookahead_threshold << std::endl;
             // display the next waypoint by markers.
@@ -606,6 +605,7 @@ int main(int argc, char **argv)
         if (endflag == false) {
 
             // get the waypoint.
+            _closest_waypoint = GetClosestWaypointNum();
             _next_waypoint = GetNextWayPoint();
             std::cout << "next waypoint = " << _next_waypoint;
             std::cout << "/" << _current_path.waypoints.size() << std::endl;
@@ -627,7 +627,7 @@ int main(int argc, char **argv)
             }
         }
 
-        if (_next_waypoint == _current_path.waypoints.size() - 1) {
+        if (_next_waypoint == static_cast<int>(_current_path.waypoints.size()) - 1) {
             endflag = true;
         }
 
