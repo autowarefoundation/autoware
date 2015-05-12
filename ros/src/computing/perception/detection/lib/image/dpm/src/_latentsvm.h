@@ -67,7 +67,7 @@
 // RESULT
 // Error status
 */
-int getFeaturePyramid(IplImage * image, CvLSVMFeaturePyramid **maps);
+int getFeaturePyramid(IplImage * image, CvLSVMFeaturePyramid **maps, int lambda, int num_cells, int num_bins);
 
 /*
 // Getting feature map for the selected subimage
@@ -82,7 +82,7 @@ int getFeaturePyramid(IplImage * image, CvLSVMFeaturePyramid **maps);
 // RESULT
 // Error status
 */
-int getFeatureMaps(const IplImage * image, const int k, CvLSVMFeatureMap **map);
+int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map, int num_bins);
 
 
 /*
@@ -98,7 +98,7 @@ int getFeatureMaps(const IplImage * image, const int k, CvLSVMFeatureMap **map);
 // RESULT
 // Error status
 */
-int normalizeAndTruncate(CvLSVMFeatureMap *map, const float alfa);
+int normalizeAndTruncate(CvLSVMFeatureMap *map, const float alfa, int num_bins);
 
 /*
 // Feature map reduction
@@ -114,7 +114,7 @@ int normalizeAndTruncate(CvLSVMFeatureMap *map, const float alfa);
 // RESULT
 // Error status
 */
-int PCAFeatureMaps(CvLSVMFeatureMap *map);
+int PCAFeatureMaps(CvLSVMFeatureMap *map, int num_bins);
 
 //////////////////////////////////////////////////////////////
 // search object
@@ -200,7 +200,8 @@ int clippingBoxes(int width, int height,
 extern "C"
 #endif
 CvLSVMFeaturePyramid* createFeaturePyramidWithBorder(IplImage *image,
-                                               int maxXBorder, int maxYBorder);
+                                               int maxXBorder, int maxYBorder,
+											   int lambda, int num_cells, int num_bins);
 
 /*
 // Computation of the root filter displacement and values of score function

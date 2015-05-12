@@ -148,7 +148,8 @@ int clippingBoxes(int width, int height,
 // Feature pyramid with nullable border
 */
 CvLSVMFeaturePyramid* createFeaturePyramidWithBorder(IplImage *image,
-                                               int maxXBorder, int maxYBorder)
+                                               int maxXBorder, int maxYBorder,
+											   int lambda, int num_cells, int num_bins)
 {
     int opResult;
     int bx, by;
@@ -156,7 +157,7 @@ CvLSVMFeaturePyramid* createFeaturePyramidWithBorder(IplImage *image,
     CvLSVMFeaturePyramid *H;
 
     // Obtaining feature pyramid
-    opResult = getFeaturePyramid(image, &H);
+    opResult = getFeaturePyramid(image, &H, lambda, num_cells, num_bins);
 
     if (opResult != LATENT_SVM_OK)
     {
@@ -606,15 +607,10 @@ int searchObjectThresholdSomeComponents(const CvLSVMFeaturePyramid *H,
     // For each component perform searching
     for (int i = 0; i < kComponents; i++)
     {
-    	TickMeter tm;
-    	tm.start();
-    	cout << "(latentsvm.cpp)searchObjectThreshold START " << endl;
         int error = searchObjectThreshold(H, &(filters[componentIndex]), kPartFilters[i],
             b[i], maxXBorder, maxYBorder, scoreThreshold,
             &(pointsArr[i]), &(levelsArr[i]), &(kPointsArr[i]),
             &(scoreArr[i]), &(partsDisplacementArr[i]), numThreads);
-        tm.stop();
-        cout << "(latentsvm.cpp)searchObjectThreshold END time = " << tm.getTimeSec() << " sec" << endl;
         if (error != LATENT_SVM_OK)
         {
             // Release allocated memory
@@ -626,14 +622,10 @@ int searchObjectThresholdSomeComponents(const CvLSVMFeaturePyramid *H,
             free(partsDisplacementArr);
             return LATENT_SVM_SEARCH_OBJECT_FAILED;
         }
-        tm.reset();tm.start();
-        cout << "(latentsvm.cpp)estimateBoxes START " << endl;
         estimateBoxes(pointsArr[i], levelsArr[i], kPointsArr[i],
             filters[componentIndex]->sizeX, filters[componentIndex]->sizeY, &(oppPointsArr[i]));
         componentIndex += (kPartFilters[i] + 1);
         *kPoints += kPointsArr[i];
-        tm.stop();
-        cout << "(latentsvm.cpp)estimateBoxes END time = " << tm.getTimeSec() << " sec" << endl;
     }
 
     *points = (CvPoint *)malloc(sizeof(CvPoint) * (*kPoints));
