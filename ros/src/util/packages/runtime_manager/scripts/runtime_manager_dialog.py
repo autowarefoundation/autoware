@@ -531,7 +531,8 @@ class MyFrame(rtmgr.MyFrame):
 			v = pdic.get(depend)
 			if v is None:
 				continue
-			v = bool(v)
+			depend_bool = eval( gdic_v.get('depend_bool', 'lambda v : bool(v)') )
+			v = depend_bool(v)
                         if vp.IsEnabled() != v:
 				vp.Enable(v)
 
@@ -563,6 +564,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			rosparam = var['rosparam']
 			v = pdic.get(name)
+			v = str(v)
 			exist = rosparam in rosparams
 			if exist:
 				cmd = [ 'rosparam', 'get', rosparam ]
@@ -570,7 +572,7 @@ class MyFrame(rtmgr.MyFrame):
 				if ov == v:
 					continue
 			elif v == '':
-				continue				
+				continue
 			cmd = [ 'rosparam', 'set', rosparam, v ] if v != '' else [ 'rosparam', 'delete', rosparam ]
 			print(cmd)
 			subprocess.call(cmd)
@@ -1351,13 +1353,13 @@ class VarPanel(wx.Panel):
 		if self.kind == 'radio_box':
 			choices = self.var.get('choices', [])
 			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
-			self.obj.SetSelection(v)
+			self.choices_sel_set(v)
 			self.Bind(wx.EVT_RADIOBOX, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'menu':
 			choices = self.var.get('choices', [])
 			slef.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
-			self.obj.SetSelection(v)
+			self.choices_sel_set(v)
 			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'checkbox':
@@ -1427,7 +1429,7 @@ class VarPanel(wx.Panel):
 
 	def get_v(self):
 		if self.kind in [ 'radio_box', 'menu' ]:
-			return self.obj.GetSelection()
+			return self.choices_sel_get()
 		if self.kind in [ 'checkbox', 'toggle_button' ]:
 			return self.obj.GetValue()
 		if self.kind == 'hide':
@@ -1491,6 +1493,15 @@ class VarPanel(wx.Panel):
 	def OnRef(self, event):
 		if file_dialog(self, self.tc, self.var) == wx.ID_OK:
 			self.update()
+
+	def choices_sel_get(self):
+		return self.obj.GetStringSelection() if self.var.get('choices_type') == 'str' else self.obj.GetSelection()
+
+	def choices_sel_set(self, v):
+		if self.var.get('choices_type') == 'str':
+			self.obj.SetStringSelection(v)
+		else:
+			self.obj.SetSelection(v)
 
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
