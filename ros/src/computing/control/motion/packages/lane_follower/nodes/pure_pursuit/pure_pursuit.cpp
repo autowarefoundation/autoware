@@ -273,25 +273,6 @@ int GetNextWayPoint()
         return 0;
     }
 
-    // seek for the first effective waypoint.
-    if (_next_waypoint == 0) {
-        do {
-            // if there exists a close waypoint, start from this waypoint.
-            if (GetLookAheadDistance(_next_waypoint) < _error_distance) {
-                _next_waypoint++; // why is this needed?
-                break;
-            }
-        } while (_next_waypoint++ < static_cast<int>(_current_path.waypoints.size()));
-
-        // if no waypoint founded close enough, fall back!
-        if (_next_waypoint == static_cast<int>(_current_path.waypoints.size())) {
-            std::cout << "no waypoint on the path!" << std::endl;
-            _next_waypoint = 0;
-            _lf_stat.data = false;
-            _stat_pub.publish(_lf_stat);
-            return 0;
-        }
-    }
     // the next waypoint must be outside of this threthold.
 
     int minimum_th = 3;
