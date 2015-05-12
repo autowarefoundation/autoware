@@ -52,7 +52,6 @@ static double _initial_ox = 0.0;
 static double _initial_oy = 0.0;
 static double _initial_oz = 0.0;
 static double _initial_ow = 0.0;
-static double _initial_yaw = 0.0;
 
 static std::string _use_topic;
 static std::string _rotation_set;

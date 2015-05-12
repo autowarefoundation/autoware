@@ -39,7 +39,7 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
   input.copyTo(tmpImage);
 
   //    blur(tmpImage, tmpImage, Size(5, 5), Point(-1, -1), BORDER_DEFAULT);
-  for (int i = 0; i < contexts.size(); i++) {
+  for (int i = 0; i < static_cast<int>(contexts.size()); i++) {
     Context context = contexts.at(i);
 
     if (context.lampRadius < MINIMAM_RADIUS || context.topLeft.x > context.botRight.x)
