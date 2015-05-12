@@ -77,10 +77,6 @@ static bool _param_set = false;
 static tf::Transform _transform;
 static tf::Vector3 _origin_v(0, 0, 0);
 
-
-
-//std::ofstream _ofs;
-
 static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
     _initial_velocity_kmh = config->velocity;
@@ -102,11 +98,11 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
         _current_pose.pose = msg->pose.pose;
 
         tf::Transform inverse;
-        tf::poseMsgToTF(msg->pose.pose,inverse);
-_transform = inverse.inverse();
+        tf::poseMsgToTF(msg->pose.pose, inverse);
+        _transform = inverse.inverse();
+
      //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
-    } //else
-      //      std::cout << "pose is not odometry" << std::endl;
+    }
 
 }
 
@@ -139,25 +135,18 @@ static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 */
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-    //std::cout << "gnss callback" << std::endl;
     if (_current_pose_topic == "ndt") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
         tf::Transform inverse;
         tf::poseMsgToTF(msg->pose,inverse);
         _transform = inverse.inverse();
-
-    } //else
-      //     std::cout << "pose is not ndt" << std::endl;
+    }
 }
 
 static void WayPointCallback(const lane_follower::laneConstPtr &msg)
 {
-    //std::cout << "waypoint callback" << std::endl;
     _current_path = *msg;
-
-    //std::cout << "_current_path frame_id = " << _current_path.header.frame_id
-    //       << std::endl;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -165,8 +154,6 @@ static void WayPointCallback(const lane_follower::laneConstPtr &msg)
 /////////////////////////////////////////////////////////////////
 static double GetLookAheadThreshold()
 {
-    //  std::cout << "get lookahead threshold" << std::endl;
-
     if (_param_flag)
         return _lookahead_threshold;
 
@@ -209,8 +196,6 @@ geometry_msgs::Point TransformWaypoint(int i)
 /////////////////////////////////////////////////////////////////
 double GetLookAheadDistance(int waypoint)
 {
-    //std::cout << "get lookahead distance" << std::endl;
-
     // position of @waypoint.
     tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, _current_path.waypoints[waypoint].pose.pose.position.z);
     tf::Vector3 tf_v2 = _transform * v2;
@@ -222,9 +207,8 @@ double GetLookAheadDistance(int waypoint)
 /////////////////////////////////////////////////////////////////
 // obtain the velocity(m/s) waypoint under the vehicle has.
 /////////////////////////////////////////////////////////////////
-int GetClosestWaypointNum()
+int GetClosestWaypoint()
 {
-    //std::cout << "search waypoint nearest the vehicle" << std::endl;
     double distance = 10000; //meter
     double waypoint = 1;
 
@@ -254,8 +238,6 @@ int GetClosestWaypointNum()
 /////////////////////////////////////////////////////////////////
 double GetWaypointVelocity()
 {
-    //std::cout << "get velocity from waypoint near the vehicle" << std::endl;
-
     return _current_path.waypoints[_closest_waypoint].twist.twist.linear.x;
 }
 
@@ -458,7 +440,7 @@ static geometry_msgs::Twist CalculateCmdTwist()
         initial_velocity_ms = _initial_velocity_kmh / 3.6;
 
     std::cout << "set velocity kmh =" << initial_velocity_ms * 3.6 << std::endl;
-    //std::cout << "initial_velocity_ms : " << initial_velocity_ms << std::endl;
+
     double angular_velocity;
 
     if (radius > 0 || radius < 0) {
@@ -471,8 +453,6 @@ static geometry_msgs::Twist CalculateCmdTwist()
 
     twist.linear.x = linear_velocity;
     twist.angular.z = angular_velocity;
-
-    //_ofs << angular_velocity << std::endl;
 
     return twist;
 }
@@ -540,26 +520,20 @@ static geometry_msgs::Twist EndControl()
 
 int main(int argc, char **argv)
 {
-    std::cout << "lane follower start" << std::endl;
+    std::cout << "pure pursuit start" << std::endl;
 
-// set up ros
-    ros::init(argc, argv, "lane_follower");
+    // set up ros
+    ros::init(argc, argv, "pure_pursuit");
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
 
-// setting params
+    // setting params
     private_nh.getParam("current_pose_topic", _current_pose_topic);
     std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
 
     private_nh.getParam("mobility_frame", _mobility_frame);
     std::cout << "mobility_frame : " << _mobility_frame << std::endl;
-
-    // private_nh.getParam("velocity_kmh", _initial_velocity_kmh);
-    // std::cout << "initial_velocity : " << _initial_velocity_kmh << std::endl;
-    //
-    // private_nh.getParam("lookahead_threshold", _lookahead_threshold);
-    // std::cout << "lookahead_threshold : " << _lookahead_threshold << std::endl;
 
     private_nh.getParam("threshold_ratio", _threshold_ratio);
     std::cout << "threshold_ratio : " << _threshold_ratio << std::endl;
@@ -570,35 +544,28 @@ int main(int argc, char **argv)
     private_nh.getParam("error_distance", _error_distance);
     std::cout << "error_distance : " << _error_distance << std::endl;
 
-//publish topic
+    //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
     _vis_pub = nh.advertise<visualization_msgs::Marker>("target_waypoint_mark", 0);
     _circle_pub = nh.advertise<visualization_msgs::Marker>("circle_mark", 0);
     _stat_pub = nh.advertise<std_msgs::Bool>("lf_stat", 0);
 
-//subscribe topic
+    //subscribe topic
     ros::Subscriber waypoint_subcscriber = nh.subscribe("ruled_waypoint", 1000, WayPointCallback);
     ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1000, OdometryPoseCallback);
-
+    ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
+    ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
     //ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
 
-    ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
-
-    ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
-
- //   std::string filename = "/home/h_ohta/gnuplot/output_zure_0.2.txt";
- //   _ofs.open(filename.c_str());
-
     geometry_msgs::TwistStamped twist;
-
     ros::Rate loop_rate(10); // by Hz
     bool endflag = false;
     while (ros::ok()) {
         ros::spinOnce();
 
         if (_param_set == false) {
-            std::cout << "parameter waiting..." << std::endl;
+            std::cout << "please open the dialog and set parameter." << std::endl;
             loop_rate.sleep();
             continue;
         }
@@ -607,15 +574,15 @@ int main(int argc, char **argv)
 
             // get the waypoint.
             std::cout << "velocity : ";
-            if (!_param_flag)
+            if (!_param_flag) {
                 std::cout << "waypoint" << std::endl;
-            else
+            } else {
                 std::cout << "dialog" << std::endl;
+            }
 
-            _closest_waypoint = GetClosestWaypointNum();
+            _closest_waypoint = GetClosestWaypoint();
             _next_waypoint = GetNextWayPoint();
-            std::cout << "next waypoint = " << _next_waypoint;
-            std::cout << "/" << _current_path.waypoints.size() << std::endl;
+            std::cout << "next waypoint = " << _next_waypoint <<  "/" << _current_path.waypoints.size() << std::endl;
 
             if (_next_waypoint > 0) {
                 // obtain the linear/angular velocity.
