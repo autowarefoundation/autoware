@@ -122,7 +122,7 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
 
         if (RecieveOnce != true) {
 
-            ofs_ << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << std::endl;
+            ofs_ << std::fixed << std::setprecision(4) << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << std::endl;
             RecieveOnce = true;
             last_pose_ = current_pose_;
         } else {
@@ -144,12 +144,12 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
                     if (can_time_sec_ == pose_time_sec_ && fabs(can_time_nsec_ - pose_time_nsec_) * NSEC_TO_SEC < 0.1) {
                         std::cout << "waypoint_velocity_saved" << std::endl;
                         last_pose_ = current_pose_;
-                        ofs_ << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << velocity_ << std::endl;
+                        ofs_ << std::fixed << std::setprecision(4) << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << velocity_ << std::endl;
                     }
                 } else {
                     std::cout << "waypoint_saved" << std::endl;
                     last_pose_ = current_pose_;
-                    ofs_ << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << 0 << std::endl;
+                    ofs_ << std::fixed << std::setprecision(4) << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << 0 << std::endl;
                 }
             }
 
