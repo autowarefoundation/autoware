@@ -54,11 +54,8 @@ CvLatentSvmDetector* cvLoadLatentSvmDetector(const char* filename)
     float scoreThreshold = 0.f;
     int err_code = 0;
 
-    TickMeter tm;
-    tm.start();
     err_code = loadModel(filename, &filters, &kFilters, &kComponents, &kPartFilters, &b, &scoreThreshold);
-    tm.stop();
-    cout << "Loading model time = " << tm.getTimeSec() << " sec" << endl;
+
     if (err_code != LATENT_SVM_OK) return 0;
 
     detector = (CvLatentSvmDetector*)malloc(sizeof(CvLatentSvmDetector));
@@ -142,9 +139,8 @@ CvSeq* cvLatentSvmDetectObjects(IplImage* image,
     getMaxFilterDims((const CvLSVMFilterObject**)(detector->filters), detector->num_components,
                      detector->num_part_filters, &maxXBorder, &maxYBorder);
     // Create feature pyramid with nullable border
-	cout << "cvLatentSvmDetectObjects:lambda=" << lambda << " num_cells=" << num_cells << "num_bins=" << num_bins << endl;
     H = createFeaturePyramidWithBorder(image, maxXBorder, maxYBorder, lambda, num_cells, num_bins);
-    cout.flush();
+    
     // Search object
     error = searchObjectThresholdSomeComponents(H, (const CvLSVMFilterObject**)(detector->filters),
         detector->num_components, detector->num_part_filters, detector->b, score_threshold,
@@ -291,8 +287,6 @@ void LatentSvmDetector::detect( const Mat& image,
     objectDetections.clear();
     if( numThreads <= 0 )
         numThreads = 1;
-	
-	cout << "LatentSvmDetector::detect:lambda=" << lambda << " num_cells=" << num_cells << "num_bins=" << num_bins << endl;
 
     for( size_t classID = 0; classID < detectors.size(); classID++ )
     {

@@ -58,9 +58,6 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
 	cv::Mat mat = cv_image->image;
 
-	ROS_INFO("num_cells %d", config_num_cells);
-	ROS_INFO("num_bins %d", config_num_bins);
-	ROS_INFO("threshold %f", config_threshold);
 	std::vector<DPMObject> pedestrians = dpm_detect_objects(mat,
 													model_files,
 													config_overlap,
