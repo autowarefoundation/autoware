@@ -1,0 +1,29 @@
+<!-- -->
+<launch>
+	<arg name="map_frame" default="/map" />
+	<arg name="odometry_frame" default="/odom" />
+
+	<!-- moriyama -->
+<!--  <arg name="position_x" default="-14876.8" />
+	<arg name="position_y" default="-84717.8" />
+	<arg name="position_z" default="40.4" />
+	<arg name="yaw" default="3.5" />  -->
+	<!-- toyota -->
+<!-- 	<arg name="position_x" default="3752.5" />
+	<arg name="position_y" default="-99434.7" />
+	<arg name="position_z" default="87.6" />
+	<arg name="yaw" default="1.6" />  -->
+	<!-- vbl -->
+<!-- <arg name="position_x" default="-18411" />
+	<arg name="position_y" default="-93544.6" />
+	<arg name="position_z" default="37" />
+	<arg name="yaw" default="-0.5" />  
+	-->
+	
+	<!-- transform path coordinate to global coordinate -->
+	<node pkg="tf" type="static_transform_publisher" name="odom2map" args="0 0 0 0 0 0 $(arg map_frame) $(arg odometry_frame) 100" />
+
+	<node pkg="lane_follower" type="odom_gen" name="odom_gen" output="screen"/>
+
+
+</launch>
