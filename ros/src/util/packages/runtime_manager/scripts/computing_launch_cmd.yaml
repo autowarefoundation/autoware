@@ -21,7 +21,7 @@ subs :
               lookahead_threshold:
                 depend : param_flag
           - name : odom_gen
-            cmd : roslaunch lane_follower odometry_sim.launch  
+            cmd : roslaunch lane_follower odom_gen.launch  
             param: odom_gen
             gui  :
               use_pose:
