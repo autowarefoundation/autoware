@@ -22,6 +22,34 @@ subs :
                 depend : param_flag
           - name : odom_gen
             cmd : roslaunch lane_follower odometry_sim.launch  
+            param: odom_gen
+            gui  :
+              use_pose:
+                flags : [ no_category, nl ]
+              x:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              y:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              z:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category, nl ]
+              roll:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              pitch:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              yaw:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category, nl ]
   
   - name : Perception
     subs :
@@ -250,6 +278,42 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
+
+  - name  : odom_gen
+    vars  :
+    - name    : use_pose
+      kind    : radio_box
+      choices :
+      - Initial Pos
+      - NDT
+      - GNSS
+      choices_type: str
+      v       : Initial Pos
+      rosparam: /odom_gen/use_pose
+    - name    : x
+      label   : 'X:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_x
+    - name    : y
+      label   : 'Y:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_y
+    - name    : z
+      label   : 'Z:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_z
+    - name    : roll
+      label   : 'Roll:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_roll
+    - name    : pitch
+      label   : 'Pitch:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_pitch
+    - name    : yaw
+      label   : 'Yaw:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_yaw
 
   - name  : car_kf
     topic : /config/car_kf
