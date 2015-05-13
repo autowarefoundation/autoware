@@ -275,9 +275,12 @@ int main(int argc, char **argv)
 
 	camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10);
 
-	for (int i = 0; i < camera_num; i++)
-	{
-		std::string topic(std::string("image_raw") + std::to_string(i));
+	for (int i = 0; i < camera_num; i++) {
+	  std::string topic(std::string("image_raw"));
+
+	  if (camera_num > 1) {
+		topic + std::to_string(i);
+	  } 
 		pub[i] = n.advertise<sensor_msgs::Image>(topic, 100);
 	}
 
