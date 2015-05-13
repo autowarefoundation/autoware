@@ -50,6 +50,8 @@
 
 #include "geo_pos_conv.hh"
 
+#define LOOP_RATE 10 //Hz
+
 // parameter servers
 static double _initial_velocity_kmh = 5; // km/h
 static double _lookahead_threshold = 4.0;
@@ -404,6 +406,7 @@ int GetNextWayPoint()
 }
 
 
+
 /////////////////////////////////////////////////////////////////
 // obtain the linear/angular velocity toward the next waypoint.
 /////////////////////////////////////////////////////////////////
@@ -414,26 +417,21 @@ static geometry_msgs::Twist CalculateCmdTwist()
     geometry_msgs::Twist twist;
 
     double radius = CalcRadius(_next_waypoint);
-    double initial_velocity_ms = 0;
+    double set_velocity_ms = 0;
     if (!_param_flag)
-        initial_velocity_ms = GetWaypointVelocity();
+        set_velocity_ms = GetWaypointVelocity();
     else
-        initial_velocity_ms = _initial_velocity_kmh / 3.6;
+        set_velocity_ms = _initial_velocity_kmh / 3.6;
 
-    std::cout << "set velocity kmh =" << initial_velocity_ms * 3.6 << std::endl;
+    std::cout << "set velocity kmh =" << set_velocity_ms * 3.6 << std::endl;
 
-    double angular_velocity;
+    twist.linear.x = set_velocity_ms;
 
     if (radius > 0 || radius < 0) {
-        angular_velocity = initial_velocity_ms / radius;
+        twist.angular.z = twist.linear.x / radius;
     } else {
-        angular_velocity = 0;
+        twist.angular.z = 0;
     }
-
-    double linear_velocity = initial_velocity_ms;
-
-    twist.linear.x = linear_velocity;
-    twist.angular.z = angular_velocity;
 
     return twist;
 }
@@ -441,61 +439,63 @@ static geometry_msgs::Twist CalculateCmdTwist()
 /////////////////////////////////////////////////////////////////
 // Safely stop the vehicle.
 /////////////////////////////////////////////////////////////////
-static int end_loop = 1;
-static double end_ratio = 0.2;
-static double end_velocity_kmh = 2.0;
+//static int end_loop = 1;
+//static double end_ratio = 0.2;
+static bool decelerate_flag = false;
 static geometry_msgs::Twist EndControl()
 {
     std::cout << "end control" << std::endl;
     geometry_msgs::Twist twist;
+    //  double minimum_velocity_kmh = 2.0;
 
     std::cout << "End Distance = " << _end_distance << std::endl;
 
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
-    double velocity_kmh;
+    double set_velocity_ms = 0;
+    if (!_param_flag)
+        set_velocity_ms = GetWaypointVelocity();
+    else
+        set_velocity_ms = _initial_velocity_kmh / 3.6;
+    static double decelerate_ms = 0;
 
-    if (_param_flag) {
-        velocity_kmh = _initial_velocity_kmh - end_ratio * pow(end_loop,2);
+    if (decelerate_flag == false) {
+        decelerate_ms = pow(set_velocity_ms, 2) / (2 * lookahead_distance);
+        decelerate_flag = true;
+    }
+//std::cout << "decelerate : "<< decelerate_ms << std::endl;
+    static double velocity_ms = set_velocity_ms;
+    velocity_ms -= decelerate_ms / LOOP_RATE;
+
+    if (velocity_ms < 0)
+        velocity_ms = 0;
+
+    /* if (lookahead_distance < _end_distance) { // EndControl completed
+
+     twist.linear.x = 0;
+     twist.angular.z = 0;
+
+     _next_waypoint = 0;
+
+     _lf_stat.data = false;
+     _stat_pub.publish(_lf_stat);
+
+     } else {
+     */
+
+    std::cout << "set velocity (kmh) = " << velocity_ms * 3.6 << std::endl;
+
+    double radius = CalcRadius(_next_waypoint);
+    twist.linear.x = velocity_ms;
+
+    if (radius > 0 || radius < 0) {
+        twist.angular.z = twist.linear.x / radius;
     } else {
-        velocity_kmh = (_current_path.waypoints[_current_path.waypoints.size() - 1].twist.twist.linear.x * 3.6 - end_ratio * pow(end_loop,2));
-    }
-
-    double velocity_ms = velocity_kmh / 3.6;
-
-    if (lookahead_distance < _end_distance) { // EndControl completed
-
-        twist.linear.x = 0;
         twist.angular.z = 0;
-
-        _next_waypoint = 0;
-
-        _lf_stat.data = false;
-        _stat_pub.publish(_lf_stat);
-
-	} else {
-
-        if (velocity_kmh < end_velocity_kmh)
-            velocity_ms = end_velocity_kmh / 3.6;
-
-        std::cout << "set velocity (kmh) = " << velocity_ms * 3.6 << std::endl;
-
-        double radius = CalcRadius(_next_waypoint);
-        double angular_velocity;
-
-        if (radius > 0 || radius < 0) {
-            angular_velocity = velocity_ms / radius;
-        } else {
-            angular_velocity = 0;
-        }
-
-        double linear_velocity = velocity_ms;
-
-        twist.linear.x = linear_velocity;
-        twist.angular.z = angular_velocity;
-        end_loop++;
     }
+//    }
+
     return twist;
 }
 
@@ -519,12 +519,12 @@ int main(int argc, char **argv)
     private_nh.getParam("threshold_ratio", _threshold_ratio);
     std::cout << "threshold_ratio : " << _threshold_ratio << std::endl;
 
-    private_nh.getParam("end_distance", _end_distance);
+ /*   private_nh.getParam("end_distance", _end_distance);
     std::cout << "end_distance : " << _end_distance << std::endl;
 
     private_nh.getParam("error_distance", _error_distance);
     std::cout << "error_distance : " << _error_distance << std::endl;
-
+*/
     //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
@@ -540,7 +540,7 @@ int main(int argc, char **argv)
     //ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
 
     geometry_msgs::TwistStamped twist;
-    ros::Rate loop_rate(10); // by Hz
+    ros::Rate loop_rate(LOOP_RATE); // by Hz
     bool endflag = false;
     while (ros::ok()) {
         ros::spinOnce();
@@ -582,8 +582,9 @@ int main(int argc, char **argv)
             }
         }
 
-        if (_next_waypoint == static_cast<int>(_current_path.waypoints.size()) - 1) {
+        if (_next_waypoint == static_cast<int>(_current_path.waypoints.size()) - 5) {
             endflag = true;
+            _next_waypoint = _current_path.waypoints.size() -1;
         }
 
         std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
