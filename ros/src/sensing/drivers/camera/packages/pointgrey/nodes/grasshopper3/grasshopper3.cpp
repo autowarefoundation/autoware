@@ -225,6 +225,7 @@ void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo
 	else
 	{
 		ROS_INFO("No calibrationfile param was received");
+		return;
 	}
 
 	cv::FileStorage fs(filename, cv::FileStorage::READ);
