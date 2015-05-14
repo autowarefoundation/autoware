@@ -57,7 +57,7 @@ static double _initial_velocity_kmh = 5; // km/h
 static double _lookahead_threshold = 4.0;
 static double _threshold_ratio = 1.0;
 static double _end_distance = 2.0;
-static double _error_distance = 2.5;
+//static double _error_distance = 2.5;
 static std::string _mobility_frame = "/base_link"; // why is this default?
 static std::string _current_pose_topic = "ndt";
 
