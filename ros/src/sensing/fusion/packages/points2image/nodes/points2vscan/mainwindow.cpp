@@ -107,7 +107,7 @@ void MainWindow::recalculateSlot()
         float * data;
         int * ring;
 
-        data=(float *)(base+(2*i)*msg.point_step);
+        data=(float *)(base + (2*i) * msg.point_step);
         data[0]=beams[i]*cos(theta);
         data[1]=beams[i]*sin(theta);
         data[2]=virtualscan.minheights[i];
@@ -115,7 +115,7 @@ void MainWindow::recalculateSlot()
         ring=(int *)(data+5*sizeof(float));
         *ring=0;
 
-        data=(float *)(base+(2*i+1)*msg.point_step);
+        data=(float *)(base + (2*i+1) * msg.point_step);
         data[0]=beams[i]*cos(theta);
         data[1]=beams[i]*sin(theta);
         data[2]=virtualscan.maxheights[i];

@@ -31,6 +31,7 @@
 #include <vector>
 #include <points_image.hpp>
 #include <stdint.h>
+#include <iostream>
 
 points2image::PointsImage
 pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
@@ -47,6 +48,8 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 
 	msg.intensity.assign(w * h, 0);
 	msg.distance.assign(w * h, 0);
+	msg.min_height.assign(w * h, 0);
+	msg.max_height.assign(w * h, 0);
 
 	cv::Mat invR = cameraExtrinsicMat(cv::Rect(0,0,3,3)).t();
 	cv::Mat invT = -invR*(cameraExtrinsicMat(cv::Rect(3,0,1,3)));
@@ -57,7 +60,7 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 
 	for (uint32_t y = 0; y < pointcloud2->height; ++y) {
 		for (uint32_t x = 0; x < pointcloud2->width; ++x) {
-			float* fp = (float *)(cp + pointcloud2->row_step * y + pointcloud2->point_step * x);
+			float* fp = (float *)(cp + (x + y*pointcloud2->width) * pointcloud2->point_step);//pointcloud2->row_step * y + pointcloud2->point_step * x);
 			double intensity = fp[4];
 
 			cv::Mat point(1, 3, CV_64F);
@@ -95,6 +98,11 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 				   msg.distance[pid] > point.at<double>(2)){
 					msg.distance[pid] = float(point.at<double>(2) * 100);
 					msg.intensity[pid] = float(intensity);
+					
+					if (0 == y) //first layer (min) fill min
+						msg.min_height[pid] = fp[2];
+					else		//second layer (max) fill max
+						msg.max_height[pid] = fp[2];
 
 					msg.max_y = py > msg.max_y ? py : msg.max_y;
 					msg.min_y = py < msg.min_y ? py : msg.min_y;
