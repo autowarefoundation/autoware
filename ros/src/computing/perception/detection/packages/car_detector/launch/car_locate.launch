@@ -1,0 +1,11 @@
+<!-- -->
+<launch>
+	<arg name="lidar_3d_yaml" default="/home/h_ohta/.ros/autoware/camera_lidar_3d.yaml" />
+
+
+<!-- rosrun  car_detector car_locate _lidar_3d_yaml:=[file] -->
+	<node pkg="car_detector" type="car_locate" name="car_locate">
+		<param name="lidar_3d_yaml" value="$(arg lidar_3d_yaml)" />
+	</node>
+
+</launch>
