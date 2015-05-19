@@ -52,6 +52,8 @@ from decimal import Decimal
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
+from runtime_manager.msg import ConfigNdtSlam
+from runtime_manager.msg import ConfigNdtSlamOutput
 from runtime_manager.msg import ConfigLaneFollower
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
@@ -1566,27 +1568,59 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
+		self.pdic_bak = self.pdic.copy()
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogNdtSlam.__init__(self, *args, **kwds)
 
-		self.name = 'map_resolution'
-		self.var = get_top([ var for var in self.prm.get('vars') if var.get('name') == self.name ])
-		v = self.pdic.get(self.name, self.var.get('v'))
-		self.text_ctrl_map_resolution.SetValue(str(v))
+		parent = self.panel_v
+		frame = self.GetParent()
+		self.panel = ParamPanel(parent, frame=frame, pdic=self.pdic, gdic=self.gdic, prm=self.prm)
+		szr = wx.BoxSizer(wx.VERTICAL)
+		szr.Add(self.panel, 1, wx.EXPAND)
+		parent.SetSizer(szr)
+
+                self.update_filename()
+		self.klass_msg = ConfigNdtSlamOutput
+		self.pub = rospy.Publisher('/config/ndt_slam_output', self.klass_msg, queue_size=10)
+
+	def update_filename(self):
+		tc = self.text_ctrl_path
+		path = tc.GetValue()
+		(dn, fn) = os.path.split(path)
+		now = datetime.datetime.now()
+		fn = 'autoware-%02d%02d%02d.pcd' % (
+			now.year % 100, now.month, now.day)
+		path = os.path.join(dn, fn)
+		set_path(tc, path)
+
+	def OnRef(self, event):
+		tc = self.text_ctrl_path
+		file_dialog(self, tc, { 'path_type' : 'save' } )
+
+	def OnRadio(self, event):
+		v = self.radio_btn_filter_resolution.GetValue()
+		tc = self.text_ctrl_filter_resolution
+		tc.Enable(v)
 
 	def OnPcdOutput(self, event):
-		v = self.text_ctrl_map_resolution.GetValue()
-		if v is None or v == '':
-			v = self.pdic.get(self.name, self.var.get('v'))
-			self.text_ctrl_map_resolution.SetValue(str(v))
-		self.pdic[ self.name ] = v
-		cmd = shlex.split(self.var.get('cmd')) + [ v ]
-		print cmd
-		subprocess.call(cmd)
+		tc = self.text_ctrl_filter_resolution
+		v = tc.GetValue() if self.radio_btn_filter_resolution.GetValue() else '0.0'
+		msg = self.klass_msg()
+		msg.filename = self.text_ctrl_path.GetValue()
+		msg.filter_res = float(v)
+		self.pub.publish(msg)
 		
 	def OnOk(self, event):
+		self.panel.update()
+		self.panel.detach_func()
 		self.EndModal(0)
+
+	def OnCancel(self, event):
+		self.panel.pdic.update(self.pdic_bak) # restore
+		self.panel.detach_func()
+		self.panel.update()
+		self.EndModal(-1)
 
 class MyApp(wx.App):
 	def OnInit(self):
