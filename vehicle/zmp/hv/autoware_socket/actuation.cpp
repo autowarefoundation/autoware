@@ -76,7 +76,7 @@ void MainWindow::SetGear(int gear)
   double current_velocity = _hev_state.drvInf.veloc; // km/h
 
   // double check if the velocity is zero or not,
-  // though SetGear() should not be called when driving.
+  // though SetGeark() should not be called when driving.
   if (current_velocity != 0) {
     return;
   }
@@ -329,10 +329,10 @@ void _str_angle_naive(double current_steering_angle, double cmd_steering_angle, 
   cout << "target_steering_angle = " << target_steering_angle << endl;
 
   // output log.
-  ofstream ofs("/tmp/steering.log", ios::app);
+  /* ofstream ofs("/tmp/steering.log", ios::app);
   ofs << target_steering_angle << " " 
       << current_steering_angle << " " 
-      << cmd_steering_angle << endl;
+      << cmd_steering_angle << endl;*/
 }
 
 // for torque control
@@ -413,7 +413,26 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
 
 void MainWindow::VelocityControl(double cmd_velocity)
 {
-  hev->SetDrvVeloc(cmd_velocity*100);
+  if (cmd_velocity > 0)
+    hev->SetDrvVeloc(cmd_velocity*100);
+  else {
+    hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity    
+    hev->SetDrvServo(SERVO_TRUE);
+    hev->SetDrvStroke(0);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.6);
+    usleep(100000);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.7);
+    usleep(100000);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.8);
+    usleep(100000);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.9);
+    usleep(100000);
+    hev->SetBrakeStroke(HEV_MAX_BRAKE);
+    usleep(100000);
+    hev->SetDrvCMode(CONT_MODE_VELOCITY);
+    hev->SetDrvServo(SERVO_TRUE);
+    hev->SetDrvVeloc(0);
+  }
 }
 
 void MainWindow::AccelerateControl(double current_velocity,double cmd_velocity)

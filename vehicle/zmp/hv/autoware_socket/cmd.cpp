@@ -139,10 +139,10 @@ void Getter(CMDDATA &cmddata)
       cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
       cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
       
-      ofstream ofs("/tmp/cmd.log", ios::app);
+      /*ofstream ofs("/tmp/cmd.log", ios::app);
       ofs << cmddata.vel.tv << " " 
           << cmddata.vel.sv << " " 
-          << endl;
+          << endl;*/
     }
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
@@ -206,6 +206,20 @@ void Control(vel_data_t vel, void* p)
   int cmd_velocity = vel.tv * 3.6;
   int cmd_steering_angle;
 
+  //<tku debug  force velocity
+#if 0
+  cmd_velocity = 20;
+  static int switch_flag = 1;
+  if (current_velocity > 15) {
+    cmd_velocity = 5;
+    switch_flag = 0;
+  }
+  if (!switch_flag)
+    cmd_velocity = 0;
+
+#endif
+  // />
+
   // We assume that the slope against the entire arc toward the 
   // next waypoint is almost equal to that against 
   // $l = 2 \pi r \times \frac{\theta}{360} = r \times \theta$
@@ -266,26 +280,44 @@ void Control(vel_data_t vel, void* p)
   //////////////////////////////////////////////////////
   // Accel and Brake
   //////////////////////////////////////////////////////
-  double vel_limit = 5.0;
-  double vel_diff = 1;
-
+  //<tku 
+  //  double vel_limit = 5.0;
+  double vel_limit = 1.0;
+  //  double vel_diff = 1.0;
+  double vel_diff_inc = 1.0;
+  double vel_diff_dec = 2.0;
+  // />
   //Velocity Version  
 
-  if(fabs((fabs(cmd_velocity) - fabs(current_velocity))) < vel_limit) {
-    std::cout << "limit cleared !! (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
-    main->VelocityControl(cmd_velocity);
-  } else {
+  //  if(fabs(cmd_velocity - current_velocity) < vel_limit) {
+  //    std::cout << "limit cleared !! (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
+  //    main->VelocityControl(cmd_velocity);
+  //  } else {
     // if change velocity is too high
-    if (fabs(cmd_velocity) > fabs(current_velocity)){
+    if (cmd_velocity > current_velocity){
       std::cout << "gain too high! limit accelerate (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
-      double increase_velocity = current_velocity + vel_diff;
-      main->VelocityControl(increase_velocity);
+      double increase_velocity = current_velocity + vel_diff_inc;
+      //<tku offset test
+      //main->VelocityControl(increase_velocity);
+      main->VelocityControl(increase_velocity+2);
+      // /tku>
+      cout << "increase: " << "vel = " << increase_velocity  << endl; 
+
     }else {
       std::cout << "gain too high! limit decelerate (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
-      double decrease_velocity = current_velocity - vel_diff;
-      main->VelocityControl(decrease_velocity);
+      double decrease_velocity = current_velocity - vel_diff_dec;
+
+      //<tku
+      // main->VelocityControl(decrease_velocity);
+      if(decrease_velocity > 4)
+        main->VelocityControl(decrease_velocity-4);
+      else if (current_velocity > 0) {
+          main->VelocityControl(0);
+      }
+      cout << "decrease: " << "vel = " << decrease_velocity  << endl; 
+      // />
     }
-  }
+    //  }
     /*
     //Stroke Version
   if (fabs(cmd_velocity) >= fabs(current_velocity) 
