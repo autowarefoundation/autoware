@@ -5,6 +5,11 @@ subs :
       - name : PointGrey Grasshoper 3 (USB1)
         probe: 'lsusb -d 1e10: > /dev/null'
         run  : roslaunch pointgrey grasshopper3.launch
+        param: calibration_path_grasshopper3
+        gui  :
+          CalibrationFile :
+            prop  : 1
+            flags : [ center_v ]
       - name : PointGrey Grasshoper 3 (USB2)
         probe:
         run  :
@@ -90,6 +95,16 @@ params :
       cmd_param :
         dash : ''
         delim: ':='
+
+  - name  : calibration_path_grasshopper3
+    vars  :
+    - name  : CalibrationFile
+      kind  : path
+      v     : ''
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : points_image
     vars  :
