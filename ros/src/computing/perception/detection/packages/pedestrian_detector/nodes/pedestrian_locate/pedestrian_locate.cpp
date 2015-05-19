@@ -213,11 +213,11 @@ static void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
     }
 
     //publish recognized object data
-    if(pose_msg.poses.size() != 0){
+ //   if(pose_msg.poses.size() != 0){
       pose_msg.header.stamp = ros::Time::now();
       pose_msg.header.frame_id = "map";
       pub.publish(pose_msg);
-    }
+ //   }
   }
 }
 
@@ -349,7 +349,7 @@ int main(int argc, char **argv){
   double Oy = 335.274106;
 
   cv::Mat Lintrinsic;
-  std::string lidar_3d_yaml = "/home/auto1/.ros/autoware/camera_lidar_3d.yaml";
+  std::string lidar_3d_yaml = "/home/h_ohta/.ros/autoware/camera_lidar_3d.yaml";
 
   cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ); 
   if(!lidar_3d_file.isOpened()){
