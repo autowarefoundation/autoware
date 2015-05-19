@@ -52,8 +52,8 @@ void MainWindow::SetMode(int mode)
     cout << "switching to PROGRAM" << endl;
     hev->SetDrvMode(MODE_PROGRAM);
     usleep(100000);
-    hev->SetDrvCMode(CONT_MODE_VELOCITY); // velocity mode not stroke
-    //hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity
+    //hev->SetDrvCMode(CONT_MODE_VELOCITY); // velocity mode not stroke
+    hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity
     usleep(200000);
     hev->SetDrvServo(SERVO_TRUE);
     usleep(200000);
@@ -108,7 +108,7 @@ void MainWindow::SetGear(int gear)
 
 bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 {
-  static int old_accel = -1;
+  static int old_accel = 0;
 
   // for small increments of change in accel pedal,
   // prius sometimes does not apply 
@@ -118,9 +118,9 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 
   int cmd_accel = current_accel;
 
-  if (old_accel != -1) 
-    cmd_accel = old_accel;
-
+  cout << "current_accel = " << current_accel << endl;
+  cout << "target_accel = " << target_accel << endl;
+  cout << "gain = " << gain << endl;
   cout << "old_accel = " << old_accel << endl;
   cout << "cmd_accel = " << cmd_accel << endl;
 
@@ -148,7 +148,7 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
   old_accel = cmd_accel;
 
   if (target_accel == current_accel){ 
-    old_accel = -1;
+    old_accel = 0;
     return true;
   }
 
@@ -157,7 +157,7 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 
 bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev) 
 {
-  static int old_brake = -1;
+  static int old_brake = 0;
 
   // for small increments of change in brake pedal,
   // prius sometimes does not apply brake
@@ -166,10 +166,12 @@ bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev)
   // to actual state
 
   int cmd_brake = current_brake;
-
-  if (old_brake != -1) 
+  if (old_brake != 0) 
     cmd_brake = old_brake;
 
+  cout << "current_brake = " << current_brake << endl;
+  cout << "target_brake = " << target_brake << endl;
+  cout << "gain = " << gain << endl;
   cout << "old_brake = " << old_brake << endl;
   cout << "cmd_brake = " << cmd_brake << endl;
 
@@ -413,26 +415,7 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
 
 void MainWindow::VelocityControl(double cmd_velocity)
 {
-  if (cmd_velocity > 0)
-    hev->SetDrvVeloc(cmd_velocity*100);
-  else {
-    hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity    
-    hev->SetDrvServo(SERVO_TRUE);
-    hev->SetDrvStroke(0);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.6);
-    usleep(100000);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.7);
-    usleep(100000);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.8);
-    usleep(100000);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE*0.9);
-    usleep(100000);
-    hev->SetBrakeStroke(HEV_MAX_BRAKE);
-    usleep(100000);
-    hev->SetDrvCMode(CONT_MODE_VELOCITY);
-    hev->SetDrvServo(SERVO_TRUE);
-    hev->SetDrvVeloc(0);
-  }
+  hev->SetDrvVeloc(cmd_velocity*100);
 }
 
 void MainWindow::AccelerateControl(double current_velocity,double cmd_velocity)
@@ -533,15 +516,18 @@ void MainWindow::StoppingControl(double current_velocity,double cmd_velocity)
       
   // decelerate by using brake	
   if (cmd_velocity == 0.0 && fabs(current_velocity) < 0.1) {
+    printf("********1*********\n");
     // nearly at stop/at stop to stop -> apply full brake
     int gain = (int)(((double)HEV_MAX_BRAKE)/1.0*cycle_time);
     _brake(HEV_MAX_BRAKE, gain, CURRENT_BRAKE_STROKE(), hev);
   }
   else {
+    printf("********2*********\n");
     // one second is approximately how fast full brakes applied in sharp stop
     int high_brake = HEV_MAX_BRAKE-500;
     int brake_target = HEV_MED_BRAKE;
     if (fabs(current_velocity) > KmhToMs(16.0)) {
+      printf("********3*********\n");
       brake_target = HEV_MED_BRAKE + (int)((fabs(current_velocity) - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
       if (brake_target > high_brake) brake_target = high_brake;
     }

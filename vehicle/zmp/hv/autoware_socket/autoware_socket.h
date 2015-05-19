@@ -61,6 +61,7 @@ using namespace zmp::hev;
 #define SERVO_TRUE 0x10 //HEV Servo ON = 0x10
 #define SERVO_FALSE 0x00 //HEV Servo OFF = 0x00
 
+#define STROKE_CTRL_LIMIT 30 // use stroke until 30 km/h
 #define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
 #define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 
 #define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 

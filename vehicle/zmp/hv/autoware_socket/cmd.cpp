@@ -131,19 +131,20 @@ void Getter(CMDDATA &cmddata)
   std::vector<std::string> cmdVector;
   cmdVector = split(cmdRes,',');
   if (cmdVector.size() == 7) {
-    if (fabs(atof(cmdVector[1].c_str())) > 0.00001) { // FIXME!!!
-      cmddata.vel.tv = atof(cmdVector[0].c_str());
-      cmddata.vel.sv = atof(cmdVector[1].c_str());
-      
-      cout << endl << endl;
-      cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
-      cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
-      
-      /*ofstream ofs("/tmp/cmd.log", ios::app);
+    cmddata.vel.tv = atof(cmdVector[0].c_str());
+    cmddata.vel.sv = atof(cmdVector[1].c_str());
+    
+    cout << endl << endl;
+    cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
+    cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
+    
+    /*
+      ofstream ofs("/tmp/cmd.log", ios::app);
       ofs << cmddata.vel.tv << " " 
-          << cmddata.vel.sv << " " 
-          << endl;*/
-    }
+      << cmddata.vel.sv << " " 
+      << endl;
+    */
+
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
     cmddata.accel = atoi(cmdVector[4].c_str());
@@ -207,16 +208,15 @@ void Control(vel_data_t vel, void* p)
   int cmd_steering_angle;
 
   //<tku debug  force velocity
-#if 0
-  cmd_velocity = 20;
-  static int switch_flag = 1;
-  if (current_velocity > 15) {
-    cmd_velocity = 5;
-    switch_flag = 0;
-  }
-  if (!switch_flag)
+#if 1
+  cmd_velocity = 10;
+  static int inc_flag = 1;
+  if (current_velocity > 5) {
     cmd_velocity = 0;
-
+    inc_flag = 0;
+  }
+  if (!inc_flag)
+    cmd_velocity = 0;
 #endif
   // />
 
@@ -240,7 +240,7 @@ void Control(vel_data_t vel, void* p)
   
   if (vel_buffer.size() > vel_buffer_size) {
     old_velocity = vel_buffer.front();
-#if 1 // debug
+#if 0 // debug
     cout << "old_velocity = " << old_velocity << endl;
     cout << "current_velocity = " << current_velocity << endl;
 #endif
@@ -280,71 +280,55 @@ void Control(vel_data_t vel, void* p)
   //////////////////////////////////////////////////////
   // Accel and Brake
   //////////////////////////////////////////////////////
-  //<tku 
-  //  double vel_limit = 5.0;
-  double vel_limit = 1.0;
-  //  double vel_diff = 1.0;
-  double vel_diff_inc = 1.0;
-  double vel_diff_dec = 2.0;
-  // />
-  //Velocity Version  
 
-  //  if(fabs(cmd_velocity - current_velocity) < vel_limit) {
-  //    std::cout << "limit cleared !! (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
-  //    main->VelocityControl(cmd_velocity);
-  //  } else {
-    // if change velocity is too high
+  if (cmd_velocity < STROKE_CTRL_LIMIT) {
+    if (fabs(cmd_velocity) >= fabs(current_velocity) 
+        && fabs(cmd_velocity) > 0.0 
+        && fabs(current_velocity) <= KmhToMs(SPEED_LIMIT) ) {
+      //accelerate !!!!!!!!!!!!!!!!
+      cout << "AccelerateControl(current_velocity=" << current_velocity 
+           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
+      main->AccelerateControl(current_velocity, cmd_velocity);
+    } 
+    else if (fabs(cmd_velocity) < fabs(current_velocity) 
+             && fabs(cmd_velocity) > 0.0) {
+      //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      cout << "DecelerateControl(current_velocity=" << current_velocity 
+           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
+      main->DecelerateControl(current_velocity, cmd_velocity); 
+    }
+    else if (cmd_velocity == 0.0 && fabs(current_velocity) != 0) {
+      //Stopping!!!!!!!!!!!
+      cout << "StoppingControl(current_velocity=" << current_velocity 
+           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
+      main->StoppingControl(current_velocity, cmd_velocity);
+    }
+    else {
+      cout << "NothingAccelBrake(current_velocity=" << current_velocity 
+           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
+    }
+  } else { /* HEV velocity control */
+    double vel_diff_inc = 1.0;
+    double vel_diff_dec = 2.0;
+    double vel_offset_inc = 2;
+    double vel_offset_dec = 4;
     if (cmd_velocity > current_velocity){
-      std::cout << "gain too high! limit accelerate (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
       double increase_velocity = current_velocity + vel_diff_inc;
-      //<tku offset test
-      //main->VelocityControl(increase_velocity);
-      main->VelocityControl(increase_velocity+2);
-      // /tku>
+      main->VelocityControl(increase_velocity + vel_offset_inc);
       cout << "increase: " << "vel = " << increase_velocity  << endl; 
-
-    }else {
-      std::cout << "gain too high! limit decelerate (current_velocity=" << current_velocity << ", cmd_velocity=" << cmd_velocity << std::endl;
+    } else {
       double decrease_velocity = current_velocity - vel_diff_dec;
-
-      //<tku
-      // main->VelocityControl(decrease_velocity);
-      if(decrease_velocity > 4)
-        main->VelocityControl(decrease_velocity-4);
+      if (decrease_velocity > vel_offset_dec) {
+        main->VelocityControl(decrease_velocity - vel_offset_dec);
+      }
       else if (current_velocity > 0) {
-          main->VelocityControl(0);
+        decrease_velocity = 0;
+        main->VelocityControl(0);
       }
       cout << "decrease: " << "vel = " << decrease_velocity  << endl; 
-      // />
     }
-    //  }
+  }
     /*
-    //Stroke Version
-  if (fabs(cmd_velocity) >= fabs(current_velocity) 
-      && fabs(cmd_velocity) > 0.0 
-      && fabs(current_velocity) <= KmhToMs(SPEED_LIMIT) ) {
-    //accelerate !!!!!!!!!!!!!!!!
-    cout << "AccelerateControl(current_velocity=" << current_velocity 
-         << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-    main->AccelerateControl(current_velocity, cmd_velocity);
-  } 
-  else if (fabs(cmd_velocity) < fabs(current_velocity) 
-             && fabs(cmd_velocity) > 0.0) {
-    //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cout << "DecelerateControl(current_velocity=" << current_velocity 
-         << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-        main->DecelerateControl(current_velocity, cmd_velocity); //Stroke version
-  }
-  else if (cmd_velocity == 0.0 && fabs(current_velocity) != 0) {
-    //Stopping!!!!!!!!!!!
-    cout << "StoppingControl(current_velocity=" << current_velocity 
-         << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-       main->StoppingControl(current_velocity, cmd_velocity); /Stroke Version
-  }
-  else {
-    cout << "NoAccelBrake(current_velocity=" << current_velocity 
-         << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-  }
     */    
   //////////////////////////////////////////////////////
   // Steering
