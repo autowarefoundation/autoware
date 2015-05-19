@@ -47,6 +47,7 @@ private:
     ros::NodeHandle nh;
     ros::Subscriber twist_sub;
     ros::Subscriber car_pose_sub;
+    ros::Subscriber ped_pose_sub;
     ros::Subscriber ndt_sub;
     ros::Subscriber odom_sub;
     ros::Subscriber waypoint_sub;
@@ -58,6 +59,7 @@ private:
     geometry_msgs::PoseStamped current_pose; // current pose by the global plane.
     lane_follower::lane current_path;
     std::vector<geometry_msgs::Pose> car_pose;
+    std::vector<geometry_msgs::Pose> ped_pose;
     std::string current_pose_topic = "odometry";
     const std::string PATH_FRAME = "/map";
     bool twist_flag;
@@ -69,11 +71,13 @@ private:
 
     void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg);
     void CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg);
+    void PedPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg);
     void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg);
     void OdometryCallback(const nav_msgs::OdometryConstPtr &msg);
     void WaypointCallback(const lane_follower::laneConstPtr &msg);
-    int GetClosestObstacle();
-    int GetWaypointObstacleLocate(int num);
+    int GetClosestCar();
+    int GetClosestPedestrian();
+    int GetWaypointObstacleLocate(int car , int ped);
 
 
 public:
@@ -88,6 +92,7 @@ TwistFilter::TwistFilter()
     ros::NodeHandle private_nh("~");
     twist_sub = nh.subscribe("twist_cmd", 1, &TwistFilter::TwistCmdCallback, this);
     car_pose_sub = nh.subscribe("car_pose", 1, &TwistFilter::CarPoseCallback, this);
+    ped_pose_sub = nh.subscribe("pedestrian_pose", 1, &TwistFilter::PedPoseCallback, this);
     ndt_sub = nh.subscribe("ndt_pose", 1, &TwistFilter::NDTCallback, this);
     odom_sub = nh.subscribe("odom_pose", 1, &TwistFilter::OdometryCallback, this);
     waypoint_sub = nh.subscribe("ruled_waypoint", 1, &TwistFilter::WaypointCallback, this);
@@ -118,6 +123,11 @@ void TwistFilter::CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
     car_pose = msg->poses;
 }
 
+void TwistFilter::PedPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
+{
+    ped_pose = msg->poses;
+}
+
 void TwistFilter::NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
     if(current_pose_topic == "ndt"){
@@ -145,9 +155,9 @@ void TwistFilter::WaypointCallback(const lane_follower::laneConstPtr &msg)
     path_flag = true;
 }
 
-int TwistFilter::GetClosestObstacle()
+int TwistFilter::GetClosestCar()
 {
-  /* if(car_pose.empty() == true)
+   if(car_pose.empty() == true)
         return -1;
 
     int num = -1;
@@ -162,29 +172,56 @@ int TwistFilter::GetClosestObstacle()
             num = i;
         }
     }
-    return num;*/
-    return 1;
+    return num;
+
 }
 
-int TwistFilter::GetWaypointObstacleLocate(int num)
+int TwistFilter::GetClosestPedestrian()
 {
-    if(num == -1 || current_path.waypoints.empty() == true)
+   if(ped_pose.empty() == true)
         return -1;
 
-/*
+    int num = -1;
+    tf::Vector3 v1(current_pose.pose.position.x, current_pose.pose.position.y, current_pose.pose.position.z);
+    double distance = 10000;
+
+    for (unsigned int i = 0; i < ped_pose.size(); i++) {
+        tf::Vector3 v2(ped_pose[i].position.x, ped_pose[i].position.y, ped_pose[i].position.z);
+        double dt = tf::tfDistance(v1, v2);
+        if (dt < distance) {
+            distance = dt;
+            num = i;
+        }
+    }
+    return num;
+
+}
+
+int TwistFilter::GetWaypointObstacleLocate(int car, int ped)
+{
+    if ((car == -1 && ped == -1) || current_path.waypoints.empty() == true)
+        return -1;
+
     double circle_radius = 3; //meter
-    tf::Vector3 v1(car_pose[num].position.x, car_pose[num].position.y, car_pose[num].position.z);
+    tf::Vector3 car_v(car_pose[car].position.x, car_pose[car].position.y, car_pose[car].position.z);
+    tf::Vector3 ped_v(ped_pose[ped].position.x, ped_pose[ped].position.y, ped_pose[ped].position.z);
 
     for (unsigned int i = 1; i < current_path.waypoints.size(); i++) {
         tf::Vector3 v2(current_path.waypoints[i].pose.pose.position.x, current_path.waypoints[i].pose.pose.position.y, 0);
-        double dt = tf::tfDistance(v1, v2);
+        double car_dt = tf::tfDistance(car_v, v2);
+        double ped_dt = tf::tfDistance(ped_v, v2);
+        double dt = 1000;
+        if (car_dt < ped_dt)
+            dt = car_dt;
+        else
+            dt = ped_dt;
 
-        if(dt < circle_radius){
+        if (dt < circle_radius) {
             return i;
         }
     }
-    return -1;*/
-    return 50;
+    return -1;
+
 }
 
 bool TwistFilter::Detection()
@@ -192,10 +229,11 @@ bool TwistFilter::Detection()
     if(twist_flag ==false || pose_flag == false || path_flag == false)
         return false;
 
-    int obstacle = GetClosestObstacle();
-    int waypoint = GetWaypointObstacleLocate(obstacle);
+    int car_num = GetClosestCar();
+    int ped_num = GetClosestPedestrian();
+    int waypoint = GetWaypointObstacleLocate(car_num , ped_num);
 
-    std::cout << obstacle << " " << waypoint << std::endl;
+    std::cout << car_num << " " << ped_num << " " << waypoint << std::endl;
     int stop_distance = 8;
 
     if (waypoint != -1) {
@@ -239,6 +277,9 @@ bool TwistFilter::Detection()
         current_twist.twist.linear.x = velocity_ms;
         current_twist.twist.angular.z = current_twist.twist.linear.x / radius;
 
+    } else {
+        decelerate_ms = 0;
+        decelerate_flag = false;
     }
            std::cout << "twist.linear.x = " << current_twist.twist.linear.x << std::endl;
            std::cout << "twist.angular.z = " << current_twist.twist.angular.z << std::endl;
