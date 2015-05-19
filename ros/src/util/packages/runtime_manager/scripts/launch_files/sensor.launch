@@ -1,0 +1,12 @@
+<launch>
+
+<!-- HDL-32e -->
+<include file="$(find velodyne)/scripts/velodyne_hdl32e.launch"/>
+
+<!-- Javad Delta 3 -->
+<node pkg="javad" type="gnss.sh" name="javad_driver"/>
+
+<!-- PointGrey Grasshopper3 -->
+<include file="$(find pointgrey)/scripts/grasshopper3.launch"/>
+
+</launch>

@@ -15,23 +15,43 @@ buttons:
   database:
     run : rosrun obj_db obj_downloader
 
-  init:
-    run : 'sh -c "roslaunch runtime_manager init.launch
+  sensor:
+    run : roslaunch runtime_manager sensor.launch
+  map:
+    run : 'sh -c "roslaunch runtime_manager map.launch
            tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
            pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
                          if [ \"$SN\" != \"noupdate\" ] ; then
                            find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1 ; fi )\"
            pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
            csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
-    param : main_init
+    param : main_map
     gui   :
       scene_num :
         func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+  perception:
+    run : roslaunch runtime_manager perception.launch
+  planning:
+    run : roslaunch runtime_manager planning.launch
+  control:
+    run : roslaunch runtime_manager control.launch
 
-  check:
-    run : roslaunch runtime_manager check.launch
-  set:
-    run : roslaunch runtime_manager set.launch
+  #init:
+  #  run : 'sh -c "roslaunch runtime_manager init.launch
+  #         tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
+  #         pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
+  #                       if [ \"$SN\" != \"noupdate\" ] ; then
+  #                         find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1 ; fi )\"
+  #         pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
+  #         csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
+  #  param : main_init
+  #  gui   :
+  #    scene_num :
+  #      func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+  #check:
+  #  run : roslaunch runtime_manager check.launch
+  #set:
+  #  run : roslaunch runtime_manager set.launch
 
   points_map_loader :
     run   : rosrun map_file points_map_loader
@@ -164,7 +184,7 @@ params :
       max   : 1.00
       v     : 0.00
 
-  - name  : main_init
+  - name  : main_map
     vars  :
     - name     : scene_num
       rosparam : /points_map_loader/scene_num
