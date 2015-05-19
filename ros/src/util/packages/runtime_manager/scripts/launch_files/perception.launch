@@ -1,0 +1,9 @@
+<launch>
+
+<!-- nmea2tfpose -->
+<node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/>
+
+<!-- ndt_pcl -->
+<node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl"/>
+
+</launch>

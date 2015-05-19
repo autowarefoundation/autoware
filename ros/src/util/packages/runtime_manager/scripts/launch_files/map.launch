@@ -1,0 +1,12 @@
+<launch>
+
+<!-- TF -->
+<include file="$(arg tf_launch)"/>
+
+<!-- Point Cloud -->
+<node pkg="map_file" type="points_map_loader" name="points_map_loader" args="$(arg pmap_param) $(arg pcd_files)"/>
+
+<!-- Vector Map -->
+<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(arg csv_files)"/>
+
+</launch>

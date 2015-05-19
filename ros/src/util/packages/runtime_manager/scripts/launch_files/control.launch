@@ -1,0 +1,12 @@
+<launch>
+
+<!-- Tablet UI -->
+<include file="$(find runtime_manager)/scripts/ui_socket.launch"/>
+
+<!-- Vehicle Contorl -->
+<include file="$(find runtime_manager)/scripts/vehicle_socket.launch"/>
+
+<!-- pure_pursuit -->
+<include file="$(find lane_follower)/launch/pure_pursuit.launch"/>
+
+</launch>

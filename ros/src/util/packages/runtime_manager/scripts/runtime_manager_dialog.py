@@ -114,7 +114,7 @@ class MyFrame(rtmgr.MyFrame):
 			setattr(self, name, False)
 			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
 		self.map_stat = False
-		self.bak_main_button_color = self.button_init.GetForegroundColour()
+		self.bak_main_button_color = self.button_sensor.GetForegroundColour()
 
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for cc in self.main_dic.get('control_check', []):
@@ -333,9 +333,9 @@ class MyFrame(rtmgr.MyFrame):
 		obj = event.GetEventObject()
 		self.OnLaunchKill_obj(obj)
 		if obj.GetValue() is False:
-			ks = { self.button_init:[ 'gnss', 'map' ], 
-			       self.button_check:[ 'ndt' ], 
-			       self.button_set:[ 'lf' ] }.get(obj, [])
+			ks = { self.button_perception:[ 'gnss', 'ndt' ], 
+			       self.button_map:[ 'map' ], 
+			       self.button_control:[ 'lf' ] }.get(obj, [])
 			for k in ks:
 				self.stat_set(k, False)
 			self.main_button_update(obj, False)
@@ -346,12 +346,7 @@ class MyFrame(rtmgr.MyFrame):
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
 
-	def OnPause(self, event):
-		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
-		pub.publish(mode_cmd(mode=0))
-
-	def OnStop(self, event):
-		#cmd = 'rostopic pub -1 error_info ui_socket/error_info \'{header: {seq: 0, stamp: 0, frame_id: ""}, error: 0}\''
+	def OnClear(self, event):
 		self.kill_all()
 
 	def OnNetConn(self, event):
@@ -406,25 +401,25 @@ class MyFrame(rtmgr.MyFrame):
 
 	def gnss_stat_callback(self, data):
 		self.stat_set('gnss', data.data)
-		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
+		self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
 
 	def pmap_stat_callback(self, data):
 		self.pmap_stat = data.data
 		self.stat_set('map', self.pmap_stat and self.vmap_stat)
-		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
+		self.main_button_update(self.button_map, self.map_stat)
 
 	def vmap_stat_callback(self, data):
 		self.vmap_stat = data.data
 		self.stat_set('map', self.pmap_stat and self.vmap_stat)
-		self.main_button_update(self.button_init, self.gnss_stat and self.map_stat)
+		self.main_button_update(self.button_map, self.map_stat)
 
 	def ndt_stat_callback(self, data):
 		self.stat_set('ndt', data.data)
-		self.main_button_update(self.button_check, self.ndt_stat)
+		self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
 
 	def lf_stat_callback(self, data):
 		self.stat_set('lf', data.data)
-		self.main_button_update(self.button_set, self.lf_stat)
+		self.main_button_update(self.button_control, self.lf_stat)
 
 	def stat_set(self, k, stat):
 		name = k + '_stat'
@@ -535,7 +530,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			depend_bool = eval( gdic_v.get('depend_bool', 'lambda v : bool(v)') )
 			v = depend_bool(v)
-                        if vp.IsEnabled() != v:
+			if vp.IsEnabled() != v:
 				vp.Enable(v)
 
 	def publish_param_topic(self, pdic, prm):
@@ -1580,7 +1575,7 @@ class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
 		szr.Add(self.panel, 1, wx.EXPAND)
 		parent.SetSizer(szr)
 
-                self.update_filename()
+		self.update_filename()
 		self.klass_msg = ConfigNdtSlamOutput
 		self.pub = rospy.Publisher('/config/ndt_slam_output', self.klass_msg, queue_size=10)
 
