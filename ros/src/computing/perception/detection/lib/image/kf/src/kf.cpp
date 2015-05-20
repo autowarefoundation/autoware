@@ -411,7 +411,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			initTracking(objects[i], kstates, detections[i], image, colors);
 		}
 	}
-	
+
 	//check overlapping states and remove them
 	float overlap = 0.8; vector<unsigned int> removedIndices;
 	for (unsigned int i = 0; i < kstates.size(); i++)
@@ -420,9 +420,9 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 		{
 			if (i==j || isInRemoved(removedIndices, i) || isInRemoved(removedIndices, j))
 				continue;
-			
+
 			Rect intersection = kstates[i].pos & kstates[j].pos;
-			
+
 			if ( ( (intersection.width >= kstates[i].pos.width * overlap) && (intersection.height >= kstates[i].pos.height * overlap) ) ||
 				( (intersection.width >= kstates[j].pos.width * overlap) && (intersection.height >= kstates[j].pos.height * overlap) ) )
 			{

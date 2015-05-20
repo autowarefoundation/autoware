@@ -73,14 +73,14 @@ static inline bool isAlmostZero(float x)
 bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float object_distance, vector<int> &outIndices)
 {
 	int numPoints = vScanPoints.size();
-	
+
 	if (numPoints <= 0)
 		return false;
-		
+
 	int pointsFound = 0;
 	for (int i = 0; i < numPoints; i++)
 	{
-		if (vScanPoints[i].x >= rect.x && vScanPoints[i].y >= rect.y && 
+		if (vScanPoints[i].x >= rect.x && vScanPoints[i].y >= rect.y &&
 				(vScanPoints[i].min_h > -1.5 && vScanPoints[i].min_h < -1.0) &&
 				(vScanPoints[i].max_h < 2.0))
 		{
@@ -120,7 +120,7 @@ float getStdDev(vector<Point5> &vScanPoints, vector<int> &indices, float avg)
 		stddev+=(vScanPoints[indices[i]].min_h-avg)*(vScanPoints[indices[i]].min_h-avg);
 	}
 	stddev/=N;
-	
+
 	return sqrt(stddev);
 }
 
@@ -129,10 +129,10 @@ bool dispersed(vector<Point5> &vScanPoints, vector<int> &indices)
 {
 	float avg = getMinAverage(vScanPoints, indices);
 	float stddev = getStdDev(vScanPoints, indices, avg);
-	
+
 	if(abs(stddev/avg>=1.0))
 		return true;
-	
+
 	return false;
 }
 
@@ -149,10 +149,10 @@ void getVScanPoints(vector<Point5> &vScanPoints)
 			double distance = points_msg.distance[i];
 			float min_h = points_msg.min_height[i];
 			float max_h = points_msg.max_height[i];
-			
+
 			if(distance == 0)
 				continue;
-			
+
 			vScanPoints.push_back({x, y, distance, min_h, max_h});//add Real Points so they can be later checked against the detection bounding box
 		}
 	}
@@ -216,16 +216,15 @@ void fuse()
 {
 	if (!pointsStored || !objectsStored)
 		return;
-	
+
 	calcDistance();//obtain distance for each object
-	
+
 	//Draw VScan Points and get them before displaying detections
 	vector<Point5> vScanPoints;
-	
+
 	getVScanPoints(vScanPoints);//store all the vscanpoints and its data
-	
+
 	fuseFilterDetections(vScanPoints);//filter and store fused objects
-	
 }
 
 #if _DEBUG
