@@ -42,6 +42,8 @@
 #include <scan2image/ScanImage.h>
 #include <points2image/PointsImage.h>
 
+#include <opencv2/opencv.hpp>
+
 #define IMAGE_WIDTH 800
 #define IMAGE_HEIGHT 600
 #define NO_DATA 0
@@ -51,6 +53,9 @@
 #define IMAGE_CALLBACK imageCallback
 #endif
 
+using namespace std;
+using namespace cv;
+
 struct Scan_image{
 	float distance[IMAGE_WIDTH][IMAGE_HEIGHT];
 	float intensity[IMAGE_WIDTH][IMAGE_HEIGHT];
@@ -58,11 +63,30 @@ struct Scan_image{
 	int min_y;
 };
 
+struct Point5
+{
+	int x;
+	int y;
+	double distance;
+	float min_h;
+	float max_h;
+};
+
+extern void fuse();
+extern void fuseFilterDetections(vector<Point5>& vScanPoints);
+extern void getVScanPoints(vector<Point5> &vScanPoints);
+extern bool dispersed(vector<Point5> &vScanPoints, vector<int> &indices);
+extern float getStdDev(vector<Point5> &vScanPoints, vector<int> &indices, float avg);
+extern float getMinAverage(vector<Point5> &vScanPoints, vector<int> &indices);
+extern bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float object_distance, vector<int> &outIndices);
+extern std::vector<float> getMinHeights();
+extern std::vector<float> getMaxHeights();
+
 extern void calcDistance();
-extern void setImageObjects(const dpm::ImageObjects& image_objects);
+extern void setDetectedObjects(const dpm::ImageObjects& image_objects);
 extern void setScanImage(const scan2image::ScanImage& scan_image);
 extern void setPointsImage(const points2image::PointsImage& points_image);
-extern int getObjectNum();
+extern int getObjectsNum();
 extern std::vector<int> getCornerPoint();
 extern std::vector<float> getDistance();
 extern void init();

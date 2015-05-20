@@ -250,7 +250,7 @@ class MyFrame(rtmgr.MyFrame):
 			[ self.button_ref_file_rosbag_play, self.button_ref_main_rosbag_play, ],
 			[ self.text_ctrl_rate_rosbag_play, self.text_ctrl_rate_main_rosbag_play, ],
 			[ self.checkbox_clock_rosbag_play, self.checkbox_clock_main_rosbag_play, ],
-			[ self.checkbox_sim_time, self.checkbox_main_sim_time, ],
+			[ self.checkbox_sim_time, self.checkbox_main_sim_time, ]
 		]
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))

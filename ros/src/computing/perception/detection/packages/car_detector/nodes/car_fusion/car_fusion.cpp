@@ -34,29 +34,29 @@ static void publishTopic();
 static ros::Publisher fused_objects;
 static std_msgs::Header sensor_header;
 
-static void ImageObjectsCallback(const dpm::ImageObjects& image_object)
+static void DetectedObjectsCallback(const dpm::ImageObjects& image_object)
 {
-    setImageObjects(image_object);
+    setDetectedObjects(image_object);
 
-    calcDistance();
+    fuse();
     publishTopic();
 }
 
-static void ScanImageCallback(const scan2image::ScanImage& scan_image)
+/*static void ScanImageCallback(const scan2image::ScanImage& scan_image)
 {
     setScanImage(scan_image);
     sensor_header = scan_image.header;
 
     calcDistance();
     publishTopic();
-}
+}*/
 
 static void PointsImageCallback(const points2image::PointsImage& points_image)
 {
     setPointsImage(points_image);
     sensor_header = points_image.header;
 
-    calcDistance();
+    fuse();
     publishTopic();
 }
 
@@ -67,9 +67,11 @@ static void publishTopic()
      */
     car_detector::FusedObjects fused_objects_msg;
     fused_objects_msg.header = sensor_header;
-    fused_objects_msg.car_num = getObjectNum();
+    fused_objects_msg.car_num = getObjectsNum();
     fused_objects_msg.corner_point = getCornerPoint();
     fused_objects_msg.distance = getDistance();
+	fused_objects_msg.min_height = getMinHeights();
+	fused_objects_msg.max_height = getMaxHeights();
     fused_objects.publish(fused_objects_msg);
 }
 
@@ -80,8 +82,8 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Subscriber car_pixel_xy_sub = n.subscribe("car_pixel_xy_tracked", 1, ImageObjectsCallback);
-    ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
+    ros::Subscriber car_pixel_xy_sub = n.subscribe("car_pixel_xy_tracked", 1, DetectedObjectsCallback);
+    //ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
     ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
 #if _DEBUG
     ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);

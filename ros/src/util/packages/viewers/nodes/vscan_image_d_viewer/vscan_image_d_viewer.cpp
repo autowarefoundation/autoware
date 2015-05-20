@@ -78,167 +78,43 @@ static inline bool isNearlyNODATA(float x)
 
 static vector<Scalar> _colors;
 
-#define	IMAGE_WIDTH	800
-#define	IMAGE_HEIGHT	600
+#define	IMAGE_WIDTH		800
+#define	IMAGE_HEIGHT 	600
+
+#define POINTS_THRESHOLD 0.1
 
 static const int OBJ_RECT_THICKNESS = 3;
 
-static void drawRects(IplImage *Image,
-		      int object_num,
-		      std::vector<int> corner_point,
-		      CvScalar color,
-		      int threshold_height,
-		      std::vector<float> distance)
+static void drawRects(Mat image,
+					car_detector::FusedObjects objects,
+					CvScalar color,
+					int threshold_height,
+					std::vector<float> distance,
+					string objectClass)
 {
+	int object_num = objects.car_num;
+	std::vector<int> corner_point = objects.corner_point;
+	char distance_string[32];
+	int fontFace = FONT_HERSHEY_SIMPLEX; double fontScale = 0.55; int fontThick = 2;
+	vector<int> pointsInBoundingBox;
 	for(int i = 0; i < object_num; i++)
 	{
-		if (corner_point[1+i*4] > threshold_height && !isNearlyNODATA(distance.at(i))) // temporal way to avoid drawing detections in the sky
-		{
-			CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
-			CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
-			cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
-		}
+		//corner_point[0]=>X1		corner_point[1]=>Y1
+		//corner_point[2]=>width	corner_point[3]=>height
+		Rect detection = Rect(corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
+		
+		rectangle(image, detection, color, OBJ_RECT_THICKNESS);//draw bounding box
+		putText(image, objectClass, Point(detection.x + 4, detection.y + 10), fontFace, fontScale, color, fontThick);//draw label text
+		
+		sprintf(distance_string, "D:%.2f m H:%.1f,%.1f", objects.distance.at(i) / 100, objects.min_height.at(i), objects.max_height.at(i)); 
+		//Size textSize = getTextSize(string(distance_string), fontFace, fontScale, fontThick, 0);
+		//rectangle(image, Rect( detection.x, detection.y, textSize.width + 4, textSize.height + 10), Scalar::all(0), CV_FILLED);//draw fill distance rectangle
+		putText(image, string(distance_string), Point(detection.x + 4, detection.y - 10), fontFace, fontScale, color, fontThick);//draw distance text
 	}
 }
 
-static void putDistance(IplImage *Image,
-			car_detector::FusedObjects objects,
-			int threshold_height,
-			const char* objectLabel)
+static void drawVScanPoints(Mat image)
 {
-	char distance_string[32];
-	CvFont dfont;
-	float hscale	    = 0.7f;
-	float vscale	    = 0.7f;
-	float italicscale = 0.0f;
-	int	thickness   = 1;
-
-	CvFont      dfont_label;
-	float       hscale_label = 0.5f;
-	float       vscale_label = 0.5f;
-	CvSize      text_size;
-	int         baseline     = 0;
-
-	cvInitFont(&dfont_label, CV_FONT_HERSHEY_COMPLEX, hscale_label, vscale_label, italicscale, thickness, CV_AA);
-	cvGetTextSize(objectLabel,
-		      &dfont_label,
-		      &text_size,
-		      &baseline);
-
-	for (int i=0; i<objects.car_num; i++)
-	{
-		if (objects.corner_point[1+i*4] > threshold_height) // temporal way to avoid drawing detections in the sky
-		{
-			if (!isNearlyNODATA(objects.distance.at(i)))
-			{
-
-				/*put label */
-				CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
-							   objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
-
-				cvRectangle(Image,
-					    cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
-					    cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
-					    CV_RGB(0, 0, 0), // label background is black
-					    -1, 8, 0
-					);
-				cvPutText(Image,
-					  objectLabel,
-					  labelOrg,
-					  &dfont_label,
-					  CV_RGB(255, 255, 255) // label text color is white
-					);
-
-				/* put distance data */
-				cvRectangle(Image,
-					    cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - (((int)log10(objects.distance.at(i)/100)+1) * 5 + 45),
-						      objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 5),
-					    cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) + (((int)log10(objects.distance.at(i)/100)+1) * 8 + 38),
-						      objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 30),
-					    cv::Scalar(255,255,255),
-					    -1);
-
-				cvInitFont (&dfont,
-					    CV_FONT_HERSHEY_COMPLEX,
-					    hscale,
-					    vscale,
-					    italicscale,
-					    thickness,
-					    CV_AA);
-
-				sprintf(distance_string, "%.2f m", objects.distance.at(i) / 100); //unit of length is meter
-				cvPutText(Image,
-					  distance_string,
-					  cvPoint(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - (((int)log10(objects.distance.at(i)/100)+1) * 5 + 40),
-						  objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 25),
-					  &dfont,
-					  CV_RGB(255, 0, 0));
-			}
-
-		}
-	}
-}
-
-static void show(void)
-{
-	if(!existImage || !existPoints){
-		return;
-	}
-	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
-	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
-	IplImage frame = cv_image->image;
-
-	cv::Mat matImage(&frame, false);
-	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
-
-	/* DRAW RECTANGLES of detected objects */
-#if 0
-	for(std::size_t i=0; i<cars.size();i++)
-	{
-
-		if(cars[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
-		{
-			cvRectangle( &frame,
-				     cvPoint(cars[i].x, cars[i].y),
-				     cvPoint(cars[i].x+cars[i].width, cars[i].y+cars[i].height),
-				     _colors[0], 3, 8,0 );
-		}
-	}
-	for(std::size_t i=0; i<peds.size();i++)
-	{
-		if(peds[i].y > matImage.rows*.3)//temporal way to avoid drawing detections in the sky
-		{
-			cvRectangle( &frame,
-				     cvPoint(peds[i].x, peds[i].y),
-				     cvPoint(peds[i].x+peds[i].width, peds[i].y+peds[i].height),
-				     _colors[1], 3, 8,0 );
-		}
-	}
-#else
-	drawRects(&frame,
-		  car_fused_objects.car_num,
-		  car_fused_objects.corner_point,
-		  cvScalar(255.0, 255.0, 0,0),
-		  matImage.rows*.25,
-		  car_fused_objects.distance);
-
-	drawRects(&frame,
-		  pedestrian_fused_objects.car_num,
-		  pedestrian_fused_objects.corner_point,
-		  cvScalar(0.0, 255.0, 0,0),
-		  matImage.rows*.25,
-		  pedestrian_fused_objects.distance);
-#endif
-	/* PUT DISTANCE text on image */
-	putDistance(&frame,
-		    car_fused_objects,
-		    matImage.rows*.25,
-		    "car");
-	putDistance(&frame,
-		    pedestrian_fused_objects,
-		    matImage.rows*.25,
-		    "pedestrian");
-
 	/* DRAW POINTS of lidar scanning */
 	int w = IMAGE_WIDTH;
 	int h = IMAGE_HEIGHT;
@@ -261,6 +137,7 @@ static void show(void)
 		for(x=0; x<w; x++){
 			int i = y * w + x;
 			double distance = points_msg->distance[i];
+			
 			if(distance == 0){
 				continue;
 			}
@@ -269,66 +146,55 @@ static void show(void)
 			int g = color[1];
 			int b = color[2];
 			int r = color[0];
-			cvRectangle(&frame, cvPoint(x, y), cvPoint(x+1, y+1), CV_RGB(r, g, b));
+			rectangle(image, Rect(x, y,1, 1), Scalar(r, g, b), OBJ_RECT_THICKNESS);
 		}
 	}
+}
+
+static void show(void)
+{
+	if(!existImage || !existPoints){
+		return;
+	}
+	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
+	IplImage frame = cv_image->image;
+
+	cv::Mat matImage(&frame, false);
+	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
+	
+	//Draw VScan Points
+	drawVScanPoints(matImage);
+
+	/* DRAW RECTANGLES of detected objects */
+	drawRects(matImage,
+		  car_fused_objects,
+		  Scalar(255.0, 255.0, 0,0),
+		  matImage.rows*.25,
+		  car_fused_objects.distance,
+		  "car");
+
+	drawRects(matImage,
+		  pedestrian_fused_objects,
+		  Scalar(0.0, 255.0, 0,0),
+		  matImage.rows*.25,
+		  pedestrian_fused_objects.distance,
+		  "pedestrian");	
+
 	cvShowImage(window_name, &frame);
 	cvWaitKey(2);
 }
-
-#if 0
-static void car_updater_callback(dpm::ImageObjects image_objects_msg)
-{
-	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point;
-	//points are X,Y,W,H and repeat for each instance
-	cars.clear();
-
-	for (int i=0; i<num;i++)
-	{
-		Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		cars.push_back(tmp);
-	}
-
-
-}
-#else
 static void car_updater_callback(const car_detector::FusedObjects& fused_car_msg)
 {
 	car_fused_objects = fused_car_msg;
 	//  show();
 }
-#endif
 
-#if 0
-static void ped_updater_callback(dpm::ImageObjects image_objects_msg)
-{
-	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point;
-	//points are X,Y,W,H and repeat for each instance
-	peds.clear();
-
-	for (int i=0; i<num;i++)
-	{
-		Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		peds.push_back(tmp);
-	}
-}
-#else
 static void ped_updater_callback(const car_detector::FusedObjects& fused_pds_msg)
 {
   pedestrian_fused_objects = fused_pds_msg;
   //  show();
 }
-#endif
 
 static void image_cb(const sensor_msgs::Image& msg)
 {
@@ -398,13 +264,13 @@ int main(int argc, char **argv)
 	cv::generateColors(_colors, 25);
 
 	ros::Subscriber scriber = n.subscribe(image_node, 1,
-					      image_cb);
+					    image_cb);
 	ros::Subscriber scriber_car = n.subscribe(car_node, 1,
-						  car_updater_callback);
+						car_updater_callback);
 	ros::Subscriber scriber_ped = n.subscribe(pedestrian_node, 1,
-						  ped_updater_callback);
+						ped_updater_callback);
 	ros::Subscriber scriber_points = n.subscribe(points_node, 1,
-						     points_cb);
+						points_cb);
 
 	cv::Mat grayscale(256,1,CV_8UC1);
 	for(int i=0;i<256;i++)
