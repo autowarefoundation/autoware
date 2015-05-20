@@ -66,7 +66,6 @@
 
 #include <runtime_manager/ConfigNdt.h>
 
-#include <chrono>
 
 struct Position {
     double x;
@@ -573,46 +572,10 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
 {
-  std::chrono::time_point<std::chrono::system_clock> callback_start, callback_end;
-  std::chrono::duration<double> callback_duration;
-  std::chrono::time_point<std::chrono::system_clock> first_start, first_end;
-  std::chrono::duration<double> first_duration;
-  std::chrono::time_point<std::chrono::system_clock> second_start, second_end;
-  std::chrono::duration<double> second_duration;
-  std::chrono::time_point<std::chrono::system_clock> third_start, third_end;
-  std::chrono::duration<double> third_duration;
-
-  std::chrono::time_point<std::chrono::system_clock> item_start, item_end;
-  std::chrono::duration<double> item_duration;
-  std::chrono::time_point<std::chrono::system_clock> filter_start, filter_end;
-  std::chrono::duration<double> filter_duration;
-
-  std::chrono::time_point<std::chrono::system_clock> setInputSource_start, setInputSource_end;
-  std::chrono::duration<double> setInputSource_duration;
-  std::chrono::time_point<std::chrono::system_clock> align_start, align_end;
-  std::chrono::duration<double> align_duration;
-  std::chrono::time_point<std::chrono::system_clock> getFinalTransformation_start, getFinalTransformation_end;
-  std::chrono::duration<double> getFinalTransformation_duration;
-  std::chrono::time_point<std::chrono::system_clock> tf_start, tf_end;
-  std::chrono::duration<double> tf_duration;
-      
-  double callback_time;
-  double first_time;
-  double second_time;
-  double third_time;
-  double item_time;
-  double filter_time;
-  double setInputSource_time;
-  double align_time;
-  double getFinalTransformation_time;
-  double tf_time;
-
-  callback_start = std::chrono::system_clock::now();
 
   if(_scanner == "velodyne"){
     if (map_loaded == 1 && init_pos_set == 1) {
       //        callback_start = ros::Time::now();
-      first_start = std::chrono::system_clock::now();
 
       static tf::TransformBroadcaster br;
       tf::Transform transform;
@@ -639,7 +602,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       */
       
       //        t1_start = ros::Time::now();
-      item_start = std::chrono::system_clock::now();
       for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
             p.x = (double) item->x;
             p.y = (double) item->y;
@@ -647,7 +609,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	    
             scan.points.push_back(p);
       }
-      item_end = std::chrono::system_clock::now();
       //        t1_end = ros::Time::now();
       //        d1 = t1_end - t1_start;
       
@@ -656,7 +617,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
       pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
       
-      filter_start = std::chrono::system_clock::now();
       // Downsampling the velodyne scan using VoxelGrid filter
       //        t2_start = ros::Time::now();
       pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
@@ -665,8 +625,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       voxel_grid_filter.filter(*filtered_scan_ptr);
       //        t2_end = ros::Time::now();
       //        d2 = t2_end - t2_start;
-      filter_end = std::chrono::system_clock::now();
-      first_end = std::chrono::system_clock::now();
 
 
 
@@ -680,12 +638,9 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
 
 
-      second_start = std::chrono::system_clock::now();
       
       // Setting point cloud to be aligned.
-      setInputSource_start = std::chrono::system_clock::now();
       ndt.setInputSource(filtered_scan_ptr);
-      setInputSource_end = std::chrono::system_clock::now();
       
       // Guess the initial gross estimation of the transformation
       //        t3_start = ros::Time::now();
@@ -711,13 +666,9 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       
       //        t4_start = ros::Time::now();
       pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-      align_start = std::chrono::system_clock::now();
       ndt.align(*output_cloud, init_guess);
-      align_end = std::chrono::system_clock::now();
       
-      getFinalTransformation_start = std::chrono::system_clock::now();
       t = ndt.getFinalTransformation();
-      getFinalTransformation_end = std::chrono::system_clock::now();
       
       //        t4_end = ros::Time::now();
       //        d4 = t4_end - t4_start;
@@ -728,15 +679,12 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	origin.setValue(static_cast<double>(t(0,3)), static_cast<double>(t(1,3)), static_cast<double>(t(2,3)));
       */
 
-      second_end = std::chrono::system_clock::now();
 
 
 
 
 
 
-      third_start = std::chrono::system_clock::now();
-      tf_start = std::chrono::system_clock::now();
 
       tf::Matrix3x3 tf3d;
       
@@ -881,8 +829,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       //        callback_end = ros::Time::now();
       //        d_callback = callback_end - callback_start;
 
-      tf_end = std::chrono::system_clock::now();
-      third_end = std::chrono::system_clock::now();
 
       std::cout << "-----------------------------------------------------------------" << std::endl;
       std::cout << "Sequence number: " << input->header.seq << std::endl;
@@ -909,30 +855,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       //      third_end = std::chrono::system_clock::now();
     }
   }
-  callback_end = std::chrono::system_clock::now();
-  callback_duration = callback_end - callback_start;
-  first_duration = first_end - first_start;
-  second_duration = second_end - second_start;
-  third_duration = third_end - third_start;
-
-  item_duration = item_end - item_start;
-  filter_duration = filter_end - filter_start;
-  setInputSource_duration = setInputSource_end - setInputSource_start;
-  align_duration = align_end - align_start;
-  getFinalTransformation_duration = getFinalTransformation_end - getFinalTransformation_start;
-  tf_duration = tf_end - tf_start;
   
-  callback_time = std::chrono::duration_cast<std::chrono::microseconds>(callback_duration).count();
-  first_time = std::chrono::duration_cast<std::chrono::microseconds>(first_duration).count();
-  second_time = std::chrono::duration_cast<std::chrono::microseconds>(second_duration).count();
-  third_time = std::chrono::duration_cast<std::chrono::microseconds>(third_duration).count();
-  item_time = std::chrono::duration_cast<std::chrono::microseconds>(item_duration).count();
-  filter_time = std::chrono::duration_cast<std::chrono::microseconds>(filter_duration).count();
-  setInputSource_time = std::chrono::duration_cast<std::chrono::microseconds>(setInputSource_duration).count();
-  align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_duration).count();
-  getFinalTransformation_time = std::chrono::duration_cast<std::chrono::microseconds>(getFinalTransformation_duration).count();
-  tf_time = std::chrono::duration_cast<std::chrono::microseconds>(tf_duration).count();
-
   /*
   std::cout << "Voxel Leaf Size: " << voxel_leaf_size << std::endl;  
   std::cout << "Callback Duration: " << callback_time * 0.001 << " milli sec." << std::endl;
