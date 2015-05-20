@@ -41,7 +41,7 @@ selector :
 
 buttons:
   rosbag_play :
-    run   : rosbag play
+    run   : rosbag play -q
     param : rosbag_play
     gui   :
       file  :

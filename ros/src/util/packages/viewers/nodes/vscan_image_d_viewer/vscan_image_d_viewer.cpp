@@ -81,72 +81,15 @@ static vector<Scalar> _colors;
 #define	IMAGE_WIDTH		800
 #define	IMAGE_HEIGHT 	600
 
+#define POINTS_THRESHOLD 0.1
+
 static const int OBJ_RECT_THICKNESS = 3;
-
-struct Point5i
-{
-	int x;
-	int y;
-	double distance;
-	double min_h;
-	double max_h;
-};
-
-bool rectangleContainsPoints(Rect rect, vector<Point5i> &vScanPoints, float object_distance, vector<int> &outIndices)
-{
-	int numPoints = vScanPoints.size();
-	
-	if (numPoints <= 0)
-		return false;
-		
-	int pointsFound = 0;
-	for (int i = 0; i < numPoints; i++)
-	{
-		if (vScanPoints[i].x >= rect.x && vScanPoints[i].y >= rect.y && 
-				(vScanPoints[i].min_h > -1.5 && vScanPoints[i].min_h < -1.0))
-		{
-			outIndices.push_back(i);//store indices of points inside the bounding box
-			pointsFound++;
-		}
-	}
-	if ( pointsFound >= 2 )//rectSize*POINTS_THRESHOLD)
-		return true;
-	else
-		return false;
-}
-
-float getMinAverage(vector<Point5i> &vScanPoints, vector<int> &indices)
-{
-	float average = 0.0;
-	int num = indices.size();
-	if (num < 0)
-		return 0.0;
-	for (int i = 0 ; i < num ; i++)
-	{
-		average+=vScanPoints[indices[i]].min_h;
-	}
-	return average/num;
-}
-
-float getMaxAverage(vector<Point5i> &vScanPoints, vector<int> &indices)
-{
-	float average = 0.0;
-	int num = indices.size();
-	if (num < 0)
-		return 0.0;
-	for (int i = 0 ; i < num ; i++)
-	{
-		average+=vScanPoints[indices[i]].max_h;
-	}
-	return average/num;
-}
 
 static void drawRects(Mat image,
 					car_detector::FusedObjects objects,
 					CvScalar color,
 					int threshold_height,
 					std::vector<float> distance,
-					vector<Point5i> &vScanPoints,
 					string objectClass)
 {
 	int object_num = objects.car_num;
@@ -159,21 +102,18 @@ static void drawRects(Mat image,
 		//corner_point[0]=>X1		corner_point[1]=>Y1
 		//corner_point[2]=>width	corner_point[3]=>height
 		Rect detection = Rect(corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
-		if (!isNearlyNODATA(distance.at(i)) &&
-			rectangleContainsPoints(detection, vScanPoints, objects.distance.at(i), pointsInBoundingBox) )
-		{
-			rectangle(image, detection, color, OBJ_RECT_THICKNESS);//draw bounding box
-			putText(image, objectClass, Point(detection.x + 4, detection.y + 10), fontFace, fontScale, color, fontThick);//draw label text
-			
-			sprintf(distance_string, "%.2f m", objects.distance.at(i) / 100); 
-			//Size textSize = getTextSize(string(distance_string), fontFace, fontScale, fontThick, 0);
-			//rectangle(image, Rect( detection.x, detection.y, textSize.width + 4, textSize.height + 10), Scalar::all(0), CV_FILLED);//draw fill distance rectangle
-			putText(image, string(distance_string), Point(detection.x + 4, detection.y - 10), fontFace, fontScale, color, fontThick);//draw distance text
-		}
+		
+		rectangle(image, detection, color, OBJ_RECT_THICKNESS);//draw bounding box
+		putText(image, objectClass, Point(detection.x + 4, detection.y + 10), fontFace, fontScale, color, fontThick);//draw label text
+		
+		sprintf(distance_string, "D:%.2f m H:%.1f,%.1f", objects.distance.at(i) / 100, objects.min_height.at(i), objects.max_height.at(i)); 
+		//Size textSize = getTextSize(string(distance_string), fontFace, fontScale, fontThick, 0);
+		//rectangle(image, Rect( detection.x, detection.y, textSize.width + 4, textSize.height + 10), Scalar::all(0), CV_FILLED);//draw fill distance rectangle
+		putText(image, string(distance_string), Point(detection.x + 4, detection.y - 10), fontFace, fontScale, color, fontThick);//draw distance text
 	}
 }
 
-static void drawAndGetVScanPoints(Mat image, vector<Point5i> &vScanPoints)
+static void drawVScanPoints(Mat image)
 {
 	/* DRAW POINTS of lidar scanning */
 	int w = IMAGE_WIDTH;
@@ -197,8 +137,6 @@ static void drawAndGetVScanPoints(Mat image, vector<Point5i> &vScanPoints)
 		for(x=0; x<w; x++){
 			int i = y * w + x;
 			double distance = points_msg->distance[i];
-			double min_h = points_msg->min_height[i];
-			double max_h = points_msg->max_height[i];
 			
 			if(distance == 0){
 				continue;
@@ -209,7 +147,6 @@ static void drawAndGetVScanPoints(Mat image, vector<Point5i> &vScanPoints)
 			int b = color[2];
 			int r = color[0];
 			rectangle(image, Rect(x, y,1, 1), Scalar(r, g, b), OBJ_RECT_THICKNESS);
-			vScanPoints.push_back({x, y, distance, min_h, max_h});//add Real Points so they can be later checked against the detection bounding box
 		}
 	}
 }
@@ -226,9 +163,8 @@ static void show(void)
 	cv::Mat matImage(&frame, false);
 	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
 	
-	//Draw VScan Points and get them before displaying detections
-	vector<Point5i> vScanPoints;
-	drawAndGetVScanPoints(matImage, vScanPoints);
+	//Draw VScan Points
+	drawVScanPoints(matImage);
 
 	/* DRAW RECTANGLES of detected objects */
 	drawRects(matImage,
@@ -236,7 +172,6 @@ static void show(void)
 		  Scalar(255.0, 255.0, 0,0),
 		  matImage.rows*.25,
 		  car_fused_objects.distance,
-		  vScanPoints,
 		  "car");
 
 	drawRects(matImage,
@@ -244,7 +179,6 @@ static void show(void)
 		  Scalar(0.0, 255.0, 0,0),
 		  matImage.rows*.25,
 		  pedestrian_fused_objects.distance,
-		  vScanPoints,
 		  "pedestrian");	
 
 	cvShowImage(window_name, &frame);

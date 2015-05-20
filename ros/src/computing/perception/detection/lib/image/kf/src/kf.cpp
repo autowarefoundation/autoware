@@ -152,12 +152,12 @@ bool crossCorr(Mat im1, Mat im2)
 	if ( (maxVal > 0.5) && (smaller_im.cols > thresWidth) )//good threshold and consistent size
 	{
 
-		std::cout << "matched" << endl;
+		//std::cout << "matched" << endl;
 		ret = true;
 	}
 	else
 	{
-		std::cout << "non matched" << endl;
+		//std::cout << "non matched" << endl;
 		ret = false;
 	}
 	//cv::imshow("match1", scene);
@@ -261,6 +261,16 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 
 }
 
+//checks whether an index was previously removed
+bool isInRemoved(vector<unsigned int> removedIndices, unsigned int index)
+{
+	for (unsigned int i=0; i< removedIndices.size(); i++)
+	{
+		if (index == removedIndices[i])
+			return true;
+	}
+	return false;
+}
 
 void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int frameNumber,
 	vector<kstate>& kstates, vector<bool>& active, Mat& image, vector<kstate>& trackedDetections, vector<Scalar> & colors)
@@ -401,7 +411,27 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			initTracking(objects[i], kstates, detections[i], image, colors);
 		}
 	}
-
+	
+	//check overlapping states and remove them
+	float overlap = 0.8; vector<unsigned int> removedIndices;
+	for (unsigned int i = 0; i < kstates.size(); i++)
+	{
+		for (unsigned int j = 0; j < kstates.size(); j++)
+		{
+			if (i==j || isInRemoved(removedIndices, i) || isInRemoved(removedIndices, j))
+				continue;
+			
+			Rect intersection = kstates[i].pos & kstates[j].pos;
+			
+			if ( ( (intersection.width >= kstates[i].pos.width * overlap) && (intersection.height >= kstates[i].pos.height * overlap) ) ||
+				( (intersection.width >= kstates[j].pos.width * overlap) && (intersection.height >= kstates[j].pos.height * overlap) ) )
+			{
+				//if one state is overlapped by "overlap" % remove it (mark it as unused
+				kstates[i].active = false;
+				removedIndices.push_back(i);
+			}
+		}
+	}
 	//return to x,y,w,h
 	posScaleToBbox(kstates, trackedDetections);
 
@@ -415,10 +445,10 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 
 	TickMeter tm;
 	tm.start();
-	std::cout << endl << "START tracking...";
+	//std::cout << endl << "START tracking...";
 	doTracking(detections, frameNumber, kstates, active, image, tracked_detections, colors);
 	tm.stop();
-	std::cout << "END Tracking time = " << tm.getTimeSec() << " sec" << endl;
+	//std::cout << "END Tracking time = " << tm.getTimeSec() << " sec" << endl;
 
 	//ROS
 	int num = tracked_detections.size();
@@ -491,7 +521,7 @@ void detections_callback(dpm::ImageObjects image_objects_msg)
 
 	}
 	_ready = true;
-	cout << "received pos" << endl;
+	//cout << "received pos" << endl;
 }
 
 static void kf_config_cb(const runtime_manager::ConfigCarKf::ConstPtr& param)
