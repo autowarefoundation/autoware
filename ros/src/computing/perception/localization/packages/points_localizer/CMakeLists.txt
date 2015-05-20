@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   pcl_conversions
   runtime_manager
+  interactive_markers
 )
 
 ###################################
@@ -16,6 +17,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
   CATKIN_DEPENDS runtime_manager
+  interactive_markers
 #  DEPENDS system_lib
 )
 
@@ -29,8 +31,15 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(ndt_pcl nodes/ndt_pcl/ndt_pcl.cpp)
 add_executable(ndt_slam nodes/ndt_slam/ndt_slam.cpp)
+add_executable(local2global nodes/local2global/local2global.cpp)
+add_executable(pos_marker nodes/pos_marker/pos_marker.cpp)
 
 target_link_libraries(ndt_pcl ${catkin_LIBRARIES})
 target_link_libraries(ndt_slam ${catkin_LIBRARIES})
+target_link_libraries(local2global ${catkin_LIBRARIES})
+target_link_libraries(pos_marker ${catkin_LIBRARIES})
+
 add_dependencies(ndt_pcl runtime_manager_generate_messages_cpp)
 add_dependencies(ndt_slam runtime_manager_generate_messages_cpp)
+add_dependencies(local2global runtime_manager_generate_messages_cpp)
+
