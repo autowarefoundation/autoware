@@ -34,7 +34,7 @@
  Yuki KITSUKAWA
  */
 
-// #define VIEW_TIME
+#define VIEW_TIME
 
 // If you want to output "position_log.txt", "#define OUTPUT".
 //#define OUTPUT 
@@ -62,7 +62,11 @@
 #include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
+#include <interactive_markers/interactive_marker_server.h>
+
 #include <runtime_manager/ConfigNdt.h>
+
+#include <chrono>
 
 struct Position {
     double x;
@@ -105,8 +109,10 @@ static double trans_eps = 0.01; // Transformation epsilon
 // Leaf size of VoxelGrid filter.
 static double voxel_leaf_size = 2.0;
 
+/*
 static ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_end, t3_start, t3_end, t4_start, t4_end, t5_start, t5_end;
 static ros::Duration d_callback, d1, d2, d3, d4, d5;
+*/
 
 static ros::Publisher ndt_pose_pub;
 static geometry_msgs::PoseStamped ndt_pose_msg;
@@ -146,11 +152,13 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     ndt.setStepSize(step_size);
     ndt.setTransformationEpsilon(trans_eps);
 
+    /*
     std::cout << "--- Parameters ---" << std::endl;
     std::cout << "ndt_res: " << ndt_res << std::endl;
     std::cout << "step_size: " << step_size << std::endl;
     std::cout << "trans_eps: " << trans_eps << std::endl;
     std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
+    */
 
     if (use_gnss == 0 && init_pos_set == 0) {
         initial_x = input->x;
@@ -174,6 +182,7 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
         current_pos.yaw = initial_yaw;
 
         init_pos_set = 1;
+	/*
         std::cout << "--- Initial Position (static) ---" << std::endl;
         std::cout << "initial_x: " << initial_x << std::endl;
         std::cout << "initial_y: " << initial_y << std::endl;
@@ -182,23 +191,25 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
         std::cout << "initial_pitch: " << initial_pitch << std::endl;
         std::cout << "initial_yaw: " << initial_yaw << std::endl;
         std::cout << "NDT ready..." << std::endl;
+	*/
     }
 
     angle = input->angle_error;
     control_shift_x = input->shift_x;
     control_shift_y = input->shift_y;
     control_shift_z = input->shift_z;
-
+    /*
     std::cout << "angle_error: " << angle << "." << std::endl;
     std::cout << "control_shift_x: " << control_shift_x << "." << std::endl;
     std::cout << "control_shift_y: " << control_shift_y << "." << std::endl;
     std::cout << "control_shift_z: " << control_shift_z << "." << std::endl;
+    */
 }
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
     if (map_loaded == 0) {
-        std::cout << "Loading map data... ";
+      //        std::cout << "Loading map data... ";
         map.header.frame_id = "/pointcloud_map_frame";
 
         // Convert the data type(from sensor_msgs to pcl).
@@ -215,8 +226,10 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         ndt.setTransformationEpsilon(trans_eps);
 
         map_loaded = 1;
+	/*
         std::cout << "Done." << std::endl;
         std::cout << "Open config window and set the parameters." << std::endl;
+	*/
     }
 }
 
@@ -246,6 +259,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
         current_pos.yaw = initial_yaw;
 
         init_pos_set = 1;
+	/*
         std::cout << "--- Initial Position (gnss) ---" << std::endl;
         std::cout << "initial_x: " << initial_x << std::endl;
         std::cout << "initial_y: " << initial_y << std::endl;
@@ -254,29 +268,41 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
         std::cout << "initial_pitch: " << initial_pitch << std::endl;
         std::cout << "initial_yaw: " << initial_yaw << std::endl;
         std::cout << "NDT ready..." << std::endl;
+	*/
     }
 }
 
+static void marker_callback(const visualization_msgs::InteractiveMarkerFeedback::ConstPtr& input)
+{
+  std::cout << "marker_callback" << std::endl;
+  std::cout << input->pose.position.x << std::endl;
+  std::cout << input->pose.position.y << std::endl;
+  std::cout << input->pose.position.z << std::endl;
+  std::cout << input->pose.orientation.x << std::endl;
+  std::cout << input->pose.orientation.y << std::endl;
+  std::cout << input->pose.orientation.z << std::endl;
+  std::cout << input->pose.orientation.w << std::endl;
 
+  tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
+  tf::Matrix3x3 m(q);
+  previous_pos.x = input->pose.position.x;
+  previous_pos.y = input->pose.position.y;
+  previous_pos.z = input->pose.position.z;
+  m.getRPY(previous_pos.roll, previous_pos.pitch, previous_pos.roll);
 
-
-
-
-
-
-
-
-
-
-
-
-
+  current_pos.x = previous_pos.x;
+  current_pos.y = previous_pos.y;
+  current_pos.z = previous_pos.z;
+  current_pos.roll = previous_pos.roll;
+  current_pos.pitch = previous_pos.pitch;
+  current_pos.yaw = previous_pos.yaw;
+}
 
 static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
   if(_scanner == "hokuyo"){
     if (map_loaded == 1 && init_pos_set == 1) {
-        callback_start = ros::Time::now();
+      //        callback_start = ros::Time::now();
 
         static tf::TransformBroadcaster br;
         tf::Transform transform;
@@ -295,7 +321,7 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
          std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
          */
 
-        t1_start = ros::Time::now();
+	//        t1_start = ros::Time::now();
 	/*
         for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
             p.x = (double) item->x;
@@ -317,8 +343,8 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
 
 
-        t1_end = ros::Time::now();
-        d1 = t1_end - t1_start;
+	//        t1_end = ros::Time::now();
+	//        d1 = t1_end - t1_start;
 
         Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
 
@@ -326,19 +352,19 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
         // Downsampling the velodyne scan using VoxelGrid filter
-        t2_start = ros::Time::now();
+	//        t2_start = ros::Time::now();
         pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
         voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
         voxel_grid_filter.setInputCloud(scan_ptr);
         voxel_grid_filter.filter(*filtered_scan_ptr);
-        t2_end = ros::Time::now();
-        d2 = t2_end - t2_start;
+	//        t2_end = ros::Time::now();
+	//        d2 = t2_end - t2_start;
 
         // Setting point cloud to be aligned.
         ndt.setInputSource(filtered_scan_ptr);
 
         // Guess the initial gross estimation of the transformation
-        t3_start = ros::Time::now();
+	//        t3_start = ros::Time::now();
         tf::Matrix3x3 init_rotation;
 
         guess_pos.x = previous_pos.x + offset_x;
@@ -356,22 +382,23 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
         Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix();
 
-        t3_end = ros::Time::now();
-        d3 = t3_end - t3_start;
+	//        t3_end = ros::Time::now();
+	//        d3 = t3_end - t3_start;
 
-        t4_start = ros::Time::now();
+	//        t4_start = ros::Time::now();
         pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
         ndt.align(*output_cloud, init_guess);
 
         t = ndt.getFinalTransformation();
-        t4_end = ros::Time::now();
-        d4 = t4_end - t4_start;
+	//        t4_end = ros::Time::now();
+	//        d4 = t4_end - t4_start;
 
-        t5_start = ros::Time::now();
+	//        t5_start = ros::Time::now();
         /*
          tf::Vector3 origin;
          origin.setValue(static_cast<double>(t(0,3)), static_cast<double>(t(1,3)), static_cast<double>(t(2,3)));
          */
+
 
         tf::Matrix3x3 tf3d;
 
@@ -483,8 +510,8 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 	}
 	ndt_stat_pub.publish(ndt_stat_msg);
 
-        t5_end = ros::Time::now();
-        d5 = t5_end - t5_start;
+	//        t5_end = ros::Time::now();
+	//        d5 = t5_end - t5_start;
 
 #ifdef OUTPUT
         // Writing position to position_log.txt
@@ -510,8 +537,8 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         previous_pos.pitch = current_pos.pitch;
         previous_pos.yaw = current_pos.yaw;
 
-        callback_end = ros::Time::now();
-        d_callback = callback_end - callback_start;
+	//        callback_end = ros::Time::now();
+	//        d_callback = callback_end - callback_start;
 
         std::cout << "-----------------------------------------------------------------" << std::endl;
         std::cout << "Sequence number: " << input->header.seq << std::endl;
@@ -524,6 +551,7 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " << current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
         std::cout << "Transformation Matrix:" << std::endl;
         std::cout << t << std::endl;
+	/*
 #ifdef VIEW_TIME
         std::cout << "Duration of velodyne_callback: " << d_callback.toSec() << " secs." << std::endl;
         std::cout << "Adding scan points: " << d1.toSec() << " secs." << std::endl;
@@ -532,6 +560,8 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         std::cout << "NDT: " << d4.toSec() << " secs." << std::endl;
         std::cout << "tf: " << d5.toSec() << " secs." << std::endl;
 #endif
+	*/
+
         std::cout << "-----------------------------------------------------------------" << std::endl;
     }
   }
@@ -543,261 +573,380 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
 {
+  std::chrono::time_point<std::chrono::system_clock> callback_start, callback_end;
+  std::chrono::duration<double> callback_duration;
+  std::chrono::time_point<std::chrono::system_clock> first_start, first_end;
+  std::chrono::duration<double> first_duration;
+  std::chrono::time_point<std::chrono::system_clock> second_start, second_end;
+  std::chrono::duration<double> second_duration;
+  std::chrono::time_point<std::chrono::system_clock> third_start, third_end;
+  std::chrono::duration<double> third_duration;
+
+  std::chrono::time_point<std::chrono::system_clock> item_start, item_end;
+  std::chrono::duration<double> item_duration;
+  std::chrono::time_point<std::chrono::system_clock> filter_start, filter_end;
+  std::chrono::duration<double> filter_duration;
+
+  std::chrono::time_point<std::chrono::system_clock> setInputSource_start, setInputSource_end;
+  std::chrono::duration<double> setInputSource_duration;
+  std::chrono::time_point<std::chrono::system_clock> align_start, align_end;
+  std::chrono::duration<double> align_duration;
+  std::chrono::time_point<std::chrono::system_clock> getFinalTransformation_start, getFinalTransformation_end;
+  std::chrono::duration<double> getFinalTransformation_duration;
+  std::chrono::time_point<std::chrono::system_clock> tf_start, tf_end;
+  std::chrono::duration<double> tf_duration;
+      
+  double callback_time;
+  double first_time;
+  double second_time;
+  double third_time;
+  double item_time;
+  double filter_time;
+  double setInputSource_time;
+  double align_time;
+  double getFinalTransformation_time;
+  double tf_time;
+
+  callback_start = std::chrono::system_clock::now();
+
   if(_scanner == "velodyne"){
     if (map_loaded == 1 && init_pos_set == 1) {
-        callback_start = ros::Time::now();
+      //        callback_start = ros::Time::now();
+      first_start = std::chrono::system_clock::now();
 
-        static tf::TransformBroadcaster br;
-        tf::Transform transform;
-        tf::Quaternion q;
-
-        tf::Quaternion q_control;
-
-        // 1 scan
-        pcl::PointCloud<pcl::PointXYZ> scan;
-        pcl::PointXYZ p;
-
-        scan.header = input->header;
-        scan.header.frame_id = "velodyne_scan_frame";
-
-        ros::Time scan_time;
-        scan_time.sec = scan.header.stamp / 1000000.0;
-        scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
-
-        /*
-         std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
-         std::cout << "scan_time: " << scan_time << std::endl;
-         std::cout << "scan_time.sec: " << scan_time.sec << std::endl;
-         std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
-         */
-
-        t1_start = ros::Time::now();
-        for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
+      static tf::TransformBroadcaster br;
+      tf::Transform transform;
+      tf::Quaternion q;
+      
+      tf::Quaternion q_control;
+      
+      // 1 scan
+      pcl::PointCloud<pcl::PointXYZ> scan;
+      pcl::PointXYZ p;
+      
+      scan.header = input->header;
+      scan.header.frame_id = "velodyne_scan_frame";
+      
+      ros::Time scan_time;
+      scan_time.sec = scan.header.stamp / 1000000.0;
+      scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
+      
+      /*
+	std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
+	std::cout << "scan_time: " << scan_time << std::endl;
+	std::cout << "scan_time.sec: " << scan_time.sec << std::endl;
+	std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
+      */
+      
+      //        t1_start = ros::Time::now();
+      item_start = std::chrono::system_clock::now();
+      for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
             p.x = (double) item->x;
             p.y = (double) item->y;
             p.z = (double) item->z;
-
+	    
             scan.points.push_back(p);
-        }
-        t1_end = ros::Time::now();
-        d1 = t1_end - t1_start;
+      }
+      item_end = std::chrono::system_clock::now();
+      //        t1_end = ros::Time::now();
+      //        d1 = t1_end - t1_start;
+      
+      Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
+      
+      pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
+      pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+      
+      filter_start = std::chrono::system_clock::now();
+      // Downsampling the velodyne scan using VoxelGrid filter
+      //        t2_start = ros::Time::now();
+      pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
+      voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+      voxel_grid_filter.setInputCloud(scan_ptr);
+      voxel_grid_filter.filter(*filtered_scan_ptr);
+      //        t2_end = ros::Time::now();
+      //        d2 = t2_end - t2_start;
+      filter_end = std::chrono::system_clock::now();
+      first_end = std::chrono::system_clock::now();
 
-        Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
-        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
-        // Downsampling the velodyne scan using VoxelGrid filter
-        t2_start = ros::Time::now();
-        pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
-        voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-        voxel_grid_filter.setInputCloud(scan_ptr);
-        voxel_grid_filter.filter(*filtered_scan_ptr);
-        t2_end = ros::Time::now();
-        d2 = t2_end - t2_start;
 
-        // Setting point cloud to be aligned.
-        ndt.setInputSource(filtered_scan_ptr);
 
-        // Guess the initial gross estimation of the transformation
-        t3_start = ros::Time::now();
-        tf::Matrix3x3 init_rotation;
 
-        guess_pos.x = previous_pos.x + offset_x;
-        guess_pos.y = previous_pos.y + offset_y;
-        guess_pos.z = previous_pos.z + offset_z;
-        guess_pos.roll = previous_pos.roll;
-        guess_pos.pitch = previous_pos.pitch;
-        guess_pos.yaw = previous_pos.yaw + offset_yaw;
 
-        Eigen::AngleAxisf init_rotation_x(guess_pos.roll, Eigen::Vector3f::UnitX());
-        Eigen::AngleAxisf init_rotation_y(guess_pos.pitch, Eigen::Vector3f::UnitY());
-        Eigen::AngleAxisf init_rotation_z(guess_pos.yaw, Eigen::Vector3f::UnitZ());
 
-        Eigen::Translation3f init_translation(guess_pos.x, guess_pos.y, guess_pos.z);
 
-        Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix();
 
-        t3_end = ros::Time::now();
-        d3 = t3_end - t3_start;
 
-        t4_start = ros::Time::now();
-        pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-        ndt.align(*output_cloud, init_guess);
 
-        t = ndt.getFinalTransformation();
-        t4_end = ros::Time::now();
-        d4 = t4_end - t4_start;
 
-        t5_start = ros::Time::now();
-        /*
-         tf::Vector3 origin;
-         origin.setValue(static_cast<double>(t(0,3)), static_cast<double>(t(1,3)), static_cast<double>(t(2,3)));
-         */
+      second_start = std::chrono::system_clock::now();
+      
+      // Setting point cloud to be aligned.
+      setInputSource_start = std::chrono::system_clock::now();
+      ndt.setInputSource(filtered_scan_ptr);
+      setInputSource_end = std::chrono::system_clock::now();
+      
+      // Guess the initial gross estimation of the transformation
+      //        t3_start = ros::Time::now();
+      tf::Matrix3x3 init_rotation;
+      
+      guess_pos.x = previous_pos.x + offset_x;
+      guess_pos.y = previous_pos.y + offset_y;
+      guess_pos.z = previous_pos.z + offset_z;
+      guess_pos.roll = previous_pos.roll;
+      guess_pos.pitch = previous_pos.pitch;
+      guess_pos.yaw = previous_pos.yaw + offset_yaw;
+      
+      Eigen::AngleAxisf init_rotation_x(guess_pos.roll, Eigen::Vector3f::UnitX());
+      Eigen::AngleAxisf init_rotation_y(guess_pos.pitch, Eigen::Vector3f::UnitY());
+      Eigen::AngleAxisf init_rotation_z(guess_pos.yaw, Eigen::Vector3f::UnitZ());
+      
+      Eigen::Translation3f init_translation(guess_pos.x, guess_pos.y, guess_pos.z);
+      
+      Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix();
+      
+      //        t3_end = ros::Time::now();
+      //        d3 = t3_end - t3_start;
+      
+      //        t4_start = ros::Time::now();
+      pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+      align_start = std::chrono::system_clock::now();
+      ndt.align(*output_cloud, init_guess);
+      align_end = std::chrono::system_clock::now();
+      
+      getFinalTransformation_start = std::chrono::system_clock::now();
+      t = ndt.getFinalTransformation();
+      getFinalTransformation_end = std::chrono::system_clock::now();
+      
+      //        t4_end = ros::Time::now();
+      //        d4 = t4_end - t4_start;
+      
+      //        t5_start = ros::Time::now();
+      /*
+	tf::Vector3 origin;
+	origin.setValue(static_cast<double>(t(0,3)), static_cast<double>(t(1,3)), static_cast<double>(t(2,3)));
+      */
 
-        tf::Matrix3x3 tf3d;
+      second_end = std::chrono::system_clock::now();
 
-        tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)), static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)), static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
 
-        // Update current_pos.
-        current_pos.x = t(0, 3);
-        current_pos.y = t(1, 3);
-        current_pos.z = t(2, 3);
-        tf3d.getRPY(current_pos.roll, current_pos.pitch, current_pos.yaw, 1);
 
-	// control_pose
-	current_pos_control.roll = current_pos.roll;
-	current_pos_control.pitch = current_pos.pitch;
-	current_pos_control.yaw = current_pos.yaw - angle / 180.0 * M_PI;
-	double theta = current_pos_control.yaw;
-	current_pos_control.x = cos(theta) * (-control_shift_x) + sin(theta) * (-control_shift_y) + current_pos.x;
-	current_pos_control.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pos.y;
-	current_pos_control.z = current_pos.z - control_shift_z;
 
-        // transform "/velodyne" to "/map"
+
+
+      third_start = std::chrono::system_clock::now();
+      tf_start = std::chrono::system_clock::now();
+
+      tf::Matrix3x3 tf3d;
+      
+      tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)), static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)), static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
+      
+      // Update current_pos.
+      current_pos.x = t(0, 3);
+      current_pos.y = t(1, 3);
+      current_pos.z = t(2, 3);
+      tf3d.getRPY(current_pos.roll, current_pos.pitch, current_pos.yaw, 1);
+      
+      // control_pose
+      current_pos_control.roll = current_pos.roll;
+      current_pos_control.pitch = current_pos.pitch;
+      current_pos_control.yaw = current_pos.yaw - angle / 180.0 * M_PI;
+      double theta = current_pos_control.yaw;
+      current_pos_control.x = cos(theta) * (-control_shift_x) + sin(theta) * (-control_shift_y) + current_pos.x;
+      current_pos_control.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pos.y;
+      current_pos_control.z = current_pos.z - control_shift_z;
+      
+      // transform "/velodyne" to "/map"
 #if 0
-        transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
-        q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
-        transform.setRotation(q);
+      transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
+      q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
+      transform.setRotation(q);
 #else
-	//
-	// FIXME:
-	// We corrected the angle of "/velodyne" so that pure_pursuit
-	// can read this frame for the control.
-	// However, this is not what we want because the scan of Velodyne
-	// looks unmatched for the 3-D map on Rviz.
-	// What we really want is to make another TF transforming "/velodyne"
-	// to a new "/ndt_points" frame and modify pure_pursuit to
-	// read this frame instead of "/velodyne".
-	// Otherwise, can pure_pursuit just use "/ndt_frame"?
-	//
-        transform.setOrigin(tf::Vector3(current_pos_control.x, current_pos_control.y, current_pos_control.z));
-        q.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
-        transform.setRotation(q);
+      //
+      // FIXME:
+      // We corrected the angle of "/velodyne" so that pure_pursuit
+      // can read this frame for the control.
+      // However, this is not what we want because the scan of Velodyne
+      // looks unmatched for the 3-D map on Rviz.
+      // What we really want is to make another TF transforming "/velodyne"
+      // to a new "/ndt_points" frame and modify pure_pursuit to
+      // read this frame instead of "/velodyne".
+      // Otherwise, can pure_pursuit just use "/ndt_frame"?
+      //
+      transform.setOrigin(tf::Vector3(current_pos_control.x, current_pos_control.y, current_pos_control.z));
+      q.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
+      transform.setRotation(q);
 #endif
+      
+      q_control.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
+      
+      /*
+	std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
+	std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
+	std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
+      */
+      
+      br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
+      
+      static tf::TransformBroadcaster pose_broadcaster;
+      tf::Transform pose_transform;
+      tf::Quaternion pose_q;
+      
+      /*        pose_transform.setOrigin(tf::Vector3(0, 0, 0));
+		pose_q.setRPY(0, 0, 0);
+		pose_transform.setRotation(pose_q);
+		pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
+      */
+      // publish the position
+      // ndt_pose_msg.header.frame_id = "/ndt_frame";
+      ndt_pose_msg.header.frame_id = "/map";
+      ndt_pose_msg.header.stamp = scan_time;
+      ndt_pose_msg.pose.position.x = current_pos.x;
+      ndt_pose_msg.pose.position.y = current_pos.y;
+      ndt_pose_msg.pose.position.z = current_pos.z;
+      ndt_pose_msg.pose.orientation.x = q.x();
+      ndt_pose_msg.pose.orientation.y = q.y();
+      ndt_pose_msg.pose.orientation.z = q.z();
+      ndt_pose_msg.pose.orientation.w = q.w();
+      
+      static tf::TransformBroadcaster pose_broadcaster_control;
+      tf::Transform pose_transform_control;
+      tf::Quaternion pose_q_control;
+      
+      /*   pose_transform_control.setOrigin(tf::Vector3(0, 0, 0));
+	   pose_q_control.setRPY(0, 0, 0);
+	   pose_transform_control.setRotation(pose_q_control);
+	   pose_broadcaster_control.sendTransform(tf::StampedTransform(pose_transform_control, scan_time, "map", "ndt_frame"));
+      */
+      // publish the position
+      //   control_pose_msg.header.frame_id = "/ndt_frame";
+      control_pose_msg.header.frame_id = "/map";
+      control_pose_msg.header.stamp = scan_time;
+      control_pose_msg.pose.position.x = current_pos_control.x;
+      control_pose_msg.pose.position.y = current_pos_control.y;
+      control_pose_msg.pose.position.z = current_pos_control.z;
+      control_pose_msg.pose.orientation.x = q_control.x();
+      control_pose_msg.pose.orientation.y = q_control.y();
+      control_pose_msg.pose.orientation.z = q_control.z();
+      control_pose_msg.pose.orientation.w = q_control.w();
+      
+      /*
+	std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
+	std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
+	std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
+      */
+      
+      ndt_pose_pub.publish(ndt_pose_msg);
+      control_pose_pub.publish(control_pose_msg);
+      
+      int iter_num = ndt.getFinalNumIteration();
+      
+      if(iter_num > 5){
+	ndt_stat_msg.data = false;
+      }else{
+	ndt_stat_msg.data = true;
+      }
+      ndt_stat_pub.publish(ndt_stat_msg);
+      
+      //        t5_end = ros::Time::now();
+      //        d5 = t5_end - t5_start;
 
-	q_control.setRPY(current_pos_control.roll, current_pos_control.pitch, current_pos_control.yaw);
 
-        /*
-         std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
-         std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
-         std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
-         */
-
-        br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
-
-        static tf::TransformBroadcaster pose_broadcaster;
-        tf::Transform pose_transform;
-        tf::Quaternion pose_q;
-
-/*        pose_transform.setOrigin(tf::Vector3(0, 0, 0));
-        pose_q.setRPY(0, 0, 0);
-        pose_transform.setRotation(pose_q);
-        pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
-*/
-        // publish the position
-       // ndt_pose_msg.header.frame_id = "/ndt_frame";
-        ndt_pose_msg.header.frame_id = "/map";
-        ndt_pose_msg.header.stamp = scan_time;
-        ndt_pose_msg.pose.position.x = current_pos.x;
-        ndt_pose_msg.pose.position.y = current_pos.y;
-        ndt_pose_msg.pose.position.z = current_pos.z;
-        ndt_pose_msg.pose.orientation.x = q.x();
-        ndt_pose_msg.pose.orientation.y = q.y();
-        ndt_pose_msg.pose.orientation.z = q.z();
-        ndt_pose_msg.pose.orientation.w = q.w();
-
-        static tf::TransformBroadcaster pose_broadcaster_control;
-        tf::Transform pose_transform_control;
-        tf::Quaternion pose_q_control;
-
-     /*   pose_transform_control.setOrigin(tf::Vector3(0, 0, 0));
-        pose_q_control.setRPY(0, 0, 0);
-        pose_transform_control.setRotation(pose_q_control);
-        pose_broadcaster_control.sendTransform(tf::StampedTransform(pose_transform_control, scan_time, "map", "ndt_frame"));
-*/
-        // publish the position
-     //   control_pose_msg.header.frame_id = "/ndt_frame";
-        control_pose_msg.header.frame_id = "/map";
-        control_pose_msg.header.stamp = scan_time;
-        control_pose_msg.pose.position.x = current_pos_control.x;
-        control_pose_msg.pose.position.y = current_pos_control.y;
-        control_pose_msg.pose.position.z = current_pos_control.z;
-        control_pose_msg.pose.orientation.x = q_control.x();
-        control_pose_msg.pose.orientation.y = q_control.y();
-        control_pose_msg.pose.orientation.z = q_control.z();
-        control_pose_msg.pose.orientation.w = q_control.w();
-
-        /*
-         std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
-         std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
-         std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
-         */
-
-        ndt_pose_pub.publish(ndt_pose_msg);
-        control_pose_pub.publish(control_pose_msg);
-
-	int iter_num = ndt.getFinalNumIteration();
-
-	if(iter_num > 5){
-	  ndt_stat_msg.data = false;
-	}else{
-	  ndt_stat_msg.data = true;
-	}
-	ndt_stat_pub.publish(ndt_stat_msg);
-
-        t5_end = ros::Time::now();
-        d5 = t5_end - t5_start;
-
+      
 #ifdef OUTPUT
-        // Writing position to position_log.txt
-        std::ofstream ofs("position_log.txt", std::ios::app);
-        if (ofs == NULL) {
-            std::cerr << "Could not open 'position_log.txt'." << std::endl;
-            exit(1);
-        }
-        ofs << current_pos.x << " " << current_pos.y << " " << current_pos.z << " " << current_pos.roll << " " << current_pos.pitch << " " << current_pos.yaw << std::endl;
+      // Writing position to position_log.txt
+      std::ofstream ofs("position_log.txt", std::ios::app);
+      if (ofs == NULL) {
+	std::cerr << "Could not open 'position_log.txt'." << std::endl;
+	exit(1);
+      }
+      ofs << current_pos.x << " " << current_pos.y << " " << current_pos.z << " " << current_pos.roll << " " << current_pos.pitch << " " << current_pos.yaw << std::endl;
 #endif
+      
+      // Calculate the offset (curren_pos - previous_pos)
+      offset_x = current_pos.x - previous_pos.x;
+      offset_y = current_pos.y - previous_pos.y;
+      offset_z = current_pos.z - previous_pos.z;
+      offset_yaw = current_pos.yaw - previous_pos.yaw;
+      
+      // Update position and posture. current_pos -> previous_pos
+      previous_pos.x = current_pos.x;
+      previous_pos.y = current_pos.y;
+      previous_pos.z = current_pos.z;
+      previous_pos.roll = current_pos.roll;
+      previous_pos.pitch = current_pos.pitch;
+      previous_pos.yaw = current_pos.yaw;
+      
+      //        callback_end = ros::Time::now();
+      //        d_callback = callback_end - callback_start;
 
-        // Calculate the offset (curren_pos - previous_pos)
-        offset_x = current_pos.x - previous_pos.x;
-        offset_y = current_pos.y - previous_pos.y;
-        offset_z = current_pos.z - previous_pos.z;
-        offset_yaw = current_pos.yaw - previous_pos.yaw;
+      tf_end = std::chrono::system_clock::now();
+      third_end = std::chrono::system_clock::now();
 
-        // Update position and posture. current_pos -> previous_pos
-        previous_pos.x = current_pos.x;
-        previous_pos.y = current_pos.y;
-        previous_pos.z = current_pos.z;
-        previous_pos.roll = current_pos.roll;
-        previous_pos.pitch = current_pos.pitch;
-        previous_pos.yaw = current_pos.yaw;
-
-        callback_end = ros::Time::now();
-        d_callback = callback_end - callback_start;
-
-        std::cout << "-----------------------------------------------------------------" << std::endl;
-        std::cout << "Sequence number: " << input->header.seq << std::endl;
-        std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
-        std::cout << "Number of filtered scan points: " << filtered_scan_ptr->size() << " points." << std::endl;
-        std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
-        std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
-        std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
-        std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
-        std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " << current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
-        std::cout << "Transformation Matrix:" << std::endl;
-        std::cout << t << std::endl;
-#ifdef VIEW_TIME
+      std::cout << "-----------------------------------------------------------------" << std::endl;
+      std::cout << "Sequence number: " << input->header.seq << std::endl;
+      std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
+      std::cout << "Number of filtered scan points: " << filtered_scan_ptr->size() << " points." << std::endl;
+      std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
+      std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
+      std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
+      std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
+      std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " << current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
+      std::cout << "Transformation Matrix:" << std::endl;
+      std::cout << t << std::endl;
+      std::cout << "-----------------------------------------------------------------" << std::endl;
+      /*
+	#ifdef VIEW_TIME
         std::cout << "Duration of velodyne_callback: " << d_callback.toSec() << " secs." << std::endl;
         std::cout << "Adding scan points: " << d1.toSec() << " secs." << std::endl;
         std::cout << "VoxelGrid Filter: " << d2.toSec() << " secs." << std::endl;
         std::cout << "Guessing the initial gross estimation: " << d3.toSec() << " secs." << std::endl;
         std::cout << "NDT: " << d4.toSec() << " secs." << std::endl;
         std::cout << "tf: " << d5.toSec() << " secs." << std::endl;
-#endif
-        std::cout << "-----------------------------------------------------------------" << std::endl;
+	#endif
+      */
+      //      third_end = std::chrono::system_clock::now();
     }
   }
+  callback_end = std::chrono::system_clock::now();
+  callback_duration = callback_end - callback_start;
+  first_duration = first_end - first_start;
+  second_duration = second_end - second_start;
+  third_duration = third_end - third_start;
+
+  item_duration = item_end - item_start;
+  filter_duration = filter_end - filter_start;
+  setInputSource_duration = setInputSource_end - setInputSource_start;
+  align_duration = align_end - align_start;
+  getFinalTransformation_duration = getFinalTransformation_end - getFinalTransformation_start;
+  tf_duration = tf_end - tf_start;
+  
+  callback_time = std::chrono::duration_cast<std::chrono::microseconds>(callback_duration).count();
+  first_time = std::chrono::duration_cast<std::chrono::microseconds>(first_duration).count();
+  second_time = std::chrono::duration_cast<std::chrono::microseconds>(second_duration).count();
+  third_time = std::chrono::duration_cast<std::chrono::microseconds>(third_duration).count();
+  item_time = std::chrono::duration_cast<std::chrono::microseconds>(item_duration).count();
+  filter_time = std::chrono::duration_cast<std::chrono::microseconds>(filter_duration).count();
+  setInputSource_time = std::chrono::duration_cast<std::chrono::microseconds>(setInputSource_duration).count();
+  align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_duration).count();
+  getFinalTransformation_time = std::chrono::duration_cast<std::chrono::microseconds>(getFinalTransformation_duration).count();
+  tf_time = std::chrono::duration_cast<std::chrono::microseconds>(tf_duration).count();
+
+  /*
+  std::cout << "Voxel Leaf Size: " << voxel_leaf_size << std::endl;  
+  std::cout << "Callback Duration: " << callback_time * 0.001 << " milli sec." << std::endl;
+  std::cout << " - First Duration: " << first_time * 0.001 << " milli sec." << std::endl;
+  std::cout << "  -- Item Duration: " << item_time * 0.001 << " milli sec." << std::endl;
+  std::cout << "  -- Filter Duration: " << filter_time * 0.001 << " milli sec." << std::endl;
+  std::cout << " - Second Duration: " << second_time * 0.001 << " milli sec." << std::endl;
+  std::cout << "  -- SetInputSource Duration: " << setInputSource_time * 0.001 << " milli sec." << std::endl;
+  std::cout << "  -- Align Duration: " << align_time * 0.001 << " milli sec." << std::endl;
+  std::cout << "  -- getFinalTransformation Duration: " << getFinalTransformation_time * 0.001 << " milli sec." << std::endl;
+  std::cout << " - Third Duration: " << third_time * 0.001 << " milli sec." << std::endl;
+  std::cout << "  -- TF Duration: " << tf_time * 0.001 << " milli sec." << std::endl;
+  */
+  //  std::cout << voxel_leaf_size << "," << callback_time * 0.001 << "," << first_time * 0.001 << "," << second_time * 0.001 << "," << third_time * 0.001 << std::endl;
 }
 
 
@@ -806,10 +955,11 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
 int main(int argc, char **argv)
 {
+  /*
     std::cout << "---------------------------------------" << std::endl;
     std::cout << "NDT_PCL program coded by Yuki KITSUKAWA" << std::endl;
     std::cout << "---------------------------------------" << std::endl;
-
+  */
     ros::init(argc, argv, "ndt_pcl");
 
     ros::NodeHandle nh;
@@ -817,7 +967,7 @@ int main(int argc, char **argv)
 
     // setting parameters
     private_nh.getParam("scanner", _scanner);
-    std::cout << "scanner: " << _scanner << std::endl;
+    //    std::cout << "scanner: " << _scanner << std::endl;
 
     ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
 
@@ -833,6 +983,9 @@ int main(int argc, char **argv)
 
     // subscribing map data (only once)
     ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
+
+    // Subscribing pose of interactive marker
+    ros::Subscriber marker_sub = nh.subscribe("pos_marker/feedback", 1000, marker_callback);
 
     // subscribing the velodyne data
     ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", 1000, velodyne_callback);
