@@ -75,7 +75,9 @@ static ros::Publisher _circle_pub;
 static ros::Publisher _stat_pub;
 static std_msgs::Bool _lf_stat;
 static int _param_flag = 0; //0 = waypoint, 1 = Dialog
-static bool _param_set = false;
+//static bool _param_set = false;
+static bool _waypoint_set = false;
+static bool _pose_set = false;
 static tf::Transform _transform;
 static tf::Vector3 _origin_v(0, 0, 0);
 
@@ -84,7 +86,7 @@ static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr con
     _initial_velocity_kmh = config->velocity;
     _lookahead_threshold = config->lookahead_threshold;
     _param_flag = config->param_flag;
-    _param_set = true;
+   // _param_set = true;
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
@@ -102,8 +104,8 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
         tf::Transform inverse;
         tf::poseMsgToTF(msg->pose.pose, inverse);
         _transform = inverse.inverse();
-
-     //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
+        _pose_set = true;
+        //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
     }
 
 }
@@ -143,12 +145,14 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
         tf::Transform inverse;
         tf::poseMsgToTF(msg->pose,inverse);
         _transform = inverse.inverse();
+        _pose_set = true;
     }
 }
 
 static void WayPointCallback(const lane_follower::laneConstPtr &msg)
 {
     _current_path = *msg;
+    _waypoint_set = true;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -552,15 +556,22 @@ int main(int argc, char **argv)
     while (ros::ok()) {
         ros::spinOnce();
 
-        if (_param_set == false) {
+     /*   if (_param_set == false) {
             std::cout << "please open the dialog and set parameter." << std::endl;
             loop_rate.sleep();
             continue;
         }
+*/
+        if (_waypoint_set == false || _pose_set ==false) {
+                 std::cout << "topic waiting..." << std::endl;
+                 loop_rate.sleep();
+                 continue;
+         }
 
         _closest_waypoint = GetClosestWaypoint();
 
-        std::cout << "endflag = " << endflag << std::endl;
+       // std::cout << "endflag = " << endflag << std::endl;
+
         if (endflag == false) {
 
             // get the waypoint.
