@@ -102,11 +102,11 @@ static void drawRects(Mat image,
 		//corner_point[0]=>X1		corner_point[1]=>Y1
 		//corner_point[2]=>width	corner_point[3]=>height
 		Rect detection = Rect(corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
-		
+
 		rectangle(image, detection, color, OBJ_RECT_THICKNESS);//draw bounding box
 		putText(image, objectClass, Point(detection.x + 4, detection.y + 10), fontFace, fontScale, color, fontThick);//draw label text
-		
-		sprintf(distance_string, "D:%.2f m H:%.1f,%.1f", objects.distance.at(i) / 100, objects.min_height.at(i), objects.max_height.at(i)); 
+
+		sprintf(distance_string, "D:%.2f m H:%.1f,%.1f", objects.distance.at(i) / 100, objects.min_height.at(i), objects.max_height.at(i));
 		//Size textSize = getTextSize(string(distance_string), fontFace, fontScale, fontThick, 0);
 		//rectangle(image, Rect( detection.x, detection.y, textSize.width + 4, textSize.height + 10), Scalar::all(0), CV_FILLED);//draw fill distance rectangle
 		putText(image, string(distance_string), Point(detection.x + 4, detection.y - 10), fontFace, fontScale, color, fontThick);//draw distance text
@@ -137,7 +137,7 @@ static void drawVScanPoints(Mat image)
 		for(x=0; x<w; x++){
 			int i = y * w + x;
 			double distance = points_msg->distance[i];
-			
+
 			if(distance == 0){
 				continue;
 			}
@@ -162,7 +162,7 @@ static void show(void)
 
 	cv::Mat matImage(&frame, false);
 	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
-	
+
 	//Draw VScan Points
 	drawVScanPoints(matImage);
 
@@ -179,7 +179,7 @@ static void show(void)
 		  Scalar(0.0, 255.0, 0,0),
 		  matImage.rows*.25,
 		  pedestrian_fused_objects.distance,
-		  "pedestrian");	
+		  "pedestrian");
 
 	cvShowImage(window_name, &frame);
 	cvWaitKey(2);
