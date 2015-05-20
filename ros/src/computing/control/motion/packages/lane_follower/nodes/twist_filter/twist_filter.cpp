@@ -68,6 +68,8 @@ private:
     bool decelerate_flag;
     double decelerate_ms;
     double velocity_ms;
+    double detection_range;
+    double stop_distance;
 
     void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg);
     void CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg);
@@ -89,7 +91,7 @@ public:
 
 TwistFilter::TwistFilter()
 {
-    ros::NodeHandle private_nh("~");
+
     twist_sub = nh.subscribe("twist_cmd", 1, &TwistFilter::TwistCmdCallback, this);
     car_pose_sub = nh.subscribe("car_pose", 1, &TwistFilter::CarPoseCallback, this);
     ped_pose_sub = nh.subscribe("pedestrian_pose", 1, &TwistFilter::PedPoseCallback, this);
@@ -99,12 +101,23 @@ TwistFilter::TwistFilter()
 
     twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_filter_cmd", 1000);
     vis_pub = nh.advertise<visualization_msgs::Marker>("stop_waypoint_mark", 0);
+
     decelerate_flag = false;
     twist_flag = false;
     pose_flag = false;
     path_flag = false;
     decelerate_ms = 0;
     velocity_ms = 0;
+    detection_range = 0;
+    stop_distance = 0;
+
+    ros::NodeHandle private_nh("~");
+    private_nh.getParam("detection_range", detection_range);
+    std::cout << "detection_range : " << detection_range << std::endl;
+
+    private_nh.getParam("stop_distance",stop_distance);
+    std::cout << "stop_distance : " << stop_distance << std::endl;
+
 }
 
 TwistFilter::~TwistFilter()
@@ -202,7 +215,6 @@ int TwistFilter::GetWaypointObstacleLocate(int car, int ped)
     if ((car == -1 && ped == -1) || current_path.waypoints.empty() == true)
         return -1;
 
-    double circle_radius = 3; //meter
     tf::Vector3 car_v(car_pose[car].position.x, car_pose[car].position.y, car_pose[car].position.z);
     tf::Vector3 ped_v(ped_pose[ped].position.x, ped_pose[ped].position.y, ped_pose[ped].position.z);
 
@@ -216,7 +228,7 @@ int TwistFilter::GetWaypointObstacleLocate(int car, int ped)
         else
             dt = ped_dt;
 
-        if (dt < circle_radius) {
+        if (dt < detection_range) {
             return i;
         }
     }
@@ -234,7 +246,6 @@ bool TwistFilter::Detection()
     int waypoint = GetWaypointObstacleLocate(car_num , ped_num);
 
     std::cout << car_num << " " << ped_num << " " << waypoint << std::endl;
-    int stop_distance = 8;
 
     if (waypoint != -1) {
         tf::Vector3 v1(current_pose.pose.position.x, current_pose.pose.position.y, 0);
@@ -253,9 +264,9 @@ bool TwistFilter::Detection()
         marker.scale.y = 1.0;
         marker.scale.z = 1.0;
         marker.color.a = 1.0;
-        marker.color.r = 0.0;
+        marker.color.r = 1.0;
         marker.color.g = 0.0;
-        marker.color.b = 1.0;
+        marker.color.b = 0.0;
 
         vis_pub.publish(marker);
 
