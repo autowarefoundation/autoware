@@ -66,17 +66,9 @@ subs :
           - name : car_kf
             cmd  : rosrun car_detector car_kf
             param: car_kf
-          - name : hog
-            cmd  : 
-          - name : hog_gpu
-            cmd  : 
-          #- name : lane_detector
-          #  cmd  : rosrun lane_detector lane_detector
+          - name : car_locate
+            cmd  : roslaunch car_detector car_locate.launch
           - name : lane_cannyhough
-            cmd  : 
-          - name : lane_fusion
-            cmd  : 
-          - name : lane_tracking
             cmd  : 
           - name : pedestrian_dpm
             cmd  : rosrun pedestrian_detector pedestrian_dpm
@@ -89,20 +81,17 @@ subs :
           - name : pedestrian_kf
             cmd  : rosrun pedestrian_detector pedestrian_kf
             param: pedestrian_kf
+          - name : pedestrian_locate
+            cmd  : roslaunch pedestrian_detector pedestrian_locate.launch
       - name : Localization
         subs :
           - name : ndt_pcl
             cmd  : roslaunch points_localizer ndt_pcl.launch
-           # cmd  : rosrun points_localizer ndt_pcl
-          #- name : ndt
-          #  cmd  : echo ndt
             param: ndt
           - name : fix2tfpose
             cmd  : rosrun gnss_localizer fix2tfpose
           - name : nmea2tfpose
             cmd  : rosrun gnss_localizer nmea2tfpose
-          - name : pos_master
-            cmd  : echo pos_master
           - name : ndt_slam
             cmd  : roslaunch points_localizer ndt_slam.launch
             param: ndt_slam
@@ -245,7 +234,7 @@ params :
       label : Leaf Size
       min   : 0
       max   : 10
-      v     : 0.1
+      v     : 2.0
     - name  : angle_error
       label : Angle Error
       min   : -180.0
