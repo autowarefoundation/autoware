@@ -53,7 +53,10 @@ void geo_pos_conv::set_plane(double lat,   double lon)
 
 void geo_pos_conv::set_plane(int num)
 {
-	if(num==7) {
+        if(num==6){
+		m_PLo = 2.373647782712;   //
+		m_PLato= 0.628318530717;  //
+        }else if(num==7) {
 		m_PLo = 2.39400995732;   //
 		m_PLato=  0.628318530717;  //
 	} else if(num==9){
