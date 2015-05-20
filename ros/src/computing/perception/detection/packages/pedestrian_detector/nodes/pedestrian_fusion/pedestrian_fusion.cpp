@@ -70,8 +70,8 @@ static void publishTopic()
     fused_objects_msg.car_num = getObjectsNum();
     fused_objects_msg.corner_point = getCornerPoint();
     fused_objects_msg.distance = getDistance();
-	fused_objects_msg.min_height = getMinHeights();
-	fused_objects_msg.max_height = getMaxHeights();
+    fused_objects_msg.min_height = getMinHeights();
+    fused_objects_msg.max_height = getMaxHeights();
     fused_objects.publish(fused_objects_msg);
 }
 

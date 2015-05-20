@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-	<arg name="lidar_3d_yaml" default="/home/h_ohta/.ros/autoware/camera_lidar_3d.yaml" />
+	<arg name="lidar_3d_yaml" default="/home/pdsljp/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml" />
 
 <!-- rosrun  pedestrian_detector pedestrian_locate _lidar_3d_yaml:=[file] -->
 	<node pkg="pedestrian_detector" type="pedestrian_locate" name="pedestrian_locate">

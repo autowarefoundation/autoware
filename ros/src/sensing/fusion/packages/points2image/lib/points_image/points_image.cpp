@@ -50,10 +50,10 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	msg.distance.assign(w * h, 0);
 	msg.min_height.assign(w * h, 0);
 	msg.max_height.assign(w * h, 0);
-	
+
 	cv::Mat invR = cameraExtrinsicMat(cv::Rect(0,0,3,3)).t();
 	cv::Mat invT = -invR*(cameraExtrinsicMat(cv::Rect(3,0,1,3)));
-    uintptr_t cp = (uintptr_t)pointcloud2->data.data();
+	uintptr_t cp = (uintptr_t)pointcloud2->data.data();
 
 	msg.max_y = -1;
 	msg.min_y = h;
