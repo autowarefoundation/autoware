@@ -56,7 +56,7 @@
 static double _initial_velocity_kmh = 5; // km/h
 static double _lookahead_threshold = 4.0;
 static double _threshold_ratio = 1.0;
-static double _end_distance = 2.0;
+//static double _end_distance = 2.0;
 //static double _error_distance = 2.5;
 static std::string _mobility_frame = "/base_link"; // why is this default?
 static std::string _current_pose_topic = "ndt";
@@ -448,7 +448,7 @@ static geometry_msgs::Twist EndControl()
     geometry_msgs::Twist twist;
     //  double minimum_velocity_kmh = 2.0;
 
-    std::cout << "End Distance = " << _end_distance << std::endl;
+    // std::cout << "End Distance = " << _end_distance << std::endl;
 
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
@@ -458,19 +458,25 @@ static geometry_msgs::Twist EndControl()
         set_velocity_ms = GetWaypointVelocity();
     else
         set_velocity_ms = _initial_velocity_kmh / 3.6;
-    static double decelerate_ms = 0;
 
+    static double decelerate_ms = 0;
+    static double velocity_ms = 0;
     if (decelerate_flag == false) {
         decelerate_ms = pow(set_velocity_ms, 2) / (2 * lookahead_distance);
+        velocity_ms = set_velocity_ms;
         decelerate_flag = true;
     }
 //std::cout << "decelerate : "<< decelerate_ms << std::endl;
-    static double velocity_ms = set_velocity_ms;
-    velocity_ms -= decelerate_ms / LOOP_RATE;
 
-    if (velocity_ms < 0)
-        velocity_ms = 0;
+    if (decelerate_flag == true)
+        velocity_ms -= decelerate_ms / LOOP_RATE;
 
+    if (velocity_ms < 0) {
+        if (lookahead_distance > 0.5)
+            velocity_ms = 1;
+        else
+            velocity_ms = 0;
+    }
     /* if (lookahead_distance < _end_distance) { // EndControl completed
 
      twist.linear.x = 0;
@@ -519,12 +525,13 @@ int main(int argc, char **argv)
     private_nh.getParam("threshold_ratio", _threshold_ratio);
     std::cout << "threshold_ratio : " << _threshold_ratio << std::endl;
 
- /*   private_nh.getParam("end_distance", _end_distance);
-    std::cout << "end_distance : " << _end_distance << std::endl;
+    /*   private_nh.getParam("end_distance", _end_distance);
+     std::cout << "end_distance : " << _end_distance << std::endl;
 
-    private_nh.getParam("error_distance", _error_distance);
-    std::cout << "error_distance : " << _error_distance << std::endl;
-*/
+     private_nh.getParam("error_distance", _error_distance);
+     std::cout << "error_distance : " << _error_distance << std::endl;
+     */
+
     //publish topic
     ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
@@ -551,6 +558,9 @@ int main(int argc, char **argv)
             continue;
         }
 
+        _closest_waypoint = GetClosestWaypoint();
+
+        std::cout << "endflag = " << endflag << std::endl;
         if (endflag == false) {
 
             // get the waypoint.
@@ -561,9 +571,8 @@ int main(int argc, char **argv)
                 std::cout << "dialog" << std::endl;
             }
 
-            _closest_waypoint = GetClosestWaypoint();
             _next_waypoint = GetNextWayPoint();
-            std::cout << "next waypoint = " << _next_waypoint <<  "/" << _current_path.waypoints.size() << std::endl;
+            std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
 
             if (_next_waypoint > 0) {
                 // obtain the linear/angular velocity.
@@ -573,18 +582,23 @@ int main(int argc, char **argv)
                 twist.twist.angular.z = 0;
             }
 
+            if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
+                endflag = true;
+                _next_waypoint = _current_path.waypoints.size() - 1;
+            }
+
         } else {
             twist.twist = EndControl();
 
-            // after stopped or fed out, let's get ready for the restart.
-            if (_next_waypoint == 0) {
-                endflag = false;
-            }
-        }
+            std::cout << "closest/next : " << _closest_waypoint << "/" << _next_waypoint << std::endl;
 
-        if (_next_waypoint == static_cast<int>(_current_path.waypoints.size()) - 5) {
-            endflag = true;
-            _next_waypoint = _current_path.waypoints.size() -1;
+            // after stopped or fed out, let's get ready for the restart.
+            if (_next_waypoint == _closest_waypoint) {
+                std::cout << "pure pursuit ended!!" << std::endl;
+                endflag = false;
+                decelerate_flag = false;
+
+            }
         }
 
         std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;

@@ -3,18 +3,19 @@
 	<arg name="current_pose_topic" default="ndt" />
 	<arg name="mobility_frame" default="/velodyne" />
 	<arg name="threshold_ratio" default="1.0" />
-	<arg name="end_distance" default="2.0" /> <!-- meter -->
-	<arg name="error_distance" default="2.5" /> <!-- meter -->
-	<arg name="fix_flag" default="true" />
+<!-- 	<arg name="end_distance" default="2.0" />--> <!-- meter -->
+<!-- 	<arg name="error_distance" default="2.5" />-->  <!-- meter -->
+	<!-- <arg name="fix_flag" default="true" /> --> 
 
-	<!-- rosrun lane_follower pure_pursuit _current_pose_topic:="topic" _mobility_frame:="/frame" _end_distance:=0 _lookahead_ratio:=0 -->
+	<!-- rosrun lane_follower pure_pursuit _current_pose_topic:="topic" _mobility_frame:="/frame" _lookahead_ratio:=0 -->
 	<node pkg="lane_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
 		<param name="mobility_frame" value="$(arg mobility_frame)" />
-		<param name="end_distance" value="$(arg end_distance)" />
-		<param name="error_distance" value="$(arg error_distance)" />
 		<param name="threshold_ratio" value="$(arg threshold_ratio)" />
-		<param name="fix_flag" value="$(arg fix_flag)" />
+	<!-- 	<param name="end_distance" value="$(arg end_distance)" />
+		<param name="error_distance" value="$(arg error_distance)" />
+		
+		<param name="fix_flag" value="$(arg fix_flag)" /> -->
 	</node>
 
 </launch>
