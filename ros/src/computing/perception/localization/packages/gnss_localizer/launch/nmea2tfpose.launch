@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+
+  <arg name="plane" default="7"/>
+
+  <node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose" output="screen">
+    <param name="plane" value="$(arg plane)"/>
+  </node>
+
+</launch>
