@@ -91,7 +91,8 @@ subs :
           - name : fix2tfpose
             cmd  : rosrun gnss_localizer fix2tfpose
           - name : nmea2tfpose
-            cmd  : rosrun gnss_localizer nmea2tfpose
+            #cmd  : rosrun gnss_localizer nmea2tfpose
+            cmd  : roslaunch gnss_localizer nmea2tfpose.launch
           - name : ndt_slam
             cmd  : roslaunch points_localizer ndt_slam.launch
             param: ndt_slam
