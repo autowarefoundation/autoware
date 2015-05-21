@@ -6,11 +6,10 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.5
-    Tree Height: 148
+    Tree Height: 231
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -66,7 +65,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 185
+      Max Intensity: 255
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Velodyne Points
@@ -85,20 +84,7 @@ Visualization Manager:
       Marker Topic: /vector_map
       Name: Vector Map
       Namespaces:
-        cross walk: true
-        curb: true
-        gutter: true
-        lane: true
-        pole: true
-        road edge: true
-        road sign: true
-        road surface mark: true
-        signal: true
-        stop line: true
-        streetlight: true
-        utilitypole: true
-        white line: true
-        zebrazone: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Image
@@ -146,11 +132,17 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        gps:
+        base_link:
           Value: true
         map:
           Value: true
         mobility:
+          Value: true
+        moving_frame:
+          Value: true
+        odom:
+          Value: true
+        rotating_frame:
           Value: true
         velodyne:
           Value: true
@@ -164,9 +156,14 @@ Visualization Manager:
       Tree:
         world:
           map:
-            gps:
-              {}
             mobility:
+              {}
+            moving_frame:
+              {}
+            odom:
+              base_link:
+                {}
+            rotating_frame:
               {}
             velodyne:
               {}
@@ -226,12 +223,71 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        velodyne:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: false
+      Name: Pos Marker
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /pos_marker/update
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /circle_mark
+      Name: Circle Mark
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /waypoint_velocity
+      Name: Waypoint Velocity
+      Namespaces:
+        waypoint_velocity: true
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 255
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /velodyne_points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -255,7 +311,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0.855001
+      Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
@@ -264,11 +320,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 3.34603
+      Scale: 7.38639
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: -625.323
-      Y: -467.629
+      X: 48.2245
+      Y: 30.4731
     Saved: ~
 Window Geometry:
   Displays:
@@ -278,7 +334,7 @@ Window Geometry:
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001110000025efc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000123000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fc00000151000000b0000000b000fffffffa000000000100000002fb0000000a005600690065007700730100000000ffffffff0000010f00fffffffb0000000a0049006d00610067006500000000000000013c0000000000000000fb0000000a0049006d00610067006501000002070000007f0000001600ffffff000000010000010f0000025efc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003bf0000003efc0100000002fb0000000800540069006d00650100000000000003bf000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000002a80000025e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001110000025efc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000176000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fc000001a4000000e2000000b000fffffffa000000000100000002fb0000000a005600690065007700730100000000ffffffff0000010f00fffffffb0000000a0049006d00610067006500000000000000013c0000005c00fffffffb0000000a0049006d00610067006501000002070000007f0000000000000000fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000000000010000010f0000025efc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003bf0000003efc0100000002fb0000000800540069006d00650100000000000003bf000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000002a80000025e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
