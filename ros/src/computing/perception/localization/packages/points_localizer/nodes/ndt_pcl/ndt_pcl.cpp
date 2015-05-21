@@ -273,28 +273,37 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 
 static void marker_callback(const visualization_msgs::InteractiveMarkerFeedback::ConstPtr& input)
 {
-  std::cout << "marker_callback" << std::endl;
-  std::cout << input->pose.position.x << std::endl;
-  std::cout << input->pose.position.y << std::endl;
-  std::cout << input->pose.position.z << std::endl;
-  std::cout << input->pose.orientation.x << std::endl;
-  std::cout << input->pose.orientation.y << std::endl;
-  std::cout << input->pose.orientation.z << std::endl;
-  std::cout << input->pose.orientation.w << std::endl;
+  if(input->event_type == 5){
+    std::cout << "marker_callback" << std::endl;
+    std::cout << input->pose.position.x << std::endl;
+    std::cout << input->pose.position.y << std::endl;
+    std::cout << input->pose.position.z << std::endl;
+    std::cout << input->pose.orientation.x << std::endl;
+    std::cout << input->pose.orientation.y << std::endl;
+    std::cout << input->pose.orientation.z << std::endl;
+    std::cout << input->pose.orientation.w << std::endl;
+    
+    tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    previous_pos.x = input->pose.position.x;
+    previous_pos.y = input->pose.position.y;
+    previous_pos.z = input->pose.position.z;
+    m.getRPY(previous_pos.roll, previous_pos.pitch, previous_pos.yaw);
+    
+    current_pos.x = previous_pos.x;
+    current_pos.y = previous_pos.y;
+    current_pos.z = previous_pos.z;
+    current_pos.roll = previous_pos.roll;
+    current_pos.pitch = previous_pos.pitch;
+    current_pos.yaw = previous_pos.yaw;
 
-  tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
-  tf::Matrix3x3 m(q);
-  previous_pos.x = input->pose.position.x;
-  previous_pos.y = input->pose.position.y;
-  previous_pos.z = input->pose.position.z;
-  m.getRPY(previous_pos.roll, previous_pos.pitch, previous_pos.roll);
+    offset_x = current_pos.x - previous_pos.x;
+    offset_y = current_pos.y - previous_pos.y;
+    offset_z = current_pos.z - previous_pos.z;
+    offset_yaw = current_pos.yaw - previous_pos.yaw;
 
-  current_pos.x = previous_pos.x;
-  current_pos.y = previous_pos.y;
-  current_pos.z = previous_pos.z;
-  current_pos.roll = previous_pos.roll;
-  current_pos.pitch = previous_pos.pitch;
-  current_pos.yaw = previous_pos.yaw;
+    std::cout << current_pos.yaw << std::endl;
+  }
 }
 
 static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -911,7 +920,7 @@ int main(int argc, char **argv)
     ros::Subscriber marker_sub = nh.subscribe("pos_marker/feedback", 1000, marker_callback);
 
     // subscribing the velodyne data
-    ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", 1000, velodyne_callback);
+    ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", 10, velodyne_callback);
 
     ros::Subscriber hokuyo_sub = nh.subscribe("hokuyo_3d/hokuyo_cloud2", 1000, hokuyo_callback);
 
