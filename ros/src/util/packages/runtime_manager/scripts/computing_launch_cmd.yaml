@@ -100,6 +100,8 @@ subs :
             param: ndt_slam
             gui  :
               dialog : MyDialogNdtSlam
+          - name : pos_marker
+            cmd  : rosrun points_localizer pos_marker
 
   - name : Planning
     subs :
