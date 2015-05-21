@@ -334,13 +334,6 @@ class MyFrame(rtmgr.MyFrame):
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
 		self.OnLaunchKill_obj(obj)
-		if obj.GetValue() is False:
-			ks = { self.button_perception:[ 'gnss', 'ndt' ], 
-			       self.button_map:[ 'map' ], 
-			       self.button_control:[ 'lf' ] }.get(obj, [])
-			for k in ks:
-				self.stat_set(k, False)
-			self.main_button_update(obj, False)
 
 	def OnDrive(self, event):
 		obj = event.GetEventObject()
@@ -397,6 +390,16 @@ class MyFrame(rtmgr.MyFrame):
 			act = False if b is not push and v else act
 			if act is not None:
 				b.SetValue(act)
+
+	def stat_label_off(self, obj):
+		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
+		if gdic is None:
+			gdic = {}
+		data = std_msgs.msg.Bool(False)
+		for k in gdic.get('stat_topic', []):
+			cb = getattr(self, k + '_stat_callback', None)
+			if cb:
+				cb(data)
 
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
@@ -910,6 +913,7 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
+		self.stat_label_off(obj)
 
 	def OnLaunchKill(self, event):
 		self.OnLaunchKill_obj(event.GetEventObject())
@@ -1031,6 +1035,8 @@ class MyFrame(rtmgr.MyFrame):
 			cfg_obj.Enable(not v)
 
 		cmd_dic[obj] = (cmd, proc)
+		if not v:
+			self.stat_label_off(obj)
 
 	def kill_all(self):
 		all = self.all_procs[:] # copy
@@ -1055,6 +1061,7 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = (v[0], proc) if proc else v
 		cmd_dic[ obj ] = (cmd, None)
 		self.launch_kill(False, 'dmy', proc, obj=obj)
+		self.stat_label_off(obj)
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
