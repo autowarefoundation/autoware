@@ -61,12 +61,28 @@ static points2image::PointsImage points_msg;
 
 static bool objectsStored = false, pointsStored = false;
 
+float Min_low_height = -1.5;
+float Max_low_height = -1.0;
+float Max_height = 2.0;
+int Min_points = 2;
+float Dispersion = 1.0;
+
 //checks if a float is close to zero
 static inline bool isAlmostZero(float x)
 {
 	float abs_x  = (float)fabs(x);
 	const int rangeScale = 100;
 	return(abs_x < FLT_MIN*rangeScale);
+}
+
+//receives and sets params from the publisher node
+void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp)
+{
+	Min_low_height = minLowHeight;
+	Max_low_height = maxLowHeight;
+	Max_height = maxHeight;
+	Min_points = minPoints;
+	Dispersion = disp;
 }
 
 //Check wheter vscanpoints are contained in the detected object bounding box(rect) or not, store the vscanpoints indices in outIndices
@@ -81,14 +97,14 @@ bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float objec
 	for (int i = 0; i < numPoints; i++)
 	{
 		if (vScanPoints[i].x >= rect.x && vScanPoints[i].y >= rect.y &&
-				(vScanPoints[i].min_h > -1.5 && vScanPoints[i].min_h < -1.0) &&
-				(vScanPoints[i].max_h < 2.0))
+				(vScanPoints[i].min_h > Min_low_height && vScanPoints[i].min_h < Max_low_height) &&
+				(vScanPoints[i].max_h < Max_height))
 		{
 			outIndices.push_back(i);//store indices of points inside the bounding box
 			pointsFound++;
 		}
 	}
-	if ( pointsFound >= 2)
+	if ( pointsFound >= Min_points)
 		return true;
 	else
 		return false;
@@ -130,7 +146,7 @@ bool dispersed(vector<Point5> &vScanPoints, vector<int> &indices)
 	float avg = getMinAverage(vScanPoints, indices);
 	float stddev = getStdDev(vScanPoints, indices, avg);
 
-	if(abs(stddev/avg>=1.0))
+	if(abs(stddev/avg>=Dispersion))
 		return true;
 
 	return false;
