@@ -68,7 +68,8 @@ static geometry_msgs::Twist _current_velocity;
 static lane_follower::lane _current_path;
 
 static int _next_waypoint = 0; // ID (index) of the next waypoint.
-static int _closest_waypoint = 0; // ID (index) of the closest waypoint.
+static int _closest_waypoint = 1; // ID (index) of the closest waypoint.
+static int _prev_waypoint = 0;
 
 static ros::Publisher _vis_pub;
 static ros::Publisher _circle_pub;
@@ -174,7 +175,7 @@ static double GetLookAheadThreshold()
 static double GetEvaluation(int closest, int i)
 {
     int num = i - closest;
-    double ratio = 0.2;
+    double ratio = 1.0;
     return num * ratio;
 }
 
@@ -218,7 +219,7 @@ int GetClosestWaypoint()
     double distance = 10000; //meter
     double waypoint = 1;
 
-    for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
+    for (unsigned int i = _closest_waypoint; i < _closest_waypoint+10; i++) {
         //std::cout << waypoint << std::endl;
 
         // position of @waypoint.
@@ -285,9 +286,12 @@ int GetNextWayPoint()
     double lookahead_threshold = GetLookAheadThreshold();
     std::cout << "nearest waypoint = " << _closest_waypoint << std::endl;
 
-    // look for the next waypoint.
-    for (unsigned int i = _closest_waypoint; i < _current_path.waypoints.size(); i++) {
+ retry:
+    if(GetLookAheadDistance(_prev_waypoint) > lookahead_threshold)
+      return _prev_waypoint;
 
+    // look for the next waypoint.
+    for (unsigned int i = _prev_waypoint; i < _current_path.waypoints.size(); i++) {
         double Distance = GetLookAheadDistance(i);
 
         // if there exists an effective waypoint
@@ -356,14 +360,13 @@ int GetNextWayPoint()
                 if (evaluation < eval_value) {
                     //     std::cout << "ok!" << std::endl;
                 } else {
-                    //std::cout << "threshold correction to ";
+		  //std::cout << "threshold correction to ";
 
                     if (lookahead_threshold > minimum_th) {
                         lookahead_threshold -= 0.1;
 
                       //  std::cout << lookahead_threshold << std::endl;
-                        i = _closest_waypoint;
-                        continue;
+                        goto retry;
                     } else {
                         lookahead_threshold = minimum_th;
                      //   std::cout << lookahead_threshold << std::endl;
@@ -584,15 +587,17 @@ int main(int argc, char **argv)
 
             _next_waypoint = GetNextWayPoint();
             std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
-
-            if (_next_waypoint > 0) {
+	    std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
+	    
+	    if(_next_waypoint != _prev_waypoint){
+	      if (_next_waypoint > 0) {
                 // obtain the linear/angular velocity.
                 twist.twist = CalculateCmdTwist();
-            } else {
+	      } else {
                 twist.twist.linear.x = 0;
                 twist.twist.angular.z = 0;
-            }
-
+	      }
+	    }
             if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
                 endflag = true;
                 _next_waypoint = _current_path.waypoints.size() - 1;
@@ -618,7 +623,7 @@ int main(int argc, char **argv)
 
         twist.header.stamp = ros::Time::now();
         cmd_velocity_publisher.publish(twist);
-
+	_prev_waypoint = _next_waypoint;
         loop_rate.sleep();
     }
 
