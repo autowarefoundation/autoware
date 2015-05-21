@@ -31,6 +31,8 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <lane_follower/lane.h>
 #include <runtime_manager/traffic_light.h>
 
@@ -43,6 +45,7 @@ static constexpr int32_t TRAFFIC_LIGHT_RED = 0;
 static constexpr int32_t TRAFFIC_LIGHT_GREEN = 1;
 
 static ros::Publisher pub_ruled;
+static ros::Publisher pub_velocity;
 
 static lane_follower::lane current_red_lane;
 static lane_follower::lane current_green_lane;
@@ -78,7 +81,35 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 		return;
 	}
 
+	visualization_msgs::MarkerArray velocities;
+	visualization_msgs::Marker velocity;
+	velocity.header.stamp = ros::Time::now();
+	velocity.header.frame_id = "/map";
+	velocity.ns = "velocity";
+	velocity.action = visualization_msgs::Marker::ADD;
+	velocity.lifetime = ros::Duration();
+	velocity.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	velocity.scale.z = 0.4;
+	velocity.color.r = 1;
+	velocity.color.a = 1;
+
+	int i = 0;
+	for (const lane_follower::waypoint& waypoint : current->waypoints) {
+		velocity.id = i;
+		velocity.pose.position = waypoint.pose.pose.position;
+		velocity.pose.position.z += 0.2; // more visible
+
+		std::ostringstream ostr;
+		ostr << std::fixed << std::setprecision(0)
+		     << (waypoint.twist.twist.linear.x * 3.6) << " km/h";
+		velocity.text = ostr.str();
+
+		velocities.markers.push_back(velocity);
+		++i;
+	}
+
 	pub_ruled.publish(*current);
+	pub_velocity.publish(velocities);
 }
 
 int main(int argc, char **argv)
@@ -99,6 +130,10 @@ int main(int argc, char **argv)
 
 	pub_ruled = n.advertise<lane_follower::lane>(
 		"ruled_waypoint",
+		ADVERTISE_QUEUE_SIZE,
+		ADVERTISE_LATCH);
+	pub_velocity = n.advertise<visualization_msgs::MarkerArray>(
+		"waypoint_velocity",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 
