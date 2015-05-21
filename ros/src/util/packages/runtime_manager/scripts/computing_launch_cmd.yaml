@@ -63,6 +63,7 @@ subs :
             param: car_dpm
           - name : car_fusion
             cmd  : rosrun car_detector car_fusion
+            param: car_fusion
           - name : car_kf
             cmd  : rosrun car_detector car_kf
             param: car_kf
@@ -78,6 +79,7 @@ subs :
             param: pedestrian_dpm
           - name : pedestrian_fusion
             cmd  : rosrun pedestrian_detector pedestrian_fusion
+            param: pedestrian_fusion
           - name : pedestrian_kf
             cmd  : rosrun pedestrian_detector pedestrian_kf
             param: pedestrian_kf
@@ -492,3 +494,63 @@ params :
       min       : 0.0
       max       : 10.0
       v         : 1.0
+
+  - name  : car_fusion
+    topic : /config/car_fusion
+    msg   : ConfigCarFusion
+    vars  :
+    - name  : min_low_height
+      label : Minimum Height(Lower Bound)
+      min   : -2
+      max   : 0
+      v     : -1.5
+    - name  : max_low_height
+      label : Minimum Height(Upper Bound)
+      min   : -2
+      max   : 0
+      v     : -1.0
+    - name  : max_height
+      label : Maximum Height
+      min   : 0
+      max   : 10
+      v     : 2.0
+    - name  : min_points
+      label : Min Points in Box
+      min   : 1
+      max   : 100
+      v     : 2
+    - name  : dispersion
+      label : Coefficient of Variation
+      min   : 0.0
+      max   : 5.0
+      v     : 1.0
+
+  - name  : pedestrian_fusion
+    topic : /config/pedestrian_fusion
+    msg   : ConfigPedestrianFusion
+    vars  :
+    - name  : min_low_height
+      label : Minimum Height(Lower Bound)
+      min   : -2
+      max   : 0
+      v     : -1.5
+    - name  : max_low_height
+      label : Minimum Height(Upper Bound)
+      min   : -2
+      max   : 0
+      v     : -1.0
+    - name  : max_height
+      label : Maximum Height
+      min   : 0
+      max   : 10
+      v     : 2.0
+    - name  : min_points
+      label : Min Points in Box
+      min   : 1
+      max   : 100
+      v     : 2
+    - name  : dispersion
+      label : Coefficient of Variation
+      min   : 0.0
+      max   : 5.0
+      v     : 1.0
