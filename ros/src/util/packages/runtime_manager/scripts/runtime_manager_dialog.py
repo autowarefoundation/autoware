@@ -1701,6 +1701,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 
 def file_dialog(parent, tc, path_inf_dic={}):
 	path = tc.GetValue()
+	path = get_top(path.split(','), path)
 	(dn, fn) = os.path.split(path)
 	path_type = path_inf_dic.get('path_type')
 	if path_type == 'dir':
