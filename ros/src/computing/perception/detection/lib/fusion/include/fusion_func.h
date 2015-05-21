@@ -81,6 +81,7 @@ extern float getMinAverage(vector<Point5> &vScanPoints, vector<int> &indices);
 extern bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float object_distance, vector<int> &outIndices);
 extern std::vector<float> getMinHeights();
 extern std::vector<float> getMaxHeights();
+extern void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp);
 
 extern void calcDistance();
 extern void setDetectedObjects(const dpm::ImageObjects& image_objects);

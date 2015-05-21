@@ -29,6 +29,7 @@
 #include <car_detector/FusedObjects.h>
 #include <std_msgs/Header.h>
 #include <fusion_func.h>
+#include <runtime_manager/ConfigCarFusion.h>
 
 static void publishTopic();
 static ros::Publisher fused_objects;
@@ -36,62 +37,74 @@ static std_msgs::Header sensor_header;
 
 static void DetectedObjectsCallback(const dpm::ImageObjects& image_object)
 {
-    setDetectedObjects(image_object);
+	setDetectedObjects(image_object);
 
-    fuse();
-    publishTopic();
+	fuse();
+	publishTopic();
 }
 
 /*static void ScanImageCallback(const scan2image::ScanImage& scan_image)
 {
-    setScanImage(scan_image);
-    sensor_header = scan_image.header;
+	setScanImage(scan_image);
+	sensor_header = scan_image.header;
 
-    calcDistance();
-    publishTopic();
+	calcDistance();
+	publishTopic();
 }*/
 
 static void PointsImageCallback(const points2image::PointsImage& points_image)
 {
-    setPointsImage(points_image);
-    sensor_header = points_image.header;
+	setPointsImage(points_image);
+	sensor_header = points_image.header;
 
-    fuse();
-    publishTopic();
+	fuse();
+	publishTopic();
 }
 
 static void publishTopic()
 {
-    /*
-     * Publish topic(Car position xyz).
-     */
-    car_detector::FusedObjects fused_objects_msg;
-    fused_objects_msg.header = sensor_header;
-    fused_objects_msg.car_num = getObjectsNum();
-    fused_objects_msg.corner_point = getCornerPoint();
-    fused_objects_msg.distance = getDistance();
+	/*
+	 * Publish topic(Car position xyz).
+	 */
+	car_detector::FusedObjects fused_objects_msg;
+	fused_objects_msg.header = sensor_header;
+	fused_objects_msg.car_num = getObjectsNum();
+	fused_objects_msg.corner_point = getCornerPoint();
+	fused_objects_msg.distance = getDistance();
 	fused_objects_msg.min_height = getMinHeights();
 	fused_objects_msg.max_height = getMaxHeights();
-    fused_objects.publish(fused_objects_msg);
+	fused_objects.publish(fused_objects_msg);
+}
+
+static void config_cb(const runtime_manager::ConfigCarFusion::ConstPtr& param)
+{
+	setParams(param->min_low_height,
+			param->max_low_height,
+			param->max_height,
+			param->min_points,
+			param->dispersion);
 }
 
 int main(int argc, char **argv)
 {
-    init();
-    ros::init(argc, argv, "car_fusion");
+	init();
+	ros::init(argc, argv, "car_fusion");
 
-    ros::NodeHandle n;
+	ros::NodeHandle n;
 
-    ros::Subscriber car_pixel_xy_sub = n.subscribe("car_pixel_xy_tracked", 1, DetectedObjectsCallback);
-    //ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
-    ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
+	ros::Subscriber car_pixel_xy_sub = n.subscribe("car_pixel_xy_tracked", 1, DetectedObjectsCallback);
+	//ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
+	ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
 #if _DEBUG
-    ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
+	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
-    fused_objects = n.advertise<car_detector::FusedObjects>("car_pixel_xyz", 1);
+	fused_objects = n.advertise<car_detector::FusedObjects>("car_pixel_xyz", 1);
 
-    ros::spin();
-    destroy();
+	ros::Subscriber config_subscriber;
+	config_subscriber = n.subscribe("/config/car_fusion", 1, config_cb);
 
-    return 0;
+	ros::spin();
+	destroy();
+
+	return 0;
 }

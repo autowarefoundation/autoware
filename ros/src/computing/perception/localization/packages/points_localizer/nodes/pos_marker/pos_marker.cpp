@@ -576,7 +576,7 @@ int main(int argc, char** argv)
 
   tf::StampedTransform transform;
   try{
-    ros::Time now = ros::Time::now();
+    ros::Time now = ros::Time(0);
     listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
     listener.lookupTransform("/map", "/world", now, transform);
   }
