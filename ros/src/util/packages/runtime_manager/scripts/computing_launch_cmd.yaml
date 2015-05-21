@@ -12,6 +12,7 @@ subs :
                 depend : param_flag
               lookahead_threshold:
                 depend : param_flag
+              stat_topic : [ lf ]
           - name : pure_pursuit
             cmd : roslaunch lane_follower pure_pursuit.launch
             param: lane_follower
@@ -20,6 +21,7 @@ subs :
                 depend : param_flag
               lookahead_threshold:
                 depend : param_flag
+              stat_topic : [ lf ]
           - name : odom_gen
             cmd : roslaunch lane_follower odom_gen.launch  
             param: odom_gen
@@ -90,16 +92,23 @@ subs :
           - name : ndt_pcl
             cmd  : roslaunch points_localizer ndt_pcl.launch
             param: ndt
+            gui  :
+              stat_topic : [ ndt ]
           - name : fix2tfpose
             cmd  : rosrun gnss_localizer fix2tfpose
+            gui  :
+              stat_topic : [ gnss ]
           - name : nmea2tfpose
             #cmd  : rosrun gnss_localizer nmea2tfpose
             cmd  : roslaunch gnss_localizer nmea2tfpose.launch
+            gui  :
+              stat_topic : [ gnss ]
           - name : ndt_slam
             cmd  : roslaunch points_localizer ndt_slam.launch
             param: ndt_slam
             gui  :
               dialog : MyDialogNdtSlam
+              stat_topic : [ ndt ]
           - name : pos_marker
             cmd  : rosrun points_localizer pos_marker
 

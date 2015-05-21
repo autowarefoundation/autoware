@@ -29,12 +29,17 @@ buttons:
     gui   :
       scene_num :
         func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+      stat_topic : [ pmap, vmap ]
   perception:
     run : roslaunch runtime_manager perception.launch
+    gui :
+      stat_topic : [ gnss, ndt ]
   planning:
     run : roslaunch runtime_manager planning.launch
   control:
     run : roslaunch runtime_manager control.launch
+    gui :
+      stat_topic : [ lf ]
 
   #init:
   #  run : 'sh -c "roslaunch runtime_manager init.launch
@@ -60,6 +65,7 @@ buttons:
       path_pcd :
         func    : self.text_ctrl_point_cloud.GetValue()
         restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
+      stat_topic : [ pmap ]
 
   points_map_loader_update :
     run   : rosrun map_file points_map_loader
@@ -74,6 +80,7 @@ buttons:
       path_pcd :
         func    : self.text_ctrl_point_cloud.GetValue()
         restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
+      stat_topic : [ pmap ]
 
   sample_points_map :
     run   : rosrun sample_data sample_points_map
@@ -89,6 +96,7 @@ buttons:
       path_vec :
         func    : self.text_ctrl_vector_map.GetValue()
         restore : 'lambda v, tc=self.text_ctrl_vector_map : set_path(tc, v)'
+      stat_topic : [ vmap ]
 
   main_tf :
     run    : roslaunch
