@@ -219,7 +219,7 @@ int GetClosestWaypoint()
     double distance = 10000; //meter
     double waypoint = 1;
 
-    for (unsigned int i = _closest_waypoint; i < _closest_waypoint+10; i++) {
+    for (int i = _closest_waypoint; i < _closest_waypoint+10; i++) {
         //std::cout << waypoint << std::endl;
 
         // position of @waypoint.
