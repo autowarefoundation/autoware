@@ -34,10 +34,6 @@
  Yuki KITSUKAWA
  */
 
-/*
-$: rostopic pub --once /output std_msgs/Float32 0.2
- */
-
 #define DEBUG 0
 // #define VIEW_TIME
 #define OUTPUT // If you want to output "position_log.txt", "#define OUTPUT".
@@ -67,7 +63,8 @@ $: rostopic pub --once /output std_msgs/Float32 0.2
 #include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <runtime_manager/ConfigNdt.h>
+#include <runtime_manager/ConfigNdtSlam.h>
+#include <runtime_manager/ConfigNdtSlamOutput.h>
 
 struct Position {
     double x;
@@ -112,10 +109,27 @@ static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
 static std::string _scanner = "velodyne";
 
-static void output_callback(const std_msgs::Float32::ConstPtr& input)
+static void param_callback(const runtime_manager::ConfigNdtSlam::ConstPtr& input)
 {
-  double voxel_leaf_size = input->data;
+  ndt_res = input->resolution;
+  step_size = input->step_size;
+  trans_eps = input->trans_eps;
+  voxel_leaf_size = input->leaf_size;
+
+  std::cout << "param_callback" << std::endl;
+  std::cout << "ndt_res: " << ndt_res << std::endl;
+  std::cout << "step_size: " << step_size << std::endl;
+  std::cout << "trans_eps: " << trans_eps << std::endl;
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
+}
+
+static void output_callback(const runtime_manager::ConfigNdtSlamOutput::ConstPtr& input)
+{
+  double filter_res = input->filter_res;
+  std::string filename = input->filename;
+  std::cout << "output_callback" << std::endl;
+  std::cout << "filter_res: " << filter_res << std::endl;
+  std::cout << "filename: " << filename << std::endl;
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_filtered(new pcl::PointCloud<pcl::PointXYZI>());
@@ -124,11 +138,12 @@ static void output_callback(const std_msgs::Float32::ConstPtr& input)
   sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
 
   // Apply voxelgrid filter
-  if(voxel_leaf_size == 0.0){
+  if(filter_res == 0.0){
+    std::cout << "Original: " << map_ptr->points.size() << " points." << std::endl;
     pcl::toROSMsg(*map_ptr, *map_msg_ptr);
   }else{
     pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
-    voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+    voxel_grid_filter.setLeafSize(filter_res, filter_res, filter_res);
     voxel_grid_filter.setInputCloud(map_ptr);
     voxel_grid_filter.filter(*map_filtered);
     std::cout << "Original: " << map_ptr->points.size() << " points." << std::endl;
@@ -140,11 +155,11 @@ static void output_callback(const std_msgs::Float32::ConstPtr& input)
 
   // Writing Point Cloud data to PCD file
   if(voxel_leaf_size == 0.0){
-    pcl::io::savePCDFileASCII("local_map_original.pcd", *map_ptr);
-    std::cout << "Saved " << map_ptr->points.size() << " data points to local_map.pcd." << std::endl;
+    pcl::io::savePCDFileASCII(filename, *map_ptr);
+    std::cout << "Saved " << map_ptr->points.size() << " data points to " << filename << "." << std::endl;
   }else{
-    pcl::io::savePCDFileASCII("local_map_filtered.pcd", *map_filtered);
-    std::cout << "Saved " << map_filtered->points.size() << " data points to local_map.pcd." << std::endl;
+    pcl::io::savePCDFileASCII(filename, *map_filtered);
+    std::cout << "Saved " << map_filtered->points.size() << " data points to " << filename << "." << std::endl;
   }    
 }
 
@@ -620,10 +635,10 @@ int main(int argc, char **argv)
     ndt_map_pub = nh.advertise<sensor_msgs::PointCloud2>("/ndt_map", 1000);
     ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
 
-    // subscribing the velodyne data
+    ros::Subscriber param_sub = nh.subscribe("config/ndt_slam", 10, param_callback);
+    ros::Subscriber output_sub = nh.subscribe("config/ndt_slam_output", 10, output_callback);
     ros::Subscriber hokuyo_sub = nh.subscribe("hokuyo_3d/hokuyo_cloud2", 1000, hokuyo_callback);
     ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", 1000, velodyne_callback);
-    ros::Subscriber output_sub = nh.subscribe("output", 1000, output_callback);
 
     ros::spin();
 
