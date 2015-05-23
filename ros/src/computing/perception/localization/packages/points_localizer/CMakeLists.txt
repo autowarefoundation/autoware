@@ -42,4 +42,3 @@ target_link_libraries(pos_marker ${catkin_LIBRARIES})
 add_dependencies(ndt_pcl runtime_manager_generate_messages_cpp)
 add_dependencies(ndt_slam runtime_manager_generate_messages_cpp)
 add_dependencies(local2global runtime_manager_generate_messages_cpp)
-
