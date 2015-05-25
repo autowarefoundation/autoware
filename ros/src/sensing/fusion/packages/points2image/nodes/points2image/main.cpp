@@ -30,13 +30,13 @@
 
 #include <QCoreApplication>
 
-#include<iostream>
-#include<qstring.h>
+#include <iostream>
+#include <qstring.h>
 
-#include<opencv2/opencv.hpp>
-#include<sensor_msgs/PointCloud2.h>
+#include <opencv2/opencv.hpp>
+#include <sensor_msgs/PointCloud2.h>
 
-#include<rosinterface.h>
+#include <rosinterface.h>
 
 #define CAMERAEXTRINSICMAT "CameraExtrinsicMat"
 #define CAMERAMAT "CameraMat"
@@ -59,7 +59,10 @@ struct POINTS2IMAGE
 
 typedef boost::shared_ptr<POINTS2IMAGE> POINTS2IMAGEPtr;
 
-POINTS2IMAGEPtr points_to_image(sensor_msgs::PointCloud2ConstPtr velodyneData, cv::Mat cameraExtrinsicMat, cv::Mat cameraMat, cv::Mat distCoeff, cv::Size imageSize)
+static POINTS2IMAGEPtr points_to_image(sensor_msgs::PointCloud2ConstPtr velodyneData,
+				       cv::Mat cameraExtrinsicMat,
+				       cv::Mat cameraMat, cv::Mat distCoeff,
+				       cv::Size imageSize)
 {
     POINTS2IMAGEPtr result(new POINTS2IMAGE);
     result->header=velodyneData->header;
@@ -73,12 +76,12 @@ POINTS2IMAGEPtr points_to_image(sensor_msgs::PointCloud2ConstPtr velodyneData, c
     cv::Mat invR=cameraExtrinsicMat(cv::Rect(0,0,3,3)).t();
     cv::Mat invT=-invR*(cameraExtrinsicMat(cv::Rect(3,0,1,3)));
 
-    int i,n=velodyneData->height;
-    int j,m=velodyneData->width;
+    int n=velodyneData->height;
+    int m=velodyneData->width;
     char * data=(char *)(velodyneData->data.data());
-    for(i=0;i<n;i++)
+    for(int i=0;i<n;i++)
     {
-        for(j=0;j<m;j++)
+        for(int j=0;j<m;j++)
         {
             int id=i*m+j;
             float * dataptr=(float *)(data+id*velodyneData->point_step);

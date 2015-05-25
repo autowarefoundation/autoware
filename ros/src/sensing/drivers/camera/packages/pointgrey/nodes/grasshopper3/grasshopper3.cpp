@@ -26,294 +26,317 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 /*
-This program requires ROS and Flycapture SDK installed
-Author: Abraham Monrroy (amonrroy@ertl.jp)
-Initial version 2014-11-14
+  This program requires ROS and Flycapture SDK installed
+  Author: Abraham Monrroy (amonrroy@ertl.jp)
+  Initial version 		2014-11-14
+  Added signal handler 		2015-05-01
+  Added CameraInfo msg 		2015-05-01
 */
-#include "FlyCapture2.h"
-#include "ros/ros.h"
+
+#include <iostream>
+
+#include <FlyCapture2.h>
+#include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
 
-#include <sys/time.h>
-#include <stdio.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
+#include <signal.h>
 
-using namespace FlyCapture2;
+static volatile int running = 1;
 
-void getNumCameras(BusManager* pbusMgr, unsigned int *pNumCameras);
-void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** pCams);
-void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCameras, Image images[]);
-void startCapture(unsigned int numCameras, Camera** ppCameras);
-void PrintError( Error error );
-void PrintCameraInfo( CameraInfo* pCamInfo );
-
-
-
-int main(int argc, char **argv)
+static void signalHandler(int)
 {
-    BusManager busMgr;
-    Error error;
-
-    unsigned int numCameras=1;
-    double FPS;
-
-    getNumCameras(&busMgr, &numCameras);
-    Camera** ppCameras = new Camera*[numCameras];
-    initializeCameras(&busMgr, numCameras, &ppCameras);
-
-    //ROS STUFF
-
-    ros::init(argc, argv, "grasshopper3");
-    ros::NodeHandle n;
-    ros::NodeHandle private_nh("~");
-
-    ros::Publisher pub[numCameras];
-
-    
-    if (private_nh.getParam("fps", FPS))
-    {
-        ROS_INFO("FPS set to %.2f", FPS);
-    }
-    else
-    {
-        FPS=15.0;
-        ROS_INFO("No param received, defaulting to %.2f", FPS);
-    }
-
-    ros::Rate loop_rate(FPS); // Hz
-
-    for (unsigned int i=0; i< numCameras; i++)
-    {
-    	char topic_name[50];
-    	if (numCameras>1)
-			sprintf( topic_name, "image_raw%d",
-							i);
-    	else
-    		sprintf( topic_name, "image_raw");
-    		
-    	pub[i]= n.advertise<sensor_msgs::Image>(topic_name, 100);//publish as many cameras as we have
-    }
-    //END ROS STUFF
-
-    
-
-    Image images[numCameras];
-
-    startCapture(numCameras, ppCameras);
-    
-    printf( "Capturing from %d cameras...\n", numCameras );
-
-    unsigned int count=0;
-    while(ros::ok())
-    {
-    	sensor_msgs::Image imagemsg[numCameras];
-    	for (unsigned int i=0; i<numCameras;i++)//for each camera capture and publish
-    	{
-    		struct timeval te;
-
-    		gettimeofday(&te, NULL); // get current time
-
-    		captureImage(ppCameras, count, numCameras, images);//Get image from camera
-
-    		//fill ROS Message structure
-    		imagemsg[i].header.seq=count;
-    		imagemsg[i].header.frame_id=count;
-    		imagemsg[i].header.stamp.sec=ros::Time::now().toSec();
-    		imagemsg[i].header.stamp.nsec=ros::Time::now().toNSec();
-    		imagemsg[i].height= images[i].GetRows();
-    		imagemsg[i].width= images[i].GetCols();
-    		imagemsg[i].encoding = "rgb8";
-    		imagemsg[i].step = images[i].GetStride();
-    		imagemsg[i].data.resize(images[i].GetDataSize());
-    		memcpy(imagemsg[i].data.data(),images[i].GetData(), images[i].GetDataSize());
-
-    		pub[i].publish(imagemsg[i]);//publish
-    	}
-    	ros::spinOnce();
-    	loop_rate.sleep();
-    	count++;
-    }
-
-    //close cameras
-	for ( unsigned int i = 0; i < numCameras; i++ )
-	{
-		ppCameras[i]->StopCapture();
-		ppCameras[i]->Disconnect();
-		delete ppCameras[i];
-	}
-
-	delete [] ppCameras;//clean memory
-
-	printf( "Done!\n" );
-
-	return 0;
-
+	running = 0;
+	ros::shutdown();
 }
 
-void PrintError( Error error )
+void parseCameraInfo(const cv::Mat  &camMat,
+                       const cv::Mat  &disCoeff,
+                       const cv::Size &imgSize,
+                       sensor_msgs::CameraInfo &msg)
 {
-    error.PrintErrorTrace();
-}
+	msg.header.frame_id = "camera";
+	//  msg.header.stamp    = ros::Time::now();
 
-void getNumCameras(BusManager* pbusMgr, unsigned int *pNumCameras)
-{
-	Error error;
-	error = (*pbusMgr).GetNumOfCameras(pNumCameras);
-	if (error != PGRERROR_OK)
+	msg.height = imgSize.height;
+	msg.width  = imgSize.width;
+
+	for (int row=0; row<3; row++)
 	{
-		PrintError( error );
-		exit(-1);
+		for (int col=0; col<3; col++)
+		{
+			msg.K[row * 3 + col] = camMat.at<double>(row, col);
+		}
 	}
 
-	printf( "Number of cameras detected: %u\n", *pNumCameras );
-
-	if ( *pNumCameras < 1 )
+	for (int row=0; row<3; row++)
 	{
-		printf( "This program requires at least 1 camera... press Enter to exit.\n");
-		getchar();
-		exit(-1);
+		for (int col=0; col<4; col++)
+		{
+			if (col == 3)
+			{
+				msg.P[row * 4 + col] = 0.0f;
+			} else
+			{
+				msg.P[row * 4 + col] = camMat.at<double>(row, col);
+			}
+		}
+	}
+
+	for (int row=0; row<disCoeff.rows; row++)
+	{
+		for (int col=0; col<disCoeff.cols; col++)
+		{
+			msg.D.push_back(disCoeff.at<double>(row, col));
+		}
 	}
 }
 
-void initializeCameras(BusManager* pbusMgr, unsigned int numCameras, Camera*** pCams)
-{
-	Error error;
-	Camera** ppCameras = *pCams;//*unwrap pointers
 
+static void print_camera_info(FlyCapture2::CameraInfo* info)
+{
+	std::cout << "\n*** CAMERA INFORMATION ***\n"
+		  << "\tSerial number       - " << info->serialNumber << "\n"
+		  << "\tCamera model        - " << info->modelName << "\n"
+		  << "\tCamera vendor       - " << info->vendorName << "\n"
+		  << "\tSendor              - " << info->sensorInfo << "\n"
+		  << "\tResolution          - " << info->sensorResolution << "\n"
+		  << "\tFirmware version    - " << info->firmwareVersion << "\n"
+		  << "\tFirmware build time - " << info->firmwareBuildTime
+		  << std::endl;
+}
+
+static std::vector<FlyCapture2::Camera*>
+initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
+{
 	// Connect to all detected cameras and attempt to set them to
 	// a common video mode and frame rate
-	for ( unsigned int i = 0; i < numCameras; i++)
+
+	std::vector<FlyCapture2::Camera*> cameras;
+	for (int i = 0; i < camera_num; i++)
 	{
-		ppCameras[i] = new Camera();
+		FlyCapture2::Camera *camera = new FlyCapture2::Camera();
 
-		PGRGuid guid;
-		error = (*pbusMgr).GetCameraFromIndex( i, &guid );
-		if (error != PGRERROR_OK)
+		FlyCapture2::PGRGuid guid;
+		FlyCapture2::Error error = bus_manger->GetCameraFromIndex(i, &guid);
+		if (error != FlyCapture2::PGRERROR_OK)
 		{
-			PrintError( error );
-			exit(-1);
+			error.PrintErrorTrace();
+			std::exit(-1);
 		}
 
-		// Connect to a camera
-		error = ppCameras[i]->Connect( &guid );
-		if (error != PGRERROR_OK)
+		error = camera->Connect( &guid );
+		if (error != FlyCapture2::PGRERROR_OK)
 		{
-			PrintError( error );
-			exit(-1);
+			error.PrintErrorTrace();
+			std::exit(-1);
 		}
 
-		EmbeddedImageInfo TestEmbeddedInfo;
-		error = ppCameras[i]->GetEmbeddedImageInfo(&TestEmbeddedInfo);
-		if (error != PGRERROR_OK)
+		FlyCapture2::EmbeddedImageInfo image_info;
+		error = camera->GetEmbeddedImageInfo(&image_info);
+		if (error != FlyCapture2::PGRERROR_OK)
 		{
-			PrintError( error );
-			exit(-1);
+			error.PrintErrorTrace();
+			std::exit(-1);
 		}
 
-		TestEmbeddedInfo.timestamp.onOff = true;
-		error = ppCameras[i]->SetEmbeddedImageInfo(&TestEmbeddedInfo);
-		if (error != PGRERROR_OK)
+		image_info.timestamp.onOff = true;
+		error = camera->SetEmbeddedImageInfo(&image_info);
+		if (error != FlyCapture2::PGRERROR_OK)
 		{
-			PrintError( error );
-			exit(-1);
+			error.PrintErrorTrace();
+			std::exit(-1);
 		}
-		// Set all cameras to a specific mode and frame rate so they
-		// can be synchronized
-		//error = ppCameras[i]->SetVideoModeAndFrameRate(
-		//		VIDEOMODE_1600x1200RGB,
-		//		FRAMERATE_30 );
-		//if (error != PGRERROR_OK)
-		//{
-	//		PrintError( error );
-	//		printf(
-	//				"Error starting cameras. \n"
-	//				"This example requires cameras to be able to set to 1600x1200 RGB at 30fps. \n"
-	//				"If your camera does not support this mode, please edit the source code and recompile the application. \n"
-	//				"Press Enter to exit. \n");
-	//		getchar();
-	//		exit(-1);
-	//	}
 
 		// Get the camera information
-		CameraInfo camInfo;
-		error = ppCameras[i]->GetCameraInfo( &camInfo );
-		if (error != PGRERROR_OK)
+		FlyCapture2::CameraInfo camera_info;
+		error = camera->GetCameraInfo(&camera_info);
+		if (error != FlyCapture2::PGRERROR_OK)
 		{
-			PrintError( error );
-			exit(-1);
+			error.PrintErrorTrace();
+			std::exit(-1);
 		}
 
-		PrintCameraInfo(&camInfo);
-
+		print_camera_info(&camera_info);
+		cameras.push_back(camera);
 	}
+
+	return cameras;
 }
 
-void startCapture(unsigned int numCameras, Camera** ppCameras)
+static int getNumCameras(FlyCapture2::BusManager *bus_manager)
 {
-	Error error;
-
-	//initialize cameras
-	for (unsigned int i=0; i<numCameras; i++)
+	unsigned int cameras;
+	FlyCapture2::Error error = bus_manager->GetNumOfCameras(&cameras);
+	if (error != FlyCapture2::PGRERROR_OK)
 	{
-		error=ppCameras[i]->StartCapture();
+		error.PrintErrorTrace();
+		std::exit(-1);
+	}
 
-		if (error != PGRERROR_OK)
+	std::cout << "Number of cameras detected: " << cameras << std::endl;
+
+	if (cameras < 1)
+	{
+		std::cerr << "Error: This program requires at least 1 camera." << std::endl;
+		std::exit(-1);
+	}
+
+	return static_cast<int>(cameras);
+}
+
+static void startCapture(std::vector<FlyCapture2::Camera*>& cameras)
+{
+	for (auto *camera : cameras)
+	{
+		FlyCapture2::Error error = camera->StartCapture();
+		if (error != FlyCapture2::PGRERROR_OK)
 		{
-			PrintError( error );
+			error.PrintErrorTrace();
 			return;
 		}
 	}
+
 	return;
 }
 
-void captureImage(Camera** ppCameras, unsigned int frame, unsigned int numCameras, Image images[])
+void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo_msg)
 {
-	// Display the time stamps for all cameras to show that the image
-	// capture is synchronized for each image
+	//////////////////CAMERA INFO/////////////////////////////////////////
+	cv::Mat  cameraExtrinsicMat;
+	cv::Mat  cameraMat;
+	cv::Mat  distCoeff;
+	cv::Size imageSize;
+	std::string filename;
 
-	JPEGOption opt;
-	opt.progressive=false;
-	opt.quality=100;
-
-
-	Error error[numCameras];
-
-	//retrieve images continuously
-	for (unsigned int i=0; i<numCameras;i++)
+	if (nh.getParam("calibrationfile", filename))
 	{
-		error[i] = ppCameras[i]->RetrieveBuffer( &(images[i]) );
+		ROS_INFO("Trying to parse calibrationfile %s", filename.c_str());
 	}
-	//check for Errors
-	for (unsigned int i=0; i<numCameras;i++)
+	else
 	{
-		if (error[i] != PGRERROR_OK)
-		{
-			PrintError( error[i] );
-			exit(-1);
-		}
+		ROS_INFO("No calibrationfile param was received");
+		return;
 	}
+
+	cv::FileStorage fs(filename, cv::FileStorage::READ);
+	if (!fs.isOpened())
+	{
+		ROS_INFO("Cannot open %s", filename.c_str());;
+		return;
+	}
+	else
+	{
+		fs["CameraMat"] >> cameraMat;
+		fs["DistCoeff"] >> distCoeff;
+		fs["ImageSize"] >> imageSize;
+	}
+	parseCameraInfo(cameraMat, distCoeff, imageSize, camerainfo_msg);
 }
 
-void PrintCameraInfo( CameraInfo* pCamInfo )
+int main(int argc, char **argv)
 {
-    printf(
-        "\n*** CAMERA INFORMATION ***\n"
-        "Serial number - %u\t"
-        "Camera model - %s\t"
-        "Camera vendor - %s\t"
-        "Sensor - %s\n"
-        "Resolution - %s\t"
-        "Firmware version - %s\t"
-        "Firmware build time - %s\n\n",
-        pCamInfo->serialNumber,
-        pCamInfo->modelName,
-        pCamInfo->vendorName,
-        pCamInfo->sensorInfo,
-        pCamInfo->sensorResolution,
-        pCamInfo->firmwareVersion,
-        pCamInfo->firmwareBuildTime );
+	////////////////POINT GREY CAMERA /////////////////////////////
+	FlyCapture2::BusManager busMgr;
+
+	int camera_num = getNumCameras(&busMgr);
+	std::vector<FlyCapture2::Camera*> cameras = initializeCameras(&busMgr, camera_num);
+
+	////ROS STUFF////
+	ros::init(argc, argv, "grasshopper3");
+	ros::NodeHandle n;
+	ros::NodeHandle private_nh("~");
+
+	signal(SIGTERM, signalHandler);//detect closing
+
+	double fps;
+	if (private_nh.getParam("fps", fps))
+	{
+		ROS_INFO("fps set to %.2f", fps);
+	} else {
+		fps = 15.0;
+		ROS_INFO("No param received, defaulting to %.2f", fps);
+	}
+
+	///////calibration data
+	sensor_msgs::CameraInfo camerainfo_msg;
+	getMatricesFromFile(private_nh, camerainfo_msg);
+
+	ros::Publisher pub[camera_num];
+	ros::Publisher camera_info_pub;
+
+	camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10);
+
+	for (int i = 0; i < camera_num; i++) {
+	  std::string topic(std::string("image_raw"));
+
+	  if (camera_num > 1) {
+		topic + std::to_string(i);
+	  } 
+		pub[i] = n.advertise<sensor_msgs::Image>(topic, 100);
+	}
+
+	startCapture(cameras);
+
+	std::cout << "Capturing by " << camera_num << " cameras..." << std::endl;
+
+	int count = 0;
+	ros::Rate loop_rate(fps); // Hz
+	while (running && ros::ok())
+	{
+		int i = 0;
+		for (auto *camera : cameras)
+		{
+			FlyCapture2::Image image;
+			FlyCapture2::Error error = camera->RetrieveBuffer(&image);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+
+			sensor_msgs::Image msg;
+			//publish*******************
+
+			msg.header.seq = count;
+			msg.header.frame_id = count;
+			msg.header.stamp.sec = ros::Time::now().toSec();
+			msg.header.stamp.nsec = ros::Time::now().toNSec();
+			msg.height = image.GetRows();
+			msg.width  = image.GetCols();
+			msg.encoding = "rgb8";
+			msg.step = image.GetStride();
+
+			size_t image_size = image.GetDataSize();
+			msg.data.resize(image_size);
+			memcpy(msg.data.data(), image.GetData(), image_size);
+
+			pub[i].publish(msg);
+			i++;
+		}
+
+		ros::spinOnce();
+		loop_rate.sleep();
+		count++;
+	}
+
+	//close cameras
+	for (auto *camera : cameras)
+	{
+		camera->StopCapture();
+		camera->Disconnect();
+		delete camera;
+	}
+
+	ROS_INFO("Camera node closed correctly");
+	return 0;
 }

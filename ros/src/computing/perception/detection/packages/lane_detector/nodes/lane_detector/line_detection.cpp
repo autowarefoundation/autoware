@@ -41,6 +41,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <math.h>
+#include <list>
 #include "utils.h"
 /*#include "switch_release.h"*/
 
@@ -51,16 +52,10 @@
 #include <lane_detector/ImageLaneObjects.h>
 #endif
 
-#undef MAX
-#undef MIN
-#define MAX(a,b) ((a)<(b) ? (b) : (a))
-#define MIN(a,b) ((a)>(b) ? (b) : (a))
-
-
 #if defined(USE_POSIX_SHARED_MEMORY)
 /* global variables and function to use shared memory */
-unsigned char    *shrd_ptr;
-int              *shrd_ptr_height, *shrd_ptr_width;
+static unsigned char    *shrd_ptr;
+static int              *shrd_ptr_height, *shrd_ptr_width;
 extern void      attach_ShareMem(void);
 extern IplImage *getImage_fromSHM(void);
 extern void      setImage_toSHM(IplImage *result);
@@ -74,7 +69,7 @@ extern void      detach_ShareMem(void);
 static ros::Publisher image_lane_objects;
 
 // clip portion of the image
-void crop(IplImage *src, IplImage *dst, CvRect rect)
+static void crop(IplImage *src, IplImage *dst, CvRect rect)
 {
   cvSetImageROI(src, rect);     // clip "rect" from "src" image
   cvCopy(src, dst);             // copy clipped portion to "dst"
@@ -83,8 +78,8 @@ void crop(IplImage *src, IplImage *dst, CvRect rect)
 
 struct Lane {
   Lane(){}
-  Lane(CvPoint a, CvPoint b, float angle, float kl, float bl): p0(a),p1(b),angle(angle),
-                                                               votes(0),visited(false),found(false),k(kl),b(bl) { }
+  Lane(CvPoint a, CvPoint b, float angle, float kl, float bl)
+    : p0(a), p1(b), angle(angle), votes(0),visited(false),found(false),k(kl),b(bl) { }
   CvPoint p0, p1;
   float angle;
   int votes;
@@ -125,7 +120,7 @@ enum {
 #define B_VARY_FACTOR 20
 #define MAX_LOST_FRAMES 30
 
-void FindResponses(IplImage *img, int startX, int endX, int y, std::vector<int> &list)
+static void FindResponses(IplImage *img, int startX, int endX, int y, std::vector<int> &list)
 {
   /* scans for single response: /^\_ */
 
@@ -157,12 +152,12 @@ void FindResponses(IplImage *img, int startX, int endX, int y, std::vector<int> 
     }
 }
 
-unsigned char pixel(IplImage *img, int x, int y)
+static unsigned char pixel(IplImage *img, int x, int y)
 {
   return (unsigned char)img->imageData[(y*img->width+x)*img->nChannels];
 }
 
-int findSymmetryAxisX(IplImage *half_frame, CvPoint bmin, CvPoint bmax)
+static int findSymmetryAxisX(IplImage *half_frame, CvPoint bmin, CvPoint bmax)
 {
   float value = 0;
   int axisX = -1;               // not found
@@ -200,7 +195,7 @@ int findSymmetryAxisX(IplImage *half_frame, CvPoint bmin, CvPoint bmax)
   return axisX;
 }
 
-bool hasVertResponse(IplImage *edges, int x, int y, int ymin, int ymax)
+static bool hasVertResponse(IplImage *edges, int x, int y, int ymin, int ymax)
 {
   bool has = (pixel(edges, x, y) > BW_TRESHOLD);
   if (y-1 >= ymin) has &= (pixel(edges, x, y-1) < BW_TRESHOLD);
@@ -208,7 +203,7 @@ bool hasVertResponse(IplImage *edges, int x, int y, int ymin, int ymax)
   return has;
 }
 
-int  horizLine(IplImage *edges, int x, int y, CvPoint bmin, CvPoint bmax, int maxHorzGap)
+static int horizLine(IplImage *edges, int x, int y, CvPoint bmin, CvPoint bmax, int maxHorzGap)
 {
   /* scan to right */
   int right = 0;
@@ -377,7 +372,7 @@ void processSide(std::vector<Lane> lanes, IplImage *edges, bool right)
 }
 
 //void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame)
-void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, IplImage *org_frame)
+static void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, IplImage *org_frame)
 {
   /* classify lines to left/right side */
   std::vector<Lane> left, right;

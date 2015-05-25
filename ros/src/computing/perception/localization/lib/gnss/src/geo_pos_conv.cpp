@@ -53,10 +53,13 @@ void geo_pos_conv::set_plane(double lat,   double lon)
 
 void geo_pos_conv::set_plane(int num)
 {
-	if(num==7){
+        if(num==6){
+		m_PLo = 2.373647782712;   //
+		m_PLato= 0.628318530717;  //
+        }else if(num==7) {
 		m_PLo = 2.39400995732;   //
 		m_PLato=  0.628318530717;  //
-	}else if(num==9){
+	} else if(num==9){
 		m_PLo =  2.4405520707;    //
 		m_PLato =  0.628318530717;  //
 	}
@@ -64,15 +67,15 @@ void geo_pos_conv::set_plane(int num)
 
 void geo_pos_conv::set_xyz(double cx, double cy, double cz)
 {
-	m_x=cx;
-	m_y=cy;
-	m_z=cz;
+	m_x = cx;
+	m_y = cy;
+	m_z = cz;
 	conv_xyz2llh();
 }
 
 void geo_pos_conv::set_llh_nmea_degrees(double latd,double lond, double h)
 {
-	double lat,lad,lod,lon;
+	double lat, lad, lod, lon;
 	//1234.56 -> 12'34.56 -> 12+ 34.56/60
 
 	lad = floor(latd/100.);
@@ -90,11 +93,11 @@ void geo_pos_conv::set_llh_nmea_degrees(double latd,double lond, double h)
 
 void geo_pos_conv::llh_to_xyz(double lat, double lon, double ele)
 {
-  m_lat = lat * M_PI/180;
-  m_lon = lon * M_PI/180;
-  m_h = ele;
+	m_lat = lat * M_PI/180;
+	m_lon = lon * M_PI/180;
+	m_h = ele;
 
-  conv_llh2xyz();
+	conv_llh2xyz();
 }
 
 void geo_pos_conv::conv_llh2xyz(void)
@@ -116,8 +119,8 @@ void geo_pos_conv::conv_llh2xyz(void)
 	Pmo = 0.9999;
 
 	/*WGS84 Parameters*/
-	AW   = 6378137.0; //Semimajor Axis
-	FW   = 1.0/298.257222101; //298.257223563 //Geometrical flattening
+	AW = 6378137.0; //Semimajor Axis
+	FW = 1.0/298.257222101; //298.257223563 //Geometrical flattening
     
 	Pe  = (double) sqrt(2.0*FW - pow(FW,2));
 	Pet = (double) sqrt( pow(Pe,2) / (1.0 - pow(Pe,2)) );

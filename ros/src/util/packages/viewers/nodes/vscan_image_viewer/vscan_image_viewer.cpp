@@ -40,13 +40,13 @@
 #define IMAGE_WIDTH 800
 #define IMAGE_HEIGHT 640
 
-bool existImage = false;
-bool existPoints = false;
-sensor_msgs::Image image_msg;
-points2image::PointsImageConstPtr points_msg;
-cv::Mat colormap;
+static bool existImage = false;
+static bool existPoints = false;
+static sensor_msgs::Image image_msg;
+static points2image::PointsImageConstPtr points_msg;
+static cv::Mat colormap;
 
-void show(void)
+static void show(void)
 {
 	if(!existImage || !existPoints){
 		return;
@@ -60,22 +60,21 @@ void show(void)
 
 	int w = IMAGE_WIDTH;
 	int h = IMAGE_HEIGHT;
-	int i, n = w * h;
+	int n = w * h;
 
 	float min_d, max_d;
 	min_d = max_d = points_msg->distance[0];
-	for(i=1; i<n; i++){
+	for(int i=1; i<n; i++){
 		float di = points_msg->distance[i];
 		max_d = di > max_d ? di : max_d;
 		min_d = di < min_d ? di : min_d;
 	}
 	float wid_d = max_d - min_d;
 
-	int x, y;
-	for(y=0; y<h; y++){
-		for(x=0; x<w; x++){
-			int i = y * w + x;
-			float distance = points_msg->distance[i];
+	for(int y=0; y<h; y++){
+		for(int x=0; x<w; x++){
+			int j = y * w + x;
+			float distance = points_msg->distance[j];
 			if(distance == 0){
 				continue;
 			}
@@ -91,14 +90,14 @@ void show(void)
 	cvWaitKey(2);
 }
 
-void image_cb(const sensor_msgs::Image& msg)
+static void image_cb(const sensor_msgs::Image& msg)
 {
 	image_msg = msg;
 	existImage = true;
 	show();
 }
 
-void points_cb(const points2image::PointsImageConstPtr& msg)
+static void points_cb(const points2image::PointsImageConstPtr& msg)
 {
 	points_msg = msg;
 	existPoints = true;
@@ -113,8 +112,7 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_points = n.subscribe("vscan_image", 1, points_cb);
 
 	cv::Mat grayscale(256,1,CV_8UC1);
-	int i;
-	for(i=0;i<256;i++)
+	for(int i=0;i<256;i++)
 	{
 		grayscale.at<uchar>(i)=i;
 	}

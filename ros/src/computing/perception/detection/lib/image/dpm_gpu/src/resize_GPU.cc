@@ -1,42 +1,27 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////resize.cpp   resize image (Input and Output must be double-array) ////////////////////////////////////////////
 
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <pthread.h>
 #include <cuda.h>
-#include <cv.h>
-#include <highgui.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+
 //ORIGINAL header files
 #include "Common.h"
 
 #include "switch_float.h"
 #include "switch_release.h"
 #include "drvapi_error_string.h"
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //main function
 //FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //#define USE_PTHREAD
 
 /* cuda error handling macro */
@@ -53,7 +38,6 @@ typedef struct {
   CUstream  stream;
   int       level;
 } resize_thread_arg;
-
 
 /*********************************************************************/
 /* global variable for GPU */
@@ -104,7 +88,7 @@ FLOAT *Ipl_to_FLOAT_forGPU(IplImage *Input)	//get intensity data (FLOAT) of inpu
         for(int x=0; x<width; x++)
           {
             int XT = x*3;
-            
+
             int pp = WS*y + XT;
             *(B++) = (FLOAT)(unsigned char)IDATA[pp];	//B
             pp++;
@@ -145,7 +129,6 @@ void upload_org_image_toGPU(FLOAT *org_image, int org_image_size[3])
   res = cuArray3DCreate(&org_image_dev, &desc);
   MY_CUDA_CHECK(res, "cuArray3DCreate(org_image)");
 
-
   /* upload data to GPU */
   CUDA_MEMCPY3D pCopy = {0};
   /* src config */
@@ -172,7 +155,7 @@ void upload_org_image_toGPU(FLOAT *org_image, int org_image_size[3])
   /* bind CUDA Array to texture reference */
   res = cuTexRefSetArray(org_image_texref, org_image_dev, CU_TRSA_OVERRIDE_FORMAT);
   MY_CUDA_CHECK(res, "cuTexRefSetArray(org_image)");
-  
+
   /* configuration for automatic interpolation */
   res = cuTexRefSetFilterMode(org_image_texref, CU_TR_FILTER_MODE_LINEAR);
   MY_CUDA_CHECK(res, "cuTexRefSetFilterMode(MODE_LINEAR)");
@@ -220,19 +203,19 @@ void  make_image_idx_incrementer(int *resized_image_size, int LEN)
       int height = resized_image_size[level*3];
       int width  = resized_image_size[level*3 + 1];
       int depth  = resized_image_size[level*3 + 2];
-      
+
       /* save total image size until this level */
       image_idx_incrementer[level] = sum_size_image;
-      
+
       /* add this level's image size */
       sum_size_image += height * width * depth;
     }
-  
+
   CUdeviceptr image_idx_incrementer_dev;
   /* allocate GPU memory region for LUT */
   res = cuMemAlloc(&image_idx_incrementer_dev, LEN*sizeof(int));
   MY_CUDA_CHECK(res, "cuMemAlloc(image_idx_incrementer)");
-  
+
   /* upload data to GPU */
   res = cuMemcpyHtoD(image_idx_incrementer_dev, image_idx_incrementer, LEN*sizeof(int));
   MY_CUDA_CHECK(res, "cuMemcpyHtoD(image_idx_incrementer)");
@@ -252,7 +235,7 @@ void  make_image_idx_incrementer(int *resized_image_size, int LEN)
 
   res = cuTexRefSetFormat(image_idx_incrementer_texref, CU_AD_FORMAT_SIGNED_INT32, 1);
   MY_CUDA_CHECK(res, "cuTexRefSetFormat(image_idx_incrementer_texref)");
-    
+
 } /* make_image_idx_incrementer() */
 
 
@@ -278,60 +261,6 @@ void *bilinear_resizing(void *arg)
   const FLOAT hfactor = (FLOAT)src_height/dst_height;
   const FLOAT wfactor = (FLOAT)src_width/dst_width;
 
-#if 0
-  for (int channel = 0; channel<dst_size[2]; channel++)
-    {
-      /*
-        The function "Ipl_to_FLOAT"(defined in featurepyramid.cpp)
-        break input image down by each color channel. 
-        So, we have to adjust the pointer location to refer 
-        each color values.
-      */
-      FLOAT *src = src_top + channel*src_height*src_width;
-      FLOAT *dst = dst_top + channel*dst_height*dst_width;
-          
-      for (int dst_x=0; dst_x<dst_width; dst_x++)
-        {
-          /* pixel position on "src" correspond to "dst"(true value) */
-          FLOAT src_x_decimal = wfactor * (FLOAT)dst_x;
-          /* pixel position on "src" correspond to "dst"(truncated integer value) */
-          int   src_x         = (int)src_x_decimal;
-          
-          for (int dst_y=0; dst_y<dst_height; dst_y++)
-            {
-              /* pixel position on "src" correspond to "dst"(true value) */
-              FLOAT src_y_decimal = hfactor * (FLOAT)dst_y;
-              /* pixel position on "src" correspond to "dst"(truncated integer value) */
-              int   src_y         = (int)src_y_decimal;
-              
-              /* bilinear interpolation */
-              FLOAT src_val[4] = {
-                (FLOAT)getPixelVal(src, src_x, src_y, src_width, src_height),
-                (FLOAT)getPixelVal(src, src_x+1, src_y, src_width, src_height),
-                (FLOAT)getPixelVal(src, src_x, src_y+1, src_width, src_height),
-                (FLOAT)getPixelVal(src, src_x+1, src_y+1, src_width, src_height)
-              };
-              
-              FLOAT c_element[4] = {0};
-              FLOAT newval = 0;
-              
-              for (int i=0; i<4; i++)
-                {
-                  c_element[i] = (FLOAT)((unsigned int)src_val[i] & 0xffffffff);
-                }
-              
-              FLOAT new_element = (FLOAT)(
-                                          (src_x + 1 - src_x_decimal)*(src_y + 1 - src_y_decimal)*c_element[0] + 
-                                          (src_x_decimal - src_x)*(src_y + 1 - src_y_decimal)*c_element[1] + 
-                                          (src_x + 1 - src_x_decimal)*(src_y_decimal - src_y)*c_element[2] + 
-                                          (src_x_decimal - src_x)*(src_y_decimal - src_y)*c_element[3]
-                                          );
-              
-              dst[dst_x*dst_height + dst_y] = (FLOAT)(new_element);
-            }
-        }
-    }
-#else
   CUresult res;
 
   /* attach CUDA Context 0 on this pthread */
@@ -386,38 +315,27 @@ void *bilinear_resizing(void *arg)
   // res = cuStreamSynchronize(stream);
   // MY_CUDA_CHECK(res, "cuStreamSynchronize(stream)");
 
-#endif
-
   return (void *)NULL;
 } /* bilinear_resizing() */
 
-//#define DEBUG
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**************************/
 /* main function (resize) */
-/**************************/
-void resize_byGPU(FLOAT *org_image, 
+void resize_byGPU(FLOAT *org_image,
                   int *org_image_size,
                   //                  FLOAT **resized_image,
-                  int *resized_image_size, 
+                  int *resized_image_size,
                   int interval,
                   int LEN,
                   CUstream *stream_array)
 {
-  
   /* pthread handler */
   /* to calculate all resized image, the required number of threads is (LEN - interval) */
   pthread_t *thread = (pthread_t *)calloc(LEN - interval, sizeof(pthread_t));
-  
+
   /* structure to carry data to pthread function */
   resize_thread_arg *args = (resize_thread_arg *)calloc(LEN - interval, sizeof(resize_thread_arg));
   int thread_count = 0;
-    
-   
+
+
   /* upload original image data to GPU */
   upload_org_image_toGPU(org_image, org_image_size);
 
@@ -445,7 +363,6 @@ void resize_byGPU(FLOAT *org_image,
   printf("/*************************************************************************/\n");
 #endif
 
-
   /* resizing */
   for (int level=0; level<interval; level++)
     {
@@ -454,15 +371,15 @@ void resize_byGPU(FLOAT *org_image,
       args[thread_count].dst_size = &resized_image_size[level*3];
       args[thread_count].stream   = stream_array[level];
       args[thread_count].level    = level;
-      
+
 #ifdef DEBUG
-      bilinear_resizing((void *)&args[thread_count]);      
+      bilinear_resizing((void *)&args[thread_count]);
 #else
       pthread_create(&thread[thread_count], NULL, bilinear_resizing, (void *)&args[thread_count]);
 #endif
       thread_count++;
     }
-  
+
   /* extra resizing */
   for (int level=2*interval; level<LEN; level++)
     {
@@ -473,13 +390,13 @@ void resize_byGPU(FLOAT *org_image,
       args[thread_count].level    = level;
 
 #ifdef DEBUG
-      bilinear_resizing((void *)&args[thread_count]);      
+      bilinear_resizing((void *)&args[thread_count]);
 #else
       pthread_create(&thread[thread_count], NULL, bilinear_resizing, (void *)&args[thread_count]);
 #endif
       thread_count++;
     }
-  
+
 #ifndef DEBUG
   /* wait for all pthread complete its work */
   //  for (int counter=0; counter<LEN-interval; counter++)
@@ -488,7 +405,7 @@ void resize_byGPU(FLOAT *org_image,
       pthread_join(thread[counter], NULL);
     }
 #endif
-  
+
   /* (interval <= level < 2*interval) use same resize scale as (0 <= level < interval) */
   for (int level=interval; level<2*interval; level++)
     {
@@ -504,7 +421,7 @@ void resize_byGPU(FLOAT *org_image,
                               copy_size,
                               stream_array[level]);
     }
-  
+
   /* cleanup */
   free(thread);
   free(args);
@@ -514,21 +431,15 @@ void resize_byGPU(FLOAT *org_image,
 
   res = cuMemFreeHost(image_idx_incrementer);
   MY_CUDA_CHECK(res, "cuMemFreeHost(image_idx_incrementer)");
-  
+
 } /* resize_byGPU()  */
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/********************************************/
 /* calculate each image size after resizing */
-/********************************************/
-void calc_resized_image_size(int *org_image_size, 
+void calc_resized_image_size(int *org_image_size,
                              int *resized_image_size,
-                             int interval, 
+                             int interval,
                              FLOAT sc,
-                             int max_scale, 
+                             int max_scale,
                              FLOAT *scale_array)
 {
  const int org_height    = org_image_size[0];
@@ -567,14 +478,13 @@ void calc_resized_image_size(int *org_image_size,
           resized_image_size[(jj+interval)*3]     = (int)((FLOAT)resized_image_size[jj*3]*extra_scale + 0.5);
           resized_image_size[(jj+interval)*3 + 1] = (int)((FLOAT)resized_image_size[jj*3 + 1]*extra_scale + 0.5);
           resized_image_size[(jj+interval)*3 + 2] = resized_image_size[jj*3 + 2];
-          
+
           /* save scale */
           scale_array[jj+interval] = 0.5*scale_array[jj];
         }
     }
 
   return;
-
 } /* calc_resized_image_size() */
 
 /*************************************************/
@@ -620,9 +530,7 @@ void create_resized_image_texref(void)
 
 } /* create_resized_image_texref() */
 
-/*************************************************/
 /* free GPU memory region allocated in this file */
-/*************************************************/
 void cleanup_about_resize(void)
 {
   CUresult res;

@@ -35,64 +35,59 @@
 #define _DEBUG 0
 #endif
 
-//openCV library
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
-//Debug mode
-#ifndef ROS
-#ifdef _DEBUG
-#pragma comment(lib,"cv200d.lib")
-#pragma comment(lib,"cxcore200d.lib")
-#pragma comment(lib,"cvaux200d.lib")
-#pragma comment(lib,"highgui200d.lib")
-#else
-//Release mode
-#pragma comment(lib,"cv200.lib")
-#pragma comment(lib,"cxcore200.lib")
-#pragma comment(lib,"cvaux200.lib")
-#pragma comment(lib,"highgui200.lib")
-#endif
-#endif
-//C++ library
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#include <boost/array.hpp>
-//ORIGINAL header files
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-//ROS
-#include "dpm/ImageObjects.h"
-#include "scan2image/ScanImage.h"
-#include "points2image/PointsImage.h"
-#include "car_detector/FusedObjects.h"
+#include <vector>
+
+#include <ros/ros.h>
+#include <dpm/ImageObjects.h>
+#include <scan2image/ScanImage.h>
+#include <points2image/PointsImage.h>
+
+#include <opencv2/opencv.hpp>
 
 #define IMAGE_WIDTH 800
 #define IMAGE_HEIGHT 600
 #define NO_DATA 0
+
 #if _DEBUG
 #define IMAGE_TOPIC "/image_raw"
 #define IMAGE_CALLBACK imageCallback
 #endif
 
+using namespace std;
+using namespace cv;
+
 struct Scan_image{
-    float distance[IMAGE_WIDTH][IMAGE_HEIGHT];
-    float intensity[IMAGE_WIDTH][IMAGE_HEIGHT];
-    int max_y;
-    int min_y;
+	float distance[IMAGE_WIDTH][IMAGE_HEIGHT];
+	float intensity[IMAGE_WIDTH][IMAGE_HEIGHT];
+	int max_y;
+	int min_y;
 };
 
+struct Point5
+{
+	int x;
+	int y;
+	double distance;
+	float min_h;
+	float max_h;
+};
+
+extern void fuse();
+extern void fuseFilterDetections(vector<Point5>& vScanPoints);
+extern void getVScanPoints(vector<Point5> &vScanPoints);
+extern bool dispersed(vector<Point5> &vScanPoints, vector<int> &indices);
+extern float getStdDev(vector<Point5> &vScanPoints, vector<int> &indices, float avg);
+extern float getMinAverage(vector<Point5> &vScanPoints, vector<int> &indices);
+extern bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float object_distance, vector<int> &outIndices);
+extern std::vector<float> getMinHeights();
+extern std::vector<float> getMaxHeights();
+extern void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp);
+
 extern void calcDistance();
-extern void setImageObjects(const dpm::ImageObjects& image_objects);
+extern void setDetectedObjects(const dpm::ImageObjects& image_objects);
 extern void setScanImage(const scan2image::ScanImage& scan_image);
 extern void setPointsImage(const points2image::PointsImage& points_image);
-extern int getObjectNum();
+extern int getObjectsNum();
 extern std::vector<int> getCornerPoint();
 extern std::vector<float> getDistance();
 extern void init();

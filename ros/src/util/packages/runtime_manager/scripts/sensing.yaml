@@ -5,6 +5,11 @@ subs :
       - name : PointGrey Grasshoper 3 (USB1)
         probe: 'lsusb -d 1e10: > /dev/null'
         run  : roslaunch pointgrey grasshopper3.launch
+        param: calibration_path_grasshopper3
+        gui  :
+          CalibrationFile :
+            prop  : 1
+            flags : [ center_v ]
       - name : PointGrey Grasshoper 3 (USB2)
         probe:
         run  :
@@ -48,12 +53,12 @@ subs :
           calibration :
             prop  : 1
             flags : [ center_v ]
-      - name : Hokuyo UTM30LX (USB1)
+      - name : Hokuyo TOP-URG
         probe: 'lsusb -d 15d1: > /dev/null'
-        run  : roslaunch hokuyo hokuyo_utm30lx.launch
-      - name : Hokuyo UTM30LX (USB2)
-        probe:
-        run  :
+        run  : roslaunch hokuyo top_urg.launch
+      - name : Hokuyo 3D-URG
+        probe: 
+        run  : rosrun hokuyo hokuyo_3d
       - name : SICK LMS511
         probe:
         run  :
@@ -74,6 +79,10 @@ buttons:
     run   : rosrun scan2image scan2image
     param : scan_image
 
+  virtual_scan_image :
+    run   : roslaunch runtime_manager vscan.launch
+    param : virtual_scan_image
+
   calibration :
     run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
 
@@ -86,6 +95,16 @@ params :
       cmd_param :
         dash : ''
         delim: ':='
+
+  - name  : calibration_path_grasshopper3
+    vars  :
+    - name  : CalibrationFile
+      kind  : path
+      v     : ''
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : points_image
     vars  :
@@ -101,3 +120,12 @@ params :
       kind      : path
       v         : ''
       rosparam  : /scan2image/camera_yaml
+
+  - name  : virtual_scan_image
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        dash : ''
+        delim: ':='

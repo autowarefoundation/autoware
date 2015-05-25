@@ -1,57 +1,30 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////MODEL_info.h   Detector-Model information & definition header  /////////////////////////////////////////
 
 //OpenCV library
-//#include "cv.h"			
-//#include "cxcore.h"
-//#include "highgui.h"
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-//Add messi 2012/11/16
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
 #include <opencv2/legacy/legacy.hpp>
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib") 
-    #pragma comment(lib,"cxcore200d.lib") 
-    #pragma comment(lib,"cvaux200d.lib") 
-    #pragma comment(lib,"highgui200d.lib") 
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib") 
-    #pragma comment(lib,"cxcore200.lib") 
-    #pragma comment(lib,"cvaux200.lib") 
-    #pragma comment(lib,"highgui200.lib") 
-#endif
-#endif
-#include <stdio.h>	
+
+#include <cstdio>
 
 #include "switch_float.h"
 #include "switch_release.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #ifndef INCLUDED_Minfo_
 #define INCLUDED_Minfo_
 
-/////////////////////
 //file information///
-/////////////////////
 
 //#define IM_NAME		"test5.jpg"				//Image name
 //#define MNAME			"M1.avi"				//source movie name
 
 //#define IN_S_NAME		"C:\\TESTIM_2010_2_3\\"			//Input-Image(successive)
-//#define IN_S_NAME		"C:\\Users\\kawano\\Desktop\\re\\"	
-#define IN_S_NAME		"CAR_TRACKING/Test_Images/Daytime_Image_PNG/"			//Input-Image(successive)	
+//#define IN_S_NAME		"C:\\Users\\kawano\\Desktop\\re\\"
+#define IN_S_NAME		"CAR_TRACKING/Test_Images/Daytime_Image_PNG/"			//Input-Image(successive)
 #define OUTMNAME		"Out.avi"				//output movie name
 #define OUT_NAME		"Out_Image/res"		//Result name
 #define EX_NAME			".png"
@@ -73,9 +46,7 @@
 
 #endif /* ifdef RELEASE */
 
-///////////////////////
 //struct information///
-///////////////////////
 
 #ifndef _MODEL_INFO
 #define _MODEL_INFO
@@ -120,7 +91,7 @@ typedef struct {
 	FLOAT **y2;
 
 	bool ini;	//flag for initialization
-	FLOAT ratio;	//ratio of zooming image 
+	FLOAT ratio;	//ratio of zooming image
 
 }Model_info;
 

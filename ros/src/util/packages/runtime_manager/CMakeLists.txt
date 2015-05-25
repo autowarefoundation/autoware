@@ -14,15 +14,20 @@ add_message_files(
   ConfigCarDpm.msg
   ConfigPedestrianDpm.msg
   ConfigNdt.msg
+  ConfigNdtSlam.msg
+  ConfigNdtSlamOutput.msg
   ConfigLaneFollower.msg
   ConfigCarKf.msg
   ConfigPedestrianKf.msg
   ConfigLaneRule.msg
+  ConfigWaypointLoader.msg
   ConfigPoints2Polygon.msg
   accel_cmd.msg
   steer_cmd.msg
   brake_cmd.msg
   traffic_light.msg
+  ConfigCarFusion.msg
+  ConfigPedestrianFusion.msg
 )
 
 generate_messages(

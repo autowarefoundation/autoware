@@ -20,3 +20,7 @@ viewers :
       cmd   : rosrun viewers image_d_viewer
     - label : Points Image with Distance
       cmd   : rosrun viewers points_image_d_viewer
+    - label : Vscan Points Image
+      cmd   : rosrun viewers vscan_image_viewer
+    - label : Vscan Points Image with Distancr
+      cmd   : rosrun viewers vscan_image_d_viewer

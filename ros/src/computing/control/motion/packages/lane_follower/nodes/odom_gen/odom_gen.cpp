@@ -40,62 +40,59 @@
 
 #include "geo_pos_conv.hh"
 
-geometry_msgs::Twist _current_velocity;
-static bool _use_pose = false;
+static geometry_msgs::Twist _current_velocity;
 static bool _init_set = false;
 static bool _pose_value_set = false;
 
-double _initial_px = 0.0;
-double _initial_py = 0.0;
-double _initial_pz = 0.0;
-double _initial_ox = 0.0;
-double _initial_oy = 0.0;
-double _initial_oz = 0.0;
-double _initial_ow = 0.0;
-double _initial_yaw = 0.0;
+static double _initial_px = 0.0;
+static double _initial_py = 0.0;
+static double _initial_pz = 0.0;
+static double _initial_ox = 0.0;
+static double _initial_oy = 0.0;
+static double _initial_oz = 0.0;
+static double _initial_ow = 0.0;
 
-std::string _use_topic;
-std::string _rotation_set;
+static std::string _use_pose;
+static std::string _rotation_set;
 
-void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
+static void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
-    if(_use_topic == "gnss"){
-    _initial_px = input->pose.position.x;
-    _initial_py = input->pose.position.y;
-    _initial_pz = input->pose.position.z;
-    _initial_ox = input->pose.orientation.x;
-    _initial_oy = input->pose.orientation.y;
-    _initial_oz = input->pose.orientation.z;
-    _initial_ow = input->pose.orientation.w;
+    if(_use_pose == "GNSS"){
+        _initial_px = input->pose.position.x;
+        _initial_py = input->pose.position.y;
+        _initial_pz = input->pose.position.z;
+        _initial_ox = input->pose.orientation.x;
+        _initial_oy = input->pose.orientation.y;
+        _initial_oz = input->pose.orientation.z;
+        _initial_ow = input->pose.orientation.w;
 
-    _pose_value_set = true;
+        _pose_value_set = true;
     }
 }
 
-void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
+static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
-    if(_use_topic == "ndt"){
-    _initial_px = input->pose.position.x;
-    _initial_py = input->pose.position.y;
-    _initial_pz = input->pose.position.z;
-    _initial_ox = input->pose.orientation.x;
-    _initial_oy = input->pose.orientation.y;
-    _initial_oz = input->pose.orientation.z;
-    _initial_ow = input->pose.orientation.w;
+    if(_use_pose == "NDT"){
+        _initial_px = input->pose.position.x;
+        _initial_py = input->pose.position.y;
+        _initial_pz = input->pose.position.z;
+        _initial_ox = input->pose.orientation.x;
+        _initial_oy = input->pose.orientation.y;
+        _initial_oz = input->pose.orientation.z;
+        _initial_ow = input->pose.orientation.w;
 
-    _pose_value_set = true;
+        _pose_value_set = true;
     }
 }
 
-void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
+static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
     _current_velocity = msg->twist;
-
 }
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "odom_pub");
+    ros::init(argc, argv, "odom_gen");
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
@@ -111,8 +108,6 @@ int main(int argc, char **argv)
     tf::TransformBroadcaster odom_broadcaster;
 
     private_nh.getParam("use_pose", _use_pose);
-    private_nh.getParam("use_topic", _use_topic);
-    private_nh.getParam("rotation_set", _rotation_set);
 
     ros::Time current_time, last_time;
     current_time = ros::Time::now();
@@ -130,36 +125,17 @@ int main(int argc, char **argv)
     std::cout << "checking use_pose" << std::endl;
 
     // Initial values are set by roslaunch
-    if (_use_pose == false) {
+    if (_use_pose == "Initial Pos") {
         std::cout << "use initial pose" << std::endl;
-        private_nh.getParam("px", x);
-        private_nh.getParam("py", y);
-        private_nh.getParam("pz", z);
-
-        if (_rotation_set == "Qua") {
-            private_nh.getParam("ox", ox);
-            private_nh.getParam("oy", oy);
-            private_nh.getParam("oz", oz);
-            private_nh.getParam("ow", ow);
-            tf::Quaternion q(ox, oy, oz, ow);
-            tf::Matrix3x3 m(q);
-            double roll, pitch, yaw;
-            m.getRPY(roll, pitch, yaw);
-            th = yaw;
-        } else if (_rotation_set == "RPY") {
-            double yaw = 0;
-            private_nh.getParam("yaw", yaw);
-            th = yaw;
-        } else {
-           std::cout << "set RPY or Qua to rotation_set!!!!!" << std::endl;
-           exit(-1);
-        }
+        private_nh.getParam("initial_pos_x", x);
+        private_nh.getParam("initial_pos_y", y);
+        private_nh.getParam("initial_pos_z", z);
+        double yaw = 0;
+        private_nh.getParam("initial_pos_yaw", yaw);
+        th = yaw;
 
         _init_set = true;
     }
-
-    // double vx = 5.0;
-    //  double vth = -0.230769;
 
     ros::Rate loop_rate(10); // 10Hz
     while (ros::ok()) {
@@ -168,7 +144,7 @@ int main(int argc, char **argv)
         //  std::cout << "waiting value set..." << std::endl;
 
         // Initial values are derived from GNSS or NDT
-        if (_use_pose == true) {
+        if (_use_pose != "Initial Pos") {
             if (_init_set == false) {
                 if (_pose_value_set == true) {
                     x = _initial_px;
@@ -206,9 +182,9 @@ int main(int argc, char **argv)
         y += delta_y;
         th += delta_th;
 
-        std::cout << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
-        std::cout << "current_velocity(linear.x angular.z) : (" << _current_velocity.linear.x << " " << _current_velocity.angular.z << ")"<< std::endl;
-        std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl << std::endl;
+       // std::cout << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
+        //std::cout << "current_velocity(linear.x angular.z) : (" << _current_velocity.linear.x << " " << _current_velocity.angular.z << ")"<< std::endl;
+       // std::cout << "current_pose : (" << x << " " << y << " " << z << " " << th << ")" << std::endl << std::endl;
         //std::cout << "current_orientation : (" << ox << " " << oy << " " << oz << " " << ow << ")" << std::endl << std::endl;
 
         //since all odometry is 6DOF we'll need a quaternion created from yaw
@@ -251,4 +227,5 @@ int main(int argc, char **argv)
         loop_rate.sleep();
     }
 
+    return 0;
 }

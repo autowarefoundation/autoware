@@ -53,7 +53,7 @@
 // RESULT
 // Error status
 */
-int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
+int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map, int num_bins)
 {
     int sizeX, sizeY;
     int p, px, stringSize;
@@ -75,8 +75,8 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
     float * r;
     int   * alfa;
 
-    float boundary_x[NUM_SECTOR + 1];
-    float boundary_y[NUM_SECTOR + 1];
+    float boundary_x[num_bins + 1];
+    float boundary_y[num_bins + 1];
     float max, dotProd;
     int   maxi;
 
@@ -92,7 +92,7 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
 
     sizeX = width  / k;
     sizeY = height / k;
-    px    = 3 * NUM_SECTOR;
+    px    = 3 * num_bins;
     p     = px;
     stringSize = sizeX * p;
     allocFeatureMapObject(map, sizeX, sizeY, p);
@@ -101,9 +101,9 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
     cvFilter2D(image, dy, &kernel_dy, cvPoint(0, -1));
 
     float arg_vector;
-    for(i = 0; i <= NUM_SECTOR; i++)
+    for(i = 0; i <= num_bins; i++)
     {
-        arg_vector    = ( (float) i ) * ( (float)(PI) / (float)(NUM_SECTOR) );
+        arg_vector    = ( (float) i ) * ( (float)(PI) / (float)(num_bins) );
         boundary_x[i] = cosf(arg_vector);
         boundary_y[i] = sinf(arg_vector);
     }/*for(i = 0; i <= NUM_SECTOR; i++) */
@@ -138,7 +138,7 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
 
             max  = boundary_x[0] * x + boundary_y[0] * y;
             maxi = 0;
-            for (kk = 0; kk < NUM_SECTOR; kk++)
+            for (kk = 0; kk < num_bins; kk++)
             {
                 dotProd = boundary_x[kk] * x + boundary_y[kk] * y;
                 if (dotProd > max)
@@ -151,11 +151,11 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
                     if (-dotProd > max)
                     {
                         max  = -dotProd;
-                        maxi = kk + NUM_SECTOR;
+                        maxi = kk + num_bins;
                     }
                 }
             }
-            alfa[j * width * 2 + i * 2    ] = maxi % NUM_SECTOR;
+            alfa[j * width * 2 + i * 2    ] = maxi % num_bins;
             alfa[j * width * 2 + i * 2 + 1] = maxi;
         }/*for(i = 0; i < width; i++)*/
     }/*for(j = 0; j < height; j++)*/
@@ -204,14 +204,14 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
               d = (k * i + ii) * width + (j * k + jj);
               (*map)->map[ i * stringSize + j * (*map)->numFeatures + alfa[d * 2    ]] +=
                   r[d] * w[ii * 2] * w[jj * 2];
-              (*map)->map[ i * stringSize + j * (*map)->numFeatures + alfa[d * 2 + 1] + NUM_SECTOR] +=
+              (*map)->map[ i * stringSize + j * (*map)->numFeatures + alfa[d * 2 + 1] + num_bins] +=
                   r[d] * w[ii * 2] * w[jj * 2];
               if ((i + nearest[ii] >= 0) &&
                   (i + nearest[ii] <= sizeY - 1))
               {
                 (*map)->map[(i + nearest[ii]) * stringSize + j * (*map)->numFeatures + alfa[d * 2    ]             ] +=
                   r[d] * w[ii * 2 + 1] * w[jj * 2 ];
-                (*map)->map[(i + nearest[ii]) * stringSize + j * (*map)->numFeatures + alfa[d * 2 + 1] + NUM_SECTOR] +=
+                (*map)->map[(i + nearest[ii]) * stringSize + j * (*map)->numFeatures + alfa[d * 2 + 1] + num_bins] +=
                   r[d] * w[ii * 2 + 1] * w[jj * 2 ];
               }
               if ((j + nearest[jj] >= 0) &&
@@ -219,7 +219,7 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
               {
                 (*map)->map[i * stringSize + (j + nearest[jj]) * (*map)->numFeatures + alfa[d * 2    ]             ] +=
                   r[d] * w[ii * 2] * w[jj * 2 + 1];
-                (*map)->map[i * stringSize + (j + nearest[jj]) * (*map)->numFeatures + alfa[d * 2 + 1] + NUM_SECTOR] +=
+                (*map)->map[i * stringSize + (j + nearest[jj]) * (*map)->numFeatures + alfa[d * 2 + 1] + num_bins] +=
                   r[d] * w[ii * 2] * w[jj * 2 + 1];
               }
               if ((i + nearest[ii] >= 0) &&
@@ -229,7 +229,7 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
               {
                 (*map)->map[(i + nearest[ii]) * stringSize + (j + nearest[jj]) * (*map)->numFeatures + alfa[d * 2    ]             ] +=
                   r[d] * w[ii * 2 + 1] * w[jj * 2 + 1];
-                (*map)->map[(i + nearest[ii]) * stringSize + (j + nearest[jj]) * (*map)->numFeatures + alfa[d * 2 + 1] + NUM_SECTOR] +=
+                (*map)->map[(i + nearest[ii]) * stringSize + (j + nearest[jj]) * (*map)->numFeatures + alfa[d * 2 + 1] + num_bins] +=
                   r[d] * w[ii * 2 + 1] * w[jj * 2 + 1];
               }
             }
@@ -264,7 +264,7 @@ int getFeatureMaps(const IplImage* image, const int k, CvLSVMFeatureMap **map)
 // RESULT
 // Error status
 */
-int normalizeAndTruncate(CvLSVMFeatureMap *map, const float alfa)
+int normalizeAndTruncate(CvLSVMFeatureMap *map, const float alfa, int num_bins)
 {
     int i,j, ii;
     int sizeX, sizeY, p, pos, pp, xp, pos1, pos2;
@@ -276,9 +276,9 @@ int normalizeAndTruncate(CvLSVMFeatureMap *map, const float alfa)
     sizeY     = map->sizeY;
     partOfNorm = (float *)malloc (sizeof(float) * (sizeX * sizeY));
 
-    p  = NUM_SECTOR;
-    xp = NUM_SECTOR * 3;
-    pp = NUM_SECTOR * 12;
+    p  = num_bins;
+    xp = num_bins * 3;
+    pp = num_bins * 12;
 
     for(i = 0; i < sizeX * sizeY; i++)
     {
@@ -389,7 +389,7 @@ int normalizeAndTruncate(CvLSVMFeatureMap *map, const float alfa)
 // RESULT
 // Error status
 */
-int PCAFeatureMaps(CvLSVMFeatureMap *map)
+int PCAFeatureMaps(CvLSVMFeatureMap *map, int num_bins)
 {
     int i,j, ii, jj, k;
     int sizeX, sizeY, p,  pp, xp, yp, pos1, pos2;
@@ -400,9 +400,9 @@ int PCAFeatureMaps(CvLSVMFeatureMap *map)
     sizeX = map->sizeX;
     sizeY = map->sizeY;
     p     = map->numFeatures;
-    pp    = NUM_SECTOR * 3 + 4;
+    pp    = num_bins * 3 + 4;
     yp    = 4;
-    xp    = NUM_SECTOR;
+    xp    = num_bins;
 
     nx    = 1.0f / sqrtf((float)(xp * 2));
     ny    = 1.0f / sqrtf((float)(yp    ));
@@ -462,7 +462,7 @@ int PCAFeatureMaps(CvLSVMFeatureMap *map)
 
 static int getPathOfFeaturePyramid(IplImage * image,
                             float step, int numStep, int startIndex,
-                            int sideLength, CvLSVMFeaturePyramid **maps)
+                            int sideLength, CvLSVMFeaturePyramid **maps, int num_bins)
 {
     CvLSVMFeatureMap *map;
     IplImage *scaleTmp;
@@ -473,9 +473,9 @@ static int getPathOfFeaturePyramid(IplImage * image,
     {
         scale = 1.0f / powf(step, (float)i);
         scaleTmp = resize_opencv (image, scale);
-        getFeatureMaps(scaleTmp, sideLength, &map);
-        normalizeAndTruncate(map, VAL_OF_TRUNCATE);
-        PCAFeatureMaps(map);
+        getFeatureMaps(scaleTmp, sideLength, &map, num_bins);
+        normalizeAndTruncate(map, VAL_OF_TRUNCATE, num_bins);
+        PCAFeatureMaps(map, num_bins);
         (*maps)->pyramid[startIndex + i] = map;
         cvReleaseImage(&scaleTmp);
     }/*for(i = 0; i < numStep; i++)*/
@@ -498,7 +498,7 @@ static int getPathOfFeaturePyramid(IplImage * image,
 // RESULT
 // Error status
 */
-int getFeaturePyramid(IplImage * image, CvLSVMFeaturePyramid **maps)
+int getFeaturePyramid(IplImage * image, CvLSVMFeaturePyramid **maps, int lambda, int num_cells, int num_bins)
 {
     IplImage *imgResize;
     float step;
@@ -520,29 +520,20 @@ int getFeaturePyramid(IplImage * image, CvLSVMFeaturePyramid **maps)
     W = imgResize->width;
     H = imgResize->height;
 
-    step = powf(2.0f, 1.0f / ((float)LAMBDA));
-    maxNumCells = W / SIDE_LENGTH;
-    if( maxNumCells > H / SIDE_LENGTH )
+    step = powf(2.0f, 1.0f / ((float)lambda));
+    maxNumCells = W / num_cells;
+    if( maxNumCells > H / num_cells )
     {
-        maxNumCells = H / SIDE_LENGTH;
+        maxNumCells = H / num_cells;
     }
     numStep = (int)(logf((float) maxNumCells / (5.0f)) / logf( step )) + 1;
 
-    allocFeaturePyramidObject(maps, numStep + LAMBDA);
+    allocFeaturePyramidObject(maps, numStep + lambda);
 
-    TickMeter tm;
-    tm.start();
-    cout << "(featurepyramid.cpp)getPathOfFeaturePyramid START " << endl;
-    getPathOfFeaturePyramid(imgResize, step   , LAMBDA, 0,
-                            SIDE_LENGTH / 2, maps);
-    tm.stop();
-    cout << "(featurepyramid.cpp)getPathOfFeaturePyramid END time = " << tm.getTimeSec() << " sec" << endl;
-    tm.reset();tm.start();
-    cout << "(featurepyramid.cpp)getPathOfFeaturePyramid START " << endl;
-    getPathOfFeaturePyramid(imgResize, step, numStep, LAMBDA,
-                            SIDE_LENGTH    , maps);
-    tm.stop();
-    cout << "(featurepyramid.cpp)getPathOfFeaturePyramid END time = " << tm.getTimeSec() << " sec" << endl;
+    getPathOfFeaturePyramid(imgResize, step   , lambda, 0,
+                            num_cells / 2, maps, num_bins);
+    getPathOfFeaturePyramid(imgResize, step, numStep, lambda,
+                            num_cells    , maps, num_bins);
     if(image->depth != IPL_DEPTH_32F)
     {
         cvReleaseImage(&imgResize);

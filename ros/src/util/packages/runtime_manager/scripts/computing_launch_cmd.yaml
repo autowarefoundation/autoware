@@ -7,11 +7,51 @@ subs :
           - name : pure_pursuit(sim)
             cmd : roslaunch lane_follower pure_pursuit_sim.launch
             param: lane_follower
+            gui  :
+              velocity:
+                depend : param_flag
+              lookahead_threshold:
+                depend : param_flag
+              stat_topic : [ lf ]
           - name : pure_pursuit
             cmd : roslaunch lane_follower pure_pursuit.launch
             param: lane_follower
+            gui  :
+              velocity:
+                depend : param_flag
+              lookahead_threshold:
+                depend : param_flag
+              stat_topic : [ lf ]
           - name : odom_gen
-            cmd : roslaunch lane_follower odometry_sim.launch  
+            cmd : roslaunch lane_follower odom_gen.launch  
+            param: odom_gen
+            gui  :
+              use_pose:
+                flags : [ no_category, nl ]
+              x:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              y:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              z:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category, nl ]
+              roll:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              pitch:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category ]
+              yaw:
+                depend      : use_pose
+                depend_bool : 'lambda v : v == "Initial Pos"'
+                flags : [ no_category, nl ]
   
   - name : Perception
     subs :
@@ -25,20 +65,13 @@ subs :
             param: car_dpm
           - name : car_fusion
             cmd  : rosrun car_detector car_fusion
+            param: car_fusion
           - name : car_kf
             cmd  : rosrun car_detector car_kf
             param: car_kf
-          - name : hog
-            cmd  : 
-          - name : hog_gpu
-            cmd  : 
-          #- name : lane_detector
-          #  cmd  : rosrun lane_detector lane_detector
+          - name : car_locate
+            cmd  : roslaunch car_detector car_locate.launch
           - name : lane_cannyhough
-            cmd  : 
-          - name : lane_fusion
-            cmd  : 
-          - name : lane_tracking
             cmd  : 
           - name : pedestrian_dpm
             cmd  : rosrun pedestrian_detector pedestrian_dpm
@@ -48,22 +81,37 @@ subs :
             param: pedestrian_dpm
           - name : pedestrian_fusion
             cmd  : rosrun pedestrian_detector pedestrian_fusion
+            param: pedestrian_fusion
           - name : pedestrian_kf
             cmd  : rosrun pedestrian_detector pedestrian_kf
             param: pedestrian_kf
+          - name : pedestrian_locate
+            cmd  : roslaunch pedestrian_detector pedestrian_locate.launch
       - name : Localization
         subs :
           - name : ndt_pcl
-            cmd  : rosrun points_localizer ndt_pcl
-          #- name : ndt
-          #  cmd  : echo ndt
+            cmd  : roslaunch points_localizer ndt_pcl.launch
             param: ndt
+            gui  :
+              stat_topic : [ ndt ]
           - name : fix2tfpose
             cmd  : rosrun gnss_localizer fix2tfpose
+            gui  :
+              stat_topic : [ gnss ]
           - name : nmea2tfpose
-            cmd  : rosrun gnss_localizer nmea2tfpose
-          - name : pos_master
-            cmd  : echo pos_master
+            #cmd  : rosrun gnss_localizer nmea2tfpose
+            cmd  : roslaunch gnss_localizer nmea2tfpose.launch
+            gui  :
+              stat_topic : [ gnss ]
+          - name : ndt_slam
+            cmd  : roslaunch points_localizer ndt_slam.launch
+            param: ndt_slam
+            gui  :
+              dialog : MyDialogNdtSlam
+              stat_topic : [ ndt ]
+          - name : pos_marker
+            cmd  : rosrun points_localizer pos_marker
+
   - name : Planning
     subs :
       - name : Path
@@ -101,7 +149,7 @@ params :
       label : Score Threshold
       min   : -2
       max   : 2
-      v     : 0.5
+      v     : -0.5
     - name  : group_threshold
       label : Group Threshold
       min   : 0
@@ -117,6 +165,11 @@ params :
       min   : 2
       max   : 10
       v     : 8
+    - name  : num_bins
+      label : Num Bins
+      min   : 2
+      max   : 10
+      v     : 9
 
   - name  : pedestrian_dpm
     topic : /config/pedestrian_dpm
@@ -142,6 +195,11 @@ params :
       min   : 2
       max   : 10
       v     : 8
+    - name  : num_bins
+      label : Num Bins
+      min   : 2
+      max   : 10
+      v     : 9
 
   - name  : ndt
     topic : /config/ndt
@@ -190,7 +248,7 @@ params :
       label : Leaf Size
       min   : 0
       max   : 10
-      v     : 0.1
+      v     : 2.0
     - name  : angle_error
       label : Angle Error
       min   : -180.0
@@ -217,6 +275,12 @@ params :
     topic : /config/lane_follower
     msg   : ConfigLaneFollower
     vars  :
+    - name  : param_flag
+      kind  : radio_box
+      choices:
+      - Waypoint
+      - Dialog
+      v     : 1
     - name  : velocity
       label : Velocity
       min   : 0
@@ -227,6 +291,42 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
+
+  - name  : odom_gen
+    vars  :
+    - name    : use_pose
+      kind    : radio_box
+      choices :
+      - Initial Pos
+      - NDT
+      - GNSS
+      choices_type: str
+      v       : Initial Pos
+      rosparam: /odom_gen/use_pose
+    - name    : x
+      label   : 'X:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_x
+    - name    : y
+      label   : 'Y:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_y
+    - name    : z
+      label   : 'Z:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_z
+    - name    : roll
+      label   : 'Roll:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_roll
+    - name    : pitch
+      label   : 'Pitch:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_pitch
+    - name    : yaw
+      label   : 'Yaw:'
+      v       : 0.0
+      rosparam: /odom_gen/initial_pos_yaw
 
   - name  : car_kf
     topic : /config/car_kf
@@ -246,7 +346,7 @@ params :
       label : Noise Covariance
       min   : 1
       max   : 1000
-      v     : 25.0
+      v     : 1.0
     - name  : measurement_noise_covariance
       label : Measurement Noise Covariance
       min   : 1
@@ -281,7 +381,7 @@ params :
       label : Noise Covariance
       min   : 1
       max   : 1000
-      v     : 25.0
+      v     : 1.0
     - name  : measurement_noise_covariance
       label : Measurement Noise Covariance
       min   : 1
@@ -358,11 +458,110 @@ params :
         delim       : ':='
 
   - name  : waypoint_loader
+    topic : /config/waypoint_loader
+    msg   : ConfigWaypointLoader
     vars  :
-    - name      : waypoint_filename
+    - name      : vector_map
       kind      : path
-      v         : ''
-      cmd_param :
-        only_enable : True
-        dash        : ''
-        delim       : ':='
+      path_type : dir
+      v         : /tmp
+      rosparam  : /waypoint_loader/vector_map_directory
+    - name      : ruled_waypoint
+      kind      : path
+      v         : /tmp/ruled_waypoint.csv
+      rosparam  : /waypoint_loader/ruled_waypoint_csv
+    - name      : velocity
+      label     : Velocity (km/h)
+      min       : 0
+      max       : 200
+      v         : 40.0
+    - name      : difference_around_signal
+      label     : Difference around Signal (km/h)
+      min       : 0
+      max       : 20
+      v         : 2.0
+
+  - name  : ndt_slam
+    topic : /config/ndt_slam
+    msg   : ConfigNdtSlam
+    vars  :
+    - name      : resolution
+      label     : Resolution
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : step_size
+      label     : Step Size
+      min       : 0.0
+      max       : 1.0
+      v         : 0.1
+    - name      : trans_eps
+      label     : Trans EPS
+      min       : 0.0
+      max       : 0.1
+      v         : 0.01
+    - name      : leaf_size
+      label     : Leaf Size
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+
+  - name  : car_fusion
+    topic : /config/car_fusion
+    msg   : ConfigCarFusion
+    vars  :
+    - name  : min_low_height
+      label : Minimum Height(Lower Bound)
+      min   : -2
+      max   : 0
+      v     : -1.5
+    - name  : max_low_height
+      label : Minimum Height(Upper Bound)
+      min   : -2
+      max   : 0
+      v     : -1.0
+    - name  : max_height
+      label : Maximum Height
+      min   : 0
+      max   : 10
+      v     : 2.0
+    - name  : min_points
+      label : Min Points in Box
+      min   : 1
+      max   : 100
+      v     : 2
+    - name  : dispersion
+      label : Coefficient of Variation
+      min   : 0.0
+      max   : 5.0
+      v     : 1.0
+
+  - name  : pedestrian_fusion
+    topic : /config/pedestrian_fusion
+    msg   : ConfigPedestrianFusion
+    vars  :
+    - name  : min_low_height
+      label : Minimum Height(Lower Bound)
+      min   : -2
+      max   : 0
+      v     : -1.5
+    - name  : max_low_height
+      label : Minimum Height(Upper Bound)
+      min   : -2
+      max   : 0
+      v     : -1.0
+    - name  : max_height
+      label : Maximum Height
+      min   : 0
+      max   : 10
+      v     : 2.0
+    - name  : min_points
+      label : Min Points in Box
+      min   : 1
+      max   : 100
+      v     : 2
+    - name  : dispersion
+      label : Coefficient of Variation
+      min   : 0.0
+      max   : 5.0
+      v     : 1.0

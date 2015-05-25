@@ -28,8 +28,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
+
 #include "for_use_GPU.h"
 #include "cutil.h"
 #include "drvapi_error_string.h"
@@ -76,17 +77,17 @@ CUdeviceptr *A_SIZE_dev, *featp2_dev, *B_dev, *B_dims_dev, *fconvs_error_array_d
 #define _MAX_PATH 256
 #define _MAX_DIR 256
 #define _MAX_DRIVE 8 */
-                  
+
 //TCHAR szAppDir[_MAX_PATH];  // directory in which application is executed
 //TCHAR szFull[_MAX_PATH];    // full path name of executed application
 //TCHAR szDrive[_MAX_DRIVE];  // drive name of executed application
 //TCHAR szDir[_MAX_DIR];      // directory name of executed application
-                  
+
 
 /*****************************************************************/
 /* init_cuda
 
-   initialization device to use CUDA function 
+   initialization device to use CUDA function
 */
 /*****************************************************************/
 void init_cuda(void)
@@ -134,23 +135,6 @@ void init_cuda_with_cubin(const char *cubin_path)
       printf("car detection use GPU[No.%d]\n", i);
   }
 
-#if 0
-  /* check whether peer-to-peer access between GPUs is possible */
-  int canAccessPeer=0;
-  cudaDeviceCanAccessPeer(&canAccessPeer, dev[0], dev[1]);
-  if(canAccessPeer ==1 )
-    printf("p2p access dev[0] -> dev[1] is ENable\n");
-  else
-    printf("p2p access dev[0] -> dev[1] is DISable\n"); 
-
-  cudaDeviceCanAccessPeer(&canAccessPeer, dev[1], dev[0]);
-  if(canAccessPeer ==1 )
-    printf("p2p access dev[1] -> dev[0] is ENable\n");
-  else
-    printf("p2p access dev[1] -> dev[0] is DISable\n"); 
-#endif
-
-
   ctx = (CUcontext*)malloc(device_num*sizeof(CUcontext));
 
   module = (CUmodule*)malloc(device_num*sizeof(CUmodule));
@@ -193,16 +177,16 @@ void init_cuda_with_cubin(const char *cubin_path)
     res = cuModuleLoad(&module[i], cubin_path);
     if(res != CUDA_SUCCESS){
       printf("\ncuModuleLoad failed: res = %s\n", conv(res));
-      /*** for debug(windows) ***//*  
+      /*** for debug(windows) ***//*
                          // get full path name of executed application
                          ::GetModuleFileName(NULL, szFull, sizeof(szFull) / sizeof(TCHAR));
-                         
+
                          // separate full path name into drive name and directory name
                          _tsplitpath(szFull, szDrive, szDir, NULL, NULL);
-                         
+
                          // concatenate drive name and directory name
                          _tmakepath(szAppDir, szDrive, szDir, NULL, NULL);
-                         
+
                          MessageBox(NULL, szAppDir, (LPCWSTR)" ", MB_OK);*/
       /*** for debug(Linux) ***//*
            char pathname[512]="";
@@ -406,7 +390,7 @@ void init_cuda_with_cubin(const char *cubin_path)
       printf("cuMemAlloc(tmpIx_dev) failed: res = %s\n", conv(res));
       exit(1);
     }
-  
+
     res = cuMemAlloc(&tmpIy_dev[i], SIZE_TMPIY);
     if(res != CUDA_SUCCESS){
       printf("cuMemAlloc(tmpIy_dev) failed: res = %s\n", conv(res));
@@ -425,7 +409,7 @@ void init_cuda_with_cubin(const char *cubin_path)
 
 
   for(int i=0; i<device_num; i++) {
-    
+
     /* get max thread num per block */
     int max_threads_num = 0;
     res = cuDeviceGetAttribute(&max_threads_num, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev[i]);
@@ -433,7 +417,7 @@ void init_cuda_with_cubin(const char *cubin_path)
       printf("\ncuDeviceGetAttribute() failed: res = %s\n", conv(res));
       exit(1);
     }
-    
+
     NR_MAXTHREADS_X[i] = (int)sqrt((double)max_threads_num);
     NR_MAXTHREADS_Y[i] = (int)sqrt((double)max_threads_num);
 
@@ -443,57 +427,7 @@ void init_cuda_with_cubin(const char *cubin_path)
     if(res != CUDA_SUCCESS) {
        printf("cuCtxSetCurrent(ctx[%d]) failed: res = %s\n", i, conv(res));
        exit(1);
-     }
-#if 0
-    /*** for debug ***/
-    /* show device information */
-    printf("************ device information ************\n");
-    char devname[256];
-    cuDeviceGetName(devname, sizeof(devname), dev);
-    printf("Device Name : %s\n", devname);
-    printf("--------------------------------------------\n");
-
-    int pi;
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev);
-    printf("Max Threads per Block : %d\n", pi);
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_INTEGRATED, dev);
-    if(pi != 0) printf("device is integrated with the host memory system\n");
-    else printf("device is NOT integrated with the host memory system\n");
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, dev);
-    if(pi != 0) printf("device can map host memory\n");
-    else printf("device CANNOT map host memory\n");
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetAttribute(&pi, CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, dev);
-    if(pi != 0) printf("device shares a unified address space\n");
-    else printf("device DOES NOT share a unified address space\n");
-    printf("--------------------------------------------\n");
-
-    cuDeviceCanAccessPeer(&pi, dev2, dev);
-    if(pi != 0) printf("dev are capable of directly accessing memory from dev2\n");
-    else printf("dev are NOT capable of directly accessing memory from dev2\n");
-    printf("--------------------------------------------\n");
-
-    int major = 0, minor = 0;
-    cuDeviceComputeCapability(&major, &minor, dev);
-    printf("Compute Capability : major = %d, minor = %d\n", major, minor);
-    printf("--------------------------------------------\n");
-
-    cuDeviceGetCount(&pi);
-    printf("Available device number : %d\n", pi);
-
-    printf("********************************************\n");
-
-    printf("if you want to exit, type 'q' then Push Enter key\n");
-    char check_exit;
-    check_exit = getchar();
-    if(check_exit == 'q') exit(1);
-
-#endif
+    }
 }
 
 
@@ -507,16 +441,6 @@ void clean_cuda(void)
 {
     CUresult res;
 
-#if 0
-    res = cuCtxPushCurrent(ctx);
-    if(res != CUDA_SUCCESS){
-      printf("cuCtxPushCurrent(ctx) failed: res = %s\n", conv(res));
-      exit(1);
-    }
-#endif
-
-
-  
   for(int i=0; i<device_num; i++){
 
     res = cuCtxSetCurrent(ctx[i]);
@@ -597,19 +521,19 @@ void clean_cuda(void)
         printf("cuMemFree(M_dev) failed: res = %s\n", conv(res));
         exit(1);
       }
-  
+
       res = cuMemFree(tmpM_dev[i]);
       if(res != CUDA_SUCCESS) {
         printf("cuMemFree(tmpM_dev) failed: res = %s\n", conv(res));
         exit(1);
       }
-  
+
       res = cuMemFree(tmpIx_dev[i]);
       if(res != CUDA_SUCCESS) {
         printf("cuMemFree(tmpIx_dev) failed: res = %s\n", conv(res));
         exit(1);
       }
-  
+
       res = cuMemFree(tmpIy_dev[i]);
       if(res != CUDA_SUCCESS) {
         printf("cuMemFree(tmpIy_dev) failed: res = %s\n", conv(res));
@@ -646,7 +570,7 @@ void clean_cuda(void)
     free(NR_MAXTHREADS_Y);
     free(func_process_root);
     free(func_process_part);
-    free(func_dt1d_x); 
+    free(func_dt1d_x);
     free(func_dt1d_y);
     free(func_calc_a_score);
     free(func_inverse_Q);
@@ -660,11 +584,11 @@ void clean_cuda(void)
     free(def_array_dev);
     free(numpart_dev);
     free(DID_4_array_dev);
-    free(PIDX_array_dev); 
+    free(PIDX_array_dev);
     free(M_dev);
     free(tmpM_dev);
-    free(tmpIx_dev); 
-    free(tmpIy_dev); 
+    free(tmpIx_dev);
+    free(tmpIy_dev);
     free(module);
     free(dev);
     free(ctx);

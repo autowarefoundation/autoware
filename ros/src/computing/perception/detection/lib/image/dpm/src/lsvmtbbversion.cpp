@@ -137,8 +137,7 @@ int tbbTasksThresholdFunctionalScore(const CvLSVMFilterObject **filters, const i
                                      CvPoint ****partsDisplacement)
 {
     tbb::task_list tasks;
-    int i;
-    for (i = 0; i < threadsNum; i++)
+    for (int i = 0; i < threadsNum; i++)
     {
         ScoreComputation& sc =
             *new(tbb::task::allocate_root()) ScoreComputation(filters, n, H, b,

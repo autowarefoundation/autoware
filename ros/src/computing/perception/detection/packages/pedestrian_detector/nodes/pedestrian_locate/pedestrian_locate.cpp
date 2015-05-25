@@ -69,13 +69,13 @@
 
 using namespace std;
 
-typedef struct _OBJPOS{
+struct OBJPOS {
   int x1;
   int y1;
   int x2;
   int y2;
   float distance;
-}OBJPOS;
+};
 
 //for timestamp
 /*
@@ -85,38 +85,39 @@ struct my_tm {
 };
 */
 
-objLocation ol;
+static objLocation ol;
 
 //flag for comfirming whether updating position or not
-bool gnssGetFlag;
-bool ndtGetFlag;
+static bool gnssGetFlag;
+static bool ndtGetFlag;
 
 //store own position and direction now.updated by position_getter
-LOCATION gnss_loc;
-LOCATION ndt_loc;
-ANGLE gnss_angle;
-ANGLE ndt_angle;
+static LOCATION gnss_loc;
+static LOCATION ndt_loc;
+static ANGLE gnss_angle;
+static ANGLE ndt_angle;
 
-double cameraMatrix[4][4] = {
+static double cameraMatrix[4][4] = {
   {-7.8577658642752374e-03, -6.2035361880992401e-02,9.9804301981022692e-01, 5.1542126095196206e-01},
   {-9.9821250329813849e-01, 5.9620033356180935e-02,-4.1532977104442731e-03, -2.9214878315161133e-02},
   {-5.9245706805522491e-02, -9.9629165684497312e-01,-6.2392954139163306e-02, -6.6728858508628075e-01},
   {0, 0, 0, 1}
- 
 };
 
-ros::Publisher pub;
+static ros::Publisher pub;
 
-void printDiff(struct timeval begin, struct timeval end){
+#ifdef NEVER // XXX no one calls this function
+static void printDiff(struct timeval begin, struct timeval end){
   long diff;
   diff = (end.tv_sec - begin.tv_sec)*1000*1000 + (end.tv_usec - begin.tv_usec);
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
+#endif
 
-void GetRPY(const geometry_msgs::Pose &pose,
-	    double &roll,
-	    double &pitch,
-	    double &yaw){
+static void GetRPY(const geometry_msgs::Pose &pose,
+		   double &roll,
+		   double &pitch,
+		   double &yaw){
   tf::Quaternion q;
   tf::quaternionMsgToTF(pose.orientation,q);
   tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
@@ -125,15 +126,13 @@ void GetRPY(const geometry_msgs::Pose &pose,
   roll = -roll;
   pitch = -pitch;
   yaw = -yaw;
-
 }
 
-void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
-			     vector<OBJPOS>::iterator pp_iterator,
-			     LOCATION mloc,
-			     ANGLE angle,
-			     geometry_msgs::PoseArray &pose){
-
+static void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
+				    vector<OBJPOS>::iterator pp_iterator,
+				    LOCATION mloc,
+				    ANGLE angle,
+				    geometry_msgs::PoseArray &pose){
   LOCATION rescoord;
   geometry_msgs::Pose tmpPose;
 
@@ -174,14 +173,10 @@ void makeSendDataDetectedObj(vector<OBJPOS> pedestrian_position_vector,
     tmpPose.position.z = rescoord.Z;
     pose.poses.push_back(tmpPose);
   }
-
 }
 
-
-
-
 //wrap SendData class
-void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
+static void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
 
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
@@ -218,17 +213,15 @@ void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
     }
 
     //publish recognized object data
-    if(pose_msg.poses.size() != 0){
+ //   if(pose_msg.poses.size() != 0){
       pose_msg.header.stamp = ros::Time::now();
       pose_msg.header.frame_id = "map";
       pub.publish(pose_msg);
-    }
+ //   }
   }
-
 }
 
-
-void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+static void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
 {
 
   vector<OBJPOS> pp_vector;
@@ -277,7 +270,8 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 */
 
-void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
+#ifdef NEVER // XXX caller is comment-outed
+static void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
 
   //In Autoware axel x and axel y is opposite
   //but once they is converted to calculate.
@@ -291,8 +285,9 @@ void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
   gnssGetFlag = true;
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
+#endif
 
-void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
+static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
   //In Autoware axel x and axel y is opposite
   //but once they is converted to calculate.
@@ -309,7 +304,6 @@ void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 
 int main(int argc, char **argv){
-  
   ros::init(argc ,argv, "pedestrian_locate") ;  
   cout << "pedestrian_locate" << endl;
 
@@ -319,6 +313,7 @@ int main(int argc, char **argv){
    * NodeHandle destructed will close down the node.
    */
   ros::NodeHandle n;
+  ros::NodeHandle private_nh("~");
 
   ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
@@ -354,9 +349,12 @@ int main(int argc, char **argv){
   double Ox = 440.017336;
   double Oy = 335.274106;
 
-
   cv::Mat Lintrinsic;
-  std::string lidar_3d_yaml = "/home/auto1/.ros/autoware/camera_lidar_3d.yaml";
+  std::string lidar_3d_yaml = "";
+  if (private_nh.getParam("lidar_3d_yaml", lidar_3d_yaml) == false) {
+      std::cout << "error! usage : rosrun  pedestrian_detector pedestrian_locate _lidar_3d_yaml:=[file]" << std::endl;
+      exit(-1);
+  }
 
   cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ); 
   if(!lidar_3d_file.isOpened()){
@@ -386,5 +384,4 @@ int main(int argc, char **argv){
   ndtGetFlag = false;
 
   ros::spin();
-
 }

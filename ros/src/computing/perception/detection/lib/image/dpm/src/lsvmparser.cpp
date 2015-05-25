@@ -822,12 +822,10 @@ int loadModel(
     int max;
     int *comp = NULL;
     int count;
-    int i;
-    int err;
     float score;
     //printf("start_parse\n\n");
 
-    err = LSVMparser(modelPath, filters, &last, &max, &comp, b, &count, &score);
+    int err = LSVMparser(modelPath, filters, &last, &max, &comp, b, &count, &score);
     if(err != LATENT_SVM_OK){
         return err;
     }
@@ -837,7 +835,7 @@ int loadModel(
 
     (*kPartFilters) = (int *)malloc(sizeof(int) * count);
 
-    for(i = 1; i < count;i++){
+    for(int i = 1; i < count;i++){
         (*kPartFilters)[i] = (comp[i] - comp[i - 1]) - 1;
     }
     (*kPartFilters)[0] = comp[0];

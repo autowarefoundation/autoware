@@ -40,18 +40,17 @@
 
 #include "geo_pos_conv.hh"
 
-ros::Publisher pose_publisher;
+static ros::Publisher pose_publisher;
 
-ros::Publisher stat_publisher;
-std_msgs::Bool gnss_stat_msg;
+static ros::Publisher stat_publisher;
+static std_msgs::Bool gnss_stat_msg;
 
-geometry_msgs::PoseStamped _prev_pose;
-geometry_msgs::Quaternion _quat;
-double yaw;
+static geometry_msgs::PoseStamped _prev_pose;
+static geometry_msgs::Quaternion _quat;
+static double yaw;
 
-void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
+static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 {
-
     geo_pos_conv geo;
 
     geo.set_plane(7);
@@ -72,7 +71,7 @@ void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
     // set gnss_stat
     if(pose.pose.position.x == 0.0 || pose.pose.position.y == 0.0 || pose.pose.position.z == 0.0){
       gnss_stat_msg.data = false;
-    }else{
+    } else{
       gnss_stat_msg.data = true;
     }
     

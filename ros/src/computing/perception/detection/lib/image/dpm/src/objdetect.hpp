@@ -314,10 +314,14 @@ public:
     virtual bool empty() const;
     bool load( const vector<string>& filenames, const vector<string>& classNames=vector<string>() );
 
-    virtual void detect( const Mat& image,
+    void detect( const Mat& image,
                          vector<ObjectDetection>& objectDetections,
-                         float overlapThreshold=0.5f,
-                         int numThreads=-1 );
+                         float overlapThreshold,
+                         int numThreads,
+						 double score_threshold,
+						 int lambda,
+						 int num_cells,
+						 int num_bins);
 
     const vector<string>& getClassNames() const;
     size_t getClassCount() const;

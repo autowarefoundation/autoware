@@ -46,253 +46,163 @@
 
 */
 
-
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-//#include "car_detector/FusedObjects.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
 #include <time.h>
-#include <math.h>
 #include <pthread.h>
 #include <vector>
-#include <boost/array.hpp>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <sys/time.h>
-#include <bitset>
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/PoseArray.h"
-#include "../SendData.h"
 
-/*
-#include "structure.h"
-#include "calcoordinates.h"
-#include "axialMove.h"
-#include "geo_pos_conv.hh"
-*/
+#include <ros/ros.h>
+#include <std_msgs/String.h>
 
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CompressedImage.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
 
-using namespace std;
-
-//for timestamp
-struct my_tm {
-  time_t tim; // yyyymmddhhmmss
-  long msec;  // milli sec
-};
+#include <obj_db.h>
 
 //store subscribed value
-geometry_msgs::PoseArray car_position_array;
-geometry_msgs::PoseArray pedestrian_position_array;
+static geometry_msgs::PoseArray car_position_array;
+static geometry_msgs::PoseArray pedestrian_position_array;
 
 //default server name and port to send data
-const string defaultServerName = "db3.ertl.jp";
-const int PORT = 5678;
-//magic that I am C++
-const char MAGIC[5] = "MPWC";
-int area = 7;
+static const std::string default_host_name = "db3.ertl.jp";
+static constexpr int db_port = 5678;
 
 //flag for comfirming whether updating position or not
-bool positionGetFlag;
+static bool is_subscribed_ndt_pose;
 
 //send to server class
-SendData sd;
+static SendData sd;
 
 //store own position and direction now.updated by position_getter
-geometry_msgs::PoseStamped my_loc;
+static geometry_msgs::PoseStamped my_location;
 
-void printDiff(struct timeval begin, struct timeval end){
-  long diff;
-  diff = (end.tv_sec - begin.tv_sec)*1000*1000 + (end.tv_usec - begin.tv_usec);
-  printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
+static std::string getTimeStamp(time_t sec, time_t nsec)
+{
+  char buf[30];
+  int msec = static_cast<int>(nsec / (1000 * 1000));
+
+  tm *t = localtime(&sec);
+  sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%d",
+          t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+          t->tm_hour, t->tm_min, t->tm_sec, msec);
+
+  return std::string(static_cast<const char*>(buf));
 }
 
-/*
-void GetRPY(const geometry_msgs::Pose &pose,
-	    double &roll,
-	    double &pitch,
-	    double &yaw){
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(pose.orientation,q);
-  tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
-}
-*/
+static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, const std::string& timestamp)
+{
+  std::ostringstream oss;
+  constexpr int AREA = 7;
 
-string getTimeStamp(long sec,long nsec){
-  struct tm *tmp;
-  struct timeval tv;
-  char temp[30];
-  string res;
-
-  tv.tv_sec = sec;
-  tv.tv_usec = nsec/1000;
-
-  tmp=localtime(&tv.tv_sec);
-  sprintf(temp,"%04d-%02d-%02d %02d:%02d:%02d.%d",
-	  tmp->tm_year + 1900, tmp->tm_mon + 1,
-	  tmp->tm_mday, tmp->tm_hour,
-	  tmp->tm_min, tmp->tm_sec,
-	  static_cast<int>(tv.tv_usec/1000));
-  res = temp;
-  return res;
-}
-
-
-string makeSendDataDetectedObj(geometry_msgs::PoseArray cp_array){
-
-  ostringstream oss;
-  vector<geometry_msgs::Pose>::iterator cp_iterator;
-  cp_iterator = cp_array.poses.begin();
-
-  for(uint i=0; i<cp_array.poses.size() ; i++, cp_iterator++){
-    //create sql
-    //In Autoware, x and y is oppsite.So reverse these when sending.
-    /*
-    oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
-    oss << "values(0," << fixed << setprecision(6) << cp_iterator->pose.position.y << "," << fixed << setprecision(6) << cp_iterator->pose.position.x << ",0,0,1,'" << getTimeStamp(cp_iterator->header.stamp.sec,cp_iterator->header.stamp.nsec) << "');\n";
-    */
-    oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
-    oss << "values('0'," << fixed << setprecision(6) << cp_iterator->position.y << "," << fixed << setprecision(6) << cp_iterator->position.x << "," << fixed << setprecision(6) << cp_iterator->position.z << "," << area << ",0,'" << getTimeStamp(cp_array.header.stamp.sec,cp_array.header.stamp.nsec) << "');\n";
-
-  }
+  oss << "INSERT INTO POS(id,x,y,z,area,type,tm) "
+      << "VALUES("
+      << "'0',"
+      << std::fixed << std::setprecision(6) << pose.position.y << ","
+      << std::fixed << std::setprecision(6) << pose.position.x << ","
+      << std::fixed << std::setprecision(6) << pose.position.z << ","
+      << AREA << ","
+      << "0,"
+      << "'" << timestamp << "'"
+      << ");";
 
   return oss.str();
-
 }
 
+static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
+{
+  std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
+
+  std::string ret;
+  for(const auto& pose : cp_array.poses){
+    //create sql
+    ret += pose_to_insert_statement(pose, timestamp);
+    ret += "\n";
+  }
+
+  return ret;
+}
 
 //wrap SendData class
-void* wrapSender(void *tsd){
-
-  ostringstream oss;
-  string value;
+static void send_sql()
+{
+  size_t car_num = car_position_array.poses.size();
+  size_t pedestrian_num = pedestrian_position_array.poses.size();
+  std::cout << "sqlnum : " << (car_num + pedestrian_num) << std::endl;
 
   //create header
-  char magic[5] = "MPWC";
-  u_int16_t major = htons(1);
-  u_int16_t minor = htons(0);
-  u_int32_t sqlinst = htonl(2);
-  u_int32_t sqlnum = htonl(car_position_array.poses.size()+pedestrian_position_array.poses.size()+1);
-  char header[16];
-  memcpy(header,magic,4);
-  memcpy(&header[4],&major,2);
-  memcpy(&header[6],&minor,2);
-  memcpy(&header[8],&sqlinst,4);
-  memcpy(&header[12],&sqlnum,4);
-  value.append(header,16);
-
-  cout << "sqlnum : " << car_position_array.poses.size() + pedestrian_position_array.poses.size() + 1 << endl;
+  std::string value = make_header(2, car_num + pedestrian_num);
 
   //get data of car and pedestrian recognizing
-  if(car_position_array.poses.size() > 0 ){
+  if(car_num > 0){
     value += makeSendDataDetectedObj(car_position_array);
   }
 
-  if(pedestrian_position_array.poses.size() > 0){
+  if(pedestrian_num > 0){
     value += makeSendDataDetectedObj(pedestrian_position_array);
   }
 
-  /*
-  oss << "INSERT INTO POS_NOUNIQUE(id,x,y,area,type,self,tm) ";
-  oss << "values(0," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << ",0,0,1,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
-  */
+  std::string timestamp = getTimeStamp(my_location.header.stamp.sec,my_location.header.stamp.nsec);
+  value += pose_to_insert_statement(my_location.pose, timestamp);
+  value += "\n";
 
-  oss << "INSERT INTO POS(id,x,y,z,area,type,tm) ";
-  oss << "values('0'," <<  fixed << setprecision(6) << my_loc.pose.position.y << "," << fixed << setprecision(6) << my_loc.pose.position.x << "," << fixed << setprecision(6) << my_loc.pose.position.z << "," << area << ",0,'" << getTimeStamp(my_loc.header.stamp.sec,my_loc.header.stamp.nsec) << "');\n";
+  std::cout << value << std::endl;
 
-  value += oss.str();
-  cout << value << endl;
+  std::string res;
+  int ret = sd.Sender(value, res);
+  if (ret == -1) {
+    std::cerr << "Failed: sd.Sender" << std::endl;
+    return;
+  }
 
-  string res = sd.Sender(value);
-  cout << "retrun message from DBserver : " << res << endl;
-
-  return nullptr;
-
+  std::cout << "retrun message from DBserver : " << res << std::endl;
+  return;
 }
 
-
-void* intervalCall(void *a){
-
-  pthread_t th;
-
+static void* intervalCall(void *unused)
+{
   while(1){
-    //If angle and position data is not updated from prevous data send,
+    //If angle and position data is not updated from previous data send,
     //data is not sent
-    //if(1){
-    if(!positionGetFlag) {
+    if(!is_subscribed_ndt_pose) {
       sleep(1);
       continue;
     }
-    positionGetFlag = false;
 
-    //create new thread for socket communication.
-    if(pthread_create(&th, NULL, wrapSender, NULL)){
-      printf("thread create error\n");
-    }
+    is_subscribed_ndt_pose = false;
+
+    send_sql();
     sleep(1);
-    if(pthread_join(th,NULL)){
-      printf("thread join error.\n");
-    }    
   }
 
   return nullptr;
 }
 
-
-void car_locateCallback(const geometry_msgs::PoseArray car_locate)
+static void car_locate_cb(const geometry_msgs::PoseArray& car_locate)
 {
-
   car_position_array = car_locate;
-
 }
 
-void pedestrian_locateCallback(const geometry_msgs::PoseArray pedestrian_locate)
+static void pedestrian_locate_cb(const geometry_msgs::PoseArray& pedestrian_locate)
 {
-
   pedestrian_position_array = pedestrian_locate;
-
 }
 
-/*
-void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
-
-  my_loc.X = pose.pose.position.x;
-  my_loc.Y = pose.pose.position.y;
-  my_loc.Z = pose.pose.position.z;
-
-  GetRPY(pose.pose,angle.thiX,angle.thiY,angle.thiZ);
-  printf("quaternion angle : %f\n",angle.thiZ*180/M_PI);
-
-  positionGetFlag = true;
-  //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
-}
-*/
-
-void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
-
-  my_loc = pose;
-  positionGetFlag = true;
-
+static void ndt_pose_cb(const geometry_msgs::PoseStamped &pose)
+{
+  my_location = pose;
+  is_subscribed_ndt_pose = true;
 }
 
-void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
-
-  my_loc = pose;
-  positionGetFlag = true;
-
-}
-
-
-int main(int argc, char **argv){
-  
-  ros::init(argc ,argv, "obj_uploader") ;  
-  cout << "obj_uploader" << endl;
+int main(int argc, char **argv)
+{
+  ros::init(argc ,argv, "obj_uploader");
+  std::cout << "obj_uploader" << std::endl;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -301,29 +211,29 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
 
-  ros::Subscriber car_locate = n.subscribe("/car_pose", 1, car_locateCallback);
-  ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locateCallback);
- ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
+  ros::Subscriber car_locate = n.subscribe("/car_pose", 1, car_locate_cb);
+  ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
+  ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, ndt_pose_cb);
 
   //set server name and port
-  string serverName = defaultServerName;
-  int portNum = PORT;
-  if(argc == 3){
-    serverName = argv[1];
-    portNum = atoi(argv[2]);
+  std::string host_name = default_host_name;
+  int port = db_port;
+  if(argc >= 3){
+    host_name = argv[1];
+    port = std::atoi(argv[2]);
   }
 
-  sd = SendData(serverName,portNum);
+  sd = SendData(host_name, port);
 
   //set angle and position flag : false at first
-  positionGetFlag = false;
+  is_subscribed_ndt_pose = false;
 
   pthread_t th;
-  if(pthread_create(&th, NULL, intervalCall, NULL)){
+  if(pthread_create(&th, nullptr, intervalCall, nullptr)){
     printf("thread create error\n");
   }
   pthread_detach(th);
 
   ros::spin();
-
+  return 0;
 }

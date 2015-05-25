@@ -24,105 +24,88 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include "fusion_func.h"
-#include "std_msgs/Header.h"
 
-void publishTopic();
-ros::Publisher fused_objects;
-std_msgs::Header sensor_header;
+#include <ros/ros.h>
+#include <car_detector/FusedObjects.h>
+#include <std_msgs/Header.h>
+#include <fusion_func.h>
+#include <runtime_manager/ConfigPedestrianFusion.h>
 
-void ImageObjectsCallback(const dpm::ImageObjects& image_object)
+static void publishTopic();
+static ros::Publisher fused_objects;
+static std_msgs::Header sensor_header;
+
+static void DetectedObjectsCallback(const dpm::ImageObjects& image_object)
 {
-    setImageObjects(image_object);
+	setDetectedObjects(image_object);
 
-    calcDistance();
-    publishTopic();
+	fuse();
+	publishTopic();
 }
 
-void ScanImageCallback(const scan2image::ScanImage& scan_image)
+/*static void ScanImageCallback(const scan2image::ScanImage& scan_image)
 {
-    setScanImage(scan_image);
-    sensor_header = scan_image.header;
+	setScanImage(scan_image);
+	sensor_header = scan_image.header;
 
-    calcDistance();
-    publishTopic();
+	calcDistance();
+	publishTopic();
+}*/
+
+static void PointsImageCallback(const points2image::PointsImage& points_image)
+{
+	setPointsImage(points_image);
+	sensor_header = points_image.header;
+
+	fuse();
+	publishTopic();
 }
 
-void PointsImageCallback(const points2image::PointsImage& points_image)
+static void publishTopic()
 {
-    setPointsImage(points_image);
-    sensor_header = points_image.header;
-
-    calcDistance();
-    publishTopic();
+	/*
+	 * Publish topic(Pedestrian position xyz).
+	 */
+	car_detector::FusedObjects fused_objects_msg;
+	fused_objects_msg.header = sensor_header;
+	fused_objects_msg.car_num = getObjectsNum();
+	fused_objects_msg.corner_point = getCornerPoint();
+	fused_objects_msg.distance = getDistance();
+	fused_objects_msg.min_height = getMinHeights();
+	fused_objects_msg.max_height = getMaxHeights();
+	fused_objects.publish(fused_objects_msg);
 }
-void publishTopic()
+
+static void config_cb(const runtime_manager::ConfigPedestrianFusion::ConstPtr& param)
 {
-    /*
-     * Publish topic(Pedestrian position xyz).
-     */
-    car_detector::FusedObjects fused_objects_msg;
-    fused_objects_msg.header = sensor_header;
-    fused_objects_msg.car_num = getObjectNum();
-    fused_objects_msg.corner_point = getCornerPoint();
-    fused_objects_msg.distance = getDistance();
-    fused_objects.publish(fused_objects_msg);
+	setParams(param->min_low_height,
+			param->max_low_height,
+			param->max_height,
+			param->min_points,
+			param->dispersion);
 }
 
 int main(int argc, char **argv)
 {
-    /**
-     * The ros::init() function needs to see argc and argv so that it can perform
-     * any ROS arguments and name remapping that were provided at the command line. For programmatic
-     * remappings you can use a different version of init() which takes remappings
-     * directly, but for most command-line programs, passing argc and argv is the easiest
-     * way to do it.  The third argument to init() is the name of the node.
-     *
-     * You must call one of the versions of ros::init() before using any other
-     * part of the ROS system.
-     */
-    init();
-    ros::init(argc, argv, "pedestrian_fusion");
+	init();
+	ros::init(argc, argv, "pedestrian_fusion");
 
-    /**
-     * NodeHandle is the main access point to communications with the ROS system.
-     * The first NodeHandle constructed will fully initialize this node, and the last
-     * NodeHandle destructed will close down the node.
-     */
-    ros::NodeHandle n;
+	ros::NodeHandle n;
 
-    /**
-     * The subscribe() call is how you tell ROS that you want to receive messages
-     * on a given topic.  This invokes a call to the ROS
-     * master node, which keeps a registry of who is publishing and who
-     * is subscribing.  Messages are passed to a callback function, here
-     * called Callback.  subscribe() returns a Subscriber object that you
-     * must hold on to until you want to unsubscribe.  When all copies of the Subscriber
-     * object go out of scope, this callback will automatically be unsubscribed from
-     * this topic.
-     *
-     * The second parameter to the subscribe() function is the size of the message
-     * queue.  If messages are arriving faster than they are being processed, this
-     * is the number of messages that will be buffered up before beginning to throw
-     * away the oldest ones.
-     */
-
-    ros::Subscriber pedestrian_pixel_xy_sub = n.subscribe("pedestrian_pixel_xy_tracked", 1, ImageObjectsCallback);
-    ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
-    ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
+	ros::Subscriber pedestrian_pixel_xy_sub = n.subscribe("pedestrian_pixel_xy_tracked", 1, DetectedObjectsCallback);
+	//ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
+	ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
 #if _DEBUG
-    ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
+	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
-    fused_objects = n.advertise<car_detector::FusedObjects>("pedestrian_pixel_xyz", 1);
+	fused_objects = n.advertise<car_detector::FusedObjects>("pedestrian_pixel_xyz", 1);
 
-    /**
-     * ros::spin() will enter a loop, pumping callbacks.  With this version, all
-     * callbacks will be called from within this thread (the main one).  ros::spin()
-     * will exit when Ctrl-C is pressed, or the node is shutdown by the master.
-     */
-    ros::spin();
+	ros::Subscriber config_subscriber;
+	config_subscriber = n.subscribe("/config/pedestrian_fusion", 1, config_cb);
 
-    destroy();
+	ros::spin();
 
-    return 0;
+	destroy();
+
+	return 0;
 }

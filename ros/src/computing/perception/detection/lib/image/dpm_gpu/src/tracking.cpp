@@ -1,41 +1,18 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////tracking.cpp   calculate_time-variation information //////////////////////////////////////////////////////////
 
-//OpenCV library
-//#include "cv.h"			
-//#include "cxcore.h"
-//#include "highgui.h"
-#include "cv.h"
-#include "highgui.h"
-#include "cxcore.h"
-#if !defined(ROS)
-#ifdef _DEBUG
-    // case of Debug mode
-    #pragma comment(lib,"cv200d.lib") 
-    #pragma comment(lib,"cxcore200d.lib") 
-    #pragma comment(lib,"cvaux200d.lib") 
-    #pragma comment(lib,"highgui200d.lib") 
-#else
-    // case of Release mode
-    #pragma comment(lib,"cv200.lib") 
-    #pragma comment(lib,"cxcore200.lib") 
-    #pragma comment(lib,"cvaux200.lib") 
-    #pragma comment(lib,"highgui200.lib") 
-#endif
-#endif
-//C++ library
-#include <stdio.h>		
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <time.h>
 
-//added by messi
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
 #include <opencv2/legacy/legacy.hpp>
+
 //Header files
 #include "MODEL_info.h"		//Model-structure definition
 #include "Common.h"
@@ -43,11 +20,7 @@
 #include "switch_float.h"
 #include "switch_release.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//definition of functions 
+//definition of functions
 
 extern int *show_particles(IplImage *Image,RESULT *CUR,PINFO *P_I);
 
@@ -63,7 +36,7 @@ void update_result(RESULT *LR,RESULT *CUR);											//update result
 
 //function about Condensation(Particle_filter tracking lower_level functions)
 CvConDensation *initialize_cond(IplImage *Image,int TYPE);							//initialize particle filter parameters
-CvMat *match_likelihood(IplImage *TEMP,IplImage *Img,int *COORD);					//match template 
+CvMat *match_likelihood(IplImage *TEMP,IplImage *Img,int *COORD);					//match template
 int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,FLOAT *A_SCORE,IplImage *RTEMP,IplImage *Im,RESULT *CUR); //calculate likelihood
 void init_particle_position(RESULT *CUR,CvConDensation *COND,IplImage *IM,int NUM,int L);//initialize position of particles
 void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,IplImage *Im,int Lnum,int NUM); //tracking function
@@ -79,33 +52,30 @@ void object_prediction(RESULT *CUR,CvConDensation **COND);							//prediction of
 void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Image,int THL);//update particle filter information
 
 //finalization_function
-void get_texture(RESULT *RES,IplImage *IM);											//get texture 
+void get_texture(RESULT *RES,IplImage *IM);											//get texture
 int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,FLOAT *A_SCORE,IplImage* Image,int THL);//finalize object_information(tracking)
 
 #define n_particle 1000																//number of particles
 #define max_hist 5
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern FILE *resFP;
 //get new_rectangle information
 RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
 {
-  const int *numpart = MO->MI->numpart;	
+  const int *numpart = MO->MI->numpart;
   const int GL = (numpart[0]+1)*4+3;
   const FLOAT ratio = MO->MI->ratio;
-  
+
   int LL = GL-3;
   FLOAT **x1 = MO->MI->x1; FLOAT **x2 = MO->MI->x2;
   FLOAT **y1 = MO->MI->y1; FLOAT **y2 = MO->MI->y2;
   int ML = 1+2*(1+numpart[0]);
-  
+
   RESULT *CUR =create_result(*NUM);
-  
-  //no_rectangle was detected 
+
+  //no_rectangle was detected
   if(*NUM==0) return(CUR);
-  
+
   FLOAT *Avec = (FLOAT *)calloc(ML,sizeof(FLOAT));
   for(int ii=0;ii<*NUM;ii++)
     {
@@ -113,20 +83,20 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
       FLOAT *Avec_T = Avec;
       int CNUM = (int)(*(P+GL-3));
       int PP[4];
-      
+
       *(Avec_T++)=P[3]-P[1];
-      
+
       for(int kk=0;kk<LL;kk+=4)
         {
           *(Avec_T++)=*(P+kk+1);
           *(Avec_T++)=*(P+kk);
         }
-      
+
       FLOAT XP1=0,XP2=0,YP1=0,YP2=0;
       Avec_T = Avec;
       FLOAT *x1_T = x1[CNUM]; FLOAT *x2_T = x2[CNUM];
-      FLOAT *y1_T = y1[CNUM]; FLOAT *y2_T = y2[CNUM];		
-      
+      FLOAT *y1_T = y1[CNUM]; FLOAT *y2_T = y2[CNUM];
+
       //get rectangle coodinate (by linear-method)
       for(int kk=0;kk<ML;kk++)
         {
@@ -134,7 +104,7 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
           XP1+=*Avec_T*(*(x1_T++)); XP2+=*Avec_T*(*(x2_T++));
           Avec_T++;
         }
-      
+
       //save result
       if(XP1>0)			{PP[0]=(int)XP1;}
       else				{PP[0]=0;}
@@ -147,16 +117,16 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
       //memcpy_s(CUR->point+ii*4,4*sizeof(int),PP,4*sizeof(int));
       memcpy(CUR->point+ii*4, PP,4*sizeof(int));
       CUR->scale[ii]=*(P+GL-1); CUR->score[ii]=*(P+GL-2); CUR->type[ii] = CNUM;
-      
+
       //calculate image coodinate for ORIGINAL-scale-image[640x480]
       int *OPP = CUR->OR_point+ii*4;
       OPP[0] = (int)((FLOAT)PP[0]/ratio);
       OPP[1] = (int)((FLOAT)PP[1]/ratio);
       OPP[2] = (int)((FLOAT)PP[2]/ratio);
       OPP[3] = (int)((FLOAT)PP[3]/ratio);
-      
+
 #ifdef PRINT_INFO
-      //for debug 
+      //for debug
       //printf("x1:%d y1:%d x2:%d y2:%d\n",PP[0],PP[1],PP[2],PP[3]);
       printf("scale:%f score:%f type:%d\n",CUR->scale[ii],CUR->score[ii],CUR->type[ii]);
 #endif  // ifdef PRINT_INFO
@@ -164,12 +134,10 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
       fprintf(resFP, "scale:%f score:%f type:%d\n",CUR->scale[ii],CUR->score[ii],CUR->type[ii]);
 #endif  // ifndef RELEASE
     }
-  s_free(Avec);	
+  s_free(Avec);
   return(CUR);
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//eliminate rectangle for 
+//eliminate rectangle for
 int* elm_rect(RESULT *CUR,int *partner)
 {
   int *NEW_PARTNER;		//output
@@ -182,7 +150,7 @@ int* elm_rect(RESULT *CUR,int *partner)
       if(partner[ii]<0 && CUR->score[ii]<0.0){ CHECK[ii]=1; N_NUM--;}
       else									 CHECK[ii]=0;
     }
-  
+
   //check socore and independence
   if(N_NUM<CUR->num && N_NUM>0)		//bad matching (have to reduce object)
     {
@@ -192,7 +160,7 @@ int* elm_rect(RESULT *CUR,int *partner)
       FLOAT *N_SCALE=(FLOAT *)calloc(N_NUM,sizeof(FLOAT));
       IplImage **N_IM	=(IplImage**)calloc(N_NUM,sizeof(IplImage*));
       NEW_PARTNER = (int *)calloc(N_NUM,sizeof(int));
-      
+
       int nc=0;
       for(int ii=0;ii<CUR->num;ii++)
         {
@@ -231,16 +199,13 @@ int* elm_rect(RESULT *CUR,int *partner)
       //memcpy_s(NEW_PARTNER,CUR->num*sizeof(int),partner,CUR->num*sizeof(int));
       memcpy(NEW_PARTNER, partner,CUR->num*sizeof(int));
     }
-  
+
   s_free(CHECK);
   return NEW_PARTNER;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //function about result(create and release and reset)
-//reset result data (for creation of new_data) 
+//reset result data (for creation of new_data)
 void reset_result(RESULT *RES,int num)
 {
 	//release previous data
@@ -262,8 +227,6 @@ void reset_result(RESULT *RES,int num)
 	RES->IM = (IplImage **)malloc(sizeof(IplImage *)*num);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //create new_result data
 RESULT *create_result(int num)
 {
@@ -286,12 +249,10 @@ RESULT *create_result(int num)
 	return(RES);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //release last_result data space
 void release_result(RESULT *LR)
 {
-	for(int ii=0;ii<LR->num;ii++) cvReleaseImage(&LR->IM[ii]);	
+	for(int ii=0;ii<LR->num;ii++) cvReleaseImage(&LR->IM[ii]);
 	s_free(LR->point);
 	s_free(LR->OR_point);
 	s_free(LR->type);
@@ -299,8 +260,6 @@ void release_result(RESULT *LR)
 	s_free(LR->score);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update result
 void update_result(RESULT *LR,RESULT *CUR)
 {
@@ -315,9 +274,6 @@ void update_result(RESULT *LR,RESULT *CUR)
 	s_free(CUR);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //tracking function (lower_level)
 //functions about condensation
 //initialize particle filter parameters
@@ -327,7 +283,7 @@ CvConDensation *initialize_cond(IplImage *Image,int TYPE)
 	FLOAT h = Image->height;
 	FLOAT w_ve = 60.0; FLOAT h_ve = 30.0;	//velocity bound
 	FLOAT w_no = 10.0; FLOAT h_no = 10.0;	//noise parameter
-	
+
 	int n_stat;
 
 	switch (TYPE) {
@@ -361,7 +317,7 @@ CvConDensation *initialize_cond(IplImage *Image,int TYPE)
 	//Set state-vector matrix and noise parameter
 	if(TYPE==0) //if linear uniform motion
 	{
-		cond->DynamMatr[0] =  1.0; cond->DynamMatr[1]  = 0.0; cond->DynamMatr[2]  = 1.0; cond->DynamMatr[3]  = 0.0; 
+		cond->DynamMatr[0] =  1.0; cond->DynamMatr[1]  = 0.0; cond->DynamMatr[2]  = 1.0; cond->DynamMatr[3]  = 0.0;
 		cond->DynamMatr[4] =  0.0; cond->DynamMatr[5]  = 1.0; cond->DynamMatr[6]  = 0.0; cond->DynamMatr[7]  = 1.0;
 		cond->DynamMatr[8] =  0.0; cond->DynamMatr[9]  = 0.0; cond->DynamMatr[10] = 1.0; cond->DynamMatr[11] = 0.0;
 		cond->DynamMatr[12] = 0.0; cond->DynamMatr[13] = 0.0; cond->DynamMatr[14] = 0.0; cond->DynamMatr[15] = 1.0;
@@ -378,8 +334,6 @@ CvConDensation *initialize_cond(IplImage *Image,int TYPE)
 }
 
 //match template (get likelihood matrix)
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CvMat *match_likelihood(IplImage *TEMP,IplImage *Img,int *COORD)
 {
 	int WID = COORD[2]-COORD[0];
@@ -410,16 +364,14 @@ CvMat *match_likelihood(IplImage *TEMP,IplImage *Img,int *COORD)
 	return(MRES);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //calculate likelihood for each particle
 int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,FLOAT *A_SCORE,IplImage *RTEMP,IplImage *Im,RESULT *CUR)
 {
 	FLOAT alpha = -8.0;
 	int L = 20;
 	int IM_HEI = Im->height;
-	int WID = RTEMP->width/2;		//width of template 
-	int HEI = RTEMP->height/2;	//height of template 
+	int WID = RTEMP->width/2;		//width of template
+	int HEI = RTEMP->height/2;	//height of template
 	int X1 = COORD[0]+WID;		int Y1 = COORD[1]+HEI;			//valid range of tracking
 	int X2 = X1+LIKE->width;	int Y2 = Y1+LIKE->height;
 
@@ -428,7 +380,7 @@ int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,FLOAT *A_SC
 	int *PP = CUR->point;
 	float XC = ((float)*PP+(float)*(PP+2)-(float)L)/2;
 	float YC = ((float)*(PP+1)+(float)*(PP+3)-(float)L)/2;
-	//debug	
+	//debug
 	IplImage *TESTIMAGE = cvCreateImage(cvSize(448,268),RTEMP->depth,RTEMP->nChannels);
 	//for(int ss=0;ss<TESTIMAGE->height;ss++) for(int mm=0;mm<TESTIMAGE->width;mm++) cvSetReal2D(TESTIMAGE,ss,mm,0.0);
 
@@ -449,15 +401,15 @@ int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,FLOAT *A_SC
 			//cvSetReal2D(TESTIMAGE,Y,X,255.0);
 			count++;
 		}
-		else 
+		else
 		{
 			COND->flConfidence[ii]=0.0;
-			COND->flSamples[ii][0]=XC+rand()%L;	
+			COND->flSamples[ii][0]=XC+rand()%L;
 			COND->flSamples[ii][1]=YC+rand()%L;
-			//float XN = XC+rand()%L;	
+			//float XN = XC+rand()%L;
 			//float YN = YC+rand()%L;
 			//cvSetReal2D(TESTIMAGE,(int)YN,(int)XN,255.0);
-		}							
+		}
 	}
 	//debug
 	//cvShowImage("TEST2",TESTIMAGE);	//show image
@@ -465,8 +417,6 @@ int calc_part_likelihood(CvConDensation *COND,CvMat *LIKE,int *COORD,FLOAT *A_SC
 	return(count);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //initialize position of particles
 void init_particle_position(RESULT *CUR,CvConDensation *COND,IplImage *IM,int NUM,int L)
 {
@@ -477,11 +427,11 @@ void init_particle_position(RESULT *CUR,CvConDensation *COND,IplImage *IM,int NU
 	int LX=L,LY=L;
 
 	X-=(LX/2);	Y-=(LY/2);
-	
+
 	//Original filter position
-	for(int ii=0;ii<COND->SamplesNum;ii++) 
+	for(int ii=0;ii<COND->SamplesNum;ii++)
 	{
-		float XN = X+rand()%LX;	
+		float XN = X+rand()%LX;
 		float YN = Y+rand()%LY;
 
 		COND->flSamples[ii][0]=XN;
@@ -497,8 +447,6 @@ void init_particle_position(RESULT *CUR,CvConDensation *COND,IplImage *IM,int NU
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //tracking function
 void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,IplImage *Im,int Lnum,int NUM)
 {
@@ -506,7 +454,7 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,
 	int R_flag=0,F_flag=0;
 	IplImage *RTEMP;
 	int BTH =15;
-	
+
 	//get searching range information
 	int *PP = CUR->point+NUM*4;
 	int WID1 = *(PP+2)-*PP;		int HEI1 = *(PP+3)-*(PP+1);
@@ -514,7 +462,7 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,
 	int L_BORD = PP[0];			int R_BORD = PP[2];
 	PP = LR->point+Lnum*4;
 	int LaX = (*(PP+2)+*PP)/2;	int LaY = (*(PP+3)+*(PP+1))/2;
-	FLOAT XMOVE = (FLOAT)(OrX-LaX); 
+	FLOAT XMOVE = (FLOAT)(OrX-LaX);
 	FLOAT YMOVE = (FLOAT)(OrY-LaY);
 	FLOAT LENGTH =sqrt(XMOVE*XMOVE+YMOVE*YMOVE);
 
@@ -562,7 +510,7 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,
 		RTEMP=cvCreateImage(cvSize(N_WID,N_HEI),Limg->depth,Limg->nChannels);
 		cvResize(Limg,RTEMP);
 	}
-	
+
 	int WID = RTEMP->width; int HEI = RTEMP->height;
 	if(WID<WID1) WID = WID1;
 	if(HEI<HEI1) HEI = HEI1;
@@ -570,9 +518,9 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,
 	HEI = (int)((FLOAT)HEI*0.7);
 	//set searching range
 	int COORD[4] = {OrX-WID,OrY-HEI,OrX+WID,OrY+HEI};
-	if(COORD[0]<0) COORD[0]=0;					
+	if(COORD[0]<0) COORD[0]=0;
 	if(COORD[1]<0) COORD[1]=0;
-	if(COORD[2]>Im->width) COORD[2]=Im->width;	
+	if(COORD[2]>Im->width) COORD[2]=Im->width;
 	if(COORD[3]>Im->height) COORD[3]=Im->height;
 
 	CvMat *Like = match_likelihood(RTEMP,Im,COORD);						//template matching
@@ -588,14 +536,14 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,
 	}
 
 	//debug
-	//CvScalar COL = cvScalar(255.0,200.0,150.0);	
+	//CvScalar COL = cvScalar(255.0,200.0,150.0);
 	//IplImage *tesIM = cvCloneImage(Im);
 	//for(int ss=0;ss<COND->SamplesNum;ss++)
 	//{
 	//	CvPoint PP = cvPoint((int)COND->flSamples[ss][0],(int)COND->flSamples[ss][1]);
 	//	cvCircle(tesIM,PP,2,COL);			//draw each particles
 	//}
-	//CvPoint p1=cvPoint(COORD[0],COORD[1]);		
+	//CvPoint p1=cvPoint(COORD[0],COORD[1]);
 	//CvPoint p2=cvPoint(COORD[2],COORD[3]);
 	//cvRectangle(tesIM,p1,p2,COL,3);
 	//cvNamedWindow("TEST",CV_WINDOW_AUTOSIZE);
@@ -612,9 +560,6 @@ void object_tracking(RESULT *CUR,RESULT *LR,CvConDensation *COND,FLOAT *A_SCORE,
 	if(R_flag==1) cvReleaseImage(&RTEMP);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //function about particle_filter information
 //reset_P_info
 void reset_pinfo(PINFO *PI,RESULT *LR)
@@ -638,8 +583,6 @@ void reset_pinfo(PINFO *PI,RESULT *LR)
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //get partner rectangle
 //link last-frame object
 int *get_partner_rectangle(RESULT *LR,RESULT *CUR,PINFO *PI,int THL)
@@ -647,7 +590,7 @@ int *get_partner_rectangle(RESULT *LR,RESULT *CUR,PINFO *PI,int THL)
 	int C_num = CUR->num;	//# of current frame object
 	int L_num = LR->num;	//# of current frame object
 	int *partner=(int *)calloc(C_num,sizeof(int));	//partner objects
-	int *Lcheck=(int *)calloc(L_num,sizeof(int));	
+	int *Lcheck=(int *)calloc(L_num,sizeof(int));
 	FLOAT *VEL = (FLOAT *)calloc(L_num,sizeof(FLOAT));	//average velocity
 
 	//get average velocity
@@ -671,12 +614,12 @@ int *get_partner_rectangle(RESULT *LR,RESULT *CUR,PINFO *PI,int THL)
 		int Cy = (*(PP+3)+*(PP+1))/2;		//position of current object(Y)
 		int Shtest = THL;								//shortest length
 		int tempP=-1;
-		for(int kk=0;kk<L_num;kk++)	
+		for(int kk=0;kk<L_num;kk++)
 		{
 			if(Lcheck[kk]==0)
 			{
 				int *PP = LR->point+kk*4;
-				int Lx = (*(PP+2)+*(PP))/2;		//position of last frame object(X)		
+				int Lx = (*(PP+2)+*(PP))/2;		//position of last frame object(X)
 				int Ly = (*(PP+3)+*(PP+1))/2;	//position of last frame object(Y)
 				int Length = (int)sqrt((FLOAT)((Lx-Cx)*(Lx-Cx)+(Ly-Cy)*(Ly-Cy)));	//lenght of current and last object
 				//find near and same-type object
@@ -699,8 +642,6 @@ int *get_partner_rectangle(RESULT *LR,RESULT *CUR,PINFO *PI,int THL)
 	s_free(VEL);
 	return(partner);
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update historical-position
 void update_h_position(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,int **NP,int *NSNUM)
 {
@@ -727,8 +668,6 @@ void update_h_position(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,int **NP,int *N
 	s_free(P_I->L_P[LNUM]);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update historical-position
 void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **NVX,FLOAT **NVY,int *NSNUM)
 {
@@ -743,7 +682,7 @@ void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **NVX,FLO
 	float *s_vector=P_I->condens[LNUM]->State;
 
 	if(P_I->condens[LNUM]->DP>2) {NVX[CCNUM][0]=*(s_vector+2);NVY[CCNUM][1]=*(s_vector+3);}
-	else						 {NVX[CCNUM][0]=0;NVY[CCNUM][1]=0;}	
+	else						 {NVX[CCNUM][0]=0;NVY[CCNUM][1]=0;}
 
 	for(int ii=1;ii<=P_COUNT;ii++)
 	{
@@ -752,8 +691,6 @@ void update_h_velocity(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **NVX,FLO
 	s_free(P_I->L_VX[LNUM]); s_free(P_I->L_VY[LNUM]);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update historical-position
 void update_ave_p(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **avep,int *NSNUM)
 {
@@ -765,15 +702,13 @@ void update_ave_p(PINFO *P_I,int LNUM,RESULT *CUR,int CCNUM,FLOAT **avep,int *NS
 
 	for(int ii=1;ii<=P_COUNT;ii++)
 	{
-		avep[CCNUM][2*ii]=LAP[2*(ii-1)]; 
+		avep[CCNUM][2*ii]=LAP[2*(ii-1)];
 		avep[CCNUM][2*ii+1]=LAP[2*(ii-1)+1];
 	}
 	s_free(P_I->ave_p[LNUM]);
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //object prediction
 void object_prediction(RESULT *CUR,CvConDensation **COND)
 {
@@ -784,8 +719,6 @@ void object_prediction(RESULT *CUR,CvConDensation **COND)
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //update P_info
 void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Image,int THL)
 {
@@ -805,7 +738,7 @@ void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Ima
 
 	//update particle filter tracking information
 	for(int ii=0;ii<CUR->num;ii++)
-	{	
+	{
 		if(c_partner[ii]>=0)						//continus_object
 		{
 			CHECK[c_partner[ii]]=1;					//filter information take-over check
@@ -830,11 +763,11 @@ void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Ima
 
 	//release unnecessary condensation
 	for(int ii=0;ii<LR->num;ii++)
-	{		
-		if(CHECK[ii]==0) 
+	{
+		if(CHECK[ii]==0)
 		{
 			cvReleaseConDensation(&P_I->condens[ii]);	//release unnecessary condensation
-			s_free(P_I->L_P[ii]);  
+			s_free(P_I->L_P[ii]);
 			s_free(P_I->L_VX[ii]); s_free(P_I->L_VY[ii]);
 			s_free(P_I->ave_p[ii]);
 		}
@@ -847,11 +780,11 @@ void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Ima
 	s_free(P_I->condens);
 	s_free(P_I->partner);
 	s_free(P_I->se_num);
-	s_free(P_I->L_P); 
+	s_free(P_I->L_P);
 	s_free(P_I->L_VX); s_free(P_I->L_VY);
 	s_free(P_I->ave_p);
 	s_free(CHECK);
-	
+
 	//return
 	P_I->partner = c_partner;
 	P_I->condens = new_cond;
@@ -861,9 +794,6 @@ void update_pinfo(PINFO *P_I,RESULT *LR,RESULT *CUR,FLOAT *A_SCORE,IplImage *Ima
 	P_I->ave_p=new_ave_P;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //get texture of object_rectangle
 void get_texture(RESULT *RES,IplImage *IM)
 {
@@ -885,9 +815,6 @@ void get_texture(RESULT *RES,IplImage *IM)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //finalize object regions
 int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,FLOAT *A_SCORE,IplImage* Image,int THL)
 {
@@ -901,7 +828,7 @@ int finalization(RESULT *CUR,RESULT *LR,PINFO *P_I,FLOAT *A_SCORE,IplImage* Imag
 	{
 		//update particle_filter tracking information
 		update_pinfo(P_I,LR,CUR,A_SCORE,Image,THL);	//update  particle filter information
-		
+
 		//all rectangles are bad-score
 		if(CUR->num==0)
 		{

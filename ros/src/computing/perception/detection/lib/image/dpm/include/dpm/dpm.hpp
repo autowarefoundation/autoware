@@ -9,8 +9,14 @@ struct DPMObject {
 	cv::Rect rect;
 };
 
-extern std::vector<DPMObject>
-dpm_detect_objects(const cv::Mat& image, const std::vector<std::string>& model_files,
-		   float overlap_threshold, int threads);
+extern std::vector<DPMObject> dpm_detect_objects(const cv::Mat& image,
+												  const std::vector<std::string>& model_files,
+												  float overlap_threshold, 
+												  int threads,
+												  double score_threshold,
+												  int lambda,
+												  int num_cells,
+												  int num_bins
+												  );
 
 #endif /* _DPM_H_ */

@@ -43,29 +43,29 @@
 #ifndef __OPENCV_PRECOMP_H__
 #define __OPENCV_PRECOMP_H__
 
-#include <iostream>//Added to check times
-#include "opencv2/contrib/contrib.hpp"//Added to check times
+#include <iostream>
+#include "contrib.hpp"
 
 using namespace std;
-using namespace cv;
+
 
 #include "cvconfig.h"
 
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/core/core_c.h"
-#include "opencv2/core/internal.hpp"
+#include "objdetect.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/core/core_c.h>
+#include <opencv2/core/internal.hpp>
 
+using namespace cv;
 
-
-#include "opencv2/opencv_modules.hpp"
+#include <opencv2/opencv_modules.hpp>
 #ifdef HAVE_OPENCV_HIGHGUI
-#  include "opencv2/highgui/highgui.hpp"
+#include <opencv2/highgui/highgui.hpp>
 #endif
 
 #ifdef HAVE_TEGRA_OPTIMIZATION
-#include "opencv2/objdetect/objdetect_tegra.hpp"
+#include <opencv2/objdetect/objdetect_tegra.hpp>
 #endif
 
 #endif

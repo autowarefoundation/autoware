@@ -31,10 +31,8 @@
 #ifndef _Depth_points_func_
 #define _Depth_points_func_
 
-// custom ros version
-/* #include "MODEL_info.h"		//File information */
-/* #include "Laser_info.h" */
-/* #include "Common.h" */
+#include <vector>
+#include <time.h>
 
 #define X_THETA 0.0
 #define Y_THETA 0.0
@@ -72,7 +70,6 @@ typedef struct {
 }Two_dimensional_vector;
 
 extern void trans_depth_points_to_image_points(Three_dimensional_vector* depth_points, Two_dimensional_vector* image_points, std::vector<float> *distance);
-extern double get_processing_time(struct timespec start, struct timespec end);
 extern void write_file_processing_time(struct timespec start, struct timespec end);
 extern void init_depth_points(Three_dimensional_vector* depth_points);
 extern void print_all_point(double *x_src, double *y_src, double *z_src, double *x_dst, double *y_dst, double *z_dst, double *u, double *v);

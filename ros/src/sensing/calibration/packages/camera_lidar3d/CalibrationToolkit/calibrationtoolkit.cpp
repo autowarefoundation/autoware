@@ -523,7 +523,7 @@ bool CalibrateCameraChessboardROS::grabCalibData()
     camerasub->stopReceiveSlot();
     cv::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
-    bool found;
+    bool found=false;
     switch(boardtype)
     {
     case BoxGrid:
@@ -982,6 +982,9 @@ bool CalibrateCameraVelodyneChessboardBase::calibrateSensor()
         localopt.set_xtol_rel(1e-4);
         localopt.set_min_objective(calibrationCameraVelodyneChessboardTranslationalObjectiveFunc,(void *)&calibrationdata);
         localresult = localopt.optimize(x,calibrationtranslationalerror);
+        if (localresult != nlopt::SUCCESS) {
+            return false;
+        }
     }
 
     cameraextrinsicmat.at<double>(0,3)=x[0];cameraextrinsicmat.at<double>(1,3)=x[1];cameraextrinsicmat.at<double>(2,3)=x[2];
@@ -1003,6 +1006,9 @@ bool CalibrateCameraVelodyneChessboardBase::calibrateSensor()
         localopt.set_xtol_rel(1e-4);
         localopt.set_min_objective(calibrationCameraVelodyneChessboardObjectiveFunc,(void *)&calibrationdata);
         localresult=localopt.optimize(xx,calibrationtranslationalerror);
+        if (localresult != nlopt::SUCCESS) {
+            return false;
+        }
     }
 
     Eigen::Matrix3d rotation;
@@ -1194,7 +1200,7 @@ bool CalibrateCameraVelodyneChessboardROS::grabCalibData()
 
     cv::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
-    bool found;
+    bool found=false;
     switch(boardtype)
     {
     case BoxGrid:
@@ -1533,6 +1539,9 @@ bool CalibrateCameraLidarChessboardBase::calibrateSensor()
         opt.set_xtol_rel(1e-4);
         opt.set_min_objective(calibrationCameraLidarChessboardObjectiveFunc,(void *)&calibrationdata);
         result=opt.optimize(x,calibrationerror);
+        if (result != nlopt::SUCCESS) {
+            return false;
+        }
     }
 
     Eigen::Matrix3d rotation;
@@ -1687,7 +1696,7 @@ bool CalibrateCameraLidarChessboardROS::grabCalibData()
 
     cv::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
-    bool found;
+    bool found=false;
     switch(boardtype)
     {
     case BoxGrid:

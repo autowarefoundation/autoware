@@ -27,8 +27,6 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-
 #ifndef CALCOORDINATES
 #define CALCOORDINATES
 
@@ -36,10 +34,8 @@
 #include <stdio.h>
 #include "structure.h"
 
-
 //this calculation refer to http://vldb.gsi.go.jp/sokuchi/surveycalc/surveycalc/algorithm/xy2bl/xy2bl.htm
 class calcoordinates{
-
 public:
     calcoordinates(){};
 
@@ -120,12 +116,9 @@ public:
         //printf("%f\n",atan(sinh(etad)/cos(xid)));
         
         return res;
-
     }
 
 private:
-
-
     const double a = 6378137;
     const double F = 1/298.257222101;
 
@@ -135,8 +128,6 @@ private:
     double x,y;
     double phi0,lam0;
     RESULT res;
-
 };
-
 
 #endif

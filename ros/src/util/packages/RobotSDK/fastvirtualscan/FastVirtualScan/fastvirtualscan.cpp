@@ -112,7 +112,7 @@ void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, doub
         {
             int j;
             bool flag=1;
-            int startid;
+            int startid=0;
             for(j=0;j<size;j++)
             {
                 if(flag)

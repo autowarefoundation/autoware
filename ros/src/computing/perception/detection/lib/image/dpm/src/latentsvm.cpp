@@ -62,13 +62,13 @@ int convertPoints(int /*countLevel*/, int lambda,
                   int maxXBorder,
                   int maxYBorder)
 {
-    int i, j, bx, by;
+    int bx, by;
     float step, scale;
     step = powf( 2.0f, 1.0f / ((float)lambda) );
 
     computeBorderSize(maxXBorder, maxYBorder, &bx, &by);
 
-    for (i = 0; i < kPoints; i++)
+    for (int i = 0; i < kPoints; i++)
     {
         // scaling factor for root filter
         scale = SIDE_LENGTH * powf(step, (float)(levels[i] - initialImageLevel));
@@ -77,7 +77,7 @@ int convertPoints(int /*countLevel*/, int lambda,
 
         // scaling factor for part filters
         scale = SIDE_LENGTH * powf(step, (float)(levels[i] - lambda - initialImageLevel));
-        for (j = 0; j < n; j++)
+        for (int j = 0; j < n; j++)
         {
             partsDisplacement[i][j].x = (int)((partsDisplacement[i][j].x -
                                                2 * bx + 1) * scale);
@@ -110,8 +110,7 @@ int convertPoints(int /*countLevel*/, int lambda,
 int clippingBoxes(int width, int height,
                   CvPoint *points, int kPoints)
 {
-    int i;
-    for (i = 0; i < kPoints; i++)
+    for (int i = 0; i < kPoints; i++)
     {
         if (points[i].x > width - 1)
         {
@@ -149,7 +148,8 @@ int clippingBoxes(int width, int height,
 // Feature pyramid with nullable border
 */
 CvLSVMFeaturePyramid* createFeaturePyramidWithBorder(IplImage *image,
-                                               int maxXBorder, int maxYBorder)
+                                               int maxXBorder, int maxYBorder,
+											   int lambda, int num_cells, int num_bins)
 {
     int opResult;
     int bx, by;
@@ -157,7 +157,7 @@ CvLSVMFeaturePyramid* createFeaturePyramidWithBorder(IplImage *image,
     CvLSVMFeaturePyramid *H;
 
     // Obtaining feature pyramid
-    opResult = getFeaturePyramid(image, &H);
+    opResult = getFeaturePyramid(image, &H, lambda, num_cells, num_bins);
 
     if (opResult != LATENT_SVM_OK)
     {
@@ -250,13 +250,12 @@ int searchObject(const CvLSVMFeaturePyramid *H, const CvLSVMFilterObject **all_F
 static int estimateBoxes(CvPoint *points, int *levels, int kPoints,
                   int sizeX, int sizeY, CvPoint **oppositePoints)
 {
-    int i;
     float step;
 
     step = powf( 2.0f, 1.0f / ((float)(LAMBDA)));
 
     *oppositePoints = (CvPoint *)malloc(sizeof(CvPoint) * kPoints);
-    for (i = 0; i < kPoints; i++)
+    for (int i = 0; i < kPoints; i++)
     {
         getOppositePoint(points[i], sizeX, sizeY, step, levels[i] - LAMBDA, &((*oppositePoints)[i]));
     }
@@ -405,12 +404,10 @@ int showRootFilterBoxes(IplImage *image,
                         CvScalar color, int thickness,
                         int line_type, int shift)
 {
-    int i;
-    float step;
     CvPoint oppositePoint;
-    step = powf( 2.0f, 1.0f / ((float)LAMBDA));
+    float step = powf( 2.0f, 1.0f / ((float)LAMBDA));
 
-    for (i = 0; i < kPoints; i++)
+    for (int i = 0; i < kPoints; i++)
     {
         // Drawing rectangle for filter
         getOppositePoint(points[i], filter->sizeX, filter->sizeY,
@@ -456,15 +453,14 @@ int showPartFilterBoxes(IplImage *image,
                         CvScalar color, int thickness,
                         int line_type, int shift)
 {
-    int i, j;
     float step;
     CvPoint oppositePoint;
 
     step = powf( 2.0f, 1.0f / ((float)LAMBDA));
 
-    for (i = 0; i < kPoints; i++)
+    for (int i = 0; i < kPoints; i++)
     {
-        for (j = 0; j < n; j++)
+        for (int j = 0; j < n; j++)
         {
             // Drawing rectangles for part filters
             getOppositePoint(partsDisplacement[i][j],
@@ -504,8 +500,7 @@ int showBoxes(IplImage *img,
               const CvPoint *points, const CvPoint *oppositePoints, int kPoints,
               CvScalar color, int thickness, int line_type, int shift)
 {
-    int i;
-    for (i = 0; i < kPoints; i++)
+    for (int i = 0; i < kPoints; i++)
     {
         cvRectangle(img, points[i], oppositePoints[i],
                     color, thickness, line_type, shift);
@@ -538,11 +533,11 @@ int getMaxFilterDims(const CvLSVMFilterObject **filters, int kComponents,
                      const int *kPartFilters,
                      unsigned int *maxXBorder, unsigned int *maxYBorder)
 {
-    int i, componentIndex;
     *maxXBorder = filters[0]->sizeX;
     *maxYBorder = filters[0]->sizeY;
-    componentIndex = kPartFilters[0] + 1;
-    for (i = 1; i < kComponents; i++)
+
+    int componentIndex = kPartFilters[0] + 1;
+    for (int i = 1; i < kComponents; i++)
     {
         if ((unsigned)filters[componentIndex]->sizeX > *maxXBorder)
         {
@@ -591,7 +586,7 @@ int searchObjectThresholdSomeComponents(const CvLSVMFeaturePyramid *H,
                                         int numThreads)
 {
     //int error = 0;
-    int i, j, s, f, componentIndex;
+    int componentIndex;
     unsigned int maxXBorder, maxYBorder;
     CvPoint **pointsArr, **oppPointsArr, ***partsDisplacementArr;
     float **scoreArr;
@@ -610,17 +605,12 @@ int searchObjectThresholdSomeComponents(const CvLSVMFeaturePyramid *H,
     componentIndex = 0;
     *kPoints = 0;
     // For each component perform searching
-    for (i = 0; i < kComponents; i++)
+    for (int i = 0; i < kComponents; i++)
     {
-    	TickMeter tm;
-    	tm.start();
-    	cout << "(latentsvm.cpp)searchObjectThreshold START " << endl;
         int error = searchObjectThreshold(H, &(filters[componentIndex]), kPartFilters[i],
             b[i], maxXBorder, maxYBorder, scoreThreshold,
             &(pointsArr[i]), &(levelsArr[i]), &(kPointsArr[i]),
             &(scoreArr[i]), &(partsDisplacementArr[i]), numThreads);
-        tm.stop();
-        cout << "(latentsvm.cpp)searchObjectThreshold END time = " << tm.getTimeSec() << " sec" << endl;
         if (error != LATENT_SVM_OK)
         {
             // Release allocated memory
@@ -632,24 +622,20 @@ int searchObjectThresholdSomeComponents(const CvLSVMFeaturePyramid *H,
             free(partsDisplacementArr);
             return LATENT_SVM_SEARCH_OBJECT_FAILED;
         }
-        tm.reset();tm.start();
-        cout << "(latentsvm.cpp)estimateBoxes START " << endl;
         estimateBoxes(pointsArr[i], levelsArr[i], kPointsArr[i],
             filters[componentIndex]->sizeX, filters[componentIndex]->sizeY, &(oppPointsArr[i]));
         componentIndex += (kPartFilters[i] + 1);
         *kPoints += kPointsArr[i];
-        tm.stop();
-        cout << "(latentsvm.cpp)estimateBoxes END time = " << tm.getTimeSec() << " sec" << endl;
     }
 
     *points = (CvPoint *)malloc(sizeof(CvPoint) * (*kPoints));
     *oppPoints = (CvPoint *)malloc(sizeof(CvPoint) * (*kPoints));
     *score = (float *)malloc(sizeof(float) * (*kPoints));
-    s = 0;
-    for (i = 0; i < kComponents; i++)
+    int s = 0;
+    for (int i = 0; i < kComponents; i++)
     {
-        f = s + kPointsArr[i];
-        for (j = s; j < f; j++)
+        int f = s + kPointsArr[i];
+        for (int j = s; j < f; j++)
         {
             (*points)[j].x = pointsArr[i][j - s].x;
             (*points)[j].y = pointsArr[i][j - s].y;
@@ -661,13 +647,13 @@ int searchObjectThresholdSomeComponents(const CvLSVMFeaturePyramid *H,
     }
 
     // Release allocated memory
-    for (i = 0; i < kComponents; i++)
+    for (int i = 0; i < kComponents; i++)
     {
         free(pointsArr[i]);
         free(oppPointsArr[i]);
         free(scoreArr[i]);
         free(levelsArr[i]);
-        for (j = 0; j < kPointsArr[i]; j++)
+        for (int j = 0; j < kPointsArr[i]; j++)
         {
             free(partsDisplacementArr[i][j]);
         }
