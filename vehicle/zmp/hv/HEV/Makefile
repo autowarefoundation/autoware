@@ -37,6 +37,8 @@ MOVE          = mv -f
 CHK_DIR_EXISTS= test -d
 MKDIR         = mkdir -p
 
+AUTOWARE_SOCKET	= autoware_socket
+
 ####### Output directory
 
 OBJECTS_DIR   = ./
@@ -56,8 +58,7 @@ OBJECTS	= main.o \
 		HevCnt.o \
 		GameControl.o \
 		moc_mainwindow.o \
-		autoware_socket.o \
-		$(SHM_OBJ)
+		$(AUTOWARE_SOCKET).o \
 
 DIST          = /opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/common/unix.conf \
 		/opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/common/linux.conf \
@@ -277,12 +278,18 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		/usr/local/include/zmp/CanCommunication.h \
 		/usr/local/include/zmp/HevControlCommon.h \
 		ui_mainwindow.h \
-		../autoware_socket/autoware_socket.h
+		../$(AUTOWARE_SOCKET)/autoware_socket.h
 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp 
 
-autoware_socket.o:../autoware_socket/common.cpp ../autoware_socket/can.cpp ../autoware_socket/cmd.cpp mainwindow.h ../autoware_socket/autoware_socket.h ../autoware_socket/actuation.cpp
-	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o autoware_socket.o -nostdlib
+$(AUTOWARE_SOCKET).o:	../$(AUTOWARE_SOCKET)/common.cpp \
+			../$(AUTOWARE_SOCKET)/can.cpp \
+			../$(AUTOWARE_SOCKET)/cmd.cpp mainwindow.h \
+			../$(AUTOWARE_SOCKET)/autoware_socket.h \
+			../$(AUTOWARE_SOCKET)/drv.cpp \
+			../$(AUTOWARE_SOCKET)/str.cpp
+
+	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o $(AUTOWARE_SOCKET).o -nostdlib
 
 
 

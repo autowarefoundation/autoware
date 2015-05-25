@@ -138,12 +138,12 @@ void Getter(CMDDATA &cmddata)
     cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
     cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
     
-    /*
+#if 0 /* log */
       ofstream ofs("/tmp/cmd.log", ios::app);
       ofs << cmddata.vel.tv << " " 
       << cmddata.vel.sv << " " 
       << endl;
-    */
+#endif
 
     cmddata.mode = atoi(cmdVector[2].c_str());
     cmddata.gear = atoi(cmdVector[3].c_str());
@@ -173,7 +173,8 @@ void Prepare(int mode, int gear, void* p)
   MainWindow* main = (MainWindow*)p;
 
   if (mode != old_mode) {
-    main->SetMode(mode);
+    main->SetStrMode(mode); // steering
+    main->SetDrvMode(mode); // accel/brake
     old_mode = mode;
   }
 

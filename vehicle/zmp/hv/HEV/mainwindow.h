@@ -104,7 +104,8 @@ public:
     void AccelerateControl(double current_velocity,double cmd_velocity);
     void DecelerateControl(double current_velocity,double cmd_velocity);
     void StoppingControl(double current_velocity,double cmd_velocity);
-    void SetMode(int mode);
+    void SetStrMode(int mode);
+    void SetDrvMode(int mode);
     void SetGear(int gear);
 
     // cmd
