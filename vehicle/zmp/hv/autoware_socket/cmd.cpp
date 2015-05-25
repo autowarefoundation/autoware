@@ -208,7 +208,7 @@ void Control(vel_data_t vel, void* p)
   int cmd_steering_angle;
 
   //<tku debug  force velocity
-#if 1
+#if 0
   cmd_velocity = 10;
   static int inc_flag = 1;
   if (current_velocity > 5) {
@@ -333,9 +333,10 @@ void Control(vel_data_t vel, void* p)
   //////////////////////////////////////////////////////
   // Steering
   //////////////////////////////////////////////////////
-  for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
+  int steering_internal_period = STEERING_INTERNAL_PERIOD;
+  for (int i = 0; i < cmd_rx_interval/steering_internal_period - 1; i++) {
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
-    usleep(STEERING_INTERNAL_PERIOD * 1000);  
+    usleep(steering_internal_period * 1000);  
     Update(main);
     current_steering_angle = _hev_state.strInf.angle; // degree
   }

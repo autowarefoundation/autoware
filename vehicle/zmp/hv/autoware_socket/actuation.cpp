@@ -345,9 +345,9 @@ void _str_angle_naive(double current_steering_angle, double cmd_steering_angle, 
 #define _STEERING_MAX_SUM 100 //deg*0.1s for I control
 
 // PID params
-#define _K_STEERING_P 130  
-#define _K_STEERING_I 13
-#define _K_STEERING_D 12
+#define _K_STEERING_P 60//130  
+#define _K_STEERING_I 13//13
+#define _K_STEERING_D 10//12
 
 void _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle, HevCnt* hev)
 {
@@ -355,9 +355,9 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
 
   //calc angular velocity
   if (prev_steering_angle == -100000) {
-    prev_steering_angle=current_steering_angle;
+    prev_steering_angle = current_steering_angle;
   }
-  
+
   double current_steering_angvel = (current_steering_angle - prev_steering_angle) / (STEERING_INTERNAL_PERIOD/1000.0);
 
   /////////////////////////////////
@@ -400,11 +400,13 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   prev_steering_angle  = current_steering_angle;
 
   // output log.
+#if 0
   ofstream ofs("/tmp/steering.log", ios::app);
   ofs << cmd_steering_angle << " " 
       << current_steering_angle << " " 
       << current_steering_angvel << " "  
       << target_steering_torque << endl;
+#endif
 }
 
 void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)
@@ -529,7 +531,8 @@ void MainWindow::StoppingControl(double current_velocity,double cmd_velocity)
     if (fabs(current_velocity) > KmhToMs(16.0)) {
       printf("********3*********\n");
       brake_target = HEV_MED_BRAKE + (int)((fabs(current_velocity) - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
-      if (brake_target > high_brake) brake_target = high_brake;
+      if (brake_target > high_brake)
+        brake_target = high_brake;
     }
     int gain = (int)(((double)brake_target)/0.5*cycle_time);
     _brake(brake_target, gain, CURRENT_BRAKE_STROKE(), hev);
