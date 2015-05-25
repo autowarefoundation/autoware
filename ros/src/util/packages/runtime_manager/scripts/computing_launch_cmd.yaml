@@ -484,6 +484,7 @@ params :
   - name  : ndt_slam
     topic : /config/ndt_slam
     msg   : ConfigNdtSlam
+    flags : [ no_init_update ]
     vars  :
     - name      : resolution
       label     : Resolution
