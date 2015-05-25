@@ -141,7 +141,7 @@ WAYPOINT_SAVER::WAYPOINT_SAVER()
             if (distance > interval) {
                 std::cout << "save sequence" << std::endl;
                 if (no_velocity_ == false) {
-                    if (can_time_sec_ == pose_time_sec_ && fabs(can_time_nsec_ - pose_time_nsec_) * NSEC_TO_SEC < 0.1) {
+                    if (can_time_sec_ == pose_time_sec_ && fabs(can_time_nsec_ - pose_time_nsec_) * NSEC_TO_SEC < 1) {
                         std::cout << "waypoint_velocity_saved" << std::endl;
                         last_pose_ = current_pose_;
                         ofs_ << std::fixed << std::setprecision(4) << current_pose_.x << "," << current_pose_.y << "," << current_pose_.z << "," << velocity_ << std::endl;

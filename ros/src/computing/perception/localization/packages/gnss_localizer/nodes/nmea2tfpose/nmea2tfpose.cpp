@@ -45,7 +45,7 @@ static geo_pos_conv geo;
 static ros::Publisher pose_publisher;
 static ros::Publisher stat_publisher;
 static std_msgs::Bool gnss_stat_msg;
-
+static int _plane = 0;
 #define NEW_QQ_SIZE 11
 
 using namespace std;
@@ -168,10 +168,15 @@ static void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "nmea2tf");
-    geo.set_plane(7);
+    ros::init(argc, argv, "nmea2tfpose");
 
     ros::NodeHandle n;
+    ros::NodeHandle private_nh("~");
+
+    private_nh.getParam("plane", _plane);
+    std::cout << "plane number : " << _plane << std::endl;
+
+    geo.set_plane(_plane);
     ros::Subscriber sub = n.subscribe("nmea_sentence", 1000, NmeaCallback);
     pose_publisher = n.advertise<geometry_msgs::PoseStamped>("gnss_pose", 1000);
     stat_publisher = n.advertise<std_msgs::Bool>("/gnss_stat", 100);

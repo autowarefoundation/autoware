@@ -26,6 +26,8 @@ add_message_files(
   steer_cmd.msg
   brake_cmd.msg
   traffic_light.msg
+  ConfigCarFusion.msg
+  ConfigPedestrianFusion.msg
 )
 
 generate_messages(

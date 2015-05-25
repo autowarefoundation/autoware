@@ -346,7 +346,7 @@ void makeQuadrocopterMarker( const tf::Vector3& position )
   InteractiveMarker int_marker;
   int_marker.header.frame_id = "map";
   tf::pointTFToMsg(position, int_marker.pose.position);
-  int_marker.scale = 20;
+  int_marker.scale = 5;
 
   int_marker.name = "quadrocopter";
   int_marker.description = "Quadrocopter";
@@ -576,7 +576,7 @@ int main(int argc, char** argv)
 
   tf::StampedTransform transform;
   try{
-    ros::Time now = ros::Time::now();
+    ros::Time now = ros::Time(0);
     listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
     listener.lookupTransform("/map", "/world", now, transform);
   }
@@ -610,15 +610,17 @@ int main(int argc, char** argv)
   position = tf::Vector3(X-3, Y+0, Z+0);
   make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::ROTATE_3D, position, false );
   */
+  /*
   position = tf::Vector3(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
   make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D, position, true );
+  */
   /*
   position = tf::Vector3( X+3, Y+0, Z+0);
   make6DofMarker( false, visualization_msgs::InteractiveMarkerControl::MOVE_3D, position, false );
   position = tf::Vector3(X-3,Y-3, Z+0);
   makeViewFacingMarker( position );
   */
-  position = tf::Vector3(transform.getOrigin().x()+30, transform.getOrigin().y()+30, transform.getOrigin().z()+30);
+  position = tf::Vector3(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
   makeQuadrocopterMarker( position );
   /*
   position = tf::Vector3( X+3,Y-3, Z+0);

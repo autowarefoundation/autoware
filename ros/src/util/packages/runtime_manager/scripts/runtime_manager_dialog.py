@@ -59,6 +59,8 @@ from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
 from runtime_manager.msg import ConfigWaypointLoader
+from runtime_manager.msg import ConfigCarFusion
+from runtime_manager.msg import ConfigPedestrianFusion
 from ui_socket.msg import mode_cmd
 from ui_socket.msg import gear_cmd
 from ui_socket.msg import Waypoint
@@ -332,13 +334,6 @@ class MyFrame(rtmgr.MyFrame):
 	def OnMainButton(self, event):
 		obj = event.GetEventObject()
 		self.OnLaunchKill_obj(obj)
-		if obj.GetValue() is False:
-			ks = { self.button_perception:[ 'gnss', 'ndt' ], 
-			       self.button_map:[ 'map' ], 
-			       self.button_control:[ 'lf' ] }.get(obj, [])
-			for k in ks:
-				self.stat_set(k, False)
-			self.main_button_update(obj, False)
 
 	def OnDrive(self, event):
 		obj = event.GetEventObject()
@@ -395,6 +390,16 @@ class MyFrame(rtmgr.MyFrame):
 			act = False if b is not push and v else act
 			if act is not None:
 				b.SetValue(act)
+
+	def stat_label_off(self, obj):
+		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
+		if gdic is None:
+			gdic = {}
+		data = std_msgs.msg.Bool(False)
+		for k in gdic.get('stat_topic', []):
+			cb = getattr(self, k + '_stat_callback', None)
+			if cb:
+				cb(data)
 
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
@@ -908,6 +913,7 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
+		self.stat_label_off(obj)
 
 	def OnLaunchKill(self, event):
 		self.OnLaunchKill_obj(event.GetEventObject())
@@ -1004,6 +1010,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def add_config_link_tree_item(self, item, name, gdic, prm):
 		pdic = self.load_dic.get(name, {})
+		self.load_dic[name] = pdic
 		self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
 		item.SetHyperText()
 
@@ -1029,6 +1036,8 @@ class MyFrame(rtmgr.MyFrame):
 			cfg_obj.Enable(not v)
 
 		cmd_dic[obj] = (cmd, proc)
+		if not v:
+			self.stat_label_off(obj)
 
 	def kill_all(self):
 		all = self.all_procs[:] # copy
@@ -1053,6 +1062,7 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = (v[0], proc) if proc else v
 		cmd_dic[ obj ] = (cmd, None)
 		self.launch_kill(False, 'dmy', proc, obj=obj)
+		self.stat_label_off(obj)
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
@@ -1309,7 +1319,8 @@ class ParamPanel(wx.Panel):
 				vp.Enable(proc is None)
 
 		self.SetSizer(szr)
-		self.update()
+		if 'no_init_update' not in self.prm.get('flags', []):
+			self.update()
 
 	def update(self):
 		update_func = self.gdic.get('update_func')
@@ -1607,15 +1618,8 @@ class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
 		self.pub.publish(msg)
 		
 	def OnOk(self, event):
-		self.panel.update()
 		self.panel.detach_func()
 		self.EndModal(0)
-
-	def OnCancel(self, event):
-		self.panel.pdic.update(self.pdic_bak) # restore
-		self.panel.detach_func()
-		self.panel.update()
-		self.EndModal(-1)
 
 class MyApp(wx.App):
 	def OnInit(self):
@@ -1699,6 +1703,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 
 def file_dialog(parent, tc, path_inf_dic={}):
 	path = tc.GetValue()
+	path = get_top(path.split(','), path)
 	(dn, fn) = os.path.split(path)
 	path_type = path_inf_dic.get('path_type')
 	if path_type == 'dir':

@@ -52,8 +52,8 @@ void MainWindow::SetMode(int mode)
     cout << "switching to PROGRAM" << endl;
     hev->SetDrvMode(MODE_PROGRAM);
     usleep(100000);
-    hev->SetDrvCMode(CONT_MODE_VELOCITY); // velocity mode not stroke
-    //hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity
+    //hev->SetDrvCMode(CONT_MODE_VELOCITY); // velocity mode not stroke
+    hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity
     usleep(200000);
     hev->SetDrvServo(SERVO_TRUE);
     usleep(200000);
@@ -76,7 +76,7 @@ void MainWindow::SetGear(int gear)
   double current_velocity = _hev_state.drvInf.veloc; // km/h
 
   // double check if the velocity is zero or not,
-  // though SetGear() should not be called when driving.
+  // though SetGeark() should not be called when driving.
   if (current_velocity != 0) {
     return;
   }
@@ -108,7 +108,7 @@ void MainWindow::SetGear(int gear)
 
 bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 {
-  static int old_accel = -1;
+  static int old_accel = 0;
 
   // for small increments of change in accel pedal,
   // prius sometimes does not apply 
@@ -118,9 +118,9 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 
   int cmd_accel = current_accel;
 
-  if (old_accel != -1) 
-    cmd_accel = old_accel;
-
+  cout << "current_accel = " << current_accel << endl;
+  cout << "target_accel = " << target_accel << endl;
+  cout << "gain = " << gain << endl;
   cout << "old_accel = " << old_accel << endl;
   cout << "cmd_accel = " << cmd_accel << endl;
 
@@ -148,7 +148,7 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
   old_accel = cmd_accel;
 
   if (target_accel == current_accel){ 
-    old_accel = -1;
+    old_accel = 0;
     return true;
   }
 
@@ -157,7 +157,7 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 
 bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev) 
 {
-  static int old_brake = -1;
+  static int old_brake = 0;
 
   // for small increments of change in brake pedal,
   // prius sometimes does not apply brake
@@ -166,10 +166,12 @@ bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev)
   // to actual state
 
   int cmd_brake = current_brake;
-
-  if (old_brake != -1) 
+  if (old_brake != 0) 
     cmd_brake = old_brake;
 
+  cout << "current_brake = " << current_brake << endl;
+  cout << "target_brake = " << target_brake << endl;
+  cout << "gain = " << gain << endl;
   cout << "old_brake = " << old_brake << endl;
   cout << "cmd_brake = " << cmd_brake << endl;
 
@@ -329,10 +331,10 @@ void _str_angle_naive(double current_steering_angle, double cmd_steering_angle, 
   cout << "target_steering_angle = " << target_steering_angle << endl;
 
   // output log.
-  ofstream ofs("/tmp/steering.log", ios::app);
+  /* ofstream ofs("/tmp/steering.log", ios::app);
   ofs << target_steering_angle << " " 
       << current_steering_angle << " " 
-      << cmd_steering_angle << endl;
+      << cmd_steering_angle << endl;*/
 }
 
 // for torque control
@@ -343,9 +345,9 @@ void _str_angle_naive(double current_steering_angle, double cmd_steering_angle, 
 #define _STEERING_MAX_SUM 100 //deg*0.1s for I control
 
 // PID params
-#define _K_STEERING_P 130  
-#define _K_STEERING_I 13
-#define _K_STEERING_D 12
+#define _K_STEERING_P 60//130  
+#define _K_STEERING_I 13//13
+#define _K_STEERING_D 10//12
 
 void _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle, HevCnt* hev)
 {
@@ -353,9 +355,9 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
 
   //calc angular velocity
   if (prev_steering_angle == -100000) {
-    prev_steering_angle=current_steering_angle;
+    prev_steering_angle = current_steering_angle;
   }
-  
+
   double current_steering_angvel = (current_steering_angle - prev_steering_angle) / (STEERING_INTERNAL_PERIOD/1000.0);
 
   /////////////////////////////////
@@ -398,11 +400,13 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   prev_steering_angle  = current_steering_angle;
 
   // output log.
+#if 0
   ofstream ofs("/tmp/steering.log", ios::app);
   ofs << cmd_steering_angle << " " 
       << current_steering_angle << " " 
       << current_steering_angvel << " "  
       << target_steering_torque << endl;
+#endif
 }
 
 void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)
@@ -514,17 +518,21 @@ void MainWindow::StoppingControl(double current_velocity,double cmd_velocity)
       
   // decelerate by using brake	
   if (cmd_velocity == 0.0 && fabs(current_velocity) < 0.1) {
+    printf("********1*********\n");
     // nearly at stop/at stop to stop -> apply full brake
     int gain = (int)(((double)HEV_MAX_BRAKE)/1.0*cycle_time);
     _brake(HEV_MAX_BRAKE, gain, CURRENT_BRAKE_STROKE(), hev);
   }
   else {
+    printf("********2*********\n");
     // one second is approximately how fast full brakes applied in sharp stop
     int high_brake = HEV_MAX_BRAKE-500;
     int brake_target = HEV_MED_BRAKE;
     if (fabs(current_velocity) > KmhToMs(16.0)) {
+      printf("********3*********\n");
       brake_target = HEV_MED_BRAKE + (int)((fabs(current_velocity) - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
-      if (brake_target > high_brake) brake_target = high_brake;
+      if (brake_target > high_brake)
+        brake_target = high_brake;
     }
     int gain = (int)(((double)brake_target)/0.5*cycle_time);
     _brake(brake_target, gain, CURRENT_BRAKE_STROKE(), hev);
