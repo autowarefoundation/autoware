@@ -304,7 +304,7 @@ return true;
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "twist_filter");
+    ros::init(argc, argv, "distance_keep");
     TwistFilter tf;
 
     ros::Rate loop_rate(LOOP_RATE);
