@@ -1319,7 +1319,8 @@ class ParamPanel(wx.Panel):
 				vp.Enable(proc is None)
 
 		self.SetSizer(szr)
-		self.update()
+		if 'no_init_update' not in self.prm.get('flags', []):
+			self.update()
 
 	def update(self):
 		update_func = self.gdic.get('update_func')
@@ -1617,15 +1618,8 @@ class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
 		self.pub.publish(msg)
 		
 	def OnOk(self, event):
-		self.panel.update()
 		self.panel.detach_func()
 		self.EndModal(0)
-
-	def OnCancel(self, event):
-		self.panel.pdic.update(self.pdic_bak) # restore
-		self.panel.detach_func()
-		self.panel.update()
-		self.EndModal(-1)
 
 class MyApp(wx.App):
 	def OnInit(self):
