@@ -1,12 +1,11 @@
 <!-- -->
 <launch>
 
-	<arg name="detection_range" default="3.0" /> <!-- meter -->
-	<arg name="stop_distance" default="5.0" /> <!-- meter -->
+	<arg name="detection_range" default="1.0" /> <!-- meter -->
 
-	<!-- rosrun lane_follower pure_pursuit _stop_distance:=0 _detection_range:=0 -->
-	<node pkg="lane_follower" type="twist_filter" name="twist_filter" output="screen">
-		<param name="stop_distance" value="$(arg stop_distance)" />
+
+	<!-- rosrun lane_follower distance_keep _detection_range:=0 -->
+	<node pkg="lane_follower" type="distance_keep" name="distance_keep" output="screen">
 		<param name="detection_range" value="$(arg detection_range)" />
 	</node>
 
