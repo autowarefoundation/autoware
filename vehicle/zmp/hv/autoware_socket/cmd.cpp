@@ -31,15 +31,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <queue>
 
 #include "mainwindow.h"
 #include "autoware_socket.h"
 
 double cycle_time = 0.0;
-double estimate_accel = 0.0;
-
-#define OUTPUT_LOG
 
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
@@ -194,13 +190,7 @@ void Control(vel_data_t vel, void* p)
   MainWindow* main = (MainWindow*)p;
   static long long int old_tstamp = 0;
 
-  // calculate current time
-  cycle_time = (_hev_state.tstamp - old_tstamp) / 1000.0;
-
-  queue<double> vel_buffer;
-  static uint vel_buffer_size = 10; 
-
-  double old_velocity = 0.0;
+  cycle_time = (_hev_state.tstamp - old_tstamp) / 1000.0; /* seconds */
 
   double current_velocity = _hev_state.drvInf.veloc; // km/h
   double current_steering_angle = _hev_state.strInf.angle; // degree
@@ -208,8 +198,7 @@ void Control(vel_data_t vel, void* p)
   int cmd_velocity = vel.tv * 3.6;
   int cmd_steering_angle;
 
-  //<tku debug  force velocity
-#if 0
+#if 0 /* just for a debug */
   cmd_velocity = 10;
   static int inc_flag = 1;
   if (current_velocity > 5) {
@@ -219,7 +208,6 @@ void Control(vel_data_t vel, void* p)
   if (!inc_flag)
     cmd_velocity = 0;
 #endif
-  // />
 
   // We assume that the slope against the entire arc toward the 
   // next waypoint is almost equal to that against 
@@ -236,108 +224,29 @@ void Control(vel_data_t vel, void* p)
     cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
   }
 
-  // estimate current acceleration.
-  vel_buffer.push(fabs(current_velocity));
-  
-  if (vel_buffer.size() > vel_buffer_size) {
-    old_velocity = vel_buffer.front();
-#if 0 // debug
-    cout << "old_velocity = " << old_velocity << endl;
-    cout << "current_velocity = " << current_velocity << endl;
-#endif
-    vel_buffer.pop(); // remove old_velocity from the queue.
-    estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
-  }
-
   cout << "Current: " << "vel = " << current_velocity 
        << ", str = " << current_steering_angle << endl; 
   cout << "Command: " << "vel = " << cmd_velocity 
        << ", str = " << cmd_steering_angle << endl; 
-  cout << "Estimate Accel: " << estimate_accel << endl; 
 
-  // TRY TO INCREASE STEERING
-  //  sv +=0.1*sv;
-
-  // if tv non zero then check if in drive gear first
-  //--------------------------------------------------------------
-  // if in neutral and get +'ve cmd vel
-  //    - put brake on
-  //    - change shift to drive
-  // if in neutral and vel cmd 0
-  //    - release brake if pressed
-  
-  //------------------------------------------------------
-  // if shift in drive
-  //     - if cmd vel > 0 && brake pressed
-  //              - release brake
-  //     - if cmd vel == 0
-  //              - if cur_vel < 0.1, nearly stopped
-  //                     - full brake too stop, wait, and shift to neutral
-  //              - else - brake to HEV_MED_BRAKE
-  //                       - decellerate until nearly stopped
-  // now motion if in drift mode and shift is in drive
-  
- 
   //////////////////////////////////////////////////////
   // Accel and Brake
   //////////////////////////////////////////////////////
 
-  if (cmd_velocity < STROKE_CTRL_LIMIT) {
-    if (fabs(cmd_velocity) >= fabs(current_velocity) 
-        && fabs(cmd_velocity) > 0.0 
-        && fabs(current_velocity) <= KmhToMs(SPEED_LIMIT) ) {
-      //accelerate !!!!!!!!!!!!!!!!
-      cout << "AccelerateControl(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-      main->AccelerateControl(current_velocity, cmd_velocity);
-    } 
-    else if (fabs(cmd_velocity) < fabs(current_velocity) 
-             && fabs(cmd_velocity) > 0.0) {
-      //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      cout << "DecelerateControl(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-      main->DecelerateControl(current_velocity, cmd_velocity); 
-    }
-    else if (cmd_velocity == 0.0 && fabs(current_velocity) != 0) {
-      //Stopping!!!!!!!!!!!
-      cout << "StoppingControl(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-      main->StoppingControl(current_velocity, cmd_velocity);
-    }
-    else {
-      cout << "NothingAccelBrake(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-    }
-  } else { /* HEV velocity control */
-    double vel_diff_inc = 1.0;
-    double vel_diff_dec = 2.0;
-    double vel_offset_inc = 2;
-    double vel_offset_dec = 4;
-    if (cmd_velocity > current_velocity){
-      double increase_velocity = current_velocity + vel_diff_inc;
-      main->VelocityControl(increase_velocity + vel_offset_inc);
-      cout << "increase: " << "vel = " << increase_velocity  << endl; 
-    } else {
-      double decrease_velocity = current_velocity - vel_diff_dec;
-      if (decrease_velocity > vel_offset_dec) {
-        main->VelocityControl(decrease_velocity - vel_offset_dec);
-      }
-      else if (current_velocity > 0) {
-        decrease_velocity = 0;
-        main->VelocityControl(0);
-      }
-      cout << "decrease: " << "vel = " << decrease_velocity  << endl; 
-    }
+  if (cmd_velocity < STROKE_SPEED_LIMIT) {
+    main->StrokeControl(current_velocity, cmd_velocity);
   }
-    /*
-    */    
+  else { /* HEV velocity control */
+    main->VelocityControl(current_velocity, cmd_velocity);
+  }
+
   //////////////////////////////////////////////////////
   // Steering
   //////////////////////////////////////////////////////
-  int steering_internal_period = STEERING_INTERNAL_PERIOD;
-  for (int i = 0; i < cmd_rx_interval/steering_internal_period - 1; i++) {
+
+  for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
-    usleep(steering_internal_period * 1000);  
+    usleep(STEERING_INTERNAL_PERIOD * 1000);  
     Update(main);
     current_steering_angle = _hev_state.strInf.angle; // degree
   }

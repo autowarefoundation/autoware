@@ -45,15 +45,7 @@ using namespace zmp::hev;
 #define CMD_GEAR_B 3
 #define CMD_GEAR_N 4
 
-#define ANGULAR_CORRECTION 1.2
-#define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
-#define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
-#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
-#define STEERING_ANGLE_MAX 666 // max angle of steering
-#define STEERING_ANGLE_LIMIT 550 // could be STEERING_ANGLE_MAX but...
-#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
 #define MILLISECOND 1000  
-#define SPEED_LIMIT 60.0 // km/h
 
 #define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
 #define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
@@ -61,7 +53,16 @@ using namespace zmp::hev;
 #define SERVO_TRUE 0x10 //HEV Servo ON = 0x10
 #define SERVO_FALSE 0x00 //HEV Servo OFF = 0x00
 
-#define STROKE_CTRL_LIMIT 30 // use stroke until 30 km/h
+// prius config
+#define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
+#define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
+#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
+#define STEERING_ANGLE_MAX 666 // max angle of steering
+#define STEERING_ANGLE_LIMIT 550 // could be STEERING_ANGLE_MAX but...
+#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
+
+#define SPEED_LIMIT 80.0 // km/h
+#define STROKE_SPEED_LIMIT 80 // use stroke until 80 km/h
 #define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
 #define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 
 #define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 

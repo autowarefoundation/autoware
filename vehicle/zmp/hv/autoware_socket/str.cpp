@@ -111,7 +111,7 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   if (target_steering_torque > _STEERING_MAX_TORQUE) {
     target_steering_torque = _STEERING_MAX_TORQUE;
   }
-  if (target_steering_torque <-_STEERING_MAX_TORQUE) {
+  if (target_steering_torque < -_STEERING_MAX_TORQUE) {
     target_steering_torque = -_STEERING_MAX_TORQUE;
   }
 
