@@ -933,7 +933,6 @@ rosrun map_file vector_map_loader <csv files>
 
 #endif
   marker.id = 0;
-  marker.header.stamp = ros::Time::now();
 
   // road data
   if(lanes.size() > 0 && dtlanes.size() <= 0) {
