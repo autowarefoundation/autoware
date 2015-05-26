@@ -32,83 +32,78 @@
 #include "autoware_socket.h"
 
 static int target_accel_level = 0;
-static double steering_diff_sum = 0;
+static double accel_diff_sum = 0;
+static double brake_diff_sum = 0;
 
-void MainWindow::SetMode(int mode)
+void MainWindow::SetDrvMode(int mode)
 {
   switch (mode) {
   case CMD_MODE_MANUAL:
-    cout << "switching to MANUAL" << endl;
+    cout << "Switching to MANUAL (Accel/Brake)" << endl;
     hev->SetDrvMode(MODE_MANUAL);
-    usleep(200000);
-    hev->SetStrMode(MODE_MANUAL);
     usleep(200000);
     hev->SetDrvServo(SERVO_FALSE);
     usleep(200000);
-    hev->SetStrServo(SERVO_FALSE);
-    usleep(200000);
     break;
   case CMD_MODE_PROGRAM:
-    cout << "switching to PROGRAM" << endl;
+    cout << "Switching to PROGRAM (Accel/Brake)" << endl;
     hev->SetDrvMode(MODE_PROGRAM);
-    usleep(100000);
-    hev->SetDrvCMode(CONT_MODE_VELOCITY); // velocity mode not stroke
-    //hev->SetDrvCMode(CONT_MODE_STROKE); // stroke mode not velocity
+    usleep(200000);
+    hev->SetDrvCMode(CONT_MODE_STROKE);
+    //hev->SetDrvCMode(CONT_MODE_VELOCITY);
     usleep(200000);
     hev->SetDrvServo(SERVO_TRUE);
     usleep(200000);
-    hev->SetStrMode(MODE_PROGRAM);
-    usleep(200000);
-    hev->SetStrCMode(CONT_MODE_TORQUE); // torque mode not angle
-    //hev->SetStrCMode(CONT_MODE_ANGLE); // angle mode not torque
-    usleep(200000);
-    hev->SetStrServo(SERVO_TRUE);
-    usleep(200000);
-    steering_diff_sum = 0;
     break;
   default:
     cout << "Unknown mode: " << mode << endl;
   }
+
+  accel_diff_sum = 0;
+  brake_diff_sum = 0;
 }
 
 void MainWindow::SetGear(int gear)
 {
   double current_velocity = _hev_state.drvInf.veloc; // km/h
 
-  // double check if the velocity is zero or not,
-  // though SetGear() should not be called when driving.
+  // double check if the velocity is zero,
+  // SetGear() should not be called when driving.
   if (current_velocity != 0) {
     return;
   }
 
   hev->SetDrvStroke(0);
+  usleep(200000);
   hev->SetBrakeStroke(HEV_MAX_BRAKE);
+  usleep(200000);
 
   switch (gear) {
   case CMD_GEAR_D:
-    cout << "shifting to Gear D" << endl;
+    cout << "Shifting to Gear D" << endl;
     hev->SetDrvShiftMode(SHIFT_POS_D);
     break;
   case CMD_GEAR_R:
-    cout << "shifting to Gear R" << endl;
+    cout << "Shifting to Gear R" << endl;
     hev->SetDrvShiftMode(SHIFT_POS_R);
     break;
   case CMD_GEAR_B:
-    cout << "shifting to Gear B" << endl;
+    cout << "Shifting to Gear B" << endl;
     hev->SetDrvShiftMode(SHIFT_POS_B);
     break;
   case CMD_GEAR_N:
-    cout << "shifting to Gear N" << endl;
+    cout << "Shifting to Gear N" << endl;
     hev->SetDrvShiftMode(SHIFT_POS_N);
     break;
   default:
     cout << "Unknown gear: " << gear << endl;    
   }
+  usleep(200000);
 }
 
 bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 {
-  static int old_accel = -1;
+  static int old_accel = 0;
 
   // for small increments of change in accel pedal,
   // prius sometimes does not apply 
@@ -118,9 +113,9 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 
   int cmd_accel = current_accel;
 
-  if (old_accel != -1) 
-    cmd_accel = old_accel;
-
+  cout << "current_accel = " << current_accel << endl;
+  cout << "target_accel = " << target_accel << endl;
+  cout << "gain = " << gain << endl;
   cout << "old_accel = " << old_accel << endl;
   cout << "cmd_accel = " << cmd_accel << endl;
 
@@ -148,7 +143,7 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
   old_accel = cmd_accel;
 
   if (target_accel == current_accel){ 
-    old_accel = -1;
+    old_accel = 0;
     return true;
   }
 
@@ -157,7 +152,7 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
 
 bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev) 
 {
-  static int old_brake = -1;
+  static int old_brake = 0;
 
   // for small increments of change in brake pedal,
   // prius sometimes does not apply brake
@@ -166,10 +161,12 @@ bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev)
   // to actual state
 
   int cmd_brake = current_brake;
-
-  if (old_brake != -1) 
+  if (old_brake != 0) 
     cmd_brake = old_brake;
 
+  cout << "current_brake = " << current_brake << endl;
+  cout << "target_brake = " << target_brake << endl;
+  cout << "gain = " << gain << endl;
   cout << "old_brake = " << old_brake << endl;
   cout << "cmd_brake = " << cmd_brake << endl;
 
@@ -198,217 +195,6 @@ bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev)
   }
 
   return false;
-}
-
-//#define _VERY_NAIVE
-#define _DELTA_LIMIT 90
-#define _DELTA_LIMIT_STRICT 10
-#define _STEERING_ANGLE_INC_INC 5
-#define _FAST_STEERING_THRESHOLD 270
-void _str_angle_naive(double current_steering_angle, double cmd_steering_angle, HevCnt* hev)
-{
-  double delta = cmd_steering_angle - current_steering_angle;
-  double target_steering_angle = cmd_steering_angle;
-
-  if (delta > _DELTA_LIMIT) {
-    target_steering_angle = current_steering_angle + _DELTA_LIMIT;
-    cout << "steering angle rounded to: " <<  target_steering_angle << endl;
-  }
-  else if (delta < -_DELTA_LIMIT) {
-    target_steering_angle = current_steering_angle - _DELTA_LIMIT;
-    cout << "steering angle rounded to: " <<  target_steering_angle << endl;
-  }
-
-  if (target_steering_angle > STEERING_ANGLE_LIMIT) {
-    target_steering_angle = STEERING_ANGLE_LIMIT;
-    cout << "steering angle limited to: " <<  target_steering_angle << endl;
-  }
-  else if (target_steering_angle < -STEERING_ANGLE_LIMIT) {
-    target_steering_angle = -STEERING_ANGLE_LIMIT;  
-    cout << "steering angle limited to: " <<  target_steering_angle << endl;
-  }
-
-#ifdef _VERY_NAIVE
-  if (delta > _DELTA_LIMIT_STRICT) {
-    target_steering_angle = current_steering_angle + _DELTA_LIMIT_STRICT;
-    cout << "steering angle forced to: " <<  target_steering_angle << endl;
-  }
-  else if (delta < -_DELTA_LIMIT_STRICT) {
-    str = current_steering_angle - _DELTA_LIMIT_STRICT;
-    cout << "steering angle forced to: " <<  str << endl;
-  }
-
-  // set the steering angle to HEV.
-  // note that we need *10 to input the steering.
-  // a unit of steering for "set" is 0.1 degree 
-  // while that for "get" is 1 degree.
-  hev->SetStrAngle(target_steering_angle*10);
-#else
-  // quick hack to smoothen steering (naive P control).
-  // if the target steering increase is 10, it is going to be:
-  // 1(1+1), 3(1+2), 6(3+3), 8(6+2), 9(8+1)...
-
-  int delta_tmp = 0; // temporary delta
-  int target_tmp = current_steering_angle; // temporary steering
-  int inc = 0; // increment value
-  int inc_inc = 0;
-  int second_half = 0; // just a flag
-
-  if (fabs(delta) < _FAST_STEERING_THRESHOLD) {
-    inc_inc = _STEERING_ANGLE_INC_INC; // slow rotation
-  } 
-  else {
-    inc_inc = _STEERING_ANGLE_INC_INC * 2; // fast rotation
-  }
-
-  if ((delta > 0 && delta < inc_inc) || (delta < 0 && delta > -inc_inc)) {
-    hev->SetStrAngle(target_steering_angle*10);
-  }
-  else if (delta > 0) {
-    for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
-      if (delta_tmp < delta / 2) {
-        inc += inc_inc;
-      }
-      else {
-        inc -= inc_inc;
-        if (second_half == 0) {
-          inc += inc_inc;
-        }
-        second_half = 1;
-      }
-
-      if (inc < 0) {
-        break;
-      }
-
-      delta_tmp += inc;
-      target_tmp = current_steering_angle + inc;
-
-      if (target_tmp < target_steering_angle) {
-        hev->SetStrAngle(target_tmp*10);
-      }
-      else {
-        hev->SetStrAngle(target_steering_angle*10);
-        break;
-      }
-      usleep(STEERING_INTERNAL_PERIOD*1000);
-    }
-  }
-  else {
-    for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
-      if (delta_tmp > delta / 2) {
-        inc -= inc_inc;
-      }
-      else {
-        inc += inc_inc;
-        if (second_half == 0) {
-          inc -= inc_inc;
-        }
-        second_half = 1;
-      }
-
-      if (inc > 0) {
-        break;
-      }
-
-      delta_tmp += inc;
-      target_tmp = current_steering_angle + inc;
-
-      if (target_tmp > target_steering_angle) {
-        hev->SetStrAngle(target_tmp*10);
-      }
-      else {
-        hev->SetStrAngle(target_steering_angle*10);
-        break;
-      }
-      usleep(STEERING_INTERNAL_PERIOD*1000);
-    }
-  }
-#endif
-
-  cout << "target_steering_angle = " << target_steering_angle << endl;
-
-  // output log.
-  ofstream ofs("/tmp/steering.log", ios::app);
-  ofs << target_steering_angle << " " 
-      << current_steering_angle << " " 
-      << cmd_steering_angle << endl;
-}
-
-// for torque control
-#define _STEERING_MAX_ANGVELSUM 1000
-#define _K_STEERING_TORQUE 10
-#define _K_STEERING_TORQUE_I 0.5
-#define _STEERING_MAX_TORQUE 2000
-#define _STEERING_MAX_SUM 100 //deg*0.1s for I control
-
-// PID params
-#define _K_STEERING_P 130  
-#define _K_STEERING_I 13
-#define _K_STEERING_D 12
-
-void _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle, HevCnt* hev)
-{
-  static double prev_steering_angle = -100000;
-
-  //calc angular velocity
-  if (prev_steering_angle == -100000) {
-    prev_steering_angle=current_steering_angle;
-  }
-  
-  double current_steering_angvel = (current_steering_angle - prev_steering_angle) / (STEERING_INTERNAL_PERIOD/1000.0);
-
-  /////////////////////////////////
-  // angle PID control
-  double steering_diff = cmd_steering_angle - current_steering_angle; 
-  steering_diff_sum += steering_diff;
-
-  if (steering_diff_sum > _STEERING_MAX_SUM) {
-    steering_diff_sum = _STEERING_MAX_SUM;
-  }
-  if (steering_diff_sum < -_STEERING_MAX_SUM) {
-    steering_diff_sum = -_STEERING_MAX_SUM;
-  }
-
-  static double angvel_diff = 0;
-  angvel_diff = angvel_diff * 0.0 - current_steering_angvel * 1; 
-
-  // magic params...
-  double k_d = _K_STEERING_D;
-  if (fabs(steering_diff) < 10) {
-    k_d = _K_STEERING_D / 2;
-  }
-  
-  // use k_d instead of _K_STEERING_D.
-  double target_steering_torque = steering_diff * _K_STEERING_P + steering_diff_sum * _K_STEERING_I + angvel_diff * k_d;
-
-  // clip
-  if (target_steering_torque > _STEERING_MAX_TORQUE) {
-    target_steering_torque = _STEERING_MAX_TORQUE;
-  }
-  if (target_steering_torque <-_STEERING_MAX_TORQUE) {
-    target_steering_torque = -_STEERING_MAX_TORQUE;
-  }
-
-  //cout << "steering_angle = " << current_steering_angle << endl;
-  //cout << "steering_angvel = " << current_steering_angvel << endl;
-
-  hev->SetStrTorque(target_steering_torque);
-
-  prev_steering_angle  = current_steering_angle;
-
-  // output log.
-  ofstream ofs("/tmp/steering.log", ios::app);
-  ofs << cmd_steering_angle << " " 
-      << current_steering_angle << " " 
-      << current_steering_angvel << " "  
-      << target_steering_torque << endl;
-}
-
-void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)
-{
-  //_str_angle_naive(current_steering_angle, cmd_steering_angle, hev);
-  _str_torque_pid_control(current_steering_angle, cmd_steering_angle, hev);
 }
 
 void MainWindow::VelocityControl(double cmd_velocity)
@@ -524,11 +310,10 @@ void MainWindow::StoppingControl(double current_velocity,double cmd_velocity)
     int brake_target = HEV_MED_BRAKE;
     if (fabs(current_velocity) > KmhToMs(16.0)) {
       brake_target = HEV_MED_BRAKE + (int)((fabs(current_velocity) - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
-      if (brake_target > high_brake) brake_target = high_brake;
+      if (brake_target > high_brake)
+        brake_target = high_brake;
     }
     int gain = (int)(((double)brake_target)/0.5*cycle_time);
     _brake(brake_target, gain, CURRENT_BRAKE_STROKE(), hev);
   }
 }
-
-

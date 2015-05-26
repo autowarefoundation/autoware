@@ -50,7 +50,7 @@ using namespace zmp::hev;
 #define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
 #define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
 #define STEERING_ANGLE_MAX 666 // max angle of steering
-#define STEERING_ANGLE_LIMIT 600 // could be STEERING_ANGLE_MAX but...
+#define STEERING_ANGLE_LIMIT 550 // could be STEERING_ANGLE_MAX but...
 #define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
 #define MILLISECOND 1000  
 #define SPEED_LIMIT 60.0 // km/h
@@ -61,17 +61,18 @@ using namespace zmp::hev;
 #define SERVO_TRUE 0x10 //HEV Servo ON = 0x10
 #define SERVO_FALSE 0x00 //HEV Servo OFF = 0x00
 
+#define STROKE_CTRL_LIMIT 30 // use stroke until 30 km/h
 #define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
 #define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 
 #define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 
-#define ACCEL_PEDAL_STEP_BIG 10
+#define ACCEL_PEDAL_STEP_BIG 9//7//10
 #define ACCEL_PEDAL_RELEASE_STEP 100 //release value for accel pedal
 #define ACCEL_PEDAL_MAX 1000 
 #define ACCEL_LIMIT 8.0 // km/h
 
-#define HEV_LIGHT_BRAKE 400 //brake pedal
+#define HEV_LIGHT_BRAKE 500 //400 //brake pedal
 #define HEV_MED_BRAKE 1000
-#define HEV_MED2_BRAKE 2000
+#define HEV_MED2_BRAKE 3000 //2000
 #define HEV_MAX_BRAKE 4096 //max brake pedal value 
 
 #define CURRENT_ACCEL_STROKE() _hev_state.drvInf.actualPedalStr
