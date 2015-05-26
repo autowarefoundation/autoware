@@ -4,6 +4,9 @@ project(lane_follower)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  pcl_ros
+  pcl_conversions
+  sensor_msgs
   tf
   gnss
   message_generation
