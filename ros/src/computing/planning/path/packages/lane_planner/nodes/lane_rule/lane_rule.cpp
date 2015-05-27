@@ -255,7 +255,7 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	visualization_msgs::MarkerArray velocities;
 	visualization_msgs::Marker velocity;
 	velocity.header = header;
-	velocity.ns = "velocity";
+	velocity.ns = "waypoint_velocity";
 
 	if (waypoint_count > 0) {
 		velocity.action = visualization_msgs::Marker::DELETE;
