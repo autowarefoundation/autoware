@@ -3,6 +3,7 @@
 
   <!-- send table.xml to param server -->
   <arg name="scanner" default="velodyne" />
+  <arg name="queue_size" default="1000" />
   <arg name="model" default="$(find points_localizer)/urdf/prius_model.urdf"/>
   <arg name="gui" default="False" />
   
@@ -15,6 +16,7 @@
   <!-- rosrun points_localizer ndt_pcl _sensor:="velodyne" -->
   <node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl" output="screen">
     <param name="scanner" value="$(arg scanner)" />
+    <param name="queue_size" value="$(arg queue_size)"/>
   </node>
   
 </launch>

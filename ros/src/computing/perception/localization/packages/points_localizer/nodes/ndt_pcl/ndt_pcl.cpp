@@ -128,6 +128,7 @@ static ros::Publisher ndt_stat_pub;
 static std_msgs::Bool ndt_stat_msg;
 
 static std::string _scanner = "velodyne";
+static int _queue_size = 1000;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -899,7 +900,8 @@ int main(int argc, char **argv)
 
     // setting parameters
     private_nh.getParam("scanner", _scanner);
-    //    std::cout << "scanner: " << _scanner << std::endl;
+    private_nh.getParam("queue_size", _queue_size);
+    std::cout << "queue_size: " << _queue_size << std::endl;
 
     ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
 
@@ -920,9 +922,9 @@ int main(int argc, char **argv)
     ros::Subscriber marker_sub = nh.subscribe("pos_marker/feedback", 1000, marker_callback);
 
     // subscribing the velodyne data
-    ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", 10, velodyne_callback);
+    ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", _queue_size, velodyne_callback);
 
-    ros::Subscriber hokuyo_sub = nh.subscribe("hokuyo_3d/hokuyo_cloud2", 1000, hokuyo_callback);
+    ros::Subscriber hokuyo_sub = nh.subscribe("hokuyo_3d/hokuyo_cloud2", _queue_size, hokuyo_callback);
 
     ros::spin();
 
