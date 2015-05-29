@@ -540,7 +540,7 @@ int main(int argc, char **argv)
      */
 
     //publish topic
-    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
+    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 1000);
 
     _vis_pub = nh.advertise<visualization_msgs::Marker>("target_waypoint_mark", 0);
     _circle_pub = nh.advertise<visualization_msgs::Marker>("circle_mark", 0);

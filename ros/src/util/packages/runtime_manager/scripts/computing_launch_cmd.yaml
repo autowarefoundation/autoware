@@ -22,6 +22,8 @@ subs :
               lookahead_threshold:
                 depend : param_flag
               stat_topic : [ lf ]
+          - name : distance_keep
+            cmd : roslaunch lane_follower distance_keep.launch  
           - name : odom_gen
             cmd : roslaunch lane_follower odom_gen.launch  
             param: odom_gen
