@@ -105,7 +105,7 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 					msg.min_y = py < msg.min_y ? py : msg.min_y;
 
 				}
-				if (0 == y)//process simultaneously min and max during the first layer
+				if (0 == y && pointcloud2->height == 2)//process simultaneously min and max during the first layer
 				{
 					float* fp2 = (float *)(cp + (x + (y+1)*pointcloud2->width) * pointcloud2->point_step);
 					msg.min_height[pid] = fp[2];

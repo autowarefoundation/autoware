@@ -94,7 +94,7 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 
 	visualization_msgs::Marker mark;
 	mark.header = header;
-	mark.ns = "mark";
+	mark.ns = "waypoint_mark";
 	mark.id = 0;
 	mark.action = visualization_msgs::Marker::ADD;
 	mark.lifetime = ros::Duration();
@@ -156,7 +156,7 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 #ifdef PUBLISH_TRAJECTORY
 	visualization_msgs::Marker trajectory;
 	trajectory.header = header;
-	trajectory.ns = "trajectory";
+	trajectory.ns = "_trajectory";
 	trajectory.id = 0;
 	trajectory.action = visualization_msgs::Marker::ADD;
 	trajectory.lifetime = ros::Duration();
