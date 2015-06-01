@@ -430,6 +430,11 @@ params :
       min       : 0
       max       : 20
       v         : 2.0
+    - name      : number_of_zeros
+      label     : Number of Zeros
+      min       : 1
+      max       : 100
+      v         : 1
 
   - name  : lane_stop
     topic : /traffic_light
@@ -480,6 +485,11 @@ params :
       min       : 0
       max       : 20
       v         : 2.0
+    - name      : number_of_zeros
+      label     : Number of Zeros
+      min       : 1
+      max       : 100
+      v         : 1
 
   - name  : ndt_slam
     topic : /config/ndt_slam
