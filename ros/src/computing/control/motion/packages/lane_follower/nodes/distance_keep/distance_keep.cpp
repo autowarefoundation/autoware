@@ -212,7 +212,7 @@ void GetClosestWaypoint()
 {
     double distance = 10000; //meter
 
-    for (unsigned int i = 0; i < _current_path.waypoints.size(); i++) {
+    for (int i =  _closest_waypoint; i < _closest_waypoint + 10; i++) {
 
         // position of @waypoint.
         /*tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, 0);
@@ -239,6 +239,8 @@ int GetObstacleWaypointUsingVscan()
 
     for (int i = _closest_waypoint + 1; i < _closest_waypoint + _search_distance; i++) {
 
+        if(i > _current_path.waypoints.size() - 1 )
+            return -1;
         DisplayDetectionRange(i);
         tf::Vector3 tf_waypoint = TransformWaypoint(i);
         /*
@@ -298,19 +300,17 @@ bool ObstacleDetection()
 
 }
 
-static bool _decelerate_set = false;
-static double _decelerate_ms = 0;
-static double _set_velocity_ms = 0;
+//static bool _decelerate_set = false;
+//static double _decelerate_ms = 0;
+//static double _set_velocity_ms = 0;
 double Decelerate()
 {
-
+    //calculate distance from my position to waypoint
     tf::Vector3 tf_waypoint = TransformWaypoint(_vscan_obstacle_waypoint - _stop_interval);
     double distance = tf::tfDistance(_origin_v, tf_waypoint);
-    std::cout << "distance to obstacle " << distance << std::endl;
+    std::cout << "distance " << distance << std::endl;
 
-    geometry_msgs::Twist twist;
-
-    if (_decelerate_set == false) {
+   /* if (_decelerate_set == false) {
         _decelerate_ms = pow(_current_twist.twist.linear.x, 2) / (2 * distance);
         _set_velocity_ms = _current_twist.twist.linear.x;
         _decelerate_set = true;
@@ -318,15 +318,24 @@ double Decelerate()
     std::cout << "decelerate : " << _decelerate_ms << std::endl;
 
     _set_velocity_ms -= _decelerate_ms / LOOP_RATE;
-    if (_set_velocity_ms < 0)
+
+     if (_set_velocity_ms < 0)
         _set_velocity_ms = 0;
+    */
 
     /*  double radius = current_twist.twist.linear.x / current_twist.twist.angular.z;
      current_twist.twist.linear.x = velocity_ms;
      current_twist.twist.angular.z = current_twist.twist.linear.x / radius;
      */
-    return _set_velocity_ms;
 
+    double decel_ms = 1.0; // m/s
+    double decel_velocity_ms = sqrt(2 * decel_ms * distance);
+    std::cout << "velocity : " << decel_velocity_ms << std::endl;
+    if(decel_velocity_ms < 1.0){
+        decel_velocity_ms = 0;
+    }
+    return decel_velocity_ms;
+//return _set_velocity_ms;
 }
 
 int main(int argc, char **argv)
@@ -356,6 +365,9 @@ int main(int argc, char **argv)
     private_nh.getParam("stop_interval", _stop_interval);
     std::cout << "stop_interval : " << _stop_interval << std::endl;
 
+    private_nh.getParam("current_pose_topic", _current_pose_topic);
+      std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
+
     ros::Rate loop_rate(LOOP_RATE);
     while (ros::ok()) {
         ros::spinOnce();
@@ -372,11 +384,16 @@ int main(int argc, char **argv)
             if (detection_flag == true) {
                 //decelerate
                 std::cout << "twist deceleration..." << std::endl;
-
-                twist.twist.linear.x = Decelerate();
+                double veloc = Decelerate();
+                if (veloc > twist.twist.linear.x) {
+                    twist.twist.linear.x = veloc;
+                } else {
+                    twist.twist.linear.x = _current_twist.twist.linear.x;
+                }
+                twist.twist.angular.z = _current_twist.twist.angular.z;
             } else {
                 //through
-                _decelerate_set = false;
+                //_decelerate_set = false;
                 std::cout << "twist through" << std::endl;
                 twist.twist = _current_twist.twist;
             }
