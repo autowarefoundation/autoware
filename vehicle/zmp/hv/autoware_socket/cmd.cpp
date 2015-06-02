@@ -31,7 +31,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <queue>
 
 #include "mainwindow.h"
 #include "autoware_socket.h"

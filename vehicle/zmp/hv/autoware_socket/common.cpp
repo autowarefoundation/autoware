@@ -31,8 +31,6 @@
 #include "mainwindow.h"
 #include "autoware_socket.h"
 
-#include <sstream>
-
 int can_tx_interval = 10; // ms
 int cmd_rx_interval = 100; // ms
 std::string ros_ip_address = "192.168.1.101";

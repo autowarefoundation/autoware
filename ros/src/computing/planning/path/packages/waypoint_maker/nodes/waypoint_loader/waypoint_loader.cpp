@@ -62,6 +62,7 @@ static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
 
 static double config_velocity = 40; // Unit: km/h
 static double config_difference_around_signal = 2; // Unit: km/h
+static int32_t config_number_of_zeros = 1;
 
 static std::vector<Lane> lanes;
 static std::vector<Node> nodes;
@@ -177,7 +178,8 @@ static std::vector<int> search_stopline_index(const nav_msgs::Path& msg)
 }
 
 static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
-                                            double velocity, double difference)
+                                            double velocity, double difference,
+                                            int nzeros)
 {
     std::vector<double> computations;
     int loops = msg.poses.size();
@@ -195,23 +197,23 @@ static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
     int npaths = static_cast<int>(velocity / difference);
 
     std::vector<int>::const_iterator iter = indexes.cbegin();
-    int start = *iter - npaths;
+    int start = *iter - npaths - (nzeros - 1);
     int end = *iter + npaths;
     for (int i = 0; i < loops; ++i) {
         double vel;
         if (i <= start)
             vel = velocity;
-        else if (start < i && i < *iter)
+        else if (i <= (*iter - nzeros))
             vel = velocity - (difference * (i - start));
-        else if (i == *iter)
+        else if (i <= *iter)
             vel = 0;
-        else if (*iter < i && i < end)
+        else if (i <= (end - 1))
             vel = velocity - (difference * (end - i));
         else {
             vel = velocity;
             if ((iter + 1) != indexes.cend()) {
                 ++iter;
-                start = *iter - npaths;
+                start = *iter - npaths - (nzeros - 1);
                 end = *iter + npaths;
             }
         }
@@ -232,8 +234,11 @@ static void publish_signal_waypoint()
     green_cmd.header = lane_cmd.header;
     green_cmd.increment = 1;
 
-    std::vector<double> computations =
-        compute_velocity(cmd_path, config_velocity, config_difference_around_signal);
+    std::vector<double> computations = compute_velocity(
+        cmd_path,
+        config_velocity,
+        config_difference_around_signal,
+        config_number_of_zeros);
 
     for (int i = 0; i < static_cast<int>(Pose.size()); i++) {
 
@@ -260,6 +265,7 @@ static void config_callback(const runtime_manager::ConfigWaypointLoader& msg)
 {
     config_velocity = msg.velocity;
     config_difference_around_signal = msg.difference_around_signal;
+    config_number_of_zeros = msg.number_of_zeros;
 
     publish_signal_waypoint();
 }

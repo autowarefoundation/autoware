@@ -31,8 +31,6 @@
 #include "mainwindow.h"
 #include "autoware_socket.h"
 
-#include <sstream>
-
 std::string candata;
 int drvmode;
 
