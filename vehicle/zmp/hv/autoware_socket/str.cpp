@@ -35,29 +35,33 @@ static double steering_diff_sum = 0;
 
 void MainWindow::SetStrMode(int mode)
 {
+  steering_diff_sum = 0;
+
   switch (mode) {
   case CMD_MODE_MANUAL:
-    cout << "Switching to MANUAL (Steering)" << endl;
-    hev->SetStrMode(MODE_MANUAL);
-    usleep(200000);
-    hev->SetStrServo(SERVO_FALSE);
-    usleep(200000);
+    if (_hev_state.strInf.mode == MODE_PROGRAM) {
+      cout << "Switching to MANUAL (Steering)" << endl;
+      hev->SetStrMode(MODE_MANUAL);
+      usleep(200000);
+      hev->SetStrServo(SERVO_FALSE);
+      usleep(200000);
+    }
     break;
   case CMD_MODE_PROGRAM:
-    cout << "Switching to PROGRAM (Steering)" << endl;
-    hev->SetStrMode(MODE_PROGRAM);
-    usleep(200000);
-    hev->SetStrCMode(CONT_MODE_TORQUE);
-    //hev->SetStrCMode(CONT_MODE_ANGLE);
-    usleep(200000);
-    hev->SetStrServo(SERVO_TRUE);
-    usleep(200000);
+    if (_hev_state.strInf.mode == MODE_MANUAL) {
+      cout << "Switching to PROGRAM (Steering)" << endl;
+      hev->SetStrMode(MODE_PROGRAM);
+      usleep(200000);
+      hev->SetStrCMode(CONT_MODE_TORQUE);
+      //hev->SetStrCMode(CONT_MODE_ANGLE);
+      usleep(200000);
+      hev->SetStrServo(SERVO_TRUE);
+      usleep(200000);
+    }
     break;
   default:
     cout << "Unknown mode: " << mode << endl;
   }
-
-  steering_diff_sum = 0;
 }
 
 // for torque control
@@ -122,13 +126,15 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
 
   prev_steering_angle  = current_steering_angle;
 
-#if 0 /* log */ 
-  ofstream ofs("/tmp/steering.log", ios::app);
-  ofs << cmd_steering_angle << " " 
-      << current_steering_angle << " " 
-      << current_steering_angvel << " "  
-      << target_steering_torque << endl;
-#endif
+  //#if 0 /* log */ 
+  if (_hev_state.strInf.mode == MODE_PROGRAM){
+    ofstream ofs("/tmp/steering.log", ios::app);
+    ofs << cmd_steering_angle << " " 
+        << current_steering_angle << " " 
+        << current_steering_angvel << " "  
+        << target_steering_torque << endl;
+  }
+  //#endif
 }
 
 void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)

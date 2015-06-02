@@ -39,30 +39,34 @@ double brake_diff_sum = 0;
 
 void MainWindow::SetDrvMode(int mode)
 {
+  accel_diff_sum = 0;
+  brake_diff_sum = 0;
+
   switch (mode) {
   case CMD_MODE_MANUAL:
-    cout << "Switching to MANUAL (Accel/Brake)" << endl;
-    hev->SetDrvMode(MODE_MANUAL);
-    usleep(200000);
-    hev->SetDrvServo(SERVO_FALSE);
-    usleep(200000);
+    if (_hev_state.drvInf.mode == MODE_PROGRAM) {
+      cout << "Switching to MANUAL (Accel/Brake)" << endl;
+      hev->SetDrvMode(MODE_MANUAL);
+      usleep(200000);
+      hev->SetDrvServo(SERVO_FALSE);
+      usleep(200000);
+    }
     break;
   case CMD_MODE_PROGRAM:
-    cout << "Switching to PROGRAM (Accel/Brake)" << endl;
-    hev->SetDrvMode(MODE_PROGRAM);
-    usleep(200000);
-    hev->SetDrvCMode(CONT_MODE_STROKE);
-    //hev->SetDrvCMode(CONT_MODE_VELOCITY);
-    usleep(200000);
-    hev->SetDrvServo(SERVO_TRUE);
-    usleep(200000);
-    break;
+    if (_hev_state.drvInf.mode == MODE_MANUAL) {
+      cout << "Switching to PROGRAM (Accel/Brake)" << endl;
+      hev->SetDrvMode(MODE_PROGRAM);
+      usleep(200000);
+      hev->SetDrvCMode(CONT_MODE_STROKE);
+      //hev->SetDrvCMode(CONT_MODE_VELOCITY);
+      usleep(200000);
+      hev->SetDrvServo(SERVO_TRUE);
+      usleep(200000);
+      break;
+    }
   default:
     cout << "Unknown mode: " << mode << endl;
   }
-
-  accel_diff_sum = 0;
-  brake_diff_sum = 0;
 }
 
 void MainWindow::SetGear(int gear)
