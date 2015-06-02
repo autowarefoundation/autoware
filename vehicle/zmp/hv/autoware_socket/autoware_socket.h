@@ -31,8 +31,19 @@
 #ifndef __AUTOWARE_SOCKET_H__
 #define __AUTOWARE_SOCKET_H__
 
-#include <string>
 #include "mainwindow.h"
+
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <queue>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <netdb.h>
+
 
 using namespace zmp::hev;
 
