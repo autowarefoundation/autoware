@@ -24,6 +24,8 @@ subs :
               stat_topic : [ lf ]
           - name : distance_keep
             cmd : roslaunch lane_follower distance_keep.launch  
+          - name : twist_through
+            cmd : rosrun lane_follower twist_through
           - name : odom_gen
             cmd : roslaunch lane_follower odom_gen.launch  
             param: odom_gen

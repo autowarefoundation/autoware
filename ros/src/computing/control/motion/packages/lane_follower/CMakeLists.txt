@@ -62,3 +62,6 @@ add_executable(distance_keep nodes/distance_keep/distance_keep.cpp)
 target_link_libraries(distance_keep ${catkin_LIBRARIES})
 add_dependencies(distance_keep 
 lane_follower_generate_messages_cpp)
+
+add_executable(twist_through nodes/distance_keep/twist_through.cpp)
+target_link_libraries(twist_through ${catkin_LIBRARIES})
