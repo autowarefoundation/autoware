@@ -239,7 +239,7 @@ int GetObstacleWaypointUsingVscan()
 
     for (int i = _closest_waypoint + 1; i < _closest_waypoint + _search_distance; i++) {
 
-        if(i > _current_path.waypoints.size() - 1 )
+        if(i > static_cast<int>(_current_path.waypoints.size()) - 1 )
             return -1;
         DisplayDetectionRange(i);
         tf::Vector3 tf_waypoint = TransformWaypoint(i);
