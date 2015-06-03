@@ -46,7 +46,7 @@
 #include <iostream>
 #include <chrono>
 
-#define LOOP_RATE 100
+#define LOOP_RATE 10
 
 geometry_msgs::TwistStamped _current_twist;
 geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
@@ -170,7 +170,7 @@ void DisplayObstacleWaypoint(int i)
     marker.color.r = 0.0;
     marker.color.g = 0.0;
     marker.color.b = 1.0;
-    marker.lifetime = ros::Duration(0.5);
+    marker.lifetime = ros::Duration(0.1);
 
     _vis_pub.publish(marker);
 }
@@ -208,16 +208,16 @@ tf::Vector3 TransformWaypoint(int i)
     return tf_w;
 }
 
-void GetClosestWaypoint()
+/*void GetClosestWaypoint()
 {
     double distance = 10000; //meter
 
     for (int i =  _closest_waypoint; i < _closest_waypoint + 10; i++) {
 
         // position of @waypoint.
-        /*tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, 0);
-         tf::Vector3 tf_waypoint = _transform * waypoint;
-         tf_waypoint.setZ(0);*/
+        //tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, 0);
+        // tf::Vector3 tf_waypoint = _transform * waypoint;
+        // tf_waypoint.setZ(0);
         tf::Vector3 tf_waypoint = TransformWaypoint(i);
 
         double dt = tf::tfDistance(_origin_v, tf_waypoint);
@@ -229,6 +229,54 @@ void GetClosestWaypoint()
             // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
         }
     }
+}*/
+
+int GetClosestWaypoint()
+{
+    //interval between 2 waypoints
+    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, _current_path.waypoints[0].pose.pose.position.z);
+
+    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, _current_path.waypoints[1].pose.pose.position.z);
+
+    double distance_threshold = tf::tfDistance(v1, v2); //meter
+    std::vector<int> waypoint_candidates;
+
+    for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
+
+        //std::cout << waypoint << std::endl;
+
+        // position of @waypoint.
+        tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
+        tf::Vector3 tf_waypoint = _transform * waypoint;
+        tf_waypoint.setZ(0);
+        //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+
+        //double dt = tf::tfDistance(v1, v2);
+        double dt = tf::tfDistance(_origin_v, tf_waypoint);
+        //  std::cout << i  << " "<< dt << std::endl;
+        if (dt < distance_threshold) {
+            //add as a candidate
+            waypoint_candidates.push_back(i);
+            // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+        }
+    }
+
+    if (waypoint_candidates.size() == 0)
+        return _closest_waypoint;
+
+    double sub_min = 100;
+    double decided_waypoint = 1;
+    for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+        std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
+        double sub = fabs(waypoint_candidates[i] - _closest_waypoint);
+        std::cout << "sub : " << sub << std::endl;
+        if (sub < sub_min) {
+            decided_waypoint = waypoint_candidates[i];
+            sub_min = sub;
+        }
+    }
+
+    return decided_waypoint;
 }
 
 int GetObstacleWaypointUsingVscan()
@@ -274,8 +322,10 @@ int GetObstacleWaypointUsingVscan()
 
 bool ObstacleDetection()
 {
+    static int false_count = 0;
+    static bool prev_detection = false;
 
-    GetClosestWaypoint();
+    _closest_waypoint = GetClosestWaypoint();
     std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
 
     // auto start = std::chrono::system_clock::now(); //start time
@@ -287,16 +337,37 @@ bool ObstacleDetection()
      double time = std::chrono::duration_cast<std::chrono::microseconds>(dur).count(); //micro sec
      std::cout << "GetObstacleWaypointUsingVscan : " << time * 0.001 << " milli sec" << std::endl;
      */
-
-    if (_vscan_obstacle_waypoint != -1) {
-        DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
-        std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
-
-        return true;
-
+    if (prev_detection == false) {
+        if (_vscan_obstacle_waypoint != -1) {
+            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
+            std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
+            prev_detection = true;
+            return true;
+        } else {
+            prev_detection = false;
+            return false;
+        }
     } else {
-        return false;
+        if (_vscan_obstacle_waypoint != -1) {
+            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
+            std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
+            prev_detection = true;
+            return true;
+        } else {
+            false_count++;
+        }
+
+        if (false_count == LOOP_RATE) {
+            false_count = 0;
+            prev_detection = false;
+            return false;
+        } else {
+            prev_detection = true;
+           return true;
+        }
     }
+
+
 
 }
 
@@ -330,10 +401,11 @@ double Decelerate()
 
     double decel_ms = 1.0; // m/s
     double decel_velocity_ms = sqrt(2 * decel_ms * distance);
-    std::cout << "velocity : " << decel_velocity_ms << std::endl;
-    if(decel_velocity_ms < 1.0){
+
+    if(decel_velocity_ms < 2.0){
         decel_velocity_ms = 0;
     }
+    std::cout << "velocity : " << decel_velocity_ms << std::endl;
     return decel_velocity_ms;
 //return _set_velocity_ms;
 }
@@ -385,10 +457,11 @@ int main(int argc, char **argv)
                 //decelerate
                 std::cout << "twist deceleration..." << std::endl;
                 double veloc = Decelerate();
-                if (veloc > twist.twist.linear.x) {
-                    twist.twist.linear.x = veloc;
-                } else {
+                std::cout << "veloc/current_twist.linear.x :" << veloc << "/" <<  _current_twist.twist.linear.x <<std::endl;
+                if (veloc > _current_twist.twist.linear.x) {
                     twist.twist.linear.x = _current_twist.twist.linear.x;
+                } else {
+                    twist.twist.linear.x = veloc;
                 }
                 twist.twist.angular.z = _current_twist.twist.angular.z;
             } else {
