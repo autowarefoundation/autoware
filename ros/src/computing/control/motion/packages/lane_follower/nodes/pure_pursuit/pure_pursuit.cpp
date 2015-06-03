@@ -236,12 +236,13 @@ double GetLookAheadDistance(int waypoint)
 
 int GetClosestWaypoint()
 {
+    //interval between 2 waypoints
+    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, 0);
 
-    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, _current_path.waypoints[0].pose.pose.position.z);
-
-    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, _current_path.waypoints[1].pose.pose.position.z);
+    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
 
     double distance_threshold = tf::tfDistance(v1, v2); //meter
+
     std::vector<int> waypoint_candidates;
 
     for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
@@ -263,8 +264,12 @@ int GetClosestWaypoint()
             // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
         }
     }
+
+    if(waypoint_candidates.size() == 0)
+        return _closest_waypoint;
+
     double sub_min = 100;
-    double decided_waypoint = 0;
+    double decided_waypoint = 1;
     for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
         std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
         double sub = fabs(waypoint_candidates[i] - _closest_waypoint);
