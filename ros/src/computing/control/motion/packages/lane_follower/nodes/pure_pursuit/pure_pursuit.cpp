@@ -207,7 +207,7 @@ double GetLookAheadDistance(int waypoint)
 /////////////////////////////////////////////////////////////////
 // obtain the velocity(m/s) waypoint under the vehicle has.
 /////////////////////////////////////////////////////////////////
-int GetClosestWaypoint()
+/*int GetClosestWaypoint()
 {
     double distance = 10000; //meter
     double waypoint = 1;
@@ -232,7 +232,52 @@ int GetClosestWaypoint()
         }
     }
     return waypoint;
+}*/
+
+int GetClosestWaypoint()
+{
+
+    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, _current_path.waypoints[0].pose.pose.position.z);
+
+    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, _current_path.waypoints[1].pose.pose.position.z);
+
+    double distance_threshold = tf::tfDistance(v1, v2); //meter
+    std::vector<int> waypoint_candidates;
+
+    for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
+
+        //std::cout << waypoint << std::endl;
+
+        // position of @waypoint.
+        tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
+        tf::Vector3 tf_waypoint = _transform * waypoint;
+        tf_waypoint.setZ(0);
+        //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+
+        //double dt = tf::tfDistance(v1, v2);
+        double dt = tf::tfDistance(_origin_v, tf_waypoint);
+        //  std::cout << i  << " "<< dt << std::endl;
+        if (dt < distance_threshold) {
+            //add as a candidate
+            waypoint_candidates.push_back(i);
+            // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+        }
+    }
+    double sub_min = 100;
+    double decided_waypoint = 0;
+    for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+        std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
+        double sub = fabs(waypoint_candidates[i] - _closest_waypoint);
+        std::cout << "sub : " << sub << std::endl;
+        if (sub < sub_min) {
+            decided_waypoint = waypoint_candidates[i];
+            sub_min = sub;
+        }
+    }
+
+    return decided_waypoint;
 }
+
 
 /////////////////////////////////////////////////////////////////
 // obtain the velocity(m/s) waypoint under the vehicle has.
@@ -389,6 +434,9 @@ int GetNextWayPoint()
 
     // look for the next waypoint.
 	for (unsigned int i = _closest_waypoint; i < _current_path.waypoints.size();i++) {
+
+	    if(_closest_waypoint > _prev_waypoint)
+	        return _closest_waypoint;
 
 		if (GetLookAheadDistance(_prev_waypoint) > lookahead_threshold){
 			std::cout << "threshold = " << lookahead_threshold << std::endl;
@@ -628,6 +676,8 @@ int main(int argc, char **argv)
                 twist.twist.linear.x = 0;
                 twist.twist.angular.z = 0;
 	      }
+	    }else{
+	        std::cout << "selected the same waypoint" << std::endl;
 	    }
             if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
                 endflag = true;
