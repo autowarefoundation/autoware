@@ -155,6 +155,7 @@ static void WayPointCallback(const lane_follower::laneConstPtr &msg)
 {
     _current_path = *msg;
     _waypoint_set = true;
+    std::cout << "waypoint subscribed" << std::endl;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -302,6 +303,7 @@ int GetClosestWaypoint()
 /////////////////////////////////////////////////////////////////
 double GetWaypointVelocity()
 {
+	std::cout << "get velocity(m/s) : "<<  _current_path.waypoints[_closest_waypoint].twist.twist.linear.x << std::endl;
     return _current_path.waypoints[_closest_waypoint].twist.twist.linear.x;
 }
 
@@ -718,7 +720,7 @@ int main(int argc, char **argv)
             std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
 	    std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
 	    
-	    if(_next_waypoint != _prev_waypoint){
+	   // if(_next_waypoint != _prev_waypoint){
 
 	      if (_next_waypoint > 0) {
                 // obtain the linear/angular velocity.
@@ -727,9 +729,9 @@ int main(int argc, char **argv)
                 twist.twist.linear.x = 0;
                 twist.twist.angular.z = 0;
 	      }
-	    }else{
-	        std::cout << "selected the same waypoint" << std::endl;
-	    }
+	    //}else{
+	      //  std::cout << "selected the same waypoint" << std::endl;
+	    //}
             if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
                 endflag = true;
                 _next_waypoint = _current_path.waypoints.size() - 1;
