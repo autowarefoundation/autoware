@@ -3,7 +3,7 @@
 
 	<arg name="detection_range" default="1.5" /> <!-- meter -->
 	<arg name="threshold_points" default="10" /> 
-	<arg name="stop_interval" default="5" /> 
+	<arg name="stop_interval" default="10" /> 
     <arg name="current_pose_topic" default="ndt" /> 
 
 	<!-- rosrun lane_follower distance_keep _detection_range:=0 -->
