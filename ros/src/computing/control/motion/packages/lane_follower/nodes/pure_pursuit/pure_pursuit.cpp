@@ -70,6 +70,7 @@ static lane_follower::lane _current_path;
 static int _next_waypoint = 0; // ID (index) of the next waypoint.
 static int _closest_waypoint = 1; // ID (index) of the closest waypoint.
 static int _prev_waypoint = 0;
+static double _prev_velocity = 0;
 
 static ros::Publisher _vis_pub;
 static ros::Publisher _circle_pub;
@@ -241,11 +242,15 @@ int GetClosestWaypoint()
 
     tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
 
-    double distance_threshold = tf::tfDistance(v1, v2); //meter
+    int ratio = 1;
 
-    std::vector<int> waypoint_candidates;
+    while(1){
 
-    for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
+      double distance_threshold = ratio *tf::tfDistance(v1, v2); //meter
+
+      std::vector<int> waypoint_candidates;
+
+      for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
 
         //std::cout << waypoint << std::endl;
 
@@ -259,28 +264,36 @@ int GetClosestWaypoint()
         double dt = tf::tfDistance(_origin_v, tf_waypoint);
         //  std::cout << i  << " "<< dt << std::endl;
         if (dt < distance_threshold) {
-            //add as a candidate
-            waypoint_candidates.push_back(i);
-            // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+	  //add as a candidate
+	  waypoint_candidates.push_back(i);
+	  // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
         }
-    }
+      }
 
-    if(waypoint_candidates.size() == 0)
-        return _closest_waypoint;
+      // if(waypoint_candidates.size() == 0)
+      //  return _closest_waypoint;
 
-    double sub_min = 100;
-    double decided_waypoint = 1;
-    for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+      int sub_min = 100;
+      int decided_waypoint = 1;
+      for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
         std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
-        double sub = fabs(waypoint_candidates[i] - _closest_waypoint);
+        int sub = waypoint_candidates[i] - _closest_waypoint;
         std::cout << "sub : " << sub << std::endl;
-        if (sub < sub_min) {
-            decided_waypoint = waypoint_candidates[i];
-            sub_min = sub;
-        }
-    }
+        if(sub < 0)
+        	continue;
 
-    return decided_waypoint;
+        if (sub < sub_min) {
+        	decided_waypoint = waypoint_candidates[i];
+        	sub_min = sub;
+        }
+      }
+      if(decided_waypoint >= _closest_waypoint){
+         return decided_waypoint;
+      }else{
+	     ratio++;
+      }
+
+    }
 }
 
 
@@ -532,6 +545,7 @@ static geometry_msgs::Twist CalculateCmdTwist()
 /////////////////////////////////////////////////////////////////
 //static int end_loop = 1;
 //static double end_ratio = 0.2;
+
 static bool decelerate_flag = false;
 static geometry_msgs::Twist EndControl()
 {
@@ -544,6 +558,37 @@ static geometry_msgs::Twist EndControl()
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
+    double stop_interval = 5;
+ if(lookahead_distance < stop_interval){
+   twist.linear.x = 0;
+   twist.angular.z = 0;
+
+        return twist;
+    }
+
+
+ double decel_ms = 1.0; // m/s
+    double decel_velocity_ms = sqrt(2 * decel_ms * lookahead_distance);
+    
+    if(decel_velocity_ms < 1.0){
+        decel_velocity_ms = 0;
+    }
+    std::cout << "velocity : " << decel_velocity_ms << std::endl;
+    if(decel_velocity_ms < _prev_velocity) {
+      twist.linear.x = decel_velocity_ms;
+    } else {
+      twist.linear.x = _prev_velocity;
+    }
+    double radius = CalcRadius(_current_path.waypoints.size() - 1);
+
+    if (radius > 0 || radius < 0) {
+        twist.angular.z = twist.linear.x / radius;
+    } else {
+        twist.angular.z = 0;
+    }
+    return twist;
+
+ /*
     double set_velocity_ms = 0;
     if (!_param_flag)
         set_velocity_ms = GetWaypointVelocity();
@@ -568,6 +613,7 @@ static geometry_msgs::Twist EndControl()
         else
             velocity_ms = 0;
     }
+ */
     /* if (lookahead_distance < _end_distance) { // EndControl completed
 
      twist.linear.x = 0;
@@ -580,7 +626,7 @@ static geometry_msgs::Twist EndControl()
 
      } else {
      */
-
+    /*
     double radius = CalcRadius(_next_waypoint);
     twist.linear.x = velocity_ms;
 
@@ -589,9 +635,9 @@ static geometry_msgs::Twist EndControl()
     } else {
         twist.angular.z = 0;
     }
-//    }
+    //    }*/
 
-    return twist;
+    // return twist;
 }
 
 int main(int argc, char **argv)
@@ -710,6 +756,7 @@ int main(int argc, char **argv)
 		twist.header.stamp = ros::Time::now();
 		cmd_velocity_publisher.publish(twist);
 		_prev_waypoint = _next_waypoint;
+		_prev_velocity = twist.twist.linear.x;
 		loop_rate.sleep();
 	}
 
