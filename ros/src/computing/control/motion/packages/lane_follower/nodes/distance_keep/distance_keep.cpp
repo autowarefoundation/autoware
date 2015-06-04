@@ -68,7 +68,7 @@ static int _vscan_obstacle_waypoint = -1;
 static int _closest_waypoint = 1;
 static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
-static double _detection_height_bottom = -1.3;
+static double _detection_height_bottom = -2.0;
 static double _search_distance = 30;
 static int _stop_interval = 5;
 static tf::Vector3 _origin_v(0, 0, 0);
@@ -230,7 +230,68 @@ tf::Vector3 TransformWaypoint(int i)
         }
     }
 }*/
+int GetClosestWaypoint()
+{
+    //interval between 2 waypoints
+    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, 0);
 
+    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
+
+    int ratio = 1;
+
+    while(1){
+      
+      double distance_threshold = ratio *tf::tfDistance(v1, v2); //meter
+      
+      std::vector<int> waypoint_candidates;
+      
+      for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
+	
+        //std::cout << waypoint << std::endl;
+
+        // position of @waypoint.
+        tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
+        tf::Vector3 tf_waypoint = _transform * waypoint;
+        tf_waypoint.setZ(0);
+        //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+
+        //double dt = tf::tfDistance(v1, v2);
+        double dt = tf::tfDistance(_origin_v, tf_waypoint);
+        //  std::cout << i  << " "<< dt << std::endl;
+        if (dt < distance_threshold) {
+	  //add as a candidate
+	  waypoint_candidates.push_back(i);
+	  // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+        }
+      }
+
+      // if(waypoint_candidates.size() == 0)
+      // return _closest_waypoint;
+
+      int sub_min = 100;
+      int decided_waypoint = 1;
+      for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+        std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
+        int sub = waypoint_candidates[i] - _closest_waypoint;
+	std::cout << "sub : " << sub << std::endl;
+	if(sub < 0)
+	  continue;
+        
+        if (sub < sub_min) {
+	  decided_waypoint = waypoint_candidates[i];
+	  sub_min = sub;
+        }
+      }
+      if(decided_waypoint >= _closest_waypoint){
+         return decided_waypoint;
+      }else{
+	ratio++;
+      }
+    
+    }
+}
+
+/*
 int GetClosestWaypoint()
 {
     //interval between 2 waypoints
@@ -277,7 +338,7 @@ int GetClosestWaypoint()
     }
 
     return decided_waypoint;
-}
+    }*/
 
 int GetObstacleWaypointUsingVscan()
 {
@@ -291,11 +352,11 @@ int GetObstacleWaypointUsingVscan()
             return -1;
         DisplayDetectionRange(i);
         tf::Vector3 tf_waypoint = TransformWaypoint(i);
-        /*
-         tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z );
-         tf::Vector3 tf_waypoint = _transform * waypoint;
-         tf_waypoint.setZ(0);
-         */
+        
+        // tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z );
+       //  tf::Vector3 tf_waypoint = _transform * waypoint;
+        // tf_waypoint.setZ(0);
+         
         //std::cout << "waypoint : "<< tf_waypoint.getX()  << " "<< tf_waypoint.getY() << std::endl;
         int point_count = 0;
         for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = _vscan.begin(); item != _vscan.end(); item++) {
@@ -318,7 +379,7 @@ int GetObstacleWaypointUsingVscan()
     }
     return -1;
 
-}
+    }
 
 bool ObstacleDetection()
 {
@@ -357,11 +418,12 @@ bool ObstacleDetection()
             false_count++;
         }
 
-        if (false_count == LOOP_RATE) {
+        if (false_count == LOOP_RATE * 3) {
             false_count = 0;
             prev_detection = false;
             return false;
         } else {
+            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
             prev_detection = true;
            return true;
         }
