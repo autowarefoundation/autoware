@@ -407,7 +407,7 @@ double Decelerate()
     double decel_ms = 1.0; // m/s
     double decel_velocity_ms = sqrt(2 * decel_ms * distance);
 
-    if(decel_velocity_ms < 2.0){
+    if(decel_velocity_ms < 1.0){
         decel_velocity_ms = 0;
     }
     std::cout << "velocity : " << decel_velocity_ms << std::endl;
