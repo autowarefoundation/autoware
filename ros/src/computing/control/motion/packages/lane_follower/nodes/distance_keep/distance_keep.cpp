@@ -377,9 +377,14 @@ bool ObstacleDetection()
 double Decelerate()
 {
     //calculate distance from my position to waypoint
-    tf::Vector3 tf_waypoint = TransformWaypoint(_vscan_obstacle_waypoint - _stop_interval);
+    tf::Vector3 tf_waypoint = TransformWaypoint(_vscan_obstacle_waypoint);
     double distance = tf::tfDistance(_origin_v, tf_waypoint);
     std::cout << "distance " << distance << std::endl;
+
+    //if distance is within stop_interval param, publish 0km/h
+    if(distance < _stop_interval){
+        return 0;
+    }
 
    /* if (_decelerate_set == false) {
         _decelerate_ms = pow(_current_twist.twist.linear.x, 2) / (2 * distance);
