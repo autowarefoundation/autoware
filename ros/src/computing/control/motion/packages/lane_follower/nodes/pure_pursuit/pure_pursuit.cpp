@@ -68,7 +68,7 @@ static geometry_msgs::Twist _current_velocity;
 static lane_follower::lane _current_path;
 
 static int _next_waypoint = 0; // ID (index) of the next waypoint.
-static int _closest_waypoint = 1; // ID (index) of the closest waypoint.
+static int _closest_waypoint = -1; // ID (index) of the closest waypoint.
 static int _prev_waypoint = 0;
 static double _prev_velocity = 0;
 
@@ -243,9 +243,7 @@ int GetClosestWaypoint()
 
     tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
 
-    int ratio = 1;
-
-    while(1){
+    for(int ratio = 1;ratio < 3 ; ratio++){
 
       double distance_threshold = ratio *tf::tfDistance(v1, v2); //meter
 
@@ -271,12 +269,13 @@ int GetClosestWaypoint()
         }
       }
 
-      // if(waypoint_candidates.size() == 0)
-      //  return _closest_waypoint;
+      if(waypoint_candidates.size() == 0) {
+        continue;
+      }
 
-      int sub_min = 100;
-      int decided_waypoint = 1;
-      for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+      int sub_min = waypoint_candidates[0] - _closest_waypoint;
+      int decided_waypoint =  waypoint_candidates[0];
+      for (unsigned int i = 1; i < waypoint_candidates.size(); i++) {
         std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
         int sub = waypoint_candidates[i] - _closest_waypoint;
         std::cout << "sub : " << sub << std::endl;
@@ -290,11 +289,10 @@ int GetClosestWaypoint()
       }
       if(decided_waypoint >= _closest_waypoint){
          return decided_waypoint;
-      }else{
-	     ratio++;
       }
 
     }
+    return -1;
 }
 
 
@@ -455,8 +453,7 @@ int GetNextWayPoint()
     // look for the next waypoint.
 	for (unsigned int i = _closest_waypoint; i < _current_path.waypoints.size();i++) {
 
-	    if(_closest_waypoint > _prev_waypoint)
-	        return _closest_waypoint;
+
 
 		if (GetLookAheadDistance(_prev_waypoint) > lookahead_threshold){
 			std::cout << "threshold = " << lookahead_threshold << std::endl;
@@ -704,6 +701,8 @@ int main(int argc, char **argv)
         _closest_waypoint = GetClosestWaypoint();
         std::cout << "closest waypoint = " << _closest_waypoint << std::endl;
 
+        if(_closest_waypoint > _prev_waypoint)
+       	    _prev_waypoint = _closest_waypoint;
        // std::cout << "endflag = " << endflag << std::endl;
 
         if (endflag == false) {
@@ -715,26 +714,32 @@ int main(int argc, char **argv)
             } else {
                 std::cout << "dialog" << std::endl;
             }
+            if(_closest_waypoint < 0){
+            	std::cout << "closest waypoint not near the car !!" << std::endl;
+            	twist.twist.linear.x = 0;
+            	twist.twist.angular.z = 0;
+            }else{
 
-            _next_waypoint = GetNextWayPoint();
-            std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
-	    std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
+            	_next_waypoint = GetNextWayPoint();
+            	std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
+            	std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
 	    
 	   // if(_next_waypoint != _prev_waypoint){
 
-	      if (_next_waypoint > 0) {
+            	if (_next_waypoint > 0) {
                 // obtain the linear/angular velocity.
-                twist.twist = CalculateCmdTwist();
-	      } else {
-                twist.twist.linear.x = 0;
-                twist.twist.angular.z = 0;
-	      }
+            		twist.twist = CalculateCmdTwist();
+            	} else {
+            		twist.twist.linear.x = 0;
+            		twist.twist.angular.z = 0;
+            	}
 	    //}else{
 	      //  std::cout << "selected the same waypoint" << std::endl;
 	    //}
-            if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
-                endflag = true;
-                _next_waypoint = _current_path.waypoints.size() - 1;
+            	if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
+            		endflag = true;
+            		_next_waypoint = _current_path.waypoints.size() - 1;
+            	}
             }
 
         } else {
