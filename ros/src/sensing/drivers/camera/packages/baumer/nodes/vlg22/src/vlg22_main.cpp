@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 	{
 		printf("init_systems Errorcode: %d\n", res);
 	}
-	ROS_INFO("Baumer Camera init_systems OK\n");
+	ROS_INFO("Baumer Camera init_systems OK. %d systems found\n", system_count);
 
 	//init all cameras in all systems
 	res = init_cameras( system_count, &ppSystem, &currSystem, camera_num, cameraPointers );
@@ -63,6 +63,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	//create images for each camera to be used while capturing
+	//
+
 	if (!create_images_start(imagePointers, cameraPointers))
 	{
 		ROS_INFO("Could not create images for capture. Finalizing...");
@@ -93,28 +95,47 @@ int main(int argc, char **argv)
 		int hwc = 0;
 		int width = 0;
 		int height = 0;
+		
 		for (unsigned int i = 0; i < cameraPointers.size(); i++)
 		{
-			res = cameraPointers[i]->getImage( &(imagePointers[i]), receiveTimeout );
+			BGAPI::Image* pImage = NULL;
+			//create an image for each camera
+			res = BGAPI::createImage( &pImage ); 
+			if( res != BGAPI_RESULT_OK )
+			{
+				ROS_INFO( "Error %d while creating an image.\n", res );
+				return false;
+			}
+			res = cameraPointers[i]->setImage( pImage );
+			if( res != BGAPI_RESULT_OK )
+			{
+				ROS_INFO( "Error %d while setting an image to the camera.\n", res );
+				return false;
+			}
+			res = cameraPointers[i]->getImage( &pImage, receiveTimeout );
 			if( res != BGAPI_RESULT_OK )
 			{
 				ROS_INFO("BGAPI_Camera_getImage returned with errorcode %d\n", res );
 			}
 			else
 			{
-				(imagePointers[i])->get( &imagebuffer );				
-				(imagePointers[i])->getNumber( &swc, &hwc );
+				(pImage)->get( &imagebuffer );				
+				(pImage)->getNumber( &swc, &hwc );
 
-				res = (imagePointers[i])->getSize(&width, &height);
+				res = (pImage)->getSize(&width, &height);
 				if( res != BGAPI_RESULT_OK )
 				{
 					ROS_INFO("BGAPI::Image::getSize Errorcode: %d", res);
 				}
+				//ROS_INFO("Get Image OK %d, %d\n", width, height);
 				//receive Bayer Image, convert to Color 3 channels
 				cv::Mat mat(cv::Size(width, height), CV_8UC1, imagebuffer);
 				//cv::flip(mat, mat, -1);
 				cv::Mat dest(cv::Size(width, height), CV_8UC3);
-				cv::cvtColor(mat, dest, CV_BayerBG2BGR);
+				cv::cvtColor(mat, dest, CV_BayerBG2RGB);
+
+				//cv::imshow("window", dest);
+				//cv::waitKey(2);
 				//ROS publish*******************
 				sensor_msgs::Image msg;
 
@@ -136,7 +157,7 @@ int main(int argc, char **argv)
 				i++;
 
 				//after you are ready with this image, return it to the camera for the next image
-				res = cameraPointers[i]->setImage( imagePointers[i] );
+				res = cameraPointers[i]->setImage( pImage );
 				if( res != BGAPI_RESULT_OK )
 				{
 					ROS_INFO( "setImage failed with %d\n", res );
