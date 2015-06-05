@@ -162,16 +162,18 @@ void Update(void *p)
   main->UpdateState();
 }
 
-void Prepare(int mode, int gear, void* p) 
+int Prepare(int mode, int gear, void* p) 
 {
   static int old_mode = -1;
   static int old_gear = -1;
   MainWindow* main = (MainWindow*)p;
+  int ret = 0;
 
   if (mode != old_mode) {
     main->SetStrMode(mode); // steering
     main->SetDrvMode(mode); // accel/brake
     old_mode = mode;
+    ret = 1;
   }
 
   if (gear != old_gear) {
@@ -180,8 +182,11 @@ void Prepare(int mode, int gear, void* p)
     if (current_velocity == 0) {
       main->SetGear(gear);
       old_gear = gear;
+      ret = 1;
     }
   }
+
+  return ret;
 }
 
 
@@ -275,17 +280,16 @@ void *MainWindow::CMDGetterEntry(void *a)
     Update(main);
 
     // set mode and gear.
-    Prepare(cmddata.mode, cmddata.gear, main);
-
-    
-
+    // if either mode or gear is changed, don't control this period.
+    if (!Prepare(cmddata.mode, cmddata.gear, main)) {
 #ifdef DIRECT_CONTROL
-    // directly set accel, brake, and steer.
-    Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);
+      // directly set accel, brake, and steer.
+      Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);
 #else
       // control accel, brake, and steer.
       Control(cmddata.vel, main);
 #endif
+    }
 
     // get interval in milliseconds.
     interval = cmd_rx_interval - (getTime() - tstamp);

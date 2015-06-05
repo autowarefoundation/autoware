@@ -44,7 +44,7 @@ void MainWindow::SetStrMode(int mode)
       hev->SetStrMode(MODE_MANUAL);
       usleep(200000);
       hev->SetStrServo(SERVO_FALSE);
-      usleep(200000);
+      //usleep(200000);
     }
     break;
   case CMD_MODE_PROGRAM:
@@ -56,12 +56,14 @@ void MainWindow::SetStrMode(int mode)
       //hev->SetStrCMode(CONT_MODE_ANGLE);
       usleep(200000);
       hev->SetStrServo(SERVO_TRUE);
-      usleep(200000);
+      //usleep(200000);
+      steering_diff_sum = 0;
     }
     break;
   default:
     cout << "Unknown mode: " << mode << endl;
   }
+
 }
 
 // for torque control
@@ -127,13 +129,12 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   prev_steering_angle  = current_steering_angle;
 
   //#if 0 /* log */ 
-  if (_hev_state.strInf.mode == MODE_PROGRAM){
-    ofstream ofs("/tmp/steering.log", ios::app);
-    ofs << cmd_steering_angle << " " 
-        << current_steering_angle << " " 
-        << current_steering_angvel << " "  
-        << target_steering_torque << endl;
-  }
+  ofstream ofs("/tmp/steering.log", ios::app);
+  ofs << cmd_steering_angle << " " 
+      << current_steering_angle << " " 
+      << current_steering_angvel << " "  
+      << steering_diff_sum << " "  
+      << target_steering_torque << endl;
   //#endif
 }
 
