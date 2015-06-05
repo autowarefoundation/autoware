@@ -61,7 +61,7 @@ using namespace zmp::hev;
 #define STEERING_ANGLE_LIMIT 550 // could be STEERING_ANGLE_MAX but...
 #define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
 
-#define SPEED_LIMIT 80.0 // km/h
+#define SPEED_LIMIT 80 // km/h
 #define STROKE_SPEED_LIMIT 80 // use stroke until 80 km/h
 #define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
 #define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 

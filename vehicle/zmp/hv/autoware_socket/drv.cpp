@@ -452,7 +452,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
 
   if (fabs(cmd_velocity) >= current_velocity
       && fabs(cmd_velocity) > 0.0 
-      && current_velocity <= KmhToMs(SPEED_LIMIT) ) {
+      && current_velocity <= SPEED_LIMIT) {
     cout << "accelerate: current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << endl;
     _accelerate_control(current_velocity, cmd_velocity, hev);
