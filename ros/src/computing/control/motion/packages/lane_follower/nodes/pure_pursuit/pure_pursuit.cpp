@@ -238,14 +238,17 @@ double GetLookAheadDistance(int waypoint)
 
 int GetClosestWaypoint()
 {
+    int closest_threshold = 5;
+
     //interval between 2 waypoints
     tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, 0);
 
     tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
 
-    for(int ratio = 1;ratio < 3 ; ratio++){
+    for(int ratio = 1;ratio < closest_threshold; ratio++){
 
       double distance_threshold = ratio *tf::tfDistance(v1, v2); //meter
+      std::cout << "distance_threshold : " << distance_threshold << std::endl;
 
       std::vector<int> waypoint_candidates;
 
@@ -265,7 +268,7 @@ int GetClosestWaypoint()
         if (dt < distance_threshold) {
 	  //add as a candidate
 	  waypoint_candidates.push_back(i);
-	  // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+	   std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
         }
       }
 
@@ -273,12 +276,12 @@ int GetClosestWaypoint()
         continue;
       }
 
+      std::cout << "prev closest waypoint : " << _closest_waypoint << std::endl;
       int sub_min = waypoint_candidates[0] - _closest_waypoint;
       int decided_waypoint =  waypoint_candidates[0];
-      for (unsigned int i = 1; i < waypoint_candidates.size(); i++) {
-        std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
+      for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
         int sub = waypoint_candidates[i] - _closest_waypoint;
-        std::cout << "sub : " << sub << std::endl;
+        std::cout << "closest candidates : " << waypoint_candidates[i] <<  " sub : " << sub << std::endl;
         if(sub < 0)
         	continue;
 
@@ -714,8 +717,9 @@ int main(int argc, char **argv)
             } else {
                 std::cout << "dialog" << std::endl;
             }
+
             if(_closest_waypoint < 0){
-            	std::cout << "closest waypoint not near the car !!" << std::endl;
+            	std::cout << "closest waypoint can not detected !!" << std::endl;
             	twist.twist.linear.x = 0;
             	twist.twist.angular.z = 0;
             }else{
