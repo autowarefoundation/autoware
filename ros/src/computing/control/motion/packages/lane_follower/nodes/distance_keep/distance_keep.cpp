@@ -232,65 +232,65 @@ tf::Vector3 TransformWaypoint(int i)
 }*/
 int GetClosestWaypoint()
 {
+    int closest_threshold = 5;
+
     //interval between 2 waypoints
     tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, 0);
 
     tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
 
-    int ratio = 1;
+    for (int ratio = 1; ratio < closest_threshold; ratio++) {
 
-    while(1){
-      
-      double distance_threshold = ratio *tf::tfDistance(v1, v2); //meter
-      
-      std::vector<int> waypoint_candidates;
-      
-      for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
-	
-        //std::cout << waypoint << std::endl;
+        double distance_threshold = ratio * tf::tfDistance(v1, v2); //meter
+        std::cout << "distance_threshold : " << distance_threshold << std::endl;
 
-        // position of @waypoint.
-        tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
-        tf::Vector3 tf_waypoint = _transform * waypoint;
-        tf_waypoint.setZ(0);
-        //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+        std::vector<int> waypoint_candidates;
 
-        //double dt = tf::tfDistance(v1, v2);
-        double dt = tf::tfDistance(_origin_v, tf_waypoint);
-        //  std::cout << i  << " "<< dt << std::endl;
-        if (dt < distance_threshold) {
-	  //add as a candidate
-	  waypoint_candidates.push_back(i);
-	  // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+        for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
+
+            //std::cout << waypoint << std::endl;
+
+            // position of @waypoint.
+            tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
+            tf::Vector3 tf_waypoint = _transform * waypoint;
+            tf_waypoint.setZ(0);
+            //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+
+            //double dt = tf::tfDistance(v1, v2);
+            double dt = tf::tfDistance(_origin_v, tf_waypoint);
+            //  std::cout << i  << " "<< dt << std::endl;
+            if (dt < distance_threshold) {
+                //add as a candidate
+                waypoint_candidates.push_back(i);
+                std::cout << "waypoint = " << i << "  distance = " << dt << std::endl;
+            }
         }
-      }
 
-      // if(waypoint_candidates.size() == 0)
-      // return _closest_waypoint;
-
-      int sub_min = 100;
-      int decided_waypoint = 1;
-      for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-        std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
-        int sub = waypoint_candidates[i] - _closest_waypoint;
-	std::cout << "sub : " << sub << std::endl;
-	if(sub < 0)
-	  continue;
-        
-        if (sub < sub_min) {
-	  decided_waypoint = waypoint_candidates[i];
-	  sub_min = sub;
+        if (waypoint_candidates.size() == 0) {
+            continue;
         }
-      }
-      if(decided_waypoint >= _closest_waypoint){
-         return decided_waypoint;
-      }else{
-	ratio++;
-      }
-    
+
+        std::cout << "prev closest waypoint : " << _closest_waypoint << std::endl;
+        int sub_min = waypoint_candidates[0] - _closest_waypoint;
+        int decided_waypoint = waypoint_candidates[0];
+        for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+            int sub = waypoint_candidates[i] - _closest_waypoint;
+            std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
+            if (sub < 0)
+                continue;
+
+            if (sub < sub_min) {
+                decided_waypoint = waypoint_candidates[i];
+                sub_min = sub;
+            }
+        }
+        if (decided_waypoint >= _closest_waypoint) {
+            return decided_waypoint;
+        }
+
     }
+    return -1;
 }
-
 /*
 int GetClosestWaypoint()
 {
