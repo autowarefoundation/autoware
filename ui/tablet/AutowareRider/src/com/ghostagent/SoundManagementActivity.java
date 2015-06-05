@@ -350,7 +350,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int NDT = 4;
 		static final int LF = 5;
 
-		static final int MISS_BEACON_LIMIT = 3;
+		static final int MISS_BEACON_LIMIT = 10;
 
 		int[] recv(int response) {
 			int[] data = new int[2];
