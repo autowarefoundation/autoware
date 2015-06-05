@@ -26,8 +26,8 @@ static void putResult_inText(Mat *image, const vector<Context> &contexts)
   for (unsigned int i=0; i<contexts.size(); i++)
     {
       Context ctx = contexts.at(i);
-      if (ctx.lampRadius < MINIMAM_RADIUS)
-        continue;
+//      if (ctx.lampRadius < MINIMAM_RADIUS)
+//        continue;
 
       switch(ctx.lightState) {
       case GREEN:
@@ -89,8 +89,8 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   frame.copyTo(targetScope);
   for (unsigned int i=0; i<detector.contexts.size(); i++)
     {
-      if (detector.contexts.at(i).lampRadius < MINIMAM_RADIUS)
-        continue;
+//      if (detector.contexts.at(i).lampRadius < MINIMAM_RADIUS)
+//        continue;
 
       circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
       circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);

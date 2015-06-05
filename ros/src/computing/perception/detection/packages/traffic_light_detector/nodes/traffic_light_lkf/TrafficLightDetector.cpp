@@ -135,17 +135,21 @@ static void colorExtraction(const Mat&    src, // input HSV image
   Mat lut(256, 1, CV_8UC3);
   for (int i=0; i<256; i++)
     {
-      lut.data[i*lut.step]     = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
-      lut.data[i*lut.step + 1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
-      lut.data[i*lut.step + 2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
+//      lut.data[i*lut.step]     = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
+//      lut.data[i*lut.step + 1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
+//      lut.data[i*lut.step + 2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
+	  lut.at<Vec3b>(i)[0] = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
+	  lut.at<Vec3b>(i)[1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
+	  lut.at<Vec3b>(i)[2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
     }
 
   /* apply LUT to input image */
-  LUT(input_img, lut, input_img);
+  Mat extracted(input_img.rows, input_img.cols, CV_8UC3);
+  LUT(input_img, lut, extracted);
 
   /* divide image into each channel */
   std::vector<Mat> channels;
-  split(input_img, channels);
+  split(extracted, channels);
 
   /* create mask */
   bitwise_and(channels[0], channels[1], *dst);
@@ -159,30 +163,30 @@ static void colorExtraction(const Mat&    src, // input HSV image
 static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
 {
   /* reduce noise */
-  Mat noiseReduced;
+  Mat noiseReduced(roi.rows, roi.cols, CV_8UC3);
   GaussianBlur(roi, noiseReduced, Size(7, 7), 0, 0);
 
   /* extract color information */
   Mat red_mask(roi.rows, roi.cols, CV_8UC1);
   colorExtraction(noiseReduced,
                   &red_mask,
-                  DAYTIME_RED_LOWER          , DAYTIME_RED_UPPER,
-                  DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
-                  DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
+                  (double)DAYTIME_RED_LOWER          , (double)DAYTIME_RED_UPPER,
+                  (double)DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
+                  (double)DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
 
   Mat yellow_mask(roi.rows, roi.cols, CV_8UC1);
   colorExtraction(noiseReduced,
                   &yellow_mask,
-                  DAYTIME_YELLOW_LOWER       , DAYTIME_YELLOW_UPPER,
-                  DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
-                  DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
+                  (double)DAYTIME_YELLOW_LOWER       , (double)DAYTIME_YELLOW_UPPER,
+                  (double)DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
+                  (double)DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
 
   Mat green_mask(roi.rows, roi.cols, CV_8UC1);
   colorExtraction(noiseReduced,
                   &green_mask,
-                  DAYTIME_GREEN_LOWER        , DAYTIME_GREEN_UPPER,
-                  DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
-                  DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
+                  (double)DAYTIME_GREEN_LOWER        , (double)DAYTIME_GREEN_UPPER,
+                  (double)DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
+                  (double)DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
 
 
   Mat red(roi.rows, roi.cols, CV_8UC3, CV_RGB(255, 0, 0));
@@ -212,7 +216,7 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
   threshold(binarized, binarized, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
   // /* reduce salt-and-pepper noise */
-  remove_SoltPepperNoise(&binarized, 1);
+  //remove_SoltPepperNoise(&binarized, 1);
 
   imshow("binarize", binarized);
   waitKey(10);
@@ -292,7 +296,8 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
   for (int i = 0; i < static_cast<int>(contexts.size()); i++) {
     Context context = contexts.at(i);
 
-    if (context.lampRadius < MINIMAM_RADIUS || context.topLeft.x > context.botRight.x)
+    //if (context.lampRadius < MINIMAM_RADIUS || context.topLeft.x > context.botRight.x)
+    if (context.topLeft.x > context.botRight.x)
       continue;
 
     /* extract region of interest from input image */
@@ -301,6 +306,12 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     /* convert color space (BGR -> HSV) */
     Mat roi_HSV;
     cvtColor(roi, roi_HSV, CV_BGR2HSV);
+
+    // /* test whether HSV conversion was success or not */
+    // Mat test;
+    // cvtColor(roi_HSV, test, CV_HSV2BGR);
+    // imshow("test", test);
+    // waitKey(5);
 
     /* search the place where traffic signals seem to be */
     Mat    signalMask    = signalDetect_inROI(roi_HSV, context.lampRadius);

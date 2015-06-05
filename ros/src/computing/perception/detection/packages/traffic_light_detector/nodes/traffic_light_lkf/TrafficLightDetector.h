@@ -57,20 +57,20 @@ public:
 /* #define DAYTIME_V_SIGNAL_THRESHOLD 80 */
 enum daytime_Hue_threshold {
     DAYTIME_RED_LOWER    = 340,
-    DAYTIME_RED_UPPER    = 40,
-    DAYTIME_YELLOW_LOWER = 40,
-    DAYTIME_YELLOW_UPPER = 60,
-    DAYTIME_GREEN_LOWER  = 70,//120,//140,
-    DAYTIME_GREEN_UPPER  = 180,
+    DAYTIME_RED_UPPER    = 50,
+    DAYTIME_YELLOW_LOWER = 50,
+    DAYTIME_YELLOW_UPPER = 70,
+    DAYTIME_GREEN_LOWER  = 80,//120,//140,
+    DAYTIME_GREEN_UPPER  = 190,//180,
 };
 
-#define DAYTIME_S_SIGNAL_THRESHOLD ((double)0.1)//((double)0.2) //0.27
-#define DAYTIME_V_SIGNAL_THRESHOLD ((double)100/255) //((double)110/255)
+#define DAYTIME_S_SIGNAL_THRESHOLD ((double)0.37)//((double)0.27)
+#define DAYTIME_V_SIGNAL_THRESHOLD ((double)90/255) //((double)110/255)
 
 #define NOISE_REDUCTION_TIME 1
 
 #define CIRCLE_LEVEL_THRESHOLD 0.65
-#define CIRCLE_AREA_THRESHOLD 10
+#define CIRCLE_AREA_THRESHOLD 5
 
 /* utility functions to convert HSV value range from OpenCV to definition */
 inline double Actual_Hue(uchar hue_opencv)
