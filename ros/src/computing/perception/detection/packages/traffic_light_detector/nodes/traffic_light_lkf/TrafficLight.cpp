@@ -13,13 +13,6 @@ static TrafficLightDetector detector;
 
 static Mat frame;
 
-static inline bool IsNearlyZero(double x)
-{
-  double abs_x = fabs(x);
-  int scale = 100;
-  return(abs_x < DBL_MIN*scale);
-}
-
 static void putResult_inText(Mat *image, const vector<Context> &contexts)
 {
   std::string label;
@@ -105,9 +98,10 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
     }
 
 
-  Mat grayScale;
-  cvtColor(frame, grayScale, CV_RGB2GRAY);
-  detector.brightnessDetect(grayScale);
+  // Mat grayScale;
+  // cvtColor(frame, grayScale, CV_RGB2GRAY);
+  // detector.brightnessDetect(grayScale);
+  detector.brightnessDetect(frame);
 
   /* test output */
   putResult_inText(&targetScope, detector.contexts);
