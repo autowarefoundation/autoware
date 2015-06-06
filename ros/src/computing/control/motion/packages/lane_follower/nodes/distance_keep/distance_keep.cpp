@@ -293,13 +293,12 @@ double Decelerate()
         return 0;
     }
 
-    double decel_ms = 1.0; // m/s
-    double decel_velocity_ms = sqrt(2 * decel_ms * distance);
+    double decel_velocity_ms = DecelerateVelocity(distance,_current_twist.twist.linear.x);
 
     if(decel_velocity_ms < 1.0){
         decel_velocity_ms = 0;
     }
-    std::cout << "velocity : " << decel_velocity_ms << std::endl;
+
     return decel_velocity_ms;
 
 }
@@ -350,13 +349,7 @@ int main(int argc, char **argv)
             if (detection_flag == true) {
                 //decelerate
                 std::cout << "twist deceleration..." << std::endl;
-                double veloc = Decelerate();
-                std::cout << "veloc/current_twist.linear.x :" << veloc << "/" <<  _current_twist.twist.linear.x <<std::endl;
-                if (veloc > _current_twist.twist.linear.x) {
-                    twist.twist.linear.x = _current_twist.twist.linear.x;
-                } else {
-                    twist.twist.linear.x = veloc;
-                }
+                twist.twist.linear.x = Decelerate();
                 twist.twist.angular.z = _current_twist.twist.angular.z;
             } else {
                 //through

@@ -397,9 +397,6 @@ static geometry_msgs::Twist CalculateCmdTwist()
 /////////////////////////////////////////////////////////////////
 // Safely stop the vehicle.
 /////////////////////////////////////////////////////////////////
-//static int end_loop = 1;
-//static double end_ratio = 0.2;
-
 static bool decelerate_flag = false;
 static geometry_msgs::Twist EndControl()
 {
@@ -420,18 +417,12 @@ static geometry_msgs::Twist EndControl()
         return twist;
     }
 
-    double decel_ms = 1.0; // m/s
-    double decel_velocity_ms = sqrt(2 * decel_ms * lookahead_distance);
+    twist.linear.x = DecelerateVelocity(lookahead_distance,_prev_velocity);
 
-    if (decel_velocity_ms < 1.0) {
-        decel_velocity_ms = 0;
+    if (twist.linear.x < 1.0) {
+        twist.linear.x = 0;
     }
-    std::cout << "velocity : " << decel_velocity_ms << std::endl;
-    if (decel_velocity_ms < _prev_velocity) {
-        twist.linear.x = decel_velocity_ms;
-    } else {
-        twist.linear.x = _prev_velocity;
-    }
+
     double radius = CalcRadius(_current_path.waypoints.size() - 1);
 
     if (radius > 0 || radius < 0) {

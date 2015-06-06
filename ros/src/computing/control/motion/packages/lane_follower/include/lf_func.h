@@ -44,5 +44,5 @@ static tf::Vector3 _origin_v(0, 0, 0);
 
 int GetClosestWaypoint(tf::Transform transform, lane_follower::lane path,int current_closest);
 tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose);
-
+double DecelerateVelocity(double distance, double prev_velocity);
 #endif

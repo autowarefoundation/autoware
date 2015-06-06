@@ -105,3 +105,18 @@ int GetClosestWaypoint(tf::Transform transform, lane_follower::lane path, int cu
     }
     return -1;
 }
+
+double DecelerateVelocity(double distance, double prev_velocity)
+{
+
+    double decel_ms = 1.0; // m/s
+    double decel_velocity_ms = sqrt(2 * decel_ms * distance);
+
+    std::cout << "velocity/prev_velocity :" << decel_velocity_ms << "/" << prev_velocity << std::endl;
+    if (decel_velocity_ms < prev_velocity) {
+        return decel_velocity_ms;
+    } else {
+        return prev_velocity;
+    }
+
+}
