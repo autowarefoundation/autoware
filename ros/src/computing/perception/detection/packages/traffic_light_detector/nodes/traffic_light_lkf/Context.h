@@ -18,6 +18,7 @@ public:
 	Point topLeft;
 	Point botRight;
 	LightState lightState;
+    int signalID;
 };
 
 #endif

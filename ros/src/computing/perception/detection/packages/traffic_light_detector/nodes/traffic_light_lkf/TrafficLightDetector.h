@@ -70,7 +70,7 @@ enum daytime_Hue_threshold {
 #define NOISE_REDUCTION_TIME 1
 
 #define CIRCLE_LEVEL_THRESHOLD 0.65
-#define CIRCLE_AREA_THRESHOLD 5
+#define CIRCLE_AREA_THRESHOLD 1 //5
 
 /* utility functions to convert HSV value range from OpenCV to definition */
 inline double Actual_Hue(uchar hue_opencv)

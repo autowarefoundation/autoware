@@ -79,9 +79,6 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   if (frame.empty())
     return;
 
-  /* reset contexts */
-  detector.contexts.clear();
-
   setContexts(detector, extractedPos);
 
   /* test output */
@@ -138,11 +135,12 @@ void setContexts(TrafficLightDetector &detector,
   for (unsigned int i=0; i<extractedPos->Signals.size(); i++ )
     {
       traffic_light_detector::ExtractedPosition tmp;
-      tmp.u      = extractedPos->Signals.at(i).u;
-      tmp.v      = extractedPos->Signals.at(i).v;
-      tmp.radius = extractedPos->Signals.at(i).radius;
-      tmp.type   = extractedPos->Signals.at(i).type;
-      tmp.linkId = extractedPos->Signals.at(i).linkId;
+      tmp.signalId = extractedPos->Signals.at(i).signalId;
+      tmp.u        = extractedPos->Signals.at(i).u;
+      tmp.v        = extractedPos->Signals.at(i).v;
+      tmp.radius   = extractedPos->Signals.at(i).radius;
+      tmp.type     = extractedPos->Signals.at(i).type;
+      tmp.linkId   = extractedPos->Signals.at(i).linkId;
       signals.push_back(tmp);
     }
 
@@ -155,6 +153,8 @@ void setContexts(TrafficLightDetector &detector,
   std::sort(linkid_vector.begin(), linkid_vector.end());
   std::vector<int>::iterator new_end = std::unique(linkid_vector.begin(), linkid_vector.end());
   linkid_vector.erase(new_end, linkid_vector.end());
+
+  std::vector<Context> updatedSignals;
 
   /* assemble fragmented signal lamp in a context */
   for (unsigned int ctx_idx=0; ctx_idx<linkid_vector.size(); ctx_idx++)
@@ -184,6 +184,7 @@ void setContexts(TrafficLightDetector &detector,
                 break;
               case 3:           /* YELLOW */
                 ctx.yellowCenter = Point( img_x, img_y );
+                ctx.signalID     = sig_iterator->signalId; // use yellow light signalID as this context's representative
                 break;
               }
               min_radius    = (min_radius > radius) ? radius : min_radius;
@@ -199,6 +200,30 @@ void setContexts(TrafficLightDetector &detector,
       ctx.botRight   = Point(most_right, most_bottom);
       ctx.lightState = UNDEFINED;
 
-      detector.contexts.push_back(ctx);
+      /* search whether this signal has already belonged in detector.contexts */
+      bool isInserted = false;
+      std::vector<int> eraseCandidate;
+      for (unsigned int i=0; i<detector.contexts.size(); i++) {
+        if (ctx.signalID == detector.contexts.at(i).signalID)
+          {
+            /* update to new information except to lightState */
+            updatedSignals.push_back(ctx);
+            updatedSignals.back().lightState = detector.contexts.at(i).lightState;
+            isInserted = true;
+            break;
+          }
+
+      }
+
+      if (isInserted == false)
+        updatedSignals.push_back(ctx); // this ctx is new in detector.contexts
+
     }
+
+  /* reset detector.contexts */
+  detector.contexts.clear();
+  detector.contexts.resize(updatedSignals.size());
+  for (unsigned int i=0; i<updatedSignals.size(); i++) {
+    detector.contexts.at(i) = updatedSignals.at(i);
+  }
 }
