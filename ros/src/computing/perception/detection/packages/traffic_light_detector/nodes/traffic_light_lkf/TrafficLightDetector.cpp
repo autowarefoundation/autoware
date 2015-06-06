@@ -367,7 +367,7 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     bool isGreen_bright;
 
     if (valid_pixNum > 0) {
-      isRed_bright    = ( ((double)red_pixNum / valid_pixNum)    > 0.5) ? true : false;
+      isRed_bright    = ( ((double)red_pixNum / valid_pixNum)    > 0.45) ? true : false; // detect red a little largely
       isYellow_bright = ( ((double)yellow_pixNum / valid_pixNum) > 0.5) ? true : false;
       isGreen_bright  = ( ((double)green_pixNum / valid_pixNum)  > 0.5) ? true : false;
     } else {
@@ -377,7 +377,7 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     }
 
     int currentLightsCode = getCurrentLightsCode(isRed_bright, isYellow_bright, isGreen_bright);
-    contexts.at(i).lightState = determineState(contexts.at(i).lightState, currentLightsCode);
+    contexts.at(i).lightState = determineState(contexts.at(i).lightState, currentLightsCode, &(contexts.at(i).stateJudgeCount));
 
     // UnsharpMasking(&roi, &roi, 3.0f);
 
@@ -418,9 +418,25 @@ int getCurrentLightsCode(bool display_red, bool display_yellow, bool display_gre
   return (int)display_red + 2 * ((int) display_yellow) + 4 * ((int) display_green);
 }
 
-LightState determineState(LightState previousState, int currentLightsCode) {
+LightState determineState(LightState previousState, int currentLightsCode, int* stateJudgeCount) {
   //printf("Previous state: %d, currentCode: %d, Switched state to %d\n", previousState, currentLightsCode, STATE_TRANSITION_MATRIX[previousState][currentLightsCode]);
-  return STATE_TRANSITION_MATRIX[previousState][currentLightsCode];
+  LightState current = STATE_TRANSITION_MATRIX[previousState][currentLightsCode];
+
+  if (current == UNDEFINED) {
+    /* if current state is UNDEFINED, return previous state tentatively */
+    return previousState;
+  }
+
+  if(*stateJudgeCount > CHANGE_STATE_THRESHOLD)
+    {
+      *stateJudgeCount = 0;
+      return current;
+    }
+  else
+    {
+      (*stateJudgeCount)++;
+      return previousState;
+    }
 }
 
 

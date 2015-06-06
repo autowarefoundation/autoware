@@ -19,6 +19,7 @@ public:
 	Point botRight;
 	LightState lightState;
     int signalID;
+    int stateJudgeCount;
 };
 
 #endif

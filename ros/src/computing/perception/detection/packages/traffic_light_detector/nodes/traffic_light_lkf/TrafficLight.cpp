@@ -199,6 +199,7 @@ void setContexts(TrafficLightDetector &detector,
       ctx.topLeft    = Point(most_left, most_top);
       ctx.botRight   = Point(most_right, most_bottom);
       ctx.lightState = UNDEFINED;
+      ctx.stateJudgeCount = 0;
 
       /* search whether this signal has already belonged in detector.contexts */
       bool isInserted = false;
@@ -208,7 +209,8 @@ void setContexts(TrafficLightDetector &detector,
           {
             /* update to new information except to lightState */
             updatedSignals.push_back(ctx);
-            updatedSignals.back().lightState = detector.contexts.at(i).lightState;
+            updatedSignals.back().lightState      = detector.contexts.at(i).lightState;
+            updatedSignals.back().stateJudgeCount = detector.contexts.at(i).stateJudgeCount;
             isInserted = true;
             break;
           }

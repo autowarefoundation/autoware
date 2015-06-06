@@ -25,7 +25,7 @@ const LightState STATE_TRANSITION_MATRIX[4][8] = {
 
 double getBrightnessRatioInCircle(const Mat &input, const Point center, const int radius);
 int getCurrentLightsCode(bool display_red, bool display_yellow, bool display_green);
-LightState determineState(LightState previousState, int currentLightsCode);
+LightState determineState(LightState previousState, int currentLightsCode, int* stateJudgeCount);
 
 class TrafficLightDetector {
 public:
@@ -71,6 +71,8 @@ enum daytime_Hue_threshold {
 
 #define CIRCLE_LEVEL_THRESHOLD 0.65
 #define CIRCLE_AREA_THRESHOLD 1 //5
+
+#define CHANGE_STATE_THRESHOLD 5
 
 /* utility functions to convert HSV value range from OpenCV to definition */
 inline double Actual_Hue(uchar hue_opencv)
