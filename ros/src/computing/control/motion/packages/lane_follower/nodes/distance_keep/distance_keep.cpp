@@ -41,7 +41,6 @@
 #include <pcl/point_types.h>
 
 #include <iostream>
-#include <chrono>
 
 #include "lf_func.h"
 
@@ -210,10 +209,7 @@ int GetObstacleWaypointUsingVscan()
      //   tf::Vector3 tf_waypoint = TransformWaypoint(i);
         tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[i].pose.pose);
         tf_waypoint.setZ(0);
-        // tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z );
-       //  tf::Vector3 tf_waypoint = _transform * waypoint;
-        // tf_waypoint.setZ(0);
-         
+
         //std::cout << "waypoint : "<< tf_waypoint.getX()  << " "<< tf_waypoint.getY() << std::endl;
         int point_count = 0;
         for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = _vscan.begin(); item != _vscan.end(); item++) {
@@ -247,15 +243,8 @@ bool ObstacleDetection()
     _closest_waypoint = GetClosestWaypoint(_transform,_current_path,_closest_waypoint);
     std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
 
-    // auto start = std::chrono::system_clock::now(); //start time
-
     _vscan_obstacle_waypoint = GetObstacleWaypointUsingVscan();
 
-    /*  auto end = std::chrono::system_clock::now(); //end time
-     auto dur = end - start; //processing time
-     double time = std::chrono::duration_cast<std::chrono::microseconds>(dur).count(); //micro sec
-     std::cout << "GetObstacleWaypointUsingVscan : " << time * 0.001 << " milli sec" << std::endl;
-     */
     if (prev_detection == false) {
         if (_vscan_obstacle_waypoint != -1) {
             DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
@@ -291,9 +280,7 @@ bool ObstacleDetection()
 
 }
 
-//static bool _decelerate_set = false;
-//static double _decelerate_ms = 0;
-//static double _set_velocity_ms = 0;
+
 double Decelerate()
 {
     //calculate distance from my position to waypoint
@@ -306,24 +293,6 @@ double Decelerate()
         return 0;
     }
 
-   /* if (_decelerate_set == false) {
-        _decelerate_ms = pow(_current_twist.twist.linear.x, 2) / (2 * distance);
-        _set_velocity_ms = _current_twist.twist.linear.x;
-        _decelerate_set = true;
-    }
-    std::cout << "decelerate : " << _decelerate_ms << std::endl;
-
-    _set_velocity_ms -= _decelerate_ms / LOOP_RATE;
-
-     if (_set_velocity_ms < 0)
-        _set_velocity_ms = 0;
-    */
-
-    /*  double radius = current_twist.twist.linear.x / current_twist.twist.angular.z;
-     current_twist.twist.linear.x = velocity_ms;
-     current_twist.twist.angular.z = current_twist.twist.linear.x / radius;
-     */
-
     double decel_ms = 1.0; // m/s
     double decel_velocity_ms = sqrt(2 * decel_ms * distance);
 
@@ -332,7 +301,7 @@ double Decelerate()
     }
     std::cout << "velocity : " << decel_velocity_ms << std::endl;
     return decel_velocity_ms;
-//return _set_velocity_ms;
+
 }
 
 int main(int argc, char **argv)
@@ -391,7 +360,6 @@ int main(int argc, char **argv)
                 twist.twist.angular.z = _current_twist.twist.angular.z;
             } else {
                 //through
-                //_decelerate_set = false;
                 std::cout << "twist through" << std::endl;
                 twist.twist = _current_twist.twist;
             }

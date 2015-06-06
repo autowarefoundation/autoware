@@ -50,8 +50,6 @@
 static double _initial_velocity_kmh = 5; // km/h
 static double _lookahead_threshold = 4.0;
 static double _threshold_ratio = 1.0;
-//static double _end_distance = 2.0;
-//static double _error_distance = 2.5;
 static std::string _mobility_frame = "/base_link"; // why is this default?
 static std::string _current_pose_topic = "ndt";
 
@@ -106,33 +104,6 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
 }
 
-/*static geometry_msgs::PoseStamped _prev_pose;
- static geometry_msgs::Quaternion _quat;
- static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
- {
- //std::cout << "gnss callback" << std::endl;
- if (_current_pose_topic == "gnss") {
- // transform to the rectangular plane.
- geo_pos_conv geo;
- geo.set_plane(7);
- geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
- _current_pose.header = msg->header;
- _current_pose.pose.position.x = geo.y();
- _current_pose.pose.position.y = geo.x();
- _current_pose.pose.position.z = geo.z();
- double distance = sqrt(pow(_current_pose.pose.position.y - _prev_pose.pose.position.y, 2) + pow(_current_pose.pose.position.x - _prev_pose.pose.position.x, 2));
- std::cout << "distance : " << distance << std::endl;
- if (distance > 0.2) {
- double yaw = atan2(_current_pose.pose.position.y - _prev_pose.pose.position.y, _current_pose.pose.position.x - _prev_pose.pose.position.x);
- _quat = tf::createQuaternionMsgFromYaw(yaw);
- _prev_pose = _current_pose;
- }
- _current_pose.pose.orientation = _quat;
-
- } //else
- //      std::cout << "pose is not gnss" << std::endl;
- }
- */
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
     if (_current_pose_topic == "ndt") {
@@ -168,24 +139,6 @@ static double GetLookAheadThreshold()
         return current_velocity_kmph * 0.5;
 }
 
-/////////////////////////////////////////////////////////////////
-// transform the waypoint to the vehicle plane.
-/////////////////////////////////////////////////////////////////
-/*geometry_msgs::Point TransformWaypoint(int i)
-{
-    tf::Vector3 original(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
-
-    geometry_msgs::Point point;
-    tf::Vector3 transformed = _transform * original;
-    point.x = transformed.getX();
-    point.y = transformed.getY();
-    point.z = transformed.getZ();
-
-    // std::cout << "transformed pose (" << point.x << " " << point.y << " " << point.z << ") transformed2 pose : (" << point2.x << " " << point2.y << " " << point2.z << ")" << std::endl;
-
-    return point;
-
-}*/
 
 /////////////////////////////////////////////////////////////////
 // obtain the distance to @waypoint. ignore z position
@@ -218,11 +171,8 @@ double CalcRadius(int waypoint)
 
     // transform the waypoint to the car plane.
 
-   // geometry_msgs::Point transformed_waypoint = TransformWaypoint(waypoint);
-
     //std::cout << "current path (" << _current_path.waypoints[waypoint].pose.pose.position.x << " " << _current_path.waypoints[waypoint].pose.pose.position.y << " " << _current_path.waypoints[waypoint].pose.pose.position.z << ") ---> transformed_path : (" << transformed_waypoint.x << " " << transformed_waypoint.y << " " << transformed_waypoint.z << ")" << std::endl;
 
-    //double radius = pow(lookahead_distance, 2) / (2 * transformed_waypoint.y);
     double radius = pow(lookahead_distance, 2) / (2 * TransformWaypoint(_transform,_current_path.waypoints[waypoint].pose.pose).getY());
     //std::cout << "radius = " << radius << std::endl;
     return radius;
@@ -525,7 +475,7 @@ int main(int argc, char **argv)
     ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1000, OdometryPoseCallback);
     ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
     ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
-    //ros::Subscriber gnss_subscriber = nh.subscribe("fix", 1000, GNSSCallback);
+
 
     geometry_msgs::TwistStamped twist;
     ros::Rate loop_rate(LOOP_RATE); // by Hz

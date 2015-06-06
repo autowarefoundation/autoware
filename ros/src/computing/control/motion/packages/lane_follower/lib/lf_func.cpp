@@ -30,13 +30,15 @@
 
 #include "lf_func.h"
 
+/////////////////////////////////////////////////////////////////
+// transform the waypoint to the vehicle plane.
+/////////////////////////////////////////////////////////////////
 tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose)
 {
 
     tf::Vector3 waypoint(pose.position.x,pose.position.y,pose.position.z);
     tf::Vector3 tf_w = transform * waypoint;
 
-    //tf_w.setZ(0);
     return tf_w;
 }
 
