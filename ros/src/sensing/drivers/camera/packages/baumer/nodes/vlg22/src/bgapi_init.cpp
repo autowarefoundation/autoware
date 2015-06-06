@@ -51,20 +51,19 @@ void stop_cameras(std::vector<BGAPI::Camera*> & cameraObjects)
 	}
 }
 
-bool create_images_start(std::vector<BGAPI::Image*>& imagePointers,  std::vector<BGAPI::Camera*> & cameraObjects)
+bool start_cameras(std::vector<BGAPI::Camera*> & cameraObjects)
 {
 	BGAPI_RESULT res = BGAPI_RESULT_FAIL;
-	
+
 	for (unsigned int i = 0; i < cameraObjects.size(); i++)
 	{
-		
+
 		res = cameraObjects[i]->setStart( true );
 		if( res != BGAPI_RESULT_OK )
 		{
 			ROS_INFO("BGAPI::Camera::setStart returned with errorcode %d\n", res );
 			return false;
 		}
-		
 	}
 	return true;
 }

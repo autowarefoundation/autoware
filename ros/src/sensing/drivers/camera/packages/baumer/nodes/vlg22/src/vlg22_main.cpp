@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 	ros::Publisher camera_info_pub;
-	
+
 	int system_count = 0;
 	int currSystem = 0;
 	int i = 0;
@@ -17,11 +17,11 @@ int main(int argc, char **argv)
 
 	vector<BGAPI::System*> ppSystem;
 	vector<BGAPI::System*>::iterator systemIter;
-	
+
 	BGAPI_RESULT res = BGAPI_RESULT_FAIL;
 	std::vector<BGAPI::Camera*> cameraPointers;
 	std::vector<BGAPI::Image*> imagePointers;
-	
+
 	double fps;
 	if (private_nh.getParam("fps", fps))
 	{
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 		fps = 15.0;
 		ROS_INFO("No param received, defaulting to %.2f", fps);
 	}
-	
+
 	//try to initialize baumer system
 	res = init_systems( &system_count, &ppSystem );
 	if( res != BGAPI_RESULT_OK )
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	{
 		ROS_INFO("init_camera Errorcode: %d\n", res);
 	}
-	
+
 	if (camera_num > 0)
 	{
 		ROS_INFO("init_cameras OK. Found %d Baumer cameras\n", camera_num);
@@ -62,10 +62,22 @@ int main(int argc, char **argv)
 		ROS_INFO("Could not setup cameras for capture. Finalizing...");
 		return -1;
 	}
-	//create images for each camera to be used while capturing
-	//
 
-	if (!create_images_start(imagePointers, cameraPointers))
+	BGAPI::Image* pImage = NULL;
+	//create an image
+	res = BGAPI::createImage( &pImage );
+	if( res != BGAPI_RESULT_OK )
+	{
+		ROS_INFO( "Error %d while creating an image.\n", res );
+		return false;
+	}
+	res = cameraPointers[i]->setImage( pImage );
+	if( res != BGAPI_RESULT_OK )
+	{
+		ROS_INFO( "Error %d while setting an image to the camera.\n", res );
+		return false;
+	}
+	if (!start_cameras(cameraPointers))
 	{
 		ROS_INFO("Could not create images for capture. Finalizing...");
 		return -1;
@@ -95,23 +107,10 @@ int main(int argc, char **argv)
 		int hwc = 0;
 		int width = 0;
 		int height = 0;
-		
+
 		for (unsigned int i = 0; i < cameraPointers.size(); i++)
 		{
-			BGAPI::Image* pImage = NULL;
-			//create an image for each camera
-			res = BGAPI::createImage( &pImage ); 
-			if( res != BGAPI_RESULT_OK )
-			{
-				ROS_INFO( "Error %d while creating an image.\n", res );
-				return false;
-			}
-			res = cameraPointers[i]->setImage( pImage );
-			if( res != BGAPI_RESULT_OK )
-			{
-				ROS_INFO( "Error %d while setting an image to the camera.\n", res );
-				return false;
-			}
+
 			res = cameraPointers[i]->getImage( &pImage, receiveTimeout );
 			if( res != BGAPI_RESULT_OK )
 			{
@@ -119,7 +118,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				(pImage)->get( &imagebuffer );				
+				(pImage)->get( &imagebuffer );
 				(pImage)->getNumber( &swc, &hwc );
 
 				res = (pImage)->getSize(&width, &height);
@@ -133,6 +132,9 @@ int main(int argc, char **argv)
 				//cv::flip(mat, mat, -1);
 				cv::Mat dest(cv::Size(width, height), CV_8UC3);
 				cv::cvtColor(mat, dest, CV_BayerBG2RGB);
+				int w = 800;//fixed
+				int h = 600;//fixed
+				cv::resize(dest, dest, cv::Size(w, h));
 
 				//cv::imshow("window", dest);
 				//cv::waitKey(2);

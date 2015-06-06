@@ -30,6 +30,6 @@ int init_cameras( int system_count, vector<BGAPI::System*> * externppSystem, int
 int release_systems( std::vector<BGAPI::System*> * ppSystem );
 int release_images( std::vector<BGAPI::Image*> * ppImage );
 bool setup_cameras(std::vector<BGAPI::Camera*> & cameraObjects, std::string camera_pixel_format_str);
-bool create_images_start(std::vector<BGAPI::Image*>& imagePointers,  std::vector<BGAPI::Camera*> & cameraObjects);
+bool start_cameras(std::vector<BGAPI::Camera*> & cameraObjects);
 void stop_cameras(std::vector<BGAPI::Camera*> & cameraObjects);
 #endif // __BGAPI_INIT_H__
