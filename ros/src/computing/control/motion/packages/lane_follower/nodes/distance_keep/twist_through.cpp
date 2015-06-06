@@ -46,7 +46,7 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
     geometry_msgs::TwistStamped twist = *msg;
     std::cout << "twist_through " << std::endl;
     std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
-    std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
+    std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl << std::endl;
 
 
     _twist_pub.publish(twist);
