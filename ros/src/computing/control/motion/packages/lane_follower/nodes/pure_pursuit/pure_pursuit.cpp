@@ -397,7 +397,6 @@ static geometry_msgs::Twist CalculateCmdTwist()
 /////////////////////////////////////////////////////////////////
 // Safely stop the vehicle.
 /////////////////////////////////////////////////////////////////
-static bool decelerate_flag = false;
 static geometry_msgs::Twist EndControl()
 {
     std::cout << "end control" << std::endl;
@@ -507,8 +506,6 @@ int main(int argc, char **argv)
                 std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
                 std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
 
-                // if(_next_waypoint != _prev_waypoint){
-
                 if (_next_waypoint > 0) {
                     // obtain the linear/angular velocity.
                     twist.twist = CalculateCmdTwist();
@@ -516,9 +513,7 @@ int main(int argc, char **argv)
                     twist.twist.linear.x = 0;
                     twist.twist.angular.z = 0;
                 }
-                //}else{
-                //  std::cout << "selected the same waypoint" << std::endl;
-                //}
+
                 if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
                     endflag = true;
                     _next_waypoint = _current_path.waypoints.size() - 1;
@@ -531,10 +526,10 @@ int main(int argc, char **argv)
             std::cout << "closest/next : " << _closest_waypoint << "/" << _next_waypoint << std::endl;
 
             // after stopped or fed out, let's get ready for the restart.
-            if (_next_waypoint == _closest_waypoint) {
+            if (twist.twist.linear.x == 0) {
                 std::cout << "pure pursuit ended!!" << std::endl;
                 endflag = false;
-                decelerate_flag = false;
+                _closest_waypoint = -1;
             }
         }
         std::cout << "set velocity (kmh) = " << twist.twist.linear.x * 3.6 << std::endl;
