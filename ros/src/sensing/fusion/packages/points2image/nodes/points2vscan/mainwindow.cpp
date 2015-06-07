@@ -2,41 +2,42 @@
 #include "ui_mainwindow.h"
 
 #define BEAMNUM 2000
-#define STEP ui->step->value()
+#define STEP 0.3
 #define MINFLOOR -3.0
 #define MAXCEILING 5.0
 #define ROADSLOP 30.0
+#define ROTATION 3
 
 #define MAXRANGE 80.0
 #define GRIDSIZE 10.0
 #define IMAGESIZE 1000.0
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    QMainWindow(parent)//, ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    //ui->setupUi(this);
     velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("velodyne_points",1000,10);
     connect(velodyne,SIGNAL(receiveMessageSignal()),this,SLOT(generateVirtualScanSlot()));
     vsros=new ROSPub<sensor_msgs::PointCloud2>("/vscan_points",1000);
+    scanros=new ROSPub<sensor_msgs::LaserScan>("/scan",1000);
 
 
-    double PI=3.141592654;
-    double density=2*PI/BEAMNUM;
-    for(int i=0;i<BEAMNUM;i++)
-    {
-        ui->comboBox->insertItem(i,QString("%1").arg((i*density-PI)*180.0/PI));
-    }
-    ui->comboBox->insertItem(BEAMNUM,"NULL");
+//    double PI=3.141592654;
+//    double density=2*PI/BEAMNUM;
+//    for(int i=0;i<BEAMNUM;i++)
+//    {
+        //ui->comboBox->insertItem(i,QString("%1").arg((i*density-PI)*180.0/PI));
+//    }
+    //ui->comboBox->insertItem(BEAMNUM,"NULL");
 
-    connect(ui->comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(showMatrixSlot(int)));
-    connect(ui->step,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
-    connect(ui->rotation,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
-    connect(ui->minrange,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
+//    connect(ui->comboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(showMatrixSlot(int)));
+//    connect(ui->step,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
+//    connect(ui->rotation,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
+//    connect(ui->minrange,SIGNAL(valueChanged(double)),this,SLOT(recalculateSlot()));
 
-    ui->label->resize(IMAGESIZE,IMAGESIZE);
-    image=QImage(IMAGESIZE,IMAGESIZE,QImage::Format_RGB888);
-    drawGrid();
+    //ui->label->resize(IMAGESIZE,IMAGESIZE);
+//    image=QImage(IMAGESIZE,IMAGESIZE,QImage::Format_RGB888);
+//    drawGrid();
 
     velodyne->startReceiveSlot();
 }
@@ -45,7 +46,9 @@ MainWindow::~MainWindow()
 {
     velodyne->stopReceiveSlot();
     delete velodyne;
-    delete ui;
+    delete vsros;
+    delete scanros;
+    //delete ui;
 }
 
 void MainWindow::generateVirtualScanSlot()
@@ -56,78 +59,103 @@ void MainWindow::generateVirtualScanSlot()
 
 void MainWindow::showMatrixSlot(int beamid)
 {
-    if(beamid>=BEAMNUM)
-    {
-        return;
-    }
-    ui->tableWidget->clear();
-    int size=int((MAXCEILING-MINFLOOR)/STEP+0.5);
-    ui->tableWidget->setRowCount(size);
-    ui->tableWidget->setColumnCount(5);
-    for(int i=0;i<size;i++)
-    {
-        ui->tableWidget->setVerticalHeaderItem(i,new QTableWidgetItem(QString("%1").arg(MINFLOOR+i*STEP)));
-    }
-    ui->tableWidget->setHorizontalHeaderLabels(QStringList()<<"RotID"<<"RotLength"<<"RotHeight"<<"Length"<<"Height");
+//    if(beamid>=BEAMNUM)
+//    {
+//        return;
+//    }
+    //ui->tableWidget->clear();
+//    int size=int((MAXCEILING-MINFLOOR)/STEP+0.5);
+    //ui->tableWidget->setRowCount(size);
+    //ui->tableWidget->setColumnCount(5);
+//    for(int i=0;i<size;i++)
+//    {
+        //ui->tableWidget->setVerticalHeaderItem(i,new QTableWidgetItem(QString("%1").arg(MINFLOOR+i*STEP)));
+//    }
+    //ui->tableWidget->setHorizontalHeaderLabels(QStringList()<<"RotID"<<"RotLength"<<"RotHeight"<<"Length"<<"Height");
 
-    for(int i=0;i<size;i++)
-    {
-        ui->tableWidget->setItem(i,0,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotid)));
-        ui->tableWidget->setItem(i,1,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotlength)));
-        ui->tableWidget->setItem(i,2,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotheight)));
-        ui->tableWidget->setItem(i,3,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].length)));
-        ui->tableWidget->setItem(i,4,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].height)));
-    }
-    drawBeam(beamid);
+//    for(int i=0;i<size;i++)
+//    {
+        //ui->tableWidget->setItem(i,0,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotid)));
+        //ui->tableWidget->setItem(i,1,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotlength)));
+        //ui->tableWidget->setItem(i,2,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].rotheight)));
+        //ui->tableWidget->setItem(i,3,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].length)));
+        //ui->tableWidget->setItem(i,4,new QTableWidgetItem(QString("%1").arg(virtualscan.svs[beamid][i].height)));
+//    }
+//    drawBeam(beamid);
 }
 
 void MainWindow::recalculateSlot()
 {
     double PI=3.141592654;
-    QTime start=QTime::currentTime();
-    virtualscan.calculateVirtualScans(BEAMNUM,ui->step->value(),MINFLOOR,MAXCEILING,ui->rotation->value()*PI/180.0, 3);
-    QTime end=QTime::currentTime();
-    virtualscan.getVirtualScan(ROADSLOP*PI/180.0,-1.0,-0.5,2,beams);
-    ui->tc->setText(QString("%1").arg(start.msecsTo(end)));
-
-    sensor_msgs::PointCloud2 msg;
-    msg.header=virtualscan.velodyne->header;
-    msg.fields=virtualscan.velodyne->fields;
-    msg.height=2;
-    msg.width=BEAMNUM;
-    msg.point_step=8*sizeof(float);
-    msg.row_step=msg.width*msg.point_step;
-    msg.data.resize(msg.height*msg.width*msg.point_step);
-    unsigned char * base=msg.data.data();
-
     double density=2*PI/BEAMNUM;
-    for(int i=0;i<BEAMNUM;i++)
+//    QTime start=QTime::currentTime();
+    virtualscan.calculateVirtualScans(BEAMNUM,STEP,MINFLOOR,MAXCEILING,ROTATION*PI/180.0, 3);
+//    QTime end=QTime::currentTime();
+    virtualscan.getVirtualScan(ROADSLOP*PI/180.0,-1.0,-0.5,2,beams);
+    //ui->tc->setText(QString("%1").arg(start.msecsTo(end)));
+
     {
-        double theta=i*density-PI;
-        float * data;
-        int * ring;
+        sensor_msgs::PointCloud2 msg;
+        msg.header=virtualscan.velodyne->header;
+        msg.fields=virtualscan.velodyne->fields;
+        msg.height=2;
+        msg.width=BEAMNUM;
+        msg.point_step=8*sizeof(float);
+        msg.row_step=msg.width*msg.point_step;
+        msg.data.resize(msg.height*msg.width*msg.point_step);
+        unsigned char * base=msg.data.data();
 
-        data=(float *)(base + (2*i) * msg.point_step);
-        data[0]=beams[i]*cos(theta);
-        data[1]=beams[i]*sin(theta);
-        data[2]=virtualscan.minheights[i];
-        data[4]=255;
-        ring=(int *)(data+5*sizeof(float));
-        *ring=0;
 
-        data=(float *)(base + (2*i+1) * msg.point_step);
-        data[0]=beams[i]*cos(theta);
-        data[1]=beams[i]*sin(theta);
-        data[2]=virtualscan.maxheights[i];
-        data[4]=255;
-        ring=(int *)(data+5*sizeof(float));
-        *ring=1;
+        for(int i=0;i<BEAMNUM;i++)
+        {
+            double theta=i*density-PI;
+            float * data;
+            int * ring;
+
+            data=(float *)(base + (2*i) * msg.point_step);
+            data[0]=beams[i]*cos(theta);
+            data[1]=beams[i]*sin(theta);
+            data[2]=virtualscan.minheights[i];
+            data[4]=255;
+            ring=(int *)(data+5*sizeof(float));
+            *ring=0;
+
+            data=(float *)(base + (2*i+1) * msg.point_step);
+            data[0]=beams[i]*cos(theta);
+            data[1]=beams[i]*sin(theta);
+            data[2]=virtualscan.maxheights[i];
+            data[4]=255;
+            ring=(int *)(data+5*sizeof(float));
+            *ring=1;
+        }
+        vsros->sendMessage(msg);
     }
-    vsros->sendMessage(msg);
 
-    drawGrid();
-    drawPoints();
-    showMatrixSlot(ui->comboBox->currentIndex());
+    {
+        sensor_msgs::LaserScan msg;
+        msg.header.frame_id=virtualscan.velodyne->header.frame_id;
+        msg.header.seq=virtualscan.velodyne->header.seq;
+        msg.header.stamp=virtualscan.velodyne->header.stamp;
+        msg.angle_min=-PI;
+        msg.angle_max=PI;
+        msg.angle_increment=density;
+        msg.time_increment=0;
+        msg.scan_time=0.1;
+        msg.range_min=0.1;
+        msg.range_max=100;
+        msg.ranges.resize(BEAMNUM);
+        msg.intensities.resize(BEAMNUM);
+        for(int i=0;i<BEAMNUM;i++)
+        {
+            msg.ranges[i]=beams[i];
+            msg.intensities[i]=255;
+        }
+        scanros->sendMessage(msg);
+    }
+
+//    drawGrid();
+//    drawPoints();
+    //showMatrixSlot(ui->comboBox->currentIndex());
 }
 
 QPointF MainWindow::convert2RealPoint(QPoint point)
@@ -166,7 +194,7 @@ void MainWindow::drawGrid()
         painter.drawEllipse(center,i,i);
     }
     painter.end();
-    ui->label->setPixmap(QPixmap::fromImage(image));
+    //ui->label->setPixmap(QPixmap::fromImage(image));
 }
 
 void MainWindow::drawPoints()
@@ -184,7 +212,7 @@ void MainWindow::drawPoints()
         painter.drawEllipse(point,1,1);
     }
     painter.end();
-    ui->label->setPixmap(QPixmap::fromImage(image));
+    //ui->label->setPixmap(QPixmap::fromImage(image));
 }
 
 void MainWindow::drawBeam(int beamid)
@@ -205,5 +233,5 @@ void MainWindow::drawBeam(int beamid)
     QPoint point=convert2ImagePoint(QPointF(beams[beamid]*cos(theta),beams[beamid]*sin(theta)));
     painter.drawLine(center,point);
     painter.end();
-    ui->label->setPixmap(QPixmap::fromImage(image));
+    //ui->label->setPixmap(QPixmap::fromImage(image));
 }
