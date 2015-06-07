@@ -204,14 +204,7 @@ void Control(vel_data_t vel, void* p)
   int cmd_steering_angle;
 
 #if 0 /* just for a debug */
-  cmd_velocity = 10;
-  static int inc_flag = 1;
-  if (current_velocity > 5) {
-    cmd_velocity = 0;
-    inc_flag = 0;
-  }
-  if (!inc_flag)
-    cmd_velocity = 0;
+  cmd_velocity = 6;
 #endif
 
   // We assume that the slope against the entire arc toward the 

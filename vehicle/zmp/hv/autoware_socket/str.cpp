@@ -32,14 +32,14 @@
 #include "autoware_socket.h"
 
 static double steering_diff_sum = 0;
+#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM)
+#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL)
 
 void MainWindow::SetStrMode(int mode)
 {
-  steering_diff_sum = 0;
-
   switch (mode) {
   case CMD_MODE_MANUAL:
-    if (_hev_state.strInf.mode == MODE_PROGRAM) {
+    if (IS_STR_MODE_PROGRAM()) {
       cout << "Switching to MANUAL (Steering)" << endl;
       hev->SetStrMode(MODE_MANUAL);
       usleep(200000);
@@ -48,7 +48,7 @@ void MainWindow::SetStrMode(int mode)
     }
     break;
   case CMD_MODE_PROGRAM:
-    if (_hev_state.strInf.mode == MODE_MANUAL) {
+    if (IS_STR_MODE_MANUAL()) {
       cout << "Switching to PROGRAM (Steering)" << endl;
       hev->SetStrMode(MODE_PROGRAM);
       usleep(200000);
@@ -140,6 +140,11 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
 
 void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)
 {
+  // do not call a control funtion in manual mode.
+  if (IS_STR_MODE_MANUAL()) {
+    return;
+  }
+
   _str_torque_pid_control(current_steering_angle, cmd_steering_angle, hev);
 }
 
