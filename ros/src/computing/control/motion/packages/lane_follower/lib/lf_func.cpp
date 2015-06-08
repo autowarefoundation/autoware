@@ -44,6 +44,8 @@ tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose)
 
 int GetClosestWaypoint(tf::Transform transform, lane_follower::lane path, int current_closest)
 {
+    std::cout << "==GetClosestWaypoint==" << std::endl;
+
     if (path.waypoints.size() == 0)
         return -1;
 
@@ -85,8 +87,24 @@ int GetClosestWaypoint(tf::Transform transform, lane_follower::lane path, int cu
         }
 
         std::cout << "prev closest waypoint : " << current_closest << std::endl;
-        int sub_min = waypoint_candidates[0] - current_closest;
-        int decided_waypoint = waypoint_candidates[0];
+
+        int sub_min = 0;
+        int decided_waypoint = 0;
+        for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+            sub_min = waypoint_candidates[i] - current_closest;
+            if(sub_min < 0)
+                continue;
+
+            if(sub_min >= 0){
+                decided_waypoint = waypoint_candidates[i];
+                break;
+            }
+        }
+        std::cout << "sub_min : " << sub_min << " waypoint : " << decided_waypoint << std::endl;
+
+        if(sub_min < 0)
+            continue;
+
         for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
             int sub = waypoint_candidates[i] - current_closest;
             std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
