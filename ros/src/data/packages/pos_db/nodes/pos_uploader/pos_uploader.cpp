@@ -95,29 +95,6 @@ static std::string getTimeStamp(time_t sec, time_t nsec)
   return std::string(static_cast<const char*>(buf));
 }
 
-static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, const std::string& timestamp)
-{
-  std::ostringstream oss;
-  constexpr int AREA = 7;
-
-  oss << "INSERT INTO POS(id,x,y,z,area,or_x,or_y,or_z,or_w,type,tm) "
-      << "VALUES("
-      << "'pos_upload_ndt_pose_test',"
-      << std::fixed << std::setprecision(6) << pose.position.y << ","
-      << std::fixed << std::setprecision(6) << pose.position.x << ","
-      << std::fixed << std::setprecision(6) << pose.position.z << ","
-      << AREA << ","
-      << std::fixed << std::setprecision(6) << pose.orientation.y << ","
-      << std::fixed << std::setprecision(6) << pose.orientation.x << ","
-      << std::fixed << std::setprecision(6) << pose.orientation.z << ","
-      << std::fixed << std::setprecision(6) << pose.orientation.w << ","
-      << "0,"
-      << "'" << timestamp << "'"
-      << ");";
-
-  return oss.str();
-}
-
 static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, const std::string& timestamp, const char *name)
 {
   std::ostringstream oss;
@@ -139,20 +116,6 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
       << ");";
 
   return oss.str();
-}
-
-static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array)
-{
-  std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
-
-  std::string ret;
-  for(const auto& pose : cp_array.poses){
-    //create sql
-    ret += pose_to_insert_statement(pose, timestamp);
-    ret += "\n";
-  }
-
-  return ret;
 }
 
 static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array, const char *name)

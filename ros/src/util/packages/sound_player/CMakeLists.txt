@@ -8,11 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(sound_play REQUIRED)
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
-
 catkin_package(
   CATKIN_DEPENDS rospy std_msgs
 )
