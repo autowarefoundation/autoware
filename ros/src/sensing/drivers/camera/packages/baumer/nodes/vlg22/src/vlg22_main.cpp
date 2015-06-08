@@ -1,7 +1,5 @@
-
 #include "bgapi.hpp"
 #include "bgapi_init.h"
-
 
 int main(int argc, char **argv)
 {
@@ -118,6 +116,7 @@ int main(int argc, char **argv)
 			}
 			else
 			{
+			        free(imagebuffer);
 				(pImage)->get( &imagebuffer );
 				(pImage)->getNumber( &swc, &hwc );
 
@@ -126,15 +125,21 @@ int main(int argc, char **argv)
 				{
 					ROS_INFO("BGAPI::Image::getSize Errorcode: %d", res);
 				}
-				//ROS_INFO("Get Image OK %d, %d\n", width, height);
+
 				//receive Bayer Image, convert to Color 3 channels
 				cv::Mat mat(cv::Size(width, height), CV_8UC1, imagebuffer);
 				//cv::flip(mat, mat, -1);
 				cv::Mat dest(cv::Size(width, height), CV_8UC3);
-				cv::cvtColor(mat, dest, CV_BayerBG2RGB);
+				cv::cvtColor(mat, dest, CV_BayerBG2BGR);
+				//to fix aspect ratio and to avoid stretching we crop the image
+				//after conversion of the bayer grid
+				//to mantain ratio of 1.33 we need to remove 2*297 from the wide
+				//image, so we use a roi to crop the 2048x1084 image
+				cv::Rect roi(297,0,1445,1084);//297 half of the width to remove
+				cv::Mat cropped = dest(roi);
 				int w = 800;//fixed
-				int h = 600;//fixed
-				cv::resize(dest, dest, cv::Size(w, h));
+				int h = 600;//fixed 
+				cv::resize(cropped, cropped, cv::Size(w, h));
 
 				//cv::imshow("window", dest);
 				//cv::waitKey(2);
@@ -145,20 +150,17 @@ int main(int argc, char **argv)
 				msg.header.frame_id = count;
 				msg.header.stamp.sec = ros::Time::now().toSec();
 				msg.header.stamp.nsec = ros::Time::now().toNSec();
-				msg.height = height;
-				msg.width  = width;
-				msg.encoding = "rgb8";
-				msg.step = dest.rows * dest.cols * dest.elemSize1();
+				msg.height = h;
+				msg.width  = w;
+				msg.encoding = "bgr8";
+				msg.step = cropped.cols * cropped.elemSize1();
 
-				size_t image_size = dest.rows * dest.cols * dest.elemSize();
+				size_t image_size = cropped.rows * cropped.cols * cropped.elemSize();
 
 				msg.data.resize(image_size);
-				memcpy(msg.data.data(), dest.data, image_size);
+				memcpy(msg.data.data(), cropped.data, image_size);
 
 				pub[i].publish(msg);
-				i++;
-
-				//after you are ready with this image, return it to the camera for the next image
 				res = cameraPointers[i]->setImage( pImage );
 				if( res != BGAPI_RESULT_OK )
 				{
