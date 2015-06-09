@@ -49,7 +49,10 @@ publish data as ractangular plane
 #include <geo_pos_conv.hh>
 #include <pos_db.h>
 
-#define MYNAME	"pos_downloader"
+#define MYNAME		"pos_downloader"
+#define MARKERNAME	"mo_marker"
+#define STARTTIME	(0)		// now
+#define DELAYSEC	(3)
 
 using namespace std;
 
@@ -187,7 +190,7 @@ static void marker_publisher(const std_msgs::String& msg)
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/map";
     marker.header.stamp = ros::Time::now();
-    marker.ns = "mo_marker";
+    marker.ns = MARKERNAME;
     marker.action = visualization_msgs::Marker::ADD;
     int ret = result_to_marker(row, marker, 1);
     if (ret != 0)
@@ -202,7 +205,7 @@ static int create_timestr(time_t sec, int nsec, char *str, size_t size)
 {
   std::tm *nowtm;
 
-  nowtm = std::gmtime(&sec); // for VoltDB
+  nowtm = std::localtime(&sec);
   return std::snprintf(str, size, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
 	nowtm->tm_year + 1900, nowtm->tm_mon + 1, nowtm->tm_mday,
 	nowtm->tm_hour, nowtm->tm_min, nowtm->tm_sec, nsec/1000/1000);
@@ -256,11 +259,12 @@ static uint64_t send_sql(time_t diff_sec, uint64_t prev)
 
 static void* intervalCall(void *unused)
 {
-  double diff_sec = *(double *)unused;
+  double *args = (double *)unused;
+  double diff_sec = args[1];
   time_t prev_sec = 0;
 
-  if (diff_sec != 0)
-    diff_sec = ros::Time::now().toSec() - diff_sec;
+  if (args[0] != 0)
+    diff_sec += ros::Time::now().toSec() - args[0];
   cout << "diff=" << diff_sec << endl;
 
   while (1) {
@@ -276,17 +280,19 @@ int main(int argc, char **argv)
   ros::init(argc, argv, MYNAME) ;
   ros::NodeHandle nh;
   pthread_t th;
-  double now_sec;
+  double args[2];
 
   cout << MYNAME << endl;
 
-  pub = nh.advertise<visualization_msgs::Marker>("mo_marker", 1);
-  nh.param<double>(MYNAME "/time", now_sec, 0);
-  cout << "time=" << now_sec << endl;
+  pub = nh.advertise<visualization_msgs::Marker>(MARKERNAME, 1);
+  nh.param<double>(MYNAME "/time", args[0], STARTTIME);
+  cout << "time=" << args[0] << endl;
+  nh.param<double>(MYNAME "/delay", args[1], DELAYSEC);
+  cout << "delay=" << args[1] << endl;
 
   sd = SendData(host_name, db_port);
 
-  if (pthread_create(&th, nullptr, intervalCall, (void *)&now_sec) != 0) {
+  if (pthread_create(&th, nullptr, intervalCall, (void *)args) != 0) {
     std::perror("pthread_create");
     std::exit(1);
   }
