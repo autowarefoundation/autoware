@@ -1,0 +1,5 @@
+<launch>
+  <arg name="file" default="" />
+  <node pkg="traffic_light_detector" type="traffic_light_extract" name="traffic_light_extract" args="$(arg file)" />
+  <node pkg="traffic_light_detector" type="traffic_light_lkf" name="traffic_light_lkf" />
+</launch>

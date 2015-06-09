@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>pos_db</name>
+  <version>0.0.0</version>
+  <description>The pos_db package</description>
+  <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>vehicle_socket</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>vehicle_socket</run_depend>
+  <export>
+  </export>
+</package>

@@ -85,7 +85,7 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 	visualization_msgs::Marker velocity;
 	velocity.header.stamp = ros::Time::now();
 	velocity.header.frame_id = "/map";
-	velocity.ns = "velocity";
+	velocity.ns = "waypoint_velocity";
 	velocity.action = visualization_msgs::Marker::ADD;
 	velocity.lifetime = ros::Duration();
 	velocity.type = visualization_msgs::Marker::TEXT_VIEW_FACING;

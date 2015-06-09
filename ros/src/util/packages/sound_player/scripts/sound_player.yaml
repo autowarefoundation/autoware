@@ -1,0 +1,4 @@
+'start'        : ~/Autoware/ros/src/util/packages/sound_player/wavs/beep1.wav
+'stop'         : ~/Autoware/ros/src/util/packages/sound_player/wavs/beep2.wav
+'red signal'   : ~/Autoware/ros/src/util/packages/sound_player/wavs/beep3.wav
+'green signal' : ~/Autoware/ros/src/util/packages/sound_player/wavs/beep4.wav

@@ -1,0 +1,17 @@
+<!-- -->
+<launch>
+
+	<arg name="detection_range" default="1.5" /> <!-- meter -->
+	<arg name="threshold_points" default="10" /> 
+	<arg name="stop_interval" default="15" /> 
+    <arg name="current_pose_topic" default="ndt" /> 
+
+	<!-- rosrun lane_follower distance_keep _detection_range:=0 -->
+	<node pkg="lane_follower" type="distance_keep" name="distance_keep" output="screen">
+		<param name="detection_range" value="$(arg detection_range)" />
+		<param name="threshold_points" value="$(arg threshold_points)" />
+		<param name="stop_interval" value="$(arg stop_interval)" />
+		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
+	</node>
+
+</launch>

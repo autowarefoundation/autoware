@@ -321,6 +321,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int S1 = 4;
 		static final int S2 = 5;
 
+		static final int EXIT_DESTROY_ACTIVITY = 0;
+		static final int EXIT_UPDATE_CONFIGURATION = 1;
+		static final int EXIT_EXCEED_ERROR_LIMIT = -1;
+		static final int EXIT_RECEIVE_BROKEN_PACKET = -2;
+
 		int send(int type, int command) {
 			if (isClosed())
 				return -1;
@@ -350,7 +355,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int NDT = 4;
 		static final int LF = 5;
 
-		static final int MISS_BEACON_LIMIT = 3;
+		static final int MISS_BEACON_LIMIT = 10;
 
 		int[] recv(int response) {
 			int[] data = new int[2];
@@ -898,7 +903,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						}
 
 						if (bIsServerConnecting) {
-							commandClient.send(CommandClient.EXIT, 0);
+							commandClient.send(
+								CommandClient.EXIT,
+								CommandClient.EXIT_UPDATE_CONFIGURATION);
 							stopServerConnecting();
 						}
 
@@ -987,7 +994,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 							if (missBeacon < InformationClient.MISS_BEACON_LIMIT)
 								missBeacon++;
 							else {
-								commandClient.send(CommandClient.EXIT, 0);
+								commandClient.send(
+									CommandClient.EXIT,
+									CommandClient.EXIT_EXCEED_ERROR_LIMIT);
 								stopServerConnecting();
 								missBeacon = 0;
 							}
@@ -996,7 +1005,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 					}
 
 					if (data[1] < 0) {
-						commandClient.send(CommandClient.EXIT, 0);
+						commandClient.send(
+							CommandClient.EXIT,
+							CommandClient.EXIT_RECEIVE_BROKEN_PACKET);
 						stopServerConnecting();
 						missBeacon = 0;
 						continue;
@@ -1120,7 +1131,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		super.onDestroy();
 		bIsKnightRiding = false;
 		if (bIsServerConnecting) {
-			commandClient.send(CommandClient.EXIT, 0);
+			commandClient.send(
+				CommandClient.EXIT,
+				CommandClient.EXIT_DESTROY_ACTIVITY);
 			stopServerConnecting();
 		}
 	}

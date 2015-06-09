@@ -26,7 +26,7 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -68,8 +68,9 @@ static geometry_msgs::Twist _current_velocity;
 static lane_follower::lane _current_path;
 
 static int _next_waypoint = 0; // ID (index) of the next waypoint.
-static int _closest_waypoint = 1; // ID (index) of the closest waypoint.
+static int _closest_waypoint = -1; // ID (index) of the closest waypoint.
 static int _prev_waypoint = 0;
+static double _prev_velocity = 0;
 
 static ros::Publisher _vis_pub;
 static ros::Publisher _circle_pub;
@@ -87,7 +88,7 @@ static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr con
     _initial_velocity_kmh = config->velocity;
     _lookahead_threshold = config->lookahead_threshold;
     _param_flag = config->param_flag;
-   // _param_set = true;
+    // _param_set = true;
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
@@ -112,39 +113,39 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 }
 
 /*static geometry_msgs::PoseStamped _prev_pose;
-static geometry_msgs::Quaternion _quat;
-static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
-{
-    //std::cout << "gnss callback" << std::endl;
-    if (_current_pose_topic == "gnss") {
-        // transform to the rectangular plane.
-        geo_pos_conv geo;
-        geo.set_plane(7);
-        geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
-        _current_pose.header = msg->header;
-        _current_pose.pose.position.x = geo.y();
-        _current_pose.pose.position.y = geo.x();
-        _current_pose.pose.position.z = geo.z();
-        double distance = sqrt(pow(_current_pose.pose.position.y - _prev_pose.pose.position.y, 2) + pow(_current_pose.pose.position.x - _prev_pose.pose.position.x, 2));
-        std::cout << "distance : " << distance << std::endl;
-        if (distance > 0.2) {
-            double yaw = atan2(_current_pose.pose.position.y - _prev_pose.pose.position.y, _current_pose.pose.position.x - _prev_pose.pose.position.x);
-            _quat = tf::createQuaternionMsgFromYaw(yaw);
-            _prev_pose = _current_pose;
-        }
-        _current_pose.pose.orientation = _quat;
+ static geometry_msgs::Quaternion _quat;
+ static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
+ {
+ //std::cout << "gnss callback" << std::endl;
+ if (_current_pose_topic == "gnss") {
+ // transform to the rectangular plane.
+ geo_pos_conv geo;
+ geo.set_plane(7);
+ geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
+ _current_pose.header = msg->header;
+ _current_pose.pose.position.x = geo.y();
+ _current_pose.pose.position.y = geo.x();
+ _current_pose.pose.position.z = geo.z();
+ double distance = sqrt(pow(_current_pose.pose.position.y - _prev_pose.pose.position.y, 2) + pow(_current_pose.pose.position.x - _prev_pose.pose.position.x, 2));
+ std::cout << "distance : " << distance << std::endl;
+ if (distance > 0.2) {
+ double yaw = atan2(_current_pose.pose.position.y - _prev_pose.pose.position.y, _current_pose.pose.position.x - _prev_pose.pose.position.x);
+ _quat = tf::createQuaternionMsgFromYaw(yaw);
+ _prev_pose = _current_pose;
+ }
+ _current_pose.pose.orientation = _quat;
 
-    } //else
-      //      std::cout << "pose is not gnss" << std::endl;
-}
-*/
+ } //else
+ //      std::cout << "pose is not gnss" << std::endl;
+ }
+ */
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
     if (_current_pose_topic == "ndt") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
         tf::Transform inverse;
-        tf::poseMsgToTF(msg->pose,inverse);
+        tf::poseMsgToTF(msg->pose, inverse);
         _transform = inverse.inverse();
         _pose_set = true;
     }
@@ -154,6 +155,7 @@ static void WayPointCallback(const lane_follower::laneConstPtr &msg)
 {
     _current_path = *msg;
     _waypoint_set = true;
+    std::cout << "waypoint subscribed" << std::endl;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -166,17 +168,10 @@ static double GetLookAheadThreshold()
 
     double current_velocity_mps = _current_path.waypoints[_next_waypoint].twist.twist.linear.x;
     double current_velocity_kmph = current_velocity_mps * 3.6;
-    if(current_velocity_kmph * 0.5 < 5)
+    if (current_velocity_kmph * 0.5 < 5)
         return 5;
     else
         return current_velocity_kmph * 0.5;
-}
-
-static double GetEvaluation(int closest, int i)
-{
-    int num = i - closest;
-    double ratio = 1.0;
-    return num * ratio;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -192,7 +187,7 @@ geometry_msgs::Point TransformWaypoint(int i)
     point.y = transformed.getY();
     point.z = transformed.getZ();
 
-   // std::cout << "transformed pose (" << point.x << " " << point.y << " " << point.z << ") transformed2 pose : (" << point2.x << " " << point2.y << " " << point2.z << ")" << std::endl;
+    // std::cout << "transformed pose (" << point.x << " " << point.y << " " << point.z << ") transformed2 pose : (" << point2.x << " " << point2.y << " " << point2.z << ")" << std::endl;
 
     return point;
 
@@ -214,30 +209,93 @@ double GetLookAheadDistance(int waypoint)
 /////////////////////////////////////////////////////////////////
 // obtain the velocity(m/s) waypoint under the vehicle has.
 /////////////////////////////////////////////////////////////////
+/*int GetClosestWaypoint()
+ {
+ double distance = 10000; //meter
+ double waypoint = 1;
+
+ for (int i = _closest_waypoint; i < _closest_waypoint + 10; i++) {
+
+ //std::cout << waypoint << std::endl;
+
+ // position of @waypoint.
+ tf::Vector3 v2(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, 0);
+ tf::Vector3 tf_v2 = _transform * v2;
+ tf_v2.setZ(0);
+ //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+
+ //double dt = tf::tfDistance(v1, v2);
+ double dt = tf::tfDistance(_origin_v, tf_v2);
+ //  std::cout << i  << " "<< dt << std::endl;
+ if (dt < distance) {
+ distance = dt;
+ waypoint = i;
+ // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+ }
+ }
+ return waypoint;
+ }*/
+
 int GetClosestWaypoint()
 {
-    double distance = 10000; //meter
-    double waypoint = 1;
+    int closest_threshold = 5;
 
-    for (int i = _closest_waypoint; i < _closest_waypoint+10; i++) {
-        //std::cout << waypoint << std::endl;
+    //interval between 2 waypoints
+    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, 0);
 
-        // position of @waypoint.
-        tf::Vector3 v2(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, 0);
-        tf::Vector3 tf_v2 = _transform * v2;
-        tf_v2.setZ(0);
-        //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
 
-        //double dt = tf::tfDistance(v1, v2);
-        double dt = tf::tfDistance(_origin_v, tf_v2);
-        //  std::cout << i  << " "<< dt << std::endl;
-        if (dt < distance) {
-            distance = dt;
-            waypoint = i;
-            // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
+    for (int ratio = 1; ratio < closest_threshold; ratio++) {
+
+        double distance_threshold = ratio * tf::tfDistance(v1, v2); //meter
+        std::cout << "distance_threshold : " << distance_threshold << std::endl;
+
+        std::vector<int> waypoint_candidates;
+
+        for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
+
+            //std::cout << waypoint << std::endl;
+
+            // position of @waypoint.
+            tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
+            tf::Vector3 tf_waypoint = _transform * waypoint;
+            tf_waypoint.setZ(0);
+            //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+
+            //double dt = tf::tfDistance(v1, v2);
+            double dt = tf::tfDistance(_origin_v, tf_waypoint);
+            //  std::cout << i  << " "<< dt << std::endl;
+            if (dt < distance_threshold) {
+                //add as a candidate
+                waypoint_candidates.push_back(i);
+                std::cout << "waypoint = " << i << "  distance = " << dt << std::endl;
+            }
         }
+
+        if (waypoint_candidates.size() == 0) {
+            continue;
+        }
+
+        std::cout << "prev closest waypoint : " << _closest_waypoint << std::endl;
+        int sub_min = waypoint_candidates[0] - _closest_waypoint;
+        int decided_waypoint = waypoint_candidates[0];
+        for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+            int sub = waypoint_candidates[i] - _closest_waypoint;
+            std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
+            if (sub < 0)
+                continue;
+
+            if (sub < sub_min) {
+                decided_waypoint = waypoint_candidates[i];
+                sub_min = sub;
+            }
+        }
+        if (decided_waypoint >= _closest_waypoint) {
+            return decided_waypoint;
+        }
+
     }
-    return waypoint;
+    return -1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -245,6 +303,7 @@ int GetClosestWaypoint()
 /////////////////////////////////////////////////////////////////
 double GetWaypointVelocity()
 {
+    std::cout << "get velocity(m/s) : " << _current_path.waypoints[_closest_waypoint].twist.twist.linear.x << std::endl;
     return _current_path.waypoints[_closest_waypoint].twist.twist.linear.x;
 }
 
@@ -266,7 +325,117 @@ double CalcRadius(int waypoint)
 
 }
 
+// display the next waypoint by markers.
+void DisplayCircle(tf::Vector3 center, double radius)
+{
 
+    geometry_msgs::Point point;
+    tf::Vector3 inv_center = _transform.inverse() * center;
+
+    point.x = inv_center.getX();
+    point.y = inv_center.getY();
+    point.z = inv_center.getZ();
+
+    visualization_msgs::Marker circle;
+    circle.header.frame_id = PATH_FRAME;
+    circle.header.stamp = ros::Time::now();
+    circle.ns = "circle";
+    circle.id = 0;
+    circle.type = visualization_msgs::Marker::SPHERE;
+    circle.action = visualization_msgs::Marker::ADD;
+    circle.pose.position = point;
+    circle.scale.x = radius * 2;
+    circle.scale.y = radius * 2;
+    circle.scale.z = 1.0;
+    circle.color.a = 0.3;
+    circle.color.r = 1.0;
+    circle.color.g = 0.0;
+    circle.color.b = 0.0;
+    _circle_pub.publish(circle);
+}
+
+// display the next waypoint by markers.
+void DisplayTargetWaypoint(int i)
+{
+
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = PATH_FRAME;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "my_namespace";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position = _current_path.waypoints[i].pose.pose.position;
+    marker.pose.orientation = _current_path.waypoints[i].pose.pose.orientation;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+
+    _vis_pub.publish(marker);
+}
+
+static double GetEvalValue(int closest, int i)
+{
+    int num = i - closest;
+    double ratio = 1.0;
+    return num * ratio;
+    //return 0.5;
+}
+
+bool EvaluationWaypoint(int i)
+{
+
+    double radius = CalcRadius(i);
+    if (radius < 0)
+        radius = (-1) * radius;
+    //std::cout << "waypoint = " << i << std::endl;
+    //std::cout << "threshold = " << lookahead_threshold << std::endl;
+    //std::cout << "distance = " << Distance << std::endl;
+
+    tf::Vector3 center;
+
+    if (TransformWaypoint(i).y > 0) {
+        center = tf::Vector3(0, 0 + radius, 0);
+    } else {
+        center = tf::Vector3(0, 0 - radius, 0);
+    }
+
+    DisplayCircle(center, radius);
+
+    //evaluation waypoint
+    double evaluation = 0;
+    //double min_diff = 10000;
+    for (int j = _closest_waypoint + 1; j < i; j++) {
+        tf::Vector3 waypoint(_current_path.waypoints[j].pose.pose.position.x, _current_path.waypoints[j].pose.pose.position.y, _current_path.waypoints[j].pose.pose.position.z);
+
+        //  std::cout << "center(" << center.x() << " " << center.y() << " " << center.z() << ")" << std::endl;
+        //  std::cout << "waypoint (" << waypoint.x() << " " << waypoint.y() << " " << waypoint.z() << ")" << std::endl;
+
+        tf::Vector3 tf_waypoint = _transform * waypoint;
+        tf_waypoint.setZ(0);
+        double dt = fabs(tf::tfDistance(center, tf_waypoint));
+        double dt_diff = fabs(dt - radius);
+
+        /*if(dt_diff < min_diff)
+         min_diff = dt_diff;*/
+        if (dt_diff < evaluation)
+            evaluation += dt_diff;
+    }
+
+    double eval_value = GetEvalValue(_closest_waypoint, i);
+    //std::cout << "evaluation (" << evaluation << " " << eval_value << "）" << std::endl;
+
+    //if (min_diff < eval_value)
+    if (evaluation < eval_value)
+        return true;
+    else
+        return false;
+
+}
 /////////////////////////////////////////////////////////////////
 // obtain the next "effective" waypoint. 
 // the vehicle drives itself toward this waypoint.
@@ -284,14 +453,15 @@ int GetNextWayPoint()
 
     int minimum_th = 3;
     double lookahead_threshold = GetLookAheadThreshold();
-    std::cout << "nearest waypoint = " << _closest_waypoint << std::endl;
-
- retry:
-    if(GetLookAheadDistance(_prev_waypoint) > lookahead_threshold)
-      return _prev_waypoint;
 
     // look for the next waypoint.
-    for (unsigned int i = _prev_waypoint; i < _current_path.waypoints.size(); i++) {
+    for (unsigned int i = _closest_waypoint; i < _current_path.waypoints.size(); i++) {
+
+        if (GetLookAheadDistance(_prev_waypoint) > lookahead_threshold) {
+            std::cout << "threshold = " << lookahead_threshold << std::endl;
+            return _prev_waypoint;
+        }
+
         double Distance = GetLookAheadDistance(i);
 
         // if there exists an effective waypoint
@@ -299,106 +469,36 @@ int GetNextWayPoint()
 
             if (!_param_flag) {
 
-                double radius = CalcRadius(i);
-                if (radius < 0)
-                    radius = (-1) * radius;
-                //std::cout << "waypoint = " << i << std::endl;
-                //std::cout << "threshold = " << lookahead_threshold << std::endl;
-                //std::cout << "distance = " << Distance << std::endl;
+                if (EvaluationWaypoint(i) == true) {
+                    std::cout << "threshold = " << lookahead_threshold << std::endl;
+                    DisplayTargetWaypoint(i);
 
-                tf::Vector3 center;
-
-                if (TransformWaypoint(i).y > 0) {
-                    center = tf::Vector3(0, 0 + radius, 0);
+                    //status turns true
+                    _lf_stat.data = true;
+                    _stat_pub.publish(_lf_stat);
+                    return i;
                 } else {
-                    center = tf::Vector3(0, 0 - radius, 0);
-                }
-
-                geometry_msgs::Point point;
-                tf::Vector3 inv_center = _transform.inverse() * center;
-
-                point.x = inv_center.getX();
-                point.y = inv_center.getY();
-                point.z = inv_center.getZ();
-                // display the next waypoint by markers.
-                visualization_msgs::Marker circle;
-                circle.header.frame_id = PATH_FRAME;
-                circle.header.stamp = ros::Time::now();
-                circle.ns = "circle";
-                circle.id = 0;
-                circle.type = visualization_msgs::Marker::SPHERE;
-                circle.action = visualization_msgs::Marker::ADD;
-                circle.pose.position = point;
-                circle.scale.x = radius * 2;
-                circle.scale.y = radius * 2;
-                circle.scale.z = 1.0;
-                circle.color.a = 0.3;
-                circle.color.r = 1.0;
-                circle.color.g = 0.0;
-                circle.color.b = 0.0;
-                _circle_pub.publish(circle);
-
-                //evaluation waypoint
-                double evaluation = 0;
-                for (unsigned int j = _closest_waypoint + 1; j < i; j++) {
-                    tf::Vector3 waypoint(_current_path.waypoints[j].pose.pose.position.x, _current_path.waypoints[j].pose.pose.position.y, _current_path.waypoints[j].pose.pose.position.z);
-
-                    //  std::cout << "center(" << center.x() << " " << center.y() << " " << center.z() << ")" << std::endl;
-                    //  std::cout << "waypoint (" << waypoint.x() << " " << waypoint.y() << " " << waypoint.z() << ")" << std::endl;
-
-                    tf::Vector3 tf_waypoint = _transform * waypoint;
-                    tf_waypoint.setZ(0);
-                    double dt = fabs(tf::tfDistance(center, tf_waypoint));
-                    double dt_diff = fabs(dt - radius);
-
-                    evaluation += dt_diff;
-                }
-
-                double eval_value = GetEvaluation(_closest_waypoint, i);
-                //std::cout << "evaluation (" << evaluation << " " << eval_value << "）" << std::endl;
-
-                if (evaluation < eval_value) {
-                    //     std::cout << "ok!" << std::endl;
-                } else {
-		  //std::cout << "threshold correction to ";
+                    //std::cout << "threshold correction" << std::endl;
 
                     if (lookahead_threshold > minimum_th) {
                         lookahead_threshold -= 0.1;
 
-                      //  std::cout << lookahead_threshold << std::endl;
-                        goto retry;
+                        //  std::cout << lookahead_threshold << std::endl;
+
                     } else {
                         lookahead_threshold = minimum_th;
-                     //   std::cout << lookahead_threshold << std::endl;
+                        //   std::cout << lookahead_threshold << std::endl;
                     }
                 }
+            } else {
+                std::cout << "threshold = " << lookahead_threshold << std::endl;
+                DisplayTargetWaypoint(i);
+
+                //status turns true
+                _lf_stat.data = true;
+                _stat_pub.publish(_lf_stat);
+                return i;
             }
-
-            std::cout << "threshold = " << lookahead_threshold << std::endl;
-            // display the next waypoint by markers.
-            visualization_msgs::Marker marker;
-            marker.header.frame_id = PATH_FRAME;
-            marker.header.stamp = ros::Time::now();
-            marker.ns = "my_namespace";
-            marker.id = 0;
-            marker.type = visualization_msgs::Marker::SPHERE;
-            marker.action = visualization_msgs::Marker::ADD;
-            marker.pose.position = _current_path.waypoints[i].pose.pose.position;
-            marker.pose.orientation = _current_path.waypoints[i].pose.pose.orientation;
-            marker.scale.x = 1.0;
-            marker.scale.y = 1.0;
-            marker.scale.z = 1.0;
-            marker.color.a = 1.0;
-            marker.color.r = 0.0;
-            marker.color.g = 0.0;
-            marker.color.b = 1.0;
-
-            _vis_pub.publish(marker);
-
-            //status turns true
-            _lf_stat.data = true;
-            _stat_pub.publish(_lf_stat);
-            return i;
         }
     }
 
@@ -412,15 +512,12 @@ int GetNextWayPoint()
     return 0;
 }
 
-
-
 /////////////////////////////////////////////////////////////////
 // obtain the linear/angular velocity toward the next waypoint.
 /////////////////////////////////////////////////////////////////
 static geometry_msgs::Twist CalculateCmdTwist()
 {
-    std::cout << "calculate" << std::endl;
-
+    //std::cout << "calculate" << std::endl;
     geometry_msgs::Twist twist;
 
     double radius = CalcRadius(_next_waypoint);
@@ -429,8 +526,6 @@ static geometry_msgs::Twist CalculateCmdTwist()
         set_velocity_ms = GetWaypointVelocity();
     else
         set_velocity_ms = _initial_velocity_kmh / 3.6;
-
-    std::cout << "set velocity kmh =" << set_velocity_ms * 3.6 << std::endl;
 
     twist.linear.x = set_velocity_ms;
 
@@ -448,6 +543,7 @@ static geometry_msgs::Twist CalculateCmdTwist()
 /////////////////////////////////////////////////////////////////
 //static int end_loop = 1;
 //static double end_ratio = 0.2;
+
 static bool decelerate_flag = false;
 static geometry_msgs::Twist EndControl()
 {
@@ -460,30 +556,61 @@ static geometry_msgs::Twist EndControl()
     double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
     std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
 
-    double set_velocity_ms = 0;
-    if (!_param_flag)
-        set_velocity_ms = GetWaypointVelocity();
-    else
-        set_velocity_ms = _initial_velocity_kmh / 3.6;
+    double stop_interval = 5;
+    if (lookahead_distance < stop_interval) {
+        twist.linear.x = 0;
+        twist.angular.z = 0;
 
-    static double decelerate_ms = 0;
-    static double velocity_ms = 0;
-    if (decelerate_flag == false) {
-        decelerate_ms = pow(set_velocity_ms, 2) / (2 * lookahead_distance);
-        velocity_ms = set_velocity_ms;
-        decelerate_flag = true;
+        return twist;
     }
-//std::cout << "decelerate : "<< decelerate_ms << std::endl;
 
-    if (decelerate_flag == true)
-        velocity_ms -= decelerate_ms / LOOP_RATE;
+    double decel_ms = 1.0; // m/s
+    double decel_velocity_ms = sqrt(2 * decel_ms * lookahead_distance);
 
-    if (velocity_ms < 0) {
-        if (lookahead_distance > 0.5)
-            velocity_ms = 1;
-        else
-            velocity_ms = 0;
+    if (decel_velocity_ms < 1.0) {
+        decel_velocity_ms = 0;
     }
+    std::cout << "velocity : " << decel_velocity_ms << std::endl;
+    if (decel_velocity_ms < _prev_velocity) {
+        twist.linear.x = decel_velocity_ms;
+    } else {
+        twist.linear.x = _prev_velocity;
+    }
+    double radius = CalcRadius(_current_path.waypoints.size() - 1);
+
+    if (radius > 0 || radius < 0) {
+        twist.angular.z = twist.linear.x / radius;
+    } else {
+        twist.angular.z = 0;
+    }
+    return twist;
+
+    /*
+     double set_velocity_ms = 0;
+     if (!_param_flag)
+     set_velocity_ms = GetWaypointVelocity();
+     else
+     set_velocity_ms = _initial_velocity_kmh / 3.6;
+
+     static double decelerate_ms = 0;
+     static double velocity_ms = 0;
+     if (decelerate_flag == false) {
+     decelerate_ms = pow(set_velocity_ms, 2) / (2 * lookahead_distance);
+     velocity_ms = set_velocity_ms;
+     decelerate_flag = true;
+     }
+     //std::cout << "decelerate : "<< decelerate_ms << std::endl;
+
+     if (decelerate_flag == true)
+     velocity_ms -= decelerate_ms / LOOP_RATE;
+
+     if (velocity_ms < 0) {
+     if (lookahead_distance > 0.5)
+     velocity_ms = 1;
+     else
+     velocity_ms = 0;
+     }
+     */
     /* if (lookahead_distance < _end_distance) { // EndControl completed
 
      twist.linear.x = 0;
@@ -496,20 +623,18 @@ static geometry_msgs::Twist EndControl()
 
      } else {
      */
+    /*
+     double radius = CalcRadius(_next_waypoint);
+     twist.linear.x = velocity_ms;
 
-    std::cout << "set velocity (kmh) = " << velocity_ms * 3.6 << std::endl;
+     if (radius > 0 || radius < 0) {
+     twist.angular.z = twist.linear.x / radius;
+     } else {
+     twist.angular.z = 0;
+     }
+     //    }*/
 
-    double radius = CalcRadius(_next_waypoint);
-    twist.linear.x = velocity_ms;
-
-    if (radius > 0 || radius < 0) {
-        twist.angular.z = twist.linear.x / radius;
-    } else {
-        twist.angular.z = 0;
-    }
-//    }
-
-    return twist;
+    // return twist;
 }
 
 int main(int argc, char **argv)
@@ -540,7 +665,7 @@ int main(int argc, char **argv)
      */
 
     //publish topic
-    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
+    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 1000);
 
     _vis_pub = nh.advertise<visualization_msgs::Marker>("target_waypoint_mark", 0);
     _circle_pub = nh.advertise<visualization_msgs::Marker>("circle_mark", 0);
@@ -559,21 +684,24 @@ int main(int argc, char **argv)
     while (ros::ok()) {
         ros::spinOnce();
 
-     /*   if (_param_set == false) {
-            std::cout << "please open the dialog and set parameter." << std::endl;
+        /*   if (_param_set == false) {
+         std::cout << "please open the dialog and set parameter." << std::endl;
+         loop_rate.sleep();
+         continue;
+         }
+         */
+        if (_waypoint_set == false || _pose_set == false) {
+            std::cout << "topic waiting..." << std::endl;
             loop_rate.sleep();
             continue;
         }
-*/
-        if (_waypoint_set == false || _pose_set ==false) {
-                 std::cout << "topic waiting..." << std::endl;
-                 loop_rate.sleep();
-                 continue;
-         }
 
         _closest_waypoint = GetClosestWaypoint();
+        std::cout << "closest waypoint = " << _closest_waypoint << std::endl;
 
-       // std::cout << "endflag = " << endflag << std::endl;
+        if (_closest_waypoint > _prev_waypoint)
+            _prev_waypoint = _closest_waypoint;
+        // std::cout << "endflag = " << endflag << std::endl;
 
         if (endflag == false) {
 
@@ -585,22 +713,32 @@ int main(int argc, char **argv)
                 std::cout << "dialog" << std::endl;
             }
 
-            _next_waypoint = GetNextWayPoint();
-            std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
-	    std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
-	    
-	    if(_next_waypoint != _prev_waypoint){
-	      if (_next_waypoint > 0) {
-                // obtain the linear/angular velocity.
-                twist.twist = CalculateCmdTwist();
-	      } else {
+            if (_closest_waypoint < 0) {
+                std::cout << "closest waypoint can not detected !!" << std::endl;
                 twist.twist.linear.x = 0;
                 twist.twist.angular.z = 0;
-	      }
-	    }
-            if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
-                endflag = true;
-                _next_waypoint = _current_path.waypoints.size() - 1;
+            } else {
+
+                _next_waypoint = GetNextWayPoint();
+                std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
+                std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
+
+                // if(_next_waypoint != _prev_waypoint){
+
+                if (_next_waypoint > 0) {
+                    // obtain the linear/angular velocity.
+                    twist.twist = CalculateCmdTwist();
+                } else {
+                    twist.twist.linear.x = 0;
+                    twist.twist.angular.z = 0;
+                }
+                //}else{
+                //  std::cout << "selected the same waypoint" << std::endl;
+                //}
+                if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
+                    endflag = true;
+                    _next_waypoint = _current_path.waypoints.size() - 1;
+                }
             }
 
         } else {
@@ -613,17 +751,17 @@ int main(int argc, char **argv)
                 std::cout << "pure pursuit ended!!" << std::endl;
                 endflag = false;
                 decelerate_flag = false;
-
             }
         }
-
+        std::cout << "set velocity (kmh) = " << twist.twist.linear.x * 3.6 << std::endl;
         std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
         std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
         std::cout << std::endl;
 
         twist.header.stamp = ros::Time::now();
         cmd_velocity_publisher.publish(twist);
-	_prev_waypoint = _next_waypoint;
+        _prev_waypoint = _next_waypoint;
+        _prev_velocity = twist.twist.linear.x;
         loop_rate.sleep();
     }
 

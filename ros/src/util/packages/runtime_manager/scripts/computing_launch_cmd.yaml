@@ -22,6 +22,10 @@ subs :
               lookahead_threshold:
                 depend : param_flag
               stat_topic : [ lf ]
+          - name : distance_keep
+            cmd : roslaunch lane_follower distance_keep.launch  
+          - name : twist_through
+            cmd : rosrun lane_follower twist_through
           - name : odom_gen
             cmd : roslaunch lane_follower odom_gen.launch  
             param: odom_gen
@@ -87,6 +91,12 @@ subs :
             param: pedestrian_kf
           - name : pedestrian_locate
             cmd  : roslaunch pedestrian_detector pedestrian_locate.launch
+          - name : traffic_light_colorExtract
+            cmd  : roslaunch runtime_manager traffic_light.launch
+            param: traffic_light
+            gui  :
+              file :
+                prop : 1
       - name : Localization
         subs :
           - name : ndt_pcl
@@ -398,6 +408,16 @@ params :
       max   : 100
       v     : 0.0
 
+  - name  : traffic_light
+    vars :
+    - name      : file
+      kind      : path
+      path_type : dir
+      v         : /tmp
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name : lane_navi
     vars :
     - name      : vector_map
@@ -430,6 +450,11 @@ params :
       min       : 0
       max       : 20
       v         : 2.0
+    - name      : number_of_zeros
+      label     : Number of Zeros
+      min       : 1
+      max       : 100
+      v         : 1
 
   - name  : lane_stop
     topic : /traffic_light
@@ -480,6 +505,11 @@ params :
       min       : 0
       max       : 20
       v         : 2.0
+    - name      : number_of_zeros
+      label     : Number of Zeros
+      min       : 1
+      max       : 100
+      v         : 1
 
   - name  : ndt_slam
     topic : /config/ndt_slam

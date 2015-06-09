@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   runtime_manager
   interactive_markers
+  velodyne_pointcloud
 )
 
 ###################################
