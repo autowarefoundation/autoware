@@ -175,7 +175,6 @@ void SetState(int mode, int gear, void* p)
 {
   if (mode != current_mode) {
     current_mode = mode;
-    mode_is_setting = true; // loose critical section
     pthread_create(&_modesetter, NULL, MainWindow::ModeSetterEntry, p);
   }
 
@@ -184,7 +183,6 @@ void SetState(int mode, int gear, void* p)
     // never change the gear when driving!
     if (current_velocity == 0) {
       current_gear = gear;
-      gear_is_setting = true; // loose critical section
       pthread_create(&_gearsetter, NULL, MainWindow::GearSetterEntry, p);
     }
   }
@@ -259,6 +257,8 @@ void *MainWindow::ModeSetterEntry(void *a)
 {
   MainWindow* main = (MainWindow*)a;
 
+  mode_is_setting = true; // loose critical section
+
   main->SetStrMode(current_mode); // steering
   sleep(1);
   main->SetDrvMode(current_mode); // accel/brake
@@ -272,6 +272,8 @@ void *MainWindow::ModeSetterEntry(void *a)
 void *MainWindow::GearSetterEntry(void *a)
 {
   MainWindow* main = (MainWindow*)a;
+
+  gear_is_setting = true; // loose critical section
 
   main->SetGear(current_gear);
   sleep(1);
