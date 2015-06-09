@@ -37,6 +37,15 @@
 
 double cycle_time = 0.0;
 
+pthread_t _modesetter;
+pthread_t _gearsetter;
+
+// hmm, dirty hacks...
+int current_mode = -1;
+int current_gear = -1;
+int mode_is_setting = false;
+int gear_is_setting = false;
+
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
   std::istringstream stream(input);
@@ -162,31 +171,23 @@ void Update(void *p)
   main->UpdateState();
 }
 
-int Prepare(int mode, int gear, void* p) 
+void SetState(int mode, int gear, void* p) 
 {
-  static int old_mode = -1;
-  static int old_gear = -1;
-  MainWindow* main = (MainWindow*)p;
-  int ret = 0;
-
-  if (mode != old_mode) {
-    main->SetStrMode(mode); // steering
-    main->SetDrvMode(mode); // accel/brake
-    old_mode = mode;
-    ret = 1;
+  if (mode != current_mode) {
+    current_mode = mode;
+    mode_is_setting = true; // loose critical section
+    pthread_create(&_modesetter, NULL, MainWindow::ModeSetterEntry, p);
   }
 
-  if (gear != old_gear) {
+  if (gear != current_gear) {
     double current_velocity = _hev_state.drvInf.veloc; // km/h
     // never change the gear when driving!
     if (current_velocity == 0) {
-      main->SetGear(gear);
-      old_gear = gear;
-      ret = 1;
+      current_gear = gear;
+      gear_is_setting = true; // loose critical section
+      pthread_create(&_gearsetter, NULL, MainWindow::GearSetterEntry, p);
     }
   }
-
-  return ret;
 }
 
 
@@ -254,6 +255,32 @@ void Control(vel_data_t vel, void* p)
   old_tstamp = _hev_state.tstamp;
 }
 
+void *MainWindow::ModeSetterEntry(void *a)
+{
+  MainWindow* main = (MainWindow*)a;
+
+  main->SetStrMode(current_mode); // steering
+  sleep(1);
+  main->SetDrvMode(current_mode); // accel/brake
+  sleep(1);
+
+  mode_is_setting = false; // loose critical section
+
+  return NULL;
+}
+
+void *MainWindow::GearSetterEntry(void *a)
+{
+  MainWindow* main = (MainWindow*)a;
+
+  main->SetGear(current_gear);
+  sleep(1);
+
+  gear_is_setting = false; // loose critical section
+
+  return NULL;
+}
+
 void *MainWindow::CMDGetterEntry(void *a)
 {
   MainWindow* main = (MainWindow*)a;
@@ -273,8 +300,9 @@ void *MainWindow::CMDGetterEntry(void *a)
     Update(main);
 
     // set mode and gear.
-    // if either mode or gear is changed, don't control this period.
-    if (!Prepare(cmddata.mode, cmddata.gear, main)) {
+    SetState(cmddata.mode, cmddata.gear, main);
+
+    if (!mode_is_setting && !gear_is_setting) {
 #ifdef DIRECT_CONTROL
       // directly set accel, brake, and steer.
       Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);

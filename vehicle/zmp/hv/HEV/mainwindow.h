@@ -108,6 +108,12 @@ public:
     // cmd
     static void* CMDGetterEntry(void *a);
 
+    // mode
+    static void* ModeSetterEntry(void *a);
+
+    // gear
+    static void* GearSetterEntry(void *a);
+
     // can
     void SendCAN(void);
 
@@ -328,7 +334,7 @@ private:
     int _drvTargetVeloc;
     int _drvTargetStroke;
 
-   /*======Autoware Socket=================*/ 
+    /*======Autoware Socket=================*/ 
     pthread_t _cmdgetter;
     /*====================================*/
 };
