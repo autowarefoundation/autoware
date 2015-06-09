@@ -54,7 +54,7 @@ bool MainWindow::ConfigSocket(void)
 
   if (getline(ifs, str)) {
     cmd_rx_interval = atoi(str.c_str());
-    cout << "CMD Interval = " << can_tx_interval << " ms" << endl;
+    cout << "CMD Interval = " << cmd_rx_interval << " ms" << endl;
   } else {
     return false;
   }
