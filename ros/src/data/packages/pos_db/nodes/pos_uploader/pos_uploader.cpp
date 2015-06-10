@@ -156,7 +156,6 @@ std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "("
 
   std::cout << value << std::endl;
 
-#if 0	//test
   std::string res;
   int ret = sd.Sender(value, res);
   if (ret == -1) {
@@ -165,7 +164,7 @@ std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "("
   }
 
   std::cout << "retrun message from DBserver : " << res << std::endl;
-#endif
+
   return;
 }
 
