@@ -162,8 +162,8 @@ int main(int argc, char* argv[]) {
  */
 static bool compareContext(const Context left, const Context right)
 {
-  /* if lampRadius is smaller, context is smaller */
-  return left.lampRadius < right.lampRadius;
+  /* if lampRadius is bigger, context is smaller */
+  return left.lampRadius > right.lampRadius;
 }
 
 void setContexts(TrafficLightDetector &detector,
