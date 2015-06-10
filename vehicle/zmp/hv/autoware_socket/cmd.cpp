@@ -202,10 +202,6 @@ void Control(vel_data_t vel, void* p)
   int cmd_velocity = vel.tv * 3.6;
   int cmd_steering_angle;
 
-#if 0 /* just for a debug */
-  cmd_velocity = 6;
-#endif
-
   // We assume that the slope against the entire arc toward the 
   // next waypoint is almost equal to that against 
   // $l = 2 \pi r \times \frac{\theta}{360} = r \times \theta$
@@ -225,6 +221,18 @@ void Control(vel_data_t vel, void* p)
        << ", str = " << current_steering_angle << endl; 
   cout << "Command: " << "vel = " << cmd_velocity 
        << ", str = " << cmd_steering_angle << endl; 
+
+#if 0 /* just for a debug */
+  static int vel_debug = 15;
+  cmd_velocity = vel_debug--;
+  if (cmd_velocity > 20)
+    cmd_velocity = 20;
+  if (cmd_velocity < 0)
+    cmd_velocity = 0;
+  static int str_debug = 0;
+  cmd_steering_angle = str_debug++;
+#endif
+
 
   //////////////////////////////////////////////////////
   // Accel and Brake

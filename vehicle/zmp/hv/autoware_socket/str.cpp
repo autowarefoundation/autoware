@@ -128,14 +128,14 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
 
   prev_steering_angle  = current_steering_angle;
 
-  //#if 0 /* log */ 
+#if 0 /* log */ 
   ofstream ofs("/tmp/steering.log", ios::app);
   ofs << cmd_steering_angle << " " 
       << current_steering_angle << " " 
       << current_steering_angvel << " "  
       << steering_diff_sum << " "  
       << target_steering_torque << endl;
-  //#endif
+#endif
 }
 
 void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)
