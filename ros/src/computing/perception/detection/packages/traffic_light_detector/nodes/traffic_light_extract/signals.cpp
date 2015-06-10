@@ -179,7 +179,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
     int u, v;
     if (project2 (signalcenter, u, v, useOpenGLCoord) == true) {
       countPoint++;
-      std::cout << u << ", " << v << ", " << std::endl;
+      // std::cout << u << ", " << v << ", " << std::endl;
 
       int radius;
       int ux, vx;
@@ -203,7 +203,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
                              &cameraOrientation.thiY,
                              &cameraOrientation.thiZ);
 
-      std::cout << "signal : " << reversed_signalYaw << ", car : " << cameraOrientation.thiZ << std::endl;
+      // std::cout << "signal : " << reversed_signalYaw << ", car : " << cameraOrientation.thiZ << std::endl;
 
       /*
         check whether this signal is oriented to the camera
@@ -213,7 +213,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 60);
       double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 60);
 
-      std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
+      // std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
 
       if (isRange(conditionRange_lower, conditionRange_upper, reversed_signalYaw)) {
         signalsInFrame.Signals.push_back (sign);
@@ -224,7 +224,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
   signalsInFrame.header.stamp = ros::Time::now();
   pub.publish (signalsInFrame);
 
-  printf ("There are %d out of %u signals in frame\n", countPoint, static_cast<unsigned int>(vmap.signals.size()));
+  // printf ("There are %d out of %u signals in frame\n", countPoint, static_cast<unsigned int>(vmap.signals.size()));
 }
 
 

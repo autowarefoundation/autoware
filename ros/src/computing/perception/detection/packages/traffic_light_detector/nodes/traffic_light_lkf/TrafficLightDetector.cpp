@@ -204,10 +204,10 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
   green.copyTo(green_test, green_mask);
 
 
-  imshow ("red", red_test);
-  imshow ("yellow", yellow_test);
-  imshow ("green", green_test);
-  waitKey(10);
+  // imshow ("red", red_test);
+  // imshow ("yellow", yellow_test);
+  // imshow ("green", green_test);
+  // waitKey(10);
 
   /* combine all color mask and create binarized image */
   Mat binarized = Mat::zeros(roi.rows, roi.cols, CV_8UC1);
@@ -218,8 +218,8 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
   // /* reduce salt-and-pepper noise */
   //remove_SoltPepperNoise(&binarized, 1);
 
-  imshow("binarize", binarized);
-  waitKey(10);
+  // imshow("binarize", binarized);
+  // waitKey(10);
 
   /* find contours in binarized image */
   std::vector< std::vector<Point> > contours;
@@ -320,8 +320,8 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     Mat extracted_HSV;
     bitwise_and(roi, signalMask, roi);
 
-    imshow("tmpImage", tmpImage);
-    waitKey(5);
+    // imshow("tmpImage", tmpImage);
+    // waitKey(5);
 
     cvtColor(roi, extracted_HSV, CV_BGR2HSV);
     // imshow("roi", roi);
@@ -360,7 +360,7 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
           }
     }
 
-    std::cout << "(green, yellow, red) / valid = (" << green_pixNum << ", " << yellow_pixNum << ", " << red_pixNum << ") / " << valid_pixNum <<std::endl;
+    // std::cout << "(green, yellow, red) / valid = (" << green_pixNum << ", " << yellow_pixNum << ", " << red_pixNum << ") / " << valid_pixNum <<std::endl;
 
     bool isRed_bright;
     bool isYellow_bright;
