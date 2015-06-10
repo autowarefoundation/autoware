@@ -1,43 +1,43 @@
 #include "TrafficLight.h"
 #include "TrafficLightDetector.h"
 
-/*
-  ref:
-  http://imagingsolution.net/program/opencv/unsharpmasking-2/
-*/
-static void UnsharpMasking(Mat* src, Mat* dst, float k)
-{
-  float kernelData[] = {
-    -k/9.0f, -k/9.0f,          -k/9.0f,
-    -k/9.0f, 1 + (8 * k)/9.0f, -k/9.0f,
-    -k/9.0f, -k/9.0f         , -k/9.0f,
-  };
+// /*
+//   ref:
+//   http://imagingsolution.net/program/opencv/unsharpmasking-2/
+// */
+// static void UnsharpMasking(Mat* src, Mat* dst, float k)
+// {
+//   float kernelData[] = {
+//     -k/9.0f, -k/9.0f,          -k/9.0f,
+//     -k/9.0f, 1 + (8 * k)/9.0f, -k/9.0f,
+//     -k/9.0f, -k/9.0f         , -k/9.0f,
+//   };
 
-  Mat kernel = Mat(3, 3, CV_32F, kernelData);
-  filter2D(*src, *dst, src->depth(), kernel, Point(-1, -1), 0, BORDER_CONSTANT);
-}
+//   Mat kernel = Mat(3, 3, CV_32F, kernelData);
+//   filter2D(*src, *dst, src->depth(), kernel, Point(-1, -1), 0, BORDER_CONSTANT);
+// }
 
 
-/*
-  ref:
-  http://seesaawiki.jp/image_processing/d/%A5%B4%A5%DE%B1%F6%A5%CE%A5%A4%A5%BA%BD%FC%B5%EE
-*/
-static void remove_SoltPepperNoise(Mat *input, int iterations)
-{
-  /* remove black noise */
-  // for (int i=0; i<iterations; i++)
-  //   dilate(*input, *input, Mat(), Point(-1, -1), 1);
+// /*
+//   ref:
+//   http://seesaawiki.jp/image_processing/d/%A5%B4%A5%DE%B1%F6%A5%CE%A5%A4%A5%BA%BD%FC%B5%EE
+// */
+// static void remove_SoltPepperNoise(Mat *input, int iterations)
+// {
+//   /* remove black noise */
+//   // for (int i=0; i<iterations; i++)
+//   //   dilate(*input, *input, Mat(), Point(-1, -1), 1);
 
-  // for (int i=0; i<iterations; i++)
-  //   erode(*input, *input, Mat(), Point(-1, -1), 1);
+//   // for (int i=0; i<iterations; i++)
+//   //   erode(*input, *input, Mat(), Point(-1, -1), 1);
 
-  /* remove white noise */
-  for (int i=0; i<iterations; i++)
-    erode(*input, *input, Mat(), Point(-1, -1), 1);
+//   /* remove white noise */
+//   for (int i=0; i<iterations; i++)
+//     erode(*input, *input, Mat(), Point(-1, -1), 1);
 
-  for (int i=0; i<iterations; i++)
-    dilate(*input, *input, Mat(), Point(-1, -1), 1);
-}
+//   for (int i=0; i<iterations; i++)
+//     dilate(*input, *input, Mat(), Point(-1, -1), 1);
+// }
 
 
 /*

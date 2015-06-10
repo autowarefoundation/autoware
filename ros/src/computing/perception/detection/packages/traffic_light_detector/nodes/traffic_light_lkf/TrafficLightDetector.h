@@ -35,26 +35,6 @@ public:
 	vector<Context> contexts;
 };
 
-/* /\* */
-/*   think in OpenCV value range */
-/*   H : 0 <= H <= 180 (H_opencv = H_def / 2) */
-/*   S : 0 <= S <= 255 (S_opencv = S_def * 255) */
-/*   V : 0 <= V <= 255 (V_opencv = V_dev * 255) */
-/* *\/ */
-/* enum daytime_Hue_threshold { */
-/*   DAYTIME_RED_LOWER    = 340/2, */
-/*   //DAYTIME_RED_UPPER    = 360/2, */
-/*   DAYTIME_RED_UPPER    = 20/2, */
-/*   //DAYTIME_YELLOW_LOWER = 0/2, */
-/*   DAYTIME_YELLOW_LOWER = 40/2, */
-/*   DAYTIME_YELLOW_UPPER = 60/2, */
-/*   DAYTIME_BLUE_LOWER   = 140/2, */
-/*   DAYTIME_BLUE_UPPER   = 180/2, */
-/* }; */
-
-/* #define DAYTIME_S_SIGNAL_THRESHOLD (0.27*255) */
-/* //#define DAYTIME_V_SIGNAL_THRESHOLD 110 */
-/* #define DAYTIME_V_SIGNAL_THRESHOLD 80 */
 enum daytime_Hue_threshold {
     DAYTIME_RED_LOWER    = 340,
     DAYTIME_RED_UPPER    = 50,
