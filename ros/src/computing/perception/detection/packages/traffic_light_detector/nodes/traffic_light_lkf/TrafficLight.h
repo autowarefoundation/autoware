@@ -30,6 +30,14 @@ void drawBoundedRects(Mat &targetImg, vector<Rect> boundedRects);
 #define LIGHT_DRAW_RADIUS 15
 
 #define MINIMAM_RADIUS 3
-#define ROI_MARGINE 5
+#define ROI_MARGINE 20
+
+inline bool IsNearlyZero(double x)
+{
+  double abs_x = fabs(x);
+  int scale = 100;
+  return(abs_x < DBL_MIN*scale);
+}
+
 
 #endif
