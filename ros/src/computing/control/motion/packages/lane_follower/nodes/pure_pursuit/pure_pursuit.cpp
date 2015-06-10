@@ -205,6 +205,7 @@ void DisplayCircle(tf::Vector3 center, double radius)
     circle.color.r = 1.0;
     circle.color.g = 0.0;
     circle.color.b = 0.0;
+    circle.lifetime = ros::Duration(0.1);
     _circle_pub.publish(circle);
 }
 
@@ -228,7 +229,7 @@ void DisplayTargetWaypoint(int i)
     marker.color.r = 0.0;
     marker.color.g = 0.0;
     marker.color.b = 1.0;
-
+    marker.lifetime = ros::Duration(0.1);
     _vis_pub.publish(marker);
 }
 
