@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 
   if (argc < 2)
     {
-      std::cout << "Usage: camera_info_publisher <calibration-file>." << std::endl;
+      std::cout << "Usage: extrinsicMatPublisher <calibration-file>." << std::endl;
       return -1;
     }
 

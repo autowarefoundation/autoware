@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   rosinterface
   fastvirtualscan
   message_generation
+  cv_bridge
+  tf
 )
 
 find_package(OpenCV REQUIRED)
@@ -136,4 +138,13 @@ target_link_libraries(vscan2image
 add_dependencies(vscan2image
   points_image
   point2image_generate_messages_cpp
+)
+
+# extrinsicMatPublisher
+add_executable(extrinsicMatPublisher
+  nodes/extrinsicMatPublisher/extrinsicMatPublisher.cpp
+  )
+
+target_link_libraries(extrinsicMatPublisher
+  ${catkin_LIBRARIES}
 )

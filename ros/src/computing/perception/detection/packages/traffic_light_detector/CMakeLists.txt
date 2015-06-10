@@ -64,12 +64,3 @@ target_link_libraries(traffic_light_extract
   ${catkin_LIBRARIES}
   ${libvectormap_LIBRARIES}
 )
-
-### camera_info_publisher ###
-add_executable(camera_info_publisher
-  nodes/camera_info_publisher/camera_info_publisher.cpp
-  )
-
-target_link_libraries(camera_info_publisher
-  ${catkin_LIBRARIES}
-)
