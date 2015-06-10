@@ -41,8 +41,9 @@ static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
 static constexpr bool ADVERTISE_LATCH = true;
 
-static constexpr int32_t TRAFFIC_LIGHT_RED = 0;
-static constexpr int32_t TRAFFIC_LIGHT_GREEN = 1;
+static constexpr int32_t TRAFFIC_LIGHT_RED     = 0;
+static constexpr int32_t TRAFFIC_LIGHT_GREEN   = 1;
+static constexpr int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
 
 static ros::Publisher pub_ruled;
 static ros::Publisher pub_velocity;
@@ -62,7 +63,8 @@ static void green_waypoint_callback(const lane_follower::lane& msg)
 
 static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 {
-	const lane_follower::lane *current;
+	const  lane_follower::lane *current;
+	static lane_follower::lane prev_path = current_red_lane;
 
 	switch (msg.traffic_light) {
 	case TRAFFIC_LIGHT_RED:
@@ -70,6 +72,9 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 		break;
 	case TRAFFIC_LIGHT_GREEN:
 		current = &current_green_lane;
+		break;
+	case TRAFFIC_LIGHT_UNKNOWN:
+        current = &prev_path;     // if traffic light state is unknown, keep previous state
 		break;
 	default:
 		ROS_ERROR("unknown traffic_light");
@@ -110,6 +115,8 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 
 	pub_ruled.publish(*current);
 	pub_velocity.publish(velocities);
+
+    prev_path = *current;
 }
 
 int main(int argc, char **argv)
