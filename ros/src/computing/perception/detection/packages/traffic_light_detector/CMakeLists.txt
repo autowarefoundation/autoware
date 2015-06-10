@@ -40,7 +40,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ### traffic_light_lkf ###
 add_executable(traffic_light_lkf
-  nodes/traffic_light_lkf/TrafficLight.cpp
+  nodes/traffic_light_lkf/traffic_light_lkf.cpp
   nodes/traffic_light_lkf/TrafficLightDetector.cpp
   nodes/traffic_light_lkf/Context.cpp
   )
@@ -57,7 +57,7 @@ include_directories(
 )
 
 add_executable(traffic_light_extract
-  nodes/traffic_light_extract/signals.cpp
+  nodes/traffic_light_extract/traffic_light_extract.cpp
 )
 
 target_link_libraries(traffic_light_extract
