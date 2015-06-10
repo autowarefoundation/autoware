@@ -84,15 +84,15 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   /* test output */
   Mat targetScope;
   frame.copyTo(targetScope);
-  for (unsigned int i=0; i<detector.contexts.size(); i++)
-    {
-//      if (detector.contexts.at(i).lampRadius < MINIMAM_RADIUS)
-//        continue;
+//   for (unsigned int i=0; i<detector.contexts.size(); i++)
+//     {
+// //      if (detector.contexts.at(i).lampRadius < MINIMAM_RADIUS)
+// //        continue;
 
-      circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
-      circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
-      circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
-    }
+//       circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
+//       circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
+//       circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
+//     }
 
 
   // Mat grayScale;
@@ -103,7 +103,7 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   /* test output */
   putResult_inText(&targetScope, detector.contexts);
 
-  imshow("target scope", targetScope);
+  imshow("detection result", targetScope);
   waitKey(5);
 }
 
