@@ -280,8 +280,6 @@ void *MainWindow::ModeSetterEntry(void *a)
 
   mode_is_setting = false; // loose critical section
 
-  cout << "set ends" << endl;
-
   return NULL;
 }
 
