@@ -49,6 +49,9 @@ publish data as ractangular plane
 #include <geo_pos_conv.hh>
 #include <pos_db.h>
 
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
+
 #define MYNAME		"pos_downloader"
 #define MARKERNAME	"mo_marker"
 #define STARTTIME	(0)		// now
@@ -96,35 +99,57 @@ static int publish_car(int id, int is_ndt, ros::Time now, geometry_msgs::Pose& p
   marker.header.stamp = now;
   marker.ns = MARKERNAME;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.type = visualization_msgs::Marker::CUBE;
   marker.id = id++;
+  marker.pose = pose;
   if (is_ndt) {
+    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    marker.mesh_resource = "package://pos_db/model/prius_model.dae";
+    marker.mesh_use_embedded_materials = true;
     marker.lifetime = ros::Duration();
     marker.color.r = 0.0;
-    marker.color.g = 1.0;
+    marker.color.g = 0.0;
     marker.color.b = 0.0;
+    marker.color.a = 0.0;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+    tf::Quaternion q1;
+    q1.setRPY(M_PI/2, 0, M_PI);
+    tf::Quaternion q2(marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z, marker.pose.orientation.w);
+    tf::Quaternion q3;
+    q3 = q2 * q1;
+
+    marker.pose.position.z -= 2.0;
+    marker.pose.orientation.x = q3.x();
+    marker.pose.orientation.y = q3.y();
+    marker.pose.orientation.z = q3.z();
+    marker.pose.orientation.w = q3.w();
+
   } else {
+    marker.type = visualization_msgs::Marker::CUBE;
     marker.lifetime = ros::Duration(life_time);
     marker.color.r = 1.0;
     marker.color.g = 0.0;
     marker.color.b = 0.0;
-  }
-  marker.color.a = 1.0;
-  marker.scale.x = 4.4; // #A
-  marker.scale.y = 1.6;
-  marker.scale.z = 1.0; // #1
-  marker.pose = pose;
-  marker.pose.position.z += 0.5; // == #1/2
-  pub.publish(marker);
-  dbg_out_marker(marker);
 
-  marker.id = id++;
-  marker.scale.x = 3.0; // #B
-  marker.scale.y = 1.6;
-  marker.scale.z = 0.6; // #2
-  marker.pose = pose;
-  marker.pose.position.x += (4.4 - 3.0) / 2; // == (#A - #B)/2
-  marker.pose.position.z += 1.0 + 0.3; // == #1 + #2/2
+    marker.color.a = 1.0;
+    marker.scale.x = 4.4; // #A
+    marker.scale.y = 1.6;
+    marker.scale.z = 1.0; // #1
+    marker.pose.position.z += 0.5; // == #1/2
+    pub.publish(marker);
+    dbg_out_marker(marker);
+
+    marker.id = id++;
+    marker.scale.x = 3.0; // #B
+    marker.scale.y = 1.6;
+    marker.scale.z = 0.6; // #2
+    marker.pose = pose;
+    marker.pose.position.x += (4.4 - 3.0) / 2; // == (#A - #B)/2
+    marker.pose.position.z += 1.0 + 0.3; // == #1 + #2/2
+  }
+
   pub.publish(marker);
   dbg_out_marker(marker);
 
