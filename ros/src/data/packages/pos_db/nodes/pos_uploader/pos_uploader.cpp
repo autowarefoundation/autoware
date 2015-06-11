@@ -45,6 +45,11 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+
 #include <pos_db.h>
 
 //store subscribed value
@@ -65,6 +70,7 @@ static SendData sd;
 static std::vector <geometry_msgs::PoseStamped> ndt_position;
 pthread_mutex_t pose_lock_;
 
+static char mac_addr[20];
 
 static std::string getTimeStamp(time_t sec, time_t nsec)
 {
@@ -86,7 +92,7 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
 
   oss << "INSERT INTO POS(id,x,y,z,area,or_x,or_y,or_z,or_w,type,tm) "
       << "VALUES("
-      << "'pos_upload_" << name << "_test',"
+      << "'" << name << ":" << mac_addr << "',"
       << std::fixed << std::setprecision(6) << pose.position.y << ","
       << std::fixed << std::setprecision(6) << pose.position.x << ","
       << std::fixed << std::setprecision(6) << pose.position.z << ","
@@ -218,6 +224,24 @@ int main(int argc, char **argv)
   std::cout << "pos_uploader" << std::endl;
 
   pose_lock_ = PTHREAD_MUTEX_INITIALIZER;
+
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    perror("socket");
+    return -1;
+  }
+  struct ifreq ifr;
+  ifr.ifr_addr.sa_family = AF_INET;
+  strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+  ioctl(sock, SIOCGIFHWADDR, &ifr);
+  close(sock);
+  snprintf(mac_addr, sizeof(mac_addr), "%.2x%.2x%.2x%.2x%.2x%.2x",
+         (unsigned char)ifr.ifr_hwaddr.sa_data[0],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[1],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[2],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[3],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[4],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[5]);
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.

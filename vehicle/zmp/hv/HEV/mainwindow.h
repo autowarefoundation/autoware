@@ -120,6 +120,7 @@ public:
     // common
     bool ConfigSocket(void);
     void UpdateState(void);
+    void ClearCntDiag(void);
 
     /*====================================*/
 

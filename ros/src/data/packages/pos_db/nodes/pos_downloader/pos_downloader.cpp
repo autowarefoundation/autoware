@@ -49,6 +49,9 @@ publish data as ractangular plane
 #include <geo_pos_conv.hh>
 #include <pos_db.h>
 
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
+
 #define MYNAME		"pos_downloader"
 #define MARKERNAME	"mo_marker"
 #define STARTTIME	(0)		// now
@@ -77,126 +80,195 @@ static std::vector<std::string> split(const string& input, char delimiter)
     return result;
 }
 
-static int result_to_marker(const std::string& result, visualization_msgs::Marker& marker, int is_swap)
+static void dbg_out_marker(visualization_msgs::Marker marker)
 {
-  std::vector<std::string> columns = split(result, '\t');
-  static int id = 1;
-
-  // id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm
-  if(columns.size() != 11)
-    return -1;
-
-  if (columns[0].find("ndt_pose", 0) != string::npos) {
-    marker.type = visualization_msgs::Marker::ARROW;
-    marker.lifetime = ros::Duration();
-    marker.id = 0;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
-    marker.color.a = 1.0;
-    marker.scale.x = 2.0;
-    marker.scale.y = 2.0;
-    marker.scale.z = 2.0;
-  } else if (columns[0].find("pedestrian_pose", 0) != string::npos) {
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.lifetime = ros::Duration(life_time);
-    marker.id = id++;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
-    marker.color.a = 1.0;
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
-  } else if (columns[0].find("car_pose", 0) != string::npos) {
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.lifetime = ros::Duration(life_time);
-    marker.id = id++;
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    marker.color.a = 1.0;
-    marker.scale.x = 2.0;
-    marker.scale.y = 2.0;
-    marker.scale.z = 2.0;
-  } else {
-    marker.type = visualization_msgs::Marker::CUBE;
-    marker.lifetime = ros::Duration(life_time);
-    marker.id = id++;
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
-    marker.color.a = 1.0;
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
-  }
-
-  if (is_swap) {
-    marker.pose.position.x = std::stod(columns[2]);
-    marker.pose.position.y = std::stod(columns[1]);
-    marker.pose.orientation.x = std::stod(columns[5]);
-    marker.pose.orientation.y = std::stod(columns[4]);
-  } else {
-    marker.pose.position.x = std::stod(columns[1]);
-    marker.pose.position.y = std::stod(columns[2]);
-    marker.pose.orientation.x = std::stod(columns[4]);
-    marker.pose.orientation.y = std::stod(columns[5]);
-  }
-  marker.pose.position.z = std::stod(columns[3]);
-  marker.pose.orientation.z = std::stod(columns[6]);
-  marker.pose.orientation.w = std::stod(columns[7]);
-  if (marker.pose.position.x < -1.79E308 ||
-	marker.pose.position.y < -1.79E308 ||
-	marker.pose.position.z < -1.79E308) {
-    geo_pos_conv geo;
-    double lon = std::stod(columns[8]);
-    double lat = std::stod(columns[9]);
-    geo.set_plane(7); // Aichi-ken
-    geo.set_llh_nmea_degrees(lat, lon, 0/*h*/);
-    if (is_swap) {
-      marker.pose.position.x = geo.y();
-      marker.pose.position.y = geo.x();
-    } else {
-      marker.pose.position.x = geo.x();
-      marker.pose.position.y = geo.y();
-    }
-    marker.pose.position.z = geo.z();
-    marker.pose.orientation.x = 0;
-    marker.pose.orientation.y = 0;
-    marker.pose.orientation.z = 0;
-    marker.pose.orientation.w = 1;
-  }
-
-  std::cout << "pose " << marker.pose.position.x << ","
+  std::cout << marker.id << " : "
+	<< marker.pose.position.x << ","
 	<< marker.pose.position.y << ","
-	<< marker.pose.position.z << ":"
+	<< marker.pose.position.z << " : "
 	<< marker.pose.orientation.x << ","
 	<< marker.pose.orientation.y << ","
 	<< marker.pose.orientation.z << ","
 	<< marker.pose.orientation.w << std::endl;
+}
+
+static int publish_car(int id, int is_ndt, ros::Time now, geometry_msgs::Pose& pose)
+{
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/map";
+  marker.header.stamp = now;
+  marker.ns = MARKERNAME;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.id = id++;
+  marker.pose = pose;
+  if (is_ndt) {
+    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    marker.mesh_resource = "package://pos_db/model/prius_model.dae";
+    marker.mesh_use_embedded_materials = true;
+    marker.lifetime = ros::Duration();
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    marker.color.a = 0.0;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+    tf::Quaternion q1;
+    q1.setRPY(M_PI/2, 0, M_PI);
+    tf::Quaternion q2(marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z, marker.pose.orientation.w);
+    tf::Quaternion q3;
+    q3 = q2 * q1;
+
+    marker.pose.position.z -= 2.0;
+    marker.pose.orientation.x = q3.x();
+    marker.pose.orientation.y = q3.y();
+    marker.pose.orientation.z = q3.z();
+    marker.pose.orientation.w = q3.w();
+
+  } else {
+    marker.type = visualization_msgs::Marker::CUBE;
+    marker.lifetime = ros::Duration(life_time);
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+
+    marker.color.a = 1.0;
+    marker.scale.x = 4.4; // #A
+    marker.scale.y = 1.6;
+    marker.scale.z = 1.0; // #1
+    marker.pose.position.z += 0.5; // == #1/2
+    pub.publish(marker);
+    dbg_out_marker(marker);
+
+    marker.id = id++;
+    marker.scale.x = 3.0; // #B
+    marker.scale.y = 1.6;
+    marker.scale.z = 0.6; // #2
+    marker.pose = pose;
+    marker.pose.position.x += (4.4 - 3.0) / 2; // == (#A - #B)/2
+    marker.pose.position.z += 1.0 + 0.3; // == #1 + #2/2
+  }
+
+  pub.publish(marker);
+  dbg_out_marker(marker);
+
+  return id;
+}
+
+static int publish_pedestrian(int id, int is_pedestrian, ros::Time now,
+			      geometry_msgs::Pose& pose)
+{
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "/map";
+  marker.header.stamp = now;
+  marker.ns = MARKERNAME;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.type = visualization_msgs::Marker::CYLINDER;
+  marker.lifetime = ros::Duration(life_time);
+  marker.id = id++;
+  if (is_pedestrian) {
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
+  } else {
+    marker.color.r = 1.0;
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
+  }
+  marker.color.a = 1.0;
+  marker.scale.x = 0.6;
+  marker.scale.y = 0.6;
+  marker.scale.z = 1.2; // #1
+  marker.pose = pose;
+  marker.pose.position.z += 0.6; // == #1/2
+  pub.publish(marker);
+  dbg_out_marker(marker);
+
+  marker.id = id++;
+  marker.type = visualization_msgs::Marker::SPHERE;
+  marker.scale.x = 0.6; // #2
+  marker.scale.y = 0.6;
+  marker.scale.z = 0.6;
+  marker.pose = pose;
+  marker.pose.position.z += 1.2 + 0.3; // == #1 + #2/2
+  pub.publish(marker);
+  dbg_out_marker(marker);
+
+  return id;
+}
+
+static int result_to_marker(const string& idstr, ros::Time now,
+			    geometry_msgs::Pose& pose, int is_swap)
+{
+  static int id = 2;
+
+  if (idstr.find("ndt_pose", 0) != string::npos) {
+    int nid = 0;
+    if(idstr.length() >= 21) nid = 0x7f000000 | (std::strtol((idstr.substr(15,6)).c_str(), NULL, 16)) << 1;
+    publish_car(nid, 1, now, pose);
+  } else if (idstr.find("car_pose", 0) != string::npos) {
+    id = publish_car(id, 0, now, pose);
+  } else if (idstr.find("pedestrian_pose", 0) != string::npos) {
+    id = publish_pedestrian(id, 1, now, pose);
+  } else {
+    id = publish_pedestrian(id, 0, now, pose);
+  }
 
   return 0;
 }
 
-static void marker_publisher(const std_msgs::String& msg)
+static void marker_publisher(const std_msgs::String& msg, int is_swap)
 {
   std::vector<std::string> db_data = split(msg.data, '\n');
+  std::vector<std::string> cols;
+  ros::Time now = ros::Time::now();
+  geometry_msgs::Pose pose;
 
   for (const std::string& row : db_data) {
     if(row.empty())
       continue;
-
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = "/map";
-    marker.header.stamp = ros::Time::now();
-    marker.ns = MARKERNAME;
-    marker.action = visualization_msgs::Marker::ADD;
-    int ret = result_to_marker(row, marker, 1);
-    if (ret != 0)
+    cols = split(row, '\t');
+    // id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm
+    if(cols.size() != 11)
       continue;
 
-    pub.publish(marker);
+    if (is_swap) {
+      pose.position.x = std::stod(cols[2]);
+      pose.position.y = std::stod(cols[1]);
+      pose.orientation.x = std::stod(cols[5]);
+      pose.orientation.y = std::stod(cols[4]);
+    } else {
+      pose.position.x = std::stod(cols[1]);
+      pose.position.y = std::stod(cols[2]);
+      pose.orientation.x = std::stod(cols[4]);
+      pose.orientation.y = std::stod(cols[5]);
+    }
+    pose.position.z = std::stod(cols[3]);
+    pose.orientation.z = std::stod(cols[6]);
+    pose.orientation.w = std::stod(cols[7]);
+    if (pose.position.x < -1.79E308 ||
+	pose.position.y < -1.79E308 ||
+	pose.position.z < -1.79E308) {
+      geo_pos_conv geo;
+      double lon = std::stod(cols[8]);
+      double lat = std::stod(cols[9]);
+      geo.set_plane(7); // Aichi-ken
+      geo.llh_to_xyz(lat, lon, 0/*h*/);
+      if (is_swap) {
+	pose.position.x = geo.y();
+	pose.position.y = geo.x();
+      } else {
+	pose.position.x = geo.x();
+	pose.position.y = geo.y();
+      }
+      pose.position.z = geo.z();
+      pose.orientation.x = 0;
+      pose.orientation.y = 0;
+      pose.orientation.z = 0;
+      pose.orientation.w = 1;
+    }
+    result_to_marker(cols[0], now, pose, is_swap);
   }
 }
 
@@ -250,7 +322,7 @@ static uint64_t send_sql(time_t diff_sec, uint64_t prev)
     std::cout << "return data: \"" << db_response << "\"" << std::endl;
     if (db_response.size() > 4) {
       msg.data = db_response.substr(4).c_str();
-      marker_publisher(msg);
+      marker_publisher(msg, 1);
     }
   }
 
