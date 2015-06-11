@@ -7,8 +7,10 @@
 #include <math.h>
 #include <sstream>
 #include <runtime_manager/traffic_light.h>
+#include <std_msgs/String.h>
 
 static ros::Publisher signalState_pub;
+static ros::Publisher signalStateString_pub;
 static constexpr int32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool    ADVERTISE_LATCH      = true;
 
@@ -108,27 +110,31 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   /* test output */
   putResult_inText(&targetScope, detector.contexts);
 
-  //imshow("detection result", targetScope);
-  //waitKey(5);
+  imshow("detection result", targetScope);
+  waitKey(5);
 
   /* publish result */
   runtime_manager::traffic_light state_msg;
+  std_msgs::String state_string_msg;
   const int32_t TRAFFIC_LIGHT_RED     = 0;
   const int32_t TRAFFIC_LIGHT_GREEN   = 1;
   const int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
-
+  static int32_t prev_state = TRAFFIC_LIGHT_UNKNOWN;
   state_msg.traffic_light = TRAFFIC_LIGHT_UNKNOWN;
   for (unsigned int i=0; i<detector.contexts.size(); i++) {
 	  switch (detector.contexts.at(i).lightState) {
 	  case GREEN:
 		  state_msg.traffic_light = TRAFFIC_LIGHT_GREEN;
+          state_string_msg.data = "green signal";
 		  break;
 	  case YELLOW:
 	  case RED:
 		  state_msg.traffic_light = TRAFFIC_LIGHT_RED;
+          state_string_msg.data = "red signal";
 		  break;
 	  case UNDEFINED:
 		  state_msg.traffic_light = TRAFFIC_LIGHT_UNKNOWN;
+          state_string_msg.data = "";
 		  break;
 	  }
 	  if (state_msg.traffic_light != TRAFFIC_LIGHT_UNKNOWN)
@@ -136,7 +142,14 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   }
 
   signalState_pub.publish(state_msg);
+  if (state_msg.traffic_light != prev_state) {
+    signalStateString_pub.publish(state_string_msg);
+  } else {
+    state_string_msg.data = "";
+    signalStateString_pub.publish(state_string_msg);
+  }
 
+  prev_state = state_msg.traffic_light;
 }
 
 int main(int argc, char* argv[]) {
@@ -151,6 +164,7 @@ int main(int argc, char* argv[]) {
   ros::Subscriber position_sub = n.subscribe("/traffic_light_pixel_xy", 1, extractedPos_cb);
 
   signalState_pub = n.advertise<runtime_manager::traffic_light>("/traffic_light", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+  signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
 
   ros::spin();
 
@@ -163,7 +177,7 @@ int main(int argc, char* argv[]) {
 static bool compareContext(const Context left, const Context right)
 {
   /* if lampRadius is bigger, context is smaller */
-  return left.lampRadius > right.lampRadius;
+  return left.lampRadius >= right.lampRadius;
 }
 
 void setContexts(TrafficLightDetector &detector,
