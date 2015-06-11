@@ -46,15 +46,15 @@
 
 #define LOOP_RATE 10
 
-geometry_msgs::TwistStamped _current_twist;
-geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-lane_follower::lane _current_path;
+static geometry_msgs::TwistStamped _current_twist;
+static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
+static lane_follower::lane _current_path;
 //std::vector<geometry_msgs::Pose> _car_pose;
 //std::vector<geometry_msgs::Pose> _ped_pose;
-pcl::PointCloud<pcl::PointXYZ> _vscan;
+staticpcl::PointCloud<pcl::PointXYZ> _vscan;
 
-std::string _current_pose_topic = "ndt";
-const std::string PATH_FRAME = "/map";
+staticstd::string _current_pose_topic = "ndt";
+staticconst std::string PATH_FRAME = "/map";
 static bool _twist_flag = false;
 static bool _pose_flag = false;
 static bool _path_flag = false;
@@ -76,7 +76,7 @@ static ros::Publisher _twist_pub;
 static ros::Publisher _vis_pub;
 static ros::Publisher _range_pub;
 
-void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
+static void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
     _current_twist = *msg;
 
@@ -86,17 +86,17 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
     }
 }
 /*
- void CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
+ static void CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
  {
  _car_pose = msg->poses;
  }
 
- void PedPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
+ static void PedPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
  {
  _ped_pose = msg->poses;
  }
  */
-void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
+static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
     pcl::fromROSMsg(*msg, _vscan);
     if (_vscan_flag == false) {
@@ -106,7 +106,7 @@ void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 }
 
-void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
     if (_current_pose_topic == "ndt") {
         _current_pose.header = msg->header;
@@ -122,7 +122,7 @@ void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
 }
 
-void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
+static void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
 {
     if (_current_pose_topic == "odometry") {
         _current_pose.header = msg->header;
@@ -138,7 +138,7 @@ void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
     }
 }
 
-void WaypointCallback(const lane_follower::laneConstPtr &msg)
+static void WaypointCallback(const lane_follower::laneConstPtr &msg)
 {
     _current_path = *msg;
     if (_path_flag == false) {
@@ -148,7 +148,7 @@ void WaypointCallback(const lane_follower::laneConstPtr &msg)
 }
 
 // display  by markers.
-void DisplayObstacleWaypoint(int i)
+static void DisplayObstacleWaypoint(int i)
 {
 
     visualization_msgs::Marker marker;
@@ -173,7 +173,7 @@ void DisplayObstacleWaypoint(int i)
 }
 
 // display  by markers.
-void DisplayDetectionRange(int i)
+static void DisplayDetectionRange(int i)
 {
 
     visualization_msgs::Marker marker;
@@ -195,7 +195,7 @@ void DisplayDetectionRange(int i)
     _range_pub.publish(marker);
 }
 
-int GetObstacleWaypointUsingVscan()
+static int GetObstacleWaypointUsingVscan()
 {
 
     if (_vscan.empty() == true)
@@ -234,7 +234,7 @@ int GetObstacleWaypointUsingVscan()
 
     }
 
-bool ObstacleDetection()
+static bool ObstacleDetection()
 {
     static int false_count = 0;
     static bool prev_detection = false;
@@ -281,7 +281,7 @@ bool ObstacleDetection()
 }
 
 
-double Decelerate()
+static double Decelerate()
 {
     //calculate distance from my position to waypoint
     tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[_vscan_obstacle_waypoint].pose.pose);
