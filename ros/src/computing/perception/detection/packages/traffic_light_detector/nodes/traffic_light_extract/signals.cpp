@@ -10,17 +10,25 @@
 #include <ros/ros.h>
 #include "Rate.h"
 #include "vector_map.h"
+#include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/CameraInfo.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Pose.h>
 #include <signal.h>
 #include <cstdio>
 #include "Math.h"
 #include <Eigen/Eigen>
 #include "traffic_light_detector/Signals.h"
 
-
+typedef struct {
+  double thiX;
+  double thiY;
+  double thiZ;
+} Angle;
 
 static VectorMap vmap;
+static Angle cameraOrientation; // camera orientation = car's orientation
 
 static Eigen::Vector3f position;
 static Eigen::Quaternionf orientation;
@@ -43,6 +51,66 @@ void cameraInfoCallback (const sensor_msgs::CameraInfo::ConstPtr camInfoMsg)
   imageHeight = camInfoMsg->height;
   cx = static_cast<float>(camInfoMsg->P[2]);
   cy = static_cast<float>(camInfoMsg->P[6]);
+}
+
+
+/* convert degree value into 0 to 360 range */
+static double setDegree0to360(double val)
+{
+  if (val < 0.0f) {
+    return (val + 360.0f);
+  }
+  else if (360.0f < val) {
+    return (val - 360.0f);
+  }
+
+  return val;
+}
+
+
+static void get_cameraRollPitchYaw(double* roll,
+                                   double* pitch,
+                                   double* yaw)
+{
+  geometry_msgs::Pose cameraPose;
+  cameraPose.position.x    = (double)(position.x());
+  cameraPose.position.y    = (double)(position.y());
+  cameraPose.position.z    = (double)(position.z());
+  cameraPose.orientation.x = (double)(orientation.x());
+  cameraPose.orientation.y = (double)(orientation.y());
+  cameraPose.orientation.z = (double)(orientation.z());
+  cameraPose.orientation.w = (double)(orientation.w());
+
+  tf::Quaternion quat;
+
+  tf::quaternionMsgToTF(cameraPose.orientation, quat);
+  tf::Matrix3x3(quat).getRPY(*roll, *pitch, *yaw);
+
+  /* convert from radian to degree */
+  *roll  = setDegree0to360(*roll  * 180.0f / M_PI);
+  *pitch = setDegree0to360(*pitch * 180.0f / M_PI);
+  *yaw   = setDegree0to360(*yaw   * 180.0f / M_PI);
+}
+
+
+/*
+  check if lower < val < upper
+  This function also considers circulation
+*/
+static bool isRange(const double lower, const double upper, const double val)
+{
+  if (lower <= upper) {
+    if (lower < val && val < upper) {
+      return true;
+    }
+  }
+  else {
+    if (val < upper || lower < val) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 
@@ -122,12 +190,34 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       sign.signalId = signal.id;
       //sign.u = u, sign.v = v, sign.radius = radius;
       sign.u = u;
-      sign.v = v - 25;    /* temporaly correction of calibration data */
+      sign.v = v - 25;    /* Temporary correction of calibration data */
       sign.radius = radius;
       sign.x = signalcenter.x(), sign.y = signalcenter.y(), sign.z = signalcenter.z();
-      sign.hang = vmap.vectors[signal.vid].hang;
+      sign.hang = vmap.vectors[signal.vid].hang; // hang is expressed in [0, 360] degree
       sign.type = signal.type, sign.linkId = signal.linkid;
-      signalsInFrame.Signals.push_back (sign);
+
+      /* convert signal's horizontal angle to yaw */
+      double reversed_signalYaw = setDegree0to360(sign.hang + 180.0f);
+
+      get_cameraRollPitchYaw(&cameraOrientation.thiX,
+                             &cameraOrientation.thiY,
+                             &cameraOrientation.thiZ);
+
+      std::cout << "signal : " << reversed_signalYaw << ", car : " << cameraOrientation.thiZ << std::endl;
+
+      /*
+        check whether this signal is oriented to the camera
+        interested signals have below condition orientation:
+        (camera_orientation - 60deg) < (signal_orientation + 180deg) < (camera_orientatin + 60deg)
+      */
+      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 60);
+      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 60);
+
+      std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
+
+      if (isRange(conditionRange_lower, conditionRange_upper, reversed_signalYaw)) {
+        signalsInFrame.Signals.push_back (sign);
+      }
     }
   }
 
@@ -157,7 +247,8 @@ int main (int argc, char *argv[])
   ros::NodeHandle rosnode;
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
-  ros::Publisher signalPublisher = rosnode.advertise <traffic_light_detector::Signals> ("traffic_light_pixel_xy", 100);
+  //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/ndt_pose", 10, ndtPoseCallback);
+  ros::Publisher  signalPublisher      = rosnode.advertise <traffic_light_detector::Signals> ("traffic_light_pixel_xy", 100);
   signal (SIGINT, interrupt);
 
   Rate loop (25);
