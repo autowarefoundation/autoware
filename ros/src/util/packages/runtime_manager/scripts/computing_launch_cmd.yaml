@@ -91,6 +91,12 @@ subs :
             param: pedestrian_kf
           - name : pedestrian_locate
             cmd  : roslaunch pedestrian_detector pedestrian_locate.launch
+          - name : traffic_light_colorExtract
+            cmd  : roslaunch runtime_manager traffic_light.launch
+            param: traffic_light
+            gui  :
+              file :
+                prop : 1
       - name : Localization
         subs :
           - name : ndt_pcl
@@ -401,6 +407,16 @@ params :
       min   : 0
       max   : 100
       v     : 0.0
+
+  - name  : traffic_light
+    vars :
+    - name      : file
+      kind      : path
+      path_type : dir
+      v         : /tmp
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name : lane_navi
     vars :

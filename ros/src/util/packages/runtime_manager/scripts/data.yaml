@@ -29,7 +29,7 @@ subs :
   - name : Position
     subs :
     - name  : pos_download
-      cmd   : rosrun obj_db obj_downloader
+      cmd   : rosrun pos_db pos_downloader
       param : pos_db
       gui   :
         to_lon :
@@ -41,7 +41,7 @@ subs :
           border: 20
           flags : [ right ]
     - name  : pos_upload
-      cmd   : rosrunobj_db obj_uploader
+      cmd   : rosrun pos_db pos_uploader
 
   - name : Sensors
     subs :

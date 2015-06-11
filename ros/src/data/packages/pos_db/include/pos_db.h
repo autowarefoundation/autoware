@@ -28,51 +28,24 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "mainwindow.h"
-#include "autoware_socket.h"
+#ifndef _MAP_DB_H_
+#define _MAP_DB_H_
 
-int can_tx_interval = 10; // ms
-int cmd_rx_interval = 100; // ms
-std::string ros_ip_address = "192.168.1.101";
+#include <cstdint>
+#include <string>
 
-HevState _hev_state;
+class SendData {
+private:
+	std::string host_name_;
+	int port_;
 
-bool MainWindow::ConfigSocket(void)
-{
-  std::ifstream ifs("./config");
-  std::string str;
-  if (ifs.fail()) {
-    return false;
-  }
+public:
+	SendData();
+	explicit SendData(const std::string& host_name, int port);
 
-  if (getline(ifs,str)) {
-    can_tx_interval = atoi(str.c_str());
-    cout << "CAN Interval = " << can_tx_interval << " ms" << endl;
-  } else {
-    return false;
-  }
+	int Sender(const std::string& value, std::string& res) const;
+};
 
-  if (getline(ifs, str)) {
-    cmd_rx_interval = atoi(str.c_str());
-    cout << "CMD Interval = " << cmd_rx_interval << " ms" << endl;
-  } else {
-    return false;
-  }
+extern std::string make_header(int32_t sql_inst, int32_t sql_num);
 
-  if (getline(ifs,str)) {
-    ros_ip_address = str;
-    cout << "ROS IP Address = " << ros_ip_address << endl;
-  } else {
-    return false;
-  }
-
-  return true;
-}
-
-void MainWindow::UpdateState(void)
-{
-  _hev_state.tstamp = (long long int) (getTime());
-  hev->GetDrvInf(&_hev_state.drvInf);
-  hev->GetStrInf(&_hev_state.strInf);
-  hev->GetBrakeInf(&_hev_state.brkInf);
-}
+#endif /* _MAP_DB_H_ */

@@ -13,13 +13,6 @@ static TrafficLightDetector detector;
 
 static Mat frame;
 
-static inline bool IsNearlyZero(double x)
-{
-  double abs_x = fabs(x);
-  int scale = 100;
-  return(abs_x < DBL_MIN*scale);
-}
-
 static void putResult_inText(Mat *image, const vector<Context> &contexts)
 {
   std::string label;
@@ -33,8 +26,8 @@ static void putResult_inText(Mat *image, const vector<Context> &contexts)
   for (unsigned int i=0; i<contexts.size(); i++)
     {
       Context ctx = contexts.at(i);
-      if (ctx.lampRadius < MINIMAM_RADIUS)
-        continue;
+//      if (ctx.lampRadius < MINIMAM_RADIUS)
+//        continue;
 
       switch(ctx.lightState) {
       case GREEN:
@@ -86,33 +79,31 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   if (frame.empty())
     return;
 
-  /* reset contexts */
-  detector.contexts.clear();
-
   setContexts(detector, extractedPos);
 
   /* test output */
   Mat targetScope;
   frame.copyTo(targetScope);
-  for (unsigned int i=0; i<detector.contexts.size(); i++)
-    {
-      if (detector.contexts.at(i).lampRadius < MINIMAM_RADIUS)
-        continue;
+//   for (unsigned int i=0; i<detector.contexts.size(); i++)
+//     {
+// //      if (detector.contexts.at(i).lampRadius < MINIMAM_RADIUS)
+// //        continue;
 
-      circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
-      circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
-      circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
-    }
+//       circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
+//       circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
+//       circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
+//     }
 
 
-  Mat grayScale;
-  cvtColor(frame, grayScale, CV_RGB2GRAY);
-  detector.brightnessDetect(grayScale);
+  // Mat grayScale;
+  // cvtColor(frame, grayScale, CV_RGB2GRAY);
+  // detector.brightnessDetect(grayScale);
+  detector.brightnessDetect(frame);
 
   /* test output */
   putResult_inText(&targetScope, detector.contexts);
 
-  imshow("target scope", targetScope);
+  imshow("detection result", targetScope);
   waitKey(5);
 }
 
@@ -144,11 +135,12 @@ void setContexts(TrafficLightDetector &detector,
   for (unsigned int i=0; i<extractedPos->Signals.size(); i++ )
     {
       traffic_light_detector::ExtractedPosition tmp;
-      tmp.u      = extractedPos->Signals.at(i).u;
-      tmp.v      = extractedPos->Signals.at(i).v;
-      tmp.radius = extractedPos->Signals.at(i).radius;
-      tmp.type   = extractedPos->Signals.at(i).type;
-      tmp.linkId = extractedPos->Signals.at(i).linkId;
+      tmp.signalId = extractedPos->Signals.at(i).signalId;
+      tmp.u        = extractedPos->Signals.at(i).u;
+      tmp.v        = extractedPos->Signals.at(i).v;
+      tmp.radius   = extractedPos->Signals.at(i).radius;
+      tmp.type     = extractedPos->Signals.at(i).type;
+      tmp.linkId   = extractedPos->Signals.at(i).linkId;
       signals.push_back(tmp);
     }
 
@@ -161,6 +153,8 @@ void setContexts(TrafficLightDetector &detector,
   std::sort(linkid_vector.begin(), linkid_vector.end());
   std::vector<int>::iterator new_end = std::unique(linkid_vector.begin(), linkid_vector.end());
   linkid_vector.erase(new_end, linkid_vector.end());
+
+  std::vector<Context> updatedSignals;
 
   /* assemble fragmented signal lamp in a context */
   for (unsigned int ctx_idx=0; ctx_idx<linkid_vector.size(); ctx_idx++)
@@ -190,6 +184,7 @@ void setContexts(TrafficLightDetector &detector,
                 break;
               case 3:           /* YELLOW */
                 ctx.yellowCenter = Point( img_x, img_y );
+                ctx.signalID     = sig_iterator->signalId; // use yellow light signalID as this context's representative
                 break;
               }
               min_radius    = (min_radius > radius) ? radius : min_radius;
@@ -204,7 +199,33 @@ void setContexts(TrafficLightDetector &detector,
       ctx.topLeft    = Point(most_left, most_top);
       ctx.botRight   = Point(most_right, most_bottom);
       ctx.lightState = UNDEFINED;
+      ctx.stateJudgeCount = 0;
 
-      detector.contexts.push_back(ctx);
+      /* search whether this signal has already belonged in detector.contexts */
+      bool isInserted = false;
+      std::vector<int> eraseCandidate;
+      for (unsigned int i=0; i<detector.contexts.size(); i++) {
+        if (ctx.signalID == detector.contexts.at(i).signalID)
+          {
+            /* update to new information except to lightState */
+            updatedSignals.push_back(ctx);
+            updatedSignals.back().lightState      = detector.contexts.at(i).lightState;
+            updatedSignals.back().stateJudgeCount = detector.contexts.at(i).stateJudgeCount;
+            isInserted = true;
+            break;
+          }
+
+      }
+
+      if (isInserted == false)
+        updatedSignals.push_back(ctx); // this ctx is new in detector.contexts
+
     }
+
+  /* reset detector.contexts */
+  detector.contexts.clear();
+  detector.contexts.resize(updatedSignals.size());
+  for (unsigned int i=0; i<updatedSignals.size(); i++) {
+    detector.contexts.at(i) = updatedSignals.at(i);
+  }
 }

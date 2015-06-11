@@ -8,6 +8,7 @@
 
 #include<rosinterface.h>
 #include<fastvirtualscan.h>
+#include<sensor_msgs/LaserScan.h>
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,7 @@ private:
 protected:
     ROSSub<sensor_msgs::PointCloud2ConstPtr> * velodyne;
     ROSPub<sensor_msgs::PointCloud2> * vsros;
+    ROSPub<sensor_msgs::LaserScan> * scanros;
     FastVirtualScan virtualscan;
     QVector<double> beams;
     QVector<double> heights;

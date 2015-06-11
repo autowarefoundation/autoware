@@ -32,32 +32,38 @@
 #include "autoware_socket.h"
 
 static double steering_diff_sum = 0;
+#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM)
+#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL)
 
 void MainWindow::SetStrMode(int mode)
 {
   switch (mode) {
   case CMD_MODE_MANUAL:
-    cout << "Switching to MANUAL (Steering)" << endl;
-    hev->SetStrMode(MODE_MANUAL);
-    usleep(200000);
-    hev->SetStrServo(SERVO_FALSE);
-    usleep(200000);
+    if (IS_STR_MODE_PROGRAM()) {
+      cout << "Switching to MANUAL (Steering)" << endl;
+      hev->SetStrMode(MODE_MANUAL);
+      usleep(200000);
+      hev->SetStrServo(SERVO_FALSE);
+      //usleep(200000);
+    }
     break;
   case CMD_MODE_PROGRAM:
-    cout << "Switching to PROGRAM (Steering)" << endl;
-    hev->SetStrMode(MODE_PROGRAM);
-    usleep(200000);
-    hev->SetStrCMode(CONT_MODE_TORQUE);
-    //hev->SetStrCMode(CONT_MODE_ANGLE);
-    usleep(200000);
-    hev->SetStrServo(SERVO_TRUE);
-    usleep(200000);
+    if (IS_STR_MODE_MANUAL()) {
+      cout << "Switching to PROGRAM (Steering)" << endl;
+      hev->SetStrMode(MODE_PROGRAM);
+      usleep(200000);
+      hev->SetStrCMode(CONT_MODE_TORQUE);
+      //hev->SetStrCMode(CONT_MODE_ANGLE);
+      usleep(200000);
+      hev->SetStrServo(SERVO_TRUE);
+      //usleep(200000);
+      steering_diff_sum = 0;
+    }
     break;
   default:
     cout << "Unknown mode: " << mode << endl;
   }
 
-  steering_diff_sum = 0;
 }
 
 // for torque control
@@ -111,7 +117,7 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   if (target_steering_torque > _STEERING_MAX_TORQUE) {
     target_steering_torque = _STEERING_MAX_TORQUE;
   }
-  if (target_steering_torque <-_STEERING_MAX_TORQUE) {
+  if (target_steering_torque < -_STEERING_MAX_TORQUE) {
     target_steering_torque = -_STEERING_MAX_TORQUE;
   }
 
@@ -127,12 +133,18 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   ofs << cmd_steering_angle << " " 
       << current_steering_angle << " " 
       << current_steering_angvel << " "  
+      << steering_diff_sum << " "  
       << target_steering_torque << endl;
 #endif
 }
 
 void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)
 {
+  // do not call a control funtion in manual mode.
+  if (IS_STR_MODE_MANUAL()) {
+    return;
+  }
+
   _str_torque_pid_control(current_steering_angle, cmd_steering_angle, hev);
 }
 

@@ -36,9 +36,15 @@
 #include "autoware_socket.h"
 
 double cycle_time = 0.0;
-double estimate_accel = 0.0;
 
-#define OUTPUT_LOG
+pthread_t _modesetter;
+pthread_t _gearsetter;
+
+// hmm, dirty hacks...
+int current_mode = -1;
+int current_gear = -1;
+int mode_is_setting = false;
+int gear_is_setting = false;
 
 std::vector<std::string> split(const std::string& input, char delimiter)
 {
@@ -165,24 +171,19 @@ void Update(void *p)
   main->UpdateState();
 }
 
-void Prepare(int mode, int gear, void* p) 
+void SetState(int mode, int gear, void* p) 
 {
-  static int old_mode = -1;
-  static int old_gear = -1;
-  MainWindow* main = (MainWindow*)p;
-
-  if (mode != old_mode) {
-    main->SetStrMode(mode); // steering
-    main->SetDrvMode(mode); // accel/brake
-    old_mode = mode;
+  if (mode != current_mode) {
+    current_mode = mode;
+    pthread_create(&_modesetter, NULL, MainWindow::ModeSetterEntry, p);
   }
 
-  if (gear != old_gear) {
+  if (gear != current_gear) {
     double current_velocity = _hev_state.drvInf.veloc; // km/h
     // never change the gear when driving!
     if (current_velocity == 0) {
-      main->SetGear(gear);
-      old_gear = gear;
+      current_gear = gear;
+      pthread_create(&_gearsetter, NULL, MainWindow::GearSetterEntry, p);
     }
   }
 }
@@ -193,32 +194,13 @@ void Control(vel_data_t vel, void* p)
   MainWindow* main = (MainWindow*)p;
   static long long int old_tstamp = 0;
 
-  // calculate current time
-  cycle_time = (_hev_state.tstamp - old_tstamp) / 1000.0;
-
-  queue<double> vel_buffer;
-  static uint vel_buffer_size = 10; 
-
-  double old_velocity = 0.0;
+  cycle_time = (_hev_state.tstamp - old_tstamp) / 1000.0; /* seconds */
 
   double current_velocity = _hev_state.drvInf.veloc; // km/h
   double current_steering_angle = _hev_state.strInf.angle; // degree
  
   int cmd_velocity = vel.tv * 3.6;
   int cmd_steering_angle;
-
-  //<tku debug  force velocity
-#if 0
-  cmd_velocity = 10;
-  static int inc_flag = 1;
-  if (current_velocity > 5) {
-    cmd_velocity = 0;
-    inc_flag = 0;
-  }
-  if (!inc_flag)
-    cmd_velocity = 0;
-#endif
-  // />
 
   // We assume that the slope against the entire arc toward the 
   // next waypoint is almost equal to that against 
@@ -235,108 +217,41 @@ void Control(vel_data_t vel, void* p)
     cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
   }
 
-  // estimate current acceleration.
-  vel_buffer.push(fabs(current_velocity));
-  
-  if (vel_buffer.size() > vel_buffer_size) {
-    old_velocity = vel_buffer.front();
-#if 0 // debug
-    cout << "old_velocity = " << old_velocity << endl;
-    cout << "current_velocity = " << current_velocity << endl;
-#endif
-    vel_buffer.pop(); // remove old_velocity from the queue.
-    estimate_accel = (fabs(current_velocity)-old_velocity)/(cycle_time*vel_buffer_size);
-  }
-
   cout << "Current: " << "vel = " << current_velocity 
        << ", str = " << current_steering_angle << endl; 
   cout << "Command: " << "vel = " << cmd_velocity 
        << ", str = " << cmd_steering_angle << endl; 
-  cout << "Estimate Accel: " << estimate_accel << endl; 
 
-  // TRY TO INCREASE STEERING
-  //  sv +=0.1*sv;
+#if 0 /* just for a debug */
+  static int vel_debug = 15;
+  cmd_velocity = vel_debug--;
+  if (cmd_velocity > 20)
+    cmd_velocity = 20;
+  if (cmd_velocity < 0)
+    cmd_velocity = 0;
+  static int str_debug = 0;
+  cmd_steering_angle = str_debug++;
+#endif
 
-  // if tv non zero then check if in drive gear first
-  //--------------------------------------------------------------
-  // if in neutral and get +'ve cmd vel
-  //    - put brake on
-  //    - change shift to drive
-  // if in neutral and vel cmd 0
-  //    - release brake if pressed
-  
-  //------------------------------------------------------
-  // if shift in drive
-  //     - if cmd vel > 0 && brake pressed
-  //              - release brake
-  //     - if cmd vel == 0
-  //              - if cur_vel < 0.1, nearly stopped
-  //                     - full brake too stop, wait, and shift to neutral
-  //              - else - brake to HEV_MED_BRAKE
-  //                       - decellerate until nearly stopped
-  // now motion if in drift mode and shift is in drive
-  
- 
+
   //////////////////////////////////////////////////////
   // Accel and Brake
   //////////////////////////////////////////////////////
 
-  if (cmd_velocity < STROKE_CTRL_LIMIT) {
-    if (fabs(cmd_velocity) >= fabs(current_velocity) 
-        && fabs(cmd_velocity) > 0.0 
-        && fabs(current_velocity) <= KmhToMs(SPEED_LIMIT) ) {
-      //accelerate !!!!!!!!!!!!!!!!
-      cout << "AccelerateControl(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-      main->AccelerateControl(current_velocity, cmd_velocity);
-    } 
-    else if (fabs(cmd_velocity) < fabs(current_velocity) 
-             && fabs(cmd_velocity) > 0.0) {
-      //decelerate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      cout << "DecelerateControl(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-      main->DecelerateControl(current_velocity, cmd_velocity); 
-    }
-    else if (cmd_velocity == 0.0 && fabs(current_velocity) != 0) {
-      //Stopping!!!!!!!!!!!
-      cout << "StoppingControl(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-      main->StoppingControl(current_velocity, cmd_velocity);
-    }
-    else {
-      cout << "NothingAccelBrake(current_velocity=" << current_velocity 
-           << ", cmd_velocity=" << cmd_velocity << ")" << endl;
-    }
-  } else { /* HEV velocity control */
-    double vel_diff_inc = 1.0;
-    double vel_diff_dec = 2.0;
-    double vel_offset_inc = 2;
-    double vel_offset_dec = 4;
-    if (cmd_velocity > current_velocity){
-      double increase_velocity = current_velocity + vel_diff_inc;
-      main->VelocityControl(increase_velocity + vel_offset_inc);
-      cout << "increase: " << "vel = " << increase_velocity  << endl; 
-    } else {
-      double decrease_velocity = current_velocity - vel_diff_dec;
-      if (decrease_velocity > vel_offset_dec) {
-        main->VelocityControl(decrease_velocity - vel_offset_dec);
-      }
-      else if (current_velocity > 0) {
-        decrease_velocity = 0;
-        main->VelocityControl(0);
-      }
-      cout << "decrease: " << "vel = " << decrease_velocity  << endl; 
-    }
+  if (cmd_velocity < STROKE_SPEED_LIMIT) {
+    main->StrokeControl(current_velocity, cmd_velocity);
   }
-    /*
-    */    
+  else { /* HEV velocity control */
+    main->VelocityControl(current_velocity, cmd_velocity);
+  }
+
   //////////////////////////////////////////////////////
   // Steering
   //////////////////////////////////////////////////////
-  int steering_internal_period = STEERING_INTERNAL_PERIOD;
-  for (int i = 0; i < cmd_rx_interval/steering_internal_period - 1; i++) {
+
+  for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
-    usleep(steering_internal_period * 1000);  
+    usleep(STEERING_INTERNAL_PERIOD * 1000);  
     Update(main);
     current_steering_angle = _hev_state.strInf.angle; // degree
   }
@@ -344,6 +259,38 @@ void Control(vel_data_t vel, void* p)
 
   // save the time stamp.
   old_tstamp = _hev_state.tstamp;
+}
+
+void *MainWindow::ModeSetterEntry(void *a)
+{
+  MainWindow* main = (MainWindow*)a;
+
+  mode_is_setting = true; // loose critical section
+
+  main->SetStrMode(current_mode); // steering
+  sleep(1);
+  main->SetDrvMode(current_mode); // accel/brake
+  sleep(1);
+
+  mode_is_setting = false; // loose critical section
+
+  cout << "set ends" << endl;
+
+  return NULL;
+}
+
+void *MainWindow::GearSetterEntry(void *a)
+{
+  MainWindow* main = (MainWindow*)a;
+
+  gear_is_setting = true; // loose critical section
+
+  main->SetGear(current_gear);
+  sleep(1);
+
+  gear_is_setting = false; // loose critical section
+
+  return NULL;
 }
 
 void *MainWindow::CMDGetterEntry(void *a)
@@ -354,7 +301,7 @@ void *MainWindow::CMDGetterEntry(void *a)
   long long int interval;
 
   while(1){
-    
+
     // get commands from ROS.
     Getter(cmddata);
 
@@ -365,17 +312,17 @@ void *MainWindow::CMDGetterEntry(void *a)
     Update(main);
 
     // set mode and gear.
-    Prepare(cmddata.mode, cmddata.gear, main);
+    SetState(cmddata.mode, cmddata.gear, main);
 
-    
-
+    if (!mode_is_setting && !gear_is_setting) {
 #ifdef DIRECT_CONTROL
-    // directly set accel, brake, and steer.
-    Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);
+      // directly set accel, brake, and steer.
+      Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);
 #else
       // control accel, brake, and steer.
       Control(cmddata.vel, main);
 #endif
+    }
 
     // get interval in milliseconds.
     interval = cmd_rx_interval - (getTime() - tstamp);
