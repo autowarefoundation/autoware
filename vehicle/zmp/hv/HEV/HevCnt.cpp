@@ -38,6 +38,16 @@ HevCnt::HevCnt()
 HevCnt::~HevCnt()
 {}
 
+// Autoware Extension
+void HevCnt::ClearCntDiag()
+{
+  CANMsg msg;
+  msg.LEN = 1;
+  msg.ID = 0x18 /*MSG_GROUP_SYSCOM*/ << 6 | MSG_COMMON_REQ_ERROR_STATUS;
+  msg.DATA[0] = 1;
+  _canCom->SendCanMessage(CAN_CHANNEL_1, &msg);
+}
+
 bool HevCnt::Init()
 {
     _canCom = new CanCommunication();
@@ -60,6 +70,9 @@ bool HevCnt::Init()
 //    _selectLog.otherInf = false;
 //    _selectLog.start = false;
 //    _selectLog.strInf = false;
+
+    ClearCntDiag(); // Autoware Extension
+
     return true;
 }
 

@@ -217,21 +217,25 @@ void Control(vel_data_t vel, void* p)
     cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
   }
 
+#if 0 /* just for a debug */
+  std::ifstream ifs("/tmp/velocity");
+  std::string s;
+  getline(ifs, s);
+  int vel_debug = atoi(s.c_str());
+  cout << "vel_debug = " << vel_debug << " km/h" << endl;
+  cmd_velocity = vel_debug;
+  if (cmd_velocity > 50)
+    cmd_velocity = 50;
+  if (cmd_velocity < 0)
+    cmd_velocity = 0;
+  static int str_debug = 0;
+  cmd_steering_angle = str_debug;
+#endif
+
   cout << "Current: " << "vel = " << current_velocity 
        << ", str = " << current_steering_angle << endl; 
   cout << "Command: " << "vel = " << cmd_velocity 
        << ", str = " << cmd_steering_angle << endl; 
-
-#if 0 /* just for a debug */
-  static int vel_debug = 15;
-  cmd_velocity = vel_debug--;
-  if (cmd_velocity > 20)
-    cmd_velocity = 20;
-  if (cmd_velocity < 0)
-    cmd_velocity = 0;
-  static int str_debug = 0;
-  cmd_steering_angle = str_debug++;
-#endif
 
 
   //////////////////////////////////////////////////////
@@ -267,6 +271,8 @@ void *MainWindow::ModeSetterEntry(void *a)
 
   mode_is_setting = true; // loose critical section
 
+  main->ClearCntDiag();
+  sleep(1);
   main->SetStrMode(current_mode); // steering
   sleep(1);
   main->SetDrvMode(current_mode); // accel/brake

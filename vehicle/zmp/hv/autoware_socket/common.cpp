@@ -76,3 +76,8 @@ void MainWindow::UpdateState(void)
   hev->GetStrInf(&_hev_state.strInf);
   hev->GetBrakeInf(&_hev_state.brkInf);
 }
+
+void MainWindow::ClearCntDiag(void)
+{
+  hev->ClearCntDiag();
+}

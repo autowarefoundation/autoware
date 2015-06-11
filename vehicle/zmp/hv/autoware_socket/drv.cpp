@@ -101,9 +101,9 @@ void MainWindow::SetGear(int gear)
   }
 
   hev->SetDrvStroke(0);
-  usleep(200000);
+  sleep(1);
   hev->SetBrakeStroke(HEV_MAX_BRAKE);
-  usleep(200000);
+  sleep(1);
 
   switch (gear) {
   case CMD_GEAR_D:
@@ -125,7 +125,7 @@ void MainWindow::SetGear(int gear)
   default:
     cout << "Unknown gear: " << gear << endl;    
   }
-  usleep(200000);
+  sleep(1);
 }
 
 bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
@@ -267,7 +267,7 @@ void _accelerate_control(double current_velocity,double cmd_velocity, HevCnt *he
   }
 }
 
-#define _K_ACCEL_P 3.0
+#define _K_ACCEL_P 30.0 //3.0
 #define _K_ACCEL_I 2.0
 #define _K_ACCEL_D 2.0
 #define _K_ACCEL_I_CYCLES 100
@@ -283,7 +283,7 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
   // acclerate by releasing the brake pedal if pressed.
   if (_hev_state.brkInf.pressed == true) {
     cout << "brake pressed, release" << endl;
-    int gain = (int)(((double)HEV_MAX_BRAKE) * cycle_time); 
+    int gain = 200;
     int cmd_brake = CURRENT_BRAKE_STROKE() - gain;
     if (cmd_brake < 0)
       cmd_brake = 0;
@@ -338,6 +338,17 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     cout << "e_d = " << e_d << endl;
     cout << "SetDrvStroke(" << cmd_accel << ")" << endl;
     hev->SetDrvStroke(cmd_accel);
+
+#if 1 /* log */
+      ofstream ofs("/tmp/drv_accel.log", ios::app);
+      ofs << cmd_velocity << " " 
+      << current_velocity << " " 
+      << e << " " 
+      << e_i << " " 
+      << e_d << " " 
+      << cmd_accel << " " 
+      << endl;
+#endif
 
     e_prev = e;
   }
@@ -402,7 +413,7 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
   // decelerate by releasing the accel pedal if pressed.
   if (_hev_state.drvInf.actualPedalStr > 0) {
     cout << "accel pressed, release" << endl;
-    int gain = (int)(((double)ACCEL_PEDAL_MAX) * cycle_time); 
+    int gain = 200;
     int cmd_accel = CURRENT_ACCEL_STROKE() - gain;
     if (cmd_accel < 0)
       cmd_accel = 0;
@@ -538,6 +549,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     cout << "unknown: current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << endl;
   }
+
 }
 
 void MainWindow::VelocityControl(double current_velocity, double cmd_velocity)
