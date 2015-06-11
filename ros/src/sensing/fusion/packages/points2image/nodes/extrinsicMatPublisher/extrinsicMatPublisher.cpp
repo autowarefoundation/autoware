@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
   cv::Mat  distCoeff;
   cv::Size imageSize;
 
-  ros::init(argc, argv, "camera_info_publisher");
+  ros::init(argc, argv, "extrinsicMatPublisher");
   ros::NodeHandle n;
 
   camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10);
