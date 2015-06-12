@@ -184,19 +184,30 @@ static void DisplayDetectionRange(int i)
     marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
-    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.type = visualization_msgs::Marker::SPHERE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position = _current_path.waypoints[i].pose.pose.position;
+
+    for (int j = 0; j < _search_distance; j++) {
+        if(i+j > static_cast<int>(_current_path.waypoints.size()) - 1)
+            break;
+
+        geometry_msgs::Point point;
+        point.x = _current_path.waypoints[j+i].pose.pose.position.x;
+        point.y = _current_path.waypoints[j+i].pose.pose.position.y;
+        point.z = _current_path.waypoints[j+i].pose.pose.position.z;
+        marker.points.push_back(point);
+    }
     marker.scale.x = 2 * _detection_range;
     marker.scale.y = 2 * _detection_range;
     marker.scale.z = _detection_height_top;
-    marker.color.a = 0.5;
+    marker.color.a = 0.2;
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
     marker.frame_locked = true;
 
     _range_pub.publish(marker);
+    marker.points.clear();
 }
 
 static int GetObstacleWaypointUsingVscan()
@@ -209,7 +220,7 @@ static int GetObstacleWaypointUsingVscan()
 
         if(i > static_cast<int>(_current_path.waypoints.size()) - 1 )
             return -1;
-        DisplayDetectionRange(i);
+
      //   tf::Vector3 tf_waypoint = TransformWaypoint(i);
         tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[i].pose.pose);
         tf_waypoint.setZ(0);
@@ -252,7 +263,7 @@ static bool ObstacleDetection()
     //_closest_waypoint = GetClosestWaypoint();
     _closest_waypoint = GetClosestWaypoint(_transform,_current_path,_closest_waypoint);
     std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
-
+    DisplayDetectionRange(_closest_waypoint + 1);
     _vscan_obstacle_waypoint = GetObstacleWaypointUsingVscan();
 
     if (prev_detection == false) {
