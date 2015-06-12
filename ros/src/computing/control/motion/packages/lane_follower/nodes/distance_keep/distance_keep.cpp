@@ -39,7 +39,7 @@
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-
+#include <std_msgs/String.h>
 #include <iostream>
 
 #include "lf_func.h"
@@ -55,6 +55,7 @@ static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
 static std::string _current_pose_topic = "ndt";
 static const std::string PATH_FRAME = "/map";
+static const std::string pedestrian_sound = "pedestrian";
 static bool _twist_flag = false;
 static bool _pose_flag = false;
 static bool _path_flag = false;
@@ -75,6 +76,7 @@ static tf::Transform _transform;
 static ros::Publisher _twist_pub;
 static ros::Publisher _vis_pub;
 static ros::Publisher _range_pub;
+static ros::Publisher _sound_pub;
 
 static void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
@@ -236,6 +238,12 @@ static int GetObstacleWaypointUsingVscan()
 
     }
 
+static void SoundPlay(){
+    std_msgs::String string;
+    string.data = pedestrian_sound;
+    _sound_pub.publish(string);
+}
+
 static bool ObstacleDetection()
 {
     static int false_count = 0;
@@ -252,6 +260,7 @@ static bool ObstacleDetection()
             DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
             std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
             prev_detection = true;
+            SoundPlay();
             return true;
         } else {
             prev_detection = false;
@@ -322,6 +331,7 @@ int main(int argc, char **argv)
     _twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
     _vis_pub = nh.advertise<visualization_msgs::Marker>("obstaclewaypoint_mark", 0);
     _range_pub = nh.advertise<visualization_msgs::Marker>("detection_range", 0);
+    _sound_pub = nh.advertise<std_msgs::String>("/sound_player", 10);
 
     private_nh.getParam("detection_range", _detection_range);
     std::cout << "detection_range : " << _detection_range << std::endl;
