@@ -176,7 +176,7 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
         {
             candid++;
         }
-        if(candid>=beamnum)
+        if(candid>=beamnum||svs[i][candid].rotlength==MAXVIRTUALSCAN)
         {
             virtualScan[i]=0;
             minheights[i]=0;
