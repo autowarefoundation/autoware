@@ -58,7 +58,7 @@ int GetClosestWaypoint(tf::Transform transform, lane_follower::lane path, int cu
 
     for (int ratio = 1; ratio < closest_threshold; ratio++) {
 
-        double distance_threshold = ratio * tf::tfDistance(v1, v2); //meter
+        double distance_threshold = 2 * ratio * tf::tfDistance(v1, v2); //meter
         std::cout << "distance_threshold : " << distance_threshold << std::endl;
 
         std::vector<int> waypoint_candidates;
