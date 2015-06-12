@@ -208,10 +208,10 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       /*
         check whether this signal is oriented to the camera
         interested signals have below condition orientation:
-        (camera_orientation - 60deg) < (signal_orientation + 180deg) < (camera_orientatin + 60deg)
+        (camera_orientation - 70deg) < (signal_orientation + 180deg) < (camera_orientatin + 70deg)
       */
-      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 60);
-      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 60);
+      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 70);
+      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 70);
 
       // std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
 

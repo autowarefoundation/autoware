@@ -45,12 +45,12 @@ enum daytime_Hue_threshold {
 };
 
 #define DAYTIME_S_SIGNAL_THRESHOLD ((double)0.37)//((double)0.27)
-#define DAYTIME_V_SIGNAL_THRESHOLD ((double)90/255) //((double)110/255)
+#define DAYTIME_V_SIGNAL_THRESHOLD ((double)140/255) //((double)90/255) //((double)110/255)
 
 #define NOISE_REDUCTION_TIME 1
 
 #define CIRCLE_LEVEL_THRESHOLD 0.65
-#define CIRCLE_AREA_THRESHOLD 1 //5
+#define CIRCLE_AREA_THRESHOLD 0.5 //1 //5
 
 #define CHANGE_STATE_THRESHOLD 5
 
