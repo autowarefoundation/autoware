@@ -4,10 +4,16 @@
 #include <tf/transform_datatypes.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <sensor_msgs/Image.h>
+
+static cv::Mat  CameraExtrinsicMat;
+static cv::Mat  CameraMat;
+static cv::Mat  DistCoeff;
+static cv::Size ImageSize;
 
 static ros::Publisher camera_info_pub;
 
-void tfRegistration (const cv::Mat &camExtMat)
+void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 {
   tf::Matrix3x3 rotation_mat;
   double roll = 0, pitch = 0, yaw = 0;
@@ -29,9 +35,18 @@ void tfRegistration (const cv::Mat &camExtMat)
 
   transform.setRotation(quaternion);
 
-  broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
+  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", "camera"));
 }
 
+
+static void image_raw_cb(const sensor_msgs::Image& image_msg)
+{
+  ros::Time timeStampOfImage = image_msg.header.stamp;
+
+  /* create TF between velodyne and camera with time stamp of /image_raw */
+  tfRegistration(CameraExtrinsicMat, timeStampOfImage);
+
+}
 
 void cameraInfo_sender(const cv::Mat  &camMat,
                        const cv::Mat  &distCoeff,
@@ -72,15 +87,10 @@ void cameraInfo_sender(const cv::Mat  &camMat,
 
 int main(int argc, char* argv[])
 {
-  cv::Mat  cameraExtrinsicMat;
-  cv::Mat  cameraMat;
-  cv::Mat  distCoeff;
-  cv::Size imageSize;
-
   ros::init(argc, argv, "extrinsicMatPublisher");
   ros::NodeHandle n;
 
-  camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10);
+  camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10, true);
 
   if (argc < 2)
     {
@@ -95,22 +105,17 @@ int main(int argc, char* argv[])
       return -1;
     }
 
-  fs["CameraExtrinsicMat"] >> cameraExtrinsicMat;
-  fs["CameraMat"] >> cameraMat;
-  fs["DistCoeff"] >> distCoeff;
-  fs["ImageSize"] >> imageSize;
+  fs["CameraExtrinsicMat"] >> CameraExtrinsicMat;
+  fs["CameraMat"] >> CameraMat;
+  fs["DistCoeff"] >> DistCoeff;
+  fs["ImageSize"] >> ImageSize;
 
-  ros::Rate loop (100);
+  ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_cb);
 
-  while(ros::ok())
-    {
-      /* create tf between velodyne and camera */
-      tfRegistration(cameraExtrinsicMat);
+  cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
 
-      /* publish camera_info */
-      cameraInfo_sender(cameraMat, distCoeff, imageSize);
+  ros::spin();
 
-      loop.sleep();
-    }
+  return 0;
 
 }
