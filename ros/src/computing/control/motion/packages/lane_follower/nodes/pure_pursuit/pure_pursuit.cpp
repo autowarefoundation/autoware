@@ -192,7 +192,7 @@ void DisplayCircle(tf::Vector3 center, double radius)
 
     visualization_msgs::Marker circle;
     circle.header.frame_id = PATH_FRAME;
-    circle.header.stamp = ros::Time::now();
+    circle.header.stamp = ros::Time();
     circle.ns = "circle";
     circle.id = 0;
     circle.type = visualization_msgs::Marker::SPHERE;
@@ -206,6 +206,7 @@ void DisplayCircle(tf::Vector3 center, double radius)
     circle.color.g = 0.0;
     circle.color.b = 0.0;
     circle.lifetime = ros::Duration(0.1);
+    circle.frame_locked = true;
     _circle_pub.publish(circle);
 }
 
@@ -215,7 +216,7 @@ void DisplayTargetWaypoint(int i)
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = PATH_FRAME;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::SPHERE;
@@ -230,6 +231,7 @@ void DisplayTargetWaypoint(int i)
     marker.color.g = 0.0;
     marker.color.b = 1.0;
     marker.lifetime = ros::Duration(0.1);
+    marker.frame_locked = true;
     _vis_pub.publish(marker);
 }
 

@@ -168,6 +168,7 @@ static void DisplayObstacleWaypoint(int i)
     marker.color.g = 0.0;
     marker.color.b = 1.0;
     marker.lifetime = ros::Duration(0.1);
+    marker.frame_locked = true;
 
     _vis_pub.publish(marker);
 }
@@ -191,6 +192,7 @@ static void DisplayDetectionRange(int i)
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
+    marker.frame_locked = true;
 
     _range_pub.publish(marker);
 }
