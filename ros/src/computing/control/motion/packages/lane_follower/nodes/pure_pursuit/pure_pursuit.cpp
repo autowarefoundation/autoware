@@ -205,7 +205,7 @@ static void DisplayCircle(tf::Vector3 center, double radius)
     circle.color.r = 1.0;
     circle.color.g = 0.0;
     circle.color.b = 0.0;
-    circle.lifetime = ros::Duration(0.1);
+    circle.lifetime = ros::Duration(5);
     circle.frame_locked = true;
     _circle_pub.publish(circle);
 }
@@ -230,7 +230,7 @@ static void DisplayTargetWaypoint(int i)
     marker.color.r = 0.0;
     marker.color.g = 0.0;
     marker.color.b = 1.0;
-    marker.lifetime = ros::Duration(0.1);
+    marker.lifetime = ros::Duration(5);
     marker.frame_locked = true;
     _vis_pub.publish(marker);
 }
@@ -305,7 +305,7 @@ static int GetNextWayPoint()
     if (_current_path.waypoints.empty() == true) {
         _lf_stat.data = false;
         _stat_pub.publish(_lf_stat);
-        return 0;
+        return -1;
     }
 
     // the next waypoint must be outside of this threthold.
@@ -364,11 +364,11 @@ static int GetNextWayPoint()
     // if the program reaches here, it means we lost the waypoint.
     // so let's try again with the first waypoint.
     std::cout << "lost waypoint!" << std::endl;
-    std::cout << "seeking from the first waypoint..." << std::endl;
-    _next_waypoint = 0;
+    //std::cout << "seeking from the first waypoint..." << std::endl;
+    //_next_waypoint = 0;
     _lf_stat.data = false;
     _stat_pub.publish(_lf_stat);
-    return 0;
+    return -1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
             if (twist.twist.linear.x == 0) {
                 std::cout << "pure pursuit ended!!" << std::endl;
                 endflag = false;
-                _closest_waypoint = -1;
+
             }
         }
         std::cout << "set velocity (kmh) = " << twist.twist.linear.x * 3.6 << std::endl;
