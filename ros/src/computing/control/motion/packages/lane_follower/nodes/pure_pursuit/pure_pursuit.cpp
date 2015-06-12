@@ -143,7 +143,7 @@ static double GetLookAheadThreshold()
 /////////////////////////////////////////////////////////////////
 // obtain the distance to @waypoint. ignore z position
 /////////////////////////////////////////////////////////////////
-double GetLookAheadDistance(int waypoint)
+static double GetLookAheadDistance(int waypoint)
 {
     // position of @waypoint.
     tf::Vector3 v2(_current_path.waypoints[waypoint].pose.pose.position.x, _current_path.waypoints[waypoint].pose.pose.position.y, _current_path.waypoints[waypoint].pose.pose.position.z);
@@ -156,13 +156,13 @@ double GetLookAheadDistance(int waypoint)
 /////////////////////////////////////////////////////////////////
 // obtain the velocity(m/s) waypoint under the vehicle has.
 /////////////////////////////////////////////////////////////////
-double GetWaypointVelocity()
+static double GetWaypointVelocity()
 {
     std::cout << "get velocity(m/s) : " << _current_path.waypoints[_closest_waypoint].twist.twist.linear.x << std::endl;
     return _current_path.waypoints[_closest_waypoint].twist.twist.linear.x;
 }
 
-double CalcRadius(int waypoint)
+static double CalcRadius(int waypoint)
 {
     //  std::cout << "current_pose : (" << _current_pose.pose.position.x << " " << _current_pose.pose.position.y << " " << _current_pose.pose.position.z << ")" << std::endl;
     double lookahead_distance = GetLookAheadDistance(waypoint);
@@ -180,7 +180,7 @@ double CalcRadius(int waypoint)
 }
 
 // display the next waypoint by markers.
-void DisplayCircle(tf::Vector3 center, double radius)
+static void DisplayCircle(tf::Vector3 center, double radius)
 {
 
     geometry_msgs::Point point;
@@ -211,7 +211,7 @@ void DisplayCircle(tf::Vector3 center, double radius)
 }
 
 // display the next waypoint by markers.
-void DisplayTargetWaypoint(int i)
+static void DisplayTargetWaypoint(int i)
 {
 
     visualization_msgs::Marker marker;
@@ -243,7 +243,7 @@ static double GetEvalValue(int closest, int i)
     //return 0.5;
 }
 
-bool EvaluationWaypoint(int i)
+static bool EvaluationWaypoint(int i)
 {
 
     double radius = CalcRadius(i);
@@ -299,7 +299,7 @@ bool EvaluationWaypoint(int i)
 // obtain the next "effective" waypoint. 
 // the vehicle drives itself toward this waypoint.
 /////////////////////////////////////////////////////////////////
-int GetNextWayPoint()
+static int GetNextWayPoint()
 {
     // if waypoints are not given, do nothing.
     if (_current_path.waypoints.empty() == true) {
