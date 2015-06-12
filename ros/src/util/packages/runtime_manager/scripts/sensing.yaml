@@ -83,6 +83,10 @@ buttons:
     run   : roslaunch runtime_manager vscan.launch
     param : virtual_scan_image
 
+  camera_extrinsicMat_Publisher :
+    run   : rosrun points2image extrinsicMatPublisher
+    param : camera_extrinsicMat_Publisher
+
   calibration :
     run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
 
@@ -129,3 +133,11 @@ params :
       cmd_param :
         dash : ''
         delim: ':='
+
+  - name  : camera_extrinsicMat_Publisher
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        delim: ''
