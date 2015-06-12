@@ -92,6 +92,7 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 	velocity.scale.z = 0.4;
 	velocity.color.r = 1;
 	velocity.color.a = 1;
+	velocity.frame_locked = true;
 
 	int i = 0;
 	for (const lane_follower::waypoint& waypoint : current->waypoints) {
