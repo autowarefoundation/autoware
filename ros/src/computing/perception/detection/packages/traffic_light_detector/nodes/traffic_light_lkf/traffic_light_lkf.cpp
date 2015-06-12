@@ -110,8 +110,8 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   /* test output */
   putResult_inText(&targetScope, detector.contexts);
 
-  imshow("detection result", targetScope);
-  waitKey(5);
+  // imshow("detection result", targetScope);
+  // waitKey(5);
 
   /* publish result */
   runtime_manager::traffic_light state_msg;
