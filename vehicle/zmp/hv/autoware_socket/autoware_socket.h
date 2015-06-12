@@ -79,7 +79,7 @@ using namespace zmp::hev;
 #define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 
 #define ACCEL_PEDAL_STEP_BIG 9//7//10
 #define ACCEL_PEDAL_RELEASE_STEP 100 //release value for accel pedal
-#define ACCEL_PEDAL_MAX 1000 
+#define ACCEL_PEDAL_MAX 1500 
 #define ACCEL_LIMIT 8.0 // km/h
 
 #define HEV_LIGHT_BRAKE 500 //400 //brake pedal

@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   rosinterface
   fastvirtualscan
   message_generation
+  pcl_ros
+  pcl_conversions
 )
 
 find_package(OpenCV REQUIRED)
@@ -137,3 +139,11 @@ add_dependencies(vscan2image
   points_image
   point2image_generate_messages_cpp
 )
+
+# vscan2linelist
+add_executable(vscan2linelist nodes/vscan2linelist/vscan2linelist.cpp)
+target_link_libraries(vscan2linelist
+  ${catkin_LIBRARIES}
+)
+
+
