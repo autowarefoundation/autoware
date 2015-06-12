@@ -51,10 +51,10 @@ static geometry_msgs::PoseStamped _current_pose; // current pose by the global p
 static lane_follower::lane _current_path;
 //std::vector<geometry_msgs::Pose> _car_pose;
 //std::vector<geometry_msgs::Pose> _ped_pose;
-staticpcl::PointCloud<pcl::PointXYZ> _vscan;
+static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
-staticstd::string _current_pose_topic = "ndt";
-staticconst std::string PATH_FRAME = "/map";
+static std::string _current_pose_topic = "ndt";
+static const std::string PATH_FRAME = "/map";
 static bool _twist_flag = false;
 static bool _pose_flag = false;
 static bool _path_flag = false;
@@ -153,7 +153,7 @@ static void DisplayObstacleWaypoint(int i)
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = PATH_FRAME;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE;
@@ -178,7 +178,7 @@ static void DisplayDetectionRange(int i)
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = PATH_FRAME;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::SPHERE;
