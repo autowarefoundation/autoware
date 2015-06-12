@@ -332,8 +332,14 @@ int main(int argc, char **argv)
     private_nh.getParam("stop_interval", _stop_interval);
     std::cout << "stop_interval : " << _stop_interval << std::endl;
 
+    private_nh.getParam("detection_height_top", _detection_height_top);
+    std::cout << "detection_height_top : " << _detection_height_top << std::endl;
+
+    private_nh.getParam("detection_height_bottom", _detection_height_bottom);
+    std::cout << "detection_height_bottom : " << _detection_height_bottom << std::endl;
+
     private_nh.getParam("current_pose_topic", _current_pose_topic);
-      std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
+    std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
 
     ros::Rate loop_rate(LOOP_RATE);
     while (ros::ok()) {
