@@ -29,7 +29,7 @@ bool compareDistance(const SimpleVirtualScan & svs1, const SimpleVirtualScan & s
     }
 }
 
-void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, double minFloor, double maxCeiling, double beamRotation, double minRange)
+void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, double minFloor, double maxCeiling, double obstacleMinHeight, double maxBackDistance, double beamRotation, double minRange)
 {
 
     assert(minFloor<maxCeiling);
@@ -130,13 +130,16 @@ void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, doub
                 }
                 else if(svs[i][j].rotlength<MAXVIRTUALSCAN)
                 {
-                    double delta=(svs[i][j].rotlength-svs[i][startid].rotlength)/(j-startid);
-                    int k;
-                    for(k=startid+1;k<j;k++)
+                    if(svs[i][j].height-svs[i][startid].height<obstacleMinHeight&&svs[i][j].rotlength-svs[i][startid].rotlength>-maxBackDistance)
                     {
-                        svs[i][k].rotlength=svs[i][j].rotlength-(j-k)*delta;
-                        svs[i][k].length=svs[i][k].rotlength*c+svs[i][k].rotheight*s;
-                        svs[i][k].height=-svs[i][k].rotlength*s+svs[i][k].rotheight*c;
+                        double delta=(svs[i][j].rotlength-svs[i][startid].rotlength)/(j-startid);
+                        int k;
+                        for(k=startid+1;k<j;k++)
+                        {
+                            svs[i][k].rotlength=svs[i][j].rotlength-(j-k)*delta;
+                            svs[i][k].length=svs[i][k].rotlength*c+svs[i][k].rotheight*s;
+                            svs[i][k].height=-svs[i][k].rotlength*s+svs[i][k].rotheight*c;
+                        }
                     }
                     startid=j;
                 }
