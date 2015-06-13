@@ -54,15 +54,20 @@ publish data as ractangular plane
 
 #define MYNAME		"pos_downloader"
 #define MARKERNAME	"mo_marker"
-#define STARTTIME	(0)		// now
-#define DELAYSEC	(3)
+#define STARTTIME	(0)		// sec since 1970-01-01 (0==now)
+#define DELAYSEC	(3)		// delay sec for pos_uploader
+#define LIFETIME	(1)		// anonymous marker's lifetime
+#define POSUP_DZ	(40)		// z offset of PosUp
+#define PEDESTRIAN_DZ	(-2)		// z offset of pedestrian_pose
 
 using namespace std;
 
 static string host_name = "db3.ertl.jp";
 static int db_port = 5678;
-static int sleep_msec = 500;
-static double life_time = 5.0;
+static int sleep_msec = 500;		// period
+static double life_time;
+static double posup_dz;
+static double pedestrian_dz;
 
 static ros::Publisher pub;
 
@@ -171,10 +176,12 @@ static int publish_pedestrian(int id, int is_pedestrian, ros::Time now,
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 1.0;
+    pose.position.z += pedestrian_dz;
   } else {
     marker.color.r = 1.0;
     marker.color.g = 1.0;
     marker.color.b = 1.0;
+    pose.position.z += posup_dz;
   }
   marker.color.a = 1.0;
   marker.scale.x = 0.6;
@@ -191,7 +198,7 @@ static int publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   marker.scale.y = 0.6;
   marker.scale.z = 0.6;
   marker.pose = pose;
-  marker.pose.position.z += 1.2 + 0.3; // == #1 + #2/2
+  marker.pose.position.z += 1.2 + 0.3 + 0.1; // == #1 + #2/2 + alpha
   pub.publish(marker);
   dbg_out_marker(marker);
 
@@ -361,6 +368,12 @@ int main(int argc, char **argv)
   cout << "time=" << args[0] << endl;
   nh.param<double>(MYNAME "/delay", args[1], DELAYSEC);
   cout << "delay=" << args[1] << endl;
+  nh.param<double>(MYNAME "/life_time", life_time, LIFETIME);
+  cout << "life_time=" << life_time << endl;
+  nh.param<double>(MYNAME "/posup_dz", posup_dz, POSUP_DZ);
+  cout << "posup_dz=" << posup_dz << endl;
+  nh.param<double>(MYNAME "/pedestrian_dz", pedestrian_dz, PEDESTRIAN_DZ);
+  cout << "pedestrian_dz=" << pedestrian_dz << endl;
 
   sd = SendData(host_name, db_port);
 
