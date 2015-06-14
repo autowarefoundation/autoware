@@ -339,6 +339,8 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     cout << "SetDrvStroke(" << target_accel_stroke << ")" << endl;
     hev->SetDrvStroke(target_accel_stroke);
 
+    e_prev = e;
+
 #if 1 /* log */
       ofstream ofs("/tmp/drv_accel.log", ios::app);
       ofs << cmd_velocity << " " 
@@ -349,8 +351,6 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
       << target_accel_stroke << " " 
       << endl;
 #endif
-
-    e_prev = e;
   }
 }
 
@@ -470,6 +470,17 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     hev->SetBrakeStroke(target_brake_stroke);
 
     e_prev = e;
+
+#if 1 /* log */
+      ofstream ofs("/tmp/drv_brake.log", ios::app);
+      ofs << cmd_velocity << " " 
+      << current_velocity << " " 
+      << e << " " 
+      << e_i << " " 
+      << e_d << " " 
+      << target_brake_stroke << " " 
+      << endl;
+#endif
   }
 }
 
