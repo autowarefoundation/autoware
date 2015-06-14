@@ -89,6 +89,7 @@ using namespace zmp::hev;
 
 #define CURRENT_ACCEL_STROKE() _hev_state.drvInf.actualPedalStr
 #define CURRENT_BRAKE_STROKE() _hev_state.brkInf.actualPedalStr
+#define CURRENT_STEERING_TORQUE() _hev_state.strInf.torque
 
 typedef struct pose_data_t {
   double x;

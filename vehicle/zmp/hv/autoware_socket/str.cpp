@@ -34,15 +34,15 @@
 static double steering_diff_sum = 0;
 queue<double> steering_diff_buffer;
 
-#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM && _hev_state.strInf.mode == SERVO_TRUE)
-#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL || _hev_state.strInf.mode == SERVO_FALSE)
+#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM && _hev_state.strInf.servo == SERVO_TRUE)
+#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL || _hev_state.strInf.servo == SERVO_FALSE)
 
 static void clear_diff()
 {
   int i;
 
   steering_diff_sum = 0;
-
+    
   for (i = 0; i < (int) steering_diff_buffer.size(); i++) {
     steering_diff_buffer.pop();
   }
@@ -77,7 +77,6 @@ void MainWindow::SetStrMode(int mode)
   default:
     cout << "Unknown mode: " << mode << endl;
   }
-
 }
 
 // for torque control
@@ -87,24 +86,76 @@ void MainWindow::SetStrMode(int mode)
 #define _STEERING_MAX_TORQUE 2000
 #define _STEERING_MAX_SUM 100 //deg*0.1s for I control
 
-// PID params
-#define _K_STEERING_P 60//130  
-#define _K_STEERING_I 13//13
-#define _K_STEERING_D 10//12
+// PID params (HV Silver)
+#define _K_STEERING_P 30//130  
+#define _K_STEERING_I 10//13//13
+#define _K_STEERING_D 5//8//10//12
+#define _K_STEERING_I_CYCLES 100
+#define _STEERING_MAX_I 100 //deg*0.1s for I control
+#define _STEERING_TORQUE_DELTA_MAX 1000
+
+// vehicle params
+#define _STEERING_ANGLE_ERROR -12 // deg
 
 void _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle, HevCnt* hev)
 {
-  static double prev_steering_angle = -100000;
+  current_steering_angle -= _STEERING_ANGLE_ERROR;
 
-  //calc angular velocity
+  // angvel, not really used for steering control...
+  static double prev_steering_angle = -100000;
   if (prev_steering_angle == -100000) {
     prev_steering_angle = current_steering_angle;
   }
 
   double current_steering_angvel = (current_steering_angle - prev_steering_angle) / (STEERING_INTERNAL_PERIOD/1000.0);
 
+  double target_steering_torque;
+
   /////////////////////////////////
   // angle PID control
+#if 0
+  double e;
+  static double e_prev = 0;
+  double e_i;
+  double e_d;
+
+  e = cmd_steering_angle - current_steering_angle;
+
+  e_d = e - e_prev;
+
+  steering_diff_sum += e;
+  // steering_diff_buffer.push(e);
+  // if (steering_diff_buffer.size() > _K_STEERING_I_CYCLES) {
+  //   double e_old = steering_diff_buffer.front();
+  //   steering_diff_sum -= e_old;
+  //   steering_diff_buffer.pop();
+  // }
+  
+  if (steering_diff_sum > _STEERING_MAX_I) {
+    e_i = _STEERING_MAX_I;
+  }
+  else if (steering_diff_sum < -_STEERING_MAX_I) {
+    e_i = -_STEERING_MAX_I;
+  }
+  else {
+    e_i = steering_diff_sum;
+  }
+
+  if (fabs(e) < 10) {
+    target_steering_torque = _K_STEERING_P * e + _K_STEERING_I * e_i + (_K_STEERING_D / 2) * e_d;
+  }
+  else {
+    target_steering_torque = _K_STEERING_P * e + _K_STEERING_I * e_i + _K_STEERING_D * e_d;
+  }
+
+  cout << "e = " << e << endl;
+  cout << "e_i = " << e_i << endl;
+  cout << "e_d = " << e_d << endl;
+
+  e_prev = e;
+
+#else
+  
   double steering_diff = cmd_steering_angle - current_steering_angle; 
   steering_diff_sum += steering_diff;
 
@@ -125,7 +176,9 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   }
   
   // use k_d instead of _K_STEERING_D.
-  double target_steering_torque = steering_diff * _K_STEERING_P + steering_diff_sum * _K_STEERING_I + angvel_diff * k_d;
+  target_steering_torque = steering_diff * _K_STEERING_P + steering_diff_sum * _K_STEERING_I + angvel_diff * k_d;
+
+#endif
 
   // clip
   if (target_steering_torque > _STEERING_MAX_TORQUE) {
@@ -135,19 +188,18 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
     target_steering_torque = -_STEERING_MAX_TORQUE;
   }
 
-  //cout << "steering_angle = " << current_steering_angle << endl;
-  //cout << "steering_angvel = " << current_steering_angvel << endl;
-
+  cout << "SetStrTorque(" << target_steering_torque << ")" << endl;
   hev->SetStrTorque(target_steering_torque);
 
   prev_steering_angle  = current_steering_angle;
 
-#if 0 /* log */ 
+#if 1 /* log */ 
   ofstream ofs("/tmp/steering.log", ios::app);
   ofs << cmd_steering_angle << " " 
       << current_steering_angle << " " 
-      << current_steering_angvel << " "  
+      << steering_diff << " "  
       << steering_diff_sum << " "  
+      << current_steering_angvel << " "  
       << target_steering_torque << endl;
 #endif
 }
@@ -162,5 +214,3 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
 
   _str_torque_pid_control(current_steering_angle, cmd_steering_angle, hev);
 }
-
-

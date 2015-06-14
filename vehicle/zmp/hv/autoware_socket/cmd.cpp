@@ -228,7 +228,12 @@ void Control(vel_data_t vel, void* p)
     cmd_velocity = 50;
   if (cmd_velocity < 0)
     cmd_velocity = 0;
-  static int str_debug = 0;
+
+  std::ifstream ifs2("/tmp/steering");
+  std::string s2;
+  getline(ifs2, s2);
+  int str_debug = atoi(s2.c_str());
+  cout << "str_debug = " << str_debug << " deg" << endl;
   cmd_steering_angle = str_debug;
 #endif
 
@@ -253,13 +258,15 @@ void Control(vel_data_t vel, void* p)
   // Steering
   //////////////////////////////////////////////////////
 
-  for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
+  if (current_velocity > 0) {
+    for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
+      main->SteeringControl(current_steering_angle, cmd_steering_angle);
+      usleep(STEERING_INTERNAL_PERIOD * 1000);  
+      Update(main);
+      current_steering_angle = _hev_state.strInf.angle; // degree
+    }
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
-    usleep(STEERING_INTERNAL_PERIOD * 1000);  
-    Update(main);
-    current_steering_angle = _hev_state.strInf.angle; // degree
   }
-  main->SteeringControl(current_steering_angle, cmd_steering_angle);
 
   // save the time stamp.
   old_tstamp = _hev_state.tstamp;
