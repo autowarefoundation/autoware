@@ -32,8 +32,21 @@
 #include "autoware_socket.h"
 
 static double steering_diff_sum = 0;
-#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM)
-#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL)
+queue<double> steering_diff_buffer;
+
+#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM && _hev_state.strInf.mode == SERVO_TRUE)
+#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL || _hev_state.strInf.mode == SERVO_FALSE)
+
+static void clear_diff()
+{
+  int i;
+
+  steering_diff_sum = 0;
+
+  for (i = 0; i < (int) steering_diff_buffer.size(); i++) {
+    steering_diff_buffer.pop();
+  }
+}
 
 void MainWindow::SetStrMode(int mode)
 {
@@ -57,7 +70,8 @@ void MainWindow::SetStrMode(int mode)
       usleep(200000);
       hev->SetStrServo(SERVO_TRUE);
       //usleep(200000);
-      steering_diff_sum = 0;
+
+      clear_diff();
     }
     break;
   default:
@@ -142,6 +156,7 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
 {
   // do not call a control funtion in manual mode.
   if (IS_STR_MODE_MANUAL()) {
+    clear_diff();
     return;
   }
 

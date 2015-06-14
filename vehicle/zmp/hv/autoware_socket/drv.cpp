@@ -39,10 +39,10 @@ double brake_diff_sum = 0;
 queue<double> accel_diff_buffer;
 queue<double> brake_diff_buffer;
 
-#define IS_DRV_MODE_PROGRAM() (_hev_state.drvInf.mode == MODE_PROGRAM)
-#define IS_DRV_MODE_MANUAL() (_hev_state.drvInf.mode == MODE_MANUAL)
+#define IS_DRV_MODE_PROGRAM() (_hev_state.drvInf.mode == MODE_PROGRAM && _hev_state.drvInf.mode == SERVO_TRUE)
+#define IS_DRV_MODE_MANUAL() (_hev_state.drvInf.mode == MODE_MANUAL || _hev_state.drvInf.mode == SERVO_FALSE)
 
-void clear_diff()
+static void clear_diff()
 {
   int i;
 
@@ -511,6 +511,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
 
   // do not call a control funtion in manual mode.
   if (IS_DRV_MODE_MANUAL()) {
+    clear_diff();
     return;
   }
 

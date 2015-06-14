@@ -53,18 +53,21 @@ public:
     /*======Autoware Socket=================*/ 
 
     // actuation
-    void ChangeShiftMode(double cmd_velocity);
     void SteeringControl(double current_steering_angle, double cmd_steering_angle);
-    void VelocityControl(double cmd_velocity);
-    void AccelerateControl(double current_velocity,double cmd_velocity);
-    void DecelerateControl(double current_velocity,double cmd_velocity);
-    void StoppingControl(double current_velocity,double cmd_velocity);
-    void SetStrMode(int mode);
-    void SetDrvMode(int mode);
-    void SetGear(int gear);
+    void StrokeControl(double current_velocity, double cmd_velocity);
+    void VelocityControl(double current_velocity, double cmd_velocity);
 
     // cmd
     static void* CMDGetterEntry(void *a);
+
+    // mode
+    static void* ModeSetterEntry(void *a);
+    void SetStrMode(int mode);
+    void SetDrvMode(int mode);
+
+    // gear
+    static void* GearSetterEntry(void *a);
+    void SetGear(int gear);
 
     // can
     void SendCAN(void);
@@ -72,6 +75,7 @@ public:
     // common
     bool ConfigSocket(void);
     void UpdateState(void);
+    void ClearCntDiag(void);
 
     /*====================================*/
 

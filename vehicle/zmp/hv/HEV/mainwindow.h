@@ -101,18 +101,18 @@ public:
     void SteeringControl(double current_steering_angle, double cmd_steering_angle);
     void StrokeControl(double current_velocity, double cmd_velocity);
     void VelocityControl(double current_velocity, double cmd_velocity);
-    void SetStrMode(int mode);
-    void SetDrvMode(int mode);
-    void SetGear(int gear);
 
     // cmd
     static void* CMDGetterEntry(void *a);
 
     // mode
     static void* ModeSetterEntry(void *a);
+    void SetStrMode(int mode);
+    void SetDrvMode(int mode);
 
     // gear
     static void* GearSetterEntry(void *a);
+    void SetGear(int gear);
 
     // can
     void SendCAN(void);
