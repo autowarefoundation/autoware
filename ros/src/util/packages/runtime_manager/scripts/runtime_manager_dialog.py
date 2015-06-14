@@ -169,6 +169,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.set_param_panel(self.button_points_image, self.panel_points_image)
 		self.set_param_panel(self.button_scan_image, self.panel_scan_image)
 		self.set_param_panel(self.button_virtual_scan_image, self.panel_virtual_scan_image)
+		self.set_param_panel(self.button_camera_extrinsicMat_Publisher, self.panel_camera_extrinsicMat_Publisher)
 
 		self.timer = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
