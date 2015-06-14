@@ -39,8 +39,8 @@ double brake_diff_sum = 0;
 queue<double> accel_diff_buffer;
 queue<double> brake_diff_buffer;
 
-#define IS_DRV_MODE_PROGRAM() (_hev_state.drvInf.mode == MODE_PROGRAM && _hev_state.drvInf.mode == SERVO_TRUE)
-#define IS_DRV_MODE_MANUAL() (_hev_state.drvInf.mode == MODE_MANUAL || _hev_state.drvInf.mode == SERVO_FALSE)
+#define IS_DRV_MODE_PROGRAM() (_hev_state.drvInf.mode == MODE_PROGRAM && _hev_state.drvInf.servo == SERVO_TRUE)
+#define IS_DRV_MODE_MANUAL() (_hev_state.drvInf.mode == MODE_MANUAL || _hev_state.drvInf.servo == SERVO_FALSE)
 
 static void clear_diff()
 {

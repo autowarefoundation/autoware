@@ -34,8 +34,8 @@
 static double steering_diff_sum = 0;
 queue<double> steering_diff_buffer;
 
-#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM && _hev_state.strInf.mode == SERVO_TRUE)
-#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL || _hev_state.strInf.mode == SERVO_FALSE)
+#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM && _hev_state.strInf.servo == SERVO_TRUE)
+#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL || _hev_state.strInf.servo == SERVO_FALSE)
 
 static void clear_diff()
 {
