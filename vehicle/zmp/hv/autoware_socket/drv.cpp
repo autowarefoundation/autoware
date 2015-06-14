@@ -397,11 +397,12 @@ void _decelerate_control(double current_velocity,double cmd_velocity, HevCnt *he
   }
 }
 
-#define _K_BRAKE_P 30.0
+#define _K_BRAKE_P 40.0
 #define _K_BRAKE_I 10.0 //5.0
-#define _K_BRAKE_D 10.0 //15.0 too fast
+#define _K_BRAKE_D 10.0
 #define _K_BRAKE_I_CYCLES 100
-#define _BRAKE_MAX_I 1000
+#define _BRAKE_MAX_I 200
+#define _BRAKE_STROKE_DELTA_MAX 1000
 
 void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, HevCnt* hev)
 {
@@ -413,7 +414,7 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
   // decelerate by releasing the accel pedal if pressed.
   if (_hev_state.drvInf.actualPedalStr > 0) {
     cout << "accel pressed, release" << endl;
-    int gain = 500;
+    int gain = 400;
     int cmd_accel = CURRENT_ACCEL_STROKE() - gain;
     if (cmd_accel < 0)
       cmd_accel = 0;
@@ -456,6 +457,10 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     }
     else if (cmd_brake < 0) {
       cmd_brake = 0;
+    }
+
+    if (cmd_brake - CURRENT_BRAKE_STROKE() > _BRAKE_STROKE_DELTA_MAX) {
+      cmd_brake = CURRENT_BRAKE_STROKE() + _BRAKE_STROKE_DELTA_MAX;
     }
 
     cout << "e = " << e << endl;
