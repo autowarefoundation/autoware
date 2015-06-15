@@ -189,11 +189,13 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       traffic_light_detector::ExtractedPosition sign;
       sign.signalId = signal.id;
       //sign.u = u, sign.v = v, sign.radius = radius;
+      /* if ndt's Angle Error == 0 */
       //sign.u = u;
-      //sign.u = u + 50;
-      sign.u = u + 35;
       //sign.v = v - 25;    /* Temporary correction of calibration data */
-      sign.v = v - 30;    /* Temporary correction of calibration data */
+
+      /* if ndt's Angle Error == 1.5 */
+      sign.u = u + 35;
+      sign.v = v - 28;    /* Temporary correction of calibration data */
       sign.radius = radius;
       sign.x = signalcenter.x(), sign.y = signalcenter.y(), sign.z = signalcenter.z();
       sign.hang = vmap.vectors[signal.vid].hang; // hang is expressed in [0, 360] degree
