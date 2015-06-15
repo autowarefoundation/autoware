@@ -68,3 +68,7 @@ target_link_libraries(traffic_light_extract
   ${catkin_LIBRARIES}
   ${libvectormap_LIBRARIES}
 )
+
+add_dependencies(traffic_light_lkf 
+traffic_light_detector_generate_messages_cpp)
+
