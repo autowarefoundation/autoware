@@ -40,15 +40,14 @@
 #include <unistd.h>
 #include <alloca.h>
 #include <string>
+#include <sys/time.h>
 
 #include <pos_db.h>
 
 #define USE_LIBSSH2
 #ifdef USE_LIBSSH2
 #include <libssh2.h>
-#endif /* USE_LIBSSH2 */
 
-#ifdef USE_LIBSSH2
 static LIBSSH2_SESSION *session;
 static LIBSSH2_CHANNEL *channel;
 static const char *sshuser = "posup";
@@ -56,6 +55,8 @@ static const char *sshpass = "NavoogohPia3";
 static const char *sshtunnelhost = "localhost";
 static int sshport = 22;
 #endif /* USE_LIBSSH2 */
+
+#define TIMEOUT_SEC	1
 
 SendData::SendData()
 	: SendData("db1.ertl.jp", 5700)
@@ -78,6 +79,10 @@ int SendData::Sender(const std::string& value, std::string& res) const
 
 	struct sockaddr_in server;
 	unsigned int **addrptr;
+
+	int maxfd;
+	fd_set readfds, writefds;
+	struct timeval timeout;
 
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
@@ -171,45 +176,63 @@ int SendData::Sender(const std::string& value, std::string& res) const
 	//    printf("send data : %s\n",value.c_str());
 	std::cout << "send data : \"" << value << "\"" << std::endl;
 
-	cvalue = (char *)alloca(value.size());
-	memcpy(cvalue, value.c_str(), value.size());
-	for (int i=0; i<16; i++)
-		cvalue[i] &= 0x7f; // TODO: see make_header()
+	FD_ZERO(&readfds);
+	FD_ZERO(&writefds);
+	FD_SET(sock, &readfds);
+	FD_SET(sock, &writefds);
+	maxfd = sock;
+	timeout.tv_sec = TIMEOUT_SEC; timeout.tv_usec = 0;
+	select(maxfd+1, NULL, &writefds, NULL, &timeout);
+	if(FD_ISSET(sock, &writefds)) {
+		cvalue = (char *)alloca(value.size());
+		memcpy(cvalue, value.c_str(), value.size());
+		for (int i=0; i<16; i++)
+			cvalue[i] &= 0x7f; // TODO: see make_header()
 #ifdef USE_LIBSSH2
-	n = libssh2_channel_write(channel, cvalue, value.size());
+		n = libssh2_channel_write(channel, cvalue, value.size());
 #else /* USE_LIBSSH2 */
-	n = write(sock, cvalue, value.size());
-#endif /* USE_LIBSSH2 */
-	if (n < 0) {
-		perror("write");
-		return -1;
-	}
-	std::cout << "write return n=" << n << std::endl;
-
-	//Caution : If server do not close in one communication,loop forever because read() do not return 0.
-	for (int hlen=0; ; ) {
-		memset(recvdata, 0, sizeof(recvdata));
-#ifdef USE_LIBSSH2
-		n = libssh2_channel_read(channel, recvdata, sizeof(recvdata)-1);
-#else /* USE_LIBSSH2 */
-		n = read(sock, recvdata, sizeof(recvdata)-1);
+		n = write(sock, cvalue, value.size());
 #endif /* USE_LIBSSH2 */
 		if (n < 0) {
-			perror("recv error");
+			perror("write");
 			return -1;
-		} else if (n==0) {
-			break;
 		}
-		std::cout << "read return n=" << n << std::endl;
+		std::cout << "write return n=" << n << std::endl;
+	} else {
+		return -1;
+	}
 
-		recvdata[n] = '\0';
-		for (int i=0; i<n && hlen<4; i++, hlen++)
-			recvdata[i] |= 0x80;
-		if (strlen(recvdata) >= sizeof(recvdata)) {
-			res.append(recvdata, sizeof(recvdata));
-		} else {
-			res.append(recvdata, strlen(recvdata));
+	//Caution : If server do not close in one communication,loop forever because read() do not return 0.
+	timeout.tv_sec = TIMEOUT_SEC; timeout.tv_usec = 0;
+	select(maxfd+1, &readfds, NULL, NULL, &timeout);
+	if(FD_ISSET(sock, &readfds)) {
+		for (int hlen=0; ; ) {
+			memset(recvdata, 0, sizeof(recvdata));
+#ifdef USE_LIBSSH2
+			n = libssh2_channel_read(channel, recvdata, sizeof(recvdata)-1);
+#else /* USE_LIBSSH2 */
+			n = read(sock, recvdata, sizeof(recvdata)-1);
+#endif /* USE_LIBSSH2 */
+
+			if (n < 0) {
+				perror("recv error");
+				return -1;
+			} else if (n==0) {
+				break;
+			}
+			std::cout << "read return n=" << n << std::endl;
+
+			recvdata[n] = '\0';
+			for (int i=0; i<n && hlen<4; i++, hlen++)
+				recvdata[i] |= 0x80;
+			if (strlen(recvdata) >= sizeof(recvdata)) {
+				res.append(recvdata, sizeof(recvdata));
+			} else {
+				res.append(recvdata, strlen(recvdata));
+			}
 		}
+	} else {
+		return -1;
 	}
 
 	close(sock);
