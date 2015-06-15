@@ -918,11 +918,11 @@ rosrun map_file vector_map_loader <csv files>
   visualization_msgs::MarkerArray marker_array;
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/map";
-
+  marker.header.stamp = ros::Time();
   marker.ns = "vector_map";
   marker.action = visualization_msgs::Marker::ADD;
   marker.lifetime = ros::Duration();
-
+  marker.frame_locked = true;
   marker.type = visualization_msgs::Marker::CYLINDER;
 
   size_t i;

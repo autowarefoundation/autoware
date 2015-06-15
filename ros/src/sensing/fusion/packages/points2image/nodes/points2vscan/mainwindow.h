@@ -10,6 +10,8 @@
 #include<fastvirtualscan.h>
 #include<sensor_msgs/LaserScan.h>
 
+//#define DEBUG_GUI
+
 namespace Ui {
 class MainWindow;
 }

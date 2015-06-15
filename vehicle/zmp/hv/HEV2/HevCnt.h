@@ -164,6 +164,8 @@ public:
     HevCnt();
     virtual ~HevCnt();
 
+    void ClearCntDiag(); // Autoware Extension
+
     bool Init();
     bool Start();
     bool Process();

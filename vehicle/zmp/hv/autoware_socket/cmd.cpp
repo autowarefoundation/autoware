@@ -217,7 +217,7 @@ void Control(vel_data_t vel, void* p)
     cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
   }
 
-#if 0 /* just for a debug */
+#if 1 /* just for a debug */
   std::ifstream ifs("/tmp/velocity");
   std::string s;
   getline(ifs, s);
@@ -279,8 +279,6 @@ void *MainWindow::ModeSetterEntry(void *a)
   sleep(1);
 
   mode_is_setting = false; // loose critical section
-
-  cout << "set ends" << endl;
 
   return NULL;
 }

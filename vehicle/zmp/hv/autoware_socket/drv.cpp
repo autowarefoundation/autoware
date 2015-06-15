@@ -39,10 +39,10 @@ double brake_diff_sum = 0;
 queue<double> accel_diff_buffer;
 queue<double> brake_diff_buffer;
 
-#define IS_DRV_MODE_PROGRAM() (_hev_state.drvInf.mode == MODE_PROGRAM)
-#define IS_DRV_MODE_MANUAL() (_hev_state.drvInf.mode == MODE_MANUAL)
+#define IS_DRV_MODE_PROGRAM() (_hev_state.drvInf.mode == MODE_PROGRAM && _hev_state.drvInf.mode == SERVO_TRUE)
+#define IS_DRV_MODE_MANUAL() (_hev_state.drvInf.mode == MODE_MANUAL || _hev_state.drvInf.mode == SERVO_FALSE)
 
-void clear_diff()
+static void clear_diff()
 {
   int i;
 
@@ -227,7 +227,7 @@ bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev)
 void _accelerate_control(double current_velocity,double cmd_velocity, HevCnt *hev)
 {
   // acclerate by releasing the brake pedal if pressed.
-  if (_hev_state.brkInf.pressed == true) {
+  if (_hev_state.brkInf.pressed == true && CURRENT_BRAKE_STROKE() == 0) {
     cout << "brake pressed, release" << endl;
     int gain = (int)(((double)HEV_MAX_BRAKE)/0.5*cycle_time); 
     _brake(0, gain, CURRENT_BRAKE_STROKE(), hev);
@@ -271,7 +271,7 @@ void _accelerate_control(double current_velocity,double cmd_velocity, HevCnt *he
 #define _K_ACCEL_I 2.0
 #define _K_ACCEL_D 2.0
 #define _K_ACCEL_I_CYCLES 100
-#define _ACCEL_MAX_I 400
+#define _ACCEL_MAX_I 600
 
 void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, HevCnt* hev)
 {
@@ -283,7 +283,7 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
   // acclerate by releasing the brake pedal if pressed.
   if (_hev_state.brkInf.pressed == true) {
     cout << "brake pressed, release" << endl;
-    int gain = 200;
+    int gain = 500;
     int cmd_brake = CURRENT_BRAKE_STROKE() - gain;
     if (cmd_brake < 0)
       cmd_brake = 0;
@@ -397,11 +397,12 @@ void _decelerate_control(double current_velocity,double cmd_velocity, HevCnt *he
   }
 }
 
-#define _K_BRAKE_P 30.0
-#define _K_BRAKE_I 5.0
-#define _K_BRAKE_D 2.0
+#define _K_BRAKE_P 40.0
+#define _K_BRAKE_I 10.0 //5.0
+#define _K_BRAKE_D 10.0
 #define _K_BRAKE_I_CYCLES 100
-#define _BRAKE_MAX_I 1000
+#define _BRAKE_MAX_I 200
+#define _BRAKE_STROKE_DELTA_MAX 1000
 
 void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, HevCnt* hev)
 {
@@ -413,7 +414,7 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
   // decelerate by releasing the accel pedal if pressed.
   if (_hev_state.drvInf.actualPedalStr > 0) {
     cout << "accel pressed, release" << endl;
-    int gain = 200;
+    int gain = 400;
     int cmd_accel = CURRENT_ACCEL_STROKE() - gain;
     if (cmd_accel < 0)
       cmd_accel = 0;
@@ -456,6 +457,10 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     }
     else if (cmd_brake < 0) {
       cmd_brake = 0;
+    }
+
+    if (cmd_brake - CURRENT_BRAKE_STROKE() > _BRAKE_STROKE_DELTA_MAX) {
+      cmd_brake = CURRENT_BRAKE_STROKE() + _BRAKE_STROKE_DELTA_MAX;
     }
 
     cout << "e = " << e << endl;
@@ -506,6 +511,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
 
   // do not call a control funtion in manual mode.
   if (IS_DRV_MODE_MANUAL()) {
+    clear_diff();
     return;
   }
 
