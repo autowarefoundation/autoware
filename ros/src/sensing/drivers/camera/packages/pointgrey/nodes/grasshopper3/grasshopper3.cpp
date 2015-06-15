@@ -308,7 +308,7 @@ int main(int argc, char **argv)
 			//publish*******************
 
 			msg.header.seq = count;
-			msg.header.frame_id = count;
+			msg.header.frame_id = "camera";
 			msg.header.stamp.sec = ros::Time::now().toSec();
 			msg.header.stamp.nsec = ros::Time::now().toNSec();
 			msg.height = image.GetRows();

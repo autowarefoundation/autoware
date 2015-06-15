@@ -189,8 +189,11 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       traffic_light_detector::ExtractedPosition sign;
       sign.signalId = signal.id;
       //sign.u = u, sign.v = v, sign.radius = radius;
-      sign.u = u;
-      sign.v = v - 25;    /* Temporary correction of calibration data */
+      //sign.u = u;
+      //sign.u = u + 50;
+      sign.u = u + 35;
+      //sign.v = v - 25;    /* Temporary correction of calibration data */
+      sign.v = v - 30;    /* Temporary correction of calibration data */
       sign.radius = radius;
       sign.x = signalcenter.x(), sign.y = signalcenter.y(), sign.z = signalcenter.z();
       sign.hang = vmap.vectors[signal.vid].hang; // hang is expressed in [0, 360] degree
@@ -208,10 +211,10 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       /*
         check whether this signal is oriented to the camera
         interested signals have below condition orientation:
-        (camera_orientation - 60deg) < (signal_orientation + 180deg) < (camera_orientatin + 60deg)
+        (camera_orientation - 70deg) < (signal_orientation + 180deg) < (camera_orientatin + 70deg)
       */
-      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 60);
-      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 60);
+      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 70);
+      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 70);
 
       // std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
 

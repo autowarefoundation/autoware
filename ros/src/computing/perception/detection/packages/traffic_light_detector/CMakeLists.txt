@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   libvectormap
+  runtime_manager
   )
 find_package(OpenCV REQUIRED)
 find_package (Eigen3 REQUIRED)
@@ -29,7 +30,7 @@ generate_messages(DEPENDENCIES
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap
+  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -40,7 +41,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ### traffic_light_lkf ###
 add_executable(traffic_light_lkf
-  nodes/traffic_light_lkf/TrafficLight.cpp
+  nodes/traffic_light_lkf/traffic_light_lkf.cpp
   nodes/traffic_light_lkf/TrafficLightDetector.cpp
   nodes/traffic_light_lkf/Context.cpp
   )
@@ -48,6 +49,9 @@ add_executable(traffic_light_lkf
 target_link_libraries(traffic_light_lkf
   ${catkin_LIBRARIES}
 )
+
+add_dependencies(traffic_light_lkf 
+runtime_manager_generate_messages_cpp)
 
 ### traffic_light_extract ###
 include_directories(
@@ -57,7 +61,7 @@ include_directories(
 )
 
 add_executable(traffic_light_extract
-  nodes/traffic_light_extract/signals.cpp
+  nodes/traffic_light_extract/traffic_light_extract.cpp
 )
 
 target_link_libraries(traffic_light_extract
@@ -65,11 +69,6 @@ target_link_libraries(traffic_light_extract
   ${libvectormap_LIBRARIES}
 )
 
-### camera_info_publisher ###
-add_executable(camera_info_publisher
-  nodes/camera_info_publisher/camera_info_publisher.cpp
-  )
+add_dependencies(traffic_light_lkf 
+traffic_light_detector_generate_messages_cpp)
 
-target_link_libraries(camera_info_publisher
-  ${catkin_LIBRARIES}
-)

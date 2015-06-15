@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  runtime_manager
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -19,7 +20,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES debug
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS std_msgs message_runtime runtime_manager
 #  DEPENDS system_lib
 )
 
@@ -82,3 +83,13 @@ target_link_libraries(vscan_image_d_viewer
    opencv_highgui opencv_core opencv_imgproc
 )
 add_dependencies(vscan_image_d_viewer points2image_generate_messages_cpp)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+add_executable(traffic_light_viewer nodes/traffic_light_viewer/traffic_light_viewer.cpp)
+target_link_libraries(traffic_light_viewer
+   ${catkin_LIBRARIES}
+   opencv_highgui opencv_core opencv_imgproc
+)
+add_dependencies(traffic_light_viewer runtime_manager_generate_messages_cpp)

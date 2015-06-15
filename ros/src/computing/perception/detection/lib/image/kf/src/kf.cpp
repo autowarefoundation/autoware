@@ -485,7 +485,7 @@ void image_callback(const sensor_msgs::Image& image_source)
 {
 	if (!_ready)
 		return;
-	_ready=false;
+
 	//const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
 	//cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 	//						     encoding);
@@ -494,17 +494,19 @@ void image_callback(const sensor_msgs::Image& image_source)
 	//Mat imageTrack(&frame, true);
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
-  	Mat imageTrack = cv_image->image;
+	Mat imageTrack = cv_image->image;
 
 	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);
-
-	imshow("Tracked", imageTrack);
+	_ready=false;
+	//imshow("Tracked", imageTrack);
 
 	_counter++;
 }
 
 void detections_callback(dpm::ImageObjects image_objects_msg)
 {
+	if(_ready)
+		return;
 	int num = image_objects_msg.car_num;
 	vector<int> points = image_objects_msg.corner_point;
 	//points are X,Y,W,H and repeat for each instance
@@ -518,7 +520,6 @@ void detections_callback(dpm::ImageObjects image_objects_msg)
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		_dpm_detections.push_back(LatentSvmDetector::ObjectDetection(tmp, 0));
-
 	}
 	_ready = true;
 	//cout << "received pos" << endl;
