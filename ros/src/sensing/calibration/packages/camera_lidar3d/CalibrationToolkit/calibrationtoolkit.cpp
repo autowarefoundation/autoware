@@ -961,7 +961,13 @@ bool CalibrateCameraVelodyneChessboardBase::calibrateSensor()
     cv::Mat tmpmat=cameraextrinsicmat(cv::Rect(0,0,3,3));
     calibrationdata.rotationresult.copyTo(tmpmat);
     QVector<double> euler=convertMatrix2Euler(calibrationdata.rotationresult);
-    //qDebug()<<euler;
+    qDebug()<<euler;
+    cv::Mat tmpX(3,1,CV_64F);
+    tmpX.at<double>(0)=1;
+    tmpX.at<double>(1)=0;
+    tmpX.at<double>(2)=0;
+    tmpX=calibrationdata.rotationresult*tmpX;
+    qDebug()<<tmpX.at<double>(0)<<tmpX.at<double>(1)<<tmpX.at<double>(2);
 
     calibrationrotationalerror=cv::norm(calibrationdata.velodynenormals-calibrationdata.chessboardnormals*calibrationdata.rotationresult.t());
 
@@ -974,7 +980,6 @@ bool CalibrateCameraVelodyneChessboardBase::calibrateSensor()
     x[0]=cameraextrinsicmat.at<double>(0,3);
     x[1]=cameraextrinsicmat.at<double>(1,3);
     x[2]=cameraextrinsicmat.at<double>(2,3);
-
     {
         nlopt::opt localopt(nlopt::LN_COBYLA,3);
         localopt.set_lower_bounds(lb.toStdVector());
@@ -982,20 +987,21 @@ bool CalibrateCameraVelodyneChessboardBase::calibrateSensor()
         localopt.set_xtol_rel(1e-4);
         localopt.set_min_objective(calibrationCameraVelodyneChessboardTranslationalObjectiveFunc,(void *)&calibrationdata);
         localresult = localopt.optimize(x,calibrationtranslationalerror);
-        if (localresult != nlopt::SUCCESS) {
+        if (localresult < nlopt::SUCCESS) {
+            qDebug()<<"Calibration error:"<<localresult;
             return false;
         }
     }
 
     cameraextrinsicmat.at<double>(0,3)=x[0];cameraextrinsicmat.at<double>(1,3)=x[1];cameraextrinsicmat.at<double>(2,3)=x[2];
-    //qDebug()<<x[0]<<x[1]<<x[2];
+    qDebug()<<x[0]<<x[1]<<x[2];
 
     lb.resize(6);ub.resize(6);
     std::vector<double> xx(6);
 
     double PI=3.141592654;
-    lb[0]=-20;lb[1]=-20;lb[2]=-20;lb[3]=-PI;lb[4]=-PI;lb[5]=-PI;
-    ub[0]=20;ub[1]=20;ub[2]=20;ub[3]=PI;ub[4]=PI;ub[5]=PI;
+    lb[0]=-PI;lb[1]=-PI;lb[2]=-PI;lb[3]=-20;lb[4]=-20;lb[5]=-20;
+    ub[0]=PI;ub[1]=PI;ub[2]=PI;ub[3]=20;ub[4]=20;ub[5]=20;
     xx[0]=euler[0];xx[1]=euler[1];xx[2]=euler[2];
     xx[3]=x[0];xx[4]=x[1];xx[5]=x[2];
 
@@ -1006,7 +1012,8 @@ bool CalibrateCameraVelodyneChessboardBase::calibrateSensor()
         localopt.set_xtol_rel(1e-4);
         localopt.set_min_objective(calibrationCameraVelodyneChessboardObjectiveFunc,(void *)&calibrationdata);
         localresult=localopt.optimize(xx,calibrationtranslationalerror);
-        if (localresult != nlopt::SUCCESS) {
+        if (localresult < nlopt::SUCCESS) {
+            qDebug()<<"Calibration error:"<<localresult;
             return false;
         }
     }
@@ -1539,7 +1546,7 @@ bool CalibrateCameraLidarChessboardBase::calibrateSensor()
         opt.set_xtol_rel(1e-4);
         opt.set_min_objective(calibrationCameraLidarChessboardObjectiveFunc,(void *)&calibrationdata);
         result=opt.optimize(x,calibrationerror);
-        if (result != nlopt::SUCCESS) {
+        if (result < nlopt::SUCCESS) {
             return false;
         }
     }
