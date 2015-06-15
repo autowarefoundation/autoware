@@ -35,7 +35,8 @@ void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 
   transform.setRotation(quaternion);
 
-  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", "camera"));
+  //broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", "camera"));
+  broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
 }
 
 
