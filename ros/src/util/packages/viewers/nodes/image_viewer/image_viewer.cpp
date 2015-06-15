@@ -106,7 +106,7 @@ void drawTracked(vector<Rect> dets, std::string objectLabel, Mat imageTrack)
 		if(dets[i].y > imageTrack.rows*.3)//temporal way to avoid drawing detections in the sky
 		{
 			rectangle(imageTrack, dets[i], Scalar(0,255,0), 3);
-			putText(imageTrack, "car", Point(dets[i].x + 4, dets[i].y + 13), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 255, 0), 2);
+                        putText(imageTrack, objectLabel.c_str(), Point(dets[i].x + 4, dets[i].y + 13), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 255, 0), 2);
 		}
 	}
 }
