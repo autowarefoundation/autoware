@@ -16,9 +16,10 @@ buttons:
     run : rosrun obj_db obj_downloader
 
   sensor:
-    run : roslaunch runtime_manager sensor.launch
+    run   : roslaunch
+    param : sensor
   map:
-    run : 'sh -c "roslaunch runtime_manager map.launch
+    run : 'sh -c "roslaunch ~/.autoware/launch_files/map.launch
            tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
            pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
                          if [ \"$SN\" != \"noupdate\" ] ; then
@@ -31,14 +32,17 @@ buttons:
         func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
       stat_topic : [ pmap, vmap ]
   perception:
-    run : roslaunch runtime_manager perception.launch
-    gui :
+    run   : roslaunch
+    param : perception
+    gui   :
       stat_topic : [ gnss, ndt ]
   planning:
-    run : roslaunch runtime_manager planning.launch
+    run   : roslaunch
+    param : planning
   control:
-    run : roslaunch runtime_manager control.launch
-    gui :
+    run   : roslaunch
+    param : control
+    gui   :
       stat_topic : [ lf ]
 
   #init:
@@ -253,3 +257,32 @@ params :
       cmd_param :
         delim     : ''
         default   : ~/.autoware/data/tf/tf.launch
+
+  - name  : sensor
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/sensor.launch
+      cmd_param :
+        delim     : ''
+  - name  : perception
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/perception.launch
+      cmd_param :
+        delim     : ''
+  - name  : planning
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/planning.launch
+      cmd_param :
+        delim     : ''
+  - name  : control
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/control.launch
+      cmd_param :
+        delim     : ''
