@@ -49,6 +49,9 @@ static int _pose_time_nsec;
 static int _can_time_sec;
 static int _can_time_nsec;
 
+static ros::Publisher _waypoint_pub;
+static ros::Publisher _waypoint_velocity_pub;
+
 static bool IsNearlyZero(geometry_msgs::Point pose)
 {
 
@@ -79,24 +82,9 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &pose)
     _pose_set = true;
 }
 
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "waypoint_saver");
+static void DisplaySavedWaypoint(){
 
-    ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~");
-    geometry_msgs::Point prev_pose;
-    std::ofstream ofs;
-    double interval = 1.0;
-    std::string filename = "";
-
-    ros::Subscriber ndt_pose_sub = nh.subscribe("ndt_pose", 10, NDTCallback);
-    ros::Subscriber can_info_sub = nh.subscribe("can_info", 10, CanInfoCallback);
-
-    ros::Publisher waypoint_pub = nh.advertise<visualization_msgs::Marker>("lane_waypoint", 10, true);
-    ros::Publisher waypoint_velocity_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 10, true);
-
-    visualization_msgs::Marker marker;
+    static visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
     marker.header.stamp = ros::Time();
     marker.ns = "lane_waypoint";
@@ -111,7 +99,14 @@ int main(int argc, char **argv)
     marker.color.b = 0.0;
     marker.frame_locked = true;
 
-    visualization_msgs::MarkerArray marker_array;
+    marker.points.push_back(_current_pose);
+   _waypoint_pub.publish(marker);
+
+}
+
+static void DisplayWaypointVelocity(int id){
+
+    static visualization_msgs::MarkerArray marker_array;
     visualization_msgs::Marker tmp_marker;
     tmp_marker.header.frame_id = "map";
     tmp_marker.header.stamp = ros::Time();
@@ -121,6 +116,45 @@ int main(int argc, char **argv)
     tmp_marker.scale.z = 0.4;
     tmp_marker.color.a = 1.0;
     tmp_marker.color.r = 1.0;
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(0) << _current_velocity << " km/h";
+    tmp_marker.text = oss.str();
+
+    //C++11 version
+    //std::string velocity = std::to_string(test_pose.velocity_kmh);
+    //velocity.erase(velocity.find_first_of(".") + 3);
+    //std::string kmh = " km/h";
+    //std::string text = velocity + kmh;
+    //marker.text = text;
+
+    tmp_marker.id = id;
+    tmp_marker.pose.position.x = _current_pose.x;
+    tmp_marker.pose.position.y = _current_pose.y;
+    tmp_marker.pose.position.z = _current_pose.z + 0.2;
+
+    marker_array.markers.push_back(tmp_marker);
+    _waypoint_velocity_pub.publish(marker_array);
+
+}
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "waypoint_saver");
+
+    ros::NodeHandle nh;
+    ros::NodeHandle private_nh("~");
+    geometry_msgs::Point prev_pose;
+    std::ofstream ofs;
+    double interval = 1.0;
+    std::string filename = "";
+
+    ros::Subscriber ndt_pose_sub = nh.subscribe("ndt_pose", 10, NDTCallback);
+    ros::Subscriber can_info_sub = nh.subscribe("can_info", 10, CanInfoCallback);
+
+    _waypoint_pub = nh.advertise<visualization_msgs::Marker>("lane_waypoint", 10, true);
+    _waypoint_velocity_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 10, true);
+
 
 
     private_nh.getParam("interval", interval);
@@ -149,8 +183,7 @@ int main(int argc, char **argv)
 
             ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << std::endl;
             receive_once = true;
-            marker.points.push_back(_current_pose);
-            waypoint_pub.publish(marker);
+            DisplaySavedWaypoint();
             prev_pose = _current_pose;
 
         } else {
@@ -175,25 +208,8 @@ int main(int argc, char **argv)
 
                         ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << "," << _current_velocity << std::endl;
 
-                        marker.points.push_back(_current_pose);
-                        waypoint_pub.publish(marker);
-
-                        std::ostringstream oss;
-                        oss << std::fixed << std::setprecision(0) << _current_velocity << " km/h";
-                        tmp_marker.text = oss.str();
-
-                        //C++11 version
-                        //std::string velocity = std::to_string(test_pose.velocity_kmh);
-                        //velocity.erase(velocity.find_first_of(".") + 3);
-                        //std::string kmh = " km/h";
-                        //std::string text = velocity + kmh;
-                        //marker.text = text;
-                        tmp_marker.id = id;
-                        tmp_marker.points.push_back(_current_pose);
-                        marker_array.markers.push_back(tmp_marker);
-                        waypoint_velocity_pub.publish(marker_array);
-                        id++;
-
+                        DisplaySavedWaypoint();
+                        DisplayWaypointVelocity(id);
                         prev_pose = _current_pose;
 
                     }
@@ -202,33 +218,14 @@ int main(int argc, char **argv)
 
                     ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << "," << 0 << std::endl;
 
-                    std::ostringstream oss;
-                    oss << std::fixed << std::setprecision(0) << _current_velocity << " km/h";
-                    tmp_marker.text = oss.str();
-
-                    //C++11 version
-                    //std::string velocity = std::to_string(test_pose.velocity_kmh);
-                    //velocity.erase(velocity.find_first_of(".") + 3);
-                    //std::string kmh = " km/h";
-                    //std::string text = velocity + kmh;
-                    //marker.text = text;
-                    tmp_marker.id = id;
-                    tmp_marker.pose.position.x = _current_pose.x;
-                    tmp_marker.pose.position.y = _current_pose.y;
-                    tmp_marker.pose.position.z = _current_pose.z;
-                    marker_array.markers.push_back(tmp_marker);
-                    waypoint_velocity_pub.publish(marker_array);
-                    id++;
-
-
-                    marker.points.push_back(_current_pose);
-                    waypoint_pub.publish(marker);
+                    DisplaySavedWaypoint();
+                    DisplayWaypointVelocity(id);
                     prev_pose = _current_pose;
 
                 }
 
             }
-
+            id++;
             loop_rate.sleep();
         }
     }
