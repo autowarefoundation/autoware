@@ -179,7 +179,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
     int u, v;
     if (project2 (signalcenter, u, v, useOpenGLCoord) == true) {
       countPoint++;
-      std::cout << u << ", " << v << ", " << std::endl;
+      // std::cout << u << ", " << v << ", " << std::endl;
 
       int radius;
       int ux, vx;
@@ -189,8 +189,13 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       traffic_light_detector::ExtractedPosition sign;
       sign.signalId = signal.id;
       //sign.u = u, sign.v = v, sign.radius = radius;
-      sign.u = u;
-      sign.v = v - 25;    /* Temporary correction of calibration data */
+      /* if ndt's Angle Error == 0 */
+      //sign.u = u;
+      //sign.v = v - 25;    /* Temporary correction of calibration data */
+
+      /* if ndt's Angle Error == 1.5 */
+      sign.u = u + 35;
+      sign.v = v - 28;    /* Temporary correction of calibration data */
       sign.radius = radius;
       sign.x = signalcenter.x(), sign.y = signalcenter.y(), sign.z = signalcenter.z();
       sign.hang = vmap.vectors[signal.vid].hang; // hang is expressed in [0, 360] degree
@@ -203,17 +208,17 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
                              &cameraOrientation.thiY,
                              &cameraOrientation.thiZ);
 
-      std::cout << "signal : " << reversed_signalYaw << ", car : " << cameraOrientation.thiZ << std::endl;
+      // std::cout << "signal : " << reversed_signalYaw << ", car : " << cameraOrientation.thiZ << std::endl;
 
       /*
         check whether this signal is oriented to the camera
         interested signals have below condition orientation:
-        (camera_orientation - 60deg) < (signal_orientation + 180deg) < (camera_orientatin + 60deg)
+        (camera_orientation - 70deg) < (signal_orientation + 180deg) < (camera_orientatin + 70deg)
       */
-      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 60);
-      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 60);
+      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 70);
+      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 70);
 
-      std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
+      // std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
 
       if (isRange(conditionRange_lower, conditionRange_upper, reversed_signalYaw)) {
         signalsInFrame.Signals.push_back (sign);
@@ -224,7 +229,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
   signalsInFrame.header.stamp = ros::Time::now();
   pub.publish (signalsInFrame);
 
-  printf ("There are %d out of %u signals in frame\n", countPoint, static_cast<unsigned int>(vmap.signals.size()));
+  // printf ("There are %d out of %u signals in frame\n", countPoint, static_cast<unsigned int>(vmap.signals.size()));
 }
 
 
