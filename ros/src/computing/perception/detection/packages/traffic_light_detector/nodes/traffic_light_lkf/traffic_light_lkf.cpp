@@ -227,8 +227,8 @@ void setContexts(TrafficLightDetector &detector,
           int img_y = sig_iterator->v;
           int radius = sig_iterator->radius;
           if (sig_iterator->linkId == linkid_vector.at(ctx_idx) &&
-              0 < img_x - radius - ROI_MARGINE && img_x + radius + ROI_MARGINE < frame.cols &&
-              0 < img_y - radius - ROI_MARGINE && img_y + radius + ROI_MARGINE < frame.rows)
+              0 < img_x - radius - 1.5 * min_radius && img_x + radius + 1.5 * min_radius < frame.cols &&
+              0 < img_y - radius - 1.5 * min_radius && img_y + radius + 1.5 * min_radius < frame.rows)
             {
               switch (sig_iterator->type) {
               case 1:           /* RED */
@@ -243,10 +243,10 @@ void setContexts(TrafficLightDetector &detector,
                 break;
               }
               min_radius    = (min_radius > radius) ? radius : min_radius;
-              most_left     = (most_left > img_x - radius - ROI_MARGINE) ? img_x - radius - ROI_MARGINE : most_left;
-              most_top      = (most_top > img_y - radius - ROI_MARGINE) ? img_y - radius - ROI_MARGINE : most_top;
-              most_right    = (most_right < img_x + radius + ROI_MARGINE) ? img_x + radius + ROI_MARGINE : most_right;
-              most_bottom   = (most_bottom < img_y + radius + ROI_MARGINE) ? img_y + radius + ROI_MARGINE : most_bottom;
+              most_left     = (most_left > img_x - radius -   1.5 * min_radius)  ? img_x - radius - 1.5 * min_radius : most_left;
+              most_top      = (most_top > img_y - radius -    1.5 * min_radius)  ? img_y - radius - 1.5 * min_radius : most_top;
+              most_right    = (most_right < img_x + radius +  1.5 * min_radius)  ? img_x + radius + 1.5 * min_radius : most_right;
+              most_bottom   = (most_bottom < img_y + radius + 1.5 * min_radius)  ? img_y + radius + 1.5 * min_radius : most_bottom;
             }
         }
 
