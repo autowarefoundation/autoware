@@ -26,46 +26,23 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
 
-#include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
+#ifndef _LF_FUNC_H
+#define _LF_FUNC_H
+
 
 #include <iostream>
-#include <chrono>
+#include <sstream>
+#include <fstream>
 
-#define LOOP_RATE 100
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+#include <lane_follower/lane.h>
 
+static tf::Vector3 _origin_v(0, 0, 0);
 
-
-//Publisher
-static ros::Publisher _twist_pub;
-
-void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
-{
-    geometry_msgs::TwistStamped twist = *msg;
-    std::cout << "twist_through " << std::endl;
-    std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
-    std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl << std::endl;
-
-
-    _twist_pub.publish(twist);
-
-}
-
-
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "distance_keep");
-
-    ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~");
-    ros::Subscriber twist_sub = nh.subscribe("twist_raw", 1, TwistCmdCallback);
-    _twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
-
-    ros::spin();
-
-
-
-    return 0;
-}
+int GetClosestWaypoint(tf::Transform transform, lane_follower::lane path,int current_closest);
+tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose);
+double DecelerateVelocity(double distance, double prev_velocity);
+#endif

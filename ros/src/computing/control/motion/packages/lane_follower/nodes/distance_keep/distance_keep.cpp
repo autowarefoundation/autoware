@@ -33,30 +33,29 @@
 #include <geometry_msgs/PoseArray.h>
 #include <lane_follower/lane.h>
 #include <nav_msgs/Odometry.h>
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_listener.h>
-
 #include <visualization_msgs/Marker.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-
+#include <std_msgs/String.h>
 #include <iostream>
-#include <chrono>
+
+#include "lf_func.h"
 
 #define LOOP_RATE 10
 
-geometry_msgs::TwistStamped _current_twist;
-geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-lane_follower::lane _current_path;
+static geometry_msgs::TwistStamped _current_twist;
+static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
+static lane_follower::lane _current_path;
 //std::vector<geometry_msgs::Pose> _car_pose;
 //std::vector<geometry_msgs::Pose> _ped_pose;
-pcl::PointCloud<pcl::PointXYZ> _vscan;
+static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
-std::string _current_pose_topic = "ndt";
-const std::string PATH_FRAME = "/map";
+static std::string _current_pose_topic = "ndt";
+static const std::string PATH_FRAME = "/map";
+static const std::string pedestrian_sound = "pedestrian";
 static bool _twist_flag = false;
 static bool _pose_flag = false;
 static bool _path_flag = false;
@@ -64,22 +63,22 @@ static bool _vscan_flag = false;
 
 static double _detection_range = 0;
 //static int _obstacle_waypoint = -1;
-static int _vscan_obstacle_waypoint = -1;
-static int _closest_waypoint = 1;
+static int _obstacle_waypoint = -1;
+static int _closest_waypoint = -1;
 static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
 static double _search_distance = 30;
 static int _stop_interval = 5;
-static tf::Vector3 _origin_v(0, 0, 0);
 static tf::Transform _transform;
 
 //Publisher
 static ros::Publisher _twist_pub;
 static ros::Publisher _vis_pub;
 static ros::Publisher _range_pub;
+static ros::Publisher _sound_pub;
 
-void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
+static void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
     _current_twist = *msg;
 
@@ -89,17 +88,17 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
     }
 }
 /*
- void CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
+ static void CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
  {
  _car_pose = msg->poses;
  }
 
- void PedPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
+ static void PedPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
  {
  _ped_pose = msg->poses;
  }
  */
-void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
+static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
     pcl::fromROSMsg(*msg, _vscan);
     if (_vscan_flag == false) {
@@ -109,7 +108,7 @@ void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 }
 
-void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
     if (_current_pose_topic == "ndt") {
         _current_pose.header = msg->header;
@@ -125,7 +124,7 @@ void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
 }
 
-void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
+static void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
 {
     if (_current_pose_topic == "odometry") {
         _current_pose.header = msg->header;
@@ -141,7 +140,7 @@ void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
     }
 }
 
-void WaypointCallback(const lane_follower::laneConstPtr &msg)
+static void WaypointCallback(const lane_follower::laneConstPtr &msg)
 {
     _current_path = *msg;
     if (_path_flag == false) {
@@ -151,12 +150,12 @@ void WaypointCallback(const lane_follower::laneConstPtr &msg)
 }
 
 // display  by markers.
-void DisplayObstacleWaypoint(int i)
+static void DisplayObstacleWaypoint(int i)
 {
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = PATH_FRAME;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE;
@@ -171,176 +170,47 @@ void DisplayObstacleWaypoint(int i)
     marker.color.g = 0.0;
     marker.color.b = 1.0;
     marker.lifetime = ros::Duration(0.1);
+    marker.frame_locked = true;
 
     _vis_pub.publish(marker);
 }
 
 // display  by markers.
-void DisplayDetectionRange(int i)
+static void DisplayDetectionRange(int i)
 {
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = PATH_FRAME;
-    marker.header.stamp = ros::Time::now();
+    marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
-    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.type = visualization_msgs::Marker::SPHERE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position = _current_path.waypoints[i].pose.pose.position;
+
+    for (int j = 0; j < _search_distance; j++) {
+        if(i+j > static_cast<int>(_current_path.waypoints.size()) - 1)
+            break;
+
+        geometry_msgs::Point point;
+        point.x = _current_path.waypoints[j+i].pose.pose.position.x;
+        point.y = _current_path.waypoints[j+i].pose.pose.position.y;
+        point.z = _current_path.waypoints[j+i].pose.pose.position.z;
+        marker.points.push_back(point);
+    }
     marker.scale.x = 2 * _detection_range;
     marker.scale.y = 2 * _detection_range;
     marker.scale.z = _detection_height_top;
-    marker.color.a = 0.5;
+    marker.color.a = 0.2;
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
+    marker.frame_locked = true;
 
     _range_pub.publish(marker);
+    marker.points.clear();
 }
 
-tf::Vector3 TransformWaypoint(int i)
-{
-
-    tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
-    tf::Vector3 tf_w = _transform * waypoint;
-    tf_w.setZ(0);
-
-    return tf_w;
-}
-
-/*void GetClosestWaypoint()
-{
-    double distance = 10000; //meter
-
-    for (int i =  _closest_waypoint; i < _closest_waypoint + 10; i++) {
-
-        // position of @waypoint.
-        //tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, 0);
-        // tf::Vector3 tf_waypoint = _transform * waypoint;
-        // tf_waypoint.setZ(0);
-        tf::Vector3 tf_waypoint = TransformWaypoint(i);
-
-        double dt = tf::tfDistance(_origin_v, tf_waypoint);
-
-        //  std::cout << i  << " "<< dt << std::endl;
-        if (dt < distance) {
-            distance = dt;
-            _closest_waypoint = i;
-            // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
-        }
-    }
-}*/
-int GetClosestWaypoint()
-{
-    int closest_threshold = 5;
-
-    //interval between 2 waypoints
-    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, 0);
-
-    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, 0);
-
-    for (int ratio = 1; ratio < closest_threshold; ratio++) {
-
-        double distance_threshold = ratio * tf::tfDistance(v1, v2); //meter
-        std::cout << "distance_threshold : " << distance_threshold << std::endl;
-
-        std::vector<int> waypoint_candidates;
-
-        for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
-
-            //std::cout << waypoint << std::endl;
-
-            // position of @waypoint.
-            tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
-            tf::Vector3 tf_waypoint = _transform * waypoint;
-            tf_waypoint.setZ(0);
-            //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
-
-            //double dt = tf::tfDistance(v1, v2);
-            double dt = tf::tfDistance(_origin_v, tf_waypoint);
-            //  std::cout << i  << " "<< dt << std::endl;
-            if (dt < distance_threshold) {
-                //add as a candidate
-                waypoint_candidates.push_back(i);
-                std::cout << "waypoint = " << i << "  distance = " << dt << std::endl;
-            }
-        }
-
-        if (waypoint_candidates.size() == 0) {
-            continue;
-        }
-
-        std::cout << "prev closest waypoint : " << _closest_waypoint << std::endl;
-        int sub_min = waypoint_candidates[0] - _closest_waypoint;
-        int decided_waypoint = waypoint_candidates[0];
-        for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-            int sub = waypoint_candidates[i] - _closest_waypoint;
-            std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
-            if (sub < 0)
-                continue;
-
-            if (sub < sub_min) {
-                decided_waypoint = waypoint_candidates[i];
-                sub_min = sub;
-            }
-        }
-        if (decided_waypoint >= _closest_waypoint) {
-            return decided_waypoint;
-        }
-
-    }
-    return -1;
-}
-/*
-int GetClosestWaypoint()
-{
-    //interval between 2 waypoints
-    tf::Vector3 v1(_current_path.waypoints[0].pose.pose.position.x, _current_path.waypoints[0].pose.pose.position.y, _current_path.waypoints[0].pose.pose.position.z);
-
-    tf::Vector3 v2(_current_path.waypoints[1].pose.pose.position.x, _current_path.waypoints[1].pose.pose.position.y, _current_path.waypoints[1].pose.pose.position.z);
-
-    double distance_threshold = tf::tfDistance(v1, v2); //meter
-    std::vector<int> waypoint_candidates;
-
-    for (unsigned int i = 1; i < _current_path.waypoints.size(); i++) {
-
-        //std::cout << waypoint << std::endl;
-
-        // position of @waypoint.
-        tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z);
-        tf::Vector3 tf_waypoint = _transform * waypoint;
-        tf_waypoint.setZ(0);
-        //std::cout << "current path (" << _current_path.waypoints[i].pose.pose.position.x << " " << _current_path.waypoints[i].pose.pose.position.y << " " << _current_path.waypoints[i].pose.pose.position.z << ")" << std::endl;
-
-        //double dt = tf::tfDistance(v1, v2);
-        double dt = tf::tfDistance(_origin_v, tf_waypoint);
-        //  std::cout << i  << " "<< dt << std::endl;
-        if (dt < distance_threshold) {
-            //add as a candidate
-            waypoint_candidates.push_back(i);
-            // std::cout << "waypoint = " << i  << "  distance = "<< dt << std::endl;
-        }
-    }
-
-    if (waypoint_candidates.size() == 0)
-        return _closest_waypoint;
-
-    double sub_min = 100;
-    double decided_waypoint = 1;
-    for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-        std::cout << "closest candidates : " << waypoint_candidates[i] << std::endl;
-        double sub = fabs(waypoint_candidates[i] - _closest_waypoint);
-        std::cout << "sub : " << sub << std::endl;
-        if (sub < sub_min) {
-            decided_waypoint = waypoint_candidates[i];
-            sub_min = sub;
-        }
-    }
-
-    return decided_waypoint;
-    }*/
-
-int GetObstacleWaypointUsingVscan()
+static int GetObstacleWaypointUsingVscan()
 {
 
     if (_vscan.empty() == true)
@@ -350,13 +220,11 @@ int GetObstacleWaypointUsingVscan()
 
         if(i > static_cast<int>(_current_path.waypoints.size()) - 1 )
             return -1;
-        DisplayDetectionRange(i);
-        tf::Vector3 tf_waypoint = TransformWaypoint(i);
-        
-        // tf::Vector3 waypoint(_current_path.waypoints[i].pose.pose.position.x, _current_path.waypoints[i].pose.pose.position.y, _current_path.waypoints[i].pose.pose.position.z );
-       //  tf::Vector3 tf_waypoint = _transform * waypoint;
-        // tf_waypoint.setZ(0);
-         
+
+     //   tf::Vector3 tf_waypoint = TransformWaypoint(i);
+        tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[i].pose.pose);
+        tf_waypoint.setZ(0);
+
         //std::cout << "waypoint : "<< tf_waypoint.getX()  << " "<< tf_waypoint.getY() << std::endl;
         int point_count = 0;
         for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = _vscan.begin(); item != _vscan.end(); item++) {
@@ -381,50 +249,61 @@ int GetObstacleWaypointUsingVscan()
 
     }
 
-bool ObstacleDetection()
+static void SoundPlay(){
+    std_msgs::String string;
+    string.data = pedestrian_sound;
+    _sound_pub.publish(string);
+}
+
+static bool ObstacleDetection()
 {
     static int false_count = 0;
     static bool prev_detection = false;
 
-    _closest_waypoint = GetClosestWaypoint();
+    //_closest_waypoint = GetClosestWaypoint();
+    _closest_waypoint = GetClosestWaypoint(_transform,_current_path,_closest_waypoint);
     std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
+    DisplayDetectionRange(_closest_waypoint + 1);
+    int vscan_result = GetObstacleWaypointUsingVscan();
 
-    // auto start = std::chrono::system_clock::now(); //start time
-
-    _vscan_obstacle_waypoint = GetObstacleWaypointUsingVscan();
-
-    /*  auto end = std::chrono::system_clock::now(); //end time
-     auto dur = end - start; //processing time
-     double time = std::chrono::duration_cast<std::chrono::microseconds>(dur).count(); //micro sec
-     std::cout << "GetObstacleWaypointUsingVscan : " << time * 0.001 << " milli sec" << std::endl;
-     */
     if (prev_detection == false) {
-        if (_vscan_obstacle_waypoint != -1) {
-            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
-            std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
+        if (vscan_result != -1) {
+            DisplayObstacleWaypoint(vscan_result);
+            std::cout << "obstacle waypoint : " << vscan_result << std::endl << std::endl;
             prev_detection = true;
+            _obstacle_waypoint = vscan_result;
+            SoundPlay();
+            false_count = 0;
             return true;
         } else {
             prev_detection = false;
             return false;
         }
-    } else {
-        if (_vscan_obstacle_waypoint != -1) {
-            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
-            std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
+    } else { //prev_detection = true
+        if (vscan_result != -1) {
+            DisplayObstacleWaypoint(vscan_result);
+            std::cout << "obstacle waypoint : " << vscan_result << std::endl << std::endl;
             prev_detection = true;
+            _obstacle_waypoint = vscan_result;
+            false_count = 0;
+
             return true;
         } else {
             false_count++;
+            std::cout << "false_count : "<<false_count << std::endl;
         }
 
-        if (false_count == LOOP_RATE * 3) {
+        //fail-safe
+        if (false_count == LOOP_RATE * 2) {
+            _obstacle_waypoint = -1;
             false_count = 0;
             prev_detection = false;
             return false;
         } else {
-            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
+            std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl << std::endl;
+            DisplayObstacleWaypoint(_obstacle_waypoint);
             prev_detection = true;
+
            return true;
         }
     }
@@ -433,48 +312,27 @@ bool ObstacleDetection()
 
 }
 
-//static bool _decelerate_set = false;
-//static double _decelerate_ms = 0;
-//static double _set_velocity_ms = 0;
-double Decelerate()
+
+static double Decelerate()
 {
     //calculate distance from my position to waypoint
-    tf::Vector3 tf_waypoint = TransformWaypoint(_vscan_obstacle_waypoint);
+    tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[_obstacle_waypoint].pose.pose);
     double distance = tf::tfDistance(_origin_v, tf_waypoint);
-    std::cout << "distance " << distance << std::endl;
+   // std::cout << "distance " << distance << std::endl;
 
     //if distance is within stop_interval param, publish 0km/h
     if(distance < _stop_interval){
         return 0;
     }
 
-   /* if (_decelerate_set == false) {
-        _decelerate_ms = pow(_current_twist.twist.linear.x, 2) / (2 * distance);
-        _set_velocity_ms = _current_twist.twist.linear.x;
-        _decelerate_set = true;
-    }
-    std::cout << "decelerate : " << _decelerate_ms << std::endl;
-
-    _set_velocity_ms -= _decelerate_ms / LOOP_RATE;
-
-     if (_set_velocity_ms < 0)
-        _set_velocity_ms = 0;
-    */
-
-    /*  double radius = current_twist.twist.linear.x / current_twist.twist.angular.z;
-     current_twist.twist.linear.x = velocity_ms;
-     current_twist.twist.angular.z = current_twist.twist.linear.x / radius;
-     */
-
-    double decel_ms = 1.0; // m/s
-    double decel_velocity_ms = sqrt(2 * decel_ms * distance);
+    double decel_velocity_ms = DecelerateVelocity(distance,_current_twist.twist.linear.x);
 
     if(decel_velocity_ms < 1.0){
         decel_velocity_ms = 0;
     }
-    std::cout << "velocity : " << decel_velocity_ms << std::endl;
+
     return decel_velocity_ms;
-//return _set_velocity_ms;
+
 }
 
 int main(int argc, char **argv)
@@ -494,6 +352,7 @@ int main(int argc, char **argv)
     _twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
     _vis_pub = nh.advertise<visualization_msgs::Marker>("obstaclewaypoint_mark", 0);
     _range_pub = nh.advertise<visualization_msgs::Marker>("detection_range", 0);
+    _sound_pub = nh.advertise<std_msgs::String>("/sound_player", 10);
 
     private_nh.getParam("detection_range", _detection_range);
     std::cout << "detection_range : " << _detection_range << std::endl;
@@ -504,8 +363,14 @@ int main(int argc, char **argv)
     private_nh.getParam("stop_interval", _stop_interval);
     std::cout << "stop_interval : " << _stop_interval << std::endl;
 
+    private_nh.getParam("detection_height_top", _detection_height_top);
+    std::cout << "detection_height_top : " << _detection_height_top << std::endl;
+
+    private_nh.getParam("detection_height_bottom", _detection_height_bottom);
+    std::cout << "detection_height_bottom : " << _detection_height_bottom << std::endl;
+
     private_nh.getParam("current_pose_topic", _current_pose_topic);
-      std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
+    std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
 
     ros::Rate loop_rate(LOOP_RATE);
     while (ros::ok()) {
@@ -516,24 +381,26 @@ int main(int argc, char **argv)
             continue;
         }
 
-        bool detection_flag = ObstacleDetection();
+        bool detection_result = ObstacleDetection();
 
+        std::cout << "detection result : ";
+        if(detection_result == false)
+            std::cout << "false";
+       else
+            std::cout << "true";
+
+        std::cout << std::endl;
+
+        std::cout << "obstacle waypoint : "<< _obstacle_waypoint << std::endl;
         if (_twist_flag == true) {
             geometry_msgs::TwistStamped twist;
-            if (detection_flag == true) {
+            if (detection_result == true) {
                 //decelerate
                 std::cout << "twist deceleration..." << std::endl;
-                double veloc = Decelerate();
-                std::cout << "veloc/current_twist.linear.x :" << veloc << "/" <<  _current_twist.twist.linear.x <<std::endl;
-                if (veloc > _current_twist.twist.linear.x) {
-                    twist.twist.linear.x = _current_twist.twist.linear.x;
-                } else {
-                    twist.twist.linear.x = veloc;
-                }
+                twist.twist.linear.x = Decelerate();
                 twist.twist.angular.z = _current_twist.twist.angular.z;
             } else {
                 //through
-                //_decelerate_set = false;
                 std::cout << "twist through" << std::endl;
                 twist.twist = _current_twist.twist;
             }
