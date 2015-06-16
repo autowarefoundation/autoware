@@ -507,7 +507,7 @@ int main(int argc, char **argv)
 
                 _next_waypoint = GetNextWayPoint();
                 std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
-                std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
+              //  std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
 
                 if (_next_waypoint > 0) {
                     // obtain the linear/angular velocity.
@@ -526,7 +526,7 @@ int main(int argc, char **argv)
         } else {
             twist.twist = EndControl();
 
-            std::cout << "closest/next : " << _closest_waypoint << "/" << _next_waypoint << std::endl;
+         //   std::cout << "closest/next : " << _closest_waypoint << "/" << _next_waypoint << std::endl;
 
             // after stopped or fed out, let's get ready for the restart.
             if (twist.twist.linear.x == 0) {
