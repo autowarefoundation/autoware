@@ -51,7 +51,8 @@ target_link_libraries(traffic_light_lkf
 )
 
 add_dependencies(traffic_light_lkf 
-runtime_manager_generate_messages_cpp)
+runtime_manager_generate_messages_cpp
+traffic_light_detector_generate_messages_cpp)
 
 ### traffic_light_extract ###
 include_directories(
@@ -69,6 +70,7 @@ target_link_libraries(traffic_light_extract
   ${libvectormap_LIBRARIES}
 )
 
-add_dependencies(traffic_light_lkf 
-traffic_light_detector_generate_messages_cpp)
+add_dependencies(traffic_light_extract
+traffic_light_detector_generate_messages_cpp
+)
 
