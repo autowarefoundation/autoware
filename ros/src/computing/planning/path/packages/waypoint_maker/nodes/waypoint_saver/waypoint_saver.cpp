@@ -196,6 +196,7 @@ int main(int argc, char **argv)
             double distance = sqrt(pow((_current_pose.x - prev_pose.x), 2) + pow((_current_pose.y - prev_pose.y), 2));
             std::cout << "distance = " << distance << std::endl;
 
+            //if car moves [imterval] meter
             if (distance > interval) {
 
                 if (_can_info_set == true) {
@@ -206,6 +207,7 @@ int main(int argc, char **argv)
                     std::cout << "pose_time_nsec = " << _pose_time_nsec << std::endl;
                     std::cout << "nsec sub = " << fabs(_can_time_nsec - _pose_time_nsec) * NSEC_TO_SEC << std::endl;
 
+                    //if time lag is less than 1 second
                     if (_can_time_sec == _pose_time_sec && fabs(_can_time_nsec - _pose_time_nsec) * NSEC_TO_SEC < 1) {
 
                         ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << "," << _current_velocity << std::endl;
