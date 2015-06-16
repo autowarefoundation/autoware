@@ -63,7 +63,7 @@ static bool _vscan_flag = false;
 
 static double _detection_range = 0;
 //static int _obstacle_waypoint = -1;
-static int _vscan_obstacle_waypoint = -1;
+static int _obstacle_waypoint = -1;
 static int _closest_waypoint = -1;
 static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
@@ -264,36 +264,46 @@ static bool ObstacleDetection()
     _closest_waypoint = GetClosestWaypoint(_transform,_current_path,_closest_waypoint);
     std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
     DisplayDetectionRange(_closest_waypoint + 1);
-    _vscan_obstacle_waypoint = GetObstacleWaypointUsingVscan();
+    int vscan_result = GetObstacleWaypointUsingVscan();
 
     if (prev_detection == false) {
-        if (_vscan_obstacle_waypoint != -1) {
-            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
-            std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
+        if (vscan_result != -1) {
+            DisplayObstacleWaypoint(vscan_result);
+            std::cout << "obstacle waypoint : " << vscan_result << std::endl << std::endl;
             prev_detection = true;
+            _obstacle_waypoint = vscan_result;
             SoundPlay();
+            false_count = 0;
             return true;
         } else {
             prev_detection = false;
             return false;
         }
-    } else {
-        if (_vscan_obstacle_waypoint != -1) {
-            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
-            std::cout << "obstacle waypoint : " << _vscan_obstacle_waypoint << std::endl << std::endl;
+    } else { //prev_detection = true
+        if (vscan_result != -1) {
+            DisplayObstacleWaypoint(vscan_result);
+            std::cout << "obstacle waypoint : " << vscan_result << std::endl << std::endl;
             prev_detection = true;
+            _obstacle_waypoint = vscan_result;
+            false_count = 0;
+
             return true;
         } else {
             false_count++;
+            std::cout << "false_count : "<<false_count << std::endl;
         }
 
-        if (false_count == LOOP_RATE * 3) {
+        //fail-safe
+        if (false_count == LOOP_RATE * 2) {
+            _obstacle_waypoint = -1;
             false_count = 0;
             prev_detection = false;
             return false;
         } else {
-            DisplayObstacleWaypoint(_vscan_obstacle_waypoint);
+            std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl << std::endl;
+            DisplayObstacleWaypoint(_obstacle_waypoint);
             prev_detection = true;
+
            return true;
         }
     }
@@ -306,9 +316,9 @@ static bool ObstacleDetection()
 static double Decelerate()
 {
     //calculate distance from my position to waypoint
-    tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[_vscan_obstacle_waypoint].pose.pose);
+    tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[_obstacle_waypoint].pose.pose);
     double distance = tf::tfDistance(_origin_v, tf_waypoint);
-    std::cout << "distance " << distance << std::endl;
+   // std::cout << "distance " << distance << std::endl;
 
     //if distance is within stop_interval param, publish 0km/h
     if(distance < _stop_interval){
@@ -371,11 +381,20 @@ int main(int argc, char **argv)
             continue;
         }
 
-        bool detection_flag = ObstacleDetection();
+        bool detection_result = ObstacleDetection();
 
+        std::cout << "detection result : ";
+        if(detection_result == false)
+            std::cout << "false";
+       else
+            std::cout << "true";
+
+        std::cout << std::endl;
+
+        std::cout << "obstacle waypoint : "<< _obstacle_waypoint << std::endl;
         if (_twist_flag == true) {
             geometry_msgs::TwistStamped twist;
-            if (detection_flag == true) {
+            if (detection_result == true) {
                 //decelerate
                 std::cout << "twist deceleration..." << std::endl;
                 twist.twist.linear.x = Decelerate();
