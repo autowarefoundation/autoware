@@ -38,6 +38,7 @@
 #include <cfloat>
 
 #define NSEC_TO_SEC 0.000000001
+#define LOOP_RATE 10
 
 static bool receive_once = false;
 static bool _can_info_set = false;
@@ -104,8 +105,9 @@ static void DisplaySavedWaypoint(){
 
 }
 
-static void DisplayWaypointVelocity(int id){
+static void DisplayWaypointVelocity(){
 
+    static int id = 0;
     static visualization_msgs::MarkerArray marker_array;
     visualization_msgs::Marker tmp_marker;
     tmp_marker.header.frame_id = "map";
@@ -118,7 +120,7 @@ static void DisplayWaypointVelocity(int id){
     tmp_marker.color.r = 1.0;
 
     std::ostringstream oss;
-    oss << std::fixed << std::setprecision(0) << _current_velocity << " km/h";
+    oss << std::fixed << std::setprecision(2) << _current_velocity << " km/h";
     tmp_marker.text = oss.str();
 
     //C++11 version
@@ -135,6 +137,7 @@ static void DisplayWaypointVelocity(int id){
 
     marker_array.markers.push_back(tmp_marker);
     _waypoint_velocity_pub.publish(marker_array);
+    id++;
 
 }
 
@@ -166,8 +169,7 @@ int main(int argc, char **argv)
     }
 
     ofs.open(filename.c_str());
-    int id = 0;
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(LOOP_RATE);
     while (ros::ok()) {
         ros::spinOnce();
 
@@ -209,7 +211,7 @@ int main(int argc, char **argv)
                         ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << "," << _current_velocity << std::endl;
 
                         DisplaySavedWaypoint();
-                        DisplayWaypointVelocity(id);
+                        DisplayWaypointVelocity();
                         prev_pose = _current_pose;
 
                     }
@@ -219,13 +221,12 @@ int main(int argc, char **argv)
                     ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << "," << 0 << std::endl;
 
                     DisplaySavedWaypoint();
-                    DisplayWaypointVelocity(id);
+                    DisplayWaypointVelocity();
                     prev_pose = _current_pose;
 
                 }
 
             }
-            id++;
             loop_rate.sleep();
         }
     }
