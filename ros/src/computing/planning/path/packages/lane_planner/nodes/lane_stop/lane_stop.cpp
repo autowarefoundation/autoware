@@ -47,6 +47,7 @@ static constexpr int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
 
 static ros::Publisher pub_ruled;
 static ros::Publisher pub_velocity;
+static ros::Publisher _lane_mark_pub;
 
 static lane_follower::lane current_red_lane;
 static lane_follower::lane current_green_lane;
@@ -65,16 +66,20 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 {
 	const  lane_follower::lane *current;
 	static lane_follower::lane prev_path = current_red_lane;
-
+	static int signal;
+	static int prev_signal;
 	switch (msg.traffic_light) {
 	case TRAFFIC_LIGHT_RED:
 		current = &current_red_lane;
+		signal = TRAFFIC_LIGHT_RED;
 		break;
 	case TRAFFIC_LIGHT_GREEN:
 		current = &current_green_lane;
+		signal = TRAFFIC_LIGHT_GREEN;
 		break;
 	case TRAFFIC_LIGHT_UNKNOWN:
         current = &prev_path;     // if traffic light state is unknown, keep previous state
+        signal = prev_signal;;
 		break;
 	default:
 		ROS_ERROR("unknown traffic_light");
@@ -96,12 +101,34 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 	velocity.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	velocity.scale.z = 0.4;
 	velocity.color.r = 1;
+	velocity.color.g = 1;
+	velocity.color.b = 1;
 	velocity.color.a = 1;
 	velocity.frame_locked = true;
 
+	visualization_msgs::Marker lane_waypoint_marker;
+    lane_waypoint_marker.header.frame_id = "/map";
+    lane_waypoint_marker.header.stamp = ros::Time();
+    lane_waypoint_marker.ns = "lane_waypoint_marker";
+    lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+    lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+    lane_waypoint_marker.scale.x = 0.2;
+    lane_waypoint_marker.pose.orientation.w = 1.0;
+    lane_waypoint_marker.color.a = 1.0;
+    lane_waypoint_marker.frame_locked = true;
+
+    if (msg.traffic_light == TRAFFIC_LIGHT_GREEN)
+        lane_waypoint_marker.color.g = 1.0;
+    else if (msg.traffic_light == TRAFFIC_LIGHT_RED)
+        lane_waypoint_marker.color.r = 1.0;
+    else
+        lane_waypoint_marker.color.b = 1.0;
+
 	int i = 0;
 	for (const lane_follower::waypoint& waypoint : current->waypoints) {
-		velocity.id = i;
+
+	    //for waypoint_velocity
+	    velocity.id = i;
 		velocity.pose.position = waypoint.pose.pose.position;
 		velocity.pose.position.z += 0.2; // more visible
 
@@ -112,12 +139,22 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 
 		velocities.markers.push_back(velocity);
 		++i;
+
+		//for lane_waypoint_marker
+		geometry_msgs::Point point;
+		point.x = waypoint.pose.pose.position.x;
+		point.y = waypoint.pose.pose.position.y;
+		point.z = waypoint.pose.pose.position.z;
+		lane_waypoint_marker.points.push_back(point);
 	}
+
+
 
 	pub_ruled.publish(*current);
 	pub_velocity.publish(velocities);
-
+	_lane_mark_pub.publish(lane_waypoint_marker);
     prev_path = *current;
+    prev_signal = signal;
 }
 
 int main(int argc, char **argv)
@@ -144,6 +181,11 @@ int main(int argc, char **argv)
 		"waypoint_velocity",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
+
+	_lane_mark_pub = n.advertise<visualization_msgs::Marker>(
+	    "lane_waypoint_mark",
+	    ADVERTISE_QUEUE_SIZE,
+	    ADVERTISE_LATCH);
 
 	ros::spin();
 
