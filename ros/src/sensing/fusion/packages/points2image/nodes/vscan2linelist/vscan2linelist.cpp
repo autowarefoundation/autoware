@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "vscan2linelist");
     ros::NodeHandle nh;
 
-    _pub = nh.advertise<visualization_msgs::Marker>("vscan_linelist", 1000);
+    _pub = nh.advertise<visualization_msgs::Marker>("vscan_linelist", 10);
     ros::Subscriber sub = nh.subscribe("vscan_points", 100, Callback);
 
     _linelist.header.frame_id = FRAME;
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     _linelist.id = 0;
     _linelist.type = visualization_msgs::Marker::LINE_LIST;
     _linelist.action = visualization_msgs::Marker::ADD;
-    _linelist.scale.x = 0.4;
+    _linelist.scale.x = 0.15;
     _linelist.color.a = 0.5;
     _linelist.color.r = 0.0;
     _linelist.color.g = 1.0;
