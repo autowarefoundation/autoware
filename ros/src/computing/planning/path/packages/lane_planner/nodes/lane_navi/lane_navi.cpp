@@ -129,6 +129,7 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 
 		waypoint.poses.push_back(posestamped);
 		mark.points.push_back(posestamped.pose.position);
+		lane_waypoint_marker.points.push_back(posestamped.pose.position);
 
 		point_index = lane.to_finishing_point_index(nodes, points);
 		if (point_index < 0) {
