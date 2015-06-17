@@ -50,6 +50,7 @@ static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
 
 static ros::Publisher pub_waypoint;
 static ros::Publisher pub_mark;
+static ros::Publisher _lane_mark_pub;
 #ifdef PUBLISH_TRAJECTORY
 static ros::Publisher pub_trajectory;
 #endif /* PUBLISH_TRAJECTORY */
@@ -104,6 +105,19 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 	mark.color.r = 1;
 	mark.color.a = 1;
 
+    static visualization_msgs::Marker lane_waypoint_marker;
+    lane_waypoint_marker.header.frame_id = "/map";
+    lane_waypoint_marker.header.stamp = ros::Time();
+    lane_waypoint_marker.ns = "lane_waypoint_marker";
+    lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+    lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+    lane_waypoint_marker.scale.x = 0.2;
+    lane_waypoint_marker.pose.orientation.w = 1.0;
+    lane_waypoint_marker.color.b = 1.0;
+    lane_waypoint_marker.color.g = 0.5;
+    lane_waypoint_marker.color.a = 1.0;
+    lane_waypoint_marker.frame_locked = true;
+
 	geometry_msgs::PoseStamped posestamped;
 	posestamped.header = header;
 	posestamped.pose.orientation.w = 1;
@@ -115,6 +129,7 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 
 		waypoint.poses.push_back(posestamped);
 		mark.points.push_back(posestamped.pose.position);
+		lane_waypoint_marker.points.push_back(posestamped.pose.position);
 
 		point_index = lane.to_finishing_point_index(nodes, points);
 		if (point_index < 0) {
@@ -131,6 +146,7 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 
 			waypoint.poses.push_back(posestamped);
 			mark.points.push_back(posestamped.pose.position);
+			lane_waypoint_marker.points.push_back(posestamped.pose.position);
 
 			break;
 		}
@@ -152,6 +168,7 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 
 	pub_waypoint.publish(waypoint);
 	pub_mark.publish(mark);
+    _lane_mark_pub.publish(lane_waypoint_marker);
 
 #ifdef PUBLISH_TRAJECTORY
 	visualization_msgs::Marker trajectory;
@@ -221,6 +238,12 @@ int main(int argc, char **argv)
 		"waypoint_mark",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
+
+	_lane_mark_pub = n.advertise<visualization_msgs::Marker>(
+	     "lane_waypoint_mark",
+	     ADVERTISE_QUEUE_SIZE,
+	     ADVERTISE_LATCH);
+
 #ifdef PUBLISH_TRAJECTORY
 	pub_trajectory = n.advertise<visualization_msgs::Marker>(
 		"_trajectory",
