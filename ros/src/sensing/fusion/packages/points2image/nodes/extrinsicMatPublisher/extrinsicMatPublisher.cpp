@@ -35,14 +35,20 @@ void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 
   transform.setRotation(quaternion);
 
-  //broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", "camera"));
-  broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
+
+  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", "camera"));
+  //broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
 }
 
 
 static void image_raw_cb(const sensor_msgs::Image& image_msg)
 {
-  ros::Time timeStampOfImage = image_msg.header.stamp;
+  //ros::Time timeStampOfImage = image_msg.header.stamp;
+
+  ros::Time timeStampOfImage;
+  timeStampOfImage.sec = image_msg.header.stamp.sec;
+  timeStampOfImage.nsec = image_msg.header.stamp.nsec;
+
 
   /* create TF between velodyne and camera with time stamp of /image_raw */
   tfRegistration(CameraExtrinsicMat, timeStampOfImage);
@@ -111,7 +117,7 @@ int main(int argc, char* argv[])
   fs["DistCoeff"] >> DistCoeff;
   fs["ImageSize"] >> ImageSize;
 
-  ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_cb);
+  ros::Subscriber image_sub = n.subscribe("/image_raw", 10, image_raw_cb);
 
   cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
 
