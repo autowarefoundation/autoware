@@ -1,0 +1,4 @@
+<launch>
+  <arg name="file" default="" />
+  <node pkg="points2image" type="extrinsicMatPublisher" name="extrinsicMatPublisher" args="$(arg file)"/>
+</launch>
