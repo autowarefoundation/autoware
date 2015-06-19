@@ -84,7 +84,7 @@ buttons:
     param : virtual_scan_image
 
   camera_extrinsicMat_Publisher :
-    run   : rosrun points2image extrinsicMatPublisher
+    run   : roslaunch runtime_manager ex_mat_pub.launch
     param : camera_extrinsicMat_Publisher
 
   calibration :
@@ -140,4 +140,5 @@ params :
       kind      : path
       v         : ''
       cmd_param :
-        delim: ''
+        dash : ''
+        delim: ':='
