@@ -1367,7 +1367,7 @@ class VarPanel(wx.Panel):
 			return
 		if self.kind == 'menu':
 			choices = self.var.get('choices', [])
-			slef.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
+			self.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
 			self.choices_sel_set(v)
 			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
 			return
