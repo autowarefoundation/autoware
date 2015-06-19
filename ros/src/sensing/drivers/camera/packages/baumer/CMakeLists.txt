@@ -25,16 +25,22 @@ find_package(OpenCV REQUIRED)
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
 )
-               
-                       
+
+set(BAUMER_INC_DIR "$ENV{HOME}/Baumer/BaumerGAPI/Components/Dev/C_C++/Inc")
+set(BAUMER_LIB_DIR "$ENV{HOME}/Baumer/BaumerGAPI/Components/Bin/Systems/GigE")
+
+if(EXISTS "${BAUMER_INC_DIR}")
+
 add_definitions(-D_GNULINUX)
 
 include_directories(include
   ${catkin_INCLUDE_DIRS}
-  BaumerGAPI/Components/Dev/C_C++/Inc
+  ${BAUMER_INC_DIR}
   nodes/vlg22/src/
   ${OpenCV_INCLUDE_DIRS}
 )
+
+link_directories("${BAUMER_LIB_DIR}")
 
 add_executable(${PROJECT_NAME}_node
   nodes/vlg22/src/vlg22_main.cpp
@@ -46,24 +52,6 @@ target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
 )
 
-#############
-## Install ##
-#############
-
-## Mark executables and/or libraries for installation
-
-install(DIRECTORY BaumerGAPI/Components/Bin/Systems/GigE/
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-   FILES_MATCHING PATTERN "*.so.*" PATTERN "*.so"
-)
-
-
-install(TARGETS ${PROJECT_NAME}_node 
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
-
-install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
-)
+else()
+message("'BGGAPI' is not installed. 'vlg22c_cam' is not built.")
+endif()
