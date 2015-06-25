@@ -107,7 +107,7 @@ target_link_libraries(car_kf
   ${catkin_LIBRARIES}
   kf
 )
-add_dependencies(car_kf dpm_generate_messages_cpp)
+add_dependencies(car_kf dpm_generate_messages_cpp kf_generate_messages_cpp)
 
 add_executable(car_locate
   nodes/car_locate/car_locate.cpp

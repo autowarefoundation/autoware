@@ -15,6 +15,7 @@ struct DPMGPUResult {
 	int num;
 	std::vector<int> corner_points;
 	std::vector<int> type;
+	std::vector<float> score;
 };
 
 extern DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,

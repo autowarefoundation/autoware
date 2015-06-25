@@ -39,19 +39,42 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include <dpm/ImageObjects.h>
+#include <kf/KFObjects.h>
 
 using namespace std;
 using namespace cv;
 
-static vector<Rect> cars;
-static vector<Rect> cars_tracked;
+/*		CARS 	*/
+//DPM related
+static vector<Rect> cars;					//objects detected
+static vector<float> cars_score;			//score of each object
+//KF related
+static vector<Rect> cars_tracked;			//objects tracked for current frame
+static vector<Rect> cars_tracked_predicted;	//objects tracked for next frame
+static vector<int> cars_tracked_lifespan;	//remaining lifespan
+static vector<int> cars_tracked_id;			//objects' id
+
+/*		PEDS 	*/
+//DPM related
 static vector<Rect> peds;
+static vector<float> peds_score;
+//KF related
 static vector<Rect> peds_tracked;
+static vector<Rect> peds_tracked_predicted;
+static vector<int> peds_tracked_lifespan;
+static vector<int> peds_tracked_id;
+
 static vector<Scalar> _colors;
 
 static const int OBJ_RECT_THICKNESS = 3;
 
-void drawDetections(vector<Rect> dets, std::string objectLabel, IplImage frame)
+static bool _drawing = false;
+static bool car_track_ready = false;
+static bool car_dpm_ready = false;
+static bool ped_track_ready = false;
+static bool ped_dpm_ready = false;
+
+void drawDetections(vector<Rect> dets, vector<float> scores, std::string objectLabel, IplImage frame)
 {
 	/* variables for object label */
 	CvFont	  font;
@@ -62,22 +85,30 @@ void drawDetections(vector<Rect> dets, std::string objectLabel, IplImage frame)
 	CvSize	  text_size;
 	int		 baseline	= 0;
 
+
 	cvInitFont(&font, CV_FONT_HERSHEY_COMPLEX, hscale, vscale, italicScale, thickness, CV_AA);
-	cvGetTextSize(objectLabel.data(),
-			&font,
-			&text_size,
-			&baseline);
+
 	//UNTRACKED
 	for(std::size_t i=0; i<dets.size();i++)
 	{
-		if(dets[i].y > frame.height*.3)//temporal way to avoid drawing detections in the sky
+		//if(dets[i].y > frame.height*.3)//temporal way to avoid drawing detections in the sky
 		{
+			ostringstream label;
+			label << objectLabel << ":" << std::setprecision(2) << scores[i];
+			string text = label.str();
+
+			//get text size
+			cvGetTextSize(text.data(),
+						&font,
+						&text_size,
+						&baseline);
+
 			cvRectangle( &frame,
 					cvPoint(dets[i].x, dets[i].y),
 					cvPoint(dets[i].x+dets[i].width, dets[i].y+dets[i].height),
-					_colors[0], OBJ_RECT_THICKNESS, CV_AA, 0);
+					CV_RGB(0, 0, 255), OBJ_RECT_THICKNESS, CV_AA, 0);
 
-			/* put object label */
+			/* draw object label */
 			CvPoint textOrg = cvPoint(dets[i].x - OBJ_RECT_THICKNESS, dets[i].y - baseline - OBJ_RECT_THICKNESS);
 
 			cvRectangle(&frame,
@@ -87,32 +118,36 @@ void drawDetections(vector<Rect> dets, std::string objectLabel, IplImage frame)
 					-1, 8, 0
 				);
 			cvPutText(&frame,
-				  objectLabel.data(),
-				  textOrg,
-				  &font,
-				  CV_RGB(255, 255, 255) // text color is black
+					text.data(),
+					textOrg,
+					&font,
+					CV_RGB(255, 255, 255) // text color is white
 				);
-
 		}
 	}
 
 	////
 }
 
-void drawTracked(vector<Rect> dets, std::string objectLabel, Mat imageTrack)
+void drawTracked(vector<Rect> dets, vector<int> lifespan, vector<int> obj_id, std::string objectLabel, Mat imageTrack)
 {
 	for(std::size_t i=0; i<dets.size();i++)
 	{
-		if(dets[i].y > imageTrack.rows*.3)//temporal way to avoid drawing detections in the sky
+		//if(dets[i].y > imageTrack.rows*.3)//temporal way to avoid drawing detections in the sky
 		{
-			rectangle(imageTrack, dets[i], Scalar(0,255,0), 3);
-                        putText(imageTrack, objectLabel.c_str(), Point(dets[i].x + 4, dets[i].y + 13), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 255, 0), 2);
+			ostringstream label;
+			label << objectLabel << "_" << obj_id[i] << ":" << std::setprecision(2) << lifespan[i];
+			string text = label.str();
+			rectangle(imageTrack, dets[i], _colors[i], 3);
+			putText(imageTrack, text.c_str(), Point(dets[i].x + 4, dets[i].y + 15), FONT_HERSHEY_SIMPLEX, 0.55, _colors[i], 2);
 		}
 	}
 }
 
 static void image_viewer_callback(const sensor_msgs::Image& image_source)
 {
+	_drawing = true;
+
 	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 								 encoding);
@@ -124,13 +159,17 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 
 	//UNTRACKED
 	putText(matImage, "PIXEL_XY", Point(10,10), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 0, 255), 2);
-	drawDetections(cars, "car", frame);
-	drawDetections(peds, "pedestrian", frame);
+	if (car_dpm_ready)
+		drawDetections(cars, cars_score, "car", frame);
+	if(ped_dpm_ready)
+		drawDetections(peds, peds_score, "pedestrian", frame);
 
 	//TRACKED
 	putText(imageTrack, "PIXEL_XY_TRACKED", Point(10,10), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 255, 0), 2);
-	drawTracked(cars_tracked, "car", imageTrack);
-	drawTracked(peds_tracked, "pedestrian", imageTrack);
+	if(car_track_ready)
+		drawTracked(cars_tracked, cars_tracked_lifespan, cars_tracked_id, "car", imageTrack);
+	if(ped_track_ready)
+		drawTracked(peds_tracked, peds_tracked_lifespan, peds_tracked_id, "pedestrian", imageTrack);
 	////////////////////
 
 	Mat merged;
@@ -139,12 +178,17 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	imshow("Image Viewer", merged);
 	//cvShowImage("Image Viewer", &frame);
 	cvWaitKey(2);
+
+	_drawing = false;
 }
 
 static void car_updater_callback(const dpm::ImageObjects& image_objects_msg)
 {
+	if(_drawing)
+		return;
 	int num = image_objects_msg.car_num;
 	vector<int> points = image_objects_msg.corner_point;
+	cars_score = image_objects_msg.score;
 	//points are X,Y,W,H and repeat for each instance
 	cars.clear();
 
@@ -157,12 +201,43 @@ static void car_updater_callback(const dpm::ImageObjects& image_objects_msg)
 		tmp.height = points[i*4 + 3];
 		cars.push_back(tmp);
 	}
+
+	car_dpm_ready = true;
 }
 
-static void car_updater_callback_tracked(const dpm::ImageObjects& image_objects_msg)
+static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
 {
+	if(_drawing)
+			return;
 	int num = image_objects_msg.car_num;
 	vector<int> points = image_objects_msg.corner_point;
+	peds_score.clear();
+	peds_score = image_objects_msg.score;
+	//points are X,Y,W,H and repeat for each instance
+	peds.clear();
+	for (int i=0; i<num;i++)
+	{
+		Rect tmp;
+		tmp.x = points[i*4 + 0];
+		tmp.y = points[i*4 + 1];
+		tmp.width = points[i*4 + 2];
+		tmp.height = points[i*4 + 3];
+		peds.push_back(tmp);
+	}
+	ped_track_ready = true;
+}
+
+static void car_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
+{
+	if(_drawing)
+			return;
+	int num = image_objects_msg.total_num;
+	vector<int> points = image_objects_msg.corner_point;
+	vector<int> pred_points = image_objects_msg.next_corner_point;
+
+	cars_tracked_lifespan = image_objects_msg.lifespan;
+	cars_tracked_id = image_objects_msg.obj_id;
+
 	//points are X,Y,W,H and repeat for each instance
 	cars_tracked.clear();
 
@@ -174,13 +249,27 @@ static void car_updater_callback_tracked(const dpm::ImageObjects& image_objects_
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		cars_tracked.push_back(tmp);
+
+		tmp.x = pred_points[i*4 + 0];
+		tmp.y = pred_points[i*4 + 1];
+		tmp.width = pred_points[i*4 + 2];
+		tmp.height = pred_points[i*4 + 3];
+		cars_tracked_predicted.push_back(tmp);
 	}
+	car_track_ready = true;
 }
 
-static void ped_updater_callback_tracked(const dpm::ImageObjects& image_objects_msg)
+static void ped_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
 {
-	int num = image_objects_msg.car_num;
+	if(_drawing)
+			return;
+	int num = image_objects_msg.total_num;
 	vector<int> points = image_objects_msg.corner_point;
+	vector<int> pred_points = image_objects_msg.next_corner_point;
+
+	peds_tracked_lifespan = image_objects_msg.lifespan;
+	peds_tracked_id = image_objects_msg.obj_id;
+
 	//points are X,Y,W,H and repeat for each instance
 	peds_tracked.clear();
 
@@ -192,25 +281,14 @@ static void ped_updater_callback_tracked(const dpm::ImageObjects& image_objects_
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		peds_tracked.push_back(tmp);
-	}
-}
 
-static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
-{
-	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point;
-	//points are X,Y,W,H and repeat for each instance
-	peds.clear();
-
-	for (int i=0; i<num;i++)
-	{
-		Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		peds.push_back(tmp);
+		tmp.x = pred_points[i*4 + 0];
+		tmp.y = pred_points[i*4 + 1];
+		tmp.width = pred_points[i*4 + 2];
+		tmp.height = pred_points[i*4 + 3];
+		peds_tracked_predicted.push_back(tmp);
 	}
+	ped_track_ready = true;
 }
 
 int main(int argc, char **argv)

@@ -256,12 +256,12 @@ static void showRects(IplImage *image, int object_num, const std::vector<int>& c
 }
 #endif
 
-void setDetectedObjects(const dpm::ImageObjects& detected_objects)
+void setDetectedObjects(const kf::KFObjects& detected_objects)
 {
 	g_corner_points.resize(detected_objects.corner_point.size());
 
-	g_objects_num = detected_objects.car_num;
-	for (int i = 0 ;i < detected_objects.car_num; i++) {
+	g_objects_num = detected_objects.total_num;
+	for (int i = 0 ;i < detected_objects.total_num; i++) {
 		g_corner_points[0+i*4] = detected_objects.corner_point[0+i*4];
 		g_corner_points[1+i*4] = detected_objects.corner_point[1+i*4];
 		g_corner_points[2+i*4] = detected_objects.corner_point[2+i*4];
