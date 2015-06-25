@@ -200,7 +200,7 @@ int SendData::Sender(const std::string& value, std::string& res)
 			host_name_.c_str(), sshport);
 	if (channel == NULL) {
 		fprintf(stderr, "libssh2_channel_direct_tcpip_ex failed\n");
-		//		DisconnectDB("tunnel failed");
+		DisconnectDB("tunnel failed");
 		return -2;
 	}
 #endif /* USE_LIBSSH2 */
