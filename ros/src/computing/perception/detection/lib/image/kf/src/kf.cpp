@@ -325,8 +325,6 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 	vector<int> correct_detection_indices;//this will correspond to kstates i, used to store the index of the corresponding object
 	vector<bool> add_as_new_indices;//this will correspond to detections j
 
-	removeUnusedObjects(kstates);
-
 	//predict_indices.assign(kstates.size(), true);//always predict
 	correct_indices.assign(kstates.size(), false);//correct only those matched
 	correct_detection_indices.assign(kstates.size(), false);//correct only those matched
@@ -373,6 +371,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 		}//for (int i = 0; i < kstates.size(); i++)
 	}//for (int j = 0; j < detections.size(); j++)
 
+	next_kstates.resize(kstates.size());
 	//do prediction and correction for the marked states
 	for (unsigned int i = 0; i < kstates.size(); i++)
 	{
@@ -485,9 +484,23 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			}
 		}
 	}
-	//return to x,y,w,h
+
+	removeUnusedObjects(kstates);
+
+	//prepare next_frame prediction vector
 	next_kstates.clear();
 	next_kstates.resize(kstates.size());
+	for (unsigned int i = 0; i < kstates.size(); i++)
+	{
+		Mat prediction = kstates[i].KF.predict();
+		//Predict again and store output
+		next_kstates[i].pos.x = prediction.at<float>(0);
+		next_kstates[i].pos.y = prediction.at<float>(1);
+		next_kstates[i].pos.width = prediction.at<float>(2);
+		next_kstates[i].pos.height = prediction.at<float>(3);
+	}
+
+	//return to x,y,w,h
 	posScaleToBbox(kstates, trackedDetections);
 
 }
