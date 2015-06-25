@@ -33,6 +33,11 @@
 
 #include <cstdint>
 #include <string>
+#include <netinet/in.h>
+#define USE_LIBSSH2
+#ifdef USE_LIBSSH2
+#include <libssh2.h>
+#endif
 
 class SendData {
 private:
@@ -43,7 +48,13 @@ public:
 	SendData();
 	explicit SendData(const std::string& host_name, int port);
 
-	int Sender(const std::string& value, std::string& res) const;
+	int Sender(const std::string& value, std::string& res);
+	int ConnectDB();
+	int DisconnectDB(char *msg);
+	int sock;
+	bool connected;
+	struct sockaddr_in server;
+	LIBSSH2_SESSION *session;
 };
 
 extern std::string make_header(int32_t sql_inst, int32_t sql_num);
