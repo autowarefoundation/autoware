@@ -44,11 +44,9 @@
 
 #include <pos_db.h>
 
-#define USE_LIBSSH2
 #ifdef USE_LIBSSH2
 #include <libssh2.h>
 
-static LIBSSH2_SESSION *session;
 static LIBSSH2_CHANNEL *channel;
 static const char *sshuser = "posup";
 static const char *sshpass = "NavoogohPia3";
@@ -66,25 +64,21 @@ SendData::SendData()
 SendData::SendData(const std::string& host_name, int port)
 	: host_name_(host_name), port_(port)
 {
+	connected = false;
+	session = NULL;
 }
 
-int SendData::Sender(const std::string& value, std::string& res) const
+int SendData::ConnectDB()
 {
-	/*********************************************
-	   format data to send
-	*******************************************/
-	char recvdata[1024];
-	int n, r;
-	char *cvalue;
-
-	struct sockaddr_in server;
+	int r;
 	unsigned int **addrptr;
 
-	int maxfd;
-	fd_set readfds, writefds;
-	struct timeval timeout;
+	if(connected) {
+		std::cout << "The database is already connected" << std::endl;
+		return -3;
+	}
 
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		perror("socket");
 		return -1;
@@ -157,13 +151,56 @@ int SendData::Sender(const std::string& value, std::string& res) const
 		libssh2_session_free(session);
 		return -2;
 	}
+#endif /* USE_LIBSSH2 */
+
+	connected = true;
+
+	return 0;
+}
+
+int SendData::DisconnectDB(char *msg)
+{
+	if(connected) {
+	        if (session) {
+			if(msg == NULL) 
+				libssh2_session_disconnect(session, "normal exit");
+			else
+				libssh2_session_disconnect(session, msg);
+			libssh2_session_free(session);
+		}
+		close(sock);
+		connected = false;
+	}
+
+	return 0;
+}
+
+int SendData::Sender(const std::string& value, std::string& res) 
+{
+	/*********************************************
+	   format data to send
+	*******************************************/
+	char recvdata[1024];
+	int n;
+	char *cvalue;
+	int maxfd;
+	fd_set readfds, writefds;
+	struct timeval timeout;
+
+	if(!connected) {
+		std::cout << "There is no connection to the database, sock=" << sock << std::endl;
+		n = ConnectDB();
+		if(n < 0) return -3;
+		std::cout << "connected to database\n";
+	}
+
+#ifdef USE_LIBSSH2
 	channel = libssh2_channel_direct_tcpip_ex(session,
 			sshtunnelhost, port_,
 			host_name_.c_str(), sshport);
 	if (channel == NULL) {
 		fprintf(stderr, "libssh2_channel_direct_tcpip_ex failed\n");
-		libssh2_session_disconnect(session, "tunnel failed");
-		libssh2_session_free(session);
+		DisconnectDB("tunnel failed");
 		return -2;
 	}
 #endif /* USE_LIBSSH2 */
@@ -235,7 +272,9 @@ int SendData::Sender(const std::string& value, std::string& res) const
 		return -1;
 	}
 
-	close(sock);
+        if (channel)
+		libssh2_channel_free(channel);
+
 	if (n > 4)
 		res = res.substr(4); // skip number
 	return 0;
