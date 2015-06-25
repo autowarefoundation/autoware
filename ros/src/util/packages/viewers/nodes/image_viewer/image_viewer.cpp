@@ -138,8 +138,8 @@ void drawTracked(vector<Rect> dets, vector<int> lifespan, vector<int> obj_id, st
 			ostringstream label;
 			label << objectLabel << "_" << obj_id[i] << ":" << std::setprecision(2) << lifespan[i];
 			string text = label.str();
-			rectangle(imageTrack, dets[i], _colors[i], 3);
-			putText(imageTrack, text.c_str(), Point(dets[i].x + 4, dets[i].y + 15), FONT_HERSHEY_SIMPLEX, 0.55, _colors[i], 2);
+			rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3);
+			putText(imageTrack, text.c_str(), Point(dets[i].x + 4, dets[i].y + 15), FONT_HERSHEY_SIMPLEX, 0.55, _colors[obj_id[i]], 2);
 		}
 	}
 }

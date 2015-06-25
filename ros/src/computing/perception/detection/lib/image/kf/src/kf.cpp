@@ -76,7 +76,7 @@ struct kstate
 	Rect			pos;//position of the object centerx, centery, width, height
 	float			score;//DPM score
 	bool			active;//if too old (lifespan) don't use
-	int				id;//id of this tracked object
+	unsigned int	id;//id of this tracked object
 	Mat				image;//image containing the detected and tracked object
 	int				lifespan;//remaining lifespan before deprecate
 	LatentSvmDetector::ObjectDetection obj;//currently not used
@@ -189,7 +189,6 @@ void posScaleToBbox(vector<kstate> kstates, vector<kstate>& trackedDetections)
 			tmp.obj.rect = tmp.pos;
 			tmp.obj.score = tmp.score;
 
-
 			if (tmp.pos.x < 0)
 				tmp.pos.x = 0;
 			if (tmp.pos.y < 0)
@@ -200,6 +199,24 @@ void posScaleToBbox(vector<kstate> kstates, vector<kstate>& trackedDetections)
 	}
 }
 
+int getAvailableIndex(vector<kstate>& kstates)
+{
+	unsigned int cur_size = kstates.size();
+	vector<bool> ids;
+
+	ids.resize(cur_size, false);
+
+	for (unsigned int i=0; i<cur_size;i++)
+	{
+		ids[kstates[i].id]= true;
+	}
+	for (unsigned int i=0; i<cur_size;i++)
+	{
+		if(ids[i] == false)
+			return i;
+	}
+	return cur_size;
+}
 
 void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kstates, LatentSvmDetector::ObjectDetection detection, Mat& image, vector<Scalar> colors)
 {
@@ -258,7 +275,7 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 	new_state.lifespan = INITIAL_LIFESPAN;//start only with 1
 	new_state.pos = object.rect;
 	new_state.score = object.score;
-	new_state.id = (kstates.size());
+	new_state.id = getAvailableIndex(kstates);
 	new_state.color = colors[new_state.id];
 
 	kstates.push_back(new_state);
@@ -288,6 +305,16 @@ void removeUnusedObjects(vector<kstate>& states)
 	}
 }
 
+bool alreadyMatched(int check_index, vector<int>& matched_indices)
+{
+	for (unsigned int i = 0; i < matched_indices.size(); i++)
+	{
+		if (matched_indices[i] == check_index)
+			return true;
+	}
+	return false;
+}
+
 void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int frameNumber,
 	vector<kstate>& kstates, vector<bool>& active, Mat& image, vector<kstate>& trackedDetections, vector<Scalar> & colors, vector<kstate>& next_kstates)
 {
@@ -307,6 +334,8 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 
 	//Convert Bounding box coordinates from (x1,y1,w,h) to (BoxCenterX, BoxCenterY, width, height)
 	objects = detections;//bboxToPosScale(detections);
+
+	vector<int> already_matched;
 	//compare detections from this frame with tracked objects
 	for (unsigned int j = 0; j < detections.size(); j++)
 	{
@@ -328,8 +357,8 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 
 				Rect intersect = detections[j].rect & kstates[i].pos;//check overlapping
 
-				if (intersect.width > (kstates[i].image.cols * OVERLAPPING_PERC)//overlapping percentage
-					&& crossCorr(kstates[i].image, currentObjectROI)
+				if (!alreadyMatched(j, already_matched) && intersect.width > (kstates[i].image.cols * OVERLAPPING_PERC/10)//overlapping percentage
+						&& crossCorr(kstates[i].image, currentObjectROI)
 					)
 				{
 					correct_indices[i] = true;//if ROI on this frame is matched to a previous object, correct
@@ -337,6 +366,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 					add_as_new_indices[j] = false;//if matched do not add as new
 					//kstates[i].image = currentObjectROI;//update image with current frame data
 					kstates[i].score = detections[j].score;
+					already_matched.push_back(j);
 				}//crossCorr
 
 			}//kstates[i].active
@@ -356,6 +386,10 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 
 			Mat prediction = kstates[i].KF.predict();
 			Mat correction;
+			kstates[i].pos.x = prediction.at<float>(0);
+			kstates[i].pos.y = prediction.at<float>(1);
+			kstates[i].pos.width = prediction.at<float>(2);
+			kstates[i].pos.height = prediction.at<float>(3);
 
 			//now do respective corrections on KFs (updates)
 			if (correct_indices[i])
@@ -384,30 +418,10 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 					kstates[i].pos.width = objects[j].rect.width;
 					kstates[i].pos.height = objects[j].rect.height;
 				}
-
 				//Mat im1 = image(kstates[i].pos);
 				//Mat im2 = image(objects[j].rect);
 			}
-			else
-			{
-				//if no real data is available, perform correction using predicted data
-				Mat_<float> measurement = (Mat_<float>(4, 1) << prediction.at<float>(0),
-									prediction.at<float>(1),
-									prediction.at<float>(2),
-									prediction.at<float>(3));
 
-				correction = kstates[i].KF.correct(measurement);//UPDATE KF with new info
-
-			}//if (correct_indices[i])
-
-			//use real data instead of predicted if set
-			if(SHOW_PREDICTIONS)
-			{
-				kstates[i].pos.x = correction.at<float>(0);
-				kstates[i].pos.y = correction.at<float>(1);
-				kstates[i].pos.width = correction.at<float>(2);
-				kstates[i].pos.height = correction.at<float>(3);
-			}
 
 			//check that new widths and heights don't go beyond the image size
 			if (kstates[i].pos.width + kstates[i].pos.x > image.cols)
@@ -587,8 +601,8 @@ static void kf_config_cb(const runtime_manager::ConfigCarKf::ConstPtr& param)
 
 void init_params()
 {
-	DEFAULT_LIFESPAN = 4;
-	INITIAL_LIFESPAN = 3;
+	DEFAULT_LIFESPAN = 8;
+	INITIAL_LIFESPAN = 4;
 	NOISE_COV = 1;
 	MEAS_NOISE_COV = 25;
 	ERROR_ESTIMATE_COV = 1000000;
