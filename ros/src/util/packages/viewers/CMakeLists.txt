@@ -33,7 +33,7 @@ target_link_libraries(image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(image_viewer dpm_generate_messages_cpp)
+add_dependencies(image_viewer dpm_generate_messages_cpp kf_generate_messages_cpp)
 
 add_executable(scan_image_viewer nodes/scan_image_viewer/scan_image_viewer.cpp)
 target_link_libraries(scan_image_viewer

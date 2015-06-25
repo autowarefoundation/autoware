@@ -7,6 +7,7 @@
 struct DPMObject {
 	int class_id;
 	cv::Rect rect;
+	float score;
 };
 
 extern std::vector<DPMObject> dpm_detect_objects(const cv::Mat& image,

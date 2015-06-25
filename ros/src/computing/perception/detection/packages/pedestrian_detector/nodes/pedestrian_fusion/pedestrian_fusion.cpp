@@ -35,7 +35,7 @@ static void publishTopic();
 static ros::Publisher fused_objects;
 static std_msgs::Header sensor_header;
 
-static void DetectedObjectsCallback(const dpm::ImageObjects& image_object)
+static void DetectedObjectsCallback(const kf::KFObjects& image_object)
 {
 	setDetectedObjects(image_object);
 

@@ -5,3 +5,4 @@ float32 noise_covariance
 float32 measurement_noise_covariance
 float32 error_estimate_covariance
 float32 percentage_of_overlapping
+int32 show_predictions

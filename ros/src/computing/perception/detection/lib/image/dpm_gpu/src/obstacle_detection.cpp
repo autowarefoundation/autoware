@@ -115,6 +115,7 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 		result.corner_points.push_back(data[1]);
 		result.corner_points.push_back(data[2] - data[0]);
 		result.corner_points.push_back(data[3] - data[1]);
+		result.score.push_back(cars->score[i]);
 	}
 
 	s_free(cars->point);

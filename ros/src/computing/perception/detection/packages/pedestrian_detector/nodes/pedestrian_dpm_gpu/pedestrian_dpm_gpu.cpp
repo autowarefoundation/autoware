@@ -67,6 +67,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 	message.corner_point = result.corner_points;
 	message.car_type = result.type;
 	message.header.stamp = image_source.header.stamp;
+	message.score = result.score;
 
 	pedestrian_pixel_publisher.publish(message);
 }

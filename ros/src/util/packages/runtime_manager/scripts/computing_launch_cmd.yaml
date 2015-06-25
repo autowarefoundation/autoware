@@ -346,12 +346,12 @@ params :
       label : Initial Lifespan
       min   : 1
       max   : 100
-      v     : 2
+      v     : 4
     - name  : default_lifespan
       label : Default Lifespan
       min   : 1
       max   : 100
-      v     : 10
+      v     : 8
     - name  : noise_covariance
       label : Noise Covariance
       min   : 1
@@ -372,6 +372,11 @@ params :
       min   : 0
       max   : 100
       v     : 0.0
+    - name  : show_predictions
+      label : Show Predictions instead of DPM result?
+      min   : 0
+      max   : 1
+      v     : 0
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
@@ -407,6 +412,11 @@ params :
       min   : 0
       max   : 100
       v     : 0.0
+    - name  : show_predictions
+      label : Show Predictions instead of DPM result?
+      min   : 0
+      max   : 1
+      v     : 0
 
   - name  : traffic_light
     vars :
