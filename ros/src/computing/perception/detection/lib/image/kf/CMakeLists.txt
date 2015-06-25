@@ -52,4 +52,4 @@ target_link_libraries(kf
   ${OpenCV_LIBS}
 )
 
-add_dependencies(kf dpm_generate_messages_cpp runtime_manager_generate_messages_cpp)
+add_dependencies(kf dpm_generate_messages_cpp runtime_manager_generate_messages_cpp  kf_generate_messages_cpp)
