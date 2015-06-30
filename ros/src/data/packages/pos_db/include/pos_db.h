@@ -50,7 +50,7 @@ public:
 
 	int Sender(const std::string& value, std::string& res);
 	int ConnectDB();
-	int DisconnectDB(char *msg);
+	int DisconnectDB(const char *msg);
 	int sock;
 	bool connected;
 	struct sockaddr_in server;

@@ -158,7 +158,7 @@ int SendData::ConnectDB()
 	return 0;
 }
 
-int SendData::DisconnectDB(char *msg)
+int SendData::DisconnectDB(const char *msg)
 {
 	if(connected) {
 	        if (session) {
