@@ -372,8 +372,13 @@ params :
       min   : 0
       max   : 100
       v     : 0.0
-    - name  : show_predictions
-      label : Show Predictions instead of DPM result?
+    - name  : orb_features
+      label : Number of ORB features
+      min   : 500
+      max   : 5000
+      v     : 2000
+    - name  : use_orb
+      label : Use ORB Matching?
       min   : 0
       max   : 1
       v     : 0
@@ -412,8 +417,13 @@ params :
       min   : 0
       max   : 100
       v     : 0.0
-    - name  : show_predictions
-      label : Show Predictions instead of DPM result?
+    - name  : orb_features
+      label : Number of ORB features
+      min   : 500
+      max   : 5000
+      v     : 2000
+    - name  : use_orb
+      label : Use ORB Matching?
       min   : 0
       max   : 1
       v     : 0
