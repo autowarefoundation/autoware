@@ -50,9 +50,9 @@ static vector<Rect> cars;					//objects detected
 static vector<float> cars_score;			//score of each object
 //KF related
 static vector<Rect> cars_tracked;			//objects tracked for current frame
-static vector<Rect> cars_tracked_predicted;	//objects tracked for next frame
 static vector<int> cars_tracked_lifespan;	//remaining lifespan
 static vector<int> cars_tracked_id;			//objects' id
+static vector<int> cars_tracked_real_data;	//states if the data contained in the index is real or prediction
 
 /*		PEDS 	*/
 //DPM related
@@ -60,9 +60,9 @@ static vector<Rect> peds;
 static vector<float> peds_score;
 //KF related
 static vector<Rect> peds_tracked;
-static vector<Rect> peds_tracked_predicted;
 static vector<int> peds_tracked_lifespan;
 static vector<int> peds_tracked_id;
+static vector<int> peds_tracked_real_data;
 
 static vector<Scalar> _colors;
 
@@ -73,6 +73,22 @@ static bool car_track_ready = false;
 static bool car_dpm_ready = false;
 static bool ped_track_ready = false;
 static bool ped_dpm_ready = false;
+
+void dashed_rectangle(Mat& img, Rect r, Scalar& color, int thickness = 2, int dash_length = 10)
+{
+	//draw horizontal dashed lines
+	for (int i = 0; i < r.width; i+=dash_length)
+	{
+		line(img, Point(r.x+i, r.y), 			Point(r.x+i+(dash_length/2), r.y),				color, thickness);
+		line(img, Point(r.x+i, r.y + r.height), Point(r.x+i+(dash_length/2), r.y + r.height), 	color, thickness);
+	}
+	//draw vertical dashes lines
+	for (int i = 0; i < r.height; i+=dash_length)
+	{
+		line(img, Point(r.x, r.y+i), 			Point(r.x, r.y+i+(dash_length/2)), 				color, thickness);
+		line(img, Point(r.x +r.width, r.y+i), 	Point(r.x+ r.width, r.y+i+(dash_length/2)), 	color, thickness);
+	}
+}
 
 void drawDetections(vector<Rect> dets, vector<float> scores, std::string objectLabel, IplImage frame)
 {
@@ -129,7 +145,7 @@ void drawDetections(vector<Rect> dets, vector<float> scores, std::string objectL
 	////
 }
 
-void drawTracked(vector<Rect> dets, vector<int> lifespan, vector<int> obj_id, std::string objectLabel, Mat imageTrack)
+void drawTracked(vector<Rect> dets, vector<int> lifespan, vector<int> obj_id, vector<int> real_data, std::string objectLabel, Mat imageTrack)
 {
 	for(std::size_t i=0; i<dets.size();i++)
 	{
@@ -138,7 +154,12 @@ void drawTracked(vector<Rect> dets, vector<int> lifespan, vector<int> obj_id, st
 			ostringstream label;
 			label << objectLabel << "_" << obj_id[i] << ":" << std::setprecision(2) << lifespan[i];
 			string text = label.str();
-			rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3);
+
+			if(real_data[i])
+				rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3);
+			else
+				dashed_rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3, 10);
+
 			putText(imageTrack, text.c_str(), Point(dets[i].x + 4, dets[i].y + 15), FONT_HERSHEY_SIMPLEX, 0.55, _colors[obj_id[i]], 2);
 		}
 	}
@@ -167,9 +188,9 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	//TRACKED
 	putText(imageTrack, "PIXEL_XY_TRACKED", Point(10,10), FONT_HERSHEY_SIMPLEX, 0.55, Scalar(0, 255, 0), 2);
 	if(car_track_ready)
-		drawTracked(cars_tracked, cars_tracked_lifespan, cars_tracked_id, "car", imageTrack);
+		drawTracked(cars_tracked, cars_tracked_lifespan, cars_tracked_id, cars_tracked_real_data, "car", imageTrack);
 	if(ped_track_ready)
-		drawTracked(peds_tracked, peds_tracked_lifespan, peds_tracked_id, "pedestrian", imageTrack);
+		drawTracked(peds_tracked, peds_tracked_lifespan, peds_tracked_id, peds_tracked_real_data, "pedestrian", imageTrack);
 	////////////////////
 
 	Mat merged;
@@ -233,10 +254,10 @@ static void car_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
 			return;
 	int num = image_objects_msg.total_num;
 	vector<int> points = image_objects_msg.corner_point;
-	vector<int> pred_points = image_objects_msg.next_corner_point;
 
 	cars_tracked_lifespan = image_objects_msg.lifespan;
 	cars_tracked_id = image_objects_msg.obj_id;
+	cars_tracked_real_data = image_objects_msg.real_data;
 
 	//points are X,Y,W,H and repeat for each instance
 	cars_tracked.clear();
@@ -250,11 +271,6 @@ static void car_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
 		tmp.height = points[i*4 + 3];
 		cars_tracked.push_back(tmp);
 
-		tmp.x = pred_points[i*4 + 0];
-		tmp.y = pred_points[i*4 + 1];
-		tmp.width = pred_points[i*4 + 2];
-		tmp.height = pred_points[i*4 + 3];
-		cars_tracked_predicted.push_back(tmp);
 	}
 	car_track_ready = true;
 }
@@ -265,10 +281,10 @@ static void ped_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
 			return;
 	int num = image_objects_msg.total_num;
 	vector<int> points = image_objects_msg.corner_point;
-	vector<int> pred_points = image_objects_msg.next_corner_point;
 
 	peds_tracked_lifespan = image_objects_msg.lifespan;
 	peds_tracked_id = image_objects_msg.obj_id;
+	peds_tracked_real_data = image_objects_msg.real_data;
 
 	//points are X,Y,W,H and repeat for each instance
 	peds_tracked.clear();
@@ -281,12 +297,6 @@ static void ped_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
 		peds_tracked.push_back(tmp);
-
-		tmp.x = pred_points[i*4 + 0];
-		tmp.y = pred_points[i*4 + 1];
-		tmp.width = pred_points[i*4 + 2];
-		tmp.height = pred_points[i*4 + 3];
-		peds_tracked_predicted.push_back(tmp);
 	}
 	ped_track_ready = true;
 }
