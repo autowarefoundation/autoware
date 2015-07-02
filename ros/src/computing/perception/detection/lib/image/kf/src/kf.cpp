@@ -125,7 +125,7 @@ void getRectFromPoints(vector< Point2f > corners, Rect& outBoundingBox)
 	}
 	outBoundingBox.x 		= min_x;
 	outBoundingBox.y 		= min_y;
-	outBoundingBox.width 	= max_x - min_y;
+	outBoundingBox.width 	= max_x - min_x;
 	outBoundingBox.height 	= max_y - min_y;
 
 }
