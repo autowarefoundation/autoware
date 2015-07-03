@@ -54,7 +54,7 @@ static const char *sshtunnelhost = "localhost";
 static int sshport = 22;
 #endif /* USE_LIBSSH2 */
 
-#define TIMEOUT_SEC	1
+#define TIMEOUT_SEC	10
 
 SendData::SendData()
 	: SendData("db1.ertl.jp", 5700)
@@ -66,6 +66,7 @@ SendData::SendData(const std::string& host_name, int port)
 {
 	connected = false;
 	session = NULL;
+	channel = NULL;
 }
 
 int SendData::ConnectDB()
@@ -161,6 +162,7 @@ int SendData::ConnectDB()
 int SendData::DisconnectDB(const char *msg)
 {
 	if(connected) {
+		if (channel) libssh2_channel_free(channel);
 	        if (session) {
 			if(msg == NULL) 
 				libssh2_session_disconnect(session, "normal exit");
@@ -175,7 +177,18 @@ int SendData::DisconnectDB(const char *msg)
 	return 0;
 }
 
-int SendData::Sender(const std::string& value, std::string& res) 
+static int count_line(char *buf)
+{
+	int ret = 0;
+	char *p;
+
+	for (p = buf; *p; p++)
+		ret += (*p == '\n') ? 1:0;
+
+	return ret;
+}
+
+int SendData::Sender(const std::string& value, std::string& res, int insert_num) 
 {
 	/*********************************************
 	   format data to send
@@ -203,6 +216,7 @@ int SendData::Sender(const std::string& value, std::string& res)
 		DisconnectDB("tunnel failed");
 		return -2;
 	}
+	libssh2_channel_flush(channel);
 #endif /* USE_LIBSSH2 */
 
 	if(value == ""){
@@ -236,14 +250,30 @@ int SendData::Sender(const std::string& value, std::string& res)
 		}
 		std::cout << "write return n=" << n << std::endl;
 	} else {
-		return -1;
+		if (channel) libssh2_channel_free(channel);
+		DisconnectDB("tunnel failed");
+		return -5;
 	}
 
 	//Caution : If server do not close in one communication,loop forever because read() do not return 0.
 	timeout.tv_sec = TIMEOUT_SEC; timeout.tv_usec = 0;
 	select(maxfd+1, &readfds, NULL, NULL, &timeout);
 	if(FD_ISSET(sock, &readfds)) {
-		for (int hlen=0; ; ) {
+		int len;
+#ifdef USE_LIBSSH2
+		n = libssh2_channel_read(channel, (char *)&len, sizeof(len));
+#else /* USE_LIBSSH2 */
+		n = read(sock, (char *)&len, sizeof(len));
+#endif /* USE_LIBSSH2 */
+		if (n < 0) {
+			perror("recv error");
+			return -1;
+		}
+		len = ntohl(len);
+		std::cerr << "recv len=" << len << std::endl;
+		if(len == insert_num) return 0;
+
+		for (int j = 0; j < len; ) {
 			memset(recvdata, 0, sizeof(recvdata));
 #ifdef USE_LIBSSH2
 			n = libssh2_channel_read(channel, recvdata, sizeof(recvdata)-1);
@@ -260,22 +290,30 @@ int SendData::Sender(const std::string& value, std::string& res)
 			std::cout << "read return n=" << n << std::endl;
 
 			recvdata[n] = '\0';
+			int hlen = 0;
 			for (int i=0; i<n && hlen<4; i++, hlen++)
-				recvdata[i] |= 0x80;
+				if(recvdata[i] == 0) recvdata[i] |= 0x80;
 			if (strlen(recvdata) >= sizeof(recvdata)) {
 				res.append(recvdata, sizeof(recvdata));
 			} else {
 				res.append(recvdata, strlen(recvdata));
 			}
+
+			j += count_line(recvdata);
+			std::cerr << "count_line=" << j << std::endl;
 		}
 	} else {
-		return -1;
+		if (channel) libssh2_channel_free(channel);
+		DisconnectDB("tunnel failed");
+		return -5;
 	}
 
-        if (channel)
+#ifdef USE_LIBSSH2
+	if (channel) {
 		libssh2_channel_free(channel);
+		channel = NULL;
+	}
+#endif
 
-	if (n > 4)
-		res = res.substr(4); // skip number
 	return 0;
 }
