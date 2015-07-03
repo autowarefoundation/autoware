@@ -131,6 +131,31 @@ class MyFrame(rtmgr.MyFrame):
 		self.tc_point_cloud = self.obj_to_varpanel_tc(self.button_point_cloud, 'path_pcd')
 		self.tc_area_list = self.obj_to_varpanel_tc(self.button_area_lists, 'path_area_list')
 
+ 		#
+		# for Sensing tab
+		#
+		tab = self.tab_sensing
+
+		self.drv_probe_cmd = {}
+		self.sensing_cmd = {}
+		self.all_cmd_dics.append(self.sensing_cmd)
+		dic = self.load_yaml('sensing.yaml')
+
+		self.add_params(dic.get('params', []))
+
+		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
+
+		self.setup_buttons(dic.get('buttons', {}), self.sensing_cmd)
+
+		#self.timer = wx.Timer(self)
+		#self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
+		#self.probe_interval = 10*1000
+		#if self.checkbox_auto_probe.GetValue():
+		#	self.OnProbe(None)
+		#	self.timer.Start(self.probe_interval)
+
+		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
+
 
 		#
 		# for Main tab
@@ -192,36 +217,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		#
-		# for Sensing Tab
-		#
-		self.drv_probe_cmd = {}
-		self.sensing_cmd = {}
-		self.all_cmd_dics.append(self.sensing_cmd)
-		dic = self.load_yaml('sensing.yaml')
-
-		self.add_params(dic.get('params', []))
-		self.selector.update(dic.get('selector', {}))
-
-		self.create_checkboxes(dic, self.panel_sensing, None, self.drv_probe_cmd, self.sensing_cmd, self.OnSensingDriver)
-
-		if 'buttons' in dic:
-			self.setup_buttons(dic['buttons'], self.sensing_cmd)
-
-		self.set_param_panel(self.button_points_image, self.panel_points_image)
-		self.set_param_panel(self.button_scan_image, self.panel_scan_image)
-		self.set_param_panel(self.button_virtual_scan_image, self.panel_virtual_scan_image)
-		self.set_param_panel(self.button_camera_extrinsicMat_Publisher, self.panel_camera_extrinsicMat_Publisher)
-
-		self.timer = wx.Timer(self)
-		self.Bind(wx.EVT_TIMER, self.OnProbe, self.timer)
-		self.probe_interval = 10*1000
-		if self.checkbox_auto_probe.GetValue():
-			self.OnProbe(None)
-			self.timer.Start(self.probe_interval)
-
-		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
-
-		#
 		# for Simulation Tab
 		#
 		self.simulation_cmd = {}
@@ -238,8 +233,8 @@ class MyFrame(rtmgr.MyFrame):
 		if 'checkboxs' in dic:
 			self.setup_buttons(dic['checkboxs'], self.simulation_cmd)
 
-		self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
-		self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
+		#self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
+		#self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
 
 		try:
 			cmd = ['rosparam', 'get', '/use_sim_time']
@@ -274,12 +269,12 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Viewer Tab
 		#
-		self.viewer_cmd = {}
-		self.all_cmd_dics.append(self.viewer_cmd)
-		parent = self.panel_viewer
-		sizer = self.sizer_viewer
-		lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
-		self.create_viewer_btns(parent, sizer, lst)
+		#self.viewer_cmd = {}
+		#self.all_cmd_dics.append(self.viewer_cmd)
+		#parent = self.panel_viewer
+		#sizer = self.sizer_viewer
+		#lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
+		#self.create_viewer_btns(parent, sizer, lst)
 
 		self.nodes_dic = self.nodes_dic_get()
 
@@ -287,7 +282,7 @@ class MyFrame(rtmgr.MyFrame):
 		# for All
 		#
 		self.alias_grps = [
-			[ self.button_rviz_qs, self.button_rviz_map, ],
+			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, ],
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],

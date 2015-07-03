@@ -71,24 +71,27 @@ subs :
       - {}
 
 buttons:
+  calibration_toolkit :
+    run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
+
+  calibration_publisher :
+    run   : echo 'calibration publisher'
+
   points_image :
     run   : rosrun points2image points2image
-    param : points_image
+    #param : points_image
 
   scan_image :
     run   : rosrun scan2image scan2image
-    param : scan_image
+    #param : scan_image
 
   virtual_scan_image :
     run   : roslaunch runtime_manager vscan.launch
-    param : virtual_scan_image
+    #param : virtual_scan_image
 
-  camera_extrinsicMat_Publisher :
-    run   : roslaunch runtime_manager ex_mat_pub.launch
-    param : camera_extrinsicMat_Publisher
-
-  calibration :
-    run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
+  #camera_extrinsicMat_Publisher :
+  #  run   : roslaunch runtime_manager ex_mat_pub.launch
+  #  param : camera_extrinsicMat_Publisher
 
 params :
   - name  : calibration_path
@@ -110,29 +113,29 @@ params :
         delim       : ':='
         only_enable : True
 
-  - name  : points_image
-    vars  :
-    - name      : file
-      kind      : path
-      v         : ''
-      cmd_param :
-        delim : ''
+#  - name  : points_image
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      cmd_param :
+#        delim : ''
 
-  - name  : scan_image
-    vars  :
-    - name      : file
-      kind      : path
-      v         : ''
-      rosparam  : /scan2image/camera_yaml
+#  - name  : scan_image
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      rosparam  : /scan2image/camera_yaml
 
-  - name  : virtual_scan_image
-    vars  :
-    - name      : file
-      kind      : path
-      v         : ''
-      cmd_param :
-        dash : ''
-        delim: ':='
+#  - name  : virtual_scan_image
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      cmd_param :
+#        dash : ''
+#        delim: ':='
 
   - name  : camera_extrinsicMat_Publisher
     vars  :
