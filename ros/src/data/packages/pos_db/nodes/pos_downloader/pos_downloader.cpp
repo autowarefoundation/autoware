@@ -293,7 +293,7 @@ static int create_timestr(time_t sec, int nsec, char *str, size_t size)
 //wrap SendData class
 static uint64_t send_sql(time_t diff_sec, uint64_t prev)
 {
-  std::string data = make_header(1, 1);
+  std::string data;
   string db_response;
   std_msgs::String msg;
   ros::Time now = ros::Time::now();
@@ -315,6 +315,8 @@ static uint64_t send_sql(time_t diff_sec, uint64_t prev)
   }
   create_timestr(now_sec, now_nsec, timestr[1], sizeof(timestr[1]));
 
+  data = make_header(1, 1);
+
   data += "SELECT id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm FROM POS "
 	"WHERE tm >= '";
   data += timestr[0];
@@ -322,8 +324,8 @@ static uint64_t send_sql(time_t diff_sec, uint64_t prev)
   data += timestr[1];
   data += "';\r\n";
 
-  int ret = sd.Sender(data, db_response);
-  if (ret == -1) {
+  int ret = sd.Sender(data, db_response, 0);
+  if (ret < 0) {
     std::cerr << "sd.Sender() failed" << std::endl;
   } else {
     std::cout << "return data: \"" << db_response << "\"" << std::endl;
