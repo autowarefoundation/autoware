@@ -82,6 +82,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.config_dic = {}
 		self.selector = {}
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
+		self.params = []
 
 		#
 		# ros
@@ -91,9 +92,27 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#
+		# for Quick Start tab
+		#
+		tab = self.tab_qs
+
+		self.qs_cmd = {}
+		self.all_cmd_dics.append(self.qs_cmd)
+		self.qs_dic = self.load_yaml('qs.yaml')
+
+		self.add_params(self.qs_dic.get('params', []))
+
+		self.setup_buttons(self.qs_dic.get('buttons', {}), self.qs_cmd)
+
+		for nm in [ 'map', 'sensing', 'localization', 'detection', 'mission_planning', 'motion_planning' ]:
+			btn = self.obj_get('button_' + nm + '_qs')
+			pnl = self.obj_get('panel_' + nm + '_qs')
+			self.set_param_panel(btn, pnl)
+
+		#
 		# for Main tab
 		#
-		tab = self.notebook_1_pane_1
+		tab = self.tab_main
 
 		for nm in [ 'tablet', 'mobile', 'vehicle', 'database' ]:
 			setattr(self, 'bitmap_' + nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
@@ -102,7 +121,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.all_cmd_dics.append(self.main_cmd)
 		self.main_dic = self.load_yaml('main.yaml')
 
-		self.params = []
 		self.add_params(self.main_dic.get('params', []))
 		self.selector.update(self.main_dic.get('selector', {}))
 
