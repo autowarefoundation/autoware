@@ -110,6 +110,29 @@ class MyFrame(rtmgr.MyFrame):
 			self.set_param_panel(btn, pnl)
 
 		#
+		# for Map tab
+		#
+		tab = self.tab_map
+
+		self.map_cmd = {}
+		self.all_cmd_dics.append(self.map_cmd)
+		self.map_dic = self.load_yaml('map.yaml')
+
+		self.add_params(self.map_dic.get('params', []))
+		self.selector.update(self.map_dic.get('selector', {}))
+
+		self.setup_buttons(self.map_dic.get('buttons', {}), self.map_cmd)
+
+		for nm in [ 'point_cloud', 'vector_map', 'area_lists', 'tf' ]:
+			btn = self.obj_get('button_' + nm)
+			pnl = self.obj_get('panel_' + nm)
+			self.set_param_panel(btn, pnl)
+
+		self.tc_point_cloud = self.obj_to_varpanel_tc(self.button_point_cloud, 'path_pcd')
+		self.tc_area_list = self.obj_to_varpanel_tc(self.button_area_lists, 'path_area_list')
+
+
+		#
 		# for Main tab
 		#
 		tab = self.tab_main
@@ -264,6 +287,7 @@ class MyFrame(rtmgr.MyFrame):
 		# for All
 		#
 		self.alias_grps = [
+			[ self.button_rviz_qs, self.button_rviz_map, ],
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
@@ -487,7 +511,7 @@ class MyFrame(rtmgr.MyFrame):
 				name = var.get('name')
 				v = pdic.get(name)
 				if (v is None or v == '') and 'default' in cmd_param:
-					v = cmd_param.get('default')					
+					v = cmd_param.get('default')
 				if cmd_param.get('must') and (v is None or v == ''):
 					print 'cmd_param', name, 'is must'
 					wx.MessageBox('cmd_param ' + name + ' is must')
@@ -766,8 +790,8 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Common Utils
 	#
-	def OnSelecotr(self, event):
-		self.OnSelector_obj(self, event.GetEventObject())
+	def OnSelector(self, event):
+		self.OnSelector_obj(event.GetEventObject())
 
 	def OnSelector_obj(self, obj):
 		pfs = ('button_launch_', 'button_kill_', 'button_', 'checkbox_')
@@ -820,6 +844,15 @@ class MyFrame(rtmgr.MyFrame):
 		parent.SetSizer(szr)
 		k = 'ext_toggle_enables'
 		gdic[ k ] = gdic.get(k, []) + [ panel ]
+
+	def obj_to_varpanel(self, obj, var_name):
+		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
+		gdic = gdic if gdic else {}
+		return gdic.get(var_name, {}).get('var')
+
+	def obj_to_varpanel_tc(self, obj, var_name):
+		vp = self.obj_to_varpanel(obj, var_name)
+		return vp.tc if vp and vp.tc else None
 
 	def OnConfig(self, event):
 		self.OnHyperlinked_obj(event.GetEventObject())
@@ -938,6 +971,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnLaunchKill_obj(event.GetEventObject())
 
 	def OnLaunchKill_obj(self, obj):
+		self.alias_sync(obj)
+		obj = self.alias_grp_top_obj(obj)
 		v = obj.GetValue()
 		add_args = self.obj_to_add_args(obj)
 		if add_args is False:
