@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(camera_lidar3d)
+project(calibration_camera_lidar)
 
-EXECUTE_PROCESS(
-  COMMAND uname -m
-  OUTPUT_VARIABLE ARCHITECTURE
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-if("${ARCHITECTURE}" STREQUAL "x86_64")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
@@ -15,41 +8,22 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   glviewer
   rosinterface
+  message_generation
+  cv_bridge
   pcl_ros
+  image_transport
 )
-else()
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rosconsole
-  std_msgs
-  sensor_msgs
-  rosinterface
-  pcl_ros
-)
-endif()
+
 find_package(OpenCV REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES camera_lidar3d
+#  LIBRARIES camera
    CATKIN_DEPENDS glviewer rosinterface
 #  DEPENDS system_lib
 )
 
-###########
-## Build ##
-###########
-
-SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall -g -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
 if(EXISTS /usr/local/qtbase5)
 # Self install version
@@ -63,15 +37,13 @@ set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
 set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
 endif()
 
-if("${ARCHITECTURE}" STREQUAL "x86_64")
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   CalibrationToolkit
-  nodes/camera_lidar3d
+  nodes/calibration_toolkit
   ${Qt5INCLUDE}
   ${Qt5INCLUDE}/QtCore
   ${Qt5INCLUDE}/QtGui
@@ -124,8 +96,8 @@ add_custom_command(
   OUTPUT ui_mainwindow.h
   COMMAND
   ${Qt5BIN}/uic
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/ui_mainwindow.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/mainwindow.ui"
+  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/calibration_toolkit/ui_mainwindow.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/calibration_toolkit/mainwindow.ui"
 )
 add_custom_target(ui_mainwindow DEPENDS ui_mainwindow.h)
 
@@ -133,30 +105,63 @@ add_custom_command(
   OUTPUT mainwindow_moc.cpp
   COMMAND
   ${Qt5BIN}/moc
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/mainwindow_moc.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/camera_lidar3d_offline_calib/mainwindow.h"
+  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/calibration_toolkit/mainwindow_moc.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/calibration_toolkit/mainwindow.h"
 )
 add_custom_target(mainwindow_moc DEPENDS mainwindow_moc.cpp)
 
-## Declare a cpp executable
-add_executable(camera_lidar3d_offline_calib
-  nodes/camera_lidar3d_offline_calib/main.cpp
-  nodes/camera_lidar3d_offline_calib/mainwindow.cpp
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  /usr/include/libxml2
+  ${OpenCV_INCLUDE_DIRS}
+
+  CalibrationToolkit
+  nodes/calibration_toolkit
+  ${Qt5INCLUDE}
+  ${Qt5INCLUDE}/QtCore
+  ${Qt5INCLUDE}/QtGui
+  ${Qt5INCLUDE}/QtOpenGL
+  ${Qt5INCLUDE}/QtWidgets
 )
 
-set_target_properties(camera_lidar3d_offline_calib
+## 2D
+add_executable(calibration_test
+  nodes/calibration_test/chessboard.cpp
+  nodes/calibration_test/trans.cpp
+  nodes/calibration_test/scan_window.cpp
+  nodes/calibration_test/common_2d_calib.cpp
+  nodes/calibration_test/image_window.cpp
+  nodes/calibration_test/camera_lidar2d_offline_calib.cpp)
+
+set(PARAM_YAML "${CMAKE_CURRENT_SOURCE_DIR}/param.yaml")
+set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
+
+set_target_properties(calibration_test
+  PROPERTIES COMPILE_FLAGS
+  "-DPARAM_YAML=${PARAM_YAML} -DCAMERA_YAML=${CAMERA_YAML}")
+
+target_link_libraries(calibration_test
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} xml2)
+
+## 3D
+add_executable(calibration_toolkit
+  nodes/calibration_toolkit/main.cpp
+  nodes/calibration_toolkit/mainwindow.cpp
+)
+
+set_target_properties(calibration_toolkit
   PROPERTIES COMPILE_FLAGS "-fPIC"
 )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(camera_lidar3d_offline_calib
+add_dependencies(calibration_toolkit
   ui_mainwindow
   mainwindow_moc
 )
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(camera_lidar3d_offline_calib
+target_link_libraries(calibration_toolkit
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   glviewer
@@ -170,4 +175,3 @@ target_link_libraries(camera_lidar3d_offline_calib
   ${Qt5LIBROOT}/libQt5Widgets.so
   nlopt
 )
-endif()
