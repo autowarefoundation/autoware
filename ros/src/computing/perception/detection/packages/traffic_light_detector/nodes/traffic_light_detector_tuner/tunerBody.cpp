@@ -10,6 +10,7 @@ thresholds_set  TunerBody::Red_set;
 thresholds_set  TunerBody::Yellow_set;
 thresholds_set  TunerBody::Green_set;
 thresholds_set* TunerBody::Selected_set;
+bool            TunerBody::updateImage;
 
 
 /*============== Utility function ==============*/
@@ -48,7 +49,7 @@ static void colorTrack(const cv::Mat& hsv_img,
 
 
 /*============== Utility function ==============*/
-int index_max(std::vector<std::vector<cv::Point> > cnt)
+static int index_max(std::vector<std::vector<cv::Point> > cnt)
 {
   unsigned int max_elementNum = 0;
   int maxIdx = -1;
@@ -101,21 +102,13 @@ TunerBody::TunerBody()
 
   Selected_set = &Green_set;
 
-  src_img = cv::imread("../../tuner_prototype/10.jpg");
-  if (src_img.empty())
-    {
-      std::cerr << "cannot open image file" << std::endl;
-      exit(-1);
-    }
+  updateImage = true;
 
   /* create track bars */
   cv::namedWindow(windowName);
   cv::createTrackbar("H", windowName, &H_slider_val, 127, NULL, NULL);
   cv::createTrackbar("S", windowName, &S_slider_val, 127, NULL, NULL);
   cv::createTrackbar("V", windowName, &V_slider_val, 127, NULL, NULL);
-
-  base = cv::Mat::zeros(src_img.rows, src_img.cols * 2, CV_8UC3);
-  mask = cv::Mat::zeros(src_img.rows, src_img.cols, CV_8UC1);
 
 } /* TunerBody::TunerBody() */
 
@@ -126,44 +119,85 @@ TunerBody::~TunerBody()
 } /* TunerBody::~TunerBody() */
 
 
+void TunerBody::image_raw_callBack(const sensor_msgs::Image& image_msg)
+{
+  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
+  if (updateImage) {
+    src_img       = cv_image->image.clone();
+    updateImage   = false;
+    Clicked_point = cv::Point(-1, -1); // if image is reloaded, reset clicked point to out of image
+  }
+} /* TunerBody::image_raw_callBack() */
+
+
 void TunerBody::launch(void)
 {
-  while (1)
+  ros::NodeHandle n;
+
+  ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_callBack);
+
+  /* valiables to check status change */
+  cv::Point prev_clicked = cv::Point(-1, -1);
+  int       prev_hw      = 0;
+  int       prev_sw      = 0;
+  int       prev_vw      = 0;
+
+  while (ros::ok())
     {
+      ros::spinOnce();
+
+      if (src_img.empty())
+        continue;
+
+      base = cv::Mat::zeros(src_img.rows, src_img.cols * 2, CV_8UC3);
+      mask = cv::Mat::zeros(src_img.rows, src_img.cols, CV_8UC1);
+
       cv::Mat result = src_img.clone();
 
+      /* get clicked coordinates on the image */
+      cv::Point targetPoint = Clicked_point;
+
+
+      /* get current slider position */
       int hw = H_slider_val;
       int sw = S_slider_val;
       int vw = V_slider_val;
 
       cv::setMouseCallback(windowName, onMouse);
 
-      if (Clicked_point.x != -1 && Clicked_point.y != -1) /* When left click is detected */
-        {
-          /* get clicked coordinates on the image */
-          cv::Point targetPoint = Clicked_point;
+      /* convert input image to HSV color image */
+      cv::Mat hsv_img;
+      cv::cvtColor(src_img, hsv_img, cv::COLOR_BGR2HSV);
 
-          /* create color extracted mask image */
-          cv::Mat hsv_img;
-          cv::cvtColor(src_img, hsv_img, cv::COLOR_BGR2HSV);
+      if (!(targetPoint == prev_clicked &&
+            prev_hw == hw &&
+            prev_sw == sw &&
+            prev_vw == vw) &&
+          targetPoint != cv::Point(-1, -1))
+        {
+          std::cerr << "Selected_set updated" << std::endl;
           int hue = (int)hsv_img.at<cv::Vec3b>(targetPoint.y, targetPoint.x)[0];
           int sat = (int)hsv_img.at<cv::Vec3b>(targetPoint.y, targetPoint.x)[1];
           int val = (int)hsv_img.at<cv::Vec3b>(targetPoint.y, targetPoint.x)[2];
-          colorTrack(hsv_img, hue, sat, val, hw, sw, vw, &mask);
 
           /* save HSV values into correspond variables */
-          if (hw != 0 && sw != 0 && vw != 0)
-            {
-              Selected_set->hue.center = hue;
-              Selected_set->hue.range  = hw;
-              Selected_set->sat.center = sat;
-              Selected_set->sat.range  = sw;
-              Selected_set->val.center = val;
-              Selected_set->val.range  = vw;
-              Selected_set->isUpdated  = true;
-            }
-
+          Selected_set->hue.center = hue;
+          Selected_set->hue.range  = hw;
+          Selected_set->sat.center = sat;
+          Selected_set->sat.range  = sw;
+          Selected_set->val.center = val;
+          Selected_set->val.range  = vw;
+          Selected_set->isUpdated  = true;
         }
+
+      colorTrack(hsv_img,
+                 Selected_set->hue.center,
+                 Selected_set->sat.center,
+                 Selected_set->val.center,
+                 Selected_set->hue.range,
+                 Selected_set->sat.range,
+                 Selected_set->val.range,
+                 &mask);
 
       std::vector< std::vector<cv::Point> > contours;
       std::vector<cv::Vec4i> hierarchy;
@@ -214,6 +248,11 @@ void TunerBody::launch(void)
       //   break;
       // }
 
+      /* save current status */
+      prev_clicked = targetPoint;
+      prev_hw = hw;
+      prev_sw = sw;
+      prev_vw = vw;
     }
 
   cv::destroyAllWindows();
@@ -473,3 +512,8 @@ void TunerBody::openSetting(std::string fileName)
              &mask);
 
 } /* void TunerBody::openSetting() */
+
+void TunerBody::setUpdateImage(void)
+{
+  updateImage = true;
+} /* void TunerBody::setUpdateImage() */

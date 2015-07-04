@@ -4,6 +4,10 @@
 #include <iostream>
 #include <string>
 #include <opencv2/opencv.hpp>
+#include <ros/ros.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 
 #define DEFAULT_SAT_LOWER ((double)0.37 * 255)
 #define DEFAULT_SAT_UPPER (255)
@@ -39,6 +43,7 @@ private:
     static thresholds_set Yellow_set;
     static thresholds_set Green_set;
     static thresholds_set* Selected_set;
+    static bool updateImage;
 
 public:
     enum signal_state {
@@ -54,6 +59,9 @@ public:
     static void setClickedPoint(cv::Point pt);
     static void saveResult(std::string fileName);
     static void openSetting(std::string fileName);
+    static void setUpdateImage(void);
+    static void image_raw_callBack(const sensor_msgs::Image& image_msg);
+
 };
 
 #endif // TUNER_BODY_H

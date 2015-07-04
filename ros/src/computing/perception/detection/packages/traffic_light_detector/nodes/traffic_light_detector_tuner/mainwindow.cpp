@@ -44,7 +44,8 @@ void MainWindow::on_radioButton_red_clicked()
 
 void MainWindow::on_pushButton_reloadImage_clicked()
 {
-  std::cout << "Not implemented yet!" << std::endl;
+  TunerBody::setUpdateImage();
+  return;
 }
 
 
