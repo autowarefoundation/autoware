@@ -48,13 +48,14 @@ public:
 	SendData();
 	explicit SendData(const std::string& host_name, int port);
 
-	int Sender(const std::string& value, std::string& res);
+	int Sender(const std::string& value, std::string& res, int insert_num);
 	int ConnectDB();
-	int DisconnectDB(char *msg);
+	int DisconnectDB(const char *msg);
 	int sock;
 	bool connected;
 	struct sockaddr_in server;
 	LIBSSH2_SESSION *session;
+	LIBSSH2_CHANNEL *channel;
 };
 
 extern std::string make_header(int32_t sql_inst, int32_t sql_num);
