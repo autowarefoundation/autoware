@@ -1,4 +1,8 @@
 #include "tunerBody.h"
+#include "traffic_light_detector/TunedResult.h"
+
+static constexpr int32_t ADVERTISE_QUEUE_SIZE = 10;
+static constexpr bool    ADVERTISE_LATCH      = true;
 
 /* definition of class static private variables */
 cv::Point       TunerBody::Clicked_point;
@@ -136,6 +140,8 @@ void TunerBody::launch(void)
 
   ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_callBack);
 
+  ros::Publisher tunedResult_pub = n.advertise <traffic_light_detector::TunedResult> ("tuned_result", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+
   /* valiables to check status change */
   cv::Point prev_clicked = cv::Point(-1, -1);
   int       prev_hw      = 0;
@@ -253,6 +259,32 @@ void TunerBody::launch(void)
       prev_hw = hw;
       prev_sw = sw;
       prev_vw = vw;
+
+      /* publish tuned result */
+      traffic_light_detector::TunedResult res;
+      res.Red.Hue.center = Red_set.hue.center;
+      res.Red.Hue.range  = Red_set.hue.range;
+      res.Red.Sat.center = Red_set.sat.center;
+      res.Red.Sat.range  = Red_set.sat.range;
+      res.Red.Val.center = Red_set.val.center;
+      res.Red.Val.range  = Red_set.val.range;
+
+      res.Yellow.Hue.center = Yellow_set.hue.center;
+      res.Yellow.Hue.range  = Yellow_set.hue.range;
+      res.Yellow.Sat.center = Yellow_set.sat.center;
+      res.Yellow.Sat.range  = Yellow_set.sat.range;
+      res.Yellow.Val.center = Yellow_set.val.center;
+      res.Yellow.Val.range  = Yellow_set.val.range;
+
+      res.Green.Hue.center = Green_set.hue.center;
+      res.Green.Hue.range  = Green_set.hue.range;
+      res.Green.Sat.center = Green_set.sat.center;
+      res.Green.Sat.range  = Green_set.sat.range;
+      res.Green.Val.center = Green_set.val.center;
+      res.Green.Val.range  = Green_set.val.range;
+
+      tunedResult_pub.publish(res);
+
     }
 
   cv::destroyAllWindows();
