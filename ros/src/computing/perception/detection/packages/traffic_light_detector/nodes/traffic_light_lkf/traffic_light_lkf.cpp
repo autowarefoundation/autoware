@@ -8,6 +8,9 @@
 #include <sstream>
 #include <runtime_manager/traffic_light.h>
 #include <std_msgs/String.h>
+#include "traffic_light_detector/TunedResult.h"
+
+thresholdSet thSet;
 
 static ros::Publisher signalState_pub;
 static ros::Publisher signalStateString_pub;
@@ -19,6 +22,49 @@ using namespace cv;
 static TrafficLightDetector detector;
 
 static Mat frame;
+
+
+static double cvtInt2Double_hue(int center, int range)
+{
+  /* convert value range from OpenCV to Definition */
+  double converted = (center + range) * 2.0f;
+
+  if (converted < 0) {
+    converted = 0.0f;
+  } else if (360 < converted) {
+    converted = converted - 360.0f;
+  }
+
+  return converted;
+}
+
+
+static double cvtInt2Double_sat(int center, int range)
+{
+  /* convert value range from OpenCV to Definition */
+  double converted = (center + range) / 255.0f;
+  if (converted < 0) {
+    converted = 0.0f;
+  } else if (1.0f < converted) {
+    converted = 1.0f;
+  }
+
+  return converted;
+}
+
+
+static double cvtInt2Double_val(int center, int range)
+{
+  /* convert value range from OpenCV to Definition */
+  double converted = (center + range) / 255.0f;
+  if (converted < 0) {
+    converted = 0;
+  } else if (1.0f < converted) {
+    converted = 1.0f;
+  }
+
+  return converted;
+}
 
 static void putResult_inText(Mat *image, const vector<Context> &contexts)
 {
@@ -152,9 +198,58 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
   prev_state = state_msg.traffic_light;
 }
 
+
+static void tunedResult_cb(const traffic_light_detector::TunedResult& msg)
+{
+  thSet.Red.Hue.upper = cvtInt2Double_hue(msg.Red.Hue.center, msg.Red.Hue.range);
+  thSet.Red.Hue.lower = cvtInt2Double_hue(msg.Red.Hue.center, -msg.Red.Hue.range);
+  thSet.Red.Sat.upper = cvtInt2Double_sat(msg.Red.Sat.center, msg.Red.Sat.range);
+  thSet.Red.Sat.lower = cvtInt2Double_sat(msg.Red.Sat.center, -msg.Red.Sat.range);
+  thSet.Red.Val.upper = cvtInt2Double_val(msg.Red.Val.center, msg.Red.Val.range);
+  thSet.Red.Val.lower = cvtInt2Double_val(msg.Red.Val.center, -msg.Red.Val.range);
+
+  thSet.Yellow.Hue.upper = cvtInt2Double_hue(msg.Yellow.Hue.center, msg.Yellow.Hue.range);
+  thSet.Yellow.Hue.lower = cvtInt2Double_hue(msg.Yellow.Hue.center, -msg.Yellow.Hue.range);
+  thSet.Yellow.Sat.upper = cvtInt2Double_sat(msg.Yellow.Sat.center, msg.Yellow.Sat.range);
+  thSet.Yellow.Sat.lower = cvtInt2Double_sat(msg.Yellow.Sat.center, -msg.Yellow.Sat.range);
+  thSet.Yellow.Val.upper = cvtInt2Double_val(msg.Yellow.Val.center, msg.Yellow.Val.range);
+  thSet.Yellow.Val.lower = cvtInt2Double_val(msg.Yellow.Val.center, -msg.Yellow.Val.range);
+
+  thSet.Green.Hue.upper = cvtInt2Double_hue(msg.Green.Hue.center, msg.Green.Hue.range);
+  thSet.Green.Hue.lower = cvtInt2Double_hue(msg.Green.Hue.center, -msg.Green.Hue.range);
+  thSet.Green.Sat.upper = cvtInt2Double_sat(msg.Green.Sat.center, msg.Green.Sat.range);
+  thSet.Green.Sat.lower = cvtInt2Double_sat(msg.Green.Sat.center, -msg.Green.Sat.range);
+  thSet.Green.Val.upper = cvtInt2Double_val(msg.Green.Val.center, msg.Green.Val.range);
+  thSet.Green.Val.lower = cvtInt2Double_val(msg.Green.Val.center, -msg.Green.Val.range);
+
+}
+
+
 int main(int argc, char* argv[]) {
 
   //	printf("***** Traffic lights app *****\n");
+
+  thSet.Red.Hue.upper = (double)DAYTIME_RED_UPPER;
+  thSet.Red.Hue.lower = (double)DAYTIME_RED_LOWER;
+  thSet.Red.Sat.upper = 1.0f;
+  thSet.Red.Sat.lower = DAYTIME_S_SIGNAL_THRESHOLD;
+  thSet.Red.Val.upper = 1.0f;
+  thSet.Red.Val.lower = DAYTIME_V_SIGNAL_THRESHOLD;
+
+  thSet.Yellow.Hue.upper = (double)DAYTIME_YELLOW_UPPER;
+  thSet.Yellow.Hue.lower = (double)DAYTIME_YELLOW_LOWER;
+  thSet.Yellow.Sat.upper = 1.0f;
+  thSet.Yellow.Sat.lower = DAYTIME_S_SIGNAL_THRESHOLD;
+  thSet.Yellow.Val.upper = 1.0f;
+  thSet.Yellow.Val.lower = DAYTIME_V_SIGNAL_THRESHOLD;
+
+  thSet.Green.Hue.upper = (double)DAYTIME_GREEN_UPPER;
+  thSet.Green.Hue.lower = (double)DAYTIME_GREEN_LOWER;
+  thSet.Green.Sat.upper = 1.0f;
+  thSet.Green.Sat.lower = DAYTIME_S_SIGNAL_THRESHOLD;
+  thSet.Green.Val.upper = 1.0f;
+  thSet.Green.Val.lower = DAYTIME_V_SIGNAL_THRESHOLD;
+
 
   ros::init(argc, argv, "traffic_light_lkf");
 
@@ -162,6 +257,7 @@ int main(int argc, char* argv[]) {
 
   ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_cb);
   ros::Subscriber position_sub = n.subscribe("/traffic_light_pixel_xy", 1, extractedPos_cb);
+  ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
 
   signalState_pub = n.advertise<runtime_manager::traffic_light>("/traffic_light", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);

@@ -1,6 +1,8 @@
 #include "TrafficLight.h"
 #include "TrafficLightDetector.h"
 
+extern thresholdSet thSet;      // declared in traffic_light_lkf.cpp
+
 // /*
 //   ref:
 //   http://imagingsolution.net/program/opencv/unsharpmasking-2/
@@ -47,11 +49,11 @@
 static inline  bool IsRange(const double lower, const double upper, const double val)
 {
   if (lower <= upper) {
-    if (lower < val && val < upper) {
+    if (lower <= val && val <= upper) {
       return true;
     }
   } else {
-    if (val < upper || lower < val)
+    if (val <= upper || lower <= val)
       return true;
   }
 
@@ -168,25 +170,25 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
 
   /* extract color information */
   Mat red_mask(roi.rows, roi.cols, CV_8UC1);
-  colorExtraction(noiseReduced,
-                  &red_mask,
-                  (double)DAYTIME_RED_LOWER          , (double)DAYTIME_RED_UPPER,
-                  (double)DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
-                  (double)DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
+  colorExtraction(noiseReduced       ,
+                  &red_mask          ,
+                  thSet.Red.Hue.lower, thSet.Red.Hue.upper,
+                  thSet.Red.Sat.lower, thSet.Red.Sat.upper,
+                  thSet.Red.Val.lower, thSet.Red.Val.upper);
 
   Mat yellow_mask(roi.rows, roi.cols, CV_8UC1);
-  colorExtraction(noiseReduced,
-                  &yellow_mask,
-                  (double)DAYTIME_YELLOW_LOWER       , (double)DAYTIME_YELLOW_UPPER,
-                  (double)DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
-                  (double)DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
+  colorExtraction(noiseReduced          ,
+                  &yellow_mask          ,
+                  thSet.Yellow.Hue.lower, thSet.Yellow.Hue.upper,
+                  thSet.Yellow.Sat.lower, thSet.Yellow.Sat.upper,
+                  thSet.Yellow.Val.lower, thSet.Yellow.Val.upper);
 
   Mat green_mask(roi.rows, roi.cols, CV_8UC1);
-  colorExtraction(noiseReduced,
-                  &green_mask,
-                  (double)DAYTIME_GREEN_LOWER        , (double)DAYTIME_GREEN_UPPER,
-                  (double)DAYTIME_S_SIGNAL_THRESHOLD , Actual_Sat(255),
-                  (double)DAYTIME_V_SIGNAL_THRESHOLD , Actual_Val(255));
+  colorExtraction(noiseReduced         ,
+                  &green_mask          ,
+                  thSet.Green.Hue.lower, thSet.Green.Hue.upper,
+                  thSet.Green.Sat.lower, thSet.Green.Sat.upper,
+                  thSet.Green.Val.lower, thSet.Green.Val.upper);
 
 
   Mat red(roi.rows, roi.cols, CV_8UC3, CV_RGB(255, 0, 0));
@@ -346,15 +348,15 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
             valid_pixNum++;
 
             /* search which color is actually bright */
-            if (IsRange(DAYTIME_RED_LOWER, DAYTIME_RED_UPPER, hue)) {
+            if (IsRange(thSet.Red.Hue.lower, thSet.Red.Hue.upper, hue)) {
               red_pixNum++;
             }
 
-            if (IsRange(DAYTIME_YELLOW_LOWER, DAYTIME_YELLOW_UPPER, hue)) {
+            if (IsRange(thSet.Yellow.Hue.lower, thSet.Yellow.Hue.upper, hue)) {
               yellow_pixNum++;
             }
 
-            if (IsRange(DAYTIME_GREEN_LOWER, DAYTIME_GREEN_UPPER, hue)) {
+            if (IsRange(thSet.Green.Hue.lower, thSet.Green.Hue.upper, hue)) {
               green_pixNum++;
             }
           }

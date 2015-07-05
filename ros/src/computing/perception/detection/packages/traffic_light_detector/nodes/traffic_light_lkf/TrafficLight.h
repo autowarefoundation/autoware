@@ -40,4 +40,21 @@ inline bool IsNearlyZero(double x)
 }
 
 
+typedef struct {
+    double upper;
+    double lower;
+} valueSet;
+
+typedef struct {
+    valueSet Hue;
+    valueSet Sat;
+    valueSet Val;
+} hsvSet;
+
+typedef struct {
+    hsvSet Red;
+    hsvSet Yellow;
+    hsvSet Green;
+} thresholdSet;
+
 #endif
