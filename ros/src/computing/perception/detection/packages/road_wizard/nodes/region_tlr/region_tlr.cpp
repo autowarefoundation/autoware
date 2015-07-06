@@ -8,7 +8,7 @@
 #include <sstream>
 #include <runtime_manager/traffic_light.h>
 #include <std_msgs/String.h>
-#include "traffic_light_detector/TunedResult.h"
+#include "road_wizard/TunedResult.h"
 
 thresholdSet thSet;
 
@@ -127,7 +127,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 
 }
 
-static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& extractedPos)
+static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
 {
   if (frame.empty())
     return;
@@ -199,7 +199,7 @@ static void extractedPos_cb(const traffic_light_detector::Signals::ConstPtr& ext
 }
 
 
-static void tunedResult_cb(const traffic_light_detector::TunedResult& msg)
+static void tunedResult_cb(const road_wizard::TunedResult& msg)
 {
   thSet.Red.Hue.upper = cvtInt2Double_hue(msg.Red.Hue.center, msg.Red.Hue.range);
   thSet.Red.Hue.lower = cvtInt2Double_hue(msg.Red.Hue.center, -msg.Red.Hue.range);
@@ -251,7 +251,7 @@ int main(int argc, char* argv[]) {
   thSet.Green.Val.lower = DAYTIME_V_SIGNAL_THRESHOLD;
 
 
-  ros::init(argc, argv, "traffic_light_lkf");
+  ros::init(argc, argv, "region_tlr");
 
   ros::NodeHandle n;
 
@@ -277,15 +277,15 @@ static bool compareContext(const Context left, const Context right)
 }
 
 void setContexts(TrafficLightDetector &detector,
-                 const traffic_light_detector::Signals::ConstPtr& extractedPos)
+                 const road_wizard::Signals::ConstPtr& extractedPos)
 {
 
   /* copy parts of data to local variable */
-  std::vector<traffic_light_detector::ExtractedPosition> signals;
-  std::vector<traffic_light_detector::ExtractedPosition>::iterator sig_iterator;
+  std::vector<road_wizard::ExtractedPosition> signals;
+  std::vector<road_wizard::ExtractedPosition>::iterator sig_iterator;
   for (unsigned int i=0; i<extractedPos->Signals.size(); i++ )
     {
-      traffic_light_detector::ExtractedPosition tmp;
+      road_wizard::ExtractedPosition tmp;
       tmp.signalId = extractedPos->Signals.at(i).signalId;
       tmp.u        = extractedPos->Signals.at(i).u;
       tmp.v        = extractedPos->Signals.at(i).v;

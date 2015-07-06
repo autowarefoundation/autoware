@@ -12,13 +12,13 @@
 #include "TrafficLightDetector.h"
 
 /* Extra includes */
-#include "traffic_light_detector/Signals.h"
+#include "road_wizard/Signals.h"
 
 #define MAIN_WINDOW_NAME "Main"
 #define SETTINGS_WINDOW_NAME "Settings"
 
 /* Functions declarations */
-void setContexts(TrafficLightDetector &detector, const traffic_light_detector::Signals::ConstPtr& extractedPos);
+void setContexts(TrafficLightDetector &detector, const road_wizard::Signals::ConstPtr& extractedPos);
 void initMasks(char *pathToShowMask);
 void drawTrafficLights(Mat &targetImg, LightState lightState);
 void drawEnforcement(Mat &targetImg, bool isEnforced, LightState lightState);
