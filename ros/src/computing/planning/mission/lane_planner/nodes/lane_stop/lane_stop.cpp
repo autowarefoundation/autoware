@@ -33,7 +33,7 @@
 
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <lane_follower/lane.h>
+#include <waypoint_follower/lane.h>
 #include <runtime_manager/traffic_light.h>
 
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
@@ -49,23 +49,23 @@ static ros::Publisher pub_ruled;
 static ros::Publisher pub_velocity;
 static ros::Publisher _lane_mark_pub;
 
-static lane_follower::lane current_red_lane;
-static lane_follower::lane current_green_lane;
+static waypoint_follower::lane current_red_lane;
+static waypoint_follower::lane current_green_lane;
 
-static void red_waypoint_callback(const lane_follower::lane& msg)
+static void red_waypoint_callback(const waypoint_follower::lane& msg)
 {
 	current_red_lane = msg;
 }
 
-static void green_waypoint_callback(const lane_follower::lane& msg)
+static void green_waypoint_callback(const waypoint_follower::lane& msg)
 {
 	current_green_lane = msg;
 }
 
 static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 {
-	const  lane_follower::lane *current;
-	static lane_follower::lane prev_path = current_red_lane;
+	const  waypoint_follower::lane *current;
+	static waypoint_follower::lane prev_path = current_red_lane;
 	static int signal;
 	static int prev_signal;
 	switch (msg.traffic_light) {
@@ -125,7 +125,7 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
         lane_waypoint_marker.color.b = 1.0;
 
 	int i = 0;
-	for (const lane_follower::waypoint& waypoint : current->waypoints) {
+	for (const waypoint_follower::waypoint& waypoint : current->waypoints) {
 
 	    //for waypoint_velocity
 	    velocity.id = i;
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 						SUBSCRIBE_QUEUE_SIZE,
 						traffic_light_callback);
 
-	pub_ruled = n.advertise<lane_follower::lane>(
+	pub_ruled = n.advertise<waypoint_follower::lane>(
 		"ruled_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);

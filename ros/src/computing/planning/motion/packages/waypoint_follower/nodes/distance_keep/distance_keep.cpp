@@ -31,7 +31,6 @@
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseArray.h>
-#include <lane_follower/lane.h>
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -40,15 +39,17 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <std_msgs/String.h>
+
 #include <iostream>
 
-#include "../../../waypoint_follower/include/lf_func.h"
+#include "waypoint_follower/lane.h"
+#include "lf_func.h"
 
 #define LOOP_RATE 10
 
 static geometry_msgs::TwistStamped _current_twist;
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-static lane_follower::lane _current_path;
+static waypoint_follower::lane _current_path;
 //std::vector<geometry_msgs::Pose> _car_pose;
 //std::vector<geometry_msgs::Pose> _ped_pose;
 static pcl::PointCloud<pcl::PointXYZ> _vscan;
@@ -140,7 +141,7 @@ static void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
     }
 }
 
-static void WaypointCallback(const lane_follower::laneConstPtr &msg)
+static void WaypointCallback(const waypoint_follower::laneConstPtr &msg)
 {
     _current_path = *msg;
     if (_path_flag == false) {

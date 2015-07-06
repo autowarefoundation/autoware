@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../../waypoint_follower/include/lf_func.h"
+#include "lf_func.h"
 
 /////////////////////////////////////////////////////////////////
 // transform the waypoint to the vehicle plane.
@@ -42,7 +42,7 @@ tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose)
     return tf_w;
 }
 
-int GetClosestWaypoint(tf::Transform transform, lane_follower::lane path, int current_closest)
+int GetClosestWaypoint(tf::Transform transform, waypoint_follower::lane path, int current_closest)
 {
    // std::cout << "==GetClosestWaypoint==" << std::endl;
 

@@ -38,11 +38,12 @@
 #include <nav_msgs/Path.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <visualization_msgs/Marker.h>
-#include <runtime_manager/ConfigLaneFollower.h>
 #include <std_msgs/Bool.h>
 
-//#include "geo_pos_conv.hh"
-#include "../../../waypoint_follower/include/lf_func.h"
+#include "runtime_manager/ConfigLaneFollower.h"
+#include "waypoint_follower/lane.h"
+#include "lf_func.h"
+
 
 #define LOOP_RATE 10 //Hz
 
@@ -57,7 +58,7 @@ static const std::string PATH_FRAME = "/map";
 
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 static geometry_msgs::Twist _current_velocity;
-static lane_follower::lane _current_path;
+static waypoint_follower::lane _current_path;
 
 static int _next_waypoint = 0; // ID (index) of the next waypoint.
 static int _closest_waypoint = -1; // ID (index) of the closest waypoint.
@@ -116,7 +117,7 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
     }
 }
 
-static void WayPointCallback(const lane_follower::laneConstPtr &msg)
+static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
     _current_path = *msg;
     _waypoint_set = true;

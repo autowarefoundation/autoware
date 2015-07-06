@@ -36,7 +36,7 @@
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <lane_follower/lane.h>
+#include <waypoint_follower/lane.h>
 #include <runtime_manager/ConfigLaneRule.h>
 
 #include <vmap_parser.h>
@@ -276,15 +276,15 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	velocity.color.r = 1;
 	velocity.color.a = 1;
 
-	lane_follower::lane ruled;
+	waypoint_follower::lane ruled;
 	ruled.header = header;
 	ruled.increment = 1;
 
-	lane_follower::lane red;
+	waypoint_follower::lane red;
 	red.header = header;
 	red.increment = 1;
 
-	lane_follower::waypoint waypoint;
+	waypoint_follower::waypoint waypoint;
 	waypoint.pose.header = header;
 	waypoint.twist.header = header;
 	waypoint.pose.pose.orientation.w = 1;
@@ -375,15 +375,15 @@ int main(int argc, char **argv)
 		"waypoint_velocity",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
-	pub_ruled = n.advertise<lane_follower::lane>(
+	pub_ruled = n.advertise<waypoint_follower::lane>(
 		"ruled_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
-	pub_red = n.advertise<lane_follower::lane>(
+	pub_red = n.advertise<waypoint_follower::lane>(
 		"red_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
-	pub_green = n.advertise<lane_follower::lane>(
+	pub_green = n.advertise<waypoint_follower::lane>(
 		"green_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);

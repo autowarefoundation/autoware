@@ -52,7 +52,7 @@ include_directories(
 
 add_library(lf_func lib/lf_func.cpp)
 add_dependencies(lf_func
-lane_follower_generate_messages_cpp)
+waypoint_follower_generate_messages_cpp)
 
 add_executable(pure_pursuit nodes/pure_pursuit/pure_pursuit.cpp)
 target_link_libraries(pure_pursuit gnss lf_func ${catkin_LIBRARIES})

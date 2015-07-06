@@ -33,10 +33,8 @@
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_broadcaster.h>
-#include <lane_follower/lane.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <runtime_manager/ConfigWaypointLoader.h>
 
 #include <iostream>
 #include <fstream>
@@ -44,7 +42,9 @@
 #include <string>
 #include <sstream>
 
-#include <vmap_parser.h>
+#include "runtime_manager/ConfigWaypointLoader.h"
+#include "waypoint_follower/lane.h"
+#include "vmap_parser.h"
 
 class Waypoint {
 private:
@@ -104,7 +104,7 @@ static ros::Publisher _lane_mark_pub;
 static ros::Publisher _ruled_pub;
 static ros::Publisher _lane_pub;
 
-static lane_follower::lane _ruled_waypoint;
+static waypoint_follower::lane _ruled_waypoint;
 static nav_msgs::Path _lane_waypoint;
 
 static Waypoint ParseWaypoint(const std::string& line)
@@ -289,11 +289,11 @@ static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
 
 static void publish_signal_waypoint()
 {
-    lane_follower::lane red_cmd;
+    waypoint_follower::lane red_cmd;
     red_cmd.header = _ruled_waypoint.header;
     red_cmd.increment = 1;
 
-    lane_follower::lane green_cmd;
+    waypoint_follower::lane green_cmd;
     green_cmd.header = _ruled_waypoint.header;
     green_cmd.increment = 1;
 
@@ -306,7 +306,7 @@ static void publish_signal_waypoint()
     for (int i = 0; i < static_cast<int>(_waypoints.size()); i++) {
 
         // for Red
-        lane_follower::waypoint waypoint;
+        waypoint_follower::waypoint waypoint;
         waypoint.pose.header = _ruled_waypoint.header;
         waypoint.twist.header = _ruled_waypoint.header;
         waypoint.pose.pose.position.x = _waypoints[i].GetX();
@@ -406,7 +406,7 @@ void PublishRuledWaypoint()
     _ruled_waypoint.increment = 1;
 
     for (unsigned int i = 0; i < _waypoints.size(); i++) {
-        lane_follower::waypoint waypoint;
+        waypoint_follower::waypoint waypoint;
         waypoint.pose.header = _ruled_waypoint.header;
         waypoint.twist.header = _ruled_waypoint.header;
         waypoint.pose.pose.position.x = _waypoints[i].GetX();
@@ -511,13 +511,13 @@ int main(int argc, char **argv)
     ros::Subscriber config_sub = nh.subscribe("config/waypoint_loader", 10, config_callback);
 
     _lane_pub = nh.advertise<nav_msgs::Path>("lane_waypoint", 10, true);
-    _ruled_pub = nh.advertise<lane_follower::lane>("ruled_waypoint", 10, true);
+    _ruled_pub = nh.advertise<waypoint_follower::lane>("ruled_waypoint", 10, true);
     _vel_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 10, true);
     _mark_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 10, true);
     _lane_mark_pub = nh.advertise<visualization_msgs::Marker>("lane_waypoint_mark", 10, true);
 
-    red_pub = nh.advertise<lane_follower::lane>("red_waypoint", 10, true);
-    green_pub = nh.advertise<lane_follower::lane>("green_waypoint", 10, true);
+    red_pub = nh.advertise<waypoint_follower::lane>("red_waypoint", 10, true);
+    green_pub = nh.advertise<waypoint_follower::lane>("green_waypoint", 10, true);
 
     DisplayWaypointVelocity();
     DisplayWaypointMark();
