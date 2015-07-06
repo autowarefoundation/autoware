@@ -253,67 +253,25 @@ class MyFrame(rtmgr.MyFrame):
 		except subprocess.CalledProcessError:
 			pass
 
-		rtmgr.MyFrame.__do_layout(self)
-
-
 		#
-		# for Main tab
+		# for Status tab
 		#
-		tab = self.tab_main
-
-		for nm in [ 'tablet', 'mobile', 'vehicle', 'database' ]:
-			setattr(self, 'bitmap_' + nm, self.get_static_bitmap(tab, nm+'.png', 0.3))
-
-		self.main_cmd = {}
-		self.all_cmd_dics.append(self.main_cmd)
-		self.main_dic = self.load_yaml('main.yaml')
-
-		self.add_params(self.main_dic.get('params', []))
-		self.selector.update(self.main_dic.get('selector', {}))
-
-		self.setup_buttons(self.main_dic.get('buttons', {}), self.main_cmd)
-
-		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
-		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
-
-		for k in [ 'gnss', 'pmap', 'vmap', 'ndt', 'lf' ]:
-			name = k + '_stat'
-			setattr(self, name, False)
-			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
-		self.map_stat = False
-		self.bak_main_button_color = self.button_sensor.GetForegroundColour()
-
-
-
-		#
-		# for Viewer Tab
-		#
-		#self.viewer_cmd = {}
-		#self.all_cmd_dics.append(self.viewer_cmd)
-		#parent = self.panel_viewer
-		#sizer = self.sizer_viewer
-		#lst = self.load_yaml('viewer.yaml', {}).get('viewers', [])
-		#self.create_viewer_btns(parent, sizer, lst)
-
-		self.nodes_dic = self.nodes_dic_get()
-
 
 		#
 		# for All
 		#
+		self.nodes_dic = self.nodes_dic_get()
+
+		rtmgr.MyFrame.__do_layout(self)
+
 		self.alias_grps = [
 			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, self.button_rviz_computing,
-			  self.button_rviz_socket, self.button_rviz_database, self.button_rviz_simulation, ],
+			  self.button_rviz_socket, self.button_rviz_database, self.button_rviz_simulation,
+			  self.button_rviz_status, ],
 			[ self.button_android_tablet_qs, self.button_android_tablet_socket, ],
 			[ self.button_oculus_rift_qs, self.button_oculus_rift_socket, ],
 			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_socket, ],
 			[ self.button_auto_pilot_qs, self.button_auto_pilot_socket,],
-
-			[ self.text_ctrl_file_rosbag_play, self.text_ctrl_main_rosbag_play, ],
-			[ self.button_ref_file_rosbag_play, self.button_ref_main_rosbag_play, ],
-			[ self.text_ctrl_rate_rosbag_play, self.text_ctrl_rate_main_rosbag_play, ],
-			[ self.checkbox_clock_rosbag_play, self.checkbox_clock_main_rosbag_play, ],
-			[ self.checkbox_sim_time, self.checkbox_main_sim_time, ]
 		]
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
@@ -389,31 +347,11 @@ class MyFrame(rtmgr.MyFrame):
 
 				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
 
-	#
-	# Main Tab
-	#
-	def OnMainButton(self, event):
-		obj = event.GetEventObject()
-		self.OnLaunchKill_obj(obj)
-
 	def OnDrive(self, event):
 		obj = event.GetEventObject()
 		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
-
-	def OnClear(self, event):
-		self.kill_all()
-
-	def OnNetConn(self, event):
-		obj = event.GetEventObject()
-		self.launch_kill_proc(obj, self.main_cmd)
-
-	#def OnReadNavi(self, event):
-	#	self.text_ctrl_route_from_lat.SetValue(str(self.route_cmd_waypoint[0].lat))
-	#	self.text_ctrl_route_from_lon.SetValue(str(self.route_cmd_waypoint[0].lon))
-	#	self.text_ctrl_route_to_lat.SetValue(str(self.route_cmd_waypoint[1].lat))
-	#	self.text_ctrl_route_to_lon.SetValue(str(self.route_cmd_waypoint[1].lon))
 
 	def OnTextRoute(self, event):
 		pass
@@ -465,37 +403,37 @@ class MyFrame(rtmgr.MyFrame):
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
 
-	def gnss_stat_callback(self, data):
-		self.stat_set('gnss', data.data)
-		self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
+	#def gnss_stat_callback(self, data):
+	#	self.stat_set('gnss', data.data)
+	#	self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
 
-	def pmap_stat_callback(self, data):
-		self.pmap_stat = data.data
-		self.stat_set('map', self.pmap_stat and self.vmap_stat)
-		self.main_button_update(self.button_map, self.map_stat)
+	#def pmap_stat_callback(self, data):
+	#	self.pmap_stat = data.data
+	#	self.stat_set('map', self.pmap_stat and self.vmap_stat)
+	#	self.main_button_update(self.button_map, self.map_stat)
 
-	def vmap_stat_callback(self, data):
-		self.vmap_stat = data.data
-		self.stat_set('map', self.pmap_stat and self.vmap_stat)
-		self.main_button_update(self.button_map, self.map_stat)
+	#def vmap_stat_callback(self, data):
+	#	self.vmap_stat = data.data
+	#	self.stat_set('map', self.pmap_stat and self.vmap_stat)
+	#	self.main_button_update(self.button_map, self.map_stat)
 
-	def ndt_stat_callback(self, data):
-		self.stat_set('ndt', data.data)
-		self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
+	#def ndt_stat_callback(self, data):
+	#	self.stat_set('ndt', data.data)
+	#	self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
 
-	def lf_stat_callback(self, data):
-		self.stat_set('lf', data.data)
-		self.main_button_update(self.button_control, self.lf_stat)
+	#def lf_stat_callback(self, data):
+	#	self.stat_set('lf', data.data)
+	#	self.main_button_update(self.button_control, self.lf_stat)
 
-	def stat_set(self, k, stat):
-		name = k + '_stat'
-		setattr(self, name, stat)
-		lb = getattr(self, 'label_' + name, None)
-		if lb:
-			wx.CallAfter(lb.Enable, stat)
+	#def stat_set(self, k, stat):
+	#	name = k + '_stat'
+	#	setattr(self, name, stat)
+	#	lb = getattr(self, 'label_' + name, None)
+	#	if lb:
+	#		wx.CallAfter(lb.Enable, stat)
 
-	def main_button_update(self, obj, ready):
-		wx.CallAfter(obj.SetForegroundColour, 'blue' if ready else self.bak_main_button_color)
+	#def main_button_update(self, obj, ready):
+	#	wx.CallAfter(obj.SetForegroundColour, 'blue' if ready else self.bak_main_button_color)
 
 	#
 	# Computing Tab
@@ -517,7 +455,7 @@ class MyFrame(rtmgr.MyFrame):
 		dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 		dlg.ShowModal()
 
-	def obj_to_add_args(self, obj):
+	def obj_to_add_args(self, obj, msg_box=True):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return None
@@ -543,7 +481,8 @@ class MyFrame(rtmgr.MyFrame):
 				v = cmd_param.get('default')
 			if cmd_param.get('must') and (v is None or v == ''):
 				print 'cmd_param', name, 'is must'
-				wx.MessageBox('cmd_param ' + name + ' is must')
+				if msg_box:
+					wx.MessageBox('cmd_param ' + name + ' is must')
 				return False
 			if cmd_param.get('only_enable') and not v:
 				continue
@@ -1215,8 +1154,7 @@ class MyFrame(rtmgr.MyFrame):
 	def nodes_dic_get(self):
 		print 'creating item node list ',
 		nodes_dic = {}
-		#for cmd_dic in self.all_cmd_dics:
-		for cmd_dic in [ self.main_cmd, self.computing_cmd, self.data_cmd, self.sensing_cmd ]:
+		for cmd_dic in self.all_cmd_dics:
 			sys.stdout.write('.')
 			sys.stdout.flush()
 			for (obj, (cmd, _)) in cmd_dic.items():
@@ -1228,7 +1166,9 @@ class MyFrame(rtmgr.MyFrame):
 				if cmd[0] == 'sh' and cmd[1] == '-c':
 					cmd2 = cmd[2].split(' ') + cmd[3:] # split ' '
 				if cmd2[0] == 'roslaunch':
-					add_args = self.obj_to_add_args(obj)
+					add_args = self.obj_to_add_args(obj, msg_box=False)
+					if add_args is False:
+						continue
 					if add_args:
 						cmd2 += add_args
 					cmd2.insert(1, '--node')

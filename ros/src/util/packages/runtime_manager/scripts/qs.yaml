@@ -1,7 +1,18 @@
 buttons :
   map_qs :
     run   : roslaunch
+#    run : 'sh -c "roslaunch ~/.autoware/launch_files/map.launch
+#           tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
+#           pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
+#                         if [ \"$SN\" != \"noupdate\" ] ; then
+#                           find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1 ; fi )\"
+#           pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
+#           csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
     param : map_qs
+#    gui   :
+#      scene_num :
+#        func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+
   sensing_qs :
     run   : roslaunch
     param : sensing_qs
@@ -38,41 +49,55 @@ params :
     vars :
     - name  : file
       kind  : path
-      v     : ~/.autoware/launch_files/map.launch
+      v     : ''
+      #v     : ~/.autoware/launch_files/map.launch
       cmd_param :
         delim     : ''
+        must      : True
+#    - name     : scene_num
+#      rosparam : /points_map_loader/scene_num
   - name : sensing_qs
     vars :
     - name  : file
       kind  : path
-      v     : ~/.autoware/launch_files/sensing.launch
+      v     : ''
+      #v     : ~/.autoware/launch_files/sensing.launch
       cmd_param :
         delim     : ''
+        must      : True
   - name : localization_qs
     vars :
     - name  : file
       kind  : path
-      v     : ~/.autoware/launch_files/localization.launch
+      v     : ''
+      #v     : ~/.autoware/launch_files/localization.launch
       cmd_param :
         delim     : ''
+        must      : True
   - name : detection_qs
     vars :
     - name  : file
       kind  : path
-      v     : ~/.autoware/launch_files/detection.launch
+      v     : ''
+      #v     : ~/.autoware/launch_files/detection.launch
       cmd_param :
         delim     : ''
+        must      : True
   - name : mission_planning_qs
     vars :
     - name  : file
       kind  : path
-      v     : ~/.autoware/launch_files/mission_planning.launch
+      v     : ''
+      #v     : ~/.autoware/launch_files/mission_planning.launch
       cmd_param :
         delim     : ''
+        must      : True
   - name : motion_planning_qs
     vars :
     - name  : file
       kind  : path
-      v     : ~/.autoware/launch_files/motion_planning.launch
+      v     : ''
+      #v     : ~/.autoware/launch_files/motion_planning.launch
       cmd_param :
         delim     : ''
+        must      : True
