@@ -94,14 +94,14 @@ void cameraInfo_sender(const cv::Mat  &camMat,
 
 int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "extrinsicMatPublisher");
+  ros::init(argc, argv, "calibration_publisher");
   ros::NodeHandle n;
 
   camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10, true);
 
   if (argc < 2)
     {
-      std::cout << "Usage: extrinsicMatPublisher <calibration-file>." << std::endl;
+      std::cout << "Usage: calibration_publisher <calibration-file>." << std::endl;
       return -1;
     }
 
