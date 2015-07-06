@@ -156,6 +156,56 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
 
+		#
+		# for Computing tab
+		#
+		tab = self.tab_computing
+
+		parent = self.tree_ctrl_0.GetParent()
+		for i in range(2):
+			self.obj_get('tree_ctrl_' + str(i)).Destroy()
+		items = self.load_yaml('computing.yaml')
+
+		self.add_params(items.get('params', []))
+
+		self.computing_cmd = {}
+		self.all_cmd_dics.append(self.computing_cmd)
+		for i in range(2):
+			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
+			tree_ctrl.ExpandAll()
+			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
+
+		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
+		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
+
+		#
+		# for Simulation Tab
+		#
+		self.simulation_cmd = {}
+		self.all_cmd_dics.append(self.simulation_cmd)
+		dic = self.load_yaml('simulation_launch_cmd.yaml')
+
+		self.add_params(dic.get('params', []))
+		self.selector.update(dic.get('selector', {}))
+
+		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
+
+		if 'buttons' in dic:
+			self.setup_buttons(dic['buttons'], self.simulation_cmd)
+		if 'checkboxs' in dic:
+			self.setup_buttons(dic['checkboxs'], self.simulation_cmd)
+
+		#self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
+		#self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
+
+		try:
+			cmd = ['rosparam', 'get', '/use_sim_time']
+			if subprocess.check_output(cmd, stderr=open(os.devnull, 'wb')).strip() == 'true':
+				self.checkbox_sim_time.SetValue(True)
+		except subprocess.CalledProcessError:
+			pass
+
 
 		#
 		# for Main tab
@@ -194,54 +244,6 @@ class MyFrame(rtmgr.MyFrame):
 			panel = ParamPanel(self.panel_main_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
 			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_main_cc.SetSizer(szr)
-
-		#
-		# for Computing tab
-		#
-		parent = self.tree_ctrl_0.GetParent()
-		for i in range(3):
-			self.obj_get('tree_ctrl_' + str(i)).Destroy()
-		items = self.load_yaml('computing_launch_cmd.yaml')
-
-		self.add_params(items.get('params', []))
-
-		self.computing_cmd = {}
-		self.all_cmd_dics.append(self.computing_cmd)
-		for i in range(3):
-			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
-			tree_ctrl.ExpandAll()
-			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
-			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
-
-		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
-		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
-
-		#
-		# for Simulation Tab
-		#
-		self.simulation_cmd = {}
-		self.all_cmd_dics.append(self.simulation_cmd)
-		dic = self.load_yaml('simulation_launch_cmd.yaml')
-
-		self.add_params(dic.get('params', []))
-		self.selector.update(dic.get('selector', {}))
-
-		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
-
-		if 'buttons' in dic:
-			self.setup_buttons(dic['buttons'], self.simulation_cmd)
-		if 'checkboxs' in dic:
-			self.setup_buttons(dic['checkboxs'], self.simulation_cmd)
-
-		#self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
-		#self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
-
-		try:
-			cmd = ['rosparam', 'get', '/use_sim_time']
-			if subprocess.check_output(cmd, stderr=open(os.devnull, 'wb')).strip() == 'true':
-				self.checkbox_sim_time.SetValue(True)
-		except subprocess.CalledProcessError:
-			pass
 
 		#
 		# for Data Tab
@@ -1040,7 +1042,7 @@ class MyFrame(rtmgr.MyFrame):
 		name = items.get('name', '')
 		if tree is None:
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
-			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, style=style)
+			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, agwStyle=style)
 			item = tree.AddRoot(name, data=tree)
 		else:
 			ct_type = 1 if 'cmd' in items else 0 # 1:checkbox type

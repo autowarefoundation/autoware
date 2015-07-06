@@ -1,154 +1,216 @@
 name : Computing
 subs :
-  - name : Control
+- subs :
+  - name : Localization
     subs :
-      - name : motion
-        subs :
-          - name : pure_pursuit(sim)
-            cmd : roslaunch lane_follower pure_pursuit_sim.launch
-            param: lane_follower
-            gui  :
-              velocity:
-                depend : param_flag
-              lookahead_threshold:
-                depend : param_flag
-              stat_topic : [ lf ]
-          - name : pure_pursuit
-            cmd : roslaunch lane_follower pure_pursuit.launch
-            param: lane_follower
-            gui  :
-              velocity:
-                depend : param_flag
-              lookahead_threshold:
-                depend : param_flag
-              stat_topic : [ lf ]
-          - name : distance_keep
-            cmd : roslaunch lane_follower distance_keep.launch  
-          - name : twist_through
-            cmd : rosrun lane_follower twist_through
-          - name : odom_gen
-            cmd : roslaunch lane_follower odom_gen.launch  
-            param: odom_gen
-            gui  :
-              use_pose:
-                flags : [ no_category, nl ]
-              x:
-                depend      : use_pose
-                depend_bool : 'lambda v : v == "Initial Pos"'
-                flags : [ no_category ]
-              y:
-                depend      : use_pose
-                depend_bool : 'lambda v : v == "Initial Pos"'
-                flags : [ no_category ]
-              z:
-                depend      : use_pose
-                depend_bool : 'lambda v : v == "Initial Pos"'
-                flags : [ no_category, nl ]
-              roll:
-                depend      : use_pose
-                depend_bool : 'lambda v : v == "Initial Pos"'
-                flags : [ no_category ]
-              pitch:
-                depend      : use_pose
-                depend_bool : 'lambda v : v == "Initial Pos"'
-                flags : [ no_category ]
-              yaw:
-                depend      : use_pose
-                depend_bool : 'lambda v : v == "Initial Pos"'
-                flags : [ no_category, nl ]
-  
-  - name : Perception
-    subs :
-      - name : Detection
-        subs :
-          - name : car_dpm
-            cmd  : rosrun car_detector car_dpm
-            param: car_dpm
-          - name : car_dpm_gpu
-            cmd  : rosrun car_detector car_dpm_gpu
-            param: car_dpm
-          - name : car_fusion
-            cmd  : rosrun car_detector car_fusion
-            param: car_fusion
-          - name : car_kf
-            cmd  : rosrun car_detector car_kf
-            param: car_kf
-          - name : car_locate
-            cmd  : roslaunch car_detector car_locate.launch
-          - name : lane_cannyhough
-            cmd  : 
-          - name : pedestrian_dpm
-            cmd  : rosrun pedestrian_detector pedestrian_dpm
-            param: pedestrian_dpm
-          - name : pedestrian_dpm_gpu
-            cmd  : rosrun pedestrian_detector pedestrian_dpm_gpu
-            param: pedestrian_dpm
-          - name : pedestrian_fusion
-            cmd  : rosrun pedestrian_detector pedestrian_fusion
-            param: pedestrian_fusion
-          - name : pedestrian_kf
-            cmd  : rosrun pedestrian_detector pedestrian_kf
-            param: pedestrian_kf
-          - name : pedestrian_locate
-            cmd  : roslaunch pedestrian_detector pedestrian_locate.launch
-          - name : traffic_light_colorExtract
-            cmd  : roslaunch runtime_manager traffic_light.launch
-            param: traffic_light
-            gui  :
-              file :
-                prop : 1
-      - name : Localization
-        subs :
-          - name : ndt_pcl
-            cmd  : roslaunch points_localizer ndt_pcl.launch
-            param: ndt
-            gui  :
-              stat_topic : [ ndt ]
-          - name : fix2tfpose
-            cmd  : rosrun gnss_localizer fix2tfpose
-            gui  :
-              stat_topic : [ gnss ]
-          - name : nmea2tfpose
-            #cmd  : rosrun gnss_localizer nmea2tfpose
-            cmd  : roslaunch gnss_localizer nmea2tfpose.launch
-            gui  :
-              stat_topic : [ gnss ]
-          - name : ndt_slam
-            cmd  : roslaunch points_localizer ndt_slam.launch
-            param: ndt_slam
-            gui  :
-              dialog : MyDialogNdtSlam
-              stat_topic : [ ndt ]
-          - name : pos_marker
-            cmd  : rosrun points_localizer pos_marker
+    - name : gnss_localizer
+      subs :
+      - name : fix2tfpose
+        cmd  : rosrun gnss_localizer fix2tfpose
+        gui  :
+          stat_topic : [ gnss ]
+      - name : nmea2tfpose
+        #cmd  : rosrun gnss_localizer nmea2tfpose
+        cmd  : roslaunch gnss_localizer nmea2tfpose.launch
+        gui  :
+          stat_topic : [ gnss ]
+    - name : ndt_localizer
+      subs :
+      - name : ndt_mapping
+        cmd  : roslaunch points_localizer ndt_pcl.launch
+        param: ndt
+        gui  :
+          stat_topic : [ ndt ]
+      - name : ndt_matching
+        cmd  : roslaunch points_localizer ndt_slam.launch
+        param: ndt_slam
+        gui  :
+          dialog : MyDialogNdtSlam
+          stat_topic : [ ndt ]
+      - name : pos_marker
+        cmd  : rosrun points_localizer pos_marker
 
-  - name : Planning
+  - name : Detection
     subs :
-      - name : Path
-        subs :
-        - name : lane_navi
-          cmd  : rosrun lane_planner lane_navi
-          param: lane_navi
-        - name : lane_rule
-          cmd  : rosrun lane_planner lane_rule
-          param: lane_rule
-        - name : lane_stop
-          cmd  : rosrun lane_planner lane_stop
-          param: lane_stop
-          gui  :
-            dialog: MyDialogLaneStop
-        - name : waypoint_saver
-          cmd  : roslaunch waypoint_maker waypoint_saver.launch
-          param: waypoint_saver
-          gui  :
-            save_filename :
-              prop  : 1
-        - name : waypoint_loader
-          cmd  : roslaunch waypoint_maker waypoint_loader.launch
-          param: waypoint_loader
-          gui  :
-            waypoint_filename :
-              prop  : 1
+    - name : cv_detector
+      subs :
+      - name : dpm_ocv
+        cmd  : echo 'dpm_ocv'
+      - name : dpm_ttic
+        cmd  : echo 'dpm_ttic'
+      - name : fusion_ranging
+        cmd  : echo 'fusion_ranging'
+      - name : kf_tracking
+        cmd  : echo 'kf_tracking'
+      - name : obj_reproj
+        cmd  : echo 'obj_reproj'
+    - name : lidar_detector
+      subs :
+      - name : euclidean_clustering
+        cmd  : echo 'euclidean_clustering'
+      - name : fusion_clustering
+        cmd  : echo 'fusion_clustering'
+    - name : road_wizard
+      subs :
+      - name : region_tlr
+        cmd  : echo 'region_tlr'
+      - name : feat_proj
+        cmd  : echo 'feat_proj'
+- subs :
+  - name : Mission Planning
+    subs :
+    - name : lane_planner
+      subs :
+      - name : lane_change
+        cmd  : echo 'lane_change'
+      - name : lane_navi
+        cmd  : rosrun lane_planner lane_navi
+        param: lane_navi
+      - name : lane_rule
+        cmd  : rosrun lane_planner lane_rule
+        param: lane_rule
+      - name : lane_stop
+        cmd  : rosrun lane_planner lane_stop
+        param: lane_stop
+        gui  :
+          dialog: MyDialogLaneStop
+      - name : waypoint_loader
+        cmd  : roslaunch waypoint_maker waypoint_loader.launch
+        param: waypoint_loader
+        gui  :
+          waypoint_filename :
+            prop  : 1
+      - name : waypoint_saver
+        cmd  : roslaunch waypoint_maker waypoint_saver.launch
+        param: waypoint_saver
+        gui  :
+          save_filename :
+            prop  : 1
+    - name : parking_planner
+      subs :
+      - name : xxx
+        cmd  : echo 'xxx'
+
+  - name : Motion Planning
+    subs :
+    - name : driving_planner
+      subs :
+      - name : obstacle_avoidance
+        cmd  : echo 'obstacle_avoidance'
+      - name : safety_drive
+        cmd  : echo 'safety_drive'
+    - name : waypoint_marker
+      subs :
+      - name : waypoint_loader
+        cmd  : roslaunch waypoint_maker waypoint_loader.launch
+        param: waypoint_loader
+        gui  :
+          waypoint_filename :
+            prop  : 1
+      - name : waypoint_saver
+        cmd  : roslaunch waypoint_maker waypoint_saver.launch
+        param: waypoint_saver
+        gui  :
+          save_filename :
+            prop  : 1
+    - name : waypoint_floower
+      subs :
+      - name : distance_keep
+        cmd  : roslaunch lane_follower distance_keep.launch  
+      - name : odom_gen
+        cmd  : roslaunch lane_follower odom_gen.launch  
+        param: odom_gen
+        gui  :
+          use_pose:
+            flags : [ no_category, nl ]
+          x:
+            depend      : use_pose
+            depend_bool : 'lambda v : v == "Initial Pos"'
+            flags : [ no_category ]
+          y:
+            depend      : use_pose
+            depend_bool : 'lambda v : v == "Initial Pos"'
+            flags : [ no_category ]
+          z:
+            depend      : use_pose
+            depend_bool : 'lambda v : v == "Initial Pos"'
+            flags : [ no_category, nl ]
+          roll:
+            depend      : use_pose
+            depend_bool : 'lambda v : v == "Initial Pos"'
+            flags : [ no_category ]
+          pitch:
+            depend      : use_pose
+            depend_bool : 'lambda v : v == "Initial Pos"'
+            flags : [ no_category ]
+          yaw:
+            depend      : use_pose
+            depend_bool : 'lambda v : v == "Initial Pos"'
+            flags : [ no_category, nl ]
+      - name : pure_pursuit
+        cmd  : roslaunch lane_follower pure_pursuit.launch
+        param: lane_follower
+        gui  :
+          velocity:
+            depend : param_flag
+          lookahead_threshold:
+            depend : param_flag
+          stat_topic : [ lf ]
+
+#  - name : Control
+#    subs :
+#      - name : motion
+#        subs :
+#          - name : pure_pursuit(sim)
+#            cmd : roslaunch lane_follower pure_pursuit_sim.launch
+#            param: lane_follower
+#            gui  :
+#              velocity:
+#                depend : param_flag
+#              lookahead_threshold:
+#                depend : param_flag
+#              stat_topic : [ lf ]
+  
+#  - name : Perception
+#    subs :
+#      - name : Detection
+#        subs :
+#          - name : car_dpm
+#            cmd  : rosrun car_detector car_dpm
+#            param: car_dpm
+#          - name : car_dpm_gpu
+#            cmd  : rosrun car_detector car_dpm_gpu
+#            param: car_dpm
+#          - name : car_fusion
+#            cmd  : rosrun car_detector car_fusion
+#            param: car_fusion
+#          - name : car_kf
+#            cmd  : rosrun car_detector car_kf
+#            param: car_kf
+#          - name : car_locate
+#            cmd  : roslaunch car_detector car_locate.launch
+#          - name : lane_cannyhough
+#            cmd  : 
+#          - name : pedestrian_dpm
+#            cmd  : rosrun pedestrian_detector pedestrian_dpm
+#            param: pedestrian_dpm
+#          - name : pedestrian_dpm_gpu
+#            cmd  : rosrun pedestrian_detector pedestrian_dpm_gpu
+#            param: pedestrian_dpm
+#          - name : pedestrian_fusion
+#            cmd  : rosrun pedestrian_detector pedestrian_fusion
+#            param: pedestrian_fusion
+#          - name : pedestrian_kf
+#            cmd  : rosrun pedestrian_detector pedestrian_kf
+#            param: pedestrian_kf
+#          - name : pedestrian_locate
+#            cmd  : roslaunch pedestrian_detector pedestrian_locate.launch
+#          - name : traffic_light_colorExtract
+#            cmd  : roslaunch runtime_manager traffic_light.launch
+#            param: traffic_light
+#            gui  :
+#              file :
+#                prop : 1
 
 params :
   - name  : car_dpm
