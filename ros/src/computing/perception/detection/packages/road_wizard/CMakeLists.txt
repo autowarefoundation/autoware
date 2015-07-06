@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(traffic_light_detector)
+project(road_wizard)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -42,42 +42,42 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## Build ##
 ###########
 
-### traffic_light_lkf ###
-add_executable(traffic_light_lkf
-  nodes/traffic_light_lkf/traffic_light_lkf.cpp
-  nodes/traffic_light_lkf/TrafficLightDetector.cpp
-  nodes/traffic_light_lkf/Context.cpp
+### region_tlr ###
+add_executable(region_tlr
+  nodes/region_tlr/region_tlr.cpp
+  nodes/region_tlr/TrafficLightDetector.cpp
+  nodes/region_tlr/Context.cpp
   )
 
-target_link_libraries(traffic_light_lkf
+target_link_libraries(region_tlr
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(traffic_light_lkf 
+add_dependencies(region_tlr
 runtime_manager_generate_messages_cpp
-traffic_light_detector_generate_messages_cpp)
+road_wizard_generate_messages_cpp)
 
-### traffic_light_extract ###
+### feat_proj ###
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${libvectormap_INCLUDE_DIRS}
 )
 
-add_executable(traffic_light_extract
-  nodes/traffic_light_extract/traffic_light_extract.cpp
+add_executable(feat_proj
+  nodes/feat_proj/feat_proj.cpp
 )
 
-target_link_libraries(traffic_light_extract
+target_link_libraries(feat_proj
   ${catkin_LIBRARIES}
   ${libvectormap_LIBRARIES}
 )
 
-add_dependencies(traffic_light_extract
-traffic_light_detector_generate_messages_cpp
+add_dependencies(feat_proj
+road_wizard_generate_messages_cpp
 )
 
-### traffic_light_detector_tuner ###
+### tlr_tuner ###
 if(EXISTS /usr/local/qtbase5)
 # Self install version
 set(Qt5INCLUDE "/usr/local/qtbase5/include")
@@ -93,7 +93,7 @@ endif()
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include
-  noddes/traffic_light_detector_tuner/
+  noddes/tlr_tuner/
   ${Qt5INCLUDE}
   ${Qt5INCLUDE}/QtCore
   ${Qt5INCLUDE}/QtGui
@@ -105,36 +105,36 @@ add_custom_command(
   OUTPUT ui_mainwindow.h
   COMMAND
   ${Qt5BIN}/uic
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/traffic_light_detector_tuner/ui_mainwindow.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/traffic_light_detector_tuner/mainwindow.ui"
+  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/ui_mainwindow.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow.ui"
 )
-add_custom_target(traffic_light_detector_tuner_ui_mainwindow DEPENDS ui_mainwindow.h)
+add_custom_target(tlr_tuner_ui_mainwindow DEPENDS ui_mainwindow.h)
 
 add_custom_command(
   OUTPUT mainwindow_moc.cpp
   COMMAND
   ${Qt5BIN}/moc
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/traffic_light_detector_tuner/mainwindow_moc.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/traffic_light_detector_tuner/mainwindow.h"
+  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow_moc.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow.h"
 )
-add_custom_target(traffic_light_detector_tuner_mainwindow_moc DEPENDS mainwindow_moc.cpp)
+add_custom_target(tlr_tuner_mainwindow_moc DEPENDS mainwindow_moc.cpp)
 
-add_executable(traffic_light_detector_tuner
-  nodes/traffic_light_detector_tuner/traffic_light_detector_tuner.cpp
-  nodes/traffic_light_detector_tuner/mainwindow.cpp
-  nodes/traffic_light_detector_tuner/tunerBody.cpp
+add_executable(tlr_tuner
+  nodes/tlr_tuner/tlr_tuner.cpp
+  nodes/tlr_tuner/mainwindow.cpp
+  nodes/tlr_tuner/tunerBody.cpp
   )
 
-set_target_properties(traffic_light_detector_tuner
+set_target_properties(tlr_tuner
   PROPERTIES COMPILE_FLAGS "-fPIC"
   )
 
-add_dependencies(traffic_light_detector_tuner
-  traffic_light_detector_tuner_ui_mainwindow
-  traffic_light_detector_tuner_mainwindow_moc
+add_dependencies(tlr_tuner
+  tlr_tuner_ui_mainwindow
+  tlr_tuner_mainwindow_moc
   )
 
-target_link_libraries(traffic_light_detector_tuner
+target_link_libraries(tlr_tuner
   ${catkin_LIBRARIES}
   ${Qt5LIBROOT}/libQt5Core.so
   ${Qt5LIBROOT}/libQt5Gui.so

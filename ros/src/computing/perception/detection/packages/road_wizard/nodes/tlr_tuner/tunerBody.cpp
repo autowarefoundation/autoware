@@ -1,5 +1,5 @@
 #include "tunerBody.h"
-#include "traffic_light_detector/TunedResult.h"
+#include "road_wizard/TunedResult.h"
 
 static constexpr int32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool    ADVERTISE_LATCH      = true;
@@ -140,7 +140,7 @@ void TunerBody::launch(void)
 
   ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_callBack);
 
-  ros::Publisher tunedResult_pub = n.advertise <traffic_light_detector::TunedResult> ("tuned_result", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+  ros::Publisher tunedResult_pub = n.advertise <road_wizard::TunedResult> ("tuned_result", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
 
   /* valiables to check status change */
   cv::Point prev_clicked = cv::Point(-1, -1);
@@ -263,7 +263,7 @@ void TunerBody::launch(void)
       prev_vw = vw;
 
       /* publish tuned result */
-      traffic_light_detector::TunedResult res;
+      road_wizard::TunedResult res;
       res.Red.Hue.center = Red_set.hue.center;
       res.Red.Hue.range  = Red_set.hue.range;
       res.Red.Sat.center = Red_set.sat.center;

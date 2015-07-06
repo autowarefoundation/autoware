@@ -19,7 +19,7 @@
 #include <cstdio>
 #include "Math.h"
 #include <Eigen/Eigen>
-#include "traffic_light_detector/Signals.h"
+#include "road_wizard/Signals.h"
 
 typedef struct {
   double thiX;
@@ -167,7 +167,7 @@ bool project2 (const Point3 &pt, int &u, int &v, bool useOpenGLCoord=false)
 void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 {
   int countPoint = 0;
-  traffic_light_detector::Signals signalsInFrame;
+  road_wizard::Signals signalsInFrame;
 
   for (unsigned int i=1; i<=vmap.signals.size(); i++) {
     Signal signal = vmap.signals[i];
@@ -186,7 +186,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       project2 (signalcenterx, ux, vx, useOpenGLCoord);
       radius = (int)distance (ux, vx, u, v);
 
-      traffic_light_detector::ExtractedPosition sign;
+      road_wizard::ExtractedPosition sign;
       sign.signalId = signal.id;
       //sign.u = u, sign.v = v, sign.radius = radius;
       /* if ndt's Angle Error == 0 */
@@ -243,17 +243,17 @@ int main (int argc, char *argv[])
 {
   if (argc < 2)
     {
-      std::cout << "Usage: traffic_light_extract <vector-map-dir>" << std::endl;
+      std::cout << "Usage: feat_proj <vector-map-dir>" << std::endl;
       return -1;
     }
 
   vmap.loadAll(argv[1]);
-  ros::init(argc, argv, "traffic_light_extract");
+  ros::init(argc, argv, "feat_proj");
   ros::NodeHandle rosnode;
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
   //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/ndt_pose", 10, ndtPoseCallback);
-  ros::Publisher  signalPublisher      = rosnode.advertise <traffic_light_detector::Signals> ("traffic_light_pixel_xy", 100);
+  ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);
   signal (SIGINT, interrupt);
 
   Rate loop (25);
