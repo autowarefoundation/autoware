@@ -23,7 +23,11 @@
 	<!-- transform path coordinate to global coordinate -->
 	<node pkg="tf" type="static_transform_publisher" name="odom2map" args="0 0 0 0 0 0 $(arg map_frame) $(arg odometry_frame) 100" />
 
-	<node pkg="lane_follower" type="odom_gen" name="odom_gen" output="screen"/>
-
+    <node pkg="waypoint_follower" type="odom_gen" name="odom_gen" output="screen">
+	   <!-- <param name="initial_pos_x" value="$(arg position_x)" />
+	    <param name="initial_pos_y" value="$(arg position_y)" />
+	    <param name="initial_pos_z" value="$(arg position_z)" />
+	    <param name="initial_pos_yaw" value="$(arg yaw)" /> -->
+    </node>
 
 </launch>

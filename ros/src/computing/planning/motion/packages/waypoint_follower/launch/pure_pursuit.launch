@@ -4,8 +4,8 @@
 	<arg name="mobility_frame" default="/velodyne" />
 	<arg name="threshold_ratio" default="1.0" />
 
-	<!-- rosrun lane_follower pure_pursuit _current_pose_topic:="topic" _mobility_frame:="/frame" _lookahead_ratio:=0 -->
-	<node pkg="lane_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
+	<!-- rosrun waypoint_follower pure_pursuit _current_pose_topic:="topic" _mobility_frame:="/frame" _lookahead_ratio:=0 -->
+	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
 		<param name="mobility_frame" value="$(arg mobility_frame)" />
 		<param name="threshold_ratio" value="$(arg threshold_ratio)" />
