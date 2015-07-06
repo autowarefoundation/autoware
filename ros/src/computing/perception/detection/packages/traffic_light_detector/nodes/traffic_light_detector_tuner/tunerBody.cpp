@@ -175,10 +175,7 @@ void TunerBody::launch(void)
       cv::Mat hsv_img;
       cv::cvtColor(src_img, hsv_img, cv::COLOR_BGR2HSV);
 
-      if (!(targetPoint == prev_clicked &&
-            prev_hw == hw &&
-            prev_sw == sw &&
-            prev_vw == vw) &&
+      if (targetPoint != prev_clicked &&
           targetPoint != cv::Point(-1, -1))
         {
           std::cerr << "Selected_set updated" << std::endl;
@@ -188,13 +185,18 @@ void TunerBody::launch(void)
 
           /* save HSV values into correspond variables */
           Selected_set->hue.center = hue;
-          Selected_set->hue.range  = hw;
           Selected_set->sat.center = sat;
-          Selected_set->sat.range  = sw;
           Selected_set->val.center = val;
-          Selected_set->val.range  = vw;
           Selected_set->isUpdated  = true;
         }
+
+      Selected_set->hue.range  = hw;
+      Selected_set->sat.range  = sw;
+      Selected_set->val.range  = vw;
+
+      if (prev_hw != hw || prev_sw != sw || prev_vw != vw) {
+        Selected_set->isUpdated = true;
+      }
 
       colorTrack(hsv_img,
                  Selected_set->hue.center,
@@ -482,6 +484,8 @@ void TunerBody::openSetting(std::string fileName)
       Red_set.val.center  = nd_val["center"];
       Red_set.val.range   = nd_val["range"];
     }
+
+    Red_set.isUpdated = true;
   }
 
   {
@@ -503,6 +507,8 @@ void TunerBody::openSetting(std::string fileName)
       Yellow_set.val.center = nd_val["center"];
       Yellow_set.val.range  = nd_val["range"];
     }
+
+    Yellow_set.isUpdated = true;
   }
 
   {
@@ -524,6 +530,8 @@ void TunerBody::openSetting(std::string fileName)
       Green_set.val.center = nd_val["center"];
       Green_set.val.range  = nd_val["range"];
     }
+
+    Green_set.isUpdated = true;
   }
 
   /* set trackbar position to current status */
