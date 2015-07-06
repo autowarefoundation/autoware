@@ -33,10 +33,13 @@
 import wx
 import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
+import gtk
 import gettext
 import os
 import re
 import sys
+import threading
+import time
 import socket
 import struct
 import shlex
@@ -131,7 +134,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.tc_point_cloud = self.obj_to_varpanel_tc(self.button_point_cloud, 'path_pcd')
 		self.tc_area_list = self.obj_to_varpanel_tc(self.button_area_lists, 'path_area_list')
 
- 		#
+		#
 		# for Sensing tab
 		#
 		tab = self.tab_sensing
@@ -316,7 +319,7 @@ class MyFrame(rtmgr.MyFrame):
 			if pdic and pdic != {}:
 				save_dic[name] = pdic
 		if save_dic != {}:
-			dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+			dir = rtmgr_src_dir()
 			print('saving param.yaml')
 			f = open(dir + 'param.yaml', 'w')
 			s = yaml.dump(save_dic, default_flow_style=False)
@@ -1201,7 +1204,7 @@ class MyFrame(rtmgr.MyFrame):
 		return cmds[r] if ok else None
 
 	def get_autoware_dir(self):
-		dir = os.path.abspath(os.path.dirname(__file__)) + '/../../../../../../'
+		dir = rtmgr_src_dir() + '../../../../../../'
 		return os.path.abspath(dir)
 
 	def get_static_bitmap(self, parent, filename, scale):
@@ -1209,7 +1212,7 @@ class MyFrame(rtmgr.MyFrame):
 		return wx.StaticBitmap(parent, wx.ID_ANY, bm)
 
 	def get_bitmap(self, filename, scale):
-		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		dir = rtmgr_src_dir()
 		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
 		(w, h) = bm.GetSize()
 		img = wx.ImageFromBitmap(bm)
@@ -1479,7 +1482,7 @@ class VarPanel(wx.Panel):
 		self.SetSizer(szr)
 
 	def create_bmbtn(self, filename, hdr):
-		dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+		dir = rtmgr_src_dir()
 		bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
 		style = wx.BORDER_NONE | wx.BU_EXACTFIT
 		obj = wx.lib.buttons.GenBitmapButton(self, wx.ID_ANY, bm, style=style)
@@ -1779,7 +1782,7 @@ def file_dialog(parent, tc, path_inf_dic={}):
 	return ret
 
 def load_yaml(filename, def_ret=None):
-	dir = os.path.abspath(os.path.dirname(__file__)) + "/"
+	dir = rtmgr_src_dir()
 	path = dir + filename
 	if not os.path.isfile(path):
 		return def_ret
@@ -1856,11 +1859,18 @@ def adjust_num_str(s):
 			s = s[:-1]
 	return s
 
+def rtmgr_src_dir():
+	return os.path.abspath(os.path.dirname(__file__)) + "/"
+
 def prn_dict(dic):
 	for (k,v) in dic.items():
 		print (k, ':', v)
 
 if __name__ == "__main__":
+	path = rtmgr_src_dir() + 'btnrc'
+	if os.path.exists(path):
+		gtk.rc_parse(path)
+
 	gettext.install("app")
 
 	app = MyApp(0)

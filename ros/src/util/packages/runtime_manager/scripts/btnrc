@@ -1,0 +1,7 @@
+style "button" {
+	fg[ACTIVE] = @bg_color
+	bg[ACTIVE] = shade (0.7, "#e0e0f0")
+}
+
+widget_class "*<GtkButton>" style "button"
+widget_class "*<GtkButton>*<GtkLabel>" style "button"
