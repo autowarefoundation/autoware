@@ -183,6 +183,32 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		#
+		# for Socket tab
+		#
+		tab = self.tab_socket
+
+		self.socket_cmd = {}
+		self.all_cmd_dics.append(self.socket_cmd)
+		self.socket_dic = self.load_yaml('socket.yaml')
+
+		self.add_params(self.socket_dic.get('params', []))
+
+		self.setup_buttons(self.socket_dic.get('buttons', {}), self.socket_cmd)
+
+		szr = wx.BoxSizer(wx.VERTICAL)
+		for cc in self.socket_dic.get('control_check', []):
+			pdic = {}
+			prm = self.get_param(cc.get('param'))
+			for var in prm['vars']:
+				pdic[ var['name'] ] = var['v']
+			gdic = self.gdic_get_1st(cc)
+			panel = ParamPanel(self.panel_socket_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
+			szr.Add(panel, 0, wx.EXPAND)
+		self.panel_socket_cc.SetSizer(szr)
+
+
+
+		#
 		# for Simulation Tab
 		#
 		self.simulation_cmd = {}
@@ -208,7 +234,6 @@ class MyFrame(rtmgr.MyFrame):
 				self.checkbox_sim_time.SetValue(True)
 		except subprocess.CalledProcessError:
 			pass
-
 
 		#
 		# for Main tab
@@ -237,16 +262,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.map_stat = False
 		self.bak_main_button_color = self.button_sensor.GetForegroundColour()
 
-		szr = wx.BoxSizer(wx.VERTICAL)
-		for cc in self.main_dic.get('control_check', []):
-			pdic = {}
-			prm = self.get_param(cc.get('param'))
-			for var in prm['vars']:
-				pdic[ var['name'] ] = var['v']
-			gdic = self.gdic_get_1st(cc)
-			panel = ParamPanel(self.panel_main_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
-			szr.Add(panel, 0, wx.EXPAND)
-		self.panel_main_cc.SetSizer(szr)
 
 		#
 		# for Data Tab
@@ -287,7 +302,13 @@ class MyFrame(rtmgr.MyFrame):
 		# for All
 		#
 		self.alias_grps = [
-			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, ],
+			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, self.button_rviz_computing,
+			  self.button_rviz_socket, ],
+			[ self.button_android_tablet_qs, self.button_android_tablet_socket, ],
+			[ self.button_oculus_rift_qs, self.button_oculus_rift_socket, ],
+			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_socket, ],
+			[ self.button_auto_pilot_qs, self.button_auto_pilot_socket,],
+
 			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
 			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
 			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
