@@ -206,6 +206,28 @@ class MyFrame(rtmgr.MyFrame):
 			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_socket_cc.SetSizer(szr)
 
+		#
+		# for Database tab
+		#
+		self.data_cmd = {}
+		self.all_cmd_dics.append(self.data_cmd)
+		dic = self.load_yaml('data.yaml')
+
+		self.add_params(dic.get('params', []))
+
+		parent = self.tree_ctrl_data.GetParent()
+		self.tree_ctrl_data.Destroy()
+		tree_ctrl = self.create_tree(parent, dic, None, None, self.data_cmd)
+		tree_ctrl.ExpandAll()
+		tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+		self.tree_ctrl_data = tree_ctrl
+
+		self.setup_config_param_pdic()
+
+		if 'buttons' in dic:
+			self.setup_buttons(dic['buttons'], self.data_cmd)
+
+		rtmgr.MyFrame.__do_layout(self)
 
 
 		#
@@ -263,28 +285,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.bak_main_button_color = self.button_sensor.GetForegroundColour()
 
 
-		#
-		# for Data Tab
-		#
-		self.data_cmd = {}
-		self.all_cmd_dics.append(self.data_cmd)
-		dic = self.load_yaml('data.yaml')
-
-		self.add_params(dic.get('params', []))
-
-		parent = self.tree_ctrl_data.GetParent()
-		self.tree_ctrl_data.Destroy()
-		tree_ctrl = self.create_tree(parent, dic, None, None, self.data_cmd)
-		tree_ctrl.ExpandAll()
-		tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
-		self.tree_ctrl_data = tree_ctrl
-
-		self.setup_config_param_pdic()
-
-		if 'buttons' in dic:
-			self.setup_buttons(dic['buttons'], self.data_cmd)
-
-		rtmgr.MyFrame.__do_layout(self)
 
 		#
 		# for Viewer Tab
@@ -298,12 +298,13 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.nodes_dic = self.nodes_dic_get()
 
+
 		#
 		# for All
 		#
 		self.alias_grps = [
 			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, self.button_rviz_computing,
-			  self.button_rviz_socket, ],
+			  self.button_rviz_socket, self.button_rviz_database, ],
 			[ self.button_android_tablet_qs, self.button_android_tablet_socket, ],
 			[ self.button_oculus_rift_qs, self.button_oculus_rift_socket, ],
 			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_socket, ],
