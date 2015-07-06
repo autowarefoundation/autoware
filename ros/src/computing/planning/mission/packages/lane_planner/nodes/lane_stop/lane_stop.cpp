@@ -174,7 +174,7 @@ int main(int argc, char **argv)
 						traffic_light_callback);
 
 	pub_ruled = n.advertise<waypoint_follower::lane>(
-		"ruled_waypoint",
+		"traffic_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 	pub_velocity = n.advertise<visualization_msgs::MarkerArray>(

@@ -511,7 +511,7 @@ int main(int argc, char **argv)
     ros::Subscriber config_sub = nh.subscribe("config/waypoint_loader", 10, config_callback);
 
     _lane_pub = nh.advertise<nav_msgs::Path>("lane_waypoint", 10, true);
-    _ruled_pub = nh.advertise<waypoint_follower::lane>("ruled_waypoint", 10, true);
+    _ruled_pub = nh.advertise<waypoint_follower::lane>("traffic_waypoint", 10, true);
     _vel_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 10, true);
     _mark_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 10, true);
     _lane_mark_pub = nh.advertise<visualization_msgs::Marker>("lane_waypoint_mark", 10, true);

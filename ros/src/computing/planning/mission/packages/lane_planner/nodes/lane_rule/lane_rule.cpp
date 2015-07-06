@@ -376,7 +376,7 @@ int main(int argc, char **argv)
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 	pub_ruled = n.advertise<waypoint_follower::lane>(
-		"ruled_waypoint",
+		"traffic_waypoint",
 		ADVERTISE_QUEUE_SIZE,
 		ADVERTISE_LATCH);
 	pub_red = n.advertise<waypoint_follower::lane>(
