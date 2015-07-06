@@ -36,7 +36,7 @@ static double cvtInt2Double_hue(int center, int range)
   }
 
   return converted;
-}
+} /* static double cvtInt2Double_hue() */
 
 
 static double cvtInt2Double_sat(int center, int range)
@@ -50,7 +50,7 @@ static double cvtInt2Double_sat(int center, int range)
   }
 
   return converted;
-}
+} /* static double cvtInt2Double_sat() */
 
 
 static double cvtInt2Double_val(int center, int range)
@@ -64,7 +64,8 @@ static double cvtInt2Double_val(int center, int range)
   }
 
   return converted;
-}
+} /* static double cvtInt2Double_val() */
+
 
 static void putResult_inText(Mat *image, const vector<Context> &contexts)
 {
@@ -117,7 +118,8 @@ static void putResult_inText(Mat *image, const vector<Context> &contexts)
               fontThickness,
               CV_AA);
     }
-}
+} /* static void putResult_inText() */
+
 
 static void image_raw_cb(const sensor_msgs::Image& image_source)
 {
@@ -125,7 +127,8 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
   //  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source);
   frame = cv_image->image.clone();
 
-}
+} /* static void image_raw_cb() */
+
 
 static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
 {
@@ -196,7 +199,7 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
   }
 
   prev_state = state_msg.traffic_light;
-}
+} /* static void extractedPos_cb() */
 
 
 static void tunedResult_cb(const road_wizard::TunedResult& msg)
@@ -222,7 +225,7 @@ static void tunedResult_cb(const road_wizard::TunedResult& msg)
   thSet.Green.Val.upper = cvtInt2Double_val(msg.Green.Val.center, msg.Green.Val.range);
   thSet.Green.Val.lower = cvtInt2Double_val(msg.Green.Val.center, -msg.Green.Val.range);
 
-}
+} /* static void tunedResult_cb() */
 
 
 int main(int argc, char* argv[]) {
@@ -265,7 +268,8 @@ int main(int argc, char* argv[]) {
   ros::spin();
 
   return 0;
-}
+} /* int main() */
+
 
 /*
   define magnitude relationship of context
@@ -274,7 +278,8 @@ static bool compareContext(const Context left, const Context right)
 {
   /* if lampRadius is bigger, context is smaller */
   return left.lampRadius >= right.lampRadius;
-}
+} /* static bool compareContext() */
+
 
 void setContexts(TrafficLightDetector &detector,
                  const road_wizard::Signals::ConstPtr& extractedPos)
@@ -380,4 +385,4 @@ void setContexts(TrafficLightDetector &detector,
   for (unsigned int i=0; i<updatedSignals.size(); i++) {
     detector.contexts.at(i) = updatedSignals.at(i);
   }
-}
+} /* void setContexts() */
