@@ -175,3 +175,12 @@ target_link_libraries(calibration_toolkit
   ${Qt5LIBROOT}/libQt5Widgets.so
   nlopt
 )
+
+# calibration_publisher
+add_executable(calibration_publisher
+  nodes/calibration_publisher/calibration_publisher.cpp
+  )
+
+target_link_libraries(calibration_publisher
+  ${catkin_LIBRARIES}
+  )
