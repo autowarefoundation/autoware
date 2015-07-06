@@ -253,7 +253,7 @@ int main (int argc, char *argv[])
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
   //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/ndt_pose", 10, ndtPoseCallback);
-  ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("traffic_light_pixel_xy", 100);
+  ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);
   signal (SIGINT, interrupt);
 
   Rate loop (25);

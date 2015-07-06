@@ -256,10 +256,10 @@ int main(int argc, char* argv[]) {
   ros::NodeHandle n;
 
   ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_cb);
-  ros::Subscriber position_sub = n.subscribe("/traffic_light_pixel_xy", 1, extractedPos_cb);
+  ros::Subscriber position_sub = n.subscribe("/roi_signal", 1, extractedPos_cb);
   ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
 
-  signalState_pub = n.advertise<runtime_manager::traffic_light>("/traffic_light", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+  signalState_pub = n.advertise<runtime_manager::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
 
   ros::spin();
