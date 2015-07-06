@@ -14,6 +14,9 @@ public:
 	Point redCenter;
 	Point yellowCenter;
 	Point greenCenter;
+    Point3d redCenter3d;
+    Point3d yellowCenter3d;
+    Point3d greenCenter3d;
 	int lampRadius;
 	Point topLeft;
 	Point botRight;

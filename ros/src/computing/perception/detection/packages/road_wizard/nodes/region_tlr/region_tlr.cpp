@@ -9,13 +9,17 @@
 #include <runtime_manager/traffic_light.h>
 #include <std_msgs/String.h>
 #include "road_wizard/TunedResult.h"
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 thresholdSet thSet;
 
 static ros::Publisher signalState_pub;
 static ros::Publisher signalStateString_pub;
+static ros::Publisher marker_pub;
 static constexpr int32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool    ADVERTISE_LATCH      = true;
+static uint32_t          shape                = visualization_msgs::Marker::SPHERE;
 
 using namespace cv;
 // Variables
@@ -198,6 +202,125 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
     signalStateString_pub.publish(state_string_msg);
   }
 
+  std_msgs::ColorRGBA color_black;
+  color_black.r = 0.0f;
+  color_black.g = 0.0f;
+  color_black.b = 0.0f;
+  color_black.a = 1.0f;
+
+  std_msgs::ColorRGBA color_red;
+  color_red.r = 1.0f;
+  color_red.g = 0.0f;
+  color_red.b = 0.0f;
+  color_red.a = 1.0f;
+
+  std_msgs::ColorRGBA color_yellow;
+  color_yellow.r = 1.0f;
+  color_yellow.g = 1.0f;
+  color_yellow.b = 0.0f;
+  color_yellow.a = 1.0f;
+
+  std_msgs::ColorRGBA color_green;
+  color_green.r = 0.0f;
+  color_green.g = 1.0f;
+  color_green.b = 0.0f;
+  color_green.a = 1.0f;
+
+  /* publish all detected result as ROS Marker */
+  for (unsigned int i=0; i<detector.contexts.size(); i++)
+    {
+      Context ctx = detector.contexts.at(i);
+      visualization_msgs::MarkerArray signalSet;
+      visualization_msgs::Marker mk_red, mk_yellow, mk_green;
+
+      /* Set the frame ID */
+      mk_red.header.frame_id    = "map";
+      mk_yellow.header.frame_id = "map";
+      mk_green.header.frame_id  = "map";
+
+      /* Set the namespace and id for this marker */
+      mk_red.ns    = "tlr_result_red";
+      mk_yellow.ns = "tlr_result_yellow";
+      mk_green.ns  = "tlr_result_green";
+      mk_red.id    = ctx.signalID;
+      mk_yellow.id = ctx.signalID;
+      mk_green.id  = ctx.signalID;
+
+      /* Set the marker type */
+      mk_red.type    = shape;
+      mk_yellow.type = shape;
+      mk_green.type  = shape;
+
+      /* Set the pose of the marker */
+      mk_red.pose.position.x    = ctx.redCenter3d.x;
+      mk_red.pose.position.y    = ctx.redCenter3d.y;
+      mk_red.pose.position.z    = ctx.redCenter3d.z;
+      mk_yellow.pose.position.x = ctx.yellowCenter3d.x;
+      mk_yellow.pose.position.y = ctx.yellowCenter3d.y;
+      mk_yellow.pose.position.z = ctx.yellowCenter3d.z;
+      mk_green.pose.position.x  = ctx.greenCenter3d.x;
+      mk_green.pose.position.y  = ctx.greenCenter3d.y;
+      mk_green.pose.position.z  = ctx.greenCenter3d.z;
+
+      mk_red.pose.orientation.x    = 0.0;
+      mk_red.pose.orientation.y    = 0.0;
+      mk_red.pose.orientation.y    = 0.0;
+      mk_red.pose.orientation.w    = 0.0;
+      mk_yellow.pose.orientation.x = 0.0;
+      mk_yellow.pose.orientation.y = 0.0;
+      mk_yellow.pose.orientation.y = 0.0;
+      mk_yellow.pose.orientation.w = 0.0;
+      mk_green.pose.orientation.x  = 0.0;
+      mk_green.pose.orientation.y  = 0.0;
+      mk_green.pose.orientation.y  = 0.0;
+      mk_green.pose.orientation.w  = 0.0;
+
+      /* Set the scale of the marker -- We assume lamp radius as 30cm */
+      mk_red.scale.x    = (double)0.3;
+      mk_red.scale.y    = (double)0.3;
+      mk_red.scale.z    = (double)0.3;
+      mk_yellow.scale.x = (double)0.3;
+      mk_yellow.scale.y = (double)0.3;
+      mk_yellow.scale.z = (double)0.3;
+      mk_green.scale.x  = (double)0.3;
+      mk_green.scale.y  = (double)0.3;
+      mk_green.scale.z  = (double)0.3;
+
+      /* Set the color */
+      switch (ctx.lightState) {
+      case GREEN:
+        mk_red.color    = color_black;
+        mk_yellow.color = color_black;
+        mk_green.color  = color_green;
+        break;
+      case YELLOW:
+        mk_red.color    = color_black;
+        mk_yellow.color = color_yellow;
+        mk_green.color  = color_black;
+        break;
+      case RED:
+        mk_red.color    = color_red;
+        mk_yellow.color = color_black;
+        mk_green.color  = color_black;
+        break;
+      case UNDEFINED:
+        mk_red.color    = color_black;
+        mk_yellow.color = color_black;
+        mk_green.color  = color_black;
+        break;
+      }
+
+      mk_red.lifetime    = ros::Duration(0.1);
+      mk_yellow.lifetime = ros::Duration(0.1);
+      mk_green.lifetime  = ros::Duration(0.1);
+
+      signalSet.markers.push_back(mk_red);
+      signalSet.markers.push_back(mk_yellow);
+      signalSet.markers.push_back(mk_green);
+
+      marker_pub.publish(signalSet);
+    }
+
   prev_state = state_msg.traffic_light;
 } /* static void extractedPos_cb() */
 
@@ -258,12 +381,13 @@ int main(int argc, char* argv[]) {
 
   ros::NodeHandle n;
 
-  ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_cb);
-  ros::Subscriber position_sub = n.subscribe("/roi_signal", 1, extractedPos_cb);
+  ros::Subscriber image_sub       = n.subscribe("/image_raw", 1, image_raw_cb);
+  ros::Subscriber position_sub    = n.subscribe("/roi_signal", 1, extractedPos_cb);
   ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
 
-  signalState_pub = n.advertise<runtime_manager::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+  signalState_pub       = n.advertise<runtime_manager::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
+  marker_pub            = n.advertise<visualization_msgs::MarkerArray>("tlr_result", ADVERTISE_QUEUE_SIZE);
 
   ros::spin();
 
@@ -295,6 +419,9 @@ void setContexts(TrafficLightDetector &detector,
       tmp.u        = extractedPos->Signals.at(i).u;
       tmp.v        = extractedPos->Signals.at(i).v;
       tmp.radius   = extractedPos->Signals.at(i).radius;
+      tmp.x        = extractedPos->Signals.at(i).x;
+      tmp.y        = extractedPos->Signals.at(i).y;
+      tmp.z        = extractedPos->Signals.at(i).z;
       tmp.type     = extractedPos->Signals.at(i).type;
       tmp.linkId   = extractedPos->Signals.at(i).linkId;
       signals.push_back(tmp);
@@ -326,6 +453,9 @@ void setContexts(TrafficLightDetector &detector,
         {
           int img_x = sig_iterator->u;
           int img_y = sig_iterator->v;
+          double map_x = sig_iterator->x;
+          double map_y = sig_iterator->y;
+          double map_z = sig_iterator->z;
           int radius = sig_iterator->radius;
           if (sig_iterator->linkId == linkid_vector.at(ctx_idx) &&
               0 < img_x - radius - 1.5 * min_radius && img_x + radius + 1.5 * min_radius < frame.cols &&
@@ -333,14 +463,17 @@ void setContexts(TrafficLightDetector &detector,
             {
               switch (sig_iterator->type) {
               case 1:           /* RED */
-                ctx.redCenter    = Point( img_x, img_y );
+                ctx.redCenter   = Point( img_x, img_y );
+                ctx.redCenter3d = Point3d( map_x, map_y, map_z );
                 break;
               case 2:           /* GREEN */
-                ctx.greenCenter  = Point( img_x, img_y );
+                ctx.greenCenter   = Point( img_x, img_y );
+                ctx.greenCenter3d = Point3d( map_x, map_y, map_z );
                 break;
               case 3:           /* YELLOW */
-                ctx.yellowCenter = Point( img_x, img_y );
-                ctx.signalID     = sig_iterator->signalId; // use yellow light signalID as this context's representative
+                ctx.yellowCenter   = Point( img_x, img_y );
+                ctx.yellowCenter3d = Point3d( map_x, map_y, map_z );
+                ctx.signalID       = sig_iterator->signalId; // use yellow light signalID as this context's representative
                 break;
               }
               min_radius    = (min_radius > radius) ? radius : min_radius;
