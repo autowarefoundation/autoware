@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lf_func.h"
+#include "../../waypoint_follower/include/lf_func.h"
 
 /////////////////////////////////////////////////////////////////
 // transform the waypoint to the vehicle plane.

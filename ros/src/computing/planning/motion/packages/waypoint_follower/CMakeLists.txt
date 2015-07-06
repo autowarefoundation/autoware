@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lane_follower)
+project(waypoint_follower)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -57,7 +57,7 @@ lane_follower_generate_messages_cpp)
 add_executable(pure_pursuit nodes/pure_pursuit/pure_pursuit.cpp)
 target_link_libraries(pure_pursuit gnss lf_func ${catkin_LIBRARIES})
 add_dependencies(pure_pursuit 
-lane_follower_generate_messages_cpp
+waypoint_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
 add_executable(odom_gen nodes/odom_gen/odom_gen.cpp)
@@ -66,7 +66,7 @@ target_link_libraries(odom_gen ${catkin_LIBRARIES})
 add_executable(distance_keep nodes/distance_keep/distance_keep.cpp)
 target_link_libraries(distance_keep lf_func ${catkin_LIBRARIES})
 add_dependencies(distance_keep 
-lane_follower_generate_messages_cpp)
+waypoint_follower_generate_messages_cpp)
 
 add_executable(twist_through nodes/distance_keep/twist_through.cpp)
 target_link_libraries(twist_through ${catkin_LIBRARIES})

@@ -42,7 +42,7 @@
 #include <std_msgs/Bool.h>
 
 //#include "geo_pos_conv.hh"
-#include "lf_func.h"
+#include "../../../waypoint_follower/include/lf_func.h"
 
 #define LOOP_RATE 10 //Hz
 
