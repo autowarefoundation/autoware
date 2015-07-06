@@ -465,7 +465,7 @@ int main(int argc, char **argv)
     _stat_pub = nh.advertise<std_msgs::Bool>("lf_stat", 0);
 
     //subscribe topic
-    ros::Subscriber waypoint_subcscriber = nh.subscribe("ruled_waypoint", 1000, WayPointCallback);
+    ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 1000, WayPointCallback);
     ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1000, OdometryPoseCallback);
     ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
     ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
