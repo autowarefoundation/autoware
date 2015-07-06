@@ -45,3 +45,6 @@ add_dependencies(lane_stop
   waypoint_follower_generate_messages_cpp
   runtime_manager_generate_messages_cpp
 )
+
+add_executable(lane_change nodes/lane_change/lane_change.cpp)
+target_link_libraries(lane_change ${catkin_LIBRARIES})
