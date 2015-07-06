@@ -227,28 +227,24 @@ class MyFrame(rtmgr.MyFrame):
 		if 'buttons' in dic:
 			self.setup_buttons(dic['buttons'], self.data_cmd)
 
-		rtmgr.MyFrame.__do_layout(self)
-
-
 		#
 		# for Simulation Tab
 		#
 		self.simulation_cmd = {}
 		self.all_cmd_dics.append(self.simulation_cmd)
-		dic = self.load_yaml('simulation_launch_cmd.yaml')
+		dic = self.load_yaml('simulation.yaml')
 
 		self.add_params(dic.get('params', []))
 		self.selector.update(dic.get('selector', {}))
 
-		self.create_checkboxes(dic, self.panel_simulation, None, None, self.simulation_cmd, self.OnSimulation)
+		self.setup_buttons(dic.get('buttons'), self.simulation_cmd)
 
-		if 'buttons' in dic:
-			self.setup_buttons(dic['buttons'], self.simulation_cmd)
-		if 'checkboxs' in dic:
-			self.setup_buttons(dic['checkboxs'], self.simulation_cmd)
+		btn = self.button_play_rosbag_play
+		pnl = self.panel_rosbag_play
+		self.set_param_panel(btn, pnl)
 
-		#self.set_param_panel(self.button_launch_vmap, self.panel_vmap_prm)
-		#self.set_param_panel(self.button_launch_trajectory, self.panel_trajectory_prm)
+		vp = self.obj_to_varpanel(btn, 'sim_time')
+		self.checkbox_sim_time = vp.obj
 
 		try:
 			cmd = ['rosparam', 'get', '/use_sim_time']
@@ -256,6 +252,9 @@ class MyFrame(rtmgr.MyFrame):
 				self.checkbox_sim_time.SetValue(True)
 		except subprocess.CalledProcessError:
 			pass
+
+		rtmgr.MyFrame.__do_layout(self)
+
 
 		#
 		# for Main tab
@@ -304,15 +303,12 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		self.alias_grps = [
 			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, self.button_rviz_computing,
-			  self.button_rviz_socket, self.button_rviz_database, ],
+			  self.button_rviz_socket, self.button_rviz_database, self.button_rviz_simulation, ],
 			[ self.button_android_tablet_qs, self.button_android_tablet_socket, ],
 			[ self.button_oculus_rift_qs, self.button_oculus_rift_socket, ],
 			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_socket, ],
 			[ self.button_auto_pilot_qs, self.button_auto_pilot_socket,],
 
-			[ self.button_launch_rosbag_play, self.button_launch_main_rosbag_play, ],
-			[ self.button_kill_rosbag_play, self.button_kill_main_rosbag_play, ],
-			[ self.button_pause_rosbag_play, self.button_pause_main_rosbag_play, ],
 			[ self.text_ctrl_file_rosbag_play, self.text_ctrl_main_rosbag_play, ],
 			[ self.button_ref_file_rosbag_play, self.button_ref_main_rosbag_play, ],
 			[ self.text_ctrl_rate_rosbag_play, self.text_ctrl_rate_main_rosbag_play, ],
@@ -527,37 +523,48 @@ class MyFrame(rtmgr.MyFrame):
 			return None
 		self.update_func(pdic, gdic, prm)
 		s = ''
+
+		vars = []
 		for var in prm.get('vars'):
 			cmd_param = var.get('cmd_param')
 			if cmd_param:
-				name = var.get('name')
-				v = pdic.get(name)
-				if (v is None or v == '') and 'default' in cmd_param:
-					v = cmd_param.get('default')
-				if cmd_param.get('must') and (v is None or v == ''):
-					print 'cmd_param', name, 'is must'
-					wx.MessageBox('cmd_param ' + name + ' is must')
-					return False
-				if cmd_param.get('only_enable') and not v:
-					continue
-				name = cmd_param.get('var_name', name)
-				unpack = cmd_param.get('unpack')
-				if unpack is not None:
-					v = ' '.join( v.split(unpack) )
-				add = ''
-				dash = cmd_param.get('dash')
-				if dash is not None:
-					add += dash + name
-				delim = cmd_param.get('delim')
-				if delim is not None:
-					str_v = str(v)
-					if var.get('kind') is None:
-						str_v = adjust_num_str(str_v)
-					if var.get('kind') == 'path':
-						str_v = os.path.expandvars(os.path.expanduser(str_v))
-					add += delim + str_v
-				if add != '':
-					s += add + ' '
+				vars.append(var)
+
+		for var in vars[:]: # copy
+			cmd_param = var.get('cmd_param')
+			if cmd_param.get('tail'):
+				vars.append( vars.pop(0) )
+
+		for var in vars:
+			cmd_param = var.get('cmd_param')
+			name = var.get('name')
+			v = pdic.get(name)
+			if (v is None or v == '') and 'default' in cmd_param:
+				v = cmd_param.get('default')
+			if cmd_param.get('must') and (v is None or v == ''):
+				print 'cmd_param', name, 'is must'
+				wx.MessageBox('cmd_param ' + name + ' is must')
+				return False
+			if cmd_param.get('only_enable') and not v:
+				continue
+			name = cmd_param.get('var_name', name)
+			unpack = cmd_param.get('unpack')
+			if unpack is not None:
+				v = ' '.join( v.split(unpack) )
+			add = ''
+			dash = cmd_param.get('dash')
+			if dash is not None:
+				add += dash + name
+			delim = cmd_param.get('delim')
+			if delim is not None:
+				str_v = str(v)
+				if var.get('kind') is None:
+					str_v = adjust_num_str(str_v)
+				if var.get('kind') == 'path':
+					str_v = os.path.expandvars(os.path.expanduser(str_v))
+				add += delim + str_v
+			if add != '':
+				s += add + ' '
 		return s.strip(' ').split(' ') if s != '' else None
 
 	def obj_to_pdic_gdic_prm(self, obj):
@@ -632,6 +639,9 @@ class MyFrame(rtmgr.MyFrame):
 			rosparam = var['rosparam']
 			v = pdic.get(name)
 			v = str(v)
+			cvdic = { 'True':'true', 'False':'false' }
+			if v in cvdic:
+				v = cvdic.get(v)
 			exist = rosparam in rosparams
 			if exist:
 				cmd = [ 'rosparam', 'get', rosparam ]
@@ -1006,6 +1016,26 @@ class MyFrame(rtmgr.MyFrame):
 		if proc != proc_bak:
 			self.toggle_enable_obj(obj)
 
+	def OnRosbagPlay(self, event):
+		obj = event.GetEventObject()
+
+		play = self.button_play_rosbag_play
+		stop = self.button_stop_rosbag_play
+		pause = self.button_pause_rosbag_play
+
+		if obj == play:
+			self.OnLaunchKill_obj(play)
+			set_val(stop, False)
+			set_val(pause, False)
+		elif obj == stop:
+			set_val(play, False)
+			set_val(pause, False)
+			self.OnLaunchKill_obj(play)
+		elif obj == pause:
+			(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(play)
+			if proc:
+				proc.stdin.write(' ')
+			
 	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()
 		pause_obj = self.alias_grp_top_obj(pause_obj)
@@ -1247,7 +1277,9 @@ class MyFrame(rtmgr.MyFrame):
 
 	def toggle_enable_obj(self, obj):
 		objs = []
-		pfs = [ 'button_launch_', 'button_kill_', 'button_pause_', 'button_ref_', 'text_ctrl_' ]
+		pfs = [ 'button_launch_', 'button_kill_',
+			'button_play_', 'button_stop_', 'button_pause_',
+			'button_ref_', 'text_ctrl_' ]
 		key = self.obj_key_get(obj, pfs)
 		if key:
 			objs += self.key_objs_get(pfs, key)
