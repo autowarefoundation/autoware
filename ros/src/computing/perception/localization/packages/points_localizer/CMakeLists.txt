@@ -34,11 +34,14 @@ add_executable(ndt_pcl nodes/ndt_pcl/ndt_pcl.cpp)
 add_executable(ndt_slam nodes/ndt_slam/ndt_slam.cpp)
 add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(pos_marker nodes/pos_marker/pos_marker.cpp)
+add_executable(ndt_pose_extractor nodes/ndt_pose_extractor/ndt_pose_extractor.cpp)
+
 
 target_link_libraries(ndt_pcl ${catkin_LIBRARIES})
 target_link_libraries(ndt_slam ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(pos_marker ${catkin_LIBRARIES})
+target_link_libraries(ndt_pose_extractor ${catkin_LIBRARIES})
 
 add_dependencies(ndt_pcl runtime_manager_generate_messages_cpp)
 add_dependencies(ndt_slam runtime_manager_generate_messages_cpp)
