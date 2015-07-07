@@ -13,9 +13,9 @@ buttons :
     run   : rosrun map_file points_map_loader
     param : points_map_loader
     gui   :
+      stdout_func : self.point_cloud_progress_bar
       path_pcd :
         func    : self.tc_point_cloud.GetValue()
-        #restore : 'lambda v, tc=self.tc_point_cloud : set_path(tc, v)'
 
   points_map_loader_update :
     run   : rosrun map_file points_map_loader

@@ -134,6 +134,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.tc_point_cloud = self.obj_to_varpanel_tc(self.button_point_cloud, 'path_pcd')
 		self.tc_area_list = self.obj_to_varpanel_tc(self.button_area_lists, 'path_area_list')
 
+		self.label_point_cloud_bar.Destroy()
+		self.label_point_cloud_bar = BarLabel(tab, '  Loading...  ', style=wx.ALIGN_CENTRE)
+
 		#
 		# for Sensing tab
 		#
@@ -209,6 +212,8 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Database tab
 		#
+		tab = self.tab_database
+
 		self.data_cmd = {}
 		self.all_cmd_dics.append(self.data_cmd)
 		dic = self.load_yaml('data.yaml')
@@ -230,6 +235,8 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for Simulation Tab
 		#
+		tab = self.tab_simulation
+
 		self.simulation_cmd = {}
 		self.all_cmd_dics.append(self.simulation_cmd)
 		dic = self.load_yaml('simulation.yaml')
@@ -252,6 +259,9 @@ class MyFrame(rtmgr.MyFrame):
 				self.checkbox_sim_time.SetValue(True)
 		except subprocess.CalledProcessError:
 			pass
+
+		self.label_rosbag_play_bar.Destroy()
+		self.label_rosbag_play_bar = BarLabel(tab, '  Playing...  ', style=wx.ALIGN_CENTRE)
 
 		#
 		# for Status tab
@@ -391,9 +401,7 @@ class MyFrame(rtmgr.MyFrame):
 				b.SetValue(act)
 
 	def stat_label_off(self, obj):
-		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
-		if gdic is None:
-			gdic = {}
+		gdic = self.obj_to_gdic(obj, {})
 		data = std_msgs.msg.Bool(False)
 		for k in gdic.get('stat_topic', []):
 			cb = getattr(self, k + '_stat_callback', None)
@@ -523,6 +531,10 @@ class MyFrame(rtmgr.MyFrame):
 		prm = info.get('param')
 		gdic = info.get('gdic')
 		return (pdic, gdic, prm)
+
+	def obj_to_gdic(self, obj, def_ret=None):
+		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj) if obj else (None, None, None)
+		return gdic if gdic else def_ret
 
 	def update_func(self, pdic, gdic, prm):
 		for var in prm.get('vars', []):
@@ -824,8 +836,7 @@ class MyFrame(rtmgr.MyFrame):
 		gdic[ k ] = gdic.get(k, []) + [ panel ]
 
 	def obj_to_varpanel(self, obj, var_name):
-		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
-		gdic = gdic if gdic else {}
+		gdic = self.obj_to_gdic(obj, {})
 		return gdic.get(var_name, {}).get('var')
 
 	def obj_to_varpanel_tc(self, obj, var_name):
@@ -982,6 +993,56 @@ class MyFrame(rtmgr.MyFrame):
 			if proc:
 				proc.stdin.write(' ')
 			
+	def stdout_file_search(self, file, k):
+		s = ''
+		while True:
+			c = file.read(1)
+			if not c:
+				return None
+			if c != '\r' and c != '\n':
+				s += c
+				continue
+			s = s.strip()
+			if k in s:
+				break
+			s = ''
+		i = s.find(k) + len(k)
+		return s[i:]
+
+	def point_cloud_progress_bar(self, file):
+		print 'map bar'
+		obj = self.button_point_cloud
+		(pdic, _, _) = self.obj_to_pdic_gdic_prm(obj)
+		n = len(pdic.get('path_pcd', '').split(','))
+		if n == 0:
+			return
+		i = 0
+		while True:
+			s = self.stdout_file_search(file, 'load ')
+			if not s:
+				break;
+			i = i + 1
+			wx.CallAfter(self.label_point_cloud_bar.set, 100 * i / n)
+
+	def rosbag_play_progress_bar(self, file):
+		while True:
+			s = self.stdout_file_search(file, 'Duration:')
+			if not s:
+				break;
+			lst = s.split()
+			pos = float(lst[0])
+			# lst[1] is '/'
+			total = float(lst[2])
+			if total == 0:
+				continue
+			prg = int(100 * pos / total + 0.5)
+			pos = str(int(pos))
+			total = str(int(total))
+
+			wx.CallAfter(self.label_rosbag_play_bar.set, prg)
+			wx.CallAfter(self.label_rosbag_play_pos.SetLabel, pos)
+			wx.CallAfter(self.label_rosbag_play_total.SetLabel, total)
+
 	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()
 		pause_obj = self.alias_grp_top_obj(pause_obj)
@@ -1137,9 +1198,18 @@ class MyFrame(rtmgr.MyFrame):
 			if add_args:
 				args += add_args
 			print(args) # for debug
-			proc = subprocess.Popen(args, stdin=subprocess.PIPE)
+
+			f = self.obj_to_gdic(obj, {}).get('stdout_func')
+			f = eval(f) if type(f) is str else f
+			out = subprocess.PIPE if f else None
+			err = subprocess.STDOUT if f else None
+
+			proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
 			self.all_procs.append(proc)
 			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
+
+			if f:
+				threading.Thread(target=f, kwargs={'file':proc.stdout}).start()
 		else:
 			terminate_children(proc, sigint)
 			terminate(proc, sigint)
@@ -1231,9 +1301,8 @@ class MyFrame(rtmgr.MyFrame):
 		if key:
 			objs += self.key_objs_get(pfs, key)
 			
-		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj)
-		if gdic:
-			objs += [ (eval(e) if type(e) is str else e) for e in gdic.get('ext_toggle_enables', []) ]
+		gdic = self.obj_to_gdic(obj, {})
+		objs += [ (eval(e) if type(e) is str else e) for e in gdic.get('ext_toggle_enables', []) ]
 
 		self.toggle_enables(objs)
 
@@ -1675,6 +1744,31 @@ class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
 	def OnOk(self, event):
 		self.panel.detach_func()
 		self.EndModal(0)
+
+class BarLabel(wx.Panel):
+	def __init__(self, parent, txt='', pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+		wx.Panel.__init__(self, parent, wx.ID_ANY, pos, size)
+		self.lb = wx.StaticText(self, wx.ID_ANY, '', style=style)
+		self.txt = txt
+		self.prg = -1
+		self.Bind(wx.EVT_PAINT, self.OnPaint)
+
+	def set(self, prg):
+		self.prg = prg
+		self.lb.SetLabel(self.txt + str(prg) + '%' if prg >= 0 else '')
+		self.Refresh()
+
+	def clear(self):
+		self.set(-1)
+
+	def OnPaint(self, event):
+		dc = wx.PaintDC(self)
+		(w,h) = self.GetSize()
+		p = w * self.prg / 100
+		rect = wx.Rect(0, 0, p, h)
+		dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(128,128,128), wx.SOUTH)
+		rect = wx.Rect(p, 0, w-p, h)
+		dc.GradientFillLinear(rect, wx.Colour(200,200,200), wx.Colour(220,220,220), wx.SOUTH)
 
 class MyApp(wx.App):
 	def OnInit(self):
