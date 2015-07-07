@@ -929,9 +929,6 @@ rosrun map_file vector_map_loader <csv files>
 
   std::cerr << "start publish vector map" << std::endl;
 
-#if 0
-
-#endif
   marker.id = 0;
 
   // road data
