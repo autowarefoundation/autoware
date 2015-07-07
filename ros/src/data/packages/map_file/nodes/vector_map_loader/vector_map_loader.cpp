@@ -77,7 +77,7 @@ std::vector<RoadEdge> read_roadedge(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<RoadEdge> ret(max_id + 1);
+  std::vector<RoadEdge> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -100,7 +100,7 @@ std::vector<Gutter> read_gutter(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<Gutter> ret(max_id + 1);
+  std::vector<Gutter> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -126,7 +126,7 @@ std::vector<Curb> read_curb(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<Curb> ret(max_id + 1);
+  std::vector<Curb> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -154,7 +154,7 @@ std::vector<WhiteLine> read_whiteline(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<WhiteLine> ret(max_id + 1);
+  std::vector<WhiteLine> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -181,7 +181,7 @@ std::vector<StopLine> read_stopline(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<StopLine> ret(max_id + 1);
+  std::vector<StopLine> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -205,7 +205,7 @@ std::vector<ZebraZone> read_zebrazone(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<ZebraZone> ret(max_id + 1);
+  std::vector<ZebraZone> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -229,7 +229,7 @@ std::vector<CrossWalk> read_crosswalk(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<CrossWalk> ret(max_id + 1);
+  std::vector<CrossWalk> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -254,7 +254,7 @@ std::vector<RoadSurfaceMark> read_roadsurfacemark(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<RoadSurfaceMark> ret(max_id + 1);
+  std::vector<RoadSurfaceMark> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -277,7 +277,7 @@ std::vector<PoleData> read_poledata(const char* filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<PoleData> ret(max_id + 1);
+  std::vector<PoleData> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -301,7 +301,7 @@ std::vector<SignalData> read_signaldata(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<SignalData> ret(max_id + 1);
+  std::vector<SignalData> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -326,7 +326,7 @@ std::vector<StreetLight> read_streetlight(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<StreetLight> ret(max_id + 1);
+  std::vector<StreetLight> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -358,7 +358,7 @@ std::vector<PointClass> read_pointclass(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<PointClass> ret(max_id + 1);
+  std::vector<PointClass> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].pid = id;
@@ -388,7 +388,7 @@ std::vector<VectorClass> read_vectorclass(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<VectorClass> ret(max_id + 1);
+  std::vector<VectorClass> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].vid = id;
@@ -413,7 +413,7 @@ std::vector<LineClass> read_lineclass(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<LineClass> ret(max_id + 1);
+  std::vector<LineClass> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].lid = id;
@@ -437,7 +437,7 @@ std::vector<AreaClass> read_areaclass(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<AreaClass> ret(max_id + 1);
+  std::vector<AreaClass> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].aid = id;
@@ -460,7 +460,7 @@ std::vector<PoleClass> read_poleclass(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<PoleClass> ret(max_id + 1);
+  std::vector<PoleClass> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].plid = id;
@@ -486,7 +486,7 @@ std::vector<BoxClass> read_boxclass(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<BoxClass> ret(max_id + 1);
+  std::vector<BoxClass> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].bid = id;
@@ -520,7 +520,7 @@ std::vector<DTLane> read_dtlane(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<DTLane> ret(max_id + 1);
+  std::vector<DTLane> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].did = id;
@@ -548,7 +548,7 @@ std::vector<NodeData> read_nodedata(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<NodeData> ret(max_id + 1);
+  std::vector<NodeData> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].nid = id;
@@ -583,7 +583,7 @@ std::vector<LaneData> read_lanedata(const char *filename)
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<LaneData> ret(max_id + 1);
+  std::vector<LaneData> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].lnid = id;
