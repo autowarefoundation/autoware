@@ -26,10 +26,8 @@ buttons :
         restore : self.choice_scene_num.SetStringSelection
       path_area_list :
         func    : self.tc_area_list.GetValue()
-        #restore : 'lambda v, tc=self.tc_area_list : set_path(tc, v)'
       path_pcd :
         func    : self.tc_point_cloud.GetValue()
-        #restore : 'lambda v, tc=self.tc_point_cloud : set_path(tc, v)'
 
   vector_map :
     run   : rosrun map_file vector_map_loader
