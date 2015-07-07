@@ -47,7 +47,6 @@
 #ifdef USE_LIBSSH2
 #include <libssh2.h>
 
-static LIBSSH2_CHANNEL *channel;
 static const char *sshuser = "posup";
 static const char *sshpass = "NavoogohPia3";
 static const char *sshtunnelhost = "localhost";
