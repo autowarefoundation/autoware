@@ -162,7 +162,10 @@ int SendData::ConnectDB()
 int SendData::DisconnectDB(const char *msg)
 {
 	if(connected) {
-		if (channel) libssh2_channel_free(channel);
+		if (channel) {
+			libssh2_channel_free(channel);
+			channel = NULL;
+		}
 	        if (session) {
 			if(msg == NULL) 
 				libssh2_session_disconnect(session, "normal exit");
@@ -250,7 +253,6 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 		}
 		std::cout << "write return n=" << n << std::endl;
 	} else {
-		if (channel) libssh2_channel_free(channel);
 		DisconnectDB("tunnel failed");
 		return -5;
 	}
@@ -303,7 +305,6 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 			std::cerr << "count_line=" << j << std::endl;
 		}
 	} else {
-		if (channel) libssh2_channel_free(channel);
 		DisconnectDB("tunnel failed");
 		return -5;
 	}

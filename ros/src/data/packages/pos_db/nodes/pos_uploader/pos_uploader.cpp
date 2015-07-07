@@ -179,7 +179,7 @@ std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "("
 
   std::string res;
   int ret = sd.Sender(value, res, sql_num);
-  if (ret == -1) {
+  if (ret < 0) {
     std::cerr << "Failed: sd.Sender" << std::endl;
     return;
   }
