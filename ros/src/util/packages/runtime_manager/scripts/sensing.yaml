@@ -75,7 +75,12 @@ buttons:
     run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
 
   calibration_publisher :
-    run   : echo 'calibration publisher'
+    run   : echo 'calibration_publisher'
+    param : calibration_publisher
+    gui   :
+      flags : [ open_dialog ]
+      file  :
+        prop  : 1
 
   points_image :
     run   : rosrun points2image points2image
@@ -137,11 +142,20 @@ params :
 #        dash : ''
 #        delim: ':='
 
-  - name  : camera_extrinsicMat_Publisher
+  - name  : calibration_publisher
     vars  :
     - name      : file
       kind      : path
       v         : ''
       cmd_param :
-        dash : ''
-        delim: ':='
+        delim     : ''
+        must      : True
+
+#  - name  : camera_extrinsicMat_Publisher
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      cmd_param :
+#        dash : ''
+#        delim: ':='

@@ -459,6 +459,13 @@ class MyFrame(rtmgr.MyFrame):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return None
+
+		if 'open_dialog' in gdic.get('flags', []) and msg_box:
+			klass_dlg = globals().get(gdic.get('dialog', 'MyDialogParam'), MyDialogParam)
+			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
+			if dlg.ShowModal() != 0:
+				return False			
+
 		self.update_func(pdic, gdic, prm)
 		s = ''
 
@@ -945,7 +952,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_sync(obj)
 		obj = self.alias_grp_top_obj(obj)
 		v = obj.GetValue()
-		add_args = self.obj_to_add_args(obj)
+		add_args = self.obj_to_add_args(obj, msg_box=v) # no open dialog at kill
 		if add_args is False:
 			set_val(obj, not v)
 			return
