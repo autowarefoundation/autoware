@@ -861,6 +861,9 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(self.label_cpuinfo_qs.set, lbs)
 			wx.CallAfter(self.label_cpuinfo_status.set, lbs)
 
+			if float(v) >= 90 or rate >= 98:
+				wx.CallAfter(self.RequestUserAttention)
+
 			time.sleep(5)
 
 	#
