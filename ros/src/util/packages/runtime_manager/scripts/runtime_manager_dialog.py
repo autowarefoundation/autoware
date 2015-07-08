@@ -186,28 +186,28 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		#
-		# for Socket tab
+		# for Interface tab
 		#
-		tab = self.tab_socket
+		tab = self.tab_interface
 
-		self.socket_cmd = {}
-		self.all_cmd_dics.append(self.socket_cmd)
-		self.socket_dic = self.load_yaml('socket.yaml')
+		self.interface_cmd = {}
+		self.all_cmd_dics.append(self.interface_cmd)
+		self.interface_dic = self.load_yaml('interface.yaml')
 
-		self.add_params(self.socket_dic.get('params', []))
+		self.add_params(self.interface_dic.get('params', []))
 
-		self.setup_buttons(self.socket_dic.get('buttons', {}), self.socket_cmd)
+		self.setup_buttons(self.interface_dic.get('buttons', {}), self.interface_cmd)
 
 		szr = wx.BoxSizer(wx.VERTICAL)
-		for cc in self.socket_dic.get('control_check', []):
+		for cc in self.interface_dic.get('control_check', []):
 			pdic = {}
 			prm = self.get_param(cc.get('param'))
 			for var in prm['vars']:
 				pdic[ var['name'] ] = var['v']
 			gdic = self.gdic_get_1st(cc)
-			panel = ParamPanel(self.panel_socket_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
+			panel = ParamPanel(self.panel_interface_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
 			szr.Add(panel, 0, wx.EXPAND)
-		self.panel_socket_cc.SetSizer(szr)
+		self.panel_interface_cc.SetSizer(szr)
 
 		#
 		# for Database tab
@@ -276,12 +276,12 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.alias_grps = [
 			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, self.button_rviz_computing,
-			  self.button_rviz_socket, self.button_rviz_database, self.button_rviz_simulation,
+			  self.button_rviz_interface, self.button_rviz_database, self.button_rviz_simulation,
 			  self.button_rviz_status, ],
-			[ self.button_android_tablet_qs, self.button_android_tablet_socket, ],
-			[ self.button_oculus_rift_qs, self.button_oculus_rift_socket, ],
-			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_socket, ],
-			[ self.button_auto_pilot_qs, self.button_auto_pilot_socket,],
+			[ self.button_android_tablet_qs, self.button_android_tablet_interface, ],
+			[ self.button_oculus_rift_qs, self.button_oculus_rift_interface, ],
+			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_interface, ],
+			[ self.button_auto_pilot_qs, self.button_auto_pilot_interface,],
 		]
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
