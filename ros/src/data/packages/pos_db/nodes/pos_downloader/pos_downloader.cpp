@@ -46,6 +46,11 @@ publish data as ractangular plane
 #include <ctime>
 #include <pthread.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+
 #include <geo_pos_conv.hh>
 #include <pos_db.h>
 
@@ -72,6 +77,9 @@ static double pedestrian_dz;
 static ros::Publisher pub;
 
 static SendData sd;
+
+static char mac_addr[20];
+static int ignore_my_pose = 1;
 
 static std::vector<std::string> split(const string& input, char delimiter)
 {
@@ -240,6 +248,10 @@ static void marker_publisher(const std_msgs::String& msg, int is_swap)
     if(cols.size() != 11)
       continue;
 
+    if(ignore_my_pose && (cols[0].find(mac_addr, 0) != string::npos)) {
+      continue;	// don't publish Marker of my pose
+    }
+
     if (is_swap) {
       pose.position.x = std::stod(cols[2]);
       pose.position.y = std::stod(cols[1]);
@@ -364,6 +376,30 @@ int main(int argc, char **argv)
   double args[2];
 
   cout << MYNAME << endl;
+
+  if(argc >= 2) {
+    for(int i = 1; i < argc; i++) {
+      if(strncmp(argv[i], "show_my_pose", 12) == 0) ignore_my_pose = 0;
+    }
+  }
+
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    perror("socket");
+    return -1;
+  }
+  struct ifreq ifr;
+  ifr.ifr_addr.sa_family = AF_INET;
+  strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+  ioctl(sock, SIOCGIFHWADDR, &ifr);
+  close(sock);
+  snprintf(mac_addr, sizeof(mac_addr), "%.2x%.2x%.2x%.2x%.2x%.2x",
+         (unsigned char)ifr.ifr_hwaddr.sa_data[0],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[1],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[2],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[3],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[4],
+         (unsigned char)ifr.ifr_hwaddr.sa_data[5]);
 
   pub = nh.advertise<visualization_msgs::Marker>(MARKERNAME, 1);
   nh.param<double>(MYNAME "/time", args[0], STARTTIME);
