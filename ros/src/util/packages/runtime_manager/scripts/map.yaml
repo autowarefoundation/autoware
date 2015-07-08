@@ -19,6 +19,7 @@ buttons :
       - self.choice_scene_num
       - self.panel_area_lists
       - self.label_point_cloud_bar
+      stat_topic : [ pmap ]
       path_pcd :
         func    : self.tc_point_cloud.GetValue()
 
@@ -30,6 +31,7 @@ buttons :
       - self.checkbox_auto_update
       - self.choice_scene_num
       - self.panel_area_lists
+      stat_topic : [ pmap ]
       scene_num :
         func    : self.choice_scene_num.GetStringSelection()
         restore : self.choice_scene_num.SetStringSelection
@@ -41,6 +43,8 @@ buttons :
   vector_map :
     run   : rosrun map_file vector_map_loader
     param : vector_map_loader
+    gui   :
+      stat_topic : [ vmap ]
 
   area_lists :
     run   : echo 'area lists'

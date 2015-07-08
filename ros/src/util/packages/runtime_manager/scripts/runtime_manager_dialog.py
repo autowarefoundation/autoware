@@ -289,7 +289,17 @@ class MyFrame(rtmgr.MyFrame):
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
 
-		# for init button
+		# waypoint
+		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
+		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
+
+		# topic /xxx_stat
+		for k in [ 'gnss', 'pmap', 'vmap', 'ndt', 'lf' ]:
+			name = k + '_stat'
+			setattr(self, name, False)
+			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
+
+		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
 			  os.environ['HOME'] + '/.autoware/data/map/pointcloud_map',
 			  os.environ['HOME'] + '/.autoware/data/map/vector_map' ]
@@ -414,27 +424,34 @@ class MyFrame(rtmgr.MyFrame):
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
 
-	#def gnss_stat_callback(self, data):
+	def pmap_stat_callback(self, data):
+		self.pmap_stat = data.data
+		v = self.pmap_stat
+		wx.CallAfter(self.label_point_cloud.SetLabel, 'OK' if v else '')
+
+		v = self.pmap_stat and self.vmap_stat
+		wx.CallAfter(self.label_map_qs.SetLabel, 'OK' if v else '')
+
+	def vmap_stat_callback(self, data):
+		self.vmap_stat = data.data
+
+		v = self.pmap_stat and self.vmap_stat
+		wx.CallAfter(self.label_map_qs.SetLabel, 'OK' if v else '')
+
+	def gnss_stat_callback(self, data):
 	#	self.stat_set('gnss', data.data)
 	#	self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
+		pass
 
-	#def pmap_stat_callback(self, data):
-	#	self.pmap_stat = data.data
-	#	self.stat_set('map', self.pmap_stat and self.vmap_stat)
-	#	self.main_button_update(self.button_map, self.map_stat)
-
-	#def vmap_stat_callback(self, data):
-	#	self.vmap_stat = data.data
-	#	self.stat_set('map', self.pmap_stat and self.vmap_stat)
-	#	self.main_button_update(self.button_map, self.map_stat)
-
-	#def ndt_stat_callback(self, data):
+	def ndt_stat_callback(self, data):
 	#	self.stat_set('ndt', data.data)
 	#	self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
+		pass
 
-	#def lf_stat_callback(self, data):
+	def lf_stat_callback(self, data):
 	#	self.stat_set('lf', data.data)
 	#	self.main_button_update(self.button_control, self.lf_stat)
+		pass
 
 	#def stat_set(self, k, stat):
 	#	name = k + '_stat'
@@ -1013,7 +1030,6 @@ class MyFrame(rtmgr.MyFrame):
 		return s[i:]
 
 	def point_cloud_progress_bar(self, file):
-		print 'map bar'
 		obj = self.button_point_cloud
 		(pdic, _, _) = self.obj_to_pdic_gdic_prm(obj)
 		n = len(pdic.get('path_pcd', '').split(','))
