@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="CAR_TRACKING">
+</Property><Property Name="ソリューション ファイル" Value="C:\cygwin\home\hirabayashi\Image_recognition_new\CAR_TRACKING(VS2008_data_fusion)\CAR_TRACKING\CAR_TRACKING.sln">
+</Property><Property Name="ユーザー オプション ファイル" Value="C:\cygwin\home\hirabayashi\Image_recognition_new\CAR_TRACKING(VS2008_data_fusion)\CAR_TRACKING\CAR_TRACKING.suo">
+</Property><Property Name="Date" Value="2012年10月26日">
+</Property><Property Name="Time" Value="10:28">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="CAR_TRACKING.sln" Description="ファイルは正常に C:\cygwin\home\hirabayashi\Image_recognition_new\CAR_TRACKING(VS2008_data_fusion)\CAR_TRACKING\CAR_TRACKING.sln.old としてバックアップされました。">
+</Event><Event ErrorLevel="0" Project="" Source="CAR_TRACKING.suo" Description="ファイルは正常に C:\cygwin\home\hirabayashi\Image_recognition_new\CAR_TRACKING(VS2008_data_fusion)\CAR_TRACKING\CAR_TRACKING.suo.old としてバックアップされました。">
+</Event><Event ErrorLevel="3" Project="CAR_TRACKING" Source="CAR_TRACKING.vcproj" Description="変換の必要なし">
+</Event><Event ErrorLevel="0" Project="" Source="CAR_TRACKING.sln" Description="ソリューションは正常に変換されました">
+</Event><Event ErrorLevel="3" Project="" Source="CAR_TRACKING.sln" Description="Converted">
+</Event></UpgradeLog>
