@@ -112,6 +112,9 @@ class MyFrame(rtmgr.MyFrame):
 			pnl = self.obj_get('panel_' + nm + '_qs')
 			self.set_param_panel(btn, pnl)
 
+		self.label_cpuinfo_qs.Destroy()
+		self.label_cpuinfo_qs = ColorLabel(tab)
+
 		#
 		# for Map tab
 		#
@@ -135,7 +138,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.tc_area_list = self.obj_to_varpanel_tc(self.button_area_lists, 'path_area_list')
 
 		self.label_point_cloud_bar.Destroy()
-		self.label_point_cloud_bar = BarLabel(tab, '  Loading...  ', style=wx.ALIGN_CENTRE)
+		self.label_point_cloud_bar = BarLabel(tab, '  Loading...  ')
 		self.label_point_cloud_bar.Enable(False)
 
 		#
@@ -263,12 +266,16 @@ class MyFrame(rtmgr.MyFrame):
 			pass
 
 		self.label_rosbag_play_bar.Destroy()
-		self.label_rosbag_play_bar = BarLabel(tab, '  Playing...  ', style=wx.ALIGN_CENTRE)
+		self.label_rosbag_play_bar = BarLabel(tab, '  Playing...  ')
 		self.label_rosbag_play_bar.Enable(False)
 
 		#
 		# for Status tab
 		#
+		tab = self.tab_status
+
+		self.label_cpuinfo_status.Destroy()
+		self.label_cpuinfo_status = ColorLabel(tab)
 
 		#
 		# for All
@@ -298,6 +305,11 @@ class MyFrame(rtmgr.MyFrame):
 			name = k + '_stat'
 			setattr(self, name, False)
 			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
+
+		# top thread
+		th = threading.Thread(target=self.top_th)
+		th.daemon = True
+		th.start()
 
 		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
@@ -798,6 +810,60 @@ class MyFrame(rtmgr.MyFrame):
 	#
 
 	#
+	# Stauts tab
+	#
+
+	def info_col(self, v, v_yellow, v_red, col_normal, col_red):
+		if v < v_yellow:
+			return col_normal
+		if v < v_red:		
+			(nr,ng,nb) = col_normal
+			(rr,rg,rb) = col_red
+			return ( (nr+rr)/2, (ng+rg)/2, (nb+rb)/2 )
+		return col_red
+
+	# top thread
+	def top_th(self):
+		while True:
+			s = subprocess.check_output(['top', '-b', '-n' '1']).strip()
+			wx.CallAfter(self.label_top_cmd.SetLabel, s)
+			wx.CallAfter(self.label_top_cmd.GetParent().FitInside)
+
+			lbs = []
+			k = '%Cpu'
+			for t in s.split('\n'):
+				if t[:len(k)] != k:
+					continue
+				lst = t[1:].split()
+				v = lst[1] if lst[1] != ':' else lst[2]
+				tx = lst[0].strip(':').upper() + ':' + v + '% '
+				col = self.info_col(float(v), 80, 90, (64,64,64), (200,0,0))
+				lbs += [ col, tx ]
+
+			k = 'KiB Mem:'
+			for t in s.split('\n'):
+				if t[:len(k)] == k:
+					break
+			lst = t.split()
+                        (total, used) = ( int(lst[2]), int(lst[4]) )
+			rate = 100 * used / total
+
+			for u in [ 'KB', 'MB', 'GB', 'TB' ]:
+				if total <= 10 * 1024 or used <= 10:
+					break;
+				total /= 1024
+				used /= 1024
+
+			col = self.info_col(rate, 95, 98, (64,64,64), (200,0,0))
+			tx = 'MEM: ' + str(used) + u + '/' + str(total) + u + '(' + str(rate) + '%)'
+			lbs += [ '\n', col, tx ]
+
+			wx.CallAfter(self.label_cpuinfo_qs.set, lbs)
+			wx.CallAfter(self.label_cpuinfo_status.set, lbs)
+
+			time.sleep(5)
+
+	#
 	# Common Utils
 	#
 	def OnSelector(self, event):
@@ -1230,7 +1296,9 @@ class MyFrame(rtmgr.MyFrame):
 			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 
 			if f:
-				threading.Thread(target=f, kwargs={'file':proc.stdout}).start()
+				th = threading.Thread(target=f, kwargs={'file':proc.stdout})
+				th.daemon = True
+				th.start()
 		else:
 			terminate_children(proc, sigint)
 			terminate(proc, sigint)
@@ -1794,6 +1862,33 @@ class BarLabel(wx.Panel):
 		else:
 			rect = wx.Rect(0, 0, w, h)
 			dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(250,250,250), wx.SOUTH)
+
+class ColorLabel(wx.Panel):
+	def __init__(self, parent, lst=[], pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+		wx.Panel.__init__(self, parent, wx.ID_ANY, pos, size)
+		self.lst = lst
+		self.Bind(wx.EVT_PAINT, self.OnPaint)
+
+	def set(self, lst):
+		self.lst = lst
+		self.Refresh()
+
+	def OnPaint(self, event):
+		dc = wx.PaintDC(self)
+		dc.Clear()
+		(x,y) = (0,0)
+		(_, h, _, _) = dc.GetFullTextExtent(' ')
+		for v in self.lst:
+			if type(v) is tuple and len(v) == 2:
+				(x,y) = v
+			elif type(v) is tuple and len(v) == 3:
+				dc.SetTextForeground(v)
+			elif v == '\n':
+				(x,y) = (0,y+h)
+			elif type(v) is str:
+				dc.DrawText(v, x, y)
+				(w, _, _, _) = dc.GetFullTextExtent(v)
+				x += w
 
 class MyApp(wx.App):
 	def OnInit(self):
