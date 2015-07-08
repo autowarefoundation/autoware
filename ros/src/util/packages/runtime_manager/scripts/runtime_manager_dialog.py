@@ -136,6 +136,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.label_point_cloud_bar.Destroy()
 		self.label_point_cloud_bar = BarLabel(tab, '  Loading...  ', style=wx.ALIGN_CENTRE)
+		self.label_point_cloud_bar.Enable(False)
 
 		#
 		# for Sensing tab
@@ -263,6 +264,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.label_rosbag_play_bar.Destroy()
 		self.label_rosbag_play_bar = BarLabel(tab, '  Playing...  ', style=wx.ALIGN_CENTRE)
+		self.label_rosbag_play_bar.Enable(False)
 
 		#
 		# for Status tab
@@ -1024,6 +1026,7 @@ class MyFrame(rtmgr.MyFrame):
 				break;
 			i = i + 1
 			wx.CallAfter(self.label_point_cloud_bar.set, 100 * i / n)
+		wx.CallAfter(self.label_point_cloud_bar.clear)
 
 	def rosbag_play_progress_bar(self, file):
 		while True:
@@ -1043,6 +1046,7 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(self.label_rosbag_play_bar.set, prg)
 			wx.CallAfter(self.label_rosbag_play_pos.SetLabel, pos)
 			wx.CallAfter(self.label_rosbag_play_total.SetLabel, total)
+		wx.CallAfter(self.label_rosbag_play_bar.clear)
 
 	def OnPauseRosbagPlay(self, event):
 		pause_obj = event.GetEventObject()
@@ -1765,11 +1769,15 @@ class BarLabel(wx.Panel):
 	def OnPaint(self, event):
 		dc = wx.PaintDC(self)
 		(w,h) = self.GetSize()
-		p = w * self.prg / 100
-		rect = wx.Rect(0, 0, p, h)
-		dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(128,128,128), wx.SOUTH)
-		rect = wx.Rect(p, 0, w-p, h)
-		dc.GradientFillLinear(rect, wx.Colour(200,200,200), wx.Colour(220,220,220), wx.SOUTH)
+		if self.IsEnabled():
+			p = w * self.prg / 100
+			rect = wx.Rect(0, 0, p, h)
+			dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(128,128,128), wx.SOUTH)
+			rect = wx.Rect(p, 0, w-p, h)
+			dc.GradientFillLinear(rect, wx.Colour(200,200,200), wx.Colour(220,220,220), wx.SOUTH)
+		else:
+			rect = wx.Rect(0, 0, w, h)
+			dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(250,250,250), wx.SOUTH)
 
 class MyApp(wx.App):
 	def OnInit(self):

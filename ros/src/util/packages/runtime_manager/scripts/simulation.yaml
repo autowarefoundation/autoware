@@ -4,6 +4,8 @@ buttons:
     param : rosbag_play
     gui   :
       stdout_func : self.rosbag_play_progress_bar
+      ext_toggle_enables :
+      - self.label_rosbag_play_bar
       start :
         border : 20
         flags  : [ left ]
