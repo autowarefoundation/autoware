@@ -24,6 +24,10 @@ control_check :
       twist.angular.z :
         flags : [ no_category ]
 
+checkboxs :
+  sound :
+    run  : rosrun sound_player sound_player.py
+
 params :
   - name  : accel
     topic : /accel_cmd

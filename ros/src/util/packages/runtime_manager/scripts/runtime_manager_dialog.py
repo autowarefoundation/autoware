@@ -197,6 +197,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.add_params(self.interface_dic.get('params', []))
 
 		self.setup_buttons(self.interface_dic.get('buttons', {}), self.interface_cmd)
+		self.setup_buttons(self.interface_dic.get('checkboxs', {}), self.interface_cmd)
 
 		szr = wx.BoxSizer(wx.VERTICAL)
 		for cc in self.interface_dic.get('control_check', []):
