@@ -75,7 +75,7 @@ buttons:
     run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
 
   calibration_publisher :
-    run   : echo 'calibration_publisher'
+    run   : rosrun calibration_camera_lidar calibration_publisher
     param : calibration_publisher
     gui   :
       flags : [ open_dialog ]
