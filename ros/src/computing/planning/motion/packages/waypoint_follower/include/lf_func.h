@@ -28,36 +28,22 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _MAP_DB_H_
-#define _MAP_DB_H_
+#ifndef _LF_FUNC_H
+#define _LF_FUNC_H
 
-#include <cstdint>
-#include <string>
-#include <netinet/in.h>
-#define USE_LIBSSH2
-#ifdef USE_LIBSSH2
-#include <libssh2.h>
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+
+#include "waypoint_follower/lane.h"
+
+static tf::Vector3 _origin_v(0, 0, 0);
+
+int GetClosestWaypoint(tf::Transform transform, waypoint_follower::lane path,int current_closest);
+tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose);
+double DecelerateVelocity(double distance, double prev_velocity);
 #endif
-
-class SendData {
-private:
-	std::string host_name_;
-	int port_;
-
-public:
-	SendData();
-	explicit SendData(const std::string& host_name, int port);
-
-	int Sender(const std::string& value, std::string& res, int insert_num);
-	int ConnectDB();
-	int DisconnectDB(const char *msg);
-	int sock;
-	bool connected;
-	struct sockaddr_in server;
-	LIBSSH2_SESSION *session;
-	LIBSSH2_CHANNEL *channel;
-};
-
-extern std::string make_header(int32_t sql_inst, int32_t sql_num);
-
-#endif /* _MAP_DB_H_ */

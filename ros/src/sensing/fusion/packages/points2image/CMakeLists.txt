@@ -142,14 +142,6 @@ add_dependencies(vscan2image
   point2image_generate_messages_cpp
 )
 
-# extrinsicMatPublisher
-add_executable(extrinsicMatPublisher
-  nodes/extrinsicMatPublisher/extrinsicMatPublisher.cpp
-  )
-
-target_link_libraries(extrinsicMatPublisher
-  ${catkin_LIBRARIES}
-)
 
 # vscan2linelist
 add_executable(vscan2linelist nodes/vscan2linelist/vscan2linelist.cpp)

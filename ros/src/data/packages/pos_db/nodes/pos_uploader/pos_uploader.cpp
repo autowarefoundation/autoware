@@ -62,6 +62,8 @@ static size_t pedestrian_num = 0;
 //default server name and port to send data
 static const std::string default_host_name = "db3.ertl.jp";
 static constexpr int db_port = 5678;
+static int sleep_msec = 500;		// period
+static int use_current_time = 0;
 
 //send to server class
 static SendData sd;
@@ -110,7 +112,13 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
 
 static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array, const char *name)
 {
-  std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
+  std::string timestamp;
+  if(use_current_time) {
+    ros::Time t = ros::Time::now();
+    timestamp = getTimeStamp(t.sec, t.nsec);
+  } else {
+    timestamp = timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
+  }
 
   std::string ret;
   for(const auto& pose : cp_array.poses){
@@ -125,10 +133,11 @@ static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_ar
 //wrap SendData class
 static void send_sql()
 {
-  std::cout << "sqlnum : " << (car_num + pedestrian_num + ndt_position.size()) << std::endl;
+  int sql_num = car_num + pedestrian_num + ndt_position.size();
+  std::cout << "sqlnum : " << sql_num << std::endl;
 
   //create header
-  std::string value = make_header(2, car_num + pedestrian_num + ndt_position.size());
+  std::string value = make_header(2, sql_num);
 
 std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "(" << car_position_array.size() << ")" << ",pedestrian_num=" << pedestrian_num << "(" << pedestrian_position_array.size() << ")" << ", val=";
 
@@ -153,7 +162,13 @@ std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "("
 
   // my_location
   for(size_t i = 0; i < ndt_position.size(); i++) {
-    std::string timestamp = getTimeStamp(ndt_position[i].header.stamp.sec,ndt_position[i].header.stamp.nsec);
+    std::string timestamp;
+    if(use_current_time) {
+      ros::Time t = ros::Time::now();
+      timestamp = getTimeStamp(t.sec, t.nsec);
+    } else {
+      timestamp = getTimeStamp(ndt_position[i].header.stamp.sec,ndt_position[i].header.stamp.nsec);
+    }
     value += pose_to_insert_statement(ndt_position[i].pose, timestamp, "ndt_pose");
     value += "\n";
   }
@@ -163,8 +178,8 @@ std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "("
   std::cout << value << std::endl;
 
   std::string res;
-  int ret = sd.Sender(value, res);
-  if (ret == -1) {
+  int ret = sd.Sender(value, res, sql_num);
+  if (ret < 0) {
     std::cerr << "Failed: sd.Sender" << std::endl;
     return;
   }
@@ -180,12 +195,12 @@ static void* intervalCall(void *unused)
     //If angle and position data is not updated from previous data send,
     //data is not sent
     if((car_num + pedestrian_num + ndt_position.size()) <= 0) {
-      sleep(1);
+      usleep(sleep_msec*1000);
       continue;
     }
 
     send_sql();
-    sleep(1);
+    usleep(sleep_msec*1000);
   }
 
   return nullptr;
@@ -258,7 +273,12 @@ int main(int argc, char **argv)
   //set server name and port
   std::string host_name = default_host_name;
   int port = db_port;
-  if(argc >= 3){
+  if(argc >= 2) {
+    for(int i = 1; i < argc; i++) {
+      if(strncmp(argv[i], "now", 3) == 0) use_current_time = 1;
+    }
+  }
+  if(argc >= 3+use_current_time){
     host_name = argv[1];
     port = std::atoi(argv[2]);
   }

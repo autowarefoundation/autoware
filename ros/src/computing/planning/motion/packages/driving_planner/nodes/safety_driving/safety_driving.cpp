@@ -26,38 +26,31 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
-#ifndef _MAP_DB_H_
-#define _MAP_DB_H_
+#include <ros/ros.h>
+#include <waypoint_follower/lane.h>
+#include <iostream>
 
-#include <cstdint>
-#include <string>
-#include <netinet/in.h>
-#define USE_LIBSSH2
-#ifdef USE_LIBSSH2
-#include <libssh2.h>
-#endif
+static ros::Publisher _pub;
 
-class SendData {
-private:
-	std::string host_name_;
-	int port_;
+void callback(const waypoint_follower::lane &msg)
+{
+    _pub.publish(msg);
+}
 
-public:
-	SendData();
-	explicit SendData(const std::string& host_name, int port);
 
-	int Sender(const std::string& value, std::string& res, int insert_num);
-	int ConnectDB();
-	int DisconnectDB(const char *msg);
-	int sock;
-	bool connected;
-	struct sockaddr_in server;
-	LIBSSH2_SESSION *session;
-	LIBSSH2_CHANNEL *channel;
-};
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "safety_driving");
 
-extern std::string make_header(int32_t sql_inst, int32_t sql_num);
+    ros::NodeHandle nh;
+    ros::Subscriber twist_sub = nh.subscribe("driving_waypoint", 1, callback);
+    _pub = nh.advertise<waypoint_follower::lane>("safety_waypoint", 1000,true);
 
-#endif /* _MAP_DB_H_ */
+    ros::spin();
+
+
+
+    return 0;
+}

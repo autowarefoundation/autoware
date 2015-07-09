@@ -1,0 +1,4 @@
+/CalibrationToolkit/calibrationtoolkit_moc.cpp
+/CalibrationToolkit/selectionwidget_moc.cpp
+/nodes/calibration_toolkit/mainwindow_moc.cpp
+/nodes/calibration_toolkit/ui_mainwindow.h

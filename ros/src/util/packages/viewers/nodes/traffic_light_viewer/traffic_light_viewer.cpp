@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 
   ros::NodeHandle n;
 
-  ros::Subscriber signalState_sub = n.subscribe("traffic_light", 1, signalState_cb);
+  ros::Subscriber signalState_sub = n.subscribe("/light_color", 1, signalState_cb);
 
   ros::spin();
 
