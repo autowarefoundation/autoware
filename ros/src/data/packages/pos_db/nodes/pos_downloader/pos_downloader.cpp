@@ -46,11 +46,6 @@ publish data as ractangular plane
 #include <ctime>
 #include <pthread.h>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-
 #include <geo_pos_conv.hh>
 #include <pos_db.h>
 
@@ -78,7 +73,7 @@ static ros::Publisher pub;
 
 static SendData sd;
 
-static char mac_addr[20];
+static char mac_addr[MAC_ADDRBUFSIZ];
 static int ignore_my_pose = 1;
 
 static std::vector<std::string> split(const string& input, char delimiter)
@@ -383,23 +378,8 @@ int main(int argc, char **argv)
     }
   }
 
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
-  if (sock < 0) {
-    perror("socket");
-    return -1;
-  }
-  struct ifreq ifr;
-  ifr.ifr_addr.sa_family = AF_INET;
-  strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
-  ioctl(sock, SIOCGIFHWADDR, &ifr);
-  close(sock);
-  snprintf(mac_addr, sizeof(mac_addr), "%.2x%.2x%.2x%.2x%.2x%.2x",
-         (unsigned char)ifr.ifr_hwaddr.sa_data[0],
-         (unsigned char)ifr.ifr_hwaddr.sa_data[1],
-         (unsigned char)ifr.ifr_hwaddr.sa_data[2],
-         (unsigned char)ifr.ifr_hwaddr.sa_data[3],
-         (unsigned char)ifr.ifr_hwaddr.sa_data[4],
-         (unsigned char)ifr.ifr_hwaddr.sa_data[5]);
+  probe_mac_addr(mac_addr);
+  std::cerr <<  "mac_addr=" << mac_addr << std::endl;
 
   pub = nh.advertise<visualization_msgs::Marker>(MARKERNAME, 1);
   nh.param<double>(MYNAME "/time", args[0], STARTTIME);
