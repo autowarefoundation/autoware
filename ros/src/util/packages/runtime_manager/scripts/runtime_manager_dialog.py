@@ -845,14 +845,17 @@ class MyFrame(rtmgr.MyFrame):
 
 			lbs = []
 			k = '%Cpu'
+			max_v = 0
 			for t in s.split('\n'):
 				if t[:len(k)] != k:
 					continue
 				lst = t[1:].split()
 				v = lst[1] if lst[1] != ':' else lst[2]
 				tx = lst[0].strip(':').upper() + ':' + v + '% '
-				col = self.info_col(float(v), 80, 90, (64,64,64), (200,0,0))
+				fv = float(v)
+				col = self.info_col(fv, 80, 90, (64,64,64), (200,0,0))
 				lbs += [ col, tx ]
+				max_v = fv if fv > max_v else max_v
 
 			k = 'KiB Mem:'
 			for t in s.split('\n'):
@@ -875,7 +878,7 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(self.label_cpuinfo_qs.set, lbs)
 			wx.CallAfter(self.label_cpuinfo_status.set, lbs)
 
-			is_alert = float(v) >= 90 or rate >= 98
+			is_alert = max_v >= 90 or rate >= 98
 
 			# --> for test
 			if os.path.exists('/tmp/alert_test_on'):
