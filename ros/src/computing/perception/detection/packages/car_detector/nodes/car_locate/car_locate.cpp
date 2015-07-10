@@ -187,7 +187,7 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
     tmpPose.header.frame_id = "map";
 
     /* Set the namespace and id for this marker */
-    tmpPose.ns = "car_location";
+    tmpPose.ns = "car_location" + std::to_string(i);
     tmpPose.id = i;             // is this OK?
 
     /* Set the marker type */
