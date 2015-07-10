@@ -59,5 +59,7 @@ public:
 };
 
 extern std::string make_header(int32_t sql_inst, int32_t sql_num);
+extern int probe_mac_addr(char *mac_addr);
+#define MAC_ADDRBUFSIZ	20
 
 #endif /* _MAP_DB_H_ */
