@@ -116,8 +116,8 @@ static void drawRects(Mat image,
 static void drawVScanPoints(Mat image)
 {
 	/* DRAW POINTS of lidar scanning */
-	int w = IMAGE_WIDTH;
-	int h = IMAGE_HEIGHT;
+    int w = image.size().width;
+	int h = image.size().height;
 
 	int i, n = w * h;
 	float min_d = 1<<16, max_d = -1;
