@@ -28,6 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "pack_into.hpp"
 #include <libgen.h>
 #include <fstream>
 #include "ros/ros.h"
@@ -65,13 +66,6 @@ Tbl read_csv(const char* filename, int* max_id)
   return tbl;
 }
 
-/* for roadedge.csv */
-struct RoadEdge {
-  int id;
-  int lid;
-  int linkid;
-};
-
 std::vector<RoadEdge> read_roadedge(const char* filename)
 {
   int max_id;
@@ -86,14 +80,6 @@ std::vector<RoadEdge> read_roadedge(const char* filename)
   }
   return ret;
 }
-
-/* for gutter.csv, guardrail.csv */
-struct Gutter {
-  int id;
-  int aid;
-  int type;
-  int linkid;
-};
 
 std::vector<Gutter> read_gutter(const char* filename)
 {
@@ -110,16 +96,6 @@ std::vector<Gutter> read_gutter(const char* filename)
   }
   return ret;
 }
-
-/* for curb.csv */
-struct Curb {
-  int id;
-  int lid;
-  double height;
-  double width;
-  int dir;
-  int linkid;
-};
 
 std::vector<Curb> read_curb(const char* filename)
 {
@@ -139,16 +115,6 @@ std::vector<Curb> read_curb(const char* filename)
   return ret;
 }
 
-/* for whiteline.csv */
-struct WhiteLine {
-	int id;
-	int lid;
-	double width;
-	char color;
-	int type;
-	int linkid;
-};
-
 std::vector<WhiteLine> read_whiteline(const char* filename)
 {
   int max_id;
@@ -167,15 +133,6 @@ std::vector<WhiteLine> read_whiteline(const char* filename)
   return ret;
 }
 
-/* for stopline.csv */
-struct StopLine {
-	int id;
-	int lid;
-	int tlid;
-	int signid;
-	int linkid;
-};
-
 std::vector<StopLine> read_stopline(const char* filename)
 {
   int max_id;
@@ -193,13 +150,6 @@ std::vector<StopLine> read_stopline(const char* filename)
   return ret;
 }
 
-/* for zebrazone.csv, sidewalk.csv, crossroads.csv */
-struct ZebraZone {
-	int id;
-	int aid;
-	int linkid;
-};
-
 std::vector<ZebraZone> read_zebrazone(const char* filename)
 {
   int max_id;
@@ -214,15 +164,6 @@ std::vector<ZebraZone> read_zebrazone(const char* filename)
   }
   return ret;
 }
-
-/* for crosswalk.csv */
-struct CrossWalk {
-	int id;
-	int aid;
-	int type;
-	int bdid;
-	int linkid;
-};
 
 std::vector<CrossWalk> read_crosswalk(const char* filename)
 {
@@ -241,43 +182,28 @@ std::vector<CrossWalk> read_crosswalk(const char* filename)
   return ret;
 }
 
-/* for road_surface_mark.csv */
-struct RoadSurfaceMark {
-  int id;
-  int aid;
-  std::string type;
-  int linkid;
-};
-
-std::vector<RoadSurfaceMark> read_roadsurfacemark(const char* filename)
+std::vector<RoadMark> read_roadmark(const char* filename)
 {
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<RoadSurfaceMark> ret(max_id + 1, {-1});
+  std::vector<RoadMark> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
     ret[id].aid = std::stoi(tbl[i][1]);
-    ret[id].type = tbl[i][2];
+    ret[id].type = std::stoi(tbl[i][2]); // Don't use wide character
     ret[id].linkid = std::stoi(tbl[i][3]);
   }
   return ret;
 }
 
-/* for poledata.csv, utilitypole.csv */
-struct PoleData {
-  int id;
-  int plid;
-  int linkid;
-};
-
-std::vector<PoleData> read_poledata(const char* filename)
+std::vector<Pole> read_pole(const char* filename)
 {
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<PoleData> ret(max_id + 1, {-1});
+  std::vector<Pole> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -287,21 +213,29 @@ std::vector<PoleData> read_poledata(const char* filename)
   return ret;
 }
 
-/* for signaldata.csv, roadsign.csv */
-struct SignalData {
-  int id;
-  int vid;
-  int plid;
-  int type;
-  int linkid;
-};
-
-std::vector<SignalData> read_signaldata(const char *filename)
+std::vector<RoadSign> read_roadsign(const char *filename)
 {
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<SignalData> ret(max_id + 1, {-1});
+  std::vector<RoadSign> ret(max_id + 1, {-1});
+  for (i=0; i<n; i++) {
+    int id = std::stoi(tbl[i][0]);
+    ret[id].id = id;
+    ret[id].vid = std::stoi(tbl[i][1]);
+    ret[id].plid = std::stoi(tbl[i][2]);
+    ret[id].type = std::stoi(tbl[i][3]); // Don't use wide character
+    ret[id].linkid = std::stoi(tbl[i][4]);
+  }
+  return ret;
+}
+
+std::vector<Signal> read_signal(const char *filename)
+{
+  int max_id;
+  Tbl tbl = read_csv(filename, &max_id);
+  size_t i, n = tbl.size();
+  std::vector<Signal> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].id = id;
@@ -312,14 +246,6 @@ std::vector<SignalData> read_signaldata(const char *filename)
   }
   return ret;
 }
-
-/* for streetlight.csv */
-struct StreetLight {
-  int id;
-  int lid;
-  int plid;
-  int linkid;
-};
 
 std::vector<StreetLight> read_streetlight(const char *filename)
 {
@@ -337,21 +263,66 @@ std::vector<StreetLight> read_streetlight(const char *filename)
   return ret;
 }
 
+std::vector<UtilityPole> read_utilitypole(const char* filename)
+{
+  int max_id;
+  Tbl tbl = read_csv(filename, &max_id);
+  size_t i, n = tbl.size();
+  std::vector<UtilityPole> ret(max_id + 1, {-1});
+  for (i=0; i<n; i++) {
+    int id = std::stoi(tbl[i][0]);
+    ret[id].id = id;
+    ret[id].plid = std::stoi(tbl[i][1]);
+    ret[id].linkid = std::stoi(tbl[i][2]);
+  }
+  return ret;
+}
 
-/* basic class */
-/* for point.csv */
-struct PointClass {
-  int pid;
-  double b;
-  double l;
-  double h;
-  double bx;
-  double ly;
-  int ref;
-  int mcode1;
-  int mcode2;
-  int mcode3;
-};
+std::vector<GuardRail> read_guardrail(const char* filename)
+{
+  int max_id;
+  Tbl tbl = read_csv(filename, &max_id);
+  size_t i, n = tbl.size();
+  std::vector<GuardRail> ret(max_id + 1, {-1});
+  for (i=0; i<n; i++) {
+    int id = std::stoi(tbl[i][0]);
+    ret[id].id = id;
+    ret[id].aid = std::stoi(tbl[i][1]);
+    ret[id].type = std::stoi(tbl[i][2]);
+    ret[id].linkid = std::stoi(tbl[i][3]);
+  }
+  return ret;
+}
+
+std::vector<SideWalk> read_sidewalk(const char* filename)
+{
+  int max_id;
+  Tbl tbl = read_csv(filename, &max_id);
+  size_t i, n = tbl.size();
+  std::vector<SideWalk> ret(max_id + 1, {-1});
+  for (i=0; i<n; i++) {
+    int id = std::stoi(tbl[i][0]);
+    ret[id].id = id;
+    ret[id].aid = std::stoi(tbl[i][1]);
+    ret[id].linkid = std::stoi(tbl[i][2]);
+  }
+  return ret;
+}
+
+std::vector<CrossRoad> read_crossroad(const char* filename)
+{
+  int max_id;
+  Tbl tbl = read_csv(filename, &max_id);
+  size_t i, n = tbl.size();
+  std::vector<CrossRoad> ret(max_id + 1, {-1});
+  for (i=0; i<n; i++) {
+    int id = std::stoi(tbl[i][0]);
+    ret[id].id = id;
+    ret[id].aid = std::stoi(tbl[i][1]);
+    ret[id].linkid = std::stoi(tbl[i][2]);
+  }
+  return ret;
+}
 
 std::vector<PointClass> read_pointclass(const char *filename)
 {
@@ -375,14 +346,6 @@ std::vector<PointClass> read_pointclass(const char *filename)
   return ret;
 }
 
-/* for vector.csv */
-struct VectorClass {
-  int vid;
-  int pid;
-  double hang;
-  double vang;
-};
-
 std::vector<VectorClass> read_vectorclass(const char *filename)
 {
   int max_id;
@@ -398,15 +361,6 @@ std::vector<VectorClass> read_vectorclass(const char *filename)
   }
   return ret;
 }
-
-/* for line.csv */
-struct LineClass {
-  int lid;
-  int bpid;
-  int fpid;
-  int blid;
-  int flid;
-};
 
 std::vector<LineClass> read_lineclass(const char *filename)
 {
@@ -425,13 +379,6 @@ std::vector<LineClass> read_lineclass(const char *filename)
   return ret;
 }
 
-/* for area.csv */
-struct AreaClass {
-  int aid;
-  int slid;
-  int elid;
-};
-
 std::vector<AreaClass> read_areaclass(const char *filename)
 {
   int max_id;
@@ -446,14 +393,6 @@ std::vector<AreaClass> read_areaclass(const char *filename)
   }
   return ret;
 }
-
-/* for pole.csv */
-struct PoleClass {
-  int plid;
-  int vid;
-  double length;
-  double dim;
-};
 
 std::vector<PoleClass> read_poleclass(const char *filename)
 {
@@ -470,16 +409,6 @@ std::vector<PoleClass> read_poleclass(const char *filename)
   }
   return ret;
 }
-
-/* for box.csv */
-struct BoxClass {
-  int bid;
-  int pid1;
-  int pid2;
-  int pid3;
-  int pid4;
-  double height;
-};
 
 std::vector<BoxClass> read_boxclass(const char *filename)
 {
@@ -498,22 +427,6 @@ std::vector<BoxClass> read_boxclass(const char *filename)
   }
   return ret;
 }
-
-
-/* Road data */
-/* for dtlane.csv */
-struct DTLane {
-  int did;
-  double dist;
-  int pid;
-  double dir;
-  double apara;
-  double r;
-  double slope;
-  double cant;
-  double lw;
-  double rw;
-};
 
 std::vector<DTLane> read_dtlane(const char *filename)
 {
@@ -537,18 +450,12 @@ std::vector<DTLane> read_dtlane(const char *filename)
   return ret;
 }
 
-/* for node.csv */
-struct NodeData {
-	int nid;
-	int pid;
-};
-
-std::vector<NodeData> read_nodedata(const char *filename)
+std::vector<Node> read_node(const char *filename)
 {
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<NodeData> ret(max_id + 1, {-1});
+  std::vector<Node> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].nid = id;
@@ -557,33 +464,12 @@ std::vector<NodeData> read_nodedata(const char *filename)
   return ret;
 }
 
-/* for lane.csv */
-struct LaneData {
-  int lnid;
-  int did;
-  int blid;
-  int flid;
-  int bnid;
-  int fnid;
-  int jct;
-  int blid2;
-  int blid3;
-  int blid4;
-  int flid2;
-  int flid3;
-  int flid4;
-  int clossid;
-  double span;
-  int lcnt;
-  int lno;
-};
-
-std::vector<LaneData> read_lanedata(const char *filename)
+std::vector<Lane> read_lane(const char *filename)
 {
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
   size_t i, n = tbl.size();
-  std::vector<LaneData> ret(max_id + 1, {-1});
+  std::vector<Lane> ret(max_id + 1, {-1});
   for (i=0; i<n; i++) {
     int id = std::stoi(tbl[i][0]);
     ret[id].lnid = id;
@@ -714,7 +600,8 @@ void set_poleclass_data(PoleClass& poleclass,
   push_marker(marker, marker_array);
 }		  
 
-void set_areaclass_data(std::vector<ZebraZone> zones,
+template <typename T>
+void set_areaclass_data(T zones,
 		       double w, 
 		       double r, double g, double b, double a,
 		       std::vector<AreaClass> areaclasses,
@@ -771,6 +658,58 @@ rosrun map_file vector_map_loader <csv files>
   ros::Publisher stat_publisher = n.advertise<std_msgs::Bool>("/vmap_stat", 100);;
   std_msgs::Bool vmap_stat_msg;
 
+  ros::Publisher pub_point_class = n.advertise<map_file::PointClassArray>(
+	  "/vector_map_info/point_class", 1, true);
+  ros::Publisher pub_vector_class = n.advertise<map_file::VectorClassArray>(
+	  "/vector_map_info/vector_class", 1, true);
+  ros::Publisher pub_line_class = n.advertise<map_file::LineClassArray>(
+	  "/vector_map_info/line_class", 1, true);
+  ros::Publisher pub_area_class = n.advertise<map_file::AreaClassArray>(
+	  "/vector_map_info/area_class", 1, true);
+  ros::Publisher pub_pole_class = n.advertise<map_file::PoleClassArray>(
+	  "/vector_map_info/pole_class", 1, true);
+  ros::Publisher pub_box_class = n.advertise<map_file::BoxClassArray>(
+	  "/vector_map_info/box_class", 1, true);
+
+  ros::Publisher pub_dtlane = n.advertise<map_file::DTLaneArray>(
+	  "/vector_map_info/dtlane", 1, true);
+  ros::Publisher pub_node = n.advertise<map_file::NodeArray>(
+	  "/vector_map_info/node", 1, true);
+  ros::Publisher pub_lane = n.advertise<map_file::LaneArray>(
+	  "/vector_map_info/lane", 1, true);
+
+  ros::Publisher pub_roadedge = n.advertise<map_file::RoadEdgeArray>(
+	  "/vector_map_info/roadedge", 1, true);
+  ros::Publisher pub_gutter = n.advertise<map_file::GutterArray>(
+	  "/vector_map_info/gutter", 1, true);
+  ros::Publisher pub_curb = n.advertise<map_file::CurbArray>(
+	  "/vector_map_info/curb", 1, true);
+  ros::Publisher pub_whiteline = n.advertise<map_file::WhiteLineArray>(
+	  "/vector_map_info/whiteline", 1, true);
+  ros::Publisher pub_stopline = n.advertise<map_file::StopLineArray>(
+	  "/vector_map_info/stopline", 1, true);
+  ros::Publisher pub_zebrazone = n.advertise<map_file::ZebraZoneArray>(
+	  "/vector_map_info/zebrazone", 1, true);
+  ros::Publisher pub_crosswalk = n.advertise<map_file::CrossWalkArray>(
+	  "/vector_map_info/crosswalk", 1, true);
+  ros::Publisher pub_roadmark = n.advertise<map_file::RoadMarkArray>(
+	  "/vector_map_info/roadmark", 1, true);
+  ros::Publisher pub_pole = n.advertise<map_file::PoleArray>(
+	  "/vector_map_info/pole", 1, true);
+  ros::Publisher pub_roadsign = n.advertise<map_file::RoadSignArray>(
+	  "/vector_map_info/roadsign", 1, true);
+  ros::Publisher pub_signal = n.advertise<map_file::SignalArray>(
+	  "/vector_map_info/signal", 1, true);
+  ros::Publisher pub_streetlight = n.advertise<map_file::StreetLightArray>(
+	  "/vector_map_info/streetlight", 1, true);
+  ros::Publisher pub_utilitypole = n.advertise<map_file::UtilityPoleArray>(
+	  "/vector_map_info/utilitypole", 1, true);
+  ros::Publisher pub_guardrail = n.advertise<map_file::GuardRailArray>(
+	  "/vector_map_info/guardrail", 1, true);
+  ros::Publisher pub_sidewalk = n.advertise<map_file::SideWalkArray>(
+	  "/vector_map_info/sidewalk", 1, true);
+  ros::Publisher pub_crossroad = n.advertise<map_file::CrossRoadArray>(
+	  "/vector_map_info/crossroad", 1, true);
 
   std::vector<PointClass> pointclasses;
   std::vector<PoleClass> poleclasses;
@@ -778,24 +717,24 @@ rosrun map_file vector_map_loader <csv files>
   std::vector<AreaClass> areaclasses;
   std::vector<LineClass> lines;
 
-  std::vector<PoleData> poledatas;
-  std::vector<SignalData> signaldatas;
-  std::vector<SignalData> roadsigns;
+  std::vector<Pole> poles;
+  std::vector<Signal> signals;
+  std::vector<RoadSign> roadsigns;
   std::vector<DTLane> dtlanes;
-  std::vector<NodeData> nodes;
-  std::vector<LaneData> lanes;
+  std::vector<Node> nodes;
+  std::vector<Lane> lanes;
   std::vector<WhiteLine> whitelines;
   std::vector<ZebraZone> zebrazones;
   std::vector<CrossWalk> crosswalks;
   std::vector<RoadEdge> roadedges;
-  std::vector<Gutter> roadmarks;
+  std::vector<RoadMark> roadmarks;
   std::vector<StopLine> stoplines;
-  std::vector<ZebraZone> crossroads;
-  std::vector<ZebraZone> sidewalks;
+  std::vector<CrossRoad> crossroads;
+  std::vector<SideWalk> sidewalks;
   std::vector<Gutter> gutters;
   std::vector<Curb> curbs;
   std::vector<StreetLight> streetlights;
-  std::vector<PoleData> utilitypoles;
+  std::vector<UtilityPole> utilitypoles;
 
   std::cerr << "Load csv files" << std::endl;
 
@@ -808,97 +747,117 @@ rosrun map_file vector_map_loader <csv files>
       pointclasses = read_pointclass(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", pointclasses.size()=" <<  pointclasses.size() << std::endl;
+      pub_point_class.publish(pack_point_class_array(pointclasses));
     } else if(name == "pole.csv") {
       poleclasses = read_poleclass(argv[0]);
       std::cerr << "  load " << argv[0]
 		<< ", poleclasses.size()=" <<  poleclasses.size() << std::endl;
+      pub_pole_class.publish(pack_pole_class_array(poleclasses));
     } else if(name == "vector.csv") {
       vectorclasses = read_vectorclass(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", vectorclasses.size()" << vectorclasses.size() << std::endl;
-
+      pub_vector_class.publish(pack_vector_class_array(vectorclasses));
     } else if(name == "area.csv") {
       areaclasses = read_areaclass(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", areaclasses.size()=" << areaclasses.size() << std::endl;
+      pub_area_class.publish(pack_area_class_array(areaclasses));
     } else if(name == "line.csv") {
       lines = read_lineclass(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", lines.size()=" << lines.size() << std::endl;
+      pub_line_class.publish(pack_line_class_array(lines));
     } else if(name == "poledata.csv") {
-      poledatas = read_poledata(argv[0]);
+      poles = read_pole(argv[0]);
       std::cerr << "  load " << argv[0] 
-		<< ", poledatas.size()=" << poledatas.size() << std::endl;
+		<< ", poles.size()=" << poles.size() << std::endl;
+      pub_pole.publish(pack_pole_array(poles));
     } else if(name == "signaldata.csv") {
-      signaldatas = read_signaldata(argv[0]);
+      signals = read_signal(argv[0]);
       std::cerr << "  load " << argv[0] 
-		<< ", signaldatas.size()=" << signaldatas.size() << std::endl;
+		<< ", signals.size()=" << signals.size() << std::endl;
+      pub_signal.publish(pack_signal_array(signals));
     } else if(name == "roadsign.csv") {
-      roadsigns = read_signaldata(argv[0]);
+      roadsigns = read_roadsign(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", roadsigns.size()=" << roadsigns.size() << std::endl;
+      pub_roadsign.publish(pack_roadsign_array(roadsigns));
     } else if(name == "dtlane.csv") {
       dtlanes = read_dtlane(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", dtlanes.size()=" << dtlanes.size() << std::endl;
+      pub_dtlane.publish(pack_dtlane_array(dtlanes));
     } else if(name == "node.csv") {
-      nodes = read_nodedata(argv[0]);
+      nodes = read_node(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", nodes.size()=" << nodes.size() << std::endl;
+      pub_node.publish(pack_node_array(nodes));
     } else if(name == "lane.csv") {
-      lanes = read_lanedata(argv[0]);
+      lanes = read_lane(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", lanes.size()=" << lanes.size() << std::endl;
+      pub_lane.publish(pack_lane_array(lanes));
     } else if(name == "whiteline.csv") {
       whitelines = read_whiteline(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", whitelines.size()=" << whitelines.size() << std::endl;
+      pub_whiteline.publish(pack_whiteline_array(whitelines));
     } else if(name == "zebrazone.csv") {
       zebrazones = read_zebrazone(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", zebrazones.size()=" << zebrazones.size() << std::endl;
+      pub_zebrazone.publish(pack_zebrazone_array(zebrazones));
     } else if(name == "crosswalk.csv") {
       crosswalks = read_crosswalk(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", crosswalks.size()=" << crosswalks.size() << std::endl;
+      pub_crosswalk.publish(pack_crosswalk_array(crosswalks));
     } else if(name == "roadedge.csv") {
       roadedges = read_roadedge(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", roadedges.size()=" << roadedges.size() << std::endl;
+      pub_roadedge.publish(pack_roadedge_array(roadedges));
     } else if(name == "road_surface_mark.csv") {
-      roadmarks = read_gutter(argv[0]);
+      roadmarks = read_roadmark(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", roadmarks.size()=" << roadmarks.size() << std::endl;
+      pub_roadmark.publish(pack_roadmark_array(roadmarks));
     } else if(name == "stopline.csv") {
       stoplines = read_stopline(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", stoplines.size()=" << stoplines.size() << std::endl;
-
+      pub_stopline.publish(pack_stopline_array(stoplines));
     } else if(name == "crossroads.csv") {
-      crossroads = read_zebrazone(argv[0]);
+      crossroads = read_crossroad(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", crossroads.size()=" << crossroads.size() << std::endl;
+      pub_crossroad.publish(pack_crossroad_array(crossroads));
     } else if(name == "sidewalk.csv") {
-      sidewalks = read_zebrazone(argv[0]);
+      sidewalks = read_sidewalk(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", sidewalks.size()=" << sidewalks.size() << std::endl;
-
+      pub_sidewalk.publish(pack_sidewalk_array(sidewalks));
     } else if(name == "gutter.csv") {
       gutters = read_gutter(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", gutters.size()=" << gutters.size() << std::endl;
+      pub_gutter.publish(pack_gutter_array(gutters));
     } else if(name == "curb.csv") {
       curbs = read_curb(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", curb.size()=" << curbs.size() << std::endl;
+      pub_curb.publish(pack_curb_array(curbs));
     } else if(name == "streetlight.csv") {
       streetlights = read_streetlight(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", streetlights.size()=" << streetlights.size() << std::endl;
+      pub_streetlight.publish(pack_streetlight_array(streetlights));
     } else if(name == "utilitypole.csv") {
-      utilitypoles = read_poledata(argv[0]);
+      utilitypoles = read_utilitypole(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", utilitypoles.size()=" << utilitypoles.size() << std::endl;
+      pub_utilitypole.publish(pack_utilitypole_array(utilitypoles));
     }
 
     argc--;
@@ -964,19 +923,19 @@ rosrun map_file vector_map_loader <csv files>
     push_marker(&marker, &marker_array);
   }
 
-  // poledata
-  if(poledatas.size() > 0 && (poleclasses.size() <= 0 || vectorclasses.size() <= 0)) {
+  // pole
+  if(poles.size() > 0 && (poleclasses.size() <= 0 || vectorclasses.size() <= 0)) {
     std::cerr << "error: pole.csv or vector.csv is not loaded \n"
 	      << "\tpoledata.csv needs pole.csv and vector.csv "
 	      << std::endl;
     std::exit(1);
   }
   marker.ns = "pole";
-  for (i=0; i<poledatas.size(); i++) {
-    if (poledatas[i].id <= 0) {
+  for (i=0; i<poles.size(); i++) {
+    if (poles[i].id <= 0) {
       continue;
     }
-    int plid = poledatas[i].plid;
+    int plid = poles[i].plid;
     set_poleclass_data(poleclasses[plid], 
 		       1, 1, 1, 1,
 		       vectorclasses,
@@ -984,19 +943,19 @@ rosrun map_file vector_map_loader <csv files>
 		       &marker, &marker_array);
   }
 
-  // signaldata
-  if(signaldatas.size() > 0 && (poleclasses.size() <= 0 || vectorclasses.size() <= 0)) {
+  // signal
+  if(signals.size() > 0 && (poleclasses.size() <= 0 || vectorclasses.size() <= 0)) {
     std::cerr << "error: pole.csv or vector.csv is not loaded.\n"
 	      << "\tsignaldata.csv needs pole.csv and vector.csv "
 	      << std::endl;
     std::exit(1);
   }
   marker.ns = "signal";
-  for (i=0; i<signaldatas.size(); i++) {
-    if (signaldatas[i].id <= 0) {
+  for (i=0; i<signals.size(); i++) {
+    if (signals[i].id <= 0) {
       continue;
     }
-    int vid = signaldatas[i].vid;
+    int vid = signals[i].vid;
     int pid = vectorclasses[vid].pid;
 
     marker.type = visualization_msgs::Marker::SPHERE;
@@ -1006,7 +965,7 @@ rosrun map_file vector_map_loader <csv files>
 		     &ox, &oy, &oz, &ow);
 
     double r = 0, g = 0, b = 0, a = 1;
-    switch (signaldatas[i].type) {
+    switch (signals[i].type) {
     case 1:
       r = 1;
       break;
@@ -1040,8 +999,8 @@ rosrun map_file vector_map_loader <csv files>
 
 
     // signal pole
-    if (signaldatas[i].type == 2) { // blue
-      int plid = signaldatas[i].plid;
+    if (signals[i].type == 2) { // blue
+      int plid = signals[i].plid;
 
       if (plid > 0) {
 	set_poleclass_data(poleclasses[plid],

@@ -14,35 +14,56 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 add_message_files(
   FILES
-  AreaData.msg
-  BoxData.msg
+  AreaClass.msg
+  AreaClassArray.msg
+  BoxClass.msg
+  BoxClassArray.msg
   CrossRoad.msg
+  CrossRoadArray.msg
   CrossWalk.msg
+  CrossWalkArray.msg
   Curb.msg
-  DTLaneData.msg
+  CurbArray.msg
+  DTLane.msg
+  DTLaneArray.msg
   GuardRail.msg
-  LaneData.msg
-  LineData.msg
-  NodeData.msg
-  Object.msg
-  PointData.msg
+  GuardRailArray.msg
+  Gutter.msg
+  GutterArray.msg
+  Lane.msg
+  LaneArray.msg
+  LineClass.msg
+  LineClassArray.msg
+  Node.msg
+  NodeArray.msg
+  PointClass.msg
+  PointClassArray.msg
   Pole.msg
-  PoleData.msg
-  PowerPole.msg
-  Primitive.msg
-  Road.msg
+  PoleArray.msg
+  PoleClass.msg
+  PoleClassArray.msg
   RoadEdge.msg
+  RoadEdgeArray.msg
   RoadMark.msg
+  RoadMarkArray.msg
   RoadSign.msg
+  RoadSignArray.msg
   SideWalk.msg
+  SideWalkArray.msg
+  Signal.msg
+  SignalArray.msg
   StopLine.msg
-  StreetGutter.msg
+  StopLineArray.msg
   StreetLight.msg
-  TrafficLight.msg
-  VectorData.msg
-  VectorMap.msg
+  StreetLightArray.msg
+  UtilityPole.msg
+  UtilityPoleArray.msg
+  VectorClass.msg
+  VectorClassArray.msg
   WhiteLine.msg
+  WhiteLineArray.msg
   ZebraZone.msg
+  ZebraZoneArray.msg
 )
 
 generate_messages(
@@ -70,6 +91,8 @@ include_directories(
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} pcl_io)
 
-add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
+add_executable(vector_map_loader
+  nodes/vector_map_loader/vector_map_loader.cpp
+  nodes/vector_map_loader/pack_into.cpp)
 target_link_libraries(vector_map_loader ${catkin_LIBRARIES})
 add_dependencies(vector_map_loader map_file_generate_messages_cpp)
