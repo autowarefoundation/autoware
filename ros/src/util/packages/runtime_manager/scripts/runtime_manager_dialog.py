@@ -322,6 +322,9 @@ class MyFrame(rtmgr.MyFrame):
 		# top command thread
 		th_start(self.top_cmd_th, { 'interval':5 })
 
+		# ps command thread
+		th_start(self.ps_cmd_th, { 'interval':5 })
+
 		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
 			  os.environ['HOME'] + '/.autoware/data/map/pointcloud_map',
@@ -902,6 +905,17 @@ class MyFrame(rtmgr.MyFrame):
 			for col in [ c, o, c, o, c, o ]:
 				wx.CallAfter(self.set_bg_all_tabs, col)
 				time.sleep(0.05)
+
+	# ps command thread
+	def ps_cmd_th(self, ev, interval):
+		nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
+	        while not ev.wait(interval):
+			lb = ''
+			for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
+				if ('/' + s.split('/')[-1]) in nodes:
+					lb += s + '\n'
+			wx.CallAfter(self.label_node_time.SetLabel, lb)
+			wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
 	#
 	# Common Utils
