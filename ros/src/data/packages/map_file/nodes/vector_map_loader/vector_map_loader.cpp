@@ -678,38 +678,38 @@ rosrun map_file vector_map_loader <csv files>
   ros::Publisher pub_lane = n.advertise<map_file::LaneArray>(
 	  "/vector_map_info/lane", 1, true);
 
-  ros::Publisher pub_roadedge = n.advertise<map_file::RoadEdgeArray>(
-	  "/vector_map_info/roadedge", 1, true);
+  ros::Publisher pub_road_edge = n.advertise<map_file::RoadEdgeArray>(
+	  "/vector_map_info/road_edge", 1, true);
   ros::Publisher pub_gutter = n.advertise<map_file::GutterArray>(
 	  "/vector_map_info/gutter", 1, true);
   ros::Publisher pub_curb = n.advertise<map_file::CurbArray>(
 	  "/vector_map_info/curb", 1, true);
-  ros::Publisher pub_whiteline = n.advertise<map_file::WhiteLineArray>(
-	  "/vector_map_info/whiteline", 1, true);
-  ros::Publisher pub_stopline = n.advertise<map_file::StopLineArray>(
-	  "/vector_map_info/stopline", 1, true);
-  ros::Publisher pub_zebrazone = n.advertise<map_file::ZebraZoneArray>(
-	  "/vector_map_info/zebrazone", 1, true);
-  ros::Publisher pub_crosswalk = n.advertise<map_file::CrossWalkArray>(
-	  "/vector_map_info/crosswalk", 1, true);
-  ros::Publisher pub_roadmark = n.advertise<map_file::RoadMarkArray>(
-	  "/vector_map_info/roadmark", 1, true);
+  ros::Publisher pub_white_line = n.advertise<map_file::WhiteLineArray>(
+	  "/vector_map_info/white_line", 1, true);
+  ros::Publisher pub_stop_line = n.advertise<map_file::StopLineArray>(
+	  "/vector_map_info/stop_line", 1, true);
+  ros::Publisher pub_zebra_zone = n.advertise<map_file::ZebraZoneArray>(
+	  "/vector_map_info/zebra_zone", 1, true);
+  ros::Publisher pub_cross_walk = n.advertise<map_file::CrossWalkArray>(
+	  "/vector_map_info/cross_walk", 1, true);
+  ros::Publisher pub_road_mark = n.advertise<map_file::RoadMarkArray>(
+	  "/vector_map_info/road_mark", 1, true);
   ros::Publisher pub_pole = n.advertise<map_file::PoleArray>(
 	  "/vector_map_info/pole", 1, true);
-  ros::Publisher pub_roadsign = n.advertise<map_file::RoadSignArray>(
-	  "/vector_map_info/roadsign", 1, true);
+  ros::Publisher pub_road_sign = n.advertise<map_file::RoadSignArray>(
+	  "/vector_map_info/road_sign", 1, true);
   ros::Publisher pub_signal = n.advertise<map_file::SignalArray>(
 	  "/vector_map_info/signal", 1, true);
-  ros::Publisher pub_streetlight = n.advertise<map_file::StreetLightArray>(
-	  "/vector_map_info/streetlight", 1, true);
-  ros::Publisher pub_utilitypole = n.advertise<map_file::UtilityPoleArray>(
-	  "/vector_map_info/utilitypole", 1, true);
-  ros::Publisher pub_guardrail = n.advertise<map_file::GuardRailArray>(
-	  "/vector_map_info/guardrail", 1, true);
-  ros::Publisher pub_sidewalk = n.advertise<map_file::SideWalkArray>(
-	  "/vector_map_info/sidewalk", 1, true);
-  ros::Publisher pub_crossroad = n.advertise<map_file::CrossRoadArray>(
-	  "/vector_map_info/crossroad", 1, true);
+  ros::Publisher pub_street_light = n.advertise<map_file::StreetLightArray>(
+	  "/vector_map_info/street_light", 1, true);
+  ros::Publisher pub_utility_pole = n.advertise<map_file::UtilityPoleArray>(
+	  "/vector_map_info/utility_pole", 1, true);
+  ros::Publisher pub_guard_rail = n.advertise<map_file::GuardRailArray>(
+	  "/vector_map_info/guard_rail", 1, true);
+  ros::Publisher pub_side_walk = n.advertise<map_file::SideWalkArray>(
+	  "/vector_map_info/side_walk", 1, true);
+  ros::Publisher pub_cross_road = n.advertise<map_file::CrossRoadArray>(
+	  "/vector_map_info/cross_road", 1, true);
 
   std::vector<PointClass> pointclasses;
   std::vector<PoleClass> poleclasses;
@@ -782,7 +782,7 @@ rosrun map_file vector_map_loader <csv files>
       roadsigns = read_roadsign(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", roadsigns.size()=" << roadsigns.size() << std::endl;
-      pub_roadsign.publish(pack_roadsign_array(roadsigns));
+      pub_road_sign.publish(pack_roadsign_array(roadsigns));
     } else if(name == "dtlane.csv") {
       dtlanes = read_dtlane(argv[0]);
       std::cerr << "  load " << argv[0] 
@@ -802,42 +802,42 @@ rosrun map_file vector_map_loader <csv files>
       whitelines = read_whiteline(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", whitelines.size()=" << whitelines.size() << std::endl;
-      pub_whiteline.publish(pack_whiteline_array(whitelines));
+      pub_white_line.publish(pack_whiteline_array(whitelines));
     } else if(name == "zebrazone.csv") {
       zebrazones = read_zebrazone(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", zebrazones.size()=" << zebrazones.size() << std::endl;
-      pub_zebrazone.publish(pack_zebrazone_array(zebrazones));
+      pub_zebra_zone.publish(pack_zebrazone_array(zebrazones));
     } else if(name == "crosswalk.csv") {
       crosswalks = read_crosswalk(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", crosswalks.size()=" << crosswalks.size() << std::endl;
-      pub_crosswalk.publish(pack_crosswalk_array(crosswalks));
+      pub_cross_walk.publish(pack_crosswalk_array(crosswalks));
     } else if(name == "roadedge.csv") {
       roadedges = read_roadedge(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", roadedges.size()=" << roadedges.size() << std::endl;
-      pub_roadedge.publish(pack_roadedge_array(roadedges));
+      pub_road_edge.publish(pack_roadedge_array(roadedges));
     } else if(name == "road_surface_mark.csv") {
       roadmarks = read_roadmark(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", roadmarks.size()=" << roadmarks.size() << std::endl;
-      pub_roadmark.publish(pack_roadmark_array(roadmarks));
+      pub_road_mark.publish(pack_roadmark_array(roadmarks));
     } else if(name == "stopline.csv") {
       stoplines = read_stopline(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", stoplines.size()=" << stoplines.size() << std::endl;
-      pub_stopline.publish(pack_stopline_array(stoplines));
+      pub_stop_line.publish(pack_stopline_array(stoplines));
     } else if(name == "crossroads.csv") {
       crossroads = read_crossroad(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", crossroads.size()=" << crossroads.size() << std::endl;
-      pub_crossroad.publish(pack_crossroad_array(crossroads));
+      pub_cross_road.publish(pack_crossroad_array(crossroads));
     } else if(name == "sidewalk.csv") {
       sidewalks = read_sidewalk(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", sidewalks.size()=" << sidewalks.size() << std::endl;
-      pub_sidewalk.publish(pack_sidewalk_array(sidewalks));
+      pub_side_walk.publish(pack_sidewalk_array(sidewalks));
     } else if(name == "gutter.csv") {
       gutters = read_gutter(argv[0]);
       std::cerr << "  load " << argv[0] 
@@ -852,12 +852,12 @@ rosrun map_file vector_map_loader <csv files>
       streetlights = read_streetlight(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", streetlights.size()=" << streetlights.size() << std::endl;
-      pub_streetlight.publish(pack_streetlight_array(streetlights));
+      pub_street_light.publish(pack_streetlight_array(streetlights));
     } else if(name == "utilitypole.csv") {
       utilitypoles = read_utilitypole(argv[0]);
       std::cerr << "  load " << argv[0] 
 		<< ", utilitypoles.size()=" << utilitypoles.size() << std::endl;
-      pub_utilitypole.publish(pack_utilitypole_array(utilitypoles));
+      pub_utility_pole.publish(pack_utilitypole_array(utilitypoles));
     }
 
     argc--;
