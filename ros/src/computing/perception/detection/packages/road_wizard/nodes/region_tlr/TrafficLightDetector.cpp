@@ -3,45 +3,6 @@
 
 extern thresholdSet thSet;      // declared in traffic_light_lkf.cpp
 
-// /*
-//   ref:
-//   http://imagingsolution.net/program/opencv/unsharpmasking-2/
-// */
-// static void UnsharpMasking(Mat* src, Mat* dst, float k)
-// {
-//   float kernelData[] = {
-//     -k/9.0f, -k/9.0f,          -k/9.0f,
-//     -k/9.0f, 1 + (8 * k)/9.0f, -k/9.0f,
-//     -k/9.0f, -k/9.0f         , -k/9.0f,
-//   };
-
-//   Mat kernel = Mat(3, 3, CV_32F, kernelData);
-//   filter2D(*src, *dst, src->depth(), kernel, Point(-1, -1), 0, BORDER_CONSTANT);
-// }
-
-
-// /*
-//   ref:
-//   http://seesaawiki.jp/image_processing/d/%A5%B4%A5%DE%B1%F6%A5%CE%A5%A4%A5%BA%BD%FC%B5%EE
-// */
-// static void remove_SoltPepperNoise(Mat *input, int iterations)
-// {
-//   /* remove black noise */
-//   // for (int i=0; i<iterations; i++)
-//   //   dilate(*input, *input, Mat(), Point(-1, -1), 1);
-
-//   // for (int i=0; i<iterations; i++)
-//   //   erode(*input, *input, Mat(), Point(-1, -1), 1);
-
-//   /* remove white noise */
-//   for (int i=0; i<iterations; i++)
-//     erode(*input, *input, Mat(), Point(-1, -1), 1);
-
-//   for (int i=0; i<iterations; i++)
-//     dilate(*input, *input, Mat(), Point(-1, -1), 1);
-// }
-
-
 /*
   check if val is in range from lower to uppper
   This function also consider circulation
@@ -61,72 +22,16 @@ static inline  bool IsRange(const double lower, const double upper, const double
 } /* static inline  bool IsRange() */
 
 
-static void colorExtraction(const Mat&    src, // input HSV image
-                            Mat*          dst, // specified color extracted binarized image
-                            const double  hue_lower, const double hue_upper, // hue thresholds
-                            const double  sat_lower, const double sat_upper, // satulation thresholds
-                            const double  val_lower, const double val_upper) // value thresholds
+static void colorExtraction(const Mat&   src,                               // input HSV image
+                            Mat*         dst,                               // specified color extracted binarized image
+                            const double hue_lower, const double hue_upper, // hue thresholds
+                            const double sat_lower, const double sat_upper, // satulation thresholds
+                            const double val_lower, const double val_upper) // value thresholds
 {
   /* create imput image copy */
   Mat input_img = src.clone();
 
-#if 0
-  /* create 3ch LUT */
-  Mat lut(256, 1, CV_8UC3);
-  for (int i=0; i<256; i++)
-    {
-      Vec3b val;
-      /* LUT elements for Hue */
-      // if (hue_lower <= hue_upper) {
-      //   val[0] = (hue_lower <=i && i <= hue_upper) ? 255 : 0;
-      // } else {
-      //   val[0] = (i <= hue_upper || hue_lower <= i) ? 255 : 0;
-      // }
-      val[0] = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
-
-
-      /* LUT elements for Saturation */
-      // val[1] = (sat_lower < i && i < sat_upper) ? 255 : 0;
-      val[1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
-
-
-      /* LUT elements for Value of brightness */
-      // val[2] = (val_lower < i && i < val_upper) ? 255 : 0;
-      val[2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
-
-
-      /* set LUT */
-      lut.at<Vec3b>(i) = val;
-    }
-
-  /* LUT transformation for each channel */
-  LUT(input_img, lut, input_img);
-
-  /* allocate Mat for each channel */
-  std::vector<Mat> channel_img;
-  split(input_img, channel_img);
-
-  /* take AND of all 3 channels and create mask image */
   *dst = Scalar::all(0);
-  bitwise_and(channel_img[0], channel_img[1], *dst);
-  bitwise_and(*dst, channel_img[2], *dst);
-#else
-  *dst = Scalar::all(0);
-  // for (int y=0; y<input_img.rows; y++)
-  //   {
-  //     for (int x=0; x<input_img.cols; x++)
-  //       {
-  //         Vec3b pix = input_img.at<Vec3b>(y, x);
-  //         double hue = Actual_Hue(pix[0]);
-  //         double sat = Actual_Sat(pix[1]);
-  //         double val = Actual_Val(pix[2]);
-  //         if (IsRange(hue_lower, hue_upper, hue) &&
-  //             IsRange(sat_lower, sat_upper, sat) &&
-  //             IsRange(val_lower, val_upper, val)) {
-  //           dst->at<uchar>(y, x) = 255;
-  //         }
-  //       }
-  //   }
 
   /*
     ref:
@@ -137,9 +42,6 @@ static void colorExtraction(const Mat&    src, // input HSV image
   Mat lut(256, 1, CV_8UC3);
   for (int i=0; i<256; i++)
     {
-//      lut.data[i*lut.step]     = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
-//      lut.data[i*lut.step + 1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
-//      lut.data[i*lut.step + 2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
 	  lut.at<Vec3b>(i)[0] = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
 	  lut.at<Vec3b>(i)[1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
 	  lut.at<Vec3b>(i)[2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
@@ -157,7 +59,6 @@ static void colorExtraction(const Mat&    src, // input HSV image
   bitwise_and(channels[0], channels[1], *dst);
   bitwise_and(*dst, channels[2], *dst);
 
-#endif
 
 } /* static void colorExtraction() */
 
@@ -217,12 +118,6 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
   bitwise_or(binarized, green_mask, binarized);
   threshold(binarized, binarized, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
-  // /* reduce salt-and-pepper noise */
-  //remove_SoltPepperNoise(&binarized, 1);
-
-  // imshow("binarize", binarized);
-  // waitKey(10);
-
   /* find contours in binarized image */
   std::vector< std::vector<Point> > contours;
   std::vector<Vec4i> hierarchy;
@@ -235,7 +130,6 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
 
   /* shape judgement */
   Mat contours_img = Mat::zeros(binarized.rows, binarized.cols, CV_8UC3);
-  //for (int contours_idx=0; contours_idx>=0; contours_idx=hierarchy[contours_idx][0]) // see all toplevel contours
   int contours_idx = 0;
   for (unsigned int i=0; i<contours.size(); i++)
     {
@@ -248,18 +142,6 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
       double perimeter = arcLength(contours.at(contours_idx), true);
       double circleLevel = (IsNearlyZero(perimeter)) ? 0.0f : (4.0 * CV_PI * area / (perimeter * perimeter));
 
-#if 0
-      Scalar rangeColor = (CIRCLE_LEVEL_THRESHOLD <= circleLevel) ? CV_RGB(255, 255, 255) : CV_RGB(0, 0, 0);
-
-      drawContours(contours_img,
-                   contours,
-                   contours_idx,
-                   rangeColor,
-                   CV_FILLED,
-                   8,
-                   hierarchy,
-                   0);
-#else
       /* correct search area center point */
       if (CIRCLE_LEVEL_THRESHOLD <= circleLevel && CIRCLE_AREA_THRESHOLD <= area)
         {
@@ -268,7 +150,6 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
           circle(contours_img, correctedCenter, estimatedRadius, CV_RGB(255, 255, 255), CV_FILLED);
         }
 
-#endif
 
       /* Only contours on toplevel are considerd */
       contours_idx = hierarchy[contours_idx][0];
@@ -298,7 +179,6 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
   for (int i = 0; i < static_cast<int>(contexts.size()); i++) {
     Context context = contexts.at(i);
 
-    //if (context.lampRadius < MINIMAM_RADIUS || context.topLeft.x > context.botRight.x)
     if (context.topLeft.x > context.botRight.x)
       continue;
 
@@ -308,12 +188,6 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     /* convert color space (BGR -> HSV) */
     Mat roi_HSV;
     cvtColor(roi, roi_HSV, CV_BGR2HSV);
-
-    // /* test whether HSV conversion was success or not */
-    // Mat test;
-    // cvtColor(roi_HSV, test, CV_HSV2BGR);
-    // imshow("test", test);
-    // waitKey(5);
 
     /* search the place where traffic signals seem to be */
     Mat    signalMask    = signalDetect_inROI(roi_HSV, context.lampRadius);
@@ -326,9 +200,6 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     // waitKey(5);
 
     cvtColor(roi, extracted_HSV, CV_BGR2HSV);
-    // imshow("roi", roi);
-    // waitKey(5);
-
 
     int red_pixNum    = 0;
     int yellow_pixNum = 0;
@@ -381,20 +252,6 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     int currentLightsCode = getCurrentLightsCode(isRed_bright, isYellow_bright, isGreen_bright);
     contexts.at(i).lightState = determineState(contexts.at(i).lightState, currentLightsCode, &(contexts.at(i).stateJudgeCount));
 
-    // UnsharpMasking(&roi, &roi, 3.0f);
-
-    // threshold(roi, roi, 0, 255, THRESH_BINARY | THRESH_OTSU);
-
-    // remove_SoltPepperNoise(&roi, 1);
-
-    // bool display_red    = (getBrightnessRatioInCircle(tmpImage, context.redCenter, context.lampRadius) > 0.5);
-    // bool display_yellow = (getBrightnessRatioInCircle(tmpImage, context.yellowCenter, context.lampRadius) > 0.5);
-    // bool display_green  = (getBrightnessRatioInCircle(tmpImage, context.greenCenter, context.lampRadius) > 0.5);
-
-    // int currentLightsCode = getCurrentLightsCode(display_red, display_yellow, display_green);
-    // contexts.at(i).lightState = determineState(contexts.at(i).lightState, currentLightsCode);
-
-    // Make ROI black
     roi.setTo(Scalar(0));
   }
 }
