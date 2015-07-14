@@ -420,14 +420,12 @@ class MyFrame(rtmgr.MyFrame):
 			pub = rospy.Publisher('gear_cmd', gear_cmd, queue_size=10)
 			pub.publish(gear_cmd(gear=v))
 
-	#def OnProgManu(self, event):
-	#	grp = { self.button_statchk_prog : 1,
-	#		self.button_statchk_manu : 0 }
-	#	self.radio_action(event, grp.keys())
-	#	v = grp.get(event.GetEventObject())
-	#	if v is not None:
-	#		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
-	#		pub.publish(mode_cmd(mode=v))
+	def OnAutoPilot(self, event):
+		obj = event.GetEventObject()
+		self.alias_sync(obj)
+		v = obj.GetValue()
+		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
+		pub.publish(mode_cmd(mode=v))
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
@@ -909,7 +907,7 @@ class MyFrame(rtmgr.MyFrame):
 	# ps command thread
 	def ps_cmd_th(self, ev, interval):
 		nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
-	        while not ev.wait(interval):
+		while not ev.wait(interval):
 			lb = ''
 			for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
 				if ('/' + s.split('/')[-1]) in nodes:
