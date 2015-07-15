@@ -1962,6 +1962,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		self.refresh()
 		self.parent = self.GetParent()
 		self.cmd_dic[ self.button_start ] = ('rosbag record', None)
+		self.toggles = [ self.button_start, self.button_stop ]
 
 	def OnRef(self, event):
 		tc = self.text_ctrl
@@ -1985,15 +1986,24 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			return
 		args = topic_opt + [ '-O', path ]
 
+		split_arg = [ '--split' ] if self.checkbox_split.GetValue() else []
+		size_arg = self.size_arg_get()
+		if split_arg and not size_arg:
+			wx.MessageBox('size is must, with split')
+			return
+		args += split_arg + size_arg
+
 		(cmd, proc) = self.cmd_dic[ key_obj ]
 		proc = self.parent.launch_kill(True, cmd, proc, add_args=args, obj=key_obj)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
+		self.parent.toggle_enables(self.toggles)
 
 	def OnStop(self, event):
 		key_obj = self.button_start
 		(cmd, proc) = self.cmd_dic[ key_obj ]
 		proc = self.parent.launch_kill(False, cmd, proc, sigint=True, obj=key_obj)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
+		self.parent.toggle_enables(self.toggles)
 		self.Hide()
 
 	def OnRefresh(self, event):
@@ -2025,6 +2035,18 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			now.year, now.month, now.day, now.hour, now.minute, now.second)
 		path = os.path.join(dn, fn)
 		set_path(tc, path)
+
+	def size_arg_get(self):
+		tc = self.text_ctrl_size
+		s = tc.GetValue()
+		mb = 0
+		try:
+			mb = float(s)
+		except ValueError:
+			mb = 0
+		if mb <= 0:
+			tc.SetValue('')
+		return [ '--size=' + str(int(mb * 1024 * 1024)) ] if mb > 0 else []
 
 def file_dialog(parent, tc, path_inf_dic={}):
 	path = tc.GetValue()
