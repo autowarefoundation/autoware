@@ -11,11 +11,6 @@
 #ifndef INCLUDED_MFunctions_
 #define INCLUDED_MFunctions_
 
-//load_model.cpp
-
-extern MODEL *load_model(FLOAT ratio);						//load MODEL(filter)
-extern void free_model(MODEL *MO);							//release model
-
 //detect.cpp
 
 extern RESULT *car_detection(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE,FLOAT overlap);//car detection
