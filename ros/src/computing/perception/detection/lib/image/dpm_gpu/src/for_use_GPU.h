@@ -41,7 +41,7 @@
 #ifndef _MODEL_INFO
 #define _MODEL_INFO
 //struct for model component information
-typedef struct {
+struct Model_info {
 
     //basic information
     //from xxxcomp.csv
@@ -83,32 +83,32 @@ typedef struct {
     bool ini;                   //flag for initialization
     FLOAT ratio;                //ratio of zooming image
 
-}Model_info;
+};
 
 //struct for root_filter_information
-typedef struct {
+struct Rootfilters {
     int NoR;                    //number of root filter
     int **root_size;            //size of root filter
     FLOAT **rootfilter;         //weight of root filter
     int *rootsym;               //symmetric information
-}Rootfilters;
+};
 
 //struct for part_filter_information
-typedef struct {
+struct Partfilters {
     int NoP;                    //number of part filter
     int **part_size;            //size of part filter
     FLOAT **partfilter;         //weight of root filter
     int *part_partner;          //symmetric-partner information
     int *part_sym;              //symmetric information of part filter
-}Partfilters;
+};
 
 
 //model information
-typedef struct {
+struct MODEL {
     Model_info *MI;
     Rootfilters *RF;
     Partfilters *PF;
-}MODEL;
+};
 #endif
 
 
