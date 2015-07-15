@@ -46,22 +46,19 @@
 
 #ifdef USE_LIBSSH2
 #include <libssh2.h>
-
-static const char *sshuser = "posup";
-static const char *sshpass = "NavoogohPia3";
-static const char *sshtunnelhost = "localhost";
-static int sshport = 22;
 #endif /* USE_LIBSSH2 */
 
 #define TIMEOUT_SEC	10
 
 SendData::SendData()
-	: SendData("db1.ertl.jp", 5700)
 {
 }
 
-SendData::SendData(const std::string& host_name, int port)
-	: host_name_(host_name), port_(port)
+SendData::SendData(const std::string& host_name, int port, char *sshuser, std::string& sshpubkey, std::string& sshprivatekey, int sshport, std::string& sshtunnelhost)
+	: host_name_(host_name), port_(port),
+	  sshuser_(sshuser), sshpubkey_(sshpubkey),
+	  sshprivatekey_(sshprivatekey), sshport_(sshport),
+	  sshtunnelhost_(sshtunnelhost)
 {
 	connected = false;
 	session = NULL;
@@ -85,7 +82,7 @@ int SendData::ConnectDB()
 	}
 
 	server.sin_family = AF_INET;
-	server.sin_port = htons(sshport); // HTTP port is 80
+	server.sin_port = htons(sshport_); // HTTP port is 80
 
 	server.sin_addr.s_addr = inet_addr(host_name_.c_str());
 	if (server.sin_addr.s_addr == 0xffffffff) {
@@ -100,6 +97,7 @@ int SendData::ConnectDB()
 
 				printf("%s : %s\n", hstrerror(h_errno), host_name_.c_str());
 			}
+			close(sock);
 			return -1;
 		}
 
@@ -145,10 +143,11 @@ int SendData::ConnectDB()
 		return -2;
 	}
 	libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_SHA1);
-	if (libssh2_userauth_password(session, sshuser, sshpass)) {
-		fprintf(stderr, "libssh2_userauth_password failed\n");
+	if (libssh2_userauth_publickey_fromfile(session, sshuser_.c_str(), sshpubkey_.c_str(), sshprivatekey_.c_str(), "")) {
+		fprintf(stderr, "libssh2_userauth_publickey_fromfile failed\n");
 		libssh2_session_disconnect(session, "auth failed");
 		libssh2_session_free(session);
+		close(sock);
 		return -2;
 	}
 #endif /* USE_LIBSSH2 */
@@ -211,8 +210,8 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 
 #ifdef USE_LIBSSH2
 	channel = libssh2_channel_direct_tcpip_ex(session,
-			sshtunnelhost, port_,
-			host_name_.c_str(), sshport);
+			sshtunnelhost_.c_str(), port_,
+			host_name_.c_str(), sshport_);
 	if (channel == NULL) {
 		fprintf(stderr, "libssh2_channel_direct_tcpip_ex failed\n");
 		DisconnectDB("tunnel failed");

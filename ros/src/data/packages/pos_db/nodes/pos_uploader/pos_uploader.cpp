@@ -47,6 +47,10 @@
 
 #include <pos_db.h>
 
+#define MYNAME		"pos_uploader"
+
+using namespace std;
+
 //store subscribed value
 static std::vector <geometry_msgs::PoseArray> car_position_array;
 static std::vector <geometry_msgs::PoseArray> pedestrian_position_array;
@@ -54,11 +58,15 @@ static std::vector <geometry_msgs::PoseArray> pedestrian_position_array;
 static size_t car_num = 0;
 static size_t pedestrian_num = 0;
 
-//default server name and port to send data
-static const std::string default_host_name = "db3.ertl.jp";
-static constexpr int db_port = 5678;
 static int sleep_msec = 500;		// period
 static int use_current_time = 0;
+
+static string db_host_name;
+static int db_port;
+static string sshpubkey;
+static string sshprivatekey;
+static int ssh_port;
+static string sshtunnelhost;
 
 //send to server class
 static SendData sd;
@@ -230,8 +238,17 @@ static void ndt_pose_cb(const geometry_msgs::PoseStamped &pose)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc ,argv, "pos_uploader");
-  std::cout << "pos_uploader" << std::endl;
+  ros::init(argc ,argv, MYNAME);
+  std::cout << MYNAME << std::endl;
+
+  if(argc < 2) {
+    std::cerr << "usage : \n\trosrun " << MYNAME << " <user name> [now]" << std::endl;
+    return -1;
+  }
+  if(argc > 2) {
+    if(strncmp(argv[2], "now", 3) == 0) use_current_time = 1;
+  }
+  std::cerr << "use_current_time=" << use_current_time << std::endl;
 
   pose_lock_ = PTHREAD_MUTEX_INITIALIZER;
 
@@ -243,27 +260,28 @@ int main(int argc, char **argv)
    * The first NodeHandle constructed will fully initialize this node, and the last
    * NodeHandle destructed will close down the node.
    */
-  ros::NodeHandle n;
+  ros::NodeHandle nh;
 
-  ros::Subscriber car_locate = n.subscribe("/car_pose", 1, car_locate_cb);
-  ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
-  ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, ndt_pose_cb);
+  ros::Subscriber car_locate = nh.subscribe("/car_pose", 1, car_locate_cb);
+  ros::Subscriber pedestrian_locate = nh.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
+  ros::Subscriber gnss_pose = nh.subscribe("/ndt_pose", 1, ndt_pose_cb);
 
+
+  nh.param<string>("pos_db/db_host_name", db_host_name, DB_HOSTNAME);
+  cout << "db_host_name=" << db_host_name << endl;
+  nh.param<int>("pos_db/db_port", db_port, DB_PORT);
+  cout << "db_port=" << db_port << endl;
+  nh.param<string>("pos_db/sshpubkey", sshpubkey, SSHPUBKEY);
+  cout << "sshpubkey=" << sshpubkey << endl;
+  nh.param<string>("pos_db/sshprivatekey", sshprivatekey, SSHPRIVATEKEY);
+  cout << "sshprivatekey=" << sshprivatekey << endl;
+  nh.param<int>("pos_db/ssh_port", ssh_port, SSHPORT);
+  cout << "ssh_port=" << ssh_port << endl;
+  nh.param<string>("pos_db/sshtunnelhost", sshtunnelhost, SSHTUNNELHOST);
+  cout << "sshtunnelhost=" << sshtunnelhost << endl;
 
   //set server name and port
-  std::string host_name = default_host_name;
-  int port = db_port;
-  if(argc >= 2) {
-    for(int i = 1; i < argc; i++) {
-      if(strncmp(argv[i], "now", 3) == 0) use_current_time = 1;
-    }
-  }
-  if(argc >= 3+use_current_time){
-    host_name = argv[1];
-    port = std::atoi(argv[2]);
-  }
-
-  sd = SendData(host_name, port);
+  sd = SendData(db_host_name, db_port, argv[1], sshpubkey, sshprivatekey, ssh_port, sshtunnelhost);
 
   pthread_t th;
   if(pthread_create(&th, nullptr, intervalCall, nullptr)){
