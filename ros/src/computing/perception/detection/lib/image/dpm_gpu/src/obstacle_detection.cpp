@@ -50,9 +50,9 @@
 #include "Common.h"
 #include "Depth_points_func.h"
 #include "for_use_GPU.h"
-#include <dpm_gpu.hpp>
 
-MODEL *MO;
+#include <load_model.hpp>
+#include <dpm_gpu.hpp>
 
 struct timeval tv_memcpy_start, tv_memcpy_end;
 float time_memcpy;
@@ -61,6 +61,8 @@ float time_kernel;
 
 int device_num;
 
+// Should be removed!!!!
+MODEL *MO;
 std::string com_name;
 std::string root_name;
 std::string part_name;
@@ -74,18 +76,14 @@ void dpm_gpu_load_models(const std::string& com_csv,
 			 const std::string& root_csv,
 			 const std::string& part_csv)
 {
-	constexpr double RATIO = 1; 
-
-	com_name = com_csv;
-	root_name = root_csv;
-	part_name = part_csv;
-	MO = load_model(RATIO);
+	constexpr double RATIO = 1;
+	MO = load_model(RATIO, com_csv.c_str(), root_csv.c_str(), part_csv.c_str());
 }
 
 void dpm_gpu_cleanup_cuda()
 {
 	clean_cuda();
-	free_model(MO);
+	//free_model(MO);
 }
 
 DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
@@ -123,5 +121,53 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 	s_free(cars->scale);
 	s_free(cars->score);
 	s_free(cars->IM);
+	return result;
+}
+
+DPMGPUModel::DPMGPUModel(const char *com_csv, const char *root_csv, const char *part_csv)
+{
+	constexpr double RATIO = 1;
+	model_ = load_model(RATIO, com_csv, root_csv, part_csv);
+}
+
+DPMGPUModel::~DPMGPUModel()
+{
+	free_model(model_);
+}
+
+DPMGPUResult DPMGPUModel::detect_objects(IplImage *image, const DPMGPUParam& param)
+{
+	model_->MI->interval = param.lambda;
+	model_->MI->sbin     = param.num_cells;
+
+	int detected_objects;
+	FLOAT *ac_score = ini_ac_score(image);
+	RESULT *objects = car_detection(image, model_, param.threshold,
+					&detected_objects, ac_score,
+					param.overlap);
+	s_free(ac_score);
+
+	DPMGPUResult result;
+	result.num = objects->num;
+	for (int i = 0; i < objects->num; ++i) {
+		result.type.push_back(objects->type[i]);
+	}
+
+	for (int i = 0; i < objects->num; ++i) {
+		int base = i * 4;
+		int *data = &(objects->OR_point[base]);
+
+		result.corner_points.push_back(data[0]);
+		result.corner_points.push_back(data[1]);
+		result.corner_points.push_back(data[2] - data[0]);
+		result.corner_points.push_back(data[3] - data[1]);
+		result.score.push_back(objects->score[i]);
+	}
+
+	s_free(objects->point);
+	s_free(objects->type);
+	s_free(objects->scale);
+	s_free(objects->score);
+	s_free(objects->IM);
 	return result;
 }

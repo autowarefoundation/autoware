@@ -18,6 +18,29 @@ struct DPMGPUResult {
 	std::vector<float> score;
 };
 
+struct DPMGPUParam {
+	double threshold;
+	double overlap;
+	double lambda;
+	double num_cells;
+
+	DPMGPUParam() = default;
+};
+
+struct MODEL;
+class DPMGPUModel {
+private:
+	struct MODEL *model_;
+	double RATIO;
+
+public:
+	DPMGPUModel(const char *com_csv, const char *root_csv, const char *part_csv);
+	~DPMGPUModel();
+
+	DPMGPUResult detect_objects(IplImage *image, const DPMGPUParam& param);
+};
+
+
 extern DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 					   double overlap, int lambda, int num_cells);
 
