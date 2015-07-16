@@ -13,7 +13,6 @@
 //Original header
 #include "MODEL_info.h"		//File information
 #include "Common.h"
-
 #include "switch_float.h"
 
 struct thread_data {
@@ -26,9 +25,6 @@ struct thread_data {
 	int B_dims[3];
 	int C_dims[2];
 };
-
-//convolve A and B
-FLOAT **fconvsMT(FLOAT*feat,FLOAT*flfeat,FLOAT**filter,int *sym_info,int start,int end,int *A_SIZE,int **B_SIZE,int *M_size);
 
 //thread process
 // convolve A and B(non_symmetric)

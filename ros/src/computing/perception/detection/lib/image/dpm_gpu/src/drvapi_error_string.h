@@ -17,11 +17,11 @@
 #include <cstdlib>
 
 // Error Code string definitions here
-typedef struct
+struct s_CudaErrorStr
 {
     char const *error_string;
     int  error_id;
-} s_CudaErrorStr;
+};
 
 /**
  * Error codes

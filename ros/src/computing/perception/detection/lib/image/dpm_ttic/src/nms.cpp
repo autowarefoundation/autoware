@@ -9,44 +9,37 @@
 #include <cstring>
 
 #include "MODEL_info.h"		//File information
-#include "Common.h"
-
 #include "switch_float.h"
+#include "nms.hpp"
 
-//definiton of functions//
+//inline function(Why does not use standard library ?)
+static inline FLOAT max_d(FLOAT x,FLOAT y)
+{
+	return (x >= y ? x : y);
+}
 
-//inline function
-static inline FLOAT max_d(FLOAT x,FLOAT y);
-static inline FLOAT min_d(FLOAT x,FLOAT y);
-
-//sub functions
-inline void exchangeOfValues(FLOAT *x , FLOAT *y);		//sub function for quick-sort
-inline void exchangeOfOrders(int *x , int *y);			//sub function for quick-sort
-void  quickSort(FLOAT *ary , int *Order, int first_index , int last_index);	//quick sort function
-
-//Non_maximum suppression function (extended to detect.cc)
-FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO);
-
-//inline function
-static inline FLOAT max_d(FLOAT x,FLOAT y) {return (x >= y ? x : y); }
-static inline FLOAT min_d(FLOAT x,FLOAT y) {return (x <= y ? x : y); }
+static inline FLOAT min_d(FLOAT x,FLOAT y)
+{
+	return (x <= y ? x : y);
+}
 
 //sub functions
-
-inline void exchangeOfValues(FLOAT *x , FLOAT *y) {
+static inline void exchangeOfValues(FLOAT *x , FLOAT *y)
+{
 	FLOAT tmp;
 	tmp = *x; *x = *y ; *y = tmp;
 	return;
 }
 
-inline void exchangeOfOrders(int *x , int *y) {
+static inline void exchangeOfOrders(int *x , int *y)
+{
 	int tmp;
 	tmp = *x; *x = *y ; *y = tmp;
 	return;
 }
 
-//Quick sort function
-void  quickSort(FLOAT *ary , int *Order, int first_index , int last_index) {
+static void quickSort(FLOAT *ary , int *Order, int first_index , int last_index)
+{
 	int i = first_index, j = last_index;
 	FLOAT key = *(ary + (first_index + last_index) / 2);
 
@@ -177,10 +170,10 @@ FLOAT *nms(FLOAT *boxes,FLOAT overlap,int *num,MODEL *MO)
 		ii++;
 	}
 	//release
-	s_free(area);
-	s_free(scores);
-	s_free(sorted_orders);
-	s_free(checked);
+	free(area);
+	free(scores);
+	free(sorted_orders);
+	free(checked);
 
 	//Output
 	*num = pi_num;

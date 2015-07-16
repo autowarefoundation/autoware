@@ -35,24 +35,12 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-#include <dpm/ImageObjects.h>
-#include <runtime_manager/ConfigCarDpm.h>
-#include <runtime_manager/ConfigPedestrianDpm.h>
-
-#include "Laser_func.h"
-#include "car_det_func.h"
-#include "Common.h"
-#include "Depth_points_func.h"
-#include "for_use_GPU.h"
 #include <dpm_gpu.hpp>
 
-MODEL *MO;
+#include "for_use_GPU.h"
+#include "load_model.hpp"
+#include "detect.hpp"
+#include "GPU_init.hpp"
 
 struct timeval tv_memcpy_start, tv_memcpy_end;
 float time_memcpy;
@@ -61,9 +49,8 @@ float time_kernel;
 
 int device_num;
 
-std::string com_name;
-std::string root_name;
-std::string part_name;
+// Should be removed!!!!
+static MODEL *MO;
 
 void dpm_gpu_init_cuda(const std::string& cubin_path)
 {
@@ -74,18 +61,14 @@ void dpm_gpu_load_models(const std::string& com_csv,
 			 const std::string& root_csv,
 			 const std::string& part_csv)
 {
-	constexpr double RATIO = 1; 
-
-	com_name = com_csv;
-	root_name = root_csv;
-	part_name = part_csv;
-	MO = load_model(RATIO);
+	constexpr double RATIO = 1;
+	MO = load_model(RATIO, com_csv.c_str(), root_csv.c_str(), part_csv.c_str());
 }
 
 void dpm_gpu_cleanup_cuda()
 {
 	clean_cuda();
-	free_model(MO);
+	//free_model(MO);
 }
 
 DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
@@ -98,8 +81,8 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 	FLOAT *ac_score = ini_ac_score(image);
 	RESULT *cars = car_detection(image, MO, threshold,
 				     &detected_objects, ac_score,
-				     overlap);	//detect car
-	s_free(ac_score);
+				     overlap);
+	free(ac_score);
 
 	DPMGPUResult result;
 	result.num = cars->num;
@@ -118,10 +101,58 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 		result.score.push_back(cars->score[i]);
 	}
 
-	s_free(cars->point);
-	s_free(cars->type);
-	s_free(cars->scale);
-	s_free(cars->score);
-	s_free(cars->IM);
+	free(cars->point);
+	free(cars->type);
+	free(cars->scale);
+	free(cars->score);
+	free(cars->IM);
+	return result;
+}
+
+DPMGPUModel::DPMGPUModel(const char *com_csv, const char *root_csv, const char *part_csv)
+{
+	constexpr double RATIO = 1;
+	model_ = load_model(RATIO, com_csv, root_csv, part_csv);
+}
+
+DPMGPUModel::~DPMGPUModel()
+{
+	free_model(model_);
+}
+
+DPMGPUResult DPMGPUModel::detect_objects(IplImage *image, const DPMGPUParam& param)
+{
+	model_->MI->interval = param.lambda;
+	model_->MI->sbin     = param.num_cells;
+
+	int detected_objects;
+	FLOAT *ac_score = ini_ac_score(image);
+	RESULT *objects = car_detection(image, model_, param.threshold,
+					&detected_objects, ac_score,
+					param.overlap);
+	free(ac_score);
+
+	DPMGPUResult result;
+	result.num = objects->num;
+	for (int i = 0; i < objects->num; ++i) {
+		result.type.push_back(objects->type[i]);
+	}
+
+	for (int i = 0; i < objects->num; ++i) {
+		int base = i * 4;
+		int *data = &(objects->OR_point[base]);
+
+		result.corner_points.push_back(data[0]);
+		result.corner_points.push_back(data[1]);
+		result.corner_points.push_back(data[2] - data[0]);
+		result.corner_points.push_back(data[3] - data[1]);
+		result.score.push_back(objects->score[i]);
+	}
+
+	free(objects->point);
+	free(objects->type);
+	free(objects->scale);
+	free(objects->score);
+	free(objects->IM);
 	return result;
 }

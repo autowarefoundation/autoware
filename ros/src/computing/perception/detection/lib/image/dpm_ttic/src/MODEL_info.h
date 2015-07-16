@@ -1,40 +1,25 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
 
 ///////////MODEL_info.h   Detector-Model information & definition header  /////////////////////////////////////////
 
 //OpenCV library
+#ifndef INCLUDED_Minfo_
+#define INCLUDED_Minfo_
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
 #include <opencv2/legacy/legacy.hpp>
-#include <cstdio>
 
 #include "switch_float.h"
-
-#ifndef INCLUDED_Minfo_
-#define INCLUDED_Minfo_
 
 /////////////////////
 //file information///
 /////////////////////
 
-//#define IM_NAME		"test5.jpg"				//Image name
-//#define MNAME			"M1.avi"				//source movie name
-
-#define IN_S_NAME		"CAR_TRACKING/Test_Images/Daytime_Image_PNG/"			//Input-Image(successive)
-#define OUTMNAME		"Out.avi"				//output movie name
-#define OUT_NAME		"Out_Image/res"		//Result name
-#define EX_NAME			".png"
-
-///////////////////////
-//struct information///
-///////////////////////
-
 //struct for model component information
-typedef struct {
-
+struct Model_info {
 	//basic information
 	//from xxxcomp.csv
 	int numcomponent;	//number of component
@@ -74,36 +59,34 @@ typedef struct {
 
 	bool ini;	//flag for initialization
 	FLOAT ratio;	//ratio of zooming image
-
-}Model_info;
+};
 
 //struct for root_filter_information
-typedef struct {
+struct Rootfilters {
 	int NoR;		//number of root filter
 	int **root_size;	//size of root filter
 	FLOAT **rootfilter;	//weight of root filter
 	int *rootsym;		//symmetric information
-}Rootfilters;
+};
 
 //struct for part_filter_information
-typedef struct {
+struct Partfilters {
 	int NoP;		//number of part filter
 	int **part_size;	//size of part filter
 	FLOAT **partfilter;	//weight of root filter
 	int *part_partner;	//symmetric-partner information
 	int *part_sym;		//symmetric information of part filter
-}Partfilters;
-
+};
 
 //model information
-typedef struct {
+struct MODEL {
 	Model_info *MI;
 	Rootfilters *RF;
 	Partfilters *PF;
-}MODEL;
+};
 
 //Particle filter informations
-typedef struct {
+struct PINFO {
 	int *partner;
 	CvConDensation ** condens;
 	int *se_num;
@@ -111,10 +94,10 @@ typedef struct {
 	FLOAT **L_VX;
 	FLOAT **L_VY;
 	FLOAT **ave_p;
-}PINFO;
+};
 
 //Result of Detection
-typedef struct {
+struct RESULT {
 	int num;
 	int *point;
 	int *OR_point;
@@ -122,6 +105,6 @@ typedef struct {
 	int *type;
 	FLOAT *scale;
 	FLOAT *score;
-}RESULT;
+};
 
 #endif

@@ -38,26 +38,13 @@
 
 //Simple portable thread library.
 
-#if _WIN32
-    //Windows threads.
-    #include <windows.h>
+#include <pthread.h>
 
-    typedef HANDLE CUTThread;
-    typedef unsigned (WINAPI *CUT_THREADROUTINE)(void *);
+typedef pthread_t CUTThread;
+typedef void *(*CUT_THREADROUTINE)(void *);
 
-    #define CUT_THREADPROC unsigned WINAPI
-    #define  CUT_THREADEND return 0
-
-#else
-    //POSIX threads.
-    #include <pthread.h>
-
-    typedef pthread_t CUTThread;
-    typedef void *(*CUT_THREADROUTINE)(void *);
-
-    #define CUT_THREADPROC void
-    #define  CUT_THREADEND
-#endif
+#define CUT_THREADPROC void
+#define  CUT_THREADEND
 
 
 #ifdef __cplusplus

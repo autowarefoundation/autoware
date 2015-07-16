@@ -1,3 +1,6 @@
+#ifndef _SWITCH_FLOAT_H_
+#define _SWITCH_FLOAT_H_
+
 /* typedef to switch float and double */
 #define FLOAT_IS_float
 typedef float FLOAT;
@@ -23,3 +26,5 @@ static inline void tvsub(
 }
 /* for measurement */
 #endif
+
+#endif /* _SWITCH_FLOAT_H_ */

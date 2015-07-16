@@ -19,9 +19,6 @@
 #include "switch_release.h"
 #include "drvapi_error_string.h"
 
-//main function
-//FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale);
-
 //#define USE_PTHREAD
 
 /* cuda error handling macro */
@@ -105,7 +102,7 @@ FLOAT *Ipl_to_FLOAT_forGPU(IplImage *Input)	//get intensity data (FLOAT) of inpu
 /* upload original image to GPU
    and get its texture reference */
 /*********************************************/
-void upload_org_image_toGPU(FLOAT *org_image, int org_image_size[3])
+static void upload_org_image_toGPU(FLOAT *org_image, int org_image_size[3])
 {
   CUresult res;
   int src_height   = org_image_size[0];
@@ -188,7 +185,7 @@ void upload_org_image_toGPU(FLOAT *org_image, int org_image_size[3])
 /* create Look-Up Table(LUT) and get texture reference
    to adjust pointer position in GPU */
 /**********************************************************/
-void  make_image_idx_incrementer(int *resized_image_size, int LEN)
+static void  make_image_idx_incrementer(int *resized_image_size, int LEN)
 {
   CUresult res;
   res = cuMemHostAlloc((void **)&image_idx_incrementer,
@@ -242,7 +239,7 @@ void  make_image_idx_incrementer(int *resized_image_size, int LEN)
 /***************************************************************/
 /* image resizing function using bilinear interpolation method */
 /***************************************************************/
-void *bilinear_resizing(void *arg)
+static void *bilinear_resizing(void *arg)
 {
   resize_thread_arg *this_arg = (resize_thread_arg *)arg;
   //  FLOAT    *src_top  = this_arg->src_top;
