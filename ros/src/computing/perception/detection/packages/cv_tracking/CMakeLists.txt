@@ -21,13 +21,20 @@ EXECUTE_PROCESS(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-##add_message_files(
-##  FILES
-##)
+add_message_files(
+  FILES
+  image_obj.msg
+  image_obj_ranged.msg
+  image_rect.msg
+  image_rect_ranged.msg
+  obj_pose.msg
+)
 
-##generate_messages(
-##  DEPENDENCIES
-##)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
 
 catkin_package(
 #  INCLUDE_DIRS include
@@ -79,6 +86,10 @@ SET_TARGET_PROPERTIES(dpm_ttic
   PROPERTIES
   COMPILE_FLAGS
   "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
+)
+
+ADD_DEPENDENCIES(dpm_ttic
+  dpm_ttic_generate_messages_cpp
 )
 
 SET(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
