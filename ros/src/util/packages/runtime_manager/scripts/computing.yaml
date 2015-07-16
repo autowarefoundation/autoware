@@ -17,15 +17,15 @@ subs :
     - name : ndt_localizer
       subs :
       - name : ndt_mapping
-        cmd  : roslaunch points_localizer ndt_pcl.launch
-        param: ndt
+        cmd  : roslaunch ndt_localizer ndt_mapping.launch
+        param: ndt_mapping
         gui  :
+          dialog : MyDialogNdtMapping
           stat_topic : [ ndt ]
       - name : ndt_matching
-        cmd  : roslaunch points_localizer ndt_slam.launch
-        param: ndt_slam
+        cmd  : roslaunch ndt_localizer ndt_matching.launch
+        param: ndt
         gui  :
-          dialog : MyDialogNdtSlam
           stat_topic : [ ndt ]
       - name : pos_marker
         cmd  : rosrun points_localizer pos_marker
@@ -538,8 +538,8 @@ params :
       max       : 100
       v         : 1
 
-  - name  : ndt_slam
-    topic : /config/ndt_slam
+  - name  : ndt_mapping
+    topic : /config/ndt_mapping
     msg   : ConfigNdtMapping
     flags : [ no_init_update ]
     vars  :

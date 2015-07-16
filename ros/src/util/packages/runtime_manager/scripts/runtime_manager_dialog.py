@@ -1851,13 +1851,13 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
-class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
+class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
 		self.pdic_bak = self.pdic.copy()
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
-		rtmgr.MyDialogNdtSlam.__init__(self, *args, **kwds)
+		rtmgr.MyDialogNdtMapping.__init__(self, *args, **kwds)
 
 		parent = self.panel_v
 		frame = self.GetParent()
@@ -1868,7 +1868,7 @@ class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
 
 		self.update_filename()
 		self.klass_msg = ConfigNdtMappingOutput
-		self.pub = rospy.Publisher('/config/ndt_slam_output', self.klass_msg, queue_size=10)
+		self.pub = rospy.Publisher('/config/ndt_mapping_output', self.klass_msg, queue_size=10)
 
 	def update_filename(self):
 		tc = self.text_ctrl_path
