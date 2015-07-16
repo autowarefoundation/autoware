@@ -21,16 +21,9 @@
 #define FLOAT_SCAN_FMT	"%lf,"
 #endif
 
-#define FLOAT_SCAN_FMT2		FLOAT_SCAN_FMT FLOAT_SCAN_FMT
-#define FLOAT_SCAN_FMT3		FLOAT_SCAN_FMT2 FLOAT_SCAN_FMT
-#define FLOAT_SCAN_FMT4		FLOAT_SCAN_FMT3 FLOAT_SCAN_FMT
-
-//load model information
-MODEL *load_model(FLOAT ratio);			//load MODEL(filter) (extended to main.cpp)
-
-//release function
-void free_model(MODEL *MO);			//release model-information (externed to main.cpp)
-//subfunctions
+#define FLOAT_SCAN_FMT2	FLOAT_SCAN_FMT FLOAT_SCAN_FMT
+#define FLOAT_SCAN_FMT3	FLOAT_SCAN_FMT2 FLOAT_SCAN_FMT
+#define FLOAT_SCAN_FMT4	FLOAT_SCAN_FMT3 FLOAT_SCAN_FMT
 
 //load model basic information
 static Model_info *load_modelinfo(const char *filename)
@@ -244,26 +237,20 @@ static Partfilters *load_partfilter(const char *filename)
 	return(PF);
 }
 
-extern std::string com_name;
-extern std::string root_name;
-extern std::string part_name;
-
 //load model infroamtion
-MODEL *load_model(FLOAT ratio)
+MODEL *load_model(FLOAT ratio, const char *com_csv, const char *root_csv, const char *part_csv)
 {
-	MODEL *MO=(MODEL*)malloc(sizeof(MODEL));
+	MODEL *model = (MODEL*)malloc(sizeof(MODEL));
 
-	MO->MI=load_modelinfo(com_name.c_str());
-	MO->RF=load_rootfilter(root_name.c_str());
-	MO->PF=load_partfilter(part_name.c_str());
-	MO->MI->ratio = ratio;
+	model->MI = load_modelinfo(com_csv);
+	model->RF = load_rootfilter(root_csv);
+	model->PF = load_partfilter(part_csv);
+	model->MI->ratio = ratio;
 
-	/* set pad size to 0 */
-	MO->MI->padx = 0;
-	MO->MI->pady = 0;
-	/* set pad size to 0 */
+	model->MI->padx = 0;
+	model->MI->pady = 0;
 
-	return(MO);
+	return model;
 }
 
 //release model

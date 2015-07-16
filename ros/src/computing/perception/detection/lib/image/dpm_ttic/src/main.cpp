@@ -4,53 +4,38 @@
 ///main.cpp   main function of car tracking
 
 //OpenCV library
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 
 #include <cstdio>
 #include <cstdlib>
-#include <time.h>
 
-#include <cmath>
 #include <dpm_ttic.hpp>
 
 #include "MODEL_info.h"
-#include "Common.h"
 #include "switch_float.h"
 #include "detect.hpp"
 #include "load_model.hpp"
 
-static MODEL *MO;
-
-std::string com_name;
-std::string root_name;
-std::string part_name;
-
-void dpm_ttic_load_models(const std::string& com_csv,
-			  const std::string& root_csv,
-			  const std::string& part_csv)
+DPMTTICModel::DPMTTICModel(const char *com_csv, const char *root_csv, const char *part_csv)
 {
 	constexpr double RATIO = 1; 
-
-	com_name = com_csv;
-	root_name = root_csv;
-	part_name = part_csv;
-	MO = load_model(RATIO);
+	model_ = load_model(RATIO, com_csv, root_csv, part_csv);
 }
 
-DPMTTICResult dpm_ttic_detect_objects(IplImage *image, double threshold,
-				      double overlap, int lambda, int num_cells)
+DPMTTICModel::~DPMTTICModel()
 {
-	//MO->MI->interval = lambda;
-	//MO->MI->sbin     = num_cells;
+	free_model(model_);
+}
+
+DPMTTICResult DPMTTICModel::detect_objects(IplImage *image, const DPMTTICParam& param)
+{
+	// model_->MI->interval = param.lambda;
+	// model_->MI->sbin     = param.num_cells;
 
 	int detected_objects;
 	FLOAT *ac_score = ini_ac_score(image);
-	RESULT *cars = car_detection(image, MO, threshold,
-				     &detected_objects, ac_score,
-				     overlap);
-	s_free(ac_score);
+	RESULT *cars = car_detection(image, model_, param.threshold, &detected_objects, ac_score,
+				     param.overlap);
+	free(ac_score);
 
 	DPMTTICResult result;
 	result.num = cars->num;
@@ -69,10 +54,11 @@ DPMTTICResult dpm_ttic_detect_objects(IplImage *image, double threshold,
 		result.score.push_back(cars->score[i]);
 	}
 
-	s_free(cars->point);
-	s_free(cars->type);
-	s_free(cars->scale);
-	s_free(cars->score);
-	s_free(cars->IM);
+	free(cars->point);
+	free(cars->type);
+	free(cars->scale);
+	free(cars->score);
+	free(cars->IM);
+
 	return result;
 }

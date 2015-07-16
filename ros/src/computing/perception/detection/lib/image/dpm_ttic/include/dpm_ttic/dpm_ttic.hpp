@@ -1,6 +1,11 @@
 #ifndef _DPM_TTIC_H_
 #define _DPM_TTIC_H_
 
+#include <vector>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
 struct DPMTTICResult {
 	int num;
 	std::vector<int> corner_points;
@@ -8,7 +13,25 @@ struct DPMTTICResult {
 	std::vector<float> score;
 };
 
-extern DPMTTICResult dpm_ttic_detect_objects(IplImage *image, double threshold,
-					     double overlap, int lambda, int num_cells);
+struct DPMTTICParam {
+	double threshold;
+	double overlap;
+	double lambda;
+	double num_cells;
+
+	DPMTTICParam() = default;
+};
+
+struct MODEL;
+class DPMTTICModel {
+private:
+	MODEL *model_;
+
+public:
+	DPMTTICModel(const char *com_csv, const char *root_csv, const char *part_csv);
+	~DPMTTICModel();
+
+	DPMTTICResult detect_objects(IplImage *image, const DPMTTICParam& param);
+};
 
 #endif /* _DPM_TTIC_H_ */

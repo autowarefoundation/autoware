@@ -63,21 +63,21 @@ static FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SC
 	//detect boundary boxes
 	FLOAT *boxes = get_boxes(feature,scales,featsize,MO,D_NUMS,A_SCORE,thresh);
 
-	s_free(scales);						//release scale-information
-	s_free(featsize);					//release feat size information
-	free_features(feature,MO->MI);
+	free(scales);
+	free(featsize);
+	free_features(feature, MO->MI);
 
 	return boxes;
 }
 
-RESULT *car_detection(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE,FLOAT overlap)
+RESULT *car_detection(IplImage *image, MODEL *model, FLOAT thresh, int *D_NUMS,FLOAT *A_SCORE,FLOAT overlap)
 {
-	FLOAT *boxes = detect(IM,MO,thresh,D_NUMS,A_SCORE);	//detect high-score region
-	FLOAT *rects = nms(boxes,overlap,D_NUMS,MO);		//get boundary-rectangles of car
-	RESULT *CUR = get_new_rects(IM,MO,rects,D_NUMS);	//get current result
+	FLOAT *boxes = detect(image,model,thresh,D_NUMS,A_SCORE);	//detect high-score region
+	FLOAT *rects = nms(boxes,overlap,D_NUMS,model);		//get boundary-rectangles of car
+	RESULT *result = get_new_rects(image,model,rects,D_NUMS);	//get current result
 
 	s_free(boxes);
 	s_free(rects);
 
-	return CUR;
+	return result;
 }

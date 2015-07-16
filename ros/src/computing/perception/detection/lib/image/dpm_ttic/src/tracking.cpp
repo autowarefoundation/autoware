@@ -14,25 +14,12 @@
 #include <time.h>
 
 #include <opencv2/legacy/legacy.hpp>
-//Header files
+
 #include "MODEL_info.h"		//Model-structure definition
 #include "Common.h"
 
 #include "switch_float.h"
 #include "tracking.hpp"
-
-//definition of functions
-
-//get object_rectangles
-int* elm_rect(RESULT *CUR,int *partner);						//eliminate rectangle(bad score)
-
-//functions about tracking(higher level)
-void get_texture(RESULT *RES,IplImage *IM);	//get texture
-
-#define n_particle 1000		//number of particles
-#define max_hist 5
-
-extern FILE *resFP;
 
 //create new_result data
 static RESULT *create_result(int num)
@@ -41,8 +28,12 @@ static RESULT *create_result(int num)
 	RES->num=num;
 	if(num==0)
 	{
-		RES->point = NULL; RES->type = NULL; RES->score = NULL;
-		RES->scale = NULL; RES->IM = NULL;	 RES->OR_point = NULL;
+		RES->point = NULL;
+		RES->type = NULL;
+		RES->score = NULL;
+		RES->scale = NULL;
+		RES->IM = NULL;
+		RES->OR_point = NULL;
 	}
 	else
 	{
@@ -123,96 +114,9 @@ RESULT *get_new_rects(IplImage *Image,MODEL *MO,FLOAT *boxes,int *NUM)
 		OPP[3] = (int)((FLOAT)PP[3]/ratio);
 
 		//for debug
-		//printf("x1:%d y1:%d x2:%d y2:%d\n",PP[0],PP[1],PP[2],PP[3]);
 		printf("scale:%f score:%f type:%d\n",CUR->scale[ii],CUR->score[ii],CUR->type[ii]);
-		fprintf(resFP, "scale:%f score:%f type:%d\n",CUR->scale[ii],CUR->score[ii],CUR->type[ii]);
 	}
 	s_free(Avec);
 	return(CUR);
 }
 
-//eliminate rectangle for
-int* elm_rect(RESULT *CUR,int *partner)
-{
-	int *NEW_PARTNER;		//output
-	int N_NUM=CUR->num;
-	int *CHECK	=(int *)calloc(N_NUM,sizeof(int));
-	//check bad-score & independent object
-	for(int ii=0;ii<CUR->num;ii++)
-	{
-		if(partner[ii]<0 && CUR->score[ii]<0.0){ CHECK[ii]=1; N_NUM--;}
-		else									 CHECK[ii]=0;
-	}
-
-	//check socore and independence
-	if(N_NUM<CUR->num && N_NUM>0)		//bad matching (have to reduce object)
-	{
-		int *N_P=(int *)calloc(N_NUM*4,sizeof(int));
-		int *N_T=(int *)calloc(N_NUM,sizeof(int));
-		FLOAT *N_SCORE=(FLOAT *)calloc(N_NUM,sizeof(FLOAT));
-		FLOAT *N_SCALE=(FLOAT *)calloc(N_NUM,sizeof(FLOAT));
-		IplImage **N_IM	=(IplImage**)calloc(N_NUM,sizeof(IplImage*));
-		NEW_PARTNER = (int *)calloc(N_NUM,sizeof(int));
-
-		int nc=0;
-		for(int ii=0;ii<CUR->num;ii++)
-		{
-			if(CHECK[ii]==0)
-			{
-				int *PP = CUR->point+ii*4;
-				//memcpy_s(N_P+nc*4,sizeof(int)*4,PP,sizeof(int)*4);
-				memcpy(N_P+nc*4, PP,sizeof(int)*4);
-				N_T[nc]=CUR->type[ii];
-				N_SCORE[nc]=CUR->score[ii];
-				N_SCALE[nc]=CUR->scale[ii];
-				NEW_PARTNER[nc]=partner[ii];
-				nc++;
-			}
-		}
-		//release old data
-		s_free(CUR->point); s_free(CUR->scale); s_free(CUR->score);
-		s_free(CUR->type);	s_free(CUR->IM);
-		//rewrite new data
-		CUR->num=N_NUM;		CUR->type=N_T;	CUR->scale=N_SCALE;
-		CUR->score=N_SCORE;	CUR->IM=N_IM;	CUR->point=N_P;
-		NEW_PARTNER = (int *)calloc(CUR->num,sizeof(int));
-		//memcpy_s(NEW_PARTNER,CUR->num*sizeof(int),partner,CUR->num*sizeof(int));
-		memcpy(NEW_PARTNER, partner,CUR->num*sizeof(int));
-	}
-	else if(N_NUM==0)		//zero matching (all rectangles are eliminated)
-	{
-		s_free(CUR->point); s_free(CUR->scale); s_free(CUR->score);
-		s_free(CUR->type);	s_free(CUR->IM);
-		CUR->num=0;
-		NEW_PARTNER=NULL;
-	}
-	else
-	{
-		NEW_PARTNER = (int *)calloc(CUR->num,sizeof(int));
-		//memcpy_s(NEW_PARTNER,CUR->num*sizeof(int),partner,CUR->num*sizeof(int));
-		memcpy(NEW_PARTNER, partner,CUR->num*sizeof(int));
-	}
-
-	s_free(CHECK);
-	return NEW_PARTNER;
-}
-
-//get texture of object_rectangle
-void get_texture(RESULT *RES,IplImage *IM)
-{
-	for(int ii=0;ii<RES->num;ii++)
-	{
-		int *PP = RES->point+ii*4;
-		int WID = *(PP+2)-*PP;
-		int HEI = *(PP+3)-*(PP+1);
-		//printf("POINTS %d %d %d %d\n",*PP,*(PP+1),*(PP+2),*(PP+3));
-		CvRect REC = cvRect(*PP,*(PP+1),WID,HEI);
-		cvSetImageROI(IM,REC);								//change ROI of Image
-		IplImage * COLIM=cvCreateImage(cvSize(WID,HEI),IM->depth,IM->nChannels);	//color image (temporary)
-		cvCopy(IM,COLIM);
-		RES->IM[ii]=cvCreateImage(cvSize(WID,HEI),IM->depth,1);				//create gray_scale image
-		cvCvtColor(COLIM,RES->IM[ii],CV_BGR2GRAY);					//get gray_scale image
-		cvReleaseImage(&COLIM);								//release temporary image
-		cvResetImageROI(IM);								//reset ROI of Image
-	}
-}
