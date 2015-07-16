@@ -113,8 +113,8 @@ static ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_en
 static ros::Duration d_callback, d1, d2, d3, d4, d5;
 */
 
-static ros::Publisher ndt_pose_pub;
-static geometry_msgs::PoseStamped ndt_pose_msg;
+static ros::Publisher current_pose_pub;
+static geometry_msgs::PoseStamped current_pose_msg;
 
 static ros::Publisher control_pose_pub;
 static geometry_msgs::PoseStamped control_pose_msg;
@@ -470,16 +470,15 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
 */
         // publish the position
-       // ndt_pose_msg.header.frame_id = "/ndt_frame";
-        ndt_pose_msg.header.frame_id = "/map";
-        ndt_pose_msg.header.stamp = scan_time;
-        ndt_pose_msg.pose.position.x = current_pos.x;
-        ndt_pose_msg.pose.position.y = current_pos.y;
-        ndt_pose_msg.pose.position.z = current_pos.z;
-        ndt_pose_msg.pose.orientation.x = q.x();
-        ndt_pose_msg.pose.orientation.y = q.y();
-        ndt_pose_msg.pose.orientation.z = q.z();
-        ndt_pose_msg.pose.orientation.w = q.w();
+        current_pose_msg.header.frame_id = "/map";
+        current_pose_msg.header.stamp = scan_time;
+        current_pose_msg.pose.position.x = current_pos.x;
+        current_pose_msg.pose.position.y = current_pos.y;
+        current_pose_msg.pose.position.z = current_pos.z;
+        current_pose_msg.pose.orientation.x = q.x();
+        current_pose_msg.pose.orientation.y = q.y();
+        current_pose_msg.pose.orientation.z = q.z();
+        current_pose_msg.pose.orientation.w = q.w();
 
         static tf::TransformBroadcaster pose_broadcaster_control;
         tf::Transform pose_transform_control;
@@ -508,7 +507,7 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
          std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
          */
 
-        ndt_pose_pub.publish(ndt_pose_msg);
+        current_pose_pub.publish(current_pose_msg);
         control_pose_pub.publish(control_pose_msg);
 
 	int iter_num = ndt.getFinalNumIteration();
@@ -757,16 +756,15 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 		pose_broadcaster.sendTransform(tf::StampedTransform(pose_transform, scan_time, "map", "ndt_frame"));
       */
       // publish the position
-      // ndt_pose_msg.header.frame_id = "/ndt_frame";
-      ndt_pose_msg.header.frame_id = "/map";
-      ndt_pose_msg.header.stamp = scan_time;
-      ndt_pose_msg.pose.position.x = current_pos.x;
-      ndt_pose_msg.pose.position.y = current_pos.y;
-      ndt_pose_msg.pose.position.z = current_pos.z;
-      ndt_pose_msg.pose.orientation.x = q.x();
-      ndt_pose_msg.pose.orientation.y = q.y();
-      ndt_pose_msg.pose.orientation.z = q.z();
-      ndt_pose_msg.pose.orientation.w = q.w();
+      current_pose_msg.header.frame_id = "/map";
+      current_pose_msg.header.stamp = scan_time;
+      current_pose_msg.pose.position.x = current_pos.x;
+      current_pose_msg.pose.position.y = current_pos.y;
+      current_pose_msg.pose.position.z = current_pos.z;
+      current_pose_msg.pose.orientation.x = q.x();
+      current_pose_msg.pose.orientation.y = q.y();
+      current_pose_msg.pose.orientation.z = q.z();
+      current_pose_msg.pose.orientation.w = q.w();
       
       static tf::TransformBroadcaster pose_broadcaster_control;
       tf::Transform pose_transform_control;
@@ -778,7 +776,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	   pose_broadcaster_control.sendTransform(tf::StampedTransform(pose_transform_control, scan_time, "map", "ndt_frame"));
       */
       // publish the position
-      //   control_pose_msg.header.frame_id = "/ndt_frame";
       control_pose_msg.header.frame_id = "/map";
       control_pose_msg.header.stamp = scan_time;
       control_pose_msg.pose.position.x = current_pos_control.x;
@@ -795,7 +792,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
       */
       
-      ndt_pose_pub.publish(ndt_pose_msg);
+      current_pose_pub.publish(current_pose_msg);
       control_pose_pub.publish(control_pose_msg);
       
       int iter_num = ndt.getFinalNumIteration();
@@ -889,11 +886,11 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 int main(int argc, char **argv)
 {
   /*
-    std::cout << "---------------------------------------" << std::endl;
-    std::cout << "NDT_PCL program coded by Yuki KITSUKAWA" << std::endl;
-    std::cout << "---------------------------------------" << std::endl;
+    std::cout << "--------------------------------------------" << std::endl;
+    std::cout << "NDT_MATCHING program coded by Yuki KITSUKAWA" << std::endl;
+    std::cout << "--------------------------------------------" << std::endl;
   */
-    ros::init(argc, argv, "ndt_pcl");
+    ros::init(argc, argv, "ndt_matching");
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
@@ -903,7 +900,7 @@ int main(int argc, char **argv)
     private_nh.getParam("queue_size", _queue_size);
     std::cout << "queue_size: " << _queue_size << std::endl;
 
-    ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
+    current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
 
     control_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
 

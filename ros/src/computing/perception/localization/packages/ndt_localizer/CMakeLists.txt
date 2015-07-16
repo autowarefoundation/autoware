@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(points_localizer)
+project(ndt_localizer)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -30,16 +30,16 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_executable(ndt_pcl nodes/ndt_pcl/ndt_pcl.cpp)
-add_executable(ndt_slam nodes/ndt_slam/ndt_slam.cpp)
+add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
+add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(pos_marker nodes/pos_marker/pos_marker.cpp)
 
-target_link_libraries(ndt_pcl ${catkin_LIBRARIES})
-target_link_libraries(ndt_slam ${catkin_LIBRARIES})
+target_link_libraries(ndt_matching ${catkin_LIBRARIES})
+target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(pos_marker ${catkin_LIBRARIES})
 
-add_dependencies(ndt_pcl runtime_manager_generate_messages_cpp)
-add_dependencies(ndt_slam runtime_manager_generate_messages_cpp)
+add_dependencies(ndt_matching runtime_manager_generate_messages_cpp)
+add_dependencies(ndt_mapping runtime_manager_generate_messages_cpp)
 add_dependencies(local2global runtime_manager_generate_messages_cpp)
