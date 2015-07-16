@@ -12,10 +12,8 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
 FIND_PACKAGE(OpenCV REQUIRED)
 
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include/dpm_ttic
   LIBRARIES libdpm_ttic
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
 )
 
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
