@@ -840,6 +840,12 @@ class MyFrame(rtmgr.MyFrame):
 			return ( (nr+rr)/2, (ng+rg)/2, (nb+rb)/2 )
 		return col_red
 
+	def mem_kb_info(self):
+		lst = subprocess.check_output(['free']).strip().split('\n')[2].split()[2:4]
+		used = int(lst[0])
+		free = int(lst[1])
+		return (used + free, used)
+
 	# top command thread
 	def top_cmd_th(self, ev, interval):
 		alerted = False
@@ -863,11 +869,7 @@ class MyFrame(rtmgr.MyFrame):
 				max_v = fv if fv > max_v else max_v
 
 			k = 'KiB Mem:'
-			for t in s.split('\n'):
-				if t[:len(k)] == k:
-					break
-			lst = t.split()
-			(total, used) = ( int(lst[2]), int(lst[4]) )
+			(total, used) = self.mem_kb_info()
 			rate = 100 * used / total
 
 			for u in [ 'KB', 'MB', 'GB', 'TB' ]:
@@ -883,7 +885,7 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(self.label_cpuinfo_qs.set, lbs)
 			wx.CallAfter(self.label_cpuinfo_status.set, lbs)
 
-			is_alert = max_v >= 90 or rate >= 98
+			is_alert = max_v >= 90 or rate >= 90
 
 			# --> for test
 			if os.path.exists('/tmp/alert_test_on'):
