@@ -50,10 +50,7 @@ float time_kernel;
 int device_num;
 
 // Should be removed!!!!
-MODEL *MO;
-std::string com_name;
-std::string root_name;
-std::string part_name;
+static MODEL *MO;
 
 void dpm_gpu_init_cuda(const std::string& cubin_path)
 {
