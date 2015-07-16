@@ -55,8 +55,8 @@ from decimal import Decimal
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
-from runtime_manager.msg import ConfigNdtSlam
-from runtime_manager.msg import ConfigNdtSlamOutput
+from runtime_manager.msg import ConfigNdtMapping
+from runtime_manager.msg import ConfigNdtMappingOutput
 from runtime_manager.msg import ConfigLaneFollower
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
@@ -73,6 +73,8 @@ from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
 from runtime_manager.msg import steer_cmd
 from runtime_manager.msg import brake_cmd
+from runtime_manager.msg import indicator_cmd
+from runtime_manager.msg import lamp_cmd
 from runtime_manager.msg import traffic_light
 
 class MyFrame(rtmgr.MyFrame):
@@ -418,6 +420,20 @@ class MyFrame(rtmgr.MyFrame):
 		if v is not None:
 			pub = rospy.Publisher('gear_cmd', gear_cmd, queue_size=10)
 			pub.publish(gear_cmd(gear=v))
+
+	def OnLamp(self, event):
+		pub = rospy.Publisher('lamp_cmd', lamp_cmd, queue_size=10)
+		msg = lamp_cmd()
+		msg.l = self.button_statchk_lamp_l.GetValue()
+		msg.r = self.button_statchk_lamp_r.GetValue()
+		pub.publish(msg)
+
+	def OnIndi(self, event):
+		pub = rospy.Publisher('indicator_cmd', indicator_cmd, queue_size=10)
+		msg = indicator_cmd()
+		msg.l = self.button_statchk_indi_l.GetValue()
+		msg.r = self.button_statchk_indi_r.GetValue()
+		pub.publish(msg)
 
 	def OnAutoPilot(self, event):
 		obj = event.GetEventObject()
@@ -1851,7 +1867,7 @@ class MyDialogNdtSlam(rtmgr.MyDialogNdtSlam):
 		parent.SetSizer(szr)
 
 		self.update_filename()
-		self.klass_msg = ConfigNdtSlamOutput
+		self.klass_msg = ConfigNdtMappingOutput
 		self.pub = rospy.Publisher('/config/ndt_slam_output', self.klass_msg, queue_size=10)
 
 	def update_filename(self):

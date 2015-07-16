@@ -540,7 +540,7 @@ params :
 
   - name  : ndt_slam
     topic : /config/ndt_slam
-    msg   : ConfigNdtSlam
+    msg   : ConfigNdtMapping
     flags : [ no_init_update ]
     vars  :
     - name      : resolution
