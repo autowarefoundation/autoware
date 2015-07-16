@@ -239,7 +239,7 @@ class MyFrame(rtmgr.MyFrame):
 		tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
 		self.tree_ctrl_data = tree_ctrl
 
-		self.setup_config_param_pdic()
+		#self.setup_config_param_pdic()
 
 		if 'buttons' in dic:
 			self.setup_buttons(dic['buttons'], self.data_cmd)
@@ -381,8 +381,7 @@ class MyFrame(rtmgr.MyFrame):
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
 			if 'param' in d2:
-				pdic = self.load_dic.get(k, {})
-				self.load_dic[k] = pdic
+				pdic = self.load_dic_pdic_setup(k, d2)
 				prm = self.get_param(d2.get('param'))
 				for var in prm.get('vars'):
 					name = var.get('name')
@@ -531,6 +530,12 @@ class MyFrame(rtmgr.MyFrame):
 			cmd_param = var.get('cmd_param')
 			if cmd_param.get('tail'):
 				vars.append( vars.pop(0) )
+
+		for var in vars[:]: # copy
+			name = var.get('name')
+			flags = gdic.get(name, {}).get('flags', [])
+			if 'hide' in flags or 'disable' in flags:
+				vars.remove(var)
 
 		for var in vars:
 			cmd_param = var.get('cmd_param')
@@ -782,8 +787,7 @@ class MyFrame(rtmgr.MyFrame):
 		hszr.Add(wx.StaticText(panel, wx.ID_ANY, '  '))
 		hszr.Add(cfg_obj)
 		name = dic['name']
-		pdic = self.load_dic.get(name, {})
-		self.load_dic[name] = pdic
+		pdic = self.load_dic_pdic_setup(name, dic)
 		gdic = self.gdic_get_1st(dic)
 		prm = self.get_param(dic.get('param'))
 		self.add_cfg_info(cfg_obj, obj, name, pdic, gdic, True, prm)
@@ -1005,24 +1009,6 @@ class MyFrame(rtmgr.MyFrame):
 
 	def get_param(self, prm_name):
 		return get_top( [ prm for prm in self.params if prm['name'] == prm_name ] )
-
-	def setup_config_param_pdic(self):
-		for info in self.config_dic.values():
-			if 'param' in info and info['pdic'] is None:
-				self.setup_create_pdic(info)
-
-	def setup_create_pdic(self, targ_info):
-		prm = targ_info.get('param')
-		info = get_top( [ info for info in self.config_dic.values() if info.get('param', None) == prm and info['pdic'] ] )
-		if info:
-			targ_info['pdic'] = info['pdic']
-			return
-		pdic = {}
-		if prm:
-			for var in prm['vars']:
-				pdic[ var['name'] ] = var['v']
-		targ_info['pdic'] = pdic
-		self.load_dic[ targ_info['name'] ] = pdic
 
 	def obj_to_cmd_dic(self, obj):
 		return get_top( [ cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic ] )
@@ -1256,17 +1242,19 @@ class MyFrame(rtmgr.MyFrame):
 			if 'param' in items:
 				prm = self.get_param(items.get('param'))
 				gdic = self.gdic_get_1st(items)
-				self.add_config_link_tree_item(item, name, gdic, prm)
+				pdic = self.load_dic_pdic_setup(name, items)
+				self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
+				item.SetHyperText()
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
 
-	def add_config_link_tree_item(self, item, name, gdic, prm):
+	def load_dic_pdic_setup(self, name, dic):
+		name = dic.get('share_val', dic.get('name', name))
 		pdic = self.load_dic.get(name, {})
-		self.load_dic[name] = pdic
-		self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
-		item.SetHyperText()
+		self.load_dic[ name ] = pdic
+		return pdic
 
 	def launch_kill_proc(self, obj, cmd_dic, add_args=None):
 		if obj not in cmd_dic:
@@ -1587,6 +1575,11 @@ class ParamPanel(wx.Panel):
 				self.gdic[ k ] = self.gdic.get(k, []) + [ vp ]
 				vp.Enable(proc is None)
 
+			if 'disable' in gdic_v.get('flags', []):
+				vp.Enable(False)
+			if 'hide' in gdic_v.get('flags', []):
+				vp.Hide()
+
 		self.SetSizer(szr)
 		if 'no_init_update' not in self.prm.get('flags', []):
 			self.update()
@@ -1679,7 +1672,7 @@ class VarPanel(wx.Panel):
 				self.tc.SetMinSize((40,27))
 
 		flag = wx.ALIGN_CENTER_VERTICAL
-		prop = 1 if self.kind == 'path' else 0
+		prop = 1 if self.kind == 'path' or self.kind == 'str' else 0
 		szr.Add(self.tc, prop, flag, 4)
 
 		if self.kind == 'path':
@@ -1711,7 +1704,7 @@ class VarPanel(wx.Panel):
 			return self.obj.GetValue()
 		if self.kind == 'hide':
 			return self.var.get('v')
-		if self.kind == 'path':
+		if self.kind in [ 'path', 'str' ]:
 			return str(self.tc.GetValue())
 
 		if not self.has_slider and self.tc.GetValue() == '':
