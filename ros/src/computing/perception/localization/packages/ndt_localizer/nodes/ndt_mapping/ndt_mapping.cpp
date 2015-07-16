@@ -63,8 +63,8 @@
 #include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <runtime_manager/ConfigNdtSlam.h>
-#include <runtime_manager/ConfigNdtSlamOutput.h>
+#include <runtime_manager/ConfigNdtMapping.h>
+#include <runtime_manager/ConfigNdtMappingOutput.h>
 
 struct Position {
     double x;
@@ -96,8 +96,8 @@ static ros::Time callback_start, callback_end, t1_start, t1_end, t2_start, t2_en
 static ros::Duration d_callback, d1, d2, d3, d4, d5;
 
 static ros::Publisher ndt_map_pub;
-static ros::Publisher ndt_pose_pub;
-static geometry_msgs::PoseStamped ndt_pose_msg;
+static ros::Publisher current_pose_pub;
+static geometry_msgs::PoseStamped current_pose_msg;
 
 static ros::Publisher ndt_stat_pub;
 static std_msgs::Bool ndt_stat_msg;
@@ -109,7 +109,7 @@ static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
 static std::string _scanner = "velodyne";
 
-static void param_callback(const runtime_manager::ConfigNdtSlam::ConstPtr& input)
+static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
 {
   ndt_res = input->resolution;
   step_size = input->step_size;
@@ -123,7 +123,7 @@ static void param_callback(const runtime_manager::ConfigNdtSlam::ConstPtr& input
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
 }
 
-static void output_callback(const runtime_manager::ConfigNdtSlamOutput::ConstPtr& input)
+static void output_callback(const runtime_manager::ConfigNdtMappingOutput::ConstPtr& input)
 {
   double filter_res = input->filter_res;
   std::string filename = input->filename;
@@ -336,17 +336,17 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt_map_pub.publish(*map_msg_ptr);
     
     q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
-    ndt_pose_msg.header.frame_id = "map";
-    ndt_pose_msg.header.stamp = scan_time;
-    ndt_pose_msg.pose.position.x = current_pos.x;
-    ndt_pose_msg.pose.position.y = current_pos.y;
-    ndt_pose_msg.pose.position.z = current_pos.z;
-    ndt_pose_msg.pose.orientation.x =  q.x();
-    ndt_pose_msg.pose.orientation.y =  q.y();
-    ndt_pose_msg.pose.orientation.z =  q.z();
-    ndt_pose_msg.pose.orientation.w =  q.w();
+    current_pose_msg.header.frame_id = "map";
+    current_pose_msg.header.stamp = scan_time;
+    current_pose_msg.pose.position.x = current_pos.x;
+    current_pose_msg.pose.position.y = current_pos.y;
+    current_pose_msg.pose.position.z = current_pos.z;
+    current_pose_msg.pose.orientation.x =  q.x();
+    current_pose_msg.pose.orientation.y =  q.y();
+    current_pose_msg.pose.orientation.z =  q.z();
+    current_pose_msg.pose.orientation.w =  q.w();
     
-    ndt_pose_pub.publish(ndt_pose_msg);
+    current_pose_pub.publish(current_pose_msg);
     
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "count: " << count << std::endl;
@@ -545,17 +545,17 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
     ndt_map_pub.publish(*map_msg_ptr);
     
     q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
-    ndt_pose_msg.header.frame_id = "map";
-    ndt_pose_msg.header.stamp = scan_time;
-    ndt_pose_msg.pose.position.x = current_pos.x;
-    ndt_pose_msg.pose.position.y = current_pos.y;
-    ndt_pose_msg.pose.position.z = current_pos.z;
-    ndt_pose_msg.pose.orientation.x =  q.x();
-    ndt_pose_msg.pose.orientation.y =  q.y();
-    ndt_pose_msg.pose.orientation.z =  q.z();
-    ndt_pose_msg.pose.orientation.w =  q.w();
+    current_pose_msg.header.frame_id = "map";
+    current_pose_msg.header.stamp = scan_time;
+    current_pose_msg.pose.position.x = current_pos.x;
+    current_pose_msg.pose.position.y = current_pos.y;
+    current_pose_msg.pose.position.z = current_pos.z;
+    current_pose_msg.pose.orientation.x =  q.x();
+    current_pose_msg.pose.orientation.y =  q.y();
+    current_pose_msg.pose.orientation.z =  q.z();
+    current_pose_msg.pose.orientation.w =  q.w();
     
-    ndt_pose_pub.publish(ndt_pose_msg);
+    current_pose_pub.publish(current_pose_msg);
     
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "count: " << count << std::endl;
@@ -579,9 +579,9 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
 int main(int argc, char **argv)
 {
-    std::cout << "----------------------------------------" << std::endl;
-    std::cout << "NDT_SLAM program coded by Yuki KITSUKAWA" << std::endl;
-    std::cout << "----------------------------------------" << std::endl;
+    std::cout << "---------------------------------------------" << std::endl;
+    std::cout << "NDT_MAPPING program coded by Yuki KITSUKAWA" << std::endl;
+    std::cout << "---------------------------------------------" << std::endl;
 
     previous_pos.x = 0.0;
     previous_pos.y = 0.0;
@@ -616,7 +616,7 @@ int main(int argc, char **argv)
     offset_z = 0.0;
     offset_yaw = 0.0;
 
-    ros::init(argc, argv, "ndt_slam");
+    ros::init(argc, argv, "ndt_mapping");
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
@@ -633,12 +633,12 @@ int main(int argc, char **argv)
     */
 
     ndt_map_pub = nh.advertise<sensor_msgs::PointCloud2>("/ndt_map", 1000);
-    ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
+    current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
 
-    ros::Subscriber param_sub = nh.subscribe("config/ndt_slam", 10, param_callback);
-    ros::Subscriber output_sub = nh.subscribe("config/ndt_slam_output", 10, output_callback);
+    ros::Subscriber param_sub = nh.subscribe("config/ndt_mapping", 10, param_callback);
+    ros::Subscriber output_sub = nh.subscribe("config/ndt_mapping_output", 10, output_callback);
     ros::Subscriber hokuyo_sub = nh.subscribe("hokuyo_3d/hokuyo_cloud2", 1000, hokuyo_callback);
-    ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", 1000, velodyne_callback);
+    ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", 10000000, velodyne_callback);
 
     ros::spin();
 
