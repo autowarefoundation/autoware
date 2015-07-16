@@ -28,7 +28,7 @@ subs :
         gui  :
           stat_topic : [ ndt ]
       - name : pos_marker
-        cmd  : rosrun points_localizer pos_marker
+        cmd  : rosrun ndt_localizer pos_marker
 
   - name : Detection
     subs :
