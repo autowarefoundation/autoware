@@ -41,7 +41,7 @@
 
 #include <dpm/ImageObjects.h>
 #include <kf/KFObjects.h>
-#include <cv_tracking/image_obj.h>
+#include <cv_tracker/image_obj.h>
 
 //DPM related
 static std::vector<cv::Rect> cars;		//objects detected
@@ -251,7 +251,7 @@ static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
 	ped_track_ready = true;
 }
 
-static void image_obj_update_cb(const cv_tracking::image_obj& image_objs)
+static void image_obj_update_cb(const cv_tracker::image_obj& image_objs)
 {
 	if(_drawing)
 		return;
