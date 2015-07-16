@@ -46,7 +46,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
 
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
@@ -79,7 +79,7 @@ TARGET_LINK_LIBRARIES(dpm_ttic
   ${OpenCV_LIBS}
   ##dpm
   dpm_gpu
-  ##dpm_ttic
+  libdpm_ttic
 )
 
 SET_TARGET_PROPERTIES(dpm_ttic
