@@ -35,7 +35,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <dpm/ImageObjects.h>
+#include <cv_tracking/image_obj.h>
 #include <runtime_manager/ConfigCarDpm.h>
 #include <runtime_manager/ConfigPedestrianDpm.h>
 
@@ -61,6 +61,20 @@ static void set_default_param(DPMGPUParam& param)
 	param.num_cells = 8;
 }
 
+static void gpu_result_to_image_obj_message(cv_tracking::image_obj& msg, const DPMGPUResult& result)
+{
+	for (int i = 0; i < result.num; ++i) {
+		cv_tracking::image_rect rect;
+
+		rect.x = result.corner_points[i];
+		rect.y = result.corner_points[i+1];
+		rect.width = result.corner_points[i+2];
+		rect.height = result.corner_points[i+3];
+
+		msg.obj.push_back(rect);
+	}
+}
+
 static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 {
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
@@ -69,15 +83,12 @@ static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 
 	DPMGPUResult result = car_model->detect_objects(img_ptr, car_param);
 
-	dpm::ImageObjects message;
-	message.header = image_source.header;
-	message.car_num = result.num;
-	message.corner_point = result.corner_points;
-	message.car_type = result.type;
-	message.header.stamp = image_source.header.stamp;
-	message.score = result.score;
+	cv_tracking::image_obj msg;
+	msg.header = image_source.header;
+	msg.type = "car";
 
-	car_image_obj_pub.publish(message);
+	gpu_result_to_image_obj_message(msg, result);
+	car_image_obj_pub.publish(msg);
 }
 
 static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
@@ -88,15 +99,12 @@ static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
 
 	DPMGPUResult result = pedestrian_model->detect_objects(img_ptr, pedestrian_param);
 
-	dpm::ImageObjects message;
-	message.header = image_source.header;
-	message.car_num = result.num;
-	message.corner_point = result.corner_points;
-	message.car_type = result.type;
-	message.header.stamp = image_source.header.stamp;
-	message.score = result.score;
+	cv_tracking::image_obj msg;
+	msg.header = image_source.header;
+	msg.type = "pedestrian";
 
-	pedestrian_image_obj_pub.publish(message);
+	gpu_result_to_image_obj_message(msg, result);
+	pedestrian_image_obj_pub.publish(msg);
 }
 
 static void car_config_cb(const runtime_manager::ConfigCarDpm::ConstPtr& param)
@@ -151,10 +159,10 @@ int main(int argc, char* argv[])
 	pedestrian_model = new DPMGPUModel(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
 
 	ros::Subscriber car_image_sub = n.subscribe("/image_raw", 1, image_raw_car_cb);
-	car_image_obj_pub = n.advertise<dpm::ImageObjects>("image_obj", 1);
+	car_image_obj_pub = n.advertise<cv_tracking::image_obj>("image_obj", 1);
 
 	ros::Subscriber pedestrian_sub = n.subscribe("/image_raw", 1, image_raw_pedestrian_cb);
-	pedestrian_image_obj_pub = n.advertise<dpm::ImageObjects>("image_obj", 1);
+	pedestrian_image_obj_pub = n.advertise<cv_tracking::image_obj>("image_obj", 1);
 
 	ros::Subscriber car_config_sub;
 	car_config_sub = n.subscribe("/config/car_dpm", 1, car_config_cb);
