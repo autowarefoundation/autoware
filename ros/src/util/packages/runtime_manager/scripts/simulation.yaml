@@ -63,4 +63,4 @@ params :
       label     : Sim Time
       kind      : checkbox
       v         : False
-      rosparam  : /sim_time
+      rosparam  : /use_sim_time
