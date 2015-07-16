@@ -17,37 +17,6 @@
 #ifndef INCLUDED_Minfo_
 #define INCLUDED_Minfo_
 
-//file information///
-
-//#define IM_NAME		"test5.jpg"				//Image name
-//#define MNAME			"M1.avi"				//source movie name
-
-//#define IN_S_NAME		"C:\\TESTIM_2010_2_3\\"			//Input-Image(successive)
-//#define IN_S_NAME		"C:\\Users\\kawano\\Desktop\\re\\"
-#define IN_S_NAME		"CAR_TRACKING/Test_Images/Daytime_Image_PNG/"			//Input-Image(successive)
-#define OUTMNAME		"Out.avi"				//output movie name
-#define OUT_NAME		"Out_Image/res"		//Result name
-#define EX_NAME			".png"
-
-#ifdef RELEASE
-
-#define F_NAME_COM "/usr/local/geye_with_cam/bin/car_detecter/car_comp.csv" //file name (component)
-#define F_NAME_ROOT	"/usr/local/geye_with_cam/bin/car_detecter/car_root.csv" //file name (root_filter)
-#define F_NAME_PART	"/usr/local/geye_with_cam/bin/car_detecter/car_part.csv" //file name (part_filter)
-
-#else
-
-//#define F_NAME_COM		"car_comp.csv"			//file name (component)
-#define F_NAME_COM "./CAR_TRACKING/car_comp.csv" //file name (component)
-//#define F_NAME_ROOT		"car_root.csv"			//file name (root_filter)
-#define F_NAME_ROOT "./CAR_TRACKING/car_root.csv"			//file name (root_filter)
-//#define F_NAME_PART		"car_part.csv"			//file name (part_filter)
-#define F_NAME_PART	"./CAR_TRACKING/car_part.csv"			//file name (part_filter)
-
-#endif /* ifdef RELEASE */
-
-//struct information///
-
 #ifndef _MODEL_INFO
 #define _MODEL_INFO
 //struct for model component information
@@ -92,24 +61,23 @@ struct Model_info {
 
 	bool ini;	//flag for initialization
 	FLOAT ratio;	//ratio of zooming image
-
 };
 
 //struct for root_filter_information
 struct Rootfilters {
-	int NoR;				//number of root filter
-	int **root_size;		//size of root filter
-	FLOAT **rootfilter;	//weight of root filter
-	int *rootsym;			//symmetric information
+	int NoR;		// number of root filter
+	int **root_size;	// size of root filter
+	FLOAT **rootfilter;	// weight of root filter
+	int *rootsym;		// symmetric information
 };
 
 //struct for part_filter_information
 struct Partfilters {
-	int NoP;				//number of part filter
-	int **part_size;		//size of part filter
-	FLOAT **partfilter;	//weight of root filter
-	int *part_partner;		//symmetric-partner information
-	int *part_sym;			//symmetric information of part filter
+	int NoP;		// number of part filter
+	int **part_size;	// size of part filter
+	FLOAT **partfilter;	// weight of root filter
+	int *part_partner;	// symmetric-partner information
+	int *part_sym;		// symmetric information of part filter
 };
 
 //model information

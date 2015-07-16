@@ -102,7 +102,6 @@ struct Partfilters {
     int *part_sym;              //symmetric information of part filter
 };
 
-
 //model information
 struct MODEL {
     Model_info *MI;
@@ -111,24 +110,9 @@ struct MODEL {
 };
 #endif
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-struct thread_data {
-    FLOAT *A;
-    FLOAT *B;
-    FLOAT *C;
-    FLOAT *F;
-    FLOAT *T;
-    int A_dims[3];
-    int B_dims[3];
-    int C_dims[2];
-};
-
 
 /* define variables for using GPU */
 
@@ -149,7 +133,6 @@ extern CUdeviceptr *M_dev;
 extern CUdeviceptr *tmpM_dev;
 extern CUdeviceptr *tmpIx_dev;
 extern CUdeviceptr *tmpIy_dev;
-extern int part_error_array_num;
 extern CUdeviceptr *pm_size_array_dev;
 extern CUdeviceptr *PIDX_array_dev;
 extern CUdeviceptr *def_array_dev;
@@ -158,73 +141,13 @@ extern CUdeviceptr *DID_4_array_dev;
 extern CUdeviceptr *numpart_dev;
 extern int max_numpart;
 extern int device_num;
-extern int *part_error_array;
-extern size_t SUM_SIZE_C;
-extern FLOAT *dst_C;
-
-/* functions for using GPU and to calculate on GPU */
-extern void init_cuda(void);
-extern void init_cuda_with_cubin(const char *cubin_path);
-
-extern void clean_cuda(void);
-
-/* function for GPU execution correspond to fconvsMT */
-extern
-FLOAT ***fconvsMT_GPU(
-    FLOAT **featp2,
-    size_t SUM_SIZE_feat,
-    FLOAT **filter,
-    int *sym_info,
-    int start,
-    int end,
-    int *A_SIZE,
-    int **B_SIZE,
-    int **M_size_array,
-    int L_MAX,
-    int interval,
-    int *FSIZE,
-    int padx,
-    int pady,
-    int max_X,
-    int max_Y,
-    int calc_flag
-    );
 
 /* definition of calc_flag */
 #define ROOT 0
 #define PART 1
 
-extern
-FLOAT ****dt_GPU(
-    int ****Ix_array,
-    int ****Iy_array,
-    int ***PIDX_array,
-    int **size_array,
-    int NoP,
-    const int *numpart,
-    int NoC,
-    int interval,
-    int L_MAX,
-    int *FSIZE,
-    int padx,
-    int pady,
-    int max_X,
-    int max_Y,
-    FLOAT *def,
-    int tmp_array_size,
-    int *dst_PIDX,
-    int *dst_DID_4
-    );
-
-
-
 /* switch define sentence  which use original source or GPU function */
 //#define ORIGINAL
-
-//#define SEPARETE_MEM
-
-
-
 #ifdef __cplusplus
 }
 #endif

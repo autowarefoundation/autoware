@@ -2,7 +2,6 @@
 #include <math.h>
 #include <stdint.h>
 #include "for_use_GPU.h"
-#include "calc_feature_conf.h"
 #include "switch_release.h"
 #define FROM_GPU
 #include "switch_float.h"
@@ -15,9 +14,7 @@ texture<float, cudaTextureType1D, cudaReadModeElementType> B;
 texture<int2, cudaTextureType1D, cudaReadModeElementType> A_double;
 texture<int2, cudaTextureType1D, cudaReadModeElementType> B_double;
 
-
 //thread process
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // convolve A and B(non_symmetric)
 //unsigned __stdcall process(void *thread_arg) {
 

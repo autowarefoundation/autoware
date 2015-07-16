@@ -35,24 +35,12 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-#include <dpm/ImageObjects.h>
-#include <runtime_manager/ConfigCarDpm.h>
-#include <runtime_manager/ConfigPedestrianDpm.h>
-
-#include "Laser_func.h"
-#include "car_det_func.h"
-#include "Common.h"
-#include "Depth_points_func.h"
-#include "for_use_GPU.h"
-
-#include <load_model.hpp>
 #include <dpm_gpu.hpp>
+
+#include "for_use_GPU.h"
+#include "load_model.hpp"
+#include "detect.hpp"
+#include "GPU_init.hpp"
 
 struct timeval tv_memcpy_start, tv_memcpy_end;
 float time_memcpy;
@@ -96,8 +84,8 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 	FLOAT *ac_score = ini_ac_score(image);
 	RESULT *cars = car_detection(image, MO, threshold,
 				     &detected_objects, ac_score,
-				     overlap);	//detect car
-	s_free(ac_score);
+				     overlap);
+	free(ac_score);
 
 	DPMGPUResult result;
 	result.num = cars->num;
@@ -116,11 +104,11 @@ DPMGPUResult dpm_gpu_detect_objects(IplImage *image, double threshold,
 		result.score.push_back(cars->score[i]);
 	}
 
-	s_free(cars->point);
-	s_free(cars->type);
-	s_free(cars->scale);
-	s_free(cars->score);
-	s_free(cars->IM);
+	free(cars->point);
+	free(cars->type);
+	free(cars->scale);
+	free(cars->score);
+	free(cars->IM);
 	return result;
 }
 
@@ -145,7 +133,7 @@ DPMGPUResult DPMGPUModel::detect_objects(IplImage *image, const DPMGPUParam& par
 	RESULT *objects = car_detection(image, model_, param.threshold,
 					&detected_objects, ac_score,
 					param.overlap);
-	s_free(ac_score);
+	free(ac_score);
 
 	DPMGPUResult result;
 	result.num = objects->num;
@@ -164,10 +152,10 @@ DPMGPUResult DPMGPUModel::detect_objects(IplImage *image, const DPMGPUParam& par
 		result.score.push_back(objects->score[i]);
 	}
 
-	s_free(objects->point);
-	s_free(objects->type);
-	s_free(objects->scale);
-	s_free(objects->score);
-	s_free(objects->IM);
+	free(objects->point);
+	free(objects->type);
+	free(objects->scale);
+	free(objects->score);
+	free(objects->IM);
 	return result;
 }

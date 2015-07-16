@@ -20,19 +20,13 @@ struct alphainfo {
 	FLOAT alpha;
 };
 
-//sub functions
-
-// copy src into dst using precomputed interpolation values
-inline void alphacopy(FLOAT *src, FLOAT *dst, struct alphainfo *ofs, int n);
-// resize along each column
-void resize1dtran(FLOAT *src, int sheight, FLOAT *dst, int dheight, int width, int chan);
 //main function
 FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale);
 
 //sub functions
 
 // copy src into dst using precomputed interpolation values
-inline void alphacopy(FLOAT *src, FLOAT *dst, struct alphainfo *ofs, int n)
+static inline void alphacopy(FLOAT *src, FLOAT *dst, struct alphainfo *ofs, int n)
 {
 	struct alphainfo *end = ofs + n;
 	while (ofs != end)
@@ -44,7 +38,7 @@ inline void alphacopy(FLOAT *src, FLOAT *dst, struct alphainfo *ofs, int n)
 
 // resize along each column
 // result is transposed, so we can apply it twice for a complete resize
-void resize1dtran(FLOAT *src, int sheight, FLOAT *dst, int dheight, int width, int chan)
+static void resize1dtran(FLOAT *src, int sheight, FLOAT *dst, int dheight, int width, int chan)
 {
 	FLOAT scale = (FLOAT)dheight/(FLOAT)sheight;
 	FLOAT invscale = (FLOAT)sheight/(FLOAT)dheight;
