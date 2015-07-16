@@ -43,8 +43,10 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <chrono>
 
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -65,7 +67,6 @@
 #include <interactive_markers/interactive_marker_server.h>
 
 #include <runtime_manager/ConfigNdt.h>
-
 
 struct Position {
     double x;
@@ -126,6 +127,16 @@ static double control_shift_z = 0.0;
 
 static ros::Publisher ndt_stat_pub;
 static std_msgs::Bool ndt_stat_msg;
+
+static ros::Time current_scan_time;
+static ros::Time previous_scan_time;
+static ros::Duration scan_duration;
+static ros::Publisher estimated_vel_pub;
+static std_msgs::Float32 estimated_vel;
+
+static std::chrono::time_point<std::chrono::system_clock> matching_start, matching_end;;
+static ros::Publisher time_ndt_matching_pub;
+static std_msgs::Float32 time_ndt_matching;
 
 static std::string _scanner = "velodyne";
 static int _queue_size = 1000;
@@ -586,6 +597,8 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
     if (map_loaded == 1 && init_pos_set == 1) {
       //        callback_start = ros::Time::now();
 
+      matching_start = std::chrono::system_clock::now();
+
       static tf::TransformBroadcaster br;
       tf::Transform transform;
       tf::Quaternion q;
@@ -598,11 +611,14 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       
       scan.header = input->header;
       scan.header.frame_id = "velodyne_scan_frame";
-      
-      ros::Time scan_time;
-      scan_time.sec = scan.header.stamp / 1000000.0;
-      scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
-      
+
+      current_scan_time.sec = scan.header.stamp / 1000000.0;
+      current_scan_time.nsec = (scan.header.stamp - current_scan_time.sec * 1000000.0) * 1000.0;
+
+      /*
+      current_scan_time.sec = scan.header.stamp.toSec();
+      current_scan_time.nsec = scan.header.stamp.toNsec();
+      */
       /*
 	std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
 	std::cout << "scan_time: " << scan_time << std::endl;
@@ -744,7 +760,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
       */
       
-      br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
+      br.sendTransform(tf::StampedTransform(transform, current_scan_time, "map", "velodyne"));
       
       static tf::TransformBroadcaster pose_broadcaster;
       tf::Transform pose_transform;
@@ -757,7 +773,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       */
       // publish the position
       current_pose_msg.header.frame_id = "/map";
-      current_pose_msg.header.stamp = scan_time;
+      current_pose_msg.header.stamp = current_scan_time;
       current_pose_msg.pose.position.x = current_pos.x;
       current_pose_msg.pose.position.y = current_pos.y;
       current_pose_msg.pose.position.z = current_pos.z;
@@ -777,7 +793,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       */
       // publish the position
       control_pose_msg.header.frame_id = "/map";
-      control_pose_msg.header.stamp = scan_time;
+      control_pose_msg.header.stamp = current_scan_time;
       control_pose_msg.pose.position.x = current_pos_control.x;
       control_pose_msg.pose.position.y = current_pos_control.y;
       control_pose_msg.pose.position.z = current_pos_control.z;
@@ -794,7 +810,22 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       
       current_pose_pub.publish(current_pose_msg);
       control_pose_pub.publish(control_pose_msg);
-      
+
+      matching_end = std::chrono::system_clock::now();
+
+      time_ndt_matching.data = std::chrono::duration_cast<std::chrono::microseconds>(matching_end-matching_start).count()/1000000.0;
+      //      std::cout << "time_ndt_matching: " << time_ndt_matching.data << std::endl;
+
+      time_ndt_matching_pub.publish(time_ndt_matching);
+
+      // Compute the velocity
+      scan_duration = current_scan_time - previous_scan_time;
+      double secs = scan_duration.toSec();
+      double distance = sqrt((current_pos.x - previous_pos.x) * (current_pos.x - previous_pos.x) + (current_pos.y - previous_pos.y) * (current_pos.y - previous_pos.y) + (current_pos.z - previous_pos.z) * (current_pos.z - previous_pos.z));
+      estimated_vel.data = distance * 3.6 / secs;
+
+      estimated_vel_pub.publish(estimated_vel);
+
       int iter_num = ndt.getFinalNumIteration();
       
       if(iter_num > 5){
@@ -836,6 +867,8 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       //        callback_end = ros::Time::now();
       //        d_callback = callback_end - callback_start;
 
+      previous_scan_time.sec = current_scan_time.sec;
+      previous_scan_time.nsec = current_scan_time.nsec;
 
       std::cout << "-----------------------------------------------------------------" << std::endl;
       std::cout << "Sequence number: " << input->header.seq << std::endl;
@@ -905,6 +938,10 @@ int main(int argc, char **argv)
     control_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
 
     ndt_stat_pub = nh.advertise<std_msgs::Bool>("/ndt_stat", 1000);
+
+    estimated_vel_pub = nh.advertise<std_msgs::Float32>("/estimated_vel", 1000);
+
+    time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
 
     // subscribing parameter
     ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
