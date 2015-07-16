@@ -35,7 +35,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <cv_tracking/image_obj.h>
+#include <cv_tracker/image_obj.h>
 #include <runtime_manager/ConfigCarDpm.h>
 #include <runtime_manager/ConfigPedestrianDpm.h>
 
@@ -70,10 +70,10 @@ static void set_default_param(T& param)
 }
 
 template<typename T>
-static void result_to_image_obj_message(cv_tracking::image_obj& msg, const T& result)
+static void result_to_image_obj_message(cv_tracker::image_obj& msg, const T& result)
 {
 	for (int i = 0; i < result.num; ++i) {
-		cv_tracking::image_rect rect;
+		cv_tracker::image_rect rect;
 
 		rect.x = result.corner_points[i];
 		rect.y = result.corner_points[i+1];
@@ -90,7 +90,7 @@ static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
 
-	cv_tracking::image_obj msg;
+	cv_tracker::image_obj msg;
 	msg.header = image_source.header;
 	msg.type = "car";
 
@@ -111,7 +111,7 @@ static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
 
-	cv_tracking::image_obj msg;
+	cv_tracker::image_obj msg;
 	msg.header = image_source.header;
 	msg.type = "pedestrian";
 
@@ -191,10 +191,10 @@ int main(int argc, char* argv[])
 	pedestrian_ttic_model = new DPMTTICModel(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
 
 	ros::Subscriber car_image_sub = n.subscribe("/image_raw", 1, image_raw_car_cb);
-	car_image_obj_pub = n.advertise<cv_tracking::image_obj>("image_obj", 1);
+	car_image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
 
 	ros::Subscriber pedestrian_sub = n.subscribe("/image_raw", 1, image_raw_pedestrian_cb);
-	pedestrian_image_obj_pub = n.advertise<cv_tracking::image_obj>("image_obj", 1);
+	pedestrian_image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
 
 	ros::Subscriber car_config_sub;
 	car_config_sub = n.subscribe("/config/car_dpm", 1, car_config_cb);

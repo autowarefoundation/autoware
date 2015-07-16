@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(cv_tracking)
+project(cv_tracker)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
   cv_bridge
@@ -60,7 +60,7 @@ LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
 endif()
 
 ELSE()
-message("CUDA is not installed. 'cv_tracking' package is not built.")
+message("CUDA is not installed. 'cv_tracker' package is not built.")
 ENDIF()
 
 ## Nodes
