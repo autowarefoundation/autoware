@@ -2,25 +2,21 @@
 /////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////resize.cpp   resize image (Input and Output must be FLOAT-array) ////////////////////////////////////////////
+/////resize.cpp   resize image (Input and Output must be FLOAT-array)
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-//ORIGINAL header files
 #include "Common.h"
 #include "switch_float.h"
+#include "resize.hpp"
 
 // struct used for caching interpolation values
 struct alphainfo {
 	int si, di;
 	FLOAT alpha;
 };
-
-//main function
-FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale);
 
 //sub functions
 // copy src into dst using precomputed interpolation values
@@ -91,7 +87,8 @@ static void resize1dtran(FLOAT *src, int sheight, FLOAT *dst, int dheight, int w
 			d++;
 		}
 	}
-	s_free(ofs);
+
+	free(ofs);
 }
 
 // main function (resize)
@@ -117,7 +114,7 @@ FLOAT *resize(FLOAT *src,int *sdims,int *odims,FLOAT scale)
 		FLOAT *tmp = (FLOAT*)calloc(odims[0]*sdims[1]*sdims[2],sizeof(FLOAT));
 		resize1dtran(src, sdims[0], tmp, odims[0], sdims[1], sdims[2]);
 		resize1dtran(tmp, sdims[1], dst, odims[1], odims[0], sdims[2]);
-		s_free(tmp);
+		free(tmp);
 	}
 	return(dst);
 }

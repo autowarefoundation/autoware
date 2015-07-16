@@ -1,26 +1,25 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////Car tracking project with laser_radar_data_fusion/////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////Copyright 2009-10 Akihiro Takeuchi///////////
+/// Car tracking project with laser_radar_data_fusion
+/// Copyright 2009-10 Akihiro Takeuchi
 
-/////main.cpp   main function of car tracking /////////////////////////////////////////////////////////////////////
+///main.cpp   main function of car tracking
 
 //OpenCV library
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
-//C++ library
+
 #include <cstdio>
 #include <cstdlib>
 #include <time.h>
 
-#include <math.h>
-
-#include "Laser_func.h"
-#include "car_det_func.h"
-#include "Common.h"
-
-#include "switch_float.h"
+#include <cmath>
 #include <dpm_ttic.hpp>
+
+#include "MODEL_info.h"
+#include "Common.h"
+#include "switch_float.h"
+#include "detect.hpp"
+#include "load_model.hpp"
 
 static MODEL *MO;
 

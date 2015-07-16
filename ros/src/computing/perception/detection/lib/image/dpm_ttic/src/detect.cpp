@@ -16,68 +16,20 @@
 
 //ORIGINAL header files
 #include "MODEL_info.h"		//File information
-#include "detect_func.h"	//functions
 #include "Common.h"
 
 #include "switch_float.h"
+#include "tracking.hpp"
+#include "nms.hpp"
+#include "get_boxes.hpp"
+#include "featurepyramid.hpp"
 
 //definiton of functions//
 
-//resize Image (IplImage)
-IplImage *ipl_resize(IplImage *IM,FLOAT ratio);
-
 //create and resize Iplimage
-IplImage *ipl_cre_resize(IplImage *IM,int width,int height);
-
 //initialize accumulated score
-FLOAT *ini_ac_score(IplImage *IM);
-
-//detect object and return rectangle-box coorinate (extended to main.cpp)
-FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE);
 
 //detect car-boundary-boxes
-RESULT *car_detection(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE,FLOAT overlap);
-
-//resize Image (IplImage)
-IplImage *ipl_resize(IplImage *IM,FLOAT ratio)
-{
-	IplImage *R_I;	//Output (Resized Image)
-
-	//parameters
-	const int height = IM->height;
-	const int width = IM->width;
-
-	const int UpY = height/10;
-	const int NEW_Y = height-UpY-height/10;
-
-	const int depth = IM->depth;
-	const int nChannels = IM->nChannels;
-
-	//set ROI
-	CvRect REC = cvRect(0,UpY,width,NEW_Y);
-	cvSetImageROI(IM,REC);			//change ROI of Image
-
-	if((int)((FLOAT)IM->height*ratio)==IM->height)
-	{
-		R_I =cvCreateImage(cvSize(width,NEW_Y),depth,nChannels);
-		cvCopy(IM,R_I);		//copy
-	}
-	else
-	{
-		R_I = cvCreateImage(cvSize((int)((FLOAT)width*ratio),(int)((FLOAT)NEW_Y*ratio)),depth,nChannels);
-		cvResize(IM,R_I);	//resize
-	}
-	cvResetImageROI(IM);
-
-	return(R_I);
-}
-
-IplImage *ipl_cre_resize(IplImage *IM,int width,int height)
-{
-	IplImage *R_I = cvCreateImage(cvSize(width,height),IM->depth,IM->nChannels);
-	cvResize(IM,R_I);	//resize
-	return(R_I);
-}
 
 FLOAT *ini_ac_score(IplImage *IM)
 {
@@ -88,7 +40,7 @@ FLOAT *ini_ac_score(IplImage *IM)
 	return (A_SCORE);
 }
 
-FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE)
+static FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE)
 {
 	//for time measurement
 	struct timeval tv;
@@ -107,7 +59,6 @@ FLOAT *detect(IplImage *IM,MODEL *MO,FLOAT thresh,int *D_NUMS,FLOAT *A_SCORE)
 	tvsub(&tv_calc_f_pyramid_end, &tv_calc_f_pyramid_start, &tv);
 	printf("\n");
 	printf("calc_f_pyramid %f[ms]\n", tv.tv_sec * 1000.0 + (float)tv.tv_usec / 1000.0);
-
 
 	//detect boundary boxes
 	FLOAT *boxes = get_boxes(feature,scales,featsize,MO,D_NUMS,A_SCORE,thresh);

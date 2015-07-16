@@ -9,22 +9,7 @@
 #include <cstdlib>
 
 #include "switch_float.h"
-
-//definiton of functions//
-
-//sub functions
-
-#define s_free(a) {free(a);a=NULL;}
-
-//sub rootine of dt
-inline void dt_helper(FLOAT *src, FLOAT *dst, int *ptr, int step, int s1, int s2, int d1, int d2, FLOAT a, FLOAT b) ;
-//sub rootine of dt
-void dt1d(FLOAT *src, FLOAT *dst, int *ptr, int step, int n, FLOAT a, FLOAT b) ;
-
-//add part score to root score (extended to featurepyramid.cpp)
-void add_part_calculation(FLOAT *score, FLOAT*M,int *rootsize,int *partsize,int ax,int ay);
-//decide best part position (extended to featurepyramid.cpp)
-FLOAT *dt(FLOAT *vals,FLOAT ax,FLOAT bx,FLOAT ay,FLOAT by,int *dims,int *Ix,int *Iy);
+#include "dt.hpp"
 
 //add part score to root score
 void add_part_calculation(FLOAT *score, FLOAT*M,int *rootsize,int *partsize,int ax,int ay)
@@ -46,8 +31,7 @@ void add_part_calculation(FLOAT *score, FLOAT*M,int *rootsize,int *partsize,int 
 	}
 }
 
-// dt helper function
-inline void dt_helper(FLOAT *src, FLOAT *dst, int *ptr, int step, int s1, int s2, int d1, int d2, FLOAT a, FLOAT b)
+static inline void dt_helper(FLOAT *src, FLOAT *dst, int *ptr, int step, int s1, int s2, int d1, int d2, FLOAT a, FLOAT b)
 {
 	if (d2 >= d1)
 	{
@@ -74,7 +58,7 @@ inline void dt_helper(FLOAT *src, FLOAT *dst, int *ptr, int step, int s1, int s2
 }
 
 //sub function of dt
-void dt1d(FLOAT *src, FLOAT *dst, int *ptr, int step, int n, FLOAT a, FLOAT b)
+static void dt1d(FLOAT *src, FLOAT *dst, int *ptr, int step, int n, FLOAT a, FLOAT b)
 {
 	dt_helper(src, dst, ptr, step, 0, n-1, 0, n-1, a, b);
 }
@@ -111,8 +95,9 @@ FLOAT *dt(FLOAT *vals,FLOAT ax,FLOAT bx,FLOAT ay,FLOAT by,int *dims,int *Ix,int 
 			tmpIx_P++;
 		}
 	}
-	s_free(tmpM);
-	s_free(tmpIx);
-	s_free(tmpIy);
+
+	free(tmpM);
+	free(tmpIx);
+	free(tmpIy);
 	return(M);
 }

@@ -11,35 +11,40 @@
 
 //Header files
 #include "MODEL_info.h"				//File information
-#include "get_boxes_func.h"			//external functions
 #include "Common.h"
 
 #include "switch_float.h"
+#include "get_boxes.hpp"
+#include "dt.hpp"
+#include "fconvsMT.hpp"
 
-//subfunctions for detection
-FLOAT *padarray(FLOAT *feature,int *size,int padx,int pady);		//padd zeros to image
-FLOAT *flip_feat(FLOAT *feat,int *size);				//filip feature order (to reduce calculation time)
-int *get_gmpc(FLOAT *score,FLOAT thresh,int *ssize,int *GMN);		//get good matches
+static void free_rootmatch(FLOAT **rootmatch, MODEL *MO)
+{
+	if (rootmatch == nullptr)
+		return;
 
-//calculate root rectangle-cooridnate
-FLOAT *rootbox(int x,int y,FLOAT scale,int padx,int pady,int *rsize);
+	for(int i = 0; i < MO->RF->NoR; i++) {
+		free(rootmatch[i]);
 
-//calculate @art rectangle-cooridnate
-FLOAT *partbox(int x,int y,int ax,int ay,FLOAT scale,int padx,int pady,int *psize,int *lx,int *ly,int *ssize);
+	}
+	s_free(rootmatch);
+}
 
-//calculate accumulated HOG detector score
-void calc_a_score(FLOAT *ac_score,FLOAT *score,int *ssize,int *rsize,Model_info *MI,FLOAT scale);
+//free part-matching result
+static void free_partmatch(FLOAT **partmatch, MODEL *MO)
+{
+	if (partmatch == nullptr)
+		return;
 
-//Object-detection function (extended to main)
-FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,FLOAT *A_SCORE,FLOAT thresh);
-
-//release-functions
-void free_rootmatch(FLOAT **rootmatch, MODEL *MO);
-void free_partmatch(FLOAT **partmatch, MODEL *MO);
+	for(int i = 0; i < MO->PF->NoP; i++) {
+		s_free(partmatch[i]);
+	}
+	s_free(partmatch);
+}
 
 //sub functions
 //padd zeros to image
-FLOAT *padarray(FLOAT *feature,int *size,int padx,int pady)
+static FLOAT *padarray(FLOAT *feature,int *size,int padx,int pady)
 {
 	const int NEW_Y=size[0]+pady*2;
 	const int NEW_X=size[1]+padx*2;
@@ -67,8 +72,7 @@ FLOAT *padarray(FLOAT *feature,int *size,int padx,int pady)
 	return(new_feature);
 }
 
-//flip feat
-FLOAT *flip_feat(FLOAT *feat,int *size)
+static FLOAT *flip_feat(FLOAT *feat,int *size)
 {
 	const int ORD[31]={10,9,8,7,6,5,4,3,2,1,18,17,16,15,14,13,12,11,19,27,26,25,24,23,22,21,20,30,31,28,29};
 	const int S_S =sizeof(FLOAT)*size[0];
@@ -92,7 +96,7 @@ FLOAT *flip_feat(FLOAT *feat,int *size)
 }
 
 //get good-matched pixel-coordinate
-int *get_gmpc(FLOAT *score,FLOAT thresh,int *ssize,int *GMN)
+static int *get_gmpc(FLOAT *score,FLOAT thresh,int *ssize,int *GMN)
 {
 	const int L = ssize[0]*ssize[1];
 	FLOAT *P=score;
@@ -130,7 +134,7 @@ int *get_gmpc(FLOAT *score,FLOAT thresh,int *ssize,int *GMN)
 }
 
 //get root-box pixel coordinate
-FLOAT *rootbox(int x,int y,FLOAT scale,int padx,int pady,int *rsize)
+static FLOAT *rootbox(int x,int y,FLOAT scale,int padx,int pady,int *rsize)
 {
 	FLOAT *Out=(FLOAT*)malloc(sizeof(FLOAT)*4);
 	Out[0]=((FLOAT)y-(FLOAT)pady+1)*scale;	//Y1
@@ -141,8 +145,7 @@ FLOAT *rootbox(int x,int y,FLOAT scale,int padx,int pady,int *rsize)
 }
 
 //get part-box pixel coordinate
-//partbox(PA,x,y,ax[pp],ay[pp],scale,padx,pady,Pd_size,Ix[pp],Iy[pp],Isize);
-FLOAT *partbox(int x,int y,int ax,int ay,FLOAT scale,int padx,int pady,int *psize,int *lx,int *ly,int *ssize)
+static FLOAT *partbox(int x,int y,int ax,int ay,FLOAT scale,int padx,int pady,int *psize,int *lx,int *ly,int *ssize)
 {
 	FLOAT *Out=(FLOAT*)malloc(sizeof(FLOAT)*4);
 	int probex = (x-1)*2+ax;
@@ -160,7 +163,7 @@ FLOAT *partbox(int x,int y,int ax,int ay,FLOAT scale,int padx,int pady,int *psiz
 }
 
 //calculate accumulated HOG detector score
-void calc_a_score(FLOAT *ac_score,FLOAT *score,int *ssize,int *rsize,Model_info *MI,FLOAT scale)
+static void calc_a_score(FLOAT *ac_score,FLOAT *score,int *ssize,int *rsize,Model_info *MI,FLOAT scale)
 {
 	const int IHEI = MI->IM_HEIGHT;
 	const int IWID = MI->IM_WIDTH;
@@ -505,33 +508,4 @@ FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,F
 	//output result
 	*Dnum=D_NUMS;
 	return(boxes);
-}
-
-////release functions //////
-
-//free root-matching result
-void free_rootmatch(FLOAT **rootmatch, MODEL *MO)
-{
-	if (rootmatch == nullptr)
-		return;
-
-	for(int i = 0; i <MO->RF->NoR; i++)
-	{
-		free(rootmatch[i]);
-
-	}
-	s_free(rootmatch);
-}
-
-//free part-matching result
-void free_partmatch(FLOAT **partmatch, MODEL *MO)
-{
-	if (partmatch == nullptr)
-		return;
-
-	for(int i = 0; i < MO->PF->NoP; i++)
-	{
-		s_free(partmatch[i]);
-	}
-	s_free(partmatch);
 }
