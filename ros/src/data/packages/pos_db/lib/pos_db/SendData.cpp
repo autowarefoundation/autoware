@@ -56,9 +56,9 @@ SendData::SendData()
 
 SendData::SendData(const std::string& host_name, int port, char *sshuser, std::string& sshpubkey, std::string& sshprivatekey, int sshport, std::string& sshtunnelhost)
 	: host_name_(host_name), port_(port),
-	  sshuser_(sshuser), sshpubkey_(sshpubkey),
-	  sshprivatekey_(sshprivatekey), sshport_(sshport),
-	  sshtunnelhost_(sshtunnelhost)
+	  sshuser_(sshuser), sshtunnelhost_(sshtunnelhost),
+	  sshpubkey_(sshpubkey), sshprivatekey_(sshprivatekey),
+	  sshport_(sshport)
 {
 	connected = false;
 	session = NULL;

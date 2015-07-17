@@ -60,7 +60,9 @@ private:
 
 public:
 	SendData();
-	explicit SendData(const std::string& host_name, int port, char *sshuser, std::string& sshpubkey, std::string& sshprivatekey, int sshport_, std::string& sshtunnelhost);
+	explicit SendData(const std::string& host_name, int port, char *sshuser,
+			  std::string& sshpubkey, std::string& sshprivatekey,
+			  int sshport, std::string& sshtunnelhost);
 
 	int Sender(const std::string& value, std::string& res, int insert_num);
 	int ConnectDB();
