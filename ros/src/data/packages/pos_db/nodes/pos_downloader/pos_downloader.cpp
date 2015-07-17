@@ -104,7 +104,7 @@ static void dbg_out_marker(visualization_msgs::Marker marker)
 	<< marker.pose.orientation.w << std::endl;
 }
 
-static int publish_car(int id, int is_ndt, ros::Time now, geometry_msgs::Pose& pose)
+static int publish_car(int id, int is_current, ros::Time now, geometry_msgs::Pose& pose)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/map";
@@ -113,7 +113,7 @@ static int publish_car(int id, int is_ndt, ros::Time now, geometry_msgs::Pose& p
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = id++;
   marker.pose = pose;
-  if (is_ndt) {
+  if (is_current) {
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.mesh_resource = "package://pos_db/model/prius_model.dae";
     marker.mesh_use_embedded_materials = true;
@@ -217,7 +217,7 @@ static int result_to_marker(const string& idstr, ros::Time now,
 {
   static int id = 2;
 
-  if (idstr.find("ndt_pose", 0) != string::npos) {
+  if (idstr.find("current_pose", 0) != string::npos) {
     int nid = 0;
     if(idstr.length() >= 21) nid = 0x7f000000 | (std::strtol((idstr.substr(15,6)).c_str(), NULL, 16)) << 1;
     publish_car(nid, 1, now, pose);

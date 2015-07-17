@@ -72,7 +72,7 @@ static string sshtunnelhost;
 static SendData sd;
 
 //store own position and direction now.updated by position_getter
-static std::vector <geometry_msgs::PoseStamped> ndt_position;
+static std::vector <geometry_msgs::PoseStamped> current_pose_position;
 pthread_mutex_t pose_lock_;
 
 static char mac_addr[MAC_ADDRBUFSIZ];
@@ -136,13 +136,13 @@ static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_ar
 //wrap SendData class
 static void send_sql()
 {
-  int sql_num = car_num + pedestrian_num + ndt_position.size();
+  int sql_num = car_num + pedestrian_num + current_pose_position.size();
   std::cout << "sqlnum : " << sql_num << std::endl;
 
   //create header
   std::string value = make_header(2, sql_num);
 
-std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "(" << car_position_array.size() << ")" << ",pedestrian_num=" << pedestrian_num << "(" << pedestrian_position_array.size() << ")" << ", val=";
+std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << car_num << "(" << car_position_array.size() << ")" << ",pedestrian_num=" << pedestrian_num << "(" << pedestrian_position_array.size() << ")" << ", val=";
 
   //get data of car and pedestrian recognizing
   pthread_mutex_lock(&pose_lock_);
@@ -164,18 +164,18 @@ std::cout << "ndt_num=" << ndt_position.size() << ", car_num=" << car_num << "("
 
 
   // my_location
-  for(size_t i = 0; i < ndt_position.size(); i++) {
+  for(size_t i = 0; i < current_pose_position.size(); i++) {
     std::string timestamp;
     if(use_current_time) {
       ros::Time t = ros::Time::now();
       timestamp = getTimeStamp(t.sec, t.nsec);
     } else {
-      timestamp = getTimeStamp(ndt_position[i].header.stamp.sec,ndt_position[i].header.stamp.nsec);
+      timestamp = getTimeStamp(current_pose_position[i].header.stamp.sec,current_pose_position[i].header.stamp.nsec);
     }
-    value += pose_to_insert_statement(ndt_position[i].pose, timestamp, "ndt_pose");
+    value += pose_to_insert_statement(current_pose_position[i].pose, timestamp, "current_pose");
     value += "\n";
   }
-  ndt_position.clear();
+  current_pose_position.clear();
   pthread_mutex_unlock(&pose_lock_);
 
   std::cout << value << std::endl;
@@ -197,7 +197,7 @@ static void* intervalCall(void *unused)
   while(1){
     //If angle and position data is not updated from previous data send,
     //data is not sent
-    if((car_num + pedestrian_num + ndt_position.size()) <= 0) {
+    if((car_num + pedestrian_num + current_pose_position.size()) <= 0) {
       usleep(sleep_msec*1000);
       continue;
     }
@@ -229,10 +229,10 @@ static void pedestrian_locate_cb(const geometry_msgs::PoseArray& pedestrian_loca
   }
 }
 
-static void ndt_pose_cb(const geometry_msgs::PoseStamped &pose)
+static void current_pose_cb(const geometry_msgs::PoseStamped &pose)
 {
   pthread_mutex_lock(&pose_lock_);
-  ndt_position.push_back(pose);
+  current_pose_position.push_back(pose);
   pthread_mutex_unlock(&pose_lock_);
 }
 
@@ -264,7 +264,7 @@ int main(int argc, char **argv)
 
   ros::Subscriber car_locate = nh.subscribe("/car_pose", 1, car_locate_cb);
   ros::Subscriber pedestrian_locate = nh.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
-  ros::Subscriber gnss_pose = nh.subscribe("/ndt_pose", 1, ndt_pose_cb);
+  ros::Subscriber gnss_pose = nh.subscribe("/current_pose", 1, current_pose_cb);
 
 
   nh.param<string>("pos_db/db_host_name", db_host_name, DB_HOSTNAME);
