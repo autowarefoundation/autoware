@@ -118,6 +118,9 @@ class MyFrame(rtmgr.MyFrame):
 			pnl = self.obj_get('panel_' + nm + '_qs')
 			self.set_param_panel(btn, pnl)
 
+			for topic in self.qs_dic.get('exec_time', {}).get(nm, {}).keys():
+				rospy.Subscriber(topic, std_msgs.msg.Float32, self.exec_time_callback, callback_args=topic)
+
 		self.label_cpuinfo_qs.Destroy()
 		self.label_cpuinfo_qs = ColorLabel(tab)
 
@@ -318,10 +321,11 @@ class MyFrame(rtmgr.MyFrame):
 		rospy.Subscriber('route_cmd', route_cmd, self.route_cmd_callback)
 
 		# topic /xxx_stat
+		self.stat_dic = {}
 		for k in [ 'gnss', 'pmap', 'vmap', 'ndt', 'lf' ]:
+			self.stat_dic[k] = False
 			name = k + '_stat'
-			setattr(self, name, False)
-			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
+			rospy.Subscriber(name, std_msgs.msg.Bool, self.stat_callback, callback_args=k)
 
 		# top command thread
 		thinf = th_start(self.top_cmd_th, { 'interval':5 })
@@ -461,53 +465,32 @@ class MyFrame(rtmgr.MyFrame):
 
 	def stat_label_off(self, obj):
 		gdic = self.obj_to_gdic(obj, {})
-		data = std_msgs.msg.Bool(False)
+		msg = std_msgs.msg.Bool(False)
 		for k in gdic.get('stat_topic', []):
-			cb = getattr(self, k + '_stat_callback', None)
-			if cb:
-				cb(data)
+			self.stat_callback(msg, k)
 
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
 
-	def pmap_stat_callback(self, data):
-		self.pmap_stat = data.data
-		v = self.pmap_stat
-		wx.CallAfter(self.label_point_cloud.SetLabel, 'OK' if v else '')
+	def stat_callback(self, msg, k):
+		self.stat_dic[k] = msg.data
+		if k == 'pmap':
+			v = self.stat_dic.get(k)
+			wx.CallAfter(self.label_point_cloud.SetLabel, 'OK' if v else '')
+		if k in [ 'pmap', 'vmap' ]:
+			v = self.stat_dic.get('pmap') and self.stat_dic.get('vmap')
+			wx.CallAfter(self.label_map_qs.SetLabel, 'OK' if v else '')
 
-		v = self.pmap_stat and self.vmap_stat
-		wx.CallAfter(self.label_map_qs.SetLabel, 'OK' if v else '')
+	def exec_time_callback(self, msg, topic):
+		msec = int(msg.data)
+		exec_time = self.qs_dic.get('exec_time', {})
+		(nm, dic) = get_top([ (nm, dic) for (nm, dic) in exec_time.items() if topic in dic ])
+		dic[ topic ] = msec
+		lb = self.obj_get('label_' + nm + '_qs')
+		if lb:
+			sum = reduce( lambda a,b:a+(b if b else 0), dic.values() )
+			wx.CallAfter(lb.SetLabel, str(sum)+' ms')
 
-	def vmap_stat_callback(self, data):
-		self.vmap_stat = data.data
-
-		v = self.pmap_stat and self.vmap_stat
-		wx.CallAfter(self.label_map_qs.SetLabel, 'OK' if v else '')
-
-	def gnss_stat_callback(self, data):
-	#	self.stat_set('gnss', data.data)
-	#	self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
-		pass
-
-	def ndt_stat_callback(self, data):
-	#	self.stat_set('ndt', data.data)
-	#	self.main_button_update(self.button_perception, self.gnss_stat and self.ndt_stat)
-		pass
-
-	def lf_stat_callback(self, data):
-	#	self.stat_set('lf', data.data)
-	#	self.main_button_update(self.button_control, self.lf_stat)
-		pass
-
-	#def stat_set(self, k, stat):
-	#	name = k + '_stat'
-	#	setattr(self, name, stat)
-	#	lb = getattr(self, 'label_' + name, None)
-	#	if lb:
-	#		wx.CallAfter(lb.Enable, stat)
-
-	#def main_button_update(self, obj, ready):
-	#	wx.CallAfter(obj.SetForegroundColour, 'blue' if ready else self.bak_main_button_color)
 
 	#
 	# Computing Tab
