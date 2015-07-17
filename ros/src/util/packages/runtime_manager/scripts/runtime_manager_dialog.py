@@ -46,6 +46,7 @@ import shlex
 import signal
 import subprocess
 import psutil
+import pty
 import yaml
 import datetime
 import rtmgr
@@ -89,6 +90,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		self.params = []
 		self.all_tabs = []
+		self.all_th_infs = []
 
 		#
 		# ros
@@ -322,10 +324,12 @@ class MyFrame(rtmgr.MyFrame):
 			rospy.Subscriber(name, std_msgs.msg.Bool, getattr(self, name + '_callback', None))
 
 		# top command thread
-		th_start(self.top_cmd_th, { 'interval':5 })
+		thinf = th_start(self.top_cmd_th, { 'interval':5 })
+		self.all_th_infs.append(thinf)
 
 		# ps command thread
-		th_start(self.ps_cmd_th, { 'interval':5 })
+		thinf = th_start(self.ps_cmd_th, { 'interval':5 })
+		self.all_th_infs.append(thinf)
 
 		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
@@ -357,6 +361,9 @@ class MyFrame(rtmgr.MyFrame):
 		shutdown_sh = self.get_autoware_dir() + '/ros/shutdown'
 		if os.path.exists(shutdown_sh):
 			os.system(shutdown_sh)
+
+		for thinf in self.all_th_infs:
+			th_end(thinf)
 
 		self.Destroy()
 
@@ -862,8 +869,32 @@ class MyFrame(rtmgr.MyFrame):
 		free = int(lst[1])
 		return (used + free, used)
 
+	def toprc_create(self):
+		(child_pid, fd) = pty.fork()
+		if child_pid == 0: # child
+			os.execvp('top', ['top'])
+		else: #parent
+			sec = 0.2
+			for s in ['1', 'W', 'q']:
+				time.sleep(sec)
+				os.write(fd, s)
+
+	def toprc_setup(self, toprc, backup):
+		if os.path.exists(toprc):
+			os.rename(toprc, backup)
+		self.toprc_create()
+
+	def toprc_restore(self, toprc, backup):
+		os.remove(toprc)
+		if os.path.exists(backup):
+			os.rename(backup, toprc)
+
 	# top command thread
 	def top_cmd_th(self, ev, interval):
+		toprc = os.path.expanduser('~/.toprc')
+		backup = os.path.expanduser('~/.toprc-autoware-backup')
+		self.toprc_setup(toprc, backup)
+
 		alerted = False
 		while not ev.wait(interval):
 			s = subprocess.check_output(['top', '-b', '-n' '1']).strip()
@@ -916,6 +947,7 @@ class MyFrame(rtmgr.MyFrame):
 			if not is_alert and alerted:
 				th_end(thinf)
 				alerted = False
+		self.toprc_restore(toprc, backup)
 
 	def alert_th(self, bgcol, ev):
 		wx.CallAfter(self.RequestUserAttention)
