@@ -73,10 +73,11 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTI
 	for (int i = 0; i < result.num; ++i) {
 		cv_tracker::image_rect rect;
 
-		rect.x = result.corner_points[i];
-		rect.y = result.corner_points[i+1];
-		rect.width = result.corner_points[i+2];
-		rect.height = result.corner_points[i+3];
+		int base = i * 4;
+		rect.x = result.corner_points[base];
+		rect.y = result.corner_points[base+1];
+		rect.width = result.corner_points[base+2];
+		rect.height = result.corner_points[base+3];
 
 		msg.obj.push_back(rect);
 	}
