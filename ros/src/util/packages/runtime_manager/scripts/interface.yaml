@@ -1,0 +1,80 @@
+control_check :
+  - name  : accel
+    param : accel
+    gui   :
+      accel :
+        flags : [ no_category ]
+  - name  : brake
+    param : brake
+    gui   :
+      brake :
+        flags : [ no_category ]
+  - name  : steer
+    param : steer
+    gui   :
+      steer :
+        flags : [ no_category ]
+  - name  : torque
+    param : torque
+  - name  : veloc
+    param : veloc
+    gui   :
+      twist.linear.x :
+        flags : [ no_category ]
+      twist.angular.z :
+        flags : [ no_category ]
+
+checkboxs :
+  sound :
+    run  : rosrun sound_player sound_player.py
+
+params :
+  - name  : accel
+    topic : /accel_cmd
+    msg   : accel_cmd
+    vars  :
+    - name  : accel
+      label : Accel
+      min   : 0
+      max   : 100
+      v     : 0
+  - name  : brake
+    topic : /brake_cmd
+    msg   : brake_cmd
+    vars  :
+    - name  : brake
+      label : Brake
+      min   : 0
+      max   : 10000
+      v     : 0
+  - name  : steer
+    topic : /steer_cmd
+    msg   : steer_cmd
+    vars  :
+    - name  : steer
+      label : Steer
+      min   : -720
+      max   : 720
+      v     : 0
+  - name  : torque
+    vars  :
+    - name  : torque
+      label : Torque
+      min   : 0
+      max   : 100
+      v     : 0
+  - name  : veloc
+    topic : /twist_cmd
+    msg   : TwistStamped
+    flags : [ 'stamp' ]
+    vars  :
+    - name  : twist.linear.x
+      label : Veloc
+      min   : 0
+      max   : 100
+      v     : 0
+    - name  : twist.angular.z
+      label : Angle
+      min   : -1.00
+      max   : 1.00
+      v     : 0.00

@@ -62,8 +62,12 @@ publish data as ractangular plane
 
 using namespace std;
 
-static string host_name = "db3.ertl.jp";
-static int db_port = 5678;
+static string db_host_name;
+static int db_port;
+static string sshpubkey;
+static string sshprivatekey;
+static int ssh_port;
+static string sshtunnelhost;
 static int sleep_msec = 500;		// period
 static double life_time;
 static double posup_dz;
@@ -72,6 +76,9 @@ static double pedestrian_dz;
 static ros::Publisher pub;
 
 static SendData sd;
+
+static char mac_addr[MAC_ADDRBUFSIZ];
+static int ignore_my_pose = 1;
 
 static std::vector<std::string> split(const string& input, char delimiter)
 {
@@ -240,6 +247,10 @@ static void marker_publisher(const std_msgs::String& msg, int is_swap)
     if(cols.size() != 11)
       continue;
 
+    if(ignore_my_pose && (cols[0].find(mac_addr, 0) != string::npos)) {
+      continue;	// don't publish Marker of my pose
+    }
+
     if (is_swap) {
       pose.position.x = std::stod(cols[2]);
       pose.position.y = std::stod(cols[1]);
@@ -293,7 +304,7 @@ static int create_timestr(time_t sec, int nsec, char *str, size_t size)
 //wrap SendData class
 static uint64_t send_sql(time_t diff_sec, uint64_t prev)
 {
-  std::string data = make_header(1, 1);
+  std::string data;
   string db_response;
   std_msgs::String msg;
   ros::Time now = ros::Time::now();
@@ -315,6 +326,8 @@ static uint64_t send_sql(time_t diff_sec, uint64_t prev)
   }
   create_timestr(now_sec, now_nsec, timestr[1], sizeof(timestr[1]));
 
+  data = make_header(1, 1);
+
   data += "SELECT id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm FROM POS "
 	"WHERE tm >= '";
   data += timestr[0];
@@ -322,8 +335,8 @@ static uint64_t send_sql(time_t diff_sec, uint64_t prev)
   data += timestr[1];
   data += "';\r\n";
 
-  int ret = sd.Sender(data, db_response);
-  if (ret == -1) {
+  int ret = sd.Sender(data, db_response, 0);
+  if (ret < 0) {
     std::cerr << "sd.Sender() failed" << std::endl;
   } else {
     std::cout << "return data: \"" << db_response << "\"" << std::endl;
@@ -363,6 +376,18 @@ int main(int argc, char **argv)
 
   cout << MYNAME << endl;
 
+  if(argc < 2) {
+    std::cerr << "usage : \n\trosrun " << MYNAME << " <user name> [show_my_pose]" << std::endl;
+    return -1;
+  }
+  if(argc > 2) {
+    if(strncmp(argv[2], "show_my_pose", 12) == 0) ignore_my_pose = 0;
+  }
+  std::cerr << "ignore_my_pose=" << ignore_my_pose << std::endl;
+
+  probe_mac_addr(mac_addr);
+  std::cerr <<  "mac_addr=" << mac_addr << std::endl;
+
   pub = nh.advertise<visualization_msgs::Marker>(MARKERNAME, 1);
   nh.param<double>(MYNAME "/time", args[0], STARTTIME);
   cout << "time=" << args[0] << endl;
@@ -375,7 +400,20 @@ int main(int argc, char **argv)
   nh.param<double>(MYNAME "/pedestrian_dz", pedestrian_dz, PEDESTRIAN_DZ);
   cout << "pedestrian_dz=" << pedestrian_dz << endl;
 
-  sd = SendData(host_name, db_port);
+  nh.param<string>("pos_db/db_host_name", db_host_name, DB_HOSTNAME);
+  cout << "db_host_name=" << db_host_name << endl;
+  nh.param<int>("pos_db/db_port", db_port, DB_PORT);
+  cout << "db_port=" << db_port << endl;
+  nh.param<string>("pos_db/sshpubkey", sshpubkey, SSHPUBKEY);
+  cout << "sshpubkey=" << sshpubkey << endl;
+  nh.param<string>("pos_db/sshprivatekey", sshprivatekey, SSHPRIVATEKEY);
+  cout << "sshprivatekey=" << sshprivatekey << endl;
+  nh.param<int>("pos_db/ssh_port", ssh_port, SSHPORT);
+  cout << "ssh_port=" << ssh_port << endl;
+  nh.param<string>("pos_db/sshtunnelhost", sshtunnelhost, SSHTUNNELHOST);
+  cout << "sshtunnelhost=" << sshtunnelhost << endl;
+
+  sd = SendData(db_host_name, db_port, argv[1], sshpubkey, sshprivatekey, ssh_port, sshtunnelhost);
 
   if (pthread_create(&th, nullptr, intervalCall, (void *)args) != 0) {
     std::perror("pthread_create");

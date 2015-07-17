@@ -24,3 +24,5 @@ viewers :
       cmd   : rosrun viewers vscan_image_viewer
     - label : Vscan Points Image with Distancr
       cmd   : rosrun viewers vscan_image_d_viewer
+    - label : Traffic Light Detection Result
+      cmd   : rosrun viewers traffic_light_viewer

@@ -309,8 +309,8 @@ int main(int argc, char **argv)
 
 			msg.header.seq = count;
 			msg.header.frame_id = "camera";
-			msg.header.stamp.sec = ros::Time::now().toSec();
-			msg.header.stamp.nsec = ros::Time::now().toNSec();
+			msg.header.stamp.sec = ros::Time::now().sec;
+			msg.header.stamp.nsec = ros::Time::now().nsec;
 			msg.height = image.GetRows();
 			msg.width  = image.GetCols();
 			msg.encoding = "rgb8";
@@ -319,6 +319,8 @@ int main(int argc, char **argv)
 			size_t image_size = image.GetDataSize();
 			msg.data.resize(image_size);
 			memcpy(msg.data.data(), image.GetData(), image_size);
+
+
 
 			pub[i].publish(msg);
 			i++;

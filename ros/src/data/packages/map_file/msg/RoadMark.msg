@@ -1,4 +1,4 @@
 int32 id
 int32 aid
-string type
+int32 type # Don't use wide character
 int32 linkid

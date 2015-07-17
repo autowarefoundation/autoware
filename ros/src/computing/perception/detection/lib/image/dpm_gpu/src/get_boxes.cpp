@@ -9,14 +9,16 @@
 #include <cstdlib>
 #include <cstring>
 
-//Header files
-#include "MODEL_info.h"				//File information
-#include "get_boxes_func.h"			//external functions
+#include "MODEL_info.h"		//File information
 #include "Common.h"
 
 #include "for_use_GPU.h"
 #include "switch_float.h"
 #include "switch_release.h"
+#include "dt.hpp"
+#include "dt_GPU.hpp"
+#include "detect.hpp"
+#include "fconvsMT.hpp"
 
 #include <cuda_util.hpp>
 
@@ -24,10 +26,6 @@ int max_numpart = 0;
 static int max_RL_S = 0;
 
 //definiton of functions//
-
-//subfunctions for detection
-//Object-detection function (extended to main)
-FLOAT *get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *MO,int *Dnum,FLOAT *A_SCORE,FLOAT thresh);
 
 //get good-matched pixel-coordinate
 static int *get_gmpc(FLOAT *score,FLOAT thresh,int *ssize,int *good_matched)
@@ -85,43 +83,6 @@ static FLOAT *partbox(int x,int y,int ax,int ay,FLOAT scale,int padx,int pady,in
 	Out[3]=Out[1]+(FLOAT)psize[1]*scale/2.0-1.0;		//X2
 	return(Out);
 }
-
-//calculate accumulated HOG detector score
-void calc_a_score(FLOAT *acc_score, FLOAT *score,int *ssize,int *rsize,Model_info *MI,FLOAT scale)
-{
-	const int height = MI->IM_HEIGHT;
-	const int width = MI->IM_WIDTH;
-	int pady_n = MI->pady;
-	int padx_n = MI->padx;
-	int block_pad = (int)(scale/2.0);
-
-	int RY = (int)((FLOAT)rsize[0]*scale/2.0-1.0+block_pad);
-	int RX = (int)((FLOAT)rsize[1]*scale/2.0-1.0+block_pad);
-
-	for(int i = 0; i < width; i++) {
-		int xn=(int)((FLOAT)i/scale+padx_n);
-		if (xn >= ssize[1])
-			continue;
-
-		for(int j = 0; j < height;j++) {
-			int yn =(int)((FLOAT)j/scale+pady_n);
-			if (yn >= ssize[0])
-				continue;
-
-			FLOAT sc = score[yn+xn*ssize[0]]; //get score of pixel
-
-			int Im_Y = j+RY;
-			int Im_X = i+RX;
-			if(Im_Y<height && Im_X<width)
-			{
-				FLOAT *PP=acc_score+Im_Y+Im_X*height; //consider root rectangle size
-				if(sc>*PP) *PP=sc;                 //save max score
-			}
-		}
-	}
-}
-
-extern size_t size_A_SCORE;
 
 static void calc_a_score_GPU(FLOAT *ac_score,  FLOAT **score,
 			     int *ssize_start,  Model_info *MI,

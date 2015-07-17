@@ -1,0 +1,12 @@
+<!-- -->
+<launch>
+	<arg name="save_finename" default="/media/pdsljp/ssd/test.txt" />
+<arg name="interval" default="1" /> 
+
+<!-- rosrun waypoint_maker waypoint_saver _save_topic:=[topic] _interval:=[value] _save_filename:="[save file]" -->
+	<node pkg="waypoint_maker" type="waypoint_saver" name="waypoint_saver" output="log">
+		<param name="save_filename" value="$(arg save_finename)" />
+		<param name="interval" value="$(arg interval)" />
+	</node>
+
+</launch>

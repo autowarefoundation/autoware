@@ -12,6 +12,17 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
+add_message_files(
+  FILES
+  KFObjects.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  sensor_msgs
+  std_msgs
+)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -41,4 +52,4 @@ target_link_libraries(kf
   ${OpenCV_LIBS}
 )
 
-add_dependencies(kf dpm_generate_messages_cpp runtime_manager_generate_messages_cpp)
+add_dependencies(kf dpm_generate_messages_cpp runtime_manager_generate_messages_cpp  kf_generate_messages_cpp)

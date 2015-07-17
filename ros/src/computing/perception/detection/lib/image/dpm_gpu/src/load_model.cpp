@@ -17,6 +17,7 @@
 #include "for_use_GPU.h"
 #include "switch_float.h"
 #include "switch_release.h"
+#include "load_model.hpp"
 
 #include <cuda_util.hpp>
 
@@ -31,12 +32,6 @@
 #define FLOAT_SCAN_FMT4		FLOAT_SCAN_FMT3 FLOAT_SCAN_FMT
 
 int sum_size_def_array;
-
-//load model information
-MODEL *load_model(FLOAT ratio);				//load MODEL(filter) (extended to main.cpp)
-
-//release function
-void free_model(MODEL *MO);						//release model-information (externed to main.cpp)
 
 //subfunctions
 
@@ -379,19 +374,14 @@ static Partfilters *load_partfilter(const char *filename)
 	return(PF);
 }
 
-//load model infroamtion
-extern std::string com_name;
-extern std::string root_name;
-extern std::string part_name;
-
-MODEL *load_model(FLOAT ratio)
+MODEL *load_model(FLOAT ratio, const char *com_csv, const char *root_csv, const char *part_csv)
 {
 	MODEL *MO = (MODEL*)malloc(sizeof(MODEL));
 
 	// assign information into  MO.OO
-	MO->MI=load_modelinfo(com_name.c_str());
-	MO->RF=load_rootfilter(root_name.c_str());
-	MO->PF=load_partfilter(part_name.c_str());
+	MO->MI = load_modelinfo(com_csv);
+	MO->RF = load_rootfilter(root_csv);
+	MO->PF = load_partfilter(part_csv);
 
 	MO->MI->ratio = ratio;
 
@@ -399,7 +389,7 @@ MODEL *load_model(FLOAT ratio)
 	MO->MI->padx = 0;
 	MO->MI->pady = 0;
 
-	return(MO);
+	return MO;
 }
 
 //release model
