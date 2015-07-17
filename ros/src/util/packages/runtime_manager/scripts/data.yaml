@@ -185,7 +185,7 @@ params :
     - name      : db_host_name
       label     : DB Server Name
       kind      : str
-      v         : db3.ertl.j
+      v         : db3.ertl.jp
       rosparam  : /pos_db/db_host_name
     - name      : db_port
       label     : DB Port
