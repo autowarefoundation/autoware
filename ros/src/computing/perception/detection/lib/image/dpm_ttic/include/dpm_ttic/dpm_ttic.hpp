@@ -6,11 +6,8 @@
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
 
-extern void dpm_gpu_init_cuda(const std::string& cubin_path);
-extern void dpm_gpu_cleanup_cuda();
-extern void dpm_gpu_load_models(const std::string& com_csv,
-				const std::string& root_csv,
-				const std::string& part_csv);
+extern void dpm_ttic_gpu_init_cuda(const std::string& cubin_path);
+extern void dpm_ttic_gpu_cleanup_cuda();
 
 struct DPMTTICResult {
 	int num;
@@ -52,9 +49,5 @@ public:
 
 	DPMTTICResult detect_objects(IplImage *image, const DPMTTICParam& param);
 };
-
-
-extern DPMTTICResult dpm_gpu_detect_objects(IplImage *image, double threshold,
-					    double overlap, int lambda, int num_cells);
 
 #endif /* _DPM_TTIC_H_ */

@@ -51,64 +51,15 @@ float time_kernel;
 
 int device_num;
 
-// Should be removed!!!!
-static GPUModel *MO;
-
-void dpm_gpu_init_cuda(const std::string& cubin_path)
+void dpm_ttic_gpu_init_cuda(const std::string& cubin_path)
 {
 	dpm_ttic_gpu_init_cuda_with_cubin(cubin_path.c_str());
 }
 
-void dpm_gpu_load_models(const std::string& com_csv,
-			 const std::string& root_csv,
-			 const std::string& part_csv)
-{
-	constexpr double RATIO = 1;
-	MO = dpm_ttic_gpu_load_model(RATIO, com_csv.c_str(), root_csv.c_str(), part_csv.c_str());
-}
-
-void dpm_gpu_cleanup_cuda()
+void dpm_ttic_gpu_cleanup_cuda()
 {
 	dpm_ttic_gpu_clean_cuda();
 	//free_model(MO);
-}
-
-DPMTTICResult dpm_gpu_detect_objects(IplImage *image, double threshold,
-				     double overlap, int lambda, int num_cells)
-{
-	MO->MI->interval = lambda;
-	MO->MI->sbin     = num_cells;
-
-	int detected_objects;
-	FLOAT *ac_score = dpm_ttic_init_accumulated_score(image, gpu_size_A_SCORE);
-	RESULT *cars = dpm_ttic_gpu_car_detection(image, MO, threshold,
-						  &detected_objects, ac_score,
-						  overlap);
-	free(ac_score);
-
-	DPMTTICResult result;
-	result.num = cars->num;
-	for (int i = 0; i < cars->num; ++i) {
-		result.type.push_back(cars->type[i]);
-	}
-
-	for (int i = 0; i < cars->num; ++i) {
-		int base = i * 4;
-		int *data = &(cars->OR_point[base]);
-
-		result.corner_points.push_back(data[0]);
-		result.corner_points.push_back(data[1]);
-		result.corner_points.push_back(data[2] - data[0]);
-		result.corner_points.push_back(data[3] - data[1]);
-		result.score.push_back(cars->score[i]);
-	}
-
-	free(cars->point);
-	free(cars->type);
-	free(cars->scale);
-	free(cars->score);
-	free(cars->IM);
-	return result;
 }
 
 DPMGPUModel::DPMGPUModel(const char *com_csv, const char *root_csv, const char *part_csv)

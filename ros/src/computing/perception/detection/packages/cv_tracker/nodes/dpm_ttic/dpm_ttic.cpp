@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 	ros::NodeHandle n;
 
 	std::string cubin = get_cubin_path(n, STR(DEFAULT_CUBIN));
-	dpm_gpu_init_cuda(cubin);
+	dpm_ttic_gpu_init_cuda(cubin);
 
 	set_default_param(car_ttic_param);
 	set_default_param(pedestrian_ttic_param);
@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
 
 	ros::spin();
 
-	dpm_gpu_cleanup_cuda();
+	dpm_ttic_gpu_cleanup_cuda();
 	delete car_gpu_model;
 	delete pedestrian_gpu_model;
 	delete car_ttic_model;
