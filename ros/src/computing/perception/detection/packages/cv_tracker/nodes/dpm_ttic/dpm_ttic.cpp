@@ -39,7 +39,6 @@
 #include <runtime_manager/ConfigCarDpm.h>
 #include <runtime_manager/ConfigPedestrianDpm.h>
 
-#include <dpm_gpu.hpp>
 #include <dpm_ttic.hpp>
 
 #define XSTR(x) #x
@@ -53,15 +52,15 @@ static DPMGPUModel *pedestrian_gpu_model;
 static DPMTTICModel *car_ttic_model;
 static DPMTTICModel *pedestrian_ttic_model;
 
-static DPMGPUParam car_gpu_param;
-static DPMGPUParam pedestrian_gpu_param;
 static DPMTTICParam car_ttic_param;
 static DPMTTICParam pedestrian_ttic_param;
 
-static bool use_gpu = true; // XXX Should be configurable(rosparam etc)
+ // XXX Should be configurable(rosparam etc)
+static bool use_gpu = false;
+static bool is_car_check = true;
+static bool is_pedestrian_check = true;
 
-template<typename T>
-static void set_default_param(T& param)
+static void set_default_param(DPMTTICParam& param)
 {
 	param.overlap = 0.4;
 	param.threshold = -0.5;
@@ -69,8 +68,7 @@ static void set_default_param(T& param)
 	param.num_cells = 8;
 }
 
-template<typename T>
-static void result_to_image_obj_message(cv_tracker::image_obj& msg, const T& result)
+static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTICResult result)
 {
 	for (int i = 0; i < result.num; ++i) {
 		cv_tracker::image_rect rect;
@@ -86,6 +84,9 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const T& res
 
 static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 {
+	if (!is_car_check)
+		return;
+
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
@@ -95,7 +96,7 @@ static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 	msg.type = "car";
 
 	if (use_gpu) {
-		DPMGPUResult result = car_gpu_model->detect_objects(img_ptr, car_gpu_param);
+		DPMTTICResult result = car_gpu_model->detect_objects(img_ptr, car_ttic_param);
 		result_to_image_obj_message(msg, result);
 	} else {
 		DPMTTICResult result = car_ttic_model->detect_objects(img_ptr, car_ttic_param);
@@ -107,6 +108,9 @@ static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 
 static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
 {
+	if (!is_pedestrian_check)
+		return;
+
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
@@ -116,7 +120,7 @@ static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
 	msg.type = "pedestrian";
 
 	if (use_gpu) {
-		DPMGPUResult result = pedestrian_gpu_model->detect_objects(img_ptr, pedestrian_gpu_param);
+		DPMTTICResult result = pedestrian_gpu_model->detect_objects(img_ptr, pedestrian_ttic_param);
 		result_to_image_obj_message(msg, result);
 	} else {
 		DPMTTICResult result = pedestrian_ttic_model->detect_objects(img_ptr, pedestrian_ttic_param);
@@ -128,11 +132,6 @@ static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
 
 static void car_config_cb(const runtime_manager::ConfigCarDpm::ConstPtr& param)
 {
-	car_gpu_param.threshold = param->score_threshold;
-	car_gpu_param.overlap   = param->group_threshold;
-	car_gpu_param.lambda    = param->Lambda;
-	car_gpu_param.num_cells = param->num_cells;
-
 	car_ttic_param.threshold = param->score_threshold;
 	car_ttic_param.overlap   = param->group_threshold;
 	car_ttic_param.lambda    = param->Lambda;
@@ -141,11 +140,6 @@ static void car_config_cb(const runtime_manager::ConfigCarDpm::ConstPtr& param)
 
 static void pedestrian_config_cb(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)
 {
-	pedestrian_gpu_param.threshold = param->score_threshold;
-	pedestrian_gpu_param.overlap   = param->group_threshold;
-	pedestrian_gpu_param.lambda    = param->Lambda;
-	pedestrian_gpu_param.num_cells = param->num_cells;
-
 	pedestrian_ttic_param.threshold = param->score_threshold;
 	pedestrian_ttic_param.overlap   = param->group_threshold;
 	pedestrian_ttic_param.lambda    = param->Lambda;
@@ -171,10 +165,8 @@ int main(int argc, char* argv[])
 	ros::NodeHandle n;
 
 	std::string cubin = get_cubin_path(n, STR(DEFAULT_CUBIN));
-	dpm_gpu_init_cuda(cubin);
+	dpm_ttic_gpu_init_cuda(cubin);
 
-	set_default_param(car_gpu_param);
-	set_default_param(pedestrian_gpu_param);
 	set_default_param(car_ttic_param);
 	set_default_param(pedestrian_ttic_param);
 
@@ -204,7 +196,7 @@ int main(int argc, char* argv[])
 
 	ros::spin();
 
-	dpm_gpu_cleanup_cuda();
+	dpm_ttic_gpu_cleanup_cuda();
 	delete car_gpu_model;
 	delete pedestrian_gpu_model;
 	delete car_ttic_model;
