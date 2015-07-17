@@ -84,7 +84,7 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTI
 
 static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 {
-	if (is_car_check)
+	if (!is_car_check)
 		return;
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
@@ -108,7 +108,7 @@ static void image_raw_car_cb(const sensor_msgs::Image& image_source)
 
 static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
 {
-	if (is_pedestrian_check)
+	if (!is_pedestrian_check)
 		return;
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
