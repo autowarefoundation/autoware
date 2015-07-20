@@ -91,53 +91,8 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
 
   double current_steering_angvel = (current_steering_angle - prev_steering_angle) / (STEERING_INTERNAL_PERIOD/1000.0);
 
-  double target_steering_torque;
-
   /////////////////////////////////
   // angle PID control
-#if 0
-  double e;
-  static double e_prev = 0;
-  double e_i;
-  double e_d;
-
-  e = cmd_steering_angle - current_steering_angle;
-
-  e_d = e - e_prev;
-
-  steering_diff_sum += e;
-  // steering_diff_buffer.push(e);
-  // if (steering_diff_buffer.size() > _K_STEERING_I_CYCLES) {
-  //   double e_old = steering_diff_buffer.front();
-  //   steering_diff_sum -= e_old;
-  //   steering_diff_buffer.pop();
-  // }
-  
-  if (steering_diff_sum > _STEERING_MAX_I) {
-    e_i = _STEERING_MAX_I;
-  }
-  else if (steering_diff_sum < -_STEERING_MAX_I) {
-    e_i = -_STEERING_MAX_I;
-  }
-  else {
-    e_i = steering_diff_sum;
-  }
-
-  if (fabs(e) < 10) {
-    target_steering_torque = _K_STEERING_P * e + _K_STEERING_I * e_i + (_K_STEERING_D / 2) * e_d;
-  }
-  else {
-    target_steering_torque = _K_STEERING_P * e + _K_STEERING_I * e_i + _K_STEERING_D * e_d;
-  }
-
-  cout << "e = " << e << endl;
-  cout << "e_i = " << e_i << endl;
-  cout << "e_d = " << e_d << endl;
-
-  e_prev = e;
-
-#else
-  
   double steering_diff = cmd_steering_angle - current_steering_angle; 
   steering_diff_sum += steering_diff;
 
@@ -158,9 +113,7 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
   }
   
   // use k_d instead of _K_STEERING_D.
-  target_steering_torque = steering_diff * _K_STEERING_P + steering_diff_sum * _K_STEERING_I + angvel_diff * k_d;
-
-#endif
+  double target_steering_torque = steering_diff * _K_STEERING_P + steering_diff_sum * _K_STEERING_I + angvel_diff * k_d;
 
   // clip
   if (target_steering_torque > _STEERING_MAX_TORQUE) {

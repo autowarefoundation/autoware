@@ -138,36 +138,36 @@ bool _accel(int target_accel, int gain, int current_accel, HevCnt *hev)
   // new cmd then is calculated directly from old cmd not relative
   // to actual state
 
-  int cmd_accel = current_accel;
+  int target_accel_stroke = current_accel;
 
   cout << "current_accel = " << current_accel << endl;
   cout << "target_accel = " << target_accel << endl;
   cout << "gain = " << gain << endl;
   cout << "old_accel = " << old_accel << endl;
-  cout << "cmd_accel = " << cmd_accel << endl;
+  cout << "target_accel_stroke = " << target_accel_stroke << endl;
 
   if (current_accel < target_accel) {
-    cmd_accel += gain;
-    if (cmd_accel > target_accel) { 
-      cmd_accel = target_accel;
+    target_accel_stroke += gain;
+    if (target_accel_stroke > target_accel) { 
+      target_accel_stroke = target_accel;
     }
   } 
 
   if (current_accel > target_accel) {
-    cmd_accel -= gain;
-    if (cmd_accel < target_accel) {
-      cmd_accel = target_accel;
+    target_accel_stroke -= gain;
+    if (target_accel_stroke < target_accel) {
+      target_accel_stroke = target_accel;
     }
   }
 
-  cout << "setting accel pedal to " << cmd_accel << endl;
+  cout << "setting accel pedal to " << target_accel_stroke << endl;
 
-  if (cmd_accel >= 0 && cmd_accel < ACCEL_PEDAL_MAX) {
-    cout << "SetDrvStroke(" << cmd_accel << ")" << endl;
-    hev->SetDrvStroke(cmd_accel);
+  if (target_accel_stroke >= 0 && target_accel_stroke < ACCEL_PEDAL_MAX) {
+    cout << "SetDrvStroke(" << target_accel_stroke << ")" << endl;
+    hev->SetDrvStroke(target_accel_stroke);
   }
 
-  old_accel = cmd_accel;
+  old_accel = target_accel_stroke;
 
   if (target_accel == current_accel){ 
     old_accel = 0;
@@ -187,34 +187,34 @@ bool _brake(int target_brake, int gain, int current_brake, HevCnt *hev)
   // new cmd then is calculated directly from old cmd not relative
   // to actual state
 
-  int cmd_brake = current_brake;
+  int target_brake_stroke = current_brake;
   if (old_brake != 0) 
-    cmd_brake = old_brake;
+    target_brake_stroke = old_brake;
 
   cout << "current_brake = " << current_brake << endl;
   cout << "target_brake = " << target_brake << endl;
   cout << "gain = " << gain << endl;
   cout << "old_brake = " << old_brake << endl;
-  cout << "cmd_brake = " << cmd_brake << endl;
+  cout << "target_brake_stroke = " << target_brake_stroke << endl;
 
   if (current_brake < target_brake) {
-    cmd_brake += gain;
-    if (cmd_brake > target_brake) { 
-      cmd_brake = target_brake;
+    target_brake_stroke += gain;
+    if (target_brake_stroke > target_brake) { 
+      target_brake_stroke = target_brake;
     }
   } 
 
   if (current_brake > target_brake) {
-    cmd_brake -= gain;
-    if (cmd_brake < target_brake) {
-      cmd_brake = target_brake;
+    target_brake_stroke -= gain;
+    if (target_brake_stroke < target_brake) {
+      target_brake_stroke = target_brake;
     }
   }
   
-  cout << "SetBrakeStroke(" << cmd_brake << ")" << endl;
-  hev->SetBrakeStroke(cmd_brake);
+  cout << "SetBrakeStroke(" << target_brake_stroke << ")" << endl;
+  hev->SetBrakeStroke(target_brake_stroke);
 
-  old_brake = cmd_brake;
+  old_brake = target_brake_stroke;
 
   if (target_brake == current_brake){ 
     old_brake = -1;
@@ -275,14 +275,15 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
   double e_d;
 
   // acclerate by releasing the brake pedal if pressed.
-  if (_hev_state.brkInf.pressed == true) {
+  //if (_hev_state.brkInf.pressed == true) {
+  if (_hev_state.brkInf.actualPedalStr > 0) {
     cout << "brake pressed, release" << endl;
     int gain = 500;
-    int cmd_brake = CURRENT_BRAKE_STROKE() - gain;
-    if (cmd_brake < 0)
-      cmd_brake = 0;
-    cout << "SetBrakeStroke(" << cmd_brake << ")" << endl;
-    hev->SetBrakeStroke(cmd_brake);    
+    int target_brake_stroke = CURRENT_BRAKE_STROKE() - gain;
+    if (target_brake_stroke < 0)
+      target_brake_stroke = 0;
+    cout << "SetBrakeStroke(" << target_brake_stroke << ")" << endl;
+    hev->SetBrakeStroke(target_brake_stroke);    
 
     /* reset PID variables. */
     e_prev = 0;
@@ -320,18 +321,11 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     }
 
     target_accel_stroke = _K_ACCEL_P * e + _K_ACCEL_I * e_i + _K_ACCEL_D * e_d;
-
-    // clip
     if (target_accel_stroke > ACCEL_PEDAL_MAX) {
       target_accel_stroke = ACCEL_PEDAL_MAX;
     }
     else if (target_accel_stroke < 0) {
       target_accel_stroke = 0;
-    }
-
-    // further clip.
-    if (target_accel_stroke - CURRENT_ACCEL_STROKE() > _ACCEL_STROKE_DELTA_MAX){
-      target_accel_stroke = CURRENT_ACCEL_STROKE() + _ACCEL_STROKE_DELTA_MAX;
     }
 
     cout << "e = " << e << endl;
@@ -340,7 +334,9 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     cout << "SetDrvStroke(" << target_accel_stroke << ")" << endl;
     hev->SetDrvStroke(target_accel_stroke);
 
-#if 1 /* log */
+    e_prev = e;
+
+#if 0 /* log */
       ofstream ofs("/tmp/drv_accel.log", ios::app);
       ofs << cmd_velocity << " " 
       << current_velocity << " " 
@@ -350,8 +346,6 @@ void _accel_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
       << target_accel_stroke << " " 
       << endl;
 #endif
-
-    e_prev = e;
   }
 }
 
@@ -446,8 +440,6 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     }
 
     target_brake_stroke = _K_BRAKE_P * e + _K_BRAKE_I * e_i + _K_BRAKE_D * e_d;
-
-    // clip.
     if (target_brake_stroke > HEV_MAX_BRAKE) {
       target_brake_stroke = HEV_MAX_BRAKE;
     }
@@ -455,8 +447,7 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
       target_brake_stroke = 0;
     }
 
-    // further clip.
-    if (target_brake_stroke - CURRENT_BRAKE_STROKE() > _BRAKE_STROKE_DELTA_MAX){
+    if (target_brake_stroke - CURRENT_BRAKE_STROKE() > _BRAKE_STROKE_DELTA_MAX) {
       target_brake_stroke = CURRENT_BRAKE_STROKE() + _BRAKE_STROKE_DELTA_MAX;
     }
 
@@ -467,6 +458,17 @@ void _brake_stroke_pid_control(double current_velocity, double cmd_velocity, Hev
     hev->SetBrakeStroke(target_brake_stroke);
 
     e_prev = e;
+
+#if 1 /* log */
+      ofstream ofs("/tmp/drv_brake.log", ios::app);
+      ofs << cmd_velocity << " " 
+      << current_velocity << " " 
+      << e << " " 
+      << e_i << " " 
+      << e_d << " " 
+      << target_brake_stroke << " " 
+      << endl;
+#endif
   }
 }
 
@@ -488,13 +490,7 @@ void _stopping_control(double current_velocity,double cmd_velocity, HevCnt *hev)
   }
   else {
     // one second is approximately how fast full brakes applied in sharp stop
-    int high_brake = HEV_MAX_BRAKE-500;
     int brake_target = HEV_MED_BRAKE;
-    if (current_velocity > 16.0) {
-      brake_target = HEV_MED_BRAKE + (int)((current_velocity - KmhToMs(16.0)/50.0)*((double)(high_brake-HEV_MED_BRAKE)));
-      if (brake_target > high_brake)
-        brake_target = high_brake;
-    }
     int gain = (int)(((double)brake_target)/0.5*cycle_time);
     _brake(brake_target, gain, CURRENT_BRAKE_STROKE(), hev);
   }
@@ -552,7 +548,6 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     cout << "unknown: current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << endl;
   }
-
 }
 
 void MainWindow::VelocityControl(double current_velocity, double cmd_velocity)

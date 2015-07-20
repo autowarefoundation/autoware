@@ -228,12 +228,7 @@ void Control(vel_data_t vel, void* p)
     cmd_velocity = 50;
   if (cmd_velocity < 0)
     cmd_velocity = 0;
-
-  std::ifstream ifs2("/tmp/steering");
-  std::string s2;
-  getline(ifs2, s2);
-  int str_debug = atoi(s2.c_str());
-  cout << "str_debug = " << str_debug << " deg" << endl;
+  static int str_debug = 0;
   cmd_steering_angle = str_debug;
 #endif
 
@@ -242,9 +237,34 @@ void Control(vel_data_t vel, void* p)
   cout << "Command: " << "vel = " << cmd_velocity 
        << ", str = " << cmd_steering_angle << endl; 
 
+  for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
+    //////////////////////////////////////////////////////
+    // Accel and Brake
+    //////////////////////////////////////////////////////
+    
+    if (cmd_velocity < STROKE_SPEED_LIMIT) {
+      main->StrokeControl(current_velocity, cmd_velocity);
+    }
+    else { /* HEV velocity control */
+      //main->VelocityControl(current_velocity, cmd_velocity);
+    }
+    
+    //////////////////////////////////////////////////////
+    // Steering
+    //////////////////////////////////////////////////////
+    
+    if (cmd_velocity != 0 && current_velocity != 0) {
+      main->SteeringControl(current_steering_angle, cmd_steering_angle);
+    }
+
+    usleep(STEERING_INTERNAL_PERIOD * 1000);  
+    Update(main);
+    current_velocity = _hev_state.drvInf.veloc; // km/h
+    current_steering_angle = _hev_state.strInf.angle; // degree
+  }
 
   //////////////////////////////////////////////////////
-  // Accel and Brake
+  // remaining period.
   //////////////////////////////////////////////////////
 
   if (cmd_velocity < STROKE_SPEED_LIMIT) {
@@ -254,17 +274,7 @@ void Control(vel_data_t vel, void* p)
     main->VelocityControl(current_velocity, cmd_velocity);
   }
 
-  //////////////////////////////////////////////////////
-  // Steering
-  //////////////////////////////////////////////////////
-
-  if (current_velocity > 0) {
-    for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
-      main->SteeringControl(current_steering_angle, cmd_steering_angle);
-      usleep(STEERING_INTERNAL_PERIOD * 1000);  
-      Update(main);
-      current_steering_angle = _hev_state.strInf.angle; // degree
-    }
+  if (cmd_velocity != 0 && current_velocity != 0) {
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
   }
 
