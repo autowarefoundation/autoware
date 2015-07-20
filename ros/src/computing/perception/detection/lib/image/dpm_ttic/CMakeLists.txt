@@ -28,8 +28,8 @@ INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
   "/usr/local/cuda/include"
   "common"
-  "cpu_implementation"
-  "gpu_implementation"
+  "cpu"
+  "gpu"
 )
 
 IF("${ARCHITECTURE}" MATCHES "^arm")
@@ -37,8 +37,8 @@ LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
 ENDIF()
 
 FILE(GLOB DPM_TTIC_COMMON_IMPL_SOURCES "common/*.cpp")
-FILE(GLOB DPM_TTIC_CPU_IMPL_SOURCES "cpu_implementation/*.cpp")
-FILE(GLOB DPM_TTIC_GPU_IMPL_SOURCES "gpu_implementation/*.cpp")
+FILE(GLOB DPM_TTIC_CPU_IMPL_SOURCES "cpu/*.cpp")
+FILE(GLOB DPM_TTIC_GPU_IMPL_SOURCES "gpu/*.cpp")
 
 ## Declare a cpp library
 ADD_LIBRARY(libdpm_ttic
@@ -85,15 +85,15 @@ ELSE()
 SET(CUDA_ARCH "sm_52")
 ENDIF()
 
-SET(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/gpu_implementation")
+SET(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/gpu")
 ADD_CUSTOM_COMMAND(
   OUTPUT GPU_function.cubin
   COMMAND
   ${CUDA_COMPILER} "-arch=${CUDA_ARCH}"
   "-o" "${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin"
   "-cubin" "-Xptxas" "-v" "--maxrregcount" "32" "-I${CUDA_FILE_PATH}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/gpu_implementation/GPU_function.cu"
-  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gpu_implementation/GPU_function.cu"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gpu/GPU_function.cu"
+  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gpu/GPU_function.cu"
 )
 
 ADD_CUSTOM_TARGET(cuda_binary DEPENDS GPU_function.cubin)
