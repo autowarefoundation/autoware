@@ -79,24 +79,6 @@ void MainWindow::SetStrMode(int mode)
   }
 }
 
-// for torque control
-#define _STEERING_MAX_ANGVELSUM 1000
-#define _K_STEERING_TORQUE 10
-#define _K_STEERING_TORQUE_I 0.5
-#define _STEERING_MAX_TORQUE 2000
-#define _STEERING_MAX_SUM 100 //deg*0.1s for I control
-
-// PID params (HV Silver)
-#define _K_STEERING_P 8//30//130  
-#define _K_STEERING_I 4//13//13
-#define _K_STEERING_D 2//8//10//12
-#define _K_STEERING_I_CYCLES 100
-#define _STEERING_MAX_I 100 //deg*0.1s for I control
-#define _STEERING_TORQUE_DELTA_MAX 1000
-
-// vehicle params
-#define _STEERING_ANGLE_ERROR -12 // deg
-
 void _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle, HevCnt* hev)
 {
   current_steering_angle -= _STEERING_ANGLE_ERROR;
