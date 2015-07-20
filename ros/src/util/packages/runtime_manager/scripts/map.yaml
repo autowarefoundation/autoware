@@ -1,0 +1,124 @@
+selector :
+  point_cloud :
+    sel   : '[ self.checkbox_auto_update.GetValue() ]'
+    False : points_map_loader
+    True  : points_map_loader_update
+
+buttons :
+  point_cloud :
+    run   : echo 'point cloud' # event handler is OnSelector()
+    param : point_cloud
+
+  points_map_loader :
+    run   : rosrun map_file points_map_loader
+    param : points_map_loader
+    gui   :
+      stdout_func : self.point_cloud_progress_bar
+      ext_toggle_enables :
+      - self.checkbox_auto_update
+      - self.choice_scene_num
+      - self.panel_area_lists
+      - self.label_point_cloud_bar
+      stat_topic : [ pmap ]
+      path_pcd :
+        func    : self.tc_point_cloud.GetValue()
+
+  points_map_loader_update :
+    run   : rosrun map_file points_map_loader
+    param : points_map_loader_update
+    gui   :
+      ext_toggle_enables :
+      - self.checkbox_auto_update
+      - self.choice_scene_num
+      - self.panel_area_lists
+      stat_topic : [ pmap ]
+      scene_num :
+        func    : self.choice_scene_num.GetStringSelection()
+        restore : self.choice_scene_num.SetStringSelection
+      path_area_list :
+        func    : self.tc_area_list.GetValue()
+      path_pcd :
+        func    : self.tc_point_cloud.GetValue()
+
+  vector_map :
+    run   : rosrun map_file vector_map_loader
+    param : vector_map_loader
+    gui   :
+      stat_topic : [ vmap ]
+
+  area_lists :
+    run   : echo 'area lists'
+    param : area_lists
+
+  tf :
+    run    : roslaunch
+    param  : tf
+
+
+params :
+  - name  : point_cloud
+    vars  :
+    - name      : path_pcd
+      kind      : path
+      path_type : multi
+      v         : ''
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+
+  - name  : points_map_loader
+    vars  :
+    - name  : scene_num
+      kind  : hide
+      v     : noupdate
+      cmd_param :
+        delim     : ''
+    - name  : path_pcd
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+
+  - name  : points_map_loader_update
+    vars  :
+    - name  : scene_num
+      kind  : menu
+      cmd_param :
+        delim     : ''
+    - name  : path_area_list
+      kind  : path
+      cmd_param :
+        delim     : ''
+        must      : True
+    - name  : path_pcd
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+
+  - name  : vector_map_loader
+    vars  :
+    - name      : path_vec
+      kind      : path
+      path_type : multi
+      v         : ''
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+        must      : True
+
+  - name  : area_lists
+    vars  :
+    - name  : path_area_list
+      kind  : path
+      cmd_param :
+        delim     : ''
+    
+  - name  : tf
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        delim     : ''
+        default   : ~/.autoware/data/tf/tf.launch

@@ -68,8 +68,6 @@
 #include <fstream>
 //#include <iostream>
 
-#include "../autoware_socket/autoware_socket.h"
-
 namespace Ui {
 class MainWindow;
 }

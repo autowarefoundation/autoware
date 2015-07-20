@@ -70,6 +70,7 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 
 	std::vector<int> corner_point_array;
 	std::vector<int> car_type_array;
+	std::vector<float> car_score_array;
 
 	for (int i = 0; i < static_cast<int>(car_num); ++i) {
 		car_type_array.push_back(cars[i].class_id);
@@ -78,12 +79,15 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 		corner_point_array.push_back(cars[i].rect.y);
 		corner_point_array.push_back(cars[i].rect.width);
 		corner_point_array.push_back(cars[i].rect.height);
+
+		car_score_array.push_back(cars[i].score);
 	}
 
 	dpm::ImageObjects message;
 	message.car_num = car_num;
 	message.corner_point = corner_point_array;
 	message.car_type = car_type_array;
+	message.score = car_score_array;
 
 	message.header = image.header;
 	message.header.stamp = image.header.stamp;

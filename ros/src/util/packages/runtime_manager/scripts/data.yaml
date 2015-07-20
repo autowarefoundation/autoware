@@ -32,16 +32,76 @@ subs :
       cmd   : rosrun pos_db pos_downloader
       param : pos_db
       gui   :
-        to_lon :
-          border : 20
-          flags  : [ right ]
-        map_matching :
-          flags : [ nl ]
-        download_rate_ms :
-          border: 20
-          flags : [ right ]
+        username :
+          prop  : 1
+          border: 4
+          flags : [ all ]
+        now :
+          border: 4
+          flags : [ all, hide ]
+        show_my_page :
+          border: 4
+          flags : [ all, nl ]
+        db_host_name :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
+        db_port :
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshpubkey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshprivatekey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshport :
+          border: 4
+          flags : [ all, no_category ]
+        sshtunnelhost :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
+
     - name  : pos_upload
       cmd   : rosrun pos_db pos_uploader
+      param : pos_db
+      share_val : pos_download
+      gui   :
+        username :
+          prop  : 1
+          border: 4
+          flags : [ all ]
+        now :
+          border: 4
+          flags : [ all ]
+        show_my_page :
+          border: 4
+          flags : [ all, nl, hide ]
+        db_host_name :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
+        db_port :
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshpubkey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshprivatekey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshport :
+          border: 4
+          flags : [ all, no_category ]
+        sshtunnelhost :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
 
   - name : Sensors
     subs :
@@ -100,39 +160,56 @@ params :
 
   - name  : pos_db
     vars  :
-    - name  : from_lat
-      label : 'Area:'
-      v     : 0.0
+    - name      : username
+      label     : 'User Name:'
+      kind      : str
+      v         : ''
       cmd_param :
-        delim     : ''
-    - name  : from_lon
-      label : ''
-      v     : 0.0
+        delim       : ''
+        must        : True
+    - name      : now
+      label     : now
+      kind      : checkbox
+      v         : False
       cmd_param :
-        delim     : ''
-    - name  : to_lat
-      label : ' - '
-      v     : 0.0
+        only_enable : True
+        dash        : ''
+    - name      : show_my_page
+      label     : show my page
+      kind      : checkbox
+      v         : False
       cmd_param :
-        delim     : ''
-    - name  : to_lon
-      label : ''
-      v     : 0.0
-      cmd_param :
-        delim     : ''
-    - name  : map_matching
-      kind  : checkbox
-      label : Map Matching
-      v     : True
-      cmd_param :
-        dash      : '--'
-        delim     : '='
-    - name  : download_rate_ms
-      label : Download Rate (ms)
-      v     : 1000
-      cmd_param :
-        dash      : '--'
-        delim     : '='
+        only_enable : True
+        dash        : ''
+
+    - name      : db_host_name
+      label     : DB Server Name
+      kind      : str
+      v         : db3.ertl.jp
+      rosparam  : /pos_db/db_host_name
+    - name      : db_port
+      label     : DB Port
+      v         : 5678
+      rosparam  : /pos_db/db_port
+    - name      : sshpubkey
+      label     : SSH Public Key
+      kind      : str
+      v         : /tmp/autoware/ssh/id_rsa.pub
+      rosparam  : /pos_db/sshpubkey
+    - name      : sshprivatekey
+      label     : SSH Private Key
+      kind      : str
+      v         : /tmp/autoware/ssh/id_rsa
+      rosparam  : /pos_db/sshprivatekey
+    - name      : sshport
+      label     : SSH Port
+      v         : 22
+      rosparam  : /pos_db/ssh_port
+    - name      : sshtunnelhost
+      label     : SSH Tunnel Host
+      kind      : str
+      v         : localhost
+      rosparam  : /pos_db/sshtunnelhost
 
   - name  : other
     vars  :

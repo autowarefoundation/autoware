@@ -11,8 +11,8 @@
 <arg name="file" value="/home/pdsljp/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
 </include>
 
-<!-- car_dpm_gpu -->
-<node pkg="car_detector" type="car_dpm_gpu" name="car_dpm_gpu"/>
+<!-- dpm_ttic -->
+<node pkg="cv_tracker" type="dpm_ttic" name="dpm_ttic"/>
 
 <!-- car_kf -->
 <node pkg="car_detector" type="car_kf" name="car_kf"/>
@@ -22,9 +22,6 @@
 
 <!-- car_locate -->
 <include file="$(find car_detector)/launch/car_locate.launch"/>
-
-<!-- pedestrian_dpm_gpu -->
-<node pkg="pedestrian_detector" type="pedestrian_dpm_gpu" name="pedestrian_dpm_gpu"/>
 
 <!-- pedestrian_kf -->
 <node pkg="pedestrian_detector" type="pedestrian_kf" name="pedestrian_kf"/>

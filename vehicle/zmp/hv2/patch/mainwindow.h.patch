@@ -1,0 +1,49 @@
+--- a/mainwindow.h	2015-06-09 15:44:52.965202266 +0900
++++ b/mainwindow.h	2015-07-17 10:59:42.092654461 +0900
+@@ -50,6 +50,35 @@ public:
+     bool GameInit();
+     bool GameStart();
+ 
++    /*======Autoware Socket=================*/ 
++
++    // actuation
++    void SteeringControl(double current_steering_angle, double cmd_steering_angle);
++    void StrokeControl(double current_velocity, double cmd_velocity);
++    void VelocityControl(double current_velocity, double cmd_velocity);
++
++    // cmd
++    static void* CMDGetterEntry(void *a);
++
++    // mode
++    static void* ModeSetterEntry(void *a);
++    void SetStrMode(int mode);
++    void SetDrvMode(int mode);
++
++    // gear
++    static void* GearSetterEntry(void *a);
++    void SetGear(int gear);
++
++    // can
++    void SendCAN(void);
++
++    // common
++    bool ConfigSocket(void);
++    void UpdateState(void);
++    void ClearCntDiag(void);
++
++    /*====================================*/
++
+ protected:
+     void changeEvent(QEvent *);
+ 
+@@ -267,6 +296,10 @@ private:
+ 
+     int _drvTargetVeloc;
+     int _drvTargetStroke;
++
++   /*======Autoware Socket=================*/ 
++    pthread_t _cmdgetter;
++    /*====================================*/
+ };
+ 
+ #endif // MAINWINDOW_H

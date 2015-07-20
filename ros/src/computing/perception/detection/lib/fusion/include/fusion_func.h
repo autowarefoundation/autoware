@@ -41,6 +41,7 @@
 #include <dpm/ImageObjects.h>
 #include <scan2image/ScanImage.h>
 #include <points2image/PointsImage.h>
+#include <kf/KFObjects.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -84,7 +85,7 @@ extern std::vector<float> getMaxHeights();
 extern void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp);
 
 extern void calcDistance();
-extern void setDetectedObjects(const dpm::ImageObjects& image_objects);
+extern void setDetectedObjects(const kf::KFObjects& image_objects);
 extern void setScanImage(const scan2image::ScanImage& scan_image);
 extern void setPointsImage(const points2image::PointsImage& points_image);
 extern int getObjectsNum();

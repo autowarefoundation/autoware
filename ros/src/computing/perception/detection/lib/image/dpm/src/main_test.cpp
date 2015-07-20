@@ -81,6 +81,7 @@ std::vector<DPMObject> dpm_detect_objects(const cv::Mat& image,							//opencv i
 	{
 		results[i].rect = detections[i].rect;
 		results[i].class_id = detections[i].classID;
+		results[i].score = detections[i].score;
 	}
 
 	return results;

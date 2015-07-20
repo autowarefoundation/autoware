@@ -82,9 +82,9 @@ int main(int argc, char *argv[])
 	fs[CAMERAEXTRINSICMAT] >> cameraExtrinsicMat;
 	fs[CAMERAMAT] >> cameraMat;
 	fs[DISTCOEFF] >> distCoeff;
-	//fs[IMAGESIZE] >> imageSize;
-	imageSize.width = IMAGE_WIDTH;
-	imageSize.height = IMAGE_HEIGHT;
+	fs[IMAGESIZE] >> imageSize;
+	//imageSize.width = IMAGE_WIDTH;
+	//imageSize.height = IMAGE_HEIGHT;
 
 	pub = n.advertise<points2image::PointsImage>("points_image", 10);
 	cpub = n.advertise<points2image::CameraExtrinsic>("threeD_calibration", 1);

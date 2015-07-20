@@ -40,12 +40,15 @@
 #include <runtime_manager/ConfigCarKf.h>
 #include <dpm/ImageObjects.h>
 
+#include <kf/KFObjects.h>
+
 //TRACKING STUFF
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 
 #include <iostream>
 #include <stdio.h>
@@ -60,12 +63,17 @@ using namespace cv;
 
 ros::Publisher image_objects;//ROS
 
-int 		DEFAULT_LIFESPAN = 4; //LIFESPAN of objects before stop being tracked, in frames
-int 		INITIAL_LIFESPAN = 3; //LIFESPAN of objects before stop being tracked, in frames
-float 		NOISE_COV = 1;
-float 		MEAS_NOISE_COV = 25;
-float 		ERROR_ESTIMATE_COV = 1000000;
-float 		OVERLAPPING_PERC = 0.0;
+static int 			DEFAULT_LIFESPAN; //LIFESPAN of objects before stop being tracked, in frames
+static int	 		INITIAL_LIFESPAN; //LIFESPAN of objects before stop being tracked, in frames
+static int			ORB_NUM_FEATURES;
+static unsigned int	ORB_MIN_MATCHES;
+static float		ORB_KNN_RATIO;
+static float 		NOISE_COV;
+static float 		MEAS_NOISE_COV;
+static float 		ERROR_ESTIMATE_COV;
+static float 		OVERLAPPING_PERC;
+static bool 		SHOW_PREDICTIONS;
+static bool 		USE_ORB;
 
 struct kstate
 {
@@ -73,11 +81,14 @@ struct kstate
 	Rect			pos;//position of the object centerx, centery, width, height
 	float			score;//DPM score
 	bool			active;//if too old (lifespan) don't use
-	int				id;//id of this tracked object
+	unsigned int	id;//id of this tracked object
 	Mat				image;//image containing the detected and tracked object
 	int				lifespan;//remaining lifespan before deprecate
 	LatentSvmDetector::ObjectDetection obj;//currently not used
 	Scalar			color;
+	int				real_data;
+	//vector<KeyPoint> orbKeypoints;
+	//Mat				orbDescriptors;
 };
 
 //tracking required code
@@ -90,6 +101,123 @@ bool _ready =false;
 
 long int _counter = 0;
 //
+
+void getRectFromPoints(vector< Point2f > corners, Rect& outBoundingBox)
+{
+
+	int min_x=0, min_y=0, max_x=0, max_y=0;
+	for (unsigned int i=0; i<corners.size(); i++)
+	{
+		if (corners[i].x > 0)
+		{
+			if (corners[i].x < min_x)
+				min_x = corners[i].x;
+			if (corners[i].x>max_x)
+				max_x = corners[i].x;
+		}
+		if (corners[i].y > 0)
+		{
+			if (corners[i].y < min_y)
+				min_y = corners[i].y;
+			if (corners[i].y > max_y)
+				max_y = corners[i].y;
+		}
+	}
+	outBoundingBox.x 		= min_x;
+	outBoundingBox.y 		= min_y;
+	outBoundingBox.width 	= max_x - min_x;
+	outBoundingBox.height 	= max_y - min_y;
+
+}
+
+bool orbMatch(Mat& inImageScene, Mat& inImageObj, Rect& outBoundingBox, unsigned int inMinMatches=2, float inKnnRatio=0.7)
+{
+	//vector of keypoints
+	vector< cv::KeyPoint > keypointsO;
+	vector< cv::KeyPoint > keypointsS;
+
+	Mat descriptors_object, descriptors_scene;
+
+	Mat outImg;
+	inImageScene.copyTo(outImg);
+
+	//-- Step 1: Extract keypoints
+	OrbFeatureDetector orb(ORB_NUM_FEATURES);
+	orb.detect(inImageScene, keypointsS);
+	if (keypointsS.size() < ORB_MIN_MATCHES)
+	{
+		//cout << "Not enough keypoints S, object not found>" << keypointsS.size() << endl;
+		return false;
+	}
+	orb.detect(inImageObj, keypointsO);
+	if (keypointsO.size() < ORB_MIN_MATCHES)
+	{
+		//cout << "Not enough keypoints O, object not found>" << keypointsO.size() << endl;
+		return false;
+	}
+
+	//Calculate descriptors (feature vectors)
+	OrbDescriptorExtractor extractor;
+	extractor.compute(inImageScene, keypointsS, descriptors_scene);
+	extractor.compute(inImageObj, keypointsO, descriptors_object);
+
+	//Matching descriptor vectors using FLANN matcher
+	BFMatcher matcher;
+	//descriptors_scene.size(), keypointsO.size(), keypointsS.size();
+	std::vector< vector< DMatch >  > matches;
+	matcher.knnMatch(descriptors_object, descriptors_scene, matches, 2);
+	vector< DMatch > good_matches;
+	good_matches.reserve(matches.size());
+
+	for (size_t i = 0; i < matches.size(); ++i)
+	{
+		if (matches[i].size() < 3)
+			continue;
+
+		const DMatch &m1 = matches[i][0];
+		const DMatch &m2 = matches[i][1];
+
+		if (m1.distance <= inKnnRatio * m2.distance)
+			good_matches.push_back(m1);
+	}
+
+	if ((good_matches.size() >= inMinMatches))
+	{
+		std::vector< Point2f > obj;
+		std::vector< Point2f > scene;
+
+		for (unsigned int i = 0; i < good_matches.size(); i++)
+		{
+			// Get the keypoints from the good matches
+			obj.push_back(keypointsO[good_matches[i].queryIdx].pt);
+			scene.push_back(keypointsS[good_matches[i].trainIdx].pt);
+		}
+
+		Mat H = findHomography(obj, scene, CV_RANSAC);
+
+		// Get the corners from the image_1 ( the object to be "detected" )
+		std::vector< Point2f > obj_corners(4);
+		obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(inImageObj.cols, 0);
+		obj_corners[2] = cvPoint(inImageObj.cols, inImageObj.rows); obj_corners[3] = cvPoint(0, inImageObj.rows);
+		std::vector< Point2f > scene_corners(4);
+
+		perspectiveTransform(obj_corners, scene_corners, H);
+
+		// Draw lines between the corners (the mapped object in the scene - image_2 )
+		line(outImg, scene_corners[0], scene_corners[1], Scalar(255, 0, 0), 2); //TOP line
+		line(outImg, scene_corners[1], scene_corners[2], Scalar(255, 0, 0), 2);
+		line(outImg, scene_corners[2], scene_corners[3], Scalar(255, 0, 0), 2);
+		line(outImg, scene_corners[3], scene_corners[0], Scalar(255, 0, 0), 2);
+
+		//imshow("Scene", outImg);
+		//imshow("Obj", inImageObj);
+		//cvWaitKey(5);
+
+		return true;
+	}
+
+	return false;
+}
 
 ///Returns true if an im1 is contained in im2 or viceversa
 bool crossCorr(Mat im1, Mat im2)
@@ -180,11 +308,12 @@ void posScaleToBbox(vector<kstate> kstates, vector<kstate>& trackedDetections)
 			tmp.color = kstates[i].color;
 			tmp.id = kstates[i].id;
 			tmp.score = kstates[i].score;
+			tmp.lifespan = kstates[i].lifespan;
+			tmp.real_data = kstates[i].real_data;
 
 			//fill in also LAtentSvm object
 			tmp.obj.rect = tmp.pos;
 			tmp.obj.score = tmp.score;
-
 
 			if (tmp.pos.x < 0)
 				tmp.pos.x = 0;
@@ -196,6 +325,24 @@ void posScaleToBbox(vector<kstate> kstates, vector<kstate>& trackedDetections)
 	}
 }
 
+int getAvailableIndex(vector<kstate>& kstates)
+{
+	unsigned int cur_size = kstates.size();
+	vector<bool> ids;
+
+	ids.resize(cur_size, false);
+
+	for (unsigned int i=0; i<cur_size;i++)
+	{
+		ids[kstates[i].id]= true;
+	}
+	for (unsigned int i=0; i<cur_size;i++)
+	{
+		if(ids[i] == false)
+			return i;
+	}
+	return cur_size;
+}
 
 void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kstates, LatentSvmDetector::ObjectDetection detection, Mat& image, vector<Scalar> colors)
 {
@@ -232,17 +379,11 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 	KF.statePost.at<float>(1) = object.rect.y;
 	KF.statePost.at<float>(2) = object.rect.width;//XY Only
 	KF.statePost.at<float>(3) = object.rect.height;//XY Only
-	//KF.measurementMatrix = measurement;
+
 	cv::setIdentity(KF.measurementMatrix);
 	cv::setIdentity(KF.processNoiseCov, Scalar::all(NOISE_COV));//1e-4
 	cv::setIdentity(KF.measurementNoiseCov, Scalar::all(MEAS_NOISE_COV));//1e-3
 	cv::setIdentity(KF.errorCovPost, Scalar::all(ERROR_ESTIMATE_COV));//100
-	//setIdentity(KF.processNoiseCov, Scalar::all(1e-4));
-	//setIdentity(KF.measurementNoiseCov, Scalar::all(1e-3));
-	//setIdentity(KF.errorCovPost, Scalar::all(100));
-
-	//KF.correct(measurement);
-	//KF.correct(measurement);
 
 	//save data to kstate
 	new_state.active = true;
@@ -254,8 +395,11 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 	new_state.lifespan = INITIAL_LIFESPAN;//start only with 1
 	new_state.pos = object.rect;
 	new_state.score = object.score;
-	new_state.id = (kstates.size());
+	new_state.id = getAvailableIndex(kstates);
 	new_state.color = colors[new_state.id];
+	new_state.real_data = 1;
+
+	//extractOrbFeatures(new_state.image, new_state.orbKeypoints, new_state.orbDescriptors, ORB_NUM_FEATURES);
 
 	kstates.push_back(new_state);
 
@@ -267,6 +411,28 @@ bool isInRemoved(vector<unsigned int> removedIndices, unsigned int index)
 	for (unsigned int i=0; i< removedIndices.size(); i++)
 	{
 		if (index == removedIndices[i])
+			return true;
+	}
+	return false;
+}
+
+void removeUnusedObjects(vector<kstate>& states)
+{
+	vector<kstate>::iterator it;
+	for(it = states.begin(); it != states.end();)
+	{
+		if (!(it->active))
+			it = states.erase(it);
+		else
+			it++;
+	}
+}
+
+bool alreadyMatched(int check_index, vector<int>& matched_indices)
+{
+	for (unsigned int i = 0; i < matched_indices.size(); i++)
+	{
+		if (matched_indices[i] == check_index)
 			return true;
 	}
 	return false;
@@ -289,6 +455,8 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 
 	//Convert Bounding box coordinates from (x1,y1,w,h) to (BoxCenterX, BoxCenterY, width, height)
 	objects = detections;//bboxToPosScale(detections);
+
+	vector<int> already_matched;
 	//compare detections from this frame with tracked objects
 	for (unsigned int j = 0; j < detections.size(); j++)
 	{
@@ -297,33 +465,50 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			//compare only to active tracked objects(not too old)
 			if (kstates[i].active)
 			{
-				//try to match with previous frame
-				Rect roi_20; //extend the roi 20%
-				//roi_20.x = (detections[j].rect.x - detections[j].rect.width*.1)<0 ? 0 : detections[j].rect.x - detections[j].rect.width*.1;
-				//roi_20.y = (detections[j].rect.y - detections[j].rect.height*.1)<0 ? 0 : detections[j].rect.y - detections[j].rect.height*.1;
-				//roi_20.width = (roi_20.x + detections[j].rect.width*1.2 > image.cols) ? image.cols - roi_20.x : detections[j].rect.width*1.2;
-				//roi_20.height = (roi_20.y + detections[j].rect.height*1.2 > image.rows) ? image.rows - roi_20.y : detections[j].rect.height*1.2;
+				//extend the roi 20%
+				int new_x = (detections[j].rect.x - detections[j].rect.width*.1);
+				int new_y = (detections[j].rect.y - detections[j].rect.height*.1);
 
-				Rect roi(detections[j].rect);
+				if (new_x < 0)			new_x = 0;
+				if (new_x > image.cols)	new_x = image.cols;
+				if (new_y < 0)			new_y = 0;
+				if (new_y > image.rows) new_y = image.rows;
 
+				int new_width = detections[j].rect.width*1.2;
+				int new_height = detections[j].rect.height*1.2;
+
+				if (new_width  + new_x > image.cols)	new_width  = image.cols - new_x;
+				if (new_height + new_y > image.rows)	new_height = image.rows - new_y;
+
+				Rect roi_20(new_x, new_y, new_width, new_height);
+				//Rect roi(detections[j].rect);
+				Rect roi(roi_20);
 				Mat currentObjectROI = image(roi).clone();//Crop image and obtain only object (ROI)
 
-				Rect intersect = detections[j].rect & kstates[i].pos;//check overlapping
+				//Rect intersect = detections[j].rect & kstates[i].pos;//check overlapping
 
-				if (intersect.width > (kstates[i].image.cols * OVERLAPPING_PERC)//overlapping percentage
-					&& crossCorr(kstates[i].image, currentObjectROI)
-					)
+				Rect boundingbox;
+				bool matched = false;
+				//try to match with previous frame
+				if ( !USE_ORB )
+					matched = ( !alreadyMatched(j, already_matched) && crossCorr(kstates[i].image, currentObjectROI));
+				else
+					matched = (!alreadyMatched(j, already_matched) && orbMatch(currentObjectROI, kstates[i].image, boundingbox, ORB_MIN_MATCHES, ORB_KNN_RATIO));
+
+				if(matched)
 				{
 					correct_indices[i] = true;//if ROI on this frame is matched to a previous object, correct
 					correct_detection_indices[i] = j;//store the index of the detection corresponding to matched kstate
 					add_as_new_indices[j] = false;//if matched do not add as new
 					//kstates[i].image = currentObjectROI;//update image with current frame data
 					kstates[i].score = detections[j].score;
+					already_matched.push_back(j);
 				}//crossCorr
 
 			}//kstates[i].active
 		}//for (int i = 0; i < kstates.size(); i++)
 	}//for (int j = 0; j < detections.size(); j++)
+
 
 	//do prediction and correction for the marked states
 	for (unsigned int i = 0; i < kstates.size(); i++)
@@ -337,10 +522,48 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			cv::setIdentity(kstates[i].KF.errorCovPost, Scalar::all(ERROR_ESTIMATE_COV));//100
 
 			Mat prediction = kstates[i].KF.predict();
+			Mat correction;
 			kstates[i].pos.x = prediction.at<float>(0);
 			kstates[i].pos.y = prediction.at<float>(1);
 			kstates[i].pos.width = prediction.at<float>(2);
 			kstates[i].pos.height = prediction.at<float>(3);
+			kstates[i].real_data = 0;
+
+			//now do respective corrections on KFs (updates)
+			if (correct_indices[i])
+			{
+				//a match was found hence update KF measurement
+				int j = correct_detection_indices[i];//obtain the index of the detection
+
+				//Mat_<float> measurement = (Mat_<float>(2, 1) << objects[j].rect.x, //XY ONLY
+				//												objects[j].rect.y);
+				Mat_<float> measurement = (Mat_<float>(4, 1) << objects[j].rect.x,
+					objects[j].rect.y,
+					objects[j].rect.width,
+					objects[j].rect.height);
+
+				correction = kstates[i].KF.correct(measurement);//UPDATE KF with new info
+				kstates[i].lifespan = DEFAULT_LIFESPAN; //RESET Lifespan of object
+
+				//kstates[i].pos.width = objects[j].rect.width;//XY ONLY
+				//kstates[i].pos.height = objects[j].rect.height;//XY ONLY
+
+				//use real data instead of predicted if set
+				kstates[i].pos.x = objects[j].rect.x;
+				kstates[i].pos.y = objects[j].rect.y;
+				kstates[i].pos.width = objects[j].rect.width;
+				kstates[i].pos.height = objects[j].rect.height;
+				kstates[i].real_data = 1;
+				//Mat im1 = image(kstates[i].pos);
+				//Mat im2 = image(objects[j].rect);
+			}
+
+
+			//check that new widths and heights don't go beyond the image size
+			if (kstates[i].pos.width + kstates[i].pos.x > image.cols)
+				kstates[i].pos.width = image.cols - kstates[i].pos.x;
+			if (kstates[i].pos.height + kstates[i].pos.y > image.rows)
+				kstates[i].pos.height = image.rows - kstates[i].pos.y;
 
 			//check that predicted positions are inside the image
 			if (kstates[i].pos.x < 0)
@@ -364,42 +587,6 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			{
 				kstates[i].active = false; //Too old, stop tracking.
 			}
-
-			//now do respective corrections on KFs (updates)
-			if (correct_indices[i])
-			{
-				//a match was found hence update KF measurement
-				int j = correct_detection_indices[i];//obtain the index of the detection
-
-				/*Mat_<float> measurement = (Mat_<float>(2, 1) << objects[j].rect.x, //XY ONLY
-																objects[j].rect.y);*/
-				Mat_<float> measurement = (Mat_<float>(4, 1) << objects[j].rect.x,
-					objects[j].rect.y,
-					objects[j].rect.width,
-					objects[j].rect.height);
-
-				//use real data instead of predicted data when data is available
-				kstates[i].pos.x = objects[j].rect.x;
-				kstates[i].pos.y = objects[j].rect.y;
-				kstates[i].pos.width = objects[j].rect.width;
-				kstates[i].pos.height = objects[j].rect.height;
-
-				kstates[i].KF.correct(measurement);//UPDATE KF with new info
-				kstates[i].lifespan = DEFAULT_LIFESPAN; //RESET Lifespan of object
-
-				//kstates[i].pos.width = objects[j].rect.width;//XY ONLY
-				//kstates[i].pos.height = objects[j].rect.height;//XY ONLY
-
-				//check that new widths and heights don't go beyond the image size
-				if (kstates[i].pos.width + kstates[i].pos.x > image.cols)
-					kstates[i].pos.width = image.cols - kstates[i].pos.x;
-				if (kstates[i].pos.height + kstates[i].pos.y > image.rows)
-					kstates[i].pos.height = image.rows - kstates[i].pos.y;
-
-				Mat im1 = image(kstates[i].pos);
-				Mat im2 = image(objects[j].rect);
-
-			}
 		}
 	}
 
@@ -413,35 +600,50 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 	}
 
 	//check overlapping states and remove them
-	float overlap = 0.8; vector<unsigned int> removedIndices;
-	for (unsigned int i = 0; i < kstates.size(); i++)
+	float overlap = (OVERLAPPING_PERC/100); vector<unsigned int> removedIndices;
+	for (unsigned int i = 0; i < kstates.size() ; i++)
 	{
-		for (unsigned int j = 0; j < kstates.size(); j++)
+		for (unsigned int j = kstates.size() - 1; j > 0; j--)
 		{
 			if (i==j || isInRemoved(removedIndices, i) || isInRemoved(removedIndices, j))
 				continue;
-
+			//cout << "i:" << i << " j:" << j << endl;
 			Rect intersection = kstates[i].pos & kstates[j].pos;
 
 			if ( ( (intersection.width >= kstates[i].pos.width * overlap) && (intersection.height >= kstates[i].pos.height * overlap) ) ||
 				( (intersection.width >= kstates[j].pos.width * overlap) && (intersection.height >= kstates[j].pos.height * overlap) ) )
 			{
 				//if one state is overlapped by "overlap" % remove it (mark it as unused
-				kstates[i].active = false;
-				removedIndices.push_back(i);
+				if (kstates[i].real_data && !(kstates[j].real_data))
+				{
+					kstates[j].active = false;
+					removedIndices.push_back(j);
+				}
+				else if (!(kstates[i].real_data) && (kstates[j].real_data))
+				{
+					kstates[i].active = false;
+					removedIndices.push_back(i);
+				}
+				else
+				{
+					kstates[j].active = false;
+					removedIndices.push_back(j);
+				}
 			}
 		}
 	}
+
+	removeUnusedObjects(kstates);
+
 	//return to x,y,w,h
 	posScaleToBbox(kstates, trackedDetections);
 
 }
 
 void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::ObjectDetection> detections,
-	vector<kstate>& kstates, vector<bool>& active, vector<Scalar> colors, const sensor_msgs::Image& image_source)
+						vector<kstate>& kstates, vector<bool>& active, vector<Scalar> colors, const sensor_msgs::Image& image_source)
 {
 	vector<kstate> tracked_detections;
-
 
 	TickMeter tm;
 	tm.start();
@@ -452,46 +654,49 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 
 	//ROS
 	int num = tracked_detections.size();
-    	std::vector<int> corner_point_array(num * 4,0);
-    	std::vector<int> car_type_array(num, 0);
+	std::vector<int> current_point_array(num * 4,0);
+	std::vector<int> real_data(num,0);
+	std::vector<int> obj_id(num, 0);
+	std::vector<int> lifespan(num, 0);
 	//ENDROS
 
 	for (size_t i = 0; i < tracked_detections.size(); i++)
 	{
 		kstate od = tracked_detections[i];
+
 		//od.rect contains x,y, width, height
 		rectangle(image, od.pos, od.color, 3);
 		putText(image, SSTR(od.id), Point(od.pos.x + 4, od.pos.y + 13), FONT_HERSHEY_SIMPLEX, 0.55, od.color, 2);
 		//ROS
-		car_type_array[i] = od.id; // ?
-		corner_point_array[0+i*4] = od.pos.x;
-		corner_point_array[1+i*4] = od.pos.y;
-		corner_point_array[2+i*4] = od.pos.width;//updated to show width instead of 2nd point
-		corner_point_array[3+i*4] = od.pos.height;//updated to show height instead of 2nd point
+		obj_id[i] = od.id; // ?
+		current_point_array[0+i*4] = od.pos.x;
+		current_point_array[1+i*4] = od.pos.y;
+		current_point_array[2+i*4] = od.pos.width;//updated to show width instead of 2nd point
+		current_point_array[3+i*4] = od.pos.height;//updated to show height instead of 2nd point
+
+		real_data[i] = od.real_data;
+		lifespan[i] = od.lifespan;
 		//ENDROS
 	}
 	//more ros
-	dpm::ImageObjects image_objects_msg;
-	image_objects_msg.car_num = num;
-	image_objects_msg.corner_point = corner_point_array;
-	image_objects_msg.car_type = car_type_array;
+	kf::KFObjects kf_objects_msg;
+	kf_objects_msg.total_num = num;
+	kf_objects_msg.corner_point = current_point_array;
+	kf_objects_msg.real_data = real_data;
+	kf_objects_msg.obj_id = obj_id;
+	kf_objects_msg.lifespan = lifespan;
 
-	image_objects_msg.header = image_source.header;
+	kf_objects_msg.header = image_source.header;
 
-	image_objects.publish(image_objects_msg);
+	image_objects.publish(kf_objects_msg);
+
+	//cout << "."<< endl;
 }
 
 void image_callback(const sensor_msgs::Image& image_source)
 {
 	if (!_ready)
 		return;
-
-	//const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
-	//cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
-	//						     encoding);
-	//IplImage frame = cv_image->image;
-
-	//Mat imageTrack(&frame, true);
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
 	Mat imageTrack = cv_image->image;
@@ -511,7 +716,7 @@ void detections_callback(dpm::ImageObjects image_objects_msg)
 	vector<int> points = image_objects_msg.corner_point;
 	//points are X,Y,W,H and repeat for each instance
 	_dpm_detections.clear();
-	cv::generateColors(_colors, num);
+
 	for (int i=0; i<num;i++)
 	{
 		Rect tmp;
@@ -527,12 +732,34 @@ void detections_callback(dpm::ImageObjects image_objects_msg)
 
 static void kf_config_cb(const runtime_manager::ConfigCarKf::ConstPtr& param)
 {
-	INITIAL_LIFESPAN = param->initial_lifespan;
-	DEFAULT_LIFESPAN   = param->default_lifespan;
-	NOISE_COV    = param->noise_covariance;
-	MEAS_NOISE_COV = param->measurement_noise_covariance;
-	ERROR_ESTIMATE_COV = param->error_estimate_covariance;
-	OVERLAPPING_PERC = param->percentage_of_overlapping;
+	INITIAL_LIFESPAN	= param->initial_lifespan;
+	DEFAULT_LIFESPAN	= param->default_lifespan;
+	NOISE_COV			= param->noise_covariance;
+	MEAS_NOISE_COV		= param->measurement_noise_covariance;
+	ERROR_ESTIMATE_COV	= param->error_estimate_covariance;
+	OVERLAPPING_PERC	= param->percentage_of_overlapping;
+
+	ORB_NUM_FEATURES	= 2000;
+	ORB_MIN_MATCHES		= 3;
+	ORB_KNN_RATIO		= 0.7;
+
+	USE_ORB				= param->use_orb;
+}
+
+void init_params()
+{
+	DEFAULT_LIFESPAN	= 8;
+	INITIAL_LIFESPAN	= 4;
+	NOISE_COV			= 1;
+	MEAS_NOISE_COV		= 25;
+	ERROR_ESTIMATE_COV	= 1000000;
+	OVERLAPPING_PERC	= 80.0;
+	SHOW_PREDICTIONS	= false;
+
+	ORB_NUM_FEATURES	= 2000;
+	ORB_MIN_MATCHES		= 3;
+	ORB_KNN_RATIO		= 0.7;
+	USE_ORB				= false;
 }
 
 int kf_main(int argc, char* argv[], const std::string& tracking_type)
@@ -560,7 +787,9 @@ int kf_main(int argc, char* argv[], const std::string& tracking_type)
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
-	image_objects = n.advertise<dpm::ImageObjects>(published_node, 1);
+	image_objects = n.advertise<kf::KFObjects>(published_node, 1);
+
+	cv::generateColors(_colors, 25);
 
 	string image_topic;
 	string obj_topic;
@@ -582,6 +811,8 @@ int kf_main(int argc, char* argv[], const std::string& tracking_type)
 		ROS_INFO("No object node received, defaulting to %s, you can use _object_node:=YOUR_TOPIC", obj_topic_def.c_str());
 		obj_topic = obj_topic_def;
 	}
+
+	init_params();
 
 	ros::Subscriber sub_image = n.subscribe(image_topic, 1, image_callback);
 	ros::Subscriber sub_dpm = n.subscribe(obj_topic, 1, detections_callback);

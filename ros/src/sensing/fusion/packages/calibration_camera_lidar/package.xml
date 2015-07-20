@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>calibration_camera_lidar</name>
+  <version>0.0.0</version>
+  <description>The calibration_camera_lidar package</description>
+  <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>glviewer</build_depend>
+  <run_depend>glviewer</run_depend>
+  <build_depend>rosinterface</build_depend>
+  <run_depend>rosinterface</run_depend>
+  <export>
+  </export>
+</package>

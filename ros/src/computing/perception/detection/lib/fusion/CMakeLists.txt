@@ -28,7 +28,7 @@ target_link_libraries(fusion
   ${OpenCV_LIBS}
   dpm
 )
-add_dependencies(fusion dpm_generate_messages_cpp)
+add_dependencies(fusion dpm_generate_messages_cpp kf_generate_messages_cpp)
 
 # Mark cpp header files for installation
 install(DIRECTORY include

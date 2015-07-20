@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+
+	<!-- rosrun waypoint_maker waypoint_loader _filename:="path file" -->
+	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader"/>
+		
+
+
+
+</launch>

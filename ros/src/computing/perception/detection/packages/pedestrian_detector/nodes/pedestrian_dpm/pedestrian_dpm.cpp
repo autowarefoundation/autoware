@@ -71,6 +71,7 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 	size_t pedestrian_num = pedestrians.size();
 	std::vector<int> corner_point_array;
 	std::vector<int> pedestrian_type_array;
+	std::vector<float> pedestrian_score_array;
 
 	for (int i = 0; i < static_cast<int>(pedestrian_num); ++i) {
 		pedestrian_type_array.push_back(pedestrians[i].class_id);
@@ -79,12 +80,15 @@ static void image_raw_cb(const sensor_msgs::Image& image)
 		corner_point_array.push_back(pedestrians[i].rect.y);
 		corner_point_array.push_back(pedestrians[i].rect.width);
 		corner_point_array.push_back(pedestrians[i].rect.height);
+
+		pedestrian_score_array.push_back(pedestrians[i].score);
 	}
 
 	dpm::ImageObjects message;
 	message.car_num = pedestrian_num;
 	message.corner_point = corner_point_array;
 	message.car_type = pedestrian_type_array;
+	message.score = pedestrian_score_array;
 
 	message.header = image.header;
 	message.header.stamp = image.header.stamp;

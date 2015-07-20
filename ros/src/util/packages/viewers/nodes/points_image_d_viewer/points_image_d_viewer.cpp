@@ -233,8 +233,8 @@ void show(void)
               "pedestrian");
 
   /* DRAW POINTS of lidar scanning */
-  int w = IMAGE_WIDTH;
-  int h = IMAGE_HEIGHT;
+  int w = matImage.size().width;
+  int h = matImage.size().height;
 
   int n = w * h;
   float min_d = 1<<16, max_d = -1;

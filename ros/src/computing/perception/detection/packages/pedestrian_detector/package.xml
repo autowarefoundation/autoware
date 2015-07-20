@@ -7,12 +7,10 @@
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>dpm</build_depend>
-  <build_depend>dpm_gpu</build_depend>
   <build_depend>kf</build_depend>
   <build_depend>car_detector</build_depend>
   <build_depend>fusion</build_depend>
   <run_depend>dpm</run_depend>
-  <run_depend>dpm_gpu</run_depend>
   <run_depend>kf</run_depend>
   <run_depend>car_detector</run_depend>
   <run_depend>fusion</run_depend>
