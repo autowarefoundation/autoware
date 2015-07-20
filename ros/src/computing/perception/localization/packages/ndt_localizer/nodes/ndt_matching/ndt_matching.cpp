@@ -813,7 +813,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
       matching_end = std::chrono::system_clock::now();
 
-      time_ndt_matching.data = std::chrono::duration_cast<std::chrono::microseconds>(matching_end-matching_start).count()/1000000.0;
+      time_ndt_matching.data = std::chrono::duration_cast<std::chrono::microseconds>(matching_end-matching_start).count()/1000.0;
       //      std::cout << "time_ndt_matching: " << time_ndt_matching.data << std::endl;
 
       time_ndt_matching_pub.publish(time_ndt_matching);

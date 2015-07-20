@@ -6,6 +6,9 @@
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
 
+extern void dpm_ttic_gpu_init_cuda(const std::string& cubin_path);
+extern void dpm_ttic_gpu_cleanup_cuda();
+
 struct DPMTTICResult {
 	int num;
 	std::vector<int> corner_points;
@@ -30,6 +33,19 @@ private:
 public:
 	DPMTTICModel(const char *com_csv, const char *root_csv, const char *part_csv);
 	~DPMTTICModel();
+
+	DPMTTICResult detect_objects(IplImage *image, const DPMTTICParam& param);
+};
+
+struct GPUModel;
+class DPMGPUModel {
+private:
+	GPUModel *model_;
+	double RATIO;
+
+public:
+	DPMGPUModel(const char *com_csv, const char *root_csv, const char *part_csv);
+	~DPMGPUModel();
 
 	DPMTTICResult detect_objects(IplImage *image, const DPMTTICParam& param);
 };

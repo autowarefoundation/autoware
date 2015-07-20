@@ -8,8 +8,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
-  dpm
-  dpm_gpu
   libdpm_ttic
   fusion
 )
@@ -37,9 +35,7 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-  CATKIN_DEPENDS dpm dpm_gpu libdpm_ttic scan2image fusion
-#  DEPENDS system_lib
+  CATKIN_DEPENDS libdpm_ttic scan2image fusion
 )
 
 ###########
@@ -63,13 +59,6 @@ ELSE()
 message("CUDA is not installed. 'cv_tracker' package is not built.")
 ENDIF()
 
-## Nodes
-##  - [ ] dpm_ocv
-##  - [ ] dpm_ttic
-##  - [ ] fusion_ranging
-##  - [ ] obj_reproj
-##  - [ ] kf_tracking
-
 ADD_EXECUTABLE(dpm_ttic
   nodes/dpm_ttic/dpm_ttic.cpp
 )
@@ -77,8 +66,6 @@ ADD_EXECUTABLE(dpm_ttic
 TARGET_LINK_LIBRARIES(dpm_ttic
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  ##dpm
-  dpm_gpu
   libdpm_ttic
 )
 

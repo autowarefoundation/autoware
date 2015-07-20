@@ -28,56 +28,36 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _MAP_DB_H_
-#define _MAP_DB_H_
+#include "common.hpp"
 
-#include <cstdint>
-#include <string>
-#include <netinet/in.h>
-#define USE_LIBSSH2
-#ifdef USE_LIBSSH2
-#include <libssh2.h>
-#endif
+void dpm_ttic_add_part_calculation(FLOAT *score, FLOAT*M,int *rootsize,int *partsize,int ax,int ay)
+{
+	FLOAT *S = score;
+	int jj_L = ax+2*(rootsize[1]-1)-1;
+	int ii_L = ay+2*(rootsize[0]-1);
+	int axm = ax-1;
 
-#define DB_HOSTNAME     "db3.ertl.jp"
-#define DB_PORT         (5678)
-#define SSHPUBKEY       "/tmp/autoware/ssh/id_rsa.pub"
-#define SSHPRIVATEKEY   "/tmp/autoware/ssh/id_rsa"
-#define SSHPORT         (22)
-#define SSHTUNNELHOST	"localhost"
+	//add part score(resolution of part is 2x of root)
+	for(int jj=axm;jj<=jj_L;jj+=2)
+	{
+		int L = jj*partsize[0];
+		for(int ii=ay;ii<=ii_L;ii+=2)
+		{
+			*S -= M[ii+L-1];
+			S++;
+		}
+	}
+}
 
-class SendData {
-private:
-	std::string host_name_;
-	int port_;
-#ifdef USE_LIBSSH2
-	std::string sshuser_;
-	std::string sshtunnelhost_;
-	std::string sshpubkey_;
-	std::string sshprivatekey_;
-	int sshport_;
-#endif
+//initialize accumulated score
+FLOAT *dpm_ttic_init_accumulated_score(IplImage *image, size_t& accumulated_size)
+{
+	size_t num = image->height * image->width;
+	accumulated_size = num * sizeof(FLOAT);
 
-public:
-	SendData();
-	explicit SendData(const std::string& host_name, int port, char *sshuser,
-			  std::string& sshpubkey, std::string& sshprivatekey,
-			  int sshport, std::string& sshtunnelhost);
+	FLOAT *scores = (FLOAT *)calloc(num, sizeof(FLOAT));
+	for(size_t i = 0; i < num; i++)
+		scores[i] = -100.0;
 
-	int Sender(const std::string& value, std::string& res, int insert_num);
-	int ConnectDB();
-	int DisconnectDB(const char *msg);
-	int sock;
-	bool connected;
-	struct sockaddr_in server;
-#ifdef USE_LIBSSH2
-	LIBSSH2_SESSION *session;
-	LIBSSH2_CHANNEL *channel;
-#endif
-};
-
-extern std::string make_header(int32_t sql_inst, int32_t sql_num);
-extern int probe_mac_addr(char *mac_addr);
-#define MAC_ADDRBUFSIZ	20
-
-#endif /* _MAP_DB_H_ */
+	return scores;
+}
