@@ -1,5 +1,18 @@
 name : Drivers
 subs :
+  - name : CAN
+    subs :
+      - name : can_converter
+        probe:
+        run  : rosrun can_tools can_converter
+      - name : can_draw
+        probe:
+        run  : rosrun can_tools can_draw
+      - name : can_listener
+        probe:
+        run  : rosrun can_tools can_listener
+        param: can_listener
+
   - name : Cameras
     subs :
       - name : PointGrey Grasshoper 3 (USB1)
@@ -99,6 +112,14 @@ buttons:
   #  param : camera_extrinsicMat_Publisher
 
 params :
+  - name  : can_listener
+    vars  :
+    - name      : channel
+      label     : 'Channel:'
+      v         : 0
+      cmd_param :
+        delim     : ''
+
   - name  : calibration_path
     vars  :
     - name  : calibration
