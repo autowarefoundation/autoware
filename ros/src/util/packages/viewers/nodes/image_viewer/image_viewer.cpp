@@ -271,7 +271,7 @@ static void image_obj_update_cb(const cv_tracker::image_obj& image_objs)
 		tmp.height = obj.height;
 
 		objs.push_back(tmp);
-		scores.push_back(0.1); // XXX dummy
+		scores.push_back(obj.score);
 	}
 
 	if (is_car) {

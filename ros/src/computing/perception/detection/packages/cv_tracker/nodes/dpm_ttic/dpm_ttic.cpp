@@ -78,6 +78,7 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTI
 		rect.y = result.corner_points[base+1];
 		rect.width = result.corner_points[base+2];
 		rect.height = result.corner_points[base+3];
+		rect.score = result.score[i];
 
 		msg.obj.push_back(rect);
 	}
