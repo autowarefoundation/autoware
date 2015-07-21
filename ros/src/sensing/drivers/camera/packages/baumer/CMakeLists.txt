@@ -46,12 +46,18 @@ add_executable(${PROJECT_NAME}_node
   nodes/vlg22/src/vlg22_main.cpp
   nodes/vlg22/src/bgapi_init.cpp
 )
+
 target_link_libraries(${PROJECT_NAME}_node
   bgapi
   ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
 )
 
+add_custom_command(TARGET ${PROJECT_NAME}_node POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${BAUMER_LIB_DIR} $<TARGET_FILE_DIR:${PROJECT_NAME}_node>
+)
+
 else()
-message("'BGGAPI' is not installed. 'vlg22c_cam' is not built.")
+message("'BGGAPI' is not installed. 'vlg22c_cam' will not be built.")
 endif()
