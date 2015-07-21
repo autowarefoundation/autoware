@@ -62,13 +62,13 @@ void dpm_ttic_gpu_cleanup_cuda()
 	//free_model(MO);
 }
 
-DPMGPUModel::DPMGPUModel(const char *com_csv, const char *root_csv, const char *part_csv)
+DPMTTICGPU::DPMTTICGPU(const char *com_csv, const char *root_csv, const char *part_csv)
 {
 	constexpr double RATIO = 1;
 	model_ = dpm_ttic_gpu_load_model(RATIO, com_csv, root_csv, part_csv);
 }
 
-DPMGPUModel::~DPMGPUModel()
+DPMTTICGPU::~DPMTTICGPU()
 {
 	dpm_ttic_gpu_free_model(model_);
 }
@@ -85,7 +85,7 @@ static FLOAT *init_accumulated_score(IplImage *image, size_t& accumulated_size)
 	return scores;
 }
 
-DPMTTICResult DPMGPUModel::detect_objects(IplImage *image, const DPMTTICParam& param)
+DPMTTICResult DPMTTICGPU::detect_objects(IplImage *image, const DPMTTICParam& param)
 {
 	model_->MI->interval = param.lambda;
 	model_->MI->sbin     = param.num_cells;

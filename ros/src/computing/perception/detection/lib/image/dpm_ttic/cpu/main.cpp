@@ -15,13 +15,13 @@
 #include "detect.hpp"
 #include "load_model.hpp"
 
-DPMTTICModel::DPMTTICModel(const char *com_csv, const char *root_csv, const char *part_csv)
+DPMTTIC::DPMTTIC(const char *com_csv, const char *root_csv, const char *part_csv)
 {
 	constexpr double RATIO = 1; 
 	model_ = dpm_ttic_cpu_load_model(RATIO, com_csv, root_csv, part_csv);
 }
 
-DPMTTICModel::~DPMTTICModel()
+DPMTTIC::~DPMTTIC()
 {
 	dpm_ttic_cpu_free_model(model_);
 }
@@ -37,7 +37,7 @@ static FLOAT *init_accumulated_score(IplImage *image)
 	return score;
 }
 
-DPMTTICResult DPMTTICModel::detect_objects(IplImage *image, const DPMTTICParam& param)
+DPMTTICResult DPMTTIC::detect_objects(IplImage *image, const DPMTTICParam& param)
 {
 	// model_->MI->interval = param.lambda;
 	// model_->MI->sbin     = param.num_cells;
