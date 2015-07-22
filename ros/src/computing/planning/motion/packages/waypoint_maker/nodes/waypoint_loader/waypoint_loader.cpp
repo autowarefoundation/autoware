@@ -44,7 +44,7 @@
 
 #include "runtime_manager/ConfigWaypointLoader.h"
 #include "waypoint_follower/lane.h"
-#include "vmap_parser.h"
+#include "vmap_utility.hpp"
 
 class Waypoint {
 private:
@@ -81,7 +81,6 @@ std::string PATH_FRAME = "/map";
 
 static constexpr double ACCIDENT_ERROR = 0.000001;
 
-static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
 static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
 
 static double position_offset = 1.8;
@@ -89,12 +88,12 @@ static double config_velocity = 40; // Unit: km/h
 static double config_difference_around_signal = 2; // Unit: km/h
 static int32_t config_number_of_zeros = 1;
 
-static std::vector<Lane> lanes;
-static std::vector<Node> nodes;
-static std::vector<Point> points;
-static std::vector<StopLine> stoplines;
+static std::vector<map_file::Lane> lanes;
+static std::vector<map_file::Node> nodes;
+static std::vector<map_file::PointClass> points;
+static std::vector<map_file::StopLine> stoplines;
 static std::vector<Waypoint> _waypoints;
-static std::vector<Point> left_lane_points;
+static std::vector<map_file::PointClass> left_lane_points;
 
 static ros::Publisher red_pub;
 static ros::Publisher green_pub;
@@ -141,67 +140,68 @@ static std::vector<Waypoint> ReadWaypoint(const char *filename)
     return waypoints;
 }
 
-static std::vector<Point> search_stopline_point(const nav_msgs::Path& msg)
+static std::vector<map_file::PointClass>
+search_stopline_point(const nav_msgs::Path& msg)
 {
-    std::vector<Point> stopline_points;
+    std::vector<map_file::PointClass> stopline_points;
 
     // msg's X-Y axis is reversed
-    Point start_point = search_nearest(
+    map_file::PointClass start_point = search_nearest(
         left_lane_points,
         msg.poses.front().pose.position.y,
         msg.poses.front().pose.position.x);
 
     // msg's X-Y axis is reversed
-    Point end_point = search_nearest(
+    map_file::PointClass end_point = search_nearest(
         left_lane_points,
         msg.poses.back().pose.position.y,
         msg.poses.back().pose.position.x);
 
-    int lane_index = start_point.to_lane_index(nodes, lanes);
+    int lane_index = to_lane_index(start_point, nodes, lanes);
     if (lane_index < 0) {
         ROS_ERROR("start lane is not found");
         return stopline_points;
     }
-    Lane lane = lanes[lane_index];
+    map_file::Lane lane = lanes[lane_index];
 
-    int point_index = lane.to_beginning_point_index(nodes, points);
+    int point_index = to_beginning_point_index(lane, nodes, points);
     if (point_index < 0) {
         ROS_ERROR("start beginning point is not found");
         return stopline_points;
     }
-    Point point = points[point_index];
+    map_file::PointClass point = points[point_index];
 
     while (1) {
-        for (const StopLine& stopline : stoplines) {
-            if (stopline.linkid() == lane.lnid())
+        for (const map_file::StopLine& stopline : stoplines) {
+            if (stopline.linkid == lane.lnid)
                 stopline_points.push_back(point);
         }
 
-        point_index = lane.to_finishing_point_index(nodes, points);
+        point_index = to_finishing_point_index(lane, nodes, points);
         if (point_index < 0) {
             ROS_ERROR("finishing point is not found");
             return stopline_points;
         }
         point = points[point_index];
 
-        if (point.bx() == end_point.bx() &&
-            point.ly() == end_point.ly()) {
-            for (const StopLine& stopline : stoplines) {
-                if (stopline.linkid() == lane.lnid())
+        if (point.bx == end_point.bx &&
+            point.ly == end_point.ly) {
+            for (const map_file::StopLine& stopline : stoplines) {
+                if (stopline.linkid == lane.lnid)
                     stopline_points.push_back(point);
             }
 
             return stopline_points;
         }
 
-        lane_index = lane.to_next_lane_index(lanes);
+        lane_index = to_next_lane_index(lane, lanes);
         if (lane_index < 0) {
             ROS_ERROR("next lane is not found");
             return stopline_points;
         }
         lane = lanes[lane_index];
 
-        point_index = lane.to_beginning_point_index(nodes, points);
+        point_index = to_beginning_point_index(lane, nodes, points);
         if (point_index < 0) {
             ROS_ERROR("beginning point is not found");
             return stopline_points;
@@ -214,19 +214,20 @@ static std::vector<int> search_stopline_index(const nav_msgs::Path& msg)
 {
     std::vector<int> indexes;
 
-    std::vector<Point> stopline_points = search_stopline_point(msg);
-    for (const Point& point : stopline_points) {
+    std::vector<map_file::PointClass> stopline_points =
+        search_stopline_point(msg);
+    for (const map_file::PointClass& point : stopline_points) {
         int i = 0;
 
         // msg's X-Y axis is reversed
-        double min = hypot(point.bx() - msg.poses[0].pose.position.y,
-                           point.ly() - msg.poses[0].pose.position.x);
+        double min = hypot(point.bx - msg.poses[0].pose.position.y,
+                           point.ly - msg.poses[0].pose.position.x);
         int index = i;
         for (const geometry_msgs::PoseStamped& stamped : msg.poses) {
             // msg's X-Y axis is reversed
             double distance = hypot(
-                point.bx() - stamped.pose.position.y,
-                point.ly() - stamped.pose.position.x);
+                point.bx - stamped.pose.position.y,
+                point.ly - stamped.pose.position.x);
             if (distance < min) {
                 min = distance;
                 index = i;
@@ -464,7 +465,48 @@ void DisplayLaneWaypointMarker()
     _lane_mark_pub.publish(lane_waypoint_marker);
 }
 
+static void update_left_lane()
+{
+    if (lanes.empty() || nodes.empty() || points.empty())
+        return;
 
+    for (const map_file::Lane& lane : lanes) {
+        if (lane.lno != 1) // leftmost lane
+            continue;
+        for (const map_file::Node& node : nodes) {
+            if (node.nid != lane.bnid && node.nid != lane.fnid)
+                continue;
+            for (const map_file::PointClass& point : points) {
+                if (point.pid != node.pid)
+                    continue;
+                left_lane_points.push_back(point);
+            }
+        }
+    }
+}
+
+static void lane_callback(const map_file::LaneArray& msg)
+{
+    lanes = msg.lanes;
+    update_left_lane();
+}
+
+static void node_callback(const map_file::NodeArray& msg)
+{
+    nodes = msg.nodes;
+    update_left_lane();
+}
+
+static void point_class_callback(const map_file::PointClassArray& msg)
+{
+    points = msg.point_classes;
+    update_left_lane();
+}
+
+static void stop_line_callback(const map_file::StopLineArray& msg)
+{
+    stoplines = msg.stop_lines;
+}
 
 static void config_callback(const runtime_manager::ConfigWaypointLoader& msg)
 {
@@ -480,33 +522,33 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "waypoint_loader");
     ros::NodeHandle nh;
 
-    std::string vector_map_directory;
-    nh.param<std::string>("waypoint_loader/vector_map_directory",
-                          vector_map_directory, VECTOR_MAP_DIRECTORY);
-
     std::string ruled_waypoint_csv;
     nh.param<std::string>("waypoint_loader/ruled_waypoint_csv",
                           ruled_waypoint_csv, RULED_WAYPOINT_CSV);
 
-    lanes = read_lane((vector_map_directory + std::string("/lane.csv")).c_str());
-    nodes = read_node((vector_map_directory + std::string("/node.csv")).c_str());
-    points = read_point((vector_map_directory + std::string("/point.csv")).c_str());
-    stoplines = read_stopline((vector_map_directory + std::string("/stopline.csv")).c_str());
-    _waypoints = ReadWaypoint(ruled_waypoint_csv.c_str());
+    ros::Subscriber sub_lane = nh.subscribe("vector_map_info/lane",
+                                            10,
+                                            lane_callback);
+    ros::Subscriber sub_node = nh.subscribe("vector_map_info/node",
+                                            10,
+                                            node_callback);
+    ros::Subscriber sub_point_class = nh.subscribe(
+        "vector_map_info/point_class",
+        10,
+        point_class_callback);
+    ros::Subscriber sub_stop_line = nh.subscribe(
+        "vector_map_info/stop_line",
+        10,
+        stop_line_callback);
 
-    for (const Lane& lane : lanes) {
-        if (lane.lno() != 1) // leftmost lane
-            continue;
-        for (const Node& node : nodes) {
-            if (node.nid() != lane.bnid() && node.nid() != lane.fnid())
-                continue;
-            for (const Point& point : points) {
-                if (point.pid() != node.pid())
-                    continue;
-                left_lane_points.push_back(point);
-            }
-        }
+    ros::Rate rate(1);
+    while (lanes.empty() || nodes.empty() || points.empty() ||
+           stoplines.empty()) {
+        ros::spinOnce();
+        rate.sleep();
     }
+
+    _waypoints = ReadWaypoint(ruled_waypoint_csv.c_str());
 
     ros::Subscriber config_sub = nh.subscribe("config/waypoint_loader", 10, config_callback);
 
