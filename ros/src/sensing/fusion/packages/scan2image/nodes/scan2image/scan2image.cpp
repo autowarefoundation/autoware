@@ -25,14 +25,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ros/ros.h"
-#include "opencv/cv.h"
-#include "opencv/highgui.h"
-#include "opencv/cxcore.h"
-#include "scan2image.h"
-#include "std_msgs/Float64.h"
-#include "std_msgs/String.h"
-#include "scan2image/ScanImage.h"
+#include <ros/ros.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+#include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
+#include <scan2image/ScanImage.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -41,6 +40,7 @@
 #include <sys/resource.h>
 #include <sensor_msgs/LaserScan.h>
 #include <algorithm>
+#include "scan2image.h"
 
 #if 1 // AXE
 #define XSTR(x) #x
