@@ -40,7 +40,6 @@ catkin_package(
 ###########
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(/usr/include/opencv2/legacy)
 
 add_executable(scan2image nodes/scan2image/scan2image.cpp)
 

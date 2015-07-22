@@ -47,7 +47,6 @@ catkin_package(
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(/usr/include/opencv2/legacy)
 
 add_executable(car_dpm
   nodes/car_dpm/car_dpm.cpp
