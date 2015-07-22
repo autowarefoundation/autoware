@@ -66,7 +66,6 @@ subs :
         cmd  : rosrun lane_planner lane_change
       - name : lane_navi
         cmd  : rosrun lane_planner lane_navi
-        param: lane_navi
       - name : lane_rule
         cmd  : rosrun lane_planner lane_rule
         param: lane_rule
@@ -445,23 +444,10 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name : lane_navi
-    vars :
-    - name      : vector_map
-      kind      : path
-      path_type : dir
-      v         : /tmp
-      rosparam  : /lane_navi/vector_map_directory
-
   - name  : lane_rule
     topic : /config/lane_rule
     msg   : ConfigLaneRule
     vars  :
-    - name      : vector_map
-      kind      : path
-      path_type : dir
-      v         : /tmp
-      rosparam  : /lane_rule/vector_map_directory
     - name      : ruled_waypoint
       kind      : path
       path_type : save
@@ -513,11 +499,6 @@ params :
     topic : /config/waypoint_loader
     msg   : ConfigWaypointLoader
     vars  :
-    - name      : vector_map
-      kind      : path
-      path_type : dir
-      v         : /tmp
-      rosparam  : /waypoint_loader/vector_map_directory
     - name      : ruled_waypoint
       kind      : path
       v         : /tmp/ruled_waypoint.csv
