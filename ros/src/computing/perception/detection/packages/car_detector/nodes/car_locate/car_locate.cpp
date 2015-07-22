@@ -28,12 +28,6 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-#include "car_detector/FusedObjects.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -46,17 +40,23 @@
 #include <sys/time.h>
 #include <bitset>
 
-#include "opencv/cv.h" 
-#include "opencv/highgui.h"
-#include "opencv/cxcore.h" 
-#include "std_msgs/Float64.h"
-#include "scan2image/ScanImage.h"
-#include "geometry_msgs/TwistStamped.h"
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/PoseArray.h"
-#include "tf/tf.h"
-#include "tf/transform_listener.h"
-#include "sensor_msgs/NavSatFix.h"
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Float64.h>
+#include <scan2image/ScanImage.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseArray.h>
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CompressedImage.h>
+#include <car_detector/FusedObjects.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+#include <sensor_msgs/NavSatFix.h>
 #include "structure.h"
 #include "calcoordinates.h"
 #include "axialMove.h"

@@ -31,12 +31,12 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv2/opencv.hpp>
-#include <cv_bridge/cv_bridge.h>
-#include "opencv2/contrib/contrib.hpp"
+#include <opencv2/contrib/contrib.hpp>
 
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include "points2image/PointsImage.h"
+#include <points2image/PointsImage.h>
 
 #if 0
 #include "dpm/ImageObjects.h"
@@ -48,9 +48,6 @@
 #include <math.h>
 #include <float.h>
 
-using namespace std;
-using namespace cv;
-
 #define NO_DATA 0
 static char window_name[] = "points_image_d_viewer";
 
@@ -61,8 +58,8 @@ static points2image::PointsImageConstPtr points_msg;
 static cv::Mat colormap;
 
 #if 0
-static vector<Rect> cars;
-static vector<Rect> peds;
+static std::vector<cv::Rect> cars;
+static std::vector<cv::Rect> peds;
 #else
 static car_detector::FusedObjects car_fused_objects;
 static car_detector::FusedObjects pedestrian_fused_objects;
@@ -76,7 +73,7 @@ static inline bool isNearlyNODATA(float x)
   return(abs_x < FLT_MIN*rangeScale);
 }
 
-static vector<Scalar> _colors;
+static std::vector<cv::Scalar> _colors;
 
 #define	IMAGE_WIDTH	800
 #define	IMAGE_HEIGHT	600
@@ -272,12 +269,12 @@ void show(void)
 static void car_updater_callback(dpm::ImageObjects image_objects_msg)
 {
   int num = image_objects_msg.car_num;
-  vector<int> points = image_objects_msg.corner_point;
+  std::vector<int> points = image_objects_msg.corner_point;
   //points are X,Y,W,H and repeat for each instance
   cars.clear();
 
   for (int i=0; i<num;i++) {
-    Rect tmp;
+    cv::Rect tmp;
     tmp.x = points[i*4 + 0];
     tmp.y = points[i*4 + 1];
     tmp.width = points[i*4 + 2];
@@ -297,12 +294,12 @@ static void car_updater_callback(const car_detector::FusedObjects& fused_car_msg
 static void ped_updater_callback(dpm::ImageObjects image_objects_msg)
 {
   int num = image_objects_msg.car_num;
-  vector<int> points = image_objects_msg.corner_point;
+  std::vector<int> points = image_objects_msg.corner_point;
   //points are X,Y,W,H and repeat for each instance
   peds.clear();
 
   for (int i=0; i<num;i++) {
-    Rect tmp;
+    cv::Rect tmp;
     tmp.x = points[i*4 + 0];
     tmp.y = points[i*4 + 1];
     tmp.width = points[i*4 + 2];
@@ -338,10 +335,10 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
 
-  string image_node;
-  string car_node;
-  string pedestrian_node;
-  string points_node;
+  std::string image_node;
+  std::string car_node;
+  std::string pedestrian_node;
+  std::string points_node;
 
   if (private_nh.getParam("image_node", image_node)) {
     ROS_INFO("Setting image node to %s", image_node.c_str());

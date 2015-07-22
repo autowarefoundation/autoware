@@ -2,8 +2,6 @@
 #define _DETECT_H_
 
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 #include "switch_float.h"
 
 //Result of Detection

@@ -2,8 +2,6 @@
 #define _TRACKING_H_
 
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 #include "detect.hpp"
 #include "switch_float.h"
 

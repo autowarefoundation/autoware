@@ -13,8 +13,6 @@
 #include <cmath>
 #include <time.h>
 
-#include <opencv2/legacy/legacy.hpp>
-
 #include "MODEL_info.h"		//Model-structure definition
 #include "common.hpp"
 

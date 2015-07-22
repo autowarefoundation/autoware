@@ -58,9 +58,6 @@
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
 
-using namespace std;
-using namespace cv;
-
 ros::Publisher image_objects;//ROS
 
 static int 			DEFAULT_LIFESPAN; //LIFESPAN of objects before stop being tracked, in frames
@@ -77,34 +74,33 @@ static bool 		USE_ORB;
 
 struct kstate
 {
-	KalmanFilter	KF;//KalmanFilter for this object
-	Rect			pos;//position of the object centerx, centery, width, height
+	cv::KalmanFilter	KF;//KalmanFilter for this object
+	cv::Rect		pos;//position of the object centerx, centery, width, height
 	float			score;//DPM score
 	bool			active;//if too old (lifespan) don't use
-	unsigned int	id;//id of this tracked object
-	Mat				image;//image containing the detected and tracked object
-	int				lifespan;//remaining lifespan before deprecate
-	LatentSvmDetector::ObjectDetection obj;//currently not used
-	Scalar			color;
-	int				real_data;
-	//vector<KeyPoint> orbKeypoints;
-	//Mat				orbDescriptors;
+	unsigned int		id;//id of this tracked object
+	cv::Mat			image;//image containing the detected and tracked object
+	int			lifespan;//remaining lifespan before deprecate
+	cv::LatentSvmDetector::ObjectDetection obj;//currently not used
+	cv::Scalar	color;
+	int		real_data;
+	//std::vector<KeyPoint> orbKeypoints;
+	//cv::Mat				orbDescriptors;
 };
 
 //tracking required code
-vector<kstate> 	_kstates;
-vector<bool> 	_active;
-vector<Scalar> 	_colors;
-vector<LatentSvmDetector::ObjectDetection> _dpm_detections;
+std::vector<kstate> 	_kstates;
+std::vector<bool> 	_active;
+std::vector<cv::Scalar>	_colors;
+std::vector<cv::LatentSvmDetector::ObjectDetection> _dpm_detections;
 
 bool _ready =false;
 
 long int _counter = 0;
 //
 
-void getRectFromPoints(vector< Point2f > corners, Rect& outBoundingBox)
+void getRectFromPoints(std::vector< cv::Point2f > corners, cv::Rect& outBoundingBox)
 {
-
 	int min_x=0, min_y=0, max_x=0, max_y=0;
 	for (unsigned int i=0; i<corners.size(); i++)
 	{
@@ -130,19 +126,19 @@ void getRectFromPoints(vector< Point2f > corners, Rect& outBoundingBox)
 
 }
 
-bool orbMatch(Mat& inImageScene, Mat& inImageObj, Rect& outBoundingBox, unsigned int inMinMatches=2, float inKnnRatio=0.7)
+bool orbMatch(cv::Mat& inImageScene, cv::Mat& inImageObj, cv::Rect& outBoundingBox, unsigned int inMinMatches=2, float inKnnRatio=0.7)
 {
 	//vector of keypoints
-	vector< cv::KeyPoint > keypointsO;
-	vector< cv::KeyPoint > keypointsS;
+	std::vector< cv::KeyPoint > keypointsO;
+	std::vector< cv::KeyPoint > keypointsS;
 
-	Mat descriptors_object, descriptors_scene;
+	cv::Mat descriptors_object, descriptors_scene;
 
-	Mat outImg;
+	cv::Mat outImg;
 	inImageScene.copyTo(outImg);
 
 	//-- Step 1: Extract keypoints
-	OrbFeatureDetector orb(ORB_NUM_FEATURES);
+	cv::OrbFeatureDetector orb(ORB_NUM_FEATURES);
 	orb.detect(inImageScene, keypointsS);
 	if (keypointsS.size() < ORB_MIN_MATCHES)
 	{
@@ -157,16 +153,16 @@ bool orbMatch(Mat& inImageScene, Mat& inImageObj, Rect& outBoundingBox, unsigned
 	}
 
 	//Calculate descriptors (feature vectors)
-	OrbDescriptorExtractor extractor;
+	cv::OrbDescriptorExtractor extractor;
 	extractor.compute(inImageScene, keypointsS, descriptors_scene);
 	extractor.compute(inImageObj, keypointsO, descriptors_object);
 
 	//Matching descriptor vectors using FLANN matcher
-	BFMatcher matcher;
+	cv::BFMatcher matcher;
 	//descriptors_scene.size(), keypointsO.size(), keypointsS.size();
-	std::vector< vector< DMatch >  > matches;
+	std::vector< std::vector< cv::DMatch >  > matches;
 	matcher.knnMatch(descriptors_object, descriptors_scene, matches, 2);
-	vector< DMatch > good_matches;
+	std::vector< cv::DMatch > good_matches;
 	good_matches.reserve(matches.size());
 
 	for (size_t i = 0; i < matches.size(); ++i)
@@ -174,8 +170,8 @@ bool orbMatch(Mat& inImageScene, Mat& inImageObj, Rect& outBoundingBox, unsigned
 		if (matches[i].size() < 3)
 			continue;
 
-		const DMatch &m1 = matches[i][0];
-		const DMatch &m2 = matches[i][1];
+		const cv::DMatch &m1 = matches[i][0];
+		const cv::DMatch &m2 = matches[i][1];
 
 		if (m1.distance <= inKnnRatio * m2.distance)
 			good_matches.push_back(m1);
@@ -183,8 +179,8 @@ bool orbMatch(Mat& inImageScene, Mat& inImageObj, Rect& outBoundingBox, unsigned
 
 	if ((good_matches.size() >= inMinMatches))
 	{
-		std::vector< Point2f > obj;
-		std::vector< Point2f > scene;
+		std::vector< cv::Point2f > obj;
+		std::vector< cv::Point2f > scene;
 
 		for (unsigned int i = 0; i < good_matches.size(); i++)
 		{
@@ -193,21 +189,21 @@ bool orbMatch(Mat& inImageScene, Mat& inImageObj, Rect& outBoundingBox, unsigned
 			scene.push_back(keypointsS[good_matches[i].trainIdx].pt);
 		}
 
-		Mat H = findHomography(obj, scene, CV_RANSAC);
+		cv::Mat H = findHomography(obj, scene, CV_RANSAC);
 
 		// Get the corners from the image_1 ( the object to be "detected" )
-		std::vector< Point2f > obj_corners(4);
+		std::vector< cv::Point2f > obj_corners(4);
 		obj_corners[0] = cvPoint(0, 0); obj_corners[1] = cvPoint(inImageObj.cols, 0);
 		obj_corners[2] = cvPoint(inImageObj.cols, inImageObj.rows); obj_corners[3] = cvPoint(0, inImageObj.rows);
-		std::vector< Point2f > scene_corners(4);
+		std::vector< cv::Point2f > scene_corners(4);
 
 		perspectiveTransform(obj_corners, scene_corners, H);
 
 		// Draw lines between the corners (the mapped object in the scene - image_2 )
-		line(outImg, scene_corners[0], scene_corners[1], Scalar(255, 0, 0), 2); //TOP line
-		line(outImg, scene_corners[1], scene_corners[2], Scalar(255, 0, 0), 2);
-		line(outImg, scene_corners[2], scene_corners[3], Scalar(255, 0, 0), 2);
-		line(outImg, scene_corners[3], scene_corners[0], Scalar(255, 0, 0), 2);
+		line(outImg, scene_corners[0], scene_corners[1], cv::Scalar(255, 0, 0), 2); //TOP line
+		line(outImg, scene_corners[1], scene_corners[2], cv::Scalar(255, 0, 0), 2);
+		line(outImg, scene_corners[2], scene_corners[3], cv::Scalar(255, 0, 0), 2);
+		line(outImg, scene_corners[3], scene_corners[0], cv::Scalar(255, 0, 0), 2);
 
 		//imshow("Scene", outImg);
 		//imshow("Obj", inImageObj);
@@ -220,14 +216,14 @@ bool orbMatch(Mat& inImageScene, Mat& inImageObj, Rect& outBoundingBox, unsigned
 }
 
 ///Returns true if an im1 is contained in im2 or viceversa
-bool crossCorr(Mat im1, Mat im2)
+bool crossCorr(cv::Mat im1, cv::Mat im2)
 {
 	//im1 roi from the previous frame
 	//im2 roi fromcurrent frame
 	if (im1.rows <= 0 || im1.cols <= 0 || im2.rows <= 0 || im2.cols <= 0)
 		return false;
 
-	Mat result, larger_im, smaller_im;
+	cv::Mat result, larger_im, smaller_im;
 
 	/// Create the result matrix
 	int result_cols;
@@ -248,7 +244,7 @@ bool crossCorr(Mat im1, Mat im2)
 	if (larger_im.rows < smaller_im.rows)
 	{
 		//add rows to match sizes
-		Mat rows = Mat::ones(smaller_im.rows - larger_im.rows, larger_im.cols, larger_im.type());
+		cv::Mat rows = cv::Mat::ones(smaller_im.rows - larger_im.rows, larger_im.cols, larger_im.type());
 		larger_im.push_back(rows);
 	}
 
@@ -258,19 +254,19 @@ bool crossCorr(Mat im1, Mat im2)
 
 	/// Do the Matching and Normalize
 	matchTemplate(larger_im, smaller_im, result, CV_TM_CCORR_NORMED);
-	//normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
+	//normalize(result, result, 0, 1, NORM_MINMAX, -1, cv::Mat());
 
 	/// Localizing the best match with minMaxLoc
-	double minVal; double maxVal; Point minLoc; Point maxLoc;
-	Point matchLoc;
+	double minVal; double maxVal; cv::Point minLoc; cv::Point maxLoc;
+	cv::Point matchLoc;
 
-	minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
+	minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, cv::Mat());
 
 	matchLoc = maxLoc;
 
 	/// Show me what you got
-	Mat scene = larger_im.clone();
-	rectangle(scene, matchLoc, Point(matchLoc.x + smaller_im.cols, matchLoc.y + smaller_im.rows), Scalar(0, 0, 255), 2, 8, 0);
+	cv::Mat scene = larger_im.clone();
+	rectangle(scene, matchLoc, cv::Point(matchLoc.x + smaller_im.cols, matchLoc.y + smaller_im.rows), cv::Scalar(0, 0, 255), 2, 8, 0);
 	//imshow(image_window, scene);
 	//imshow(result_window, result);
 
@@ -294,7 +290,7 @@ bool crossCorr(Mat im1, Mat im2)
 	return ret;
 }
 
-void posScaleToBbox(vector<kstate> kstates, vector<kstate>& trackedDetections)
+void posScaleToBbox(std::vector<kstate> kstates, std::vector<kstate>& trackedDetections)
 {
 	for (unsigned int i = 0; i < kstates.size(); i++)
 	{
@@ -325,10 +321,10 @@ void posScaleToBbox(vector<kstate> kstates, vector<kstate>& trackedDetections)
 	}
 }
 
-int getAvailableIndex(vector<kstate>& kstates)
+int getAvailableIndex(std::vector<kstate>& kstates)
 {
 	unsigned int cur_size = kstates.size();
-	vector<bool> ids;
+	std::vector<bool> ids;
 
 	ids.resize(cur_size, false);
 
@@ -344,22 +340,24 @@ int getAvailableIndex(vector<kstate>& kstates)
 	return cur_size;
 }
 
-void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kstates, LatentSvmDetector::ObjectDetection detection, Mat& image, vector<Scalar> colors)
+void initTracking(cv::LatentSvmDetector::ObjectDetection object, std::vector<kstate>& kstates,
+		  cv::LatentSvmDetector::ObjectDetection detection,
+		  cv::Mat& image, std::vector<cv::Scalar> colors)
 {
 	kstate new_state;
-	//KalmanFilter KF(4, 2, 0);//XY Only
-	KalmanFilter KF(8, 4, 0);
+	//cv::KalmanFilter KF(4, 2, 0);//XY Only
+	cv::KalmanFilter KF(8, 4, 0);
 
-	/*Mat_<float> measurement = (Mat_<float>(2, 1) << object.rect.x,//XY Only
+	/*cv::Mat_<float> measurement = (cv::Mat_<float>(2, 1) << object.rect.x,//XY Only
 		object.rect.y);*/
-	Mat_<float> measurement = (Mat_<float>(4, 1) << object.rect.x,
+	cv::Mat_<float> measurement = (cv::Mat_<float>(4, 1) << object.rect.x,
 		object.rect.y, object.rect.width, object.rect.height);
 
-	/*KF.transitionMatrix = (Mat_<float>(4, 4) << 1, 0, 1, 0,//XY Only
+	/*KF.transitioncv::Matrix = (cv::Mat_<float>(4, 4) << 1, 0, 1, 0,//XY Only
 												0, 1, 0, 1,
 												0, 0, 1, 0,
 												0, 0, 0, 1);*/
-	KF.transitionMatrix = (Mat_<float>(8, 8)
+	KF.transitionMatrix = (cv::Mat_<float>(8, 8)
 	<<	1, 0, 0, 0, 1, 0, 0, 0,
 		0, 1, 0, 0, 0, 1, 0, 0,
 		0, 0, 1, 0, 0, 0, 1, 0,
@@ -381,13 +379,13 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 	KF.statePost.at<float>(3) = object.rect.height;//XY Only
 
 	cv::setIdentity(KF.measurementMatrix);
-	cv::setIdentity(KF.processNoiseCov, Scalar::all(NOISE_COV));//1e-4
-	cv::setIdentity(KF.measurementNoiseCov, Scalar::all(MEAS_NOISE_COV));//1e-3
-	cv::setIdentity(KF.errorCovPost, Scalar::all(ERROR_ESTIMATE_COV));//100
+	cv::setIdentity(KF.processNoiseCov, cv:: Scalar::all(NOISE_COV));//1e-4
+	cv::setIdentity(KF.measurementNoiseCov, cv::Scalar::all(MEAS_NOISE_COV));//1e-3
+	cv::setIdentity(KF.errorCovPost, cv::Scalar::all(ERROR_ESTIMATE_COV));//100
 
 	//save data to kstate
 	new_state.active = true;
-	new_state.image = image(Rect(detection.rect.x,
+	new_state.image = image(cv::Rect(detection.rect.x,
 		detection.rect.y,
 		detection.rect.width,
 		detection.rect.height)).clone();//Crop image and obtain only object (ROI)
@@ -406,7 +404,7 @@ void initTracking(LatentSvmDetector::ObjectDetection object, vector<kstate>& kst
 }
 
 //checks whether an index was previously removed
-bool isInRemoved(vector<unsigned int> removedIndices, unsigned int index)
+bool isInRemoved(std::vector<unsigned int> removedIndices, unsigned int index)
 {
 	for (unsigned int i=0; i< removedIndices.size(); i++)
 	{
@@ -416,9 +414,9 @@ bool isInRemoved(vector<unsigned int> removedIndices, unsigned int index)
 	return false;
 }
 
-void removeUnusedObjects(vector<kstate>& states)
+void removeUnusedObjects(std::vector<kstate>& states)
 {
-	vector<kstate>::iterator it;
+	std::vector<kstate>::iterator it;
 	for(it = states.begin(); it != states.end();)
 	{
 		if (!(it->active))
@@ -428,7 +426,7 @@ void removeUnusedObjects(vector<kstate>& states)
 	}
 }
 
-bool alreadyMatched(int check_index, vector<int>& matched_indices)
+bool alreadyMatched(int check_index, std::vector<int>& matched_indices)
 {
 	for (unsigned int i = 0; i < matched_indices.size(); i++)
 	{
@@ -438,15 +436,16 @@ bool alreadyMatched(int check_index, vector<int>& matched_indices)
 	return false;
 }
 
-void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int frameNumber,
-	vector<kstate>& kstates, vector<bool>& active, Mat& image, vector<kstate>& trackedDetections, vector<Scalar> & colors)
+void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections, int frameNumber,
+		std::vector<kstate>& kstates, std::vector<bool>& active, cv::Mat& image,
+		std::vector<kstate>& trackedDetections, std::vector<cv::Scalar> & colors)
 {
-	vector<LatentSvmDetector::ObjectDetection> objects;
+	std::vector<cv::LatentSvmDetector::ObjectDetection> objects;
 	//vector<LatentSvmDetector::ObjectDetection> tracked_objects;
-	vector<bool> predict_indices;//this will correspond to kstates i
-	vector<bool> correct_indices;//this will correspond to kstates i
-	vector<int> correct_detection_indices;//this will correspond to kstates i, used to store the index of the corresponding object
-	vector<bool> add_as_new_indices;//this will correspond to detections j
+	std::vector<bool> predict_indices;//this will correspond to kstates i
+	std::vector<bool> correct_indices;//this will correspond to kstates i
+	std::vector<int> correct_detection_indices;//this will correspond to kstates i, used to store the index of the corresponding object
+	std::vector<bool> add_as_new_indices;//this will correspond to detections j
 
 	//predict_indices.assign(kstates.size(), true);//always predict
 	correct_indices.assign(kstates.size(), false);//correct only those matched
@@ -456,7 +455,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 	//Convert Bounding box coordinates from (x1,y1,w,h) to (BoxCenterX, BoxCenterY, width, height)
 	objects = detections;//bboxToPosScale(detections);
 
-	vector<int> already_matched;
+	std::vector<int> already_matched;
 	//compare detections from this frame with tracked objects
 	for (unsigned int j = 0; j < detections.size(); j++)
 	{
@@ -480,14 +479,14 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 				if (new_width  + new_x > image.cols)	new_width  = image.cols - new_x;
 				if (new_height + new_y > image.rows)	new_height = image.rows - new_y;
 
-				Rect roi_20(new_x, new_y, new_width, new_height);
-				//Rect roi(detections[j].rect);
-				Rect roi(roi_20);
-				Mat currentObjectROI = image(roi).clone();//Crop image and obtain only object (ROI)
+				cv::Rect roi_20(new_x, new_y, new_width, new_height);
+				//cv::Rect roi(detections[j].rect);
+				cv::Rect roi(roi_20);
+				cv::Mat currentObjectROI = image(roi).clone();//Crop image and obtain only object (ROI)
 
-				//Rect intersect = detections[j].rect & kstates[i].pos;//check overlapping
+				//cv::Rect intersect = detections[j].rect & kstates[i].pos;//check overlapping
 
-				Rect boundingbox;
+				cv::Rect boundingbox;
 				bool matched = false;
 				//try to match with previous frame
 				if ( !USE_ORB )
@@ -517,12 +516,12 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 		{
 			//update params before predicting
 			cv::setIdentity(kstates[i].KF.measurementMatrix);
-			cv::setIdentity(kstates[i].KF.processNoiseCov, Scalar::all(NOISE_COV));//1e-4
-			cv::setIdentity(kstates[i].KF.measurementNoiseCov, Scalar::all(MEAS_NOISE_COV));//1e-3
-			cv::setIdentity(kstates[i].KF.errorCovPost, Scalar::all(ERROR_ESTIMATE_COV));//100
+			cv::setIdentity(kstates[i].KF.processNoiseCov, cv::Scalar::all(NOISE_COV));//1e-4
+			cv::setIdentity(kstates[i].KF.measurementNoiseCov, cv::Scalar::all(MEAS_NOISE_COV));//1e-3
+			cv::setIdentity(kstates[i].KF.errorCovPost, cv::Scalar::all(ERROR_ESTIMATE_COV));//100
 
-			Mat prediction = kstates[i].KF.predict();
-			Mat correction;
+			cv::Mat prediction = kstates[i].KF.predict();
+			cv::Mat correction;
 			kstates[i].pos.x = prediction.at<float>(0);
 			kstates[i].pos.y = prediction.at<float>(1);
 			kstates[i].pos.width = prediction.at<float>(2);
@@ -535,9 +534,9 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 				//a match was found hence update KF measurement
 				int j = correct_detection_indices[i];//obtain the index of the detection
 
-				//Mat_<float> measurement = (Mat_<float>(2, 1) << objects[j].rect.x, //XY ONLY
+				//cv::Mat_<float> measurement = (cv::Mat_<float>(2, 1) << objects[j].rect.x, //XY ONLY
 				//												objects[j].rect.y);
-				Mat_<float> measurement = (Mat_<float>(4, 1) << objects[j].rect.x,
+				cv::Mat_<float> measurement = (cv::Mat_<float>(4, 1) << objects[j].rect.x,
 					objects[j].rect.y,
 					objects[j].rect.width,
 					objects[j].rect.height);
@@ -554,8 +553,8 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 				kstates[i].pos.width = objects[j].rect.width;
 				kstates[i].pos.height = objects[j].rect.height;
 				kstates[i].real_data = 1;
-				//Mat im1 = image(kstates[i].pos);
-				//Mat im2 = image(objects[j].rect);
+				//cv::Mat im1 = image(kstates[i].pos);
+				//cv::Mat im2 = image(objects[j].rect);
 			}
 
 
@@ -600,7 +599,8 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 	}
 
 	//check overlapping states and remove them
-	float overlap = (OVERLAPPING_PERC/100); vector<unsigned int> removedIndices;
+	float overlap = (OVERLAPPING_PERC/100);
+	std::vector<unsigned int> removedIndices;
 	for (unsigned int i = 0; i < kstates.size() ; i++)
 	{
 		for (unsigned int j = kstates.size() - 1; j > 0; j--)
@@ -608,7 +608,7 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 			if (i==j || isInRemoved(removedIndices, i) || isInRemoved(removedIndices, j))
 				continue;
 			//cout << "i:" << i << " j:" << j << endl;
-			Rect intersection = kstates[i].pos & kstates[j].pos;
+			cv::Rect intersection = kstates[i].pos & kstates[j].pos;
 
 			if ( ( (intersection.width >= kstates[i].pos.width * overlap) && (intersection.height >= kstates[i].pos.height * overlap) ) ||
 				( (intersection.width >= kstates[j].pos.width * overlap) && (intersection.height >= kstates[j].pos.height * overlap) ) )
@@ -640,12 +640,13 @@ void doTracking(vector<LatentSvmDetector::ObjectDetection>& detections, int fram
 
 }
 
-void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::ObjectDetection> detections,
-						vector<kstate>& kstates, vector<bool>& active, vector<Scalar> colors, const sensor_msgs::Image& image_source)
+void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::LatentSvmDetector::ObjectDetection> detections,
+			 std::vector<kstate>& kstates, std::vector<bool>& active,
+			 std::vector<cv::Scalar> colors, const sensor_msgs::Image& image_source)
 {
-	vector<kstate> tracked_detections;
+	std::vector<kstate> tracked_detections;
 
-	TickMeter tm;
+	cv::TickMeter tm;
 	tm.start();
 	//std::cout << endl << "START tracking...";
 	doTracking(detections, frameNumber, kstates, active, image, tracked_detections, colors);
@@ -666,7 +667,7 @@ void trackAndDrawObjects(Mat& image, int frameNumber, vector<LatentSvmDetector::
 
 		//od.rect contains x,y, width, height
 		rectangle(image, od.pos, od.color, 3);
-		putText(image, SSTR(od.id), Point(od.pos.x + 4, od.pos.y + 13), FONT_HERSHEY_SIMPLEX, 0.55, od.color, 2);
+		putText(image, SSTR(od.id), cv::Point(od.pos.x + 4, od.pos.y + 13), cv::FONT_HERSHEY_SIMPLEX, 0.55, od.color, 2);
 		//ROS
 		obj_id[i] = od.id; // ?
 		current_point_array[0+i*4] = od.pos.x;
@@ -699,7 +700,7 @@ void image_callback(const sensor_msgs::Image& image_source)
 		return;
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
-	Mat imageTrack = cv_image->image;
+	cv::Mat imageTrack = cv_image->image;
 
 	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);
 	_ready=false;
@@ -713,18 +714,18 @@ void detections_callback(dpm::ImageObjects image_objects_msg)
 	if(_ready)
 		return;
 	int num = image_objects_msg.car_num;
-	vector<int> points = image_objects_msg.corner_point;
+	std::vector<int> points = image_objects_msg.corner_point;
 	//points are X,Y,W,H and repeat for each instance
 	_dpm_detections.clear();
 
 	for (int i=0; i<num;i++)
 	{
-		Rect tmp;
+		cv::Rect tmp;
 		tmp.x = points[i*4 + 0];
 		tmp.y = points[i*4 + 1];
 		tmp.width = points[i*4 + 2];
 		tmp.height = points[i*4 + 3];
-		_dpm_detections.push_back(LatentSvmDetector::ObjectDetection(tmp, 0));
+		_dpm_detections.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
 	}
 	_ready = true;
 	//cout << "received pos" << endl;
@@ -765,7 +766,7 @@ void init_params()
 int kf_main(int argc, char* argv[], const std::string& tracking_type)
 {
 	std::string published_node;
-	string obj_topic_def;
+	std::string obj_topic_def;
 	if(tracking_type=="car")
 	{
 		published_node="car_pixel_xy_tracked";
@@ -791,8 +792,8 @@ int kf_main(int argc, char* argv[], const std::string& tracking_type)
 
 	cv::generateColors(_colors, 25);
 
-	string image_topic;
-	string obj_topic;
+	std::string image_topic;
+	std::string obj_topic;
 	if (private_nh.getParam("image_node", image_topic))
     	{
         	ROS_INFO("Setting image node to %s", image_topic.c_str());

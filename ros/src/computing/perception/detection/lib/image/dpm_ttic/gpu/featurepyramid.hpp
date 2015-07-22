@@ -2,9 +2,6 @@
 #define _FEATURE_PYRAMID_H_
 
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
-
 #include "switch_float.h"
 #include "MODEL_info.h"
 

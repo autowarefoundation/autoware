@@ -32,9 +32,6 @@
 #define _common_2d_common_
 
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
-#include <vector>
 
 extern CvMat *v_g2l;
 extern CvMat *v_g2c;

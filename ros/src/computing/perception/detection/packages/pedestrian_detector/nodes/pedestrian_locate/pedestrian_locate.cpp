@@ -28,12 +28,6 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "std_msgs/String.h"
-#include "ros/ros.h"
-
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-#include "car_detector/FusedObjects.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -46,17 +40,23 @@
 #include <sys/time.h>
 #include <bitset>
 
-#include "opencv/cv.h" 
-#include "opencv/highgui.h"
-#include "opencv/cxcore.h" 
-#include "std_msgs/Float64.h"
-#include "scan2image/ScanImage.h"
-#include "geometry_msgs/TwistStamped.h"
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/PoseArray.h"
-#include "tf/tf.h"
-#include "tf/transform_listener.h"
-#include "sensor_msgs/NavSatFix.h"
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Float64.h>
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CompressedImage.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <car_detector/FusedObjects.h>
+#include <scan2image/ScanImage.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseArray.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
 #include "structure.h"
 #include "calcoordinates.h"
 #include "axialMove.h"
@@ -122,7 +122,7 @@ static void GetRPY(const geometry_msgs::Pose &pose,
   tf::quaternionMsgToTF(pose.orientation,q);
   tf::Matrix3x3(q).getRPY(roll,pitch,yaw);
 
-  //reverse angle value 
+  //reverse angle value
   roll = -roll;
   pitch = -pitch;
   yaw = -yaw;
@@ -180,7 +180,7 @@ static void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
 
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
-  
+
   geometry_msgs::PoseArray pose_msg;
 
   vector<OBJPOS>::iterator pp_iterator;
@@ -201,10 +201,10 @@ static void locatePublisher(vector<OBJPOS> pedestrian_position_vector){
   }
   gnssGetFlag = false;
   ndtGetFlag = false;
-  
+
   //If position is over range,skip loop
-  if((!(mloc.X > 180.0 && mloc.X < -180.0 ) || 
-      (mloc.Y > 180.0 && mloc.Y < -180.0 ) || 
+  if((!(mloc.X > 180.0 && mloc.X < -180.0 ) ||
+      (mloc.Y > 180.0 && mloc.Y < -180.0 ) ||
       mloc.Z < 0.0) ){
 
     //get data of car and pedestrian recognizing
@@ -226,31 +226,31 @@ static void pedestrian_pos_xyzCallback(const car_detector::FusedObjects& fused_o
 
   vector<OBJPOS> pp_vector;
   OBJPOS pp;
-  
+
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   if(gnssGetFlag || ndtGetFlag) {
     //認識した車の数だけ繰り返す
     for (int i = 0; i < fused_objects.car_num; i++){
-      
+
       //If distance is zero, we cannot calculate position of recognized object
       //so skip loop
       if(fused_objects.distance.at(i) <= 0) continue;
-      
+
       pp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
       pp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
       pp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
       pp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
-      
+
       pp.distance = fused_objects.distance.at(i);
-      
+
       //printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
-      
-      pp_vector.push_back(pp);      
+
+      pp_vector.push_back(pp);
     }
-    
+
     locatePublisher(pp_vector);
-    
+
   }
 }
 
@@ -304,7 +304,7 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 
 int main(int argc, char **argv){
-  ros::init(argc ,argv, "pedestrian_locate") ;  
+  ros::init(argc ,argv, "pedestrian_locate") ;
   cout << "pedestrian_locate" << endl;
 
   /**
@@ -320,7 +320,7 @@ int main(int argc, char **argv){
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
 
-  pub = n.advertise<geometry_msgs::PoseArray>("pedestrian_pose",1); 
+  pub = n.advertise<geometry_msgs::PoseArray>("pedestrian_pose",1);
 
   /*
   //read calibration value
@@ -330,13 +330,13 @@ int main(int argc, char **argv){
 
   n.param<std::string>("/scan2image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
 
-  cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ); 
+  cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ);
   if(!camera_file.isOpened()){
     fprintf(stderr,"%s, : cannot open file\n",camera_yaml.c_str());
     exit(EXIT_FAILURE);
   }
-  camera_file["intrinsic"] >> Cintrinsic; 
-  camera_file.release(); 
+  camera_file["intrinsic"] >> Cintrinsic;
+  camera_file.release();
 
   double fkx = Cintrinsic.at<float>(0,0);
   double fky = Cintrinsic.at<float>(1,1);
@@ -356,13 +356,13 @@ int main(int argc, char **argv){
       exit(-1);
   }
 
-  cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ); 
+  cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ);
   if(!lidar_3d_file.isOpened()){
     fprintf(stderr,"%s, : cannot open file\n",lidar_3d_yaml.c_str());
     exit(EXIT_FAILURE);
   }
-  lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic; 
-  lidar_3d_file.release(); 
+  lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic;
+  lidar_3d_file.release();
 
   for(int i=0; i<4 ; i++){
     for(int j=0; j<4 ; j++){

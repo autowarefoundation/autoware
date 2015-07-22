@@ -8,10 +8,6 @@
 #define INCLUDED_Minfo_
 
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
-#include <opencv2/legacy/legacy.hpp>
-
 #include "switch_float.h"
 
 /////////////////////
@@ -83,17 +79,6 @@ struct MODEL {
 	Model_info *MI;
 	Rootfilters *RF;
 	Partfilters *PF;
-};
-
-//Particle filter informations
-struct PINFO {
-	int *partner;
-	CvConDensation ** condens;
-	int *se_num;
-	int **L_P;
-	FLOAT **L_VX;
-	FLOAT **L_VY;
-	FLOAT **ave_p;
 };
 
 //Result of Detection
