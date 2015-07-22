@@ -6,7 +6,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
-#include <opencv2/legacy/legacy.hpp>
 
 #include <cstdio>
 #include <cstdlib>

@@ -1,10 +1,9 @@
 #ifndef _DPM_TTIC_H_
 #define _DPM_TTIC_H_
 
+#include <string>
 #include <vector>
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 
 extern void dpm_ttic_gpu_init_cuda(const std::string& cubin_path);
 extern void dpm_ttic_gpu_cleanup_cuda();

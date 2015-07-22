@@ -11,7 +11,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
-#include <opencv2/legacy/legacy.hpp>
 
 //Header files
 #include "MODEL_info.h"		//Model-structure definition

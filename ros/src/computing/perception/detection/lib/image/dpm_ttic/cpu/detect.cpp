@@ -12,7 +12,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <time.h>
-#include <opencv2/legacy/legacy.hpp>
 
 //ORIGINAL header files
 #include "MODEL_info.h"		//File information

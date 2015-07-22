@@ -28,28 +28,22 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
 #include <opencv2/opencv.hpp>
-#include <cv_bridge/cv_bridge.h>
-#include "opencv2/contrib/contrib.hpp"
 
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include "points2image/PointsImage.h"
+#include <points2image/PointsImage.h>
 
 #if 0
-#include "dpm/ImageObjects.h"
+#include <dpm/ImageObjects.h>
 #else
-#include "car_detector/FusedObjects.h"
+#include <car_detector/FusedObjects.h>
 #endif
 #include <vector>
 #include <iostream>
 #include <math.h>
 #include <float.h>
-
-using namespace std;
-using namespace cv;
 
 #define NO_DATA 0
 static char window_name[] = "vscan_image_d_viewer";
@@ -61,8 +55,8 @@ static points2image::PointsImageConstPtr points_msg;
 static cv::Mat colormap;
 
 #if 0
-static vector<Rect> cars;
-static vector<Rect> peds;
+static std::vector<cv::Rect> cars;
+static std::vector<cv::Rect> peds;
 #else
 static car_detector::FusedObjects car_fused_objects;
 static car_detector::FusedObjects pedestrian_fused_objects;
@@ -76,7 +70,7 @@ static inline bool isNearlyNODATA(float x)
 	return(abs_x < FLT_MIN*rangeScale);
 }
 
-static vector<Scalar> _colors;
+static std::vector<cv::Scalar> _colors;
 
 #define	IMAGE_WIDTH		800
 #define	IMAGE_HEIGHT 	600
@@ -85,35 +79,35 @@ static vector<Scalar> _colors;
 
 static const int OBJ_RECT_THICKNESS = 3;
 
-static void drawRects(Mat image,
+static void drawRects(cv::Mat image,
 					car_detector::FusedObjects objects,
 					CvScalar color,
 					int threshold_height,
 					std::vector<float> distance,
-					string objectClass)
+					std::string objectClass)
 {
 	int object_num = objects.car_num;
 	std::vector<int> corner_point = objects.corner_point;
 	char distance_string[32];
-	int fontFace = FONT_HERSHEY_SIMPLEX; double fontScale = 0.55; int fontThick = 2;
-	vector<int> pointsInBoundingBox;
+	int fontFace = cv::FONT_HERSHEY_SIMPLEX; double fontScale = 0.55; int fontThick = 2;
+	std::vector<int> pointsInBoundingBox;
 	for(int i = 0; i < object_num; i++)
 	{
 		//corner_point[0]=>X1		corner_point[1]=>Y1
 		//corner_point[2]=>width	corner_point[3]=>height
-		Rect detection = Rect(corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
+		cv::Rect detection = cv::Rect(corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
 
 		rectangle(image, detection, color, OBJ_RECT_THICKNESS);//draw bounding box
-		putText(image, objectClass, Point(detection.x + 4, detection.y + 10), fontFace, fontScale, color, fontThick);//draw label text
+		putText(image, objectClass, cv::Point(detection.x + 4, detection.y + 10), fontFace, fontScale, color, fontThick);//draw label text
 
 		sprintf(distance_string, "D:%.2f m H:%.1f,%.1f", objects.distance.at(i) / 100, objects.min_height.at(i), objects.max_height.at(i));
 		//Size textSize = getTextSize(string(distance_string), fontFace, fontScale, fontThick, 0);
-		//rectangle(image, Rect( detection.x, detection.y, textSize.width + 4, textSize.height + 10), Scalar::all(0), CV_FILLED);//draw fill distance rectangle
-		putText(image, string(distance_string), Point(detection.x + 4, detection.y - 10), fontFace, fontScale, color, fontThick);//draw distance text
+		//rectangle(image, cv::Rect( detection.x, detection.y, textSize.width + 4, textSize.height + 10), Scalar::all(0), CV_FILLED);//draw fill distance rectangle
+		putText(image, std::string(distance_string), cv::Point(detection.x + 4, detection.y - 10), fontFace, fontScale, color, fontThick);//draw distance text
 	}
 }
 
-static void drawVScanPoints(Mat image)
+static void drawVScanPoints(cv::Mat image)
 {
 	/* DRAW POINTS of lidar scanning */
     int w = image.size().width;
@@ -146,7 +140,7 @@ static void drawVScanPoints(Mat image)
 			int g = color[1];
 			int b = color[2];
 			int r = color[0];
-			rectangle(image, Rect(x, y,1, 1), Scalar(r, g, b), OBJ_RECT_THICKNESS);
+			rectangle(image, cv::Rect(x, y,1, 1), cv::Scalar(r, g, b), OBJ_RECT_THICKNESS);
 		}
 	}
 }
@@ -169,14 +163,14 @@ static void show(void)
 	/* DRAW RECTANGLES of detected objects */
 	drawRects(matImage,
 		  car_fused_objects,
-		  Scalar(255.0, 255.0, 0,0),
+		  cv::Scalar(255.0, 255.0, 0,0),
 		  matImage.rows*.25,
 		  car_fused_objects.distance,
 		  "car");
 
 	drawRects(matImage,
 		  pedestrian_fused_objects,
-		  Scalar(0.0, 255.0, 0,0),
+		  cv::Scalar(0.0, 255.0, 0,0),
 		  matImage.rows*.25,
 		  pedestrian_fused_objects.distance,
 		  "pedestrian");
@@ -216,10 +210,10 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
-	string image_node;
-	string car_node;
-	string pedestrian_node;
-	string points_node;
+	std::string image_node;
+	std::string car_node;
+	std::string pedestrian_node;
+	std::string points_node;
 
 	if (private_nh.getParam("image_node", image_node))
 	{
