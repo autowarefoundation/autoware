@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   visualization_msgs
-  ui_socket
+  tablet_socket
   waypoint_follower
   runtime_manager
   map_file
@@ -18,7 +18,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES vmap_utility
-  CATKIN_DEPENDS ui_socket waypoint_follower runtime_manager map_file
+  CATKIN_DEPENDS tablet_socket waypoint_follower runtime_manager map_file
   DEPENDS gnss
 )
 
@@ -35,7 +35,7 @@ add_dependencies(vmap_utility
 add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
 target_link_libraries(lane_navi vmap_utility gnss ${catkin_LIBRARIES})
 add_dependencies(lane_navi
-  ui_socket_generate_messages_cpp
+  tablet_socket_generate_messages_cpp
   map_file_generate_messages_cpp
 )
 

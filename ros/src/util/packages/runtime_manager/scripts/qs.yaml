@@ -37,7 +37,7 @@ buttons :
     param : motion_planning_qs
 
   android_tablet_qs :
-    run : roslaunch runtime_manager ui_socket.launch
+    run : roslaunch runtime_manager tablet_socket.launch
   oculus_rift_qs :
     run : echo 'oculus rift'
   vehicle_gateway_qs :

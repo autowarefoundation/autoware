@@ -7,7 +7,7 @@
 
 buttons:
   tablet:
-    run : roslaunch runtime_manager ui_socket.launch
+    run : roslaunch runtime_manager tablet_socket.launch
   mobile:
     run : echo 'mobile ui'
   vehicle:
