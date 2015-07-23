@@ -46,7 +46,7 @@
 #include "tablet_socket/mode_cmd.h"
 #include "tablet_socket/route_cmd.h"
 
-#define NODE_NAME	"ui_receiver"
+#define NODE_NAME	"tablet_receiver"
 #define TOPIC_NR	(3)
 
 #define DEFAULT_PORT	(5666)
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 	pub[0] = node.advertise<tablet_socket::gear_cmd>("gear_cmd", 1);
 	pub[1] = node.advertise<tablet_socket::mode_cmd>("mode_cmd", 1);
 	pub[2] = node.advertise<tablet_socket::route_cmd>("route_cmd", 1);
-	node.param<int>("ui_receiver/port", port, DEFAULT_PORT);
+	node.param<int>("tablet_receiver/port", port, DEFAULT_PORT);
 	fprintf(stderr, "listen port=%d\n", port);
 
 	//get connect to android

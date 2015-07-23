@@ -29,9 +29,9 @@ catkin_package(
   CATKIN_DEPENDS vehicle_socket
 )
 
-add_executable(ui_receiver nodes/ui_receiver/ui_receiver.cpp)
-target_link_libraries(ui_receiver ${catkin_LIBRARIES})
-add_dependencies(ui_receiver tablet_socket_generate_messages_cpp)
+add_executable(tablet_receiver nodes/tablet_receiver/tablet_receiver.cpp)
+target_link_libraries(tablet_receiver ${catkin_LIBRARIES})
+add_dependencies(tablet_receiver tablet_socket_generate_messages_cpp)
 
 add_executable(ui_sender nodes/ui_sender/ui_sender.cpp)
 target_link_libraries(ui_sender ${catkin_LIBRARIES})
