@@ -65,10 +65,10 @@ from runtime_manager.msg import ConfigLaneRule
 from runtime_manager.msg import ConfigWaypointLoader
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
-from ui_socket.msg import mode_cmd
-from ui_socket.msg import gear_cmd
-from ui_socket.msg import Waypoint
-from ui_socket.msg import route_cmd
+from tablet_socket.msg import mode_cmd
+from tablet_socket.msg import gear_cmd
+from tablet_socket.msg import Waypoint
+from tablet_socket.msg import route_cmd
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
