@@ -49,7 +49,7 @@ enum daytime_Hue_threshold {
 
 #define NOISE_REDUCTION_TIME 1
 
-#define CIRCLE_LEVEL_THRESHOLD 0.65
+#define CIRCLE_LEVEL_THRESHOLD 0.75 //0.65
 #define CIRCLE_AREA_THRESHOLD 0.5 //1 //5
 
 #define CHANGE_STATE_THRESHOLD 5

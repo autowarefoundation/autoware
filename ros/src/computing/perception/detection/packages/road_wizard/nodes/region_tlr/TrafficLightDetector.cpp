@@ -1,6 +1,17 @@
 #include "TrafficLight.h"
 #include "TrafficLightDetector.h"
 
+#define BLACK CV_RGB(0, 0, 0)
+#define WHITE CV_RGB(255, 255, 255)
+
+struct regionCandidate {
+  Point  center;
+  int    idx;
+  double circleLevel;
+  bool   isBlacked;
+};
+
+
 extern thresholdSet thSet;      // declared in traffic_light_lkf.cpp
 
 /*
@@ -63,11 +74,91 @@ static void colorExtraction(const Mat&   src,                               // i
 } /* static void colorExtraction() */
 
 
-static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
+static bool checkExtinctionLight(const Mat&  src_img,
+                                 const Point top_left,
+                                 const Point bot_right,
+                                 const Point bright_center)
+{
+
+  /* check whether new roi is included by source image */
+  Point roi_top_left;
+  roi_top_left.x = (top_left.x < 0) ? 0 :
+    (src_img.cols < top_left.x) ? src_img.cols : top_left.x;
+  roi_top_left.y = (top_left.y < 0) ? 0 :
+    (src_img.rows < top_left.y) ? src_img.rows : top_left.y;
+
+  Point roi_bot_right;
+  roi_bot_right.x = (bot_right.x < 0) ? 0 :
+    (src_img.cols < bot_right.x) ? src_img.cols : bot_right.x;
+  roi_bot_right.y = (bot_right.y < 0) ? 0 :
+    (src_img.rows < bot_right.y) ? src_img.rows : bot_right.y;
+
+  Mat roi = src_img(Rect(roi_top_left, roi_bot_right));
+
+  Mat roi_HSV;
+  cvtColor(roi, roi_HSV, CV_BGR2HSV);
+
+  Mat hsv_channel[3];
+  split(roi_HSV, hsv_channel);
+
+  int anchor = 3;
+  Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(2*anchor + 1, 2*anchor + 1), Point(anchor, anchor));
+
+  Mat topHat_dark;
+  morphologyEx(hsv_channel[2], topHat_dark, MORPH_TOPHAT, kernel, Point(anchor, anchor), 5);
+
+  /* sharpening */
+  Mat tmp;
+  threshold(topHat_dark, tmp, 0.1*255, 255, THRESH_BINARY_INV);
+  tmp.copyTo(topHat_dark);
+
+  /* filter by its shape and search dark region */
+  std::vector< std::vector<Point> > dark_contours;
+  std::vector<Vec4i> dark_hierarchy;
+  findContours(topHat_dark,
+               dark_contours,
+               dark_hierarchy,
+               CV_RETR_CCOMP,
+               CV_CHAIN_APPROX_NONE);
+
+  int contours_idx = 0;
+  bool isThere_dark = false;
+
+  /* check whether "turned off light" like region are in this roi */
+  for (unsigned int i=0; i<dark_contours.size(); i++)
+    {
+      Rect bound = boundingRect(dark_contours.at(contours_idx));
+      double area = contourArea(dark_contours.at(contours_idx));
+      double perimeter = arcLength(dark_contours.at(contours_idx), true);
+      double circleLevel = (IsNearlyZero(perimeter)) ? 0.0f : (4.0f * CV_PI * area / pow(perimeter, 2));
+
+      if (std::max(bound.width, bound.height) < 2*std::min(bound.width, bound.height) && // dimension ratio
+          CIRCLE_LEVEL_THRESHOLD <= circleLevel)                                         // round enough
+
+        {
+          isThere_dark = true;
+          // std::cerr << "there is dark region" << std::endl;
+        }
+
+      contours_idx = dark_hierarchy[contours_idx][0];
+      if (contours_idx < 0)
+        break;
+    }
+
+  return isThere_dark;
+
+} /* static bool checkExtinctionLight() */
+
+
+static Mat signalDetect_inROI(const Mat&   roi,
+                              const Mat&   src_img,
+                              const double estimatedRadius,
+                              const Point roi_topLeft
+                              )
 {
   /* reduce noise */
   Mat noiseReduced(roi.rows, roi.cols, CV_8UC3);
-  GaussianBlur(roi, noiseReduced, Size(7, 7), 0, 0);
+  GaussianBlur(roi, noiseReduced, Size(3, 3), 0, 0);
 
   /* extract color information */
   Mat red_mask(roi.rows, roi.cols, CV_8UC1);
@@ -91,77 +182,163 @@ static Mat signalDetect_inROI(const Mat& roi, const double estimatedRadius)
                   thSet.Green.Sat.lower, thSet.Green.Sat.upper,
                   thSet.Green.Val.lower, thSet.Green.Val.upper);
 
-
-  Mat red(roi.rows, roi.cols, CV_8UC3, CV_RGB(255, 0, 0));
-  Mat red_test;
-  red.copyTo(red_test, red_mask);
-
-
-  Mat yellow(roi.rows, roi.cols, CV_8UC3, CV_RGB(255, 255, 0));
-  Mat yellow_test;
-  yellow.copyTo(yellow_test, yellow_mask);
-
-
-  Mat green(roi.rows, roi.cols, CV_8UC3, CV_RGB(0, 255, 0));
-  Mat green_test;
-  green.copyTo(green_test, green_mask);
-
-
-  // imshow ("red", red_test);
-  // imshow ("yellow", yellow_test);
-  // imshow ("green", green_test);
-  // waitKey(10);
-
   /* combine all color mask and create binarized image */
   Mat binarized = Mat::zeros(roi.rows, roi.cols, CV_8UC1);
   bitwise_or(red_mask, yellow_mask, binarized);
   bitwise_or(binarized, green_mask, binarized);
   threshold(binarized, binarized, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
-  /* find contours in binarized image */
-  std::vector< std::vector<Point> > contours;
-  std::vector<Vec4i> hierarchy;
-
+  /* filter by its shape and index each bright region */
+  std::vector< std::vector<Point> > bright_contours;
+  std::vector<Vec4i> bright_hierarchy;
   findContours(binarized,
-               contours,
-               hierarchy,
+               bright_contours,
+               bright_hierarchy,
                CV_RETR_CCOMP,
                CV_CHAIN_APPROX_NONE);
 
-  /* shape judgement */
-  Mat contours_img = Mat::zeros(binarized.rows, binarized.cols, CV_8UC3);
+
+  Mat bright_mask = Mat::zeros(roi.rows, roi.cols, CV_8UC1);
+
   int contours_idx = 0;
-  for (unsigned int i=0; i<contours.size(); i++)
+  std::vector<regionCandidate> candidates;
+  for (unsigned int i=0; i<bright_contours.size(); i++)
     {
-      /* if the area contours has less than 3 points, it may not be detected as traffic signal */
-      if (contours.at(contours_idx).size() < 3) {
-        continue;
-      }
+      Rect bound = boundingRect(bright_contours.at(contours_idx));
+      Scalar rangeColor = BLACK;
+      struct regionCandidate cnd;
+      double area = contourArea(bright_contours.at(contours_idx));
+      double perimeter = arcLength(bright_contours.at(contours_idx), true);
+      double circleLevel = (IsNearlyZero(perimeter)) ? 0.0f : (4.0f * CV_PI * area / pow(perimeter, 2));
 
-      double area = contourArea(contours.at(contours_idx));
-      double perimeter = arcLength(contours.at(contours_idx), true);
-      double circleLevel = (IsNearlyZero(perimeter)) ? 0.0f : (4.0 * CV_PI * area / (perimeter * perimeter));
-
-      /* correct search area center point */
-      if (CIRCLE_LEVEL_THRESHOLD <= circleLevel && CIRCLE_AREA_THRESHOLD <= area)
+      if (std::max(bound.width, bound.height) < 2*std::min(bound.width, bound.height) && /* dimension ratio */
+          CIRCLE_LEVEL_THRESHOLD <= circleLevel                                       &&
+          CIRCLE_AREA_THRESHOLD  <= area)
         {
-          Rect bound = boundingRect(contours.at(contours_idx));
-          Point correctedCenter(bound.x + bound.width/2, bound.y + bound.height/2);
-          circle(contours_img, correctedCenter, estimatedRadius, CV_RGB(255, 255, 255), CV_FILLED);
+          // std::cerr << "circleLevel: " << circleLevel << std::endl;
+          rangeColor    = WHITE;
+          cnd.center.x  = bound.x + bound.width/2;
+          cnd.center.y  = bound.y + bound.height/2;
+          cnd.idx       = contours_idx;
+          cnd.circleLevel = (IsNearlyZero(perimeter)) ? 0.0f : (4.0 * CV_PI * area / pow(perimeter, 2));
+          cnd.isBlacked = false;
+          candidates.push_back(cnd);
         }
 
+      drawContours(bright_mask,
+                   bright_contours,
+                   contours_idx,
+                   rangeColor,
+                   CV_FILLED,
+                   8,
+                   bright_hierarchy,
+                   0);
 
-      /* Only contours on toplevel are considerd */
-      contours_idx = hierarchy[contours_idx][0];
+      /* only contours on toplevel are considered */
+      contours_idx = bright_hierarchy[contours_idx][0];
       if (contours_idx < 0)
         break;
     }
 
-  // imshow("contours_img", contours_img);
+  // imshow("bright_mask", bright_mask);
   // waitKey(10);
 
-  return contours_img;
+  unsigned int candidates_num = candidates.size();
 
+  // std::cerr << "before checkExtrinctionLight. candidates: " << candidates_num << std::endl;
+
+  /* decrease candidates by checking existence of turned off light in their neighborhood */
+  if (candidates_num > 1)    /* if there are multipule candidates */
+    {
+      for (unsigned int i=0; i<candidates.size(); i++)
+        {
+          /* check wheter this candidate seems to be green lamp */
+          Point check_roi_topLeft  = Point(candidates.at(i).center.x - 2*estimatedRadius + roi_topLeft.x,
+                                           candidates.at(i).center.y - 2*estimatedRadius + roi_topLeft.y);
+          Point check_roi_botRight = Point(candidates.at(i).center.x + 6*estimatedRadius + roi_topLeft.x,
+                                           candidates.at(i).center.y + 2*estimatedRadius + roi_topLeft.y);
+          bool likeGreen = checkExtinctionLight(src_img, check_roi_topLeft, check_roi_botRight, candidates.at(i).center);
+
+          /* check wheter this candidate seems to be yellow lamp */
+          check_roi_topLeft  = Point(candidates.at(i).center.x - 4*estimatedRadius + roi_topLeft.x,
+                                     candidates.at(i).center.y - 2*estimatedRadius + roi_topLeft.y);
+          check_roi_botRight = Point(candidates.at(i).center.x + 4*estimatedRadius + roi_topLeft.x,
+                                     candidates.at(i).center.y + 2*estimatedRadius + roi_topLeft.y);
+          bool likeYellow = checkExtinctionLight(src_img, check_roi_topLeft, check_roi_botRight, candidates.at(i).center);
+
+          /* check wheter this candidate seems to be red lamp */
+          check_roi_topLeft  = Point(candidates.at(i).center.x - 6*estimatedRadius + roi_topLeft.x,
+                                     candidates.at(i).center.y - 2*estimatedRadius + roi_topLeft.y);
+          check_roi_botRight = Point(candidates.at(i).center.x + 2*estimatedRadius + roi_topLeft.x,
+                                     candidates.at(i).center.y + 2*estimatedRadius + roi_topLeft.y);
+          bool likeRed = checkExtinctionLight(src_img, check_roi_topLeft, check_roi_botRight, candidates.at(i).center);
+
+
+          if (!likeGreen && !likeYellow && !likeRed) /* this region may not be traffic light */
+            {
+              candidates_num--;
+              drawContours(bright_mask,
+                           bright_contours,
+                           candidates.at(i).idx,
+                           BLACK,
+                           CV_FILLED,
+                           8,
+                           bright_hierarchy,
+                           0);
+              candidates.at(i).isBlacked = true;
+            }
+        }
+    }
+
+  // std::cerr << "after checkExtrinctionLight. candidates: " << candidates_num << std::endl;
+
+  /* choose one candidate by comparing degree of circularity */
+  if (candidates_num > 1)       /* if there are still multiple candidates */
+    {
+      double min_diff = DBL_MAX;
+      unsigned int min_idx = 0;
+
+      /* search the region that has nearest degree of circularity to 1 */
+      for (unsigned int i=0; i<candidates.size(); i++)
+        {
+          if(candidates.at(i).isBlacked)
+            continue;
+
+          double diff = fabs(1 - candidates.at(i).circleLevel);
+          if (min_diff > diff)
+            {
+              min_diff = diff;
+              min_idx = i;
+            }
+        }
+
+      /* fill region of non-candidate */
+      for (unsigned int i=0; i<candidates.size(); i++)
+        {
+
+          if(candidates.at(i).isBlacked)
+            continue;
+
+          Scalar regionColor = BLACK;
+          candidates.at(i).isBlacked = true;
+          if (i == min_idx)
+            {
+              regionColor = WHITE;
+              candidates.at(i).isBlacked = false;
+            }
+
+          drawContours(bright_mask,
+                       bright_contours,
+                       candidates.at(i).idx,
+                       regionColor,
+                       CV_FILLED,
+                       8,
+                       bright_hierarchy,
+                       0);
+        }
+    }
+
+  return bright_mask;
 
 } /* static void signalDetect_inROI() */
 
@@ -190,16 +367,17 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     cvtColor(roi, roi_HSV, CV_BGR2HSV);
 
     /* search the place where traffic signals seem to be */
-    Mat    signalMask    = signalDetect_inROI(roi_HSV, context.lampRadius);
+    Mat    signalMask    = signalDetect_inROI(roi_HSV, input.clone(), context.lampRadius, context.topLeft);
 
     /* detect which color is dominant */
     Mat extracted_HSV;
-    bitwise_and(roi, signalMask, roi);
+    roi.copyTo(extracted_HSV, signalMask);
 
+    // extracted_HSV.copyTo(roi);
     // imshow("tmpImage", tmpImage);
     // waitKey(5);
 
-    cvtColor(roi, extracted_HSV, CV_BGR2HSV);
+    cvtColor(extracted_HSV, extracted_HSV, CV_BGR2HSV);
 
     int red_pixNum    = 0;
     int yellow_pixNum = 0;
