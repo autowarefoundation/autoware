@@ -401,10 +401,10 @@ int main(int argc, char **argv)
 	int listenfd, on;
 	sockaddr_in addr;
 
-	ros::init(argc, argv, "ui_sender");
+	ros::init(argc, argv, "tablet_sender");
 
 	ros::NodeHandle n;
-	n.param<int>("ui_sender/port", port, DEFAULT_PORT);
+	n.param<int>("tablet_sender/port", port, DEFAULT_PORT);
 	if (!(port >= 0 && port < 65536)) {
 		ROS_ERROR("Invalid port value %d\n", port);
 		return -1;

@@ -33,9 +33,9 @@ add_executable(tablet_receiver nodes/tablet_receiver/tablet_receiver.cpp)
 target_link_libraries(tablet_receiver ${catkin_LIBRARIES})
 add_dependencies(tablet_receiver tablet_socket_generate_messages_cpp)
 
-add_executable(ui_sender nodes/ui_sender/ui_sender.cpp)
-target_link_libraries(ui_sender ${catkin_LIBRARIES})
-add_dependencies(ui_sender
+add_executable(tablet_sender nodes/tablet_sender/tablet_sender.cpp)
+target_link_libraries(tablet_sender ${catkin_LIBRARIES})
+add_dependencies(tablet_sender
   tablet_socket_generate_messages_cpp
   vehicle_socket_generate_messages_cpp
 )
