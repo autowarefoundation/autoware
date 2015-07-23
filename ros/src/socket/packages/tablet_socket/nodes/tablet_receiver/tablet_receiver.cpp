@@ -42,11 +42,11 @@
 #include <assert.h>
 
 #include "ros/ros.h"
-#include "ui_socket/gear_cmd.h"
-#include "ui_socket/mode_cmd.h"
-#include "ui_socket/route_cmd.h"
+#include "tablet_socket/gear_cmd.h"
+#include "tablet_socket/mode_cmd.h"
+#include "tablet_socket/route_cmd.h"
 
-#define NODE_NAME	"ui_receiver"
+#define NODE_NAME	"tablet_receiver"
 #define TOPIC_NR	(3)
 
 #define DEFAULT_PORT	(5666)
@@ -130,10 +130,10 @@ int main(int argc, char *argv[])
 
 	ros::init(argc, argv, NODE_NAME);
 	ros::NodeHandle node;
-	pub[0] = node.advertise<ui_socket::gear_cmd>("gear_cmd", 1);
-	pub[1] = node.advertise<ui_socket::mode_cmd>("mode_cmd", 1);
-	pub[2] = node.advertise<ui_socket::route_cmd>("route_cmd", 1);
-	node.param<int>("ui_receiver/port", port, DEFAULT_PORT);
+	pub[0] = node.advertise<tablet_socket::gear_cmd>("gear_cmd", 1);
+	pub[1] = node.advertise<tablet_socket::mode_cmd>("mode_cmd", 1);
+	pub[2] = node.advertise<tablet_socket::route_cmd>("route_cmd", 1);
+	node.param<int>("tablet_receiver/port", port, DEFAULT_PORT);
 	fprintf(stderr, "listen port=%d\n", port);
 
 	//get connect to android
@@ -217,20 +217,20 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 
 	switch(info[0]) {
 	case 1: { // GEAR
-		ui_socket::gear_cmd msg;
+		tablet_socket::gear_cmd msg;
 		msg.gear = info[1];
 		pub[0].publish(msg);
 		break;
 	}
 	case 2: { // MODE
-		ui_socket::mode_cmd msg;
+		tablet_socket::mode_cmd msg;
 		msg.mode = info[1];
 		pub[1].publish(msg);
 		break;
 	}
 	case 3: { // ROUTE
-		ui_socket::route_cmd msg;
-		ui_socket::Waypoint point;
+		tablet_socket::route_cmd msg;
+		tablet_socket::Waypoint point;
 		size_t size = info[1];
 		double *points;
 		int points_nr;

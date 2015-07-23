@@ -2,7 +2,7 @@
 <launch>
 
 <!-- Tablet UI -->
-<include file="$(find runtime_manager)/scripts/ui_socket.launch"/>
+<include file="$(find runtime_manager)/scripts/tablet_socket.launch"/>
 
 <!-- Vehicle Contorl -->
 <include file="$(find runtime_manager)/scripts/vehicle_socket.launch"/>

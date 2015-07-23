@@ -33,7 +33,7 @@
 
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
-#include <ui_socket/route_cmd.h>
+#include <tablet_socket/route_cmd.h>
 
 #include <geo_pos_conv.hh>
 
@@ -98,7 +98,7 @@ static void point_class_callback(const map_file::PointClassArray& msg)
 	update_left_lane();
 }
 
-static void route_cmd_callback(const ui_socket::route_cmd& msg)
+static void route_cmd_callback(const tablet_socket::route_cmd& msg)
 {
 	geo_pos_conv geo;
 	geo.set_plane(7);
