@@ -352,6 +352,21 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
   Mat tmpImage;
   input.copyTo(tmpImage);
 
+  /* contrast correction */
+  Mat tmp;
+  cvtColor(tmpImage, tmp, CV_BGR2HSV);
+  std::vector<Mat> hsv_channel;
+  split(tmp, hsv_channel);
+
+  float correction_factor = 10.0;
+  uchar lut[256];
+  for (int i=0; i<256; i++) {
+    lut[i] = 255.0 / (1 + exp(-correction_factor*(i-128)/255));
+  }
+
+  LUT(hsv_channel[2], Mat(Size(256, 1), CV_8U, lut), hsv_channel[2]);
+  merge(hsv_channel, tmp);
+  cvtColor(tmp, tmpImage, CV_HSV2BGR);
 
   for (int i = 0; i < static_cast<int>(contexts.size()); i++) {
     Context context = contexts.at(i);
