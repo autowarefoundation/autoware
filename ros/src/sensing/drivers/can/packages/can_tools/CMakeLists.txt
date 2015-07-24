@@ -128,10 +128,14 @@ include_directories(
 # target_link_libraries(particle_filter_node
 #   ${catkin_LIBRARIES}
 # )
+if(EXISTS "/usr/include/canlib.h")
 add_executable(can_listener nodes/can_listener/can_listener.cpp)
 target_link_libraries(can_listener ${catkin_LIBRARIES})
 target_link_libraries(can_listener canlib)
 add_dependencies(can_listener can_tools_generate_messages_cpp)
+else()
+message("'canlib' is not installed. 'can_listener' is not built.")
+endif()
 
 add_executable(can_converter nodes/can_converter/can_converter.cpp)
 target_link_libraries(can_converter ${catkin_LIBRARIES})
