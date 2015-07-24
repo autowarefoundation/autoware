@@ -489,8 +489,8 @@ static void process_image_common(IplImage *frame)
   video_size.width  = *shrd_ptr_width;
 #else
   // XXX These parameters should be set ROS parameters
-  video_size.height = 480;
-  video_size.width  = 640;
+  video_size.height = frame->height;
+  video_size.width  = frame->width;
 #endif
   CvSize    frame_size = cvSize(video_size.width, video_size.height/2);
   IplImage *temp_frame = cvCreateImage(frame_size, IPL_DEPTH_8U, 3);
@@ -573,7 +573,7 @@ int main(int argc, char *argv[])
 #else
   ros::init(argc, argv, "line_ocv");
   ros::NodeHandle n;
-  ros::Subscriber subscriber = n.subscribe("/lane_cannyhough", 1, lane_cannyhough_callback);
+  ros::Subscriber subscriber = n.subscribe("/image_raw", 1, lane_cannyhough_callback);
 
   image_lane_objects = n.advertise<lane_detector::ImageLaneObjects>("lane_pos_xy", 1);
 
