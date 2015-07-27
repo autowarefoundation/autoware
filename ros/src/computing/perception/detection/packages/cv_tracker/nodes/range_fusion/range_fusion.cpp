@@ -30,7 +30,6 @@
 #include <std_msgs/Header.h>
 #include <fusion_func.h>
 #include <runtime_manager/ConfigCarFusion.h>
-#include <kf/KFObjects.h>
 
 static void publishTopic();
 static ros::Publisher fused_objects;

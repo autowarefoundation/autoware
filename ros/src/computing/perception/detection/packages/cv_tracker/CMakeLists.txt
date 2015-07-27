@@ -10,6 +10,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   message_generation
   libdpm_ttic
   fusion
+  kf
 )
 FIND_PACKAGE(OpenCV REQUIRED)
 
@@ -23,6 +24,7 @@ add_message_files(
   FILES
   image_obj.msg
   image_obj_ranged.msg
+  image_obj_tracked.msg
   image_rect.msg
   image_rect_ranged.msg
   obj_pose.msg
@@ -35,7 +37,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ttic scan2image fusion
+  CATKIN_DEPENDS libdpm_ttic scan2image fusion kf
 )
 
 ###########
@@ -76,7 +78,7 @@ SET_TARGET_PROPERTIES(dpm_ttic
 )
 
 ADD_DEPENDENCIES(dpm_ttic
-  dpm_ttic_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
 )
 
 SET(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
@@ -96,5 +98,19 @@ TARGET_LINK_LIBRARIES(range_fusion
 )
 
 ADD_DEPENDENCIES(range_fusion
-  range_fusion_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
+)
+
+ADD_EXECUTABLE(kf_track
+  nodes/kf_track/kf_track.cpp
+)
+
+TARGET_LINK_LIBRARIES(kf_track
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  kf
+)
+
+ADD_DEPENDENCIES(kf_track
+  kf_track_generate_messages_cpp
 )

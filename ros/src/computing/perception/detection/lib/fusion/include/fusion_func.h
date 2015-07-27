@@ -42,7 +42,7 @@
 #include <cv_tracker/image_rect_ranged.h>
 #include <scan2image/ScanImage.h>
 #include <points2image/PointsImage.h>
-#include <kf/KFObjects.h>
+#include <cv_tracker/image_obj_tracked.h>
 
 #include <opencv2/opencv.hpp>
 
