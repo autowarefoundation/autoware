@@ -47,7 +47,7 @@ subs :
     - name : lidar_detector
       subs :
       - name : euclidean_clustering
-        cmd  : echo 'euclidean_clustering'
+        cmd  : roslaunch lidar_tracker euclidean_clustering.launch
       - name : fusion_clustering
         cmd  : echo 'fusion_clustering'
     - name : road_wizard
