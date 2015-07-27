@@ -84,3 +84,17 @@ SET(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
+
+ADD_EXECUTABLE(range_fusion
+  nodes/range_fusion/range_fusion.cpp
+)
+
+TARGET_LINK_LIBRARIES(range_fusion
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  fusion
+)
+
+ADD_DEPENDENCIES(range_fusion
+  range_fusion_generate_messages_cpp
+)

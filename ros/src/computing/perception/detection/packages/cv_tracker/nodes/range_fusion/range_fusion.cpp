@@ -26,7 +26,7 @@
  */
 
 #include <ros/ros.h>
-#include <car_detector/FusedObjects.h>
+#include <cv_tracker/image_obj_ranged.h>
 #include <std_msgs/Header.h>
 #include <fusion_func.h>
 #include <runtime_manager/ConfigCarFusion.h>
@@ -36,7 +36,7 @@ static void publishTopic();
 static ros::Publisher fused_objects;
 static std_msgs::Header sensor_header;
 
-static void DetectedObjectsCallback(const kf::KFObjects& image_object)
+static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 {
 	setDetectedObjects(image_object);
 
@@ -65,15 +65,12 @@ static void PointsImageCallback(const points2image::PointsImage& points_image)
 static void publishTopic()
 {
 	/*
-	 * Publish topic(Car position xyz).
+	 * Publish topic(obj position ranged).
 	 */
-	car_detector::FusedObjects fused_objects_msg;
+	cv_tracker::image_obj_ranged fused_objects_msg;
 	fused_objects_msg.header = sensor_header;
-	fused_objects_msg.car_num = getObjectsNum();
-	fused_objects_msg.corner_point = getCornerPoint();
-	fused_objects_msg.distance = getDistance();
-	fused_objects_msg.min_height = getMinHeights();
-	fused_objects_msg.max_height = getMaxHeights();
+	fused_objects_msg.type = getObjectsType();
+	fused_objects_msg.obj = getObjectsRectRanged();
 	fused_objects.publish(fused_objects_msg);
 }
 
@@ -89,17 +86,17 @@ static void config_cb(const runtime_manager::ConfigCarFusion::ConstPtr& param)
 int main(int argc, char **argv)
 {
 	init();
-	ros::init(argc, argv, "car_fusion");
+	ros::init(argc, argv, "range_fusion");
 
 	ros::NodeHandle n;
 
-	ros::Subscriber car_pixel_xy_sub = n.subscribe("car_pixel_xy_tracked", 1, DetectedObjectsCallback);
+	ros::Subscriber image_obj_sub = n.subscribe("/image_obj", 1, DetectedObjectsCallback);
 	//ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
 	ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
 #if _DEBUG
 	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
-	fused_objects = n.advertise<car_detector::FusedObjects>("car_pixel_xyz", 1);
+	fused_objects = n.advertise<cv_tracker::image_obj_ranged>("/image_obj_ranged", 1);
 
 	ros::Subscriber config_subscriber;
 	config_subscriber = n.subscribe("/config/car_fusion", 1, config_cb);

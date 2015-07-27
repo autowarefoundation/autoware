@@ -44,8 +44,11 @@ static double ratio = 1;	//resize ratio
 #endif
 
 /*for obstacle_detectionCallback */
+static std::string obj_type;
 static std::vector<int> g_corner_points;
+static std::vector<float> g_scores;
 static std::vector<int> filtered_corner_points;
+static std::vector<float> filtered_scores;
 static int g_objects_num;
 static int filtered_objects_num;
 /*for distance_measurementCallback */
@@ -197,6 +200,7 @@ void fuseFilterDetections(std::vector<Point5>& vScanPoints)
 	//reset
 	filtered_objects_num = 0;
 	filtered_corner_points.clear();
+    filtered_scores.clear();
 	filtered_distances.clear();
 	filtered_max_heights.clear();
 	filtered_min_heights.clear();
@@ -217,6 +221,8 @@ void fuseFilterDetections(std::vector<Point5>& vScanPoints)
 			filtered_corner_points.push_back(detection.y);
 			filtered_corner_points.push_back(detection.width);
 			filtered_corner_points.push_back(detection.height);
+			//detection score
+			filtered_scores.push_back(g_scores.at(i));
 			//distance
 			filtered_distances.push_back(g_distances.at(i));
 			//calculate min and max height of the points in the bounding box
@@ -256,16 +262,19 @@ static void showRects(IplImage *image, int object_num, const std::vector<int>& c
 }
 #endif
 
-void setDetectedObjects(const kf::KFObjects& detected_objects)
+void setDetectedObjects(const cv_tracker::image_obj& detected_objects)
 {
-	g_corner_points.resize(detected_objects.corner_point.size());
+	obj_type = detected_objects.type;
+	g_corner_points.resize(4*detected_objects.obj.size());
+	g_scores.resize(detected_objects.obj.size());
 
-	g_objects_num = detected_objects.total_num;
-	for (int i = 0 ;i < detected_objects.total_num; i++) {
-		g_corner_points[0+i*4] = detected_objects.corner_point[0+i*4];
-		g_corner_points[1+i*4] = detected_objects.corner_point[1+i*4];
-		g_corner_points[2+i*4] = detected_objects.corner_point[2+i*4];
-		g_corner_points[3+i*4] = detected_objects.corner_point[3+i*4];
+	g_objects_num = detected_objects.obj.size();
+	for (int i = 0 ;i < g_objects_num; i++) {
+		g_corner_points[0+i*4] = detected_objects.obj.at(i).x;
+		g_corner_points[1+i*4] = detected_objects.obj.at(i).y;
+		g_corner_points[2+i*4] = detected_objects.obj.at(i).width;
+		g_corner_points[3+i*4] = detected_objects.obj.at(i).height;
+		g_scores[i]            = detected_objects.obj.at(i).score;
 	}
 	objectsStored = true;
 }
@@ -402,11 +411,6 @@ void calcDistance()
 #endif
 }
 
-int getObjectsNum()
-{
-	return filtered_objects_num;
-}
-
 std::vector<float> getMinHeights()
 {
 	return filtered_min_heights;
@@ -417,14 +421,30 @@ std::vector<float> getMaxHeights()
 	return filtered_max_heights;
 }
 
-std::vector<int> getCornerPoint()
+std::vector<cv_tracker::image_rect_ranged> getObjectsRectRanged()
 {
-	return filtered_corner_points;
+	std::vector<cv_tracker::image_rect_ranged> fused_objects;
+	for (int i=0; i<filtered_objects_num; i++)
+	{
+		int base = i * 4;
+		cv_tracker::image_rect_ranged obj_ranged;
+		obj_ranged.rect.x      = filtered_corner_points.at(base);
+		obj_ranged.rect.y      = filtered_corner_points.at(base + 1);
+		obj_ranged.rect.width  = filtered_corner_points.at(base + 2);
+		obj_ranged.rect.height = filtered_corner_points.at(base + 3);
+		obj_ranged.rect.score  = filtered_scores.at(i);
+		obj_ranged.range       = filtered_distances.at(i);
+		obj_ranged.min_height  = filtered_min_heights.at(i);
+		obj_ranged.max_height  = filtered_max_heights.at(i);
+		fused_objects.push_back(obj_ranged);
+	}
+
+    return fused_objects;
 }
 
-std::vector<float> getDistance()
+std::string getObjectsType()
 {
-	return filtered_distances;
+	return obj_type;
 }
 
 #if _DEBUG //debug

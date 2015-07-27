@@ -39,7 +39,6 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <dpm/ImageObjects.h>
 #include <kf/KFObjects.h>
 #include <cv_tracker/image_obj.h>
 
@@ -206,51 +205,6 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	_drawing = false;
 }
 
-static void car_updater_callback(const dpm::ImageObjects& image_objects_msg)
-{
-	if(_drawing)
-		return;
-	int num = image_objects_msg.car_num;
-	std::vector<int> points = image_objects_msg.corner_point;
-	cars_score = image_objects_msg.score;
-	//points are X,Y,W,H and repeat for each instance
-	cars.clear();
-
-	for (int i=0; i<num;i++)
-	{
-		cv::Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		cars.push_back(tmp);
-	}
-
-	car_dpm_ready = true;
-}
-
-static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
-{
-	if(_drawing)
-			return;
-	int num = image_objects_msg.car_num;
-	std::vector<int> points = image_objects_msg.corner_point;
-	peds_score.clear();
-	peds_score = image_objects_msg.score;
-	//points are X,Y,W,H and repeat for each instance
-	peds.clear();
-	for (int i=0; i<num;i++)
-	{
-		cv::Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		peds.push_back(tmp);
-	}
-	ped_track_ready = true;
-}
-
 static void image_obj_update_cb(const cv_tracker::image_obj& image_objs)
 {
 	if(_drawing)
@@ -353,13 +307,10 @@ int main(int argc, char **argv)
 
 	ros::Subscriber scriber = n.subscribe(image_node, 1, image_viewer_callback);
 
-	ros::Subscriber scriber_car = n.subscribe("/car_pixel_xy", 1,
-						car_updater_callback);
-	ros::Subscriber scriber_ped = n.subscribe("/pedestrian_pixel_xy", 1,
-						ped_updater_callback);
-
-	ros::Subscriber image_obj_sub = n.subscribe("/image_obj", 1,
-						    image_obj_update_cb);
+	ros::Subscriber scriber_car = n.subscribe("/obj_car/image_obj", 1,
+						image_obj_update_cb);
+	ros::Subscriber scriber_ped = n.subscribe("/obj_person/image_obj", 1,
+						image_obj_update_cb);
 
 	ros::Subscriber scriber_ped_tracked = n.subscribe("/pedestrian_pixel_xy_tracked", 1,
 						ped_updater_callback_tracked);

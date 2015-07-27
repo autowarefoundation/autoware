@@ -38,7 +38,8 @@
 #include <vector>
 
 #include <ros/ros.h>
-#include <dpm/ImageObjects.h>
+#include <cv_tracker/image_obj.h>
+#include <cv_tracker/image_rect_ranged.h>
 #include <scan2image/ScanImage.h>
 #include <points2image/PointsImage.h>
 #include <kf/KFObjects.h>
@@ -82,12 +83,11 @@ extern std::vector<float> getMaxHeights();
 extern void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp);
 
 extern void calcDistance();
-extern void setDetectedObjects(const kf::KFObjects& image_objects);
+extern void setDetectedObjects(const cv_tracker::image_obj& image_objects);
 extern void setScanImage(const scan2image::ScanImage& scan_image);
 extern void setPointsImage(const points2image::PointsImage& points_image);
-extern int getObjectsNum();
-extern std::vector<int> getCornerPoint();
-extern std::vector<float> getDistance();
+extern std::vector<cv_tracker::image_rect_ranged> getObjectsRectRanged();
+extern std::string getObjectsType();
 extern void init();
 extern void destroy();
 #if _DEBUG
