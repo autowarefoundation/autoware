@@ -12,7 +12,7 @@ published topics:
 	<arg name="calibration" default="$(find velodyne_pointcloud)/params/32db.yaml"/>
 	<arg name="min_range" default="0.1"/>
 	<arg name="max_range" default="130.0"/>
-	<arg name="cloud_topic" default="velodyne_points"/>
+	<arg name="topic_name" default="points_raw"/>
 
 
 
@@ -30,6 +30,6 @@ published topics:
 		<param name="calibration" value="$(arg calibration)"/>
 		<param name="min_range" value="$(arg min_range)" />
 		<param name="max_range" value="$(arg max_range)" />
-		<remap from="/velodyne_points" to="$(arg cloud_topic)"/>
+		<remap from="velodyne_points" to="$(arg topic_name)"/>
 	</node>
 </launch>
