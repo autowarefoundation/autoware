@@ -62,7 +62,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <ros/ros.h>
-#include "can_tools/CANPacket.h"
+#include "kvaser/CANPacket.h"
 
 int i = 0;
 unsigned char willExit = 0;
@@ -94,12 +94,12 @@ int main (int argc, char *argv[])
   int channel = 0;
   int bitrate = BAUD_500K;
   int j;
-  can_tools::CANPacket candat;
+  kvaser::CANPacket candat;
 
   ros::init(argc, argv, "can_listener");
   ros::NodeHandle n;
  
-  ros::Publisher can_pub = n.advertise<can_tools::CANPacket>("can_raw", 10);
+  ros::Publisher can_pub = n.advertise<kvaser::CANPacket>("can_raw", 10);
 
   errno = 0;
   if (argc != 2 || (channel = atoi(argv[1]), errno) != 0) {

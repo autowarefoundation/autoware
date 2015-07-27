@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "can_tools/CANPacket.h"
+#include "kvaser/CANPacket.h"
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -7,7 +7,7 @@
 ros::Publisher pub;
 double g_steer,g_speed;
 
-void chatterCallback(const can_tools::CANPacket::ConstPtr& msg)
+void chatterCallback(const kvaser::CANPacket::ConstPtr& msg)
 {
   unsigned short w;
   static int enc_sum;
@@ -85,7 +85,7 @@ void chatterCallback(const can_tools::CANPacket::ConstPtr& msg)
 
 
 int main (int argc, char *argv[]){
-  can_tools::CANPacket candat;
+  kvaser::CANPacket candat;
 
   ros::init(argc, argv, "can_draw");
   ros::NodeHandle n;
