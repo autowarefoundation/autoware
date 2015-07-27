@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(can_tools)
+project(kvaser)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -132,18 +132,18 @@ if(EXISTS "/usr/include/canlib.h")
 add_executable(can_listener nodes/can_listener/can_listener.cpp)
 target_link_libraries(can_listener ${catkin_LIBRARIES})
 target_link_libraries(can_listener canlib)
-add_dependencies(can_listener can_tools_generate_messages_cpp)
+add_dependencies(can_listener kvaser_generate_messages_cpp)
 else()
 message("'canlib' is not installed. 'can_listener' is not built.")
 endif()
 
 add_executable(can_converter nodes/can_converter/can_converter.cpp)
 target_link_libraries(can_converter ${catkin_LIBRARIES})
-add_dependencies(can_converter can_tools_generate_messages_cpp)
+add_dependencies(can_converter kvaser_generate_messages_cpp)
 
 add_executable(can_draw nodes/can_draw/can_draw.cpp)
 target_link_libraries(can_draw ${catkin_LIBRARIES})
-add_dependencies(can_draw can_tools_generate_messages_cpp)
+add_dependencies(can_draw kvaser_generate_messages_cpp)
 
 #add_executable(vib_controler src/vib_controler.cpp)
 #target_link_libraries(vib_controler ${catkin_LIBRARIES})
