@@ -15,7 +15,7 @@
   <arg name="min_range" default="0.4" />
   <arg name="max_range" default="130.0" />
   <arg name="model" default="VLP16"/>
-  <arg name="cloud_topic" default="points_raw"/>
+  <arg name="topic_name" default="points_raw"/>
 
   <!-- start nodelet manager and driver nodelets -->
   <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
@@ -24,12 +24,11 @@
   </include>
 
   <!-- start cloud nodelet -->
-  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
-    <arg name="calibration" value="$(arg calibration)"/>
-    <arg name="min_range" value="$(arg min_range)" />
-    <arg name="max_range" value="$(arg max_range)" />
-    <remap from="/velodyne_points" to="$(arg cloud_topic)"/>
-
-  </include>
-
+   <node pkg="nodelet" type="nodelet" name="cloud_nodelet"
+        args="load velodyne_pointcloud/CloudNodelet velodyne_nodelet_manager">
+    <param name="calibration" value="$(arg calibration)"/>
+    <param name="min_range" value="$(arg min_range)"/>
+    <param name="max_range" value="$(arg max_range)"/>
+    <remap from="velodyne_points" to="$(arg topic_name)"/>
+  </node>
 </launch>
