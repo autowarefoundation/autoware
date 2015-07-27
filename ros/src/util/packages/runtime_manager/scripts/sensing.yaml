@@ -66,6 +66,14 @@ subs :
           calibration :
             prop  : 1
             flags : [ center_v ]
+      - name : Velodyne VLP-16
+        probe: 
+        run  : roslaunch velodyne velodyne_vlp16.launch
+        param: calibration_path
+        gui  :
+          calibration :
+            prop  : 1
+            flags : [ center_v ]
       - name : Hokuyo TOP-URG
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
