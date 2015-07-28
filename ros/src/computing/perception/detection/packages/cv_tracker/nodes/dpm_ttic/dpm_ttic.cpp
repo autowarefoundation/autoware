@@ -56,12 +56,6 @@ static bool use_gpu = false;
 
 static std::string object_class;
 
-static void show_getParam_error(std::string param_name)
-{
-	std::string name_space = ros::this_node::getNamespace();
-	std::cerr << "ERROR: rosparam \"" << name_space << "/" << param_name << "\" doesn't exist" << std::endl;
-}
-
 static void set_default_param(DPMTTICParam& param)
 {
 	param.overlap = 0.4;
@@ -135,32 +129,26 @@ int main(int argc, char* argv[])
 	ros::NodeHandle private_nh("~");
 
 	if (!private_nh.getParam("detection_class_name", object_class)) {
-		show_getParam_error("detection_class_name");
-		exit(EXIT_FAILURE);
+		object_class = "car";
 	}
 
 	std::string comp_csv_path;
 	if (!private_nh.getParam("comp_model_path", comp_csv_path)) {
-		show_getParam_error("comp_model_path");
-		exit(EXIT_FAILURE);
+		comp_csv_path = STR(MODEL_DIR) "car_comp.csv";
 	}
-	std::cerr << "model path: " << comp_csv_path << std::endl;
 
 	std::string root_csv_path;
 	if (!private_nh.getParam("root_model_path", root_csv_path)) {
-		show_getParam_error("root_model_path");
-		exit(EXIT_FAILURE);
+		root_csv_path = STR(MODEL_DIR) "car_root.csv";
 	}
 
 	std::string part_csv_path;
 	if (!private_nh.getParam("part_model_path", part_csv_path)) {
-		show_getParam_error("part_model_path");
-		exit(EXIT_FAILURE);
+		part_csv_path = STR(MODEL_DIR) "car_part.csv";
 	}
 
 	if (!private_nh.getParam("use_gpu", use_gpu)) {
-		show_getParam_error("use_gpu");
-		exit(EXIT_FAILURE);
+		use_gpu = false;
 	}
 
 	std::string cubin = get_cubin_path(n, STR(DEFAULT_CUBIN));
