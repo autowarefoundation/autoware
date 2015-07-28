@@ -105,6 +105,7 @@ static ros::Publisher _lane_pub;
 
 static waypoint_follower::lane _ruled_waypoint;
 static nav_msgs::Path _lane_waypoint;
+static bool _vector_map_flag = false;
 
 static Waypoint ParseWaypoint(const std::string& line)
 {
@@ -345,7 +346,7 @@ void DisplayWaypointVelocity()
 
     for (unsigned int i = 0; i < _waypoints.size(); i++) {
 
-        std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " << _waypoints[i].GetVelocity_kmh() << std::endl;
+        //std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " << _waypoints[i].GetVelocity_kmh() << std::endl;
         velocity.id = i;
         velocity.pose.position.x = _waypoints[i].GetX();
         velocity.pose.position.y = _waypoints[i].GetY();
@@ -514,6 +515,8 @@ static void config_callback(const runtime_manager::ConfigWaypointLoader& msg)
     config_difference_around_signal = msg.difference_around_signal;
     config_number_of_zeros = msg.number_of_zeros;
 
+
+    if (_vector_map_flag)
     publish_signal_waypoint();
 }
 
@@ -541,12 +544,29 @@ int main(int argc, char **argv)
         10,
         stop_line_callback);
 
+
+    //wait vector map for 2 seconds
     ros::Rate rate(1);
+    int count = 0;
     while (lanes.empty() || nodes.empty() || points.empty() ||
            stoplines.empty()) {
         ros::spinOnce();
         rate.sleep();
+       if(count == 2)
+      	break;
+     count++;
     }
+
+
+
+  if (!lanes.empty() && !nodes.empty() && !points.empty() && !stoplines.empty()) {
+    _vector_map_flag = true;
+    ROS_INFO("vector map loaded");
+  } else {
+    _vector_map_flag = false;
+    ROS_INFO("vector map not loaded");
+  }
+
 
     _waypoints = ReadWaypoint(ruled_waypoint_csv.c_str());
 
@@ -566,8 +586,9 @@ int main(int argc, char **argv)
     DisplayLaneWaypoint();
     DisplayLaneWaypointMarker();
     PublishRuledWaypoint();
-    publish_signal_waypoint();
 
+  if (_vector_map_flag)
+    publish_signal_waypoint();
     ros::spin();
 
 }
