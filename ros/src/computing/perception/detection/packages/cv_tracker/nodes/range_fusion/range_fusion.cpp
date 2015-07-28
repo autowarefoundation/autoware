@@ -89,16 +89,18 @@ int main(int argc, char **argv)
 
 	ros::NodeHandle n;
 
-	ros::Subscriber image_obj_sub = n.subscribe("/image_obj", 1, DetectedObjectsCallback);
+	ros::Subscriber image_obj_sub = n.subscribe("image_obj", 1, DetectedObjectsCallback);
 	//ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
-	ros::Subscriber points_image_sub =n.subscribe("vscan_image", 1, PointsImageCallback);
+	ros::Subscriber points_image_sub =n.subscribe("/vscan_image", 1, PointsImageCallback);
 #if _DEBUG
 	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
-	fused_objects = n.advertise<cv_tracker::image_obj_ranged>("/image_obj_ranged", 1);
+	fused_objects = n.advertise<cv_tracker::image_obj_ranged>("image_obj_ranged", 1);
 
 	ros::Subscriber config_subscriber;
-	config_subscriber = n.subscribe("/config/car_fusion", 1, config_cb);
+	std::string config_topic("/config");
+	config_topic += ros::this_node::getNamespace() + "/fusion";
+	config_subscriber = n.subscribe(config_topic, 1, config_cb);
 
 	ros::spin();
 	destroy();

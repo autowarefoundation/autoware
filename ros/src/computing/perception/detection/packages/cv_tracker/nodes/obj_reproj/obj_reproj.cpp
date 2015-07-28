@@ -297,7 +297,7 @@ int main(int argc, char **argv){
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
 
-  ros::Subscriber obj_pos_xyz = n.subscribe("/image_obj_tracked", 1, obj_pos_xyzCallback);
+  ros::Subscriber obj_pos_xyz = n.subscribe("image_obj_tracked", 1, obj_pos_xyzCallback);
   //ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
   /*
@@ -341,7 +341,7 @@ int main(int argc, char **argv){
   std::string lidar_3d_yaml = "";
 
   if (private_nh.getParam("lidar_3d_yaml", lidar_3d_yaml) == false) {
-      std::cout << "error! usage : rosrun  cv_tracker obj_reproj _lidar_3d_yaml:=[file]" << std::endl;
+      std::cerr << "error! usage : rosrun  cv_tracker obj_reproj _lidar_3d_yaml:=[file]" << std::endl;
       exit(-1);
   }
 

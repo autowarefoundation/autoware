@@ -822,7 +822,7 @@ int kf_main(int argc, char* argv[])
 	else
 	{
 		ROS_INFO("No object node received, defaulting to image_obj_ranged, you can use _object_node:=YOUR_TOPIC");
-		obj_topic = "/image_obj_ranged";
+		obj_topic = "image_obj_ranged";
 	}
 
 	init_params();
@@ -830,7 +830,10 @@ int kf_main(int argc, char* argv[])
 	ros::Subscriber sub_image = n.subscribe(image_topic, 1, image_callback);
 	ros::Subscriber sub_dpm = n.subscribe(obj_topic, 1, detections_callback);
 
-	ros::Subscriber config_subscriber = n.subscribe("/config/car_kf", 1, kf_config_cb);
+
+	std::string config_topic("/config");
+	config_topic += ros::this_node::getNamespace() + "/kf";
+	ros::Subscriber config_subscriber = n.subscribe(config_topic, 1, kf_config_cb);
 
 	//TimeSynchronizer<Image, dpm::ImageObjects> sync(image_sub, pos_sub, 10);
 
