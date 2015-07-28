@@ -53,7 +53,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CompressedImage.h>
-#include <car_detector/FusedObjects.h>
+#include <cv_tracker/image_obj_tracked.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -222,7 +222,7 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
    //   }
 }
 
-static void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
+static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objects)
 {
   vector<OBJPOS> cp_vector;
   OBJPOS cp;
@@ -230,18 +230,18 @@ static void car_pos_xyzCallback(const car_detector::FusedObjects& fused_objects)
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   if(gnssGetFlag || ndtGetFlag) {
-    for (int i = 0; i < fused_objects.car_num; i++){
+    for (unsigned int i = 0; i < fused_objects.rect_ranged.size(); i++){
       
       //If distance is zero, we cannot calculate position of recognized object
       //so skip loop
-      if(fused_objects.distance.at(i) <= 0) continue;
+      if(fused_objects.rect_ranged.at(i).range <= 0) continue;
       
-      cp.x1 = fused_objects.corner_point[0+i*4];//x-axis of the upper left
-      cp.y1 = fused_objects.corner_point[1+i*4];//x-axis of the lower left
-      cp.x2 = fused_objects.corner_point[2+i*4];//x-axis of the upper right
-      cp.y2 = fused_objects.corner_point[3+i*4];//x-axis of the lower left
+      cp.x1 = fused_objects.rect_ranged.at(i).rect.x;//x-axis of the upper left
+      cp.y1 = fused_objects.rect_ranged.at(i).rect.y;//x-axis of the lower left
+      cp.x2 = fused_objects.rect_ranged.at(i).rect.width;//x-axis of the upper right
+      cp.y2 = fused_objects.rect_ranged.at(i).rect.height;//x-axis of the lower left
       
-      cp.distance = fused_objects.distance.at(i);
+      cp.distance = fused_objects.rect_ranged.at(i).range;
       
       //printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
       
@@ -297,7 +297,7 @@ int main(int argc, char **argv){
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
 
-  ros::Subscriber car_pos_xyz = n.subscribe("/car_pixel_xyz", 1, car_pos_xyzCallback);
+  ros::Subscriber obj_pos_xyz = n.subscribe("/image_obj_tracked", 1, obj_pos_xyzCallback);
   //ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
 
   /*
@@ -307,7 +307,7 @@ int main(int argc, char **argv){
   */
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
-  pub = n.advertise<geometry_msgs::PoseArray>("car_pose",1); 
+  pub = n.advertise<geometry_msgs::PoseArray>("obj_label",1); 
 
 
   /*
@@ -341,7 +341,7 @@ int main(int argc, char **argv){
   std::string lidar_3d_yaml = "";
 
   if (private_nh.getParam("lidar_3d_yaml", lidar_3d_yaml) == false) {
-      std::cout << "error! usage : rosrun  car_detector car_locate _lidar_3d_yaml:=[file]" << std::endl;
+      std::cout << "error! usage : rosrun  cv_tracker obj_reproj _lidar_3d_yaml:=[file]" << std::endl;
       exit(-1);
   }
 

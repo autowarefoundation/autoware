@@ -61,6 +61,7 @@ ELSE()
 message("CUDA is not installed. 'cv_tracker' package is not built.")
 ENDIF()
 
+## dpm_ttic ##
 ADD_EXECUTABLE(dpm_ttic
   nodes/dpm_ttic/dpm_ttic.cpp
 )
@@ -87,6 +88,7 @@ SET(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
 
+## range_fusion ##
 ADD_EXECUTABLE(range_fusion
   nodes/range_fusion/range_fusion.cpp
 )
@@ -101,6 +103,7 @@ ADD_DEPENDENCIES(range_fusion
   cv_tracker_generate_messages_cpp
 )
 
+## kf_tracker ##
 ADD_EXECUTABLE(kf_track
   nodes/kf_track/kf_track.cpp
 )
@@ -113,4 +116,18 @@ TARGET_LINK_LIBRARIES(kf_track
 
 ADD_DEPENDENCIES(kf_track
   kf_track_generate_messages_cpp
+)
+
+## obj_reproj ##
+ADD_EXECUTABLE(obj_reproj
+  nodes/obj_reproj/obj_reproj.cpp
+)
+
+TARGET_LINK_LIBRARIES(obj_reproj
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+
+ADD_DEPENDENCIES(obj_reproj
+  obj_reproj_generate_messages_cpp
 )
