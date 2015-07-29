@@ -39,12 +39,13 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Bool.h>
-
+#include <std_msgs/Float32.h>
 #include "runtime_manager/ConfigLaneFollower.h"
 #include "libwaypoint_follower.h"
 
 
 #define LOOP_RATE 10 //Hz
+
 
 //define class
 class PathPP: public Path
@@ -268,16 +269,13 @@ double PathPP::calcRadius(int waypoint)
 
 static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
-    _initial_velocity_kmh = config->velocity;
-    _lookahead_threshold = config->lookahead_threshold;
-    _param_flag = config->param_flag;
-    // _param_set = true;
+    _path_pp.setConfig(config);
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
     //std::cout << "odometry callback" << std::endl;
-    _current_velocity = msg->twist.twist;
+    _current_velocity = msg->twist.twist.linear.x;
 
     //
     // effective for testing.
@@ -288,7 +286,7 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
         tf::Transform inverse;
         tf::poseMsgToTF(msg->pose.pose, inverse);
-        _transform = inverse.inverse();
+        _path_pp.setTransform(inverse.inverse());
         _pose_set = true;
         //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
     }
@@ -302,33 +300,38 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
         _current_pose.pose = msg->pose;
         tf::Transform inverse;
         tf::poseMsgToTF(msg->pose, inverse);
-        _transform = inverse.inverse();
+        _path_pp.setTransform(inverse.inverse());
         _pose_set = true;
     }
 }
 
-static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
+static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
 {
-    _current_path = *msg;
-    _waypoint_set = true;
-    std::cout << "waypoint subscribed" << std::endl;
+   _current_velocity = msg->data;
 }
 
+
+static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
+{
+    //_current_path = *msg;
+		_path_pp.setPath(msg);
+    _waypoint_set = true;
+    ROS_INFO_STREAM( "waypoint subscribed");
 }
 
 // display the next waypoint by markers.
-static void DisplayTargetWaypoint(int i)
+static void displayNextWaypoint(int i)
 {
 
     visualization_msgs::Marker marker;
-    marker.header.frame_id = PATH_FRAME;
+    marker.header.frame_id = "map";
     marker.header.stamp = ros::Time();
-    marker.ns = "my_namespace";
+    marker.ns = "next_waypoint_marker";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::SPHERE;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position = _current_path.waypoints[i].pose.pose.position;
-    marker.pose.orientation = _current_path.waypoints[i].pose.pose.orientation;
+    marker.pose.position = _path_pp.getWaypointPosition(i);
+    marker.pose.orientation = _path_pp.getWaypointOrientation(i);
     marker.scale.x = 1.0;
     marker.scale.y = 1.0;
     marker.scale.z = 1.0;
@@ -336,7 +339,6 @@ static void DisplayTargetWaypoint(int i)
     marker.color.r = 0.0;
     marker.color.g = 0.0;
     marker.color.b = 1.0;
-    marker.lifetime = ros::Duration(5);
     marker.frame_locked = true;
     _vis_pub.publish(marker);
 }
@@ -344,22 +346,18 @@ static void DisplayTargetWaypoint(int i)
 /////////////////////////////////////////////////////////////////
 // obtain the linear/angular velocity toward the next waypoint.
 /////////////////////////////////////////////////////////////////
-static geometry_msgs::Twist CalculateCmdTwist()
+static geometry_msgs::Twist calcTwist(int next_waypoint)
 {
     //std::cout << "calculate" << std::endl;
     geometry_msgs::Twist twist;
 
-    double radius = CalcRadius(_next_waypoint);
-    double set_velocity_ms = 0;
-    if (!_param_flag)
-        set_velocity_ms = GetWaypointVelocity();
-    else
-        set_velocity_ms = _initial_velocity_kmh / 3.6;
+    double radius = _path_pp.calcRadius(next_waypoint);
+    twist.linear.x = _path_pp.getCmdVelocity();
 
-    twist.linear.x = set_velocity_ms;
+    double current_velocity = _current_velocity;
 
     if (radius > 0 || radius < 0) {
-        twist.angular.z = twist.linear.x / radius;
+        twist.angular.z = current_velocity / radius;
     } else {
         twist.angular.z = 0;
     }
@@ -370,22 +368,16 @@ static geometry_msgs::Twist CalculateCmdTwist()
 /////////////////////////////////////////////////////////////////
 // Safely stop the vehicle.
 /////////////////////////////////////////////////////////////////
-static geometry_msgs::Twist EndControl()
+static geometry_msgs::Twist stopControl()
 {
-    std::cout << "end control" << std::endl;
     geometry_msgs::Twist twist;
-    //  double minimum_velocity_kmh = 2.0;
 
-    // std::cout << "End Distance = " << _end_distance << std::endl;
+    double lookahead_distance = _path_pp.getDistance(_path_pp.getPathSize() - 1);
 
-    double lookahead_distance = GetLookAheadDistance(_current_path.waypoints.size() - 1);
-    std::cout << "Lookahead Distance = " << lookahead_distance << std::endl;
-
-    double stop_interval = 5;
+    double stop_interval = 3;
     if (lookahead_distance < stop_interval) {
         twist.linear.x = 0;
         twist.angular.z = 0;
-
         return twist;
     }
 
@@ -395,7 +387,7 @@ static geometry_msgs::Twist EndControl()
         twist.linear.x = 0;
     }
 
-    double radius = CalcRadius(_current_path.waypoints.size() - 1);
+    double radius =  _path_pp.calcRadius(_path_pp.getPathSize() - 1);
 
     if (radius > 0 || radius < 0) {
         twist.angular.z = twist.linear.x / radius;
@@ -408,7 +400,7 @@ static geometry_msgs::Twist EndControl()
 
 int main(int argc, char **argv)
 {
-    std::cout << "pure pursuit start" << std::endl;
+    ROS_INFO_STREAM("pure pursuit start");
 
     // set up ros
     ros::init(argc, argv, "pure_pursuit");
@@ -418,102 +410,114 @@ int main(int argc, char **argv)
 
     // setting params
     private_nh.getParam("current_pose_topic", _current_pose_topic);
-    std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
+    ROS_INFO_STREAM("current_pose_topic : " << _current_pose_topic);
+
 
     private_nh.getParam("mobility_frame", _mobility_frame);
-    std::cout << "mobility_frame : " << _mobility_frame << std::endl;
-
+    ROS_INFO_STREAM( "mobility_frame : " << _mobility_frame);
 
     //publish topic
-    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 1000);
-
-    _vis_pub = nh.advertise<visualization_msgs::Marker>("target_waypoint_mark", 0);
-    _circle_pub = nh.advertise<visualization_msgs::Marker>("circle_mark", 0);
+    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
+    _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
+    _traj_pub = nh.advertise<visualization_msgs::Marker>("trajectory_mark", 0);
     _stat_pub = nh.advertise<std_msgs::Bool>("lf_stat", 0);
 
     //subscribe topic
-    ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 1000, WayPointCallback);
-    ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1000, OdometryPoseCallback);
-    ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1000, NDTCallback);
-    ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 1000, ConfigCallback);
+    ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 10, WayPointCallback);
+    ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
+    ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
+    ros::Subscriber estimated_vel_subscriber = nh.subscribe("/estimated_vel", 10, estVelCallback);
+    ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 10, ConfigCallback);
+
 
 
     geometry_msgs::TwistStamped twist;
     ros::Rate loop_rate(LOOP_RATE); // by Hz
     bool endflag = false;
-    while (ros::ok()) {
-        ros::spinOnce();
+  while (ros::ok())
+  {
+    std_msgs::Bool _lf_stat;
 
-        if (_waypoint_set == false || _pose_set == false) {
-            std::cout << "topic waiting..." << std::endl;
-            loop_rate.sleep();
-            continue;
-        }
+    ros::spinOnce();
 
-        _closest_waypoint = GetClosestWaypoint(_transform,_current_path,_closest_waypoint);
-        std::cout << "closest waypoint = " << _closest_waypoint << std::endl;
-
-        if (_closest_waypoint > _prev_waypoint)
-            _prev_waypoint = _closest_waypoint;
-        // std::cout << "endflag = " << endflag << std::endl;
-
-        if (endflag == false) {
-
-            // get the waypoint.
-            std::cout << "velocity : ";
-            if (!_param_flag) {
-                std::cout << "waypoint" << std::endl;
-            } else {
-                std::cout << "dialog" << std::endl;
-            }
-
-            if (_closest_waypoint < 0) {
-                std::cout << "closest waypoint can not detected !!" << std::endl;
-                twist.twist.linear.x = 0;
-                twist.twist.angular.z = 0;
-            } else {
-
-                _next_waypoint = GetNextWayPoint();
-                std::cout << "next waypoint = " << _next_waypoint << "/" << _current_path.waypoints.size() - 1 << std::endl;
-              //  std::cout << "prev waypoint = " << _prev_waypoint << std::endl;
-
-                if (_next_waypoint > 0) {
-                    // obtain the linear/angular velocity.
-                    twist.twist = CalculateCmdTwist();
-                } else {
-                    twist.twist.linear.x = 0;
-                    twist.twist.angular.z = 0;
-                }
-
-                if (_next_waypoint > static_cast<int>(_current_path.waypoints.size()) - 5) {
-                    endflag = true;
-                    _next_waypoint = _current_path.waypoints.size() - 1;
-                }
-            }
-
-        } else {
-            twist.twist = EndControl();
-
-         //   std::cout << "closest/next : " << _closest_waypoint << "/" << _next_waypoint << std::endl;
-
-            // after stopped or fed out, let's get ready for the restart.
-            if (twist.twist.linear.x == 0) {
-                std::cout << "pure pursuit ended!!" << std::endl;
-                endflag = false;
-
-            }
-        }
-        std::cout << "set velocity (kmh) = " << twist.twist.linear.x * 3.6 << std::endl;
-        std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
-        std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
-        std::cout << std::endl;
-
-        twist.header.stamp = ros::Time::now();
-        cmd_velocity_publisher.publish(twist);
-        _prev_waypoint = _next_waypoint;
-        _prev_velocity = twist.twist.linear.x;
-        loop_rate.sleep();
+    //check topic
+    if (_waypoint_set == false || _pose_set == false)
+    {
+      ROS_INFO_STREAM("topic waiting...");
+      loop_rate.sleep();
+      continue;
     }
 
-    return 0;
+    //get closest waypoint
+    int closest_waypoint = _path_pp.getClosestWaypoint();
+    ROS_INFO_STREAM("closest waypoint = " << closest_waypoint);
+    //if vehicle is not closed to final destination
+    if (!endflag)
+    {
+      //if can get closest waypoint
+      if (closest_waypoint > 0)
+      {
+        //get next waypoint
+        int next_waypoint = _path_pp.getNextWaypoint();
+
+        //if can get next waypoint
+        if (next_waypoint > 0)
+        {
+          // obtain the linear/angular velocity.
+          ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << _path_pp.getPathSize() - 1);
+          displayNextWaypoint(next_waypoint);
+          _lf_stat.data = true;
+          _stat_pub.publish(_lf_stat);
+          twist.twist = calcTwist(next_waypoint);
+        }
+        else //if cannot get next
+        {
+          ROS_INFO_STREAM("lost waypoint! ");
+          _lf_stat.data = false;
+          _stat_pub.publish(_lf_stat);
+          twist.twist.linear.x = 0;
+          twist.twist.angular.z = 0;
+        }
+
+
+        //check whether vehicle is closed to final destination
+        if (next_waypoint > _path_pp.getPathSize() - 1)
+          endflag = true;
+
+      }
+      else //cannot get closest
+      {
+        ROS_INFO_STREAM("closest waypoint cannot detected !!");
+        _lf_stat.data = false;
+        _stat_pub.publish(_lf_stat);
+        twist.twist.linear.x = 0;
+        twist.twist.angular.z = 0;
+      }
+
+    }
+    else //final sequence
+    {
+      twist.twist = stopControl();
+      _lf_stat.data = false;
+      _stat_pub.publish(_lf_stat);
+
+      // after stopped or fed out, let's get ready for the restart.
+      if (twist.twist.linear.x == 0)
+      {
+        ROS_INFO_STREAM("pure pursuit ended!!");
+        _lf_stat.data = false;
+        _stat_pub.publish(_lf_stat);
+        endflag = false;
+      }
+    }
+
+    ROS_INFO_STREAM(
+        "twist(linear.x , angular.z) = ( " << twist.twist.linear.x << " , " << twist.twist.angular.z << " )");
+    twist.header.stamp = ros::Time::now();
+    cmd_velocity_publisher.publish(twist);
+    _prev_velocity = twist.twist.linear.x;
+    loop_rate.sleep();
+  }
+
+  return 0;
 }
