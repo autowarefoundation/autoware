@@ -43,9 +43,36 @@
 #include "runtime_manager/ConfigLaneFollower.h"
 #include "waypoint_follower/lane.h"
 #include "lf_func.h"
+#include "libwaypoint_follower.h"
 
 
 #define LOOP_RATE 10 //Hz
+
+//define class
+class PathPP: public Path
+{
+private:
+  int next_waypoint_;
+  int param_flag_; //0 = waypoint, 1 = Dialog
+  double lookahead_threshold_; //meter
+  double initial_velocity_; //km/h
+
+public:
+  PathPP(){
+    param_flag_ = 0;
+    lookahead_threshold_ = 4.0;
+    initial_velocity_ = 5.0;
+    next_waypoint_ = -1;
+  }
+  void setConfig(const runtime_manager::ConfigLaneFollowerConstPtr &config);
+  double getCmdVelocity();
+  double getLookAheadThreshold(int waypoint);
+  int getNextWaypoint();
+  double calcRadius(int waypoint);
+  bool evaluateWaypoint(int next_waypoint);
+  void displayTrajectory(tf::Vector3 center, double radius);
+};
+PathPP _path_pp;
 
 // parameter servers
 static double _initial_velocity_kmh = 5; // km/h
@@ -74,6 +101,185 @@ static int _param_flag = 0; //0 = waypoint, 1 = Dialog
 static bool _waypoint_set = false;
 static bool _pose_set = false;
 static tf::Transform _transform;
+
+void PathPP::setConfig(const runtime_manager::ConfigLaneFollowerConstPtr &config)
+{
+  initial_velocity_ = config->velocity;
+  param_flag_ = config->param_flag;
+  lookahead_threshold_ = config->lookahead_threshold;
+}
+
+//get velocity of the closest waypoint or from config
+double PathPP::getCmdVelocity()
+{
+
+  if(param_flag_){
+
+    ROS_INFO_STREAM("dialog : " << initial_velocity_ << " km/h (" << kmph2mps(initial_velocity_) << " m/s )");
+    return kmph2mps(initial_velocity_);
+  }
+  if (current_path_.waypoints.empty())
+  {
+    ROS_INFO_STREAM("waypoint : not loaded path");
+    return 0;
+  }
+
+  double velocity = current_path_.waypoints[closest_waypoint_].twist.twist.linear.x;
+  ROS_INFO_STREAM("waypoint : " <<  mps2kmph(velocity) << " km/h , " << velocity << "m/s");
+  return velocity;
+}
+
+double PathPP::getLookAheadThreshold(int waypoint)
+{
+  if (param_flag_)
+    return lookahead_threshold_;
+
+  double ratio = 2.0;
+  double current_velocity_mps = current_path_.waypoints[waypoint].twist.twist.linear.x;
+  if (current_velocity_mps * ratio < 3)
+    return 3.0;
+  else
+    return current_velocity_mps * ratio;
+}
+
+/////////////////////////////////////////////////////////////////
+// obtain the next "effective" waypoint.
+// the vehicle drives itself toward this waypoint.
+/////////////////////////////////////////////////////////////////
+int PathPP::getNextWaypoint()
+{
+  // if waypoints are not given, do nothing.
+  if (!getPathSize())
+    return -1;
+
+  // the next waypoint must be outside of this threshold.
+  int minimum_th = 3;
+
+  double lookahead_threshold = getLookAheadThreshold(closest_waypoint_);
+
+  // look for the next waypoint.
+  for (int i = closest_waypoint_; i < getPathSize(); i++)
+  {
+
+    //if threshold is  distance of previous waypoint
+    if (next_waypoint_ > 0)
+    {
+      if (getDistance(next_waypoint_) > lookahead_threshold)
+      {
+        ROS_INFO_STREAM("threshold = " << lookahead_threshold);
+      }
+    }
+
+    // if there exists an effective waypoint
+    if (getDistance(i) > lookahead_threshold)
+    {
+
+      //if param flag is waypoint
+      if (!param_flag_)
+      {
+
+        if (evaluateWaypoint(i) == true)
+        {
+          ROS_INFO_STREAM("threshold = " << lookahead_threshold);
+          return i;
+        }
+        else
+        {
+          if (lookahead_threshold > minimum_th)
+          {
+            lookahead_threshold -= lookahead_threshold / 10;
+          }
+          else
+          {
+            lookahead_threshold = minimum_th;
+          }
+        }
+      }
+      else
+      {
+        ROS_INFO_STREAM("threshold = " << lookahead_threshold);
+        return i;
+      }
+    }
+  }
+
+  // if the program reaches here, it means we lost the waypoint.
+  return -1;
+}
+
+bool PathPP::evaluateWaypoint(int next_waypoint)
+{
+  double eval_threshold = 1.0;
+
+
+  double radius = calcRadius(next_waypoint);
+ // std::cout << "radius "<< radius << std::endl;
+  if (radius < 0)
+    radius = (-1) * radius;
+
+  tf::Vector3 center;
+
+  //calculate circle of trajectory
+  if (transformWaypoint(next_waypoint).getY() > 0)
+    center = tf::Vector3(0, 0 + radius, 0);
+  else
+    center = tf::Vector3(0, 0 - radius, 0);
+
+  displayTrajectory(center, radius);
+
+  //evaluation
+  double evaluation = 0;
+  for (int j = closest_waypoint_ + 1; j < next_waypoint; j++)
+  {
+    tf::Vector3 tf_waypoint = transformWaypoint(j);
+    tf_waypoint.setZ(0);
+    double dt_diff = fabs(tf::tfDistance(center, tf_waypoint) - fabs(radius));
+   // std::cout << dt_diff << std::endl;
+    if (dt_diff > evaluation)
+      evaluation = dt_diff;
+  }
+
+  if (evaluation < eval_threshold)
+    return true;
+  else
+    return false;
+
+}
+
+// display the trajectory by markers.
+void PathPP::displayTrajectory(tf::Vector3 center, double radius)
+{
+
+    geometry_msgs::Point point;
+    tf::Vector3 inv_center = transform_.inverse() * center;
+
+    point.x = inv_center.getX();
+    point.y = inv_center.getY();
+    point.z = inv_center.getZ();
+
+    visualization_msgs::Marker traj;
+    traj.header.frame_id = "map";
+    traj.header.stamp = ros::Time();
+    traj.ns = "trajectory_marker";
+    traj.id = 0;
+    traj.type = visualization_msgs::Marker::SPHERE;
+    traj.action = visualization_msgs::Marker::ADD;
+    traj.pose.position = point;
+    traj.scale.x = radius * 2;
+    traj.scale.y = radius * 2;
+    traj.scale.z = 1.0;
+    traj.color.a = 0.3;
+    traj.color.r = 1.0;
+    traj.color.g = 0.0;
+    traj.color.b = 0.0;
+    traj.frame_locked = true;
+    _traj_pub.publish(traj);
+}
+
+double PathPP::calcRadius(int waypoint)
+{
+  return pow(getDistance(waypoint), 2) / (2 * transformWaypoint(waypoint).getY());
+}
 
 
 static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
