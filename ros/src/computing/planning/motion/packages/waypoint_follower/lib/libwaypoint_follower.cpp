@@ -28,100 +28,155 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "lf_func.h"
+#include "libwaypoint_follower.h"
+
+//set subscribed waypoint
+void Path::setPath(const waypoint_follower::laneConstPtr &msg)
+{
+	current_path_ = *msg;
+	//  std::cout << "waypoint subscribed" << std::endl;
+	std::cout << current_path_.waypoints.size() << std::endl;
+}
+
+int Path::getPathSize()
+{
+	if (current_path_.waypoints.empty() == true)
+		return 0;
+	else
+		return current_path_.waypoints.size();
+}
+
+double Path::getInterval()
+{
+  if(current_path_.waypoints.empty())
+    return 0;
+
+	//interval between 2 waypoints
+	tf::Vector3 v1(current_path_.waypoints[0].pose.pose.position.x, current_path_.waypoints[0].pose.pose.position.y, 0);
+
+	tf::Vector3 v2(current_path_.waypoints[1].pose.pose.position.x, current_path_.waypoints[1].pose.pose.position.y, 0);
+	return tf::tfDistance(v1, v2);
+}
+
+/////////////////////////////////////////////////////////////////
+// obtain the distance to @waypoint. ignore z position
+/////////////////////////////////////////////////////////////////
+double Path::getDistance(int waypoint)
+{
+	// position of @waypoint.
+	tf::Vector3 tf_v = transformWaypoint(waypoint);
+	tf_v.setZ(0);
+
+	return tf::tfDistance(origin_v_, tf_v);
+}
 
 /////////////////////////////////////////////////////////////////
 // transform the waypoint to the vehicle plane.
 /////////////////////////////////////////////////////////////////
-tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose)
+tf::Vector3 Path::transformWaypoint(int waypoint)
 {
 
-    tf::Vector3 waypoint(pose.position.x,pose.position.y,pose.position.z);
-    tf::Vector3 tf_w = transform * waypoint;
+	tf::Vector3 point(current_path_.waypoints[waypoint].pose.pose.position.x, current_path_.waypoints[waypoint].pose.pose.position.y,
+			current_path_.waypoints[waypoint].pose.pose.position.z);
+	tf::Vector3 tf_point = transform_ * point;
 
-    return tf_w;
+	return tf_point;
 }
 
-int GetClosestWaypoint(tf::Transform transform, waypoint_follower::lane path, int current_closest)
+geometry_msgs::Point Path::getWaypointPosition(int waypoint)
 {
-   // std::cout << "==GetClosestWaypoint==" << std::endl;
+	geometry_msgs::Point p;
+	p.x = current_path_.waypoints[waypoint].pose.pose.position.x;
+	p.y = current_path_.waypoints[waypoint].pose.pose.position.y;
+	p.z = current_path_.waypoints[waypoint].pose.pose.position.z;
+	return p;
+}
 
-    if (path.waypoints.size() == 0)
-        return -1;
+geometry_msgs::Quaternion Path::getWaypointOrientation(int waypoint)
+{
+	geometry_msgs::Quaternion q;
+	q.x = current_path_.waypoints[waypoint].pose.pose.orientation.x;
+	q.y = current_path_.waypoints[waypoint].pose.pose.orientation.y;
+	q.z = current_path_.waypoints[waypoint].pose.pose.orientation.z;
+	q.w = current_path_.waypoints[waypoint].pose.pose.orientation.w;
+	return q;
+}
 
-    int closest_threshold = 5;
+int Path::getClosestWaypoint()
+{
+	// std::cout << "==GetClosestWaypoint==" << std::endl;
 
-    //interval between 2 waypoints
-    tf::Vector3 v1(path.waypoints[0].pose.pose.position.x, path.waypoints[0].pose.pose.position.y, 0);
+	if (!getPathSize())
+		return -1;
 
-    tf::Vector3 v2(path.waypoints[1].pose.pose.position.x, path.waypoints[1].pose.pose.position.y, 0);
+	int closest_threshold = 5;
 
-    for (int ratio = 1; ratio < closest_threshold; ratio++) {
+	//decide search radius
+	for (int ratio = 1; ratio < closest_threshold; ratio++) {
 
-        double distance_threshold = 2 * ratio * tf::tfDistance(v1, v2); //meter
-        //std::cout << "distance_threshold : " << distance_threshold << std::endl;
+		double distance_threshold = 2 * ratio * getInterval(); //meter
+			//	std::cout << "distance_threshold : " << distance_threshold << std::endl;
 
-        std::vector<int> waypoint_candidates;
+		std::vector<int> waypoint_candidates;
 
-        for (unsigned int i = 1; i < path.waypoints.size(); i++) {
+		//search closest candidate
+		for (int i = 1; i < getPathSize(); i++) {
 
-            //std::cout << waypoint << std::endl;
+			//std::cout << waypoint << std::endl;
 
-            // position of @waypoint.
-            tf::Vector3 tf_waypoint = TransformWaypoint(transform,path.waypoints[i].pose.pose);
-            tf_waypoint.setZ(0);
-            //std::cout << "current path (" << path.waypoints[i].pose.pose.position.x << " " << path.waypoints[i].pose.pose.position.y << " " << path.waypoints[i].pose.pose.position.z << ")" << std::endl;
+			//skip waypoint behind vehicle
+			if (transformWaypoint(i).x() < 0)
+				continue;
 
-            //double dt = tf::tfDistance(v1, v2);
-            double dt = tf::tfDistance(_origin_v, tf_waypoint);
-            //  std::cout << i  << " "<< dt << std::endl;
-            if (dt < distance_threshold) {
-                //add as a candidate
-                waypoint_candidates.push_back(i);
-        //        std::cout << "waypoint = " << i << "  distance = " << dt << std::endl;
-            }
-        }
+			if (getDistance(i) < distance_threshold) {
+				waypoint_candidates.push_back(i);
+				//std::cout << "waypoint = " << i << "  distance = " << getDistance(i)  << std::endl;
+			}
+		}
 
-        if (waypoint_candidates.size() == 0) {
-            continue;
-        }
+		if (waypoint_candidates.size() == 0) {
+			continue;
+		}
 
-      //  std::cout << "prev closest waypoint : " << current_closest << std::endl;
+		//search substraction minimum between candidate and previous closest
+		int substraction_minimum = 0;
+		int decided_waypoint = 0;
+		int initial_minimum = 0;
 
-        int sub_min = 0;
-        int decided_waypoint = 0;
-        for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-            sub_min = waypoint_candidates[i] - current_closest;
-            if(sub_min < 0)
-                continue;
+		//decide initial minimum
+		for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
+			substraction_minimum = waypoint_candidates[i] - closest_waypoint_;
+			if (substraction_minimum < 0)
+				continue;
 
-            if(sub_min >= 0){
-                decided_waypoint = waypoint_candidates[i];
-                break;
-            }
-        }
-     //   std::cout << "sub_min : " << sub_min << " waypoint : " << decided_waypoint << std::endl;
+			if (substraction_minimum >= 0) {
+				decided_waypoint = waypoint_candidates[i];
+				initial_minimum = i;
+				break;
+			}
+		}
 
-        if(sub_min < 0)
-            continue;
+		//calc closest
+		for (unsigned int i = initial_minimum; i < waypoint_candidates.size(); i++) {
+			int sub = waypoint_candidates[i] - closest_waypoint_;
+			//std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
 
-        for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-            int sub = waypoint_candidates[i] - current_closest;
-      //      std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
-            if (sub < 0)
-                continue;
+			if (sub < 0)
+				continue;
 
-            if (sub < sub_min) {
-                decided_waypoint = waypoint_candidates[i];
-                sub_min = sub;
-            }
-        }
-        if (decided_waypoint >= current_closest) {
-            return decided_waypoint;
-        }
+			if (sub < substraction_minimum) {
+				decided_waypoint = waypoint_candidates[i];
+				substraction_minimum = sub;
+			}
+		}
 
-    }
-    return -1;
+		if (decided_waypoint >= closest_waypoint_) {
+			closest_waypoint_ = decided_waypoint;
+			return decided_waypoint;
+		}
+
+	}
+	return -1;
 }
 
 double DecelerateVelocity(double distance, double prev_velocity)
