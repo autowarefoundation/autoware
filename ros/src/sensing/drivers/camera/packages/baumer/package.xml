@@ -1,0 +1,25 @@
+<package>
+  <name>vlg22c_cam</name>
+  <version>1.0.0</version>
+  <description>A ROS Driver for VLG-22C Camera</description>
+
+  <maintainer email="aaa@aaa.com">rbcar</maintainer>
+  <author email="aaa@aaa.com">rbcar</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>image_transport</build_depend> 
+  <build_depend>roscpp</build_depend> 
+  <build_depend>std_msgs</build_depend> 
+  <build_depend>sensor_msgs</build_depend> 
+  <build_depend>camera_info_manager</build_depend>
+
+  <run_depend>image_transport</run_depend> 
+  <run_depend>roscpp</run_depend> 
+  <run_depend>std_msgs</run_depend> 
+  <run_depend>sensor_msgs</run_depend> 
+  <run_depend>camera_info_manager</run_depend>
+
+</package>

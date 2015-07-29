@@ -1,3 +1,4 @@
+#include <vector>
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
@@ -21,11 +22,10 @@ static constexpr int32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool    ADVERTISE_LATCH      = true;
 static uint32_t          shape                = visualization_msgs::Marker::SPHERE;
 
-using namespace cv;
 // Variables
 static TrafficLightDetector detector;
 
-static Mat frame;
+static cv::Mat frame;
 
 
 static double cvtInt2Double_hue(int center, int range)
@@ -71,10 +71,10 @@ static double cvtInt2Double_val(int center, int range)
 } /* static double cvtInt2Double_val() */
 
 
-static void putResult_inText(Mat *image, const vector<Context> &contexts)
+static void putResult_inText(cv::Mat *image, const std::vector<Context> &contexts)
 {
   std::string label;
-  const int fontFace = FONT_HERSHEY_COMPLEX_SMALL;
+  const int fontFace = cv::FONT_HERSHEY_COMPLEX_SMALL;
   const float fontScale = 1.0f;
   const int fontThickness = 1;
   int baseline = 0;
@@ -105,13 +105,13 @@ static void putResult_inText(Mat *image, const vector<Context> &contexts)
         textColor = CV_RGB(0, 0, 0);
       }
 
-      getTextSize(label,
-                  fontFace,
-                  fontScale,
-                  fontThickness,
-                  &baseline);
+      cv::getTextSize(label,
+		      fontFace,
+		      fontScale,
+		      fontThickness,
+		      &baseline);
 
-      textOrg = Point(ctx.topLeft.x, ctx.botRight.y + baseline);
+      textOrg = cv::Point(ctx.topLeft.x, ctx.botRight.y + baseline);
 
       putText(*image,
               label,
@@ -142,7 +142,7 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
   setContexts(detector, extractedPos);
 
   /* test output */
-  Mat targetScope;
+  cv::Mat targetScope;
   frame.copyTo(targetScope);
 //   for (unsigned int i=0; i<detector.contexts.size(); i++)
 //     {
@@ -155,7 +155,7 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
 //     }
 
 
-  // Mat grayScale;
+  // cv::Mat grayScale;
   // cvtColor(frame, grayScale, CV_RGB2GRAY);
   // detector.brightnessDetect(grayScale);
   detector.brightnessDetect(frame);
@@ -463,16 +463,16 @@ void setContexts(TrafficLightDetector &detector,
             {
               switch (sig_iterator->type) {
               case 1:           /* RED */
-                ctx.redCenter   = Point( img_x, img_y );
-                ctx.redCenter3d = Point3d( map_x, map_y, map_z );
+                ctx.redCenter   = cv::Point( img_x, img_y );
+                ctx.redCenter3d = cv::Point3d( map_x, map_y, map_z );
                 break;
               case 2:           /* GREEN */
-                ctx.greenCenter   = Point( img_x, img_y );
-                ctx.greenCenter3d = Point3d( map_x, map_y, map_z );
+                ctx.greenCenter   = cv::Point( img_x, img_y );
+                ctx.greenCenter3d = cv::Point3d( map_x, map_y, map_z );
                 break;
               case 3:           /* YELLOW */
-                ctx.yellowCenter   = Point( img_x, img_y );
-                ctx.yellowCenter3d = Point3d( map_x, map_y, map_z );
+                ctx.yellowCenter   = cv::Point( img_x, img_y );
+                ctx.yellowCenter3d = cv::Point3d( map_x, map_y, map_z );
                 ctx.signalID       = sig_iterator->signalId; // use yellow light signalID as this context's representative
                 break;
               }
@@ -485,8 +485,8 @@ void setContexts(TrafficLightDetector &detector,
         }
 
       ctx.lampRadius = (int)(min_radius / 1.5);
-      ctx.topLeft    = Point(most_left, most_top);
-      ctx.botRight   = Point(most_right, most_bottom);
+      ctx.topLeft    = cv::Point(most_left, most_top);
+      ctx.botRight   = cv::Point(most_right, most_bottom);
       ctx.lightState = UNDEFINED;
       ctx.stateJudgeCount = 0;
 

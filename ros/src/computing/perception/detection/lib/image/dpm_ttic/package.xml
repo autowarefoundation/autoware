@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>libdpm_ttic</name>
+  <version>0.0.0</version>
+  <description>The dpm_ttic package</description>
+  <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

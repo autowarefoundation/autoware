@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   dpm
-  dpm_gpu
   fusion
 )
 find_package(OpenCV REQUIRED)
@@ -37,7 +36,7 @@ generate_messages(
 ###################################
 catkin_package(
 #  INCLUDE_DIRS include
-  CATKIN_DEPENDS dpm dpm_gpu scan2image fusion
+  CATKIN_DEPENDS dpm scan2image fusion
 #  DEPENDS system_lib
 )
 
@@ -48,7 +47,6 @@ catkin_package(
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(/usr/include/opencv2/legacy)
 
 add_executable(car_dpm
   nodes/car_dpm/car_dpm.cpp
@@ -63,32 +61,6 @@ target_link_libraries(car_dpm
   ${OpenCV_LIBS}
   dpm
 )
-
-if(EXISTS "/usr/local/cuda")
-include_directories(/usr/local/cuda/include)
-
-if("${ARCHITECTURE}" MATCHES "^arm")
-LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
-endif()
-
-add_executable(car_dpm_gpu
-  nodes/car_dpm_gpu/car_dpm_gpu.cpp
-)
-
-SET_TARGET_PROPERTIES(car_dpm_gpu
-  PROPERTIES
-  COMPILE_FLAGS
-  "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
-)
-
-target_link_libraries(car_dpm_gpu
-  ${catkin_LIBRARIES}
-  cuda
-  dpm_gpu
-)
-else()
-message("CUDA is not installed. 'car_dpm_gpu' is not built.")
-endif()
 
 ## Declare a cpp executable
 add_executable(car_fusion

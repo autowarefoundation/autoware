@@ -38,9 +38,10 @@ catkin_package(
 
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
-include_directories(include/dpm ${catkin_INCLUDE_DIRS})
-include_directories(/usr/include/opencv2/legacy)
-include_directories(src)
+include_directories(include/dpm
+  ${catkin_INCLUDE_DIRS}
+  src
+)
 
 file(GLOB DPM_OCV_CXX_SOURCES "src/*.cpp")
 

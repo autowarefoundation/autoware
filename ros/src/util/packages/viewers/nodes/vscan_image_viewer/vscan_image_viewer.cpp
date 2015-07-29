@@ -58,8 +58,8 @@ static void show(void)
 	cv::Mat matImage(&frame, false);
 	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
 
-	int w = IMAGE_WIDTH;
-	int h = IMAGE_HEIGHT;
+	int w = matImage.size().width;
+	int h = matImage.size().height;
 	int n = w * h;
 
 	float min_d, max_d;

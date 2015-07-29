@@ -1,0 +1,47 @@
+--- a/mainwindow.cpp	2015-06-09 15:44:52.968202279 +0900
++++ b/mainwindow.cpp	2015-07-17 10:59:42.236655201 +0900
+@@ -213,6 +213,15 @@ MainWindow::MainWindow(QWidget *parent)
+     ui->pushButton_startLog->setEnabled(true);
+     ui->pushButton_stopLog->setEnabled(false);
+ 
++    /////////////////////////////////////////////////////////
++    // Autoware extension
++    if (!ConfigSocket()) {
++      printf("Error: failed to configure Autoware socket!\n");    
++    }
++    pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
++    pthread_detach(_cmdgetter);
++    ////////////////////////////////////////////////////////
++
+     pthread_create(&_logThread, NULL, LogThreadEntry, this);
+     readTimer->start(100);
+     drvTimer->start(200);
+@@ -277,10 +286,13 @@ void MainWindow::logThread()
+ //    readTimer->start(10);
+     while(1){
+         updateTime();
+-        if(_selectLog.start == true){
+-            writeLog();
+-        }
+-        usleep(10*1000);
++	/////////////////////////////////////////////////
++	// Autoware extension
++	if(_selectLog.start == true){
++	  //writeLog();
++	  SendCAN();
++	}
++        //usleep(10*1000);
+     }
+ }
+ 
+@@ -1189,6 +1201,10 @@ void MainWindow::updateTime()
+     *date += "_" + QString::number(_getTime.tv_usec ,10);
+ 
+     _update = *date;
++    /////////////////////////////////////////////////////////
++    // Autoware patch
++    delete(date); // added by yabuta. may cause memory leak?
++    /////////////////////////////////////////////////////////
+ //    ui->textEdit_updateTime->setText(update);
+ }
+ 
