@@ -53,6 +53,8 @@
 #include <velodyne_pointcloud/point_types.h>
 #include <velodyne_pointcloud/rawdata.h>
 
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
@@ -322,17 +324,17 @@ static void marker_callback(const visualization_msgs::InteractiveMarkerFeedback:
   }
 }
 
-static void nav_goal_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
 {
 
-  std::cout << "marker_callback" << std::endl;
-  std::cout << input->pose.position.x << std::endl;
-  std::cout << input->pose.position.y << std::endl;
-  std::cout << input->pose.position.z << std::endl;
-  std::cout << input->pose.orientation.x << std::endl;
-  std::cout << input->pose.orientation.y << std::endl;
-  std::cout << input->pose.orientation.z << std::endl;
-  std::cout << input->pose.orientation.w << std::endl;
+  std::cout << "initialpose_callback" << std::endl;
+  std::cout << input->pose.pose.position.x << std::endl;
+  std::cout << input->pose.pose.position.y << std::endl;
+  std::cout << input->pose.pose.position.z << std::endl;
+  std::cout << input->pose.pose.orientation.x << std::endl;
+  std::cout << input->pose.pose.orientation.y << std::endl;
+  std::cout << input->pose.pose.orientation.z << std::endl;
+  std::cout << input->pose.pose.orientation.w << std::endl;
   
   tf::TransformListener listener;
   tf::StampedTransform transform;
@@ -349,11 +351,11 @@ static void nav_goal_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   std::cout << "y: " << transform.getOrigin().y() << std::endl;
   std::cout << "z: " << transform.getOrigin().z() << std::endl;
 
-  tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
+  tf::Quaternion q(input->pose.pose.orientation.x, input->pose.pose.orientation.y, input->pose.pose.orientation.z, input->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
-  previous_pos.x = input->pose.position.x + transform.getOrigin().x();
-  previous_pos.y = input->pose.position.y + transform.getOrigin().y();
-  previous_pos.z = input->pose.position.z + transform.getOrigin().z();
+  previous_pos.x = input->pose.pose.position.x + transform.getOrigin().x();
+  previous_pos.y = input->pose.pose.position.y + transform.getOrigin().y();
+  previous_pos.z = input->pose.pose.position.z + transform.getOrigin().z();
   m.getRPY(previous_pos.roll, previous_pos.pitch, previous_pos.yaw);
   
   current_pos.x = previous_pos.x;
@@ -1021,7 +1023,7 @@ int main(int argc, char **argv)
     ros::Subscriber marker_sub = nh.subscribe("pos_marker/feedback", 1000, marker_callback);
 
     // Subscribing 2D Nav Goal
-    ros::Subscriber nav_goal_sub = nh.subscribe("move_base_simple/goal", 1000, nav_goal_callback);
+    ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
 
     // subscribing the velodyne data
     ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", _queue_size, velodyne_callback);
