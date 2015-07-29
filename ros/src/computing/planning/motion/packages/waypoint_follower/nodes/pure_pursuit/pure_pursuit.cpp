@@ -43,9 +43,7 @@
 #include "runtime_manager/ConfigLaneFollower.h"
 #include "libwaypoint_follower.h"
 
-
 #define LOOP_RATE 10 //Hz
-
 
 //define class
 class PathPP: public Path
@@ -57,7 +55,8 @@ private:
   double initial_velocity_; //km/h
 
 public:
-  PathPP(){
+  PathPP()
+  {
     param_flag_ = 0;
     lookahead_threshold_ = 4.0;
     initial_velocity_ = 5.0;
@@ -98,7 +97,8 @@ void PathPP::setConfig(const runtime_manager::ConfigLaneFollowerConstPtr &config
 double PathPP::getCmdVelocity()
 {
 
-  if(param_flag_){
+  if (param_flag_)
+  {
 
     ROS_INFO_STREAM("dialog : " << initial_velocity_ << " km/h (" << kmph2mps(initial_velocity_) << " m/s )");
     return kmph2mps(initial_velocity_);
@@ -110,7 +110,7 @@ double PathPP::getCmdVelocity()
   }
 
   double velocity = current_path_.waypoints[closest_waypoint_].twist.twist.linear.x;
-  ROS_INFO_STREAM("waypoint : " <<  mps2kmph(velocity) << " km/h , " << velocity << "m/s");
+  ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h , " << velocity << "m/s");
   return velocity;
 }
 
@@ -196,9 +196,8 @@ bool PathPP::evaluateWaypoint(int next_waypoint)
 {
   double eval_threshold = 1.0;
 
-
   double radius = calcRadius(next_waypoint);
- // std::cout << "radius "<< radius << std::endl;
+  // std::cout << "radius "<< radius << std::endl;
   if (radius < 0)
     radius = (-1) * radius;
 
@@ -219,7 +218,7 @@ bool PathPP::evaluateWaypoint(int next_waypoint)
     tf::Vector3 tf_waypoint = transformWaypoint(j);
     tf_waypoint.setZ(0);
     double dt_diff = fabs(tf::tfDistance(center, tf_waypoint) - fabs(radius));
-   // std::cout << dt_diff << std::endl;
+    // std::cout << dt_diff << std::endl;
     if (dt_diff > evaluation)
       evaluation = dt_diff;
   }
@@ -235,30 +234,30 @@ bool PathPP::evaluateWaypoint(int next_waypoint)
 void PathPP::displayTrajectory(tf::Vector3 center, double radius)
 {
 
-    geometry_msgs::Point point;
-    tf::Vector3 inv_center = transform_.inverse() * center;
+  geometry_msgs::Point point;
+  tf::Vector3 inv_center = transform_.inverse() * center;
 
-    point.x = inv_center.getX();
-    point.y = inv_center.getY();
-    point.z = inv_center.getZ();
+  point.x = inv_center.getX();
+  point.y = inv_center.getY();
+  point.z = inv_center.getZ();
 
-    visualization_msgs::Marker traj;
-    traj.header.frame_id = "map";
-    traj.header.stamp = ros::Time();
-    traj.ns = "trajectory_marker";
-    traj.id = 0;
-    traj.type = visualization_msgs::Marker::SPHERE;
-    traj.action = visualization_msgs::Marker::ADD;
-    traj.pose.position = point;
-    traj.scale.x = radius * 2;
-    traj.scale.y = radius * 2;
-    traj.scale.z = 1.0;
-    traj.color.a = 0.3;
-    traj.color.r = 1.0;
-    traj.color.g = 0.0;
-    traj.color.b = 0.0;
-    traj.frame_locked = true;
-    _traj_pub.publish(traj);
+  visualization_msgs::Marker traj;
+  traj.header.frame_id = "map";
+  traj.header.stamp = ros::Time();
+  traj.ns = "trajectory_marker";
+  traj.id = 0;
+  traj.type = visualization_msgs::Marker::SPHERE;
+  traj.action = visualization_msgs::Marker::ADD;
+  traj.pose.position = point;
+  traj.scale.x = radius * 2;
+  traj.scale.y = radius * 2;
+  traj.scale.z = 1.0;
+  traj.color.a = 0.3;
+  traj.color.r = 1.0;
+  traj.color.g = 0.0;
+  traj.color.b = 0.0;
+  traj.frame_locked = true;
+  _traj_pub.publish(traj);
 }
 
 double PathPP::calcRadius(int waypoint)
@@ -266,81 +265,81 @@ double PathPP::calcRadius(int waypoint)
   return pow(getDistance(waypoint), 2) / (2 * transformWaypoint(waypoint).getY());
 }
 
-
 static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
-    _path_pp.setConfig(config);
+  _path_pp.setConfig(config);
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
-    //std::cout << "odometry callback" << std::endl;
-    _current_velocity = msg->twist.twist.linear.x;
+  //std::cout << "odometry callback" << std::endl;
+  _current_velocity = msg->twist.twist.linear.x;
 
-    //
-    // effective for testing.
-    //
-    if (_current_pose_topic == "odometry") {
-        _current_pose.header = msg->header;
-        _current_pose.pose = msg->pose.pose;
+  //
+  // effective for testing.
+  //
+  if (_current_pose_topic == "odometry")
+  {
+    _current_pose.header = msg->header;
+    _current_pose.pose = msg->pose.pose;
 
-        tf::Transform inverse;
-        tf::poseMsgToTF(msg->pose.pose, inverse);
-        _path_pp.setTransform(inverse.inverse());
-        _pose_set = true;
-        //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
-    }
+    tf::Transform inverse;
+    tf::poseMsgToTF(msg->pose.pose, inverse);
+    _path_pp.setTransform(inverse.inverse());
+    _pose_set = true;
+    //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
+  }
 
 }
 
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-    if (_current_pose_topic == "ndt") {
-        _current_pose.header = msg->header;
-        _current_pose.pose = msg->pose;
-        tf::Transform inverse;
-        tf::poseMsgToTF(msg->pose, inverse);
-        _path_pp.setTransform(inverse.inverse());
-        _pose_set = true;
-    }
+  if (_current_pose_topic == "ndt")
+  {
+    _current_pose.header = msg->header;
+    _current_pose.pose = msg->pose;
+    tf::Transform inverse;
+    tf::poseMsgToTF(msg->pose, inverse);
+    _path_pp.setTransform(inverse.inverse());
+    _pose_set = true;
+  }
 }
 
 static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
 {
-   _current_velocity = msg->data;
+  _current_velocity = msg->data;
 }
-
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-    //_current_path = *msg;
-		_path_pp.setPath(msg);
-    _waypoint_set = true;
-    ROS_INFO_STREAM( "waypoint subscribed");
+  //_current_path = *msg;
+  _path_pp.setPath(msg);
+  _waypoint_set = true;
+  ROS_INFO_STREAM("waypoint subscribed");
 }
 
 // display the next waypoint by markers.
 static void displayNextWaypoint(int i)
 {
 
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = ros::Time();
-    marker.ns = "next_waypoint_marker";
-    marker.id = 0;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position = _path_pp.getWaypointPosition(i);
-    marker.pose.orientation = _path_pp.getWaypointOrientation(i);
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 1.0;
-    marker.color.r = 0.0;
-    marker.color.g = 0.0;
-    marker.color.b = 1.0;
-    marker.frame_locked = true;
-    _vis_pub.publish(marker);
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "map";
+  marker.header.stamp = ros::Time();
+  marker.ns = "next_waypoint_marker";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::SPHERE;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose.position = _path_pp.getWaypointPosition(i);
+  marker.pose.orientation = _path_pp.getWaypointOrientation(i);
+  marker.scale.x = 1.0;
+  marker.scale.y = 1.0;
+  marker.scale.z = 1.0;
+  marker.color.a = 1.0;
+  marker.color.r = 0.0;
+  marker.color.g = 0.0;
+  marker.color.b = 1.0;
+  marker.frame_locked = true;
+  _vis_pub.publish(marker);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -348,21 +347,24 @@ static void displayNextWaypoint(int i)
 /////////////////////////////////////////////////////////////////
 static geometry_msgs::Twist calcTwist(int next_waypoint)
 {
-    //std::cout << "calculate" << std::endl;
-    geometry_msgs::Twist twist;
+  //std::cout << "calculate" << std::endl;
+  geometry_msgs::Twist twist;
 
-    double radius = _path_pp.calcRadius(next_waypoint);
-    twist.linear.x = _path_pp.getCmdVelocity();
+  double radius = _path_pp.calcRadius(next_waypoint);
+  twist.linear.x = _path_pp.getCmdVelocity();
 
-    double current_velocity = _current_velocity;
+  double current_velocity = _current_velocity;
 
-    if (radius > 0 || radius < 0) {
-        twist.angular.z = current_velocity / radius;
-    } else {
-        twist.angular.z = 0;
-    }
+  if (radius > 0 || radius < 0)
+  {
+    twist.angular.z = current_velocity / radius;
+  }
+  else
+  {
+    twist.angular.z = 0;
+  }
 
-    return twist;
+  return twist;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -370,70 +372,72 @@ static geometry_msgs::Twist calcTwist(int next_waypoint)
 /////////////////////////////////////////////////////////////////
 static geometry_msgs::Twist stopControl()
 {
-    geometry_msgs::Twist twist;
+  geometry_msgs::Twist twist;
 
-    double lookahead_distance = _path_pp.getDistance(_path_pp.getPathSize() - 1);
+  double lookahead_distance = _path_pp.getDistance(_path_pp.getPathSize() - 1);
 
-    double stop_interval = 3;
-    if (lookahead_distance < stop_interval) {
-        twist.linear.x = 0;
-        twist.angular.z = 0;
-        return twist;
-    }
-
-    twist.linear.x = DecelerateVelocity(lookahead_distance,_prev_velocity);
-
-    if (twist.linear.x < 1.0) {
-        twist.linear.x = 0;
-    }
-
-    double radius =  _path_pp.calcRadius(_path_pp.getPathSize() - 1);
-
-    if (radius > 0 || radius < 0) {
-        twist.angular.z = twist.linear.x / radius;
-    } else {
-        twist.angular.z = 0;
-    }
+  double stop_interval = 3;
+  if (lookahead_distance < stop_interval)
+  {
+    twist.linear.x = 0;
+    twist.angular.z = 0;
     return twist;
+  }
+
+  twist.linear.x = DecelerateVelocity(lookahead_distance, _prev_velocity);
+
+  if (twist.linear.x < 1.0)
+  {
+    twist.linear.x = 0;
+  }
+
+  double radius = _path_pp.calcRadius(_path_pp.getPathSize() - 1);
+
+  if (radius > 0 || radius < 0)
+  {
+    twist.angular.z = twist.linear.x / radius;
+  }
+  else
+  {
+    twist.angular.z = 0;
+  }
+  return twist;
 
 }
 
 int main(int argc, char **argv)
 {
-    ROS_INFO_STREAM("pure pursuit start");
+  ROS_INFO_STREAM("pure pursuit start");
 
-    // set up ros
-    ros::init(argc, argv, "pure_pursuit");
+  // set up ros
+  ros::init(argc, argv, "pure_pursuit");
 
-    ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~");
+  ros::NodeHandle nh;
+  ros::NodeHandle private_nh("~");
 
-    // setting params
-    private_nh.getParam("current_pose_topic", _current_pose_topic);
-    ROS_INFO_STREAM("current_pose_topic : " << _current_pose_topic);
+  // setting params
+  private_nh.getParam("current_pose_topic", _current_pose_topic);
+  ROS_INFO_STREAM("current_pose_topic : " << _current_pose_topic);
 
+  private_nh.getParam("mobility_frame", _mobility_frame);
+  ROS_INFO_STREAM("mobility_frame : " << _mobility_frame);
 
-    private_nh.getParam("mobility_frame", _mobility_frame);
-    ROS_INFO_STREAM( "mobility_frame : " << _mobility_frame);
+  //publish topic
+  ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
+  _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
+  _traj_pub = nh.advertise<visualization_msgs::Marker>("trajectory_mark", 0);
+  _stat_pub = nh.advertise<std_msgs::Bool>("lf_stat", 0);
 
-    //publish topic
-    ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
-    _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
-    _traj_pub = nh.advertise<visualization_msgs::Marker>("trajectory_mark", 0);
-    _stat_pub = nh.advertise<std_msgs::Bool>("lf_stat", 0);
+  //subscribe topic
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 10, WayPointCallback);
+  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
+  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
+  ros::Subscriber estimated_vel_subscriber = nh.subscribe("/estimated_vel", 10, estVelCallback);
+  ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 10, ConfigCallback);
 
-    //subscribe topic
-    ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 10, WayPointCallback);
-    ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
-    ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
-    ros::Subscriber estimated_vel_subscriber = nh.subscribe("/estimated_vel", 10, estVelCallback);
-    ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 10, ConfigCallback);
-
-
-
-    geometry_msgs::TwistStamped twist;
-    ros::Rate loop_rate(LOOP_RATE); // by Hz
-    bool endflag = false;
+  geometry_msgs::TwistStamped twist;
+  ros::Rate loop_rate(LOOP_RATE); // by Hz
+  bool endflag = false;
   while (ros::ok())
   {
     std_msgs::Bool _lf_stat;
@@ -478,7 +482,6 @@ int main(int argc, char **argv)
           twist.twist.linear.x = 0;
           twist.twist.angular.z = 0;
         }
-
 
         //check whether vehicle is closed to final destination
         if (next_waypoint > _path_pp.getPathSize() - 1)
