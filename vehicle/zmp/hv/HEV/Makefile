@@ -13,7 +13,7 @@ CXX           = g++
 DEFINES       = -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT $(DEFINES)
 CXXFLAGS      = -pipe -g -Wall -W -D_REENTRANT $(DEFINES)
-INCPATH       = -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/linux-g++ -I. -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/include -I/usr/local/include/zmp -I/usr/local/include/zmp -I. -I. $(SHM_INC)
+INCPATH       = -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/linux-g++ -I. -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui -I/opt/QtSDK/Desktop/Qt/4.8.1/gcc/include -I/usr/local/include/zmp -I/usr/local/include/zmp -I. -I.
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/opt/QtSDK/Desktop/Qt/4.8.1/gcc/lib
 LIBS          = $(SUBLIBS)  -L/opt/QtSDK/Desktop/Qt/4.8.1/gcc/lib -L/home/robocar_HV/proj/HEV/../../../../usr/local/lib/zmp/ -lcanif -lhevcontrol -lQtGui -L/opt/QtSDK/Desktop/Qt/4.8.1/gcc/lib -L/usr/X11R6/lib -lQtCore -lpthread 
@@ -37,7 +37,11 @@ MOVE          = mv -f
 CHK_DIR_EXISTS= test -d
 MKDIR         = mkdir -p
 
+AUTOWARE_CONFIG	= autoware_config
+AUTOWARE_CONFIG_PATH	= .
+
 AUTOWARE_SOCKET	= autoware_socket
+AUTOWARE_SOCKET_PATH	= ../../$(AUTOWARE_SOCKET)
 
 ####### Output directory
 
@@ -49,8 +53,7 @@ SOURCES       = main.cpp \
 		mainwindow.cpp \
 		RingBuffer.cpp \
 		HevCnt.cpp \
-		GameControl.cpp moc_mainwindow.cpp \
-		activate_hev.cpp
+		GameControl.cpp moc_mainwindow.cpp
 
 OBJECTS	= main.o \
 		mainwindow.o \
@@ -278,20 +281,10 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		/usr/local/include/zmp/CanCommunication.h \
 		/usr/local/include/zmp/HevControlCommon.h \
 		ui_mainwindow.h \
-		../$(AUTOWARE_SOCKET)/autoware_socket.h
+		$(AUTOWARE_CONFIG_PATH)/autoware_config.h \
+		$(AUTOWARE_SOCKET_PATH)/autoware_socket.h
 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp 
-
-$(AUTOWARE_SOCKET).o:	../$(AUTOWARE_SOCKET)/common.cpp \
-			../$(AUTOWARE_SOCKET)/can.cpp \
-			../$(AUTOWARE_SOCKET)/cmd.cpp mainwindow.h \
-			../$(AUTOWARE_SOCKET)/autoware_socket.h \
-			../$(AUTOWARE_SOCKET)/drv.cpp \
-			../$(AUTOWARE_SOCKET)/str.cpp
-
-	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o $(AUTOWARE_SOCKET).o -nostdlib
-
-
 
 RingBuffer.o: RingBuffer.cpp RingBuffer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RingBuffer.o RingBuffer.cpp
@@ -318,6 +311,16 @@ GameControl.o: GameControl.cpp GameControl.h \
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
 
+$(AUTOWARE_SOCKET).o:	$(AUTOWARE_SOCKET_PATH)/common.cpp \
+			$(AUTOWARE_SOCKET_PATH)/can.cpp \
+			$(AUTOWARE_SOCKET_PATH)/cmd.cpp \
+			$(AUTOWARE_SOCKET_PATH)/autoware_socket.h \
+			$(AUTOWARE_SOCKET_PATH)/drv.cpp \
+			$(AUTOWARE_SOCKET_PATH)/str.cpp \
+			$(AUTOWARE_CONFIG_PATH)/autoware_config.h \
+			 mainwindow.h \
+
+	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o $(AUTOWARE_SOCKET).o -nostdlib
 
 ####### Install
 

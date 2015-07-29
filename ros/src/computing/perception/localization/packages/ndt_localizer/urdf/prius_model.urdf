@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<robot name="prius">
+	<link name="velodyne">
+		<visual name="base_visual">
+			<!-- front_wheel - rear_wheel distance = 2.696 -->
+			<!-- origin_x = distance / 2 = 1.348 -->
+			<origin xyz="0.4 0.0 -2.0" rpy="1.5708 0.0 3.1416"/>
+			<geometry name="prius_geom">
+				<mesh filename="package://ndt_localizer/urdf/prius_model.dae" scale="1.0 1.0 1.0"/>
+			</geometry>
+		</visual>
+	</link>
+</robot>
+

@@ -1,0 +1,107 @@
+--- a/mainwindow.cpp	2014-11-11 16:43:36.000000000 +0900
++++ b/mainwindow.cpp	2015-06-09 11:18:10.577369313 +0900
+@@ -1,3 +1,33 @@
++/*
++ *  Copyright (c) 2015, Nagoya University
++ *  All rights reserved.
++ *
++ *  Redistribution and use in source and binary forms, with or without
++ *  modification, are permitted provided that the following conditions are met:
++ *
++ *  * Redistributions of source code must retain the above copyright notice, this
++ *    list of conditions and the following disclaimer.
++ *
++ *  * Redistributions in binary form must reproduce the above copyright notice,
++ *    this list of conditions and the following disclaimer in the documentation
++ *    and/or other materials provided with the distribution.
++ *
++ *  * Neither the name of Autoware nor the names of its
++ *    contributors may be used to endorse or promote products derived from
++ *    this software without specific prior written permission.
++ *
++ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
++ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
++ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
++ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++*/
++
+ #include "mainwindow.h"
+ #include "ui_mainwindow.h"
+ 
+@@ -204,7 +234,17 @@
+     ui->pushButton_startLog->setEnabled(true);
+     ui->pushButton_stopLog->setEnabled(false);
+ 
++    /////////////////////////////////////////////////////////
++    // Autoware extension
++    if (!ConfigSocket()) {
++      printf("Error: failed to configure Autoware socket!\n");    
++    }
++    pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
++    pthread_detach(_cmdgetter);
++    ////////////////////////////////////////////////////////
++
+     pthread_create(&_logThread, NULL, LogThreadEntry, this);
++
+     readTimer->start(100);
+     drvTimer->start(200);
+ 
+@@ -229,6 +269,7 @@
+ 
+ MainWindow::~MainWindow()
+ {
++
+     hev->Stop();
+     hev->Close();
+     delete ui;
+@@ -267,11 +308,14 @@
+ {
+ //    readTimer->start(10);
+     while(1){
+-        updateTime();
+-        if(_selectLog.start == true){
+-            writeLog();
+-        }
+-        usleep(10*1000);
++      updateTime();
++      /////////////////////////////////////////////////
++      // Autoware extension
++      if(_selectLog.start == true){
++        //writeLog();
++        SendCAN();
++      }
++      /////////////////////////////////////////////////
+     }
+ }
+ 
+@@ -1103,6 +1147,7 @@
+     fprintf(_logSave, "\n");
+ }
+ 
++
+ void MainWindow::updateTime()
+ {
+     time(&_day_time);
+@@ -1139,6 +1184,11 @@
+     *date += "_" + QString::number(_getTime.tv_usec ,10);
+ 
+     _update = *date;
++    
++    /////////////////////////////////////////////////////////
++    // Autoware patch
++    delete(date); // added by yabuta. may cause memory leak?
++    /////////////////////////////////////////////////////////
+ //    ui->textEdit_updateTime->setText(update);
+ }
+ 
+@@ -1715,3 +1765,4 @@
+         break;
+     }
+ }
++

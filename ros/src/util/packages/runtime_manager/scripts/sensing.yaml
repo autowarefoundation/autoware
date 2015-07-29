@@ -1,5 +1,18 @@
 name : Drivers
 subs :
+  - name : CAN
+    subs :
+      - name : can_converter
+        probe:
+        run  : rosrun kvaser can_converter
+      - name : can_draw
+        probe:
+        run  : rosrun kvaser can_draw
+      - name : can_listener
+        probe:
+        run  : rosrun kvaser can_listener
+        param: can_listener
+
   - name : Cameras
     subs :
       - name : PointGrey Grasshoper 3 (USB1)
@@ -53,12 +66,20 @@ subs :
           calibration :
             prop  : 1
             flags : [ center_v ]
+      - name : Velodyne VLP-16
+        probe: 
+        run  : roslaunch velodyne velodyne_vlp16.launch
+        param: calibration_path
+        gui  :
+          calibration :
+            prop  : 1
+            flags : [ center_v ]
       - name : Hokuyo TOP-URG
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
       - name : Hokuyo 3D-URG
         probe: 
-        run  : rosrun hokuyo hokuyo_3d
+        run  : roslaunch hokuyo hokuyo_3d.launch
       - name : SICK LMS511
         probe:
         run  :
@@ -71,26 +92,42 @@ subs :
       - {}
 
 buttons:
+  calibration_toolkit :
+    run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
+
+  calibration_publisher :
+    run   : rosrun calibration_camera_lidar calibration_publisher
+    param : calibration_publisher
+    gui   :
+      flags : [ open_dialog ]
+      file  :
+        prop  : 1
+
   points_image :
     run   : rosrun points2image points2image
-    param : points_image
+    #param : points_image
 
   scan_image :
     run   : rosrun scan2image scan2image
-    param : scan_image
+    #param : scan_image
 
   virtual_scan_image :
     run   : roslaunch runtime_manager vscan.launch
-    param : virtual_scan_image
+    #param : virtual_scan_image
 
-  camera_extrinsicMat_Publisher :
-    run   : roslaunch runtime_manager ex_mat_pub.launch
-    param : camera_extrinsicMat_Publisher
-
-  calibration :
-    run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
+  #camera_extrinsicMat_Publisher :
+  #  run   : roslaunch runtime_manager ex_mat_pub.launch
+  #  param : camera_extrinsicMat_Publisher
 
 params :
+  - name  : can_listener
+    vars  :
+    - name      : channel
+      label     : 'Channel:'
+      v         : 0
+      cmd_param :
+        delim     : ''
+
   - name  : calibration_path
     vars  :
     - name  : calibration
@@ -110,35 +147,44 @@ params :
         delim       : ':='
         only_enable : True
 
-  - name  : points_image
+#  - name  : points_image
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      cmd_param :
+#        delim : ''
+
+#  - name  : scan_image
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      rosparam  : /scan2image/camera_yaml
+
+#  - name  : virtual_scan_image
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      cmd_param :
+#        dash : ''
+#        delim: ':='
+
+  - name  : calibration_publisher
     vars  :
     - name      : file
       kind      : path
       v         : ''
       cmd_param :
-        delim : ''
+        delim     : ''
+        must      : True
 
-  - name  : scan_image
-    vars  :
-    - name      : file
-      kind      : path
-      v         : ''
-      rosparam  : /scan2image/camera_yaml
-
-  - name  : virtual_scan_image
-    vars  :
-    - name      : file
-      kind      : path
-      v         : ''
-      cmd_param :
-        dash : ''
-        delim: ':='
-
-  - name  : camera_extrinsicMat_Publisher
-    vars  :
-    - name      : file
-      kind      : path
-      v         : ''
-      cmd_param :
-        dash : ''
-        delim: ':='
+#  - name  : camera_extrinsicMat_Publisher
+#    vars  :
+#    - name      : file
+#      kind      : path
+#      v         : ''
+#      cmd_param :
+#        dash : ''
+#        delim: ':='

@@ -1,0 +1,74 @@
+--- a/Makefile	2014-11-11 16:43:36.000000000 +0900
++++ b/Makefile	2015-07-20 14:03:17.861593927 +0900
+@@ -37,6 +37,12 @@
+ CHK_DIR_EXISTS= test -d
+ MKDIR         = mkdir -p
+ 
++AUTOWARE_CONFIG	= autoware_config
++AUTOWARE_CONFIG_PATH	= .
++
++AUTOWARE_SOCKET	= autoware_socket
++AUTOWARE_SOCKET_PATH	= ../../$(AUTOWARE_SOCKET)
++
+ ####### Output directory
+ 
+ OBJECTS_DIR   = ./
+@@ -48,12 +54,15 @@
+ 		RingBuffer.cpp \
+ 		HevCnt.cpp \
+ 		GameControl.cpp moc_mainwindow.cpp
+-OBJECTS       = main.o \
++
++OBJECTS	= main.o \
+ 		mainwindow.o \
+ 		RingBuffer.o \
+ 		HevCnt.o \
+ 		GameControl.o \
+-		moc_mainwindow.o
++		moc_mainwindow.o \
++		$(AUTOWARE_SOCKET).o \
++
+ DIST          = /opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/common/unix.conf \
+ 		/opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/common/linux.conf \
+ 		/opt/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/common/gcc-base.conf \
+@@ -177,7 +186,7 @@
+ 
+ clean:compiler_clean 
+ 	-$(DEL_FILE) $(OBJECTS)
+-	-$(DEL_FILE) *~ core *.core
++	-$(DEL_FILE) *~ core *.core HEV
+ 
+ 
+ ####### Sub-libraries
+@@ -271,8 +280,11 @@
+ 		/usr/local/include/zmp/DemoSensorInformation.h \
+ 		/usr/local/include/zmp/CanCommunication.h \
+ 		/usr/local/include/zmp/HevControlCommon.h \
+-		ui_mainwindow.h
+-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp
++		ui_mainwindow.h \
++		$(AUTOWARE_CONFIG_PATH)/autoware_config.h \
++		$(AUTOWARE_SOCKET_PATH)/autoware_socket.h
++
++	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp 
+ 
+ RingBuffer.o: RingBuffer.cpp RingBuffer.h
+ 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RingBuffer.o RingBuffer.cpp
+@@ -299,6 +311,17 @@
+ moc_mainwindow.o: moc_mainwindow.cpp 
+ 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
+ 
++$(AUTOWARE_SOCKET).o:	$(AUTOWARE_SOCKET_PATH)/common.cpp \
++			$(AUTOWARE_SOCKET_PATH)/can.cpp \
++			$(AUTOWARE_SOCKET_PATH)/cmd.cpp \
++			$(AUTOWARE_SOCKET_PATH)/autoware_socket.h \
++			$(AUTOWARE_SOCKET_PATH)/drv.cpp \
++			$(AUTOWARE_SOCKET_PATH)/str.cpp \
++			$(AUTOWARE_CONFIG_PATH)/autoware_config.h \
++			 mainwindow.h \
++
++	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o $(AUTOWARE_SOCKET).o -nostdlib
++
+ ####### Install
+ 
+ install:   FORCE

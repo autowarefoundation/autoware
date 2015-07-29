@@ -1,0 +1,28 @@
+node_name: sync_server
+
+req_pub_mode: 1
+#0:rapid mode(increase memory usage)
+#1:normal mode
+
+sched_policy: 1
+#1:default sched_policy
+#2:rate monotonic
+short_rate: /image_raw
+
+sub1: /image_raw
+sub1_ringbuf: 3
+sub1_header: sensor_msgs/Image
+
+sub2: /scan
+sub2_ringbuf: 12
+sub2_header: sensor_msgs/LaserScan
+
+pub1: /sync_image_raw
+
+pub2: /sync_scan
+
+sync_sub1: /car_pixel_xy
+sync_sub1_header: dpm/ImageObjects
+
+sync_sub2: /scan_image
+sync_sub2_header: scan2image/ScanImage

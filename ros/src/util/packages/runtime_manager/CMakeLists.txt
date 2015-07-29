@@ -14,8 +14,8 @@ add_message_files(
   ConfigCarDpm.msg
   ConfigPedestrianDpm.msg
   ConfigNdt.msg
-  ConfigNdtSlam.msg
-  ConfigNdtSlamOutput.msg
+  ConfigNdtMapping.msg
+  ConfigNdtMappingOutput.msg
   ConfigLaneFollower.msg
   ConfigCarKf.msg
   ConfigPedestrianKf.msg
@@ -25,6 +25,8 @@ add_message_files(
   accel_cmd.msg
   steer_cmd.msg
   brake_cmd.msg
+  lamp_cmd.msg
+  indicator_cmd.msg
   traffic_light.msg
   ConfigCarFusion.msg
   ConfigPedestrianFusion.msg

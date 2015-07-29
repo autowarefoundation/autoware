@@ -54,9 +54,6 @@
 #define IMAGE_CALLBACK imageCallback
 #endif
 
-using namespace std;
-using namespace cv;
-
 struct Scan_image{
 	float distance[IMAGE_WIDTH][IMAGE_HEIGHT];
 	float intensity[IMAGE_WIDTH][IMAGE_HEIGHT];
@@ -74,12 +71,12 @@ struct Point5
 };
 
 extern void fuse();
-extern void fuseFilterDetections(vector<Point5>& vScanPoints);
-extern void getVScanPoints(vector<Point5> &vScanPoints);
-extern bool dispersed(vector<Point5> &vScanPoints, vector<int> &indices);
-extern float getStdDev(vector<Point5> &vScanPoints, vector<int> &indices, float avg);
-extern float getMinAverage(vector<Point5> &vScanPoints, vector<int> &indices);
-extern bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float object_distance, vector<int> &outIndices);
+extern void fuseFilterDetections(std::vector<Point5>& vScanPoints);
+extern void getVScanPoints(std::vector<Point5> &vScanPoints);
+extern bool dispersed(std::vector<Point5> &vScanPoints, std::vector<int> &indices);
+extern float getStdDev(std::vector<Point5> &vScanPoints, std::vector<int> &indices, float avg);
+extern float getMinAverage(std::vector<Point5> &vScanPoints, std::vector<int> &indices);
+extern bool rectangleContainsPoints(cv::Rect rect, std::vector<Point5> &vScanPoints, float object_distance, std::vector<int> &outIndices);
 extern std::vector<float> getMinHeights();
 extern std::vector<float> getMaxHeights();
 extern void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp);

@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   dpm
-  dpm_gpu
   runtime_manager
   fusion
 )
@@ -47,7 +46,6 @@ catkin_package(
 SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(/usr/include/opencv2/legacy)
 
 add_executable(pedestrian_dpm
   nodes/pedestrian_dpm/pedestrian_dpm.cpp
@@ -62,33 +60,6 @@ target_link_libraries(pedestrian_dpm
   ${OpenCV_LIBS}
   dpm
 )
-
-if(EXISTS "/usr/local/cuda")
-include_directories(/usr/local/cuda/include)
-
-if("${ARCHITECTURE}" MATCHES "^arm")
-LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
-endif()
-
-add_executable(pedestrian_dpm_gpu
-  nodes/pedestrian_dpm_gpu/pedestrian_dpm_gpu.cpp
-)
-
-add_dependencies(pedestrian_dpm_gpu runtime_manager_generate_messages_cpp)
-
-SET_TARGET_PROPERTIES(pedestrian_dpm_gpu
-  PROPERTIES
-  COMPILE_FLAGS "-DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
-)
-
-target_link_libraries(pedestrian_dpm_gpu
-  ${catkin_LIBRARIES}
-  cuda
-  dpm_gpu
-)
-else()
-message("CUDA is not installed. 'pedestrian_dpm_gpu' is not built.")
-endif()
 
 ## Declare a cpp executable
 add_executable(pedestrian_fusion

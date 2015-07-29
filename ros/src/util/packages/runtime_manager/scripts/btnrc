@@ -1,0 +1,13 @@
+style "button" {
+	fg[ACTIVE] = @bg_color
+	bg[ACTIVE] = shade (0.7, "#e0e0f0")
+}
+
+style "radiocheck"  = "button" {
+	fg[ACTIVE] = @fg_color
+}
+
+widget_class "*<GtkButton>" style "button"
+widget_class "*<GtkButton>*<GtkLabel>" style "button"
+widget_class "*<GtkRadioButton>*" style "radiocheck"
+widget_class "*<GtkCheckButton>*" style "radiocheck"

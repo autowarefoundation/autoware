@@ -33,11 +33,11 @@
 
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
-#include <ui_socket/route_cmd.h>
+#include <tablet_socket/route_cmd.h>
 
 #include <geo_pos_conv.hh>
 
-#include <vmap_parser.h>
+#include <vmap_utility.hpp>
 
 // #define PUBLISH_TRAJECTORY
 
@@ -46,8 +46,6 @@ static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
 static constexpr bool ADVERTISE_LATCH = true;
 
-static const std::string VECTOR_MAP_DIRECTORY = "/tmp";
-
 static ros::Publisher pub_waypoint;
 static ros::Publisher pub_mark;
 static ros::Publisher _lane_mark_pub;
@@ -55,36 +53,77 @@ static ros::Publisher _lane_mark_pub;
 static ros::Publisher pub_trajectory;
 #endif /* PUBLISH_TRAJECTORY */
 
-static std::vector<Lane> lanes;
-static std::vector<Node> nodes;
-static std::vector<Point> points;
+static std::vector<map_file::Lane> lanes;
+static std::vector<map_file::Node> nodes;
+static std::vector<map_file::PointClass> points;
 
-static std::vector<Point> left_lane_points;
+static std::vector<map_file::PointClass> left_lane_points;
 
-static void route_cmd_callback(const ui_socket::route_cmd& msg)
+static void update_left_lane()
+{
+	if (lanes.empty() || nodes.empty() || points.empty())
+		return;
+
+	for (const map_file::Lane& lane : lanes) {
+		if (lane.lno != 1) // leftmost lane
+			continue;
+		for (const map_file::Node& node : nodes) {
+			if (node.nid != lane.bnid &&
+			    node.nid != lane.fnid)
+				continue;
+			for (const map_file::PointClass& point : points) {
+				if (point.pid != node.pid)
+					continue;
+				left_lane_points.push_back(point);
+			}
+		}
+	}
+}
+
+static void lane_callback(const map_file::LaneArray& msg)
+{
+	lanes = msg.lanes;
+	update_left_lane();
+}
+
+static void node_callback(const map_file::NodeArray& msg)
+{
+	nodes = msg.nodes;
+	update_left_lane();
+}
+
+static void point_class_callback(const map_file::PointClassArray& msg)
+{
+	points = msg.point_classes;
+	update_left_lane();
+}
+
+static void route_cmd_callback(const tablet_socket::route_cmd& msg)
 {
 	geo_pos_conv geo;
 	geo.set_plane(7);
 
 	geo.llh_to_xyz(msg.point.front().lat, msg.point.front().lon, 0);
-	Point start_point = search_nearest(left_lane_points, geo.x(), geo.y());
+	map_file::PointClass start_point =
+		search_nearest(left_lane_points, geo.x(), geo.y());
 
 	geo.llh_to_xyz(msg.point.back().lat, msg.point.back().lon, 0);
-	Point end_point = search_nearest(left_lane_points, geo.x(), geo.y());
+	map_file::PointClass end_point =
+		search_nearest(left_lane_points, geo.x(), geo.y());
 
-	int lane_index = start_point.to_lane_index(nodes, lanes);
+	int lane_index = to_lane_index(start_point, nodes, lanes);
 	if (lane_index < 0) {
 		ROS_ERROR("start lane is not found");
 		return;
 	}
-	Lane lane = lanes[lane_index];
+	map_file::Lane lane = lanes[lane_index];
 
-	int point_index = lane.to_beginning_point_index(nodes, points);
+	int point_index = to_beginning_point_index(lane, nodes, points);
 	if (point_index < 0) {
 		ROS_ERROR("start beginning point is not found");
 		return;
 	}
-	Point point = points[point_index];
+	map_file::PointClass point = points[point_index];
 
 	std_msgs::Header header;
 	header.stamp = ros::Time::now();
@@ -123,26 +162,26 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 	posestamped.pose.orientation.w = 1;
 
 	while (1) {
-		posestamped.pose.position.x = point.ly();
-		posestamped.pose.position.y = point.bx();
-		posestamped.pose.position.z = point.h();
+		posestamped.pose.position.x = point.ly;
+		posestamped.pose.position.y = point.bx;
+		posestamped.pose.position.z = point.h;
 
 		waypoint.poses.push_back(posestamped);
 		mark.points.push_back(posestamped.pose.position);
 		lane_waypoint_marker.points.push_back(posestamped.pose.position);
 
-		point_index = lane.to_finishing_point_index(nodes, points);
+		point_index = to_finishing_point_index(lane, nodes, points);
 		if (point_index < 0) {
 			ROS_ERROR("finishing point is not found");
 			return;
 		}
 		point = points[point_index];
 
-		if (point.bx() == end_point.bx() &&
-		    point.ly() == end_point.ly()) {
-			posestamped.pose.position.x = point.ly();
-			posestamped.pose.position.y = point.bx();
-			posestamped.pose.position.z = point.h();
+		if (point.bx == end_point.bx &&
+		    point.ly == end_point.ly) {
+			posestamped.pose.position.x = point.ly;
+			posestamped.pose.position.y = point.bx;
+			posestamped.pose.position.z = point.h;
 
 			waypoint.poses.push_back(posestamped);
 			mark.points.push_back(posestamped.pose.position);
@@ -151,14 +190,14 @@ static void route_cmd_callback(const ui_socket::route_cmd& msg)
 			break;
 		}
 
-		lane_index = lane.to_next_lane_index(lanes);
+		lane_index = to_next_lane_index(lane, lanes);
 		if (lane_index < 0) {
 			ROS_ERROR("next lane is not found");
 			return;
 		}
 		lane = lanes[lane_index];
 
-		point_index = lane.to_beginning_point_index(nodes, points);
+		point_index = to_beginning_point_index(lane, nodes, points);
 		if (point_index < 0) {
 			ROS_ERROR("beginning point is not found");
 			return;
@@ -198,32 +237,23 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "lane_navi");
 
-	std::string vector_map_directory;
-
 	ros::NodeHandle n;
-	n.param<std::string>("lane_navi/vector_map_directory",
-			     vector_map_directory, VECTOR_MAP_DIRECTORY);
 
-	lanes = read_lane((vector_map_directory +
-			   std::string("/lane.csv")).c_str());
-	nodes = read_node((vector_map_directory +
-			   std::string("/node.csv")).c_str());
-	points = read_point((vector_map_directory +
-			     std::string("/point.csv")).c_str());
+	ros::Subscriber sub_lane = n.subscribe("vector_map_info/lane",
+					       SUBSCRIBE_QUEUE_SIZE,
+					       lane_callback);
+	ros::Subscriber sub_node = n.subscribe("vector_map_info/node",
+					       SUBSCRIBE_QUEUE_SIZE,
+					       node_callback);
+	ros::Subscriber sub_point_class = n.subscribe(
+		"vector_map_info/point_class",
+		SUBSCRIBE_QUEUE_SIZE,
+		point_class_callback);
 
-	for (const Lane& lane : lanes) {
-		if (lane.lno() != 1) // leftmost lane
-			continue;
-		for (const Node& node : nodes) {
-			if (node.nid() != lane.bnid() &&
-			    node.nid() != lane.fnid())
-				continue;
-			for (const Point& point : points) {
-				if (point.pid() != node.pid())
-					continue;
-				left_lane_points.push_back(point);
-			}
-		}
+	ros::Rate rate(1);
+	while (lanes.empty() || nodes.empty() || points.empty()) {
+		ros::spinOnce();
+		rate.sleep();
 	}
 
 	ros::Subscriber sub = n.subscribe("route_cmd",

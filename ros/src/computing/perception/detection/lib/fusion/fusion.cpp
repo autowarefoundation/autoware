@@ -86,7 +86,7 @@ void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minP
 }
 
 //Check wheter vscanpoints are contained in the detected object bounding box(rect) or not, store the vscanpoints indices in outIndices
-bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float object_distance, vector<int> &outIndices)
+bool rectangleContainsPoints(cv::Rect rect, std::vector<Point5> &vScanPoints, float object_distance, std::vector<int> &outIndices)
 {
 	int numPoints = vScanPoints.size();
 
@@ -111,7 +111,7 @@ bool rectangleContainsPoints(Rect rect, vector<Point5> &vScanPoints, float objec
 }
 
 //get the average of the minimum heights for only those vscan points in theindices
-float getMinAverage(vector<Point5> &vScanPoints, vector<int> &indices)
+float getMinAverage(std::vector<Point5> &vScanPoints, std::vector<int> &indices)
 {
 	float average = 0.0;
 	int num = indices.size();
@@ -125,7 +125,7 @@ float getMinAverage(vector<Point5> &vScanPoints, vector<int> &indices)
 }
 
 //get the standard deviation of only those min heightsa in the indices vector
-float getStdDev(vector<Point5> &vScanPoints, vector<int> &indices, float avg)
+float getStdDev(std::vector<Point5> &vScanPoints, std::vector<int> &indices, float avg)
 {
 	float N = indices.size();
 	if(N==0.0)
@@ -141,7 +141,7 @@ float getStdDev(vector<Point5> &vScanPoints, vector<int> &indices, float avg)
 }
 
 //obtain the coefficient of dispersion of the min height to check for uneven heights
-bool dispersed(vector<Point5> &vScanPoints, vector<int> &indices)
+bool dispersed(std::vector<Point5> &vScanPoints, std::vector<int> &indices)
 {
 	float avg = getMinAverage(vScanPoints, indices);
 	float stddev = getStdDev(vScanPoints, indices, avg);
@@ -153,7 +153,7 @@ bool dispersed(vector<Point5> &vScanPoints, vector<int> &indices)
 }
 
 //returns the vscanpoints in the pointcloud
-void getVScanPoints(vector<Point5> &vScanPoints)
+void getVScanPoints(std::vector<Point5> &vScanPoints)
 {
 	int w = IMAGE_WIDTH;
 	int h = IMAGE_HEIGHT;
@@ -174,7 +174,7 @@ void getVScanPoints(vector<Point5> &vScanPoints)
 	}
 }
 
-void getMinMaxHeight(vector<Point5>& vScanPoints, vector<int> indices, float& outMinHeight, float& outMaxHeight)
+void getMinMaxHeight(std::vector<Point5>& vScanPoints, std::vector<int> indices, float& outMinHeight, float& outMaxHeight)
 {
 	float N = indices.size();
 	if(N==0.0)
@@ -191,9 +191,9 @@ void getMinMaxHeight(vector<Point5>& vScanPoints, vector<int> indices, float& ou
 	outMaxHeight = tmpMaxH;
 }
 
-void fuseFilterDetections(vector<Point5>& vScanPoints)
+void fuseFilterDetections(std::vector<Point5>& vScanPoints)
 {
-	vector<int> pointsInBoundingBox;
+	std::vector<int> pointsInBoundingBox;
 	//reset
 	filtered_objects_num = 0;
 	filtered_corner_points.clear();
@@ -204,7 +204,7 @@ void fuseFilterDetections(vector<Point5>& vScanPoints)
 	{
 		//corner_point[0]=>X1		corner_point[1]=>Y1
 		//corner_point[2]=>width	corner_point[3]=>height
-		Rect detection = Rect(g_corner_points[0+i*4], g_corner_points[1+i*4], g_corner_points[2+i*4], g_corner_points[3+i*4]);
+		cv::Rect detection = cv::Rect(g_corner_points[0+i*4], g_corner_points[1+i*4], g_corner_points[2+i*4], g_corner_points[3+i*4]);
 		if (!isAlmostZero(g_distances.at(i)) &&
 			rectangleContainsPoints(detection, vScanPoints, g_distances.at(i), pointsInBoundingBox) &&
 			!dispersed(vScanPoints, pointsInBoundingBox))
@@ -236,7 +236,7 @@ void fuse()
 	calcDistance();//obtain distance for each object
 
 	//Draw VScan Points and get them before displaying detections
-	vector<Point5> vScanPoints;
+	std::vector<Point5> vScanPoints;
 
 	getVScanPoints(vScanPoints);//store all the vscanpoints and its data
 
