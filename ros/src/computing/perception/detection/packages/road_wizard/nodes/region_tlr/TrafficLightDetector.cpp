@@ -5,7 +5,7 @@
 #define WHITE CV_RGB(255, 255, 255)
 
 struct regionCandidate {
-  Point  center;
+  cv::Point  center;
   int    idx;
   double circleLevel;
   bool   isBlacked;
@@ -33,16 +33,16 @@ static inline  bool IsRange(const double lower, const double upper, const double
 } /* static inline  bool IsRange() */
 
 
-static void colorExtraction(const Mat&   src,                               // input HSV image
-                            Mat*         dst,                               // specified color extracted binarized image
-                            const double hue_lower, const double hue_upper, // hue thresholds
-                            const double sat_lower, const double sat_upper, // satulation thresholds
-                            const double val_lower, const double val_upper) // value thresholds
+static void colorExtraction(const cv::Mat& src, // input HSV image
+                            cv::Mat*       dst, // specified color extracted binarized image
+                            const double   hue_lower, const double hue_upper, // hue thresholds
+                            const double   sat_lower, const double sat_upper, // satulation thresholds
+                            const double   val_lower, const double val_upper) // value thresholds
 {
   /* create imput image copy */
-  Mat input_img = src.clone();
+  cv::Mat input_img = src.clone();
 
-  *dst = Scalar::all(0);
+  *dst = cv::Scalar::all(0);
 
   /*
     ref:
@@ -50,20 +50,20 @@ static void colorExtraction(const Mat&   src,                               // i
    */
 
   /* create LookUp Table */
-  Mat lut(256, 1, CV_8UC3);
+  cv::Mat lut(256, 1, CV_8UC3);
   for (int i=0; i<256; i++)
     {
-	  lut.at<Vec3b>(i)[0] = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
-	  lut.at<Vec3b>(i)[1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
-	  lut.at<Vec3b>(i)[2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
+	  lut.at<cv::Vec3b>(i)[0] = (IsRange(hue_lower, hue_upper, Actual_Hue(i))) ? 255 : 0;
+	  lut.at<cv::Vec3b>(i)[1] = (IsRange(sat_lower, sat_upper, Actual_Sat(i))) ? 255 : 0;
+	  lut.at<cv::Vec3b>(i)[2] = (IsRange(val_lower, val_upper, Actual_Val(i))) ? 255 : 0;
     }
 
   /* apply LUT to input image */
-  Mat extracted(input_img.rows, input_img.cols, CV_8UC3);
+  cv::Mat extracted(input_img.rows, input_img.cols, CV_8UC3);
   LUT(input_img, lut, extracted);
 
   /* divide image into each channel */
-  std::vector<Mat> channels;
+  std::vector<cv::Mat> channels;
   split(extracted, channels);
 
   /* create mask */
@@ -74,47 +74,47 @@ static void colorExtraction(const Mat&   src,                               // i
 } /* static void colorExtraction() */
 
 
-static bool checkExtinctionLight(const Mat&  src_img,
-                                 const Point top_left,
-                                 const Point bot_right,
-                                 const Point bright_center)
+static bool checkExtinctionLight(const cv::Mat&  src_img,
+                                 const cv::Point top_left,
+                                 const cv::Point bot_right,
+                                 const cv::Point bright_center)
 {
 
   /* check whether new roi is included by source image */
-  Point roi_top_left;
+  cv::Point roi_top_left;
   roi_top_left.x = (top_left.x < 0) ? 0 :
     (src_img.cols < top_left.x) ? src_img.cols : top_left.x;
   roi_top_left.y = (top_left.y < 0) ? 0 :
     (src_img.rows < top_left.y) ? src_img.rows : top_left.y;
 
-  Point roi_bot_right;
+  cv::Point roi_bot_right;
   roi_bot_right.x = (bot_right.x < 0) ? 0 :
     (src_img.cols < bot_right.x) ? src_img.cols : bot_right.x;
   roi_bot_right.y = (bot_right.y < 0) ? 0 :
     (src_img.rows < bot_right.y) ? src_img.rows : bot_right.y;
 
-  Mat roi = src_img(Rect(roi_top_left, roi_bot_right));
+  cv::Mat roi = src_img(cv::Rect(roi_top_left, roi_bot_right));
 
-  Mat roi_HSV;
+  cv::Mat roi_HSV;
   cvtColor(roi, roi_HSV, CV_BGR2HSV);
 
-  Mat hsv_channel[3];
+  cv::Mat hsv_channel[3];
   split(roi_HSV, hsv_channel);
 
   int anchor = 3;
-  Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(2*anchor + 1, 2*anchor + 1), Point(anchor, anchor));
+  cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2*anchor + 1, 2*anchor + 1), cv::Point(anchor, anchor));
 
-  Mat topHat_dark;
-  morphologyEx(hsv_channel[2], topHat_dark, MORPH_TOPHAT, kernel, Point(anchor, anchor), 5);
+  cv::Mat topHat_dark;
+  morphologyEx(hsv_channel[2], topHat_dark, cv::MORPH_TOPHAT, kernel, cv::Point(anchor, anchor), 5);
 
   /* sharpening */
-  Mat tmp;
-  threshold(topHat_dark, tmp, 0.1*255, 255, THRESH_BINARY_INV);
+  cv::Mat tmp;
+  threshold(topHat_dark, tmp, 0.1*255, 255, cv::THRESH_BINARY_INV);
   tmp.copyTo(topHat_dark);
 
   /* filter by its shape and search dark region */
-  std::vector< std::vector<Point> > dark_contours;
-  std::vector<Vec4i> dark_hierarchy;
+  std::vector< std::vector<cv::Point> > dark_contours;
+  std::vector<cv::Vec4i> dark_hierarchy;
   findContours(topHat_dark,
                dark_contours,
                dark_hierarchy,
@@ -127,7 +127,7 @@ static bool checkExtinctionLight(const Mat&  src_img,
   /* check whether "turned off light" like region are in this roi */
   for (unsigned int i=0; i<dark_contours.size(); i++)
     {
-      Rect bound = boundingRect(dark_contours.at(contours_idx));
+      cv::Rect bound = boundingRect(dark_contours.at(contours_idx));
       double area = contourArea(dark_contours.at(contours_idx));
       double perimeter = arcLength(dark_contours.at(contours_idx), true);
       double circleLevel = (IsNearlyZero(perimeter)) ? 0.0f : (4.0f * CV_PI * area / pow(perimeter, 2));
@@ -150,32 +150,32 @@ static bool checkExtinctionLight(const Mat&  src_img,
 } /* static bool checkExtinctionLight() */
 
 
-static Mat signalDetect_inROI(const Mat&   roi,
-                              const Mat&   src_img,
-                              const double estimatedRadius,
-                              const Point roi_topLeft
-                              )
+static cv::Mat signalDetect_inROI(const cv::Mat& roi,
+                                  const cv::Mat&     src_img,
+                                  const double       estimatedRadius,
+                                  const cv::Point roi_topLeft
+                                  )
 {
   /* reduce noise */
-  Mat noiseReduced(roi.rows, roi.cols, CV_8UC3);
-  GaussianBlur(roi, noiseReduced, Size(3, 3), 0, 0);
+  cv::Mat noiseReduced(roi.rows, roi.cols, CV_8UC3);
+  GaussianBlur(roi, noiseReduced, cv::Size(3, 3), 0, 0);
 
   /* extract color information */
-  Mat red_mask(roi.rows, roi.cols, CV_8UC1);
+  cv::Mat red_mask(roi.rows, roi.cols, CV_8UC1);
   colorExtraction(noiseReduced       ,
                   &red_mask          ,
                   thSet.Red.Hue.lower, thSet.Red.Hue.upper,
                   thSet.Red.Sat.lower, thSet.Red.Sat.upper,
                   thSet.Red.Val.lower, thSet.Red.Val.upper);
 
-  Mat yellow_mask(roi.rows, roi.cols, CV_8UC1);
+  cv::Mat yellow_mask(roi.rows, roi.cols, CV_8UC1);
   colorExtraction(noiseReduced          ,
                   &yellow_mask          ,
                   thSet.Yellow.Hue.lower, thSet.Yellow.Hue.upper,
                   thSet.Yellow.Sat.lower, thSet.Yellow.Sat.upper,
                   thSet.Yellow.Val.lower, thSet.Yellow.Val.upper);
 
-  Mat green_mask(roi.rows, roi.cols, CV_8UC1);
+  cv::Mat green_mask(roi.rows, roi.cols, CV_8UC1);
   colorExtraction(noiseReduced         ,
                   &green_mask          ,
                   thSet.Green.Hue.lower, thSet.Green.Hue.upper,
@@ -183,14 +183,14 @@ static Mat signalDetect_inROI(const Mat&   roi,
                   thSet.Green.Val.lower, thSet.Green.Val.upper);
 
   /* combine all color mask and create binarized image */
-  Mat binarized = Mat::zeros(roi.rows, roi.cols, CV_8UC1);
+  cv::Mat binarized = cv::Mat::zeros(roi.rows, roi.cols, CV_8UC1);
   bitwise_or(red_mask, yellow_mask, binarized);
   bitwise_or(binarized, green_mask, binarized);
   threshold(binarized, binarized, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU);
 
   /* filter by its shape and index each bright region */
-  std::vector< std::vector<Point> > bright_contours;
-  std::vector<Vec4i> bright_hierarchy;
+  std::vector< std::vector<cv::Point> > bright_contours;
+  std::vector<cv::Vec4i> bright_hierarchy;
   findContours(binarized,
                bright_contours,
                bright_hierarchy,
@@ -198,14 +198,14 @@ static Mat signalDetect_inROI(const Mat&   roi,
                CV_CHAIN_APPROX_NONE);
 
 
-  Mat bright_mask = Mat::zeros(roi.rows, roi.cols, CV_8UC1);
+  cv::Mat bright_mask = cv::Mat::zeros(roi.rows, roi.cols, CV_8UC1);
 
   int contours_idx = 0;
   std::vector<regionCandidate> candidates;
   for (unsigned int i=0; i<bright_contours.size(); i++)
     {
-      Rect bound = boundingRect(bright_contours.at(contours_idx));
-      Scalar rangeColor = BLACK;
+      cv::Rect bound = boundingRect(bright_contours.at(contours_idx));
+      cv::Scalar rangeColor = BLACK;
       struct regionCandidate cnd;
       double area = contourArea(bright_contours.at(contours_idx));
       double perimeter = arcLength(bright_contours.at(contours_idx), true);
@@ -253,23 +253,23 @@ static Mat signalDetect_inROI(const Mat&   roi,
       for (unsigned int i=0; i<candidates.size(); i++)
         {
           /* check wheter this candidate seems to be green lamp */
-          Point check_roi_topLeft  = Point(candidates.at(i).center.x - 2*estimatedRadius + roi_topLeft.x,
-                                           candidates.at(i).center.y - 2*estimatedRadius + roi_topLeft.y);
-          Point check_roi_botRight = Point(candidates.at(i).center.x + 6*estimatedRadius + roi_topLeft.x,
-                                           candidates.at(i).center.y + 2*estimatedRadius + roi_topLeft.y);
+          cv::Point check_roi_topLeft  = cv::Point(candidates.at(i).center.x - 2*estimatedRadius + roi_topLeft.x,
+                                                   candidates.at(i).center.y - 2*estimatedRadius + roi_topLeft.y);
+          cv::Point check_roi_botRight = cv::Point(candidates.at(i).center.x + 6*estimatedRadius + roi_topLeft.x,
+                                                   candidates.at(i).center.y + 2*estimatedRadius + roi_topLeft.y);
           bool likeGreen = checkExtinctionLight(src_img, check_roi_topLeft, check_roi_botRight, candidates.at(i).center);
 
           /* check wheter this candidate seems to be yellow lamp */
-          check_roi_topLeft  = Point(candidates.at(i).center.x - 4*estimatedRadius + roi_topLeft.x,
+          check_roi_topLeft  = cv::Point(candidates.at(i).center.x - 4*estimatedRadius + roi_topLeft.x,
                                      candidates.at(i).center.y - 2*estimatedRadius + roi_topLeft.y);
-          check_roi_botRight = Point(candidates.at(i).center.x + 4*estimatedRadius + roi_topLeft.x,
+          check_roi_botRight = cv::Point(candidates.at(i).center.x + 4*estimatedRadius + roi_topLeft.x,
                                      candidates.at(i).center.y + 2*estimatedRadius + roi_topLeft.y);
           bool likeYellow = checkExtinctionLight(src_img, check_roi_topLeft, check_roi_botRight, candidates.at(i).center);
 
           /* check wheter this candidate seems to be red lamp */
-          check_roi_topLeft  = Point(candidates.at(i).center.x - 6*estimatedRadius + roi_topLeft.x,
+          check_roi_topLeft  = cv::Point(candidates.at(i).center.x - 6*estimatedRadius + roi_topLeft.x,
                                      candidates.at(i).center.y - 2*estimatedRadius + roi_topLeft.y);
-          check_roi_botRight = Point(candidates.at(i).center.x + 2*estimatedRadius + roi_topLeft.x,
+          check_roi_botRight = cv::Point(candidates.at(i).center.x + 2*estimatedRadius + roi_topLeft.x,
                                      candidates.at(i).center.y + 2*estimatedRadius + roi_topLeft.y);
           bool likeRed = checkExtinctionLight(src_img, check_roi_topLeft, check_roi_botRight, candidates.at(i).center);
 
@@ -319,7 +319,7 @@ static Mat signalDetect_inROI(const Mat&   roi,
           if(candidates.at(i).isBlacked)
             continue;
 
-          Scalar regionColor = BLACK;
+          cv::Scalar regionColor = BLACK;
           candidates.at(i).isBlacked = true;
           if (i == min_idx)
             {
@@ -347,15 +347,15 @@ static Mat signalDetect_inROI(const Mat&   roi,
 TrafficLightDetector::TrafficLightDetector() {}
 
 
-void TrafficLightDetector::brightnessDetect(const Mat &input) {
+void TrafficLightDetector::brightnessDetect(const cv::Mat &input) {
 
-  Mat tmpImage;
+  cv::Mat tmpImage;
   input.copyTo(tmpImage);
 
   /* contrast correction */
-  Mat tmp;
+  cv::Mat tmp;
   cvtColor(tmpImage, tmp, CV_BGR2HSV);
-  std::vector<Mat> hsv_channel;
+  std::vector<cv::Mat> hsv_channel;
   split(tmp, hsv_channel);
 
   float correction_factor = 10.0;
@@ -364,7 +364,7 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     lut[i] = 255.0 / (1 + exp(-correction_factor*(i-128)/255));
   }
 
-  LUT(hsv_channel[2], Mat(Size(256, 1), CV_8U, lut), hsv_channel[2]);
+  LUT(hsv_channel[2], cv::Mat(cv::Size(256, 1), CV_8U, lut), hsv_channel[2]);
   merge(hsv_channel, tmp);
   cvtColor(tmp, tmpImage, CV_HSV2BGR);
 
@@ -375,17 +375,17 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
       continue;
 
     /* extract region of interest from input image */
-    Mat roi = tmpImage(Rect(context.topLeft, context.botRight));
+    cv::Mat roi = tmpImage(cv::Rect(context.topLeft, context.botRight));
 
     /* convert color space (BGR -> HSV) */
-    Mat roi_HSV;
+    cv::Mat roi_HSV;
     cvtColor(roi, roi_HSV, CV_BGR2HSV);
 
     /* search the place where traffic signals seem to be */
-    Mat    signalMask    = signalDetect_inROI(roi_HSV, input.clone(), context.lampRadius, context.topLeft);
+    cv::Mat    signalMask    = signalDetect_inROI(roi_HSV, input.clone(), context.lampRadius, context.topLeft);
 
     /* detect which color is dominant */
-    Mat extracted_HSV;
+    cv::Mat extracted_HSV;
     roi.copyTo(extracted_HSV, signalMask);
 
     // extracted_HSV.copyTo(roi);
@@ -403,8 +403,8 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
         for (int x=0; x<extracted_HSV.cols; x++)
           {
             /* extract H, V value from pixel */
-            double hue = Actual_Hue(extracted_HSV.at<Vec3b>(y, x)[0]);
-            uchar  val = extracted_HSV.at<Vec3b>(y, x)[2];
+            double hue = Actual_Hue(extracted_HSV.at<cv::Vec3b>(y, x)[0]);
+            uchar  val = extracted_HSV.at<cv::Vec3b>(y, x)[2];
 
             if (val == 0) {
               continue;         // this is masked pixel
@@ -445,11 +445,11 @@ void TrafficLightDetector::brightnessDetect(const Mat &input) {
     int currentLightsCode = getCurrentLightsCode(isRed_bright, isYellow_bright, isGreen_bright);
     contexts.at(i).lightState = determineState(contexts.at(i).lightState, currentLightsCode, &(contexts.at(i).stateJudgeCount));
 
-    roi.setTo(Scalar(0));
+    roi.setTo(cv::Scalar(0));
   }
 }
 
-double getBrightnessRatioInCircle(const Mat &input, const Point center, const int radius) {
+double getBrightnessRatioInCircle(const cv::Mat &input, const cv::Point center, const int radius) {
 
   int whitePoints = 0;
   int blackPoints = 0;
@@ -497,15 +497,15 @@ LightState determineState(LightState previousState, int currentLightsCode, int* 
  *  Attempt to recognize by color tracking in HSV. Detects good only green, but need to
  *  play also with S and V parameters range.
  */
-void TrafficLightDetector::colorDetect(const Mat &input, Mat &output, const Rect coords, int Hmin, int Hmax) {
+void TrafficLightDetector::colorDetect(const cv::Mat &input, cv::Mat &output, const cv::Rect coords, int Hmin, int Hmax) {
 
   if (input.channels() != 3) {
     return;
   }
 
-  Mat hsv, thresholded;
+  cv::Mat hsv, thresholded;
   cvtColor(input, hsv, CV_RGB2HSV, 0);
-  inRange(hsv, Scalar(Hmin,0,0), Scalar(Hmax,255,255), thresholded);
+  inRange(hsv, cv::Scalar(Hmin,0,0), cv::Scalar(Hmax,255,255), thresholded);
 
   cvtColor(thresholded, thresholded, CV_GRAY2RGB);
   thresholded.copyTo(output);
