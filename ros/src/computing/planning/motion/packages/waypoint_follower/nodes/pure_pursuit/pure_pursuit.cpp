@@ -99,7 +99,6 @@ double PathPP::getCmdVelocity()
 
   if (param_flag_)
   {
-
     ROS_INFO_STREAM("dialog : " << initial_velocity_ << " km/h (" << kmph2mps(initial_velocity_) << " m/s )");
     return kmph2mps(initial_velocity_);
   }
@@ -110,7 +109,7 @@ double PathPP::getCmdVelocity()
   }
 
   double velocity = current_path_.waypoints[closest_waypoint_].twist.twist.linear.x;
-  ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h , " << velocity << "m/s");
+  ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h ( " << velocity << "m/s )");
   return velocity;
 }
 
