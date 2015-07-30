@@ -553,7 +553,7 @@ static void process_image_common(IplImage *frame)
 #if !defined(USE_POSIX_SHARED_MEMORY)
 static void lane_cannyhough_callback(const sensor_msgs::Image& image_source)
 {
-  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
+  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
   IplImage frame = cv_image->image;
   process_image_common(&frame);
   cvWaitKey(2);
