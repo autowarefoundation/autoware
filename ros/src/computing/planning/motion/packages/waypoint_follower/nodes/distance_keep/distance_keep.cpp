@@ -43,19 +43,15 @@
 #include <iostream>
 
 #include "waypoint_follower/lane.h"
-#include "lf_func.h"
+#include "waypoint_follower/libwaypoint_follower.h"
 
 #define LOOP_RATE 10
 
 static geometry_msgs::TwistStamped _current_twist;
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-static waypoint_follower::lane _current_path;
-//std::vector<geometry_msgs::Pose> _car_pose;
-//std::vector<geometry_msgs::Pose> _ped_pose;
 static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
 static std::string _current_pose_topic = "ndt";
-static const std::string PATH_FRAME = "/map";
 static const std::string pedestrian_sound = "pedestrian";
 static bool _twist_flag = false;
 static bool _pose_flag = false;
@@ -63,9 +59,7 @@ static bool _path_flag = false;
 static bool _vscan_flag = false;
 
 static double _detection_range = 0;
-//static int _obstacle_waypoint = -1;
 static int _obstacle_waypoint = -1;
-static int _closest_waypoint = -1;
 static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
@@ -79,6 +73,8 @@ static ros::Publisher _vis_pub;
 static ros::Publisher _range_pub;
 static ros::Publisher _sound_pub;
 
+Path _path_dk;
+
 static void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
     _current_twist = *msg;
@@ -88,17 +84,7 @@ static void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
         _twist_flag = true;
     }
 }
-/*
- static void CarPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
- {
- _car_pose = msg->poses;
- }
 
- static void PedPoseCallback(const geometry_msgs::PoseArrayConstPtr &msg)
- {
- _ped_pose = msg->poses;
- }
- */
 static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
     pcl::fromROSMsg(*msg, _vscan);
@@ -111,39 +97,20 @@ static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-    if (_current_pose_topic == "ndt") {
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
         tf::Transform inverse;
         tf::poseMsgToTF(msg->pose, inverse);
-        _transform = inverse.inverse();
+        _path_dk.setTransform(inverse.inverse());
         if (_pose_flag == false) {
             std::cout << "pose subscribed" << std::endl;
             _pose_flag = true;
         }
-    }
-
-}
-
-static void OdometryCallback(const nav_msgs::OdometryConstPtr &msg)
-{
-    if (_current_pose_topic == "odometry") {
-        _current_pose.header = msg->header;
-        _current_pose.pose = msg->pose.pose;
-        tf::Transform inverse;
-        tf::poseMsgToTF(msg->pose.pose, inverse);
-        _transform = inverse.inverse();
-
-        if (_pose_flag == false) {
-            std::cout << "pose subscribed" << std::endl;
-            _pose_flag = true;
-        }
-    }
 }
 
 static void WaypointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-    _current_path = *msg;
+    _path_dk.setPath(msg);
     if (_path_flag == false) {
         std::cout << "waypoint subscribed" << std::endl;
         _path_flag = true;
@@ -155,13 +122,13 @@ static void DisplayObstacleWaypoint(int i)
 {
 
     visualization_msgs::Marker marker;
-    marker.header.frame_id = PATH_FRAME;
+    marker.header.frame_id = "/map";
     marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position = _current_path.waypoints[i].pose.pose.position;
+    marker.pose.position = _path_dk.getWaypointPosition(i);
     marker.pose.orientation = _current_pose.pose.orientation;
     marker.scale.x = 1.0;
     marker.scale.y = 1.0;
@@ -181,7 +148,7 @@ static void DisplayDetectionRange(int i)
 {
 
     visualization_msgs::Marker marker;
-    marker.header.frame_id = PATH_FRAME;
+    marker.header.frame_id = "/map";
     marker.header.stamp = ros::Time();
     marker.ns = "my_namespace";
     marker.id = 0;
@@ -189,13 +156,11 @@ static void DisplayDetectionRange(int i)
     marker.action = visualization_msgs::Marker::ADD;
 
     for (int j = 0; j < _search_distance; j++) {
-        if(i+j > static_cast<int>(_current_path.waypoints.size()) - 1)
+        if(i+j > _path_dk.getPathSize() - 1)
             break;
 
         geometry_msgs::Point point;
-        point.x = _current_path.waypoints[j+i].pose.pose.position.x;
-        point.y = _current_path.waypoints[j+i].pose.pose.position.y;
-        point.z = _current_path.waypoints[j+i].pose.pose.position.z;
+        point = _path_dk.getWaypointPosition(j+i);
         marker.points.push_back(point);
     }
     marker.scale.x = 2 * _detection_range;
@@ -211,19 +176,19 @@ static void DisplayDetectionRange(int i)
     marker.points.clear();
 }
 
-static int GetObstacleWaypointUsingVscan()
+static int vscanDetection(int closest_waypoint)
 {
 
     if (_vscan.empty() == true)
         return -1;
 
-    for (int i = _closest_waypoint + 1; i < _closest_waypoint + _search_distance; i++) {
+    for (int i = closest_waypoint + 1; i < closest_waypoint + _search_distance; i++) {
 
-        if(i > static_cast<int>(_current_path.waypoints.size()) - 1 )
+        if(i > _path_dk.getPathSize() - 1 )
             return -1;
 
-     //   tf::Vector3 tf_waypoint = TransformWaypoint(i);
-        tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[i].pose.pose);
+        tf::Vector3 tf_waypoint = _path_dk.transformWaypoint(i);
+        //tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[i].pose.pose);
         tf_waypoint.setZ(0);
 
         //std::cout << "waypoint : "<< tf_waypoint.getX()  << " "<< tf_waypoint.getY() << std::endl;
@@ -262,10 +227,10 @@ static bool ObstacleDetection()
     static bool prev_detection = false;
 
     //_closest_waypoint = GetClosestWaypoint();
-    _closest_waypoint = GetClosestWaypoint(_transform,_current_path,_closest_waypoint);
-    std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
-    DisplayDetectionRange(_closest_waypoint + 1);
-    int vscan_result = GetObstacleWaypointUsingVscan();
+    int closest_waypoint = _path_dk.getClosestWaypoint();
+    std::cout << "closest_waypoint : " << closest_waypoint << std::endl;
+    DisplayDetectionRange(closest_waypoint + 1);
+    int vscan_result = vscanDetection(closest_waypoint);
 
     if (prev_detection == false) {
         if (vscan_result != -1) {
@@ -317,8 +282,11 @@ static bool ObstacleDetection()
 static double Decelerate()
 {
     //calculate distance from my position to waypoint
-    tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[_obstacle_waypoint].pose.pose);
-    double distance = tf::tfDistance(_origin_v, tf_waypoint);
+    //tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[_obstacle_waypoint].pose.pose);
+  tf::Vector3 tf_waypoint = _path_dk.transformWaypoint(_obstacle_waypoint);
+    tf::Vector3 origin_v;
+                   origin_v.setZero();
+  double distance = tf::tfDistance(origin_v, tf_waypoint);
    // std::cout << "distance " << distance << std::endl;
 
     //if distance is within stop_interval param, publish 0km/h
@@ -343,17 +311,14 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
     ros::Subscriber twist_sub = nh.subscribe("twist_raw", 1, TwistCmdCallback);
-    //ros::Subscriber car_pose_sub = nh.subscribe("car_pose", 1,CarPoseCallback);
-    //ros::Subscriber ped_pose_sub = nh.subscribe("pedestrian_pose", 1, PedPoseCallback);
     ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, VscanCallback);
     ros::Subscriber ndt_sub = nh.subscribe("control_pose", 1, NDTCallback);
-    ros::Subscriber odom_sub = nh.subscribe("odom_pose", 1, OdometryCallback);
-    ros::Subscriber waypoint_sub = nh.subscribe("ruled_waypoint", 1, WaypointCallback);
+    ros::Subscriber waypoint_sub = nh.subscribe("safety_waypoint", 1, WaypointCallback);
 
     _twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
     _vis_pub = nh.advertise<visualization_msgs::Marker>("obstaclewaypoint_mark", 0);
     _range_pub = nh.advertise<visualization_msgs::Marker>("detection_range", 0);
-    _sound_pub = nh.advertise<std_msgs::String>("/sound_player", 10);
+    _sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
 
     private_nh.getParam("detection_range", _detection_range);
     std::cout << "detection_range : " << _detection_range << std::endl;

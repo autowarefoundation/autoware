@@ -28,22 +28,64 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _LF_FUNC_H
-#define _LF_FUNC_H
+#ifndef _LIB_WAYPOINT_FOLLOWER_H
+#define _LIB_WAYPOINT_FOLLOWER_H
 
-
+//C++ header
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
+//ROS header
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
-
 #include "waypoint_follower/lane.h"
 
-static tf::Vector3 _origin_v(0, 0, 0);
+class Path
+{
+protected:
+	waypoint_follower::lane current_path_;
+  tf::Vector3 origin_v_;
+  tf::Transform transform_;
+  int closest_waypoint_;
 
-int GetClosestWaypoint(tf::Transform transform, waypoint_follower::lane path,int current_closest);
-tf::Vector3 TransformWaypoint(tf::Transform transform,geometry_msgs::Pose pose);
+
+public:
+
+  Path()
+  {
+    closest_waypoint_ = -1;
+    origin_v_.setZero();
+  }
+  void setTransform(tf::Transform transform){ transform_ = transform;}
+  void setPath(const waypoint_follower::laneConstPtr &msg);
+  int getPathSize();
+  double getInterval();
+	double getDistance(int waypoint);
+  tf::Vector3 transformWaypoint(int waypoint);
+	geometry_msgs::Point getWaypointPosition(int waypoint);
+	geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
+	waypoint_follower::lane getCurrentPath(){ return current_path_; }
+	int getClosestWaypoint();
+
+};
+
+inline double kmph2mps(double velocity_kmph) { return (velocity_kmph * 1000) / (60 * 60); }
+inline double mps2kmph(double velocity_mps) { return (velocity_mps * 60 * 60) / 1000; }
 double DecelerateVelocity(double distance, double prev_velocity);
+inline tf::Vector3 point2vector(geometry_msgs::Point point)
+{
+  tf::Vector3 vector(point.x,point.y,point.z);
+  return vector;
+}
+
+inline geometry_msgs::Point vector2point(tf::Vector3 vector)
+{
+  geometry_msgs::Point point;
+  point.x = vector.getX();
+  point.y = vector.getY();
+  point.z = vector.getZ();
+  return point;
+}
+
 #endif

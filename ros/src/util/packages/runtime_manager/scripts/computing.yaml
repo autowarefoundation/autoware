@@ -103,15 +103,6 @@ subs :
              prop  : 1
     - name : waypoint_follower
       subs :
-       - name : pure_pursuit(sim)
-         cmd  : roslaunch waypoint_follower pure_pursuit_sim.launch
-         param: lane_follower
-         gui  :
-           velocity:
-             depend : param_flag
-           lookahead_threshold:
-             depend : param_flag
-           stat_topic : [ lf ]
        - name : pure_pursuit
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
          param: lane_follower
@@ -125,9 +116,9 @@ subs :
          cmd  : roslaunch waypoint_follower distance_keep.launch
        - name : twist_through
          cmd  : rosrun waypoint_follower twist_through
-       - name : odom_gen
-         cmd  : roslaunch waypoint_follower odom_gen.launch
-         param: odom_gen
+       - name : car_simulator
+         cmd  : roslaunch waypoint_follower car_simulator.launch
+         param: car_simulator
          gui  :
            use_pose:
              flags : [ no_category, nl ]
@@ -307,8 +298,12 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
-
-  - name  : odom_gen
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      rosparam: /pure_pursuit/sim_mode
+  - name  : car_simulator
     vars  :
     - name    : use_pose
       kind    : radio_box
