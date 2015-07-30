@@ -476,6 +476,8 @@ static void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, Ip
 
   image_lane_objects.publish(lane_msg);
 #endif
+  // cvLine(org_frame, cvPoint(lane_msg.lane_l_x1, lane_msg.lane_l_y1), cvPoint(lane_msg.lane_l_x2, lane_msg.lane_l_y2), RED, 5);
+  // cvLine(org_frame, cvPoint(lane_msg.lane_r_x1, lane_msg.lane_r_y1), cvPoint(lane_msg.lane_r_x2, lane_msg.lane_r_y2), RED, 5);
 }
 
 static void process_image_common(IplImage *frame)
@@ -524,9 +526,11 @@ static void process_image_common(IplImage *frame)
   cvLine(temp_frame, cvPoint(frame_size.width/2, 0),
          cvPoint(frame_size.width/2, frame_size.height), CV_RGB(255, 255, 0), 1);
 
-  cvShowImage("Gray", gray);
-  cvShowImage("Edges", edges);
-  cvShowImage("Color", temp_frame);
+  // cvShowImage("Gray", gray);
+  // cvShowImage("Edges", edges);
+  // cvShowImage("Color", temp_frame);
+  // cvShowImage("temp_frame", temp_frame);
+  // cvShowImage("frame", frame);
 #endif
 
 #if defined(USE_POSIX_SHARED_MEMORY)
@@ -534,9 +538,9 @@ static void process_image_common(IplImage *frame)
 #endif
 
 #ifdef SHOW_DETAIL
-  cvMoveWindow("Gray", 0, 0);
-  cvMoveWindow("Edges", 0, frame_size.height+25);
-  cvMoveWindow("Color", 0, 2*(frame_size.height+25));
+  // cvMoveWindow("Gray", 0, 0);
+  // cvMoveWindow("Edges", 0, frame_size.height+25);
+  // cvMoveWindow("Color", 0, 2*(frame_size.height+25));
 #endif
 
   cvReleaseMemStorage(&houghStorage);
