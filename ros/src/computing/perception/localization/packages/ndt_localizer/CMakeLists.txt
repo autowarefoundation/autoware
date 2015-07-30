@@ -35,6 +35,7 @@ add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(pos_marker nodes/pos_marker/pos_marker.cpp)
 
+
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})

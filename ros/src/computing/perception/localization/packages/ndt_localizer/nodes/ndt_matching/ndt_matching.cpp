@@ -53,8 +53,12 @@
 #include <velodyne_pointcloud/point_types.h>
 #include <velodyne_pointcloud/rawdata.h>
 
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+
+#include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
+#include <tf/transform_listener.h>
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
@@ -140,6 +144,8 @@ static std_msgs::Float32 time_ndt_matching;
 
 static std::string _scanner = "velodyne";
 static int _queue_size = 1000;
+
+static ros::Publisher velodyne_points_filtered_pub;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -316,6 +322,55 @@ static void marker_callback(const visualization_msgs::InteractiveMarkerFeedback:
 
     std::cout << current_pos.yaw << std::endl;
   }
+}
+
+static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
+{
+
+  std::cout << "initialpose_callback" << std::endl;
+  std::cout << input->pose.pose.position.x << std::endl;
+  std::cout << input->pose.pose.position.y << std::endl;
+  std::cout << input->pose.pose.position.z << std::endl;
+  std::cout << input->pose.pose.orientation.x << std::endl;
+  std::cout << input->pose.pose.orientation.y << std::endl;
+  std::cout << input->pose.pose.orientation.z << std::endl;
+  std::cout << input->pose.pose.orientation.w << std::endl;
+  
+  tf::TransformListener listener;
+  tf::StampedTransform transform;
+  try{
+    ros::Time now = ros::Time(0);
+    listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
+    listener.lookupTransform("/map", "world", now, transform);
+  }
+  catch(tf::TransformException &ex){
+    ROS_ERROR("%s", ex.what());
+  }
+
+  std::cout << "x: " << transform.getOrigin().x() << std::endl;
+  std::cout << "y: " << transform.getOrigin().y() << std::endl;
+  std::cout << "z: " << transform.getOrigin().z() << std::endl;
+
+  tf::Quaternion q(input->pose.pose.orientation.x, input->pose.pose.orientation.y, input->pose.pose.orientation.z, input->pose.pose.orientation.w);
+  tf::Matrix3x3 m(q);
+  previous_pos.x = input->pose.pose.position.x + transform.getOrigin().x();
+  previous_pos.y = input->pose.pose.position.y + transform.getOrigin().y();
+  previous_pos.z = input->pose.pose.position.z + transform.getOrigin().z();
+  m.getRPY(previous_pos.roll, previous_pos.pitch, previous_pos.yaw);
+  
+  current_pos.x = previous_pos.x;
+  current_pos.y = previous_pos.y;
+  current_pos.z = previous_pos.z;
+  current_pos.roll = previous_pos.roll;
+  current_pos.pitch = previous_pos.pitch;
+  current_pos.yaw = previous_pos.yaw;
+  
+  offset_x = current_pos.x - previous_pos.x;
+  offset_y = current_pos.y - previous_pos.y;
+  offset_z = current_pos.z - previous_pos.z;
+  offset_yaw = current_pos.yaw - previous_pos.yaw;
+  
+  std::cout << current_pos.yaw << std::endl;
 }
 
 static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -631,12 +686,18 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
             p.x = (double) item->x;
             p.y = (double) item->y;
             p.z = (double) item->z;
-	    
-            scan.points.push_back(p);
+
+	    //	    if(item->ring % 3 == 0 ){
+	    scan.points.push_back(p);
+	      //	    }
       }
       //        t1_end = ros::Time::now();
       //        d1 = t1_end - t1_start;
-      
+
+      sensor_msgs::PointCloud2::Ptr velodyne_points_filtered(new sensor_msgs::PointCloud2);      
+      pcl::toROSMsg(scan, *velodyne_points_filtered);
+      velodyne_points_filtered_pub.publish(*velodyne_points_filtered);
+
       Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
       
       pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
@@ -826,6 +887,10 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
       estimated_vel_pub.publish(estimated_vel);
 
+      // Output csv
+      std::ofstream ofs("matching_time.csv", std::ios::app);
+      ofs << input->header.seq << "," << time_ndt_matching.data << std::endl;
+
       int iter_num = ndt.getFinalNumIteration();
       
       if(iter_num > 5){
@@ -943,6 +1008,8 @@ int main(int argc, char **argv)
 
     time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
 
+    velodyne_points_filtered_pub = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points_filtered", 1000);
+
     // subscribing parameter
     ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
 
@@ -954,6 +1021,9 @@ int main(int argc, char **argv)
 
     // Subscribing pose of interactive marker
     ros::Subscriber marker_sub = nh.subscribe("pos_marker/feedback", 1000, marker_callback);
+
+    // Subscribing 2D Nav Goal
+    ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
 
     // subscribing the velodyne data
     ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", _queue_size, velodyne_callback);
