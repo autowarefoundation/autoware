@@ -497,7 +497,7 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 	current_pos_control.z = current_pos.z - control_shift_z;
 
         // transform "/velodyne" to "/map"
-#if 0
+#if 1
         transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
         q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
         transform.setRotation(q);
