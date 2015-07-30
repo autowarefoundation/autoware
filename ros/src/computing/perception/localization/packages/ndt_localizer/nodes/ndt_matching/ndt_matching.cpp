@@ -36,6 +36,7 @@
 
 #define VIEW_TIME
 
+
 // If you want to output "position_log.txt", "#define OUTPUT".
 //#define OUTPUT 
 
@@ -369,8 +370,9 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   offset_y = current_pos.y - previous_pos.y;
   offset_z = current_pos.z - previous_pos.z;
   offset_yaw = current_pos.yaw - previous_pos.yaw;
-  
+  /*  
   std::cout << current_pos.yaw << std::endl;
+  */
 }
 
 static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
