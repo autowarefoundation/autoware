@@ -44,7 +44,7 @@ include_directories(
 )
 
 add_executable(lane_detector
-  nodes/lane_detector/line_detection.cpp
+  nodes/lane_detector/lane_detector.cpp
 )
 
 target_link_libraries(lane_detector

@@ -476,6 +476,8 @@ static void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, Ip
 
   image_lane_objects.publish(lane_msg);
 #endif
+  // cvLine(org_frame, cvPoint(lane_msg.lane_l_x1, lane_msg.lane_l_y1), cvPoint(lane_msg.lane_l_x2, lane_msg.lane_l_y2), RED, 5);
+  // cvLine(org_frame, cvPoint(lane_msg.lane_r_x1, lane_msg.lane_r_y1), cvPoint(lane_msg.lane_r_x2, lane_msg.lane_r_y2), RED, 5);
 }
 
 static void process_image_common(IplImage *frame)
@@ -489,8 +491,8 @@ static void process_image_common(IplImage *frame)
   video_size.width  = *shrd_ptr_width;
 #else
   // XXX These parameters should be set ROS parameters
-  video_size.height = 480;
-  video_size.width  = 640;
+  video_size.height = frame->height;
+  video_size.width  = frame->width;
 #endif
   CvSize    frame_size = cvSize(video_size.width, video_size.height/2);
   IplImage *temp_frame = cvCreateImage(frame_size, IPL_DEPTH_8U, 3);
@@ -524,9 +526,11 @@ static void process_image_common(IplImage *frame)
   cvLine(temp_frame, cvPoint(frame_size.width/2, 0),
          cvPoint(frame_size.width/2, frame_size.height), CV_RGB(255, 255, 0), 1);
 
-  cvShowImage("Gray", gray);
-  cvShowImage("Edges", edges);
-  cvShowImage("Color", temp_frame);
+  // cvShowImage("Gray", gray);
+  // cvShowImage("Edges", edges);
+  // cvShowImage("Color", temp_frame);
+  // cvShowImage("temp_frame", temp_frame);
+  // cvShowImage("frame", frame);
 #endif
 
 #if defined(USE_POSIX_SHARED_MEMORY)
@@ -534,9 +538,9 @@ static void process_image_common(IplImage *frame)
 #endif
 
 #ifdef SHOW_DETAIL
-  cvMoveWindow("Gray", 0, 0);
-  cvMoveWindow("Edges", 0, frame_size.height+25);
-  cvMoveWindow("Color", 0, 2*(frame_size.height+25));
+  // cvMoveWindow("Gray", 0, 0);
+  // cvMoveWindow("Edges", 0, frame_size.height+25);
+  // cvMoveWindow("Color", 0, 2*(frame_size.height+25));
 #endif
 
   cvReleaseMemStorage(&houghStorage);
@@ -549,7 +553,7 @@ static void process_image_common(IplImage *frame)
 #if !defined(USE_POSIX_SHARED_MEMORY)
 static void lane_cannyhough_callback(const sensor_msgs::Image& image_source)
 {
-  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
+  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
   IplImage frame = cv_image->image;
   process_image_common(&frame);
   cvWaitKey(2);
@@ -573,7 +577,7 @@ int main(int argc, char *argv[])
 #else
   ros::init(argc, argv, "line_ocv");
   ros::NodeHandle n;
-  ros::Subscriber subscriber = n.subscribe("/lane_cannyhough", 1, lane_cannyhough_callback);
+  ros::Subscriber subscriber = n.subscribe("/image_raw", 1, lane_cannyhough_callback);
 
   image_lane_objects = n.advertise<lane_detector::ImageLaneObjects>("lane_pos_xy", 1);
 

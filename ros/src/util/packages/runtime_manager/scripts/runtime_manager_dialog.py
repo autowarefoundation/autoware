@@ -1035,7 +1035,7 @@ class MyFrame(rtmgr.MyFrame):
 		for prm in params:
 			if 'topic' in prm and 'msg' in prm:
 				klass_msg = globals()[ prm['msg'] ]
-				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
+				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, latch=True, queue_size=10)
 		self.params += params
 
 	def gdic_get_1st(self, dic):

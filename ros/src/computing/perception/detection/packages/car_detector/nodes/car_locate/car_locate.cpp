@@ -28,6 +28,12 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "std_msgs/String.h"
+#include "ros/ros.h"
+
+#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/CompressedImage.h>
+#include "car_detector/FusedObjects.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -40,23 +46,19 @@
 #include <sys/time.h>
 #include <bitset>
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
-
-#include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Float64.h>
-#include <scan2image/ScanImage.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseArray.h>
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
-#include <car_detector/FusedObjects.h>
-#include <tf/tf.h>
-#include <tf/transform_listener.h>
-#include <sensor_msgs/NavSatFix.h>
+#include "opencv/cv.h" 
+#include "opencv/highgui.h"
+#include "opencv/cxcore.h" 
+#include "std_msgs/Float64.h"
+#include "scan2image/ScanImage.h"
+#include "geometry_msgs/TwistStamped.h"
+// #include "geometry_msgs/Pose.h"
+// #include "geometry_msgs/PoseArray.h"
+#include "visualization_msgs/Marker.h"
+#include "visualization_msgs/MarkerArray.h"
+#include "tf/tf.h"
+#include "tf/transform_listener.h"
+#include "sensor_msgs/NavSatFix.h"
 #include "structure.h"
 #include "calcoordinates.h"
 #include "axialMove.h"
@@ -133,12 +135,15 @@ void GetRPY(const geometry_msgs::Pose &pose,
 }
 
 void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
-			     vector<OBJPOS>::iterator cp_iterator,
-			     LOCATION mloc,
-			     ANGLE angle,
-			     geometry_msgs::PoseArray &pose){
+                             vector<OBJPOS>::iterator cp_iterator,
+                             LOCATION mloc,
+                             ANGLE angle,
+                             //geometry_msgs::PoseArray &pose)
+                             visualization_msgs::MarkerArray& pose)
+{
   LOCATION rescoord;
-  geometry_msgs::Pose tmpPose;
+  //geometry_msgs::Pose tmpPose;
+  visualization_msgs::Marker tmpPose;
 
   for(uint i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
@@ -172,10 +177,46 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
     rescoord.Y += mloc.Y;
     rescoord.Z += mloc.Z;
 
-    tmpPose.position.x = rescoord.X;
-    tmpPose.position.y = rescoord.Y;
-    tmpPose.position.z = rescoord.Z;
-    pose.poses.push_back(tmpPose);
+    // tmpPose.position.x = rescoord.X;
+    // tmpPose.position.y = rescoord.Y;
+    // tmpPose.position.z = rescoord.Z;
+    // pose.poses.push_back(tmpPose);
+
+    /* Publish as ROS Marker*/
+    /* Set frame ID */
+    tmpPose.header.frame_id = "map";
+
+    /* Set the namespace and id for this marker */
+    tmpPose.ns = "car_location" + std::to_string(i);
+    tmpPose.id = i;             // is this OK?
+
+    /* Set the marker type */
+    tmpPose.type = visualization_msgs::Marker::CUBE;
+
+    /* Set the pose of the marker */
+    tmpPose.pose.position.x = rescoord.X;
+    tmpPose.pose.position.y = rescoord.Y;
+    tmpPose.pose.position.z = rescoord.Z;
+    /* orientation is set zero temporarily because 3 dimensional car orientation is not available now */
+    tmpPose.pose.orientation.x = 0.0;
+    tmpPose.pose.orientation.y = 0.0;
+    tmpPose.pose.orientation.z = 0.0;
+    tmpPose.pose.orientation.w = 0.0;
+
+    /* Set the scale of the marker -- temporary assume car size as 1.5m cube */
+    tmpPose.scale.x = 1.5f;
+    tmpPose.scale.y = 1.5f;
+    tmpPose.scale.z = 1.5f;
+
+    /* Set the color */
+    tmpPose.color.r = 0;
+    tmpPose.color.g = 25;
+    tmpPose.color.b = 255;
+    tmpPose.color.a = 1.0f;
+
+    tmpPose.lifetime = ros::Duration(0.1);
+
+    pose.markers.push_back(tmpPose);
   }
 }
 
@@ -184,7 +225,8 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
   
-  geometry_msgs::PoseArray pose_msg;
+  //  geometry_msgs::PoseArray pose_msg;
+  visualization_msgs::MarkerArray pose_msg;
 
   vector<OBJPOS>::iterator cp_iterator;
   LOCATION mloc;
@@ -216,8 +258,8 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   }
   //publish recognized car data
  //     if(pose_msg.poses.size() != 0){
-        pose_msg.header.stamp = ros::Time::now();
-        pose_msg.header.frame_id = "map";
+        // pose_msg.header.stamp = ros::Time::now();
+        // pose_msg.header.frame_id = "map";
         pub.publish(pose_msg);
    //   }
 }
@@ -307,7 +349,8 @@ int main(int argc, char **argv){
   */
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
-  pub = n.advertise<geometry_msgs::PoseArray>("car_pose",1); 
+  //pub = n.advertise<geometry_msgs::PoseArray>("car_pose",1); 
+  pub = n.advertise<visualization_msgs::MarkerArray>("car_pose",1); 
 
 
   /*
