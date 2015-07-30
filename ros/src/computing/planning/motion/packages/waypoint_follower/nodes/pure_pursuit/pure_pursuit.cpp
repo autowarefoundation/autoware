@@ -41,7 +41,7 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include "runtime_manager/ConfigLaneFollower.h"
-#include "libwaypoint_follower.h"
+#include "waypoint_follower/libwaypoint_follower.h"
 
 #define LOOP_RATE 10 //Hz
 

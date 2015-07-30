@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "libwaypoint_follower.h"
+#include "waypoint_follower/libwaypoint_follower.h"
 
 //set subscribed waypoint
 void Path::setPath(const waypoint_follower::laneConstPtr &msg)
