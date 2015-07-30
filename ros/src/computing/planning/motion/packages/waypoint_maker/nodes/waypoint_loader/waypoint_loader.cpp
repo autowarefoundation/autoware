@@ -44,37 +44,13 @@
 
 #include "runtime_manager/ConfigWaypointLoader.h"
 #include "waypoint_follower/lane.h"
+#include "waypoint_follower/libwaypoint_follower.h"
+
 #include "vmap_utility.hpp"
 
-class Waypoint {
-private:
-    double x_;
-    double y_;
-    double z_;
-    double velocity_kmh_;
-
-public:
-    explicit Waypoint(double x, double y, double z, double velocity_kmh) :
-            x_(x), y_(y), z_(z), velocity_kmh_(velocity_kmh)
-    {
-    }
-
-    double GetX() const
-    {
-        return x_;
-    }
-    double GetY() const
-    {
-        return y_;
-    }
-    double GetZ() const
-    {
-        return z_;
-    }
-    double GetVelocity_kmh() const
-    {
-        return velocity_kmh_;
-    }
+struct WP {
+    geometry_msgs::Point point;
+    double velocity_kmh;
 };
 
 std::string PATH_FRAME = "/map";
@@ -92,7 +68,7 @@ static std::vector<map_file::Lane> lanes;
 static std::vector<map_file::Node> nodes;
 static std::vector<map_file::PointClass> points;
 static std::vector<map_file::StopLine> stoplines;
-static std::vector<Waypoint> _waypoints;
+static std::vector<WP> _waypoints;
 static std::vector<map_file::PointClass> left_lane_points;
 
 static ros::Publisher red_pub;
@@ -107,7 +83,7 @@ static waypoint_follower::lane _ruled_waypoint;
 static nav_msgs::Path _lane_waypoint;
 static bool _vector_map_flag = false;
 
-static Waypoint ParseWaypoint(const std::string& line)
+static WP parseWaypoint(const std::string& line)
 {
     std::istringstream ss(line);
     std::vector<std::string> columns;
@@ -117,25 +93,27 @@ static Waypoint ParseWaypoint(const std::string& line)
         columns.push_back(column);
     }
 
-    return Waypoint(
-            std::stod(columns[0]),
-            std::stod(columns[1]),
-            std::stod(columns[2]) - position_offset,
-            std::stod(columns[3])
-    );
+    WP waypoint;
+    waypoint.point.x = std::stod(columns[0]);
+    waypoint.point.y = std::stod(columns[1]);
+    waypoint.point.z = std::stod(columns[2]);
+    waypoint.velocity_kmh = std::stod(columns[3]);
+
+    return waypoint;
 
 }
 
-static std::vector<Waypoint> ReadWaypoint(const char *filename)
+static std::vector<WP> readWaypoint(const char *filename)
 {
     std::ifstream ifs(filename);
     std::string line;
 
     std::getline(ifs, line); // Remove first line
 
-    std::vector<Waypoint> waypoints;
+    std::vector<WP> waypoints;
     while (std::getline(ifs, line)) {
-        waypoints.push_back(ParseWaypoint(line));
+      waypoints.push_back(parseWaypoint(line));
+
     }
 
     return waypoints;
@@ -311,9 +289,7 @@ static void publish_signal_waypoint()
         waypoint_follower::waypoint waypoint;
         waypoint.pose.header = _ruled_waypoint.header;
         waypoint.twist.header = _ruled_waypoint.header;
-        waypoint.pose.pose.position.x = _waypoints[i].GetX();
-        waypoint.pose.pose.position.y = _waypoints[i].GetY();
-        waypoint.pose.pose.position.z = _waypoints[i].GetZ();
+        waypoint.pose.pose.position = _waypoints[i].point;
         waypoint.pose.pose.orientation.w = 1.0;
         waypoint.twist.twist.linear.x = computations[i] / 3.6;
         red_cmd.waypoints.push_back(waypoint);
@@ -326,11 +302,10 @@ static void publish_signal_waypoint()
     green_pub.publish(green_cmd);
 }
 
-void DisplayWaypointVelocity()
-{
 
-    // display by markers the velocity of each waypoint.
-    visualization_msgs::MarkerArray velocity_array;
+void createWaypointVelocity(visualization_msgs::MarkerArray *marker_array){
+
+  // display by markers the velocity of each waypoint.
     visualization_msgs::Marker velocity;
     velocity.header.frame_id = PATH_FRAME;
     velocity.header.stamp = ros::Time();
@@ -348,17 +323,16 @@ void DisplayWaypointVelocity()
 
         //std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " << _waypoints[i].GetVelocity_kmh() << std::endl;
         velocity.id = i;
-        velocity.pose.position.x = _waypoints[i].GetX();
-        velocity.pose.position.y = _waypoints[i].GetY();
-        velocity.pose.position.z =  _waypoints[i].GetZ() + 0.2;
-        velocity.pose.orientation.x = 0.0;
-        velocity.pose.orientation.y = 0.0;
-        velocity.pose.orientation.z = 0.0;
+        velocity.pose.position = _waypoints[i].point;
+        velocity.pose.position.z += 0.2;
         velocity.pose.orientation.w = 1.0;
+
+        double vel = decelerate(point2vector(_waypoints[i].point),
+              point2vector(_waypoints[_waypoints.size() - 1].point),_waypoints[i].velocity_kmh);
 
         // double to string
         std::ostringstream oss;
-        oss << std::fixed << std::setprecision(0) << _waypoints[i].GetVelocity_kmh() << " km/h";
+        oss << std::fixed << std::setprecision(2) << vel << " km/h";
         velocity.text = oss.str();
 
         //C++11 version
@@ -368,17 +342,17 @@ void DisplayWaypointVelocity()
         //std::string text = velocity + kmh;
         //marker.text = text;
 
-        velocity_array.markers.push_back(velocity);
+        marker_array->markers.push_back(velocity);
     }
-    _vel_pub.publish(velocity_array);
 }
 
-void DisplayWaypointMark()
+void createWaypointMark(visualization_msgs::MarkerArray *marker_array)
 {
     visualization_msgs::Marker waypoint_mark;
     waypoint_mark.header.frame_id = PATH_FRAME;
     waypoint_mark.header.stamp = ros::Time();
     waypoint_mark.ns = "waypoint_mark";
+    waypoint_mark.id = 0;
     waypoint_mark.type = visualization_msgs::Marker::POINTS;
     waypoint_mark.action = visualization_msgs::Marker::ADD;
     waypoint_mark.scale.x = 0.1;
@@ -391,13 +365,47 @@ void DisplayWaypointMark()
 
     for (unsigned int i = 0; i < _waypoints.size(); i++) {
         geometry_msgs::Point point;
-        point.x = _waypoints[i].GetX();
-        point.y = _waypoints[i].GetY();
-        point.z = _waypoints[i].GetZ();
+        point = _waypoints[i].point;
         waypoint_mark.points.push_back(point);
 
     }
-    _mark_pub.publish(waypoint_mark);
+    marker_array->markers.push_back(waypoint_mark);
+}
+
+void createLaneWaypointMarker(visualization_msgs::MarkerArray *marker_array)
+{
+    static visualization_msgs::Marker lane_waypoint_marker;
+    lane_waypoint_marker.header.frame_id = PATH_FRAME;
+    lane_waypoint_marker.header.stamp = ros::Time();
+    lane_waypoint_marker.ns = "lane_waypoint_marker";
+    lane_waypoint_marker.id = 0;
+    lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+    lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+    lane_waypoint_marker.scale.x = 0.2;
+    lane_waypoint_marker.pose.orientation.w = 1.0;
+    lane_waypoint_marker.color.b = 1.0;
+    lane_waypoint_marker.color.g = 0.5;
+    lane_waypoint_marker.color.a = 1.0;
+    lane_waypoint_marker.frame_locked = true;
+
+    for (unsigned int i = 0; i < _waypoints.size(); i++) {
+        geometry_msgs::Point point;
+        point = _waypoints[i].point;
+        lane_waypoint_marker.points.push_back(point);
+
+    }
+    marker_array->markers.push_back(lane_waypoint_marker);
+}
+
+void displayLaneWaypoint(){
+
+
+     visualization_msgs::MarkerArray lane_waypoint;
+     createWaypointVelocity(&lane_waypoint);
+     createWaypointMark(&lane_waypoint);
+     createLaneWaypointMarker(&lane_waypoint);
+     _lane_mark_pub.publish(lane_waypoint);
+
 }
 
 void PublishRuledWaypoint()
@@ -411,59 +419,32 @@ void PublishRuledWaypoint()
         waypoint_follower::waypoint waypoint;
         waypoint.pose.header = _ruled_waypoint.header;
         waypoint.twist.header = _ruled_waypoint.header;
-        waypoint.pose.pose.position.x = _waypoints[i].GetX();
-        waypoint.pose.pose.position.y = _waypoints[i].GetY();
-        waypoint.pose.pose.position.z = _waypoints[i].GetZ();
+        waypoint.pose.pose.position = _waypoints[i].point;
         waypoint.pose.pose.orientation.w = 1.0;
-        waypoint.twist.twist.linear.x = _waypoints[i].GetVelocity_kmh() / 3.6;
+
+        double vel = decelerate(point2vector(_waypoints[i].point),
+                      point2vector(_waypoints[_waypoints.size() - 1].point),_waypoints[i].velocity_kmh);
+
+        waypoint.twist.twist.linear.x = kmph2mps(vel);
         _ruled_waypoint.waypoints.push_back(waypoint);
     }
     _ruled_pub.publish(_ruled_waypoint);
 }
 
-void DisplayLaneWaypoint()
+void publishLaneWaypoint()
 {
 
-     _lane_waypoint.header.frame_id = PATH_FRAME;
+    _lane_waypoint.header.frame_id = PATH_FRAME;
      _lane_waypoint.header.stamp = ros::Time(0);
 
-     for (unsigned int i = 0; i < _waypoints.size(); i++) {
+    for (unsigned int i = 0; i < _waypoints.size(); i++) {
      geometry_msgs::PoseStamped waypoint;
      waypoint.header = _lane_waypoint.header;
-     waypoint.pose.position.x = _waypoints[i].GetX();
-     waypoint.pose.position.y = _waypoints[i].GetY();
-     waypoint.pose.position.z = _waypoints[i].GetZ();
+     waypoint.pose.position = _waypoints[i].point;
      waypoint.pose.orientation.w = 1.0;
-     _lane_waypoint.poses.push_back(waypoint);
+    _lane_waypoint.poses.push_back(waypoint);
      }
      _lane_pub.publish(_lane_waypoint);
-
-}
-
-void DisplayLaneWaypointMarker()
-{
-    static visualization_msgs::Marker lane_waypoint_marker;
-    lane_waypoint_marker.header.frame_id = PATH_FRAME;
-    lane_waypoint_marker.header.stamp = ros::Time();
-    lane_waypoint_marker.ns = "lane_waypoint_marker";
-    lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
-    lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-    lane_waypoint_marker.scale.x = 0.2;
-    lane_waypoint_marker.pose.orientation.w = 1.0;
-    lane_waypoint_marker.color.b = 1.0;
-    lane_waypoint_marker.color.g = 0.5;
-    lane_waypoint_marker.color.a = 1.0;
-    lane_waypoint_marker.frame_locked = true;
-
-    for (unsigned int i = 0; i < _waypoints.size(); i++) {
-        geometry_msgs::Point point;
-        point.x = _waypoints[i].GetX();
-        point.y = _waypoints[i].GetY();
-        point.z = _waypoints[i].GetZ();
-        lane_waypoint_marker.points.push_back(point);
-
-    }
-    _lane_mark_pub.publish(lane_waypoint_marker);
 }
 
 static void update_left_lane()
@@ -520,6 +501,8 @@ static void config_callback(const runtime_manager::ConfigWaypointLoader& msg)
     publish_signal_waypoint();
 }
 
+
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "waypoint_loader");
@@ -567,24 +550,18 @@ int main(int argc, char **argv)
     ROS_INFO("vector map not loaded");
   }
 
-
-    _waypoints = ReadWaypoint(ruled_waypoint_csv.c_str());
-
     ros::Subscriber config_sub = nh.subscribe("config/waypoint_loader", 10, config_callback);
 
     _lane_pub = nh.advertise<nav_msgs::Path>("lane_waypoint", 10, true);
     _ruled_pub = nh.advertise<waypoint_follower::lane>("traffic_waypoint", 10, true);
-    _vel_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 10, true);
-    _mark_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 10, true);
-    _lane_mark_pub = nh.advertise<visualization_msgs::Marker>("lane_waypoint_mark", 10, true);
+    _lane_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("lane_waypoint_mark", 10, true);
 
     red_pub = nh.advertise<waypoint_follower::lane>("red_waypoint", 10, true);
     green_pub = nh.advertise<waypoint_follower::lane>("green_waypoint", 10, true);
 
-    DisplayWaypointVelocity();
-    DisplayWaypointMark();
-    DisplayLaneWaypoint();
-    DisplayLaneWaypointMarker();
+    _waypoints = readWaypoint(ruled_waypoint_csv.c_str());
+    displayLaneWaypoint();
+    publishLaneWaypoint();
     PublishRuledWaypoint();
 
   if (_vector_map_flag)
