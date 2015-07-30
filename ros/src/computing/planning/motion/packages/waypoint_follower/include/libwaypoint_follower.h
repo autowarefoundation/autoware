@@ -73,6 +73,10 @@ public:
 inline double kmph2mps(double velocity_kmph) { return (velocity_kmph * 1000) / (60 * 60); }
 inline double mps2kmph(double velocity_mps) { return (velocity_mps * 60 * 60) / 1000; }
 double DecelerateVelocity(double distance, double prev_velocity);
-
+inline tf::Vector3 point2vector(geometry_msgs::Point point)
+{
+  tf::Vector3 vector(point.x,point.y,point.z);
+  return vector;
+}
 
 #endif
