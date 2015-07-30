@@ -75,6 +75,7 @@ PathPP _path_pp;
 // parameter servers
 static std::string _mobility_frame = "/base_link"; // why is this default?
 static std::string _current_pose_topic = "ndt";
+static bool _sim_mode = false;
 
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 static double _current_velocity;
@@ -281,13 +282,14 @@ static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr con
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
   //std::cout << "odometry callback" << std::endl;
-  _current_velocity = msg->twist.twist.linear.x;
 
   //
   // effective for testing.
   //
-  if (_current_pose_topic == "odometry")
+ // if (_current_pose_topic == "odometry")
+  if (_sim_mode)
   {
+    _current_velocity = msg->twist.twist.linear.x;
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose.pose;
 
@@ -302,7 +304,8 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  if (_current_pose_topic == "ndt")
+  //if (_current_pose_topic == "ndt")
+  if (!_sim_mode)
   {
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose;
@@ -430,6 +433,9 @@ int main(int argc, char **argv)
   private_nh.getParam("mobility_frame", _mobility_frame);
   ROS_INFO_STREAM("mobility_frame : " << _mobility_frame);
 
+  private_nh.getParam("sim_mode", _sim_mode);
+  ROS_INFO_STREAM("sim_mode : " << _sim_mode);
+
   //publish topic
   ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
   _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
@@ -460,9 +466,11 @@ int main(int argc, char **argv)
       continue;
     }
 
+
     //get closest waypoint
     int closest_waypoint = _path_pp.getClosestWaypoint();
     ROS_INFO_STREAM("closest waypoint = " << closest_waypoint);
+
     //if vehicle is not closed to final destination
     if (!endflag)
     {

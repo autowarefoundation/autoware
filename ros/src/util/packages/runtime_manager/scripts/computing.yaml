@@ -307,7 +307,11 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
-
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      rosparam: /pure_pursuit/sim_mode
   - name  : odom_gen
     vars  :
     - name    : use_pose
