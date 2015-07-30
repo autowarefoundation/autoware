@@ -79,4 +79,13 @@ inline tf::Vector3 point2vector(geometry_msgs::Point point)
   return vector;
 }
 
+inline geometry_msgs::Point vector2point(tf::Vector3 vector)
+{
+  geometry_msgs::Point point;
+  point.x = vector.getX();
+  point.y = vector.getY();
+  point.z = vector.getZ();
+  return point;
+}
+
 #endif
