@@ -93,10 +93,10 @@ subs :
 
 buttons:
   calibration_toolkit :
-    run   : rosrun camera_lidar3d camera_lidar3d_offline_calib
+    run   : rosrun calibration_camera_lidar calibration_toolkit
 
   calibration_publisher :
-    run   : rosrun calibration_camera_lidar calibration_publisher
+    run   : roslaunch runtime_manager calibration_publisher.launch
     param : calibration_publisher
     gui   :
       flags : [ open_dialog ]
@@ -177,7 +177,7 @@ params :
       kind      : path
       v         : ''
       cmd_param :
-        delim     : ''
+        delim     : 'file:='
         must      : True
 
 #  - name  : camera_extrinsicMat_Publisher
