@@ -140,7 +140,7 @@ int PathPP::getNextWaypoint()
   int minimum_th = 3;
 
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint_);
-
+  //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
   // look for the next waypoint.
   for (int i = closest_waypoint_; i < getPathSize(); i++)
   {
@@ -151,6 +151,7 @@ int PathPP::getNextWaypoint()
       if (getDistance(next_waypoint_) > lookahead_threshold)
       {
         ROS_INFO_STREAM("threshold = " << lookahead_threshold);
+        return next_waypoint_;
       }
     }
 
@@ -165,13 +166,20 @@ int PathPP::getNextWaypoint()
         if (evaluateWaypoint(i) == true)
         {
           ROS_INFO_STREAM("threshold = " << lookahead_threshold);
+          next_waypoint_ = i;
           return i;
         }
         else
         {
+          //restart search from closest_waypoint
+          i = closest_waypoint_;
+
+          //threshold shortening
           if (lookahead_threshold > minimum_th)
           {
+           // std::cout << "threshold correction" << std::endl;
             lookahead_threshold -= lookahead_threshold / 10;
+            ROS_INFO_STREAM("fixed threshold = " << lookahead_threshold);
           }
           else
           {
@@ -182,6 +190,7 @@ int PathPP::getNextWaypoint()
       else
       {
         ROS_INFO_STREAM("threshold = " << lookahead_threshold);
+        next_waypoint_ = i;
         return i;
       }
     }
