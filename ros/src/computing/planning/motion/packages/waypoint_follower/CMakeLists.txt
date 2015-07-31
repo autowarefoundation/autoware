@@ -21,6 +21,7 @@ add_message_files(
   FILES
   lane.msg
   waypoint.msg
+  dtlane.msg
 )
 
 generate_messages(

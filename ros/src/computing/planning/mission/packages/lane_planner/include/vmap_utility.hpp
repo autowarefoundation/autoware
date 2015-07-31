@@ -37,6 +37,7 @@
 #include <map_file/LaneArray.h>
 #include <map_file/NodeArray.h>
 #include <map_file/StopLineArray.h>
+#include <map_file/DTLaneArray.h>
 
 int to_lane_index(const map_file::PointClass& point,
 		  const std::vector<map_file::Node>& nodes,
