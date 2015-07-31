@@ -290,6 +290,14 @@ class MyFrame(rtmgr.MyFrame):
 		tab = self.tab_status
 		self.all_tabs.append(tab)
 
+		self.status_cmd = {}
+		self.all_cmd_dics.append(self.status_cmd)
+		self.status_dic = self.load_yaml('status.yaml')
+
+		self.add_params(self.status_dic.get('params', []))
+
+		self.setup_buttons(self.status_dic.get('buttons', {}), self.status_cmd)
+
 		self.label_cpuinfo_status.Destroy()
 		self.label_cpuinfo_status = ColorLabel(tab)
 
@@ -328,7 +336,8 @@ class MyFrame(rtmgr.MyFrame):
 			rospy.Subscriber(name, std_msgs.msg.Bool, self.stat_callback, callback_args=k)
 
 		# top command thread
-		thinf = th_start(self.top_cmd_th, { 'interval':5 })
+		sec = self.status_dic.get('top_cmd_interval', 3)
+		thinf = th_start(self.top_cmd_th, { 'interval':sec })
 		self.all_th_infs.append(thinf)
 
 		# ps command thread
@@ -1968,6 +1977,12 @@ class ColorLabel(wx.Panel):
 	def OnPaint(self, event):
 		dc = wx.PaintDC(self)
 		dc.Clear()
+
+		font = dc.GetFont()
+		pt = font.GetPointSize()
+		font.SetPointSize(pt * 3 / 4)
+		dc.SetFont(font)
+
 		(x,y) = (0,0)
 		(_, h, _, _) = dc.GetFullTextExtent(' ')
 		for v in self.lst:
