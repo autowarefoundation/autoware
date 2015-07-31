@@ -218,9 +218,10 @@ void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo
 	cv::Size imageSize;
 	std::string filename;
 
-	if (nh.getParam("calibrationfile", filename))
+	if (nh.getParam("calibrationfile", filename) && filename!="")
 	{
-		ROS_INFO("Trying to parse calibrationfile %s", filename.c_str());
+		ROS_INFO("Trying to parse calibrationfile :");
+		ROS_INFO("> %s", filename.c_str());
 	}
 	else
 	{
@@ -280,9 +281,10 @@ int main(int argc, char **argv)
 	  std::string topic(std::string("image_raw"));
 
 	  if (camera_num > 1) {
-		topic + std::to_string(i);
+		topic = "camera" + std::to_string(i) + "/" + topic;
 	  } 
 		pub[i] = n.advertise<sensor_msgs::Image>(topic, 100);
+		ROS_INFO("Publishing.. %s", topic.c_str());
 	}
 
 	startCapture(cameras);
