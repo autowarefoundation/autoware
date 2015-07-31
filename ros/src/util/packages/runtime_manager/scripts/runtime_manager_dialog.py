@@ -1977,6 +1977,12 @@ class ColorLabel(wx.Panel):
 	def OnPaint(self, event):
 		dc = wx.PaintDC(self)
 		dc.Clear()
+
+		font = dc.GetFont()
+		pt = font.GetPointSize()
+		font.SetPointSize(pt * 3 / 4)
+		dc.SetFont(font)
+
 		(x,y) = (0,0)
 		(_, h, _, _) = dc.GetFullTextExtent(' ')
 		for v in self.lst:
