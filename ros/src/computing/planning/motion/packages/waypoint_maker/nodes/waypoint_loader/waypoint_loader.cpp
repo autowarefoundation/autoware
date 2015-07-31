@@ -302,6 +302,19 @@ static void publish_signal_waypoint()
     green_pub.publish(green_cmd);
 }
 
+double decelerate(tf::Vector3 v1 ,tf::Vector3 v2 , double original_velocity_kmh){
+
+  double a = 0.5; //m/s^2
+  double distance = tf::tfDistance(v1,v2);
+  double vel = mps2kmph(sqrt(2 * a * distance)); //km/h
+  if(vel < 1.0)
+    vel = 0;
+  if (vel > original_velocity_kmh)
+  {
+    vel = original_velocity_kmh;
+  }
+  return vel;
+}
 
 void createWaypointVelocity(visualization_msgs::MarkerArray *marker_array){
 
