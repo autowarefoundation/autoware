@@ -20,7 +20,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_follower
   CATKIN_DEPENDS roscpp std_msgs tf vehicle_socket waypoint_follower lane_planner runtime_manager map_file
-  DEPENDS gnss
+  DEPENDS gnss waypoint_follower
 )
 
 ###########
@@ -34,7 +34,7 @@ include_directories(
 )
 
 add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader.cpp)
-target_link_libraries(waypoint_loader vmap_utility ${catkin_LIBRARIES})
+target_link_libraries(waypoint_loader vmap_utility  libwaypoint_follower ${catkin_LIBRARIES})
 add_dependencies(waypoint_loader
   waypoint_follower_generate_messages_cpp
   runtime_manager_generate_messages_cpp
