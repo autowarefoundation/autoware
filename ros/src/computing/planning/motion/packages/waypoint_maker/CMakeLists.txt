@@ -45,3 +45,8 @@ target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver
   waypoint_follower_generate_messages_cpp
   vehicle_socket_generate_messages_cpp)
+add_executable(waypoint_marker_publisher nodes/waypoint_marker_publisher/waypoint_marker_publisher.cpp)
+target_link_libraries(waypoint_marker_publisher libwaypoint_follower ${catkin_LIBRARIES})
+add_dependencies(waypoint_marker_publisher
+  waypoint_follower_generate_messages_cpp
+  runtime_manager_generate_messages_cpp)
