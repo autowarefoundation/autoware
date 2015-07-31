@@ -290,7 +290,13 @@ class MyFrame(rtmgr.MyFrame):
 		tab = self.tab_status
 		self.all_tabs.append(tab)
 
+		self.status_cmd = {}
+		self.all_cmd_dics.append(self.status_cmd)
 		self.status_dic = self.load_yaml('status.yaml')
+
+		self.add_params(self.status_dic.get('params', []))
+
+		self.setup_buttons(self.status_dic.get('buttons', {}), self.status_cmd)
 
 		self.label_cpuinfo_status.Destroy()
 		self.label_cpuinfo_status = ColorLabel(tab)
