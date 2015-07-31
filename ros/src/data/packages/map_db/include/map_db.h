@@ -34,52 +34,27 @@
 #include <cstdint>
 #include <string>
 #include <netinet/in.h>
-#define USE_LIBSSH2
-#ifdef USE_LIBSSH2
-#include <libssh2.h>
-#endif
 
-#define DB_HOSTNAME     "db3.ertl.jp"
-#define DB_PORT         (5678)
-#ifdef USE_LIBSSH2
-#define SSHPUBKEY       "/tmp/autoware/ssh/id_rsa.pub"
-#define SSHPRIVATEKEY   "/tmp/autoware/ssh/id_rsa"
-#define SSHPORT         (22)
-#define SSHTUNNELHOST	"localhost"
-#endif
+#define HTTP_HOSTNAME     "133.6.148.90"
+#define HTTP_PORT         (80)
 
-class SendData {
+class GetFile {
 private:
 	std::string host_name_;
 	int port_;
-#ifdef USE_LIBSSH2
-	std::string sshuser_;
-	std::string sshtunnelhost_;
-	std::string sshpubkey_;
-	std::string sshprivatekey_;
-	int sshport_;
-#endif
 
 public:
-	SendData();
-	explicit SendData(const std::string& host_name, int port, char *sshuser,
-			  std::string& sshpubkey, std::string& sshprivatekey,
-			  int sshport, std::string& sshtunnelhost);
+	GetFile();
+	explicit GetFile(const std::string& host_name, int port);
 
+	int GetHTTPFile(const std::string& value);
 	int Sender(const std::string& value, std::string& res, int insert_num);
-	int ConnectDB();
-	int DisconnectDB(const char *msg);
+	int ConnectHTTP();
+	int DisconnectHTTP(const char *msg);
 	int sock;
 	bool connected;
 	struct sockaddr_in server;
-#ifdef USE_LIBSSH2
-	LIBSSH2_SESSION *session;
-	LIBSSH2_CHANNEL *channel;
-#endif
 };
 
-extern std::string make_header(int32_t sql_inst, int32_t sql_num);
-extern int probe_mac_addr(char *mac_addr);
-#define MAC_ADDRBUFSIZ	20
 
 #endif /* _MAP_DB_H_ */

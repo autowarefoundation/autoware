@@ -41,41 +41,35 @@
 #include <alloca.h>
 #include <string>
 #include <sys/time.h>
+#include <fstream>
+#include <sstream>
 
-#include <pos_db.h>
-
-#ifdef USE_LIBSSH2
-#include <libssh2.h>
-#endif /* USE_LIBSSH2 */
+#include <map_db.h>
 
 #define TIMEOUT_SEC	10
 
-SendData::SendData()
+GetFile::GetFile()
+	: GetFile(HTTP_HOSTNAME, HTTP_PORT)
 {
 }
 
-SendData::SendData(const std::string& host_name, int port, char *sshuser, std::string& sshpubkey, std::string& sshprivatekey, int sshport, std::string& sshtunnelhost)
-	: host_name_(host_name), port_(port),
-	  sshuser_(sshuser), sshtunnelhost_(sshtunnelhost),
-	  sshpubkey_(sshpubkey), sshprivatekey_(sshprivatekey),
-	  sshport_(sshport)
+GetFile::GetFile(const std::string& host_name, int port)
+	: host_name_(host_name), port_(port)
 {
 	connected = false;
-#ifdef USE_LIBSSH2
-	session = NULL;
-	channel = NULL;
-#endif
 }
 
-int SendData::ConnectDB()
+int GetFile::ConnectHTTP()
 {
 	int r;
 	unsigned int **addrptr;
 
+#if 0
 	if(connected) {
 		std::cout << "The database is already connected" << std::endl;
 		return -3;
 	}
+#endif
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
@@ -84,7 +78,7 @@ int SendData::ConnectDB()
 	}
 
 	server.sin_family = AF_INET;
-	server.sin_port = htons(sshport_); // HTTP port is 80
+	server.sin_port = htons(port_); // HTTP port is 80
 
 	server.sin_addr.s_addr = inet_addr(host_name_.c_str());
 	if (server.sin_addr.s_addr == 0xffffffff) {
@@ -131,50 +125,15 @@ int SendData::ConnectDB()
 			return -1;
 		}
 	}
-#ifdef USE_LIBSSH2
-	session = libssh2_session_init();
-	if (session == NULL) {
-		fprintf(stderr, "libssh2_session_init failed.\n");
-		close(sock);
-		return -2;
-	}
-	r = libssh2_session_handshake(session, sock);
-	if (r) {
-		fprintf(stderr, "libssh2_session_handshake failed (%d)\n", r);
-		close(sock);
-		return -2;
-	}
-	libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_SHA1);
-	if (libssh2_userauth_publickey_fromfile(session, sshuser_.c_str(), sshpubkey_.c_str(), sshprivatekey_.c_str(), "")) {
-		fprintf(stderr, "libssh2_userauth_publickey_fromfile failed\n");
-		libssh2_session_disconnect(session, "auth failed");
-		libssh2_session_free(session);
-		close(sock);
-		return -2;
-	}
-#endif /* USE_LIBSSH2 */
 
 	connected = true;
 
 	return 0;
 }
 
-int SendData::DisconnectDB(const char *msg)
+int GetFile::DisconnectHTTP(const char *msg)
 {
 	if(connected) {
-#ifdef USE_LIBSSH2
-		if (channel) {
-			libssh2_channel_free(channel);
-			channel = NULL;
-		}
-	        if (session) {
-			if(msg == NULL) 
-				libssh2_session_disconnect(session, "normal exit");
-			else
-				libssh2_session_disconnect(session, msg);
-			libssh2_session_free(session);
-		}
-#endif
 		close(sock);
 		connected = false;
 	}
@@ -193,7 +152,57 @@ static int count_line(char *buf)
 	return ret;
 }
 
-int SendData::Sender(const std::string& value, std::string& res, int insert_num) 
+int GetFile::GetHTTPFile(const std::string& value) 
+{
+	char send_buf[256];
+	int n;
+	char recvdata[1024];
+	std::string res;
+
+	ConnectHTTP();
+	snprintf(send_buf, sizeof(send_buf), "GET %s HTTP/1.1\r\n", value.c_str());
+	write(sock, send_buf, strlen(send_buf));
+	snprintf(send_buf, sizeof(send_buf), "Host: %s:%d\r\n", host_name_.c_str(), port_);
+	write(sock, send_buf, strlen(send_buf));
+	snprintf(send_buf, sizeof(send_buf), "\r\n");
+	write(sock, send_buf, strlen(send_buf));
+
+	int r_head = 1;
+	while(1) {
+		n = read(sock, recvdata, sizeof(recvdata)-1);
+		if (n < 0) {
+			perror("recv error");
+			return -1;
+		} else if (n==0) {
+			break;
+		}
+		recvdata[n] = '\0';
+
+		if (strlen(recvdata) >= sizeof(recvdata)) {
+			res.append(recvdata, sizeof(recvdata));
+		} else {
+			res.append(recvdata, strlen(recvdata));
+		}
+	}
+
+	if(res.find("HTTP/1.1 200 OK", 0) == std::string::npos) return -1;
+
+	std::istringstream ss(res);
+	std::string tbuf;
+	for(int i; i < 10; i++) {
+		std::getline(ss, tbuf);	// ignore http header
+		if(tbuf.size() <= 1) break;
+	}
+
+	std::ofstream ofs;
+	ofs.open("/tmp/"+value);
+	while(std::getline(ss, tbuf)) ofs << tbuf << std::endl;
+	ofs.close();
+
+	return 0;
+}
+
+int GetFile::Sender(const std::string& value, std::string& res, int insert_num) 
 {
 	/*********************************************
 	   format data to send
@@ -207,22 +216,10 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 
 	if(!connected) {
 		std::cout << "There is no connection to the database, sock=" << sock << std::endl;
-		n = ConnectDB();
+		n = ConnectHTTP();
 		if(n < 0) return -3;
 		std::cout << "connected to database\n";
 	}
-
-#ifdef USE_LIBSSH2
-	channel = libssh2_channel_direct_tcpip_ex(session,
-			sshtunnelhost_.c_str(), port_,
-			host_name_.c_str(), sshport_);
-	if (channel == NULL) {
-		fprintf(stderr, "libssh2_channel_direct_tcpip_ex failed\n");
-		DisconnectDB("tunnel failed");
-		return -2;
-	}
-	libssh2_channel_flush(channel);
-#endif /* USE_LIBSSH2 */
 
 	if(value == ""){
 		fprintf(stderr,"no data\n");
@@ -242,20 +239,18 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 	if(FD_ISSET(sock, &writefds)) {
 		cvalue = (char *)alloca(value.size());
 		memcpy(cvalue, value.c_str(), value.size());
+#if 0	///???
 		for (int i=0; i<16; i++)
 			cvalue[i] &= 0x7f; // TODO: see make_header()
-#ifdef USE_LIBSSH2
-		n = libssh2_channel_write(channel, cvalue, value.size());
-#else /* USE_LIBSSH2 */
+#endif
 		n = write(sock, cvalue, value.size());
-#endif /* USE_LIBSSH2 */
 		if (n < 0) {
 			perror("write");
 			return -1;
 		}
 		std::cout << "write return n=" << n << std::endl;
 	} else {
-		DisconnectDB("tunnel failed");
+		DisconnectHTTP("tunnel failed");
 		return -5;
 	}
 
@@ -264,11 +259,7 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 	select(maxfd+1, &readfds, NULL, NULL, &timeout);
 	if(FD_ISSET(sock, &readfds)) {
 		int len;
-#ifdef USE_LIBSSH2
-		n = libssh2_channel_read(channel, (char *)&len, sizeof(len));
-#else /* USE_LIBSSH2 */
 		n = read(sock, (char *)&len, sizeof(len));
-#endif /* USE_LIBSSH2 */
 		if (n < 0) {
 			perror("recv error");
 			return -1;
@@ -279,11 +270,7 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 
 		for (int j = 0; j < len; ) {
 			memset(recvdata, 0, sizeof(recvdata));
-#ifdef USE_LIBSSH2
-			n = libssh2_channel_read(channel, recvdata, sizeof(recvdata)-1);
-#else /* USE_LIBSSH2 */
 			n = read(sock, recvdata, sizeof(recvdata)-1);
-#endif /* USE_LIBSSH2 */
 
 			if (n < 0) {
 				perror("recv error");
@@ -307,16 +294,9 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 			std::cerr << "count_line=" << j << std::endl;
 		}
 	} else {
-		DisconnectDB("tunnel failed");
+		DisconnectHTTP("tunnel failed");
 		return -5;
 	}
-
-#ifdef USE_LIBSSH2
-	if (channel) {
-		libssh2_channel_free(channel);
-		channel = NULL;
-	}
-#endif
 
 	return 0;
 }
