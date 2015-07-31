@@ -56,6 +56,7 @@ struct WP
 
 std::string PATH_FRAME = "/map";
 static const std::string LANE_WAYPOINT_CSV = "/tmp/lane_waypoint.csv";
+static double _decelerate = 1.0;
 
 static std::vector<WP> _waypoints;
 static ros::Publisher _lane_mark_pub;
@@ -254,6 +255,8 @@ int main(int argc, char **argv)
   std::string lane_waypoint_csv;
 
   private_nh.param<std::string>("lane_waypoint_csv", lane_waypoint_csv, LANE_WAYPOINT_CSV);
+  private_nh.getParam("decelerate", _decelerate);
+  ROS_INFO_STREAM("decelerate :" << _decelerate);
 
   _lane_pub = nh.advertise<waypoint_follower::lane>("lane_waypoint", 10, true);
   _lane_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("lane_waypoint_mark", 10, true);

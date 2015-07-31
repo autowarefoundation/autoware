@@ -496,6 +496,9 @@ params :
       kind      : path
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_loader/lane_waypoint_csv
+    - name      : decelerate  
+      v         : 1.0
+      rosparam  : /waypoint_loader/decelerate
 
   - name  : ndt_mapping
     topic : /config/ndt_mapping
