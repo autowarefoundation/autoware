@@ -1,0 +1,6 @@
+<launch>
+  <arg name="file" default="" />
+  <node pkg="calibration_camera_lidar" type="calibration_publisher" name="calibration_publisher" args="$(arg file)"/>
+  <node pkg="topic_tools" type="relay" name="relay_camera_info" args="/camera/camera_info /camera_info"/>
+</launch>
+

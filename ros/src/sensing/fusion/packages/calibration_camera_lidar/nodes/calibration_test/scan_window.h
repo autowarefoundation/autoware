@@ -32,8 +32,6 @@
 #define _scan_window_
 
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 #include "data_struct.h"
 
 extern void plot_vertical_line(IplImage* image, int line_division_num, int window_width, int window_height);

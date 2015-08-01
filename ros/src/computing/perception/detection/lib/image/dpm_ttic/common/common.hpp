@@ -3,8 +3,6 @@
 
 #include <cstdlib>
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 
 #include "switch_float.h"
 

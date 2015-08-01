@@ -1,0 +1,7 @@
+<!-- -->
+<launch>
+
+	<include file="$(find model_publisher)/launch/prius_model.launch"/>
+    <node pkg="waypoint_follower" type="odom_gen" name="odom_gen" output="screen"/>
+
+</launch>

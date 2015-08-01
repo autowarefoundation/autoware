@@ -1,6 +1,8 @@
 #include "Context.h"
 
-Context::Context(Point aRedCenter, Point aYellowCenter, Point aGreenCenter, int aLampRadius, Point aTopLeft, Point aBotRight) {
+Context::Context(cv::Point aRedCenter, cv::Point aYellowCenter, cv::Point aGreenCenter,
+		 int aLampRadius, cv::Point aTopLeft, cv::Point aBotRight)
+{
 	redCenter = aRedCenter;
 	yellowCenter = aYellowCenter;
 	greenCenter = aGreenCenter;

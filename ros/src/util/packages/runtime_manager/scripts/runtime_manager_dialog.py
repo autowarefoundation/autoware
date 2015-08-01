@@ -65,10 +65,10 @@ from runtime_manager.msg import ConfigLaneRule
 from runtime_manager.msg import ConfigWaypointLoader
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
-from ui_socket.msg import mode_cmd
-from ui_socket.msg import gear_cmd
-from ui_socket.msg import Waypoint
-from ui_socket.msg import route_cmd
+from tablet_socket.msg import mode_cmd
+from tablet_socket.msg import gear_cmd
+from tablet_socket.msg import Waypoint
+from tablet_socket.msg import route_cmd
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
@@ -290,6 +290,14 @@ class MyFrame(rtmgr.MyFrame):
 		tab = self.tab_status
 		self.all_tabs.append(tab)
 
+		self.status_cmd = {}
+		self.all_cmd_dics.append(self.status_cmd)
+		self.status_dic = self.load_yaml('status.yaml')
+
+		self.add_params(self.status_dic.get('params', []))
+
+		self.setup_buttons(self.status_dic.get('buttons', {}), self.status_cmd)
+
 		self.label_cpuinfo_status.Destroy()
 		self.label_cpuinfo_status = ColorLabel(tab)
 
@@ -328,12 +336,13 @@ class MyFrame(rtmgr.MyFrame):
 			rospy.Subscriber(name, std_msgs.msg.Bool, self.stat_callback, callback_args=k)
 
 		# top command thread
-		thinf = th_start(self.top_cmd_th, { 'interval':5 })
+		sec = self.status_dic.get('top_cmd_interval', 3)
+		thinf = th_start(self.top_cmd_th, { 'interval':sec })
 		self.all_th_infs.append(thinf)
 
 		# ps command thread
-		thinf = th_start(self.ps_cmd_th, { 'interval':5 })
-		self.all_th_infs.append(thinf)
+		#thinf = th_start(self.ps_cmd_th, { 'interval':5 })
+		#self.all_th_infs.append(thinf)
 
 		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
@@ -488,9 +497,19 @@ class MyFrame(rtmgr.MyFrame):
 		dic[ topic ] = msec
 		lb = self.obj_get('label_' + nm + '_qs')
 		if lb:
-			sum = reduce( lambda a,b:a+(b if b else 0), dic.values() )
+			sum = reduce( lambda a,b:a+(b if b else 0), dic.values(), 0 )
 			wx.CallAfter(lb.SetLabel, str(sum)+' ms')
 
+		# update Status tab
+		lb = ''
+		for nm in [ 'map', 'sensing', 'localization', 'detection', 'mission_planning', 'motion_planning' ]:
+			dic = exec_time.get(nm, {})
+			sum = reduce( lambda a,b:a+(b if b else 0), dic.values(), 0 )
+			if sum > 0:
+				s = nm + ' : ' + str(sum) + ' ms'
+				lb += s + '\n'
+		wx.CallAfter(self.label_node_time.SetLabel, lb)
+		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
 	#
 	# Computing Tab
@@ -942,15 +961,15 @@ class MyFrame(rtmgr.MyFrame):
 				time.sleep(0.05)
 
 	# ps command thread
-	def ps_cmd_th(self, ev, interval):
-		nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
-		while not ev.wait(interval):
-			lb = ''
-			for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
-				if ('/' + s.split('/')[-1]) in nodes:
-					lb += s + '\n'
-			wx.CallAfter(self.label_node_time.SetLabel, lb)
-			wx.CallAfter(self.label_node_time.GetParent().FitInside)
+	#def ps_cmd_th(self, ev, interval):
+	#	nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
+	#	while not ev.wait(interval):
+	#		lb = ''
+	#		for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
+	#			if ('/' + s.split('/')[-1]) in nodes:
+	#				lb += s + '\n'
+	#		wx.CallAfter(self.label_node_time.SetLabel, lb)
+	#		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
 	#
 	# Common Utils
@@ -1025,7 +1044,7 @@ class MyFrame(rtmgr.MyFrame):
 		for prm in params:
 			if 'topic' in prm and 'msg' in prm:
 				klass_msg = globals()[ prm['msg'] ]
-				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, queue_size=10)
+				prm['pub'] = rospy.Publisher(prm['topic'], klass_msg, latch=True, queue_size=10)
 		self.params += params
 
 	def gdic_get_1st(self, dic):
@@ -1958,6 +1977,12 @@ class ColorLabel(wx.Panel):
 	def OnPaint(self, event):
 		dc = wx.PaintDC(self)
 		dc.Clear()
+
+		font = dc.GetFont()
+		pt = font.GetPointSize()
+		font.SetPointSize(pt * 3 / 4)
+		dc.SetFont(font)
+
 		(x,y) = (0,0)
 		(_, h, _, _) = dc.GetFullTextExtent(' ')
 		for v in self.lst:

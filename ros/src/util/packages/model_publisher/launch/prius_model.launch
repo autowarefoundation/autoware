@@ -1,0 +1,14 @@
+<!-- -->
+<launch>
+	
+	<arg name="frame_id" default="/base_link"/>
+	<arg name="topic_name" default="prius_model"/>
+	<arg name="model_path" default="package://model_publisher/model/prius_model.dae"/>
+	
+    <node pkg="model_publisher" type="model_publisher" name="model_publisher">
+		<param name="frame_id" value="$(arg frame_id)"/>
+		<param name="topic_name" value="$(arg topic_name)"/>
+		<param name="model_path" value="$(arg model_path)"/>
+    </node>
+
+</launch>

@@ -2,7 +2,7 @@ name : Data
 subs :
   - name : CAN
     subs :
-    - name  : can_upload
+    - name  : can_uploader
       cmd   : rosrun obj_db can_uploader
       param : other
       gui   :
@@ -12,7 +12,7 @@ subs :
 
   - name : Map
     subs :
-    - name  : map_download
+    - name  : map_downloader
       cmd   : echo map_file
       param : map_file
       gui   :
@@ -28,7 +28,7 @@ subs :
 
   - name : Position
     subs :
-    - name  : pos_download
+    - name  : pos_downloader
       cmd   : rosrun pos_db pos_downloader
       param : pos_db
       gui   :
@@ -39,7 +39,7 @@ subs :
         now :
           border: 4
           flags : [ all, hide ]
-        show_my_page :
+        show_my_pose :
           border: 4
           flags : [ all, nl ]
         db_host_name :
@@ -65,7 +65,7 @@ subs :
           border: 4
           flags : [ all, no_category ]
 
-    - name  : pos_upload
+    - name  : pos_uploader
       cmd   : rosrun pos_db pos_uploader
       param : pos_db
       share_val : pos_download
@@ -77,7 +77,7 @@ subs :
         now :
           border: 4
           flags : [ all ]
-        show_my_page :
+        show_my_pose :
           border: 4
           flags : [ all, nl, hide ]
         db_host_name :
@@ -174,8 +174,8 @@ params :
       cmd_param :
         only_enable : True
         dash        : ''
-    - name      : show_my_page
-      label     : show my page
+    - name      : show_my_pose
+      label     : show my pose
       kind      : checkbox
       v         : False
       cmd_param :

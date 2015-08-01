@@ -1,0 +1,5 @@
+top_cmd_interval : 3
+
+buttons :
+  system_monitor :
+    run   : gnome-system-monitor

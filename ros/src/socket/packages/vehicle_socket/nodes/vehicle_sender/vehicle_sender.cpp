@@ -30,8 +30,8 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <ui_socket/mode_cmd.h>
-#include <ui_socket/gear_cmd.h>
+#include <tablet_socket/mode_cmd.h>
+#include <tablet_socket/gear_cmd.h>
 #include <runtime_manager/accel_cmd.h>
 #include <runtime_manager/brake_cmd.h>
 #include <runtime_manager/steer_cmd.h>
@@ -77,7 +77,7 @@ static void twistCMDCallback(const geometry_msgs::TwistStamped& msg)
   command_data.angular_z = msg.twist.angular.z;
 }
 
-static void modeCMDCallback(const ui_socket::mode_cmd& mode)
+static void modeCMDCallback(const tablet_socket::mode_cmd& mode)
 {
   if(mode.mode == -1 || mode.mode == 0){
     command_data.reset();
@@ -86,7 +86,7 @@ static void modeCMDCallback(const ui_socket::mode_cmd& mode)
   command_data.modeValue = mode.mode;
 }
 
-static void gearCMDCallback(const ui_socket::gear_cmd& gear)
+static void gearCMDCallback(const tablet_socket::gear_cmd& gear)
 {
   command_data.gearValue = gear.gear;
 }

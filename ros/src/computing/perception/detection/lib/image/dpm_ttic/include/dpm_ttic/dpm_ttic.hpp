@@ -1,10 +1,9 @@
 #ifndef _DPM_TTIC_H_
 #define _DPM_TTIC_H_
 
+#include <string>
 #include <vector>
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 
 extern void dpm_ttic_gpu_init_cuda(const std::string& cubin_path);
 extern void dpm_ttic_gpu_cleanup_cuda();
@@ -26,26 +25,26 @@ struct DPMTTICParam {
 };
 
 struct MODEL;
-class DPMTTICModel {
+class DPMTTIC {
 private:
 	MODEL *model_;
 
 public:
-	DPMTTICModel(const char *com_csv, const char *root_csv, const char *part_csv);
-	~DPMTTICModel();
+	DPMTTIC(const char *com_csv, const char *root_csv, const char *part_csv);
+	~DPMTTIC();
 
 	DPMTTICResult detect_objects(IplImage *image, const DPMTTICParam& param);
 };
 
 struct GPUModel;
-class DPMGPUModel {
+class DPMTTICGPU {
 private:
 	GPUModel *model_;
 	double RATIO;
 
 public:
-	DPMGPUModel(const char *com_csv, const char *root_csv, const char *part_csv);
-	~DPMGPUModel();
+	DPMTTICGPU(const char *com_csv, const char *root_csv, const char *part_csv);
+	~DPMTTICGPU();
 
 	DPMTTICResult detect_objects(IplImage *image, const DPMTTICParam& param);
 };

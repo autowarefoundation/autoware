@@ -47,10 +47,10 @@
 static ros::Publisher car_image_obj_pub;
 static ros::Publisher pedestrian_image_obj_pub;
 
-static DPMGPUModel *car_gpu_model;
-static DPMGPUModel *pedestrian_gpu_model;
-static DPMTTICModel *car_ttic_model;
-static DPMTTICModel *pedestrian_ttic_model;
+static DPMTTICGPU *car_gpu_model;
+static DPMTTICGPU *pedestrian_gpu_model;
+static DPMTTIC *car_ttic_model;
+static DPMTTIC *pedestrian_ttic_model;
 
 static DPMTTICParam car_ttic_param;
 static DPMTTICParam pedestrian_ttic_param;
@@ -78,6 +78,7 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTI
 		rect.y = result.corner_points[base+1];
 		rect.width = result.corner_points[base+2];
 		rect.height = result.corner_points[base+3];
+		rect.score = result.score[i];
 
 		msg.obj.push_back(rect);
 	}
@@ -174,14 +175,14 @@ int main(int argc, char* argv[])
 	const char *car_com_csv  = STR(MODEL_DIR) "car_comp.csv";
 	const char *car_root_csv = STR(MODEL_DIR) "car_root.csv";
 	const char *car_part_csv = STR(MODEL_DIR) "car_part.csv";
-	car_gpu_model = new DPMGPUModel(car_com_csv, car_root_csv, car_part_csv);
-	car_ttic_model = new DPMTTICModel(car_com_csv, car_root_csv, car_part_csv);
+	car_gpu_model = new DPMTTICGPU(car_com_csv, car_root_csv, car_part_csv);
+	car_ttic_model = new DPMTTIC(car_com_csv, car_root_csv, car_part_csv);
 
 	const char *pedestrian_com_csv  = STR(MODEL_DIR) "person_comp.csv";
 	const char *pedestrian_root_csv = STR(MODEL_DIR) "person_root.csv";
 	const char *pedestrian_part_csv = STR(MODEL_DIR) "person_part.csv";
-	pedestrian_gpu_model = new DPMGPUModel(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
-	pedestrian_ttic_model = new DPMTTICModel(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
+	pedestrian_gpu_model = new DPMTTICGPU(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
+	pedestrian_ttic_model = new DPMTTIC(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
 
 	ros::Subscriber car_image_sub = n.subscribe("/image_raw", 1, image_raw_car_cb);
 	car_image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);

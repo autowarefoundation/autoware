@@ -61,8 +61,10 @@ SendData::SendData(const std::string& host_name, int port, char *sshuser, std::s
 	  sshport_(sshport)
 {
 	connected = false;
+#ifdef USE_LIBSSH2
 	session = NULL;
 	channel = NULL;
+#endif
 }
 
 int SendData::ConnectDB()
@@ -160,6 +162,7 @@ int SendData::ConnectDB()
 int SendData::DisconnectDB(const char *msg)
 {
 	if(connected) {
+#ifdef USE_LIBSSH2
 		if (channel) {
 			libssh2_channel_free(channel);
 			channel = NULL;
@@ -171,6 +174,7 @@ int SendData::DisconnectDB(const char *msg)
 				libssh2_session_disconnect(session, msg);
 			libssh2_session_free(session);
 		}
+#endif
 		close(sock);
 		connected = false;
 	}
