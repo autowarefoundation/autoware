@@ -167,7 +167,7 @@ void Update(void *p)
 {
   MainWindow* main = (MainWindow*)p;
 
-  // update Hev's drvinf/strinf/brkinf.
+  // update robocar state.
   main->UpdateState();
 }
 
@@ -179,7 +179,7 @@ void SetState(int mode, int gear, void* p)
   }
 
   if (gear != current_gear) {
-    double current_velocity = _hev_state.drvInf.veloc; // km/h
+    double current_velocity = vstate.velocity; // km/h
     // never change the gear when driving!
     if (current_velocity == 0) {
       current_gear = gear;
@@ -194,10 +194,10 @@ void Control(vel_data_t vel, void* p)
   MainWindow* main = (MainWindow*)p;
   static long long int old_tstamp = 0;
 
-  cycle_time = (_hev_state.tstamp - old_tstamp) / 1000.0; /* seconds */
+  cycle_time = (vstate.tstamp - old_tstamp) / 1000.0; /* seconds */
 
-  double current_velocity = _hev_state.drvInf.veloc; // km/h
-  double current_steering_angle = _hev_state.strInf.angle; // degree
+  double current_velocity = vstate.velocity; // km/h
+  double current_steering_angle = vstate.steering_angle; // degree
  
   int cmd_velocity = vel.tv * 3.6;
   int cmd_steering_angle;
@@ -245,9 +245,6 @@ void Control(vel_data_t vel, void* p)
     if (cmd_velocity < STROKE_SPEED_LIMIT) {
       main->StrokeControl(current_velocity, cmd_velocity);
     }
-    else { /* HEV velocity control */
-      //main->VelocityControl(current_velocity, cmd_velocity);
-    }
     
     //////////////////////////////////////////////////////
     // Steering
@@ -259,8 +256,8 @@ void Control(vel_data_t vel, void* p)
 
     usleep(STEERING_INTERNAL_PERIOD * 1000);  
     Update(main);
-    current_velocity = _hev_state.drvInf.veloc; // km/h
-    current_steering_angle = _hev_state.strInf.angle; // degree
+    current_velocity = vstate.velocity; // km/h
+    current_steering_angle = vstate.steering_angle; // degree
   }
 
   //////////////////////////////////////////////////////
@@ -270,16 +267,13 @@ void Control(vel_data_t vel, void* p)
   if (cmd_velocity < STROKE_SPEED_LIMIT) {
     main->StrokeControl(current_velocity, cmd_velocity);
   }
-  else { /* HEV velocity control */
-    main->VelocityControl(current_velocity, cmd_velocity);
-  }
 
   if (cmd_velocity != 0 && current_velocity != 0) {
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
   }
 
   // save the time stamp.
-  old_tstamp = _hev_state.tstamp;
+  old_tstamp = vstate.tstamp;
 }
 
 void *MainWindow::ModeSetterEntry(void *a)
@@ -329,7 +323,7 @@ void *MainWindow::CMDGetterEntry(void *a)
     // get time in milliseconds.
     tstamp = (long long int) getTime();
 
-    // update HEV state.
+    // update robocar state.
     Update(main);
 
     // set mode and gear.
