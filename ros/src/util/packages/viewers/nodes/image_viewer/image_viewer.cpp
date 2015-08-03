@@ -39,8 +39,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <dpm/ImageObjects.h>
-#include <kf/KFObjects.h>
+#include <cv_tracker/image_obj_tracked.h>
 #include <cv_tracker/image_obj.h>
 
 //DPM related
@@ -206,51 +205,6 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	_drawing = false;
 }
 
-static void car_updater_callback(const dpm::ImageObjects& image_objects_msg)
-{
-	if(_drawing)
-		return;
-	int num = image_objects_msg.car_num;
-	std::vector<int> points = image_objects_msg.corner_point;
-	cars_score = image_objects_msg.score;
-	//points are X,Y,W,H and repeat for each instance
-	cars.clear();
-
-	for (int i=0; i<num;i++)
-	{
-		cv::Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		cars.push_back(tmp);
-	}
-
-	car_dpm_ready = true;
-}
-
-static void ped_updater_callback(const dpm::ImageObjects& image_objects_msg)
-{
-	if(_drawing)
-			return;
-	int num = image_objects_msg.car_num;
-	std::vector<int> points = image_objects_msg.corner_point;
-	peds_score.clear();
-	peds_score = image_objects_msg.score;
-	//points are X,Y,W,H and repeat for each instance
-	peds.clear();
-	for (int i=0; i<num;i++)
-	{
-		cv::Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		peds.push_back(tmp);
-	}
-	ped_track_ready = true;
-}
-
 static void image_obj_update_cb(const cv_tracker::image_obj& image_objs)
 {
 	if(_drawing)
@@ -281,57 +235,37 @@ static void image_obj_update_cb(const cv_tracker::image_obj& image_objs)
 	}
 }
 
-static void car_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
-{
-	if(_drawing)
-			return;
-	int num = image_objects_msg.total_num;
-	std::vector<int> points = image_objects_msg.corner_point;
-
-	cars_tracked_lifespan = image_objects_msg.lifespan;
-	cars_tracked_id = image_objects_msg.obj_id;
-	cars_tracked_real_data = image_objects_msg.real_data;
-
-	//points are X,Y,W,H and repeat for each instance
-	cars_tracked.clear();
-
-	for (int i=0; i<num;i++) {
-		cv::Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		cars_tracked.push_back(tmp);
-
-	}
-	car_track_ready = true;
-}
-
-static void ped_updater_callback_tracked(const kf::KFObjects& image_objects_msg)
+static void image_obj_updater_cb_tracked(const cv_tracker::image_obj_tracked& image_objs_tracked_msg)
 {
 	if(_drawing)
 		return;
+	bool is_car = (image_objs_tracked_msg.type == "car");
+	std::vector<cv::Rect>& objs_tracked = is_car ? cars_tracked : peds_tracked;
+	std::vector<int>& objs_tracked_lifespan = is_car ? cars_tracked_lifespan : peds_tracked_lifespan;
+	std::vector<int>& objs_tracked_id = is_car ? cars_tracked_id : peds_tracked_id;
+	std::vector<int>& objs_tracked_real_data = is_car ? cars_tracked_real_data : peds_tracked_real_data;
 
-	int num = image_objects_msg.total_num;
-	std::vector<int> points = image_objects_msg.corner_point;
+	objs_tracked_lifespan = image_objs_tracked_msg.lifespan;
+	objs_tracked_id = image_objs_tracked_msg.obj_id;
+	objs_tracked_real_data = image_objs_tracked_msg.real_data;
 
-	peds_tracked_lifespan = image_objects_msg.lifespan;
-	peds_tracked_id = image_objects_msg.obj_id;
-	peds_tracked_real_data = image_objects_msg.real_data;
+	objs_tracked.clear();
+	for (const auto& rect_ranged : image_objs_tracked_msg.rect_ranged)
+		{
+			cv::Rect tmp;
+			tmp.x = rect_ranged.rect.x;
+			tmp.y = rect_ranged.rect.y;
+			tmp.width = rect_ranged.rect.width;
+			tmp.height = rect_ranged.rect.height;
 
-	//points are X,Y,W,H and repeat for each instance
-	peds_tracked.clear();
+			objs_tracked.push_back(tmp);
+		}
 
-	for (int i = 0; i < num;i++) {
-		cv::Rect tmp;
-		tmp.x = points[i*4 + 0];
-		tmp.y = points[i*4 + 1];
-		tmp.width = points[i*4 + 2];
-		tmp.height = points[i*4 + 3];
-		peds_tracked.push_back(tmp);
+	if(is_car) {
+		car_track_ready = true;
+	} else {
+		ped_track_ready = true;
 	}
-
-	ped_track_ready = true;
 }
 
 int main(int argc, char **argv)
@@ -353,18 +287,15 @@ int main(int argc, char **argv)
 
 	ros::Subscriber scriber = n.subscribe(image_node, 1, image_viewer_callback);
 
-	ros::Subscriber scriber_car = n.subscribe("/car_pixel_xy", 1,
-						car_updater_callback);
-	ros::Subscriber scriber_ped = n.subscribe("/pedestrian_pixel_xy", 1,
-						ped_updater_callback);
+	ros::Subscriber scriber_car = n.subscribe("/obj_car/image_obj", 1,
+						image_obj_update_cb);
+	ros::Subscriber scriber_ped = n.subscribe("/obj_person/image_obj", 1,
+						image_obj_update_cb);
 
-	ros::Subscriber image_obj_sub = n.subscribe("/image_obj", 1,
-						    image_obj_update_cb);
-
-	ros::Subscriber scriber_ped_tracked = n.subscribe("/pedestrian_pixel_xy_tracked", 1,
-						ped_updater_callback_tracked);
-	ros::Subscriber scriber_car_tracked = n.subscribe("/car_pixel_xy_tracked", 1,
-						car_updater_callback_tracked);
+	ros::Subscriber scriber_ped_tracked = n.subscribe("/obj_person/image_obj_tracked", 1,
+						image_obj_updater_cb_tracked);
+	ros::Subscriber scriber_car_tracked = n.subscribe("/obj_car/image_obj_tracked", 1,
+						image_obj_updater_cb_tracked);
 
 	ros::spin();
 	return 0;

@@ -28,6 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <cstdio>
 #include <string>
 #include <ros/ros.h>
 
@@ -44,21 +45,16 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
-static ros::Publisher car_image_obj_pub;
-static ros::Publisher pedestrian_image_obj_pub;
+static ros::Publisher image_obj_pub;
 
-static DPMTTICGPU *car_gpu_model;
-static DPMTTICGPU *pedestrian_gpu_model;
-static DPMTTIC *car_ttic_model;
-static DPMTTIC *pedestrian_ttic_model;
+static DPMTTICGPU *gpu_model;
+static DPMTTIC *ttic_model;
 
-static DPMTTICParam car_ttic_param;
-static DPMTTICParam pedestrian_ttic_param;
+static DPMTTICParam ttic_param;
 
- // XXX Should be configurable(rosparam etc)
 static bool use_gpu = false;
-static bool is_car_check = true;
-static bool is_pedestrian_check = true;
+
+static std::string object_class;
 
 static void set_default_param(DPMTTICParam& param)
 {
@@ -84,68 +80,33 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTI
 	}
 }
 
-static void image_raw_car_cb(const sensor_msgs::Image& image_source)
+static void image_raw_cb(const sensor_msgs::Image& image_source)
 {
-	if (!is_car_check)
-		return;
-
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
 
 	cv_tracker::image_obj msg;
 	msg.header = image_source.header;
-	msg.type = "car";
+	msg.type = object_class;
 
 	if (use_gpu) {
-		DPMTTICResult result = car_gpu_model->detect_objects(img_ptr, car_ttic_param);
+		DPMTTICResult result = gpu_model->detect_objects(img_ptr, ttic_param);
 		result_to_image_obj_message(msg, result);
 	} else {
-		DPMTTICResult result = car_ttic_model->detect_objects(img_ptr, car_ttic_param);
+		DPMTTICResult result = ttic_model->detect_objects(img_ptr, ttic_param);
 		result_to_image_obj_message(msg, result);
 	}
 
-	car_image_obj_pub.publish(msg);
+	image_obj_pub.publish(msg);
 }
 
-static void image_raw_pedestrian_cb(const sensor_msgs::Image& image_source)
+static void config_cb(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)
 {
-	if (!is_pedestrian_check)
-		return;
-
-	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
-	IplImage img = cv_image->image;
-	IplImage *img_ptr = &img;
-
-	cv_tracker::image_obj msg;
-	msg.header = image_source.header;
-	msg.type = "pedestrian";
-
-	if (use_gpu) {
-		DPMTTICResult result = pedestrian_gpu_model->detect_objects(img_ptr, pedestrian_ttic_param);
-		result_to_image_obj_message(msg, result);
-	} else {
-		DPMTTICResult result = pedestrian_ttic_model->detect_objects(img_ptr, pedestrian_ttic_param);
-		result_to_image_obj_message(msg, result);
-	}
-
-	pedestrian_image_obj_pub.publish(msg);
-}
-
-static void car_config_cb(const runtime_manager::ConfigCarDpm::ConstPtr& param)
-{
-	car_ttic_param.threshold = param->score_threshold;
-	car_ttic_param.overlap   = param->group_threshold;
-	car_ttic_param.lambda    = param->Lambda;
-	car_ttic_param.num_cells = param->num_cells;
-}
-
-static void pedestrian_config_cb(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)
-{
-	pedestrian_ttic_param.threshold = param->score_threshold;
-	pedestrian_ttic_param.overlap   = param->group_threshold;
-	pedestrian_ttic_param.lambda    = param->Lambda;
-	pedestrian_ttic_param.num_cells = param->num_cells;
+	ttic_param.threshold = param->score_threshold;
+	ttic_param.overlap   = param->group_threshold;
+	ttic_param.lambda    = param->Lambda;
+	ttic_param.num_cells = param->num_cells;
 }
 
 static std::string get_cubin_path(const ros::NodeHandle& n, const char *default_path)
@@ -165,44 +126,67 @@ int main(int argc, char* argv[])
 	ros::init(argc, argv, "dpm_ttic");
 
 	ros::NodeHandle n;
+	ros::NodeHandle private_nh("~");
+
+	if (!private_nh.getParam("detection_class_name", object_class)) {
+		object_class = "car";
+	}
+
+	std::string comp_csv_path;
+	if (!private_nh.getParam("comp_model_path", comp_csv_path)) {
+		comp_csv_path = STR(MODEL_DIR) "car_comp.csv";
+	}
+
+	std::string root_csv_path;
+	if (!private_nh.getParam("root_model_path", root_csv_path)) {
+		root_csv_path = STR(MODEL_DIR) "car_root.csv";
+	}
+
+	std::string part_csv_path;
+	if (!private_nh.getParam("part_model_path", part_csv_path)) {
+		part_csv_path = STR(MODEL_DIR) "car_part.csv";
+	}
+
+	if (!private_nh.getParam("use_gpu", use_gpu)) {
+		use_gpu = false;
+	}
 
 	std::string cubin = get_cubin_path(n, STR(DEFAULT_CUBIN));
-	dpm_ttic_gpu_init_cuda(cubin);
+	if (use_gpu) {
+		dpm_ttic_gpu_init_cuda(cubin);
+	}
 
-	set_default_param(car_ttic_param);
-	set_default_param(pedestrian_ttic_param);
+	set_default_param(ttic_param);
 
-	const char *car_com_csv  = STR(MODEL_DIR) "car_comp.csv";
-	const char *car_root_csv = STR(MODEL_DIR) "car_root.csv";
-	const char *car_part_csv = STR(MODEL_DIR) "car_part.csv";
-	car_gpu_model = new DPMTTICGPU(car_com_csv, car_root_csv, car_part_csv);
-	car_ttic_model = new DPMTTIC(car_com_csv, car_root_csv, car_part_csv);
+	const char *com_csv  = comp_csv_path.c_str();
+	const char *root_csv = root_csv_path.c_str();
+	const char *part_csv = part_csv_path.c_str();
 
-	const char *pedestrian_com_csv  = STR(MODEL_DIR) "person_comp.csv";
-	const char *pedestrian_root_csv = STR(MODEL_DIR) "person_root.csv";
-	const char *pedestrian_part_csv = STR(MODEL_DIR) "person_part.csv";
-	pedestrian_gpu_model = new DPMTTICGPU(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
-	pedestrian_ttic_model = new DPMTTIC(pedestrian_com_csv, pedestrian_root_csv, pedestrian_part_csv);
+	if (use_gpu) {
+		gpu_model = new DPMTTICGPU(com_csv, root_csv, part_csv);
+	} else {
+		ttic_model = new DPMTTIC(com_csv, root_csv, part_csv);
+	}
 
-	ros::Subscriber car_image_sub = n.subscribe("/image_raw", 1, image_raw_car_cb);
-	car_image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
+	ros::Subscriber sub = n.subscribe("/image_raw", 1, image_raw_cb);
+	image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
 
-	ros::Subscriber pedestrian_sub = n.subscribe("/image_raw", 1, image_raw_pedestrian_cb);
-	pedestrian_image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
-
-	ros::Subscriber car_config_sub;
-	car_config_sub = n.subscribe("/config/car_dpm", 1, car_config_cb);
-
-	ros::Subscriber pedestrian_config_sub;
-	pedestrian_config_sub = n.subscribe("/config/pedestrian_dpm", 1, pedestrian_config_cb);
+	ros::Subscriber config_sub;
+	std::string config_topic("/config");
+	config_topic += ros::this_node::getNamespace() + "/dpm";
+	config_sub = n.subscribe(config_topic, 1, config_cb);
 
 	ros::spin();
 
-	dpm_ttic_gpu_cleanup_cuda();
-	delete car_gpu_model;
-	delete pedestrian_gpu_model;
-	delete car_ttic_model;
-	delete pedestrian_ttic_model;
+	if (use_gpu) {
+		dpm_ttic_gpu_cleanup_cuda();
+	}
+
+	if (use_gpu){
+		delete gpu_model;
+	} else {
+		delete ttic_model;
+	}
 
 	return 0;
 }

@@ -10,6 +10,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   message_generation
   libdpm_ttic
   fusion
+  kf
 )
 FIND_PACKAGE(OpenCV REQUIRED)
 
@@ -23,6 +24,7 @@ add_message_files(
   FILES
   image_obj.msg
   image_obj_ranged.msg
+  image_obj_tracked.msg
   image_rect.msg
   image_rect_ranged.msg
   obj_pose.msg
@@ -35,7 +37,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ttic scan2image fusion
+  CATKIN_DEPENDS libdpm_ttic scan2image fusion kf
 )
 
 ###########
@@ -59,6 +61,7 @@ ELSE()
 message("CUDA is not installed. 'cv_tracker' package is not built.")
 ENDIF()
 
+## dpm_ttic ##
 ADD_EXECUTABLE(dpm_ttic
   nodes/dpm_ttic/dpm_ttic.cpp
 )
@@ -76,7 +79,7 @@ SET_TARGET_PROPERTIES(dpm_ttic
 )
 
 ADD_DEPENDENCIES(dpm_ttic
-  dpm_ttic_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
 )
 
 SET(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
@@ -84,3 +87,62 @@ SET(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
+
+## range_fusion ##
+ADD_EXECUTABLE(range_fusion
+  nodes/range_fusion/range_fusion.cpp
+)
+
+TARGET_LINK_LIBRARIES(range_fusion
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  fusion
+)
+
+ADD_DEPENDENCIES(range_fusion
+  cv_tracker_generate_messages_cpp
+)
+
+## kf_tracker ##
+ADD_EXECUTABLE(kf_track
+  nodes/kf_track/kf_track.cpp
+)
+
+TARGET_LINK_LIBRARIES(kf_track
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  kf
+)
+
+ADD_DEPENDENCIES(kf_track
+  kf_track_generate_messages_cpp
+)
+
+## obj_reproj ##
+ADD_EXECUTABLE(obj_reproj
+  nodes/obj_reproj/obj_reproj.cpp
+)
+
+TARGET_LINK_LIBRARIES(obj_reproj
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+
+ADD_DEPENDENCIES(obj_reproj
+  obj_reproj_generate_messages_cpp
+)
+
+## kf_tracker ##
+ADD_EXECUTABLE(klt_track
+  nodes/klt_track/klt_track.cpp
+)
+
+TARGET_LINK_LIBRARIES(klt_track
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  klt
+)
+
+ADD_DEPENDENCIES(klt_track
+  klt_track_generate_messages_cpp
+)
