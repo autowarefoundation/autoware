@@ -43,6 +43,8 @@
 static geometry_msgs::Twist _current_velocity;
 
 static double _initial_px = 0.0;
+static const std::string SIMULATION_FRAME="sim_base_link";
+static const std::string MAP_FRAME="map";
 static double _initial_py = 0.0;
 static double _initial_pz = 0.0;
 static double _initial_ox = 0.0;
@@ -251,8 +253,8 @@ int main(int argc, char **argv)
     //first, we'll publish the transform over tf
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
-    odom_trans.header.frame_id = "map";
-    odom_trans.child_frame_id = "base_link";
+    odom_trans.header.frame_id = MAP_FRAME;
+    odom_trans.child_frame_id = SIMULATION_FRAME;
 
     odom_trans.transform.translation.x = pose.position.x;
     odom_trans.transform.translation.y = pose.position.y;
@@ -265,13 +267,13 @@ int main(int argc, char **argv)
     //next, we'll publish the odometry message over ROS
     nav_msgs::Odometry odom;
     odom.header.stamp = current_time;
-    odom.header.frame_id = "map";
+    odom.header.frame_id = MAP_FRAME;
 
     //set the position
     odom.pose.pose = pose;
 
     //set the velocity
-    odom.child_frame_id = "base_link";
+    odom.child_frame_id = SIMULATION_FRAME;
     odom.twist.twist.linear.x = vx;
     odom.twist.twist.angular.z = vth;
     //publish the message
