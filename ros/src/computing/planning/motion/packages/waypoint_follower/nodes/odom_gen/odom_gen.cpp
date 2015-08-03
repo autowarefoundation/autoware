@@ -42,8 +42,8 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 static geometry_msgs::Twist _current_velocity;
 
-static const std::string SIMULATION_FRAME="sim_base_link";
-static const std::string MAP_FRAME="map";
+static const std::string SIMULATION_FRAME = "sim_base_link";
+static const std::string MAP_FRAME = "map";
 
 static geometry_msgs::Pose _initial_pose;
 static std::string _use_pose;
@@ -155,19 +155,19 @@ int main(int argc, char **argv)
     if (!_waypoint_set)
       continue;
 
-
     if (_initial_set)
     {
       if (!_pose_set)
       {
         pose.position = _initial_pose.position;
-pose.orientation = _initial_pose.orientation;
-        tf::Quaternion q(pose.orientation.x,pose.orientation.y,pose.orientation.z,  pose.orientation.w);
+        pose.orientation = _initial_pose.orientation;
+        tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
         tf::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
         th = yaw;
-        std::cout << "pose set : (" << pose.position.x << " " << pose.position.y<< " " << pose.position.z << " " << th << ")" << std::endl << std::endl;
+        std::cout << "pose set : (" << pose.position.x << " " << pose.position.y << " " << pose.position.z << " " << th
+            << ")" << std::endl << std::endl;
 
       }
       _pose_set = true;

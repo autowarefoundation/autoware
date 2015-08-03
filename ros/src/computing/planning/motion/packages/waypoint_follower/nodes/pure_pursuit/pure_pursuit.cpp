@@ -26,7 +26,7 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -47,7 +47,7 @@ static const int LOOP_RATE = 10; //Hz
 static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 3.0; // the next waypoint must be outside of this threshold.
 static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 4.0; // the next waypoint must be outside of this threshold.
 static const double EVALUATION_THRESHOLD = 1.0; //meter
-static const std::string MAP_FRAME="map";
+static const std::string MAP_FRAME = "map";
 
 //define class
 class PathPP: public Path
@@ -137,7 +137,6 @@ int PathPP::getNextWaypoint()
   if (!getPathSize())
     return -1;
 
-
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint_);
   //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
   // look for the next waypoint.
@@ -174,15 +173,15 @@ int PathPP::getNextWaypoint()
           i = closest_waypoint_;
 
           //threshold shortening
-          if (lookahead_threshold >  MINIMUM_LOOK_AHEAD_THRESHOLD)
+          if (lookahead_threshold > MINIMUM_LOOK_AHEAD_THRESHOLD)
           {
-           // std::cout << "threshold correction" << std::endl;
+            // std::cout << "threshold correction" << std::endl;
             lookahead_threshold -= lookahead_threshold / 10;
             ROS_INFO_STREAM("fixed threshold = " << lookahead_threshold);
           }
           else
           {
-            lookahead_threshold =  MINIMUM_LOOK_AHEAD_THRESHOLD;
+            lookahead_threshold = MINIMUM_LOOK_AHEAD_THRESHOLD;
           }
         }
       }
@@ -283,7 +282,6 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
   //
   // effective for testing.
   //
- // if (_current_pose_topic == "odometry")
   if (_sim_mode)
   {
     _current_velocity = msg->twist.twist.linear.x;
@@ -301,7 +299,6 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  //if (_current_pose_topic == "ndt")
   if (!_sim_mode)
   {
     _current_pose.header = msg->header;
@@ -320,7 +317,6 @@ static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-  //_current_path = *msg;
   _path_pp.setPath(msg);
   _waypoint_set = true;
   ROS_INFO_STREAM("waypoint subscribed");
@@ -456,7 +452,6 @@ int main(int argc, char **argv)
       loop_rate.sleep();
       continue;
     }
-
 
     //get closest waypoint
     int closest_waypoint = _path_pp.getClosestWaypoint();
