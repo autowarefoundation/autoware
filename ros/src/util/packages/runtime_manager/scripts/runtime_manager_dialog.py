@@ -332,8 +332,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.all_th_infs.append(thinf)
 
 		# ps command thread
-		thinf = th_start(self.ps_cmd_th, { 'interval':5 })
-		self.all_th_infs.append(thinf)
+		#thinf = th_start(self.ps_cmd_th, { 'interval':5 })
+		#self.all_th_infs.append(thinf)
 
 		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
@@ -488,9 +488,19 @@ class MyFrame(rtmgr.MyFrame):
 		dic[ topic ] = msec
 		lb = self.obj_get('label_' + nm + '_qs')
 		if lb:
-			sum = reduce( lambda a,b:a+(b if b else 0), dic.values() )
+			sum = reduce( lambda a,b:a+(b if b else 0), dic.values(), 0 )
 			wx.CallAfter(lb.SetLabel, str(sum)+' ms')
 
+		# update Status tab
+		lb = ''
+		for nm in [ 'map', 'sensing', 'localization', 'detection', 'mission_planning', 'motion_planning' ]:
+			dic = exec_time.get(nm, {})
+			sum = reduce( lambda a,b:a+(b if b else 0), dic.values(), 0 )
+			if sum > 0:
+				s = nm + ' : ' + str(sum) + ' ms'
+				lb += s + '\n'
+		wx.CallAfter(self.label_node_time.SetLabel, lb)
+		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
 	#
 	# Computing Tab
@@ -942,15 +952,15 @@ class MyFrame(rtmgr.MyFrame):
 				time.sleep(0.05)
 
 	# ps command thread
-	def ps_cmd_th(self, ev, interval):
-		nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
-		while not ev.wait(interval):
-			lb = ''
-			for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
-				if ('/' + s.split('/')[-1]) in nodes:
-					lb += s + '\n'
-			wx.CallAfter(self.label_node_time.SetLabel, lb)
-			wx.CallAfter(self.label_node_time.GetParent().FitInside)
+	#def ps_cmd_th(self, ev, interval):
+	#	nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
+	#	while not ev.wait(interval):
+	#		lb = ''
+	#		for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
+	#			if ('/' + s.split('/')[-1]) in nodes:
+	#				lb += s + '\n'
+	#		wx.CallAfter(self.label_node_time.SetLabel, lb)
+	#		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
 	#
 	# Common Utils

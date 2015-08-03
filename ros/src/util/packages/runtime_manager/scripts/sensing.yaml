@@ -4,13 +4,13 @@ subs :
     subs :
       - name : can_converter
         probe:
-        run  : rosrun can_tools can_converter
+        run  : rosrun kvaser can_converter
       - name : can_draw
         probe:
-        run  : rosrun can_tools can_draw
+        run  : rosrun kvaser can_draw
       - name : can_listener
         probe:
-        run  : rosrun can_tools can_listener
+        run  : rosrun kvaser can_listener
         param: can_listener
 
   - name : Cameras
@@ -66,12 +66,20 @@ subs :
           calibration :
             prop  : 1
             flags : [ center_v ]
+      - name : Velodyne VLP-16
+        probe: 
+        run  : roslaunch velodyne velodyne_vlp16.launch
+        param: calibration_path
+        gui  :
+          calibration :
+            prop  : 1
+            flags : [ center_v ]
       - name : Hokuyo TOP-URG
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
       - name : Hokuyo 3D-URG
         probe: 
-        run  : rosrun hokuyo hokuyo_3d
+        run  : roslaunch hokuyo hokuyo_3d.launch
       - name : SICK LMS511
         probe:
         run  :
