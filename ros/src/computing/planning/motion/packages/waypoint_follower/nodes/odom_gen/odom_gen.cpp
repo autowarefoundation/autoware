@@ -42,14 +42,10 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 static geometry_msgs::Twist _current_velocity;
 
-static double _initial_px = 0.0;
-static double _initial_py = 0.0;
-static double _initial_pz = 0.0;
-static double _initial_ox = 0.0;
-static double _initial_oy = 0.0;
-static double _initial_oz = 0.0;
-static double _initial_ow = 0.0;
+static const std::string SIMULATION_FRAME = "sim_base_link";
+static const std::string MAP_FRAME = "map";
 
+static geometry_msgs::Pose _initial_pose;
 static std::string _use_pose;
 static bool _initial_set = false;
 static bool _pose_set = false;
@@ -60,14 +56,7 @@ static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
   if (_use_pose == "NDT")
   {
-    _initial_px = input->pose.position.x;
-    _initial_py = input->pose.position.y;
-    _initial_pz = input->pose.position.z;
-    _initial_ox = input->pose.orientation.x;
-    _initial_oy = input->pose.orientation.y;
-    _initial_oz = input->pose.orientation.z;
-    _initial_ow = input->pose.orientation.w;
-
+    _initial_pose = input->pose;
     _initial_set = true;
     _pose_set = false;
   }
@@ -77,14 +66,8 @@ static void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
   if (_use_pose == "GNSS")
   {
-    _initial_px = input->pose.position.x;
-    _initial_py = input->pose.position.y;
-    _initial_pz = input->pose.position.z;
-    _initial_ox = input->pose.orientation.x;
-    _initial_oy = input->pose.orientation.y;
-    _initial_oz = input->pose.orientation.z;
-    _initial_ow = input->pose.orientation.w;
 
+    _initial_pose = input->pose;
     _initial_set = true;
     _pose_set = false;
   }
@@ -118,22 +101,10 @@ static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedCo
 
     }
 
-    _initial_px = input->pose.pose.position.x + transform.getOrigin().x();
-    _initial_py = input->pose.pose.position.y + transform.getOrigin().y();
-    _initial_pz = input->pose.pose.position.z + transform.getOrigin().z();
-    _initial_ox = input->pose.pose.orientation.x;
-    _initial_oy = input->pose.pose.orientation.y;
-    _initial_oz = input->pose.pose.orientation.z;
-    _initial_ow = input->pose.pose.orientation.w;
-
-    /*double px = input->pose.pose.position.x;
-     double py = input->pose.pose.position.y;
-     double pz = input->pose.pose.position.z;
-     double ox = input->pose.pose.orientation.x;
-     double oy = input->pose.pose.orientation.y;
-     double oz = input->pose.pose.orientation.z;
-     double ow = input->pose.pose.orientation.w;
-     */
+    _initial_pose.position.x = input->pose.pose.position.x + transform.getOrigin().x();
+    _initial_pose.position.y = input->pose.pose.position.y + transform.getOrigin().y();
+    _initial_pose.position.z = input->pose.pose.position.z + transform.getOrigin().z();
+    _initial_pose.orientation = input->pose.pose.orientation;
 
     _initial_set = true;
     _pose_set = false;
@@ -173,15 +144,6 @@ int main(int argc, char **argv)
   current_time = ros::Time::now();
   last_time = ros::Time::now();
 
-  std::cout << "checking use_pose" << std::endl;
-  /*  private_nh.getParam("initial_pos_x", x);
-   private_nh.getParam("initial_pos_y", y);
-   private_nh.getParam("initial_pos_z", z);
-   double yaw = 0;
-   private_nh.getParam("initial_pos_yaw", yaw);
-   th = yaw;
-
-   _init_set = true;*/
   geometry_msgs::Pose pose;
   double th = 0;
 
@@ -192,22 +154,21 @@ int main(int argc, char **argv)
 
     if (!_waypoint_set)
       continue;
+
     if (_initial_set)
     {
       if (!_pose_set)
       {
-        pose.position.x = _initial_px;
-        pose.position.y = _initial_py;
-        pose.position.z = _initial_pz;
-        pose.orientation.x = _initial_ox;
-        pose.orientation.y = _initial_oy;
-        pose.orientation.z = _initial_oz;
-        pose.orientation.w = _initial_ow;
-        tf::Quaternion q(_initial_ox, _initial_oy, _initial_oz, _initial_ow);
+        pose.position = _initial_pose.position;
+        pose.orientation = _initial_pose.orientation;
+        tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
         tf::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
         th = yaw;
+        std::cout << "pose set : (" << pose.position.x << " " << pose.position.y << " " << pose.position.z << " " << th
+            << ")" << std::endl << std::endl;
+
       }
       _pose_set = true;
     }
@@ -251,8 +212,8 @@ int main(int argc, char **argv)
     //first, we'll publish the transform over tf
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = current_time;
-    odom_trans.header.frame_id = "map";
-    odom_trans.child_frame_id = "base_link";
+    odom_trans.header.frame_id = MAP_FRAME;
+    odom_trans.child_frame_id = SIMULATION_FRAME;
 
     odom_trans.transform.translation.x = pose.position.x;
     odom_trans.transform.translation.y = pose.position.y;
@@ -265,13 +226,13 @@ int main(int argc, char **argv)
     //next, we'll publish the odometry message over ROS
     nav_msgs::Odometry odom;
     odom.header.stamp = current_time;
-    odom.header.frame_id = "map";
+    odom.header.frame_id = MAP_FRAME;
 
     //set the position
     odom.pose.pose = pose;
 
     //set the velocity
-    odom.child_frame_id = "base_link";
+    odom.child_frame_id = SIMULATION_FRAME;
     odom.twist.twist.linear.x = vx;
     odom.twist.twist.angular.z = vth;
     //publish the message
