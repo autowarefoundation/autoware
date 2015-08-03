@@ -43,7 +43,11 @@
 #include "runtime_manager/ConfigLaneFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
-#define LOOP_RATE 10 //Hz
+static const int LOOP_RATE = 10; //Hz
+static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 3.0; // the next waypoint must be outside of this threshold.
+static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 4.0; // the next waypoint must be outside of this threshold.
+static const double EVALUATION_THRESHOLD = 1.0; //meter
+static const std::string MAP_FRAME="map";
 
 //define class
 class PathPP: public Path
@@ -72,9 +76,6 @@ public:
 };
 PathPP _path_pp;
 
-// parameter servers
-static std::string _mobility_frame = "/base_link"; // why is this default?
-static std::string _current_pose_topic = "ndt";
 static bool _sim_mode = false;
 
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
@@ -119,12 +120,11 @@ double PathPP::getLookAheadThreshold(int waypoint)
   if (param_flag_)
     return lookahead_threshold_;
 
-  double ratio = 2.0;
   double current_velocity_mps = current_path_.waypoints[waypoint].twist.twist.linear.x;
-  if (current_velocity_mps * ratio < 3)
-    return 3.0;
+  if (current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO < MINIMUM_LOOK_AHEAD_THRESHOLD)
+    return MINIMUM_LOOK_AHEAD_THRESHOLD;
   else
-    return current_velocity_mps * ratio;
+    return current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -137,8 +137,6 @@ int PathPP::getNextWaypoint()
   if (!getPathSize())
     return -1;
 
-  // the next waypoint must be outside of this threshold.
-  int minimum_th = 3;
 
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint_);
   //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
@@ -176,7 +174,7 @@ int PathPP::getNextWaypoint()
           i = closest_waypoint_;
 
           //threshold shortening
-          if (lookahead_threshold > minimum_th)
+          if (lookahead_threshold >  MINIMUM_LOOK_AHEAD_THRESHOLD)
           {
            // std::cout << "threshold correction" << std::endl;
             lookahead_threshold -= lookahead_threshold / 10;
@@ -184,7 +182,7 @@ int PathPP::getNextWaypoint()
           }
           else
           {
-            lookahead_threshold = minimum_th;
+            lookahead_threshold =  MINIMUM_LOOK_AHEAD_THRESHOLD;
           }
         }
       }
@@ -203,7 +201,6 @@ int PathPP::getNextWaypoint()
 
 bool PathPP::evaluateWaypoint(int next_waypoint)
 {
-  double eval_threshold = 1.0;
 
   double radius = calcRadius(next_waypoint);
   // std::cout << "radius "<< radius << std::endl;
@@ -232,7 +229,7 @@ bool PathPP::evaluateWaypoint(int next_waypoint)
       evaluation = dt_diff;
   }
 
-  if (evaluation < eval_threshold)
+  if (evaluation < EVALUATION_THRESHOLD)
     return true;
   else
     return false;
@@ -251,7 +248,7 @@ void PathPP::displayTrajectory(tf::Vector3 center, double radius)
   point.z = inv_center.getZ();
 
   visualization_msgs::Marker traj;
-  traj.header.frame_id = "map";
+  traj.header.frame_id = MAP_FRAME;
   traj.header.stamp = ros::Time();
   traj.ns = "trajectory_marker";
   traj.id = 0;
@@ -334,7 +331,7 @@ static void displayNextWaypoint(int i)
 {
 
   visualization_msgs::Marker marker;
-  marker.header.frame_id = "map";
+  marker.header.frame_id = MAP_FRAME;
   marker.header.stamp = ros::Time();
   marker.ns = "next_waypoint_marker";
   marker.id = 0;
@@ -427,12 +424,6 @@ int main(int argc, char **argv)
   ros::NodeHandle private_nh("~");
 
   // setting params
-  private_nh.getParam("current_pose_topic", _current_pose_topic);
-  ROS_INFO_STREAM("current_pose_topic : " << _current_pose_topic);
-
-  private_nh.getParam("mobility_frame", _mobility_frame);
-  ROS_INFO_STREAM("mobility_frame : " << _mobility_frame);
-
   private_nh.getParam("sim_mode", _sim_mode);
   ROS_INFO_STREAM("sim_mode : " << _sim_mode);
 
@@ -446,7 +437,7 @@ int main(int argc, char **argv)
   ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 10, WayPointCallback);
   ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
-  ros::Subscriber estimated_vel_subscriber = nh.subscribe("/estimated_vel", 10, estVelCallback);
+  ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 10, ConfigCallback);
 
   geometry_msgs::TwistStamped twist;
@@ -500,7 +491,7 @@ int main(int argc, char **argv)
         }
 
         //check whether vehicle is closed to final destination
-        if (next_waypoint > _path_pp.getPathSize() - 1)
+        if (next_waypoint > _path_pp.getPathSize() - 5)
           endflag = true;
 
       }
