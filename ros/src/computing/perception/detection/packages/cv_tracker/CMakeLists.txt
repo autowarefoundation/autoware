@@ -131,3 +131,18 @@ TARGET_LINK_LIBRARIES(obj_reproj
 ADD_DEPENDENCIES(obj_reproj
   obj_reproj_generate_messages_cpp
 )
+
+## kf_tracker ##
+ADD_EXECUTABLE(klt_track
+  nodes/klt_track/klt_track.cpp
+)
+
+TARGET_LINK_LIBRARIES(klt_track
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  klt
+)
+
+ADD_DEPENDENCIES(klt_track
+  klt_track_generate_messages_cpp
+)

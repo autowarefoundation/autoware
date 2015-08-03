@@ -5,4 +5,3 @@ int32[] obj_id
 image_rect_ranged[] rect_ranged
 int32[] real_data
 int32[] lifespan
-
