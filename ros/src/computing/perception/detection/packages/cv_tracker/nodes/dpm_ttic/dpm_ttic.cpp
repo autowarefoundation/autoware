@@ -47,12 +47,13 @@
 
 static ros::Publisher image_obj_pub;
 
+#if defined(HAS_GPU)
 static DPMTTICGPU *gpu_model;
+static bool use_gpu = false;
+#endif
 static DPMTTIC *ttic_model;
 
 static DPMTTICParam ttic_param;
-
-static bool use_gpu = false;
 
 static std::string object_class;
 
@@ -90,13 +91,17 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 	msg.header = image_source.header;
 	msg.type = object_class;
 
+#if defined(HAS_GPU)
 	if (use_gpu) {
 		DPMTTICResult result = gpu_model->detect_objects(img_ptr, ttic_param);
 		result_to_image_obj_message(msg, result);
 	} else {
+#endif
 		DPMTTICResult result = ttic_model->detect_objects(img_ptr, ttic_param);
 		result_to_image_obj_message(msg, result);
+#if defined(HAS_GPU)
 	}
+#endif
 
 	image_obj_pub.publish(msg);
 }
@@ -109,6 +114,7 @@ static void config_cb(const runtime_manager::ConfigPedestrianDpm::ConstPtr& para
 	ttic_param.num_cells = param->num_cells;
 }
 
+#if defined(HAS_GPU)
 static std::string get_cubin_path(const ros::NodeHandle& n, const char *default_path)
 {
 	std::string path;
@@ -120,6 +126,7 @@ static std::string get_cubin_path(const ros::NodeHandle& n, const char *default_
 
 	return path;
 }
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -147,6 +154,7 @@ int main(int argc, char* argv[])
 		part_csv_path = STR(MODEL_DIR) "car_part.csv";
 	}
 
+#if defined(HAS_GPU)
 	if (!private_nh.getParam("use_gpu", use_gpu)) {
 		use_gpu = false;
 	}
@@ -155,6 +163,7 @@ int main(int argc, char* argv[])
 	if (use_gpu) {
 		dpm_ttic_gpu_init_cuda(cubin);
 	}
+#endif
 
 	set_default_param(ttic_param);
 
@@ -162,11 +171,15 @@ int main(int argc, char* argv[])
 	const char *root_csv = root_csv_path.c_str();
 	const char *part_csv = part_csv_path.c_str();
 
+#if defined(HAS_GPU)
 	if (use_gpu) {
 		gpu_model = new DPMTTICGPU(com_csv, root_csv, part_csv);
 	} else {
+#endif
 		ttic_model = new DPMTTIC(com_csv, root_csv, part_csv);
+#if defined(HAS_GPU)
 	}
+#endif
 
 	ros::Subscriber sub = n.subscribe("/image_raw", 1, image_raw_cb);
 	image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
@@ -177,16 +190,16 @@ int main(int argc, char* argv[])
 	config_sub = n.subscribe(config_topic, 1, config_cb);
 
 	ros::spin();
-
+#if defined(HAS_GPU)
 	if (use_gpu) {
 		dpm_ttic_gpu_cleanup_cuda();
-	}
-
-	if (use_gpu){
 		delete gpu_model;
 	} else {
+#endif
 		delete ttic_model;
+#if defined(HAS_GPU)
 	}
+#endif
 
 	return 0;
 }

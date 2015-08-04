@@ -103,7 +103,32 @@ ADD_DEPENDENCIES(libdpm_ttic
   runtime_manager_generate_messages_cpp)
 
 ELSE()
-MESSAGE("CUDA is not installed. 'libdpm_gpu' is not built.")
+
+INCLUDE_DIRECTORIES(
+  include/dpm_ttic
+  ${catkin_INCLUDE_DIRS}
+  "common"
+  "cpu"
+)
+
+FILE(GLOB DPM_TTIC_COMMON_IMPL_SOURCES "common/*.cpp")
+FILE(GLOB DPM_TTIC_CPU_IMPL_SOURCES "cpu/*.cpp")
+
+## Declare a cpp library
+ADD_LIBRARY(libdpm_ttic
+  ${DPM_TTIC_COMMON_IMPL_SOURCES}
+  ${DPM_TTIC_CPU_IMPL_SOURCES}
+)
+SET_TARGET_PROPERTIES(libdpm_ttic PROPERTIES OUTPUT_NAME dpm_ttic)
+
+TARGET_LINK_LIBRARIES(libdpm_ttic
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+
+ADD_DEPENDENCIES(libdpm_ttic
+  runtime_manager_generate_messages_cpp)
+
 ENDIF()
 
 #############
