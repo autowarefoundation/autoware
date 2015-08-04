@@ -49,7 +49,7 @@ static ros::Publisher image_obj_pub;
 
 #if defined(HAS_GPU)
 static DPMTTICGPU *gpu_model;
-static bool use_gpu = false;
+static bool use_gpu = true;
 #endif
 static DPMTTIC *ttic_model;
 
