@@ -33,7 +33,7 @@ target_link_libraries(image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(image_viewer dpm_generate_messages_cpp kf_generate_messages_cpp)
+add_dependencies(image_viewer cv_tracker_generate_messages_cpp)
 
 add_executable(scan_image_viewer nodes/scan_image_viewer/scan_image_viewer.cpp)
 target_link_libraries(scan_image_viewer
@@ -61,7 +61,7 @@ target_link_libraries(image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(image_d_viewer car_detector_generate_messages_cpp)
+add_dependencies(image_d_viewer cv_tracker_generate_messages_cpp)
 
 add_executable(points_image_d_viewer nodes/points_image_d_viewer/points_image_d_viewer.cpp)
 target_link_libraries(points_image_d_viewer

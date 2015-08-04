@@ -35,11 +35,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <points2image/PointsImage.h>
 
-#if 0
-#include <dpm/ImageObjects.h>
-#else
-#include <car_detector/FusedObjects.h>
-#endif
+#include <cv_tracker/image_obj_ranged.h>
 #include <vector>
 #include <iostream>
 #include <math.h>
@@ -58,8 +54,8 @@ static cv::Mat colormap;
 static std::vector<cv::Rect> cars;
 static std::vector<cv::Rect> peds;
 #else
-static car_detector::FusedObjects car_fused_objects;
-static car_detector::FusedObjects pedestrian_fused_objects;
+static cv_tracker::image_obj_ranged car_fused_objects;
+static cv_tracker::image_obj_ranged pedestrian_fused_objects;
 #endif
 
 /* check whether floating value x is nearly 0 or not */
@@ -80,14 +76,12 @@ static std::vector<cv::Scalar> _colors;
 static const int OBJ_RECT_THICKNESS = 3;
 
 static void drawRects(cv::Mat image,
-					car_detector::FusedObjects objects,
+                    std::vector<cv_tracker::image_rect_ranged> objects,
 					CvScalar color,
 					int threshold_height,
-					std::vector<float> distance,
 					std::string objectClass)
 {
-	int object_num = objects.car_num;
-	std::vector<int> corner_point = objects.corner_point;
+	int object_num = objects.size();
 	char distance_string[32];
 	int fontFace = cv::FONT_HERSHEY_SIMPLEX; double fontScale = 0.55; int fontThick = 2;
 	std::vector<int> pointsInBoundingBox;
@@ -95,12 +89,12 @@ static void drawRects(cv::Mat image,
 	{
 		//corner_point[0]=>X1		corner_point[1]=>Y1
 		//corner_point[2]=>width	corner_point[3]=>height
-		cv::Rect detection = cv::Rect(corner_point[0+i*4], corner_point[1+i*4], corner_point[2+i*4], corner_point[3+i*4]);
+		cv::Rect detection = cv::Rect(objects.at(i).rect.x, objects.at(i).rect.y, objects.at(i).rect.width, objects.at(i).rect.height);
 
 		rectangle(image, detection, color, OBJ_RECT_THICKNESS);//draw bounding box
 		putText(image, objectClass, cv::Point(detection.x + 4, detection.y + 10), fontFace, fontScale, color, fontThick);//draw label text
 
-		sprintf(distance_string, "D:%.2f m H:%.1f,%.1f", objects.distance.at(i) / 100, objects.min_height.at(i), objects.max_height.at(i));
+		sprintf(distance_string, "D:%.2f m H:%.1f,%.1f", objects.at(i).range / 100, objects.at(i).min_height, objects.at(i).max_height);
 		//Size textSize = getTextSize(string(distance_string), fontFace, fontScale, fontThick, 0);
 		//rectangle(image, cv::Rect( detection.x, detection.y, textSize.width + 4, textSize.height + 10), Scalar::all(0), CV_FILLED);//draw fill distance rectangle
 		putText(image, std::string(distance_string), cv::Point(detection.x + 4, detection.y - 10), fontFace, fontScale, color, fontThick);//draw distance text
@@ -162,29 +156,27 @@ static void show(void)
 
 	/* DRAW RECTANGLES of detected objects */
 	drawRects(matImage,
-		  car_fused_objects,
+		  car_fused_objects.obj,
 		  cv::Scalar(255.0, 255.0, 0,0),
 		  matImage.rows*.25,
-		  car_fused_objects.distance,
-		  "car");
+		  car_fused_objects.type);
 
 	drawRects(matImage,
-		  pedestrian_fused_objects,
+		  pedestrian_fused_objects.obj,
 		  cv::Scalar(0.0, 255.0, 0,0),
 		  matImage.rows*.25,
-		  pedestrian_fused_objects.distance,
-		  "pedestrian");
+		  pedestrian_fused_objects.type);
 
 	cvShowImage(window_name, &frame);
 	cvWaitKey(2);
 }
-static void car_updater_callback(const car_detector::FusedObjects& fused_car_msg)
+static void car_updater_callback(const cv_tracker::image_obj_ranged& fused_car_msg)
 {
 	car_fused_objects = fused_car_msg;
 	//  show();
 }
 
-static void ped_updater_callback(const car_detector::FusedObjects& fused_pds_msg)
+static void ped_updater_callback(const cv_tracker::image_obj_ranged& fused_pds_msg)
 {
   pedestrian_fused_objects = fused_pds_msg;
   //  show();
@@ -232,7 +224,7 @@ int main(int argc, char **argv)
 	else
 	{
 		ROS_INFO("No car positions node received, defaulting to car_pixel_xyz, you can use _car_node:=YOUR_TOPIC");
-		car_node = "/car_pixel_xyz";
+		car_node = "/obj_car/image_obj_ranged";
 	}
 
 	if (private_nh.getParam("pedestrian_node", pedestrian_node))
@@ -242,7 +234,7 @@ int main(int argc, char **argv)
 	else
 	{
 		ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xyz, you can use _pedestrian_node:=YOUR_TOPIC");
-		pedestrian_node = "/pedestrian_pixel_xyz";
+		pedestrian_node = "/obj_person/image_obj_ranged";
 	}
 
 	if (private_nh.getParam("points_node", points_node))

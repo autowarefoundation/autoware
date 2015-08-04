@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(kf)
+project(klt)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
@@ -32,13 +32,13 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(src)
 
 ## Declare a cpp library
-add_library(kf
-   src/kf.cpp
+add_library(klt
+   src/klt.cpp
 )
 
-target_link_libraries(kf
+target_link_libraries(klt
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
 
-add_dependencies(kf runtime_manager_generate_messages_cpp  cv_tracker_generate_messages_cpp)
+add_dependencies(klt runtime_manager_generate_messages_cpp  cv_tracker_generate_messages_cpp)

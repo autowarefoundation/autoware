@@ -38,11 +38,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <points2image/PointsImage.h>
 
-#if 0
-#include "dpm/ImageObjects.h"
-#else
-#include "car_detector/FusedObjects.h"
-#endif
+#include "cv_tracker/image_obj_ranged.h"
 #include <vector>
 #include <iostream>
 #include <math.h>
@@ -61,8 +57,8 @@ static cv::Mat colormap;
 static std::vector<cv::Rect> cars;
 static std::vector<cv::Rect> peds;
 #else
-static car_detector::FusedObjects car_fused_objects;
-static car_detector::FusedObjects pedestrian_fused_objects;
+static cv_tracker::image_obj_ranged car_fused_objects;
+static cv_tracker::image_obj_ranged pedestrian_fused_objects;
 #endif
 
 /* check whether floating value x is nearly 0 or not */
@@ -81,23 +77,22 @@ static std::vector<cv::Scalar> _colors;
 static const int OBJ_RECT_THICKNESS = 3;
 
 static void drawRects(IplImage *Image,
-                      int object_num,
-                      std::vector<int> corner_point,
+                      std::vector<cv_tracker::image_rect_ranged> objects,
                       CvScalar color,
-                      int threshold_height,
-                      std::vector<float> distance)
+                      int threshold_height)
 {
-  for(int i = 0; i < object_num; i++) {
-    if (corner_point[1+i*4] > threshold_height && !isNearlyNODATA(distance.at(i))) {  // temporal way to avoid drawing detections in the sky
-      CvPoint p1=cvPoint(corner_point[0+i*4], corner_point[1+i*4]);
-      CvPoint p2=cvPoint(corner_point[0+i*4] + corner_point[2+i*4], corner_point[1+i*4] + corner_point[3+i*4]);
+  unsigned int object_num = objects.size();
+  for(unsigned int i = 0; i < object_num; i++) {
+    if (objects.at(i).rect.y > threshold_height && !isNearlyNODATA(objects.at(i).range)) {  // temporal way to avoid drawing detections in the sky
+      CvPoint p1=cvPoint(objects.at(i).rect.x, objects.at(i).rect.y);
+      CvPoint p2=cvPoint(objects.at(i).rect.x + objects.at(i).rect.width, objects.at(i).rect.y + objects.at(i).rect.height);
       cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
     }
   }
 }
 
 static void putDistance(IplImage *Image,
-                        car_detector::FusedObjects objects,
+                        std::vector<cv_tracker::image_rect_ranged> objects,
                         int threshold_height,
                         const char* objectLabel)
 {
@@ -120,16 +115,16 @@ static void putDistance(IplImage *Image,
                 &text_size,
                 &baseline);
 
-  for (int i=0; i<objects.car_num; i++)
+  for (unsigned int i=0; i<objects.size(); i++)
     {
-      if (objects.corner_point[1+i*4] > threshold_height) // temporal way to avoid drawing detections in the sky
+      if (objects.at(i).rect.y > threshold_height) // temporal way to avoid drawing detections in the sky
         {
-          if (!isNearlyNODATA(objects.distance.at(i)))
+          if (!isNearlyNODATA(objects.at(i).range))
             {
 
               /*put label */
-              CvPoint labelOrg = cvPoint(objects.corner_point[0+i*4] - OBJ_RECT_THICKNESS,
-                                         objects.corner_point[1+i*4] - baseline - OBJ_RECT_THICKNESS);
+              CvPoint labelOrg = cvPoint(objects.at(i).rect.x - OBJ_RECT_THICKNESS,
+                                         objects.at(i).rect.y - baseline - OBJ_RECT_THICKNESS);
 
               cvRectangle(Image,
                           cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
@@ -146,10 +141,10 @@ static void putDistance(IplImage *Image,
 
               /* put distance data */
               cvRectangle(Image,
-                          cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - (((int)log10(objects.distance.at(i)/100)+1) * 5 + 45),
-                                    objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 5),
-                          cv::Point(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) + (((int)log10(objects.distance.at(i)/100)+1) * 8 + 38),
-                                    objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 30),
+                          cv::Point(objects.at(i).rect.x + (objects.at(i).rect.width/2) - (((int)log10(objects.at(i).range/100)+1) * 5 + 45),
+                                    objects.at(i).rect.y + objects.at(i).rect.height + 5),
+                          cv::Point(objects.at(i).rect.x + (objects.at(i).rect.width/2) + (((int)log10(objects.at(i).range/100)+1) * 8 + 38),
+                                    objects.at(i).rect.y + objects.at(i).rect.height + 30),
                           cv::Scalar(255,255,255),
                           -1);
 
@@ -161,11 +156,11 @@ static void putDistance(IplImage *Image,
                           thickness,
                           CV_AA);
 
-              sprintf(distance_string, "%.2f m", objects.distance.at(i) / 100); //unit of length is meter
+              sprintf(distance_string, "%.2f m", objects.at(i).range / 100); //unit of length is meter
               cvPutText(Image,
                         distance_string,
-                        cvPoint(objects.corner_point[0+i*4] + (objects.corner_point[2+i*4]/2) - (((int)log10(objects.distance.at(i)/100)+1) * 5 + 40),
-                                objects.corner_point[1+i*4] + objects.corner_point[3+i*4] + 25),
+                        cvPoint(objects.at(i).rect.x + (objects.at(i).rect.width/2) - (((int)log10(objects.at(i).range/100)+1) * 5 + 40),
+                                objects.at(i).rect.y + objects.at(i).rect.height + 25),
                         &dfont,
                         CV_RGB(255, 0, 0));
             }
@@ -206,28 +201,24 @@ void show(void)
   }
 #else
   drawRects(&frame,
-            car_fused_objects.car_num,
-            car_fused_objects.corner_point,
+            car_fused_objects.obj,
             cvScalar(255.0, 255.0, 0,0),
-            matImage.rows*.25,
-            car_fused_objects.distance);
+            matImage.rows*.25);
 
   drawRects(&frame,
-            pedestrian_fused_objects.car_num,
-            pedestrian_fused_objects.corner_point,
+            pedestrian_fused_objects.obj,
             cvScalar(0.0, 255.0, 0,0),
-            matImage.rows*.25,
-            pedestrian_fused_objects.distance);
+            matImage.rows*.25);
 #endif
   /* PUT DISTANCE text on image */
   putDistance(&frame,
-              car_fused_objects,
+              car_fused_objects.obj,
               matImage.rows*.25,
-              "car");
+              car_fused_objects.type.c_str());
   putDistance(&frame,
-              pedestrian_fused_objects,
+              pedestrian_fused_objects.obj,
               matImage.rows*.25,
-              "pedestrian");
+              pedestrian_fused_objects.type.c_str());
 
   /* DRAW POINTS of lidar scanning */
   int w = matImage.size().width;
@@ -283,7 +274,7 @@ static void car_updater_callback(dpm::ImageObjects image_objects_msg)
   }
 }
 #else
-static void car_updater_callback(const car_detector::FusedObjects& fused_car_msg)
+static void car_updater_callback(const cv_tracker::image_obj_ranged& fused_car_msg)
 {
   car_fused_objects = fused_car_msg;
   //  show();
@@ -308,7 +299,7 @@ static void ped_updater_callback(dpm::ImageObjects image_objects_msg)
   }
 }
 #else
-static void ped_updater_callback(const car_detector::FusedObjects& fused_pds_msg)
+static void ped_updater_callback(const cv_tracker::image_obj_ranged& fused_pds_msg)
 {
   pedestrian_fused_objects = fused_pds_msg;
   //  show();
@@ -351,14 +342,14 @@ int main(int argc, char **argv)
     ROS_INFO("Setting car positions node to %s", car_node.c_str());
   } else {
     ROS_INFO("No car positions node received, defaulting to car_pixel_xyz, you can use _car_node:=YOUR_TOPIC");
-    car_node = "/car_pixel_xyz";
+    car_node = "/obj_car/image_obj_ranged";
   }
 
   if (private_nh.getParam("pedestrian_node", pedestrian_node)) {
     ROS_INFO("Setting pedestrian positions node to %s", pedestrian_node.c_str());
   } else {
     ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xyz, you can use _pedestrian_node:=YOUR_TOPIC");
-    pedestrian_node = "/pedestrian_pixel_xyz";
+    pedestrian_node = "/obj_person/image_obj_ranged";
   }
 
   if (private_nh.getParam("points_node", points_node)) {
