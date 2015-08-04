@@ -312,7 +312,7 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
 static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
 {
-  _current_velocity = msg->data;
+  _current_velocity = kmph2mps(msg->data);
 }
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
@@ -357,8 +357,8 @@ static geometry_msgs::Twist calcTwist(int next_waypoint)
   double radius = _path_pp.calcRadius(next_waypoint);
   twist.linear.x = _path_pp.getCmdVelocity();
 
-  double current_velocity = _current_velocity;
-
+  // double current_velocity = _current_velocity;
+  double current_velocity = twist.linear.x;
   if (radius > 0 || radius < 0)
   {
     twist.angular.z = current_velocity / radius;
