@@ -54,23 +54,32 @@ Path _path_og;
 
 static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
-  if (_use_pose == "NDT")
-  {
-    _initial_pose = input->pose;
-    _initial_set = true;
-    _pose_set = false;
-  }
+  if (_use_pose != "NDT")
+    return;
+
+  if(_initial_set)
+    return;
+
+  _initial_pose = input->pose;
+  _initial_set = true;
+  _pose_set = false;
+
+  
 }
 
 static void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
-  if (_use_pose == "GNSS")
-  {
+  if (_use_pose != "GNSS")
+    return;
 
-    _initial_pose = input->pose;
-    _initial_set = true;
-    _pose_set = false;
-  }
+  if(_initial_set)
+    return;
+
+  _initial_pose = input->pose;
+  _initial_set = true;
+  _pose_set = false;
+  
+
 }
 
 static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
@@ -80,8 +89,8 @@ static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 
 static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
 {
-  if (_use_pose == "Initial Pos")
-  {
+  if (_use_pose != "Initial Pos")
+    return;
 
     static tf::TransformListener listener;
     tf::StampedTransform transform;
@@ -108,7 +117,8 @@ static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedCo
 
     _initial_set = true;
     _pose_set = false;
-  }
+
+  
 }
 
 static void waypointCallback(const waypoint_follower::laneConstPtr &msg)
@@ -155,26 +165,21 @@ int main(int argc, char **argv)
     if (!_waypoint_set)
       continue;
 
-    if (_initial_set)
-    {
-      if (!_pose_set)
-      {
-        pose.position = _initial_pose.position;
-        pose.orientation = _initial_pose.orientation;
-        tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-        tf::Matrix3x3 m(q);
-        double roll, pitch, yaw;
-        m.getRPY(roll, pitch, yaw);
-        th = yaw;
-        std::cout << "pose set : (" << pose.position.x << " " << pose.position.y << " " << pose.position.z << " " << th
-            << ")" << std::endl << std::endl;
-
-      }
-      _pose_set = true;
-    }
-    else
-    {
+    if (!_initial_set)
       continue;
+
+    if (!_pose_set)
+    {
+      pose.position = _initial_pose.position;
+      pose.orientation = _initial_pose.orientation;
+      tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+      tf::Matrix3x3 m(q);
+      double roll, pitch, yaw;
+      m.getRPY(roll, pitch, yaw);
+      th = yaw;
+      std::cout << "pose set : (" << pose.position.x << " " << pose.position.y << " " << pose.position.z << " " << th
+	    << ")" << std::endl << std::endl;
+      _pose_set = true;
     }
 
     tf::Transform inverse;
