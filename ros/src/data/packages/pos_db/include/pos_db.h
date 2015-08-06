@@ -41,10 +41,12 @@
 
 #define DB_HOSTNAME     "db3.ertl.jp"
 #define DB_PORT         (5678)
+#ifdef USE_LIBSSH2
 #define SSHPUBKEY       "/tmp/autoware/ssh/id_rsa.pub"
 #define SSHPRIVATEKEY   "/tmp/autoware/ssh/id_rsa"
 #define SSHPORT         (22)
 #define SSHTUNNELHOST	"localhost"
+#endif
 
 class SendData {
 private:

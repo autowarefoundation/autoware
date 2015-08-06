@@ -1,0 +1,10 @@
+int32 pid
+float64 b
+float64 l
+float64 h
+float64 bx
+float64 ly
+int32 ref
+int32 mcode1
+int32 mcode2
+int32 mcode3

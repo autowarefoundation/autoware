@@ -1,0 +1,28 @@
+--- a/PhvCnt.cpp	2015-07-20 19:02:11.851859290 +0900
++++ b/PhvCnt.cpp	2015-08-01 12:54:04.166530583 +0900
+@@ -8,6 +8,16 @@ PhvCnt::PhvCnt()
+ PhvCnt::~PhvCnt()
+ {}
+ 
++// Autoware Extension
++void PhvCnt::ClearCntDiag()
++{
++    CANMsg msg;
++    msg.LEN = 1;
++    msg.ID = MSG_GROUP_SYSCOM << 6 | MSG_SYSCOM_REQ_ERR_STATE;
++    msg.DATA[0] = 1;
++    _canCom->SendCanMessage(CAN_CHANNEL_1, &msg);
++}
++
+ bool PhvCnt::Init()
+ {
+     _canCom = new CanCommunication();
+@@ -27,6 +37,8 @@ bool PhvCnt::Init()
+     _targetCnt=0;
+     _callback = NULL;
+ 
++    ClearCntDiag(); // Autoware Extension
++
+     return true;
+ }
+ 

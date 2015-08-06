@@ -21,6 +21,7 @@ add_message_files(
   FILES
   lane.msg
   waypoint.msg
+  dtlane.msg
 )
 
 generate_messages(
@@ -62,7 +63,7 @@ waypoint_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
 add_executable(odom_gen nodes/odom_gen/odom_gen.cpp)
-target_link_libraries(odom_gen ${catkin_LIBRARIES})
+target_link_libraries(odom_gen libwaypoint_follower ${catkin_LIBRARIES})
 
 add_executable(distance_keep nodes/distance_keep/distance_keep.cpp)
 target_link_libraries(distance_keep libwaypoint_follower ${catkin_LIBRARIES})

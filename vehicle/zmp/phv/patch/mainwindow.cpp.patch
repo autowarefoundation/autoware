@@ -1,0 +1,30 @@
+--- a/mainwindow.cpp	2015-07-20 19:02:11.851859290 +0900
++++ b/mainwindow.cpp	2015-07-20 16:19:12.830315113 +0900
+@@ -162,6 +162,15 @@ MainWindow::MainWindow(QWidget *parent)
+     ui->pushButton_startLog->setEnabled(true);
+     ui->pushButton_stopLog->setEnabled(false);
+ 
++    /////////////////////////////////////////////////////////
++    // Autoware extension
++    if (!ConfigSocket()) {
++      printf("Error: failed to configure Autoware socket!\n");    
++    }
++    pthread_create(&_cmdgetter, NULL, CMDGetterEntry, this);
++    pthread_detach(_cmdgetter);
++    ////////////////////////////////////////////////////////
++
+     pthread_create(&_logThread, NULL, LogThreadEntry, this);
+     readTimer->start(100);
+     drvTimer->start(200);
+@@ -224,7 +233,10 @@ void MainWindow::logThread()
+     while(1){
+         updateTime();
+         if(_selectLog.start == true){
+-            writeLog();
++	    /////////////////////////////////////////////////
++	    // Autoware extension
++	    //writeLog();
++	    SendCAN();
+         }
+         usleep(10*1000);
+     }

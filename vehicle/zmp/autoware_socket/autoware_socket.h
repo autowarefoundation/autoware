@@ -45,7 +45,6 @@
 #include <errno.h>
 #include <netdb.h>
 
-
 using namespace zmp::hev;
 
 #define NO_TSTAMP 0
@@ -59,32 +58,10 @@ using namespace zmp::hev;
 
 #define MILLISECOND 1000  
 
-#define MODE_MANUAL 0x00 //HEV Manual Mode = 0x00
-#define MODE_PROGRAM 0x10 //HEV Program Mode = 0x10
-
-#define SERVO_TRUE 0x10 //HEV Servo ON = 0x10
-#define SERVO_FALSE 0x00 //HEV Servo OFF = 0x00
-
 #define SPEED_LIMIT 80 // km/h
 #define STROKE_SPEED_LIMIT 80 // use stroke until 80 km/h
-#define ACCEL_PEDAL_SET_START 100 //initial press value for accel pedal
-#define ACCEL_PEDAL_SET_START_FAST 1000 //initial press value for accel pedal if cmd_vel is higer 
-#define ACCEL_PEDAL_STEP 5 //increase press value for accel pedal 
-#define ACCEL_PEDAL_STEP_BIG 9//7//10
-#define ACCEL_PEDAL_RELEASE_STEP 100 //release value for accel pedal
-#define ACCEL_PEDAL_MAX 1700 
-#define ACCEL_LIMIT 8.0 // km/h
 
-#define HEV_LIGHT_BRAKE 500 //400 //brake pedal
-#define HEV_MED_BRAKE 1000
-#define HEV_MED2_BRAKE 3000 //2000
-#define HEV_MAX_BRAKE 4096 //max brake pedal value 
-
-#define CURRENT_ACCEL_STROKE() _hev_state.drvInf.actualPedalStr
-#define CURRENT_BRAKE_STROKE() _hev_state.brkInf.actualPedalStr
-#define CURRENT_STEERING_TORQUE() _hev_state.strInf.torque
-
-typedef struct pose_data_t {
+typedef struct pose_data {
   double x;
   double y;
   double z;
@@ -94,18 +71,18 @@ typedef struct pose_data_t {
   long long int tstamp;
 } pose_data_t;
 
-typedef struct vel_data_t {
+typedef struct vel_data {
   double tv;
   double sv;
   long long int tstamp;
 } vel_data_t;
 
-typedef struct vel_cmd_data_t {
+typedef struct vel_cmd_data {
   vel_data_t vel;
   int mode;
 } vel_cmd_data_t;
 
-typedef struct base_data_t {
+typedef struct base_data {
   pose_data_t odom_pose;
   vel_data_t vel_cur;
   unsigned char batt_voltage;
@@ -113,7 +90,7 @@ typedef struct base_data_t {
   long long int tstamp;
 } base_data_t;
 
-typedef struct state_data_t {
+typedef struct state_data {
   long long int update_tstamp;
   long long int control_tstamp;
 
@@ -127,7 +104,7 @@ typedef struct state_data_t {
 
 } state_data_t;
 
-typedef struct lrf_config_t {
+typedef struct lrf_config {
   int N;
   double fov; // field of view radians
   double res;
@@ -146,15 +123,16 @@ typedef struct _CMDDATA {
     int brake;
 } CMDDATA;
 
-// Structure to store HEV State
-typedef struct _HevState {
-  DrvInf drvInf;
-  StrInf strInf;
-  BrakeInf brkInf;
-  long long int tstamp;
-} HevState;
+typedef struct vehicle_state {
+	float accel_stroke;
+	float brake_stroke;
+	float steering_torque;
+	float steering_angle;
+	float velocity;
+	long long int tstamp;
+} vehicle_state_t;
 
-extern HevState _hev_state;
+extern vehicle_state_t vstate;
 extern int can_tx_interval; // ms
 extern int cmd_rx_interval; // ms
 extern std::string ros_ip_address;

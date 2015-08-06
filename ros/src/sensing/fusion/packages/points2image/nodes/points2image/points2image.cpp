@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
 	pub = n.advertise<points2image::PointsImage>("points_image", 10);
 	cpub = n.advertise<points2image::CameraExtrinsic>("threeD_calibration", 1);
-	ros::Subscriber sub = n.subscribe("velodyne_points", 1, callback);
+	ros::Subscriber sub = n.subscribe("points_raw", 1, callback);
 
 	ros::spin();
 	return 0;

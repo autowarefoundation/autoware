@@ -48,6 +48,10 @@ static constexpr bool ADVERTISE_LATCH = true;
 
 static constexpr int PRECISION = 6;
 static constexpr double ACCIDENT_ERROR = 0.000001;
+static constexpr double RADIUS_MAX = 90000000000;
+static constexpr double CURVE_WEIGHT = 50 * 0.6; // XXX
+static constexpr double CROSSROAD_WEIGHT = 9.1 * 0.9; // XXX
+static constexpr double CLOTHOID_WEIGHT = CURVE_WEIGHT;
 
 static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
 
@@ -64,6 +68,7 @@ static std::vector<map_file::Lane> lanes;
 static std::vector<map_file::Node> nodes;
 static std::vector<map_file::PointClass> points;
 static std::vector<map_file::StopLine> stoplines;
+static std::vector<map_file::DTLane> dtlanes;
 
 static std::vector<map_file::PointClass> left_lane_points;
 
@@ -115,11 +120,159 @@ static void stop_line_callback(const map_file::StopLineArray& msg)
 	stoplines = msg.stop_lines;
 }
 
+static void dtlane_callback(const map_file::DTLaneArray& msg)
+{
+	dtlanes = msg.dtlanes;
+}
+
 static void config_callback(const runtime_manager::ConfigLaneRule& msg)
 {
 	config_velocity = msg.velocity;
 	config_difference_around_signal = msg.difference_around_signal;
 	config_number_of_zeros = msg.number_of_zeros;
+}
+
+static bool is_straight(const map_file::DTLane& dtlane)
+{
+	return (dtlane.apara == 0 && dtlane.r == RADIUS_MAX);
+}
+
+static bool is_curve(const map_file::DTLane& dtlane)
+{
+	return (dtlane.apara == 0 && dtlane.r != RADIUS_MAX);
+}
+
+static bool is_crossroad(const map_file::DTLane& dtlane)
+{
+	return (dtlane.did >= 5547 && dtlane.did <= 5557); // XXX
+}
+
+static bool is_single_curve(const std::vector<map_file::DTLane>& dtls,
+			    int index)
+{
+	int hit = 0, straight = 0;
+	int size = dtls.size();
+
+	for (int i = index - 1; i >= 0; --i) {
+		if (dtls[index].r != dtls[i].r) {
+			++hit;
+			if (is_straight(dtls[i]))
+				++straight;
+			break;
+		}
+	}
+
+	for (int i = index + 1; i < size; ++i) {
+		if (dtls[index].r != dtls[i].r) {
+			++hit;
+			if (is_straight(dtls[i]))
+				++straight;
+			break;
+		}
+	}
+
+	if (hit == 0)
+		return true;
+
+	if (hit == 1 && straight == 1)
+		return true;
+
+	if (straight == 2)
+		return true;
+
+	return false;
+}
+
+static bool is_clothoid(const map_file::DTLane& dtlane)
+{
+	return (dtlane.apara != 0);
+}
+
+static double compute_reduction(const map_file::DTLane& dtlane, double weight)
+{
+	return (1 - fabs(1 / dtlane.r) * weight);
+}
+
+static double dtlane_to_reduction(const std::vector<map_file::DTLane>& dtls,
+				  int index)
+{
+	if (is_straight(dtls[index]))
+		return 1;
+	if (is_curve(dtls[index])) {
+		if (is_crossroad(dtls[index]))
+			return compute_reduction(dtls[index],
+						 CROSSROAD_WEIGHT);
+		if (is_single_curve(dtls, index))
+			return 1;
+		return compute_reduction(dtls[index], CURVE_WEIGHT);
+	}
+	if (is_clothoid(dtls[index]))
+		return compute_reduction(dtls[index], CLOTHOID_WEIGHT);
+
+	return 1;
+}
+
+static std::vector<map_file::DTLane>
+search_waypoint_dtlane(const nav_msgs::Path& msg)
+{
+	std::vector<map_file::DTLane> waypoint_dtlanes;
+
+	// msg's X-Y axis is reversed
+	map_file::PointClass start_point = search_nearest(
+		left_lane_points,
+		msg.poses.front().pose.position.y,
+		msg.poses.front().pose.position.x);
+
+	// msg's X-Y axis is reversed
+	map_file::PointClass end_point = search_nearest(
+		left_lane_points,
+		msg.poses.back().pose.position.y,
+		msg.poses.back().pose.position.x);
+
+	int lane_index = to_lane_index(start_point, nodes, lanes);
+	if (lane_index < 0) {
+		ROS_ERROR("start lane is not found");
+		return waypoint_dtlanes;
+	}
+	map_file::Lane lane = lanes[lane_index];
+
+	int point_index = to_beginning_point_index(lane, nodes, points);
+	if (point_index < 0) {
+		ROS_ERROR("start beginning point is not found");
+		return waypoint_dtlanes;
+	}
+	map_file::PointClass point = points[point_index];
+
+	while (1) {
+		for (const map_file::DTLane& dtlane : dtlanes) {
+			if (dtlane.did == lane.did)
+				waypoint_dtlanes.push_back(dtlane);
+		}
+
+		point_index = to_finishing_point_index(lane, nodes, points);
+		if (point_index < 0) {
+			ROS_ERROR("finishing point is not found");
+			return waypoint_dtlanes;
+		}
+		point = points[point_index];
+
+		lane_index = to_next_lane_index(lane, lanes);
+		if (lane_index < 0) {
+			ROS_ERROR("next lane is not found");
+			return waypoint_dtlanes;
+		}
+		lane = lanes[lane_index];
+
+		if (point.bx == end_point.bx &&
+		    point.ly == end_point.ly) {
+			for (const map_file::DTLane& dtlane : dtlanes) {
+				if (dtlane.did == lane.did)
+					waypoint_dtlanes.push_back(dtlane);
+			}
+
+			return waypoint_dtlanes;
+		}
+	}
 }
 
 static std::vector<map_file::PointClass>
@@ -166,6 +319,13 @@ search_stopline_point(const nav_msgs::Path& msg)
 		}
 		point = points[point_index];
 
+		lane_index = to_next_lane_index(lane, lanes);
+		if (lane_index < 0) {
+			ROS_ERROR("next lane is not found");
+			return stopline_points;
+		}
+		lane = lanes[lane_index];
+
 		if (point.bx == end_point.bx &&
 		    point.ly == end_point.ly) {
 			for (const map_file::StopLine& stopline : stoplines) {
@@ -175,20 +335,6 @@ search_stopline_point(const nav_msgs::Path& msg)
 
 			return stopline_points;
 		}
-
-		lane_index = to_next_lane_index(lane, lanes);
-		if (lane_index < 0) {
-			ROS_ERROR("next lane is not found");
-			return stopline_points;
-		}
-		lane = lanes[lane_index];
-
-		point_index = to_beginning_point_index(lane, nodes, points);
-		if (point_index < 0) {
-			ROS_ERROR("beginning point is not found");
-			return stopline_points;
-		}
-		point = points[point_index];
 	}
 }
 
@@ -271,7 +417,7 @@ static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
 }
 
 static void write_waypoint(const geometry_msgs::Point& point, double velocity,
-			   const char *filename, bool first)
+			   double reduction, const char *filename, bool first)
 {
 	if (first) {
 		std::ofstream ofs(filename);
@@ -289,7 +435,8 @@ static void write_waypoint(const geometry_msgs::Point& point, double velocity,
 		    << ","
 		    << std::fixed << std::setprecision(PRECISION) << point.z
 		    << ","
-		    << std::fixed << std::setprecision(PRECISION) << velocity
+		    << std::fixed << std::setprecision(PRECISION)
+		    << (velocity * reduction)
 		    << std::endl;
 	}
 }
@@ -334,6 +481,13 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 	waypoint.twist.header = header;
 	waypoint.pose.pose.orientation.w = 1;
 
+	std::vector<map_file::DTLane> waypoint_dtlanes =
+		search_waypoint_dtlane(msg);
+	if (waypoint_dtlanes.size() != msg.poses.size()) {
+		ROS_ERROR("not enough dtlane");
+		return;
+	}
+
 	std::vector<double> computations = compute_velocity(
 		msg,
 		config_velocity,
@@ -342,13 +496,15 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 
 	waypoint_count = msg.poses.size();
 	for (int i = 0; i < waypoint_count; ++i) {
+		double reduction = dtlane_to_reduction(waypoint_dtlanes, i);
+
 		velocity.id = i;
 		velocity.pose.position = msg.poses[i].pose.position;
 		velocity.pose.position.z += 0.2; // more visible
 
 		std::ostringstream ostr;
-		ostr << std::fixed << std::setprecision(0) << config_velocity
-		     << " km/h";
+		ostr << std::fixed << std::setprecision(0)
+		     << (config_velocity * reduction) << " km/h";
 		velocity.text = ostr.str();
 
 		velocities.markers.push_back(velocity);
@@ -356,14 +512,23 @@ static void lane_waypoint_callback(const nav_msgs::Path& msg)
 		waypoint.pose.pose.position = msg.poses[i].pose.position;
 
 		waypoint.twist.twist.linear.x =
-			config_velocity / 3.6; // to m/s
+			(config_velocity * reduction) / 3.6; // to m/s
+		waypoint.dtlane.dist = waypoint_dtlanes[i].dist;
+		waypoint.dtlane.dir = waypoint_dtlanes[i].dir;
+		waypoint.dtlane.apara = waypoint_dtlanes[i].apara;
+		waypoint.dtlane.r = waypoint_dtlanes[i].r;
+		waypoint.dtlane.slope = waypoint_dtlanes[i].slope;
+		waypoint.dtlane.cant = waypoint_dtlanes[i].cant;
+		waypoint.dtlane.lw = waypoint_dtlanes[i].lw;
+		waypoint.dtlane.rw = waypoint_dtlanes[i].rw;
 		ruled.waypoints.push_back(waypoint);
 
 		write_waypoint(waypoint.pose.pose.position, config_velocity,
-			       ruled_waypoint_csv.c_str(), (i == 0));
+			       reduction, ruled_waypoint_csv.c_str(),
+			       (i == 0));
 
 		waypoint.twist.twist.linear.x =
-			computations[i] / 3.6; // to m/s
+			(computations[i] * reduction) / 3.6; // to m/s
 		red.waypoints.push_back(waypoint);
 	}
 
@@ -395,10 +560,14 @@ int main(int argc, char **argv)
 		"vector_map_info/stop_line",
 		SUBSCRIBE_QUEUE_SIZE,
 		stop_line_callback);
+	ros::Subscriber sub_dtlane = n.subscribe(
+		"vector_map_info/dtlane",
+		SUBSCRIBE_QUEUE_SIZE,
+		dtlane_callback);
 
 	ros::Rate rate(1);
 	while (lanes.empty() || nodes.empty() || points.empty() ||
-	       stoplines.empty()) {
+	       stoplines.empty() || dtlanes.empty()) {
 		ros::spinOnce();
 		rate.sleep();
 	}

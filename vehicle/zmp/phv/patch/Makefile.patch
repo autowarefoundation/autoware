@@ -1,0 +1,64 @@
+--- a/Makefile	2015-07-20 19:02:11.857859289 +0900
++++ b/Makefile	2015-07-20 16:20:34.465311308 +0900
+@@ -16,7 +16,7 @@ CXXFLAGS      = -pipe -g -Wall -W -D_REE
+ INCPATH       = -I/usr/lib/qt4/mkspecs/linux-g++ -I. -I/usr/include/QtCore -I/usr/include/QtGui -I/usr/include -I/usr/local/include/zmp -I/usr/local/include/zmp -I/usr/local/include/zmp -I. -I.
+ LINK          = g++
+ LFLAGS        = 
+-LIBS          = $(SUBLIBS)  -L/usr/lib -L/home/zmp/PHV/sample/PHV/../../../../../usr/local/lib/zmp/ -lcanif -lCarTomoUSB -lphvcontrol -lQtGui -lQtCore -lpthread 
++LIBS          = $(SUBLIBS)  -L/usr/lib -L/usr/local/lib/zmp/ -lcanif -lCarTomoUSB -lphvcontrol -lQtGui -lQtCore -lpthread 
+ AR            = ar cqs
+ RANLIB        = 
+ QMAKE         = /usr/bin/qmake-qt4
+@@ -37,6 +37,12 @@ MOVE          = mv -f
+ CHK_DIR_EXISTS= test -d
+ MKDIR         = mkdir -p
+ 
++AUTOWARE_CONFIG	= autoware_config
++AUTOWARE_CONFIG_PATH	= .
++
++AUTOWARE_SOCKET	= autoware_socket
++AUTOWARE_SOCKET_PATH	= ../../$(AUTOWARE_SOCKET)
++
+ ####### Output directory
+ 
+ OBJECTS_DIR   = ./
+@@ -53,7 +59,8 @@ OBJECTS       = main.o \
+ 		RingBuffer.o \
+ 		PhvCnt.o \
+ 		GameControl.o \
+-		moc_mainwindow.o
++		moc_mainwindow.o \
++		$(AUTOWARE_SOCKET).o 
+ DIST          = /usr/lib/qt4/mkspecs/common/unix.conf \
+ 		/usr/lib/qt4/mkspecs/common/linux.conf \
+ 		/usr/lib/qt4/mkspecs/common/gcc-base.conf \
+@@ -286,7 +293,10 @@ mainwindow.o: mainwindow.cpp mainwindow.
+ 		/usr/local/include/zmp/CARTomoConst.h \
+ 		/usr/local/include/zmp/CarTomo.h \
+ 		/usr/local/include/zmp/UsbSerial.h \
+-		ui_mainwindow.h
++		ui_mainwindow.h \
++		$(AUTOWARE_CONFIG_PATH)/autoware_config.h \
++		$(AUTOWARE_SOCKET_PATH)/autoware_socket.h
++
+ 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp
+ 
+ RingBuffer.o: RingBuffer.cpp RingBuffer.h
+@@ -318,6 +328,17 @@ GameControl.o: GameControl.cpp GameContr
+ moc_mainwindow.o: moc_mainwindow.cpp 
+ 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
+ 
++$(AUTOWARE_SOCKET).o:	$(AUTOWARE_SOCKET_PATH)/common.cpp \
++			$(AUTOWARE_SOCKET_PATH)/can.cpp \
++			$(AUTOWARE_SOCKET_PATH)/cmd.cpp \
++			$(AUTOWARE_SOCKET_PATH)/autoware_socket.h \
++			$(AUTOWARE_SOCKET_PATH)/drv.cpp \
++			$(AUTOWARE_SOCKET_PATH)/str.cpp \
++			$(AUTOWARE_CONFIG_PATH)/autoware_config.h \
++			mainwindow.h
++
++	$(CXX) -Wl,-r $(CXXFLAGS) $(INCPATH) $^ -o $(AUTOWARE_SOCKET).o -nostdlib
++
+ ####### Install
+ 
+ install:   FORCE
