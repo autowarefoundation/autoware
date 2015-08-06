@@ -4,13 +4,15 @@ project(libvectormap)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  map_file
+  )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package (Eigen3 REQUIRED)
 
-
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -79,6 +81,7 @@ find_package (Eigen3 REQUIRED)
 catkin_package(
 INCLUDE_DIRS include
 LIBRARIES vectormap
+CATKIN_DEPENDS map_file
 )
 
 include_directories(
@@ -92,3 +95,6 @@ add_library(vectormap STATIC
    src/vector_map.cpp
 )
 
+add_dependencies(vectormap
+  map_file_generate_messages_cpp
+  )
