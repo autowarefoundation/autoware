@@ -188,7 +188,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 int main (int argc, char** argv)
 {
 	// Initialize ROS
-	ros::init (argc, argv, "euclidean_clustering");
+	ros::init (argc, argv, "euclidean_cluster");
 
 	ros::NodeHandle h;
 	ros::NodeHandle private_nh("~");
@@ -204,11 +204,11 @@ int main (int argc, char** argv)
 
 	if (private_nh.getParam("points_node", points_topic))
 	{
-		ROS_INFO("euclidean_clustering > Setting points node to %s", points_topic.c_str());
+		ROS_INFO("euclidean_cluster > Setting points node to %s", points_topic.c_str());
 	}
 	else
 	{
-		ROS_INFO("euclidean_clustering > No points node received, defaulting to velodyne_points, you can use _points_node:=YOUR_TOPIC");
+		ROS_INFO("euclidean_cluster > No points node received, defaulting to velodyne_points, you can use _points_node:=YOUR_TOPIC");
 		points_topic = "/velodyne_points";
 	}
 

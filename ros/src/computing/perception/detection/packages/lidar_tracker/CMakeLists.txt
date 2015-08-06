@@ -117,11 +117,11 @@ link_directories(${PCL_LIBRARY_DIRS})
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(euclidean_clustering src/euclidean_clustering.cpp)
-target_link_libraries(euclidean_clustering opencv_highgui opencv_core opencv_contrib ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_clustering lidar_tracker_generate_messages_cpp)
+add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp)
+target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
 
-add_executable(vscan_filling src/vscan_filling.cpp)
+add_executable(vscan_filling nodes/vscan_filling/vscan_filling.cpp)
 target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 #############
