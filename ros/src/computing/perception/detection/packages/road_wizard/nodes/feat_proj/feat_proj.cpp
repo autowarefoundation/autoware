@@ -21,6 +21,8 @@
 #include <Eigen/Eigen>
 #include "road_wizard/Signals.h"
 
+static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
+
 typedef struct {
   double thiX;
   double thiY;
@@ -241,15 +243,51 @@ void interrupt (int s)
 
 int main (int argc, char *argv[])
 {
-  if (argc < 2)
-    {
-      std::cout << "Usage: feat_proj <vector-map-dir>" << std::endl;
-      return -1;
-    }
 
-  vmap.loadAll(argv[1]);
   ros::init(argc, argv, "feat_proj");
   ros::NodeHandle rosnode;
+
+  /* load vector map */
+  ros::Subscriber sub_point     = rosnode.subscribe("vector_map_info/point_class",
+                                                    SUBSCRIBE_QUEUE_SIZE,
+                                                    &VectorMap::load_points,
+                                                    &vmap);
+  ros::Subscriber sub_line      = rosnode.subscribe("vector_map_info/line_class",
+                                                    SUBSCRIBE_QUEUE_SIZE,
+                                                    &VectorMap::load_lines,
+                                                    &vmap);
+  ros::Subscriber sub_lane      = rosnode.subscribe("vector_map_info/lane",
+                                                    SUBSCRIBE_QUEUE_SIZE,
+                                                    &VectorMap::load_lanes,
+                                                    &vmap);
+  ros::Subscriber sub_vector    = rosnode.subscribe("vector_map_info/vector_class",
+                                                    SUBSCRIBE_QUEUE_SIZE,
+                                                    &VectorMap::load_vectors,
+                                                    &vmap);
+  ros::Subscriber sub_signal    = rosnode.subscribe("vector_map_info/signal",
+                                                    SUBSCRIBE_QUEUE_SIZE,
+                                                    &VectorMap::load_signals,
+                                                    &vmap);
+  ros::Subscriber sub_whiteline = rosnode.subscribe("vector_map_info/white_line",
+                                                    SUBSCRIBE_QUEUE_SIZE,
+                                                    &VectorMap::load_whitelines,
+                                                    &vmap);
+  ros::Subscriber sub_dtlane    = rosnode.subscribe("vector_map_info/dtlane",
+                                                    SUBSCRIBE_QUEUE_SIZE,
+                                                    &VectorMap::load_dtlanes,
+                                                    &vmap);
+
+  /* wait until loading all vector map is completed */
+  ros::Rate wait_rate(1);
+  while(vmap.points.empty() || vmap.lines.empty() || vmap.whitelines.empty() ||
+        vmap.lanes.empty() || vmap.dtlanes.empty() || vmap.vectors.empty() || vmap.signals.empty())
+    {
+      ros::spinOnce();
+      wait_rate.sleep();
+    }
+
+  vmap.loaded = true;
+  std::cout << "all vector map loaded." << std::endl;
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
   //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/ndt_pose", 10, ndtPoseCallback);

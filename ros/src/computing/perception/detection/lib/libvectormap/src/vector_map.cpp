@@ -7,281 +7,143 @@
 #include <vector>
 #include <map>
 #include <tf/transform_listener.h>
-#include <string>
-#include <fstream>
 
-using std::string;
-
-typedef std::vector< std::vector<std::string> > File_contents;
-
-static inline File_contents read_csv(const char* filename)
+void VectorMap::load_points(const map_file::PointClassArray& msg)
 {
-  File_contents fileContents;
-  fileContents.clear();
-
-  std::ifstream ifs(filename);
-  if (ifs == 0)
-    return fileContents;
-
-  std::string line_contents;
-  std::getline(ifs, line_contents); // skip first header line
-
-  while (std::getline(ifs, line_contents))
+  for (const auto& point : msg.point_classes)
     {
-      std::istringstream ss(line_contents);
-
-      std::vector<std::string> column;
-      std::string element;
-      while (std::getline(ss, element, ',')) {
-        column.push_back(element);
-      }
-      fileContents.push_back(column);
+      Point tmp;
+      tmp.pid	 = point.pid;
+      tmp.b      = point.b;
+      tmp.l      = point.l;
+      tmp.h      = point.h;
+      tmp.bx	 = point.ly;
+      tmp.ly	 = point.bx;
+      tmp.ref	 = point.ref;
+      tmp.mcode1 = point.mcode1;
+      tmp.mcode2 = point.mcode2;
+      tmp.mcode3 = point.mcode3;
+      points.insert( std::map<int, Point>::value_type(tmp.pid, tmp) );
     }
-
-  return fileContents;
-}
-
-
-int VectorMap::load_points(char *name) {
-
-  File_contents fileContents = read_csv(name);
-  if (fileContents.empty())
-    return EXIT_FAILURE;
-
-  size_t line_num = fileContents.size();
-  for (int i=0; i<line_num; i++)
-    {
-      Point tmp_p;
-      tmp_p.pid    = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_p.b      = atof((const char*)(fileContents[i][1].c_str()));
-      tmp_p.l      = atof((const char*)(fileContents[i][2].c_str()));
-      tmp_p.h      = atof((const char*)(fileContents[i][3].c_str()));
-      tmp_p.ly     = atof((const char*)(fileContents[i][4].c_str()));
-      tmp_p.bx     = atof((const char*)(fileContents[i][5].c_str()));
-      tmp_p.ref    = atoi((const char*)(fileContents[i][6].c_str()));
-      tmp_p.mcode1 = atoi((const char*)(fileContents[i][7].c_str()));
-      tmp_p.mcode2 = atoi((const char*)(fileContents[i][8].c_str()));
-      tmp_p.mcode3 = atoi((const char*)(fileContents[i][9].c_str()));
-
-      points.insert( std::map<int, Point>::value_type(tmp_p.pid, tmp_p) );
-    }
-
-  return EXIT_SUCCESS;
-}
+  std::cout << "load points complete. element num: " << points.size() << std::endl;
+} /* void VectorMap::load_points() */
 
 
-int VectorMap::load_lines(char *name) {
-
-  File_contents fileContents = read_csv(name);
-  if (fileContents.empty())
-    return EXIT_FAILURE;
-
-  size_t line_num = fileContents.size();
-  for (int i=0; i<line_num; i++)
-    {
-      Line tmp_l;
-      tmp_l.lid  = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_l.bpid = atoi((const char*)(fileContents[i][1].c_str()));
-      tmp_l.fpid = atoi((const char*)(fileContents[i][2].c_str()));
-      tmp_l.blid = atoi((const char*)(fileContents[i][3].c_str()));
-      tmp_l.flid = atoi((const char*)(fileContents[i][4].c_str()));
-
-      lines.insert( std::map<int, Line>::value_type(tmp_l.lid, tmp_l) );
-    }
-
-  return EXIT_SUCCESS;
-}
-
-
-int VectorMap::load_lanes(char *name) {
-
-  File_contents fileContents = read_csv(name);
-  if (fileContents.empty())
-    return EXIT_FAILURE;
-
-  size_t line_num = fileContents.size();
-  for (int i=0; i<line_num; i++)
-    {
-      Lane tmp_l;
-      tmp_l.lnid    = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_l.did     = atoi((const char*)(fileContents[i][1].c_str()));
-      tmp_l.blid    = atoi((const char*)(fileContents[i][2].c_str()));
-      tmp_l.flid    = atoi((const char*)(fileContents[i][3].c_str()));
-      tmp_l.bnid    = atoi((const char*)(fileContents[i][4].c_str()));
-      tmp_l.fnid    = atoi((const char*)(fileContents[i][5].c_str()));
-      tmp_l.jct     = atoi((const char*)(fileContents[i][6].c_str()));
-      tmp_l.blid2   = atoi((const char*)(fileContents[i][7].c_str()));
-      tmp_l.blid3   = atoi((const char*)(fileContents[i][8].c_str()));
-      tmp_l.blid4   = atoi((const char*)(fileContents[i][9].c_str()));
-      tmp_l.flid2   = atoi((const char*)(fileContents[i][10].c_str()));
-      tmp_l.flid3   = atoi((const char*)(fileContents[i][11].c_str()));
-      tmp_l.flid4   = atoi((const char*)(fileContents[i][12].c_str()));
-      tmp_l.clossid = atoi((const char*)(fileContents[i][13].c_str()));
-      tmp_l.span    = atof((const char*)(fileContents[i][14].c_str()));
-      tmp_l.lcnt    = atoi((const char*)(fileContents[i][15].c_str()));
-      tmp_l.lno     = atoi((const char*)(fileContents[i][16].c_str()));
-
-      lanes.insert( std::map<int, Lane>::value_type(tmp_l.lnid, tmp_l) );
-    }
-
-  return EXIT_SUCCESS;
-}
-
-
-int VectorMap::load_vectors(char *name) {
-
-  File_contents fileContents = read_csv(name);
-  if (fileContents.empty())
-    return EXIT_FAILURE;
-
-  size_t line_num = fileContents.size();
-  for (int i=0; i<line_num; i++)
-    {
-      Vector tmp_v;
-      tmp_v.vid  = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_v.pid  = atoi((const char*)(fileContents[i][1].c_str()));
-      tmp_v.hang = atof((const char*)(fileContents[i][2].c_str()));
-      tmp_v.vang = atof((const char*)(fileContents[i][3].c_str()));
-
-      vectors.insert( std::map<int, Vector>::value_type(tmp_v.vid, tmp_v) );
-    }
-
-  return EXIT_SUCCESS;
-}
-
-
-int VectorMap::load_signals(char *name) {
-
-  File_contents fileContents = read_csv(name);
-  if (fileContents.empty())
-    return EXIT_FAILURE;
-
-  size_t line_num = fileContents.size();
-  for (int i=0; i<line_num; i++)
-    {
-      Signal tmp_s;
-      tmp_s.id     = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_s.vid    = atoi((const char*)(fileContents[i][1].c_str()));
-      tmp_s.plid   = atoi((const char*)(fileContents[i][2].c_str()));
-      tmp_s.type   = atoi((const char*)(fileContents[i][3].c_str()));
-      tmp_s.linkid = atoi((const char*)(fileContents[i][4].c_str()));
-
-      signals.insert( std::map<int, Signal>::value_type(tmp_s.id, tmp_s) );
-    }
-
-  return EXIT_SUCCESS;
-}
-
-int VectorMap::load_clines(char *name) {
-
-  File_contents fileContents = read_csv(name);
-  if (fileContents.empty())
-    return EXIT_FAILURE;
-
-  size_t line_num = fileContents.size();
-  for (int i=0; i<line_num; i++)
-    {
-      CLine tmp_l;
-      tmp_l.id     = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_l.lid    = atoi((const char*)(fileContents[i][1].c_str()));
-      tmp_l.width  = atof((const char*)(fileContents[i][2].c_str()));
-      tmp_l.color  = fileContents[i][3].c_str()[0];
-      tmp_l.type   = atoi((const char*)(fileContents[i][4].c_str()));
-      tmp_l.linkid = atoi((const char*)(fileContents[i][5].c_str()));
-
-      //clines[tmp_l.id] = tmp_l;
-      clines.insert( std::map<int, CLine>::value_type(tmp_l.id, tmp_l) );
-    }
-
-  return EXIT_SUCCESS;
-}
-
-
-int VectorMap::load_dtlanes(char *name ) {
-
-  File_contents fileContents = read_csv(name);
-  if (fileContents.empty())
-    return EXIT_FAILURE;
-
-  size_t line_num = fileContents.size();
-  for (int i=0; i<line_num; i++)
-    {
-      DTLane tmp_a;
-      tmp_a.did   = atoi((const char*)(fileContents[i][0].c_str()));
-      tmp_a.dist  = atof((const char*)(fileContents[i][1].c_str()));
-      tmp_a.pid   = atoi((const char*)(fileContents[i][2].c_str()));
-      tmp_a.dir   = atof((const char*)(fileContents[i][3].c_str()));
-      tmp_a.apara = atof((const char*)(fileContents[i][4].c_str()));
-      tmp_a.r     = atof((const char*)(fileContents[i][5].c_str()));
-      tmp_a.slope = atof((const char*)(fileContents[i][6].c_str()));
-      tmp_a.cant  = atof((const char*)(fileContents[i][7].c_str()));
-      tmp_a.lw    = atof((const char*)(fileContents[i][8].c_str()));
-      tmp_a.rw    = atof((const char*)(fileContents[i][9].c_str()));
-
-      dtlanes.insert( std::map<int, DTLane>::value_type(tmp_a.did, tmp_a) );
-    }
-
-  return EXIT_SUCCESS;
-}
-
-
-void VectorMap::loadAll (const std::string &dirname)
+void VectorMap::load_lines(const map_file::LineClassArray& msg)
 {
-	if (loaded)
-		return;
+  for (const auto& line : msg.line_classes)
+    {
+      Line tmp;
+      tmp.lid  = line.lid;
+      tmp.bpid = line.bpid;
+      tmp.fpid = line.fpid;
+      tmp.blid = line.blid;
+      tmp.flid = line.flid;
 
-	string ptname = dirname + "/point.csv";
-	if (load_points((char*)ptname.c_str()) == EXIT_FAILURE) {
-      std::cerr << ptname << "\t load fail." << std::endl;
-      exit(EXIT_FAILURE);
+      lines.insert( std::map<int, Line>::value_type(tmp.lid, tmp) );
     }
-    std::cout << ptname << "\t load complete." << std::endl;
+  std::cout << "load lines complete." << std::endl;
+} /* void VectorMap::load_lines() */
 
-	string linename = dirname + "/line.csv";
-	if (load_lines ((char*)linename.c_str()) == EXIT_FAILURE) {
-      std::cerr << linename << "\t load fail." << std::endl;
-      exit(EXIT_FAILURE);
+
+void VectorMap::load_lanes(const map_file::LaneArray& msg)
+{
+  for (const auto& lane : msg.lanes)
+    {
+      Lane tmp;
+      tmp.lnid    = lane.lnid;
+      tmp.did     = lane.did;
+      tmp.blid    = lane.blid;
+      tmp.flid    = lane.flid;
+      tmp.bnid    = lane.bnid;
+      tmp.fnid    = lane.fnid;
+      tmp.jct     = lane.jct;
+      tmp.blid2   = lane.blid2;
+      tmp.blid3   = lane.blid3;
+      tmp.blid4   = lane.blid4;
+      tmp.flid2   = lane.flid2;
+      tmp.flid3   = lane.flid3;
+      tmp.flid4   = lane.flid4;
+      tmp.clossid = lane.clossid;
+      tmp.span    = lane.span;
+      tmp.lcnt    = lane.lcnt;
+      tmp.lno     = lane.lno;
+
+      lanes.insert( std::map<int, Lane>::value_type(tmp.lnid, tmp) );
     }
-    std::cout << linename << "\t load complete." << std::endl;
+  std::cout << "load lanes complete." << std::endl;
+} /* void VectorMap::load_lanes() */
 
-	string dtlanename = dirname + "/dtlane.csv";
-	if (load_dtlanes ((char*)dtlanename.c_str()) == EXIT_FAILURE) {
-      std::cerr << dtlanename << "\t load fail." << std::endl;
-      exit(EXIT_FAILURE);
+
+void VectorMap::load_vectors(const map_file::VectorClassArray& msg)
+{
+  for (const auto& vector : msg.vector_classes)
+    {
+      Vector tmp;
+      tmp.vid  = vector.vid;
+      tmp.pid  = vector.pid;
+      tmp.hang = vector.hang;
+      tmp.vang = vector.vang;
+
+      vectors.insert( std::map<int, Vector>::value_type(tmp.vid, tmp) );
     }
-    std::cout << dtlanename << "\t load complete." << std::endl;
+  std::cout << "load vectors complete. element num: " << vectors.size() << std::endl;
+} /* void VectorMap::load_vectors() */
 
-	//string clinename = dirname + "/cline.csv";
-    string clinename = dirname + "/whiteline.csv";
-	if (load_clines ((char*)clinename.c_str()) == EXIT_FAILURE) {
-      std::cerr << clinename << "\t load fail." << std::endl;
-      exit(EXIT_FAILURE);
+
+void VectorMap::load_signals(const map_file::SignalArray& msg)
+{
+  for (const auto& signal : msg.signals)
+    {
+      Signal tmp;
+      tmp.id     = signal.id;
+      tmp.vid    = signal.vid;
+      tmp.plid   = signal.plid;
+      tmp.type   = signal.type;
+      tmp.linkid = signal.linkid;
+
+      signals.insert( std::map<int, Signal>::value_type(tmp.id, tmp) );
     }
-    std::cout << clinename << "\t load complete." << std::endl;
+  std::cout << "load signals complete. element num: " << signals.size() << std::endl;
+} /* void VectorMap::load_signals() */
 
-	string vectorname = dirname + "/vector.csv";
-	if (load_vectors ((char*)vectorname.c_str()) == EXIT_FAILURE) {
-      std::cerr << vectorname << "\t load fail." << std::endl;
-      exit(EXIT_FAILURE);
+
+void VectorMap::load_whitelines(const map_file::WhiteLineArray& msg)
+{
+  for (const auto& white_line : msg.white_lines)
+    {
+      WhiteLine tmp;
+      tmp.id     = white_line.id;
+      tmp.lid    = white_line.lid;
+      tmp.width  = white_line.width;
+      tmp.color  = white_line.color;
+      tmp.type   = white_line.type;
+      tmp.linkid = white_line.linkid;
+
+      whitelines.insert( std::map<int, WhiteLine>::value_type(tmp.id, tmp) );
     }
-    std::cout << vectorname << "\t load complete." << std::endl;
+  std::cout << "load whitelines complete." << std::endl;
+} /* void VectorMap::load_whitelines() */
 
-	//string signalname = dirname + "/signal.csv";
-    string signalname = dirname + "/signaldata.csv";
-	if (load_signals ((char*)signalname.c_str()) == EXIT_FAILURE) {
-      std::cerr << signalname << "\t load fail." << std::endl;
-      exit(EXIT_FAILURE);
+
+void VectorMap::load_dtlanes(const map_file::DTLaneArray& msg)
+{
+  for (const auto& dtlane : msg.dtlanes)
+    {
+      DTLane tmp;
+      tmp.did   = dtlane.did;
+      tmp.dist  = dtlane.dist;
+      tmp.pid   = dtlane.pid;
+      tmp.dir   = dtlane.dir;
+      tmp.apara = dtlane.apara;
+      tmp.r     = dtlane.r;
+      tmp.slope = dtlane.slope;
+      tmp.cant  = dtlane.cant;
+      tmp.lw    = dtlane.lw;
+      tmp.rw    = dtlane.rw;
+
+      dtlanes.insert( std::map<int, DTLane>::value_type(tmp.did, tmp) );
     }
-    std::cout << signalname << "\t load complete." << std::endl;
+  std::cout << "load dtlanes complete." << std::endl;
+} /* void VectorMap::load_dtlanes() */
 
-	string lanename = dirname + "/lane.csv";
-	if (load_lanes ((char*)lanename.c_str()) == EXIT_FAILURE) {
-      std::cerr << lanename << "\t load fail." << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    std::cout << lanename << "\t load complete." << std::endl;
-
-	loaded = true;
-
-    std::cout << "all vecter maps loaded." << std::endl;
-}
