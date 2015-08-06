@@ -27,7 +27,7 @@ add_message_files(
   image_obj_tracked.msg
   image_rect.msg
   image_rect_ranged.msg
-  obj_pose.msg
+  obj_label.msg
 )
 
 generate_messages(
