@@ -5,6 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <sensor_msgs/Image.h>
+#include <calibration_camera_lidar/projection_matrix.h>
 
 static cv::Mat  CameraExtrinsicMat;
 static cv::Mat  CameraMat;
@@ -12,6 +13,7 @@ static cv::Mat  DistCoeff;
 static cv::Size ImageSize;
 
 static ros::Publisher camera_info_pub;
+static ros::Publisher projection_matrix_pub;
 
 void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 {
@@ -53,6 +55,21 @@ static void image_raw_cb(const sensor_msgs::Image& image_msg)
   /* create TF between velodyne and camera with time stamp of /image_raw */
   tfRegistration(CameraExtrinsicMat, timeStampOfImage);
 
+}
+
+void projectionMatrix_sender(const cv::Mat  &projMat)
+{
+	calibration_camera_lidar::projection_matrix projMsg;
+
+	projMsg.header.frame_id="camera";
+
+	for (int row=0; row<4; row++) {
+	      for (int col=0; col<4; col++) {
+	    	  	  projMsg.projection_matrix[row * 4 + col] = projMat.at<double>(row, col);
+
+	      }
+	}
+	projection_matrix_pub.publish(projMsg);
 }
 
 void cameraInfo_sender(const cv::Mat  &camMat,
@@ -98,7 +115,7 @@ int main(int argc, char* argv[])
   ros::NodeHandle n;
 
   camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10, true);
-
+  projection_matrix_pub = n.advertise<calibration_camera_lidar::projection_matrix>("/projection_matrix", 10, true);
   if (argc < 2)
     {
       std::cout << "Usage: calibration_publisher <calibration-file>." << std::endl;
@@ -120,6 +137,8 @@ int main(int argc, char* argv[])
   ros::Subscriber image_sub = n.subscribe("/image_raw", 10, image_raw_cb);
 
   cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
+
+  projectionMatrix_sender(CameraExtrinsicMat);
 
   ros::spin();
 

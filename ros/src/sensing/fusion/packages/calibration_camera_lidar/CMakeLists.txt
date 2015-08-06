@@ -16,6 +16,16 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
+add_message_files(
+  FILES
+  projection_matrix.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES camera
@@ -180,6 +190,10 @@ target_link_libraries(calibration_toolkit
 add_executable(calibration_publisher
   nodes/calibration_publisher/calibration_publisher.cpp
   )
+
+add_dependencies(calibration_publisher
+  calibration_camera_lidar_generate_messages_cpp
+)
 
 target_link_libraries(calibration_publisher
   ${catkin_LIBRARIES}
