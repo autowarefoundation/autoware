@@ -32,80 +32,98 @@
 
 #include <vmap_utility.hpp>
 
-int to_lane_index(const map_file::PointClass& point,
-		  const std::vector<map_file::Node>& nodes,
-		  const std::vector<map_file::Lane>& lanes)
+map_file::Lane vmap_find_lane(const VectorMap& vmap, const map_file::PointClass& point)
 {
-	for (const map_file::Node& node : nodes) {
-		if (node.pid != point.pid)
+	map_file::Lane error;
+	error.lnid = -1;
+
+	for (const map_file::Node& n : vmap.nodes) {
+		if (n.pid != point.pid)
 			continue;
-		for (int i = 0; i < static_cast<int>(lanes.size()); i++) {
-			if (lanes[i].bnid != node.nid)
+		for (const map_file::Lane& l : vmap.lanes) {
+			if (l.bnid != n.nid)
 				continue;
-			return i;
+			return l;
 		}
 	}
 
-	return -1;
+	return error;
 }
 
-int to_next_lane_index(const map_file::Lane& lane,
-		       const std::vector<map_file::Lane>& lanes)
+map_file::Lane vmap_find_prev_lane(const VectorMap& vmap, const map_file::Lane& lane)
 {
-	for (int i = 0; i < static_cast<int>(lanes.size()); i++) {
-		if (lanes[i].lnid != lane.flid)
+	map_file::Lane error;
+	error.lnid = -1;
+
+	for (const map_file::Lane& l : vmap.lanes) {
+		if (l.lnid != lane.blid)
 			continue;
-		return i;
+		return l;
 	}
 
-	return -1;
+	return error;
 }
 
-int to_beginning_point_index(const map_file::Lane& lane,
-			     const std::vector<map_file::Node>& nodes,
-			     const std::vector<map_file::PointClass>& points)
+map_file::Lane vmap_find_next_lane(const VectorMap& vmap, const map_file::Lane& lane)
 {
-	for (const map_file::Node& node : nodes) {
-		if (node.nid != lane.bnid)
+	map_file::Lane error;
+	error.lnid = -1;
+
+	for (const map_file::Lane& l : vmap.lanes) {
+		if (l.lnid != lane.flid)
 			continue;
-		for (int i = 0; i < static_cast<int>(points.size()); i++) {
-			if (points[i].pid != node.pid)
+		return l;
+	}
+
+	return error;
+}
+
+map_file::PointClass vmap_find_start_point(const VectorMap& vmap, const map_file::Lane& lane)
+{
+	map_file::PointClass error;
+	error.pid = -1;
+
+	for (const map_file::Node& n : vmap.nodes) {
+		if (n.nid != lane.bnid)
+			continue;
+		for (const map_file::PointClass& p : vmap.points) {
+			if (p.pid != n.pid)
 				continue;
-			return i;
+			return p;
 		}
 	}
 
-	return -1;
+	return error;
 }
 
-int to_finishing_point_index(const map_file::Lane& lane,
-			     const std::vector<map_file::Node>& nodes,
-			     const std::vector<map_file::PointClass>& points)
+map_file::PointClass vmap_find_end_point(const VectorMap& vmap, const map_file::Lane& lane)
 {
-	for (const map_file::Node& node : nodes) {
-		if (node.nid != lane.fnid)
+	map_file::PointClass error;
+	error.pid = -1;
+
+	for (const map_file::Node& n : vmap.nodes) {
+		if (n.nid != lane.fnid)
 			continue;
-		for (int i = 0; i < static_cast<int>(points.size()); i++) {
-			if (points[i].pid != node.pid)
+		for (const map_file::PointClass& p : vmap.points) {
+			if (p.pid != n.pid)
 				continue;
-			return i;
+			return p;
 		}
 	}
 
-	return -1;
+	return error;
 }
 
-map_file::PointClass
-search_nearest(const std::vector<map_file::PointClass>& points,
-	       double x, double y)
+map_file::PointClass vmap_find_nearest_point(const VectorMap& vmap, double x, double y)
 {
-	map_file::PointClass nearest_point = points[0];
-	double min = hypot(x - points[0].bx, y - points[0].ly);
-	for (const map_file::PointClass& point : points) {
-		double distance = hypot(x - point.bx, y - point.ly);
+	map_file::PointClass nearest_point = vmap.points[0];
+
+	double min = hypot(x - nearest_point.bx, y - nearest_point.ly);
+	for (const map_file::PointClass& p : vmap.points) {
+		double distance = hypot(x - p.bx, y - p.ly);
 		if (distance < min) {
 			min = distance;
-			nearest_point = point;
+			nearest_point = p;
 		}
 	}
 
