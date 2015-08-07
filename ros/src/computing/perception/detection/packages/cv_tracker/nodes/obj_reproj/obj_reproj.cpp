@@ -65,6 +65,7 @@
 #include "geo_pos_conv.hh"
 #include "CalObjLoc.h"
 #include "cv_tracker/obj_label.h"
+#include "calibration_camera_lidar/projection_matrix.h"
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
@@ -96,6 +97,7 @@ static vector<OBJPOS> global_cp_vector;
 //flag for comfirming whether updating position or not
 static bool gnssGetFlag;
 static bool ndtGetFlag;
+static bool ready_;
 
 //store own position and direction now.updated by position_getter
 static LOCATION gnss_loc;
@@ -121,6 +123,16 @@ static void printDiff(struct timeval begin, struct timeval end){
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
 #endif
+
+static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
+{
+	for (int row=0; row<4; row++) {
+		for (int col=0; col<4; col++) {
+			cameraMatrix[row][col] = msg.projection_matrix[row * 4 + col];
+		}
+	}
+	ready_ = true;
+}
 
 void GetRPY(const geometry_msgs::Pose &pose,
 	    double &roll,
@@ -233,6 +245,9 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
 
 static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objects)
 {
+	if (!ready_)
+		return;
+
   vector<OBJPOS> cp_vector;
   OBJPOS cp;
   
@@ -299,6 +314,8 @@ int main(int argc, char **argv){
   ros::init(argc ,argv, "car_locate") ;  
   cout << "car_locate" << endl;
 
+  ready_ = false;
+
   /**
    * NodeHandle is the main access point to communications with the ROS system.
    * The first NodeHandle constructed will fully initialize this node, and the last
@@ -318,6 +335,8 @@ int main(int argc, char **argv){
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
   pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
+
+  ros::Subscriber projection = n.subscribe("projection_matrix", 1, projection_callback);
 
   /*
   //read calibration value
@@ -346,8 +365,7 @@ int main(int argc, char **argv){
   double Ox = 440.017336;
   double Oy = 335.274106;
 
-  cv::Mat Lintrinsic;
-  std::string lidar_3d_yaml = "";
+/*  std::string lidar_3d_yaml = "";
 
   if (private_nh.getParam("lidar_3d_yaml", lidar_3d_yaml) == false) {
       std::cerr << "error! usage : rosrun  cv_tracker obj_reproj _lidar_3d_yaml:=[file]" << std::endl;
@@ -361,12 +379,9 @@ int main(int argc, char **argv){
   }
   lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic; 
   lidar_3d_file.release(); 
+*/
 
-  for(int i=0; i<4 ; i++){
-    for(int j=0; j<4 ; j++){
-      cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
-    }
-  }
+
 
   /*
   double fkx = 5.83199829e+02;
