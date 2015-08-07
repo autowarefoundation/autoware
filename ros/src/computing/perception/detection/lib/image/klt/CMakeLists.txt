@@ -34,6 +34,7 @@ include_directories(src)
 ## Declare a cpp library
 add_library(klt
    src/klt.cpp
+   include/LkTracker.cpp
 )
 
 target_link_libraries(klt
@@ -41,4 +42,4 @@ target_link_libraries(klt
   ${OpenCV_LIBS}
 )
 
-add_dependencies(klt runtime_manager_generate_messages_cpp  cv_tracker_generate_messages_cpp)
+add_dependencies(klt runtime_manager_generate_messages_cpp cv_tracker_generate_messages_cpp)
