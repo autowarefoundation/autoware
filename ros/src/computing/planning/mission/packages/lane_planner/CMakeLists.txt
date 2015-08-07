@@ -4,8 +4,6 @@ project(lane_planner)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  nav_msgs
-  visualization_msgs
   tablet_socket
   waypoint_follower
   runtime_manager
@@ -35,6 +33,7 @@ add_dependencies(vmap_utility
 add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
 target_link_libraries(lane_navi vmap_utility gnss ${catkin_LIBRARIES})
 add_dependencies(lane_navi
+  waypoint_follower_generate_messages_cpp
   tablet_socket_generate_messages_cpp
   map_file_generate_messages_cpp
 )
