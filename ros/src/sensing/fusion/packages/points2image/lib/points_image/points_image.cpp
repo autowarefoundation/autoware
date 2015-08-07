@@ -118,7 +118,7 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	return msg;
 }
 
-points2image::CameraExtrinsic
+/*points2image::CameraExtrinsic
 pointcloud2_to_3d_calibration(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 			      const cv::Mat& cameraExtrinsicMat)
 {
@@ -133,3 +133,4 @@ pointcloud2_to_3d_calibration(const sensor_msgs::PointCloud2ConstPtr& pointcloud
 	msg.calibration = cali;
 	return msg;
 }
+*/
