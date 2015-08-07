@@ -34,7 +34,6 @@
 #include <opencv2/opencv.hpp>
 #include <sensor_msgs/PointCloud2.h>
 #include "points2image/PointsImage.h"
-#include "points2image/CameraExtrinsic.h"
 
 points2image::PointsImage
 pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointclound2,
@@ -42,8 +41,8 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointclound2,
 		     const cv::Mat& cameraMat, const cv::Mat& distCoeff,
 		     const cv::Size& imageSize);
 
-points2image::CameraExtrinsic
+/*points2image::CameraExtrinsic
 pointcloud2_to_3d_calibration(const sensor_msgs::PointCloud2ConstPtr& pointclound2,
 			      const cv::Mat& cameraExtrinsicMat);
-
+*/
 #endif /* _POINTS_IMAGE_H_ */
