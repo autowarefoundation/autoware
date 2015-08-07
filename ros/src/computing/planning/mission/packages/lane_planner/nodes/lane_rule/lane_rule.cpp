@@ -28,188 +28,152 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <fstream>
-
 #include <ros/ros.h>
 #include <ros/console.h>
 
-#include <nav_msgs/Path.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <waypoint_follower/lane.h>
 #include <runtime_manager/ConfigLaneRule.h>
 
 #include <vmap_utility.hpp>
 
-static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
+static double config_acceleration = 1; // m/s^2
+static int config_number_of_zeros = 1;
 
-static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
-static constexpr bool ADVERTISE_LATCH = true;
-
-static constexpr int PRECISION = 6;
-static constexpr double ACCIDENT_ERROR = 0.000001;
-
-static const std::string RULED_WAYPOINT_CSV = "/tmp/ruled_waypoint.csv";
-
-static double config_velocity = 40; // Unit: km/h
-static double config_difference_around_signal = 2; // Unit: km/h
-static int32_t config_number_of_zeros = 1;
-
-static ros::Publisher pub_velocity;
-static ros::Publisher pub_ruled;
+static ros::Publisher pub_traffic;
 static ros::Publisher pub_red;
 static ros::Publisher pub_green;
 
-static std::vector<map_file::Lane> lanes;
-static std::vector<map_file::Node> nodes;
-static std::vector<map_file::PointClass> points;
-static std::vector<map_file::StopLine> stoplines;
+static VectorMap vmap_all;
+static VectorMap vmap_left_lane;
 
-static std::vector<map_file::PointClass> left_lane_points;
+static int sub_vmap_queue_size;
+static int sub_waypoint_queue_size;
+static int sub_config_queue_size;
+static int pub_waypoint_queue_size;
+static bool pub_waypoint_latch;
 
-static int waypoint_count;
-
-static std::string ruled_waypoint_csv;
-
-static void update_left_lane()
+static void cache_left_lane()
 {
-	if (lanes.empty() || nodes.empty() || points.empty())
+	if (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty())
 		return;
 
-	for (const map_file::Lane& lane : lanes) {
-		if (lane.lno != 1) // leftmost lane
+	for (const map_file::Lane& l : vmap_all.lanes) {
+		if (l.lno != 1)	// leftmost lane
 			continue;
-		for (const map_file::Node& node : nodes) {
-			if (node.nid != lane.bnid &&
-			    node.nid != lane.fnid)
+		vmap_left_lane.lanes.push_back(l);
+		for (const map_file::Node& n : vmap_all.nodes) {
+			if (n.nid != l.bnid && n.nid != l.fnid)
 				continue;
-			for (const map_file::PointClass& point : points) {
-				if (point.pid != node.pid)
+			vmap_left_lane.nodes.push_back(n);
+			for (const map_file::PointClass& p : vmap_all.points) {
+				if (p.pid != n.pid)
 					continue;
-				left_lane_points.push_back(point);
+				vmap_left_lane.points.push_back(p);
 			}
 		}
 	}
 }
 
-static void lane_callback(const map_file::LaneArray& msg)
+static void cache_lane(const map_file::LaneArray& msg)
 {
-	lanes = msg.lanes;
-	update_left_lane();
+	vmap_all.lanes = msg.lanes;
+	cache_left_lane();
 }
 
-static void node_callback(const map_file::NodeArray& msg)
+static void cache_node(const map_file::NodeArray& msg)
 {
-	nodes = msg.nodes;
-	update_left_lane();
+	vmap_all.nodes = msg.nodes;
+	cache_left_lane();
 }
 
-static void point_class_callback(const map_file::PointClassArray& msg)
+static void cache_point(const map_file::PointClassArray& msg)
 {
-	points = msg.point_classes;
-	update_left_lane();
+	vmap_all.points = msg.point_classes;
+	cache_left_lane();
 }
 
-static void stop_line_callback(const map_file::StopLineArray& msg)
+static void cache_stopline(const map_file::StopLineArray& msg)
 {
-	stoplines = msg.stop_lines;
+	vmap_all.stoplines = msg.stop_lines;
 }
 
-static void config_callback(const runtime_manager::ConfigLaneRule& msg)
+static void config_rule(const runtime_manager::ConfigLaneRule& msg)
 {
-	config_velocity = msg.velocity;
-	config_difference_around_signal = msg.difference_around_signal;
+	config_acceleration = msg.acceleration;
 	config_number_of_zeros = msg.number_of_zeros;
 }
 
-static std::vector<map_file::PointClass>
-search_stopline_point(const nav_msgs::Path& msg)
+static std::vector<map_file::PointClass> search_stopline_point(const waypoint_follower::lane& msg)
 {
 	std::vector<map_file::PointClass> stopline_points;
 
-	// msg's X-Y axis is reversed
-	map_file::PointClass start_point = search_nearest(
-		left_lane_points,
-		msg.poses.front().pose.position.y,
-		msg.poses.front().pose.position.x);
+	map_file::PointClass start_point = vmap_find_nearest_point(vmap_left_lane,
+								   msg.waypoints.front().pose.pose.position.x,
+								   msg.waypoints.front().pose.pose.position.y);
+	map_file::PointClass end_point = vmap_find_nearest_point(vmap_left_lane,
+								 msg.waypoints.back().pose.pose.position.x,
+								 msg.waypoints.back().pose.pose.position.y);
 
-	// msg's X-Y axis is reversed
-	map_file::PointClass end_point = search_nearest(
-		left_lane_points,
-		msg.poses.back().pose.position.y,
-		msg.poses.back().pose.position.x);
-
-	int lane_index = to_lane_index(start_point, nodes, lanes);
-	if (lane_index < 0) {
-		ROS_ERROR("start lane is not found");
+	map_file::PointClass point = start_point;
+	map_file::Lane lane = vmap_find_lane(vmap_left_lane, point);
+	if (lane.lnid < 0) {
+		ROS_ERROR("no start lane");
 		return stopline_points;
 	}
-	map_file::Lane lane = lanes[lane_index];
 
-	int point_index = to_beginning_point_index(lane, nodes, points);
-	if (point_index < 0) {
-		ROS_ERROR("start beginning point is not found");
-		return stopline_points;
-	}
-	map_file::PointClass point = points[point_index];
-
-	while (1) {
-		for (const map_file::StopLine& stopline : stoplines) {
-			if (stopline.linkid == lane.lnid)
+	bool finish = false;
+	for (size_t i = 0; i < std::numeric_limits<std::size_t>::max(); ++i) {
+		for (const map_file::StopLine& s : vmap_all.stoplines) {
+			if (s.linkid == lane.lnid)
 				stopline_points.push_back(point);
 		}
 
-		point_index = to_finishing_point_index(lane, nodes, points);
-		if (point_index < 0) {
-			ROS_ERROR("finishing point is not found");
-			return stopline_points;
-		}
-		point = points[point_index];
+		if (finish)
+			break;
 
-		if (point.bx == end_point.bx &&
-		    point.ly == end_point.ly) {
-			for (const map_file::StopLine& stopline : stoplines) {
-				if (stopline.linkid == lane.lnid)
-					stopline_points.push_back(point);
-			}
-
+		point = vmap_find_end_point(vmap_left_lane, lane);
+		if (point.pid < 0) {
+			ROS_ERROR("no end point");
 			return stopline_points;
 		}
 
-		lane_index = to_next_lane_index(lane, lanes);
-		if (lane_index < 0) {
-			ROS_ERROR("next lane is not found");
-			return stopline_points;
+		if (point.bx == end_point.bx && point.ly == end_point.ly) {
+			finish = true;
+			continue;
 		}
-		lane = lanes[lane_index];
 
-		point_index = to_beginning_point_index(lane, nodes, points);
-		if (point_index < 0) {
-			ROS_ERROR("beginning point is not found");
+		lane = vmap_find_next_lane(vmap_left_lane, lane);
+		if (lane.lnid < 0) {
+			ROS_ERROR("no next lane");
 			return stopline_points;
 		}
-		point = points[point_index];
+
+		point = vmap_find_start_point(vmap_left_lane, lane);
+		if (point.pid < 0) {
+			ROS_ERROR("no start point");
+			return stopline_points;
+		}
 	}
+	if (!finish)
+		ROS_ERROR("miss finish");
+
+	return stopline_points;
 }
 
-static std::vector<int> search_stopline_index(const nav_msgs::Path& msg)
+static std::vector<size_t> search_stopline_index(const waypoint_follower::lane& msg)
 {
-	std::vector<int> indexes;
+	std::vector<size_t> indexes;
 
-	std::vector<map_file::PointClass> stopline_points =
-		search_stopline_point(msg);
-	for (const map_file::PointClass& point : stopline_points) {
-		int i = 0;
+	std::vector<map_file::PointClass> stopline_points = search_stopline_point(msg);
+	for (const map_file::PointClass& p : stopline_points) {
+		size_t i = 0;
 
-		// msg's X-Y axis is reversed
-		double min = hypot(point.bx - msg.poses[0].pose.position.y,
-				   point.ly - msg.poses[0].pose.position.x);
-		int index = i;
-		for (const geometry_msgs::PoseStamped& stamped : msg.poses) {
-			// msg's X-Y axis is reversed
-			double distance = hypot(
-				point.bx - stamped.pose.position.y,
-				point.ly - stamped.pose.position.x);
+		double min = hypot(p.bx - msg.waypoints[0].pose.pose.position.x,
+				   p.ly - msg.waypoints[0].pose.pose.position.y);
+		size_t index = i;
+		for (const waypoint_follower::waypoint& w : msg.waypoints) {
+			double distance = hypot(p.bx - w.pose.pose.position.x,
+						p.ly - w.pose.pose.position.y);
 			if (distance < min) {
 				min = distance;
 				index = i;
@@ -223,154 +187,52 @@ static std::vector<int> search_stopline_index(const nav_msgs::Path& msg)
 	return indexes;
 }
 
-static std::vector<double> compute_velocity(const nav_msgs::Path& msg,
-					    double velocity, double difference,
-					    int nzeros)
+static std::vector<double> compute_velocity(const waypoint_follower::lane& msg, double acceleration, int nzeros)
 {
 	std::vector<double> computations;
-	int loops = msg.poses.size();
 
-	std::vector<int> indexes = search_stopline_index(msg);
-
-	if (indexes.empty() || difference < ACCIDENT_ERROR) {
-		ROS_WARN_COND(difference < ACCIDENT_ERROR,
-			      "too small difference");
-		for (int i = 0; i < loops; ++i)
-			computations.push_back(velocity);
+	std::vector<size_t> indexes = search_stopline_index(msg);
+	if (indexes.empty()) {
+		for (const waypoint_follower::waypoint& w : msg.waypoints)
+			computations.push_back(w.twist.twist.linear.x);
 		return computations;
 	}
 
-	int npaths = static_cast<int>(velocity / difference);
-
-	std::vector<int>::const_iterator iter = indexes.cbegin();
-	int start = *iter - npaths - (nzeros - 1);
-	int end = *iter + npaths;
-	for (int i = 0; i < loops; ++i) {
-		double vel;
-		if (i <= start)
-			vel = velocity;
-		else if (i <= (*iter - nzeros))
-			vel = velocity - (difference * (i - start));
-		else if (i <= *iter)
-			vel = 0;
-		else if (i <= (end - 1))
-			vel = velocity - (difference * (end - i));
-		else {
-			vel = velocity;
-			if ((iter + 1) != indexes.cend()) {
-				++iter;
-				start = *iter - npaths - (nzeros - 1);
-				end = *iter + npaths;
-			}
-		}
-
-		computations.push_back(vel);
-	}
+	// XXX no implementation of handling acceleration
 
 	return computations;
 }
 
-static void write_waypoint(const geometry_msgs::Point& point, double velocity,
-			   const char *filename, bool first)
-{
-	if (first) {
-		std::ofstream ofs(filename);
-		ofs << std::fixed << std::setprecision(PRECISION) << point.x
-		    << ","
-		    << std::fixed << std::setprecision(PRECISION) << point.y
-		    << ","
-		    << std::fixed << std::setprecision(PRECISION) << point.z
-		    << std::endl;
-	} else {
-		std::ofstream ofs(filename, std::ios_base::app);
-		ofs << std::fixed << std::setprecision(PRECISION) << point.x
-		    << ","
-		    << std::fixed << std::setprecision(PRECISION) << point.y
-		    << ","
-		    << std::fixed << std::setprecision(PRECISION) << point.z
-		    << ","
-		    << std::fixed << std::setprecision(PRECISION) << velocity
-		    << std::endl;
-	}
-}
-
-static void lane_waypoint_callback(const nav_msgs::Path& msg)
+static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 {
 	std_msgs::Header header;
 	header.stamp = ros::Time::now();
 	header.frame_id = "/map";
-
-	visualization_msgs::MarkerArray velocities;
-	visualization_msgs::Marker velocity;
-	velocity.header = header;
-	velocity.ns = "waypoint_velocity";
-
-	if (waypoint_count > 0) {
-		velocity.action = visualization_msgs::Marker::DELETE;
-		for (int i = 0; i < waypoint_count; ++i) {
-			velocity.id = i;
-			velocities.markers.push_back(velocity);
-		}
-		pub_velocity.publish(velocities);
-	}
-
-	velocity.action = visualization_msgs::Marker::ADD;
-	velocity.lifetime = ros::Duration();
-	velocity.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-	velocity.scale.z = 0.4;
-	velocity.color.r = 1;
-	velocity.color.a = 1;
-
-	waypoint_follower::lane ruled;
-	ruled.header = header;
-	ruled.increment = 1;
-
+	waypoint_follower::lane green;
+	green.header = header;
+	green.increment = 1;
 	waypoint_follower::lane red;
 	red.header = header;
 	red.increment = 1;
-
 	waypoint_follower::waypoint waypoint;
 	waypoint.pose.header = header;
 	waypoint.twist.header = header;
 	waypoint.pose.pose.orientation.w = 1;
 
-	std::vector<double> computations = compute_velocity(
-		msg,
-		config_velocity,
-		config_difference_around_signal,
-		config_number_of_zeros);
+	std::vector<double> computations = compute_velocity(msg, config_acceleration, config_number_of_zeros);
 
-	waypoint_count = msg.poses.size();
-	for (int i = 0; i < waypoint_count; ++i) {
-		velocity.id = i;
-		velocity.pose.position = msg.poses[i].pose.position;
-		velocity.pose.position.z += 0.2; // more visible
-
-		std::ostringstream ostr;
-		ostr << std::fixed << std::setprecision(0) << config_velocity
-		     << " km/h";
-		velocity.text = ostr.str();
-
-		velocities.markers.push_back(velocity);
-
-		waypoint.pose.pose.position = msg.poses[i].pose.position;
-
-		waypoint.twist.twist.linear.x =
-			config_velocity / 3.6; // to m/s
-		ruled.waypoints.push_back(waypoint);
-
-		write_waypoint(waypoint.pose.pose.position, config_velocity,
-			       ruled_waypoint_csv.c_str(), (i == 0));
-
-		waypoint.twist.twist.linear.x =
-			computations[i] / 3.6; // to m/s
+	size_t loops = msg.waypoints.size();
+	for (size_t i = 0; i < loops; ++i) {
+		waypoint.pose.pose = msg.waypoints[i].pose.pose;
+		waypoint.twist.twist = msg.waypoints[i].twist.twist;
+		green.waypoints.push_back(waypoint);
+		waypoint.twist.twist.linear.x = computations[i];
 		red.waypoints.push_back(waypoint);
 	}
 
-	pub_velocity.publish(velocities);
-	pub_ruled.publish(ruled);
+	pub_traffic.publish(green);
+	pub_green.publish(green);
 	pub_red.publish(red);
-	pub_green.publish(ruled);
 }
 
 int main(int argc, char **argv)
@@ -378,54 +240,31 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "lane_rule");
 
 	ros::NodeHandle n;
-	n.param<std::string>("lane_rule/ruled_waypoint_csv",
-			     ruled_waypoint_csv, RULED_WAYPOINT_CSV);
+	n.param<int>("/lane_navi/sub_vmap_queue_size", sub_vmap_queue_size, 1);
+	n.param<int>("/lane_navi/sub_waypoint_queue_size", sub_waypoint_queue_size, 1);
+	n.param<int>("/lane_navi/sub_config_queue_size", sub_config_queue_size, 1);
+	n.param<int>("/lane_navi/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
+	n.param<bool>("/lane_navi/pub_waypoint_latch", pub_waypoint_latch, true);
 
-	ros::Subscriber sub_lane = n.subscribe("vector_map_info/lane",
-					       SUBSCRIBE_QUEUE_SIZE,
-					       lane_callback);
-	ros::Subscriber sub_node = n.subscribe("vector_map_info/node",
-					       SUBSCRIBE_QUEUE_SIZE,
-					       node_callback);
-	ros::Subscriber sub_point_class = n.subscribe(
-		"vector_map_info/point_class",
-		SUBSCRIBE_QUEUE_SIZE,
-		point_class_callback);
-	ros::Subscriber sub_stop_line = n.subscribe(
-		"vector_map_info/stop_line",
-		SUBSCRIBE_QUEUE_SIZE,
-		stop_line_callback);
-
+	ros::Subscriber sub_lane = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
+	ros::Subscriber sub_node = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
+	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
+	ros::Subscriber sub_stopline = n.subscribe("/vector_map_info/stop_line", sub_vmap_queue_size, cache_stopline);
 	ros::Rate rate(1);
-	while (lanes.empty() || nodes.empty() || points.empty() ||
-	       stoplines.empty()) {
+	while (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty() ||
+	       vmap_all.stoplines.empty()) {
 		ros::spinOnce();
 		rate.sleep();
 	}
+	ros::Subscriber sub_waypoint = n.subscribe("/lane_waypoint", sub_waypoint_queue_size, create_traffic_waypoint);
+	ros::Subscriber sub_config = n.subscribe("/config/lane_rule", sub_config_queue_size, config_rule);
 
-	ros::Subscriber sub_config = n.subscribe("config/lane_rule",
-						 SUBSCRIBE_QUEUE_SIZE,
-						 config_callback);
-	ros::Subscriber sub_waypoint = n.subscribe("lane_waypoint",
-						   SUBSCRIBE_QUEUE_SIZE,
-						   lane_waypoint_callback);
-
-	pub_velocity = n.advertise<visualization_msgs::MarkerArray>(
-		"waypoint_velocity",
-		ADVERTISE_QUEUE_SIZE,
-		ADVERTISE_LATCH);
-	pub_ruled = n.advertise<waypoint_follower::lane>(
-		"traffic_waypoint",
-		ADVERTISE_QUEUE_SIZE,
-		ADVERTISE_LATCH);
-	pub_red = n.advertise<waypoint_follower::lane>(
-		"red_waypoint",
-		ADVERTISE_QUEUE_SIZE,
-		ADVERTISE_LATCH);
-	pub_green = n.advertise<waypoint_follower::lane>(
-		"green_waypoint",
-		ADVERTISE_QUEUE_SIZE,
-		ADVERTISE_LATCH);
+	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoint", pub_waypoint_queue_size,
+							   pub_waypoint_latch);
+	pub_red = n.advertise<waypoint_follower::lane>("/red_waypoint", pub_waypoint_queue_size,
+						       pub_waypoint_latch);
+	pub_green = n.advertise<waypoint_follower::lane>("/green_waypoint", pub_waypoint_queue_size,
+							 pub_waypoint_latch);
 
 	ros::spin();
 

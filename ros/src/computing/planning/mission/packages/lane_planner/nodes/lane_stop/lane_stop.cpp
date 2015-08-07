@@ -31,57 +31,51 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <waypoint_follower/lane.h>
 #include <runtime_manager/traffic_light.h>
 
+static constexpr int TRAFFIC_LIGHT_RED = 0;
+static constexpr int TRAFFIC_LIGHT_GREEN = 1;
+static constexpr int TRAFFIC_LIGHT_UNKNOWN = 2;
 
-static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
+static ros::Publisher pub_traffic;
 
-static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1000;
-static constexpr bool ADVERTISE_LATCH = true;
-
-static constexpr int32_t TRAFFIC_LIGHT_RED     = 0;
-static constexpr int32_t TRAFFIC_LIGHT_GREEN   = 1;
-static constexpr int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
-
-static ros::Publisher pub_ruled;
+static int sub_waypoint_queue_size;
+static int sub_light_queue_size;
+static int pub_waypoint_queue_size;
+static bool pub_waypoint_latch;
 
 static waypoint_follower::lane current_red_lane;
 static waypoint_follower::lane current_green_lane;
 
-static void red_waypoint_callback(const waypoint_follower::lane& msg)
+static const waypoint_follower::lane *previous_lane = &current_red_lane;
+
+static void cache_red_lane(const waypoint_follower::lane& msg)
 {
 	current_red_lane = msg;
 }
 
-static void green_waypoint_callback(const waypoint_follower::lane& msg)
+static void cache_green_lane(const waypoint_follower::lane& msg)
 {
 	current_green_lane = msg;
 }
 
-static void traffic_light_callback(const runtime_manager::traffic_light& msg)
+static void select_current_lane(const runtime_manager::traffic_light& msg)
 {
-	const  waypoint_follower::lane *current;
-	static waypoint_follower::lane prev_path = current_red_lane;
-	static int signal;
-	static int prev_signal;
+	const waypoint_follower::lane *current;
+
 	switch (msg.traffic_light) {
 	case TRAFFIC_LIGHT_RED:
 		current = &current_red_lane;
-		signal = TRAFFIC_LIGHT_RED;
 		break;
 	case TRAFFIC_LIGHT_GREEN:
 		current = &current_green_lane;
-		signal = TRAFFIC_LIGHT_GREEN;
 		break;
 	case TRAFFIC_LIGHT_UNKNOWN:
-        current = &prev_path;     // if traffic light state is unknown, keep previous state
-        signal = prev_signal;;
+		current = previous_lane; // if traffic light state is unknown, keep previous state
 		break;
 	default:
-		ROS_ERROR("unknown traffic_light");
+		ROS_ERROR("undefined traffic_light");
 		return;
 	}
 
@@ -90,9 +84,9 @@ static void traffic_light_callback(const runtime_manager::traffic_light& msg)
 		return;
 	}
 
-	pub_ruled.publish(*current);
-    prev_path = *current;
-    prev_signal = signal;
+	pub_traffic.publish(*current);
+
+	previous_lane = current;
 }
 
 int main(int argc, char **argv)
@@ -100,21 +94,17 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "lane_stop");
 
 	ros::NodeHandle n;
+	n.param<int>("/lane_stop/sub_waypoint_queue_size", sub_waypoint_queue_size, 1);
+	n.param<int>("/lane_stop/sub_light_queue_size", sub_light_queue_size, 1);
+	n.param<int>("/lane_stop/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
+	n.param<bool>("/lane_stop/pub_waypoint_latch", pub_waypoint_latch, true);
 
-	ros::Subscriber sub_red = n.subscribe("red_waypoint",
-					      SUBSCRIBE_QUEUE_SIZE,
-					      red_waypoint_callback);
-	ros::Subscriber sub_green = n.subscribe("green_waypoint",
-						SUBSCRIBE_QUEUE_SIZE,
-						green_waypoint_callback);
-	ros::Subscriber sub_light = n.subscribe("traffic_light",
-						SUBSCRIBE_QUEUE_SIZE,
-						traffic_light_callback);
+	ros::Subscriber sub_red = n.subscribe("/red_waypoint", sub_waypoint_queue_size, cache_red_lane);
+	ros::Subscriber sub_green = n.subscribe("/green_waypoint", sub_waypoint_queue_size, cache_green_lane);
+	ros::Subscriber sub_light = n.subscribe("/traffic_light", sub_light_queue_size, select_current_lane);
 
-	pub_ruled = n.advertise<waypoint_follower::lane>(
-		"traffic_waypoint",
-		ADVERTISE_QUEUE_SIZE,
-		ADVERTISE_LATCH);
+	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoint", pub_waypoint_queue_size,
+							   pub_waypoint_latch);
 
 	ros::spin();
 
