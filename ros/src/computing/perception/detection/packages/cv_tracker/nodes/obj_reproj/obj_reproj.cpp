@@ -64,7 +64,7 @@
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
 #include "CalObjLoc.h"
-//#include "car_detector/CarPose.h"
+#include "cv_tracker/obj_label.h"
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
@@ -112,6 +112,8 @@ static double cameraMatrix[4][4] = {
 
 static ros::Publisher pub;
 
+static std::string object_type;
+
 #ifdef NEVER // XXX No one calls this functions
 static void printDiff(struct timeval begin, struct timeval end){
   long diff;
@@ -138,12 +140,10 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
                              vector<OBJPOS>::iterator cp_iterator,
                              LOCATION mloc,
                              ANGLE angle,
-                             //geometry_msgs::PoseArray &pose)
-                             visualization_msgs::MarkerArray& pose)
+                             cv_tracker::obj_label& send_data)
 {
   LOCATION rescoord;
-  //geometry_msgs::Pose tmpPose;
-  visualization_msgs::Marker tmpPose;
+  geometry_msgs::Point tmpPoint;
 
   for(uint i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
@@ -172,51 +172,17 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
     rescoord.Y = anglefixed.Y;
     rescoord.Z = anglefixed.Z;
 
-    //add plane rectangular coordinate to that of target car.
+    //add plane rectangular coordinate to that of target object.
     rescoord.X += mloc.X;
     rescoord.Y += mloc.Y;
     rescoord.Z += mloc.Z;
 
-    // tmpPose.position.x = rescoord.X;
-    // tmpPose.position.y = rescoord.Y;
-    // tmpPose.position.z = rescoord.Z;
-    // pose.poses.push_back(tmpPose);
+    /* Set the position of this object */
+    tmpPoint.x = rescoord.X;
+    tmpPoint.y = rescoord.Y;
+    tmpPoint.z = rescoord.Z;
 
-    /* Publish as ROS Marker*/
-    /* Set frame ID */
-    tmpPose.header.frame_id = "map";
-
-    /* Set the namespace and id for this marker */
-    tmpPose.ns = "car_location" + std::to_string(i);
-    tmpPose.id = i;             // is this OK?
-
-    /* Set the marker type */
-    tmpPose.type = visualization_msgs::Marker::CUBE;
-
-    /* Set the pose of the marker */
-    tmpPose.pose.position.x = rescoord.X;
-    tmpPose.pose.position.y = rescoord.Y;
-    tmpPose.pose.position.z = rescoord.Z;
-    /* orientation is set zero temporarily because 3 dimensional car orientation is not available now */
-    tmpPose.pose.orientation.x = 0.0;
-    tmpPose.pose.orientation.y = 0.0;
-    tmpPose.pose.orientation.z = 0.0;
-    tmpPose.pose.orientation.w = 0.0;
-
-    /* Set the scale of the marker -- temporary assume car size as 1.5m cube */
-    tmpPose.scale.x = 1.5f;
-    tmpPose.scale.y = 1.5f;
-    tmpPose.scale.z = 1.5f;
-
-    /* Set the color */
-    tmpPose.color.r = 0;
-    tmpPose.color.g = 25;
-    tmpPose.color.b = 255;
-    tmpPose.color.a = 1.0f;
-
-    tmpPose.lifetime = ros::Duration(0.1);
-
-    pose.markers.push_back(tmpPose);
+    send_data.reprojected_pos.push_back(tmpPoint);
   }
 }
 
@@ -226,7 +192,7 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   //and send database server.
   
   //  geometry_msgs::PoseArray pose_msg;
-  visualization_msgs::MarkerArray pose_msg;
+  cv_tracker::obj_label obj_label_msg;
 
   vector<OBJPOS>::iterator cp_iterator;
   LOCATION mloc;
@@ -253,14 +219,15 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
 
     //get data of car and pedestrian recognizing
     if(car_position_vector.size() > 0 ){
-      makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,mang,pose_msg);
+      makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,mang,obj_label_msg);
     }
   }
   //publish recognized car data
  //     if(pose_msg.poses.size() != 0){
         // pose_msg.header.stamp = ros::Time::now();
         // pose_msg.header.frame_id = "map";
-        pub.publish(pose_msg);
+  obj_label_msg.type = object_type;
+  pub.publish(obj_label_msg);
    //   }
 }
 
@@ -269,6 +236,7 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
   vector<OBJPOS> cp_vector;
   OBJPOS cp;
   
+  object_type = fused_objects.type;
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   if(gnssGetFlag || ndtGetFlag) {
@@ -349,7 +317,7 @@ int main(int argc, char **argv){
   */
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
-  pub = n.advertise<visualization_msgs::MarkerArray>("obj_label",1); 
+  pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
 
   /*
   //read calibration value
