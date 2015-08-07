@@ -1,4 +1,3 @@
 Header header
-float32 velocity
-float32 difference_around_signal
+float32 acceleration
 int32 number_of_zeros
