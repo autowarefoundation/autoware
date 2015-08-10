@@ -55,10 +55,11 @@ subs :
         cmd  : echo 'fusion_clustering'
     - name : road_wizard
       subs :
-      - name : region_tlr
-        cmd  : echo 'region_tlr'
       - name : feat_proj
-        cmd  : echo 'feat_proj'
+        cmd  : rosrun road_wizard feat_proj
+      - name : region_tlr
+        cmd  : roslaunch road_wizard traffic_light_recognition.launch
+
 
 - subs :
   - name : Mission Planning
