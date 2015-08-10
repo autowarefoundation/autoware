@@ -6,6 +6,7 @@
     <group ns="obj_car">
 
       <node pkg="cv_tracker" name="tracking" type="kf_track">
+          <remap from="/config/obj_car/kf" to="/config/car_kf" />
       </node>
 
     </group>
@@ -15,6 +16,7 @@
     <group ns="obj_person">
 
       <node pkg="cv_tracker" name="tracking" type="kf_track">
+          <remap from="/config/obj_person/kf" to="/config/pedestrian_kf" />
       </node>
 
     </group>
