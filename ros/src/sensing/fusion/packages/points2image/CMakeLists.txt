@@ -24,7 +24,7 @@ find_package(OpenCV REQUIRED)
 add_message_files(
   FILES
   PointsImage.msg
-  CameraExtrinsic.msg
+#  CameraExtrinsic.msg
 )
 
 generate_messages(

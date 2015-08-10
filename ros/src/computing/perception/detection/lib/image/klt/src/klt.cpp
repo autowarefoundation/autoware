@@ -37,7 +37,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include <cv_tracker/image_obj_ranged.h>
+#include <cv_tracker/image_obj.h>
 #include <cv_tracker/image_obj_tracked.h>
 
 //TRACKING STUFF
@@ -47,6 +47,8 @@
 #include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+
+#include <LkTracker.hpp>
 
 #include <iostream>
 #include <stdio.h>
@@ -60,20 +62,48 @@ class RosTrackerApp
 	ros::Subscriber subscriber_image_obj_;
 	ros::Subscriber subscriber_klt_config_;
 	ros::Publisher publisher_tracked_objects;//ROS
+	ros::NodeHandle node_handle_;
 
-	bool track_again_;
+	LkTracker obj_tracker_;
 
+	std::vector<cv::LatentSvmDetector::ObjectDetection> dpm_detections_;
+	bool ready_;
+
+public:
 	void image_callback(const sensor_msgs::Image& image_source)
 	{
+		//std::cout << "I" << std::endl;
+		if (!ready_)
+			return;
 
 		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
-		cv::Mat imageTrack = cv_image->image;
+		cv::Mat image_track = cv_image->image;
 
+		if (!dpm_detections_.empty())
+			obj_tracker_.Track(image_track, dpm_detections_[0].rect);
 	}
 
-	void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
+	void detections_callback(cv_tracker::image_obj image_objects_msg)
 	{
+		//std::cout << "D" << std::endl;
+		if(ready_)
+				return;
+		unsigned int num = image_objects_msg.obj.size();
+		std::vector<cv_tracker::image_rect> objects = image_objects_msg.obj;
+		//object_type = image_objects_msg.type;
+		//points are X,Y,W,H and repeat for each instance
+		dpm_detections_.clear();
 
+		for (unsigned int i=0; i<num;i++)
+		{
+			cv::Rect tmp;
+			tmp.x = objects.at(i).x;
+			tmp.y = objects.at(i).y;
+			tmp.width = objects.at(i).width;
+			tmp.height = objects.at(i).height;
+			dpm_detections_.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+		}
+		ready_ = true;
 	}
 
 	void klt_config_cb()
@@ -81,7 +111,7 @@ class RosTrackerApp
 
 	}
 
-public:
+
 	void Run()
 	{
 		std::string image_raw_topic_str;
@@ -98,32 +128,35 @@ public:
 			ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_raw_node:=YOUR_TOPIC");
 			image_raw_topic_str = "/image_raw";
 		}
-		if (private_node_handle.getParam("img_obj_node", image_obj_topic_str))
+		if (private_node_handle.getParam(ros::this_node::getNamespace() + "img_obj_node", image_obj_topic_str))
 			{
 				ROS_INFO("Setting object node to %s", image_obj_topic_str.c_str());
 			}
 		else
 		{
-			ROS_INFO("No object node received, defaulting to /image_obj, you can use _img_obj_node:=YOUR_TOPIC");
-			image_obj_topic_str = "/image_obj";
+			ROS_INFO("No object node received, defaulting to /obj_car/image_obj, you can use _img_obj_node:=YOUR_TOPIC");
+			image_obj_topic_str = "/obj_car/image_obj";
 		}
-		ros::NodeHandle node_handle;
 
-		publisher_tracked_objects = node_handle.advertise<cv_tracker::image_obj_tracked>("image_obj_tracked", 1);
 
-		node_handle.subscribe(image_raw_topic_str, 1, &RosTrackerApp::image_callback, this);
-		node_handle.subscribe(image_obj_topic_str, 1, &RosTrackerApp::detections_callback, this);
+		publisher_tracked_objects = node_handle_.advertise<cv_tracker::image_obj_tracked>("image_obj_tracked", 1);
+
+		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
+		ROS_INFO("Subscribing to... %s", image_obj_topic_str.c_str());
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosTrackerApp::image_callback, this);
+		subscriber_image_obj_ = node_handle_.subscribe(image_obj_topic_str, 1, &RosTrackerApp::detections_callback, this);
 
 		std::string config_topic("/config");
 		config_topic += ros::this_node::getNamespace() + "/klt";
 		//node_handle.subscribe(config_topic, 1, &RosTrackerApp::klt_config_cb, this);
 
 		ros::spin();
+		ROS_INFO("END klt");
 	}
 
 	RosTrackerApp()
 	{
-		track_again_ = true;
+		ready_ = false;
 	}
 
 };

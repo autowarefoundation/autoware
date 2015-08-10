@@ -64,7 +64,8 @@
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
 #include "CalObjLoc.h"
-//#include "car_detector/CarPose.h"
+#include "cv_tracker/obj_label.h"
+#include "calibration_camera_lidar/projection_matrix.h"
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
@@ -96,6 +97,7 @@ static vector<OBJPOS> global_cp_vector;
 //flag for comfirming whether updating position or not
 static bool gnssGetFlag;
 static bool ndtGetFlag;
+static bool ready_;
 
 //store own position and direction now.updated by position_getter
 static LOCATION gnss_loc;
@@ -112,6 +114,8 @@ static double cameraMatrix[4][4] = {
 
 static ros::Publisher pub;
 
+static std::string object_type;
+
 #ifdef NEVER // XXX No one calls this functions
 static void printDiff(struct timeval begin, struct timeval end){
   long diff;
@@ -119,6 +123,16 @@ static void printDiff(struct timeval begin, struct timeval end){
   printf("Diff: %ld us (%ld ms)\n",diff,diff/1000);
 }
 #endif
+
+static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
+{
+	for (int row=0; row<4; row++) {
+		for (int col=0; col<4; col++) {
+			cameraMatrix[row][col] = msg.projection_matrix[row * 4 + col];
+		}
+	}
+	ready_ = true;
+}
 
 void GetRPY(const geometry_msgs::Pose &pose,
 	    double &roll,
@@ -138,12 +152,10 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
                              vector<OBJPOS>::iterator cp_iterator,
                              LOCATION mloc,
                              ANGLE angle,
-                             //geometry_msgs::PoseArray &pose)
-                             visualization_msgs::MarkerArray& pose)
+                             cv_tracker::obj_label& send_data)
 {
   LOCATION rescoord;
-  //geometry_msgs::Pose tmpPose;
-  visualization_msgs::Marker tmpPose;
+  geometry_msgs::Point tmpPoint;
 
   for(uint i=0; i<car_position_vector.size() ; i++, cp_iterator++){
 
@@ -172,51 +184,17 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
     rescoord.Y = anglefixed.Y;
     rescoord.Z = anglefixed.Z;
 
-    //add plane rectangular coordinate to that of target car.
+    //add plane rectangular coordinate to that of target object.
     rescoord.X += mloc.X;
     rescoord.Y += mloc.Y;
     rescoord.Z += mloc.Z;
 
-    // tmpPose.position.x = rescoord.X;
-    // tmpPose.position.y = rescoord.Y;
-    // tmpPose.position.z = rescoord.Z;
-    // pose.poses.push_back(tmpPose);
+    /* Set the position of this object */
+    tmpPoint.x = rescoord.X;
+    tmpPoint.y = rescoord.Y;
+    tmpPoint.z = rescoord.Z;
 
-    /* Publish as ROS Marker*/
-    /* Set frame ID */
-    tmpPose.header.frame_id = "map";
-
-    /* Set the namespace and id for this marker */
-    tmpPose.ns = "car_location" + std::to_string(i);
-    tmpPose.id = i;             // is this OK?
-
-    /* Set the marker type */
-    tmpPose.type = visualization_msgs::Marker::CUBE;
-
-    /* Set the pose of the marker */
-    tmpPose.pose.position.x = rescoord.X;
-    tmpPose.pose.position.y = rescoord.Y;
-    tmpPose.pose.position.z = rescoord.Z;
-    /* orientation is set zero temporarily because 3 dimensional car orientation is not available now */
-    tmpPose.pose.orientation.x = 0.0;
-    tmpPose.pose.orientation.y = 0.0;
-    tmpPose.pose.orientation.z = 0.0;
-    tmpPose.pose.orientation.w = 0.0;
-
-    /* Set the scale of the marker -- temporary assume car size as 1.5m cube */
-    tmpPose.scale.x = 1.5f;
-    tmpPose.scale.y = 1.5f;
-    tmpPose.scale.z = 1.5f;
-
-    /* Set the color */
-    tmpPose.color.r = 0;
-    tmpPose.color.g = 25;
-    tmpPose.color.b = 255;
-    tmpPose.color.a = 1.0f;
-
-    tmpPose.lifetime = ros::Duration(0.1);
-
-    pose.markers.push_back(tmpPose);
+    send_data.reprojected_pos.push_back(tmpPoint);
   }
 }
 
@@ -226,7 +204,7 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   //and send database server.
   
   //  geometry_msgs::PoseArray pose_msg;
-  visualization_msgs::MarkerArray pose_msg;
+  cv_tracker::obj_label obj_label_msg;
 
   vector<OBJPOS>::iterator cp_iterator;
   LOCATION mloc;
@@ -252,23 +230,28 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
       mloc.Z < 0.0) ){
 
     //get data of car and pedestrian recognizing
-    if(car_position_vector.size() > 0 ){
-      makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,mang,pose_msg);
+  if(!car_position_vector.empty()){
+      makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,mang,obj_label_msg);
     }
   }
   //publish recognized car data
  //     if(pose_msg.poses.size() != 0){
         // pose_msg.header.stamp = ros::Time::now();
         // pose_msg.header.frame_id = "map";
-        pub.publish(pose_msg);
+  obj_label_msg.type = object_type;
+  pub.publish(obj_label_msg);
    //   }
 }
 
 static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objects)
 {
+	if (!ready_)
+		return;
+
   vector<OBJPOS> cp_vector;
   OBJPOS cp;
   
+  object_type = fused_objects.type;
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   if(gnssGetFlag || ndtGetFlag) {
@@ -328,8 +311,10 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
 int main(int argc, char **argv){
   
-  ros::init(argc ,argv, "car_locate") ;  
-  cout << "car_locate" << endl;
+  ros::init(argc ,argv, "obj_reproj") ;  
+  cout << "obj_reproj" << endl;
+
+  ready_ = false;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -349,7 +334,9 @@ int main(int argc, char **argv){
   */
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
-  pub = n.advertise<visualization_msgs::MarkerArray>("obj_label",1); 
+  pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
+
+  ros::Subscriber projection = n.subscribe("/projection_matrix", 1, projection_callback);
 
   /*
   //read calibration value
@@ -378,8 +365,7 @@ int main(int argc, char **argv){
   double Ox = 440.017336;
   double Oy = 335.274106;
 
-  cv::Mat Lintrinsic;
-  std::string lidar_3d_yaml = "";
+/*  std::string lidar_3d_yaml = "";
 
   if (private_nh.getParam("lidar_3d_yaml", lidar_3d_yaml) == false) {
       std::cerr << "error! usage : rosrun  cv_tracker obj_reproj _lidar_3d_yaml:=[file]" << std::endl;
@@ -393,12 +379,9 @@ int main(int argc, char **argv){
   }
   lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic; 
   lidar_3d_file.release(); 
+*/
 
-  for(int i=0; i<4 ; i++){
-    for(int j=0; j<4 ; j++){
-      cameraMatrix[i][j] = Lintrinsic.at<double>(i,j);
-    }
-  }
+
 
   /*
   double fkx = 5.83199829e+02;

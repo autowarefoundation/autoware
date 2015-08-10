@@ -1,0 +1,27 @@
+<launch>
+  <arg name="launch_car" default="true"/>
+  <arg name="launch_person" default="false"/>
+
+  <group if="$(arg launch_car)">
+    <group ns="obj_car">
+
+      <!-- ranging -->
+      <node pkg="cv_tracker" name="ranging" type="range_fusion">
+          <remap from="/config/obj_car/fusion" to="/config/car_fusion"/>
+      </node>
+
+    </group>
+  </group>
+
+  <group if="$(arg launch_person)">
+    <group ns="obj_person">
+
+      <!-- ranging -->
+      <node pkg="cv_tracker" name="ranging" type="range_fusion">
+          <remap from="/config/obj_person/fusion" to="/config/pedestrian_fusion"/>
+      </node>
+
+    </group>
+  </group>
+
+</launch>

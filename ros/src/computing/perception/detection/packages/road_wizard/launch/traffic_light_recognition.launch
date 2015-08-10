@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="road_wizard" type="region_tlr" name="traffic_light_recognition"/>
+  <node pkg="sound_player" type="sound_player.py" name="sound_player"/>
+</launch>

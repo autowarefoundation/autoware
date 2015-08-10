@@ -5,6 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <sensor_msgs/Image.h>
+#include <calibration_camera_lidar/projection_matrix.h>
 
 static cv::Mat  CameraExtrinsicMat;
 static cv::Mat  CameraMat;
@@ -12,6 +13,12 @@ static cv::Mat  DistCoeff;
 static cv::Size ImageSize;
 
 static ros::Publisher camera_info_pub;
+static ros::Publisher projection_matrix_pub;
+
+static bool isRegister_tf;
+static bool isPublish_extrinsic;
+static bool isPublish_cameraInfo;
+
 
 void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 {
@@ -55,6 +62,21 @@ static void image_raw_cb(const sensor_msgs::Image& image_msg)
 
 }
 
+void projectionMatrix_sender(const cv::Mat  &projMat)
+{
+	calibration_camera_lidar::projection_matrix projMsg;
+
+	projMsg.header.frame_id="camera";
+
+	for (int row=0; row<4; row++) {
+	      for (int col=0; col<4; col++) {
+	    	  	  projMsg.projection_matrix[row * 4 + col] = projMat.at<double>(row, col);
+
+	      }
+	}
+	projection_matrix_pub.publish(projMsg);
+}
+
 void cameraInfo_sender(const cv::Mat  &camMat,
                        const cv::Mat  &distCoeff,
                        const cv::Size &imgSize)
@@ -96,8 +118,19 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "calibration_publisher");
   ros::NodeHandle n;
+  ros::NodeHandle private_nh("~");
 
-  camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10, true);
+  if (!private_nh.getParam("register_lidar2camera_tf", isRegister_tf)) {
+    isRegister_tf = true;
+  }
+
+  if (!private_nh.getParam("publish_extrinsic_mat", isPublish_extrinsic)) {
+    isPublish_extrinsic = true; /* publish extrinsic_mat in default */
+  }
+
+  if (!private_nh.getParam("publish_camera_info", isPublish_cameraInfo)) {
+    isPublish_extrinsic = false; /* doesn't publish camera_info in default */
+  }
 
   if (argc < 2)
     {
@@ -117,9 +150,20 @@ int main(int argc, char* argv[])
   fs["DistCoeff"] >> DistCoeff;
   fs["ImageSize"] >> ImageSize;
 
-  ros::Subscriber image_sub = n.subscribe("/image_raw", 10, image_raw_cb);
+  ros::Subscriber image_sub;
+  if (isRegister_tf) {
+    image_sub = n.subscribe("/image_raw", 10, image_raw_cb);
+  }
 
-  cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
+  if (isPublish_cameraInfo) {
+    camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10, true);
+    cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
+  }
+
+  if (isPublish_extrinsic) {
+    projection_matrix_pub = n.advertise<calibration_camera_lidar::projection_matrix>("/projection_matrix", 10, true);
+    projectionMatrix_sender(CameraExtrinsicMat);
+  }
 
   ros::spin();
 

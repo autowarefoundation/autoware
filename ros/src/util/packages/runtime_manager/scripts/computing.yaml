@@ -49,7 +49,7 @@ subs :
             flags  : [ left ]
 
       - name : dpm_ttic
-        cmd  : roslaunch runtime_manager dpm_ttic.launch
+        cmd  : roslaunch cv_tracker dpm_ttic.launch
         param: dpm_ttic
         gui  :
           flags : [ open_dialog, no_link ]
@@ -65,23 +65,26 @@ subs :
             flags  : [ hline ]
 
       - name : fusion_ranging
-        cmd  : echo 'fusion_ranging'
+        cmd  : roslaunch cv_tracker ranging.launch
+        param: car_fusion
       - name : kf_tracking
-        cmd  : echo 'kf_tracking'
+        cmd  : roslaunch cv_tracker kf_tracking.launch
+        param: car_kf
       - name : obj_reproj
-        cmd  : echo 'obj_reproj'
+        cmd  : roslaunch cv_tracker reprojection.launch
     - name : lidar_detector
       subs :
       - name : euclidean_clustering
-        cmd  : echo 'euclidean_clustering'
+        cmd  : roslaunch lidar_tracker euclidean_clustering.launch
       - name : fusion_clustering
-        cmd  : echo 'fusion_clustering'
+        cmd  : roslaunch lidar_tracker obj_fusion.launch
     - name : road_wizard
       subs :
-      - name : region_tlr
-        cmd  : echo 'region_tlr'
       - name : feat_proj
-        cmd  : echo 'feat_proj'
+        cmd  : rosrun road_wizard feat_proj
+      - name : region_tlr
+        cmd  : roslaunch road_wizard traffic_light_recognition.launch
+
 
 - subs :
   - name : Mission Planning

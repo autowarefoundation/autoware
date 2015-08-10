@@ -571,9 +571,9 @@ class MyFrame(rtmgr.MyFrame):
 			if (v is None or v == '') and 'default' in cmd_param:
 				v = cmd_param.get('default')
 			if cmd_param.get('must') and (v is None or v == ''):
-				print 'cmd_param', name, 'is must'
+				print 'cmd_param', name, 'is required'
 				if msg_box:
-					wx.MessageBox('cmd_param ' + name + ' is must')
+					wx.MessageBox('cmd_param ' + name + ' is required')
 				return False
 			if cmd_param.get('only_enable') and not v:
 				continue
@@ -2101,7 +2101,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		split_arg = [ '--split' ] if self.checkbox_split.GetValue() else []
 		size_arg = self.size_arg_get()
 		if split_arg and not size_arg:
-			wx.MessageBox('size is must, with split')
+			wx.MessageBox('size is required, with split')
 			return
 		args += split_arg + size_arg
 

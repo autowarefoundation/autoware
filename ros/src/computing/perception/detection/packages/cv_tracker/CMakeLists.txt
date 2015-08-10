@@ -27,7 +27,7 @@ add_message_files(
   image_obj_tracked.msg
   image_rect.msg
   image_rect_ranged.msg
-  obj_pose.msg
+  obj_label.msg
 )
 
 generate_messages(
@@ -141,15 +141,15 @@ ADD_DEPENDENCIES(obj_reproj
   obj_reproj_generate_messages_cpp
 )
 
-## kf_tracker ##
+## klt_tracker ##
 ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
 )
 
 TARGET_LINK_LIBRARIES(klt_track
+  klt
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  klt
 )
 
 ADD_DEPENDENCIES(klt_track
