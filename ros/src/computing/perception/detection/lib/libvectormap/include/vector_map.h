@@ -11,6 +11,13 @@
 #include <string>
 #include "Math.h"
 
+#include <map_file/PointClassArray.h>
+#include <map_file/LineClassArray.h>
+#include <map_file/LaneArray.h>
+#include <map_file/VectorClassArray.h>
+#include <map_file/SignalArray.h>
+#include <map_file/WhiteLineArray.h>
+#include <map_file/DTLaneArray.h>
 
 
 typedef struct{
@@ -57,7 +64,7 @@ typedef struct{
   char color;
   int type;
   int linkid;
-}CLine;
+}WhiteLine;
 
 typedef struct{
   int lid;
@@ -103,26 +110,23 @@ class VectorMap
   bool loaded;
   std::map<int, Point > points;
   std::map<int, Line > lines;
-  std::map<int, CLine > clines;
+  std::map<int, WhiteLine > whitelines;
   std::map<int, Lane > lanes;
   std::map<int, DTLane > dtlanes;
   std::map<int, Vector > vectors;
   std::map<int, Signal > signals;
 
-  int load_points(char *name);
-  int load_lines(char *name);
-  int load_lanes(char *name);
-  int load_vectors(char *name);
-  int load_signals(char *name);
-  int load_clines(char *name);
-  int load_dtlanes(char *name );
+  void load_points(const map_file::PointClassArray& msg);
+  void load_lines(const map_file::LineClassArray& msg);
+  void load_lanes(const map_file::LaneArray& msg);
+  void load_vectors(const map_file::VectorClassArray& msg);
+  void load_signals(const map_file::SignalArray& msg);
+  void load_whitelines(const map_file::WhiteLineArray& msg);
+  void load_dtlanes(const map_file::DTLaneArray& msg);
 
 
   VectorMap () :
 	  loaded(false) {}
-
-
-  void loadAll (const std::string &dirname);
 
   inline Point3 getPoint (const int idx)
   {

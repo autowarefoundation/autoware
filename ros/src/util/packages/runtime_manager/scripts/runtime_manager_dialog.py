@@ -201,6 +201,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
+		self.setup_buttons(items.get('buttons', {}), self.computing_cmd)
+
 		#
 		# for Interface tab
 		#
@@ -589,6 +591,7 @@ class MyFrame(rtmgr.MyFrame):
 				if var.get('kind') is None:
 					str_v = adjust_num_str(str_v)
 				if var.get('kind') == 'path':
+					str_v = path_expand_cmd(str_v)
 					str_v = os.path.expandvars(os.path.expanduser(str_v))
 				add += delim + str_v
 			if add != '':
@@ -1296,7 +1299,8 @@ class MyFrame(rtmgr.MyFrame):
 				gdic = self.gdic_get_1st(items)
 				pdic = self.load_dic_pdic_setup(name, items)
 				self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
-				item.SetHyperText()
+				if 'no_link' not in gdic.get('flags', []):
+					item.SetHyperText()
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
@@ -1441,7 +1445,8 @@ class MyFrame(rtmgr.MyFrame):
 
 	def roslaunch_to_nodes(self, cmd):
 		try:
-			return subprocess.check_output(cmd).strip().split('\n')
+			s = subprocess.check_output(cmd).strip()
+			return s.split('\n') if s != '' else []
 		except subprocess.CalledProcessError:
 			return []
 
@@ -1613,6 +1618,12 @@ class ParamPanel(wx.Panel):
 				targ_szr.Add(rp_szr, 0, wx.EXPAND | wx.ALL, 4)
 				targ_szr = rp_szr
 
+			user_category = gdic_v.get('user_category')
+			if user_category and hszr:
+				user_szr = static_box_sizer(self, user_category, orient=wx.HORIZONTAL)
+				targ_szr.Add(user_szr, 0, 0, 0)
+				targ_szr = hszr = user_szr
+
 			targ_szr.Add(vp, prop, flag, border)
 
 			if 'nl' in gdic_v.get('flags', []):
@@ -1621,6 +1632,9 @@ class ParamPanel(wx.Panel):
 			if do_category and self.in_msg(var):
 				topic_szrs = (szr, hszr)
 				(szr, hszr) = bak
+
+			if 'hline' in gdic_v.get('flags', []) and hszr is None:
+				szr.Add(wx.StaticLine(self, wx.ID_ANY), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 4)
 
 			if not self.in_msg(var) and var.get('rosparam'):
 				k = 'ext_toggle_enables'
@@ -1674,7 +1688,8 @@ class VarPanel(wx.Panel):
 		self.kind = self.var.get('kind')
 		if self.kind == 'radio_box':
 			choices = self.var.get('choices', [])
-			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
+			style = wx.RA_SPECIFY_COLS if self.var.get('choices_style') == 'h' else wx.RA_SPECIFY_ROWS
+			self.obj = wx.RadioBox(self, wx.ID_ANY, label, choices=choices, majorDimension=0, style=style)
 			self.choices_sel_set(v)
 			self.Bind(wx.EVT_RADIOBOX, self.OnUpdate, self.obj)
 			return
@@ -1703,6 +1718,11 @@ class VarPanel(wx.Panel):
 		lb = wx.StaticText(self, wx.ID_ANY, label)
 		flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
 		szr.Add(lb, 0, flag, 4)
+
+		if self.kind == 'path':
+			v = str(v)
+			v = path_expand_cmd(v)
+			v = os.path.expandvars(os.path.expanduser(v))
 
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
@@ -1857,6 +1877,47 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.panel.detach_func()
 		self.panel.update()
 		self.EndModal(-1)
+
+class MyDialogDpm(rtmgr.MyDialogDpm):
+	def __init__(self, *args, **kwds):
+		pdic = kwds.pop('pdic')
+		self.pdic_bak = pdic.copy()
+		gdic = kwds.pop('gdic')
+		prm = kwds.pop('prm')
+		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+
+		parent = self.panel_v
+		frame = self.GetParent()
+		self.frame = frame
+		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
+		szr = wx.BoxSizer(wx.VERTICAL)
+		szr.Add(self.panel, 1, wx.EXPAND)
+		parent.SetSizer(szr)
+
+		self.SetTitle(prm.get('name', ''))
+		(w,h) = self.GetSize()
+		(w2,_) = szr.GetMinSize()
+		w2 += 20
+		if w2 > w:
+			self.SetSize((w2,h))
+
+		hl = self.hyperlink_car
+		hl.SetVisitedColour(hl.GetNormalColour())
+		hl = self.hyperlink_pedestrian
+		hl.SetVisitedColour(hl.GetNormalColour())
+
+	def OnOk(self, event):
+		self.panel.update()
+		self.panel.detach_func()
+		self.EndModal(0)
+
+	def OnLink(self, event):
+		obj = event.GetEventObject()
+		dic = { self.hyperlink_car : self.frame.button_launch_car_dpm,
+			self.hyperlink_pedestrian : self.frame.button_launch_pedestrian_dpm }
+		obj = dic.get(obj)
+		if obj:
+			self.frame.OnHyperlinked_obj(obj)
 
 class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def __init__(self, *args, **kwds):
@@ -2217,6 +2278,15 @@ def adjust_num_str(s):
 
 def rtmgr_src_dir():
 	return os.path.abspath(os.path.dirname(__file__)) + "/"
+
+def path_expand_cmd(path):
+	lst = path.split('/')
+	s = lst[0]
+	if s[:2] == '$(' and s[-1] == ')':
+		cmd = s[2:-1].split(' ')
+		lst[0] = subprocess.check_output(cmd).strip()
+		path = '/'.join(lst)
+	return path
 
 def prn_dict(dic):
 	for (k,v) in dic.items():
