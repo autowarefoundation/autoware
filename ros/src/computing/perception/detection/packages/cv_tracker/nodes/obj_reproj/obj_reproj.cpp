@@ -230,7 +230,7 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
       mloc.Z < 0.0) ){
 
     //get data of car and pedestrian recognizing
-    if(car_position_vector.size() > 0 ){
+  if(!car_position_vector.empty()){
       makeSendDataDetectedObj(car_position_vector,cp_iterator,mloc,mang,obj_label_msg);
     }
   }
@@ -311,8 +311,8 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 
 int main(int argc, char **argv){
   
-  ros::init(argc ,argv, "car_locate") ;  
-  cout << "car_locate" << endl;
+  ros::init(argc ,argv, "obj_reproj") ;  
+  cout << "obj_reproj" << endl;
 
   ready_ = false;
 

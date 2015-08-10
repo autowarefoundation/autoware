@@ -32,5 +32,9 @@
         <param name="lidar_3d_yaml" type="str" value="$(arg lidar_3d_yaml)"/>
     </node>
 
+    <!-- fusion -->
+    <node pkg="lidar_tracker" name="fusion" type="obj_fusion">
+    </node>
+
   </group>
 </launch>

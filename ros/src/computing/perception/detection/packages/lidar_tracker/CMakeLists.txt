@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   message_generation
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -89,6 +90,8 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+
 ###########
 ## Build ##
 ###########
@@ -123,6 +126,21 @@ add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
 
 add_executable(vscan_filling nodes/vscan_filling/vscan_filling.cpp)
 target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(obj_fusion
+  nodes/obj_fusion/obj_fusion.cpp
+)
+
+target_link_libraries(obj_fusion
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  m
+)
+
+add_dependencies(obj_fusion
+  lidar_tracker_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
+)
 
 #############
 ## Install ##
