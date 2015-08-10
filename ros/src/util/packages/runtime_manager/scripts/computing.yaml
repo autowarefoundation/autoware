@@ -35,9 +35,35 @@ subs :
     - name : cv_detector
       subs :
       - name : dpm_ocv
-        cmd  : echo 'dpm_ocv'
+        cmd  : roslaunch runtime_manager dpm_ocv.launch
+        param: dpm_ocv
+        gui  :
+          flags : [ open_dialog, no_link ]
+          dialog: MyDialogDpm
+          use_gpu :
+            flags  : [ nl ]
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+
       - name : dpm_ttic
-        cmd  : echo 'dpm_ttic'
+        cmd  : roslaunch runtime_manager dpm_ttic.launch
+        param: dpm_ttic
+        gui  :
+          flags : [ open_dialog, no_link ]
+          dialog: MyDialogDpm
+          use_gpu :
+            flags  : [ nl ]
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+          part_model_car :
+            flags  : [ hline ]
+
       - name : fusion_ranging
         cmd  : echo 'fusion_ranging'
       - name : kf_tracking
@@ -147,7 +173,123 @@ subs :
              depend_bool : 'lambda v : v == "Initial Pos"'
              flags : [ no_category, nl ]
 
+buttons:
+  car_dpm :
+    param   : car_dpm
+  pedestrian_dpm :
+    param   : pedestrian_dpm
+
 params :
+  - name  : dpm_ocv
+    vars  :
+    - name     : use_gpu
+      label    : Use GPU
+      kind     : radio_box
+      choices  : [ 'False', 'True' ]
+      choices_type : str
+      choices_style: h
+      v        : 'False'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : car
+      label    : Car
+      kind     : checkbox
+      v        : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pedestrian
+      label    : Pedestrian
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : model_file_car
+      label    : 'model_file (Car)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/car_2008.xml
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : model_file_pedestrian
+      label    : 'model_file (Pedestrian)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/person.xml
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : dpm_ttic
+    vars  :
+    - name     : use_gpu
+      label    : Use GPU
+      kind     : radio_box
+      choices  : [ 'False', 'True' ]
+      choices_type : str
+      choices_style: h
+      v        : 'False'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : car
+      label    : Car
+      kind     : checkbox
+      v        : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pedestrian
+      label    : Pedestrian
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : comp_model_car
+      label    : 'comp_model (Car)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/car_comp.csv
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : root_model_car
+      label    : 'root_model (Car)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/car_root.csv
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : part_model_car
+      label    : 'part_model (Car)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/car_part.csv
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : comp_model_pedestrian
+      label    : 'comp_model (Pedestrian)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/person_comp.csv
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : root_model_pedestrian
+      label    : 'root_model (Pedestrian)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/person_root.csv
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : part_model_pedestrian
+      label    : 'part_model (Pedestrian)'
+      kind     : path
+      v        : $(rospack find cv_tracker)/data/person_part.csv
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
   - name  : car_dpm
     topic : /config/car_dpm
     msg   : ConfigCarDpm
