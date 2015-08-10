@@ -2,24 +2,24 @@
   <arg name="launch_car" default="true"/>
   <arg name="launch_person" default="false"/>
 
-<group if="$(arg launch_car)">
-  <group ns="obj_car">
+  <group if="$(arg launch_car)">
+    <group ns="obj_car">
 
-    <!-- ranging -->
-    <node pkg="cv_tracker" name="ranging" type="range_fusion">
-    </node>
-    
+      <!-- ranging -->
+      <node pkg="cv_tracker" name="ranging" type="range_fusion">
+      </node>
+
+    </group>
   </group>
-</group>
 
-<group if="$(arg launch_person)">
-  <group ns="obj_person">
+  <group if="$(arg launch_person)">
+    <group ns="obj_person">
 
-    <!-- ranging -->
-    <node pkg="cv_tracker" name="ranging" type="range_fusion">
-    </node>
-    
+      <!-- ranging -->
+      <node pkg="cv_tracker" name="ranging" type="range_fusion">
+      </node>
+
+    </group>
   </group>
-</group>
 
 </launch>
