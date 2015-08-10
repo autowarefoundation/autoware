@@ -336,7 +336,7 @@ int main(int argc, char **argv){
   ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
   pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
 
-  ros::Subscriber projection = n.subscribe("projection_matrix", 1, projection_callback);
+  ros::Subscriber projection = n.subscribe("/projection_matrix", 1, projection_callback);
 
   /*
   //read calibration value
