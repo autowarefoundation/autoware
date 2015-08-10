@@ -49,7 +49,7 @@ subs :
             flags  : [ left ]
 
       - name : dpm_ttic
-        cmd  : roslaunch runtime_manager dpm_ttic.launch
+        cmd  : roslaunch cv_tracker dpm_ttic.launch
         param: dpm_ttic
         gui  :
           flags : [ open_dialog, no_link ]
