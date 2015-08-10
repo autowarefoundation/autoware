@@ -1,0 +1,45 @@
+<launch>
+  <arg name="launch_car" default="true"/>
+  <arg name="launch_person" default="false"/>
+
+<group if="$(arg launch_car)">
+  <group ns="obj_car">
+
+    <!-- arguments list -->
+    <arg name="comp_model_path" default="$(find cv_tracker)/data/car_comp.csv"/>
+    <arg name="root_model_path" default="$(find cv_tracker)/data/car_root.csv"/>
+    <arg name="part_model_path" default="$(find cv_tracker)/data/car_part.csv"/>
+    <arg name="use_gpu" default="false"/>
+
+    <!-- dpm detection -->
+    <node pkg="cv_tracker" name="dpm" type="dpm_ttic">
+      <param name="detection_class_name" type="str" value="car"/>
+      <param name="comp_model_path" type="str" value="$(arg comp_model_path)"/>
+      <param name="root_model_path" type="str" value="$(arg root_model_path)"/>
+      <param name="part_model_path" type="str" value="$(arg part_model_path)"/>
+      <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+    </node>
+  </group>
+</group>
+
+<group if="$(arg launch_person)">
+  <group ns="obj_person">
+
+    <!-- arguments list -->
+    <arg name="comp_model_path" default="$(find cv_tracker)/data/person_comp.csv"/>
+    <arg name="root_model_path" default="$(find cv_tracker)/data/person_root.csv"/>
+    <arg name="part_model_path" default="$(find cv_tracker)/data/person_part.csv"/>
+    <arg name="use_gpu" default="false"/>
+
+    <!-- dpm detection -->
+    <node pkg="cv_tracker" name="dpm" type="dpm_ttic">
+      <param name="detection_class_name" type="str" value="person"/>
+      <param name="comp_model_path" type="str" value="$(arg comp_model_path)"/>
+      <param name="root_model_path" type="str" value="$(arg root_model_path)"/>
+      <param name="part_model_path" type="str" value="$(arg part_model_path)"/>
+      <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+    </node>
+  </group>
+</group>
+
+</launch>

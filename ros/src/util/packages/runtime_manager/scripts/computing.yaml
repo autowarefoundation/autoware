@@ -35,15 +35,18 @@ subs :
     - name : cv_detector
       subs :
       - name : dpm_ocv
-        cmd  : echo 'dpm_ocv'
+        cmd  : echo 'dpm_ocv NOT YET IMPLEMENTED'
       - name : dpm_ttic
-        cmd  : echo 'dpm_ttic'
+        cmd  : roslaunch cv_tracker dpm_ttic.launch use_gpu:=true 
+        param: car_dpm
       - name : fusion_ranging
-        cmd  : echo 'fusion_ranging'
+        cmd  : roslaunch cv_tracker ranging.launch
+        param: car_fusion
       - name : kf_tracking
-        cmd  : echo 'kf_tracking'
+        cmd  : roslaunch cv_tracker kf_tracking.launch
+        param: car_kf
       - name : obj_reproj
-        cmd  : echo 'obj_reproj'
+        cmd  : roslaunch cv_tracker reprojection.launch
     - name : lidar_detector
       subs :
       - name : euclidean_clustering
