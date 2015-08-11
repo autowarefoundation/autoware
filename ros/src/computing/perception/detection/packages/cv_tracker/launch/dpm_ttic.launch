@@ -1,6 +1,7 @@
 <launch>
   <arg name="car" default="true"/>
   <arg name="pedestrian" default="false"/>
+  <arg name="use_gpu" default="false"/>
 
   <group if="$(arg car)">
     <group ns="obj_car">
@@ -9,7 +10,6 @@
       <arg name="comp_model_car" default="$(find cv_tracker)/data/car_comp.csv"/>
       <arg name="root_model_car" default="$(find cv_tracker)/data/car_root.csv"/>
       <arg name="part_model_car" default="$(find cv_tracker)/data/car_part.csv"/>
-      <arg name="use_gpu" default="false"/>
 
       <!-- dpm detection -->
       <node pkg="cv_tracker" name="dpm" type="dpm_ttic">
@@ -30,7 +30,6 @@
       <arg name="comp_model_pedestrian" default="$(find cv_tracker)/data/person_comp.csv"/>
       <arg name="root_model_pedestrian" default="$(find cv_tracker)/data/person_root.csv"/>
       <arg name="part_model_pedestrian" default="$(find cv_tracker)/data/person_part.csv"/>
-      <arg name="use_gpu" default="false"/>
 
       <!-- dpm detection -->
       <node pkg="cv_tracker" name="dpm" type="dpm_ttic">
