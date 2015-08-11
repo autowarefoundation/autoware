@@ -6,14 +6,14 @@ published topics:
 <launch>
 
 	<!-- declare arguments with default values -->
-	<arg name="model" default="64E_S2"/>
+	<arg name="model" default="64E_S3"/>
 	<arg name="pcap" default="" />
 	
 <!--	<arg name="calibration" default="$(find velodyne_pointcloud)/params/64e_utexas.yaml"/>-->
-	<arg name="calibration" default="/home/pdsljp/S2-Unit.yaml"/>	
+	<arg name="calibration" default="$(env HOME)/S2-Unit.yaml"/>	
 	<arg name="min_range" default="2.0"/>
 	<arg name="max_range" default="250.0"/>
-	<arg name="topic_name" default="points_raw"/>
+	<arg name="cloud_topic" default="points_raw"/>
 
 
 
@@ -31,6 +31,6 @@ published topics:
 		<param name="calibration" value="$(arg calibration)"/>
 		<param name="min_range" value="$(arg min_range)" />
 		<param name="max_range" value="$(arg max_range)" />
-		<remap from="velodyne_points" to="$(arg topic_name)"/>
+		<remap from="/velodyne_points" to="$(arg cloud_topic)"/>
 	</node>
 </launch>
