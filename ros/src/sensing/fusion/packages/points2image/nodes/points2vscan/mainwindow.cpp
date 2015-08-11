@@ -1,18 +1,21 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#define BEAMNUM 1024
-#define STEP 0.2
+#define BEAMNUM 1440
+#define STEP 0.1
 #define MINFLOOR -3.0
-#define MAXCEILING 5.0
+#define MAXFLOOR -1.3
+#define MAXCEILING 6.0
+#define MINCEILING -0.5
 #define ROADSLOPMINHEIGHT 80.0
 #define ROADSLOPMAXHEIGHT 30.0
 #define ROTATION 3
 #define OBSTACLEMINHEIGHT 1
 #define MAXBACKDISTANCE 1
-#define PASSHEIGHT 2
+#define PASSHEIGHT 3
 
 #define MAXRANGE 80.0
+#define MINRANGE 3
 #define GRIDSIZE 10.0
 #define IMAGESIZE 1000.0
 
@@ -103,11 +106,11 @@ void MainWindow::recalculateSlot()
 #ifdef DEBUG_GUI
     QTime start=QTime::currentTime();
 #endif
-    virtualscan.calculateVirtualScans(BEAMNUM,STEP,MINFLOOR,MAXCEILING,OBSTACLEMINHEIGHT,MAXBACKDISTANCE,ROTATION*PI/180.0, 3);
+    virtualscan.calculateVirtualScans(BEAMNUM,STEP,MINFLOOR,MAXCEILING,OBSTACLEMINHEIGHT,MAXBACKDISTANCE,ROTATION*PI/180.0, MINRANGE);
 #ifdef DEBUG_GUI
     QTime end=QTime::currentTime();
 #endif
-    virtualscan.getVirtualScan(ROADSLOPMINHEIGHT*PI/180.0,ROADSLOPMAXHEIGHT*PI/180.0,-1.0,-0.5,PASSHEIGHT,beams);
+    virtualscan.getVirtualScan(ROADSLOPMINHEIGHT*PI/180.0,ROADSLOPMAXHEIGHT*PI/180.0,MAXFLOOR,MINCEILING,PASSHEIGHT,beams);
 #ifdef DEBUG_GUI
     ui->tc->setText(QString("%1").arg(start.msecsTo(end)));
 #endif
