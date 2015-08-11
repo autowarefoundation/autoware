@@ -1028,7 +1028,7 @@ int main(int argc, char **argv)
     ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
 
     // subscribing the velodyne data
-    ros::Subscriber velodyne_sub = nh.subscribe("velodyne_points", _queue_size, velodyne_callback);
+    ros::Subscriber velodyne_sub = nh.subscribe("points_raw", _queue_size, velodyne_callback);
 
     ros::Subscriber hokuyo_sub = nh.subscribe("hokuyo_3d/hokuyo_cloud2", _queue_size, hokuyo_callback);
 
