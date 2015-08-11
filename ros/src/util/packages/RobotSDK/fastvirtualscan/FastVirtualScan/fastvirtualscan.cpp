@@ -151,7 +151,7 @@ void FastVirtualScan::calculateVirtualScans(int beamNum, double heightStep, doub
     }
 }
 
-void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCeiling, double passHeight, QVector<double> &virtualScan)
+void FastVirtualScan::getVirtualScan(double thetaminheight, double thetamaxheight, double maxFloor, double minCeiling, double passHeight, QVector<double> &virtualScan)
 {
     virtualScan.fill(MAXVIRTUALSCAN,beamnum);
     minheights.fill(minfloor,beamnum);
@@ -161,7 +161,8 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
     rotVirtualScan.fill(MAXVIRTUALSCAN,beamnum);
 
     int size=int((maxceiling-minfloor)/step+0.5);
-    double delta=fabs(step/tan(theta));
+    double deltaminheight=fabs(step/tan(thetaminheight));
+    double deltamaxheight=fabs(step/tan(thetamaxheight));
 
 #ifdef USEOMP
 #ifndef QT_DEBUG
@@ -175,11 +176,11 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
         int candid=0;
         bool roadfilterflag=1;
         bool denoiseflag=1;
-        while(candid<beamnum&&svs[i][candid].height>minCeiling)
+        while(candid<size&&svs[i][candid].height>minCeiling)
         {
             candid++;
         }
-        if(candid>=beamnum||svs[i][candid].rotlength==MAXVIRTUALSCAN)
+        if(candid>=size||svs[i][candid].rotlength==MAXVIRTUALSCAN)
         {
             virtualScan[i]=0;
             minheights[i]=0;
@@ -188,11 +189,12 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
         }
         if(svs[i][candid].height>maxFloor)
         {
-            virtualScan[i]=svs[i].front().length;
-            minheights[i]=svs[i].front().height;
+            virtualScan[i]=svs[i][candid].length;
+            minheights[i]=svs[i][candid].height;
             denoiseflag=0;
             roadfilterflag=0;
         }
+        int firstcandid=candid;
         for(int j=candid+1;j<size;j++)
         {
             if(svs[i][j].rotid<=svs[i][candid].rotid)
@@ -207,8 +209,8 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
                 if(roadfilterflag)
                 {
                     virtualScan[i]=0;
-                    minheights[i]=svsback[i][startrotid].height;
-                    maxheights[i]=svsback[i][startrotid].height;
+                    minheights[i]=0;//svsback[i][startrotid].height;
+                    maxheights[i]=0;//svsback[i][startrotid].height;
                 }
                 else
                 {
@@ -222,15 +224,15 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
                 {
                     if(startrotid+1==endrotid)
                     {
-                        if(svs[i][j].rotlength-svs[i][candid].rotlength>=delta)
+                        if(svs[i][j].rotlength-svs[i][candid].rotlength>=deltaminheight)
                         {
                             denoiseflag=0;
                             roadfilterflag=1;
                         }
                         else if(svs[i][j].height>maxFloor)
                         {
-                            virtualScan[i]=svs[i].front().length;
-                            minheights[i]=svs[i].front().height;
+                            virtualScan[i]=svs[i][firstcandid].length;
+                            minheights[i]=svs[i][firstcandid].height;
                             denoiseflag=0;
                             roadfilterflag=0;
                         }
@@ -239,7 +241,7 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
                     {
                         if(svs[i][j].height-svs[i][candid].height<=passHeight)
                         {
-                            if(svs[i][j].rotlength-svs[i][candid].rotlength<=delta)
+                            if(svs[i][j].rotlength-svs[i][candid].rotlength<=deltaminheight)
                             {
                                 virtualScan[i]=svsback[i][startrotid].length;
                                 minheights[i]=svsback[i][startrotid].height;
@@ -273,7 +275,7 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
                     {
                         if(startrotid+1==endrotid)
                         {
-                            if(svs[i][j].rotlength-svs[i][candid].rotlength<=delta)
+                            if(svs[i][j].rotlength-svs[i][candid].rotlength<=deltaminheight)
                             {
                                 virtualScan[i]=svsback[i][startrotid].length;
                                 minheights[i]=svsback[i][startrotid].height;
@@ -284,7 +286,7 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
                         {
                             if(svs[i][j].height-svs[i][candid].height<=passHeight)
                             {
-                                if(svs[i][j].rotlength-svs[i][candid].rotlength<=delta)
+                                if(svs[i][j].rotlength-svs[i][candid].rotlength<=deltaminheight)
                                 {
                                     virtualScan[i]=svsback[i][startrotid].length;
                                     minheights[i]=svsback[i][startrotid].height;
@@ -312,7 +314,7 @@ void FastVirtualScan::getVirtualScan(double theta, double maxFloor, double minCe
                     }
                     else
                     {
-                        if(svs[i][j].rotlength-svs[i][candid].rotlength>delta)
+                        if(svs[i][j].rotlength-svs[i][candid].rotlength>deltamaxheight)
                         {
                             maxheights[i]=svsback[i][startrotid].height;
                             break;

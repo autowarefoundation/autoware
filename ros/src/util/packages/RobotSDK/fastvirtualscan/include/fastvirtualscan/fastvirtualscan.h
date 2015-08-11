@@ -35,7 +35,7 @@ public:
     virtual ~FastVirtualScan();
 public:
     void calculateVirtualScans(int beamNum, double heightStep, double minFloor, double maxCeiling, double obstacleMinHeight=1, double maxBackDistance=1, double beamRotation=0, double minRange=0);
-    void getVirtualScan(double theta, double maxFloor, double minCeiling, double passHeight, QVector<double> & virtualScan);
+    void getVirtualScan(double thetaminheight, double thetamaxheight, double maxFloor, double minCeiling, double passHeight, QVector<double> & virtualScan);
 };
 
 #endif // FASTVIRTUALSCAN_H
