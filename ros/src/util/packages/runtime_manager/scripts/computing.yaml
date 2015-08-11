@@ -67,17 +67,75 @@ subs :
       - name : fusion_ranging
         cmd  : roslaunch cv_tracker ranging.launch
         param: car_fusion
+        gui  :
+          flags                : [ open_dialog ]
+          config_dialog_only   : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
+          open_dialog_only     : [ use_gpu, car, pedestrian ]
+          open_dialog_ok_label : Start
+          use_gpu :
+            flags  : [ nl ]
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+
       - name : kf_tracking
         cmd  : roslaunch cv_tracker kf_tracking.launch
         param: car_kf
+        gui  :
+          flags                : [ open_dialog ]
+          config_dialog_only   :
+            - initial_lifespan
+            - default_lifespan
+            - noise_covariance
+            - measurement_noise_covariance
+            - error_estimate_covariance
+            - percentage_of_overlapping
+            - orb_features
+            - use_orb
+          open_dialog_only     : [ use_gpu, car, pedestrian ]
+          open_dialog_ok_label : Start
+          use_gpu :
+            flags  : [ nl ]
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+
       - name : obj_reproj
         cmd  : roslaunch cv_tracker reprojection.launch
+        param: obj_reproj
+        gui  :
+          flags                : [ open_dialog, no_link ]
+          open_dialog_ok_label : Start
+          use_gpu :
+            flags  : [ nl ]
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+
     - name : lidar_detector
       subs :
       - name : euclidean_clustering
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
       - name : fusion_clustering
         cmd  : roslaunch lidar_tracker obj_fusion.launch
+        param: fusion_clustering
+        gui  :
+          flags                : [ open_dialog, no_link ]
+          open_dialog_ok_label : Start
+          use_gpu :
+            flags  : [ nl ]
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+
     - name : road_wizard
       subs :
       - name : feat_proj
@@ -529,6 +587,31 @@ params :
       max   : 1
       v     : 0
 
+    - name     : use_gpu
+      label    : Use GPU
+      kind     : radio_box
+      choices  : [ 'False', 'True' ]
+      choices_type : str
+      choices_style: h
+      v        : 'False'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : car
+      label    : Car
+      kind     : checkbox
+      v        : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pedestrian
+      label    : Pedestrian
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
     msg   : ConfigPedestrianKf
@@ -573,6 +656,60 @@ params :
       min   : 0
       max   : 1
       v     : 0
+
+  - name : obj_reproj
+    vars :
+    - name     : use_gpu
+      label    : Use GPU
+      kind     : radio_box
+      choices  : [ 'False', 'True' ]
+      choices_type : str
+      choices_style: h
+      v        : 'False'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : car
+      label    : Car
+      kind     : checkbox
+      v        : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pedestrian
+      label    : Pedestrian
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name : fusion_clustering
+    vars :
+    - name     : use_gpu
+      label    : Use GPU
+      kind     : radio_box
+      choices  : [ 'False', 'True' ]
+      choices_type : str
+      choices_style: h
+      v        : 'False'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : car
+      label    : Car
+      kind     : checkbox
+      v        : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pedestrian
+      label    : Pedestrian
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : traffic_light
     vars :
@@ -714,6 +851,31 @@ params :
       min   : 0.0
       max   : 5.0
       v     : 1.0
+
+    - name     : use_gpu
+      label    : Use GPU
+      kind     : radio_box
+      choices  : [ 'False', 'True' ]
+      choices_type : str
+      choices_style: h
+      v        : 'False'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : car
+      label    : Car
+      kind     : checkbox
+      v        : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pedestrian
+      label    : Pedestrian
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : pedestrian_fusion
     topic : /config/pedestrian_fusion
