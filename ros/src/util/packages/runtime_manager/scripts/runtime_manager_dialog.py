@@ -530,8 +530,11 @@ class MyFrame(rtmgr.MyFrame):
 		if pdic is None or prm is None:
 			return
 		klass_dlg = globals().get(gdic.get('dialog', 'MyDialogParam'), MyDialogParam)
+
+		dic_list_push(gdic, 'dialog_type', 'config')
 		dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 		dlg.ShowModal()
+		dic_list_pop(gdic, 'dialog_type')
 
 	def obj_to_add_args(self, obj, msg_box=True):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
@@ -540,8 +543,12 @@ class MyFrame(rtmgr.MyFrame):
 
 		if 'open_dialog' in gdic.get('flags', []) and msg_box:
 			klass_dlg = globals().get(gdic.get('dialog', 'MyDialogParam'), MyDialogParam)
+
+			dic_list_push(gdic, 'dialog_type', 'open');
 			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
-			if dlg.ShowModal() != 0:
+			dlg_ret = dlg.ShowModal()
+			dic_list_pop(gdic, 'dialog_type')
+			if dlg_ret != 0:
 				return False			
 
 		self.update_func(pdic, gdic, prm)
@@ -1559,6 +1566,12 @@ class MyFrame(rtmgr.MyFrame):
 #	def OnCancel(self, event):
 #		self.EndModal(-1)
 
+def gdic_dialog_type_chk(gdic, name):
+	dlg_type = dic_list_get(gdic, 'dialog_type', 'config')
+	other_key = 'open_dialog_only' if dlg_type == 'config' else 'config_dialog_only'
+	other_lst = gdic.get(other_key, [])
+	return False if name in other_lst else True
+
 class ParamPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.frame = kwds.pop('frame')
@@ -1578,6 +1591,10 @@ class ParamPanel(wx.Panel):
 		topic_szrs = (None, None)
 		for var in self.prm.get('vars'):
 			name = var.get('name')
+
+			if not gdic_dialog_type_chk(self.gdic, name):
+				continue
+
 			if name not in self.gdic:
 				self.gdic[ name ] = {}
 			gdic_v = self.gdic.get(name)
@@ -1852,6 +1869,10 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
+
+		ok_lb_key = 'open_dialog_ok_label'
+		if dic_list_get(gdic, 'dialog_type', 'config') == 'open' and ok_lb_key in gdic:
+			self.button_1.SetLabel( gdic.get(ok_lb_key) )
 
 		parent = self.panel_v
 		frame = self.GetParent()
@@ -2264,6 +2285,19 @@ def obj_refresh(obj):
 			obj = obj.GetParent()
 		tree = obj.GetData()
 		tree.Refresh()
+
+# dic_list util (push, pop, get)
+def dic_list_push(dic, key, v):
+	if key not in dic:
+		dic[key] = []
+	dic.get(key).append(v)
+
+def dic_list_pop(dic, key):
+	dic.get(key, [None]).pop()
+
+def dic_list_get(dic, key, def_ret=None):
+	return dic.get(key, [def_ret])[-1]
+
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret
