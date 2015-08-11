@@ -38,8 +38,10 @@ subs :
         cmd  : roslaunch runtime_manager dpm_ocv.launch
         param: dpm_ocv
         gui  :
-          flags : [ open_dialog, no_link ]
-          dialog: MyDialogDpm
+          flags                  : [ open_dialog ]
+          config_dialog          : MyDialogCarPedestrian
+          car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
+          open_dialog            : MyDialogDpm
           use_gpu :
             flags  : [ nl ]
           car :
@@ -52,8 +54,10 @@ subs :
         cmd  : roslaunch cv_tracker dpm_ttic.launch
         param: dpm_ttic
         gui  :
-          flags : [ open_dialog, no_link ]
-          dialog: MyDialogDpm
+          flags                  : [ open_dialog ]
+          config_dialog          : MyDialogCarPedestrian
+          car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
+          open_dialog            : MyDialogDpm
           use_gpu :
             flags  : [ nl ]
           car :
@@ -68,10 +72,12 @@ subs :
         cmd  : roslaunch cv_tracker ranging.launch
         param: car_fusion
         gui  :
-          flags                : [ open_dialog ]
-          config_dialog_only   : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
-          open_dialog_only     : [ use_gpu, car, pedestrian ]
-          open_dialog_ok_label : Start
+          flags                  : [ open_dialog ]
+          config_dialog          : MyDialogCarPedestrian
+          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
+          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
+          open_dialog_only       : [ use_gpu, car, pedestrian ]
+          open_dialog_ok_label   : Start
           use_gpu :
             flags  : [ nl ]
           car :
@@ -84,8 +90,10 @@ subs :
         cmd  : roslaunch cv_tracker kf_tracking.launch
         param: car_kf
         gui  :
-          flags                : [ open_dialog ]
-          config_dialog_only   :
+          flags                  : [ open_dialog ]
+          config_dialog          : MyDialogCarPedestrian
+          car_pedestrian_obj_key : { car : car_kf, pedestrian : pedestrian_kf }
+          config_dialog_only     :
             - initial_lifespan
             - default_lifespan
             - noise_covariance
@@ -94,8 +102,8 @@ subs :
             - percentage_of_overlapping
             - orb_features
             - use_orb
-          open_dialog_only     : [ use_gpu, car, pedestrian ]
-          open_dialog_ok_label : Start
+          open_dialog_only       : [ use_gpu, car, pedestrian ]
+          open_dialog_ok_label   : Start
           use_gpu :
             flags  : [ nl ]
           car :
@@ -239,6 +247,14 @@ buttons:
     param   : car_dpm
   pedestrian_dpm :
     param   : pedestrian_dpm
+  car_fusion :
+    param   : car_fusion
+  pedestrian_fusion :
+    param   : pedestrian_fusion
+  car_kf :
+    param   : car_kf
+  pedestrian_kf :
+    param   : pedestrian_kf
 
 params :
   - name  : dpm_ocv

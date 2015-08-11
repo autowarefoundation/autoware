@@ -529,9 +529,8 @@ class MyFrame(rtmgr.MyFrame):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		if pdic is None or prm is None:
 			return
-		klass_dlg = globals().get(gdic.get('dialog', 'MyDialogParam'), MyDialogParam)
-
 		dic_list_push(gdic, 'dialog_type', 'config')
+		klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 		dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 		dlg.ShowModal()
 		dic_list_pop(gdic, 'dialog_type')
@@ -542,9 +541,8 @@ class MyFrame(rtmgr.MyFrame):
 			return None
 
 		if 'open_dialog' in gdic.get('flags', []) and msg_box:
-			klass_dlg = globals().get(gdic.get('dialog', 'MyDialogParam'), MyDialogParam)
-
 			dic_list_push(gdic, 'dialog_type', 'open');
+			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 			dlg_ret = dlg.ShowModal()
 			dic_list_pop(gdic, 'dialog_type')
@@ -1572,6 +1570,10 @@ def gdic_dialog_type_chk(gdic, name):
 	other_lst = gdic.get(other_key, [])
 	return False if name in other_lst else True
 
+def gdic_dialog_name_get(gdic):
+	dlg_type = dic_list_get(gdic, 'dialog_type', 'config')
+	return gdic.get(dlg_type + '_dialog',  gdic.get('dialog', 'MyDialogParam') )
+
 class ParamPanel(wx.Panel):
 	def __init__(self, *args, **kwds):
 		self.frame = kwds.pop('frame')
@@ -1939,6 +1941,32 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		obj = dic.get(obj)
 		if obj:
 			self.frame.OnHyperlinked_obj(obj)
+
+class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
+	def __init__(self, *args, **kwds):
+		pdic = kwds.pop('pdic')
+		self.gdic = kwds.pop('gdic')
+		prm = kwds.pop('prm')
+		rtmgr.MyDialogCarPedestrian.__init__(self, *args, **kwds)
+
+		frame = self.GetParent()
+		self.frame = frame
+
+		self.SetTitle(prm.get('name', ''))
+
+		hl = self.hyperlink_car
+		hl.SetVisitedColour(hl.GetNormalColour())
+		hl = self.hyperlink_pedestrian
+		hl.SetVisitedColour(hl.GetNormalColour())
+
+	def OnLink(self, event):
+		obj = event.GetEventObject()
+		car_ped = { self.hyperlink_car : 'car', self.hyperlink_pedestrian : 'pedestrian' }.get(obj, 'car')
+		obj_key = self.gdic.get('car_pedestrian_obj_key', {}).get(car_ped)
+        	obj = getattr(self.frame, 'button_launch_' + obj_key, None) if obj_key else None
+		if obj:
+			self.frame.OnHyperlinked_obj(obj)
+		self.EndModal(0)
 
 class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def __init__(self, *args, **kwds):
