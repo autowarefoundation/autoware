@@ -68,7 +68,7 @@ subs :
           part_model_car :
             flags  : [ hline ]
 
-      - name : fusion_ranging
+      - name : range_fusion
         cmd  : roslaunch cv_tracker ranging.launch
         param: car_fusion
         gui  :
@@ -84,7 +84,7 @@ subs :
             border : 16
             flags  : [ left ]
 
-      - name : kf_tracking
+      - name : kf_track
         cmd  : roslaunch cv_tracker kf_tracking.launch
         param: car_kf
         gui  :
@@ -122,11 +122,11 @@ subs :
 
     - name : lidar_detector
       subs :
-      - name : euclidean_clustering
+      - name : euclidean_clusterer
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
-      - name : fusion_clustering
+      - name : obj_fusion
         cmd  : roslaunch lidar_tracker obj_fusion.launch
-        param: fusion_clustering
+        param: obj_fusion
         gui  :
           flags                : [ open_dialog, no_link ]
           open_dialog_ok_label : Start
@@ -672,7 +672,7 @@ params :
         dash     : ''
         delim    : ':='
 
-  - name : fusion_clustering
+  - name : obj_fusion
     vars :
     - name     : car
       label    : Car
