@@ -76,10 +76,8 @@ subs :
           config_dialog          : MyDialogCarPedestrian
           car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
           config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
-          open_dialog_only       : [ use_gpu, car, pedestrian ]
+          open_dialog_only       : [ car, pedestrian ]
           open_dialog_ok_label   : Start
-          use_gpu :
-            flags  : [ nl ]
           car :
             user_category : Detection Target
           pedestrian :
@@ -102,10 +100,8 @@ subs :
             - percentage_of_overlapping
             - orb_features
             - use_orb
-          open_dialog_only       : [ use_gpu, car, pedestrian ]
+          open_dialog_only       : [ car, pedestrian ]
           open_dialog_ok_label   : Start
-          use_gpu :
-            flags  : [ nl ]
           car :
             user_category : Detection Target
           pedestrian :
@@ -118,8 +114,6 @@ subs :
         gui  :
           flags                : [ open_dialog, no_link ]
           open_dialog_ok_label : Start
-          use_gpu :
-            flags  : [ nl ]
           car :
             user_category : Detection Target
           pedestrian :
@@ -136,8 +130,6 @@ subs :
         gui  :
           flags                : [ open_dialog, no_link ]
           open_dialog_ok_label : Start
-          use_gpu :
-            flags  : [ nl ]
           car :
             user_category : Detection Target
           pedestrian :
@@ -603,16 +595,6 @@ params :
       max   : 1
       v     : 0
 
-    - name     : use_gpu
-      label    : Use GPU
-      kind     : radio_box
-      choices  : [ 'False', 'True' ]
-      choices_type : str
-      choices_style: h
-      v        : 'False'
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name     : car
       label    : Car
       kind     : checkbox
@@ -675,16 +657,6 @@ params :
 
   - name : obj_reproj
     vars :
-    - name     : use_gpu
-      label    : Use GPU
-      kind     : radio_box
-      choices  : [ 'False', 'True' ]
-      choices_type : str
-      choices_style: h
-      v        : 'False'
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name     : car
       label    : Car
       kind     : checkbox
@@ -702,16 +674,6 @@ params :
 
   - name : fusion_clustering
     vars :
-    - name     : use_gpu
-      label    : Use GPU
-      kind     : radio_box
-      choices  : [ 'False', 'True' ]
-      choices_type : str
-      choices_style: h
-      v        : 'False'
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name     : car
       label    : Car
       kind     : checkbox
@@ -868,16 +830,6 @@ params :
       max   : 5.0
       v     : 1.0
 
-    - name     : use_gpu
-      label    : Use GPU
-      kind     : radio_box
-      choices  : [ 'False', 'True' ]
-      choices_type : str
-      choices_style: h
-      v        : 'False'
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name     : car
       label    : Car
       kind     : checkbox
