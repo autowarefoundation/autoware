@@ -5,7 +5,7 @@
   <group if="$(arg car)">
     <group ns="obj_car">
 
-      <node pkg="cv_tracker" name="tracking" type="kf_track">
+      <node pkg="cv_tracker" name="tracking" type="kf_track" output="screen">
           <remap from="/config/obj_car/kf" to="/config/car_kf" />
       </node>
 
