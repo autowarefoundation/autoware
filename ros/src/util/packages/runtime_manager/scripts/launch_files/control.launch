@@ -4,6 +4,6 @@
 <include file="$(find runtime_manager)/scripts/vehicle_socket.launch"/>
 
 <!-- pure_pursuit -->
-<include file="$(find lane_follower)/launch/pure_pursuit.launch"/>
+<include file="$(find waypoint_follower)/launch/pure_pursuit.launch"/>
 
 </launch>

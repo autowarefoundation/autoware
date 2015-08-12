@@ -427,14 +427,14 @@ int main(int argc, char **argv)
   ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
   _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   _traj_pub = nh.advertise<visualization_msgs::Marker>("trajectory_mark", 0);
-  _stat_pub = nh.advertise<std_msgs::Bool>("lf_stat", 0);
+  _stat_pub = nh.advertise<std_msgs::Bool>("wf_stat", 0);
 
   //subscribe topic
   ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 10, WayPointCallback);
   ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
   ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);
-  ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 10, ConfigCallback);
+  ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
 
   geometry_msgs::TwistStamped twist;
   ros::Rate loop_rate(LOOP_RATE); // by Hz
