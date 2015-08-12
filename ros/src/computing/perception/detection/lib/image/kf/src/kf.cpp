@@ -725,7 +725,6 @@ void image_callback(const sensor_msgs::Image& image_source)
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
 	cv::Mat imageTrack = cv_image->image;
-
 	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);
 	_ready=false;
 	//imshow("Tracked", imageTrack);
@@ -764,12 +763,18 @@ void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
 
 static void kf_config_cb(const runtime_manager::ConfigCarKf::ConstPtr& param)
 {
-	INITIAL_LIFESPAN	= param->initial_lifespan;
-	DEFAULT_LIFESPAN	= param->default_lifespan;
-	NOISE_COV			= param->noise_covariance;
-	MEAS_NOISE_COV		= param->measurement_noise_covariance;
-	ERROR_ESTIMATE_COV	= param->error_estimate_covariance;
-	OVERLAPPING_PERC	= param->percentage_of_overlapping;
+	if (param->initial_lifespan > 0)
+		INITIAL_LIFESPAN	= param->initial_lifespan;
+	if (param->default_lifespan > 0)
+		DEFAULT_LIFESPAN	= param->default_lifespan;
+	if(param->noise_covariance > 0)
+		NOISE_COV			= param->noise_covariance;
+	if(param->measurement_noise_covariance > 0)
+		MEAS_NOISE_COV		= param->measurement_noise_covariance;
+	if(param->error_estimate_covariance > 0)
+		ERROR_ESTIMATE_COV	= param->error_estimate_covariance;
+	if(param->percentage_of_overlapping > 0)
+		OVERLAPPING_PERC	= param->percentage_of_overlapping;
 
 	ORB_NUM_FEATURES	= 2000;
 	ORB_MIN_MATCHES		= 3;
