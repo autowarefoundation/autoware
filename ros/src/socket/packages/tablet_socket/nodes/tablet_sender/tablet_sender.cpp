@@ -449,7 +449,7 @@ int main(int argc, char **argv)
 						    subscribe_mode_info);
 	ros::Subscriber sub_ndt_stat = n.subscribe("ndt_stat", QUEUE_SIZE,
 						   subscribe_ndt_stat);
-	ros::Subscriber sub_lf_stat = n.subscribe("lf_stat", QUEUE_SIZE,
+	ros::Subscriber sub_lf_stat = n.subscribe("wf_stat", QUEUE_SIZE,
 						  subscribe_lf_stat);
 
 	ros::Rate loop_rate(SUBSCRIBE_HZ);

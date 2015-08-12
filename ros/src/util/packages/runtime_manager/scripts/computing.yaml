@@ -192,7 +192,7 @@ subs :
       subs :
        - name : pure_pursuit
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
-         param: lane_follower
+         param: waypoint_follower
          gui  :
            velocity:
              depend : param_flag
@@ -489,8 +489,8 @@ params :
       max   : 2.0
       v     : 0
 
-  - name  : lane_follower
-    topic : /config/lane_follower
+  - name  : waypoint_follower
+    topic : /config/waypoint_follower
     msg   : ConfigLaneFollower
     vars  :
     - name  : param_flag
