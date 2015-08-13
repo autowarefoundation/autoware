@@ -169,7 +169,7 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_config = n.subscribe("config/points2polygon",
 						 SUBSCRIBE_QUEUE_SIZE,
 						 config_callback);
-	ros::Subscriber sub_points = n.subscribe("velodyne_points",
+	ros::Subscriber sub_points = n.subscribe("points_raw",
 						 SUBSCRIBE_QUEUE_SIZE,
 						 velodyne_points_callback);
 

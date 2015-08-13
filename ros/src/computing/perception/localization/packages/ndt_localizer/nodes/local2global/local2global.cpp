@@ -637,7 +637,7 @@ int main(int argc, char **argv)
     ros::Subscriber map_sub = n.subscribe("points_map", 10, map_callback);
 
     // subscribing the velodyne data
-    //    ros::Subscriber velodyne_sub = n.subscribe("velodyne_points", 1000, velodyne_callback);
+    //    ros::Subscriber velodyne_sub = n.subscribe("points_raw", 1000, velodyne_callback);
     //    ros::Subscriber velodyne_sub = n.subscribe("cloud_pcd", 1000, velodyne_callback);
 
     ros::spin();
