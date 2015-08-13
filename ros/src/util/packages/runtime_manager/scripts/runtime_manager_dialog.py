@@ -1205,7 +1205,12 @@ class MyFrame(rtmgr.MyFrame):
 			s = self.stdout_file_search(file, 'load ')
 			if not s:
 				break;
-			i = i + 1
+			err_key = 'failed '
+			if s[:len(err_key)] != err_key:
+                                i += 1
+			else:
+				i -= 1
+				print s
 			wx.CallAfter(self.label_point_cloud_bar.set, 100 * i / n)
 		wx.CallAfter(self.label_point_cloud_bar.clear)
 
