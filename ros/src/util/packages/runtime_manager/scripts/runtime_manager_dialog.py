@@ -121,8 +121,8 @@ class MyFrame(rtmgr.MyFrame):
 			for topic in self.qs_dic.get('exec_time', {}).get(nm, {}).keys():
 				rospy.Subscriber(topic, std_msgs.msg.Float32, self.exec_time_callback, callback_args=topic)
 
-		self.label_cpuinfo_qs.Destroy()
-		self.label_cpuinfo_qs = ColorLabel(tab)
+		self.label_cpuinfo.Destroy()
+		self.label_cpuinfo = ColorLabel(self)
 
 		#
 		# for Map tab
@@ -196,6 +196,7 @@ class MyFrame(rtmgr.MyFrame):
 			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
 			tree_ctrl.ExpandAll()
 			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+			tree_ctrl.SetBackgroundColour(wx.NullColour)
 			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
 
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
@@ -246,6 +247,7 @@ class MyFrame(rtmgr.MyFrame):
 		tree_ctrl = self.create_tree(parent, dic, None, None, self.data_cmd)
 		tree_ctrl.ExpandAll()
 		tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+		tree_ctrl.SetBackgroundColour(wx.NullColour)
 		self.tree_ctrl_data = tree_ctrl
 
 		#self.setup_config_param_pdic()
@@ -299,9 +301,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.add_params(self.status_dic.get('params', []))
 
 		self.setup_buttons(self.status_dic.get('buttons', {}), self.status_cmd)
-
-		self.label_cpuinfo_status.Destroy()
-		self.label_cpuinfo_status = ColorLabel(tab)
 
 		font = self.label_top_cmd.GetFont()
 		font.SetFamily(wx.FONTFAMILY_MODERN)
@@ -939,8 +938,7 @@ class MyFrame(rtmgr.MyFrame):
 			tx = 'MEM: ' + str(used) + u + '/' + str(total) + u + '(' + str(rate) + '%)'
 			lbs += [ '\n', col, tx ]
 
-			wx.CallAfter(self.label_cpuinfo_qs.set, lbs)
-			wx.CallAfter(self.label_cpuinfo_status.set, lbs)
+			wx.CallAfter(self.label_cpuinfo.set, lbs)
 
 			is_alert = max_v >= 90 or rate >= 90
 
@@ -1207,7 +1205,7 @@ class MyFrame(rtmgr.MyFrame):
 				break;
 			err_key = 'failed '
 			if s[:len(err_key)] != err_key:
-                                i += 1
+				i += 1
 			else:
 				i -= 1
 				print s
@@ -1461,7 +1459,14 @@ class MyFrame(rtmgr.MyFrame):
 			return []
 
 	def set_bg_all_tabs(self, col=wx.NullColour):
-		for tab in self.all_tabs:
+
+		add_pnls = [
+			self, 
+			self.tree_ctrl_0,
+			self.tree_ctrl_1,
+			self.tree_ctrl_data ]
+
+		for tab in self.all_tabs + add_pnls:
 			tab.SetBackgroundColour(col)
 
 	#def modal_dialog(self, lst, title=''):
@@ -1968,7 +1973,7 @@ class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 		obj = event.GetEventObject()
 		car_ped = { self.hyperlink_car : 'car', self.hyperlink_pedestrian : 'pedestrian' }.get(obj, 'car')
 		obj_key = self.gdic.get('car_pedestrian_obj_key', {}).get(car_ped)
-        	obj = getattr(self.frame, 'button_launch_' + obj_key, None) if obj_key else None
+		obj = getattr(self.frame, 'button_launch_' + obj_key, None) if obj_key else None
 		if obj:
 			self.frame.OnHyperlinked_obj(obj)
 		self.EndModal(0)
@@ -2095,7 +2100,7 @@ class ColorLabel(wx.Panel):
 
 		font = dc.GetFont()
 		pt = font.GetPointSize()
-		font.SetPointSize(pt * 3 / 4)
+		#font.SetPointSize(pt * 3 / 4)
 		dc.SetFont(font)
 
 		(x,y) = (0,0)
