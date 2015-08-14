@@ -42,6 +42,9 @@ buttons :
   rviz_qs :
     run : rosrun rviz rviz
 
+  rqt_qs :
+    run : rosrun rqt_graph rqt_graph
+
 params :
   - name : map_qs
     vars :
