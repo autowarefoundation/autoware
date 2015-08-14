@@ -40,14 +40,15 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 
-#include <sensor_msgs/image_encodings.h>
-#include <sensor_msgs/CompressedImage.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 
 #include <pos_db.h>
 
 #define MYNAME		"pos_uploader"
+#define OWN_TOPIC_NAME	"current_pose"
+#define CAR_TOPIC_NAME	"car_pose"
+#define PEDESTRIAN_TOPIC_NAME	"pedestrian_pose"
 
 using namespace std;
 
@@ -82,12 +83,26 @@ static std::string getTimeStamp(time_t sec, time_t nsec)
   char buf[30];
   int msec = static_cast<int>(nsec / (1000 * 1000));
 
-  tm *t = localtime(&sec);
+  tm *t = gmtime(&sec);
   sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%d",
           t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
           t->tm_hour, t->tm_min, t->tm_sec, msec);
 
   return std::string(static_cast<const char*>(buf));
+}
+
+static int get_type_from_name(const char *name)
+{
+  if (strcmp(name, OWN_TOPIC_NAME) == 0) {
+    return 1;
+  } else if (strcmp(name, CAR_TOPIC_NAME) == 0) {
+    return 2;
+  } else if (strcmp(name, PEDESTRIAN_TOPIC_NAME) == 0) {
+    return 3;
+  } else {
+    std::cerr << "Cannot convert name \"" << name << "\" to type" << std::endl;
+    return 0;
+  }
 }
 
 static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, const std::string& timestamp, const char *name)
@@ -97,7 +112,7 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
 
   oss << "INSERT INTO POS(id,x,y,z,area,or_x,or_y,or_z,or_w,type,tm) "
       << "VALUES("
-      << "'" << name << ":" << mac_addr << "',"
+      << "'" << mac_addr << "',"
       << std::fixed << std::setprecision(6) << pose.position.y << ","
       << std::fixed << std::setprecision(6) << pose.position.x << ","
       << std::fixed << std::setprecision(6) << pose.position.z << ","
@@ -106,7 +121,7 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
       << std::fixed << std::setprecision(6) << pose.orientation.x << ","
       << std::fixed << std::setprecision(6) << pose.orientation.z << ","
       << std::fixed << std::setprecision(6) << pose.orientation.w << ","
-      << "0,"
+      << get_type_from_name(name) << ","
       << "'" << timestamp << "'"
       << ");";
 
@@ -120,7 +135,7 @@ static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_ar
     ros::Time t = ros::Time::now();
     timestamp = getTimeStamp(t.sec, t.nsec);
   } else {
-    timestamp = timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
+    timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
   }
 
   std::string ret;
@@ -148,7 +163,7 @@ std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << c
   pthread_mutex_lock(&pose_lock_);
   if(car_num > 0){
     for(size_t i = 0; i < car_position_array.size(); i++) {
-      value += makeSendDataDetectedObj(car_position_array[i], "car_pose");
+      value += makeSendDataDetectedObj(car_position_array[i], CAR_TOPIC_NAME);
     }
   }
   car_position_array.clear();
@@ -156,7 +171,7 @@ std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << c
 
   if(pedestrian_num > 0){
     for(size_t i = 0; i < pedestrian_position_array.size(); i++) {
-      value += makeSendDataDetectedObj(pedestrian_position_array[i], "pedestrian_pose");
+      value += makeSendDataDetectedObj(pedestrian_position_array[i], PEDESTRIAN_TOPIC_NAME);
     }
   }
   pedestrian_position_array.clear();
@@ -172,7 +187,7 @@ std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << c
     } else {
       timestamp = getTimeStamp(current_pose_position[i].header.stamp.sec,current_pose_position[i].header.stamp.nsec);
     }
-    value += pose_to_insert_statement(current_pose_position[i].pose, timestamp, "current_pose");
+    value += pose_to_insert_statement(current_pose_position[i].pose, timestamp, OWN_TOPIC_NAME);
     value += "\n";
   }
   current_pose_position.clear();
@@ -262,9 +277,9 @@ int main(int argc, char **argv)
    */
   ros::NodeHandle nh;
 
-  ros::Subscriber car_locate = nh.subscribe("/car_pose", 1, car_locate_cb);
-  ros::Subscriber pedestrian_locate = nh.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
-  ros::Subscriber gnss_pose = nh.subscribe("/current_pose", 1, current_pose_cb);
+  ros::Subscriber car_locate = nh.subscribe("/" CAR_TOPIC_NAME, 1, car_locate_cb);
+  ros::Subscriber pedestrian_locate = nh.subscribe("/" PEDESTRIAN_TOPIC_NAME, 1, pedestrian_locate_cb);
+  ros::Subscriber gnss_pose = nh.subscribe("/" OWN_TOPIC_NAME, 1, current_pose_cb);
 
 
   nh.param<string>("pos_db/db_host_name", db_host_name, DB_HOSTNAME);

@@ -55,10 +55,17 @@ publish data as ractangular plane
 #define MYNAME		"pos_downloader"
 #define MARKERNAME	"mo_marker"
 #define STARTTIME	(0)		// sec since 1970-01-01 (0==now)
-#define DELAYSEC	(3)		// delay sec for pos_uploader
+#define DELAYSEC	(0)		// delay sec for pos_uploader
 #define LIFETIME	(1)		// anonymous marker's lifetime
 #define POSUP_DZ	(40)		// z offset of PosUp
 #define PEDESTRIAN_DZ	(-2)		// z offset of pedestrian_pose
+
+#define TYPE_OWN	(1)
+#define TYPE_CAR	(2)
+#define TYPE_PEDESTRIAN	(3)
+
+#define ANON_MARKER_ID_MIN	(2)
+#define ANON_MARKER_ID_MAX	(0x7f000000)
 
 using namespace std;
 
@@ -213,41 +220,105 @@ static int publish_pedestrian(int id, int is_pedestrian, ros::Time now,
 }
 
 static int result_to_marker(const string& idstr, ros::Time now,
-			    geometry_msgs::Pose& pose, int is_swap)
+			    geometry_msgs::Pose& pose, int type, int is_swap)
 {
-  static int id = 2;
+  static int id = ANON_MARKER_ID_MIN;
+  int nid = 0;
 
-  if (idstr.find("current_pose", 0) != string::npos) {
-    int nid = 0;
-    if(idstr.length() >= 21) nid = 0x7f000000 | (std::strtol((idstr.substr(15,6)).c_str(), NULL, 16)) << 1;
+  switch (type) {
+  case TYPE_OWN:
+    /* use lower 6 bytes */
+    nid = ANON_MARKER_ID_MAX |
+      (std::strtol(idstr.substr(6, 6).c_str(), NULL, 16)) << 1;
     publish_car(nid, 1, now, pose);
-  } else if (idstr.find("car_pose", 0) != string::npos) {
+    break;
+  case TYPE_CAR:
     id = publish_car(id, 0, now, pose);
-  } else if (idstr.find("pedestrian_pose", 0) != string::npos) {
+    break;
+  case TYPE_PEDESTRIAN:
     id = publish_pedestrian(id, 1, now, pose);
-  } else {
-    id = publish_pedestrian(id, 0, now, pose);
+    break;
+
+  /* backward compatibility */
+  default:
+    if (idstr.find("current_pose", 0) != string::npos) {
+      /* current_pose:DEF012345678 */
+      if (idstr.length() >= 25)
+	/* use lower 6 bytes */
+	nid = ANON_MARKER_ID_MAX |
+	  (std::strtol((idstr.substr(19, 6)).c_str(), NULL, 16)) << 1;
+      publish_car(nid, 1, now, pose);
+    } else if (idstr.find("ndt_pose", 0) != string::npos) {
+      /* ndt_pose:9ABCDEF01234 */
+      if (idstr.length() >= 21)
+	/* use lower 6 bytes */
+	nid = ANON_MARKER_ID_MAX |
+	  (std::strtol((idstr.substr(15, 6)).c_str(), NULL, 16)) << 1;
+      publish_car(nid, 1, now, pose);
+    } else if (idstr.find("car_pose", 0) != string::npos) {
+      id = publish_car(id, 0, now, pose);
+    } else if (idstr.find("pedestrian_pose", 0) != string::npos) {
+      id = publish_pedestrian(id, 1, now, pose);
+    } else {
+      id = publish_pedestrian(id, 0, now, pose); // PosUp
+    }
   }
+
+  if (id >= ANON_MARKER_ID_MAX)
+    id = ANON_MARKER_ID_MIN;
 
   return 0;
 }
 
-static void marker_publisher(const std_msgs::String& msg, int is_swap)
+// convert JST time into GMT time
+static void convert_jst_to_gmt(char *tstr)
+{
+  struct tm tm, *tp;
+  int nsec = 0;
+  time_t tsec;
+
+  if (sscanf(tstr, "%04d-%02d-%02d %02d:%02d:%02d.%d",
+    &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min,
+    &tm.tm_sec, &nsec) < 7) {
+    if (sscanf(tstr, "%04d-%02d-%02d %02d:%02d:%02d",
+      &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min,
+      &tm.tm_sec) < 6) {
+      std::cerr << "Cannot convert time \"" << tstr << "\"" << std::endl;
+      return;
+    }
+  }
+  tm.tm_year -= 1900;
+  tm.tm_mon -= 1;
+  tsec = mktime(&tm);
+  tp = gmtime(&tsec);
+  sprintf(tstr, "%04d-%02d-%02d %02d:%02d:%02d.%d",
+    tp->tm_year + 1900, tp->tm_mon + 1, tp->tm_mday,
+    tp->tm_hour, tp->tm_min, tp->tm_sec, nsec);
+}
+
+static void marker_publisher(const std_msgs::String& msg, char *prev, int is_swap)
 {
   std::vector<std::string> db_data = split(msg.data, '\n');
   std::vector<std::string> cols;
   ros::Time now = ros::Time::now();
   geometry_msgs::Pose pose;
+  int type;
+  int i = 0;
 
   for (const std::string& row : db_data) {
     if(row.empty())
       continue;
     cols = split(row, '\t');
-    // id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm
-    if(cols.size() != 11)
+    // id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm,type
+    if(cols.size() != 12)
       continue;
 
-    if(ignore_my_pose && (cols[0].find(mac_addr, 0) != string::npos)) {
+    type = std::stoi(cols[11]);
+    if(ignore_my_pose &&
+       (type == TYPE_OWN ||
+	((cols[0].find("current_pose", 0) != string::npos ||
+	  cols[0].find("ndt_pose", 0) != string::npos) &&
+	 cols[0].find(mac_addr, 0) != string::npos))) {
       continue;	// don't publish Marker of my pose
     }
 
@@ -265,6 +336,7 @@ static void marker_publisher(const std_msgs::String& msg, int is_swap)
     pose.position.z = std::stod(cols[3]);
     pose.orientation.z = std::stod(cols[6]);
     pose.orientation.w = std::stod(cols[7]);
+    // VoltDB returns not NULL but -1.7976931348623157E308
     if (pose.position.x < -1.79E308 ||
 	pose.position.y < -1.79E308 ||
 	pose.position.z < -1.79E308) {
@@ -286,7 +358,11 @@ static void marker_publisher(const std_msgs::String& msg, int is_swap)
       pose.orientation.z = 0;
       pose.orientation.w = 1;
     }
-    result_to_marker(cols[0], now, pose, is_swap);
+    result_to_marker(cols[0], now, pose, type, is_swap);
+    if (i++ == 0) {
+      strcpy(prev, cols[10].c_str());
+      convert_jst_to_gmt(prev);
+    }
   }
 }
 
@@ -295,14 +371,43 @@ static int create_timestr(time_t sec, int nsec, char *str, size_t size)
 {
   std::tm *nowtm;
 
-  nowtm = std::localtime(&sec);
+  nowtm = std::gmtime(&sec);
   return std::snprintf(str, size, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
 	nowtm->tm_year + 1900, nowtm->tm_mon + 1, nowtm->tm_mday,
 	nowtm->tm_hour, nowtm->tm_min, nowtm->tm_sec, nsec/1000/1000);
 }
 
+// get latest timestamp
+static int get_latest_tm(char *prev)
+{
+  std::string data;
+  std::string db_response;
+  std::vector<std::string> db_data;
+  int ret;
+
+  data = make_header(1, 1);
+  data += "SELECT tm FROM POS ORDER BY tm DESC LIMIT 1;\r\n";
+  ret = sd.Sender(data, db_response, 0);
+  if (ret < 0) {
+    std::cerr << "sd.Sender() failed (return " << ret << ")" << std::endl;
+    return ret;
+  }
+
+  db_data = split(db_response.c_str(), '\r');
+  if (db_data.size() < 1) {
+    std::cerr << "Invalid vector size (" << db_data.size() << ")" << std::endl;
+    return -12;
+  }
+
+  strcpy(prev, db_data.at(0).c_str());
+  // VoltDB returns JST time...
+  convert_jst_to_gmt(prev);
+  std::cerr << "Get \"" << prev << "\"" << std::endl;
+  return 0;
+}
+
 //wrap SendData class
-static uint64_t send_sql(time_t diff_sec, uint64_t prev)
+static void send_sql(time_t diff_sec, char *prev)
 {
   std::string data;
   string db_response;
@@ -310,57 +415,46 @@ static uint64_t send_sql(time_t diff_sec, uint64_t prev)
   ros::Time now = ros::Time::now();
   time_t now_sec = now.toSec() - diff_sec;
   int now_nsec = now.toNSec()%(1000*1000*1000);
-  char timestr[2][64]; // "YYYY-mm-dd HH:MM:SS.sss"
+  char timestr[64]; // "YYYY-mm-dd HH:MM:SS.sss..."
 
-  if (prev == 0) {
-    time_t psec = now_sec - sleep_msec/1000;
-    int pnsec = now_nsec - (sleep_msec%1000)*1000*1000;
-    if (pnsec < 0) {
-	psec--;
-	pnsec += 1000*1000*1000;
-    }
-    create_timestr(psec, pnsec, timestr[0], sizeof(timestr[0]));
-  } else {
-    create_timestr(prev/1000/1000/1000, prev%(1000*1000*1000),
-	timestr[0], sizeof(timestr[0]));
-  }
-  create_timestr(now_sec, now_nsec, timestr[1], sizeof(timestr[1]));
+  // at first, get the latest timestamp
+  if (prev[0] == '\0')
+    if (get_latest_tm(prev) < 0)
+      return;
+  create_timestr(now_sec, now_nsec, timestr, sizeof(timestr));
 
   data = make_header(1, 1);
-
-  data += "SELECT id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm FROM POS "
-	"WHERE tm >= '";
-  data += timestr[0];
+  // select pos data between previous latest timestamp and now
+  data += "SELECT id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm,type FROM POS "
+	"WHERE tm > '";
+  data += prev;
   data += "' AND tm < '";
-  data += timestr[1];
-  data += "';\r\n";
+  data += timestr;
+  data += "' ORDER BY tm DESC;\r\n";
 
   int ret = sd.Sender(data, db_response, 0);
   if (ret < 0) {
     std::cerr << "sd.Sender() failed" << std::endl;
   } else {
     std::cout << "return data: \"" << db_response << "\"" << std::endl;
-    if (db_response.size() > 4) {
-      msg.data = db_response.substr(4).c_str();
-      marker_publisher(msg, 1);
-    }
+    msg.data = db_response.c_str();
+    marker_publisher(msg, prev, 1);
   }
-
-  return now_sec*1000*1000*1000 + now_nsec;
 }
 
 static void* intervalCall(void *unused)
 {
   double *args = (double *)unused;
   double diff_sec = args[1];
-  time_t prev_sec = 0;
+  char prev_sec[64]; // "YYYY-mm-dd HH:MM:SS.sss..."
 
   if (args[0] != 0)
     diff_sec += ros::Time::now().toSec() - args[0];
   cout << "diff=" << diff_sec << endl;
 
+  prev_sec[0] = '\0';
   while (1) {
-    prev_sec = send_sql((time_t)diff_sec, prev_sec);
+    send_sql((time_t)diff_sec, prev_sec);
     usleep(sleep_msec*1000);
   }
 
