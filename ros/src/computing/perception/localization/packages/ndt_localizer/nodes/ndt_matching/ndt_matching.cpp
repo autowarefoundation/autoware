@@ -69,8 +69,6 @@
 #include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <interactive_markers/interactive_marker_server.h>
-
 #include <runtime_manager/ConfigNdt.h>
 
 struct Position {
@@ -129,6 +127,10 @@ static double angle = 0.0;
 static double control_shift_x = 0.0;
 static double control_shift_y = 0.0;
 static double control_shift_z = 0.0;
+
+static int max = 63;
+static int min = 0;
+static int layer = 1;
 
 static ros::Publisher ndt_stat_pub;
 static std_msgs::Bool ndt_stat_msg;
@@ -216,6 +218,11 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     control_shift_x = input->shift_x;
     control_shift_y = input->shift_y;
     control_shift_z = input->shift_z;
+
+    max = input->max;
+    min = input->min;
+    layer = input->layer;
+
     /*
     std::cout << "angle_error: " << angle << "." << std::endl;
     std::cout << "control_shift_x: " << control_shift_x << "." << std::endl;
@@ -288,41 +295,6 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
         std::cout << "NDT ready..." << std::endl;
 	*/
     }
-}
-
-static void marker_callback(const visualization_msgs::InteractiveMarkerFeedback::ConstPtr& input)
-{
-  if(input->event_type == 5){
-    std::cout << "marker_callback" << std::endl;
-    std::cout << input->pose.position.x << std::endl;
-    std::cout << input->pose.position.y << std::endl;
-    std::cout << input->pose.position.z << std::endl;
-    std::cout << input->pose.orientation.x << std::endl;
-    std::cout << input->pose.orientation.y << std::endl;
-    std::cout << input->pose.orientation.z << std::endl;
-    std::cout << input->pose.orientation.w << std::endl;
-    
-    tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
-    tf::Matrix3x3 m(q);
-    previous_pos.x = input->pose.position.x;
-    previous_pos.y = input->pose.position.y;
-    previous_pos.z = input->pose.position.z;
-    m.getRPY(previous_pos.roll, previous_pos.pitch, previous_pos.yaw);
-    
-    current_pos.x = previous_pos.x;
-    current_pos.y = previous_pos.y;
-    current_pos.z = previous_pos.z;
-    current_pos.roll = previous_pos.roll;
-    current_pos.pitch = previous_pos.pitch;
-    current_pos.yaw = previous_pos.yaw;
-
-    offset_x = current_pos.x - previous_pos.x;
-    offset_y = current_pos.y - previous_pos.y;
-    offset_z = current_pos.z - previous_pos.z;
-    offset_yaw = current_pos.yaw - previous_pos.yaw;
-
-    std::cout << current_pos.yaw << std::endl;
-  }
 }
 
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
@@ -667,7 +639,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       pcl::PointXYZ p;
       
       scan.header = input->header;
-      scan.header.frame_id = "velodyne_scan_frame";
+      scan.header.frame_id = "velodyne";
 
       current_scan_time.sec = scan.header.stamp / 1000000.0;
       current_scan_time.nsec = (scan.header.stamp - current_scan_time.sec * 1000000.0) * 1000.0;
@@ -689,9 +661,9 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
             p.y = (double) item->y;
             p.z = (double) item->z;
 
-	    //	    if(item->ring % 3 == 0 ){
-	    scan.points.push_back(p);
-	      //	    }
+	    if(item->ring >= min && item->ring <= max && item->ring % layer == 0 ){
+	      scan.points.push_back(p);
+	    }
       }
       //        t1_end = ros::Time::now();
       //        d1 = t1_end - t1_start;
@@ -1020,9 +992,6 @@ int main(int argc, char **argv)
 
     // subscribing map data (only once)
     ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
-
-    // Subscribing pose of interactive marker
-    ros::Subscriber marker_sub = nh.subscribe("pos_marker/feedback", 1000, marker_callback);
 
     // Subscribing 2D Nav Goal
     ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);

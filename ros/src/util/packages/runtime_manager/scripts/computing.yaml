@@ -461,13 +461,13 @@ params :
       v     : 1
     - name  : max
       label : 'Max:'
-      v     : 100
+      v     : 63
     - name  : min
       label : 'Min:'
       v     : 0
     - name  : layer
       label : 'Layer:'
-      v     : 0
+      v     : 1
     - name  : resolution
       label : Resolution
       min   : 0
