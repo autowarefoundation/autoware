@@ -36,7 +36,6 @@
 
 #define VIEW_TIME
 
-
 // If you want to output "position_log.txt", "#define OUTPUT".
 //#define OUTPUT 
 
@@ -81,7 +80,7 @@ struct Position {
 };
 
 // global variables
-static Position previous_pos, guess_pos, current_pos, current_pos_control;
+static Position previous_pos, guess_pos, current_pos, current_pos_control, previous_gnss_pos, current_gnss_pos;
 
 static double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
 
@@ -99,7 +98,7 @@ static pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr;
 
 // If the map is loaded, map_loaded will be 1.
 static int map_loaded = 0;
-static int use_gnss = 1;
+static int _use_gnss = 1;
 static int init_pos_set = 0;
 
 static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
@@ -132,6 +131,8 @@ static int max = 63;
 static int min = 0;
 static int layer = 1;
 
+static double fitness_score = 0;
+
 static ros::Publisher ndt_stat_pub;
 static std_msgs::Bool ndt_stat_msg;
 
@@ -152,13 +153,13 @@ static ros::Publisher velodyne_points_filtered_pub;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
-    if (use_gnss != input->init_pos_gnss) {
+    if (_use_gnss != input->init_pos_gnss) {
         init_pos_set = 0;
-    } else if (use_gnss == 0 && (initial_x != input->x || initial_y != input->y || initial_z != input->z || initial_roll != input->roll || initial_pitch != input->pitch || initial_yaw != input->yaw)) {
+    } else if (_use_gnss == 0 && (initial_x != input->x || initial_y != input->y || initial_z != input->z || initial_roll != input->roll || initial_pitch != input->pitch || initial_yaw != input->yaw)) {
         init_pos_set = 0;
     }
 
-    use_gnss = input->init_pos_gnss;
+    _use_gnss = input->init_pos_gnss;
 
     ndt_res = input->resolution;
     step_size = input->step_size;
@@ -180,7 +181,7 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
     */
 
-    if (use_gnss == 0 && init_pos_set == 0) {
+    if (_use_gnss == 0 && init_pos_set == 0) {
         initial_x = input->x;
         initial_y = input->y;
         initial_z = input->z;
@@ -233,68 +234,62 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-    if (map_loaded == 0) {
-      //        std::cout << "Loading map data... ";
-        map.header.frame_id = "/pointcloud_map_frame";
-
-        // Convert the data type(from sensor_msgs to pcl).
-        pcl::fromROSMsg(*input, map);
-
-        pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
-        // Setting point cloud to be aligned to.
-        ndt.setInputTarget(map_ptr);
-
-        // Setting NDT parameters to default values
-        ndt.setMaximumIterations(iter);
-        ndt.setResolution(ndt_res);
-        ndt.setStepSize(step_size);
-        ndt.setTransformationEpsilon(trans_eps);
-
-        map_loaded = 1;
-	/*
-        std::cout << "Done." << std::endl;
-        std::cout << "Open config window and set the parameters." << std::endl;
-	*/
-    }
+  if (map_loaded == 0) {
+    // Convert the data type(from sensor_msgs to pcl).
+    pcl::fromROSMsg(*input, map);
+    
+    pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
+    // Setting point cloud to be aligned to.
+    ndt.setInputTarget(map_ptr);
+    
+    // Setting NDT parameters to default values
+    ndt.setMaximumIterations(iter);
+    ndt.setResolution(ndt_res);
+    ndt.setStepSize(step_size);
+    ndt.setTransformationEpsilon(trans_eps);
+    
+    map_loaded = 1;
+  }
 }
 
 static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
-    if (use_gnss == 1 && init_pos_set == 0) {
-        tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
-        tf::Matrix3x3 m(q);
-        initial_x = input->pose.position.x;
-        initial_y = input->pose.position.y;
-        initial_z = input->pose.position.z;
-        m.getRPY(initial_roll, initial_pitch, initial_yaw);
+  tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z, input->pose.orientation.w);
+  tf::Matrix3x3 gnss_m(gnss_q);
+  current_gnss_pos.x = input->pose.position.x;
+  current_gnss_pos.y = input->pose.position.y;
+  current_gnss_pos.z = input->pose.position.z;
+  gnss_m.getRPY(current_gnss_pos.roll, current_gnss_pos.pitch, current_gnss_pos.yaw);
 
-        // Setting position and posture for the fist time.
-        previous_pos.x = initial_x;
-        previous_pos.y = initial_y;
-        previous_pos.z = initial_z;
-        previous_pos.roll = initial_roll;
-        previous_pos.pitch = initial_pitch;
-        previous_pos.yaw = initial_yaw;
+  if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 1000.0) {
+    previous_pos.x = previous_gnss_pos.x;
+    previous_pos.y = previous_gnss_pos.y;
+    previous_pos.z = previous_gnss_pos.z;
+    previous_pos.roll = previous_gnss_pos.roll;
+    previous_pos.pitch = previous_gnss_pos.pitch;
+    previous_pos.yaw = previous_gnss_pos.yaw;
+    
+    current_pos.x = current_gnss_pos.x;
+    current_pos.y = current_gnss_pos.y;
+    current_pos.z = current_gnss_pos.z;
+    current_pos.roll = current_gnss_pos.roll;
+    current_pos.pitch = current_gnss_pos.pitch;
+    current_pos.yaw = current_gnss_pos.yaw;
+  
+    offset_x = current_pos.x - previous_pos.x;
+    offset_y = current_pos.y - previous_pos.y;
+    offset_z = current_pos.z - previous_pos.z;
+    offset_yaw = current_pos.yaw - previous_pos.yaw;
+  
+    init_pos_set = 1;
+  }
 
-        current_pos.x = initial_x;
-        current_pos.y = initial_y;
-        current_pos.z = initial_z;
-        current_pos.roll = initial_roll;
-        current_pos.pitch = initial_pitch;
-        current_pos.yaw = initial_yaw;
-
-        init_pos_set = 1;
-	/*
-        std::cout << "--- Initial Position (gnss) ---" << std::endl;
-        std::cout << "initial_x: " << initial_x << std::endl;
-        std::cout << "initial_y: " << initial_y << std::endl;
-        std::cout << "initial_z: " << initial_z << std::endl;
-        std::cout << "initial_roll: " << initial_roll << std::endl;
-        std::cout << "initial_pitch: " << initial_pitch << std::endl;
-        std::cout << "initial_yaw: " << initial_yaw << std::endl;
-        std::cout << "NDT ready..." << std::endl;
-	*/
-    }
+  previous_gnss_pos.x = current_gnss_pos.x;
+  previous_gnss_pos.y = current_gnss_pos.y;
+  previous_gnss_pos.z = current_gnss_pos.z;
+  previous_gnss_pos.roll = current_gnss_pos.roll;
+  previous_gnss_pos.pitch = current_gnss_pos.pitch;
+  previous_gnss_pos.yaw = current_gnss_pos.yaw;
 }
 
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
@@ -621,7 +616,6 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
 {
-
   if(_scanner == "velodyne"){
     if (map_loaded == 1 && init_pos_set == 1) {
       //        callback_start = ros::Time::now();
@@ -729,7 +723,9 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       ndt.align(*output_cloud, init_guess);
       
       t = ndt.getFinalTransformation();
-      
+
+      fitness_score = ndt.getFitnessScore();
+
       //        t4_end = ros::Time::now();
       //        d4 = t4_end - t4_start;
       
@@ -748,7 +744,9 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
       tf::Matrix3x3 tf3d;
       
-      tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)), static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)), static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
+      tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
+		    static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
+		    static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
       
       // Update current_pos.
       current_pos.x = t(0, 3);
@@ -951,10 +949,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
   //  std::cout << voxel_leaf_size << "," << callback_time * 0.001 << "," << first_time * 0.001 << "," << second_time * 0.001 << "," << third_time * 0.001 << std::endl;
 }
 
-
-
-
-
 int main(int argc, char **argv)
 {
   /*
@@ -969,6 +963,7 @@ int main(int argc, char **argv)
 
     // setting parameters
     private_nh.getParam("scanner", _scanner);
+    private_nh.getParam("use_gnss", _use_gnss);
     private_nh.getParam("queue_size", _queue_size);
     std::cout << "queue_size: " << _queue_size << std::endl;
 
