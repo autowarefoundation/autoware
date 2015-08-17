@@ -1651,7 +1651,7 @@ class ParamPanel(wx.Panel):
 				targ_szr = rp_szr
 
 			user_category = gdic_v.get('user_category')
-			if user_category and hszr:
+			if user_category is not None and hszr:
 				user_szr = static_box_sizer(self, user_category, orient=wx.HORIZONTAL)
 				targ_szr.Add(user_szr, 0, 0, 0)
 				targ_szr = hszr = user_szr

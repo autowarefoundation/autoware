@@ -6,6 +6,10 @@ float32 z
 float32 roll
 float32 pitch
 float32 yaw
+int32 lidar_original
+int32 max
+int32 min
+int32 layer
 float32 resolution
 float32 step_size
 float32 trans_esp
