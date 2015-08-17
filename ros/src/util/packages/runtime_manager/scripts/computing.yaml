@@ -33,8 +33,6 @@ subs :
             flags : [ nl ]
           max:
             user_category : ''
-      - name : pos_marker
-        cmd  : rosrun ndt_localizer pos_marker
 
   - name : Detection
     subs :
