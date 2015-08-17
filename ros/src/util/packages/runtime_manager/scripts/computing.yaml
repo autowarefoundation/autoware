@@ -27,6 +27,12 @@ subs :
         param: ndt
         gui  :
           stat_topic : [ ndt ]
+          x  :
+            user_category : ''
+          yaw:
+            flags : [ nl ]
+          max:
+            user_category : ''
       - name : pos_marker
         cmd  : rosrun ndt_localizer pos_marker
 
@@ -447,6 +453,21 @@ params :
     - name  : yaw
       label : 'yaw:'
       v     : 0.0
+    - name  : lidar_original
+      kind  : radio_box
+      choices:
+      - Lidar
+      - Original
+      v     : 1
+    - name  : max
+      label : 'Max:'
+      v     : 100
+    - name  : min
+      label : 'Min:'
+      v     : 0
+    - name  : layer
+      label : 'Layer:'
+      v     : 0
     - name  : resolution
       label : Resolution
       min   : 0
