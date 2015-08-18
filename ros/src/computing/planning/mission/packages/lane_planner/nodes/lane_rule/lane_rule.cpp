@@ -190,18 +190,58 @@ static std::vector<size_t> search_stopline_index(const waypoint_follower::lane& 
 	return indexes;
 }
 
-static std::vector<double> compute_velocity(const waypoint_follower::lane& msg, double acceleration, int nzeros)
+static waypoint_follower::lane apply_acceleration(const waypoint_follower::lane& msg, double acceleration,
+						  size_t start_index, size_t fixed_cnt, double fixed_vel)
 {
-	std::vector<double> computations;
+	waypoint_follower::lane computations = msg;
 
-	std::vector<size_t> indexes = search_stopline_index(msg);
-	if (indexes.empty()) {
-		for (const waypoint_follower::waypoint& w : msg.waypoints)
-			computations.push_back(w.twist.twist.linear.x);
+	if (fixed_cnt == 0)
 		return computations;
+
+	size_t loops = msg.waypoints.size();
+	for (size_t i = start_index; i < loops; ++i) {
+		if (i - start_index < fixed_cnt) {
+			computations.waypoints[i].twist.twist.linear.x = fixed_vel;
+			continue;
+		}
+
+		geometry_msgs::Point a = computations.waypoints[i - 1].pose.pose.position;
+		geometry_msgs::Point b = computations.waypoints[i].pose.pose.position;
+		double distance = hypot(b.x - a.x, b.y - a.y);
+
+		double velocity = computations.waypoints[i - 1].twist.twist.linear.x +
+			sqrt(2 * acceleration * distance);
+		if (velocity < computations.waypoints[i].twist.twist.linear.x)
+			computations.waypoints[i].twist.twist.linear.x = velocity;
+		else
+			break;
 	}
 
-	// XXX no implementation of handling acceleration
+	return computations;
+}
+
+static waypoint_follower::lane compute_velocity(const waypoint_follower::lane& msg, double acceleration, size_t fixed_cnt)
+{
+	waypoint_follower::lane computations = msg;
+
+	std::vector<size_t> indexes = search_stopline_index(msg);
+	if (indexes.empty())
+		return computations;
+
+	for (const size_t& i : indexes)
+		computations = apply_acceleration(computations, acceleration, i, 1, 0);
+
+	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
+
+	std::vector<size_t> reverse_indexes;
+	for (const size_t& i : indexes)
+		reverse_indexes.push_back(msg.waypoints.size() - i - 1);
+	std::reverse(reverse_indexes.begin(), reverse_indexes.end());
+
+	for (const size_t& i : reverse_indexes)
+		computations = apply_acceleration(computations, acceleration, i, fixed_cnt, 0);
+
+	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
 
 	return computations;
 }
@@ -222,14 +262,14 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 	waypoint.twist.header = header;
 	waypoint.pose.pose.orientation.w = 1;
 
-	std::vector<double> computations = compute_velocity(msg, config_acceleration, config_number_of_zeros);
+	waypoint_follower::lane computations = compute_velocity(msg, config_acceleration, config_number_of_zeros);
 
 	size_t loops = msg.waypoints.size();
 	for (size_t i = 0; i < loops; ++i) {
 		waypoint.pose.pose = msg.waypoints[i].pose.pose;
 		waypoint.twist.twist = msg.waypoints[i].twist.twist;
 		green.waypoints.push_back(waypoint);
-		waypoint.twist.twist.linear.x = computations[i];
+		waypoint.twist.twist = computations.waypoints[i].twist.twist;
 		red.waypoints.push_back(waypoint);
 	}
 
