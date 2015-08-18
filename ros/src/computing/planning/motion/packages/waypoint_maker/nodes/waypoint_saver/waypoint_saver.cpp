@@ -164,7 +164,7 @@ int main(int argc, char **argv)
     std::cout << "interval = " << interval << std::endl;
 
     if (private_nh.getParam("save_filename", filename) == false) {
-        std::cout << "error! usage : rosrun lane_follower waypoint_saver _interval:=[value] _save_filename:=\"[save file]\"" << std::endl;
+        std::cout << "error! usage : rosrun waypoint_maker waypoint_saver _interval:=[value] _save_filename:=\"[save file]\"" << std::endl;
         exit(-1);
     }
 
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
             double distance = sqrt(pow((_current_pose.x - prev_pose.x), 2) + pow((_current_pose.y - prev_pose.y), 2));
             std::cout << "distance = " << distance << std::endl;
 
-            //if car moves [imterval] meter
+            //if car moves [interval] meter
             if (distance > interval) {
 
                 if (_can_info_set == true) {
