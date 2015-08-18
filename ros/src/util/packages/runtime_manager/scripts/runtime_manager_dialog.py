@@ -39,6 +39,7 @@ import os
 import re
 import sys
 import threading
+import Queue
 import time
 import socket
 import struct
@@ -91,6 +92,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.params = []
 		self.all_tabs = []
 		self.all_th_infs = []
+		self.log_que = Queue.Queue()
 
 		#
 		# ros
@@ -347,6 +349,10 @@ class MyFrame(rtmgr.MyFrame):
 		# ps command thread
 		#thinf = th_start(self.ps_cmd_th, { 'interval':5 })
 		#self.all_th_infs.append(thinf)
+
+		# logout thread
+		thinf = th_start(self.logout_th)
+		self.all_th_infs.append(thinf)
 
 		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
@@ -983,6 +989,28 @@ class MyFrame(rtmgr.MyFrame):
 	#		wx.CallAfter(self.label_node_time.SetLabel, lb)
 	#		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
+	def log_th(self, file, ev):
+		while not ev.wait(0):
+			s = file.readline()
+			if not s:
+				break;
+			self.log_que.put(s)
+
+	def logout_th(self, ev):
+		path = self.status_dic.get('log_path', '~/.autoware/runtime_manager_log.txt')
+		path = os.path.expandvars(os.path.expanduser(path))
+		f = open(path, 'a')
+		while not ev.wait(0):
+			try:
+				s = self.log_que.get(timeout=1)
+			except Queue.Empty:
+				continue
+			f.write(s)
+			f.flush()
+			print s.strip()
+			sys.stdout.flush()
+		f.close()
+
 	#
 	# Common Utils
 	#
@@ -1400,6 +1428,8 @@ class MyFrame(rtmgr.MyFrame):
 
 			f = self.obj_to_gdic(obj, {}).get('stdout_func')
 			f = eval(f) if type(f) is str else f
+			f = f if f else self.log_th
+
 			out = subprocess.PIPE if f else None
 			err = subprocess.STDOUT if f else None
 
@@ -1408,7 +1438,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 
 			if f:
-				th_start(f, {'file':proc.stdout})
+				thinf = th_start(f, {'file':proc.stdout})
+				self.all_th_infs.append(thinf)
 		else:
 			terminate_children(proc, sigint)
 			terminate(proc, sigint)
