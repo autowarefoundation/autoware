@@ -290,7 +290,7 @@ int main (int argc, char *argv[])
   std::cout << "all vector map loaded." << std::endl;
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
-  //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/ndt_pose", 10, ndtPoseCallback);
+  //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/current_pose", 10, ndtPoseCallback);
   ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);
   signal (SIGINT, interrupt);
 

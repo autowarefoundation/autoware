@@ -213,7 +213,7 @@ int main(int argc, char **argv)
 
   ros::Subscriber car_locate = n.subscribe("/car_pose", 1, car_locate_cb);
   ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
-  ros::Subscriber gnss_pose = n.subscribe("/ndt_pose", 1, ndt_pose_cb);
+  ros::Subscriber gnss_pose = n.subscribe("/current_pose", 1, ndt_pose_cb);
 
   //set server name and port
   std::string host_name = default_host_name;
