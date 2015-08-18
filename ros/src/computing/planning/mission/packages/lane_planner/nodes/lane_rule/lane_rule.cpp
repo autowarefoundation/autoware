@@ -107,12 +107,13 @@ static std::vector<map_file::PointClass> search_stopline_point(const waypoint_fo
 {
 	std::vector<map_file::PointClass> stopline_points;
 
+	// msg's X-Y axis is reversed
 	map_file::PointClass start_point = vmap_find_nearest_point(vmap_left_lane,
-								   msg.waypoints.front().pose.pose.position.x,
-								   msg.waypoints.front().pose.pose.position.y);
+								   msg.waypoints.front().pose.pose.position.y,
+								   msg.waypoints.front().pose.pose.position.x);
 	map_file::PointClass end_point = vmap_find_nearest_point(vmap_left_lane,
-								 msg.waypoints.back().pose.pose.position.x,
-								 msg.waypoints.back().pose.pose.position.y);
+								 msg.waypoints.back().pose.pose.position.y,
+								 msg.waypoints.back().pose.pose.position.x);
 
 	map_file::PointClass point = start_point;
 	map_file::Lane lane = vmap_find_lane(vmap_all, point);
@@ -168,12 +169,14 @@ static std::vector<size_t> search_stopline_index(const waypoint_follower::lane& 
 	for (const map_file::PointClass& p : stopline_points) {
 		size_t i = 0;
 
-		double min = hypot(p.bx - msg.waypoints[0].pose.pose.position.x,
-				   p.ly - msg.waypoints[0].pose.pose.position.y);
+		// msg's X-Y axis is reversed
+		double min = hypot(p.bx - msg.waypoints[0].pose.pose.position.y,
+				   p.ly - msg.waypoints[0].pose.pose.position.x);
 		size_t index = i;
 		for (const waypoint_follower::waypoint& w : msg.waypoints) {
-			double distance = hypot(p.bx - w.pose.pose.position.x,
-						p.ly - w.pose.pose.position.y);
+			// msg's X-Y axis is reversed
+			double distance = hypot(p.bx - w.pose.pose.position.y,
+						p.ly - w.pose.pose.position.x);
 			if (distance < min) {
 				min = distance;
 				index = i;

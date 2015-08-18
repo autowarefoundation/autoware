@@ -137,8 +137,9 @@ static void create_lane_waypoint(const tablet_socket::route_cmd& msg)
 
 	bool finish = false;
 	for (size_t i = 0; i < std::numeric_limits<std::size_t>::max(); ++i) {
-		waypoint.pose.pose.position.x = point.bx;
-		waypoint.pose.pose.position.y = point.ly;
+		// msg's X-Y axis is reversed
+		waypoint.pose.pose.position.x = point.ly;
+		waypoint.pose.pose.position.y = point.bx;
 		waypoint.pose.pose.position.z = point.h;
 		waypoint.twist.twist.linear.x = velocity / 3.6;	// to m/s
 		waypoints.waypoints.push_back(waypoint);
