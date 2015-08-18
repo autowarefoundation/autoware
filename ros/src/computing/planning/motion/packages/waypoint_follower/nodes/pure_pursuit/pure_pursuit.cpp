@@ -441,7 +441,7 @@ int main(int argc, char **argv)
   bool endflag = false;
   while (ros::ok())
   {
-    std_msgs::Bool _lf_stat;
+    std_msgs::Bool wf_stat;
 
     ros::spinOnce();
 
@@ -472,15 +472,15 @@ int main(int argc, char **argv)
           // obtain the linear/angular velocity.
           ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << _path_pp.getPathSize() - 1);
           displayNextWaypoint(next_waypoint);
-          _lf_stat.data = true;
-          _stat_pub.publish(_lf_stat);
+          wf_stat.data = true;
+          _stat_pub.publish(wf_stat);
           twist.twist = calcTwist(next_waypoint);
         }
         else //if cannot get next
         {
           ROS_INFO_STREAM("lost waypoint! ");
-          _lf_stat.data = false;
-          _stat_pub.publish(_lf_stat);
+          wf_stat.data = false;
+          _stat_pub.publish(wf_stat);
           twist.twist.linear.x = 0;
           twist.twist.angular.z = 0;
         }
@@ -493,8 +493,8 @@ int main(int argc, char **argv)
       else //cannot get closest
       {
         ROS_INFO_STREAM("closest waypoint cannot detected !!");
-        _lf_stat.data = false;
-        _stat_pub.publish(_lf_stat);
+        wf_stat.data = false;
+        _stat_pub.publish(wf_stat);
         twist.twist.linear.x = 0;
         twist.twist.angular.z = 0;
       }
@@ -503,15 +503,15 @@ int main(int argc, char **argv)
     else //final sequence
     {
       twist.twist = stopControl();
-      _lf_stat.data = false;
-      _stat_pub.publish(_lf_stat);
+      wf_stat.data = false;
+      _stat_pub.publish(wf_stat);
 
       // after stopped or fed out, let's get ready for the restart.
       if (twist.twist.linear.x == 0)
       {
         ROS_INFO_STREAM("pure pursuit ended!!");
-        _lf_stat.data = false;
-        _stat_pub.publish(_lf_stat);
+        wf_stat.data = false;
+        _stat_pub.publish(wf_stat);
         endflag = false;
       }
     }
