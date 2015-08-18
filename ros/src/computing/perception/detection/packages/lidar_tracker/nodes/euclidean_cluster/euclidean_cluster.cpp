@@ -209,7 +209,7 @@ int main (int argc, char** argv)
 	else
 	{
 		ROS_INFO("euclidean_cluster > No points node received, defaulting to velodyne_points, you can use _points_node:=YOUR_TOPIC");
-		points_topic = "/velodyne_points";
+		points_topic = "/points_raw";
 	}
 
 	// Create a ROS subscriber for the input point cloud

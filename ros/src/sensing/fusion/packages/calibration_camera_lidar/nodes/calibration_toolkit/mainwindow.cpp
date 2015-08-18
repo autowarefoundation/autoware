@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     else if(selection==CALIBCAMERAVELODYNE)
     {
         QString cameratopic="/image_raw";
-        QString velodynetopic="/velodyne_points";
+        QString velodynetopic="/points_raw";
         CalibrateCameraVelodyneChessboardROS * calibration=new CalibrateCameraVelodyneChessboardROS(cameratopic,1000,10,velodynetopic,1000,10,100,cvpatternsize,cvpatternnum);
         ui->tabWidget->addTab(calibration,CALIBCAMERAVELODYNE);
         connect(ui->grab,SIGNAL(clicked()),calibration,SLOT(grabCalibDataSlot()));

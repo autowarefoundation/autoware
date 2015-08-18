@@ -330,10 +330,10 @@ int main(int argc, char **argv){
   /*
   ros::Subscriber azm = n.subscribe("/vel", 1, azimuth_getter);
   ros::Subscriber my_pos = n.subscribe("/fix", 1, position_getter);
-  ros::Subscriber ndt = n.subscribe("/ndt_pose", 1, position_getter_ndt);
+  ros::Subscriber ndt = n.subscribe("/current_pose", 1, position_getter_ndt);
   */
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
-  ros::Subscriber ndt_pose = n.subscribe("/ndt_pose", 1, position_getter_ndt);
+  ros::Subscriber ndt_pose = n.subscribe("/current_pose", 1, position_getter_ndt);
   pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
 
   ros::Subscriber projection = n.subscribe("/projection_matrix", 1, projection_callback);

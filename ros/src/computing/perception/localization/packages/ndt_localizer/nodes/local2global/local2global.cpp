@@ -619,7 +619,7 @@ int main(int argc, char **argv)
     current_pos.pitch = initial_pitch;
     current_pos.yaw = initial_yaw;
 
-    ndt_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
+    ndt_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
 
     control_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
 
