@@ -115,7 +115,7 @@ static std::vector<map_file::PointClass> search_stopline_point(const waypoint_fo
 								 msg.waypoints.back().pose.pose.position.y);
 
 	map_file::PointClass point = start_point;
-	map_file::Lane lane = vmap_find_lane(vmap_left_lane, point);
+	map_file::Lane lane = vmap_find_lane(vmap_all, point);
 	if (lane.lnid < 0) {
 		ROS_ERROR("no start lane");
 		return stopline_points;
@@ -131,7 +131,7 @@ static std::vector<map_file::PointClass> search_stopline_point(const waypoint_fo
 		if (finish)
 			break;
 
-		point = vmap_find_end_point(vmap_left_lane, lane);
+		point = vmap_find_end_point(vmap_all, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no end point");
 			return stopline_points;
@@ -142,13 +142,13 @@ static std::vector<map_file::PointClass> search_stopline_point(const waypoint_fo
 			continue;
 		}
 
-		lane = vmap_find_next_lane(vmap_left_lane, lane);
+		lane = vmap_find_next_lane(vmap_all, lane);
 		if (lane.lnid < 0) {
 			ROS_ERROR("no next lane");
 			return stopline_points;
 		}
 
-		point = vmap_find_start_point(vmap_left_lane, lane);
+		point = vmap_find_start_point(vmap_all, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no start point");
 			return stopline_points;

@@ -118,7 +118,7 @@ static void create_lane_waypoint(const tablet_socket::route_cmd& msg)
 	map_file::PointClass end_point = vmap_find_nearest_point(vmap_left_lane, geo.x(), geo.y());
 
 	map_file::PointClass point = start_point;
-	map_file::Lane lane = vmap_find_lane(vmap_left_lane, point);
+	map_file::Lane lane = vmap_find_lane(vmap_all, point);
 	if (lane.lnid < 0) {
 		ROS_ERROR("no start lane");
 		return;
@@ -147,7 +147,7 @@ static void create_lane_waypoint(const tablet_socket::route_cmd& msg)
 		if (finish)
 			break;
 
-		point = vmap_find_end_point(vmap_left_lane, lane);
+		point = vmap_find_end_point(vmap_all, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no end point");
 			return;
@@ -158,13 +158,13 @@ static void create_lane_waypoint(const tablet_socket::route_cmd& msg)
 			continue;
 		}
 
-		lane = vmap_find_next_lane(vmap_left_lane, lane);
+		lane = vmap_find_next_lane(vmap_all, lane);
 		if (lane.lnid < 0) {
 			ROS_ERROR("no next lane");
 			return;
 		}
 
-		point = vmap_find_start_point(vmap_left_lane, lane);
+		point = vmap_find_start_point(vmap_all, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no start point");
 			return;
