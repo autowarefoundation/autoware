@@ -1,5 +1,7 @@
 top_cmd_interval : 3
 
+log_path : '~/.autoware/runtime_manager_log.txt'
+
 buttons :
   system_monitor :
     run   : gnome-system-monitor
