@@ -621,11 +621,14 @@ class MyFrame(rtmgr.MyFrame):
 		return gdic if gdic else def_ret
 
 	def update_func(self, pdic, gdic, prm):
+		pdic_empty = (pdic == {})
 		for var in prm.get('vars', []):
 			name = var.get('name')
 			gdic_v = gdic.get(name, {})
 			func = gdic_v.get('func')
 			if func is None:
+				if pdic_empty:
+					pdic[ name ] = var.get('v')
 				continue
 			v = eval(func) if type(func) is str else func()
 			pdic[ name ] = v
