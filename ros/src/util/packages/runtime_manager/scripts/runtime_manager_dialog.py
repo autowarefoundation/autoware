@@ -1000,15 +1000,44 @@ class MyFrame(rtmgr.MyFrame):
 		path = self.status_dic.get('log_path', '~/.autoware/runtime_manager_log.txt')
 		path = os.path.expandvars(os.path.expanduser(path))
 		f = open(path, 'a')
+		lb_lines = []
 		while not ev.wait(0):
 			try:
 				s = self.log_que.get(timeout=1)
 			except Queue.Empty:
 				continue
-			f.write(s)
-			f.flush()
 			print s.strip()
 			sys.stdout.flush()
+
+                        # cut esc ...
+			while True:
+				i = s.find(chr(27))
+				if i < 0:
+					break
+				j = s.find('m', i)
+				if j < 0:
+					break
+				s = s[:i] + s[j+1:]
+
+			f.write(s)
+			f.flush()
+
+			lb_lines.append(s)
+			while len(lb_lines) > 1000:
+				del lb_lines[0]
+			lb_str = ''
+			reduce
+			lbstr = reduce( lambda s,a:s+a, lb_lines, '')
+
+			wx.CallAfter(self.label_stdout.SetLabel, lbstr)
+			wx.CallAfter(self.label_stdout.GetParent().FitInside)
+
+			(_, vh) = self.panel_stdout.GetVirtualSize()
+			(_, h) = self.panel_stdout.GetSize()
+			(_, yu) = self.panel_stdout.GetScrollPixelsPerUnit()
+			dh = (vh - h) / yu
+			if dh > 0:
+				wx.CallAfter(self.panel_stdout.Scroll, -1, dh)
 		f.close()
 
 	#
