@@ -1,0 +1,11 @@
+--- a/PhvCnt.h	2015-07-20 19:02:11.838859290 +0900
++++ b/PhvCnt.h	2015-07-20 16:09:51.332341286 +0900
+@@ -199,6 +199,8 @@ public:
+     PhvCnt();
+     virtual ~PhvCnt();
+ 
++    void ClearCntDiag(); // Autoware Extension
++
+     bool Init();
+     bool Start();
+     bool Process();

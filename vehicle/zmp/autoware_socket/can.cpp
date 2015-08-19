@@ -31,32 +31,17 @@
 #include "mainwindow.h"
 #include "autoware_socket.h"
 
+// CAN + Drive Mode
 std::string candata;
 int drvmode;
-
-int CheckDrvMode()
-{  
-  int drv_mode = _hev_state.drvInf.mode; // 0x00 : manual ; 0x10 : program
-  int drv_servo = _hev_state.drvInf.servo; // 0x00 : OFF 0x10 :ON
-  int str_mode = _hev_state.strInf.mode; // 0x00 : manual ; 0x10 : program
-  int str_servo = _hev_state.strInf.servo; // 0x00 : OFF 0x10 :ON
-
-  // cout <<  "===============CheckHevMode===============" << endl;
-  if(drv_mode == 0x10 && drv_servo == 0x10 && str_mode == 0x10 && str_servo == 0x10){
-    return CMD_MODE_PROGRAM;
-  }else{
-    return CMD_MODE_MANUAL;
-  }
-}
 
 void *CANSenderEntry(void *a)
 {
   struct sockaddr_in server;
   int sock;
-  //  char deststr[80] = serverIP.c_str();
   std::string senddata; 
   std::ostringstream oss;
-  oss << candata << "," << drvmode; //candata and drvmode are global.
+  oss << candata << "," << drvmode; // global variables.
   senddata = oss.str();
   unsigned int **addrptr;
 
@@ -67,7 +52,7 @@ void *CANSenderEntry(void *a)
   }
 
   server.sin_family = AF_INET;
-  server.sin_port = htons(10000); /* HTTPのポートは80番です */
+  server.sin_port = htons(10000);
 
   server.sin_addr.s_addr = inet_addr(ros_ip_address.c_str());
   if (server.sin_addr.s_addr == 0xffffffff) {
@@ -76,13 +61,8 @@ void *CANSenderEntry(void *a)
     host = gethostbyname(ros_ip_address.c_str());
     if (host == NULL) {
       if (h_errno == HOST_NOT_FOUND) {
-        /* h_errnoはexternで宣言されています */
         fprintf(stderr,"info : host not found : %s\n", ros_ip_address.c_str());
       } else {
-        /*
-          HOST_NOT_FOUNDだけ特別扱いする必要はないですが、
-          とりあえず例として分けてみました
-        */
         fprintf(stderr,"info : %s : %s\n", hstrerror(h_errno), ros_ip_address.c_str());
       }
       return NULL;
@@ -93,7 +73,7 @@ void *CANSenderEntry(void *a)
     while (*addrptr != NULL) {
       server.sin_addr.s_addr = *(*addrptr);
       
-      /* connect()が成功したらloopを抜けます */
+      // if connected, break out this loop.
       if (connect(sock,
                   (struct sockaddr *)&server,
                   sizeof(server)) == 0) {
@@ -101,10 +81,10 @@ void *CANSenderEntry(void *a)
       }
 
       addrptr++;
-      /* connectが失敗したら次のアドレスで試します */
+      // if failed to connect, try another address.
     }
 
-    /* connectが全て失敗した場合 */
+    // if totally failed to connect, return NULL.
     if (*addrptr == NULL) {
       perror("info : connect");
       return NULL;
@@ -127,15 +107,6 @@ void *CANSenderEntry(void *a)
     return NULL;
   }
     
-  //while (n > 0) {
-  /*
-  memset(recvdata, 0, sizeof(recvdata));
-  n = recv(sock, recvdata, sizeof(recvdata),0);
-  if (n < 0) {
-    perror("read");
-    return;
-  }
-  */
   close(sock);
 
   return NULL;
@@ -166,7 +137,8 @@ void MainWindow::SendCAN(void)
           _getTime.tv_usec);
 
   can += tmp;
-    
+
+#if 0    
   if(_selectLog.drvInf == true){
     sprintf(tmp,"%d,%d,%d,%d,%d,%d,%d,%3.2f,%3.2f,%d,%d,%d,",
             _drvInf.mode, _drvInf.contMode, _drvInf.overrideMode, 
@@ -227,12 +199,18 @@ void MainWindow::SendCAN(void)
     sprintf(tmp,"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     can += tmp;
   }
+#endif
   
   //sprintf(tmp,"\n");
   candata = can;
-  
+
+  // send drive mode in addition to CAN.
   UpdateState();
-  drvmode = CheckDrvMode();
+  if (ZMP_DRV_CONTROLLED() && ZMP_STR_CONTROLLED()) {
+    drvmode = CMD_MODE_PROGRAM;
+  } else {
+    drvmode = CMD_MODE_MANUAL;
+  }
   
   wrapSender();
 }

@@ -130,13 +130,15 @@ int main(int argc, char **argv)
 				cv::Mat mat(cv::Size(width, height), CV_8UC1, imagebuffer);
 				//cv::flip(mat, mat, -1);
 				cv::Mat dest(cv::Size(width, height), CV_8UC3);
-				cv::cvtColor(mat, dest, CV_BayerBG2BGR);
+				cv::cvtColor(mat, dest, CV_BayerBG2RGB);
 				//to fix aspect ratio and to avoid stretching we crop the image
 				//after conversion of the bayer grid
 				//to mantain ratio of 1.33 we need to remove 2*297 from the wide
 				//image, so we use a roi to crop the 2048x1084 image
-				cv::Rect roi(297,0,1445,1084);//297 half of the width to remove
-				cv::Mat cropped = dest(roi);
+				cv::Rect roi(297,0,1445,1084);//for [4:3] aspect ratio. 297 half of the width to remove
+				//cv::Rect roi(56,0,1927,1084);//for [16:9] aspect ratio. 56 half of the width to remove
+				cv::Mat tmp = dest(roi);
+				cv::Mat cropped = tmp.clone();
 				int w = 800;//fixed
 				int h = 600;//fixed 
 				cv::resize(cropped, cropped, cv::Size(w, h));
@@ -147,13 +149,13 @@ int main(int argc, char **argv)
 				sensor_msgs::Image msg;
 
 				msg.header.seq = count;
-				msg.header.frame_id = count;
-				msg.header.stamp.sec = ros::Time::now().toSec();
-				msg.header.stamp.nsec = ros::Time::now().toNSec();
-				msg.height = h;
-				msg.width  = w;
-				msg.encoding = "bgr8";
-				msg.step = cropped.cols * cropped.elemSize1();
+				msg.header.frame_id = "camera";
+				msg.header.stamp.sec = ros::Time::now().sec;
+				msg.header.stamp.nsec = ros::Time::now().nsec;
+				msg.height = cropped.size().height;
+				msg.width = cropped.size().width;
+				msg.encoding = "rgb8";
+				msg.step = cropped.cols * cropped.elemSize();
 
 				size_t image_size = cropped.rows * cropped.cols * cropped.elemSize();
 

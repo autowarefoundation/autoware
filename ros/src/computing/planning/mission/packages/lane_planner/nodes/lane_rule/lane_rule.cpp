@@ -36,6 +36,11 @@
 
 #include <vmap_utility.hpp>
 
+static constexpr double RADIUS_MAX = 90000000000;
+static constexpr double CURVE_WEIGHT = 50 * 0.6; // XXX
+static constexpr double CROSSROAD_WEIGHT = 9.1 * 0.9; // XXX
+static constexpr double CLOTHOID_WEIGHT = CURVE_WEIGHT;
+
 static double config_acceleration = 1; // m/s^2
 static int config_number_of_zeros = 1;
 
@@ -97,10 +102,154 @@ static void cache_stopline(const map_file::StopLineArray& msg)
 	vmap_all.stoplines = msg.stop_lines;
 }
 
+static void cache_dtlane(const map_file::DTLaneArray& msg)
+{
+	vmap_all.dtlanes = msg.dtlanes;
+}
+
 static void config_rule(const runtime_manager::ConfigLaneRule& msg)
 {
 	config_acceleration = msg.acceleration;
 	config_number_of_zeros = msg.number_of_zeros;
+}
+
+static bool is_straight(const map_file::DTLane& dtlane)
+{
+	return (dtlane.apara == 0 && dtlane.r == RADIUS_MAX);
+}
+
+static bool is_curve(const map_file::DTLane& dtlane)
+{
+	return (dtlane.apara == 0 && dtlane.r != RADIUS_MAX);
+}
+
+static bool is_crossroad(const map_file::DTLane& dtlane)
+{
+	return (dtlane.did >= 5547 && dtlane.did <= 5557); // XXX
+}
+
+static bool is_single_curve(const std::vector<map_file::DTLane>& dtlanes, int index)
+{
+	int hit = 0, straight = 0;
+	int size = dtlanes.size();
+
+	for (int i = index - 1; i >= 0; --i) {
+		if (dtlanes[index].r != dtlanes[i].r) {
+			++hit;
+			if (is_straight(dtlanes[i]))
+				++straight;
+			break;
+		}
+	}
+
+	for (int i = index + 1; i < size; ++i) {
+		if (dtlanes[index].r != dtlanes[i].r) {
+			++hit;
+			if (is_straight(dtlanes[i]))
+				++straight;
+			break;
+		}
+	}
+
+	if (hit == 0)
+		return true;
+
+	if (hit == 1 && straight == 1)
+		return true;
+
+	if (straight == 2)
+		return true;
+
+	return false;
+}
+
+static bool is_clothoid(const map_file::DTLane& dtlane)
+{
+	return (dtlane.apara != 0);
+}
+
+static double compute_reduction(const map_file::DTLane& dtlane, double weight)
+{
+	return (1 - fabs(1 / dtlane.r) * weight);
+}
+
+static double dtlane_to_reduction(const std::vector<map_file::DTLane>& dtlanes, int index)
+{
+	if (is_straight(dtlanes[index]))
+		return 1;
+
+	if (is_curve(dtlanes[index])) {
+		if (is_crossroad(dtlanes[index]))
+			return compute_reduction(dtlanes[index], CROSSROAD_WEIGHT);
+
+		if (is_single_curve(dtlanes, index))
+			return 1;
+
+		return compute_reduction(dtlanes[index], CURVE_WEIGHT);
+	}
+
+	if (is_clothoid(dtlanes[index]))
+		return compute_reduction(dtlanes[index], CLOTHOID_WEIGHT);
+
+	return 1;
+}
+
+static std::vector<map_file::DTLane> search_dtlane(const waypoint_follower::lane& msg)
+{
+	std::vector<map_file::DTLane> dtlanes;
+
+	// msg's X-Y axis is reversed
+	map_file::PointClass start_point = vmap_find_nearest_point(vmap_left_lane,
+								   msg.waypoints.front().pose.pose.position.y,
+								   msg.waypoints.front().pose.pose.position.x);
+	map_file::PointClass end_point = vmap_find_nearest_point(vmap_left_lane,
+								 msg.waypoints.back().pose.pose.position.y,
+								 msg.waypoints.back().pose.pose.position.x);
+
+	map_file::PointClass point = start_point;
+	map_file::Lane lane = vmap_find_lane(vmap_all, point);
+	if (lane.lnid < 0) {
+		ROS_ERROR("no start lane");
+		return dtlanes;
+	}
+
+	bool finish = false;
+	for (size_t i = 0; i < std::numeric_limits<std::size_t>::max(); ++i) {
+		for (const map_file::DTLane& d : vmap_all.dtlanes) {
+			if (d.did == lane.did)
+				dtlanes.push_back(d);
+		}
+
+		if (finish)
+			break;
+
+		point = vmap_find_end_point(vmap_all, lane);
+		if (point.pid < 0) {
+			ROS_ERROR("no end point");
+			return dtlanes;
+		}
+
+		if (point.bx == end_point.bx && point.ly == end_point.ly) {
+			finish = true;
+			continue;
+		}
+
+		lane = vmap_find_next_lane(vmap_all, lane);
+		if (lane.lnid < 0) {
+			ROS_ERROR("no next lane");
+			return dtlanes;
+		}
+
+		point = vmap_find_start_point(vmap_all, lane);
+		if (point.pid < 0) {
+			ROS_ERROR("no start point");
+			return dtlanes;
+		}
+	}
+	if (!finish)
+		ROS_ERROR("miss finish");
+
+	return dtlanes;
 }
 
 static std::vector<map_file::PointClass> search_stopline_point(const waypoint_follower::lane& msg)
@@ -220,7 +369,8 @@ static waypoint_follower::lane apply_acceleration(const waypoint_follower::lane&
 	return computations;
 }
 
-static waypoint_follower::lane compute_velocity(const waypoint_follower::lane& msg, double acceleration, size_t fixed_cnt)
+static waypoint_follower::lane compute_velocity(const waypoint_follower::lane& msg, double acceleration,
+						size_t fixed_cnt)
 {
 	waypoint_follower::lane computations = msg;
 
@@ -260,16 +410,36 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 	waypoint_follower::waypoint waypoint;
 	waypoint.pose.header = header;
 	waypoint.twist.header = header;
-	waypoint.pose.pose.orientation.w = 1;
+
+	std::vector<map_file::DTLane> dtlanes = search_dtlane(msg);
+	if (dtlanes.size() != msg.waypoints.size()) {
+		ROS_ERROR("not enough dtlane");
+		return;
+	}
 
 	waypoint_follower::lane computations = compute_velocity(msg, config_acceleration, config_number_of_zeros);
 
 	size_t loops = msg.waypoints.size();
 	for (size_t i = 0; i < loops; ++i) {
+		double reduction = dtlane_to_reduction(dtlanes, i);
+
 		waypoint.pose.pose = msg.waypoints[i].pose.pose;
+
+		waypoint.dtlane.dist = dtlanes[i].dist;
+		waypoint.dtlane.dir = dtlanes[i].dir;
+		waypoint.dtlane.apara = dtlanes[i].apara;
+		waypoint.dtlane.r = dtlanes[i].r;
+		waypoint.dtlane.slope = dtlanes[i].slope;
+		waypoint.dtlane.cant = dtlanes[i].cant;
+		waypoint.dtlane.lw = dtlanes[i].lw;
+		waypoint.dtlane.rw = dtlanes[i].rw;
+
 		waypoint.twist.twist = msg.waypoints[i].twist.twist;
+		waypoint.twist.twist.linear.x *= reduction;
 		green.waypoints.push_back(waypoint);
+
 		waypoint.twist.twist = computations.waypoints[i].twist.twist;
+		waypoint.twist.twist.linear.x *= reduction;
 		red.waypoints.push_back(waypoint);
 	}
 
@@ -293,9 +463,10 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_node = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
 	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
 	ros::Subscriber sub_stopline = n.subscribe("/vector_map_info/stop_line", sub_vmap_queue_size, cache_stopline);
+	ros::Subscriber sub_dtlane = n.subscribe("/vector_map_info/dtlane", sub_vmap_queue_size, cache_dtlane);
 	ros::Rate rate(1);
 	while (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty() ||
-	       vmap_all.stoplines.empty()) {
+	       vmap_all.stoplines.empty() || vmap_all.dtlanes.empty()) {
 		ros::spinOnce();
 		rate.sleep();
 	}

@@ -37,12 +37,14 @@
 #include <map_file/LaneArray.h>
 #include <map_file/NodeArray.h>
 #include <map_file/StopLineArray.h>
+#include <map_file/DTLaneArray.h>
 
 struct VectorMap {
 	std::vector<map_file::PointClass> points;
 	std::vector<map_file::Lane> lanes;
 	std::vector<map_file::Node> nodes;
 	std::vector<map_file::StopLine> stoplines;
+	std::vector<map_file::DTLane> dtlanes;
 };
 
 map_file::Lane vmap_find_lane(const VectorMap& vmap, const map_file::PointClass& point);

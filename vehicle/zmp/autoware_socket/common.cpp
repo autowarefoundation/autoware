@@ -31,11 +31,13 @@
 #include "mainwindow.h"
 #include "autoware_socket.h"
 
+// these parameters can be configured later.
 int can_tx_interval = 10; // ms
 int cmd_rx_interval = 100; // ms
 std::string ros_ip_address = "192.168.1.101";
 
-HevState _hev_state;
+// vehicle state.
+vehicle_state_t vstate;
 
 bool MainWindow::ConfigSocket(void)
 {
@@ -71,13 +73,16 @@ bool MainWindow::ConfigSocket(void)
 
 void MainWindow::UpdateState(void)
 {
-  _hev_state.tstamp = (long long int) (getTime());
-  hev->GetDrvInf(&_hev_state.drvInf);
-  hev->GetStrInf(&_hev_state.strInf);
-  hev->GetBrakeInf(&_hev_state.brkInf);
+  ZMP_UPDATE_STATE();
+  vstate.accel_stroke = ZMP_ACCEL_STROKE();
+  vstate.brake_stroke = ZMP_BRAKE_STROKE();
+  vstate.steering_torque = ZMP_STEERING_TORQUE();
+  vstate.steering_angle = ZMP_STEERING_ANGLE();
+  vstate.velocity = ZMP_VELOCITY();
+  vstate.tstamp = (long long int) (getTime());
 }
 
 void MainWindow::ClearCntDiag(void)
 {
-  hev->ClearCntDiag();
+  ZMP_CLEAR_CNT_DIAG();
 }

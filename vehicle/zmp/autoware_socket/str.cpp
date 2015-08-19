@@ -34,9 +34,6 @@
 static double steering_diff_sum = 0;
 queue<double> steering_diff_buffer;
 
-#define IS_STR_MODE_PROGRAM() (_hev_state.strInf.mode == MODE_PROGRAM && _hev_state.strInf.servo == SERVO_TRUE)
-#define IS_STR_MODE_MANUAL() (_hev_state.strInf.mode == MODE_MANUAL || _hev_state.strInf.servo == SERVO_FALSE)
-
 static void clear_diff()
 {
   int i;
@@ -52,35 +49,23 @@ void MainWindow::SetStrMode(int mode)
 {
   switch (mode) {
   case CMD_MODE_MANUAL:
-    if (IS_STR_MODE_PROGRAM()) {
-      cout << "Switching to MANUAL (Steering)" << endl;
-      hev->SetStrMode(MODE_MANUAL);
-      usleep(200000);
-      hev->SetStrServo(SERVO_FALSE);
-      //usleep(200000);
-    }
+    cout << "Switching to MANUAL (Steering)" << endl;
+    ZMP_SET_STR_MANUAL();
     break;
   case CMD_MODE_PROGRAM:
-    if (IS_STR_MODE_MANUAL()) {
-      cout << "Switching to PROGRAM (Steering)" << endl;
-      hev->SetStrMode(MODE_PROGRAM);
-      usleep(200000);
-      hev->SetStrCMode(CONT_MODE_TORQUE);
-      //hev->SetStrCMode(CONT_MODE_ANGLE);
-      usleep(200000);
-      hev->SetStrServo(SERVO_TRUE);
-      //usleep(200000);
-
-      clear_diff();
-    }
+    cout << "Switching to PROGRAM (Steering)" << endl;
+    ZMP_SET_STR_PROGRAM();
+    clear_diff();
     break;
   default:
     cout << "Unknown mode: " << mode << endl;
   }
 }
 
-void _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle, HevCnt* hev)
+double _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle)
 {
+  double ret;
+
   current_steering_angle -= _STEERING_ANGLE_ERROR;
 
   // angvel, not really used for steering control...
@@ -123,8 +108,7 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
     target_steering_torque = -_STEERING_MAX_TORQUE;
   }
 
-  cout << "SetStrTorque(" << target_steering_torque << ")" << endl;
-  hev->SetStrTorque(target_steering_torque);
+  ret = target_steering_torque;
 
   prev_steering_angle  = current_steering_angle;
 
@@ -137,15 +121,21 @@ void _str_torque_pid_control(double current_steering_angle, double cmd_steering_
       << current_steering_angvel << " "  
       << target_steering_torque << endl;
 #endif
+
+  return ret;
 }
 
 void MainWindow::SteeringControl(double current_steering_angle, double cmd_steering_angle)
 {
-  // do not call a control funtion in manual mode.
-  if (IS_STR_MODE_MANUAL()) {
+  double torque;
+
+  // don't control if not in program mode.
+  if (!ZMP_STR_CONTROLLED()) {
     clear_diff();
     return;
   }
 
-  _str_torque_pid_control(current_steering_angle, cmd_steering_angle, hev);
+  torque = _str_torque_pid_control(current_steering_angle, cmd_steering_angle);
+  cout << "ZMP_SET_STR_TORQUE(" << torque << ")" << endl;
+  ZMP_SET_STR_TORQUE(torque);
 }
