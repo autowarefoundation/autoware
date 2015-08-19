@@ -31,6 +31,7 @@ Open-source software for autonomous driving
 
 ### Install Velodyne Driver dependencies 
 ```
+% sudo apt-get install libpcap-dev
 % mkdir -p ~/ros_drivers/src
 % cd ~/ros_drivers/src 
 % catkin_init_workspace
