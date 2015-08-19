@@ -134,8 +134,8 @@ public:
 			}
 		else
 		{
-			ROS_INFO("No object node received, defaulting to /obj_car/image_obj, you can use _img_obj_node:=YOUR_TOPIC");
-			image_obj_topic_str = "/obj_car/image_obj";
+			ROS_INFO("No object node received, defaulting to image_obj, you can use _img_obj_node:=YOUR_TOPIC");
+			image_obj_topic_str = "image_obj";
 		}
 
 
