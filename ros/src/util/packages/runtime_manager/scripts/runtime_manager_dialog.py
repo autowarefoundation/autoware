@@ -318,10 +318,10 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_grps = [
 			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, self.button_rviz_computing,
 			  self.button_rviz_interface, self.button_rviz_database, self.button_rviz_simulation,
-			  self.button_rviz_status, self.button_rviz_topic, ],
+			  self.button_rviz_status, self.button_rviz_topics, ],
 			[ self.button_rqt_qs, self.button_rqt_map, self.button_rqt_sensing, self.button_rqt_computing,
 			  self.button_rqt_interface, self.button_rqt_database, self.button_rqt_simulation,
-			  self.button_rqt_status, self.button_rqt_topic, ],
+			  self.button_rqt_status, self.button_rqt_topics, ],
 			[ self.button_android_tablet_qs, self.button_android_tablet_interface, ],
 			[ self.button_oculus_rift_qs, self.button_oculus_rift_interface, ],
 			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_interface, ],
@@ -330,11 +330,11 @@ class MyFrame(rtmgr.MyFrame):
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
 
-		# Topic tab (need, after layout for sizer)
-		self.topic_dic = self.load_yaml('topic.yaml')
-		self.topic_list = []
-		self.topic_echo_proc = None
-		self.refresh_topic_list()
+		# Topics tab (need, after layout for sizer)
+		self.topics_dic = self.load_yaml('topics.yaml')
+		self.topics_list = []
+		self.topics_echo_proc = None
+		self.refresh_topics_list()
 
 		# waypoint
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
@@ -1033,25 +1033,25 @@ class MyFrame(rtmgr.MyFrame):
 		f.close()
 
 	#
-	# for Topic tab
+	# for Topics tab
 	#
-	def OnRefreshTopic(self, event):
-		self.refresh_topic_list()
+	def OnRefreshTopics(self, event):
+		self.refresh_topics_list()
 
-	def refresh_topic_list(self):
+	def refresh_topics_list(self):
 		lst = subprocess.check_output([ 'rostopic', 'list' ]).strip().split('\n')
-		panel = self.panel_topic_list
-		szr = self.sizer_topic_list
-		for obj in self.topic_list:
+		panel = self.panel_topics_list
+		szr = self.sizer_topics_list
+		for obj in self.topics_list:
 			szr.Remove(obj)
 			obj.Destroy()
-		self.topic_list = []
+		self.topics_list = []
 		for topic in lst:
 			obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, topic, '')
 			self.Bind(wx.EVT_HYPERLINK, self.OnTopicLink, obj)
 			szr.Add(obj, 0, wx.LEFT, 4)
 			obj.SetVisitedColour(obj.GetNormalColour())
-			self.topic_list.append(obj)
+			self.topics_list.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
 
@@ -1061,32 +1061,32 @@ class MyFrame(rtmgr.MyFrame):
 
 		# info
 		info = subprocess.check_output([ 'rostopic', 'info', topic ]).strip()
-		lb = self.label_topic_info
+		lb = self.label_topics_info
 		lb.SetLabel(info)
 		lb.GetParent().FitInside()
 
 		# echo
-		proc = self.topic_echo_proc
+		proc = self.topics_echo_proc
 		if proc:
 			terminate_children(proc)
 			terminate(proc)
 			proc.wait()
-			self.topic_echo_proc = None
+			self.topics_echo_proc = None
 
 		out = subprocess.PIPE
 		err = subprocess.STDOUT
-		self.topic_echo_proc = subprocess.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
+		self.topics_echo_proc = subprocess.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
 
-		th_start(self.topic_echo_th)
+		th_start(self.topics_echo_th)
 
-	def topic_echo_th(self, ev):
-		if not self.topic_echo_proc:
+	def topics_echo_th(self, ev):
+		if not self.topics_echo_proc:
 			return
-		file = self.topic_echo_proc.stdout
-		lb = self.label_topic_echo
+		file = self.topics_echo_proc.stdout
+		lb = self.label_topics_echo
 		lb_lines = []
-		lines_limit = self.topic_dic.get('gui_lines_limit', 20)
-		while not ev.wait(0):
+		lines_limit = self.topics_dic.get('gui_lines_limit', 20)
+		while not ev.wait(0.2):
 			s = file.readline()
 			if not s:
 				break
