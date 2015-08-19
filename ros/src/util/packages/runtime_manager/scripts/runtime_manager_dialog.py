@@ -318,10 +318,10 @@ class MyFrame(rtmgr.MyFrame):
 		self.alias_grps = [
 			[ self.button_rviz_qs, self.button_rviz_map, self.button_rviz_sensing, self.button_rviz_computing,
 			  self.button_rviz_interface, self.button_rviz_database, self.button_rviz_simulation,
-			  self.button_rviz_status, ],
+			  self.button_rviz_status, self.button_rviz_topic, ],
 			[ self.button_rqt_qs, self.button_rqt_map, self.button_rqt_sensing, self.button_rqt_computing,
 			  self.button_rqt_interface, self.button_rqt_database, self.button_rqt_simulation,
-			  self.button_rqt_status, ],
+			  self.button_rqt_status, self.button_rqt_topic, ],
 			[ self.button_android_tablet_qs, self.button_android_tablet_interface, ],
 			[ self.button_oculus_rift_qs, self.button_oculus_rift_interface, ],
 			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_interface, ],
@@ -329,6 +329,12 @@ class MyFrame(rtmgr.MyFrame):
 		]
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
+
+		# Topic tab (need, after layout for sizer)
+		self.topic_dic = self.load_yaml('topic.yaml')
+		self.topic_list = []
+		self.topic_echo_proc = None
+		self.refresh_topic_list()
 
 		# waypoint
 		self.route_cmd_waypoint = [ Waypoint(0,0), Waypoint(0,0) ]
@@ -549,7 +555,7 @@ class MyFrame(rtmgr.MyFrame):
 			return None
 
 		if 'open_dialog' in gdic.get('flags', []) and msg_box:
-			dic_list_push(gdic, 'dialog_type', 'open');
+			dic_list_push(gdic, 'dialog_type', 'open')
 			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 			dlg_ret = dlg.ShowModal()
@@ -848,7 +854,7 @@ class MyFrame(rtmgr.MyFrame):
 	#	self.alias_sync(obj)
 	#	obj = self.alias_grp_top_obj(obj)
 	#	cmd_dic = self.simulation_cmd
-	#	(cmd, proc) = cmd_dic.get(obj, (None, None));
+	#	(cmd, proc) = cmd_dic.get(obj, (None, None))
 	#	if cmd and type(cmd) is dict:
 	#		cmd = cmd.get(obj.GetValue())
 	#	if cmd:
@@ -942,7 +948,7 @@ class MyFrame(rtmgr.MyFrame):
 
 			for u in [ 'KB', 'MB', 'GB', 'TB' ]:
 				if total <= 10 * 1024 or used <= 10:
-					break;
+					break
 				total /= 1024
 				used /= 1024
 
@@ -993,7 +999,7 @@ class MyFrame(rtmgr.MyFrame):
 		while not ev.wait(0):
 			s = file.readline()
 			if not s:
-				break;
+				break
 			self.log_que.put(s)
 
 	def logout_th(self, ev):
@@ -1010,7 +1016,7 @@ class MyFrame(rtmgr.MyFrame):
 			print s.strip()
 			sys.stdout.flush()
 
-                        # cut esc ...
+			# cut esc ...
 			while True:
 				i = s.find(chr(27))
 				if i < 0:
@@ -1023,23 +1029,68 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.flush()
 
-			lb_lines.append(s)
-			while len(lb_lines) > lines_limit:
-				del lb_lines[0]
-			lb_str = ''
-			reduce
-			lbstr = reduce( lambda s,a:s+a, lb_lines, '')
-
-			wx.CallAfter(self.label_stdout.SetLabel, lbstr)
-			wx.CallAfter(self.label_stdout.GetParent().FitInside)
-
-			(_, vh) = self.panel_stdout.GetVirtualSize()
-			(_, h) = self.panel_stdout.GetSize()
-			(_, yu) = self.panel_stdout.GetScrollPixelsPerUnit()
-			dh = (vh - h) / yu
-			if dh > 0:
-				wx.CallAfter(self.panel_stdout.Scroll, -1, dh)
+			wx.CallAfter(update_label_and_sc_tail, lb_lines, s, lines_limit, self.label_stdout)
 		f.close()
+
+	#
+	# for Topic tab
+	#
+	def OnRefreshTopic(self, event):
+		self.refresh_topic_list()
+
+	def refresh_topic_list(self):
+		lst = subprocess.check_output([ 'rostopic', 'list' ]).strip().split('\n')
+		panel = self.panel_topic_list
+		szr = self.sizer_topic_list
+		for obj in self.topic_list:
+			szr.Remove(obj)
+			obj.Destroy()
+		self.topic_list = []
+		for topic in lst:
+			obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, topic, '')
+			self.Bind(wx.EVT_HYPERLINK, self.OnTopicLink, obj)
+			szr.Add(obj, 0, wx.LEFT, 4)
+			obj.SetVisitedColour(obj.GetNormalColour())
+			self.topic_list.append(obj)
+		szr.Layout()
+		panel.SetVirtualSize(szr.GetMinSize())
+
+	def OnTopicLink(self, event):
+		obj = event.GetEventObject()
+		topic = obj.GetLabel()
+
+		# info
+		info = subprocess.check_output([ 'rostopic', 'info', topic ]).strip()
+		lb = self.label_topic_info
+		lb.SetLabel(info)
+		lb.GetParent().FitInside()
+
+		# echo
+		proc = self.topic_echo_proc
+		if proc:
+			terminate_children(proc)
+			terminate(proc)
+			proc.wait()
+			self.topic_echo_proc = None
+
+		out = subprocess.PIPE
+		err = subprocess.STDOUT
+		self.topic_echo_proc = subprocess.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
+
+		th_start(self.topic_echo_th)
+
+	def topic_echo_th(self, ev):
+		if not self.topic_echo_proc:
+			return
+		file = self.topic_echo_proc.stdout
+		lb = self.label_topic_echo
+		lb_lines = []
+		lines_limit = self.topic_dic.get('gui_lines_limit', 20)
+		while not ev.wait(0):
+			s = file.readline()
+			if not s:
+				break
+			wx.CallAfter(update_label_and_sc_tail, lb_lines, s, lines_limit, lb)
 
 	#
 	# Common Utils
@@ -1266,7 +1317,7 @@ class MyFrame(rtmgr.MyFrame):
 		while not ev.wait(0):
 			s = self.stdout_file_search(file, 'load ')
 			if not s:
-				break;
+				break
 			err_key = 'failed '
 			if s[:len(err_key)] != err_key:
 				i += 1
@@ -1281,7 +1332,7 @@ class MyFrame(rtmgr.MyFrame):
 		while not ev.wait(0):
 			s = self.stdout_file_search(file, 'Duration:')
 			if not s:
-				break;
+				break
 			lst = s.split()
 			pos = float(lst[0])
 			# lst[1] is '/'
@@ -2262,7 +2313,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			self.cbs.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
-		self.update_filename();
+		self.update_filename()
 
 	def update_filename(self):
 		tc = self.text_ctrl
@@ -2344,6 +2395,25 @@ def th_start(target, kwargs={}):
 def th_end((th, ev)):
 	ev.set()
 	th.join()
+
+def update_label_and_sc_tail(lb_lines, add_str, lines_limit, lb):
+	lb_lines.append(add_str)
+	while len(lb_lines) > lines_limit:
+		del lb_lines[0]
+	lb_str = ''
+	reduce
+	lbstr = reduce( lambda s,a:s+a, lb_lines, '')
+	lb.SetLabel(lbstr)
+
+	scpnl = lb.GetParent()
+	scpnl.FitInside()
+
+	(_, vh) = scpnl.GetVirtualSize()
+	(_, h) = scpnl.GetSize()
+	(_, yu) = scpnl.GetScrollPixelsPerUnit()
+	dh = (vh - h) / yu
+	if dh > 0:
+		scpnl.Scroll(-1, dh)
 
 def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	sb = wx.StaticBox(parent, wx.ID_ANY, s)
