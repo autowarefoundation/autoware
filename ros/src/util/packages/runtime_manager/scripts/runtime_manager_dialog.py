@@ -1001,6 +1001,7 @@ class MyFrame(rtmgr.MyFrame):
 		path = os.path.expandvars(os.path.expanduser(path))
 		f = open(path, 'a')
 		lb_lines = []
+		lines_limit = self.status_dic.get('gui_lines_limit', 20)
 		while not ev.wait(0):
 			try:
 				s = self.log_que.get(timeout=1)
@@ -1023,7 +1024,7 @@ class MyFrame(rtmgr.MyFrame):
 			f.flush()
 
 			lb_lines.append(s)
-			while len(lb_lines) > 1000:
+			while len(lb_lines) > lines_limit:
 				del lb_lines[0]
 			lb_str = ''
 			reduce
