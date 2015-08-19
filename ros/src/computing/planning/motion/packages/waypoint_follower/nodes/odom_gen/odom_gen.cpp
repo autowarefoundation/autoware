@@ -143,7 +143,7 @@ int main(int argc, char **argv)
   ros::Subscriber initialpose_subscriber = nh.subscribe("initialpose", 10, initialposeCallback);
   ros::Subscriber gnss_subscriber = nh.subscribe("gnss_pose", 1000, GNSSCallback);
 
-  ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 10, waypointCallback);
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, waypointCallback);
 
 //transform
   tf::TransformBroadcaster odom_broadcaster;

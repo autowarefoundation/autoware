@@ -174,10 +174,8 @@ subs :
     subs :
     - name : driving_planner
       subs :
-      - name : obstacle_avoidance
-        cmd  : rosrun driving_planner obstacle_avoidance
-      - name : safety_driving
-        cmd  : rosrun driving_planner safety_driving
+      - name : velocity_set
+        cmd  : rosrun driving_planner velocity_set
     - name : waypoint_maker
       subs :
        - name : waypoint_loader

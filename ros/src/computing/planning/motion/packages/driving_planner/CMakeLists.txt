@@ -113,15 +113,12 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(safety_driving nodes/safety_driving/safety_driving.cpp)
-target_link_libraries(safety_driving ${catkin_LIBRARIES})
-add_dependencies(safety_driving
+add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
+target_link_libraries(velocity_set ${catkin_LIBRARIES})
+add_dependencies(velocity_set
   waypoint_follower_generate_messages_cpp)
   
-add_executable(obstacle_avoidance nodes/obstacle_avoidance/obstacle_avoidance.cpp)
-target_link_libraries(obstacle_avoidance ${catkin_LIBRARIES})
-add_dependencies(obstacle_avoidance
-  waypoint_follower_generate_messages_cpp)
+
   
 
 #############
