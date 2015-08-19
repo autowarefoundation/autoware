@@ -137,11 +137,16 @@ int PathPP::getNextWaypoint()
   if (!getPathSize())
     return -1;
 
+  if(next_waypoint_ == getPathSize() - 1)
+    return next_waypoint_;
+
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint_);
   //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
   // look for the next waypoint.
   for (int i = closest_waypoint_; i < getPathSize(); i++)
   {
+    if(i == getPathSize() -1)
+        return i;
 
     //if threshold is  distance of previous waypoint
     if (next_waypoint_ > 0)
@@ -430,7 +435,7 @@ int main(int argc, char **argv)
   _stat_pub = nh.advertise<std_msgs::Bool>("wf_stat", 0);
 
   //subscribe topic
-  ros::Subscriber waypoint_subcscriber = nh.subscribe("path_waypoint", 10, WayPointCallback);
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
   ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
   ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);

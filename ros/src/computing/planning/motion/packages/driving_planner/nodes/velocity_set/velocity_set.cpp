@@ -42,10 +42,10 @@ void callback(const waypoint_follower::lane &msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "safety_driving");
+    ros::init(argc, argv, "velocity_set");
 
     ros::NodeHandle nh;
-    ros::Subscriber twist_sub = nh.subscribe("driving_waypoint", 1, callback);
+    ros::Subscriber twist_sub = nh.subscribe("base_waypoint", 1, callback);
     _pub = nh.advertise<waypoint_follower::lane>("safety_waypoint", 1000,true);
 
     ros::spin();
