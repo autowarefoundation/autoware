@@ -39,23 +39,19 @@
 #include <map_file/StopLineArray.h>
 #include <map_file/DTLaneArray.h>
 
-int to_lane_index(const map_file::PointClass& point,
-		  const std::vector<map_file::Node>& nodes,
-		  const std::vector<map_file::Lane>& lanes);
+struct VectorMap {
+	std::vector<map_file::PointClass> points;
+	std::vector<map_file::Lane> lanes;
+	std::vector<map_file::Node> nodes;
+	std::vector<map_file::StopLine> stoplines;
+	std::vector<map_file::DTLane> dtlanes;
+};
 
-int to_next_lane_index(const map_file::Lane& lane,
-		       const std::vector<map_file::Lane>& lanes);
-
-int to_beginning_point_index(const map_file::Lane& lane,
-			     const std::vector<map_file::Node>& nodes,
-			     const std::vector<map_file::PointClass>& points);
-
-int to_finishing_point_index(const map_file::Lane& lane,
-			     const std::vector<map_file::Node>& nodes,
-			     const std::vector<map_file::PointClass>& points);
-
-map_file::PointClass
-search_nearest(const std::vector<map_file::PointClass>& points,
-	       double x, double y);
+map_file::Lane vmap_find_lane(const VectorMap& vmap, const map_file::PointClass& point);
+map_file::Lane vmap_find_prev_lane(const VectorMap& vmap, const map_file::Lane& lane);
+map_file::Lane vmap_find_next_lane(const VectorMap& vmap, const map_file::Lane& lane);
+map_file::PointClass vmap_find_start_point(const VectorMap& vmap, const map_file::Lane& lane);
+map_file::PointClass vmap_find_end_point(const VectorMap& vmap, const map_file::Lane& lane);
+map_file::PointClass vmap_find_nearest_point(const VectorMap& vmap, double x, double y);
 
 #endif /* !_VMAP_UTILITY_HPP */

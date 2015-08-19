@@ -157,6 +157,7 @@ subs :
         cmd  : rosrun lane_planner lane_change
       - name : lane_navi
         cmd  : rosrun lane_planner lane_navi
+        param: lane_navi
       - name : lane_rule
         cmd  : rosrun lane_planner lane_rule
         param: lane_rule
@@ -718,25 +719,30 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : lane_rule
-    topic : /config/lane_rule
-    msg   : ConfigLaneRule
+  - name  : lane_navi
     vars  :
-    - name      : ruled_waypoint
-      kind      : path
-      path_type : save
-      v         : /tmp/ruled_waypoint.csv
-      rosparam  : /lane_rule/ruled_waypoint_csv
     - name      : velocity
       label     : Velocity (km/h)
       min       : 0
       max       : 200
       v         : 40.0
-    - name      : difference_around_signal
-      label     : Difference around Signal (km/h)
+      rosparam  : /lane_navi/velocity
+    - name      : output_file
+      label     : Output File
+      kind      : path
+      path_type : save
+      v         : /tmp/lane_waypoint.csv
+      rosparam  : /lane_navi/output_file
+
+  - name  : lane_rule
+    topic : /config/lane_rule
+    msg   : ConfigLaneRule
+    vars  :
+    - name      : acceleration
+      label     : Acceleration (m/s^2)
       min       : 0
-      max       : 20
-      v         : 2.0
+      max       : 100
+      v         : 1.0
     - name      : number_of_zeros
       label     : Number of Zeros
       min       : 1
@@ -770,28 +776,15 @@ params :
         delim       : ':='
 
   - name  : waypoint_loader
-    topic : /config/waypoint_loader
-    msg   : ConfigWaypointLoader
     vars  :
-    - name      : ruled_waypoint
+    - name      : lane_waypoint
       kind      : path
-      v         : /tmp/ruled_waypoint.csv
-      rosparam  : /waypoint_loader/ruled_waypoint_csv
-    - name      : velocity
-      label     : Velocity (km/h)
-      min       : 0
-      max       : 200
-      v         : 40.0
-    - name      : difference_around_signal
-      label     : Difference around Signal (km/h)
-      min       : 0
-      max       : 20
-      v         : 2.0
-    - name      : number_of_zeros
-      label     : Number of Zeros
-      min       : 1
-      max       : 100
-      v         : 1
+      v         : /tmp/lane_waypoint.csv
+      rosparam  : /waypoint_loader/lane_waypoint_csv
+    - name      : decelerate  
+      label   : 'decelerate :'
+      v         : 1.0
+      rosparam  : /waypoint_loader/decelerate
 
   - name  : ndt_mapping
     topic : /config/ndt_mapping
