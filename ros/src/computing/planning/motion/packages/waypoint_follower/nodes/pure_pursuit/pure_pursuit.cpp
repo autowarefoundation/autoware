@@ -137,11 +137,16 @@ int PathPP::getNextWaypoint()
   if (!getPathSize())
     return -1;
 
+  if(next_waypoint_ == getPathSize() - 1)
+    return next_waypoint_;
+
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint_);
   //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
   // look for the next waypoint.
   for (int i = closest_waypoint_; i < getPathSize(); i++)
   {
+    if(i == getPathSize() -1)
+        return i;
 
     //if threshold is  distance of previous waypoint
     if (next_waypoint_ > 0)
