@@ -72,7 +72,7 @@ First you have to install Qt5 dependencies.
 ```
 
 ```
-% git clone https://git.gitorious.org/qt/qt5.git qt5
+% git clone git://code.qt.io/qt/qt5.git
 % cd qt5
 % git checkout v5.2.1 # <- Same as Ubuntu 14.04 'qtbase5-dev'
 % perl init-repository --no-webkit # <- webkit is very too large
