@@ -26,7 +26,7 @@ subs :
         cmd  : roslaunch ndt_localizer ndt_matching.launch
         param: ndt
         gui  :
-          stat_topic : [ ndt ]
+          stat_topic : [ ndt, /time_ndt_matching ]
           x  :
             user_category : ''
           yaw:

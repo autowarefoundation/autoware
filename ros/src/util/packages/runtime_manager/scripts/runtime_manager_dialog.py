@@ -490,10 +490,23 @@ class MyFrame(rtmgr.MyFrame):
 				b.SetValue(act)
 
 	def stat_label_off(self, obj):
+		qs_nms = [ 'map', 'sensing', 'localization', 'detection', 'mission_planning', 'motion_planning' ]
+		exec_time = self.qs_dic.get('exec_time', {})
+
 		gdic = self.obj_to_gdic(obj, {})
 		msg = std_msgs.msg.Bool(False)
 		for k in gdic.get('stat_topic', []):
 			self.stat_callback(msg, k)
+
+			# exec_time off
+			if get_top([ dic for dic in exec_time.values() if k in dic ]):
+				self.exec_time_callback(std_msgs.msg.Float32(0), k)
+
+		# Quick Start tab, exec_time off
+		obj_nm = self.name_get(obj)
+		nm = get_top([ nm for nm in qs_nms if 'button_' + nm + '_qs' == obj_nm ])
+		for topic in exec_time.get(nm, {}):
+			self.exec_time_callback(std_msgs.msg.Float32(0), topic)
 
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
@@ -515,7 +528,7 @@ class MyFrame(rtmgr.MyFrame):
 		lb = self.obj_get('label_' + nm + '_qs')
 		if lb:
 			sum = reduce( lambda a,b:a+(b if b else 0), dic.values(), 0 )
-			wx.CallAfter(lb.SetLabel, str(sum)+' ms')
+			wx.CallAfter(lb.SetLabel, str(sum)+' ms' if sum > 0 else '')
 
 		# update Status tab
 		lb = ''
@@ -1041,7 +1054,10 @@ class MyFrame(rtmgr.MyFrame):
 		lines_limit = self.status_dic.get('gui_lines_limit', 20)
 		interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
 		while not ev.wait(interval):
-			s = que.get()
+			try:
+				s = self.log_que.get(timeout=1)
+			except Queue.Empty:
+				continue
 			wx.CallAfter(append_tc_limit, tc, s, lines_limit)
 
 	#
