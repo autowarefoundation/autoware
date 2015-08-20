@@ -334,6 +334,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.topics_dic = self.load_yaml('topics.yaml')
 		self.topics_list = []
 		self.topics_echo_proc = None
+		self.topics_echo_thinf = None
 		self.refresh_topics_list()
 
 		# waypoint
@@ -1006,8 +1007,11 @@ class MyFrame(rtmgr.MyFrame):
 		path = self.status_dic.get('log_path', '~/.autoware/runtime_manager_log.txt')
 		path = os.path.expandvars(os.path.expanduser(path))
 		f = open(path, 'a')
-		lb_lines = []
-		lines_limit = self.status_dic.get('gui_lines_limit', 20)
+
+		show_que = Queue.Queue()
+		thinf = th_start(self.logshow_th, { 'que':show_que })
+		self.all_th_infs.append(thinf)
+
 		while not ev.wait(0):
 			try:
 				s = self.log_que.get(timeout=1)
@@ -1029,8 +1033,16 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.flush()
 
-			wx.CallAfter(update_label_and_sc_tail, lb_lines, s, lines_limit, self.label_stdout)
+			show_que.put(s)
 		f.close()
+
+	def logshow_th(self, que, ev):
+		tc = self.text_ctrl_stdout
+		lines_limit = self.status_dic.get('gui_lines_limit', 20)
+		interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
+		while not ev.wait(interval):
+			s = que.get()
+			wx.CallAfter(append_tc_limit, tc, s, lines_limit)
 
 	#
 	# for Topics tab
@@ -1055,6 +1067,27 @@ class MyFrame(rtmgr.MyFrame):
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
 
+		# info clear
+		lb = self.label_topics_info
+		lb.SetLabel('')
+		
+		# echo clear
+		proc = self.topics_echo_proc
+		if proc:
+			terminate_children(proc)
+			terminate(proc)
+			proc.wait()
+			self.topics_echo_proc = None
+		thinf = self.topics_echo_thinf
+		if thinf:
+			th_end(thinf)
+			self.topics_echo_thinf = None
+
+		tc = self.text_ctrl_topics_echo
+		tc.Enable(False)
+		wx.CallAfter(tc.Clear)
+		wx.CallAfter(tc.Enable, True)
+
 	def OnTopicLink(self, event):
 		obj = event.GetEventObject()
 		topic = obj.GetLabel()
@@ -1077,20 +1110,20 @@ class MyFrame(rtmgr.MyFrame):
 		err = subprocess.STDOUT
 		self.topics_echo_proc = subprocess.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
 
-		th_start(self.topics_echo_th)
+		self.topics_echo_thinf = th_start(self.topics_echo_th)
 
 	def topics_echo_th(self, ev):
 		if not self.topics_echo_proc:
 			return
 		file = self.topics_echo_proc.stdout
-		lb = self.label_topics_echo
-		lb_lines = []
+		tc = self.text_ctrl_topics_echo
 		lines_limit = self.topics_dic.get('gui_lines_limit', 20)
-		while not ev.wait(0.2):
+		interval = self.topics_dic.get('gui_update_interval_ms', 100) * 0.001
+		while not ev.wait(interval):
 			s = file.readline()
 			if not s:
 				break
-			wx.CallAfter(update_label_and_sc_tail, lb_lines, s, lines_limit, lb)
+			wx.CallAfter(append_tc_limit, tc, s, lines_limit)
 
 	#
 	# Common Utils
@@ -2396,24 +2429,10 @@ def th_end((th, ev)):
 	ev.set()
 	th.join()
 
-def update_label_and_sc_tail(lb_lines, add_str, lines_limit, lb):
-	lb_lines.append(add_str)
-	while len(lb_lines) > lines_limit:
-		del lb_lines[0]
-	lb_str = ''
-	reduce
-	lbstr = reduce( lambda s,a:s+a, lb_lines, '')
-	lb.SetLabel(lbstr)
-
-	scpnl = lb.GetParent()
-	scpnl.FitInside()
-
-	(_, vh) = scpnl.GetVirtualSize()
-	(_, h) = scpnl.GetSize()
-	(_, yu) = scpnl.GetScrollPixelsPerUnit()
-	dh = (vh - h) / yu
-	if dh > 0:
-		scpnl.Scroll(-1, dh)
+def append_tc_limit(tc, s, lines_limit):
+	tc.AppendText(s)
+	while lines_limit and tc.GetNumberOfLines()-1 > lines_limit:
+		tc.Remove(0, tc.GetLineLength(0)+1)
 
 def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	sb = wx.StaticBox(parent, wx.ID_ANY, s)
