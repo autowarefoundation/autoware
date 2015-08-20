@@ -1029,9 +1029,11 @@ class MyFrame(rtmgr.MyFrame):
 			path = os.path.expandvars(os.path.expanduser(path))
 			f = open(path, 'a') if path else None
 
-		show_que = Queue.Queue()
-		thinf = th_start(self.logshow_th, { 'que':show_que })
-		self.all_th_infs.append(thinf)
+		show_interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
+		if show_interval >= 0:
+			show_que = Queue.Queue()
+			thinf = th_start(self.logshow_th, { 'que':show_que , 'interval':show_interval })
+			self.all_th_infs.append(thinf)
 
 		while not ev.wait(0):
 			try:
@@ -1057,17 +1059,17 @@ class MyFrame(rtmgr.MyFrame):
 				f.write(s)
 				f.flush()
 
-			show_que.put(s)
+			if show_interval >= 0:
+				show_que.put(s)
 
 		if is_syslog:
 			syslog.closelog()
 		if f:
 			f.close()
 
-	def logshow_th(self, que, ev):
+	def logshow_th(self, que, interval, ev):
 		tc = self.text_ctrl_stdout
 		lines_limit = self.status_dic.get('gui_lines_limit', 20)
-		interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
 		while not ev.wait(interval):
 			try:
 				s = que.get(timeout=1)
