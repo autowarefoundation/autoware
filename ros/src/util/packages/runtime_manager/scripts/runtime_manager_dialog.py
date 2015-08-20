@@ -50,6 +50,7 @@ import psutil
 import pty
 import yaml
 import datetime
+import syslog
 import rtmgr
 import rospy
 import std_msgs.msg
@@ -1017,9 +1018,16 @@ class MyFrame(rtmgr.MyFrame):
 			self.log_que.put(s)
 
 	def logout_th(self, ev):
-		path = self.status_dic.get('log_path', '~/.autoware/runtime_manager_log.txt')
-		path = os.path.expandvars(os.path.expanduser(path))
-		f = open(path, 'a')
+		f = None
+		path = self.status_dic.get('log_path')
+		is_syslog = (path == 'syslog')
+
+		if is_syslog:
+			ident = sys.argv[0].split('/')[-1]
+			syslog.openlog(ident, syslog.LOG_PID | syslog.LOG_CONS)
+		elif path:
+			path = os.path.expandvars(os.path.expanduser(path))
+			f = open(path, 'a') if path else None
 
 		show_que = Queue.Queue()
 		thinf = th_start(self.logshow_th, { 'que':show_que })
@@ -1043,11 +1051,18 @@ class MyFrame(rtmgr.MyFrame):
 					break
 				s = s[:i] + s[j+1:]
 
-			f.write(s)
-			f.flush()
+			if is_syslog:
+				syslog.syslog(s)
+			elif f:
+				f.write(s)
+				f.flush()
 
 			show_que.put(s)
-		f.close()
+
+		if is_syslog:
+			syslog.closelog()
+		if f:
+			f.close()
 
 	def logshow_th(self, que, ev):
 		tc = self.text_ctrl_stdout
@@ -1055,7 +1070,7 @@ class MyFrame(rtmgr.MyFrame):
 		interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
 		while not ev.wait(interval):
 			try:
-				s = self.log_que.get(timeout=1)
+				s = que.get(timeout=1)
 			except Queue.Empty:
 				continue
 			wx.CallAfter(append_tc_limit, tc, s, lines_limit)
