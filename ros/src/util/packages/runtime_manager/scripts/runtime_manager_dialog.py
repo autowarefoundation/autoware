@@ -1029,11 +1029,15 @@ class MyFrame(rtmgr.MyFrame):
 			path = os.path.expandvars(os.path.expanduser(path))
 			f = open(path, 'a') if path else None
 
+		tc = self.text_ctrl_stdout
 		show_interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
 		if show_interval >= 0:
 			show_que = Queue.Queue()
-			thinf = th_start(self.logshow_th, { 'que':show_que , 'interval':show_interval })
+			thinf = th_start(self.logshow_th, { 'que':show_que , 'interval':show_interval , 'tc':tc })
 			self.all_th_infs.append(thinf)
+		else:
+			wx.CallAfter(self.checkbox_stdout.Enable, False)
+			wx.CallAfter(tc.Enable, False)
 
 		while not ev.wait(0):
 			try:
@@ -1060,15 +1064,21 @@ class MyFrame(rtmgr.MyFrame):
 				f.flush()
 
 			if show_interval >= 0:
-				show_que.put(s)
+				if self.checkbox_stdout.GetValue():
+					if not tc.IsEnabled():
+						wx.CallAfter(tc.Enable, True)
+					show_que.put(s)
+				elif tc.IsEnabled():
+					with show_que.mutex:
+						show_que.queue.clear()
+					wx.CallAfter(tc.Enable, False)
 
 		if is_syslog:
 			syslog.closelog()
 		if f:
 			f.close()
 
-	def logshow_th(self, que, interval, ev):
-		tc = self.text_ctrl_stdout
+	def logshow_th(self, que, interval, tc, ev):
 		lines_limit = self.status_dic.get('gui_lines_limit', 20)
 		while not ev.wait(interval):
 			try:
