@@ -2,7 +2,8 @@ top_cmd_interval : 3
 
 log_path : '~/.autoware/runtime_manager_log.txt'
 
-gui_lines_limit : 20
+gui_lines_limit : None
+gui_update_interval_ms : 10
 
 buttons :
   system_monitor :
