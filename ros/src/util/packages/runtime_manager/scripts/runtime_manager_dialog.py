@@ -379,6 +379,12 @@ class MyFrame(rtmgr.MyFrame):
 		save_dic = {}
 		for (name, pdic) in self.load_dic.items():
 			if pdic and pdic != {}:
+				prm = get_top([ cfg.get('param') for cfg in self.config_dic.values() if cfg.get('name') == name ], {})
+				no_saves = prm.get('no_save_vars', [])
+				pdic = pdic.copy()
+                                for k in pdic.keys():
+					if k in no_saves:
+						del pdic[k]
 				save_dic[name] = pdic
 		if save_dic != {}:
 			dir = rtmgr_src_dir()
