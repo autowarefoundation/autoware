@@ -147,6 +147,23 @@ subs :
       - name : region_tlr
         cmd  : roslaunch road_wizard traffic_light_recognition.launch
 
+    - name : viewers
+      subs :
+      - name : image_viewer
+        cmd  : rosrun viewers image_viewer
+      - name : image_d_viewer
+        cmd  : rosrun viewers image_d_viewer
+      - name : points_image_viewer
+        cmd  : rosrun viewers points_image_viewer
+      - name : points_image_d_viewer
+        cmd  : rosrun viewers points_image_d_viewer
+      - name : vscan_image_viewer
+        cmd  : rosrun viewers vscan_image_viewer
+      - name : vscan_image_d_viewer
+        cmd  : rosrun viewers vscan_image_d_viewer
+      - name : traffic_light_viewer
+        cmd  : rosrun viewers traffic_light_viewer
+
 
 - subs :
   - name : Mission Planning
