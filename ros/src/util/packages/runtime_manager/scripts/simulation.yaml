@@ -21,6 +21,7 @@ buttons:
 
 params :
   - name  : rosbag_play
+    no_save_vars : [ clock, sim_time ]
     vars  :
     - name      : file
       kind      : path
