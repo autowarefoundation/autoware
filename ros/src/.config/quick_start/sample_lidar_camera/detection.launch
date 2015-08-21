@@ -1,0 +1,54 @@
+<launch>
+
+  <!-- setting of this launch file -->
+  <arg name="is_use_gpu" default="true" />
+  <arg name="car_detection" default="true" />
+  <arg name="pedestrian_detection" default="true" />
+
+  <!-- car and pedestrian detection -->
+  <!-- dpm_XXX -->
+  <include file="$(find cv_tracker)/launch/dpm_ttic.launch">
+    <arg name="car" value="$(arg car_detection)" />
+    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
+    <arg name="use_gpu" value="$(arg is_use_gpu)" />
+  </include>
+
+  <!-- range_fusion -->
+  <include file="$(find cv_tracker)/launch/ranging.launch">
+    <arg name="car" value="$(arg car_detection)" />
+    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
+  </include>
+
+  <!-- XXX_track -->
+  <include file="$(find cv_tracker)/launch/kf_tracking.launch">
+    <arg name="car" value="$(arg car_detection)" />
+    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
+  </include>
+
+  <!-- obj_reproj -->
+  <include file="$(find cv_tracker)/launch/reprojection.launch">
+    <arg name="car" value="$(arg car_detection)" />
+    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
+  </include>
+
+  <!-- euclidean_cluster -->
+  <include file="$(find lidar_tracker)/launch/euclidean_clustering.launch">
+  </include>
+
+  <!-- obj_fusion -->
+  <include file="$(find lidar_tracker)/launch/obj_fusion.launch">
+    <arg name="car" value="$(arg car_detection)" />
+    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
+  </include>
+
+
+  <!-- traffic light recognition -->
+  <!-- feat_proj -->
+  <node pkg="road_wizard" type="feat_proj" name="feat_proj">
+  </node>
+
+  <!-- region_tlr -->
+  <include file="$(find road_wizard)/launch/traffic_light_recognition.launch">
+  </include>
+
+</launch>
