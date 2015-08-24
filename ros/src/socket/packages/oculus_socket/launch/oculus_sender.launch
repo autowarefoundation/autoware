@@ -1,0 +1,3 @@
+<launch>
+	 <node pkg="udp" name="udp_sender" type="udp_sender" args="$(arg ip)" output="screen"/>
+</launch>
