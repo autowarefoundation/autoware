@@ -37,6 +37,7 @@
 #define CAR_WIDTH 2.0
 #define WHEELBASE 2.7
 #define LASER 0.0 //laser offset from the center of car
+#define SEARCH_LIMIT 50000
 
 struct node_t{
   double x, y, theta;
@@ -81,9 +82,10 @@ static bool _start_set = false;
 static int sx, sy, stheta, gx, gy, gtheta;//for map array
 static double dsx, dsy, dstheta;// DOUBLE START POINT
 static double dgx, dgy, dgtheta;// DOUBLE GOAL POINT
-static double x, y, theta;      // FOR CURRENT POINT
+static double current_x, current_y, current_theta;      // FOR CURRENT POINT
 static double origin_yaw;       // for transform
 static int SIZE_X, SIZE_Y;      // map size
+static int Astar_count = 0;
 
 static waypoint_follower::lane ruled_waypoint; //lane_path -> 
 static nav_msgs::Path plan_path;// for visualization
@@ -120,7 +122,7 @@ void mapCallback(const nav_msgs::OccupancyGridConstPtr &msg)
   m.getRPY(roll, pitch, yaw); // origin yaw (-PI ~ PI)
   origin_yaw = yaw;
 
-  std::cout << "origin_yaw: " << origin_yaw << std::endl;
+  std::cout << "\norigin_yaw: " << origin_yaw << std::endl;
   printf("w:%d  h:%d  w*h:%d\n", msg->info.width, msg->info.height, msg->info.width*msg->info.height);
 
   SIZE_X = msg->info.width;
@@ -138,27 +140,11 @@ void mapCallback(const nav_msgs::OccupancyGridConstPtr &msg)
   /* gridmap information to array */
   for (i = 0; i < SIZE_Y; i++){
     for (j = 0; j < SIZE_X; j++){
-      if (msg->data[SIZE_Y*i+j] == 100){//obstacle
+      if (msg->data[SIZE_Y*i+j] == 100){	//obstacle
 	map[i][j][0].status = OBS;
-	//map[i][j][0].x = j; map[i][j][0].y = i;
-	/*
-	map[i][j][0].gc = 0.0; map[i][j][0].hc = 0.0;
-	map[i][j][0].wf = 0.0;
-	map[i][j][0].goal = false;
-	map[i][j][0].visited = false;
-	map[i][j][0].steering = -1;
-	*/
-      } else if (msg->data[SIZE_Y*i+j] == -1){//unknown
+      } else if (msg->data[SIZE_Y*i+j] == -1){	//unknown
 	map[i][j][0].status = OBS;
-	//map[i][j][0].x = j; map[i][j][0].y = i;
-	/*
-	map[i][j][k].gc = 0.0; map[i][j][k].hc = 0.0;
-	map[i][j][k].wf = 0.0;
-	map[i][j][k].goal = false;
-	map[i][j][k].visited = false;
-	map[i][j][k].steering = -1;
-	*/
-      } else {                              //free space
+      } else {                              	//free space
 	for (k = 0; k < SIZE_T; k++){
 	  map[i][j][k].status = NONE;
 	  //map[i][j][k].x = j; map[i][j][k].y = i;
@@ -166,20 +152,20 @@ void mapCallback(const nav_msgs::OccupancyGridConstPtr &msg)
 	  map[i][j][k].wf = 0.0;
 	  map[i][j][k].goal = false;
 	  map[i][j][k].visited = false;
+	  map[i][j][k].parent = NULL;
 	  map[i][j][k].steering = -1;
 	}
       }
     }
   }
   
-  //////
 
   _map_set = true;
 }
 
 
 
-void mapCallback(const nav_msgs::OccupancyGrid &msg)
+void mapReset(const nav_msgs::OccupancyGrid &msg)
 {
   int i, j, k;
   double roll, pitch, yaw;
@@ -194,7 +180,7 @@ void mapCallback(const nav_msgs::OccupancyGrid &msg)
   m.getRPY(roll, pitch, yaw); // origin yaw (-PI ~ PI)
   origin_yaw = yaw;
 
-  std::cout << "origin_yaw: " << origin_yaw << std::endl;
+  std::cout << "\norigin_yaw: " << origin_yaw << std::endl;
   printf("w:%d  h:%d  w*h:%d\n", msg.info.width, msg.info.height, msg.info.width*msg.info.height);
 
   SIZE_X = msg.info.width;
@@ -240,6 +226,7 @@ void mapCallback(const nav_msgs::OccupancyGrid &msg)
 	  map[i][j][k].wf = 0.0;
 	  map[i][j][k].goal = false;
 	  map[i][j][k].visited = false;
+	  map[i][j][k].parent = NULL;
 	  map[i][j][k].steering = -1;
 	}
       }
@@ -278,7 +265,7 @@ void GoalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   if (tfyaw < 0) {tfyaw+=2*M_PI;}
   gtheta = (int)(tfyaw/THETA); // in grid cell
 
-  printf("(dgx, dgy, dgtheta) = (%lf, %lf, %lf)\n", dgx, dgy, dgtheta);
+  printf("\n(dgx, dgy, dgtheta) = (%lf, %lf, %lf)\n", dgx, dgy, dgtheta);
   printf("(gx, gy, gtheta) = (%d, %d, %d)\n", gx, gy, gtheta);
 
   /////////for debug/////////
@@ -319,9 +306,6 @@ void StartCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 
   tf::Vector3 tfpoint = TransformPoint(msg->pose.pose);
 
-  std::cout << tfpoint.getX() << ", " << tfpoint.getY() << std::endl;
-
-  printf("(dsx, dsy) = (%lf, %lf)\n", msg->pose.pose.position.x, msg->pose.pose.position.y);
   sx = (int)(tfpoint.getX()*10);
   sy = (int)(tfpoint.getY()*10);
   dsx = msg->pose.pose.position.x;
@@ -339,7 +323,7 @@ void StartCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
   if (tfyaw < 0) {tfyaw+=2*M_PI;} //make yaw 0~2PI
   stheta = (int)(tfyaw/THETA);  //0~23 (THETA=PI/12) in grid cell
 
-  printf("(dsx, dsy, dstheta) = (%lf, %lf, %lf)\n", dsx, dsy, dstheta);
+  printf("\n(dsx, dsy, dstheta) = (%lf, %lf, %lf)\n", dsx, dsy, dstheta);
   printf("(sx, sy, stheta) = (%d, %d, %d)\n", sx, sy, stheta);
 
   ros::Publisher start_pub = n.advertise<geometry_msgs::PoseStamped>("start_pose", 1000, true);
@@ -369,13 +353,14 @@ void StartCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
   map[sy][sx][stheta].x = dsx;  map[sy][sx][stheta].y = dsy;
   map[sy][sx][stheta].theta = dstheta;
   map[sy][sx][stheta].gc = 0.0;
+  map[sy][sx][stheta].parent = NULL;
 
   /* push start point to openlist */
   openlist.push(map[sy][sx][stheta]);
 
   /* set start point to current point */
-  x = map[sy][sx][stheta].x;  y = map[sy][sx][stheta].y;
-  theta = map[sy][sx][stheta].theta;
+  current_x = map[sy][sx][stheta].x;  current_y = map[sy][sx][stheta].y;
+  current_theta = map[sy][sx][stheta].theta;
 
 
   _start_set = true;
@@ -598,7 +583,7 @@ void CalcCarsize(const double &car_x, const double &car_y, const double &car_the
       }
     }
   }
-  //[3]と[5]の要素をswap
+  //swap [3] and [5]
   temp = polygon.polygon.points[3];
   polygon.polygon.points[3] = polygon.polygon.points[5];
   polygon.polygon.points[5] = temp;
@@ -685,8 +670,6 @@ double ChangeTheta(const double &current_theta){
 
 int AStar(){
   int i;
-  static int count = 0;
-  //static int goal_count = 0;
   double tftheta, cost;
   double center_x1, center_y1, center_x2, center_y2;
   int grid_x, grid_y, grid_theta;
@@ -698,17 +681,17 @@ int AStar(){
   CalcCenter(&center_x1, &center_y1, &center_x2, &center_y2);
 
 
-  count++;
-  std::cout << count << std::endl;
+  Astar_count++;
+  //std::cout << Astar_count << std::endl;
   //std::cout << "openlist size: " << openlist.size() << std::endl;
   
 
   /* calculate tf point */
-  tftheta = theta - origin_yaw;
+  tftheta = current_theta - origin_yaw;
   tftheta = ChangeTheta(tftheta);
-  theta = ChangeTheta(theta);
+  current_theta = ChangeTheta(current_theta);
   //if (tftheta < 0 || tftheta >= 2*M_PI) {std::cout << "ERROR!!" << std::endl;}
-  tfpose.position.x = x; tfpose.position.y = y; tfpose.position.z = 0.0;
+  tfpose.position.x = current_x; tfpose.position.y = current_y; tfpose.position.z = 0.0;
   tf::Vector3 tfpoint = TransformPoint(tfpose);
 
   /* current grid cell */
@@ -752,51 +735,53 @@ int AStar(){
     case 0:// forward //
       //continue;
       if (map[norm_y][norm_x][norm_theta].steering == 1) {continue;}
-      temp.x = x + ARC*cos(theta); temp.y = y + ARC*sin(theta);
-      temp.theta = theta;
+      temp.x = current_x + ARC*cos(current_theta);
+      temp.y = current_y + ARC*sin(current_theta);
+      temp.theta = current_theta;
       cost = ARC*W_STRAIGHT;
       break;
     case 1:// backward //
       //continue;
       if (map[norm_y][norm_x][norm_theta].steering == 0) {continue;}
-      temp.x = x + ARC*cos(theta+M_PI); temp.y = y + ARC*sin(theta+M_PI);
-      temp.theta = theta;
+      temp.x = current_x + ARC*cos(current_theta+M_PI);
+      temp.y = current_y + ARC*sin(current_theta+M_PI);
+      temp.theta = current_theta;
       cost = ARC*W_STRAIGHT;
       break;
     case 2:// left forward //
       //continue;
       if (map[norm_y][norm_x][norm_theta].steering == 3 ||
 	  map[norm_y][norm_x][norm_theta].steering == 4) {continue;}
-      temp.x = (ARC/THETA)*cos(theta + 3*M_PI/2 + THETA) + center_x2;
-      temp.y = (ARC/THETA)*sin(theta + 3*M_PI/2 + THETA) + center_y2;
-      temp.theta = theta + THETA;
+      temp.x = (ARC/THETA)*cos(current_theta + 3*M_PI/2 + THETA) + center_x2;
+      temp.y = (ARC/THETA)*sin(current_theta + 3*M_PI/2 + THETA) + center_y2;
+      temp.theta = current_theta + THETA;
       cost = ARC*W_CURVE;
       break;
     case 3:// left backward //
       //continue;
       if (map[norm_y][norm_x][norm_theta].steering == 2 ||
 	  map[norm_y][norm_x][norm_theta].steering == 5) {continue;}
-      temp.x = (ARC/THETA)*cos(theta + 3*M_PI/2 - THETA) + center_x2;
-      temp.y = (ARC/THETA)*sin(theta + 3*M_PI/2 - THETA) + center_y2;
-      temp.theta = theta - THETA;
+      temp.x = (ARC/THETA)*cos(current_theta + 3*M_PI/2 - THETA) + center_x2;
+      temp.y = (ARC/THETA)*sin(current_theta + 3*M_PI/2 - THETA) + center_y2;
+      temp.theta = current_theta - THETA;
       cost = ARC*W_CURVE;
       break;
     case 4:// right forward //
       //continue;
       if (map[norm_y][norm_x][norm_theta].steering == 5 ||
 	  map[norm_y][norm_x][norm_theta].steering == 2) {continue;}
-      temp.x = (ARC/THETA)*cos(theta + M_PI/2 - THETA) + center_x1;
-      temp.y = (ARC/THETA)*sin(theta + M_PI/2 - THETA) + center_y1;
-      temp.theta = theta - THETA;
+      temp.x = (ARC/THETA)*cos(current_theta + M_PI/2 - THETA) + center_x1;
+      temp.y = (ARC/THETA)*sin(current_theta + M_PI/2 - THETA) + center_y1;
+      temp.theta = current_theta - THETA;
       cost = ARC*W_CURVE;
       break;
     case 5:// right backward //
       //continue;
       if (map[norm_y][norm_x][norm_theta].steering == 4 ||
 	  map[norm_y][norm_x][norm_theta].steering == 3) {continue;}
-      temp.x = (ARC/THETA)*cos(theta + M_PI/2 + THETA) + center_x1;
-      temp.y = (ARC/THETA)*sin(theta + M_PI/2 + THETA) + center_y1;
-      temp.theta = theta + THETA;
+      temp.x = (ARC/THETA)*cos(current_theta + M_PI/2 + THETA) + center_x1;
+      temp.y = (ARC/THETA)*sin(current_theta + M_PI/2 + THETA) + center_y1;
+      temp.theta = current_theta + THETA;
       cost = ARC*W_CURVE;
       break;
     }
@@ -820,6 +805,7 @@ int AStar(){
       continue;
     } else if (map[grid_y][grid_x][grid_theta].goal &&
 	       GoalAngle(temp.theta)){ //current node is GOAL
+      std::cout << Astar_count << std::endl;
       map[grid_y][grid_x][grid_theta].x = temp.x;
       map[grid_y][grid_x][grid_theta].y = temp.y;
       map[grid_y][grid_x][grid_theta].theta = temp.theta;
@@ -875,12 +861,13 @@ int AStar(){
   }
 
 
-  // search for next start point
+  // set next start point
   temp = openlist.top();
-  x = temp.x;  y = temp.y;
-  theta = temp.theta;
+  current_x = temp.x;  current_y = temp.y;
+  current_theta = temp.theta;
 
-  if (count == 50000)//for debug
+  // terminate search
+  if (Astar_count == SEARCH_LIMIT)
     return 1;
 
   return -1;//for loop
@@ -906,8 +893,7 @@ void PrintPath(){
   // search from a parent node
   
   while (temp->parent != NULL){
-    //std::cout << "" << (int)(temp->x*10) << " " << (int)(temp->y*10) << "" << std::endl;
-    std::cout << "" << temp->x/10 << " " << temp->y/10 << "" << std::endl;
+    std::cout << "" << temp->x << " " << temp->y << "" << std::endl;
     //Path
     posestamped.header = plan_path.header;
     posestamped.pose.position.x = temp->x;
@@ -924,11 +910,12 @@ void PrintPath(){
 
     temp = temp->parent;
   }
+  std::cout << "" << temp->x << " " << temp->y << "" << std::endl;
   posestamped.header = plan_path.header;
   posestamped.pose.position.x = temp->x;
   posestamped.pose.position.y = temp->y;
   posestamped.pose.position.z = 0.0;//
-  posestamped.pose.orientation.w = 1.0;//??
+  posestamped.pose.orientation.w = 1.0;//
   plan_path.poses.push_back(posestamped);
 
   temp_path.x = temp->x;
@@ -939,7 +926,6 @@ void PrintPath(){
   //from start point
   std::cout << path_list.size() << std::endl;
   for (i = path_list.size()-1; i >= 0; i--){
-    //printf("%lf,%lf,0.000000,40.000000\n", path_list[i].x, path_list[i].y);
     waypoint.pose.header = ruled_waypoint.header;
     waypoint.twist.header = ruled_waypoint.header;
     waypoint.pose.pose.position.x = path_list[i].x;
@@ -957,13 +943,28 @@ void PrintPath(){
 
 void CalcCenter(double *center_x1, double *center_y1, double *center_x2, double *center_y2){
 
-  *center_x1 = x - cos(theta + M_PI/2)*(ARC/THETA);
-  *center_y1 = y - sin(theta + M_PI/2)*(ARC/THETA);
-  *center_x2 = x - cos(theta + 3*M_PI/2)*(ARC/THETA);
-  *center_y2 = y - sin(theta + 3*M_PI/2)*(ARC/THETA);
+  *center_x1 = current_x - cos(current_theta + M_PI/2)*(ARC/THETA);
+  *center_y1 = current_y - sin(current_theta + M_PI/2)*(ARC/THETA);
+  *center_x2 = current_x - cos(current_theta + 3*M_PI/2)*(ARC/THETA);
+  *center_y2 = current_y - sin(current_theta + 3*M_PI/2)*(ARC/THETA);
 
 }
 
+//init Data
+void InitData(){
+
+  ruled_waypoint.waypoints.clear();
+  plan_path.poses.clear();
+  plan_poses.poses.clear();
+  closelist.clear();
+  map.clear();
+  Astar_count = 0;
+
+  while (!openlist.empty()){
+    openlist.pop();
+  }
+
+}
 
 
 int main(int argc, char **argv)
@@ -983,7 +984,6 @@ int main(int argc, char **argv)
   ros::Subscriber goal_sub = n.subscribe("/move_base_simple/goal", 1000, GoalCallback);
   ros::Subscriber start_sub = n.subscribe("/initialpose", 1000, StartCallback);
 
-  //ros::Publisher map_pub = n.advertise<nav_msgs::OccupancyGrid>("/map", 1000, true);
   ros::Publisher lane_pub = n.advertise<nav_msgs::Path>("lane_waypoint", 1000, true);
   ros::Publisher ruled_pub = n.advertise<waypoint_follower::lane>("traffic_waypoint", 1000, true);
   ros::Publisher pose_pub = n.advertise<geometry_msgs::PoseArray>("poses", 1000, true);
@@ -1010,16 +1010,6 @@ int main(int argc, char **argv)
       continue;
     }
 
-
-    /* set start point */
-    /*
-    map[sy][sx][stheta].status = OPEN;
-    map[sy][sx][stheta].x = dsx;  map[sy][sx][stheta].y = dsy;
-    map[sy][sx][stheta].theta = dstheta;
-    map[sy][sx][stheta].gc = 0.0;
-    map[sy][sx][stheta].hc = hypot(dgx-dsx, dgy-dsy) * W_HC;
-    */
-
     /*******for debug***********/
     /*
     sx = 58; sy = 128;
@@ -1030,18 +1020,12 @@ int main(int argc, char **argv)
     */
     /***************************/
     
-    /* push start point to openlist */
-    //openlist.push(map[sy][sx][stheta]);
-
-    /* set current point to start point */
-    //x = map[sy][sx][stheta].x;  y = map[sy][sx][stheta].y;
-    //theta = map[sy][sx][stheta].theta;
 
     /* Atar search loop */
     while(1){
       count++;
       end_flag = AStar();
-      if (!(count%500) || count < 1000){
+      if (!(count%1000) || count < 1000){
 	pose_pub.publish(plan_poses);//for visualization
       }
       if (!end_flag){
@@ -1056,12 +1040,24 @@ int main(int argc, char **argv)
 	_map_set = false;
 
 	/* reset map data */
+	InitData();
 	getmap_srv_.call(getmap);
-	mapCallback(getmap.response.map);
+	mapReset(getmap.response.map);
 
 	break;
       } else if (end_flag == 1){
 	std::cout << "FAILED..." << std::endl;
+
+	_start_set = false;
+	_goal_set = false;
+	_map_set = false;
+
+	/* reset map data */
+	InitData();
+	getmap_srv_.call(getmap);
+	mapReset(getmap.response.map);
+
+	break;
 	return 1;
       } else {
 	continue;
