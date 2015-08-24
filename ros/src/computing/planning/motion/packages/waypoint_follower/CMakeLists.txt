@@ -72,3 +72,9 @@ waypoint_follower_generate_messages_cpp)
 
 add_executable(twist_through nodes/distance_keep/twist_through.cpp)
 target_link_libraries(twist_through ${catkin_LIBRARIES})
+
+add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
+target_link_libraries(velocity_set ${catkin_LIBRARIES})
+add_dependencies(velocity_set
+  waypoint_follower_generate_messages_cpp)
+  
