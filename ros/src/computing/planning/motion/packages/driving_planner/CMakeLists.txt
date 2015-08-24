@@ -113,11 +113,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
-target_link_libraries(velocity_set ${catkin_LIBRARIES})
-add_dependencies(velocity_set
-  waypoint_follower_generate_messages_cpp)
-  
+
 
   
 

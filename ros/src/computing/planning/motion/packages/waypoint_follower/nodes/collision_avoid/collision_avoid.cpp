@@ -306,7 +306,7 @@ static double Decelerate()
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "distance_keep");
+    ros::init(argc, argv, "collision_avoid");
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");

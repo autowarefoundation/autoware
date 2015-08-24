@@ -65,10 +65,16 @@ runtime_manager_generate_messages_cpp)
 add_executable(odom_gen nodes/odom_gen/odom_gen.cpp)
 target_link_libraries(odom_gen libwaypoint_follower ${catkin_LIBRARIES})
 
-add_executable(distance_keep nodes/distance_keep/distance_keep.cpp)
-target_link_libraries(distance_keep libwaypoint_follower ${catkin_LIBRARIES})
-add_dependencies(distance_keep 
+add_executable(collision_avoid nodes/collision_avoid/collision_avoid.cpp)
+target_link_libraries(collision_avoid libwaypoint_follower ${catkin_LIBRARIES})
+add_dependencies(collision_avoid 
 waypoint_follower_generate_messages_cpp)
 
-add_executable(twist_through nodes/distance_keep/twist_through.cpp)
+add_executable(twist_through nodes/collision_avoid/twist_through.cpp)
 target_link_libraries(twist_through ${catkin_LIBRARIES})
+
+add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
+target_link_libraries(velocity_set ${catkin_LIBRARIES})
+add_dependencies(velocity_set
+  waypoint_follower_generate_messages_cpp)
+  
