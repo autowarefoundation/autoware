@@ -482,6 +482,8 @@ int main(int argc, char **argv)
   probe_mac_addr(mac_addr);
   std::cerr <<  "mac_addr=" << mac_addr << std::endl;
 
+  string home_dir = getenv("HOME");
+
   pub = nh.advertise<visualization_msgs::Marker>(MARKERNAME, 1);
   nh.param<double>(MYNAME "/time", args[0], STARTTIME);
   cout << "time=" << args[0] << endl;
@@ -498,9 +500,9 @@ int main(int argc, char **argv)
   cout << "db_host_name=" << db_host_name << endl;
   nh.param<int>("pos_db/db_port", db_port, DB_PORT);
   cout << "db_port=" << db_port << endl;
-  nh.param<string>("pos_db/sshpubkey", sshpubkey, SSHPUBKEY);
+  nh.param<string>("pos_db/sshpubkey", sshpubkey, home_dir+SSHPUBKEY);
   cout << "sshpubkey=" << sshpubkey << endl;
-  nh.param<string>("pos_db/sshprivatekey", sshprivatekey, SSHPRIVATEKEY);
+  nh.param<string>("pos_db/sshprivatekey", sshprivatekey, home_dir+SSHPRIVATEKEY);
   cout << "sshprivatekey=" << sshprivatekey << endl;
   nh.param<int>("pos_db/ssh_port", ssh_port, SSHPORT);
   cout << "ssh_port=" << ssh_port << endl;
