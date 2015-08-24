@@ -193,13 +193,13 @@ params :
       rosparam  : /pos_db/db_port
     - name      : sshpubkey
       label     : SSH Public Key
-      kind      : str
-      v         : /tmp/autoware/ssh/id_rsa.pub
+      kind      : path
+      v         : ~/.ssh/id_rsa.pub
       rosparam  : /pos_db/sshpubkey
     - name      : sshprivatekey
       label     : SSH Private Key
-      kind      : str
-      v         : /tmp/autoware/ssh/id_rsa
+      kind      : path
+      v         : ~/.ssh/id_rsa
       rosparam  : /pos_db/sshprivatekey
     - name      : sshport
       label     : SSH Port

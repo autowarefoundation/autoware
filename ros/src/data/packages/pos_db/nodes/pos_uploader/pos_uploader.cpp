@@ -42,22 +42,24 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/Point.h>
 
 #include <pos_db.h>
+#include <cv_tracker/obj_label.h>
 
 #define MYNAME		"pos_uploader"
 #define OWN_TOPIC_NAME	"current_pose"
-#define CAR_TOPIC_NAME	"car_pose"
-#define PEDESTRIAN_TOPIC_NAME	"pedestrian_pose"
+#define CAR_TOPIC_NAME	"obj_car/obj_label"
+#define PERSON_TOPIC_NAME	"obj_person/obj_label"
 
 using namespace std;
 
 //store subscribed value
-static std::vector <geometry_msgs::PoseArray> car_position_array;
-static std::vector <geometry_msgs::PoseArray> pedestrian_position_array;
+static std::vector <cv_tracker::obj_label> car_positions_array;
+static std::vector <cv_tracker::obj_label> person_positions_array;
 //flag for comfirming whether updating position or not
 static size_t car_num = 0;
-static size_t pedestrian_num = 0;
+static size_t person_num = 0;
 
 static int sleep_msec = 500;		// period
 static int use_current_time = 0;
@@ -97,7 +99,7 @@ static int get_type_from_name(const char *name)
     return 1;
   } else if (strcmp(name, CAR_TOPIC_NAME) == 0) {
     return 2;
-  } else if (strcmp(name, PEDESTRIAN_TOPIC_NAME) == 0) {
+  } else if (strcmp(name, PERSON_TOPIC_NAME) == 0) {
     return 3;
   } else {
     std::cerr << "Cannot convert name \"" << name << "\" to type" << std::endl;
@@ -128,10 +130,33 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
   return oss.str();
 }
 
-static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_array, const char *name)
+static std::string point_to_insert_statement(const geometry_msgs::Point& point, const std::string& timestamp, const char *name)
+{
+  std::ostringstream oss;
+  constexpr int AREA = 7;
+
+  oss << "INSERT INTO POS(id,x,y,z,area,or_x,or_y,or_z,or_w,type,tm) "
+      << "VALUES("
+      << "'" << mac_addr << "',"
+      << std::fixed << std::setprecision(6) << point.y << ","
+      << std::fixed << std::setprecision(6) << point.x << ","
+      << std::fixed << std::setprecision(6) << point.z << ","
+      << AREA << ","
+      << std::fixed << std::setprecision(6) << 0 << ","
+      << std::fixed << std::setprecision(6) << 0 << ","
+      << std::fixed << std::setprecision(6) << 0 << ","
+      << std::fixed << std::setprecision(6) << 0 << ","
+      << get_type_from_name(name) << ","
+      << "'" << timestamp << "'"
+      << ");";
+
+  return oss.str();
+}
+
+static std::string makeSendDataDetectedObj(const cv_tracker::obj_label& cp_array, const char *name)
 {
   std::string timestamp;
-  if(use_current_time) {
+  if(use_current_time  || cp_array.header.stamp.sec == 0) {
     ros::Time t = ros::Time::now();
     timestamp = getTimeStamp(t.sec, t.nsec);
   } else {
@@ -139,9 +164,9 @@ static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_ar
   }
 
   std::string ret;
-  for(const auto& pose : cp_array.poses){
+  for (const auto& point : cp_array.reprojected_pos) {
     //create sql
-    ret += pose_to_insert_statement(pose, timestamp, name);
+    ret += point_to_insert_statement(point, timestamp, name);
     ret += "\n";
   }
 
@@ -151,31 +176,31 @@ static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_ar
 //wrap SendData class
 static void send_sql()
 {
-  int sql_num = car_num + pedestrian_num + current_pose_position.size();
+  int sql_num = car_num + person_num + current_pose_position.size();
   std::cout << "sqlnum : " << sql_num << std::endl;
 
   //create header
   std::string value = make_header(2, sql_num);
 
-std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << car_num << "(" << car_position_array.size() << ")" << ",pedestrian_num=" << pedestrian_num << "(" << pedestrian_position_array.size() << ")" << ", val=";
+std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << car_num << "(" << car_positions_array.size() << ")" << ",person_num=" << person_num << "(" << person_positions_array.size() << ")" << ", val=";
 
-  //get data of car and pedestrian recognizing
+  //get data of car and person recognizing
   pthread_mutex_lock(&pose_lock_);
-  if(car_num > 0){
-    for(size_t i = 0; i < car_position_array.size(); i++) {
-      value += makeSendDataDetectedObj(car_position_array[i], CAR_TOPIC_NAME);
+  if(car_positions_array.size() > 0){
+    for(size_t i = 0; i < car_positions_array.size(); i++) {
+      value += makeSendDataDetectedObj(car_positions_array[i], CAR_TOPIC_NAME);
     }
   }
-  car_position_array.clear();
+  car_positions_array.clear();
   car_num = 0;
 
-  if(pedestrian_num > 0){
-    for(size_t i = 0; i < pedestrian_position_array.size(); i++) {
-      value += makeSendDataDetectedObj(pedestrian_position_array[i], PEDESTRIAN_TOPIC_NAME);
+  if(person_positions_array.size() > 0){
+    for(size_t i = 0; i < person_positions_array.size(); i++) {
+      value += makeSendDataDetectedObj(person_positions_array[i], PERSON_TOPIC_NAME);
     }
   }
-  pedestrian_position_array.clear();
-  pedestrian_num = 0;
+  person_positions_array.clear();
+  person_num = 0;
 
 
   // my_location
@@ -212,7 +237,7 @@ static void* intervalCall(void *unused)
   while(1){
     //If angle and position data is not updated from previous data send,
     //data is not sent
-    if((car_num + pedestrian_num + current_pose_position.size()) <= 0) {
+    if((car_num + person_num + current_pose_position.size()) <= 0) {
       usleep(sleep_msec*1000);
       continue;
     }
@@ -224,22 +249,22 @@ static void* intervalCall(void *unused)
   return nullptr;
 }
 
-static void car_locate_cb(const geometry_msgs::PoseArray& car_locate)
+static void car_locate_cb(const cv_tracker::obj_label& obj_label_msg)
 {
-  if(car_locate.poses.size() > 0) {
+  if(obj_label_msg.reprojected_pos.size() > 0) {
     pthread_mutex_lock(&pose_lock_);
-    car_num += car_locate.poses.size();
-    car_position_array.push_back(car_locate);
+    car_num += obj_label_msg.reprojected_pos.size();
+    car_positions_array.push_back(obj_label_msg);
     pthread_mutex_unlock(&pose_lock_);
   }
 }
 
-static void pedestrian_locate_cb(const geometry_msgs::PoseArray& pedestrian_locate)
+static void person_locate_cb(const cv_tracker::obj_label& obj_label_msg)
 {
-  if(pedestrian_locate.poses.size() > 0) {
+  if(obj_label_msg.reprojected_pos.size() > 0) {
     pthread_mutex_lock(&pose_lock_);
-    pedestrian_num += pedestrian_locate.poses.size();
-    pedestrian_position_array.push_back(pedestrian_locate);
+    person_num += obj_label_msg.reprojected_pos.size();
+    person_positions_array.push_back(obj_label_msg);
     pthread_mutex_unlock(&pose_lock_);
   }
 }
@@ -278,17 +303,18 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   ros::Subscriber car_locate = nh.subscribe("/" CAR_TOPIC_NAME, 1, car_locate_cb);
-  ros::Subscriber pedestrian_locate = nh.subscribe("/" PEDESTRIAN_TOPIC_NAME, 1, pedestrian_locate_cb);
+  ros::Subscriber person_locate = nh.subscribe("/" PERSON_TOPIC_NAME, 1, person_locate_cb);
   ros::Subscriber gnss_pose = nh.subscribe("/" OWN_TOPIC_NAME, 1, current_pose_cb);
 
+  string home_dir = getenv("HOME");
 
   nh.param<string>("pos_db/db_host_name", db_host_name, DB_HOSTNAME);
   cout << "db_host_name=" << db_host_name << endl;
   nh.param<int>("pos_db/db_port", db_port, DB_PORT);
   cout << "db_port=" << db_port << endl;
-  nh.param<string>("pos_db/sshpubkey", sshpubkey, SSHPUBKEY);
+  nh.param<string>("pos_db/sshpubkey", sshpubkey, home_dir+SSHPUBKEY);
   cout << "sshpubkey=" << sshpubkey << endl;
-  nh.param<string>("pos_db/sshprivatekey", sshprivatekey, SSHPRIVATEKEY);
+  nh.param<string>("pos_db/sshprivatekey", sshprivatekey, home_dir+SSHPRIVATEKEY);
   cout << "sshprivatekey=" << sshprivatekey << endl;
   nh.param<int>("pos_db/ssh_port", ssh_port, SSHPORT);
   cout << "ssh_port=" << ssh_port << endl;
