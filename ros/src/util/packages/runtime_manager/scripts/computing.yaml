@@ -170,8 +170,6 @@ subs :
     subs :
     - name : lane_planner
       subs :
-      - name : lane_change
-        cmd  : rosrun lane_planner lane_change
       - name : lane_navi
         cmd  : rosrun lane_planner lane_navi
         param: lane_navi
@@ -181,6 +179,8 @@ subs :
       - name : lane_stop
         cmd  : rosrun lane_planner lane_stop
         param: lane_stop
+      - name : lane_select
+        cmd  : rosrun lane_planner lane_select
         gui  :
           dialog: MyDialogLaneStop
     - name : parking_planner
@@ -191,9 +191,7 @@ subs :
   - name : Motion Planning
     subs :
     - name : driving_planner
-      subs :
-      - name : velocity_set
-        cmd  : rosrun driving_planner velocity_set
+
     - name : waypoint_maker
       subs :
        - name : waypoint_loader
@@ -209,7 +207,7 @@ subs :
            save_filename :
              prop  : 1
     - name : waypoint_follower
-      subs :
+      subs :   
        - name : pure_pursuit
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
          param: waypoint_follower
@@ -218,14 +216,17 @@ subs :
              depend : param_flag
            lookahead_threshold:
              depend : param_flag
-           stat_topic : [ lf ]
-       - name : distance_keep
-         cmd  : roslaunch waypoint_follower distance_keep.launch
+           stat_topic : [ lf ]  
+       - name : velocity_set
+         cmd  : rosrun waypoint_follower velocity_set
+       - name : collision_avoid
+         cmd  : roslaunch waypoint_follower collision_avoid.launch  
        - name : twist_through
-         cmd  : rosrun waypoint_follower twist_through
-       - name : car_simulator
-         cmd  : roslaunch waypoint_follower car_simulator.launch
-         param: car_simulator
+         cmd  : roslaunch waypoint_follower twist_through  
+       - name : wf_simulator
+         cmd  : roslaunch waypoint_follower wf_simulator.launch
+         param: wf_simulator  
+         
          gui  :
            use_pose:
              flags : [ no_category, nl ]
@@ -549,7 +550,7 @@ params :
       kind    : checkbox
       v       : False
       rosparam: /pure_pursuit/sim_mode
-  - name  : car_simulator
+  - name  : wf_simulator
     vars  :
     - name    : use_pose
       kind    : radio_box
