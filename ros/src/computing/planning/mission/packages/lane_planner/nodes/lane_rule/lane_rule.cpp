@@ -36,10 +36,12 @@
 
 #include <vmap_utility.hpp>
 
-static constexpr double RADIUS_MAX = 90000000000;
-static constexpr double CURVE_WEIGHT = 50 * 0.6; // XXX
-static constexpr double CROSSROAD_WEIGHT = 9.1 * 0.9; // XXX
+// XXX heuristic parameter
+static constexpr double CURVE_WEIGHT = 50 * 0.6;
+static constexpr double CROSSROAD_WEIGHT = 9.1 * 0.9;
 static constexpr double CLOTHOID_WEIGHT = CURVE_WEIGHT;
+
+static constexpr double RADIUS_MAX = 90000000000;
 
 static double config_acceleration = 1; // m/s^2
 static int config_number_of_zeros = 1;
@@ -125,7 +127,8 @@ static bool is_curve(const map_file::DTLane& dtlane)
 
 static bool is_crossroad(const map_file::DTLane& dtlane)
 {
-	return (dtlane.did >= 5547 && dtlane.did <= 5557); // XXX
+	// XXX take crossroad for 10 radius or less
+	return (fabs(dtlane.r) <= 10);
 }
 
 static bool is_single_curve(const std::vector<map_file::DTLane>& dtlanes, int index)
