@@ -126,7 +126,7 @@ subs :
 
     - name : lidar_detector
       subs :
-      - name : euclidean_clusterer
+      - name : euclidean_cluster
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
       - name : obj_fusion
         cmd  : roslaunch lidar_tracker obj_fusion.launch
