@@ -347,8 +347,7 @@ static waypoint_follower::lane apply_acceleration(const waypoint_follower::lane&
 	if (fixed_cnt == 0)
 		return computations;
 
-	size_t loops = msg.waypoints.size();
-	for (size_t i = start_index; i < loops; ++i) {
+	for (size_t i = start_index; i < msg.waypoints.size(); ++i) {
 		if (i - start_index < fixed_cnt) {
 			computations.waypoints[i].twist.twist.linear.x = fixed_vel;
 			continue;
@@ -413,14 +412,22 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 
 	std::vector<map_file::DTLane> dtlanes = search_dtlane(msg);
 	if (dtlanes.size() != msg.waypoints.size()) {
-		ROS_ERROR("not enough dtlane");
+		ROS_WARN("not found dtlane");
+
+		// publish waypoints without change
+		for (size_t i = 0; i < msg.waypoints.size(); ++i) {
+			waypoint.pose.pose = msg.waypoints[i].pose.pose;
+			waypoint.twist.twist = msg.waypoints[i].twist.twist;
+			green.waypoints.push_back(waypoint);
+		}
+		pub_traffic.publish(green);
+
 		return;
 	}
 
 	waypoint_follower::lane computations = compute_velocity(msg, config_acceleration, config_number_of_zeros);
 
-	size_t loops = msg.waypoints.size();
-	for (size_t i = 0; i < loops; ++i) {
+	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
 		double reduction = dtlane_to_reduction(dtlanes, i);
 
 		waypoint.pose.pose = msg.waypoints[i].pose.pose;
