@@ -278,15 +278,28 @@ class MyFrame(rtmgr.MyFrame):
 		pnl = self.panel_rosbag_play
 		self.set_param_panel(btn, pnl)
 
+		# setup for rosbag info
+		gdic = self.obj_to_gdic(btn, {})
+		name = 'file'
+		if name not in gdic:
+			gdic[ name ] = {}
+		gdic_v = gdic.get(name, {})
+		gdic_v['update_hook'] = self.rosbag_info_hook
+
+		tc = self.obj_to_varpanel_tc(btn, 'file')
+		if tc:
+			self.rosbag_info_hook( tc.GetValue() )
+
+
 		vp = self.obj_to_varpanel(btn, 'sim_time')
 		self.checkbox_sim_time = vp.obj
 
-		try:
-			cmd = ['rosparam', 'get', '/use_sim_time']
-			if subprocess.check_output(cmd, stderr=open(os.devnull, 'wb')).strip() == 'true':
-				self.checkbox_sim_time.SetValue(True)
-		except subprocess.CalledProcessError:
-			pass
+		#try:
+		#	cmd = ['rosparam', 'get', '/use_sim_time']
+		#	if subprocess.check_output(cmd, stderr=open(os.devnull, 'wb')).strip() == 'true':
+		#		self.checkbox_sim_time.SetValue(True)
+		#except subprocess.CalledProcessError:
+		#	pass
 
 		self.label_rosbag_play_bar.Destroy()
 		self.label_rosbag_play_bar = BarLabel(tab, '  Playing...  ')
@@ -666,12 +679,17 @@ class MyFrame(rtmgr.MyFrame):
 			name = var.get('name')
 			gdic_v = gdic.get(name, {})
 			func = gdic_v.get('func')
-			if func is None:
-				if pdic_empty:
-					pdic[ name ] = var.get('v')
+			if func is None and not pdic_empty:
 				continue
-			v = eval(func) if type(func) is str else func()
+			v = var.get('v')
+			if func is not None:
+				v = eval(func) if type(func) is str else func()
 			pdic[ name ] = v
+
+			hook = gdic_v.get('update_hook')
+			if hook:
+				hook(v)
+
 		if 'pub' in prm:
 			self.publish_param_topic(pdic, prm)
 		self.rosparam_set(pdic, prm)
@@ -874,6 +892,14 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Simulation Tab
 	#
+	def rosbag_info_hook(self, v):
+		if not v:
+			return
+		err = subprocess.STDOUT
+		s = subprocess.check_output([ 'rosbag', 'info', v ], stderr=err).strip()
+		self.label_rosbag_info.SetLabel(s)
+		self.label_rosbag_info.GetParent().FitInside()
+
 	#def OnSimulation(self, event):
 	#	self.OnChecked_obj(event.GetEventObject())
 
