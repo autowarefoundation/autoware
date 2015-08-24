@@ -95,6 +95,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.all_tabs = []
 		self.all_th_infs = []
 		self.log_que = Queue.Queue()
+		self.log_que_stdout = Queue.Queue()
+		self.log_que_stderr = Queue.Queue()
+		self.log_que_show = Queue.Queue()
 
 		#
 		# ros
@@ -379,8 +382,22 @@ class MyFrame(rtmgr.MyFrame):
 		#self.all_th_infs.append(thinf)
 
 		# logout thread
-		thinf = th_start(self.logout_th)
+		interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
+		tc = self.text_ctrl_stdout
+
+		thinf = th_start(self.logout_th, { 'que':self.log_que_stdout, 'interval':interval, 'tc':tc } )
 		self.all_th_infs.append(thinf)
+		thinf = th_start(self.logout_th, { 'que':self.log_que_stderr, 'interval':interval, 'tc':tc } )
+		self.all_th_infs.append(thinf)
+		thinf = th_start(self.logout_th, { 'que':self.log_que, 'interval':interval, 'tc':tc } )
+		self.all_th_infs.append(thinf)
+
+		if interval > 0:
+			thinf = th_start(self.logshow_th, { 'que':self.log_que_show , 'interval':interval , 'tc':tc })
+			self.all_th_infs.append(thinf)
+		else:
+			self.checkbox_stdout.Enable(False)
+			tc.Enable(False)
 
 		# mkdir
 		paths = [ os.environ['HOME'] + '/.autoware/data/tf',
@@ -1049,73 +1066,59 @@ class MyFrame(rtmgr.MyFrame):
 	#		wx.CallAfter(self.label_node_time.SetLabel, lb)
 	#		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
-	def log_th(self, file, ev):
+	def log_th(self, file, que, ev):
 		while not ev.wait(0):
 			s = file.readline()
 			if not s:
 				break
-			self.log_que.put(s)
+			que.put(s)
 
-	def logout_th(self, ev):
-		f = None
-		path = self.status_dic.get('log_path')
-		is_syslog = (path == 'syslog')
+	def logout_th(self, que, interval, tc, ev):
+		if que == self.log_que_stdout or que == self.log_que_stderr:
+			while not ev.wait(0):
+				try:
+					s = que.get(timeout=1)
+				except Queue.Empty:
+					continue
+				self.log_que.put(s)
 
-		if is_syslog:
-			ident = sys.argv[0].split('/')[-1]
-			syslog.openlog(ident, syslog.LOG_PID | syslog.LOG_CONS)
-		elif path:
-			path = os.path.expandvars(os.path.expanduser(path))
-			f = open(path, 'a') if path else None
+				if interval <= 0:
+					continue
 
-		tc = self.text_ctrl_stdout
-		show_interval = self.status_dic.get('gui_update_interval_ms', 100) * 0.001
-		if show_interval >= 0:
-			show_que = Queue.Queue()
-			thinf = th_start(self.logshow_th, { 'que':show_que , 'interval':show_interval , 'tc':tc })
-			self.all_th_infs.append(thinf)
-		else:
-			wx.CallAfter(self.checkbox_stdout.Enable, False)
-			wx.CallAfter(tc.Enable, False)
+				ckbox = self.checkbox_stdout if que == self.log_que_stdout else self.checkbox_stderr
+				if ckbox.GetValue():
+					self.log_que_show.put( cut_esc(s) )
 
-		while not ev.wait(0):
-			try:
-				s = self.log_que.get(timeout=1)
-			except Queue.Empty:
-				continue
-			print s.strip()
-			sys.stdout.flush()
-
-			# cut esc ...
-			while True:
-				i = s.find(chr(27))
-				if i < 0:
-					break
-				j = s.find('m', i)
-				if j < 0:
-					break
-				s = s[:i] + s[j+1:]
+		else: # == self.log_que
+			f = None
+			path = self.status_dic.get('log_path')
+			is_syslog = (path == 'syslog')
 
 			if is_syslog:
-				syslog.syslog(s)
-			elif f:
-				f.write(s)
-				f.flush()
+				ident = sys.argv[0].split('/')[-1]
+				syslog.openlog(ident, syslog.LOG_PID | syslog.LOG_CONS)
+			elif path:
+				path = os.path.expandvars(os.path.expanduser(path))
+				f = open(path, 'a') if path else None
 
-			if show_interval >= 0:
-				if self.checkbox_stdout.GetValue():
-					if not tc.IsEnabled():
-						wx.CallAfter(tc.Enable, True)
-					show_que.put(s)
-				elif tc.IsEnabled():
-					with show_que.mutex:
-						show_que.queue.clear()
-					wx.CallAfter(tc.Enable, False)
+			while not ev.wait(0):
+				try:
+					s = que.get(timeout=1)
+				except Queue.Empty:
+					continue
+				print s.strip()
+				sys.stdout.flush()
 
-		if is_syslog:
-			syslog.closelog()
-		if f:
-			f.close()
+				s = cut_esc(s)
+				if is_syslog:
+					syslog.syslog(s)
+				elif f:
+					f.write(s)
+					f.flush()
+			if is_syslog:
+				syslog.closelog()
+			if f:
+				f.close()
 
 	def logshow_th(self, que, interval, tc, ev):
 		while not ev.wait(interval):
@@ -1669,12 +1672,19 @@ class MyFrame(rtmgr.MyFrame):
 
 			out = subprocess.PIPE if f else None
 			err = subprocess.STDOUT if f else None
+			if f == self.log_th:
+				err = subprocess.PIPE
 
 			proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
 			self.all_procs.append(proc)
 			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 
-			if f:
+			if f == self.log_th:
+				thinf = th_start(f, {'file':proc.stdout, 'que':self.log_que_stdout})
+				self.all_th_infs.append(thinf)
+				thinf = th_start(f, {'file':proc.stderr, 'que':self.log_que_stderr})
+				self.all_th_infs.append(thinf)
+			elif f:
 				thinf = th_start(f, {'file':proc.stdout})
 				self.all_th_infs.append(thinf)
 		else:
@@ -2556,6 +2566,17 @@ def append_tc_limit(tc, s, rm_chars=0):
 	if rm_chars > 0:
 		tc.Remove(0, rm_chars)
 	tc.AppendText(s)
+
+def cut_esc(s):
+	while True:
+		i = s.find(chr(27))
+		if i < 0:
+			break
+		j = s.find('m', i)
+		if j < 0:
+			break
+		s = s[:i] + s[j+1:]
+	return s
 
 def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	sb = wx.StaticBox(parent, wx.ID_ANY, s)
