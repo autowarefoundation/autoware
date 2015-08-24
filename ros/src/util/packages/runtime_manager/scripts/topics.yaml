@@ -1,2 +1,2 @@
-gui_lines_limit : 1000
-gui_update_interval_ms : 10
+gui_chars_limit : 10000
+gui_update_interval_ms : 100

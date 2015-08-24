@@ -38,6 +38,7 @@ import gettext
 import os
 import re
 import sys
+import fcntl
 import threading
 import Queue
 import time
@@ -336,6 +337,12 @@ class MyFrame(rtmgr.MyFrame):
 		self.topics_list = []
 		self.topics_echo_proc = None
 		self.topics_echo_thinf = None
+
+		self.topics_echo_que = Queue.Queue()
+		self.topics_echo_sum = 0
+		thinf = th_start(self.topics_echo_show_th)
+		self.all_th_infs.append(thinf)
+
 		self.refresh_topics_list()
 
 		# waypoint
@@ -382,7 +389,7 @@ class MyFrame(rtmgr.MyFrame):
 				prm = get_top([ cfg.get('param') for cfg in self.config_dic.values() if cfg.get('name') == name ], {})
 				no_saves = prm.get('no_save_vars', [])
 				pdic = pdic.copy()
-                                for k in pdic.keys():
+				for k in pdic.keys():
 					if k in no_saves:
 						del pdic[k]
 				save_dic[name] = pdic
@@ -1085,13 +1092,12 @@ class MyFrame(rtmgr.MyFrame):
 			f.close()
 
 	def logshow_th(self, que, interval, tc, ev):
-		lines_limit = self.status_dic.get('gui_lines_limit', 20)
 		while not ev.wait(interval):
 			try:
 				s = que.get(timeout=1)
 			except Queue.Empty:
 				continue
-			wx.CallAfter(append_tc_limit, tc, s, lines_limit)
+			wx.CallAfter(append_tc_limit, tc, s)
 
 	#
 	# for Topics tab
@@ -1121,21 +1127,17 @@ class MyFrame(rtmgr.MyFrame):
 		lb.SetLabel('')
 		
 		# echo clear
-		proc = self.topics_echo_proc
-		if proc:
-			terminate_children(proc)
-			terminate(proc)
-			proc.wait()
-			self.topics_echo_proc = None
-		thinf = self.topics_echo_thinf
-		if thinf:
-			th_end(thinf)
-			self.topics_echo_thinf = None
+		self.topics_proc_th_end()
+
+		# wait que clear
+		while self.topics_echo_que.qsize() > 0:
+			time.sleep(0.1)
 
 		tc = self.text_ctrl_topics_echo
 		tc.Enable(False)
 		wx.CallAfter(tc.Clear)
 		wx.CallAfter(tc.Enable, True)
+		self.topics_echo_sum = 0
 
 	def OnTopicLink(self, event):
 		obj = event.GetEventObject()
@@ -1148,31 +1150,77 @@ class MyFrame(rtmgr.MyFrame):
 		lb.GetParent().FitInside()
 
 		# echo
-		proc = self.topics_echo_proc
-		if proc:
-			terminate_children(proc)
-			terminate(proc)
-			proc.wait()
-			self.topics_echo_proc = None
+		self.topics_proc_th_end()
+		self.topics_proc_th_start(topic)
 
+	def topics_proc_th_start(self, topic):
 		out = subprocess.PIPE
 		err = subprocess.STDOUT
 		self.topics_echo_proc = subprocess.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
 
 		self.topics_echo_thinf = th_start(self.topics_echo_th)
+		
+	def topics_proc_th_end(self):
+		thinf = self.topics_echo_thinf
+		if thinf:
+			th_end(thinf)
+			self.topics_echo_thinf = None
+
+		proc = self.topics_echo_proc
+		if proc:
+			terminate_children(proc)
+			terminate(proc)
+			#proc.wait()
+			self.topics_echo_proc = None
 
 	def topics_echo_th(self, ev):
 		if not self.topics_echo_proc:
 			return
 		file = self.topics_echo_proc.stdout
-		tc = self.text_ctrl_topics_echo
-		lines_limit = self.topics_dic.get('gui_lines_limit', 20)
-		interval = self.topics_dic.get('gui_update_interval_ms', 100) * 0.001
-		while not ev.wait(interval):
-			s = file.readline()
+		fl = fcntl.fcntl(file.fileno(), fcntl.F_GETFL)
+		fcntl.fcntl(file.fileno(), fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+		while not ev.wait(0):
+			try:
+				s = file.read(1)
+			except:
+				continue
 			if not s:
 				break
-			wx.CallAfter(append_tc_limit, tc, s, lines_limit)
+			if self.checkbox_topics_echo.GetValue():
+				self.topics_echo_que.put(s)
+
+	def topics_echo_show_th(self, ev):
+		que = self.topics_echo_que
+		interval = self.topics_dic.get('gui_update_interval_ms', 100) * 0.001
+		chars_limit = self.topics_dic.get('gui_chars_limit', 10000)
+		tc = self.text_ctrl_topics_echo
+		while not ev.wait(interval):
+			qsz = que.qsize()
+			if qsz <= 0:
+				continue
+			if qsz > chars_limit:
+				over = qsz - chars_limit
+				for i in range(over):
+					que.get(timeout=1)
+				qsz = chars_limit
+			arr = []
+			for i in range(qsz):
+				try:
+					s = que.get(timeout=1)
+				except Queue.Empty:
+					s = ''
+				arr.append(s)
+			s = ''.join(arr)
+
+			self.topics_echo_sum += len(s)
+			rm_chars = 0
+			if self.topics_echo_sum > chars_limit:
+				rm_chars = self.topics_echo_sum - chars_limit
+				self.topics_echo_sum = chars_limit
+
+			if self.checkbox_topics_echo.GetValue():
+				wx.CallAfter(append_tc_limit, tc, s, rm_chars)
 
 	#
 	# Common Utils
@@ -2478,10 +2526,10 @@ def th_end((th, ev)):
 	ev.set()
 	th.join()
 
-def append_tc_limit(tc, s, lines_limit):
+def append_tc_limit(tc, s, rm_chars=0):
+	if rm_chars > 0:
+		tc.Remove(0, rm_chars)
 	tc.AppendText(s)
-	while lines_limit and tc.GetNumberOfLines()-1 > lines_limit:
-		tc.Remove(0, tc.GetLineLength(0)+1)
 
 def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	sb = wx.StaticBox(parent, wx.ID_ANY, s)
