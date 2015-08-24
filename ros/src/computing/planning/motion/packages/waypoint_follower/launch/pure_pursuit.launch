@@ -1,0 +1,8 @@
+<!-- -->
+<launch>
+
+	<!-- rosrun waypoint_follower pure_pursuit-->
+	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
+	</node>
+
+</launch>

@@ -1,0 +1,35 @@
+<launch>
+
+<!-- nmea2tfpose -->
+<node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/>
+
+<!-- ndt_pcl -->
+<node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl"/>
+
+<!-- vscan -->
+<include file="$(find runtime_manager)/scripts/vscan.launch">
+<arg name="file" value="/home/pdsljp/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
+</include>
+
+<!-- dpm_ttic -->
+<node pkg="cv_tracker" type="dpm_ttic" name="dpm_ttic"/>
+
+<!-- car_kf -->
+<node pkg="car_detector" type="car_kf" name="car_kf"/>
+
+<!-- car_fusion -->
+<node pkg="car_detector" type="car_fusion" name="car_fusion"/>
+
+<!-- car_locate -->
+<include file="$(find car_detector)/launch/car_locate.launch"/>
+
+<!-- pedestrian_kf -->
+<node pkg="pedestrian_detector" type="pedestrian_kf" name="pedestrian_kf"/>
+
+<!-- pedestrian_fusion -->
+<node pkg="pedestrian_detector" type="pedestrian_fusion" name="pedestrian_fusion"/>
+
+<!-- pedestrian_locate -->
+<include file="$(find pedestrian_detector)/launch/pedestrian_locate.launch"/>
+
+</launch>

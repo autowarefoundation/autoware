@@ -1,0 +1,7 @@
+<!-- -->
+<launch>
+
+<!-- pure_pursuit -->
+<include file="$(find waypoint_follower)/launch/pure_pursuit.launch"/>
+
+</launch>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package>
+  <name>requirements_version_checker</name>
+  <version>0.0.0</version>
+  <description>The requirements_version_checker package</description>
+  <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
+  <license>BSD</license>
+  <export>
+  </export>
+</package>

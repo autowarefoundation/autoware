@@ -1,0 +1,9 @@
+Header header
+int32 k_search
+float32 search_radius
+float32 mu
+int32 maximum_nearest_neighbors
+float32 maximum_surface_angle
+float32 minimum_angle
+float32 maximum_angle
+bool normal_consistency

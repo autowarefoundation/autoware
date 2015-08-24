@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="points2image" type="points2vscan" name="points2vscan" output="screen" />
+  <node pkg="points2image" type="vscan2image" name="vscan2image" output="screen" />
+  <node pkg="points2image" type="vscan2linelist" name="vscan2linelist" output="screen" />
+</launch>

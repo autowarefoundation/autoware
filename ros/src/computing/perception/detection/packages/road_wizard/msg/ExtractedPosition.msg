@@ -1,0 +1,10 @@
+int32 signalId
+int32 u
+int32 v
+int32 radius
+float64 x
+float64 y
+float64 z
+float64 hang
+int8 type
+int32 linkId

@@ -1,0 +1,4 @@
+Header header
+float32 velocity
+float32 difference_around_signal
+int32 number_of_zeros

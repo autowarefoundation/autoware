@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>pointgrey</name>
+  <version>0.0.0</version>
+  <description>The pointgrey package</description>
+  <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

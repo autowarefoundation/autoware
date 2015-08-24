@@ -1,0 +1,20 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="scanner" default="velodyne" />
+  <arg name="use_gnss" default="1" />
+  <arg name="queue_size" default="10" />
+
+  <node pkg="tf" type="static_transform_publisher" name="velodyne_to_base_link" args="0 0 -2.0 0 0 0 /velodyne /base_link 10" />
+
+  <include file="$(find model_publisher)/launch/prius_model.launch"/>
+
+  <!-- rosrun ndt_localizer ndt_matching _sensor:="velodyne" -->
+  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
+    <param name="scanner" value="$(arg scanner)" />
+    <param name="use_gnss" value="$(arg use_gnss)" />
+    <param name="queue_size" value="$(arg queue_size)"/>
+  </node>
+  
+</launch>

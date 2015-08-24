@@ -1,0 +1,23 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="false"/>
+
+  <group if="$(arg car)">
+    <group ns="obj_car">
+
+      <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+      </node>
+
+    </group>
+  </group>
+
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+
+      <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+      </node>
+
+    </group>
+  </group>
+
+</launch>

@@ -1,0 +1,15 @@
+<launch>
+
+<!-- Tablet UI -->
+<include file="$(find runtime_manager)/scripts/tablet_socket.launch"/>
+
+<!-- lane_navi -->
+<node pkg="lane_planner" type="lane_navi" name="lane_navi"/>
+
+<!-- lane_rule -->
+<node pkg="lane_planner" type="lane_rule" name="lane_rule"/>
+
+<!-- lane_stop -->
+<node pkg="lane_planner" type="lane_stop" name="lane_stop"/>
+
+</launch>

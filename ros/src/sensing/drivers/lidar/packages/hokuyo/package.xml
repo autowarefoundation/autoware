@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>hokuyo</name>
+  <version>0.0.0</version>
+  <description>The hokuyo package</description>
+  <maintainer email="kondoh@todo.todo">kondoh</maintainer>
+  <license>BSD</license>
+  <author email="atsushi.w@atr.jp">Atsushi Watanabe</author>
+  <author email="yukky@ubi.cs.ritsumei.ac.jp">Yukihiro Saito</author>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <export>
+  </export>
+</package>

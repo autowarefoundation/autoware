@@ -1,0 +1,31 @@
+<!-- -->
+<launch>
+
+<!-- Tablet UI -->
+<include file="$(find runtime_manager)/scripts/tablet_socket.launch"/>
+
+<!-- Vehicle Contorl -->
+<include file="$(find runtime_manager)/scripts/vehicle_socket.launch"/>
+
+<!-- TF -->
+<include file="$(arg tf_launch)"/>
+
+<!-- Point Cloud -->
+<node pkg="map_file" type="points_map_loader" name="points_map_loader" args="$(arg pmap_param) $(arg pcd_files)"/>
+
+<!-- Vector Map -->
+<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(arg csv_files)"/>
+
+<!-- HDL-32e -->
+<include file="$(find velodyne)/scripts/velodyne_hdl32e.launch"/>
+
+<!-- Javad Delta 3 -->
+<node pkg="javad" type="gnss.sh" name="javad_driver"/>
+
+<!-- PointGrey Grasshopper3 -->
+<include file="$(find pointgrey)/scripts/grasshopper3.launch"/>
+
+<!-- nmea2tfpose -->
+<node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/>
+
+</launch>

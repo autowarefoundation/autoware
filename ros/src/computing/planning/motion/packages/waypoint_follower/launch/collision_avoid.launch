@@ -1,0 +1,21 @@
+<!-- -->
+<launch>
+
+	<arg name="detection_range" default="2.2" /> <!-- meter -->
+	<arg name="threshold_points" default="5" /> 
+	<arg name="stop_interval" default="15" /> 
+	<arg name="detection_height_top" default="2.0" />
+	<arg name="detection_height_bottom" default="-1.0" />
+    <arg name="current_pose_topic" default="ndt" /> 
+
+	<!-- rosrun waypoint_follower collision_avoid _detection_range:=0 -->
+	<node pkg="waypoint_follower" type="collision_avoid" name="collision_avoid" output="screen">
+		<param name="detection_range" value="$(arg detection_range)" />
+		<param name="threshold_points" value="$(arg threshold_points)" />
+		<param name="stop_interval" value="$(arg stop_interval)" />
+		<param name="detection_height_top" value="$(arg detection_height_top)" />
+		<param name="detection_height_bottom" value="$(arg detection_height_bottom)" />
+		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
+	</node>
+
+</launch>

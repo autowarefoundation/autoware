@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package>
+  <name>sample_data</name>
+  <version>0.0.0</version>
+  <description>The sample_data package</description>
+  <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gnss</build_depend>
+  <run_depend>gnss</run_depend>
+  <export>
+  </export>
+</package>

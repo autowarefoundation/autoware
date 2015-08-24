@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+if [[ -d build ]]; then
+    rm -rf build
+fi
+
+if [[ -d devel ]]; then
+    rm -rf devel
+fi
+
+catkin_make clean
+source devel/setup.bash
+
+catkin_make -DCMAKE_BUILD_TYPE=Release $@

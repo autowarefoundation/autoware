@@ -1,0 +1,288 @@
+##selector :
+##  load_map :
+##    sel   : '[ self.checkbox_auto_update.GetValue(), "vmap" ]'
+##    False : points_map_loader
+##    True  : points_map_loader_update
+##    vmap  : vector_map_loader
+
+buttons:
+  tablet:
+    run : roslaunch runtime_manager tablet_socket.launch
+  mobile:
+    run : echo 'mobile ui'
+  vehicle:
+    run : roslaunch runtime_manager vehicle_socket.launch
+  database:
+    run : rosrun obj_db obj_downloader
+
+  sensor:
+    run   : roslaunch
+    param : sensor
+  map:
+    run : 'sh -c "roslaunch ~/.autoware/launch_files/map.launch
+           tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
+           pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
+                         if [ \"$SN\" != \"noupdate\" ] ; then
+                           find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1 ; fi )\"
+           pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
+           csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
+    param : main_map
+    gui   :
+      scene_num :
+        func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+      stat_topic : [ pmap, vmap ]
+  perception:
+    run   : roslaunch
+    param : perception
+    gui   :
+      stat_topic : [ gnss, ndt ]
+  planning:
+    run   : roslaunch
+    param : planning
+  control:
+    run   : roslaunch
+    param : control
+    gui   :
+      stat_topic : [ lf ]
+
+  #init:
+  #  run : 'sh -c "roslaunch runtime_manager init.launch
+  #         tf_launch:=$(find ~/.autoware/data/tf -name \"*.launch\" | head -n 1)
+  #         pmap_param:=\"$(SN=$(rosparam get /points_map_loader/scene_num) ; echo $SN ;
+  #                       if [ \"$SN\" != \"noupdate\" ] ; then
+  #                         find ~/.autoware/data/map/pointcloud_map -name \"*.txt\" | head -n 1 ; fi )\"
+  #         pcd_files:=\"$(find ~/.autoware/data/map/pointcloud_map -name \"*.pcd\")\"
+  #         csv_files:=\"$(find ~/.autoware/data/map/vector_map -name \"*.csv\")\"  "'
+  #  param : main_init
+  #  gui   :
+  #    scene_num :
+  #      func : 'self.choice_scene_num.GetStringSelection() if self.checkbox_auto_update.GetValue() else "noupdate" '
+  #check:
+  #  run : roslaunch runtime_manager check.launch
+  #set:
+  #  run : roslaunch runtime_manager set.launch
+
+##  points_map_loader :
+##    run   : rosrun map_file points_map_loader
+##    param : points_map_loader
+##    gui   :
+##      path_pcd :
+##        func    : self.text_ctrl_point_cloud.GetValue()
+##        restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
+##      stat_topic : [ pmap ]
+
+##  points_map_loader_update :
+##    run   : rosrun map_file points_map_loader
+##    param : points_map_loader_update
+##    gui   :
+##      scene_num :
+##        func    : self.choice_scene_num.GetStringSelection()
+##        restore : self.choice_scene_num.SetStringSelection
+##      path_area_list :
+##        func    : self.text_ctrl_area_list.GetValue()
+##        restore : 'lambda v, tc=self.text_ctrl_area_list : set_path(tc, v)'
+##      path_pcd :
+##        func    : self.text_ctrl_point_cloud.GetValue()
+##        restore : 'lambda v, tc=self.text_ctrl_point_cloud : set_path(tc, v)'
+##      stat_topic : [ pmap ]
+
+  sample_points_map :
+    run   : rosrun sample_data sample_points_map
+    param : sample_points_map
+    gui   :
+      path_pcd :
+        func : self.text_ctrl_point_cloud.GetValue()
+
+##  vector_map_loader :
+##    run   : rosrun map_file vector_map_loader
+##    param : vector_map_loader
+##    gui   :
+##      path_vec :
+##        func    : self.text_ctrl_vector_map.GetValue()
+##        restore : 'lambda v, tc=self.text_ctrl_vector_map : set_path(tc, v)'
+##      stat_topic : [ vmap ]
+
+  main_tf :
+    run    : roslaunch
+    param  : main_tf
+    gui    :
+      file  :
+        func    : self.text_ctrl_main_tf.GetValue()
+        restore : 'lambda v, tc=self.text_ctrl_main_tf : set_path(tc, v)'
+      ext_toggle_enables :
+      - self.text_ctrl_main_tf
+      - self.button_ref_main_tf
+
+ipaddress:
+  tablet:   127.0.0.1
+  mobile:   127.0.0.1
+  vehicle:  127.0.0.1
+  database: 127.0.0.1
+
+control_check :
+  - name  : accel
+    param : accel
+    gui   :
+      accel :
+        flags : [ no_category ]
+  - name  : brake
+    param : brake
+    gui   :
+      brake :
+        flags : [ no_category ]
+  - name  : steer
+    param : steer
+    gui   :
+      steer :
+        flags : [ no_category ]
+  - name  : torque
+    param : torque
+  - name  : veloc
+    param : veloc
+    gui   :
+      twist.linear.x :
+        flags : [ no_category ]
+      twist.angular.z :
+        flags : [ no_category ]
+
+params :
+  - name  : accel
+    topic : /accel_cmd
+    msg   : accel_cmd
+    vars  :
+    - name  : accel
+      label : Accel
+      min   : 0
+      max   : 100
+      v     : 0
+  - name  : brake
+    topic : /brake_cmd
+    msg   : brake_cmd
+    vars  :
+    - name  : brake
+      label : Brake
+      min   : 0
+      max   : 10000
+      v     : 0
+  - name  : steer
+    topic : /steer_cmd
+    msg   : steer_cmd
+    vars  :
+    - name  : steer
+      label : Steer
+      min   : -720
+      max   : 720
+      v     : 0
+  - name  : torque
+    vars  :
+    - name  : torque
+      label : Torque
+      min   : 0
+      max   : 100
+      v     : 0
+  - name  : veloc
+    topic : /twist_cmd
+    msg   : TwistStamped
+    flags : [ 'stamp' ]
+    vars  :
+    - name  : twist.linear.x
+      label : Veloc
+      min   : 0
+      max   : 100
+      v     : 0
+    - name  : twist.angular.z
+      label : Angle
+      min   : -1.00
+      max   : 1.00
+      v     : 0.00
+
+  - name  : main_map
+    vars  :
+    - name     : scene_num
+      rosparam : /points_map_loader/scene_num
+
+##  - name  : points_map_loader
+##    vars  :
+##    - name  : scene_num
+##      kind  : hide
+##      v     : noupdate
+##      cmd_param :
+##        delim     : ''
+##    - name  : path_pcd
+##      kind  : path
+##      cmd_param :
+##        delim     : ''
+##        unpack    : ','
+
+##  - name  : points_map_loader_update
+##    vars  :
+##    - name  : scene_num
+##      kind  : menu
+##      cmd_param :
+##        delim     : ''
+##    - name  : path_area_list
+##      kind  : path
+##      cmd_param :
+##        delim     : ''
+##        must      : True
+##    - name  : path_pcd
+##      kind  : path
+##      cmd_param :
+##        delim     : ''
+##        unpack    : ','
+
+  - name  : sample_points_map
+    vars  :
+    - name  : path_pcd
+      kind  : path
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+        must      : True
+
+##  - name  : vector_map_loader
+##    vars  :
+##    - name  : path_vec
+##      kind  : path
+##      cmd_param :
+##        delim     : ''
+##        unpack    : ','
+##        must      : True
+
+  - name  : main_tf
+    vars  :
+    - name      : file
+      kind      : path
+      v         : ''
+      cmd_param :
+        delim     : ''
+        default   : ~/.autoware/data/tf/tf.launch
+
+  - name  : sensor
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/sensor.launch
+      cmd_param :
+        delim     : ''
+  - name  : perception
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/perception.launch
+      cmd_param :
+        delim     : ''
+  - name  : planning
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/planning.launch
+      cmd_param :
+        delim     : ''
+  - name  : control
+    vars  :
+    - name  : file
+      kind  : path
+      v     : ~/.autoware/launch_files/control.launch
+      cmd_param :
+        delim     : ''

@@ -1,0 +1,4 @@
+<launch>
+  <param name="camera_lidar2d/camera_yaml" value="$(arg dir)/camera_lidar_2d.yaml" />
+  <node pkg="calibration_camera_lidar" type="calibration_toolkit" name="calibration_toolkit" />
+</launch>

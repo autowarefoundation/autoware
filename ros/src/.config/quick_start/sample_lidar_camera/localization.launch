@@ -1,0 +1,21 @@
+<launch>
+
+  <!-- calibration file path -->
+  <arg name="vscan_calib" default="/home/pdsljp/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
+
+  <!-- nmea2tfpose -->
+  <!-- node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/ -->
+  <include file="$(find gnss_localizer)/launch/nmea2tfpose.launch"/>
+
+  <!-- ndt_matching -->
+  <include file="$(find ndt_localizer)/launch/ndt_matching.launch"/>
+
+  <!-- calibration_publisher -->
+  <include file="$(find runtime_manager)/scripts/calibration_publisher.launch">
+    <arg name="file" value="$(arg vscan_calib)" />
+  </include>
+
+  <!-- vscan -->
+  <include file="$(find runtime_manager)/scripts/vscan.launch" />
+
+</launch>

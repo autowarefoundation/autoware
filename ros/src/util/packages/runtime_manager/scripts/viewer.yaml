@@ -1,0 +1,28 @@
+viewers :
+  - subs  :
+    - label : ROS
+      subs  :
+      - label : Rviz
+        cmd   : rosrun rviz rviz
+      - label : Topics
+        cmd   : rosrun rqt_graph rqt_graph
+    - label : Vehicle
+      subs  :
+      - label : CAN
+        cmd   : echo can
+  - label : Sensor
+    subs  :
+    - label : Image
+      cmd   :  rosrun viewers image_viewer
+    - label : Points Image
+      cmd   :  rosrun viewers points_image_viewer
+    - label : Image with Distance
+      cmd   : rosrun viewers image_d_viewer
+    - label : Points Image with Distance
+      cmd   : rosrun viewers points_image_d_viewer
+    - label : Vscan Points Image
+      cmd   : rosrun viewers vscan_image_viewer
+    - label : Vscan Points Image with Distancr
+      cmd   : rosrun viewers vscan_image_d_viewer
+    - label : Traffic Light Detection Result
+      cmd   : rosrun viewers traffic_light_viewer

@@ -1,0 +1,7 @@
+<launch>
+  <param name="tablet_receiver/port" value="5666" />
+  <node pkg="tablet_socket" type="tablet_receiver" name="tablet_receiver" />
+
+  <param name="tablet_sender/port" value="5777" />
+  <node pkg="tablet_socket" type="tablet_sender" name="tablet_sender" />
+</launch>

@@ -1,0 +1,21 @@
+%YAML:1.0
+checkerboard:
+    pat_row:7
+    pat_col:11
+    chess_size:20.0 #mm
+    paper_width_margin:66.0 #both ends
+window_lrf:
+    width:1240
+    height:960
+    line_division_num:10
+    judge_margin:30.0 #mm
+intrinsic_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: f
+   data: [1089.817404, 0.000000, 340.483989, 0.000000, 1082.630376, 265.268140, 0.000000, 0.000000, 1.000000]
+distrotion_matrix: !!opencv-matrix
+   rows: 1
+   cols: 4
+   dt: f
+   data: [0.161902, -0.992352, 0.003219, -0.000887]

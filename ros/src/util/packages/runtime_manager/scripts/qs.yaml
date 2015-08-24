@@ -1,0 +1,104 @@
+exec_time :
+  localization :
+    /time_ndt_matching :
+  detection :
+    /topic1 :
+    /topic2 :
+
+buttons :
+  map_qs :
+    run   : roslaunch
+    param : map_qs
+    gui   :
+      stat_topic : [ pmap, vmap ]
+  sensing_qs :
+    run   : roslaunch
+    param : sensing_qs
+  localization_qs :
+    run   : roslaunch
+    param : localization_qs
+  detection_qs :
+    run   : roslaunch
+    param : detection_qs
+  mission_planning_qs :
+    run   : roslaunch
+    param : mission_planning_qs
+  motion_planning_qs :
+    run   : roslaunch
+    param : motion_planning_qs
+
+  android_tablet_qs :
+    run : roslaunch runtime_manager tablet_socket.launch
+  oculus_rift_qs :
+    run : echo 'oculus rift'
+  vehicle_gateway_qs :
+    run : roslaunch runtime_manager vehicle_socket.launch
+  cloud_data_qs :
+    run : rosrun obj_db obj_downloader
+
+  auto_pilot_qs :
+    run : echo 'auto pilot'
+
+  rviz_qs :
+    run : rosrun rviz rviz
+
+  rqt_qs :
+    run : rqt
+
+params :
+  - name : map_qs
+    vars :
+    - name  : file
+      kind  : path
+      v     : ''
+      #v     : ~/.autoware/launch_files/map.launch
+      cmd_param :
+        delim     : ''
+        must      : True
+#    - name     : scene_num
+#      rosparam : /points_map_loader/scene_num
+  - name : sensing_qs
+    vars :
+    - name  : file
+      kind  : path
+      v     : ''
+      #v     : ~/.autoware/launch_files/sensing.launch
+      cmd_param :
+        delim     : ''
+        must      : True
+  - name : localization_qs
+    vars :
+    - name  : file
+      kind  : path
+      v     : ''
+      #v     : ~/.autoware/launch_files/localization.launch
+      cmd_param :
+        delim     : ''
+        must      : True
+  - name : detection_qs
+    vars :
+    - name  : file
+      kind  : path
+      v     : ''
+      #v     : ~/.autoware/launch_files/detection.launch
+      cmd_param :
+        delim     : ''
+        must      : True
+  - name : mission_planning_qs
+    vars :
+    - name  : file
+      kind  : path
+      v     : ''
+      #v     : ~/.autoware/launch_files/mission_planning.launch
+      cmd_param :
+        delim     : ''
+        must      : True
+  - name : motion_planning_qs
+    vars :
+    - name  : file
+      kind  : path
+      v     : ''
+      #v     : ~/.autoware/launch_files/motion_planning.launch
+      cmd_param :
+        delim     : ''
+        must      : True

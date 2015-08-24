@@ -1,0 +1,9 @@
+top_cmd_interval : 3
+
+log_path : syslog
+
+gui_update_interval_ms : 10
+
+buttons :
+  system_monitor :
+    run   : gnome-system-monitor

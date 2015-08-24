@@ -1,0 +1,15 @@
+<!-- -->
+<launch>
+	<arg name="points_node" default="/vscan_filling_cloud" />
+
+
+	<!-- rosrun lidar_tracker vscan_filling -->
+	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
+
+	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
+	<node pkg="lidar_tracker" type="euclidean_cluster" name="euclidean_cluster">
+		<param name="points_node" value="$(arg points_node)" />
+	</node>
+
+</launch>
+

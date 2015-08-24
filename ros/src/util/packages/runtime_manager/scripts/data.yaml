@@ -1,0 +1,221 @@
+name : Data
+subs :
+  - name : CAN
+    subs :
+    - name  : can_uploader
+      cmd   : rosrun obj_db can_uploader
+      param : other
+      gui   :
+        upload_rate_ms :
+          border : 20
+          flags  : [ right ]
+
+  - name : Map
+    subs :
+    - name  : map_downloader
+      cmd   : echo map_file
+      param : map_file
+      gui   :
+        update_timing :
+          border: 20
+          flags : [ right ]
+        load_map :
+          border: 20
+          flags : [ left, right ]
+        auto_update :
+          border: 20
+          flags : [ right ]
+
+  - name : Position
+    subs :
+    - name  : pos_downloader
+      cmd   : rosrun pos_db pos_downloader
+      param : pos_db
+      gui   :
+        username :
+          prop  : 1
+          border: 4
+          flags : [ all ]
+        now :
+          border: 4
+          flags : [ all, hide ]
+        show_my_pose :
+          border: 4
+          flags : [ all, nl ]
+        db_host_name :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
+        db_port :
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshpubkey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshprivatekey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshport :
+          border: 4
+          flags : [ all, no_category ]
+        sshtunnelhost :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
+
+    - name  : pos_uploader
+      cmd   : rosrun pos_db pos_uploader
+      param : pos_db
+      share_val : pos_download
+      gui   :
+        username :
+          prop  : 1
+          border: 4
+          flags : [ all ]
+        now :
+          border: 4
+          flags : [ all ]
+        show_my_pose :
+          border: 4
+          flags : [ all, nl, hide ]
+        db_host_name :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
+        db_port :
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshpubkey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshprivatekey :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category, nl ]
+        sshport :
+          border: 4
+          flags : [ all, no_category ]
+        sshtunnelhost :
+          prop  : 1
+          border: 4
+          flags : [ all, no_category ]
+
+  - name : Sensors
+    subs :
+    - name  : image_upload
+      cmd   : echo image_db
+      param : other
+      gui   :
+        upload_rate_ms :
+          border : 20
+          flags  : [ right ]
+    - name  : pointcloud_upload
+      cmd   : echo pointcloud_db
+      param : other
+      gui   :
+        upload_rate_ms :
+          border : 20
+          flags  : [ right ]
+
+params :
+  - name  : map_file
+    vars  :
+    - name  : update_timing
+      label : 'Update Timing:'
+      v     : 0
+    - name  : update_rate
+      label : 'Update Rate:'
+      v     : 1000
+    - name  : point_cloud
+      kind  : path
+      label : 'Point Cloud:'
+      v     : pcd_file
+    - name  : vector_map
+      kind  : path
+      label : 'Vector Map:'
+      v     : vector_file
+    - name  : area_lists
+      kind  : path
+      path_type : multi
+      label : 'Area Lists:'
+      v     : arealists_file
+      cmd_param :
+        dash   : '--'
+        delim  : '='
+    - name  : load_map
+      kind  : toggle_button
+      label : Load Map
+      v     : False
+    - name  : auto_update
+      kind  : checkbox
+      label : Auto update
+      v     : True
+    - name  : ignore_db
+      kind  : checkbox
+      label : Ignore DB
+      v     : True
+
+  - name  : pos_db
+    vars  :
+    - name      : username
+      label     : 'User Name:'
+      kind      : str
+      v         : ''
+      cmd_param :
+        delim       : ''
+        must        : True
+    - name      : now
+      label     : now
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        only_enable : True
+        dash        : ''
+    - name      : show_my_pose
+      label     : show my pose
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        only_enable : True
+        dash        : ''
+
+    - name      : db_host_name
+      label     : DB Server Name
+      kind      : str
+      v         : db3.ertl.jp
+      rosparam  : /pos_db/db_host_name
+    - name      : db_port
+      label     : DB Port
+      v         : 5678
+      rosparam  : /pos_db/db_port
+    - name      : sshpubkey
+      label     : SSH Public Key
+      kind      : path
+      v         : ~/.ssh/id_rsa.pub
+      rosparam  : /pos_db/sshpubkey
+    - name      : sshprivatekey
+      label     : SSH Private Key
+      kind      : path
+      v         : ~/.ssh/id_rsa
+      rosparam  : /pos_db/sshprivatekey
+    - name      : sshport
+      label     : SSH Port
+      v         : 22
+      rosparam  : /pos_db/ssh_port
+    - name      : sshtunnelhost
+      label     : SSH Tunnel Host
+      kind      : str
+      v         : localhost
+      rosparam  : /pos_db/sshtunnelhost
+
+  - name  : other
+    vars  :
+    - name  : upload_rate_ms
+      label : Upload Rate (ms)
+      v     : 1000
+    - name  : download_rate_ms
+      label : Download Rate (ms)
+      v     : 1000

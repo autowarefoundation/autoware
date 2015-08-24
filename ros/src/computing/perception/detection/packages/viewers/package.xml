@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>viewers</name>
+  <version>0.0.0</version>
+  <description>The viewers package</description>
+  <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cv_tracker</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>runtime_manager</build_depend>
+  <run_depend>runtime_manager</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <export>
+  </export>
+</package>
