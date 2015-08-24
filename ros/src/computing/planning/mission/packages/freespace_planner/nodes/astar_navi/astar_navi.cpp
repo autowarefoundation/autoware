@@ -1058,7 +1058,6 @@ int main(int argc, char **argv)
 	mapReset(getmap.response.map);
 
 	break;
-	return 1;
       } else {
 	continue;
       }
