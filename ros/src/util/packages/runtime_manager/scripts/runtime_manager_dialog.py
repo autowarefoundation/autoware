@@ -407,6 +407,9 @@ class MyFrame(rtmgr.MyFrame):
 			if not os.path.exists(path):
 				subprocess.call([ 'mkdir', '-p', path ])
 
+		# icon
+		self.SetIcon( wx.Icon(rtmgr_src_dir() + 'rtmgr_icon.xpm', wx.BITMAP_TYPE_XPM) )
+
 	def __do_layout(self):
 		pass
 
