@@ -82,7 +82,7 @@ First you have to install Qt5 dependencies.
 % make install
 % sudo cp -r qtbase /usr/local/qtbase5
 ```
-[This page](https://qt.gitorious.org/qt/qtbase/commit/9d2edfe5248fce8b16693fad8304f94a1f101bab) could help you when `make` returns error. 
+[This page](http://code.qt.io/cgit/qt/qtbase.git/commit/?id=9d2edfe5248fce8b16693fad8304f94a1f101bab) could help you when `make` returns error.
 
 ## How to Build
 
