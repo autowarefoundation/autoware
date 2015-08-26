@@ -94,7 +94,7 @@ $ cd ../
 $ ./catkin_make_release
 ```
 
-## How to Build
+## How to Start
 
 ```
 $ cd $HOME/Autoware/ros
