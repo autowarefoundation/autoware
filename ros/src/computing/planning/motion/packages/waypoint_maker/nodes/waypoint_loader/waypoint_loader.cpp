@@ -35,7 +35,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
 #include "waypoint_follower/libwaypoint_follower.h"
 
 struct WP

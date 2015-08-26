@@ -14,19 +14,20 @@ Open-source software for autonomous driving
 - Qt 5.2.1 or higher
 - CUDA(Optional)
 - FlyCapture2(optional)
+- Armadillo
 
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
 % sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-sound-play
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev
 ```
 
 ### Install dependencies for Ubuntu 13.10 indigo and Ubuntu 13.04 hydro
 
 ```
 % sudo apt-get install ros-hydro-desktop-full ros-indigo-nmea-msgs ros-hydro-sound-play
-% sudo apt-get install libnlopt-dev freeglut3-dev libssh2-1-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev libssh2-1-dev libarmadillo-dev
 ```
 
 ### Install Velodyne Driver dependencies 
@@ -93,3 +94,9 @@ $ catkin_init_workspace
 $ cd ../
 $ ./catkin_make_release
 ```
+
+## How to Start
+
+```
+$ cd $HOME/Autoware/ros
+$ ./run
