@@ -371,8 +371,52 @@ static waypoint_follower::lane apply_acceleration(const waypoint_follower::lane&
 	return computations;
 }
 
-static waypoint_follower::lane compute_velocity(const waypoint_follower::lane& msg, double acceleration,
-						size_t fixed_cnt)
+static waypoint_follower::lane rule_crossroad(const waypoint_follower::lane& msg, double acceleration)
+{
+	waypoint_follower::lane computations = msg;
+
+	bool crossroad;
+	std::vector<size_t> start_indexes;
+	std::vector<size_t> end_indexes;
+	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
+		map_file::DTLane dtlane;
+		dtlane.r = msg.waypoints[i].dtlane.r;
+		if (i == 0) {
+			crossroad = is_crossroad(dtlane);
+			continue;
+		}
+		if (!crossroad && is_crossroad(dtlane)) {
+			start_indexes.push_back(i);
+			crossroad = true;
+			continue;
+		}
+		if (crossroad && !is_crossroad(dtlane)) {
+			end_indexes.push_back(i - 1);
+			crossroad = false;
+		}
+	}
+
+	for (const size_t& i : end_indexes)
+		computations = apply_acceleration(computations, acceleration, i, 1,
+						  computations.waypoints[i].twist.twist.linear.x);
+
+	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
+
+	std::vector<size_t> reverse_start_indexes;
+	for (const size_t& i : start_indexes)
+		reverse_start_indexes.push_back(msg.waypoints.size() - i - 1);
+	std::reverse(reverse_start_indexes.begin(), reverse_start_indexes.end());
+
+	for (const size_t& i : reverse_start_indexes)
+		computations = apply_acceleration(computations, acceleration, i, 1,
+						  computations.waypoints[i].twist.twist.linear.x);
+
+	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
+
+	return computations;
+}
+
+static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg, double acceleration, size_t fixed_cnt)
 {
 	waypoint_follower::lane computations = msg;
 
@@ -428,8 +472,6 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 		return;
 	}
 
-	waypoint_follower::lane computations = compute_velocity(msg, config_acceleration, config_number_of_zeros);
-
 	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
 		double reduction = dtlane_to_reduction(dtlanes, i);
 
@@ -447,9 +489,16 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 		waypoint.twist.twist = msg.waypoints[i].twist.twist;
 		waypoint.twist.twist.linear.x *= reduction;
 		green.waypoints.push_back(waypoint);
+	}
 
-		waypoint.twist.twist = computations.waypoints[i].twist.twist;
-		waypoint.twist.twist.linear.x *= reduction;
+	waypoint_follower::lane crossroad = rule_crossroad(green, config_acceleration);
+
+	waypoint_follower::lane stopline = rule_stopline(crossroad, config_acceleration, config_number_of_zeros);
+
+	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
+		green.waypoints[i].twist.twist = crossroad.waypoints[i].twist.twist;
+		waypoint = green.waypoints[i];
+		waypoint.twist.twist = stopline.waypoints[i].twist.twist;
 		red.waypoints.push_back(waypoint);
 	}
 
