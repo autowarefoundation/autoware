@@ -100,3 +100,16 @@ $ ./catkin_make_release
 ```
 $ cd $HOME/Autoware/ros
 $ ./run
+
+## Documents
+
+See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. English documents will be added shortly.
+
+## Instruction Videos
+
+[Quick Start](https://www.youtube.com/watch?v=ztUtN3ZG6N8)
+[Localization with GNSS](https://www.youtube.com/watch?v=5x3szHneHzM)
+[Localization without GNSS](https://www.youtube.com/watch?v=rbtdllALbCE)
+[Mapping](https://www.youtube.com/watch?v=hsX4HX_XBM4)
+[Detection](https://www.youtube.com/watch?v=UcoYqGniIkE)
+[Planning](https://www.youtube.com/watch?v=QOrsC1P8nN0)
