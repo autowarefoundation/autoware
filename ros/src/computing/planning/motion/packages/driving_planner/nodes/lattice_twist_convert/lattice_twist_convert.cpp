@@ -209,7 +209,6 @@ void splineCallback(const std_msgs::Float64MultiArray::ConstPtr& spline)
     }
 
     // Reset elapsed time to 0, if called...
-    double start_time = ros::Time::now().toSec();
     int i = 0;
 
     for(std::vector<double>::const_iterator it = spline->data.begin(); it != spline->data.end(); ++it)
