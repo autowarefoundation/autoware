@@ -100,6 +100,7 @@ $ ./catkin_make_release
 ```
 $ cd $HOME/Autoware/ros
 $ ./run
+```
 
 ## Documents
 
