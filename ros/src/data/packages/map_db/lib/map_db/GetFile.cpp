@@ -61,7 +61,6 @@ GetFile::GetFile(const std::string& host_name, int port)
 
 int GetFile::ConnectHTTP()
 {
-	int r;
 	unsigned int **addrptr;
 
 #if 0
@@ -167,7 +166,6 @@ int GetFile::GetHTTPFile(const std::string& value)
 	snprintf(send_buf, sizeof(send_buf), "\r\n");
 	write(sock, send_buf, strlen(send_buf));
 
-	int r_head = 1;
 	while(1) {
 		n = read(sock, recvdata, sizeof(recvdata)-1);
 		if (n < 0) {
@@ -189,7 +187,7 @@ int GetFile::GetHTTPFile(const std::string& value)
 
 	std::istringstream ss(res);
 	std::string tbuf;
-	for(int i; i < 10; i++) {
+	for(int i = 0; i < 10; i++) {
 		std::getline(ss, tbuf);	// ignore http header
 		if(tbuf.size() <= 1) break;
 	}

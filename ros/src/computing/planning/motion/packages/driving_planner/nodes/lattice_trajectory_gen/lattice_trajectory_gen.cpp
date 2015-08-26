@@ -397,32 +397,6 @@ static void displayNextWaypoint(int i)
 }
 
 /////////////////////////////////////////////////////////////////
-// obtain the linear/angular velocity toward the next waypoint.
-/////////////////////////////////////////////////////////////////
-static geometry_msgs::Twist calcTwist(int next_waypoint)
-{
-  //std::cout << "calculate" << std::endl;
-  geometry_msgs::Twist twist;
-
-  double radius = _path_pp.calcRadius(next_waypoint);
-  twist.linear.x = _path_pp.getCmdVelocity();
-
-  double current_velocity = _current_velocity;
-
-  if (radius > 0 || radius < 0)
-  {
-    twist.angular.z = current_velocity / radius;
-  }
-  else
-  {
-    twist.angular.z = 0;
-  }
-  return twist;
-}
-
-
-
-/////////////////////////////////////////////////////////////////
 // Safely stop the vehicle.
 /////////////////////////////////////////////////////////////////
 static geometry_msgs::Twist stopControl()
