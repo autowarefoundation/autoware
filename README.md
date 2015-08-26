@@ -42,12 +42,12 @@ Open-source software for autonomous driving
 % source devel/setup.bash
 ```
 
-You cannot build **Autoware/ros** source code with those OpenCV and Qt5 package,
-because they are too old. So you have to install newer OpenCV and Qt5.
+You cannot build **Autoware/ros** source code with those OpenCV and Qt5 packages,
+because they are too old. So you have to install newer versions of OpenCV and Qt5.
 
 #### Install OpenCV
 
-You can download source code from [here](http://sourceforge.net/projects/opencvlibrary/).
+You can download the source code from [here](http://sourceforge.net/projects/opencvlibrary/).
 
 ```
 % unzip opencv-2.4.8.zip
@@ -59,7 +59,7 @@ You can download source code from [here](http://sourceforge.net/projects/opencvl
 
 #### Install Qt 5
 
-Document is [here](http://qt-project.org/wiki/Building_Qt_5_from_Git).
+The installation document is [here](http://qt-project.org/wiki/Building_Qt_5_from_Git).
 
 First you have to install Qt5 dependencies.
 
@@ -119,3 +119,9 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 [Detection](https://www.youtube.com/watch?v=UcoYqGniIkE)
 
 [Planning](https://www.youtube.com/watch?v=QOrsC1P8nN0)
+
+## Sample Data
+
+[3D map of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
+
+[ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
