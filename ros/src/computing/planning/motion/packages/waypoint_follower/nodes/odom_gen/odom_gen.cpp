@@ -157,7 +157,7 @@ int main(int argc, char **argv)
   geometry_msgs::Pose pose;
   double th = 0;
 
-  ros::Rate loop_rate(10); // 10Hz
+  ros::Rate loop_rate(50); // 50Hz
   while (ros::ok())
   {
     ros::spinOnce(); //check subscribe topic

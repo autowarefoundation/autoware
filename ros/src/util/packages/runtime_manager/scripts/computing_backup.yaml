@@ -26,13 +26,9 @@ subs :
         cmd  : roslaunch ndt_localizer ndt_matching.launch
         param: ndt
         gui  :
-          stat_topic : [ ndt, /time_ndt_matching ]
-          x  :
-            user_category : ''
-          yaw:
-            flags : [ nl ]
-          max:
-            user_category : ''
+          stat_topic : [ ndt ]
+      - name : pos_marker
+        cmd  : rosrun ndt_localizer pos_marker
 
   - name : Detection
     subs :
@@ -126,7 +122,7 @@ subs :
 
     - name : lidar_detector
       subs :
-      - name : euclidean_cluster
+      - name : euclidean_clusterer
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
       - name : obj_fusion
         cmd  : roslaunch lidar_tracker obj_fusion.launch
@@ -147,40 +143,22 @@ subs :
       - name : region_tlr
         cmd  : roslaunch road_wizard traffic_light_recognition.launch
 
-    - name : viewers
-      subs :
-      - name : image_viewer
-        cmd  : rosrun viewers image_viewer
-      - name : image_d_viewer
-        cmd  : rosrun viewers image_d_viewer
-      - name : points_image_viewer
-        cmd  : rosrun viewers points_image_viewer
-      - name : points_image_d_viewer
-        cmd  : rosrun viewers points_image_d_viewer
-      - name : vscan_image_viewer
-        cmd  : rosrun viewers vscan_image_viewer
-      - name : vscan_image_d_viewer
-        cmd  : rosrun viewers vscan_image_d_viewer
-      - name : traffic_light_viewer
-        cmd  : rosrun viewers traffic_light_viewer
-
 
 - subs :
   - name : Mission Planning
     subs :
     - name : lane_planner
       subs :
+      - name : lane_change
+        cmd  : rosrun lane_planner lane_change
       - name : lane_navi
         cmd  : rosrun lane_planner lane_navi
-        param: lane_navi
       - name : lane_rule
         cmd  : rosrun lane_planner lane_rule
         param: lane_rule
       - name : lane_stop
         cmd  : rosrun lane_planner lane_stop
         param: lane_stop
-      - name : lane_select
-        cmd  : rosrun lane_planner lane_select
         gui  :
           dialog: MyDialogLaneStop
     - name : parking_planner
@@ -192,8 +170,8 @@ subs :
     subs :
     - name : driving_planner
       subs :
-      - name : lattice_trajectory_gen
-        cmd  : roslaunch driving_planner lattice_trajectory_gen.launch
+      - name : trajectory_generator
+        cmd  : roslaunch driving_planner trajectory_generator.launch
         param: lane_follower_trajgen
         gui  :
           velocity:
@@ -201,9 +179,12 @@ subs :
           lookahead_threshold:
             depend : param_flag
           stat_topic : [ lf ]
-      - name : lattice_twist_convert
-        cmd  : rosrun driving_planner lattice_twist_convert
-
+      - name : command_converter
+        cmd  : rosrun driving_planner command_converter
+      - name : obstacle_avoidance
+        cmd  : rosrun driving_planner obstacle_avoidance
+      - name : safety_driving
+        cmd  : rosrun driving_planner safety_driving
     - name : waypoint_maker
       subs :
        - name : waypoint_loader
@@ -219,26 +200,23 @@ subs :
            save_filename :
              prop  : 1
     - name : waypoint_follower
-      subs :   
+      subs :
        - name : pure_pursuit
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
-         param: waypoint_follower
+         param: lane_follower
          gui  :
            velocity:
              depend : param_flag
            lookahead_threshold:
              depend : param_flag
-           stat_topic : [ lf ]  
-       - name : velocity_set
-         cmd  : rosrun waypoint_follower velocity_set
-       - name : collision_avoid
-         cmd  : roslaunch waypoint_follower collision_avoid.launch  
+           stat_topic : [ lf ]
+       - name : distance_keep
+         cmd  : roslaunch waypoint_follower distance_keep.launch
        - name : twist_through
-         cmd  : rosrun waypoint_follower twist_through  
-       - name : wf_simulator
-         cmd  : roslaunch waypoint_follower wf_simulator.launch
-         param: wf_simulator  
-         
+         cmd  : rosrun waypoint_follower twist_through
+       - name : car_simulator
+         cmd  : roslaunch waypoint_follower car_simulator.launch
+         param: car_simulator
          gui  :
            use_pose:
              flags : [ no_category, nl ]
@@ -480,21 +458,6 @@ params :
     - name  : yaw
       label : 'yaw:'
       v     : 0.0
-    - name  : lidar_original
-      kind  : radio_box
-      choices:
-      - Lidar
-      - Original
-      v     : 1
-    - name  : max
-      label : 'Max:'
-      v     : 63
-    - name  : min
-      label : 'Min:'
-      v     : 0
-    - name  : layer
-      label : 'Layer:'
-      v     : 1
     - name  : resolution
       label : Resolution
       min   : 0
@@ -537,8 +500,8 @@ params :
       max   : 2.0
       v     : 0
 
-  - name  : waypoint_follower
-    topic : /config/waypoint_follower
+  - name  : lane_follower
+    topic : /config/lane_follower
     msg   : ConfigLaneFollower
     vars  :
     - name  : param_flag
@@ -586,8 +549,8 @@ params :
       label   : 'Simulation Mode'
       kind    : checkbox
       v       : False
-      rosparam: /lattice_trajectory_gen/sim_mode
-  - name  : wf_simulator
+      rosparam: /trajectory_generator/sim_mode
+  - name  : car_simulator
     vars  :
     - name    : use_pose
       kind    : radio_box
@@ -691,12 +654,12 @@ params :
       label : Initial Lifespan
       min   : 1
       max   : 100
-      v     : 4
+      v     : 2
     - name  : default_lifespan
       label : Default Lifespan
       min   : 1
       max   : 100
-      v     : 8
+      v     : 10
     - name  : noise_covariance
       label : Noise Covariance
       min   : 1
@@ -772,30 +735,25 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : lane_navi
+  - name  : lane_rule
+    topic : /config/lane_rule
+    msg   : ConfigLaneRule
     vars  :
+    - name      : ruled_waypoint
+      kind      : path
+      path_type : save
+      v         : /tmp/ruled_waypoint.csv
+      rosparam  : /lane_rule/ruled_waypoint_csv
     - name      : velocity
       label     : Velocity (km/h)
       min       : 0
       max       : 200
       v         : 40.0
-      rosparam  : /lane_navi/velocity
-    - name      : output_file
-      label     : Output File
-      kind      : path
-      path_type : save
-      v         : /tmp/lane_waypoint.csv
-      rosparam  : /lane_navi/output_file
-
-  - name  : lane_rule
-    topic : /config/lane_rule
-    msg   : ConfigLaneRule
-    vars  :
-    - name      : acceleration
-      label     : Acceleration (m/s^2)
+    - name      : difference_around_signal
+      label     : Difference around Signal (km/h)
       min       : 0
-      max       : 100
-      v         : 1.0
+      max       : 20
+      v         : 2.0
     - name      : number_of_zeros
       label     : Number of Zeros
       min       : 1
@@ -829,15 +787,28 @@ params :
         delim       : ':='
 
   - name  : waypoint_loader
+    topic : /config/waypoint_loader
+    msg   : ConfigWaypointLoader
     vars  :
-    - name      : lane_waypoint
+    - name      : ruled_waypoint
       kind      : path
-      v         : /tmp/lane_waypoint.csv
-      rosparam  : /waypoint_loader/lane_waypoint_csv
-    - name      : decelerate  
-      label   : 'decelerate :'
-      v         : 1.0
-      rosparam  : /waypoint_loader/decelerate
+      v         : /tmp/ruled_waypoint.csv
+      rosparam  : /waypoint_loader/ruled_waypoint_csv
+    - name      : velocity
+      label     : Velocity (km/h)
+      min       : 0
+      max       : 200
+      v         : 40.0
+    - name      : difference_around_signal
+      label     : Difference around Signal (km/h)
+      min       : 0
+      max       : 20
+      v         : 2.0
+    - name      : number_of_zeros
+      label     : Number of Zeros
+      min       : 1
+      max       : 100
+      v         : 1
 
   - name  : ndt_mapping
     topic : /config/ndt_mapping
