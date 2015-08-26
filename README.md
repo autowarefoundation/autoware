@@ -93,3 +93,9 @@ $ catkin_init_workspace
 $ cd ../
 $ ./catkin_make_release
 ```
+
+## How to Build
+
+```
+$ cd $HOME/Autoware/ros
+$ ./run
