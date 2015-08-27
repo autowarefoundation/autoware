@@ -1,6 +1,24 @@
 # Autoware
 
-Open-source software for autonomous driving
+Open-source software for urban autonomous driving. The following functions are supported:
+
+- 3D Localization
+- 3D Mapping
+- Path Planning
+- Path Following
+- Accel/Brake/Steering Control
+- Data Logging
+- Car/Pedestrian/Object Detection
+- Traffic Signal Detection
+- Traffic Light Recognition
+- Lane Detection
+- Moving Object Tracking
+- Sensor Calibration
+- Sensor Fusion
+- Cloud-based Dynamic Maps
+- Android Navigation
+- Simulation
+- Gamificated HMI
 
 ## License
 
