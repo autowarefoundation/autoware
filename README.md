@@ -108,17 +108,23 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 
 ## Instruction Videos
 
-[Quick Start](https://www.youtube.com/watch?v=ztUtN3ZG6N8)
+### Quick Start
+[![Quick Start](http://img.youtube.com/vi/ztUtN3ZG6N8/0.jpg)](https://www.youtube.com/watch?v=ztUtN3ZG6N8)
 
-[Localization with GNSS](https://www.youtube.com/watch?v=5x3szHneHzM)
+### Localization with GNSS
+[![Localization with GNSS](http://img.youtube.com/vi/5x3szHneHzM/0.jpg)](https://www.youtube.com/watch?v=5x3szHneHzM)
 
-[Localization without GNSS](https://www.youtube.com/watch?v=rbtdllALbCE)
+### Localization without GNSS
+[![Localization without GNSS](http://img.youtube.com/vi/rbtdllALbCE/0.jpg)](https://www.youtube.com/watch?v=rbtdllALbCE)
 
-[Mapping](https://www.youtube.com/watch?v=hsX4HX_XBM4)
+### Mapping
+[![Mapping](http://img.youtube.com/vi/hsX4HX_XBM4/0.jpg)](https://www.youtube.com/watch?v=hsX4HX_XBM4)
 
-[Detection](https://www.youtube.com/watch?v=UcoYqGniIkE)
+### Detection
+[![Detection](http://img.youtube.com/vi/UcoYqGniIkE/0.jpg)](https://www.youtube.com/watch?v=UcoYqGniIkE)
 
-[Planning](https://www.youtube.com/watch?v=QOrsC1P8nN0)
+### Planning
+[![Planning](http://img.youtube.com/vi/QOrsC1P8nN0/0.jpg)](https://www.youtube.com/watch?v=QOrsC1P8nN0)
 
 ## Sample Data
 
