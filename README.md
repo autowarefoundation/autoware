@@ -1,6 +1,24 @@
 # Autoware
 
-Open-source software for autonomous driving
+Open-source software for urban autonomous driving. The following functions are supported:
+
+- 3D Localization
+- 3D Mapping
+- Path Planning
+- Path Following
+- Accel/Brake/Steering Control
+- Data Logging
+- Car/Pedestrian/Object Detection
+- Traffic Signal Detection
+- Traffic Light Recognition
+- Lane Detection
+- Moving Object Tracking
+- Sensor Calibration
+- Sensor Fusion
+- Cloud-based Dynamic Maps
+- Android Navigation
+- Simulation
+- Gamificated HMI
 
 ## License
 
@@ -42,12 +60,12 @@ Open-source software for autonomous driving
 % source devel/setup.bash
 ```
 
-You cannot build **Autoware/ros** source code with those OpenCV and Qt5 package,
-because they are too old. So you have to install newer OpenCV and Qt5.
+You cannot build **Autoware/ros** source code with those OpenCV and Qt5 packages,
+because they are too old. So you have to install newer versions of OpenCV and Qt5.
 
 #### Install OpenCV
 
-You can download source code from [here](http://sourceforge.net/projects/opencvlibrary/).
+You can download the source code from [here](http://sourceforge.net/projects/opencvlibrary/).
 
 ```
 % unzip opencv-2.4.8.zip
@@ -59,7 +77,7 @@ You can download source code from [here](http://sourceforge.net/projects/opencvl
 
 #### Install Qt 5
 
-Document is [here](http://qt-project.org/wiki/Building_Qt_5_from_Git).
+The installation document is [here](http://qt-project.org/wiki/Building_Qt_5_from_Git).
 
 First you have to install Qt5 dependencies.
 
@@ -82,7 +100,7 @@ First you have to install Qt5 dependencies.
 % make install
 % sudo cp -r qtbase /usr/local/qtbase5
 ```
-[This page](https://qt.gitorious.org/qt/qtbase/commit/9d2edfe5248fce8b16693fad8304f94a1f101bab) could help you when `make` returns error. 
+[This page](http://code.qt.io/cgit/qt/qtbase.git/commit/?id=9d2edfe5248fce8b16693fad8304f94a1f101bab) could help you when `make` returns error.
 
 ## How to Build
 
@@ -100,3 +118,34 @@ $ ./catkin_make_release
 ```
 $ cd $HOME/Autoware/ros
 $ ./run
+```
+
+## Documents
+
+See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. English documents will be added shortly.
+
+## Instruction Videos
+
+### Quick Start
+[![Quick Start](http://img.youtube.com/vi/ztUtN3ZG6N8/0.jpg)](https://www.youtube.com/watch?v=ztUtN3ZG6N8)
+
+### Localization with GNSS
+[![Localization with GNSS](http://img.youtube.com/vi/5x3szHneHzM/0.jpg)](https://www.youtube.com/watch?v=5x3szHneHzM)
+
+### Localization without GNSS
+[![Localization without GNSS](http://img.youtube.com/vi/rbtdllALbCE/0.jpg)](https://www.youtube.com/watch?v=rbtdllALbCE)
+
+### Mapping
+[![Mapping](http://img.youtube.com/vi/hsX4HX_XBM4/0.jpg)](https://www.youtube.com/watch?v=hsX4HX_XBM4)
+
+### Detection
+[![Detection](http://img.youtube.com/vi/UcoYqGniIkE/0.jpg)](https://www.youtube.com/watch?v=UcoYqGniIkE)
+
+### Planning
+[![Planning](http://img.youtube.com/vi/QOrsC1P8nN0/0.jpg)](https://www.youtube.com/watch?v=QOrsC1P8nN0)
+
+## Sample Data
+
+[3D map of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
+
+[ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)

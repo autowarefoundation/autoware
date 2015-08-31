@@ -152,7 +152,7 @@ int main(int argc, char **argv)
     double interval = 1.0;
     std::string filename = "";
 
-    ros::Subscriber ndt_pose_sub = nh.subscribe("currnet_pose", 10, NDTCallback);
+    ros::Subscriber ndt_pose_sub = nh.subscribe("current_pose", 10, NDTCallback);
     ros::Subscriber can_info_sub = nh.subscribe("can_info", 10, CanInfoCallback);
 
     _waypoint_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 10, true);
