@@ -128,9 +128,6 @@ class MyFrame(rtmgr.MyFrame):
 			for topic in self.qs_dic.get('exec_time', {}).get(nm, {}).keys():
 				rospy.Subscriber(topic, std_msgs.msg.Float32, self.exec_time_callback, callback_args=topic)
 
-		self.label_cpuinfo.Destroy()
-		self.label_cpuinfo = ColorLabel(self)
-
 		#
 		# for Map tab
 		#
@@ -372,9 +369,29 @@ class MyFrame(rtmgr.MyFrame):
 			name = k + '_stat'
 			rospy.Subscriber(name, std_msgs.msg.Bool, self.stat_callback, callback_args=k)
 
-		# top command thread
+		# top command thread setup
+		toprc = os.path.expanduser('~/.toprc')
+		backup = os.path.expanduser('~/.toprc-autoware-backup')
+		self.toprc_setup(toprc, backup)
+
+		# get top cmd cpu N
+		s = subprocess.check_output(['sh', '-c', 'top -b -n 1 | grep ^%Cpu | wc -l']).strip()
+		cpu_n = int(s)
+
+		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(cpu_n) ]
+		sz = wx.BoxSizer(wx.HORIZONTAL)
+		for ibl in cpu_ibls:
+			sz.Add(ibl, 1, wx.EXPAND, 0)
+		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
+
+		ibl = InfoBarLabel(self, 'Memory')
+		self.sizer_cpuinfo.Add(ibl, 2, wx.ALL | wx.EXPAND, 4)
+
 		sec = self.status_dic.get('top_cmd_interval', 3)
-		thinf = th_start(self.top_cmd_th, { 'interval':sec })
+
+		th_arg = { 'interval':sec, 'cpu_ibls':cpu_ibls, 'mem_ibl':ibl, 
+			   'toprc':toprc, 'backup':backup }
+		thinf = th_start(self.top_cmd_th, th_arg)
 		self.all_th_infs.append(thinf)
 
 		# ps command thread
@@ -991,29 +1008,32 @@ class MyFrame(rtmgr.MyFrame):
 			os.rename(backup, toprc)
 
 	# top command thread
-	def top_cmd_th(self, ev, interval):
-		toprc = os.path.expanduser('~/.toprc')
-		backup = os.path.expanduser('~/.toprc-autoware-backup')
-		self.toprc_setup(toprc, backup)
-
+	def top_cmd_th(self, ev, interval, cpu_ibls, mem_ibl, toprc, backup):
 		alerted = False
 		while not ev.wait(interval):
-			s = subprocess.check_output(['top', '-b', '-n' '1']).strip()
+			s = subprocess.check_output(['top', '-b', '-n', '2', '-d', '0.1']).strip()
+			s = s[s.rfind('top -'):]
 			wx.CallAfter(self.label_top_cmd.SetLabel, s)
 			wx.CallAfter(self.label_top_cmd.GetParent().FitInside)
 
-			lbs = []
 			k = '%Cpu'
 			max_v = 0
+			i = 0
 			for t in s.split('\n'):
 				if t[:len(k)] != k:
 					continue
 				lst = t[1:].split()
 				v = lst[1] if lst[1] != ':' else lst[2]
-				tx = lst[0].strip(':').upper() + ':' + v + '% '
+				if v[0] == ':':
+					v = v[1:]
 				fv = float(v)
 				col = self.info_col(fv, 80, 90, (64,64,64), (200,0,0))
-				lbs += [ col, tx ]
+
+				if i < len(cpu_ibls):
+					ibl = cpu_ibls[i]
+					wx.CallAfter(ibl.lb_set, v+'%', col)
+					wx.CallAfter(ibl.bar_set, int(fv))
+				i += 1
 				max_v = fv if fv > max_v else max_v
 
 			k = 'KiB Mem:'
@@ -1027,10 +1047,10 @@ class MyFrame(rtmgr.MyFrame):
 				used /= 1024
 
 			col = self.info_col(rate, 95, 98, (64,64,64), (200,0,0))
-			tx = 'MEM: ' + str(used) + u + '/' + str(total) + u + '(' + str(rate) + '%)'
-			lbs += [ '\n', col, tx ]
+			tx = str(used) + u + '/' + str(total) + u + '(' + str(rate) + '%)'
 
-			wx.CallAfter(self.label_cpuinfo.set, lbs)
+			wx.CallAfter(mem_ibl.lb_set, tx, col)
+			wx.CallAfter(mem_ibl.bar_set, rate)
 
 			is_alert = max_v >= 90 or rate >= 90
 
@@ -2342,18 +2362,62 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		self.panel.detach_func()
 		self.EndModal(0)
 
+class InfoBarLabel(wx.BoxSizer):
+	def __init__(self, parent, btm_txt=None, lmt_bar_prg=90):
+		wx.BoxSizer.__init__(self, orient=wx.VERTICAL)
+		self.lb = wx.StaticText(parent, wx.ID_ANY, '')
+		self.Add(self.lb, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+
+		self.bar = BarLabel(parent, hv=wx.VERTICAL, show_lb=False)
+		sz = self.bar.GetSize()
+		sz.SetWidth(20)
+		self.bar.SetMinSize(sz)
+		self.Add(self.bar, 1, wx.ALIGN_CENTER_HORIZONTAL, 0)
+
+		if btm_txt:
+			bt = wx.StaticText(parent, wx.ID_ANY, btm_txt)
+			self.Add(bt, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+
+		self.lmt_bar_prg = lmt_bar_prg
+
+	def lb_set(self, txt, col):
+		self.lb.SetForegroundColour(col)
+		self.lb.SetLabel(txt);
+		self.Layout()
+
+	def bar_set(self, prg):
+		(col1, col2) = (wx.NullColour, wx.NullColour)
+		if prg >= self.lmt_bar_prg:
+			(col1, col2) = (wx.Color(250,0,0), wx.Color(128,0,0)) 
+		self.bar.set_col(col1, col2)
+		self.bar.set(prg)
+
 class BarLabel(wx.Panel):
-	def __init__(self, parent, txt='', pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
+	def __init__(self, parent, txt='', pos=wx.DefaultPosition, size=wx.DefaultSize, style=0, hv=wx.HORIZONTAL, show_lb=True):
 		wx.Panel.__init__(self, parent, wx.ID_ANY, pos, size)
 		self.lb = wx.StaticText(self, wx.ID_ANY, '', style=style)
 		self.txt = txt
+		self.hv = hv
+		self.dir = wx.SOUTH if hv == wx.HORIZONTAL else wx.EAST
+		self.show_lb = show_lb
 		self.prg = -1
+
+		self.dflt_col1 = wx.Color(250,250,250)
+		self.dflt_col2 = wx.Color(128,128,128)
+		self.col1 = self.dflt_col1
+		self.col2 = self.dflt_col2
+
 		self.Bind(wx.EVT_PAINT, self.OnPaint)
 
 	def set(self, prg):
 		self.prg = prg
-		self.lb.SetLabel(self.txt + str(prg) + '%' if prg >= 0 else '')
+		if self.show_lb:
+			self.lb.SetLabel(self.txt + str(prg) + '%' if prg >= 0 else '')
 		self.Refresh()
+
+	def set_col(self, col1, col2):
+		self.col1 = col1 if col1 != wx.NullColour else self.dflt_col1
+		self.col2 = col2 if col2 != wx.NullColour else self.dflt_col2
 
 	def clear(self):
 		self.set(-1)
@@ -2362,14 +2426,14 @@ class BarLabel(wx.Panel):
 		dc = wx.PaintDC(self)
 		(w,h) = self.GetSize()
 		if self.IsEnabled():
-			p = w * self.prg / 100
-			rect = wx.Rect(0, 0, p, h)
-			dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(128,128,128), wx.SOUTH)
-			rect = wx.Rect(p, 0, w-p, h)
-			dc.GradientFillLinear(rect, wx.Colour(200,200,200), wx.Colour(220,220,220), wx.SOUTH)
+			p = (w if self.hv == wx.HORIZONTAL else h) * self.prg / 100
+			rect = wx.Rect(0, 0, p, h) if self.hv == wx.HORIZONTAL else wx.Rect(0, h-p, w, p)
+			dc.GradientFillLinear(rect, self.col1, self.col2, self.dir)
+			rect = wx.Rect(p, 0, w-p, h) if self.hv == wx.HORIZONTAL else wx.Rect(0, 0, w, h-p)
+			dc.GradientFillLinear(rect, wx.Colour(200,200,200), wx.Colour(220,220,220), self.dir)
 		else:
 			rect = wx.Rect(0, 0, w, h)
-			dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(250,250,250), wx.SOUTH)
+			dc.GradientFillLinear(rect, wx.Colour(250,250,250), wx.Colour(250,250,250), self.dir)
 
 class ColorLabel(wx.Panel):
 	def __init__(self, parent, lst=[], pos=wx.DefaultPosition, size=wx.DefaultSize, style=0):
