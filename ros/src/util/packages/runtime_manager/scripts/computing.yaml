@@ -144,6 +144,7 @@ subs :
       subs :
       - name : feat_proj
         cmd  : rosrun road_wizard feat_proj
+        param: feat_proj
       - name : region_tlr
         cmd  : roslaunch road_wizard traffic_light_recognition.launch
 
@@ -761,6 +762,21 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+
+  - name : feat_proj
+    topic: /config/adjust_xy
+    msg  : adjust_xy
+    vars :
+    - name : x
+      label: x
+      min  : -100
+      max  : 100
+      v    : 0
+    - name : y
+      label: y
+      min  : -100
+      max  : 100
+      v    : 0
 
   - name  : traffic_light
     vars :

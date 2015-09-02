@@ -80,6 +80,7 @@ from runtime_manager.msg import brake_cmd
 from runtime_manager.msg import indicator_cmd
 from runtime_manager.msg import lamp_cmd
 from runtime_manager.msg import traffic_light
+from runtime_manager.msg import adjust_xy
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
