@@ -2395,7 +2395,7 @@ class InfoBarLabel(wx.BoxSizer):
 		self.Layout()
 
 	def bar_set(self, prg):
-		(col1, col2) = (wx.NullColour, wx.NullColour)
+		(col1, col2) = (wx.Color(0,0,250), wx.Color(0,0,128))
 		if prg >= self.lmt_bar_prg:
 			(col1, col2) = (wx.Color(250,0,0), wx.Color(128,0,0)) 
 		self.bar.set_col(col1, col2)
