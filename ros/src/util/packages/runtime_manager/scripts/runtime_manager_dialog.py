@@ -1058,8 +1058,10 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(mem_ibl.lb_set, tx, col)
 			wx.CallAfter(mem_ibl.bar_set, rate)
 
-			is_alert_cpu = ( busy_cpu_cnt >= cpu_n * alert_level.get('rate_cpu_num', 70) / 100 )
-			is_alert = is_alert_cpu or rate >= 90
+			busy_cpu_lmt = int( cpu_n * alert_level.get('rate_cpu_num', 70) / 100 )
+			if busy_cpu_lmt <= 0:
+				busy_cpu_lmt = 1
+			is_alert = busy_cpu_cnt >= busy_cpu_lmt or rate >= 90
 
 			# --> for test
 			if os.path.exists('/tmp/alert_test_on'):
