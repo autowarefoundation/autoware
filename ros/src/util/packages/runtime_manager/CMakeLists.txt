@@ -30,6 +30,7 @@ add_message_files(
   traffic_light.msg
   ConfigCarFusion.msg
   ConfigPedestrianFusion.msg
+  adjust_xy.msg
 )
 
 generate_messages(
