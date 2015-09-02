@@ -387,9 +387,8 @@ class MyFrame(rtmgr.MyFrame):
 		ibl = InfoBarLabel(self, 'Memory')
 		self.sizer_cpuinfo.Add(ibl, 2, wx.ALL | wx.EXPAND, 4)
 
-		sec = self.status_dic.get('top_cmd_interval', 3)
-
-		th_arg = { 'interval':sec, 'cpu_ibls':cpu_ibls, 'mem_ibl':ibl, 
+		th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
+			   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl, 
 			   'toprc':toprc, 'backup':backup }
 		thinf = th_start(self.top_cmd_th, th_arg)
 		self.all_th_infs.append(thinf)
@@ -1008,8 +1007,12 @@ class MyFrame(rtmgr.MyFrame):
 			os.rename(backup, toprc)
 
 	# top command thread
-	def top_cmd_th(self, ev, interval, cpu_ibls, mem_ibl, toprc, backup):
+	def top_cmd_th(self, ev, setting, cpu_ibls, mem_ibl, toprc, backup):
+		interval = setting.get('interval', 3)
+		alert_level = setting.get('alert_level', {})
 		alerted = False
+		cpu_n = len(cpu_ibls)
+
 		while not ev.wait(interval):
 			s = subprocess.check_output(['top', '-b', '-n', '2', '-d', '0.1']).strip()
 			s = s[s.rfind('top -'):]
@@ -1017,7 +1020,7 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(self.label_top_cmd.GetParent().FitInside)
 
 			k = '%Cpu'
-			max_v = 0
+			busy_cpu_cnt = 0
 			i = 0
 			for t in s.split('\n'):
 				if t[:len(k)] != k:
@@ -1029,12 +1032,13 @@ class MyFrame(rtmgr.MyFrame):
 				fv = float(v)
 				col = self.info_col(fv, 80, 90, (64,64,64), (200,0,0))
 
-				if i < len(cpu_ibls):
+				if i < cpu_n:
 					ibl = cpu_ibls[i]
 					wx.CallAfter(ibl.lb_set, v+'%', col)
 					wx.CallAfter(ibl.bar_set, int(fv))
 				i += 1
-				max_v = fv if fv > max_v else max_v
+				if fv >= alert_level.get('rate_per_cpu', 90):
+					busy_cpu_cnt += 1
 
 			k = 'KiB Mem:'
 			(total, used) = self.mem_kb_info()
@@ -1052,7 +1056,8 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(mem_ibl.lb_set, tx, col)
 			wx.CallAfter(mem_ibl.bar_set, rate)
 
-			is_alert = max_v >= 90 or rate >= 90
+			is_alert_cpu = ( busy_cpu_cnt >= cpu_n * alert_level.get('rate_cpu_num', 70) / 100 )
+			is_alert = is_alert_cpu or rate >= 90
 
 			# --> for test
 			if os.path.exists('/tmp/alert_test_on'):
