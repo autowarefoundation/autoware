@@ -1,4 +1,8 @@
-top_cmd_interval : 3
+top_cmd_setting :
+  interval : 3
+  alert_level :
+    rate_per_cpu : 90
+    rate_cpu_num : 70
 
 log_path : syslog
 
