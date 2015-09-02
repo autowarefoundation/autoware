@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>libdpm_ocv</name>
+  <version>0.0.0</version>
+  <description>The opencv_dpm_gpu package</description>
+  <maintainer email="hoshika@todo.todo">hoshika</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

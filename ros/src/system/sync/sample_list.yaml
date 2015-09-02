@@ -22,7 +22,7 @@ pub1: /sync_image_raw
 pub2: /sync_scan
 
 sync_sub1: /car_pixel_xy
-sync_sub1_header: dpm/ImageObjects
+sync_sub1_header: libdpm_ocv/ImageObjects
 
 sync_sub2: /scan_image
 sync_sub2_header: scan2image/ScanImage

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<launch>
+<!--
+  <node name="image_viewer" pkg="viewers" type="image_viewer" >
+	<remap from="image_raw" to="resize_image" />
+  </node>
+-->
+
+  <node name="vscan_image_d_viewer" pkg="viewers" type="vscan_image_d_viewer" >
+	<remap from="image_raw" to="resize_image" />
+  </node>
+
+  <node name="resize_image_node" pkg="resize_image" type="resize_image_node">
+	<param name="scale" value="1.0" />
+  </node>
+
+  <node name="car_kf" pkg="car_detector" type="car_kf">
+	<remap from="image_raw" to="resize_image" />
+  </node>
+
+  <node name="car_fusion" pkg="car_detector" type="car_fusion"/>
+<!--
+  <node name="points2image" pkg="points2image" type="points2image" args="$(find points2image)/test.yml">
+  </node>
+-->
+
+  <node name="points2vscan" pkg="points2image" type="points2vscan"/>
+  <node name="vscan2image" pkg="points2image" type="vscan2image" args="$(find points2image)/nic-150407.yml"/>
+
+  <node name="dpm_gpu_node" pkg="dpm_gpu_node" type="dpm_gpu_node" output="screen">
+	<param name="model_file" value="$(find dpm_gpu_node)/model/models_VOC2007/car.xml" />	
+	<param name="overlap_threshold" value="0.48" />
+	<param name="num_threads" value="7" />
+	<remap from="image_raw" to="resize_image" />
+	<remap from="car_pos_xy" to="car_pixel_xy" />
+  </node>
+</launch>

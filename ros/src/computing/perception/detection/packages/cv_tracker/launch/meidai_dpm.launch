@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <node name="image_viewer" pkg="viewers" type="image_viewer" >
+	<remap from="image_raw" to="resize_image" />
+  </node>
+
+  <node name="resize_image_node" pkg="resize_image" type="resize_image_node">
+	<param name="scale" value="0.7" />
+  </node>
+
+  <node name="dpm_gpu" pkg="car_detector" type="car_dpm_gpu" output="screen">
+	<remap from="image_raw" to="resize_image" />
+  </node>
+</launch>

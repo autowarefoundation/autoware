@@ -30,7 +30,7 @@
 
 #include <string>
 #include <ros/ros.h>
-#include <dpm/ImageObjects.h>
+#include <libdpm_ocv/ImageObjects.h>
 
 extern int kf_main(int argc, char* argv[]);
 
