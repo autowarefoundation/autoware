@@ -110,6 +110,12 @@ buttons:
       flags : [ open_dialog ]
       file  :
         prop  : 1
+      register_lidar2camera_tf :
+        flags : [ nl ]
+      publish_extrinsic_mat :
+        flags : [ nl ]
+      publish_camera_info :
+        flags : [ nl ]
 
   points_image :
     run   : rosrun points2image points2image
@@ -187,6 +193,27 @@ params :
       cmd_param :
         delim     : 'file:='
         must      : True
+    - name      : register_lidar2camera_tf
+      label     : register TF between lidar and camera
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : publish_extrinsic_mat
+      label     : publish extrinsic matrix
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : publish_camera_info
+      label     : publish camera_info
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
 #  - name  : camera_extrinsicMat_Publisher
 #    vars  :
