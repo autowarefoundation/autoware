@@ -55,6 +55,7 @@ import syslog
 import rtmgr
 import rospy
 import std_msgs.msg
+from std_msgs.msg import Bool
 from decimal import Decimal
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
