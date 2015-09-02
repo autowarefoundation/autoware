@@ -147,6 +147,7 @@ subs :
         param: feat_proj
       - name : region_tlr
         cmd  : roslaunch road_wizard traffic_light_recognition.launch
+        param: region_tlr
 
     - name : viewers
       subs :
@@ -777,6 +778,15 @@ params :
       min  : -100
       max  : 100
       v    : 0
+
+  - name : region_tlr
+    topic: /config/superimpose
+    msg  : Bool
+    vars :
+    - name  : data
+      label : Display superimpose result
+      kind  : checkbox
+      v     : False
 
   - name  : traffic_light
     vars :
