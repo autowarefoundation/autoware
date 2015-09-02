@@ -8,6 +8,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  libdpm_ocv
   libdpm_ttic
   fusion
   kf
@@ -37,7 +38,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ttic scan2image fusion kf
+  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf
 )
 
 ###########
@@ -91,8 +92,36 @@ ADD_DEPENDENCIES(dpm_ttic
   cv_tracker_generate_messages_cpp
 )
 
-SET(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
+## dpm_ocv
+INCLUDE_DIRECTORIES(../../lib/image/dpm_ocv/src)
 
+ADD_EXECUTABLE(dpm_ocv
+  nodes/dpm_ocv/dpm_ocv.cpp
+)
+
+TARGET_LINK_LIBRARIES(dpm_ocv
+  libdpm_ocv
+  ${catkin_LIBRARIES}
+  #${OpenCV_LIBS}
+)
+
+IF(EXISTS "/usr/local/cuda")
+SET_TARGET_PROPERTIES(dpm_ocv
+  PROPERTIES
+  COMPILE_FLAGS
+  "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/model/models_VOC2007/"
+)
+ELSE()
+SET_TARGET_PROPERTIES(dpm_ocv
+  PROPERTIES
+  COMPILE_FLAGS
+  "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
+)
+ENDIF()
+
+ADD_DEPENDENCIES(dpm_ocv
+  dpm_ttic_generate_messages_cpp
+)
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
@@ -125,6 +154,7 @@ TARGET_LINK_LIBRARIES(kf_track
 
 ADD_DEPENDENCIES(kf_track
   kf_track_generate_messages_cpp
+  libdpm_ocv_generate_messages_cpp
 )
 
 ## obj_reproj ##
@@ -154,4 +184,5 @@ TARGET_LINK_LIBRARIES(klt_track
 
 ADD_DEPENDENCIES(klt_track
   klt_track_generate_messages_cpp
+  libdpm_ocv_generate_messages_cpp
 )

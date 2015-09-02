@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<launch>
+<!--
+  <node name="fake_camera" pkg="fake_drivers" type="fake_camera" 
+	args="$(find dpm_node)/Debug/org_image/17.png" />
+-->
+
+  <node name="image_viewer" pkg="viewers" type="image_viewer" >
+	<!--<remap from="image_raw" to="resize_image" />
+	
+	<remap from="car_pos_xy" to="car_pos_xy_tracked" />
+	-->
+  </node>
+
+<!--
+  <node name="car_tracking" pkg="car_detector" type="car_tracking">
+	<remap from="image_raw" to="resize_image" />
+  </node>
+
+
+  <node name="resize_image_node" pkg="resize_image" type="resize_image_node">
+	<param name="scale" value="1.0" />
+  </node>-->
+
+
+  <node name="dpm_gpu_node" pkg="dpm_gpu_node" type="dpm_gpu_node" output="screen">
+	<param name="model_file" value="$(find dpm_gpu_node)/model/models_VOC2007/car.xml" />	
+<!--
+	<param name="model_file" value="$(find dpm_gpu_node)/Debug/models_VOC2007/person.xml" />	
+	<param name="overlap_threshold" value="0.48" />
+-->
+	<param name="overlap_threshold" value="0.40" />
+	<param name="num_threads" value="7" />
+	<!--<remap from="image_raw" to="resize_image" />-->
+	<remap from="car_pos_xy" to="car_pixel_xy" />
+  </node>
+</launch>
