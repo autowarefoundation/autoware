@@ -81,6 +81,12 @@ static void cache_left_lane()
 	}
 }
 
+static bool is_cached_vmap()
+{
+	return (!vmap_all.lanes.empty() && !vmap_all.nodes.empty() && !vmap_all.points.empty() &&
+		!vmap_all.stoplines.empty() && !vmap_all.dtlanes.empty());
+}
+
 static void cache_lane(const map_file::LaneArray& msg)
 {
 	vmap_all.lanes = msg.lanes;
@@ -442,11 +448,43 @@ static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg,
 	return computations;
 }
 
+static void publish_waypoint_without_change(const waypoint_follower::lane& msg, const std_msgs::Header& header)
+{
+	waypoint_follower::lane traffic;
+	traffic.header = header;
+	traffic.increment = 1;
+	waypoint_follower::waypoint waypoint;
+	waypoint.pose.header = header;
+	waypoint.twist.header = header;
+
+	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
+		waypoint.pose.pose = msg.waypoints[i].pose.pose;
+		waypoint.twist.twist = msg.waypoints[i].twist.twist;
+		traffic.waypoints.push_back(waypoint);
+	}
+
+	pub_traffic.publish(traffic);
+}
+
 static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 {
 	std_msgs::Header header;
 	header.stamp = ros::Time::now();
 	header.frame_id = "/map";
+
+	if (!is_cached_vmap()) {
+		ROS_WARN("not cached vmap");
+		publish_waypoint_without_change(msg, header);
+		return;
+	}
+
+	std::vector<map_file::DTLane> dtlanes = search_dtlane(msg);
+	if (dtlanes.size() != msg.waypoints.size()) {
+		ROS_WARN("not found dtlane");
+		publish_waypoint_without_change(msg, header);
+		return;
+	}
+
 	waypoint_follower::lane green;
 	green.header = header;
 	green.increment = 1;
@@ -456,21 +494,6 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 	waypoint_follower::waypoint waypoint;
 	waypoint.pose.header = header;
 	waypoint.twist.header = header;
-
-	std::vector<map_file::DTLane> dtlanes = search_dtlane(msg);
-	if (dtlanes.size() != msg.waypoints.size()) {
-		ROS_WARN("not found dtlane");
-
-		// publish waypoints without change
-		for (size_t i = 0; i < msg.waypoints.size(); ++i) {
-			waypoint.pose.pose = msg.waypoints[i].pose.pose;
-			waypoint.twist.twist = msg.waypoints[i].twist.twist;
-			green.waypoints.push_back(waypoint);
-		}
-		pub_traffic.publish(green);
-
-		return;
-	}
 
 	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
 		double reduction = dtlane_to_reduction(dtlanes, i);
@@ -523,12 +546,6 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
 	ros::Subscriber sub_stopline = n.subscribe("/vector_map_info/stop_line", sub_vmap_queue_size, cache_stopline);
 	ros::Subscriber sub_dtlane = n.subscribe("/vector_map_info/dtlane", sub_vmap_queue_size, cache_dtlane);
-	ros::Rate rate(1);
-	while (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty() ||
-	       vmap_all.stoplines.empty() || vmap_all.dtlanes.empty()) {
-		ros::spinOnce();
-		rate.sleep();
-	}
 	ros::Subscriber sub_waypoint = n.subscribe("/lane_waypoint", sub_waypoint_queue_size, create_traffic_waypoint);
 	ros::Subscriber sub_config = n.subscribe("/config/lane_rule", sub_config_queue_size, config_rule);
 

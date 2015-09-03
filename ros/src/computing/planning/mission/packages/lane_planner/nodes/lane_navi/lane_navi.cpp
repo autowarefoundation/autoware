@@ -74,6 +74,11 @@ static void cache_left_lane()
 	}
 }
 
+static bool is_cached_vmap()
+{
+	return (!vmap_all.lanes.empty() && !vmap_all.nodes.empty() && !vmap_all.points.empty());
+}
+
 static void cache_lane(const map_file::LaneArray& msg)
 {
 	vmap_all.lanes = msg.lanes;
@@ -110,6 +115,11 @@ static void write_lane_waypoint(const geometry_msgs::Point& point, bool first)
 
 static void create_lane_waypoint(const tablet_socket::route_cmd& msg)
 {
+	if (!is_cached_vmap()) {
+		ROS_WARN("not cached vmap");
+		return;
+	}
+
 	geo_pos_conv geo;
 	geo.set_plane(7);
 	geo.llh_to_xyz(msg.point.front().lat, msg.point.front().lon, 0);
@@ -192,11 +202,6 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_lane = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
 	ros::Subscriber sub_node = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
 	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
-	ros::Rate rate(1);
-	while (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty()) {
-		ros::spinOnce();
-		rate.sleep();
-	}
 	ros::Subscriber sub_route = n.subscribe("/route_cmd", sub_route_queue_size, create_lane_waypoint);
 
 	pub_waypoint = n.advertise<waypoint_follower::lane>("/lane_waypoint", pub_waypoint_queue_size,
