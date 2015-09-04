@@ -1,0 +1,11 @@
+<launch>
+
+	<!-- declare arguments with default values -->
+	<arg name="SCALE" default="100"/>
+	<arg name="CalibrationFile" default=""/>
+
+	<node pkg="pointgrey" type="lady_bug" name="lady_bug">
+		<param name="scale" value="$(arg SCALE)"/>
+		<param name="calibrationfile" value="$(arg CalibrationFile)"/>
+	</node>
+</launch>

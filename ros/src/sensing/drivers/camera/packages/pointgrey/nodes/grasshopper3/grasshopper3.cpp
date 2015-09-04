@@ -275,7 +275,7 @@ int main(int argc, char **argv)
 	ros::Publisher pub[camera_num];
 	ros::Publisher camera_info_pub;
 
-	camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10);
+	camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 1, true);
 
 	for (int i = 0; i < camera_num; i++) {
 	  std::string topic(std::string("image_raw"));

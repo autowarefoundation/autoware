@@ -28,7 +28,15 @@ subs :
         run  :
       - name : PointGrey LadyBug 5
         probe:
-        run  :
+        run  : roslaunch pointgrey ladybug.launch
+        param: calibration_path_ladybug
+        gui  :
+          CalibrationFile :
+            prop  : 1
+            flags : [ center_v ]
+          Scale :
+            prop  : 1
+            flags : [ center_v ]
       - name : USB Generic
         probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
         run  : rosrun uvc_camera uvc_camera_node
@@ -152,6 +160,15 @@ params :
         delim: ':='
 
   - name  : calibration_path_grasshopper3
+    vars  :
+    - name  : CalibrationFile
+      kind  : path
+      v     : ''
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+  - name  : calibration_path_ladybug
     vars  :
     - name  : CalibrationFile
       kind  : path

@@ -36,5 +36,27 @@ target_link_libraries(grasshopper3
    ${catkin_LIBRARIES} ${OpenCV_LIBS} flycapture
 )
 else()
-message("'flycapture2' is not installed. 'grasshopper3' is not built.")
+message("'flycapture2' is not installed. 'grasshopper3' will not be built.")
+endif()
+
+
+if(EXISTS "/usr/include/ladybug")
+include_directories(
+	/usr/include/ladybug
+	nodes/ladybug
+	${OpenCV_INCLUDE_DIRS}
+)
+
+add_executable(lady_bug
+	nodes/ladybug/ladybug.cpp
+)
+
+target_link_libraries(lady_bug
+   ${catkin_LIBRARIES} ${OpenCV_LIBS}
+   flycapture
+   ladybug
+   xerces-c
+)
+else()
+message("'lady_bug' is not installed. 'ladybug' will not be built.")
 endif()
