@@ -76,7 +76,10 @@ struct Position {
 // global variables
 static Position previous_pos, guess_pos, current_pos, current_pos_control;
 
-static double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
+static double offset_x = 0.0;
+static double offset_y = 0.0;
+static double offset_z = 0.0;
+static double offset_yaw = 0.0; // current_pos - previous_pos
 
 // Initial position (updated in param_callback)
 static double initial_x = 0.0;
@@ -197,33 +200,6 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     std::cout << "control_shift_y: " << control_shift_y << "." << std::endl;
     std::cout << "control_shift_z: " << control_shift_z << "." << std::endl;
 }
-
-/*
-static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
-{
-    if (map_loaded == 0) {
-        std::cout << "Loading map data... ";
-        map.header.frame_id = "/pointcloud_map_frame";
-
-        // Convert the data type(from sensor_msgs to pcl).
-        pcl::fromROSMsg(*input, map);
-
-        pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
-        // Setting point cloud to be aligned to.
-        ndt.setInputTarget(map_ptr);
-
-        // Setting NDT parameters to default values
-        ndt.setMaximumIterations(iter);
-        ndt.setResolution(ndt_res);
-        ndt.setStepSize(step_size);
-        ndt.setTransformationEpsilon(trans_eps);
-
-        map_loaded = 1;
-        std::cout << "Done." << std::endl;
-        std::cout << "Open config window and set the parameters." << std::endl;
-    }
-}
-*/
 
 static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
@@ -376,11 +352,12 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
         t = ndt.getFinalTransformation();
 	pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_additional_map_ptr (new pcl::PointCloud<pcl::PointXYZI>());
-	transformed_additional_map_ptr->header.frame_id = "/map2";
+	transformed_additional_map_ptr->header.frame_id = "/map";
 	pcl::transformPointCloud(*additional_map_ptr, *transformed_additional_map_ptr, t);
 	sensor_msgs::PointCloud2::Ptr msg_ptr(new sensor_msgs::PointCloud2);
-	pcl::toROSMsg(*transformed_additional_map_ptr, *msg_ptr);
 
+	pcl::toROSMsg(*transformed_additional_map_ptr, *msg_ptr);
+	msg_ptr->header.frame_id = "/map";
 	ndt_map_pub.publish(*msg_ptr);
 
 	// Writing Point Cloud data to PCD file
@@ -576,9 +553,10 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 int main(int argc, char **argv)
 {
-    std::cout << "---------------------------------------" << std::endl;
-    std::cout << "NDT_PCL program coded by Yuki KITSUKAWA" << std::endl;
-    std::cout << "---------------------------------------" << std::endl;
+    if(argc != 8){
+      std::cout << "Usage: rosrun ndt_localizer local2global \"filename\" \"x\" \"y\" \"z\" \"roll\" \"pitch\" \"yaw\"" << std::endl;
+      exit(1);
+    }
 
     ros::init(argc, argv, "local2global");
     ros::NodeHandle n;
@@ -586,8 +564,6 @@ int main(int argc, char **argv)
     std::string filename = argv[1];
     std::cout << filename << std::endl;
 
-    //Loading additional map.
-    //    pcl::PointCloud<pcl::PointXYZI>::Ptr additional_map_ptr(new pcl::PointCloud<pcl::PointXYZI>);
     if(pcl::io::loadPCDFile<pcl::PointXYZI> (filename, *additional_map_ptr) == -1){
       std::cout << "Couldn't read " << filename << "." << std::endl;
       return(-1);
@@ -625,7 +601,7 @@ int main(int argc, char **argv)
 
     ndt_stat_pub = n.advertise<std_msgs::Bool>("/ndt_stat", 1000);
 
-    ndt_map_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_map", 1000);
+    ndt_map_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_map", 1000, true);
 
     // subscribing parameter
     ros::Subscriber param_sub = n.subscribe("config/ndt", 10, param_callback);
