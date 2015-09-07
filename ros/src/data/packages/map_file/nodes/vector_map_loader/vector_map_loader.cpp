@@ -1044,11 +1044,13 @@ rosrun map_file vector_map_loader <csv files>
 
     // road sign pole
     int plid = roadsigns[i].plid;
-    set_poleclass_data(poleclasses[plid],
-		       1, 1, 1, 1,
-		       vectorclasses,
-		       pointclasses,
-		       &marker, &marker_array);
+    if(plid > 0) {
+      set_poleclass_data(poleclasses[plid],
+			 1, 1, 1, 1,
+			 vectorclasses,
+			 pointclasses,
+			 &marker, &marker_array);
+    }
   }
 
   // cross walk
