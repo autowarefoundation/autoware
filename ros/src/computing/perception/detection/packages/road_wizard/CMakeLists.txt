@@ -74,6 +74,7 @@ target_link_libraries(feat_proj
 )
 
 add_dependencies(feat_proj
+runtime_manager_generate_messages_cpp
 road_wizard_generate_messages_cpp
 )
 
