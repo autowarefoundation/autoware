@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DataLayerSample</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_data_item_sample">DataItemSampleActivity</string>
+    <string name="title_activity_message_sample">Message</string>
+
+</resources>
