@@ -43,6 +43,9 @@ subs :
       - name : IEEE1394
         probe:
         run  :
+      - name : Baumer VLG-22
+        probe:
+        run  : roslaunch vlg22c_cam baumer.launch
 
   - name : GNSS
     subs :
