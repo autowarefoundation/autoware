@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2012 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:orientation="vertical">
+      <Button
+        android:id="@+id/get_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onRequestPosition"
+        android:text="@string/request_position"/>
+      <Button
+        android:id="@+id/move_position"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onMovePosition"
+        android:text="@string/walk_panorama"/>
+      </LinearLayout>
+    <RelativeLayout
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:gravity="center_horizontal"
+      android:layout_weight="1">
+      <Button
+        android:id="@+id/pan_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onPanLeft"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:text="@string/left_arrow"/>
+      <Button
+        android:id="@+id/pan_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onPanUp"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/pan_left"
+        android:text="@string/up_arrow"/>
+      <Button
+        android:id="@+id/pan_down"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onPanDown"
+        android:layout_below="@id/pan_up"
+        android:layout_toRightOf="@id/pan_left"
+        android:text="@string/down_arrow"/>
+      <Button
+        android:id="@+id/pan_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onPanRight"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/pan_down"
+        android:text="@string/right_arrow"/>
+    </RelativeLayout>
+    <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_gravity="right"
+      android:orientation="vertical">
+      <Button
+        android:id="@+id/zoom_in"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onZoomIn"
+        android:text="@string/zoom_in"/>
+      <Button
+        android:id="@+id/zoom_out"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onZoomOut"
+        android:text="@string/zoom_out"/>
+    </LinearLayout>
+    <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="wrap_content"
+      android:layout_height="fill_parent"
+      android:layout_gravity="right">
+    </LinearLayout>
+  </LinearLayout>
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:text="@string/duration"/>
+    <SeekBar
+      android:id="@+id/duration_bar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:progress="1000"
+      android:max="5000"/>
+  </LinearLayout>
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+      <Button
+        android:id="@+id/sydney"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:onClick="onGoToSydney"
+        android:layout_weight="1"
+        android:text="@string/go_to_sydney"/>
+      <Button
+        android:id="@+id/sanfran"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:onClick="onGoToSanFran"
+        android:layout_weight="1"
+        android:text="@string/go_to_san_fran"/>
+      <Button
+        android:id="@+id/santorini"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:onClick="onGoToSantorini"
+        android:layout_weight="1"
+        android:text="@string/go_to_santorini"/>
+      <Button
+        android:id="@+id/invalid"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:onClick="onGoToInvalid"
+        android:layout_weight="1"
+        android:text="@string/go_to_invalid"/>
+  </LinearLayout>
+  <fragment
+    android:id="@+id/streetviewpanorama"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    class="com.google.android.gms.maps.SupportStreetViewPanoramaFragment"/>
+</LinearLayout>

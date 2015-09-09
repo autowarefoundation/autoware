@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">VoiceMobile</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_notification">NotificationActivity</string>
+    <string name="title_activity_notification_landing">NotificationLandingActivity</string>
+    <string name="title_activity_voice_reply">VoiceReplyActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_data">DataActivity</string>
+</resources>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2012 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+  <string name="alpha">Alpha</string>
+  <string name="animate">Animate</string>
+  <string name="basic_map_demo_label">Basic Map</string>
+  <string name="basic_map_demo_description">Launches a map</string>
+  <string name="buildings">Buildings</string>
+  <string name="camera_demo_label">Camera</string>
+  <string name="camera_demo_description">Demonstrates camera functions.</string>
+  <string name="circle_demo_label">Circles</string>
+  <string name="circle_demo_description">Demonstrates how to add Circles to a map.</string>
+  <string name="clear_map">Clear</string>
+  <string name="compass">Compass</string>
+  <string name="custom_info_contents">Custom info contents</string>
+  <string name="custom_info_window">Custom info window</string>
+  <string name="default_info_window">Default info window</string>
+  <string name="demo_title">Google Maps API Demos</string>
+  <string name="down_arrow">\u2193</string>
+  <string name="drag_melbourne">Drag Melbourne</string>
+  <string name="duration">Custom Duration</string>
+  <string name="hue">Hue</string>
+  <string name="events_demo_label">Events</string>
+  <string name="events_demo_description">Demonstrates event handling.</string>
+  <string name="fade_in">Fade In Tiles</string>
+  <string name="fill_alpha">Fill Alpha</string>
+  <string name="fill_hue">Fill Hue</string>
+  <string name="flat">Flat</string>
+  <string name="go_to_bondi">Go to Bondi</string>
+  <string name="go_to_santorini">Go to Santorini</string>
+  <string name="go_to_sydney">Go to Sydney</string>
+  <string name="ground_overlay_demo_label">Ground Overlays</string>
+  <string name="ground_overlay_demo_description">Demonstrates how to add a GroundOverlay to a map.</string>
+  <string name="hybrid">Hybrid</string>
+
+
+
+  <string name="indoor">Indoor</string>
+  <string-array name="layers_array">
+    <item>@string/normal</item>
+    <item>@string/hybrid</item>
+
+
+
+    <item>@string/satellite</item>
+    <item>@string/terrain</item>
+    <item>@string/none_map</item>
+  </string-array>
+  <string name="layers_demo_label">Layers</string>
+  <string name="layers_demo_description">Demonstrates the different map layers.</string>
+  <string name="left_arrow">\u2190</string>
+  <string name="legal_info">Legal Info</string>
+  <string name="location_source_demo_label">Location Source Demo</string>
+  <string name="location_source_demo_description">Demonstrates how to use a custom location source.</string>
+  <string name="map_not_ready">Map is not ready yet</string>
+  <string name="map_in_pager_demo_label">Map In Pager</string>
+  <string name="map_in_pager_demo_description">Demonstrates how to add a map to a ViewPager.</string>
+  <string name="marker_demo_label">Markers</string>
+  <string name="marker_demo_description">Demonstrates how to add Markers to a map.</string>
+  <string name="move_the_camera">Move the camera</string>
+  <string name="multi_map_demo_label">Multiple Maps</string>
+  <string name="multi_map_demo_description">Demonstrates how to show multiple maps in a single activity.</string>
+  <string name="my_location">My Location</string>
+  <string name="my_location_demo_label">My Location Demo</string>
+  <string name="my_location_demo_description">Demonstrates how to use GMS Location</string>
+  <string name="mylocation_button">My Location Button</string>
+  <string name="mylocation_layer">My Location Layer</string>
+  <string name="no_demos">No demos</string>
+  <string name="none_map">None</string>
+  <string name="normal">Normal</string>
+  <string name="options_demo_label">Options</string>
+  <string name="options_demo_description">Demonstrates how to use Options to initialize a map.</string>
+
+
+
+
+  <string name="play_services_not_installed">Google Play services is not installed on this device.</string>
+  <string name="polygon_demo_label">Polygons</string>
+  <string name="polygon_demo_description">Demonstrates how to add Polygons to a map.</string>
+  <string name="polyline_demo_label">Polylines</string>
+  <string name="polyline_demo_description">Demonstrates how to add Polylines to a map.</string>
+  <string name="programmatic_demo_label">Programmatically add map</string>
+  <string name="programmatic_demo_description">Demonstrates how to add a MapFragment programmatically.</string>
+  <string name="properties_circle">Properties for Circle(s)</string>
+  <string name="properties_sydney_polyline">Properties for Sydney Polyline</string>
+  <string name="properties_sydney_polygon">Properties for Sydney Polygon</string>
+  <string name="rotate">Rotate Gestures</string>
+  <string name="raw_map_view_demo_label">Raw MapView</string>
+  <string name="raw_map_view_demo_description">Demonstrates how to use a raw MapView.</string>
+  <string name="reset_map">Reset</string>
+  <string name="retain_map_demo_label">Retain map</string>
+  <string name="retain_map_demo_description">Demonstrates how to reuse a MapFragment.</string>
+  <string name="right_arrow">\u2192</string>
+  <string name="rotation">Rotation:</string>
+  <string name="satellite">Satellite</string>
+  <string name="save_state_demo_label">Save the state of a MapFragment.</string>
+  <string name="save_state_demo_description">Demonstrates how to save the state of a MapFragment upon rotation of the device.</string>
+  <string name="save_state_instructions">Drag the marker, tap on it to change its color and rotate the device to check that the state of the map is preserved.</string>
+  <string name="scroll">Scroll Gestures</string>
+  <string name="snapshot_clear_button">Clear</string>
+  <string name="snapshot_demo_label">Snapshot</string>
+  <string name="snapshot_demo_description">Demonstrates how to take a snapshot of the map.</string>
+  <string name="snapshot_holder_description">Area for the map snapshot.</string>
+  <string name="snapshot_take_button">Take snapshot</string>
+  <string name="stop_animation">\u25A0</string>
+  <string name="stroke_width">Stroke Width</string>
+  <string name="swipe">\u2190 Swipe \u2192</string>
+  <string name="switch_image">Switch Image</string>
+  <string name="tap_instructions">Tap or long press on the map</string>
+  <string name="terrain">Terrain</string>
+  <string name="tile_coordinate_demo_label">Tile Coordinate Overlay</string>
+  <string name="tile_coordinate_demo_description">Demonstrates how to add a tile overlay with tile coordinates to a map.</string>
+  <string name="tile_overlay_demo_label">Tile Overlays</string>
+  <string name="tile_overlay_demo_description">Demonstrates how to add a tile overlay to a map.</string>
+  <string name="tilt">Tilt Gestures</string>
+  <string name="tilt_less">\u2193</string>
+  <string name="tilt_more">\u2191</string>
+  <string name="traffic">Traffic</string>
+  <string name="transparency">Transparency</string>
+  <string name="ui_settings_demo_label">UI Settings</string>
+  <string name="ui_settings_demo_description">Demonstrates how to alter user interface settings.</string>
+  <string name="up_arrow">\u2191</string>
+  <string name="visible_region_demo_label">Visible Regions</string>
+  <string name="visible_region_demo_description">Demonstrates how to use Visible Regions</string>
+  <string name="vr_aus_button">AUS</string>
+  <string name="vr_normal_button">Normal</string>
+  <string name="vr_more_padded_button">More</string>
+  <string name="vr_soh_button">SOH</string>
+  <string name="vr_sfo_button">SFO</string>
+  <string name="wait_for_map_load">Wait for Map Load</string>
+  <string name="width">Width</string>
+  <string name="zoom_buttons">Zoom Buttons</string>
+  <string name="zoom_gestures">Zoom Gestures</string>
+  <string name="zoom_in">+</string>
+  <string name="zoom_out">-</string>
+
+  <!-- Lite Mode -->
+  <string name="lite_demo_label">Lite Mode</string>
+  <string name="lite_demo_description">Demonstrates some features on a map in lite mode.</string>
+  <string name="lite_demo_intro">Click the map with no, one or multiple markers displayed to open the Google Maps Mobile app.</string>
+  <string name="lite_go_to_darwin">Go to Darwin (No Markers)</string>
+  <string name="lite_go_to_adelaide">Go to Adelaide (One Marker)</string>
+  <string name="lite_go_to_australia">Go to Australia (Five Markers)</string>
+  <string name="lite_list_demo_label">Lite Mode ListView</string>
+  <string name="lite_list_demo_description">Demonstrates using maps in lite mode in a ListView</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!--     Indoor    -->
+  <string name="activate_higher_level">Activate Higher Level</string>
+  <string name="focused_building_info">Focused Building</string>
+  <string name="focused_level_info">Focused Level</string>
+  <string name="indoor_demo_description">Demonstrates how to use the Indoor API</string>
+  <string name="indoor_demo_label">Indoor</string>
+  <string name="toggle_level_picker">Toggle Level Picker</string>
+
+  <!--    Streetview    -->
+  <string name="go_to_invalid">Go to Invalid Point</string>
+  <string name="go_to_san_fran">Go to San Fran</string>
+  <string name="navigate_to_another_panorama">navigate to another panorama</string>
+  <string name="navigation">Navigation</string>
+  <string name="pan_camera">pan camera</string>
+  <string name="panning">Panning Gestures</string>
+  <string name="panorama_not_ready">Panorama is not ready yet</string>
+  <string name="request_position">Position</string>
+  <string name="split_street_view_panorama_and_map_demo_description">Demonstrates how to show a Street View panorama and map.</string>
+  <string name="split_street_view_panorama_and_map_demo_label">Street View Panorama and Map</string>
+  <string name="street_view_panorama_basic_demo_description">Standard Street View Panorama using a Fragment.</string>
+  <string name="street_view_panorama_basic_demo_label">Street View Panorama</string>
+
+
+
+
+  <string name="street_view_panorama_events_demo_description">Standard Street View Panorama with event handling.</string>
+  <string name="street_view_panorama_events_demo_label">Street View Panorama events</string>
+  <string name="street_view_panorama_navigation_demo_description">Street View Panorama with programatic navigation</string>
+  <string name="street_view_panorama_navigation_demo_label">Street View Panorama navigation</string>
+  <string name="street_view_panorama_options_demo_description">Street View Panorama with toggles for options</string>
+  <string name="street_view_panorama_options_demo_label">Street View Panorama options</string>
+  <string name="street_view_panorama_view_demo_description">Standard Street View Panorama using a View</string>
+  <string name="street_view_panorama_view_demo_label">Street View Panorama View</string>
+  <string name="streetnames">Streetnames</string>
+  <string name="tap_screen">tap screen</string>
+  <string name="long_press_screen">long press screen</string>
+  <string name="walk_panorama">Walk</string>
+
+  <string name="basic_wear_long_press_intro">long press</string>
+  <string name="intro_text">Long click to exit the map.</string>
+
+</resources>
