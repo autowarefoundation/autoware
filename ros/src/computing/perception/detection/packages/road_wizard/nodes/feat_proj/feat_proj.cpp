@@ -20,8 +20,12 @@
 #include "Math.h"
 #include <Eigen/Eigen>
 #include "road_wizard/Signals.h"
+#include <runtime_manager/adjust_xy.h>
 
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
+
+static int adjust_proj_x = 0;
+static int adjust_proj_y = 0;
 
 typedef struct {
   double thiX;
@@ -44,6 +48,12 @@ static tf::StampedTransform trf;
 
 #define SignalLampRadius 0.3
 
+/* Callback function to shift projection result */
+void adjust_xyCallback (const runtime_manager::adjust_xy::ConstPtr& config_msg)
+{
+  adjust_proj_x = config_msg->x;
+  adjust_proj_y = config_msg->y;
+}
 
 void cameraInfoCallback (const sensor_msgs::CameraInfo::ConstPtr camInfoMsg)
 {
@@ -190,14 +200,10 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 
       road_wizard::ExtractedPosition sign;
       sign.signalId = signal.id;
-      //sign.u = u, sign.v = v, sign.radius = radius;
-      /* if ndt's Angle Error == 0 */
-      sign.u = u;
-      sign.v = v - 25;    /* Temporary correction of calibration data */
 
-      /* if ndt's Angle Error == 1.5 */
-      // sign.u = u + 35;
-      // sign.v = v - 28;    /* Temporary correction of calibration data */
+      sign.u = u + adjust_proj_x; // shift project position by configuration value from runtime manager
+      sign.v = v + adjust_proj_y; // shift project position by configuration value from runtime manager
+
       sign.radius = radius;
       sign.x = signalcenter.x(), sign.y = signalcenter.y(), sign.z = signalcenter.z();
       sign.hang = vmap.vectors[signal.vid].hang; // hang is expressed in [0, 360] degree
@@ -290,6 +296,7 @@ int main (int argc, char *argv[])
   std::cout << "all vector map loaded." << std::endl;
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
+  ros::Subscriber adjust_xySubscriber  = rosnode.subscribe("/config/adjust_xy", 100, adjust_xyCallback);
   //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/current_pose", 10, ndtPoseCallback);
   ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);
   signal (SIGINT, interrupt);
