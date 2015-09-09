@@ -62,15 +62,19 @@ static void signalState_cb(const runtime_manager::traffic_light::ConstPtr& msg)
               fontThickness,
               CV_AA);
 
-  cv::imshow(WINDOW_NAME, result);
-  cv::waitKey(5);
+  if (cvGetWindowHandle(WINDOW_NAME) != NULL) // Guard not to write destroyed window by using close button on the window
+    {
+      cv::imshow(WINDOW_NAME, result);
+      cv::waitKey(5);
+    }
 
 
 }
 
 int main(int argc, char* argv[])
 {
-  cv::namedWindow(WINDOW_NAME, CV_WINDOW_AUTOSIZE | CV_WINDOW_FREERATIO);
+  cv::namedWindow(WINDOW_NAME, cv::WINDOW_NORMAL);
+  cv::startWindowThread();
 
   ros::init(argc, argv, "traffic_light_viewer");
 
@@ -79,6 +83,8 @@ int main(int argc, char* argv[])
   ros::Subscriber signalState_sub = n.subscribe("/light_color", 1, signalState_cb);
 
   ros::spin();
+
+  cv::destroyWindow(WINDOW_NAME);
 
   return 0;
 }

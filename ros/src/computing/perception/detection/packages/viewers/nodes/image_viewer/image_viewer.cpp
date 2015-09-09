@@ -73,6 +73,8 @@ static bool ped_dpm_ready = false;
 static bool car_image_obj_ready = false;
 static bool pedestrian_image_obj_ready = false;
 
+static const std::string window_name = "Image Viewer";
+
 static void dashed_rectangle(cv::Mat& img, const cv::Rect& r, const cv::Scalar& color,
 			     int thickness = 2, int dash_length = 10)
 {
@@ -199,8 +201,12 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 
 	cv::Mat merged;
 	hconcat(matImage, imageTrack, merged);
-	imshow("Image Viewer", merged);
-	cvWaitKey(2);
+
+	if (cvGetWindowHandle(window_name.c_str()) != NULL) // Guard not to write destroyed window by using close button on the window
+		{
+			imshow(window_name, merged);
+			cvWaitKey(2);
+		}
 
 	_drawing = false;
 }
@@ -270,6 +276,11 @@ static void image_obj_updater_cb_tracked(const cv_tracker::image_obj_tracked& im
 
 int main(int argc, char **argv)
 {
+
+	/* create resizable window */
+	cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+	cv::startWindowThread();
+
 	ros::init(argc, argv, "image_viewer");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
@@ -298,5 +309,9 @@ int main(int argc, char **argv)
 						image_obj_updater_cb_tracked);
 
 	ros::spin();
+
+	/* destroy window */
+	cv::destroyWindow(window_name);
+
 	return 0;
 }
