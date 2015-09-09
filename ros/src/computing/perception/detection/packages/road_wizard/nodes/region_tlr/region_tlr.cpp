@@ -12,6 +12,7 @@
 #include "road_wizard/TunedResult.h"
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <std_msgs/Bool.h>
 
 thresholdSet thSet;
 
@@ -27,6 +28,8 @@ static TrafficLightDetector detector;
 
 static cv::Mat frame;
 
+static bool              show_superimpose_result = false;
+static const std::string window_name             = "superimpose result";
 
 static double cvtInt2Double_hue(int center, int range)
 {
@@ -131,6 +134,28 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
   //  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source);
   frame = cv_image->image.clone();
 
+  if (show_superimpose_result)
+    {
+      /* display superimpose result */
+      cv::Mat targetScope = frame.clone();
+      for (unsigned int i=0; i<detector.contexts.size(); i++)
+        {
+          /* draw superimposed position of traffic lights */
+          circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
+          circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
+          circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
+        }
+
+      /* draw detection results */
+      putResult_inText(&targetScope, detector.contexts);
+
+      if (cvGetWindowHandle(window_name.c_str()) != NULL) // Guard not to write destroyed window by using close button on the window
+        {
+          imshow(window_name, targetScope);
+          cv::waitKey(5);
+        }
+    }
+
 } /* static void image_raw_cb() */
 
 
@@ -141,30 +166,7 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
 
   setContexts(detector, extractedPos);
 
-  /* test output */
-  cv::Mat targetScope;
-  frame.copyTo(targetScope);
-//   for (unsigned int i=0; i<detector.contexts.size(); i++)
-//     {
-// //      if (detector.contexts.at(i).lampRadius < MINIMAM_RADIUS)
-// //        continue;
-
-//       circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
-//       circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
-//       circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
-//     }
-
-
-  // cv::Mat grayScale;
-  // cvtColor(frame, grayScale, CV_RGB2GRAY);
-  // detector.brightnessDetect(grayScale);
   detector.brightnessDetect(frame);
-
-  /* test output */
-  putResult_inText(&targetScope, detector.contexts);
-
-  // imshow("detection result", targetScope);
-  // waitKey(5);
 
   /* publish result */
   runtime_manager::traffic_light state_msg;
@@ -351,6 +353,22 @@ static void tunedResult_cb(const road_wizard::TunedResult& msg)
 } /* static void tunedResult_cb() */
 
 
+static void superimpose_cb(const std_msgs::Bool::ConstPtr& config_msg)
+{
+  show_superimpose_result = config_msg->data;
+
+  if (show_superimpose_result) {
+    cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+    cv::startWindowThread();
+  }
+
+  if (!show_superimpose_result) {
+    cv::destroyWindow(window_name);
+    cv::waitKey(1);
+  }
+
+} /* static void superimpose_cb() */
+
 int main(int argc, char* argv[]) {
 
   //	printf("***** Traffic lights app *****\n");
@@ -384,6 +402,7 @@ int main(int argc, char* argv[]) {
   ros::Subscriber image_sub       = n.subscribe("/image_raw", 1, image_raw_cb);
   ros::Subscriber position_sub    = n.subscribe("/roi_signal", 1, extractedPos_cb);
   ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
+  ros::Subscriber superimpose_sub = n.subscribe("/config/superimpose", 1, superimpose_cb);
 
   signalState_pub       = n.advertise<runtime_manager::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
