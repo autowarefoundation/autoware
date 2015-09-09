@@ -167,8 +167,11 @@ static void show(void)
 		  matImage.rows*.25,
 		  pedestrian_fused_objects.type);
 
-	cvShowImage(window_name, &frame);
-	cvWaitKey(2);
+	if (cvGetWindowHandle(window_name) != NULL) // Guard not to write destroyed window by using close button on the window
+	{
+		cvShowImage(window_name, &frame);
+		cvWaitKey(2);
+	}
 }
 static void car_updater_callback(const cv_tracker::image_obj_ranged& fused_car_msg)
 {
@@ -198,6 +201,10 @@ static void points_cb(const points2image::PointsImageConstPtr& msg)
 
 int main(int argc, char **argv)
 {
+	/* create resizable window */
+	cvNamedWindow(window_name, CV_WINDOW_NORMAL);
+	cvStartWindowThread();
+
 	ros::init(argc, argv, "vscan_image_d_viewer");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
@@ -266,5 +273,8 @@ int main(int argc, char **argv)
 	cv::applyColorMap(grayscale,colormap,cv::COLORMAP_JET);
 
 	ros::spin();
+
+	cvDestroyWindow(window_name);
+
 	return 0;
 }

@@ -241,8 +241,11 @@ static void showImage()
     /*
      * Show image
      */
-    cvShowImage(window_name, image_clone);
-    cvWaitKey(2);
+    if (cvGetWindowHandle(window_name) != NULL) // Guard not to write destroyed window by using close button on the window
+      {
+        cvShowImage(window_name, image_clone);
+        cvWaitKey(2);
+      }
     cvReleaseImage(&image_clone);
 }
 
@@ -260,6 +263,7 @@ int main(int argc, char **argv)
     */
 
     cvNamedWindow(window_name, 2);
+    cvStartWindowThread();
     image = NULL;
     car_fused_objects.obj.clear();
     pedestrian_fused_objects.obj.clear();

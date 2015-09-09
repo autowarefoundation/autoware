@@ -46,6 +46,8 @@ static sensor_msgs::Image image_msg;
 static points2image::PointsImageConstPtr points_msg;
 static cv::Mat colormap;
 
+static const char window_name[] = "vscan_image_viewer";
+
 static void show(void)
 {
 	if(!existImage || !existPoints){
@@ -86,8 +88,12 @@ static void show(void)
 			cvRectangle(&frame, cvPoint(x, y), cvPoint(x+1, y+1), CV_RGB(r, g, b));
 		}
 	}
-	cvShowImage("Image Viewer", &frame);
-	cvWaitKey(2);
+
+	if (cvGetWindowHandle(window_name) != NULL) // Guard not to write destroyed window by using close button on the window
+	{
+		cvShowImage(window_name, &frame);
+		cvWaitKey(2);
+	}
 }
 
 static void image_cb(const sensor_msgs::Image& msg)
@@ -106,6 +112,10 @@ static void points_cb(const points2image::PointsImageConstPtr& msg)
 
 int main(int argc, char **argv)
 {
+	/* create resizable window */
+	cvNamedWindow(window_name, CV_WINDOW_NORMAL);
+	cvStartWindowThread();
+
 	ros::init(argc, argv, "vscan_image_viewer");
 	ros::NodeHandle n;
 	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
@@ -119,5 +129,8 @@ int main(int argc, char **argv)
 	cv::applyColorMap(grayscale,colormap,cv::COLORMAP_JET);
 
 	ros::spin();
+
+	cvDestroyWindow(window_name);
+
 	return 0;
 }
