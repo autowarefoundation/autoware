@@ -185,10 +185,10 @@ subs :
         cmd  : rosrun lane_planner lane_select
         gui  :
           dialog: MyDialogLaneStop
-    - name : parking_planner
+    - name : freespace_planner
       subs :
-      - name : XXX
-        cmd  : echo "XXX"
+      - name : astar_navi
+        cmd  : rosrun freespace_planner astar_navi
 
   - name : Motion Planning
     subs :
