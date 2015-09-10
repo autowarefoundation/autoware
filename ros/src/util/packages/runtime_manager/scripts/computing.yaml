@@ -220,6 +220,9 @@ subs :
          gui  :
            save_filename :
              prop  : 1
+       - name : waypoint_clicker
+         cmd  : rosrun waypoint_maker waypoint_clicker
+         param: waypoint_clicker
     - name : waypoint_follower
       subs :   
        - name : pure_pursuit
@@ -853,6 +856,21 @@ params :
         only_enable : True
         dash        : ''
         delim       : ':='
+
+  - name  : waypoint_clicker
+    vars  :
+    - name      : velocity
+      label     : Velocity (km/h)
+      min       : 0
+      max       : 200
+      v         : 40.0
+      rosparam  : /waypoint_clicker/velocity
+    - name      : output_file
+      label     : Output File
+      kind      : path
+      path_type : save
+      v         : /tmp/lane_waypoint.csv
+      rosparam  : /waypoint_clicker/output_file
 
   - name  : waypoint_loader
     vars  :
