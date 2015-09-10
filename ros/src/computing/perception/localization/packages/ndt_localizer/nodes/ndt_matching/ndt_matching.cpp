@@ -139,8 +139,8 @@ static std_msgs::Bool ndt_stat_msg;
 static ros::Time current_scan_time;
 static ros::Time previous_scan_time;
 static ros::Duration scan_duration;
-static ros::Publisher estimated_vel_pub;
-static std_msgs::Float32 estimated_vel;
+static ros::Publisher estimated_vel_mps_pub, estimated_vel_kmph_pub;
+static std_msgs::Float32 estimated_vel_mps, estimated_vel_kmph;
 
 static std::chrono::time_point<std::chrono::system_clock> matching_start, matching_end;;
 static ros::Publisher time_ndt_matching_pub;
@@ -855,9 +855,11 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       scan_duration = current_scan_time - previous_scan_time;
       double secs = scan_duration.toSec();
       double distance = sqrt((current_pos.x - previous_pos.x) * (current_pos.x - previous_pos.x) + (current_pos.y - previous_pos.y) * (current_pos.y - previous_pos.y) + (current_pos.z - previous_pos.z) * (current_pos.z - previous_pos.z));
-      estimated_vel.data = distance * 3.6 / secs;
+      estimated_vel_mps.data = distance / secs;
+      estimated_vel_kmph.data = distance * 3.6 / secs;
 
-      estimated_vel_pub.publish(estimated_vel);
+      estimated_vel_mps_pub.publish(estimated_vel_mps);
+      estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
       // Output csv
       std::ofstream ofs("matching_time.csv", std::ios::app);
@@ -973,7 +975,9 @@ int main(int argc, char **argv)
 
     ndt_stat_pub = nh.advertise<std_msgs::Bool>("/ndt_stat", 1000);
 
-    estimated_vel_pub = nh.advertise<std_msgs::Float32>("/estimated_vel", 1000);
+    estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
+
+    estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
 
     time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
 
