@@ -50,7 +50,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
  add_message_files(
    FILES
    centroids.msg
-
+   geometric_rectangle.msg
+   vscan_tracked.msg
+   vscan_tracked_array.msg
  )
 
 ## Generate services in the 'srv' folder
