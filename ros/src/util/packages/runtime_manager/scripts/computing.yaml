@@ -39,7 +39,7 @@ subs :
     - name : cv_detector
       subs :
       - name : dpm_ocv
-        cmd  : roslaunch runtime_manager dpm_ocv.launch
+        cmd  : roslaunch cv_tracker dpm_ocv.launch
         param: dpm_ocv
         gui  :
           flags                  : [ open_dialog ]
