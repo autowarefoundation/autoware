@@ -44,6 +44,9 @@ publish data as ractangular plane
 #include <sstream>
 #include <string>
 #include <ctime>
+#ifndef CURRENT_CAR_DIRECTLY
+#include <map>
+#endif /* ! CURRENT_CAR_DIRECTLY */
 #include <pthread.h>
 
 #include <geo_pos_conv.hh>
@@ -88,9 +91,20 @@ static SendData sd;
 static char mac_addr[MAC_ADDRBUFSIZ];
 static int ignore_my_pose = 1;
 
+#ifndef CURRENT_CAR_DIRECTLY
+static map<int, geometry_msgs::Pose> car_map;
+static map<int, ros::Time> now_map;
+#endif /* ! CURRENT_CAR_DIRECTLY */
+
+#ifdef NEVER
 static double color_percent(int diffmsec)
 {
   return (1.0 - diffmsec/TOTAL_LIFETIME/1000.0)*((256-48)/256.0) + (48/256.0);
+}
+#endif /* NEVER */
+static double alpha_percent(int diffmsec)
+{
+  return (1.0 - diffmsec/TOTAL_LIFETIME/1000.0);
 }
 
 static int create_markerid(geometry_msgs::Pose& pose, int type)
@@ -132,6 +146,7 @@ static void publish_car(int id, int is_current, ros::Time now,
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose = pose;
   if (is_current) {
+#ifdef CURRENT_CAR_DIRECTLY
     marker.id = id;
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.mesh_resource = "package://pos_db/model/prius_model.dae";
@@ -157,15 +172,21 @@ static void publish_car(int id, int is_current, ros::Time now,
     marker.pose.orientation.z = q3.z();
     marker.pose.orientation.w = q3.w();
 
+    pub.publish(marker);
+    dbg_out_marker(marker);
+#else /* CURRENT_CAR_DIRECTLY */
+    car_map[id] = pose;
+    now_map[id] = now;
+#endif /* CURRENT_CAR_DIRECTLY */
+
   } else {
     marker.id = create_markerid(pose, 1);
     marker.type = visualization_msgs::Marker::CUBE;
     marker.lifetime = ros::Duration(life_time);
-    marker.color.r = 1.0 * color_percent(diffmsec);
+    marker.color.r = 1.0;
     marker.color.g = 0.0;
     marker.color.b = 0.0;
-
-    marker.color.a = 1.0;
+    marker.color.a = alpha_percent(diffmsec);
     marker.scale.x = 4.4; // #A
     marker.scale.y = 1.6;
     marker.scale.z = 1.0; // #1
@@ -180,11 +201,60 @@ static void publish_car(int id, int is_current, ros::Time now,
     marker.pose = pose;
     marker.pose.position.x += (4.4 - 3.0) / 2; // == (#A - #B)/2
     marker.pose.position.z += 1.0 + 0.3; // == #1 + #2/2
-  }
 
-  pub.publish(marker);
-  dbg_out_marker(marker);
+    pub.publish(marker);
+    dbg_out_marker(marker);
+  }
 }
+
+#ifndef CURRENT_CAR_DIRECTLY
+static void publish_car_summary(ros::Time now)
+{
+  visualization_msgs::Marker marker;
+  map<int, geometry_msgs::Pose>::iterator itr;
+
+  for(itr = car_map.begin(); itr != car_map.end(); itr++) {
+    int id = itr->first;
+    geometry_msgs::Pose pose = itr->second;
+    ros::Time cur = now_map[id];
+    if (now - cur >= ros::Duration(DOWNLOAD_PERIOD/1000.0)) {
+      continue;
+    }
+    marker.header.frame_id = "/map";
+    marker.header.stamp = cur;
+    marker.ns = MARKERNAME;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.id = id;
+    marker.pose = pose;
+    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    marker.mesh_resource = "package://pos_db/model/prius_model.dae";
+    marker.mesh_use_embedded_materials = true;
+    marker.lifetime = ros::Duration();
+    marker.color.r = 0.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    marker.color.a = 0.0;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+    tf::Quaternion q1;
+    q1.setRPY(M_PI/2, 0, M_PI);
+    tf::Quaternion q2(marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z, marker.pose.orientation.w);
+    tf::Quaternion q3;
+    q3 = q2 * q1;
+
+    marker.pose.position.z -= 2.0;
+    marker.pose.orientation.x = q3.x();
+    marker.pose.orientation.y = q3.y();
+    marker.pose.orientation.z = q3.z();
+    marker.pose.orientation.w = q3.w();
+
+    pub.publish(marker);
+    dbg_out_marker(marker);
+  }
+}
+#endif /* ! CURRENT_CAR_DIRECTLY */
 
 static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
 			      geometry_msgs::Pose& pose, int diffmsec)
@@ -199,16 +269,16 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   marker.id = create_markerid(pose, 2);
   if (is_pedestrian) {
     marker.color.r = 0.0;
-    marker.color.g = 1.0 * color_percent(diffmsec);
-    marker.color.b = 1.0 * color_percent(diffmsec);
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
     pose.position.z += pedestrian_dz;
   } else {
-    marker.color.r = 1.0 * color_percent(diffmsec);
-    marker.color.g = 1.0 * color_percent(diffmsec);
-    marker.color.b = 1.0 * color_percent(diffmsec);
+    marker.color.r = 1.0;
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
     pose.position.z += posup_dz;
   }
-  marker.color.a = 1.0;
+  marker.color.a = alpha_percent(diffmsec);
   marker.scale.x = 0.6;
   marker.scale.y = 0.6;
   marker.scale.z = 1.2; // #1
@@ -368,6 +438,10 @@ static void marker_publisher(const std_msgs::String& msg, int is_swap)
     result_to_marker(cols[0], now, pose, type,
       (now_sec-prv_sec)*1000+(now_nsec-prv_nsec)/1000/1000, is_swap);
   }
+
+#ifndef CURRENT_CAR_DIRECTLY
+  publish_car_summary(now);
+#endif /* ! CURRENT_CAR_DIRECTLY */
 }
 
 // create "YYYY-mm-dd HH:MM:SS.sss"
