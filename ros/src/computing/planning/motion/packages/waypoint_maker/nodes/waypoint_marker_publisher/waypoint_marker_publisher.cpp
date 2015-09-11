@@ -186,6 +186,17 @@ static void trafficCallback(const waypoint_follower::laneConstPtr &msg)
 
 }
 
+static void safetyCallback(const waypoint_follower::laneConstPtr &msg)
+{
+  visualization_msgs::MarkerArray marker_array;
+  createWaypointVelocityMarker(*msg, &marker_array);
+  createWaypointMarker(*msg, &marker_array);
+  createPathMarker(_color, *msg, &marker_array);
+
+  _lane_mark_pub.publish(marker_array);
+
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "marker_publisher");
@@ -195,6 +206,7 @@ int main(int argc, char **argv)
   ros::Subscriber lane_sub = nh.subscribe("lane_waypoint",10,laneCallback);
   ros::Subscriber traffic_sub = nh.subscribe("traffic_waypoint",10,trafficCallback);
   ros::Subscriber light_sub = nh.subscribe("traffic_light",10,lightCallback);
+  ros::Subscriber safety_sub = nh.subscribe("safety_waypoint",10,safetyCallback);
 
   _lane_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("lane_waypoint_mark", 10, true);
 
