@@ -235,7 +235,7 @@ subs :
              depend : param_flag
            stat_topic : [ lf ]  
        - name : velocity_set
-         cmd  : rosrun waypoint_follower velocity_set
+         cmd  : roslaunch waypoint_follower velocity_set.launch
        - name : collision_avoid
          cmd  : roslaunch waypoint_follower collision_avoid.launch  
        - name : twist_through
