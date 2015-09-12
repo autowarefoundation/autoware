@@ -97,10 +97,10 @@ public:
 PathVset _path_change;
 
 
+
 //===============================
 //       class function
 //===============================
-
 
 
 double PathVset::getVel(int num){
@@ -118,8 +118,9 @@ double PathVset::getVel(int num){
 void PathVset::avoidSuddenBraking(){
   int i = 0;
   int path_size = getPathSize();
-  int close_waypoint_threshold = 3;
-  int fill_in_zero = 10;
+  int close_waypoint_threshold = 5;
+  int fill_in_zero = 5;
+  int fill_in_vel = 15;
   int num;
   double temp;
   double interval = getInterval();
@@ -127,6 +128,15 @@ void PathVset::avoidSuddenBraking(){
   std::cout << "====avoid sudden braking====" << std::endl;
   std::cout << "vehicle is decelerating..." << std::endl;
   _closest_waypoint = getClosestWaypoint();
+  std::cout << "closest_waypoint: " << _closest_waypoint << std::endl;
+  for (num = _closest_waypoint - close_waypoint_threshold; fill_in_vel > 0; fill_in_vel--){
+    if (num-fill_in_vel < 0 || num >= path_size){
+      std::cout << "avoidSuddenBraking: invalid waypoint number" << std::endl;
+      continue;
+    }
+    current_path_.waypoints[num-fill_in_vel].twist.twist.linear.x = _current_vel;
+  }
+
   for (num = _closest_waypoint - close_waypoint_threshold; num > -1; num++){
     if (num < 0 || num >= path_size){
       std::cout << "avoidSuddenBraking: invalid waypoint number" << std::endl;
@@ -134,8 +144,9 @@ void PathVset::avoidSuddenBraking(){
     }
     temp = _current_vel*_current_vel - 2*_decel*i*interval; // sqrt(v^2 - 2*a*x)
     if (temp > 0){
-      if (sqrt(temp) > getVel(num)){current_path_.waypoints[num].twist.twist.linear.x = getVel(num);}
-      else {current_path_.waypoints[num].twist.twist.linear.x = sqrt(temp);}
+      //if (sqrt(temp) > getVel(num)){current_path_.waypoints[num].twist.twist.linear.x = getVel(num);}
+      current_path_.waypoints[num].twist.twist.linear.x = sqrt(temp);//
+      //std::cout << "waypoint[" << num << "] vel: " << mps2kmph(sqrt(temp)) << std::endl;
     } else {
       break;
     }
@@ -158,8 +169,8 @@ void PathVset::avoidSuddenBraking(){
 void PathVset::changeWaypoints(int stop_waypoint){
   int i = 0;
   int path_size = getPathSize();
-  int close_waypoint_threshold = 6;
-  int fill_in_zero = 20;
+  int close_waypoint_threshold = 4;
+  int fill_in_zero = 10;
   double changed_vel;
   double interval = getInterval();
 
@@ -170,7 +181,7 @@ void PathVset::changeWaypoints(int stop_waypoint){
     return;
   }
 
-  for (int num = _closest_waypoint + close_waypoint_threshold; num > _closest_waypoint-1; num--){
+  for (int num = _closest_waypoint + close_waypoint_threshold; num > _closest_waypoint-5; num--){
     if (getVel(num) < _current_vel - _decel_limit){
       avoidSuddenBraking();
       return;
@@ -180,7 +191,7 @@ void PathVset::changeWaypoints(int stop_waypoint){
   for (int num = stop_waypoint; num > _closest_waypoint - close_waypoint_threshold; num--){
     if (num < 0 || num >= path_size){
       std::cout << "invalid waypoint number" << std::endl;
-      break;
+      return;
     }
     changed_vel = sqrt(2.0*_decel*(interval*i)); // sqrt(2*a*x)
 
@@ -206,8 +217,15 @@ void PathVset::changeWaypoints(int stop_waypoint){
 
     i++;
   }
-  // avoid sudden acceleration
-  for (int j = 1; j < fill_in_zero; j++){current_path_.waypoints[stop_waypoint+j].twist.twist.linear.x = 0;}
+  // fill in 0
+  for (int j = 1; j < fill_in_zero; j++){
+    if (stop_waypoint+j < _closest_waypoint+close_waypoint_threshold &&
+	_current_vel > _decel_limit){
+      avoidSuddenBraking();
+      return;
+    }
+    current_path_.waypoints[stop_waypoint+j].twist.twist.linear.x = 0;
+  }
 
   _safety_waypoint_pub.publish(current_path_);// publish new waypoints
   std::cout << "---published waypoints---" << std::endl;
@@ -299,7 +317,7 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
 
 
-// display  by markers.
+// display by markers.
 static void DisplayObstacleWaypoint(int i)
 {
 
@@ -325,7 +343,7 @@ static void DisplayObstacleWaypoint(int i)
     _vis_pub.publish(marker);
 }
 
-// display  by markers.
+// display by markers.
 static void DisplayDetectionRange(int i)
 {
 
@@ -420,8 +438,7 @@ static bool ObstacleDetection()
     static int false_count = 0;
     static bool prev_detection = false;
 
-    //_closest_waypoint = GetClosestWaypoint();
-    int closest_waypoint = _path_dk.getClosestWaypoint();
+    int closest_waypoint = _path_change.getClosestWaypoint(); //
     _closest_waypoint = closest_waypoint;//
     std::cout << "closest_waypoint : " << closest_waypoint << std::endl;
     DisplayDetectionRange(closest_waypoint + 1);
@@ -533,16 +550,20 @@ static void ChangeWaypoint(bool detection_result)
     std::cout << "=============================" << std::endl;
   }
 
-
+  _closest_waypoint = _path_change.getClosestWaypoint();
   if (detection_result){ // DECELERATE
+    // if obstacle is behind a vehicle, return
+    if (obs < _closest_waypoint){
+      std::cout << "ChangeWaypoint: invalid obstacle waypoint" << std::endl;
+      return;
+    }
     // *stop_waypoint is about _car_distance meter away from obstacle*
     int stop_waypoint = obs - (((int)_car_distance / _path_change.getInterval()));
     std::cout << "stop_waypoint: " << stop_waypoint << std::endl;
     if (stop_waypoint < 0){
-      std::cout << "invalid waypoint!" << std::endl;
+      std::cout << "ChangeWaypoint: invalid stop_waypoint!" << std::endl;
       return;
     }
-
     _path_change.changeWaypoints(stop_waypoint);
     _changepath_flag = true;
   } else {               // ACELERATE or KEEP
@@ -624,12 +645,6 @@ int main(int argc, char **argv)
 	
         bool detection_result = ObstacleDetection();
 
-	// if detection result is TRUE, we have to Decelerate
-	std::cout << "====detection result ====" << std::endl;
-        std::cout << "detection result : " << (detection_result ? "true" : "false") << std::endl;
-        std::cout << "obstacle waypoint : "<< _obstacle_waypoint << std::endl;
-	std::cout << "_current_vel: " << _current_vel << std::endl;
-	std::cout << "=========================" << std::endl;
 
 	/* change waypoints to avoid collision */
 	/* if detection_result is true,and then it becomes false,we have to Accelerate */
