@@ -20,6 +20,7 @@ catkin_package(
 #  LIBRARIES dpm
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
+  CATKIN_DEPENDS runtime_manager
 )
 
 ###########

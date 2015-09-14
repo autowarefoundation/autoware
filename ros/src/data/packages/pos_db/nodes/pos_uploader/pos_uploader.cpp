@@ -43,14 +43,17 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Point.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+
 
 #include <pos_db.h>
 #include <cv_tracker/obj_label.h>
 
 #define MYNAME		"pos_uploader"
 #define OWN_TOPIC_NAME	"current_pose"
-#define CAR_TOPIC_NAME	"obj_car/obj_label"
-#define PERSON_TOPIC_NAME	"obj_person/obj_label"
+#define CAR_TOPIC_NAME	"obj_car/obj_pose"
+#define PERSON_TOPIC_NAME	"obj_person/obj_pose"
 
 using namespace std;
 
@@ -249,24 +252,51 @@ static void* intervalCall(void *unused)
   return nullptr;
 }
 
-static void car_locate_cb(const cv_tracker::obj_label& obj_label_msg)
+
+static void car_locate_cb(const visualization_msgs::MarkerArray& obj_pose_msg)
 {
-  if(obj_label_msg.reprojected_pos.size() > 0) {
-    pthread_mutex_lock(&pose_lock_);
-    car_num += obj_label_msg.reprojected_pos.size();
-    car_positions_array.push_back(obj_label_msg);
-    pthread_mutex_unlock(&pose_lock_);
-  }
+	if (obj_pose_msg.markers.size() > 0) {
+		geometry_msgs::Point tmpPoint;
+		cv_tracker::obj_label tmpLabel;
+
+		pthread_mutex_lock(&pose_lock_);
+
+		for (visualization_msgs::Marker tmpMarker : obj_pose_msg.markers) {
+			tmpPoint.x = tmpMarker.pose.position.x;
+			tmpPoint.y = tmpMarker.pose.position.y;
+			tmpPoint.z = tmpMarker.pose.position.z;
+
+			tmpLabel.reprojected_pos.push_back(tmpPoint);
+		}
+
+		car_positions_array.push_back(tmpLabel);
+		car_num += obj_pose_msg.markers.size();
+
+		pthread_mutex_unlock(&pose_lock_);
+	}
 }
 
-static void person_locate_cb(const cv_tracker::obj_label& obj_label_msg)
+static void person_locate_cb(const visualization_msgs::MarkerArray &obj_pose_msg)
 {
-  if(obj_label_msg.reprojected_pos.size() > 0) {
-    pthread_mutex_lock(&pose_lock_);
-    person_num += obj_label_msg.reprojected_pos.size();
-    person_positions_array.push_back(obj_label_msg);
-    pthread_mutex_unlock(&pose_lock_);
-  }
+	if (obj_pose_msg.markers.size() > 0) {
+		geometry_msgs::Point tmpPoint;
+		cv_tracker::obj_label tmpLabel;
+
+		pthread_mutex_lock(&pose_lock_);
+
+		for (visualization_msgs::Marker tmpMarker : obj_pose_msg.markers) {
+			tmpPoint.x = tmpMarker.pose.position.x;
+			tmpPoint.y = tmpMarker.pose.position.y;
+			tmpPoint.z = tmpMarker.pose.position.z;
+
+			tmpLabel.reprojected_pos.push_back(tmpPoint);
+		}
+
+		person_positions_array.push_back(tmpLabel);
+		person_num += obj_pose_msg.markers.size();
+
+		pthread_mutex_unlock(&pose_lock_);
+	}
 }
 
 static void current_pose_cb(const geometry_msgs::PoseStamped &pose)
