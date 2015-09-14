@@ -221,7 +221,7 @@ std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << c
   current_pose_position.clear();
   pthread_mutex_unlock(&pose_lock_);
 
-  std::cout << value << std::endl;
+  std::cout << value.substr(POS_DB_HEAD_LEN) << std::endl;
 
   std::string res;
   int ret = sd.Sender(value, res, sql_num);
