@@ -6,7 +6,8 @@
 	<arg name="stop_interval" default="15" /> 
 	<arg name="detection_height_top" default="2.0" /><!-- 2.0 -->
 	<arg name="detection_height_bottom" default="-1.0" />
-    <arg name="current_pose_topic" default="ndt" /> 
+	<arg name="current_pose_topic" default="ndt" /> 
+	<arg name="velocity_limit" default="1.94" />
 
 	<!-- rosrun waypoint_follower velocity_set _detection_range:=0 -->
 	<node pkg="waypoint_follower" type="velocity_set" name="velocity_set" output="screen">
@@ -16,6 +17,7 @@
 		<param name="detection_height_top" value="$(arg detection_height_top)" />
 		<param name="detection_height_bottom" value="$(arg detection_height_bottom)" />
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
+		<param name="velocity_limit" value="$(arg velocity_limit)" />
 	</node>
 
 </launch>

@@ -74,6 +74,7 @@ static int _closest_waypoint = -1;
 static double _current_vel = 0;     // subscribe estimated_vel_mps
 static double _decel = 1.5;         // (m/s) deceleration
 static double _decel_limit = 2.778; // (m/s) about 10 km/h
+static double _velocity_limit = 1.0; //(m/x) limit velocity for waypoints
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 
@@ -177,21 +178,27 @@ void PathVset::changeWaypoints(int stop_waypoint){
 
   _closest_waypoint = getClosestWaypoint();
   if (_closest_waypoint < 0){
-    std::cout << "changeWaypoints: invalid waypoint number" << std::endl;
+    std::cout << "changeWaypoints: invalid waypoint number(1)" << std::endl;
     return;
   }
 
+  // avoid sudden braking at close waypoints
   for (int num = _closest_waypoint + close_waypoint_threshold; num > _closest_waypoint-5; num--){
+    if (num < 0 || num >= path_size){
+      std::cout << "changeWaypoints: invalid waypoint number(2)" << std::endl;
+      break;
+    }
     if (getVel(num) < _current_vel - _decel_limit){
       avoidSuddenBraking();
       return;
     }
   }
 
+  // change waypoints to decelerate
   for (int num = stop_waypoint; num > _closest_waypoint - close_waypoint_threshold; num--){
     if (num < 0 || num >= path_size){
-      std::cout << "invalid waypoint number" << std::endl;
-      return;
+      std::cout << "changeWaypoints: invalid waypoint number(3)" << std::endl;
+      break;
     }
     changed_vel = sqrt(2.0*_decel*(interval*i)); // sqrt(2*a*x)
 
@@ -199,15 +206,16 @@ void PathVset::changeWaypoints(int stop_waypoint){
     std::cout << "   distance: " << (_obstacle_waypoint-num)*interval << " (m)";
     std::cout << "   current_vel: " << mps2kmph(_current_vel) << std::endl;
 
-    // avoid sudden braking at close waypoint
+    // avoid sudden braking at close waypoints
     if (num < _closest_waypoint + close_waypoint_threshold){
-      if (changed_vel < _current_vel - _decel_limit){
+      if (changed_vel < _current_vel - _decel_limit ||
+	  _velocity_limit < _current_vel - _decel_limit){
 	avoidSuddenBraking();
 	return;
       }
     }
 
-    if (changed_vel > _current_vel || 
+    if (changed_vel > _velocity_limit ||
 	changed_vel > _path_dk.getCurrentPath().waypoints[num].twist.twist.linear.x){ // avoid acceleration
       std::cout << "too large velocity!!" << std::endl;
       current_path_.waypoints[num].twist.twist.linear.x = current_path_.waypoints[num+1].twist.twist.linear.x;
@@ -217,8 +225,10 @@ void PathVset::changeWaypoints(int stop_waypoint){
 
     i++;
   }
+
   // fill in 0
   for (int j = 1; j < fill_in_zero; j++){
+    // if obstacle is near a vehicle, we must avoid sudden braking
     if (stop_waypoint+j < _closest_waypoint+close_waypoint_threshold &&
 	_current_vel > _decel_limit){
       avoidSuddenBraking();
@@ -226,6 +236,7 @@ void PathVset::changeWaypoints(int stop_waypoint){
     }
     current_path_.waypoints[stop_waypoint+j].twist.twist.linear.x = 0;
   }
+
 
   _safety_waypoint_pub.publish(current_path_);// publish new waypoints
   std::cout << "---published waypoints---" << std::endl;
@@ -626,6 +637,10 @@ int main(int argc, char **argv)
 
     private_nh.getParam("current_pose_topic", _current_pose_topic);
     std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
+
+    private_nh.getParam("velocity_limit", _velocity_limit);
+    std::cout << "velocity_limit : " << _velocity_limit << std::endl;
+
 
     linelistInit();
 
