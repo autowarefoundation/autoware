@@ -230,7 +230,7 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 	}
 
 	//    printf("send data : %s\n",value.c_str());
-	std::cout << "send data : \"" << value << "\"" << std::endl;
+	std::cout << "send data : \"" << value.substr(POS_DB_HEAD_LEN) << "\"" << std::endl;
 
 	FD_ZERO(&readfds);
 	FD_ZERO(&writefds);
@@ -242,7 +242,7 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 	if(FD_ISSET(sock, &writefds)) {
 		cvalue = (char *)alloca(value.size());
 		memcpy(cvalue, value.c_str(), value.size());
-		for (int i=0; i<16; i++)
+		for (int i=0; i<POS_DB_HEAD_LEN; i++)
 			cvalue[i] &= 0x7f; // TODO: see make_header()
 #ifdef USE_LIBSSH2
 		n = libssh2_channel_write(channel, cvalue, value.size());
