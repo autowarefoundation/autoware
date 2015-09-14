@@ -70,6 +70,8 @@
 
 #include <runtime_manager/ConfigNdt.h>
 
+#include <ndt_localizer/ndt_stat.h>
+
 struct pose {
     double x;
     double y;
@@ -147,6 +149,9 @@ static std::string _scanner = "velodyne";
 static int _queue_size = 1000;
 
 static ros::Publisher velodyne_points_filtered_pub;
+
+static ros::Publisher ndt_stat_pub_;
+static ndt_localizer::ndt_stat ndt_stat_msg_;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -292,7 +297,6 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
 {
 
-  std::cout << "initialpose_callback" << std::endl;
   std::cout << input->pose.pose.position.x << std::endl;
   std::cout << input->pose.pose.position.y << std::endl;
   std::cout << input->pose.pose.position.z << std::endl;
@@ -311,10 +315,6 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   catch(tf::TransformException &ex){
     ROS_ERROR("%s", ex.what());
   }
-
-  std::cout << "x: " << transform.getOrigin().x() << std::endl;
-  std::cout << "y: " << transform.getOrigin().y() << std::endl;
-  std::cout << "z: " << transform.getOrigin().z() << std::endl;
 
   tf::Quaternion q(input->pose.pose.orientation.x, input->pose.pose.orientation.y, input->pose.pose.orientation.z, input->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
@@ -740,7 +740,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       estimated_vel_mps_pub.publish(estimated_vel_mps);
       estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
-      if((abs(estimated_vel_kmph.data - previous_estimated_vel_kmph.data) < 50) && (fitness_score.data < 500.0)){
+      if((abs(estimated_vel_kmph.data - previous_estimated_vel_kmph.data) < 50.0) && (fitness_score.data < 500.0)){
 	current_pose.x = ndt_pose.x;
 	current_pose.y = ndt_pose.y;
 	current_pose.z = ndt_pose.z;
@@ -899,6 +899,35 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       previous_scan_time.sec = current_scan_time.sec;
       previous_scan_time.nsec = current_scan_time.nsec;
 
+      // Set values for /ndt_stat_
+      if(time_ndt_matching.data <= 100){
+	ndt_stat_msg_.time = 0;
+      }else{
+	ndt_stat_msg_.time = 1;
+      }
+      if(ndt.getFinalNumIteration() <= 5){
+	ndt_stat_msg_.iteration = 0;
+      }else{
+	ndt_stat_msg_.iteration = 1;
+      }
+      if(ndt.getFitnessScore() <= 100){
+	ndt_stat_msg_.score = 0;
+      }else{
+	ndt_stat_msg_.score = 1;
+      }
+      if(abs(estimated_vel_kmph.data - previous_estimated_vel_kmph.data) <= 10.0){
+	ndt_stat_msg_.velocity = 0;
+      }else{
+	ndt_stat_msg_.velocity = 1;
+      }
+      if(ndt_stat_msg_.score == 0 && ndt_stat_msg_.velocity == 0){
+	ndt_stat_msg_.use_predict_pose = 0;
+      }else{
+	ndt_stat_msg_.use_predict_pose = 1;
+      }
+
+      ndt_stat_pub_.publish(ndt_stat_msg_);
+
       std::cout << "-----------------------------------------------------------------" << std::endl;
       std::cout << "Sequence number: " << input->header.seq << std::endl;
       std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
@@ -973,6 +1002,7 @@ int main(int argc, char **argv)
     status_pub = nh.advertise<std_msgs::Float32>("/status", 1000);
     time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
     velodyne_points_filtered_pub = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points_filtered", 1000);
+    ndt_stat_pub_ = nh.advertise<ndt_localizer::ndt_stat>("/ndt_stat_", 1000);
 
     // Subscribers
     ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
