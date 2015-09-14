@@ -123,7 +123,20 @@ int main(int argc, char *argv[])
 
 	pub = n.advertise<points2image::PointsImage>("points_image", 10);
 	//cpub = n.advertise<points2image::CameraExtrinsic>("threeD_calibration", 1);
-	ros::Subscriber sub = n.subscribe("points_raw", 1, callback);
+	ros::NodeHandle private_nh("~");
+
+	std::string points_topic;
+	if (private_nh.getParam("points_node", points_topic))
+	{
+		ROS_INFO("Setting points node to %s", points_topic.c_str());
+	}
+	else
+	{
+		ROS_INFO("No points node received, defaulting to points_raw, you can use _points_node:=YOUR_TOPIC");
+		points_topic = "points_raw";
+	}
+
+	ros::Subscriber sub = n.subscribe(points_topic, 1, callback);
 	ros::Subscriber projection = n.subscribe("projection_matrix", 1, projection_callback);
 	ros::Subscriber intrinsic = n.subscribe("camera/camera_info", 1, intrinsic_callback);
 

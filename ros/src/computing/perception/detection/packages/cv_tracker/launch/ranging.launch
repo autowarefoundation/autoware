@@ -1,6 +1,8 @@
 <launch>
   <arg name="car" default="true"/>
   <arg name="pedestrian" default="false"/>
+  <arg name="image_node" default="/image_obj"/>
+  <arg name="points_node" default="/vscan_image"/>
 
   <group if="$(arg car)">
     <group ns="obj_car">
@@ -8,6 +10,8 @@
       <!-- ranging -->
       <node pkg="cv_tracker" name="ranging" type="range_fusion">
           <remap from="/config/obj_car/fusion" to="/config/car_fusion"/>
+          <param name="image_node" type="str" value="$(arg image_node)"/>
+          <param name="points_node" type="str" value="$(arg points_node)"/>
       </node>
 
     </group>
