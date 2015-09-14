@@ -18,9 +18,9 @@
   <node pkg="lane_planner" type="lane_rule" name="lane_rule" />
 
   <!-- lane_change -->
-  <node pkg="lane_planner" type="lane_change" name="lane_change" />
+  <node pkg="lane_planner" type="lane_select" name="lane_select" />
 
   <!-- velocity_set -->
-  <node pkg="driving_planner" type="velocity_set" name="velocity_set" />
+  <node pkg="waypoint_follower" type="velocity_set" name="velocity_set" />
 
 </launch>

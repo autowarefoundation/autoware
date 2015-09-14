@@ -185,10 +185,10 @@ subs :
         cmd  : rosrun lane_planner lane_select
         gui  :
           dialog: MyDialogLaneStop
-    - name : parking_planner
+    - name : freespace_planner
       subs :
-      - name : XXX
-        cmd  : echo "XXX"
+      - name : astar_navi
+        cmd  : rosrun freespace_planner astar_navi
 
   - name : Motion Planning
     subs :
@@ -235,7 +235,7 @@ subs :
              depend : param_flag
            stat_topic : [ lf ]  
        - name : velocity_set
-         cmd  : rosrun waypoint_follower velocity_set
+         cmd  : roslaunch waypoint_follower velocity_set.launch
        - name : collision_avoid
          cmd  : roslaunch waypoint_follower collision_avoid.launch  
        - name : twist_through

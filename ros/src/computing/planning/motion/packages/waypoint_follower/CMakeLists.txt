@@ -101,7 +101,7 @@ add_executable(twist_through nodes/collision_avoid/twist_through.cpp)
 target_link_libraries(twist_through ${catkin_LIBRARIES})
 
 add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
-target_link_libraries(velocity_set ${catkin_LIBRARIES})
-add_dependencies(velocity_set
-  waypoint_follower_generate_messages_cpp)
+target_link_libraries(velocity_set libwaypoint_follower ${catkin_LIBRARIES})
+add_dependencies(velocity_set 
+waypoint_follower_generate_messages_cpp)
 

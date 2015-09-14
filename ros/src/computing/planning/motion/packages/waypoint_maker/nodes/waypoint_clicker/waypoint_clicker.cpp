@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	n.param<double>("/waypoint_clicker/velocity", velocity, 40);
 	n.param<std::string>("/waypoint_clicker/output_file", output_file, "/tmp/lane_waypoint.csv");
 
-	ros::Subscriber sub_point = n.subscribe("/clicked_point", sub_point_queue_size, write_clicked_point);
+	ros::Subscriber sub_point = n.subscribe("/initialpose", sub_point_queue_size, write_clicked_point);
 
 	tf::TransformListener listener;
 	try {
