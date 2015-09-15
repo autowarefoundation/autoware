@@ -181,10 +181,10 @@ subs :
       - name : lane_stop
         cmd  : rosrun lane_planner lane_stop
         param: lane_stop
-      - name : lane_select
-        cmd  : rosrun lane_planner lane_select
         gui  :
           dialog: MyDialogLaneStop
+      - name : lane_select
+        cmd  : rosrun lane_planner lane_select
     - name : freespace_planner
       subs :
       - name : astar_navi
