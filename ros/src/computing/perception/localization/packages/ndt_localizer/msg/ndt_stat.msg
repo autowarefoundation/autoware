@@ -1,6 +1,7 @@
 Header header
-int32 time
+float32 exe_time
 int32 iteration
-int32 score
-int32 velocity
+float32 score
+float32 velocity
+float32 acceleration
 int32 use_predict_pose

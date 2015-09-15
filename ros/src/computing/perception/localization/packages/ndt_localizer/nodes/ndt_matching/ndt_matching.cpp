@@ -34,10 +34,7 @@
  Yuki KITSUKAWA
  */
 
-#define VIEW_TIME
-
-// If you want to output "position_log.txt", "#define OUTPUT".
-#define OUTPUT 
+// #define OUTPUT 
 
 #include <iostream>
 #include <sstream>
@@ -53,6 +50,7 @@
 #include <velodyne_pointcloud/point_types.h>
 #include <velodyne_pointcloud/rawdata.h>
 
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 #include <tf/tf.h>
@@ -71,6 +69,12 @@
 #include <runtime_manager/ConfigNdt.h>
 
 #include <ndt_localizer/ndt_stat.h>
+
+#define THRESHOLD_EXE_TIME 100.0
+#define THRESHOLD_ITERATION 10
+#define THRESHOLD_SCORE 100.0
+#define THRESHOLD_VELOCITY 100.0
+#define THRESHOLD_ACCELERATION 10.0
 
 struct pose {
     double x;
@@ -116,6 +120,9 @@ static geometry_msgs::PoseStamped current_pose_msg;
 static ros::Publisher control_pose_pub;
 static geometry_msgs::PoseStamped control_pose_msg;
 
+static ros::Publisher estimate_twist_pub;
+static geometry_msgs::TwistStamped estimate_twist_msg;
+
 static double angle = 0.0;
 static double control_shift_x = 0.0;
 static double control_shift_y = 0.0;
@@ -128,15 +135,17 @@ static int layer = 1;
 static ros::Publisher fitness_score_pub;
 static std_msgs::Float32 fitness_score;
 
-static ros::Publisher status_pub;
-static std_msgs::Float32 status;
-
 static ros::Publisher ndt_stat_pub;
 static std_msgs::Bool ndt_stat_msg;
 
 static ros::Time current_scan_time;
 static ros::Time previous_scan_time;
 static ros::Duration scan_duration;
+
+static double current_velocity = 0.0, previous_velocity = 0.0; // [m/s]
+static double current_acceleration = 0.0, previous_acceleration = 0.0; // [m/s^2]
+
+static double angular_velocity = 0.0;
 
 static ros::Publisher estimated_vel_mps_pub, estimated_vel_kmph_pub;
 static std_msgs::Float32 estimated_vel_mps, estimated_vel_kmph, previous_estimated_vel_kmph;
@@ -296,15 +305,6 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
 {
-
-  std::cout << input->pose.pose.position.x << std::endl;
-  std::cout << input->pose.pose.position.y << std::endl;
-  std::cout << input->pose.pose.position.z << std::endl;
-  std::cout << input->pose.pose.orientation.x << std::endl;
-  std::cout << input->pose.pose.orientation.y << std::endl;
-  std::cout << input->pose.pose.orientation.z << std::endl;
-  std::cout << input->pose.pose.orientation.w << std::endl;
-  
   tf::TransformListener listener;
   tf::StampedTransform transform;
   try{
@@ -322,37 +322,18 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   current_pose.y = input->pose.pose.position.y + transform.getOrigin().y();
   current_pose.z = input->pose.pose.position.z + transform.getOrigin().z();
   m.getRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
-  
-  /*
-  current_pos.x = previous_pos.x;
-  current_pos.y = previous_pos.y;
-  current_pos.z = previous_pos.z;
-  current_pos.roll = previous_pos.roll;
-  current_pos.pitch = previous_pos.pitch;
-  current_pos.yaw = previous_pos.yaw;
-  */
+
   previous_pose.x = current_pose.x;
   previous_pose.y = current_pose.y;
   previous_pose.z = current_pose.z;
   previous_pose.roll = current_pose.roll;
   previous_pose.pitch = current_pose.pitch;
   previous_pose.yaw = current_pose.yaw;
-  /*
-  offset_x = current_pos.x - previous_pos.x;
-  offset_y = current_pos.y - previous_pos.y;
-  offset_z = current_pos.z - previous_pos.z;
-  offset_yaw = current_pos.yaw - previous_pos.yaw;
-  */
+
   offset_x = 0.0;
   offset_y = 0.0;
   offset_z = 0.0;
   offset_yaw = 0.0;
-
-  /*  
-  std::cout << current_pos.yaw << std::endl;
-  */
-  status.data = 200;
-  status_pub.publish(status);
 }
 
 static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -618,7 +599,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 {
   if(_scanner == "velodyne"){
     if (map_loaded == 1 && init_pos_set == 1) {
-      //        callback_start = ros::Time::now();
 
       matching_start = std::chrono::system_clock::now();
 
@@ -635,18 +615,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       current_scan_time.sec = scan.header.stamp / 1000000.0;
       current_scan_time.nsec = (scan.header.stamp - current_scan_time.sec * 1000000.0) * 1000.0;
 
-      /*
-      current_scan_time.sec = scan.header.stamp.toSec();
-      current_scan_time.nsec = scan.header.stamp.toNsec();
-      */
-      /*
-	std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
-	std::cout << "scan_time: " << scan_time << std::endl;
-	std::cout << "scan_time.sec: " << scan_time.sec << std::endl;
-	std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
-      */
-      
-      //        t1_start = ros::Time::now();
       for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
             p.x = (double) item->x;
             p.y = (double) item->y;
@@ -656,8 +624,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	      scan.points.push_back(p);
 	    }
       }
-      //        t1_end = ros::Time::now();
-      //        d1 = t1_end - t1_start;
 
       sensor_msgs::PointCloud2::Ptr velodyne_points_filtered(new sensor_msgs::PointCloud2);      
       pcl::toROSMsg(scan, *velodyne_points_filtered);
@@ -669,21 +635,15 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
       
       // Downsampling the velodyne scan using VoxelGrid filter
-      //        t2_start = ros::Time::now();
       pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
       voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
       voxel_grid_filter.setInputCloud(scan_ptr);
       voxel_grid_filter.filter(*filtered_scan_ptr);
-      //        t2_end = ros::Time::now();
-      //        d2 = t2_end - t2_start;
       
       // Setting point cloud to be aligned.
       ndt.setInputSource(filtered_scan_ptr);
       
       // Guess the initial gross estimation of the transformation
-      //        t3_start = ros::Time::now();
-      tf::Matrix3x3 init_rotation;
-      
       predict_pose.x = previous_pose.x + offset_x;
       predict_pose.y = previous_pose.y + offset_y;
       predict_pose.z = previous_pose.z + offset_z;
@@ -697,10 +657,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       Eigen::AngleAxisf init_rotation_z(predict_pose.yaw, Eigen::Vector3f::UnitZ());
       Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix();
       
-      //        t3_end = ros::Time::now();
-      //        d3 = t3_end - t3_start;
-      
-      //        t4_start = ros::Time::now();
       pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
       ndt.align(*output_cloud, init_guess);
       
@@ -708,23 +664,13 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
       fitness_score.data = ndt.getFitnessScore();
       fitness_score_pub.publish(fitness_score);
-      //        t4_end = ros::Time::now();
-      //        d4 = t4_end - t4_start;
-      
-      //        t5_start = ros::Time::now();
-      /*
-	tf::Vector3 origin;
-	origin.setValue(static_cast<double>(t(0,3)), static_cast<double>(t(1,3)), static_cast<double>(t(2,3)));
-      */
-
 
       tf::Matrix3x3 tf3d;
-      
       tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
 		    static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
 		    static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
       
-      // Update current_pos.
+      // Update ndt_pose
       ndt_pose.x = t(0, 3);
       ndt_pose.y = t(1, 3);
       ndt_pose.z = t(2, 3);
@@ -733,21 +679,27 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       // Compute the velocity
       scan_duration = current_scan_time - previous_scan_time;
       double secs = scan_duration.toSec();
-      double distance = sqrt((ndt_pose.x - previous_pose.x) * (ndt_pose.x - previous_pose.x) + (ndt_pose.y - previous_pose.y) * (ndt_pose.y - previous_pose.y) + (ndt_pose.z - previous_pose.z) * (ndt_pose.z - previous_pose.z));
-      estimated_vel_mps.data = distance / secs;
-      estimated_vel_kmph.data = estimated_vel_mps.data * 3.6;
+      double distance = sqrt((ndt_pose.x - previous_pose.x) * (ndt_pose.x - previous_pose.x) +
+			     (ndt_pose.y - previous_pose.y) * (ndt_pose.y - previous_pose.y) +
+			     (ndt_pose.z - previous_pose.z) * (ndt_pose.z - previous_pose.z));
+
+      current_velocity = distance / secs;
+      current_acceleration = (current_velocity - previous_velocity) / secs;
+
+      estimated_vel_mps.data = current_velocity;
+      estimated_vel_kmph.data = current_velocity * 3.6;
 
       estimated_vel_mps_pub.publish(estimated_vel_mps);
       estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
-      if((abs(estimated_vel_kmph.data - previous_estimated_vel_kmph.data) < 50.0) && (fitness_score.data < 500.0)){
+      //      if((abs(estimated_vel_kmph.data - previous_estimated_vel_kmph.data) < 50.0) && (fitness_score.data < 500.0)){
+      if(1){
 	current_pose.x = ndt_pose.x;
 	current_pose.y = ndt_pose.y;
 	current_pose.z = ndt_pose.z;
 	current_pose.roll = ndt_pose.roll;
 	current_pose.pitch = ndt_pose.pitch;
 	current_pose.yaw = ndt_pose.yaw;
-	status.data = 0.0;
       }else{
 	current_pose.x = predict_pose.x;
 	current_pose.y = predict_pose.y;
@@ -755,9 +707,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	current_pose.roll = predict_pose.roll;
 	current_pose.pitch = predict_pose.pitch;
 	current_pose.yaw = predict_pose.yaw;
-	status.data = 100.0;
       }
-      status_pub.publish(status);
 
       control_pose.roll = current_pose.roll;
       control_pose.pitch = current_pose.pitch;
@@ -812,12 +762,6 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       control_pose_msg.pose.orientation.z = control_q.z();
       control_pose_msg.pose.orientation.w = control_q.w();
       
-      /*
-	std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
-	std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
-	std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
-      */
-      
       predict_pose_pub.publish(predict_pose_msg);
       ndt_pose_pub.publish(ndt_pose_msg);
       current_pose_pub.publish(current_pose_msg);
@@ -828,23 +772,11 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       transform.setRotation(current_q);
       br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/velodyne"));
       
-      /*
-	std::cout << "ros::Time::now(): " << ros::Time::now() << std::endl;
-	std::cout << "ros::Time::now().sec: " << ros::Time::now().sec << std::endl;
-	std::cout << "ros::Time::now().nsec: " << ros::Time::now().nsec << std::endl;
-      */      
-
       matching_end = std::chrono::system_clock::now();
 
       time_ndt_matching.data = std::chrono::duration_cast<std::chrono::microseconds>(matching_end-matching_start).count()/1000.0;
-      //      std::cout << "time_ndt_matching: " << time_ndt_matching.data << std::endl;
 
       time_ndt_matching_pub.publish(time_ndt_matching);
-
-
-      // Output csv
-      std::ofstream ofs("matching_time.csv", std::ios::app);
-      ofs << input->header.seq << "," << time_ndt_matching.data << std::endl;
 
       int iter_num = ndt.getFinalNumIteration();
       
@@ -855,76 +787,49 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       }
       ndt_stat_pub.publish(ndt_stat_msg);
       
-      //        t5_end = ros::Time::now();
-      //        d5 = t5_end - t5_start;
-
-
-      
 #ifdef OUTPUT
-      // Writing position to position_log.txt
+      // matching_time_log.txt
+      std::ofstream ofs_time_log("matching_time_log.txt", std::ios::app);
+      if (ofs_time_log == NULL) {
+	std::cerr << "Could not open 'matching_time_log.txt'." << std::endl;
+	exit(1);
+      }
+      ofs_time_log << input->header.seq << "," << time_ndt_matching.data << std::endl;
+
+      // position_log.txt
       std::ofstream ofs_position_log("position_log.txt", std::ios::app);
       if (ofs_position_log == NULL) {
 	std::cerr << "Could not open 'position_log.txt'." << std::endl;
 	exit(1);
       }
-      ofs_position_log << current_pose.x << " " << current_pose.y << " " << current_pose.z << " " << current_pose.roll << " " << current_pose.pitch << " " << current_pose.yaw << std::endl;
+      ofs_position_log << current_pose.x << ","
+		       << current_pose.y << ","
+		       << current_pose.z << ","
+		       << current_pose.roll << ","
+		       << current_pose.pitch << ","
+		       << current_pose.yaw << std::endl;
 #endif
 
-      std::ofstream ofs1("log.txt", std::ios::app);
-      if (ofs1 == NULL) {
-	std::cerr << "Could not open 'log.txt'." << std::endl;
-	exit(1);
-      }
-      ofs1 << input->header.seq << "," << fitness_score.data << "," << estimated_vel_kmph.data << std::endl;
-      
-      // Calculate the offset (current_pos - previous_pose)
-      offset_x = current_pose.x - previous_pose.x;
-      offset_y = current_pose.y - previous_pose.y;
-      offset_z = current_pose.z - previous_pose.z;
-      offset_yaw = current_pose.yaw - previous_pose.yaw;
-      
-      // Update position and posture. current_pos -> previous_pos
-      previous_pose.x = current_pose.x;
-      previous_pose.y = current_pose.y;
-      previous_pose.z = current_pose.z;
-      previous_pose.roll = current_pose.roll;
-      previous_pose.pitch = current_pose.pitch;
-      previous_pose.yaw = current_pose.yaw;
+      // Set values for /estimate_twist
+      angular_velocity = (current_pose.yaw - previous_pose.yaw) / secs;
 
-      //        callback_end = ros::Time::now();
-      //        d_callback = callback_end - callback_start;
+      estimate_twist_msg.twist.linear.x = current_velocity;
+      estimate_twist_msg.twist.linear.y = 0.0;
+      estimate_twist_msg.twist.linear.z = 0.0;
+      estimate_twist_msg.twist.angular.x = 0.0;
+      estimate_twist_msg.twist.angular.y = 0.0;
+      estimate_twist_msg.twist.angular.z = angular_velocity;
 
-      previous_estimated_vel_kmph.data = estimated_vel_kmph.data;
-
-      previous_scan_time.sec = current_scan_time.sec;
-      previous_scan_time.nsec = current_scan_time.nsec;
+      estimate_twist_pub.publish(estimate_twist_msg);
 
       // Set values for /ndt_stat_
-      if(time_ndt_matching.data <= 100){
-	ndt_stat_msg_.time = 0;
-      }else{
-	ndt_stat_msg_.time = 1;
-      }
-      if(ndt.getFinalNumIteration() <= 5){
-	ndt_stat_msg_.iteration = 0;
-      }else{
-	ndt_stat_msg_.iteration = 1;
-      }
-      if(ndt.getFitnessScore() <= 100){
-	ndt_stat_msg_.score = 0;
-      }else{
-	ndt_stat_msg_.score = 1;
-      }
-      if(abs(estimated_vel_kmph.data - previous_estimated_vel_kmph.data) <= 10.0){
-	ndt_stat_msg_.velocity = 0;
-      }else{
-	ndt_stat_msg_.velocity = 1;
-      }
-      if(ndt_stat_msg_.score == 0 && ndt_stat_msg_.velocity == 0){
-	ndt_stat_msg_.use_predict_pose = 0;
-      }else{
-	ndt_stat_msg_.use_predict_pose = 1;
-      }
+      ndt_stat_msg_.header.stamp = current_scan_time;
+      ndt_stat_msg_.exe_time = time_ndt_matching.data;
+      ndt_stat_msg_.iteration = ndt.getFinalNumIteration();
+      ndt_stat_msg_.score = ndt.getFitnessScore();
+      ndt_stat_msg_.velocity = current_velocity;
+      ndt_stat_msg_.acceleration = current_acceleration;
+      ndt_stat_msg_.use_predict_pose = 0;
 
       ndt_stat_pub_.publish(ndt_stat_msg_);
 
@@ -936,38 +841,33 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
       std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
       std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
-      std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
+      std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z
+		<< ", " << current_pose.roll << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
       std::cout << "Transformation Matrix:" << std::endl;
       std::cout << t << std::endl;
       std::cout << "-----------------------------------------------------------------" << std::endl;
-      /*
-	#ifdef VIEW_TIME
-        std::cout << "Duration of velodyne_callback: " << d_callback.toSec() << " secs." << std::endl;
-        std::cout << "Adding scan points: " << d1.toSec() << " secs." << std::endl;
-        std::cout << "VoxelGrid Filter: " << d2.toSec() << " secs." << std::endl;
-        std::cout << "Guessing the initial gross estimation: " << d3.toSec() << " secs." << std::endl;
-        std::cout << "NDT: " << d4.toSec() << " secs." << std::endl;
-        std::cout << "tf: " << d5.toSec() << " secs." << std::endl;
-	#endif
-      */
-      //      third_end = std::chrono::system_clock::now();
+      
+      // Update previous_***
+      offset_x = current_pose.x - previous_pose.x;
+      offset_y = current_pose.y - previous_pose.y;
+      offset_z = current_pose.z - previous_pose.z;
+      offset_yaw = current_pose.yaw - previous_pose.yaw;
+      
+      previous_pose.x = current_pose.x;
+      previous_pose.y = current_pose.y;
+      previous_pose.z = current_pose.z;
+      previous_pose.roll = current_pose.roll;
+      previous_pose.pitch = current_pose.pitch;
+      previous_pose.yaw = current_pose.yaw;
+
+      previous_scan_time.sec = current_scan_time.sec;
+      previous_scan_time.nsec = current_scan_time.nsec;
+
+      previous_velocity = current_velocity;
+      previous_acceleration = current_acceleration;
+      previous_estimated_vel_kmph.data = estimated_vel_kmph.data;
     }
   }
-  
-  /*
-  std::cout << "Voxel Leaf Size: " << voxel_leaf_size << std::endl;  
-  std::cout << "Callback Duration: " << callback_time * 0.001 << " milli sec." << std::endl;
-  std::cout << " - First Duration: " << first_time * 0.001 << " milli sec." << std::endl;
-  std::cout << "  -- Item Duration: " << item_time * 0.001 << " milli sec." << std::endl;
-  std::cout << "  -- Filter Duration: " << filter_time * 0.001 << " milli sec." << std::endl;
-  std::cout << " - Second Duration: " << second_time * 0.001 << " milli sec." << std::endl;
-  std::cout << "  -- SetInputSource Duration: " << setInputSource_time * 0.001 << " milli sec." << std::endl;
-  std::cout << "  -- Align Duration: " << align_time * 0.001 << " milli sec." << std::endl;
-  std::cout << "  -- getFinalTransformation Duration: " << getFinalTransformation_time * 0.001 << " milli sec." << std::endl;
-  std::cout << " - Third Duration: " << third_time * 0.001 << " milli sec." << std::endl;
-  std::cout << "  -- TF Duration: " << tf_time * 0.001 << " milli sec." << std::endl;
-  */
-  //  std::cout << voxel_leaf_size << "," << callback_time * 0.001 << "," << first_time * 0.001 << "," << second_time * 0.001 << "," << third_time * 0.001 << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -995,11 +895,11 @@ int main(int argc, char **argv)
     ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
     current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
     control_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
+    estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("estimate_twist", 1000);
     ndt_stat_pub = nh.advertise<std_msgs::Bool>("/ndt_stat", 1000);
     estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
     estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
     fitness_score_pub = nh.advertise<std_msgs::Float32>("/fitness_score", 1000);
-    status_pub = nh.advertise<std_msgs::Float32>("/status", 1000);
     time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
     velodyne_points_filtered_pub = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points_filtered", 1000);
     ndt_stat_pub_ = nh.advertise<ndt_localizer::ndt_stat>("/ndt_stat_", 1000);
