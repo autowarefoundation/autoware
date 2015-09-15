@@ -56,11 +56,9 @@ static pcl::PointCloud<pcl::PointXYZ> _vscan;
 static std::string _current_pose_topic = "ndt";
 static const std::string pedestrian_sound = "pedestrian";
 static std::string _linelist_frame = "/velodyne";
-//static bool _twist_flag = false;
 static bool _pose_flag = false;
 static bool _path_flag = false;
 static bool _vscan_flag = false;
-static bool _changepath_flag = false;
 
 static double _detection_range = 0;
 static int _obstacle_waypoint = -1;
@@ -68,18 +66,16 @@ static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
 static double _search_distance = 70;
-static int _stop_interval = 5;
-static double _car_distance = 8.0;  // meter :distance from a front car when stopped
+static double _car_distance = 8.0;    // meter :distance from a front car when stopped
 static int _closest_waypoint = -1;
-static double _current_vel = 0;     // subscribe estimated_vel_mps
-static double _decel = 1.5;         // (m/s) deceleration
-static double _decel_limit = 2.778; // (m/s) about 10 km/h
-static double _velocity_limit = 1.0; //(m/x) limit velocity for waypoints
+static double _current_vel = 0;       // subscribe estimated_vel_mps
+static double _decel = 1.5;           // (m/s) deceleration
+static double _decel_limit = 2.778;   // (m/s) about 10 km/h
+static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 
 //Publisher
-//static ros::Publisher _twist_pub;
 static ros::Publisher _vis_pub;
 static ros::Publisher _range_pub;
 static ros::Publisher _sound_pub;
@@ -91,11 +87,15 @@ Path _path_dk;
 class PathVset: public Path{
 private:
 public:
+  const waypoint_follower::lane& getPathVset(){ return current_path_; }
+  void setPathVset(const waypoint_follower::lane& current_path){ current_path_ = current_path;}
   void changeWaypoints(int stop_waypoint);
   double getVel(int num);
   void avoidSuddenBraking();
+  void avoidSuddenAceleration();
+  bool checkWaypoint(int num, const std::string &name);
 };
-PathVset _path_change;
+PathVset _path_change, _path_subscribe;
 
 
 
@@ -104,49 +104,79 @@ PathVset _path_change;
 //===============================
 
 
-double PathVset::getVel(int num){
+// check if waypoint number is valid
+bool PathVset::checkWaypoint(int num, const std::string& name)
+{
+  if (num < 0 || num >= getPathSize()){
+    std::cout << name << ": invalid waypoint number" << std::endl;
+    return false;
+  }
+  return true;
+}
 
-  if (current_path_.waypoints.empty() || num < 0){
+
+double PathVset::getVel(int num)
+{
+  if (current_path_.waypoints.empty() || num < 0 || num >= getPathSize()){
     std::cout << "getVel: invalid waypoint" << std::endl;
     return 0.0;
   }
-
   return current_path_.waypoints[num].twist.twist.linear.x;
 }
 
 
+void PathVset::avoidSuddenAceleration()
+{
+  double changed_vel;
+  double interval = getInterval();
 
-void PathVset::avoidSuddenBraking(){
+  for (int i = 0; ; i++) {
+    if (!checkWaypoint(_closest_waypoint+i, "avoidSuddenAceleration")) {return;}
+    changed_vel = sqrt(_current_vel*_current_vel + 2*_decel*interval*(double)i);
+    if (changed_vel > current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x) {
+      return;
+    } else {
+      current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x = changed_vel;
+    }
+  }
+
+  return;
+}
+
+
+void PathVset::avoidSuddenBraking()
+{
   int i = 0;
-  int path_size = getPathSize();
-  int close_waypoint_threshold = 5;
-  int fill_in_zero = 5;
+  int fill_in_zero = 20;
   int fill_in_vel = 15;
+  int examin_range = 7; // need to change according to waypoint interval?
   int num;
   double temp;
   double interval = getInterval();
 
+  for (int j = -2; j < examin_range; j++) {
+    if (!checkWaypoint(_closest_waypoint+j, "avoidSuddenBraking")) {continue;}
+    if (getVel(_closest_waypoint+j) < _current_vel - _decel_limit) {break;} // we must change waypoints
+    if (j == examin_range-1) {return;} // we don't have to change waypoints
+  }
+
   std::cout << "====avoid sudden braking====" << std::endl;
   std::cout << "vehicle is decelerating..." << std::endl;
-  _closest_waypoint = getClosestWaypoint();
   std::cout << "closest_waypoint: " << _closest_waypoint << std::endl;
-  for (num = _closest_waypoint - close_waypoint_threshold; fill_in_vel > 0; fill_in_vel--){
-    if (num-fill_in_vel < 0 || num >= path_size){
-      std::cout << "avoidSuddenBraking: invalid waypoint number" << std::endl;
-      continue;
-    }
+
+  // fill in waypoints velocity behind vehicle
+  for (num = _closest_waypoint-1; fill_in_vel > 0; fill_in_vel--) {
+    if (!checkWaypoint(num-fill_in_vel, "avoidSuddenBraking")) {continue;}
     current_path_.waypoints[num-fill_in_vel].twist.twist.linear.x = _current_vel;
   }
 
-  for (num = _closest_waypoint - close_waypoint_threshold; num > -1; num++){
-    if (num < 0 || num >= path_size){
-      std::cout << "avoidSuddenBraking: invalid waypoint number" << std::endl;
-      return;
-    }
-    temp = _current_vel*_current_vel - 2*_decel*i*interval; // sqrt(v^2 - 2*a*x)
-    if (temp > 0){
-      //if (sqrt(temp) > getVel(num)){current_path_.waypoints[num].twist.twist.linear.x = getVel(num);}
-      current_path_.waypoints[num].twist.twist.linear.x = sqrt(temp);//
+  // decelerate gradually
+  for (num = _closest_waypoint-1; ; num++) {
+    if (num >= getPathSize()) {return;}
+    if (!checkWaypoint(num, "avoidSuddenBraking")) {continue;}
+    temp = _current_vel*_current_vel - 2*_decel*interval*(double)i; // sqrt(v^2 - 2*a*x)
+    if (temp > 0) {
+      current_path_.waypoints[num].twist.twist.linear.x = sqrt(temp);
       //std::cout << "waypoint[" << num << "] vel: " << mps2kmph(sqrt(temp)) << std::endl;
     } else {
       break;
@@ -154,73 +184,43 @@ void PathVset::avoidSuddenBraking(){
     i++;
   }
 
-  if (num < 0){
-    std::cout << "avoidSuddenBraking: invalid waypoint number" << std::endl;
-    return;
+  for (int j = 0; j < fill_in_zero; j++) {
+    if (!checkWaypoint(num+j, "avoidSuddenBraking")) {continue;}
+    current_path_.waypoints[num+j].twist.twist.linear.x = 0.0;
   }
-  for (int j = 0; j < fill_in_zero; j++){current_path_.waypoints[num+j].twist.twist.linear.x = 0.0;}
 
   _safety_waypoint_pub.publish(current_path_);// publish new waypoints
-  std::cout << "====published waypoints====" << std::endl;
+  std::cout << "====changed waypoints====" << std::endl;
 
   return;
 }
 
 
-void PathVset::changeWaypoints(int stop_waypoint){
+void PathVset::changeWaypoints(int stop_waypoint)
+{
   int i = 0;
-  int path_size = getPathSize();
   int close_waypoint_threshold = 4;
-  int fill_in_zero = 10;
+  int fill_in_zero = 20;
   double changed_vel;
   double interval = getInterval();
 
-
-  _closest_waypoint = getClosestWaypoint();
-  if (_closest_waypoint < 0){
-    std::cout << "changeWaypoints: invalid waypoint number(1)" << std::endl;
-    return;
-  }
-
-  // avoid sudden braking at close waypoints
-  for (int num = _closest_waypoint + close_waypoint_threshold; num > _closest_waypoint-5; num--){
-    if (num < 0 || num >= path_size){
-      std::cout << "changeWaypoints: invalid waypoint number(2)" << std::endl;
-      break;
-    }
-    if (getVel(num) < _current_vel - _decel_limit){
-      avoidSuddenBraking();
-      return;
-    }
-  }
-
   // change waypoints to decelerate
   for (int num = stop_waypoint; num > _closest_waypoint - close_waypoint_threshold; num--){
-    if (num < 0 || num >= path_size){
-      std::cout << "changeWaypoints: invalid waypoint number(3)" << std::endl;
-      break;
-    }
+    if (!checkWaypoint(num, "changeWaypoints")) {continue;}
+
     changed_vel = sqrt(2.0*_decel*(interval*i)); // sqrt(2*a*x)
 
     std::cout << "changed_vel[" << num << "]: " << mps2kmph(changed_vel) << " (km/h)";
     std::cout << "   distance: " << (_obstacle_waypoint-num)*interval << " (m)";
     std::cout << "   current_vel: " << mps2kmph(_current_vel) << std::endl;
 
-    // avoid sudden braking at close waypoints
-    if (num < _closest_waypoint + close_waypoint_threshold){
-      if (changed_vel < _current_vel - _decel_limit ||
-	  _velocity_limit < _current_vel - _decel_limit){
-	avoidSuddenBraking();
-	return;
-      }
-    }
-
-    if (changed_vel > _velocity_limit ||
-	changed_vel > _path_dk.getCurrentPath().waypoints[num].twist.twist.linear.x){ // avoid acceleration
+    waypoint_follower::waypoint initial_waypoint = _path_dk.getCurrentPath().waypoints[num];
+    if (changed_vel > _velocity_limit || //
+	changed_vel > initial_waypoint.twist.twist.linear.x){ // avoid acceleration
       std::cout << "too large velocity!!" << std::endl;
-      current_path_.waypoints[num].twist.twist.linear.x = current_path_.waypoints[num+1].twist.twist.linear.x;
+      current_path_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
     } else {
-      current_path_.waypoints[num].twist.twist.linear.x = changed_vel; // set waypoint velocity to decelerate
+      current_path_.waypoints[num].twist.twist.linear.x = changed_vel;
     }
 
     i++;
@@ -228,16 +228,12 @@ void PathVset::changeWaypoints(int stop_waypoint){
 
   // fill in 0
   for (int j = 1; j < fill_in_zero; j++){
-    // if obstacle is near a vehicle, we must avoid sudden braking
-    if (stop_waypoint+j < _closest_waypoint+close_waypoint_threshold &&
-	_current_vel > _decel_limit){
-      avoidSuddenBraking();
-      return;
-    }
-    current_path_.waypoints[stop_waypoint+j].twist.twist.linear.x = 0;
+    if (!checkWaypoint(stop_waypoint+j, "changeWaypoints")) {continue;}
+    current_path_.waypoints[stop_waypoint+j].twist.twist.linear.x = 0.0;
   }
 
 
+  avoidSuddenBraking(); // examine close waypoints to avoid sudden braking
   _safety_waypoint_pub.publish(current_path_);// publish new waypoints
   std::cout << "---published waypoints---" << std::endl;
 
@@ -257,44 +253,34 @@ void PathVset::changeWaypoints(int stop_waypoint){
 //          Callback
 //===============================
 
-void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg){
-
+void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
+{
   _current_vel = msg->data;
 }
 
-void BaseWaypointCallback(const waypoint_follower::laneConstPtr &msg){
-
+void BaseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
+{
   ROS_INFO("subscribed safety_waypoint\n");
   _path_dk.setPath(msg);
   _path_change.setPath(msg); //++
+  _path_subscribe.setPath(msg); //++
   if (_path_flag == false) {
     std::cout << "waypoint subscribed" << std::endl;
     _path_flag = true;
   }
 
-  _safety_waypoint_pub.publish(msg);
+  //_safety_waypoint_pub.publish(msg);
 
 }
 
 
-void ObjPoseCallback(const visualization_msgs::MarkerConstPtr &msg){
-
-  ROS_INFO("subscribed obj_pose\n");
-
-}
-
-
-/*
-static void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
+void ObjPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
 {
-    _current_twist = *msg;
-
-    if (_twist_flag == false) {
-        std::cout << "twist subscribed" << std::endl;
-        _twist_flag = true;
-    }
+  ROS_INFO("subscribed obj_pose\n");
 }
-*/
+
+
+
 
 static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
@@ -400,28 +386,25 @@ static int vscanDetection(int closest_waypoint)
 
         tf::Vector3 tf_waypoint = _path_dk.transformWaypoint(i); // waypoint seen by vehicle
         tf_waypoint.setZ(0);
-        //std::cout << "waypoint : "<< tf_waypoint.getX()  << " "<< tf_waypoint.getY() << std::endl;
-
+ 
         int point_count = 0;
 	geometry_msgs::Point vscan_point;
 	_linelist.points.clear();
         for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = _vscan.begin(); item != _vscan.end(); item++) {
-	    // out of detection range
-            if ((item->x == 0 && item->y == 0) /*|| item->z > _detection_height_top || 
-						 item->z < _detection_height_bottom*/){
+            if ((item->x == 0 && item->y == 0)) {
 	      continue;
 	    }
 
             tf::Vector3 point((double) item->x, (double) item->y, 0);
 
-	    // 2D distance between waypoint and vscan point(obstacle)
+	    // 2D distance between waypoint and vscan points(obstacle)
             double dt = tf::tfDistance(point, tf_waypoint);
             if (dt < _detection_range) {
 	      vscan_point.x = item->x;
 	      vscan_point.y = item->y;
 	      vscan_point.z = item->z;
 	      _linelist.points.push_back(vscan_point);
-	      if (item->z > _detection_height_top || item->z < _detection_height_bottom){continue;}
+	      if (item->z > _detection_height_top || item->z < _detection_height_bottom) {continue;}
 	      point_count++;
 	    }
 
@@ -434,11 +417,11 @@ static int vscanDetection(int closest_waypoint)
         }
     }
 
-    // no obstacles
-    return -1;
+    return -1; //no obstacles
 }
 
-static void SoundPlay(){
+static void SoundPlay()
+{
     std_msgs::String string;
     string.data = pedestrian_sound;
     _sound_pub.publish(string);
@@ -449,11 +432,9 @@ static bool ObstacleDetection()
     static int false_count = 0;
     static bool prev_detection = false;
 
-    int closest_waypoint = _path_change.getClosestWaypoint(); //
-    _closest_waypoint = closest_waypoint;//
-    std::cout << "closest_waypoint : " << closest_waypoint << std::endl;
-    DisplayDetectionRange(closest_waypoint + 1);
-    int vscan_result = vscanDetection(closest_waypoint);
+    std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
+    DisplayDetectionRange(_closest_waypoint + 1);
+    int vscan_result = vscanDetection(_closest_waypoint);
 
     if (prev_detection == false) {
       if (vscan_result != -1) { // found obstacle
@@ -497,36 +478,8 @@ static bool ObstacleDetection()
       }
     }
 
-
-
 }
 
-/*
-static double Decelerate()
-{
-    //calculate distance from my position to waypoint
-    //tf::Vector3 tf_waypoint = TransformWaypoint(_transform,_current_path.waypoints[_obstacle_waypoint].pose.pose);
-    tf::Vector3 tf_waypoint = _path_dk.transformWaypoint(_obstacle_waypoint);
-    tf::Vector3 origin_v;
-    origin_v.setZero();
-  double distance = tf::tfDistance(origin_v, tf_waypoint);
-   // std::cout << "distance " << distance << std::endl;
-
-    //if distance is within stop_interval param, publish 0km/h
-    if(distance < _stop_interval){
-        return 0;
-    }
-
-    double decel_velocity_ms = DecelerateVelocity(distance,_current_twist.twist.linear.x);
-
-    if(decel_velocity_ms < 1.0){
-        decel_velocity_ms = 0;
-    }
-
-    return decel_velocity_ms;
-
-}
-*/
 
 // publish obstacles as RED linelist
 static void linelistInit()
@@ -561,30 +514,20 @@ static void ChangeWaypoint(bool detection_result)
     std::cout << "=============================" << std::endl;
   }
 
-  _closest_waypoint = _path_change.getClosestWaypoint();
   if (detection_result){ // DECELERATE
-    // if obstacle is behind a vehicle, return
-    if (obs < _closest_waypoint){
-      std::cout << "ChangeWaypoint: invalid obstacle waypoint" << std::endl;
-      return;
-    }
-    // *stop_waypoint is about _car_distance meter away from obstacle*
-    int stop_waypoint = obs - (((int)_car_distance / _path_change.getInterval()));
+    // stop_waypoint is about _car_distance meter away from obstacle
+    int stop_waypoint = obs - ((int)(_car_distance / _path_change.getInterval()));
     std::cout << "stop_waypoint: " << stop_waypoint << std::endl;
-    if (stop_waypoint < 0){
-      std::cout << "ChangeWaypoint: invalid stop_waypoint!" << std::endl;
-      return;
-    }
+
+    // change waypoints to stop by the stop_waypoint
     _path_change.changeWaypoints(stop_waypoint);
-    _changepath_flag = true;
+    //_changepath_flag = true;
   } else {               // ACELERATE or KEEP
-    if (_changepath_flag){
-      _safety_waypoint_pub.publish(_path_dk.getCurrentPath());///
-      _changepath_flag = false;
-    }
+    _path_change.setPathVset(_path_subscribe.getPathVset());
+    _path_change.avoidSuddenBraking();
+    _path_change.avoidSuddenAceleration();
+    _safety_waypoint_pub.publish(_path_change.getCurrentPath());///
   }
-
-
 
 
   return;
@@ -604,18 +547,16 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
-    //ros::Subscriber twist_sub = nh.subscribe("twist_raw", 1, TwistCmdCallback);
     ros::Subscriber ndt_sub = nh.subscribe("control_pose", 1, NDTCallback);
     ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, VscanCallback);
     ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoint", 1, BaseWaypointCallback);
     ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, ObjPoseCallback);
     ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel_mps", 1, EstimatedVelCallback);
 
-    //_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
     _vis_pub = nh.advertise<visualization_msgs::Marker>("obstaclewaypoint_mark", 0);
     _range_pub = nh.advertise<visualization_msgs::Marker>("detection_range", 0);
     _sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
-    _safety_waypoint_pub = nh.advertise<waypoint_follower::lane>("safety_waypoint", 1000);
+    _safety_waypoint_pub = nh.advertise<waypoint_follower::lane>("safety_waypoint", 1000, true);
     _linelist_pub = nh.advertise<visualization_msgs::Marker>("vscan_linelist", 10);
 
 
@@ -626,8 +567,8 @@ int main(int argc, char **argv)
     private_nh.getParam("threshold_points", _threshold_points);
     std::cout << "threshold_points : " << _threshold_points << std::endl;
 
-    private_nh.getParam("stop_interval", _stop_interval);
-    std::cout << "stop_interval : " << _stop_interval << std::endl;
+    private_nh.getParam("car_distance", _car_distance);
+    std::cout << "car_distance : " << _car_distance << std::endl;
 
     private_nh.getParam("detection_height_top", _detection_height_top);
     std::cout << "detection_height_top : " << _detection_height_top << std::endl;
@@ -658,37 +599,11 @@ int main(int argc, char **argv)
 	  continue;
         }
 	
+	_closest_waypoint = _path_dk.getClosestWaypoint();
         bool detection_result = ObstacleDetection();
 
-
-	/* change waypoints to avoid collision */
-	/* if detection_result is true,and then it becomes false,we have to Accelerate */
 	ChangeWaypoint(detection_result);
-	
 
-	/*
-        if (_twist_flag == true) {
-            geometry_msgs::TwistStamped twist;
-            if (detection_result == true) {
-                //decelerate
-                std::cout << "twist deceleration..." << std::endl;
-                twist.twist.linear.x = Decelerate();
-                twist.twist.angular.z = _current_twist.twist.angular.z;
-            } else {
-                //through
-                std::cout << "twist through" << std::endl;
-                twist.twist = _current_twist.twist;
-            }
-            std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
-            std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl;
-            std::cout << std::endl;
-
-            twist.header.stamp = _current_twist.header.stamp;
-            _twist_pub.publish(twist);
-        } else {
-            std::cout << "no twist topic" << std::endl;
-        }
-	*/
 
         loop_rate.sleep();
     }
