@@ -48,6 +48,8 @@
 #define SSHTUNNELHOST	"localhost"
 #endif
 
+#define POS_DB_HEAD_LEN	(16)
+
 class SendData {
 private:
 	std::string host_name_;

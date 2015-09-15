@@ -181,27 +181,16 @@ static void publish_car(int id, int is_current, ros::Time now,
 
   } else {
     marker.id = create_markerid(pose, 1);
-    marker.type = visualization_msgs::Marker::CUBE;
+    marker.type = visualization_msgs::Marker::SPHERE;
     marker.lifetime = ros::Duration(life_time);
     marker.color.r = 1.0;
     marker.color.g = 0.0;
     marker.color.b = 0.0;
     marker.color.a = alpha_percent(diffmsec);
-    marker.scale.x = 4.4; // #A
-    marker.scale.y = 1.6;
-    marker.scale.z = 1.0; // #1
+    marker.scale.x = 2.0;
+    marker.scale.y = 2.0;
+    marker.scale.z = 2.0;
     marker.pose.position.z += 0.5; // == #1/2
-    pub.publish(marker);
-    dbg_out_marker(marker);
-
-    marker.id = 1 + create_markerid(pose, 1);
-    marker.scale.x = 3.0; // #B
-    marker.scale.y = 1.6;
-    marker.scale.z = 0.6; // #2
-    marker.pose = pose;
-    marker.pose.position.x += (4.4 - 3.0) / 2; // == (#A - #B)/2
-    marker.pose.position.z += 1.0 + 0.3; // == #1 + #2/2
-
     pub.publish(marker);
     dbg_out_marker(marker);
   }

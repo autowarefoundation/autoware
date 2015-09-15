@@ -344,6 +344,7 @@ int main(int argc, char **argv)
 
         if (_pose_flag == false || _path_flag == false) {
             std::cout << "topic waiting..." << std::endl;
+            loop_rate.sleep();
             continue;
         }
 
