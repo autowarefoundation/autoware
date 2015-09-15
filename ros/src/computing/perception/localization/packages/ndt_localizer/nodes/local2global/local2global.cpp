@@ -125,9 +125,6 @@ static double control_shift_x = 0.0;
 static double control_shift_y = 0.0;
 static double control_shift_z = 0.0;
 
-static ros::Publisher ndt_stat_pub;
-static std_msgs::Bool ndt_stat_msg;
-
 static ros::Publisher ndt_map_pub;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
@@ -490,14 +487,6 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         ndt_pose_pub.publish(ndt_pose_msg);
         control_pose_pub.publish(control_pose_msg);
 
-	int iter_num = ndt.getFinalNumIteration();
-	if(iter_num > 5){
-	  ndt_stat_msg.data = false;
-	}else{
-	  ndt_stat_msg.data = true;
-	}
-	ndt_stat_pub.publish(ndt_stat_msg);
-
         t5_end = ros::Time::now();
         d5 = t5_end - t5_start;
 
@@ -598,8 +587,6 @@ int main(int argc, char **argv)
     ndt_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
 
     control_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
-
-    ndt_stat_pub = n.advertise<std_msgs::Bool>("/ndt_stat", 1000);
 
     ndt_map_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_map", 1000, true);
 
