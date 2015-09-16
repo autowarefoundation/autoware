@@ -60,7 +60,6 @@ def callback(data):
 	if fn is None:
 		print('Invalid msg str "' + data.data +'"')
 		return
-	fn = os.path.expandvars(os.path.expanduser(fn))
 	subprocess.call(['rosrun', 'sound_play', 'play.py', fn] )
 
 def sound_player():
@@ -70,8 +69,17 @@ def sound_player():
 	else:
 		proc = subprocess.Popen(['rosrun', 'sound_play', 'soundplay_node.py'])
 
+	cmd = '(cd $(rospack find runtime_manager)/../../../../.. ; pwd)'
+	autoware_path = subprocess.check_output([ 'sh', '-c', cmd ]).strip()
+
 	global str_fn_dic
 	str_fn_dic = load_yaml('sound_player.yaml', {})
+
+	for (k,fn) in str_fn_dic.items():
+		fn = os.path.expandvars(os.path.expanduser(fn))
+		if not os.path.isabs(fn):
+			fn = autoware_path + '/' + fn
+		str_fn_dic[k] = fn
 
 	rospy.init_node('sound_player', anonymous=True)
 	rospy.Subscriber('sound_player', String, callback);
