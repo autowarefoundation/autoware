@@ -81,7 +81,7 @@ def sound_player():
 				fn = pack_path + '/' + fn
 			else:
 				cmd = 'find ' + pack_path + '/wavs' + ' -name ' + fn
-				fn = subprocess.check_output([ 'sh', '-c', cmd ]).strip()
+				fn = subprocess.check_output([ 'sh', '-c', cmd ]).strip().split('\n')[0]
 		str_fn_dic[k] = fn
 
 	rospy.init_node('sound_player', anonymous=True)
