@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   vehicle_socket
+  ndt_localizer
   message_generation
 )
 
@@ -26,7 +27,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS vehicle_socket
+  CATKIN_DEPENDS vehicle_socket ndt_localizer
 )
 
 add_executable(tablet_receiver nodes/tablet_receiver/tablet_receiver.cpp)
@@ -38,4 +39,5 @@ target_link_libraries(tablet_sender ${catkin_LIBRARIES})
 add_dependencies(tablet_sender
   tablet_socket_generate_messages_cpp
   vehicle_socket_generate_messages_cpp
+  ndt_localizer_generate_messages_cpp
 )

@@ -8,8 +8,10 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>vehicle_socket</build_depend>
+  <build_depend>ndt_localizer</build_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>vehicle_socket</run_depend>
+  <run_depend>ndt_localizer</run_depend>
   <export>
   </export>
 </package>
