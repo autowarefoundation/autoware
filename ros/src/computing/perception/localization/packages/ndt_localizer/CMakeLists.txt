@@ -8,6 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   runtime_manager
   velodyne_pointcloud
+  message_generation
+)
+
+add_message_files(FILES ndt_stat.msg)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 ###################################
@@ -36,6 +44,6 @@ target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 
-add_dependencies(ndt_matching runtime_manager_generate_messages_cpp)
+add_dependencies(ndt_matching runtime_manager_generate_messages_cpp ndt_localizer_generate_messages_cpp)
 add_dependencies(ndt_mapping runtime_manager_generate_messages_cpp)
 add_dependencies(local2global runtime_manager_generate_messages_cpp)
