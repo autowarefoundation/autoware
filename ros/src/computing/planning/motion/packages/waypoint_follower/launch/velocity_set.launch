@@ -2,7 +2,7 @@
 <launch>
 
 	<arg name="detection_range" default="1.3" /> <!-- meter 2.2 -->
-	<arg name="threshold_points" default="10" /> <!-- 5 -->
+	<arg name="threshold_points" default="15" /> <!-- 5 -->
 	<arg name="car_distance" default="15" /> 
 	<arg name="detection_height_top" default="2.5" /><!-- 2.0 -->
 	<arg name="detection_height_bottom" default="-1.5" />
