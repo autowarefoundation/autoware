@@ -36,6 +36,8 @@
 
 #include <vmap_utility.hpp>
 
+static void create_traffic_waypoint(const waypoint_follower::lane& msg);
+
 // XXX heuristic parameter
 static constexpr double CURVE_WEIGHT = 50 * 0.6;
 static constexpr double CROSSROAD_WEIGHT = 9.1 * 0.9;
@@ -46,12 +48,16 @@ static constexpr double RADIUS_MAX = 90000000000;
 static double config_acceleration = 1; // m/s^2
 static int config_number_of_zeros = 1;
 
+static bool cached_waypoint = false;
+
 static ros::Publisher pub_traffic;
 static ros::Publisher pub_red;
 static ros::Publisher pub_green;
 
 static VectorMap vmap_all;
 static VectorMap vmap_left_lane;
+
+static waypoint_follower::lane current_waypoint;
 
 static int sub_vmap_queue_size;
 static int sub_waypoint_queue_size;
@@ -87,32 +93,62 @@ static bool is_cached_vmap()
 		!vmap_all.stoplines.empty() && !vmap_all.dtlanes.empty());
 }
 
+static bool is_cached_waypoint()
+{
+	return cached_waypoint;
+}
+
+static void cache_waypoint(const waypoint_follower::lane& msg)
+{
+	current_waypoint = msg;
+}
+
 static void cache_lane(const map_file::LaneArray& msg)
 {
 	vmap_all.lanes = msg.lanes;
 	cache_left_lane();
+	if (is_cached_waypoint() && is_cached_vmap()) {
+		create_traffic_waypoint(current_waypoint);
+		cached_waypoint = false;
+	}
 }
 
 static void cache_node(const map_file::NodeArray& msg)
 {
 	vmap_all.nodes = msg.nodes;
 	cache_left_lane();
+	if (is_cached_waypoint() && is_cached_vmap()) {
+		create_traffic_waypoint(current_waypoint);
+		cached_waypoint = false;
+	}
 }
 
 static void cache_point(const map_file::PointClassArray& msg)
 {
 	vmap_all.points = msg.point_classes;
 	cache_left_lane();
+	if (is_cached_waypoint() && is_cached_vmap()) {
+		create_traffic_waypoint(current_waypoint);
+		cached_waypoint = false;
+	}
 }
 
 static void cache_stopline(const map_file::StopLineArray& msg)
 {
 	vmap_all.stoplines = msg.stop_lines;
+	if (is_cached_waypoint() && is_cached_vmap()) {
+		create_traffic_waypoint(current_waypoint);
+		cached_waypoint = false;
+	}
 }
 
 static void cache_dtlane(const map_file::DTLaneArray& msg)
 {
 	vmap_all.dtlanes = msg.dtlanes;
+	if (is_cached_waypoint() && is_cached_vmap()) {
+		create_traffic_waypoint(current_waypoint);
+		cached_waypoint = false;
+	}
 }
 
 static void config_rule(const runtime_manager::ConfigLaneRule& msg)
@@ -475,6 +511,8 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 	if (!is_cached_vmap()) {
 		ROS_WARN("not cached vmap");
 		publish_waypoint_without_change(msg, header);
+		cache_waypoint(msg);
+		cached_waypoint = true;
 		return;
 	}
 
