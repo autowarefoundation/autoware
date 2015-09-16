@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 	else
 	{
 		ROS_INFO("No image node received, defaulting to image_obj, you can use _image_node:=YOUR_TOPIC");
-		image_topic = "/image_obj";
+		image_topic = "image_obj";
 	}
 	if (private_nh.getParam("points_node", points_topic))
 	{
