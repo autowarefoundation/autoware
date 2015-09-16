@@ -149,3 +149,7 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 [3D map of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
 
 [ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
+
+## Contact
+
+Autoware Developers <autoware@googlegroups.com>
