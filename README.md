@@ -152,4 +152,4 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 
 ## Contact
 
-Autoware Developers <autoware@googlegroups.com>
+Autoware Developers (<autoware@googlegroups.com>)
