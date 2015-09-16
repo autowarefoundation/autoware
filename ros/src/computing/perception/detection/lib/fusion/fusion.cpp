@@ -211,7 +211,8 @@ void fuseFilterDetections(std::vector<Point5>& vScanPoints)
 		cv::Rect detection = cv::Rect(g_corner_points[0+i*4], g_corner_points[1+i*4], g_corner_points[2+i*4], g_corner_points[3+i*4]);
 		if (!isAlmostZero(g_distances.at(i)) &&
 			rectangleContainsPoints(detection, vScanPoints, g_distances.at(i), pointsInBoundingBox) &&
-			!dispersed(vScanPoints, pointsInBoundingBox))
+			!dispersed(vScanPoints, pointsInBoundingBox)
+		    )
 		{
 			//if all the conditions above are true -> store this detection
 			//objects_num
@@ -264,6 +265,7 @@ static void showRects(IplImage *image, int object_num, const std::vector<int>& c
 
 void setDetectedObjects(const cv_tracker::image_obj& detected_objects)
 {
+	objectsStored = false;
 	obj_type = detected_objects.type;
 	g_corner_points.resize(4*detected_objects.obj.size());
 	g_scores.resize(detected_objects.obj.size());
@@ -307,7 +309,7 @@ void setPointsImage(const points2image::PointsImage& points_image)
 	}
 #endif
 	points_msg = points_image;//store vscan pointcloud
-	pointsStored = true;
+	pointsStored = false;
 	/*
 	* Assign distance and intensity to scan_image
 	*/
@@ -321,6 +323,7 @@ void setPointsImage(const points2image::PointsImage& points_image)
 	}
 	g_scan_image.max_y = points_image.max_y;
 	g_scan_image.min_y = points_image.min_y;
+	pointsStored=true;
 }
 
 void calcDistance()
