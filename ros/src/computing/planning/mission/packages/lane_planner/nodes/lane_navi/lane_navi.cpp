@@ -39,10 +39,16 @@
 #include <geo_pos_conv.hh>
 #include <vmap_utility.hpp>
 
+static void create_lane_waypoint(const tablet_socket::route_cmd& msg);
+
+static bool cached_route = false;
+
 static ros::Publisher pub_waypoint;
 
 static VectorMap vmap_all;
 static VectorMap vmap_left_lane;
+
+static tablet_socket::route_cmd current_route;
 
 static int sub_vmap_queue_size;
 static int sub_route_queue_size;
@@ -79,22 +85,44 @@ static bool is_cached_vmap()
 	return (!vmap_all.lanes.empty() && !vmap_all.nodes.empty() && !vmap_all.points.empty());
 }
 
+static bool is_cached_route()
+{
+	return cached_route;
+}
+
+static void cache_route(const tablet_socket::route_cmd& msg)
+{
+	current_route = msg;
+}
+
 static void cache_lane(const map_file::LaneArray& msg)
 {
 	vmap_all.lanes = msg.lanes;
 	cache_left_lane();
+	if (is_cached_route() && is_cached_vmap()) {
+		create_lane_waypoint(current_route);
+		cached_route = false;
+	}
 }
 
 static void cache_node(const map_file::NodeArray& msg)
 {
 	vmap_all.nodes = msg.nodes;
 	cache_left_lane();
+	if (is_cached_route() && is_cached_vmap()) {
+		create_lane_waypoint(current_route);
+		cached_route = false;
+	}
 }
 
 static void cache_point(const map_file::PointClassArray& msg)
 {
 	vmap_all.points = msg.point_classes;
 	cache_left_lane();
+	if (is_cached_route() && is_cached_vmap()) {
+		create_lane_waypoint(current_route);
+		cached_route = false;
+	}
 }
 
 static void write_lane_waypoint(const geometry_msgs::Point& point, bool first)
@@ -117,6 +145,8 @@ static void create_lane_waypoint(const tablet_socket::route_cmd& msg)
 {
 	if (!is_cached_vmap()) {
 		ROS_WARN("not cached vmap");
+		cache_route(msg);
+		cached_route = true;
 		return;
 	}
 
