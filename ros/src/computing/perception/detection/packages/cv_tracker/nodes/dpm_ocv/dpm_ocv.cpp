@@ -48,7 +48,6 @@ private:
 	int lambda_;
 	int num_cells_;
 	int num_bins_;
-	int side_length_;
 	std::string model_file_;
 	std::string object_class;
 };
@@ -63,12 +62,11 @@ objectDetect::objectDetect() :
 {
 	ros::NodeHandle private_nh_("~");
 
-	private_nh_.param("overlap_threashold", overlap_threshold_, 0.5);
+	private_nh_.param("overlap_threshold", overlap_threshold_, 0.5);
 	private_nh_.param("num_threads", num_threads_, 8);
 	private_nh_.param("lambda", lambda_, 10);
 	private_nh_.param("num_cells", num_cells_, NUM_CELLS);
 	private_nh_.param("num_bins", num_bins_, NUM_BINS);
-	private_nh_.param("side_length", side_length_, 8);
 	private_nh_.param("val_of_tuncate", val_of_truncate_, 0.2);
 
 	if (!private_nh_.getParam("detection_class_name", object_class))  {
@@ -149,7 +147,7 @@ void objectDetect::imageCallback(const sensor_msgs::ImageConstPtr& img)
 #if defined(HAS_GPU)
 	if (use_gpu) {
 		gpu_detector_->detect(image, detections, (float)overlap_threshold_, num_threads_,
-			lambda_, side_length_, (float)val_of_truncate_);
+			lambda_, num_cells_, (float)val_of_truncate_);
 	} else {
 #endif
 		cpu_detector_->detect(image, detections, (float)overlap_threshold_, num_threads_,
