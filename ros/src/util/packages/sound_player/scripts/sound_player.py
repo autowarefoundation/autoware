@@ -69,8 +69,7 @@ def sound_player():
 	else:
 		proc = subprocess.Popen(['rosrun', 'sound_play', 'soundplay_node.py'])
 
-	cmd = '(cd $(rospack find runtime_manager)/../../../../.. ; pwd)'
-	autoware_path = subprocess.check_output([ 'sh', '-c', cmd ]).strip()
+	pack_path = subprocess.check_output([ 'rospack', 'find', 'sound_player' ]).strip()
 
 	global str_fn_dic
 	str_fn_dic = load_yaml('sound_player.yaml', {})
@@ -78,7 +77,11 @@ def sound_player():
 	for (k,fn) in str_fn_dic.items():
 		fn = os.path.expandvars(os.path.expanduser(fn))
 		if not os.path.isabs(fn):
-			fn = autoware_path + '/' + fn
+			if '/' in fn:
+				fn = pack_path + '/' + fn
+			else:
+				cmd = 'find ' + pack_path + '/wavs' + ' -name ' + fn
+				fn = subprocess.check_output([ 'sh', '-c', cmd ]).strip().split('\n')[0]
 		str_fn_dic[k] = fn
 
 	rospy.init_node('sound_player', anonymous=True)
