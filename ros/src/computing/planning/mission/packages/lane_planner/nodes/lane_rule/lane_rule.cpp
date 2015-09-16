@@ -573,11 +573,11 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "lane_rule");
 
 	ros::NodeHandle n;
-	n.param<int>("/lane_navi/sub_vmap_queue_size", sub_vmap_queue_size, 1);
-	n.param<int>("/lane_navi/sub_waypoint_queue_size", sub_waypoint_queue_size, 1);
-	n.param<int>("/lane_navi/sub_config_queue_size", sub_config_queue_size, 1);
-	n.param<int>("/lane_navi/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
-	n.param<bool>("/lane_navi/pub_waypoint_latch", pub_waypoint_latch, true);
+	n.param<int>("/lane_rule/sub_vmap_queue_size", sub_vmap_queue_size, 1);
+	n.param<int>("/lane_rule/sub_waypoint_queue_size", sub_waypoint_queue_size, 1);
+	n.param<int>("/lane_rule/sub_config_queue_size", sub_config_queue_size, 1);
+	n.param<int>("/lane_rule/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
+	n.param<bool>("/lane_rule/pub_waypoint_latch", pub_waypoint_latch, true);
 
 	ros::Subscriber sub_lane = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
 	ros::Subscriber sub_node = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
