@@ -41,7 +41,8 @@
 #include <float.h>
 #define NO_DATA 0
 
-static char window_name[] = "image_d_viewer";
+static char window_name_base[] = "image_d_viewer";
+static std::string window_name;
 //for imageCallback
 static cv_bridge::CvImagePtr cv_image;
 static IplImage temp;
@@ -241,9 +242,9 @@ static void showImage()
     /*
      * Show image
      */
-    if (cvGetWindowHandle(window_name) != NULL) // Guard not to write destroyed window by using close button on the window
+    if (cvGetWindowHandle(window_name.c_str()) != NULL) // Guard not to write destroyed window by using close button on the window
       {
-        cvShowImage(window_name, image_clone);
+        cvShowImage(window_name.c_str(), image_clone);
         cvWaitKey(2);
       }
     cvReleaseImage(&image_clone);
@@ -262,11 +263,6 @@ int main(int argc, char **argv)
     * part of the ROS system.
     */
 
-    cvNamedWindow(window_name, 2);
-    cvStartWindowThread();
-    image = NULL;
-    car_fused_objects.obj.clear();
-    pedestrian_fused_objects.obj.clear();
 
     ros::init(argc, argv, "image_d_viewer");
 
@@ -276,6 +272,7 @@ int main(int argc, char **argv)
      * NodeHandle destructed will close down the node.
      */
     ros::NodeHandle n;
+    ros::NodeHandle private_nh("~");
 
     /**
      * The subscribe() call is how you tell ROS that you want to receive messages
@@ -292,10 +289,38 @@ int main(int argc, char **argv)
      * is the number of messages that will be buffered up before beginning to throw
      * away the oldest ones.
      */
+    std::string image_topic;
+    std::string car_topic;
+    std::string person_topic;
 
-    ros::Subscriber image_sub = n.subscribe("/image_raw", 1, imageCallback);
-    ros::Subscriber obj_car_sub = n.subscribe("/obj_car/image_obj_ranged", 1, obj_carCallback);
-    ros::Subscriber obj_person_sub = n.subscribe("/obj_car/image_obj_ranged", 1, obj_personCallback);
+    if (!private_nh.getParam("image_topic", image_topic)) {
+      image_topic = "/image_raw";
+    }
+
+    if (!private_nh.getParam("car_topic", car_topic)) {
+      car_topic = "/obj_car/image_obj_ranged";
+    }
+
+    if (!private_nh.getParam("person_topic", person_topic)) {
+      person_topic = "/obj_person/image_obj_ranged";
+    }
+
+    std::string name_space_str = ros::this_node::getNamespace();
+    if (name_space_str != "/") {
+      window_name = std::string(window_name_base) + " (" + ros::this_node::getNamespace() + ")";
+    }
+    else {
+      window_name = std::string(window_name_base);
+    }
+    cvNamedWindow(window_name.c_str(), 2);
+    cvStartWindowThread();
+    image = NULL;
+    car_fused_objects.obj.clear();
+    pedestrian_fused_objects.obj.clear();
+
+    ros::Subscriber image_sub = n.subscribe(image_topic, 1, imageCallback);
+    ros::Subscriber obj_car_sub = n.subscribe(car_topic, 1, obj_carCallback);
+    ros::Subscriber obj_person_sub = n.subscribe(person_topic, 1, obj_personCallback);
 
     /**
      * ros::spin() will enter a loop, pumping callbacks.  With this version, all
@@ -303,7 +328,7 @@ int main(int argc, char **argv)
      * will exit when Ctrl-C is pressed, or the node is shutdown by the master.
      */
     ros::spin();
-    cvDestroyWindow(window_name);
+    cvDestroyWindow(window_name.c_str());
 
     return 0;
 }

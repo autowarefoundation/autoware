@@ -111,6 +111,11 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 					msg.min_height[pid] = fp[2];
 					msg.max_height[pid] = fp2[2];
 				}
+				else
+				{
+					msg.min_height[pid] = -1.25;
+					msg.max_height[pid] = 0;
+				}
 			}
 		}
 	}

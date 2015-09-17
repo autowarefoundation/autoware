@@ -88,10 +88,32 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "range_fusion");
 
 	ros::NodeHandle n;
+	ros::NodeHandle private_nh("~");
 
-	ros::Subscriber image_obj_sub = n.subscribe("image_obj", 1, DetectedObjectsCallback);
+	std::string image_topic;
+	std::string points_topic;
+	if (private_nh.getParam("image_node", image_topic))
+	{
+		ROS_INFO("Setting image node to %s", image_topic.c_str());
+	}
+	else
+	{
+		ROS_INFO("No image node received, defaulting to image_obj, you can use _image_node:=YOUR_TOPIC");
+		image_topic = "image_obj";
+	}
+	if (private_nh.getParam("points_node", points_topic))
+	{
+		ROS_INFO("Setting points node to %s", points_topic.c_str());
+	}
+	else
+	{
+		ROS_INFO("No points node received, defaulting to vscan_image, you can use _points_node:=YOUR_TOPIC");
+		points_topic = "/vscan_image";
+	}
+
+	ros::Subscriber image_obj_sub = n.subscribe(image_topic, 1, DetectedObjectsCallback);
 	//ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
-	ros::Subscriber points_image_sub =n.subscribe("/vscan_image", 1, PointsImageCallback);
+	ros::Subscriber points_image_sub =n.subscribe(points_topic, 1, PointsImageCallback);
 #if _DEBUG
 	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
