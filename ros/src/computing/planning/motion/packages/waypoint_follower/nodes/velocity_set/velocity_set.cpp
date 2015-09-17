@@ -93,7 +93,7 @@ public:
   double getVel(int num);
   void avoidSuddenBraking();
   void avoidSuddenAceleration();
-  bool checkWaypoint(int num, const std::string &name);
+  bool checkWaypoint(int num, const char *name);
 };
 PathVset _path_change, _path_subscribe;
 
@@ -105,7 +105,7 @@ PathVset _path_change, _path_subscribe;
 
 
 // check if waypoint number is valid
-bool PathVset::checkWaypoint(int num, const std::string& name)
+bool PathVset::checkWaypoint(int num, const char *name)
 {
   if (num < 0 || num >= getPathSize()){
     std::cout << name << ": invalid waypoint number" << std::endl;
@@ -130,14 +130,15 @@ void PathVset::avoidSuddenAceleration()
   double changed_vel;
   double interval = getInterval();
 
+  double temp1 = _current_vel*_current_vel;
+  double temp2 = 2*_decel*interval;
   for (int i = 0; ; i++) {
-    if (!checkWaypoint(_closest_waypoint+i, "avoidSuddenAceleration")) {return;}
-    changed_vel = sqrt(_current_vel*_current_vel + 2*_decel*interval*(double)(i+2));
-    if (changed_vel > current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x) {
+    if (!checkWaypoint(_closest_waypoint+i, "avoidSuddenAceleration"))
       return;
-    } else {
-      current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x = changed_vel;
-    }
+    changed_vel = sqrt(temp1 + temp2*(double)(i+2));
+    if (changed_vel > current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x)
+      return;
+    current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x = changed_vel;
   }
 
   return;
@@ -151,13 +152,16 @@ void PathVset::avoidSuddenBraking()
   int fill_in_vel = 15;
   int examin_range = 7; // need to change according to waypoint interval?
   int num;
-  double temp;
   double interval = getInterval();
+  double changed_vel;
 
   for (int j = -2; j < examin_range; j++) {
-    if (!checkWaypoint(_closest_waypoint+j, "avoidSuddenBraking")) {continue;}
-    if (getVel(_closest_waypoint+j) < _current_vel - _decel_limit) {break;} // we must change waypoints
-    if (j == examin_range-1) {return;} // we don't have to change waypoints
+    if (!checkWaypoint(_closest_waypoint+j, "avoidSuddenBraking"))
+      return;
+    if (getVel(_closest_waypoint+j) < _current_vel - _decel_limit) // we must change waypoints
+      break;
+    if (j == examin_range-1) // we don't have to change waypoints
+      return;
   }
 
   
@@ -168,25 +172,30 @@ void PathVset::avoidSuddenBraking()
 
   // fill in waypoints velocity behind vehicle
   for (num = _closest_waypoint-1; fill_in_vel > 0; fill_in_vel--) {
-    if (!checkWaypoint(num-fill_in_vel, "avoidSuddenBraking")) {continue;}
+    if (!checkWaypoint(num-fill_in_vel, "avoidSuddenBraking"))
+      continue;
     current_path_.waypoints[num-fill_in_vel].twist.twist.linear.x = _current_vel;
   }
 
   // decelerate gradually
+  double temp1 = _current_vel*_current_vel;
+  double temp2 = 2*_decel*interval;
   for (num = _closest_waypoint-1; ; num++) {
-    if (num >= getPathSize()) {return;}
-    if (!checkWaypoint(num, "avoidSuddenBraking")) {continue;}
-    temp = _current_vel*_current_vel - 2*_decel*interval*(double)i; // sqrt(v^2 - 2*a*x)
-    if (temp > 0) {
-      current_path_.waypoints[num].twist.twist.linear.x = sqrt(temp);
-    } else {
+    if (num >= getPathSize())
+      return;
+    if (!checkWaypoint(num, "avoidSuddenBraking"))
+      continue;
+    changed_vel = temp1 - temp2*(double)i; // sqrt(v^2 - 2*a*x)
+    if (changed_vel <= 0)
       break;
-    }
+    current_path_.waypoints[num].twist.twist.linear.x = sqrt(changed_vel);
+
     i++;
   }
 
   for (int j = 0; j < fill_in_zero; j++) {
-    if (!checkWaypoint(num+j, "avoidSuddenBraking")) {continue;}
+    if (!checkWaypoint(num+j, "avoidSuddenBraking"))
+      continue;
     current_path_.waypoints[num+j].twist.twist.linear.x = 0.0;
   }
 
@@ -206,7 +215,8 @@ void PathVset::changeWaypoints(int stop_waypoint)
 
   // change waypoints to decelerate
   for (int num = stop_waypoint; num > _closest_waypoint - close_waypoint_threshold; num--){
-    if (!checkWaypoint(num, "changeWaypoints")) {continue;}
+    if (!checkWaypoint(num, "changeWaypoints"))
+      continue;
 
     changed_vel = sqrt(2.0*_decel*(interval*i)); // sqrt(2*a*x)
 
@@ -228,7 +238,8 @@ void PathVset::changeWaypoints(int stop_waypoint)
 
   // fill in 0
   for (int j = 1; j < fill_in_zero; j++){
-    if (!checkWaypoint(stop_waypoint+j, "changeWaypoints")) {continue;}
+    if (!checkWaypoint(stop_waypoint+j, "changeWaypoints"))
+      continue;
     current_path_.waypoints[stop_waypoint+j].twist.twist.linear.x = 0.0;
   }
 
@@ -527,7 +538,7 @@ static void ChangeWaypoint(bool detection_result)
 
 
     return;
-  }
+}
 
 
 
