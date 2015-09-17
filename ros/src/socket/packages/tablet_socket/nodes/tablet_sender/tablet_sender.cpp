@@ -39,6 +39,7 @@
 #include <tablet_socket/error_info.h>
 #include <tablet_socket/mode_info.h>
 #include <vehicle_socket/CanInfo.h>
+#include <ndt_localizer/ndt_stat.h>
 
 static constexpr int DEFAULT_PORT = 5777;
 static constexpr int LISTEN_BACKLOG = 10;
@@ -188,11 +189,21 @@ struct mode_request {
 
 struct ndt_request {
 	int32_t type;
-	int32_t data;
+	float exe_time;
+	int32_t iteration;
+	float score;
+	float velocity;
+	float acceleration;
+	int32_t use_predict_pose;
 
-	ndt_request(const std_msgs::Bool& msg) {
+	ndt_request(const ndt_localizer::ndt_stat& msg) {
 		type = NDT_STAT_TYPE;
-		data = msg.data ? 1 : 0;
+		exe_time = msg.exe_time;
+		iteration = msg.iteration;
+		score = msg.score;
+		velocity = msg.velocity;
+		acceleration = msg.acceleration;
+		use_predict_pose = msg.use_predict_pose;
 	}
 };
 
@@ -305,7 +316,7 @@ static void subscribe_mode_info(const tablet_socket::mode_info& msg)
 	}
 }
 
-static void subscribe_ndt_stat(const std_msgs::Bool& msg)
+static void subscribe_ndt_stat(const ndt_localizer::ndt_stat& msg)
 {
 	ndt_request request(msg);
 	int response;
