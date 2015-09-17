@@ -21,12 +21,11 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          stat_topic : [ ndt ]
       - name : ndt_matching
         cmd  : roslaunch ndt_localizer ndt_matching.launch
         param: ndt
         gui  :
-          stat_topic : [ ndt, /time_ndt_matching ]
+          stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
           x  :
             user_category : ''
           yaw:

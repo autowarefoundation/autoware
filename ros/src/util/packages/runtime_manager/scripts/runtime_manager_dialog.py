@@ -73,6 +73,7 @@ from tablet_socket.msg import mode_cmd
 from tablet_socket.msg import gear_cmd
 from tablet_socket.msg import Waypoint
 from tablet_socket.msg import route_cmd
+from ndt_localizer.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from runtime_manager.msg import accel_cmd
@@ -127,8 +128,12 @@ class MyFrame(rtmgr.MyFrame):
 			pnl = self.obj_get('panel_' + nm + '_qs')
 			self.set_param_panel(btn, pnl)
 
-			for topic in self.qs_dic.get('exec_time', {}).get(nm, {}).keys():
-				rospy.Subscriber(topic, std_msgs.msg.Float32, self.exec_time_callback, callback_args=topic)
+			for key in self.qs_dic.get('exec_time', {}).get(nm, {}).keys():
+				(topic, msg, attr) = ( key.split('.') + [ None, None, None ] )[:3]
+				msg = globals().get(msg)
+				msg = msg if msg else std_msgs.msg.Float32
+				attr = attr if attr else 'data'
+				rospy.Subscriber(topic, msg, self.exec_time_callback, callback_args=(key, attr))
 
 		#
 		# for Map tab
@@ -366,7 +371,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		# topic /xxx_stat
 		self.stat_dic = {}
-		for k in [ 'gnss', 'pmap', 'vmap', 'ndt', 'lf' ]:
+		for k in [ 'gnss', 'pmap', 'vmap', 'lf' ]:
 			self.stat_dic[k] = False
 			name = k + '_stat'
 			rospy.Subscriber(name, std_msgs.msg.Bool, self.stat_callback, callback_args=k)
@@ -561,17 +566,17 @@ class MyFrame(rtmgr.MyFrame):
 		gdic = self.obj_to_gdic(obj, {})
 		msg = std_msgs.msg.Bool(False)
 		for k in gdic.get('stat_topic', []):
-			self.stat_callback(msg, k)
-
 			# exec_time off
 			if get_top([ dic for dic in exec_time.values() if k in dic ]):
-				self.exec_time_callback(std_msgs.msg.Float32(0), k)
+				self.exec_time_callback(std_msgs.msg.Float32(0), (k, 'data'))
+			else:
+				self.stat_callback(msg, k)
 
 		# Quick Start tab, exec_time off
 		obj_nm = self.name_get(obj)
 		nm = get_top([ nm for nm in qs_nms if 'button_' + nm + '_qs' == obj_nm ])
-		for topic in exec_time.get(nm, {}):
-			self.exec_time_callback(std_msgs.msg.Float32(0), topic)
+		for key in exec_time.get(nm, {}):
+			self.exec_time_callback(std_msgs.msg.Float32(0), (key, 'data'))
 
 	def route_cmd_callback(self, data):
 		self.route_cmd_waypoint = data.point
@@ -585,11 +590,11 @@ class MyFrame(rtmgr.MyFrame):
 			v = self.stat_dic.get('pmap') and self.stat_dic.get('vmap')
 			wx.CallAfter(self.label_map_qs.SetLabel, 'OK' if v else '')
 
-	def exec_time_callback(self, msg, topic):
-		msec = int(msg.data)
+	def exec_time_callback(self, msg, (key, attr)):
+		msec = int(getattr(msg, attr, 0))
 		exec_time = self.qs_dic.get('exec_time', {})
-		(nm, dic) = get_top([ (nm, dic) for (nm, dic) in exec_time.items() if topic in dic ])
-		dic[ topic ] = msec
+		(nm, dic) = get_top([ (nm, dic) for (nm, dic) in exec_time.items() if key in dic ])
+		dic[ key ] = msec
 		lb = self.obj_get('label_' + nm + '_qs')
 		if lb:
 			sum = reduce( lambda a,b:a+(b if b else 0), dic.values(), 0 )
