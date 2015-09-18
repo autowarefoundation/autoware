@@ -300,36 +300,6 @@ void displayLinePoint(double slope,double intercept,geometry_msgs::Point target 
   _line_point_pub.publish(marker);
 }
 
-//calculation relative coordinate of point from current_pose frame
-geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose)
-{
-  tf::Transform inverse;
-  tf::poseMsgToTF(current_pose, inverse);
-  tf::Transform transform = inverse.inverse();
-
-  tf::Vector3 v = point2vector(point);
-  tf::Vector3 tf_v = transform * v;
-
-  return vector2point(tf_v);
-}
-
-//calculation absolute coordinate of point on current_pose frame
-geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose)
-{
-  tf::Transform inverse;
-  tf::poseMsgToTF(current_pose, inverse);
-
-  tf::Vector3 v = point2vector(point);
-  tf::Vector3 tf_v = inverse * v;
-
-  return vector2point(tf_v);
-}
-
-//convert from degree to radian
-double deg2rad(double deg){
-  return deg * M_PI/180;
-}
-
 //rotation point by degree
 geometry_msgs::Point rotatePoint(double degree, geometry_msgs::Point point)
 {
@@ -338,17 +308,6 @@ geometry_msgs::Point rotatePoint(double degree, geometry_msgs::Point point)
   rotate.y = sin(deg2rad(degree)) * point.x + cos(deg2rad(degree)) * point.y;
 
   return rotate;
-}
-
-
-//distance between target 1 and target2 in 2-D
-double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point target2)
-{
-  tf::Vector3 v1 = point2vector(target1);
-  v1.setZ(0);
-  tf::Vector3 v2 = point2vector(target2);
-  v2.setZ(0);
-  return tf::tfDistance(v1,v2) ;
 }
 
 double getCmdVelocity(int waypoint)
@@ -424,91 +383,6 @@ static void shorteningThreshold(double *lookahead_threshold)
     *lookahead_threshold = MINIMUM_LOOK_AHEAD_THRESHOLD;
   }
   ROS_INFO_STREAM("fixed threshold = " << *lookahead_threshold);
-}
-
-//get closest waypoint from current pose
-int getClosestWaypoint(waypoint_follower::lane current_path,geometry_msgs::Pose current_pose )
-{
-  // std::cout << "==GetClosestWaypoint==" << std::endl;
-
-  static int closest_waypoint = 0;
-  if (!current_path.waypoints.size()){
-    closest_waypoint = -1;
-    return -1;
-  }
-
-
-  int closest_threshold = 5;
-  int interval = 1.0;
-
-  //decide search radius
-  for (int ratio = 1; ratio < closest_threshold; ratio++) {
-
-    double distance_threshold = 2 * ratio * interval; //meter
-      //  std::cout << "distance_threshold : " << distance_threshold << std::endl;
-
-    std::vector<int> waypoint_candidates;
-
-    //search closest candidate
-    for (int i = 1; i < static_cast<int>(current_path.waypoints.size()); i++) {
-
-      //std::cout << waypoint << std::endl;
-
-      //skip waypoint behind vehicle
-      if (calcRelativeCoordinate(current_path.waypoints[i].pose.pose.position,current_pose).x < 0)
-        continue;
-
-      if (getPlaneDistance(current_path.waypoints[i].pose.pose.position,current_pose.position) < distance_threshold) {
-        waypoint_candidates.push_back(i);
-     //   std::cout << "waypoint = " << i << "  distance = " << getPlaneDistance(current_path.waypoints[i].pose.pose.position,current_pose.position)  << std::endl;
-      }
-    }
-
-    if (waypoint_candidates.size() == 0) {
-      continue;
-    }
-
-    //search substraction minimum between candidate and previous closest
-    int substraction_minimum = 0;
-    int decided_waypoint = 0;
-    int initial_minimum = 0;
-
-    //decide initial minimum
-    for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-      substraction_minimum = waypoint_candidates[i] - closest_waypoint;
-      if (substraction_minimum < 0)
-        continue;
-
-      if (substraction_minimum >= 0) {
-        decided_waypoint = waypoint_candidates[i];
-        initial_minimum = i;
-        break;
-      }
-    }
-
-    //calc closest
-    for (unsigned int i = initial_minimum; i < waypoint_candidates.size(); i++) {
-      int sub = waypoint_candidates[i] - closest_waypoint;
-      //std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
-
-      if (sub < 0)
-        continue;
-
-      if (sub < substraction_minimum) {
-        decided_waypoint = waypoint_candidates[i];
-        substraction_minimum = sub;
-      }
-    }
-
-    if (decided_waypoint >= closest_waypoint) {
-      closest_waypoint = decided_waypoint;
-      return decided_waypoint;
-      //return decided_waypoint;
-    }
-
-  }
-  closest_waypoint = -1;
-  return -1;
 }
 
 //evaluate score between locus and path

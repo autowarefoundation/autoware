@@ -72,7 +72,7 @@ public:
 
 inline double kmph2mps(double velocity_kmph) { return (velocity_kmph * 1000) / (60 * 60); }
 inline double mps2kmph(double velocity_mps) { return (velocity_mps * 60 * 60) / 1000; }
-double DecelerateVelocity(double distance, double prev_velocity);
+inline double deg2rad(double deg){  return deg * M_PI/180;} //convert from degree to radian
 inline tf::Vector3 point2vector(geometry_msgs::Point point)
 {
   tf::Vector3 vector(point.x,point.y,point.z);
@@ -87,5 +87,11 @@ inline geometry_msgs::Point vector2point(tf::Vector3 vector)
   point.z = vector.getZ();
   return point;
 }
+
+double DecelerateVelocity(double distance, double prev_velocity);
+geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
+geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
+double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point target2);
+int getClosestWaypoint(waypoint_follower::lane current_path,geometry_msgs::Pose current_pose );
 
 #endif
