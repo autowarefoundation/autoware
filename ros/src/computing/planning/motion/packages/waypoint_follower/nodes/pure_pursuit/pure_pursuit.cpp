@@ -588,9 +588,15 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
 
 
     if(next_waypoint  == (path_size -1))
-      return _current_path.waypoints[i].pose.pose.position;
+      return _current_waypoints.getWaypointPosition(i);
 
     interpolateNextTarget(next_waypoint, lookahead_threshold, &next_target);
+
+#if 1 /* log */
+      std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
+      ofs << _current_waypoints.getWaypointPosition(next_waypoint).x << " "  << _current_waypoints.getWaypointPosition(next_waypoint).y << " " <<  next_target.x << " " << next_target.y <<  std::endl;
+#endif
+
     return next_target;
   }
 
