@@ -76,8 +76,9 @@ private:
 	waypoint_follower::lane current_waypoints_;
 
 public:
-	void setPath(waypoint_follower::lane waypoints) { current_waypoints_ = waypoints; }
+	void setPath(const waypoint_follower::lane &waypoints) { current_waypoints_ = waypoints; }
 	int getSize() const;
+	bool isEmpty() const { return current_waypoints_.waypoints.empty(); };
 	double getInterval() const;
 	geometry_msgs::Point getWaypointPosition(int waypoint) const;
 	geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
