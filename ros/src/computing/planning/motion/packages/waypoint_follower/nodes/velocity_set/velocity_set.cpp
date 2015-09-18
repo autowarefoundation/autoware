@@ -41,6 +41,7 @@
 #include <pcl/point_types.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Int32.h>
 
 #include <iostream>
 
@@ -551,7 +552,8 @@ int main(int argc, char **argv)
     _sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
     _safety_waypoint_pub = nh.advertise<waypoint_follower::lane>("safety_waypoint", 1000, true);
     _linelist_pub = nh.advertise<visualization_msgs::Marker>("vscan_linelist", 10);
-
+    static ros::Publisher closest_waypoint_pub;
+    closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
 
 
     private_nh.getParam("detection_range", _detection_range);
@@ -593,6 +595,7 @@ int main(int argc, char **argv)
         }
 	
 	_closest_waypoint = getClosestWaypoint(_path_change.getCurrentWaypoints(), _current_pose.pose);
+	closest_waypoint_pub.publish(_closest_waypoint);
         bool detection_result = ObstacleDetection();
 
 	ChangeWaypoint(detection_result);
