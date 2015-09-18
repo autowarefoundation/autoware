@@ -43,7 +43,7 @@
 #include "runtime_manager/ConfigLaneFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
-static const int LOOP_RATE = 10; //Hz
+static const int LOOP_RATE = 30; //Hz
 static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 3.0; // the next waypoint must be outside of this threshold.
 static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 4.0; // the next waypoint must be outside of this threshold.
 static const double EVALUATION_THRESHOLD = 1.0; //meter
@@ -610,50 +610,45 @@ geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 }
 
 //generate the locus of pure pursuit
-std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target,double curvature)
+std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
 {
   std::vector<geometry_msgs::Point> locus_array;
-  double radius;
+  double radius = calcRadius (target);
+  //if(radius < 0)
+  //  radius = radius * (-1);
   double theta;
-  double interval = 1;
-  if (curvature != 0){
-    radius = 1 / curvature;
-     theta = 2 * asin(interval/(2 * radius));
-  }else{
-    radius = 0;
-  theta = 0;
-  }
+  if (radius != 0)
+    theta = 2 * asin (getPlaneDistance (target, _current_pose.pose.position) / (2 * radius));
+  else
+    theta = 0;
 
   //ROS_INFO("radius : %lf", radius);
   //ROS_INFO("theta : %lf", theta);
-  int i = 0;
-  while(1){
- //   ROS_INFO("loop : %d", i);
-      //calc a point of circumference
-      geometry_msgs::Point p;
-      p.x = radius * cos(theta * i);
-      p.y = radius * sin(theta * i);
-  //    ROS_INFO("p : (%lf , %lf )", p.x, p.y);
+  int step = 100;
+  for (double i = theta/step; fabs(i) < fabs(theta); i+=theta/step)
+  {
+    //   ROS_INFO("loop : %d", i);
+    //calc a point of circumference
+    geometry_msgs::Point p;
+    p.x = radius * cos (i);
+    p.y = radius * sin (i);
+    //    ROS_INFO("p : (%lf , %lf )", p.x, p.y);
 
-      //transform to (radius,0)
-      geometry_msgs::Point relative_p;
-      relative_p.x = p.x - radius;
-      relative_p.y = p.y;
+    //transform to (radius,0)
+    geometry_msgs::Point relative_p;
+    relative_p.x = p.x - radius;
+    relative_p.y = p.y;
 
-      //rotate -90°
-      geometry_msgs::Point rotate_p = rotatePoint(-90,relative_p);
+    //rotate -90°
+    geometry_msgs::Point rotate_p = rotatePoint (-90, relative_p);
 
-  //    ROS_INFO("relative point : (%lf , %lf )", rotate_p.x, rotate_p.y);
+    //    ROS_INFO("relative point : (%lf , %lf )", rotate_p.x, rotate_p.y);
 
     //transform to vehicle plane
-    geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p,_current_pose.pose);
- //   ROS_INFO("locus : (%lf , %lf )", tf_p.x, tf_p.y);
+    geometry_msgs::Point tf_p = calcAbsoluteCoordinate (rotate_p, _current_pose.pose);
+    //   ROS_INFO("locus : (%lf , %lf )", tf_p.x, tf_p.y);
 
-    if(getPlaneDistance(tf_p,target) < 0.5)
-      break;
-
-    locus_array.push_back(tf_p);
-    i++;
+    locus_array.push_back (tf_p);
 
   }
   return locus_array;
@@ -730,10 +725,9 @@ int main(int argc, char **argv)
       else
       {
         displayNextTarget(next_target);
-        double curvature = calcCurvature(next_target);
-        std::vector<geometry_msgs::Point> locus_array = generateLocus(next_target, curvature);
+        std::vector<geometry_msgs::Point> locus_array = generateLocus(next_target);
         displayLocus(locus_array);
-        twist.twist = calcTwist(curvature, getCmdVelocity(closest_waypoint));
+        twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(closest_waypoint));
         wf_stat.data = true;
         _stat_pub.publish(wf_stat);
       }
