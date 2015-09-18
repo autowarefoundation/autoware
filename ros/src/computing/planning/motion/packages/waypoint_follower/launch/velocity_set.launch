@@ -3,7 +3,7 @@
 
 	<arg name="detection_range" default="1.3" /> <!-- meter 2.2 -->
 	<arg name="threshold_points" default="15" /> <!-- 5 -->
-	<arg name="car_distance" default="15" /> 
+	<arg name="obstacle_distance" default="15" /> 
 	<arg name="detection_height_top" default="2.5" /><!-- 2.0 -->
 	<arg name="detection_height_bottom" default="-1.5" />
 	<arg name="current_pose_topic" default="ndt" /> 
@@ -13,7 +13,7 @@
 	<node pkg="waypoint_follower" type="velocity_set" name="velocity_set" output="screen">
 		<param name="detection_range" value="$(arg detection_range)" />
 		<param name="threshold_points" value="$(arg threshold_points)" />
-		<param name="car_distance" value="$(arg car_distance)" />
+		<param name="obstacle_distance" value="$(arg obstacle_distance)" />
 		<param name="detection_height_top" value="$(arg detection_height_top)" />
 		<param name="detection_height_bottom" value="$(arg detection_height_bottom)" />
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
