@@ -983,23 +983,14 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
     //if search waypoint is last
     if(i == (path_size -1)){
       next_waypoint = i;
-      ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
-      displayNextWaypoint(next_waypoint);
-      return _current_path.waypoints[i].pose.pose.position;
+      break;
     }
 
     //if threshold is  distance of previous waypoint
-    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT)
-    {
-      if (getPlaneDistance(_current_path.waypoints[next_waypoint].pose.pose.position, _current_pose.pose.position) > lookahead_threshold){
-        ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
-        displayNextWaypoint(next_waypoint);
-        interpolateNextTarget(next_waypoint, lookahead_threshold, &next_target);
-        return next_target;
-      }
-
-    }
-
+    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT && 
+        getPlaneDistance(_current_path.waypoints[next_waypoint].pose.pose.position, _current_pose.pose.position) > lookahead_threshold)
+        break;
+    
     // if there exists an effective waypoint
     if (getPlaneDistance(_current_path.waypoints[i].pose.pose.position, _current_pose.pose.position) > lookahead_threshold)
     {
@@ -1007,23 +998,36 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
       if (_param_flag  == MODE_DIALOG || evaluateLocusFitness(closest_waypoint,i))
       {
         next_waypoint = i;
-        ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
-        displayNextWaypoint(next_waypoint);
-        interpolateNextTarget(next_waypoint, lookahead_threshold, &next_target);
-        return next_target;
+        break;
       }
 
       //threshold shortening
       shorteningThreshold(&lookahead_threshold);
+      if(lookahead_threshold == MINIMUM_LOOK_AHEAD_THRESHOLD){
+        next_waypoint = i;
+        break;       
+      }
+
       //restart search from closest_waypoint
       i = closest_waypoint;
     }
     i++;
   }
 
+  if(next_waypoint != -1){
+
+    ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
+    displayNextWaypoint(next_waypoint);
+
+
+    if(next_waypoint  == (path_size -1))
+      return _current_path.waypoints[i].pose.pose.position;
+
+    interpolateNextTarget(next_waypoint, lookahead_threshold, &next_target);
+    return next_target;
+  }
+
   // if the program reaches here, it means we lost the waypoint.
-  next_waypoint = -1;
-  ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
   return point_zero;
 }
 
