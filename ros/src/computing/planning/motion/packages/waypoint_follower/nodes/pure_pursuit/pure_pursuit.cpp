@@ -382,7 +382,7 @@ bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
 {
 	geometry_msgs::Point next_waypoint_position = _current_waypoints.getWaypointPosition(next_waypoint);
   double radius = calcRadius(next_waypoint_position);
-  std::cout << "radius "<< radius << std::endl;
+
   if (radius < 0)
     radius = (-1) * radius;
 
@@ -540,7 +540,7 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
   int i = closest_waypoint;
   while(i < path_size)
   {
-    displaySearchRadius(lookahead_threshold);
+
     //if search waypoint is last
     if(i == (path_size -1)){
       next_waypoint = i;
