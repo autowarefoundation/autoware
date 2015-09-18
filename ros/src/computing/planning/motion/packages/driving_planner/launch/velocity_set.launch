@@ -10,7 +10,7 @@
 	<arg name="velocity_limit" default="12.0" /> <!-- 43.2 km/h -->
 
 	<!-- rosrun waypoint_follower velocity_set _detection_range:=0 -->
-	<node pkg="waypoint_follower" type="velocity_set" name="velocity_set" output="screen">
+	<node pkg="driving_planner" type="velocity_set" name="velocity_set" output="screen">
 		<param name="detection_range" value="$(arg detection_range)" />
 		<param name="threshold_points" value="$(arg threshold_points)" />
 		<param name="car_distance" value="$(arg car_distance)" />
