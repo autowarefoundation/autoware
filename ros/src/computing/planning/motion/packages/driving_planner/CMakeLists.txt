@@ -80,7 +80,10 @@ target_link_libraries(lattice_twist_convert libwaypoint_follower libtraj_gen ${c
 add_dependencies(lattice_twist_convert 
 waypoint_follower_generate_messages_cpp)
 
-
+add_executable(path_select nodes/path_select/path_select.cpp)
+target_link_libraries(path_select libwaypoint_follower  ${catkin_LIBRARIES})
+add_dependencies(path_select 
+waypoint_follower_generate_messages_cpp)
 
 #############
 ## Install ##
