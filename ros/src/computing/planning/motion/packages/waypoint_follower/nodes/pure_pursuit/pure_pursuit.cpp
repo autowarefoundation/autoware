@@ -160,10 +160,9 @@ static void displayNextTarget(geometry_msgs::Point target)
   marker.header.stamp = ros::Time();
   marker.ns = "next_target_marker";
   marker.id = 0;
-  marker.type = visualization_msgs::Marker::SPHERE_LIST;
+  marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
-  //marker.pose.position = target;
-  marker.points.push_back(target);
+  marker.pose.position = target;
   std_msgs::ColorRGBA green;
   green.a = 1.0;
   green.b = 0.0;
