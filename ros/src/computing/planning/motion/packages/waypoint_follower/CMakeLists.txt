@@ -81,8 +81,4 @@ target_link_libraries(odom_gen libwaypoint_follower ${catkin_LIBRARIES})
 add_executable(twist_filter nodes/twist_filter/twist_filter.cpp)
 target_link_libraries(twist_filter ${catkin_LIBRARIES})
 
-add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
-target_link_libraries(velocity_set libwaypoint_follower ${catkin_LIBRARIES})
-add_dependencies(velocity_set 
-waypoint_follower_generate_messages_cpp)
 
