@@ -56,7 +56,7 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "twist_through");
+    ros::init(argc, argv, "twist_filter");
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");

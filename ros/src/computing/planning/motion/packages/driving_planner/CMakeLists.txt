@@ -85,6 +85,11 @@ target_link_libraries(velocity_set libwaypoint_follower ${catkin_LIBRARIES})
 add_dependencies(velocity_set 
 waypoint_follower_generate_messages_cpp)
 
+add_executable(path_select nodes/path_select/path_select.cpp)
+target_link_libraries(path_select libwaypoint_follower  ${catkin_LIBRARIES})
+add_dependencies(path_select 
+waypoint_follower_generate_messages_cpp)
+
 
 #############
 ## Install ##

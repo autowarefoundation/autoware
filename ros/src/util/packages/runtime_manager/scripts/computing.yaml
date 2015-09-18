@@ -235,10 +235,8 @@ subs :
            stat_topic : [ lf ]  
        - name : velocity_set
          cmd  : roslaunch waypoint_follower velocity_set.launch
-       - name : collision_avoid
-         cmd  : roslaunch waypoint_follower collision_avoid.launch  
-       - name : twist_through
-         cmd  : rosrun waypoint_follower twist_through  
+       - name : twist_filter
+         cmd  : rosrun waypoint_follower twist_filter  
        - name : wf_simulator
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator  
