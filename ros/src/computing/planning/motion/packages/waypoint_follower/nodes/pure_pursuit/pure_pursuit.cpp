@@ -159,7 +159,7 @@ static void displayNextTarget(geometry_msgs::Point target)
   green.b = 0.0;
   green.r = 0.0;
   green.g = 1.0;
-  marker.colors.push_back(green);
+  marker.color = green;
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
   marker.scale.z = 1.0;
@@ -582,8 +582,9 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
 
 
     if(next_waypoint  == (path_size -1))
-      return _current_waypoints.getWaypointPosition(i);
+      return _current_waypoints.getWaypointPosition(next_waypoint);
 
+    displaySearchRadius(lookahead_threshold);
     interpolateNextTarget(next_waypoint, lookahead_threshold, &next_target);
 
 #if 1 /* log */
