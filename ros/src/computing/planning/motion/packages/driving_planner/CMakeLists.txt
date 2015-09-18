@@ -80,6 +80,10 @@ target_link_libraries(lattice_twist_convert libwaypoint_follower libtraj_gen ${c
 add_dependencies(lattice_twist_convert 
 waypoint_follower_generate_messages_cpp)
 
+add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
+target_link_libraries(velocity_set libwaypoint_follower ${catkin_LIBRARIES})
+add_dependencies(velocity_set 
+waypoint_follower_generate_messages_cpp)
 
 
 #############
