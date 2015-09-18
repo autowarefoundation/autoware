@@ -64,7 +64,7 @@ static bool _pose_set = false;
 static int _param_flag = 0; //0 = waypoint, 1 = Dialog
 static double _lookahead_threshold = 4.0; //meter
 static double _initial_velocity = 5.0; //km/h
-static waypoint_follower::lane _current_path;
+static WayPoints _current_waypoints;
 static ros::Publisher _locus_pub;
 static ros::Publisher _target_pub;
 static ros::Publisher _search_pub;
@@ -72,8 +72,6 @@ static ros::Publisher _line_point_pub;
 
 static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
 {
-  //_path_pp.setConfig(config);
-
   _param_flag = config->param_flag;
   _lookahead_threshold = config->lookahead_threshold;
   _initial_velocity = config->velocity;
@@ -94,9 +92,7 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
     tf::Transform inverse;
     tf::poseMsgToTF(msg->pose.pose, inverse);
-   // _path_pp.setTransform(inverse.inverse());
     _pose_set = true;
-    //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
   }
 
 }
@@ -107,9 +103,6 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   {
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose;
-   // tf::Transform inverse;
-  //  tf::poseMsgToTF(msg->pose, inverse);
-   // _path_pp.setTransform(inverse.inverse());
     _pose_set = true;
   }
 }
@@ -121,9 +114,7 @@ static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
- // _path_pp.setPath(msg);
-
-  _current_path = *msg;
+	_current_waypoints.setPath(*msg);
   _waypoint_set = true;
   ROS_INFO_STREAM("waypoint subscribed");
 }
@@ -139,7 +130,7 @@ static void displayNextWaypoint(int i)
   marker.id = 0;
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position = _current_path.waypoints[i].pose.pose.position;
+  marker.pose.position = _current_waypoints.getWaypointPosition(i);
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
   marker.scale.z = 1.0;
@@ -317,13 +308,14 @@ double getCmdVelocity(int waypoint)
     ROS_INFO_STREAM("dialog : " << _initial_velocity << " km/h (" << kmph2mps(_initial_velocity) << " m/s )");
     return kmph2mps(_initial_velocity);
   }
-  if (_current_path.waypoints.empty())
+
+  if (_current_waypoints.isEmpty())
   {
     ROS_INFO_STREAM("waypoint : not loaded path");
     return 0;
   }
 
-  double velocity = _current_path.waypoints[waypoint].twist.twist.linear.x;
+  double velocity = _current_waypoints.getWaypointVelocityMPS(waypoint);
   ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h ( " << velocity << "m/s )");
   return velocity;
 }
@@ -333,7 +325,8 @@ double getLookAheadThreshold(int waypoint)
   if (_param_flag)
     return _lookahead_threshold;
 
-  double current_velocity_mps = _current_path.waypoints[waypoint].twist.twist.linear.x;
+  double current_velocity_mps = _current_waypoints.getWaypointVelocityMPS(waypoint);
+
   if (current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO < MINIMUM_LOOK_AHEAD_THRESHOLD)
     return MINIMUM_LOOK_AHEAD_THRESHOLD;
   else
@@ -375,7 +368,7 @@ static void shorteningThreshold(double *lookahead_threshold)
   if (*lookahead_threshold > MINIMUM_LOOK_AHEAD_THRESHOLD)
   {
     // std::cout << "threshold correction" << std::endl;
-   * lookahead_threshold -= *lookahead_threshold / 10;
+   *lookahead_threshold -= *lookahead_threshold / 10;
   }
   else
   {
@@ -387,7 +380,7 @@ static void shorteningThreshold(double *lookahead_threshold)
 //evaluate score between locus and path
 bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
 {
-  geometry_msgs::Point next_waypoint_position = _current_path.waypoints[next_waypoint].pose.pose.position;
+	geometry_msgs::Point next_waypoint_position = _current_waypoints.getWaypointPosition(next_waypoint);
   double radius = calcRadius(next_waypoint_position);
   std::cout << "radius "<< radius << std::endl;
   if (radius < 0)
@@ -405,7 +398,7 @@ bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
   double evaluation = 0;
   for (int j = closest_waypoint + 1; j < next_waypoint; j++)
   {
-   geometry_msgs::Point tf_p = calcRelativeCoordinate(_current_path.waypoints[j].pose.pose.position,_current_pose.pose);
+   geometry_msgs::Point tf_p = calcRelativeCoordinate(_current_waypoints.getWaypointPosition(j),_current_pose.pose);
    tf::Vector3 tf_v = point2vector(tf_p);
     tf_v.setZ(0);
     double dt_diff = fabs(tf::tfDistance(center, tf_v) - fabs(radius));
@@ -425,8 +418,8 @@ bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
 bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msgs::Point *next_target)
 {
    geometry_msgs::Point zero_p;
-   geometry_msgs::Point end = _current_path.waypoints[next_waypoint].pose.pose.position;
-   geometry_msgs::Point start = _current_path.waypoints[next_waypoint - 1].pose.pose.position;
+   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
+   geometry_msgs::Point start =_current_waypoints.getWaypointPosition(next_waypoint - 1);
 
    //get slope of segment end,start
    double slope = (start.y -end.y)/(start.x - end.x);
@@ -529,14 +522,15 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
 geometry_msgs::Point getNextTarget(double closest_waypoint)
 {
   static int next_waypoint = -1;
-  int path_size = static_cast<int>(_current_path.waypoints.size());
+  int path_size = static_cast<int>(_current_waypoints.getSize());
   geometry_msgs::Point next_target;
   geometry_msgs::Point point_zero;
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint);
   //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
 
+
   // if waypoints are not given, do nothing.
-  if (_current_path.waypoints.empty()){
+  if (_current_waypoints.isEmpty()){
     next_waypoint = -1;
     ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
     return point_zero;
@@ -555,11 +549,11 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
 
     //if threshold is  distance of previous waypoint
     if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT && 
-        getPlaneDistance(_current_path.waypoints[next_waypoint].pose.pose.position, _current_pose.pose.position) > lookahead_threshold)
+        getPlaneDistance(_current_waypoints.getWaypointPosition(next_waypoint), _current_pose.pose.position) > lookahead_threshold)
         break;
-    
+
     // if there exists an effective waypoint
-    if (getPlaneDistance(_current_path.waypoints[i].pose.pose.position, _current_pose.pose.position) > lookahead_threshold)
+    if (getPlaneDistance(_current_waypoints.getWaypointPosition(i), _current_pose.pose.position) > lookahead_threshold)
     {
       //param flag is waypoint
       if (_param_flag  == MODE_DIALOG || evaluateLocusFitness(closest_waypoint,i))
@@ -714,7 +708,7 @@ int main(int argc, char **argv)
     }
 
     //get closest waypoint
-    int closest_waypoint = getClosestWaypoint(_current_path,_current_pose.pose);
+    int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(),_current_pose.pose);
     ROS_INFO_STREAM("closest waypoint = " << closest_waypoint);
 
       //if can get closest waypoint
