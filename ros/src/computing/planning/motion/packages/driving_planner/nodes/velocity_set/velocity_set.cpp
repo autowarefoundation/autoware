@@ -73,6 +73,7 @@ static double _current_vel = 0;       // subscribe estimated_vel_mps
 static double _decel = 1.5;           // (m/s) deceleration
 static double _decel_limit = 2.778;   // (m/s) about 10 km/h
 static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
+static double _temporal_waypoints_size = 100.0; // meter
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 
@@ -82,16 +83,20 @@ static ros::Publisher _range_pub;
 static ros::Publisher _sound_pub;
 static ros::Publisher _safety_waypoint_pub;
 static ros::Publisher _linelist_pub;
+static ros::Publisher _temporal_waypoints_pub;
 
 WayPoints _path_dk;
 
 class PathVset: public WayPoints{
 private:
+  waypoint_follower::lane temporal_waypoints_;
 public:
   void changeWaypoints(int stop_waypoint);
   void avoidSuddenBraking();
   void avoidSuddenAceleration();
   bool checkWaypoint(int num, const char *name) const;
+  void setTemporalWaypoints();
+  waypoint_follower::lane getTemporalWaypoints() const { return temporal_waypoints_; }
 };
 PathVset _path_change;
 
@@ -110,6 +115,23 @@ bool PathVset::checkWaypoint(int num, const char *name) const
     return false;
   }
   return true;
+}
+
+// set about '_temporal_waypoints_size' meter waypoints from closest waypoint
+void PathVset::setTemporalWaypoints()
+{
+  if (_closest_waypoint < 0)
+    return;
+  static const int size = (int)(_temporal_waypoints_size/getInterval())+1;
+
+  temporal_waypoints_.waypoints.clear();
+  for (int i = 0; i < size; i++) {
+    temporal_waypoints_.waypoints.push_back(current_waypoints_.waypoints[_closest_waypoint+i]);
+    temporal_waypoints_.header = current_waypoints_.header;
+    temporal_waypoints_.increment = current_waypoints_.increment;
+  }
+
+  return;
 }
 
 
@@ -211,7 +233,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
     std::cout << "changed_vel[" << num << "]: " << mps2kmph(changed_vel) << " (km/h)";
     std::cout << "   distance: " << (_obstacle_waypoint-num)*interval << " (m)";
     std::cout << "   current_vel: " << mps2kmph(_current_vel) << std::endl;
-
+ 
     waypoint_follower::waypoint initial_waypoint = _path_dk.getCurrentWaypoints().waypoints[num];
     if (changed_vel > _velocity_limit || //
 	changed_vel > initial_waypoint.twist.twist.linear.x){ // avoid acceleration
@@ -498,13 +520,9 @@ static void ChangeWaypoint(bool detection_result)
 {
 
   int obs = _obstacle_waypoint;
-  //waypoint_follower::lane lane;
 
   if (obs != -1){
     std::cout << "====got obstacle waypoint====" << std::endl;
-    //lane = _path_change.getCurrentPath();
-    //std::cout << "waypoint[" << obs << "] velocity: " << lane.waypoints[obs].twist.twist.linear.x << std::endl;
-    //std::cout << "getDistance: " << _path_change.getDistance(obs) << std::endl;
     std::cout << "=============================" << std::endl;
   }
 
@@ -515,12 +533,14 @@ static void ChangeWaypoint(bool detection_result)
     // change waypoints to stop by the stop_waypoint
     _path_change.changeWaypoints(stop_waypoint);
     _path_change.avoidSuddenBraking();
-    _safety_waypoint_pub.publish(_path_change.getCurrentWaypoints());
+    _path_change.setTemporalWaypoints();
+    _temporal_waypoints_pub.publish(_path_change.getTemporalWaypoints());
   } else {               // ACELERATE or KEEP
     _path_change.setPath(_path_dk.getCurrentWaypoints());
     _path_change.avoidSuddenBraking();
     _path_change.avoidSuddenAceleration();
-    _safety_waypoint_pub.publish(_path_change.getCurrentWaypoints());
+    _path_change.setTemporalWaypoints();
+    _temporal_waypoints_pub.publish(_path_change.getTemporalWaypoints());
   }
 
 
@@ -550,8 +570,8 @@ int main(int argc, char **argv)
     _vis_pub = nh.advertise<visualization_msgs::Marker>("obstaclewaypoint_mark", 0);
     _range_pub = nh.advertise<visualization_msgs::Marker>("detection_range", 0);
     _sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
-    _safety_waypoint_pub = nh.advertise<waypoint_follower::lane>("safety_waypoint", 1000, true);
     _linelist_pub = nh.advertise<visualization_msgs::Marker>("vscan_linelist", 10);
+    _temporal_waypoints_pub = nh.advertise<waypoint_follower::lane>("temporal_waypoints", 1000, true);
     static ros::Publisher closest_waypoint_pub;
     closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
 
@@ -577,6 +597,8 @@ int main(int argc, char **argv)
     private_nh.getParam("velocity_limit", _velocity_limit);
     std::cout << "velocity_limit : " << _velocity_limit << std::endl;
 
+    private_nh.getParam("temporal_waypoints_size", _temporal_waypoints_size);
+    std::cout << "temporal_waypoints_size : " << _temporal_waypoints_size << std::endl;
 
     linelistInit();
 
