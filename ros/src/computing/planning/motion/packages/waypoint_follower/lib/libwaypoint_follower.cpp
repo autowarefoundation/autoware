@@ -179,6 +179,50 @@ int Path::getClosestWaypoint()
 	return -1;
 }
 
+int WayPoints::getSize() const
+{
+	if (current_waypoints_.waypoints.empty())
+		return 0;
+	else
+		return current_waypoints_.waypoints.size();
+}
+
+double WayPoints::getInterval() const
+{
+  if(current_waypoints_.waypoints.empty())
+    return 0;
+
+	//interval between 2 waypoints
+	tf::Vector3 v1(current_waypoints_.waypoints[0].pose.pose.position.x, current_waypoints_.waypoints[0].pose.pose.position.y, 0);
+
+	tf::Vector3 v2(current_waypoints_.waypoints[1].pose.pose.position.x, current_waypoints_.waypoints[1].pose.pose.position.y, 0);
+	return tf::tfDistance(v1, v2);
+}
+
+geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
+{
+	geometry_msgs::Point p;
+	p.x = current_waypoints_.waypoints[waypoint].pose.pose.position.x;
+	p.y = current_waypoints_.waypoints[waypoint].pose.pose.position.y;
+	p.z = current_waypoints_.waypoints[waypoint].pose.pose.position.z;
+	return p;
+}
+
+geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
+{
+	geometry_msgs::Quaternion q;
+	q.x = current_waypoints_.waypoints[waypoint].pose.pose.orientation.x;
+	q.y = current_waypoints_.waypoints[waypoint].pose.pose.orientation.y;
+	q.z = current_waypoints_.waypoints[waypoint].pose.pose.orientation.z;
+	q.w = current_waypoints_.waypoints[waypoint].pose.pose.orientation.w;
+	return q;
+}
+
+double WayPoints::getWaypointVelocityMPS(int waypoint)const
+{
+	return current_waypoints_.waypoints[waypoint].twist.twist.linear.x;
+}
+
 double DecelerateVelocity(double distance, double prev_velocity)
 {
 

@@ -52,21 +52,37 @@ protected:
 
 public:
 
-  Path()
+  __attribute__ ((deprecated)) Path()
   {
     closest_waypoint_ = -1;
     origin_v_.setZero();
   }
-  void setTransform(tf::Transform transform){ transform_ = transform;}
-  void setPath(const waypoint_follower::laneConstPtr &msg);
-  int getPathSize();
-  double getInterval();
-	double getDistance(int waypoint);
-  tf::Vector3 transformWaypoint(int waypoint);
-	geometry_msgs::Point getWaypointPosition(int waypoint);
-	geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
-	waypoint_follower::lane getCurrentPath(){ return current_path_; }
-	int getClosestWaypoint();
+  __attribute__ ((deprecated)) void setTransform(tf::Transform transform){ transform_ = transform;}
+  __attribute__ ((deprecated)) void setPath(const waypoint_follower::laneConstPtr &msg);
+  __attribute__ ((deprecated)) int getPathSize();
+  __attribute__ ((deprecated)) double getInterval();
+  __attribute__ ((deprecated)) double getDistance(int waypoint);
+  __attribute__ ((deprecated)) tf::Vector3 transformWaypoint(int waypoint);
+  __attribute__ ((deprecated)) geometry_msgs::Point getWaypointPosition(int waypoint);
+  __attribute__ ((deprecated)) geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
+  __attribute__ ((deprecated)) waypoint_follower::lane getCurrentPath(){ return current_path_; }
+  __attribute__ ((deprecated)) int getClosestWaypoint();
+
+};
+
+class WayPoints
+{
+private:
+	waypoint_follower::lane current_waypoints_;
+
+public:
+	void setPath(waypoint_follower::lane waypoints) { current_waypoints_ = waypoints; }
+	int getSize() const;
+	double getInterval() const;
+	geometry_msgs::Point getWaypointPosition(int waypoint) const;
+	geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
+	double getWaypointVelocityMPS(int waypoint) const;
+	waypoint_follower::lane getCurrentWaypoints() const { return current_waypoints_; }
 
 };
 
