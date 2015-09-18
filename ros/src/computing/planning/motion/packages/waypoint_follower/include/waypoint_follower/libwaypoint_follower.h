@@ -72,7 +72,7 @@ public:
 
 class WayPoints
 {
-private:
+protected:
 	waypoint_follower::lane current_waypoints_;
 
 public:
