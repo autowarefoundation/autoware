@@ -114,7 +114,7 @@ static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-	_current_waypoints.setPath(*msg);
+  _current_waypoints.setPath(*msg);
   _waypoint_set = true;
   ROS_INFO_STREAM("waypoint subscribed");
 }
@@ -168,7 +168,7 @@ static void displayNextTarget(geometry_msgs::Point target)
 }
 
 // display the locus of pure pursuit by markers.
-void displayLocus(std::vector<geometry_msgs::Point>locus_array)
+void displayLocus(std::vector<geometry_msgs::Point> locus_array)
 {
   visualization_msgs::Marker locus;
   locus.header.frame_id = MAP_FRAME;
@@ -184,7 +184,8 @@ void displayLocus(std::vector<geometry_msgs::Point>locus_array)
   white.r = 1.0;
   white.g = 1.0;
 
-  for(std::vector<geometry_msgs::Point>::iterator it = locus_array.begin() ; it != locus_array.end();it++){
+  for (std::vector<geometry_msgs::Point>::iterator it = locus_array.begin(); it != locus_array.end(); it++)
+  {
     locus.points.push_back(*it);
     locus.colors.push_back(white);
   }
@@ -209,7 +210,7 @@ static void displaySearchRadius(double search_radius)
   marker.id = 0;
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position =  _current_pose.pose.position;
+  marker.pose.position = _current_pose.pose.position;
   marker.scale.x = search_radius * 2;
   marker.scale.y = search_radius * 2;
   marker.scale.z = 1.0;
@@ -221,9 +222,9 @@ static void displaySearchRadius(double search_radius)
   _search_pub.publish(marker);
 }
 
-
 // debug tool for interpolateNextTarget
-void displayLinePoint(double slope,double intercept,geometry_msgs::Point target , geometry_msgs::Point target2,geometry_msgs::Point target3)
+void displayLinePoint(double slope, double intercept, geometry_msgs::Point target, geometry_msgs::Point target2,
+    geometry_msgs::Point target3)
 {
   visualization_msgs::Marker line;
   line.header.frame_id = MAP_FRAME;
@@ -239,13 +240,14 @@ void displayLinePoint(double slope,double intercept,geometry_msgs::Point target 
   white.r = 1.0;
   white.g = 1.0;
 
-  for(int i = -1000000;i < 1000000 ; ){
+  for (int i = -1000000; i < 1000000;)
+  {
     geometry_msgs::Point p;
     p.x = i;
     p.y = slope * i + intercept;
     p.z = _current_pose.pose.position.z;
     line.points.push_back(p);
-    i+=10000;
+    i += 10000;
   }
 
   line.scale.x = 0.3;
@@ -352,7 +354,7 @@ double calcRadius(geometry_msgs::Point target)
 {
   double radius;
   double denominator = 2 * calcRelativeCoordinate(target, _current_pose.pose).y;
-  double numerator = pow(getPlaneDistance(target,_current_pose.pose.position), 2);
+  double numerator = pow(getPlaneDistance(target, _current_pose.pose.position), 2);
 
   if (denominator != 0)
     radius = numerator / denominator;
@@ -368,7 +370,7 @@ static void shorteningThreshold(double *lookahead_threshold)
   if (*lookahead_threshold > MINIMUM_LOOK_AHEAD_THRESHOLD)
   {
     // std::cout << "threshold correction" << std::endl;
-   *lookahead_threshold -= *lookahead_threshold / 10;
+    *lookahead_threshold -= *lookahead_threshold / 10;
   }
   else
   {
@@ -378,9 +380,9 @@ static void shorteningThreshold(double *lookahead_threshold)
 }
 
 //evaluate score between locus and path
-bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
+bool evaluateLocusFitness(int closest_waypoint, int next_waypoint)
 {
-	geometry_msgs::Point next_waypoint_position = _current_waypoints.getWaypointPosition(next_waypoint);
+  geometry_msgs::Point next_waypoint_position = _current_waypoints.getWaypointPosition(next_waypoint);
   double radius = calcRadius(next_waypoint_position);
 
   if (radius < 0)
@@ -389,7 +391,7 @@ bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
   tf::Vector3 center;
 
   //calculate circle of locus
-  if (calcRelativeCoordinate(next_waypoint_position,_current_pose.pose).y > 0)
+  if (calcRelativeCoordinate(next_waypoint_position, _current_pose.pose).y > 0)
     center = tf::Vector3(0, 0 + radius, 0);
   else
     center = tf::Vector3(0, 0 - radius, 0);
@@ -398,11 +400,11 @@ bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
   double evaluation = 0;
   for (int j = closest_waypoint + 1; j < next_waypoint; j++)
   {
-   geometry_msgs::Point tf_p = calcRelativeCoordinate(_current_waypoints.getWaypointPosition(j),_current_pose.pose);
-   tf::Vector3 tf_v = point2vector(tf_p);
+    geometry_msgs::Point tf_p = calcRelativeCoordinate(_current_waypoints.getWaypointPosition(j), _current_pose.pose);
+    tf::Vector3 tf_v = point2vector(tf_p);
     tf_v.setZ(0);
     double dt_diff = fabs(tf::tfDistance(center, tf_v) - fabs(radius));
-     //std::cout << dt_diff << std::endl;
+    //std::cout << dt_diff << std::endl;
     if (dt_diff > evaluation)
       evaluation = dt_diff;
   }
@@ -417,106 +419,114 @@ bool evaluateLocusFitness(int closest_waypoint,int next_waypoint)
 //linear interpolation of next target
 bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msgs::Point *next_target)
 {
-   geometry_msgs::Point zero_p;
-   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
-   geometry_msgs::Point start =_current_waypoints.getWaypointPosition(next_waypoint - 1);
+  geometry_msgs::Point zero_p;
+  geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
+  geometry_msgs::Point start = _current_waypoints.getWaypointPosition(next_waypoint - 1);
 
-   //get slope of segment end,start
-   double slope = (start.y -end.y)/(start.x - end.x);
+  //get slope of segment end,start
+  double slope = (start.y - end.y) / (start.x - end.x);
   // ROS_INFO("slope : %lf ",slope);
-   //get intercept of segment end,start
-   double intercept = (-1) * slope * end.x + end.y;
- //  ROS_INFO("intercept : %lf ",intercept);
+  //get intercept of segment end,start
+  double intercept = (-1) * slope * end.x + end.y;
+  //  ROS_INFO("intercept : %lf ",intercept);
 
-   //distance between the foot of a perpendicular line and the center of circle
-   double d = fabs(_current_pose.pose.position.y - slope * _current_pose.pose.position.x - intercept) / sqrt(1 + pow(slope,2));
+  //distance between the foot of a perpendicular line and the center of circle
+  double d = fabs(_current_pose.pose.position.y - slope * _current_pose.pose.position.x - intercept)
+      / sqrt(1 + pow(slope, 2));
   // ROS_INFO("distance : %lf ",d);
 
-   if(d > search_radius)
-     return false;
+  if (d > search_radius)
+    return false;
 
-   //unit vector of point 'start' to point 'end'
-   tf::Vector3 v((end.x - start.x),(end.y-start.y),0);
-   tf::Vector3 unit_v = v.normalize();
+  //unit vector of point 'start' to point 'end'
+  tf::Vector3 v((end.x - start.x), (end.y - start.y), 0);
+  tf::Vector3 unit_v = v.normalize();
 
-   //normal unit vector of v
-   double deg1 = 90;
-   tf::Vector3 w1(cos(deg2rad(deg1)) * v.getX() - sin(deg2rad(deg1)) * v.getY(),sin(deg2rad(deg1)) * v.getX() + cos(deg2rad(deg1)) * v.getY(),0);
-   tf::Vector3 unit_w1 = w1.normalize();
+  //normal unit vector of v
+  double deg1 = 90;
+  tf::Vector3 w1(cos(deg2rad(deg1)) * v.getX() - sin(deg2rad(deg1)) * v.getY(),
+      sin(deg2rad(deg1)) * v.getX() + cos(deg2rad(deg1)) * v.getY(), 0);
+  tf::Vector3 unit_w1 = w1.normalize();
 
-   double deg2 = -90;
-   tf::Vector3 w2(cos(deg2rad(deg2)) * v.getX() - sin(deg2rad(deg2)) * v.getY(),sin(deg2rad(deg2)) * v.getX() + cos(deg2rad(deg2)) * v.getY(),0);
-   tf::Vector3 unit_w2 = w2.normalize();
+  double deg2 = -90;
+  tf::Vector3 w2(cos(deg2rad(deg2)) * v.getX() - sin(deg2rad(deg2)) * v.getY(),
+      sin(deg2rad(deg2)) * v.getX() + cos(deg2rad(deg2)) * v.getY(), 0);
+  tf::Vector3 unit_w2 = w2.normalize();
 
-   //the foot of a perpendicular line
-   geometry_msgs::Point h1;
-   h1.x = _current_pose.pose.position.x + d * unit_w1.getX();
-   h1.y = _current_pose.pose.position.y + d * unit_w1.getY();
-   h1.z = _current_pose.pose.position.z;
+  //the foot of a perpendicular line
+  geometry_msgs::Point h1;
+  h1.x = _current_pose.pose.position.x + d * unit_w1.getX();
+  h1.y = _current_pose.pose.position.y + d * unit_w1.getY();
+  h1.z = _current_pose.pose.position.z;
 
-   geometry_msgs::Point h2;
-   h2.x = _current_pose.pose.position.x + d * unit_w2.getX();
-   h2.y = _current_pose.pose.position.y + d * unit_w2.getY();
-   h2.z = _current_pose.pose.position.z;
+  geometry_msgs::Point h2;
+  h2.x = _current_pose.pose.position.x + d * unit_w2.getX();
+  h2.y = _current_pose.pose.position.y + d * unit_w2.getY();
+  h2.z = _current_pose.pose.position.z;
 
-   double error = pow(10,-5); //0.00001
+  double error = pow(10, -5); //0.00001
   // ROS_INFO("error : %lf",error);
   // ROS_INFO("whether h1 on line : %lf", h1.y - (slope * h1.x + intercept) );
- //  ROS_INFO("whether h2 on line : %lf",h2.y - (slope * h2.x + intercept) );
+  //  ROS_INFO("whether h2 on line : %lf",h2.y - (slope * h2.x + intercept) );
 
-   geometry_msgs::Point h;
-   if(fabs(h1.y - (slope * h1.x + intercept)) < error){
-     h = h1;
-  //   ROS_INFO("use h1");
-   }else if(fabs(h2.y - (slope * h2.x + intercept)) < error ){
-  //   ROS_INFO("use h2");
-     h = h2;
-   }else
-   {
-     return false;
-   }
+  geometry_msgs::Point h;
+  if (fabs(h1.y - (slope * h1.x + intercept)) < error)
+  {
+    h = h1;
+    //   ROS_INFO("use h1");
+  }
+  else if (fabs(h2.y - (slope * h2.x + intercept)) < error)
+  {
+    //   ROS_INFO("use h2");
+    h = h2;
+  }
+  else
+  {
+    return false;
+  }
 
-   if(d == search_radius)
-   {
-     *next_target = h;
-     return true;
-   }else{
+  if (d == search_radius)
+  {
+    *next_target = h;
+    return true;
+  }
+  else
+  {
 
-     double s = sqrt(pow(search_radius,2) - pow(d,2));
-     geometry_msgs::Point target1;
-     target1.x = h.x + s* unit_v.getX();
-     target1.y = h.y + s* unit_v.getY();
-     target1.z = _current_pose.pose.position.z;
-  //   ROS_INFO("target1 : ( %lf , %lf , %lf)",target1.x,target1.y,target1.z);
-     geometry_msgs::Point target2;
-     target2.x = h.x - s* unit_v.getX();
-     target2.y = h.y - s* unit_v.getY();
-     target2.z = _current_pose.pose.position.z;
- //    ROS_INFO("target2 : ( %lf , %lf , %lf)",target2.x,target2.y,target2.z);
+    double s = sqrt(pow(search_radius, 2) - pow(d, 2));
+    geometry_msgs::Point target1;
+    target1.x = h.x + s * unit_v.getX();
+    target1.y = h.y + s * unit_v.getY();
+    target1.z = _current_pose.pose.position.z;
+    //   ROS_INFO("target1 : ( %lf , %lf , %lf)",target1.x,target1.y,target1.z);
+    geometry_msgs::Point target2;
+    target2.x = h.x - s * unit_v.getX();
+    target2.y = h.y - s * unit_v.getY();
+    target2.z = _current_pose.pose.position.z;
+    //    ROS_INFO("target2 : ( %lf , %lf , %lf)",target2.x,target2.y,target2.z);
 
-     displayLinePoint(slope,intercept,target1,target2 ,h); //debug tool
+    displayLinePoint(slope, intercept, target1, target2, h); //debug tool
 
-     if(calcRelativeCoordinate(target1,_current_pose.pose).x >0)
-     {
+    if (calcRelativeCoordinate(target1, _current_pose.pose).x > 0)
+    {
 
+      //    ROS_INFO("result : target1");
+      *next_target = target1;
+      return true;
+    }
+    else if (calcRelativeCoordinate(target2, _current_pose.pose).x > 0)
+    {
+      //    ROS_INFO("result : target2");
 
-   //    ROS_INFO("result : target1");
-       *next_target = target1;
-       return true;
-     }
-     else if(calcRelativeCoordinate(target2,_current_pose.pose).x > 0)
-     {
-   //    ROS_INFO("result : target2");
-
-       *next_target = target2;
-       return true;
-     }
-     else
-     {
-   //    ROS_INFO("result : false ");
-       return false;
-     }
-   }
+      *next_target = target2;
+      return true;
+    }
+    else
+    {
+      //    ROS_INFO("result : false ");
+      return false;
+    }
+  }
 }
 
 geometry_msgs::Point getNextTarget(double closest_waypoint)
@@ -528,9 +538,9 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint);
   //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
 
-
   // if waypoints are not given, do nothing.
-  if (_current_waypoints.isEmpty()){
+  if (_current_waypoints.isEmpty())
+  {
     next_waypoint = -1;
     ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
     return point_zero;
@@ -538,25 +548,27 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
 
   // look for the next waypoint.
   int i = closest_waypoint;
-  while(i < path_size)
+  while (i < path_size)
   {
 
     //if search waypoint is last
-    if(i == (path_size -1)){
+    if (i == (path_size - 1))
+    {
       next_waypoint = i;
       break;
     }
 
     //if threshold is  distance of previous waypoint
-    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT && 
-        getPlaneDistance(_current_waypoints.getWaypointPosition(next_waypoint), _current_pose.pose.position) > lookahead_threshold)
-        break;
+    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT
+        && getPlaneDistance(_current_waypoints.getWaypointPosition(next_waypoint), _current_pose.pose.position)
+            > lookahead_threshold)
+      break;
 
     // if there exists an effective waypoint
     if (getPlaneDistance(_current_waypoints.getWaypointPosition(i), _current_pose.pose.position) > lookahead_threshold)
     {
       //param flag is waypoint
-      if (_param_flag  == MODE_DIALOG || evaluateLocusFitness(closest_waypoint,i))
+      if (_param_flag == MODE_DIALOG || evaluateLocusFitness(closest_waypoint, i))
       {
         next_waypoint = i;
         break;
@@ -564,9 +576,10 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
 
       //threshold shortening
       shorteningThreshold(&lookahead_threshold);
-      if(lookahead_threshold == MINIMUM_LOOK_AHEAD_THRESHOLD){
+      if (lookahead_threshold == MINIMUM_LOOK_AHEAD_THRESHOLD)
+      {
         next_waypoint = i;
-        break;       
+        break;
       }
 
       //restart search from closest_waypoint
@@ -575,21 +588,23 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
     i++;
   }
 
-  if(next_waypoint != -1){
+  if (next_waypoint != -1)
+  {
 
     ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
     displayNextWaypoint(next_waypoint);
 
-
-    if(next_waypoint  == (path_size -1))
+    if (next_waypoint == (path_size - 1))
       return _current_waypoints.getWaypointPosition(next_waypoint);
 
     displaySearchRadius(lookahead_threshold);
     interpolateNextTarget(next_waypoint, lookahead_threshold, &next_target);
 
 #if 1 /* log */
-      std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
-      ofs << _current_waypoints.getWaypointPosition(next_waypoint).x << " "  << _current_waypoints.getWaypointPosition(next_waypoint).y << " " <<  next_target.x << " " << next_target.y <<  std::endl;
+    std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
+    ofs << _current_waypoints.getWaypointPosition(next_waypoint).x << " "
+        << _current_waypoints.getWaypointPosition(next_waypoint).y << " " << next_target.x << " " << next_target.y
+        << std::endl;
 #endif
 
     return next_target;
@@ -613,25 +628,25 @@ geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
 {
   std::vector<geometry_msgs::Point> locus_array;
-  double radius = calcRadius (target);
+  double radius = calcRadius(target);
   //if(radius < 0)
   //  radius = radius * (-1);
   double theta;
   if (radius != 0)
-    theta = 2 * asin (getPlaneDistance (target, _current_pose.pose.position) / (2 * radius));
+    theta = 2 * asin(getPlaneDistance(target, _current_pose.pose.position) / (2 * radius));
   else
     theta = 0;
 
   //ROS_INFO("radius : %lf", radius);
   //ROS_INFO("theta : %lf", theta);
   int step = 100;
-  for (double i = theta/step; fabs(i) < fabs(theta); i+=theta/step)
+  for (double i = theta / step; fabs(i) < fabs(theta); i += theta / step)
   {
     //   ROS_INFO("loop : %d", i);
     //calc a point of circumference
     geometry_msgs::Point p;
-    p.x = radius * cos (i);
-    p.y = radius * sin (i);
+    p.x = radius * cos(i);
+    p.y = radius * sin(i);
     //    ROS_INFO("p : (%lf , %lf )", p.x, p.y);
 
     //transform to (radius,0)
@@ -640,15 +655,15 @@ std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
     relative_p.y = p.y;
 
     //rotate -90°
-    geometry_msgs::Point rotate_p = rotatePoint (-90, relative_p);
+    geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
 
     //    ROS_INFO("relative point : (%lf , %lf )", rotate_p.x, rotate_p.y);
 
     //transform to vehicle plane
-    geometry_msgs::Point tf_p = calcAbsoluteCoordinate (rotate_p, _current_pose.pose);
+    geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
     //   ROS_INFO("locus : (%lf , %lf )", tf_p.x, tf_p.y);
 
-    locus_array.push_back (tf_p);
+    locus_array.push_back(tf_p);
 
   }
   return locus_array;
@@ -687,7 +702,6 @@ int main(int argc, char **argv)
 
   geometry_msgs::TwistStamped twist;
   ros::Rate loop_rate(LOOP_RATE); // by Hz
- // bool endflag = false;
 
   while (ros::ok())
   {
@@ -704,10 +718,10 @@ int main(int argc, char **argv)
     }
 
     //get closest waypoint
-    int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(),_current_pose.pose);
+    int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), _current_pose.pose);
     ROS_INFO_STREAM("closest waypoint = " << closest_waypoint);
 
-      //if can get closest waypoint
+    //if can get closest waypoint
     if (closest_waypoint > 0)
     {
       //get next target
