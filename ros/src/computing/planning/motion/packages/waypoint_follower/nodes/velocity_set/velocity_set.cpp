@@ -66,7 +66,9 @@ static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
 static double _search_distance = 70;
-static double _obstacle_distance = 8.0;    // meter :distance from a front obstacle when stopped
+static double _cars_distance = 15.0; // meter: stopping distance from cars (using DPM)
+static double _pedestrians_distance = 10.0; // meter: stopping distance from pedestrians (using DPM)
+static double _obstacle_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
 static int _closest_waypoint = -1;
 static double _current_vel = 0;       // subscribe estimated_vel_mps
 static double _decel = 1.5;           // (m/s) deceleration
@@ -576,6 +578,12 @@ int main(int argc, char **argv)
 
     private_nh.getParam("obstacle_distance", _obstacle_distance);
     std::cout << "obstacle_distance : " << _obstacle_distance << std::endl;
+
+    private_nh.getParam("cars_distance", _cars_distance);
+    std::cout << "cars_distance : " << _cars_distance << std::endl;
+
+    private_nh.getParam("pedestrians_distance", _pedestrians_distance);
+    std::cout << "pedestrians_distance : " << _pedestrians_distance << std::endl;
 
     private_nh.getParam("detection_height_top", _detection_height_top);
     std::cout << "detection_height_top : " << _detection_height_top << std::endl;
