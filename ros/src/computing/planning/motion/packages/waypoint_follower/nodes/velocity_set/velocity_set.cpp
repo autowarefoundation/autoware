@@ -41,6 +41,7 @@
 #include <pcl/point_types.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Float32.h>
+#include <runtime_manager/ConfigVelocitySet.h>
 
 #include <iostream>
 
@@ -68,7 +69,7 @@ static double _detection_height_bottom = -2.0;
 static double _search_distance = 70;
 static double _cars_distance = 15.0; // meter: stopping distance from cars (using DPM)
 static double _pedestrians_distance = 10.0; // meter: stopping distance from pedestrians (using DPM)
-static double _obstacle_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
+static double _others_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
 static int _closest_waypoint = -1;
 static double _current_vel = 0;       // subscribe estimated_vel_mps
 static double _decel = 1.5;           // (m/s) deceleration
@@ -265,6 +266,18 @@ void PathVset::changeWaypoints(int stop_waypoint)
 //===============================
 //          Callback
 //===============================
+
+void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
+{
+  _velocity_limit = kmph2mps(config->velocity_limit);
+  _others_distance = config->others_distance;
+  _cars_distance = config->cars_distance;
+  _pedestrians_distance = config->pedestrians_distance;
+  _detection_range = config->detection_range;
+  _threshold_points = config->threshold_points;
+  _detection_height_top = config->detection_height_top;
+  _detection_height_bottom = config->detection_height_bottom;
+}
 
 void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
 {
@@ -526,8 +539,8 @@ static void ChangeWaypoint(bool detection_result)
   }
 
   if (detection_result){ // DECELERATE
-    // stop_waypoint is about _obstacle_distance meter away from obstacle
-    int stop_waypoint = obs - ((int)(_obstacle_distance / _path_change.getInterval()));
+    // stop_waypoint is about _others_distance meter away from obstacle
+    int stop_waypoint = obs - ((int)(_others_distance / _path_change.getInterval()));
     std::cout << "stop_waypoint: " << stop_waypoint << std::endl;
     // change waypoints to stop by the stop_waypoint
     _path_change.changeWaypoints(stop_waypoint);
@@ -561,6 +574,7 @@ int main(int argc, char **argv)
     ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoint", 1, BaseWaypointCallback);
     ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, ObjPoseCallback);
     ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel_mps", 1, EstimatedVelCallback);
+    ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, ConfigCallback);
 
     _vis_pub = nh.advertise<visualization_msgs::Marker>("obstaclewaypoint_mark", 0);
     _range_pub = nh.advertise<visualization_msgs::Marker>("detection_range", 0);
@@ -576,8 +590,8 @@ int main(int argc, char **argv)
     private_nh.getParam("threshold_points", _threshold_points);
     std::cout << "threshold_points : " << _threshold_points << std::endl;
 
-    private_nh.getParam("obstacle_distance", _obstacle_distance);
-    std::cout << "obstacle_distance : " << _obstacle_distance << std::endl;
+    private_nh.getParam("others_distance", _others_distance);
+    std::cout << "others_distance : " << _others_distance << std::endl;
 
     private_nh.getParam("cars_distance", _cars_distance);
     std::cout << "cars_distance : " << _cars_distance << std::endl;
