@@ -4,6 +4,7 @@ project(rosinterface)
 include(FindPkgConfig)
 find_package(catkin REQUIRED
   roscpp
+  tf
 )
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
