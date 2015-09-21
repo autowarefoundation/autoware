@@ -1,7 +1,8 @@
 <!-- -->
 <launch>
-	<arg name="points_node" default="/vscan_filling_cloud" />
-
+	<arg name="points_node" default="/points_raw" /><!--CHANGE THIS TO READ WHETEHER FROM VSCAN OR POINTS_RAW -->
+	<arg name="publish_ground" default="true" />
+	<arg name="publish_filtered" default="true" />
 
 	<!-- rosrun lidar_tracker vscan_filling -->
 	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
@@ -9,6 +10,8 @@
 	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
 	<node pkg="lidar_tracker" type="euclidean_cluster" name="euclidean_cluster">
 		<param name="points_node" value="$(arg points_node)" />
+		<param name="publish_ground" value="$(arg publish_ground)" /><!--GROUND FILTERING LIKELY WONT WORK ON VSCAN (for obvious reasons)-->
+		<param name="publish_filtered" value="$(arg publish_filtered)" /><!--POINTS FILTERING LIKELY WONT WORK ON VSCAN (for obvious reasons)-->
 	</node>
 
 </launch>
