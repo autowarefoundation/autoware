@@ -54,6 +54,8 @@
 #include <stdio.h>
 
 #include <sstream>
+#include <algorithm>
+#include <iterator>
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
@@ -353,7 +355,7 @@ int getAvailableIndex(std::vector<kstate>& kstates)
 
 void initTracking(cv::LatentSvmDetector::ObjectDetection object, std::vector<kstate>& kstates,
 		  cv::LatentSvmDetector::ObjectDetection detection,
-		  cv::Mat& image, std::vector<cv::Scalar> colors)
+		  cv::Mat& image, std::vector<cv::Scalar> colors, float range)
 {
 	kstate new_state;
 	//cv::KalmanFilter KF(4, 2, 0);//XY Only
@@ -407,6 +409,7 @@ void initTracking(cv::LatentSvmDetector::ObjectDetection object, std::vector<kst
 	new_state.id = getAvailableIndex(kstates);
 	new_state.color = colors[new_state.id];
 	new_state.real_data = 1;
+	new_state.range = range;
 
 	//extractOrbFeatures(new_state.image, new_state.orbKeypoints, new_state.orbDescriptors, ORB_NUM_FEATURES);
 
@@ -512,6 +515,7 @@ void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections,
 					add_as_new_indices[j] = false;//if matched do not add as new
 					//kstates[i].image = currentObjectROI;//update image with current frame data
 					kstates[i].score = detections[j].score;
+					kstates[i].range = _ranges[j];
 					already_matched.push_back(j);
 				}//crossCorr
 
@@ -611,7 +615,7 @@ void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections,
 	{
 		if (add_as_new_indices[i])
 		{
-			initTracking(objects[i], kstates, detections[i], image, colors);
+			initTracking(objects[i], kstates, detections[i], image, colors, _ranges[i]);
 		}
 	}
 
@@ -706,10 +710,10 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 	cv_tracker::image_obj_tracked kf_objects_msg;
 	kf_objects_msg.type = object_type;
 	kf_objects_msg.total_num = num;
-	kf_objects_msg.rect_ranged = rect_ranged_array;
-	kf_objects_msg.real_data = real_data;
-	kf_objects_msg.obj_id = obj_id;
-	kf_objects_msg.lifespan = lifespan;
+	copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(kf_objects_msg.rect_ranged)); // copy vector
+	copy(real_data.begin(), real_data.end(), back_inserter(kf_objects_msg.real_data)); // copy vector
+	copy(obj_id.begin(), obj_id.end(), back_inserter(kf_objects_msg.obj_id)); // copy vector
+	copy(lifespan.begin(), lifespan.end(), back_inserter(kf_objects_msg.lifespan)); // copy vector
 
 	kf_objects_msg.header = image_source.header;
 
