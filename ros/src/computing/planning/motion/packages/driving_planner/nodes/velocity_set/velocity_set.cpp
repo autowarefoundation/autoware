@@ -126,6 +126,8 @@ void PathVset::setTemporalWaypoints()
 
   temporal_waypoints_.waypoints.clear();
   for (int i = 0; i < size; i++) {
+    if (_closest_waypoint+i >= getSize())
+      return;
     temporal_waypoints_.waypoints.push_back(current_waypoints_.waypoints[_closest_waypoint+i]);
     temporal_waypoints_.header = current_waypoints_.header;
     temporal_waypoints_.increment = current_waypoints_.increment;
