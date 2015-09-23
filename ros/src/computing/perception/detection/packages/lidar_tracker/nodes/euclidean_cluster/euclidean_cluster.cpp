@@ -226,20 +226,20 @@ int main (int argc, char** argv)
 	}
 	else
 	{
-		ROS_INFO("euclidean_cluster > No points node received, defaulting to velodyne_points, you can use _points_node:=YOUR_TOPIC");
+		ROS_INFO("euclidean_cluster > No points node received, defaulting to points_raw, you can use _points_node:=YOUR_TOPIC");
 		points_topic = "/points_raw";
 	}
 	publish_ground = false;
 	if (private_nh.getParam("publish_ground", publish_ground))
 	{
 		ROS_INFO("Publishing /points_ground point cloud...");
-		pub_filtered = h.advertise<sensor_msgs::PointCloud2>("/points_filtered",1);
+		pub_ground = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
 	}
 	publish_filtered = false;
 	if (private_nh.getParam("publish_filtered", publish_filtered))
 	{
 		ROS_INFO("Publishing /points_filtered point cloud...");
-		pub_ground = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
+		pub_filtered = h.advertise<sensor_msgs::PointCloud2>("/points_filtered",1);
 	}
 
 	// Create a ROS subscriber for the input point cloud
