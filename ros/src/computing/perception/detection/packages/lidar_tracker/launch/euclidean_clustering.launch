@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-	<arg name="points_node" default="/points_raw" /><!--CHANGE THIS TO READ WHETEHER FROM VSCAN OR POINTS_RAW -->
+	<arg name="points_node" default="/points_raw" /><!--CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW -->
 	<arg name="publish_ground" default="true" />
 	<arg name="publish_filtered" default="true" />
 
