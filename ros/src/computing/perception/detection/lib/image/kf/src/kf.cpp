@@ -396,6 +396,21 @@ void initTracking(cv::LatentSvmDetector::ObjectDetection object, std::vector<kst
 	cv::setIdentity(KF.measurementNoiseCov, cv::Scalar::all(MEAS_NOISE_COV));//1e-3
 	cv::setIdentity(KF.errorCovPost, cv::Scalar::all(ERROR_ESTIMATE_COV));//100
 
+	//clip detection
+	//check that predicted positions are inside the image
+	if (detection.rect.x < 0)
+		detection.rect.x = 0;
+	if (detection.rect.x > image.cols)
+		detection.rect.x = image.cols - 1;
+	if (detection.rect.y < 0)
+		detection.rect.y = 0;
+	if (detection.rect.height > image.rows)
+		detection.rect.height = image.rows - 1;
+	if (detection.rect.width + detection.rect.x > image.cols)
+		detection.rect.width = image.cols - detection.rect.x;
+	if (detection.rect.height + detection.rect.y > image.rows)
+		detection.rect.height = image.rows - detection.rect.y;
+
 	//save data to kstate
 	new_state.active = true;
 	new_state.image = image(cv::Rect(detection.rect.x,
