@@ -46,7 +46,8 @@ static sensor_msgs::Image image_msg;
 static points2image::PointsImageConstPtr points_msg;
 static cv::Mat colormap;
 
-static const char window_name[] = "points_image_viewer";
+static const char window_name_base[] = "points_image_viewer";
+static std::string window_name;
 
 static void show(void)
 {
@@ -89,9 +90,9 @@ static void show(void)
 		}
 	}
 
-	if (cvGetWindowHandle(window_name) != NULL) // Guard not to write destroyed window by using close button on the window
+	if (cvGetWindowHandle(window_name.c_str()) != NULL) // Guard not to write destroyed window by using close button on the window
 	{
-		cvShowImage(window_name, &frame);
+		cvShowImage(window_name.c_str(), &frame);
 		cvWaitKey(2);
 	}
 }
@@ -112,14 +113,27 @@ static void points_cb(const points2image::PointsImageConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-	/* create resizable window */
-	cvNamedWindow(window_name, CV_WINDOW_NORMAL);
-	cvStartWindowThread();
-
 	ros::init(argc, argv, "points_image_viewer");
 	ros::NodeHandle n;
+	ros::NodeHandle private_nh("~");
+
+	std::string points_topic;
+	if (!private_nh.getParam("points_topic", points_topic)) {
+		points_topic = "points_image";
+	}
+
+	std::string name_space_str = ros::this_node::getNamespace();
+	window_name = std::string(window_name_base);
+	if (name_space_str != "/") {
+		window_name += " (" + name_space_str + ")";
+	}
+
+	/* create resizable window */
+	cvNamedWindow(window_name.c_str(), CV_WINDOW_NORMAL);
+	cvStartWindowThread();
+
 	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
-	ros::Subscriber sub_points = n.subscribe("points_image", 1, points_cb);
+	ros::Subscriber sub_points = n.subscribe(points_topic, 1, points_cb);
 
 	cv::Mat grayscale(256,1,CV_8UC1);
 	for(int i=0;i<256;i++)
@@ -130,6 +144,6 @@ int main(int argc, char **argv)
 
 	ros::spin();
 
-	cvDestroyWindow(window_name);
+	cvDestroyWindow(window_name.c_str());
 	return 0;
 }
