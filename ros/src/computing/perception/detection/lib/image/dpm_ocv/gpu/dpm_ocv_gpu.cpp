@@ -15,10 +15,6 @@ extern int freeFeatureMapObject(CvLSVMFeatureMap **obj);
 extern IplImage * resize_opencv(IplImage * img, float scale);
 extern int computeBorderSize(int maxXBorder, int maxYBorder, int *bx, int *by);
 extern int addNullableBorder(CvLSVMFeatureMap *map, int bx, int by);
-extern int getOppositePoint(CvPoint point, int sizeX, int sizeY, float step, int degree, CvPoint *oppositePoint);
-extern int convertPoints(int countLevel, int lambda, int initialImageLevel,
-        CvPoint *points, int *levels, CvPoint **partsDisplacement, int kPoints,
-        int n, int maxXBorder, int maxYBorder);
 
 extern "C" {
 extern int allocFeaturePyramidObject(CvLSVMFeaturePyramid **obj, const int countLevel);
@@ -42,6 +38,38 @@ extern int loadModel(const char *modelPath, CvLSVMFilterObject ***filters,
 int Lambda = LAMBDA;
 int Side_Length = SIDE_LENGTH;
 float Val_Of_Truncate = VAL_OF_TRUNCATE;
+
+static int convertPoints(int /*countLevel*/, int lambda, int initialImageLevel,
+        CvPoint *points, int *levels, CvPoint **partsDisplacement, int kPoints,
+        int n, int maxXBorder, int maxYBorder)
+{
+    int i, j, bx, by;
+    float step, scale;
+    step = powf(2.0f, 1.0f / ((float) lambda));
+
+    computeBorderSize(maxXBorder, maxYBorder, &bx, &by);
+
+    for (i = 0; i < kPoints; i++)
+    {
+        // scaling factor for root filter
+        scale = Side_Length
+                * powf(step, (float) (levels[i] - initialImageLevel));
+        points[i].x = (int) ((points[i].x - bx + 1) * scale);
+        points[i].y = (int) ((points[i].y - by + 1) * scale);
+
+        // scaling factor for part filters
+        scale = Side_Length
+                * powf(step, (float) (levels[i] - lambda - initialImageLevel));
+        for (j = 0; j < n; j++)
+        {
+            partsDisplacement[i][j].x = (int) ((partsDisplacement[i][j].x
+                    - 2 * bx + 1) * scale);
+            partsDisplacement[i][j].y = (int) ((partsDisplacement[i][j].y
+                    - 2 * by + 1) * scale);
+        }
+    }
+    return LATENT_SVM_OK;
+}
 
 /*
  // load trained detector from a file
@@ -201,6 +229,16 @@ static int searchObjectThreshold(const CvLSVMFeaturePyramid *H,
     convertPoints(H->numLevels, Lambda, Lambda, (*points), (*levels),
             (*partsDisplacement), (*kPoints), n, maxXBorder, maxYBorder);
 
+    return LATENT_SVM_OK;
+}
+
+static int getOppositePoint(CvPoint point, int sizeX, int sizeY, float step,
+    int degree, CvPoint *oppositePoint)
+{
+    float scale;
+    scale = Side_Length * powf(step, (float) degree);
+    oppositePoint->x = (int) (point.x + sizeX * scale);
+    oppositePoint->y = (int) (point.y + sizeY * scale);
     return LATENT_SVM_OK;
 }
 
