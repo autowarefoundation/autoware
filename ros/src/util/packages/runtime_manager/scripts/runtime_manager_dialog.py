@@ -2055,6 +2055,13 @@ class VarPanel(wx.Panel):
 			self.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
 			self.choices_sel_set(v)
 			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
+			if label:
+				szr = wx.BoxSizer(wx.HORIZONTAL)
+				lb = wx.StaticText(self, wx.ID_ANY, label)
+				flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+				szr.Add(lb, 0, flag, 4)
+				szr.Add(self.obj, 0, flag, 4)
+				self.SetSizer(szr)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
