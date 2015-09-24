@@ -1172,6 +1172,14 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			wx.CallAfter(append_tc_limit, tc, s)
 
+			# que clear
+			if self.checkbox_stdout.GetValue() is False and \
+			   self.checkbox_stderr.GetValue() is False and \
+			   que.qsize() > 0:
+				with que.mutex:
+					que.queue.clear()
+				wx.CallAfter(tc.Clear)
+
 	#
 	# for Topics tab
 	#
