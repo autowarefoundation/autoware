@@ -63,6 +63,7 @@ from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigNdtMapping
 from runtime_manager.msg import ConfigNdtMappingOutput
 from runtime_manager.msg import ConfigLaneFollower
+from runtime_manager.msg import ConfigVelocitySet
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
@@ -206,7 +207,7 @@ class MyFrame(rtmgr.MyFrame):
 		for i in range(2):
 			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
 			tree_ctrl.ExpandAll()
-			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+			fix_link_color(tree_ctrl)
 			tree_ctrl.SetBackgroundColour(wx.NullColour)
 			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
 
@@ -257,7 +258,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.tree_ctrl_data.Destroy()
 		tree_ctrl = self.create_tree(parent, dic, None, None, self.data_cmd)
 		tree_ctrl.ExpandAll()
-		tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+		fix_link_color(tree_ctrl)
 		tree_ctrl.SetBackgroundColour(wx.NullColour)
 		self.tree_ctrl_data = tree_ctrl
 
@@ -386,9 +387,7 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_n = int(s)
 
 		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(cpu_n) ]
-		sz = wx.BoxSizer(wx.HORIZONTAL)
-		for ibl in cpu_ibls:
-			sz.Add(ibl, 1, wx.EXPAND, 0)
+		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
 		ibl = InfoBarLabel(self, 'Memory')
@@ -919,12 +918,10 @@ class MyFrame(rtmgr.MyFrame):
 
 	def add_config_link(self, dic, panel, obj):
 		cfg_obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, '[config]', '')
-		cfg_obj.SetVisitedColour(cfg_obj.GetNormalColour()) # no change
+		fix_link_color(cfg_obj)
 		self.Bind(wx.EVT_HYPERLINK, self.OnConfig, cfg_obj)
-		hszr = wx.BoxSizer(wx.HORIZONTAL)
-		hszr.Add(obj)
-		hszr.Add(wx.StaticText(panel, wx.ID_ANY, '  '))
-		hszr.Add(cfg_obj)
+		add_objs = (obj, wx.StaticText(panel, wx.ID_ANY, '  '), cfg_obj)
+		hszr = sizer_wrap(add_objs, wx.HORIZONTAL)
 		name = dic['name']
 		pdic = self.load_dic_pdic_setup(name, dic)
 		gdic = self.gdic_get_1st(dic)
@@ -1171,6 +1168,14 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			wx.CallAfter(append_tc_limit, tc, s)
 
+			# que clear
+			if self.checkbox_stdout.GetValue() is False and \
+			   self.checkbox_stderr.GetValue() is False and \
+			   que.qsize() > 0:
+				with que.mutex:
+					que.queue.clear()
+				wx.CallAfter(tc.Clear)
+
 	#
 	# for Topics tab
 	#
@@ -1189,7 +1194,7 @@ class MyFrame(rtmgr.MyFrame):
 			obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, topic, '')
 			self.Bind(wx.EVT_HYPERLINK, self.OnTopicLink, obj)
 			szr.Add(obj, 0, wx.LEFT, 4)
-			obj.SetVisitedColour(obj.GetNormalColour())
+			fix_link_color(obj)
 			self.topics_list.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
@@ -1346,9 +1351,7 @@ class MyFrame(rtmgr.MyFrame):
 	def set_param_panel(self, obj, parent):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		panel = ParamPanel(parent, frame=self, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(panel, 0, wx.EXPAND)
-		parent.SetSizer(szr)
+		sizer_wrap((panel,), wx.VERTICAL, 0, wx.EXPAND, 0, parent)
 		k = 'ext_toggle_enables'
 		gdic[ k ] = gdic.get(k, []) + [ panel ]
 
@@ -2054,6 +2057,10 @@ class VarPanel(wx.Panel):
 			self.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
 			self.choices_sel_set(v)
 			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
+			if label:
+				lb = wx.StaticText(self, wx.ID_ANY, label)
+				flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+				sizer_wrap((lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
@@ -2216,9 +2223,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		parent = self.panel_v
 		frame = self.GetParent()
 		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		szr = sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
@@ -2250,9 +2255,7 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		frame = self.GetParent()
 		self.frame = frame
 		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		szr = sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
@@ -2261,10 +2264,8 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		if w2 > w:
 			self.SetSize((w2,h))
 
-		hl = self.hyperlink_car
-		hl.SetVisitedColour(hl.GetNormalColour())
-		hl = self.hyperlink_pedestrian
-		hl.SetVisitedColour(hl.GetNormalColour())
+		fix_link_color(self.hyperlink_car)
+		fix_link_color(self.hyperlink_pedestrian)
 
 	def OnOk(self, event):
 		self.panel.update()
@@ -2291,10 +2292,8 @@ class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 
 		self.SetTitle(prm.get('name', ''))
 
-		hl = self.hyperlink_car
-		hl.SetVisitedColour(hl.GetNormalColour())
-		hl = self.hyperlink_pedestrian
-		hl.SetVisitedColour(hl.GetNormalColour())
+		fix_link_color(self.hyperlink_car)
+		fix_link_color(self.hyperlink_pedestrian)
 
 	def OnLink(self, event):
 		obj = event.GetEventObject()
@@ -2343,9 +2342,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		parent = self.panel_v
 		frame = self.GetParent()
 		self.panel = ParamPanel(parent, frame=frame, pdic=self.pdic, gdic=self.gdic, prm=self.prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.update_filename()
 		self.klass_msg = ConfigNdtMappingOutput
@@ -2665,6 +2662,21 @@ def cut_esc(s):
 		s = s[:i] + s[j+1:]
 	return s
 
+def fix_link_color(obj):
+	t = type(obj)
+	if t is CT.GenericTreeItem or t is CT.CustomTreeCtrl:
+		obj.SetHyperTextVisitedColour(obj.GetHyperTextNewColour())
+	elif t is wx.HyperlinkCtrl:
+		obj.SetVisitedColour(obj.GetNormalColour())
+
+def sizer_wrap(add_objs, orient=wx.VERTICAL, prop=0, flag=0, border=0, parent=None):
+	szr = wx.BoxSizer(orient)
+	for obj in add_objs:
+		szr.Add(obj, prop, flag, border)
+	if parent:
+		parent.SetSizer(szr)
+	return szr
+
 def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	sb = wx.StaticBox(parent, wx.ID_ANY, s)
 	sb.Lower()
@@ -2705,7 +2717,7 @@ def set_val(obj, v):
 		obj_refresh(obj)
 
 def obj_refresh(obj):
-	if type(obj) is wx.lib.agw.customtreectrl.GenericTreeItem:
+	if type(obj) is CT.GenericTreeItem:
 		while obj.GetParent():
 			obj = obj.GetParent()
 		tree = obj.GetData()

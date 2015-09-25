@@ -52,6 +52,7 @@ subs :
       - name : Javad Delta 3 (TTY1)
         probe: 'lsusb -d 0584: > /dev/null' # probed if serial converter is connected
         run  : rosrun javad gnss.sh
+        param: serial
 
   - name : IMU
     subs :
@@ -243,3 +244,22 @@ params :
 #      cmd_param :
 #        dash : ''
 #        delim: ':='
+
+  - name : serial
+    vars :
+    - name      : port
+      label     : 'Device name:'
+      kind      : path
+      v         : /dev/ttyUSB0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : baud
+      label     : 'Baud:'
+      kind      : menu
+      choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
+      choices_type : str
+      v         : '9600'
+      cmd_param :
+        dash      : ''
+        delim     : ':='

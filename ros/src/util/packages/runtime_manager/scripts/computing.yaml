@@ -38,7 +38,7 @@ subs :
     - name : cv_detector
       subs :
       - name : dpm_ocv
-        cmd  : roslaunch runtime_manager dpm_ocv.launch
+        cmd  : roslaunch cv_tracker dpm_ocv.launch
         param: dpm_ocv
         gui  :
           flags                  : [ open_dialog ]
@@ -234,7 +234,8 @@ subs :
              depend : param_flag
            stat_topic : [ lf ]  
        - name : velocity_set
-         cmd  : roslaunch waypoint_follower velocity_set.launch
+         cmd  : roslaunch driving_planner velocity_set.launch
+         param: velocity_set
        - name : twist_filter
          cmd  : rosrun waypoint_follower twist_filter  
        - name : wf_simulator
@@ -564,6 +565,50 @@ params :
       kind    : checkbox
       v       : False
       rosparam: /pure_pursuit/sim_mode
+  - name  : velocity_set
+    topic : /config/velocity_set
+    msg   : ConfigVelocitySet
+    vars  :
+    - name  : velocity_limit
+      label : Velocity Limit
+      min   : 0
+      max   : 60
+      v     : 42.0
+    - name  : others_distance
+      label : Others Distance
+      min   : 0
+      max   : 50
+      v     : 15.0
+    - name  : cars_distance
+      label : Cars Distance
+      min   : 0
+      max   : 50
+      v     : 15.0
+    - name  : pedestrians_distance
+      label : Pedestrians Distance
+      min   : 0
+      max   : 50
+      v     : 10.0
+    - name  : detection_range
+      label : Detection Range
+      min   : 0
+      max   : 10
+      v     : 1.3
+    - name  : threshold_points
+      label : Points Threshold
+      min   : 0
+      max   : 30
+      v     : 15
+    - name  : detection_height_top
+      label : Detection Height Top
+      min   : 0
+      max   : 10
+      v     : 2.5
+    - name  : detection_height_bottom
+      label : Detection Height Bottom
+      min   : -10
+      max   : 0
+      v     : -1.5
   - name  : lane_follower_trajgen
     topic : /config/lane_follower
     msg   : ConfigLaneFollower
