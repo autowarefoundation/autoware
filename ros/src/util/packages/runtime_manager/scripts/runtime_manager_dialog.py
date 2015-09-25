@@ -387,9 +387,7 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_n = int(s)
 
 		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(cpu_n) ]
-		sz = wx.BoxSizer(wx.HORIZONTAL)
-		for ibl in cpu_ibls:
-			sz.Add(ibl, 1, wx.EXPAND, 0)
+		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
 		ibl = InfoBarLabel(self, 'Memory')
@@ -922,10 +920,8 @@ class MyFrame(rtmgr.MyFrame):
 		cfg_obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, '[config]', '')
 		cfg_obj.SetVisitedColour(cfg_obj.GetNormalColour()) # no change
 		self.Bind(wx.EVT_HYPERLINK, self.OnConfig, cfg_obj)
-		hszr = wx.BoxSizer(wx.HORIZONTAL)
-		hszr.Add(obj)
-		hszr.Add(wx.StaticText(panel, wx.ID_ANY, '  '))
-		hszr.Add(cfg_obj)
+		add_objs = (obj, wx.StaticText(panel, wx.ID_ANY, '  '), cfg_obj)
+		hszr = sizer_wrap(add_objs, wx.HORIZONTAL)
 		name = dic['name']
 		pdic = self.load_dic_pdic_setup(name, dic)
 		gdic = self.gdic_get_1st(dic)
@@ -1355,9 +1351,7 @@ class MyFrame(rtmgr.MyFrame):
 	def set_param_panel(self, obj, parent):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		panel = ParamPanel(parent, frame=self, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(panel, 0, wx.EXPAND)
-		parent.SetSizer(szr)
+		sizer_wrap((panel,), wx.VERTICAL, 0, wx.EXPAND, 0, parent)
 		k = 'ext_toggle_enables'
 		gdic[ k ] = gdic.get(k, []) + [ panel ]
 
@@ -2064,12 +2058,9 @@ class VarPanel(wx.Panel):
 			self.choices_sel_set(v)
 			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
 			if label:
-				szr = wx.BoxSizer(wx.HORIZONTAL)
 				lb = wx.StaticText(self, wx.ID_ANY, label)
 				flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
-				szr.Add(lb, 0, flag, 4)
-				szr.Add(self.obj, 0, flag, 4)
-				self.SetSizer(szr)
+				sizer_wrap((lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
@@ -2232,9 +2223,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		parent = self.panel_v
 		frame = self.GetParent()
 		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		szr = sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
@@ -2266,9 +2255,7 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		frame = self.GetParent()
 		self.frame = frame
 		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		szr = sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
@@ -2359,9 +2346,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		parent = self.panel_v
 		frame = self.GetParent()
 		self.panel = ParamPanel(parent, frame=frame, pdic=self.pdic, gdic=self.gdic, prm=self.prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.update_filename()
 		self.klass_msg = ConfigNdtMappingOutput
@@ -2680,6 +2665,14 @@ def cut_esc(s):
 			break
 		s = s[:i] + s[j+1:]
 	return s
+
+def sizer_wrap(add_objs, orient=wx.VERTICAL, prop=0, flag=0, border=0, parent=None):
+	szr = wx.BoxSizer(orient)
+	for obj in add_objs:
+		szr.Add(obj, prop, flag, border)
+	if parent:
+		parent.SetSizer(szr)
+	return szr
 
 def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	sb = wx.StaticBox(parent, wx.ID_ANY, s)
