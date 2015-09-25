@@ -4,8 +4,8 @@
 <!-- For details: http://wiki.ros.org/nmea_navsat_driver-->
 <launch> 
 
-  <arg name="port" value="/dev/ttyUSB0"/>
-  <arg name="baud" value="57600" />
+  <arg name="port" default="/dev/ttyUSB0"/>
+  <arg name="baud" default="57600" />
  
   <!-- HOW TO RUN using rosrun:-->
   <!-- rosrun nmea_navsat_driver nmea_topic_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
