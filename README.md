@@ -44,7 +44,7 @@ Open-source software for urban autonomous driving. The following functions are s
 ### Install dependencies for Ubuntu 13.10 indigo and Ubuntu 13.04 hydro
 
 ```
-% sudo apt-get install ros-hydro-desktop-full ros-indigo-nmea-msgs ros-hydro-sound-play
+% sudo apt-get install ros-hydro-desktop-full ros-hydro-nmea-msgs ros-hydro-sound-play
 % sudo apt-get install libnlopt-dev freeglut3-dev libssh2-1-dev libarmadillo-dev
 ```
 
