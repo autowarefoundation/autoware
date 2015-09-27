@@ -3,10 +3,12 @@
 
   <!-- send table.xml to param server -->
   <arg name="scanner" default="velodyne" />
+  <arg name="use_velodyne" default="true" />
   <arg name="use_gnss" default="1" />
   <arg name="queue_size" default="10" />
 
-  <node pkg="tf" type="static_transform_publisher" name="velodyne_to_base_link" args="0 0 -2.0 0 0 0 /velodyne /base_link 10" />
+  <node pkg="tf" type="static_transform_publisher" name="velodyne_to_base_link" args="0 0 -2.0 0 0 0 /velodyne /base_link 10" if="$(arg use_velodyne)"/>
+  <node pkg="tf" type="static_transform_publisher" name="hokuyo_to_base_link" args="0 0 -1.0 0 0 0 /3d_urg /base_link 10" unless="$(arg use_velodyne)"/>
 
   <include file="$(find model_publisher)/launch/prius_model.launch"/>
 
