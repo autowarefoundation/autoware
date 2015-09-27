@@ -11,7 +11,7 @@
   <include file="$(find model_publisher)/launch/prius_model.launch"/>
 
   <!-- rosrun ndt_localizer ndt_matching _sensor:="velodyne" -->
-  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
+  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log">
     <param name="scanner" value="$(arg scanner)" />
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="queue_size" value="$(arg queue_size)"/>

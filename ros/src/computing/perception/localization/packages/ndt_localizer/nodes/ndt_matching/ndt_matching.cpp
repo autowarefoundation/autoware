@@ -34,7 +34,7 @@
  Yuki KITSUKAWA
  */
 
-// #define OUTPUT 
+#define OUTPUT 
 
 #include <iostream>
 #include <sstream>
@@ -70,11 +70,7 @@
 
 #include <ndt_localizer/ndt_stat.h>
 
-#define THRESHOLD_EXE_TIME 100.0
-#define THRESHOLD_ITERATION 10
-#define THRESHOLD_SCORE 100.0
-#define THRESHOLD_VELOCITY 100.0
-#define THRESHOLD_ACCELERATION 10.0
+#define PREDICT_POSE_THRESHOLD 0.5
 
 struct pose {
     double x;
@@ -141,6 +137,7 @@ static int iteration = 0;
 static double score = 0.0;
 
 static double current_velocity = 0.0, previous_velocity = 0.0; // [m/s]
+static double current_velocity_smooth = 0.0, second_previous_velocity = 0.0;
 static double current_acceleration = 0.0, previous_acceleration = 0.0; // [m/s^2]
 
 static double angular_velocity = 0.0;
@@ -678,6 +675,10 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 				(ndt_pose.z - predict_pose.z) * (ndt_pose.z - predict_pose.z));
 
       current_velocity = distance / secs;
+      current_velocity_smooth = (current_velocity + previous_velocity + second_previous_velocity) / 3.0;
+      if(current_velocity_smooth < 0.2){
+	current_velocity_smooth = 0.0;
+      }
       current_acceleration = (current_velocity - previous_velocity) / secs;
 
       estimated_vel_mps.data = current_velocity;
@@ -686,7 +687,12 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       estimated_vel_mps_pub.publish(estimated_vel_mps);
       estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
-      // The condition will be updated in future.
+      if(predict_pose_error <= PREDICT_POSE_THRESHOLD){
+	use_predict_pose = 0;
+      }else{
+	use_predict_pose = 1;
+      }
+
       if(use_predict_pose == 0){
 	current_pose.x = ndt_pose.x;
 	current_pose.y = ndt_pose.y;
@@ -774,6 +780,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       // Set values for /estimate_twist
       angular_velocity = (current_pose.yaw - previous_pose.yaw) / secs;
 
+      estimate_twist_msg.header.stamp = current_scan_time;
       estimate_twist_msg.twist.linear.x = current_velocity;
       estimate_twist_msg.twist.linear.y = 0.0;
       estimate_twist_msg.twist.linear.z = 0.0;
@@ -783,7 +790,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
       estimate_twist_pub.publish(estimate_twist_msg);
 
-      // Set values for /ndt_stat
+     // Set values for /ndt_stat
       ndt_stat_msg.header.stamp = current_scan_time;
       ndt_stat_msg.exe_time = time_ndt_matching.data;
       ndt_stat_msg.iteration = iteration;
@@ -827,6 +834,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	      << iteration << ","
 	      << score << ","
 	      << current_velocity << ","
+	      << current_velocity_smooth << ","
 	      << current_acceleration << ","
 	      << angular_velocity << ","
 	      << time_ndt_matching.data << ","
@@ -863,6 +871,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       previous_scan_time.sec = current_scan_time.sec;
       previous_scan_time.nsec = current_scan_time.nsec;
 
+      second_previous_velocity = previous_velocity;
       previous_velocity = current_velocity;
       previous_acceleration = current_acceleration;
       previous_estimated_vel_kmph.data = estimated_vel_kmph.data;
