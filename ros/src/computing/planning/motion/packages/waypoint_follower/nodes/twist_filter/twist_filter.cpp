@@ -35,21 +35,35 @@
 #include <chrono>
 
 #define LOOP_RATE 100
-
+#define FILTER_SIZE 3
 
 
 //Publisher
-static ros::Publisher _twist_pub;
+static ros::Publisher g_twist_pub;
+
 
 void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-    geometry_msgs::TwistStamped twist = *msg;
-    std::cout << "twist_through " << std::endl;
-    std::cout << "twist.linear.x = " << twist.twist.linear.x << std::endl;
-    std::cout << "twist.angular.z = " << twist.twist.angular.z << std::endl << std::endl;
+  geometry_msgs::TwistStamped twist;
 
+  static std::list<geometry_msgs::Twist> twist_list;
+  twist_list.push_back(msg->twist);
 
-    _twist_pub.publish(twist);
+  if(twist_list.size() != FILTER_SIZE)
+    return;
+  else{
+    for(std::list<geometry_msgs::Twist>::const_iterator it = twist_list.begin(); it != twist_list.end();it++){
+      twist.twist.linear.x += it->linear.x;
+      twist.twist.angular.z += it->angular.z;
+    }
+    twist.twist.linear.x /= FILTER_SIZE;
+    twist.twist.angular.z /= FILTER_SIZE;
+
+    twist.header = msg->header;
+    g_twist_pub.publish(twist);
+
+    twist_list.pop_front();
+  }
 
 }
 
@@ -61,7 +75,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
     ros::Subscriber twist_sub = nh.subscribe("twist_raw", 1, TwistCmdCallback);
-    _twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
+    g_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
     ros::spin();
 
