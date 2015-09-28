@@ -694,7 +694,8 @@ int main(int argc, char **argv)
   _locus_pub = nh.advertise<visualization_msgs::Marker>("locus_mark", 0);
 
   //subscribe topic
-  ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("final_waypoints", 10, WayPointCallback);
+ // ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
   ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
   ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel_mps", 10, estVelCallback);
@@ -718,14 +719,15 @@ int main(int argc, char **argv)
     }
 
     //get closest waypoint
-    int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), _current_pose.pose);
-    ROS_INFO_STREAM("closest waypoint = " << closest_waypoint);
+   // int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), _current_pose.pose);
+   //ROS_INFO_STREAM("closest waypoint = " << closest_waypoint);
 
     //if can get closest waypoint
-    if (closest_waypoint > 0)
-    {
+  //  if (closest_waypoint > 0)
+ //  {
       //get next target
-      geometry_msgs::Point next_target = getNextTarget(closest_waypoint);
+      //geometry_msgs::Point next_target = getNextTarget(closest_waypoint);
+      geometry_msgs::Point next_target = getNextTarget(0);
       ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y, next_target.z);
 
       if (next_target.x == 0 && next_target.y == 0 && next_target.z == 0)
@@ -741,12 +743,13 @@ int main(int argc, char **argv)
         displayNextTarget(next_target);
         std::vector<geometry_msgs::Point> locus_array = generateLocus(next_target);
         displayLocus(locus_array);
-        twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(closest_waypoint));
+     //   twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(closest_waypoint));
+       twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(0));
         wf_stat.data = true;
         _stat_pub.publish(wf_stat);
       }
-    }
-    else //cannot get closest
+ /*  }
+   else //cannot get closest
     {
       ROS_INFO_STREAM("closest waypoint cannot detected !!");
       wf_stat.data = false;
@@ -754,7 +757,7 @@ int main(int argc, char **argv)
       twist.twist.linear.x = 0;
       twist.twist.angular.z = 0;
     }
-
+*/
     ROS_INFO_STREAM(
         "twist(linear.x , angular.z) = ( " << twist.twist.linear.x << " , " << twist.twist.angular.z << " )");
     twist.header.stamp = ros::Time::now();
