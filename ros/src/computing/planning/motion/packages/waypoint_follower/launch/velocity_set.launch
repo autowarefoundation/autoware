@@ -8,6 +8,7 @@
 	<arg name="detection_height_bottom" default="-1.5" />
 	<arg name="current_pose_topic" default="ndt" /> 
 	<arg name="velocity_limit" default="12.0" /> <!-- 43.2 km/h -->
+	<arg name="accel_bias" default="5.0" />
 
 	<!-- rosrun waypoint_follower velocity_set _detection_range:=0 -->
 	<node pkg="waypoint_follower" type="velocity_set" name="velocity_set" output="screen">
@@ -18,6 +19,7 @@
 		<param name="detection_height_bottom" value="$(arg detection_height_bottom)" />
 		<param name="current_pose_topic" value="$(arg current_pose_topic)" />
 		<param name="velocity_limit" value="$(arg velocity_limit)" />
+		<param name="accel_bias" value="$(arg accel_bias)" />
 	</node>
 
 </launch>
