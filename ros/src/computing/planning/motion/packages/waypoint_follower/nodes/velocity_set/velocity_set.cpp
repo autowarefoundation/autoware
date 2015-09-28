@@ -71,10 +71,11 @@ static double _cars_distance = 15.0; // meter: stopping distance from cars (usin
 static double _pedestrians_distance = 10.0; // meter: stopping distance from pedestrians (using DPM)
 static double _others_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
 static int _closest_waypoint = -1;
-static double _current_vel = 0;       // subscribe estimated_vel_mps
+static double _current_vel = 0.0;       // subscribe estimated_vel_mps
 static double _decel = 1.5;           // (m/s) deceleration
 static double _decel_limit = 2.778;   // (m/s) about 10 km/h
 static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
+static double _accel_bias = 5.0; // (km/h)
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 
@@ -132,13 +133,13 @@ void PathVset::avoidSuddenAceleration()
 {
   double changed_vel;
   double interval = getInterval();
-
   double temp1 = _current_vel*_current_vel;
   double temp2 = 2*_decel*interval;
+
   for (int i = 0; ; i++) {
     if (!checkWaypoint(_closest_waypoint+i, "avoidSuddenAceleration"))
       return;
-    changed_vel = sqrt(temp1 + temp2*(double)(i+2));
+    changed_vel = sqrt(temp1 + temp2*(double)(i+1)) + kmph2mps(_accel_bias);
     if (changed_vel > current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x)
       return;
     current_path_.waypoints[_closest_waypoint+i].twist.twist.linear.x = changed_vel;
@@ -153,12 +154,12 @@ void PathVset::avoidSuddenBraking()
   int i = 0;
   int fill_in_zero = 20;
   int fill_in_vel = 15;
-  int examin_range = 7; // need to change according to waypoint interval?
+  int examin_range = 2; // need to change according to waypoint interval?
   int num;
   double interval = getInterval();
   double changed_vel;
 
-  for (int j = -2; j < examin_range; j++) {
+  for (int j = -1; j < examin_range; j++) {
     if (!checkWaypoint(_closest_waypoint+j, "avoidSuddenBraking"))
       return;
     if (getVel(_closest_waypoint+j) < _current_vel - _decel_limit) // we must change waypoints
@@ -611,6 +612,8 @@ int main(int argc, char **argv)
     private_nh.getParam("velocity_limit", _velocity_limit);
     std::cout << "velocity_limit : " << _velocity_limit << std::endl;
 
+    private_nh.getParam("accel_bias", _accel_bias);
+    std::cout << "accel_bias : " << _accel_bias << std::endl;
 
     linelistInit();
 
