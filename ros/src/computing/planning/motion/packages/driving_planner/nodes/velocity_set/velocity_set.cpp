@@ -579,7 +579,7 @@ int main(int argc, char **argv)
     ros::NodeHandle private_nh("~");
     ros::Subscriber ndt_sub = nh.subscribe("control_pose", 1, NDTCallback);
     ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, VscanCallback);
-    ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoint", 1, BaseWaypointCallback);
+    ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, BaseWaypointCallback);
     ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, ObjPoseCallback);
     ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel_mps", 1, EstimatedVelCallback);
     ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, ConfigCallback);
