@@ -327,8 +327,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.setup_buttons(self.status_dic.get('buttons', {}), self.status_cmd)
 
-		font = self.label_top_cmd.GetFont()
-		font.SetFamily(wx.FONTFAMILY_MODERN)
+		font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 		self.label_top_cmd.SetFont(font)
 
 		#
