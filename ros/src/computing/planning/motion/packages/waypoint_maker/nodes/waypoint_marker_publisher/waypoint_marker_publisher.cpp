@@ -203,8 +203,8 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  ros::Subscriber lane_sub = nh.subscribe("lane_waypoint",10,laneCallback);
-  ros::Subscriber traffic_sub = nh.subscribe("traffic_waypoint",10,trafficCallback);
+  ros::Subscriber lane_sub = nh.subscribe("lane_waypoints",10,laneCallback);
+  ros::Subscriber traffic_sub = nh.subscribe("traffic_waypoints",10,trafficCallback);
   ros::Subscriber light_sub = nh.subscribe("traffic_light",10,lightCallback);
   ros::Subscriber temporal_sub = nh.subscribe("temporal_waypoints",10,temporalCallback);
 

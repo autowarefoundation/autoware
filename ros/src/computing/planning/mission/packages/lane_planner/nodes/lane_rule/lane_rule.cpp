@@ -584,14 +584,14 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
 	ros::Subscriber sub_stopline = n.subscribe("/vector_map_info/stop_line", sub_vmap_queue_size, cache_stopline);
 	ros::Subscriber sub_dtlane = n.subscribe("/vector_map_info/dtlane", sub_vmap_queue_size, cache_dtlane);
-	ros::Subscriber sub_waypoint = n.subscribe("/lane_waypoint", sub_waypoint_queue_size, create_traffic_waypoint);
+	ros::Subscriber sub_waypoint = n.subscribe("/lane_waypoints", sub_waypoint_queue_size, create_traffic_waypoint);
 	ros::Subscriber sub_config = n.subscribe("/config/lane_rule", sub_config_queue_size, config_rule);
 
-	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoint", pub_waypoint_queue_size,
+	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoints", pub_waypoint_queue_size,
 							   pub_waypoint_latch);
-	pub_red = n.advertise<waypoint_follower::lane>("/red_waypoint", pub_waypoint_queue_size,
+	pub_red = n.advertise<waypoint_follower::lane>("/red_waypoints", pub_waypoint_queue_size,
 						       pub_waypoint_latch);
-	pub_green = n.advertise<waypoint_follower::lane>("/green_waypoint", pub_waypoint_queue_size,
+	pub_green = n.advertise<waypoint_follower::lane>("/green_waypoints", pub_waypoint_queue_size,
 							 pub_waypoint_latch);
 
 	ros::spin();

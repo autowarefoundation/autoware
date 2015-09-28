@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
 	ros::Subscriber sub_route = n.subscribe("/route_cmd", sub_route_queue_size, create_lane_waypoint);
 
-	pub_waypoint = n.advertise<waypoint_follower::lane>("/lane_waypoint", pub_waypoint_queue_size,
+	pub_waypoint = n.advertise<waypoint_follower::lane>("/lane_waypoints", pub_waypoint_queue_size,
 							    pub_waypoint_latch);
 
 	ros::spin();
