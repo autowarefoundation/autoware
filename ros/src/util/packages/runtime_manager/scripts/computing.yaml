@@ -567,6 +567,7 @@ params :
       kind    : checkbox
       v       : False
       rosparam: /pure_pursuit/sim_mode
+      
   - name  : velocity_set
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
@@ -611,6 +612,15 @@ params :
       min   : -10
       max   : 0
       v     : -1.5
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+      
+      
   - name  : lane_follower_trajgen
     topic : /config/lane_follower
     msg   : ConfigLaneFollower

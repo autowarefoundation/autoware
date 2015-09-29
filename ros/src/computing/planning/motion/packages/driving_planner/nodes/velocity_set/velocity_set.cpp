@@ -78,6 +78,7 @@ static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
 static double _temporal_waypoints_size = 100.0; // meter
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
+static bool g_sim_mode;
 
 //Publisher
 static ros::Publisher _vis_pub;
@@ -326,12 +327,34 @@ static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
+  if (g_sim_mode)
+  return;
+
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
         if (_pose_flag == false) {
             std::cout << "pose subscribed" << std::endl;
             _pose_flag = true;
         }
+}
+
+static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
+{
+  //std::cout << "odometry callback" << std::endl;
+
+  //
+  // effective for testing.
+  //
+  if (!g_sim_mode)
+   return;
+
+    _current_pose.header = msg->header;
+    _current_pose.pose = msg->pose.pose;
+    if (_pose_flag == false) {
+      std::cout << "pose subscribed" << std::endl;
+      _pose_flag = true;
+    }
+
 }
 
 //===============================
@@ -578,6 +601,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
     ros::Subscriber ndt_sub = nh.subscribe("control_pose", 1, NDTCallback);
+    ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
     ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, VscanCallback);
     ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, BaseWaypointCallback);
     ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, ObjPoseCallback);
@@ -592,6 +616,8 @@ int main(int argc, char **argv)
     static ros::Publisher closest_waypoint_pub;
     closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
 
+    private_nh.param<bool>("sim_mode", g_sim_mode,false);
+    ROS_INFO_STREAM("sim_mode : " << g_sim_mode);
 
     private_nh.getParam("detection_range", _detection_range);
     std::cout << "detection_range : " << _detection_range << std::endl;
