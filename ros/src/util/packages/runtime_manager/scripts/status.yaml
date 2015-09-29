@@ -7,7 +7,7 @@ top_cmd_setting :
     rate_mem : 80
     rate_mem_yellow : 70
 
-log_path : syslog
+#log_path : syslog
 
 gui_update_interval_ms : 10
 
