@@ -315,28 +315,18 @@ double getCmdVelocity(int waypoint)
 
   if (_param_flag)
   {
-#ifdef DEBUG
     ROS_INFO_STREAM("dialog : " << _initial_velocity << " km/h (" << kmph2mps(_initial_velocity) << " m/s )");
-#endif
     return kmph2mps(_initial_velocity);
   }
 
   if (_current_waypoints.isEmpty())
   {
-
-#ifdef DEBUG
     ROS_INFO_STREAM("waypoint : not loaded path");
-#endif
-
     return 0;
   }
 
   double velocity = _current_waypoints.getWaypointVelocityMPS(waypoint);
-
-#ifdef DEBUG
   ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h ( " << velocity << "m/s )");
-#endif
-
   return velocity;
 }
 
@@ -365,10 +355,7 @@ double calcCurvature(geometry_msgs::Point target)
   else
     kappa = 0;
 
-#ifdef DEBUG
   ROS_INFO("kappa : %lf", kappa);
-#endif
-
   return kappa;
 
 }
@@ -384,10 +371,7 @@ double calcRadius(geometry_msgs::Point target)
   else
     radius = 0;
 
-#ifdef DEBUG
   ROS_INFO("radius : %lf", radius);
-#endif
-
   return radius;
 }
 
@@ -404,10 +388,7 @@ static void shorteningThreshold(double *lookahead_threshold)
     *lookahead_threshold = MINIMUM_LOOK_AHEAD_THRESHOLD;
   }
 
-#ifdef DEBUG
   ROS_INFO_STREAM("fixed threshold = " << *lookahead_threshold);
-#endif
-
 }
 
 //evaluate score between locus and path
@@ -439,9 +420,8 @@ bool evaluateLocusFitness(int closest_waypoint, int next_waypoint)
     if (dt_diff > evaluation)
       evaluation = dt_diff;
   }
-#ifdef DEBUG
+
   ROS_INFO("evaluation : %lf", evaluation);
-#endif
 
   if (evaluation < EVALUATION_THRESHOLD)
     return true;
@@ -467,11 +447,9 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
   double d = fabs(_current_pose.pose.position.y - slope * _current_pose.pose.position.x - intercept)
       / sqrt(1 + pow(slope, 2));
 
-#ifdef DEBUG
   ROS_INFO("slope : %lf ", slope);
   ROS_INFO("intercept : %lf ", intercept);
   ROS_INFO("distance : %lf ", d);
-#endif
 
   if (d > search_radius)
     return false;
@@ -504,25 +482,20 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
 
   double error = pow(10, -5); //0.00001
 
-#ifdef DEBUG
   ROS_INFO("error : %lf", error);
   ROS_INFO("whether h1 on line : %lf", h1.y - (slope * h1.x + intercept));
   ROS_INFO("whether h2 on line : %lf", h2.y - (slope * h2.x + intercept));
-#endif
 
   geometry_msgs::Point h;
   if (fabs(h1.y - (slope * h1.x + intercept)) < error)
   {
     h = h1;
-#ifdef DEBUG
     ROS_INFO("use h1");
-#endif
+
   }
   else if (fabs(h2.y - (slope * h2.x + intercept)) < error)
   {
-#ifdef DEBUG
     ROS_INFO("use h2");
-#endif
     h = h2;
   }
   else
@@ -549,34 +522,25 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
     target2.y = h.y - s * unit_v.getY();
     target2.z = _current_pose.pose.position.z;
 
-#ifdef DEBUG
     ROS_INFO("target1 : ( %lf , %lf , %lf)", target1.x, target1.y, target1.z);
     ROS_INFO("target2 : ( %lf , %lf , %lf)", target2.x, target2.y, target2.z);
     displayLinePoint(slope, intercept, target1, target2, h); //debug tool
-#endif
 
     if (calcRelativeCoordinate(target1, _current_pose.pose).x > 0)
     {
-#ifdef DEBUG
       ROS_INFO("result : target1");
-#endif
       *next_target = target1;
       return true;
     }
     else if (calcRelativeCoordinate(target2, _current_pose.pose).x > 0)
     {
-#ifdef DEBUG
       ROS_INFO("result : target2");
-#endif
-
       *next_target = target2;
       return true;
     }
     else
     {
-#ifdef DEBUG
       ROS_INFO("result : false ");
-#endif
       return false;
     }
   }
@@ -593,20 +557,13 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
   geometry_msgs::Point next_target;
   geometry_msgs::Point point_zero;
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint);
-
-#ifdef DEBUG
   ROS_INFO("initilize threshold = %lf", lookahead_threshold);
-#endif
 
   // if waypoints are not given, do nothing.
   if (_current_waypoints.isEmpty())
   {
     next_waypoint = -1;
-
-#ifdef DEBUG
     ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
-#endif
-
     return point_zero;
   }
 
@@ -618,11 +575,7 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
     //if search waypoint is the last
     if (i == (path_size - 1))
     {
-
-#ifdef DEBUG
       ROS_INFO("search waypoint is the last");
-#endif
-
       next_waypoint = i;
       break;
     }
@@ -632,10 +585,7 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
         && getPlaneDistance(_current_waypoints.getWaypointPosition(next_waypoint), _current_pose.pose.position)
             > lookahead_threshold)
     {
-#ifdef DEBUG
       ROS_INFO("threshold is  shorter than distance of previous waypoint");
-#endif
-
       break;
     }
     // if there exists an effective waypoint
@@ -652,20 +602,13 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
       //param flag is waypoint
       if (evaluateLocusFitness(closest_waypoint, i))
       {
-
-#ifdef DEBUG
         ROS_INFO("evaluate : OK");
-#endif
-
         next_waypoint = i;
         break;
       }
       else
       {
-
-#ifdef DEBUG
         ROS_INFO("evaluate : NG");
-#endif
 
         //threshold shortening
         shorteningThreshold(&lookahead_threshold);
@@ -685,9 +628,7 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
 
   if (next_waypoint != -1)
   {
-#ifdef DEBUG
     ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
-#endif
     displayNextWaypoint(next_waypoint);
     displaySearchRadius(lookahead_threshold);
 
@@ -733,26 +674,21 @@ std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
     theta = 2 * asin(getPlaneDistance(target, _current_pose.pose.position) / (2 * radius));
   else
     theta = 0;
-#ifdef DEBUG
+
   ROS_INFO("radius : %lf", radius);
   ROS_INFO("theta : %lf", theta);
-#endif
 
   int step = 100;
   for (double i = theta / step; fabs(i) < fabs(theta); i += theta / step)
   {
-
-#ifdef DEBUG
     ROS_INFO("loop : %lf", i);
-#endif
+
     //calc a point of circumference
     geometry_msgs::Point p;
     p.x = radius * cos(i);
     p.y = radius * sin(i);
 
-#ifdef DEBUG
     ROS_INFO("p : (%lf , %lf )", p.x, p.y);
-#endif
 
     //transform to (radius,0)
     geometry_msgs::Point relative_p;
@@ -761,16 +697,12 @@ std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
 
     //rotate -90°
     geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
-
-#ifdef DEBUG
     ROS_INFO("relative point : (%lf , %lf )", rotate_p.x, rotate_p.y);
-#endif
+
 
     //transform to vehicle plane
     geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
-#ifdef DEBUG
     ROS_INFO("locus : (%lf , %lf )", tf_p.x, tf_p.y);
-#endif
 
     locus_array.push_back(tf_p);
 
@@ -848,9 +780,7 @@ int main(int argc, char **argv)
       geometry_msgs::Point next_target = getNextTarget(0);
 #endif
 
-#ifdef DEBUG
       ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y, next_target.z);
-#endif
 
       if (next_target.x == 0 && next_target.y == 0 && next_target.z == 0)
       {
@@ -885,10 +815,8 @@ int main(int argc, char **argv)
     }
 #endif
 
-#ifdef DEBUG
     ROS_INFO_STREAM(
         "twist(linear.x , angular.z) = ( " << twist.twist.linear.x << " , " << twist.twist.angular.z << " )");
-#endif
 
     twist.header.stamp = ros::Time::now();
     cmd_velocity_publisher.publish(twist);
