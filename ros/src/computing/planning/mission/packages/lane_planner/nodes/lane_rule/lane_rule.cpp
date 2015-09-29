@@ -392,6 +392,8 @@ static waypoint_follower::lane apply_acceleration(const waypoint_follower::lane&
 	if (fixed_cnt == 0)
 		return computations;
 
+	double square_vel = fixed_vel * fixed_vel;
+	double distance = 0;
 	for (size_t i = start_index; i < msg.waypoints.size(); ++i) {
 		if (i - start_index < fixed_cnt) {
 			computations.waypoints[i].twist.twist.linear.x = fixed_vel;
@@ -400,10 +402,9 @@ static waypoint_follower::lane apply_acceleration(const waypoint_follower::lane&
 
 		geometry_msgs::Point a = computations.waypoints[i - 1].pose.pose.position;
 		geometry_msgs::Point b = computations.waypoints[i].pose.pose.position;
-		double distance = hypot(b.x - a.x, b.y - a.y);
+		distance += hypot(b.x - a.x, b.y - a.y);
 
-		double velocity = computations.waypoints[i - 1].twist.twist.linear.x +
-			sqrt(2 * acceleration * distance);
+		double velocity = sqrt(square_vel + 2 * acceleration * distance);
 		if (velocity < computations.waypoints[i].twist.twist.linear.x)
 			computations.waypoints[i].twist.twist.linear.x = velocity;
 		else
