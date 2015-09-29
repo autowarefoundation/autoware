@@ -355,6 +355,7 @@ class MyFrame(rtmgr.MyFrame):
 		# Topics tab (need, after layout for sizer)
 		self.topics_dic = self.load_yaml('topics.yaml')
 		self.topics_list = []
+		self.topics_echo_curr_topic = None
 		self.topics_echo_proc = None
 		self.topics_echo_thinf = None
 
@@ -1172,8 +1173,7 @@ class MyFrame(rtmgr.MyFrame):
 			if self.checkbox_stdout.GetValue() is False and \
 			   self.checkbox_stderr.GetValue() is False and \
 			   que.qsize() > 0:
-				with que.mutex:
-					que.queue.clear()
+				que_clear(que)
 				wx.CallAfter(tc.Clear)
 
 	#
@@ -1215,10 +1215,18 @@ class MyFrame(rtmgr.MyFrame):
 		wx.CallAfter(tc.Clear)
 		wx.CallAfter(tc.Enable, True)
 		self.topics_echo_sum = 0
+		self.topic_echo_curr_topic = None
+
+	def OnEcho(self, event):
+		if self.checkbox_topics_echo.GetValue() and self.topic_echo_curr_topic:
+			self.topics_proc_th_start(self.topic_echo_curr_topic)
+		else:
+			self.topics_proc_th_end()
 
 	def OnTopicLink(self, event):
 		obj = event.GetEventObject()
 		topic = obj.GetLabel()
+		self.topic_echo_curr_topic = topic
 
 		# info
 		info = subprocess.check_output([ 'rostopic', 'info', topic ]).strip()
@@ -1228,7 +1236,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		# echo
 		self.topics_proc_th_end()
-		self.topics_proc_th_start(topic)
+		if self.checkbox_topics_echo.GetValue():
+			self.topics_proc_th_start(topic)
 
 	def topics_proc_th_start(self, topic):
 		out = subprocess.PIPE
@@ -1267,6 +1276,8 @@ class MyFrame(rtmgr.MyFrame):
 			if self.checkbox_topics_echo.GetValue():
 				self.topics_echo_que.put(s)
 
+		que_clear(self.topics_echo_que)
+
 	def topics_echo_show_th(self, ev):
 		que = self.topics_echo_que
 		interval = self.topics_dic.get('gui_update_interval_ms', 100) * 0.001
@@ -1279,7 +1290,10 @@ class MyFrame(rtmgr.MyFrame):
 			if qsz > chars_limit:
 				over = qsz - chars_limit
 				for i in range(over):
-					que.get(timeout=1)
+					try:
+						que.get(timeout=1)
+					except Queue.Empty:
+						break
 				qsz = chars_limit
 			arr = []
 			for i in range(qsz):
@@ -2645,6 +2659,10 @@ def th_start(target, kwargs={}):
 def th_end((th, ev)):
 	ev.set()
 	th.join()
+
+def que_clear(que):
+	with que.mutex:
+		que.queue.clear()
 
 def append_tc_limit(tc, s, rm_chars=0):
 	if rm_chars > 0:
