@@ -443,23 +443,24 @@ void setContexts(TrafficLightDetector &detector,
       tmp.z        = extractedPos->Signals.at(i).z;
       tmp.type     = extractedPos->Signals.at(i).type;
       tmp.linkId   = extractedPos->Signals.at(i).linkId;
+      tmp.plId     = extractedPos->Signals.at(i).plId;
       signals.push_back(tmp);
     }
 
-  std::vector<int> linkid_vector;
+  std::vector<int> plid_vector;
   for (sig_iterator=signals.begin(); sig_iterator<signals.end(); sig_iterator++) {
-    linkid_vector.push_back(sig_iterator->linkId);
+    plid_vector.push_back(sig_iterator->plId);
   }
 
-  /* get array that has unique linkID values as its element */
-  std::sort(linkid_vector.begin(), linkid_vector.end());
-  std::vector<int>::iterator new_end = std::unique(linkid_vector.begin(), linkid_vector.end());
-  linkid_vector.erase(new_end, linkid_vector.end());
+  /* get array that has unique PLID values as its element */
+  std::sort(plid_vector.begin(), plid_vector.end());
+  std::vector<int>::iterator new_end = std::unique(plid_vector.begin(), plid_vector.end());
+  plid_vector.erase(new_end, plid_vector.end());
 
   std::vector<Context> updatedSignals;
 
   /* assemble fragmented signal lamp in a context */
-  for (unsigned int ctx_idx=0; ctx_idx<linkid_vector.size(); ctx_idx++)
+  for (unsigned int ctx_idx=0; ctx_idx<plid_vector.size(); ctx_idx++)
     {
       Context ctx;
       int min_radius  = 20;
@@ -476,7 +477,7 @@ void setContexts(TrafficLightDetector &detector,
           double map_y = sig_iterator->y;
           double map_z = sig_iterator->z;
           int radius = sig_iterator->radius;
-          if (sig_iterator->linkId == linkid_vector.at(ctx_idx) &&
+          if (sig_iterator->plId == plid_vector.at(ctx_idx) &&
               0 < img_x - radius - 1.5 * min_radius && img_x + radius + 1.5 * min_radius < frame.cols &&
               0 < img_y - radius - 1.5 * min_radius && img_y + radius + 1.5 * min_radius < frame.rows)
             {
