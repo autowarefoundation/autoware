@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tf
   #vector_map_server
+  rosinterface
 )
 
 ## System dependencies are found with CMake's conventions
@@ -191,3 +192,166 @@ add_dependencies(obj_fusion
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+# build vehicle tracker
+
+execute_process(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+
+if(EXISTS "/usr/local/cuda")
+  include_directories(
+    ${catkin_INCLUDE_DIRS}
+    "/usr/local/cuda/include"
+    )
+
+  if("${ARCHITECTURE}" MATCHES "^arm")
+    LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+  endif()
+
+  set(CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+
+  if("${ARCHITECTURE}" MATCHES "^arm")
+    set(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)
+  else()
+    set(CUDA_LDFLAGS -lcuda)
+  endif()
+
+  set(CUDA_CAPABILITY_VERSION_CHECKER
+    "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
+    )
+
+  add_custom_target(gpu_arch_version_checker)
+  add_dependencies(gpu_arch_version_checker
+    libdpm_ttic
+    )
+
+  execute_process(
+    COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+    OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+  if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+    set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+  else()
+    set(CUDA_ARCH "sm_52")
+  endif()
+
+  set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR/nodes/vehicle_tracker}")
+  add_custom_command(
+    OUTPUT rbsspfvehicletracker_cuda.o
+    COMMAND ${CUDA_COMPILER}
+    "-std=c++11" "-rdc=true" "--compiler-options" "-fPIC" "-m64" "-O3"
+    "-arch=${CUDA_ARCH}" "-c" "--compiler-options" "-fno-strict-aliasing"
+    "-use_fast_math" "--ptxas-options=-v"
+    "-I/usr/local/cuda/include"  "-L/usr/local/cuda/lib64"
+    "-lcudart" "-lcuda" "-lcudadevrt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/rbsspfvehicletracker.cu"
+    "-o" "${CATKIN_DEVEL_PREFIX}/lib/rbsspfvehicletracker_cuda.o"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/rbsspfvehicletracker.cu"
+    )
+  # add_library(vehicle_tracker_gpu_parts
+  #   STATIC
+  #   rbsspfvehicletracker_cuda.o
+  #   )
+  # set_source_files_properties(rbsspfvehicletracker_cuda.o
+  #   PROPERTIES
+  #   EXTERNAL_OBJECT true
+  #   GENERATED true
+  #   )
+  # set_target_properties(vehicle_tracker_gpu_parts
+  #   PROPERTIES
+  #   LINKER_LANGUAGE CUDA
+  #   )
+
+  catkin_package(
+    CATKIN_DEPENDS rosinterface
+    )
+
+  if(EXISTS /usr/local/qtbase5)
+    # Self install version
+    set(Qt5INCLUDE "/usr/local/qtbase5/include")
+    set(Qt5BIN "/usr/local/qtbase5/bin")
+    set(Qt5LIBROOT "/usr/local/qtbase5/lib")
+  else()
+    # Ubuntu Qt5 package
+    set(Qt5INCLUDE "/usr/include/qt5")
+    set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
+    set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
+  endif()
+
+  include_directories(
+    ${catkin_INCLUDE_DIRS}
+    nodes/vehicle_tracker
+    ${Qt5INCLUDE}
+    ${Qt5INCLUDE}/QtCore
+    ${Qt5INCLUDE}/QtGui
+    ${Qt5INCLUDE}/QtOpenGL
+    ${Qt5INCLUDE}/QtWidgets
+    )
+
+  add_custom_command(
+    OUTPUT moc_rbsspfvehicletracker.cpp
+    COMMAND ${Qt5BIN}/moc
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/moc_rbsspfvehicletracker.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/moc_rbsspfvehicletracker.h"
+    )
+  add_custom_target(moc_rbsspfvehicletracker
+    DEPENDS moc_rbsspfvehicletracker.cpp
+    )
+
+  add_custom_command(
+    OUTPUT ui_mainwindow.h
+    COMMAND ${Qt5BIN}/uic
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/ui_mainwindow.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/mainwindow.ui"
+    )
+  add_custom_target(vehicle_tracker_ui_mainwindow
+    DEPENDS ui_mainwindow.h
+    )
+
+  add_custom_command(
+    OUTPUT moc_mainwindow.cpp
+    COMMAND ${Qt5BIN}/moc
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/moc_mainwindow.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/mainwindow.h"
+    )
+  add_custom_target(moc_mainwindow
+    DEPENDS moc_mainwindow.cpp
+    )
+
+  add_executable(vehicle_tracker
+    nodes/vehicle_tracker/main.cpp
+    nodes/vehicle_tracker/mainwindow.cpp
+#    rbsspfvehicletracker_cuda.o
+    )
+
+  set_target_properties(vehicle_tracker
+    PROPERTIES COMPILE_FLAGS "-fPIC"
+    )
+
+  add_dependencies(vehicle_tracker
+    moc_mainwindow
+    moc_rbsspfvehicletrackre
+    vehicle_tracker_ui_mainwindow
+    )
+
+  target_link_libraries(vehicle_tracker
+    ${catkin_LIBRARIES}
+    rosinterface
+#    vehicle_tracker_gpu_parts
+    ${Qt5LIBROOT}/libQt5Core.so
+    ${Qt5LIBROOT}/libQt5Gui.so
+    ${Qt5LIBROOT}/libQt5OpenGL.so
+    ${Qt5LIBROOT}/libQt5Widgets.so
+    #${CATKIN_DEVEL_PREFIX}/lib/rbsspfvehicletracker_cuda.o
+    rbsspfvehicletracker_cuda.o
+    )
+
+
+endif()

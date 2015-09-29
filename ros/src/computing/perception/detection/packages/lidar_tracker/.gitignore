@@ -1,0 +1,3 @@
+# ignore auto-generated files in vehicle_tracker
+nodes/vehicle_tracker/moc_mainwindow.cpp
+nodes/vehicle_tracker/ui_mainwindow.h

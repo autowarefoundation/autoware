@@ -50,6 +50,7 @@
   <!--<build_depend>vector_map_server</build_depend>-->
   
   <run_depend>message_runtime</run_depend>
+  <build_depend>rosinterface</build_depend>
   <run_depend>pcl_conversions</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>roscpp</run_depend>
@@ -57,7 +58,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <!--<run_depend>vector_map_server</run_depend>-->
-
+  <run_depend>rosinterface</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
