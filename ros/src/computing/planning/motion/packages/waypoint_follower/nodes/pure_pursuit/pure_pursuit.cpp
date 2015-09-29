@@ -114,19 +114,16 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 }
 
-static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
+static void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  _current_velocity = kmph2mps(msg->data);
+  _current_velocity = msg->twist.linear.x;
 }
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
-
-#ifdef DEBUG
   ROS_INFO_STREAM("waypoint subscribed");
-#endif
 }
 
 // display the next waypoint by markers.
@@ -812,22 +809,17 @@ int main(int argc, char **argv)
   // ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
   ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
-  ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel_mps", 10, estVelCallback);
+  ros::Subscriber est_twist_subscriber = nh.subscribe("estimate_twist", 10, estTwistCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
 
   geometry_msgs::TwistStamped twist;
   ros::Rate loop_rate(LOOP_RATE); // by Hz
 
-#ifdef DEBUG
   int count = 0;
-#endif
 
   while (ros::ok())
   {
-
-#ifdef DEBUG
     ROS_INFO("loop %d", count);
-#endif
 
     std_msgs::Bool wf_stat;
 
