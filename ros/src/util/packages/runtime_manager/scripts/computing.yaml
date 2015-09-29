@@ -193,6 +193,8 @@ subs :
     subs :
     - name : driving_planner
       subs :
+      - name : path_select
+        cmd  : rosrun driving_planner path_select
       - name : lattice_trajectory_gen
         cmd  : roslaunch driving_planner lattice_trajectory_gen.launch
         param: lane_follower_trajgen
