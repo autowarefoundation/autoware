@@ -995,7 +995,7 @@ class MyFrame(rtmgr.MyFrame):
 			os.execvp('top', ['top'])
 		else: #parent
 			sec = 0.2
-			for s in ['1', 'W', 'q']:
+			for s in ['1', 'c', 'W', 'q']:
 				time.sleep(sec)
 				os.write(fd, s)
 
@@ -1027,8 +1027,9 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_n = len(cpu_ibls)
 
 		while not ev.wait(interval):
-			s = subprocess.check_output(['top', '-b', '-n', '2', '-d', '0.1']).strip()
-			s = s[s.rfind('top -'):]
+			s = subprocess.check_output(['sh', '-c', 'env COLUMNS=512 top -b -n 2 -d 0.1']).strip()
+			i = s.rfind('\ntop -') + 1
+			s = s[i:]
 			wx.CallAfter(self.label_top_cmd.SetLabel, s)
 			wx.CallAfter(self.label_top_cmd.GetParent().FitInside)
 
