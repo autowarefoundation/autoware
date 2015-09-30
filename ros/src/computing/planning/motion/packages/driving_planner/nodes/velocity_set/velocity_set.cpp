@@ -292,6 +292,9 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
 
 void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
 {
+  if (g_sim_mode)
+    return;
+
   _current_vel = msg->data;
 }
 
@@ -329,7 +332,7 @@ static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   if (g_sim_mode)
-  return;
+    return;
 
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
@@ -351,6 +354,7 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose.pose;
+    _current_vel = msg->twist.twist.linear.x;
     if (_pose_flag == false) {
       std::cout << "pose subscribed" << std::endl;
       _pose_flag = true;
@@ -489,6 +493,7 @@ static bool ObstacleDetection()
     static bool prev_detection = false;
 
     std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
+    std::cout << "current_velocity : " << mps2kmph(_current_vel) << std::endl;
     DisplayDetectionRange(_closest_waypoint + 1);
     int vscan_result = vscanDetection(_closest_waypoint);
 
