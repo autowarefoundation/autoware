@@ -31,6 +31,7 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <std_msgs/Int32.h>
 
 #include <iostream>
 #include <vector>
@@ -47,9 +48,13 @@ static constexpr int32_t TRAFFIC_LIGHT_GREEN   = 1;
 static constexpr int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
 
 static std_msgs::ColorRGBA _initial_color;
-static std_msgs::ColorRGBA _color;
+static std_msgs::ColorRGBA _global_color;
+static std_msgs::ColorRGBA g_local_color;
+static const double g_global_alpha = 0.2;
+static const double g_local_alpha = 1.0;
+static int _closest_waypoint = -1;
 
-void createWaypointVelocityMarker(waypoint_follower::lane lane_waypoint, visualization_msgs::MarkerArray *marker_array)
+void createGlobalWaypointVelocityMarker(const waypoint_follower::lane &lane_waypoint, visualization_msgs::MarkerArray *marker_array)
 {
 
   // display by markers the velocity of each waypoint.
@@ -91,7 +96,55 @@ void createWaypointVelocityMarker(waypoint_follower::lane lane_waypoint, visuali
   }
 }
 
-void createWaypointMarker(waypoint_follower::lane lane_waypoint,visualization_msgs::MarkerArray *marker_array)
+void createLocalWaypointVelocityMarker(int closest_waypoint,const waypoint_follower::lane &lane_waypoint, visualization_msgs::MarkerArray *marker_array)
+{
+
+  // display by markers the velocity of each waypoint.
+  visualization_msgs::Marker velocity;
+  velocity.header.frame_id = "map";
+  velocity.header.stamp = ros::Time();
+  velocity.ns = "waypoint_velocity";
+  velocity.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  velocity.action = visualization_msgs::Marker::ADD;
+  velocity.scale.z = 0.4;
+  velocity.color.a = 1.0;
+  velocity.color.r = 1;
+  velocity.color.g = 1;
+  velocity.color.b = 1;
+  velocity.frame_locked = true;
+
+  for (unsigned int i = 0; i < lane_waypoint.waypoints.size(); i++)
+  {
+    velocity.id = closest_waypoint+i;
+    velocity.pose.position = lane_waypoint.waypoints[i].pose.pose.position;
+    velocity.pose.position.z += 0.2;
+    velocity.pose.orientation.w = 1.0;
+
+    // double to string
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << mps2kmph(lane_waypoint.waypoints[i].twist.twist.linear.x) << " km/h";
+    velocity.text = oss.str();
+
+    //C++11 version
+    //std::string velocity = std::to_string(test_pose.velocity_kmh);
+    //velocity.erase(velocity.find_first_of(".") + 3);
+    //std::string kmh = " km/h";
+    //std::string text = velocity + kmh;
+    //marker.text = text;
+
+    marker_array->markers.push_back(velocity);
+  }
+
+  for (int i = closest_waypoint -1 ; i > -1 ; i--)
+    {
+      velocity.id = i;
+      velocity.action = visualization_msgs::Marker::DELETE;
+      marker_array->markers.push_back(velocity);
+    }
+
+}
+
+void createGlobalWaypointMarker(waypoint_follower::lane lane_waypoint,visualization_msgs::MarkerArray *marker_array)
 {
   visualization_msgs::Marker waypoint_mark;
   waypoint_mark.header.frame_id =  "map";
@@ -118,12 +171,35 @@ void createWaypointMarker(waypoint_follower::lane lane_waypoint,visualization_ms
   marker_array->markers.push_back(waypoint_mark);
 }
 
-void createPathMarker(std_msgs::ColorRGBA color , waypoint_follower::lane lane_waypoint,visualization_msgs::MarkerArray *marker_array)
+void createGlobalPathMarker(std_msgs::ColorRGBA color , const waypoint_follower::lane &lane_waypoint,visualization_msgs::MarkerArray *marker_array)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
   lane_waypoint_marker.header.stamp = ros::Time();
-  lane_waypoint_marker.ns = "path_marker";
+  lane_waypoint_marker.ns = "global_path_marker";
+  lane_waypoint_marker.id = 0;
+  lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.scale.x = 2.0;
+  lane_waypoint_marker.color = color;
+  lane_waypoint_marker.frame_locked = true;
+
+  for (unsigned int i = 0; i < lane_waypoint.waypoints.size(); i++)
+    {
+      geometry_msgs::Point point;
+      point = lane_waypoint.waypoints[i].pose.pose.position;
+      lane_waypoint_marker.points.push_back(point);
+
+    }
+  marker_array->markers.push_back(lane_waypoint_marker);
+}
+
+void createLocalPathMarker(std_msgs::ColorRGBA color , const waypoint_follower::lane &lane_waypoint,visualization_msgs::MarkerArray *marker_array)
+{
+  visualization_msgs::Marker lane_waypoint_marker;
+  lane_waypoint_marker.header.frame_id = "map";
+  lane_waypoint_marker.header.stamp = ros::Time();
+  lane_waypoint_marker.ns = "local_path_marker";
   lane_waypoint_marker.id = 0;
   lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
@@ -144,30 +220,38 @@ void createPathMarker(std_msgs::ColorRGBA color , waypoint_follower::lane lane_w
 static void laneCallback(const waypoint_follower::laneConstPtr &msg)
 {
   visualization_msgs::MarkerArray marker_array;
-  createWaypointVelocityMarker(*msg, &marker_array);
-  createWaypointMarker(*msg, &marker_array);
-  createPathMarker(_color, *msg, &marker_array);
+  createGlobalWaypointVelocityMarker(*msg, &marker_array);
+  //createGlobalWaypointMarker(*msg, &marker_array);
+  createGlobalPathMarker(_global_color, *msg, &marker_array);
 
   _lane_mark_pub.publish(marker_array);
 }
 
 static void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
 {
-  std_msgs::ColorRGBA color;
-  color.a = 1.0;
+  std_msgs::ColorRGBA global_color;
+  global_color.a = g_global_alpha;
+
+  std_msgs::ColorRGBA local_color;
+  local_color.a = g_local_alpha;
 
   switch (msg->traffic_light)
   {
   case TRAFFIC_LIGHT_RED:
-    color.r = 1.0;
-    _color = color;
+    global_color.r = 1.0;
+    _global_color = global_color;
+    local_color.r = 1.0;
+    g_local_color = local_color;
     break;
   case TRAFFIC_LIGHT_GREEN:
-    color.g = 1.0;
-    _color = color;
+    global_color.g = 1.0;
+    _global_color = global_color;
+    local_color.g = 1.0;
+    g_local_color = local_color;
     break;
   case TRAFFIC_LIGHT_UNKNOWN:
-    _color = _initial_color;
+    _global_color = _initial_color;
+    g_local_color = _initial_color;
     break;
   default:
     ROS_ERROR("unknown traffic_light");
@@ -178,9 +262,9 @@ static void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
 static void trafficCallback(const waypoint_follower::laneConstPtr &msg)
 {
   visualization_msgs::MarkerArray marker_array;
-  createWaypointVelocityMarker(*msg, &marker_array);
-  createWaypointMarker(*msg, &marker_array);
-  createPathMarker(_color, *msg, &marker_array);
+  createGlobalWaypointVelocityMarker(*msg, &marker_array);
+  //createGlobalWaypointMarker(*msg, &marker_array);
+  createGlobalPathMarker(_global_color, *msg, &marker_array);
 
   _lane_mark_pub.publish(marker_array);
 
@@ -189,32 +273,46 @@ static void trafficCallback(const waypoint_follower::laneConstPtr &msg)
 static void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
   visualization_msgs::MarkerArray marker_array;
-  createWaypointVelocityMarker(*msg, &marker_array);
-  createWaypointMarker(*msg, &marker_array);
-  createPathMarker(_color, *msg, &marker_array);
+  if(_closest_waypoint != -1)
+    createLocalWaypointVelocityMarker(_closest_waypoint,*msg, &marker_array);
+  //createLocalWaypointMarker(*msg, &marker_array);
+  createLocalPathMarker(g_local_color, *msg, &marker_array);
 
   _lane_mark_pub.publish(marker_array);
 
 }
 
+static void closestCallback(const std_msgs::Int32ConstPtr &msg)
+{
+  _closest_waypoint = msg->data;
+}
+
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "marker_publisher");
+  ros::init(argc, argv, "waypoints_marker_publisher");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
+  //subscribe traffic light
+  ros::Subscriber light_sub = nh.subscribe("traffic_light",10,lightCallback);
+
+  //subscribe global waypoints
   ros::Subscriber lane_sub = nh.subscribe("lane_waypoints",10,laneCallback);
   ros::Subscriber traffic_sub = nh.subscribe("traffic_waypoints",10,trafficCallback);
-  ros::Subscriber light_sub = nh.subscribe("traffic_light",10,lightCallback);
+
+  //subscribe local waypoints
   ros::Subscriber temporal_sub = nh.subscribe("temporal_waypoints",10,temporalCallback);
+  ros::Subscriber closest_sub = nh.subscribe("closest_waypoint",10,closestCallback);
 
   _lane_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("lane_waypoint_mark", 10, true);
 
   //initialize path color
   _initial_color.b = 1.0;
   _initial_color.g = 0.7;
-  _initial_color.a = 1.0;
-  _color = _initial_color;
+  _global_color = _initial_color;
+  _global_color.a = g_global_alpha;
+  g_local_color = _initial_color;
+  g_local_color.a = g_local_alpha;
 
   ros::spin();
 
