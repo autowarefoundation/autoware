@@ -193,6 +193,9 @@ subs :
     subs :
     - name : driving_planner
       subs :
+      - name : velocity_set
+        cmd  : roslaunch driving_planner velocity_set.launch
+        param: velocity_set
       - name : path_select
         cmd  : rosrun driving_planner path_select
       - name : lattice_trajectory_gen
@@ -235,9 +238,6 @@ subs :
            lookahead_threshold:
              depend : param_flag
            stat_topic : [ lf ]  
-       - name : velocity_set
-         cmd  : roslaunch driving_planner velocity_set.launch
-         param: velocity_set
        - name : twist_filter
          cmd  : rosrun waypoint_follower twist_filter  
        - name : wf_simulator
