@@ -73,9 +73,11 @@ objectDetect::objectDetect() :
 		object_class = "car";
 	}
 
+#if defined(HAS_GPU)
 	if (!private_nh_.getParam("use_gpu", use_gpu)) {
 		use_gpu = false;
 	}
+#endif
 
 	std::string default_model;
 	// switch (type) {

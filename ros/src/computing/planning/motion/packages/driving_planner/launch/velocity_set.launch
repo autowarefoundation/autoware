@@ -10,6 +10,7 @@
 	<arg name="velocity_limit" default="12.0" /> <!-- 43.2 km/h -->
 	<arg name="temporal_waypoints_size" default="100.0" />
     <arg name="sim_mode" default="false" />
+	<arg name="accel_bias" default="5.0" />
 
 	<!-- rosrun waypoint_follower velocity_set _detection_range:=0 -->
 	<node pkg="driving_planner" type="velocity_set" name="velocity_set" output="screen">
@@ -22,6 +23,7 @@
 		<param name="velocity_limit" value="$(arg velocity_limit)" />
 		<param name="temporal_waypoints_size" value="$(arg temporal_waypoints_size)" />
 		<param name="sim_mode" value="$(arg sim_mode)" />
+		<param name="accel_bias" value="$(arg accel_bias)" />
 	</node>
 
 </launch>
