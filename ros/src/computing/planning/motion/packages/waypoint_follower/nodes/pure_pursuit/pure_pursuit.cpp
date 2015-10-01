@@ -48,7 +48,7 @@
 //#define GLOBAL
 
 static const int LOOP_RATE = 30; //Hz
-static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 3.0; // the next waypoint must be outside of this threshold.
+static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 2.0; // the next waypoint must be outside of this threshold.
 static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 4.0; // the next waypoint must be outside of this threshold.
 static const double EVALUATION_THRESHOLD = 1.0; //meter
 static const std::string MAP_FRAME = "map";
@@ -677,7 +677,7 @@ std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
  // ROS_INFO("theta : %lf", theta);
 
   int step = 100;
-  for (double i = theta / step; fabs(i) < fabs(theta); i += theta / step)
+  for (double i = theta / step; fabs(i) < fabs(theta) + theta/step; i += theta / step)
   {
     //calc a point of circumference
     geometry_msgs::Point p;
@@ -743,11 +743,11 @@ int main(int argc, char **argv)
   geometry_msgs::TwistStamped twist;
   ros::Rate loop_rate(LOOP_RATE); // by Hz
 
-  int count = 0;
+  //int count = 0;
 
   while (ros::ok())
   {
-    ROS_INFO("loop %d", count);
+    //ROS_INFO("loop %d", count);
 
     std_msgs::Bool wf_stat;
 
@@ -818,7 +818,7 @@ int main(int argc, char **argv)
     cmd_velocity_publisher.publish(twist);
     _prev_velocity = twist.twist.linear.x;
     loop_rate.sleep();
-    count++;
+    //count++;
   }
 
   return 0;
