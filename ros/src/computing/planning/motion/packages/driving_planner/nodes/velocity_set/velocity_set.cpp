@@ -54,7 +54,6 @@ static geometry_msgs::TwistStamped _current_twist;
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
-static std::string _current_pose_topic = "ndt";
 static const std::string pedestrian_sound = "pedestrian";
 static std::string _linelist_frame = "/velodyne";
 static bool _pose_flag = false;
@@ -624,38 +623,6 @@ int main(int argc, char **argv)
 
     private_nh.param<bool>("sim_mode", g_sim_mode,false);
     ROS_INFO_STREAM("sim_mode : " << g_sim_mode);
-
-    private_nh.getParam("detection_range", _detection_range);
-    std::cout << "detection_range : " << _detection_range << std::endl;
-
-    private_nh.getParam("threshold_points", _threshold_points);
-    std::cout << "threshold_points : " << _threshold_points << std::endl;
-
-    private_nh.getParam("others_distance", _others_distance);
-    std::cout << "others_distance : " << _others_distance << std::endl;
-
-    private_nh.getParam("cars_distance", _cars_distance);
-    std::cout << "cars_distance : " << _cars_distance << std::endl;
-
-    private_nh.getParam("pedestrians_distance", _pedestrians_distance);
-    std::cout << "pedestrians_distance : " << _pedestrians_distance << std::endl;
-
-    private_nh.getParam("detection_height_top", _detection_height_top);
-    std::cout << "detection_height_top : " << _detection_height_top << std::endl;
-
-    private_nh.getParam("detection_height_bottom", _detection_height_bottom);
-    std::cout << "detection_height_bottom : " << _detection_height_bottom << std::endl;
-
-    private_nh.getParam("current_pose_topic", _current_pose_topic);
-    std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
-
-    private_nh.getParam("velocity_limit", _velocity_limit);
-    std::cout << "velocity_limit : " << _velocity_limit << std::endl;
-
-    private_nh.getParam("temporal_waypoints_size", _temporal_waypoints_size);
-    std::cout << "temporal_waypoints_size : " << _temporal_waypoints_size << std::endl;
-    private_nh.getParam("accel_bias", _accel_bias);
-    std::cout << "accel_bias : " << _accel_bias << std::endl;
 
     linelistInit();
 
