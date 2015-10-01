@@ -91,7 +91,7 @@ static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 
 static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
 {
-  if (_use_pose != "Initial Pos")
+  if (_use_pose != "InitialPos")
     return;
 
     static tf::TransformListener listener;
