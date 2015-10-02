@@ -75,7 +75,8 @@ static double _decel = 1.5;           // (m/s) deceleration
 static double _decel_limit = 2.778;   // (m/s) about 10 km/h
 static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
 static double _temporal_waypoints_size = 100.0; // meter
-static double _accel_bias = 5.0; // (km/h)
+static double _accel_bias = 1.389; // (m/s)
+static double _avoid_braking_velocity = 2.22; // if target velocity is under this, it could be sudden braking
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 static bool g_sim_mode;
@@ -150,7 +151,7 @@ void PathVset::avoidSuddenAceleration()
   for (int i = 0; ; i++) {
     if (!checkWaypoint(_closest_waypoint+i, "avoidSuddenAceleration"))
       return;
-    changed_vel = sqrt(temp1 + temp2*(double)(i+1)) + kmph2mps(_accel_bias);
+    changed_vel = sqrt(temp1 + temp2*(double)(i+1)) + _accel_bias;
     if (changed_vel > current_waypoints_.waypoints[_closest_waypoint+i].twist.twist.linear.x)
       return;
     current_waypoints_.waypoints[_closest_waypoint+i].twist.twist.linear.x = changed_vel;
@@ -165,7 +166,7 @@ void PathVset::avoidSuddenBraking()
   int i = 0;
   int fill_in_zero = 20;
   int fill_in_vel = 15;
-  int examin_range = 2; // need to change according to waypoint interval?
+  int examin_range = 1; // need to change according to waypoint interval?
   int num;
   double interval = getInterval();
   double changed_vel;
@@ -173,7 +174,8 @@ void PathVset::avoidSuddenBraking()
   for (int j = -1; j < examin_range; j++) {
     if (!checkWaypoint(_closest_waypoint+j, "avoidSuddenBraking"))
       return;
-    if (getWaypointVelocityMPS(_closest_waypoint+j) < _current_vel - _decel_limit) // we must change waypoints
+    if (getWaypointVelocityMPS(_closest_waypoint+j) < _current_vel - _decel_limit &&
+	getWaypointVelocityMPS(_closest_waypoint+j) < _avoid_braking_velocity) // we must change waypoints
       break;
     if (j == examin_range-1) // we don't have to change waypoints
       return;
@@ -287,6 +289,9 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   _threshold_points = config->threshold_points;
   _detection_height_top = config->detection_height_top;
   _detection_height_bottom = config->detection_height_bottom;
+  _decel_limit = kmph2mps(config->decel_change_limit);
+  _avoid_braking_velocity = kmph2mps(config->avoid_braking_velocity);
+  _accel_bias = kmph2mps(config->accel_bias);
 }
 
 void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
