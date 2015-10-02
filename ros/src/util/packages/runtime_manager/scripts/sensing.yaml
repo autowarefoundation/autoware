@@ -23,9 +23,9 @@ subs :
           CalibrationFile :
             prop  : 1
             flags : [ center_v ]
-      - name : PointGrey Grasshoper 3 (USB2)
+      - name : PointGrey Generic
         probe:
-        run  :
+        run  : roslaunch pointgrey_camera_driver camera.launch
       - name : PointGrey LadyBug 5
         probe:
         run  : roslaunch pointgrey ladybug.launch
