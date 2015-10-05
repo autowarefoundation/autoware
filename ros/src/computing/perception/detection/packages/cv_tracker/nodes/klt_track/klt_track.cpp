@@ -28,17 +28,11 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <string>
 #include <ros/ros.h>
-#include <libdpm_ocv/ImageObjects.h>
-
-extern int klt_main(int argc, char* argv[]);
+#include <lktracker/LkTracker.hpp>
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "klt_track");
-
-	ros::NodeHandle n;
-
 	return klt_main(argc, argv);
 }

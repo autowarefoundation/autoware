@@ -49,6 +49,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
 
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
+  lib
 )
 
 IF(EXISTS "/usr/local/cuda")
@@ -176,8 +177,19 @@ ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
 )
 
+ADD_LIBRARY(lktracker
+  lib/lktracker/klt.cpp
+  lib/lktracker/LkTracker.cpp
+)
+TARGET_LINK_LIBRARIES(lktracker
+  ${OpenCV_LIBS}
+)
+ADD_DEPENDENCIES(lktracker
+  cv_tracker_generate_messages_cpp
+)
+
 TARGET_LINK_LIBRARIES(klt_track
-  klt
+  lktracker
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
