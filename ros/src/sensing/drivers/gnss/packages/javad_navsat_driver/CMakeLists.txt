@@ -7,9 +7,9 @@ catkin_python_setup()
 catkin_package()
 
 install(PROGRAMS
-   scripts/javad_serial_driver
-   scripts/javad_topic_driver
-   scripts/javad_topic_serial_reader
+   nodes/javad_serial_driver
+   nodes/javad_topic_driver
+   nodes/javad_topic_serial_reader
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
