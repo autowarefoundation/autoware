@@ -33,7 +33,7 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall -g -Wno-unused-result ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -g -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
 if(EXISTS /usr/local/qtbase5)
 # Self install version
