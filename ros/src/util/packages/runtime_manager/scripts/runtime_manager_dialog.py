@@ -1107,8 +1107,8 @@ class MyFrame(rtmgr.MyFrame):
 			
 			for (lb, cmd, load) in zip(self.lb_top5, cmds, loads):
 				col = self.info_col(float(load), rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
-				lb.SetForegroundColour(col)
-				lb.SetLabel(cmd + ' (' + load + ' %CPU)')
+				wx.CallAfter(lb.SetForegroundColour, col)
+				wx.CallAfter(lb.SetLabel, cmd + ' (' + load + ' %CPU)')
 
 		self.toprc_restore(toprc, backup)
 
