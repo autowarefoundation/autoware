@@ -37,11 +37,9 @@
 #include <vmap_utility.hpp>
 
 static void create_traffic_waypoint(const waypoint_follower::lane& msg);
-
-// XXX heuristic parameter
-static constexpr double CURVE_WEIGHT = 50 * 0.6;
-static constexpr double CROSSROAD_WEIGHT = 9.1 * 0.9;
-static constexpr double CLOTHOID_WEIGHT = CURVE_WEIGHT;
+static bool is_curve(const map_file::DTLane& dtlane);
+static bool is_crossroad(const map_file::DTLane& dtlane);
+static bool is_clothoid(const map_file::DTLane& dtlane);
 
 static constexpr double RADIUS_MAX = 90000000000;
 
@@ -59,6 +57,10 @@ static VectorMap vmap_lane;
 
 static waypoint_follower::lane current_waypoint;
 
+static double curve_radius_min;
+static double crossroad_radius_min;
+static double clothoid_radius_min;
+
 static int sub_vmap_queue_size;
 static int sub_waypoint_queue_size;
 static int sub_config_queue_size;
@@ -66,6 +68,9 @@ static int pub_waypoint_queue_size;
 static bool pub_waypoint_latch;
 
 static int waypoint_max;
+static double curve_weight;
+static double crossroad_weight;
+static double clothoid_weight;
 
 static void cache_vmap_lane()
 {
@@ -87,6 +92,32 @@ static void cache_vmap_lane()
 		}
 	}
 	vmap_lane = vmap;
+}
+
+static void cache_radius_min()
+{
+	double curve_radius = RADIUS_MAX;
+	double crossroad_radius = RADIUS_MAX;
+	double clothoid_radius = RADIUS_MAX;
+
+	for (const map_file::DTLane& d : vmap_all.dtlanes) {
+		if (is_curve(d)) {
+			if (is_crossroad(d)) {
+				if (fabs(d.r) <= crossroad_radius)
+					crossroad_radius = fabs(d.r);
+			} else {
+				if (fabs(d.r) <= curve_radius)
+					curve_radius = fabs(d.r);
+			}
+		} else if (is_clothoid(d)) {
+			if (fabs(d.r) <= clothoid_radius)
+				clothoid_radius = fabs(d.r);
+		}
+	}
+
+	curve_radius_min = curve_radius;
+	crossroad_radius_min = crossroad_radius;
+	clothoid_radius_min = clothoid_radius;
 }
 
 static VectorMap cache_vmap_fine(const waypoint_follower::lane& msg)
@@ -161,6 +192,7 @@ static void cache_stopline(const map_file::StopLineArray& msg)
 static void cache_dtlane(const map_file::DTLaneArray& msg)
 {
 	vmap_all.dtlanes = msg.dtlanes;
+	cache_radius_min();
 	if (is_cached_waypoint() && is_cached_vmap()) {
 		create_traffic_waypoint(current_waypoint);
 		cached_waypoint = false;
@@ -241,16 +273,16 @@ static double dtlane_to_reduction(const std::vector<map_file::DTLane>& dtlanes, 
 
 	if (is_curve(dtlanes[index])) {
 		if (is_crossroad(dtlanes[index]))
-			return compute_reduction(dtlanes[index], CROSSROAD_WEIGHT);
+			return compute_reduction(dtlanes[index], crossroad_radius_min * crossroad_weight);
 
 		if (is_single_curve(dtlanes, index))
 			return 1;
 
-		return compute_reduction(dtlanes[index], CURVE_WEIGHT);
+		return compute_reduction(dtlanes[index], curve_radius_min * curve_weight);
 	}
 
 	if (is_clothoid(dtlanes[index]))
-		return compute_reduction(dtlanes[index], CLOTHOID_WEIGHT);
+		return compute_reduction(dtlanes[index], clothoid_radius_min * clothoid_weight);
 
 	return 1;
 }
@@ -680,6 +712,9 @@ int main(int argc, char **argv)
 	n.param<int>("/lane_rule/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
 	n.param<bool>("/lane_rule/pub_waypoint_latch", pub_waypoint_latch, true);
 	n.param<int>("/lane_rule/waypoint_max", waypoint_max, 10000);
+	n.param<double>("/lane_rule/curve_weight", curve_weight, 0.6);
+	n.param<double>("/lane_rule/crossroad_weight", crossroad_weight, 0.9);
+	n.param<double>("/lane_rule/clothoid_weight", clothoid_weight, 0.215);
 
 	ros::Subscriber sub_lane = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
 	ros::Subscriber sub_node = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
