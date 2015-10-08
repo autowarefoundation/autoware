@@ -1,0 +1,25 @@
+<launch>
+	<arg name="car" default="true"/>
+	<arg name="pedestrian" default="false"/>
+	<arg name="use_gpu" default="true"/>
+	<arg name="gpu_device_id" default="0"/>
+	
+	<!-- arguments list -->
+	
+	<arg name="network_definition_file" default="/home/ne0/fast-rcnn/models/VGG16/test.prototxt"/>
+	<arg name="pretrained_model_file" default="/home/ne0/fast-rcnn/data/fast_rcnn_models/vgg16_fast_rcnn_iter_40000.caffemodel"/> 
+<!--
+	<arg name="network_definition_file" default="/home/ne0/fast-rcnn/models/CaffeNet/test.prototxt"/>
+	<arg name="pretrained_model_file" default="/home/ne0/fast-rcnn/output/default/voc_2012_trainval"/>-->
+	
+	<!-- RCNN detection -->
+	<node pkg="cv_tracker" name="rcnn" type="rcnn_node" output="log">
+		<remap from="/config/obj_car/rcnn" to="/config/car_rcnn"/>
+		
+		<param name="network_definition_file" type="str" value="$(arg network_definition_file)"/>
+		<param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)"/>
+		<param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+		<param name="gpu_device_id" type="int" value="$(arg gpu_device_id)"/>
+	</node>
+	
+</launch>
