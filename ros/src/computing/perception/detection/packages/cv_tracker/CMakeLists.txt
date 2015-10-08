@@ -204,7 +204,7 @@ ADD_DEPENDENCIES(klt_track
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 ##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	 	### 
-set(CAFFE_PATH "/home/ne0/fast-rcnn/caffe-fast-rcnn/distribute")								####
+set(CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")								####
 set(CUDA_INCLUDE_PATH "/usr/local/cuda/include/")												####
 ####################################################################################################
 
