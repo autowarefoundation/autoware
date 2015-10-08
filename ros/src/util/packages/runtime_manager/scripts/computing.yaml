@@ -70,6 +70,10 @@ subs :
             flags  : [ left ]
           part_model_car :
             flags  : [ hline ]
+            
+      - name : rcnn_node
+        cmd  : roslaunch cv_tracker rcnn.launch
+        param: rcnn
 
       - name : range_fusion
         cmd  : roslaunch cv_tracker ranging.launch
@@ -1027,3 +1031,43 @@ params :
       min   : 0.0
       max   : 5.0
       v     : 1.0
+
+  - name  : rcnn
+    topic : /config/rcnn
+    msg   : ConfigRcnn
+    vars  :
+    - name  : score_threshold
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.6
+    - name  : group_threshold
+      label : Group Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.3
+    - name  : image_slices
+      label : Image Slices (proposals)
+      min   : 2
+      max   : 32
+      v     : 16
+    - name  : slices_overlap
+      label : Overlap between slices (proposals)
+      min   : 0.0
+      max   : 1.0
+      v     : 0.7
+    - name  : b_mean
+      label : Blue Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 192.9801
+    - name  : g_mean
+      label : Green Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 115.9465
+    - name  : r_mean
+      label : Red Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 122.7717

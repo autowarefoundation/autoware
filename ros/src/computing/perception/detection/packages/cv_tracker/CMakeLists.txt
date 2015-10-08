@@ -12,6 +12,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   libdpm_ttic
   fusion
   kf
+  librcnn
 )
 FIND_PACKAGE(OpenCV REQUIRED)
 
@@ -197,4 +198,31 @@ TARGET_LINK_LIBRARIES(klt_track
 ADD_DEPENDENCIES(klt_track
   klt_track_generate_messages_cpp
   libdpm_ocv_generate_messages_cpp
+)
+
+############# RCNN#############
+
+###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
+##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	 	### 
+set(CAFFE_PATH "/home/ne0/fast-rcnn/caffe-fast-rcnn/distribute")								####
+set(CUDA_INCLUDE_PATH "/usr/local/cuda/include/")												####
+####################################################################################################
+
+ADD_EXECUTABLE(rcnn_node
+  nodes/rcnn/rcnn_node.cpp
+)
+
+include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${CAFFE_PATH}/include)
+include_directories(${CUDA_INCLUDE_PATH})
+
+TARGET_LINK_LIBRARIES(rcnn_node
+  librcnn
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
+
+ADD_DEPENDENCIES(rcnn_node
+  rcnn_node_generate_messages_cpp
+  librcnn
 )

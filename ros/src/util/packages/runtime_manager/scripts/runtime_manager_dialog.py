@@ -57,6 +57,7 @@ import rospy
 import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
+from runtime_manager.msg import ConfigRcnn
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
