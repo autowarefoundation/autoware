@@ -35,9 +35,6 @@
 
 map_file::Lane vmap_find_lane(const VectorMap& vmap, const map_file::PointClass& point)
 {
-	map_file::Lane error;
-	error.lnid = -1;
-
 	for (const map_file::Node& n : vmap.nodes) {
 		if (n.pid != point.pid)
 			continue;
@@ -48,34 +45,34 @@ map_file::Lane vmap_find_lane(const VectorMap& vmap, const map_file::PointClass&
 		}
 	}
 
+	map_file::Lane error;
+	error.lnid = -1;
 	return error;
 }
 
 map_file::Lane vmap_find_prev_lane(const VectorMap& vmap, const map_file::Lane& lane)
 {
-	map_file::Lane error;
-	error.lnid = -1;
-
 	for (const map_file::Lane& l : vmap.lanes) {
 		if (l.lnid != lane.blid)
 			continue;
 		return l;
 	}
 
+	map_file::Lane error;
+	error.lnid = -1;
 	return error;
 }
 
 map_file::Lane vmap_find_next_lane(const VectorMap& vmap, const map_file::Lane& lane)
 {
-	map_file::Lane error;
-	error.lnid = -1;
-
 	for (const map_file::Lane& l : vmap.lanes) {
 		if (l.lnid != lane.flid)
 			continue;
 		return l;
 	}
 
+	map_file::Lane error;
+	error.lnid = -1;
 	return error;
 }
 
@@ -133,9 +130,6 @@ map_file::Lane vmap_find_junction_lane(const VectorMap& vmap, const map_file::La
 
 map_file::PointClass vmap_find_start_point(const VectorMap& vmap, const map_file::Lane& lane)
 {
-	map_file::PointClass error;
-	error.pid = -1;
-
 	for (const map_file::Node& n : vmap.nodes) {
 		if (n.nid != lane.bnid)
 			continue;
@@ -146,14 +140,13 @@ map_file::PointClass vmap_find_start_point(const VectorMap& vmap, const map_file
 		}
 	}
 
+	map_file::PointClass error;
+	error.pid = -1;
 	return error;
 }
 
 map_file::PointClass vmap_find_end_point(const VectorMap& vmap, const map_file::Lane& lane)
 {
-	map_file::PointClass error;
-	error.pid = -1;
-
 	for (const map_file::Node& n : vmap.nodes) {
 		if (n.nid != lane.fnid)
 			continue;
@@ -164,6 +157,8 @@ map_file::PointClass vmap_find_end_point(const VectorMap& vmap, const map_file::
 		}
 	}
 
+	map_file::PointClass error;
+	error.pid = -1;
 	return error;
 }
 
