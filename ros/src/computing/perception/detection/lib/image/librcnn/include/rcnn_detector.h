@@ -17,7 +17,6 @@
 
 #include "caffe/caffe.hpp"
 
-#define NUM_CLASSES 21
 
 namespace Rcnn
 {
@@ -28,7 +27,7 @@ namespace Rcnn
 		BOTTLE, BUS, CAR, CAT, CHAIR,
 		COW, TABLE, DOG, HORSE,
 		MOTORBIKE, PERSON, PLANT,
-		SHEEP, SOFA, TRAIN, TV
+		SHEEP, SOFA, TRAIN, TV, NUM_CLASSES
 	};
 }
 
@@ -76,7 +75,7 @@ class RcnnDetector
 	*
 	* Fills a BlobProto out_blob object from a vector of scalars, so it can be fed into the network
 	*/
-	void ConvertRoisToBlob(std::vector< cv::Scalar  >& in_proposals, caffe::BlobProto* out_blob);
+	void ConvertRoisToBlob(std::vector< cv::Scalar  >& in_proposals, caffe::BlobProto& out_blob);
 
 	/**
 	* @brief Generates Class Scored Rectangles of the ROIS input proposals

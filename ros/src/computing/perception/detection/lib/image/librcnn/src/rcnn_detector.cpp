@@ -123,20 +123,20 @@ void RcnnDetector::ConvertImageToBlob(cv::Mat& in_image, caffe::BlobProto& out_b
 	}
 }
 
-void RcnnDetector::ConvertRoisToBlob(std::vector< cv::Scalar >& in_rois, caffe::BlobProto* out_blob)
+void RcnnDetector::ConvertRoisToBlob(std::vector< cv::Scalar >& in_rois, caffe::BlobProto& out_blob)
 {
-	out_blob->set_num((int)in_rois.size());	//number of ROIS
-	out_blob->set_channels(5);				//depth, always 5 (0, x1, y1, x2,y2)
-	out_blob->set_height(1);				//one vector vector
-	out_blob->set_width(1);					//one column vector
+	out_blob.set_num((int)in_rois.size());	//number of ROIS
+	out_blob.set_channels(5);				//depth, always 5 (0, x1, y1, x2,y2)
+	out_blob.set_height(1);				//one vector vector
+	out_blob.set_width(1);					//one column vector
 
 	for (unsigned int i = 0; i < in_rois.size(); ++i)
 	{
 		for (unsigned int j = 0; j < 4; ++j)
 		{
 			if (j == 0)
-				out_blob->add_data(0.0f);	//append a 0 as the first column
-			out_blob->add_data( (float) ((cv::Scalar)(in_rois)[i]).val[j] );
+				out_blob.add_data(0.0f);	//append a 0 as the first column
+			out_blob.add_data( (float) ((cv::Scalar)(in_rois)[i]).val[j] );
 		}
 	}
 }
@@ -165,11 +165,11 @@ std::vector< RectClassScore<float> > RcnnDetector::GetRectClassesScored(std::vec
 		y = ((cv::Scalar)(in_proposals)[j]).val[1];
 		w = ((cv::Scalar)(in_proposals)[j]).val[2] - ((cv::Scalar)(in_proposals)[j]).val[0];
 		h = ((cv::Scalar)(in_proposals)[j]).val[3] - ((cv::Scalar)(in_proposals)[j]).val[1];
-		for (int i = 0, m=0; i < NUM_CLASSES*4; i+=4, k++, m++)//repeat for all 21 classes			// four points on each rect
+		for (int i = 0, m=0; i < Rcnn::NUM_CLASSES*4; i+=4, k++, m++)//repeat for all 21 classes			// four points on each rect
 		{
 			if ( (in_probabilities[k] >=in_score_threshold) && CheckClasses(m, in_classes))//check if the class is being searched, otherwise do not add the detection
 			{
-				int index = j*NUM_CLASSES*4 + i;
+				int index = j*Rcnn::NUM_CLASSES*4 + i;
 				//[0] = X1; [1] = Y1; [2] = W; [3] = H
 				float dx,dy,dw,dh;
 				dx = in_boxes[index];	//cout << dx << ", ";
@@ -256,7 +256,7 @@ std::vector< RectClassScore<float> >
 
 
 	caffe::BlobProto rois_blob_proto;
-	ConvertRoisToBlob(proposals, &rois_blob_proto);
+	ConvertRoisToBlob(proposals, rois_blob_proto);
 	//GenerateBlobProposals(float_image.cols, float_image.rows, in_slices);	//generate proposals 1st time
 	input_rois_blob->FromProto(rois_blob_proto);							//set data into 'data' layer
 
@@ -287,14 +287,14 @@ std::vector< RectClassScore<float> >
 	const float* bounding_box_predicted_data = bounding_box_predicted_layer->cpu_data();
 
 	std::vector< RectClassScore<float> > detections;
-	if ((unsigned int)bounding_box_predicted_layer->count() == proposals.size()*NUM_CLASSES*4)//4 points for each of the 21 classes
+	if ((unsigned int)bounding_box_predicted_layer->count() == proposals.size()*Rcnn::NUM_CLASSES*4)//4 points for each of the 21 classes
 	{
 		detections = GetRectClassesScored(proposals, in_classes, in_score_threshold, bounding_box_predicted_data, class_probability_data, float_image.cols, float_image.rows);
 
 		detections = ApplyNonMaximumSuppresion(detections, in_nms_threshold);
 	}
 	else
-		std::cout << "Wrong output size:" << class_probability_layer->count() << ", expecting " << proposals.size()*NUM_CLASSES*4; std::cout << std::endl;
+		std::cout << "Wrong output size:" << class_probability_layer->count() << ", expecting " << proposals.size()*Rcnn::NUM_CLASSES*4; std::cout << std::endl;
 
 #ifdef _TIMEPROCESS
 	timer.stop();
