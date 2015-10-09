@@ -278,6 +278,9 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   _threshold_points = config->threshold_points;
   _detection_height_top = config->detection_height_top;
   _detection_height_bottom = config->detection_height_bottom;
+  _decel = config->deceleration;
+  _decel_limit = kmph2mps(config->decel_change_limit);
+  _accel_bias = kmph2mps(config->accel_bias);
 }
 
 void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)

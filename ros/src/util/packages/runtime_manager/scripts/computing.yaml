@@ -611,6 +611,21 @@ params :
       min   : -10
       max   : 0
       v     : -1.5
+    - name  : deceleration
+      label : Deceleration (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 1.5
+    - name  : decel_change_limit
+      label : Deceleration Change Limit
+      min   : 5
+      max   : 40
+      v     : 15.0
+    - name  : accel_bias
+      label : Accel Bias
+      min   : 0
+      max   : 40
+      v     : 5.0
   - name  : lane_follower_trajgen
     topic : /config/lane_follower
     msg   : ConfigLaneFollower
