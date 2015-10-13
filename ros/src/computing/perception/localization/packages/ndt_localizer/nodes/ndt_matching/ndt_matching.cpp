@@ -692,6 +692,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       }else{
 	use_predict_pose = 1;
       }
+      use_predict_pose = 0;
 
       if(use_predict_pose == 0){
 	current_pose.x = ndt_pose.x;
