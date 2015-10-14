@@ -18,22 +18,23 @@ LkTracker::LkTracker()
 	frame_count_			= 0;
 }
 
-void LkTracker::Track(cv::Mat image, cv::Rect detection)
+void LkTracker::Track(cv::Mat in_image, cv::Rect in_detection, bool in_update)
 {
 	cv::Mat gray_image;
-	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-	cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
+	cv::cvtColor(in_image, in_image, cv::COLOR_RGB2BGR);
+	cv::cvtColor(in_image, gray_image, cv::COLOR_BGR2GRAY);
 	cv::Mat mask(gray_image.size(), CV_8UC1);
 
-	if (detection.x < 0) detection.x = 0;
-	if (detection.y < 0) detection.y = 0;
-	if (detection.x + detection.width > image.cols) detection.width = image.cols - detection.x;
-	if (detection.y + detection.height > image.rows) detection.height = image.rows - detection.y;
+	if (in_detection.x < 0) in_detection.x = 0;
+	if (in_detection.y < 0) in_detection.y = 0;
+	if (in_detection.x + in_detection.width > in_image.cols) in_detection.width = in_image.cols - in_detection.x;
+	if (in_detection.y + in_detection.height > in_image.rows) in_detection.height = in_image.rows - in_detection.y;
 
 	mask.setTo(cv::Scalar::all(0));
-	mask(detection) = 1;							//fill with ones only the ROI
+	mask(in_detection) = 1;							//fill with ones only the ROI
 
-	if (prev_image_.empty())						//add as new object
+	if ( (in_detection.width>0 && in_detection.height >0 ) &&
+		( (in_update && (frame_count_%5 == 0)) || prev_image_.empty() ))						//add as new object
 	{
 		cv::goodFeaturesToTrack(gray_image,			//input to extract corners
 								current_points_,	//out array with corners in the image
@@ -44,19 +45,23 @@ void LkTracker::Track(cv::Mat image, cv::Rect detection)
 								3,					//block size
 								true,				//true to use harris corner detector, otherwise use tomasi
 								0.04);				//harris detector free parameter
-		cv::cornerSubPix(gray_image,
+		/*cv::cornerSubPix(gray_image,
 					current_points_,
 					sub_pixel_window_size_,
 					cv::Size(-1,-1),
-					term_criteria_);
-		frame_count_ = 0;
+					term_criteria_);*/
+		//frame_count_ = 0;
+		for (std::size_t i = 0; i < prev_points_.size(); i++)
+		{
+			cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
+		}
 	}
 	else if ( !prev_points_.empty() )//try to match current object
 	{
 		std::vector<uchar> status;
 		std::vector<float> err;
 		if(prev_image_.empty())
-			image.copyTo(prev_image_);
+			in_image.copyTo(prev_image_);
 		cv::calcOpticalFlowPyrLK(prev_image_, 			//previous image frame
 								gray_image, 					//current image frame
 								prev_points_, 			//previous corner points
@@ -69,36 +74,41 @@ void LkTracker::Track(cv::Mat image, cv::Rect detection)
 								0,
 								0.001);
 		std::size_t i = 0, k = 0;
+		int sum_angle = 0;
 		for (i=0, k=0 ; i < prev_points_.size(); i++)
 		{
 			if( !status[i] )
 				continue;
 
-			cv::Point2f p,q;
-			p.x = (int)prev_points_[i].x;		p.y = (int)prev_points_[i].y;
-			q.x = (int)current_points_[i].x;	q.y = (int)current_points_[i].y;
 
-			double angle 		= atan2(p.y-q.y, p.x -q.x);
-			double hypotenuse 	= sqrt( (p.y - q.y) * (p.y - q.y) + (p.x - q.x)*(p.x - q.x) );
 
-			q.x = (p.x - 10 * hypotenuse * cos(angle));
-			q.y = (p.y - 10 * hypotenuse * sin(angle));
-
-			cv::line(image, p,q,cv::Scalar(255,0,0));
 
 			current_points_[k++] = current_points_[i];
-			cv::circle(image, current_points_[i], 3 , cv::Scalar(0,255,0));
+			cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
 		}
-		current_points_.resize(k);
-		cv::Rect obj_rect;
 
-		GetRectFromPoints(current_points_, obj_rect);
-		cv::rectangle(image, obj_rect, cv::Scalar(0,0,255));
+		current_points_.resize(k);
 
 		frame_count_++;
-
 	}
-	imshow("KLT debug", image);
+	cv::Rect obj_rect;
+	GetRectFromPoints(current_points_, obj_rect);
+
+	if (prev_points_.size() > 0 )
+	{
+		cv::Point center_point = cv::Point(obj_rect.x + obj_rect.width/2, obj_rect.y + obj_rect.height/2);
+
+		cv::Point direction_point;
+		direction_point.x = (center_point.x - 100 * cos(sum_angle));
+		direction_point.y = (center_point.y - 100 * sin(sum_angle));
+
+		cv::line(in_image, center_point, direction_point, cv::Scalar(0,0,255), 2);
+	}
+	cv::rectangle(in_image, obj_rect, cv::Scalar(0,0,255), 2);
+
+
+
+	imshow("KLT debug", in_image);
 	cvWaitKey(1);
 	//finally store current state into previous
 	std::swap(current_points_, prev_points_);

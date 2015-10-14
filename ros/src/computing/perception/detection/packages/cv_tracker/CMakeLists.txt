@@ -177,8 +177,9 @@ ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
 )
 
+INCLUDE_DIRECTORIES(lib/lktracker)
+
 ADD_LIBRARY(lktracker
-  lib/lktracker/klt.cpp
   lib/lktracker/LkTracker.cpp
 )
 TARGET_LINK_LIBRARIES(lktracker
