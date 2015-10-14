@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <iostream>
 
 // OpenCV includes
 #include <opencv2/core/core.hpp>
@@ -34,7 +35,7 @@ class LkTracker
 	void GetRectFromPoints(std::vector< cv::Point2f > corners, cv::Rect& outBoundingBox);
 public:
 	LkTracker();
-	void Track(cv::Mat image, cv::Rect detection);
+	void Track(cv::Mat image, cv::Rect detection, bool in_update);
 };
 
 extern int klt_main(int argc, char* argv[]);
