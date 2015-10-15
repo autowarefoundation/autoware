@@ -39,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -52,6 +53,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.GpsStatus;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -320,6 +329,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int ROUTE = 3;
 		static final int S1 = 4;
 		static final int S2 = 5;
+		static final int POSE = 6;
 
 		static final int EXIT_DESTROY_ACTIVITY = 0;
 		static final int EXIT_UPDATE_CONFIGURATION = 1;
@@ -342,6 +352,17 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			sendIntTuple(ROUTE, latlong.length * (Double.SIZE / 8));
 
 			sendDoubleArray(latlong);
+
+			return recvInt();
+		}
+
+		int sendPose(double[] pose) {
+			if (isClosed())
+				return -1;
+
+			sendIntTuple(POSE, pose.length * (Double.SIZE / 8));
+
+			sendDoubleArray(pose);
 
 			return recvInt();
 		}
@@ -574,6 +595,29 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	 */
 	private static final int MENU_ID_SETTINGS = 0;
 	private static final int MENU_ID_DATA_GATHERING = 1;
+	/**
+	 * location manager
+	 */
+	private LocationManager locationManager;
+	private LocationListener locationListener;
+	private GpsStatus.NmeaListener nmeaListener;
+	private double[] locationLatLong = new double[2];
+	private double[] locationHeight = new double[1];
+	private boolean bUsesGPS = false;
+	private boolean bUsesNetwork = false;
+	private boolean bExistsLatLong = false;
+	private boolean bExistsHeight = false;
+	/**
+	 * sensor manager
+	 */
+	private SensorManager sensorManager;
+	private SensorEventListener sensorListener;
+	private float[] sensorGravity = new float[3];
+	private float[] sensorGeomagnetic = new float[3];
+	private boolean bUsesGravity = false;
+	private boolean bUsesGeomagnetic = false;
+	private boolean bExistsGravity = false;
+	private boolean bExistsGeomagnetic = false;
 
 	private String getMacAddress() {
 		WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
@@ -704,6 +748,95 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						settings[9]);
 				}
 			}
+		}
+
+		// register location listener
+		locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		locationListener = new LocationListener() {
+				@Override
+				public void onLocationChanged(Location location) {
+					locationLatLong[0] = location.getLatitude();
+					locationLatLong[1] = location.getLongitude();
+					bExistsLatLong = true;
+				}
+				@Override
+				public void onProviderDisabled(String provider) {
+				}
+				@Override
+				public void onProviderEnabled(String provider) {
+				}
+				@Override
+				public void onStatusChanged(String provider, int status, Bundle extras) {
+				}
+			};
+		nmeaListener = new GpsStatus.NmeaListener() {
+				@Override
+				public void onNmeaReceived(long timestamp, String nmea) {
+					String[] data = nmea.split(",");
+					if (data[0].equals("$GPGGA") && !data[9].isEmpty()) {
+						locationHeight[0] = Double.parseDouble(data[9]);
+						bExistsHeight = true;
+					}
+				}
+			};
+		if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+			locationManager.addNmeaListener(nmeaListener);
+			bUsesGPS = true;
+		} else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+			bUsesNetwork = true;
+		}
+		if (!bUsesGPS) {
+			locationHeight[0] = 0;
+			bExistsHeight = true;
+		}
+		if (!bUsesGPS && !bUsesNetwork) {
+			locationLatLong[0] = 0;
+			locationLatLong[1] = 0;
+			bExistsLatLong = true;
+		}
+
+		// register sensor listener
+		sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+		sensorListener = new SensorEventListener() {
+				@Override
+				public void onAccuracyChanged(Sensor sensor, int accuracy) {
+				}
+				@Override
+				public void onSensorChanged(SensorEvent event) {
+					if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+						sensorGravity = event.values.clone();
+						bExistsGravity = true;
+					}
+					if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+						sensorGeomagnetic = event.values.clone();
+						bExistsGeomagnetic = true;
+					}
+				}
+			};
+		List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+		for (Sensor sensor : sensors) {
+			if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+				sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+				bUsesGravity = true;
+			}
+			if (sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+				sensorManager.registerListener(sensorListener, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+				bUsesGeomagnetic = true;
+			}
+		}
+		if (!bUsesGravity) {
+			sensorGravity[0] = 0;
+			sensorGravity[1] = 0;
+			sensorGravity[2] = 0;
+			bExistsGravity = true;
+		}
+		if (!bUsesGeomagnetic) {
+			sensorGeomagnetic[0] = 0;
+			sensorGeomagnetic[1] = 0;
+			sensorGeomagnetic[2] = 0;
+			bExistsGeomagnetic = true;
 		}
 
 		bIsKnightRiding = true;
@@ -1130,6 +1263,23 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	protected void onDestroy() {
 		super.onDestroy();
 		bIsKnightRiding = false;
+
+		if (bUsesGravity || bUsesGeomagnetic)
+			sensorManager.unregisterListener(sensorListener);
+		bUsesGravity = false;
+		bUsesGeomagnetic = false;
+		bExistsGravity = false;
+		bExistsGeomagnetic = false;
+
+		if (bUsesGPS)
+			locationManager.removeNmeaListener(nmeaListener);
+		if (bUsesGPS || bUsesNetwork)
+			locationManager.removeUpdates(locationListener);
+		bUsesGPS = false;
+		bUsesNetwork = false;
+		bExistsLatLong = false;
+		bExistsHeight = false;
+
 		if (bIsServerConnecting) {
 			commandClient.send(
 				CommandClient.EXIT,
@@ -1223,7 +1373,30 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			data = 0;
 		} else if (v == applicationButton.map) {
 			applicationButton.updateMode(ApplicationButton.MAP);
-			data = 0;
+			if (bExistsLatLong && bExistsHeight && bExistsGravity && bExistsGeomagnetic) {
+				float[] inR = new float[16];
+				float[] I = new float[16];
+				SensorManager.getRotationMatrix(inR, I, sensorGravity, sensorGeomagnetic);
+
+				float[] outR = new float[16];
+				SensorManager.remapCoordinateSystem(inR, SensorManager.AXIS_X, SensorManager.AXIS_Y, outR);
+
+				float[] attitude = new float[3];
+				SensorManager.getOrientation(outR, attitude);
+
+				double[] pose = new double[6];
+				pose[0] = locationLatLong[0]; // north latitude (degrees)
+				pose[1] = locationLatLong[1]; // east longitude (degrees)
+				pose[2] = locationHeight[0];  // height above sea level (m)
+				pose[3] = (double)attitude[0]; // azimuth (rad)
+				pose[4] = (double)attitude[1]; // pitch (rad)
+				pose[5] = (double)attitude[2]; // roll (rad)
+				data = commandClient.sendPose(pose);
+			} else {
+				Toast.makeText(this, "Sensor data has not been received yet", Toast.LENGTH_LONG).show();
+				data = 0;
+			}
+			applicationButton.updateMode(ApplicationButton.MAP);
 		} else if (v == s1Button.s1) {
 			if (s1Button.getMode() == S1Button.OK)
 				s1Button.updateMode(S1Button.OK);
