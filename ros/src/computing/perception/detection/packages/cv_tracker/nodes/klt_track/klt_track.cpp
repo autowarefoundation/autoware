@@ -72,8 +72,8 @@ class RosTrackerApp
 public:
 	void image_callback(const sensor_msgs::Image& image_source)
 	{
-		if (!ready_)
-			return;
+		//if (!ready_)
+		//	return;
 
 		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
 		cv::Mat image_track = cv_image->image;
@@ -85,7 +85,10 @@ public:
 			temp = obj_detections_[0].rect;
 			update = true;
 		}
-		obj_tracker_.Track(image_track, temp, update);
+		cv::Mat res = obj_tracker_.Track(image_track, temp, update);
+
+		cv::imshow("KLT",res);
+		cv::waitKey(1);
 
 		ready_ = false;
 
