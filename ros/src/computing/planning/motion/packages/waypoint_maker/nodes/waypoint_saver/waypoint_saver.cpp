@@ -75,7 +75,7 @@ private:
   //subscriber
   message_filters::Subscriber<vehicle_socket::CanInfo> *zmp_can_sub_;
  // message_filters::Subscriber<geometry_msgs::TwistStamped> *ndt_estimated_sub_;
-  message_filters::Subscriber<std_msgs::Float32> *ndt_estimated_sub_;
+  message_filters::Subscriber<geometry_msgs::TwistStamped> *ndt_estimated_sub_;
   message_filters::Subscriber<geometry_msgs::PoseStamped> *pose_sub_;
   message_filters::Synchronizer<CaninfoPoseSync> *sync_cp_;
   message_filters::Synchronizer<TwistPoseSync> *sync_tp_;
