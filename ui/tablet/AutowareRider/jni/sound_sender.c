@@ -219,3 +219,31 @@ Java_com_ghostagent_SoundManagementNative_recvInt(JNIEnv *env, jobject obj,
 
 	return (jint)buf[0];
 }
+
+JNIEXPORT jint JNICALL
+Java_com_ghostagent_SoundManagementNative_recvNDT(JNIEnv *env, jobject obj,
+						  jint sockfd, jint timeout)
+{
+	fd_set rset;
+	struct timeval tv;
+	int buf[6];
+	ssize_t nbytes;
+
+	FD_ZERO(&rset);
+	FD_SET(sockfd, &rset);
+
+	memset(&tv, 0, sizeof(tv));
+	tv.tv_sec = (time_t)timeout;
+
+	if (select(sockfd + 1, &rset, NULL, NULL, &tv) <= 0)
+		return -1;
+
+	nbytes = recv(sockfd, buf, sizeof(buf), 0);
+	if (nbytes != sizeof(buf))
+		return -1;
+
+	if (buf[1] > 5)
+		return 0;
+	else
+		return 1;
+}

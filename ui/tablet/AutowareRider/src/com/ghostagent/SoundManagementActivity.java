@@ -320,6 +320,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		int recvInt() {
 			return SoundManagementNative.recvInt(sockfd, TIMEOUT);
 		}
+
+		int recvNDT() {
+			return SoundManagementNative.recvNDT(sockfd, TIMEOUT);
+		}
 	}
 
 	class CommandClient extends Client {
@@ -393,7 +397,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				return data;
 			}
 
-			data[1] = recvInt();
+			if (data[0] == NDT)
+				data[1] = recvNDT();
+			else
+				data[1] = recvInt();
 			if (data[1] < 0)
 				return data;
 
