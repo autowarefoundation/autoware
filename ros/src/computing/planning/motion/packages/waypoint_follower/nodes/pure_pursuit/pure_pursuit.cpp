@@ -552,7 +552,7 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
 #endif
   int path_size = static_cast<int>(_current_waypoints.getSize());
 //  geometry_msgs::Point next_target;
-  static geometry_msgs::Point prev_target;
+  static geometry_msgs::Point prev_target = _current_pose.pose.position;
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint);
   ROS_INFO("initilize threshold = %lf", lookahead_threshold);
 
@@ -578,13 +578,13 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
     }
 
     //if threshold is  shorter than distance of previous waypoint
-    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT
+/*    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT
         && getPlaneDistance(_current_waypoints.getWaypointPosition(next_waypoint), _current_pose.pose.position)
             > lookahead_threshold)
     {
       ROS_INFO("threshold is  shorter than distance of previous waypoint");
       break;
-    }
+    }*/
     // if there exists an effective waypoint
     if (getPlaneDistance(_current_waypoints.getWaypointPosition(i), _current_pose.pose.position) > lookahead_threshold)
     {
@@ -645,6 +645,7 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
     	*next_target = prev_target;
     else
     	*next_target = next_candidate;
+
     prev_target = *next_target;
 
 #ifdef LOG
