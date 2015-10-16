@@ -16,10 +16,11 @@
 #define MY_COLOR_WHITE	cv::Scalar(255,255,255)
 
 const LightState STATE_TRANSITION_MATRIX[4][8] = {
-	{ GREEN,     RED, YELLOW, YELLOW, GREEN, GREEN, YELLOW, UNDEFINED },
-	{ YELLOW,    RED, YELLOW, RED,    GREEN, RED,   YELLOW, UNDEFINED },
-	{ RED,       RED, YELLOW, RED,    GREEN, RED,   GREEN,  UNDEFINED },
-	{ UNDEFINED, RED, YELLOW, RED,    GREEN, RED,   YELLOW, UNDEFINED }
+	/* current RYG: 000, 001, 010, 011, 100, 101, 110, 111 */
+	{ GREEN,     UNDEFINED, YELLOW,    YELLOW, GREEN,     GREEN,     YELLOW, UNDEFINED }, /* pre = GREEN  */
+	{ YELLOW,    RED,       YELLOW,    RED,    UNDEFINED, UNDEFINED, YELLOW, UNDEFINED }, /* pre = YELLOW */
+	{ RED,       RED,       UNDEFINED, RED,    GREEN,     RED,       GREEN,  UNDEFINED }, /* pre = RED */
+	{ UNDEFINED, RED,       YELLOW,    RED,    GREEN,     RED,       YELLOW, UNDEFINED }  /* pre = UNDEFINED */
 };
 
 double getBrightnessRatioInCircle(const cv::Mat &input, const cv::Point center, const int radius);
@@ -51,7 +52,7 @@ enum daytime_Hue_threshold {
 #define CIRCLE_LEVEL_THRESHOLD 0.75 //0.65
 #define CIRCLE_AREA_THRESHOLD 0.5 //1 //5
 
-#define CHANGE_STATE_THRESHOLD 5
+#define CHANGE_STATE_THRESHOLD 10
 
 /* utility functions to convert HSV value range from OpenCV to definition */
 static inline double Actual_Hue(uchar hue_opencv)

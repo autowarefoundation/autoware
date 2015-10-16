@@ -28,11 +28,29 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ros/ros.h>
-#include <lktracker/LkTracker.hpp>
+#ifndef _MAP_DB_H_
+#define _MAP_DB_H_
 
-int main(int argc, char **argv)
-{
-	ros::init(argc, argv, "klt_track");
-	return klt_main(argc, argv);
-}
+#include <cstdint>
+#include <string>
+#include <netinet/in.h>
+
+#define HTTP_HOSTNAME     "133.6.148.90"
+#define HTTP_PORT         (80)
+
+class GetFile {
+private:
+	std::string host_name_;
+	int port_;
+	int sock;
+	struct sockaddr_in server;
+
+public:
+	GetFile();
+	explicit GetFile(const std::string& host_name, int port);
+
+	int GetHTTPFile(const std::string& value);
+};
+
+
+#endif /* _MAP_DB_H_ */

@@ -39,6 +39,9 @@
 #include <map_file/StopLineArray.h>
 #include <map_file/DTLaneArray.h>
 
+constexpr double VMAP_ANGLE_MAX = 180; // degrees
+constexpr double VMAP_JUNCTION_DISTANCE_MAX = 10; // m
+
 struct VectorMap {
 	std::vector<map_file::PointClass> points;
 	std::vector<map_file::Lane> lanes;
@@ -50,8 +53,16 @@ struct VectorMap {
 map_file::Lane vmap_find_lane(const VectorMap& vmap, const map_file::PointClass& point);
 map_file::Lane vmap_find_prev_lane(const VectorMap& vmap, const map_file::Lane& lane);
 map_file::Lane vmap_find_next_lane(const VectorMap& vmap, const map_file::Lane& lane);
+map_file::Lane vmap_find_junction_lane(const VectorMap& vmap, const map_file::Lane& lane, double angle);
 map_file::PointClass vmap_find_start_point(const VectorMap& vmap, const map_file::Lane& lane);
 map_file::PointClass vmap_find_end_point(const VectorMap& vmap, const map_file::Lane& lane);
-map_file::PointClass vmap_find_nearest_point(const VectorMap& vmap, double x, double y);
+map_file::PointClass vmap_find_nearest_point(const VectorMap& vmap, const map_file::PointClass& point);
+map_file::PointClass vmap_find_start_nearest_point(const VectorMap& vmap, const map_file::PointClass& p1,
+						   const map_file::PointClass& p2, double radius);
+map_file::PointClass vmap_find_end_nearest_point(const VectorMap& vmap, const map_file::PointClass& p1,
+						 const map_file::PointClass& p2, double radius);
+std::vector<map_file::PointClass> vmap_find_near_points(const VectorMap& vmap, const map_file::PointClass& point,
+							double radius);
+double vmap_compute_direction_angle(const map_file::PointClass& p1, const map_file::PointClass& p2);
 
 #endif /* !_VMAP_UTILITY_HPP */

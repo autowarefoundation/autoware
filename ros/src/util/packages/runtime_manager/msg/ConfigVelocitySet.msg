@@ -1,0 +1,12 @@
+Header header
+float32 velocity_limit
+float32 others_distance
+float32 cars_distance
+float32 pedestrians_distance
+float32 detection_range
+int32 threshold_points
+float32 detection_height_top
+float32 detection_height_bottom
+float32 deceleration
+float32 decel_change_limit
+float32 accel_bias

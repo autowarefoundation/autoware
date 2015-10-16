@@ -36,7 +36,7 @@ import serial
 
 import rospy
 
-import libnmea_navsat_driver.driver
+import libjavad_navsat_driver.driver
 
 if __name__ == '__main__':
     rospy.init_node('javad_serial_driver')

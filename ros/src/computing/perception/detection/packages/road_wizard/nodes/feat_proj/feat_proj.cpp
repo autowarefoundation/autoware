@@ -208,6 +208,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       sign.x = signalcenter.x(), sign.y = signalcenter.y(), sign.z = signalcenter.z();
       sign.hang = vmap.vectors[signal.vid].hang; // hang is expressed in [0, 360] degree
       sign.type = signal.type, sign.linkId = signal.linkid;
+      sign.plId = signal.plid;
 
       /* convert signal's horizontal angle to yaw */
       double reversed_signalYaw = setDegree0to360(sign.hang + 180.0f);

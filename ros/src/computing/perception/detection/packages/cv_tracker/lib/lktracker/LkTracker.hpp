@@ -37,5 +37,6 @@ public:
 	void Track(cv::Mat image, cv::Rect detection);
 };
 
+extern int klt_main(int argc, char* argv[]);
 
 #endif /* LKTRACKER_HPP_ */

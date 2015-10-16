@@ -34,9 +34,14 @@ using namespace cv;
 
 std::vector<cv::Scalar> _colors;
 ros::Publisher pub;
+ros::Publisher pub_filtered;
+ros::Publisher pub_ground;
 ros::Publisher centroid_pub;
 ros::Publisher marker_pub;
 visualization_msgs::Marker marker;
+
+static bool publish_ground;		//only ground
+static bool publish_filtered;	//pc with no ground
 
 void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 {
@@ -62,39 +67,36 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	/////////////////////////////////
 
 	float distance = 0.5;//this may be a parameter,so we must tune it
-	/*seg.setOptimizeCoefficients (true);
+	seg.setOptimizeCoefficients (true);
 	seg.setModelType (pcl::SACMODEL_PLANE);
 	seg.setMethodType (pcl::SAC_RANSAC);
 	seg.setMaxIterations (100);
 	seg.setDistanceThreshold (distance);
-
-	int nr_points = (int) cloud1->points.size ();
-	while (cloud1->points.size () > distance * nr_points)
+	// Segment the largest planar component from the remaining cloud
+	seg.setInputCloud (cloud1);
+	seg.segment (*inliers, *coefficients);
+	if (inliers->indices.size () == 0)
 	{
-		// Segment the largest planar component from the remaining cloud
-		seg.setInputCloud (cloud1);
-		seg.segment (*inliers, *coefficients);
-		if (inliers->indices.size () == 0)
-		{
-			std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-			break;
-		}
-
-		// Extract the planar inliers from the input cloud
-		pcl::ExtractIndices<pcl::PointXYZ> extract;
-		extract.setInputCloud (cloud1);
-		extract.setIndices(inliers);
-		extract.setNegative(false);
-
-		// Get the points associated with the planar surface
-		extract.filter (*cloud_plane);
-
-		// Remove the planar inliers, extract the rest
-		extract.setNegative (true);
-		extract.filter (*cloud_f);
-		*cloud1 = *cloud_f;
+		std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
 	}
-*/
+	else
+	{
+		pcl::copyPointCloud(*cloud1, *inliers, *cloud_plane);
+	}
+
+	// Extract the planar inliers from the input cloud
+	pcl::ExtractIndices<pcl::PointXYZ> extract;
+	extract.setInputCloud (cloud1);
+	extract.setIndices(inliers);
+	extract.setNegative(false);
+
+	// Get the points associated with the planar surface
+	extract.filter (*cloud_plane);
+
+	// Remove the planar inliers, extract the rest
+	extract.setNegative (true);
+	extract.filter (*cloud_f);
+
 	/////////////////////////////////
 	//---	2. Euclidean Clustering
 	/////////////////////////////////
@@ -177,6 +179,22 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	// Publish the data
 	pub.publish (final_cluster);
 
+///////////////////////////////////////////////
+	//4.5 Publish Filtered PointClouds if requested 
+	//////////////////////////////////////////////
+	if(publish_filtered)	//points, no ground
+	{
+		pcl_conversions::toPCL(input->header, cloud_f->header);
+		// Publish the data
+		pub_filtered.publish (cloud_f);
+	}
+	if(publish_ground)		//only ground
+	{
+		pcl_conversions::toPCL(input->header, cloud_plane->header);
+		// Publish the data
+		pub_ground.publish (cloud_plane);
+	}
+
 	centroids.header = input->header;
 	centroid_pub.publish(centroids);
 
@@ -208,8 +226,20 @@ int main (int argc, char** argv)
 	}
 	else
 	{
-		ROS_INFO("euclidean_cluster > No points node received, defaulting to velodyne_points, you can use _points_node:=YOUR_TOPIC");
+		ROS_INFO("euclidean_cluster > No points node received, defaulting to points_raw, you can use _points_node:=YOUR_TOPIC");
 		points_topic = "/points_raw";
+	}
+	publish_ground = false;
+	if (private_nh.getParam("publish_ground", publish_ground))
+	{
+		ROS_INFO("Publishing /points_ground point cloud...");
+		pub_ground = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
+	}
+	publish_filtered = false;
+	if (private_nh.getParam("publish_filtered", publish_filtered))
+	{
+		ROS_INFO("Publishing /points_filtered point cloud...");
+		pub_filtered = h.advertise<sensor_msgs::PointCloud2>("/points_filtered",1);
 	}
 
 	// Create a ROS subscriber for the input point cloud

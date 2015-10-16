@@ -7,6 +7,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_tracker/image_obj.h>
+#include <runtime_manager/ConfigCarDpm.h>
 
 #include <dpm_ocv.hpp>
 
@@ -21,22 +22,19 @@ static constexpr float SCORE_THRESHOLD = -0.5;
 static constexpr int NUM_CELLS = 8;
 static constexpr int NUM_BINS = 9;
 
-enum class DetectType {
-	CAR,
-	PEDESTRIAN
-};
-
 class objectDetect
 {
 public:
-	objectDetect(DetectType type);
+	objectDetect();
 	~objectDetect();
 	void run();
 
 private:
 	void imageCallback(const sensor_msgs::ImageConstPtr& img);
+	void configCallback(const runtime_manager::ConfigCarDpm::ConstPtr& param);
 
 	ros::NodeHandle nh_;
+	ros::Subscriber config_sub_;
 	ros::Subscriber img_sub_;
 	ros::Publisher detect_pub_;
 	DPMOCVCPULatentSvmDetector *cpu_detector_;
@@ -48,37 +46,55 @@ private:
 	double val_of_truncate_;
 	int num_threads_;
 	int lambda_;
-	int side_length_;
+	int num_cells_;
+	int num_bins_;
 	std::string model_file_;
-	DetectType type_;
+	std::string object_class;
 };
 
 // Constructor
-objectDetect::objectDetect(DetectType type) :
+objectDetect::objectDetect() :
 	cpu_detector_(NULL),
 #if defined(HAS_GPU)
 	gpu_detector_(NULL),
 #endif
-	type_(type)
+	object_class("car")
 {
 	ros::NodeHandle private_nh_("~");
 
-	private_nh_.param("overlap_threashold", overlap_threshold_, 0.5);
+	private_nh_.param("overlap_threshold", overlap_threshold_, 0.5);
 	private_nh_.param("num_threads", num_threads_, 8);
 	private_nh_.param("lambda", lambda_, 10);
-	private_nh_.param("side_length", side_length_, 8);
+	private_nh_.param("num_cells", num_cells_, NUM_CELLS);
+	private_nh_.param("num_bins", num_bins_, NUM_BINS);
 	private_nh_.param("val_of_tuncate", val_of_truncate_, 0.2);
 
+	if (!private_nh_.getParam("detection_class_name", object_class))  {
+		object_class = "car";
+	}
+
+#if defined(HAS_GPU)
+	if (!private_nh_.getParam("use_gpu", use_gpu)) {
+		use_gpu = false;
+	}
+#endif
+
 	std::string default_model;
-	switch (type) {
-	case DetectType::CAR:
+	// switch (type) {
+	// case DetectType::CAR:
+	// 	default_model =  std::string(STR(MODEL_DIR) "car_2008.xml");
+	// 	break;
+	// case DetectType::PEDESTRIAN:
+	// 	default_model =  std::string(STR(MODEL_DIR) "person.xml");
+	// 	break;
+	// default:
+	// 	break;
+	// }
+	if (object_class == "car") {
 		default_model =  std::string(STR(MODEL_DIR) "car_2008.xml");
-		break;
-	case DetectType::PEDESTRIAN:
+	}
+	else if (object_class == "person") {
 		default_model =  std::string(STR(MODEL_DIR) "person.xml");
-		break;
-	default:
-		break;
 	}
 
 	private_nh_.param("model_file", model_file_, default_model);
@@ -113,7 +129,10 @@ objectDetect::~objectDetect()
 
 void objectDetect::run()
 {
-	img_sub_ = nh_.subscribe<sensor_msgs::Image>("image_raw", 1, &objectDetect::imageCallback, this);
+	std::string config_topic("/config");
+	config_topic += ros::this_node::getNamespace() + "/dpm";
+	config_sub_ = nh_.subscribe<runtime_manager::ConfigCarDpm>(config_topic, 1, &objectDetect::configCallback, this);
+	img_sub_ = nh_.subscribe<sensor_msgs::Image>("/image_raw", 1, &objectDetect::imageCallback, this);
 	detect_pub_ = nh_.advertise<cv_tracker::image_obj>("image_obj", 1);
 }
 
@@ -130,11 +149,11 @@ void objectDetect::imageCallback(const sensor_msgs::ImageConstPtr& img)
 #if defined(HAS_GPU)
 	if (use_gpu) {
 		gpu_detector_->detect(image, detections, (float)overlap_threshold_, num_threads_,
-			lambda_, side_length_, (float)val_of_truncate_);
+			lambda_, num_cells_, (float)val_of_truncate_);
 	} else {
 #endif
 		cpu_detector_->detect(image, detections, (float)overlap_threshold_, num_threads_,
-			score_threshold_, lambda_, NUM_CELLS, NUM_BINS);
+			score_threshold_, lambda_, num_cells_, num_bins_);
 #if defined(HAS_GPU)
 	}
 #endif
@@ -145,7 +164,7 @@ void objectDetect::imageCallback(const sensor_msgs::ImageConstPtr& img)
 
 	cv_tracker::image_obj msg;
 	msg.header = img->header;
-	msg.type = type_ == DetectType::CAR ? "car" : "pedestrian";
+	msg.type = object_class;
 
 	for(size_t i = 0; i < detections.size(); i++)
 	{
@@ -164,15 +183,22 @@ void objectDetect::imageCallback(const sensor_msgs::ImageConstPtr& img)
 	detect_pub_.publish(msg);
 }
 
+void objectDetect::configCallback(const runtime_manager::ConfigCarDpm::ConstPtr& param)
+{
+	score_threshold_   = param->score_threshold;
+	overlap_threshold_ = param->group_threshold;
+	lambda_			   = param->Lambda;
+	num_cells_		   = param->num_cells;
+	num_bins_		   = param->num_bins;
+}
+
 int main(int argc, char* argv[])
 {
-	ros::init(argc, argv, "dpm_node");
+	ros::init(argc, argv, "dpm_ocv");
 
-	objectDetect car_detector(DetectType::CAR);
-	objectDetect pedestrian_detector(DetectType::PEDESTRIAN);
+	objectDetect detector;
 
-	car_detector.run();
-	pedestrian_detector.run();
+	detector.run();
 
 	ros::spin();
 	return 0;

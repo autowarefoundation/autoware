@@ -63,6 +63,7 @@ from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigNdtMapping
 from runtime_manager.msg import ConfigNdtMappingOutput
 from runtime_manager.msg import ConfigLaneFollower
+from runtime_manager.msg import ConfigVelocitySet
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
@@ -206,7 +207,7 @@ class MyFrame(rtmgr.MyFrame):
 		for i in range(2):
 			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
 			tree_ctrl.ExpandAll()
-			tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+			fix_link_color(tree_ctrl)
 			tree_ctrl.SetBackgroundColour(wx.NullColour)
 			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
 
@@ -257,7 +258,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.tree_ctrl_data.Destroy()
 		tree_ctrl = self.create_tree(parent, dic, None, None, self.data_cmd)
 		tree_ctrl.ExpandAll()
-		tree_ctrl.SetHyperTextVisitedColour(tree_ctrl.GetHyperTextNewColour()) # no change
+		fix_link_color(tree_ctrl)
 		tree_ctrl.SetBackgroundColour(wx.NullColour)
 		self.tree_ctrl_data = tree_ctrl
 
@@ -326,8 +327,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.setup_buttons(self.status_dic.get('buttons', {}), self.status_cmd)
 
-		font = self.label_top_cmd.GetFont()
-		font.SetFamily(wx.FONTFAMILY_MODERN)
+		font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 		self.label_top_cmd.SetFont(font)
 
 		#
@@ -355,6 +355,7 @@ class MyFrame(rtmgr.MyFrame):
 		# Topics tab (need, after layout for sizer)
 		self.topics_dic = self.load_yaml('topics.yaml')
 		self.topics_list = []
+		self.topics_echo_curr_topic = None
 		self.topics_echo_proc = None
 		self.topics_echo_thinf = None
 
@@ -386,13 +387,18 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_n = int(s)
 
 		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(cpu_n) ]
-		sz = wx.BoxSizer(wx.HORIZONTAL)
-		for ibl in cpu_ibls:
-			sz.Add(ibl, 1, wx.EXPAND, 0)
+		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
-		ibl = InfoBarLabel(self, 'Memory')
-		self.sizer_cpuinfo.Add(ibl, 2, wx.ALL | wx.EXPAND, 4)
+		self.lb_top5 = []
+		for i in range(5):
+			lb = wx.StaticText(self, wx.ID_ANY, '')
+			change_font_point_by_rate(lb, 0.75)
+			self.lb_top5.append(lb)
+		line = wx.StaticLine(self, wx.ID_ANY)
+		ibl = InfoBarLabel(self, 'Memory', bar_orient=wx.HORIZONTAL)
+		szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND)
+		self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
 
 		th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
 			   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl, 
@@ -919,12 +925,10 @@ class MyFrame(rtmgr.MyFrame):
 
 	def add_config_link(self, dic, panel, obj):
 		cfg_obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, '[config]', '')
-		cfg_obj.SetVisitedColour(cfg_obj.GetNormalColour()) # no change
+		fix_link_color(cfg_obj)
 		self.Bind(wx.EVT_HYPERLINK, self.OnConfig, cfg_obj)
-		hszr = wx.BoxSizer(wx.HORIZONTAL)
-		hszr.Add(obj)
-		hszr.Add(wx.StaticText(panel, wx.ID_ANY, '  '))
-		hszr.Add(cfg_obj)
+		add_objs = (obj, wx.StaticText(panel, wx.ID_ANY, '  '), cfg_obj)
+		hszr = sizer_wrap(add_objs, wx.HORIZONTAL)
 		name = dic['name']
 		pdic = self.load_dic_pdic_setup(name, dic)
 		gdic = self.gdic_get_1st(dic)
@@ -999,7 +1003,7 @@ class MyFrame(rtmgr.MyFrame):
 			os.execvp('top', ['top'])
 		else: #parent
 			sec = 0.2
-			for s in ['1', 'W', 'q']:
+			for s in ['1', 'c', 'W', 'q']:
 				time.sleep(sec)
 				os.write(fd, s)
 
@@ -1031,8 +1035,9 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_n = len(cpu_ibls)
 
 		while not ev.wait(interval):
-			s = subprocess.check_output(['top', '-b', '-n', '2', '-d', '0.1']).strip()
-			s = s[s.rfind('top -'):]
+			s = subprocess.check_output(['sh', '-c', 'env COLUMNS=512 top -b -n 2 -d 0.1']).strip()
+			i = s.rfind('\ntop -') + 1
+			s = s[i:]
 			wx.CallAfter(self.label_top_cmd.SetLabel, s)
 			wx.CallAfter(self.label_top_cmd.GetParent().FitInside)
 
@@ -1087,6 +1092,24 @@ class MyFrame(rtmgr.MyFrame):
 			if not is_alert and alerted:
 				th_end(thinf)
 				alerted = False
+
+			# top5
+			i = s.find('\n\n') + 2
+			lst = s[i:].split('\n')
+			hd = lst[0]
+			top5 = lst[1:1+5]
+
+			i = hd.rfind('COMMAND')
+			cmds = [ line[i:].split(' ')[0] for line in top5 ]
+
+			i = hd.find('%CPU')
+			loads = [ line[i-1:].strip().split(' ')[0] for line in top5 ]
+			
+			for (lb, cmd, load) in zip(self.lb_top5, cmds, loads):
+				col = self.info_col(float(load), rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
+				wx.CallAfter(lb.SetForegroundColour, col)
+				wx.CallAfter(lb.SetLabel, cmd + ' (' + load + ' %CPU)')
+
 		self.toprc_restore(toprc, backup)
 
 	def alert_th(self, bgcol, ev):
@@ -1171,6 +1194,13 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			wx.CallAfter(append_tc_limit, tc, s)
 
+			# que clear
+			if self.checkbox_stdout.GetValue() is False and \
+			   self.checkbox_stderr.GetValue() is False and \
+			   que.qsize() > 0:
+				que_clear(que)
+				wx.CallAfter(tc.Clear)
+
 	#
 	# for Topics tab
 	#
@@ -1189,7 +1219,7 @@ class MyFrame(rtmgr.MyFrame):
 			obj = wx.HyperlinkCtrl(panel, wx.ID_ANY, topic, '')
 			self.Bind(wx.EVT_HYPERLINK, self.OnTopicLink, obj)
 			szr.Add(obj, 0, wx.LEFT, 4)
-			obj.SetVisitedColour(obj.GetNormalColour())
+			fix_link_color(obj)
 			self.topics_list.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
@@ -1210,10 +1240,18 @@ class MyFrame(rtmgr.MyFrame):
 		wx.CallAfter(tc.Clear)
 		wx.CallAfter(tc.Enable, True)
 		self.topics_echo_sum = 0
+		self.topic_echo_curr_topic = None
+
+	def OnEcho(self, event):
+		if self.checkbox_topics_echo.GetValue() and self.topic_echo_curr_topic:
+			self.topics_proc_th_start(self.topic_echo_curr_topic)
+		else:
+			self.topics_proc_th_end()
 
 	def OnTopicLink(self, event):
 		obj = event.GetEventObject()
 		topic = obj.GetLabel()
+		self.topic_echo_curr_topic = topic
 
 		# info
 		info = subprocess.check_output([ 'rostopic', 'info', topic ]).strip()
@@ -1223,7 +1261,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		# echo
 		self.topics_proc_th_end()
-		self.topics_proc_th_start(topic)
+		if self.checkbox_topics_echo.GetValue():
+			self.topics_proc_th_start(topic)
 
 	def topics_proc_th_start(self, topic):
 		out = subprocess.PIPE
@@ -1262,6 +1301,8 @@ class MyFrame(rtmgr.MyFrame):
 			if self.checkbox_topics_echo.GetValue():
 				self.topics_echo_que.put(s)
 
+		que_clear(self.topics_echo_que)
+
 	def topics_echo_show_th(self, ev):
 		que = self.topics_echo_que
 		interval = self.topics_dic.get('gui_update_interval_ms', 100) * 0.001
@@ -1274,7 +1315,10 @@ class MyFrame(rtmgr.MyFrame):
 			if qsz > chars_limit:
 				over = qsz - chars_limit
 				for i in range(over):
-					que.get(timeout=1)
+					try:
+						que.get(timeout=1)
+					except Queue.Empty:
+						break
 				qsz = chars_limit
 			arr = []
 			for i in range(qsz):
@@ -1346,9 +1390,7 @@ class MyFrame(rtmgr.MyFrame):
 	def set_param_panel(self, obj, parent):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		panel = ParamPanel(parent, frame=self, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(panel, 0, wx.EXPAND)
-		parent.SetSizer(szr)
+		sizer_wrap((panel,), wx.VERTICAL, 0, wx.EXPAND, 0, parent)
 		k = 'ext_toggle_enables'
 		gdic[ k ] = gdic.get(k, []) + [ panel ]
 
@@ -2054,6 +2096,10 @@ class VarPanel(wx.Panel):
 			self.obj = wx.Choice(self, wx.ID_ANY, choices=choices)
 			self.choices_sel_set(v)
 			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
+			if label:
+				lb = wx.StaticText(self, wx.ID_ANY, label)
+				flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+				sizer_wrap((lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
@@ -2216,9 +2262,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		parent = self.panel_v
 		frame = self.GetParent()
 		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		szr = sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
@@ -2250,9 +2294,7 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		frame = self.GetParent()
 		self.frame = frame
 		self.panel = ParamPanel(parent, frame=frame, pdic=pdic, gdic=gdic, prm=prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		szr = sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.SetTitle(prm.get('name', ''))
 		(w,h) = self.GetSize()
@@ -2261,10 +2303,8 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		if w2 > w:
 			self.SetSize((w2,h))
 
-		hl = self.hyperlink_car
-		hl.SetVisitedColour(hl.GetNormalColour())
-		hl = self.hyperlink_pedestrian
-		hl.SetVisitedColour(hl.GetNormalColour())
+		fix_link_color(self.hyperlink_car)
+		fix_link_color(self.hyperlink_pedestrian)
 
 	def OnOk(self, event):
 		self.panel.update()
@@ -2291,10 +2331,8 @@ class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 
 		self.SetTitle(prm.get('name', ''))
 
-		hl = self.hyperlink_car
-		hl.SetVisitedColour(hl.GetNormalColour())
-		hl = self.hyperlink_pedestrian
-		hl.SetVisitedColour(hl.GetNormalColour())
+		fix_link_color(self.hyperlink_car)
+		fix_link_color(self.hyperlink_pedestrian)
 
 	def OnLink(self, event):
 		obj = event.GetEventObject()
@@ -2343,9 +2381,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		parent = self.panel_v
 		frame = self.GetParent()
 		self.panel = ParamPanel(parent, frame=frame, pdic=self.pdic, gdic=self.gdic, prm=self.prm)
-		szr = wx.BoxSizer(wx.VERTICAL)
-		szr.Add(self.panel, 1, wx.EXPAND)
-		parent.SetSizer(szr)
+		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.update_filename()
 		self.klass_msg = ConfigNdtMappingOutput
@@ -2383,20 +2419,26 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		self.EndModal(0)
 
 class InfoBarLabel(wx.BoxSizer):
-	def __init__(self, parent, btm_txt=None, lmt_bar_prg=90):
+	def __init__(self, parent, btm_txt=None, lmt_bar_prg=90, bar_orient=wx.VERTICAL):
 		wx.BoxSizer.__init__(self, orient=wx.VERTICAL)
 		self.lb = wx.StaticText(parent, wx.ID_ANY, '')
+		self.bar = BarLabel(parent, hv=bar_orient, show_lb=False)
+		bt = wx.StaticText(parent, wx.ID_ANY, btm_txt) if btm_txt else None
+
 		self.Add(self.lb, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
-
-		self.bar = BarLabel(parent, hv=wx.VERTICAL, show_lb=False)
-		sz = self.bar.GetSize()
-		sz.SetWidth(20)
-		self.bar.SetMinSize(sz)
-		self.Add(self.bar, 1, wx.ALIGN_CENTER_HORIZONTAL, 0)
-
-		if btm_txt:
-			bt = wx.StaticText(parent, wx.ID_ANY, btm_txt)
-			self.Add(bt, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+		if bar_orient == wx.VERTICAL:		
+			sz = self.bar.GetSize()
+			sz.SetWidth(20)
+			self.bar.SetMinSize(sz)
+			self.Add(self.bar, 1, wx.ALIGN_CENTER_HORIZONTAL, 0)
+			if bt:
+				self.Add(bt, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+		else:
+			szr = wx.BoxSizer(wx.HORIZONTAL)
+			if bt:
+				szr.Add(bt, 0, 0, 0)
+			szr.Add(self.bar, 1, 0, 0)
+			self.Add(szr, 1, wx.EXPAND, 0)
 
 		self.lmt_bar_prg = lmt_bar_prg
 
@@ -2469,10 +2511,7 @@ class ColorLabel(wx.Panel):
 		dc = wx.PaintDC(self)
 		dc.Clear()
 
-		font = dc.GetFont()
-		pt = font.GetPointSize()
-		#font.SetPointSize(pt * 3 / 4)
-		dc.SetFont(font)
+		#change_font_point_by_rate(dc, 0.75)
 
 		(x,y) = (0,0)
 		(_, h, _, _) = dc.GetFullTextExtent(' ')
@@ -2649,6 +2688,10 @@ def th_end((th, ev)):
 	ev.set()
 	th.join()
 
+def que_clear(que):
+	with que.mutex:
+		que.queue.clear()
+
 def append_tc_limit(tc, s, rm_chars=0):
 	if rm_chars > 0:
 		tc.Remove(0, rm_chars)
@@ -2664,6 +2707,28 @@ def cut_esc(s):
 			break
 		s = s[:i] + s[j+1:]
 	return s
+
+def change_font_point_by_rate(obj, rate=1.0):
+	font = obj.GetFont()
+	pt = font.GetPointSize()
+	pt = int(pt * rate)
+	font.SetPointSize(pt)
+	obj.SetFont(font)
+
+def fix_link_color(obj):
+	t = type(obj)
+	if t is CT.GenericTreeItem or t is CT.CustomTreeCtrl:
+		obj.SetHyperTextVisitedColour(obj.GetHyperTextNewColour())
+	elif t is wx.HyperlinkCtrl:
+		obj.SetVisitedColour(obj.GetNormalColour())
+
+def sizer_wrap(add_objs, orient=wx.VERTICAL, prop=0, flag=0, border=0, parent=None):
+	szr = wx.BoxSizer(orient)
+	for obj in add_objs:
+		szr.Add(obj, prop, flag, border)
+	if parent:
+		parent.SetSizer(szr)
+	return szr
 
 def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	sb = wx.StaticBox(parent, wx.ID_ANY, s)
@@ -2705,7 +2770,7 @@ def set_val(obj, v):
 		obj_refresh(obj)
 
 def obj_refresh(obj):
-	if type(obj) is wx.lib.agw.customtreectrl.GenericTreeItem:
+	if type(obj) is CT.GenericTreeItem:
 		while obj.GetParent():
 			obj = obj.GetParent()
 		tree = obj.GetData()

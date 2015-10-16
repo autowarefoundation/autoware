@@ -8,3 +8,4 @@ float64 z
 float64 hang
 int8 type
 int32 linkId
+int32 plId

@@ -17,6 +17,7 @@ add_message_files(
   ConfigNdtMapping.msg
   ConfigNdtMappingOutput.msg
   ConfigLaneFollower.msg
+  ConfigVelocitySet.msg
   ConfigCarKf.msg
   ConfigPedestrianKf.msg
   ConfigLaneRule.msg

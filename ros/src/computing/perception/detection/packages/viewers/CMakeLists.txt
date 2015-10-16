@@ -47,7 +47,7 @@ target_link_libraries(scan_image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(scan_image_d_viewer scan2image_generate_messages_cpp)
+add_dependencies(scan_image_d_viewer cv_tracker_generate_messages_cpp scan2image_generate_messages_cpp)
 
 add_executable(points_image_viewer nodes/points_image_viewer/points_image_viewer.cpp)
 target_link_libraries(points_image_viewer
