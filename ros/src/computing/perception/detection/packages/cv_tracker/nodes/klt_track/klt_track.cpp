@@ -48,6 +48,7 @@
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+
 #include "LkTracker.hpp"
 
 #include <iostream>
@@ -72,20 +73,23 @@ class RosTrackerApp
 public:
 	void image_callback(const sensor_msgs::Image& image_source)
 	{
-		//if (!ready_)
-		//	return;
-
 		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
 		cv::Mat image_track = cv_image->image;
-
 		cv::Rect temp(0,0,0,0);
 		bool update = false;
+		std::vector<cv::Rect> detections;
+
 		if (obj_detections_.size() > 0)
 		{
-			temp = obj_detections_[0].rect;
+			for (unsigned int i =0; i< obj_detections_.size(); i++)
+			{
+				detections.push_back(obj_detections_[i].rect);
+			}
 			update = true;
+			obj_detections_.clear();
 		}
-		cv::Mat res = obj_tracker_.Track(image_track, temp, update);
+
+		cv::Mat res = obj_tracker_.Track(image_track, detections, update);
 
 		cv::imshow("KLT",res);
 		cv::waitKey(1);
@@ -96,9 +100,9 @@ public:
 
 	void detections_callback(cv_tracker::image_obj image_objects_msg)
 	{
-		//std::cout << "D" << std::endl;
-		if(ready_)
-				return;
+		if (ready_)
+			return;
+		ready_ = false;
 		unsigned int num = image_objects_msg.obj.size();
 		std::vector<cv_tracker::image_rect> objects = image_objects_msg.obj;
 		//object_type = image_objects_msg.type;
@@ -167,7 +171,7 @@ public:
 
 	RosTrackerApp()
 	{
-		ready_ = false;
+		ready_ = true;
 	}
 
 };

@@ -16,6 +16,11 @@ LkTracker::LkTracker()
 	window_size_ 			= cv::Size(corner_window_size_, corner_window_size_);
 
 	frame_count_			= 0;
+
+	current_centroid_x_		= 0;
+	current_centroid_y_		= 0;
+	previous_centroid_x_	= 0;
+	previous_centroid_y_	= 0;
 }
 
 void LkTracker::ArrowedLine(cv::Mat& in_image, cv::Point in_point1, cv::Point in_point2, const cv::Scalar& in_color,
@@ -36,24 +41,51 @@ void LkTracker::ArrowedLine(cv::Mat& in_image, cv::Point in_point1, cv::Point in
 	cv::line(in_image, p, in_point2, in_color, in_thickness, in_line_type, in_shift);
 }
 
-cv::Mat LkTracker::Track(cv::Mat in_image, cv::Rect in_detection, bool in_update)
+void OrbFeatures(cv::Mat in_image)
+{
+	cv::OrbFeatureDetector orb(500);
+	std::vector< cv::KeyPoint > keypoints;
+	orb.detect(in_image, keypoints);
+
+	cv::OrbDescriptorExtractor extractor;
+	cv::Mat descriptors;
+	cv::Mat training_descriptors(1, extractor.descriptorSize(), extractor.descriptorType());
+	extractor.compute(in_image, keypoints, descriptors);
+	training_descriptors.push_back(descriptors);
+
+	cv::BOWKMeansTrainer bow_trainer(2);
+	bow_trainer.add(descriptors);
+
+	cv::Mat vocabulary = bow_trainer.cluster();
+}
+
+cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, bool in_update)
 {
 	cv::Mat gray_image;
 	cv::cvtColor(in_image, in_image, cv::COLOR_RGB2BGR);
 	cv::cvtColor(in_image, gray_image, cv::COLOR_BGR2GRAY);
 	cv::Mat mask(gray_image.size(), CV_8UC1);
 
-	if (in_detection.x < 0) in_detection.x = 0;
-	if (in_detection.y < 0) in_detection.y = 0;
-	if (in_detection.x + in_detection.width > in_image.cols) in_detection.width = in_image.cols - in_detection.x;
-	if (in_detection.y + in_detection.height > in_image.rows) in_detection.height = in_image.rows - in_detection.y;
 
-	mask.setTo(cv::Scalar::all(0));
-	mask(in_detection) = 1;							//fill with ones only the ROI
-	int sum_angle = 0;
+	if (in_update && in_detections.size() > 0)
+	{
+		//MATCH
+		matched_detection_ = in_detections[0];
+		if (matched_detection_.x < 0) matched_detection_.x = 0;
+		if (matched_detection_.y < 0) matched_detection_.y = 0;
+		if (matched_detection_.x + matched_detection_.width > in_image.cols) matched_detection_.width = in_image.cols - matched_detection_.x;
+		if (matched_detection_.y + matched_detection_.height > in_image.rows) matched_detection_.height = in_image.rows - matched_detection_.y;
 
-	if ( (in_detection.width>0 && in_detection.height >0 ) &&
-		( (in_update && (frame_count_%5 == 0)) || prev_image_.empty() ))						//add as new object
+		mask.setTo(cv::Scalar::all(0));
+		mask(matched_detection_) = 1;							//fill with ones only the ROI
+	}
+	int sum_x = 0;
+	int sum_y = 0;
+
+
+	if ( ( (in_update && (frame_count_%3 == 0)) || prev_image_.empty() ) &&
+		 ( matched_detection_.width>0 && matched_detection_.height >0 )
+		)																//add as new object
 	{
 		cv::goodFeaturesToTrack(gray_image,			//input to extract corners
 								current_points_,	//out array with corners in the image
@@ -70,10 +102,17 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::Rect in_detection, bool in_update
 					cv::Size(-1,-1),
 					term_criteria_);*/
 		//frame_count_ = 0;
-		for (std::size_t i = 0; i < prev_points_.size(); i++)
+		current_centroid_x_ = 0;
+		current_centroid_y_ = 0;
+
+		for (std::size_t i = 0; i < current_points_.size(); i++)
 		{
 			cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
+			current_centroid_x_+= current_points_[i].x;
+			current_centroid_y_+= current_points_[i].y;
 		}
+		std::cout << "CENTROID" << current_centroid_x_ <<","<< current_centroid_y_<< std::endl << std::endl;
+
 	}
 	else if ( !prev_points_.empty() )//try to match current object
 	{
@@ -94,6 +133,9 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::Rect in_detection, bool in_update
 								0.001);
 		std::size_t i = 0, k = 0;
 
+		current_centroid_x_ = 0;
+		current_centroid_y_ = 0;
+
 		for (i=0, k=0 ; i < prev_points_.size(); i++)
 		{
 			if( !status[i] )
@@ -102,13 +144,25 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::Rect in_detection, bool in_update
 			p.x = (int)prev_points_[i].x;		p.y = (int)prev_points_[i].y;
 			q.x = (int)current_points_[i].x;	q.y = (int)current_points_[i].y;
 
-			sum_angle += atan2(p.y-q.y, p.x -q.x);
+			if (current_points_[i].x > (previous_centroid_x_/current_points_.size() + matched_detection_.width)
+				|| current_points_[i].x < (previous_centroid_x_/current_points_.size() - matched_detection_.width)
+				|| current_points_[i].y > (previous_centroid_y_/current_points_.size() + matched_detection_.height)
+				|| current_points_[i].y < (previous_centroid_y_/current_points_.size() - matched_detection_.height)
+				)
+			{
+				status[i]= false;						//if current point is out of the threshold(width and height of the initial detection) do not count
+				continue;
+			}
+
+			sum_y = p.y-q.y;
+			sum_x = p.x -q.x;
+
+			current_centroid_x_+= current_points_[i].x;
+			current_centroid_y_+= current_points_[i].y;
 
 			current_points_[k++] = current_points_[i];
 			cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
 		}
-
-		current_points_.resize(k);
 
 		frame_count_++;
 	}
@@ -120,6 +174,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::Rect in_detection, bool in_update
 		cv::Point center_point = cv::Point(obj_rect.x + obj_rect.width/2, obj_rect.y + obj_rect.height/2);
 
 		cv::Point direction_point;
+		float sum_angle = atan2(sum_y, sum_x);
 		direction_point.x = (center_point.x - 100 * cos(sum_angle));
 		direction_point.y = (center_point.y - 100 * sin(sum_angle));
 
@@ -127,11 +182,23 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::Rect in_detection, bool in_update
 	}
 	cv::rectangle(in_image, obj_rect, cv::Scalar(0,0,255), 2);
 
+	if (current_points_.size() > 0)
+	{
+		cv::circle(in_image, cv::Point(current_centroid_x_/current_points_.size(), current_centroid_y_/current_points_.size()), 4 , cv::Scalar(0,0,255), 2);
+		cv::circle(in_image, cv::Point(current_centroid_x_/current_points_.size(), current_centroid_y_/current_points_.size()), 2 , cv::Scalar(0,0,255), 2);
+	}
+
 	//imshow("KLT debug", in_image);
 	//cvWaitKey(1);
 	//finally store current state into previous
 	std::swap(current_points_, prev_points_);
 	cv::swap(prev_image_, gray_image);
+
+	if (current_centroid_x_ > 0 && current_centroid_y_ > 0)
+	{
+		previous_centroid_x_ = current_centroid_x_;
+		previous_centroid_y_ = current_centroid_y_;
+	}
 
 	return in_image;
 }

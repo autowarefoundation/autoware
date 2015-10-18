@@ -12,6 +12,7 @@
 #include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 
 class LkTracker
@@ -22,13 +23,21 @@ class LkTracker
 	int			corner_window_size_;
 	int			corner_subwindow_size_;
 
-	int			frame_count_;
+	unsigned long int frame_count_;
 
 	cv::Mat 	prev_image_;
 	cv::Mat 	current_image_;
 	cv::TermCriteria term_criteria_;
 	cv::Size 	sub_pixel_window_size_;
 	cv::Size 	window_size_;
+
+	cv::Rect matched_detection_;
+
+	int current_centroid_x_;
+	int current_centroid_y_;
+
+	int previous_centroid_x_;
+	int previous_centroid_y_;
 
 	std::vector<cv::Point2f> prev_points_;
 	std::vector<cv::Point2f> current_points_;
@@ -37,7 +46,7 @@ class LkTracker
 			int in_thickness=1, int in_line_type=8, int in_shift=0, double in_tip_length=0.1);
 public:
 	LkTracker();
-	cv::Mat Track(cv::Mat image, cv::Rect detection, bool in_update);
+	cv::Mat Track(cv::Mat image, std::vector<cv::Rect> in_detections, bool in_update);
 };
 
 extern int klt_main(int argc, char* argv[]);
