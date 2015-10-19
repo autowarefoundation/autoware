@@ -75,6 +75,8 @@ You can download the source code from [here](http://sourceforge.net/projects/ope
 % make install
 ```
 
+**NOTE: Autoware does not support OpenCV 3. Please use OpenCV 2**
+
 #### Install Qt 5
 
 The installation document is [here](http://qt-project.org/wiki/Building_Qt_5_from_Git).
