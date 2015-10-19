@@ -638,7 +638,8 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
     }
 
     geometry_msgs::Point next_candidate;
-    interpolateNextTarget(next_waypoint, lookahead_threshold, &next_candidate);
+    if(!interpolateNextTarget(next_waypoint, lookahead_threshold, &next_candidate))
+    	return false;
 
     //if next candidate is nearer than previous target
     if(getPlaneDistance(next_candidate,_current_pose.pose.position) < getPlaneDistance(prev_target,_current_pose.pose.position))
