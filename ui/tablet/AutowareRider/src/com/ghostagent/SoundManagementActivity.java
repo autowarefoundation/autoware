@@ -1395,7 +1395,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				pose[0] = locationLatLong[0]; // north latitude (degrees)
 				pose[1] = locationLatLong[1]; // east longitude (degrees)
 				pose[2] = locationHeight[0];  // height above sea level (m)
-				pose[3] = (double)attitude[0]; // azimuth (rad)
+				pose[3] = -(double)attitude[0]; // azimuth (rad)
 				pose[4] = (double)attitude[1]; // pitch (rad)
 				pose[5] = (double)attitude[2]; // roll (rad)
 				data = commandClient.sendPose(pose);
