@@ -1,0 +1,19 @@
+# GNU global tags
+GTAGS
+GRTAGS
+GSYMS
+GPATH
+
+# Python byte-compile file
+__pycache__/
+*.py[co]
+
+# editor backup files
+*~
+\#*\#
+
+#eclipse settings
+.cproject
+.project
+.pydevproject
+.settings/

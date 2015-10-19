@@ -28,7 +28,7 @@ Open-source software for urban autonomous driving. The following functions are s
 ## Requirements
 
 - ROS indigo(Ubuntu 13.10, 14.04) or ROS jade(Ubuntu 15.04)
-- OpenCV 2.4.8 or higher
+- OpenCV 2.4.8 or higher(Autoware does not support OpenCV 3. Please use OpenCV 2.x.y)
 - Qt 5.2.1 or higher
 - CUDA(Optional)
 - FlyCapture2(optional)
@@ -51,7 +51,7 @@ create symbolic for adding directory path same as Ubuntu 14.04 now.
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-velodyne-pointcloud
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev
 ```
 
@@ -67,7 +67,6 @@ create symbolic for adding directory path same as Ubuntu 14.04 now.
 % catkin_make
 % source devel/setup.bash
 ```
-
 
 ## How to Build
 

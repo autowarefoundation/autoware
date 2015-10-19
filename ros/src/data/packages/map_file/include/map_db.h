@@ -28,18 +28,29 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.ghostagent;
+#ifndef _MAP_DB_H_
+#define _MAP_DB_H_
 
-public class SoundManagementNative {
-	static{
-		System.loadLibrary("soundsender");
-	}
-	public static native int socket();
-	public static native int connect(int sockfd, int timeout, String address, int port);
-	public static native int close(int sockfd);
-	public static native void sendInt(int sockfd, int timeout, int arg0);
-	public static native void sendIntTuple(int sockfd, int timeout, int arg0, int arg1);
-	public static native void sendDoubleArray(int sockfd, int timeout, double arg0[]);
-	public static native int recvInt(int sockfd, int timeout);
-	public static native int recvNDT(int sockfd, int timeout);
-}
+#include <cstdint>
+#include <string>
+#include <netinet/in.h>
+
+#define HTTP_HOSTNAME     "133.6.148.90"
+#define HTTP_PORT         (80)
+
+class GetFile {
+private:
+	std::string host_name_;
+	int port_;
+	int sock;
+	struct sockaddr_in server;
+
+public:
+	GetFile();
+	explicit GetFile(const std::string& host_name, int port);
+
+	int GetHTTPFile(const std::string& value);
+};
+
+
+#endif /* _MAP_DB_H_ */

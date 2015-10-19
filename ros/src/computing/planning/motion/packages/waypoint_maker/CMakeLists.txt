@@ -38,7 +38,7 @@ add_dependencies(waypoint_loader
   runtime_manager_generate_messages_cpp)
 
 add_executable(waypoint_saver nodes/waypoint_saver/waypoint_saver.cpp)
-target_link_libraries(waypoint_saver gnss ${catkin_LIBRARIES})
+target_link_libraries(waypoint_saver libwaypoint_follower ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver
   waypoint_follower_generate_messages_cpp
   vehicle_socket_generate_messages_cpp)

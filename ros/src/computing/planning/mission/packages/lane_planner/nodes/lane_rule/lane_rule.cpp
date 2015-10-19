@@ -37,11 +37,9 @@
 #include <vmap_utility.hpp>
 
 static void create_traffic_waypoint(const waypoint_follower::lane& msg);
-
-// XXX heuristic parameter
-static constexpr double CURVE_WEIGHT = 50 * 0.6;
-static constexpr double CROSSROAD_WEIGHT = 9.1 * 0.9;
-static constexpr double CLOTHOID_WEIGHT = CURVE_WEIGHT;
+static bool is_curve(const map_file::DTLane& dtlane);
+static bool is_crossroad(const map_file::DTLane& dtlane);
+static bool is_clothoid(const map_file::DTLane& dtlane);
 
 static constexpr double RADIUS_MAX = 90000000000;
 
@@ -55,9 +53,13 @@ static ros::Publisher pub_red;
 static ros::Publisher pub_green;
 
 static VectorMap vmap_all;
-static VectorMap vmap_left_lane;
+static VectorMap vmap_lane;
 
 static waypoint_follower::lane current_waypoint;
+
+static double curve_radius_min;
+static double crossroad_radius_min;
+static double clothoid_radius_min;
 
 static int sub_vmap_queue_size;
 static int sub_waypoint_queue_size;
@@ -65,26 +67,71 @@ static int sub_config_queue_size;
 static int pub_waypoint_queue_size;
 static bool pub_waypoint_latch;
 
-static void cache_left_lane()
+static int waypoint_max;
+static double curve_weight;
+static double crossroad_weight;
+static double clothoid_weight;
+
+static void cache_vmap_lane()
 {
 	if (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty())
 		return;
 
+	VectorMap vmap;
 	for (const map_file::Lane& l : vmap_all.lanes) {
-		if (l.lno != 1)	// leftmost lane
-			continue;
-		vmap_left_lane.lanes.push_back(l);
+		vmap.lanes.push_back(l);
 		for (const map_file::Node& n : vmap_all.nodes) {
 			if (n.nid != l.bnid && n.nid != l.fnid)
 				continue;
-			vmap_left_lane.nodes.push_back(n);
+			vmap.nodes.push_back(n);
 			for (const map_file::PointClass& p : vmap_all.points) {
 				if (p.pid != n.pid)
 					continue;
-				vmap_left_lane.points.push_back(p);
+				vmap.points.push_back(p);
 			}
 		}
 	}
+	vmap_lane = vmap;
+}
+
+static void cache_radius_min()
+{
+	double curve_radius = RADIUS_MAX;
+	double crossroad_radius = RADIUS_MAX;
+	double clothoid_radius = RADIUS_MAX;
+
+	for (const map_file::DTLane& d : vmap_all.dtlanes) {
+		if (is_curve(d)) {
+			if (is_crossroad(d)) {
+				if (fabs(d.r) <= crossroad_radius)
+					crossroad_radius = fabs(d.r);
+			} else {
+				if (fabs(d.r) <= curve_radius)
+					curve_radius = fabs(d.r);
+			}
+		} else if (is_clothoid(d)) {
+			if (fabs(d.r) <= clothoid_radius)
+				clothoid_radius = fabs(d.r);
+		}
+	}
+
+	curve_radius_min = curve_radius;
+	crossroad_radius_min = crossroad_radius;
+	clothoid_radius_min = clothoid_radius;
+}
+
+static VectorMap cache_vmap_fine(const waypoint_follower::lane& msg)
+{
+	VectorMap vmap;
+	for (const waypoint_follower::waypoint& w : msg.waypoints) {
+		map_file::PointClass p;
+		// msg's X-Y axis is reversed
+		p.bx = w.pose.pose.position.y;
+		p.ly = w.pose.pose.position.x;
+		vmap.points.push_back(p);
+	}
+
+	return vmap;
 }
 
 static bool is_cached_vmap()
@@ -106,7 +153,7 @@ static void cache_waypoint(const waypoint_follower::lane& msg)
 static void cache_lane(const map_file::LaneArray& msg)
 {
 	vmap_all.lanes = msg.lanes;
-	cache_left_lane();
+	cache_vmap_lane();
 	if (is_cached_waypoint() && is_cached_vmap()) {
 		create_traffic_waypoint(current_waypoint);
 		cached_waypoint = false;
@@ -116,7 +163,7 @@ static void cache_lane(const map_file::LaneArray& msg)
 static void cache_node(const map_file::NodeArray& msg)
 {
 	vmap_all.nodes = msg.nodes;
-	cache_left_lane();
+	cache_vmap_lane();
 	if (is_cached_waypoint() && is_cached_vmap()) {
 		create_traffic_waypoint(current_waypoint);
 		cached_waypoint = false;
@@ -126,7 +173,7 @@ static void cache_node(const map_file::NodeArray& msg)
 static void cache_point(const map_file::PointClassArray& msg)
 {
 	vmap_all.points = msg.point_classes;
-	cache_left_lane();
+	cache_vmap_lane();
 	if (is_cached_waypoint() && is_cached_vmap()) {
 		create_traffic_waypoint(current_waypoint);
 		cached_waypoint = false;
@@ -145,6 +192,7 @@ static void cache_stopline(const map_file::StopLineArray& msg)
 static void cache_dtlane(const map_file::DTLaneArray& msg)
 {
 	vmap_all.dtlanes = msg.dtlanes;
+	cache_radius_min();
 	if (is_cached_waypoint() && is_cached_vmap()) {
 		create_traffic_waypoint(current_waypoint);
 		cached_waypoint = false;
@@ -225,41 +273,44 @@ static double dtlane_to_reduction(const std::vector<map_file::DTLane>& dtlanes, 
 
 	if (is_curve(dtlanes[index])) {
 		if (is_crossroad(dtlanes[index]))
-			return compute_reduction(dtlanes[index], CROSSROAD_WEIGHT);
+			return compute_reduction(dtlanes[index], crossroad_radius_min * crossroad_weight);
 
 		if (is_single_curve(dtlanes, index))
 			return 1;
 
-		return compute_reduction(dtlanes[index], CURVE_WEIGHT);
+		return compute_reduction(dtlanes[index], curve_radius_min * curve_weight);
 	}
 
 	if (is_clothoid(dtlanes[index]))
-		return compute_reduction(dtlanes[index], CLOTHOID_WEIGHT);
+		return compute_reduction(dtlanes[index], clothoid_radius_min * clothoid_weight);
 
 	return 1;
 }
 
-static std::vector<map_file::DTLane> search_dtlane(const waypoint_follower::lane& msg)
+static std::vector<map_file::DTLane> search_dtlane(const VectorMap& vmap)
 {
 	std::vector<map_file::DTLane> dtlanes;
 
-	// msg's X-Y axis is reversed
-	map_file::PointClass start_point = vmap_find_nearest_point(vmap_left_lane,
-								   msg.waypoints.front().pose.pose.position.y,
-								   msg.waypoints.front().pose.pose.position.x);
-	map_file::PointClass end_point = vmap_find_nearest_point(vmap_left_lane,
-								 msg.waypoints.back().pose.pose.position.y,
-								 msg.waypoints.back().pose.pose.position.x);
+	map_file::PointClass start_point = vmap_find_nearest_point(vmap_lane, vmap.points.front());
+	if (start_point.pid < 0) {
+		ROS_ERROR("no start point");
+		return dtlanes;
+	}
+	map_file::PointClass end_point = vmap_find_nearest_point(vmap_lane, vmap.points.back());
+	if (end_point.pid < 0) {
+		ROS_ERROR("no end point");
+		return dtlanes;
+	}
 
 	map_file::PointClass point = start_point;
-	map_file::Lane lane = vmap_find_lane(vmap_all, point);
+	map_file::Lane lane = vmap_find_lane(vmap_lane, point);
 	if (lane.lnid < 0) {
 		ROS_ERROR("no start lane");
 		return dtlanes;
 	}
 
 	bool finish = false;
-	for (size_t i = 0; i < std::numeric_limits<std::size_t>::max(); ++i) {
+	for (int i = 0; i < waypoint_max; ++i) {
 		for (const map_file::DTLane& d : vmap_all.dtlanes) {
 			if (d.did == lane.did)
 				dtlanes.push_back(d);
@@ -268,7 +319,7 @@ static std::vector<map_file::DTLane> search_dtlane(const waypoint_follower::lane
 		if (finish)
 			break;
 
-		point = vmap_find_end_point(vmap_all, lane);
+		point = vmap_find_end_point(vmap_lane, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no end point");
 			return dtlanes;
@@ -279,45 +330,83 @@ static std::vector<map_file::DTLane> search_dtlane(const waypoint_follower::lane
 			continue;
 		}
 
-		lane = vmap_find_next_lane(vmap_all, lane);
+		if (lane.jct >= 1 && lane.jct <= 2) { // bifurcation
+			map_file::PointClass p1 = vmap_find_end_point(vmap_lane, lane);
+			if (p1.pid < 0) {
+				ROS_ERROR("no end point");
+				return dtlanes;
+			}
+
+			p1 = vmap_find_nearest_point(vmap, p1);
+			if (p1.pid < 0) {
+				ROS_ERROR("no nearest point");
+				return dtlanes;
+			}
+
+			map_file::PointClass p2;
+			double distance = -1;
+			for (const map_file::PointClass& p : vmap.points) {
+				if (distance == -1) {
+					if (p.bx == p1.bx && p.ly == p1.ly)
+						distance = 0;
+					continue;
+				}
+				p2 = p;
+				distance = hypot(p1.bx - p2.bx, p1.ly - p2.ly);
+				if (distance > VMAP_JUNCTION_DISTANCE_MAX)
+					break;
+			}
+			if (distance <= 0) {
+				ROS_ERROR("no next nearest point");
+				return dtlanes;
+			}
+
+			lane = vmap_find_junction_lane(vmap_lane, lane, vmap_compute_direction_angle(p1, p2));
+		} else
+			lane = vmap_find_next_lane(vmap_lane, lane);
 		if (lane.lnid < 0) {
 			ROS_ERROR("no next lane");
 			return dtlanes;
 		}
 
-		point = vmap_find_start_point(vmap_all, lane);
+		point = vmap_find_start_point(vmap_lane, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no start point");
 			return dtlanes;
 		}
 	}
-	if (!finish)
+	if (!finish) {
 		ROS_ERROR("miss finish");
+		return dtlanes;
+	}
 
 	return dtlanes;
 }
 
-static std::vector<map_file::PointClass> search_stopline_point(const waypoint_follower::lane& msg)
+static std::vector<map_file::PointClass> search_stopline_point(const VectorMap& vmap)
 {
 	std::vector<map_file::PointClass> stopline_points;
 
-	// msg's X-Y axis is reversed
-	map_file::PointClass start_point = vmap_find_nearest_point(vmap_left_lane,
-								   msg.waypoints.front().pose.pose.position.y,
-								   msg.waypoints.front().pose.pose.position.x);
-	map_file::PointClass end_point = vmap_find_nearest_point(vmap_left_lane,
-								 msg.waypoints.back().pose.pose.position.y,
-								 msg.waypoints.back().pose.pose.position.x);
+	map_file::PointClass start_point = vmap_find_nearest_point(vmap_lane, vmap.points.front());
+	if (start_point.pid < 0) {
+		ROS_ERROR("no start point");
+		return stopline_points;
+	}
+	map_file::PointClass end_point = vmap_find_nearest_point(vmap_lane, vmap.points.back());
+	if (end_point.pid < 0) {
+		ROS_ERROR("no end point");
+		return stopline_points;
+	}
 
 	map_file::PointClass point = start_point;
-	map_file::Lane lane = vmap_find_lane(vmap_all, point);
+	map_file::Lane lane = vmap_find_lane(vmap_lane, point);
 	if (lane.lnid < 0) {
 		ROS_ERROR("no start lane");
 		return stopline_points;
 	}
 
 	bool finish = false;
-	for (size_t i = 0; i < std::numeric_limits<std::size_t>::max(); ++i) {
+	for (int i = 0; i < waypoint_max; ++i) {
 		for (const map_file::StopLine& s : vmap_all.stoplines) {
 			if (s.linkid == lane.lnid)
 				stopline_points.push_back(point);
@@ -326,7 +415,7 @@ static std::vector<map_file::PointClass> search_stopline_point(const waypoint_fo
 		if (finish)
 			break;
 
-		point = vmap_find_end_point(vmap_all, lane);
+		point = vmap_find_end_point(vmap_lane, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no end point");
 			return stopline_points;
@@ -337,20 +426,55 @@ static std::vector<map_file::PointClass> search_stopline_point(const waypoint_fo
 			continue;
 		}
 
-		lane = vmap_find_next_lane(vmap_all, lane);
+		if (lane.jct >= 1 && lane.jct <= 2) { // bifurcation
+			map_file::PointClass p1 = vmap_find_end_point(vmap_lane, lane);
+			if (p1.pid < 0) {
+				ROS_ERROR("no end point");
+				return stopline_points;
+			}
+
+			p1 = vmap_find_nearest_point(vmap, p1);
+			if (p1.pid < 0) {
+				ROS_ERROR("no nearest point");
+				return stopline_points;
+			}
+
+			map_file::PointClass p2;
+			double distance = -1;
+			for (const map_file::PointClass& p : vmap.points) {
+				if (distance == -1) {
+					if (p.bx == p1.bx && p.ly == p1.ly)
+						distance = 0;
+					continue;
+				}
+				p2 = p;
+				distance = hypot(p1.bx - p2.bx, p1.ly - p2.ly);
+				if (distance > VMAP_JUNCTION_DISTANCE_MAX)
+					break;
+			}
+			if (distance <= 0) {
+				ROS_ERROR("no next nearest point");
+				return stopline_points;
+			}
+
+			lane = vmap_find_junction_lane(vmap_lane, lane, vmap_compute_direction_angle(p1, p2));
+		} else
+			lane = vmap_find_next_lane(vmap_lane, lane);
 		if (lane.lnid < 0) {
 			ROS_ERROR("no next lane");
 			return stopline_points;
 		}
 
-		point = vmap_find_start_point(vmap_all, lane);
+		point = vmap_find_start_point(vmap_lane, lane);
 		if (point.pid < 0) {
 			ROS_ERROR("no start point");
 			return stopline_points;
 		}
 	}
-	if (!finish)
+	if (!finish) {
 		ROS_ERROR("miss finish");
+		return stopline_points;
+	}
 
 	return stopline_points;
 }
@@ -359,20 +483,22 @@ static std::vector<size_t> search_stopline_index(const waypoint_follower::lane& 
 {
 	std::vector<size_t> indexes;
 
-	std::vector<map_file::PointClass> stopline_points = search_stopline_point(msg);
-	for (const map_file::PointClass& p : stopline_points) {
+	VectorMap vmap_fine = cache_vmap_fine(msg);
+	if (vmap_fine.points.size() < 2) {
+		ROS_ERROR("lack of waypoint");
+		return indexes;
+	}
+
+	std::vector<map_file::PointClass> stopline_points = search_stopline_point(vmap_fine);
+	for (const map_file::PointClass& p1 : stopline_points) {
 		size_t i = 0;
 
-		// msg's X-Y axis is reversed
-		double min = hypot(p.bx - msg.waypoints[0].pose.pose.position.y,
-				   p.ly - msg.waypoints[0].pose.pose.position.x);
+		double min = hypot(p1.bx - vmap_fine.points.front().bx, p1.ly - vmap_fine.points.front().ly);
 		size_t index = i;
-		for (const waypoint_follower::waypoint& w : msg.waypoints) {
-			// msg's X-Y axis is reversed
-			double distance = hypot(p.bx - w.pose.pose.position.y,
-						p.ly - w.pose.pose.position.x);
-			if (distance < min) {
-				min = distance;
+		for (const map_file::PointClass& p2 : vmap_fine.points) {
+			double d = hypot(p2.bx - p1.bx, p2.ly - p1.ly);
+			if (d < min) {
+				min = d;
 				index = i;
 			}
 			++i;
@@ -517,7 +643,13 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 		return;
 	}
 
-	std::vector<map_file::DTLane> dtlanes = search_dtlane(msg);
+	VectorMap vmap_fine = cache_vmap_fine(msg);
+	if (vmap_fine.points.size() < 2) {
+		ROS_ERROR("lack of waypoint");
+		return;
+	}
+
+	std::vector<map_file::DTLane> dtlanes = search_dtlane(vmap_fine);
 	if (dtlanes.size() != msg.waypoints.size()) {
 		ROS_WARN("not found dtlane");
 		publish_waypoint_without_change(msg, header);
@@ -579,6 +711,10 @@ int main(int argc, char **argv)
 	n.param<int>("/lane_rule/sub_config_queue_size", sub_config_queue_size, 1);
 	n.param<int>("/lane_rule/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
 	n.param<bool>("/lane_rule/pub_waypoint_latch", pub_waypoint_latch, true);
+	n.param<int>("/lane_rule/waypoint_max", waypoint_max, 10000);
+	n.param<double>("/lane_rule/curve_weight", curve_weight, 0.6);
+	n.param<double>("/lane_rule/crossroad_weight", crossroad_weight, 0.9);
+	n.param<double>("/lane_rule/clothoid_weight", clothoid_weight, 0.215);
 
 	ros::Subscriber sub_lane = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
 	ros::Subscriber sub_node = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
