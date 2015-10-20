@@ -41,4 +41,5 @@ public class SoundManagementNative {
 	public static native void sendIntTuple(int sockfd, int timeout, int arg0, int arg1);
 	public static native void sendDoubleArray(int sockfd, int timeout, double arg0[]);
 	public static native int recvInt(int sockfd, int timeout);
+	public static native int recvNDT(int sockfd, int timeout);
 }

@@ -390,8 +390,15 @@ class MyFrame(rtmgr.MyFrame):
 		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
-		ibl = InfoBarLabel(self, 'Memory')
-		self.sizer_cpuinfo.Add(ibl, 2, wx.ALL | wx.EXPAND, 4)
+		self.lb_top5 = []
+		for i in range(5):
+			lb = wx.StaticText(self, wx.ID_ANY, '')
+			change_font_point_by_rate(lb, 0.75)
+			self.lb_top5.append(lb)
+		line = wx.StaticLine(self, wx.ID_ANY)
+		ibl = InfoBarLabel(self, 'Memory', bar_orient=wx.HORIZONTAL)
+		szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND)
+		self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
 
 		th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
 			   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl, 
@@ -1085,6 +1092,24 @@ class MyFrame(rtmgr.MyFrame):
 			if not is_alert and alerted:
 				th_end(thinf)
 				alerted = False
+
+			# top5
+			i = s.find('\n\n') + 2
+			lst = s[i:].split('\n')
+			hd = lst[0]
+			top5 = lst[1:1+5]
+
+			i = hd.rfind('COMMAND')
+			cmds = [ line[i:].split(' ')[0] for line in top5 ]
+
+			i = hd.find('%CPU')
+			loads = [ line[i-1:].strip().split(' ')[0] for line in top5 ]
+			
+			for (lb, cmd, load) in zip(self.lb_top5, cmds, loads):
+				col = self.info_col(float(load), rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
+				wx.CallAfter(lb.SetForegroundColour, col)
+				wx.CallAfter(lb.SetLabel, cmd + ' (' + load + ' %CPU)')
+
 		self.toprc_restore(toprc, backup)
 
 	def alert_th(self, bgcol, ev):
@@ -2394,20 +2419,26 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		self.EndModal(0)
 
 class InfoBarLabel(wx.BoxSizer):
-	def __init__(self, parent, btm_txt=None, lmt_bar_prg=90):
+	def __init__(self, parent, btm_txt=None, lmt_bar_prg=90, bar_orient=wx.VERTICAL):
 		wx.BoxSizer.__init__(self, orient=wx.VERTICAL)
 		self.lb = wx.StaticText(parent, wx.ID_ANY, '')
+		self.bar = BarLabel(parent, hv=bar_orient, show_lb=False)
+		bt = wx.StaticText(parent, wx.ID_ANY, btm_txt) if btm_txt else None
+
 		self.Add(self.lb, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
-
-		self.bar = BarLabel(parent, hv=wx.VERTICAL, show_lb=False)
-		sz = self.bar.GetSize()
-		sz.SetWidth(20)
-		self.bar.SetMinSize(sz)
-		self.Add(self.bar, 1, wx.ALIGN_CENTER_HORIZONTAL, 0)
-
-		if btm_txt:
-			bt = wx.StaticText(parent, wx.ID_ANY, btm_txt)
-			self.Add(bt, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+		if bar_orient == wx.VERTICAL:		
+			sz = self.bar.GetSize()
+			sz.SetWidth(20)
+			self.bar.SetMinSize(sz)
+			self.Add(self.bar, 1, wx.ALIGN_CENTER_HORIZONTAL, 0)
+			if bt:
+				self.Add(bt, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+		else:
+			szr = wx.BoxSizer(wx.HORIZONTAL)
+			if bt:
+				szr.Add(bt, 0, 0, 0)
+			szr.Add(self.bar, 1, 0, 0)
+			self.Add(szr, 1, wx.EXPAND, 0)
 
 		self.lmt_bar_prg = lmt_bar_prg
 
@@ -2480,10 +2511,7 @@ class ColorLabel(wx.Panel):
 		dc = wx.PaintDC(self)
 		dc.Clear()
 
-		font = dc.GetFont()
-		pt = font.GetPointSize()
-		#font.SetPointSize(pt * 3 / 4)
-		dc.SetFont(font)
+		#change_font_point_by_rate(dc, 0.75)
 
 		(x,y) = (0,0)
 		(_, h, _, _) = dc.GetFullTextExtent(' ')
@@ -2679,6 +2707,13 @@ def cut_esc(s):
 			break
 		s = s[:i] + s[j+1:]
 	return s
+
+def change_font_point_by_rate(obj, rate=1.0):
+	font = obj.GetFont()
+	pt = font.GetPointSize()
+	pt = int(pt * rate)
+	font.SetPointSize(pt)
+	obj.SetFont(font)
 
 def fix_link_color(obj):
 	t = type(obj)

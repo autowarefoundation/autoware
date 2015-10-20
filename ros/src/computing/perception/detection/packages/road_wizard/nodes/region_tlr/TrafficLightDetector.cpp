@@ -207,13 +207,16 @@ static cv::Mat signalDetect_inROI(const cv::Mat& roi,
       cv::Rect bound = boundingRect(bright_contours.at(contours_idx));
       cv::Scalar rangeColor = BLACK;
       struct regionCandidate cnd;
-      double area = contourArea(bright_contours.at(contours_idx));
+      double area = contourArea(bright_contours.at(contours_idx)); // unit : pixel
       double perimeter = arcLength(bright_contours.at(contours_idx), true);
       double circleLevel = (IsNearlyZero(perimeter)) ? 0.0f : (4.0f * CV_PI * area / pow(perimeter, 2));
 
+      double area_lower_limit = (3*sqrt(3)) * pow(estimatedRadius / 3.0, 2) / 4; // the area of inscribed triangle of 1/3 circle
+      double area_upper_limit = pow(estimatedRadius, 2) * M_PI;                  // the area of the circle
+
       if (std::max(bound.width, bound.height) < 2*std::min(bound.width, bound.height) && /* dimension ratio */
           CIRCLE_LEVEL_THRESHOLD <= circleLevel                                       &&
-          CIRCLE_AREA_THRESHOLD  <= area)
+          area_lower_limit <= area && area <= area_upper_limit)
         {
           // std::cerr << "circleLevel: " << circleLevel << std::endl;
           rangeColor    = WHITE;
@@ -433,7 +436,7 @@ void TrafficLightDetector::brightnessDetect(const cv::Mat &input) {
     bool isGreen_bright;
 
     if (valid_pixNum > 0) {
-      isRed_bright    = ( ((double)red_pixNum / valid_pixNum)    > 0.45) ? true : false; // detect red a little largely
+      isRed_bright    = ( ((double)red_pixNum / valid_pixNum)    > 0.5) ? true : false;
       isYellow_bright = ( ((double)yellow_pixNum / valid_pixNum) > 0.5) ? true : false;
       isGreen_bright  = ( ((double)green_pixNum / valid_pixNum)  > 0.5) ? true : false;
     } else {

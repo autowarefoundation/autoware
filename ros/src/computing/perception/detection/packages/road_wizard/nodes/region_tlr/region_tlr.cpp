@@ -463,7 +463,7 @@ void setContexts(TrafficLightDetector &detector,
   for (unsigned int ctx_idx=0; ctx_idx<plid_vector.size(); ctx_idx++)
     {
       Context ctx;
-      int min_radius  = 20;
+      int min_radius  = INT_MAX;
       int most_left   = frame.cols;
       int most_top    = frame.rows;
       int most_right  = 0;
@@ -478,8 +478,8 @@ void setContexts(TrafficLightDetector &detector,
           double map_z = sig_iterator->z;
           int radius = sig_iterator->radius;
           if (sig_iterator->plId == plid_vector.at(ctx_idx) &&
-              0 < img_x - radius - 1.5 * min_radius && img_x + radius + 1.5 * min_radius < frame.cols &&
-              0 < img_y - radius - 1.5 * min_radius && img_y + radius + 1.5 * min_radius < frame.rows)
+              0 < img_x - radius - 1.5 * radius && img_x + radius + 1.5 * radius < frame.cols &&
+              0 < img_y - radius - 1.5 * radius && img_y + radius + 1.5 * radius < frame.rows)
             {
               switch (sig_iterator->type) {
               case 1:           /* RED */
@@ -504,7 +504,7 @@ void setContexts(TrafficLightDetector &detector,
             }
         }
 
-      ctx.lampRadius = (int)(min_radius / 1.5);
+      ctx.lampRadius = min_radius;
       ctx.topLeft    = cv::Point(most_left, most_top);
       ctx.botRight   = cv::Point(most_right, most_bottom);
       ctx.lightState = UNDEFINED;
@@ -514,7 +514,7 @@ void setContexts(TrafficLightDetector &detector,
       bool isInserted = false;
       std::vector<int> eraseCandidate;
       for (unsigned int i=0; i<detector.contexts.size(); i++) {
-        if (ctx.signalID == detector.contexts.at(i).signalID)
+        if (ctx.signalID == detector.contexts.at(i).signalID && ctx.lampRadius != INT_MAX)
           {
             /* update to new information except to lightState */
             updatedSignals.push_back(ctx);
@@ -526,7 +526,7 @@ void setContexts(TrafficLightDetector &detector,
 
       }
 
-      if (isInserted == false)
+      if (isInserted == false && ctx.lampRadius != INT_MAX)
         updatedSignals.push_back(ctx); // this ctx is new in detector.contexts
 
     }

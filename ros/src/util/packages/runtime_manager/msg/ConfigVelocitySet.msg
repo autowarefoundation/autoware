@@ -9,5 +9,4 @@ float32 detection_height_top
 float32 detection_height_bottom
 float32 deceleration
 float32 decel_change_limit
-float32 avoid_braking_velocity
 float32 accel_bias

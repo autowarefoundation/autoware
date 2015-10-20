@@ -23,9 +23,9 @@ subs :
           CalibrationFile :
             prop  : 1
             flags : [ center_v ]
-      - name : PointGrey Grasshoper 3 (USB2)
+      - name : PointGrey Generic
         probe:
-        run  :
+        run  : roslaunch pointgrey_camera_driver camera.launch
       - name : PointGrey LadyBug 5
         probe:
         run  : roslaunch pointgrey ladybug.launch
@@ -51,7 +51,11 @@ subs :
     subs :
       - name : Javad Delta 3 (TTY1)
         probe: 'lsusb -d 0584: > /dev/null' # probed if serial converter is connected
-        run  : rosrun javad gnss.sh
+        run  : rosrun javad_navsat_driver gnss.sh
+        param: serial
+      - name : Serial GNSS
+        probe: 
+        run  : roslaunch nmea_navsat nmea_navsat.launch
         param: serial
 
   - name : IMU

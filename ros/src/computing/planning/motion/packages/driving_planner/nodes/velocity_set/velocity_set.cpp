@@ -65,7 +65,7 @@ static int _obstacle_waypoint = -1;
 static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
-static double _search_distance = 70;
+static double _search_distance = 60;
 static double _cars_distance = 15.0; // meter: stopping distance from cars (using DPM)
 static double _pedestrians_distance = 10.0; // meter: stopping distance from pedestrians (using DPM)
 static double _others_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
@@ -76,7 +76,6 @@ static double _decel_limit = 2.778;   // (m/s) about 10 km/h
 static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
 static double _temporal_waypoints_size = 100.0; // meter
 static double _accel_bias = 1.389; // (m/s)
-static double _avoid_braking_velocity = 2.22; // if target velocity is under this, it could be sudden braking
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 static bool g_sim_mode;
@@ -174,18 +173,17 @@ void PathVset::avoidSuddenBraking()
   for (int j = -1; j < examin_range; j++) {
     if (!checkWaypoint(_closest_waypoint+j, "avoidSuddenBraking"))
       return;
-    if (getWaypointVelocityMPS(_closest_waypoint+j) < _current_vel - _decel_limit &&
-	getWaypointVelocityMPS(_closest_waypoint+j) < _avoid_braking_velocity) // we must change waypoints
+    if (getWaypointVelocityMPS(_closest_waypoint+j) < _current_vel - _decel_limit) // we must change waypoints
       break;
     if (j == examin_range-1) // we don't have to change waypoints
       return;
   }
 
-  
+
   std::cout << "====avoid sudden braking====" << std::endl;
   std::cout << "vehicle is decelerating..." << std::endl;
   std::cout << "closest_waypoint: " << _closest_waypoint << std::endl;
-  
+
 
   // fill in waypoints velocity behind vehicle
   for (num = _closest_waypoint-1; fill_in_vel > 0; fill_in_vel--) {
@@ -195,7 +193,7 @@ void PathVset::avoidSuddenBraking()
   }
 
   // decelerate gradually
-  double temp1 = _current_vel*_current_vel;
+  double temp1 = (_current_vel-_decel_limit+1.389)*(_current_vel-_decel_limit+1.389);
   double temp2 = 2*_decel*interval;
   for (num = _closest_waypoint-1; ; num++) {
     if (num >= getSize())
@@ -289,8 +287,8 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   _threshold_points = config->threshold_points;
   _detection_height_top = config->detection_height_top;
   _detection_height_bottom = config->detection_height_bottom;
+  _decel = config->deceleration;
   _decel_limit = kmph2mps(config->decel_change_limit);
-  _avoid_braking_velocity = kmph2mps(config->avoid_braking_velocity);
   _accel_bias = kmph2mps(config->accel_bias);
 }
 
@@ -389,7 +387,7 @@ static void DisplayObstacleWaypoint(int i)
     marker.pose.orientation = _current_pose.pose.orientation;
     marker.scale.x = 1.0;
     marker.scale.y = 1.0;
-    marker.scale.z = _detection_height_top;
+    marker.scale.z = 2.0;
     marker.color.a = 1.0;
     marker.color.r = 0.0;
     marker.color.g = 0.0;
@@ -450,7 +448,7 @@ static int vscanDetection(int closest_waypoint)
 	tf::Vector3 tf_waypoint = point2vector(point);
 			
         tf_waypoint.setZ(0);
- 
+
         int point_count = 0;
 	geometry_msgs::Point vscan_point;
 	_linelist.points.clear();
@@ -468,7 +466,8 @@ static int vscanDetection(int closest_waypoint)
 	      vscan_point.y = item->y;
 	      vscan_point.z = item->z;
 	      _linelist.points.push_back(vscan_point);
-	      if (item->z > _detection_height_top || item->z < _detection_height_bottom) {continue;}
+	      if (item->z > _detection_height_top || item->z < _detection_height_bottom)
+		continue;
 	      point_count++;
 	    }
 
@@ -529,7 +528,7 @@ static bool ObstacleDetection()
       }
 
       //fail-safe
-      if (false_count >= LOOP_RATE * 2) {
+      if (false_count >= LOOP_RATE/2) {
 	_obstacle_waypoint = -1;
 	false_count = 0;
 	prev_detection = false;
@@ -634,7 +633,7 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(LOOP_RATE);
     while (ros::ok()) {
         ros::spinOnce();
-	
+
         if (_pose_flag == false || _path_flag == false) {
 	  std::cout << "\rtopic waiting          \rtopic waiting";
 	  for (int j = 0; j < i; j++) {std::cout << ".";}
@@ -644,9 +643,10 @@ int main(int argc, char **argv)
 	  loop_rate.sleep();
 	  continue;
         }
-	
+
 	_closest_waypoint = getClosestWaypoint(_path_change.getCurrentWaypoints(), _current_pose.pose);
 	closest_waypoint_pub.publish(_closest_waypoint);
+
         bool detection_result = ObstacleDetection();
 
 	ChangeWaypoint(detection_result);

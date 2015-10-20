@@ -613,20 +613,15 @@ params :
       max   : 0
       v     : -1.5
     - name  : deceleration
-      label : Deceleration
+      label : Deceleration (m/s^2)
       min   : 0
       max   : 5
       v     : 1.5
     - name  : decel_change_limit
       label : Deceleration Change Limit
-      min   : 0
+      min   : 5
       max   : 40
       v     : 15.0
-    - name  : avoid_braking_velocity
-      label : Avoid Braking Velocity
-      min   : 0
-      max   : 80
-      v     : 8.0
     - name  : accel_bias
       label : Accel Bias
       min   : 0
@@ -639,8 +634,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-      
-      
+
   - name  : lane_follower_trajgen
     topic : /config/lane_follower
     msg   : ConfigLaneFollower
@@ -919,15 +913,23 @@ params :
       path_type : save
       v         : ''
       cmd_param :
-        only_enable : True
         var_name    : save_finename
+        dash        : ''
+        delim       : ':='
+    - name  : velocity_source
+      kind  : radio_box
+      choices:
+      - None
+      - ZMP CAN
+      - NDT
+      v     : 0
+      cmd_param :
         dash        : ''
         delim       : ':='
     - name      : interval
       label     : Interval
       v         : 4.0
       cmd_param :
-        only_enable : True
         dash        : ''
         delim       : ':='
 
