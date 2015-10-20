@@ -572,6 +572,13 @@ params :
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name  : velocity_limit
       label : Velocity Limit
       min   : 0
@@ -627,13 +634,6 @@ params :
       min   : 0
       max   : 40
       v     : 5.0
-    - name    : sim_mode
-      label   : 'Simulation Mode'
-      kind    : checkbox
-      v       : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
   - name  : lane_follower_trajgen
     topic : /config/lane_follower
