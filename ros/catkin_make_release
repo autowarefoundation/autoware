@@ -20,7 +20,7 @@ if [[ ! -e depends/devel/setup.bash ]]; then
        catkin_init_workspace
     fi
 
-    (cd .. && catkin_make)
+    (cd .. && catkin_make $@)
     cd $cwd
 fi
 source depends/devel/setup.bash
