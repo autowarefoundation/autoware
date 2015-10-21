@@ -165,11 +165,15 @@ int main(int argc, char **argv)
   {
     ros::spinOnce(); //check subscribe topic
 
-    if (!_waypoint_set)
+    if (!_waypoint_set) {
+      loop_rate.sleep();
       continue;
+    }
 
-    if (!_initial_set)
+    if (!_initial_set) {
+      loop_rate.sleep();
       continue;
+    }
 
     if (!_pose_set)
     {

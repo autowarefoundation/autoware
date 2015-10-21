@@ -54,7 +54,6 @@ static geometry_msgs::TwistStamped _current_twist;
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
-static std::string _current_pose_topic = "ndt";
 static const std::string pedestrian_sound = "pedestrian";
 static std::string _linelist_frame = "/velodyne";
 static bool _pose_flag = false;
@@ -66,7 +65,7 @@ static int _obstacle_waypoint = -1;
 static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
-static double _search_distance = 70;
+static double _search_distance = 60;
 static double _cars_distance = 15.0; // meter: stopping distance from cars (using DPM)
 static double _pedestrians_distance = 10.0; // meter: stopping distance from pedestrians (using DPM)
 static double _others_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
@@ -76,7 +75,7 @@ static double _decel = 1.5;           // (m/s) deceleration
 static double _decel_limit = 2.778;   // (m/s) about 10 km/h
 static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
 static double _temporal_waypoints_size = 100.0; // meter
-static double _accel_bias = 5.0; // (km/h)
+static double _accel_bias = 1.389; // (m/s)
 static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 static bool g_sim_mode;
@@ -151,7 +150,7 @@ void PathVset::avoidSuddenAceleration()
   for (int i = 0; ; i++) {
     if (!checkWaypoint(_closest_waypoint+i, "avoidSuddenAceleration"))
       return;
-    changed_vel = sqrt(temp1 + temp2*(double)(i+1)) + kmph2mps(_accel_bias);
+    changed_vel = sqrt(temp1 + temp2*(double)(i+1)) + _accel_bias;
     if (changed_vel > current_waypoints_.waypoints[_closest_waypoint+i].twist.twist.linear.x)
       return;
     current_waypoints_.waypoints[_closest_waypoint+i].twist.twist.linear.x = changed_vel;
@@ -166,7 +165,7 @@ void PathVset::avoidSuddenBraking()
   int i = 0;
   int fill_in_zero = 20;
   int fill_in_vel = 15;
-  int examin_range = 2; // need to change according to waypoint interval?
+  int examin_range = 1; // need to change according to waypoint interval?
   int num;
   double interval = getInterval();
   double changed_vel;
@@ -180,11 +179,11 @@ void PathVset::avoidSuddenBraking()
       return;
   }
 
-  
+
   std::cout << "====avoid sudden braking====" << std::endl;
   std::cout << "vehicle is decelerating..." << std::endl;
   std::cout << "closest_waypoint: " << _closest_waypoint << std::endl;
-  
+
 
   // fill in waypoints velocity behind vehicle
   for (num = _closest_waypoint-1; fill_in_vel > 0; fill_in_vel--) {
@@ -194,7 +193,7 @@ void PathVset::avoidSuddenBraking()
   }
 
   // decelerate gradually
-  double temp1 = _current_vel*_current_vel;
+  double temp1 = (_current_vel-_decel_limit+1.389)*(_current_vel-_decel_limit+1.389);
   double temp2 = 2*_decel*interval;
   for (num = _closest_waypoint-1; ; num++) {
     if (num >= getSize())
@@ -288,6 +287,9 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   _threshold_points = config->threshold_points;
   _detection_height_top = config->detection_height_top;
   _detection_height_bottom = config->detection_height_bottom;
+  _decel = config->deceleration;
+  _decel_limit = kmph2mps(config->decel_change_limit);
+  _accel_bias = kmph2mps(config->accel_bias);
 }
 
 void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
@@ -385,7 +387,7 @@ static void DisplayObstacleWaypoint(int i)
     marker.pose.orientation = _current_pose.pose.orientation;
     marker.scale.x = 1.0;
     marker.scale.y = 1.0;
-    marker.scale.z = _detection_height_top;
+    marker.scale.z = 2.0;
     marker.color.a = 1.0;
     marker.color.r = 0.0;
     marker.color.g = 0.0;
@@ -446,7 +448,7 @@ static int vscanDetection(int closest_waypoint)
 	tf::Vector3 tf_waypoint = point2vector(point);
 			
         tf_waypoint.setZ(0);
- 
+
         int point_count = 0;
 	geometry_msgs::Point vscan_point;
 	_linelist.points.clear();
@@ -464,7 +466,8 @@ static int vscanDetection(int closest_waypoint)
 	      vscan_point.y = item->y;
 	      vscan_point.z = item->z;
 	      _linelist.points.push_back(vscan_point);
-	      if (item->z > _detection_height_top || item->z < _detection_height_bottom) {continue;}
+	      if (item->z > _detection_height_top || item->z < _detection_height_bottom)
+		continue;
 	      point_count++;
 	    }
 
@@ -525,7 +528,7 @@ static bool ObstacleDetection()
       }
 
       //fail-safe
-      if (false_count >= LOOP_RATE * 2) {
+      if (false_count >= LOOP_RATE/2) {
 	_obstacle_waypoint = -1;
 	false_count = 0;
 	prev_detection = false;
@@ -625,44 +628,12 @@ int main(int argc, char **argv)
     private_nh.param<bool>("sim_mode", g_sim_mode,false);
     ROS_INFO_STREAM("sim_mode : " << g_sim_mode);
 
-    private_nh.getParam("detection_range", _detection_range);
-    std::cout << "detection_range : " << _detection_range << std::endl;
-
-    private_nh.getParam("threshold_points", _threshold_points);
-    std::cout << "threshold_points : " << _threshold_points << std::endl;
-
-    private_nh.getParam("others_distance", _others_distance);
-    std::cout << "others_distance : " << _others_distance << std::endl;
-
-    private_nh.getParam("cars_distance", _cars_distance);
-    std::cout << "cars_distance : " << _cars_distance << std::endl;
-
-    private_nh.getParam("pedestrians_distance", _pedestrians_distance);
-    std::cout << "pedestrians_distance : " << _pedestrians_distance << std::endl;
-
-    private_nh.getParam("detection_height_top", _detection_height_top);
-    std::cout << "detection_height_top : " << _detection_height_top << std::endl;
-
-    private_nh.getParam("detection_height_bottom", _detection_height_bottom);
-    std::cout << "detection_height_bottom : " << _detection_height_bottom << std::endl;
-
-    private_nh.getParam("current_pose_topic", _current_pose_topic);
-    std::cout << "current_pose_topic : " << _current_pose_topic << std::endl;
-
-    private_nh.getParam("velocity_limit", _velocity_limit);
-    std::cout << "velocity_limit : " << _velocity_limit << std::endl;
-
-    private_nh.getParam("temporal_waypoints_size", _temporal_waypoints_size);
-    std::cout << "temporal_waypoints_size : " << _temporal_waypoints_size << std::endl;
-    private_nh.getParam("accel_bias", _accel_bias);
-    std::cout << "accel_bias : " << _accel_bias << std::endl;
-
     linelistInit();
 
     ros::Rate loop_rate(LOOP_RATE);
     while (ros::ok()) {
         ros::spinOnce();
-	
+
         if (_pose_flag == false || _path_flag == false) {
 	  std::cout << "\rtopic waiting          \rtopic waiting";
 	  for (int j = 0; j < i; j++) {std::cout << ".";}
@@ -672,9 +643,10 @@ int main(int argc, char **argv)
 	  loop_rate.sleep();
 	  continue;
         }
-	
+
 	_closest_waypoint = getClosestWaypoint(_path_change.getCurrentWaypoints(), _current_pose.pose);
 	closest_waypoint_pub.publish(_closest_waypoint);
+
         bool detection_result = ObstacleDetection();
 
 	ChangeWaypoint(detection_result);

@@ -13,3 +13,9 @@ catkin_generated/
 /devel/
 /install/
 /gtest/
+
+# Dependency
+/depends/.catkin_workspace
+/depends/build/
+/depends/devel/
+/depends/src/CMakeLists.txt

@@ -28,11 +28,71 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ros/ros.h>
-#include <lktracker/LkTracker.hpp>
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <ext/stdio_filebuf.h>
+#include <curl/curl.h>
 
-int main(int argc, char **argv)
+#include <map_db.h>
+
+
+GetFile::GetFile()
+	: GetFile(HTTP_HOSTNAME, HTTP_PORT)
 {
-	ros::init(argc, argv, "klt_track");
-	return klt_main(argc, argv);
+}
+
+GetFile::GetFile(const std::string& host_name, int port)
+	: host_name_(host_name), port_(port)
+{
+}
+
+typedef std::basic_ofstream<char>::__filebuf_type buffer_t;
+typedef __gnu_cxx::stdio_filebuf<char> io_buffer_t; 
+static FILE* cfile(buffer_t* const fb) {
+	return (static_cast<io_buffer_t* const>(fb))->file();
+}
+
+int GetFile::GetHTTPFile(const std::string& value) 
+{
+	CURL *curl;
+
+	curl = curl_easy_init();
+	if (! curl) {
+		std::cerr << "curl_easy_init failed" << std::endl;
+		return -1;
+	}
+
+	std::ofstream ofs;
+	ofs.open("/tmp/" + value);
+	if (! ofs.is_open()) {
+		std::cerr << "cannot open /tmp/" << value << std::endl;
+		curl_easy_cleanup(curl);
+		return -2;
+	}
+
+	std::ostringstream urlss;
+	urlss << "http://" << host_name_ << ":" << port_ << "/" << value;
+	curl_easy_setopt(curl, CURLOPT_URL, urlss.str().c_str());
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, cfile(ofs.rdbuf()));
+	CURLcode res = curl_easy_perform(curl);
+	if (res != CURLE_OK) {
+		std::cerr << "curl_easy_perform failed: " <<
+			curl_easy_strerror(res) << std::endl;
+		ofs.close();
+		curl_easy_cleanup(curl);
+		return -3;
+	}
+	ofs.close();
+	curl_easy_cleanup(curl);
+
+	return 0;
 }

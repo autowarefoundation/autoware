@@ -543,7 +543,7 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
   }
 }
 
-geometry_msgs::Point getNextTarget(double closest_waypoint)
+bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
 {
 #ifdef GLOBAL
   static int next_waypoint = -1;
@@ -551,8 +551,8 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
   int next_waypoint = -1;
 #endif
   int path_size = static_cast<int>(_current_waypoints.getSize());
-  geometry_msgs::Point next_target;
-  geometry_msgs::Point point_zero;
+//  geometry_msgs::Point next_target;
+  static geometry_msgs::Point prev_target = _current_pose.pose.position;
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint);
   ROS_INFO("initilize threshold = %lf", lookahead_threshold);
 
@@ -561,7 +561,7 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
   {
     next_waypoint = -1;
     ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
-    return point_zero;
+    return false;
   }
 
   // look for the next waypoint.
@@ -578,13 +578,13 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
     }
 
     //if threshold is  shorter than distance of previous waypoint
-    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT
+/*    if (next_waypoint > 0 && _param_flag == MODE_WAYPOINT
         && getPlaneDistance(_current_waypoints.getWaypointPosition(next_waypoint), _current_pose.pose.position)
             > lookahead_threshold)
     {
       ROS_INFO("threshold is  shorter than distance of previous waypoint");
       break;
-    }
+    }*/
     // if there exists an effective waypoint
     if (getPlaneDistance(_current_waypoints.getWaypointPosition(i), _current_pose.pose.position) > lookahead_threshold)
     {
@@ -597,12 +597,12 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
       }
 
       //param flag is waypoint
-      if (evaluateLocusFitness(closest_waypoint, i))
-      {
-        ROS_INFO("evaluate : OK");
+      //    if (evaluateLocusFitness(closest_waypoint, i))
+      // {
+      //    ROS_INFO("evaluate : OK");
         next_waypoint = i;
         break;
-      }
+	/*  }
       else
       {
         ROS_INFO("evaluate : NG");
@@ -618,7 +618,7 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
         //restart search from closest_waypoint
         i = closest_waypoint;
         continue;
-      }
+	}*/
     }
     i++;
   }
@@ -631,10 +631,23 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
     displaySearchRadius(lookahead_threshold);
 
     //if next waypoint is the last
-    if (next_waypoint == (path_size - 1))
-      return _current_waypoints.getWaypointPosition(next_waypoint);
+    if (next_waypoint == (path_size - 1)){
+    	*next_target = _current_waypoints.getWaypointPosition(next_waypoint);
+    			prev_target = *next_target;
+      return true;
+    }
 
-    interpolateNextTarget(next_waypoint, lookahead_threshold, &next_target);
+    geometry_msgs::Point next_candidate;
+    if(!interpolateNextTarget(next_waypoint, lookahead_threshold, &next_candidate))
+    	return false;
+
+    //if next candidate is nearer than previous target
+    if(getPlaneDistance(next_candidate,_current_pose.pose.position) < getPlaneDistance(prev_target,_current_pose.pose.position))
+    	*next_target = prev_target;
+    else
+    	*next_target = next_candidate;
+
+    prev_target = *next_target;
 
 #ifdef LOG
     std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
@@ -643,11 +656,11 @@ geometry_msgs::Point getNextTarget(double closest_waypoint)
     << std::endl;
 #endif
 
-    return next_target;
+    return true;
   }
 
   // if the program reaches here, it means we lost the waypoint.
-  return point_zero;
+  return false;
 }
 
 geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
@@ -760,7 +773,7 @@ int main(int argc, char **argv)
       loop_rate.sleep();
       continue;
     }
-
+    geometry_msgs::Point next_target;
 #ifdef GLOBAL
     //get closest waypoint
     int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), _current_pose.pose);
@@ -771,34 +784,32 @@ int main(int argc, char **argv)
     {
 
       //get next target
-      geometry_msgs::Point next_target = getNextTarget(closest_waypoint);
+    	if (geometry_msgs::Point next_target = getNextTarget(closest_waypoint){
 #else
-      geometry_msgs::Point next_target = getNextTarget(0);
+		if (getNextTarget(0, &next_target)) {
 #endif
 
-      ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y, next_target.z);
-
-      if (next_target.x == 0 && next_target.y == 0 && next_target.z == 0)
-      {
-        ROS_INFO_STREAM("lost target! ");
-        wf_stat.data = false;
-        _stat_pub.publish(wf_stat);
-        twist.twist.linear.x = 0;
-        twist.twist.angular.z = 0;
-      }
-      else
-      {
-        displayNextTarget(next_target);
-        std::vector<geometry_msgs::Point> locus_array = generateLocus(next_target);
-        displayLocus(locus_array);
+			ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x,
+					next_target.y, next_target.z);
+			displayNextTarget(next_target);
+			std::vector<geometry_msgs::Point> locus_array = generateLocus(
+					next_target);
+			displayLocus(locus_array);
 #ifdef GLOBAL
-        twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(closest_waypoint));
+			twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(closest_waypoint));
 #else
-        twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(0));
+			twist.twist = calcTwist(calcCurvature(next_target),
+					getCmdVelocity(0));
 #endif
-        wf_stat.data = true;
-        _stat_pub.publish(wf_stat);
-      }
+			wf_stat.data = true;
+			_stat_pub.publish(wf_stat);
+		} else {
+			ROS_INFO_STREAM("lost target! ");
+			wf_stat.data = false;
+			_stat_pub.publish(wf_stat);
+			twist.twist.linear.x = 0;
+			twist.twist.angular.z = 0;
+		}
 #ifdef GLOBAL
     }
     else //cannot get closest
