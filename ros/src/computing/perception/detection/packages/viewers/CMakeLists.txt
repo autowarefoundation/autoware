@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   runtime_manager
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 find_package(OpenCV REQUIRED)
 
 ###################################

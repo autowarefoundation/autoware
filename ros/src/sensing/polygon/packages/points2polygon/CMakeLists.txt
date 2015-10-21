@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(PCL 1.2 REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
   CATKIN_DEPENDS runtime_manager
