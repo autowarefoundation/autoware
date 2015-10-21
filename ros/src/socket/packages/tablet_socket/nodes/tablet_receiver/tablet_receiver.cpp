@@ -325,7 +325,6 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 		tf::Transform transform;
 		tf::Quaternion q;
 		transform.setOrigin(tf::Vector3(geo.y(), geo.x(), geo.z()));
-		fprintf(stderr,"azimuth : %lf\n",buf[3] * 180/M_PI);
 		q.setRPY(buf[4], buf[5], buf[3]);
 		transform.setRotation(q);
 
