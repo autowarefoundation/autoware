@@ -96,7 +96,7 @@ First you have to install Qt5 dependencies.
 
 ```
 $ cd $HOME
-$ git clone https://github.com/CPFL/Autoware.git
+$ git clone --recursive https://github.com/CPFL/Autoware.git
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
 $ cd ../
