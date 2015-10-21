@@ -597,12 +597,12 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
       }
 
       //param flag is waypoint
-      if (evaluateLocusFitness(closest_waypoint, i))
-      {
-        ROS_INFO("evaluate : OK");
+      //    if (evaluateLocusFitness(closest_waypoint, i))
+      // {
+      //    ROS_INFO("evaluate : OK");
         next_waypoint = i;
         break;
-      }
+	/*  }
       else
       {
         ROS_INFO("evaluate : NG");
@@ -618,7 +618,7 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
         //restart search from closest_waypoint
         i = closest_waypoint;
         continue;
-      }
+	}*/
     }
     i++;
   }
