@@ -65,7 +65,9 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 	cv::cvtColor(in_image, in_image, cv::COLOR_RGB2BGR);
 	cv::cvtColor(in_image, gray_image, cv::COLOR_BGR2GRAY);
 	cv::Mat mask(gray_image.size(), CV_8UC1);
+	cv::TickMeter timer;
 
+	timer.start();
 
 	if (in_update && in_detections.size() > 0)
 	{
@@ -171,8 +173,8 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 						matched_detection_,
 						obj_rect);
 
-	if (obj_rect.width <= matched_detection_.width*0.2 ||
-			obj_rect.height <= matched_detection_.height*0.2)
+	if (obj_rect.width <= matched_detection_.width*0.1 ||
+			obj_rect.height <= matched_detection_.height*0.1)
 	{
 		std::cout << "TRACK STOPPED" << std::endl;
 		prev_points_.clear();
@@ -180,11 +182,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		return in_image;
 	}
 
-
 	cv::rectangle(in_image, obj_rect, cv::Scalar(0,0,255), 2);
-
-	std::cout << "i_w>" << matched_detection_.width << "i_h>" << matched_detection_.height;
-	std::cout << "b_w>" << obj_rect.width << "b_h>" << obj_rect.height << std::endl;
 
 	if (prev_points_.size() > 0 )
 	{
@@ -212,6 +210,10 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		previous_centroid_x_ = current_centroid_x_;
 		previous_centroid_y_ = current_centroid_y_;
 	}
+
+	timer.stop();
+
+	std::cout << timer.getTimeMilli() << std::endl;
 
 	return in_image;
 }
@@ -268,7 +270,11 @@ int LkTracker::GetRectFromPoints(std::vector< cv::Point2f > in_corners_points, c
 	out_boundingbox.x 		= min_x;
 	out_boundingbox.y 		= min_y;
 	out_boundingbox.width 	= max_x - min_x;
+	if (out_boundingbox.width > in_initial_box.width)
+		out_boundingbox.width = in_initial_box.width;
 	out_boundingbox.height 	= max_y - min_y;
+	if (out_boundingbox.height > in_initial_box.height)
+				out_boundingbox.height = in_initial_box.height;
 
 	return num_points;
 }
