@@ -41,6 +41,9 @@ Open-source software for urban autonomous driving. The following functions are s
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev
 ```
 
+**NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
+
+
 ### Install dependencies for Ubuntu 13.10 indigo and Ubuntu 13.04 hydro
 
 ```
