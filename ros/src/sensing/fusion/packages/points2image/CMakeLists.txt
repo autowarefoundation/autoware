@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(points2image)
 
+include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosinterface
@@ -16,6 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
+
+pkg_check_modules(Qt5Core REQUIRED Qt5Core)
+pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -46,26 +50,17 @@ catkin_package(
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
-if(EXISTS /usr/local/qtbase5)
-# Self install version
-set(Qt5INCLUDE "/usr/local/qtbase5/include")
-set(Qt5BIN "/usr/local/qtbase5/bin")
-set(Qt5LIBROOT "/usr/local/qtbase5/lib")
-else()
-# Ubuntu Qt5 package
-set(Qt5INCLUDE "/usr/include/qt5")
-set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
-set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
-endif()
+EXECUTE_PROCESS(
+  COMMAND pkg-config --variable=host_bins Qt5Core
+  OUTPUT_VARIABLE Qt5BIN
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include
-  ${Qt5INCLUDE}
-  ${Qt5INCLUDE}/QtCore
-  ${Qt5INCLUDE}/QtGui
-  ${Qt5INCLUDE}/QtOpenGL
-  ${Qt5INCLUDE}/QtWidgets
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
 )
 
 # library
@@ -111,11 +106,9 @@ add_dependencies(points2vscan
 target_link_libraries(points2vscan
   ${catkin_LIBRARIES}
   rosinterface
-  ${Qt5LIBROOT}/libQt5Core.so
-  ${Qt5LIBROOT}/libQt5Gui.so
-  ${Qt5LIBROOT}/libQt5OpenGL.so
-  ${Qt5LIBROOT}/libQt5Widgets.so
   nlopt
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
 )
 
 # points2image

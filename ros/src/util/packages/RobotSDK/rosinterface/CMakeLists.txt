@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosinterface)
 
+include(FindPkgConfig)
 find_package(catkin REQUIRED)
+
+pkg_check_modules(Qt5Core REQUIRED Qt5Core)
+pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 
 ###################################
 ## catkin specific configuration ##
@@ -24,38 +28,17 @@ catkin_package(
 ###########
 
 EXECUTE_PROCESS(
-  COMMAND uname -m
-  OUTPUT_VARIABLE ARCHITECTURE
+  COMMAND pkg-config --variable=host_bins Qt5Core
+  OUTPUT_VARIABLE Qt5BIN
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-
-if(EXISTS /usr/local/qtbase5)
-# Self install version
-set(Qt5INCLUDE "/usr/local/qtbase5/include")
-set(Qt5BIN "/usr/local/qtbase5/bin")
-set(Qt5LIBROOT "/usr/local/qtbase5/lib")
-else()
-
-# Ubuntu Qt5 package
-set(Qt5INCLUDE "/usr/include/qt5")
-if("${ARCHITECTURE}" STREQUAL "x86_64")
-  set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
-  set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
-elseif("${ARCHITECTURE}" MATCHES "^arm")
-  set(Qt5LIBROOT "/usr/lib/arm-linux-gnueabihf")
-  set(Qt5BIN "/usr/lib/arm-linux-gnueabihf/qt5/bin")
-endif()
-
-endif()
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
   include/rosinterface
-  ${Qt5INCLUDE}
-  ${Qt5INCLUDE}/QtCore
-  ${Qt5INCLUDE}/QtGui
-  ${Qt5INCLUDE}/QtWidgets
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
 )
 
 add_custom_command(
@@ -74,9 +57,8 @@ add_library(rosinterface
 
 target_link_libraries(rosinterface
   ${catkin_LIBRARIES}
-  ${Qt5LIBROOT}/libQt5Core.so
-  ${Qt5LIBROOT}/libQt5Gui.so
-  ${Qt5LIBROOT}/libQt5Widgets.so
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
 )
 
 ## Add cmake target dependencies of the executable/library
