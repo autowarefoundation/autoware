@@ -41,7 +41,7 @@ class LkTracker
 
 	std::vector<cv::Point2f> prev_points_;
 	std::vector<cv::Point2f> current_points_;
-	void GetRectFromPoints(std::vector< cv::Point2f > in_corners_points, cv::Rect& out_boundingbox);
+	int GetRectFromPoints(std::vector< cv::Point2f > in_corners_points, cv::Point in_centroid, cv::Rect in_initial_box, cv::Rect& out_boundingbox);
 	void ArrowedLine(cv::Mat& in_image, cv::Point in_point1, cv::Point in_point2, const cv::Scalar& in_color,
 			int in_thickness=1, int in_line_type=8, int in_shift=0, double in_tip_length=0.1);
 public:

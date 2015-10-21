@@ -83,7 +83,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 	int sum_y = 0;
 
 
-	if ( ( (in_update && (frame_count_%3 == 0)) || prev_image_.empty() ) &&
+	if ( ( in_update || prev_image_.empty() ) &&
 		 ( matched_detection_.width>0 && matched_detection_.height >0 )
 		)																//add as new object
 	{
@@ -104,6 +104,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		//frame_count_ = 0;
 		current_centroid_x_ = 0;
 		current_centroid_y_ = 0;
+		//current_points_.push_back(cv::Point(matched_detection_.x, matched_detection_.y));
 
 		for (std::size_t i = 0; i < current_points_.size(); i++)
 		{
@@ -121,7 +122,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		if(prev_image_.empty())
 			in_image.copyTo(prev_image_);
 		cv::calcOpticalFlowPyrLK(prev_image_, 			//previous image frame
-								gray_image, 					//current image frame
+								gray_image, 			//current image frame
 								prev_points_, 			//previous corner points
 								current_points_, 		//current corner points (tracked)
 								status,
@@ -136,23 +137,16 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		current_centroid_x_ = 0;
 		current_centroid_y_ = 0;
 
+		//process points
 		for (i=0, k=0 ; i < prev_points_.size(); i++)
 		{
 			if( !status[i] )
+			{
 				continue;
+			}
 			cv::Point2f p,q;
 			p.x = (int)prev_points_[i].x;		p.y = (int)prev_points_[i].y;
 			q.x = (int)current_points_[i].x;	q.y = (int)current_points_[i].y;
-
-			if (current_points_[i].x > (previous_centroid_x_/current_points_.size() + matched_detection_.width)
-				|| current_points_[i].x < (previous_centroid_x_/current_points_.size() - matched_detection_.width)
-				|| current_points_[i].y > (previous_centroid_y_/current_points_.size() + matched_detection_.height)
-				|| current_points_[i].y < (previous_centroid_y_/current_points_.size() - matched_detection_.height)
-				)
-			{
-				status[i]= false;						//if current point is out of the threshold(width and height of the initial detection) do not count
-				continue;
-			}
 
 			sum_y = p.y-q.y;
 			sum_x = p.x -q.x;
@@ -166,26 +160,45 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 
 		frame_count_++;
 	}
+	if (current_points_.size()<=0)
+		return in_image;
+
 	cv::Rect obj_rect;
-	GetRectFromPoints(current_points_, obj_rect);
+	cv::Point centroid(current_centroid_x_/current_points_.size(), current_centroid_y_/current_points_.size());
+
+	int valid_points = GetRectFromPoints(current_points_,
+						centroid,
+						matched_detection_,
+						obj_rect);
+
+	if (obj_rect.width <= matched_detection_.width*0.2 ||
+			obj_rect.height <= matched_detection_.height*0.2)
+	{
+		std::cout << "TRACK STOPPED" << std::endl;
+		prev_points_.clear();
+		current_points_.clear();
+		return in_image;
+	}
+
+
+	cv::rectangle(in_image, obj_rect, cv::Scalar(0,0,255), 2);
+
+	std::cout << "i_w>" << matched_detection_.width << "i_h>" << matched_detection_.height;
+	std::cout << "b_w>" << obj_rect.width << "b_h>" << obj_rect.height << std::endl;
 
 	if (prev_points_.size() > 0 )
 	{
 		cv::Point center_point = cv::Point(obj_rect.x + obj_rect.width/2, obj_rect.y + obj_rect.height/2);
-
 		cv::Point direction_point;
 		float sum_angle = atan2(sum_y, sum_x);
+
 		direction_point.x = (center_point.x - 100 * cos(sum_angle));
 		direction_point.y = (center_point.y - 100 * sin(sum_angle));
 
 		ArrowedLine(in_image, center_point, direction_point, cv::Scalar(0,0,255), 2);
-	}
-	cv::rectangle(in_image, obj_rect, cv::Scalar(0,0,255), 2);
 
-	if (current_points_.size() > 0)
-	{
-		cv::circle(in_image, cv::Point(current_centroid_x_/current_points_.size(), current_centroid_y_/current_points_.size()), 4 , cv::Scalar(0,0,255), 2);
-		cv::circle(in_image, cv::Point(current_centroid_x_/current_points_.size(), current_centroid_y_/current_points_.size()), 2 , cv::Scalar(0,0,255), 2);
+		cv::circle(in_image, center_point, 4 , cv::Scalar(0,0,255), 2);
+		cv::circle(in_image, center_point, 2 , cv::Scalar(0,0,255), 2);
 	}
 
 	//imshow("KLT debug", in_image);
@@ -203,34 +216,60 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 	return in_image;
 }
 
-void LkTracker::GetRectFromPoints(std::vector< cv::Point2f > in_corners_points, cv::Rect& out_boundingbox)
+int LkTracker::GetRectFromPoints(std::vector< cv::Point2f > in_corners_points, cv::Point in_centroid, cv::Rect in_initial_box, cv::Rect& out_boundingbox)
 {
+	int num_points = 0;
 	if (in_corners_points.empty())
-		return;
+		return num_points;
 
 	int min_x=in_corners_points[0].x, min_y=in_corners_points[0].y, max_x=in_corners_points[0].x, max_y=in_corners_points[0].y;
 
+	float top_x = in_centroid.x + in_initial_box.width/2;
+	float low_x = in_centroid.x - in_initial_box.width/2;
+	float top_y = in_centroid.y + in_initial_box.height/2;
+	float low_y = in_centroid.y - in_initial_box.height/2;
+
 	for (unsigned int i=0; i<in_corners_points.size(); i++)
 	{
-		if (in_corners_points[i].x > 0)
+		bool sum_point = true;
+		if (in_corners_points[i].x > 0 &&
+				(in_corners_points[i].x <= top_x) &&
+				(in_corners_points[i].x >= low_x) &&
+				(in_corners_points[i].y <= top_y) &&
+				(in_corners_points[i].y >= low_y)
+			)
 		{
 			if (in_corners_points[i].x < min_x)
 				min_x = in_corners_points[i].x;
 			if (in_corners_points[i].x > max_x)
 				max_x = in_corners_points[i].x;
 		}
-		if (in_corners_points[i].y > 0)
+		else
+			sum_point = false;
+
+		if (in_corners_points[i].y > 0 &&
+				(in_corners_points[i].x <= top_x) &&
+				(in_corners_points[i].x >= low_x) &&
+				(in_corners_points[i].y <= top_y) &&
+				(in_corners_points[i].y >= low_y)
+			)
 		{
 			if (in_corners_points[i].y < min_y)
 				min_y = in_corners_points[i].y;
 			if (in_corners_points[i].y > max_y)
 				max_y = in_corners_points[i].y;
 		}
+		else
+			sum_point = false;
+
+		if (sum_point)
+			num_points++;
 	}
 	out_boundingbox.x 		= min_x;
 	out_boundingbox.y 		= min_y;
 	out_boundingbox.width 	= max_x - min_x;
 	out_boundingbox.height 	= max_y - min_y;
 
+	return num_points;
 }
 
