@@ -9,6 +9,11 @@ if [[ -d devel ]]; then
     rm -rf devel
 fi
 
+if [[ ! -e depends/devel/setup.bash ]]; then
+    (cd depends/src && catkin_init_workspace && cd .. && catkin_make)
+fi
+source depends/devel/setup.bash
+
 catkin_make clean
 source devel/setup.bash
 
