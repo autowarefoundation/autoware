@@ -37,30 +37,21 @@ Open-source software for urban autonomous driving. The following functions are s
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-velodyne-pointcloud
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev
 ```
+
+**NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
+
 
 ### Install dependencies for Ubuntu 13.10 indigo and Ubuntu 13.04 hydro
 
 ```
-% sudo apt-get install ros-hydro-desktop-full ros-hydro-nmea-msgs ros-hydro-sound-play ros-hydro-velodyne-pointcloud
-% sudo apt-get install libnlopt-dev freeglut3-dev libssh2-1-dev libarmadillo-dev
+% sudo apt-get install ros-hydro-desktop-full ros-hydro-nmea-msgs ros-hydro-sound-play
+% sudo apt-get install libnlopt-dev freeglut3-dev libssh2-1-dev libarmadillo-dev libpcap-dev
 ```
 
-### Install Velodyne Driver dependencies 
-```
-% sudo apt-get install libpcap-dev
-% mkdir -p ~/ros_drivers/src
-% cd ~/ros_drivers/src 
-% catkin_init_workspace
-% git clone https://github.com/ros-drivers/velodyne.git
-% cd ~/ros_drivers 
-% catkin_make
-% source devel/setup.bash
-```
-
-You cannot build **Autoware/ros** source code with those OpenCV and Qt5 packages,
+You cannot not build **Autoware/ros** source code with those OpenCV and Qt5 packages,
 because they are too old. So you have to install newer versions of OpenCV and Qt5.
 
 #### Install OpenCV
@@ -108,7 +99,7 @@ First you have to install Qt5 dependencies.
 
 ```
 $ cd $HOME
-$ git clone https://github.com/CPFL/Autoware.git
+$ git clone --recursive https://github.com/CPFL/Autoware.git
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
 $ cd ../

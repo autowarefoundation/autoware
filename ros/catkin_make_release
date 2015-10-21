@@ -9,6 +9,22 @@ if [[ -d devel ]]; then
     rm -rf devel
 fi
 
+if [[ ! -f depends/src/velodyne/velodyne/.git ]]; then
+    (cd .. && git submodule init && git submodule update)
+fi
+
+if [[ ! -e depends/devel/setup.bash ]]; then
+    cwd=$PWD
+    cd depends/src
+    if [[ ! -e CMakeLists.txt ]]; then
+       catkin_init_workspace
+    fi
+
+    (cd .. && catkin_make $@)
+    cd $cwd
+fi
+source depends/devel/setup.bash
+
 catkin_make clean
 source devel/setup.bash
 
