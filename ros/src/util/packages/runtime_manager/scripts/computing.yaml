@@ -904,15 +904,23 @@ params :
       path_type : save
       v         : ''
       cmd_param :
-        only_enable : True
         var_name    : save_finename
+        dash        : ''
+        delim       : ':='
+    - name  : velocity_source
+      kind  : radio_box
+      choices:
+      - None
+      - ZMP CAN
+      - NDT
+      v     : 0
+      cmd_param :
         dash        : ''
         delim       : ':='
     - name      : interval
       label     : Interval
       v         : 4.0
       cmd_param :
-        only_enable : True
         dash        : ''
         delim       : ':='
 

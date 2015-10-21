@@ -32,206 +32,216 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <vehicle_socket/CanInfo.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <std_msgs/Float32.h>
+
 #include <fstream>
-#include <sstream>
-#include <cfloat>
 
-#define NSEC_TO_SEC 0.000000001
-#define LOOP_RATE 10
+#include "vehicle_socket/CanInfo.h"
+#include "waypoint_follower/libwaypoint_follower.h"
 
-static bool receive_once = false;
-static bool _can_info_set = false;
-static bool _pose_set = false;
-static geometry_msgs::Point _current_pose;
-static double _current_velocity;
-static int _pose_time_sec;
-static int _pose_time_nsec;
-static int _can_time_sec;
-static int _can_time_nsec;
+static const int SYNC_FRAMES = 10;
+static const int ZMP_CAN = 1;
+static const int NDT = 2;
 
-static ros::Publisher _waypoint_pub;
-static ros::Publisher _waypoint_velocity_pub;
+typedef message_filters::sync_policies::ApproximateTime<vehicle_socket::CanInfo, geometry_msgs::PoseStamped> CaninfoPoseSync;
+typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::TwistStamped, geometry_msgs::PoseStamped> TwistPoseSync;
 
-static bool IsNearlyZero(geometry_msgs::Point pose)
+class WaypointSaver
 {
+public:
+  WaypointSaver();
+  ~WaypointSaver();
 
-    double abs_x = fabs(pose.x);
-    double abs_y = fabs(pose.y);
-    double abs_z = fabs(pose.z);
+private:
 
-    if (abs_x < DBL_MIN * 100 && abs_y < DBL_MIN * 100 && abs_z < DBL_MIN * 100)
-        return true;
-    else
-        return false;
+  //functions
+  void CaninfoPoseCallback(const vehicle_socket::CanInfoConstPtr &can_msg, const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
+  void TwistPoseCallback(const geometry_msgs::TwistStampedConstPtr &twist_msg, const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
+  void FloatPoseCallback(const std_msgs::Float32ConstPtr &float_msg, const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
+  void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
+  void displayMarker(geometry_msgs::Pose pose, double velocity) const;
+  void outputProcessing(geometry_msgs::Pose current_pose , double velocity) const;
 
-}
+  //handle
+  ros::NodeHandle nh_;
+  ros::NodeHandle private_nh_;
 
-static void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &info)
+  //publisher
+  ros::Publisher waypoint_saver_pub_;
+
+  //subscriber
+  message_filters::Subscriber<vehicle_socket::CanInfo> *zmp_can_sub_;
+ // message_filters::Subscriber<geometry_msgs::TwistStamped> *ndt_estimated_sub_;
+  message_filters::Subscriber<geometry_msgs::TwistStamped> *ndt_estimated_sub_;
+  message_filters::Subscriber<geometry_msgs::PoseStamped> *pose_sub_;
+  message_filters::Synchronizer<CaninfoPoseSync> *sync_cp_;
+  message_filters::Synchronizer<TwistPoseSync> *sync_tp_;
+
+  //variables
+  int velocity_source_; //0 : none , 1 : ZMP CAN , 2 : kvaser ,3 : NDT
+  double interval_;
+  std::string filename_, pose_topic_;
+};
+
+WaypointSaver::WaypointSaver() :
+    private_nh_("~")
 {
-    _current_velocity = info->speed;
-    _can_time_sec = info->header.stamp.sec;
-    _can_time_nsec = info->header.stamp.nsec;
-    _can_info_set = true;
+  //parameter settings
+  private_nh_.param<std::string>("save_filename", filename_, std::string("data.txt"));
+  private_nh_.param<std::string>("pose_topic", pose_topic_, std::string("current_pose"));
+  private_nh_.param<double>("interval", interval_, 1.0);
+  private_nh_.param<int>("velocity_source", velocity_source_,0);
+
+  //subscriber
+  pose_sub_ = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, pose_topic_, 50);
+
+  if (velocity_source_ == ZMP_CAN) // ZMP CAN
+  {
+    zmp_can_sub_ = new message_filters::Subscriber<vehicle_socket::CanInfo>(nh_, "can_info", 1);
+    sync_cp_ = new message_filters::Synchronizer<CaninfoPoseSync>(CaninfoPoseSync(SYNC_FRAMES), *zmp_can_sub_,
+        *pose_sub_);
+    sync_cp_->registerCallback(boost::bind(&WaypointSaver::CaninfoPoseCallback, this, _1, _2));
+  }
+  else if(velocity_source_ == NDT){
+    ndt_estimated_sub_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(nh_, "estimate_twist", 50);
+
+       sync_tp_ = new message_filters::Synchronizer<TwistPoseSync>(TwistPoseSync(SYNC_FRAMES), *ndt_estimated_sub_,
+           *pose_sub_);
+      sync_tp_->registerCallback(boost::bind(&WaypointSaver::TwistPoseCallback, this, _1, _2));
+
+  }
+  else
+  {
+    pose_sub_->registerCallback(boost::bind(&WaypointSaver::poseCallback, this, _1));
+  }
+
+  //publisher
+  waypoint_saver_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("waypoint_saver_marker", 10, true);
+
 }
 
-static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &pose)
+WaypointSaver::~WaypointSaver()
 {
-    _current_pose = pose->pose.position;
-    _pose_time_sec = pose->header.stamp.sec;
-    _pose_time_nsec = pose->header.stamp.nsec;
-    _pose_set = true;
+  delete zmp_can_sub_;
+  delete ndt_estimated_sub_;
+  delete pose_sub_;
+  delete sync_tp_;
+  delete sync_cp_;
 }
 
-static void DisplaySavedWaypoint(){
-
-    static visualization_msgs::Marker marker;
-    marker.header.frame_id = "map";
-    marker.header.stamp = ros::Time();
-    marker.ns = "lane_waypoint";
-    marker.type = visualization_msgs::Marker::SPHERE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 0.5;
-    marker.scale.y = 0.5;
-    marker.scale.z = 0.5;
-    marker.color.a = 1.0;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
-    marker.frame_locked = true;
-
-    marker.points.push_back(_current_pose);
-   _waypoint_pub.publish(marker);
-
+void WaypointSaver::poseCallback (
+  const geometry_msgs::PoseStampedConstPtr &pose_msg) const
+{
+  outputProcessing(pose_msg->pose,0);
 }
 
-static void DisplayWaypointVelocity(){
+void WaypointSaver::CaninfoPoseCallback(const vehicle_socket::CanInfoConstPtr &can_msg,
+  const geometry_msgs::PoseStampedConstPtr &pose_msg) const
+{
+  outputProcessing(pose_msg->pose,can_msg->speed);
+}
 
-    static int id = 0;
-    static visualization_msgs::MarkerArray marker_array;
-    visualization_msgs::Marker tmp_marker;
-    tmp_marker.header.frame_id = "map";
-    tmp_marker.header.stamp = ros::Time();
-    tmp_marker.ns = "waypoint_velocity";
-    tmp_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    tmp_marker.action = visualization_msgs::Marker::ADD;
-    tmp_marker.scale.z = 0.4;
-    tmp_marker.color.a = 1.0;
-    tmp_marker.color.r = 1.0;
+void WaypointSaver::TwistPoseCallback(const geometry_msgs::TwistStampedConstPtr &twist_msg,
+  const geometry_msgs::PoseStampedConstPtr &pose_msg) const
+{
+  outputProcessing(pose_msg->pose,mps2kmph(twist_msg->twist.linear.x));
+}
 
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2) << _current_velocity << " km/h";
-    tmp_marker.text = oss.str();
+void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose , double velocity) const{
 
-    //C++11 version
-    //std::string velocity = std::to_string(test_pose.velocity_kmh);
-    //velocity.erase(velocity.find_first_of(".") + 3);
-    //std::string kmh = " km/h";
-    //std::string text = velocity + kmh;
-    //marker.text = text;
+  std::ofstream ofs(filename_.c_str(), std::ios::app);
+  static geometry_msgs::Pose previous_pose;
+  static bool receive_once = false;
+  //first subscribe
+  if (!receive_once)
+  {
 
-    tmp_marker.id = id;
-    tmp_marker.pose.position.x = _current_pose.x;
-    tmp_marker.pose.position.y = _current_pose.y;
-    tmp_marker.pose.position.z = _current_pose.z + 0.2;
+    ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
+        << current_pose.position.z << std::endl;
+    receive_once = true;
+    displayMarker(current_pose, 0);
+    previous_pose = current_pose;
 
-    marker_array.markers.push_back(tmp_marker);
-    _waypoint_velocity_pub.publish(marker_array);
-    id++;
+  }
+  else
+  {
+
+    double distance = sqrt(
+        pow((current_pose.position.x - previous_pose.position.x), 2)
+            + pow((current_pose.position.y - previous_pose.position.y), 2));
+
+    //if car moves [interval] meter
+    if (distance > interval_)
+    {
+      ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
+          << current_pose.position.z << "," << velocity << std::endl;
+
+      displayMarker(current_pose, velocity);
+      previous_pose = current_pose;
+
+    }
+  }
+}
+
+
+void WaypointSaver::displayMarker(geometry_msgs::Pose pose, double velocity) const
+{
+  static visualization_msgs::MarkerArray marray;
+  static int id = 0;
+
+  //initialize marker
+  visualization_msgs::Marker marker;
+  marker.id = id;
+  marker.header.frame_id = "map";
+  marker.header.stamp = ros::Time();
+  marker.frame_locked = true;
+
+  //create saved waypoint marker
+  marker.scale.x = 0.5;
+  marker.scale.y = 0.5;
+  marker.scale.z = 0.5;
+  marker.color.a = 1.0;
+  marker.color.r = 0.0;
+  marker.color.g = 1.0;
+  marker.color.b = 0.0;
+  marker.ns = "saved_waypoint";
+  marker.type = visualization_msgs::Marker::SPHERE;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.pose = pose;
+  marray.markers.push_back(marker);
+
+  //create saved waypoint velocity text
+  marker.scale.z = 0.4;
+  marker.color.a = 1.0;
+  marker.color.r = 1.0;
+  marker.ns = "saved_waypoint_velocity";
+  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  marker.action = visualization_msgs::Marker::ADD;
+  std::ostringstream oss;
+  oss << std::fixed << std::setprecision(2) << velocity << " km/h";
+  marker.text = oss.str();
+
+  //C++11 version
+  //std::string velocity_str = std::to_string(velocity);
+  //velocity.erase(velocity_str.find_first_of(".") + 3);
+  //std::string kmh = " km/h";
+  //std::string text = velocity + kmh;
+  //marker.text = text;
+  marray.markers.push_back(marker);
+
+  waypoint_saver_pub_.publish(marray);
+  id++;
 
 }
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "waypoint_saver");
-
-    ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~");
-    geometry_msgs::Point prev_pose;
-    std::ofstream ofs;
-    double interval = 1.0;
-    std::string filename = "";
-
-    ros::Subscriber ndt_pose_sub = nh.subscribe("current_pose", 10, NDTCallback);
-    ros::Subscriber can_info_sub = nh.subscribe("can_info", 10, CanInfoCallback);
-
-    _waypoint_pub = nh.advertise<visualization_msgs::Marker>("waypoint_mark", 10, true);
-    _waypoint_velocity_pub = nh.advertise<visualization_msgs::MarkerArray>("waypoint_velocity", 10, true);
-
-
-
-    private_nh.getParam("interval", interval);
-    std::cout << "interval = " << interval << std::endl;
-
-    if (private_nh.getParam("save_filename", filename) == false) {
-        std::cout << "error! usage : rosrun waypoint_maker waypoint_saver _interval:=[value] _save_filename:=\"[save file]\"" << std::endl;
-        exit(-1);
-    }
-
-    ofs.open(filename.c_str());
-    ros::Rate loop_rate(LOOP_RATE);
-    while (ros::ok()) {
-        ros::spinOnce();
-
-        if (_pose_set == false) {
-            std::cout << "topic waiting..." << std::endl;
-            continue;
-        }
-
-        if (IsNearlyZero(_current_pose) == true)
-            continue;
-
-        if (receive_once != true) {
-
-            ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << std::endl;
-            receive_once = true;
-            DisplaySavedWaypoint();
-            prev_pose = _current_pose;
-
-        } else {
-
-            std::cout << "current_pose : " << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << std::endl;
-            std::cout << "prev_pose : " << prev_pose.x << "," << prev_pose.y << "," << prev_pose.z << std::endl;
-
-            double distance = sqrt(pow((_current_pose.x - prev_pose.x), 2) + pow((_current_pose.y - prev_pose.y), 2));
-            std::cout << "distance = " << distance << std::endl;
-
-            //if car moves [interval] meter
-            if (distance > interval) {
-
-                if (_can_info_set == true) {
-
-                    std::cout << "can_time_sec = " << _can_time_sec << std::endl;
-                    std::cout << "pose_time_sec = " << _pose_time_sec << std::endl;
-                    std::cout << "can_time_nsec = " << _can_time_nsec << std::endl;
-                    std::cout << "pose_time_nsec = " << _pose_time_nsec << std::endl;
-                    std::cout << "nsec sub = " << fabs(_can_time_nsec - _pose_time_nsec) * NSEC_TO_SEC << std::endl;
-
-                    //if time lag is less than 1 second
-                    if (_can_time_sec == _pose_time_sec && fabs(_can_time_nsec - _pose_time_nsec) * NSEC_TO_SEC < 1) {
-
-                        ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << "," << _current_velocity << std::endl;
-
-                        DisplaySavedWaypoint();
-                        DisplayWaypointVelocity();
-                        prev_pose = _current_pose;
-
-                    }
-
-                } else {
-
-                    ofs << std::fixed << std::setprecision(4) << _current_pose.x << "," << _current_pose.y << "," << _current_pose.z << "," << 0 << std::endl;
-
-                    DisplaySavedWaypoint();
-                    DisplayWaypointVelocity();
-                    prev_pose = _current_pose;
-
-                }
-
-            }
-            loop_rate.sleep();
-        }
-    }
-
-    return 0;
+  ros::init(argc, argv, "waypoint_saver");
+  WaypointSaver ws;
+  ros::spin();
+  return 0;
 }
+

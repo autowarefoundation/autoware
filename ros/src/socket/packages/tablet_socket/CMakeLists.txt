@@ -7,6 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
   vehicle_socket
   ndt_localizer
   message_generation
+  tf
+  gnss
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -27,11 +29,17 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS vehicle_socket ndt_localizer
+  CATKIN_DEPENDS vehicle_socket ndt_localizer tf
+  DEPENDS gnss
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(tablet_receiver nodes/tablet_receiver/tablet_receiver.cpp)
-target_link_libraries(tablet_receiver ${catkin_LIBRARIES})
+target_link_libraries(tablet_receiver gnss ${catkin_LIBRARIES})
 add_dependencies(tablet_receiver tablet_socket_generate_messages_cpp)
 
 add_executable(tablet_sender nodes/tablet_sender/tablet_sender.cpp)
