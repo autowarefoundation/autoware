@@ -14,7 +14,14 @@ if [[ ! -f depends/src/velodyne/velodyne/.git ]]; then
 fi
 
 if [[ ! -e depends/devel/setup.bash ]]; then
-    (cd depends/src && catkin_init_workspace && cd .. && catkin_make)
+    cwd=$PWD
+    cd depends/src
+    if [[ ! -e CMakeLists.txt ]]; then
+       catkin_init_workspace
+    fi
+
+    (cd .. && catkin_make)
+    cd $cwd
 fi
 source depends/devel/setup.bash
 
