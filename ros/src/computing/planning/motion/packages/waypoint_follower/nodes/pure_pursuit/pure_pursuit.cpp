@@ -523,7 +523,7 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
     //ROS_INFO("target2 : ( %lf , %lf , %lf)", target2.x, target2.y, target2.z);
     displayLinePoint(slope, intercept, target1, target2, h); //debug tool
 
-    if (calcRelativeCoordinate(target1, _current_pose.pose).x > 0)
+   /* if (calcRelativeCoordinate(target1, _current_pose.pose).x > 0)
     {
       //ROS_INFO("result : target1");
       *next_target = target1;
@@ -531,6 +531,26 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
     }
     else if (calcRelativeCoordinate(target2, _current_pose.pose).x > 0)
     {
+      //ROS_INFO("result : target2");
+      *next_target = target2;
+      return true;
+    }
+    else
+    {
+      //ROS_INFO("result : false ");
+      return false;
+    }*/
+
+    double interval = getPlaneDistance(end,start);
+    if (getPlaneDistance(target1, end) < interval)
+    {
+      //ROS_INFO("result : target1");
+      *next_target = target1;
+      return true;
+    }
+    else if (getPlaneDistance(target2, end) < interval)
+    {
+
       //ROS_INFO("result : target2");
       *next_target = target2;
       return true;
