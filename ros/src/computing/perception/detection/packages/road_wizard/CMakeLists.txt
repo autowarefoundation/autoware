@@ -36,7 +36,7 @@ catkin_package(
   CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ###########
 ## Build ##
