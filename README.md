@@ -28,13 +28,13 @@ Open-source software for urban autonomous driving. The following functions are s
 ## Requirements
 
 - ROS indigo(Ubuntu 14.04) or ROS jade(Ubuntu 15.04)
-- OpenCV 2.4.8 or higher
+- OpenCV 2.4.8 or higher **NOTE: Autoware does not support OpenCV 3. Please use OpenCV 2**
 - Qt 5.2.1 or higher
 - CUDA(Optional)
 - FlyCapture2(optional)
 - Armadillo
 
-**NOTE: Autoware does not support OpenCV 3. Please use OpenCV 2**
+**Please use checkout revision before 2015/OCT/21 if you use Autoware on ROS hydro or Ubuntu 13.04, 13.10.**
 
 ### Install dependencies for Ubuntu 14.04 indigo
 
