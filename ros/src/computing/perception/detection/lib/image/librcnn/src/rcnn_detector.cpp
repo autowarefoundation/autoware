@@ -396,12 +396,10 @@ void RcnnDetector::Sort(const std::vector<float> in_scores, std::vector<unsigned
 		{
 			if (in_scores[in_out_indices[j]] > in_scores[in_out_indices[i]])
 			{
-				//float x_tmp = x[i];
-				int index_tmp = in_out_indices[i];
-				//x[i] = x[j];
+				std::swap(in_out_indices[i], in_out_indices[j]);
+				/*int index_tmp = in_out_indices[i];
 				in_out_indices[i] = in_out_indices[j];
-				//x[j] = x_tmp;
-				in_out_indices[j] = index_tmp;
+				in_out_indices[j] = index_tmp;*/
 			}
 		}
 }

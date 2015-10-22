@@ -19,55 +19,33 @@ public:
 		return out.str();
 	}
 	inline std::string GetClassString()
+	{
+		switch (class_type)
 		{
-			switch (class_type)
-			{
-				case 0:
-					return "nothing";
-				case 1:
-					return "plane";
-				case 2:
-					return "bicycle";
-				case 3:
-					return "bird";
-				case 4:
-					return "boat";
-				case 5:
-					return "bottle";
-				case 6:
-					return "bus";
-				case 7:
-					return "car";
-				case 8:
-					return "cat";
-				case 9:
-					return "chair";
-				case 10:
-					return "cow";
-				case 11:
-					return "table";
-				case 12:
-					return "dog";
-				case 13:
-					return "horse";
-				case 14:
-					return "motorbike";
-				case 15:
-					return "person";
-				case 16:
-					return "plant";
-				case 17:
-					return "sheep";
-				case 18:
-					return "sofa";
-				case 19:
-					return "train";
-				case 20:
-					return "tv";
-				default:
-					return "error";
-			}
+			case 0: return "nothing";
+			case 1: return "plane";
+			case 2: return "bicycle";
+			case 3: return "bird";
+			case 4: return "boat";
+			case 5: return "bottle";
+			case 6: return "bus";
+			case 7: return "car";
+			case 8: return "cat";
+			case 9: return "chair";
+			case 10:return "cow";
+			case 11:return "table";
+			case 12:return "dog";
+			case 13:return "horse";
+			case 14:return "motorbike";
+			case 15:return "person";
+			case 16:return "plant";
+			case 17:return "sheep";
+			case 18:return "sofa";
+			case 19:return "train";
+			case 20:return "tv";
+			default:return "error";
 		}
+	}
 };
 
 
