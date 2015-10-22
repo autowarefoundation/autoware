@@ -60,7 +60,12 @@ private:
 	std::string sshpubkey_;
 	std::string sshprivatekey_;
 	int sshport_;
+	LIBSSH2_SESSION *session;
+	LIBSSH2_CHANNEL *channel;
 #endif
+	int sock;
+	bool connected;
+	struct sockaddr_in server;
 
 public:
 	SendData();
@@ -71,13 +76,6 @@ public:
 	int Sender(const std::string& value, std::string& res, int insert_num);
 	int ConnectDB();
 	int DisconnectDB(const char *msg);
-	int sock;
-	bool connected;
-	struct sockaddr_in server;
-#ifdef USE_LIBSSH2
-	LIBSSH2_SESSION *session;
-	LIBSSH2_CHANNEL *channel;
-#endif
 };
 
 extern std::string make_header(int32_t sql_inst, int32_t sql_num);
