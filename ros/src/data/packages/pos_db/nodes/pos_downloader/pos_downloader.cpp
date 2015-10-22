@@ -61,7 +61,7 @@ publish data as ractangular plane
 #define DELAYSEC	(0)		// delay sec for pos_uploader
 #define POSUP_DZ	(40)		// z offset of PosUp
 #define PEDESTRIAN_DZ	(-2)		// z offset of pedestrian_pose
-#define DOWNLOAD_PERIOD	(500)		// period (msec)
+#define DOWNLOAD_PERIOD	(250)		// period (msec)
 #define TOTAL_LIFETIME	(10.0)		// total lifetime (sec)
 
 #define TYPE_OWN	(1)
@@ -80,7 +80,7 @@ static string sshprivatekey;
 static int ssh_port;
 static string sshtunnelhost;
 static int sleep_msec = DOWNLOAD_PERIOD;	// period
-static double life_time = 2*DOWNLOAD_PERIOD/1000.0; // sec
+static double life_time = 4*DOWNLOAD_PERIOD/1000.0; // sec
 static double posup_dz;
 static double pedestrian_dz;
 
@@ -126,6 +126,7 @@ static std::vector<std::string> split(const string& input, char delimiter)
 
 static void dbg_out_marker(visualization_msgs::Marker marker)
 {
+#ifdef POS_DB_VERBOSE
   std::cout << marker.id << " : "
 	<< marker.pose.position.x << ","
 	<< marker.pose.position.y << ","
@@ -134,6 +135,7 @@ static void dbg_out_marker(visualization_msgs::Marker marker)
 	<< marker.pose.orientation.y << ","
 	<< marker.pose.orientation.z << ","
 	<< marker.pose.orientation.w << std::endl;
+#endif /* POS_DB_VERBOSE */
 }
 
 static void publish_car(int id, int is_current, ros::Time now,
@@ -472,7 +474,9 @@ static void send_sql(time_t diff_sec)
   if (ret < 0) {
     std::cerr << "sd.Sender() failed" << std::endl;
   } else {
+#ifdef POS_DB_VERBOSE
     std::cout << "return data: \"" << db_response << "\"" << std::endl;
+#endif /* POS_DB_VERBOSE */
     msg.data = db_response.c_str();
     marker_publisher(msg, 1);
   }
@@ -485,7 +489,9 @@ static void* intervalCall(void *unused)
 
   if (args[0] != 0)
     diff_sec += ros::Time::now().toSec() - args[0];
+#ifdef POS_DB_VERBOSE
   cout << "diff=" << diff_sec << endl;
+#endif /* POS_DB_VERBOSE */
 
   while (1) {
     send_sql((time_t)diff_sec);

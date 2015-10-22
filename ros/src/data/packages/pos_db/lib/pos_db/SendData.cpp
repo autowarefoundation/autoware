@@ -122,12 +122,14 @@ int SendData::ConnectDB()
 		// the case of connection failed
 		if (*addrptr == nullptr) {
 			perror("connect");
+			close(sock);
 			return -1;
 		}
 	} else {
 		if (connect(sock,
 			    (struct sockaddr *)&server, sizeof(server)) != 0) {
 			perror("connect");
+			close(sock);
 			return -1;
 		}
 	}
@@ -141,6 +143,7 @@ int SendData::ConnectDB()
 	r = libssh2_session_handshake(session, sock);
 	if (r) {
 		fprintf(stderr, "libssh2_session_handshake failed (%d)\n", r);
+		libssh2_session_free(session);
 		close(sock);
 		return -2;
 	}
@@ -173,19 +176,21 @@ int SendData::DisconnectDB(const char *msg)
 			else
 				libssh2_session_disconnect(session, msg);
 			libssh2_session_free(session);
+			session = NULL;
 		}
 #endif
 		close(sock);
+		sock = -1;
 		connected = false;
 	}
 
 	return 0;
 }
 
-static int count_line(char *buf)
+static int count_line(const char *buf)
 {
 	int ret = 0;
-	char *p;
+	const char *p;
 
 	for (p = buf; *p; p++)
 		ret += (*p == '\n') ? 1:0;
@@ -193,7 +198,7 @@ static int count_line(char *buf)
 	return ret;
 }
 
-int SendData::Sender(const std::string& value, std::string& res, int insert_num) 
+int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 {
 	/*********************************************
 	   format data to send
@@ -201,9 +206,11 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 	char recvdata[1024];
 	int n;
 	char *cvalue;
+#ifndef USE_LIBSSH2
 	int maxfd;
 	fd_set readfds, writefds;
 	struct timeval timeout;
+#endif /* !USE_LIBSSH2 */
 
 	if(!connected) {
 		std::cout << "There is no connection to the database, sock=" << sock << std::endl;
@@ -213,14 +220,22 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 	}
 
 #ifdef USE_LIBSSH2
+	long oldtoutmsec = libssh2_session_get_timeout(session);
+	libssh2_session_set_timeout(session, TIMEOUT_SEC*1000);
+	std::cout << "timeout set " << oldtoutmsec << "msec to "
+		<< TIMEOUT_SEC*1000 << "msec" << std::endl;
+	time_t t1 = time(NULL);
 	channel = libssh2_channel_direct_tcpip_ex(session,
 			sshtunnelhost_.c_str(), port_,
 			host_name_.c_str(), sshport_);
+	time_t t2 = time(NULL);
 	if (channel == NULL) {
-		fprintf(stderr, "libssh2_channel_direct_tcpip_ex failed\n");
+		std::cerr << "libssh2_channel_direct_tcpip_ex failed, diff="
+			<< t2-t1 << std::endl;
 		DisconnectDB("tunnel failed");
 		return -2;
 	}
+	std::cout << "channel done, diff=" << t2-t1 << ", time=" << t2 << std::endl;
 	libssh2_channel_flush(channel);
 #endif /* USE_LIBSSH2 */
 
@@ -229,87 +244,114 @@ int SendData::Sender(const std::string& value, std::string& res, int insert_num)
 		return -1;
 	}
 
-	//    printf("send data : %s\n",value.c_str());
+#ifdef POS_DB_VERBOSE
 	std::cout << "send data : \"" << value.substr(POS_DB_HEAD_LEN) << "\"" << std::endl;
+#endif /* POS_DB_VERBOSE */
 
+	cvalue = (char *)alloca(value.size());
+	memcpy(cvalue, value.c_str(), value.size());
+	for (int i=0; i<POS_DB_HEAD_LEN; i++)
+		cvalue[i] &= 0x7f; // TODO: see make_header()
+#ifdef USE_LIBSSH2
+	n = libssh2_channel_write(channel, cvalue, value.size());
+#else /* USE_LIBSSH2 */
 	FD_ZERO(&readfds);
 	FD_ZERO(&writefds);
-	FD_SET(sock, &readfds);
 	FD_SET(sock, &writefds);
 	maxfd = sock;
 	timeout.tv_sec = TIMEOUT_SEC; timeout.tv_usec = 0;
 	select(maxfd+1, NULL, &writefds, NULL, &timeout);
 	if(FD_ISSET(sock, &writefds)) {
-		cvalue = (char *)alloca(value.size());
-		memcpy(cvalue, value.c_str(), value.size());
-		for (int i=0; i<POS_DB_HEAD_LEN; i++)
-			cvalue[i] &= 0x7f; // TODO: see make_header()
-#ifdef USE_LIBSSH2
-		n = libssh2_channel_write(channel, cvalue, value.size());
-#else /* USE_LIBSSH2 */
 		n = write(sock, cvalue, value.size());
-#endif /* USE_LIBSSH2 */
-		if (n < 0) {
-			perror("write");
-			return -1;
-		}
-		std::cout << "write return n=" << n << std::endl;
 	} else {
-		DisconnectDB("tunnel failed");
-		return -5;
+		n = 0;
 	}
+#endif /* USE_LIBSSH2 */
+	if (n < 0) {
+		perror("write");
+		DisconnectDB("tunnel failed");
+		return -1-n;
+	} else if (n == 0) {
+		std::cerr << "write timed out" << std::endl;
+		DisconnectDB("tunnel failed");
+		return -1-n;
+	}
+	std::cout << "write done, size=" << value.size() << ", n=" << n << std::endl;
 
 	//Caution : If server do not close in one communication,loop forever because read() do not return 0.
+	int len;
+#ifdef USE_LIBSSH2
+	n = libssh2_channel_read(channel, (char *)&len, sizeof(len));
+#else /* USE_LIBSSH2 */
 	timeout.tv_sec = TIMEOUT_SEC; timeout.tv_usec = 0;
+	FD_ZERO(&readfds);
+	FD_ZERO(&writefds);
+	FD_SET(sock, &readfds);
 	select(maxfd+1, &readfds, NULL, NULL, &timeout);
 	if(FD_ISSET(sock, &readfds)) {
-		int len;
-#ifdef USE_LIBSSH2
-		n = libssh2_channel_read(channel, (char *)&len, sizeof(len));
-#else /* USE_LIBSSH2 */
 		n = read(sock, (char *)&len, sizeof(len));
+	} else {
+		n = 0;
+	}
+#endif /* USE_LIBSSH2 */
+	if (n < 0) {
+		perror("read");
+		DisconnectDB("tunnel failed");
+		return -1-n;
+	} else if (n == 0) {
+		std::cerr << "read timed out" << std::endl;
+		DisconnectDB("tunnel failed");
+		return -1;
+	}
+	len = ntohl(len);
+	std::cerr << "read count done, len=" << len << std::endl;
+	if(len == insert_num) return 0;
+
+	for (int j = 0; j < len; ) {
+		memset(recvdata, 0, sizeof(recvdata));
+#ifdef USE_LIBSSH2
+		n = libssh2_channel_read(channel, recvdata, sizeof(recvdata)-1);
+#else /* USE_LIBSSH2 */
+		timeout.tv_sec = TIMEOUT_SEC; timeout.tv_usec = 0;
+		FD_ZERO(&readfds);
+		FD_ZERO(&writefds);
+		FD_SET(sock, &readfds);
+		select(maxfd+1, &readfds, NULL, NULL, &timeout);
+		if(FD_ISSET(sock, &readfds)) {
+			n = read(sock, recvdata, sizeof(recvdata)-1);
+		} else {
+			n = 0;
+		}
 #endif /* USE_LIBSSH2 */
 		if (n < 0) {
-			perror("recv error");
+			perror("read");
+			DisconnectDB("tunnel failed");
+			return -1-n;
+		} else if (n == 0) {
+			std::cerr << "read timed out" << std::endl;
+			DisconnectDB("tunnel failed");
 			return -1;
 		}
-		len = ntohl(len);
-		std::cerr << "recv len=" << len << std::endl;
-		if(len == insert_num) return 0;
+#ifdef POS_DB_VERBOSE
+		std::cerr << "read return n=" << n << std::endl;
+#endif /* POS_DB_VERBOSE */
 
-		for (int j = 0; j < len; ) {
-			memset(recvdata, 0, sizeof(recvdata));
-#ifdef USE_LIBSSH2
-			n = libssh2_channel_read(channel, recvdata, sizeof(recvdata)-1);
-#else /* USE_LIBSSH2 */
-			n = read(sock, recvdata, sizeof(recvdata)-1);
-#endif /* USE_LIBSSH2 */
-
-			if (n < 0) {
-				perror("recv error");
-				return -1;
-			} else if (n==0) {
-				break;
-			}
-			std::cout << "read return n=" << n << std::endl;
-
-			recvdata[n] = '\0';
-			int hlen = 0;
-			for (int i=0; i<n && hlen<4; i++, hlen++)
-				if(recvdata[i] == 0) recvdata[i] |= 0x80;
-			if (strlen(recvdata) >= sizeof(recvdata)) {
-				res.append(recvdata, sizeof(recvdata));
-			} else {
-				res.append(recvdata, strlen(recvdata));
-			}
-
-			j += count_line(recvdata);
-			std::cerr << "count_line=" << j << std::endl;
+		recvdata[n] = '\0';
+		int hlen = 0;
+		for (int i=0; i<n && hlen<4; i++, hlen++)
+			if(recvdata[i] == 0) recvdata[i] |= 0x80;
+		if (strlen(recvdata) >= sizeof(recvdata)) {
+			res.append(recvdata, sizeof(recvdata));
+		} else {
+			res.append(recvdata, strlen(recvdata));
 		}
-	} else {
-		DisconnectDB("tunnel failed");
-		return -5;
+
+		j = count_line(res.c_str());
+#ifdef POS_DB_VERBOSE
+		std::cerr << "count_line=" << j << std::endl;
+#endif /* POS_DB_VERBOSE */
 	}
+	std::cerr << "read data done, count_line=" << count_line(res.c_str()) << std::endl;
 
 #ifdef USE_LIBSSH2
 	if (channel) {
