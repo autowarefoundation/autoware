@@ -45,7 +45,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
 
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
