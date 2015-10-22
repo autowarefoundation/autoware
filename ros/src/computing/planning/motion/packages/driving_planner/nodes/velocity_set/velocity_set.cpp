@@ -238,7 +238,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
     std::cout << "changed_vel[" << num << "]: " << mps2kmph(changed_vel) << " (km/h)";
     std::cout << "   distance: " << (_obstacle_waypoint-num)*interval << " (m)";
     std::cout << "   current_vel: " << mps2kmph(_current_vel) << std::endl;
- 
+
     waypoint_follower::waypoint initial_waypoint = _path_dk.getCurrentWaypoints().waypoints[num];
     if (changed_vel > _velocity_limit || //
 	changed_vel > initial_waypoint.twist.twist.linear.x){ // avoid acceleration
@@ -446,7 +446,7 @@ static int vscanDetection(int closest_waypoint)
 	geometry_msgs::Point point = calcRelativeCoordinate(_path_dk.getWaypointPosition(i),
 							    _current_pose.pose);
 	tf::Vector3 tf_waypoint = point2vector(point);
-			
+
         tf_waypoint.setZ(0);
 
         int point_count = 0;
