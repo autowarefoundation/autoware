@@ -49,7 +49,7 @@
 
 static const int LOOP_RATE = 30; //Hz
 static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 2.0; // the next waypoint must be outside of this threshold.
-static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 4.0; // the next waypoint must be outside of this threshold.
+static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 6.0; // the next waypoint must be outside of this threshold.
 static const double EVALUATION_THRESHOLD = 1.0; //meter
 static const std::string MAP_FRAME = "map";
 static const int MODE_WAYPOINT = 0;
@@ -107,12 +107,17 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   {
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose;
+    
+    geometry_msgs::Point base_link_point;
+    base_link_point.x = -1.17;
+    _current_pose.pose.position =  calcAbsoluteCoordinate(base_link_point,_current_pose.pose);
     _pose_set = true;
   }
 }
 
 static void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+  if(!_sim_mode)
   _current_velocity = msg->twist.linear.x;
 }
 
@@ -658,17 +663,17 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
     }
 
     geometry_msgs::Point next_candidate;
-    if(!interpolateNextTarget(next_waypoint, lookahead_threshold, &next_candidate))
+    if(!interpolateNextTarget(next_waypoint, lookahead_threshold, next_target))
     	return false;
-
+    
     //if next candidate is nearer than previous target
-    if(getPlaneDistance(next_candidate,_current_pose.pose.position) < getPlaneDistance(prev_target,_current_pose.pose.position))
+    /*  if(getPlaneDistance(next_candidate,_current_pose.pose.position) < getPlaneDistance(prev_target,_current_pose.pose.position))
     	*next_target = prev_target;
     else
     	*next_target = next_candidate;
 
     prev_target = *next_target;
-
+    */
 #ifdef LOG
     std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
     ofs << _current_waypoints.getWaypointPosition(next_waypoint).x << " "
