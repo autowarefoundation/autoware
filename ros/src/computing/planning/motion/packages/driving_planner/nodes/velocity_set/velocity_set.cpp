@@ -52,6 +52,7 @@ static const int LOOP_RATE = 10;
 
 static geometry_msgs::TwistStamped _current_twist;
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
+static geometry_msgs::PoseStamped _sim_ndt_pose;
 static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
 static const std::string pedestrian_sound = "pedestrian";
@@ -238,7 +239,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
     std::cout << "changed_vel[" << num << "]: " << mps2kmph(changed_vel) << " (km/h)";
     std::cout << "   distance: " << (_obstacle_waypoint-num)*interval << " (m)";
     std::cout << "   current_vel: " << mps2kmph(_current_vel) << std::endl;
- 
+
     waypoint_follower::waypoint initial_waypoint = _path_dk.getCurrentWaypoints().waypoints[num];
     if (changed_vel > _velocity_limit || //
 	changed_vel > initial_waypoint.twist.twist.linear.x){ // avoid acceleration
@@ -333,8 +334,11 @@ static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  if (g_sim_mode)
+  if (g_sim_mode) {
+    _sim_ndt_pose.header = msg->header;
+    _sim_ndt_pose.pose = msg->pose;
     return;
+  }
 
         _current_pose.header = msg->header;
         _current_pose.pose = msg->pose;
@@ -443,10 +447,9 @@ static int vscanDetection(int closest_waypoint)
             return -1;
 
 	// waypoint seen by vehicle
-	geometry_msgs::Point point = calcRelativeCoordinate(_path_dk.getWaypointPosition(i),
-							    _current_pose.pose);
-	tf::Vector3 tf_waypoint = point2vector(point);
-			
+	geometry_msgs::Point waypoint = calcRelativeCoordinate(_path_dk.getWaypointPosition(i),
+							       _current_pose.pose);
+	tf::Vector3 tf_waypoint = point2vector(waypoint);
         tf_waypoint.setZ(0);
 
         int point_count = 0;
@@ -457,10 +460,17 @@ static int vscanDetection(int closest_waypoint)
 	      continue;
 	    }
 
-            tf::Vector3 point((double) item->x, (double) item->y, 0);
+	    tf::Vector3 vscan_vector((double) item->x, (double) item->y, 0);
+	    if (g_sim_mode) { // for simulation
+	      tf::Transform transform;
+	      tf::poseMsgToTF(_sim_ndt_pose.pose, transform);
+	      geometry_msgs::Point world2vscan = vector2point(transform * vscan_vector);
+	      vscan_vector = point2vector(calcRelativeCoordinate(world2vscan, _current_pose.pose));
+	      vscan_vector.setZ(0);
+	    }
 
 	    // 2D distance between waypoint and vscan points(obstacle)
-            double dt = tf::tfDistance(point, tf_waypoint);
+            double dt = tf::tfDistance(vscan_vector, tf_waypoint);
             if (dt < _detection_range) {
 	      vscan_point.x = item->x;
 	      vscan_point.y = item->y;
