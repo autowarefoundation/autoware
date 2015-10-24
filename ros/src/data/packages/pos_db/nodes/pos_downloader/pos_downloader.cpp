@@ -80,7 +80,7 @@ static string sshprivatekey;
 static int ssh_port;
 static string sshtunnelhost;
 static int sleep_msec = DOWNLOAD_PERIOD;	// period
-static double life_time = 4*DOWNLOAD_PERIOD/1000.0; // sec
+static double life_time = 1.0;			// sec
 static double posup_dz;
 static double pedestrian_dz;
 
@@ -94,6 +94,7 @@ static int ignore_my_pose = 1;
 #ifndef CURRENT_CAR_DIRECTLY
 static map<int, geometry_msgs::Pose> car_map;
 static map<int, ros::Time> now_map;
+static ros::Time prev_time;
 #endif /* ! CURRENT_CAR_DIRECTLY */
 
 #ifdef NEVER
@@ -177,8 +178,11 @@ static void publish_car(int id, int is_current, ros::Time now,
     pub.publish(marker);
     dbg_out_marker(marker);
 #else /* CURRENT_CAR_DIRECTLY */
-    car_map[id] = pose;
-    now_map[id] = now;
+    ros::Time newnow = now - ros::Duration(diffmsec/1000.0);
+    if (now_map.count(id) == 0 || newnow >= now_map[id]) {
+      car_map[id] = pose;
+      now_map[id] = newnow;
+    }
 #endif /* CURRENT_CAR_DIRECTLY */
 
   } else {
@@ -208,7 +212,7 @@ static void publish_car_summary(ros::Time now)
     int id = itr->first;
     geometry_msgs::Pose pose = itr->second;
     ros::Time cur = now_map[id];
-    if (now - cur >= ros::Duration(DOWNLOAD_PERIOD/1000.0)) {
+    if (cur <= prev_time) {
       continue;
     }
     marker.header.frame_id = "/map";
@@ -243,7 +247,10 @@ static void publish_car_summary(ros::Time now)
 
     pub.publish(marker);
     dbg_out_marker(marker);
+    prev_time = cur;
   }
+  car_map.clear();
+  now_map.clear();
 }
 #endif /* ! CURRENT_CAR_DIRECTLY */
 
@@ -342,16 +349,17 @@ static int result_to_marker(const string& idstr, ros::Time now,
 static int get_timeval(const char *tstr, time_t *sp, int *np)
 {
   struct tm tm;
+  const char *p;
 
-  if (sscanf(tstr, "%04d-%02d-%02d %02d:%02d:%02d.%d",
-    &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min,
-    &tm.tm_sec, np) < 7) {
-    if (sscanf(tstr, "%04d-%02d-%02d %02d:%02d:%02d",
-      &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min,
-      &tm.tm_sec) < 6) {
-      std::cerr << "Cannot convert time \"" << tstr << "\"" << std::endl;
-      return -1;
-    }
+  if (sscanf(tstr, "%d-%d-%d %d:%d:%d", &tm.tm_year, &tm.tm_mon,
+	&tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) != 6) {
+    std::cerr << "Cannot convert time \"" << tstr << "\"" << std::endl;
+    return -1;
+  }
+  if ((p = strchr(tstr, '.')) != NULL) {
+    sscanf(++p, "%d", np);
+    for (int i = strlen(p); i < 9; i++, *np*=10);
+  } else {
     *np = 0;
   }
   tm.tm_year -= 1900;
@@ -367,7 +375,7 @@ static void marker_publisher(const std_msgs::String& msg, int is_swap)
   ros::Time now = ros::Time::now();
   geometry_msgs::Pose pose;
   int type;
-  time_t now_sec, prv_sec;
+  time_t now_sec, prv_sec = 0;
   int now_nsec, prv_nsec;
 
   for (const std::string& row : db_data) {
