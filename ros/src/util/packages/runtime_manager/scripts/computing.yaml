@@ -544,7 +544,7 @@ params :
 
   - name  : waypoint_follower
     topic : /config/waypoint_follower
-    msg   : ConfigLaneFollower
+    msg   : ConfigWaypointFollower
     vars  :
     - name  : param_flag
       kind  : radio_box
@@ -639,8 +639,8 @@ params :
       v     : 5.0
 
   - name  : lane_follower_trajgen
-    topic : /config/lane_follower
-    msg   : ConfigLaneFollower
+    topic : /config/waypoint_follower
+    msg   : ConfigWaypointFollower
     vars  :
     - name  : param_flag
       kind  : radio_box

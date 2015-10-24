@@ -49,7 +49,7 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64MultiArray.h>
-#include "runtime_manager/ConfigLaneFollower.h"
+#include "runtime_manager/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libtraj_gen.h"
 #include "vehicle_socket/CanInfo.h"
@@ -90,7 +90,7 @@ public:
     initial_velocity_ = 5.0;
     next_waypoint_ = -1;
   }
-  void setConfig(const runtime_manager::ConfigLaneFollowerConstPtr &config);
+  void setConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config);
   double getCmdVelocity();
   double getLookAheadThreshold(int waypoint);
   int getNextWaypoint();
@@ -119,7 +119,7 @@ static ros::Publisher _stat_pub;
 static bool _waypoint_set = false;
 static bool _pose_set = false;
 
-void PathPP::setConfig(const runtime_manager::ConfigLaneFollowerConstPtr &config)
+void PathPP::setConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
   initial_velocity_ = config->velocity;
   param_flag_ = config->param_flag;
@@ -314,7 +314,7 @@ double PathPP::calcRadius(int waypoint)
   return pow(getDistance(waypoint), 2) / (2 * transformWaypoint(waypoint).getY());
 }
 
-static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
+static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr config)
 {
   _path_pp.setConfig(config);
 }

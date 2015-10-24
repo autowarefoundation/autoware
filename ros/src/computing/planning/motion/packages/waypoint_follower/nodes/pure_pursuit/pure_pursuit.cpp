@@ -40,7 +40,7 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
-#include "runtime_manager/ConfigLaneFollower.h"
+#include "runtime_manager/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
 #define DEBUG //if you print debug code
@@ -77,7 +77,7 @@ static ros::Publisher _search_pub;
 static ros::Publisher _line_point_pub;
 #endif
 
-static void ConfigCallback(const runtime_manager::ConfigLaneFollowerConstPtr config)
+static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
   _param_flag = config->param_flag;
   _lookahead_threshold = config->lookahead_threshold;
