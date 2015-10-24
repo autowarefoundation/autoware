@@ -48,14 +48,15 @@
 //#define GLOBAL
 
 static const int LOOP_RATE = 30; //Hz
-static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 2.0; // the next waypoint must be outside of this threshold.
-static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 6.0; // the next waypoint must be outside of this threshold.
-static const double EVALUATION_THRESHOLD = 1.0; //meter
+
+//static const double EVALUATION_THRESHOLD = 1.0; //meter
 static const std::string MAP_FRAME = "map";
-static const int MODE_WAYPOINT = 0;
+//static const int MODE_WAYPOINT = 0;
 static const int MODE_DIALOG = 1;
 
+//parameter
 static bool _sim_mode = false;
+
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 static double _current_velocity;
 static double _prev_velocity = 0;
@@ -65,9 +66,14 @@ static ros::Publisher _stat_pub;
 static bool _waypoint_set = false;
 static bool _pose_set = false;
 
+//config topic
 static int _param_flag = 0; //0 = waypoint, 1 = Dialog
 static double _lookahead_threshold = 4.0; //meter
 static double _initial_velocity = 5.0; //km/h
+static double g_offset_base2sensor = 0;
+static double g_look_ahead_threshold_calc_ratio = 2.0;
+static double g_minimum_lool_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
+
 static WayPoints _current_waypoints;
 static ros::Publisher _locus_pub;
 static ros::Publisher _target_pub;
@@ -82,6 +88,9 @@ static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr
   _param_flag = config->param_flag;
   _lookahead_threshold = config->lookahead_threshold;
   _initial_velocity = config->velocity;
+  g_offset_base2sensor = config->offset;
+  g_look_ahead_threshold_calc_ratio = config->threshold_ratio;
+  g_minimum_lool_ahead_threshold = config->minimum_lookahead_threshold;
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
@@ -109,7 +118,7 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
     _current_pose.pose = msg->pose;
     
     geometry_msgs::Point base_link_point;
-    base_link_point.x = -1.17;
+    base_link_point.x = g_offset_base2sensor;
     _current_pose.pose.position =  calcAbsoluteCoordinate(base_link_point,_current_pose.pose);
     _pose_set = true;
   }
@@ -340,10 +349,10 @@ double getLookAheadThreshold(int waypoint)
   // double current_velocity_mps = _current_waypoints.getWaypointVelocityMPS(waypoint);
   double current_velocity_mps = _current_velocity;
 
-  if (current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO < MINIMUM_LOOK_AHEAD_THRESHOLD)
-    return MINIMUM_LOOK_AHEAD_THRESHOLD;
+  if (current_velocity_mps * g_look_ahead_threshold_calc_ratio < g_minimum_lool_ahead_threshold)
+    return g_minimum_lool_ahead_threshold;
   else
-    return current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO;
+    return current_velocity_mps * g_look_ahead_threshold_calc_ratio;
 }
 
 double calcCurvature(geometry_msgs::Point target)
@@ -376,7 +385,7 @@ double calcRadius(geometry_msgs::Point target)
   //ROS_INFO("radius : %lf", radius);
   return radius;
 }
-
+/*
 static void shorteningThreshold(double *lookahead_threshold)
 {
   //threshold shortening
@@ -431,7 +440,7 @@ bool evaluateLocusFitness(int closest_waypoint, int next_waypoint)
     return false;
 
 }
-
+*/
 //linear interpolation of next target
 bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msgs::Point *next_target)
 {

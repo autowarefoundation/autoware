@@ -204,8 +204,16 @@ subs :
         gui  :
           velocity:
             depend : param_flag
+            depend_bool : 'lambda v : v == 1'
           lookahead_threshold:
             depend : param_flag
+            depend_bool : 'lambda v : v == 1'
+          minimum_lookahead_threshold:
+            depend : param_flag   
+            depend_bool : 'lambda v : v == 0'          
+          threshold_ratio:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0' 
           stat_topic : [ lf ]
       - name : lattice_twist_convert
         cmd  : rosrun driving_planner lattice_twist_convert
@@ -235,8 +243,16 @@ subs :
          gui  :
            velocity:
              depend : param_flag
+             depend_bool : 'lambda v : v == 1'
            lookahead_threshold:
              depend : param_flag
+             depend_bool : 'lambda v : v == 1'
+           minimum_lookahead_threshold:
+             depend : param_flag   
+             depend_bool : 'lambda v : v == 0'          
+           threshold_ratio:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 0' 
            stat_topic : [ lf ]  
        - name : twist_filter
          cmd  : rosrun waypoint_follower twist_filter  
@@ -562,6 +578,21 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
+    - name  : threshold_ratio
+      label : threshold_ratio
+      min   : 1.0
+      max   : 5.0
+      v     : 2.0
+    - name  : minimum_lookahead_threshold
+      label : minimum_lookahead_threshold
+      min   : 2.0
+      max   : 10.0
+      v     : 6.0
+    - name  : offset
+      label : offset
+      min   : -5.0
+      max   : 5.0
+      v     : -1.17
     - name    : sim_mode
       label   : 'Simulation Mode'
       kind    : checkbox
@@ -658,6 +689,21 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
+    - name  : threshold_ratio
+      label : threshold_ratio
+      min   : 1.0
+      max   : 5.0
+      v     : 2.0
+    - name  : minimum_lookahead_threshold
+      label : minimum_lookahead_threshold
+      min   : 2.0
+      max   : 10.0
+      v     : 6.0
+    - name  : offset
+      label : offset
+      min   : -5.0
+      max   : 5.0
+      v     : -1.17
     - name    : sim_mode
       label   : 'Simulation Mode'
       kind    : checkbox
