@@ -2,7 +2,7 @@
 <launch>
 
 	<arg name="sim_mode" default="False"/>
-	<!-- rosrun waypoint_follower pure_pursuit-->
+	<!-- rosrun waypoint_follower pure_pursuit -->
 	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
 		<param name="sim_mode" value="$(arg sim_mode)"/>
 	</node>
