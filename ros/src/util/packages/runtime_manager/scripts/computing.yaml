@@ -216,7 +216,7 @@ subs :
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
          param: waypoint_loader
          gui  :
-           waypoint_filename :
+           lane_waypoint_csv :
              prop  : 1
        - name : waypoint_saver
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -242,35 +242,35 @@ subs :
          cmd  : rosrun waypoint_follower twist_filter  
        - name : wf_simulator
          cmd  : roslaunch waypoint_follower wf_simulator.launch
-         param: wf_simulator  
+         param: wf_simulator
          
-         gui  :
-           use_pose:
-             flags : [ no_category, nl ]
-           x:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           y:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           z:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category, nl ]
-           roll:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           pitch:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           yaw:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category, nl ]
+   #      gui  :
+   #        use_pose:
+  #           flags : [ no_category, nl ]
+  #         x:
+  #           depend      : use_pose
+  #           depend_bool : 'lambda v : v == "Initial Pos"'
+   #          flags : [ no_category ]
+  #         y:
+  #           depend      : use_pose
+  #           depend_bool : 'lambda v : v == "Initial Pos"'
+  #           flags : [ no_category ]
+  #         z:
+  #           depend      : use_pose
+  #           depend_bool : 'lambda v : v == "Initial Pos"'
+  #           flags : [ no_category, nl ]
+  #         roll:
+  #           depend      : use_pose
+   #          depend_bool : 'lambda v : v == "Initial Pos"'
+  #           flags : [ no_category ]
+   #        pitch:
+   #          depend      : use_pose
+   #          depend_bool : 'lambda v : v == "Initial Pos"'
+   #          flags : [ no_category ]
+   #        yaw:
+   #          depend      : use_pose
+   #          depend_bool : 'lambda v : v == "Initial Pos"'
+    #         flags : [ no_category, nl ]
 
 buttons:
   car_dpm :
@@ -566,7 +566,10 @@ params :
       label   : 'Simulation Mode'
       kind    : checkbox
       v       : False
-      rosparam: /pure_pursuit/sim_mode
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+      #rosparam: /pure_pursuit/sim_mode
       
   - name  : velocity_set
     topic : /config/velocity_set
@@ -660,41 +663,45 @@ params :
       kind    : checkbox
       v       : False
       rosparam: /lattice_trajectory_gen/sim_mode
+  
   - name  : wf_simulator
     vars  :
     - name    : use_pose
+      label   : use_pose
       kind    : radio_box
-      choices :
-      - Initial Pos
-      - NDT
-      - GNSS
-      choices_type: str
-      v       : Initial Pos
-      rosparam: /odom_gen/use_pose
-    - name    : x
-      label   : 'X:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_x
-    - name    : y
-      label   : 'Y:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_y
-    - name    : z
-      label   : 'Z:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_z
-    - name    : roll
-      label   : 'Roll:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_roll
-    - name    : pitch
-      label   : 'Pitch:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_pitch
-    - name    : yaw
-      label   : 'Yaw:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_yaw
+      choices : ['InitialPos','NDT','GNSS']
+      choices_type : str
+      v       : InitialPos
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+ #     choices_type: str
+
+ #     rosparam: /odom_gen/use_pose
+ #   - name    : x
+ #     label   : 'X:'
+ #     v       : 0.0
+ #     rosparam: /odom_gen/initial_pos_x
+ #   - name    : y
+  #    label   : 'Y:'
+  #    v       : 0.0
+ #     rosparam: /odom_gen/initial_pos_y
+ #   - name    : z
+  #    label   : 'Z:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_z
+  #  - name    : roll
+ #     label   : 'Roll:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_roll
+  #  - name    : pitch
+  #    label   : 'Pitch:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_pitch
+  #  - name    : yaw
+  #    label   : 'Yaw:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_yaw
 
   - name  : car_kf
     topic : /config/car_kf
@@ -928,7 +935,7 @@ params :
         delim       : ':='
     - name      : interval
       label     : Interval
-      v         : 4.0
+      v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -950,15 +957,20 @@ params :
 
   - name  : waypoint_loader
     vars  :
-    - name      : lane_waypoint
+    - name      : lane_waypoint_csv
       kind      : path
       v         : /tmp/lane_waypoint.csv
-      rosparam  : /waypoint_loader/lane_waypoint_csv
+#      rosparam  : /waypoint_loader/lane_waypoint_csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : decelerate  
       label   : 'decelerate :'
       v         : 1.0
-      rosparam  : /waypoint_loader/decelerate
-
+      #rosparam  : /waypoint_loader/decelerate
+      cmd_param :
+        dash        : ''
+        delim       : ':='
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping
