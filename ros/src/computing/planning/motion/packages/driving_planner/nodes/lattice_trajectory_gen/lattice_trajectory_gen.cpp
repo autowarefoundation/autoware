@@ -53,24 +53,49 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libtraj_gen.h"
 #include "vehicle_socket/CanInfo.h"
+#include <dbw_mkz_msgs/SteeringReport.h>
+
 
 #define DEBUG_TRAJECTORY_GEN
+
 #define WHEEL_ANGLE_MAX (31.28067)
-#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
 #define STEERING_ANGLE_MAX (666.00000)
+#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
 #define WHEEL_BASE (2.70)
 
-#define DEBUG_TRAJECTORY_GEN
+#define WHEEL_BASE_MKZ (2.84988)
+#define WHEEL_TO_STEERING_MKZ (22.00)
 
 static const int LOOP_RATE = 10; //Hz
 static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 3.0; // the next waypoint must be outside of this threshold.
 static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 4.0; // the next waypoint must be outside of this threshold.
 static const double EVALUATION_THRESHOLD = 1.0; //meter
+
+
 static const std::string MAP_FRAME = "map";
 static const std::string SIM_BASE_FRAME = "sim_base_link";
 static const std::string BASE_FRAME = "base_link";
+static geometry_msgs::PoseStamped _current_pose;
+
 static ros::Publisher marker_pub;
+static ros::Publisher _vis_pub;
+static ros::Publisher _traj_pub;
+static ros::Publisher _stat_pub;
+
+static bool _prius_mode = FALSE;
+static bool _mkz_mode = FALSE;
+static bool _sim_mode = FALSE;
+
+static double _current_velocity;
+static double _current_angular_velocity;
+static double _can_info_curvature;
+static double _mkz_info_curvature;
+
+
+static bool _waypoint_set = FALSE;
+static bool _pose_set = FALSE;
 static int SPLINE_INDEX=0;
+static double _prev_velocity = 0;
 
 //define class
 class PathPP: public Path
@@ -90,6 +115,7 @@ public:
     initial_velocity_ = 5.0;
     next_waypoint_ = -1;
   }
+
   void setConfig(const runtime_manager::ConfigLaneFollowerConstPtr &config);
   double getCmdVelocity();
   double getLookAheadThreshold(int waypoint);
@@ -106,18 +132,6 @@ public:
 
 };
 PathPP _path_pp;
-
-static bool _sim_mode = false;
-static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-static double _current_velocity;
-static double _current_angular_velocity;
-static double _can_info_curvature;
-static double _prev_velocity = 0;
-static ros::Publisher _vis_pub;
-static ros::Publisher _traj_pub;
-static ros::Publisher _stat_pub;
-static bool _waypoint_set = false;
-static bool _pose_set = false;
 
 void PathPP::setConfig(const runtime_manager::ConfigLaneFollowerConstPtr &config)
 {
@@ -350,11 +364,6 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 }
 
-static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
-{
-  //_current_velocity = msg->data;
-}
-
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
   _path_pp.setPath(msg);
@@ -370,6 +379,15 @@ static void canInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
   _can_info_curvature = (steering_wheel_angle / (double) WHEEL_TO_STEERING) / WHEEL_BASE;
   ROS_INFO_STREAM("Steering Wheel Angle: "<<steering_wheel_angle);
   ROS_INFO_STREAM("Curvature from CAN: "<<_can_info_curvature);
+}
+
+static void mkzInfoCallback(const dbw_mkz_msgs::SteeringReport::ConstPtr& msg)
+{
+  double steering_wheel_angle = msg->steering_wheel_angle;
+  _current_velocity = (msg->speed);
+  _can_info_curvature = (steering_wheel_angle / (double) WHEEL_TO_STEERING_MKZ) / WHEEL_BASE_MKZ;
+  ROS_INFO_STREAM("Steering Wheel Angle: "<<steering_wheel_angle);
+  ROS_INFO_STREAM("Curvature from CAN: "<<_mkz_info_curvature);
 }
 
 // display the next waypoint by markers.
@@ -469,11 +487,6 @@ union State computeWaypointGoal(int next_waypoint)
     // Estimate desired orientation of the vehicle at next waypoint
     l_goal.theta = atan(dY_1/dX_1);
 
-    // Should we use lookahead and next waypoint 
-    // or current and next as below:
-    //l_goal.theta = atan(l_goal.sy/l_goal.sx);
-
-
     // Estimate the desired orientation at the next next waypoint
     double theta_lookahead = atan(dY_2/dX_2);
 
@@ -518,9 +531,6 @@ union State computeVeh(int old_time, double old_theta, int next_waypoint)
     double roll,pitch,yaw;
     m.getRPY(roll,pitch,yaw);
 
-    // Check this later:
-    //double local_theta=yaw;
-
     // Because we are on the coordinate system of the base frame
     l_veh.theta = 0.0;
 
@@ -532,26 +542,28 @@ union State computeVeh(int old_time, double old_theta, int next_waypoint)
     ROS_INFO_STREAM("Desired Velocity: "<< l_veh.vdes);
 
     // Not using timing related stuff for now...
-    // In order to estimate the curvature we need to compute the arc length we have travelled on
-    // Thus we need to estimate dt
-    // l_veh.timestamp = _current_pose.header.stamp.nsec;
-    //double localElapsedTime=((double)l_veh.timestamp-old_time)/1000000000.00;
-
-    // ds is the change in position along the arc
-    //double ds = localElapsedTime*veh.v;
-
-    // Should get the current steering angle instead
-    // Steering angle ~= kappa 
-    // Ask Ohta-san?
     double w = _current_angular_velocity;
     ROS_INFO_STREAM("Current omega: " <<w);
     l_veh.kappa = w/l_veh.vdes;
 
 
-    if (!_sim_mode)
+    if (!_sim_mode && _prius_mode)
     {
      l_veh.kappa = _can_info_curvature;
-     ROS_INFO_STREAM("Current kappa: " <<l_veh.kappa);
+     ROS_INFO_STREAM("Current kappa (prius): " <<l_veh.kappa);
+    }
+
+    else if(!_sim_mode && _mkz_mode)
+    {
+      l_veh.kappa = _mkz_info_curvature;
+      ROS_INFO_STREAM("Current kappa (mkz): " <<l_veh.kappa);
+    }
+
+    else
+    {
+      double w = _current_angular_velocity;
+      l_veh.kappa = w/l_veh.vdes;
+      ROS_INFO_STREAM("Current kappa (sim): " <<l_veh.kappa);
     }
 
     return l_veh;
@@ -719,33 +731,43 @@ int main(int argc, char **argv)
 
   // Set the parameters for the node
   private_nh.getParam("sim_mode", _sim_mode);
+  private_nh.getParam("prius_mode", _prius_mode);
+  private_nh.getParam("mkz_mode", _mkz_mode);
   ROS_INFO_STREAM("sim_mode : " << _sim_mode);
+  ROS_INFO_STREAM("prius_mode : " << _prius_mode);
+  ROS_INFO_STREAM("mkz_mode : " << _mkz_mode);
 
   // Publish the following topics: 
-  // Velocity commands, waypoint markers, trajectory marker, and lf_stat (? MOK not sure what this is)
-  // NOTE: MOK commented out velocity command publisher, because that will be done in command_converter now
-  // ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
   _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 1);
   _traj_pub = nh.advertise<visualization_msgs::Marker>("trajectory_mark", 0);
   _stat_pub = nh.advertise<std_msgs::Bool>("wf_stat", 0);
-
   // Publish the curvature information:
   ros::Publisher spline_parameters_pub = nh.advertise<std_msgs::Float64MultiArray>("spline", 10);
   ros::Publisher state_parameters_pub = nh.advertise<std_msgs::Float64MultiArray>("state", 10);
-
   // Publish the trajectory visualization
   marker_pub = nh.advertise<visualization_msgs::Marker>("cubic_splines_viz", 10);
 
   // Subscribe to the following topics: 
-  // waypoints, odometry, localization, velocity estimate, lane follower (MOK not sure of the purpose)
-  //ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoint", 10, WayPointCallback);
-  ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
-  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
-  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
-  ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);
-  //ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 10, ConfigCallback);
-  ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-  ros::Subscriber can_info = nh.subscribe("can_info", 10, canInfoCallback);
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 1, WayPointCallback);
+  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1, OdometryPoseCallback);
+  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1, NDTCallback);
+  //ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);
+  ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 1, ConfigCallback);
+  ros::Subscriber sub_steering;
+  ros::Subscriber can_info;
+
+  if(_prius_mode)
+  {
+    can_info = nh.subscribe("can_info", 1, canInfoCallback);
+  }
+
+  
+  else if(_mkz_mode)
+    {
+    ROS_INFO_STREAM("********************mkz_mode ON");
+    sub_steering = nh.subscribe("/vehicle/steering_report", 1, mkzInfoCallback);
+    }
+  
 
   // Local variable for geometry messages
   geometry_msgs::TwistStamped twist;
@@ -756,8 +778,7 @@ int main(int argc, char **argv)
   // Initialize endflag to false
   bool endflag = false;
 
-  // Set up arrays for perturb and flag to enable easy
-  // parallelization via OpenMP pragma
+  // Set up arrays for perturb and flag to enable easy parallelization via OpenMP pragma
   double perturb[30];
   perturb[0]=-3.00;
 
@@ -828,7 +849,6 @@ int main(int argc, char **argv)
           if(initFlag==TRUE && prev_curvature.success==TRUE)
           {
             veh_fmm = nextState(veh, prev_curvature, veh.vdes, 0.2, 0);
-            //veh.kappa = veh_fmm.kappa;
             ROS_INFO_STREAM("est kappa: " <<veh_fmm.kappa);
           }
         
@@ -843,7 +863,6 @@ int main(int argc, char **argv)
           // Check that we got a result and publish it or stream expletive to screen
           if(curvature.success==TRUE)
           { 
-
             std_msgs::Float64MultiArray spline;
   	        spline.data.clear();
 
@@ -856,7 +875,7 @@ int main(int argc, char **argv)
           }
           else 
           {
-            ROS_INFO_STREAM("DAMNIT");
+            ROS_INFO_STREAM("SPLINE FAIL");
           }
 
           // Also publish the state at the time of the result for curvature...
@@ -869,50 +888,50 @@ int main(int argc, char **argv)
 
           state_parameters_pub.publish(state);
 
-          // If the velocity is nonzero (would preclude horizon calc) publish trajectory viz
-          if(veh.v>0)
+          // Need to hold back on extra trajectories until CPU utilization is figured out...
+          // Need cost map etc...
+          if(_sim_mode)
           {
-            drawSpline(curvature, veh, 0,0);
-            SPLINE_INDEX++;
-            ROS_INFO_STREAM("Spline published to RVIZ");
-          }
-          
-            // This is a messy for loop which generates extra trajectories for visualization
-            // Likely will change when valid cost map arrives.
-            // Note: pragma indicates parallelization for OpenMP
-
-            // Setup variables
-            union State tempGoal= goal;
-            int i;
-            union Spline extra;
-            
-            // Tell OpenMP how to parallelize (keep i private because it is a counter)
-            #pragma omp parallel for private(i)
-
-            // Index through all the predefined perturbations from waypoint
-            for(i=1; i<31; i++)
-            {
-              // Shift the y-coordinate of the goal
-              tempGoal.sy = tempGoal.sy + perturb[i-1];
-
-              // Compute new spline 
-              extra= waypointTrajectory(veh, tempGoal, curvature, next_waypoint);
-
-              // Display trajectory
-              if(veh.v>5.00)
+              // If the velocity is nonzero (would preclude horizon calc) publish trajectory viz
+              if(veh.v>0)
               {
-                drawSpline(extra, veh, i,1);
+                drawSpline(curvature, veh, 0,0);
+                SPLINE_INDEX++;
+                ROS_INFO_STREAM("Spline published to RVIZ");
               }
-            }
+              
+                // This is a messy for loop which generates extra trajectories for visualization
+                // Likely will change when valid cost map arrives.
+                // Note: pragma indicates parallelization for OpenMP
 
+                // Setup variables
+                union State tempGoal= goal;
+                int i;
+                union Spline extra;
+                
+                // Tell OpenMP how to parallelize (keep i private because it is a counter)
+                #pragma omp parallel for private(i)
 
-          // Update the elapsed time 
-          //double elapsedTime=(veh.timestamp-old_time)/1000000000.00;
+                // Index through all the predefined perturbations from waypoint
+                for(i=1; i<31; i++)
+                {
+                  // Shift the y-coordinate of the goal
+                  tempGoal.sy = tempGoal.sy + perturb[i-1];
+
+                  // Compute new spline 
+                  extra= waypointTrajectory(veh, tempGoal, curvature, next_waypoint);
+
+                  // Display trajectory
+                  if(veh.v>5.00)
+                  {
+                    drawSpline(extra, veh, i,1);
+                  }
+                }
+          }
 
           // Update previous time and orientation measurements
           old_time= veh.timestamp;
           old_theta=veh.theta;
-
         }
 
         // If the next way point is not available 
@@ -931,17 +950,6 @@ int main(int argc, char **argv)
             endflag = true;
         }
       }
-
-      // Else if the closest waypoint is not detected
-      /*else 
-      {
-        ROS_INFO_STREAM("Closest waypoint cannot be detected!");
-        _lf_stat.data = false;
-        _stat_pub.publish(_lf_stat);
-        twist.twist.linear.x = 0;
-        twist.twist.angular.z = 0;
-      }*/
-
     }
 
     // If endflag is true

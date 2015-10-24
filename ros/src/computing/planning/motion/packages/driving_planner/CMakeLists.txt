@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   runtime_manager
   waypoint_follower
+  dbw_mkz_msgs
 )
 
 ################################################
@@ -50,7 +51,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libtraj_gen 
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower
+  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower dbw_mkz_msgs
   DEPENDS gnss
 )
 
@@ -58,7 +59,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   include
