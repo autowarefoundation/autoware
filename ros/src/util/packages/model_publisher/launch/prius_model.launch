@@ -2,15 +2,25 @@
 <launch>
 	
 	<arg name="base_frame" default="/base_link"/>
-	<arg name="sensor_frame" default="/velodyne"/>
 	<arg name="topic_name" default="prius_model"/>
 	<arg name="model_path" default="package://model_publisher/model/prius_model.dae"/>
+	<arg name="offset_x" default="1.17"/> <!-- meter -->
+	<arg name="offset_y" default="0"/>
+	<arg name="offset_z" default="0"/>
+	<arg name="offset_roll" default="90"/> <!-- degree -->
+	<arg name="offset_pitch" default="0"/> <!-- degree -->
+	<arg name="offset_yaw" default="180"/> <!-- degree -->
 	
     <node pkg="model_publisher" type="model_publisher" name="model_publisher">
 		<param name="base_frame" value="$(arg base_frame)"/>
-		<param name="sensor_frame" value="$(arg sensor_frame)"/>
 		<param name="topic_name" value="$(arg topic_name)"/>
 		<param name="model_path" value="$(arg model_path)"/>
+		<param name="offset_x" value="$(arg offset_x)"/>
+		<param name="offset_y" value="$(arg offset_y)"/>
+		<param name="offset_z" value="$(arg offset_z)"/>
+		<param name="offset_roll" value="$(arg offset_roll)"/>
+		<param name="offset_pitch" value="$(arg offset_pitch)"/>
+		<param name="offset_yaw" value="$(arg offset_yaw)"/>
     </node>
 
 </launch>

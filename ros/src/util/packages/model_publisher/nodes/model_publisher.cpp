@@ -10,10 +10,6 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  std::string sensor_frame;
-  private_nh.getParam("sensor_frame", sensor_frame);
-  ROS_INFO_STREAM("sensor_frame : " << sensor_frame);
-
   std::string base_frame;
   private_nh.getParam("base_frame", base_frame);
   ROS_INFO_STREAM("base_frame : " << base_frame);
@@ -26,50 +22,60 @@ int main(int argc, char **argv)
   private_nh.getParam("model_path", model_path);
   ROS_INFO_STREAM("model_path : " << model_path);
 
-  ros::Publisher pub = nh.advertise<visualization_msgs::Marker>(topic_name,10, true);
+  double offset_x;
+  private_nh.getParam("offset_x", offset_x);
+  ROS_INFO_STREAM("offset_x : " << offset_x);
 
-  tf::TransformListener listener;
+  double offset_y;
+  private_nh.getParam("offset_y", offset_y);
+  ROS_INFO_STREAM("offset_y : " << offset_y);
 
-  while(nh.ok()){
+  double offset_z;
+  private_nh.getParam("offset_z", offset_z);
+  ROS_INFO_STREAM("offset_z : " << offset_z);
 
-    tf::StampedTransform transform;
-    try
-    {
-      listener.lookupTransform(base_frame, sensor_frame, ros::Time(0), transform);
+  double offset_roll;
+  private_nh.getParam("offset_roll", offset_roll);
+  ROS_INFO_STREAM("offset_roll : " << offset_roll);
 
-      visualization_msgs::Marker marker;
-        marker.header.frame_id = base_frame;
-        marker.header.stamp = ros::Time();
-        marker.ns = topic_name;
-        marker.id = 0;
-        marker.action = visualization_msgs::Marker::ADD;
-        marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-        marker.mesh_resource = model_path;
-        marker.mesh_use_embedded_materials = true;
-        marker.pose.position.x = transform.getOrigin().x();
-        marker.pose.position.y = 0;
-        marker.pose.position.z = 0;
-        double roll = 90 * (M_PI /180);
-        double yaw = 180 * (M_PI / 180);
-        double pitch = 0;
-        marker.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll,pitch,yaw);
-        marker.color.r = 0.0;
-        marker.color.g = 0.0;
-        marker.color.b = 0.0;
-        marker.color.a = 0.0;
-        marker.scale.x = 1.0;
-        marker.scale.y = 1.0;
-        marker.scale.z = 1.0;
-        marker.frame_locked = true;
+  double offset_pitch;
+  private_nh.getParam("offset_pitch", offset_pitch);
+  ROS_INFO_STREAM("offset_pitch : " << offset_pitch);
 
-        pub.publish(marker);
-    }
-    catch (tf::TransformException ex)
-    {
-      ROS_ERROR("%s", ex.what());
-      ros::Duration(1.0).sleep();
-    }
-  }
+  double offset_yaw;
+  private_nh.getParam("offset_yaw", offset_yaw);
+  ROS_INFO_STREAM("offset_yaw : " << offset_yaw);
+
+  ros::Publisher pub = nh.advertise<visualization_msgs::Marker>(topic_name, 10, true);
+
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = base_frame;
+  marker.header.stamp = ros::Time();
+  marker.ns = topic_name;
+  marker.id = 0;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+  marker.mesh_resource = model_path;
+  marker.mesh_use_embedded_materials = true;
+  marker.pose.position.x = offset_x;
+  marker.pose.position.y = offset_y;
+  marker.pose.position.z = offset_z;
+  double roll = offset_roll * (M_PI / 180);
+  double yaw = offset_yaw * (M_PI / 180);
+  double pitch = 0;
+  marker.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
+  marker.color.r = 0.0;
+  marker.color.g = 0.0;
+  marker.color.b = 0.0;
+  marker.color.a = 0.0;
+  marker.scale.x = 1.0;
+  marker.scale.y = 1.0;
+  marker.scale.z = 1.0;
+  marker.frame_locked = true;
+
+  pub.publish(marker);
+
+  ros::spin();
 
   return 0;
 }
