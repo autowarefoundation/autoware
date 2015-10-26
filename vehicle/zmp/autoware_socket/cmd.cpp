@@ -250,11 +250,7 @@ void Control(vel_data_t vel, void* p)
     // Steering
     //////////////////////////////////////////////////////
     
-<<<<<<< HEAD
     if (current_velocity != 0.0) {
-=======
-    if (cmd_velocity != 0 && current_velocity != 0) {
->>>>>>> d61a5844b67f11cb26729981bcb9b9ac31a2feb6
       main->SteeringControl(current_steering_angle, cmd_steering_angle);
     }
 
@@ -272,11 +268,7 @@ void Control(vel_data_t vel, void* p)
     main->StrokeControl(current_velocity, cmd_velocity);
   }
 
-<<<<<<< HEAD
-  if (current_velocity != 0) {
-=======
-  if (cmd_velocity != 0 && current_velocity != 0) {
->>>>>>> d61a5844b67f11cb26729981bcb9b9ac31a2feb6
+  if (current_velocity != 0.0) {
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
   }
 

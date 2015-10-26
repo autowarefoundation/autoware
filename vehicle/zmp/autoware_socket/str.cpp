@@ -66,10 +66,7 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
 {
   double ret;
 
-<<<<<<< HEAD
   // the read value of current steering position may have some error.
-=======
->>>>>>> d61a5844b67f11cb26729981bcb9b9ac31a2feb6
   current_steering_angle -= _STEERING_ANGLE_ERROR;
 
   // angvel, not really used for steering control...
@@ -95,7 +92,6 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
   static double angvel_diff = 0;
   angvel_diff = angvel_diff * 0.0 - current_steering_angvel * 1; 
 
-<<<<<<< HEAD
   double k_p = _K_STEERING_P;
   double k_i = _K_STEERING_I;
   double k_d = _K_STEERING_D;
@@ -125,16 +121,6 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
   // torque control.
   double target_steering_torque = 
     steering_diff * k_p + steering_diff_sum * k_i + angvel_diff * k_d;
-=======
-  // magic params...
-  double k_d = _K_STEERING_D;
-  if (fabs(steering_diff) < 10) {
-    k_d = _K_STEERING_D / 2;
-  }
-  
-  // use k_d instead of _K_STEERING_D.
-  double target_steering_torque = steering_diff * _K_STEERING_P + steering_diff_sum * _K_STEERING_I + angvel_diff * k_d;
->>>>>>> d61a5844b67f11cb26729981bcb9b9ac31a2feb6
 
   // clip
   if (target_steering_torque > _STEERING_MAX_TORQUE) {
