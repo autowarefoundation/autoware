@@ -69,6 +69,7 @@ static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
 static double _search_distance = 60;
+static double _deceleration_search_distance = 30;
 static double _cars_distance = 15.0; // meter: stopping distance from cars (using DPM)
 static double _pedestrians_distance = 10.0; // meter: stopping distance from pedestrians (using DPM)
 static double _others_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
@@ -486,7 +487,7 @@ static void DisplayDecelerationRange(int i)
     marker.id = 0;
     marker.type = visualization_msgs::Marker::SPHERE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
-    for (int j = 0; j < _search_distance; j++) {
+    for (int j = 0; j < _deceleration_search_distance; j++) {
         if(i+j > _path_dk.getSize() - 1)
             break;
 
@@ -515,13 +516,12 @@ static EControl vscanDetection(int closest_waypoint)
 
     int decelerate_or_stop = -10000;
     int decelerate2stop_waypoints = 15;
-    int decelerate_waypoints_range = 30;
     for (int i = closest_waypoint; i < closest_waypoint + _search_distance; i++) {
         decelerate_or_stop++;
         if (decelerate_or_stop > decelerate2stop_waypoints ||
 	    (decelerate_or_stop >= 0 && i >= _path_dk.getSize()-1))
 	    return DECELERATE;
-        if(i > _path_dk.getSize() - 1 )
+        if (i > _path_dk.getSize() - 1 )
             return KEEP;
 
 	// waypoint seen by vehicle
@@ -565,17 +565,21 @@ static EControl vscanDetection(int closest_waypoint)
 	      return STOP;
 	    }
 
+
+	    // without deceleration range
 	    if (_deceleration_range < 0)
 	      continue;
-	    // deceleration search runs "decelerate_waypoints_range" waypoints from closest
-	    if (i > _closest_waypoint+decelerate_waypoints_range || decelerate_or_stop >= 0)
+	    // deceleration search runs "decelerate_search_distance" waypoints from closest
+	    if (i > _closest_waypoint+_deceleration_search_distance || decelerate_or_stop >= 0)
 	      continue;
+
 	    // ---DECELERATE OBSTACLE DETECTION---
             if (dt > _detection_range && dt < _detection_range + _deceleration_range) {
 	      if (item->z > _detection_height_top || item->z < _detection_height_bottom)
 		continue;
 
 	      bool count_flag = true;
+	      // search overlaps between DETECTION range and DECELERATION range
 	      for (int waypoint_search = -5; waypoint_search <= 5; waypoint_search++) {
 		if (i+waypoint_search < 0 || i+waypoint_search >= _path_dk.getSize() || !waypoint_search)
 		  continue;
@@ -584,6 +588,7 @@ static EControl vscanDetection(int closest_waypoint)
 						      _current_pose.pose);
 		tf::Vector3 waypoint_vector = point2vector(temp_waypoint);
 		waypoint_vector.setZ(0);
+		// if there is a overlap, give priority to DETECTION range
 		if (tf::tfDistance(vscan_vector, waypoint_vector) < _detection_range) {
 		  count_flag = false;
 		  break;
@@ -592,6 +597,7 @@ static EControl vscanDetection(int closest_waypoint)
 	      if (count_flag)
 		decelerate_point_count++;
 	    }
+
 	    // found obstacle to DECELERATE
             if (decelerate_point_count > _threshold_points) {
 	      _obstacle_waypoint = i;
