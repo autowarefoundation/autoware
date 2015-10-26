@@ -276,14 +276,22 @@ double _stopping_control(double current_velocity)
   // decelerate by using brake	
   if (current_velocity < 0.1) {
     // nearly at stop/at stop to stop -> apply full brake
+<<<<<<< HEAD
+    int gain = (int)(((double)_BRAKE_PEDAL_MAX)*cycle_time);
+=======
     int gain = (int)(((double)_BRAKE_PEDAL_MAX)/1.0*cycle_time);
+>>>>>>> d61a5844b67f11cb26729981bcb9b9ac31a2feb6
     ret = vstate.brake_stroke + gain;
     if ((int)ret > _BRAKE_PEDAL_MAX)
       ret = _BRAKE_PEDAL_MAX;
   }
   else {
     // one second is approximately how fast full brakes applied in sharp stop
+<<<<<<< HEAD
+    int gain = (int)(((double)_BRAKE_PEDAL_MED)*cycle_time);
+=======
     int gain = (int)(((double)_BRAKE_PEDAL_MED)/0.5*cycle_time);
+>>>>>>> d61a5844b67f11cb26729981bcb9b9ac31a2feb6
     ret = vstate.brake_stroke + gain;
     if ((int)ret > _BRAKE_PEDAL_MED)
       ret = _BRAKE_PEDAL_MED;
@@ -353,6 +361,10 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     if (current_velocity < 3.0) { // nearly stopping
       ZMP_SET_DRV_STROKE(0);
       brake_stroke = _stopping_control(current_velocity);
+<<<<<<< HEAD
+      cout << "ZMP_SET_BRAKE_STROKE(" << brake_stroke << ")" << endl;
+=======
+>>>>>>> d61a5844b67f11cb26729981bcb9b9ac31a2feb6
       ZMP_SET_BRAKE_STROKE(brake_stroke);
     }
     else {

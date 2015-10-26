@@ -123,9 +123,30 @@
 #define _STEERING_MAX_TORQUE 2000
 #define _STEERING_MAX_SUM 100 //deg*0.1s for I control
 
+// default params
 #define _K_STEERING_P 60
 #define _K_STEERING_I 12
 #define _K_STEERING_D 10
+
+// when slower than 40km/h
+#define _K_STEERING_P_40 40
+#define _K_STEERING_I_40 10
+#define _K_STEERING_D_40 10
+
+// When slower than 30km/h
+#define _K_STEERING_P_30 30
+#define _K_STEERING_I_30 8
+#define _K_STEERING_D_30 8
+
+// when slower than 20km/h
+#define _K_STEERING_P_20 25
+#define _K_STEERING_I_20 5
+#define _K_STEERING_D_20 5
+
+// when slower than 10km/h
+#define _K_STEERING_P_10 15
+#define _K_STEERING_I_10 5
+#define _K_STEERING_D_10 3
 
 #define _STEERING_ANGLE_ERROR 0 // deg
 
