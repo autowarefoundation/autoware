@@ -619,7 +619,7 @@ static void SoundPlay()
 static EControl ObstacleDetection()
 {
     static int false_count = 0;
-    static bool prev_detection = false;
+    static EControl prev_detection = KEEP;
 
     std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
     std::cout << "current_velocity : " << mps2kmph(_current_vel) << std::endl;
@@ -627,41 +627,40 @@ static EControl ObstacleDetection()
     DisplayDecelerationRange(_closest_waypoint);
     EControl vscan_result = vscanDetection(_closest_waypoint);
 
-    if (prev_detection == false) {
+    if (prev_detection == KEEP) {
       if (vscan_result != KEEP) { // found obstacle
 	DisplayObstacleWaypoint(_obstacle_waypoint, vscan_result);
 	std::cout << "obstacle waypoint : " << vscan_result << std::endl << std::endl;
-	prev_detection = true;
+	prev_detection = vscan_result;
 	SoundPlay();
 	false_count = 0;
 	return vscan_result;
       } else {                  // no obstacle
-	prev_detection = false;
+	prev_detection = KEEP;
 	return vscan_result;
       }
-    } else { //prev_detection = true
+    } else { //prev_detection = STOP or DECELERATE
       if (vscan_result != KEEP) { // found obstacle
 	DisplayObstacleWaypoint(_obstacle_waypoint, vscan_result);
 	std::cout << "obstacle waypoint : " << vscan_result << std::endl << std::endl;
-	prev_detection = true;
+	prev_detection = vscan_result;
 	false_count = 0;
 	return vscan_result;
       } else {                  // no obstacle
 	false_count++;
 	std::cout << "false_count : "<< false_count << std::endl;
-      }
 
-      //fail-safe
-      if (false_count >= LOOP_RATE/2) {
-	_obstacle_waypoint = -1;
-	false_count = 0;
-	prev_detection = false;
-	return vscan_result;
-      } else {
-	std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl << std::endl;
-	DisplayObstacleWaypoint(_obstacle_waypoint, vscan_result);
-	prev_detection = true;
-	return STOP;
+	//fail-safe
+	if (false_count >= LOOP_RATE/2) {
+	  _obstacle_waypoint = -1;
+	  false_count = 0;
+	  prev_detection = KEEP;
+	  return vscan_result;
+	} else {
+	  std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl << std::endl;
+	  DisplayObstacleWaypoint(_obstacle_waypoint, vscan_result);
+	  return prev_detection;
+	}
       }
     }
 
