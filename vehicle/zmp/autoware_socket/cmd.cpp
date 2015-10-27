@@ -228,9 +228,21 @@ void Control(vel_data_t vel, void* p)
     cmd_velocity = 50;
   if (cmd_velocity < 0)
     cmd_velocity = 0;
-  static int str_debug = 0;
-  cmd_steering_angle = str_debug;
 #endif
+#if 0 /* just for a debug */
+  std::ifstream ifs("/tmp/steering");
+  std::string s;
+  getline(ifs, s);
+  int str_debug = atoi(s.c_str());
+  cout << "str_debug = " << str_debug << " degree" << endl;
+  cmd_steering_angle = str_debug;
+  if (cmd_steering_angle > 60)
+    cmd_steering_angle = 60;
+  if (cmd_steering_angle < -60)
+    cmd_steering_angle = -60;
+
+#endif
+
 
   cout << "Current: " << "vel = " << current_velocity 
        << ", str = " << current_steering_angle << endl; 
@@ -242,17 +254,13 @@ void Control(vel_data_t vel, void* p)
     // Accel and Brake
     //////////////////////////////////////////////////////
     
-    if (cmd_velocity < STROKE_SPEED_LIMIT) {
-      main->StrokeControl(current_velocity, cmd_velocity);
-    }
+    main->StrokeControl(current_velocity, cmd_velocity);
     
     //////////////////////////////////////////////////////
     // Steering
     //////////////////////////////////////////////////////
     
-    if (current_velocity != 0.0) {
-      main->SteeringControl(current_steering_angle, cmd_steering_angle);
-    }
+    main->SteeringControl(current_steering_angle, cmd_steering_angle);
 
     usleep(STEERING_INTERNAL_PERIOD * 1000);  
     Update(main);
@@ -264,13 +272,9 @@ void Control(vel_data_t vel, void* p)
   // remaining period.
   //////////////////////////////////////////////////////
 
-  if (cmd_velocity < STROKE_SPEED_LIMIT) {
-    main->StrokeControl(current_velocity, cmd_velocity);
-  }
+  main->StrokeControl(current_velocity, cmd_velocity);
 
-  if (current_velocity != 0.0) {
-    main->SteeringControl(current_steering_angle, cmd_steering_angle);
-  }
+  main->SteeringControl(current_steering_angle, cmd_steering_angle);
 
   // save the time stamp.
   old_tstamp = vstate.tstamp;

@@ -157,7 +157,12 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
     return;
   }
 
-  torque = _str_torque_pid_control(current_steering_angle, cmd_steering_angle);
+  if (vstate.velocity < 1) { // if nearly at stop, don't control steering.
+    torque = 0;
+  }
+  else {
+    torque = _str_torque_pid_control(current_steering_angle, cmd_steering_angle);
+  }
   cout << "ZMP_SET_STR_TORQUE(" << torque << ")" << endl;
   ZMP_SET_STR_TORQUE(torque);
 }
