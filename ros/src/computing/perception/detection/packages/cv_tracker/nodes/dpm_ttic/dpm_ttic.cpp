@@ -55,14 +55,14 @@ static DPMTTIC *ttic_model;
 
 static DPMTTICParam ttic_param;
 
-static std::string object_class;
+static std::string object_class;static long int counter;
 
 static void set_default_param(DPMTTICParam& param)
 {
 	param.overlap = 0.4;
 	param.threshold = -0.5;
 	param.lambda = 10;
-	param.num_cells = 8;
+	param.num_cells = 8;counter =0;
 }
 
 static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTICResult result)
@@ -83,6 +83,10 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTI
 
 static void image_raw_cb(const sensor_msgs::Image& image_source)
 {
+	if(counter%15){
+		counter++;
+		return;
+	}
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
@@ -104,6 +108,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 #endif
 
 	image_obj_pub.publish(msg);
+	counter++;
 }
 
 static void config_cb(const runtime_manager::ConfigPedestrianDpm::ConstPtr& param)

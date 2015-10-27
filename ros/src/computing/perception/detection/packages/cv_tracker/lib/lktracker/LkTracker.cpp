@@ -21,6 +21,8 @@ LkTracker::LkTracker()
 	current_centroid_y_		= 0;
 	previous_centroid_x_	= 0;
 	previous_centroid_y_	= 0;
+
+	cv::generateColors(colors_, 2);
 }
 
 void LkTracker::ArrowedLine(cv::Mat& in_image, cv::Point in_point1, cv::Point in_point2, const cv::Scalar& in_color,
@@ -83,7 +85,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 	}
 	int sum_x = 0;
 	int sum_y = 0;
-
+	std::vector<cv::Point2f> valid_points;
 
 	if ( ( in_update || prev_image_.empty() ) &&
 		 ( matched_detection_.width>0 && matched_detection_.height >0 )
@@ -98,11 +100,13 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 								3,					//block size
 								true,				//true to use harris corner detector, otherwise use tomasi
 								0.04);				//harris detector free parameter
-		/*cv::cornerSubPix(gray_image,
+		if (current_points_.size()<=0)
+			return in_image;
+		cv::cornerSubPix(gray_image,
 					current_points_,
 					sub_pixel_window_size_,
 					cv::Size(-1,-1),
-					term_criteria_);*/
+					term_criteria_);
 		//frame_count_ = 0;
 		current_centroid_x_ = 0;
 		current_centroid_y_ = 0;
@@ -110,9 +114,10 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 
 		for (std::size_t i = 0; i < current_points_.size(); i++)
 		{
-			cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
+			//cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
 			current_centroid_x_+= current_points_[i].x;
 			current_centroid_y_+= current_points_[i].y;
+			valid_points.push_back(current_points_[i]);
 		}
 		std::cout << "CENTROID" << current_centroid_x_ <<","<< current_centroid_y_<< std::endl << std::endl;
 
@@ -157,24 +162,82 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 			current_centroid_y_+= current_points_[i].y;
 
 			current_points_[k++] = current_points_[i];
-			cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
+			valid_points.push_back(current_points_[i]);
+			//cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
 		}
 
 		frame_count_++;
 	}
-	if (current_points_.size()<=0)
+	if (valid_points.size()<=2)
 		return in_image;
 
-	cv::Rect obj_rect;
-	cv::Point centroid(current_centroid_x_/current_points_.size(), current_centroid_y_/current_points_.size());
+	cv::Mat labels;
+	cv::Mat centers;
 
-	int valid_points = GetRectFromPoints(current_points_,
-						centroid,
-						matched_detection_,
+	cv::kmeans(valid_points,
+					2,
+					labels,
+					cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0),
+					3,
+					cv::KMEANS_PP_CENTERS,
+					centers);
+
+	cv::Point2f center1 = centers.at<cv::Point2f>(0);
+	cv::Point2f center2 = centers.at<cv::Point2f>(1);
+
+	cv::Rect obj_rect;
+	cv::Point centroid(current_centroid_x_/valid_points.size(), current_centroid_y_/valid_points.size());
+
+	int cluster_nums[2] = {0,0};
+	std::vector<cv::Scalar> colors(2);
+	if (center1.x < center2.x || center1.x < center2.x)
+	{
+		colors[0]=colors_[0];
+		colors[1]=colors_[1];
+	}
+	else
+	{
+		colors[0]=colors_[1];
+		colors[1]=colors_[0];
+	}
+
+	cv::circle(in_image, center1, 5 , (cv::Scalar)colors[0], 3);
+	cv::circle(in_image, center2, 5 , (cv::Scalar)colors[1], 3);
+
+	std::vector<cv::Point2f> points_clusters[2];
+	std::vector<cv::Point2f> close_points;
+	//count points for each cluster
+	for (std::size_t i = 0; i < valid_points.size(); i++)
+	{
+		int cluster_index = labels.at<int>(i);
+		cluster_nums[cluster_index]++;
+		points_clusters[cluster_index].push_back(valid_points[i]);
+		if (cv::norm(valid_points[i] - center1) < matched_detection_.width &&
+				cv::norm(valid_points[i] - center2) < matched_detection_.width)
+		{
+			close_points.push_back(valid_points[i]);
+		}
+		cv::circle(in_image, valid_points[i], 2, colors[cluster_index], 2);
+	}
+
+	std::vector<cv::Point2f> final_points;
+
+	if (cv::norm(center2-center1) > matched_detection_.width*0.75)//if centroid are too far keep only the one with the most points
+	{
+		if (cluster_nums[0] > cluster_nums[1])
+			final_points = points_clusters[0];
+		else
+			final_points = points_clusters[1];
+	}
+	else
+		final_points = close_points;
+
+	GetRectFromPoints(final_points,
 						obj_rect);
 
-	if (obj_rect.width <= matched_detection_.width*0.1 ||
-			obj_rect.height <= matched_detection_.height*0.1)
+	if (obj_rect.width <= matched_detection_.width*0.15 ||
+			obj_rect.height <= matched_detection_.height*0.15
+		)
 	{
 		std::cout << "TRACK STOPPED" << std::endl;
 		prev_points_.clear();
@@ -193,7 +256,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		direction_point.x = (center_point.x - 100 * cos(sum_angle));
 		direction_point.y = (center_point.y - 100 * sin(sum_angle));
 
-		ArrowedLine(in_image, center_point, direction_point, cv::Scalar(0,0,255), 2);
+		//ArrowedLine(in_image, center_point, direction_point, cv::Scalar(0,0,255), 2);
 
 		cv::circle(in_image, center_point, 4 , cv::Scalar(0,0,255), 2);
 		cv::circle(in_image, center_point, 2 , cv::Scalar(0,0,255), 2);
@@ -202,7 +265,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 	//imshow("KLT debug", in_image);
 	//cvWaitKey(1);
 	//finally store current state into previous
-	std::swap(current_points_, prev_points_);
+	std::swap(final_points, prev_points_);
 	cv::swap(prev_image_, gray_image);
 
 	if (current_centroid_x_ > 0 && current_centroid_y_ > 0)
@@ -218,64 +281,39 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 	return in_image;
 }
 
-int LkTracker::GetRectFromPoints(std::vector< cv::Point2f > in_corners_points, cv::Point in_centroid, cv::Rect in_initial_box, cv::Rect& out_boundingbox)
+void LkTracker::GetRectFromPoints(std::vector< cv::Point2f > in_corners_points, cv::Rect& out_boundingbox)
 {
-	int num_points = 0;
+
 	if (in_corners_points.empty())
-		return num_points;
+	{
+		return;
+	}
 
 	int min_x=in_corners_points[0].x, min_y=in_corners_points[0].y, max_x=in_corners_points[0].x, max_y=in_corners_points[0].y;
 
-	float top_x = in_centroid.x + in_initial_box.width/2;
-	float low_x = in_centroid.x - in_initial_box.width/2;
-	float top_y = in_centroid.y + in_initial_box.height/2;
-	float low_y = in_centroid.y - in_initial_box.height/2;
-
 	for (unsigned int i=0; i<in_corners_points.size(); i++)
 	{
-		bool sum_point = true;
-		if (in_corners_points[i].x > 0 &&
-				(in_corners_points[i].x <= top_x) &&
-				(in_corners_points[i].x >= low_x) &&
-				(in_corners_points[i].y <= top_y) &&
-				(in_corners_points[i].y >= low_y)
-			)
+		if (in_corners_points[i].x > 0 )
 		{
 			if (in_corners_points[i].x < min_x)
 				min_x = in_corners_points[i].x;
 			if (in_corners_points[i].x > max_x)
 				max_x = in_corners_points[i].x;
 		}
-		else
-			sum_point = false;
 
-		if (in_corners_points[i].y > 0 &&
-				(in_corners_points[i].x <= top_x) &&
-				(in_corners_points[i].x >= low_x) &&
-				(in_corners_points[i].y <= top_y) &&
-				(in_corners_points[i].y >= low_y)
-			)
+		if (in_corners_points[i].y > 0 )
 		{
 			if (in_corners_points[i].y < min_y)
 				min_y = in_corners_points[i].y;
 			if (in_corners_points[i].y > max_y)
 				max_y = in_corners_points[i].y;
 		}
-		else
-			sum_point = false;
-
-		if (sum_point)
-			num_points++;
 	}
 	out_boundingbox.x 		= min_x;
 	out_boundingbox.y 		= min_y;
 	out_boundingbox.width 	= max_x - min_x;
-	if (out_boundingbox.width > in_initial_box.width)
-		out_boundingbox.width = in_initial_box.width;
 	out_boundingbox.height 	= max_y - min_y;
-	if (out_boundingbox.height > in_initial_box.height)
-				out_boundingbox.height = in_initial_box.height;
 
-	return num_points;
+	return;
 }
 
