@@ -66,6 +66,7 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
 {
   double ret;
 
+  // the read value of current steering position may have some error.
   current_steering_angle -= _STEERING_ANGLE_ERROR;
 
   // angvel, not really used for steering control...
@@ -91,14 +92,35 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
   static double angvel_diff = 0;
   angvel_diff = angvel_diff * 0.0 - current_steering_angvel * 1; 
 
-  // magic params...
+  double k_p = _K_STEERING_P;
+  double k_i = _K_STEERING_I;
   double k_d = _K_STEERING_D;
-  if (fabs(steering_diff) < 10) {
-    k_d = _K_STEERING_D / 2;
+
+  // change PID params depending on the driving speed.
+  if (vstate.velocity < 40) {
+    k_p = _K_STEERING_P_40;
+    k_i = _K_STEERING_I_40;
+    k_d = _K_STEERING_D_40;
   }
-  
-  // use k_d instead of _K_STEERING_D.
-  double target_steering_torque = steering_diff * _K_STEERING_P + steering_diff_sum * _K_STEERING_I + angvel_diff * k_d;
+  else if (vstate.velocity < 30) {
+    k_p = _K_STEERING_P_30;
+    k_i = _K_STEERING_I_30;
+    k_d = _K_STEERING_D_30;
+  }
+  else if (vstate.velocity < 20) {
+    k_p = _K_STEERING_P_20;
+    k_i = _K_STEERING_I_20;
+    k_d = _K_STEERING_D_20;
+  }
+  else if (vstate.velocity < 10) {
+    k_p = _K_STEERING_P_10;
+    k_i = _K_STEERING_I_10;
+    k_d = _K_STEERING_D_10;
+  }
+
+  // torque control.
+  double target_steering_torque = 
+    steering_diff * k_p + steering_diff_sum * k_i + angvel_diff * k_d;
 
   // clip
   if (target_steering_torque > _STEERING_MAX_TORQUE) {
@@ -135,7 +157,12 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
     return;
   }
 
-  torque = _str_torque_pid_control(current_steering_angle, cmd_steering_angle);
+  if (vstate.velocity < 1) { // if nearly at stop, don't control steering.
+    torque = 0;
+  }
+  else {
+    torque = _str_torque_pid_control(current_steering_angle, cmd_steering_angle);
+  }
   cout << "ZMP_SET_STR_TORQUE(" << torque << ")" << endl;
   ZMP_SET_STR_TORQUE(torque);
 }

@@ -212,12 +212,7 @@ static void send_sql()
   // my_location
   for(size_t i = 0; i < current_pose_position.size(); i++) {
     std::string timestamp;
-    if(use_current_time) {
-      ros::Time t = ros::Time::now();
-      timestamp = getTimeStamp(t.sec, t.nsec);
-    } else {
-      timestamp = getTimeStamp(current_pose_position[i].header.stamp.sec,current_pose_position[i].header.stamp.nsec);
-    }
+    timestamp = getTimeStamp(current_pose_position[i].header.stamp.sec,current_pose_position[i].header.stamp.nsec);
     value += pose_to_insert_statement(current_pose_position[i].pose, timestamp, OWN_TOPIC_NAME);
     value += "\n";
   }
@@ -309,7 +304,14 @@ static void person_locate_cb(const visualization_msgs::MarkerArray &obj_pose_msg
 static void current_pose_cb(const geometry_msgs::PoseStamped &pose)
 {
   pthread_mutex_lock(&pose_lock_);
-  current_pose_position.push_back(pose);
+  if(use_current_time) {
+    geometry_msgs::PoseStamped n = pose;
+    ros::Time t = ros::Time::now();
+    n.header.stamp = t;
+    current_pose_position.push_back(n);
+  } else {
+    current_pose_position.push_back(pose);
+  }
   pthread_mutex_unlock(&pose_lock_);
 }
 
