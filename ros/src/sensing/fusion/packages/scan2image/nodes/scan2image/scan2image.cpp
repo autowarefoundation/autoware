@@ -22,7 +22,6 @@
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 #endif
-#define _MANUAL 0
 
 static cv::Mat cameraExtrinsicMat;
 static cv::Mat cameraMat;
@@ -30,9 +29,6 @@ static cv::Mat distCoeff;
 static cv::Size imageSize;
 
 ros::Publisher transformed_point_data;
-cv::Mat translation_global2lrf, translation_global2camera, rotation, intrinsic; //for auto mode
-double x_theta, y_theta, z_theta, x_vector, y_vector, z_vector, fx_camera_param, fy_camera_param, ox_camera_param, oy_camera_param; // for manual mode
-int manual_mode;
 static bool isProjection;
 static bool isIntrinsic;
 Scan_image scan_image;
