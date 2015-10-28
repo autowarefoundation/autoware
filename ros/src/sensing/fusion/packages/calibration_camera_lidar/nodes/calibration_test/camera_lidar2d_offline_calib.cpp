@@ -151,18 +151,11 @@ static void imageCallback(const sensor_msgs::Image& image_raw) {
         cvRodrigues2(v_rotation, m_rotation);
 
         //Get global to scan parameter
-        cvmSet(v_g2l, 0, 0, -1.0 * chess_size * (pat_col - 1) / 2);
-        cvmSet(v_g2l, 0, 1, -1.0 * chess_size * (pat_row - 1) / 2);
+        cvmSet(v_g2l, 0, 0, chess_size * (pat_col - 1) / 2);
+        cvmSet(v_g2l, 0, 1, chess_size * (pat_row - 1) / 2);
         cvmSet(v_g2l, 0, 2, g_scan_z * 1000);
         set_rotation(m_rotation);
         set_g2c(v_g2c);
-
-        printf("--transration global2camera vector--\n");
-        print_param(v_g2c);
-        printf("--transration global2scan vector--\n");
-        print_param(v_g2l);
-        printf("--rotation matrix--\n");
-        print_param(m_rotation);
     }
 
     else if (g_fusion_flag) {
@@ -184,12 +177,64 @@ static void imageCallback(const sensor_msgs::Image& image_raw) {
             exit(EXIT_FAILURE);
         }
 
-        fs << "intrinsic" << m_intrinsic;
-        fs << "rotation" << v_rotation;
-        fs << "rotation_matrix" << m_rotation;
-        fs << "translation_global2lrf" << v_g2l;
-        fs << "translation_global2camera" << v_g2c;
-        fs << "distortion" << m_dist;
+        CvMat *affine_l2g = cvCreateMat(4, 4, CV_64FC1);
+        CvMat *affine_g2c = cvCreateMat(4, 4, CV_64FC1);
+        CvMat *affine_l2c = cvCreateMat(4, 4, CV_64FC1);
+        cvSetZero(affine_l2g);
+        cvSetZero(affine_g2c);
+        cvSetZero(affine_l2c);
+
+        cvmSet(affine_l2g, 0, 1, 1.0);
+        cvmSet(affine_l2g, 1, 0, -1.0);
+        cvmSet(affine_l2g, 2, 2, -1.0);
+        cvmSet(affine_l2g, 0, 3, cvmGet(v_g2l, 0, 1));
+        cvmSet(affine_l2g, 1, 3, cvmGet(v_g2l, 0, 0));
+        cvmSet(affine_l2g, 2, 3, cvmGet(v_g2l, 0, 2));
+        cvmSet(affine_l2g, 3, 3, 1);
+
+        cvmSet(affine_g2c, 0, 0, cvmGet(m_rotation, 0, 0));
+        cvmSet(affine_g2c, 0, 1, cvmGet(m_rotation, 0, 1));
+        cvmSet(affine_g2c, 0, 2, cvmGet(m_rotation, 0, 2));
+        cvmSet(affine_g2c, 1, 0, cvmGet(m_rotation, 1, 0));
+        cvmSet(affine_g2c, 1, 1, cvmGet(m_rotation, 1, 1));
+        cvmSet(affine_g2c, 1, 2, cvmGet(m_rotation, 1, 2));
+        cvmSet(affine_g2c, 2, 0, cvmGet(m_rotation, 2, 0));
+        cvmSet(affine_g2c, 2, 1, cvmGet(m_rotation, 2, 1));
+        cvmSet(affine_g2c, 2, 2, cvmGet(m_rotation, 2, 2));
+        cvmSet(affine_g2c, 0, 3, cvmGet(v_g2c, 0, 0));
+        cvmSet(affine_g2c, 1, 3, cvmGet(v_g2c, 0, 1));
+        cvmSet(affine_g2c, 2, 3, cvmGet(v_g2c, 0, 2));
+        cvmSet(affine_g2c, 3, 3, 1);
+
+        cvmMul(affine_g2c, affine_l2g, affine_l2c);
+
+        printf("--transration v_g2l\n");
+        print_param(v_g2l);
+        printf("--transration v_g2c\n");
+        print_param(v_g2c);
+        printf("--transration m_rotation\n");
+        print_param(m_rotation);
+        printf("--transration l2g\n");
+        print_param(affine_l2g);
+        printf("--transration g2c\n");
+        print_param(affine_g2c);
+        printf("--transration l2c\n");
+        print_param(affine_l2c);
+        printf("--intrinsic\n");
+        print_param(m_intrinsic);
+
+        cv::Size image_size(image_raw.width, image_raw.height);
+
+        fs << "CameraExtrinsicMat" << affine_l2c;
+        fs << "CameraMat" << m_intrinsic;
+        fs << "DistCoeff" << m_dist;
+        fs << "ImageSize" << image_size;
+        fs << "ReprojectionError" << 0;
+
+        cvReleaseMat (&affine_g2c);
+        cvReleaseMat (&affine_l2g);
+        cvReleaseMat (&affine_l2c);
+
         fs.release();
         printf("saved\n");
         g_fusion_flag = true;
