@@ -29,7 +29,7 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(src)
@@ -45,7 +45,7 @@ target_link_libraries(librcnn
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   glog
-  caffe
+  ${CAFFE_PATH}/lib/libcaffe.so
 )
 
 add_dependencies(librcnn runtime_manager_generate_messages_cpp cv_tracker_generate_messages_cpp)
