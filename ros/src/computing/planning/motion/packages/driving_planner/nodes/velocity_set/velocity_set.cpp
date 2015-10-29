@@ -446,6 +446,8 @@ static void DisplayObstacleWaypoint(int i, EControl kind)
 // display by markers.
 static void DisplayDetectionRange(int i)
 {
+    if (i < 0)
+      return;
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/map";
@@ -479,6 +481,8 @@ static void DisplayDetectionRange(int i)
 // display by markers.
 static void DisplayDecelerationRange(int i)
 {
+    if (i < 0)
+      return;
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = "/map";
