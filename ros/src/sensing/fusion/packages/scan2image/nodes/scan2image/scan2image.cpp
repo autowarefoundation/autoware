@@ -102,10 +102,11 @@ static void intrinsic_callback(const sensor_msgs::CameraInfo& msg)
             free(scan_image.distance);
             free(scan_image.intensity);
         }
-        scan_image.distance = (float *)malloc(sizeof(float) * msg.height * msg.width);
-        scan_image.intensity = (float *)malloc(sizeof(float) * msg.height * msg.width);
+        scan_image.distance = (float *)calloc(msg.height * msg.width, sizeof(float));
+        scan_image.intensity = (float *)calloc(msg.height * msg.width, sizeof(float));
         scan_image.max_y = NO_DATA;
         scan_image.min_y = NO_DATA;
+
     }
 
 	imageSize.height = msg.height;
@@ -200,6 +201,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
         } else if ((scan_image.min_y > (int)image_points_dataset.image_points.y.at(i)) || (scan_image.min_y == NO_DATA)) {
             scan_image.min_y = (int)image_points_dataset.image_points.y.at(i);
         }
+
         /* for init zero */
         stored_num[count] = (int)image_points_dataset.image_points.x.at(i) * imageSize.height + (int)image_points_dataset.image_points.y.at(i);
         count++;
@@ -226,6 +228,8 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     for (i = 0; i < count; ++i) {
         scan_image.distance[stored_num[i]] = 0;
     }
+    scan_image.max_y = NO_DATA;
+    scan_image.min_y = NO_DATA;
 }
 
 int main(int argc, char **argv)
