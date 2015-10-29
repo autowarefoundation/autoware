@@ -243,18 +243,32 @@ if(EXISTS "/usr/local/cuda")
   endif()
 
   set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR/nodes/vehicle_tracker}")
-  add_custom_command(
-    OUTPUT rbsspfvehicletracker_cuda.o
-    COMMAND ${CUDA_COMPILER}
-    "-std=c++11" "-rdc=true" "--compiler-options" "-fPIC" "-m64" "-O3"
-    "-arch=${CUDA_ARCH}" "-c" "--compiler-options" "-fno-strict-aliasing"
-    "-use_fast_math" "--ptxas-options=-v"
-    "-I/usr/local/cuda/include"  "-L/usr/local/cuda/lib64"
-    "-lcudart" "-lcuda" "-lcudadevrt"
-    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/rbsspfvehicletracker.cu"
-    "-o" "${CATKIN_DEVEL_PREFIX}/lib/rbsspfvehicletracker_cuda.o"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/rbsspfvehicletracker.cu"
-    )
+  
+  FILE(GLOB SOURCES "*.cu" "*.cpp" "*.c" "*.h")
+  
+  cuda_add_executable(rbsspfvehicletracker
+  	${SOURCES})
+  
+  LIST(APPEND CMAKE_CXX_FLAGS "-std=c++11 -rdc=true --compiler-options -fPIC -m64 -O3")
+  LIST(APPEND CUDA_NVCC_FLAGS "-arch=${CUDA_ARCH} -c --compiler-options -fno-strict-aliasing")
+  LIST(APPEND CUDA_NVCC_FLAGS "-use_fast_math --ptxas-options=-v")
+  
+  target_link_libraries(rbsspfvehicletracker
+    /usr/local/cuda/lib/libcudart)
+
+  #add_custom_command(
+  #  OUTPUT rbsspfvehicletracker_cuda.o
+  #  COMMAND ${CUDA_COMPILER}
+  #  "-std=c++11" "-rdc=true" "--compiler-options" "-fPIC" "-m64" "-O3"
+  #  "-arch=${CUDA_ARCH}" "-c" "--compiler-options" "-fno-strict-aliasing"
+  #  "-use_fast_math" "--ptxas-options=-v"
+  #  "-I/usr/local/cuda/include"  "-L/usr/local/cuda/lib64"
+  #  "-lcudart" "-lcuda" "-lcudadevrt"
+  #  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/rbsspfvehicletracker.cu"
+  #  "-o" "${CATKIN_DEVEL_PREFIX}/lib/rbsspfvehicletracker_cuda.o"
+  #  DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/rbsspfvehicletracker.cu"
+  #  )
+    
   # add_library(vehicle_tracker_gpu_parts
   #   STATIC
   #   rbsspfvehicletracker_cuda.o
@@ -350,7 +364,7 @@ if(EXISTS "/usr/local/cuda")
     ${Qt5LIBROOT}/libQt5OpenGL.so
     ${Qt5LIBROOT}/libQt5Widgets.so
     #${CATKIN_DEVEL_PREFIX}/lib/rbsspfvehicletracker_cuda.o
-    rbsspfvehicletracker_cuda.o
+    #rbsspfvehicletracker_cuda.o
     )
 
 
