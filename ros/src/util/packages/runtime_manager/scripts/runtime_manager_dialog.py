@@ -67,7 +67,6 @@ from runtime_manager.msg import ConfigVelocitySet
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
-from runtime_manager.msg import ConfigWaypointLoader
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
 from tablet_socket.msg import mode_cmd
