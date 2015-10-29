@@ -6,11 +6,11 @@
 	
 	<!-- arguments list -->
 	
-	<arg name="network_definition_file" default="/home/ne0/fast-rcnn/models/VGG16/test.prototxt"/>
-	<arg name="pretrained_model_file" default="/home/ne0/fast-rcnn/data/fast_rcnn_models/vgg16_fast_rcnn_iter_40000.caffemodel"/> 
+	<arg name="network_definition_file" default="$(env HOME)/fast-rcnn/models/VGG16/test.prototxt"/>
+	<arg name="pretrained_model_file" default="$(env HOME)/fast-rcnn/data/fast_rcnn_models/vgg16_fast_rcnn_iter_40000.caffemodel"/> 
 <!--
-	<arg name="network_definition_file" default="/home/ne0/fast-rcnn/models/CaffeNet/test.prototxt"/>
-	<arg name="pretrained_model_file" default="/home/ne0/fast-rcnn/output/default/voc_2012_trainval"/>-->
+	<arg name="network_definition_file" default="$(env HOME)/fast-rcnn/models/CaffeNet/test.prototxt"/>
+	<arg name="pretrained_model_file" default="$(env HOME)/fast-rcnn/output/default/voc_2012_trainval"/>-->
 	
 	<!-- RCNN detection -->
 	<node pkg="cv_tracker" name="rcnn" type="rcnn_node" output="log">

@@ -12,7 +12,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   libdpm_ttic
   fusion
   kf
-  librcnn
 )
 FIND_PACKAGE(OpenCV REQUIRED)
 
@@ -208,21 +207,28 @@ set(CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")								####
 set(CUDA_INCLUDE_PATH "/usr/local/cuda/include/")												####
 ####################################################################################################
 
-ADD_EXECUTABLE(rcnn_node
-  nodes/rcnn/rcnn_node.cpp
-)
+if(EXISTS "${CAFFE_PATH}")
+  find_package(librcnn)
 
-include_directories(${catkin_INCLUDE_DIRS})
-include_directories(${CAFFE_PATH}/include)
-include_directories(${CUDA_INCLUDE_PATH})
+  include_directories(${librcnn_INCLUDE_DIRS})
+  include_directories(${catkin_INCLUDE_DIRS})
+  include_directories(${CAFFE_PATH}/include)
+  include_directories(${CUDA_INCLUDE_PATH})
+  
+  ADD_EXECUTABLE(rcnn_node
+    nodes/rcnn/rcnn_node.cpp
+  )
 
-TARGET_LINK_LIBRARIES(rcnn_node
-  librcnn
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
-)
+  TARGET_LINK_LIBRARIES(rcnn_node
+    librcnn
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+  )
 
-ADD_DEPENDENCIES(rcnn_node
-  rcnn_node_generate_messages_cpp
-  librcnn
-)
+  ADD_DEPENDENCIES(rcnn_node
+    rcnn_node_generate_messages_cpp
+    librcnn
+  )
+else()
+  message("'FastRCNN/Caffe' are not installed. 'rcnn_node' will not be built.")
+endif()

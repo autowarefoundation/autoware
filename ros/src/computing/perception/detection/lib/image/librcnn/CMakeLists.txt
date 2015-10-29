@@ -15,6 +15,8 @@ set(CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")				####
 set(CUDA_INCLUDE_PATH "/usr/local/cuda/include/")						####
 ####################################################################################################
 
+if(EXISTS "${CAFFE_PATH}")
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -57,3 +59,7 @@ INSTALL(
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
 )
+
+else()
+  message("'FastRCNN/Caffe ' are not installed. 'librcnn' will not be built.")
+endif()
