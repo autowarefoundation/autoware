@@ -48,8 +48,6 @@ target_link_libraries(librcnn
   ${CAFFE_PATH}/lib/libcaffe.so
 )
 
-add_dependencies(librcnn runtime_manager_generate_messages_cpp cv_tracker_generate_messages_cpp)
-
 #############
 ## Install ##
 #############
