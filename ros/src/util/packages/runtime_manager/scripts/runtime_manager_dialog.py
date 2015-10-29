@@ -202,17 +202,18 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.add_params(items.get('params', []))
 
+		self.sys_gdic = items.get('sys_gui')
+		self.sys_gdic['update_func'] = self.update_func
+
 		self.computing_cmd = {}
 		self.all_cmd_dics.append(self.computing_cmd)
 		for i in range(2):
 			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
 			tree_ctrl.ExpandAll()
-			fix_link_color(tree_ctrl)
 			tree_ctrl.SetBackgroundColour(wx.NullColour)
 			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
 
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
-		self.Bind(CT.EVT_TREE_ITEM_HYPERLINK, self.OnTreeHyperlinked)
 
 		self.setup_buttons(items.get('buttons', {}), self.computing_cmd)
 
@@ -258,7 +259,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.tree_ctrl_data.Destroy()
 		tree_ctrl = self.create_tree(parent, dic, None, None, self.data_cmd)
 		tree_ctrl.ExpandAll()
-		fix_link_color(tree_ctrl)
 		tree_ctrl.SetBackgroundColour(wx.NullColour)
 		self.tree_ctrl_data = tree_ctrl
 
@@ -382,11 +382,7 @@ class MyFrame(rtmgr.MyFrame):
 		backup = os.path.expanduser('~/.toprc-autoware-backup')
 		self.toprc_setup(toprc, backup)
 
-		# get top cmd cpu N
-		s = subprocess.check_output(['sh', '-c', 'top -b -n 1 | grep ^%Cpu | wc -l']).strip()
-		cpu_n = int(s)
-
-		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(cpu_n) ]
+		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(psutil.NUM_CPUS) ]
 		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
@@ -626,8 +622,11 @@ class MyFrame(rtmgr.MyFrame):
 	def OnChecked_obj(self, obj):
 		self.OnLaunchKill_obj(obj)
 
-	def OnTreeHyperlinked(self, event):
-		self.OnHyperlinked_obj(event.GetItem())
+	#def OnTreeHyperlinked(self, event):
+	#	self.OnHyperlinked_obj(event.GetItem())
+
+	def OnHyperlinked(self, event):
+		self.OnHyperlinked_obj(event.GetEventObject())
 
 	def OnHyperlinked_obj(self, obj):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
@@ -722,6 +721,10 @@ class MyFrame(rtmgr.MyFrame):
 		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj) if obj else (None, None, None)
 		return gdic if gdic else def_ret
 
+	def cfg_prm_to_obj(self, arg_dic):
+		return get_top( [ d.get('obj') for d in self.config_dic.values() \
+			if all( [ d.get(k) == v for (k,v) in arg_dic.items() ] ) ] )
+
 	def update_func(self, pdic, gdic, prm):
 		pdic_empty = (pdic == {})
 		for var in prm.get('vars', []):
@@ -743,6 +746,36 @@ class MyFrame(rtmgr.MyFrame):
 			self.publish_param_topic(pdic, prm)
 		self.rosparam_set(pdic, prm)
 		self.update_depend_enable(pdic, gdic, prm)
+
+		sys_gdic = getattr(self, 'sys_gdic', None)
+		obj = self.cfg_prm_to_obj( { 'pdic':pdic , 'gdic':sys_gdic , 'param':prm } )
+		self.update_proc_cpu(obj, pdic, prm)
+
+	def update_proc_cpu(self, obj, pdic=None, prm=None):
+		if obj is None or not obj.GetValue():
+			return
+		(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
+		if proc is None:
+			return
+		if pdic is None or prm is None:
+			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj)
+
+		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
+		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
+		cpus = [ i for i in range(psutil.NUM_CPUS) if cpu_chks[i] ]
+		print 'cpus=', cpus
+		set_process_cpu_affinity(proc, cpus)
+
+		nice = self.param_value_get(pdic, prm, 'nice', 1)
+		print 'nice=', nice
+		set_process_nice(proc, nice)
+
+	def param_value_get(self, pdic, prm, name, def_ret=None):
+		def_ret = self.param_default_value_get(prm, name, def_ret)
+		return pdic.get(name, def_ret)
+
+	def param_default_value_get(self, prm, name, def_ret=None):
+		return get_top([ var.get('v') for var in prm.get('vars') if var.get('name') == name ], def_ret)
 
 	def update_depend_enable(self, pdic, gdic, prm):
 		for var in prm.get('vars', []):
@@ -1032,7 +1065,7 @@ class MyFrame(rtmgr.MyFrame):
 		mem_ibl.lmt_bar_prg = rate_mem
 
 		alerted = False
-		cpu_n = len(cpu_ibls)
+		cpu_n = psutil.NUM_CPUS
 
 		while not ev.wait(interval):
 			s = subprocess.check_output(['sh', '-c', 'env COLUMNS=512 top -b -n 2 -d 0.1']).strip()
@@ -1267,7 +1300,7 @@ class MyFrame(rtmgr.MyFrame):
 	def topics_proc_th_start(self, topic):
 		out = subprocess.PIPE
 		err = subprocess.STDOUT
-		self.topics_echo_proc = subprocess.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
+		self.topics_echo_proc = psutil.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
 
 		self.topics_echo_thinf = th_start(self.topics_echo_th)
 		
@@ -1513,6 +1546,8 @@ class MyFrame(rtmgr.MyFrame):
 		(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
 		if proc != proc_bak:
 			self.toggle_enable_obj(obj)
+		if proc:
+			self.update_proc_cpu(obj)
 
 	def OnRosbagPlay(self, event):
 		obj = event.GetEventObject()
@@ -1661,17 +1696,30 @@ class MyFrame(rtmgr.MyFrame):
 			if 'cmd' in items:
 				cmd_dic[item] = (items['cmd'], None)
 
-			if 'param' in items:
-				prm = self.get_param(items.get('param'))
-				gdic = self.gdic_get_1st(items)
 				pdic = self.load_dic_pdic_setup(name, items)
-				self.add_cfg_info(item, item, name, pdic, gdic, False, prm)
-				if 'no_link' not in gdic.get('flags', []):
-					item.SetHyperText()
+				pnl = wx.Panel(tree, wx.ID_ANY)
+				lkc_sys = self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys')
+				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '(') , lkc_sys ]
+				gdic = self.gdic_get_1st(items)
+				if 'param' in items and 'no_link' not in gdic.get('flags', []):
+					lkc = self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'))
+					add_objs += [ lkc ]
+				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ')') ]
+				szr = sizer_wrap(add_objs, wx.HORIZONTAL, 0, wx.LEFT, 12, pnl)
+				szr.Fit(pnl)
+				item.SetWindow(pnl)
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
+
+	def new_link(self, item, name, pdic, gdic, pnl, link_str, prm_name):
+		lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
+		fix_link_color(lkc)
+		self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
+		prm = self.get_param(prm_name)
+		self.add_cfg_info(lkc, item, name, pdic, gdic, False, prm)
+		return lkc
 
 	def load_dic_pdic_setup(self, name, dic):
 		name = dic.get('share_val', dic.get('name', name))
@@ -1760,7 +1808,7 @@ class MyFrame(rtmgr.MyFrame):
 			if f == self.log_th:
 				err = subprocess.PIPE
 
-			proc = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
+			proc = psutil.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
 			self.all_procs.append(proc)
 			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 
@@ -2001,7 +2049,7 @@ class ParamPanel(wx.Panel):
 					szr = static_box_sizer(self, 'topic : ' + self.prm.get('topic'))
 					bak[0].Add(szr, 0, wx.EXPAND | wx.ALL, 4)
 			targ_szr = szr
-			if vp.has_slider or vp.kind =='path':
+			if vp.is_nl():
 				hszr = None if hszr else hszr
 				flag |= wx.EXPAND
 			else:
@@ -2019,7 +2067,8 @@ class ParamPanel(wx.Panel):
 			user_category = gdic_v.get('user_category')
 			if user_category is not None and hszr:
 				user_szr = static_box_sizer(self, user_category, orient=wx.HORIZONTAL)
-				targ_szr.Add(user_szr, 0, 0, 0)
+				(flgs, bdr) = gdic_v.get('user_category_add', [ [], 0 ])
+				targ_szr.Add(user_szr, 0, wx_flag_get(flgs), bdr)
 				targ_szr = hszr = user_szr
 
 			targ_szr.Add(vp, prop, flag, border)
@@ -2106,6 +2155,13 @@ class VarPanel(wx.Panel):
 			self.obj.SetValue(v)
 			self.Bind(wx.EVT_CHECKBOX, self.OnUpdate, self.obj)
 			return
+		if self.kind == 'checkboxes':
+			item_n = self.var.get('item_n', 1)
+			if type(item_n) is str:
+				item_n = eval(item_n)
+			self.obj = Checkboxes(self, item_n, label)
+			self.obj.set(v)
+			return
 		if self.kind == 'toggle_button':
 			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
 			self.obj.SetValue(v)
@@ -2129,7 +2185,7 @@ class VarPanel(wx.Panel):
 		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
 
-		if self.kind is None:
+		if self.kind in ('num', None):
 			if self.has_slider:
 				self.w = self.max - self.min
 				vlst = [ v, self.min, self.max, self.var['v'] ]
@@ -2155,7 +2211,7 @@ class VarPanel(wx.Panel):
 			self.ref.SetMinSize((40,29))
 			szr.Add(self.ref, 0, flag, 4)
 
-		if self.has_slider:
+		if self.has_slider or self.kind == 'num':
 			vszr = wx.BoxSizer(wx.VERTICAL)
 			vszr.Add( self.create_bmbtn("inc.png", self.OnIncBtn) )
 			vszr.Add( self.create_bmbtn("dec.png", self.OnDecBtn) )
@@ -2176,6 +2232,8 @@ class VarPanel(wx.Panel):
 			return self.choices_sel_get()
 		if self.kind in [ 'checkbox', 'toggle_button' ]:
 			return self.obj.GetValue()
+		if self.kind == 'checkboxes':
+			return self.obj.get()
 		if self.kind == 'hide':
 			return self.var.get('v')
 		if self.kind in [ 'path', 'str' ]:
@@ -2226,7 +2284,8 @@ class VarPanel(wx.Panel):
 		self.tc.SetValue(str(ov + step))
 		v = self.get_v()
 		if v != ov:
-			self.slider.SetValue(self.get_int_v())
+			if self.has_slider:
+				self.slider.SetValue(self.get_int_v())
 			self.update()
 
 	def OnUpdate(self, event):
@@ -2246,6 +2305,9 @@ class VarPanel(wx.Panel):
 			self.obj.SetStringSelection(v)
 		else:
 			self.obj.SetSelection(v)
+
+	def is_nl(self):
+		return self.has_slider or self.kind in [ 'path' ]
 
 class MyDialogParam(rtmgr.MyDialogParam):
 	def __init__(self, *args, **kwds):
@@ -2453,6 +2515,29 @@ class InfoBarLabel(wx.BoxSizer):
 			(col1, col2) = (wx.Color(250,0,0), wx.Color(128,0,0)) 
 		self.bar.set_col(col1, col2)
 		self.bar.set(prg)
+
+class Checkboxes(wx.Panel):
+	def __init__(self, parent, item_n, lb):
+		wx.Panel.__init__(self, parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize)
+		self.boxes = [ wx.CheckBox(self, wx.ID_ANY, lb + str(i)) for i in range(item_n) ]
+		vsz = wx.BoxSizer(wx.VERTICAL)
+		for j in range((item_n + 7) / 8):
+			hsz = wx.BoxSizer(wx.HORIZONTAL)
+			for i in range(8):
+				idx = j * 8 + i
+				if idx < len(self.boxes):
+					hsz.Add(self.boxes[idx], 0, wx.LEFT, 8)
+			vsz.Add(hsz)
+		self.SetSizer(vsz)
+		vsz.Fit(self)
+
+	def set(self, vs):
+		vs = vs if vs else [ True for box in self.boxes ]
+		for (box, v) in zip(self.boxes, vs):
+			box.SetValue(v)
+
+	def get(self):
+		return [ box.GetValue() for box in self.boxes ]
 
 class BarLabel(wx.Panel):
 	def __init__(self, parent, txt='', pos=wx.DefaultPosition, size=wx.DefaultSize, style=0, hv=wx.HORIZONTAL, show_lb=True):
@@ -2815,6 +2900,20 @@ def path_expand_cmd(path):
 def prn_dict(dic):
 	for (k,v) in dic.items():
 		print (k, ':', v)
+
+def set_process_nice(proc, value):
+	try:
+		proc.set_nice(value)
+	except Exception:
+		return False
+	return True
+
+def set_process_cpu_affinity(proc, cpus):
+	try:
+		proc.set_cpu_affinity(cpus)
+	except Exception:
+		return False
+	return True
 
 if __name__ == "__main__":
 	path = rtmgr_src_dir() + 'btnrc'
