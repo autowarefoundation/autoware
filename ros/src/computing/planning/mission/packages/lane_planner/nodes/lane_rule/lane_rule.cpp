@@ -44,7 +44,8 @@ static bool is_clothoid(const map_file::DTLane& dtlane);
 static constexpr double RADIUS_MAX = 90000000000;
 
 static double config_acceleration = 1; // m/s^2
-static int config_number_of_zeros_ahead = 1;
+static int config_number_of_zeros_ahead = 0;
+static int config_number_of_zeros_behind = 0;
 
 static bool cached_waypoint = false;
 
@@ -203,6 +204,7 @@ static void config_rule(const runtime_manager::ConfigLaneRule& msg)
 {
 	config_acceleration = msg.acceleration;
 	config_number_of_zeros_ahead = msg.number_of_zeros_ahead;
+	config_number_of_zeros_behind = msg.number_of_zeros_behind;
 }
 
 static bool is_straight(const map_file::DTLane& dtlane)
@@ -585,7 +587,8 @@ static waypoint_follower::lane rule_crossroad(const waypoint_follower::lane& msg
 	return computations;
 }
 
-static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg, double acceleration, size_t fixed_cnt)
+static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg, double acceleration, size_t ahead_cnt,
+					     size_t behind_cnt)
 {
 	waypoint_follower::lane computations = msg;
 
@@ -594,7 +597,7 @@ static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg,
 		return computations;
 
 	for (const size_t& i : indexes)
-		computations = apply_acceleration(computations, acceleration, i, 1, 0);
+		computations = apply_acceleration(computations, acceleration, i, behind_cnt + 1, 0);
 
 	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
 
@@ -604,7 +607,7 @@ static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg,
 	std::reverse(reverse_indexes.begin(), reverse_indexes.end());
 
 	for (const size_t& i : reverse_indexes)
-		computations = apply_acceleration(computations, acceleration, i, fixed_cnt, 0);
+		computations = apply_acceleration(computations, acceleration, i, ahead_cnt + 1, 0);
 
 	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
 
@@ -687,7 +690,8 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 
 	waypoint_follower::lane crossroad = rule_crossroad(green, config_acceleration);
 
-	waypoint_follower::lane stopline = rule_stopline(crossroad, config_acceleration, config_number_of_zeros_ahead);
+	waypoint_follower::lane stopline = rule_stopline(crossroad, config_acceleration,
+							 config_number_of_zeros_ahead, config_number_of_zeros_behind);
 
 	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
 		green.waypoints[i].twist.twist = crossroad.waypoints[i].twist.twist;

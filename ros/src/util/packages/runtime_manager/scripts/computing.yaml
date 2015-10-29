@@ -886,9 +886,14 @@ params :
       v         : 1.0
     - name      : number_of_zeros_ahead
       label     : Number of Zeros Ahead
-      min       : 1
+      min       : 0
       max       : 100
-      v         : 1
+      v         : 0
+    - name      : number_of_zeros_behind
+      label     : Number of Zeros Behind
+      min       : 0
+      max       : 100
+      v         : 0
 
   - name  : lane_stop
     topic : /traffic_light
