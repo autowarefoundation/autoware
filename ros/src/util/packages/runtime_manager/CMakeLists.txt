@@ -11,6 +11,7 @@ find_package(OpenCV REQUIRED)
 
 add_message_files(
   FILES
+  ConfigRcnn.msg
   ConfigCarDpm.msg
   ConfigPedestrianDpm.msg
   ConfigNdt.msg

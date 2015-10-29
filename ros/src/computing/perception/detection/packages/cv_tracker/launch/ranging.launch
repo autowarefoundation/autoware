@@ -2,7 +2,7 @@
   <arg name="car" default="true"/>
   <arg name="pedestrian" default="false"/>
   <arg name="image_node" default="image_obj"/>
-  <arg name="points_node" default="/vscan_image"/>
+  <arg name="points_node" default="/points_image"/>
 
   <group if="$(arg car)">
     <group ns="obj_car">

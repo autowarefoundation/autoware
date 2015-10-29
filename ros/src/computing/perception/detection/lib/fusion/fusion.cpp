@@ -248,6 +248,7 @@ void fuse()
 	getVScanPoints(vScanPoints);//store all the vscanpoints and its data
 
 	fuseFilterDetections(vScanPoints);//filter and store fused objects
+
 }
 
 #if _DEBUG
@@ -442,7 +443,7 @@ std::vector<cv_tracker::image_rect_ranged> getObjectsRectRanged()
 		fused_objects.push_back(obj_ranged);
 	}
 
-    return fused_objects;
+	return fused_objects;
 }
 
 std::string getObjectsType()
