@@ -884,8 +884,8 @@ params :
       min       : 0
       max       : 100
       v         : 1.0
-    - name      : number_of_zeros
-      label     : Number of Zeros
+    - name      : number_of_zeros_ahead
+      label     : Number of Zeros Ahead
       min       : 1
       max       : 100
       v         : 1

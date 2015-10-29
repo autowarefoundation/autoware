@@ -44,7 +44,7 @@ static bool is_clothoid(const map_file::DTLane& dtlane);
 static constexpr double RADIUS_MAX = 90000000000;
 
 static double config_acceleration = 1; // m/s^2
-static int config_number_of_zeros = 1;
+static int config_number_of_zeros_ahead = 1;
 
 static bool cached_waypoint = false;
 
@@ -202,7 +202,7 @@ static void cache_dtlane(const map_file::DTLaneArray& msg)
 static void config_rule(const runtime_manager::ConfigLaneRule& msg)
 {
 	config_acceleration = msg.acceleration;
-	config_number_of_zeros = msg.number_of_zeros;
+	config_number_of_zeros_ahead = msg.number_of_zeros_ahead;
 }
 
 static bool is_straight(const map_file::DTLane& dtlane)
@@ -687,7 +687,7 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 
 	waypoint_follower::lane crossroad = rule_crossroad(green, config_acceleration);
 
-	waypoint_follower::lane stopline = rule_stopline(crossroad, config_acceleration, config_number_of_zeros);
+	waypoint_follower::lane stopline = rule_stopline(crossroad, config_acceleration, config_number_of_zeros_ahead);
 
 	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
 		green.waypoints[i].twist.twist = crossroad.waypoints[i].twist.twist;
