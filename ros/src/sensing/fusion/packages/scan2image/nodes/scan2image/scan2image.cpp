@@ -136,9 +136,9 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 
     static Scan_points_dataset scan_points_dataset;
     static Image_points_dataset image_points_dataset;
-    static int i;
-    static int count;
     static int stored_num[MAX_IMAGE_WIDTH * MAX_IMAGE_HEIGHT];
+    int i;
+    int count;
 
 //    ROS_INFO("angle_min[%f]\nangle_max:[%f]\nangle_increment:[%f]\ntime_increment:[%f]\nscan_time:[%f]\nrange_min:[%f]\nrange_max:[%f]\n", msg->angle_min * 180 / 3.141592, msg->angle_max * 180 / 3.141592, msg->angle_increment * 180 / 3.141592, msg->time_increment, msg->scan_time, msg->range_min, msg->range_max);
 
