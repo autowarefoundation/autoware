@@ -166,9 +166,9 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
       target_accel_stroke = 0;
     }
 
-    cout << "e = " << e << endl;
-    cout << "e_i = " << e_i << endl;
-    cout << "e_d = " << e_d << endl;
+    //cout << "e = " << e << endl;
+    //cout << "e_i = " << e_i << endl;
+    //cout << "e_d = " << e_d << endl;
 
     ret = target_accel_stroke;
 

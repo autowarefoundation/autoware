@@ -236,10 +236,10 @@ void Control(vel_data_t vel, void* p)
   int str_debug = atoi(s.c_str());
   cout << "str_debug = " << str_debug << " degree" << endl;
   cmd_steering_angle = str_debug;
-  if (cmd_steering_angle > 60)
-    cmd_steering_angle = 60;
-  if (cmd_steering_angle < -60)
-    cmd_steering_angle = -60;
+  if (cmd_steering_angle > 360)
+    cmd_steering_angle = 360;
+  if (cmd_steering_angle < -360)
+    cmd_steering_angle = -360;
 
 #endif
 

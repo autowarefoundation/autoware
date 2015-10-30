@@ -64,21 +64,15 @@ void MainWindow::SetStrMode(int mode)
 
 double _str_torque_pid_control(double current_steering_angle, double cmd_steering_angle)
 {
+  double e;
+  static double e_prev = 0xffffffff;
+  double e_i;
+  double e_d;
   double ret;
 
-  // the read value of current steering position may have some error.
+  // adjust the steering angle error (default offset).
   current_steering_angle -= _STEERING_ANGLE_ERROR;
 
-  // angvel, not really used for steering control...
-  static double prev_steering_angle = -100000;
-  if (prev_steering_angle == -100000) {
-    prev_steering_angle = current_steering_angle;
-  }
-
-  double current_steering_angvel = (current_steering_angle - prev_steering_angle) / (STEERING_INTERNAL_PERIOD/1000.0);
-
-  /////////////////////////////////
-  // angle PID control
   double steering_diff = cmd_steering_angle - current_steering_angle; 
   steering_diff_sum += steering_diff;
 
@@ -89,60 +83,66 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
     steering_diff_sum = -_STEERING_MAX_SUM;
   }
 
-  static double angvel_diff = 0;
-  angvel_diff = angvel_diff * 0.0 - current_steering_angvel * 1; 
+  e = steering_diff;
+  e_i = steering_diff_sum;
+
+  if (e_prev == 0xffffffff) {
+    e_prev = e;
+  }
+
+  e_d = (e - e_prev) / (STEERING_INTERNAL_PERIOD/1000.0);
 
   double k_p = _K_STEERING_P;
   double k_i = _K_STEERING_I;
   double k_d = _K_STEERING_D;
 
+  double steering_max_torque = _STEERING_MAX_TORQUE;
+
   // change PID params depending on the driving speed.
-  if (vstate.velocity < 40) {
-    k_p = _K_STEERING_P_40;
-    k_i = _K_STEERING_I_40;
-    k_d = _K_STEERING_D_40;
-  }
-  else if (vstate.velocity < 30) {
-    k_p = _K_STEERING_P_30;
-    k_i = _K_STEERING_I_30;
-    k_d = _K_STEERING_D_30;
-  }
-  else if (vstate.velocity < 20) {
-    k_p = _K_STEERING_P_20;
-    k_i = _K_STEERING_I_20;
-    k_d = _K_STEERING_D_20;
-  }
-  else if (vstate.velocity < 10) {
+  if (vstate.velocity < 10) {
     k_p = _K_STEERING_P_10;
     k_i = _K_STEERING_I_10;
     k_d = _K_STEERING_D_10;
+
+    // if angular velocity is slow, ignore D to smoothen the steer.
+    if (fabs(e_d) < _STEERING_ANGVEL_BOUNDARY) {
+      e_d = 0;
+    }
+    // if the error is small, ignore D and I to stabilize the steer.
+    else if (fabs(e) < _STEERING_IGNORE_ERROR) {
+      e_d = 0;
+      steering_diff_sum = 0;
+    }
+
+    // slow down the steer speed.
+    steering_max_torque /= 2.0;
   }
 
-  // torque control.
-  double target_steering_torque = 
-    steering_diff * k_p + steering_diff_sum * k_i + angvel_diff * k_d;
+  // torque control
+  double target_steering_torque = e * k_p + e_i * k_i + e_d * k_d;
 
   // clip
-  if (target_steering_torque > _STEERING_MAX_TORQUE) {
-    target_steering_torque = _STEERING_MAX_TORQUE;
+  if (target_steering_torque > steering_max_torque) {
+    target_steering_torque = steering_max_torque;
   }
-  if (target_steering_torque < -_STEERING_MAX_TORQUE) {
-    target_steering_torque = -_STEERING_MAX_TORQUE;
+  if (target_steering_torque < -steering_max_torque) {
+    target_steering_torque = -steering_max_torque;
   }
 
   ret = target_steering_torque;
-
-  prev_steering_angle  = current_steering_angle;
 
 #if 1 /* log */ 
   ofstream ofs("/tmp/steering.log", ios::app);
   ofs << cmd_steering_angle << " " 
       << current_steering_angle << " " 
-      << steering_diff << " "  
-      << steering_diff_sum << " "  
-      << current_steering_angvel << " "  
+      << e << " "  
+      << e_i << " "  
+      << e_d << " "  
+      << (e - e_prev) / (STEERING_INTERNAL_PERIOD/1000.0) << " "
       << target_steering_torque << endl;
 #endif
+
+  e_prev = e;
 
   return ret;
 }
