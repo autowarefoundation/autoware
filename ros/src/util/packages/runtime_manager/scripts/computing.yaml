@@ -290,7 +290,58 @@ buttons:
   pedestrian_kf :
     param   : pedestrian_kf
 
+sys_gui:
+  dialog   : MyDialogParam
+  cpu_chks :
+    user_category : Migration Allowance
+    user_category_add : [ [ all ], 8 ]
+    flags         : [ nl ]
+  nice     :
+    user_category : Best-Effort
+    user_category_add : [ [ all, expand ], 8 ]
+    flags         : [ nl, hline ]
+  real_time:
+    flags         : [ nl, left ]
+    border        : 8
+  prio     :
+    border        : 16
+    flags         : [ left ]
+  period   :
+    border        : 16
+    flags         : [ left ]
+  budget   :
+    border        : 16
+    flags         : [ left ]
+
 params :
+  - name  : sys
+    vars  :
+    - name     : cpu_chks
+      label    : CPU
+      kind     : checkboxes
+      item_n   : psutil.NUM_CPUS
+      v        : []
+    - name     : nice
+      label    : 'nice:'
+      kind     : num
+      v        : 0
+    - name     : real_time
+      label    : Real-Time
+      kind     : checkbox
+      v        : False
+    - name     : prio
+      label    : 'prio:'
+      kind     : num
+      v        : 99
+    - name     : period
+      label    : 'period(ms):'
+      kind     : num
+      v        : 100
+    - name     : budget
+      label    : 'budget(ms):'
+      kind     : num
+      v        : 20
+
   - name  : dpm_ocv
     vars  :
     - name     : use_gpu
