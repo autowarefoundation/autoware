@@ -1,18 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(librcnn)
 
+include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
 )
-
+FIND_PACKAGE(CUDA)
 find_package(OpenCV REQUIRED)
+
+pkg_check_modules(HDF5 hdf5)
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 ##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	#### 
 set(CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")				####
-set(CUDA_INCLUDE_PATH "/usr/local/cuda/include/")						####
 ####################################################################################################
 
 if(EXISTS "${CAFFE_PATH}")
@@ -31,10 +33,17 @@ catkin_package(
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(src)
-include_directories(${CAFFE_PATH}/include)
-include_directories(${CUDA_INCLUDE_PATH})
+INCLUDE_DIRECTORIES(
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${CAFFE_PATH}/include
+)
+IF(CUDA_FOUND)
+INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+ENDIF()
+IF(HDF5_FOUND)
+INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
+ENDIF()
 
 ## Declare a cpp library
 add_library(librcnn
