@@ -324,7 +324,7 @@ params :
     - name     : nice
       label    : 'nice:'
       kind     : num
-      v        : 1
+      v        : 0
     - name     : real_time
       label    : Real-Time
       kind     : checkbox

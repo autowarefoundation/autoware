@@ -763,12 +763,18 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
 		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
 		cpus = [ i for i in range(psutil.NUM_CPUS) if cpu_chks[i] ]
-		print 'cpus=', cpus
-		set_process_cpu_affinity(proc, cpus)
-
-		nice = self.param_value_get(pdic, prm, 'nice', 1)
-		print 'nice=', nice
-		set_process_nice(proc, nice)
+		nice = self.param_value_get(pdic, prm, 'nice', 0)
+		procs = [ proc ] + proc.get_children(recursive=True)
+		for proc in procs:
+			print 'pid={}'.format(proc.pid)
+			if proc.get_nice() != nice:
+				print 'nice {} -> {}'.format(proc.get_nice(), nice)
+				if set_process_nice(proc, nice) is False:
+					print 'Err set_process_nice()'
+			if proc.get_cpu_affinity() != cpus:
+				print 'cpus {} -> {}'.format(proc.get_cpu_affinity(), cpus)
+				if set_process_cpu_affinity(proc, cpus) is False:
+					print 'Err set_process_cpu_affinity()'
 
 	def param_value_get(self, pdic, prm, name, def_ret=None):
 		def_ret = self.param_default_value_get(prm, name, def_ret)
