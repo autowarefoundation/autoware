@@ -70,6 +70,10 @@ subs :
             flags  : [ left ]
           part_model_car :
             flags  : [ hline ]
+            
+      - name : rcnn_node
+        cmd  : roslaunch cv_tracker rcnn.launch
+        param: rcnn
 
       - name : range_fusion
         cmd  : roslaunch cv_tracker ranging.launch
@@ -286,7 +290,58 @@ buttons:
   pedestrian_kf :
     param   : pedestrian_kf
 
+sys_gui:
+  dialog   : MyDialogParam
+  cpu_chks :
+    user_category : Migration Allowance
+    user_category_add : [ [ all ], 8 ]
+    flags         : [ nl ]
+  nice     :
+    user_category : Best-Effort
+    user_category_add : [ [ all, expand ], 8 ]
+    flags         : [ nl, hline ]
+  real_time:
+    flags         : [ nl, left ]
+    border        : 8
+  prio     :
+    border        : 16
+    flags         : [ left ]
+  period   :
+    border        : 16
+    flags         : [ left ]
+  budget   :
+    border        : 16
+    flags         : [ left ]
+
 params :
+  - name  : sys
+    vars  :
+    - name     : cpu_chks
+      label    : CPU
+      kind     : checkboxes
+      item_n   : psutil.NUM_CPUS
+      v        : []
+    - name     : nice
+      label    : 'nice:'
+      kind     : num
+      v        : 0
+    - name     : real_time
+      label    : Real-Time
+      kind     : checkbox
+      v        : False
+    - name     : prio
+      label    : 'prio:'
+      kind     : num
+      v        : 99
+    - name     : period
+      label    : 'period(ms):'
+      kind     : num
+      v        : 100
+    - name     : budget
+      label    : 'budget(ms):'
+      kind     : num
+      v        : 20
+
   - name  : dpm_ocv
     vars  :
     - name     : use_gpu
@@ -884,11 +939,16 @@ params :
       min       : 0
       max       : 100
       v         : 1.0
-    - name      : number_of_zeros
-      label     : Number of Zeros
-      min       : 1
+    - name      : number_of_zeros_ahead
+      label     : Number of Zeros Ahead
+      min       : 0
       max       : 100
-      v         : 1
+      v         : 0
+    - name      : number_of_zeros_behind
+      label     : Number of Zeros Behind
+      min       : 0
+      max       : 100
+      v         : 0
 
   - name  : lane_stop
     topic : /traffic_light
@@ -1050,3 +1110,43 @@ params :
       min   : 0.0
       max   : 5.0
       v     : 1.0
+
+  - name  : rcnn
+    topic : /config/rcnn
+    msg   : ConfigRcnn
+    vars  :
+    - name  : score_threshold
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.6
+    - name  : group_threshold
+      label : Group Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.3
+    - name  : image_slices
+      label : Image Slices (proposals)
+      min   : 2
+      max   : 32
+      v     : 16
+    - name  : slices_overlap
+      label : Overlap between slices (proposals)
+      min   : 0.0
+      max   : 1.0
+      v     : 0.7
+    - name  : b_mean
+      label : Blue Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 192.9801
+    - name  : g_mean
+      label : Green Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 115.9465
+    - name  : r_mean
+      label : Red Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 122.7717

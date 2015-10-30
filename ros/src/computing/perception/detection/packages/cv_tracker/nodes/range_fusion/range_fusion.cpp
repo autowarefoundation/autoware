@@ -35,12 +35,13 @@ static void publishTopic();
 static ros::Publisher fused_objects;
 static std_msgs::Header sensor_header;
 
+static bool ready_;
+
 static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 {
+	ready_ = false;
 	setDetectedObjects(image_object);
-
-	fuse();
-	publishTopic();
+	ready_ = true;
 }
 
 /*static void ScanImageCallback(const scan2image::ScanImage& scan_image)
@@ -54,11 +55,15 @@ static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 
 static void PointsImageCallback(const points2image::PointsImage& points_image)
 {
-	setPointsImage(points_image);
-	sensor_header = points_image.header;
+	if (ready_)
+	{
+		setPointsImage(points_image);
+		sensor_header = points_image.header;
+		fuse();
+		publishTopic();
 
-	fuse();
-	publishTopic();
+		ready_ = false;
+	}
 }
 
 static void publishTopic()
@@ -68,6 +73,7 @@ static void publishTopic()
 	 */
 	cv_tracker::image_obj_ranged fused_objects_msg;
 	fused_objects_msg.header = sensor_header;
+
 	fused_objects_msg.type = getObjectsType();
 	fused_objects_msg.obj = getObjectsRectRanged();
 	fused_objects.publish(fused_objects_msg);

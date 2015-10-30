@@ -105,6 +105,7 @@
 #define _ACCEL_STROKE_DELTA_MAX 1000
 #define _ACCEL_RELEASE_STEP 400
 #define _ACCEL_PEDAL_MAX 1700
+#define _ACCEL_PEDAL_OFFSET 200
 
 #define _K_BRAKE_P 40.0
 #define _K_BRAKE_I 10.0
@@ -115,6 +116,7 @@
 #define _BRAKE_RELEASE_STEP 500
 #define _BRAKE_PEDAL_MAX 4095
 #define _BRAKE_PEDAL_MED 3200
+#define _BRAKE_PEDAL_OFFSET 1000
 
 // steering parameters
 #define _STEERING_MAX_ANGVELSUM 1000
@@ -144,9 +146,9 @@
 #define _K_STEERING_D_20 2
 
 // when slower than 10km/h
-#define _K_STEERING_P_10 3
+#define _K_STEERING_P_10 4
 #define _K_STEERING_I_10 2
-#define _K_STEERING_D_10 1
+#define _K_STEERING_D_10 2
 
 #define _STEERING_ANGLE_ERROR -12 // deg
 
