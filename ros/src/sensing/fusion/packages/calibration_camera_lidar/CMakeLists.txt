@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(calibration_camera_lidar)
 
 include(FindPkgConfig)
+include(FindLibXml2)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
@@ -121,7 +122,7 @@ add_custom_target(mainwindow_moc DEPENDS mainwindow_moc.cpp)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  /usr/include/libxml2
+  ${LIBXML2_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
 
   CalibrationToolkit
