@@ -70,7 +70,7 @@ waypoint_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
 #add_library(libtraj_gen lib/libtraj_gen.cpp)
-#target_link_libraries(libtraj_gen ${catkin_LIBRARIES} /usr/lib/libarmadillo.so)
+#target_link_libraries(libtraj_gen ${catkin_LIBRARIES} armadillo)
 
 add_executable(pure_pursuit nodes/pure_pursuit/pure_pursuit.cpp)
 target_link_libraries(pure_pursuit gnss libwaypoint_follower ${catkin_LIBRARIES})
