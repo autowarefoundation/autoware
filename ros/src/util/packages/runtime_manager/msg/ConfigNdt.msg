@@ -10,6 +10,8 @@ int32 lidar_original
 int32 max
 int32 min
 int32 layer
+int32 use_predict_pose
+float32 error_threshold
 float32 resolution
 float32 step_size
 float32 trans_esp

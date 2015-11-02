@@ -99,11 +99,11 @@ int main(int argc, char **argv)
 	n.param<int>("/lane_stop/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
 	n.param<bool>("/lane_stop/pub_waypoint_latch", pub_waypoint_latch, true);
 
-	ros::Subscriber sub_red = n.subscribe("/red_waypoint", sub_waypoint_queue_size, cache_red_lane);
-	ros::Subscriber sub_green = n.subscribe("/green_waypoint", sub_waypoint_queue_size, cache_green_lane);
+	ros::Subscriber sub_red = n.subscribe("/red_waypoints", sub_waypoint_queue_size, cache_red_lane);
+	ros::Subscriber sub_green = n.subscribe("/green_waypoints", sub_waypoint_queue_size, cache_green_lane);
 	ros::Subscriber sub_light = n.subscribe("/traffic_light", sub_light_queue_size, select_current_lane);
 
-	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoint", pub_waypoint_queue_size,
+	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoints", pub_waypoint_queue_size,
 							   pub_waypoint_latch);
 
 	ros::spin();

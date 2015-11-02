@@ -138,7 +138,7 @@ int main(int argc, char **argv)
   private_nh.getParam("decelerate", _decelerate);
   ROS_INFO_STREAM("decelerate :" << _decelerate);
 
-  ros::Publisher lane_pub = nh.advertise<waypoint_follower::lane>("lane_waypoint", 10, true);
+  ros::Publisher lane_pub = nh.advertise<waypoint_follower::lane>("lane_waypoints", 10, true);
 
   std::vector<WP> waypoints = readWaypoint(lane_waypoint_csv.c_str());
   waypoint_follower::lane lane_waypoint = createLaneWaypoint(waypoints);

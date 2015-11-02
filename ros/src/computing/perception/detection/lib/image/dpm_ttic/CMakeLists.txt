@@ -7,6 +7,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   message_generation
 )
 FIND_PACKAGE(OpenCV REQUIRED)
+FIND_PACKAGE(CUDA)
 
 EXECUTE_PROCESS(
   COMMAND uname -m
@@ -22,11 +23,11 @@ catkin_package(
 SET(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_C_FLAGS}")
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
-IF(EXISTS "/usr/local/cuda")
+IF(CUDA_FOUND)
 INCLUDE_DIRECTORIES(
   include/dpm_ttic
   ${catkin_INCLUDE_DIRS}
-  "/usr/local/cuda/include"
+  ${CUDA_INCLUDE_DIRS}
   "common"
   "cpu"
   "gpu"
@@ -54,7 +55,7 @@ TARGET_LINK_LIBRARIES(libdpm_ttic
   cuda
 )
 
-SET(CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+SET(CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
 
 IF("${ARCHITECTURE}" MATCHES "^arm")
 SET(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)

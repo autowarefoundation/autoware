@@ -1,9 +1,10 @@
 <!-- -->
 <launch>
+
 	<arg name="save_finename" default="/media/pdsljp/ssd/test.txt" />
     <arg name="interval" default="1" /> 
-     <arg name="pose_topic" default="current_pose" /> 
-     <arg name="velocity_source" default="2" /> 
+    <arg name="pose_topic" default="current_pose" /> 
+    <arg name="velocity_source" default="2" /> 
 
 	<node pkg="waypoint_maker" type="waypoint_saver" name="waypoint_saver" output="screen">
 		<param name="save_filename" value="$(arg save_finename)" />

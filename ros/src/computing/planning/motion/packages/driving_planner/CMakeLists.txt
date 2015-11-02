@@ -68,7 +68,7 @@ include_directories(
 
 
 add_library(libtraj_gen lib/libtraj_gen.cpp)
-target_link_libraries(libtraj_gen ${catkin_LIBRARIES} /usr/lib/libarmadillo.so)
+target_link_libraries(libtraj_gen ${catkin_LIBRARIES} armadillo)
 
 add_executable(lattice_trajectory_gen nodes/lattice_trajectory_gen/lattice_trajectory_gen.cpp)
 target_link_libraries(lattice_trajectory_gen gnss libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
@@ -81,6 +81,15 @@ target_link_libraries(lattice_twist_convert libwaypoint_follower libtraj_gen ${c
 add_dependencies(lattice_twist_convert 
 waypoint_follower_generate_messages_cpp)
 
+add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
+target_link_libraries(velocity_set libwaypoint_follower ${catkin_LIBRARIES})
+add_dependencies(velocity_set 
+waypoint_follower_generate_messages_cpp)
+
+add_executable(path_select nodes/path_select/path_select.cpp)
+target_link_libraries(path_select libwaypoint_follower  ${catkin_LIBRARIES})
+add_dependencies(path_select 
+waypoint_follower_generate_messages_cpp)
 
 
 #############

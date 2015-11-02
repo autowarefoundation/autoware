@@ -44,7 +44,8 @@ static bool is_clothoid(const map_file::DTLane& dtlane);
 static constexpr double RADIUS_MAX = 90000000000;
 
 static double config_acceleration = 1; // m/s^2
-static int config_number_of_zeros = 1;
+static int config_number_of_zeros_ahead = 0;
+static int config_number_of_zeros_behind = 0;
 
 static bool cached_waypoint = false;
 
@@ -202,7 +203,8 @@ static void cache_dtlane(const map_file::DTLaneArray& msg)
 static void config_rule(const runtime_manager::ConfigLaneRule& msg)
 {
 	config_acceleration = msg.acceleration;
-	config_number_of_zeros = msg.number_of_zeros;
+	config_number_of_zeros_ahead = msg.number_of_zeros_ahead;
+	config_number_of_zeros_behind = msg.number_of_zeros_behind;
 }
 
 static bool is_straight(const map_file::DTLane& dtlane)
@@ -585,7 +587,8 @@ static waypoint_follower::lane rule_crossroad(const waypoint_follower::lane& msg
 	return computations;
 }
 
-static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg, double acceleration, size_t fixed_cnt)
+static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg, double acceleration, size_t ahead_cnt,
+					     size_t behind_cnt)
 {
 	waypoint_follower::lane computations = msg;
 
@@ -594,7 +597,7 @@ static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg,
 		return computations;
 
 	for (const size_t& i : indexes)
-		computations = apply_acceleration(computations, acceleration, i, 1, 0);
+		computations = apply_acceleration(computations, acceleration, i, behind_cnt + 1, 0);
 
 	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
 
@@ -604,7 +607,7 @@ static waypoint_follower::lane rule_stopline(const waypoint_follower::lane& msg,
 	std::reverse(reverse_indexes.begin(), reverse_indexes.end());
 
 	for (const size_t& i : reverse_indexes)
-		computations = apply_acceleration(computations, acceleration, i, fixed_cnt, 0);
+		computations = apply_acceleration(computations, acceleration, i, ahead_cnt + 1, 0);
 
 	std::reverse(computations.waypoints.begin(), computations.waypoints.end());
 
@@ -687,7 +690,8 @@ static void create_traffic_waypoint(const waypoint_follower::lane& msg)
 
 	waypoint_follower::lane crossroad = rule_crossroad(green, config_acceleration);
 
-	waypoint_follower::lane stopline = rule_stopline(crossroad, config_acceleration, config_number_of_zeros);
+	waypoint_follower::lane stopline = rule_stopline(crossroad, config_acceleration,
+							 config_number_of_zeros_ahead, config_number_of_zeros_behind);
 
 	for (size_t i = 0; i < msg.waypoints.size(); ++i) {
 		green.waypoints[i].twist.twist = crossroad.waypoints[i].twist.twist;
@@ -721,14 +725,14 @@ int main(int argc, char **argv)
 	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
 	ros::Subscriber sub_stopline = n.subscribe("/vector_map_info/stop_line", sub_vmap_queue_size, cache_stopline);
 	ros::Subscriber sub_dtlane = n.subscribe("/vector_map_info/dtlane", sub_vmap_queue_size, cache_dtlane);
-	ros::Subscriber sub_waypoint = n.subscribe("/lane_waypoint", sub_waypoint_queue_size, create_traffic_waypoint);
+	ros::Subscriber sub_waypoint = n.subscribe("/lane_waypoints", sub_waypoint_queue_size, create_traffic_waypoint);
 	ros::Subscriber sub_config = n.subscribe("/config/lane_rule", sub_config_queue_size, config_rule);
 
-	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoint", pub_waypoint_queue_size,
+	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoints", pub_waypoint_queue_size,
 							   pub_waypoint_latch);
-	pub_red = n.advertise<waypoint_follower::lane>("/red_waypoint", pub_waypoint_queue_size,
+	pub_red = n.advertise<waypoint_follower::lane>("/red_waypoints", pub_waypoint_queue_size,
 						       pub_waypoint_latch);
-	pub_green = n.advertise<waypoint_follower::lane>("/green_waypoint", pub_waypoint_queue_size,
+	pub_green = n.advertise<waypoint_follower::lane>("/green_waypoints", pub_waypoint_queue_size,
 							 pub_waypoint_latch);
 
 	ros::spin();
