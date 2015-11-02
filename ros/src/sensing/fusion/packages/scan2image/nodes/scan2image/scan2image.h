@@ -33,8 +33,6 @@
 
 #include <vector>
 
-#define MAX_IMAGE_WIDTH 800
-#define MAX_IMAGE_HEIGHT 600
 #define NO_DATA 0
 
 struct Three_dimensional_vector{

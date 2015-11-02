@@ -136,9 +136,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 
     static Scan_points_dataset scan_points_dataset;
     static Image_points_dataset image_points_dataset;
-    static int stored_num[MAX_IMAGE_WIDTH * MAX_IMAGE_HEIGHT];
     int i;
-    int count;
 
 //    ROS_INFO("angle_min[%f]\nangle_max:[%f]\nangle_increment:[%f]\ntime_increment:[%f]\nscan_time:[%f]\nrange_min:[%f]\nrange_max:[%f]\n", msg->angle_min * 180 / 3.141592, msg->angle_max * 180 / 3.141592, msg->angle_increment * 180 / 3.141592, msg->time_increment, msg->scan_time, msg->range_min, msg->range_max);
 
@@ -153,7 +151,6 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     image_points_dataset.image_points.y.clear();
     image_points_dataset.distance.clear();
     image_points_dataset.intensity.clear();
-    count = 0;
 
     /*
      * Change to three dimentional coordinate. And copy intensity
@@ -175,7 +172,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     /*
      * Judge out of image frame. And Determine max_y and min_y
      */
-    for (i = 0, count = 0; i < (int)image_points_dataset.image_points.x.size(); i++) {
+    for (i = 0; i < (int)image_points_dataset.image_points.x.size(); i++) {
         /* Judge NaN */
         if(isnan(image_points_dataset.image_points.x.at(i)) == 1 || isnan(image_points_dataset.image_points.y.at(i)) == 1) {
             std::cout <<"Not a Number is i:" << i << std::endl;
@@ -201,10 +198,6 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
         } else if ((scan_image.min_y > (int)image_points_dataset.image_points.y.at(i)) || (scan_image.min_y == NO_DATA)) {
             scan_image.min_y = (int)image_points_dataset.image_points.y.at(i);
         }
-
-        /* for init zero */
-        stored_num[count] = (int)image_points_dataset.image_points.x.at(i) * imageSize.height + (int)image_points_dataset.image_points.y.at(i);
-        count++;
     }
 
     /*
@@ -225,9 +218,8 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     /*
      * Init zero
      */
-    for (i = 0; i < count; ++i) {
-        scan_image.distance[stored_num[i]] = 0;
-    }
+    memset(scan_image.distance, 0, imageSize.width * imageSize.height);
+    memset(scan_image.intensity, 0, imageSize.width * imageSize.height);
     scan_image.max_y = NO_DATA;
     scan_image.min_y = NO_DATA;
 }
