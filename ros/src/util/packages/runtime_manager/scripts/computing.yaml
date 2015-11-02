@@ -32,6 +32,8 @@ subs :
             flags : [ nl ]
           max:
             user_category : ''
+          layer:
+            flags : [ nl ]
 
   - name : Detection
     subs :
@@ -555,6 +557,17 @@ params :
     - name  : layer
       label : 'Layer:'
       v     : 1
+    - name  : use_predict_pose
+      label : Predict Pose
+      kind  : radio_box
+      choices: [ 'OFF', 'ON' ]
+      choices_style: h
+      v     : 1
+    - name  : error_threshold
+      label : Error Threshold
+      min   : 0
+      max   : 10
+      v     : 1.0
     - name  : resolution
       label : Resolution
       min   : 0
