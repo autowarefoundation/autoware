@@ -218,8 +218,8 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     /*
      * Init zero
      */
-    memset(scan_image.distance, 0, imageSize.width * imageSize.height);
-    memset(scan_image.intensity, 0, imageSize.width * imageSize.height);
+    memset(scan_image.distance, 0, sizeof(float) * imageSize.width * imageSize.height);
+    memset(scan_image.intensity, 0, sizeof(float) * imageSize.width * imageSize.height);
     scan_image.max_y = NO_DATA;
     scan_image.min_y = NO_DATA;
 }
