@@ -50,7 +50,6 @@ static std::string _use_pose;
 static bool _initial_set = false;
 static bool _pose_set = false;
 static bool _waypoint_set = false;
-static int _closest_waypoint = -1;
 //Path _path_og;
 WayPoints _current_waypoints;
 
@@ -189,19 +188,6 @@ int main(int argc, char **argv)
       _pose_set = true;
     }
 
-  /*  tf::Transform inverse;
-    tf::poseMsgToTF(pose, inverse);
-    _path_og.setTransform(inverse.inverse());
-
-    int closest_waypoint = _path_og.getClosestWaypoint();
-    if (closest_waypoint == -1)
-    {
-      ROS_INFO_STREAM("waypoint is not closed");
-      _initial_set = false;
-      continue;
-    }
-    pose.position.z = _path_og.getWaypointPosition(closest_waypoint).z;
-*/
     int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(),pose);
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
 
