@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ###################################
 ## catkin specific configuration ##
@@ -37,6 +37,7 @@ target_link_libraries(pos_downloader ${catkin_LIBRARIES} gnss pos_db ssh2)
 
 add_executable(pos_uploader nodes/pos_uploader/pos_uploader.cpp)
 target_link_libraries(pos_uploader ${catkin_LIBRARIES} pos_db ssh2)
+add_dependencies(pos_uploader cv_tracker_generate_messages_cpp)
 
 set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 

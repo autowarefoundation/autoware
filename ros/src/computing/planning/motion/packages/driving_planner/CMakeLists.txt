@@ -58,7 +58,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   include
@@ -67,7 +67,7 @@ include_directories(
 
 
 add_library(libtraj_gen lib/libtraj_gen.cpp)
-target_link_libraries(libtraj_gen ${catkin_LIBRARIES} /usr/lib/libarmadillo.so)
+target_link_libraries(libtraj_gen ${catkin_LIBRARIES} armadillo)
 
 add_executable(lattice_trajectory_gen nodes/lattice_trajectory_gen/lattice_trajectory_gen.cpp)
 target_link_libraries(lattice_trajectory_gen gnss libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})

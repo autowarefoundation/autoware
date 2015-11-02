@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(calibration_camera_lidar)
 
+include(FindPkgConfig)
+include(FindLibXml2)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
@@ -15,6 +17,10 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
+
+pkg_check_modules(Qt5Core REQUIRED Qt5Core)
+pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
+pkg_check_modules(Qt5OpenGL REQUIRED Qt5OpenGL)
 
 add_message_files(
   FILES
@@ -33,19 +39,13 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall -g -Wno-unused-result ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -g -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
-if(EXISTS /usr/local/qtbase5)
-# Self install version
-set(Qt5INCLUDE "/usr/local/qtbase5/include")
-set(Qt5BIN "/usr/local/qtbase5/bin")
-set(Qt5LIBROOT "/usr/local/qtbase5/lib")
-else()
-# Ubuntu Qt5 package
-set(Qt5INCLUDE "/usr/include/qt5")
-set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
-set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
-endif()
+EXECUTE_PROCESS(
+  COMMAND pkg-config --variable=host_bins Qt5Core
+  OUTPUT_VARIABLE Qt5BIN
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -54,11 +54,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   CalibrationToolkit
   nodes/calibration_toolkit
-  ${Qt5INCLUDE}
-  ${Qt5INCLUDE}/QtCore
-  ${Qt5INCLUDE}/QtGui
-  ${Qt5INCLUDE}/QtOpenGL
-  ${Qt5INCLUDE}/QtWidgets
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
 )
 
 add_custom_command(
@@ -99,7 +97,9 @@ target_link_libraries(calibrationtoolkit
   glviewer
   rosinterface
   nlopt
-  ${Qt5LIBROOT}/libQt5OpenGL.so
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
 )
 
 add_custom_command(
@@ -122,16 +122,14 @@ add_custom_target(mainwindow_moc DEPENDS mainwindow_moc.cpp)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  /usr/include/libxml2
+  ${LIBXML2_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
 
   CalibrationToolkit
   nodes/calibration_toolkit
-  ${Qt5INCLUDE}
-  ${Qt5INCLUDE}/QtCore
-  ${Qt5INCLUDE}/QtGui
-  ${Qt5INCLUDE}/QtOpenGL
-  ${Qt5INCLUDE}/QtWidgets
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+  ${Qt5OpenGL_INCLUDE_DIRS}
 )
 
 ## 2D
@@ -179,11 +177,10 @@ target_link_libraries(calibration_toolkit
   calibrationtoolkit
   glut
   GLU
-  ${Qt5LIBROOT}/libQt5Core.so
-  ${Qt5LIBROOT}/libQt5Gui.so
-  ${Qt5LIBROOT}/libQt5OpenGL.so
-  ${Qt5LIBROOT}/libQt5Widgets.so
   nlopt
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+  ${Qt5OpenGL_LIBRARIES}
 )
 
 # calibration_publisher

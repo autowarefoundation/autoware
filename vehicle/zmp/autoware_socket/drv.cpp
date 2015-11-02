@@ -1,4 +1,4 @@
-/*
+ /*
  *  Copyright (c) 2015, Nagoya University
  *  All rights reserved.
  *
@@ -77,7 +77,7 @@ void MainWindow::SetGear(int gear)
 
   // double check if the velocity is zero,
   // SetGear() should not be called when driving.
-  if (current_velocity != 0) {
+  if (current_velocity != 0.0) {
     return;
   }
 
@@ -117,11 +117,17 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
   double ret;
 
   // acclerate by releasing the brake pedal if pressed.
-  if (vstate.brake_stroke > 0) {
+  if (vstate.brake_stroke > _BRAKE_PEDAL_OFFSET) {
+    /*
     double target_brake_stroke = vstate.brake_stroke - _BRAKE_RELEASE_STEP;
     if (target_brake_stroke < 0)
       target_brake_stroke = 0;
     ret = -target_brake_stroke; // if ret is negative, brake will be applied.
+    */
+
+    // vstate has some delay until applying the current state.
+    // perhaps we can just return 0 (release brake pedal) here to avoid acceleration delay.
+    ret = 0;
 
     /* reset PID variables. */
     e_prev = 0;
@@ -129,12 +135,6 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
   }
   else { // PID control
     double target_accel_stroke;
-
-    // double check if cmd_velocity > current_velocity
-    if (cmd_velocity <= current_velocity) {
-      cout << "cmd_velocity is smaller than current_velocity!" << endl;
-      return 0; // just release the accel pedal.
-    }
 
     e = cmd_velocity - current_velocity;
 
@@ -166,9 +166,9 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
       target_accel_stroke = 0;
     }
 
-    cout << "e = " << e << endl;
-    cout << "e_i = " << e_i << endl;
-    cout << "e_d = " << e_d << endl;
+    //cout << "e = " << e << endl;
+    //cout << "e_i = " << e_i << endl;
+    //cout << "e_d = " << e_d << endl;
 
     ret = target_accel_stroke;
 
@@ -198,11 +198,17 @@ double _brake_stroke_pid_control(double current_velocity, double cmd_velocity)
   double ret;
 
   // decelerate by releasing the accel pedal if pressed.
-  if (vstate.accel_stroke > 0) {
+  if (vstate.accel_stroke > _ACCEL_PEDAL_OFFSET) {
+    /*
     double target_accel_stroke = vstate.accel_stroke - _ACCEL_RELEASE_STEP;
     if (target_accel_stroke < 0)
       target_accel_stroke = 0;
     ret = -target_accel_stroke; // if ret is negative, accel will be applied.
+    */
+
+    // vstate has some delay until applying the current state.
+    // perhaps we can just return 0 (release accel pedal) here to avoid deceleration delay.
+    ret = 0;
 
     /* reset PID variables. */
     e_prev = 0;
@@ -272,21 +278,30 @@ double _brake_stroke_pid_control(double current_velocity, double cmd_velocity)
 double _stopping_control(double current_velocity)
 {
   double ret;
+  static double old_brake_stroke = _BRAKE_PEDAL_MED;
 
   // decelerate by using brake	
   if (current_velocity < 0.1) {
-    // nearly at stop/at stop to stop -> apply full brake
-    int gain = (int)(((double)_BRAKE_PEDAL_MAX)/1.0*cycle_time);
-    ret = vstate.brake_stroke + gain;
+    // nearly at stop -> apply full brake. brake_stroke should reach BRAKE_PEDAL_MAX in one second.
+    int gain = (int)(((double)_BRAKE_PEDAL_MAX)*cycle_time);
+    ret = old_brake_stroke + gain;
     if ((int)ret > _BRAKE_PEDAL_MAX)
       ret = _BRAKE_PEDAL_MAX;
+    old_brake_stroke = ret;
   }
   else {
+    /*
     // one second is approximately how fast full brakes applied in sharp stop
-    int gain = (int)(((double)_BRAKE_PEDAL_MED)/0.5*cycle_time);
+    int gain = (int)(((double)_BRAKE_PEDAL_MED)*cycle_time);
     ret = vstate.brake_stroke + gain;
     if ((int)ret > _BRAKE_PEDAL_MED)
       ret = _BRAKE_PEDAL_MED;
+    */
+
+    // vstate has some delay until applying the current state.
+    // perhaps we can just set BRAKE_PEDAL_MED to avoid deceleration delay.
+    ret = _BRAKE_PEDAL_MED;
+    old_brake_stroke = _BRAKE_PEDAL_MED;
   }
 
   return ret;
@@ -315,20 +330,22 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
 
   cout << "estimate_accel: " << estimate_accel << endl; 
 
-  if (fabs(cmd_velocity) >= current_velocity
+  if (fabs(cmd_velocity) > current_velocity
       && fabs(cmd_velocity) > 0.0 
-      && current_velocity <= SPEED_LIMIT) {
+      && current_velocity < SPEED_LIMIT) {
     double accel_stroke;
     cout << "accelerate: current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << endl;
     accel_stroke = _accel_stroke_pid_control(current_velocity, cmd_velocity);
-    if (accel_stroke < 0) {
-      cout << "ZMP_SET_BRAKE_STROKE(" << -accel_stroke << ")" << endl;
-      ZMP_SET_BRAKE_STROKE(-accel_stroke);
-    }
-    else {
+    if (accel_stroke > 0) {
       cout << "ZMP_SET_DRV_STROKE(" << accel_stroke << ")" << endl;
       ZMP_SET_DRV_STROKE(accel_stroke);
+    }
+    else {
+      cout << "ZMP_SET_DRV_STROKE(0)" << endl;
+      ZMP_SET_DRV_STROKE(0);
+      cout << "ZMP_SET_BRAKE_STROKE(" << -accel_stroke << ")" << endl;
+      ZMP_SET_BRAKE_STROKE(-accel_stroke);
     }
   } 
   else if (fabs(cmd_velocity) < current_velocity
@@ -337,13 +354,15 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     cout << "decelerate: current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << endl;
     brake_stroke = _brake_stroke_pid_control(current_velocity, cmd_velocity);
-    if (brake_stroke < 0) {
-      cout << "ZMP_SET_DRV_STROKE(" << -brake_stroke << ")" << endl;
-      ZMP_SET_DRV_STROKE(-brake_stroke);
-    }
-    else {
+    if (brake_stroke > 0) {
       cout << "ZMP_SET_BRAKE_STROKE(" << brake_stroke << ")" << endl;
       ZMP_SET_BRAKE_STROKE(brake_stroke);
+    }
+    else {
+      cout << "ZMP_SET_BRAKE_STROKE(0)" << endl;
+      ZMP_SET_BRAKE_STROKE(0);
+      cout << "ZMP_SET_DRV_STROKE(" << -brake_stroke << ")" << endl;
+      ZMP_SET_DRV_STROKE(-brake_stroke);
     }
   }
   else if (cmd_velocity == 0.0 && current_velocity != 0.0) {
@@ -353,17 +372,20 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     if (current_velocity < 3.0) { // nearly stopping
       ZMP_SET_DRV_STROKE(0);
       brake_stroke = _stopping_control(current_velocity);
+      cout << "ZMP_SET_BRAKE_STROKE(" << brake_stroke << ")" << endl;
       ZMP_SET_BRAKE_STROKE(brake_stroke);
     }
     else {
       brake_stroke = _brake_stroke_pid_control(current_velocity, 0);
-      if (brake_stroke < 0) {
-	cout << "ZMP_SET_DRV_STROKE(" << -brake_stroke << ")" << endl;
-	ZMP_SET_DRV_STROKE(-brake_stroke);
+      if (brake_stroke > 0) {
+        cout << "ZMP_SET_BRAKE_STROKE(" << brake_stroke << ")" << endl;
+        ZMP_SET_BRAKE_STROKE(brake_stroke);
       }
       else {
-	cout << "ZMP_SET_BRAKE_STROKE(" << brake_stroke << ")" << endl;
-	ZMP_SET_BRAKE_STROKE(brake_stroke);
+        cout << "ZMP_SET_DRV_STROKE(0)" << endl;
+        ZMP_SET_DRV_STROKE(0);
+        cout << "ZMP_SET_DRV_STROKE(" << -brake_stroke << ")" << endl;
+        ZMP_SET_DRV_STROKE(-brake_stroke);
       }
     }
   }
@@ -396,4 +418,5 @@ void MainWindow::VelocityControl(double current_velocity, double cmd_velocity)
     cout << "decrease: " << "vel = " << decrease_velocity  << endl; 
   }
 }
+
 

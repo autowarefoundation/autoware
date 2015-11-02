@@ -11,6 +11,7 @@ find_package(OpenCV REQUIRED)
 
 add_message_files(
   FILES
+  ConfigRcnn.msg
   ConfigCarDpm.msg
   ConfigPedestrianDpm.msg
   ConfigNdt.msg
@@ -21,7 +22,6 @@ add_message_files(
   ConfigCarKf.msg
   ConfigPedestrianKf.msg
   ConfigLaneRule.msg
-  ConfigWaypointLoader.msg
   ConfigPoints2Polygon.msg
   accel_cmd.msg
   steer_cmd.msg

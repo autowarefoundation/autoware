@@ -11,7 +11,7 @@ catkin_package(
   LIBRARIES fusion
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   include

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(cv_tracker)
 
+include(FindPkgConfig)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
@@ -13,7 +14,10 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   fusion
   kf
 )
+FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
+
+pkg_check_modules(HDF5 hdf5)
 
 EXECUTE_PROCESS(
   COMMAND uname -m
@@ -45,15 +49,15 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x -O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -DROS ${CMAKE_CXX_FLAGS}")
 
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
   lib
 )
 
-IF(EXISTS "/usr/local/cuda")
-INCLUDE_DIRECTORIES(/usr/local/cuda/include)
+IF(CUDA_FOUND)
+INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 
 IF("${ARCHITECTURE}" MATCHES "^arm")
 LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
@@ -74,7 +78,7 @@ TARGET_LINK_LIBRARIES(dpm_ttic
   libdpm_ttic
 )
 
-IF(EXISTS "/usr/local/cuda")
+IF(CUDA_FOUND)
 SET_TARGET_PROPERTIES(dpm_ttic
   PROPERTIES
   COMPILE_FLAGS
@@ -106,7 +110,7 @@ TARGET_LINK_LIBRARIES(dpm_ocv
   #${OpenCV_LIBS}
 )
 
-IF(EXISTS "/usr/local/cuda")
+IF(CUDA_FOUND)
 SET_TARGET_PROPERTIES(dpm_ocv
   PROPERTIES
   COMPILE_FLAGS
@@ -198,3 +202,42 @@ ADD_DEPENDENCIES(klt_track
   klt_track_generate_messages_cpp
   libdpm_ocv_generate_messages_cpp
 )
+
+############# RCNN#############
+
+###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
+##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	 	### 
+set(CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")
+####################################################################################################
+
+if(EXISTS "${CAFFE_PATH}")
+  find_package(librcnn)
+
+  INCLUDE_DIRECTORIES(
+    ${librcnn_INCLUDE_DIRS}
+    ${CAFFE_PATH}/include
+  )
+IF(HDF5_FOUND)
+  INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
+ENDIF()
+
+  ADD_EXECUTABLE(rcnn_node
+    nodes/rcnn/rcnn_node.cpp
+  )
+
+  TARGET_LINK_LIBRARIES(rcnn_node
+    librcnn
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${CUDA_LIBRARIES}
+    ${CUDA_CUBLAS_LIBRARIES}
+    ${CUDA_curand_LIBRARY}
+  )
+
+  ADD_DEPENDENCIES(rcnn_node
+    rcnn_node_generate_messages_cpp
+    librcnn
+  )
+else()
+  message("'FastRCNN/Caffe' are not installed. 'rcnn_node' will not be built.")
+endif()
