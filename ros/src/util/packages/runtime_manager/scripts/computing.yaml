@@ -32,6 +32,8 @@ subs :
             flags : [ nl ]
           max:
             user_category : ''
+          layer:
+            flags : [ nl ]
 
   - name : Detection
     subs :
