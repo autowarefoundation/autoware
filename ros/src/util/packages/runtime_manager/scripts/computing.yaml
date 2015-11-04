@@ -32,6 +32,8 @@ subs :
             flags : [ nl ]
           max:
             user_category : ''
+          layer:
+            flags : [ nl ]
 
   - name : Detection
     subs :
@@ -70,6 +72,10 @@ subs :
             flags  : [ left ]
           part_model_car :
             flags  : [ hline ]
+            
+      - name : rcnn_node
+        cmd  : roslaunch cv_tracker rcnn.launch
+        param: rcnn
 
       - name : range_fusion
         cmd  : roslaunch cv_tracker ranging.launch
@@ -193,14 +199,27 @@ subs :
     subs :
     - name : driving_planner
       subs :
+      - name : velocity_set
+        cmd  : roslaunch driving_planner velocity_set.launch
+        param: velocity_set
+      - name : path_select
+        cmd  : rosrun driving_planner path_select
       - name : lattice_trajectory_gen
         cmd  : roslaunch driving_planner lattice_trajectory_gen.launch
         param: lane_follower_trajgen
         gui  :
           velocity:
             depend : param_flag
+            depend_bool : 'lambda v : v == 1'
           lookahead_threshold:
             depend : param_flag
+            depend_bool : 'lambda v : v == 1'
+          minimum_lookahead_threshold:
+            depend : param_flag   
+            depend_bool : 'lambda v : v == 0'          
+          threshold_ratio:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0' 
           stat_topic : [ lf ]
       - name : lattice_twist_convert
         cmd  : rosrun driving_planner lattice_twist_convert
@@ -211,7 +230,7 @@ subs :
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
          param: waypoint_loader
          gui  :
-           waypoint_filename :
+           lane_waypoint_csv :
              prop  : 1
        - name : waypoint_saver
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -230,47 +249,50 @@ subs :
          gui  :
            velocity:
              depend : param_flag
+             depend_bool : 'lambda v : v == 1'
            lookahead_threshold:
              depend : param_flag
+             depend_bool : 'lambda v : v == 1'
+           minimum_lookahead_threshold:
+             depend : param_flag   
+             depend_bool : 'lambda v : v == 0'          
+           threshold_ratio:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 0' 
            stat_topic : [ lf ]  
-       - name : velocity_set
-         cmd  : roslaunch waypoint_follower velocity_set.launch
-         param: velocity_set
-       - name : collision_avoid
-         cmd  : roslaunch waypoint_follower collision_avoid.launch  
-       - name : twist_through
-         cmd  : rosrun waypoint_follower twist_through  
+       - name : twist_filter
+         cmd  : rosrun waypoint_follower twist_filter  
        - name : wf_simulator
          cmd  : roslaunch waypoint_follower wf_simulator.launch
-         param: wf_simulator  
+         param: wf_simulator
          
-         gui  :
-           use_pose:
-             flags : [ no_category, nl ]
-           x:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           y:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           z:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category, nl ]
-           roll:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           pitch:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category ]
-           yaw:
-             depend      : use_pose
-             depend_bool : 'lambda v : v == "Initial Pos"'
-             flags : [ no_category, nl ]
+   #      gui  :
+   #        use_pose:
+  #           flags : [ no_category, nl ]
+  #         x:
+  #           depend      : use_pose
+  #           depend_bool : 'lambda v : v == "Initial Pos"'
+   #          flags : [ no_category ]
+  #         y:
+  #           depend      : use_pose
+  #           depend_bool : 'lambda v : v == "Initial Pos"'
+  #           flags : [ no_category ]
+  #         z:
+  #           depend      : use_pose
+  #           depend_bool : 'lambda v : v == "Initial Pos"'
+  #           flags : [ no_category, nl ]
+  #         roll:
+  #           depend      : use_pose
+   #          depend_bool : 'lambda v : v == "Initial Pos"'
+  #           flags : [ no_category ]
+   #        pitch:
+   #          depend      : use_pose
+   #          depend_bool : 'lambda v : v == "Initial Pos"'
+   #          flags : [ no_category ]
+   #        yaw:
+   #          depend      : use_pose
+   #          depend_bool : 'lambda v : v == "Initial Pos"'
+    #         flags : [ no_category, nl ]
 
 buttons:
   car_dpm :
@@ -286,7 +308,58 @@ buttons:
   pedestrian_kf :
     param   : pedestrian_kf
 
+sys_gui:
+  dialog   : MyDialogParam
+  cpu_chks :
+    user_category : Migration Allowance
+    user_category_add : [ [ all ], 8 ]
+    flags         : [ nl ]
+  nice     :
+    user_category : Best-Effort
+    user_category_add : [ [ all, expand ], 8 ]
+    flags         : [ nl, hline ]
+  real_time:
+    flags         : [ nl, left ]
+    border        : 8
+  prio     :
+    border        : 16
+    flags         : [ left ]
+  period   :
+    border        : 16
+    flags         : [ left ]
+  budget   :
+    border        : 16
+    flags         : [ left ]
+
 params :
+  - name  : sys
+    vars  :
+    - name     : cpu_chks
+      label    : CPU
+      kind     : checkboxes
+      item_n   : psutil.NUM_CPUS
+      v        : []
+    - name     : nice
+      label    : 'nice:'
+      kind     : num
+      v        : 0
+    - name     : real_time
+      label    : Real-Time
+      kind     : checkbox
+      v        : False
+    - name     : prio
+      label    : 'prio:'
+      kind     : num
+      v        : 99
+    - name     : period
+      label    : 'period(ms):'
+      kind     : num
+      v        : 100
+    - name     : budget
+      label    : 'budget(ms):'
+      kind     : num
+      v        : 20
+
   - name  : dpm_ocv
     vars  :
     - name     : use_gpu
@@ -500,6 +573,17 @@ params :
     - name  : layer
       label : 'Layer:'
       v     : 1
+    - name  : use_predict_pose
+      label : Predict Pose
+      kind  : radio_box
+      choices: [ 'OFF', 'ON' ]
+      choices_style: h
+      v     : 1
+    - name  : error_threshold
+      label : Error Threshold
+      min   : 0
+      max   : 10
+      v     : 1.0
     - name  : resolution
       label : Resolution
       min   : 0
@@ -544,7 +628,7 @@ params :
 
   - name  : waypoint_follower
     topic : /config/waypoint_follower
-    msg   : ConfigLaneFollower
+    msg   : ConfigWaypointFollower
     vars  :
     - name  : param_flag
       kind  : radio_box
@@ -562,15 +646,41 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
+    - name  : threshold_ratio
+      label : threshold_ratio
+      min   : 1.0
+      max   : 5.0
+      v     : 2.0
+    - name  : minimum_lookahead_threshold
+      label : minimum_lookahead_threshold
+      min   : 2.0
+      max   : 10.0
+      v     : 6.0
+    - name  : offset
+      label : offset
+      min   : -5.0
+      max   : 5.0
+      v     : -1.17
     - name    : sim_mode
       label   : 'Simulation Mode'
       kind    : checkbox
       v       : False
-      rosparam: /pure_pursuit/sim_mode
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+      #rosparam: /pure_pursuit/sim_mode
+      
   - name  : velocity_set
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name  : velocity_limit
       label : Velocity Limit
       min   : 0
@@ -626,9 +736,10 @@ params :
       min   : 0
       max   : 40
       v     : 5.0
+
   - name  : lane_follower_trajgen
-    topic : /config/lane_follower
-    msg   : ConfigLaneFollower
+    topic : /config/waypoint_follower
+    msg   : ConfigWaypointFollower
     vars  :
     - name  : param_flag
       kind  : radio_box
@@ -646,46 +757,65 @@ params :
       min   : 0
       max   : 30
       v     : 4.0
+    - name  : threshold_ratio
+      label : threshold_ratio
+      min   : 1.0
+      max   : 5.0
+      v     : 2.0
+    - name  : minimum_lookahead_threshold
+      label : minimum_lookahead_threshold
+      min   : 2.0
+      max   : 10.0
+      v     : 6.0
+    - name  : offset
+      label : offset
+      min   : -5.0
+      max   : 5.0
+      v     : -1.17
     - name    : sim_mode
       label   : 'Simulation Mode'
       kind    : checkbox
       v       : False
       rosparam: /lattice_trajectory_gen/sim_mode
+  
   - name  : wf_simulator
     vars  :
     - name    : use_pose
+      label   : use_pose
       kind    : radio_box
-      choices :
-      - Initial Pos
-      - NDT
-      - GNSS
-      choices_type: str
-      v       : Initial Pos
-      rosparam: /odom_gen/use_pose
-    - name    : x
-      label   : 'X:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_x
-    - name    : y
-      label   : 'Y:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_y
-    - name    : z
-      label   : 'Z:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_z
-    - name    : roll
-      label   : 'Roll:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_roll
-    - name    : pitch
-      label   : 'Pitch:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_pitch
-    - name    : yaw
-      label   : 'Yaw:'
-      v       : 0.0
-      rosparam: /odom_gen/initial_pos_yaw
+      choices : ['InitialPos','NDT','GNSS']
+      choices_type : str
+      v       : InitialPos
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+ #     choices_type: str
+
+ #     rosparam: /odom_gen/use_pose
+ #   - name    : x
+ #     label   : 'X:'
+ #     v       : 0.0
+ #     rosparam: /odom_gen/initial_pos_x
+ #   - name    : y
+  #    label   : 'Y:'
+  #    v       : 0.0
+ #     rosparam: /odom_gen/initial_pos_y
+ #   - name    : z
+  #    label   : 'Z:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_z
+  #  - name    : roll
+ #     label   : 'Roll:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_roll
+  #  - name    : pitch
+  #    label   : 'Pitch:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_pitch
+  #  - name    : yaw
+  #    label   : 'Yaw:'
+  #    v       : 0.0
+  #    rosparam: /odom_gen/initial_pos_yaw
 
   - name  : car_kf
     topic : /config/car_kf
@@ -884,11 +1014,16 @@ params :
       min       : 0
       max       : 100
       v         : 1.0
-    - name      : number_of_zeros
-      label     : Number of Zeros
-      min       : 1
+    - name      : number_of_zeros_ahead
+      label     : Number of Zeros Ahead
+      min       : 0
       max       : 100
-      v         : 1
+      v         : 0
+    - name      : number_of_zeros_behind
+      label     : Number of Zeros Behind
+      min       : 0
+      max       : 100
+      v         : 0
 
   - name  : lane_stop
     topic : /traffic_light
@@ -919,7 +1054,7 @@ params :
         delim       : ':='
     - name      : interval
       label     : Interval
-      v         : 4.0
+      v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -941,15 +1076,20 @@ params :
 
   - name  : waypoint_loader
     vars  :
-    - name      : lane_waypoint
+    - name      : lane_waypoint_csv
       kind      : path
       v         : /tmp/lane_waypoint.csv
-      rosparam  : /waypoint_loader/lane_waypoint_csv
+#      rosparam  : /waypoint_loader/lane_waypoint_csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : decelerate  
       label   : 'decelerate :'
       v         : 1.0
-      rosparam  : /waypoint_loader/decelerate
-
+      #rosparam  : /waypoint_loader/decelerate
+      cmd_param :
+        dash        : ''
+        delim       : ':='
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping
@@ -1050,3 +1190,43 @@ params :
       min   : 0.0
       max   : 5.0
       v     : 1.0
+
+  - name  : rcnn
+    topic : /config/rcnn
+    msg   : ConfigRcnn
+    vars  :
+    - name  : score_threshold
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.6
+    - name  : group_threshold
+      label : Group Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.3
+    - name  : image_slices
+      label : Image Slices (proposals)
+      min   : 2
+      max   : 32
+      v     : 16
+    - name  : slices_overlap
+      label : Overlap between slices (proposals)
+      min   : 0.0
+      max   : 1.0
+      v     : 0.7
+    - name  : b_mean
+      label : Blue Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 192.9801
+    - name  : g_mean
+      label : Green Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 115.9465
+    - name  : r_mean
+      label : Red Channel Mean Value (pre processing)
+      min   : -255.0
+      max   : 255.0
+      v     : 122.7717

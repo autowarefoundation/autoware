@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ###################################
 ## catkin specific configuration ##

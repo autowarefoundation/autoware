@@ -64,7 +64,7 @@ static std::vector <cv_tracker::obj_label> person_positions_array;
 static size_t car_num = 0;
 static size_t person_num = 0;
 
-static int sleep_msec = 500;		// period
+static int sleep_msec = 250;		// period
 static int use_current_time = 0;
 
 static string db_host_name;
@@ -185,7 +185,10 @@ static void send_sql()
   //create header
   std::string value = make_header(2, sql_num);
 
-std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << car_num << "(" << car_positions_array.size() << ")" << ",person_num=" << person_num << "(" << person_positions_array.size() << ")" << ", val=";
+  std::cout << "current_num=" << current_pose_position.size()
+    << ", car_num=" << car_num << "(" << car_positions_array.size() << ")"
+    << ",person_num=" << person_num << "(" << person_positions_array.size() << ")"
+    << std::endl;
 
   //get data of car and person recognizing
   pthread_mutex_lock(&pose_lock_);
@@ -209,19 +212,16 @@ std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << c
   // my_location
   for(size_t i = 0; i < current_pose_position.size(); i++) {
     std::string timestamp;
-    if(use_current_time) {
-      ros::Time t = ros::Time::now();
-      timestamp = getTimeStamp(t.sec, t.nsec);
-    } else {
-      timestamp = getTimeStamp(current_pose_position[i].header.stamp.sec,current_pose_position[i].header.stamp.nsec);
-    }
+    timestamp = getTimeStamp(current_pose_position[i].header.stamp.sec,current_pose_position[i].header.stamp.nsec);
     value += pose_to_insert_statement(current_pose_position[i].pose, timestamp, OWN_TOPIC_NAME);
     value += "\n";
   }
   current_pose_position.clear();
   pthread_mutex_unlock(&pose_lock_);
 
-  std::cout << value.substr(POS_DB_HEAD_LEN) << std::endl;
+#ifdef POS_DB_VERBOSE
+  std::cout << "val=" << value.substr(POS_DB_HEAD_LEN) << std::endl;
+#endif /* POS_DB_VERBOSE */
 
   std::string res;
   int ret = sd.Sender(value, res, sql_num);
@@ -230,7 +230,9 @@ std::cout << "current_num=" << current_pose_position.size() << ", car_num=" << c
     return;
   }
 
+#ifdef POS_DB_VERBOSE
   std::cout << "retrun message from DBserver : " << res << std::endl;
+#endif /* POS_DB_VERBOSE */
 
   return;
 }
@@ -302,7 +304,14 @@ static void person_locate_cb(const visualization_msgs::MarkerArray &obj_pose_msg
 static void current_pose_cb(const geometry_msgs::PoseStamped &pose)
 {
   pthread_mutex_lock(&pose_lock_);
-  current_pose_position.push_back(pose);
+  if(use_current_time) {
+    geometry_msgs::PoseStamped n = pose;
+    ros::Time t = ros::Time::now();
+    n.header.stamp = t;
+    current_pose_position.push_back(n);
+  } else {
+    current_pose_position.push_back(pose);
+  }
   pthread_mutex_unlock(&pose_lock_);
 }
 

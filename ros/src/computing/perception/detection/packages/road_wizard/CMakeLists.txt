@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(road_wizard)
 
+include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -13,6 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
   )
 find_package(OpenCV REQUIRED)
 find_package (Eigen3 REQUIRED)
+
+pkg_check_modules(Qt5Core REQUIRED Qt5Core)
+pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 
 ## Generate added messages and services with any dependencies listed here
 add_message_files(FILES
@@ -36,7 +40,7 @@ catkin_package(
   CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ###########
 ## Build ##
@@ -78,28 +82,18 @@ runtime_manager_generate_messages_cpp
 road_wizard_generate_messages_cpp
 )
 
-### tlr_tuner ###
-if(EXISTS /usr/local/qtbase5)
-# Self install version
-set(Qt5INCLUDE "/usr/local/qtbase5/include")
-set(Qt5BIN "/usr/local/qtbase5/bin")
-set(Qt5LIBROOT "/usr/local/qtbase5/lib")
-else()
-# Ubuntu Qt5 package
-set(Qt5INCLUDE "/usr/include/qt5")
-set(Qt5BIN "/usr/lib/x86_64-linux-gnu/qt5/bin")
-set(Qt5LIBROOT "/usr/lib/x86_64-linux-gnu")
-endif()
+EXECUTE_PROCESS(
+  COMMAND pkg-config --variable=host_bins Qt5Core
+  OUTPUT_VARIABLE Qt5BIN
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include
-  noddes/tlr_tuner/
-  ${Qt5INCLUDE}
-  ${Qt5INCLUDE}/QtCore
-  ${Qt5INCLUDE}/QtGui
-  ${Qt5INCLUDE}/QtOpenGL
-  ${Qt5INCLUDE}/QtWidgets
+  nodes/tlr_tuner/
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
 )
 
 add_custom_command(
@@ -137,8 +131,6 @@ add_dependencies(tlr_tuner
 
 target_link_libraries(tlr_tuner
   ${catkin_LIBRARIES}
-  ${Qt5LIBROOT}/libQt5Core.so
-  ${Qt5LIBROOT}/libQt5Gui.so
-  ${Qt5LIBROOT}/libQt5OpenGL.so
-  ${Qt5LIBROOT}/libQt5Widgets.so
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
   )

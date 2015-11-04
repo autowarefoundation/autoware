@@ -12,12 +12,14 @@
   <build_depend>scan2image</build_depend>
   <build_depend>fusion</build_depend>
   <build_depend>klt</build_depend>
+  <build_depend>librcnn</build_depend>
   <run_depend>libdpm_ocv</run_depend>
   <run_depend>libdpm_ttic</run_depend>
   <run_depend>kf</run_depend>
   <run_depend>scan2image</run_depend>
   <run_depend>fusion</run_depend>
   <run_depend>klt</run_depend>
+  <run_depend>librcnn</run_depend>
   <export>
   </export>
 </package>
