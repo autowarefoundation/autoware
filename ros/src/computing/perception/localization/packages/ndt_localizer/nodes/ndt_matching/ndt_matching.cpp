@@ -154,12 +154,13 @@ static std_msgs::Float32 time_ndt_matching;
 static std::string _scanner = "velodyne";
 static int _queue_size = 1000;
 
-static ros::Publisher velodyne_points_filtered_pub;
-
 static ros::Publisher ndt_stat_pub;
 static ndt_localizer::ndt_stat ndt_stat_msg;
 
 static double predict_pose_error = 0.0;
+
+static double _tf_x, _tf_y, _tf_z, _tf_yaw, _tf_pitch, _tf_roll;
+static Eigen::Matrix4f scan_transform;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -613,19 +614,19 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	    }
       }
 
-      sensor_msgs::PointCloud2::Ptr velodyne_points_filtered(new sensor_msgs::PointCloud2);      
-      pcl::toROSMsg(scan, *velodyne_points_filtered);
-      velodyne_points_filtered_pub.publish(*velodyne_points_filtered);
+      pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
+      pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+      pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+
+      pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, scan_transform);
 
       Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
-      
-      pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
-      pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
-      
+            
       // Downsampling the velodyne scan using VoxelGrid filter
       pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
       voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-      voxel_grid_filter.setInputCloud(scan_ptr);
+      // voxel_grid_filter.setInputCloud(scan_ptr);
+      voxel_grid_filter.setInputCloud(transformed_scan_ptr);
       voxel_grid_filter.filter(*filtered_scan_ptr);
       
       // Setting point cloud to be aligned.
@@ -771,7 +772,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       // Send TF "/velodyne" to "/map"
       transform.setOrigin(tf::Vector3(current_pose.x, current_pose.y, current_pose.z));
       transform.setRotation(current_q);
-      br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/velodyne"));
+      br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/base_link"));
       
       matching_end = std::chrono::system_clock::now();
       exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end-matching_start).count()/1000.0;
@@ -891,6 +892,18 @@ int main(int argc, char **argv)
     private_nh.getParam("scanner", _scanner);
     private_nh.getParam("use_gnss", _use_gnss);
     private_nh.getParam("queue_size", _queue_size);
+    private_nh.getParam("tf_x", _tf_x);
+    private_nh.getParam("tf_y", _tf_y);
+    private_nh.getParam("tf_z", _tf_z);
+    private_nh.getParam("tf_yaw", _tf_yaw);
+    private_nh.getParam("tf_pitch", _tf_pitch);
+    private_nh.getParam("tf_roll", _tf_roll);
+
+    Eigen::Translation3f scan_translation(_tf_x, _tf_y, _tf_z);
+    Eigen::AngleAxisf scan_rotation_x(_tf_roll, Eigen::Vector3f::UnitX());
+    Eigen::AngleAxisf scan_rotation_y(_tf_pitch, Eigen::Vector3f::UnitY());
+    Eigen::AngleAxisf scan_rotation_z(_tf_yaw, Eigen::Vector3f::UnitZ());
+    scan_transform = (scan_translation * scan_rotation_z * scan_rotation_y * scan_rotation_x).matrix();
 
     // Updated in initialpose_callback or gnss_callback
     initial_pose.x = 0.0;
@@ -909,7 +922,6 @@ int main(int argc, char **argv)
     estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
     estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
     time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
-    velodyne_points_filtered_pub = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_points_filtered", 1000);
     ndt_stat_pub = nh.advertise<ndt_localizer::ndt_stat>("/ndt_stat", 1000);
 
     // Subscribers
