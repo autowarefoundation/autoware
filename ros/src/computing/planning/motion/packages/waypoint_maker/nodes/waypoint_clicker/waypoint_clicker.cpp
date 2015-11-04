@@ -127,8 +127,8 @@ static void publish_branching()
 	branching.id = 0;
 	branching.type = visualization_msgs::Marker::SPHERE_LIST;
 	branching.action = visualization_msgs::Marker::ADD;
-	branching.scale.x = 0.2;
-	branching.scale.y = 0.2;
+	branching.scale.x = 0.3;
+	branching.scale.y = 0.3;
 	branching.color.r = 0;
 	branching.color.g = 1;
 	branching.color.b = 0;
@@ -161,8 +161,8 @@ static void publish_merging()
 	merging.id = 0;
 	merging.type = visualization_msgs::Marker::SPHERE_LIST;
 	merging.action = visualization_msgs::Marker::ADD;
-	merging.scale.x = 0.2;
-	merging.scale.y = 0.2;
+	merging.scale.x = 0.3;
+	merging.scale.y = 0.3;
 	merging.color.r = 1;
 	merging.color.g = 0;
 	merging.color.b = 0;
