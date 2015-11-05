@@ -64,6 +64,7 @@ from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigNdtMapping
 from runtime_manager.msg import ConfigNdtMappingOutput
 from runtime_manager.msg import ConfigWaypointFollower
+from runtime_manager.msg import ConfigTwistFilter
 from runtime_manager.msg import ConfigVelocitySet
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
