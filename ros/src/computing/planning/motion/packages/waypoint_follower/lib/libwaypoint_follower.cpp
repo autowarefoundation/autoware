@@ -276,84 +276,63 @@ double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point targe
 //get closest waypoint from current pose
 int getClosestWaypoint(waypoint_follower::lane current_path,geometry_msgs::Pose current_pose )
 {
-  // std::cout << "==GetClosestWaypoint==" << std::endl;
 
-  static int closest_waypoint = 0;
   if (!current_path.waypoints.size()){
-    closest_waypoint = -1;
     return -1;
   }
 
-
-  int closest_threshold = 5;
-  int interval = 1.0;
-
-  //decide search radius
-  for (int ratio = 1; ratio < closest_threshold; ratio++) {
-
-    double distance_threshold = 2 * ratio * interval; //meter
-      //  std::cout << "distance_threshold : " << distance_threshold << std::endl;
-
-    std::vector<int> waypoint_candidates;
-
-    //search closest candidate
-    for (int i = 1; i < static_cast<int>(current_path.waypoints.size()); i++) {
-
-      //std::cout << waypoint << std::endl;
-
-      //skip waypoint behind vehicle
-      if (calcRelativeCoordinate(current_path.waypoints[i].pose.pose.position,current_pose).x < 0)
-        continue;
-
-      if (getPlaneDistance(current_path.waypoints[i].pose.pose.position,current_pose.position) < distance_threshold) {
-        waypoint_candidates.push_back(i);
-     //   std::cout << "waypoint = " << i << "  distance = " << getPlaneDistance(current_path.waypoints[i].pose.pose.position,current_pose.position)  << std::endl;
-      }
-    }
-
-    if (waypoint_candidates.size() == 0) {
+  int waypoint_min = -1;
+  double distance_min = DBL_MAX;
+  //get closest waypoint
+  for(int i = 1 ; i <  static_cast<int>(current_path.waypoints.size()); i++)
+  {
+    //skip waypoint behind vehicle
+    double x = calcRelativeCoordinate(current_path.waypoints[i].pose.pose.position, current_pose).x;
+    //ROS_INFO("waypoint = %d, x = %lf",i,x);
+    if (x < 0)
       continue;
+
+    //calc waypoint angle
+    double waypoint_yaw;
+    if (i == static_cast<int>(current_path.waypoints.size()) - 1)
+    {
+      waypoint_yaw = atan2(
+          current_path.waypoints[i - 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
+          current_path.waypoints[i - 1].pose.pose.position.x - current_path.waypoints[i].pose.pose.position.x);
+      waypoint_yaw -= M_PI;
     }
-
-    //search substraction minimum between candidate and previous closest
-    int substraction_minimum = 0;
-    int decided_waypoint = 0;
-    int initial_minimum = 0;
-
-    //decide initial minimum
-    for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-      substraction_minimum = waypoint_candidates[i] - closest_waypoint;
-      if (substraction_minimum < 0)
-        continue;
-
-      if (substraction_minimum >= 0) {
-        decided_waypoint = waypoint_candidates[i];
-        initial_minimum = i;
-        break;
-      }
+    else
+    {
+      waypoint_yaw = atan2(
+          current_path.waypoints[i + 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
+          current_path.waypoints[i + 1].pose.pose.position.x - current_path.waypoints[i].pose.pose.position.x);
     }
+    if(waypoint_yaw < 0)
+      waypoint_yaw += 2 * M_PI;
 
-    //calc closest
-    for (unsigned int i = initial_minimum; i < waypoint_candidates.size(); i++) {
-      int sub = waypoint_candidates[i] - closest_waypoint;
-      //std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
+    //calc pose angle
+    tf::Quaternion q(current_pose.orientation.x, current_pose.orientation.y, current_pose.orientation.z, current_pose.orientation.w);
+    double dummy1,dummy2,pose_yaw;
+    tf::Matrix3x3(q).getRPY(dummy1, dummy2, pose_yaw);
+    if(pose_yaw < 0)
+      pose_yaw += 2 * M_PI;
 
-      if (sub < 0)
-        continue;
+    //skip waypoint which direction is reverse against current_pose
+    double direction_sub = (waypoint_yaw - pose_yaw) * 180 / M_PI; //degree
+    //ROS_INFO("waypoint = %d, waypoint_yaw = %lf, pose_yaw = %lf, direction sub = %lf",i,waypoint_yaw,pose_yaw,direction_sub);
+    if(fabs(direction_sub) > 90)
+     continue;
 
-      if (sub < substraction_minimum) {
-        decided_waypoint = waypoint_candidates[i];
-        substraction_minimum = sub;
-      }
+    double distance = getPlaneDistance(current_path.waypoints[i].pose.pose.position, current_pose.position);
+    //ROS_INFO("waypoint = %d , distance = %lf , distance_min = %lf",i,distance,distance_min);
+    if(distance_min > distance){
+
+      //waypoint_min = el;
+      waypoint_min = i;
+      distance_min = distance;
     }
-
-    if (decided_waypoint >= closest_waypoint) {
-      closest_waypoint = decided_waypoint;
-      return decided_waypoint;
-      //return decided_waypoint;
-    }
-
   }
-  closest_waypoint = -1;
-  return -1;
+
+  //ROS_INFO("waypoint = %d",waypoint_min);
+  return waypoint_min;
 }
