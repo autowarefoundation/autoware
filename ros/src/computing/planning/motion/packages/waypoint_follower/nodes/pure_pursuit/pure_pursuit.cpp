@@ -585,8 +585,6 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
   int next_waypoint = -1;
 #endif
   int path_size = static_cast<int>(_current_waypoints.getSize());
-//  geometry_msgs::Point next_target;
-  static geometry_msgs::Point prev_target = _current_pose.pose.position;
   double lookahead_threshold = getLookAheadThreshold(closest_waypoint);
   ROS_INFO("initilize threshold = %lf", lookahead_threshold);
 
@@ -665,13 +663,11 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
     displaySearchRadius(lookahead_threshold);
 
     //if next waypoint is the last
-    if (next_waypoint == (path_size - 1)){
+    if (next_waypoint == (path_size - 1) || next_waypoint == 0){
     	*next_target = _current_waypoints.getWaypointPosition(next_waypoint);
-    			prev_target = *next_target;
       return true;
     }
 
-    geometry_msgs::Point next_candidate;
     if(!interpolateNextTarget(next_waypoint, lookahead_threshold, next_target))
     	return false;
     
