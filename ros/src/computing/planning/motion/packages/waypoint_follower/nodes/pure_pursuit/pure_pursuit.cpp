@@ -73,7 +73,7 @@ static double g_look_ahead_threshold_calc_ratio = 2.0;
 static double g_minimum_lool_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
 
 static WayPoints _current_waypoints;
-static ros::Publisher _locus_pub;
+static ros::Publisher _traj_circle_pub;
 static ros::Publisher _target_pub;
 static ros::Publisher _search_pub;
 
@@ -184,35 +184,37 @@ static void displayNextTarget(geometry_msgs::Point target)
 }
 
 // display the locus of pure pursuit by markers.
-void displayLocus(std::vector<geometry_msgs::Point> locus_array)
+void displayTrajectoryCircle(std::vector<geometry_msgs::Point> traj_circle_array)
 {
-  visualization_msgs::Marker locus;
-  locus.header.frame_id = MAP_FRAME;
-  locus.header.stamp = ros::Time();
-  locus.ns = "locus_marker";
-  locus.id = 0;
-  locus.type = visualization_msgs::Marker::LINE_STRIP;
-  locus.action = visualization_msgs::Marker::ADD;
+  visualization_msgs::Marker traj_circle;
+  traj_circle.header.frame_id = MAP_FRAME;
+  traj_circle.header.stamp = ros::Time();
+  traj_circle.ns = "trajectory_circle_marker";
+  traj_circle.id = 0;
+  traj_circle.type = visualization_msgs::Marker::LINE_STRIP;
+  traj_circle.action = visualization_msgs::Marker::ADD;
 
   std_msgs::ColorRGBA white;
   white.a = 1.0;
   white.b = 1.0;
   white.r = 1.0;
   white.g = 1.0;
-
-  for (std::vector<geometry_msgs::Point>::iterator it = locus_array.begin(); it != locus_array.end(); it++)
+//
+  for (auto el : traj_circle_array)
+  for (std::vector<geometry_msgs::Point>::iterator it = traj_circle_array.begin(); it != traj_circle_array.end(); it++)
   {
-    locus.points.push_back(*it);
-    locus.colors.push_back(white);
+    //traj_circle.points.push_back(*it);
+    traj_circle.points.push_back(el);
+    traj_circle.colors.push_back(white);
   }
 
-  locus.scale.x = 0.5;
-  locus.color.a = 0.3;
-  locus.color.r = 1.0;
-  locus.color.g = 0.0;
-  locus.color.b = 0.0;
-  locus.frame_locked = true;
-  _locus_pub.publish(locus);
+  traj_circle.scale.x = 0.1;
+  traj_circle.color.a = 0.3;
+  traj_circle.color.r = 1.0;
+  traj_circle.color.g = 0.0;
+  traj_circle.color.b = 0.0;
+  traj_circle.frame_locked = true;
+  _traj_circle_pub.publish(traj_circle);
 }
 
 // display the search radius by markers.
@@ -597,30 +599,17 @@ geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 }
 
 //generate the locus of pure pursuit
-std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
+std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target)
 {
-  std::vector<geometry_msgs::Point> locus_array;
+  std::vector<geometry_msgs::Point> traj_circle_array;
   double radius = calcRadius(target);
-  //if(radius < 0)
-  //  radius = radius * (-1);
-  double theta;
-  if (radius != 0)
-    theta = 2 * asin(getPlaneDistance(target, _current_pose.pose.position) / (2 * radius));
-  else
-    theta = 0;
 
-  //ROS_INFO("radius : %lf", radius);
- // ROS_INFO("theta : %lf", theta);
-
-  int step = 100;
-  for (double i = theta / step; fabs(i) < fabs(theta) + theta/step; i += theta / step)
+  for (double i = 0; i < M_PI / 2; i += 0.1)
   {
     //calc a point of circumference
     geometry_msgs::Point p;
     p.x = radius * cos(i);
     p.y = radius * sin(i);
-
-   // ROS_INFO("p : (%lf , %lf )", p.x, p.y);
 
     //transform to (radius,0)
     geometry_msgs::Point relative_p;
@@ -629,17 +618,38 @@ std::vector<geometry_msgs::Point> generateLocus(geometry_msgs::Point target)
 
     //rotate -90°
     geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
-   // ROS_INFO("relative point : (%lf , %lf )", rotate_p.x, rotate_p.y);
-
 
     //transform to vehicle plane
     geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
-  //  ROS_INFO("locus : (%lf , %lf )", tf_p.x, tf_p.y);
 
-    locus_array.push_back(tf_p);
-
+    traj_circle_array.push_back(tf_p);
   }
-  return locus_array;
+
+  //reverse vector
+  std::reverse(traj_circle_array.begin(), traj_circle_array.end());
+
+  for (double i = 0; i > (-1) * M_PI / 2; i -= 0.1)
+  {
+    //calc a point of circumference
+    geometry_msgs::Point p;
+    p.x = radius * cos(i);
+    p.y = radius * sin(i);
+
+    //transform to (radius,0)
+    geometry_msgs::Point relative_p;
+    relative_p.x = p.x - radius;
+    relative_p.y = p.y;
+
+    //rotate -90°
+    geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
+
+    //transform to vehicle plane
+    geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
+
+    traj_circle_array.push_back(tf_p);
+  }
+
+  return traj_circle_array;
 
 }
 
@@ -662,11 +672,11 @@ int main(int argc, char **argv)
   _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   _stat_pub = nh.advertise<std_msgs::Bool>("wf_stat", 0);
   _target_pub = nh.advertise<visualization_msgs::Marker>("next_target_mark", 0);
-  _search_pub = nh.advertise<visualization_msgs::Marker>("search_circle", 0);
+  _search_pub = nh.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
 #ifdef DEBUG
   _line_point_pub = nh.advertise<visualization_msgs::Marker>("line_point_mark", 0); //debug tool
 #endif
-  _locus_pub = nh.advertise<visualization_msgs::Marker>("locus_mark", 0);
+  _traj_circle_pub = nh.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
 
   //subscribe topic
   ros::Subscriber waypoint_subcscriber = nh.subscribe("final_waypoints", 10, WayPointCallback);
@@ -711,9 +721,7 @@ int main(int argc, char **argv)
 			ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x,
 					next_target.y, next_target.z);
 			displayNextTarget(next_target);
-			std::vector<geometry_msgs::Point> locus_array = generateLocus(
-					next_target);
-			displayLocus(locus_array);
+			displayTrajectoryCircle(generateTrajectoryCircle(next_target));
 #ifdef GLOBAL
 			twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(closest_waypoint));
 #else
