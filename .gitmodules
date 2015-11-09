@@ -1,3 +1,0 @@
-[submodule "ros/depends/src/velodyne"]
-	path = ros/depends/src/velodyne
-	url = https://github.com/ros-drivers/velodyne.git
