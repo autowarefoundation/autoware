@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   vehicle_socket
   waypoint_follower
   runtime_manager
+  map_file
+  lane_planner
 )
 
 ###################################
@@ -17,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_follower
-  CATKIN_DEPENDS roscpp std_msgs tf vehicle_socket waypoint_follower runtime_manager
+  CATKIN_DEPENDS roscpp std_msgs tf vehicle_socket waypoint_follower runtime_manager map_file lane_planner
   DEPENDS gnss waypoint_follower
 )
 
@@ -44,7 +46,9 @@ add_dependencies(waypoint_saver
   vehicle_socket_generate_messages_cpp)
 
 add_executable(waypoint_clicker nodes/waypoint_clicker/waypoint_clicker.cpp)
-target_link_libraries(waypoint_clicker ${catkin_LIBRARIES})
+target_link_libraries(waypoint_clicker vmap_utility ${catkin_LIBRARIES})
+add_dependencies(waypoint_clicker
+  map_file_generate_messages_cpp)
 
 add_executable(waypoint_marker_publisher nodes/waypoint_marker_publisher/waypoint_marker_publisher.cpp)
 target_link_libraries(waypoint_marker_publisher libwaypoint_follower ${catkin_LIBRARIES})
