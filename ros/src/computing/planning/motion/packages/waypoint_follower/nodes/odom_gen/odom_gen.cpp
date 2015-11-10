@@ -51,7 +51,7 @@ static bool _initial_set = false;
 static bool _pose_set = false;
 static bool _waypoint_set = false;
 //Path _path_og;
-WayPoints _current_waypoints;
+static WayPoints _current_waypoints;
 
 static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {

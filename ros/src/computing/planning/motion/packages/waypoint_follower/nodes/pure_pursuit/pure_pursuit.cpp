@@ -184,7 +184,7 @@ static void displayNextTarget(geometry_msgs::Point target)
 }
 
 // display the locus of pure pursuit by markers.
-void displayTrajectoryCircle(std::vector<geometry_msgs::Point> traj_circle_array)
+static void displayTrajectoryCircle(std::vector<geometry_msgs::Point> traj_circle_array)
 {
   visualization_msgs::Marker traj_circle;
   traj_circle.header.frame_id = MAP_FRAME;
@@ -241,7 +241,7 @@ static void displaySearchRadius(double search_radius)
 }
 #ifdef DEBUG
 // debug tool for interpolateNextTarget
-void displayLinePoint(double slope, double intercept, geometry_msgs::Point target, geometry_msgs::Point target2,
+static void displayLinePoint(double slope, double intercept, geometry_msgs::Point target, geometry_msgs::Point target2,
     geometry_msgs::Point target3)
 {
   visualization_msgs::Marker line;
@@ -312,7 +312,7 @@ void displayLinePoint(double slope, double intercept, geometry_msgs::Point targe
 #endif
 
 //rotation point by degree
-geometry_msgs::Point rotatePoint(double degree, geometry_msgs::Point point)
+static geometry_msgs::Point rotatePoint(double degree, geometry_msgs::Point point)
 {
   geometry_msgs::Point rotate;
   rotate.x = cos(deg2rad(degree)) * point.x - sin(deg2rad(degree)) * point.y;
@@ -321,7 +321,7 @@ geometry_msgs::Point rotatePoint(double degree, geometry_msgs::Point point)
   return rotate;
 }
 
-double getCmdVelocity(int waypoint)
+static double getCmdVelocity(int waypoint)
 {
 
   if (_param_flag)
@@ -341,7 +341,7 @@ double getCmdVelocity(int waypoint)
   return velocity;
 }
 
-double getLookAheadThreshold(int waypoint)
+static double getLookAheadThreshold(int waypoint)
 {
   if (_param_flag)
     return _lookahead_threshold;
@@ -355,7 +355,7 @@ double getLookAheadThreshold(int waypoint)
     return current_velocity_mps * g_look_ahead_threshold_calc_ratio;
 }
 
-double calcCurvature(geometry_msgs::Point target)
+static double calcCurvature(geometry_msgs::Point target)
 {
   double kappa;
   double denominator = pow(getPlaneDistance(target, _current_pose.pose.position), 2);
@@ -371,7 +371,7 @@ double calcCurvature(geometry_msgs::Point target)
 
 }
 
-double calcRadius(geometry_msgs::Point target)
+static double calcRadius(geometry_msgs::Point target)
 {
   double radius;
   double denominator = 2 * calcRelativeCoordinate(target, _current_pose.pose).y;
@@ -387,7 +387,7 @@ double calcRadius(geometry_msgs::Point target)
 }
 
 //linear interpolation of next target
-bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msgs::Point *next_target)
+static bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msgs::Point *next_target)
 {
   geometry_msgs::Point zero_p;
   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
@@ -504,7 +504,7 @@ bool interpolateNextTarget(int next_waypoint, double search_radius, geometry_msg
   }
 }
 
-bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
+static bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
 {
 #ifdef GLOBAL
   static int next_waypoint = -1;
@@ -588,7 +588,7 @@ bool getNextTarget(double closest_waypoint , geometry_msgs::Point *next_target)
   return false;
 }
 
-geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
+static geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 {
   geometry_msgs::Twist twist;
 
@@ -599,7 +599,7 @@ geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 }
 
 //generate the locus of pure pursuit
-std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target)
+static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target)
 {
   std::vector<geometry_msgs::Point> traj_circle_array;
   double radius = calcRadius(target);
