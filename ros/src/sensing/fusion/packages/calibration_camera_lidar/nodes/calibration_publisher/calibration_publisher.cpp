@@ -150,18 +150,29 @@ int main(int argc, char* argv[])
   fs["DistCoeff"] >> DistCoeff;
   fs["ImageSize"] >> ImageSize;
 
+  std::string image_topic_name("/image_raw");
+  std::string camera_info_name("/camera/camera_info");
+  std::string projection_matrix_name("/projection_matrix");
+
+  std::string name_space_str = ros::this_node::getNamespace();
+  if (name_space_str != "/") {
+    image_topic_name = name_space_str + image_topic_name;
+    camera_info_name = name_space_str + camera_info_name;
+    projection_matrix_name = name_space_str + projection_matrix_name;
+  }
+
   ros::Subscriber image_sub;
   if (isRegister_tf) {
-    image_sub = n.subscribe("/image_raw", 10, image_raw_cb);
+    image_sub = n.subscribe(image_topic_name, 10, image_raw_cb);
   }
 
   if (isPublish_cameraInfo) {
-    camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10, true);
+    camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, true);
     cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
   }
 
   if (isPublish_extrinsic) {
-    projection_matrix_pub = n.advertise<calibration_camera_lidar::projection_matrix>("/projection_matrix", 10, true);
+    projection_matrix_pub = n.advertise<calibration_camera_lidar::projection_matrix>(projection_matrix_name, 10, true);
     projectionMatrix_sender(CameraExtrinsicMat);
   }
 
