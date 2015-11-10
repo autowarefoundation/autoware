@@ -776,17 +776,23 @@ params :
       label   : 'Simulation Mode'
       kind    : checkbox
       v       : False
-      rosparam: /lattice_trajectory_gen/sim_mode
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : prius_mode
       label   : 'Prius Mode'
       kind    : checkbox
       v       : False
-      rosparam: /lattice_trajectory_gen/prius_mode
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : mkz_mode
       label   : 'MKZ Mode'
       kind    : checkbox
       v       : False
-      rosparam: /lattice_trajectory_gen/mkz_mode
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : wf_simulator
     vars  :
