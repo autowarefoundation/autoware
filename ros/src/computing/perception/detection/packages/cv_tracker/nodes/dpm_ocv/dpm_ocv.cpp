@@ -50,6 +50,7 @@ private:
 	int num_bins_;
 	std::string model_file_;
 	std::string object_class;
+	std::string image_topic_name;
 };
 
 // Constructor
@@ -68,6 +69,7 @@ objectDetect::objectDetect() :
 	private_nh_.param("num_cells", num_cells_, NUM_CELLS);
 	private_nh_.param("num_bins", num_bins_, NUM_BINS);
 	private_nh_.param("val_of_tuncate", val_of_truncate_, 0.2);
+	private_nh_.param<std::string>("image_raw_topic", image_topic_name, "/image_raw");
 
 	if (!private_nh_.getParam("detection_class_name", object_class))  {
 		object_class = "car";
@@ -132,7 +134,7 @@ void objectDetect::run()
 	std::string config_topic("/config");
 	config_topic += ros::this_node::getNamespace() + "/dpm";
 	config_sub_ = nh_.subscribe<runtime_manager::ConfigCarDpm>(config_topic, 1, &objectDetect::configCallback, this);
-	img_sub_ = nh_.subscribe<sensor_msgs::Image>("/image_raw", 1, &objectDetect::imageCallback, this);
+	img_sub_ = nh_.subscribe<sensor_msgs::Image>(image_topic_name, 1, &objectDetect::imageCallback, this);
 	detect_pub_ = nh_.advertise<cv_tracker::image_obj>("image_obj", 1);
 }
 

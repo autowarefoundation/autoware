@@ -57,6 +57,8 @@ static DPMTTICParam ttic_param;
 
 static std::string object_class;
 
+static std::string image_topic_name;
+
 static void set_default_param(DPMTTICParam& param)
 {
 	param.overlap = 0.4;
@@ -135,6 +137,10 @@ int main(int argc, char* argv[])
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
+	if (!private_nh.getParam("image_raw_topic", image_topic_name)) {
+		image_topic_name = "/image_raw";
+	}
+
 	if (!private_nh.getParam("detection_class_name", object_class)) {
 		object_class = "car";
 	}
@@ -181,7 +187,7 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	ros::Subscriber sub = n.subscribe("/image_raw", 1, image_raw_cb);
+	ros::Subscriber sub = n.subscribe(image_topic_name, 1, image_raw_cb);
 	image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
 
 	ros::Subscriber config_sub;

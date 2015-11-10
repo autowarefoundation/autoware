@@ -43,6 +43,7 @@
 #include <math.h>
 #include <list>
 #include "utils.h"
+#include <string>
 /*#include "switch_release.h"*/
 
 #if !defined(USE_POSIX_SHARED_MEMORY)
@@ -577,7 +578,12 @@ int main(int argc, char *argv[])
 #else
   ros::init(argc, argv, "line_ocv");
   ros::NodeHandle n;
-  ros::Subscriber subscriber = n.subscribe("/image_raw", 1, lane_cannyhough_callback);
+  ros::NodeHandle private_nh("~");
+  std::string image_topic_name;
+  private_nh.param<std::string>("image_raw_topic", image_topic_name, "/image_raw");
+  ROS_INFO("Setting image topic to %s", image_topic_name.c_str());
+
+  ros::Subscriber subscriber = n.subscribe(image_topic_name, 1, lane_cannyhough_callback);
 
   image_lane_objects = n.advertise<lane_detector::ImageLaneObjects>("lane_pos_xy", 1);
 

@@ -117,9 +117,18 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "sca_image_viewer");
     ros::NodeHandle n;
+    ros::NodeHandle private_nh("~");
+    std::string image_topic_name;
+
+    if (private_nh.getParam("image_raw_topic", image_topic_name)) {
+        ROS_INFO("Setting image topic to %s", image_topic_name.c_str());
+    } else {
+        ROS_INFO("No image topic received, defaulting to image_raw, you can use _image_raw_topic:=YOUR_NODE");
+        image_topic_name = "/image_raw";
+    }
 
     ros::Subscriber scan_image_sub = n.subscribe("/scan_image", 1, scan_image_callback);
-    ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_callback);
+    ros::Subscriber image_sub = n.subscribe(image_topic_name, 1, image_callback);
 
     cv::Mat grayscale(256,1,CV_8UC1);
     for(int i = 0; i < 256; i++) {

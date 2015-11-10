@@ -9,6 +9,7 @@
 
       <!-- argument list -->
       <arg name="model_file_car" default="$(find cv_tracker)/data/car_2008.xml"/>
+      <arg name="image_src_car" default="/image_raw"/>
 
       <!-- dpm detection -->
       <node pkg="cv_tracker" name="dpm" type="dpm_ocv">
@@ -16,6 +17,7 @@
         <param name="detection_class_name" type="str" value="car"/>
         <param name="model_file" type="str" value="$(arg model_file_car)"/>
         <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+        <param name="image_raw_topic" type="str" value="$(arg image_src_car)"/>
       </node>
     </group>
   </group>
@@ -27,6 +29,7 @@
 
       <!-- argument list -->
       <arg name="model_file_pedestrian" default="$(find cv_tracker)/data/person.xml"/>
+      <arg name="image_src_pedestrian" default="/image_raw"/>
 
       <!-- dpm detection -->
       <node pkg="cv_tracker" name="dpm" type="dpm_ocv">
@@ -34,6 +37,7 @@
         <param name="detection_class_name" type="str" value="person"/>
         <param name="model_file" type="str" value="$(arg model_file_pedestrian)"/>
         <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+        <param name="image_raw_topic" type="str" value="$(arg image_src_pedestrian)"/>
       </node>
     </group>
   </group>

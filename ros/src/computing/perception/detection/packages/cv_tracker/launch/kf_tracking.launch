@@ -5,8 +5,11 @@
   <group if="$(arg car)">
     <group ns="obj_car">
 
+      <arg name="image_src_car" default="/image_raw"/>
+
       <node pkg="cv_tracker" name="tracking" type="kf_track" output="screen">
           <remap from="/config/obj_car/kf" to="/config/car_kf" />
+          <param name="image_node" type="str" value="$(arg image_src_car)"/>
       </node>
 
     </group>
@@ -15,8 +18,11 @@
   <group if="$(arg pedestrian)">
     <group ns="obj_person">
 
+      <arg name="image_src_pedestrian" default="/image_raw"/>
+
       <node pkg="cv_tracker" name="tracking" type="kf_track">
           <remap from="/config/obj_person/kf" to="/config/pedestrian_kf" />
+          <param name="image_node" type="str" value="$(arg image_src_pedestrian)"/>
       </node>
 
     </group>
