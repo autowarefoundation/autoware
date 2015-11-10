@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   runtime_manager
   waypoint_follower
-  dbw_mkz_msgs
+  #dbw_mkz_msgs
 )
 
 ################################################
