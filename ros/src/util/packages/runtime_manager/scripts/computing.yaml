@@ -93,6 +93,10 @@ subs :
             border : 16
             flags  : [ left ]
 
+      - name : klt_track
+        cmd  : roslaunch cv_tracker klt_tracking.launch
+        param: car_kf
+
       - name : kf_track
         cmd  : roslaunch cv_tracker kf_tracking.launch
         param: car_kf

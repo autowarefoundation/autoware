@@ -1,7 +1,7 @@
 #include "LkTracker.hpp"
 
 
-LkTracker::LkTracker()
+LkTracker::LkTracker(int in_id, float in_min_height, float in_max_height, float in_range)
 {
 	max_point_count_ 		= 500;
 	criteria_max_iteration_	= 20;
@@ -23,8 +23,18 @@ LkTracker::LkTracker()
 	previous_centroid_y_	= 0;
 
 	cv::generateColors(colors_, 2);
-}
+	lifespan_				= 45;
+	DEFAULT_LIFESPAN_		= 45;
+	object_id				= in_id;
 
+	min_height_ 			= in_min_height;
+	max_height_ 			= in_max_height;
+	range_					= in_range;
+}
+cv::LatentSvmDetector::ObjectDetection LkTracker::GetTrackedObject()
+{
+	return current_rect_;
+}
 void LkTracker::ArrowedLine(cv::Mat& in_image, cv::Point in_point1, cv::Point in_point2, const cv::Scalar& in_color,
 				int in_thickness, int in_line_type, int in_shift, double in_tip_length)
 {
@@ -61,34 +71,47 @@ void OrbFeatures(cv::Mat in_image)
 	cv::Mat vocabulary = bow_trainer.cluster();
 }
 
-cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, bool in_update)
+unsigned int	LkTracker::GetRemainingLifespan()
+{
+	return lifespan_;
+}
+
+void LkTracker::NullifyLifespan()
+{
+	lifespan_ = 0;
+}
+
+cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetection in_detection, bool in_update)
 {
 	cv::Mat gray_image;
-	cv::cvtColor(in_image, in_image, cv::COLOR_RGB2BGR);
+	//cv::cvtColor(in_image, in_image, cv::COLOR_RGB2BGR);
 	cv::cvtColor(in_image, gray_image, cv::COLOR_BGR2GRAY);
 	cv::Mat mask(gray_image.size(), CV_8UC1);
 	cv::TickMeter timer;
 
 	timer.start();
 
-	if (in_update && in_detections.size() > 0)
+	if (in_update && in_detection.rect.width > 0)
 	{
 		//MATCH
-		matched_detection_ = in_detections[0];
-		if (matched_detection_.x < 0) matched_detection_.x = 0;
-		if (matched_detection_.y < 0) matched_detection_.y = 0;
-		if (matched_detection_.x + matched_detection_.width > in_image.cols) matched_detection_.width = in_image.cols - matched_detection_.x;
-		if (matched_detection_.y + matched_detection_.height > in_image.rows) matched_detection_.height = in_image.rows - matched_detection_.y;
+		matched_detection_ = in_detection;
+		if (matched_detection_.rect.x < 0) matched_detection_.rect.x = 0;
+		if (matched_detection_.rect.y < 0) matched_detection_.rect.y = 0;
+		if (matched_detection_.rect.x + matched_detection_.rect.width > in_image.cols) matched_detection_.rect.width = in_image.cols - matched_detection_.rect.x;
+		if (matched_detection_.rect.y + matched_detection_.rect.height > in_image.rows) matched_detection_.rect.height = in_image.rows - matched_detection_.rect.y;
 
 		mask.setTo(cv::Scalar::all(0));
-		mask(matched_detection_) = 1;							//fill with ones only the ROI
+		mask(matched_detection_.rect) = 1;							//fill with ones only the ROI
+
+		lifespan_ = DEFAULT_LIFESPAN_;
 	}
 	int sum_x = 0;
 	int sum_y = 0;
 	std::vector<cv::Point2f> valid_points;
 
+	lifespan_--;
 	if ( ( in_update || prev_image_.empty() ) &&
-		 ( matched_detection_.width>0 && matched_detection_.height >0 )
+		 ( matched_detection_.rect.width>0 && matched_detection_.rect.height >0 )
 		)																//add as new object
 	{
 		cv::goodFeaturesToTrack(gray_image,			//input to extract corners
@@ -101,7 +124,10 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 								true,				//true to use harris corner detector, otherwise use tomasi
 								0.04);				//harris detector free parameter
 		if (current_points_.size()<=0)
+		{
+			current_rect_ = cv::LatentSvmDetector::ObjectDetection(cv::Rect(0,0,0,0),0,0);
 			return in_image;
+		}
 		cv::cornerSubPix(gray_image,
 					current_points_,
 					sub_pixel_window_size_,
@@ -119,7 +145,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 			current_centroid_y_+= current_points_[i].y;
 			valid_points.push_back(current_points_[i]);
 		}
-		std::cout << "CENTROID" << current_centroid_x_ <<","<< current_centroid_y_<< std::endl << std::endl;
+		//std::cout << "CENTROID" << current_centroid_x_ <<","<< current_centroid_y_<< std::endl << std::endl;
 
 	}
 	else if ( !prev_points_.empty() )//try to match current object
@@ -169,7 +195,10 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		frame_count_++;
 	}
 	if (valid_points.size()<=2)
+	{
+		current_rect_ = cv::LatentSvmDetector::ObjectDetection(cv::Rect(0,0,0,0),0,0);
 		return in_image;
+	}
 
 	cv::Mat labels;
 	cv::Mat centers;
@@ -185,7 +214,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 	cv::Point2f center1 = centers.at<cv::Point2f>(0);
 	cv::Point2f center2 = centers.at<cv::Point2f>(1);
 
-	cv::Rect obj_rect;
+
 	cv::Point centroid(current_centroid_x_/valid_points.size(), current_centroid_y_/valid_points.size());
 
 	int cluster_nums[2] = {0,0};
@@ -201,8 +230,8 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		colors[1]=colors_[0];
 	}
 
-	cv::circle(in_image, center1, 5 , (cv::Scalar)colors[0], 3);
-	cv::circle(in_image, center2, 5 , (cv::Scalar)colors[1], 3);
+	//cv::circle(in_image, center1, 5 , (cv::Scalar)colors[0], 3);
+	//cv::circle(in_image, center2, 5 , (cv::Scalar)colors[1], 3);
 
 	std::vector<cv::Point2f> points_clusters[2];
 	std::vector<cv::Point2f> close_points;
@@ -212,17 +241,17 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		int cluster_index = labels.at<int>(i);
 		cluster_nums[cluster_index]++;
 		points_clusters[cluster_index].push_back(valid_points[i]);
-		if (cv::norm(valid_points[i] - center1) < matched_detection_.width &&
-				cv::norm(valid_points[i] - center2) < matched_detection_.width)
+		if (cv::norm(valid_points[i] - center1) < matched_detection_.rect.width*0.8 &&
+				cv::norm(valid_points[i] - center2) < matched_detection_.rect.width*0.8) //distance between point and cluster centroid
 		{
 			close_points.push_back(valid_points[i]);
 		}
-		cv::circle(in_image, valid_points[i], 2, colors[cluster_index], 2);
+		//cv::circle(in_image, valid_points[i], 2, colors[cluster_index], 2);
 	}
 
 	std::vector<cv::Point2f> final_points;
 
-	if (cv::norm(center2-center1) > matched_detection_.width*0.75)//if centroid are too far keep only the one with the most points
+	if (cv::norm(center2-center1) > matched_detection_.rect.width*0.75)//if centroids are too far keep only the one with the most points
 	{
 		if (cluster_nums[0] > cluster_nums[1])
 			final_points = points_clusters[0];
@@ -233,23 +262,27 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 		final_points = close_points;
 
 	GetRectFromPoints(final_points,
-						obj_rect);
+			current_rect_.rect);
 
-	if (obj_rect.width <= matched_detection_.width*0.15 ||
-			obj_rect.height <= matched_detection_.height*0.15
+	current_rect_.classID = matched_detection_.classID;
+	current_rect_.score = matched_detection_.score;
+
+	if (current_rect_.rect.width <= matched_detection_.rect.width*0.15 ||
+			current_rect_.rect.height <= matched_detection_.rect.height*0.15
 		)
 	{
-		std::cout << "TRACK STOPPED" << std::endl;
+		//std::cout << "TRACK STOPPED" << std::endl;
 		prev_points_.clear();
 		current_points_.clear();
+		current_rect_ = cv::LatentSvmDetector::ObjectDetection(cv::Rect(0,0,0,0),0,0);
 		return in_image;
 	}
 
-	cv::rectangle(in_image, obj_rect, cv::Scalar(0,0,255), 2);
+	//cv::rectangle(in_image, current_rect_, cv::Scalar(0,0,255), 2);
 
 	if (prev_points_.size() > 0 )
 	{
-		cv::Point center_point = cv::Point(obj_rect.x + obj_rect.width/2, obj_rect.y + obj_rect.height/2);
+		cv::Point center_point = cv::Point(current_rect_.rect.x + current_rect_.rect.width/2, current_rect_.rect.y + current_rect_.rect.height/2);
 		cv::Point direction_point;
 		float sum_angle = atan2(sum_y, sum_x);
 
@@ -258,12 +291,10 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 
 		//ArrowedLine(in_image, center_point, direction_point, cv::Scalar(0,0,255), 2);
 
-		cv::circle(in_image, center_point, 4 , cv::Scalar(0,0,255), 2);
-		cv::circle(in_image, center_point, 2 , cv::Scalar(0,0,255), 2);
+		//cv::circle(in_image, center_point, 4 , cv::Scalar(0,0,255), 2);
+		//cv::circle(in_image, center_point, 2 , cv::Scalar(0,0,255), 2);
 	}
 
-	//imshow("KLT debug", in_image);
-	//cvWaitKey(1);
 	//finally store current state into previous
 	std::swap(final_points, prev_points_);
 	cv::swap(prev_image_, gray_image);
@@ -276,7 +307,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, std::vector<cv::Rect> in_detections, 
 
 	timer.stop();
 
-	std::cout << timer.getTimeMilli() << std::endl;
+	//std::cout << timer.getTimeMilli() << std::endl;
 
 	return in_image;
 }

@@ -83,10 +83,7 @@ static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTI
 
 static void image_raw_cb(const sensor_msgs::Image& image_source)
 {
-	if(counter%15){
-		counter++;
-		return;
-	}
+
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
