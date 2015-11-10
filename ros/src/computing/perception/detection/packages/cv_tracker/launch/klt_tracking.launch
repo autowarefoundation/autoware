@@ -1,6 +1,6 @@
 <launch>
   <arg name="car" default="true"/>
-  <arg name="pedestrian" default="false"/>
+  <arg name="pedestrian" default="true"/>
 
   <group if="$(arg car)">
     <group ns="obj_car">
