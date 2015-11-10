@@ -71,6 +71,13 @@ $ cd $HOME/Autoware/ros
 $ ./run
 ```
 
+## For developers
+
+Be careful for changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
+Original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
+repository, you must use **git subtree push**. (Please never change and push code if you don't understand
+`git subtree` well).
+
 ## Documents
 
 See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. English documents will be added shortly.
