@@ -274,7 +274,7 @@ double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point targe
 }
 
 //get closest waypoint from current pose
-int getClosestWaypoint(waypoint_follower::lane current_path,geometry_msgs::Pose current_pose )
+int getClosestWaypoint(const waypoint_follower::lane &current_path,geometry_msgs::Pose current_pose )
 {
 
   if (!current_path.waypoints.size()){
