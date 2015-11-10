@@ -119,6 +119,6 @@ double DecelerateVelocity(double distance, double prev_velocity);
 geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
 geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
 double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point target2);
-int getClosestWaypoint(waypoint_follower::lane current_path,geometry_msgs::Pose current_pose );
+int getClosestWaypoint(const waypoint_follower::lane &current_path,geometry_msgs::Pose current_pose );
 
 #endif
