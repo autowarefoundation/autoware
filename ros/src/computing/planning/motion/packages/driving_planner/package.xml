@@ -46,8 +46,8 @@
   <build_depend>tf</build_depend>
   <build_depend>gnss</build_depend>
   <build_depend>runtime_manager</build_depend>
-  <build_depend>dbw_mkz_msgs</build_depend>
-  <run_depend>dbw_mkz_msgs</run_depend>
+ <!--   <build_depend>dbw_mkz_msgs</build_depend>-->
+ <!--  <run_depend>dbw_mkz_msgs</run_depend>-->
   <run_depend>runtime_manager</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
