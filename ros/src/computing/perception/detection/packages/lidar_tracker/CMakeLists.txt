@@ -60,6 +60,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
    geometry_msgs
  )
 
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -73,26 +74,39 @@ catkin_package(
    CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 link_directories(${PCL_LIBRARY_DIRS})
 
 #euclidean_clustering node
-add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp)
-target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
+add_executable(euclidean_cluster
+  nodes/euclidean_cluster/euclidean_cluster.cpp)
+
+target_link_libraries(euclidean_cluster
+  opencv_highgui
+  opencv_core
+  opencv_contrib
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES})
+
+add_dependencies(euclidean_cluster
+  lidar_tracker_generate_messages_cpp)
 
 #vscan_filling node
-add_executable(vscan_filling nodes/vscan_filling/vscan_filling.cpp)
-target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(vscan_filling
+  nodes/vscan_filling/vscan_filling.cpp)
+
+target_link_libraries(vscan_filling
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES})
 
 #fusion node
-add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
+add_executable(obj_fusion
+  nodes/obj_fusion/obj_fusion.cpp)
 
-target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
+target_link_libraries(obj_fusion
+  ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
 
 add_dependencies(obj_fusion
   lidar_tracker_generate_messages_cpp
@@ -100,14 +114,13 @@ add_dependencies(obj_fusion
 )
 
 # build vehicle tracker
-
 execute_process(
   COMMAND uname -m
   OUTPUT_VARIABLE ARCHITECTURE
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 if(EXISTS "/usr/local/cuda")
   include_directories(
@@ -148,46 +161,49 @@ if(EXISTS "/usr/local/cuda")
     set(CUDA_ARCH "sm_52")
   endif()
 
-  set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR/nodes/vehicle_tracker}")
+  #QT Stuff
+  set(CMAKE_AUTOMOC ON)
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
   
-  FIND_PACKAGE(CUDA)
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5Widgets REQUIRED)
+  
+  #QT Stuff
+  
+  FIND_PACKAGE(CUDA REQUIRED)
   INCLUDE(FindCUDA)
   
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION})
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
   
-  FILE(GLOB SOURCES "*.cu" "*.cpp" "*.c" "*.h")
-  
+  INCLUDE_DIRECTORIES(${Qt5Core_INCLUDES}
+    ${Qt5Widgets_INCLUDES})
+
+  #cuda pf lib
   cuda_add_library(rbsspfvehicletracker
-  	${SOURCES})
+        nodes/vehicle_tracker/rbsspfvehicletracker.cu
+        nodes/vehicle_tracker/rbsspfvehicletracker.cuh)
 
   catkin_package(
     CATKIN_DEPENDS rosinterface
     )
 
-####
-  
-    ###
-    
-  set(CMAKE_AUTOMOC ON)
-  set(CMAKE_INCLUDE_CURRENT_DIR ON)
-  
-  find_package(Qt5Widgets REQUIRED)
-  
-  include_directories(${Qt5Widgets_INCLUDES})
-  
+  #qt exe
+  include_directories(${Qt5Core_INCLUDES}
+    ${Qt5Widgets_INCLUDES}
+    nodes/vehicle_tracker/)
+
+  add_definitions(${Qt5Core_DEFINITIONS})
   add_definitions(${Qt5Widgets_DEFINITIONS})
   
-  set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
   add_executable(vehicle_tracker
+    nodes/vehicle_tracker/rbsspfvehicletracker.h
     nodes/vehicle_tracker/main.cpp
     nodes/vehicle_tracker/mainwindow.cpp
-#    rbsspfvehicletracker_cuda.o
+    nodes/vehicle_tracker/rbsspfvehicletracker.cpp
     )
 
-  set_target_properties(vehicle_tracker
-    PROPERTIES COMPILE_FLAGS "-fPIC"
-    )
 
   add_dependencies(vehicle_tracker
     moc_mainwindow
@@ -198,6 +214,7 @@ if(EXISTS "/usr/local/cuda")
   target_link_libraries(vehicle_tracker
     ${catkin_LIBRARIES}
     rosinterface
+    ${Qt5Core_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     rbsspfvehicletracker
     )
