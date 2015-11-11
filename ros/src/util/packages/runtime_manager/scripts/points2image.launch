@@ -1,0 +1,7 @@
+<launch>
+    <arg name="camera_info_src" default="/camera/camera_info"/>
+
+    <node pkg="points2image" type="points2image" name="points2image" output="screen">
+        <param name="camera_info_topic" value="$(arg camera_info_src)"/>
+    </node>
+</launch>

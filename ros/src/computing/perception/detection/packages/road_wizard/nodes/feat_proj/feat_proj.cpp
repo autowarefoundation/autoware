@@ -253,6 +253,9 @@ int main (int argc, char *argv[])
 
   ros::init(argc, argv, "feat_proj");
   ros::NodeHandle rosnode;
+  ros::NodeHandle private_nh("~");
+  std::string cameraInfo_topic_name;
+  private_nh.param<std::string>("camera_info_topic", cameraInfo_topic_name, "/camera/camera_info");
 
   /* load vector map */
   ros::Subscriber sub_point     = rosnode.subscribe("vector_map_info/point_class",
@@ -296,7 +299,7 @@ int main (int argc, char *argv[])
   vmap.loaded = true;
   std::cout << "all vector map loaded." << std::endl;
 
-  ros::Subscriber cameraInfoSubscriber = rosnode.subscribe ("/camera/camera_info", 100, cameraInfoCallback);
+  ros::Subscriber cameraInfoSubscriber = rosnode.subscribe (cameraInfo_topic_name, 100, cameraInfoCallback);
   ros::Subscriber adjust_xySubscriber  = rosnode.subscribe("/config/adjust_xy", 100, adjust_xyCallback);
   //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/current_pose", 10, ndtPoseCallback);
   ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);

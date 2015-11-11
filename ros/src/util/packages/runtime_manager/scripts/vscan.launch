@@ -1,5 +1,9 @@
 <launch>
+  <arg name="camera_info_src" default="/camera/camera_info"/>
+
   <node pkg="points2image" type="points2vscan" name="points2vscan" output="screen" />
-  <node pkg="points2image" type="vscan2image" name="vscan2image" output="screen" />
+  <node pkg="points2image" type="vscan2image" name="vscan2image" output="screen">
+      <param name="camera_info_topic" value="$(arg camera_info_src)" />
+  </node>
   <node pkg="points2image" type="vscan2linelist" name="vscan2linelist" output="screen" />
 </launch>
