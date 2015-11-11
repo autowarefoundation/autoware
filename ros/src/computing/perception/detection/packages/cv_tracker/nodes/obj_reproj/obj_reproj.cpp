@@ -323,6 +323,8 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
+  std::string projectionMat_topic_name;
+  private_nh.param<std::string>("projection_matrix_topic", projectionMat_topic_name, "/projection_matrix");
 
   ros::Subscriber obj_pos_xyz = n.subscribe("image_obj_tracked", 1, obj_pos_xyzCallback);
   //ros::Subscriber pedestrian_pos_xyz = n.subscribe("/pedestrian_pixel_xyz", 1, pedestrian_pos_xyzCallback);
@@ -336,7 +338,7 @@ int main(int argc, char **argv){
   ros::Subscriber ndt_pose = n.subscribe("/current_pose", 1, position_getter_ndt);
   pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
 
-  ros::Subscriber projection = n.subscribe("/projection_matrix", 1, projection_callback);
+  ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
 
   /*
   //read calibration value

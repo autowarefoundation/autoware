@@ -147,8 +147,19 @@ int main(int argc, char *argv[])
 		camera_info_topic = "/camera/camera_info";
 	}
 
+	std::string projection_matrix_topic;
+	if (private_nh.getParam("projection_matrix_topic", projection_matrix_topic))
+	{
+		ROS_INFO("Setting projection_matrix topic to %s", projection_matrix_topic.c_str());
+	}
+	else
+	{
+		ROS_INFO("No projection matrix topic received, defaulting to /projection_matrix, you can use _projection_matrix_topic:=YOUR_TOPIC");
+		projection_matrix_topic = "/projection_matrix";
+	}
+
 	ros::Subscriber sub = n.subscribe(points_topic, 1, callback);
-	ros::Subscriber projection = n.subscribe("projection_matrix", 1, projection_callback);
+	ros::Subscriber projection = n.subscribe(projection_matrix_topic, 1, projection_callback);
 	ros::Subscriber intrinsic = n.subscribe(camera_info_topic, 1, intrinsic_callback);
 
 	ros::spin();

@@ -5,7 +5,10 @@
   <group if="$(arg car)">
     <group ns="obj_car">
 
+      <arg name="projection_matrix_src_car" default="/projection_matrix"/>
+
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+        <param name="projection_matrix_topic" value="$(arg projection_matrix_src_car)"/>
       </node>
 
     </group>
@@ -14,7 +17,10 @@
   <group if="$(arg pedestrian)">
     <group ns="obj_person">
 
+      <arg name="projection_matrix_src_pedestrian" default="/projection_matrix"/>
+
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+        <param name="projection_matrix_topic" value="$(arg projection_matrix_src_pedestrian)"/>
       </node>
 
     </group>
