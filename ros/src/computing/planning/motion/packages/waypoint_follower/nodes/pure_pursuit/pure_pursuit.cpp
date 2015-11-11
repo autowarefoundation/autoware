@@ -70,7 +70,7 @@ static double _lookahead_threshold = 4.0; //meter
 static double _initial_velocity = 5.0; //km/h
 static double g_offset_base2sensor = 0;
 static double g_look_ahead_threshold_calc_ratio = 2.0;
-static double g_minimum_lool_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
+static double g_minimum_look_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
 
 static WayPoints _current_waypoints;
 static ros::Publisher _traj_circle_pub;
@@ -88,7 +88,7 @@ static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr
   _initial_velocity = config->velocity;
   g_offset_base2sensor = config->offset;
   g_look_ahead_threshold_calc_ratio = config->threshold_ratio;
-  g_minimum_lool_ahead_threshold = config->minimum_lookahead_threshold;
+  g_minimum_look_ahead_threshold = config->minimum_lookahead_threshold;
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
@@ -349,8 +349,8 @@ static double getLookAheadThreshold(int waypoint)
   // double current_velocity_mps = _current_waypoints.getWaypointVelocityMPS(waypoint);
   double current_velocity_mps = _current_velocity;
 
-  if (current_velocity_mps * g_look_ahead_threshold_calc_ratio < g_minimum_lool_ahead_threshold)
-    return g_minimum_lool_ahead_threshold;
+  if (current_velocity_mps * g_look_ahead_threshold_calc_ratio < g_minimum_look_ahead_threshold)
+    return g_minimum_look_ahead_threshold;
   else
     return current_velocity_mps * g_look_ahead_threshold_calc_ratio;
 }
