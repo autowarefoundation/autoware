@@ -1,0 +1,30 @@
+<!-- -*- mode: XML -*- -->
+<!-- start velodyne_driver/DriverNodelet in a nodelet manager
+
+     $Id$
+  -->
+
+<launch>
+
+  <!-- start nodelet manager and load driver nodelet -->
+  <node pkg="nodelet" type="nodelet" name="velodyne_nodelet_manager"
+        args="manager" />
+  <arg name="model" default="64E" />
+  <arg name="pcap" default="" />
+  <arg name="read_once" default="false" />
+  <arg name="read_fast" default="false" />
+  <arg name="repeat_delay" default="0.0" />
+  <arg name="rpm" default="600.0" />
+  <arg name="frame_id" default="velodyne" />
+  <node pkg="nodelet" type="nodelet" name="driver_nodelet"
+        args="load velodyne_driver/DriverNodelet velodyne_nodelet_manager" >
+    <param name="model" value="$(arg model)"/>
+    <param name="pcap" value="$(arg pcap)"/>
+    <param name="read_once" value="$(arg read_once)"/>
+    <param name="read_fast" value="$(arg read_fast)"/>
+    <param name="repeat_delay" value="$(arg repeat_delay)"/>
+    <param name="rpm" value="$(arg rpm)"/>
+    <param name="frame_id" value="$(arg frame_id)"/>
+  </node>    
+
+</launch>
