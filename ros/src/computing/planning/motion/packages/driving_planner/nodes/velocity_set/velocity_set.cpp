@@ -140,12 +140,18 @@ void PathVset::setTemporalWaypoints()
   static const int size = (int)(_temporal_waypoints_size/getInterval())+1;
 
   temporal_waypoints_.waypoints.clear();
+  temporal_waypoints_.header = current_waypoints_.header;
+  temporal_waypoints_.increment = current_waypoints_.increment;
+  // push current pose
+  waypoint_follower::waypoint current_point;
+  current_point.pose = _current_pose;
+  current_point.twist = current_waypoints_.waypoints[_closest_waypoint].twist;
+  current_point.dtlane = current_waypoints_.waypoints[_closest_waypoint].dtlane;
+  temporal_waypoints_.waypoints.push_back(current_point);
   for (int i = 0; i < size; i++) {
     if (_closest_waypoint+i >= getSize())
       return;
     temporal_waypoints_.waypoints.push_back(current_waypoints_.waypoints[_closest_waypoint+i]);
-    temporal_waypoints_.header = current_waypoints_.header;
-    temporal_waypoints_.increment = current_waypoints_.increment;
   }
 
   return;
