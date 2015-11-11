@@ -222,16 +222,19 @@ static int getConnect(int port, int *sock, int *asock)
 static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 {
 	int info[2];
+	size_t size = sizeof(info);
 	ssize_t nbytes;
 
-	nbytes = recv(sock, info, sizeof(info), 0);
-	if (nbytes == -1) {
-		perror("recv");
-		return -1;
-	}
-	if (nbytes == 0) {
-		fprintf(stderr, "peer is shutdown\n");
-		return -1;
+	for (char *p = (char *)info; size; size -= nbytes, p += nbytes) {
+		nbytes = recv(sock, info, size, 0);
+		if (nbytes == -1) {
+			perror("recv");
+			return -1;
+		}
+		if (nbytes == 0) {
+			fprintf(stderr, "peer is shutdown\n");
+			return -1;
+		}
 	}
 	fprintf(stderr, "info=%d value=%d\n", info[0], info[1]);
 
@@ -251,7 +254,7 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 	case 3: { // ROUTE
 		tablet_socket::route_cmd msg;
 		tablet_socket::Waypoint point;
-		size_t size = info[1];
+		size = info[1];
 		double *points;
 		int points_nr;
 
@@ -309,7 +312,7 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 		break;
 	}
 	case 6: { // POSE
-		size_t size = info[1];
+		size = info[1];
 		if (!size)
 			break;
 
