@@ -222,9 +222,15 @@ static int getConnect(int port, int *sock, int *asock)
 static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 {
 	int info[2];
+	ssize_t nbytes;
 
-	if(recv(sock, info, sizeof(info), 0) == -1) {
+	nbytes = recv(sock, info, sizeof(info), 0);
+	if (nbytes == -1) {
 		perror("recv");
+		return -1;
+	}
+	if (nbytes == 0) {
+		fprintf(stderr, "peer is shutdown\n");
 		return -1;
 	}
 	fprintf(stderr, "info=%d value=%d\n", info[0], info[1]);
@@ -248,7 +254,6 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 		size_t size = info[1];
 		double *points;
 		int points_nr;
-		ssize_t nbytes;
 
 		if (!size)
 			break;
@@ -266,6 +271,11 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 			nbytes = recv(sock, p, size, 0);
 			if (nbytes == -1) {
 				perror("recv");
+				free(points);
+				return -1;
+			}
+			if (nbytes == 0) {
+				fprintf(stderr, "peer is shutdown\n");
 				free(points);
 				return -1;
 			}
@@ -309,12 +319,16 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 			return -1;
 		}
 
-		ssize_t nbytes;
 		for (char *p = (char *)buf; size;
 		     size -= nbytes, p += nbytes) {
 			nbytes = recv(sock, p, size, 0);
 			if (nbytes == -1) {
 				perror("recv");
+				free(buf);
+				return -1;
+			}
+			if (nbytes == 0) {
+				fprintf(stderr, "peer is shutdown\n");
 				free(buf);
 				return -1;
 			}
