@@ -287,7 +287,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				return false;
 		}
 
-		boolean connect(String address, int port) {
+		synchronized boolean connect(String address, int port) {
 			sockfd = SoundManagementNative.socket();
 			if (sockfd < 0)
 				return false;
@@ -300,7 +300,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			return true;
 		}
 
-		void close() {
+		synchronized void close() {
 			SoundManagementNative.close(sockfd);
 			sockfd = -1;
 		}
@@ -340,7 +340,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int EXIT_EXCEED_ERROR_LIMIT = -1;
 		static final int EXIT_RECEIVE_BROKEN_PACKET = -2;
 
-		int send(int type, int command) {
+		synchronized int send(int type, int command) {
 			if (isClosed())
 				return -1;
 
@@ -349,7 +349,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			return recvInt();
 		}
 
-		int sendRoute(double[] latlong) {
+		synchronized int sendRoute(double[] latlong) {
 			if (isClosed())
 				return -1;
 
@@ -360,7 +360,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			return recvInt();
 		}
 
-		int sendPose(double[] pose) {
+		synchronized int sendPose(double[] pose) {
 			if (isClosed())
 				return -1;
 
@@ -382,7 +382,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		static final int MISS_BEACON_LIMIT = 10;
 
-		int[] recv(int response) {
+		synchronized int[] recv(int response) {
 			int[] data = new int[2];
 
 			if (isClosed()) {
