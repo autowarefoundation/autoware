@@ -170,6 +170,17 @@ if(EXISTS "/usr/local/cuda")
 ####
   
     ###
+    
+  set(CMAKE_AUTOMOC ON)
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+  
+  find_package(Qt5Widgets REQUIRED)
+  
+  include_directories(${Qt5Widgets_INCLUDES})
+  
+  add_definitions(${Qt5Widgets_DEFINITIONS})
+  
+  set(CMAKE_CXX_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
   add_executable(vehicle_tracker
     nodes/vehicle_tracker/main.cpp
@@ -190,13 +201,7 @@ if(EXISTS "/usr/local/cuda")
   target_link_libraries(vehicle_tracker
     ${catkin_LIBRARIES}
     rosinterface
-#    vehicle_tracker_gpu_parts
-    ${Qt5LIBROOT}/libQt5Core.so
-    ${Qt5LIBROOT}/libQt5Gui.so
-    ${Qt5LIBROOT}/libQt5OpenGL.so
-    ${Qt5LIBROOT}/libQt5Widgets.so
-    #${CATKIN_DEVEL_PREFIX}/lib/rbsspfvehicletracker_cuda.o
-    #rbsspfvehicletracker_cuda.o
+    ${Qt5Widgets_LIBRARIES}
     rbsspfvehicletracker
     )
 
