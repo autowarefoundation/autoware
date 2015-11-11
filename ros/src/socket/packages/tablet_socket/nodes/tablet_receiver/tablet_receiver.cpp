@@ -252,22 +252,15 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 		break;
 	}
 	case 3: { // ROUTE
-		tablet_socket::route_cmd msg;
-		tablet_socket::Waypoint point;
 		size = info[1];
-		double *points;
-		int points_nr;
-
 		if (!size)
 			break;
 
-		points = (double *)malloc(size);
+		double *points = (double *)malloc(size);
 		if (points == NULL) {
 			perror("malloc");
 			return -1;
 		}
-
-		points_nr = size / sizeof(double);
 
 		for (char *p = (char *)points; size;
 		     size -= nbytes, p += nbytes) {
@@ -284,6 +277,9 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 			}
 		}
 
+		tablet_socket::route_cmd msg;
+		tablet_socket::Waypoint point;
+		int points_nr = size / sizeof(double);
 		for (int i = 0; i < points_nr; i++) {
 			if (i % 2) {
 				point.lon = points[i];
