@@ -203,21 +203,21 @@ void show(void)
   drawRects(&frame,
             car_fused_objects.obj,
             cvScalar(255.0, 255.0, 0,0),
-            matImage.rows*.25);
+            matImage.rows*.10);
 
   drawRects(&frame,
             pedestrian_fused_objects.obj,
             cvScalar(0.0, 255.0, 0,0),
-            matImage.rows*.25);
+            matImage.rows*.10);
 #endif
   /* PUT DISTANCE text on image */
   putDistance(&frame,
               car_fused_objects.obj,
-              matImage.rows*.25,
+              matImage.rows*.10,
               car_fused_objects.type.c_str());
   putDistance(&frame,
               pedestrian_fused_objects.obj,
-              matImage.rows*.25,
+              matImage.rows*.10,
               pedestrian_fused_objects.type.c_str());
 
   /* DRAW POINTS of lidar scanning */
