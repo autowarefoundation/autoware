@@ -364,7 +364,7 @@ void ObjPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
 
 static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-    static pcl::PointCloud<pcl::PointXYZ> vscan_raw;
+    pcl::PointCloud<pcl::PointXYZ> vscan_raw;
     pcl::fromROSMsg(*msg, vscan_raw);
 
     _vscan.clear();
