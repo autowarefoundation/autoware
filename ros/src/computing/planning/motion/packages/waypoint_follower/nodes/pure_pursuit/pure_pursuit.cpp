@@ -384,11 +384,9 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   geometry_msgs::Point start = _current_waypoints.getWaypointPosition(next_waypoint - 1);
 
   //let the linear equation be "y = slope * x + intercept"
-  //get slope of segment end,start
-  double slope = (start.y - end.y) / (start.x - end.x);
-
-  //get intercept of segment end,start
-  double intercept = (-1) * slope * end.x + end.y;
+  double slope = 0;
+  double intercept = 0;
+  getLinearEquation(start,end,&slope, &intercept);
 
   //let the center of circle be "(x0,y0)", in my code , the center of circle is vehicle position
   //the distance  "d" between the foot of a perpendicular line and the center of circle is ...

@@ -336,3 +336,17 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path,geometry_msgs
   //ROS_INFO("waypoint = %d",waypoint_min);
   return waypoint_min;
 }
+
+bool getLinearEquation(geometry_msgs::Point start,geometry_msgs::Point end,double *slope, double *intercept)
+{
+  if((start.x - end.x) == 0)
+    return false;
+
+  //get slope of segment end,start
+  *slope = (start.y - end.y) / (start.x - end.x);
+
+  //get intercept of segment end,start
+  *intercept = (-1) * slope * end.x + end.y;
+
+  return true;
+}

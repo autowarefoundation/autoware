@@ -141,6 +141,7 @@ geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry
 double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point target2);
 int getClosestWaypoint(const waypoint_follower::lane &current_path,geometry_msgs::Pose current_pose );
 
+bool getLinearEquation(geometry_msgs::Point start,geometry_msgs::Point end,double *slope, double *intercept);
 
 
 #endif
