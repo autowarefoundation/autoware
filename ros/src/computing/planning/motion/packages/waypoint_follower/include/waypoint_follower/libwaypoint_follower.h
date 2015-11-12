@@ -101,39 +101,12 @@ public:
 inline double kmph2mps(double velocity_kmph) { return (velocity_kmph * 1000) / (60 * 60); }
 inline double mps2kmph(double velocity_mps) { return (velocity_mps * 60 * 60) / 1000; }
 inline double deg2rad(double deg){  return deg * M_PI/180;} //convert from degree to radian
-inline tf::Vector3 point2vector(geometry_msgs::Point point)
-{
-  tf::Vector3 vector(point.x,point.y,point.z);
-  return vector;
-}
 
-inline geometry_msgs::Point vector2point(tf::Vector3 vector)
-{
-  geometry_msgs::Point point;
-  point.x = vector.getX();
-  point.y = vector.getY();
-  point.z = vector.getZ();
-  return point;
-}
 
-inline tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree)
-{
-  tf::Vector3 w1(cos(deg2rad(degree)) * unit_vector.getX() - sin(deg2rad(degree)) * unit_vector.getY(),
-      sin(deg2rad(degree)) * unit_vector.getX() + cos(deg2rad(degree)) * unit_vector.getY(), 0);
-  tf::Vector3 unit_w1 = w1.normalize();
-
-  return unit_w1;
-}
-
-//rotation point by degree
-inline geometry_msgs::Point rotatePoint(geometry_msgs::Point point, double degree)
-{
-  geometry_msgs::Point rotate;
-  rotate.x = cos(deg2rad(degree)) * point.x - sin(deg2rad(degree)) * point.y;
-  rotate.y = sin(deg2rad(degree)) * point.x + cos(deg2rad(degree)) * point.y;
-
-  return rotate;
-}
+tf::Vector3 point2vector(geometry_msgs::Point point); //convert point to vector
+geometry_msgs::Point vector2point(tf::Vector3 vector); //convert vector to point
+tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree); //rotate unit vector by degree
+geometry_msgs::Point rotatePoint(geometry_msgs::Point point, double degree); //rotate point vector by degree
 
 double DecelerateVelocity(double distance, double prev_velocity);
 geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
