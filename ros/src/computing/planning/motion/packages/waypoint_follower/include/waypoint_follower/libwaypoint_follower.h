@@ -115,6 +115,24 @@ inline geometry_msgs::Point vector2point(tf::Vector3 vector)
   return point;
 }
 
+inline tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree)
+{
+  tf::Vector3 w1(cos(deg2rad(degree)) * unit_vector.getX() - sin(deg2rad(degree)) * unit_vector.getY(),
+      sin(deg2rad(degree)) * unit_vector.getX() + cos(deg2rad(degree)) * unit_vector.getY(), 0);
+  tf::Vector3 unit_w1 = w1.normalize();
+
+  return unit_w1;
+}
+
+//rotation point by degree
+inline geometry_msgs::Point rotatePoint(geometry_msgs::Point point, double degree)
+{
+  geometry_msgs::Point rotate;
+  rotate.x = cos(deg2rad(degree)) * point.x - sin(deg2rad(degree)) * point.y;
+  rotate.y = sin(deg2rad(degree)) * point.x + cos(deg2rad(degree)) * point.y;
+
+  return rotate;
+}
 double DecelerateVelocity(double distance, double prev_velocity);
 geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
 geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);

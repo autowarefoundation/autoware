@@ -311,16 +311,6 @@ static void displayLinePoint(double slope, double intercept, geometry_msgs::Poin
 }
 #endif
 
-//rotation point by degree
-static geometry_msgs::Point rotatePoint(double degree, geometry_msgs::Point point)
-{
-  geometry_msgs::Point rotate;
-  rotate.x = cos(deg2rad(degree)) * point.x - sin(deg2rad(degree)) * point.y;
-  rotate.y = sin(deg2rad(degree)) * point.x + cos(deg2rad(degree)) * point.y;
-
-  return rotate;
-}
-
 static double getCmdVelocity(int waypoint)
 {
 
@@ -414,16 +404,9 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   tf::Vector3 v((end.x - start.x), (end.y - start.y), 0);
   tf::Vector3 unit_v = v.normalize();
 
-  //normal unit vector of v
-  double deg1 = 90;
-  tf::Vector3 w1(cos(deg2rad(deg1)) * v.getX() - sin(deg2rad(deg1)) * v.getY(),
-      sin(deg2rad(deg1)) * v.getX() + cos(deg2rad(deg1)) * v.getY(), 0);
-  tf::Vector3 unit_w1 = w1.normalize();
-
-  double deg2 = -90;
-  tf::Vector3 w2(cos(deg2rad(deg2)) * v.getX() - sin(deg2rad(deg2)) * v.getY(),
-      sin(deg2rad(deg2)) * v.getX() + cos(deg2rad(deg2)) * v.getY(), 0);
-  tf::Vector3 unit_w2 = w2.normalize();
+  //normal unit vectors of v
+  tf::Vector3 unit_w1 = rotateUnitVector(unit_v, 90); //rotate to counter clockwise 90 degree
+  tf::Vector3 unit_w2 = rotateUnitVector(unit_v, -90); //rotate to counter clockwise 90 degree
 
   //the foot of a perpendicular line
   geometry_msgs::Point h1;
@@ -617,7 +600,7 @@ static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs:
     relative_p.y = p.y;
 
     //rotate -90°
-    geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
+    geometry_msgs::Point rotate_p = rotatePoint(relative_p,-90);
 
     //transform to vehicle plane
     geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
@@ -641,7 +624,7 @@ static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs:
     relative_p.y = p.y;
 
     //rotate -90°
-    geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
+    geometry_msgs::Point rotate_p = rotatePoint(relative_p,-90);
 
     //transform to vehicle plane
     geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
