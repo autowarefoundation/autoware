@@ -1,6 +1,5 @@
 #include <ros/ros.h>
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
 #include <opencv/cxcore.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
@@ -218,8 +217,8 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     /*
      * Init zero
      */
-    memset(scan_image.distance, 0, sizeof(float) * imageSize.width * imageSize.height);
-    memset(scan_image.intensity, 0, sizeof(float) * imageSize.width * imageSize.height);
+    std::fill_n(scan_image.distance, imageSize.width * imageSize.height,0);
+    std::fill_n(scan_image.intensity, imageSize.width * imageSize.height,0);
     scan_image.max_y = NO_DATA;
     scan_image.min_y = NO_DATA;
 }
