@@ -364,7 +364,18 @@ void ObjPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
 
 static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-    pcl::fromROSMsg(*msg, _vscan);
+    static pcl::PointCloud<pcl::PointXYZ> vscan_raw;
+    pcl::fromROSMsg(*msg, vscan_raw);
+
+    _vscan.clear();
+    for (const auto &v : vscan_raw) {
+      if (v.x == 0 && v.y == 0)
+	continue;
+      if (v.z > _detection_height_top || v.z < _detection_height_bottom)
+	continue;
+      _vscan.push_back(v);
+    }
+
     if (_vscan_flag == false) {
         std::cout << "vscan subscribed" << std::endl;
         _vscan_flag = true;
@@ -526,7 +537,8 @@ static EControl vscanDetection(int closest_waypoint)
     for (int i = closest_waypoint; i < closest_waypoint + _search_distance; i++) {
         decelerate_or_stop++;
         if (decelerate_or_stop > decelerate2stop_waypoints ||
-	    (decelerate_or_stop >= 0 && i >= _path_dk.getSize()-1))
+	    (decelerate_or_stop >= 0 && i >= _path_dk.getSize()-1) ||
+	    (decelerate_or_stop >= 0 && i == closest_waypoint+_search_distance-1))
 	    return DECELERATE;
         if (i > _path_dk.getSize() - 1 )
             return KEEP;
@@ -540,9 +552,6 @@ static EControl vscanDetection(int closest_waypoint)
         int stop_point_count = 0;
 	int decelerate_point_count = 0;
         for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = _vscan.begin(); item != _vscan.end(); item++) {
-            if ((item->x == 0 && item->y == 0)) {
-	      continue;
-	    }
 
 	    tf::Vector3 vscan_vector((double) item->x, (double) item->y, 0);
 	    if (g_sim_mode) { // for simulation
@@ -556,11 +565,8 @@ static EControl vscanDetection(int closest_waypoint)
 	    // 2D distance between waypoint and vscan points(obstacle)
 	    // ---STOP OBSTACLE DETECTION---
             double dt = tf::tfDistance(vscan_vector, tf_waypoint);
-            if (dt < _detection_range) {
-	      if (item->z > _detection_height_top || item->z < _detection_height_bottom)
-		continue;
+            if (dt < _detection_range)
 	      stop_point_count++;
-	    }
             if (stop_point_count > _threshold_points) {
 	      _obstacle_waypoint = i;
 	      return STOP;
@@ -568,7 +574,7 @@ static EControl vscanDetection(int closest_waypoint)
 
 
 	    // without deceleration range
-	    if (_deceleration_range < 0)
+	    if (_deceleration_range <= 0)
 	      continue;
 	    // deceleration search runs "decelerate_search_distance" waypoints from closest
 	    if (i > _closest_waypoint+_deceleration_search_distance || decelerate_or_stop >= 0)
@@ -576,9 +582,6 @@ static EControl vscanDetection(int closest_waypoint)
 
 	    // ---DECELERATE OBSTACLE DETECTION---
             if (dt > _detection_range && dt < _detection_range + _deceleration_range) {
-	      if (item->z > _detection_height_top || item->z < _detection_height_bottom)
-		continue;
-
 	      bool count_flag = true;
 	      // search overlaps between DETECTION range and DECELERATION range
 	      for (int waypoint_search = -5; waypoint_search <= 5; waypoint_search++) {
