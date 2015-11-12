@@ -56,7 +56,6 @@ static geometry_msgs::PoseStamped _sim_ndt_pose;
 static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
 static const std::string pedestrian_sound = "pedestrian";
-static std::string _linelist_frame = "/velodyne";
 static bool _pose_flag = false;
 static bool _path_flag = false;
 static bool _vscan_flag = false;
@@ -80,7 +79,6 @@ static double _decel_limit = 2.778;   // (m/s) about 10 km/h
 static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
 static double _temporal_waypoints_size = 100.0; // meter
 static double _accel_bias = 1.389; // (m/s)
-static visualization_msgs::Marker _linelist; // for obstacle's vscan linelist
 static tf::Transform _transform;
 static bool g_sim_mode;
 enum EControl
@@ -96,7 +94,6 @@ static ros::Publisher _range_pub;
 static ros::Publisher _deceleration_range_pub;
 static ros::Publisher _sound_pub;
 static ros::Publisher _safety_waypoint_pub;
-static ros::Publisher _linelist_pub;
 static ros::Publisher _temporal_waypoints_pub;
 
 WayPoints _path_dk;
@@ -542,8 +539,6 @@ static EControl vscanDetection(int closest_waypoint)
 
         int stop_point_count = 0;
 	int decelerate_point_count = 0;
-	geometry_msgs::Point vscan_point;
-	_linelist.points.clear();
         for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = _vscan.begin(); item != _vscan.end(); item++) {
             if ((item->x == 0 && item->y == 0)) {
 	      continue;
@@ -562,10 +557,6 @@ static EControl vscanDetection(int closest_waypoint)
 	    // ---STOP OBSTACLE DETECTION---
             double dt = tf::tfDistance(vscan_vector, tf_waypoint);
             if (dt < _detection_range) {
-	      vscan_point.x = item->x;
-	      vscan_point.y = item->y;
-	      vscan_point.z = item->z;
-	      _linelist.points.push_back(vscan_point);
 	      if (item->z > _detection_height_top || item->z < _detection_height_bottom)
 		continue;
 	      stop_point_count++;
@@ -677,25 +668,6 @@ static EControl ObstacleDetection()
 }
 
 
-// publish obstacles as RED linelist
-static void linelistInit()
-{
-
-  _linelist.header.frame_id = _linelist_frame;
-  _linelist.header.stamp = ros::Time(0);
-  _linelist.ns = "vscan_linelist";
-  _linelist.id = 0;
-  _linelist.type = visualization_msgs::Marker::LINE_LIST;
-  _linelist.action = visualization_msgs::Marker::ADD;
-  _linelist.scale.x = 0.15;
-  _linelist.color.a = 0.5;
-  _linelist.color.r = 1.0;
-  _linelist.color.g = 0.0;
-  _linelist.color.b = 0.0;
-
-}
-
-
 static void ChangeWaypoint(EControl detection_result)
 {
 
@@ -758,7 +730,6 @@ int main(int argc, char **argv)
     _range_pub = nh.advertise<visualization_msgs::Marker>("detection_range", 0);
     _deceleration_range_pub = nh.advertise<visualization_msgs::Marker>("deceleration_range", 0);
     _sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
-    _linelist_pub = nh.advertise<visualization_msgs::Marker>("vscan_linelist", 10);
     _temporal_waypoints_pub = nh.advertise<waypoint_follower::lane>("temporal_waypoints", 1000, true);
     static ros::Publisher closest_waypoint_pub;
     closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
@@ -771,7 +742,6 @@ int main(int argc, char **argv)
     ROS_INFO_STREAM("deceleration_minimum : " << _deceleration_minimum);
     _deceleration_minimum = kmph2mps(_deceleration_minimum);
 
-    linelistInit();
 
     ros::Rate loop_rate(LOOP_RATE);
     while (ros::ok()) {
