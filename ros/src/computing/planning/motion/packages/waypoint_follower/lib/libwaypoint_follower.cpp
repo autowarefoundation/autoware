@@ -204,6 +204,9 @@ double WayPoints::getInterval() const
 geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
 {
   geometry_msgs::Point p;
+  if(waypoint > getSize() - 1)
+    return p;
+
   p.x = current_waypoints_.waypoints[waypoint].pose.pose.position.x;
   p.y = current_waypoints_.waypoints[waypoint].pose.pose.position.y;
   p.z = current_waypoints_.waypoints[waypoint].pose.pose.position.z;
@@ -213,6 +216,9 @@ geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
 geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
 {
   geometry_msgs::Quaternion q;
+  if(waypoint > getSize() - 1)
+    return q;
+
   q.x = current_waypoints_.waypoints[waypoint].pose.pose.orientation.x;
   q.y = current_waypoints_.waypoints[waypoint].pose.pose.orientation.y;
   q.z = current_waypoints_.waypoints[waypoint].pose.pose.orientation.z;
@@ -222,6 +228,9 @@ geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
 
 double WayPoints::getWaypointVelocityMPS(int waypoint) const
 {
+  if(waypoint > getSize() - 1)
+    return 0;
+
   return current_waypoints_.waypoints[waypoint].twist.twist.linear.x;
 }
 
