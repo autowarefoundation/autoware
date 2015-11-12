@@ -70,7 +70,7 @@ static double _lookahead_threshold = 4.0; //meter
 static double _initial_velocity = 5.0; //km/h
 static double g_offset_base2sensor = 0;
 static double g_look_ahead_threshold_calc_ratio = 2.0;
-static double g_minimum_lool_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
+static double g_minimum_look_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
 
 static WayPoints _current_waypoints;
 static ros::Publisher _traj_circle_pub;
@@ -88,7 +88,7 @@ static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr
   _initial_velocity = config->velocity;
   g_offset_base2sensor = config->offset;
   g_look_ahead_threshold_calc_ratio = config->threshold_ratio;
-  g_minimum_lool_ahead_threshold = config->minimum_lookahead_threshold;
+  g_minimum_look_ahead_threshold = config->minimum_lookahead_threshold;
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
@@ -311,16 +311,6 @@ static void displayLinePoint(double slope, double intercept, geometry_msgs::Poin
 }
 #endif
 
-//rotation point by degree
-static geometry_msgs::Point rotatePoint(double degree, geometry_msgs::Point point)
-{
-  geometry_msgs::Point rotate;
-  rotate.x = cos(deg2rad(degree)) * point.x - sin(deg2rad(degree)) * point.y;
-  rotate.y = sin(deg2rad(degree)) * point.x + cos(deg2rad(degree)) * point.y;
-
-  return rotate;
-}
-
 static double getCmdVelocity(int waypoint)
 {
 
@@ -349,8 +339,8 @@ static double getLookAheadThreshold(int waypoint)
   // double current_velocity_mps = _current_waypoints.getWaypointVelocityMPS(waypoint);
   double current_velocity_mps = _current_velocity;
 
-  if (current_velocity_mps * g_look_ahead_threshold_calc_ratio < g_minimum_lool_ahead_threshold)
-    return g_minimum_lool_ahead_threshold;
+  if (current_velocity_mps * g_look_ahead_threshold_calc_ratio < g_minimum_look_ahead_threshold)
+    return g_minimum_look_ahead_threshold;
   else
     return current_velocity_mps * g_look_ahead_threshold_calc_ratio;
 }
@@ -393,13 +383,16 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
   geometry_msgs::Point start = _current_waypoints.getWaypointPosition(next_waypoint - 1);
 
-  //get slope of segment end,start
-  double slope = (start.y - end.y) / (start.x - end.x);
+  //let the linear equation be "y = slope * x + intercept"
+  double slope = 0;
+  double intercept = 0;
+  getLinearEquation(start,end,&slope, &intercept);
 
-  //get intercept of segment end,start
-  double intercept = (-1) * slope * end.x + end.y;
-
-  //distance between the foot of a perpendicular line and the center of circle
+  //let the center of circle be "(x0,y0)", in my code , the center of circle is vehicle position
+  //the distance  "d" between the foot of a perpendicular line and the center of circle is ...
+  //    | y0 - slope * x0 - intercept |
+  //d = -------------------------------
+  //          √( 1 + slope^2)
   double d = fabs(_current_pose.pose.position.y - slope * _current_pose.pose.position.x - intercept)
       / sqrt(1 + pow(slope, 2));
 
@@ -414,16 +407,9 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   tf::Vector3 v((end.x - start.x), (end.y - start.y), 0);
   tf::Vector3 unit_v = v.normalize();
 
-  //normal unit vector of v
-  double deg1 = 90;
-  tf::Vector3 w1(cos(deg2rad(deg1)) * v.getX() - sin(deg2rad(deg1)) * v.getY(),
-      sin(deg2rad(deg1)) * v.getX() + cos(deg2rad(deg1)) * v.getY(), 0);
-  tf::Vector3 unit_w1 = w1.normalize();
-
-  double deg2 = -90;
-  tf::Vector3 w2(cos(deg2rad(deg2)) * v.getX() - sin(deg2rad(deg2)) * v.getY(),
-      sin(deg2rad(deg2)) * v.getX() + cos(deg2rad(deg2)) * v.getY(), 0);
-  tf::Vector3 unit_w2 = w2.normalize();
+  //normal unit vectors of v
+  tf::Vector3 unit_w1 = rotateUnitVector(unit_v, 90); //rotate to counter clockwise 90 degree
+  tf::Vector3 unit_w2 = rotateUnitVector(unit_v, -90); //rotate to counter clockwise 90 degree
 
   //the foot of a perpendicular line
   geometry_msgs::Point h1;
@@ -442,12 +428,12 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   //ROS_INFO("whether h1 on line : %lf", h1.y - (slope * h1.x + intercept));
   //ROS_INFO("whether h2 on line : %lf", h2.y - (slope * h2.x + intercept));
 
+  //check which of two foot of a perpendicular line is on the line equation
   geometry_msgs::Point h;
   if (fabs(h1.y - (slope * h1.x + intercept)) < error)
   {
     h = h1;
  //   ROS_INFO("use h1");
-
   }
   else if (fabs(h2.y - (slope * h2.x + intercept)) < error)
   {
@@ -459,6 +445,8 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
     return false;
   }
 
+  //get intersection[s]
+  //if there is a intersection
   if (d == search_radius)
   {
     *next_target = h;
@@ -466,7 +454,8 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   }
   else
   {
-
+    //if there are two intersection
+    //get intersection in front of vehicle
     double s = sqrt(pow(search_radius, 2) - pow(d, 2));
     geometry_msgs::Point target1;
     target1.x = h.x + s * unit_v.getX();
@@ -482,6 +471,7 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
     //ROS_INFO("target2 : ( %lf , %lf , %lf)", target2.x, target2.y, target2.z);
     displayLinePoint(slope, intercept, target1, target2, h); //debug tool
 
+    //check intersection is between end and start
     double interval = getPlaneDistance(end,start);
     if (getPlaneDistance(target1, end) < interval)
     {
@@ -617,7 +607,7 @@ static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs:
     relative_p.y = p.y;
 
     //rotate -90°
-    geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
+    geometry_msgs::Point rotate_p = rotatePoint(relative_p,-90);
 
     //transform to vehicle plane
     geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
@@ -641,7 +631,7 @@ static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs:
     relative_p.y = p.y;
 
     //rotate -90°
-    geometry_msgs::Point rotate_p = rotatePoint(-90, relative_p);
+    geometry_msgs::Point rotate_p = rotatePoint(relative_p,-90);
 
     //transform to vehicle plane
     geometry_msgs::Point tf_p = calcAbsoluteCoordinate(rotate_p, _current_pose.pose);
