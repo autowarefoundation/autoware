@@ -363,7 +363,7 @@ bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, dou
   *slope = (start.y - end.y) / (start.x - end.x);
 
   //get intercept of segment end,start
-  *intercept = (-1) * slope * end.x + end.y;
+  *intercept = (-1) * (*slope) * end.x + end.y;
 
   return true;
 }
@@ -383,7 +383,7 @@ geometry_msgs::Point vector2point(tf::Vector3 vector)
   return point;
 }
 
-inline tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree)
+tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree)
 {
   tf::Vector3 w1(cos(deg2rad(degree)) * unit_vector.getX() - sin(deg2rad(degree)) * unit_vector.getY(),
       sin(deg2rad(degree)) * unit_vector.getX() + cos(deg2rad(degree)) * unit_vector.getY(), 0);
@@ -392,7 +392,7 @@ inline tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree)
   return unit_w1;
 }
 
-inline geometry_msgs::Point rotatePoint(geometry_msgs::Point point, double degree)
+geometry_msgs::Point rotatePoint(geometry_msgs::Point point, double degree)
 {
   geometry_msgs::Point rotate;
   rotate.x = cos(deg2rad(degree)) * point.x - sin(deg2rad(degree)) * point.y;
