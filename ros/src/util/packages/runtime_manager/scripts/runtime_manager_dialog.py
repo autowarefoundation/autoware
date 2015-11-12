@@ -706,10 +706,12 @@ class MyFrame(rtmgr.MyFrame):
 				s += add + ' '
 		return s.strip(' ').split(' ') if s != '' else None
 
-	def obj_to_pdic_gdic_prm(self, obj):
+	def obj_to_pdic_gdic_prm(self, obj, sys=False):
 		info = self.config_dic.get(obj)
 		if info is None:
-			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj ])
+			sys_prm = self.get_param('sys')
+			prm_chk = lambda prm : prm is sys_prm if sys else prm is not sys_prm
+			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj and prm_chk(v.get('param')) ])
 			if info is None:
 				return (None, None, None)
 		pdic = info.get('pdic')
@@ -758,7 +760,7 @@ class MyFrame(rtmgr.MyFrame):
 		if proc is None:
 			return
 		if pdic is None or prm is None:
-			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj)
+			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj, sys=True)
 
 		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
 		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
