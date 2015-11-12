@@ -1715,7 +1715,7 @@ class MyFrame(rtmgr.MyFrame):
 				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ')') ]
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, 0, wx.LEFT, 12, pnl)
 				szr.Fit(pnl)
-				item.SetWindow(pnl)
+				tree.SetItemWindow(item, pnl)
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
