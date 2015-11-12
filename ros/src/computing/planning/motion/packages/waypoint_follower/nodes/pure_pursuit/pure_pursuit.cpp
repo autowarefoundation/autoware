@@ -383,13 +383,18 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
   geometry_msgs::Point start = _current_waypoints.getWaypointPosition(next_waypoint - 1);
 
+  //let the linear equation be "y = slope * x + intercept"
   //get slope of segment end,start
   double slope = (start.y - end.y) / (start.x - end.x);
 
   //get intercept of segment end,start
   double intercept = (-1) * slope * end.x + end.y;
 
-  //distance between the foot of a perpendicular line and the center of circle
+  //let the center of circle be "(x0,y0)", in my code , the center of circle is vehicle position
+  //the distance  "d" between the foot of a perpendicular line and the center of circle is ...
+  //    | y0 - slope * x0 - intercept |
+  //d = -------------------------------
+  //          √( 1 + slope^2)
   double d = fabs(_current_pose.pose.position.y - slope * _current_pose.pose.position.x - intercept)
       / sqrt(1 + pow(slope, 2));
 
@@ -425,12 +430,12 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   //ROS_INFO("whether h1 on line : %lf", h1.y - (slope * h1.x + intercept));
   //ROS_INFO("whether h2 on line : %lf", h2.y - (slope * h2.x + intercept));
 
+  //check which of two foot of a perpendicular line is on the line equation
   geometry_msgs::Point h;
   if (fabs(h1.y - (slope * h1.x + intercept)) < error)
   {
     h = h1;
  //   ROS_INFO("use h1");
-
   }
   else if (fabs(h2.y - (slope * h2.x + intercept)) < error)
   {
@@ -442,6 +447,8 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
     return false;
   }
 
+  //get intersection[s]
+  //if there is a intersection
   if (d == search_radius)
   {
     *next_target = h;
@@ -449,7 +456,8 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   }
   else
   {
-
+    //if there are two intersection
+    //get intersection in front of vehicle
     double s = sqrt(pow(search_radius, 2) - pow(d, 2));
     geometry_msgs::Point target1;
     target1.x = h.x + s * unit_v.getX();
@@ -465,6 +473,7 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
     //ROS_INFO("target2 : ( %lf , %lf , %lf)", target2.x, target2.y, target2.z);
     displayLinePoint(slope, intercept, target1, target2, h); //debug tool
 
+    //check intersection is between end and start
     double interval = getPlaneDistance(end,start);
     if (getPlaneDistance(target1, end) < interval)
     {
