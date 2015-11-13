@@ -765,11 +765,11 @@ static void distanceTransform(int numLevels, int n, int max_size,
         }
     }
 
-    res = cuMemFreeHost(&tmp_disposition.score);
+    res = cuMemFreeHost(tmp_disposition.score);
     CUDA_CHECK(res, "cuMemFreeHost(&tmp_disposition.score)");
-    cuMemFreeHost(&tmp_disposition.x);
+    cuMemFreeHost(tmp_disposition.x);
     CUDA_CHECK(res, "cuMemFreeHost(&tmp_disposition.x)");
-    cuMemFreeHost(&tmp_disposition.y);
+    cuMemFreeHost(tmp_disposition.y);
     CUDA_CHECK(res, "cuMemFreeHost(&tmp_disposition.y)");
 
     for (i = 0; i < DISTANCE_TRANSFORM_STREAMS; i++)
