@@ -308,8 +308,8 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
       continue;
 
     //calc waypoint angle
-    double waypoint_yaw;
-    if (i == static_cast<int>(current_path.waypoints.size()) - 1)
+    double waypoint_yaw = tf::getYaw(current_path.waypoints[i].pose.pose.orientation);
+   /* if (i == static_cast<int>(current_path.waypoints.size()) - 1)
     {
       waypoint_yaw = atan2(
           current_path.waypoints[i - 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
@@ -321,14 +321,14 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
       waypoint_yaw = atan2(
           current_path.waypoints[i + 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
           current_path.waypoints[i + 1].pose.pose.position.x - current_path.waypoints[i].pose.pose.position.x);
-    }
-    if (waypoint_yaw < 0)
-      waypoint_yaw += 2 * M_PI;
+    }*/
+  //  if (waypoint_yaw < 0)
+    //  waypoint_yaw += 2 * M_PI;
 
     //calc pose angle
     double pose_yaw = tf::getYaw(current_pose.orientation);
-    if (pose_yaw < 0)
-      pose_yaw += 2 * M_PI;
+   // if (pose_yaw < 0)
+   //   pose_yaw += 2 * M_PI;
 
     //skip waypoint which direction is reverse against current_pose
     double direction_sub = (waypoint_yaw - pose_yaw) * 180 / M_PI; //degree

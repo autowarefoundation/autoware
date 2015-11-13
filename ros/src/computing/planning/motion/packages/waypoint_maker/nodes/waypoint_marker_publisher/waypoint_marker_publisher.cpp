@@ -78,7 +78,7 @@ void createGlobalWaypointVelocityMarker(const waypoint_follower::lane &lane_wayp
 
     //std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " << _waypoints[i].GetVelocity_kmh() << std::endl;
     velocity.id = i;
-    double yaw = 0;
+    /*double yaw = 0;
     if(i == static_cast<int>(lane_waypoint.waypoints.size()) -1){
       yaw = atan2(lane_waypoint.waypoints[i -1].pose.pose.position.y - lane_waypoint.waypoints[i].pose.pose.position.y,
           lane_waypoint.waypoints[i -1].pose.pose.position.x - lane_waypoint.waypoints[i].pose.pose.position.x);
@@ -87,10 +87,11 @@ void createGlobalWaypointVelocityMarker(const waypoint_follower::lane &lane_wayp
     else
       yaw = atan2(lane_waypoint.waypoints[i + 1].pose.pose.position.y - lane_waypoint.waypoints[i].pose.pose.position.y,
           lane_waypoint.waypoints[i + 1].pose.pose.position.x - lane_waypoint.waypoints[i].pose.pose.position.x);
-
+    */
     geometry_msgs::Pose waypoint_pose;
     waypoint_pose.position = lane_waypoint.waypoints[i].pose.pose.position;
-    waypoint_pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    //waypoint_pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    waypoint_pose.orientation = lane_waypoint.waypoints[i].pose.pose.orientation;
 
     geometry_msgs::Point relative_p;
     relative_p.y = 0.65;
@@ -131,7 +132,7 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color , int closest_w
   for (int i = 0; i < static_cast<int>(lane_waypoint.waypoints.size()); i++)
   {
     velocity.id = closest_waypoint+i;
-    double yaw = 0;
+    /*double yaw = 0;
         if(i == static_cast<int>(lane_waypoint.waypoints.size()) -1){
           yaw = atan2(lane_waypoint.waypoints[i -1].pose.pose.position.y - lane_waypoint.waypoints[i].pose.pose.position.y,
               lane_waypoint.waypoints[i -1].pose.pose.position.x - lane_waypoint.waypoints[i].pose.pose.position.x);
@@ -140,10 +141,11 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color , int closest_w
         else
           yaw = atan2(lane_waypoint.waypoints[i + 1].pose.pose.position.y - lane_waypoint.waypoints[i].pose.pose.position.y,
               lane_waypoint.waypoints[i + 1].pose.pose.position.x - lane_waypoint.waypoints[i].pose.pose.position.x);
-
+*/
         geometry_msgs::Pose waypoint_pose;
         waypoint_pose.position = lane_waypoint.waypoints[i].pose.pose.position;
-        waypoint_pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+       // waypoint_pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+        waypoint_pose.orientation = lane_waypoint.waypoints[i].pose.pose.orientation;
 
         geometry_msgs::Point relative_p;
         relative_p.y = - 0.65;
