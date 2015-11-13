@@ -178,11 +178,7 @@ int main(int argc, char **argv)
     {
       pose.position = _initial_pose.position;
       pose.orientation = _initial_pose.orientation;
-      tf::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-      tf::Matrix3x3 m(q);
-      double roll, pitch, yaw;
-      m.getRPY(roll, pitch, yaw);
-      th = yaw;
+      th = tf::getYaw(pose.orientation);
       std::cout << "pose set : (" << pose.position.x << " " << pose.position.y << " " << pose.position.z << " " << th
 	    << ")" << std::endl << std::endl;
       _pose_set = true;

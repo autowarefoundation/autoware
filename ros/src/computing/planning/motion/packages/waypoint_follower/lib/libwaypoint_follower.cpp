@@ -326,10 +326,7 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
       waypoint_yaw += 2 * M_PI;
 
     //calc pose angle
-    tf::Quaternion q(current_pose.orientation.x, current_pose.orientation.y, current_pose.orientation.z,
-        current_pose.orientation.w);
-    double dummy1, dummy2, pose_yaw;
-    tf::Matrix3x3(q).getRPY(dummy1, dummy2, pose_yaw);
+    double pose_yaw = tf::getYaw(current_pose.orientation);
     if (pose_yaw < 0)
       pose_yaw += 2 * M_PI;
 
