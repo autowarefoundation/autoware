@@ -424,7 +424,7 @@ void resize_byGPU(FLOAT *org_image,
   free(args);
 
   res = cuArrayDestroy(org_image_dev);
-  MY_CUDA_CHECK(res, "cuMemFree(org_image_dev)");
+  MY_CUDA_CHECK(res, "cuArrayDestroy(org_image_dev)");
 
   res = cuMemFreeHost(image_idx_incrementer);
   MY_CUDA_CHECK(res, "cuMemFreeHost(image_idx_incrementer)");
