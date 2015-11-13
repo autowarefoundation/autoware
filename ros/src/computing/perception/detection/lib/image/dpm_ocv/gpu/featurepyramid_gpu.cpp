@@ -532,7 +532,8 @@ int normalizeAndTruncateGPUStream(const int numStep, const float alfa,
     // synchronize cuda stream
     for (i = 0; i < numStep; i++)
     {
-        cuStreamSynchronize(streams[i]);
+        CUresult res = cuStreamSynchronize(streams[i]);
+        CUDA_CHECK(res, "cuStreamSynchronize(streams)");
     }
 
     // free device memory
@@ -716,8 +717,11 @@ static int getPathOfFeaturePyramidGPUStream(IplImage * image, float step,
     // synchronize cuda stream
     for (i = 0; i < numStep; i++)
     {
-        cuStreamSynchronize(streams[i]);
-        cuStreamDestroy(streams[i]);
+        CUresult res = cuStreamSynchronize(streams[i]);
+        CUDA_CHECK(res, "cuStreamSynchronize(streams)");
+
+        res = cuStreamDestroy(streams[i]);
+        CUDA_CHECK(res, "cuStreamDestroy(streams)");
     }
 
     for (i = 0; i < numStep; i++)
