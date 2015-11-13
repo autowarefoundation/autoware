@@ -269,7 +269,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     scansub=new ROSSub<sensor_msgs::LaserScanConstPtr>("/scan",1000,10,this);
     detectionsub=new ROSSub<visualization_msgs::MarkerArray::ConstPtr>("/obj_pose",1000,10,this);
-    tfsub=new ROSTFSub("/world","/ndt_frame",10,this);
+    tfsub=new ROSTFSub("/world","/velodyne",10,this);
 
 
     //subscribe vehicle detection results (array of [x,y,theta])
