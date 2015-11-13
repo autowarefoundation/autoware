@@ -393,7 +393,7 @@ class MyFrame(rtmgr.MyFrame):
 			self.lb_top5.append(lb)
 		line = wx.StaticLine(self, wx.ID_ANY)
 		ibl = InfoBarLabel(self, 'Memory', bar_orient=wx.HORIZONTAL)
-		szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND)
+		szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND | wx.FIXED_MINSIZE)
 		self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
 
 		th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
