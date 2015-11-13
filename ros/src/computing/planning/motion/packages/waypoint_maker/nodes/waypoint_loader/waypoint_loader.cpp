@@ -39,7 +39,7 @@
 
 struct WP
 {
-  geometry_msgs::Point point;
+  geometry_msgs::Pose pose;
   double velocity_kmh;
 };
 
@@ -61,10 +61,11 @@ static WP parseWaypoint(const std::string& line)
   }
 
   WP waypoint;
-  waypoint.point.x = std::stod(columns[0]);
-  waypoint.point.y = std::stod(columns[1]);
-  waypoint.point.z = std::stod(columns[2]);
-  waypoint.velocity_kmh = std::stod(columns[3]);
+  waypoint.pose.position.x = std::stod(columns[0]);
+  waypoint.pose.position.y = std::stod(columns[1]);
+  waypoint.pose.position.z = std::stod(columns[2]);
+  waypoint.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[2]));
+  waypoint.velocity_kmh = std::stod(columns[4]);
 
   return waypoint;
 
@@ -112,12 +113,12 @@ waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
     waypoint_follower::waypoint wp;
 
     wp.pose.header = lane_waypoint.header;
-    wp.pose.pose.position = waypoints[i].point;
-    wp.pose.pose.orientation.w = 1.0;
+    wp.pose.pose.position = waypoints[i].pose.position;
+    wp.pose.pose.orientation = waypoints[i].pose.orientation;
 
     wp.twist.header = lane_waypoint.header;
-    double vel_kmh = decelerate(point2vector(waypoints[i].point),
-        point2vector(waypoints[waypoints.size() -1 ].point),
+    double vel_kmh = decelerate(point2vector(waypoints[i].pose.position),
+        point2vector(waypoints[waypoints.size() -1 ].pose.position),
         waypoints[i].velocity_kmh);
     wp.twist.twist.linear.x = kmph2mps(vel_kmh);
 

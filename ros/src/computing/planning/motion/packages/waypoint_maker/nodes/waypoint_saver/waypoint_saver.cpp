@@ -36,6 +36,7 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <std_msgs/Float32.h>
+#include <tf/transform_datatypes.h>
 
 #include <fstream>
 
@@ -159,8 +160,9 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose , double v
   if (!receive_once)
   {
 
+
     ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-        << current_pose.position.z << std::endl;
+        << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << std::endl;
     receive_once = true;
     displayMarker(current_pose, 0);
     previous_pose = current_pose;
@@ -177,7 +179,7 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose , double v
     if (distance > interval_)
     {
       ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-          << current_pose.position.z << "," << velocity << std::endl;
+          << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << ","  << velocity << std::endl;
 
       displayMarker(current_pose, velocity);
       previous_pose = current_pose;
