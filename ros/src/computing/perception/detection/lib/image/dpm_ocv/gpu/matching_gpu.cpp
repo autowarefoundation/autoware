@@ -474,7 +474,7 @@ static void calculationScore(int numLevels, int n, const CvLSVMFeaturePyramid* H
     CUdeviceptr dev_filterIdxTbl[numLevels][n + 1];
     CUdeviceptr dev_filter;
     CUdeviceptr dev_map[2][numLevels];
-    CUstream convStreams[numLevels + 2];
+    CUstream convStreams[numLevels + 3];
     int size[2][numLevels];
     int filterSize[n + 1];
     int filterIdx[n + 1];
