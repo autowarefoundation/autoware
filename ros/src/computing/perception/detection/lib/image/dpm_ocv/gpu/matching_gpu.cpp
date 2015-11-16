@@ -662,7 +662,7 @@ static void distanceTransform(int numLevels, int n, int max_size,
         if (isNew == true)
         {
             size = (diffX + 1) * (diffY + 1);
-            CUResult res = cuMemAlloc(&dev_distTransWork[l], sizeof(DistTransWork) * size);
+            CUresult res = cuMemAlloc(&dev_distTransWork[l], sizeof(DistTransWork) * size);
             CUDA_CHECK(res, "cuMemAlloc(&dev_distTransWork[l])");
             res = cuMemAlloc(&dev_distTransScore[l], sizeof(float) * size);
             CUDA_CHECK(res, "cuMemAlloc(&dev_distTransScore[l])");
@@ -691,7 +691,7 @@ static void distanceTransform(int numLevels, int n, int max_size,
             }
         }
     }
-    CUResult res = cuMemFreeHost(tmp_disposition.score);
+    CUresult res = cuMemFreeHost(tmp_disposition.score);
     CUDA_CHECK(res, "cuMemFreeHost(tmp_disposition.score)");
     res = cuMemFreeHost(tmp_disposition.x);
     CUDA_CHECK(res, "cuMemFreeHost(tmp_disposition.x)");
