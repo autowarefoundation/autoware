@@ -33,8 +33,6 @@
 
 #include <vector>
 
-#define IMAGE_WIDTH 800
-#define IMAGE_HEIGHT 600
 #define NO_DATA 0
 
 struct Three_dimensional_vector{
@@ -60,8 +58,8 @@ struct Image_points_dataset{
 };
 
 struct Scan_image{
-    float distance[IMAGE_WIDTH][IMAGE_HEIGHT];
-    float intensity[IMAGE_WIDTH][IMAGE_HEIGHT];
+    float *distance;
+    float *intensity;
     int max_y;
     int min_y;
 };
