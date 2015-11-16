@@ -84,7 +84,8 @@ static int convolutionGPU(const CvLSVMFilterObject *filter,
     {
         ConvolutionParam prm;
 
-        cuMemAlloc(dev_score, (diffX * diffY) * sizeof(float));
+        CUresult res = cuMemAlloc(dev_score, (diffX * diffY) * sizeof(float));
+        CUDA_CHECK(res, "cuMemAlloc(dev_score)");
 
         prm.numSectors = map->numFeatures;
         prm.mapX = map->sizeX * prm.numSectors;
@@ -105,17 +106,21 @@ static int convolutionGPU(const CvLSVMFilterObject *filter,
                     + (i % prm.filterX);
         }
 
-        cuMemAlloc(dev_filterIdxTbl, prm.filterSize * sizeof(float));
-        cuMemcpyHtoDAsync(*dev_filterIdxTbl, filterIdxTbl,
-                prm.filterSize * sizeof(float), stream);
+        res = cuMemAlloc(dev_filterIdxTbl, prm.filterSize * sizeof(float));
+        CUDA_CHECK(res, "cuMemAlloc(dev_filterIdxTbl)");
+
+        res = cuMemcpyHtoDAsync(*dev_filterIdxTbl, filterIdxTbl,
+                                prm.filterSize * sizeof(float), stream);
+        CUDA_CHECK(res, "cuMemcpyHtoDAsync(dev_filterIdxTbl, filterIdxTbl)");
 
         void *kernel_arg[] =
         { (void *) &filterIdx, (void *) dev_score, (void *) dev_filterIdxTbl,
                 (void *) &prm };
 
-        cuLaunchKernel(ConvolutionKernel_func[0], prm.scoreSize, 1, 1,
-                CONV_THREAD, 1, 1, CONV_THREAD * sizeof(float), stream,
-                kernel_arg, NULL);
+        res = cuLaunchKernel(ConvolutionKernel_func[0], prm.scoreSize, 1, 1,
+                             CONV_THREAD, 1, 1, CONV_THREAD * sizeof(float), stream,
+                             kernel_arg, NULL);
+        CUDA_CHECK(res, "cuLaunchKernel(ConvolutionKernel_func)");
     }
 
     return res;
@@ -161,8 +166,9 @@ static int DistanceTransformTwoDimensionalProblemGPU(const CvLSVMFilterObject *f
             (void *) &filter->fineFunction[3], (void *) dev_distTransWork,
             (void *) dev_distTransScore, (void *) dev_x, (void *) dev_y };
 
-    cuLaunchKernel(DistanceTransformTwoDimensionalProblem_func[0], 1, 1, 1,
-            TRANS_THREAD, 1, 1, 0, stream, kernel_arg, NULL);
+    CUresult res = cuLaunchKernel(DistanceTransformTwoDimensionalProblem_func[0], 1, 1, 1,
+                                  TRANS_THREAD, 1, 1, 0, stream, kernel_arg, NULL);
+    CUDA_CHECK(res, "cuLaunchKernel(DistanceTransformTwoDimensionalProblem_func)");
 
     return LATENT_SVM_OK;
 }
@@ -204,20 +210,22 @@ static int sumScore(const CvLSVMFilterObject **all_F, const int n,
     int i, j, k;
     int index, last;
     float sumScorePartDisposition;
-    int diffX, diffY, res;
+    int diffX, diffY, ret;
 
-    res = calculationScoreSize(all_F[0], H->pyramid[level], &diffX, &diffY);
-
-    if (res != LATENT_SVM_OK)
+    ret = calculationScoreSize(all_F[0], H->pyramid[level], &diffX, &diffY);
+    if (ret != LATENT_SVM_OK)
     {
-        return res;
+        return ret;
     }
 
     sumScorePartDisposition = 0.0;
 
     float root_score[diffX * diffY];
-    cuMemcpyDtoH(root_score, dev_score[0], diffX * diffY * sizeof(float));
-    cuMemFree(dev_score[0]);
+    CUresult res = cuMemcpyDtoH(root_score, dev_score[0], diffX * diffY * sizeof(float));
+    CUDA_CHECK(res, "cuMemcpyDtoH(root_score, devscore)");
+
+    res = cuMemFree(dev_score[0]);
+    CUDA_CHECK(res, "cuMemFree(dev_score)");
 
     // The scores of hypothesis is given by the scores of each filter at
     // their respective locations minus deformation cost plus the bias.
@@ -412,18 +420,31 @@ static void dispositionCpyDtoH(CUdeviceptr *dev_distTransScore, CUdeviceptr *dev
     // Copy data from the device to the host by using the page-locked memory
     // with fast transfer rate, and copy from the page-locked memory to
     // normal memory in the host.
-    cuMemcpyDtoHAsync(tmp_disposition->score, *dev_distTransScore,
-            disposition->size * sizeof(float), stream[0]);
-    cuMemcpyDtoHAsync(tmp_disposition->x, *dev_x,
-            disposition->size * sizeof(int), stream[1]);
-    cuMemcpyDtoHAsync(tmp_disposition->y, *dev_y,
-            disposition->size * sizeof(int), stream[2]);
-    cuStreamSynchronize(stream[0]);
+    CUresult res = cuMemcpyDtoHAsync(tmp_disposition->score, *dev_distTransScore,
+                                     disposition->size * sizeof(float), stream[0]);
+    CUDA_CHECK(res, "cuMemcpyDtoHAsync(tmp_disposition->score, *dev_distTransScore)");
+
+    res = cuMemcpyDtoHAsync(tmp_disposition->x, *dev_x,
+                            disposition->size * sizeof(int), stream[1]);
+    CUDA_CHECK(res, "cuMemcpyDtoHAsync(tmp_disposition->x, *dev_x)");
+
+    res = cuMemcpyDtoHAsync(tmp_disposition->y, *dev_y,
+                            disposition->size * sizeof(int), stream[2]);
+    CUDA_CHECK(res, "cuMemcpyDtoHAsync(tmp_disposition->y, *dev_y)");
+
+    res = cuStreamSynchronize(stream[0]);
+    CUDA_CHECK(res, "cuStreamSynchronize(stream[0])");
+
     memcpy(disposition->score, tmp_disposition->score,
             disposition->size * sizeof(float));
-    cuStreamSynchronize(stream[1]);
+
+    res = cuStreamSynchronize(stream[1]);
+    CUDA_CHECK(res, "cuStreamSynchronize(stream[1])");
+
     memcpy(disposition->x, tmp_disposition->x, disposition->size * sizeof(int));
-    cuStreamSynchronize(stream[2]);
+    res = cuStreamSynchronize(stream[2]);
+    CUDA_CHECK(res, "cuStreamSynchronize(stream[2])");
+
     memcpy(disposition->y, tmp_disposition->y, disposition->size * sizeof(int));
 }
 
@@ -459,7 +480,7 @@ static void dispositionFree(CvLSVMFilterDisposition *disposition)
  // H                  - feature pyramid
  // all_F              - the set of filters
  //                      (the first element is root filter,the other - part filters)
- // res                - response
+ // response           - response
  // map                - feature map
  // OUTPUT
  // dev_score          - device score
@@ -467,7 +488,7 @@ static void dispositionFree(CvLSVMFilterDisposition *disposition)
  // none
  */
 static void calculationScore(int numLevels, int n, const CvLSVMFeaturePyramid* H,
-        const CvLSVMFilterObject** all_F, int *res, CvLSVMFeatureMap* map[],
+        const CvLSVMFilterObject** all_F, int *response, CvLSVMFeatureMap* map[],
         CUdeviceptr** dev_score)
 {
     int i, j, k;
@@ -481,6 +502,7 @@ static void calculationScore(int numLevels, int n, const CvLSVMFeaturePyramid* H
     int totalFilterSize;
     int numSectors;
     float* filters;
+    CUresult res;
 
 #ifdef PROFILE
     TickMeter tm;
@@ -492,7 +514,8 @@ static void calculationScore(int numLevels, int n, const CvLSVMFeaturePyramid* H
     numSectors = H->pyramid[0]->numFeatures;
     for (i = 0; i < numLevels + 3; i++)
     {
-        cuStreamCreate(&convStreams[i], CU_STREAM_DEFAULT);
+        CUresult res = cuStreamCreate(&convStreams[i], CU_STREAM_DEFAULT);
+        CUDA_CHECK(res, "cuStreamCreate(&convStreams, CU_STREAM_DEFAULT)");
     }
     totalFilterSize = 0;
     for (i = 0; i < n + 1; i++)
@@ -501,14 +524,20 @@ static void calculationScore(int numLevels, int n, const CvLSVMFeaturePyramid* H
         filterSize[i] = all_F[i]->sizeX * all_F[i]->sizeY * numSectors;
         totalFilterSize += filterSize[i];
     }
-    cuMemAlloc(&dev_filter, totalFilterSize * sizeof(float));
+
+    res = cuMemAlloc(&dev_filter, totalFilterSize * sizeof(float));
+    CUDA_CHECK(res, "cuMemAlloc(&dev_filter)");
+
     filters = (float*) (malloc(totalFilterSize * sizeof(float)));
     for (i = 0; i < n + 1; i++)
     {
         memcpy(&(filters[filterIdx[i]]), all_F[i]->H,
                 filterSize[i] * sizeof(float));
     }
-    cuMemcpyHtoD(dev_filter, filters, totalFilterSize * sizeof(float));
+
+    res = cuMemcpyHtoD(dev_filter, filters, totalFilterSize * sizeof(float));
+    CUDA_CHECK(res, "cuMemcpyHtoD(dev_filter, filters)");
+
     free(filters);
     for (k = Lambda; k < H->numLevels; k++)
     {
@@ -518,38 +547,60 @@ static void calculationScore(int numLevels, int n, const CvLSVMFeaturePyramid* H
         // map size of part filters
         size[1][j] = map[j]->sizeX * map[j]->sizeY * numSectors;
     }
+
     CUtexref image_texMap;
-    cuModuleGetTexRef(&image_texMap, module[0], "texMap");
-    cuTexRefSetFlags(image_texMap, CU_TRSF_READ_AS_INTEGER);
+    res = cuModuleGetTexRef(&image_texMap, module[0], "texMap");
+    CUDA_CHECK(res, "cuModuleGetTexRef(&image_texMap, module[0])");
+
+    res = cuTexRefSetFlags(image_texMap, CU_TRSF_READ_AS_INTEGER);
+    CUDA_CHECK(res, "cuTexRefSetFlags(image_texMap, CU_TRSF_READ_AS_INTEGER)");
+
     cuTexRefSetFormat(image_texMap, CU_AD_FORMAT_FLOAT, 1);
+    CUDA_CHECK(res, "cuTexRefSetFormat(image_texMap, CU_AD_FORMAT_FLOAT, 1)");
+
     CUtexref image_texFi;
-    cuModuleGetTexRef(&image_texFi, module[0], "texFi");
-    cuTexRefSetFlags(image_texFi, CU_TRSF_READ_AS_INTEGER);
-    cuTexRefSetFormat(image_texFi, CU_AD_FORMAT_FLOAT, 1);
-    cuTexRefSetAddress(NULL, image_texFi, dev_filter,
-            totalFilterSize * sizeof(float));
+    res = cuModuleGetTexRef(&image_texFi, module[0], "texFi");
+    CUDA_CHECK(res, "cuModuleGetTexRef(&image_texFi, module[0])");
+
+    res = cuTexRefSetFlags(image_texFi, CU_TRSF_READ_AS_INTEGER);
+    CUDA_CHECK(res, "cuTexRefSetFlags(image_texFi, CU_TRSF_READ_AS_INTEGER)");
+
+    res = cuTexRefSetFormat(image_texFi, CU_AD_FORMAT_FLOAT, 1);
+    CUDA_CHECK(res, "cuTexRefSetFormat(image_texFi, CU_AD_FORMAT_FLOAT, 1)");
+
+    res = cuTexRefSetAddress(NULL, image_texFi, dev_filter,
+                             totalFilterSize * sizeof(float));
+    CUDA_CHECK(res, "cuTexRefSetAddress(NULL, image_texFi, dev_filter)");
 
     // Transfer of root maps
     for (k = Lambda; k < H->numLevels; k++)
     {
         j = k - Lambda;
-        cuMemAlloc(&dev_map[0][j], size[0][j] * sizeof(float));
-        cuMemcpyHtoDAsync(dev_map[0][j], H->pyramid[k]->map,
-                size[0][j] * sizeof(float), convStreams[j]);
+        CUresult res = cuMemAlloc(&dev_map[0][j], size[0][j] * sizeof(float));
+        CUDA_CHECK(res, "cuMemAlloc(&dev_map[0][j])");
+
+        res = cuMemcpyHtoDAsync(dev_map[0][j], H->pyramid[k]->map,
+                                size[0][j] * sizeof(float), convStreams[j]);
+        CUDA_CHECK(res, "cuMemcpyHtoDAsync(dev_map[0][j], H->pyramid[k]->map)");
     }
 
     // Calculate root scores
     for (k = Lambda; k < H->numLevels; k++)
     {
         j = k - Lambda;
-        cuStreamSynchronize(convStreams[0]);
-        cuTexRefSetAddress(NULL, image_texMap, dev_map[0][j],
-                size[0][j] * sizeof(float));
-        res[j] = convolutionGPU(all_F[0], H->pyramid[k], &dev_filter,
-                &dev_map[0][j], &dev_filterIdxTbl[j][0], &dev_score[j][0],
-                filterIdx[0], convStreams[0]);
+        CUresult res = cuStreamSynchronize(convStreams[0]);
+        CUDA_CHECK(res, "cuStreamSynchronize(convStreams[0])");
+
+        res = cuTexRefSetAddress(NULL, image_texMap, dev_map[0][j],
+                                 size[0][j] * sizeof(float));
+        CUDA_CHECK(res, "cuTexRefSetAddress(NULL< image_texMap, dev_map[0][j])");
+
+        response[j] = convolutionGPU(all_F[0], H->pyramid[k], &dev_filter,
+                     &dev_map[0][j], &dev_filterIdxTbl[j][0], &dev_score[j][0],
+                     filterIdx[0], convStreams[0]);
     }
-    cuStreamSynchronize(convStreams[0]);
+    res = cuStreamSynchronize(convStreams[0]);
+    CUDA_CHECK(res, "cuStreamSynchronize(convStreams[0])");
 
 #ifdef PROFILE
     tm.stop();
@@ -563,42 +614,57 @@ static void calculationScore(int numLevels, int n, const CvLSVMFeaturePyramid* H
     {
         // Transfer of part maps
         j = k - Lambda;
-        cuMemAlloc(&dev_map[1][j], size[1][j] * sizeof(float));
-        cuMemcpyHtoDAsync(dev_map[1][j], map[j]->map,
-                size[1][j] * sizeof(float), convStreams[numLevels + 2]);
-        cuStreamSynchronize(convStreams[numLevels + 2]);
-        cuTexRefSetAddress(NULL, image_texMap, dev_map[1][j],
-                size[1][j] * sizeof(float));
+        CUresult res = cuMemAlloc(&dev_map[1][j], size[1][j] * sizeof(float));
+        CUDA_CHECK(res, "cuMemAlloc(&dev_map[1][j])");
+
+        res = cuMemcpyHtoDAsync(dev_map[1][j], map[j]->map,
+                                size[1][j] * sizeof(float), convStreams[numLevels + 2]);
+        CUDA_CHECK(res, "cuMemcpyHtoDAsync(dev_map[1][j], map[j]->map)");
+
+        res = cuStreamSynchronize(convStreams[numLevels + 2]);
+        CUDA_CHECK(res, "cuStreamSynchronize(convStreams[numLevels + 2])");
+
+        res = cuTexRefSetAddress(NULL, image_texMap, dev_map[1][j],
+                                 size[1][j] * sizeof(float));
+        CUDA_CHECK(res, "cuTexRefSetAddress(NULL, image_texMap, dev_map[1][j])");
+
         // Calculate part scores
         for (i = 0; i < n; i++)
         {
-            if (res[j] == LATENT_SVM_OK)
+            if (response[j] == LATENT_SVM_OK)
             {
-                res[j] = convolutionGPU(all_F[i + 1], map[j], &dev_filter,
-                        &dev_map[1][j], &dev_filterIdxTbl[j][i + 1],
-                        &dev_score[j][i + 1], filterIdx[i + 1],
-                        convStreams[i + 1]);
+                response[j] = convolutionGPU(all_F[i + 1], map[j], &dev_filter,
+                            &dev_map[1][j], &dev_filterIdxTbl[j][i + 1],
+                            &dev_score[j][i + 1], filterIdx[i + 1],
+                            convStreams[i + 1]);
             }
         }
     }
 
     for (i = 0; i < n + 1; i++)
     {
-        cuStreamSynchronize(convStreams[i]);
+        CUresult res = cuStreamSynchronize(convStreams[i]);
+        CUDA_CHECK(res, "cuStreamSynchronize(convStreams)");
     }
     for (i = 0; i < numLevels + 3; i++)
     {
-        cuStreamDestroy(convStreams[i]);
+        CUresult res = cuStreamDestroy(convStreams[i]);
+        CUDA_CHECK(res, "cuStreamDestroy(convStreams)");
     }
 
     cuMemFree(dev_filter);
     for (j = 0; j < numLevels; j++)
     {
-        cuMemFree(dev_map[0][j]);
-        cuMemFree(dev_map[1][j]);
+        CUresult res = cuMemFree(dev_map[0][j]);
+        CUDA_CHECK(res, "cuMemFree(dev_map[0])");
+
+        res = cuMemFree(dev_map[1][j]);
+        CUDA_CHECK(res, "cuMemFree(dev_map[1])");
+
         for (i = 0; i < n + 1; i++)
         {
-            cuMemFree(dev_filterIdxTbl[j][i]);
+            res = cuMemFree(dev_filterIdxTbl[j][i]);
+            CUDA_CHECK(res, "cuMemFree(dev_filterIdxTbl)");
         }
     }
 #ifdef PROFILE
@@ -639,14 +705,20 @@ static void distanceTransform(int numLevels, int n, int max_size,
     CUdeviceptr dev_distTransWork[DISTANCE_TRANSFORM_STREAMS];
     int diffX, diffY, size;
     int i, j, k, l;
+    CUresult res;
 
     for (i = 0; i < DISTANCE_TRANSFORM_STREAMS; i++)
     {
-        cuStreamCreate(&ditTransStreams[i], CU_STREAM_DEFAULT);
+        CUresult res = cuStreamCreate(&ditTransStreams[i], CU_STREAM_DEFAULT);
+        CUDA_CHECK(res, "cuStreamCreate(&ditTransStreams, CU_STREAM_DEFAULT)");
     }
-    cuMemAllocHost((void**) &tmp_disposition.score, sizeof(float) * max_size);
-    cuMemAllocHost((void**) &tmp_disposition.x, sizeof(int) * max_size);
-    cuMemAllocHost((void**) &tmp_disposition.y, sizeof(int) * max_size);
+
+    res = cuMemAllocHost((void**) &tmp_disposition.score, sizeof(float) * max_size);
+    CUDA_CHECK(res, "cuMemAllocHost(&tmp_disposition.score)");
+    res = cuMemAllocHost((void**) &tmp_disposition.x, sizeof(int) * max_size);
+    CUDA_CHECK(res, "cuMemAllocHost(&tmp_disposition.x)");
+    res = cuMemAllocHost((void**) &tmp_disposition.y, sizeof(int) * max_size);
+    CUDA_CHECK(res, "cuMemAllocHost(&tmp_disposition.y)");
 
     bool isNew = true;
     for (j = 0; j < n * numLevels; j++)
@@ -662,10 +734,13 @@ static void distanceTransform(int numLevels, int n, int max_size,
         if (isNew == true)
         {
             size = (diffX + 1) * (diffY + 1);
-            cuMemAlloc(&dev_distTransWork[l], sizeof(DistTransWork) * size);
-            cuMemAlloc(&dev_distTransScore[l], sizeof(float) * size);
-            cuMemAlloc(&dev_x[l], sizeof(int) * size);
-            cuMemAlloc(&dev_y[l], sizeof(int) * size);
+            CUresult res = cuMemAlloc(&dev_distTransWork[l], sizeof(DistTransWork) * size);
+            res = cuMemAlloc(&dev_distTransScore[l], sizeof(float) * size);
+            CUDA_CHECK(res, "cuMemAlloc(&dev_distTransScore)");
+            res = cuMemAlloc(&dev_x[l], sizeof(int) * size);
+            CUDA_CHECK(res, "cuMemAlloc(&dev_x)");
+            res = cuMemAlloc(&dev_y[l], sizeof(int) * size);
+            CUDA_CHECK(res, "cuMemAlloc(&dev_y)");
         }
 
         DistanceTransformTwoDimensionalProblemGPU(all_F[i + 1], map[k],
@@ -679,7 +754,9 @@ static void distanceTransform(int numLevels, int n, int max_size,
 
             for (int m = 0; m <= l; m++)
             {
-                cuStreamSynchronize(ditTransStreams[m]);
+                CUresult res = cuStreamSynchronize(ditTransStreams[m]);
+                CUDA_CHECK(res, "cuStreamSynchronize(ditTransStreams)");
+
                 k = (j - l + m) / n;
                 i = (j - l + m) % n;
                 dispositionCpyDtoH(&dev_distTransScore[m], &dev_x[m], &dev_y[m],
@@ -687,24 +764,40 @@ static void distanceTransform(int numLevels, int n, int max_size,
             }
         }
     }
-    cuMemFreeHost(&tmp_disposition.score);
-    cuMemFreeHost(&tmp_disposition.x);
-    cuMemFreeHost(&tmp_disposition.y);
+
+    res = cuMemFreeHost(tmp_disposition.score);
+    CUDA_CHECK(res, "cuMemFreeHost(&tmp_disposition.score)");
+    cuMemFreeHost(tmp_disposition.x);
+    CUDA_CHECK(res, "cuMemFreeHost(&tmp_disposition.x)");
+    cuMemFreeHost(tmp_disposition.y);
+    CUDA_CHECK(res, "cuMemFreeHost(&tmp_disposition.y)");
 
     for (i = 0; i < DISTANCE_TRANSFORM_STREAMS; i++)
     {
-        cuStreamSynchronize(ditTransStreams[i]);
-        cuStreamDestroy(ditTransStreams[i]);
-        cuMemFree(dev_distTransWork[i]);
-        cuMemFree(dev_distTransScore[i]);
-        cuMemFree(dev_x[i]);
-        cuMemFree(dev_y[i]);
+        CUresult res = cuStreamSynchronize(ditTransStreams[i]);
+        CUDA_CHECK(res, "cuStreamSynchronize(ditTransStreams)");
+
+        res = cuStreamDestroy(ditTransStreams[i]);
+        CUDA_CHECK(res, "cuStreamDestroy(ditTransStreams)");
+
+        res = cuMemFree(dev_distTransWork[i]);
+        CUDA_CHECK(res, "cuMemFree(dev_distTransWork)");
+
+        res = cuMemFree(dev_distTransScore[i]);
+        CUDA_CHECK(res, "cuMemFree(dev_distTransScore)");
+
+        res = cuMemFree(dev_x[i]);
+        CUDA_CHECK(res, "cuMemFree(dev_x)");
+
+        res = cuMemFree(dev_y[i]);
+        CUDA_CHECK(res, "cuMemFree(dev_y)");
     }
     for (k = 0; k < numLevels; k++)
     {
         for (i = 0; i < n; i++)
         {
-            cuMemFree(dev_score[k][i + 1]);
+            CUresult res = cuMemFree(dev_score[k][i + 1]);
+            CUDA_CHECK(res, "cuMemFree(dev_score)");
         }
     }
 }
