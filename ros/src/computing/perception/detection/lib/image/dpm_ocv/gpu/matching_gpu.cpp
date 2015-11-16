@@ -662,10 +662,14 @@ static void distanceTransform(int numLevels, int n, int max_size,
         if (isNew == true)
         {
             size = (diffX + 1) * (diffY + 1);
-            cuMemAlloc(&dev_distTransWork[l], sizeof(DistTransWork) * size);
-            cuMemAlloc(&dev_distTransScore[l], sizeof(float) * size);
-            cuMemAlloc(&dev_x[l], sizeof(int) * size);
-            cuMemAlloc(&dev_y[l], sizeof(int) * size);
+            CUresult res = cuMemAlloc(&dev_distTransWork[l], sizeof(DistTransWork) * size);
+            CUDA_CHECK(res, "cuMemAlloc(&dev_distTransWork[l])");
+            res = cuMemAlloc(&dev_distTransScore[l], sizeof(float) * size);
+            CUDA_CHECK(res, "cuMemAlloc(&dev_distTransScore[l])");
+            res = cuMemAlloc(&dev_x[l], sizeof(int) * size);
+            CUDA_CHECK(res, "cuMemAlloc(&dev_x[l])");
+            res = cuMemAlloc(&dev_y[l], sizeof(int) * size);
+            CUDA_CHECK(res, "cuMemAlloc(&dev_y[l])");
         }
 
         DistanceTransformTwoDimensionalProblemGPU(all_F[i + 1], map[k],
@@ -687,9 +691,12 @@ static void distanceTransform(int numLevels, int n, int max_size,
             }
         }
     }
-    cuMemFreeHost(&tmp_disposition.score);
-    cuMemFreeHost(&tmp_disposition.x);
-    cuMemFreeHost(&tmp_disposition.y);
+    CUresult res = cuMemFreeHost(tmp_disposition.score);
+    CUDA_CHECK(res, "cuMemFreeHost(tmp_disposition.score)");
+    res = cuMemFreeHost(tmp_disposition.x);
+    CUDA_CHECK(res, "cuMemFreeHost(tmp_disposition.x)");
+    res = cuMemFreeHost(tmp_disposition.y);
+    CUDA_CHECK(res, "cuMemFreeHost(tmp_disposition.y)");
 
     for (i = 0; i < DISTANCE_TRANSFORM_STREAMS; i++)
     {
