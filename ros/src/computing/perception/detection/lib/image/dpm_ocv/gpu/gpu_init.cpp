@@ -47,7 +47,7 @@ void init_cuda(void)
     for (int i = 0; i < device_num; i++)
     {
         res = cuDeviceGet(&dev[i], i);
-        CUDA_CHECK(res, "cuDeviceGet()");
+        CUDA_CHECK(res, "cuDeviceGet(&dev[%d])", i);
     }
 
     ctx = (CUcontext*) malloc(device_num * sizeof(CUcontext));
@@ -72,18 +72,18 @@ void init_cuda(void)
     for (int i = 0; i < device_num; i++)
     {
         res = cuCtxCreate(&ctx[i], 0, dev[i]);
-        CUDA_CHECK(res, "cuCtxCreate()");
+        CUDA_CHECK(res, "cuCtxCreate(&ctx[%d])", i);
     }
 
     for (int i = 0; i < device_num; i++)
     {
 
         res = cuCtxSetCurrent(ctx[i]);
-        CUDA_CHECK(res, "cuCtxSetCurrent()");
+        CUDA_CHECK(res, "cuCtxSetCurrent(ctx[%d])", i);
 
         // load .cubin file
         res = cuModuleLoad(&module[i], cubin_path.c_str());
-        CUDA_CHECK(res, "cuModuleLoad()");
+        CUDA_CHECK(res, "cuModuleLoad(&module[%d]), cubin path=%s", i, cubin_path.c_str());
 
         res = cuModuleGetFunction(&ConvolutionKernel_func[i], module[i],
                 "ConvolutionKernel");
@@ -128,7 +128,7 @@ void init_cuda(void)
         max_threads_num = 0;
         res = cuDeviceGetAttribute(&max_threads_num,
                 CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK, dev[i]);
-        CUDA_CHECK(res, "cuDeviceGetAttribute()");
+        CUDA_CHECK(res, "cuDeviceGetAttribute(CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK)");
 
         NR_MAXTHREADS_X[i] = (int) sqrt((double) max_threads_num);
         NR_MAXTHREADS_Y[i] = (int) sqrt((double) max_threads_num);
@@ -143,13 +143,13 @@ void clean_cuda(void)
     for (int i = 0; i < device_num; i++)
     {
         res = cuModuleUnload(module[i]);
-        CUDA_CHECK(res, "cuModuleUnload()");
+        CUDA_CHECK(res, "cuModuleUnload(module[%d])", i);
     }
 
     for (int i = 0; i < device_num; i++)
     {
         res = cuCtxDestroy(ctx[i]);
-        CUDA_CHECK(res, "cuCtxDestroy()");
+        CUDA_CHECK(res, "cuCtxDestroy(ctx[%d])", i);
     }
 
     free(NR_MAXTHREADS_X);
