@@ -31,7 +31,6 @@
 #include "mainwindow.h"
 #include "autoware_socket.h"
 #include <queue>
-#include "shm_data.h"
 
 double estimate_accel = 0.0;
 int target_accel_level = 0;
@@ -162,9 +161,12 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
       e_i = accel_diff_sum;
     }
 
-    //  target_accel_stroke = _K_ACCEL_P * e + _K_ACCEL_I * e_i + _K_ACCEL_D * e_d;
+#if 1
+    target_accel_stroke = _K_ACCEL_P * e + _K_ACCEL_I * e_i + _K_ACCEL_D * e_d;
+#else
     printf("accel_p = %lf, accel_i = %lf, accel_d = %lf\n", shm_ptr->accel.P, shm_ptr->accel.I, shm_ptr->accel.D);
     target_accel_stroke = shm_ptr->accel.P * e + shm_ptr->accel.I * e_i + shm_ptr->accel.D * e_d;
+#endif
     
  if (target_accel_stroke > _ACCEL_PEDAL_MAX) {
       target_accel_stroke = _ACCEL_PEDAL_MAX;
