@@ -51,7 +51,7 @@
 #include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <std_msgs/Float64MultiArray.h>
-#include "runtime_manager/ConfigLaneFollower.h"
+#include "runtime_manager/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libtraj_gen.h"
 #include <vector>
@@ -123,14 +123,15 @@ int main(int argc, char **argv)
 
   // Subscribe to the following topics:
   // Curvature parameters and state parameters
-  ros::Subscriber spline_parameters = nh.subscribe("spline", 10, splineCallback);
-  ros::Subscriber state_parameters = nh.subscribe("state", 10, stateCallback);
+  ros::Subscriber spline_parameters = nh.subscribe("spline", 1, splineCallback);
+  ros::Subscriber state_parameters = nh.subscribe("state", 1, stateCallback);
 
   // Setup message to hold commands
   geometry_msgs::TwistStamped twist;
 
   // Setup the loop rate in Hz
-  ros::Rate loop_rate(LOOP_RATE); 
+  ros::Rate loop_rate(LOOP_RATE);
+
   bool endflag = false;
   static  double vdes;
 

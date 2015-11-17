@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _LIB_WAYPOINT_FOLLOWER_H
-#define _LIB_WAYPOINT_FOLLOWER_H
+#ifndef _LIB_WAYPOINT_FOLLOWER_H_
+#define _LIB_WAYPOINT_FOLLOWER_H_
 
 //C++ header
 #include <iostream>
@@ -41,51 +41,40 @@
 #include <tf/transform_listener.h>
 #include "waypoint_follower/lane.h"
 
-class Path
+class WayPoints
 {
 protected:
-	waypoint_follower::lane current_path_;
-  tf::Vector3 origin_v_;
-  tf::Transform transform_;
-  int closest_waypoint_;
-
+	waypoint_follower::lane current_waypoints_;
 
 public:
-
-  Path()
-  {
-    closest_waypoint_ = -1;
-    origin_v_.setZero();
-  }
-  void setTransform(tf::Transform transform){ transform_ = transform;}
-  void setPath(const waypoint_follower::laneConstPtr &msg);
-  int getPathSize();
-  double getInterval();
-	double getDistance(int waypoint);
-  tf::Vector3 transformWaypoint(int waypoint);
-	geometry_msgs::Point getWaypointPosition(int waypoint);
-	geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
-	waypoint_follower::lane getCurrentPath(){ return current_path_; }
-	int getClosestWaypoint();
+	void setPath(const waypoint_follower::lane &waypoints) { current_waypoints_ = waypoints; }
+	int getSize() const;
+	bool isEmpty() const { return current_waypoints_.waypoints.empty(); };
+	double getInterval() const;
+	geometry_msgs::Point getWaypointPosition(int waypoint) const;
+	geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
+	double getWaypointVelocityMPS(int waypoint) const;
+	waypoint_follower::lane getCurrentWaypoints() const { return current_waypoints_; }
 
 };
 
+//inline function (less than 10 lines )
 inline double kmph2mps(double velocity_kmph) { return (velocity_kmph * 1000) / (60 * 60); }
 inline double mps2kmph(double velocity_mps) { return (velocity_mps * 60 * 60) / 1000; }
-double DecelerateVelocity(double distance, double prev_velocity);
-inline tf::Vector3 point2vector(geometry_msgs::Point point)
-{
-  tf::Vector3 vector(point.x,point.y,point.z);
-  return vector;
-}
+inline double deg2rad(double deg){  return deg * M_PI/180;} //convert degree to radian
 
-inline geometry_msgs::Point vector2point(tf::Vector3 vector)
-{
-  geometry_msgs::Point point;
-  point.x = vector.getX();
-  point.y = vector.getY();
-  point.z = vector.getZ();
-  return point;
-}
+
+tf::Vector3 point2vector(geometry_msgs::Point point); //convert point to vector
+geometry_msgs::Point vector2point(tf::Vector3 vector); //convert vector to point
+tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree); //rotate unit vector by degree
+geometry_msgs::Point rotatePoint(geometry_msgs::Point point, double degree); //rotate point vector by degree
+
+double DecelerateVelocity(double distance, double prev_velocity);
+geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose); //transform point into the coordinate of current_pose
+geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose); //transform point into the global coordinate
+double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point target2); //get 2 dimentional distance between target 1 and target 2
+int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msgs::Pose current_pose);
+bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *slope, double *intercept);
+
 
 #endif

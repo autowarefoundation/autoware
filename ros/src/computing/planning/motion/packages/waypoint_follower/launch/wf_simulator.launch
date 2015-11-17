@@ -3,8 +3,12 @@
 
 	<include file="$(find model_publisher)/launch/prius_model.launch">
 	<arg name="topic_name" default="sim_prius_model"/>
-	<arg name="frame_id" default="sim_base_link"/>
+	<arg name="base_frame" default="sim_base_link"/>
 	</include>
-    <node pkg="waypoint_follower" type="odom_gen" name="odom_gen" output="screen"/>
+	
+	<arg name="use_pose" default="InitialPos"/>
+    <node pkg="waypoint_follower" type="odom_gen" name="odom_gen" output="screen">
+    	<param name="use_pose" value="$(arg use_pose)"/>
+    </node>
 
 </launch>

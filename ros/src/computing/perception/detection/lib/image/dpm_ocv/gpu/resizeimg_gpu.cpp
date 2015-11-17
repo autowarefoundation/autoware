@@ -52,23 +52,23 @@ void uploadImageToGPU1D(IplImage* img)
     size_img = width * height * nChannels;
 
     res = cuMemAlloc(&dev_image, sizeof(float) * size_img);
-    CUDA_CHECK(res, "cuMemAlloc");
+    CUDA_CHECK(res, "cuMemAlloc(&dev_image): %zd bytes", sizeof(float) * size_img);
 
     res = cuMemcpyHtoD(dev_image, img->imageData, sizeof(float) * size_img);
-    CUDA_CHECK(res, "cuMemcpyHtoD");
+    CUDA_CHECK(res, "cuMemcpyHtoD(dev_image, img->imageData): %zd bytes", sizeof(float) * size_img);
 
     res = cuModuleGetTexRef(&image_texref, module[0], "texRef");
-    CUDA_CHECK(res, "cuModuleGetTexRef");
+    CUDA_CHECK(res, "cuModuleGetTexRef(&image_texref)");
 
     res = cuTexRefSetAddress(NULL, image_texref, dev_image,
             sizeof(float) * size_img);
-    CUDA_CHECK(res, "cuTexRefSetAddress");
+    CUDA_CHECK(res, "cuTexRefSetAddress(image_texref)");
 
     res = cuTexRefSetFlags(image_texref, CU_TRSF_READ_AS_INTEGER);
-    CUDA_CHECK(res, "cuTexRefSetFlags");
+    CUDA_CHECK(res, "cuTexRefSetFlags(image_texref)");
 
     res = cuTexRefSetFormat(image_texref, CU_AD_FORMAT_FLOAT, 1);
-    CUDA_CHECK(res, "cuTexRefSetFormat");
+    CUDA_CHECK(res, "cuTexRefSetFormat(image_texref)");
 }
 
 void cleanImageFromGPU1D()
@@ -76,7 +76,7 @@ void cleanImageFromGPU1D()
     CUresult res;
 
     res = cuMemFree(dev_image);
-    CUDA_CHECK(res, "cuMemFree");
+    CUDA_CHECK(res, "cuMemFree(dev_image)");
 }
 
 void resizeLaunchUsingTex(IplImage* img, float scale, size_t type,
@@ -122,7 +122,7 @@ void resizeLaunchUsingTex(IplImage* img, float scale, size_t type,
     res = cuLaunchKernel(BilinearKernelTex32F_func[0], block_num_x, block_num_y,
             block_num_z, thread_num_x, thread_num_y, thread_num_z,
             sharedMemBytes, stream, kernel_arg, NULL);
-    CUDA_CHECK(res, "cuLaunchKernel(resize)");
+    CUDA_CHECK(res, "cuLaunchKernel(BilinearKernelTex32F)");
 
 }
 

@@ -50,7 +50,8 @@ static std::string _use_pose;
 static bool _initial_set = false;
 static bool _pose_set = false;
 static bool _waypoint_set = false;
-Path _path_og;
+//Path _path_og;
+static WayPoints _current_waypoints;
 
 static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
@@ -89,7 +90,7 @@ static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 
 static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
 {
-  if (_use_pose != "Initial Pos")
+  if (_use_pose != "InitialPos")
     return;
 
     static tf::TransformListener listener;
@@ -123,7 +124,8 @@ static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedCo
 
 static void waypointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-  _path_og.setPath(msg);
+ // _path_og.setPath(msg);
+  _current_waypoints.setPath(*msg);
   _waypoint_set = true;
   ROS_INFO_STREAM("waypoint subscribed");
 }
@@ -143,7 +145,7 @@ int main(int argc, char **argv)
   ros::Subscriber initialpose_subscriber = nh.subscribe("initialpose", 10, initialposeCallback);
   ros::Subscriber gnss_subscriber = nh.subscribe("gnss_pose", 1000, GNSSCallback);
 
-  ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, waypointCallback);
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
 
 //transform
   tf::TransformBroadcaster odom_broadcaster;
@@ -162,11 +164,15 @@ int main(int argc, char **argv)
   {
     ros::spinOnce(); //check subscribe topic
 
-    if (!_waypoint_set)
+    if (!_waypoint_set) {
+      loop_rate.sleep();
       continue;
+    }
 
-    if (!_initial_set)
+    if (!_initial_set) {
+      loop_rate.sleep();
       continue;
+    }
 
     if (!_pose_set)
     {
@@ -182,18 +188,9 @@ int main(int argc, char **argv)
       _pose_set = true;
     }
 
-    tf::Transform inverse;
-    tf::poseMsgToTF(pose, inverse);
-    _path_og.setTransform(inverse.inverse());
+    int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(),pose);
+    pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
 
-    int closest_waypoint = _path_og.getClosestWaypoint();
-    if (closest_waypoint == -1)
-    {
-      ROS_INFO_STREAM("waypoint is not closed");
-      _initial_set = false;
-      continue;
-    }
-    pose.position.z = _path_og.getWaypointPosition(closest_waypoint).z;
 
     double vx = _current_velocity.linear.x;
     double vth = _current_velocity.angular.z;

@@ -45,8 +45,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "lane_change");
 
     ros::NodeHandle nh;
-    ros::Subscriber twist_sub = nh.subscribe("traffic_waypoint", 1, callback);
-    _pub = nh.advertise<waypoint_follower::lane>("base_waypoint", 1000,true);
+    ros::Subscriber twist_sub = nh.subscribe("traffic_waypoints", 1, callback);
+    _pub = nh.advertise<waypoint_follower::lane>("base_waypoints", 1000,true);
 
     ros::spin();
 

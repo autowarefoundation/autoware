@@ -57,7 +57,7 @@ Open-source software for urban autonomous driving. The following functions are s
 
 ```
 $ cd $HOME
-$ git clone --recursive https://github.com/CPFL/Autoware.git
+$ git clone https://github.com/CPFL/Autoware.git
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
 $ cd ../
@@ -70,6 +70,13 @@ $ ./catkin_make_release
 $ cd $HOME/Autoware/ros
 $ ./run
 ```
+
+## For developers
+
+Be careful for changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
+Original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
+repository, you must use **git subtree push**. (Please never change and push code if you don't understand
+`git subtree` well).
 
 ## Documents
 

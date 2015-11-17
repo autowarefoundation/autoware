@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_file)
 
+include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   gnss
@@ -10,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tf
 )
+pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
+pkg_check_modules(EIGEN3 REQUIRED eigen3)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -87,14 +90,15 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  /usr/include/pcl-1.7
-  /usr/include/eigen3)
+  ${PCL_IO_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+)
 
 add_library(map_file
   lib/map_db/GetFile.cpp
 )
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
-target_link_libraries(points_map_loader ${catkin_LIBRARIES} pcl_io map_file curl)
+target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} map_file curl)
 
 add_executable(vector_map_loader
   nodes/vector_map_loader/vector_map_loader.cpp

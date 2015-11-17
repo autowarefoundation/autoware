@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
 )
+FIND_PACKAGE(CUDA)
 find_package(OpenCV REQUIRED)
 
 add_message_files(
@@ -27,11 +28,11 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-IF(EXISTS "/usr/local/cuda")
+IF(CUDA_FOUND)
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
   "include/dpm_ocv"
-  "/usr/local/cuda/include"
+  ${CUDA_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -57,7 +58,7 @@ TARGET_LINK_LIBRARIES(libdpm_ocv
   cuda
 )
 
-SET(CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+SET(CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
 
 IF("${ARCHITECTURE}" MATCHES "^arm")
 SET(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)
