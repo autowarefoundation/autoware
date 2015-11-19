@@ -37,7 +37,7 @@
 
 //Publisher
 static ros::Publisher g_twist_pub;
-static double g_lateral_accel_limit;
+static double g_lateral_accel_limit = 0.8;
 
 static void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
 {
