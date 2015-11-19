@@ -132,12 +132,27 @@ typedef struct vehicle_state {
 	long long int tstamp;
 } vehicle_state_t;
 
+struct PID_valueSet {
+    float P;
+    float I;
+    float D;
+};
+
+struct struct_PID_controller {
+    struct PID_valueSet accel;
+    struct PID_valueSet brake;
+    struct PID_valueSet steer;
+};
+
+const std::string SHM_SEED_PATH = "/tmp/PID_controller";
+
 extern vehicle_state_t vstate;
 extern int can_tx_interval; // ms
 extern int cmd_rx_interval; // ms
 extern std::string ros_ip_address;
 extern double estimate_accel;
 extern double cycle_time;
+extern struct struct_PID_controller *shm_ptr;
 
 // convert km/h to m/s
 static inline double KmhToMs(double v)

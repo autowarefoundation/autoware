@@ -163,6 +163,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.label_point_cloud_bar = BarLabel(tab, '  Loading...  ')
 		self.label_point_cloud_bar.Enable(False)
 
+		self.pcd_loaded = False
+
 		#
 		# for Sensing tab
 		#
@@ -393,7 +395,7 @@ class MyFrame(rtmgr.MyFrame):
 			self.lb_top5.append(lb)
 		line = wx.StaticLine(self, wx.ID_ANY)
 		ibl = InfoBarLabel(self, 'Memory', bar_orient=wx.HORIZONTAL)
-		szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND)
+		szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND | wx.FIXED_MINSIZE)
 		self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
 
 		th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
@@ -584,6 +586,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.route_cmd_waypoint = data.point
 
 	def stat_callback(self, msg, k):
+		if k == 'pmap' and msg.data and not self.pcd_loaded:
+			return
 		self.stat_dic[k] = msg.data
 		if k == 'pmap':
 			v = self.stat_dic.get(k)
@@ -706,10 +710,12 @@ class MyFrame(rtmgr.MyFrame):
 				s += add + ' '
 		return s.strip(' ').split(' ') if s != '' else None
 
-	def obj_to_pdic_gdic_prm(self, obj):
+	def obj_to_pdic_gdic_prm(self, obj, sys=False):
 		info = self.config_dic.get(obj)
 		if info is None:
-			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj ])
+			sys_prm = self.get_param('sys')
+			prm_chk = lambda prm : prm is sys_prm if sys else prm is not sys_prm
+			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj and prm_chk(v.get('param')) ])
 			if info is None:
 				return (None, None, None)
 		pdic = info.get('pdic')
@@ -758,7 +764,7 @@ class MyFrame(rtmgr.MyFrame):
 		if proc is None:
 			return
 		if pdic is None or prm is None:
-			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj)
+			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj, sys=True)
 
 		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
 		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
@@ -1599,6 +1605,7 @@ class MyFrame(rtmgr.MyFrame):
 		if n == 0:
 			return
 		i = 0
+		self.pcd_loaded = False
 		while not ev.wait(0):
 			s = self.stdout_file_search(file, 'load ')
 			if not s:
@@ -1609,6 +1616,7 @@ class MyFrame(rtmgr.MyFrame):
 			else:
 				i -= 1
 				print s
+			self.pcd_loaded = (i == n)
 			wx.CallAfter(self.label_point_cloud_bar.set, 100 * i / n)
 		wx.CallAfter(self.label_point_cloud_bar.clear)
 
@@ -1713,7 +1721,7 @@ class MyFrame(rtmgr.MyFrame):
 				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ')') ]
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, 0, wx.LEFT, 12, pnl)
 				szr.Fit(pnl)
-				item.SetWindow(pnl)
+				tree.SetItemWindow(item, pnl)
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)

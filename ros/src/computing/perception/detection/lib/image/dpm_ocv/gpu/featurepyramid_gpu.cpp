@@ -386,14 +386,16 @@ int getFeatureMapsGPUStream(const int numStep, const int k,
     }/*for(j = k / 2; j < k; j++)*/
 
     res = cuMemAlloc(&dev_nearest, sizeof(int) * size_nearest);
-    CUDA_CHECK(res, "cuMemAlloc(dev_nearest)");
+    CUDA_CHECK(res, "cuMemAlloc(dev_nearest): %zd bytes", sizeof(int) * size_nearest);
     res = cuMemAlloc(&dev_w, sizeof(float) * size_w);
-    CUDA_CHECK(res, "cuMemAlloc(dev_w)");
+    CUDA_CHECK(res, "cuMemAlloc(dev_w): %zd bytes", sizeof(float) * size_w);
 
     res = cuMemcpyHtoDAsync(dev_nearest, nearest, sizeof(int) * size_nearest,
             streams[numStep - 1]);
+    CUDA_CHECK(res, "cuMemcpyHtoDAsync(dev_nearest, nearest, %zd bytes)", sizeof(int) * size_nearest);
     res = cuMemcpyHtoDAsync(dev_w, w, sizeof(float) * size_w,
             streams[numStep - 1]);
+    CUDA_CHECK(res, "cuMemcpyHtoDAsync(dev_w, w, %zd bytes)", sizeof(float) * size_w);
 
     // allocate device memory
     for (i = 0; i < numStep; i++)
@@ -419,11 +421,11 @@ int getFeatureMapsGPUStream(const int numStep, const int k,
 
         // initilize device memory value of 0
         res = cuMemsetD32Async(devs_map[i]->map, 0, size_map, streams[i]);
-        CUDA_CHECK(res, "cuMemset(dev_map)");
+        CUDA_CHECK(res, "cuMemset(dev_map[%d]->map)", i);
         res = cuMemsetD32Async(devs_r[i]->map, 0, size_r, streams[i]);
-        CUDA_CHECK(res, "cuMemset(dev_r)");
+        CUDA_CHECK(res, "cuMemset(dev_r[%d]->map)", i);
         res = cuMemsetD32Async(devs_alfa[i]->map, 0, size_alfa, streams[i]);
-        CUDA_CHECK(res, "cuMemset(dev_alfa)");
+        CUDA_CHECK(res, "cuMemset(dev_alfa[%d]->map)", i);
 
         // launch kernel
         calculateHistogramGPULaunch(k, devs_img[i], devs_r[i], devs_alfa[i],
@@ -532,7 +534,8 @@ int normalizeAndTruncateGPUStream(const int numStep, const float alfa,
     // synchronize cuda stream
     for (i = 0; i < numStep; i++)
     {
-        cuStreamSynchronize(streams[i]);
+        CUresult res = cuStreamSynchronize(streams[i]);
+        CUDA_CHECK(res, "cuStreamSynchronize(streams[%d])", i);
     }
 
     // free device memory
@@ -604,7 +607,7 @@ int PCAFeatureMapsGPUStream(const int numStep, const int bx, const int by,
         // initilize device memory value of 0
         res = cuMemsetD32Async(devs_map_pca[i]->map, 0, size_map_pca,
                 streams[i]);
-        CUDA_CHECK(res, "cuMemset(dev_map_pca)");
+        CUDA_CHECK(res, "cuMemset(dev_map_pca[%d]->map)", i);
 
         // launch kernel
         PCAFeatureMapsAddNullableBorderGPULaunch(devs_map_in[i],
@@ -620,7 +623,7 @@ int PCAFeatureMapsGPUStream(const int numStep, const int bx, const int by,
         // copy memory from device to host
         res = cuMemcpyDtoHAsync(feature_maps[i]->map, devs_map_pca[i]->map,
                 sizeof(float) * size_map_pca, streams[i]);
-        CUDA_CHECK(res, "cuMemcpyDtoH(dev_map_pca)");
+        CUDA_CHECK(res, "cuMemcpyDtoHAsync(feature_maps[%d]->map)", i);
     }
 
     // free device memory
@@ -698,7 +701,7 @@ static int getPathOfFeaturePyramidGPUStream(IplImage * image, float step,
         allocFeatureMapObjectGPU<float>(&devs_map_pre_pca[i], newSizeX,
                 newSizeY, pp);
         res = cuStreamCreate(&streams[i], CU_STREAM_DEFAULT);
-        CUDA_CHECK(res, "cuStreamCreate(stream)");
+        CUDA_CHECK(res, "cuStreamCreate(&streams[%d])", i);
     }
 
     // excute main function
@@ -716,8 +719,11 @@ static int getPathOfFeaturePyramidGPUStream(IplImage * image, float step,
     // synchronize cuda stream
     for (i = 0; i < numStep; i++)
     {
-        cuStreamSynchronize(streams[i]);
-        cuStreamDestroy(streams[i]);
+        CUresult res = cuStreamSynchronize(streams[i]);
+        CUDA_CHECK(res, "cuStreamSynchronize(streams[%d])", i);
+
+        res = cuStreamDestroy(streams[i]);
+        CUDA_CHECK(res, "cuStreamDestroy(streams[%d])", i);
     }
 
     for (i = 0; i < numStep; i++)
