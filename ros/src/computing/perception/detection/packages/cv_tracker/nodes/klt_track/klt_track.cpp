@@ -72,6 +72,8 @@ class RosTrackerApp
 
 	bool 				ready_;
 
+	int					num_trackers_;
+
 	std::vector<LkTracker*> obj_trackers_;
 	std::vector<cv::LatentSvmDetector::ObjectDetection> obj_detections_;
 
@@ -135,24 +137,29 @@ class RosTrackerApp
 
 		for(unsigned int i=0; i< size; i++)
 		{
-			if(!is_suppresed[indices[i]])
+
+			for(unsigned int j= i+1; j< size; j++)
 			{
-				for(unsigned int j= i+1; j< size; j++)
+				if(is_suppresed[indices[i]] || is_suppresed[indices[j]])
+					continue;
+				int x1_max = std::max(x1[indices[i]], x1[indices[j]]);
+				int x2_min = std::min(x2[indices[i]], x2[indices[j]]);
+				int y1_max = std::max(y1[indices[i]], y1[indices[j]]);
+				int y2_min = std::min(y2[indices[i]], y2[indices[j]]);
+				int overlap_width = x2_min - x1_max + 1;
+				int overlap_height = y2_min - y1_max + 1;
+				if(overlap_width > 0 && overlap_height>0)
 				{
-					int x1_max = std::max(x1[indices[i]], x1[indices[j]]);
-					int x2_min = std::min(x2[indices[i]], x2[indices[j]]);
-					int y1_max = std::max(y1[indices[i]], y1[indices[j]]);
-					int y2_min = std::min(y2[indices[i]], y2[indices[j]]);
-					int overlap_width = x2_min - x1_max + 1;
-					int overlap_height = y2_min - y1_max + 1;
-					if(overlap_width > 0 && overlap_height>0)
+					float overlap_part = (overlap_width*overlap_height)/area[indices[j]];
+					if(overlap_part > in_nms_threshold)
 					{
-						float overlap_part = (overlap_width*overlap_height)/area[indices[j]];
-						if(overlap_part > in_nms_threshold)
+						is_suppresed[indices[j]] = true;
+						in_out_source[indices[j]]->NullifyLifespan();
+						if (in_out_source[indices[j]]->GetFrameCount() > in_out_source[indices[i]]->GetFrameCount())
 						{
-							is_suppresed[indices[j]] = true;
-							in_out_source[indices[j]]->NullifyLifespan();
+							in_out_source[indices[i]]->object_id = in_out_source[indices[j]]->object_id;
 						}
+
 					}
 				}
 			}
@@ -209,7 +216,9 @@ public:
 		{
 			if (!object_matched[i])//if object wasn't matched by overlapping area, create a new tracker
 			{
-				LkTracker* new_tracker = new LkTracker(obj_trackers_.size() + 1, min_heights_[i], max_heights_[i], ranges_[i]);
+				if (num_trackers_ >10)
+					num_trackers_=0;
+				LkTracker* new_tracker = new LkTracker(++num_trackers_, min_heights_[i], max_heights_[i], ranges_[i]);
 				new_tracker->Track(image_track, obj_detections_[i], true);
 
 				//std::cout << "added new tracker" << std::endl;
@@ -382,6 +391,7 @@ public:
 	RosTrackerApp()
 	{
 		ready_ = true;
+		num_trackers_ = 0;
 	}
 
 };
