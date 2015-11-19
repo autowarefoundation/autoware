@@ -64,7 +64,7 @@ static WP parseWaypoint(const std::string& line)
   waypoint.pose.position.x = std::stod(columns[0]);
   waypoint.pose.position.y = std::stod(columns[1]);
   waypoint.pose.position.z = std::stod(columns[2]);
-  waypoint.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[2]));
+  waypoint.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[3]));
   waypoint.velocity_kmh = std::stod(columns[4]);
 
   return waypoint;
