@@ -12,7 +12,7 @@
 #define ROTATION 3
 #define OBSTACLEMINHEIGHT 1
 #define MAXBACKDISTANCE 1
-#define PASSHEIGHT 3
+#define PASSHEIGHT 2
 
 #define MAXRANGE 80.0
 #define MINRANGE 3
