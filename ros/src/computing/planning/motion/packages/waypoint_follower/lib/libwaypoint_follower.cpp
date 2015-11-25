@@ -58,9 +58,7 @@ geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
   if(waypoint > getSize() - 1)
     return p;
 
-  p.x = current_waypoints_.waypoints[waypoint].pose.pose.position.x;
-  p.y = current_waypoints_.waypoints[waypoint].pose.pose.position.y;
-  p.z = current_waypoints_.waypoints[waypoint].pose.pose.position.z;
+  p = current_waypoints_.waypoints[waypoint].pose.pose.position;
   return p;
 }
 
@@ -70,10 +68,7 @@ geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
   if(waypoint > getSize() - 1)
     return q;
 
-  q.x = current_waypoints_.waypoints[waypoint].pose.pose.orientation.x;
-  q.y = current_waypoints_.waypoints[waypoint].pose.pose.orientation.y;
-  q.z = current_waypoints_.waypoints[waypoint].pose.pose.orientation.z;
-  q.w = current_waypoints_.waypoints[waypoint].pose.pose.orientation.w;
+  //q = current_waypoints_.waypoints[waypoint].pose.pose.orientation;
   return q;
 }
 
