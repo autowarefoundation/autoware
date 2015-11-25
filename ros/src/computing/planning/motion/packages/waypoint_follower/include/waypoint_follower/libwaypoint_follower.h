@@ -55,6 +55,8 @@ public:
 	geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
 	double getWaypointVelocityMPS(int waypoint) const;
 	waypoint_follower::lane getCurrentWaypoints() const { return current_waypoints_; }
+  bool isFront(int waypoint, geometry_msgs::Pose current_pose) const;
+  bool isValid(int waypoint,geometry_msgs::Pose current_pose) const;
 
 };
 

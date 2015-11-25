@@ -97,6 +97,32 @@ double WayPoints::getWaypointVelocityMPS(int waypoint) const
   return current_waypoints_.waypoints[waypoint].twist.twist.linear.x;
 }
 
+bool WayPoints::isFront(int waypoint, geometry_msgs::Pose current_pose) const
+{
+  double x = calcRelativeCoordinate(current_waypoints_.waypoints[waypoint].pose.pose.position, current_pose).x;
+  if (x < 0)
+    return false;
+  else
+    return true;
+}
+
+bool WayPoints::isValid(int waypoint, geometry_msgs::Pose current_pose) const
+{
+  double angle_threshold = 90;
+  //waypoint angle
+  double waypoint_yaw = tf::getYaw(getWaypointOrientation(waypoint));
+  //pose angle
+  double pose_yaw = tf::getYaw(current_pose.orientation);
+  //skip waypoint which direction is reverse against current_pose
+  double direction_sub = (waypoint_yaw - pose_yaw) * 180 / M_PI; //degree
+  if (fabs(direction_sub) > angle_threshold)
+    return false;
+  else
+    return true;
+  //ROS_INFO("waypoint = %d, waypoint_yaw = %lf, pose_yaw = %lf, direction sub = %lf", i, waypoint_yaw, pose_yaw,direction_sub);
+
+}
+
 double DecelerateVelocity(double distance, double prev_velocity)
 {
 
