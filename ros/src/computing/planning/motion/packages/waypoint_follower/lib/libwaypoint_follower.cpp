@@ -176,71 +176,77 @@ double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point targe
   return tf::tfDistance(v1, v2);
 }
 
+
+
 //get closest waypoint from current pose
 int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msgs::Pose current_pose)
 {
+  WayPoints wp;
+  wp.setPath(current_path);
 
-  if (!current_path.waypoints.size())
-  {
+  if (wp.isEmpty())
     return -1;
-  }
 
-  int waypoint_min = -1;
-  double distance_min = DBL_MAX;
-  //get closest waypoint
-  for (int i = 1; i < static_cast<int>(current_path.waypoints.size()); i++)
+  //search closest candidate within a certain meter
+  double search_distance = 5.0;
+  std::vector<int> waypoint_candidates;
+  for (int i = 1; i < wp.getSize(); i++)
   {
-    //skip waypoint behind vehicle
-    double x = calcRelativeCoordinate(current_path.waypoints[i].pose.pose.position, current_pose).x;
-    //ROS_INFO("waypoint = %d, x = %lf",i,x);
-    if (x < 0)
+    if (getPlaneDistance(wp.getWaypointPosition(i), current_pose.position) > search_distance)
       continue;
 
-    //calc waypoint angle
-    double waypoint_yaw;
-    if (i == static_cast<int>(current_path.waypoints.size()) - 1)
-    {
-      waypoint_yaw = atan2(
-          current_path.waypoints[i - 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
-          current_path.waypoints[i - 1].pose.pose.position.x - current_path.waypoints[i].pose.pose.position.x);
-      waypoint_yaw -= M_PI;
-    }
-    else
-    {
-      waypoint_yaw = atan2(
-          current_path.waypoints[i + 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
-          current_path.waypoints[i + 1].pose.pose.position.x - current_path.waypoints[i].pose.pose.position.x);
-    }
-    if (waypoint_yaw < 0)
-      waypoint_yaw += 2 * M_PI;
-
-    //calc pose angle
-    tf::Quaternion q(current_pose.orientation.x, current_pose.orientation.y, current_pose.orientation.z,
-        current_pose.orientation.w);
-    double dummy1, dummy2, pose_yaw;
-    tf::Matrix3x3(q).getRPY(dummy1, dummy2, pose_yaw);
-    if (pose_yaw < 0)
-      pose_yaw += 2 * M_PI;
-
-    //skip waypoint which direction is reverse against current_pose
-    double direction_sub = (waypoint_yaw - pose_yaw) * 180 / M_PI; //degree
-    //ROS_INFO("waypoint = %d, waypoint_yaw = %lf, pose_yaw = %lf, direction sub = %lf",i,waypoint_yaw,pose_yaw,direction_sub);
-    if (fabs(direction_sub) > 90)
+    if (!wp.isFront(i, current_pose))
       continue;
 
-    double distance = getPlaneDistance(current_path.waypoints[i].pose.pose.position, current_pose.position);
-    //ROS_INFO("waypoint = %d , distance = %lf , distance_min = %lf",i,distance,distance_min);
-    if (distance_min > distance)
-    {
+    if(!wp.isValid(i,current_pose))
+      continue;
 
-      //waypoint_min = el;
-      waypoint_min = i;
-      distance_min = distance;
-    }
+    waypoint_candidates.push_back(i);
   }
 
-  //ROS_INFO("waypoint = %d",waypoint_min);
-  return waypoint_min;
+  //get closest waypoint from candidates
+  if (!waypoint_candidates.empty())
+  {
+    int waypoint_min = -1;
+    double distance_min = DBL_MAX;
+    for (auto el :waypoint_candidates)
+    {
+      ROS_INFO("closest_candidates : %d",el);
+      double d = getPlaneDistance(wp.getWaypointPosition(el), current_pose.position);
+      if (d < distance_min)
+      {
+        waypoint_min = el;
+        distance_min = d;
+      }
+    }
+    return waypoint_min;
+
+  }
+  else
+  {
+    //if there is no candidate...
+    int waypoint_min = -1;
+    double distance_min = DBL_MAX;
+    for (int i = 1; i < wp.getSize(); i++)
+    {
+      if (!wp.isFront(i, current_pose))
+        continue;
+
+      if (!wp.isValid(i, current_pose))
+        continue;
+
+      double d = getPlaneDistance(wp.getWaypointPosition(i), current_pose.position);
+      if (d < distance_min)
+      {
+        waypoint_min = i;
+        distance_min = d;
+      }
+    }
+    return waypoint_min;
+
+
+  }
+
 }
 
 bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *slope, double *intercept)
