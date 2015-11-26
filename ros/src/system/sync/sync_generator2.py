@@ -37,8 +37,7 @@ if __name__ == "__main__":
     text += '/* user header */\n'
     text += '#include "%s.h"\n' % data['sub1_header']
     text += '#include "%s.h"\n' % data['sub2_header']
-    text += '#include "%s.h"\n' % data['sync_sub1_header']
-    text += '#include "%s.h"\n' % data['sync_sub2_header']
+    text += '#include "%s.h"\n' % data['sync_sub_header']
 
     text += '\n/* ----mode---- */\n'
     text += '#define _REQ_PUB %s\n\n' % data['req_pub_mode']
@@ -52,8 +51,7 @@ if __name__ == "__main__":
     text += 'boost::circular_buffer<%s> %s_ringbuf(%s);\n' % (data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1], data['sub2_ringbuf'])
     text += 'ros::Publisher %s_pub;\n' % data['pub1'].split('/')[-1]
     text += 'ros::Publisher %s_pub;\n' % data['pub2'].split('/')[-1]
-    text += 'bool %s_flag;\n' % data['sync_sub1'].split('/')[-1]
-    text += 'bool %s_flag;\n\n' % data['sync_sub2'].split('/')[-1]
+    text += 'bool %s_flag;\n\n' % data['sync_sub'].split('/')[-1]
 
     text += '/* ----function---- */\n'
     text += 'double fabs_time_diff(std_msgs::Header *timespec1, std_msgs::Header *timespec2) {\n'
@@ -71,33 +69,6 @@ if __name__ == "__main__":
     text += '%s* p_%s_buf;\n' % (data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1])
     text += '%s* p_%s_buf;\n\n' % (data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1])
 
-    text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sub1'].split('/')[-1], data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1])
-    text += '    pthread_mutex_lock(&mutex);\n'
-    text += '    %s_ringbuf.push_front(*%s_msg);\n' % (data['sub1'].split('/')[-1], data['sub1'].split('/')[-1])
-    text += '    //%s is empty\n' % data['sub2'].split('/')[-1]
-    text += '    if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub2'].split('/')[-1], data['sub2'].split('/')[-1])
-    text += '        pthread_mutex_unlock(&mutex);\n'
-    text += '        ROS_INFO("%s ring buffer is empty");\n' % data['sub2'].split('/')[-1]
-    text += '        return\n'
-    text += '    }\n'
-    text += '    buf_flag = true;\n'
-    text += '    pthread_mutex_unlock(&mutex);\n'
-    text += '}\n\n'
-
-    text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sub2'].split('/')[-1], data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1])
-    text += '    pthread_mutex_lock(&mutex);\n'
-    text += '    %s_ringbuf.push_front(*%s_msg);\n' % (data['sub2'].split('/')[-1], data['sub2'].split('/')[-1])
-    text += '    //%s is empty\n' % data['sub1'].split('/')[-1]
-    text += '    if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub1'].split('/')[-1], data['sub1'].split('/')[-1])
-    text += '        ROS_INFO("%s ring buffer is empty");\n' % data['sub1'].split('/')[-1]
-    text += '        pthread_mutex_unlock(&mutex);\n'
-    text += '        return;\n'
-    text += '    }\n\n'
-
-    text += '    buf_flag = true;\n'
-    text += '    pthread_mutex_unlock(&mutex);\n'
-    text += '}\n'
-    text += '\n'
     text += 'void publish_msg(%s* p_%s_buf, %s* p_%s_buf)\n' % (data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1], data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1])
     text += '{\n'
     text += '    ROS_INFO("publish");\n'
@@ -107,18 +78,14 @@ if __name__ == "__main__":
 
     text += 'bool publish() {\n'
     text += '    if (buf_flag) {\n'
-    text += '        pthread_mutex_lock(&mutex)\n\n'
-
     text += '        //%s is empty\n' % data['sub1'].split('/')[-1]
     text += '        if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub1'].split('/')[-1], data['sub1'].split('/')[-1])
-    text += '            pthread_mutex_unlock(&mutex);\n'
-    text += '            ROS_INFO("%s ring buffer is empty");\n'% data['sub1'].split('/')[-1]
+    text += '            ROS_INFO("%s ring buffer is empty");\n' % data['sub1'].split('/')[-1]
     text += '            return false;\n'
     text += '        }\n\n'
 
     text += '        //%s is empty\n' % data['sub2'].split('/')[-1]
     text += '        if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub2'].split('/')[-1], data['sub2'].split('/')[-1])
-    text += '            pthread_mutex_unlock(&mutex);\n'
     text += '            ROS_INFO("%s ring buffer is empty");\n'% data['sub2'].split('/')[-1]
     text += '            return false;\n'
     text += '        }\n\n'
@@ -131,7 +98,12 @@ if __name__ == "__main__":
         text += '            if (%s_ringbuf.size() == 1) {\n' % data['sub1'].split('/')[-1]
         text += '                p_%s_buf = &*it;\n' % data['sub1'].split('/')[-1]
         text += '                publish_msg(p_%s_buf, p_%s_buf);\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])
-        text += '                pthread_mutex_unlock(&mutex);\n'
+        text += '                if (%s_flag == true){\n' % data['sync_sub'].split('/')[-1]
+        text += '                    buf_flag = false;\n'
+        text += '                    %s_flag = false;\n' % data['sync_sub'].split('/')[-1]
+        text += '                    %s_ringbuf.clear();\n' % data['sub1'].split('/')[-1]
+        text += '                    %s_ringbuf.clear();\n' % data['sub2'].split('/')[-1]
+        text += '                }\n'
         text += '                return true;\n'
         text += '            } else {\n'
         text += '                for (it++; it != %s_ringbuf.end(); it++) {\n' % data['sub1'].split('/')[-1]
@@ -153,7 +125,12 @@ if __name__ == "__main__":
         text += '            if (%s_ringbuf.size() == 1) {\n' % data['sub2'].split('/')[-1]
         text += '                p_%s_buf = &*it;\n' % data['sub2'].split('/')[-1]
         text += '                publish_msg(p_%s_buf, p_%s_buf);\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])
-        text += '                pthread_mutex_unlock(&mutex);\n'
+        text += '                if (%s_flag == true){\n' % data['sync_sub'].split('/')[-1]
+        text += '                    buf_flag = false;\n'
+        text += '                    %s_flag = false;\n' % data['sync_sub'].split('/')[-1]
+        text += '                    %s_ringbuf.clear();\n' % data['sub1'].split('/')[-1]
+        text += '                    %s_ringbuf.clear();\n' % data['sub2'].split('/')[-1]
+        text += '                }\n'
         text += '                return true;\n'
         text += '            }\n\n'
 
@@ -177,7 +154,12 @@ if __name__ == "__main__":
             text += '        if (%s_ringbuf.size() == 1) {\n' % data['sub2'].split('/')[-1]
             text += '            p_%s_buf = &*it;\n' % data['sub2'].split('/')[-1]
             text += '            publish_msg(p_%s_buf, p_%s_buf);\n' % (data['short_rate'].split('/')[-1], data['sub2'].split('/')[-1])
-            text += '            pthread_mutex_unlock(&mutex);\n'
+            text += '                if (%s_flag == true){\n' % data['sync_sub'].split('/')[-1]
+            text += '                    buf_flag = false;\n'
+            text += '                    %s_flag = false;\n' % data['sync_sub'].split('/')[-1]
+            text += '                    %s_ringbuf.clear();\n' % data['sub1'].split('/')[-1]
+            text += '                    %s_ringbuf.clear();\n' % data['sub2'].split('/')[-1]
+            text += '                }\n'
             text += '            return true;\n'
             text += '        }\n\n'
 
@@ -197,7 +179,12 @@ if __name__ == "__main__":
             text += '        if (%s_ringbuf.size() == 1) {\n' % data['sub1'].split('/')[-1]
             text += '            p_%s_buf = &*it;\n' % data['sub1'].split('/')[-1]
             text += '            publish_msg(p_%s_buf, p_%s_buf);\n' % (data['short_rate'].split('/')[-1], data['sub1'].split('/')[-1])
-            text += '            pthread_mutex_unlock(&mutex);\n'
+            text += '            if (%s_flag == true){\n' % data['sync_sub'].split('/')[-1]
+            text += '                buf_flag = false;\n'
+            text += '                %s_flag = false;\n' % data['sync_sub'].split('/')[-1]
+            text += '                %s_ringbuf.clear();\n' % data['sub1'].split('/')[-1]
+            text += '                %s_ringbuf.clear();\n' % data['sub2'].split('/')[-1]
+            text += '            }\n'
             text += '            return true;\n'
             text += '        }\n\n'
 
@@ -216,15 +203,76 @@ if __name__ == "__main__":
             print "failed: sched_policy 2, short_rate unmatched sub1 or sub2"
 
     text += '        publish_msg(p_%s_buf, p_%s_buf);\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])
-    text += '        pthread_mutex_unlock(&mutex);\n'
+    text += '        if (%s_flag == true){\n' % data['sync_sub'].split('/')[-1]
+    text += '            buf_flag = false;\n'
+    text += '            %s_flag = false;\n' % data['sync_sub'].split('/')[-1]
+    text += '            %s_ringbuf.clear();\n' % data['sub1'].split('/')[-1]
+    text += '            %s_ringbuf.clear();\n' % data['sub2'].split('/')[-1]
+    text += '        }\n'
     text += '        return true;\n'
     text += '    } else {\n'
     text += '        return false;\n'
     text += '    }\n'
-    text += '}\n'
+    text += '}\n\n'
+
+    text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sub1'].split('/')[-1], data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1])
+    text += '    pthread_mutex_lock(&mutex);\n'
+    text += '    %s_ringbuf.push_front(*%s_msg);\n' % (data['sub1'].split('/')[-1], data['sub1'].split('/')[-1])
+    text += '    //%s is empty\n' % data['sub2'].split('/')[-1]
+    text += '    if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub2'].split('/')[-1], data['sub2'].split('/')[-1])
+    text += '        pthread_mutex_unlock(&mutex);\n'
+    text += '        ROS_INFO("%s ring buffer is empty");\n' % data['sub2'].split('/')[-1]
+    text += '        return;\n'
+    text += '    }\n'
+    text += '    buf_flag = true;\n'
+    text += '    pthread_mutex_unlock(&mutex);\n'
+    text += '    pthread_mutex_lock(&mutex);\n'
+    text += '    if (%s_flag == true) {\n' % data['sync_sub'].split('/')[-1]
+    text += '        publish();\n'
+    text += '    }\n'
+    text += '    pthread_mutex_unlock(&mutex);\n'
+    text += '}\n\n'
+
+    text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sub2'].split('/')[-1], data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1])
+    text += '    pthread_mutex_lock(&mutex);\n'
+    text += '    %s_ringbuf.push_front(*%s_msg);\n' % (data['sub2'].split('/')[-1], data['sub2'].split('/')[-1])
+    text += '    //%s is empty\n' % data['sub1'].split('/')[-1]
+    text += '    if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub1'].split('/')[-1], data['sub1'].split('/')[-1])
+    text += '        ROS_INFO("%s ring buffer is empty");\n' % data['sub1'].split('/')[-1]
+    text += '        pthread_mutex_unlock(&mutex);\n'
+    text += '        return;\n'
+    text += '    }\n\n'
+
+    text += '    buf_flag = true;\n'
+    text += '    pthread_mutex_unlock(&mutex);\n'
+    text += '    pthread_mutex_lock(&mutex);\n'
+    text += '    if (%s_flag == true) {\n' % data['sync_sub'].split('/')[-1]
+    text += '        publish();\n'
+    text += '    }\n'
+    text += '    pthread_mutex_unlock(&mutex);\n'
+    text += '}\n\n'
+
     text += '#else\n'
     text += '%s %s_buf;\n' % (data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1])
     text += '%s %s_buf;\n\n' % (data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1])
+
+    text += 'bool publish() {\n'
+    text += '    if (buf_flag) {\n'
+    text += '        ROS_INFO("publish");\n'
+    text += '        %s_pub.publish(%s_buf);\n' % (data['pub1'].split('/')[-1], data['sub1'].split('/')[-1])
+    text += '        %s_pub.publish(%s_buf);\n' % (data['pub2'].split('/')[-1], data['sub2'].split('/')[-1])
+    text += '        if (%s_flag == true){\n' % data['sync_sub'].split('/')[-1]
+    text += '            buf_flag = false;\n'
+    text += '            %s_flag = false;\n' % data['sync_sub'].split('/')[-1]
+    text += '            %s_ringbuf.clear();\n' % data['sub1'].split('/')[-1]
+    text += '            %s_ringbuf.clear();\n' % data['sub2'].split('/')[-1]
+    text += '        }\n'
+    text += '        return true;\n'
+    text += '    } else {\n'
+    text += '        ROS_INFO("publish failed");\n'
+    text += '        return false;\n'
+    text += '    }\n'
+    text += '}\n\n'
 
     text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sub1'].split('/')[-1], data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1])
     text += '    pthread_mutex_lock(&mutex);\n'
@@ -246,6 +294,11 @@ if __name__ == "__main__":
         text += '        if (%s_ringbuf.size() == 1) {\n' % data['sub1'].split('/')[-1]
         text += '            %s_buf = *it;\n' % data['sub1'].split('/')[-1]
         text += '            pthread_mutex_unlock(&mutex);\n'
+        text += '            pthread_mutex_lock(&mutex);\n'
+        text += '            if (%s_flag == true) {\n' % data['sync_sub'].split('/')[-1]
+        text += '                publish();\n'
+        text += '            }\n'
+        text += '            pthread_mutex_unlock(&mutex);\n'
         text += '            return;\n'
         text += '        } else {\n'
         text += '            for (it++; it != %s_ringbuf.end(); it++) {\n' % data['sub1'].split('/')[-1]
@@ -265,6 +318,11 @@ if __name__ == "__main__":
         text += '        boost::circular_buffer<%s>::iterator it = %s_ringbuf.begin();\n' % (data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1])
         text += '        if (%s_ringbuf.size() == 1) {\n' % data['sub2'].split('/')[-1]
         text += '            %s_buf = *it;\n' % data['sub2'].split('/')[-1]
+        text += '            pthread_mutex_unlock(&mutex);\n'
+        text += '            pthread_mutex_lock(&mutex);\n'
+        text += '            if (%s_flag == true) {\n' % data['sync_sub'].split('/')[-1]
+        text += '                publish();\n'
+        text += '            }\n'
         text += '            pthread_mutex_unlock(&mutex);\n'
         text += '            return;\n'
         text += '        }\n\n'
@@ -339,6 +397,7 @@ if __name__ == "__main__":
     text += '    }\n\n'
 
     text += '    buf_flag = true;\n\n'
+
     if data['sched_policy'] == 1:
         text += '    // %s > %s\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])
         text += '    if (get_time(&(%s_ringbuf.front().header)) >= get_time(&(%s_ringbuf.front().header))) {\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])
@@ -346,6 +405,11 @@ if __name__ == "__main__":
         text += '        boost::circular_buffer<%s>::iterator it = %s_ringbuf.begin();\n' % (data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1])
         text += '        if (%s_ringbuf.size() == 1) {\n' % data['sub1'].split('/')[-1]
         text += '            %s_buf = *it;\n' % data['sub1'].split('/')[-1]
+        text += '            pthread_mutex_unlock(&mutex);\n'
+        text += '            pthread_mutex_lock(&mutex);\n'
+        text += '            if (%s_flag == true) {\n' % data['sync_sub'].split('/')[-1]
+        text += '                publish();\n'
+        text += '            }\n'
         text += '            pthread_mutex_unlock(&mutex);\n'
         text += '            return;\n'
         text += '        } else {\n'
@@ -366,6 +430,11 @@ if __name__ == "__main__":
         text += '        boost::circular_buffer<%s>::iterator it = %s_ringbuf.begin();\n' % (data['sub2_header'].replace('/', '::'), data['sub2'].split('/')[-1])
         text += '        if (%s_ringbuf.size() == 1) {\n' % data['sub2'].split('/')[-1]
         text += '            %s_buf = *it;\n' % data['sub2'].split('/')[-1]
+        text += '            pthread_mutex_unlock(&mutex);\n'
+        text += '            pthread_mutex_lock(&mutex);\n'
+        text += '            if (%s_flag == true) {\n' % data['sync_sub'].split('/')[-1]
+        text += '                publish();\n'
+        text += '            }\n'
         text += '            pthread_mutex_unlock(&mutex);\n'
         text += '            return;\n'
         text += '        }\n\n'
@@ -427,69 +496,16 @@ if __name__ == "__main__":
     text += '    pthread_mutex_unlock(&mutex);\n'
     text += '}\n\n'
 
-    text += 'bool publish() {\n'
-    text += '    if (buf_flag) {\n'
-    text += '        pthread_mutex_lock(&mutex);\n'
-    text += '        // scan_ringbuf.clear();\n'
-    text += '        // image_ringbuf.clear();\n'
-    text += '        // scan_ringbuf.push_front(scan_buf);\n'
-    text += '        // image_ringbuf.push_front(image_buf);\n'
-    text += '        ROS_INFO("publish");\n'
-    text += '        %s_pub.publish(%s_buf);\n' % (data['pub1'].split('/')[-1], data['sub1'].split('/')[-1])
-    text += '        %s_pub.publish(%s_buf);\n' % (data['pub2'].split('/')[-1], data['sub2'].split('/')[-1])
-    text += '        pthread_mutex_unlock(&mutex);\n'
-    text += '        return true;\n'
-    text += '    } else {\n'
-    text += '        ROS_INFO("publish failed");\n'
-    text += '        return false;\n'
-    text += '    }\n'
-    text += '}\n'
     text += '#endif\n\n'
 
-    text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sync_sub1'].split('/')[-1], data['sync_sub1_header'].replace('/', '::'), data['sync_sub1'].split('/')[-1])
-    text += '    if (%s_flag) {\n' % data['sync_sub1'].split('/')[-1]
-    text += '        %s_flag = false;\n' % data['sync_sub1'].split('/')[-1]
-    text += '        %s_flag = false;\n' % data['sync_sub2'].split('/')[-1]
-    text += '        return;\n'
-    text += '    }\n\n'
-
-    text += '    %s_flag = true;\n' % data['sync_sub1'].split('/')[-1]
-    text += '    if (%s_flag) {\n' % data['sync_sub2'].split('/')[-1]
-    text += '        ROS_INFO("catch publish request");\n'
-    text += '        if(!publish()) {\n'
-    text += '            /* when to publish is failure, republish */\n'
-    text += '            struct timespec sleep_time;\n'
-    text += '            sleep_time.tv_sec = 0;\n'
-    text += '            sleep_time.tv_nsec = 200000000; //5Hz\n'
-    text += '            while (!publish() || ros::ok())\n'
-    text += '                nanosleep(&sleep_time, NULL);\n'
-    text += '        }\n'
-    text += '        %s_flag = false;\n' % data['sync_sub1'].split('/')[-1]
-    text += '        %s_flag = false;\n' % data['sync_sub2'].split('/')[-1]
+    text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sync_sub'].split('/')[-1], data['sync_sub_header'].replace('/', '::'), data['sync_sub'].split('/')[-1])
+    text += '    pthread_mutex_lock(&mutex);\n'
+    text += '    %s_flag = true;\n' % data['sync_sub'].split('/')[-1]
+    text += '    ROS_INFO("catch publish request");\n'
+    text += '    if (publish() == false) {\n'
+    text += '        ROS_INFO("waitting...");\n'
     text += '    }\n'
-    text += '}\n'
-
-    text += 'void %s_callback(const %s::ConstPtr& %s_msg) {\n' % (data['sync_sub2'].split('/')[-1], data['sync_sub2_header'].replace('/', '::'), data['sync_sub2'].split('/')[-1])
-    text += '    if (%s_flag) {\n' % data['sync_sub2'].split('/')[-1]
-    text += '        %s_flag = false;\n' % data['sync_sub1'].split('/')[-1]
-    text += '        %s_flag = false;\n' % data['sync_sub2'].split('/')[-1]
-    text += '        return;\n'
-    text += '    }\n\n'
-
-    text += '    %s_flag = true;\n' % data['sync_sub2'].split('/')[-1]
-    text += '    if (%s_flag) {\n' % data['sync_sub1'].split('/')[-1]
-    text += '        ROS_INFO("catch publish request");\n'
-    text += '        if(!publish()) {\n'
-    text += '            /* when to publish is failure, republish */\n'
-    text += '            struct timespec sleep_time;\n'
-    text += '            sleep_time.tv_sec = 0;\n'
-    text += '            sleep_time.tv_nsec = 200000000; //5Hz\n'
-    text += '            while (!publish() || ros::ok())\n'
-    text += '                nanosleep(&sleep_time, NULL);\n'
-    text += '        }\n'
-    text += '        %s_flag = false;\n' % data['sync_sub1'].split('/')[-1]
-    text += '        %s_flag = false;\n' % data['sync_sub2'].split('/')[-1]
-    text += '    }\n'
+    text += '    pthread_mutex_unlock(&mutex);'
     text += '}\n\n'
 
     text += 'void* thread(void* args)\n'
@@ -497,10 +513,24 @@ if __name__ == "__main__":
     text += '    ros::NodeHandle nh_rcv;\n'
     text += '    ros::CallbackQueue rcv_callbackqueue;\n'
     text += '    nh_rcv.setCallbackQueue(&rcv_callbackqueue);\n'
-    text += '    ros::Subscriber %s_sub = nh_rcv.subscribe("%s", 5, %s_callback);\n' % (data['sync_sub1'].split('/')[-1], data['sync_sub1'].split('/')[-1], data['sync_sub1'].split('/')[-1])
-    text += '    ros::Subscriber %s_sub = nh_rcv.subscribe("%s", 5, %s_callback);\n' % (data['sync_sub2'].split('/')[-1], data['sync_sub2'].split('/')[-1], data['sync_sub2'].split('/')[-1])
-    text += '    while (nh_rcv.ok())\n'
+    text += '    ros::Subscriber %s_sub = nh_rcv.subscribe("%s", 5, %s_callback);\n' % (data['sync_sub'].split('/')[-1], data['sync_sub'].split('/')[-1], data['sync_sub'].split('/')[-1])
+    text += '    while (nh_rcv.ok()) {\n'
     text += '        rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));\n'
+    text += '        pthread_mutex_lock(&mutex);\n'
+    text += '        bool flag = (%s_flag == false && buf_flag == true);\n'% data['sync_sub'].split('/')[-1]
+    text += '        if (flag) {\n'
+    text += '            ROS_INFO("timeout");\n'
+    text += '            if(!publish()) {\n'
+    text += '                /* when to publish is failure, republish */\n'
+    text += '                struct timespec sleep_time;\n'
+    text += '                sleep_time.tv_sec = 0;\n'
+    text += '                sleep_time.tv_nsec = 200000000; //5Hz\n'
+    text += '                while (!publish() || ros::ok())\n'
+    text += '                    nanosleep(&sleep_time, NULL);\n'
+    text += '            }\n'
+    text += '        }\n'
+    text += '        pthread_mutex_unlock(&mutex);\n'
+    text += '    }\n'
     text += '    return NULL;\n'
     text += '}\n\n'
 
@@ -518,7 +548,9 @@ if __name__ == "__main__":
     text += '    %s_pub = nh.advertise<%s>("%s", 5);\n' % (data['pub2'].split('/')[-1], data['sub2_header'].replace('/', '::'), data['pub2'])
     text += '    while (!buf_flag) {\n'
     text += '        ros::spinOnce();\n'
+    text += '        usleep(100000);\n'
     text += '    }\n'
+    text += '    pthread_mutex_lock(&mutex);\n'
     text += '    if(!publish()) {\n'
     text += '        /* when to publish is failure, republish */\n'
     text += '        struct timespec sleep_time;\n'
@@ -526,7 +558,8 @@ if __name__ == "__main__":
     text += '        sleep_time.tv_nsec = 200000000; //5Hz\n'
     text += '        while (!publish() || ros::ok())\n'
     text += '            nanosleep(&sleep_time, NULL);\n'
-    text += '    }\n\n'
+    text += '    }\n'
+    text += '    pthread_mutex_lock(&mutex);\n\n'
 
     text += '    ros::spin();\n\n'
 
