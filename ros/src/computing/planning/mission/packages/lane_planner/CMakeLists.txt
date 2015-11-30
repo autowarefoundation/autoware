@@ -54,7 +54,7 @@ add_dependencies(lane_rule
 )
 
 add_executable(lane_stop nodes/lane_stop/lane_stop.cpp)
-target_link_libraries(lane_stop ${catkin_LIBRARIES})
+target_link_libraries(lane_stop vmap ${catkin_LIBRARIES})
 add_dependencies(lane_stop
   waypoint_follower_generate_messages_cpp
   runtime_manager_generate_messages_cpp

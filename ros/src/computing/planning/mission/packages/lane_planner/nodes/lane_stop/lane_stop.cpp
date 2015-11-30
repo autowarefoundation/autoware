@@ -28,85 +28,85 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ros/ros.h>
 #include <ros/console.h>
 
-#include <waypoint_follower/lane.h>
 #include <runtime_manager/traffic_light.h>
+#include <waypoint_follower/LaneArray.h>
 
-static constexpr int TRAFFIC_LIGHT_RED = 0;
-static constexpr int TRAFFIC_LIGHT_GREEN = 1;
-static constexpr int TRAFFIC_LIGHT_UNKNOWN = 2;
+#include <lane_planner/vmap.hpp>
 
-static ros::Publisher pub_traffic;
+namespace {
 
-static int sub_waypoint_queue_size;
-static int sub_light_queue_size;
-static int pub_waypoint_queue_size;
-static bool pub_waypoint_latch;
+ros::Publisher traffic_pub;
 
-static waypoint_follower::lane current_red_lane;
-static waypoint_follower::lane current_green_lane;
+waypoint_follower::LaneArray current_red_lane;
+waypoint_follower::LaneArray current_green_lane;
 
-static const waypoint_follower::lane *previous_lane = &current_red_lane;
+const waypoint_follower::LaneArray *previous_lane = &current_red_lane;
 
-static void cache_red_lane(const waypoint_follower::lane& msg)
+void select_current_lane(const runtime_manager::traffic_light& msg)
+{
+	const waypoint_follower::LaneArray *current;
+	switch (msg.traffic_light) {
+	case lane_planner::vmap::TRAFFIC_LIGHT_RED:
+		current = &current_red_lane;
+		break;
+	case lane_planner::vmap::TRAFFIC_LIGHT_GREEN:
+		current = &current_green_lane;
+		break;
+	case lane_planner::vmap::TRAFFIC_LIGHT_UNKNOWN:
+		current = previous_lane; // if traffic light state is unknown, keep previous state
+		break;
+	default:
+		ROS_ERROR_STREAM("undefined traffic light");
+		return;
+	}
+
+	if (current->lanes.empty()) {
+		ROS_ERROR_STREAM("empty lanes");
+		return;
+	}
+
+	traffic_pub.publish(*current);
+
+	previous_lane = current;
+}
+
+void cache_red_lane(const waypoint_follower::LaneArray& msg)
 {
 	current_red_lane = msg;
 }
 
-static void cache_green_lane(const waypoint_follower::lane& msg)
+void cache_green_lane(const waypoint_follower::LaneArray& msg)
 {
 	current_green_lane = msg;
 }
 
-static void select_current_lane(const runtime_manager::traffic_light& msg)
-{
-	const waypoint_follower::lane *current;
-
-	switch (msg.traffic_light) {
-	case TRAFFIC_LIGHT_RED:
-		current = &current_red_lane;
-		break;
-	case TRAFFIC_LIGHT_GREEN:
-		current = &current_green_lane;
-		break;
-	case TRAFFIC_LIGHT_UNKNOWN:
-		current = previous_lane; // if traffic light state is unknown, keep previous state
-		break;
-	default:
-		ROS_ERROR("undefined traffic_light");
-		return;
-	}
-
-	if (current->waypoints.empty()) {
-		ROS_ERROR("empty waypoints");
-		return;
-	}
-
-	pub_traffic.publish(*current);
-
-	previous_lane = current;
-}
+} // namespace
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "lane_stop");
 
 	ros::NodeHandle n;
-	n.param<int>("/lane_stop/sub_waypoint_queue_size", sub_waypoint_queue_size, 1);
+
+	int sub_light_queue_size;
 	n.param<int>("/lane_stop/sub_light_queue_size", sub_light_queue_size, 1);
+	int sub_waypoint_queue_size;
+	n.param<int>("/lane_stop/sub_waypoint_queue_size", sub_waypoint_queue_size, 1);
+	int pub_waypoint_queue_size;
 	n.param<int>("/lane_stop/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
+	bool pub_waypoint_latch;
 	n.param<bool>("/lane_stop/pub_waypoint_latch", pub_waypoint_latch, true);
 
-	ros::Subscriber sub_red = n.subscribe("/red_waypoints", sub_waypoint_queue_size, cache_red_lane);
-	ros::Subscriber sub_green = n.subscribe("/green_waypoints", sub_waypoint_queue_size, cache_green_lane);
-	ros::Subscriber sub_light = n.subscribe("/traffic_light", sub_light_queue_size, select_current_lane);
+	traffic_pub = n.advertise<waypoint_follower::LaneArray>("/traffic_waypoints", pub_waypoint_queue_size,
+								pub_waypoint_latch);
 
-	pub_traffic = n.advertise<waypoint_follower::lane>("/traffic_waypoints", pub_waypoint_queue_size,
-							   pub_waypoint_latch);
+	ros::Subscriber light_sub = n.subscribe("/traffic_light", sub_light_queue_size, select_current_lane);
+	ros::Subscriber red_sub = n.subscribe("/red_waypoints", sub_waypoint_queue_size, cache_red_lane);
+	ros::Subscriber green_sub = n.subscribe("/green_waypoints", sub_waypoint_queue_size, cache_green_lane);
 
 	ros::spin();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
