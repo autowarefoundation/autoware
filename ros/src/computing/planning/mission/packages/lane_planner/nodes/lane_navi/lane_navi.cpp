@@ -28,316 +28,207 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <fstream>
+#include <sstream>
 
-#include <ros/ros.h>
 #include <ros/console.h>
 
-#include <waypoint_follower/lane.h>
-#include <tablet_socket/route_cmd.h>
+#include <map_file/PointClassArray.h>
+#include <map_file/LaneArray.h>
+#include <map_file/NodeArray.h>
+#include <waypoint_follower/LaneArray.h>
 
-#include <geo_pos_conv.hh>
-#include <vmap_utility.hpp>
+#include <lane_planner/vmap.hpp>
 
-static void create_lane_waypoint(const tablet_socket::route_cmd& msg);
+namespace {
 
-static bool cached_route = false;
+int waypoint_max;
+double search_radius; // meter
+double velocity; // km/h
+std::string frame_id;
+std::string output_file;
 
-static ros::Publisher pub_waypoint;
+ros::Publisher waypoint_pub;
 
-static VectorMap vmap_all;
-static VectorMap vmap_lane;
-static VectorMap vmap_left_lane;
+lane_planner::vmap::VectorMap all_vmap;
+lane_planner::vmap::VectorMap lane_vmap;
+tablet_socket::route_cmd cached_route;
 
-static tablet_socket::route_cmd current_route;
-
-static int sub_vmap_queue_size;
-static int sub_route_queue_size;
-static int pub_waypoint_queue_size;
-static bool pub_waypoint_latch;
-
-static double velocity;		// km/h
-static std::string output_file;
-static double search_radius;	// m
-static int waypoint_max;
-
-static void cache_vmap_lane()
+std::vector<std::string> split(const std::string& str, char delim)
 {
-	if (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty())
-		return;
+	std::stringstream ss(str);
+	std::string s;
+	std::vector<std::string> vec;
+	while (std::getline(ss, s, delim))
+		vec.push_back(s);
 
-	VectorMap vmap;
-	for (const map_file::Lane& l : vmap_all.lanes) {
-		vmap.lanes.push_back(l);
-		for (const map_file::Node& n : vmap_all.nodes) {
-			if (n.nid != l.bnid && n.nid != l.fnid)
-				continue;
-			vmap.nodes.push_back(n);
-			for (const map_file::PointClass& p : vmap_all.points) {
-				if (p.pid != n.pid)
-					continue;
-				vmap.points.push_back(p);
-			}
-		}
-	}
-	vmap_lane = vmap;
+	if (!str.empty() && str.back() == delim)
+		vec.push_back(std::string());
+
+	return vec;
 }
 
-static void cache_vmap_left_lane()
+std::string join(const std::vector<std::string>& vec, char delim)
 {
-	if (vmap_all.lanes.empty() || vmap_all.nodes.empty() || vmap_all.points.empty())
-		return;
-
-	VectorMap vmap;
-	for (const map_file::Lane& l : vmap_all.lanes) {
-		if (l.lno != 1)	// leftmost lane
-			continue;
-		vmap.lanes.push_back(l);
-		for (const map_file::Node& n : vmap_all.nodes) {
-			if (n.nid != l.bnid && n.nid != l.fnid)
-				continue;
-			vmap.nodes.push_back(n);
-			for (const map_file::PointClass& p : vmap_all.points) {
-				if (p.pid != n.pid)
-					continue;
-				vmap.points.push_back(p);
-			}
-		}
+	std::string str;
+	for (size_t i = 0; i < vec.size(); ++i) {
+		str += vec[i];
+		if (i != (vec.size() - 1))
+			str += delim;
 	}
-	vmap_left_lane = vmap;
+
+	return str;
 }
 
-static VectorMap cache_vmap_coarse(const tablet_socket::route_cmd& msg)
+int count_lane(const lane_planner::vmap::VectorMap& vmap)
 {
-	geo_pos_conv geo;
-	geo.set_plane(7);
+	int lcnt = -1;
 
-	VectorMap vmap;
-	for (const tablet_socket::Waypoint& w : msg.point) {
-		geo.llh_to_xyz(w.lat, w.lon, 0);
-
-		map_file::PointClass p;
-		p.bx = geo.x();
-		p.ly = geo.y();
-		vmap.points.push_back(p);
+	for (const map_file::Lane& l : vmap.lanes) {
+		if (l.lcnt > lcnt)
+			lcnt = l.lcnt;
 	}
 
-	return vmap;
+	return lcnt;
 }
 
-static bool is_cached_vmap()
+void create_waypoint(const tablet_socket::route_cmd& msg)
 {
-	return (!vmap_all.lanes.empty() && !vmap_all.nodes.empty() && !vmap_all.points.empty());
-}
-
-static bool is_cached_route()
-{
-	return cached_route;
-}
-
-static void cache_route(const tablet_socket::route_cmd& msg)
-{
-	current_route = msg;
-}
-
-static void cache_lane(const map_file::LaneArray& msg)
-{
-	vmap_all.lanes = msg.lanes;
-	cache_vmap_lane();
-	cache_vmap_left_lane();
-	if (is_cached_route() && is_cached_vmap()) {
-		create_lane_waypoint(current_route);
-		cached_route = false;
-	}
-}
-
-static void cache_node(const map_file::NodeArray& msg)
-{
-	vmap_all.nodes = msg.nodes;
-	cache_vmap_lane();
-	cache_vmap_left_lane();
-	if (is_cached_route() && is_cached_vmap()) {
-		create_lane_waypoint(current_route);
-		cached_route = false;
-	}
-}
-
-static void cache_point(const map_file::PointClassArray& msg)
-{
-	vmap_all.points = msg.point_classes;
-	cache_vmap_lane();
-	cache_vmap_left_lane();
-	if (is_cached_route() && is_cached_vmap()) {
-		create_lane_waypoint(current_route);
-		cached_route = false;
-	}
-}
-
-static void write_lane_waypoint(const geometry_msgs::Point& point, bool first)
-{
-	if (first) {
-		std::ofstream ofs(output_file.c_str());
-		ofs << std::fixed << point.x << ","
-		    << std::fixed << point.y << ","
-		    << std::fixed << point.z << std::endl;
-	} else {
-		std::ofstream ofs(output_file.c_str(), std::ios_base::app);
-		ofs << std::fixed << point.x << ","
-		    << std::fixed << point.y << ","
-		    << std::fixed << point.z << ","
-		    << std::fixed << velocity << std::endl;
-	}
-}
-
-static void create_lane_waypoint(const tablet_socket::route_cmd& msg)
-{
-	if (!is_cached_vmap()) {
-		ROS_WARN("not cached vmap");
-		cache_route(msg);
-		cached_route = true;
-		return;
-	}
-
-	VectorMap vmap_coarse = cache_vmap_coarse(msg);
-	if (vmap_coarse.points.size() < 2) {
-		ROS_ERROR("lack of waypoint");
-		return;
-	}
-
-	map_file::PointClass start_point = vmap_find_start_nearest_point(vmap_left_lane,
-									 vmap_coarse.points[0],
-									 vmap_coarse.points[1],
-									 search_radius);
-	if (start_point.pid < 0) {
-		ROS_ERROR("no start point");
-		return;
-	}
-	map_file::PointClass end_point = vmap_find_end_nearest_point(vmap_left_lane,
-								     vmap_coarse.points[msg.point.size() - 1],
-								     vmap_coarse.points[msg.point.size() - 2],
-								     search_radius);
-	if (end_point.pid < 0) {
-		ROS_ERROR("no end point");
-		return;
-	}
-	map_file::PointClass point = start_point;
-	map_file::Lane lane = vmap_find_lane(vmap_lane, point);
-	if (lane.lnid < 0) {
-		ROS_ERROR("no start lane");
-		return;
-	}
-
 	std_msgs::Header header;
 	header.stamp = ros::Time::now();
-	header.frame_id = "/map";
-	waypoint_follower::lane waypoints;
-	waypoints.header = header;
-	waypoints.increment = 1;
-	waypoint_follower::waypoint waypoint;
-	waypoint.pose.header = header;
-	waypoint.twist.header = header;
-	waypoint.pose.pose.orientation.w = 1;
+	header.frame_id = frame_id;
 
-	bool finish = false;
-	for (int i = 0; i < waypoint_max; ++i) {
-		// msg's X-Y axis is reversed
-		waypoint.pose.pose.position.x = point.ly;
-		waypoint.pose.pose.position.y = point.bx;
-		waypoint.pose.pose.position.z = point.h;
-		waypoint.twist.twist.linear.x = velocity / 3.6;	// to m/s
-		waypoints.waypoints.push_back(waypoint);
-		write_lane_waypoint(waypoint.pose.pose.position, (i == 0));
-
-		if (finish)
-			break;
-
-		point = vmap_find_end_point(vmap_lane, lane);
-		if (point.pid < 0) {
-			ROS_ERROR("no end point");
-			return;
-		}
-
-		if (point.bx == end_point.bx && point.ly == end_point.ly) {
-			finish = true;
-			continue;
-		}
-
-		if (lane.jct >= 1 && lane.jct <= 2) { // bifurcation
-			map_file::PointClass p1 = vmap_find_end_point(vmap_lane, lane);
-			if (p1.pid < 0) {
-				ROS_ERROR("no end point");
-				return;
-			}
-
-			p1 = vmap_find_nearest_point(vmap_coarse, p1);
-			if (p1.pid < 0) {
-				ROS_ERROR("no nearest point");
-				return;
-			}
-
-			map_file::PointClass p2;
-			double distance = -1;
-			for (const map_file::PointClass& p : vmap_coarse.points) {
-				if (distance == -1) {
-					if (p.bx == p1.bx && p.ly == p1.ly)
-						distance = 0;
-					continue;
-				}
-				p2 = p;
-				distance = hypot(p1.bx - p2.bx, p1.ly - p2.ly);
-				if (distance > VMAP_JUNCTION_DISTANCE_MAX)
-					break;
-			}
-			if (distance <= 0) {
-				ROS_ERROR("no next nearest point");
-				return;
-			}
-
-			lane = vmap_find_junction_lane(vmap_lane, lane, vmap_compute_direction_angle(p1, p2));
-		} else
-			lane = vmap_find_next_lane(vmap_lane, lane);
-		if (lane.lnid < 0) {
-			ROS_ERROR("no next lane");
-			return;
-		}
-
-		point = vmap_find_start_point(vmap_lane, lane);
-		if (point.pid < 0) {
-			ROS_ERROR("no start point");
-			return;
-		}
-	}
-	if (!finish) {
-		ROS_ERROR("miss finish");
+	if (all_vmap.points.empty() || all_vmap.lanes.empty() || all_vmap.nodes.empty()) {
+		cached_route.header = header;
+		cached_route.point = msg.point;
 		return;
 	}
 
-	pub_waypoint.publish(waypoints);
+	lane_planner::vmap::VectorMap coarse_vmap = lane_planner::vmap::create_coarse_vmap_from_route(msg);
+	if (coarse_vmap.points.size() < 2)
+		return;
+
+	std::vector<lane_planner::vmap::VectorMap> fine_vmaps;
+	lane_planner::vmap::VectorMap fine_mostleft_vmap =
+		lane_planner::vmap::create_fine_vmap(lane_vmap, lane_planner::vmap::LNO_MOSTLEFT, coarse_vmap,
+						     search_radius, waypoint_max);
+	if (fine_mostleft_vmap.points.empty())
+		return;
+	fine_vmaps.push_back(fine_mostleft_vmap);
+
+	int lcnt = count_lane(fine_mostleft_vmap);
+	for (int i = lane_planner::vmap::LNO_MOSTLEFT + 1; i <= lcnt; ++i) {
+		lane_planner::vmap::VectorMap v =
+			lane_planner::vmap::create_fine_vmap(lane_vmap, i, coarse_vmap, search_radius, waypoint_max);
+		if (v.points.empty())
+			continue;
+		fine_vmaps.push_back(v);
+	}
+
+	waypoint_follower::LaneArray lane_waypoint;
+	for (const lane_planner::vmap::VectorMap& v : fine_vmaps) {
+		waypoint_follower::lane l;
+		l.header = header;
+		l.increment = 1;
+		for (const map_file::PointClass& p : v.points) {
+			waypoint_follower::waypoint w;
+			w.pose.header = header;
+			w.pose.pose.position = lane_planner::vmap::create_geometry_msgs_point(p);
+			w.pose.pose.orientation.w = 1; // XXX compute from yaw
+			w.twist.header = header;
+			w.twist.twist.linear.x = velocity / 3.6; // to m/s
+			l.waypoints.push_back(w);
+		}
+		lane_waypoint.lanes.push_back(l);
+	}
+	waypoint_pub.publish(lane_waypoint);
+
+	for (size_t i = 0; i < fine_vmaps.size(); ++i) {
+		std::stringstream ss;
+		ss << "_" << i;
+
+		std::vector<std::string> v1 = split(output_file, '/');
+		std::vector<std::string> v2 = split(v1.back(), '.');
+		v2[0] = v2.front() + ss.str();
+		v1[v1.size() - 1] = join(v2, '.');
+		std::string path = join(v1, '/');
+
+		lane_planner::vmap::write_waypoints(fine_vmaps[i].points, velocity, path);
+	}
 }
+
+void update_values()
+{
+	if (all_vmap.points.empty() || all_vmap.lanes.empty() || all_vmap.nodes.empty())
+		return;
+
+	lane_vmap = lane_planner::vmap::create_lane_vmap(all_vmap, lane_planner::vmap::LNO_ALL);
+
+	if (!cached_route.point.empty()) {
+		create_waypoint(cached_route);
+		cached_route.point.clear();
+		cached_route.point.shrink_to_fit();
+	}
+}
+
+void cache_point(const map_file::PointClassArray& msg)
+{
+	all_vmap.points = msg.point_classes;
+	update_values();
+}
+
+void cache_lane(const map_file::LaneArray& msg)
+{
+	all_vmap.lanes = msg.lanes;
+	update_values();
+}
+
+void cache_node(const map_file::NodeArray& msg)
+{
+	all_vmap.nodes = msg.nodes;
+	update_values();
+}
+
+} // namespace
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "lane_navi");
 
 	ros::NodeHandle n;
+
+	int sub_vmap_queue_size;
 	n.param<int>("/lane_navi/sub_vmap_queue_size", sub_vmap_queue_size, 1);
+	int sub_route_queue_size;
 	n.param<int>("/lane_navi/sub_route_queue_size", sub_route_queue_size, 1);
+	int pub_waypoint_queue_size;
 	n.param<int>("/lane_navi/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
+	bool pub_waypoint_latch;
 	n.param<bool>("/lane_navi/pub_waypoint_latch", pub_waypoint_latch, true);
-	n.param<double>("/lane_navi/velocity", velocity, 40);
-	n.param<std::string>("/lane_navi/output_file", output_file, "/tmp/lane_waypoint.csv");
-	n.param<double>("/lane_navi/search_radius", search_radius, 10);
+
 	n.param<int>("/lane_navi/waypoint_max", waypoint_max, 10000);
+	n.param<double>("/lane_navi/search_radius", search_radius, 10);
+	n.param<double>("/lane_navi/velocity", velocity, 40);
+	n.param<std::string>("/lane_navi/frame_id", frame_id, "map");
+	n.param<std::string>("/lane_navi/output_file", output_file, "/tmp/lane_waypoint.csv");
 
-	ros::Subscriber sub_lane = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
-	ros::Subscriber sub_node = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
-	ros::Subscriber sub_point = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
-	ros::Subscriber sub_route = n.subscribe("/route_cmd", sub_route_queue_size, create_lane_waypoint);
+	if (output_file.empty()) {
+		ROS_ERROR_STREAM("output filename is empty");
+		return EXIT_FAILURE;
+	}
+	if (output_file.back() == '/') {
+		ROS_ERROR_STREAM(output_file << " is directory");
+		return EXIT_FAILURE;
+	}
 
-	pub_waypoint = n.advertise<waypoint_follower::lane>("/lane_waypoints", pub_waypoint_queue_size,
-							    pub_waypoint_latch);
+	waypoint_pub = n.advertise<waypoint_follower::LaneArray>("/lane_waypoints", pub_waypoint_queue_size,
+								 pub_waypoint_latch);
+
+	ros::Subscriber route_sub = n.subscribe("/route_cmd", sub_route_queue_size, create_waypoint);
+	ros::Subscriber point_sub = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
+	ros::Subscriber lane_sub = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
+	ros::Subscriber node_sub = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
 
 	ros::spin();
 
-	return 0;
+	return EXIT_SUCCESS;
 }

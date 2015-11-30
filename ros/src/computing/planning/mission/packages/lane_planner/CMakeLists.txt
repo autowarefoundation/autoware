@@ -38,7 +38,7 @@ add_dependencies(vmap
 )
 
 add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
-target_link_libraries(lane_navi vmap_utility gnss ${catkin_LIBRARIES})
+target_link_libraries(lane_navi vmap ${catkin_LIBRARIES})
 add_dependencies(lane_navi
   waypoint_follower_generate_messages_cpp
   tablet_socket_generate_messages_cpp
