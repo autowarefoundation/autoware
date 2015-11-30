@@ -46,7 +46,7 @@ add_dependencies(lane_navi
 )
 
 add_executable(lane_rule nodes/lane_rule/lane_rule.cpp)
-target_link_libraries(lane_rule vmap_utility ${catkin_LIBRARIES})
+target_link_libraries(lane_rule vmap ${catkin_LIBRARIES})
 add_dependencies(lane_rule
   waypoint_follower_generate_messages_cpp
   runtime_manager_generate_messages_cpp
