@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	waypoint_pub = n.advertise<waypoint_follower::LaneArray>("/lane_waypoints", pub_waypoint_queue_size,
+	waypoint_pub = n.advertise<waypoint_follower::LaneArray>("/lane_waypoints_array", pub_waypoint_queue_size,
 								 pub_waypoint_latch);
 
 	ros::Subscriber route_sub = n.subscribe("/route_cmd", sub_route_queue_size, create_waypoint);

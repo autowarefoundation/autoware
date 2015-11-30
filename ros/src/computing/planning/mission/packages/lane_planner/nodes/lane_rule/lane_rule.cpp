@@ -467,11 +467,11 @@ int main(int argc, char **argv)
 	n.param<double>("/lane_rule/clothoid_weight", clothoid_weight, 0.215);
 	n.param<std::string>("/lane_rule/frame_id", frame_id, "map");
 
-	traffic_pub = n.advertise<waypoint_follower::LaneArray>("/traffic_waypoints", pub_waypoint_queue_size,
+	traffic_pub = n.advertise<waypoint_follower::LaneArray>("/traffic_waypoints_array", pub_waypoint_queue_size,
 								pub_waypoint_latch);
-	red_pub = n.advertise<waypoint_follower::LaneArray>("/red_waypoints", pub_waypoint_queue_size,
+	red_pub = n.advertise<waypoint_follower::LaneArray>("/red_waypoints_array", pub_waypoint_queue_size,
 							    pub_waypoint_latch);
-	green_pub = n.advertise<waypoint_follower::LaneArray>("/green_waypoints", pub_waypoint_queue_size,
+	green_pub = n.advertise<waypoint_follower::LaneArray>("/green_waypoints_array", pub_waypoint_queue_size,
 							      pub_waypoint_latch);
 
 #ifdef DEBUG
@@ -486,7 +486,7 @@ int main(int argc, char **argv)
 							     pub_marker_latch);
 #endif // DEBUG
 
-	ros::Subscriber waypoint_sub = n.subscribe("/lane_waypoints", sub_waypoint_queue_size, create_waypoint);
+	ros::Subscriber waypoint_sub = n.subscribe("/lane_waypoints_array", sub_waypoint_queue_size, create_waypoint);
 	ros::Subscriber point_sub = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
 	ros::Subscriber lane_sub = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
 	ros::Subscriber node_sub = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
