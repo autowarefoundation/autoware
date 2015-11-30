@@ -29,28 +29,36 @@
  */
 
 #include <ros/ros.h>
-#include <waypoint_follower/lane.h>
 #include <iostream>
 
-static ros::Publisher _pub;
+#include "waypoint_follower/LaneArray.h"
+#include "runtime_manager/ConfigLaneSelect.h"
 
-void callback(const waypoint_follower::lane &msg)
+static ros::Publisher g_pub;
+static int g_lane_number = 0;
+static waypoint_follower::LaneArray g_lane_array;
+
+static void configCallback(const runtime_manager::ConfigLaneSelectConstPtr &config)
 {
-    _pub.publish(msg);
+  g_lane_number = config->number;
+  g_pub.publish(g_lane_array.lanes[g_lane_number]);
 }
 
+static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
+{
+  g_lane_array = *msg;
+  g_pub.publish(g_lane_array.lanes[g_lane_number]);
+}
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "lane_change");
+  ros::init(argc, argv, "lane_select");
 
-    ros::NodeHandle nh;
-    ros::Subscriber twist_sub = nh.subscribe("traffic_waypoints", 1, callback);
-    _pub = nh.advertise<waypoint_follower::lane>("base_waypoints", 1000,true);
+  ros::NodeHandle nh;
+  ros::Subscriber config_sub = nh.subscribe("/config/lane_select", 1, configCallback);
+  ros::Subscriber sub = nh.subscribe("lane_waypoints_array", 1, laneArrayCallback);
+  g_pub = nh.advertise<waypoint_follower::lane>("base_waypoints", 10, true);
 
-    ros::spin();
-
-
-
-    return 0;
+  ros::spin();
+  return 0;
 }
