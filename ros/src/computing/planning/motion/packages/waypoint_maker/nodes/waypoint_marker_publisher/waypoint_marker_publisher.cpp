@@ -55,9 +55,7 @@ static const double g_global_alpha = 0.2;
 static const double g_local_alpha = 1.0;
 static int _closest_waypoint = -1;
 static visualization_msgs::MarkerArray g_global_marker_array;
-
-static visualization_msgs::MarkerArray g_base_waypoints_marker_array;
-static visualization_msgs::MarkerArray g_temporal_waypoints_marker_array;
+static visualization_msgs::MarkerArray g_local_waypoints_marker_array;
 
 static void publishMarker(){
   visualization_msgs::MarkerArray marker_array;
@@ -65,11 +63,8 @@ static void publishMarker(){
   //insert global marker
   marker_array.markers.insert(marker_array.markers.end(),g_global_marker_array.markers.begin(),g_global_marker_array.markers.end());
 
-  //insert base_waypoints marker
-  marker_array.markers.insert(marker_array.markers.end(),g_base_waypoints_marker_array.markers.begin(),g_base_waypoints_marker_array.markers.end());
-
-  //insert temporal_waypoints marker
-  marker_array.markers.insert(marker_array.markers.end(),g_temporal_waypoints_marker_array.markers.begin(),g_temporal_waypoints_marker_array.markers.end());
+  //insert local marker
+  marker_array.markers.insert(marker_array.markers.end(),g_local_waypoints_marker_array.markers.begin(),g_local_waypoints_marker_array.markers.end());
 
   g_lane_mark_pub.publish(marker_array);
 }
@@ -147,7 +142,7 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color , int closest_w
 
   for (int i = 0; i < static_cast<int>(lane_waypoint.waypoints.size()); i++)
   {
-    velocity.id = closest_waypoint+i;
+    velocity.id = i;
     double yaw = 0;
         if(i == static_cast<int>(lane_waypoint.waypoints.size()) -1){
           yaw = atan2(lane_waypoint.waypoints[i -1].pose.pose.position.y - lane_waypoint.waypoints[i].pose.pose.position.y,
@@ -180,15 +175,10 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color , int closest_w
     //std::string text = velocity + kmh;
     //marker.text = text;
 
-    g_temporal_waypoints_marker_array.markers.push_back(velocity);
+    g_local_waypoints_marker_array.markers.push_back(velocity);
   }
 
-  for (int i = closest_waypoint -1 ; i > -1 ; i--)
-    {
-      velocity.id = i;
-      velocity.action = visualization_msgs::Marker::DELETE;
-      g_temporal_waypoints_marker_array.markers.push_back(velocity);
-    }
+
 
 }
 
@@ -243,7 +233,7 @@ void createLocalPathMarker(std_msgs::ColorRGBA color , const waypoint_follower::
       lane_waypoint_marker.points.push_back(point);
 
     }
-  g_temporal_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
+  g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
 static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
@@ -286,17 +276,9 @@ static void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
   }
 }
 
-/*static void trafficCallback(const waypoint_follower::laneConstPtr &msg)
-{
-  g_global_marker_array.markers.clear();
-  createGlobalWaypointVelocityMarker(*msg, &g_global_marker_array);
-  //createGlobalWaypointMarker(*msg, &marker_array);
-  createGlobalPathMarker(_global_color, *msg, &g_global_marker_array);
-}*/
-
 static void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
-  g_temporal_waypoints_marker_array.markers.clear();
+  g_local_waypoints_marker_array.markers.clear();
   if(_closest_waypoint != -1)
     createLocalWaypointVelocityMarker(g_local_color,_closest_waypoint,*msg);
   createLocalPathMarker(g_local_color, *msg);
@@ -320,7 +302,7 @@ int main(int argc, char **argv)
 
   //subscribe global waypoints
   ros::Subscriber lane_array_sub = nh.subscribe("lane_waypoints_array",10,laneArrayCallback);
- // ros::Subscriber traffic_sub = nh.subscribe("traffic_waypoints",10,trafficCallback);
+  ros::Subscriber traffic_array_sub = nh.subscribe("traffic_waypoints_array",10,laneArrayCallback);
 
   //subscribe local waypoints
   ros::Subscriber temporal_sub = nh.subscribe("temporal_waypoints",10,temporalCallback);
