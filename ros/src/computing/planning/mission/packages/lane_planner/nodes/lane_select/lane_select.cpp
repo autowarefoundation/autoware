@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
   ros::NodeHandle nh;
   ros::Subscriber config_sub = nh.subscribe("/config/lane_select", 1, configCallback);
-  ros::Subscriber sub = nh.subscribe("lane_waypoints_array", 1, laneArrayCallback);
+  ros::Subscriber sub = nh.subscribe("traffic_waypoints_array", 1, laneArrayCallback);
   g_pub = nh.advertise<waypoint_follower::lane>("base_waypoints", 10, true);
 
   ros::spin();
