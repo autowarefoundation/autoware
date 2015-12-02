@@ -59,9 +59,6 @@ buttons :
     param : pcd_filter
     gui   :
       show_order : [ path_pcd_filter, leaf_size ]
-      #leaf_size :
-      #  func      : self.tc_pcd_filter_leaf_size.GetValue()
-      #  restore   : self.tc_pcd_filter_leaf_size.SetValue
 
   pcd_binarizer :
     run   : rosrun map_tools pcd_binarizer
