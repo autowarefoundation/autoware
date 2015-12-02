@@ -17,11 +17,11 @@
 		<param name="points_node" value="$(arg points_node)" />
 		<param name="publish_ground" value="$(arg publish_ground)" /><!--GROUND FILTERING LIKELY WONT WORK ON VSCAN (for obvious reasons)-->
 		<param name="publish_filtered" value="$(arg publish_filtered)" /><!--POINTS FILTERING LIKELY WONT WORK ON VSCAN (for obvious reasons)-->
-        <param name="is_downsampling" type="bool" value="$(arg is_downsampling)" />
-        <param name="distance" type="double" value="$(arg distance)" />
-        <param name="leaf_size" type="double" value="$(arg leaf_size)" />
-        <param name="cluster_size_min" type="int" value="$(arg cluster_size_min)" />
-        <param name="cluster_size_max" type="int" value="$(arg cluster_size_max)" />
+        <param name="is_downsampling" value="$(arg is_downsampling)" />
+        <param name="distance" value="$(arg distance)" />
+        <param name="leaf_size" value="$(arg leaf_size)" />
+        <param name="cluster_size_min" value="$(arg cluster_size_min)" />
+        <param name="cluster_size_max" value="$(arg cluster_size_max)" />
 	</node>
 
 </launch>
