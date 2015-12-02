@@ -1714,13 +1714,13 @@ class MyFrame(rtmgr.MyFrame):
 				pdic = self.load_dic_pdic_setup(name, items)
 				pnl = wx.Panel(tree, wx.ID_ANY)
 				lkc_sys = self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys')
-				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '(') , lkc_sys ]
+				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc_sys, wx.StaticText(pnl, wx.ID_ANY, ']') ]
 				gdic = self.gdic_get_1st(items)
 				if 'param' in items and 'no_link' not in gdic.get('flags', []):
 					lkc = self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'))
-					add_objs += [ lkc ]
-				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ')') ]
-				szr = sizer_wrap(add_objs, wx.HORIZONTAL, 0, wx.LEFT, 12, pnl)
+					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
+					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc, wx.StaticText(pnl, wx.ID_ANY, ']') ]
+				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
 
