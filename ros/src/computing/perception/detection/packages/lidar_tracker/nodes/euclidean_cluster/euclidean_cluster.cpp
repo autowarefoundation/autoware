@@ -40,6 +40,13 @@ ros::Publisher centroid_pub;
 ros::Publisher marker_pub;
 visualization_msgs::Marker marker;
 
+/* parameters for tuning */
+static bool is_downsampling;
+static double distance;
+static double leaf_size;
+static int cluster_size_min;
+static int cluster_size_max;
+
 static bool publish_ground;		//only ground
 static bool publish_filtered;	//pc with no ground
 
@@ -62,16 +69,30 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>());
 
+	if (is_downsampling)
+	  {
+		/////////////////////////////////
+		//---	ex. Down Sampling
+		/////////////////////////////////
+
+		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
+		pcl::VoxelGrid<pcl::PointXYZ> sor;
+		sor.setInputCloud(cloud1);
+		sor.setLeafSize((float)leaf_size, (float)leaf_size, (float)leaf_size);
+		sor.filter(*cloud_filtered);
+
+		*cloud1 = *cloud_filtered;
+	  }
+
 	/////////////////////////////////
 	//---	1. Remove planes (floor)
 	/////////////////////////////////
 
-	float distance = 0.5;//this may be a parameter,so we must tune it
 	seg.setOptimizeCoefficients (true);
 	seg.setModelType (pcl::SACMODEL_PLANE);
 	seg.setMethodType (pcl::SAC_RANSAC);
 	seg.setMaxIterations (100);
-	seg.setDistanceThreshold (distance);
+	seg.setDistanceThreshold ((float)distance);
 	// Segment the largest planar component from the remaining cloud
 	seg.setInputCloud (cloud1);
 	seg.segment (*inliers, *coefficients);
@@ -103,13 +124,13 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	auto start = std::chrono::system_clock::now(); //start time
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 
-	tree->setInputCloud (cloud1);
+	tree->setInputCloud (cloud_f);  // pass ground-removed points
 
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
 	ec.setClusterTolerance (distance); //
-	ec.setMinClusterSize (50);
-	ec.setMaxClusterSize (2500);
+	ec.setMinClusterSize (cluster_size_min);
+	ec.setMaxClusterSize (cluster_size_max);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud (cloud1);
 	ec.extract (cluster_indices);
@@ -241,6 +262,13 @@ int main (int argc, char** argv)
 		ROS_INFO("Publishing /points_filtered point cloud...");
 		pub_filtered = h.advertise<sensor_msgs::PointCloud2>("/points_filtered",1);
 	}
+
+	/* Initialize tuning parameter */
+	private_nh.param("is_downsampling", is_downsampling, false);
+	private_nh.param("distance", distance, 0.5);
+	private_nh.param("leaf_size", leaf_size, 0.1);
+	private_nh.param("cluster_size_min", cluster_size_min, 50);
+	private_nh.param("cluster_size_max", cluster_size_max, 2500);
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, cloud_cb);
