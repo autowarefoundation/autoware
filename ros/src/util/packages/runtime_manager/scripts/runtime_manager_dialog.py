@@ -152,7 +152,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.setup_buttons(self.map_dic.get('buttons', {}), self.map_cmd)
 
-		for nm in [ 'point_cloud', 'vector_map', 'area_lists', 'tf' ]:
+		for nm in [ 'point_cloud', 'vector_map', 'area_lists', 'tf', 'pcd_filter', 'pcd_binarizer' ]:
 			btn = self.obj_get('button_' + nm)
 			pnl = self.obj_get('panel_' + nm)
 			self.set_param_panel(btn, pnl)
@@ -2033,7 +2033,13 @@ class ParamPanel(wx.Panel):
 		szr = wx.BoxSizer(wx.VERTICAL)
 
 		topic_szrs = (None, None)
-		for var in self.prm.get('vars'):
+
+		vars = self.prm.get('vars')
+		if self.gdic.get('show_order'):
+			var_lst = lambda name, vars : [ var for var in vars if var.get('name') == name ]
+			vars = reduce( lambda lst, name : lst + var_lst(name, vars), self.gdic.get('show_order'), [] )
+
+		for var in vars:
 			name = var.get('name')
 
 			if not gdic_dialog_type_chk(self.gdic, name):
