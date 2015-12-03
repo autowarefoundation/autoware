@@ -28,6 +28,10 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
+add_executable(sync_drivers sync_drivers.cpp)
+target_link_libraries(sync_drivers ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(sync_drivers sync_drivers_generate_messages_cpp)
+
 add_executable(sync_car_range_fusion computing/perception/detection/packages/cv_tracker/nodes/range_fusion/sync_car_range_fusion.cpp)
 target_link_libraries(sync_car_range_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(sync_car_range_fusion sync_car_range_fusion_generate_messages_cpp)
