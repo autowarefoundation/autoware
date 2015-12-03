@@ -10,7 +10,7 @@
   <node pkg="tf" type="static_transform_publisher" name="velodyne_to_base_link" args="-1.17 0 -2.0 0 0 0 /velodyne /base_link 10" if="$(arg use_velodyne)"/>
   <node pkg="tf" type="static_transform_publisher" name="hokuyo_to_base_link" args="0 0 -1.0 0 0 0 /3d_urg /base_link 10" unless="$(arg use_velodyne)"/>
 
-  <include file="$(find model_publisher)/launch/prius_model.launch"/>
+  <include file="$(find model_publisher)/launch/vehicle_model.launch"/>
 
   <!-- rosrun ndt_localizer ndt_matching _sensor:="velodyne" -->
   <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log">
