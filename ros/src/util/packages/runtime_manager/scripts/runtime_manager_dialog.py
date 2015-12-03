@@ -152,7 +152,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.setup_buttons(self.map_dic.get('buttons', {}), self.map_cmd)
 
-		for nm in [ 'point_cloud', 'vector_map', 'area_lists', 'tf' ]:
+		for nm in [ 'point_cloud', 'vector_map', 'area_lists', 'tf', 'pcd_filter', 'pcd_binarizer' ]:
 			btn = self.obj_get('button_' + nm)
 			pnl = self.obj_get('panel_' + nm)
 			self.set_param_panel(btn, pnl)
@@ -1714,13 +1714,13 @@ class MyFrame(rtmgr.MyFrame):
 				pdic = self.load_dic_pdic_setup(name, items)
 				pnl = wx.Panel(tree, wx.ID_ANY)
 				lkc_sys = self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys')
-				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '(') , lkc_sys ]
+				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc_sys, wx.StaticText(pnl, wx.ID_ANY, ']') ]
 				gdic = self.gdic_get_1st(items)
 				if 'param' in items and 'no_link' not in gdic.get('flags', []):
 					lkc = self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'))
-					add_objs += [ lkc ]
-				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ')') ]
-				szr = sizer_wrap(add_objs, wx.HORIZONTAL, 0, wx.LEFT, 12, pnl)
+					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
+					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc, wx.StaticText(pnl, wx.ID_ANY, ']') ]
+				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
 
@@ -2033,7 +2033,13 @@ class ParamPanel(wx.Panel):
 		szr = wx.BoxSizer(wx.VERTICAL)
 
 		topic_szrs = (None, None)
-		for var in self.prm.get('vars'):
+
+		vars = self.prm.get('vars')
+		if self.gdic.get('show_order'):
+			var_lst = lambda name, vars : [ var for var in vars if var.get('name') == name ]
+			vars = reduce( lambda lst, name : lst + var_lst(name, vars), self.gdic.get('show_order'), [] )
+
+		for var in vars:
 			name = var.get('name')
 
 			if not gdic_dialog_type_chk(self.gdic, name):

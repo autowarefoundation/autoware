@@ -109,17 +109,15 @@ bool WayPoints::isFront(int waypoint, geometry_msgs::Pose current_pose) const
 bool WayPoints::isValid(int waypoint, geometry_msgs::Pose current_pose) const
 {
   double angle_threshold = 90;
-  //waypoint angle
-  double waypoint_yaw = tf::getYaw(getWaypointOrientation(waypoint));
-  //pose angle
-  double pose_yaw = tf::getYaw(current_pose.orientation);
-  //skip waypoint which direction is reverse against current_pose
-  double direction_sub = (waypoint_yaw - pose_yaw) * 180 / M_PI; //degree
-  if (fabs(direction_sub) > angle_threshold)
+  tf::Vector3 waypoint_v(getWaypointPosition(waypoint).x,getWaypointPosition(waypoint).y,getWaypointPosition(waypoint).z);
+  tf::Vector3 pose_v(current_pose.position.x,current_pose.position.y,current_pose.position.z);
+  double angle = waypoint_v.angle(pose_v) * 180 / M_PI; //degree
+  ROS_INFO("angle : %lf",angle);
+
+  if (fabs(angle) > angle_threshold)
     return false;
   else
     return true;
-  //ROS_INFO("waypoint = %d, waypoint_yaw = %lf, pose_yaw = %lf, direction sub = %lf", i, waypoint_yaw, pose_yaw,direction_sub);
 
 }
 
@@ -211,7 +209,7 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
     double distance_min = DBL_MAX;
     for (auto el :waypoint_candidates)
     {
-      ROS_INFO("closest_candidates : %d",el);
+      //ROS_INFO("closest_candidates : %d",el);
       double d = getPlaneDistance(wp.getWaypointPosition(el), current_pose.position);
       if (d < distance_min)
       {
@@ -224,6 +222,7 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
   }
   else
   {
+    ROS_INFO("no candidate. search closest waypoint from all waypoints...");
     //if there is no candidate...
     int waypoint_min = -1;
     double distance_min = DBL_MAX;
@@ -232,8 +231,8 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
       if (!wp.isFront(i, current_pose))
         continue;
 
-      if (!wp.isValid(i, current_pose))
-        continue;
+      //if (!wp.isValid(i, current_pose))
+      //  continue;
 
       double d = getPlaneDistance(wp.getWaypointPosition(i), current_pose.position);
       if (d < distance_min)

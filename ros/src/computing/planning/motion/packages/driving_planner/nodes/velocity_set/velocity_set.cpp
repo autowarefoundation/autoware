@@ -526,19 +526,19 @@ static void DisplayDecelerationRange(int i)
     marker.points.clear();
 }
 
-static EControl vscanDetection(int closest_waypoint)
+static EControl vscanDetection()
 {
 
-    if (_vscan.empty() == true)
+    if (_vscan.empty() == true || _closest_waypoint < 0)
         return KEEP;
 
     int decelerate_or_stop = -10000;
     int decelerate2stop_waypoints = 15;
-    for (int i = closest_waypoint; i < closest_waypoint + _search_distance; i++) {
+    for (int i = _closest_waypoint; i < _closest_waypoint + _search_distance; i++) {
         decelerate_or_stop++;
         if (decelerate_or_stop > decelerate2stop_waypoints ||
 	    (decelerate_or_stop >= 0 && i >= _path_dk.getSize()-1) ||
-	    (decelerate_or_stop >= 0 && i == closest_waypoint+_search_distance-1))
+	    (decelerate_or_stop >= 0 && i == _closest_waypoint+_search_distance-1))
 	    return DECELERATE;
         if (i > _path_dk.getSize() - 1 )
             return KEEP;
@@ -629,7 +629,7 @@ static EControl ObstacleDetection()
     std::cout << "current_velocity : " << mps2kmph(_current_vel) << std::endl;
     DisplayDetectionRange(_closest_waypoint);
     DisplayDecelerationRange(_closest_waypoint);
-    EControl vscan_result = vscanDetection(_closest_waypoint);
+    EControl vscan_result = vscanDetection();
 
     if (prev_detection == KEEP) {
       if (vscan_result != KEEP) { // found obstacle
