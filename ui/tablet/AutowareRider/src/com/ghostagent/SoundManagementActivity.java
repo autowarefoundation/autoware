@@ -287,7 +287,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 				return false;
 		}
 
-		boolean connect(String address, int port) {
+		synchronized boolean connect(String address, int port) {
 			sockfd = SoundManagementNative.socket();
 			if (sockfd < 0)
 				return false;
@@ -300,7 +300,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			return true;
 		}
 
-		void close() {
+		synchronized void close() {
 			SoundManagementNative.close(sockfd);
 			sockfd = -1;
 		}
@@ -340,7 +340,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		static final int EXIT_EXCEED_ERROR_LIMIT = -1;
 		static final int EXIT_RECEIVE_BROKEN_PACKET = -2;
 
-		int send(int type, int command) {
+		synchronized int send(int type, int command) {
 			if (isClosed())
 				return -1;
 
@@ -349,7 +349,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			return recvInt();
 		}
 
-		int sendRoute(double[] latlong) {
+		synchronized int sendRoute(double[] latlong) {
 			if (isClosed())
 				return -1;
 
@@ -360,7 +360,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			return recvInt();
 		}
 
-		int sendPose(double[] pose) {
+		synchronized int sendPose(double[] pose) {
 			if (isClosed())
 				return -1;
 
@@ -382,7 +382,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		static final int MISS_BEACON_LIMIT = 10;
 
-		int[] recv(int response) {
+		synchronized int[] recv(int response) {
 			int[] data = new int[2];
 
 			if (isClosed()) {
@@ -851,7 +851,7 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		// start recording
 		startKnightRiding();
 
-		// start informationReceiver
+		startCommandSender();
 		startInformationReceiver();
 	}
 
@@ -1121,6 +1121,43 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		}).start();
 	}
 
+	public void startCommandSender() {
+		new Thread(new Runnable() {
+			public void run() {
+				while (bIsKnightRiding) {
+					if (applicationButton.getMode() == ApplicationButton.MAP) {
+						if (bExistsLatLong && bExistsHeight && bExistsGravity && bExistsGeomagnetic) {
+							float[] inR = new float[16];
+							float[] I = new float[16];
+							SensorManager.getRotationMatrix(inR, I, sensorGravity, sensorGeomagnetic);
+
+							float[] outR = new float[16];
+							SensorManager.remapCoordinateSystem(inR, SensorManager.AXIS_X, SensorManager.AXIS_Y, outR);
+
+							float[] attitude = new float[3];
+							SensorManager.getOrientation(outR, attitude);
+
+							double[] pose = new double[6];
+							pose[0] = locationLatLong[0]; // north latitude (degrees)
+							pose[1] = locationLatLong[1]; // east longitude (degrees)
+							pose[2] = locationHeight[0];  // height above sea level (m)
+							pose[3] = -(double)attitude[0]; // azimuth (rad)
+							pose[4] = (double)attitude[1]; // pitch (rad)
+							pose[5] = (double)attitude[2]; // roll (rad)
+							int data = commandClient.sendPose(pose);
+							if (data < 0)
+								stopServerConnecting();
+						}
+					}
+					try {
+						Thread.sleep(1000);
+					} catch (Exception e) {
+					}
+				}
+			}
+		}).start();
+	}
+
 	public void startInformationReceiver() {
 		new Thread(new Runnable() {
 			public void run() {
@@ -1379,31 +1416,15 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			startActivity(intent);
 			data = 0;
 		} else if (v == applicationButton.map) {
-			applicationButton.updateMode(ApplicationButton.MAP);
-			if (bExistsLatLong && bExistsHeight && bExistsGravity && bExistsGeomagnetic) {
-				float[] inR = new float[16];
-				float[] I = new float[16];
-				SensorManager.getRotationMatrix(inR, I, sensorGravity, sensorGeomagnetic);
-
-				float[] outR = new float[16];
-				SensorManager.remapCoordinateSystem(inR, SensorManager.AXIS_X, SensorManager.AXIS_Y, outR);
-
-				float[] attitude = new float[3];
-				SensorManager.getOrientation(outR, attitude);
-
-				double[] pose = new double[6];
-				pose[0] = locationLatLong[0]; // north latitude (degrees)
-				pose[1] = locationLatLong[1]; // east longitude (degrees)
-				pose[2] = locationHeight[0];  // height above sea level (m)
-				pose[3] = -(double)attitude[0]; // azimuth (rad)
-				pose[4] = (double)attitude[1]; // pitch (rad)
-				pose[5] = (double)attitude[2]; // roll (rad)
-				data = commandClient.sendPose(pose);
-			} else {
-				Toast.makeText(this, "Sensor data has not been received yet", Toast.LENGTH_LONG).show();
-				data = 0;
+			if (applicationButton.getMode() == ApplicationButton.MAP)
+				applicationButton.updateMode(ApplicationButton.MAP);
+			else {
+				if (bExistsLatLong && bExistsHeight && bExistsGravity && bExistsGeomagnetic)
+					applicationButton.updateMode(ApplicationButton.MAP);
+				else
+					Toast.makeText(this, "Sensor data has not been received yet", Toast.LENGTH_LONG).show();
 			}
-			applicationButton.updateMode(ApplicationButton.MAP);
+			data = 0;
 		} else if (v == s1Button.s1) {
 			if (s1Button.getMode() == S1Button.OK)
 				s1Button.updateMode(S1Button.OK);

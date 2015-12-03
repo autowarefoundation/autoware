@@ -9,9 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   gnss
-  message_generation
   runtime_manager
   waypoint_follower
+  #dbw_mkz_msgs
 )
 
 ################################################
@@ -27,22 +27,6 @@ IF(USE_OpenMP)
   ENDIF()
 ENDIF()
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-add_message_files(
-  FILES
-  lane.msg
-  waypoint.msg
-  dtlane.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs 
-  geometry_msgs
-)
 
 ###################################
 ## catkin specific configuration ##
@@ -50,7 +34,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libtraj_gen 
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower
+  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower #dbw_mkz_msgs
   DEPENDS gnss
 )
 

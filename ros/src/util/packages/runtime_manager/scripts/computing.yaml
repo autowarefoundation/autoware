@@ -93,6 +93,10 @@ subs :
             border : 16
             flags  : [ left ]
 
+      - name : klt_track
+        cmd  : roslaunch cv_tracker klt_tracking.launch
+        param: car_kf
+
       - name : kf_track
         cmd  : roslaunch cv_tracker kf_tracking.launch
         param: car_kf
@@ -261,7 +265,8 @@ subs :
              depend_bool : 'lambda v : v == 0' 
            stat_topic : [ lf ]  
        - name : twist_filter
-         cmd  : rosrun waypoint_follower twist_filter  
+         cmd  : roslaunch waypoint_follower twist_filter.launch
+         param: twist_filter
        - name : wf_simulator
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
@@ -776,7 +781,33 @@ params :
       label   : 'Simulation Mode'
       kind    : checkbox
       v       : False
-      rosparam: /lattice_trajectory_gen/sim_mode
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : prius_mode
+      label   : 'Prius Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : mkz_mode
+      label   : 'MKZ Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : twist_filter
+    topic : /config/twist_filter
+    msg   : ConfigTwistFilter
+    vars  :
+    - name    : lateral_accel_limit 
+      label   : 'lateral_accel_limit :'
+      min   : 0
+      max   : 5.0
+      v         : 0.8
   
   - name  : wf_simulator
     vars  :

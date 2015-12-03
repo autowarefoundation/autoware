@@ -1,0 +1,25 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="true"/>
+
+  <group if="$(arg car)">
+    <group ns="obj_car">
+
+      <node pkg="cv_tracker" name="tracking" type="klt_track" output="screen">
+          <remap from="/config/obj_car/klt" to="/config/car_klt" />
+      </node>
+
+    </group>
+  </group>
+
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+
+      <node pkg="cv_tracker" name="tracking" type="klt_track">
+          <remap from="/config/obj_person/klt" to="/config/pedestrian_klt" />
+      </node>
+
+    </group>
+  </group>
+
+</launch>

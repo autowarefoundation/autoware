@@ -92,17 +92,17 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
 
   e_d = (e - e_prev) / (STEERING_INTERNAL_PERIOD/1000.0);
 
-  double k_p = _K_STEERING_P;
-  double k_i = _K_STEERING_I;
-  double k_d = _K_STEERING_D;
+  double k_p = _K_STEERING_P_SLOW;
+  double k_i = _K_STEERING_I_SLOW;
+  double k_d = _K_STEERING_D_SLOW;
 
   double steering_max_torque = _STEERING_MAX_TORQUE;
 
   // change PID params depending on the driving speed.
-  if (vstate.velocity < 10) {
-    k_p = _K_STEERING_P_10;
-    k_i = _K_STEERING_I_10;
-    k_d = _K_STEERING_D_10;
+  if (vstate.velocity < 30) {
+    k_p = _K_STEERING_P_SLOW;
+    k_i = _K_STEERING_I_SLOW;
+    k_d = _K_STEERING_D_SLOW;
 
     // if angular velocity is slow, ignore D to smoothen the steer.
     if (fabs(e_d) < _STEERING_ANGVEL_BOUNDARY) {
