@@ -6,7 +6,7 @@
   <arg name="use_velodyne" default="true" />
   <arg name="use_gnss" default="1" />
   <arg name="queue_size" default="10" />
-  <arg name="tf_x" default="1.17"/>
+  <arg name="tf_x" default="1.2"/>
   <arg name="tf_y" default="0.0"/>
   <arg name="tf_z" default="2.0"/>
   <arg name="tf_yaw" default="0.0"/>

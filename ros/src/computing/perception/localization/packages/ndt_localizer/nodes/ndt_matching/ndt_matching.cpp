@@ -81,7 +81,7 @@ struct pose {
     double yaw;
 };
 
-static pose initial_pose, predict_pose, previous_pose, ndt_pose, current_pose, control_pose, previous_gnss_pose, current_gnss_pose;
+static pose initial_pose, predict_pose, previous_pose, ndt_pose, current_pose, control_pose, localizer_pose, previous_gnss_pose, current_gnss_pose;
 
 static double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pose
 
@@ -115,6 +115,9 @@ static geometry_msgs::PoseStamped current_pose_msg;
 
 static ros::Publisher control_pose_pub;
 static geometry_msgs::PoseStamped control_pose_msg;
+
+static ros::Publisher localizer_pose_pub;
+static geometry_msgs::PoseStamped localizer_pose_msg;
 
 static ros::Publisher estimate_twist_pub;
 static geometry_msgs::TwistStamped estimate_twist_msg;
@@ -160,7 +163,7 @@ static ndt_localizer::ndt_stat ndt_stat_msg;
 static double predict_pose_error = 0.0;
 
 static double _tf_x, _tf_y, _tf_z, _tf_yaw, _tf_pitch, _tf_roll;
-static Eigen::Matrix4f scan_transform;
+static Eigen::Matrix4f base_link_to_localizer_transform;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -593,7 +596,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 
       static tf::TransformBroadcaster br;
       tf::Transform transform;
-      tf::Quaternion predict_q, ndt_q, current_q, control_q;
+      tf::Quaternion predict_q, ndt_q, current_q, control_q, localizer_q;
       
       pcl::PointCloud<pcl::PointXYZ> scan;
       pcl::PointXYZ p;
@@ -618,14 +621,15 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
       pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
 
-      pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, scan_transform);
+      pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, base_link_to_localizer_transform);
 
-      Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
+      Eigen::Matrix4f t(Eigen::Matrix4f::Identity()); // base_link
+      Eigen::Matrix4f t2(Eigen::Matrix4f::Identity()); // localizer
             
       // Downsampling the velodyne scan using VoxelGrid filter
       pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
       voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-      // voxel_grid_filter.setInputCloud(scan_ptr);
+//      voxel_grid_filter.setInputCloud(scan_ptr);
       voxel_grid_filter.setInputCloud(transformed_scan_ptr);
       voxel_grid_filter.filter(*filtered_scan_ptr);
       
@@ -649,20 +653,33 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
       ndt.align(*output_cloud, init_guess);
       
-      t = ndt.getFinalTransformation();
+      t = ndt.getFinalTransformation(); // base_link
+      t2 = t * base_link_to_localizer_transform; // localizer
+
       iteration = ndt.getFinalNumIteration();
       score = ndt.getFitnessScore();
 
       tf::Matrix3x3 tf3d;
       tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
-		    static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
-		    static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
+    		  static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
+			  static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
       
       // Update ndt_pose
       ndt_pose.x = t(0, 3);
       ndt_pose.y = t(1, 3);
       ndt_pose.z = t(2, 3);
       tf3d.getRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw, 1);
+
+      tf::Matrix3x3 tf3d2;
+      tf3d2.setValue(static_cast<double>(t2(0, 0)), static_cast<double>(t2(0, 1)), static_cast<double>(t2(0, 2)),
+    		  static_cast<double>(t2(1, 0)), static_cast<double>(t2(1, 1)), static_cast<double>(t2(1, 2)),
+			  static_cast<double>(t2(2, 0)), static_cast<double>(t2(2, 1)), static_cast<double>(t2(2, 2)));
+
+      // Update ndt_pose
+      localizer_pose.x = t2(0, 3);
+      localizer_pose.y = t2(1, 3);
+      localizer_pose.z = t2(2, 3);
+      tf3d2.getRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw, 1);
 
       // Compute the velocity
       scan_duration = current_scan_time - previous_scan_time;
@@ -763,11 +780,23 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       control_pose_msg.pose.orientation.y = control_q.y();
       control_pose_msg.pose.orientation.z = control_q.z();
       control_pose_msg.pose.orientation.w = control_q.w();
+
+      localizer_q.setRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw);
+      localizer_pose_msg.header.frame_id = "/map";
+      localizer_pose_msg.header.stamp = current_scan_time;
+      localizer_pose_msg.pose.position.x = localizer_pose.x;
+      localizer_pose_msg.pose.position.y = localizer_pose.y;
+      localizer_pose_msg.pose.position.z = localizer_pose.z;
+      localizer_pose_msg.pose.orientation.x = localizer_q.x();
+      localizer_pose_msg.pose.orientation.y = localizer_q.y();
+      localizer_pose_msg.pose.orientation.z = localizer_q.z();
+      localizer_pose_msg.pose.orientation.w = localizer_q.w();
       
       predict_pose_pub.publish(predict_pose_msg);
       ndt_pose_pub.publish(ndt_pose_msg);
       current_pose_pub.publish(current_pose_msg);
       control_pose_pub.publish(control_pose_msg);
+      localizer_pose_pub.publish(localizer_pose_msg);
 
       // Send TF "/velodyne" to "/map"
       transform.setOrigin(tf::Vector3(current_pose.x, current_pose.y, current_pose.z));
@@ -899,11 +928,11 @@ int main(int argc, char **argv)
     private_nh.getParam("tf_pitch", _tf_pitch);
     private_nh.getParam("tf_roll", _tf_roll);
 
-    Eigen::Translation3f scan_translation(_tf_x, _tf_y, _tf_z);
-    Eigen::AngleAxisf scan_rotation_x(_tf_roll, Eigen::Vector3f::UnitX());
-    Eigen::AngleAxisf scan_rotation_y(_tf_pitch, Eigen::Vector3f::UnitY());
-    Eigen::AngleAxisf scan_rotation_z(_tf_yaw, Eigen::Vector3f::UnitZ());
-    scan_transform = (scan_translation * scan_rotation_z * scan_rotation_y * scan_rotation_x).matrix();
+    Eigen::Translation3f base_link_to_localizer_translation(_tf_x, _tf_y, _tf_z);
+    Eigen::AngleAxisf base_link_to_localizer_rotation_x(_tf_roll, Eigen::Vector3f::UnitX());
+    Eigen::AngleAxisf base_link_to_localizer_rotation_y(_tf_pitch, Eigen::Vector3f::UnitY());
+    Eigen::AngleAxisf base_link_to_localizer_rotation_z(_tf_yaw, Eigen::Vector3f::UnitZ());
+    base_link_to_localizer_transform = (base_link_to_localizer_translation * base_link_to_localizer_rotation_z * base_link_to_localizer_rotation_y * base_link_to_localizer_rotation_x).matrix();
 
     // Updated in initialpose_callback or gnss_callback
     initial_pose.x = 0.0;
@@ -918,7 +947,8 @@ int main(int argc, char **argv)
     ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
     current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
     control_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
-    estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("estimate_twist", 1000);
+    localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 1000);
+    estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist", 1000);
     estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
     estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
     time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
