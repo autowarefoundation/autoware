@@ -55,6 +55,7 @@ import syslog
 import rtmgr
 import rospy
 import std_msgs.msg
+import ctypes
 from std_msgs.msg import Bool
 from decimal import Decimal
 from runtime_manager.msg import ConfigRcnn
@@ -85,6 +86,12 @@ from runtime_manager.msg import indicator_cmd
 from runtime_manager.msg import lamp_cmd
 from runtime_manager.msg import traffic_light
 from runtime_manager.msg import adjust_xy
+
+libc = ctypes.CDLL("libc.so.6")
+SCHED_OTHER = ctypes.c_int(0)
+SCHED_FIFO = ctypes.c_int(1)
+SCHED_RR = ctypes.c_int(2)
+
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -772,6 +779,14 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
 		cpus = [ i for i in range(psutil.NUM_CPUS) if cpu_chks[i] ]
 		nice = self.param_value_get(pdic, prm, 'nice', 0)
+
+		d = { 'OTHER':SCHED_OTHER, 'FIFO':SCHED_FIFO, 'RR':SCHED_RR }
+		policy = SCHED_OTHER
+		priority = 0
+		if self.param_value_get(pdic, prm, 'real_time', False):
+			policy = d.get(self.param_value_get(pdic, prm, 'policy', 'FIFO'), SCHED_FIFO)
+			priority = self.param_value_get(pdic, prm, 'prio', 0)
+
 		procs = [ proc ] + proc.get_children(recursive=True)
 		for proc in procs:
 			print 'pid={}'.format(proc.pid)
@@ -783,6 +798,11 @@ class MyFrame(rtmgr.MyFrame):
 				print 'cpus {} -> {}'.format(proc.get_cpu_affinity(), cpus)
 				if set_process_cpu_affinity(proc, cpus) is False:
 					print 'Err set_process_cpu_affinity()'
+
+			policy_str = next( (k for (k,v) in d.items() if v == policy), '?')
+			print 'sched policy={} prio={}'.format(policy_str, priority)
+			if set_scheduling_policy(proc, policy, priority) is False:
+				print 'Err scheduling_policy()'
 
 	def param_value_get(self, pdic, prm, name, def_ret=None):
 		def_ret = self.param_default_value_get(prm, name, def_ret)
@@ -2936,6 +2956,11 @@ def set_process_cpu_affinity(proc, cpus):
 	except Exception:
 		return False
 	return True
+
+def set_scheduling_policy(proc, policy, priority):
+	param = ctypes.c_int(priority)
+	err = libc.sched_setscheduler(proc.pid, policy, ctypes.byref(param))
+	return err == 0
 
 if __name__ == "__main__":
 	path = rtmgr_src_dir() + 'btnrc'

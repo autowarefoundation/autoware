@@ -326,15 +326,22 @@ sys_gui:
   real_time:
     flags         : [ nl, left ]
     border        : 8
+  policy   :
+    border        : 16
+    flags         : [ left ]
+    depend        : real_time
   prio     :
     border        : 16
-    flags         : [ left ]
+    flags         : [ left, nl ]
+    depend        : real_time
   period   :
     border        : 16
-    flags         : [ left ]
+    flags         : [ top, left ]
+    depend        : real_time
   budget   :
     border        : 16
-    flags         : [ left ]
+    flags         : [ top, left ]
+    depend        : real_time
 
 params :
   - name  : sys
@@ -352,6 +359,12 @@ params :
       label    : Real-Time
       kind     : checkbox
       v        : False
+    - name     : policy
+      label    : Policy
+      kind     : menu
+      choices  : [ FIFO, RR ]
+      choices_type : str
+      v        : fifo
     - name     : prio
       label    : 'prio:'
       kind     : num
