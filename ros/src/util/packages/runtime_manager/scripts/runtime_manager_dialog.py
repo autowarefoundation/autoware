@@ -55,6 +55,7 @@ import syslog
 import rtmgr
 import rospy
 import std_msgs.msg
+import ctypes
 from std_msgs.msg import Bool
 from decimal import Decimal
 from runtime_manager.msg import ConfigRcnn
@@ -85,6 +86,12 @@ from runtime_manager.msg import indicator_cmd
 from runtime_manager.msg import lamp_cmd
 from runtime_manager.msg import traffic_light
 from runtime_manager.msg import adjust_xy
+
+libc = ctypes.CDLL("libc.so.6")
+SCHED_OTHER = ctypes.c_int(0)
+SCHED_FIFO = ctypes.c_int(1)
+SCHED_RR = ctypes.c_int(2)
+
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -136,6 +143,21 @@ class MyFrame(rtmgr.MyFrame):
 				msg = msg if msg else std_msgs.msg.Float32
 				attr = attr if attr else 'data'
 				rospy.Subscriber(topic, msg, self.exec_time_callback, callback_args=(key, attr))
+
+		#
+		# for Setup tab
+		#
+		tab = self.tab_setup
+		self.all_tabs.append(tab)
+
+		setup_cmd = {}
+		self.all_cmd_dics.append(setup_cmd)
+		dic = self.load_yaml('setup.yaml')
+		
+		self.add_params(dic.get('params', []))
+		self.setup_buttons(dic.get('buttons', {}), setup_cmd)
+		for nm in [ 'setup_tf', 'vehicle_model' ]:
+			self.set_param_panel(self.obj_get('button_' + nm), self.obj_get('panel_' + nm))
 
 		#
 		# for Map tab
@@ -447,7 +469,7 @@ class MyFrame(rtmgr.MyFrame):
 		save_dic = {}
 		for (name, pdic) in self.load_dic.items():
 			if pdic and pdic != {}:
-				prm = get_top([ cfg.get('param') for cfg in self.config_dic.values() if cfg.get('name') == name ], {})
+				prm = next( (cfg.get('param') for cfg in self.config_dic.values() if cfg.get('name') == name), {})
 				no_saves = prm.get('no_save_vars', [])
 				pdic = pdic.copy()
 				for k in pdic.keys():
@@ -483,7 +505,8 @@ class MyFrame(rtmgr.MyFrame):
 
 	def setup_buttons(self, d, run_dic):
 		for (k,d2) in d.items():
-			obj = get_top( self.key_objs_get([ 'button_', 'button_launch_', 'checkbox_' ], k) )
+			pfs = [ 'button_', 'button_launch_', 'checkbox_' ]
+			obj = next( (self.obj_get(pf+k) for pf in pfs if self.obj_get(pf+k)), None)
 			if not obj:
 				s = 'button_launch_' + k
 				setattr(self, s, s)
@@ -572,14 +595,14 @@ class MyFrame(rtmgr.MyFrame):
 		msg = std_msgs.msg.Bool(False)
 		for k in gdic.get('stat_topic', []):
 			# exec_time off
-			if get_top([ dic for dic in exec_time.values() if k in dic ]):
+			if next( (dic for dic in exec_time.values() if k in dic), None):
 				self.exec_time_callback(std_msgs.msg.Float32(0), (k, 'data'))
 			else:
 				self.stat_callback(msg, k)
 
 		# Quick Start tab, exec_time off
 		obj_nm = self.name_get(obj)
-		nm = get_top([ nm for nm in qs_nms if 'button_' + nm + '_qs' == obj_nm ])
+		nm = next( (nm for nm in qs_nms if 'button_' + nm + '_qs' == obj_nm), None)
 		for key in exec_time.get(nm, {}):
 			self.exec_time_callback(std_msgs.msg.Float32(0), (key, 'data'))
 
@@ -600,7 +623,7 @@ class MyFrame(rtmgr.MyFrame):
 	def exec_time_callback(self, msg, (key, attr)):
 		msec = int(getattr(msg, attr, 0))
 		exec_time = self.qs_dic.get('exec_time', {})
-		(nm, dic) = get_top([ (nm, dic) for (nm, dic) in exec_time.items() if key in dic ])
+		(nm, dic) = next( ( (nm, dic) for (nm, dic) in exec_time.items() if key in dic), None)
 		dic[ key ] = msec
 		lb = self.obj_get('label_' + nm + '_qs')
 		if lb:
@@ -706,6 +729,12 @@ class MyFrame(rtmgr.MyFrame):
 				if var.get('kind') == 'path':
 					str_v = path_expand_cmd(str_v)
 					str_v = os.path.expandvars(os.path.expanduser(str_v))
+
+					relpath_from = var.get('relpath_from')
+					if relpath_from:
+						relpath_from = path_expand_cmd(relpath_from)
+						relpath_from = os.path.expandvars(os.path.expanduser(relpath_from))
+						str_v = os.path.relpath(str_v, relpath_from)
 				add += delim + str_v
 			if add != '':
 				s += add + ' '
@@ -716,7 +745,7 @@ class MyFrame(rtmgr.MyFrame):
 		if info is None:
 			sys_prm = self.get_param('sys')
 			prm_chk = lambda prm : prm is sys_prm if sys else prm is not sys_prm
-			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj and prm_chk(v.get('param')) ])
+			info = next( ( v for v in self.config_dic.values() if v.get('obj') is obj and prm_chk(v.get('param')) ), None)
 			if info is None:
 				return (None, None, None)
 		pdic = info.get('pdic')
@@ -729,8 +758,8 @@ class MyFrame(rtmgr.MyFrame):
 		return gdic if gdic else def_ret
 
 	def cfg_prm_to_obj(self, arg_dic):
-		return get_top( [ d.get('obj') for d in self.config_dic.values() \
-			if all( [ d.get(k) == v for (k,v) in arg_dic.items() ] ) ] )
+		return next( ( d.get('obj') for d in self.config_dic.values() \
+			if all( [ d.get(k) == v for (k,v) in arg_dic.items() ] ) ), None)
 
 	def update_func(self, pdic, gdic, prm):
 		pdic_empty = (pdic == {})
@@ -771,6 +800,14 @@ class MyFrame(rtmgr.MyFrame):
 		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
 		cpus = [ i for i in range(psutil.NUM_CPUS) if cpu_chks[i] ]
 		nice = self.param_value_get(pdic, prm, 'nice', 0)
+
+		d = { 'OTHER':SCHED_OTHER, 'FIFO':SCHED_FIFO, 'RR':SCHED_RR }
+		policy = SCHED_OTHER
+		priority = 0
+		if self.param_value_get(pdic, prm, 'real_time', False):
+			policy = d.get(self.param_value_get(pdic, prm, 'policy', 'FIFO'), SCHED_FIFO)
+			priority = self.param_value_get(pdic, prm, 'prio', 0)
+
 		procs = [ proc ] + proc.get_children(recursive=True)
 		for proc in procs:
 			print 'pid={}'.format(proc.pid)
@@ -783,12 +820,17 @@ class MyFrame(rtmgr.MyFrame):
 				if set_process_cpu_affinity(proc, cpus) is False:
 					print 'Err set_process_cpu_affinity()'
 
+			policy_str = next( (k for (k,v) in d.items() if v == policy), '?')
+			print 'sched policy={} prio={}'.format(policy_str, priority)
+			if set_scheduling_policy(proc, policy, priority) is False:
+				print 'Err scheduling_policy()'
+
 	def param_value_get(self, pdic, prm, name, def_ret=None):
 		def_ret = self.param_default_value_get(prm, name, def_ret)
 		return pdic.get(name, def_ret)
 
 	def param_default_value_get(self, prm, name, def_ret=None):
-		return get_top([ var.get('v') for var in prm.get('vars') if var.get('name') == name ], def_ret)
+		return next( (var.get('v') for var in prm.get('vars') if var.get('name') == name ), def_ret)
 
 	def update_depend_enable(self, pdic, gdic, prm):
 		for var in prm.get('vars', []):
@@ -1464,17 +1506,17 @@ class MyFrame(rtmgr.MyFrame):
 		return gdic
 
 	def get_cfg_obj(self, obj):
-		return get_top( [ k for (k,v) in self.config_dic.items() if v['obj'] is obj ] )
+		return next( (k for (k,v) in self.config_dic.items() if v['obj'] is obj), None)
 
 	def add_cfg_info(self, cfg_obj, obj, name, pdic, gdic, run_disable, prm):
 		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'gdic':gdic, 
 					       'run_disable':run_disable , 'param':prm }
 
 	def get_param(self, prm_name):
-		return get_top( [ prm for prm in self.params if prm['name'] == prm_name ] )
+		return next( (prm for prm in self.params if prm['name'] == prm_name), None)
 
 	def obj_to_cmd_dic(self, obj):
-		return get_top( [ cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic ] )
+		return next( (cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic), None)
 
 	def obj_to_cmd_dic_cmd_proc(self, obj):
 		cmd_dic = self.obj_to_cmd_dic(obj)
@@ -1697,7 +1739,7 @@ class MyFrame(rtmgr.MyFrame):
 		return get_top(self.alias_grp_get(obj), obj)
 
 	def alias_grp_get(self, obj):
-		return get_top([ grp for grp in self.alias_grps if obj in grp ], [])
+		return next( (grp for grp in self.alias_grps if obj in grp), [])
 
 	def create_tree(self, parent, items, tree, item, cmd_dic):
 		name = items.get('name', '')
@@ -1794,7 +1836,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
-			obj = get_top( [ obj for (obj, v) in cmd_dic.items() if proc in v ] )
+			obj = next( (obj for (obj, v) in cmd_dic.items() if proc in v), None)
 			if obj:
 				return (cmd_dic, obj)
 		return (None, None)
@@ -1956,19 +1998,19 @@ class MyFrame(rtmgr.MyFrame):
 		name = self.name_get(obj)
 		if name is None:
 			return (None, None)
-		return get_top( [ ( name[:len(pf)], name[len(pf):] ) for pf in pfs if name[:len(pf)] == pf ] )
+		return next( ( ( name[:len(pf)], name[len(pf):] ) for pf in pfs if name[:len(pf)] == pf ), None)
 
 	def obj_key_get(self, obj, pfs):
 		name = self.name_get(obj)
 		if name is None:
 			return None
-		return get_top( [ name[len(pf):] for pf in pfs if name[:len(pf)] == pf ] )
+		return next( (name[len(pf):] for pf in pfs if name[:len(pf)] == pf), None)
 
 	def key_objs_get(self, pfs, key):
 		return [ self.obj_get(pf + key) for pf in pfs if self.obj_get(pf + key) ]
 
 	def name_get(self, obj):
-		return get_top( [ nm for nm in dir(self) if getattr(self, nm) is obj ] )
+		return next( (nm for nm in dir(self) if getattr(self, nm) is obj), None)
 
 	def val_get(self, name):
 		obj = self.obj_get(name)
@@ -1980,7 +2022,7 @@ class MyFrame(rtmgr.MyFrame):
 		return getattr(self, name, None)
 
 	def key_get(self, dic, val):
-		return get_top( [ k for (k,v) in dic.items() if v == val ] )
+		return next( (k for (k,v) in dic.items() if v == val), None)
 
 #class MyDialog(rtmgr.MyDialog):
 #	def __init__(self, *args, **kwds):
@@ -2024,7 +2066,7 @@ class ParamPanel(wx.Panel):
 		self.prm = kwds.pop('prm')
 		wx.Panel.__init__(self, *args, **kwds)
 
-		obj = get_top( [ v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm ] )
+		obj = next( (v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm), None)
 		(_, _, proc) = self.frame.obj_to_cmd_dic_cmd_proc(obj)
 
 		hszr = None
@@ -2935,6 +2977,11 @@ def set_process_cpu_affinity(proc, cpus):
 	except Exception:
 		return False
 	return True
+
+def set_scheduling_policy(proc, policy, priority):
+	param = ctypes.c_int(priority)
+	err = libc.sched_setscheduler(proc.pid, policy, ctypes.byref(param))
+	return err == 0
 
 if __name__ == "__main__":
 	path = rtmgr_src_dir() + 'btnrc'
