@@ -1,0 +1,10 @@
+Header header
+time image_raw
+time points_raw
+time image_obj
+time image_obj_ranged
+time image_obj_tracked
+time current_pose
+time obj_label
+time cluster_centroids
+time obj_pose

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sync)
+project(synchronization)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -18,12 +18,22 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 
 #set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+add_message_files(
+  FILES
+  time_monitor.msg
+  time_diff.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS cv_tracker points2image# scan2image
+  CATKIN_DEPENDS cv_tracker points2image
 )
 ###########
 ## Build ##
@@ -37,20 +47,20 @@ add_dependencies(sync_drivers sync_drivers_generate_messages_cpp)
 
 add_executable(sync_car_range_fusion computing/perception/detection/packages/cv_tracker/nodes/range_fusion/sync_car_range_fusion.cpp)
 target_link_libraries(sync_car_range_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_car_range_fusion sync_car_range_fusion_generate_messages_cpp)
+add_dependencies(sync_car_range_fusion synce_fusion_generate_messages_cpp)
 
 add_executable(sync_car_track computing/perception/detection/packages/cv_tracker/nodes/kf_track/sync_car_track.cpp)
 target_link_libraries(sync_car_track ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_car_track sync_car_track_generate_messages_cpp)
+add_dependencies(sync_car_track sync_generate_messages_cpp)
 
 add_executable(sync_car_obj_reproj computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/sync_car_obj_reproj.cpp)
 target_link_libraries(sync_car_obj_reproj ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_car_obj_reproj sync_car_obj_reproj_generate_messages_cpp)
+add_dependencies(sync_car_obj_reproj sync_generate_messages_cpp)
 
 add_executable(sync_car_obj_fusion computing/perception/detection/packages/lidar_tracker/nodes/obj_fusion/sync_car_obj_fusion.cpp)
 target_link_libraries(sync_car_obj_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_car_obj_fusion sync_car_obj_fusion_generate_messages_cpp)
+add_dependencies(sync_car_obj_fusion sync_generate_messages_cpp)
 
 add_executable(time_monitor time_monitor.cpp)
 target_link_libraries(time_monitor ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(time_monitor time_monitor_generate_messages_cpp)
+add_dependencies(time_monitor sync_generate_messages_cpp)

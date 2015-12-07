@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>sync</name>
+  <name>synchronization</name>
   <version>0.0.0</version>
   <description>The sync package</description>
   <maintainer email="yukky@ubi.cs.ritsumei.ac.jp">Yukihiro SAITO</maintainer>
