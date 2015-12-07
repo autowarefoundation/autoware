@@ -50,6 +50,7 @@
 #include <opencv/cxcore.h>
 
 #include <std_msgs/Float64.h>
+#include <std_msgs/Header.h>
 #include <scan2image/ScanImage.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Pose.h>
@@ -199,10 +200,10 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 }
 
 //wrap SendData class
-void locatePublisher(vector<OBJPOS> car_position_vector){
+void locatePublisher(vector<OBJPOS> car_position_vector, std_msgs::Header image_obj_tracked_header){
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
-  
+
   //  geometry_msgs::PoseArray pose_msg;
   cv_tracker::obj_label obj_label_msg;
 
@@ -225,8 +226,8 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   ndtGetFlag = false;
 
   //If position is over range,skip loop
-  if((!(mloc.X > 180.0 && mloc.X < -180.0 ) || 
-      (mloc.Y > 180.0 && mloc.Y < -180.0 ) || 
+  if((!(mloc.X > 180.0 && mloc.X < -180.0 ) ||
+      (mloc.Y > 180.0 && mloc.Y < -180.0 ) ||
       mloc.Z < 0.0) ){
 
     //get data of car and pedestrian recognizing
@@ -250,31 +251,31 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
 
   vector<OBJPOS> cp_vector;
   OBJPOS cp;
-  
+
   object_type = fused_objects.type;
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   if(gnssGetFlag || ndtGetFlag) {
     for (unsigned int i = 0; i < fused_objects.rect_ranged.size(); i++){
-      
+
       //If distance is zero, we cannot calculate position of recognized object
       //so skip loop
       if(fused_objects.rect_ranged.at(i).range <= 0) continue;
-      
+
       cp.x1 = fused_objects.rect_ranged.at(i).rect.x;//x-axis of the upper left
       cp.y1 = fused_objects.rect_ranged.at(i).rect.y;//x-axis of the lower left
       cp.x2 = fused_objects.rect_ranged.at(i).rect.width;//x-axis of the upper right
       cp.y2 = fused_objects.rect_ranged.at(i).rect.height;//x-axis of the lower left
-      
+
       cp.distance = fused_objects.rect_ranged.at(i).range;
-      
+
       //printf("\ncar : %d,%d,%d,%d,%f\n",cp.x1,cp.y1,cp.x2,cp.y2,cp.distance);
-      
-      cp_vector.push_back(cp);      
+
+      cp_vector.push_back(cp);
     }
-    
-    locatePublisher(cp_vector);
-    
+
+    locatePublisher(cp_vector, fused_objects.header);
+
   }
 }
 
@@ -310,8 +311,8 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
 }
 
 int main(int argc, char **argv){
-  
-  ros::init(argc ,argv, "obj_reproj") ;  
+
+  ros::init(argc ,argv, "obj_reproj") ;
   cout << "obj_reproj" << endl;
 
   ready_ = false;
@@ -334,7 +335,7 @@ int main(int argc, char **argv){
   */
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/current_pose", 1, position_getter_ndt);
-  pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
+  pub = n.advertise<cv_tracker::obj_label>("obj_label",1);
 
   ros::Subscriber projection = n.subscribe("/projection_matrix", 1, projection_callback);
 
@@ -346,13 +347,13 @@ int main(int argc, char **argv){
 
   n.param<std::string>("/scan2image/camera_yaml", camera_yaml,STR(CAMERA_YAML));
 
-  cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ); 
+  cv::FileStorage camera_file(camera_yaml.c_str(), cv::FileStorage::READ);
   if(!camera_file.isOpened()){
     fprintf(stderr,"%s, : cannot open file\n",camera_yaml.c_str());
     exit(EXIT_FAILURE);
   }
-  camera_file["intrinsic"] >> Cintrinsic; 
-  camera_file.release(); 
+  camera_file["intrinsic"] >> Cintrinsic;
+  camera_file.release();
 
   double fkx = Cintrinsic.at<float>(0,0);
   double fky = Cintrinsic.at<float>(1,1);
@@ -372,13 +373,13 @@ int main(int argc, char **argv){
       exit(-1);
   }
 
-  cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ); 
+  cv::FileStorage lidar_3d_file(lidar_3d_yaml.c_str(), cv::FileStorage::READ);
   if(!lidar_3d_file.isOpened()){
     fprintf(stderr,"%s, : cannot open file\n",lidar_3d_yaml.c_str());
     exit(EXIT_FAILURE);
   }
-  lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic; 
-  lidar_3d_file.release(); 
+  lidar_3d_file["CameraExtrinsicMat"] >> Lintrinsic;
+  lidar_3d_file.release();
 */
 
 

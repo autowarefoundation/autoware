@@ -41,6 +41,7 @@
 #include <cv_tracker/image_obj_ranged.h>
 
 #include <cv_tracker/image_obj_tracked.h>
+#include <std_msgs/Header.h>
 
 //TRACKING STUFF
 #include <opencv2/core/core.hpp>
@@ -103,6 +104,8 @@ std::string object_type;
 std::vector<float> _ranges;
 std::vector<float> _min_heights;
 std::vector<float> _max_heights;
+
+std_msgs::Header    image_objects_header;
 
 bool _ready =false;
 
@@ -826,8 +829,8 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 	copy(obj_id.begin(), obj_id.end(), back_inserter(kf_objects_msg.obj_id)); // copy vector
 	copy(lifespan.begin(), lifespan.end(), back_inserter(kf_objects_msg.lifespan)); // copy vector
 
-	kf_objects_msg.header = image_source.header;
-
+//	kf_objects_msg.header = image_source.header;
+	kf_objects_msg.header = image_objects_header;
 	image_objects.publish(kf_objects_msg);
 
 	//cout << "."<< endl;
@@ -854,6 +857,7 @@ void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
 	unsigned int num = image_objects_msg.obj.size();
 	std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
 	object_type = image_objects_msg.type;
+    image_objects_header = image_objects_msg.header;
 	//points are X,Y,W,H and repeat for each instance
 	_dpm_detections.clear();
 	_ranges.clear();

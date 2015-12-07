@@ -68,6 +68,7 @@ class RosTrackerApp
 	ros::Publisher 		publisher_tracked_objects_;//ROS
 	ros::NodeHandle 	node_handle_;
 
+    std_msgs::Header    image_objects_header;
 	std::string 		tracked_type_;
 
 	bool 				ready_;
@@ -282,7 +283,8 @@ public:
 		copy(obj_id.begin(), obj_id.end(), back_inserter(ros_objects_msg.obj_id)); // copy vector
 		copy(lifespan.begin(), lifespan.end(), back_inserter(ros_objects_msg.lifespan)); // copy vector
 
-		ros_objects_msg.header = image_source.header;
+//		ros_objects_msg.header = image_source.header;
+		ros_objects_msg.header = image_objects_header;
 
 		publisher_tracked_objects_.publish(ros_objects_msg);
 
@@ -299,6 +301,7 @@ public:
 			return;
 		unsigned int num = image_objects_msg.obj.size();
 		std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
+        image_objects_header = image_objects_msg.header;
 		tracked_type_ = image_objects_msg.type;
 		//points are X,Y,W,H and repeat for each instance
 		obj_detections_.clear();
