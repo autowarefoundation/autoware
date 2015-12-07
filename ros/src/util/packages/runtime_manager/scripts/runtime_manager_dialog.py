@@ -145,6 +145,21 @@ class MyFrame(rtmgr.MyFrame):
 				rospy.Subscriber(topic, msg, self.exec_time_callback, callback_args=(key, attr))
 
 		#
+		# for Setup tab
+		#
+		tab = self.tab_setup
+		self.all_tabs.append(tab)
+
+		setup_cmd = {}
+		self.all_cmd_dics.append(setup_cmd)
+		dic = self.load_yaml('setup.yaml')
+		
+		self.add_params(dic.get('params', []))
+		self.setup_buttons(dic.get('buttons', {}), setup_cmd)
+		for nm in [ 'setup_tf', 'vehicle_model' ]:
+			self.set_param_panel(self.obj_get('button_' + nm), self.obj_get('panel_' + nm))
+
+		#
 		# for Map tab
 		#
 		tab = self.tab_map
@@ -714,6 +729,12 @@ class MyFrame(rtmgr.MyFrame):
 				if var.get('kind') == 'path':
 					str_v = path_expand_cmd(str_v)
 					str_v = os.path.expandvars(os.path.expanduser(str_v))
+
+					relpath_from = var.get('relpath_from')
+					if relpath_from:
+						relpath_from = path_expand_cmd(relpath_from)
+						relpath_from = os.path.expandvars(os.path.expanduser(relpath_from))
+						str_v = os.path.relpath(str_v, relpath_from)
 				add += delim + str_v
 			if add != '':
 				s += add + ' '
