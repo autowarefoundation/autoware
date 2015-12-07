@@ -38,53 +38,116 @@
 #include "sensor_msgs/PointCloud2.h"
 
 /* ----mode---- */
-#define SELECT_MODE 1
-
+#define SELECT_MODE 0
+#define PUBLISH_RATE 5
 /* ----var---- */
 /* common var */
+#if SELECT_MODE
 bool buf_flag;
-
+pthread_mutex_t mutex;
+#endif
 /* user var */
 #if SELECT_MODE
 boost::circular_buffer<sensor_msgs::Image> image_raw_ringbuf(10);
 boost::circular_buffer<sensor_msgs::PointCloud2> points_raw_ringbuf(10);
 #else
-
+sensor_msgs::Image image_raw_buf;
 #endif
 ros::Publisher points_raw__pub;
 ros::Publisher image_raw__pub;
 
+#if SELECT_MODE
 double fabs_time_diff(std_msgs::Header *timespec1, std_msgs::Header *timespec2)
 {
     double time1 = (double)timespec1->stamp.sec + (double)timespec1->stamp.nsec/1000000000L;
     double time2 = (double)timespec2->stamp.sec + (double)timespec2->stamp.nsec/1000000000L;
     return fabs(time1 - time2);
 }
-
+#endif
 
 void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg)
 {
+#if SELECT_MODE
+    pthread_mutex_lock(&mutex);
     image_raw_ringbuf.push_front(*image_raw_msg);
+    pthread_mutex_unlock(&mutex);
+#else
+    image_raw_buf = *image_raw_msg;
+#endif
 }
 
 void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg)
 {
+#if SELECT_MODE
+    pthread_mutex_lock(&mutex);
     points_raw_ringbuf.push_front(*points_raw_msg);
-    image_raw__pub.publish(image_raw_ringbuf.front());
+    pthread_mutex_unlock(&mutex);
+#else
+    image_raw__pub.publish(image_raw_buf);
     points_raw__pub.publish(points_raw_msg);
+#endif
 }
+
+#if SELECT_MODE
+void* thread(void* args) {
+    ros::Rate loop_rate(PUBLISH_RATE);
+    while (ros::ok()) {
+        pthread_mutex_lock(&mutex);
+        image_raw__pub.publish(image_raw_ringbuf.front());
+        points_raw__pub.publish(points_raw_ringbuf.front());
+        pthread_mutex_unlock(&mutex);
+        loop_rate.sleep();
+    }
+    return NULL;
+}
+#endif
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "sync_drivers");
-  ros::NodeHandle nh("~");
+  ros::NodeHandle nh;
+  ros::NodeHandle private_nh("~");
 
-  ros::Subscriber image_raw_sub = nh.subscribe("/image_raw", 1, image_raw_callback);
-  ros::Subscriber points_raw_sub = nh.subscribe("/points_raw", 1, points_raw_callback);
-  ros::Publisher image_raw__pub = nh.advertise<sensor_msgs::Image>("image_raw_", 1);
-  ros::Publisher points_raw__pub = nh.advertise<sensor_msgs::PointCloud2>("points_raw_", 1);
+#if SELECT_MODE
+    /* create server thread */
+    pthread_t th;
+    pthread_create(&th, NULL, thread, (void *)NULL );
+#endif
+
+  std::string image_topic;
+  std::string points_topic;
+  if (private_nh.getParam("image_node", image_topic))
+  {
+		ROS_INFO("Setting image node to %s", image_topic.c_str());
+  }
+  else
+  {
+      ROS_INFO("No image node received, defaulting to image_obj, you can use _image_node:=YOUR_TOPIC");
+      image_topic = "/image_raw";
+  }
+  if (private_nh.getParam("points_node", points_topic))
+  {
+		ROS_INFO("Setting points node to %s", points_topic.c_str());
+  }
+  else
+  {
+      ROS_INFO("No points node received, defaulting to vscan_image, you can use _points_node:=YOUR_TOPIC");
+      points_topic = "/points_raw";
+  }
+
+  ros::Subscriber image_raw_sub = nh.subscribe(image_topic, 1, image_raw_callback);
+  ros::Subscriber points_raw_sub = nh.subscribe(points_topic, 1, points_raw_callback);
+  image_raw__pub = private_nh.advertise<sensor_msgs::Image>("image_raw_", 1);
+  points_raw__pub = private_nh.advertise<sensor_msgs::PointCloud2>("points_raw_", 1);
 
   ros::spin();
+
+#if SELECT_MODE
+  /* shutdown child thread */
+  ROS_INFO("wait until shutdown a thread");
+  pthread_kill(th, SIGINT);
+  pthread_join(th, NULL);
+#endif
 
   return 0;
 }

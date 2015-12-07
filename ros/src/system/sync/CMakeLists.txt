@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   cv_tracker
+  lidar_tracker
+  geometry_msgs
+  visualization_msgs
   points2image
 )
 find_package(OpenCV REQUIRED)
@@ -47,3 +50,7 @@ add_dependencies(sync_car_obj_reproj sync_car_obj_reproj_generate_messages_cpp)
 add_executable(sync_car_obj_fusion computing/perception/detection/packages/lidar_tracker/nodes/obj_fusion/sync_car_obj_fusion.cpp)
 target_link_libraries(sync_car_obj_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(sync_car_obj_fusion sync_car_obj_fusion_generate_messages_cpp)
+
+add_executable(time_monitor time_monitor.cpp)
+target_link_libraries(time_monitor ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(time_monitor time_monitor_generate_messages_cpp)
