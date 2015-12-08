@@ -70,10 +70,11 @@ params:
 
   - name: vehicle_model
     vars:
-    - name        : model_patch
+    - name        : model_path
       kind        : path
       relpath_from: $(rospack find model_publisher)
       v           : ''
       cmd_param   :
         dash       : ''
         delim      : ':=package://model_publisher/'
+        default    : $(rospack find model_publisher)/../../../.config/model/default.dae
