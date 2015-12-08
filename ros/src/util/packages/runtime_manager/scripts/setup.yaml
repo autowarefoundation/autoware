@@ -75,6 +75,6 @@ params:
       relpath_from: $(rospack find model_publisher)
       v           : ''
       cmd_param   :
+        only_enable: True
         dash       : ''
         delim      : ':=package://model_publisher/'
-        default    : $(rospack find model_publisher)/../../../.config/model/default.dae
