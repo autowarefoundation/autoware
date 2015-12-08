@@ -10,7 +10,7 @@
   <node pkg="tf" type="static_transform_publisher" name="hokuyo_to_base_link" args="0 0 -1.0 0 0 0 /3d_urg /base_link 10" unless="$(arg use_velodyne)"/>
 
   <!-- rosrun ndt_localizer ndt_matching _sensor:="velodyne" -->
-  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
+  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log">
     <param name="scanner" value="$(arg scanner)" />
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="queue_size" value="$(arg queue_size)"/>
