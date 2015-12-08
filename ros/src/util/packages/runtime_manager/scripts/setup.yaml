@@ -54,7 +54,7 @@ params:
         delim   : ''
     - name     : frame_id
       kind     : hide
-      v        : /baselink
+      v        : /base_link
       cmd_param:
         delim   : ''
     - name     : child_frame_id

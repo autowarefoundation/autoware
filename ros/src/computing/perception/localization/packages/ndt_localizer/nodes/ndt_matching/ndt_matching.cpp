@@ -921,12 +921,31 @@ int main(int argc, char **argv)
     private_nh.getParam("scanner", _scanner);
     private_nh.getParam("use_gnss", _use_gnss);
     private_nh.getParam("queue_size", _queue_size);
-    private_nh.getParam("tf_x", _tf_x);
-    private_nh.getParam("tf_y", _tf_y);
-    private_nh.getParam("tf_z", _tf_z);
-    private_nh.getParam("tf_yaw", _tf_yaw);
-    private_nh.getParam("tf_pitch", _tf_pitch);
-    private_nh.getParam("tf_roll", _tf_roll);
+
+    // TF listener
+    tf::TransformListener listener;
+    tf::StampedTransform transform;
+    try{
+      ros::Time now = ros::Time(0);
+      listener.waitForTransform("/base_link", "/velodyne", now, ros::Duration(10.0));
+      listener.lookupTransform("/base_link", "/velodyne", now, transform);
+    }
+    catch(tf::TransformException &ex){
+      ROS_ERROR("%s", ex.what());
+    }
+
+    tf::Matrix3x3 m(transform.getRotation());
+    _tf_x = transform.getOrigin().x();
+    _tf_y = transform.getOrigin().y();
+    _tf_z = transform.getOrigin().z();
+    m.getRPY(_tf_roll, _tf_pitch, _tf_yaw);
+
+    std::cout << "_tf_x: " << _tf_x << std::endl;
+    std::cout << "_tf_y: " << _tf_y << std::endl;
+    std::cout << "_tf_z: " << _tf_z << std::endl;
+    std::cout << "_tf_roll: " << _tf_roll << std::endl;
+    std::cout << "_tf_pitch: " << _tf_pitch << std::endl;
+    std::cout << "_tf_yaw: " << _tf_yaw << std::endl;
 
     Eigen::Translation3f base_link_to_localizer_translation(_tf_x, _tf_y, _tf_z);
     Eigen::AngleAxisf base_link_to_localizer_rotation_x(_tf_roll, Eigen::Vector3f::UnitX());
