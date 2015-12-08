@@ -45,45 +45,100 @@
 #include "cv_tracker/obj_label.h"
 #include "lidar_tracker/centroids.h"
 #include "visualization_msgs/MarkerArray.h"
+#include "synchronization/time_monitor.h"
+#include "synchronization/time_diff.h"
 
 /* ----var---- */
 /* common var */
 
 /* user var */
+class KeyPair
+{
+    boost::circular_buffer<ros::Time> sensor;
+    boost::circular_buffer<ros::Time> execution;
+
+public:
+    KeyPair() {
+        sensor.resize(1);
+        execution.resize(1);
+    }
+    void resize(int size) {
+        sensor.resize(size);
+        execution.resize(size);
+    }
+    void push_front(const ros::Time& sensor_time, const ros::Time& execution_time) {
+        sensor.push_front(sensor_time);
+        execution.push_front(execution_time);
+    }
+
+    ros::Time find(ros::Time sensor_time) {
+        boost::circular_buffer<ros::Time>::iterator it = sensor.begin();
+        for (int i = 0; it != sensor.end(); it++, i++) {
+            if (it->sec == sensor_time.sec && it->nsec == sensor_time.nsec) {
+                return execution.at(i); // find
+            }
+        }
+        ros::Time failed;
+        failed.sec = 0;
+        failed.nsec = 0;
+        return failed; // not find
+    }
+};
+
+
 class TimeManager
 {
-    std::vector<ros::Time> image_raw;
-    std::vector<ros::Time> points_raw;
-    std::vector<ros::Time> image_obj;
-    std::vector<ros::Time> image_obj_ranged;
-    std::vector<ros::Time> image_obj_tracked;
-    std::vector<ros::Time> current_pose;
-    std::vector<ros::Time> obj_label;
-    std::vector<ros::Time> cluster_centroids;
-    std::vector<ros::Time> obj_pose;
+    KeyPair image_raw_;
+    KeyPair points_raw_;
+    KeyPair image_obj_;
+    KeyPair image_obj_ranged_;
+    KeyPair image_obj_tracked_;
+    KeyPair current_pose_;
+    KeyPair obj_label_;
+    KeyPair cluster_centroids_;
+    KeyPair obj_pose_;
+    KeyPair time_diff_;
 
     ros::NodeHandle nh;
     ros::Subscriber image_raw_sub;
     ros::Subscriber points_raw_sub;
+    ros::Subscriber image_obj_sub;
     ros::Subscriber image_obj_tracked_sub;
     ros::Subscriber current_pose_sub;
-//  ros::Subscriber obj_label_sub;
     ros::Subscriber obj_label_sub;
     ros::Subscriber cluster_centroids_sub;
     ros::Subscriber obj_pose_sub;
+    ros::Subscriber time_diff_sub;
+
     ros::Publisher time_monitor_pub;
-    int seq;
+
+    double ros_time2msec(ros::Time time) {
+        return (double)time.sec*1000L + (double)time.nsec/1000000L;
+    }
+    double time_diff(ros::Time sensor_time, ros::Time execution_time) {
+        if (execution_time.sec == 0 && execution_time.nsec == 0) { // not find
+            return 0.0;
+        }
+
+        double time_diff = ros_time2msec(sensor_time) - ros_time2msec(execution_time);
+        if (time_diff <= 0)
+            return time_diff;
+        else
+            return 0.0;
+    }
 
 public:
     TimeManager(int);
     void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg);
     void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg);
+    void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg);
     void image_obj_ranged_callback(const cv_tracker::image_obj_ranged::ConstPtr& image_obj_ranged_msg);
     void image_obj_tracked_callback(const cv_tracker::image_obj_tracked::ConstPtr& image_obj_tracked_msg);
     void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg);
     void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) ;
     void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg);
     void obj_pose_callback(const lidar_tracker::centroids::ConstPtr& obj_pose_msg);
+    void time_diff_callback(const synchronization::time_diff::ConstPtr& time_diff_msg);
     void run();
 };
 
@@ -92,96 +147,81 @@ TimeManager::TimeManager(int buffer_size) {
     time_monitor_pub = nh.advertise<std_msgs::Time> ("time_monitor", 1);
     image_raw_sub = nh.subscribe("/image_raw", 1, &TimeManager::image_raw_callback, this);
     points_raw_sub = nh.subscribe("/points_raw", 1, &TimeManager::points_raw_callback, this);
+    image_obj_sub = nh.subscribe("/image_obj", 1, &TimeManager::image_obj_callback, this);
     image_obj_tracked_sub = nh.subscribe("/obj_car/image_obj_tracked", 1, &TimeManager::image_obj_tracked_callback, this);
     current_pose_sub = nh.subscribe("current_pose", 1, &TimeManager::current_pose_callback, this);
-//  ros::Subscriber obj_label_sub = nh.subscribe("/obj_person/obj_label", 1, TimeManager::obj_label_callback);
     obj_label_sub = nh.subscribe("/obj_car/obj_label", 1, &TimeManager::obj_label_callback, this);
     cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, &TimeManager::cluster_centroids_callback, this);
     obj_pose_sub = nh.subscribe("obj_pose", 1, &TimeManager::obj_pose_callback, this);
+    time_diff_sub = nh.subscribe("/time_diff", 1, &TimeManager::time_diff_callback, this);
 
-    image_raw.resize(buffer_size);
-    points_raw.resize(buffer_size);
-    image_obj.resize(buffer_size);
-    image_obj_ranged.resize(buffer_size);
-    image_obj_tracked.resize(buffer_size);
-    current_pose.resize(buffer_size);
-    obj_label.resize(buffer_size);
-    cluster_centroids.resize(buffer_size);
-
-    seq = 0;
+    image_raw_.resize(buffer_size);
+    points_raw_.resize(buffer_size);
+    image_obj_.resize(buffer_size);
+    image_obj_ranged_.resize(buffer_size);
+    image_obj_tracked_.resize(buffer_size);
+    current_pose_.resize(buffer_size);
+    obj_label_.resize(buffer_size);
+    cluster_centroids_.resize(buffer_size);
+    time_diff_.resize(buffer_size);
 }
 
 void TimeManager::image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg) {
-    static int i = 0;
-    if (i >= image_raw.size()) {
-        i = 0;
-    }
-    image_raw.at(i) = ros::Time::now();
-    i++;
+    image_raw_.push_front(image_raw_msg->header.stamp, ros::Time::now());
 }
 
 void TimeManager::points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg) {
-    static int i = 0;
-    if (i >= points_raw.size()) {
-        i = 0;
-    }
-    points_raw.at(i) = ros::Time::now();
-    i++;
+    points_raw_.push_front(points_raw_msg->header.stamp, ros::Time::now());
+}
+
+void TimeManager::image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
+    image_obj_.push_front(image_obj_msg->header.stamp, ros::Time::now());
 }
 
 void TimeManager::image_obj_ranged_callback(const cv_tracker::image_obj_ranged::ConstPtr& image_obj_ranged_msg) {
-    static int i = 0;
-    if (i >= image_obj_ranged.size()) {
-        i = 0;
-    }
-    image_obj_ranged.at(i) = ros::Time::now();
-    time_monitor_pub.publish(image_obj_ranged.at(i));
-    i++;
+    image_obj_ranged_.push_front(image_obj_ranged_msg->header.stamp, ros::Time::now());
 }
 
 void TimeManager::image_obj_tracked_callback(const cv_tracker::image_obj_tracked::ConstPtr& image_obj_tracked_msg) {
-    static int i = 0;
-    if (i >= image_obj_tracked.size()) {
-        i = 0;
-    }
-    image_obj_tracked.at(i) = ros::Time::now();
-    i++;
+    image_obj_tracked_.push_front(image_obj_tracked_msg->header.stamp, ros::Time::now());
 }
 
 void TimeManager::current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg) {
-    static int i = 0;
-    if (i >= current_pose.size()) {
-        i = 0;
-    }
-    current_pose.at(i) = ros::Time::now();
-    i++;
+    current_pose_.push_front(current_pose_msg->header.stamp, ros::Time::now());
 }
 
 void TimeManager::obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) {
-    static int i = 0;
-    if (i >= obj_label.size()) {
-        i = 0;
-    }
-    obj_label.at(i) = ros::Time::now();
-    i++;
+    obj_label_.push_front(obj_label_msg->header.stamp, ros::Time::now());
 }
 
 void TimeManager::cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg) {
-    static int i = 0;
-    if (i >= cluster_centroids.size()) {
-        i = 0;
-    }
-    cluster_centroids.at(i) = ros::Time::now();
-    i++;
+    cluster_centroids_.push_front(cluster_centroids_msg->header.stamp, ros::Time::now());
+}
+
+void TimeManager::time_diff_callback(const synchronization::time_diff::ConstPtr& time_diff_msg) {
+    ros::Time time_diff;
+    time_diff.sec = time_diff_msg->lidar.sec - time_diff_msg->camera.sec;
+    time_diff.nsec = time_diff_msg->lidar.nsec - time_diff_msg->camera.nsec;
+    time_diff_.push_front(time_diff_msg->header.stamp, time_diff);
 }
 
 void TimeManager::obj_pose_callback(const lidar_tracker::centroids::ConstPtr& obj_pose_msg) {
-    static int i = 0;
-    if (i >= obj_pose.size()) {
-        i = 0;
-    }
-    obj_pose.at(i) = ros::Time::now();
-    i++;
+    obj_pose_.push_front(obj_pose_msg->header.stamp, ros::Time::now());
+    synchronization::time_monitor time_monitor_msg;
+    time_monitor_msg.header.frame_id = "0";
+    time_monitor_msg.header.stamp = obj_pose_msg->header.stamp;
+
+    time_monitor_msg.image_raw = time_diff(obj_pose_msg->header.stamp, image_raw_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.points_raw = time_diff(obj_pose_msg->header.stamp, points_raw_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.image_obj = time_diff(obj_pose_msg->header.stamp, image_obj_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.image_obj_ranged = time_diff(obj_pose_msg->header.stamp, image_obj_ranged_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.image_obj_tracked = time_diff(obj_pose_msg->header.stamp, image_obj_tracked_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.current_pose = time_diff(obj_pose_msg->header.stamp, current_pose_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.obj_label = time_diff(obj_pose_msg->header.stamp, obj_label_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.cluster_centroids = time_diff(obj_pose_msg->header.stamp, cluster_centroids_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.obj_pose = time_diff(obj_pose_msg->header.stamp, obj_pose_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.time_diff = ros_time2msec(time_diff_.find(obj_pose_msg->header.stamp));
+    time_monitor_pub.publish(time_monitor_msg);
 }
 
 void TimeManager::run() {
@@ -190,21 +230,7 @@ void TimeManager::run() {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "time_monitor");
-#if 0
-  ros::NodeHandle nh();
-  ros::NodeHandle private_nh("~");
 
-  ros::Subscriber image_raw_sub = nh.subscribe("/image_raw", 1, image_raw_callback);
-  ros::Subscriber points_raw_sub = nh.subscribe("/points_raw", 1, points_raw_callback);
-  ros::Subscriber image_obj_tracked_sub = nh.subscribe("/obj_car/image_obj_tracked", 1, image_obj_tracked_callback);
-  ros::Subscriber current_pose_sub = nh.subscribe("current_pose", 1, current_pose_callback);
-//  ros::Subscriber obj_label_sub = nh.subscribe("/obj_person/obj_label", 1, obj_label_callback);
-  ros::Subscriber obj_label_sub = nh.subscribe("/obj_car/obj_label", 1, obj_label_callback);
-  ros::Subscriber cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, cluster_centroids_callback);
-  ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, obj_pose_callback);
-
-  ros::spin();
-#endif
   TimeManager time_manager(32);
   time_manager.run();
 
