@@ -724,6 +724,11 @@ params :
       min   : 0
       max   : 10
       v     : 1.3
+    - name  : deceleration_range
+      label : Deceleration Range (m)
+      min   : 0
+      max   : 10
+      v     : 1.7
     - name  : threshold_points
       label : Points Threshold
       min   : 0
@@ -733,7 +738,7 @@ params :
       label : Detection Height Top (m)
       min   : 0
       max   : 10
-      v     : 2.5
+      v     : 0.1
     - name  : detection_height_bottom
       label : Detection Height Bottom (m)
       min   : -10
@@ -754,6 +759,16 @@ params :
       min   : 0
       max   : 40
       v     : 3.0
+    - name  : deceleration_minimum
+      label : Deceleration Minimum (km/h)
+      min   : 0
+      max   : 40
+      v     : 5.0
+    - name  : temporal_waypoints_size
+      label : Temporal Waypoints (m)
+      min   : 0
+      max   : 150
+      v     : 100.0
 
   - name  : lane_follower_trajgen
     topic : /config/waypoint_follower

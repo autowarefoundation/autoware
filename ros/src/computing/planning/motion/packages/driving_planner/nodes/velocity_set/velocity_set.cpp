@@ -135,7 +135,7 @@ void PathVset::setTemporalWaypoints()
 {
   if (_closest_waypoint < 0)
     return;
-  static const int size = (int)(_temporal_waypoints_size/getInterval())+1;
+  int size = (int)(_temporal_waypoints_size/getInterval())+1;
 
   temporal_waypoints_.waypoints.clear();
   temporal_waypoints_.header = current_waypoints_.header;
@@ -332,6 +332,9 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   _decel = config->deceleration;
   _velocity_change_limit = kmph2mps(config->velocity_change_limit);
   _velocity_offset = kmph2mps(config->velocity_offset);
+  _deceleration_range = config->deceleration_range;
+  _deceleration_minimum = kmph2mps(config->deceleration_minimum);
+  _temporal_waypoints_size = config->temporal_waypoints_size;
 }
 
 void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
@@ -740,11 +743,6 @@ int main(int argc, char **argv)
 
     private_nh.param<bool>("sim_mode", g_sim_mode, false);
     ROS_INFO_STREAM("sim_mode : " << g_sim_mode);
-    private_nh.getParam("deceleration_range", _deceleration_range);
-    ROS_INFO_STREAM("deceleration_range : " << _deceleration_range);
-    private_nh.getParam("deceleration_minimum", _deceleration_minimum);
-    ROS_INFO_STREAM("deceleration_minimum : " << _deceleration_minimum);
-    _deceleration_minimum = kmph2mps(_deceleration_minimum);
 
 
     ros::Rate loop_rate(LOOP_RATE);
