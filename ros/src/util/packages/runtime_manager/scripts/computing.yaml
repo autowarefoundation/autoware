@@ -700,27 +700,27 @@ params :
         dash     : ''
         delim    : ':='
     - name  : velocity_limit
-      label : Velocity Limit
+      label : Velocity Limit (km/h)
       min   : 0
       max   : 60
       v     : 42.0
     - name  : others_distance
-      label : Others Distance
+      label : Others Distance (m)
       min   : 0
       max   : 50
       v     : 15.0
     - name  : cars_distance
-      label : Cars Distance
+      label : Cars Distance (m)
       min   : 0
       max   : 50
       v     : 15.0
     - name  : pedestrians_distance
-      label : Pedestrians Distance
+      label : Pedestrians Distance (m)
       min   : 0
       max   : 50
       v     : 10.0
     - name  : detection_range
-      label : Detection Range
+      label : Detection Range (m)
       min   : 0
       max   : 10
       v     : 1.3
@@ -730,12 +730,12 @@ params :
       max   : 30
       v     : 15
     - name  : detection_height_top
-      label : Detection Height Top
+      label : Detection Height Top (m)
       min   : 0
       max   : 10
       v     : 2.5
     - name  : detection_height_bottom
-      label : Detection Height Bottom
+      label : Detection Height Bottom (m)
       min   : -10
       max   : 0
       v     : -1.5
@@ -743,17 +743,17 @@ params :
       label : Deceleration (m/s^2)
       min   : 0
       max   : 5
-      v     : 1.5
-    - name  : decel_change_limit
-      label : Deceleration Change Limit
+      v     : 1.0
+    - name  : velocity_change_limit
+      label : Velocity Change Limit (km/h)
       min   : 5
       max   : 40
       v     : 15.0
-    - name  : accel_bias
-      label : Accel Bias
+    - name  : velocity_offset
+      label : Velocity Offset (km/h)
       min   : 0
       max   : 40
-      v     : 5.0
+      v     : 3.0
 
   - name  : lane_follower_trajgen
     topic : /config/waypoint_follower
