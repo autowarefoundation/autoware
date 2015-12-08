@@ -6,29 +6,14 @@
   <arg name="use_velodyne" default="true" />
   <arg name="use_gnss" default="1" />
   <arg name="queue_size" default="10" />
-  <arg name="tf_x" default="1.2"/>
-  <arg name="tf_y" default="0.0"/>
-  <arg name="tf_z" default="2.0"/>
-  <arg name="tf_yaw" default="0.0"/>
-  <arg name="tf_pitch" default="0.0"/>
-  <arg name="tf_roll" default="0.0"/>
 
-  <node pkg="tf" type="static_transform_publisher" name="base_link_to_velodyne" args="$(arg tf_x) $(arg tf_y) $(arg tf_z) $(arg tf_yaw) $(arg tf_pitch) $(arg tf_roll) /base_link /velodyne 10" if="$(arg use_velodyne)"/>
   <node pkg="tf" type="static_transform_publisher" name="hokuyo_to_base_link" args="0 0 -1.0 0 0 0 /3d_urg /base_link 10" unless="$(arg use_velodyne)"/>
 
-  <include file="$(find model_publisher)/launch/vehicle_model.launch"/>
-
   <!-- rosrun ndt_localizer ndt_matching _sensor:="velodyne" -->
-  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log">
+  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
     <param name="scanner" value="$(arg scanner)" />
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="queue_size" value="$(arg queue_size)"/>
-    <param name="tf_x" value="$(arg tf_x)"/>
-    <param name="tf_y" value="$(arg tf_y)"/>
-    <param name="tf_z" value="$(arg tf_z)"/>
-    <param name="tf_yaw" value="$(arg tf_yaw)"/>
-    <param name="tf_pitch" value="$(arg tf_pitch)"/>
-    <param name="tf_roll" value="$(arg tf_roll)"/>
   </node>
   
 </launch>
