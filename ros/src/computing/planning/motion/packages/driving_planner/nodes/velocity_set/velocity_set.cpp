@@ -574,7 +574,7 @@ static EControl vscanDetection()
 
 
 	    // without deceleration range
-	    if (_deceleration_range <= 0)
+	    if (_deceleration_range < 0.01)
 	      continue;
 	    // deceleration search runs "decelerate_search_distance" waypoints from closest
 	    if (i > _closest_waypoint+_deceleration_search_distance || decelerate_or_stop >= 0)
@@ -662,7 +662,7 @@ static EControl ObstacleDetection()
 	  return vscan_result;
 	} else {
 	  std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl << std::endl;
-	  DisplayObstacleWaypoint(_obstacle_waypoint, vscan_result);
+	  DisplayObstacleWaypoint(_obstacle_waypoint, prev_detection);
 	  return prev_detection;
 	}
       }
