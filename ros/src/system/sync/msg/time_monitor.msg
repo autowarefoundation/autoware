@@ -1,6 +1,8 @@
 Header header
 float64 image_raw
 float64 points_raw
+float64 vscan_points
+float64 vscan_image
 float64 image_obj
 float64 image_obj_ranged
 float64 image_obj_tracked
@@ -8,6 +10,8 @@ float64 current_pose
 float64 obj_label
 float64 cluster_centroids
 float64 obj_pose
+float64 execution_time
+float64 cycle_time
 float64 time_diff
 
 

@@ -90,6 +90,8 @@ class TimeManager
 {
     KeyPair image_raw_;
     KeyPair points_raw_;
+    KeyPair vscan_points_;
+    KeyPair vscan_image_;
     KeyPair image_obj_;
     KeyPair image_obj_ranged_;
     KeyPair image_obj_tracked_;
@@ -102,6 +104,8 @@ class TimeManager
     ros::NodeHandle nh;
     ros::Subscriber image_raw_sub;
     ros::Subscriber points_raw_sub;
+    ros::Subscriber vscan_points_sub;
+    ros::Subscriber vscan_image_sub;
     ros::Subscriber image_obj_sub;
     ros::Subscriber image_obj_tracked_sub;
     ros::Subscriber current_pose_sub;
@@ -120,8 +124,8 @@ class TimeManager
             return 0.0;
         }
 
-        double time_diff = ros_time2msec(sensor_time) - ros_time2msec(execution_time);
-        if (time_diff <= 0)
+        double time_diff = ros_time2msec(execution_time) - ros_time2msec(sensor_time);
+        if (time_diff > 0)
             return time_diff;
         else
             return 0.0;
@@ -131,6 +135,8 @@ public:
     TimeManager(int);
     void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg);
     void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg);
+    void vscan_points_callback(const sensor_msgs::PointCloud2::ConstPtr& vscan_points_msg);
+    void vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image_msg);
     void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg);
     void image_obj_ranged_callback(const cv_tracker::image_obj_ranged::ConstPtr& image_obj_ranged_msg);
     void image_obj_tracked_callback(const cv_tracker::image_obj_tracked::ConstPtr& image_obj_tracked_msg);
@@ -147,6 +153,8 @@ TimeManager::TimeManager(int buffer_size) {
     time_monitor_pub = nh.advertise<std_msgs::Time> ("time_monitor", 1);
     image_raw_sub = nh.subscribe("/image_raw", 1, &TimeManager::image_raw_callback, this);
     points_raw_sub = nh.subscribe("/points_raw", 1, &TimeManager::points_raw_callback, this);
+    vscan_points_sub = nh.subscribe("/vscan_points", 1, &TimeManager::vscan_points_callback, this);
+    vscan_image_sub = nh.subscribe("/vscan_image", 1, &TimeManager::vscan_image_callback, this);
     image_obj_sub = nh.subscribe("/image_obj", 1, &TimeManager::image_obj_callback, this);
     image_obj_tracked_sub = nh.subscribe("/obj_car/image_obj_tracked", 1, &TimeManager::image_obj_tracked_callback, this);
     current_pose_sub = nh.subscribe("current_pose", 1, &TimeManager::current_pose_callback, this);
@@ -157,6 +165,8 @@ TimeManager::TimeManager(int buffer_size) {
 
     image_raw_.resize(buffer_size);
     points_raw_.resize(buffer_size);
+    vscan_points_.resize(buffer_size);
+    vscan_image_.resize(buffer_size);
     image_obj_.resize(buffer_size);
     image_obj_ranged_.resize(buffer_size);
     image_obj_tracked_.resize(buffer_size);
@@ -172,6 +182,14 @@ void TimeManager::image_raw_callback(const sensor_msgs::Image::ConstPtr& image_r
 
 void TimeManager::points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg) {
     points_raw_.push_front(points_raw_msg->header.stamp, ros::Time::now());
+}
+
+void TimeManager::vscan_points_callback(const sensor_msgs::PointCloud2::ConstPtr& vscan_points_msg) {
+    vscan_points_.push_front(vscan_points_msg->header.stamp, ros::Time::now());
+}
+
+void TimeManager::vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image_msg) {
+    vscan_image_.push_front(vscan_image_msg->header.stamp, ros::Time::now());
 }
 
 void TimeManager::image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
@@ -207,12 +225,15 @@ void TimeManager::time_diff_callback(const synchronization::time_diff::ConstPtr&
 
 void TimeManager::obj_pose_callback(const lidar_tracker::centroids::ConstPtr& obj_pose_msg) {
     obj_pose_.push_front(obj_pose_msg->header.stamp, ros::Time::now());
+    static ros::Time pre_sensor_time;
     synchronization::time_monitor time_monitor_msg;
     time_monitor_msg.header.frame_id = "0";
     time_monitor_msg.header.stamp = obj_pose_msg->header.stamp;
 
     time_monitor_msg.image_raw = time_diff(obj_pose_msg->header.stamp, image_raw_.find(obj_pose_msg->header.stamp));
     time_monitor_msg.points_raw = time_diff(obj_pose_msg->header.stamp, points_raw_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.vscan_points = time_diff(obj_pose_msg->header.stamp, vscan_points_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.vscan_image = time_diff(obj_pose_msg->header.stamp, vscan_image_.find(obj_pose_msg->header.stamp));
     time_monitor_msg.image_obj = time_diff(obj_pose_msg->header.stamp, image_obj_.find(obj_pose_msg->header.stamp));
     time_monitor_msg.image_obj_ranged = time_diff(obj_pose_msg->header.stamp, image_obj_ranged_.find(obj_pose_msg->header.stamp));
     time_monitor_msg.image_obj_tracked = time_diff(obj_pose_msg->header.stamp, image_obj_tracked_.find(obj_pose_msg->header.stamp));
@@ -220,8 +241,11 @@ void TimeManager::obj_pose_callback(const lidar_tracker::centroids::ConstPtr& ob
     time_monitor_msg.obj_label = time_diff(obj_pose_msg->header.stamp, obj_label_.find(obj_pose_msg->header.stamp));
     time_monitor_msg.cluster_centroids = time_diff(obj_pose_msg->header.stamp, cluster_centroids_.find(obj_pose_msg->header.stamp));
     time_monitor_msg.obj_pose = time_diff(obj_pose_msg->header.stamp, obj_pose_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.time_diff = ros_time2msec(time_diff_.find(obj_pose_msg->header.stamp));
+    time_monitor_msg.execution_time = time_diff(obj_pose_msg->header.stamp, obj_pose_.find(obj_pose_msg->header.stamp)); // execution time
+    time_monitor_msg.cycle_time = time_diff(pre_sensor_time, obj_pose_msg->header.stamp); // cycle time
+    time_monitor_msg.time_diff = ros_time2msec(time_diff_.find(obj_pose_msg->header.stamp)); // time difference
     time_monitor_pub.publish(time_monitor_msg);
+    pre_sensor_time = obj_pose_msg->header.stamp;
 }
 
 void TimeManager::run() {
