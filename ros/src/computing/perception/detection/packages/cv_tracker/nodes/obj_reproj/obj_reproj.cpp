@@ -106,6 +106,10 @@ static LOCATION ndt_loc;
 static ANGLE gnss_angle;
 static ANGLE ndt_angle;
 
+//flag for comfirming whether multiple topics are received
+static bool isReady_obj_pos_xyz;
+static bool isReady_ndt_pose;
+
 static double cameraMatrix[4][4] = {
   {-7.8577658642752374e-03, -6.2035361880992401e-02,9.9804301981022692e-01, 5.1542126095196206e-01},
   {-9.9821250329813849e-01, 5.9620033356180935e-02,-4.1532977104442731e-03, -2.9214878315161133e-02},
@@ -240,7 +244,12 @@ void locatePublisher(vector<OBJPOS> car_position_vector, std_msgs::Header image_
         // pose_msg.header.stamp = ros::Time::now();
         // pose_msg.header.frame_id = "map";
   obj_label_msg.type = object_type;
-  pub.publish(obj_label_msg);
+
+  if (isReady_obj_pos_xyz && isReady_ndt_pose) {
+    pub.publish(obj_label_msg);
+    isReady_obj_pos_xyz = false;
+    isReady_ndt_pose    = false;
+  }
    //   }
 }
 
@@ -255,7 +264,7 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
   object_type = fused_objects.type;
   //If angle and position data is not updated from prevous data send,
   //data is not sent
-  if(gnssGetFlag || ndtGetFlag) {
+  //  if(gnssGetFlag || ndtGetFlag) {
     for (unsigned int i = 0; i < fused_objects.rect_ranged.size(); i++){
 
       //If distance is zero, we cannot calculate position of recognized object
@@ -274,9 +283,12 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
       cp_vector.push_back(cp);
     }
 
+    //Confirm that obj_pos_xyz is subscribed
+    isReady_obj_pos_xyz = true;
+
     locatePublisher(cp_vector, fused_objects.header);
 
-  }
+    //  }
 }
 
 #ifdef NEVER // XXX No one calls this functions. caller is comment out
@@ -307,6 +319,11 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   printf("location : %f %f %f\n",ndt_loc.X,ndt_loc.Y,ndt_loc.Z);
 
   ndtGetFlag = true;
+
+  //Confirm ndt_pose is subscribed
+  isReady_ndt_pose = true;
+
+
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
 
@@ -316,6 +333,9 @@ int main(int argc, char **argv){
   cout << "obj_reproj" << endl;
 
   ready_ = false;
+
+  isReady_obj_pos_xyz = false;
+  isReady_ndt_pose    = false;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.

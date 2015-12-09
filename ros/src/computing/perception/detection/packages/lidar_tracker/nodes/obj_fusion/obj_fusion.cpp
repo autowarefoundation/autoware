@@ -9,6 +9,10 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 
+/* flag for comfirming whether multiple topics are received */
+static bool isReady_obj_label;
+static bool isReady_cluster_centroids;
+
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 100;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool ADVERTISE_LATCH = false;
@@ -46,6 +50,9 @@ void obj_label_cb(const cv_tracker::obj_label& obj_label_msg)
             reprojected_positions.push_back(point);
         }
 
+    /* confirm obj_label is subscribed */
+    isReady_obj_label = true;
+
 } /* void obj_label_cb() */
 
 
@@ -66,6 +73,8 @@ void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
 
             centroids.push_back(point_in_map);
         }
+
+    isReady_cluster_centroids = true;
 
     if (centroids.empty() || reprojected_positions.empty()) {
         return;
@@ -155,8 +164,11 @@ void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
             pub_msg.markers.push_back(marker);
         }
 
-       obj_pose_pub.publish(pub_msg);
-
+    if (isReady_obj_label && isReady_cluster_centroids) {
+        obj_pose_pub.publish(pub_msg);
+        isReady_obj_label = false;
+        isReady_cluster_centroids = false;
+    }
 
 } /* void cluster_centroids_cb() */
 
@@ -167,6 +179,10 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "obj_fusion");
 
     ros::NodeHandle n;
+
+    /* Initialize flags */
+    isReady_obj_label         = false;
+    isReady_cluster_centroids = false;
 
     ros::Subscriber obj_label_sub         = n.subscribe("obj_label", SUBSCRIBE_QUEUE_SIZE, obj_label_cb);
     ros::Subscriber cluster_centroids_sub = n.subscribe("/cluster_centroids", SUBSCRIBE_QUEUE_SIZE, cluster_centroids_cb);
