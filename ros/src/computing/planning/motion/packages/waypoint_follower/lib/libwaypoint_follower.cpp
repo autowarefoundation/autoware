@@ -109,31 +109,26 @@ bool WayPoints::isFront(int waypoint, geometry_msgs::Pose current_pose) const
 bool WayPoints::isValid(int waypoint, geometry_msgs::Pose current_pose) const
 {
   double angle_threshold = 90;
-  geometry_msgs::Point relative_p1 = calcRelativeCoordinate(getWaypointPosition(waypoint),current_pose);
-  geometry_msgs::Point relative_p2;
+  geometry_msgs::Point relative_wp1 = calcRelativeCoordinate(getWaypointPosition(waypoint),current_pose);
+  geometry_msgs::Point relative_wp2;
   tf::Vector3 relative_waypoint_v;
-  if(waypoint == getSize() - 1)
-    {
-	  relative_p2 = calcRelativeCoordinate(getWaypointPosition(waypoint - 1),current_pose);
-      relative_waypoint_v.setX(relative_p1.x - relative_p2.x);
-      relative_waypoint_v.setY(relative_p1.y - relative_p2.y);
-      relative_waypoint_v.setZ(relative_p1.z - relative_p2.z);
-    }
+  if (waypoint == getSize() - 1)
+  {
+    relative_wp2 = calcRelativeCoordinate(getWaypointPosition(waypoint - 1), current_pose);
+    relative_waypoint_v.setX(relative_wp1.x - relative_wp2.x);
+    relative_waypoint_v.setY(relative_wp1.y - relative_wp2.y);
+    relative_waypoint_v.setZ(relative_wp1.z - relative_wp2.z);
+  }
   else
-    {
-      relative_p2 = calcRelativeCoordinate(getWaypointPosition(waypoint + 1),current_pose);
-    relative_waypoint_v.setX(relative_p2.x - relative_p1.x);
-    relative_waypoint_v.setY(relative_p2.y - relative_p1.y);
-    relative_waypoint_v.setZ(relative_p2.z - relative_p1.z);
-    }
+  {
+    relative_wp2 = calcRelativeCoordinate(getWaypointPosition(waypoint + 1), current_pose);
+    relative_waypoint_v.setX(relative_wp2.x - relative_wp1.x);
+    relative_waypoint_v.setY(relative_wp2.y - relative_wp1.y);
+    relative_waypoint_v.setZ(relative_wp2.z - relative_wp1.z);
+  }
   relative_waypoint_v.normalize();
   tf::Vector3 relative_pose_v(1,0,0);
   double angle = relative_pose_v.angle(relative_waypoint_v) *180 / M_PI;
-  //tf::Vector3 waypoint_v(getWaypointPosition(waypoint).x,getWaypointPosition(waypoint).y,getWaypointPosition(waypoint).z);
-  //tf::Vector3
- //pose_v(current_pose.position.x,current_pose.position.y,current_pose.position.z);
-  //double angle = waypoint_v.angle(pose_v) * 180 / M_PI; //degree
-  //ROS_INFO("angle : %lf",angle);
 
   if (fabs(angle) > angle_threshold)
     return false;
