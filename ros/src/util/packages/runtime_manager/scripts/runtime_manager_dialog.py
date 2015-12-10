@@ -360,6 +360,10 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		self.nodes_dic = self.nodes_dic_get()
 
+		self.bitmap_logo.Destroy()
+		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'autoware_logo_1.png'), 0.2)
+		self.bitmap_logo = wx.StaticBitmap(self, wx.ID_ANY, bm)
+
 		rtmgr.MyFrame.__do_layout(self)
 
 		self.alias_grps = [
@@ -458,7 +462,10 @@ class MyFrame(rtmgr.MyFrame):
 				subprocess.call([ 'mkdir', '-p', path ])
 
 		# icon
-		self.SetIcon( wx.Icon(rtmgr_src_dir() + 'rtmgr_icon.xpm', wx.BITMAP_TYPE_XPM) )
+		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'autoware_logo_2_white.png'), 0.5)
+		icon = wx.EmptyIcon()
+		icon.CopyFromBitmap(bm)
+		self.SetIcon(icon)
 
 	def __do_layout(self):
 		pass
@@ -2869,6 +2876,12 @@ def fix_link_color(obj):
 		obj.SetHyperTextVisitedColour(obj.GetHyperTextNewColour())
 	elif t is wx.HyperlinkCtrl:
 		obj.SetVisitedColour(obj.GetNormalColour())
+
+def scaled_bitmap(bm, scale):
+	(w, h) = bm.GetSize()
+	img = wx.ImageFromBitmap(bm)
+	img = img.Scale(w * scale, h * scale, wx.IMAGE_QUALITY_HIGH)
+	return wx.BitmapFromImage(img)
 
 def sizer_wrap(add_objs, orient=wx.VERTICAL, prop=0, flag=0, border=0, parent=None):
 	szr = wx.BoxSizer(orient)
