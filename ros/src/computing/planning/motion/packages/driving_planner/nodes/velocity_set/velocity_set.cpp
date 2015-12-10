@@ -857,7 +857,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
-    ros::Subscriber ndt_sub = nh.subscribe("control_pose", 1, NDTCallback);
+    ros::Subscriber ndt_sub = nh.subscribe("localizer_pose", 1, NDTCallback);
     ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
     ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, VscanCallback);
     ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, BaseWaypointCallback);
