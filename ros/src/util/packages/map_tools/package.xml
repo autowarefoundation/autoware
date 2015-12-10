@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>map_tools</name>
+  <version>0.0.0</version>
+  <description>The map_tools package</description>
+  <maintainer email="yuki@ertl.jp">kitsukawa</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

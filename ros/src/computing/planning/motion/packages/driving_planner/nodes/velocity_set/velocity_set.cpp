@@ -61,30 +61,31 @@ static const std::string pedestrian_sound = "pedestrian";
 static bool _pose_flag = false;
 static bool _path_flag = false;
 static bool _vscan_flag = false;
+static int _obstacle_waypoint = -1;
+static double _deceleration_search_distance = 30;
+static double _search_distance = 60;
+static int _closest_waypoint = -1;
+static double _current_vel = 0.0;       // subscribe estimated_vel_mps
+static CrossWalk vmap;
+static ObstaclePoints g_obstacle;
+static bool g_sim_mode;
 
+/* Config Parameter */
 static double _detection_range = 0; // if obstacle is in this range, stop
 static double _deceleration_range = 1.8; // if obstacle is in this range, decelerate
 static double _deceleration_minimum = kmph2mps(4.0); // until this speed
-static int _obstacle_waypoint = -1;
 static int _threshold_points = 15;
 static double _detection_height_top = 2.0; //actually +2.0m
 static double _detection_height_bottom = -2.0;
-static double _search_distance = 60;
-static double _deceleration_search_distance = 30;
 static double _cars_distance = 15.0; // meter: stopping distance from cars (using DPM)
 static double _pedestrians_distance = 10.0; // meter: stopping distance from pedestrians (using DPM)
 static double _others_distance = 8.0;    // meter: stopping distance from obstacles (using VSCAN)
-static int _closest_waypoint = -1;
-static double _current_vel = 0.0;       // subscribe estimated_vel_mps
 static double _decel = 1.5;           // (m/s) deceleration
-static double _decel_limit = 2.778;   // (m/s) about 10 km/h
+static double _velocity_change_limit = 2.778;   // (m/s) about 10 km/h
 static double _velocity_limit = 12.0; //(m/s) limit velocity for waypoints
 static double _temporal_waypoints_size = 100.0; // meter
-static double _accel_bias = 1.389; // (m/s)
-static tf::Transform _transform;
-static CrossWalk vmap;
-static bool g_sim_mode;
-static ObstaclePoints g_obstacle;
+static double _velocity_offset = 1.389; // (m/s)
+
 
 //Publisher
 static ros::Publisher _range_pub;
@@ -133,7 +134,7 @@ void PathVset::setTemporalWaypoints()
 {
   if (_closest_waypoint < 0)
     return;
-  static const int size = (int)(_temporal_waypoints_size/getInterval())+1;
+  int size = (int)(_temporal_waypoints_size/getInterval())+1;
 
   temporal_waypoints_.waypoints.clear();
   temporal_waypoints_.header = current_waypoints_.header;
@@ -190,7 +191,7 @@ void PathVset::avoidSuddenAceleration()
   for (int i = 0; ; i++) {
     if (!checkWaypoint(_closest_waypoint+i, "avoidSuddenAceleration"))
       return;
-    changed_vel = sqrt(temp1 + temp2*(double)(i+1)) + _accel_bias;
+    changed_vel = sqrt(temp1 + temp2*(double)(i+1)) + _velocity_offset;
     if (changed_vel > current_waypoints_.waypoints[_closest_waypoint+i].twist.twist.linear.x)
       return;
     current_waypoints_.waypoints[_closest_waypoint+i].twist.twist.linear.x = changed_vel;
@@ -213,7 +214,7 @@ void PathVset::avoidSuddenBraking()
   for (int j = -1; j < examin_range; j++) {
     if (!checkWaypoint(_closest_waypoint+j, "avoidSuddenBraking"))
       return;
-    if (getWaypointVelocityMPS(_closest_waypoint+j) < _current_vel - _decel_limit) // we must change waypoints
+    if (getWaypointVelocityMPS(_closest_waypoint+j) < _current_vel - _velocity_change_limit) // we must change waypoints
       break;
     if (j == examin_range-1) // we don't have to change waypoints
       return;
@@ -233,7 +234,7 @@ void PathVset::avoidSuddenBraking()
   }
 
   // decelerate gradually
-  double temp1 = (_current_vel-_decel_limit+1.389)*(_current_vel-_decel_limit+1.389);
+  double temp1 = (_current_vel-_velocity_change_limit+1.389)*(_current_vel-_velocity_change_limit+1.389);
   double temp2 = 2*_decel*interval;
   for (num = _closest_waypoint-1; ; num++) {
     if (num >= getSize())
@@ -328,8 +329,11 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   _detection_height_top = config->detection_height_top;
   _detection_height_bottom = config->detection_height_bottom;
   _decel = config->deceleration;
-  _decel_limit = kmph2mps(config->decel_change_limit);
-  _accel_bias = kmph2mps(config->accel_bias);
+  _velocity_change_limit = kmph2mps(config->velocity_change_limit);
+  _velocity_offset = kmph2mps(config->velocity_offset);
+  _deceleration_range = config->deceleration_range;
+  _deceleration_minimum = kmph2mps(config->deceleration_minimum);
+  _temporal_waypoints_size = config->temporal_waypoints_size;
 }
 
 void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
@@ -629,16 +633,17 @@ static EControl CrossWalkDetection(const int &crosswalk_id)
 static EControl vscanDetection()
 {
 
-    if (_vscan.empty() == true)
+    if (_vscan.empty() == true || _closest_waypoint < 0)
         return KEEP;
 
     int decelerate_or_stop = -10000;
     int decelerate2stop_waypoints = 15;
 
+
     for (int i = _closest_waypoint; i < _closest_waypoint + _search_distance; i++) {
-	    g_obstacle.clearStopPoints();
-	    if (!g_obstacle.isDecided())
-	      g_obstacle.clearDeceleratePoints();
+        g_obstacle.clearStopPoints();
+	if (!g_obstacle.isDecided())
+	  g_obstacle.clearDeceleratePoints();
 
         decelerate_or_stop++;
         if (decelerate_or_stop > decelerate2stop_waypoints ||
@@ -762,6 +767,7 @@ static EControl ObstacleDetection()
     EControl vscan_result = vscanDetection();
     DisplayDetectionRange(vmap.getDetectionCrossWalkID(), _closest_waypoint, vscan_result);
 
+
     if (prev_detection == KEEP) {
       if (vscan_result != KEEP) { // found obstacle
 	DisplayObstacle(vscan_result);
@@ -880,11 +886,6 @@ int main(int argc, char **argv)
 
     private_nh.param<bool>("sim_mode", g_sim_mode, false);
     ROS_INFO_STREAM("sim_mode : " << g_sim_mode);
-    private_nh.getParam("deceleration_range", _deceleration_range);
-    ROS_INFO_STREAM("deceleration_range : " << _deceleration_range);
-    private_nh.getParam("deceleration_minimum", _deceleration_minimum);
-    ROS_INFO_STREAM("deceleration_minimum : " << _deceleration_minimum);
-    _deceleration_minimum = kmph2mps(_deceleration_minimum);
 
 
     ros::Rate loop_rate(LOOP_RATE);

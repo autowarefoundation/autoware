@@ -57,7 +57,7 @@ Open-source software for urban autonomous driving. The following functions are s
 
 ```
 $ cd $HOME
-$ git clone --recursive https://github.com/CPFL/Autoware.git
+$ git clone https://github.com/CPFL/Autoware.git
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
 $ cd ../

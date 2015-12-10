@@ -61,6 +61,7 @@ public:
 	cv::LatentSvmDetector::ObjectDetection	GetTrackedObject();
 	unsigned int							GetRemainingLifespan();
 	void 									NullifyLifespan();
+	unsigned long int						GetFrameCount();
 };
 
 extern int klt_main(int argc, char* argv[]);

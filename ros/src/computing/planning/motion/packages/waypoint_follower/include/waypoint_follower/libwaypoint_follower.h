@@ -41,45 +41,6 @@
 #include <tf/transform_listener.h>
 #include "waypoint_follower/lane.h"
 
-class Path
-{
-protected:
-	waypoint_follower::lane current_path_;
-  tf::Vector3 origin_v_;
-  tf::Transform transform_;
-  int closest_waypoint_;
-
-
-public:
-
-  /*__attribute__ ((deprecated)) */ Path()
-  {
-    closest_waypoint_ = -1;
-    origin_v_.setZero();
-  }
-/*__attribute__ ((deprecated))  void setTransform(tf::Transform transform){ transform_ = transform;}
-  __attribute__ ((deprecated)) void setPath(const waypoint_follower::laneConstPtr &msg);
-  __attribute__ ((deprecated)) int getPathSize();
-  __attribute__ ((deprecated)) double getInterval();
-  __attribute__ ((deprecated)) double getDistance(int waypoint);
-  __attribute__ ((deprecated)) tf::Vector3 transformWaypoint(int waypoint);
-  __attribute__ ((deprecated)) geometry_msgs::Point getWaypointPosition(int waypoint);
-  __attribute__ ((deprecated)) geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
-  __attribute__ ((deprecated)) waypoint_follower::lane getCurrentPath(){ return current_path_; }
-  __attribute__ ((deprecated)) int getClosestWaypoint();*/
-  void setTransform(tf::Transform transform){ transform_ = transform;}
-  void setPath(const waypoint_follower::laneConstPtr &msg);
-  int getPathSize();
-  double getInterval();
-  double getDistance(int waypoint);
-  tf::Vector3 transformWaypoint(int waypoint);
-  geometry_msgs::Point getWaypointPosition(int waypoint);
-  geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
-  waypoint_follower::lane getCurrentPath(){ return current_path_; }
-  int getClosestWaypoint();
-
-};
-
 class WayPoints
 {
 protected:
@@ -94,31 +55,28 @@ public:
 	geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
 	double getWaypointVelocityMPS(int waypoint) const;
 	waypoint_follower::lane getCurrentWaypoints() const { return current_waypoints_; }
+  bool isFront(int waypoint, geometry_msgs::Pose current_pose) const;
+  bool isValid(int waypoint,geometry_msgs::Pose current_pose) const;
 
 };
 
+//inline function (less than 10 lines )
 inline double kmph2mps(double velocity_kmph) { return (velocity_kmph * 1000) / (60 * 60); }
 inline double mps2kmph(double velocity_mps) { return (velocity_mps * 60 * 60) / 1000; }
-inline double deg2rad(double deg){  return deg * M_PI/180;} //convert from degree to radian
-inline tf::Vector3 point2vector(geometry_msgs::Point point)
-{
-  tf::Vector3 vector(point.x,point.y,point.z);
-  return vector;
-}
+inline double deg2rad(double deg){  return deg * M_PI/180;} //convert degree to radian
 
-inline geometry_msgs::Point vector2point(tf::Vector3 vector)
-{
-  geometry_msgs::Point point;
-  point.x = vector.getX();
-  point.y = vector.getY();
-  point.z = vector.getZ();
-  return point;
-}
+
+tf::Vector3 point2vector(geometry_msgs::Point point); //convert point to vector
+geometry_msgs::Point vector2point(tf::Vector3 vector); //convert vector to point
+tf::Vector3 rotateUnitVector(tf::Vector3 unit_vector, double degree); //rotate unit vector by degree
+geometry_msgs::Point rotatePoint(geometry_msgs::Point point, double degree); //rotate point vector by degree
 
 double DecelerateVelocity(double distance, double prev_velocity);
-geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
-geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose);
-double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point target2);
-int getClosestWaypoint(const waypoint_follower::lane &current_path,geometry_msgs::Pose current_pose );
+geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose); //transform point into the coordinate of current_pose
+geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point, geometry_msgs::Pose current_pose); //transform point into the global coordinate
+double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point target2); //get 2 dimentional distance between target 1 and target 2
+int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msgs::Pose current_pose);
+bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *slope, double *intercept);
+
 
 #endif

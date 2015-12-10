@@ -8,5 +8,8 @@ int32 threshold_points
 float32 detection_height_top
 float32 detection_height_bottom
 float32 deceleration
-float32 decel_change_limit
-float32 accel_bias
+float32 velocity_change_limit
+float32 velocity_offset
+float32 deceleration_range
+float32 deceleration_minimum
+float32 temporal_waypoints_size

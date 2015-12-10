@@ -262,6 +262,8 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 			return -1;
 		}
 
+		int points_nr = size / sizeof(double);
+
 		for (char *p = (char *)points; size;
 		     size -= nbytes, p += nbytes) {
 			nbytes = recv(sock, p, size, 0);
@@ -279,7 +281,6 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 
 		tablet_socket::route_cmd msg;
 		tablet_socket::Waypoint point;
-		int points_nr = size / sizeof(double);
 		for (int i = 0; i < points_nr; i++) {
 			if (i % 2) {
 				point.lon = points[i];

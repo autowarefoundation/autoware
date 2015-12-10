@@ -14,19 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ################################################
-## Find OpenMP in order to parallelize loops  ##
-################################################
-
-OPTION (USE_OpenMP "Use OpenMP" ON)
-IF(USE_OpenMP)
-  FIND_PACKAGE(OpenMP)
-  IF(OPENMP_FOUND)
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  ENDIF()
-ENDIF()
-
-################################################
 ## Declare ROS messages, services and actions ##
 ################################################
 
@@ -80,5 +67,7 @@ target_link_libraries(odom_gen libwaypoint_follower ${catkin_LIBRARIES})
 
 add_executable(twist_filter nodes/twist_filter/twist_filter.cpp)
 target_link_libraries(twist_filter ${catkin_LIBRARIES})
+add_dependencies(twist_filter
+runtime_manager_generate_messages_cpp)
 
 

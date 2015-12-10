@@ -81,6 +81,11 @@ void LkTracker::NullifyLifespan()
 	lifespan_ = 0;
 }
 
+unsigned long int LkTracker::GetFrameCount()
+{
+	return frame_count_;
+}
+
 cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetection in_detection, bool in_update)
 {
 	cv::Mat gray_image;
@@ -191,14 +196,13 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetectio
 			valid_points.push_back(current_points_[i]);
 			//cv::circle(in_image, current_points_[i], 3 , cv::Scalar(0,255,0), 2);
 		}
-
-		frame_count_++;
 	}
 	if (valid_points.size()<=2)
 	{
 		current_rect_ = cv::LatentSvmDetector::ObjectDetection(cv::Rect(0,0,0,0),0,0);
 		return in_image;
 	}
+	frame_count_++;
 
 	cv::Mat labels;
 	cv::Mat centers;

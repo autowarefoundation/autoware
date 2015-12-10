@@ -141,6 +141,8 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
     e_d = e - e_prev;
     
     accel_diff_sum += e;
+
+#if 0 // shouldn't we limit the cycles for I control?
     accel_diff_buffer.push(e);
     if (accel_diff_buffer.size() > _K_ACCEL_I_CYCLES) {
       double e_old = accel_diff_buffer.front();
@@ -150,6 +152,7 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
       }
       accel_diff_buffer.pop();
     }
+#endif
 
     if (accel_diff_sum > _ACCEL_MAX_I) {
       e_i = _ACCEL_MAX_I;
@@ -158,8 +161,14 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
       e_i = accel_diff_sum;
     }
 
+#if 1
     target_accel_stroke = _K_ACCEL_P * e + _K_ACCEL_I * e_i + _K_ACCEL_D * e_d;
-    if (target_accel_stroke > _ACCEL_PEDAL_MAX) {
+#else
+    printf("accel_p = %lf, accel_i = %lf, accel_d = %lf\n", shm_ptr->accel.P, shm_ptr->accel.I, shm_ptr->accel.D);
+    target_accel_stroke = shm_ptr->accel.P * e + shm_ptr->accel.I * e_i + shm_ptr->accel.D * e_d;
+#endif
+    
+ if (target_accel_stroke > _ACCEL_PEDAL_MAX) {
       target_accel_stroke = _ACCEL_PEDAL_MAX;
     }
     else if (target_accel_stroke < 0) {

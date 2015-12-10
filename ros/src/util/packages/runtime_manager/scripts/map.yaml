@@ -54,6 +54,15 @@ buttons :
     run    : roslaunch
     param  : tf
 
+  pcd_filter :
+    run   : rosrun map_tools pcd_filter
+    param : pcd_filter
+    gui   :
+      show_order : [ path_pcd_filter, leaf_size ]
+
+  pcd_binarizer :
+    run   : rosrun map_tools pcd_binarizer
+    param : pcd_binarizer
 
 params :
   - name  : point_cloud
@@ -122,3 +131,31 @@ params :
       cmd_param :
         delim     : ''
         default   : ~/.autoware/data/tf/tf.launch
+
+  - name  : pcd_filter
+    vars  :
+    - name      : leaf_size
+      label     : 'Leaf Size:'
+      kind      : num
+      v         : 0.20
+      cmd_param :
+        delim     : ''
+    - name      : path_pcd_filter
+      kind      : path
+      path_type : multi
+      v         : ''
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+        must      : True
+
+  - name  : pcd_binarizer
+    vars  :
+    - name      : path_pcd_binarizer
+      kind      : path
+      path_type : multi
+      v         : ''
+      cmd_param :
+        delim     : ''
+        unpack    : ','
+        must      : True

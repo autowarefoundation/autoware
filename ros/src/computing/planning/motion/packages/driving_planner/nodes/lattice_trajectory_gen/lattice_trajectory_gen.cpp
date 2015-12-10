@@ -53,323 +53,184 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libtraj_gen.h"
 #include "vehicle_socket/CanInfo.h"
+//#include <dbw_mkz_msgs/SteeringReport.h>
+
 
 #define DEBUG_TRAJECTORY_GEN
+
 #define WHEEL_ANGLE_MAX (31.28067)
-#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
 #define STEERING_ANGLE_MAX (666.00000)
+#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
 #define WHEEL_BASE (2.70)
 
-#define DEBUG_TRAJECTORY_GEN
+#define WHEEL_BASE_MKZ (2.84988)
+#define WHEEL_TO_STEERING_MKZ (22.00)
 
 static const int LOOP_RATE = 10; //Hz
-static const double LOOK_AHEAD_THRESHOLD_CALC_RATIO = 3.0; // the next waypoint must be outside of this threshold.
-static const double MINIMUM_LOOK_AHEAD_THRESHOLD = 4.0; // the next waypoint must be outside of this threshold.
-static const double EVALUATION_THRESHOLD = 1.0; //meter
+
 static const std::string MAP_FRAME = "map";
 static const std::string SIM_BASE_FRAME = "sim_base_link";
 static const std::string BASE_FRAME = "base_link";
-static ros::Publisher marker_pub;
-static int SPLINE_INDEX=0;
 
-//define class
-class PathPP: public Path
-{
-private:
-  int next_waypoint_;
+static ros::Publisher g_marker_pub;
+static ros::Publisher g_vis_pub;
+static ros::Publisher g_stat_pub;
 
-  int param_flag_; //0 = waypoint, 1 = Dialog
-  double lookahead_threshold_; //meter
-  double initial_velocity_; //km/h
-
-public:
-  PathPP()
-  {
-    param_flag_ = 0;
-    lookahead_threshold_ = 4.0;
-    initial_velocity_ = 5.0;
-    next_waypoint_ = -1;
-  }
-  void setConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config);
-  double getCmdVelocity();
-  double getLookAheadThreshold(int waypoint);
-  int getNextWaypoint();
-  double calcRadius(int waypoint);
-  bool evaluateWaypoint(int next_waypoint);
-  void displayTrajectory(tf::Vector3 center, double radius);
-  double getNextWaypointVelocity(int next_waypoint);
-  union Spline waypointTrajectory(union State veh, union State goal, union Spline curvature, int next_waypoint);
-  union State computeWaypointGoal(int next_waypoint);
-  union State computeVeh(int old_time, double old_theta, int next_waypoint);
-  void drawSpline(union Spline curvature, union State veh, int flag, int selected);
-
-
-};
-PathPP _path_pp;
-
-static bool _sim_mode = false;
-static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-static double _current_velocity;
-static double _current_angular_velocity;
-static double _can_info_curvature;
-static double _prev_velocity = 0;
+static bool g_prius_mode = FALSE;
+static bool g_mkz_mode = FALSE;
+static bool g_sim_mode = false;
+static geometry_msgs::PoseStamped g_current_pose; // current pose by the global plane.
+static double g_current_velocity;
+static double g_can_info_curvature;
+static double g_prev_velocity = 0;
 static ros::Publisher _vis_pub;
 static ros::Publisher _traj_pub;
 static ros::Publisher _stat_pub;
-static bool _waypoint_set = false;
-static bool _pose_set = false;
+static bool g_waypoint_set = false;
+static bool g_pose_set = false;
 
-void PathPP::setConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
+static double g_current_angular_velocity;
+static double g_mkz_info_curvature;
+
+static int SPLINE_INDEX=0;
+
+//config topic
+static int g_param_flag = 0; //0 = waypoint, 1 = Dialog
+static double g_lookahead_threshold = 4.0; //meter
+static double g_initial_velocity = 5.0; //km/h
+static double g_offset_base2sensor = 0;
+static double g_look_ahead_threshold_calc_ratio = 2.0;
+static double g_minimum_lool_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
+
+static WayPoints g_current_waypoints;
+
+static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
-  initial_velocity_ = config->velocity;
-  param_flag_ = config->param_flag;
-  lookahead_threshold_ = config->lookahead_threshold;
-}
-
-//get velocity of the closest waypoint or from config
-double PathPP::getCmdVelocity()
-{
-
-  if (param_flag_)
-  {
-    ROS_INFO_STREAM("dialog : " << initial_velocity_ << " km/h (" << kmph2mps(initial_velocity_) << " m/s )");
-    return kmph2mps(initial_velocity_);
-  }
-  if (current_path_.waypoints.empty())
-  {
-    return 0;
-  }
-
-  double velocity = current_path_.waypoints[closest_waypoint_].twist.twist.linear.x;
-  return velocity;
-}
-
-double PathPP::getNextWaypointVelocity(int next_waypoint)
-{
-  if (current_path_.waypoints.empty())
-  {
-    ROS_INFO_STREAM("waypoint : not loaded path");
-    return 0;
-  }
-
-  double velocity = current_path_.waypoints[next_waypoint].twist.twist.linear.x;
-  return velocity;
-}
-
-double PathPP::getLookAheadThreshold(int waypoint)
-{
-  if (param_flag_)
-    return lookahead_threshold_;
-
-  double current_velocity_mps = current_path_.waypoints[waypoint].twist.twist.linear.x;
-  if (current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO < MINIMUM_LOOK_AHEAD_THRESHOLD)
-    return MINIMUM_LOOK_AHEAD_THRESHOLD;
-  else if (getDistance(waypoint) < 0.5)
-    return current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO;
-  else
-    return current_velocity_mps * LOOK_AHEAD_THRESHOLD_CALC_RATIO + getDistance(waypoint) * 3.0;
-}
-
-/////////////////////////////////////////////////////////////////
-// obtain the next "effective" waypoint.
-// the vehicle drives itself toward this waypoint.
-/////////////////////////////////////////////////////////////////
-int PathPP::getNextWaypoint()
-{
-  // if waypoints are not given, do nothing.
-  if (!getPathSize())
-    return -1;
-
-  double lookahead_threshold = getLookAheadThreshold(closest_waypoint_);
-
-  //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
-  // look for the next waypoint.
-  for (int i = closest_waypoint_; i < getPathSize(); i++)
-  {
-
-    //if threshold is  distance of previous waypoint
-    if (next_waypoint_ > 0)
-    {
-      if (getDistance(next_waypoint_) > lookahead_threshold)
-      {
-        //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
-        return next_waypoint_;
-      }
-    }
-
-    // if there exists an effective waypoint
-    if (getDistance(i) > lookahead_threshold)
-    {
-
-      //if param flag is waypoint
-      if (!param_flag_)
-      {
-
-        if (evaluateWaypoint(i) == true)
-        {
-          //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
-          next_waypoint_ = i;
-          return i;
-        }
-        else
-        {
-          //restart search from closest_waypoint
-          i = closest_waypoint_;
-
-          //threshold shortening
-          if (lookahead_threshold > MINIMUM_LOOK_AHEAD_THRESHOLD)
-          {
-            // std::cout << "threshold correction" << std::endl;
-            lookahead_threshold -= lookahead_threshold / 10;
-            //ROS_INFO_STREAM("fixed threshold = " << lookahead_threshold);
-          }
-          else
-          {
-            lookahead_threshold = MINIMUM_LOOK_AHEAD_THRESHOLD;
-          }
-        }
-      }
-      else
-      {
-        //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
-        next_waypoint_ = i;
-        return i;
-      }
-    }
-  }
-
-  // if the program reaches here, it means we lost the waypoint.
-  return -1;
-}
-
-bool PathPP::evaluateWaypoint(int next_waypoint)
-{
-
-  double radius = calcRadius(next_waypoint);
-  // std::cout << "radius "<< radius << std::endl;
-  if (radius < 0)
-    radius = (-1) * radius;
-
-  tf::Vector3 center;
-
-  //calculate circle of trajectory
-  if (transformWaypoint(next_waypoint).getY() > 0)
-    center = tf::Vector3(0, 0 + radius, 0);
-  else
-    center = tf::Vector3(0, 0 - radius, 0);
-
-  displayTrajectory(center, radius);
-
-  //evaluation
-  double evaluation = 0;
-  for (int j = closest_waypoint_ + 1; j < next_waypoint; j++)
-  {
-    tf::Vector3 tf_waypoint = transformWaypoint(j);
-    tf_waypoint.setZ(0);
-    double dt_diff = fabs(tf::tfDistance(center, tf_waypoint) - fabs(radius));
-    // std::cout << dt_diff << std::endl;
-    if (dt_diff > evaluation)
-      evaluation = dt_diff;
-  }
-
-  if (evaluation < EVALUATION_THRESHOLD)
-    return true;
-  else
-    return false;
-
-}
-
-// display the trajectory by markers.
-void PathPP::displayTrajectory(tf::Vector3 center, double radius)
-{
-
-  geometry_msgs::Point point;
-  tf::Vector3 inv_center = transform_.inverse() * center;
-
-  point.x = inv_center.getX();
-  point.y = inv_center.getY();
-  point.z = inv_center.getZ();
-
-  visualization_msgs::Marker traj;
-  traj.header.frame_id = MAP_FRAME;
-  traj.header.stamp = ros::Time();
-  traj.ns = "trajectory_marker";
-  traj.id = 0;
-  traj.type = visualization_msgs::Marker::SPHERE;
-  traj.action = visualization_msgs::Marker::ADD;
-  traj.pose.position = point;
-  traj.scale.x = radius * 2;
-  traj.scale.y = radius * 2;
-  traj.scale.z = 1.0;
-  traj.color.a = 0.3;
-  traj.color.r = 1.0;
-  traj.color.g = 0.0;
-  traj.color.b = 0.0;
-  traj.frame_locked = true;
-  _traj_pub.publish(traj);
-}
-
-double PathPP::calcRadius(int waypoint)
-{
-  return pow(getDistance(waypoint), 2) / (2 * transformWaypoint(waypoint).getY());
-}
-
-static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr config)
-{
-  _path_pp.setConfig(config);
+  g_param_flag = config->param_flag;
+  g_lookahead_threshold = config->lookahead_threshold;
+  g_initial_velocity = config->velocity;
+  g_offset_base2sensor = config->offset;
+  g_look_ahead_threshold_calc_ratio = config->threshold_ratio;
+  g_minimum_lool_ahead_threshold = config->minimum_lookahead_threshold;
 }
 
 static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
-  if (_sim_mode)
-  {
-    _current_velocity = msg->twist.twist.linear.x;
-    _current_angular_velocity = msg->twist.twist.angular.z;
-    _current_pose.header = msg->header;
-    _current_pose.pose = msg->pose.pose;
+  //std::cout << "odometry callback" << std::endl;
 
-    tf::Transform inverse;
-    tf::poseMsgToTF(msg->pose.pose, inverse);
-    _path_pp.setTransform(inverse.inverse());
-    _pose_set = true;
-    //   std::cout << "transform2 (" << _transform2.getOrigin().x() << " " <<  _transform2.getOrigin().y() << " " <<  _transform2.getOrigin().z() << ")" << std::endl;
+  //
+  // effective for testing.
+  //
+  if (g_sim_mode)
+  {
+    g_current_velocity = msg->twist.twist.linear.x;
+    g_current_pose.header = msg->header;
+    g_current_pose.pose = msg->pose.pose;
+    g_pose_set = true;
   }
 
 }
 
 static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  if (!_sim_mode)
+  if (!g_sim_mode)
   {
-    _current_pose.header = msg->header;
-    _current_pose.pose = msg->pose;
-    tf::Transform inverse;
-    tf::poseMsgToTF(msg->pose, inverse);
-    _path_pp.setTransform(inverse.inverse());
-    _pose_set = true;
-  }
-}
+    g_current_pose.header = msg->header;
+    g_current_pose.pose = msg->pose;
 
-static void estVelCallback(const std_msgs::Float32ConstPtr &msg)
-{
-  //_current_velocity = msg->data;
+    geometry_msgs::Point base_link_point;
+    base_link_point.x = g_offset_base2sensor;
+    g_current_pose.pose.position =  calcAbsoluteCoordinate(base_link_point,g_current_pose.pose);
+    g_pose_set = true;
+  }
 }
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-  _path_pp.setPath(msg);
-  _waypoint_set = true;
+  g_current_waypoints.setPath(*msg);
+  g_waypoint_set = true;
   ROS_INFO_STREAM("waypoint subscribed");
+}
+
+/*static double getCmdVelocity(int waypoint)
+{
+
+  if (g_param_flag)
+  {
+    ROS_INFO_STREAM("dialog : " << g_initial_velocity << " km/h (" << kmph2mps(g_initial_velocity) << " m/s )");
+    return kmph2mps(g_initial_velocity);
+  }
+
+  if (g_current_waypoints.isEmpty())
+  {
+    ROS_INFO_STREAM("waypoint : not loaded path");
+    return 0;
+  }
+
+  double velocity = g_current_waypoints.getWaypointVelocityMPS(waypoint);
+  ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h ( " << velocity << "m/s )");
+  return velocity;
+}
+*/
+static double getLookAheadThreshold(int waypoint)
+{
+  if (g_param_flag)
+    return g_lookahead_threshold;
+
+  // double current_velocity_mps = _current_waypoints.getWaypointVelocityMPS(waypoint);
+  double current_velocity_mps = g_current_velocity;
+
+  if (current_velocity_mps * g_look_ahead_threshold_calc_ratio < g_minimum_lool_ahead_threshold)
+    return g_minimum_lool_ahead_threshold;
+  else
+    return current_velocity_mps * g_look_ahead_threshold_calc_ratio;
 }
 
 static void canInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
 {
   double steering_wheel_angle = msg->angle;
-  _current_velocity = (msg->speed)*(1000.00/3600);
+  g_current_velocity = (msg->speed)*(1000.00/3600);
   steering_wheel_angle = steering_wheel_angle*(3.1496/180.00);
-  _can_info_curvature = (steering_wheel_angle / (double) WHEEL_TO_STEERING) / WHEEL_BASE;
+  g_can_info_curvature = (steering_wheel_angle / (double) WHEEL_TO_STEERING) / WHEEL_BASE;
   ROS_INFO_STREAM("Steering Wheel Angle: "<<steering_wheel_angle);
-  ROS_INFO_STREAM("Curvature from CAN: "<<_can_info_curvature);
+  ROS_INFO_STREAM("Curvature from CAN: "<<g_can_info_curvature);
+}
+
+/*static void mkzInfoCallback(const dbw_mkz_msgs::SteeringReport::ConstPtr& msg)
+{
+  double steering_wheel_angle = msg->steering_wheel_angle;
+  _current_velocity = (msg->speed);
+  _can_info_curvature = (steering_wheel_angle / (double) WHEEL_TO_STEERING_MKZ) / WHEEL_BASE_MKZ;
+  ROS_INFO_STREAM("Steering Wheel Angle: "<<steering_wheel_angle);
+  ROS_INFO_STREAM("Curvature from CAN: "<<_mkz_info_curvature);
+}
+*/
+
+static int getNextWaypoint(int closest_waypoint)
+{
+  // if waypoints are not given, do nothing.
+  if (g_current_waypoints.getSize() == 0)
+    return -1;
+
+  double lookahead_threshold = getLookAheadThreshold(closest_waypoint);
+
+  //ROS_INFO_STREAM("threshold = " << lookahead_threshold);
+  // look for the next waypoint.
+  for (int i = closest_waypoint; i < g_current_waypoints.getSize(); i++)
+  {
+    //skip waypoint behind vehicle
+    if (calcRelativeCoordinate(g_current_waypoints.getCurrentWaypoints().waypoints[i].pose.pose.position,
+        g_current_pose.pose).x < 0)
+      continue;
+
+    // if there exists an effective waypoint
+    if (getPlaneDistance(g_current_waypoints.getCurrentWaypoints().waypoints[i].pose.pose.position,
+        g_current_pose.pose.position) > lookahead_threshold)
+      return i;
+  }
+
+  // if the program reaches here, it means we lost the waypoint.
+  return -1;
 }
 
 // display the next waypoint by markers.
@@ -383,8 +244,8 @@ static void displayNextWaypoint(int i)
   marker.id = 0;
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position = _path_pp.getWaypointPosition(i);
-  marker.pose.orientation = _path_pp.getWaypointOrientation(i);
+  marker.pose.position = g_current_waypoints.getWaypointPosition(i);
+  marker.pose.orientation = g_current_waypoints.getWaypointOrientation(i);
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
   marker.scale.z = 1.0;
@@ -396,44 +257,6 @@ static void displayNextWaypoint(int i)
   _vis_pub.publish(marker);
 }
 
-/////////////////////////////////////////////////////////////////
-// Safely stop the vehicle.
-/////////////////////////////////////////////////////////////////
-static geometry_msgs::Twist stopControl()
-{
-  geometry_msgs::Twist twist;
-
-  double lookahead_distance = _path_pp.getDistance(_path_pp.getPathSize() - 1);
-
-  double stop_interval = 3;
-  if (lookahead_distance < stop_interval)
-  {
-    twist.linear.x = 0;
-    twist.angular.z = 0;
-    return twist;
-  }
-
-  twist.linear.x = DecelerateVelocity(lookahead_distance, _prev_velocity);
-
-  if (twist.linear.x < 1.0)
-  {
-    twist.linear.x = 0;
-  }
-
-  double radius = _path_pp.calcRadius(_path_pp.getPathSize() - 1);
-
-  if (radius > 0 || radius < 0)
-  {
-    twist.angular.z = twist.linear.x / radius;
-  }
-  else
-  {
-    twist.angular.z = 0;
-  }
-  return twist;
-
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // M. O'Kelly code begins here, 
 // Suggested: need to clean up unused functions above... don't have time.
@@ -442,21 +265,28 @@ static geometry_msgs::Twist stopControl()
 /////////////////////////////////////////////////////////////////
 // Compute the goal state of the vehicle
 /////////////////////////////////////////////////////////////////
-union State computeWaypointGoal(int next_waypoint)
+static union State computeWaypointGoal(int next_waypoint)
 {
     union State l_goal;
 
     // Get the next waypoint position with respect to the vehicles frame
-    l_goal.sx = _path_pp.transformWaypoint(next_waypoint).getX();
-    l_goal.sy = _path_pp.transformWaypoint(next_waypoint).getY();
+    //l_goal.sx = _path_pp.transformWaypoint(next_waypoint).getX();
+    //l_goal.sy = _path_pp.transformWaypoint(next_waypoint).getY();
+
+    l_goal.sx = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint),g_current_pose.pose).x;
+    l_goal.sy = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint),g_current_pose.pose).y;
 
     // Get the next next waypoint position
-    double waypoint_lookahead_1_x = _path_pp.transformWaypoint(next_waypoint+1).getX();
-    double waypoint_lookahead_1_y = _path_pp.transformWaypoint(next_waypoint+1).getY();
+    //double waypoint_lookahead_1_x = _path_pp.transformWaypoint(next_waypoint+1).getX();
+   // double waypoint_lookahead_1_y = _path_pp.transformWaypoint(next_waypoint+1).getY();
+    double waypoint_lookahead_1_x = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+1),g_current_pose.pose).x;
+    double waypoint_lookahead_1_y = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+1),g_current_pose.pose).y;
 
     // Get the next next next waypoint
-    double waypoint_lookahead_2_x = _path_pp.transformWaypoint(next_waypoint+2).getX();
-    double waypoint_lookahead_2_y = _path_pp.transformWaypoint(next_waypoint+2).getY();
+   // double waypoint_lookahead_2_x = _path_pp.transformWaypoint(next_waypoint+2).getX();
+    //double waypoint_lookahead_2_y = _path_pp.transformWaypoint(next_waypoint+2).getY();
+    double waypoint_lookahead_2_x = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+2),g_current_pose.pose).x;
+    double waypoint_lookahead_2_y = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+2),g_current_pose.pose).y;
 
     // Compute dX and dY relative to lookahead
     double dX_1 =  waypoint_lookahead_1_x - l_goal.sx;
@@ -468,11 +298,6 @@ union State computeWaypointGoal(int next_waypoint)
 
     // Estimate desired orientation of the vehicle at next waypoint
     l_goal.theta = atan(dY_1/dX_1);
-
-    // Should we use lookahead and next waypoint 
-    // or current and next as below:
-    //l_goal.theta = atan(l_goal.sy/l_goal.sx);
-
 
     // Estimate the desired orientation at the next next waypoint
     double theta_lookahead = atan(dY_2/dX_2);
@@ -494,8 +319,8 @@ union State computeWaypointGoal(int next_waypoint)
 
     l_goal.kappa = max ((double)kmin/10.0, l_goal.kappa); 
   
-    // Get the desired velocity at the next waypoint
-    l_goal.v = _path_pp.getNextWaypointVelocity(next_waypoint);
+    // Get the desired velocity at the closest waypoint
+    l_goal.v = g_current_waypoints.getWaypointVelocityMPS(next_waypoint);
 
     return l_goal;
 }
@@ -503,7 +328,7 @@ union State computeWaypointGoal(int next_waypoint)
 /////////////////////////////////////////////////////////////////
 // Compute current state of the vehicle
 /////////////////////////////////////////////////////////////////
-union State computeVeh(int old_time, double old_theta, int next_waypoint)
+static union State computeVeh(int old_time, double old_theta, int next_waypoint)
 {
     union State l_veh;
 
@@ -513,45 +338,44 @@ union State computeVeh(int old_time, double old_theta, int next_waypoint)
 
     // Compute yaw (orientation) relative to the world coordinate frame
     // Necessary to compute curvature, but note that in the local coordinate frame yaw is still 0.0
-    tf::Quaternion q(_current_pose.pose.orientation.x,_current_pose.pose.orientation.y,_current_pose.pose.orientation.z,_current_pose.pose.orientation.w);
+    tf::Quaternion q(g_current_pose.pose.orientation.x,g_current_pose.pose.orientation.y,g_current_pose.pose.orientation.z,g_current_pose.pose.orientation.w);
     tf::Matrix3x3 m(q);
     double roll,pitch,yaw;
     m.getRPY(roll,pitch,yaw);
-
-    // Check this later:
-    //double local_theta=yaw;
 
     // Because we are on the coordinate system of the base frame
     l_veh.theta = 0.0;
 
     // Get the current velocity of the vehicle
-    l_veh.v = _current_velocity;
+    l_veh.v = g_current_velocity;
 
     // Get the desired velocity
-    l_veh.vdes = _path_pp.getNextWaypointVelocity(next_waypoint);
+    l_veh.vdes = g_current_waypoints.getWaypointVelocityMPS(next_waypoint);
     ROS_INFO_STREAM("Desired Velocity: "<< l_veh.vdes);
 
     // Not using timing related stuff for now...
-    // In order to estimate the curvature we need to compute the arc length we have travelled on
-    // Thus we need to estimate dt
-    // l_veh.timestamp = _current_pose.header.stamp.nsec;
-    //double localElapsedTime=((double)l_veh.timestamp-old_time)/1000000000.00;
-
-    // ds is the change in position along the arc
-    //double ds = localElapsedTime*veh.v;
-
-    // Should get the current steering angle instead
-    // Steering angle ~= kappa 
-    // Ask Ohta-san?
-    double w = _current_angular_velocity;
+    double w = g_current_angular_velocity;
     ROS_INFO_STREAM("Current omega: " <<w);
     l_veh.kappa = w/l_veh.vdes;
 
 
-    if (!_sim_mode)
+    if (!g_sim_mode && g_prius_mode)
     {
-     l_veh.kappa = _can_info_curvature;
-     ROS_INFO_STREAM("Current kappa: " <<l_veh.kappa);
+     l_veh.kappa = g_can_info_curvature;
+     ROS_INFO_STREAM("Current kappa (prius): " <<l_veh.kappa);
+    }
+
+    else if(!g_sim_mode && g_mkz_mode)
+    {
+      l_veh.kappa = g_mkz_info_curvature;
+      ROS_INFO_STREAM("Current kappa (mkz): " <<l_veh.kappa);
+    }
+
+    else
+    {
+      double w = g_current_angular_velocity;
+      l_veh.kappa = w/l_veh.vdes;
+      ROS_INFO_STREAM("Current kappa (sim): " <<l_veh.kappa);
     }
 
     return l_veh;
@@ -560,7 +384,7 @@ union State computeVeh(int old_time, double old_theta, int next_waypoint)
 /////////////////////////////////////////////////////////////////
 // Compute trajectory
 /////////////////////////////////////////////////////////////////
-union Spline waypointTrajectory(union State veh, union State goal, union Spline curvature, int next_waypoint)
+static union Spline waypointTrajectory(union State veh, union State goal, union Spline curvature, int next_waypoint)
 {
     curvature.success=TRUE;  
     bool convergence=FALSE;
@@ -628,12 +452,12 @@ union Spline waypointTrajectory(union State veh, union State goal, union Spline 
 /////////////////////////////////////////////////////////////////
 // Draw Spline
 /////////////////////////////////////////////////////////////////
-void drawSpline(union Spline curvature, union State veh, int flag, int selected)
+static void drawSpline(union Spline curvature, union State veh, int flag, int selected)
 {
   static double vdes=veh.vdes;
   // Setup up line strips
   visualization_msgs:: Marker line_strip;
-  if (!_sim_mode)
+  if (!g_sim_mode)
   {
     line_strip.header.frame_id = BASE_FRAME;
   }
@@ -692,7 +516,7 @@ void drawSpline(union Spline curvature, union State veh, int flag, int selected)
   }
 
   // Publish trajectory line strip (to RViz)
-  marker_pub.publish(line_strip);
+  g_marker_pub.publish(line_strip);
 
 }
 
@@ -711,41 +535,50 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("Trajectory Generation Begins: ");
 
   // Set up ROS, TO DO: change to proper name (same with rest of the file)
-  ros::init(argc, argv, "pure_pursuit");
+  ros::init(argc, argv, "lattice_trajectory_gen");
 
   // Create node handles 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
   // Set the parameters for the node
-  private_nh.getParam("sim_mode", _sim_mode);
-  ROS_INFO_STREAM("sim_mode : " << _sim_mode);
+  private_nh.getParam("sim_mode", g_sim_mode);
+  private_nh.getParam("prius_mode", g_prius_mode);
+  private_nh.getParam("mkz_mode", g_mkz_mode);
+  ROS_INFO_STREAM("sim_mode : " << g_sim_mode);
+  ROS_INFO_STREAM("prius_mode : " << g_prius_mode);
+  ROS_INFO_STREAM("mkz_mode : " << g_mkz_mode);
 
   // Publish the following topics: 
-  // Velocity commands, waypoint markers, trajectory marker, and lf_stat (? MOK not sure what this is)
-  // NOTE: MOK commented out velocity command publisher, because that will be done in command_converter now
-  // ros::Publisher cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
-  _vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 1);
-  _traj_pub = nh.advertise<visualization_msgs::Marker>("trajectory_mark", 0);
-  _stat_pub = nh.advertise<std_msgs::Bool>("wf_stat", 0);
-
+  g_vis_pub = nh.advertise<visualization_msgs::Marker>("next_waypoint_mark", 1);
+  g_stat_pub = nh.advertise<std_msgs::Bool>("wf_stat", 0);
   // Publish the curvature information:
   ros::Publisher spline_parameters_pub = nh.advertise<std_msgs::Float64MultiArray>("spline", 10);
   ros::Publisher state_parameters_pub = nh.advertise<std_msgs::Float64MultiArray>("state", 10);
-
   // Publish the trajectory visualization
-  marker_pub = nh.advertise<visualization_msgs::Marker>("cubic_splines_viz", 10);
+  g_marker_pub = nh.advertise<visualization_msgs::Marker>("cubic_splines_viz", 10);
 
   // Subscribe to the following topics: 
-  // waypoints, odometry, localization, velocity estimate, lane follower (MOK not sure of the purpose)
-  //ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoint", 10, WayPointCallback);
-  ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
-  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
-  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
-  ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);
-  //ros::Subscriber config_subscriber = nh.subscribe("config/lane_follower", 10, ConfigCallback);
-  ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-  ros::Subscriber can_info = nh.subscribe("can_info", 10, canInfoCallback);
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 1, WayPointCallback);
+  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1, OdometryPoseCallback);
+  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1, NDTCallback);
+  //ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);
+  ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 1, ConfigCallback);
+  ros::Subscriber sub_steering;
+  ros::Subscriber can_info;
+
+  if(g_prius_mode)
+  {
+    can_info = nh.subscribe("can_info", 1, canInfoCallback);
+  }
+
+  
+/*  else if(_mkz_mode)
+    {
+    ROS_INFO_STREAM("********************mkz_mode ON");
+    sub_steering = nh.subscribe("/vehicle/steering_report", 1, mkzInfoCallback);
+    }
+  */
 
   // Local variable for geometry messages
   geometry_msgs::TwistStamped twist;
@@ -753,11 +586,7 @@ int main(int argc, char **argv)
   // Set the loop rate unit is Hz
   ros::Rate loop_rate(LOOP_RATE); 
 
-  // Initialize endflag to false
-  bool endflag = false;
-
-  // Set up arrays for perturb and flag to enable easy
-  // parallelization via OpenMP pragma
+  // Set up arrays for perturb and flag to enable easy parallelization via OpenMP pragma
   double perturb[30];
   perturb[0]=-3.00;
 
@@ -781,34 +610,22 @@ int main(int argc, char **argv)
     ros::spinOnce();
 
     // Wait for waypoints (in Runtime Manager) and pose to be set (in RViz)
-    if (_waypoint_set == false || _pose_set == false)
+    if (g_waypoint_set == false || g_pose_set == false)
     {
       ROS_INFO_STREAM("topic waiting...");
       loop_rate.sleep();
       continue;
     }
 
-    // Get the closest waypoinmt 
-    int closest_waypoint = _path_pp.getClosestWaypoint();
-    static int prev_closest_waypoint = 0;
-    if (closest_waypoint < 0)
-    {
-      closest_waypoint = prev_closest_waypoint+5;
-      prev_closest_waypoint = closest_waypoint;
-    }
-    
-    
+    // Get the closest waypoinmt
+    int closest_waypoint = getClosestWaypoint(g_current_waypoints.getCurrentWaypoints(), g_current_pose.pose);
     ROS_INFO_STREAM("closest waypoint = " << closest_waypoint);
 
-    // Check to make sure that the vehicle has not reached the end
-    // of the mission
-    if (!endflag)
-    {
       // If the current  waypoint has a valid index
       if (closest_waypoint > 0)
       {
         // Return the next waypoint
-        int next_waypoint = _path_pp.getNextWaypoint();
+        int next_waypoint = getNextWaypoint(closest_waypoint);
         ROS_INFO_STREAM("Next waypoint: "<<next_waypoint);
 
         // If the next waypoiont also has a valid index
@@ -828,7 +645,6 @@ int main(int argc, char **argv)
           if(initFlag==TRUE && prev_curvature.success==TRUE)
           {
             veh_fmm = nextState(veh, prev_curvature, veh.vdes, 0.2, 0);
-            //veh.kappa = veh_fmm.kappa;
             ROS_INFO_STREAM("est kappa: " <<veh_fmm.kappa);
           }
         
@@ -843,7 +659,6 @@ int main(int argc, char **argv)
           // Check that we got a result and publish it or stream expletive to screen
           if(curvature.success==TRUE)
           { 
-
             std_msgs::Float64MultiArray spline;
   	        spline.data.clear();
 
@@ -856,7 +671,7 @@ int main(int argc, char **argv)
           }
           else 
           {
-            ROS_INFO_STREAM("DAMNIT");
+            ROS_INFO_STREAM("SPLINE FAIL");
           }
 
           // Also publish the state at the time of the result for curvature...
@@ -869,52 +684,51 @@ int main(int argc, char **argv)
 
           state_parameters_pub.publish(state);
 
-          // If the velocity is nonzero (would preclude horizon calc) publish trajectory viz
-          if(veh.v>0)
+          // Need to hold back on extra trajectories until CPU utilization is figured out...
+          // Need cost map etc...
+          if(g_sim_mode)
           {
-            drawSpline(curvature, veh, 0,0);
-            SPLINE_INDEX++;
-            ROS_INFO_STREAM("Spline published to RVIZ");
-          }
-          
-            // This is a messy for loop which generates extra trajectories for visualization
-            // Likely will change when valid cost map arrives.
-            // Note: pragma indicates parallelization for OpenMP
-
-            // Setup variables
-            union State tempGoal= goal;
-            int i;
-            union Spline extra;
-            
-            // Tell OpenMP how to parallelize (keep i private because it is a counter)
-            #pragma omp parallel for private(i)
-
-            // Index through all the predefined perturbations from waypoint
-            for(i=1; i<31; i++)
-            {
-              // Shift the y-coordinate of the goal
-              tempGoal.sy = tempGoal.sy + perturb[i-1];
-
-              // Compute new spline 
-              extra= waypointTrajectory(veh, tempGoal, curvature, next_waypoint);
-
-              // Display trajectory
-              if(veh.v>5.00)
+              // If the velocity is nonzero (would preclude horizon calc) publish trajectory viz
+              if(veh.v>0)
               {
-                drawSpline(extra, veh, i,1);
+                drawSpline(curvature, veh, 0,0);
+                SPLINE_INDEX++;
+                ROS_INFO_STREAM("Spline published to RVIZ");
               }
-            }
+              
+                // This is a messy for loop which generates extra trajectories for visualization
+                // Likely will change when valid cost map arrives.
+                // Note: pragma indicates parallelization for OpenMP
 
+                // Setup variables
+                union State tempGoal= goal;
+                int i;
+                union Spline extra;
+                
+                // Tell OpenMP how to parallelize (keep i private because it is a counter)
+                #pragma omp parallel for private(i)
 
-          // Update the elapsed time 
-          //double elapsedTime=(veh.timestamp-old_time)/1000000000.00;
+                // Index through all the predefined perturbations from waypoint
+                for(i=1; i<31; i++)
+                {
+                  // Shift the y-coordinate of the goal
+                  tempGoal.sy = tempGoal.sy + perturb[i-1];
+
+                  // Compute new spline 
+                  extra= waypointTrajectory(veh, tempGoal, curvature, next_waypoint);
+
+                  // Display trajectory
+                  if(veh.v>5.00)
+                  {
+                    drawSpline(extra, veh, i,1);
+                  }
+                }
+          }
 
           // Update previous time and orientation measurements
           old_time= veh.timestamp;
           old_theta=veh.theta;
-
         }
-
         // If the next way point is not available 
         else 
         {
@@ -925,42 +739,9 @@ int main(int argc, char **argv)
           twist.twist.angular.z = 0;
         }
 
-        // Check whether vehicle is close to the final destination
-        if (next_waypoint > _path_pp.getPathSize() - 5)
-        {
-            endflag = true;
-        }
       }
 
-      // Else if the closest waypoint is not detected
-      /*else 
-      {
-        ROS_INFO_STREAM("Closest waypoint cannot be detected!");
-        _lf_stat.data = false;
-        _stat_pub.publish(_lf_stat);
-        twist.twist.linear.x = 0;
-        twist.twist.angular.z = 0;
-      }*/
-
-    }
-
-    // If endflag is true
-    else 
-    {
-      twist.twist = stopControl();
-      _lf_stat.data = false;
-      _stat_pub.publish(_lf_stat);
-
-      // After stopped or fed out, let's get ready for the restart.
-      if (twist.twist.linear.x == 0)
-      {
-        ROS_INFO_STREAM("Trajectory generation ended!");
-        _lf_stat.data = false;
-        _stat_pub.publish(_lf_stat);
-        endflag = false;
-      }
-    }
-    _prev_velocity = twist.twist.linear.x;
+    g_prev_velocity = twist.twist.linear.x;
     loop_rate.sleep();
   }
 
