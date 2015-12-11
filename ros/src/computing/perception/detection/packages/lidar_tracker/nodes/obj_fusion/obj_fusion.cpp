@@ -9,6 +9,7 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <mutex>
+#include <std_msgs/Time.h>
 
 /* flag for comfirming whether multiple topics are received */
 static bool isReady_obj_label;
@@ -19,10 +20,12 @@ static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool ADVERTISE_LATCH = false;
 
 ros::Publisher obj_pose_pub;
+ros::Publisher obj_pose_timestamp_pub;
 
 static std::vector<geometry_msgs::Point> reprojected_positions;
 static std::string object_type;
 static std::vector<geometry_msgs::Point> centroids;
+static ros::Time obj_pose_timestamp;
 
 static tf::StampedTransform transform;
 
@@ -147,12 +150,14 @@ static void fusion_objects(void)
         }
 
         obj_pose_pub.publish(pub_msg);
+        obj_pose_timestamp_pub.publish(obj_pose_timestamp);
 }
 
 
 void obj_label_cb(const cv_tracker::obj_label& obj_label_msg)
 {
     object_type = obj_label_msg.type;
+    obj_pose_timestamp = obj_label_msg.header.stamp;
 
     LOCK(mtx_reprojected_positions);
     reprojected_positions.clear();
@@ -243,6 +248,7 @@ int main(int argc, char* argv[])
     ros::Subscriber obj_label_sub         = n.subscribe("obj_label", SUBSCRIBE_QUEUE_SIZE, obj_label_cb);
     ros::Subscriber cluster_centroids_sub = n.subscribe("/cluster_centroids", SUBSCRIBE_QUEUE_SIZE, cluster_centroids_cb);
     obj_pose_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+    obj_pose_timestamp_pub = n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
 
     tf::TransformListener trf_listener;
 
