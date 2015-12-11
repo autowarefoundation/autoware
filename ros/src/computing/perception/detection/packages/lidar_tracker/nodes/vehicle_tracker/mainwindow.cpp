@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "moc_mainwindow.cpp"
 
 InitTrackerView::InitTrackerView(QWidget * parent)
     : QGraphicsView(parent)
