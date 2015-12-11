@@ -8,6 +8,7 @@
 #include <float.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include <mutex>
 
 /* flag for comfirming whether multiple topics are received */
 static bool isReady_obj_label;
@@ -21,8 +22,17 @@ ros::Publisher obj_pose_pub;
 
 static std::vector<geometry_msgs::Point> reprojected_positions;
 static std::string object_type;
+static std::vector<geometry_msgs::Point> centroids;
 
 static tf::StampedTransform transform;
+
+/* mutex to handle objects from within multi thread safely */
+std::mutex mtx_flag_obj_label;
+std::mutex mtx_flag_cluster_centroids;
+std::mutex mtx_reprojected_positions;
+std::mutex mtx_centroids;
+#define LOCK(mtx) (mtx).lock()
+#define UNLOCK(mtx) (mtx).unlock()
 
 static double euclid_distance(const geometry_msgs::Point pos1,
                               const geometry_msgs::Point pos2)
@@ -34,62 +44,34 @@ static double euclid_distance(const geometry_msgs::Point pos1,
 } /* static double distance() */
 
 
-void obj_label_cb(const cv_tracker::obj_label& obj_label_msg)
+/* fusion reprojected position and pointcloud centroids */
+static void fusion_objects(void)
 {
-    object_type = obj_label_msg.type;
-    reprojected_positions.clear();
+    std::vector<geometry_msgs::Point> reprojected_positions_current;
+    std::vector<geometry_msgs::Point> centroids_current;
 
-    visualization_msgs::MarkerArray test;
-    std_msgs::ColorRGBA color_green;
-    color_green.r = 0.0f;
-    color_green.g = 1.0f;
-    color_green.b = 0.0f;
-    color_green.a = 1.0f;
-    for (const auto& point : obj_label_msg.reprojected_pos)
-        {
-            reprojected_positions.push_back(point);
-        }
+    LOCK(mtx_reprojected_positions);
+    copy(reprojected_positions.begin(), reprojected_positions.end(), back_inserter(reprojected_positions_current));
+    UNLOCK(mtx_reprojected_positions);
 
-    /* confirm obj_label is subscribed */
-    isReady_obj_label = true;
+    LOCK(mtx_centroids);
+    copy(centroids.begin(), centroids.end(), back_inserter(centroids_current));
+    UNLOCK(mtx_centroids);
 
-} /* void obj_label_cb() */
-
-
-void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
-{
-    std::vector<geometry_msgs::Point> centroids;
-
-    for (const auto& point : cluster_centroids_msg.points)
-        {
-            /* convert centroids coodinate from velodyne frame to map frame */
-            tf::Vector3 pt(point.x, point.y, point.z);
-            tf::Vector3 converted = transform * pt;
-
-            geometry_msgs::Point point_in_map;
-            point_in_map.x = converted.x();
-            point_in_map.y = converted.y();
-            point_in_map.z = converted.z();
-
-            centroids.push_back(point_in_map);
-        }
-
-    isReady_cluster_centroids = true;
-
-    if (centroids.empty() || reprojected_positions.empty()) {
+    if (centroids_current.empty() || reprojected_positions_current.empty()) {
         return;
     }
 
     std::vector<unsigned int> obj_indices;
-    for(const auto& reproj_pos : reprojected_positions)
+    for(const auto& reproj_pos : reprojected_positions_current)
         {
             unsigned int min_idx      = 0;
             double       min_distance = DBL_MAX;
 
             /* calculate each euclid distance between reprojected position and centroids */
-            for (unsigned int i=0; i<centroids.size(); i++)
+            for (unsigned int i=0; i<centroids_current.size(); i++)
                 {
-                    double distance = euclid_distance(reproj_pos, centroids.at(i));
+                    double distance = euclid_distance(reproj_pos, centroids_current.at(i));
 
                     /* Nearest centroid correspond to this reprojected object */
                     if (distance < min_distance)
@@ -137,7 +119,7 @@ void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
             marker.type = visualization_msgs::Marker::SPHERE;
 
             /* Set the pose of the marker */
-            marker.pose.position = centroids.at(idx);
+            marker.pose.position = centroids_current.at(idx);
             marker.pose.orientation.x = 0.0;
             marker.pose.orientation.y = 0.0;
             marker.pose.orientation.y = 0.0;
@@ -164,10 +146,84 @@ void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
             pub_msg.markers.push_back(marker);
         }
 
-    if (isReady_obj_label && isReady_cluster_centroids) {
         obj_pose_pub.publish(pub_msg);
+}
+
+
+void obj_label_cb(const cv_tracker::obj_label& obj_label_msg)
+{
+    object_type = obj_label_msg.type;
+
+    LOCK(mtx_reprojected_positions);
+    reprojected_positions.clear();
+    UNLOCK(mtx_reprojected_positions);
+
+    LOCK(mtx_reprojected_positions);
+    for (const auto& point : obj_label_msg.reprojected_pos)
+        {
+            reprojected_positions.push_back(point);
+        }
+    UNLOCK(mtx_reprojected_positions);
+
+    /* confirm obj_label is subscribed */
+    LOCK(mtx_flag_obj_label);
+    isReady_obj_label = true;
+    UNLOCK(mtx_flag_obj_label);
+
+    /* Publish fusion result if both of topics are ready */
+   if (isReady_obj_label && isReady_cluster_centroids)
+        {
+            fusion_objects();
+
+            LOCK(mtx_flag_obj_label);
+            isReady_obj_label = false;
+            UNLOCK(mtx_flag_obj_label);
+
+            LOCK(mtx_flag_cluster_centroids);
+            isReady_cluster_centroids = false;
+            UNLOCK(mtx_flag_cluster_centroids);
+        }
+
+} /* void obj_label_cb() */
+
+
+void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
+{
+    LOCK(mtx_centroids);
+    centroids.clear();
+    UNLOCK(mtx_centroids);
+
+    LOCK(mtx_centroids);
+    for (const auto& point : cluster_centroids_msg.points)
+        {
+            /* convert centroids coodinate from velodyne frame to map frame */
+            tf::Vector3 pt(point.x, point.y, point.z);
+            tf::Vector3 converted = transform * pt;
+
+            geometry_msgs::Point point_in_map;
+            point_in_map.x = converted.x();
+            point_in_map.y = converted.y();
+            point_in_map.z = converted.z();
+
+            centroids.push_back(point_in_map);
+        }
+    UNLOCK(mtx_centroids);
+
+    LOCK(mtx_flag_cluster_centroids);
+    isReady_cluster_centroids = true;
+    UNLOCK(mtx_flag_cluster_centroids);
+
+    /* Publish fusion result if both of topics are ready */
+    if (isReady_obj_label && isReady_cluster_centroids) {
+        fusion_objects();
+
+        LOCK(mtx_flag_obj_label);
         isReady_obj_label = false;
+        UNLOCK(mtx_flag_obj_label);
+
+        LOCK(mtx_flag_cluster_centroids);
         isReady_cluster_centroids = false;
+        UNLOCK(mtx_flag_cluster_centroids);
     }
 
 } /* void cluster_centroids_cb() */
