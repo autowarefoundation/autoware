@@ -67,6 +67,7 @@
 #include "CalObjLoc.h"
 #include "cv_tracker/obj_label.h"
 #include "calibration_camera_lidar/projection_matrix.h"
+#include <mutex>
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
@@ -92,8 +93,15 @@ struct my_tm {
 static objLocation ol;
 
 //store subscribed value
-static vector<OBJPOS> global_cp_vector;
-//vector<OBJPOS> global_pp_vector;
+static vector<OBJPOS> cp_vector;
+static std_msgs::Header image_obj_tracked_header;
+
+//mutex to handle global-scope objects
+static std::mutex mtx_cp_vector;
+static std::mutex mtx_flag_obj_pos_xyz;
+static std::mutex mtx_flag_ndt_pose;
+#define LOCK(mtx) (mtx).lock()
+#define UNLOCK(mtx) (mtx).unlock()
 
 //flag for comfirming whether updating position or not
 static bool gnssGetFlag;
@@ -204,7 +212,13 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 }
 
 //wrap SendData class
-void locatePublisher(vector<OBJPOS> car_position_vector, std_msgs::Header image_obj_tracked_header){
+void locatePublisher(void){
+
+  vector<OBJPOS> car_position_vector;
+  LOCK(mtx_cp_vector);
+  copy(cp_vector.begin(), cp_vector.end(), back_inserter(car_position_vector));
+  UNLOCK(mtx_cp_vector);
+
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
 
@@ -245,11 +259,7 @@ void locatePublisher(vector<OBJPOS> car_position_vector, std_msgs::Header image_
         // pose_msg.header.frame_id = "map";
   obj_label_msg.type = object_type;
 
-  if (isReady_obj_pos_xyz && isReady_ndt_pose) {
-    pub.publish(obj_label_msg);
-    isReady_obj_pos_xyz = false;
-    isReady_ndt_pose    = false;
-  }
+  pub.publish(obj_label_msg);
    //   }
 }
 
@@ -258,13 +268,19 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
 	if (!ready_)
 		return;
 
-  vector<OBJPOS> cp_vector;
+  // vector<OBJPOS> cp_vector;
+  image_obj_tracked_header = fused_objects.header;
+  LOCK(mtx_cp_vector);
+  cp_vector.clear();
+  UNLOCK(mtx_cp_vector);
+
   OBJPOS cp;
 
   object_type = fused_objects.type;
   //If angle and position data is not updated from prevous data send,
   //data is not sent
   //  if(gnssGetFlag || ndtGetFlag) {
+    LOCK(mtx_cp_vector);
     for (unsigned int i = 0; i < fused_objects.rect_ranged.size(); i++){
 
       //If distance is zero, we cannot calculate position of recognized object
@@ -282,12 +298,24 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
 
       cp_vector.push_back(cp);
     }
+    UNLOCK(mtx_cp_vector);
 
     //Confirm that obj_pos_xyz is subscribed
+    LOCK(mtx_flag_obj_pos_xyz);
     isReady_obj_pos_xyz = true;
+    UNLOCK(mtx_flag_obj_pos_xyz);
 
-    locatePublisher(cp_vector, fused_objects.header);
+    if (isReady_obj_pos_xyz && isReady_ndt_pose) {
+      locatePublisher();
 
+      LOCK(mtx_flag_obj_pos_xyz);
+      isReady_obj_pos_xyz = false;
+      UNLOCK(mtx_flag_obj_pos_xyz);
+
+      LOCK(mtx_flag_ndt_pose);
+      isReady_ndt_pose    = false;
+      UNLOCK(mtx_flag_ndt_pose);
+    }
     //  }
 }
 
@@ -321,8 +349,21 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   ndtGetFlag = true;
 
   //Confirm ndt_pose is subscribed
+  LOCK(mtx_flag_ndt_pose);
   isReady_ndt_pose = true;
+  UNLOCK(mtx_flag_ndt_pose);
 
+    if (isReady_obj_pos_xyz && isReady_ndt_pose) {
+      locatePublisher();
+
+      LOCK(mtx_flag_obj_pos_xyz);
+      isReady_obj_pos_xyz = false;
+      UNLOCK(mtx_flag_obj_pos_xyz);
+
+      LOCK(mtx_flag_ndt_pose);
+      isReady_ndt_pose    = false;
+      UNLOCK(mtx_flag_ndt_pose);
+    }
 
   //printf("my position : %f %f %f\n",my_loc.X,my_loc.Y,my_loc.Z);
 }
