@@ -53,7 +53,8 @@
 static const int LOOP_RATE = 10;
 
 static geometry_msgs::TwistStamped _current_twist;
-static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
+static geometry_msgs::PoseStamped _current_pose; // pose of sensor
+static geometry_msgs::PoseStamped _control_pose; // pose of base_link
 static geometry_msgs::PoseStamped _sim_ndt_pose;
 static pcl::PointCloud<pcl::PointXYZ> _vscan;
 
@@ -141,7 +142,7 @@ void PathVset::setTemporalWaypoints()
   temporal_waypoints_.increment = current_waypoints_.increment;
   // push current pose
   waypoint_follower::waypoint current_point;
-  current_point.pose = _current_pose;
+  current_point.pose = _control_pose;
   current_point.twist = current_waypoints_.waypoints[_closest_waypoint].twist;
   current_point.dtlane = current_waypoints_.waypoints[_closest_waypoint].dtlane;
   temporal_waypoints_.waypoints.push_back(current_point);
@@ -386,7 +387,13 @@ static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 }
 
-static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+static void ControlCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+{
+        _control_pose.header = msg->header;
+        _control_pose.pose = msg->pose;
+}
+
+static void LocalizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   if (g_sim_mode) {
     _sim_ndt_pose.header = msg->header;
@@ -857,7 +864,8 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
-    ros::Subscriber ndt_sub = nh.subscribe("localizer_pose", 1, NDTCallback);
+    ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, LocalizerCallback);
+    ros::Subscriber control_pose_sub = nh.subscribe("control_pose", 1, ControlCallback);
     ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
     ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, VscanCallback);
     ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, BaseWaypointCallback);
