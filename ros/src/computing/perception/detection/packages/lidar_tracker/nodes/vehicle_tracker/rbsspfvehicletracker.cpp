@@ -1,4 +1,5 @@
 #include "rbsspfvehicletracker.h"
+#include "moc_rbsspfvehicletracker.cpp"
 
 
 RBSSPFVehicleTrackerInstance::RBSSPFVehicleTrackerInstance(int vehicleID, QThread *thread)

@@ -4,6 +4,7 @@ project(lidar_tracker)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
@@ -14,6 +15,15 @@ find_package(catkin REQUIRED COMPONENTS
   #vector_map_server
   rosinterface
 )
+
+pkg_check_modules(Qt5Core REQUIRED Qt5Core)
+pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
+
+execute_process(
+  COMMAND pkg-config --variable=host_bins Qt5Core
+  OUTPUT_VARIABLE Qt5BIN
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -171,21 +181,49 @@ if(EXISTS "/usr/local/cuda")
   endif()
 
   #QT Stuff
-  set(CMAKE_AUTOMOC ON)
+  # set(CMAKE_AUTOMOC ON)
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+  add_custom_command(
+    OUTPUT ui_mainwindow.h
+    COMMAND
+    ${Qt5BIN}/uic
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/ui_mainwindow.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/mainwindow.ui"
+    )
+  add_custom_target(vehicle_tracker_ui_mainwindow DEPENDS ui_mainwindow.h)
+
+  add_custom_command(
+    OUTPUT moc_mainwindow.cpp
+    COMMAND
+    ${Qt5BIN}/moc
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/moc_mainwindow.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/mainwindow.h"
+    )
+  add_custom_target(vehicle_tracker_moc_mainwindow DEPENDS moc_mainwindow.cpp)
+
+  add_custom_command(
+    OUTPUT moc_rbsspfvehicletracker.cpp
+    COMMAND
+    ${Qt5BIN}/moc
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/moc_rbsspfvehicletracker.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vehicle_tracker/rbsspfvehicletracker.h"
+    )
+  add_custom_target(vehicle_tracker_moc_rbsspfvehicletracker DEPENDS moc_rbsspfvehicletracker.cpp)
   
-  find_package(Qt5Core REQUIRED)
-  find_package(Qt5Widgets REQUIRED)
+  # find_package(Qt5Core REQUIRED)
+  # find_package(Qt5Widgets REQUIRED)
   
   #QT Stuff
   
   FIND_PACKAGE(CUDA REQUIRED)
   INCLUDE(FindCUDA)
   
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
+  # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
   
-  INCLUDE_DIRECTORIES(${Qt5Core_INCLUDES}
-    ${Qt5Widgets_INCLUDES})
+  INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS})
 
   #cuda pf lib
   cuda_add_library(rbsspfvehicletracker
@@ -197,8 +235,8 @@ if(EXISTS "/usr/local/cuda")
     )
 
   #qt exe
-  include_directories(${Qt5Core_INCLUDES}
-    ${Qt5Widgets_INCLUDES}
+  include_directories(${Qt5Core_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
     nodes/vehicle_tracker/)
 
   add_definitions(${Qt5Core_DEFINITIONS})
@@ -213,10 +251,13 @@ if(EXISTS "/usr/local/cuda")
     nodes/vehicle_tracker/rbsspfvehicletracker.cpp
     )
 
+  set_target_properties(vehicle_tracker
+    PROPERTIES COMPILE_FLAGS "-fPIC"
+    )
 
   add_dependencies(vehicle_tracker
-    moc_mainwindow
-    moc_rbsspfvehicletrackre
+    vehicle_tracker_moc_mainwindow
+    vehicle_tracker_moc_rbsspfvehicletracker
     vehicle_tracker_ui_mainwindow
     )
 
