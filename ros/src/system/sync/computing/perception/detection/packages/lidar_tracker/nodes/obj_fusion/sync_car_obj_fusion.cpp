@@ -146,6 +146,7 @@ void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) {
     obj_label_ringbuf.push_front(*obj_label_msg);
     //cluster_centroids is empty
     if (cluster_centroids_ringbuf.begin() == cluster_centroids_ringbuf.end()) {
+        buf_flag = false;
         pthread_mutex_unlock(&mutex);
         ROS_INFO("cluster_centroids ring buffer is empty");
         return;
@@ -164,6 +165,7 @@ void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluste
     cluster_centroids_ringbuf.push_front(*cluster_centroids_msg);
     //obj_label is empty
     if (obj_label_ringbuf.begin() == obj_label_ringbuf.end()) {
+        buf_flag = false;
         ROS_INFO("obj_label ring buffer is empty");
         pthread_mutex_unlock(&mutex);
         return;
@@ -351,7 +353,7 @@ void* thread(void* args)
     ros::NodeHandle nh_rcv;
     ros::CallbackQueue rcv_callbackqueue;
     nh_rcv.setCallbackQueue(&rcv_callbackqueue);
-    ros::Subscriber obj_pose_sub = nh_rcv.subscribe("obj_pose", 5, obj_pose_callback);
+    ros::Subscriber obj_pose_sub = nh_rcv.subscribe("/obj_car/obj_pose", 5, obj_pose_callback);
     while (nh_rcv.ok()) {
         rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
         pthread_mutex_lock(&mutex);
@@ -363,7 +365,7 @@ void* thread(void* args)
                 struct timespec sleep_time;
                 sleep_time.tv_sec = 0;
                 sleep_time.tv_nsec = 200000000; //5Hz
-                while (!publish() || ros::ok())
+                while (!publish() && ros::ok())
                     nanosleep(&sleep_time, NULL);
             }
         }
@@ -373,6 +375,9 @@ void* thread(void* args)
 }
 
 int main(int argc, char **argv) {
+    /* init */
+    buf_flag = false;
+    obj_pose_flag = false;
     ros::init(argc, argv, "sync_car_obj_fusion");
     ros::NodeHandle nh;
 
@@ -384,7 +389,7 @@ int main(int argc, char **argv) {
     ros::Subscriber cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, cluster_centroids_callback);
     obj_label__pub = nh.advertise<cv_tracker::obj_label>("/obj_car/obj_label_", 5);
     cluster_centroids__pub = nh.advertise<lidar_tracker::centroids>("/cluster_centroids_", 5);
-    while (!buf_flag) {
+    while (!buf_flag && ros::ok()) {
         ros::spinOnce();
         usleep(100000);
     }
@@ -394,10 +399,10 @@ int main(int argc, char **argv) {
         struct timespec sleep_time;
         sleep_time.tv_sec = 0;
         sleep_time.tv_nsec = 200000000; //5Hz
-        while (!publish() || ros::ok())
+        while (!publish() && ros::ok())
             nanosleep(&sleep_time, NULL);
     }
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_unlock(&mutex);
 
     ros::spin();
 

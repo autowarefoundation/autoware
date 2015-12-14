@@ -207,7 +207,7 @@ void* thread(void* args) {
                 struct timespec sleep_time;
                 sleep_time.tv_sec = 0;
                 sleep_time.tv_nsec = 200000000; //5Hz
-                while (!publish() || ros::ok())
+                while (!publish() && ros::ok())
                     nanosleep(&sleep_time, NULL);
             }
         }
@@ -221,19 +221,19 @@ int main(int argc, char **argv) {
     /* init */
     buf_flag = false;
     image_obj_ranged_flag = false;
-    ros::init(argc, argv, "car_dpm_sync");
+    ros::init(argc, argv, "car_ranging_sync");
     ros::NodeHandle nh;
 
     /* create server thread */
     pthread_t th;
     pthread_create(&th, NULL, thread, (void *)NULL );
 
-    ros::Subscriber image_obj_sub = nh.subscribe("obj_car/image_obj", 1, image_obj_callback);
+    ros::Subscriber image_obj_sub = nh.subscribe("/obj_car/image_obj", 1, image_obj_callback);
     ros::Subscriber vscan_image_sub = nh.subscribe("vscan_image", 1, vscan_image_callback);
-    image_obj__pub = nh.advertise<cv_tracker::image_obj>("obj_car/image_obj_", 5);
+    image_obj__pub = nh.advertise<cv_tracker::image_obj>("/obj_car/image_obj_", 5);
     vscan_image__pub = nh.advertise<points2image::PointsImage>("vscan_image_", 5);
 
-    while ((!buf_flag) || ros::ok()) {
+    while ((!buf_flag) && ros::ok()) {
         ros::spinOnce();
         usleep(100000);
     }
@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
         struct timespec sleep_time;
         sleep_time.tv_sec = 0;
         sleep_time.tv_nsec = 200000000; //5Hz
-        while (!publish() || ros::ok())
+        while (!publish() && ros::ok())
             nanosleep(&sleep_time, NULL);
     }
     pthread_mutex_unlock(&mutex);

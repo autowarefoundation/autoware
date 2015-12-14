@@ -52,8 +52,7 @@ double get_time(const std_msgs::Header *timespec) {
 cv_tracker::image_obj_tracked* p_image_obj_tracked_buf;
 geometry_msgs::PoseStamped* p_current_pose_buf;
 
-void publish_msg(cv_tracker::image_obj_tracked* p_image_obj_tracked_buf, geometry_msgs::PoseStamped* p_current_pose_buf)
-{
+void publish_msg(cv_tracker::image_obj_tracked* p_image_obj_tracked_buf, geometry_msgs::PoseStamped* p_current_pose_buf) {
     ROS_INFO("publish");
     image_obj_tracked__pub.publish(*p_image_obj_tracked_buf);
     current_pose__pub.publish(*p_current_pose_buf);
@@ -135,6 +134,7 @@ bool publish() {
             image_obj_tracked_ringbuf.clear();
             current_pose_ringbuf.clear();
         }
+
         return true;
     } else {
         return false;
@@ -146,11 +146,11 @@ void image_obj_tracked_callback(const cv_tracker::image_obj_tracked::ConstPtr& i
     image_obj_tracked_ringbuf.push_front(*image_obj_tracked_msg);
     //current_pose is empty
     if (current_pose_ringbuf.begin() == current_pose_ringbuf.end()) {
+        buf_flag = false;
         pthread_mutex_unlock(&mutex);
         ROS_INFO("current_pose ring buffer is empty");
         return;
     }
-
     buf_flag = true;
     pthread_mutex_unlock(&mutex);
     pthread_mutex_lock(&mutex);
@@ -166,10 +166,10 @@ void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_p
     //image_obj_tracked is empty
     if (image_obj_tracked_ringbuf.begin() == image_obj_tracked_ringbuf.end()) {
         ROS_INFO("image_obj_tracked ring buffer is empty");
+        buf_flag = false;
         pthread_mutex_unlock(&mutex);
         return;
     }
-
     buf_flag = true;
     pthread_mutex_unlock(&mutex);
     pthread_mutex_lock(&mutex);
@@ -180,6 +180,85 @@ void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_p
 }
 
 #else
+#endif
+
+void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) {
+    pthread_mutex_lock(&mutex);
+    obj_label_flag = true;
+    ROS_INFO("catch publish request");
+    if (publish() == false) {
+        ROS_INFO("waitting...");
+    }
+    pthread_mutex_unlock(&mutex);}
+
+void* thread(void* args)
+{
+    ros::NodeHandle nh_rcv;
+    ros::CallbackQueue rcv_callbackqueue;
+    nh_rcv.setCallbackQueue(&rcv_callbackqueue);
+    ros::Subscriber obj_label_sub = nh_rcv.subscribe("/obj_car/obj_label", 5, obj_label_callback);
+    while (nh_rcv.ok()) {
+        rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
+        pthread_mutex_lock(&mutex);
+        bool flag = (obj_label_flag == false && buf_flag == true);
+        if (flag) {
+            ROS_INFO("timeout");
+            if(!publish()) {
+                /* when to publish is failure, republish */
+                struct timespec sleep_time;
+                sleep_time.tv_sec = 0;
+                sleep_time.tv_nsec = 200000000; //5Hz
+                while (!publish() && ros::ok())
+                    nanosleep(&sleep_time, NULL);
+            }
+        }
+        pthread_mutex_unlock(&mutex);
+    }
+    return NULL;
+}
+
+int main(int argc, char **argv) {
+    /* init */
+    buf_flag = false;
+    obj_label_flag = false;
+    ros::init(argc, argv, "sync_car_obj_reproj");
+    ros::NodeHandle nh;
+
+    /* create server thread */
+    pthread_t th;
+    pthread_create(&th, NULL, thread, (void *)NULL );
+
+    ros::Subscriber image_obj_tracked_sub = nh.subscribe("obj_car/image_obj_tracked", 1, image_obj_tracked_callback);
+    ros::Subscriber current_pose_sub = nh.subscribe("current_pose", 1, current_pose_callback);
+    image_obj_tracked__pub = nh.advertise<cv_tracker::image_obj_tracked>("obj_car/image_obj_tracked_", 5);
+    current_pose__pub = nh.advertise<geometry_msgs::PoseStamped>("current_pose_", 5);
+
+    while (!buf_flag && ros::ok()) {
+        ros::spinOnce();
+        usleep(100000);
+    }
+    pthread_mutex_lock(&mutex);
+    if(!publish()) {
+        /* when to publish is failure, republish */
+        struct timespec sleep_time;
+        sleep_time.tv_sec = 0;
+        sleep_time.tv_nsec = 200000000; //5Hz
+        while (!publish() && ros::ok())
+            nanosleep(&sleep_time, NULL);
+    }
+    pthread_mutex_unlock(&mutex);
+
+    ros::spin();
+
+    /* shutdown server thread */
+    ROS_INFO("wait until shutdown a thread");
+    pthread_kill(th, SIGINT);
+    pthread_join(th, NULL);
+
+    return 0;
+}
+
+#if 0
 cv_tracker::image_obj_tracked image_obj_tracked_buf;
 geometry_msgs::PoseStamped current_pose_buf;
 
@@ -346,73 +425,3 @@ bool publish() {
     }
 }
 #endif
-
-void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) {
-    pthread_mutex_lock(&mutex);
-    obj_label_flag = true;
-    ROS_INFO("catch publish request");
-    if (publish() == false) {
-        ROS_INFO("waitting...");
-    }
-    pthread_mutex_unlock(&mutex);}
-
-void* thread(void* args)
-{
-    ros::NodeHandle nh_rcv;
-    ros::CallbackQueue rcv_callbackqueue;
-    nh_rcv.setCallbackQueue(&rcv_callbackqueue);
-    ros::Subscriber obj_label_sub = nh_rcv.subscribe("obj_label", 5, obj_label_callback);
-    while (nh_rcv.ok()) {
-        rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
-        pthread_mutex_lock(&mutex);
-        bool flag = (obj_label_flag == false && buf_flag == true);
-        if (flag) {
-            ROS_INFO("timeout");
-            if(!publish()) {
-                /* when to publish is failure, republish */
-                struct timespec sleep_time;
-                sleep_time.tv_sec = 0;
-                sleep_time.tv_nsec = 200000000; //5Hz
-                while (!publish() || ros::ok())
-                    nanosleep(&sleep_time, NULL);
-            }
-        }
-        pthread_mutex_unlock(&mutex);
-    }
-    return NULL;
-}
-
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "sync_car_obj_reproj");
-    ros::NodeHandle nh;
-
-    /* create server thread */
-    pthread_t th;
-    pthread_create(&th, NULL, thread, (void *)NULL );
-
-    ros::Subscriber image_obj_tracked_sub = nh.subscribe("obj_car/image_obj_tracked", 1, image_obj_tracked_callback);
-    ros::Subscriber current_pose_sub = nh.subscribe("current_pose", 1, current_pose_callback);
-    image_obj_tracked__pub = nh.advertise<cv_tracker::image_obj_tracked>("obj_car/image_obj_tracked_", 5);
-    current_pose__pub = nh.advertise<geometry_msgs::PoseStamped>("current_pose_", 5);
-    while (!buf_flag) {
-        ros::spinOnce();
-        usleep(100000);
-    }
-    pthread_mutex_lock(&mutex);    if(!publish()) {
-        /* when to publish is failure, republish */
-        struct timespec sleep_time;
-        sleep_time.tv_sec = 0;
-        sleep_time.tv_nsec = 200000000; //5Hz
-        while (!publish() || ros::ok())
-            nanosleep(&sleep_time, NULL);
-    }    pthread_mutex_lock(&mutex);
-
-    ros::spin();
-
-    /* shutdown server thread */
-    ROS_INFO("wait until shutdown a thread");
-    pthread_kill(th, SIGINT);
-    pthread_join(th, NULL);
-
-    return 0;
-}
