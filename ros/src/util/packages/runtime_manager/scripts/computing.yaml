@@ -137,6 +137,7 @@ subs :
       subs :
       - name : euclidean_cluster
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
+        param: euclidean_cluster
       - name : obj_fusion
         cmd  : roslaunch lidar_tracker obj_fusion.launch
         param: obj_fusion
@@ -547,6 +548,62 @@ params :
       min   : 2
       max   : 10
       v     : 9
+      
+  - name  : euclidean_cluster
+    vars  :
+    - name    : publish_ground
+      label   : 'publish ground'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : publish_filtered
+      label   : 'publish filtered'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : is_downsampling
+      label   : 'is downsampling'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : distance
+      label   : 'distance'
+      min       : 0
+      max       : 5
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : leaf_size
+      label   : 'leaf size'
+      min       : 0
+      max       : 1
+      v       : 0.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='  
+    - name    : cluster_size_min
+      label   : 'cluster size minimum'
+      min       : 0
+      max       : 3000
+      v       : 50
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : cluster_size_max
+      label   : 'cluster size maximum'
+      min       : 0
+      max       : 3000
+      v       : 2500
+      cmd_param :
+        dash        : ''
+        delim       : ':='              
 
   - name  : ndt
     topic : /config/ndt

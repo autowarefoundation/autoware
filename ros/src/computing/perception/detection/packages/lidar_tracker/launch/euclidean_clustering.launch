@@ -3,6 +3,11 @@
 	<arg name="points_node" default="/points_raw" /><!--CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW -->
 	<arg name="publish_ground" default="true" />
 	<arg name="publish_filtered" default="true" />
+    <arg name="is_downsampling" default="false" />
+    <arg name="distance" default="0.5" />
+    <arg name="leaf_size" default="0.1" />
+    <arg name="cluster_size_min" default="50" />
+    <arg name="cluster_size_max" default="2500" />
 
 	<!-- rosrun lidar_tracker vscan_filling -->
 	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
@@ -12,6 +17,11 @@
 		<param name="points_node" value="$(arg points_node)" />
 		<param name="publish_ground" value="$(arg publish_ground)" /><!--GROUND FILTERING LIKELY WONT WORK ON VSCAN (for obvious reasons)-->
 		<param name="publish_filtered" value="$(arg publish_filtered)" /><!--POINTS FILTERING LIKELY WONT WORK ON VSCAN (for obvious reasons)-->
+        <param name="is_downsampling" value="$(arg is_downsampling)" />
+        <param name="distance" value="$(arg distance)" />
+        <param name="leaf_size" value="$(arg leaf_size)" />
+        <param name="cluster_size_min" value="$(arg cluster_size_min)" />
+        <param name="cluster_size_max" value="$(arg cluster_size_max)" />
 	</node>
 
 </launch>
