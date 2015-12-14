@@ -90,12 +90,14 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void getInitStateFromTopic(QVector<VehicleState> & initState);
 private:
     Ui::MainWindow *ui;
 public:
     ROSSub<sensor_msgs::LaserScanConstPtr> * scansub;
     ROSSub<visualization_msgs::MarkerArray::ConstPtr> * detectionsub;
     ROSTFSub * tfsub;
+    ROSTFSub * tfMap2Lidarsub;
     QList< QPair<QTime,LaserScan> > scanlist;
     QList< QPair<QTime,VehicleState> > detectionlist;
     QList< QPair<QTime,EGOMOTION> > tflist;
@@ -110,7 +112,10 @@ public slots:
     void slotReceive();
     void slotReceiveDetection();
     void slotReceiveTF();
+    void slotReceiveTFMap2Lidar();
     void slotShowScan();
+private:
+    tf::StampedTransform transformMap2Lidar;
 };
 
 #endif // MAINWINDOW_H

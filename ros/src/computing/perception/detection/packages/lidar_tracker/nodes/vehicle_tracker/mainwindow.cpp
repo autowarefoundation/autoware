@@ -269,14 +269,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     scansub=new ROSSub<sensor_msgs::LaserScanConstPtr>("/scan",1000,10,this);
-    detectionsub=new ROSSub<visualization_msgs::MarkerArray::ConstPtr>("/obj_pose",1000,10,this);
+    detectionsub=new ROSSub<visualization_msgs::MarkerArray::ConstPtr>("obj_pose",1000,10,this);
     tfsub=new ROSTFSub("/world","/velodyne",10,this);
+    tfMap2Lidarsub=new ROSTFSub("/velodyne","/map",10,this); // obj_pose is published into "map" frame
 
 
     //subscribe vehicle detection results (array of [x,y,theta])
 
     connect(scansub,SIGNAL(receiveMessageSignal()),this,SLOT(slotReceive()));
+    connect(detectionsub,SIGNAL(receiveMessageSignal()), this, SLOT(slotReceiveDetection()));
     connect(tfsub,SIGNAL(receiveTFSignal()),this,SLOT(slotReceiveTF()));
+    connect(tfMap2Lidarsub,SIGNAL(receiveTFSignal()),this,SLOT(slotReceiveTFMap2Lidar()));
 
     QSplitter * splitter=new QSplitter(Qt::Horizontal);
     ui->layout->addWidget(splitter);
@@ -291,13 +294,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(vehicletracker,SIGNAL(signalUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)),updateview,SLOT(slotUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)));
 
     scansub->startReceiveSlot();
+    detectionsub->startReceiveSlot();
     tfsub->startReceiveSlot();
+    tfMap2Lidarsub->startReceiveSlot();
 }
 
 MainWindow::~MainWindow()
 {
     scansub->stopReceiveSlot();
+    detectionsub->stopReceiveSlot();
     tfsub->stopReceiveSlot();
+    tfMap2Lidarsub->stopReceiveSlot();
     delete ui;
 }
 
@@ -329,6 +336,12 @@ void MainWindow::slotReceiveDetection()
         QTime timestamp=QTime::fromMSecsSinceStartOfDay(msec);
         VehicleState state;
         //fill state from msg;
+        // convert object position from map coordinate to sensor coordinate
+        tf::Vector3 pt(marker.pose.position.x, marker.pose.position.y, marker.pose.position.z);
+        tf::Vector3 converted = transformMap2Lidar * pt;
+        state.x = converted.x();
+        state.y = converted.y();
+
         detectionlist.push_back(QPair<QTime, VehicleState >(timestamp,state));
         if(ui->trigger->isChecked())
             {
@@ -366,6 +379,22 @@ void MainWindow::slotReceiveTF()
     }
 }
 
+
+void MainWindow::slotReceiveTFMap2Lidar()
+{
+    tfMap2Lidarsub->getTF(transformMap2Lidar);
+}
+
+
+void MainWindow::getInitStateFromTopic(QVector<VehicleState> &initState)
+{
+    for (auto& detected : detectionlist)
+    {
+        initState.push_back(detected.second);
+    }
+    detectionlist.clear();
+}
+
 void MainWindow::slotShowScan()
 {
     //synchronization between vscan and tf
@@ -401,7 +430,8 @@ void MainWindow::slotShowScan()
             //fill initstate from subscribed detection topic
             //=====================================
             QVector<VehicleState> initstate;
-            initview->getInitState(initstate);
+            //initview->getInitState(initstate);
+            getInitStateFromTopic(initstate);
             vehicletracker->addTrackerData(curscan,initstate);
         }
         curscan=scanlist[0].second;
