@@ -107,6 +107,7 @@ class TimeManager
     ros::Subscriber vscan_points_sub;
     ros::Subscriber vscan_image_sub;
     ros::Subscriber image_obj_sub;
+    ros::Subscriber image_obj_ranged_sub;
     ros::Subscriber image_obj_tracked_sub;
     ros::Subscriber current_pose_sub;
     ros::Subscriber obj_label_sub;
@@ -143,24 +144,25 @@ public:
     void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg);
     void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) ;
     void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg);
-    void obj_pose_callback(const lidar_tracker::centroids::ConstPtr& obj_pose_msg);
+    void obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg);
     void time_diff_callback(const synchronization::time_diff::ConstPtr& time_diff_msg);
     void run();
 };
 
 TimeManager::TimeManager(int buffer_size) {
     ros::NodeHandle private_nh("~");
-    time_monitor_pub = nh.advertise<std_msgs::Time> ("time_monitor", 1);
+    time_monitor_pub = nh.advertise<std_msgs::Time> ("/times", 1);
     image_raw_sub = nh.subscribe("/image_raw", 1, &TimeManager::image_raw_callback, this);
     points_raw_sub = nh.subscribe("/points_raw", 1, &TimeManager::points_raw_callback, this);
     vscan_points_sub = nh.subscribe("/vscan_points", 1, &TimeManager::vscan_points_callback, this);
     vscan_image_sub = nh.subscribe("/vscan_image", 1, &TimeManager::vscan_image_callback, this);
-    image_obj_sub = nh.subscribe("/image_obj", 1, &TimeManager::image_obj_callback, this);
+    image_obj_sub = nh.subscribe("/obj_car/image_obj", 1, &TimeManager::image_obj_callback, this);
+    image_obj_ranged_sub = nh.subscribe("/obj_car/image_obj_ranged", 1, &TimeManager::image_obj_ranged_callback, this);
     image_obj_tracked_sub = nh.subscribe("/obj_car/image_obj_tracked", 1, &TimeManager::image_obj_tracked_callback, this);
     current_pose_sub = nh.subscribe("current_pose", 1, &TimeManager::current_pose_callback, this);
     obj_label_sub = nh.subscribe("/obj_car/obj_label", 1, &TimeManager::obj_label_callback, this);
     cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, &TimeManager::cluster_centroids_callback, this);
-    obj_pose_sub = nh.subscribe("obj_pose", 1, &TimeManager::obj_pose_callback, this);
+    obj_pose_sub = nh.subscribe("/obj_car/obj_pose", 1, &TimeManager::obj_pose_callback, this);
     time_diff_sub = nh.subscribe("/time_diff", 1, &TimeManager::time_diff_callback, this);
 
     image_raw_.resize(buffer_size);
@@ -223,7 +225,7 @@ void TimeManager::time_diff_callback(const synchronization::time_diff::ConstPtr&
     time_diff_.push_front(time_diff_msg->header.stamp, time_diff);
 }
 
-void TimeManager::obj_pose_callback(const lidar_tracker::centroids::ConstPtr& obj_pose_msg) {
+void TimeManager::obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg) {
     obj_pose_.push_front(obj_pose_msg->header.stamp, ros::Time::now());
     static ros::Time pre_sensor_time;
     synchronization::time_monitor time_monitor_msg;
