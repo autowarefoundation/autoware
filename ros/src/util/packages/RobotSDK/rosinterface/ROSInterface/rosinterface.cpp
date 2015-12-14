@@ -51,7 +51,6 @@ ROSInterfaceBase::ROSInterfaceBase(QObject *parent)
         {
             NodeName=QFileInfo(arguments[0]).baseName();
         }
-        NodeName.replace(QRegExp("[^a-zA-Z0-9/_$]"),QString("_"));
         char *argv=NodeName.toUtf8().data();
         ros::init(argc,&argv,NodeName.toStdString());
         initflag=1;
