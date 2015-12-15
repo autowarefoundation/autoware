@@ -238,6 +238,15 @@ static void camera_info_callback(const sensor_msgs::CameraInfo& msg)
   ol.setCameraParam(fkx,fky,Ox,Oy);
 }
 
+static void camera_info_callback(const sensor_msgs::CameraInfo& msg)
+{
+  double fkx = msg.K[0 * 3 + 0]; // get K[0][0]
+  double fky = msg.K[1 * 3 + 1]; // get K[1][1]
+  double Ox  = msg.K[0 * 3 + 2]; // get K[0][2]
+  double Oy  = msg.K[1 * 3 + 2]; // get K[1][2]
+  ol.setCameraParam(fkx,fky,Ox,Oy);
+}
+
 void GetRPY(const geometry_msgs::Pose &pose,
 	    double &roll,
 	    double &pitch,
@@ -385,6 +394,7 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
+
   std::string projectionMat_topic_name;
   private_nh.param<std::string>("projection_matrix_topic", projectionMat_topic_name, "/projection_matrix");
   std::string camera_info_topic_name;
