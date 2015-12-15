@@ -219,6 +219,9 @@ static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const c
 }
 #endif  // ifdef HAVE_JSK_PLUGIN
 
+//coordinate system conversion between camera coordinate and map coordinate
+static tf::StampedTransform transformCam2Map;
+
 static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
 {
   for (int row=0; row<4; row++) {
@@ -410,7 +413,20 @@ int main(int argc, char **argv){
   ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
   ros::Subscriber camera_info = n.subscribe(camera_info_topic_name, 1, camera_info_callback);
 
-  ros::spin();
+  tf::TransformListener listener;
+  while(n.ok())
+    {
+      /* try to get coordinate system conversion from "camera" to "map" */
+      try {
+        listener.lookupTransform("map", "camera", ros::Time(0), transformCam2Map);
+      }
+      catch (tf::TransformException ex) {
+        ROS_INFO("%s", ex.what());
+        ros::Duration(0.1).sleep();
+      }
 
+      ros::spinOnce();
+
+    }
   return 0;
 }
