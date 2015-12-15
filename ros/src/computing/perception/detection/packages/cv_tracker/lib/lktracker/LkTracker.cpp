@@ -218,7 +218,6 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetectio
 	cv::Point2f center1 = centers.at<cv::Point2f>(0);
 	cv::Point2f center2 = centers.at<cv::Point2f>(1);
 
-
 	cv::Point centroid(current_centroid_x_/valid_points.size(), current_centroid_y_/valid_points.size());
 
 	int cluster_nums[2] = {0,0};

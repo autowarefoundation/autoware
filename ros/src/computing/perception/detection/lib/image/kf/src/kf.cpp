@@ -75,6 +75,10 @@ static float 		OVERLAPPING_PERC;
 static bool 		SHOW_PREDICTIONS;
 static bool 		USE_ORB;
 
+static bool 		track_ready_;
+static bool 		detect_ready_;
+static cv_tracker::image_obj_tracked kf_objects_msg_;
+
 struct kstate
 {
 	cv::KalmanFilter	KF;//KalmanFilter for this object
@@ -775,6 +779,16 @@ void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections,
 
 }
 
+void publish_if_possible()
+{
+	if (track_ready_ && detect_ready_)
+	{
+		image_objects.publish(kf_objects_msg_);
+		track_ready_ = false;
+		detect_ready_ = false;
+	}
+}
+
 void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::LatentSvmDetector::ObjectDetection> detections,
 			 std::vector<kstate>& kstates, std::vector<bool>& active,
 			 std::vector<cv::Scalar> colors, const sensor_msgs::Image& image_source)
@@ -799,39 +813,39 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 	for (size_t i = 0; i < tracked_detections.size(); i++)
 	{
 		kstate od = tracked_detections[i];
-		cv_tracker::image_rect_ranged rect_ranged;
+		cv_tracker::image_rect_ranged rect_ranged_;
 
 		//od.rect contains x,y, width, height
 		rectangle(image, od.pos, od.color, 3);
 		putText(image, SSTR(od.id), cv::Point(od.pos.x + 4, od.pos.y + 13), cv::FONT_HERSHEY_SIMPLEX, 0.55, od.color, 2);
 		//ROS
 		obj_id[i] = od.id; // ?
-		rect_ranged.rect.x	= od.pos.x;
-		rect_ranged.rect.y	= od.pos.y;
-		rect_ranged.rect.width	= od.pos.width;
-		rect_ranged.rect.height = od.pos.height;
-		rect_ranged.range	= od.range;
-		rect_ranged.min_height	= od.min_height;
-		rect_ranged.max_height	= od.max_height;
+		rect_ranged_.rect.x	= od.pos.x;
+		rect_ranged_.rect.y	= od.pos.y;
+		rect_ranged_.rect.width	= od.pos.width;
+		rect_ranged_.rect.height = od.pos.height;
+		rect_ranged_.range	= od.range;
+		rect_ranged_.min_height	= od.min_height;
+		rect_ranged_.max_height	= od.max_height;
 
-		rect_ranged_array.push_back(rect_ranged);
+		rect_ranged_array.push_back(rect_ranged_);
 
 		real_data[i] = od.real_data;
 		lifespan[i] = od.lifespan;
 		//ENDROS
 	}
 	//more ros
-	cv_tracker::image_obj_tracked kf_objects_msg;
-	kf_objects_msg.type = object_type;
-	kf_objects_msg.total_num = num;
-	copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(kf_objects_msg.rect_ranged)); // copy vector
-	copy(real_data.begin(), real_data.end(), back_inserter(kf_objects_msg.real_data)); // copy vector
-	copy(obj_id.begin(), obj_id.end(), back_inserter(kf_objects_msg.obj_id)); // copy vector
-	copy(lifespan.begin(), lifespan.end(), back_inserter(kf_objects_msg.lifespan)); // copy vector
+	kf_objects_msg_.type = object_type;
+	kf_objects_msg_.total_num = num;
+	copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(kf_objects_msg_.rect_ranged)); // copy vector
+	copy(real_data.begin(), real_data.end(), back_inserter(kf_objects_msg_.real_data)); // copy vector
+	copy(obj_id.begin(), obj_id.end(), back_inserter(kf_objects_msg_.obj_id)); // copy vector
+	copy(lifespan.begin(), lifespan.end(), back_inserter(kf_objects_msg_.lifespan)); // copy vector
 
-//	kf_objects_msg.header = image_source.header;
-	kf_objects_msg.header = image_objects_header;
-	image_objects.publish(kf_objects_msg);
+//	kf_objects_msg_.header = image_source.header;
+	kf_objects_msg_.header = image_objects_header;
+
+	publish_if_possible();
 
 	//cout << "."<< endl;
 }
@@ -844,7 +858,7 @@ void image_callback(const sensor_msgs::Image& image_source)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
 	cv::Mat imageTrack = cv_image->image;
 	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);
-	_ready=false;
+	//_ready=false;
 	//imshow("Tracked", imageTrack);
 
 	_counter++;
@@ -852,32 +866,36 @@ void image_callback(const sensor_msgs::Image& image_source)
 
 void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
 {
-	if(_ready)
-		return;
-	unsigned int num = image_objects_msg.obj.size();
-	std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
-	object_type = image_objects_msg.type;
-    image_objects_header = image_objects_msg.header;
-	//points are X,Y,W,H and repeat for each instance
-	_dpm_detections.clear();
-	_ranges.clear();
-	_min_heights.clear();
-	_max_heights.clear();
-
-	for (unsigned int i=0; i<num;i++)
+	if(!detect_ready_)
 	{
-		cv::Rect tmp;
-		tmp.x = objects.at(i).rect.x;
-		tmp.y = objects.at(i).rect.y;
-		tmp.width = objects.at(i).rect.width;
-		tmp.height = objects.at(i).rect.height;
-		_dpm_detections.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
-		_ranges.push_back(objects.at(i).range);
-		_min_heights.push_back(objects.at(i).min_height);
-		_max_heights.push_back(objects.at(i).max_height);
+		unsigned int num = image_objects_msg.obj.size();
+		std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
+		object_type = image_objects_msg.type;
+		image_objects_header = image_objects_msg.header;
+		//points are X,Y,W,H and repeat for each instance
+		_dpm_detections.clear();
+		_ranges.clear();
+		_min_heights.clear();
+		_max_heights.clear();
+
+		for (unsigned int i=0; i<num;i++)
+		{
+			cv::Rect tmp;
+			tmp.x = objects.at(i).rect.x;
+			tmp.y = objects.at(i).rect.y;
+			tmp.width = objects.at(i).rect.width;
+			tmp.height = objects.at(i).rect.height;
+			_dpm_detections.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+			_ranges.push_back(objects.at(i).range);
+			_min_heights.push_back(objects.at(i).min_height);
+			_max_heights.push_back(objects.at(i).max_height);
+		}
+		//_ready = true;
+		detect_ready_ = true;
 	}
-	_ready = true;
 	//cout << "received pos" << endl;
+
+	publish_if_possible();
 }
 
 static void kf_config_cb(const runtime_manager::ConfigCarKf::ConstPtr& param)
