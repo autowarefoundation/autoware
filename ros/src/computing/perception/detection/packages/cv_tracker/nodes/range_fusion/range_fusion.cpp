@@ -43,8 +43,8 @@ bool ready_ = false;
 static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 {
     if (ready_) {
-        setDetectedObjects(image_object);
 		sensor_header = image_object.header;
+        setDetectedObjects(image_object);
         fuse();
         publishTopic();
         ready_ = false;
@@ -65,6 +65,7 @@ static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 static void PointsImageCallback(const points2image::PointsImage& points_image)
 {
     if (ready_) {
+		sensor_header = points_image.header;
 		setPointsImage(points_image);
 		fuse();
 		publishTopic();
@@ -125,9 +126,9 @@ int main(int argc, char **argv)
 		points_topic = "/vscan_image";
 	}
 
-	ros::Subscriber image_obj_sub = n.subscribe(image_topic, 1, DetectedObjectsCallback);
+	ros::Subscriber image_obj_sub = n.subscribe("/obj_car/image_obj_", 1, DetectedObjectsCallback);
 	//ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
-	ros::Subscriber points_image_sub =n.subscribe(points_topic, 1, PointsImageCallback);
+	ros::Subscriber points_image_sub =n.subscribe("/vscan_image_", 1, PointsImageCallback);
 #if _DEBUG
 	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif

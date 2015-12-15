@@ -144,7 +144,8 @@ public:
     void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg);
     void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) ;
     void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg);
-    void obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg);
+//    void obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg);
+    void obj_pose_callback(const std_msgs::Time::ConstPtr& obj_pose_timestamp_msg);
     void time_diff_callback(const synchronization::time_diff::ConstPtr& time_diff_msg);
     void run();
 };
@@ -162,7 +163,7 @@ TimeManager::TimeManager(int buffer_size) {
     current_pose_sub = nh.subscribe("current_pose", 1, &TimeManager::current_pose_callback, this);
     obj_label_sub = nh.subscribe("/obj_car/obj_label", 1, &TimeManager::obj_label_callback, this);
     cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, &TimeManager::cluster_centroids_callback, this);
-    obj_pose_sub = nh.subscribe("/obj_car/obj_pose", 1, &TimeManager::obj_pose_callback, this);
+    obj_pose_sub = nh.subscribe("/obj_car/obj_pose_timestamp", 1, &TimeManager::obj_pose_callback, this);
     time_diff_sub = nh.subscribe("/time_diff", 1, &TimeManager::time_diff_callback, this);
 
     image_raw_.resize(buffer_size);
@@ -174,6 +175,7 @@ TimeManager::TimeManager(int buffer_size) {
     image_obj_tracked_.resize(buffer_size);
     current_pose_.resize(buffer_size);
     obj_label_.resize(buffer_size);
+    obj_pose_.resize(buffer_size);
     cluster_centroids_.resize(buffer_size);
     time_diff_.resize(buffer_size);
 }
@@ -225,29 +227,30 @@ void TimeManager::time_diff_callback(const synchronization::time_diff::ConstPtr&
     time_diff_.push_front(time_diff_msg->header.stamp, time_diff);
 }
 
-void TimeManager::obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg) {
-    obj_pose_.push_front(obj_pose_msg->header.stamp, ros::Time::now());
+void TimeManager::obj_pose_callback(const std_msgs::Time::ConstPtr& obj_pose_timestamp_msg) {
+    ros::Time converted_timestamp = obj_pose_timestamp_msg->data;
+    obj_pose_.push_front(obj_pose_timestamp_msg->data, ros::Time::now());
     static ros::Time pre_sensor_time;
     synchronization::time_monitor time_monitor_msg;
     time_monitor_msg.header.frame_id = "0";
-    time_monitor_msg.header.stamp = obj_pose_msg->header.stamp;
+    time_monitor_msg.header.stamp = obj_pose_timestamp_msg->data;
 
-    time_monitor_msg.image_raw = time_diff(obj_pose_msg->header.stamp, image_raw_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.points_raw = time_diff(obj_pose_msg->header.stamp, points_raw_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.vscan_points = time_diff(obj_pose_msg->header.stamp, vscan_points_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.vscan_image = time_diff(obj_pose_msg->header.stamp, vscan_image_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.image_obj = time_diff(obj_pose_msg->header.stamp, image_obj_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.image_obj_ranged = time_diff(obj_pose_msg->header.stamp, image_obj_ranged_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.image_obj_tracked = time_diff(obj_pose_msg->header.stamp, image_obj_tracked_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.current_pose = time_diff(obj_pose_msg->header.stamp, current_pose_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.obj_label = time_diff(obj_pose_msg->header.stamp, obj_label_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.cluster_centroids = time_diff(obj_pose_msg->header.stamp, cluster_centroids_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.obj_pose = time_diff(obj_pose_msg->header.stamp, obj_pose_.find(obj_pose_msg->header.stamp));
-    time_monitor_msg.execution_time = time_diff(obj_pose_msg->header.stamp, obj_pose_.find(obj_pose_msg->header.stamp)); // execution time
-    time_monitor_msg.cycle_time = time_diff(pre_sensor_time, obj_pose_msg->header.stamp); // cycle time
-    time_monitor_msg.time_diff = ros_time2msec(time_diff_.find(obj_pose_msg->header.stamp)); // time difference
+    time_monitor_msg.image_raw = time_diff(obj_pose_timestamp_msg->data, image_raw_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.points_raw = time_diff(obj_pose_timestamp_msg->data, points_raw_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.vscan_points = time_diff(obj_pose_timestamp_msg->data, vscan_points_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.vscan_image = time_diff(obj_pose_timestamp_msg->data, vscan_image_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.image_obj = time_diff(obj_pose_timestamp_msg->data, image_obj_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.image_obj_ranged = time_diff(obj_pose_timestamp_msg->data, image_obj_ranged_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.image_obj_tracked = time_diff(obj_pose_timestamp_msg->data, image_obj_tracked_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.current_pose = time_diff(obj_pose_timestamp_msg->data, current_pose_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.obj_label = time_diff(obj_pose_timestamp_msg->data, obj_label_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.cluster_centroids = time_diff(obj_pose_timestamp_msg->data, cluster_centroids_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.obj_pose = time_diff(obj_pose_timestamp_msg->data, obj_pose_.find(obj_pose_timestamp_msg->data));
+    time_monitor_msg.execution_time = time_diff(obj_pose_timestamp_msg->data, obj_pose_.find(obj_pose_timestamp_msg->data)); // execution time
+    time_monitor_msg.cycle_time = time_diff(pre_sensor_time, obj_pose_timestamp_msg->data); // cycle time
+    time_monitor_msg.time_diff = ros_time2msec(time_diff_.find(obj_pose_timestamp_msg->data)); // time difference
     time_monitor_pub.publish(time_monitor_msg);
-    pre_sensor_time = obj_pose_msg->header.stamp;
+    pre_sensor_time = obj_pose_timestamp_msg->data;
 }
 
 void TimeManager::run() {
