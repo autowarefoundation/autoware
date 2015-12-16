@@ -378,7 +378,7 @@ int main(int argc, char **argv) {
     /* init */
     buf_flag = false;
     obj_pose_flag = false;
-    ros::init(argc, argv, "sync_car_obj_fusion");
+    ros::init(argc, argv, "sync_obj_fusion");
     ros::NodeHandle nh;
 
     /* create server thread */
@@ -387,8 +387,8 @@ int main(int argc, char **argv) {
 
     ros::Subscriber obj_label_sub = nh.subscribe("/obj_car/obj_label", 1, obj_label_callback);
     ros::Subscriber cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, cluster_centroids_callback);
-    obj_label__pub = nh.advertise<cv_tracker::obj_label>("/obj_car/obj_label_", 5);
-    cluster_centroids__pub = nh.advertise<lidar_tracker::centroids>("/cluster_centroids_", 5);
+    obj_label__pub = nh.advertise<cv_tracker::obj_label>("/sync_obj_fusion/obj_car/obj_label", 5);
+    cluster_centroids__pub = nh.advertise<lidar_tracker::centroids>("/sync_obj_fusion/cluster_centroids", 5);
     while (!buf_flag && ros::ok()) {
         ros::spinOnce();
         usleep(100000);

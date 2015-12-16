@@ -133,7 +133,7 @@ int main(int argc, char **argv)
   else
   {
       ROS_INFO("No image node received, defaulting to image_obj, you can use _image_node:=YOUR_TOPIC");
-      image_topic = "/image_raw";
+      image_topic = "image_raw";
   }
   if (private_nh.getParam("points_node", points_topic))
   {
@@ -142,13 +142,13 @@ int main(int argc, char **argv)
   else
   {
       ROS_INFO("No points node received, defaulting to vscan_image, you can use _points_node:=YOUR_TOPIC");
-      points_topic = "/points_raw";
+      points_topic = "points_raw";
   }
 
   ros::Subscriber image_raw_sub = nh.subscribe(image_topic, 1, image_raw_callback);
   ros::Subscriber points_raw_sub = nh.subscribe(points_topic, 1, points_raw_callback);
-  image_raw__pub = private_nh.advertise<sensor_msgs::Image>("image_raw_", 1);
-  points_raw__pub = private_nh.advertise<sensor_msgs::PointCloud2>("points_raw_", 1);
+  image_raw__pub = private_nh.advertise<sensor_msgs::Image>("image_raw", 1);
+  points_raw__pub = private_nh.advertise<sensor_msgs::PointCloud2>("points_raw", 1);
   time_diff_pub = nh.advertise<synchronization::time_diff>("/time_difference", 1);
 
   ros::spin();

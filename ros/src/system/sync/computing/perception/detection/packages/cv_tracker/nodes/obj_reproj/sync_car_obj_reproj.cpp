@@ -221,17 +221,17 @@ int main(int argc, char **argv) {
     /* init */
     buf_flag = false;
     obj_label_flag = false;
-    ros::init(argc, argv, "sync_car_obj_reproj");
+    ros::init(argc, argv, "sync_reprojection");
     ros::NodeHandle nh;
 
     /* create server thread */
     pthread_t th;
     pthread_create(&th, NULL, thread, (void *)NULL );
 
-    ros::Subscriber image_obj_tracked_sub = nh.subscribe("obj_car/image_obj_tracked", 1, image_obj_tracked_callback);
-    ros::Subscriber current_pose_sub = nh.subscribe("current_pose", 1, current_pose_callback);
-    image_obj_tracked__pub = nh.advertise<cv_tracker::image_obj_tracked>("obj_car/image_obj_tracked_", 5);
-    current_pose__pub = nh.advertise<geometry_msgs::PoseStamped>("current_pose_", 5);
+    ros::Subscriber image_obj_tracked_sub = nh.subscribe("/obj_car/image_obj_tracked", 1, image_obj_tracked_callback);
+    ros::Subscriber current_pose_sub = nh.subscribe("/current_pose", 1, current_pose_callback);
+    image_obj_tracked__pub = nh.advertise<cv_tracker::image_obj_tracked>("/sync_reprojection/obj_car/image_obj_tracked_", 5);
+    current_pose__pub = nh.advertise<geometry_msgs::PoseStamped>("/sync_reprojection/current_pose", 5);
 
     while (!buf_flag && ros::ok()) {
         ros::spinOnce();
