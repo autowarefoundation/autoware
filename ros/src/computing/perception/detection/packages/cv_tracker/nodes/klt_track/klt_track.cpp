@@ -289,14 +289,18 @@ public:
 
 		obj_detections_.clear();
 
-		ros_objects_msg_.type = tracked_type_;
-		ros_objects_msg_.total_num = num;
-		copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(ros_objects_msg_.rect_ranged)); // copy vector
-		copy(real_data.begin(), real_data.end(), back_inserter(ros_objects_msg_.real_data)); // copy vector
-		copy(obj_id.begin(), obj_id.end(), back_inserter(ros_objects_msg_.obj_id)); // copy vector
-		copy(lifespan.begin(), lifespan.end(), back_inserter(ros_objects_msg_.lifespan)); // copy vector
+		cv_tracker::image_obj_tracked tmp_objects_msg;
 
-		ros_objects_msg_.header = image_source.header;
+		tmp_objects_msg.type = tracked_type_;
+		tmp_objects_msg.total_num = num;
+		copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(tmp_objects_msg.rect_ranged)); // copy vector
+		copy(real_data.begin(), real_data.end(), back_inserter(tmp_objects_msg.real_data)); // copy vector
+		copy(obj_id.begin(), obj_id.end(), back_inserter(tmp_objects_msg.obj_id)); // copy vector
+		copy(lifespan.begin(), lifespan.end(), back_inserter(tmp_objects_msg.lifespan)); // copy vector
+
+		tmp_objects_msg.header = image_source.header;
+
+		ros_objects_msg_ = tmp_objects_msg;
 
 		//publisher_tracked_objects_.publish(ros_objects_msg);
 
