@@ -250,6 +250,7 @@ if(EXISTS "/usr/local/cuda")
     vehicle_tracker_moc_mainwindow
     vehicle_tracker_moc_rbsspfvehicletracker
     vehicle_tracker_ui_mainwindow
+    cv_tracker_generate_messages_cpp
     )
 
   target_link_libraries(vehicle_tracker
