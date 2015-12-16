@@ -487,6 +487,7 @@ static void DisplayDetectionRange(const int &crosswalk_id, const int &num, const
     stop_line = crosswalk_marker;
     stop_line.type = visualization_msgs::Marker::CUBE;
 
+
     // set each namespace
     crosswalk_marker.ns = "Crosswalk Detection";
     waypoint_marker_stop.ns = "Stop Detection";
@@ -517,6 +518,7 @@ static void DisplayDetectionRange(const int &crosswalk_id, const int &num, const
 
 
     stop_line.pose.position = _path_dk.getWaypointPosition(_obstacle_waypoint);
+    stop_line.pose.position.z += 1.0;
     stop_line.pose.orientation = _current_pose.pose.orientation;
     stop_line.scale.x = 0.1;
     stop_line.scale.y = 15.0;
@@ -534,7 +536,7 @@ static void DisplayDetectionRange(const int &crosswalk_id, const int &num, const
     crosswalk_marker.scale.x = scale;
     crosswalk_marker.scale.y = scale;
     crosswalk_marker.scale.z = scale;
-    crosswalk_marker.color.a = 0.3;
+    crosswalk_marker.color.a = 0.5;
     crosswalk_marker.color.r = 0.0;
     crosswalk_marker.color.g = 1.0;
     crosswalk_marker.color.b = 0.0;
@@ -699,7 +701,10 @@ static EControl vscanDetection()
 	      vscan_temp.x = item->x;
 	      vscan_temp.y = item->y;
 	      vscan_temp.z = item->z;
-	      g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, _current_pose.pose));
+	      if (g_sim_mode)
+		g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, _sim_ndt_pose.pose));
+	      else
+		g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, _current_pose.pose));
 	    }
             if (stop_point_count > _threshold_points) {
 	      _obstacle_waypoint = i;
@@ -740,7 +745,10 @@ static EControl vscanDetection()
 		vscan_temp.x = item->x;
 		vscan_temp.y = item->y;
 		vscan_temp.z = item->z;
-		g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(vscan_temp, _current_pose.pose));
+		if (g_sim_mode)
+		  g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(vscan_temp, _sim_ndt_pose.pose));
+		else
+		  g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(vscan_temp, _current_pose.pose));
 	      }
 	    }
 
