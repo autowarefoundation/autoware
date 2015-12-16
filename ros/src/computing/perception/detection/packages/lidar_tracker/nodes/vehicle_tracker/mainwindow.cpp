@@ -269,7 +269,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     scansub=new ROSSub<sensor_msgs::LaserScanConstPtr>("/scan",1000,10,this);
-    detectionsub=new ROSSub<visualization_msgs::MarkerArray::ConstPtr>("obj_pose",1000,10,this);
+    detectionsub=new ROSSub<cv_tracker::obj_label::ConstPtr>("obj_label",1000,10,this);
     tfsub=new ROSTFSub("/world","/velodyne",10,this);
     tfMap2Lidarsub=new ROSTFSub("/velodyne","/map",10,this); // obj_pose is published into "map" frame
 
@@ -329,15 +329,15 @@ void MainWindow::slotReceive()
 
 void MainWindow::slotReceiveDetection()
 {
-    visualization_msgs::MarkerArray::ConstPtr msg=detectionsub->getMessage();
+    cv_tracker::obj_label::ConstPtr msg=detectionsub->getMessage();
 
-    for (const auto& marker : msg->markers) {
-        int msec=(marker.header.stamp.sec)%(24*60*60)*1000+(marker.header.stamp.nsec)/1000000;
+    for (const auto& point : msg->reprojected_pos) {
+        int msec=(msg->header.stamp.sec)%(24*60*60)*1000+(msg->header.stamp.nsec)/1000000;
         QTime timestamp=QTime::fromMSecsSinceStartOfDay(msec);
         VehicleState state;
         //fill state from msg;
         // convert object position from map coordinate to sensor coordinate
-        tf::Vector3 pt(marker.pose.position.x, marker.pose.position.y, marker.pose.position.z);
+        tf::Vector3 pt(point.x, point.y, point.z);
         tf::Vector3 converted = transformMap2Lidar * pt;
         state.x = converted.x();
         state.y = converted.y();
