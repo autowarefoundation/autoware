@@ -31,6 +31,7 @@
 #include <sstream>
 
 #include <ros/console.h>
+#include <tf/transform_datatypes.h>
 
 #include <map_file/PointClassArray.h>
 #include <map_file/LaneArray.h>
@@ -111,7 +112,7 @@ void create_waypoint(const tablet_socket::route_cmd& msg)
 	lane_planner::vmap::VectorMap fine_mostleft_vmap =
 		lane_planner::vmap::create_fine_vmap(lane_vmap, lane_planner::vmap::LNO_MOSTLEFT, coarse_vmap,
 						     search_radius, waypoint_max);
-	if (fine_mostleft_vmap.points.empty())
+	if (fine_mostleft_vmap.points.size() < 2)
 		return;
 	fine_vmaps.push_back(fine_mostleft_vmap);
 
@@ -119,7 +120,7 @@ void create_waypoint(const tablet_socket::route_cmd& msg)
 	for (int i = lane_planner::vmap::LNO_MOSTLEFT + 1; i <= lcnt; ++i) {
 		lane_planner::vmap::VectorMap v =
 			lane_planner::vmap::create_fine_vmap(lane_vmap, i, coarse_vmap, search_radius, waypoint_max);
-		if (v.points.empty())
+		if (v.points.size() < 2)
 			continue;
 		fine_vmaps.push_back(v);
 	}
@@ -129,11 +130,29 @@ void create_waypoint(const tablet_socket::route_cmd& msg)
 		waypoint_follower::lane l;
 		l.header = header;
 		l.increment = 1;
-		for (const map_file::PointClass& p : v.points) {
+
+		size_t last_index = v.points.size() - 1;
+		for (size_t i = 0; i < v.points.size(); ++i) {
+			double yaw;
+			if (i == last_index) {
+				geometry_msgs::Point p1 =
+					lane_planner::vmap::create_geometry_msgs_point(v.points[i]);
+				geometry_msgs::Point p2 =
+					lane_planner::vmap::create_geometry_msgs_point(v.points[i - 1]);
+				yaw = atan2(p2.y - p1.y, p2.x - p1.x);
+				yaw -= M_PI;
+			} else {
+				geometry_msgs::Point p1 =
+					lane_planner::vmap::create_geometry_msgs_point(v.points[i]);
+				geometry_msgs::Point p2 =
+					lane_planner::vmap::create_geometry_msgs_point(v.points[i + 1]);
+				yaw = atan2(p2.y - p1.y, p2.x - p1.x);
+			}
+
 			waypoint_follower::waypoint w;
 			w.pose.header = header;
-			w.pose.pose.position = lane_planner::vmap::create_geometry_msgs_point(p);
-			w.pose.pose.orientation.w = 1; // XXX compute from yaw
+			w.pose.pose.position = lane_planner::vmap::create_geometry_msgs_point(v.points[i]);
+			w.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
 			w.twist.header = header;
 			w.twist.twist.linear.x = velocity / 3.6; // to m/s
 			l.waypoints.push_back(w);

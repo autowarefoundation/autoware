@@ -68,24 +68,7 @@ geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
   if(waypoint > getSize() - 1)
     return q;
 
-  //q = current_waypoints_.waypoints[waypoint].pose.pose.orientation;
-
-  double waypoint_yaw;
-  if (waypoint == static_cast<int>(current_waypoints_.waypoints.size()) - 1)
-  {
-    waypoint_yaw = atan2(
-        current_waypoints_.waypoints[waypoint - 1].pose.pose.position.y - current_waypoints_.waypoints[waypoint].pose.pose.position.y,
-        current_waypoints_.waypoints[waypoint - 1].pose.pose.position.x - current_waypoints_.waypoints[waypoint].pose.pose.position.x);
-    waypoint_yaw -= M_PI;
-  }
-  else
-  {
-    waypoint_yaw = atan2(
-        current_waypoints_.waypoints[waypoint + 1].pose.pose.position.y - current_waypoints_.waypoints[waypoint].pose.pose.position.y,
-        current_waypoints_.waypoints[waypoint + 1].pose.pose.position.x - current_waypoints_.waypoints[waypoint].pose.pose.position.x);
-  }
-  q = tf::createQuaternionMsgFromYaw (waypoint_yaw);
-
+  q = current_waypoints_.waypoints[waypoint].pose.pose.orientation;
   return q;
 }
 

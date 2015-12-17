@@ -76,7 +76,7 @@ void create_route(const geometry_msgs::PointStamped& msg)
 	lane_planner::vmap::VectorMap fine_vmap =
 		lane_planner::vmap::create_fine_vmap(lane_vmap, lane_planner::vmap::LNO_ALL, coarse_vmap,
 						     search_radius, waypoint_max);
-	if (fine_vmap.points.empty())
+	if (fine_vmap.points.size() < 2)
 		return;
 
 	lane_planner::vmap::publish_add_marker(marker_pub, route_marker, fine_vmap.points);

@@ -36,6 +36,7 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <std_msgs/Float32.h>
+#include <tf/transform_datatypes.h>
 
 #include <fstream>
 
@@ -159,8 +160,9 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose , double v
   if (!receive_once)
   {
 
+
     ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-        << current_pose.position.z << std::endl;
+        << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << std::endl;
     receive_once = true;
     displayMarker(current_pose, 0);
     previous_pose = current_pose;
@@ -177,7 +179,7 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose , double v
     if (distance > interval_)
     {
       ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-          << current_pose.position.z << "," << velocity << std::endl;
+          << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << ","  << velocity << std::endl;
 
       displayMarker(current_pose, velocity);
       previous_pose = current_pose;
@@ -201,14 +203,13 @@ void WaypointSaver::displayMarker(geometry_msgs::Pose pose, double velocity) con
 
   //create saved waypoint marker
   marker.scale.x = 0.5;
-  marker.scale.y = 0.5;
-  marker.scale.z = 0.5;
+  marker.scale.y = 0.1;
   marker.color.a = 1.0;
   marker.color.r = 0.0;
   marker.color.g = 1.0;
   marker.color.b = 0.0;
-  marker.ns = "saved_waypoint";
-  marker.type = visualization_msgs::Marker::SPHERE;
+  marker.ns = "saved_waypoint_arrow";
+  marker.type = visualization_msgs::Marker::ARROW;
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose = pose;
   marray.markers.push_back(marker);
@@ -223,13 +224,6 @@ void WaypointSaver::displayMarker(geometry_msgs::Pose pose, double velocity) con
   std::ostringstream oss;
   oss << std::fixed << std::setprecision(2) << velocity << " km/h";
   marker.text = oss.str();
-
-  //C++11 version
-  //std::string velocity_str = std::to_string(velocity);
-  //velocity.erase(velocity_str.find_first_of(".") + 3);
-  //std::string kmh = " km/h";
-  //std::string text = velocity + kmh;
-  //marker.text = text;
   marray.markers.push_back(marker);
 
   waypoint_saver_pub_.publish(marray);
