@@ -500,6 +500,8 @@ void setContexts(TrafficLightDetector &detector,
                 ctx.yellowCenter3d = cv::Point3d( map_x, map_y, map_z );
                 ctx.signalID       = sig_iterator->signalId; // use yellow light signalID as this context's representative
                 break;
+              default:          /* this signal is not for cars (for pedestrian or something) */
+                continue;
               }
               min_radius    = (min_radius > radius) ? radius : min_radius;
               most_left     = (most_left > img_x - radius -   1.5 * min_radius)  ? img_x - radius - 1.5 * min_radius : most_left;
