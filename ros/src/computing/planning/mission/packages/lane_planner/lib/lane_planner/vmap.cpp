@@ -44,7 +44,8 @@ namespace vmap {
 
 namespace {
 
-void write_waypoint(const map_file::PointClass& point, double velocity, const std::string& path, bool first);
+void write_waypoint(const map_file::PointClass& point, double yaw, double velocity, const std::string& path,
+		    bool first);
 
 double compute_direction_angle(const map_file::PointClass& p1, const map_file::PointClass& p2);
 
@@ -71,22 +72,23 @@ map_file::Lane find_next_lane(const VectorMap& vmap, int lno, const map_file::La
 map_file::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const map_file::Lane& lane,
 					double coarse_angle, double search_radius);
 
-void write_waypoint(const map_file::PointClass& point, double velocity, const std::string& path, bool first)
+void write_waypoint(const map_file::PointClass& point, double yaw, double velocity, const std::string& path,
+		    bool first)
 {
 	// reverse X-Y axis
 	if (first) {
 		std::ofstream ofs(path.c_str());
 		ofs << std::fixed << point.ly << ","
 		    << std::fixed << point.bx << ","
-		    << std::fixed << point.h << std::endl;
-		// XXX add yaw
+		    << std::fixed << point.h << ","
+		    << std::fixed << yaw << std::endl;
 	} else {
 		std::ofstream ofs(path.c_str(), std::ios_base::app);
 		ofs << std::fixed << point.ly << ","
 		    << std::fixed << point.bx << ","
 		    << std::fixed << point.h << ","
+		    << std::fixed << yaw << ","
 		    << std::fixed << velocity << std::endl;
-		// XXX add yaw
 	}
 }
 
@@ -402,8 +404,25 @@ map_file::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const ma
 
 void write_waypoints(const std::vector<map_file::PointClass>& points, double velocity, const std::string& path)
 {
-	for (size_t i = 0; i < points.size(); ++i)
-		write_waypoint(points[i], velocity, path, (i == 0)); // XXX add yaw
+	if (points.size() < 2)
+		return;
+
+	size_t last_index = points.size() - 1;
+	for (size_t i = 0; i < points.size(); ++i) {
+		double yaw;
+		if (i == last_index) {
+			geometry_msgs::Point p1 = create_geometry_msgs_point(points[i]);
+			geometry_msgs::Point p2 = create_geometry_msgs_point(points[i - 1]);
+			yaw = atan2(p2.y - p1.y, p2.x - p1.x);
+			yaw -= M_PI;
+		} else {
+			geometry_msgs::Point p1 = create_geometry_msgs_point(points[i]);
+			geometry_msgs::Point p2 = create_geometry_msgs_point(points[i + 1]);
+			yaw = atan2(p2.y - p1.y, p2.x - p1.x);
+		}
+
+		write_waypoint(points[i], yaw, velocity, path, (i == 0));
+	}
 }
 
 double compute_reduction(const map_file::DTLane& d, double w)

@@ -309,7 +309,7 @@ void create_waypoint(const waypoint_follower::LaneArray& msg)
 		lane_planner::vmap::VectorMap fine_vmap =
 			lane_planner::vmap::create_fine_vmap(lane_vmap, lane_planner::vmap::LNO_ALL, coarse_vmap,
 							     search_radius, waypoint_max);
-		if (fine_vmap.points.empty() || fine_vmap.points.size() != lane.waypoints.size()) {
+		if (fine_vmap.points.size() < 2 || fine_vmap.points.size() != lane.waypoints.size()) {
 			traffic_waypoint.lanes.push_back(lane);
 			continue;
 		}
@@ -324,14 +324,12 @@ void create_waypoint(const waypoint_follower::LaneArray& msg)
 
 		lane = apply_crossroad_acceleration(lane, config_acceleration);
 
-		// XXX update yaw
 		traffic_waypoint.lanes.push_back(lane);
 		green_waypoint.lanes.push_back(lane);
 
 		lane = apply_stopline_acceleration(lane, config_acceleration, fine_vmap, config_number_of_zeros_ahead,
 						   config_number_of_zeros_behind);
 
-		// XXX update yaw
 		red_waypoint.lanes.push_back(lane);
 
 #ifdef DEBUG
