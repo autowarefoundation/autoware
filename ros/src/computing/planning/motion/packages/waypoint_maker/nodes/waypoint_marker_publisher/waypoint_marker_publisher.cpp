@@ -178,6 +178,38 @@ void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const waypoint_follo
 
 }
 
+void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &lane_waypoints_array)
+{
+  visualization_msgs::MarkerArray tmp_marker_array;
+  visualization_msgs::Marker lane_waypoint_marker;
+  lane_waypoint_marker.header.frame_id = "map";
+  lane_waypoint_marker.header.stamp = ros::Time();
+  lane_waypoint_marker.type = visualization_msgs::Marker::ARROW;
+  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.scale.x = 0.5;
+  lane_waypoint_marker.scale.y = 0.1;
+  lane_waypoint_marker.color.r = 1.0;
+  lane_waypoint_marker.color.a = 1.0;
+  lane_waypoint_marker.frame_locked = true;
+
+  int count = 1;
+  for (auto lane : lane_waypoints_array.lanes)
+  {
+    lane_waypoint_marker.ns = "global_lane_waypoint_orientation_marker_" + std::to_string(count);
+
+    for (int i = 0; i < static_cast<int>(lane.waypoints.size()); i++)
+    {
+      lane_waypoint_marker.id = i;
+      lane_waypoint_marker.pose = lane.waypoints[i].pose.pose;
+      tmp_marker_array.markers.push_back(lane_waypoint_marker);
+    }
+    count++;
+  }
+
+  g_global_marker_array.markers.insert(g_global_marker_array.markers.end(), tmp_marker_array.markers.begin(),
+        tmp_marker_array.markers.end());
+}
+
 void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::lane &lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
@@ -206,6 +238,7 @@ static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
   createGlobalLaneArrayMarker(_global_color, *msg);
+  //createGlobalLaneArrayOrientationMarker(*msg);
   publishMarker();
 }
 
