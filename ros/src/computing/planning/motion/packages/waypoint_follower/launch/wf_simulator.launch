@@ -1,8 +1,8 @@
 <!-- -->
 <launch>
 
-	<include file="$(find model_publisher)/launch/prius_model.launch">
-	<arg name="topic_name" default="sim_prius_model"/>
+	<include file="$(find model_publisher)/launch/vehicle_model.launch">
+	<arg name="topic_name" default="sim_vehicle_model"/>
 	<arg name="base_frame" default="sim_base_link"/>
 	</include>
 	
