@@ -30,155 +30,6 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 
-//set subscribed waypoint
-void Path::setPath(const waypoint_follower::laneConstPtr &msg)
-{
-	current_path_ = *msg;
-	//  std::cout << "waypoint subscribed" << std::endl;
-	std::cout << current_path_.waypoints.size() << std::endl;
-}
-
-int Path::getPathSize()
-{
-	if (current_path_.waypoints.empty() == true)
-		return 0;
-	else
-		return current_path_.waypoints.size();
-}
-
-double Path::getInterval()
-{
-  if(current_path_.waypoints.empty())
-    return 0;
-
-	//interval between 2 waypoints
-	tf::Vector3 v1(current_path_.waypoints[0].pose.pose.position.x, current_path_.waypoints[0].pose.pose.position.y, 0);
-
-	tf::Vector3 v2(current_path_.waypoints[1].pose.pose.position.x, current_path_.waypoints[1].pose.pose.position.y, 0);
-	return tf::tfDistance(v1, v2);
-}
-
-/////////////////////////////////////////////////////////////////
-// obtain the distance to @waypoint. ignore z position
-/////////////////////////////////////////////////////////////////
-double Path::getDistance(int waypoint)
-{
-	// position of @waypoint.
-	tf::Vector3 tf_v = transformWaypoint(waypoint);
-	tf_v.setZ(0);
-
-	return tf::tfDistance(origin_v_, tf_v);
-}
-
-/////////////////////////////////////////////////////////////////
-// transform the waypoint to the vehicle plane.
-/////////////////////////////////////////////////////////////////
-tf::Vector3 Path::transformWaypoint(int waypoint)
-{
-
-	tf::Vector3 point(current_path_.waypoints[waypoint].pose.pose.position.x, current_path_.waypoints[waypoint].pose.pose.position.y,
-			current_path_.waypoints[waypoint].pose.pose.position.z);
-	tf::Vector3 tf_point = transform_ * point;
-
-	return tf_point;
-}
-
-geometry_msgs::Point Path::getWaypointPosition(int waypoint)
-{
-	geometry_msgs::Point p;
-	p.x = current_path_.waypoints[waypoint].pose.pose.position.x;
-	p.y = current_path_.waypoints[waypoint].pose.pose.position.y;
-	p.z = current_path_.waypoints[waypoint].pose.pose.position.z;
-	return p;
-}
-
-geometry_msgs::Quaternion Path::getWaypointOrientation(int waypoint)
-{
-	geometry_msgs::Quaternion q;
-	q.x = current_path_.waypoints[waypoint].pose.pose.orientation.x;
-	q.y = current_path_.waypoints[waypoint].pose.pose.orientation.y;
-	q.z = current_path_.waypoints[waypoint].pose.pose.orientation.z;
-	q.w = current_path_.waypoints[waypoint].pose.pose.orientation.w;
-	return q;
-}
-
-int Path::getClosestWaypoint()
-{
-	// std::cout << "==GetClosestWaypoint==" << std::endl;
-
-	if (!getPathSize())
-		return -1;
-
-	int closest_threshold = 5;
-
-	//decide search radius
-	for (int ratio = 1; ratio < closest_threshold; ratio++) {
-
-		double distance_threshold = 2 * ratio * getInterval(); //meter
-			//	std::cout << "distance_threshold : " << distance_threshold << std::endl;
-
-		std::vector<int> waypoint_candidates;
-
-		//search closest candidate
-		for (int i = 1; i < getPathSize(); i++) {
-
-			//std::cout << waypoint << std::endl;
-
-			//skip waypoint behind vehicle
-			if (transformWaypoint(i).x() < 0)
-				continue;
-
-			if (getDistance(i) < distance_threshold) {
-				waypoint_candidates.push_back(i);
-				//std::cout << "waypoint = " << i << "  distance = " << getDistance(i)  << std::endl;
-			}
-		}
-
-		if (waypoint_candidates.size() == 0) {
-			continue;
-		}
-
-		//search substraction minimum between candidate and previous closest
-		int substraction_minimum = 0;
-		int decided_waypoint = 0;
-		int initial_minimum = 0;
-
-		//decide initial minimum
-		for (unsigned int i = 0; i < waypoint_candidates.size(); i++) {
-			substraction_minimum = waypoint_candidates[i] - closest_waypoint_;
-			if (substraction_minimum < 0)
-				continue;
-
-			if (substraction_minimum >= 0) {
-				decided_waypoint = waypoint_candidates[i];
-				initial_minimum = i;
-				break;
-			}
-		}
-
-		//calc closest
-		for (unsigned int i = initial_minimum; i < waypoint_candidates.size(); i++) {
-			int sub = waypoint_candidates[i] - closest_waypoint_;
-			//std::cout << "closest candidates : " << waypoint_candidates[i] << " sub : " << sub << std::endl;
-
-			if (sub < 0)
-				continue;
-
-			if (sub < substraction_minimum) {
-				decided_waypoint = waypoint_candidates[i];
-				substraction_minimum = sub;
-			}
-		}
-
-		if (decided_waypoint >= closest_waypoint_) {
-			closest_waypoint_ = decided_waypoint;
-			return decided_waypoint;
-		}
-
-	}
-	return -1;
-}
-
 int WayPoints::getSize() const
 {
   if (current_waypoints_.waypoints.empty())
@@ -207,9 +58,7 @@ geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
   if(waypoint > getSize() - 1)
     return p;
 
-  p.x = current_waypoints_.waypoints[waypoint].pose.pose.position.x;
-  p.y = current_waypoints_.waypoints[waypoint].pose.pose.position.y;
-  p.z = current_waypoints_.waypoints[waypoint].pose.pose.position.z;
+  p = current_waypoints_.waypoints[waypoint].pose.pose.position;
   return p;
 }
 
@@ -219,10 +68,24 @@ geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
   if(waypoint > getSize() - 1)
     return q;
 
-  q.x = current_waypoints_.waypoints[waypoint].pose.pose.orientation.x;
-  q.y = current_waypoints_.waypoints[waypoint].pose.pose.orientation.y;
-  q.z = current_waypoints_.waypoints[waypoint].pose.pose.orientation.z;
-  q.w = current_waypoints_.waypoints[waypoint].pose.pose.orientation.w;
+  //q = current_waypoints_.waypoints[waypoint].pose.pose.orientation;
+
+  double waypoint_yaw;
+  if (waypoint == static_cast<int>(current_waypoints_.waypoints.size()) - 1)
+  {
+    waypoint_yaw = atan2(
+        current_waypoints_.waypoints[waypoint - 1].pose.pose.position.y - current_waypoints_.waypoints[waypoint].pose.pose.position.y,
+        current_waypoints_.waypoints[waypoint - 1].pose.pose.position.x - current_waypoints_.waypoints[waypoint].pose.pose.position.x);
+    waypoint_yaw -= M_PI;
+  }
+  else
+  {
+    waypoint_yaw = atan2(
+        current_waypoints_.waypoints[waypoint + 1].pose.pose.position.y - current_waypoints_.waypoints[waypoint].pose.pose.position.y,
+        current_waypoints_.waypoints[waypoint + 1].pose.pose.position.x - current_waypoints_.waypoints[waypoint].pose.pose.position.x);
+  }
+  q = tf::createQuaternionMsgFromYaw (waypoint_yaw);
+
   return q;
 }
 
@@ -232,6 +95,46 @@ double WayPoints::getWaypointVelocityMPS(int waypoint) const
     return 0;
 
   return current_waypoints_.waypoints[waypoint].twist.twist.linear.x;
+}
+
+bool WayPoints::isFront(int waypoint, geometry_msgs::Pose current_pose) const
+{
+  double x = calcRelativeCoordinate(current_waypoints_.waypoints[waypoint].pose.pose.position, current_pose).x;
+  if (x < 0)
+    return false;
+  else
+    return true;
+}
+
+bool WayPoints::isValid(int waypoint, geometry_msgs::Pose current_pose) const
+{
+  double angle_threshold = 90;
+  geometry_msgs::Point relative_wp1 = calcRelativeCoordinate(getWaypointPosition(waypoint),current_pose);
+  geometry_msgs::Point relative_wp2;
+  tf::Vector3 relative_waypoint_v;
+  if (waypoint == getSize() - 1)
+  {
+    relative_wp2 = calcRelativeCoordinate(getWaypointPosition(waypoint - 1), current_pose);
+    relative_waypoint_v.setX(relative_wp1.x - relative_wp2.x);
+    relative_waypoint_v.setY(relative_wp1.y - relative_wp2.y);
+    relative_waypoint_v.setZ(relative_wp1.z - relative_wp2.z);
+  }
+  else
+  {
+    relative_wp2 = calcRelativeCoordinate(getWaypointPosition(waypoint + 1), current_pose);
+    relative_waypoint_v.setX(relative_wp2.x - relative_wp1.x);
+    relative_waypoint_v.setY(relative_wp2.y - relative_wp1.y);
+    relative_waypoint_v.setZ(relative_wp2.z - relative_wp1.z);
+  }
+  relative_waypoint_v.normalize();
+  tf::Vector3 relative_pose_v(1,0,0);
+  double angle = relative_pose_v.angle(relative_waypoint_v) *180 / M_PI;
+
+  if (fabs(angle) > angle_threshold)
+    return false;
+  else
+    return true;
+
 }
 
 double DecelerateVelocity(double distance, double prev_velocity)
@@ -287,68 +190,78 @@ double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point targe
   return tf::tfDistance(v1, v2);
 }
 
+
+
 //get closest waypoint from current pose
 int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msgs::Pose current_pose)
 {
+  WayPoints wp;
+  wp.setPath(current_path);
 
-  if (!current_path.waypoints.size())
-  {
+  if (wp.isEmpty())
     return -1;
-  }
 
-  int waypoint_min = -1;
-  double distance_min = DBL_MAX;
-  //get closest waypoint
-  for (int i = 1; i < static_cast<int>(current_path.waypoints.size()); i++)
+  //search closest candidate within a certain meter
+  double search_distance = 5.0;
+  std::vector<int> waypoint_candidates;
+  for (int i = 1; i < wp.getSize(); i++)
   {
-    //skip waypoint behind vehicle
-    double x = calcRelativeCoordinate(current_path.waypoints[i].pose.pose.position, current_pose).x;
-    //ROS_INFO("waypoint = %d, x = %lf",i,x);
-    if (x < 0)
+    if (getPlaneDistance(wp.getWaypointPosition(i), current_pose.position) > search_distance)
       continue;
 
-    //calc waypoint angle
-    double waypoint_yaw = tf::getYaw(current_path.waypoints[i].pose.pose.orientation);
-   /* if (i == static_cast<int>(current_path.waypoints.size()) - 1)
-    {
-      waypoint_yaw = atan2(
-          current_path.waypoints[i - 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
-          current_path.waypoints[i - 1].pose.pose.position.x - current_path.waypoints[i].pose.pose.position.x);
-      waypoint_yaw -= M_PI;
-    }
-    else
-    {
-      waypoint_yaw = atan2(
-          current_path.waypoints[i + 1].pose.pose.position.y - current_path.waypoints[i].pose.pose.position.y,
-          current_path.waypoints[i + 1].pose.pose.position.x - current_path.waypoints[i].pose.pose.position.x);
-    }*/
-  //  if (waypoint_yaw < 0)
-    //  waypoint_yaw += 2 * M_PI;
-
-    //calc pose angle
-    double pose_yaw = tf::getYaw(current_pose.orientation);
-   // if (pose_yaw < 0)
-   //   pose_yaw += 2 * M_PI;
-
-    //skip waypoint which direction is reverse against current_pose
-    double direction_sub = (waypoint_yaw - pose_yaw) * 180 / M_PI; //degree
-    //ROS_INFO("waypoint = %d, waypoint_yaw = %lf, pose_yaw = %lf, direction sub = %lf",i,waypoint_yaw,pose_yaw,direction_sub);
-    if (fabs(direction_sub) > 90)
+    if (!wp.isFront(i, current_pose))
       continue;
 
-    double distance = getPlaneDistance(current_path.waypoints[i].pose.pose.position, current_pose.position);
-    //ROS_INFO("waypoint = %d , distance = %lf , distance_min = %lf",i,distance,distance_min);
-    if (distance_min > distance)
-    {
+    if(!wp.isValid(i,current_pose))
+      continue;
 
-      //waypoint_min = el;
-      waypoint_min = i;
-      distance_min = distance;
-    }
+    waypoint_candidates.push_back(i);
   }
 
-  //ROS_INFO("waypoint = %d",waypoint_min);
-  return waypoint_min;
+  //get closest waypoint from candidates
+  if (!waypoint_candidates.empty())
+  {
+    int waypoint_min = -1;
+    double distance_min = DBL_MAX;
+    for (auto el :waypoint_candidates)
+    {
+      //ROS_INFO("closest_candidates : %d",el);
+      double d = getPlaneDistance(wp.getWaypointPosition(el), current_pose.position);
+      if (d < distance_min)
+      {
+        waypoint_min = el;
+        distance_min = d;
+      }
+    }
+    return waypoint_min;
+
+  }
+  else
+  {
+    ROS_INFO("no candidate. search closest waypoint from all waypoints...");
+    //if there is no candidate...
+    int waypoint_min = -1;
+    double distance_min = DBL_MAX;
+    for (int i = 1; i < wp.getSize(); i++)
+    {
+      if (!wp.isFront(i, current_pose))
+        continue;
+
+      //if (!wp.isValid(i, current_pose))
+      //  continue;
+
+      double d = getPlaneDistance(wp.getWaypointPosition(i), current_pose.position);
+      if (d < distance_min)
+      {
+        waypoint_min = i;
+        distance_min = d;
+      }
+    }
+    return waypoint_min;
+
+
+  }
+
 }
 
 bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *slope, double *intercept)

@@ -18,10 +18,12 @@ add_message_files(
   ConfigNdtMapping.msg
   ConfigNdtMappingOutput.msg
   ConfigWaypointFollower.msg
+  ConfigTwistFilter.msg
   ConfigVelocitySet.msg
   ConfigCarKf.msg
   ConfigPedestrianKf.msg
   ConfigLaneRule.msg
+  ConfigLaneSelect.msg
   ConfigPoints2Polygon.msg
   accel_cmd.msg
   steer_cmd.msg

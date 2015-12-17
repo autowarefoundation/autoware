@@ -41,45 +41,6 @@
 #include <tf/transform_listener.h>
 #include "waypoint_follower/lane.h"
 
-class Path
-{
-protected:
-	waypoint_follower::lane current_path_;
-  tf::Vector3 origin_v_;
-  tf::Transform transform_;
-  int closest_waypoint_;
-
-
-public:
-
-  /*__attribute__ ((deprecated)) */ Path()
-  {
-    closest_waypoint_ = -1;
-    origin_v_.setZero();
-  }
-/*__attribute__ ((deprecated))  void setTransform(tf::Transform transform){ transform_ = transform;}
-  __attribute__ ((deprecated)) void setPath(const waypoint_follower::laneConstPtr &msg);
-  __attribute__ ((deprecated)) int getPathSize();
-  __attribute__ ((deprecated)) double getInterval();
-  __attribute__ ((deprecated)) double getDistance(int waypoint);
-  __attribute__ ((deprecated)) tf::Vector3 transformWaypoint(int waypoint);
-  __attribute__ ((deprecated)) geometry_msgs::Point getWaypointPosition(int waypoint);
-  __attribute__ ((deprecated)) geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
-  __attribute__ ((deprecated)) waypoint_follower::lane getCurrentPath(){ return current_path_; }
-  __attribute__ ((deprecated)) int getClosestWaypoint();*/
-  void setTransform(tf::Transform transform){ transform_ = transform;}
-  void setPath(const waypoint_follower::laneConstPtr &msg);
-  int getPathSize();
-  double getInterval();
-  double getDistance(int waypoint);
-  tf::Vector3 transformWaypoint(int waypoint);
-  geometry_msgs::Point getWaypointPosition(int waypoint);
-  geometry_msgs::Quaternion getWaypointOrientation(int waypoint);
-  waypoint_follower::lane getCurrentPath(){ return current_path_; }
-  int getClosestWaypoint();
-
-};
-
 class WayPoints
 {
 protected:
@@ -94,6 +55,8 @@ public:
 	geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
 	double getWaypointVelocityMPS(int waypoint) const;
 	waypoint_follower::lane getCurrentWaypoints() const { return current_waypoints_; }
+  bool isFront(int waypoint, geometry_msgs::Pose current_pose) const;
+  bool isValid(int waypoint,geometry_msgs::Pose current_pose) const;
 
 };
 

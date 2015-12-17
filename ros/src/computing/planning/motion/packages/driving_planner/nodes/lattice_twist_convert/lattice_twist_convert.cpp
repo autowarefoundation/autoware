@@ -123,14 +123,15 @@ int main(int argc, char **argv)
 
   // Subscribe to the following topics:
   // Curvature parameters and state parameters
-  ros::Subscriber spline_parameters = nh.subscribe("spline", 10, splineCallback);
-  ros::Subscriber state_parameters = nh.subscribe("state", 10, stateCallback);
+  ros::Subscriber spline_parameters = nh.subscribe("spline", 1, splineCallback);
+  ros::Subscriber state_parameters = nh.subscribe("state", 1, stateCallback);
 
   // Setup message to hold commands
   geometry_msgs::TwistStamped twist;
 
   // Setup the loop rate in Hz
-  ros::Rate loop_rate(LOOP_RATE); 
+  ros::Rate loop_rate(LOOP_RATE);
+
   bool endflag = false;
   static  double vdes;
 

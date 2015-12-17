@@ -46,7 +46,7 @@ add_dependencies(waypoint_saver
   vehicle_socket_generate_messages_cpp)
 
 add_executable(waypoint_clicker nodes/waypoint_clicker/waypoint_clicker.cpp)
-target_link_libraries(waypoint_clicker vmap_utility ${catkin_LIBRARIES})
+target_link_libraries(waypoint_clicker vmap ${catkin_LIBRARIES})
 add_dependencies(waypoint_clicker
   map_file_generate_messages_cpp)
 

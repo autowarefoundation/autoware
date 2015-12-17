@@ -682,6 +682,8 @@ rosrun map_file vector_map_loader <csv files>
 
   ros::init(argc, argv, "sample_vector_map");
   ros::NodeHandle n;
+  bool publish_lane;
+  n.param<bool>("/sample_vector_map/publish_lane", publish_lane, false);
   ros::Publisher pub = n.advertise<visualization_msgs::MarkerArray>("/vector_map", 1000, true);
   ros::Publisher stat_publisher = n.advertise<std_msgs::Bool>("/vmap_stat", 100);;
   std_msgs::Bool vmap_stat_msg;
@@ -987,36 +989,38 @@ rosrun map_file vector_map_loader <csv files>
   marker.id = 0;
 
   // road data
-  if(lanes.size() > 0 && dtlanes.size() <= 0) {
-    std::cerr << "error: dtlane.csv is not loaded.\n"
-	      << "\tlane.csv needs dtlane.csv"
-	      << std::endl;
-    std::exit(1);
-  }
-  marker.ns = "lane";
-  for (i=0; i<lanes.size(); i++) {
-    if (lanes[i].lnid <= 0) {
-      continue;
+  if (publish_lane) {
+    if(lanes.size() > 0 && dtlanes.size() <= 0) {
+      std::cerr << "error: dtlane.csv is not loaded.\n"
+		<< "\tlane.csv needs dtlane.csv"
+		<< std::endl;
+      std::exit(1);
     }
-    int did = lanes[i].did;
-    int pid = dtlanes[did].pid;
-    double ox, oy, oz, ow;
+    marker.ns = "lane";
+    for (i=0; i<lanes.size(); i++) {
+      if (lanes[i].lnid <= 0) {
+	continue;
+      }
+      int did = lanes[i].did;
+      int pid = dtlanes[did].pid;
+      double ox, oy, oz, ow;
 
-    marker.type = visualization_msgs::Marker::CUBE;
+      marker.type = visualization_msgs::Marker::CUBE;
 
-    ox = 0.0;
-    oy = 0.0;
-    oz = sin(dtlanes[did].dir / 2);
-    ow = cos(dtlanes[did].dir / 2);
+      ox = 0.0;
+      oy = 0.0;
+      oz = sin(dtlanes[did].dir / 2);
+      ow = cos(dtlanes[did].dir / 2);
 
-    if((lanes[i].span == 0 || (dtlanes[did].lw + dtlanes[did].rw) == 0)) continue;
-    set_marker_data(&marker,
-		    pointclasses[pid].bx - lanes[i].span/2, pointclasses[pid].ly - (dtlanes[did].lw + dtlanes[did].rw)/2, pointclasses[pid].h,
-		    ox, oy, oz, ow,
-		    lanes[i].span, dtlanes[did].lw + dtlanes[did].rw, 0.1,
-		    0.5, 0, 0, 0.3);
-    
-    push_marker(&marker, &marker_array);
+      if((lanes[i].span == 0 || (dtlanes[did].lw + dtlanes[did].rw) == 0)) continue;
+      set_marker_data(&marker,
+		      pointclasses[pid].bx - lanes[i].span/2, pointclasses[pid].ly - (dtlanes[did].lw + dtlanes[did].rw)/2, pointclasses[pid].h,
+		      ox, oy, oz, ow,
+		      lanes[i].span, dtlanes[did].lw + dtlanes[did].rw, 0.1,
+		      0.5, 0, 0, 0.3);
+
+      push_marker(&marker, &marker_array);
+    }
   }
 
   // pole

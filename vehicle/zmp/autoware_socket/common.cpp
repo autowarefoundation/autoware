@@ -31,6 +31,12 @@
 #include "mainwindow.h"
 #include "autoware_socket.h"
 
+#include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+
+struct struct_PID_controller *shm_ptr;
+
 // these parameters can be configured later.
 int can_tx_interval = 10; // ms
 int cmd_rx_interval = 100; // ms
@@ -67,6 +73,15 @@ bool MainWindow::ConfigSocket(void)
   } else {
     return false;
   }
+
+  // key generation
+  key_t shm_key = ftok(SHM_SEED_PATH.c_str(), 1);
+
+  // open shared memory
+  int shm_id = shmget(shm_key, sizeof(struct_PID_controller), 0444); // read only
+
+  // get address of shared memory
+  shm_ptr = (struct struct_PID_controller *)shmat(shm_id, NULL, 0);
 
   return true;
 }

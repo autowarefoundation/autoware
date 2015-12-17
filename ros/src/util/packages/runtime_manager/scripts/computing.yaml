@@ -137,6 +137,7 @@ subs :
       subs :
       - name : euclidean_cluster
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
+        param: euclidean_cluster
       - name : obj_fusion
         cmd  : roslaunch lidar_tracker obj_fusion.launch
         param: obj_fusion
@@ -194,6 +195,7 @@ subs :
           dialog: MyDialogLaneStop
       - name : lane_select
         cmd  : rosrun lane_planner lane_select
+        param: lane_select
     - name : freespace_planner
       subs :
       - name : astar_navi
@@ -235,7 +237,7 @@ subs :
          param: waypoint_loader
          gui  :
            lane_waypoint_csv :
-             prop  : 1
+             prop  : 1    
        - name : waypoint_saver
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
          param: waypoint_saver
@@ -265,7 +267,8 @@ subs :
              depend_bool : 'lambda v : v == 0' 
            stat_topic : [ lf ]  
        - name : twist_filter
-         cmd  : rosrun waypoint_follower twist_filter  
+         cmd  : roslaunch waypoint_follower twist_filter.launch
+         param: twist_filter
        - name : wf_simulator
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
@@ -325,15 +328,22 @@ sys_gui:
   real_time:
     flags         : [ nl, left ]
     border        : 8
+  policy   :
+    border        : 16
+    flags         : [ left ]
+    depend        : real_time
   prio     :
     border        : 16
-    flags         : [ left ]
+    flags         : [ left, nl ]
+    depend        : real_time
   period   :
     border        : 16
-    flags         : [ left ]
+    flags         : [ top, left ]
+    depend        : real_time
   budget   :
     border        : 16
-    flags         : [ left ]
+    flags         : [ top, left ]
+    depend        : real_time
 
 params :
   - name  : sys
@@ -351,6 +361,12 @@ params :
       label    : Real-Time
       kind     : checkbox
       v        : False
+    - name     : policy
+      label    : Policy
+      kind     : menu
+      choices  : [ FIFO, RR ]
+      choices_type : str
+      v        : fifo
     - name     : prio
       label    : 'prio:'
       kind     : num
@@ -533,6 +549,62 @@ params :
       min   : 2
       max   : 10
       v     : 9
+      
+  - name  : euclidean_cluster
+    vars  :
+    - name    : publish_ground
+      label   : 'publish ground'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : publish_filtered
+      label   : 'publish filtered'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : is_downsampling
+      label   : 'is downsampling'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : distance
+      label   : 'distance'
+      min       : 0
+      max       : 5
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : leaf_size
+      label   : 'leaf size'
+      min       : 0
+      max       : 1
+      v       : 0.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='  
+    - name    : cluster_size_min
+      label   : 'cluster size minimum'
+      min       : 0
+      max       : 3000
+      v       : 50
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : cluster_size_max
+      label   : 'cluster size maximum'
+      min       : 0
+      max       : 3000
+      v       : 2500
+      cmd_param :
+        dash        : ''
+        delim       : ':='              
 
   - name  : ndt
     topic : /config/ndt
@@ -686,42 +758,47 @@ params :
         dash     : ''
         delim    : ':='
     - name  : velocity_limit
-      label : Velocity Limit
+      label : Velocity Limit (km/h)
       min   : 0
       max   : 60
       v     : 42.0
     - name  : others_distance
-      label : Others Distance
+      label : Others Distance (m)
       min   : 0
       max   : 50
       v     : 15.0
     - name  : cars_distance
-      label : Cars Distance
+      label : Cars Distance (m)
       min   : 0
       max   : 50
       v     : 15.0
     - name  : pedestrians_distance
-      label : Pedestrians Distance
+      label : Pedestrians Distance (m)
       min   : 0
       max   : 50
       v     : 10.0
     - name  : detection_range
-      label : Detection Range
+      label : Detection Range (m)
       min   : 0
       max   : 10
       v     : 1.3
+    - name  : deceleration_range
+      label : Deceleration Range (m)
+      min   : 0
+      max   : 10
+      v     : 1.7
     - name  : threshold_points
       label : Points Threshold
       min   : 0
       max   : 30
       v     : 15
     - name  : detection_height_top
-      label : Detection Height Top
+      label : Detection Height Top (m)
       min   : 0
       max   : 10
-      v     : 2.5
+      v     : 0.1
     - name  : detection_height_bottom
-      label : Detection Height Bottom
+      label : Detection Height Bottom (m)
       min   : -10
       max   : 0
       v     : -1.5
@@ -729,17 +806,27 @@ params :
       label : Deceleration (m/s^2)
       min   : 0
       max   : 5
-      v     : 1.5
-    - name  : decel_change_limit
-      label : Deceleration Change Limit
+      v     : 1.0
+    - name  : velocity_change_limit
+      label : Velocity Change Limit (km/h)
       min   : 5
       max   : 40
       v     : 15.0
-    - name  : accel_bias
-      label : Accel Bias
+    - name  : velocity_offset
+      label : Velocity Offset (km/h)
+      min   : 0
+      max   : 40
+      v     : 3.0
+    - name  : deceleration_minimum
+      label : Deceleration Minimum (km/h)
       min   : 0
       max   : 40
       v     : 5.0
+    - name  : temporal_waypoints_size
+      label : Temporal Waypoints (m)
+      min   : 0
+      max   : 150
+      v     : 100.0
 
   - name  : lane_follower_trajgen
     topic : /config/waypoint_follower
@@ -780,7 +867,33 @@ params :
       label   : 'Simulation Mode'
       kind    : checkbox
       v       : False
-      rosparam: /lattice_trajectory_gen/sim_mode
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : prius_mode
+      label   : 'Prius Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : mkz_mode
+      label   : 'MKZ Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : twist_filter
+    topic : /config/twist_filter
+    msg   : ConfigTwistFilter
+    vars  :
+    - name    : lateral_accel_limit 
+      label   : 'lateral_accel_limit :'
+      min   : 0
+      max   : 5.0
+      v         : 0.8
   
   - name  : wf_simulator
     vars  :
@@ -1035,6 +1148,17 @@ params :
     vars  :
     - name  : traffic_light
       v     : 0
+      
+  - name  : lane_select
+    topic : /config/lane_select
+    msg   : ConfigLaneSelect
+    vars  :
+    - name  : number
+      kind  : radio_box
+      choices:
+      - Driving
+      - Passing
+      v     : 1
 
   - name  : waypoint_saver
     vars  :
@@ -1077,23 +1201,30 @@ params :
       path_type : save
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
-
+        
   - name  : waypoint_loader
     vars  :
-    - name      : lane_waypoint_csv
+    - name      : driving_lane_csv
+      label     : Driving
       kind      : path
-      v         : /tmp/lane_waypoint.csv
-#      rosparam  : /waypoint_loader/lane_waypoint_csv
+      v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : passing_lane_csv
+      label     : Passing
+      kind      : path
+      v         : /tmp/driving_lane.csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='        
     - name      : decelerate  
       label   : 'decelerate :'
       v         : 1.0
-      #rosparam  : /waypoint_loader/decelerate
       cmd_param :
         dash        : ''
         delim       : ':='
+        
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping

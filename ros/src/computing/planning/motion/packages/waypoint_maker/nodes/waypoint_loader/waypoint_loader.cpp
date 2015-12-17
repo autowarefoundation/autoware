@@ -36,6 +36,7 @@
 #include <vector>
 #include <string>
 #include "waypoint_follower/libwaypoint_follower.h"
+#include "waypoint_follower/LaneArray.h"
 
 struct WP
 {
@@ -44,7 +45,8 @@ struct WP
 };
 
 
-static const std::string LANE_WAYPOINT_CSV = "/tmp/lane_waypoint.csv";
+static const std::string DRIVING_LANE_CSV = "/tmp/driving_lane.csv";
+static const std::string PASSING_LANE_CSV = "/tmp/passing_lane.csv";
 static double _decelerate = 1.0;
 
 static std::vector<WP> _waypoints;
@@ -129,22 +131,25 @@ waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "waypoint_loader");
+  ros::init(argc, argv, "waypoint_array_loader");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  std::string lane_waypoint_csv;
+  std::string driving_lane_csv;
+  std::string passing_lane_csv;
 
-  private_nh.param<std::string>("lane_waypoint_csv", lane_waypoint_csv, LANE_WAYPOINT_CSV);
+  private_nh.param<std::string>("driving_lane_csv", driving_lane_csv, DRIVING_LANE_CSV);
+  private_nh.param<std::string>("passing_lane_csv", passing_lane_csv, PASSING_LANE_CSV);
   private_nh.getParam("decelerate", _decelerate);
   ROS_INFO_STREAM("decelerate :" << _decelerate);
 
-  ros::Publisher lane_pub = nh.advertise<waypoint_follower::lane>("lane_waypoints", 10, true);
+  ros::Publisher lane_pub = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
 
-  std::vector<WP> waypoints = readWaypoint(lane_waypoint_csv.c_str());
-  waypoint_follower::lane lane_waypoint = createLaneWaypoint(waypoints);
+  waypoint_follower::LaneArray lane_array;
+  lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(driving_lane_csv.c_str())));
+  lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(passing_lane_csv.c_str())));
 
-   lane_pub.publish(lane_waypoint);
+  lane_pub.publish(lane_array);
 
   ros::spin();
 
