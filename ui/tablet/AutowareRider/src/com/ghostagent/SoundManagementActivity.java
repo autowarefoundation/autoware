@@ -382,6 +382,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		static final int MISS_BEACON_LIMIT = 10;
 
+		static final int CAN_SHIFT_BRAKE = 0x00;
+		static final int CAN_SHIFT_DRIVE = 0x10;
+		static final int CAN_SHIFT_NEUTRAL = 0x20;
+		static final int CAN_SHIFT_REVERSE = 0x40;
+
 		synchronized int[] recv(int response) {
 			int[] data = new int[2];
 
@@ -1203,32 +1208,83 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						missBeacon = 0;
 						break;
 					case InformationClient.ERROR:
-						switch (data[1]) {
-						case 0:
+						if (data[1] == 0) {
 							drawLeftView.setColor(COLOR_RED);
 							drawRightView.setColor(COLOR_RED);
 							drawCenterView.setColor(COLOR_RED);
-							break;
-						case 1:
+						} else {
 							drawLeftView.setColor(COLOR_YELLOW);
 							drawRightView.setColor(COLOR_YELLOW);
 							drawCenterView.setColor(COLOR_YELLOW);
+						}
+						break;
+					case InformationClient.CAN:
+						switch (data[1]) {
+						case InformationClient.CAN_SHIFT_BRAKE:
+							if (gearButton.getMode() != GearButton.BRAKE) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.BRAKE);
+									}
+								});
+							}
+							break;
+						case InformationClient.CAN_SHIFT_DRIVE:
+							if (gearButton.getMode() != GearButton.DRIVE) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.DRIVE);
+									}
+								});
+							}
+							break;
+						case InformationClient.CAN_SHIFT_NEUTRAL:
+							if (gearButton.getMode() != GearButton.NEUTRAL) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.NEUTRAL);
+									}
+								});
+							}
+							break;
+						case InformationClient.CAN_SHIFT_REVERSE:
+							if (gearButton.getMode() != GearButton.REVERSE) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.REVERSE);
+									}
+								});
+							}
 							break;
 						}
 						break;
 					case InformationClient.MODE:
 						switch (data[1]) {
-						case 0:
+						case DriveButton.NORMAL:
+							if (driveButton.getMode() != DriveButton.NORMAL) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										driveButton.updateMode(DriveButton.NORMAL);
+									}
+								});
+							}
 							drawLeftView.setColor(COLOR_RED);
 							drawRightView.setColor(COLOR_RED);
 							drawCenterView.setColor(COLOR_RED);
 							break;
-						case 1:
+						case DriveButton.AUTO:
+							if (driveButton.getMode() != DriveButton.AUTO) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										driveButton.updateMode(DriveButton.AUTO);
+									}
+								});
+							}
 							drawLeftView.setColor(COLOR_BLUE);
 							drawRightView.setColor(COLOR_BLUE);
 							drawCenterView.setColor(COLOR_BLUE);
 							break;
-						case 2:
+						default:
 							drawLeftView.setColor(COLOR_YELLOW);
 							drawRightView.setColor(COLOR_YELLOW);
 							drawCenterView.setColor(COLOR_YELLOW);
@@ -1390,25 +1446,18 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		int data = -1;
 
 		if (v == gearButton.drive) {
-			gearButton.updateMode(GearButton.DRIVE);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.DRIVE);
 		} else if (v == gearButton.reverse) {
-			gearButton.updateMode(GearButton.REVERSE);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.REVERSE);
 		} else if (v == gearButton.brake) {
-			gearButton.updateMode(GearButton.BRAKE);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.BRAKE);
 		} else if (v == gearButton.neutral) {
-			gearButton.updateMode(GearButton.NEUTRAL);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.NEUTRAL);
 		} else if (v == driveButton.auto) {
-			driveButton.updateMode(DriveButton.AUTO);
-			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, DriveButton.AUTO);
 		} else if (v == driveButton.normal) {
-			driveButton.updateMode(DriveButton.NORMAL);
-			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, DriveButton.NORMAL);
 		} else if (v == driveButton.pursuit) {
-			driveButton.updateMode(DriveButton.PURSUIT);
 			finish();
 			data = 0;
 		} else if (v == applicationButton.navigation) {
