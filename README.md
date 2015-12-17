@@ -64,10 +64,31 @@ $ cd ../
 $ ./catkin_make_release
 ```
 
+## If you're using Ubuntu MATE 15.04
+
+```
+$ cd ~/Autoware/ros
+$ sed -i 's|gnome|mate|g' run
+```
+
+## To obtain the demo data
+
+```
+$ mkdir ~/Autoware/demodata
+$ cd ~/Autoware/demodata
+$ wget http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz
+$ wget http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz
+$ tar -xzvf sample_moriyama_data.tar.gz
+$ tar -xzvf sample_moriyama_150324.tar.gz
+```
+
 ## How to Start
 
 ```
-$ cd $HOME/Autoware/ros
+$ cd ~/Autoware/ros/src/.config/quick_start/sample_lidar_camera
+$ sed -i 's|/home/pdsljp/|~/|g' *.launch
+$ sed -i "s|.autoware|Autoware|g" *.launch
+$ cd ~/Autoware/ros
 $ ./run
 ```
 
