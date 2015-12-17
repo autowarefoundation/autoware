@@ -41,7 +41,7 @@ void *CANSenderEntry(void *a)
   int sock;
   std::string senddata; 
   std::ostringstream oss;
-  oss << candata << "," << drvmode; // global variables.
+  oss << CAN_KEY_MODE << "," << drvmode << "," << candata; // global variables.
   senddata = oss.str();
   unsigned int **addrptr;
 
@@ -131,77 +131,31 @@ void MainWindow::SendCAN(void)
   string can = "";
 
   // add time when sent out.
-  sprintf(tmp,"'%d/%02d/%02d %02d:%02d:%02d.%ld',",
+  sprintf(tmp, "%d,'%d/%02d/%02d %02d:%02d:%02d.%ld'",
+          CAN_KEY_TIME,
           _s_time->tm_year+1900, _s_time->tm_mon+1, _s_time->tm_mday,
           _s_time->tm_hour + 9, _s_time->tm_min, _s_time->tm_sec, 
           _getTime.tv_usec);
-
   can += tmp;
 
-#if 0    
-  if(_selectLog.drvInf == true){
-    sprintf(tmp,"%d,%d,%d,%d,%d,%d,%d,%3.2f,%3.2f,%d,%d,%d,",
-            _drvInf.mode, _drvInf.contMode, _drvInf.overrideMode, 
-            _drvInf.servo, _drvInf.actualPedalStr, _drvInf.targetPedalStr, 
-            _drvInf.inputPedalStr,
-            _drvInf.targetVeloc, _drvInf.veloc,
-            _drvInf.actualShift, _drvInf.targetShift, _drvInf.inputShift);
-    can += tmp;
-  } else {
-    sprintf(tmp,"0,0,0,0,0,0,0,0,0,0,0,0,");
+  if (_selectLog.drvInf == true) {
+    sprintf(tmp, ",%d,%3.2f,%d,%d,%d,%d",
+            CAN_KEY_VELOC, _drvInf.veloc,
+            CAN_KEY_ACCEL, _drvInf.actualPedalStr,
+            CAN_KEY_SHIFT, _drvInf.actualShift);
     can += tmp;
   }
-  if(_selectLog.strInf == true){
-    sprintf(tmp,"%d,%d,%d,%d,%d,%d,%3.2f,%3.2f,",
-            _strInf.mode, _strInf.cont_mode, _strInf.overrideMode, 
-            _strInf.servo,
-            _strInf.targetTorque, _strInf.torque,
-            _strInf.angle, _strInf.targetAngle);
-    can += tmp;
-  } else {
-    sprintf(tmp,"0,0,0,0,0,0,0,0,");
+  if (_selectLog.strInf == true) {
+    sprintf(tmp, ",%d,%3.2f,%d,%d",
+            CAN_KEY_ANGLE, _strInf.angle,
+            CAN_KEY_TORQUE, _strInf.torque);
     can += tmp;
   }
-  if(_selectLog.brkInf == true){
-    sprintf(tmp,"%d,%d,%d,%d,",
-            _brakeInf.pressed, _brakeInf.actualPedalStr, 
-            _brakeInf.targetPedalStr, _brakeInf.inputPedalStr);
-    can += tmp;
-  } else {
-    sprintf(tmp,"0,0,0,0,");
+  if (_selectLog.brkInf == true) {
+    sprintf(tmp, ",%d,%d", CAN_KEY_BRAKE, _brakeInf.actualPedalStr);
     can += tmp;
   }
-  if(_selectLog.battInf == true){
-    sprintf(tmp,"%3.2f,%d,%3.2f,%d,%d,%3.2f,%3.2f,",
-            _battInf.soc, _battInf.voltage, _battInf.current,
-            _battInf.max_temp, _battInf.min_temp,
-            _battInf.max_chg_current, _battInf.max_dischg_current);
-    can += tmp;
-  } else {
-    sprintf(tmp,"0,0,0,0,0,0,0,");
-    can += tmp;
-  }
-  if(_selectLog.otherInf == true){
-    sprintf(tmp,"%3.3f,%3.5f,%3.1f,%3.1f,%3.1f,%3.1f,%3.1f,%3.1f,%3.1f,%d,%d,%d,%3.1f,%d,%d,%d,%d,%d,%d,%d",
-            _otherInf.sideAcc, _otherInf.acc, _otherInf.angleFromP, 
-            _otherInf.brkPedalStrFromP, _otherInf.velocFrFromP, 
-            _otherInf.velocFlFromP, _otherInf.velocRrFromP, 
-            _otherInf.velocRlFromP,
-            _otherInf.velocFromP2,
-            _otherInf.drv_mode, _otherInf.drvPedalStrFromP, _otherInf.rpm,
-            _otherInf.velocFlFromP,
-            _otherInf.ev_mode, _otherInf.temp, _otherInf.shiftFromPrius, 
-            _otherInf.light,
-            _otherInf.level, _otherInf.door, _otherInf.cluise);
-    
-    can += tmp;
-  } else {
-    sprintf(tmp,"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
-    can += tmp;
-  }
-#endif
   
-  //sprintf(tmp,"\n");
   candata = can;
 
   // send drive mode in addition to CAN.
@@ -214,9 +168,3 @@ void MainWindow::SendCAN(void)
   
   wrapSender();
 }
-
-
-
-
-
-
