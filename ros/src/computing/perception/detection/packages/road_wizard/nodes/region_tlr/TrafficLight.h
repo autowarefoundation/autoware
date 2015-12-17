@@ -43,4 +43,6 @@ struct thresholdSet {
     hsvSet Green;
 };
 
+//#define SHOW_DEBUG_INFO
+
 #endif

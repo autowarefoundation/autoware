@@ -372,6 +372,11 @@ static void superimpose_cb(const std_msgs::Bool::ConstPtr& config_msg)
 int main(int argc, char* argv[]) {
 
   //	printf("***** Traffic lights app *****\n");
+#ifdef SHOW_DEBUG_INFO
+  cv::namedWindow("tmpImage", cv::WINDOW_NORMAL);
+  cv::namedWindow("bright_mask", cv::WINDOW_NORMAL);
+  cv::startWindowThread();
+#endif
 
   thSet.Red.Hue.upper = (double)DAYTIME_RED_UPPER;
   thSet.Red.Hue.lower = (double)DAYTIME_RED_LOWER;
