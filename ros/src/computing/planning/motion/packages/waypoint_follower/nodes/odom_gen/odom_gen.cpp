@@ -40,6 +40,7 @@
 #include <iostream>
 
 #include "waypoint_follower/libwaypoint_follower.h"
+
 static geometry_msgs::Twist _current_velocity;
 
 static const std::string SIMULATION_FRAME = "sim_base_link";
@@ -50,7 +51,6 @@ static std::string _use_pose;
 static bool _initial_set = false;
 static bool _pose_set = false;
 static bool _waypoint_set = false;
-//Path _path_og;
 static WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
 
@@ -210,6 +210,7 @@ static void publishOdometry()
 
   last_time = current_time;
 }
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "odom_gen");
@@ -229,18 +230,19 @@ int main(int argc, char **argv)
 
   private_nh.getParam("use_pose", _use_pose);
 
-
   ros::Rate loop_rate(50); // 50Hz
   while (ros::ok())
   {
     ros::spinOnce(); //check subscribe topic
 
-    if (!_waypoint_set) {
+    if (!_waypoint_set)
+    {
       loop_rate.sleep();
       continue;
     }
 
-    if (!_initial_set) {
+    if (!_initial_set)
+    {
       loop_rate.sleep();
       continue;
     }
