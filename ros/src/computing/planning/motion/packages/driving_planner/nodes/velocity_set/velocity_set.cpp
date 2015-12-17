@@ -142,7 +142,10 @@ void PathVset::setTemporalWaypoints()
   temporal_waypoints_.increment = current_waypoints_.increment;
   // push current pose
   waypoint_follower::waypoint current_point;
+
   current_point.pose = _control_pose;
+  if (g_sim_mode)
+    current_point.pose = _current_pose;
   current_point.twist = current_waypoints_.waypoints[_closest_waypoint].twist;
   current_point.dtlane = current_waypoints_.waypoints[_closest_waypoint].dtlane;
   temporal_waypoints_.waypoints.push_back(current_point);
@@ -614,6 +617,8 @@ static EControl CrossWalkDetection(const int &crosswalk_id)
   // Search each calculated points in the crosswalk
   for (const auto &p : vmap.getDetectionPoints(crosswalk_id).points) {
     geometry_msgs::Point detection_point = calcRelativeCoordinate(p, _current_pose.pose);
+    if (g_sim_mode)
+      detection_point = calcRelativeCoordinate(p, _sim_ndt_pose.pose);
     tf::Vector3 detection_vector = point2vector(detection_point);
     detection_vector.setZ(0.0);
 
@@ -627,7 +632,10 @@ static EControl CrossWalkDetection(const int &crosswalk_id)
 	vscan_temp.x = vscan.x;
 	vscan_temp.y = vscan.y;
 	vscan_temp.z = vscan.z;
-	g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, _current_pose.pose));
+	if (g_sim_mode)
+	  g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, _sim_ndt_pose.pose));
+	else
+	  g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, _current_pose.pose));
       }
       if (stop_count > _threshold_points)
 	return STOP;
