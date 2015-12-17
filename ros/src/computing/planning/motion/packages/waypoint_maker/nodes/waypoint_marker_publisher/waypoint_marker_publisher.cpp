@@ -96,24 +96,9 @@ void createGlobalLaneArrayVelocityMarker(const waypoint_follower::LaneArray &lan
     {
       //std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " << _waypoints[i].GetVelocity_kmh() << std::endl;
       velocity_marker.id = i;
-      double yaw = 0;
-      if (i == static_cast<int>(lane.waypoints.size()) - 1)
-      {
-        yaw = atan2(lane.waypoints[i - 1].pose.pose.position.y - lane.waypoints[i].pose.pose.position.y,
-            lane.waypoints[i - 1].pose.pose.position.x - lane.waypoints[i].pose.pose.position.x);
-        yaw -= M_PI;
-      }
-      else
-        yaw = atan2(lane.waypoints[i + 1].pose.pose.position.y - lane.waypoints[i].pose.pose.position.y,
-            lane.waypoints[i + 1].pose.pose.position.x - lane.waypoints[i].pose.pose.position.x);
-
-      geometry_msgs::Pose waypoint_pose;
-      waypoint_pose.position = lane.waypoints[i].pose.pose.position;
-      waypoint_pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-
       geometry_msgs::Point relative_p;
       relative_p.y = 0.5;
-      velocity_marker.pose.position = calcAbsoluteCoordinate(relative_p, waypoint_pose);
+      velocity_marker.pose.position = calcAbsoluteCoordinate(relative_p, lane.waypoints[i].pose.pose);
       velocity_marker.pose.position.z += 0.2;
 
       // double to string
@@ -147,24 +132,9 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_wa
   for (int i = 0; i < static_cast<int>(lane_waypoint.waypoints.size()); i++)
   {
     velocity.id = i;
-    double yaw = 0;
-    if (i == static_cast<int>(lane_waypoint.waypoints.size()) - 1)
-    {
-      yaw = atan2(lane_waypoint.waypoints[i - 1].pose.pose.position.y - lane_waypoint.waypoints[i].pose.pose.position.y,
-          lane_waypoint.waypoints[i - 1].pose.pose.position.x - lane_waypoint.waypoints[i].pose.pose.position.x);
-      yaw -= M_PI;
-    }
-    else
-      yaw = atan2(lane_waypoint.waypoints[i + 1].pose.pose.position.y - lane_waypoint.waypoints[i].pose.pose.position.y,
-          lane_waypoint.waypoints[i + 1].pose.pose.position.x - lane_waypoint.waypoints[i].pose.pose.position.x);
-
-    geometry_msgs::Pose waypoint_pose;
-    waypoint_pose.position = lane_waypoint.waypoints[i].pose.pose.position;
-    waypoint_pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-
     geometry_msgs::Point relative_p;
     relative_p.y = -0.65;
-    velocity.pose.position = calcAbsoluteCoordinate(relative_p, waypoint_pose);
+    velocity.pose.position = calcAbsoluteCoordinate(relative_p, lane_waypoint.waypoints[i].pose.pose);
     velocity.pose.position.z += 0.2;
 
     // double to string
@@ -172,13 +142,6 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_wa
     // oss << std::fixed << std::setprecision(2) << mps2kmph(lane_waypoint.waypoints[i].twist.twist.linear.x) << " km/h";
     oss << std::fixed << std::setprecision(1) << mps2kmph(lane_waypoint.waypoints[i].twist.twist.linear.x);
     velocity.text = oss.str();
-
-    //C++11 version
-    //std::string velocity = std::to_string(test_pose.velocity_kmh);
-    //velocity.erase(velocity.find_first_of(".") + 3);
-    //std::string kmh = " km/h";
-    //std::string text = velocity + kmh;
-    //marker.text = text;
 
     g_local_waypoints_marker_array.markers.push_back(velocity);
   }
