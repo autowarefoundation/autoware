@@ -625,6 +625,13 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	private boolean bUsesGeomagnetic = false;
 	private boolean bExistsGravity = false;
 	private boolean bExistsGeomagnetic = false;
+	/**
+	 * meter color
+	 */
+	private static final int COLOR_DARK_RED = 0xff5b1100;
+	private static final int COLOR_RED = 0xffb62200;
+	private static final int COLOR_BLUE = 0xff0000fb;
+	private static final int COLOR_YELLOW = 0xfffffb00;
 
 	private String getMacAddress() {
 		WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
@@ -635,10 +642,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	private boolean startServerConnecting() {
 		bIsServerConnecting = true;
 
-		// red
-		drawLeftView.setColor(0xffb62200);
-		drawRightView.setColor(0xffb62200);
-		drawCenterView.setColor(0xffb62200);
+		drawLeftView.setColor(COLOR_RED);
+		drawRightView.setColor(COLOR_RED);
+		drawCenterView.setColor(COLOR_RED);
 
 		if (commandClient.send(CommandClient.GEAR, gearButton.getMode()) < 0)
 			return false;
@@ -653,10 +659,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	private void stopServerConnecting() {
-		// dark red
-		drawLeftView.setColor(0xff5b1100);
-		drawRightView.setColor(0xff5b1100);
-		drawCenterView.setColor(0xff5b1100);
+		drawLeftView.setColor(COLOR_DARK_RED);
+		drawRightView.setColor(COLOR_DARK_RED);
+		drawCenterView.setColor(COLOR_DARK_RED);
 
 		bIsServerConnecting = false;
 
@@ -674,8 +679,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		// center expression
 		drawLeftView = (DrawLeftView) findViewById(R.id.leftView);
+		drawLeftView.setColor(COLOR_DARK_RED);
 		drawRightView = (DrawRightView) findViewById(R.id.rightView);
+		drawRightView.setColor(COLOR_DARK_RED);
 		drawCenterView = (DrawCenterView) findViewById(R.id.centerView);
+		drawCenterView.setColor(COLOR_DARK_RED);
 
 		// set buttons
 		gearButton = new GearButton(this);
@@ -1197,38 +1205,33 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 					case InformationClient.ERROR:
 						switch (data[1]) {
 						case 0:
-							// red
-							drawLeftView.setColor(0xffb62200);
-							drawRightView.setColor(0xffb62200);
-							drawCenterView.setColor(0xffb62200);
+							drawLeftView.setColor(COLOR_RED);
+							drawRightView.setColor(COLOR_RED);
+							drawCenterView.setColor(COLOR_RED);
 							break;
 						case 1:
-							// yellow
-							drawLeftView.setColor(0xfffffb00);
-							drawRightView.setColor(0xfffffb00);
-							drawCenterView.setColor(0xfffffb00);
+							drawLeftView.setColor(COLOR_YELLOW);
+							drawRightView.setColor(COLOR_YELLOW);
+							drawCenterView.setColor(COLOR_YELLOW);
 							break;
 						}
 						break;
 					case InformationClient.MODE:
 						switch (data[1]) {
 						case 0:
-							// red
-							drawLeftView.setColor(0xffb62200);
-							drawRightView.setColor(0xffb62200);
-							drawCenterView.setColor(0xffb62200);
+							drawLeftView.setColor(COLOR_RED);
+							drawRightView.setColor(COLOR_RED);
+							drawCenterView.setColor(COLOR_RED);
 							break;
 						case 1:
-							// blue
-							drawLeftView.setColor(0xff0000fb);
-							drawRightView.setColor(0xff0000fb);
-							drawCenterView.setColor(0xff0000fb);
+							drawLeftView.setColor(COLOR_BLUE);
+							drawRightView.setColor(COLOR_BLUE);
+							drawCenterView.setColor(COLOR_BLUE);
 							break;
 						case 2:
-							// yellow
-							drawLeftView.setColor(0xfffffb00);
-							drawRightView.setColor(0xfffffb00);
-							drawCenterView.setColor(0xfffffb00);
+							drawLeftView.setColor(COLOR_YELLOW);
+							drawRightView.setColor(COLOR_YELLOW);
+							drawCenterView.setColor(COLOR_YELLOW);
 							break;
 						}
 						break;
