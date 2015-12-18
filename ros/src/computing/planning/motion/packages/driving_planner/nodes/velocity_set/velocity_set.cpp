@@ -519,10 +519,11 @@ static void DisplayDetectionRange(const int &crosswalk_id, const int &num, const
     waypoint_marker_decelerate.color.b = 0.0;
     waypoint_marker_decelerate.frame_locked = true;
 
-
-    stop_line.pose.position = _path_dk.getWaypointPosition(_obstacle_waypoint);
+    if (_obstacle_waypoint > -1) {
+      stop_line.pose.position = _path_dk.getWaypointPosition(_obstacle_waypoint);
+      stop_line.pose.orientation = _path_dk.getWaypointOrientation(_obstacle_waypoint);
+    }
     stop_line.pose.position.z += 1.0;
-    stop_line.pose.orientation = _path_dk.getWaypointOrientation(_obstacle_waypoint);
     stop_line.scale.x = 0.1;
     stop_line.scale.y = 15.0;
     stop_line.scale.z = 2.0;
