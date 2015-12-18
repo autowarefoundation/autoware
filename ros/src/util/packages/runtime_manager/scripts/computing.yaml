@@ -183,7 +183,7 @@ subs :
     - name : lane_planner
       subs :
       - name : lane_navi
-        cmd  : rosrun lane_planner lane_navi
+        cmd  : roslaunch lane_planner lane_navi.launch
         param: lane_navi
       - name : lane_rule
         cmd  : rosrun lane_planner lane_rule
@@ -1114,13 +1114,17 @@ params :
       min       : 0
       max       : 200
       v         : 40.0
-      rosparam  : /lane_navi/velocity
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : output_file
       label     : Output File
       kind      : path
       path_type : save
       v         : /tmp/lane_waypoint.csv
-      rosparam  : /lane_navi/output_file
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : lane_rule
     topic : /config/lane_rule
