@@ -22,6 +22,8 @@
 #include "road_wizard/Signals.h"
 #include <runtime_manager/adjust_xy.h>
 
+static std::string camera_id_str;
+
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 
 static int adjust_proj_x = 0;
@@ -132,8 +134,8 @@ void getTransform (Eigen::Quaternionf &ori, Point3 &pos)
 
   // target_frame    source_frame
   ros::Time now = ros::Time();
-  listener.waitForTransform ("camera", "map", now, ros::Duration(10.0));
-  listener.lookupTransform ("camera", "map", now, trf);
+  listener.waitForTransform (camera_id_str, "map", now, ros::Duration(10.0));
+  listener.lookupTransform (camera_id_str, "map", now, trf);
 
   tf::Vector3 &p = trf.getOrigin();
   tf::Quaternion o = trf.getRotation();
@@ -257,6 +259,13 @@ int main (int argc, char *argv[])
   std::string cameraInfo_topic_name;
   private_nh.param<std::string>("camera_info_topic", cameraInfo_topic_name, "/camera/camera_info");
 
+  /* get camera ID */
+  camera_id_str = cameraInfo_topic_name;
+  camera_id_str.erase(camera_id_str.find("/camera/camera_info"));
+  if (camera_id_str == "/") {
+    camera_id_str = "camera";
+  }
+  
   /* load vector map */
   ros::Subscriber sub_point     = rosnode.subscribe("vector_map_info/point_class",
                                                     SUBSCRIBE_QUEUE_SIZE,
