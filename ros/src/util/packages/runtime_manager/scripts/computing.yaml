@@ -157,19 +157,19 @@ subs :
     - name : viewers
       subs :
       - name : image_viewer
-        cmd  : rosrun viewers image_viewer
+        cmd  : roslaunch viewers viewers.launch viewer_type:=image_viewer
       - name : image_d_viewer
-        cmd  : rosrun viewers image_d_viewer
+        cmd  : roslaunch viewers viewers.launch viewer_type:=image_d_viewer
       - name : points_image_viewer
-        cmd  : rosrun viewers points_image_viewer
+        cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_viewer
       - name : points_image_d_viewer
-        cmd  : rosrun viewers points_image_d_viewer
+        cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_d_viewer
       - name : vscan_image_viewer
-        cmd  : rosrun viewers vscan_image_viewer
+        cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_viewer
       - name : vscan_image_d_viewer
-        cmd  : rosrun viewers vscan_image_d_viewer
+        cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_d_viewer
       - name : traffic_light_viewer
-        cmd  : rosrun viewers traffic_light_viewer
+        cmd  : roslaunch viewers viewers.launch viewer_type:=traffic_light_viewer
 
 
 - subs :

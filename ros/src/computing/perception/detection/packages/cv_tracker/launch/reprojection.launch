@@ -1,6 +1,7 @@
 <launch>
   <arg name="car" default="true"/>
   <arg name="pedestrian" default="false"/>
+  <arg name="camera_id" default="/"/>
 
   <group if="$(arg car)">
     <group ns="obj_car">
@@ -8,7 +9,7 @@
       <arg name="projection_matrix_src_car" default="/projection_matrix"/>
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
-        <param name="projection_matrix_topic" value="$(arg projection_matrix_src_car)"/>
+        <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_car)"/>
       </node>
 
     </group>
@@ -20,7 +21,7 @@
       <arg name="projection_matrix_src_pedestrian" default="/projection_matrix"/>
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
-        <param name="projection_matrix_topic" value="$(arg projection_matrix_src_pedestrian)"/>
+        <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_pedestrian)"/>
       </node>
 
     </group>

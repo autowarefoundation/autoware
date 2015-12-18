@@ -3,6 +3,8 @@
   <arg name="pedestrian" default="false" />
   <arg name="use_gpu" default="false" />
 
+  <arg name="camera_id" default="/" />
+
   <!-- car detection -->
   <group if="$(arg car)">
     <group ns="obj_car">
@@ -17,7 +19,7 @@
         <param name="detection_class_name" type="str" value="car"/>
         <param name="model_file" type="str" value="$(arg model_file_car)"/>
         <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
-        <param name="image_raw_topic" type="str" value="$(arg image_src_car)"/>
+        <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src_car)"/>
       </node>
     </group>
   </group>
@@ -37,7 +39,7 @@
         <param name="detection_class_name" type="str" value="person"/>
         <param name="model_file" type="str" value="$(arg model_file_pedestrian)"/>
         <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
-        <param name="image_raw_topic" type="str" value="$(arg image_src_pedestrian)"/>
+        <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src_pedestrian)"/>
       </node>
     </group>
   </group>

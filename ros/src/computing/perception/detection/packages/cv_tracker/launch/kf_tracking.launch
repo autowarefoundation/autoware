@@ -2,6 +2,8 @@
   <arg name="car" default="true"/>
   <arg name="pedestrian" default="false"/>
 
+  <arg name="camera_id" default="/"/>
+
   <group if="$(arg car)">
     <group ns="obj_car">
 
@@ -9,7 +11,7 @@
 
       <node pkg="cv_tracker" name="tracking" type="kf_track" output="screen">
           <remap from="/config/obj_car/kf" to="/config/car_kf" />
-          <param name="image_node" type="str" value="$(arg image_src_car)"/>
+          <param name="image_node" type="str" value="$(arg camera_id)$(arg image_src_car)"/>
       </node>
 
     </group>
@@ -22,7 +24,7 @@
 
       <node pkg="cv_tracker" name="tracking" type="kf_track">
           <remap from="/config/obj_person/kf" to="/config/pedestrian_kf" />
-          <param name="image_node" type="str" value="$(arg image_src_pedestrian)"/>
+          <param name="image_node" type="str" value="$(camera_id)$(arg image_src_pedestrian)"/>
       </node>
 
     </group>
