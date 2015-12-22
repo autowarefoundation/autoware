@@ -155,6 +155,30 @@ double decelerate(tf::Vector3 v1, tf::Vector3 v2, double original_velocity_kmh)
   return vel;
 }
 
+
+bool verifyFileConsistency(const char *filename)
+{
+
+  std::ifstream ifs(filename);
+
+  if (!ifs)
+  {
+    return false;
+  }
+
+  std::string line;
+  std::getline(ifs, line);
+  size_t ncol = countColumn(line);
+
+  while (std::getline(ifs, line))
+  {
+    if (countColumn(line) != ncol + 1)
+      return false;
+  }
+  return true;
+}
+
+
 waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
 {
   waypoint_follower::lane lane_waypoint;
