@@ -219,10 +219,28 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("decelerate :" << _decelerate);
 
   ros::Publisher lane_pub = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
-
   waypoint_follower::LaneArray lane_array;
-  lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(driving_lane_csv.c_str())));
-  lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(passing_lane_csv.c_str())));
+
+  if (!verifyFileConsistency(driving_lane_csv.c_str()))
+  {
+    ROS_ERROR("driving lane data is something wrong...");
+    exit(-1);
+  }
+  else
+  {
+    ROS_INFO("driving lane data is valid. publishing...");
+    lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(driving_lane_csv.c_str())));
+  }
+
+  if (!verifyFileConsistency(passing_lane_csv.c_str()))
+  {
+    ROS_INFO("no passing lane data...");
+  }
+  else
+  {
+    ROS_INFO("passing lane data is valid. publishing...");
+    lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(passing_lane_csv.c_str())));
+  }
 
   lane_pub.publish(lane_array);
 
