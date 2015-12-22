@@ -188,6 +188,7 @@ void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
   lane_waypoint_marker.scale.x = 0.5;
   lane_waypoint_marker.scale.y = 0.1;
+  lane_waypoint_marker.scale.z = 0.1;
   lane_waypoint_marker.color.r = 1.0;
   lane_waypoint_marker.color.a = 1.0;
   lane_waypoint_marker.frame_locked = true;
@@ -238,7 +239,7 @@ static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
   createGlobalLaneArrayMarker(_global_color, *msg);
-  //createGlobalLaneArrayOrientationMarker(*msg);
+  createGlobalLaneArrayOrientationMarker(*msg);
   publishMarker();
 }
 
