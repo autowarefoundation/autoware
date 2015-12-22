@@ -182,7 +182,7 @@ waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "waypoint_array_loader");
+  ros::init(argc, argv, "waypoint_loader");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
