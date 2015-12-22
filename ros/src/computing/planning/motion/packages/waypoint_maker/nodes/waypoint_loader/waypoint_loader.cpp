@@ -51,7 +51,7 @@ static double _decelerate = 1.0;
 
 static std::vector<WP> _waypoints;
 
-static WP parseWaypoint(const std::string& line)
+static WP parseWaypoint(const std::string& line, bool yaw)
 {
   std::istringstream ss(line);
   std::vector<std::string> columns;
@@ -63,14 +63,37 @@ static WP parseWaypoint(const std::string& line)
   }
 
   WP waypoint;
-  waypoint.pose.position.x = std::stod(columns[0]);
-  waypoint.pose.position.y = std::stod(columns[1]);
-  waypoint.pose.position.z = std::stod(columns[2]);
-  waypoint.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[3]));
-  waypoint.velocity_kmh = std::stod(columns[4]);
+  if (yaw)
+  {
+    waypoint.pose.position.x = std::stod(columns[0]);
+    waypoint.pose.position.y = std::stod(columns[1]);
+    waypoint.pose.position.z = std::stod(columns[2]);
+    waypoint.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[3]));
+    waypoint.velocity_kmh = std::stod(columns[4]);
+  }
+  else
+  {
+    waypoint.pose.position.x = std::stod(columns[0]);
+    waypoint.pose.position.y = std::stod(columns[1]);
+    waypoint.pose.position.z = std::stod(columns[2]);
+    waypoint.velocity_kmh = std::stod(columns[3]);
+  }
 
   return waypoint;
+}
 
+static size_t countColumn(const std::string& line)
+{
+  std::istringstream ss(line);
+  size_t ncol = 0;
+
+  std::string column;
+  while (std::getline(ss, column, ','))
+  {
+    ++ncol;
+  }
+
+  return ncol;
 }
 
 static std::vector<WP> readWaypoint(const char *filename)
@@ -79,12 +102,40 @@ static std::vector<WP> readWaypoint(const char *filename)
   std::string line;
 
   std::getline(ifs, line); // Remove first line
+  size_t ncol = countColumn(line);
 
   std::vector<WP> waypoints;
-  while (std::getline(ifs, line))
+  if (ncol == 3)
   {
-    waypoints.push_back(parseWaypoint(line));
+    while (std::getline(ifs, line))
+    {
+      waypoints.push_back(parseWaypoint(line, false));
+    }
 
+    size_t last = waypoints.size() - 1;
+    for (size_t i = 0; i < waypoints.size(); ++i)
+    {
+      double yaw;
+      if (i == last)
+      {
+        yaw = atan2(waypoints[i-1].pose.position.y - waypoints[i].pose.position.y,
+                    waypoints[i-1].pose.position.x - waypoints[i].pose.position.x);
+        yaw -= M_PI;
+      }
+      else
+      {
+        yaw = atan2(waypoints[i+1].pose.position.y - waypoints[i].pose.position.y,
+                    waypoints[i+1].pose.position.x - waypoints[i].pose.position.x);
+      }
+      waypoints[i].pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    }
+  }
+  else if (ncol == 4)
+  {
+    while (std::getline(ifs, line))
+    {
+      waypoints.push_back(parseWaypoint(line, true));
+    }
   }
 
   return waypoints;
