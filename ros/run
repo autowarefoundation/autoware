@@ -3,25 +3,20 @@
 MY_PATH=$(readlink -f  $(dirname $0))
 
 # what type of terminal
-TERMINAL=gnome-terminal
 OPTION_TITLE='--title'
 OPTION_WORKING_DIR='working-directory'
 OPTION_GEOMETRY='--geometry=50x10+0+0'
 OPTION_COMMAND='--command'
 
-if [ $(which mate-terminal) ]; then
+if [ $(which gnome-terminal) ]; then
+    TERMINAL=gnome-terminal
+elif [ $(which mate-terminal) ]; then
     TERMINAL=mate-terminal
-fi
-
-if [ $(which xfce4-terminal) ]; then
+elif [ $(which xfce4-terminal) ]; then
     TERMINAL=xfce4-terminal
-fi
-
-if [ $(which lxterminal) ]; then
+elif [ $(which lxterminal) ]; then
     TERMINAL=lxterminal
-fi
-
-if [ $(which konsole) ]; then
+elif [ $(which konsole) ]; then
     TERMINAL=konsole
     OPTION_WORKING_DIR='workdir'
     OPTION_GEOMETRY=''
