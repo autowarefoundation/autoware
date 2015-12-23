@@ -220,8 +220,9 @@ if __name__ == "__main__":
     text += '    %s_ringbuf.push_front(*%s_msg);\n' % (data['sub1'].split('/')[-1], data['sub1'].split('/')[-1])
     text += '    //%s is empty\n' % data['sub2'].split('/')[-1]
     text += '    if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub2'].split('/')[-1], data['sub2'].split('/')[-1])
-    text += '        pthread_mutex_unlock(&mutex);\n'
+    text += '        buf_flag = false;\n'
     text += '        ROS_INFO("%s ring buffer is empty");\n' % data['sub2'].split('/')[-1]
+    text += '        pthread_mutex_unlock(&mutex);\n'
     text += '        return;\n'
     text += '    }\n'
     text += '    buf_flag = true;\n'
@@ -239,6 +240,7 @@ if __name__ == "__main__":
     text += '    //%s is empty\n' % data['sub1'].split('/')[-1]
     text += '    if (%s_ringbuf.begin() == %s_ringbuf.end()) {\n' % (data['sub1'].split('/')[-1], data['sub1'].split('/')[-1])
     text += '        ROS_INFO("%s ring buffer is empty");\n' % data['sub1'].split('/')[-1]
+    text += '        buf_flag = false;\n'
     text += '        pthread_mutex_unlock(&mutex);\n'
     text += '        return;\n'
     text += '    }\n\n'
@@ -505,7 +507,7 @@ if __name__ == "__main__":
     text += '    if (publish() == false) {\n'
     text += '        ROS_INFO("waitting...");\n'
     text += '    }\n'
-    text += '    pthread_mutex_unlock(&mutex);'
+    text += '    pthread_mutex_unlock(&mutex);\n'
     text += '}\n\n'
 
     text += 'void* thread(void* args)\n'
@@ -525,7 +527,7 @@ if __name__ == "__main__":
     text += '                struct timespec sleep_time;\n'
     text += '                sleep_time.tv_sec = 0;\n'
     text += '                sleep_time.tv_nsec = 200000000; //5Hz\n'
-    text += '                while (!publish() || ros::ok())\n'
+    text += '                while (!publish() && ros::ok())\n'
     text += '                    nanosleep(&sleep_time, NULL);\n'
     text += '            }\n'
     text += '        }\n'
@@ -535,6 +537,8 @@ if __name__ == "__main__":
     text += '}\n\n'
 
     text += 'int main(int argc, char **argv) {\n'
+    text += '    buf_flag = false\n'
+    text += '    %s_flag = false\n' % data['sync_sub'].split('/')[-1]
     text += '    ros::init(argc, argv, "%s");\n' % data['node_name'].split('/')[-1]
     text += '    ros::NodeHandle nh;\n\n'
 
@@ -556,10 +560,10 @@ if __name__ == "__main__":
     text += '        struct timespec sleep_time;\n'
     text += '        sleep_time.tv_sec = 0;\n'
     text += '        sleep_time.tv_nsec = 200000000; //5Hz\n'
-    text += '        while (!publish() || ros::ok())\n'
+    text += '        while (!publish() && ros::ok())\n'
     text += '            nanosleep(&sleep_time, NULL);\n'
     text += '    }\n'
-    text += '    pthread_mutex_lock(&mutex);\n\n'
+    text += '    pthread_mutex_unlock(&mutex);\n\n'
 
     text += '    ros::spin();\n\n'
 
