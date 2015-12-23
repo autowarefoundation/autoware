@@ -25,6 +25,12 @@ Open-source software for urban autonomous driving. The following functions are s
 * New BSD License
     * See LICENSE
 
+## System Requiements
+
+- 8 core CPU
+- 32GB RAM
+- 30GB of strage
+
 ## Requirements
 
 - ROS indigo(Ubuntu 14.04) or ROS jade(Ubuntu 15.04)
