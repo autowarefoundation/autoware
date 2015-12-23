@@ -39,6 +39,9 @@ Open-source software for urban autonomous driving. The following functions are s
 - CUDA(Optional)
 - FlyCapture2(optional)
 - Armadillo
+- 8 core CPU
+- 32GB RAM
+- 30GB of storage
 
 **Please use checkout revision before 2015/OCT/21 if you use Autoware on ROS hydro or Ubuntu 13.04, 13.10.**
 
