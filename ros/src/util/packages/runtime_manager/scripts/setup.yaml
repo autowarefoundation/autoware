@@ -1,6 +1,7 @@
 buttons:
   setup_tf:
-    run    : rosrun tf static_transform_publisher
+#    run    : rosrun tf static_transform_publisher
+    run    : roslaunch runtime_manager setup_tf.launch
     param  : setup_tf
 
   vehicle_model:
@@ -16,57 +17,66 @@ params:
       step     : 0.1
       v        : 1.2
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : y
       label    : 'y:'
       kind     : num
       step     : 0.1
       v        : 0.0
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : z
       label    : 'z:'
       kind     : num
       step     : 0.1
       v        : 2.0
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : yaw
       label    : 'yaw:'
       kind     : num
       step     : 0.1
       v        : 0.0
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : pitch
       label    : 'pitch:'
       kind     : num
       step     : 0.1
       v        : 0.0
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : roll
       label    : 'roll:'
       kind     : num
       step     : 0.1
       v        : 0.0
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : frame_id
       kind     : hide
       v        : /base_link
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : child_frame_id
       kind     : hide
       v        : /velodyne
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
     - name     : period_in_ms
       kind     : hide
       v        : 10
       cmd_param:
-        delim   : ''
+        dash   : ''
+        delim  : ':='
 
   - name: vehicle_model
     vars:
