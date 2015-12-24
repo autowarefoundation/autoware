@@ -5,7 +5,9 @@ MY_PATH=$(readlink -f  $(dirname $0))
 # what type of terminal
 OPTION_TITLE='--title'
 OPTION_WORKING_DIR='working-directory'
-OPTION_GEOMETRY='--geometry=50x10+0+0'
+OPTION_CORE_GEOMETRY='--geometry=50x10+0+0'
+OPTION_RM_GEOMETRY='--geometry=50x10+500+0'
+OPTION_PM_GEOMETRY='--geometry=50x10+0+300'
 OPTION_COMMAND='--command'
 
 if [ $(which gnome-terminal) ]; then
@@ -19,13 +21,18 @@ elif [ $(which lxterminal) ]; then
 elif [ $(which konsole) ]; then
     TERMINAL=konsole
     OPTION_WORKING_DIR='workdir'
-    OPTION_GEOMETRY=''
+    OPTION_CORE_GEOMETRY=''
+    OPTION_RM_GEOMETRY=''
+    OPTION_PM_GEOMETRY=''
     OPTION_COMMAND='-e'
     OPTION_TITLE='-T'
 fi
 
+echo "Process Manager"
+sudo ${TERMINAL} ${OPTION_PM_GEOMETRY} ${OPTION_TITLE}="proc_manager" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="python ./src/util/packages/runtime_manager/scripts/proc_manager.py $UID" &
+
 # boot ros-master
-${TERMINAL} ${OPTION_GEOMETRY} ${OPTION_TITLE}="roscore" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
+${TERMINAL} ${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}="roscore" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
 
 # boot runtime_manager
-${TERMINAL} ${OPTION_GEOMETRY} ${OPTION_TITLE}="runtime_manager" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
+${TERMINAL} ${OPTION_RM_GEOMETRY} ${OPTION_TITLE}="runtime_manager" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
