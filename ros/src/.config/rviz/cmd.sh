@@ -35,12 +35,12 @@ else
     ROS_MASTER_URI=$ROS_MASER_URI
     DISPLAY=:0
     export ROS_IP ROS_MASTER_URI DISPLAY
-    #rosrun rviz rviz
-    xeyes
+    rosrun rviz rviz
+    #xeyes
 EOF
   else
-    #ssh $KEYOPT $REMOTE pkill rviz
-    ssh $KEYOPT $REMOTE pkill xeyes
+    ssh $KEYOPT $REMOTE pkill rviz
+    #ssh $KEYOPT $REMOTE pkill xeyes
   fi
 fi
 
