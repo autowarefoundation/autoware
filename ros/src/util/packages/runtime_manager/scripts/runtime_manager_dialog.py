@@ -98,6 +98,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.all_procs = []
 		self.all_procs_nodes = {}
 		self.all_cmd_dics = []
+		self.stop_dic = {}
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
 		self.selector = {}
@@ -509,6 +510,10 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub.publish(data.data)
 		r.sleep()
 
+	def try_setup_obj_stop(self, obj, dic):
+		if 'stop' in dic:
+			self.stop_dic[ obj ] = dic.get('stop')
+
 	def setup_buttons(self, d, run_dic):
 		for (k,d2) in d.items():
 			pfs = [ 'button_', 'button_launch_', 'checkbox_' ]
@@ -523,6 +528,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
+			self.try_setup_obj_stop(obj, d2);
 			if 'param' in d2:
 				pdic = self.load_dic_pdic_setup(k, d2)
 				prm = self.get_param(d2.get('param'))
@@ -833,10 +839,11 @@ class MyFrame(rtmgr.MyFrame):
 
 	def param_value_get(self, pdic, prm, name, def_ret=None):
 		def_ret = self.param_default_value_get(prm, name, def_ret)
-		return pdic.get(name, def_ret)
+		return pdic.get(name, def_ret) if pdic else def_ret
 
 	def param_default_value_get(self, prm, name, def_ret=None):
-		return next( (var.get('v') for var in prm.get('vars') if var.get('name') == name ), def_ret)
+		return next( (var.get('v') for var in prm.get('vars') if var.get('name') == name ), def_ret) \
+			if prm else def_ret
 
 	def update_depend_enable(self, pdic, gdic, prm):
 		for var in prm.get('vars', []):
@@ -1010,6 +1017,7 @@ class MyFrame(rtmgr.MyFrame):
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
 				run_dic[obj] = (dic['run'], None)
+			self.try_setup_obj_stop(obj, dic);
 			if 'param' in dic:
 				obj = self.add_config_link(dic, panel, obj)
 		if sizer:
@@ -1609,6 +1617,10 @@ class MyFrame(rtmgr.MyFrame):
 			self.toggle_enable_obj(obj)
 		if proc:
 			self.update_proc_cpu(obj)
+		else:
+			stop_cmd = self.stop_dic.get(obj)
+			if stop_cmd:
+				subprocess.call( shlex.split(stop_cmd) )
 
 	def OnRosbagPlay(self, event):
 		obj = event.GetEventObject()
@@ -1771,6 +1783,7 @@ class MyFrame(rtmgr.MyFrame):
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
+			self.try_setup_obj_stop(item, items);
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
