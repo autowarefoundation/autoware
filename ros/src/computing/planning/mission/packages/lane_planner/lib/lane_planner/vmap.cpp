@@ -121,12 +121,12 @@ bool is_merging_point(const VectorMap& vmap, const map_file::PointClass& point)
 
 bool is_branching_lane(const map_file::Lane& lane)
 {
-	return (lane.jct >= 1 && lane.jct <= 2);
+	return (lane.jct == 1 || lane.jct == 2 || lane.jct == 5);
 }
 
 bool is_merging_lane(const map_file::Lane& lane)
 {
-	return (lane.jct >= 3 && lane.jct <= 4);
+	return (lane.jct == 3 || lane.jct == 4 || lane.jct == 5);
 }
 
 map_file::PointClass find_start_point(const VectorMap& vmap, const map_file::Lane& lane)
