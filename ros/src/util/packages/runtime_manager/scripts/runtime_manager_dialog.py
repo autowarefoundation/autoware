@@ -2989,13 +2989,6 @@ def prn_dict(dic):
 	for (k,v) in dic.items():
 		print (k, ':', v)
 
-def set_process_nice(proc, value):
-	try:
-		proc.set_nice(value)
-	except Exception:
-		return False
-	return True
-
 def send_to_proc_manager(order):
 	sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
@@ -3009,6 +3002,14 @@ def send_to_proc_manager(order):
 	ret = sock.recv(1024)
 	sock.close()
 	return int(ret) == 0
+
+def set_process_nice(proc, value):
+	order = {
+		"name": "nice",
+		"pid": proc.pid,
+		"nice": value
+	}
+	return send_to_proc_manager(order)
 
 def set_process_cpu_affinity(proc, cpus):
 	order = {

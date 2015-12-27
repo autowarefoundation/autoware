@@ -29,7 +29,7 @@ elif [ $(which konsole) ]; then
 fi
 
 echo "Process Manager"
-sudo ${TERMINAL} ${OPTION_PM_GEOMETRY} ${OPTION_TITLE}="proc_manager" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="python ./src/util/packages/runtime_manager/scripts/proc_manager.py $UID" &
+sudo ${TERMINAL} ${OPTION_PM_GEOMETRY} ${OPTION_TITLE}="proc_manager" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="python ./src/util/packages/runtime_manager/scripts/proc_manager.py" &
 
 # boot ros-master
 ${TERMINAL} ${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}="roscore" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&

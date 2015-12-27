@@ -50,8 +50,27 @@ class ProcManager:
 			os.unlink(SOCK_PATH)
 		except:
 			pass
+		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.sock.bind(SOCK_PATH)
 		self.sock.listen(10)
+		os.chmod(SOCK_PATH, 0777)
+
+	def set_nice(self, pid, value):
+		try:
+			proc = psutil.Process(pid)
+		except Exception as e:
+			print("Error construct psutil.Process(pid={})".format(pid))
+			return -1
+
+		try:
+			proc.set_nice(value)
+		except Exception as e:
+			print("Error set_nice: {}".format(e))
+			return -1
+
+		print("[set_nice] pid={}, value={} ".format(
+			pid, value))
+		return 0
 
 	def set_cpu_affinity(self, pid, cpus):
                 try:
@@ -93,7 +112,10 @@ class ProcManager:
 
 			order = yaml.load(data)
 			ret = 0
-			if order['name'] == 'cpu_affinity':
+                        print("Got: {}".format(order['name']))
+			if order['name'] == 'nice':
+				ret = self.set_nice(order['pid'], order['nice'])
+			elif order['name'] == 'cpu_affinity':
 				ret = self.set_cpu_affinity(order['pid'], order['cpus'])
 			elif order['name'] == 'scheduling_policy':
 				ret = self.set_scheduling_policy(order['pid'],
@@ -117,17 +139,11 @@ def drop_capabilities():
 
 
 if __name__ == "__main__":
-	if len(sys.argv) < 2:
-		print("Usage: {} UID".format(sys.argv[0]))
-		sys.exit(-1)
-
 	if os.getuid() != 0:
 		print("You must run runtime manger as root user")
 		sys.exit(-1)
 
-	uid = int(sys.argv[1])
 	drop_capabilities()
-	os.setuid(uid)
 
 	manager = ProcManager()
 	manager.run()
