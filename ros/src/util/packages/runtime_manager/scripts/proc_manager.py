@@ -73,10 +73,10 @@ class ProcManager:
 		return 0
 
 	def set_cpu_affinity(self, pid, cpus):
-                try:
-		        proc = psutil.Process(pid)
-                except psutil.NoSuchProcess as e:
-                        return
+		try:
+			proc = psutil.Process(pid)
+		except psutil.NoSuchProcess as e:
+			return
 
 		print("[CPU affinity] Set pid:{}, CPUS: {}: ".format(proc.pid, cpus))
 
@@ -89,17 +89,17 @@ class ProcManager:
 
 	def _policy_to_string(self, policy):
 		if policy == 0:
-                        return "SCHED_OTHER"
-                elif policy == 1:
-                        return "SCHED_FIFO"
-                elif policy == 2:
-                        return "SCHED_RR"
-                else:
-                        raise ValueError("Invalid schedule policy argument")
+			return "SCHED_OTHER"
+		elif policy == 1:
+			return "SCHED_FIFO"
+		elif policy == 2:
+			return "SCHED_RR"
+		else:
+			raise ValueError("Invalid schedule policy argument")
 
 	def set_scheduling_policy(self, pid, policy, priority):
 		print("[sched_setscheduler] pid={}, priority={} ".format(
-                        pid, self._policy_to_string(policy), priority))
+			pid, self._policy_to_string(policy), priority))
 
 		param = ctypes.c_int(priority)
 		err = libc.sched_setscheduler(pid, ctypes.c_int(policy), ctypes.byref(param))
@@ -112,7 +112,7 @@ class ProcManager:
 
 			order = yaml.load(data)
 			ret = 0
-                        print("Got: {}".format(order['name']))
+
 			if order['name'] == 'nice':
 				ret = self.set_nice(order['pid'], order['nice'])
 			elif order['name'] == 'cpu_affinity':
