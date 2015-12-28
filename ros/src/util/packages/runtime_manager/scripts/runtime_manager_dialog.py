@@ -1617,10 +1617,6 @@ class MyFrame(rtmgr.MyFrame):
 			self.toggle_enable_obj(obj)
 		if proc:
 			self.update_proc_cpu(obj)
-		else:
-			stop_cmd = self.stop_dic.get(obj)
-			if stop_cmd:
-				subprocess.call( shlex.split(stop_cmd) )
 
 	def OnRosbagPlay(self, event):
 		obj = event.GetEventObject()
@@ -1904,6 +1900,10 @@ class MyFrame(rtmgr.MyFrame):
 				self.all_procs.remove(proc)
 				self.all_procs_nodes.pop(proc, None)
 			proc = None
+
+			stop_cmd = self.stop_dic.get(obj)
+			if stop_cmd:
+				subprocess.call( shlex.split(stop_cmd) )
 		return proc
 
 	def is_boot(self, obj):
@@ -2835,6 +2835,7 @@ def load_yaml(filename, def_ret=None):
 
 def terminate_children(proc, sigint=False):
 	for child in psutil.Process(proc.pid).get_children():
+		terminate_children(child, sigint)
 		terminate(child, sigint)
 
 def terminate(proc, sigint=False):
