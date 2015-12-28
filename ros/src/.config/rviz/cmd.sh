@@ -31,8 +31,10 @@ else
   fi
   if [ $1 = start ]; then
     cat <<EOF | ssh $KEYOPT $REMOTE
-    ROS_IP=192.168.0.2
-    ROS_MASTER_URI=$ROS_MASER_URI
+    [ -d /opt/ros/indigo ] && . /opt/ros/indigo/setup.bash
+    [ -d /opt/ros/jade ] && . /opt/ros/jade/setup.bash
+    ROS_IP=$REMOTE
+    ROS_MASTER_URI=$ROS_MASTER_URI
     DISPLAY=:0
     export ROS_IP ROS_MASTER_URI DISPLAY
     rosrun rviz rviz
