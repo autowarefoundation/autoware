@@ -25,11 +25,11 @@ Open-source software for urban autonomous driving. The following functions are s
 * New BSD License
     * See LICENSE
 
-## System Requiements
+## Spec recommendation
 
-- 8 core CPU
-- 32GB RAM
-- 30GB of strage
+- # of CPU cores: 8
+- RAM size: 32GB
+- Storage size: 30GB
 
 ## Requirements
 
