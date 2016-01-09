@@ -310,7 +310,7 @@ int main(int argc, char **argv)
 			std::string encoding_pattern;
 			switch (image.GetBayerTileFormat()) {
 			case FlyCapture2::RGGB: 
-			  encoding_pattern = "beyer_rggb8";
+			  encoding_pattern = "bayer_rggb8";
 			  break;
 			case FlyCapture2::GRBG:
 			  encoding_pattern = "bayer_grbg8";
