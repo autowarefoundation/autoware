@@ -732,11 +732,6 @@ params :
       min   : 2.0
       max   : 10.0
       v     : 6.0
-    - name  : offset
-      label : offset
-      min   : -5.0
-      max   : 5.0
-      v     : -1.17
     - name    : sim_mode
       label   : 'Simulation Mode'
       kind    : checkbox
@@ -744,7 +739,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-      #rosparam: /pure_pursuit/sim_mode
       
   - name  : velocity_set
     topic : /config/velocity_set

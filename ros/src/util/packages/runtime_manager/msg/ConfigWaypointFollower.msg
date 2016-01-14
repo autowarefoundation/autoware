@@ -4,4 +4,3 @@ float32 velocity
 float32 lookahead_threshold
 float32 threshold_ratio
 float32 minimum_lookahead_threshold
-float32 offset
