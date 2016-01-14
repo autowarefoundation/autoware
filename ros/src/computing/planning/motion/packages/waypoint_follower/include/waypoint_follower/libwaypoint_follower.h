@@ -53,6 +53,7 @@ public:
 	double getInterval() const;
 	geometry_msgs::Point getWaypointPosition(int waypoint) const;
 	geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
+	geometry_msgs::Pose getWaypointPose(int waypoint) const;
 	double getWaypointVelocityMPS(int waypoint) const;
 	waypoint_follower::lane getCurrentWaypoints() const { return current_waypoints_; }
   bool isFront(int waypoint, geometry_msgs::Pose current_pose) const;

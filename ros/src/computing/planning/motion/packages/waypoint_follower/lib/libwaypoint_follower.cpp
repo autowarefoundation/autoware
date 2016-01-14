@@ -72,6 +72,16 @@ geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
   return q;
 }
 
+geometry_msgs::Pose WayPoints::getWaypointPose(int waypoint) const
+{
+  geometry_msgs::Pose pose;
+  if(waypoint > getSize() - 1)
+    return pose;
+
+  pose = current_waypoints_.waypoints[waypoint].pose.pose;
+  return pose;
+}
+
 double WayPoints::getWaypointVelocityMPS(int waypoint) const
 {
   if(waypoint > getSize() - 1)
