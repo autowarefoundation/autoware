@@ -55,13 +55,13 @@ params :
         var_name    : 'loop'
     - name      : clock
       label     : Clock
-      kind      : checkbox
-      v         : False
+      kind      : hide
+      v         : True
       cmd_param :
         only_enable : True
         dash        : '--'
     - name      : sim_time
       label     : Sim Time
-      kind      : checkbox
+      kind      : hide
       v         : False
       rosparam  : /use_sim_time
