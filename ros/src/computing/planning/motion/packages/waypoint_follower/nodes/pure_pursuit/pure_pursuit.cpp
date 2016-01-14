@@ -42,6 +42,7 @@
 #include <std_msgs/Float32.h>
 #include "runtime_manager/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
+#include "vehicle_socket/CanInfo.h"
 
 #define DEBUG //if you print debug code
 //#define LOG
@@ -54,6 +55,7 @@ static const int MODE_DIALOG = 1;
 
 //parameter
 static bool _sim_mode = false;
+static std::string g_velocity_source = "ZMP_CAN";//"NDT";
 
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 static double _current_velocity;
@@ -80,6 +82,15 @@ static ros::Publisher _search_pub;
 #ifdef DEBUG
 static ros::Publisher _line_point_pub;
 #endif
+
+static void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
+{
+  if(!_sim_mode && g_velocity_source == "ZMP_CAN")
+  {
+    _current_velocity = kmph2mps(msg->speed);
+    ROS_INFO("velocity_source : ZMP_CAN");
+  }
+}
 
 static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
@@ -124,7 +135,7 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
 static void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  if(!_sim_mode)
+  if(!_sim_mode && g_velocity_source == "NDT")
   _current_velocity = msg->twist.linear.x;
 }
 
@@ -675,7 +686,7 @@ int main(int argc, char **argv)
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
   ros::Subscriber est_twist_subscriber = nh.subscribe("estimate_twist", 10, estTwistCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-
+ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
   geometry_msgs::TwistStamped twist;
   ros::Rate loop_rate(LOOP_RATE); // by Hz
 
