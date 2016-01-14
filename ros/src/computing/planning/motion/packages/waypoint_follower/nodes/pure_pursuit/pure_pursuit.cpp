@@ -492,6 +492,36 @@ static bool interpolateNextTarget(int next_waypoint,geometry_msgs::Point *next_t
   }
 }
 
+static bool verifyFollowing()
+{
+  double slope = 0;
+  double intercept = 0;
+  getLinearEquation(_current_waypoints.getWaypointPosition(0),_current_waypoints.getWaypointPosition(1),&slope,&intercept);
+  double displacement = getDistanceBetweenLineAndPoint(_current_pose.pose.position,slope,intercept);
+  double relative_angle = getRelativeAngle(_current_waypoints.getWaypointPose(0),_current_pose.pose);
+
+  if(displacement < g_displacement_threshold && relative_angle < g_relative_angle_threshold)
+    return true;
+  else
+    return false;
+
+}
+
+static geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
+{
+  //verify whether vehicle is following the path
+  bool following_flag = verifyFollowing();
+
+  geometry_msgs::Twist twist;
+  twist.linear.x = cmd_velocity;
+  if(following_flag)
+    twist.angular.z = _current_velocity * curvature;
+  else
+    twist.angular.z = 0;
+
+  return twist;
+}
+
 static int getNextWaypoint()
 {
   int path_size = static_cast<int>(_current_waypoints.getSize());
