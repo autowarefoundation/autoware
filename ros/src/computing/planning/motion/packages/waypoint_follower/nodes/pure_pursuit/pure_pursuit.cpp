@@ -393,8 +393,7 @@ static bool interpolateNextTarget(int next_waypoint, double search_radius, geome
   //    | y0 - slope * x0 - intercept |
   //d = -------------------------------
   //          √( 1 + slope^2)
-  double d = fabs(_current_pose.pose.position.y - slope * _current_pose.pose.position.x - intercept)
-      / sqrt(1 + pow(slope, 2));
+  double d = getDistanceBetweenLineAndPoint(_current_pose.pose.position,slope,intercept);
 
   //ROS_INFO("slope : %lf ", slope);
   //ROS_INFO("intercept : %lf ", intercept);

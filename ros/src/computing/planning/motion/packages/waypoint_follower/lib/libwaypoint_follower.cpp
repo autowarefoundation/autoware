@@ -259,6 +259,13 @@ bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, dou
 
   return true;
 }
+double getDistanceBetweenLineAndPoint(geometry_msgs::Point point,double slope,double intercept)
+{
+  double d = fabs(point.y - slope * point.x - intercept)
+      / sqrt(1 + pow(slope, 2));
+
+  return d;
+}
 
 tf::Vector3 point2vector(geometry_msgs::Point point)
 {
