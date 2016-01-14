@@ -46,7 +46,7 @@ Open-source software for urban autonomous driving. The following functions are s
 
 ```
 % sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
 ```
 
 **NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
@@ -56,7 +56,7 @@ Open-source software for urban autonomous driving. The following functions are s
 
 ```
 % sudo apt-get install ros-jade-desktop-full ros-jade-nmea-msgs ros-jade-nmea-navsat-driver ros-jade-sound-play
-% sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
 ```
 
 ## How to Build
