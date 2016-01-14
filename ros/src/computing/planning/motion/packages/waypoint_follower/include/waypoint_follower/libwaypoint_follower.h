@@ -57,8 +57,6 @@ public:
 	double getWaypointVelocityMPS(int waypoint) const;
 	waypoint_follower::lane getCurrentWaypoints() const { return current_waypoints_; }
   bool isFront(int waypoint, geometry_msgs::Pose current_pose) const;
-  bool isValid(int waypoint,geometry_msgs::Pose current_pose) const;
-
 };
 
 //inline function (less than 10 lines )
@@ -80,4 +78,5 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
 bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *slope, double *intercept);
 
 
+double getRelativeAngle(geometry_msgs::Pose waypoint_pose,geometry_msgs::Pose vehicle_pose);
 #endif

@@ -99,37 +99,6 @@ bool WayPoints::isFront(int waypoint, geometry_msgs::Pose current_pose) const
     return true;
 }
 
-bool WayPoints::isValid(int waypoint, geometry_msgs::Pose current_pose) const
-{
-  double angle_threshold = 90;
-  geometry_msgs::Point relative_wp1 = calcRelativeCoordinate(getWaypointPosition(waypoint),current_pose);
-  geometry_msgs::Point relative_wp2;
-  tf::Vector3 relative_waypoint_v;
-  if (waypoint == getSize() - 1)
-  {
-    relative_wp2 = calcRelativeCoordinate(getWaypointPosition(waypoint - 1), current_pose);
-    relative_waypoint_v.setX(relative_wp1.x - relative_wp2.x);
-    relative_waypoint_v.setY(relative_wp1.y - relative_wp2.y);
-    relative_waypoint_v.setZ(relative_wp1.z - relative_wp2.z);
-  }
-  else
-  {
-    relative_wp2 = calcRelativeCoordinate(getWaypointPosition(waypoint + 1), current_pose);
-    relative_waypoint_v.setX(relative_wp2.x - relative_wp1.x);
-    relative_waypoint_v.setY(relative_wp2.y - relative_wp1.y);
-    relative_waypoint_v.setZ(relative_wp2.z - relative_wp1.z);
-  }
-  relative_waypoint_v.normalize();
-  tf::Vector3 relative_pose_v(1,0,0);
-  double angle = relative_pose_v.angle(relative_waypoint_v) *180 / M_PI;
-
-  if (fabs(angle) > angle_threshold)
-    return false;
-  else
-    return true;
-
-}
-
 double DecelerateVelocity(double distance, double prev_velocity)
 {
 
@@ -188,7 +157,21 @@ double getPlaneDistance(geometry_msgs::Point target1, geometry_msgs::Point targe
   return tf::tfDistance(v1, v2);
 }
 
+double getRelativeAngle(geometry_msgs::Pose waypoint_pose,geometry_msgs::Pose vehicle_pose)
+{
 
+  geometry_msgs::Point relative_p1 = calcRelativeCoordinate(waypoint_pose.position, vehicle_pose);
+  geometry_msgs::Point p2;
+  p2.x = 1.0;
+  geometry_msgs::Point relative_p2 = calcRelativeCoordinate(calcAbsoluteCoordinate(p2, waypoint_pose),vehicle_pose);
+  tf::Vector3 relative_waypoint_v(relative_p2.x - relative_p1.x,relative_p2.y - relative_p1.y,relative_p2.z - relative_p1.z);
+  relative_waypoint_v.normalize();
+  tf::Vector3 relative_pose_v(1, 0, 0);
+  double angle = relative_pose_v.angle(relative_waypoint_v) * 180 / M_PI;
+  //ROS_INFO("angle : %lf",angle);
+
+  return angle;
+}
 
 //get closest waypoint from current pose
 int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msgs::Pose current_pose)
@@ -210,7 +193,8 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
     if (!wp.isFront(i, current_pose))
       continue;
 
-    if(!wp.isValid(i,current_pose))
+    double angle_threshold = 90;
+    if (getRelativeAngle(wp.getWaypointPose(i), current_pose) > angle_threshold)
       continue;
 
     waypoint_candidates.push_back(i);
