@@ -324,8 +324,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.rosbag_info_hook( tc.GetValue() )
 
 
-		vp = self.obj_to_varpanel(btn, 'sim_time')
-		self.checkbox_sim_time = vp.obj
+		#vp = self.obj_to_varpanel(btn, 'sim_time')
+		#self.checkbox_sim_time = vp.obj
 
 		#try:
 		#	cmd = ['rosparam', 'get', '/use_sim_time']
@@ -1529,6 +1529,9 @@ class MyFrame(rtmgr.MyFrame):
 	def get_param(self, prm_name):
 		return next( (prm for prm in self.params if prm['name'] == prm_name), None)
 
+	def get_var(self, prm, var_name, def_ret=None):
+		return next( (var for var in prm.get('vars') if var.get('name') == var_name), def_ret)
+
 	def obj_to_cmd_dic(self, obj):
 		return next( (cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic), None)
 
@@ -1625,13 +1628,18 @@ class MyFrame(rtmgr.MyFrame):
 		stop = self.button_stop_rosbag_play
 		pause = self.button_pause_rosbag_play
 
+		(_, _, prm) = self.obj_to_pdic_gdic_prm(play)
+		var = self.get_var(prm, 'sim_time', {})
+
 		if obj == play:
+			var['v'] = True
 			self.OnLaunchKill_obj(play)
 			set_val(stop, False)
 			set_val(pause, False)
 		elif obj == stop:
 			set_val(play, False)
 			set_val(pause, False)
+			var['v'] = False
 			self.OnLaunchKill_obj(play)
 		elif obj == pause:
 			(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(play)
