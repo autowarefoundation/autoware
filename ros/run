@@ -28,7 +28,9 @@ elif [ $(which konsole) ]; then
 fi
 
 echo "Process Manager"
-sudo python $MY_PATH/src/util/packages/runtime_manager/scripts/proc_manager.py &
+
+gksudo --message "Please input password for launching process manager" \
+       -- $MY_PATH/run_proc_manager &
 
 # boot ros-master
 ${TERMINAL} ${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}="roscore" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
