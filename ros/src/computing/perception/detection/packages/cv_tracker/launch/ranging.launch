@@ -23,6 +23,8 @@
       <!-- ranging -->
       <node pkg="cv_tracker" name="ranging" type="range_fusion">
           <remap from="/config/obj_person/fusion" to="/config/pedestrian_fusion"/>
+          <param name="image_node" type="str" value="$(arg image_node)"/>
+          <param name="points_node" type="str" value="$(arg points_node)"/>
       </node>
 
     </group>

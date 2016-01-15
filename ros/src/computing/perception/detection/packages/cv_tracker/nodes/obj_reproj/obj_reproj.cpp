@@ -113,6 +113,7 @@ static double cameraMatrix[4][4] = {
 };
 
 static ros::Publisher pub;
+static ros::Publisher reproj_pub;
 
 static std::string object_type;
 
@@ -241,6 +242,74 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   obj_label_msg.type = object_type;
   pub.publish(obj_label_msg);
    //   }
+
+  // publish reprojection result as ROS MarkerArray
+  visualization_msgs::MarkerArray obj_label_marker_msg;
+
+    std_msgs::ColorRGBA color_red;
+    color_red.r = 1.0f;
+    color_red.g = 0.0f;
+    color_red.b = 0.0f;
+    color_red.a = 1.0f;
+
+    std_msgs::ColorRGBA color_blue;
+    color_blue.r = 0.0f;
+    color_blue.g = 0.0f;
+    color_blue.b = 1.0f;
+    color_blue.a = 1.0f;
+
+    std_msgs::ColorRGBA color_green;
+    color_green.r = 0.0f;
+    color_green.g = 1.0f;
+    color_green.b = 0.0f;
+    color_green.a = 1.0f;
+
+    for (unsigned int idx=0; idx < obj_label_msg.reprojected_pos.size(); idx++)
+      {
+	visualization_msgs::Marker marker;
+	auto reproj_pos = obj_label_msg.reprojected_pos.at(idx);
+
+	// Set frame ID
+	marker.header.frame_id = "map";
+
+	// Set namespace and ID
+	marker.ns = object_type;
+	marker.id = idx;
+	idx++;
+
+	// Set Marker type
+	marker.type = visualization_msgs::Marker::SPHERE;
+
+	// Set pose of marker
+	marker.pose.position = reproj_pos;
+	marker.pose.orientation.x = 0.0;
+	marker.pose.orientation.y = 0.0;
+	marker.pose.orientation.z = 0.0;
+	marker.pose.orientation.w = 0.0;
+
+    // Set marker scale -- We assume objects as 1.5m sphere
+    marker.scale.x = (double)1.5;
+    marker.scale.y = (double)1.5;
+    marker.scale.z = (double)1.5;
+
+	// Set color
+	if (object_type == "car") {
+	  marker.color = color_blue;
+	}
+	else if (object_type == "person") {
+	  marker.color = color_green;
+	}
+	else {
+	  marker.color = color_red;
+	}
+
+	marker.lifetime = ros::Duration(0.3);
+
+	obj_label_marker_msg.markers.push_back(marker);	
+      }
+
+    reproj_pub.publish(obj_label_marker_msg);
+
 }
 
 static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objects)
@@ -335,6 +404,7 @@ int main(int argc, char **argv){
   //ros::Subscriber gnss_pose = n.subscribe("/gnss_pose", 1, position_getter_gnss);
   ros::Subscriber ndt_pose = n.subscribe("/current_pose", 1, position_getter_ndt);
   pub = n.advertise<cv_tracker::obj_label>("obj_label",1); 
+  reproj_pub = n.advertise<visualization_msgs::MarkerArray>("obj_label_marker",1); 
 
   ros::Subscriber projection = n.subscribe("/projection_matrix", 1, projection_callback);
 
