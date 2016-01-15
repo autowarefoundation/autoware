@@ -287,6 +287,11 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
 	marker.pose.orientation.z = 0.0;
 	marker.pose.orientation.w = 0.0;
 
+    // Set marker scale -- We assume objects as 1.5m sphere
+    marker.scale.x = (double)1.5;
+    marker.scale.y = (double)1.5;
+    marker.scale.z = (double)1.5;
+
 	// Set color
 	if (object_type == "car") {
 	  marker.color = color_blue;
