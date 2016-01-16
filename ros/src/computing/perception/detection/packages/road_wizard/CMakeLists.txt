@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   runtime_manager
   )
 find_package(OpenCV REQUIRED)
-find_package(Eigen3)
+find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
   # Fallback to cmake_modules
   find_package(cmake_modules REQUIRED)
@@ -46,9 +46,16 @@ generate_messages(DEPENDENCIES
 ###################################
 ## catkin specific configuration ##
 ###################################
-catkin_package(
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
+include_directories(
+    ${catkin_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
 )
+
+ catkin_package(
+  INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
+   CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
+ )
+
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
