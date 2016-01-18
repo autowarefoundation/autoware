@@ -158,8 +158,8 @@ bool dispersed(std::vector<Point5> &vScanPoints, std::vector<int> &indices)
 //returns the vscanpoints in the pointcloud
 void getVScanPoints(std::vector<Point5> &vScanPoints)
 {
-	int w = IMAGE_WIDTH;
-	int h = IMAGE_HEIGHT;
+	int w = points_msg.image_width;
+	int h = points_msg.image_height;
 	for(int y=0; y<h; y++)
 	{
 		for(int x=0; x<w; x++)
@@ -311,13 +311,31 @@ void setPointsImage(const points2image::PointsImage& points_image)
 #endif
 	points_msg = points_image;//store vscan pointcloud
 	pointsStored = false;
+
+	/*
+	 * Reset 2D vector
+	 */
+	for (auto i=0; i<g_scan_image.distance.size(); i++) {
+	    g_scan_image.distance[i].clear();
+	    g_scan_image.intensity[i].clear();
+	}
+	g_scan_image.distance.clear();
+	g_scan_image.intensity.clear();
+
+	g_scan_image.distance.resize(points_msg.image_width);
+	g_scan_image.intensity.resize(points_msg.image_width);
+	for (auto i=0; i<points_msg.image_width; i++) {
+		g_scan_image.distance[i].resize(points_msg.image_height);
+		g_scan_image.intensity[i].resize(points_msg.image_height);
+	}
+
 	/*
 	* Assign distance and intensity to scan_image
 	*/
 	for(int i = 0; i < (int)points_image.distance.size(); i++) {
-		int height = (int)(i / IMAGE_WIDTH);
-		int width = (int)(i % IMAGE_WIDTH);
-		if (height < IMAGE_HEIGHT && width < IMAGE_WIDTH) {
+		int height = (int)(i / points_msg.image_width);
+		int width = (int)(i % points_msg.image_width);
+		if (height < points_msg.image_height && width < points_msg.image_width) {
 			g_scan_image.distance[width][height] = points_image.distance.at(i); //unit of length is centimeter
 			g_scan_image.intensity[width][height] = points_image.intensity.at(i);
 		}
@@ -395,8 +413,8 @@ void calcDistance()
 	 * Plot depth points on an image
 	 */
 	CvPoint pt;
-	for(int i = 0; i < IMAGE_HEIGHT; i++) {
-		for(int j = 0; j < IMAGE_WIDTH; j++) {
+	for(int i = 0; i < points_msg.image_height; i++) {
+		for(int j = 0; j < points_msg.image_width; j++) {
 			if (g_scan_image.distance[j][i] != 0.0) {
 				pt.x = j;
 				pt.y = i;
