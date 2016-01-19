@@ -13,7 +13,17 @@ find_package(catkin REQUIRED COMPONENTS
   runtime_manager
   )
 find_package(OpenCV REQUIRED)
-find_package (Eigen3 REQUIRED)
+find_package(Eigen3 QUIET)
+if(NOT EIGEN3_FOUND)
+  # Fallback to cmake_modules
+  find_package(cmake_modules REQUIRED)
+  find_package(Eigen REQUIRED)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+  set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
+  # Possibly map additional variables to the EIGEN3_ prefix.
+else()
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
@@ -36,9 +46,16 @@ generate_messages(DEPENDENCIES
 ###################################
 ## catkin specific configuration ##
 ###################################
-catkin_package(
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
+include_directories(
+    ${catkin_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
 )
+
+ catkin_package(
+  INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
+   CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
+ )
+
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
