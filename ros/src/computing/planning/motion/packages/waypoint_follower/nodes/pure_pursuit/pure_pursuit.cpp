@@ -522,14 +522,20 @@ static geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 {
   //verify whether vehicle is following the path
   bool following_flag = verifyFollowing();
+  static double prev_angular_velocity = 0;
 
   geometry_msgs::Twist twist;
   twist.linear.x = cmd_velocity;
-  if(following_flag)
+  if(!following_flag)
+  {
     twist.angular.z = _current_velocity * curvature;
+  }
   else
-    twist.angular.z = 0;
+  {
+    twist.angular.z = prev_angular_velocity;
+  }
 
+  prev_angular_velocity = twist.angular.z;
   return twist;
 }
 
