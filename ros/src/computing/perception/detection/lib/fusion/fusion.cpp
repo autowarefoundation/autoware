@@ -158,8 +158,8 @@ bool dispersed(std::vector<Point5> &vScanPoints, std::vector<int> &indices)
 //returns the vscanpoints in the pointcloud
 void getVScanPoints(std::vector<Point5> &vScanPoints)
 {
-	int w = IMAGE_WIDTH;
-	int h = IMAGE_HEIGHT;
+	int w = points_msg.image_width;
+	int h = points_msg.image_height;
 	for(int y=0; y<h; y++)
 	{
 		for(int x=0; x<w; x++)
@@ -311,13 +311,33 @@ void setPointsImage(const points2image::PointsImage& points_image)
 #endif
 	points_msg = points_image;//store vscan pointcloud
 	pointsStored = false;
+
+	/*
+	 * Reset 2D vector
+	 */
+	for (auto& distance : g_scan_image.distance) {
+	    distance.clear();
+	}
+	for (auto& intensity : g_scan_image.intensity) {
+	    intensity.clear();
+	}
+	g_scan_image.distance.clear();
+	g_scan_image.intensity.clear();
+
+	g_scan_image.distance.resize(points_msg.image_width);
+	g_scan_image.intensity.resize(points_msg.image_width);
+	for (auto i=0; i<points_msg.image_width; i++) {
+		g_scan_image.distance[i].resize(points_msg.image_height);
+		g_scan_image.intensity[i].resize(points_msg.image_height);
+	}
+
 	/*
 	* Assign distance and intensity to scan_image
 	*/
 	for(int i = 0; i < (int)points_image.distance.size(); i++) {
-		int height = (int)(i / IMAGE_WIDTH);
-		int width = (int)(i % IMAGE_WIDTH);
-		if (height < IMAGE_HEIGHT && width < IMAGE_WIDTH) {
+		int height = (int)(i / points_msg.image_width);
+		int width = (int)(i % points_msg.image_width);
+		if (height < points_msg.image_height && width < points_msg.image_width) {
 			g_scan_image.distance[width][height] = points_image.distance.at(i); //unit of length is centimeter
 			g_scan_image.intensity[width][height] = points_image.intensity.at(i);
 		}
@@ -348,6 +368,7 @@ void calcDistance()
 			search_scope_min_y = g_scan_image.min_y;
 		}
 
+#if 0
 		/*
 		 * Search shortest distance in obstacle boxes
 		 */
@@ -360,6 +381,34 @@ void calcDistance()
 				}
 			}
 		}
+#else
+		/*
+		 * Search median of distance in obstacle boxes
+		 */
+		std::vector<float> distance_candidates;
+		for(int j = g_corner_points[0+i*4]; j <= g_corner_points[0+i*4] + g_corner_points[2+i*4]; j++) {
+		    for(int k = search_scope_min_y; k <= search_scope_max_y; k++) {
+			if(g_scan_image.distance[j][k] != NO_DATA) {
+			    distance_candidates.push_back(g_scan_image.distance[j][k]);
+			}
+		    }
+		}
+
+		std::sort(distance_candidates.begin(), distance_candidates.end());
+		int num_candidates = distance_candidates.size();
+		if (num_candidates == 0) {
+		    obstacle_distance = NO_DATA;
+		}
+		else if (num_candidates == 1) {
+		    obstacle_distance = distance_candidates.at(0);
+		}
+		else if (num_candidates % 2 == 0) {
+		    obstacle_distance = (distance_candidates.at(num_candidates/2 - 1) + distance_candidates.at(num_candidates/2)) / 2;
+		}
+		else {
+		    obstacle_distance = distance_candidates.at(num_candidates/2);
+		}
+#endif
 
 		g_distances.push_back(obstacle_distance); //unit of length is centimeter
 #if _DEBUG //debug
@@ -395,8 +444,8 @@ void calcDistance()
 	 * Plot depth points on an image
 	 */
 	CvPoint pt;
-	for(int i = 0; i < IMAGE_HEIGHT; i++) {
-		for(int j = 0; j < IMAGE_WIDTH; j++) {
+	for(int i = 0; i < points_msg.image_height; i++) {
+		for(int j = 0; j < points_msg.image_width; j++) {
 			if (g_scan_image.distance[j][i] != 0.0) {
 				pt.x = j;
 				pt.y = i;
