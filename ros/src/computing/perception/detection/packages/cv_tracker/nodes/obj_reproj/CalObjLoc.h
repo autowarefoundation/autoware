@@ -26,7 +26,7 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #ifndef CALSELFLOC
 #define CALSELFLOC
@@ -54,21 +54,21 @@ public:
     LOCATION cal(){
         LOCATION res;
 
-	double a = (U-Ox)*(U-Ox)/(fkx*fkx);
-	double b = (V-Oy)*(V-Oy)/(fky*fky);
+		double a = (U-Ox)*(U-Ox)/(fkx*fkx);
+		double b = (V-Oy)*(V-Oy)/(fky*fky);
 
-	res.Z = sqrt((distance*distance/(a+b+1)));
-	res.X = (U-Ox)*res.Z/fkx;
+		res.Z = sqrt((distance*distance/(a+b+1)));
+		res.X = (U-Ox)*res.Z/fkx;
         res.Y = (V-Oy)*res.Z/fky;
 
-	//mili meter -> meter
-        res.X = res.X/100;
-        res.Y = res.Y/100;
-	res.Z = res.Z/100;
+		//mili meter -> meter
+        res.X = res.X/1000;
+        res.Y = res.Y/1000;
+		res.Z = res.Z/1000;
 
         return res;
     }
-    
+
 private:
     double U;//X from camera picture
     double V;//Y from camera picture
