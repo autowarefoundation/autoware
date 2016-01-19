@@ -39,6 +39,7 @@
 #include <ros/console.h>
 
 #include <geometry_msgs/PoseStamped.h>
+#include <tf/transform_datatypes.h>
 
 #include <tablet_socket/mode_info.h>
 
@@ -71,6 +72,11 @@ void cache_pose(const geometry_msgs::PoseStamped& msg)
 	vehicle.location.x = msg.pose.position.y;
 	vehicle.location.y = msg.pose.position.x;
 	vehicle.location.z = msg.pose.position.z;
+	vehicle.location.d = tf::getYaw(msg.pose.orientation);
+	vehicle.location.d = (-1 * vehicle.location.d) + (M_PI / 2);
+	vehicle.location.d = fmod(vehicle.location.d, (2 * M_PI));
+	if (vehicle.location.d < 0)
+		vehicle.location.d += (2 * M_PI);
 }
 
 void send_info(const sockaddr_in client_addr, int connect_fd, std::size_t bufsize, int period)

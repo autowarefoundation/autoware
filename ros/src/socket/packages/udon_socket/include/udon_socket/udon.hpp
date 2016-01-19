@@ -47,6 +47,7 @@ struct Location {
 	double x;
 	double y;
 	double z;
+	double d;
 
 	bool operator !=(const Location& location) const;
 };
