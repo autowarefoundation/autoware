@@ -54,8 +54,8 @@
 #endif
 
 struct Scan_image{
-	std::vector< std::vector <float> > distance;
-	std::vector< std::vector <float> > intensity;
+	std::vector<std::vector<float>> distance;
+	std::vector<std::vector<float>> intensity;
 	int max_y;
 	int min_y;
 };

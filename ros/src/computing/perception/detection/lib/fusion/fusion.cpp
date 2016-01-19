@@ -315,9 +315,11 @@ void setPointsImage(const points2image::PointsImage& points_image)
 	/*
 	 * Reset 2D vector
 	 */
-	for (auto i=0; i<g_scan_image.distance.size(); i++) {
-	    g_scan_image.distance[i].clear();
-	    g_scan_image.intensity[i].clear();
+	for (auto& distance : g_scan_image.distance) {
+	    distance.clear();
+	}
+	for (auto& intensity : g_scan_image.intensity) {
+	    intensity.clear();
 	}
 	g_scan_image.distance.clear();
 	g_scan_image.intensity.clear();
