@@ -48,7 +48,7 @@ constexpr std::int32_t TYPE_LOCATION	= 6;
 constexpr std::size_t SIZE_REQUEST	= 0x08;
 constexpr std::size_t SIZE_RESPONSE	= 0x04;
 constexpr std::size_t SIZE_MODE		= 0x08;
-constexpr std::size_t SIZE_LOCATION	= 0x20;
+constexpr std::size_t SIZE_LOCATION	= 0x28;
 
 constexpr std::ptrdiff_t OFFSET_TYPE		= 0x00;
 constexpr std::ptrdiff_t OFFSET_VALUE		= 0x04;
@@ -56,6 +56,7 @@ constexpr std::ptrdiff_t OFFSET_LENGTH		= 0x04;
 constexpr std::ptrdiff_t OFFSET_LOCATION_X	= 0x08;
 constexpr std::ptrdiff_t OFFSET_LOCATION_Y	= 0x10;
 constexpr std::ptrdiff_t OFFSET_LOCATION_Z	= 0x18;
+constexpr std::ptrdiff_t OFFSET_LOCATION_D	= 0x20;
 
 void set_type(std::uint8_t *buf, std::int32_t type)
 {
@@ -87,11 +88,16 @@ void set_location_z(std::uint8_t *buf, double z)
 	std::memcpy(buf + OFFSET_LOCATION_Z, &z, sizeof(z));
 }
 
+void set_location_d(std::uint8_t *buf, double d)
+{
+	std::memcpy(buf + OFFSET_LOCATION_D, &d, sizeof(d));
+}
+
 } // namespace
 
 bool Location::operator !=(const Location& location) const
 {
-	return !(x == location.x && y == location.y && z == location.z);
+	return !(x == location.x && y == location.y && z == location.z && d == location.d);
 }
 
 ssize_t send_request(int fd)
@@ -124,10 +130,11 @@ ssize_t send_location(int fd, const Location& location)
 {
 	std::uint8_t buf[SIZE_LOCATION];
 	set_type(buf, TYPE_LOCATION);
-	set_length(buf, sizeof(double) * 3);
+	set_length(buf, sizeof(double) * 4);
 	set_location_x(buf, location.x);
 	set_location_y(buf, location.y);
 	set_location_z(buf, location.z);
+	set_location_d(buf, location.d);
 
 	return send(fd, &buf, sizeof(buf), 0);
 }
