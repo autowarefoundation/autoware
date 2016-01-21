@@ -19,6 +19,3 @@ include_directories(
 
 add_executable(oculus_sender nodes/oculus_sender/oculus_sender.cpp)
 target_link_libraries(oculus_sender ${catkin_LIBRARIES})
-add_dependencies(oculus_sender oculus_socket_generate_messages_cpp)
-
-
