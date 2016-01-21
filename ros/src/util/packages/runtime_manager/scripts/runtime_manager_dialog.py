@@ -664,7 +664,8 @@ class MyFrame(rtmgr.MyFrame):
 		for var in vars[:]: # copy
 			cmd_param = var.get('cmd_param')
 			if cmd_param.get('tail'):
-				vars.append( vars.pop(0) )
+				vars.remove(var)
+				vars.append(var)
 
 		for var in vars[:]: # copy
 			name = var.get('name')
@@ -684,6 +685,8 @@ class MyFrame(rtmgr.MyFrame):
 					wx.MessageBox('cmd_param ' + name + ' is required')
 				return False
 			if cmd_param.get('only_enable') and not v:
+				continue
+			if cmd_param.get('only_disable') and v:
 				continue
 			name = cmd_param.get('var_name', name)
 			unpack = cmd_param.get('unpack')
@@ -725,6 +728,12 @@ class MyFrame(rtmgr.MyFrame):
 		return get_top( [ d.get('obj') for d in self.config_dic.values() \
 			if all( [ d.get(k) == v for (k,v) in arg_dic.items() ] ) ] )
 
+	def cfg_prm_to_pdic_gdic_prm(self, arg_dic):
+		return self.obj_to_pdic_gdic_prm( self.cfg_prm_to_obj(arg_dic) )
+
+	def name_to_pdic_gdic_prm(self, name):
+		return self.cfg_prm_to_pdic_gdic_prm( {'name':name} )
+
 	def update_func(self, pdic, gdic, prm):
 		pdic_empty = (pdic == {})
 		for var in prm.get('vars', []):
@@ -741,6 +750,11 @@ class MyFrame(rtmgr.MyFrame):
 			hook = gdic_v.get('update_hook')
 			if hook:
 				hook(v)
+			if var == gdic.get('update_func_arg_var'):
+				hook_var = gdic_v.get('hook_var', {})
+				hook = hook_var.get('hook')
+				if hook:
+					hook(hook_var.get('args', {}))
 
 		if 'pub' in prm:
 			self.publish_param_topic(pdic, prm)
@@ -974,6 +988,113 @@ class MyFrame(rtmgr.MyFrame):
 		prm = self.get_param(dic.get('param'))
 		self.add_cfg_info(cfg_obj, obj, name, pdic, gdic, True, prm)
 		return hszr
+
+	def camera_ids(self):
+		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed s/^$//"
+		return subprocess.check_output(cmd, shell=True).strip().split()
+
+	def cam_id_to_obj(self, cam_id, v):
+		cam_id_obj = self.cfg_prm_to_obj( {'name':cam_id} )
+		if cam_id_obj is None:
+			cam_id_obj = StrValObj(cam_id, v)
+		cam_id_obj.v = v
+		return cam_id_obj
+
+	def camera_id_hook(self, args):
+		new_id = args.get('pdic', {}).get('camera_id', '')
+		ids = args.get('ids', [])
+		if new_id not in ids:
+			return
+		idx = ids.index(new_id)
+		
+		pp = args.get('param_panel')
+		if pp:
+			pp.detach_func()
+		dlg = args.get('dlg')
+		if dlg:
+			dlg.EndModal(idx + 100)
+
+	def prm_var(self, prm, name, def_ret=None):
+		return next( (var for var in prm.get('vars') if var.get('name') == name), def_ret)
+
+	def OnCalibrationPublisher(self, event):
+		ids = self.camera_ids()
+		if ids == []:
+			self.OnLaunchKill(event)
+			return
+
+		#
+		# setup
+		#
+		obj = event.GetEventObject()
+		(_, gdic_org, prm) = self.obj_to_pdic_gdic_prm(obj)
+		(cmd_dic, cmd, _) = self.obj_to_cmd_dic_cmd_proc(obj)
+
+		flags = gdic_org.get('flags', [])[:] # copy
+		if 'open_dialog' in flags:
+			flags.remove('open_dialog')
+		
+		pdic_baks = {}
+		for cam_id in ids:
+			(pdic_a, gdic_a, _) = self.name_to_pdic_gdic_prm(cam_id)
+			pdic = pdic_a if pdic_a else self.load_dic_pdic_setup(cam_id, {})
+			pdic_baks[cam_id] = pdic.copy()
+			gdic = gdic_a if gdic_a else gdic_org.copy()
+			gdic['flags'] = flags
+
+			cam_id_obj = self.cam_id_to_obj(cam_id, obj.GetValue())
+			if not pdic_a or not gdic_a:
+				self.add_cfg_info(cam_id_obj, cam_id_obj, cam_id, pdic, gdic, False, prm)
+			if not cam_id_obj in cmd_dic:
+				cmd_dic[ cam_id_obj ] = (cmd, None)
+
+		# after marged to master, udpate to use self.get_var()
+		var = self.prm_var(prm, 'camera_id', {})
+		var['choices'] = ids
+
+		#
+		# Dialog
+		#
+		cam_id = ids[0]
+		while obj.GetValue():
+			(pdic, gdic, _) = self.name_to_pdic_gdic_prm(cam_id)
+			pdic['camera_id'] = cam_id
+			dic_list_push(gdic, 'dialog_type', 'config')
+			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
+			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
+
+			if 'camera_id' not in gdic:
+				gdic['camera_id'] = {}
+			gdic_v = gdic.get('camera_id', {})
+			args = { 'pdic':pdic, 'ids':ids, 'param_panel':gdic.get('param_panel'), 'dlg':dlg }
+			gdic_v['hook_var'] = { 'hook':self.camera_id_hook, 'args':args }
+
+			dlg_ret = dlg.ShowModal()
+
+			dic_list_pop(gdic, 'dialog_type')
+			pdic['camera_id'] = cam_id # restore
+
+			if dlg_ret == 0: # OK
+				break
+
+			idx = dlg_ret - 100
+			if idx < 0 or len(ids) <= idx: # Cancel
+				for cam_id in ids:
+					(pdic, _, _) = self.name_to_pdic_gdic_prm(cam_id)
+					pdic.update(pdic_baks.get(cam_id))
+				return
+
+			# Menu changed
+			cam_id = ids[idx]
+
+		#
+		# Launch / Kill
+		#
+		for cam_id in ids:
+			cam_id_obj = self.cfg_prm_to_obj( {'name':cam_id} )
+			(pdic, _, _) = self.obj_to_pdic_gdic_prm(cam_id_obj)
+			pdic['solo_camera'] = False
+			self.OnLaunchKill_obj(cam_id_obj)
 
 	#
 	# Simulation Tab
@@ -2015,6 +2136,8 @@ class ParamPanel(wx.Panel):
 		self.prm = kwds.pop('prm')
 		wx.Panel.__init__(self, *args, **kwds)
 
+		self.gdic['param_panel'] = self
+
 		obj = get_top( [ v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm ] )
 		(_, _, proc) = self.frame.obj_to_cmd_dic_cmd_proc(obj)
 
@@ -2103,9 +2226,10 @@ class ParamPanel(wx.Panel):
 		if 'no_init_update' not in self.prm.get('flags', []):
 			self.update()
 
-	def update(self):
+	def update(self, var=None):
 		update_func = self.gdic.get('update_func')
 		if update_func:
+			self.gdic['update_func_arg_var'] = var
 			update_func(self.pdic, self.gdic, self.prm)
 
 	def detach_func(self):
@@ -2271,7 +2395,7 @@ class VarPanel(wx.Panel):
 			v = self.min + float(self.w) * iv / self.int_max
 			s = str(Decimal(v).quantize(Decimal(str(self.get_step()))))
 		self.tc.SetValue(s)
-		self.update()
+		self.update(self.var)
 
 	def OnIncBtn(self, event):
 		step = self.get_step()
@@ -2292,16 +2416,16 @@ class VarPanel(wx.Panel):
 		if v != ov:
 			if self.has_slider:
 				self.slider.SetValue(self.get_int_v())
-			self.update()
+			self.update(self.var)
 
 	def OnUpdate(self, event):
 		if self.has_slider:
 			self.slider.SetValue(self.get_int_v())
-		self.update()
+		self.update(self.var)
 
 	def OnRef(self, event):
 		if file_dialog(self, self.tc, self.var) == wx.ID_OK:
-			self.update()
+			self.update(self.var)
 
 	def choices_sel_get(self):
 		return self.obj.GetStringSelection() if self.var.get('choices_type') == 'str' else self.obj.GetSelection()
@@ -2617,6 +2741,13 @@ class ColorLabel(wx.Panel):
 				dc.DrawText(v, x, y)
 				(w, _, _, _) = dc.GetFullTextExtent(v)
 				x += w
+
+class StrValObj:
+	def __init__(self, s, v):
+		self.s = s
+		self.v = v
+	def GetValue(self):
+		return self.v
 
 class MyApp(wx.App):
 	def OnInit(self):

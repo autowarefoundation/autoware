@@ -124,6 +124,10 @@ buttons:
     param : calibration_publisher
     gui   :
       flags : [ open_dialog ]
+      config_dialog_only : [ camera_id ]
+      camera_id :
+        border : 16
+        flags : [ all ]
       file  :
         prop  : 1
       register_lidar2camera_tf :
@@ -212,6 +216,16 @@ params :
 
   - name  : calibration_publisher
     vars  :
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+        tail         : True
     - name      : file
       kind      : path
       v         : ''
@@ -239,6 +253,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : solo_camera
+      kind      : hide
+      v         : True
+      cmd_param :
+        dash         : ''
+        delim        : ':='
+        only_disable : True
+        tail         : True
 
 #  - name  : camera_extrinsicMat_Publisher
 #    vars  :
