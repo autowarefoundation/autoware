@@ -125,9 +125,6 @@ SET_TARGET_PROPERTIES(dpm_ocv
 )
 ENDIF()
 
-ADD_DEPENDENCIES(dpm_ocv
-  dpm_ttic_generate_messages_cpp
-)
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
@@ -156,11 +153,6 @@ TARGET_LINK_LIBRARIES(kf_track
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   kf
-)
-
-ADD_DEPENDENCIES(kf_track
-  kf_track_generate_messages_cpp
-  libdpm_ocv_generate_messages_cpp
 )
 
 ## obj_reproj ##
@@ -201,7 +193,6 @@ TARGET_LINK_LIBRARIES(klt_track
 )
 
 ADD_DEPENDENCIES(klt_track
-  klt_track_generate_messages_cpp
   libdpm_ocv_generate_messages_cpp
 )
 

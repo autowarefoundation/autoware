@@ -132,7 +132,7 @@ target_link_libraries(vscan2image
 )
 add_dependencies(vscan2image
   points_image
-  point2image_generate_messages_cpp
+  points2image_generate_messages_cpp
 )
 
 
