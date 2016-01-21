@@ -124,7 +124,7 @@ buttons:
     param : calibration_publisher
     gui   :
       flags : [ open_dialog ]
-      config_dialog_only : [ camera_id ]
+      open2_dialog_only : [ camera_id ]
       camera_id :
         border : 16
         flags : [ all ]
@@ -140,6 +140,13 @@ buttons:
   points_image :
     run   : rosrun points2image points2image
     #param : points_image
+    param : sel_cam
+    gui   :
+      flags : [ need_camera_info ]
+      sel_cam_dialog_only : [ camera_id ]
+      camera_id :
+        border : 16
+        flags : [ all ]
 
   scan_image :
     run   : rosrun scan2image scan2image
@@ -148,6 +155,13 @@ buttons:
   virtual_scan_image :
     run   : roslaunch runtime_manager vscan.launch
     #param : virtual_scan_image
+    param : sel_cam
+    gui   :
+      flags : [ need_camera_info ]
+      sel_cam_dialog_only : [ camera_id ]
+      camera_id :
+        border : 16
+        flags : [ all ]
 
   #camera_extrinsicMat_Publisher :
   #  run   : roslaunch runtime_manager ex_mat_pub.launch
@@ -289,3 +303,15 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name : sel_cam
+    vars :
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True

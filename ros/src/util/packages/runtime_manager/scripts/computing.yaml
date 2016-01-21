@@ -43,7 +43,7 @@ subs :
         cmd  : roslaunch cv_tracker dpm_ocv.launch
         param: dpm_ocv
         gui  :
-          flags                  : [ open_dialog ]
+          flags                  : [ open_dialog, need_camera_info ]
           config_dialog          : MyDialogCarPedestrian
           car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
           open_dialog            : MyDialogDpm
@@ -54,12 +54,17 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
 
       - name : dpm_ttic
         cmd  : roslaunch cv_tracker dpm_ttic.launch
         param: dpm_ttic
         gui  :
-          flags                  : [ open_dialog ]
+          flags                  : [ open_dialog, need_camera_info ]
           config_dialog          : MyDialogCarPedestrian
           car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
           open_dialog            : MyDialogDpm
@@ -72,10 +77,22 @@ subs :
             flags  : [ left ]
           part_model_car :
             flags  : [ hline ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
             
       - name : rcnn_node
         cmd  : roslaunch cv_tracker rcnn.launch
         param: rcnn
+        gui   :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
 
       - name : range_fusion
         cmd  : roslaunch cv_tracker ranging.launch
@@ -97,7 +114,7 @@ subs :
         cmd  : roslaunch cv_tracker kf_tracking.launch
         param: car_kf
         gui  :
-          flags                  : [ open_dialog ]
+          flags                  : [ open_dialog, need_camera_info ]
           config_dialog          : MyDialogCarPedestrian
           car_pedestrian_obj_key : { car : car_kf, pedestrian : pedestrian_kf }
           config_dialog_only     :
@@ -116,18 +133,28 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
 
       - name : obj_reproj
         cmd  : roslaunch cv_tracker reprojection.launch
         param: obj_reproj
         gui  :
-          flags                : [ open_dialog, no_link ]
+          flags                : [ open_dialog, no_link, need_camera_info ]
           open_dialog_ok_label : Start
           car :
             user_category : Detection Target
           pedestrian :
             border : 16
             flags  : [ left ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
 
     - name : lidar_detector
       subs :
@@ -150,24 +177,87 @@ subs :
       - name : feat_proj
         cmd  : rosrun road_wizard feat_proj
         param: feat_proj
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
       - name : region_tlr
         cmd  : roslaunch road_wizard traffic_light_recognition.launch
         param: region_tlr
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
 
     - name : viewers
       subs :
       - name : image_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=image_viewer
+        param: viewer_sel_cam
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : image_d_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=image_d_viewer
+        param: viewer_sel_cam
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : points_image_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_viewer
+        param: viewer_sel_cam
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : points_image_d_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_d_viewer
+        param: viewer_sel_cam
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : vscan_image_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_viewer
+        param: viewer_sel_cam
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : vscan_image_d_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_d_viewer
+        param: viewer_sel_cam
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : traffic_light_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=traffic_light_viewer
 
@@ -400,6 +490,15 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
 
   - name  : dpm_ttic
     vars  :
@@ -469,6 +568,15 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
 
   - name  : car_dpm
     topic : /config/car_dpm
@@ -876,6 +984,15 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
@@ -938,6 +1055,15 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
 
   - name : obj_fusion
     vars :
@@ -970,6 +1096,15 @@ params :
       min  : -100
       max  : 100
       v    : 0
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
 
   - name : region_tlr
     topic: /config/superimpose
@@ -979,6 +1114,15 @@ params :
       label : Display superimpose result
       kind  : checkbox
       v     : False
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
 
   - name  : traffic_light
     vars :
@@ -1230,3 +1374,24 @@ params :
       min   : -255.0
       max   : 255.0
       v     : 122.7717
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+
+  - name : viewer_sel_cam
+    vars :
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True

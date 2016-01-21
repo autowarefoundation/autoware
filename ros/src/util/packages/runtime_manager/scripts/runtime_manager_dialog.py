@@ -643,6 +643,20 @@ class MyFrame(rtmgr.MyFrame):
 		if pdic is None or prm is None:
 			return None
 
+		if 'need_camera_info' in gdic.get('flags', []) and msg_box:
+			ids = self.camera_ids()
+			# after marged to master, udpate to use self.get_var()
+			var = self.prm_var(prm, 'camera_id', {})
+			var['choices'] = ids
+
+			dic_list_push(gdic, 'dialog_type', 'sel_cam')
+			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
+			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
+			dlg_ret = dlg.ShowModal()
+			dic_list_pop(gdic, 'dialog_type')
+			if dlg_ret != 0:
+				return False			
+
 		if 'open_dialog' in gdic.get('flags', []) and msg_box:
 			dic_list_push(gdic, 'dialog_type', 'open')
 			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
@@ -835,8 +849,7 @@ class MyFrame(rtmgr.MyFrame):
 		pub.publish(msg)
 
 	def rosparam_set(self, pdic, prm):
-		cmd = [ 'rosparam', 'list' ]
-		rosparams = subprocess.check_output(cmd).strip().split('\n')
+		rosparams = None
 		for var in prm.get('vars', []):
 			name = var['name']
 			if 'rosparam' not in var or name not in pdic:
@@ -847,6 +860,9 @@ class MyFrame(rtmgr.MyFrame):
 			cvdic = { 'True':'true', 'False':'false' }
 			if v in cvdic:
 				v = cvdic.get(v)
+			if rosparams is None:
+				cmd = [ 'rosparam', 'list' ]
+				rosparams = subprocess.check_output(cmd).strip().split('\n')
 			exist = rosparam in rosparams
 			if exist:
 				cmd = [ 'rosparam', 'get', rosparam ]
@@ -1018,22 +1034,24 @@ class MyFrame(rtmgr.MyFrame):
 		return next( (var for var in prm.get('vars') if var.get('name') == name), def_ret)
 
 	def OnCalibrationPublisher(self, event):
-		ids = self.camera_ids()
+		obj = event.GetEventObject()
+		(_, gdic_org, prm) = self.obj_to_pdic_gdic_prm(obj)
+		if obj.GetValue():
+			gdic_org['ids'] = self.camera_ids()
+		ids = gdic_org.get('ids', [])
+
 		if ids == []:
 			self.OnLaunchKill(event)
 			return
-
 		#
 		# setup
 		#
-		obj = event.GetEventObject()
-		(_, gdic_org, prm) = self.obj_to_pdic_gdic_prm(obj)
 		(cmd_dic, cmd, _) = self.obj_to_cmd_dic_cmd_proc(obj)
 
 		flags = gdic_org.get('flags', [])[:] # copy
 		if 'open_dialog' in flags:
 			flags.remove('open_dialog')
-		
+
 		pdic_baks = {}
 		for cam_id in ids:
 			(pdic_a, gdic_a, _) = self.name_to_pdic_gdic_prm(cam_id)
@@ -1059,7 +1077,7 @@ class MyFrame(rtmgr.MyFrame):
 		while obj.GetValue():
 			(pdic, gdic, _) = self.name_to_pdic_gdic_prm(cam_id)
 			pdic['camera_id'] = cam_id
-			dic_list_push(gdic, 'dialog_type', 'config')
+			dic_list_push(gdic, 'dialog_type', 'open2')
 			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 
@@ -1082,6 +1100,7 @@ class MyFrame(rtmgr.MyFrame):
 				for cam_id in ids:
 					(pdic, _, _) = self.name_to_pdic_gdic_prm(cam_id)
 					pdic.update(pdic_baks.get(cam_id))
+				set_val(obj, False)
 				return
 
 			# Menu changed
@@ -1094,6 +1113,7 @@ class MyFrame(rtmgr.MyFrame):
 			cam_id_obj = self.cfg_prm_to_obj( {'name':cam_id} )
 			(pdic, _, _) = self.obj_to_pdic_gdic_prm(cam_id_obj)
 			pdic['solo_camera'] = False
+			#print '@', cam_id, cam_id_obj.GetValue()
 			self.OnLaunchKill_obj(cam_id_obj)
 
 	#
@@ -2120,9 +2140,16 @@ class MyFrame(rtmgr.MyFrame):
 
 def gdic_dialog_type_chk(gdic, name):
 	dlg_type = dic_list_get(gdic, 'dialog_type', 'config')
-	other_key = 'open_dialog_only' if dlg_type == 'config' else 'config_dialog_only'
-	other_lst = gdic.get(other_key, [])
-	return False if name in other_lst else True
+
+	tail = '_dialog_only'
+	lst = [ (k, k[:-len(tail)]) for k in gdic.keys() if k[-len(tail):] == tail ]
+	only_chk = next( (False for (k,type) in lst if type != dlg_type and name in gdic.get(k, [])), True)
+
+	tail = '_dialog_allow'
+	lst = [ (k, k[:-len(tail)]) for k in gdic.keys() if k[-len(tail):] == tail ]
+	allow_chk = next( (False for (k,type) in lst if type == dlg_type and name not in gdic.get(k, [])), True)
+
+	return only_chk and allow_chk
 
 def gdic_dialog_name_get(gdic):
 	dlg_type = dic_list_get(gdic, 'dialog_type', 'config')
