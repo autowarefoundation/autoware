@@ -1,11 +1,14 @@
 <launch>
   <arg name="car" default="true"/>
   <arg name="pedestrian" default="false"/>
+  <arg name="sync" default="false" />
 
   <group if="$(arg car)">
     <group ns="obj_car">
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+        <remap from="/obj_car/image_obj_tracked" to="/sync_reprojection/obj_car/image_obj_tracked" if="$(arg sync)" />
+        <remap from="/current_pose" to="/sync_reprojection/current_pose" if="$(arg sync)" />
       </node>
 
     </group>
@@ -15,6 +18,8 @@
     <group ns="obj_person">
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+        <remap from="/obj_person/image_obj_tracked" to="/sync_reprojection/obj_person/image_obj_tracked" if="$(arg sync)" />
+        <remap from="/current_pose" to="/sync_reprojection/current_pose" if="$(arg sync)" />
       </node>
 
     </group>

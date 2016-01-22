@@ -16,6 +16,7 @@
     <arg name="min_range" default="3" />
     <arg name="grid_size" default="10.0" />
     <arg name="image_size" default="1000.0" />
+    <arg name="sync" default="false" />
 
   <node pkg="points2image" type="points2vscan" name="points2vscan" output="screen" >
       <param name="BEAMNUM" type="int" value="$(arg beam_num)" />

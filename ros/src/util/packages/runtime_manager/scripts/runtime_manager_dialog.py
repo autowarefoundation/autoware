@@ -834,10 +834,11 @@ class MyFrame(rtmgr.MyFrame):
 
 	def param_value_get(self, pdic, prm, name, def_ret=None):
 		def_ret = self.param_default_value_get(prm, name, def_ret)
-		return pdic.get(name, def_ret)
+		return pdic.get(name, def_ret) if pdic else def_ret
 
 	def param_default_value_get(self, prm, name, def_ret=None):
-		return next( (var.get('v') for var in prm.get('vars') if var.get('name') == name ), def_ret)
+		return next( (var.get('v') for var in prm.get('vars') if var.get('name') == name ), def_ret) \
+                        if prm else def_ret
 
 	def update_depend_enable(self, pdic, gdic, prm):
 		for var in prm.get('vars', []):
@@ -2097,6 +2098,8 @@ class ParamPanel(wx.Panel):
 			if name not in self.gdic:
 				self.gdic[ name ] = {}
 			gdic_v = self.gdic.get(name)
+
+			bak_stk_push(gdic_v, 'func')
 			if gdic_v.get('func'):
 				continue
 
@@ -2177,7 +2180,7 @@ class ParamPanel(wx.Panel):
 			name = var.get('name')
 			gdic_v = self.gdic.get(name, {})
 			if 'func' in gdic_v:
-				del gdic_v['func']
+				bak_stk_pop(gdic_v, 'func')
 
 	def in_msg(self, var):
 		if 'topic' not in self.prm or 'msg' not in self.prm:
@@ -2948,6 +2951,25 @@ def dic_list_pop(dic, key):
 
 def dic_list_get(dic, key, def_ret=None):
 	return dic.get(key, [def_ret])[-1]
+
+def bak_stk_push(dic, key):
+	if key in dic:
+		k = key + '_bak_str'
+		if k not in dic:
+			dic[k] = []
+		dic[k].append( dic.get(key) )
+
+def bak_stk_pop(dic, key):
+	k = key + '_bak_str'
+	stk = dic.get(k, [])
+        if len(stk) > 0:
+		dic[key] = stk.pop()
+	else:
+		del dic[key]
+
+def bak_stk_set(dic, key, v):
+	bak_str_push(dic, key)
+        dic[key] = v
 
 
 def get_top(lst, def_ret=None):

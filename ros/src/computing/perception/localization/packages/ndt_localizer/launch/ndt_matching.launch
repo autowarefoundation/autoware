@@ -6,6 +6,7 @@
   <arg name="use_velodyne" default="true" />
   <arg name="use_gnss" default="1" />
   <arg name="queue_size" default="10" />
+  <arg name="sync" default="false" />
 
   <node pkg="tf" type="static_transform_publisher" name="hokuyo_to_base_link" args="0 0 -1.0 0 0 0 /3d_urg /base_link 10" unless="$(arg use_velodyne)"/>
 
@@ -14,6 +15,7 @@
     <param name="scanner" value="$(arg scanner)" />
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="queue_size" value="$(arg queue_size)"/>
+    <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>
   
 </launch>

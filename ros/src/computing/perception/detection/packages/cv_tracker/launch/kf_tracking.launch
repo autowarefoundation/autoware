@@ -1,12 +1,15 @@
 <launch>
   <arg name="car" default="true"/>
   <arg name="pedestrian" default="false"/>
+  <arg name="sync" default="false" />
 
   <group if="$(arg car)">
     <group ns="obj_car">
 
       <node pkg="cv_tracker" name="tracking" type="kf_track" output="screen">
           <remap from="/config/obj_car/kf" to="/config/car_kf" />
+          <remap from="/obj_car/image_obj_ranged" to="/sync_tracking/obj_car/image_obj_ranged" if="$(arg sync)" />
+          <remap from="/image_raw" to="/sync_tracking/image_raw" if="$(arg sync)" />
       </node>
 
     </group>
@@ -17,6 +20,8 @@
 
       <node pkg="cv_tracker" name="tracking" type="kf_track">
           <remap from="/config/obj_person/kf" to="/config/pedestrian_kf" />
+          <remap from="/obj_person/image_obj_ranged" to="/sync_tracking/obj_person/image_obj_ranged" if="$(arg sync)" />
+          <remap from="/image_raw" to="/sync_tracking/image_raw" if="$(arg sync)" />
       </node>
 
     </group>

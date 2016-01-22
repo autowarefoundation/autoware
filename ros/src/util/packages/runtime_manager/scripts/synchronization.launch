@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="synchronization" type="sync_drivers" name="sync_drivers" />
+  <node pkg="synchronization" type="time_monitor" name="time_monitor" />
+</launch>

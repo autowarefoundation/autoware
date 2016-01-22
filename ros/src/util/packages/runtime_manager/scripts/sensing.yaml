@@ -144,6 +144,10 @@ buttons:
   virtual_scan_image :
     run   : roslaunch runtime_manager vscan.launch
     #param : virtual_scan_image
+    param : sync
+    gui   :
+      sync :
+        func : self.button_synchronization.GetValue()
 
   #camera_extrinsicMat_Publisher :
   #  run   : roslaunch runtime_manager ex_mat_pub.launch
@@ -270,3 +274,13 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name : sync
+    vars :
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
