@@ -1763,13 +1763,11 @@ class MyFrame(rtmgr.MyFrame):
 
 				pdic = self.load_dic_pdic_setup(name, items)
 				pnl = wx.Panel(tree, wx.ID_ANY)
-				lkc_sys = self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys')
-				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc_sys, wx.StaticText(pnl, wx.ID_ANY, ']') ]
+				add_objs = []
+				self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys', add_objs)
 				gdic = self.gdic_get_1st(items)
-				if 'param' in items and 'no_link' not in gdic.get('flags', []):
-					lkc = self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'))
-					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
-					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc, wx.StaticText(pnl, wx.ID_ANY, ']') ]
+				if 'param' in items:
+					self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'), add_objs)
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
@@ -1778,13 +1776,17 @@ class MyFrame(rtmgr.MyFrame):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
 
-	def new_link(self, item, name, pdic, gdic, pnl, link_str, prm_name):
-		lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
-		fix_link_color(lkc)
-		self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
+	def new_link(self, item, name, pdic, gdic, pnl, link_str, prm_name, add_objs):
+		lkc = None
+		if 'no_link' not in gdic.get('flags', []):
+			lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
+			fix_link_color(lkc)
+			self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
+			if len(add_objs) > 0:
+				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
+			add_objs += [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc, wx.StaticText(pnl, wx.ID_ANY, ']') ]
 		prm = self.get_param(prm_name)
-		self.add_cfg_info(lkc, item, name, pdic, gdic, False, prm)
-		return lkc
+		self.add_cfg_info(lkc if lkc else item, item, name, pdic, gdic, False, prm)
 
 	def load_dic_pdic_setup(self, name, dic):
 		name = dic.get('share_val', dic.get('name', name))
