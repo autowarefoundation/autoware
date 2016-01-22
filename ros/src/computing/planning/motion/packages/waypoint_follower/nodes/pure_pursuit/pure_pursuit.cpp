@@ -55,6 +55,7 @@ static const int MODE_DIALOG = 1;
 
 //parameter
 static bool _sim_mode = false;
+static bool g_linear_interpolate_mode = true;
 static std::string g_velocity_source = "ZMP_CAN";//"NDT";
 
 static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
@@ -638,40 +639,47 @@ static void doPurePursuit()
   //linear interpolation and calculate angular velocity
   geometry_msgs::Point next_target;
   geometry_msgs::TwistStamped twist;
-  std_msgs::Bool wf_stat;
-  if (interpolateNextTarget(next_waypoint, &next_target))
+	std_msgs::Bool wf_stat;
+	bool interpolate_flag = false;
+
+  if (!g_linear_interpolate_mode)
   {
-
-    ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y, next_target.z);
-    displayNextTarget(next_target);
-    displayTrajectoryCircle(generateTrajectoryCircle(next_target));
-
-#ifdef LOG
-  std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
-  ofs << _current_waypoints.getWaypointPosition(next_waypoint).x << " "
-  << _current_waypoints.getWaypointPosition(next_waypoint).y << " " << next_target.x << " " << next_target.y
-  << std::endl;
-#endif
-
-    twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(0));
-
-    wf_stat.data = true;
-    _stat_pub.publish(wf_stat);
+    next_target = _current_waypoints.getWaypointPosition(next_waypoint);
   }
   else
+  {
+    interpolate_flag = interpolateNextTarget(next_waypoint, &next_target);
+  }
+
+  if (g_linear_interpolate_mode && !interpolate_flag)
   {
     ROS_INFO_STREAM("lost target! ");
     wf_stat.data = false;
     _stat_pub.publish(wf_stat);
     twist.twist.linear.x = 0;
     twist.twist.angular.z = 0;
+    twist.header.stamp = ros::Time::now();
+    g_cmd_velocity_publisher.publish(twist);
+    return;
   }
 
-  //ROS_INFO_STREAM("twist(linear.x , angular.z) = ( " << twist.twist.linear.x << " , " << twist.twist.angular.z << " )");
+  ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,
+      next_target.z);
+  displayNextTarget(next_target);
+  displayTrajectoryCircle(generateTrajectoryCircle(next_target));
+  twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(0));
 
+  wf_stat.data = true;
+  _stat_pub.publish(wf_stat);
   twist.header.stamp = ros::Time::now();
   g_cmd_velocity_publisher.publish(twist);
 
+#ifdef LOG
+      std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
+      ofs << _current_waypoints.getWaypointPosition(next_waypoint).x << " "
+      << _current_waypoints.getWaypointPosition(next_waypoint).y << " " << next_target.x << " " << next_target.y
+      << std::endl;
+#endif
 }
 
 int main(int argc, char **argv)
@@ -687,6 +695,9 @@ int main(int argc, char **argv)
   // setting params
   private_nh.getParam("sim_mode", _sim_mode);
   ROS_INFO_STREAM("sim_mode : " << _sim_mode);
+
+  private_nh.getParam("linear_interpolate_mode", g_linear_interpolate_mode);
+  ROS_INFO_STREAM("linear_interpolate_mode : " << g_linear_interpolate_mode);
 
   //publish topic
   g_cmd_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);

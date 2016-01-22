@@ -749,6 +749,13 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : linear_interpolate_mode
+      label   : 'Linear Interpolate'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
       
   - name  : velocity_set
     topic : /config/velocity_set
