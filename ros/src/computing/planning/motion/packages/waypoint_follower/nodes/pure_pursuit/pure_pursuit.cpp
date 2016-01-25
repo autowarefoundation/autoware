@@ -90,7 +90,7 @@ static void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
   if(!_sim_mode && g_velocity_source == "ZMP_CAN")
   {
     _current_velocity = kmph2mps(msg->speed);
-    ROS_INFO("velocity_source : ZMP_CAN");
+    //ROS_INFO("velocity_source : ZMP_CAN");
   }
 }
 
@@ -142,7 +142,7 @@ static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
-  ROS_INFO_STREAM("waypoint subscribed");
+  //ROS_INFO_STREAM("waypoint subscribed");
 }
 
 // display the next waypoint by markers.
@@ -337,7 +337,7 @@ static double getCmdVelocity(int waypoint)
   }
 
   double velocity = _current_waypoints.getWaypointVelocityMPS(waypoint);
-  ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h ( " << velocity << "m/s )");
+  //ROS_INFO_STREAM("waypoint : " << mps2kmph(velocity) << " km/h ( " << velocity << "m/s )");
   return velocity;
 }
 
@@ -508,15 +508,18 @@ static bool verifyFollowing()
 {
   double slope = 0;
   double intercept = 0;
-  getLinearEquation(_current_waypoints.getWaypointPosition(0),_current_waypoints.getWaypointPosition(1),&slope,&intercept);
+  getLinearEquation(_current_waypoints.getWaypointPosition(1),_current_waypoints.getWaypointPosition(2),&slope,&intercept);
   double displacement = getDistanceBetweenLineAndPoint(_current_pose.pose.position,slope,intercept);
-  double relative_angle = getRelativeAngle(_current_waypoints.getWaypointPose(0),_current_pose.pose);
-
-  if(displacement < g_displacement_threshold && relative_angle < g_relative_angle_threshold)
+  double relative_angle = getRelativeAngle(_current_waypoints.getWaypointPose(1),_current_pose.pose);
+  ROS_INFO("side diff : %lf , angle diff : %lf",displacement,relative_angle);
+  if(displacement < g_displacement_threshold || relative_angle < g_relative_angle_threshold){
+    ROS_INFO("Following : True");
     return true;
-  else
+  }
+  else{
+    ROS_INFO("Following : False");
     return false;
-
+  }
 }
 
 static geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
@@ -663,8 +666,7 @@ static void doPurePursuit()
     return;
   }
 
-  ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,
-      next_target.z);
+  //ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,next_target.z);
   displayNextTarget(next_target);
   displayTrajectoryCircle(generateTrajectoryCircle(next_target));
   twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(0));
@@ -673,6 +675,8 @@ static void doPurePursuit()
   _stat_pub.publish(wf_stat);
   twist.header.stamp = ros::Time::now();
   g_cmd_velocity_publisher.publish(twist);
+
+  ROS_INFO("linear : %lf, angular : %lf",twist.twist.linear.x,twist.twist.angular.z);
 
 #ifdef LOG
       std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
