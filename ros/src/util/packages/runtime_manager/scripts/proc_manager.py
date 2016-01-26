@@ -121,6 +121,9 @@ class ProcManager:
 				ret = self.set_scheduling_policy(order['pid'],
 								 order['policy'],
 								 order['priority'])
+			else:
+				print("Error: unknown operation key: '{}'".format(order['name']))
+				ret = -1
 			conn.send(str.encode(str(ret)))
 			conn.close()
 
