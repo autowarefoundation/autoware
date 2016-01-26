@@ -166,7 +166,7 @@ TARGET_LINK_LIBRARIES(obj_reproj
 )
 
 ADD_DEPENDENCIES(obj_reproj
-  obj_reproj_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
 )
 
 ## klt_tracker ##
