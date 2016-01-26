@@ -121,6 +121,11 @@ class ProcManager:
 				ret = self.set_scheduling_policy(order['pid'],
 								 order['policy'],
 								 order['priority'])
+			elif order['name'] == 'shutdown':
+				conn.send(str.encode("0"))
+				conn.close()
+				print("[proc_manager.py] Shutdown process manager")
+				break
 			else:
 				print("Error: unknown operation key: '{}'".format(order['name']))
 				ret = -1

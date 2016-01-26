@@ -492,6 +492,8 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.close()
 
+		shutdown_proc_manager()
+
 		shutdown_sh = self.get_autoware_dir() + '/ros/shutdown'
 		if os.path.exists(shutdown_sh):
 			os.system(shutdown_sh)
@@ -3048,6 +3050,12 @@ def set_process_cpu_affinity(proc, cpus):
 		"name": "cpu_affinity",
 		"pid": proc.pid,
 		"cpus": cpus,
+	}
+	return send_to_proc_manager(order)
+
+def shutdown_proc_manager():
+	order = {
+		"name": "shutdown",
 	}
 	return send_to_proc_manager(order)
 
