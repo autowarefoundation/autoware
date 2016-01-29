@@ -5,74 +5,12 @@ include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   gnss
-  std_msgs
-  visualization_msgs
-  geometry_msgs
-  message_generation
+  map_file
 )
 pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
 pkg_check_modules(EIGEN3 REQUIRED eigen3)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
-
-add_message_files(
-  FILES
-  AreaClass.msg
-  AreaClassArray.msg
-  BoxClass.msg
-  BoxClassArray.msg
-  CrossRoad.msg
-  CrossRoadArray.msg
-  CrossWalk.msg
-  CrossWalkArray.msg
-  Curb.msg
-  CurbArray.msg
-  DTLane.msg
-  DTLaneArray.msg
-  GuardRail.msg
-  GuardRailArray.msg
-  Gutter.msg
-  GutterArray.msg
-  Lane.msg
-  LaneArray.msg
-  LineClass.msg
-  LineClassArray.msg
-  Node.msg
-  NodeArray.msg
-  PointClass.msg
-  PointClassArray.msg
-  Pole.msg
-  PoleArray.msg
-  PoleClass.msg
-  PoleClassArray.msg
-  RoadEdge.msg
-  RoadEdgeArray.msg
-  RoadMark.msg
-  RoadMarkArray.msg
-  RoadSign.msg
-  RoadSignArray.msg
-  SideWalk.msg
-  SideWalkArray.msg
-  Signal.msg
-  SignalArray.msg
-  StopLine.msg
-  StopLineArray.msg
-  StreetLight.msg
-  StreetLightArray.msg
-  UtilityPole.msg
-  UtilityPoleArray.msg
-  VectorClass.msg
-  VectorClassArray.msg
-  WhiteLine.msg
-  WhiteLineArray.msg
-  ZebraZone.msg
-  ZebraZoneArray.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 catkin_package(
 #  INCLUDE_DIRS include
