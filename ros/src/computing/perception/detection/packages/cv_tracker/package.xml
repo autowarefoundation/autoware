@@ -21,6 +21,7 @@
   <run_depend>fusion</run_depend>
   <run_depend>klt</run_depend>
   <run_depend>librcnn</run_depend>
+  <run_depend>runtime_manager</run_depend>
   <export>
   </export>
 </package>
