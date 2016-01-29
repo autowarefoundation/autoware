@@ -44,7 +44,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf
+  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager
 )
 
 ###########
