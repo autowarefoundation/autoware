@@ -14,6 +14,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   fusion
   kf
   tf
+  runtime_manager
 )
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
@@ -96,6 +97,7 @@ ENDIF()
 
 ADD_DEPENDENCIES(dpm_ttic
   cv_tracker_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
 )
 
 ## dpm_ocv
@@ -109,6 +111,10 @@ TARGET_LINK_LIBRARIES(dpm_ocv
   libdpm_ocv
   ${catkin_LIBRARIES}
   #${OpenCV_LIBS}
+)
+
+ADD_DEPENDENCIES(dpm_ocv
+  runtime_manager_generate_messages_cpp
 )
 
 IF(CUDA_FOUND)
@@ -142,6 +148,7 @@ TARGET_LINK_LIBRARIES(range_fusion
 
 ADD_DEPENDENCIES(range_fusion
   cv_tracker_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
 )
 
 ## kf_tracker ##
@@ -228,7 +235,8 @@ ENDIF()
   )
 
   ADD_DEPENDENCIES(rcnn_node
-    rcnn_node_generate_messages_cpp
+    cv_tracker_generate_messages_cpp
+    runtime_manager_generate_messages_cpp
     librcnn
   )
 else()
