@@ -1,7 +1,7 @@
 <launch>
 
   <!-- calibration file path -->
-  <arg name="vscan_calib" default="/home/pdsljp/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
+  <arg name="vscan_calib" default="~/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
 
   <!-- nmea2tfpose -->
   <!-- node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/ -->

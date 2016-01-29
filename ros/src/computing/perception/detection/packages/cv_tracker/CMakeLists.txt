@@ -13,6 +13,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   libdpm_ttic
   fusion
   kf
+  tf
 )
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
@@ -124,9 +125,6 @@ SET_TARGET_PROPERTIES(dpm_ocv
 )
 ENDIF()
 
-ADD_DEPENDENCIES(dpm_ocv
-  dpm_ttic_generate_messages_cpp
-)
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
@@ -157,11 +155,6 @@ TARGET_LINK_LIBRARIES(kf_track
   kf
 )
 
-ADD_DEPENDENCIES(kf_track
-  kf_track_generate_messages_cpp
-  libdpm_ocv_generate_messages_cpp
-)
-
 ## obj_reproj ##
 ADD_EXECUTABLE(obj_reproj
   nodes/obj_reproj/obj_reproj.cpp
@@ -173,7 +166,7 @@ TARGET_LINK_LIBRARIES(obj_reproj
 )
 
 ADD_DEPENDENCIES(obj_reproj
-  obj_reproj_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
 )
 
 ## klt_tracker ##
@@ -200,7 +193,6 @@ TARGET_LINK_LIBRARIES(klt_track
 )
 
 ADD_DEPENDENCIES(klt_track
-  klt_track_generate_messages_cpp
   libdpm_ocv_generate_messages_cpp
 )
 

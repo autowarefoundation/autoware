@@ -1,5 +1,7 @@
 #include "calibrationtoolkit.h"
 #include "calibrationtoolkit_moc.cpp"
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
 
 
 CalibrationToolkitBase::CalibrationToolkitBase(QWidget * parent)
@@ -496,25 +498,8 @@ bool CalibrateCameraChessboardROS::refreshImage()
     imagesize.height=msg->height;
     imagesize.width=msg->width;
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
-    void * data=(void *)(msg->data.data());
-    if(QString::fromStdString(msg->encoding)=="rgb8")
-    {
-        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC3,data);
-        cv::cvtColor(tmpimage,calibimage,CV_BGR2RGB);
-    }
-    else if(QString::fromStdString(msg->encoding)=="bgr8")
-    {
-        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC3,data);
-        calibimage=tmpimage.clone();
-    }
-    else if(QString::fromStdString(msg->encoding)=="mono8")
-    {
-        calibimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
-    }
-    else
-    {
-        return 0;
-    }
+    cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    calibimage = cv_image->image.clone();
     return CalibrateCameraBase::refreshImage();
 }
 
@@ -1166,25 +1151,8 @@ bool CalibrateCameraVelodyneChessboardROS::refreshImage()
     imagesize.height=msg->height;
     imagesize.width=msg->width;
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
-    void * data=(void *)(msg->data.data());
-    if(QString::fromStdString(msg->encoding)=="rgb8")
-    {
-        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC3,data);
-        cv::cvtColor(tmpimage,calibimage,CV_BGR2RGB);
-    }
-    else if(QString::fromStdString(msg->encoding)=="bgr8")
-    {
-        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC3,data);
-        calibimage=tmpimage.clone();
-    }
-    else if(QString::fromStdString(msg->encoding)=="mono8")
-    {
-        calibimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
-    }
-    else
-    {
-        return 0;
-    }
+    cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    calibimage = cv_image->image.clone();
     return CalibrateCameraBase::refreshImage();
 }
 
@@ -1662,25 +1630,8 @@ bool CalibrateCameraLidarChessboardROS::refreshImage()
     imagesize.height=msg->height;
     imagesize.width=msg->width;
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
-    void * data=(void *)(msg->data.data());
-    if(QString::fromStdString(msg->encoding)=="rgb8")
-    {
-        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC3,data);
-        cv::cvtColor(tmpimage,calibimage,CV_BGR2RGB);
-    }
-    else if(QString::fromStdString(msg->encoding)=="bgr8")
-    {
-        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC3,data);
-        calibimage=tmpimage.clone();
-    }
-    else if(QString::fromStdString(msg->encoding)=="mono8")
-    {
-        calibimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
-    }
-    else
-    {
-        return 0;
-    }
+    cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    calibimage = cv_image->image.clone();
     return CalibrateCameraBase::refreshImage();
 }
 

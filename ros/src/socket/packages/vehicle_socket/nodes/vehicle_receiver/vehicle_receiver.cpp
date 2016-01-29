@@ -30,6 +30,7 @@
 
 #include <ros/ros.h>
 #include <vehicle_socket/CanInfo.h>
+#include <tablet_socket/mode_info.h>
 
 #include <iostream>
 #include <string>
@@ -44,9 +45,17 @@
 #include <unistd.h>
 #include <pthread.h>
 
-static constexpr int CAN_DATA_NUM = 52;
+#define CAN_KEY_MODE	(0)
+#define CAN_KEY_TIME	(1)
+#define CAN_KEY_VELOC	(2)
+#define CAN_KEY_ANGLE	(3)
+#define CAN_KEY_TORQUE	(4)
+#define CAN_KEY_ACCEL	(5)
+#define CAN_KEY_BRAKE	(6)
+#define CAN_KEY_SHIFT	(7)
 
-static ros::Publisher pub;
+static ros::Publisher can_pub;
+static ros::Publisher mode_pub;
 static int mode;
 
 static bool parseCanValue(const std::string& can_data, vehicle_socket::CanInfo& msg)
@@ -59,62 +68,37 @@ static bool parseCanValue(const std::string& can_data, vehicle_socket::CanInfo& 
     columns.push_back(column);
   }
 
-  if(columns.size() != (CAN_DATA_NUM + 1))
-    return false;
-
-  msg.tm = columns[0].substr(1, columns[0].length() - 2);
-  msg.devmode = std::stoi(columns[1]);
-  msg.drvcontmode = std::stoi(columns[2]);
-  msg.drvoverridemode = std::stoi(columns[3]);
-  msg.drvservo = std::stoi(columns[4]);
-  msg.drivepedal = std::stoi(columns[5]);
-  msg.targetpedalstr = std::stoi(columns[6]);
-  msg.inputpedalstr = std::stoi(columns[7]);
-  msg.targetveloc = std::stod(columns[8]);
-  msg.speed = std::stod(columns[9]);
-  msg.driveshift = std::stoi(columns[10]);
-  msg.targetshift = std::stoi(columns[11]);
-  msg.inputshift = std::stoi(columns[12]);
-  msg.strmode = std::stoi(columns[13]);
-  msg.strcontmode = std::stoi(columns[14]);
-  msg.stroverridemode = std::stoi(columns[15]);
-  msg.strservo = std::stoi(columns[16]);
-  msg.targettorque = std::stoi(columns[17]);
-  msg.torque = std::stoi(columns[18]);
-  msg.angle = std::stod(columns[19]);
-  msg.targetangle = std::stod(columns[20]);
-  msg.bbrakepress = std::stoi(columns[21]);
-  msg.brakepedal = std::stoi(columns[22]);
-  msg.brtargetpedalstr = std::stoi(columns[23]);
-  msg.brinputpedalstr = std::stoi(columns[24]);
-  msg.battery = std::stod(columns[25]);
-  msg.voltage = std::stoi(columns[26]);
-  msg.anp = std::stod(columns[27]);
-  msg.battmaxtemparature = std::stoi(columns[28]);
-  msg.battmintemparature = std::stoi(columns[29]);
-  msg.maxchgcurrent = std::stod(columns[30]);
-  msg.maxdischgcurrent = std::stod(columns[31]);
-  msg.sideacc = std::stod(columns[32]);
-  msg.accellfromp = std::stod(columns[33]);
-  msg.anglefromp = std::stod(columns[34]);
-  msg.brakepedalfromp = std::stod(columns[35]);
-  msg.speedfr = std::stod(columns[36]);
-  msg.speedfl = std::stod(columns[37]);
-  msg.speedrr = std::stod(columns[38]);
-  msg.speedrl = std::stod(columns[39]);
-  msg.velocfromp2 = std::stod(columns[40]);
-  msg.drvmode = std::stoi(columns[41]);
-  msg.devpedalstrfromp = std::stoi(columns[42]);
-  msg.rpm = std::stoi(columns[43]);
-  msg.velocflfromp = std::stod(columns[44]);
-  msg.ev_mode = std::stoi(columns[45]);
-  msg.temp = std::stoi(columns[46]);
-  msg.shiftfrmprius = std::stoi(columns[47]);
-  msg.light = std::stoi(columns[48]);
-  msg.gaslevel = std::stoi(columns[49]);
-  msg.door = std::stoi(columns[50]);
-  msg.cluise = std::stoi(columns[51]);
-  mode = std::stoi(columns[52]);
+  for (std::size_t i = 0; i < columns.size(); i += 2) {
+    int key = std::stoi(columns[i]);
+    switch (key) {
+    case CAN_KEY_MODE:
+      mode = std::stoi(columns[i+1]);
+      break;
+    case CAN_KEY_TIME:
+      msg.tm = columns[i+1].substr(1, columns[i+1].length() - 2); // skip '
+      break;
+    case CAN_KEY_VELOC:
+      msg.speed = std::stod(columns[i+1]);
+      break;
+    case CAN_KEY_ANGLE:
+      msg.angle = std::stod(columns[i+1]);
+      break;
+    case CAN_KEY_TORQUE:
+      msg.torque = std::stoi(columns[i+1]);
+      break;
+    case CAN_KEY_ACCEL:
+      msg.drivepedal = std::stoi(columns[i+1]);
+      break;
+    case CAN_KEY_BRAKE:
+      msg.brakepedal = std::stoi(columns[i+1]);
+      break;
+    case CAN_KEY_SHIFT:
+      msg.driveshift = std::stoi(columns[i+1]);
+      break;
+    default:
+      std::cout << "Warning: unknown key : " << key << std::endl;
+    }
+  }
 
   return true;
 }
@@ -157,14 +141,20 @@ static void* getCanValue(void *arg)
   if(can_data.empty())
     return nullptr;
 
-  vehicle_socket::CanInfo msg;
-  bool ret = parseCanValue(can_data, msg);
+  vehicle_socket::CanInfo can_msg;
+  bool ret = parseCanValue(can_data, can_msg);
   if(!ret)
     return nullptr;
 
-  msg.header.frame_id = "/can";
-  msg.header.stamp = ros::Time::now();
-  pub.publish(msg);
+  can_msg.header.frame_id = "/can";
+  can_msg.header.stamp = ros::Time::now();
+  can_pub.publish(can_msg);
+
+  tablet_socket::mode_info mode_msg;
+  mode_msg.header.frame_id = "/mode";
+  mode_msg.header.stamp = ros::Time::now();
+  mode_msg.mode = mode;
+  mode_pub.publish(mode_msg);
 
   return nullptr;
 }
@@ -238,7 +228,8 @@ int main(int argc, char **argv)
 
   std::cout << "vehicle receiver" << std::endl;
 
-  pub = nh.advertise<vehicle_socket::CanInfo>("can_info", 100);
+  can_pub = nh.advertise<vehicle_socket::CanInfo>("can_info", 100);
+  mode_pub = nh.advertise<tablet_socket::mode_info>("mode_info", 100);
 
   pthread_t th;
   int ret = pthread_create(&th, nullptr, receiverCaller, nullptr);

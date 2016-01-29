@@ -55,7 +55,6 @@ import syslog
 import rtmgr
 import rospy
 import std_msgs.msg
-import ctypes
 from std_msgs.msg import Bool
 from decimal import Decimal
 from runtime_manager.msg import ConfigRcnn
@@ -70,6 +69,7 @@ from runtime_manager.msg import ConfigVelocitySet
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
+from runtime_manager.msg import ConfigLaneSelect
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
 from tablet_socket.msg import mode_cmd
@@ -87,11 +87,10 @@ from runtime_manager.msg import lamp_cmd
 from runtime_manager.msg import traffic_light
 from runtime_manager.msg import adjust_xy
 
-libc = ctypes.CDLL("libc.so.6")
-SCHED_OTHER = ctypes.c_int(0)
-SCHED_FIFO = ctypes.c_int(1)
-SCHED_RR = ctypes.c_int(2)
-
+SCHED_OTHER = 0
+SCHED_FIFO = 1
+SCHED_RR = 2
+PROC_MANAGER_SOCK="/tmp/autoware_proc_manager"
 
 class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
@@ -99,6 +98,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.all_procs = []
 		self.all_procs_nodes = {}
 		self.all_cmd_dics = []
+		self.stop_dic = {}
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
 		self.selector = {}
@@ -324,8 +324,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.rosbag_info_hook( tc.GetValue() )
 
 
-		vp = self.obj_to_varpanel(btn, 'sim_time')
-		self.checkbox_sim_time = vp.obj
+		#vp = self.obj_to_varpanel(btn, 'sim_time')
+		#self.checkbox_sim_time = vp.obj
 
 		#try:
 		#	cmd = ['rosparam', 'get', '/use_sim_time']
@@ -492,6 +492,8 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.close()
 
+		shutdown_proc_manager()
+
 		shutdown_sh = self.get_autoware_dir() + '/ros/shutdown'
 		if os.path.exists(shutdown_sh):
 			os.system(shutdown_sh)
@@ -510,6 +512,10 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub.publish(data.data)
 		r.sleep()
 
+	def try_setup_obj_stop(self, obj, dic):
+		if 'stop' in dic:
+			self.stop_dic[ obj ] = dic.get('stop')
+
 	def setup_buttons(self, d, run_dic):
 		for (k,d2) in d.items():
 			pfs = [ 'button_', 'button_launch_', 'checkbox_' ]
@@ -524,6 +530,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
+			self.try_setup_obj_stop(obj, d2);
 			if 'param' in d2:
 				pdic = self.load_dic_pdic_setup(k, d2)
 				prm = self.get_param(d2.get('param'))
@@ -834,10 +841,11 @@ class MyFrame(rtmgr.MyFrame):
 
 	def param_value_get(self, pdic, prm, name, def_ret=None):
 		def_ret = self.param_default_value_get(prm, name, def_ret)
-		return pdic.get(name, def_ret)
+		return pdic.get(name, def_ret) if pdic else def_ret
 
 	def param_default_value_get(self, prm, name, def_ret=None):
-		return next( (var.get('v') for var in prm.get('vars') if var.get('name') == name ), def_ret)
+		return next( (var.get('v') for var in prm.get('vars') if var.get('name') == name ), def_ret) \
+			if prm else def_ret
 
 	def update_depend_enable(self, pdic, gdic, prm):
 		for var in prm.get('vars', []):
@@ -1011,6 +1019,7 @@ class MyFrame(rtmgr.MyFrame):
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
 				run_dic[obj] = (dic['run'], None)
+			self.try_setup_obj_stop(obj, dic);
 			if 'param' in dic:
 				obj = self.add_config_link(dic, panel, obj)
 		if sizer:
@@ -1522,6 +1531,9 @@ class MyFrame(rtmgr.MyFrame):
 	def get_param(self, prm_name):
 		return next( (prm for prm in self.params if prm['name'] == prm_name), None)
 
+	def get_var(self, prm, var_name, def_ret=None):
+		return next( (var for var in prm.get('vars') if var.get('name') == var_name), def_ret)
+
 	def obj_to_cmd_dic(self, obj):
 		return next( (cmd_dic for cmd_dic in self.all_cmd_dics if obj in cmd_dic), None)
 
@@ -1618,13 +1630,18 @@ class MyFrame(rtmgr.MyFrame):
 		stop = self.button_stop_rosbag_play
 		pause = self.button_pause_rosbag_play
 
+		(_, _, prm) = self.obj_to_pdic_gdic_prm(play)
+		var = self.get_var(prm, 'sim_time', {})
+
 		if obj == play:
+			var['v'] = True
 			self.OnLaunchKill_obj(play)
 			set_val(stop, False)
 			set_val(pause, False)
 		elif obj == stop:
 			set_val(play, False)
 			set_val(pause, False)
+			var['v'] = False
 			self.OnLaunchKill_obj(play)
 		elif obj == pause:
 			(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(play)
@@ -1762,28 +1779,31 @@ class MyFrame(rtmgr.MyFrame):
 
 				pdic = self.load_dic_pdic_setup(name, items)
 				pnl = wx.Panel(tree, wx.ID_ANY)
-				lkc_sys = self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys')
-				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc_sys, wx.StaticText(pnl, wx.ID_ANY, ']') ]
+				add_objs = []
+				self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys', add_objs)
 				gdic = self.gdic_get_1st(items)
-				if 'param' in items and 'no_link' not in gdic.get('flags', []):
-					lkc = self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'))
-					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
-					add_objs += [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc, wx.StaticText(pnl, wx.ID_ANY, ']') ]
+				if 'param' in items:
+					self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'), add_objs)
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
+			self.try_setup_obj_stop(item, items);
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
 		return tree
 
-	def new_link(self, item, name, pdic, gdic, pnl, link_str, prm_name):
-		lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
-		fix_link_color(lkc)
-		self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
+	def new_link(self, item, name, pdic, gdic, pnl, link_str, prm_name, add_objs):
+		lkc = None
+		if 'no_link' not in gdic.get('flags', []):
+			lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
+			fix_link_color(lkc)
+			self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
+			if len(add_objs) > 0:
+				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
+			add_objs += [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc, wx.StaticText(pnl, wx.ID_ANY, ']') ]
 		prm = self.get_param(prm_name)
-		self.add_cfg_info(lkc, item, name, pdic, gdic, False, prm)
-		return lkc
+		self.add_cfg_info(lkc if lkc else item, item, name, pdic, gdic, False, prm)
 
 	def load_dic_pdic_setup(self, name, dic):
 		name = dic.get('share_val', dic.get('name', name))
@@ -1892,6 +1912,10 @@ class MyFrame(rtmgr.MyFrame):
 				self.all_procs.remove(proc)
 				self.all_procs_nodes.pop(proc, None)
 			proc = None
+
+			stop_cmd = self.stop_dic.get(obj)
+			if stop_cmd:
+				subprocess.call( shlex.split(stop_cmd) )
 		return proc
 
 	def is_boot(self, obj):
@@ -2097,6 +2121,8 @@ class ParamPanel(wx.Panel):
 			if name not in self.gdic:
 				self.gdic[ name ] = {}
 			gdic_v = self.gdic.get(name)
+
+			bak_stk_push(gdic_v, 'func')
 			if gdic_v.get('func'):
 				continue
 
@@ -2177,7 +2203,7 @@ class ParamPanel(wx.Panel):
 			name = var.get('name')
 			gdic_v = self.gdic.get(name, {})
 			if 'func' in gdic_v:
-				del gdic_v['func']
+				bak_stk_pop(gdic_v, 'func')
 
 	def in_msg(self, var):
 		if 'topic' not in self.prm or 'msg' not in self.prm:
@@ -2823,6 +2849,7 @@ def load_yaml(filename, def_ret=None):
 
 def terminate_children(proc, sigint=False):
 	for child in psutil.Process(proc.pid).get_children():
+		terminate_children(child, sigint)
 		terminate(child, sigint)
 
 def terminate(proc, sigint=False):
@@ -2949,6 +2976,25 @@ def dic_list_pop(dic, key):
 def dic_list_get(dic, key, def_ret=None):
 	return dic.get(key, [def_ret])[-1]
 
+def bak_stk_push(dic, key):
+	if key in dic:
+		k = key + '_bak_str'
+		if k not in dic:
+			dic[k] = []
+		dic[k].append( dic.get(key) )
+
+def bak_stk_pop(dic, key):
+	k = key + '_bak_str'
+	stk = dic.get(k, [])
+	if len(stk) > 0:
+		dic[key] = stk.pop()
+	else:
+		del dic[key]
+
+def bak_stk_set(dic, key, v):
+	bak_str_push(dic, key)
+	dic[key] = v
+
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret
@@ -2977,24 +3023,50 @@ def prn_dict(dic):
 	for (k,v) in dic.items():
 		print (k, ':', v)
 
-def set_process_nice(proc, value):
+def send_to_proc_manager(order):
+	sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+
 	try:
-		proc.set_nice(value)
-	except Exception:
-		return False
-	return True
+		sock.connect(PROC_MANAGER_SOCK)
+	except socket.error:
+		print('Failed connect to {}'.format(PROC_MANAGER_SOCK))
+		return -1
+
+	sock.send(yaml.dump(order))
+	ret = sock.recv(1024)
+	sock.close()
+	return int(ret) == 0
+
+def set_process_nice(proc, value):
+	order = {
+		"name": "nice",
+		"pid": proc.pid,
+		"nice": value
+	}
+	return send_to_proc_manager(order)
 
 def set_process_cpu_affinity(proc, cpus):
-	try:
-		proc.set_cpu_affinity(cpus)
-	except Exception:
-		return False
-	return True
+	order = {
+		"name": "cpu_affinity",
+		"pid": proc.pid,
+		"cpus": cpus,
+	}
+	return send_to_proc_manager(order)
+
+def shutdown_proc_manager():
+	order = {
+		"name": "shutdown",
+	}
+	return send_to_proc_manager(order)
 
 def set_scheduling_policy(proc, policy, priority):
-	param = ctypes.c_int(priority)
-	err = libc.sched_setscheduler(proc.pid, policy, ctypes.byref(param))
-	return err == 0
+	order = {
+		"name": "scheduling_policy",
+		"pid": proc.pid,
+		"policy": policy,
+		"priority": priority,
+	}
+	return send_to_proc_manager(order)
 
 if __name__ == "__main__":
 	path = rtmgr_src_dir() + 'btnrc'

@@ -170,15 +170,13 @@ class RosTrackerApp
 public:
 	void image_callback(const sensor_msgs::Image& image_source)
 	{
-		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
+		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 		cv::Mat image_track = cv_image->image;
 		cv::LatentSvmDetector::ObjectDetection empty_detection(cv::Rect(0,0,0,0),0,0);
 		unsigned int i;
 
 		std::vector<bool> tracker_matched(obj_trackers_.size(), false);
 		std::vector<bool> object_matched(obj_detections_.size(), false);
-
-		cv::cvtColor(image_track, image_track, cv::COLOR_RGB2BGR);
 
 		//check object detections vs current trackers
 		for (i =0; i< obj_detections_.size(); i++)

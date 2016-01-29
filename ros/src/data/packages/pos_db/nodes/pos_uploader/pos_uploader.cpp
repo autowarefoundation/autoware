@@ -89,7 +89,7 @@ static std::string getTimeStamp(time_t sec, time_t nsec)
   int msec = static_cast<int>(nsec / (1000 * 1000));
 
   tm *t = gmtime(&sec);
-  sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%d",
+  sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
           t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
           t->tm_hour, t->tm_min, t->tm_sec, msec);
 

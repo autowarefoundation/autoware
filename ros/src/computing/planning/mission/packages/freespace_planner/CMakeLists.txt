@@ -17,7 +17,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
   #INCLUDE_DIRS include
-  LIBRARIES vmap_utility
   CATKIN_DEPENDS tablet_socket waypoint_follower runtime_manager map_file
   DEPENDS gnss
 )

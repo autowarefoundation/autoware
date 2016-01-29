@@ -46,8 +46,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#define IMAGE_WIDTH 800
-#define IMAGE_HEIGHT 600
 #define NO_DATA 0
 
 #if _DEBUG
@@ -56,8 +54,8 @@
 #endif
 
 struct Scan_image{
-	float distance[IMAGE_WIDTH][IMAGE_HEIGHT];
-	float intensity[IMAGE_WIDTH][IMAGE_HEIGHT];
+	std::vector<std::vector<float>> distance;
+	std::vector<std::vector<float>> intensity;
 	int max_y;
 	int min_y;
 };

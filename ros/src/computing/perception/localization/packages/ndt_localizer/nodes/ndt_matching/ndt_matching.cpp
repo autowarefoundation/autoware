@@ -162,8 +162,8 @@ static ndt_localizer::ndt_stat ndt_stat_msg;
 
 static double predict_pose_error = 0.0;
 
-static double _tf_x, _tf_y, _tf_z, _tf_yaw, _tf_pitch, _tf_roll;
-static Eigen::Matrix4f base_link_to_localizer_transform;
+static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
+static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -175,40 +175,46 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 
     _use_gnss = input->init_pos_gnss;
 
-    ndt_res = input->resolution;
-    step_size = input->step_size;
-    trans_eps = input->trans_esp;
-
     voxel_leaf_size = input->leaf_size;
 
     // Setting parameters
-    ndt.setMaximumIterations(iter);
-    ndt.setResolution(ndt_res);
-    ndt.setStepSize(step_size);
-    ndt.setTransformationEpsilon(trans_eps);
-
-    /*
-    std::cout << "--- Parameters ---" << std::endl;
-    std::cout << "ndt_res: " << ndt_res << std::endl;
-    std::cout << "step_size: " << step_size << std::endl;
-    std::cout << "trans_eps: " << trans_eps << std::endl;
-    std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
-    */
+    if(input->resolution != ndt_res){
+    	ndt_res = input->resolution;
+        ndt.setResolution(ndt_res);
+    }
+    if(input->step_size != step_size){
+        step_size = input->step_size;
+        ndt.setStepSize(step_size);
+    }
+    if(input->trans_esp != trans_eps){
+        trans_eps = input->trans_esp;
+    	ndt.setTransformationEpsilon(trans_eps);
+    }
 
     if (_use_gnss == 0 && init_pos_set == 0) {
+
         initial_pose.x = input->x;
         initial_pose.y = input->y;
         initial_pose.z = input->z;
         initial_pose.roll = input->roll;
         initial_pose.pitch = input->pitch;
         initial_pose.yaw = input->yaw;
+
         // Setting position and posture for the first time.
+        localizer_pose.x = initial_pose.x;
+        localizer_pose.y = initial_pose.y;
+        localizer_pose.z = initial_pose.z;
+        localizer_pose.roll = initial_pose.roll;
+        localizer_pose.pitch = initial_pose.pitch;
+        localizer_pose.yaw = initial_pose.yaw;
+
         previous_pose.x = initial_pose.x;
         previous_pose.y = initial_pose.y;
         previous_pose.z = initial_pose.z;
         previous_pose.roll = initial_pose.roll;
         previous_pose.pitch = initial_pose.pitch;
         previous_pose.yaw = initial_pose.yaw;
+
         current_pose.x = initial_pose.x;
         current_pose.y = initial_pose.y;
         current_pose.z = initial_pose.z;
@@ -414,7 +420,14 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         predict_pose.roll = previous_pose.roll;
         predict_pose.pitch = previous_pose.pitch;
         predict_pose.yaw = previous_pose.yaw + offset_yaw;
-
+/*
+        predict_pose.x = localizer_pose.x + offset_x;
+        predict_pose.y = localizer_pose.y + offset_y;
+        predict_pose.z = localizer_pose.z + offset_z;
+        predict_pose.roll = localizer_pose.roll;
+        predict_pose.pitch = localizer_pose.pitch;
+        predict_pose.yaw = localizer_pose.yaw + offset_yaw;
+*/
         Eigen::AngleAxisf init_rotation_x(predict_pose.roll, Eigen::Vector3f::UnitX());
         Eigen::AngleAxisf init_rotation_y(predict_pose.pitch, Eigen::Vector3f::UnitY());
         Eigen::AngleAxisf init_rotation_z(predict_pose.yaw, Eigen::Vector3f::UnitZ());
@@ -618,10 +631,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       }
 
       pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
-      pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
       pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
-
-      pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, base_link_to_localizer_transform);
 
       Eigen::Matrix4f t(Eigen::Matrix4f::Identity()); // base_link
       Eigen::Matrix4f t2(Eigen::Matrix4f::Identity()); // localizer
@@ -629,8 +639,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       // Downsampling the velodyne scan using VoxelGrid filter
       pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
       voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-//      voxel_grid_filter.setInputCloud(scan_ptr);
-      voxel_grid_filter.setInputCloud(transformed_scan_ptr);
+      voxel_grid_filter.setInputCloud(scan_ptr);
       voxel_grid_filter.filter(*filtered_scan_ptr);
       
       // Setting point cloud to be aligned.
@@ -648,38 +657,38 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       Eigen::AngleAxisf init_rotation_x(predict_pose.roll, Eigen::Vector3f::UnitX());
       Eigen::AngleAxisf init_rotation_y(predict_pose.pitch, Eigen::Vector3f::UnitY());
       Eigen::AngleAxisf init_rotation_z(predict_pose.yaw, Eigen::Vector3f::UnitZ());
-      Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix();
+      Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x) * tf_btol;
       
       pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
       ndt.align(*output_cloud, init_guess);
       
-      t = ndt.getFinalTransformation(); // base_link
-      t2 = t * base_link_to_localizer_transform; // localizer
+      t = ndt.getFinalTransformation(); // localizer
+      t2 = t * tf_ltob; // base_link
 
       iteration = ndt.getFinalNumIteration();
       score = ndt.getFitnessScore();
 
-      tf::Matrix3x3 tf3d;
-      tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
+      tf::Matrix3x3 mat_l; // localizer
+      mat_l.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
     		  static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
 			  static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
-      
-      // Update ndt_pose
-      ndt_pose.x = t(0, 3);
-      ndt_pose.y = t(1, 3);
-      ndt_pose.z = t(2, 3);
-      tf3d.getRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw, 1);
 
-      tf::Matrix3x3 tf3d2;
-      tf3d2.setValue(static_cast<double>(t2(0, 0)), static_cast<double>(t2(0, 1)), static_cast<double>(t2(0, 2)),
+      // Update ndt_pose
+      localizer_pose.x = t(0, 3);
+      localizer_pose.y = t(1, 3);
+      localizer_pose.z = t(2, 3);
+      mat_l.getRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw, 1);
+      
+      tf::Matrix3x3 mat_b; // base_link
+      mat_b.setValue(static_cast<double>(t2(0, 0)), static_cast<double>(t2(0, 1)), static_cast<double>(t2(0, 2)),
     		  static_cast<double>(t2(1, 0)), static_cast<double>(t2(1, 1)), static_cast<double>(t2(1, 2)),
 			  static_cast<double>(t2(2, 0)), static_cast<double>(t2(2, 1)), static_cast<double>(t2(2, 2)));
 
       // Update ndt_pose
-      localizer_pose.x = t2(0, 3);
-      localizer_pose.y = t2(1, 3);
-      localizer_pose.z = t2(2, 3);
-      tf3d2.getRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw, 1);
+      ndt_pose.x = t2(0, 3);
+      ndt_pose.y = t2(1, 3);
+      ndt_pose.z = t2(2, 3);
+      mat_b.getRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw, 1);
 
       // Compute the velocity
       scan_duration = current_scan_time - previous_scan_time;
@@ -922,23 +931,30 @@ int main(int argc, char **argv)
     private_nh.getParam("use_gnss", _use_gnss);
     private_nh.getParam("queue_size", _queue_size);
 
-    // TF listener
-    tf::TransformListener listener;
-    tf::StampedTransform transform;
-    try{
-      ros::Time now = ros::Time(0);
-      listener.waitForTransform("/base_link", "/velodyne", now, ros::Duration(10.0));
-      listener.lookupTransform("/base_link", "/velodyne", now, transform);
+    if(nh.getParam("tf_x", _tf_x) == false){
+    	std::cout << "tf_x is not set." << std::endl;
+    	return 1;
     }
-    catch(tf::TransformException &ex){
-      ROS_ERROR("%s", ex.what());
+    if(nh.getParam("tf_y", _tf_y) == false){
+    	std::cout << "tf_y is not set." << std::endl;
+    	return 1;
     }
-
-    tf::Matrix3x3 m(transform.getRotation());
-    _tf_x = transform.getOrigin().x();
-    _tf_y = transform.getOrigin().y();
-    _tf_z = transform.getOrigin().z();
-    m.getRPY(_tf_roll, _tf_pitch, _tf_yaw);
+    if(nh.getParam("tf_z", _tf_z) == false){
+    	std::cout << "tf_z is not set." << std::endl;
+    	return 1;
+    }
+    if(nh.getParam("tf_roll", _tf_roll) == false){
+    	std::cout << "tf_roll is not set." << std::endl;
+    	return 1;
+    }
+    if(nh.getParam("tf_pitch", _tf_pitch) == false){
+    	std::cout << "tf_pitch is not set." << std::endl;
+    	return 1;
+    }
+    if(nh.getParam("tf_yaw", _tf_yaw) == false){
+    	std::cout << "tf_yaw is not set." << std::endl;
+    	return 1;
+    }
 
     std::cout << "_tf_x: " << _tf_x << std::endl;
     std::cout << "_tf_y: " << _tf_y << std::endl;
@@ -947,11 +963,17 @@ int main(int argc, char **argv)
     std::cout << "_tf_pitch: " << _tf_pitch << std::endl;
     std::cout << "_tf_yaw: " << _tf_yaw << std::endl;
 
-    Eigen::Translation3f base_link_to_localizer_translation(_tf_x, _tf_y, _tf_z);
-    Eigen::AngleAxisf base_link_to_localizer_rotation_x(_tf_roll, Eigen::Vector3f::UnitX());
-    Eigen::AngleAxisf base_link_to_localizer_rotation_y(_tf_pitch, Eigen::Vector3f::UnitY());
-    Eigen::AngleAxisf base_link_to_localizer_rotation_z(_tf_yaw, Eigen::Vector3f::UnitZ());
-    base_link_to_localizer_transform = (base_link_to_localizer_translation * base_link_to_localizer_rotation_z * base_link_to_localizer_rotation_y * base_link_to_localizer_rotation_x).matrix();
+    Eigen::Translation3f tl_btol(_tf_x, _tf_y, _tf_z); // tl: translation
+    Eigen::AngleAxisf rot_x_btol(_tf_roll, Eigen::Vector3f::UnitX()); //rot: rotation
+    Eigen::AngleAxisf rot_y_btol(_tf_pitch, Eigen::Vector3f::UnitY());
+    Eigen::AngleAxisf rot_z_btol(_tf_yaw, Eigen::Vector3f::UnitZ());
+    tf_btol = (tl_btol * rot_z_btol * rot_y_btol * rot_x_btol).matrix();
+
+    Eigen::Translation3f tl_ltob((-1.0)*_tf_x, (-1.0)*_tf_y, (-1.0)*_tf_z); // tl: translation
+    Eigen::AngleAxisf rot_x_ltob((-1.0)*_tf_roll, Eigen::Vector3f::UnitX()); //rot: rotation
+    Eigen::AngleAxisf rot_y_ltob((-1.0)*_tf_pitch, Eigen::Vector3f::UnitY());
+    Eigen::AngleAxisf rot_z_ltob((-1.0)*_tf_yaw, Eigen::Vector3f::UnitZ());
+    tf_ltob = (tl_ltob * rot_z_ltob * rot_y_ltob * rot_x_ltob).matrix();
 
     // Updated in initialpose_callback or gnss_callback
     initial_pose.x = 0.0;

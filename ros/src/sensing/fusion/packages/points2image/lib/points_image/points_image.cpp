@@ -58,6 +58,9 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	msg.max_y = -1;
 	msg.min_y = h;
 
+	msg.image_height = imageSize.height;
+	msg.image_width = imageSize.width;
+
 	for (uint32_t y = 0; y < pointcloud2->height; ++y) {
 		for (uint32_t x = 0; x < pointcloud2->width; ++x) {
 			float* fp = (float *)(cp + (x + y*pointcloud2->width) * pointcloud2->point_step);

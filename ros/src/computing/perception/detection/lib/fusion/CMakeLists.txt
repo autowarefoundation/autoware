@@ -25,7 +25,7 @@ target_link_libraries(fusion
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
-add_dependencies(fusion point2image_generate_messages_cpp cv_tracker_generate_messages_cpp)
+add_dependencies(fusion points2image_generate_messages_cpp cv_tracker_generate_messages_cpp)
 
 # Mark cpp header files for installation
 install(DIRECTORY include

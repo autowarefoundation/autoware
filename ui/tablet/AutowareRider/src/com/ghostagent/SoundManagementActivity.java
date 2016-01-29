@@ -382,6 +382,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		static final int MISS_BEACON_LIMIT = 10;
 
+		static final int CAN_SHIFT_BRAKE = 0x00;
+		static final int CAN_SHIFT_DRIVE = 0x10;
+		static final int CAN_SHIFT_NEUTRAL = 0x20;
+		static final int CAN_SHIFT_REVERSE = 0x40;
+
 		synchronized int[] recv(int response) {
 			int[] data = new int[2];
 
@@ -625,6 +630,13 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	private boolean bUsesGeomagnetic = false;
 	private boolean bExistsGravity = false;
 	private boolean bExistsGeomagnetic = false;
+	/**
+	 * meter color
+	 */
+	private static final int COLOR_DARK_RED = 0xff5b1100;
+	private static final int COLOR_RED = 0xffb62200;
+	private static final int COLOR_BLUE = 0xff0000fb;
+	private static final int COLOR_YELLOW = 0xfffffb00;
 
 	private String getMacAddress() {
 		WifiManager wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
@@ -635,10 +647,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	private boolean startServerConnecting() {
 		bIsServerConnecting = true;
 
-		// red
-		drawLeftView.setColor(0xffb62200);
-		drawRightView.setColor(0xffb62200);
-		drawCenterView.setColor(0xffb62200);
+		drawLeftView.setColor(COLOR_RED);
+		drawRightView.setColor(COLOR_RED);
+		drawCenterView.setColor(COLOR_RED);
 
 		if (commandClient.send(CommandClient.GEAR, gearButton.getMode()) < 0)
 			return false;
@@ -653,10 +664,9 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	private void stopServerConnecting() {
-		// dark red
-		drawLeftView.setColor(0xff5b1100);
-		drawRightView.setColor(0xff5b1100);
-		drawCenterView.setColor(0xff5b1100);
+		drawLeftView.setColor(COLOR_DARK_RED);
+		drawRightView.setColor(COLOR_DARK_RED);
+		drawCenterView.setColor(COLOR_DARK_RED);
 
 		bIsServerConnecting = false;
 
@@ -674,8 +684,11 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 		// center expression
 		drawLeftView = (DrawLeftView) findViewById(R.id.leftView);
+		drawLeftView.setColor(COLOR_DARK_RED);
 		drawRightView = (DrawRightView) findViewById(R.id.rightView);
+		drawRightView.setColor(COLOR_DARK_RED);
 		drawCenterView = (DrawCenterView) findViewById(R.id.centerView);
+		drawCenterView.setColor(COLOR_DARK_RED);
 
 		// set buttons
 		gearButton = new GearButton(this);
@@ -1195,40 +1208,86 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 						missBeacon = 0;
 						break;
 					case InformationClient.ERROR:
+						if (data[1] == 0) {
+							drawLeftView.setColor(COLOR_RED);
+							drawRightView.setColor(COLOR_RED);
+							drawCenterView.setColor(COLOR_RED);
+						} else {
+							drawLeftView.setColor(COLOR_YELLOW);
+							drawRightView.setColor(COLOR_YELLOW);
+							drawCenterView.setColor(COLOR_YELLOW);
+						}
+						break;
+					case InformationClient.CAN:
 						switch (data[1]) {
-						case 0:
-							// red
-							drawLeftView.setColor(0xffb62200);
-							drawRightView.setColor(0xffb62200);
-							drawCenterView.setColor(0xffb62200);
+						case InformationClient.CAN_SHIFT_BRAKE:
+							if (gearButton.getMode() != GearButton.BRAKE) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.BRAKE);
+									}
+								});
+							}
 							break;
-						case 1:
-							// yellow
-							drawLeftView.setColor(0xfffffb00);
-							drawRightView.setColor(0xfffffb00);
-							drawCenterView.setColor(0xfffffb00);
+						case InformationClient.CAN_SHIFT_DRIVE:
+							if (gearButton.getMode() != GearButton.DRIVE) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.DRIVE);
+									}
+								});
+							}
+							break;
+						case InformationClient.CAN_SHIFT_NEUTRAL:
+							if (gearButton.getMode() != GearButton.NEUTRAL) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.NEUTRAL);
+									}
+								});
+							}
+							break;
+						case InformationClient.CAN_SHIFT_REVERSE:
+							if (gearButton.getMode() != GearButton.REVERSE) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										gearButton.updateMode(GearButton.REVERSE);
+									}
+								});
+							}
 							break;
 						}
 						break;
 					case InformationClient.MODE:
 						switch (data[1]) {
-						case 0:
-							// red
-							drawLeftView.setColor(0xffb62200);
-							drawRightView.setColor(0xffb62200);
-							drawCenterView.setColor(0xffb62200);
+						case DriveButton.NORMAL:
+							if (driveButton.getMode() != DriveButton.NORMAL) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										driveButton.updateMode(DriveButton.NORMAL);
+									}
+								});
+							}
+							drawLeftView.setColor(COLOR_RED);
+							drawRightView.setColor(COLOR_RED);
+							drawCenterView.setColor(COLOR_RED);
 							break;
-						case 1:
-							// blue
-							drawLeftView.setColor(0xff0000fb);
-							drawRightView.setColor(0xff0000fb);
-							drawCenterView.setColor(0xff0000fb);
+						case DriveButton.AUTO:
+							if (driveButton.getMode() != DriveButton.AUTO) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										driveButton.updateMode(DriveButton.AUTO);
+									}
+								});
+							}
+							drawLeftView.setColor(COLOR_BLUE);
+							drawRightView.setColor(COLOR_BLUE);
+							drawCenterView.setColor(COLOR_BLUE);
 							break;
-						case 2:
-							// yellow
-							drawLeftView.setColor(0xfffffb00);
-							drawRightView.setColor(0xfffffb00);
-							drawCenterView.setColor(0xfffffb00);
+						default:
+							drawLeftView.setColor(COLOR_YELLOW);
+							drawRightView.setColor(COLOR_YELLOW);
+							drawCenterView.setColor(COLOR_YELLOW);
 							break;
 						}
 						break;
@@ -1387,25 +1446,18 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 		int data = -1;
 
 		if (v == gearButton.drive) {
-			gearButton.updateMode(GearButton.DRIVE);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.DRIVE);
 		} else if (v == gearButton.reverse) {
-			gearButton.updateMode(GearButton.REVERSE);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.REVERSE);
 		} else if (v == gearButton.brake) {
-			gearButton.updateMode(GearButton.BRAKE);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.BRAKE);
 		} else if (v == gearButton.neutral) {
-			gearButton.updateMode(GearButton.NEUTRAL);
-			data = commandClient.send(CommandClient.GEAR, gearButton.getMode());
+			data = commandClient.send(CommandClient.GEAR, GearButton.NEUTRAL);
 		} else if (v == driveButton.auto) {
-			driveButton.updateMode(DriveButton.AUTO);
-			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, DriveButton.AUTO);
 		} else if (v == driveButton.normal) {
-			driveButton.updateMode(DriveButton.NORMAL);
-			data = commandClient.send(CommandClient.MODE, driveButton.getMode());
+			data = commandClient.send(CommandClient.MODE, DriveButton.NORMAL);
 		} else if (v == driveButton.pursuit) {
-			driveButton.updateMode(DriveButton.PURSUIT);
 			finish();
 			data = 0;
 		} else if (v == applicationButton.navigation) {

@@ -171,13 +171,12 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 {
 	_drawing = true;
 
-	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
+	const auto& encoding = sensor_msgs::image_encodings::BGR8;
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 							     encoding);
 	IplImage frame = cv_image->image;
 
 	cv::Mat matImage(cv_image->image);
-	cvtColor(matImage, matImage, CV_BGR2RGB);
 	cv::Mat imageTrack = matImage.clone();
 
 	//UNTRACKED
