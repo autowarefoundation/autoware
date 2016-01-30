@@ -626,6 +626,7 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	      scan.points.push_back(p);
 	    }
       }
+
       std_msgs::Header header;
       header.stamp.fromNSec(input->header.stamp * 1000ull);
       current_scan_time = header.stamp;
