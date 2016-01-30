@@ -601,6 +601,7 @@ static void hokuyo_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 }
 
 static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
+//static void velodyne_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
   if(_scanner == "velodyne"){
     if (map_loaded == 1 && init_pos_set == 1) {
@@ -610,15 +611,11 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
       static tf::TransformBroadcaster br;
       tf::Transform transform;
       tf::Quaternion predict_q, ndt_q, current_q, control_q, localizer_q;
-      
+
       pcl::PointCloud<pcl::PointXYZ> scan;
       pcl::PointXYZ p;
-      
-      scan.header = input->header;
-      scan.header.frame_id = "velodyne";
 
-      current_scan_time.sec = scan.header.stamp / 1000000.0;
-      current_scan_time.nsec = (scan.header.stamp - current_scan_time.sec * 1000000.0) * 1000.0;
+      scan.header = input->header;
 
       for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
             p.x = (double) item->x;
@@ -629,6 +626,14 @@ static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXY
 	      scan.points.push_back(p);
 	    }
       }
+      std_msgs::Header header;
+      header.stamp.fromNSec(input->header.stamp * 1000ull);
+      current_scan_time = header.stamp;
+
+      /*
+      current_scan_time.sec = scan.header.stamp / 1000000;
+      current_scan_time.nsec = (scan.header.stamp - current_scan_time.sec * 1000000) * 1000;
+      */
 
       pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
       pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
