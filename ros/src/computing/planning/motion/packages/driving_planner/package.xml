@@ -46,6 +46,7 @@
   <build_depend>tf</build_depend>
   <build_depend>gnss</build_depend>
   <build_depend>runtime_manager</build_depend>
+  <build_depend>vehicle_socket</build_depend>
  <!--   <build_depend>dbw_mkz_msgs</build_depend>-->
  <!--  <run_depend>dbw_mkz_msgs</run_depend>-->
   <run_depend>runtime_manager</run_depend>
@@ -54,7 +55,7 @@
   <run_depend>tf</run_depend>
   <run_depend>gnss</run_depend>
   <run_depend>waypoint_follower</run_depend>
-
+  <run_depend>vehicle_socket</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
