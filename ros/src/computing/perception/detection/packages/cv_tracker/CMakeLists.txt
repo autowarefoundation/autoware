@@ -15,6 +15,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   kf
   tf
   runtime_manager
+  calibration_camera_lidar
 )
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
@@ -44,7 +45,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager
+  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar
 )
 
 ###########
@@ -174,6 +175,7 @@ TARGET_LINK_LIBRARIES(obj_reproj
 
 ADD_DEPENDENCIES(obj_reproj
   cv_tracker_generate_messages_cpp
+  calibration_camera_lidar_generate_messages_cpp
 )
 
 ## klt_tracker ##

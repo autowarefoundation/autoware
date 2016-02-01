@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   pcl_ros
   pcl_conversions
+  calibration_camera_lidar
 )
 
 find_package(OpenCV REQUIRED)
@@ -40,7 +41,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES camera_lidar3d
-   CATKIN_DEPENDS rosinterface
+   CATKIN_DEPENDS rosinterface calibration_camera_lidar
 #  DEPENDS system_lib
 )
 
@@ -121,6 +122,7 @@ target_link_libraries(points2image
 add_dependencies(points2image
   points_image
   points2image_generate_messages_cpp
+  calibration_camera_lidar_generate_messages_cpp
 )
 
 # vscan2image
@@ -133,6 +135,7 @@ target_link_libraries(vscan2image
 add_dependencies(vscan2image
   points_image
   points2image_generate_messages_cpp
+  calibration_camera_lidar_generate_messages_cpp
 )
 
 
