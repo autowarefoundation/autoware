@@ -36,7 +36,7 @@ ENDIF()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libtraj_gen 
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket #dbw_mkz_msgs
+  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket map_file #dbw_mkz_msgs
   DEPENDS gnss
 )
 
