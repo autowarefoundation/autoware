@@ -9,9 +9,11 @@
   <build_depend>cv_tracker</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>runtime_manager</build_depend>
+  <build_depend>points2image</build_depend>
   <run_depend>runtime_manager</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
+  <run_depend>points2image</run_depend>
   <export>
   </export>
 </package>
