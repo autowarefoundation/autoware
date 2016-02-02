@@ -1158,7 +1158,7 @@ params :
       v         : 0
 
   - name  : lane_stop
-    topic : /traffic_light
+    topic : /light_color_managed
     msg   : traffic_light
     vars  :
     - name  : traffic_light
