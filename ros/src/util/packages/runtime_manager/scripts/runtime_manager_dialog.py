@@ -2522,7 +2522,7 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 		self.pdic['traffic_light'] = 1
 		self.update()
 
-	def OnLaneStop(self, event):
+	def OnTrafficLightRecognition(self, event):
 		obj = event.GetEventObject()
 		onoff = obj.GetValue()
 		print 'onoff=', onoff
