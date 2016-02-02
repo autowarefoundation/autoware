@@ -30,12 +30,15 @@
 
 #include <ros/console.h>
 
+#include <runtime_manager/ConfigLaneStop.h>
 #include <runtime_manager/traffic_light.h>
 #include <waypoint_follower/LaneArray.h>
 
 #include <lane_planner/vmap.hpp>
 
 namespace {
+
+bool config_manual_detection = true;
 
 ros::Publisher traffic_pub;
 
@@ -72,6 +75,18 @@ void select_current_lane(const runtime_manager::traffic_light& msg)
 	previous_lane = current;
 }
 
+void receive_auto_detection(const runtime_manager::traffic_light& msg)
+{
+	if (!config_manual_detection)
+		select_current_lane(msg);
+}
+
+void receive_manual_detection(const runtime_manager::traffic_light& msg)
+{
+	if (config_manual_detection)
+		select_current_lane(msg);
+}
+
 void cache_red_lane(const waypoint_follower::LaneArray& msg)
 {
 	current_red_lane = msg;
@@ -80,6 +95,11 @@ void cache_red_lane(const waypoint_follower::LaneArray& msg)
 void cache_green_lane(const waypoint_follower::LaneArray& msg)
 {
 	current_green_lane = msg;
+}
+
+void config_parameter(const runtime_manager::ConfigLaneStop& msg)
+{
+	config_manual_detection = msg.manual_detection;
 }
 
 } // namespace
@@ -94,6 +114,8 @@ int main(int argc, char **argv)
 	n.param<int>("/lane_stop/sub_light_queue_size", sub_light_queue_size, 1);
 	int sub_waypoint_queue_size;
 	n.param<int>("/lane_stop/sub_waypoint_queue_size", sub_waypoint_queue_size, 1);
+	int sub_config_queue_size;
+	n.param<int>("/lane_rule/sub_config_queue_size", sub_config_queue_size, 1);
 	int pub_waypoint_queue_size;
 	n.param<int>("/lane_stop/pub_waypoint_queue_size", pub_waypoint_queue_size, 1);
 	bool pub_waypoint_latch;
@@ -102,9 +124,12 @@ int main(int argc, char **argv)
 	traffic_pub = n.advertise<waypoint_follower::LaneArray>("/traffic_waypoints_array", pub_waypoint_queue_size,
 								pub_waypoint_latch);
 
-	ros::Subscriber light_sub = n.subscribe("/traffic_light", sub_light_queue_size, select_current_lane);
+	ros::Subscriber light_sub = n.subscribe("/light_color", sub_light_queue_size, receive_auto_detection);
+	ros::Subscriber light_managed_sub = n.subscribe("/light_color_managed", sub_light_queue_size,
+							receive_manual_detection);
 	ros::Subscriber red_sub = n.subscribe("/red_waypoints_array", sub_waypoint_queue_size, cache_red_lane);
 	ros::Subscriber green_sub = n.subscribe("/green_waypoints_array", sub_waypoint_queue_size, cache_green_lane);
+	ros::Subscriber config_sub = n.subscribe("/config/lane_stop", sub_config_queue_size, config_parameter);
 
 	ros::spin();
 
