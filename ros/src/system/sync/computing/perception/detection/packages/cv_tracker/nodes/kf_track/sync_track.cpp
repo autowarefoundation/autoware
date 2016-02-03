@@ -195,7 +195,7 @@ void* thread(void* args) {
     ros::NodeHandle nh_rcv;
     ros::CallbackQueue rcv_callbackqueue;
     nh_rcv.setCallbackQueue(&rcv_callbackqueue);
-    ros::Subscriber image_obj_tracked_sub = nh_rcv.subscribe("obj_car/image_obj_tracked", 1, image_obj_tracked_callback);
+    ros::Subscriber image_obj_tracked_sub = nh_rcv.subscribe("/image_obj_tracked", 1, image_obj_tracked_callback);
     while (nh_rcv.ok()) {
         rcv_callbackqueue.callAvailable(ros::WallDuration(3.0f));
         pthread_mutex_lock(&mutex);
@@ -228,9 +228,9 @@ int main(int argc, char **argv) {
     pthread_t th;
     pthread_create(&th, NULL, thread, (void *)NULL );
 
-    ros::Subscriber image_obj_ranged_sub = nh.subscribe("/obj_car/image_obj_ranged", 1, image_obj_ranged_callback);
+    ros::Subscriber image_obj_ranged_sub = nh.subscribe("/image_obj_ranged", 1, image_obj_ranged_callback);
     ros::Subscriber image_raw_sub = nh.subscribe("/sync_drivers/image_raw", 1, image_raw_callback);
-    image_obj_ranged__pub = nh.advertise<cv_tracker::image_obj_ranged>("/sync_tracking/obj_car/image_obj_ranged", 5);
+    image_obj_ranged__pub = nh.advertise<cv_tracker::image_obj_ranged>("/sync_tracking/image_obj_ranged", 5);
     image_raw__pub = nh.advertise<sensor_msgs::Image>("/sync_tracking/image_raw", 5);
 
     while ((!buf_flag) && ros::ok()) {

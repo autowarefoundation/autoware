@@ -195,7 +195,7 @@ void* thread(void* args) {
     ros::NodeHandle nh_rcv;
     ros::CallbackQueue rcv_callbackqueue;
     nh_rcv.setCallbackQueue(&rcv_callbackqueue);
-    ros::Subscriber image_obj_ranged_sub = nh_rcv.subscribe("obj_car/image_obj_ranged", 1, image_obj_ranged_callback);
+    ros::Subscriber image_obj_ranged_sub = nh_rcv.subscribe("/image_obj_ranged", 1, image_obj_ranged_callback);
     while (nh_rcv.ok()) {
         rcv_callbackqueue.callAvailable(ros::WallDuration(3.0f));
         pthread_mutex_lock(&mutex);
@@ -228,9 +228,9 @@ int main(int argc, char **argv) {
     pthread_t th;
     pthread_create(&th, NULL, thread, (void *)NULL );
 
-    ros::Subscriber image_obj_sub = nh.subscribe("/obj_car/image_obj", 1, image_obj_callback);
-    ros::Subscriber vscan_image_sub = nh.subscribe("vscan_image", 1, vscan_image_callback);
-    image_obj__pub = nh.advertise<cv_tracker::image_obj>("/sync_ranging/obj_car/image_obj", 5);
+    ros::Subscriber image_obj_sub = nh.subscribe("/image_obj", 1, image_obj_callback);
+    ros::Subscriber vscan_image_sub = nh.subscribe("/vscan_image", 1, vscan_image_callback);
+    image_obj__pub = nh.advertise<cv_tracker::image_obj>("/sync_ranging/image_obj", 5);
     vscan_image__pub = nh.advertise<points2image::PointsImage>("/sync_ranging/vscan_image", 5);
 
     while ((!buf_flag) && ros::ok()) {

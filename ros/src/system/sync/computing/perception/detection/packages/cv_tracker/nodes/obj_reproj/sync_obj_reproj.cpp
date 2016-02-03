@@ -196,7 +196,7 @@ void* thread(void* args)
     ros::NodeHandle nh_rcv;
     ros::CallbackQueue rcv_callbackqueue;
     nh_rcv.setCallbackQueue(&rcv_callbackqueue);
-    ros::Subscriber obj_label_sub = nh_rcv.subscribe("/obj_car/obj_label", 5, obj_label_callback);
+    ros::Subscriber obj_label_sub = nh_rcv.subscribe("/obj_label", 5, obj_label_callback);
     while (nh_rcv.ok()) {
         rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
         pthread_mutex_lock(&mutex);
@@ -228,9 +228,9 @@ int main(int argc, char **argv) {
     pthread_t th;
     pthread_create(&th, NULL, thread, (void *)NULL );
 
-    ros::Subscriber image_obj_tracked_sub = nh.subscribe("/obj_car/image_obj_tracked", 1, image_obj_tracked_callback);
+    ros::Subscriber image_obj_tracked_sub = nh.subscribe("/image_obj_tracked", 1, image_obj_tracked_callback);
     ros::Subscriber current_pose_sub = nh.subscribe("/current_pose", 1, current_pose_callback);
-    image_obj_tracked__pub = nh.advertise<cv_tracker::image_obj_tracked>("/sync_reprojection/obj_car/image_obj_tracked", 5);
+    image_obj_tracked__pub = nh.advertise<cv_tracker::image_obj_tracked>("/sync_reprojection/image_obj_tracked", 5);
     current_pose__pub = nh.advertise<geometry_msgs::PoseStamped>("/sync_reprojection/current_pose", 5);
 
     while (!buf_flag && ros::ok()) {
