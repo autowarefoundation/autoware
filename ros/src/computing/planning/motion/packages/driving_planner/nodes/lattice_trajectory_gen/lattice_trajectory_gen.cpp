@@ -109,7 +109,7 @@ static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr
   g_param_flag = config->param_flag;
   g_lookahead_threshold = config->lookahead_threshold;
   g_initial_velocity = config->velocity;
-  g_offset_base2sensor = config->offset;
+  //g_offset_base2sensor = config->offset;
   g_look_ahead_threshold_calc_ratio = config->threshold_ratio;
   g_minimum_lool_ahead_threshold = config->minimum_lookahead_threshold;
 }

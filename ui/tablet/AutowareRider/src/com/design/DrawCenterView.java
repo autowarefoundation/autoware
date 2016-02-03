@@ -63,8 +63,7 @@ public class DrawCenterView extends View{
 
 	public DrawCenterView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		// dark red
-		color = 0xff5b1100;
+		color = Color.BLACK;
 		paint = new Paint();
 		paint.setAntiAlias(true);
 		

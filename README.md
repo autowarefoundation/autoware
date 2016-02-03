@@ -25,6 +25,12 @@ Open-source software for urban autonomous driving. The following functions are s
 * New BSD License
     * See LICENSE
 
+## Spec Recommendation
+
+- # of CPU cores: 8
+- RAM size: 32GB
+- Storage size: 30GB
+
 ## Requirements
 
 - ROS indigo(Ubuntu 14.04) or ROS jade(Ubuntu 15.04)
@@ -40,7 +46,7 @@ Open-source software for urban autonomous driving. The following functions are s
 
 ```
 % sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
 ```
 
 **NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
@@ -50,7 +56,7 @@ Open-source software for urban autonomous driving. The following functions are s
 
 ```
 % sudo apt-get install ros-jade-desktop-full ros-jade-nmea-msgs ros-jade-nmea-navsat-driver ros-jade-sound-play
-% sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
 ```
 
 ## How to Build
@@ -71,7 +77,7 @@ $ cd $HOME/Autoware/ros
 $ ./run
 ```
 
-## For developers
+## For Developers
 
 Be careful for changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
 Original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
@@ -81,6 +87,10 @@ repository, you must use **git subtree push**. (Please never change and push cod
 ## Documents
 
 See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. English documents will be added shortly.
+
+## Research Papers for Citation
+
+1. S. Kato, E. Takeuchi, Y. Ishiguro, Y. Ninomiya, K. Takeda, and T. Hamada. "An Open Approach to Autonomous Vehicles", IEEE Micro, Vol. 35, No. 6, pp. 60-69, 2015. [![Link](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)
 
 ## Instruction Videos
 

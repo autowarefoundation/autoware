@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [[ $UID != 0 ]]; then
+    echo "Usage: sudo ./run_proc_manager"
+    exit 1
+fi
+
+CURDIR=$(readlink -f  $(dirname $0))
+CLEANUP_SCRIPT=$CURDIR/cleanup
+PROC_MANAGER=$CURDIR/src/util/packages/runtime_manager/scripts/proc_manager.py
+
+$CLEANUP_SCRIPT
+exec python $PROC_MANAGER

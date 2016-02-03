@@ -203,7 +203,7 @@ subs :
     - name : lane_planner
       subs :
       - name : lane_navi
-        cmd  : rosrun lane_planner lane_navi
+        cmd  : roslaunch lane_planner lane_navi.launch
         param: lane_navi
       - name : lane_rule
         cmd  : rosrun lane_planner lane_rule
@@ -215,6 +215,7 @@ subs :
           dialog: MyDialogLaneStop
       - name : lane_select
         cmd  : rosrun lane_planner lane_select
+        param: lane_select
     - name : freespace_planner
       subs :
       - name : astar_navi
@@ -256,7 +257,7 @@ subs :
          param: waypoint_loader
          gui  :
            lane_waypoint_csv :
-             prop  : 1
+             prop  : 1    
        - name : waypoint_saver
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
          param: waypoint_saver
@@ -781,11 +782,16 @@ params :
       min   : 2.0
       max   : 10.0
       v     : 6.0
-    - name  : offset
-      label : offset
-      min   : -5.0
-      max   : 5.0
-      v     : -1.17
+    - name  : displacement_threshold
+      label : displacement_threshold
+      min   : 0
+      max   : 1.0
+      v     : 0.2  
+    - name  : relative_angle_threshold
+      label : relative_angle_threshold
+      min   : 0
+      max   : 90
+      v     : 10    
     - name    : sim_mode
       label   : 'Simulation Mode'
       kind    : checkbox
@@ -793,7 +799,13 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-      #rosparam: /pure_pursuit/sim_mode
+    - name    : linear_interpolate_mode
+      label   : 'Linear Interpolate'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
       
   - name  : velocity_set
     topic : /config/velocity_set
@@ -1184,13 +1196,17 @@ params :
       min       : 0
       max       : 200
       v         : 40.0
-      rosparam  : /lane_navi/velocity
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : output_file
       label     : Output File
       kind      : path
       path_type : save
       v         : /tmp/lane_waypoint.csv
-      rosparam  : /lane_navi/output_file
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : lane_rule
     topic : /config/lane_rule
@@ -1218,6 +1234,17 @@ params :
     vars  :
     - name  : traffic_light
       v     : 0
+      
+  - name  : lane_select
+    topic : /config/lane_select
+    msg   : ConfigLaneSelect
+    vars  :
+    - name  : number
+      kind  : radio_box
+      choices:
+      - Driving
+      - Passing
+      v     : 1
 
   - name  : waypoint_saver
     vars  :
@@ -1260,23 +1287,30 @@ params :
       path_type : save
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
-
+        
   - name  : waypoint_loader
     vars  :
-    - name      : lane_waypoint_csv
+    - name      : driving_lane_csv
+      label     : Driving
       kind      : path
-      v         : /tmp/lane_waypoint.csv
-#      rosparam  : /waypoint_loader/lane_waypoint_csv
+      v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : passing_lane_csv
+      label     : Passing
+      kind      : path
+      v         : /tmp/driving_lane.csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='        
     - name      : decelerate  
       label   : 'decelerate :'
       v         : 1.0
-      #rosparam  : /waypoint_loader/decelerate
       cmd_param :
         dash        : ''
         delim       : ':='
+        
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping

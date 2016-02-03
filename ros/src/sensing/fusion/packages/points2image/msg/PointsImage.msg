@@ -5,3 +5,5 @@ float32[] min_height
 float32[] max_height
 int32 max_y
 int32 min_y
+int32 image_height
+int32 image_width

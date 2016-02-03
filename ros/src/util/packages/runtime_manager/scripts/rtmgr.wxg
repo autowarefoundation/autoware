@@ -5,7 +5,7 @@
     <object class="MyFrame" name="frame_1" base="EditFrame">
         <style>wxDEFAULT_FRAME_STYLE</style>
         <title>runtime manager</title>
-        <size>806, 562</size>
+        <size>806, 584</size>
         <object class="wxBoxSizer" name="sizer_1" base="EditBoxSizer">
             <attribute>1</attribute>
             <orient>wxVERTICAL</orient>
@@ -368,7 +368,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_qs" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -495,7 +495,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_computing_copy" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -848,7 +848,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_map" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -1018,7 +1018,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_sensing" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -1116,7 +1116,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_computing" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -1477,7 +1477,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_interface" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -1608,7 +1608,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_database" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -1813,7 +1813,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_simulation" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -1988,7 +1988,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_status" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
@@ -2149,7 +2149,7 @@
                                                 <border>4</border>
                                                 <option>0</option>
                                                 <object class="wxToggleButton" name="button_rviz_topics" base="EditToggleButton">
-                                                    <label>Rviz</label>
+                                                    <label>RViz</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>

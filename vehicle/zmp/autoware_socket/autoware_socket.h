@@ -45,7 +45,7 @@
 #include <errno.h>
 #include <netdb.h>
 
-using namespace zmp::hev;
+using namespace zmp;
 
 #define NO_TSTAMP 0
 
@@ -55,6 +55,15 @@ using namespace zmp::hev;
 #define CMD_GEAR_R 2
 #define CMD_GEAR_B 3
 #define CMD_GEAR_N 4
+
+#define CAN_KEY_MODE	(0)
+#define CAN_KEY_TIME	(1)
+#define CAN_KEY_VELOC	(2)
+#define CAN_KEY_ANGLE	(3)
+#define CAN_KEY_TORQUE	(4)
+#define CAN_KEY_ACCEL	(5)
+#define CAN_KEY_BRAKE	(6)
+#define CAN_KEY_SHIFT	(7)
 
 #define MILLISECOND 1000  
 

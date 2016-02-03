@@ -855,7 +855,7 @@ void image_callback(const sensor_msgs::Image& image_source)
 	if (!_ready)
 		return;
 
-	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::TYPE_8UC3);
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 	cv::Mat imageTrack = cv_image->image;
 	trackAndDrawObjects(imageTrack, _counter, _dpm_detections, _kstates, _active, _colors, image_source);
 	//_ready=false;
