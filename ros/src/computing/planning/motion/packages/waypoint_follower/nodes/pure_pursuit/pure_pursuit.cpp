@@ -511,13 +511,13 @@ static bool verifyFollowing()
   getLinearEquation(_current_waypoints.getWaypointPosition(1),_current_waypoints.getWaypointPosition(2),&slope,&intercept);
   double displacement = getDistanceBetweenLineAndPoint(_current_pose.pose.position,slope,intercept);
   double relative_angle = getRelativeAngle(_current_waypoints.getWaypointPose(1),_current_pose.pose);
-  ROS_INFO("side diff : %lf , angle diff : %lf",displacement,relative_angle);
+  //ROS_INFO("side diff : %lf , angle diff : %lf",displacement,relative_angle);
   if(displacement < g_displacement_threshold || relative_angle < g_relative_angle_threshold){
-    ROS_INFO("Following : True");
+    //ROS_INFO("Following : True");
     return true;
   }
   else{
-    ROS_INFO("Following : False");
+    //ROS_INFO("Following : False");
     return false;
   }
 }
@@ -676,7 +676,7 @@ static void doPurePursuit()
   twist.header.stamp = ros::Time::now();
   g_cmd_velocity_publisher.publish(twist);
 
-  ROS_INFO("linear : %lf, angular : %lf",twist.twist.linear.x,twist.twist.angular.z);
+  //ROS_INFO("linear : %lf, angular : %lf",twist.twist.linear.x,twist.twist.angular.z);
 
 #ifdef LOG
       std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
