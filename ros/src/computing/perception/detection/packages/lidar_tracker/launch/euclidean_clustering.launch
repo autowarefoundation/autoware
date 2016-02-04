@@ -23,8 +23,7 @@
         <param name="leaf_size" value="$(arg leaf_size)" />
         <param name="cluster_size_min" value="$(arg cluster_size_min)" />
         <param name="cluster_size_max" value="$(arg cluster_size_max)" />
-	<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+        <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
 	</node>
 
 </launch>
-

@@ -8,7 +8,7 @@
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
         <remap from="/obj_car/image_obj_tracked" to="/sync_reprojection/obj_car/image_obj_tracked" if="$(arg sync)" />
-        <remap from="/current_pose" to="/sync_reprojection/current_pose" if="$(arg sync)" />
+        <remap from="/current_pose" to="/sync_reprojection/obj_car/current_pose" if="$(arg sync)" />
       </node>
 
     </group>
@@ -19,10 +19,12 @@
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
         <remap from="/obj_person/image_obj_tracked" to="/sync_reprojection/obj_person/image_obj_tracked" if="$(arg sync)" />
-        <remap from="/current_pose" to="/sync_reprojection/current_pose" if="$(arg sync)" />
+        <remap from="/current_pose" to="/sync_reprojection/obj_person/current_pose" if="$(arg sync)" />
       </node>
 
     </group>
   </group>
+
+  <include file="$(find synchronization)/launch/sync_obj_reproj.launch" if="$(arg sync)"/>
 
 </launch>

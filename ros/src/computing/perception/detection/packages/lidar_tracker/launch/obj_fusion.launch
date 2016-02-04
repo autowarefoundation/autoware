@@ -9,7 +9,7 @@
 
       <node pkg="lidar_tracker" name="fusion" type="obj_fusion">
         <remap from="/obj_car/obj_label" to="/sync_obj_fusion/obj_car/obj_label" if="$(arg sync)" />
-        <remap from="/cluster_centroids" to="/sync_obj_fusion/cluster_centroids" if="$(arg sync)" />
+        <remap from="/cluster_centroids" to="/sync_obj_fusion/obj_car/cluster_centroids" if="$(arg sync)" />
       </node>
 
     </group>
@@ -21,10 +21,12 @@
 
       <node pkg="lidar_tracker" name="fusion" type="obj_fusion">
         <remap from="/obj_person/obj_label" to="/sync_obj_fusion/obj_person/obj_label" if="$(arg sync)" />
-        <remap from="/cluster_centroids" to="/sync_obj_fusion/cluster_centroids" if="$(arg sync)" />
+        <remap from="/cluster_centroids" to="/sync_obj_fusion/obj_person/cluster_centroids" if="$(arg sync)" />
       </node>
 
     </group>
   </group>
+
+  <include file="$(find synchronization)/launch/sync_obj_fusion.launch" if="$(arg sync)"/>
 
 </launch>

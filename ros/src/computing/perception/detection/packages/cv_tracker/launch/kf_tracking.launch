@@ -27,4 +27,6 @@
     </group>
   </group>
 
+  <include file="$(find synchronization)/launch/sync_track.launch" if="$(arg sync)"/>
+
 </launch>

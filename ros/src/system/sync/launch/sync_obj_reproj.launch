@@ -1,4 +1,3 @@
-<!-- -->
 <launch>
   <!-- send table.xml to param server -->
   <arg name="car" default="true" />
@@ -10,7 +9,7 @@
   <group ns="sync_tracking">
     <group if="$(arg car)">
       <group ns="obj_car">
-        <node pkg="synchronization" type="sync_reprojection" name="sync_$(arg obj_car)_reprojection">
+        <node pkg="synchronization" type="sync_obj_reproj" name="sync_$(arg obj_car)_reprojection">
           <remap from="/image_obj_tracked" to="/$(arg obj_car)/image_obj_tracked"/>
           <remap from="/current_pose" to="/current_pose"/>
           <remap from="/obj_label" to="/$(arg obj_car)/obj_label"/>
@@ -22,7 +21,7 @@
 
     <group if="$(arg pedestrian)">
       <group ns="obj_person">
-        <node pkg="synchronization" type="sync_reprojection" name="sync_$(arg obj_person)_reprojection">
+        <node pkg="synchronization" type="sync_obj_reproj" name="sync_$(arg obj_person)_reprojection">
           <remap from="/image_obj_tracked" to="/$(arg obj_person)/image_obj_tracked"/>
           <remap from="/current_pose" to="/current_pose"/>
           <remap from="/obj_label" to="/$(arg obj_person)/obj_label"/>
