@@ -70,6 +70,7 @@ from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
 from runtime_manager.msg import ConfigLaneSelect
+from runtime_manager.msg import ConfigLaneStop
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
 from tablet_socket.msg import mode_cmd
@@ -2521,6 +2522,15 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnTrafficGreenLight(self, event):
 		self.pdic['traffic_light'] = 1
 		self.update()
+
+	def OnTrafficLightRecognition(self, event):
+		pub = rospy.Publisher('/config/lane_stop', ConfigLaneStop, latch=True, queue_size=10)
+		msg = ConfigLaneStop()
+		if event.GetEventObject().GetValue():
+			msg.manual_detection = False
+		else:
+			msg.manual_detection = True
+		pub.publish(msg)
 
 	def OnOk(self, event):
 		self.EndModal(0)

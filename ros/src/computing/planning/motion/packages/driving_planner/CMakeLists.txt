@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   runtime_manager
   waypoint_follower
   map_file
+  vehicle_socket
   #dbw_mkz_msgs
 )
 
@@ -35,7 +36,7 @@ ENDIF()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libtraj_gen 
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower #dbw_mkz_msgs
+  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket map_file #dbw_mkz_msgs
   DEPENDS gnss
 )
 
@@ -61,7 +62,8 @@ add_executable(lattice_trajectory_gen nodes/lattice_trajectory_gen/lattice_traje
 target_link_libraries(lattice_trajectory_gen gnss libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
 add_dependencies(lattice_trajectory_gen
 waypoint_follower_generate_messages_cpp
-runtime_manager_generate_messages_cpp)
+runtime_manager_generate_messages_cpp
+vehicle_socket_generate_messages_cpp)
 
 add_executable(lattice_twist_convert nodes/lattice_twist_convert/lattice_twist_convert.cpp)
 target_link_libraries(lattice_twist_convert libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})

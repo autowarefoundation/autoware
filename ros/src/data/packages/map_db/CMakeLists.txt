@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}"
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES fake_drivers
-#  CATKIN_DEPENDS other_catkin_pkg
+   CATKIN_DEPENDS map_file
 #  DEPENDS system_lib
    DEPENDS gnss
 )
