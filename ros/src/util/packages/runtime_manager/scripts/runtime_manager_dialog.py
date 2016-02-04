@@ -657,6 +657,14 @@ class MyFrame(rtmgr.MyFrame):
 		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
 	#
+	# Setup tab
+	#
+        def OnSetupLocalizer(self, event):
+		obj = self.button_setup_tf
+		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
+		self.update_func(pdic, gdic, prm)
+
+	#
 	# Computing Tab
 	#
 	def OnTreeChecked(self, event):

@@ -3,6 +3,11 @@ buttons:
 #    run    : rosrun tf static_transform_publisher
     run    : roslaunch runtime_manager setup_tf.launch
     param  : setup_tf
+    gui    :
+      localizer_rosparam :
+        func : '[ "velodyne", "hokuyo" ][ self.radio_box_localizer.GetSelection() ]'
+      localizer_cmd_param :
+        func : '[ "/velodyne" , "/3d_urg" ][ self.radio_box_localizer.GetSelection() ]'
 
   vehicle_model:
     run    : roslaunch model_publisher vehicle_model.launch
@@ -11,6 +16,17 @@ buttons:
 params:
   - name: setup_tf
     vars:
+    - name     : localizer_rosparam
+      kind     : str
+      v        : velodyne
+      rosparam : localizer
+    - name     : localizer_cmd_param
+      kind     : str
+      v        : /velodyne
+      cmd_param:
+        var_name : child_frame_id
+        dash     : ''
+        delim    : ':='
     - name     : x
       label    : 'x:'
       kind     : num
