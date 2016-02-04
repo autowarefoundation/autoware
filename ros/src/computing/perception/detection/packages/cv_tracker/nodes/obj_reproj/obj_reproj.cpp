@@ -140,13 +140,13 @@ static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::ob
   color_blue.g = 0.0f;
   color_blue.b = 1.0f;
   color_blue.a = 1.0f;
-  
+
   std_msgs::ColorRGBA color_green;
   color_green.r = 0.0f;
   color_green.g = 1.0f;
   color_green.b = 0.0f;
   color_green.a = 1.0f;
-  
+
   for (const auto& reproj_pos : src.reprojected_pos)
     {
       visualization_msgs::Marker marker;
@@ -256,7 +256,6 @@ void locatePublisher(void){
 
   vector<OBJPOS> car_position_vector;
   LOCK(mtx_cp_vector);
-  copy(cp_vector.begin(), cp_vector.end(), back_inserter(car_position_vector));
   copy(global_cp_vector.begin(), global_cp_vector.end(), back_inserter(car_position_vector));
   UNLOCK(mtx_cp_vector);
 
