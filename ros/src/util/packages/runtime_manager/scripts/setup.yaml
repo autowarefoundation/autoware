@@ -8,6 +8,7 @@ buttons:
         func : '[ "velodyne", "hokuyo" ][ self.radio_box_localizer.GetSelection() ]'
       localizer_cmd_param :
         func : '[ "/velodyne" , "/3d_urg" ][ self.radio_box_localizer.GetSelection() ]'
+      ext_toggle_enables : [ self.radio_box_localizer ]
 
   vehicle_model:
     run    : roslaunch model_publisher vehicle_model.launch
