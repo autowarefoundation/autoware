@@ -25,6 +25,8 @@
     </group>
   </group>
 
-  <include file="$(find synchronization)/launch/sync_obj_reproj.launch" if="$(arg sync)"/>
-
+  <include file="$(find synchronization)/launch/sync_obj_reproj.launch" if="$(arg sync)">
+    <arg name="car" value="$(arg car)"/>
+    <arg name="pedestrian" value="$(arg pedestrian)"/>
+  </include>
 </launch>

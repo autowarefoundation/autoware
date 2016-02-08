@@ -37,6 +37,9 @@
     </group>
   </group>
 
-  <include file="$(find synchronization)/launch/sync_range_fusion.launch" if="$(arg sync)"/>
+  <include file="$(find synchronization)/launch/sync_range_fusion.launch" if="$(arg sync)">
+    <arg name="car" value="$(arg car)"/>
+    <arg name="pedestrian" value="$(arg pedestrian)"/>
+  </include>
 
 </launch>
