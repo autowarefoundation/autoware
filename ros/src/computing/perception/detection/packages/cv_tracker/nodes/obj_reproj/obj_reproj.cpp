@@ -121,6 +121,8 @@ static ros::Publisher pub;
 static ros::Publisher marker_pub;
 
 static std::string object_type;
+static ros::Time image_obj_tracked_time;
+static ros::Time current_pose_time;
 
 //coordinate system conversion between camera coordinate and map coordinate
 static tf::StampedTransform transformCam2Map;
@@ -296,6 +298,13 @@ void locatePublisher(void){
   //publish recognized car data
   obj_label_msg.type = object_type;
   obj_label_marker_msgs = convert_marker_array(obj_label_msg);
+  /* Extraordinary correspondence because of wrong timestamp(current_pose)
+   * if a timestamp of current_pose is modified, this comment out should be removed
+   */
+//  if(image_obj_tracked_time.sec == current_pose.sec && image_obj_tracked_time.nsec == current_pose.nsec) {
+    obj_label_msg.header.stamp = image_obj_tracked_time;
+//  }
+
   pub.publish(obj_label_msg);
   marker_pub.publish(obj_label_marker_msgs);
 }
@@ -304,6 +313,7 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
 {
   if (!ready_)
     return;
+  image_obj_tracked_time = fused_objects.header.stamp;
 
   LOCK(mtx_cp_vector);
   global_cp_vector.clear();
@@ -376,6 +386,7 @@ static void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
 static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   //In Autoware axel x and axel y is opposite
   //but once they is converted to calculate.
+  current_pose_time = pose.header.stamp;
   ndt_loc.X = pose.pose.position.x;
   ndt_loc.Y = pose.pose.position.y;
   ndt_loc.Z = pose.pose.position.z;
