@@ -12,6 +12,7 @@
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 100;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool ADVERTISE_LATCH = false;
+static constexpr double LOOP_RATE = 15.0;
 
 ros::Publisher obj_pose_pub;
 
@@ -173,7 +174,7 @@ int main(int argc, char* argv[])
     obj_pose_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
 
     tf::TransformListener trf_listener;
-
+    ros::Rate loop_rate(LOOP_RATE);  // Try to loop in "LOOP_RATE" [Hz]
     while (n.ok())
         {
             try {
@@ -185,6 +186,7 @@ int main(int argc, char* argv[])
             }
 
             ros::spinOnce();
+            loop_rate.sleep();
         }
 
     return 0;

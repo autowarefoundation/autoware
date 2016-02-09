@@ -73,6 +73,8 @@
 
 using namespace std;
 
+static constexpr double LOOP_RATE = 15.0;
+
 typedef struct _OBJPOS{
   int x1;
   int y1;
@@ -378,6 +380,7 @@ int main(int argc, char **argv){
   ndtGetFlag = false;
 
   tf::TransformListener listener;
+  ros::Rate loop_rate(LOOP_RATE);  // Try to loop in "LOOP_RATE" [Hz]
   while(n.ok())
     {
       /* try to get coordinate system conversion from "camera" to "map" */
@@ -390,6 +393,7 @@ int main(int argc, char **argv){
       }
 
       ros::spinOnce();
+      loop_rate.sleep();
 
     }
   return 0;
