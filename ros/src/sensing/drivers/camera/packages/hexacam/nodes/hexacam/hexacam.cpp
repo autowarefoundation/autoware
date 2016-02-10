@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <utility>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
@@ -134,6 +135,7 @@ void CamServer::EnableCamera(int en)
 	RecvPacket(sock, buf, len);
 	close(sock);
 }
+
 int DefaultStream(std::stringstream &ss)
 {
   std::string file(
@@ -564,13 +566,17 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 	HexaCam *cameras;
-	
 	CamServer *cs;
 	std::stringstream ss;
+	std::streambuf *sb;
+
+
 	DefaultStream(ss);
-	cs = new CamServer("10.0.0.1",  ss);
+	sb = ss.rdbuf();
 	
 	//signal(SIGTERM, signalHandler);//detect closing
+	std::string configfile;
+	std::filebuf fb;
 
 	double fps;
 	if (private_nh.getParam("fps", fps))
@@ -580,6 +586,18 @@ int main(int argc, char **argv)
 		fps = 7.5;
 		ROS_INFO("No param received, defaulting to %.2f", fps);
 	}
+	if (private_nh.getParam("configfile", configfile)&& configfile!="")
+	{
+		if(fb.open(configfile, std::ios::in)!=NULL){
+			ROS_INFO("OPEN SUCCESS");
+			sb = &fb;
+		}
+		ROS_INFO("file %s", configfile.c_str());
+	}else{
+		ROS_INFO("configfile param not found ");
+	}
+	std::istream is(sb);
+	cs = new CamServer("10.0.0.1", is);
 	
 	cameras = new HexaCam(n, 8);
 
