@@ -47,19 +47,15 @@ add_dependencies(sync_drivers synchronization_generate_messages_cpp)
 
 add_executable(sync_range_fusion computing/perception/detection/packages/cv_tracker/nodes/range_fusion/sync_range_fusion.cpp)
 target_link_libraries(sync_range_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_range_fusion synchronization_generate_messages_cpp)
 
 add_executable(sync_track computing/perception/detection/packages/cv_tracker/nodes/kf_track/sync_track.cpp)
 target_link_libraries(sync_track ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_track synchronization_generate_messages_cpp)
 
 add_executable(sync_obj_reproj computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/sync_obj_reproj.cpp)
 target_link_libraries(sync_obj_reproj ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_obj_reproj synchronization_generate_messages_cpp)
 
 add_executable(sync_obj_fusion computing/perception/detection/packages/lidar_tracker/nodes/obj_fusion/sync_obj_fusion.cpp)
 target_link_libraries(sync_obj_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_obj_fusion synchronization_generate_messages_cpp)
 
 add_executable(time_monitor time_monitor.cpp)
 target_link_libraries(time_monitor ${catkin_LIBRARIES} ${OpenCV_LIBS})
