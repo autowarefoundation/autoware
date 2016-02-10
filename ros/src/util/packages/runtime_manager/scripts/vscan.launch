@@ -35,6 +35,7 @@
       <param name="MINRANGE" type="double" value="$(arg min_range)" />
       <param name="GRIDSIZE" type="double" value="$(arg grid_size)" />
       <param name="IMAGESIZE" type="double" value="$(arg image_size)" />
+      <param name="SYNC" type="bool" value="$(arg sync)" />
   </node>
 
   <node pkg="points2image" type="vscan2image" name="vscan2image" output="screen" />

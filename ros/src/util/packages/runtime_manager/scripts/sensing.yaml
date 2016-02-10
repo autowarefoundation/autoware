@@ -54,7 +54,7 @@ subs :
         run  : rosrun javad_navsat_driver gnss.sh
         param: serial
       - name : Serial GNSS
-        probe: 
+        probe:
         run  : roslaunch nmea_navsat nmea_navsat.launch
         param: serial
 
@@ -91,7 +91,7 @@ subs :
             prop  : 1
             flags : [ center_v ]
       - name : Velodyne VLP-16
-        probe: 
+        probe:
         run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
         param: calibration_path
         gui  :
@@ -102,7 +102,7 @@ subs :
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
       - name : Hokuyo 3D-URG
-        probe: 
+        probe:
         run  : roslaunch hokuyo hokuyo_3d.launch
       - name : SICK LMS511
         probe:
@@ -134,8 +134,12 @@ buttons:
         flags : [ nl ]
 
   points_image :
-    run   : rosrun points2image points2image
+    run   : roslaunch runtime_manager points2image.launch
     #param : points_image
+    param : sync
+    gui   :
+      sync :
+        func : self.button_synchronization.GetValue()
 
   scan_image :
     run   : rosrun scan2image scan2image
