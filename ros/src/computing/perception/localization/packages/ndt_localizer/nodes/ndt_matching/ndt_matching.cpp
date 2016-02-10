@@ -72,6 +72,10 @@
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
+#define Wa 0.4
+#define Wb 0.3
+#define Wc 0.3
+
 struct pose {
 	double x;
 	double y;
@@ -137,6 +141,7 @@ static ros::Duration scan_duration;
 static double exe_time = 0.0;
 static int iteration = 0;
 static double score = 0.0;
+static double trans_probability = 0.0;
 
 static double current_velocity = 0.0, previous_velocity = 0.0; // [m/s]
 static double current_velocity_smooth = 0.0, second_previous_velocity = 0.0;
@@ -164,6 +169,9 @@ static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static std::string _localizer = "velodyne";
+
+static ros::Publisher ndt_reliability_pub;
+static std_msgs::Float32 ndt_reliability;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -397,6 +405,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 		iteration = ndt.getFinalNumIteration();
 		score = ndt.getFitnessScore();
+		trans_probability = ndt.getTransformationProbability();
 
 		tf::Matrix3x3 mat_l; // localizer
 		mat_l.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
@@ -571,6 +580,10 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 		ndt_stat_pub.publish(ndt_stat_msg);
 
+		/* Compute NDT_Reliability */
+		ndt_reliability.data = Wa * (exe_time/100.0) * 100.0 + Wb * (iteration/10.0) * 100.0 + Wc * ((2.0-trans_probability)/2.0) * 100.0;
+		ndt_reliability_pub.publish(ndt_reliability);
+
 #ifdef OUTPUT
 		// Output log.csv
 		std::ofstream ofs_log("log.csv", std::ios::app);
@@ -603,6 +616,8 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 				<< predict_pose_error << ","
 				<< iteration << ","
 				<< score << ","
+				<< trans_probability << ","
+				<< ndt_reliability.data << ","
 				<< current_velocity << ","
 				<< current_velocity_smooth << ","
 				<< current_acceleration << ","
@@ -623,6 +638,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		std::cout << "Transformation Probability: " << ndt.getTransformationProbability() << std::endl;
 		std::cout << "Execution Time: " << exe_time << " ms." << std::endl;
 		std::cout << "Number of Iterations: " << ndt.getFinalNumIteration() << std::endl;
+		std::cout << "NDT Reliability: " << ndt_reliability.data << std::endl;
 		std::cout << "(x,y,z,roll,pitch,yaw): " << std::endl;
 		std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z
 				<< ", " << current_pose.roll << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
@@ -733,6 +749,7 @@ int main(int argc, char **argv)
 	estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
 	time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
 	ndt_stat_pub = nh.advertise<ndt_localizer::ndt_stat>("/ndt_stat", 1000);
+	ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
 
 	// Subscribers
 	ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
