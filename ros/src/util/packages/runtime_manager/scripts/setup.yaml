@@ -3,6 +3,12 @@ buttons:
 #    run    : rosrun tf static_transform_publisher
     run    : roslaunch runtime_manager setup_tf.launch
     param  : setup_tf
+    gui    :
+      localizer_rosparam :
+        func : '[ "velodyne", "hokuyo" ][ self.radio_box_localizer.GetSelection() ]'
+      localizer_cmd_param :
+        func : '[ "/velodyne" , "/3d_urg" ][ self.radio_box_localizer.GetSelection() ]'
+      ext_toggle_enables : [ self.radio_box_localizer ]
 
   vehicle_model:
     run    : roslaunch model_publisher vehicle_model.launch
@@ -19,6 +25,7 @@ params:
       cmd_param:
         dash   : ''
         delim  : ':='
+      rosparam : tf_x
     - name     : y
       label    : 'y:'
       kind     : num
@@ -27,6 +34,7 @@ params:
       cmd_param:
         dash   : ''
         delim  : ':='
+      rosparam : tf_y
     - name     : z
       label    : 'z:'
       kind     : num
@@ -35,6 +43,7 @@ params:
       cmd_param:
         dash   : ''
         delim  : ':='
+      rosparam : tf_z
     - name     : yaw
       label    : 'yaw:'
       kind     : num
@@ -43,6 +52,7 @@ params:
       cmd_param:
         dash   : ''
         delim  : ':='
+      rosparam : tf_yaw
     - name     : pitch
       label    : 'pitch:'
       kind     : num
@@ -51,6 +61,7 @@ params:
       cmd_param:
         dash   : ''
         delim  : ':='
+      rosparam : tf_pitch
     - name     : roll
       label    : 'roll:'
       kind     : num
@@ -59,18 +70,24 @@ params:
       cmd_param:
         dash   : ''
         delim  : ':='
+      rosparam : tf_roll
     - name     : frame_id
       kind     : hide
       v        : /base_link
       cmd_param:
         dash   : ''
         delim  : ':='
-    - name     : child_frame_id
-      kind     : hide
+    - name     : localizer_rosparam
+      kind     : str
+      v        : velodyne
+      rosparam : localizer
+    - name     : localizer_cmd_param
+      kind     : str
       v        : /velodyne
       cmd_param:
-        dash   : ''
-        delim  : ':='
+        var_name : child_frame_id
+        dash     : ''
+        delim    : ':='
     - name     : period_in_ms
       kind     : hide
       v        : 10

@@ -10,20 +10,6 @@
   <arg name="child_frame_id" default="velodyne"/>
   <arg name="period_in_ms" default="10"/>
 
-  <arg name="tf_x" default="0.0"/>
-  <arg name="tf_y" default="0.0"/>
-  <arg name="tf_z" default="0.0"/>
-  <arg name="tf_yaw" default="0.0"/>
-  <arg name="tf_pitch" default="0.0"/>
-  <arg name="tf_roll" default="0.0"/>
-
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_localizer" args="$(arg x) $(arg y) $(arg z) $(arg yaw) $(arg pitch) $(arg roll) $(arg frame_id) $(arg child_frame_id) $(arg period_in_ms)"/>
-
-  <rosparam param="tf_x" subst_value="True">$(arg x)</rosparam>
-  <rosparam param="tf_y" subst_value="True">$(arg y)</rosparam>
-  <rosparam param="tf_z" subst_value="True">$(arg z)</rosparam>
-  <rosparam param="tf_yaw" subst_value="True">$(arg yaw)</rosparam>
-  <rosparam param="tf_pitch" subst_value="True">$(arg pitch)</rosparam>
-  <rosparam param="tf_roll" subst_value="True">$(arg roll)</rosparam>
 
 </launch>
