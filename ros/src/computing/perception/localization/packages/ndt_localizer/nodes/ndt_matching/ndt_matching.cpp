@@ -546,7 +546,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		control_pose_pub.publish(control_pose_msg);
 		localizer_pose_pub.publish(localizer_pose_msg);
 
-		// Send TF "/velodyne" to "/map"
+		// Send TF "/base_link" to "/map"
 		transform.setOrigin(tf::Vector3(current_pose.x, current_pose.y, current_pose.z));
 		transform.setRotation(current_q);
 		br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/base_link"));
@@ -756,7 +756,7 @@ int main(int argc, char **argv)
 	ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
 	ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
 	ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
-	ros::Subscriber velodyne_sub = nh.subscribe("points_raw", _queue_size, scan_callback);
+	ros::Subscriber scan_sub = nh.subscribe("points_raw", _queue_size, scan_callback);
 
 	ros::spin();
 
