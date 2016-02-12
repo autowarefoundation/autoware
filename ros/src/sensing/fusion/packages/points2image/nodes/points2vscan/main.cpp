@@ -4,6 +4,7 @@
 
 int main(int argc, char *argv[])
 {
+    ros::init(argc, argv, "points2vscan");
     QApplication a(argc, argv);
     MainWindow w;
 #ifdef DEBUG_GUI

@@ -1,0 +1,8 @@
+<!-- -->
+<launch>
+  <!-- send table.xml to param server -->
+  <group ns="sync_drivers">
+    <node pkg="synchronization" type="sync_drivers" name="sync_drivers">
+    </node>
+  </group>
+</launch>

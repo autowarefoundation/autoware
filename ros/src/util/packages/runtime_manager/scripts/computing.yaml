@@ -34,6 +34,8 @@ subs :
             user_category : ''
           layer:
             flags : [ nl ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
   - name : Detection
     subs :
@@ -54,6 +56,8 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
       - name : dpm_ttic
         cmd  : roslaunch cv_tracker dpm_ttic.launch
@@ -72,6 +76,8 @@ subs :
             flags  : [ left ]
           part_model_car :
             flags  : [ hline ]
+          sync :
+            func : self.button_synchronization.GetValue()
             
       - name : rcnn_node
         cmd  : roslaunch cv_tracker rcnn.launch
@@ -92,10 +98,15 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
       - name : klt_track
         cmd  : roslaunch cv_tracker klt_tracking.launch
         param: car_kf
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
 
       - name : kf_track
         cmd  : roslaunch cv_tracker kf_tracking.launch
@@ -120,6 +131,8 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
       - name : obj_reproj
         cmd  : roslaunch cv_tracker reprojection.launch
@@ -132,12 +145,17 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
     - name : lidar_detector
       subs :
       - name : euclidean_cluster
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
         param: euclidean_cluster
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : obj_fusion
         cmd  : roslaunch lidar_tracker obj_fusion.launch
         param: obj_fusion
@@ -149,6 +167,8 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
     - name : road_wizard
       subs :
@@ -314,6 +334,8 @@ buttons:
     param   : car_kf
   pedestrian_kf :
     param   : pedestrian_kf
+  synchronization :
+    run : roslaunch runtime_manager synchronization.launch
 
 sys_gui:
   dialog   : MyDialogParam
@@ -420,6 +442,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : dpm_ttic
     vars  :
@@ -489,6 +518,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : car_dpm
     topic : /config/car_dpm
@@ -605,6 +641,13 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='              
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : ndt
     topic : /config/ndt
@@ -701,6 +744,13 @@ params :
       min   : -2.0
       max   : 2.0
       v     : 0
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : waypoint_follower
     topic : /config/waypoint_follower
@@ -1004,6 +1054,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
@@ -1066,6 +1123,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name : obj_fusion
     vars :
@@ -1083,6 +1147,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name : feat_proj
     topic: /config/adjust_xy
@@ -1310,6 +1381,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : pedestrian_fusion
     topic : /config/pedestrian_fusion

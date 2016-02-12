@@ -50,6 +50,7 @@
 #include <opencv/cxcore.h>
 
 #include <std_msgs/Float64.h>
+#include <std_msgs/Header.h>
 #include <scan2image/ScanImage.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Pose.h>
@@ -67,6 +68,7 @@
 #include "cv_tracker/obj_label.h"
 #include "calibration_camera_lidar/projection_matrix.h"
 #include <sensor_msgs/CameraInfo.h>
+#include <mutex>
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
@@ -88,6 +90,13 @@ static objLocation ol;
 //store subscribed value
 static vector<OBJPOS> global_cp_vector;
 
+//mutex to handle global-scope objects
+static std::mutex mtx_cp_vector;
+static std::mutex mtx_flag_obj_pos_xyz;
+static std::mutex mtx_flag_ndt_pose;
+#define LOCK(mtx) (mtx).lock()
+#define UNLOCK(mtx) (mtx).unlock()
+
 //flag for comfirming whether updating position or not
 static bool gnssGetFlag;
 static bool ndtGetFlag;
@@ -98,6 +107,10 @@ static LOCATION gnss_loc;
 static LOCATION ndt_loc;
 static ANGLE gnss_angle;
 static ANGLE ndt_angle;
+
+//flag for comfirming whether multiple topics are received
+static bool isReady_obj_pos_xyz;
+static bool isReady_ndt_pose;
 
 static double cameraMatrix[4][4] = {
   {-7.8577658642752374e-03, -6.2035361880992401e-02,9.9804301981022692e-01, 5.1542126095196206e-01},
@@ -110,6 +123,8 @@ static ros::Publisher pub;
 static ros::Publisher marker_pub;
 
 static std::string object_type;
+static ros::Time image_obj_tracked_time;
+static ros::Time current_pose_time;
 
 //coordinate system conversion between camera coordinate and map coordinate
 static tf::StampedTransform transformCam2Map;
@@ -129,13 +144,13 @@ static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::ob
   color_blue.g = 0.0f;
   color_blue.b = 1.0f;
   color_blue.a = 1.0f;
-  
+
   std_msgs::ColorRGBA color_green;
   color_green.r = 0.0f;
   color_green.g = 1.0f;
   color_green.b = 0.0f;
   color_green.a = 1.0f;
-  
+
   for (const auto& reproj_pos : src.reprojected_pos)
     {
       visualization_msgs::Marker marker;
@@ -241,7 +256,13 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 }
 
 //wrap SendData class
-void locatePublisher(vector<OBJPOS> car_position_vector){
+void locatePublisher(void){
+
+  vector<OBJPOS> car_position_vector;
+  LOCK(mtx_cp_vector);
+  copy(global_cp_vector.begin(), global_cp_vector.end(), back_inserter(car_position_vector));
+  UNLOCK(mtx_cp_vector);
+
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
 
@@ -279,6 +300,13 @@ void locatePublisher(vector<OBJPOS> car_position_vector){
   //publish recognized car data
   obj_label_msg.type = object_type;
   obj_label_marker_msgs = convert_marker_array(obj_label_msg);
+  /* Extraordinary correspondence because of wrong timestamp(current_pose)
+   * if a timestamp of current_pose is modified, this comment out should be removed
+   */
+//  if(image_obj_tracked_time.sec == current_pose.sec && image_obj_tracked_time.nsec == current_pose.nsec) {
+    obj_label_msg.header.stamp = image_obj_tracked_time;
+//  }
+
   pub.publish(obj_label_msg);
   marker_pub.publish(obj_label_marker_msgs);
 }
@@ -287,14 +315,19 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
 {
   if (!ready_)
     return;
+  image_obj_tracked_time = fused_objects.header.stamp;
 
-  vector<OBJPOS> cp_vector;
+  LOCK(mtx_cp_vector);
+  global_cp_vector.clear();
+  UNLOCK(mtx_cp_vector);
+
   OBJPOS cp;
 
   object_type = fused_objects.type;
   //If angle and position data is not updated from prevous data send,
   //data is not sent
-  if(gnssGetFlag || ndtGetFlag) {
+  //  if(gnssGetFlag || ndtGetFlag) {
+    LOCK(mtx_cp_vector);
     for (unsigned int i = 0; i < fused_objects.rect_ranged.size(); i++){
 
       //If distance is zero, we cannot calculate position of recognized object
@@ -313,12 +346,27 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
       */
       cp.distance = (fused_objects.rect_ranged.at(i).range - cameraMatrix[0][3]) * 10;
 
-      cp_vector.push_back(cp);
+      global_cp_vector.push_back(cp);
     }
+    UNLOCK(mtx_cp_vector);
 
-    locatePublisher(cp_vector);
+    //Confirm that obj_pos_xyz is subscribed
+    LOCK(mtx_flag_obj_pos_xyz);
+    isReady_obj_pos_xyz = true;
+    UNLOCK(mtx_flag_obj_pos_xyz);
 
-  }
+    if (isReady_obj_pos_xyz && isReady_ndt_pose) {
+      locatePublisher();
+
+      LOCK(mtx_flag_obj_pos_xyz);
+      isReady_obj_pos_xyz = false;
+      UNLOCK(mtx_flag_obj_pos_xyz);
+
+      LOCK(mtx_flag_ndt_pose);
+      isReady_ndt_pose    = false;
+      UNLOCK(mtx_flag_ndt_pose);
+    }
+    //  }
 }
 
 #ifdef NEVER // XXX No one calls this functions. caller is comment out
@@ -340,6 +388,7 @@ static void position_getter_gnss(const geometry_msgs::PoseStamped &pose){
 static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   //In Autoware axel x and axel y is opposite
   //but once they is converted to calculate.
+  current_pose_time = pose.header.stamp;
   ndt_loc.X = pose.pose.position.x;
   ndt_loc.Y = pose.pose.position.y;
   ndt_loc.Z = pose.pose.position.z;
@@ -349,6 +398,23 @@ static void position_getter_ndt(const geometry_msgs::PoseStamped &pose){
   printf("location : %f %f %f\n",ndt_loc.X,ndt_loc.Y,ndt_loc.Z);
 
   ndtGetFlag = true;
+
+  //Confirm ndt_pose is subscribed
+  LOCK(mtx_flag_ndt_pose);
+  isReady_ndt_pose = true;
+  UNLOCK(mtx_flag_ndt_pose);
+
+    if (isReady_obj_pos_xyz && isReady_ndt_pose) {
+      locatePublisher();
+
+      LOCK(mtx_flag_obj_pos_xyz);
+      isReady_obj_pos_xyz = false;
+      UNLOCK(mtx_flag_obj_pos_xyz);
+
+      LOCK(mtx_flag_ndt_pose);
+      isReady_ndt_pose    = false;
+      UNLOCK(mtx_flag_ndt_pose);
+    }
 }
 
 int main(int argc, char **argv){
@@ -357,6 +423,9 @@ int main(int argc, char **argv){
   cout << "obj_reproj" << endl;
 
   ready_ = false;
+
+  isReady_obj_pos_xyz = false;
+  isReady_ndt_pose    = false;
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.

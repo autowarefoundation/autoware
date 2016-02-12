@@ -1094,11 +1094,22 @@
                                 <object class="wxBoxSizer" name="sizer_62_copy_copy" base="EditBoxSizer">
                                     <orient>wxHORIZONTAL</orient>
                                     <object class="sizeritem">
+                                        <flag>wxEXPAND</flag>
                                         <border>0</border>
                                         <option>1</option>
-                                        <object class="spacer" name="spacer" base="EditSpacer">
-                                            <height>20</height>
-                                            <width>20</width>
+                                        <object class="wxBoxSizer" name="sizer_47" base="EditBoxSizer">
+                                            <orient>wxHORIZONTAL</orient>
+                                            <object class="sizeritem">
+                                                <flag>wxALL</flag>
+                                                <border>4</border>
+                                                <option>0</option>
+                                                <object class="wxToggleButton" name="button_synchronization" base="EditToggleButton">
+                                                    <label>Synchronization</label>
+                                                    <events>
+                                                        <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
+                                                    </events>
+                                                </object>
+                                            </object>
                                         </object>
                                     </object>
                                     <object class="sizeritem">

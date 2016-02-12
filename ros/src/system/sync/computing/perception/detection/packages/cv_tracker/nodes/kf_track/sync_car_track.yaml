@@ -1,0 +1,25 @@
+node_name: sync_car_track
+
+req_pub_mode: 1
+#0:rapid mode(increase memory usage)
+#1:normal mode
+
+sched_policy: 1
+#1:default sched_policy
+#2:rate monotonic
+short_rate: /image_raw
+
+sub1: /image_raw
+sub1_ringbuf: 30
+sub1_header: sensor_msgs/Image
+
+sub2: /obj_car/image_obj_ranged
+sub2_ringbuf: 10
+sub2_header: cv_tracker/image_obj_ranged
+
+pub1: /image_raw
+
+pub2: /obj_car/image_obj_ranged
+
+sync_sub: obj_car/image_obj_tracked
+sync_sub_header: cv_tracker/image_obj_tracked

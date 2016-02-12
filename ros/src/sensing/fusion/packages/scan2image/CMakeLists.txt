@@ -31,7 +31,6 @@ generate_messages(
 ###################################
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES scan2image
   CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs calibration_camera_lidar
   DEPENDS system_lib
 )

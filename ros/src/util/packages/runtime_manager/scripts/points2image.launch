@@ -1,0 +1,8 @@
+<launch>
+    <!-- parameters for points2vscan -->
+    <arg name="sync" default="false" />
+
+    <node pkg="points2image" type="points2image" name="points2image">
+        <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+    </node>
+</launch>
