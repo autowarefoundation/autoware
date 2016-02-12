@@ -69,24 +69,23 @@ unsigned char willExit = 0;
 int last;
 time_t last_time = 0;
 
-
-void sighand (int sig)
+void sighand(int sig)
 {
-  switch (sig) {
-  case SIGINT:
-    willExit = 1;
-    alarm(0);
-    break;
+  switch (sig)
+  {
+    case SIGINT:
+      willExit = 1;
+      alarm(0);
+      break;
   }
 }
 
- 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 
 {
   canHandle h;
   int ret = -1;
-  long id; 
+  long id;
   unsigned char msg[8];
   unsigned int dlc;
   unsigned int flag;
@@ -98,14 +97,17 @@ int main (int argc, char *argv[])
 
   ros::init(argc, argv, "can_listener");
   ros::NodeHandle n;
- 
+
   ros::Publisher can_pub = n.advertise<kvaser::CANPacket>("can_raw", 10);
 
   errno = 0;
-  if (argc != 2 || (channel = atoi(argv[1]), errno) != 0) {
+  if (argc != 2 || (channel = atoi(argv[1]), errno) != 0)
+  {
     printf("usage %s channel\n", argv[0]);
     exit(1);
-  } else {
+  }
+  else
+  {
     printf("Reading messages on channel %d\n", channel);
   }
 
@@ -116,71 +118,76 @@ int main (int argc, char *argv[])
 
   /* Allow signals to interrupt syscalls(in canReadBlock) */
   siginterrupt(SIGINT, 1);
-  
+
   /* Open channels, parameters and go on bus */
   h = canOpenChannel(channel, canOPEN_EXCLUSIVE | canOPEN_REQUIRE_EXTENDED);
-  if (h < 0) {
+  if (h < 0)
+  {
     printf("canOpenChannel %d failed\n", channel);
     return -1;
   }
-    
+
   canSetBusParams(h, bitrate, 4, 3, 1, 1, 0);
   canSetBusOutputControl(h, canDRIVER_NORMAL);
   canBusOn(h);
 
   i = 0;
   //  while (!willExit) {
-  while(ros::ok()){ 
-    do { 
+  while (ros::ok())
+  {
+    do
+    {
       ret = canReadWait(h, &id, &msg, &dlc, &flag, &t, -1);
-      switch (ret) {
-      case 0:
-        printf("(%d) id:%ld dlc:%d data: ", i, id, dlc);
-        if (dlc > 8) {
-          dlc = 8;
-        }
-        for (j = 0; j < dlc; j++){
-          printf("%2.2x ", msg[j]);
-	  candat.dat[j]=msg[j];
-	}
-        printf(" flags:0x%x time:%ld\n", flag, t);
-	candat.count =i;
-	candat.time=t;
-	candat.id = id;
-	candat.len=dlc;
-	candat.header.stamp=ros::Time::now();
-	can_pub.publish(candat);
-	ros::spinOnce();
-	i++;
-	if (last_time == 0) {
-	  last_time = time(0);
-	} else if (time(0) > last_time) {
-	  last_time = time(0);
-	  if (i != last) {
-	    printf("rx : %d total: %d\n", i - last, i);
-	  }
-	  last = i;
-	}
-        break;
-      case canERR_NOMSG:
-        break;
-      default:
-        perror("canReadBlock error");
-        break;
+      switch (ret)
+      {
+        case 0:
+          printf("(%d) id:%ld dlc:%d data: ", i, id, dlc);
+          if (dlc > 8)
+          {
+            dlc = 8;
+          }
+          for (j = 0; j < dlc; j++)
+          {
+            printf("%2.2x ", msg[j]);
+            candat.dat[j] = msg[j];
+          }
+          printf(" flags:0x%x time:%ld\n", flag, t);
+          candat.count = i;
+          candat.time = t;
+          candat.id = id;
+          candat.len = dlc;
+          candat.header.stamp = ros::Time::now();
+          can_pub.publish(candat);
+          ros::spinOnce();
+          i++;
+          if (last_time == 0)
+          {
+            last_time = time(0);
+          }
+          else if (time(0) > last_time)
+          {
+            last_time = time(0);
+            if (i != last)
+            {
+              printf("rx : %d total: %d\n", i - last, i);
+            }
+            last = i;
+          }
+          break;
+        case canERR_NOMSG:
+          break;
+        default:
+          perror("canReadBlock error");
+          break;
       }
     } while (ret == canOK);
     willExit = 1;
   }
-   
+
   canClose(h);
-   
+
   sighand(SIGALRM);
   printf("Ready\n");
 
   return 0;
 }
-
-
-
-
-

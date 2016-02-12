@@ -46,12 +46,13 @@ int current_gear = -1;
 int mode_is_setting = false;
 int gear_is_setting = false;
 
-std::vector<std::string> split(const std::string& input, char delimiter)
+std::vector<std::string> split(const std::string &input, char delimiter)
 {
   std::istringstream stream(input);
   std::string field;
   std::vector<std::string> result;
-  while (std::getline(stream, field, delimiter)) {
+  while (std::getline(stream, field, delimiter))
+  {
     result.push_back(field);
   }
   return result;
@@ -69,7 +70,8 @@ void Getter(CMDDATA &cmddata)
   unsigned int **addrptr;
 
   sock = socket(AF_INET, SOCK_STREAM, 0);
-  if (sock < 0) {
+  if (sock < 0)
+  {
     perror("socket");
     return;
   }
@@ -78,41 +80,51 @@ void Getter(CMDDATA &cmddata)
   server.sin_port = htons(10001);
 
   server.sin_addr.s_addr = inet_addr(ros_ip_address.c_str());
-  if (server.sin_addr.s_addr == 0xffffffff) {
+  if (server.sin_addr.s_addr == 0xffffffff)
+  {
     struct hostent *host;
 
     host = gethostbyname(ros_ip_address.c_str());
-    if (host == NULL) {
-      if (h_errno == HOST_NOT_FOUND) {
-        fprintf(stdout,"cmd : ROS PC not found : %s\n", ros_ip_address.c_str());
-      } else {
-        fprintf(stdout,"cmd : %s : %s\n", hstrerror(h_errno), ros_ip_address.c_str());
+    if (host == NULL)
+    {
+      if (h_errno == HOST_NOT_FOUND)
+      {
+        fprintf(stdout, "cmd : ROS PC not found : %s\n", ros_ip_address.c_str());
+      }
+      else
+      {
+        fprintf(stdout, "cmd : %s : %s\n", hstrerror(h_errno), ros_ip_address.c_str());
       }
       return;
     }
 
     addrptr = (unsigned int **)host->h_addr_list;
 
-    while (*addrptr != NULL) {
+    while (*addrptr != NULL)
+    {
       server.sin_addr.s_addr = *(*addrptr);
 
       /* break the loop when connected. */
-      if (connect(sock, (struct sockaddr *)&server, sizeof(server)) == 0) {
+      if (connect(sock, (struct sockaddr *)&server, sizeof(server)) == 0)
+      {
         break;
       }
 
       addrptr++;
       // let's try another IP address if not successfully connected.
     }
-   
+
     // if all connections failed...
-    if (*addrptr == NULL) {
+    if (*addrptr == NULL)
+    {
       perror("cmd : connect");
       return;
     }
-  } else {
-    if (connect(sock,
-		(struct sockaddr *)&server, sizeof(server)) != 0) {
+  }
+  else
+  {
+    if (connect(sock, (struct sockaddr *)&server, sizeof(server)) != 0)
+    {
       perror("cmd : connect");
       return;
     }
@@ -120,29 +132,35 @@ void Getter(CMDDATA &cmddata)
 
   int n;
 
-  while (true) {
+  while (true)
+  {
     memset(recvdata, 0, sizeof(recvdata));
-    n = recv(sock, recvdata, sizeof(recvdata),0);
-    if (n < 0) {
+    n = recv(sock, recvdata, sizeof(recvdata), 0);
+    if (n < 0)
+    {
       perror("cmd : read erro");
       return;
-    } else if (n == 0) {
+    }
+    else if (n == 0)
+    {
       break;
     }
-    cmdRes.append(recvdata,n);
+    cmdRes.append(recvdata, n);
   }
 
   // string version
   std::vector<std::string> cmdVector;
-  cmdVector = split(cmdRes,',');
-  if (cmdVector.size() == 7) {
+  cmdVector = split(cmdRes, ',');
+  if (cmdVector.size() == 7)
+  {
     cmddata.vel.tv = atof(cmdVector[0].c_str());
     cmddata.vel.sv = atof(cmdVector[1].c_str());
-    
-    cout << endl << endl;
+
+    cout << endl
+         << endl;
     cout << "cmddata.vel.tv = " << cmddata.vel.tv << endl;
     cout << "cmddata.vel.sv = " << cmddata.vel.sv << endl;
-    
+
 #if 0 /* log */
       ofstream ofs("/tmp/cmd.log", ios::app);
       ofs << cmddata.vel.tv << " " 
@@ -155,8 +173,10 @@ void Getter(CMDDATA &cmddata)
     cmddata.accel = atoi(cmdVector[4].c_str());
     cmddata.steer = atoi(cmdVector[5].c_str());
     cmddata.brake = atoi(cmdVector[6].c_str());
-  } else {
-    fprintf(stderr,"cmd : Recv data is invalid\n");
+  }
+  else
+  {
+    fprintf(stderr, "cmd : Recv data is invalid\n");
   }
   cout << "cmd : return data : " << cmdRes.c_str() << endl;
 
@@ -165,53 +185,57 @@ void Getter(CMDDATA &cmddata)
 
 void Update(void *p)
 {
-  MainWindow* main = (MainWindow*)p;
+  MainWindow *main = (MainWindow *)p;
 
   // update robocar state.
   main->UpdateState();
 }
 
-void SetState(int mode, int gear, void* p) 
+void SetState(int mode, int gear, void *p)
 {
-  if (mode != current_mode) {
+  if (mode != current_mode)
+  {
     current_mode = mode;
     pthread_create(&_modesetter, NULL, MainWindow::ModeSetterEntry, p);
   }
 
-  if (gear != current_gear) {
-    double current_velocity = vstate.velocity; // km/h
+  if (gear != current_gear)
+  {
+    double current_velocity = vstate.velocity;  // km/h
     // never change the gear when driving!
-    if (current_velocity == 0) {
+    if (current_velocity == 0)
+    {
       current_gear = gear;
       pthread_create(&_gearsetter, NULL, MainWindow::GearSetterEntry, p);
     }
   }
 }
 
-
-void Control(vel_data_t vel, void* p) 
+void Control(vel_data_t vel, void *p)
 {
-  MainWindow* main = (MainWindow*)p;
+  MainWindow *main = (MainWindow *)p;
   static long long int old_tstamp = 0;
 
   cycle_time = (vstate.tstamp - old_tstamp) / 1000.0; /* seconds */
 
-  double current_velocity = vstate.velocity; // km/h
-  double current_steering_angle = vstate.steering_angle; // degree
- 
+  double current_velocity = vstate.velocity;              // km/h
+  double current_steering_angle = vstate.steering_angle;  // degree
+
   int cmd_velocity = vel.tv * 3.6;
   int cmd_steering_angle;
 
-  // We assume that the slope against the entire arc toward the 
-  // next waypoint is almost equal to that against 
+  // We assume that the slope against the entire arc toward the
+  // next waypoint is almost equal to that against
   // $l = 2 \pi r \times \frac{\theta}{360} = r \times \theta$
   // \theta = cmd_wheel_angle
   // vel.sv/vel.tv = Radius
   // l \simeq VEHICLE_LENGTH
-  if (vel.tv < 0.1) { // just avoid divided by zero.
+  if (vel.tv < 0.1)
+  {  // just avoid divided by zero.
     cmd_steering_angle = current_steering_angle;
   }
-  else {
+  else
+  {
     double wheel_angle_pi = (vel.sv / vel.tv) * WHEEL_BASE;
     double wheel_angle = (wheel_angle_pi / M_PI) * 180.0;
     cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
@@ -243,29 +267,29 @@ void Control(vel_data_t vel, void* p)
 
 #endif
 
+  cout << "Current: "
+       << "vel = " << current_velocity << ", str = " << current_steering_angle << endl;
+  cout << "Command: "
+       << "vel = " << cmd_velocity << ", str = " << cmd_steering_angle << endl;
 
-  cout << "Current: " << "vel = " << current_velocity 
-       << ", str = " << current_steering_angle << endl; 
-  cout << "Command: " << "vel = " << cmd_velocity 
-       << ", str = " << cmd_steering_angle << endl; 
-
-  for (int i = 0; i < cmd_rx_interval/STEERING_INTERNAL_PERIOD - 1; i++) {
+  for (int i = 0; i < cmd_rx_interval / STEERING_INTERNAL_PERIOD - 1; i++)
+  {
     //////////////////////////////////////////////////////
     // Accel and Brake
     //////////////////////////////////////////////////////
-    
+
     main->StrokeControl(current_velocity, cmd_velocity);
-    
+
     //////////////////////////////////////////////////////
     // Steering
     //////////////////////////////////////////////////////
-    
+
     main->SteeringControl(current_steering_angle, cmd_steering_angle);
 
-    usleep(STEERING_INTERNAL_PERIOD * 1000);  
+    usleep(STEERING_INTERNAL_PERIOD * 1000);
     Update(main);
-    current_velocity = vstate.velocity; // km/h
-    current_steering_angle = vstate.steering_angle; // degree
+    current_velocity = vstate.velocity;              // km/h
+    current_steering_angle = vstate.steering_angle;  // degree
   }
 
   //////////////////////////////////////////////////////
@@ -282,50 +306,50 @@ void Control(vel_data_t vel, void* p)
 
 void *MainWindow::ModeSetterEntry(void *a)
 {
-  MainWindow* main = (MainWindow*)a;
+  MainWindow *main = (MainWindow *)a;
 
-  mode_is_setting = true; // loose critical section
+  mode_is_setting = true;  // loose critical section
 
   main->ClearCntDiag();
   sleep(1);
-  main->SetStrMode(current_mode); // steering
+  main->SetStrMode(current_mode);  // steering
   sleep(1);
-  main->SetDrvMode(current_mode); // accel/brake
+  main->SetDrvMode(current_mode);  // accel/brake
   sleep(1);
 
-  mode_is_setting = false; // loose critical section
+  mode_is_setting = false;  // loose critical section
 
   return NULL;
 }
 
 void *MainWindow::GearSetterEntry(void *a)
 {
-  MainWindow* main = (MainWindow*)a;
+  MainWindow *main = (MainWindow *)a;
 
-  gear_is_setting = true; // loose critical section
+  gear_is_setting = true;  // loose critical section
 
   main->SetGear(current_gear);
   sleep(1);
 
-  gear_is_setting = false; // loose critical section
+  gear_is_setting = false;  // loose critical section
 
   return NULL;
 }
 
 void *MainWindow::CMDGetterEntry(void *a)
 {
-  MainWindow* main = (MainWindow*)a;
+  MainWindow *main = (MainWindow *)a;
   CMDDATA cmddata;
   long long int tstamp;
   long long int interval;
 
-  while(1){
-
+  while (1)
+  {
     // get commands from ROS.
     Getter(cmddata);
 
     // get time in milliseconds.
-    tstamp = (long long int) getTime();
+    tstamp = (long long int)getTime();
 
     // update robocar state.
     Update(main);
@@ -333,7 +357,8 @@ void *MainWindow::CMDGetterEntry(void *a)
     // set mode and gear.
     SetState(cmddata.mode, cmddata.gear, main);
 
-    if (!mode_is_setting && !gear_is_setting) {
+    if (!mode_is_setting && !gear_is_setting)
+    {
 #ifdef DIRECT_CONTROL
       // directly set accel, brake, and steer.
       Direct(cmddata.accel, cmddata.brake, cmddata.steer, main);
@@ -346,9 +371,10 @@ void *MainWindow::CMDGetterEntry(void *a)
     // get interval in milliseconds.
     interval = cmd_rx_interval - (getTime() - tstamp);
 
-    if (interval > 0) {
+    if (interval > 0)
+    {
       cout << "sleeping for " << interval << "ms" << endl;
-      usleep(interval * 1000); // not really real-time...
+      usleep(interval * 1000);  // not really real-time...
     }
   }
   return NULL;

@@ -14,7 +14,7 @@
 #define SETTINGS_WINDOW_NAME "Settings"
 
 /* Functions declarations */
-void setContexts(TrafficLightDetector &detector, const road_wizard::Signals::ConstPtr& extractedPos);
+void setContexts(TrafficLightDetector &detector, const road_wizard::Signals::ConstPtr &extractedPos);
 
 #define MINIMAM_RADIUS 3
 #define ROI_MARGINE 20
@@ -23,24 +23,27 @@ static inline bool IsNearlyZero(double x)
 {
   double abs_x = fabs(x);
   int scale = 100;
-  return(abs_x < DBL_MIN*scale);
+  return (abs_x < DBL_MIN * scale);
 }
 
-struct valueSet {
-    double upper;
-    double lower;
+struct valueSet
+{
+  double upper;
+  double lower;
 };
 
-struct hsvSet {
-    valueSet Hue;
-    valueSet Sat;
-    valueSet Val;
+struct hsvSet
+{
+  valueSet Hue;
+  valueSet Sat;
+  valueSet Val;
 };
 
-struct thresholdSet {
-    hsvSet Red;
-    hsvSet Yellow;
-    hsvSet Green;
+struct thresholdSet
+{
+  hsvSet Red;
+  hsvSet Yellow;
+  hsvSet Green;
 };
 
 //#define SHOW_DEBUG_INFO

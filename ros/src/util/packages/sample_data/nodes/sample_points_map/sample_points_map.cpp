@@ -44,40 +44,42 @@ ros::Publisher pub;
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "pcd_read");
-	ros::NodeHandle n;
-	ros::Publisher pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
+  ros::init(argc, argv, "pcd_read");
+  ros::NodeHandle n;
+  ros::Publisher pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
 
-	// skip argv[0]
-	argc--;
-	argv++;
+  // skip argv[0]
+  argc--;
+  argv++;
 
-	if (argc <= 0) {
-		fprintf(stderr, "file name ?\n");
-		return 0;
-	}
+  if (argc <= 0)
+  {
+    fprintf(stderr, "file name ?\n");
+    return 0;
+  }
 
-	sensor_msgs::PointCloud2 msg, add;
+  sensor_msgs::PointCloud2 msg, add;
 
-	pcl::io::loadPCDFile(*argv++, msg);
-	// ToDo: error check
-	argc--;
+  pcl::io::loadPCDFile(*argv++, msg);
+  // ToDo: error check
+  argc--;
 
-	while (argc > 0) {
-		//sensor_msgs::PointCloud2 add;
-		pcl::io::loadPCDFile(*argv++, add);
-		// ToDo: error check
-		argc--;
+  while (argc > 0)
+  {
+    // sensor_msgs::PointCloud2 add;
+    pcl::io::loadPCDFile(*argv++, add);
+    // ToDo: error check
+    argc--;
 
-		msg.width += add.width;
-		msg.row_step += add.row_step;
-		msg.data.insert(msg.data.end(), add.data.begin(), add.data.end());
+    msg.width += add.width;
+    msg.row_step += add.row_step;
+    msg.data.insert(msg.data.end(), add.data.begin(), add.data.end());
 
-		fprintf(stderr, "%d%c", argc, argc ? ' ' : '\n');
-	}
-	msg.header.frame_id = "/map";
+    fprintf(stderr, "%d%c", argc, argc ? ' ' : '\n');
+  }
+  msg.header.frame_id = "/map";
 
-	pub.publish(msg);
-	ros::spin();
-	return 0;
+  pub.publish(msg);
+  ros::spin();
+  return 0;
 }

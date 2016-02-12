@@ -36,21 +36,18 @@ static ros::Publisher _pub;
 
 void callback(const waypoint_follower::lane &msg)
 {
-    _pub.publish(msg);
+  _pub.publish(msg);
 }
-
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "path_select");
+  ros::init(argc, argv, "path_select");
 
-    ros::NodeHandle nh;
-    ros::Subscriber twist_sub = nh.subscribe("temporal_waypoints", 1, callback);
-    _pub = nh.advertise<waypoint_follower::lane>("final_waypoints", 1000,true);
+  ros::NodeHandle nh;
+  ros::Subscriber twist_sub = nh.subscribe("temporal_waypoints", 1, callback);
+  _pub = nh.advertise<waypoint_follower::lane>("final_waypoints", 1000, true);
 
-    ros::spin();
+  ros::spin();
 
-
-
-    return 0;
+  return 0;
 }

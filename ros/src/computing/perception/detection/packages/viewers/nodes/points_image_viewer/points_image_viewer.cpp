@@ -51,98 +51,106 @@ static std::string window_name;
 
 static void show(void)
 {
-	if(!existImage || !existPoints){
-		return;
-	}
-	const auto& encoding = sensor_msgs::image_encodings::BGR8;
-	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
-	IplImage frame = cv_image->image;
+  if (!existImage || !existPoints)
+  {
+    return;
+  }
+  const auto& encoding = sensor_msgs::image_encodings::BGR8;
+  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
+  IplImage frame = cv_image->image;
 
-	cv::Mat matImage(&frame, false);
+  cv::Mat matImage(&frame, false);
 
-	int w = matImage.size().width;
-	int h = matImage.size().height;
-	int n = w * h;
+  int w = matImage.size().width;
+  int h = matImage.size().height;
+  int n = w * h;
 
-	float min_d, max_d;
-	min_d = max_d = points_msg->distance[0];
-	for(int i=1; i<n; i++){
-		float di = points_msg->distance[i];
-		max_d = di > max_d ? di : max_d;
-		min_d = di < min_d ? di : min_d;
-	}
-	float wid_d = max_d - min_d;
+  float min_d, max_d;
+  min_d = max_d = points_msg->distance[0];
+  for (int i = 1; i < n; i++)
+  {
+    float di = points_msg->distance[i];
+    max_d = di > max_d ? di : max_d;
+    min_d = di < min_d ? di : min_d;
+  }
+  float wid_d = max_d - min_d;
 
-	for(int y=0; y<h; y++){
-		for(int x=0; x<w; x++){
-			int j = y * w + x;
-			float distance = points_msg->distance[j];
-			if(distance == 0){
-				continue;
-			}
-			int colorid= wid_d ? ( (distance - min_d) * 255 / wid_d ) : 128;
-			cv::Vec3b color=colormap.at<cv::Vec3b>(colorid);
-			int g = color[1];
-			int b = color[2];
-			int r = color[0];
-			cvRectangle(&frame, cvPoint(x, y), cvPoint(x+1, y+1), CV_RGB(r, g, b));
-		}
-	}
+  for (int y = 0; y < h; y++)
+  {
+    for (int x = 0; x < w; x++)
+    {
+      int j = y * w + x;
+      float distance = points_msg->distance[j];
+      if (distance == 0)
+      {
+        continue;
+      }
+      int colorid = wid_d ? ((distance - min_d) * 255 / wid_d) : 128;
+      cv::Vec3b color = colormap.at<cv::Vec3b>(colorid);
+      int g = color[1];
+      int b = color[2];
+      int r = color[0];
+      cvRectangle(&frame, cvPoint(x, y), cvPoint(x + 1, y + 1), CV_RGB(r, g, b));
+    }
+  }
 
-	if (cvGetWindowHandle(window_name.c_str()) != NULL) // Guard not to write destroyed window by using close button on the window
-	{
-		cvShowImage(window_name.c_str(), &frame);
-		cvWaitKey(2);
-	}
+  if (cvGetWindowHandle(window_name.c_str()) !=
+      NULL)  // Guard not to write destroyed window by using close button on the window
+  {
+    cvShowImage(window_name.c_str(), &frame);
+    cvWaitKey(2);
+  }
 }
 
 static void image_cb(const sensor_msgs::Image& msg)
 {
-	image_msg = msg;
-	existImage = true;
-	show();
+  image_msg = msg;
+  existImage = true;
+  show();
 }
 
 static void points_cb(const points2image::PointsImageConstPtr& msg)
 {
-	points_msg = msg;
-	existPoints = true;
-	show();
+  points_msg = msg;
+  existPoints = true;
+  show();
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "points_image_viewer");
-	ros::NodeHandle n;
-	ros::NodeHandle private_nh("~");
+  ros::init(argc, argv, "points_image_viewer");
+  ros::NodeHandle n;
+  ros::NodeHandle private_nh("~");
 
-	std::string points_topic;
-	if (!private_nh.getParam("points_topic", points_topic)) {
-		points_topic = "points_image";
-	}
+  std::string points_topic;
+  if (!private_nh.getParam("points_topic", points_topic))
+  {
+    points_topic = "points_image";
+  }
 
-	std::string name_space_str = ros::this_node::getNamespace();
-	window_name = std::string(window_name_base);
-	if (name_space_str != "/") {
-		window_name += " (" + name_space_str + ")";
-	}
+  std::string name_space_str = ros::this_node::getNamespace();
+  window_name = std::string(window_name_base);
+  if (name_space_str != "/")
+  {
+    window_name += " (" + name_space_str + ")";
+  }
 
-	/* create resizable window */
-	cvNamedWindow(window_name.c_str(), CV_WINDOW_NORMAL);
-	cvStartWindowThread();
+  /* create resizable window */
+  cvNamedWindow(window_name.c_str(), CV_WINDOW_NORMAL);
+  cvStartWindowThread();
 
-	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
-	ros::Subscriber sub_points = n.subscribe(points_topic, 1, points_cb);
+  ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
+  ros::Subscriber sub_points = n.subscribe(points_topic, 1, points_cb);
 
-	cv::Mat grayscale(256,1,CV_8UC1);
-	for(int i=0;i<256;i++)
-	{
-		grayscale.at<uchar>(i)=i;
-	}
-	cv::applyColorMap(grayscale,colormap,cv::COLORMAP_JET);
+  cv::Mat grayscale(256, 1, CV_8UC1);
+  for (int i = 0; i < 256; i++)
+  {
+    grayscale.at<uchar>(i) = i;
+  }
+  cv::applyColorMap(grayscale, colormap, cv::COLORMAP_JET);
 
-	ros::spin();
+  ros::spin();
 
-	cvDestroyWindow(window_name.c_str());
-	return 0;
+  cvDestroyWindow(window_name.c_str());
+  return 0;
 }

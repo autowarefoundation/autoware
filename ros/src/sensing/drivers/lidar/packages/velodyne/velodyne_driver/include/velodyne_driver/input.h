@@ -41,84 +41,82 @@
 
 namespace velodyne_driver
 {
-  static uint16_t UDP_PORT_NUMBER = 2368;
+static uint16_t UDP_PORT_NUMBER = 2368;
 
-  /** @brief Pure virtual Velodyne input base class */
-  class Input
+/** @brief Pure virtual Velodyne input base class */
+class Input
+{
+public:
+  Input()
   {
-  public:
-    Input() {}
+  }
 
-    /** @brief Read one Velodyne packet.
-     *
-     * @param pkt points to VelodynePacket message
-     *
-     * @returns 0 if successful,
-     *          -1 if end of file
-     *          > 0 if incomplete packet (is this possible?)
-     */
-    virtual int getPacket(velodyne_msgs::VelodynePacket *pkt) = 0;
-
-
-    /** @brief Set source IP, from where packets are accepted
-     *
-     * @param ip IP of a Velodyne LIDAR e.g. 192.168.51.70
-     */
-    virtual void setDeviceIP( const std::string& ip ) { devip_str_ = ip; }
-  protected:
-    std::string devip_str_;
-  };
-
-  /** @brief Live Velodyne input from socket. */
-  class InputSocket: public Input
-  {
-  public:
-    InputSocket(ros::NodeHandle private_nh,
-                uint16_t udp_port = UDP_PORT_NUMBER);
-    ~InputSocket();
-
-    virtual int getPacket(velodyne_msgs::VelodynePacket *pkt);
-    void setDeviceIP( const std::string& ip );
-  private:
-
-    int sockfd_;
-    in_addr devip_;
-  };
-
-
-  /** @brief Velodyne input from PCAP dump file.
+  /** @brief Read one Velodyne packet.
    *
-   * Dump files can be grabbed by libpcap, Velodyne's DSR software,
-   * ethereal, wireshark, tcpdump, or the \ref vdump_command.
+   * @param pkt points to VelodynePacket message
+   *
+   * @returns 0 if successful,
+   *          -1 if end of file
+   *          > 0 if incomplete packet (is this possible?)
    */
-  class InputPCAP: public Input
+  virtual int getPacket(velodyne_msgs::VelodynePacket *pkt) = 0;
+
+  /** @brief Set source IP, from where packets are accepted
+   *
+   * @param ip IP of a Velodyne LIDAR e.g. 192.168.51.70
+   */
+  virtual void setDeviceIP(const std::string &ip)
   {
-  public:
-    InputPCAP(ros::NodeHandle private_nh,
-              double packet_rate,
-              std::string filename="",
-              bool read_once=false,
-              bool read_fast=false,
-              double repeat_delay=0.0);
-    ~InputPCAP();
+    devip_str_ = ip;
+  }
 
-    virtual int getPacket(velodyne_msgs::VelodynePacket *pkt);
-    void setDeviceIP( const std::string& ip );
+protected:
+  std::string devip_str_;
+};
 
-  private:
+/** @brief Live Velodyne input from socket. */
+class InputSocket : public Input
+{
+public:
+  InputSocket(ros::NodeHandle private_nh, uint16_t udp_port = UDP_PORT_NUMBER);
+  ~InputSocket();
 
-    std::string filename_;
-    FILE *fp_;
-    pcap_t *pcap_;
-    char errbuf_[PCAP_ERRBUF_SIZE];
-    bool empty_;
-    bool read_once_;
-    bool read_fast_;
-    double repeat_delay_;
-    ros::Rate packet_rate_;
-    bpf_program velodyne_pointdata_filter_;
-  };
+  virtual int getPacket(velodyne_msgs::VelodynePacket *pkt);
+  void setDeviceIP(const std::string &ip);
 
-} // velodyne_driver namespace
+private:
+  int sockfd_;
+  in_addr devip_;
+};
 
-#endif // __VELODYNE_INPUT_H
+/** @brief Velodyne input from PCAP dump file.
+ *
+ * Dump files can be grabbed by libpcap, Velodyne's DSR software,
+ * ethereal, wireshark, tcpdump, or the \ref vdump_command.
+ */
+class InputPCAP : public Input
+{
+public:
+  InputPCAP(ros::NodeHandle private_nh, double packet_rate, std::string filename = "", bool read_once = false,
+            bool read_fast = false, double repeat_delay = 0.0);
+  ~InputPCAP();
+
+  virtual int getPacket(velodyne_msgs::VelodynePacket *pkt);
+  void setDeviceIP(const std::string &ip);
+
+private:
+  std::string filename_;
+  FILE *fp_;
+  pcap_t *pcap_;
+  char errbuf_[PCAP_ERRBUF_SIZE];
+  bool empty_;
+  bool read_once_;
+  bool read_fast_;
+  double repeat_delay_;
+  ros::Rate packet_rate_;
+  bpf_program velodyne_pointdata_filter_;
+};
+
+}  // velodyne_driver namespace
+
+#endif  // __VELODYNE_INPUT_H

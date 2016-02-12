@@ -33,7 +33,7 @@
 #include <visualization_msgs/Marker.h>
 #include <geo_pos_conv.hh>
 
-#define SELF_TRANS	0
+#define SELF_TRANS 0
 int swap_x_y = 0;
 
 typedef std::vector<std::vector<std::string>> Tbl;
@@ -45,17 +45,21 @@ Tbl read_csv(const char* filename)
 
   Tbl tbl;
 
-  while (std::getline(ifs, line)) {
+  while (std::getline(ifs, line))
+  {
     std::istringstream ss(line);
 
     std::vector<std::string> columns;
     std::string column;
-    while (std::getline(ss, column, ',')) {
+    while (std::getline(ss, column, ','))
+    {
       columns.push_back(column);
     }
-    if(columns[0].compare("$GPGGA") != 0) continue;
+    if (columns[0].compare("$GPGGA") != 0)
+      continue;
 
-    if(columns[2] != "" && columns[4] != "" && columns[9] != "") {
+    if (columns[2] != "" && columns[4] != "" && columns[9] != "")
+    {
       tbl.push_back(columns);
     }
   }
@@ -63,12 +67,12 @@ Tbl read_csv(const char* filename)
 }
 
 /* for gnssdata.csv */
-struct GnssData {
+struct GnssData
+{
   double x;
   double y;
   double z;
 };
-
 
 std::vector<GnssData> read_gnssdata(const char* filename)
 {
@@ -76,7 +80,8 @@ std::vector<GnssData> read_gnssdata(const char* filename)
   size_t i, n = tbl.size();
   std::vector<GnssData> ret(n);
 
-  for (i=0; i<n; i++) {
+  for (i = 0; i < n; i++)
+  {
     ret[i].x = std::stod(tbl[i][2]);
     ret[i].y = std::stod(tbl[i][4]);
     ret[i].z = std::stod(tbl[i][9]);
@@ -85,17 +90,18 @@ std::vector<GnssData> read_gnssdata(const char* filename)
   return ret;
 }
 
-
-void set_marker_data(visualization_msgs::Marker* marker,
-		    double px, double py, double pz, double ox, double oy, double oz, double ow,
-		    double sx, double sy, double sz, double r, double g, double b, double a)
+void set_marker_data(visualization_msgs::Marker* marker, double px, double py, double pz, double ox, double oy,
+                     double oz, double ow, double sx, double sy, double sz, double r, double g, double b, double a)
 {
-  if(swap_x_y) {
+  if (swap_x_y)
+  {
     marker->pose.position.x = py;
     marker->pose.position.y = px;
     marker->pose.orientation.x = oy;
     marker->pose.orientation.y = ox;
-  } else {
+  }
+  else
+  {
     marker->pose.position.x = px;
     marker->pose.position.y = py;
     marker->pose.orientation.x = ox;
@@ -116,59 +122,60 @@ void set_marker_data(visualization_msgs::Marker* marker,
   marker->color.a = a;
 }
 
-void publish_marker(visualization_msgs::Marker* marker,
-		    ros::Publisher& pub,
-		    ros::Rate& rate)
+void publish_marker(visualization_msgs::Marker* marker, ros::Publisher& pub, ros::Rate& rate)
 {
 #if SELF_TRANS
-    if(swap_x_y) {
-      marker->pose.position.x += 16635;
-      marker->pose.position.y += 86432;
-    } else {
-      marker->pose.position.x += 86432;
-      marker->pose.position.y += 16635;
-    }
-    marker->pose.position.z += -50; // -50
+  if (swap_x_y)
+  {
+    marker->pose.position.x += 16635;
+    marker->pose.position.y += 86432;
+  }
+  else
+  {
+    marker->pose.position.x += 86432;
+    marker->pose.position.y += 16635;
+  }
+  marker->pose.position.z += -50;  // -50
 #endif
 
-    ros::ok();
-    pub.publish(*marker);
-    rate.sleep();
-    //    marker->id++;
+  ros::ok();
+  pub.publish(*marker);
+  rate.sleep();
+  //    marker->id++;
 }
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
+  /*
 
-/*
+  #!/bin/sh
+  rosrun sample_data sample_trajectory gnss.log <swap_x_y_off|swap_x_y_on>
 
-#!/bin/sh
-rosrun sample_data sample_trajectory gnss.log <swap_x_y_off|swap_x_y_on>
+  # EOF
 
-# EOF
-
-*/
+  */
 
   ros::init(argc, argv, "sample_trajectory");
   ros::NodeHandle n;
   //  ros::Publisher pub = n.advertise<visualization_msgs::Marker>("/vector_map", 10, true);
   ros::Publisher pub = n.advertise<visualization_msgs::Marker>("/sample_trajectory", 10, true);
 
-
-  if (argc < 3) {
-    std::cerr << "Usage: " << argv[0] << " csv_file"
-              << std::endl;
+  if (argc < 3)
+  {
+    std::cerr << "Usage: " << argv[0] << " csv_file" << std::endl;
     std::exit(1);
   }
 
   geo_pos_conv geo;
   std::vector<GnssData> gnssdatas = read_gnssdata(argv[1]);
 
-  if(std::string(argv[2]) == "swap_x_y_on") {
+  if (std::string(argv[2]) == "swap_x_y_on")
+  {
     printf("swap_x_y: on\n");
     swap_x_y = 1;
-  } else {
+  }
+  else
+  {
     printf("swap_x_y : off\n");
   }
 
@@ -193,15 +200,10 @@ rosrun sample_data sample_trajectory gnss.log <swap_x_y_off|swap_x_y_on>
 
   // show gnssdata
   geo.set_plane(7);
-  for (i=0; i<gnssdatas.size(); i++) {
-    geo.set_llh_nmea_degrees(gnssdatas[i].x,gnssdatas[i].y,gnssdatas[i].z);
-    set_marker_data(&marker,
-		    geo.x()-1.0, 
-		    geo.y()-1.0, 
-		    geo.z()-1.0,
-		    0, 0, 0, 1,
-		    2.0, 2.0, 2.0,
-		    0, 1, 0, 1);
+  for (i = 0; i < gnssdatas.size(); i++)
+  {
+    geo.set_llh_nmea_degrees(gnssdatas[i].x, gnssdatas[i].y, gnssdatas[i].z);
+    set_marker_data(&marker, geo.x() - 1.0, geo.y() - 1.0, geo.z() - 1.0, 0, 0, 0, 1, 2.0, 2.0, 2.0, 0, 1, 0, 1);
     publish_marker(&marker, pub, rate);
   }
 

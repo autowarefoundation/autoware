@@ -35,14 +35,14 @@
 
 #include "runtime_manager/ConfigTwistFilter.h"
 
-//Publisher
+// Publisher
 static ros::Publisher g_twist_pub;
 static double g_lateral_accel_limit = 0.8;
 
 static void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
 {
   g_lateral_accel_limit = config->lateral_accel_limit;
-  ROS_INFO("g_lateral_accel_limit = %lf",g_lateral_accel_limit);
+  ROS_INFO("g_lateral_accel_limit = %lf", g_lateral_accel_limit);
 }
 
 void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
@@ -51,41 +51,37 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   twist.twist.linear.x = msg->twist.linear.x;
 
   double accel = msg->twist.linear.x * msg->twist.angular.z;
-  ROS_INFO("lateral accel = %lf",accel);
+  ROS_INFO("lateral accel = %lf", accel);
 
-
-
-  if(fabs(accel) > g_lateral_accel_limit)
+  if (fabs(accel) > g_lateral_accel_limit)
   {
     ROS_INFO("limit over! filtering...");
-    if(accel < 0)
+    if (accel < 0)
       twist.twist.angular.z = (-1) * g_lateral_accel_limit / msg->twist.linear.x;
     else
       twist.twist.angular.z = g_lateral_accel_limit / msg->twist.linear.x;
   }
   else
   {
-    //ROS_INFO("limit clear!");
+    // ROS_INFO("limit clear!");
     twist.twist.angular.z = msg->twist.angular.z;
   }
 
-  ROS_INFO("twist.linear.x = %lf, twist.angular.z = %lf",twist.twist.linear.x,twist.twist.angular.z);
+  ROS_INFO("twist.linear.x = %lf, twist.angular.z = %lf", twist.twist.linear.x, twist.twist.angular.z);
   g_twist_pub.publish(twist);
-
 }
-
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "twist_filter");
+  ros::init(argc, argv, "twist_filter");
 
-    ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~");
+  ros::NodeHandle nh;
+  ros::NodeHandle private_nh("~");
 
-    ros::Subscriber twist_sub = nh.subscribe("twist_raw", 1, TwistCmdCallback);
-    ros::Subscriber config_sub = nh.subscribe("config/twist_filter", 10, configCallback);
-    g_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
+  ros::Subscriber twist_sub = nh.subscribe("twist_raw", 1, TwistCmdCallback);
+  ros::Subscriber config_sub = nh.subscribe("config/twist_filter", 10, configCallback);
+  g_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 1000);
 
-    ros::spin();
-    return 0;
+  ros::spin();
+  return 0;
 }

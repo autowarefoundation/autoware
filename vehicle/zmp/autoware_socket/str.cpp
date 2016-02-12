@@ -39,26 +39,28 @@ static void clear_diff()
   int i;
 
   steering_diff_sum = 0;
-    
-  for (i = 0; i < (int) steering_diff_buffer.size(); i++) {
+
+  for (i = 0; i < (int)steering_diff_buffer.size(); i++)
+  {
     steering_diff_buffer.pop();
   }
 }
 
 void MainWindow::SetStrMode(int mode)
 {
-  switch (mode) {
-  case CMD_MODE_MANUAL:
-    cout << "Switching to MANUAL (Steering)" << endl;
-    ZMP_SET_STR_MANUAL();
-    break;
-  case CMD_MODE_PROGRAM:
-    cout << "Switching to PROGRAM (Steering)" << endl;
-    ZMP_SET_STR_PROGRAM();
-    clear_diff();
-    break;
-  default:
-    cout << "Unknown mode: " << mode << endl;
+  switch (mode)
+  {
+    case CMD_MODE_MANUAL:
+      cout << "Switching to MANUAL (Steering)" << endl;
+      ZMP_SET_STR_MANUAL();
+      break;
+    case CMD_MODE_PROGRAM:
+      cout << "Switching to PROGRAM (Steering)" << endl;
+      ZMP_SET_STR_PROGRAM();
+      clear_diff();
+      break;
+    default:
+      cout << "Unknown mode: " << mode << endl;
   }
 }
 
@@ -73,24 +75,27 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
   // adjust the steering angle error (default offset).
   current_steering_angle -= _STEERING_ANGLE_ERROR;
 
-  double steering_diff = cmd_steering_angle - current_steering_angle; 
+  double steering_diff = cmd_steering_angle - current_steering_angle;
   steering_diff_sum += steering_diff;
 
-  if (steering_diff_sum > _STEERING_MAX_SUM) {
+  if (steering_diff_sum > _STEERING_MAX_SUM)
+  {
     steering_diff_sum = _STEERING_MAX_SUM;
   }
-  if (steering_diff_sum < -_STEERING_MAX_SUM) {
+  if (steering_diff_sum < -_STEERING_MAX_SUM)
+  {
     steering_diff_sum = -_STEERING_MAX_SUM;
   }
 
   e = steering_diff;
   e_i = steering_diff_sum;
 
-  if (e_prev == 0xffffffff) {
+  if (e_prev == 0xffffffff)
+  {
     e_prev = e;
   }
 
-  e_d = (e - e_prev) / (STEERING_INTERNAL_PERIOD/1000.0);
+  e_d = (e - e_prev) / (STEERING_INTERNAL_PERIOD / 1000.0);
 
   double k_p = _K_STEERING_P_SLOW;
   double k_i = _K_STEERING_I_SLOW;
@@ -99,17 +104,20 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
   double steering_max_torque = _STEERING_MAX_TORQUE;
 
   // change PID params depending on the driving speed.
-  if (vstate.velocity < 30) {
+  if (vstate.velocity < 30)
+  {
     k_p = _K_STEERING_P_SLOW;
     k_i = _K_STEERING_I_SLOW;
     k_d = _K_STEERING_D_SLOW;
 
     // if angular velocity is slow, ignore D to smoothen the steer.
-    if (fabs(e_d) < _STEERING_ANGVEL_BOUNDARY) {
+    if (fabs(e_d) < _STEERING_ANGVEL_BOUNDARY)
+    {
       e_d = 0;
     }
     // if the error is small, ignore D and I to stabilize the steer.
-    else if (fabs(e) < _STEERING_IGNORE_ERROR) {
+    else if (fabs(e) < _STEERING_IGNORE_ERROR)
+    {
       e_d = 0;
       steering_diff_sum = 0;
     }
@@ -122,24 +130,21 @@ double _str_torque_pid_control(double current_steering_angle, double cmd_steerin
   double target_steering_torque = e * k_p + e_i * k_i + e_d * k_d;
 
   // clip
-  if (target_steering_torque > steering_max_torque) {
+  if (target_steering_torque > steering_max_torque)
+  {
     target_steering_torque = steering_max_torque;
   }
-  if (target_steering_torque < -steering_max_torque) {
+  if (target_steering_torque < -steering_max_torque)
+  {
     target_steering_torque = -steering_max_torque;
   }
 
   ret = target_steering_torque;
 
-#if 1 /* log */ 
+#if 1 /* log */
   ofstream ofs("/tmp/steering.log", ios::app);
-  ofs << cmd_steering_angle << " " 
-      << current_steering_angle << " " 
-      << e << " "  
-      << e_i << " "  
-      << e_d << " "  
-      << (e - e_prev) / (STEERING_INTERNAL_PERIOD/1000.0) << " "
-      << target_steering_torque << endl;
+  ofs << cmd_steering_angle << " " << current_steering_angle << " " << e << " " << e_i << " " << e_d << " "
+      << (e - e_prev) / (STEERING_INTERNAL_PERIOD / 1000.0) << " " << target_steering_torque << endl;
 #endif
 
   e_prev = e;
@@ -152,15 +157,18 @@ void MainWindow::SteeringControl(double current_steering_angle, double cmd_steer
   double torque;
 
   // don't control if not in program mode.
-  if (!ZMP_STR_CONTROLLED()) {
+  if (!ZMP_STR_CONTROLLED())
+  {
     clear_diff();
     return;
   }
 
-  if (vstate.velocity < 1) { // if nearly at stop, don't control steering.
+  if (vstate.velocity < 1)
+  {  // if nearly at stop, don't control steering.
     torque = 0;
   }
-  else {
+  else
+  {
     torque = _str_torque_pid_control(current_steering_angle, cmd_steering_angle);
   }
   cout << "ZMP_SET_STR_TORQUE(" << torque << ")" << endl;

@@ -34,44 +34,42 @@ typedef velodyne_rawdata::VPoint VPoint;
 typedef velodyne_rawdata::VPointCloud VPointCloud;
 
 // instantiate template for transforming a VPointCloud
-template bool
-  pcl_ros::transformPointCloud<VPoint>(const std::string &,
-                                       const VPointCloud &,
-                                       VPointCloud &,
-                                       const tf::TransformListener &);
+template bool pcl_ros::transformPointCloud<VPoint>(const std::string &, const VPointCloud &, VPointCloud &,
+                                                   const tf::TransformListener &);
 
 namespace velodyne_pointcloud
 {
-  class Transform
+class Transform
+{
+public:
+  Transform(ros::NodeHandle node, ros::NodeHandle private_nh);
+  ~Transform()
   {
-  public:
+  }
 
-    Transform(ros::NodeHandle node, ros::NodeHandle private_nh);
-    ~Transform() {}
+private:
+  void processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg);
 
-  private:
+  boost::shared_ptr<velodyne_rawdata::RawData> data_;
+  message_filters::Subscriber<velodyne_msgs::VelodyneScan> velodyne_scan_;
+  tf::MessageFilter<velodyne_msgs::VelodyneScan> *tf_filter_;
+  ros::Publisher output_;
+  tf::TransformListener listener_;
 
-    void processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg);
+  /// configuration parameters
+  typedef struct
+  {
+    std::string frame_id;  ///< target frame ID
+  } Config;
+  Config config_;
 
-    boost::shared_ptr<velodyne_rawdata::RawData> data_;
-    message_filters::Subscriber<velodyne_msgs::VelodyneScan> velodyne_scan_;
-    tf::MessageFilter<velodyne_msgs::VelodyneScan> *tf_filter_;
-    ros::Publisher output_;
-    tf::TransformListener listener_;
+  // Point cloud buffers for collecting points within a packet.  The
+  // inPc_ and tfPc_ are class members only to avoid reallocation on
+  // every message.
+  VPointCloud inPc_;  ///< input packet point cloud
+  VPointCloud tfPc_;  ///< transformed packet point cloud
+};
 
-    /// configuration parameters
-    typedef struct {
-      std::string frame_id;          ///< target frame ID
-    } Config;
-    Config config_;
+}  // namespace velodyne_pointcloud
 
-    // Point cloud buffers for collecting points within a packet.  The
-    // inPc_ and tfPc_ are class members only to avoid reallocation on
-    // every message.
-    VPointCloud inPc_;              ///< input packet point cloud
-    VPointCloud tfPc_;              ///< transformed packet point cloud
-  };
-
-} // namespace velodyne_pointcloud
-
-#endif // _VELODYNE_POINTCLOUD_TRANSFORM_H_
+#endif  // _VELODYNE_POINTCLOUD_TRANSFORM_H_

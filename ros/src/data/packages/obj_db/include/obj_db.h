@@ -34,16 +34,17 @@
 #include <cstdint>
 #include <string>
 
-class SendData {
+class SendData
+{
 private:
-	std::string host_name_;
-	int port_;
+  std::string host_name_;
+  int port_;
 
 public:
-	SendData();
-	explicit SendData(const std::string& host_name, int port);
+  SendData();
+  explicit SendData(const std::string& host_name, int port);
 
-	int Sender(const std::string& value, std::string& res) const;
+  int Sender(const std::string& value, std::string& res) const;
 };
 
 extern std::string make_header(int32_t sql_inst, int32_t sql_num);

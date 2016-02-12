@@ -53,43 +53,45 @@
 #define IMAGE_CALLBACK imageCallback
 #endif
 
-struct Scan_image{
-	std::vector<std::vector<float>> distance;
-	std::vector<std::vector<float>> intensity;
-	int max_y;
-	int min_y;
+struct Scan_image
+{
+  std::vector<std::vector<float>> distance;
+  std::vector<std::vector<float>> intensity;
+  int max_y;
+  int min_y;
 };
 
 struct Point5
 {
-	int x;
-	int y;
-	double distance;
-	float min_h;
-	float max_h;
+  int x;
+  int y;
+  double distance;
+  float min_h;
+  float max_h;
 };
 
 extern void fuse();
-extern void fuseFilterDetections(std::vector<Point5>& vScanPoints);
+extern void fuseFilterDetections(std::vector<Point5> &vScanPoints);
 extern void getVScanPoints(std::vector<Point5> &vScanPoints);
 extern bool dispersed(std::vector<Point5> &vScanPoints, std::vector<int> &indices);
 extern float getStdDev(std::vector<Point5> &vScanPoints, std::vector<int> &indices, float avg);
 extern float getMinAverage(std::vector<Point5> &vScanPoints, std::vector<int> &indices);
-extern bool rectangleContainsPoints(cv::Rect rect, std::vector<Point5> &vScanPoints, float object_distance, std::vector<int> &outIndices);
+extern bool rectangleContainsPoints(cv::Rect rect, std::vector<Point5> &vScanPoints, float object_distance,
+                                    std::vector<int> &outIndices);
 extern std::vector<float> getMinHeights();
 extern std::vector<float> getMaxHeights();
 extern void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp);
 
 extern void calcDistance();
-extern void setDetectedObjects(const cv_tracker::image_obj& image_objects);
-extern void setScanImage(const scan2image::ScanImage& scan_image);
-extern void setPointsImage(const points2image::PointsImage& points_image);
+extern void setDetectedObjects(const cv_tracker::image_obj &image_objects);
+extern void setScanImage(const scan2image::ScanImage &scan_image);
+extern void setPointsImage(const points2image::PointsImage &points_image);
 extern std::vector<cv_tracker::image_rect_ranged> getObjectsRectRanged();
 extern std::string getObjectsType();
 extern void init();
 extern void destroy();
 #if _DEBUG
-extern void imageCallback(const sensor_msgs::Image& image_source);
+extern void imageCallback(const sensor_msgs::Image &image_source);
 #endif
 
 #endif

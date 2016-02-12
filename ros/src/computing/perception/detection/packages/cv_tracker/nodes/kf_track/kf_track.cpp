@@ -32,13 +32,13 @@
 #include <ros/ros.h>
 #include <libdpm_ocv/ImageObjects.h>
 
-extern int kf_main(int argc, char* argv[]);
+extern int kf_main(int argc, char *argv[]);
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "kf_track");
+  ros::init(argc, argv, "kf_track");
 
-	ros::NodeHandle n;
+  ros::NodeHandle n;
 
-	return kf_main(argc, argv);
+  return kf_main(argc, argv);
 }

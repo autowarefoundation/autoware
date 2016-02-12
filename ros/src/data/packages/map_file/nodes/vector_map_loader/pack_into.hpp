@@ -65,40 +65,40 @@
  * Graphical Primitive Class
  */
 
-map_file::PointClassArray pack_point_class_array(const std::vector<PointClass>&);
-map_file::VectorClassArray pack_vector_class_array(const std::vector<VectorClass>&);
-map_file::LineClassArray pack_line_class_array(const std::vector<LineClass>&);
-map_file::AreaClassArray pack_area_class_array(const std::vector<AreaClass>&);
-map_file::PoleClassArray pack_pole_class_array(const std::vector<PoleClass>&);
-map_file::BoxClassArray pack_box_class_array(const std::vector<BoxClass>&);
+map_file::PointClassArray pack_point_class_array(const std::vector<PointClass> &);
+map_file::VectorClassArray pack_vector_class_array(const std::vector<VectorClass> &);
+map_file::LineClassArray pack_line_class_array(const std::vector<LineClass> &);
+map_file::AreaClassArray pack_area_class_array(const std::vector<AreaClass> &);
+map_file::PoleClassArray pack_pole_class_array(const std::vector<PoleClass> &);
+map_file::BoxClassArray pack_box_class_array(const std::vector<BoxClass> &);
 
 /*
  * Road Data
  */
 
-map_file::DTLaneArray pack_dtlane_array(const std::vector<DTLane>&);
-map_file::NodeArray pack_node_array(const std::vector<Node>&);
-map_file::LaneArray pack_lane_array(const std::vector<Lane>&);
+map_file::DTLaneArray pack_dtlane_array(const std::vector<DTLane> &);
+map_file::NodeArray pack_node_array(const std::vector<Node> &);
+map_file::LaneArray pack_lane_array(const std::vector<Lane> &);
 
 /*
  * Object Data
  */
 
-map_file::RoadEdgeArray pack_roadedge_array(const std::vector<RoadEdge>&);
-map_file::GutterArray pack_gutter_array(const std::vector<Gutter>&);
-map_file::CurbArray pack_curb_array(const std::vector<Curb>&);
-map_file::WhiteLineArray pack_whiteline_array(const std::vector<WhiteLine>&);
-map_file::StopLineArray pack_stopline_array(const std::vector<StopLine>&);
-map_file::ZebraZoneArray pack_zebrazone_array(const std::vector<ZebraZone>&);
-map_file::CrossWalkArray pack_crosswalk_array(const std::vector<CrossWalk>&);
-map_file::RoadMarkArray pack_roadmark_array(const std::vector<RoadMark>&);
-map_file::PoleArray pack_pole_array(const std::vector<Pole>&);
-map_file::RoadSignArray pack_roadsign_array(const std::vector<RoadSign>&);
-map_file::SignalArray pack_signal_array(const std::vector<Signal>&);
-map_file::StreetLightArray pack_streetlight_array(const std::vector<StreetLight>&);
-map_file::UtilityPoleArray pack_utilitypole_array(const std::vector<UtilityPole>&);
-map_file::GuardRailArray pack_guardrail_array(const std::vector<GuardRail>&);
-map_file::SideWalkArray pack_sidewalk_array(const std::vector<SideWalk>&);
-map_file::CrossRoadArray pack_crossroad_array(const std::vector<CrossRoad>&);
+map_file::RoadEdgeArray pack_roadedge_array(const std::vector<RoadEdge> &);
+map_file::GutterArray pack_gutter_array(const std::vector<Gutter> &);
+map_file::CurbArray pack_curb_array(const std::vector<Curb> &);
+map_file::WhiteLineArray pack_whiteline_array(const std::vector<WhiteLine> &);
+map_file::StopLineArray pack_stopline_array(const std::vector<StopLine> &);
+map_file::ZebraZoneArray pack_zebrazone_array(const std::vector<ZebraZone> &);
+map_file::CrossWalkArray pack_crosswalk_array(const std::vector<CrossWalk> &);
+map_file::RoadMarkArray pack_roadmark_array(const std::vector<RoadMark> &);
+map_file::PoleArray pack_pole_array(const std::vector<Pole> &);
+map_file::RoadSignArray pack_roadsign_array(const std::vector<RoadSign> &);
+map_file::SignalArray pack_signal_array(const std::vector<Signal> &);
+map_file::StreetLightArray pack_streetlight_array(const std::vector<StreetLight> &);
+map_file::UtilityPoleArray pack_utilitypole_array(const std::vector<UtilityPole> &);
+map_file::GuardRailArray pack_guardrail_array(const std::vector<GuardRail> &);
+map_file::SideWalkArray pack_sidewalk_array(const std::vector<SideWalk> &);
+map_file::CrossRoadArray pack_crossroad_array(const std::vector<CrossRoad> &);
 
 #endif /* !_PACK_INTO_HPP */

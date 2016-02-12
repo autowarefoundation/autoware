@@ -46,7 +46,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
-struct CommandData {
+struct CommandData
+{
   double linear_x;
   double angular_z;
   int modeValue;
@@ -60,43 +61,44 @@ struct CommandData {
 
 void CommandData::reset()
 {
-  linear_x    = 0;
-  angular_z   = 0;
-  modeValue   = 0;
-  gearValue   = 0;
+  linear_x = 0;
+  angular_z = 0;
+  modeValue = 0;
+  gearValue = 0;
   accellValue = 0;
-  brakeValue  = 0;
-  steerValue  = 0;
+  brakeValue = 0;
+  steerValue = 0;
 }
 
 static CommandData command_data;
 
-static void twistCMDCallback(const geometry_msgs::TwistStamped& msg)
+static void twistCMDCallback(const geometry_msgs::TwistStamped &msg)
 {
   command_data.linear_x = msg.twist.linear.x;
   command_data.angular_z = msg.twist.angular.z;
 }
 
-static void modeCMDCallback(const tablet_socket::mode_cmd& mode)
+static void modeCMDCallback(const tablet_socket::mode_cmd &mode)
 {
-  if(mode.mode == -1 || mode.mode == 0){
+  if (mode.mode == -1 || mode.mode == 0)
+  {
     command_data.reset();
   }
 
   command_data.modeValue = mode.mode;
 }
 
-static void gearCMDCallback(const tablet_socket::gear_cmd& gear)
+static void gearCMDCallback(const tablet_socket::gear_cmd &gear)
 {
   command_data.gearValue = gear.gear;
 }
 
-static void accellCMDCallback(const runtime_manager::accel_cmd& accell)
+static void accellCMDCallback(const runtime_manager::accel_cmd &accell)
 {
   command_data.accellValue = accell.accel;
 }
 
-static void steerCMDCallback(const runtime_manager::steer_cmd& steer)
+static void steerCMDCallback(const runtime_manager::steer_cmd &steer)
 {
   command_data.steerValue = steer.steer;
 }
@@ -108,7 +110,7 @@ static void brakeCMDCallback(const runtime_manager::brake_cmd &brake)
 
 static void *sendCommand(void *arg)
 {
-  int *client_sockp = static_cast<int*>(arg);
+  int *client_sockp = static_cast<int *>(arg);
   int client_sock = *client_sockp;
   delete client_sockp;
 
@@ -123,12 +125,14 @@ static void *sendCommand(void *arg)
 
   std::string cmd(oss.str());
   ssize_t n = write(client_sock, cmd.c_str(), cmd.size());
-  if(n < 0){
+  if (n < 0)
+  {
     std::perror("write");
     return nullptr;
   }
-  
-  if(close(client_sock) == -1){
+
+  if (close(client_sock) == -1)
+  {
     std::perror("close");
     return nullptr;
   }
@@ -137,12 +141,13 @@ static void *sendCommand(void *arg)
   return nullptr;
 }
 
-static void* receiverCaller(void *unused)
+static void *receiverCaller(void *unused)
 {
   constexpr int listen_port = 10001;
 
   int sock = socket(AF_INET, SOCK_STREAM, 0);
-  if(sock == -1){
+  if (sock == -1)
+  {
     std::perror("socket");
     return nullptr;
   }
@@ -157,24 +162,28 @@ static void* receiverCaller(void *unused)
   addr.sin_addr.s_addr = INADDR_ANY;
 
   int ret = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
-  if(ret == -1){
+  if (ret == -1)
+  {
     std::perror("bind");
     goto error;
   }
 
   ret = listen(sock, 20);
-  if(ret == -1){
+  if (ret == -1)
+  {
     std::perror("listen");
     goto error;
   }
 
-  while(true){
-    //get connect to android
+  while (true)
+  {
+    // get connect to android
     std::cout << "Waiting access..." << std::endl;
 
     int *client_sock = new int();
-    *client_sock = accept(sock, reinterpret_cast<sockaddr*>(&client), &len);
-    if(*client_sock == -1){
+    *client_sock = accept(sock, reinterpret_cast<sockaddr *>(&client), &len);
+    if (*client_sock == -1)
+    {
       std::perror("accept");
       break;
     }
@@ -182,12 +191,14 @@ static void* receiverCaller(void *unused)
     std::cout << "get connect." << std::endl;
 
     pthread_t th;
-    if(pthread_create(&th, nullptr, sendCommand, static_cast<void*>(client_sock)) != 0){
+    if (pthread_create(&th, nullptr, sendCommand, static_cast<void *>(client_sock)) != 0)
+    {
       std::perror("pthread_create");
       break;
     }
 
-    if(pthread_detach(th) != 0){
+    if (pthread_detach(th) != 0)
+    {
       std::perror("pthread_detach");
       break;
     }
@@ -200,14 +211,14 @@ error:
 
 int main(int argc, char **argv)
 {
-  ros::init(argc ,argv, "vehicle_sender") ;
+  ros::init(argc, argv, "vehicle_sender");
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
   ros::Subscriber sub[6];
   sub[0] = nh.subscribe("/twist_cmd", 1, twistCMDCallback);
-  sub[1] = nh.subscribe("/mode_cmd",  1, modeCMDCallback);
-  sub[2] = nh.subscribe("/gear_cmd",  1, gearCMDCallback);
+  sub[1] = nh.subscribe("/mode_cmd", 1, modeCMDCallback);
+  sub[2] = nh.subscribe("/gear_cmd", 1, gearCMDCallback);
   sub[3] = nh.subscribe("/accel_cmd", 1, accellCMDCallback);
   sub[4] = nh.subscribe("/steer_cmd", 1, steerCMDCallback);
   sub[5] = nh.subscribe("/brake_cmd", 1, brakeCMDCallback);
@@ -215,12 +226,14 @@ int main(int argc, char **argv)
   command_data.reset();
 
   pthread_t th;
-  if(pthread_create(&th, nullptr, receiverCaller, nullptr) != 0){
+  if (pthread_create(&th, nullptr, receiverCaller, nullptr) != 0)
+  {
     std::perror("pthread_create");
     std::exit(1);
   }
 
-  if (pthread_detach(th) != 0){
+  if (pthread_detach(th) != 0)
+  {
     std::perror("pthread_detach");
     std::exit(1);
   }
