@@ -1,6 +1,6 @@
 # Autoware
 
-Open-source software for urban autonomous driving. The following functions are supported:
+Integrated open-source software for urban autonomous driving. The following functions are supported:
 
 - 3D Localization
 - 3D Mapping
@@ -19,6 +19,8 @@ Open-source software for urban autonomous driving. The following functions are s
 - Android Navigation
 - Simulation
 - Gamificated HMI
+
+Autoware is protected by BSD License. Please use it on your own responsibility. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case that you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
 ## License
 
