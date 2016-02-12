@@ -33,15 +33,17 @@
 
 #include <vector>
 
-struct Three_dimensional_vector{
-    std::vector<float> x;
-    std::vector<float> y;
-    std::vector<float> z;
+struct Three_dimensional_vector
+{
+  std::vector<float> x;
+  std::vector<float> y;
+  std::vector<float> z;
 };
 
-struct Two_dimensional_vector{
-    std::vector<float> x;
-    std::vector<float> y;
+struct Two_dimensional_vector
+{
+  std::vector<float> x;
+  std::vector<float> y;
 };
 
 #endif

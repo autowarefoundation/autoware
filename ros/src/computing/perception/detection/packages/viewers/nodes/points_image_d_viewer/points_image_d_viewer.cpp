@@ -64,114 +64,95 @@ static cv_tracker::image_obj_ranged pedestrian_fused_objects;
 /* check whether floating value x is nearly 0 or not */
 static inline bool isNearlyNODATA(float x)
 {
-  float abs_x  = (float)fabs(x);
+  float abs_x = (float)fabs(x);
   const int rangeScale = 100;
-  return(abs_x < FLT_MIN*rangeScale);
+  return (abs_x < FLT_MIN * rangeScale);
 }
 
 static std::vector<cv::Scalar> _colors;
 
-#define	IMAGE_WIDTH	800
-#define	IMAGE_HEIGHT	600
+#define IMAGE_WIDTH 800
+#define IMAGE_HEIGHT 600
 
 static const int OBJ_RECT_THICKNESS = 3;
 
-static void drawRects(IplImage *Image,
-                      std::vector<cv_tracker::image_rect_ranged> objects,
-                      CvScalar color,
+static void drawRects(IplImage* Image, std::vector<cv_tracker::image_rect_ranged> objects, CvScalar color,
                       int threshold_height)
 {
   unsigned int object_num = objects.size();
-  for(unsigned int i = 0; i < object_num; i++) {
-    if (objects.at(i).rect.y > threshold_height && !isNearlyNODATA(objects.at(i).range)) {  // temporal way to avoid drawing detections in the sky
-      CvPoint p1=cvPoint(objects.at(i).rect.x, objects.at(i).rect.y);
-      CvPoint p2=cvPoint(objects.at(i).rect.x + objects.at(i).rect.width, objects.at(i).rect.y + objects.at(i).rect.height);
-      cvRectangle(Image,p1,p2,color,OBJ_RECT_THICKNESS);
+  for (unsigned int i = 0; i < object_num; i++)
+  {
+    if (objects.at(i).rect.y > threshold_height && !isNearlyNODATA(objects.at(i).range))
+    {  // temporal way to avoid drawing detections in the sky
+      CvPoint p1 = cvPoint(objects.at(i).rect.x, objects.at(i).rect.y);
+      CvPoint p2 =
+          cvPoint(objects.at(i).rect.x + objects.at(i).rect.width, objects.at(i).rect.y + objects.at(i).rect.height);
+      cvRectangle(Image, p1, p2, color, OBJ_RECT_THICKNESS);
     }
   }
 }
 
-static void putDistance(IplImage *Image,
-                        std::vector<cv_tracker::image_rect_ranged> objects,
-                        int threshold_height,
+static void putDistance(IplImage* Image, std::vector<cv_tracker::image_rect_ranged> objects, int threshold_height,
                         const char* objectLabel)
 {
   char distance_string[32];
   CvFont dfont;
-  float hscale	    = 0.7f;
-  float vscale	    = 0.7f;
+  float hscale = 0.7f;
+  float vscale = 0.7f;
   float italicscale = 0.0f;
-  int	thickness   = 1;
+  int thickness = 1;
 
-  CvFont      dfont_label;
-  float       hscale_label = 0.5f;
-  float       vscale_label = 0.5f;
-  CvSize      text_size;
-  int         baseline     = 0;
+  CvFont dfont_label;
+  float hscale_label = 0.5f;
+  float vscale_label = 0.5f;
+  CvSize text_size;
+  int baseline = 0;
 
   cvInitFont(&dfont_label, CV_FONT_HERSHEY_COMPLEX, hscale_label, vscale_label, italicscale, thickness, CV_AA);
-  cvGetTextSize(objectLabel,
-                &dfont_label,
-                &text_size,
-                &baseline);
+  cvGetTextSize(objectLabel, &dfont_label, &text_size, &baseline);
 
-  for (unsigned int i=0; i<objects.size(); i++)
+  for (unsigned int i = 0; i < objects.size(); i++)
+  {
+    if (objects.at(i).rect.y > threshold_height)  // temporal way to avoid drawing detections in the sky
     {
-      if (objects.at(i).rect.y > threshold_height) // temporal way to avoid drawing detections in the sky
-        {
-          if (!isNearlyNODATA(objects.at(i).range))
-            {
+      if (!isNearlyNODATA(objects.at(i).range))
+      {
+        /*put label */
+        CvPoint labelOrg =
+            cvPoint(objects.at(i).rect.x - OBJ_RECT_THICKNESS, objects.at(i).rect.y - baseline - OBJ_RECT_THICKNESS);
 
-              /*put label */
-              CvPoint labelOrg = cvPoint(objects.at(i).rect.x - OBJ_RECT_THICKNESS,
-                                         objects.at(i).rect.y - baseline - OBJ_RECT_THICKNESS);
+        cvRectangle(Image, cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
+                    cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
+                    CV_RGB(0, 0, 0),  // label background is black
+                    -1, 8, 0);
+        cvPutText(Image, objectLabel, labelOrg, &dfont_label, CV_RGB(255, 255, 255)  // label text color is white
+                  );
 
-              cvRectangle(Image,
-                          cvPoint(labelOrg.x + 0, labelOrg.y + baseline),
-                          cvPoint(labelOrg.x + text_size.width, labelOrg.y - text_size.height),
-                          CV_RGB(0, 0, 0), // label background is black
-                          -1, 8, 0
-                          );
-              cvPutText(Image,
-                        objectLabel,
-                        labelOrg,
-                        &dfont_label,
-                        CV_RGB(255, 255, 255) // label text color is white
-                        );
+        /* put distance data */
+        cvRectangle(Image, cv::Point(objects.at(i).rect.x + (objects.at(i).rect.width / 2) -
+                                         (((int)log10(objects.at(i).range / 100) + 1) * 5 + 45),
+                                     objects.at(i).rect.y + objects.at(i).rect.height + 5),
+                    cv::Point(objects.at(i).rect.x + (objects.at(i).rect.width / 2) +
+                                  (((int)log10(objects.at(i).range / 100) + 1) * 8 + 38),
+                              objects.at(i).rect.y + objects.at(i).rect.height + 30),
+                    cv::Scalar(255, 255, 255), -1);
 
-              /* put distance data */
-              cvRectangle(Image,
-                          cv::Point(objects.at(i).rect.x + (objects.at(i).rect.width/2) - (((int)log10(objects.at(i).range/100)+1) * 5 + 45),
-                                    objects.at(i).rect.y + objects.at(i).rect.height + 5),
-                          cv::Point(objects.at(i).rect.x + (objects.at(i).rect.width/2) + (((int)log10(objects.at(i).range/100)+1) * 8 + 38),
-                                    objects.at(i).rect.y + objects.at(i).rect.height + 30),
-                          cv::Scalar(255,255,255),
-                          -1);
+        cvInitFont(&dfont, CV_FONT_HERSHEY_COMPLEX, hscale, vscale, italicscale, thickness, CV_AA);
 
-              cvInitFont (&dfont,
-                          CV_FONT_HERSHEY_COMPLEX,
-                          hscale,
-                          vscale,
-                          italicscale,
-                          thickness,
-                          CV_AA);
-
-              sprintf(distance_string, "%.2f m", objects.at(i).range / 100); //unit of length is meter
-              cvPutText(Image,
-                        distance_string,
-                        cvPoint(objects.at(i).rect.x + (objects.at(i).rect.width/2) - (((int)log10(objects.at(i).range/100)+1) * 5 + 40),
-                                objects.at(i).rect.y + objects.at(i).rect.height + 25),
-                        &dfont,
-                        CV_RGB(255, 0, 0));
-            }
-
-        }
+        sprintf(distance_string, "%.2f m", objects.at(i).range / 100);  // unit of length is meter
+        cvPutText(Image, distance_string, cvPoint(objects.at(i).rect.x + (objects.at(i).rect.width / 2) -
+                                                      (((int)log10(objects.at(i).range / 100) + 1) * 5 + 40),
+                                                  objects.at(i).rect.y + objects.at(i).rect.height + 25),
+                  &dfont, CV_RGB(255, 0, 0));
+      }
     }
+  }
 }
 
 void show(void)
 {
-  if(!existImage || !existPoints){
+  if (!existImage || !existPoints)
+  {
     return;
   }
   const auto& encoding = sensor_msgs::image_encodings::BGR8;
@@ -180,7 +161,7 @@ void show(void)
 
   cv::Mat matImage(&frame, false);
 
-  /* DRAW RECTANGLES of detected objects */
+/* DRAW RECTANGLES of detected objects */
 #if 0
   for(std::size_t i=0; i<cars.size();i++) {
       if(cars[i].y > matImage.rows*.3) { //temporal way to avoid drawing detections in the sky
@@ -199,34 +180,23 @@ void show(void)
     }
   }
 #else
-  drawRects(&frame,
-            car_fused_objects.obj,
-            cvScalar(255.0, 255.0, 0,0),
-            matImage.rows*.10);
+  drawRects(&frame, car_fused_objects.obj, cvScalar(255.0, 255.0, 0, 0), matImage.rows * .10);
 
-  drawRects(&frame,
-            pedestrian_fused_objects.obj,
-            cvScalar(0.0, 255.0, 0,0),
-            matImage.rows*.10);
+  drawRects(&frame, pedestrian_fused_objects.obj, cvScalar(0.0, 255.0, 0, 0), matImage.rows * .10);
 #endif
   /* PUT DISTANCE text on image */
-  putDistance(&frame,
-              car_fused_objects.obj,
-              matImage.rows*.10,
-              car_fused_objects.type.c_str());
-  putDistance(&frame,
-              pedestrian_fused_objects.obj,
-              matImage.rows*.10,
-              pedestrian_fused_objects.type.c_str());
+  putDistance(&frame, car_fused_objects.obj, matImage.rows * .10, car_fused_objects.type.c_str());
+  putDistance(&frame, pedestrian_fused_objects.obj, matImage.rows * .10, pedestrian_fused_objects.type.c_str());
 
   /* DRAW POINTS of lidar scanning */
   int w = matImage.size().width;
   int h = matImage.size().height;
 
   int n = w * h;
-  float min_d = 1<<16, max_d = -1;
+  float min_d = 1 << 16, max_d = -1;
   //	int min_i = 1<<8, max_i = -1;
-  for(int i=0; i<n; i++){
+  for (int i = 0; i < n; i++)
+  {
     int di = points_msg->distance[i];
     max_d = di > max_d ? di : max_d;
     min_d = di < min_d ? di : min_d;
@@ -236,27 +206,31 @@ void show(void)
   }
   float wid_d = max_d - min_d;
 
-  for(int y=0; y<h; y++){
-    for(int x=0; x<w; x++){
+  for (int y = 0; y < h; y++)
+  {
+    for (int x = 0; x < w; x++)
+    {
       int j = y * w + x;
       double distance = points_msg->distance[j];
-      if(distance == 0){
+      if (distance == 0)
+      {
         continue;
       }
-      int colorid= wid_d ? ( (distance - min_d) * 255 / wid_d ) : 128;
-      cv::Vec3b color=colormap.at<cv::Vec3b>(colorid);
+      int colorid = wid_d ? ((distance - min_d) * 255 / wid_d) : 128;
+      cv::Vec3b color = colormap.at<cv::Vec3b>(colorid);
       int g = color[1];
       int b = color[2];
       int r = color[0];
-      cvRectangle(&frame, cvPoint(x, y), cvPoint(x+1, y+1), CV_RGB(r, g, b));
+      cvRectangle(&frame, cvPoint(x, y), cvPoint(x + 1, y + 1), CV_RGB(r, g, b));
     }
   }
 
-  if (cvGetWindowHandle(window_name) != NULL) // Guard not to write destroyed window by using close button on the window
-    {
-      cvShowImage(window_name, &frame);
-      cvWaitKey(2);
-    }
+  if (cvGetWindowHandle(window_name) !=
+      NULL)  // Guard not to write destroyed window by using close button on the window
+  {
+    cvShowImage(window_name, &frame);
+    cvWaitKey(2);
+  }
 }
 
 #if 0
@@ -323,7 +297,7 @@ static void points_cb(const points2image::PointsImageConstPtr& msg)
   show();
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   /* create resizable window */
   cvNamedWindow(window_name, CV_WINDOW_NORMAL);
@@ -338,50 +312,60 @@ int main(int argc, char **argv)
   std::string pedestrian_node;
   std::string points_node;
 
-  if (private_nh.getParam("image_node", image_node)) {
+  if (private_nh.getParam("image_node", image_node))
+  {
     ROS_INFO("Setting image node to %s", image_node.c_str());
-  } else {
+  }
+  else
+  {
     ROS_INFO("No image node received, defaulting to image_raw, you can use _image_node:=YOUR_NODE");
     image_node = "/image_raw";
   }
 
-  if (private_nh.getParam("car_node", car_node)) {
+  if (private_nh.getParam("car_node", car_node))
+  {
     ROS_INFO("Setting car positions node to %s", car_node.c_str());
-  } else {
+  }
+  else
+  {
     ROS_INFO("No car positions node received, defaulting to car_pixel_xyz, you can use _car_node:=YOUR_TOPIC");
     car_node = "/obj_car/image_obj_ranged";
   }
 
-  if (private_nh.getParam("pedestrian_node", pedestrian_node)) {
+  if (private_nh.getParam("pedestrian_node", pedestrian_node))
+  {
     ROS_INFO("Setting pedestrian positions node to %s", pedestrian_node.c_str());
-  } else {
-    ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xyz, you can use _pedestrian_node:=YOUR_TOPIC");
+  }
+  else
+  {
+    ROS_INFO("No pedestrian positions node received, defaulting to pedestrian_pixel_xyz, you can use "
+             "_pedestrian_node:=YOUR_TOPIC");
     pedestrian_node = "/obj_person/image_obj_ranged";
   }
 
-  if (private_nh.getParam("points_node", points_node)) {
+  if (private_nh.getParam("points_node", points_node))
+  {
     ROS_INFO("Setting pedestrian positions node to %s", points_node.c_str());
-  } else {
+  }
+  else
+  {
     ROS_INFO("No points node received, defaulting to points_image, you can use _points_node:=YOUR_TOPIC");
     points_node = "/points_image";
   }
 
   cv::generateColors(_colors, 25);
 
-  ros::Subscriber scriber = n.subscribe(image_node, 1,
-                                        image_cb);
-  ros::Subscriber scriber_car = n.subscribe(car_node, 1,
-                                            car_updater_callback);
-  ros::Subscriber scriber_ped = n.subscribe(pedestrian_node, 1,
-                                            ped_updater_callback);
-  ros::Subscriber scriber_points = n.subscribe(points_node, 1,
-                                               points_cb);
+  ros::Subscriber scriber = n.subscribe(image_node, 1, image_cb);
+  ros::Subscriber scriber_car = n.subscribe(car_node, 1, car_updater_callback);
+  ros::Subscriber scriber_ped = n.subscribe(pedestrian_node, 1, ped_updater_callback);
+  ros::Subscriber scriber_points = n.subscribe(points_node, 1, points_cb);
 
-  cv::Mat grayscale(256,1,CV_8UC1);
-  for(int i=0;i<256;i++) {
-    grayscale.at<uchar>(i)=i;
+  cv::Mat grayscale(256, 1, CV_8UC1);
+  for (int i = 0; i < 256; i++)
+  {
+    grayscale.at<uchar>(i) = i;
   }
-  cv::applyColorMap(grayscale,colormap,cv::COLORMAP_JET);
+  cv::applyColorMap(grayscale, colormap, cv::COLORMAP_JET);
 
   ros::spin();
 

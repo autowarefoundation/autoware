@@ -3,8 +3,10 @@
 
 #include <stdio.h>
 
-enum messageT {REQ_PUB,
-               REQ_SD
+enum messageT
+{
+  REQ_PUB,
+  REQ_SD
 };
 
 #endif

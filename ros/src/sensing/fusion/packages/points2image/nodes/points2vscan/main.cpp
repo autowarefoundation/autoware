@@ -4,10 +4,10 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
+  QApplication a(argc, argv);
+  MainWindow w;
 #ifdef DEBUG_GUI
-    w.show(); //Don't show GUI window
+  w.show();  // Don't show GUI window
 #endif
-    return a.exec();
+  return a.exec();
 }

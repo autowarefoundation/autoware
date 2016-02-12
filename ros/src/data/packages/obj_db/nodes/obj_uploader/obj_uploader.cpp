@@ -65,21 +65,21 @@
 
 #include <obj_db.h>
 
-//store subscribed value
+// store subscribed value
 static geometry_msgs::PoseArray car_position_array;
 static geometry_msgs::PoseArray pedestrian_position_array;
 
-//default server name and port to send data
+// default server name and port to send data
 static const std::string default_host_name = "db3.ertl.jp";
 static constexpr int db_port = 5678;
 
-//flag for comfirming whether updating position or not
+// flag for comfirming whether updating position or not
 static bool is_subscribed_ndt_pose;
 
-//send to server class
+// send to server class
 static SendData sd;
 
-//store own position and direction now.updated by position_getter
+// store own position and direction now.updated by position_getter
 static geometry_msgs::PoseStamped my_location;
 
 static std::string getTimeStamp(time_t sec, time_t nsec)
@@ -87,10 +87,9 @@ static std::string getTimeStamp(time_t sec, time_t nsec)
   char buf[30];
   int msec = static_cast<int>(nsec / (1000 * 1000));
 
-  tm *t = localtime(&sec);
-  sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%d",
-          t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-          t->tm_hour, t->tm_min, t->tm_sec, msec);
+  tm* t = localtime(&sec);
+  sprintf(buf, "%04d-%02d-%02d %02d:%02d:%02d.%d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min,
+          t->tm_sec, msec);
 
   return std::string(static_cast<const char*>(buf));
 }
@@ -102,11 +101,8 @@ static std::string pose_to_insert_statement(const geometry_msgs::Pose& pose, con
 
   oss << "INSERT INTO POS(id,x,y,z,area,type,tm) "
       << "VALUES("
-      << "'0',"
-      << std::fixed << std::setprecision(6) << pose.position.y << ","
-      << std::fixed << std::setprecision(6) << pose.position.x << ","
-      << std::fixed << std::setprecision(6) << pose.position.z << ","
-      << AREA << ","
+      << "'0'," << std::fixed << std::setprecision(6) << pose.position.y << "," << std::fixed << std::setprecision(6)
+      << pose.position.x << "," << std::fixed << std::setprecision(6) << pose.position.z << "," << AREA << ","
       << "0,"
       << "'" << timestamp << "'"
       << ");";
@@ -119,8 +115,9 @@ static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_ar
   std::string timestamp = getTimeStamp(cp_array.header.stamp.sec, cp_array.header.stamp.nsec);
 
   std::string ret;
-  for(const auto& pose : cp_array.poses){
-    //create sql
+  for (const auto& pose : cp_array.poses)
+  {
+    // create sql
     ret += pose_to_insert_statement(pose, timestamp);
     ret += "\n";
   }
@@ -128,26 +125,28 @@ static std::string makeSendDataDetectedObj(const geometry_msgs::PoseArray& cp_ar
   return ret;
 }
 
-//wrap SendData class
+// wrap SendData class
 static void send_sql()
 {
   size_t car_num = car_position_array.poses.size();
   size_t pedestrian_num = pedestrian_position_array.poses.size();
   std::cout << "sqlnum : " << (car_num + pedestrian_num) << std::endl;
 
-  //create header
+  // create header
   std::string value = make_header(2, car_num + pedestrian_num);
 
-  //get data of car and pedestrian recognizing
-  if(car_num > 0){
+  // get data of car and pedestrian recognizing
+  if (car_num > 0)
+  {
     value += makeSendDataDetectedObj(car_position_array);
   }
 
-  if(pedestrian_num > 0){
+  if (pedestrian_num > 0)
+  {
     value += makeSendDataDetectedObj(pedestrian_position_array);
   }
 
-  std::string timestamp = getTimeStamp(my_location.header.stamp.sec,my_location.header.stamp.nsec);
+  std::string timestamp = getTimeStamp(my_location.header.stamp.sec, my_location.header.stamp.nsec);
   value += pose_to_insert_statement(my_location.pose, timestamp);
   value += "\n";
 
@@ -155,7 +154,8 @@ static void send_sql()
 
   std::string res;
   int ret = sd.Sender(value, res);
-  if (ret == -1) {
+  if (ret == -1)
+  {
     std::cerr << "Failed: sd.Sender" << std::endl;
     return;
   }
@@ -164,12 +164,14 @@ static void send_sql()
   return;
 }
 
-static void* intervalCall(void *unused)
+static void* intervalCall(void* unused)
 {
-  while(1){
-    //If angle and position data is not updated from previous data send,
-    //data is not sent
-    if(!is_subscribed_ndt_pose) {
+  while (1)
+  {
+    // If angle and position data is not updated from previous data send,
+    // data is not sent
+    if (!is_subscribed_ndt_pose)
+    {
       sleep(1);
       continue;
     }
@@ -193,15 +195,15 @@ static void pedestrian_locate_cb(const geometry_msgs::PoseArray& pedestrian_loca
   pedestrian_position_array = pedestrian_locate;
 }
 
-static void ndt_pose_cb(const geometry_msgs::PoseStamped &pose)
+static void ndt_pose_cb(const geometry_msgs::PoseStamped& pose)
 {
   my_location = pose;
   is_subscribed_ndt_pose = true;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-  ros::init(argc ,argv, "obj_uploader");
+  ros::init(argc, argv, "obj_uploader");
   std::cout << "obj_uploader" << std::endl;
 
   /**
@@ -215,21 +217,23 @@ int main(int argc, char **argv)
   ros::Subscriber pedestrian_locate = n.subscribe("/pedestrian_pose", 1, pedestrian_locate_cb);
   ros::Subscriber gnss_pose = n.subscribe("/current_pose", 1, ndt_pose_cb);
 
-  //set server name and port
+  // set server name and port
   std::string host_name = default_host_name;
   int port = db_port;
-  if(argc >= 3){
+  if (argc >= 3)
+  {
     host_name = argv[1];
     port = std::atoi(argv[2]);
   }
 
   sd = SendData(host_name, port);
 
-  //set angle and position flag : false at first
+  // set angle and position flag : false at first
   is_subscribed_ndt_pose = false;
 
   pthread_t th;
-  if(pthread_create(&th, nullptr, intervalCall, nullptr)){
+  if (pthread_create(&th, nullptr, intervalCall, nullptr))
+  {
     printf("thread create error\n");
   }
   pthread_detach(th);

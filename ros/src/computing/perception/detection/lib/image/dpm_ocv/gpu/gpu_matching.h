@@ -10,24 +10,24 @@
 
 typedef struct
 {
-    int numSectors;     //number of sectors
-    int mapX;           //map sizeX * numSectors
-    int mapY;           //map sizeY
-    int filterX;        //filter sizeX * numSectors
-    int filterY;        //filter sizeY
-    int scoreX;         //mapX - filterX + 1
-    int scoreY;         //mapY - filterY + 1
-    int mapSize;        //mapX * mapY
-    int filterSize;     //filterX * filterY
-    int scoreSize;      //scoreX * scoreY
+  int numSectors;  // number of sectors
+  int mapX;  // map sizeX * numSectors
+  int mapY;  // map sizeY
+  int filterX;  // filter sizeX * numSectors
+  int filterY;  // filter sizeY
+  int scoreX;  // mapX - filterX + 1
+  int scoreY;  // mapY - filterY + 1
+  int mapSize;  // mapX * mapY
+  int filterSize;  // filterX * filterY
+  int scoreSize;  // scoreX * scoreY
 } ConvolutionParam;
 
 typedef struct
 {
-    float internalDistTrans;
-    int internalPoints;
-    int v;
-    float z;
+  float internalDistTrans;
+  int internalPoints;
+  int v;
+  float z;
 } DistTransWork;
 
 #endif
