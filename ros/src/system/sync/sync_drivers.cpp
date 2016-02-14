@@ -50,32 +50,30 @@ bool is_sim;
 
 double fabs_time_diff(const std_msgs::Header *timespec1, const std_msgs::Header *timespec2)
 {
-    double time1 = (double)timespec1->stamp.sec + (double)timespec1->stamp.nsec/1000000000L;
-    double time2 = (double)timespec2->stamp.sec + (double)timespec2->stamp.nsec/1000000000L;
-    return fabs(time1 - time2);
+  double time1 = (double)timespec1->stamp.sec + (double)timespec1->stamp.nsec / 1000000000L;
+  double time2 = (double)timespec2->stamp.sec + (double)timespec2->stamp.nsec / 1000000000L;
+  return fabs(time1 - time2);
 }
 
 void image_raw_callback(sensor_msgs::Image image_raw_msg)
 {
-    image_raw_buf = image_raw_msg;
+  image_raw_buf = image_raw_msg;
 }
 
-void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg)
+void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr &points_raw_msg)
 {
-    synchronization::time_diff time_diff_msg;
-    time_diff_msg.header.frame_id = "0";
-    time_diff_msg.header.stamp = points_raw_msg->header.stamp;
-    time_diff_msg.time_diff = fabs_time_diff(&(points_raw_msg->header), &image_raw_buf.header)*1000.0; //msec
-    time_diff_msg.camera = image_raw_buf.header.stamp;
-    time_diff_msg.lidar = points_raw_msg->header.stamp;
-    time_diff_pub.publish(time_diff_msg);
+  synchronization::time_diff time_diff_msg;
+  time_diff_msg.header.frame_id = "0";
+  time_diff_msg.header.stamp = points_raw_msg->header.stamp;
+  time_diff_msg.time_diff = fabs_time_diff(&(points_raw_msg->header), &image_raw_buf.header) * 1000.0;  // msec
+  time_diff_msg.camera = image_raw_buf.header.stamp;
+  time_diff_msg.lidar = points_raw_msg->header.stamp;
+  time_diff_pub.publish(time_diff_msg);
 
-    image_raw_buf.header.stamp = points_raw_msg->header.stamp;
-    image_raw__pub.publish(image_raw_buf);
-    points_raw__pub.publish(points_raw_msg);
+  image_raw_buf.header.stamp = points_raw_msg->header.stamp;
+  image_raw__pub.publish(image_raw_buf);
+  points_raw__pub.publish(points_raw_msg);
 }
-
-
 
 int main(int argc, char **argv)
 {
@@ -92,7 +90,6 @@ int main(int argc, char **argv)
   time_diff_pub = nh.advertise<synchronization::time_diff>("/time_difference", 1);
 
   ros::spin();
-
 
   return 0;
 }

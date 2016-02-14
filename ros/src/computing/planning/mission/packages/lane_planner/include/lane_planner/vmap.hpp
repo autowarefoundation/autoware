@@ -47,10 +47,10 @@
 #include <waypoint_follower/dtlane.h>
 #include <waypoint_follower/lane.h>
 
-namespace lane_planner {
-
-namespace vmap {
-
+namespace lane_planner
+{
+namespace vmap
+{
 constexpr int LNO_ALL = -1;
 constexpr int LNO_CROSSING = 0;
 constexpr int LNO_MOSTLEFT = 1;
@@ -61,12 +61,13 @@ constexpr int TRAFFIC_LIGHT_UNKNOWN = 2;
 
 constexpr double RADIUS_MAX = 90000000000;
 
-struct VectorMap {
-	std::vector<map_file::PointClass> points;
-	std::vector<map_file::Lane> lanes;
-	std::vector<map_file::Node> nodes;
-	std::vector<map_file::StopLine> stoplines;
-	std::vector<map_file::DTLane> dtlanes;
+struct VectorMap
+{
+  std::vector<map_file::PointClass> points;
+  std::vector<map_file::Lane> lanes;
+  std::vector<map_file::Node> nodes;
+  std::vector<map_file::StopLine> stoplines;
+  std::vector<map_file::DTLane> dtlanes;
 };
 
 void write_waypoints(const std::vector<map_file::PointClass>& points, double velocity, const std::string& path);
@@ -88,17 +89,17 @@ VectorMap create_lane_vmap(const VectorMap& vmap, int lno);
 VectorMap create_coarse_vmap_from_lane(const waypoint_follower::lane& lane);
 VectorMap create_coarse_vmap_from_route(const tablet_socket::route_cmd& route);
 VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap& coarse_vmap, double search_radius,
-			   int waypoint_max);
+                           int waypoint_max);
 
 std::vector<map_file::PointClass> create_branching_points(const VectorMap& vmap);
 std::vector<map_file::PointClass> create_merging_points(const VectorMap& vmap);
 
 void publish_add_marker(const ros::Publisher& pub, const visualization_msgs::Marker& marker,
-			const std::vector<map_file::PointClass>& points);
+                        const std::vector<map_file::PointClass>& points);
 void publish_delete_marker(const ros::Publisher& pub, const visualization_msgs::Marker& marker);
 
-} // namespace vmap
+}  // namespace vmap
 
-} // namespace lane_planner
+}  // namespace lane_planner
 
-#endif // LANE_PLANNER_VMAP_HPP
+#endif  // LANE_PLANNER_VMAP_HPP

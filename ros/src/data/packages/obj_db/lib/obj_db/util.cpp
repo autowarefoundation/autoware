@@ -22,5 +22,5 @@ std::string make_header(int32_t sql_inst, int32_t sql_num)
   std::memcpy(header + 8, &sql_inst, sizeof(int32_t));
   std::memcpy(header + 12, &sql_num, sizeof(int32_t));
 
-  return std::string(static_cast<const char*>(header));
+  return std::string(static_cast<const char *>(header));
 }

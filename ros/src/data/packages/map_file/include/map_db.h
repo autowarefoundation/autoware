@@ -35,22 +35,22 @@
 #include <string>
 #include <netinet/in.h>
 
-#define HTTP_HOSTNAME     "133.6.148.90"
-#define HTTP_PORT         (80)
+#define HTTP_HOSTNAME "133.6.148.90"
+#define HTTP_PORT (80)
 
-class GetFile {
+class GetFile
+{
 private:
-	std::string host_name_;
-	int port_;
-	int sock;
-	struct sockaddr_in server;
+  std::string host_name_;
+  int port_;
+  int sock;
+  struct sockaddr_in server;
 
 public:
-	GetFile();
-	explicit GetFile(const std::string& host_name, int port);
+  GetFile();
+  explicit GetFile(const std::string& host_name, int port);
 
-	int GetHTTPFile(const std::string& value);
+  int GetHTTPFile(const std::string& value);
 };
-
 
 #endif /* _MAP_DB_H_ */

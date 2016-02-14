@@ -48,7 +48,8 @@ extern "C" {
 
 extern CUdevice *dev;
 extern CUcontext *ctx;
-extern CUfunction *func_process_root, *func_process_part, *func_dt1d_x, *func_dt1d_y, *func_calc_a_score, *func_inverse_Q;
+extern CUfunction *func_process_root, *func_process_part, *func_dt1d_x, *func_dt1d_y, *func_calc_a_score,
+    *func_inverse_Q;
 extern CUmodule *module;
 extern int *NR_MAXTHREADS_X, *NR_MAXTHREADS_Y;
 extern CUdeviceptr *featp2_dev;

@@ -65,20 +65,20 @@
 
 using namespace std;
 
-//default server name and port to send data
+// default server name and port to send data
 static const string default_db_host = "db1.ertl.jp";
 static const int default_db_port = 5678;
 
-//flag for comfirming whether updating position or not
+// flag for comfirming whether updating position or not
 static bool canGetFlag;
 
-//send to server class
+// send to server class
 static SendData sd;
 
-//send data
+// send data
 static string CanSql;
 
-//wrap SendData class
+// wrap SendData class
 static void send_sql()
 {
   std::string value = make_header(2, 1);
@@ -87,7 +87,8 @@ static void send_sql()
 
   string res;
   int ret = sd.Sender(value, res);
-  if (ret == -1) {
+  if (ret == -1)
+  {
     std::cerr << "Failed: sd.Sender" << std::endl;
     return;
   }
@@ -95,12 +96,14 @@ static void send_sql()
   std::cout << "retrun message from DBserver : " << res << std::endl;
 }
 
-static void* intervalCall(void *unused)
+static void *intervalCall(void *unused)
 {
-  while(1){
-    //If angle and position data is not updated from prevous data send,
-    //data is not sent
-    if(!canGetFlag) {
+  while (1)
+  {
+    // If angle and position data is not updated from prevous data send,
+    // data is not sent
+    if (!canGetFlag)
+    {
       sleep(1);
       continue;
     }
@@ -113,7 +116,7 @@ static void* intervalCall(void *unused)
   return nullptr;
 }
 
-static void can_infoCallback(const vehicle_socket::CanInfo& can)
+static void can_infoCallback(const vehicle_socket::CanInfo &can)
 {
   ostringstream oss;
 
@@ -236,7 +239,7 @@ static void can_infoCallback(const vehicle_socket::CanInfo& can)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc ,argv, "can_uploader") ;
+  ros::init(argc, argv, "can_uploader");
   cout << "can_uploader" << endl;
 
   /**
@@ -247,21 +250,23 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::Subscriber can = n.subscribe("/can_info", 1, can_infoCallback);
 
-  //set server name and port
+  // set server name and port
   string host_name = default_db_host;
   int port = default_db_port;
-  if(argc >= 3){
+  if (argc >= 3)
+  {
     host_name = argv[1];
     port = std::atoi(argv[2]);
   }
 
   sd = SendData(host_name, port);
 
-  //set angle and position flag : false at first
+  // set angle and position flag : false at first
   canGetFlag = false;
 
   pthread_t th;
-  if(pthread_create(&th, nullptr, intervalCall, nullptr)){
+  if (pthread_create(&th, nullptr, intervalCall, nullptr))
+  {
     printf("thread create error\n");
   }
   pthread_detach(th);

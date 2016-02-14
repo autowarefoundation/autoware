@@ -51,73 +51,74 @@ float time_kernel;
 
 int device_num;
 
-void dpm_ttic_gpu_init_cuda(const std::string& cubin_path)
+void dpm_ttic_gpu_init_cuda(const std::string &cubin_path)
 {
-	dpm_ttic_gpu_init_cuda_with_cubin(cubin_path.c_str());
+  dpm_ttic_gpu_init_cuda_with_cubin(cubin_path.c_str());
 }
 
 void dpm_ttic_gpu_cleanup_cuda()
 {
-	dpm_ttic_gpu_clean_cuda();
-	//free_model(MO);
+  dpm_ttic_gpu_clean_cuda();
+  // free_model(MO);
 }
 
 DPMTTICGPU::DPMTTICGPU(const char *com_csv, const char *root_csv, const char *part_csv)
 {
-	constexpr double RATIO = 1;
-	model_ = dpm_ttic_gpu_load_model(RATIO, com_csv, root_csv, part_csv);
+  constexpr double RATIO = 1;
+  model_ = dpm_ttic_gpu_load_model(RATIO, com_csv, root_csv, part_csv);
 }
 
 DPMTTICGPU::~DPMTTICGPU()
 {
-	dpm_ttic_gpu_free_model(model_);
+  dpm_ttic_gpu_free_model(model_);
 }
 
-static FLOAT *init_accumulated_score(IplImage *image, size_t& accumulated_size)
+static FLOAT *init_accumulated_score(IplImage *image, size_t &accumulated_size)
 {
-	size_t num = image->height * image->width;
-	accumulated_size = num * sizeof(FLOAT);
+  size_t num = image->height * image->width;
+  accumulated_size = num * sizeof(FLOAT);
 
-	FLOAT *scores = (FLOAT *)calloc(num, sizeof(FLOAT));
-	for(size_t i = 0; i < num; i++)
-		scores[i] = -100.0;
+  FLOAT *scores = (FLOAT *)calloc(num, sizeof(FLOAT));
+  for (size_t i = 0; i < num; i++)
+    scores[i] = -100.0;
 
-	return scores;
+  return scores;
 }
 
-DPMTTICResult DPMTTICGPU::detect_objects(IplImage *image, const DPMTTICParam& param)
+DPMTTICResult DPMTTICGPU::detect_objects(IplImage *image, const DPMTTICParam &param)
 {
-	model_->MI->interval = param.lambda;
-	model_->MI->sbin     = param.num_cells;
+  model_->MI->interval = param.lambda;
+  model_->MI->sbin = param.num_cells;
 
-	int detected_objects;
-	FLOAT *ac_score = init_accumulated_score(image, gpu_size_A_SCORE);
-	RESULT *objects = dpm_ttic_gpu_car_detection(image, model_, param.threshold,
-						     &detected_objects, ac_score,
-						     param.overlap);
-	free(ac_score);
+  int detected_objects;
+  FLOAT *ac_score = init_accumulated_score(image, gpu_size_A_SCORE);
+  RESULT *objects =
+      dpm_ttic_gpu_car_detection(image, model_, param.threshold, &detected_objects, ac_score, param.overlap);
+  free(ac_score);
 
-	DPMTTICResult result;
-	result.num = objects->num;
-	for (int i = 0; i < objects->num; ++i) {
-		result.type.push_back(objects->type[i]);
-	}
+  DPMTTICResult result;
+  result.num = objects->num;
+  for (int i = 0; i < objects->num; ++i)
+  {
+    result.type.push_back(objects->type[i]);
+  }
 
-	for (int i = 0; i < objects->num; ++i) {
-		int base = i * 4;
-		int *data = &(objects->OR_point[base]);
+  for (int i = 0; i < objects->num; ++i)
+  {
+    int base = i * 4;
+    int *data = &(objects->OR_point[base]);
 
-		result.corner_points.push_back(data[0]);
-		result.corner_points.push_back(data[1]);
-		result.corner_points.push_back(data[2] - data[0]);
-		result.corner_points.push_back(data[3] - data[1]);
-		result.score.push_back(objects->score[i]);
-	}
+    result.corner_points.push_back(data[0]);
+    result.corner_points.push_back(data[1]);
+    result.corner_points.push_back(data[2] - data[0]);
+    result.corner_points.push_back(data[3] - data[1]);
+    result.score.push_back(objects->score[i]);
+  }
 
-	free(objects->point);
-	free(objects->type);
-	free(objects->scale);
-	free(objects->score);
-	free(objects->IM);
-	return result;
+  free(objects->point);
+  free(objects->type);
+  free(objects->scale);
+  free(objects->score);
+  free(objects->IM);
+  return result;
 }

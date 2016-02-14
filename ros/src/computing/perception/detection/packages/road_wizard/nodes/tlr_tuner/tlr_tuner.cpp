@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv,"tlr_tuner");
+  ros::init(argc, argv, "tlr_tuner");
 
   QApplication a(argc, argv);
   MainWindow w;

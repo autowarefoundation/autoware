@@ -39,47 +39,47 @@
 #include <libssh2.h>
 #endif
 
-#define DB_HOSTNAME     "db3.ertl.jp"
-#define DB_PORT         (5678)
+#define DB_HOSTNAME "db3.ertl.jp"
+#define DB_PORT (5678)
 #ifdef USE_LIBSSH2
-#define SSHPUBKEY       "/.ssh/id_rsa.pub"
-#define SSHPRIVATEKEY   "/.ssh/id_rsa"
-#define SSHPORT         (22)
-#define SSHTUNNELHOST	"localhost"
+#define SSHPUBKEY "/.ssh/id_rsa.pub"
+#define SSHPRIVATEKEY "/.ssh/id_rsa"
+#define SSHPORT (22)
+#define SSHTUNNELHOST "localhost"
 #endif
 
-#define POS_DB_HEAD_LEN	(16)
+#define POS_DB_HEAD_LEN (16)
 
-class SendData {
+class SendData
+{
 private:
-	std::string host_name_;
-	int port_;
+  std::string host_name_;
+  int port_;
 #ifdef USE_LIBSSH2
-	std::string sshuser_;
-	std::string sshtunnelhost_;
-	std::string sshpubkey_;
-	std::string sshprivatekey_;
-	int sshport_;
-	LIBSSH2_SESSION *session;
-	LIBSSH2_CHANNEL *channel;
+  std::string sshuser_;
+  std::string sshtunnelhost_;
+  std::string sshpubkey_;
+  std::string sshprivatekey_;
+  int sshport_;
+  LIBSSH2_SESSION* session;
+  LIBSSH2_CHANNEL* channel;
 #endif
-	int sock;
-	bool connected;
-	struct sockaddr_in server;
+  int sock;
+  bool connected;
+  struct sockaddr_in server;
 
 public:
-	SendData();
-	explicit SendData(const std::string& host_name, int port, char *sshuser,
-			  std::string& sshpubkey, std::string& sshprivatekey,
-			  int sshport, std::string& sshtunnelhost);
+  SendData();
+  explicit SendData(const std::string& host_name, int port, char* sshuser, std::string& sshpubkey,
+                    std::string& sshprivatekey, int sshport, std::string& sshtunnelhost);
 
-	int Sender(const std::string& value, std::string& res, int insert_num);
-	int ConnectDB();
-	int DisconnectDB(const char *msg);
+  int Sender(const std::string& value, std::string& res, int insert_num);
+  int ConnectDB();
+  int DisconnectDB(const char* msg);
 };
 
 extern std::string make_header(int32_t sql_inst, int32_t sql_num);
-extern int probe_mac_addr(char *mac_addr);
-#define MAC_ADDRBUFSIZ	20
+extern int probe_mac_addr(char* mac_addr);
+#define MAC_ADDRBUFSIZ 20
 
 #endif /* _MAP_DB_H_ */

@@ -5,7 +5,7 @@
  *  Created by Matthew O'Kelly on 7/17/15.
  *  Copyright (c) 2015 Matthew O'Kelly. All rights reserved.
  *  mokelly@seas.upenn.edu
- *  
+ *
 */
 
 /*
@@ -52,7 +52,6 @@
 //#define QUINTIC_STABLE
 //#define FIRST ORDER
 
-
 // ------------BOOLEAN----------//
 #define TRUE 1
 #define FALSE 0
@@ -73,7 +72,7 @@
 #define dvmin (-6.000)
 // Control latency (seconds)
 #define tdelay (0.0800)
- //#define tdelay (0.03)
+//#define tdelay (0.03)
 // Speed control logic a coefficient
 #define ascl (0.1681)
 // Speed control logic b coefficient
@@ -131,66 +130,62 @@ ofstream fmm_kappa;
 // --------DATA STRUCTURES-------//
 union State
 {
-    struct 
-    {
-        double sx;
-        double sy;
-        double theta; 
-        double kappa;
-        double v;
-        double vdes;
-        double timestamp;
-    };
+  struct
+  {
+    double sx;
+    double sy;
+    double theta;
+    double kappa;
+    double v;
+    double vdes;
+    double timestamp;
+  };
 
-    double state_value[7];
+  double state_value[7];
 };
 
-union Parameters 
+union Parameters
 {
-    struct 
-    {
-        double a;
-        double b;
-        double c;
-        double d;
-        double s;
-    };
+  struct
+  {
+    double a;
+    double b;
+    double c;
+    double d;
+    double s;
+  };
 
-    double param_value[5];
-
-
+  double param_value[5];
 };
 
 union Spline
 {
-    struct
-    {
-        //double kappa_0;
-        double s;
-        double kappa_1;
-        double kappa_2;
-        //double kappa_2;
-        //double kappa_3;
-        
-        double kappa_0;
-        double kappa_3;
-        bool success;
-        
-    };
+  struct
+  {
+    // double kappa_0;
+    double s;
+    double kappa_1;
+    double kappa_2;
+    // double kappa_2;
+    // double kappa_3;
 
-    double spline_value[6];
+    double kappa_0;
+    double kappa_3;
+    bool success;
+  };
+
+  double spline_value[6];
 };
 
 union Command
 {
-    struct
-    {
-        double kappa;
-        double v;
-    };
-    double cmd_index[2];
+  struct
+  {
+    double kappa;
+    double v;
+  };
+  double cmd_index[2];
 };
-
 
 // ------------FUNCTION DECLARATIONS----------//
 
@@ -209,7 +204,8 @@ double getCurvatureCommand(union Spline curvature, double dt, double v, double t
 // getVelocityCommand computes the next velocity command, very naieve right now.
 double getVelocityCommand(double v_goal, double v);
 
-// motionModel computes the vehicles next state, it calls speedControlLogic, responseToControlInputs, getCurvatureCommand and
+// motionModel computes the vehicles next state, it calls speedControlLogic, responseToControlInputs,
+// getCurvatureCommand and
 // and getVelocityCommand
 union State motionModel(union State veh, union State goal, union Spline curvature, double dt, double horizon, int flag);
 
@@ -217,10 +213,12 @@ union State motionModel(union State veh, union State goal, union Spline curvatur
 bool checkConvergence(union State veh_next, union State goal);
 
 // pDerivEstimate computes one column of the Jacobian
-union State pDerivEstimate(union State veh, union State veh_next, union State goal, union Spline curvature, int p_id, double h, double dt, double horizon, int stateIndex);
+union State pDerivEstimate(union State veh, union State veh_next, union State goal, union Spline curvature, int p_id,
+                           double h, double dt, double horizon, int stateIndex);
 
 // generateCorrection inverts the Jacobian and updates the spline parameters
-union Spline generateCorrection(union State veh, union State veh_next, union State goal, union Spline curvature, double dt, double horizon);
+union Spline generateCorrection(union State veh, union State veh_next, union State goal, union Spline curvature,
+                                double dt, double horizon);
 
 // nextState is used by the robot to compute commands once an adequate set of parameters has been found
 union State nextState(union State veh, union Spline curvature, double vdes, double dt, double elapsedTime);
@@ -231,6 +229,4 @@ union Spline trajectoryGenerator(double sx, double sy, double theta, double v, d
 // plotTraj is used by rViz to compute points for line strip, it is a lighter weight version of nextState
 union State genLineStrip(union State veh, union Spline curvature, double vdes, double t);
 
-
-#endif // TRAJECTORYGENERATOR_H
-
+#endif  // TRAJECTORYGENERATOR_H

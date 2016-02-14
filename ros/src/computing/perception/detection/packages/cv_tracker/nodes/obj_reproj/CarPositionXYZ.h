@@ -55,125 +55,127 @@ struct CarPositionXYZ_
 {
   typedef CarPositionXYZ_<ContainerAllocator> Type;
 
-  CarPositionXYZ_()
-    : header()
-    , car_num(0)
-    , car_type()
-    , corner_point()
-    , distance()  {
-    }
+  CarPositionXYZ_() : header(), car_num(0), car_type(), corner_point(), distance()
+  {
+  }
   CarPositionXYZ_(const ContainerAllocator& _alloc)
-    : header(_alloc)
-    , car_num(0)
-    , car_type(_alloc)
-    , corner_point(_alloc)
-    , distance(_alloc)  {
-    }
+    : header(_alloc), car_num(0), car_type(_alloc), corner_point(_alloc), distance(_alloc)
+  {
+  }
 
-   typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
+  typedef ::std_msgs::Header_<ContainerAllocator> _header_type;
   _header_type header;
 
-   typedef uint8_t _car_num_type;
+  typedef uint8_t _car_num_type;
   _car_num_type car_num;
 
-   typedef std::vector<int32_t, typename ContainerAllocator::template rebind<int32_t>::other >  _car_type_type;
+  typedef std::vector<int32_t, typename ContainerAllocator::template rebind<int32_t>::other> _car_type_type;
   _car_type_type car_type;
 
-   typedef std::vector<int32_t, typename ContainerAllocator::template rebind<int32_t>::other >  _corner_point_type;
+  typedef std::vector<int32_t, typename ContainerAllocator::template rebind<int32_t>::other> _corner_point_type;
   _corner_point_type corner_point;
 
-   typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other >  _distance_type;
+  typedef std::vector<float, typename ContainerAllocator::template rebind<float>::other> _distance_type;
   _distance_type distance;
 
-  typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> > Ptr;
-  typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const> ConstPtr;
-  boost::shared_ptr<std::map<std::string, std::string> > __connection_header;
+  typedef boost::shared_ptr<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>> Ptr;
+  typedef boost::shared_ptr<::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const> ConstPtr;
+  boost::shared_ptr<std::map<std::string, std::string>> __connection_header;
 
-}; // struct CarPositionXYZ_
+};  // struct CarPositionXYZ_
 
-typedef ::sensors_fusion::CarPositionXYZ_<std::allocator<void> > CarPositionXYZ;
+typedef ::sensors_fusion::CarPositionXYZ_<std::allocator<void>> CarPositionXYZ;
 
-typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ > CarPositionXYZPtr;
-typedef boost::shared_ptr< ::sensors_fusion::CarPositionXYZ const> CarPositionXYZConstPtr;
+typedef boost::shared_ptr<::sensors_fusion::CarPositionXYZ> CarPositionXYZPtr;
+typedef boost::shared_ptr<::sensors_fusion::CarPositionXYZ const> CarPositionXYZConstPtr;
 
 // constants requiring out of line definition
 
-template<typename ContainerAllocator>
-std::ostream& operator<<(std::ostream& s, const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> & v)
+template <typename ContainerAllocator>
+std::ostream& operator<<(std::ostream& s, const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>& v)
 {
-ros::message_operations::Printer< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >::stream(s, "", v);
-return s;
+  ros::message_operations::Printer<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>>::stream(s, "", v);
+  return s;
 }
 
-} // namespace sensors_fusion
+}  // namespace sensors_fusion
 
 namespace ros
 {
 namespace message_traits
 {
-
 // BOOLTRAITS {'IsFixedSize': False, 'IsMessage': True, 'HasHeader': True}
-// {'sensor_msgs': ['/opt/ros/hydro/share/sensor_msgs/cmake/../msg'], 'sensors_fusion': ['/home/yukky/catkin_ws/src/sensors_fusion/msg'], 'std_msgs': ['/opt/ros/hydro/share/std_msgs/cmake/../msg'], 'geometry_msgs': ['/opt/ros/hydro/share/geometry_msgs/cmake/../msg']}
+// {'sensor_msgs': ['/opt/ros/hydro/share/sensor_msgs/cmake/../msg'], 'sensors_fusion':
+// ['/home/yukky/catkin_ws/src/sensors_fusion/msg'], 'std_msgs': ['/opt/ros/hydro/share/std_msgs/cmake/../msg'],
+// 'geometry_msgs': ['/opt/ros/hydro/share/geometry_msgs/cmake/../msg']}
 
-// !!!!!!!!!!! ['__class__', '__delattr__', '__dict__', '__doc__', '__eq__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_parsed_fields', 'constants', 'fields', 'full_name', 'has_header', 'header_present', 'names', 'package', 'parsed_fields', 'short_name', 'text', 'types']
-
-template <class ContainerAllocator>
-struct IsFixedSize< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
-  : FalseType
-  { };
-
-template <class ContainerAllocator>
-struct IsFixedSize< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const>
-  : FalseType
-  { };
+// !!!!!!!!!!! ['__class__', '__delattr__', '__dict__', '__doc__', '__eq__', '__format__', '__getattribute__',
+// '__hash__', '__init__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__',
+// '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_parsed_fields', 'constants', 'fields', 'full_name',
+// 'has_header', 'header_present', 'names', 'package', 'parsed_fields', 'short_name', 'text', 'types']
 
 template <class ContainerAllocator>
-struct IsMessage< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
-  : TrueType
-  { };
+struct IsFixedSize<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>> : FalseType
+{
+};
 
 template <class ContainerAllocator>
-struct IsMessage< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const>
-  : TrueType
-  { };
+struct IsFixedSize<::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const> : FalseType
+{
+};
 
 template <class ContainerAllocator>
-struct HasHeader< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
-  : TrueType
-  { };
+struct IsMessage<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>> : TrueType
+{
+};
 
 template <class ContainerAllocator>
-struct HasHeader< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const>
-  : TrueType
-  { };
+struct IsMessage<::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const> : TrueType
+{
+};
 
+template <class ContainerAllocator>
+struct HasHeader<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>> : TrueType
+{
+};
 
-template<class ContainerAllocator>
-struct MD5Sum< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
+template <class ContainerAllocator>
+struct HasHeader<::sensors_fusion::CarPositionXYZ_<ContainerAllocator> const> : TrueType
+{
+};
+
+template <class ContainerAllocator>
+struct MD5Sum<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>>
 {
   static const char* value()
   {
     return "d68530dc0bde2f64ddc6c99da3384213";
   }
 
-  static const char* value(const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>&) { return value(); }
+  static const char* value(const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>&)
+  {
+    return value();
+  }
   static const uint64_t static_value1 = 0xd68530dc0bde2f64ULL;
   static const uint64_t static_value2 = 0xddc6c99da3384213ULL;
 };
 
-template<class ContainerAllocator>
-struct DataType< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
+template <class ContainerAllocator>
+struct DataType<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>>
 {
   static const char* value()
   {
     return "sensors_fusion/CarPositionXYZ";
   }
 
-  static const char* value(const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>&) { return value(); }
+  static const char* value(const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>&)
+  {
+    return value();
+  }
 };
 
-template<class ContainerAllocator>
-struct Definition< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
+template <class ContainerAllocator>
+struct Definition<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>>
 {
   static const char* value()
   {
@@ -202,47 +204,52 @@ string frame_id\n\
 ";
   }
 
-  static const char* value(const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>&) { return value(); }
+  static const char* value(const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>&)
+  {
+    return value();
+  }
 };
 
-} // namespace message_traits
-} // namespace ros
+}  // namespace message_traits
+}  // namespace ros
 
 namespace ros
 {
 namespace serialization
 {
-
-  template<class ContainerAllocator> struct Serializer< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
+template <class ContainerAllocator>
+struct Serializer<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>>
+{
+  template <typename Stream, typename T>
+  inline static void allInOne(Stream& stream, T m)
   {
-    template<typename Stream, typename T> inline static void allInOne(Stream& stream, T m)
-    {
-      stream.next(m.header);
-      stream.next(m.car_num);
-      stream.next(m.car_type);
-      stream.next(m.corner_point);
-      stream.next(m.distance);
-    }
+    stream.next(m.header);
+    stream.next(m.car_num);
+    stream.next(m.car_type);
+    stream.next(m.corner_point);
+    stream.next(m.distance);
+  }
 
-    ROS_DECLARE_ALLINONE_SERIALIZER;
-  }; // struct CarPositionXYZ_
+  ROS_DECLARE_ALLINONE_SERIALIZER;
+};  // struct CarPositionXYZ_
 
-} // namespace serialization
-} // namespace ros
+}  // namespace serialization
+}  // namespace ros
 
 namespace ros
 {
 namespace message_operations
 {
-
-template<class ContainerAllocator>
-struct Printer< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
+template <class ContainerAllocator>
+struct Printer<::sensors_fusion::CarPositionXYZ_<ContainerAllocator>>
 {
-  template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>& v)
+  template <typename Stream>
+  static void stream(Stream& s, const std::string& indent,
+                     const ::sensors_fusion::CarPositionXYZ_<ContainerAllocator>& v)
   {
     s << indent << "header: ";
     s << std::endl;
-    Printer< ::std_msgs::Header_<ContainerAllocator> >::stream(s, indent + "  ", v.header);
+    Printer<::std_msgs::Header_<ContainerAllocator>>::stream(s, indent + "  ", v.header);
     s << indent << "car_num: ";
     Printer<uint8_t>::stream(s, indent + "  ", v.car_num);
     s << indent << "car_type[]" << std::endl;
@@ -266,7 +273,7 @@ struct Printer< ::sensors_fusion::CarPositionXYZ_<ContainerAllocator> >
   }
 };
 
-} // namespace message_operations
-} // namespace ros
+}  // namespace message_operations
+}  // namespace ros
 
-#endif // SENSORS_FUSION_MESSAGE_CARPOSITIONXYZ_H
+#endif  // SENSORS_FUSION_MESSAGE_CARPOSITIONXYZ_H

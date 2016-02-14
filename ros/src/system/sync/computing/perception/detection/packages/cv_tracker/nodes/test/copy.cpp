@@ -25,442 +25,519 @@ bool points_image_flag;
 bool vscan_image_flag;
 
 /* ----function---- */
-double fabs_time_diff(std_msgs::Header *timespec1, std_msgs::Header *timespec2) {
-    double time1 = (double)timespec1->stamp.sec + (double)timespec1->stamp.nsec/1000000000L;
-    double time2 = (double)timespec2->stamp.sec + (double)timespec2->stamp.nsec/1000000000L;
+double fabs_time_diff(std_msgs::Header* timespec1, std_msgs::Header* timespec2)
+{
+  double time1 = (double)timespec1->stamp.sec + (double)timespec1->stamp.nsec / 1000000000L;
+  double time2 = (double)timespec2->stamp.sec + (double)timespec2->stamp.nsec / 1000000000L;
 
-    return fabs(time1 - time2);
+  return fabs(time1 - time2);
 }
 
-double get_time(const std_msgs::Header *timespec) {
-    return (double)timespec->stamp.sec + (double)timespec->stamp.nsec/1000000000L;
+double get_time(const std_msgs::Header* timespec)
+{
+  return (double)timespec->stamp.sec + (double)timespec->stamp.nsec / 1000000000L;
 }
-
 
 #if _REQ_PUB
 sensor_msgs::Image* p_image_raw_buf;
 sensor_msgs::PointCloud2* p_points_raw_buf;
 
-void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg) {
-    pthread_mutex_lock(&mutex);
-    image_raw_ringbuf.push_front(*image_raw_msg);
-    //points_raw is empty
-    if (points_raw_ringbuf.begin() == points_raw_ringbuf.end()) {
-        pthread_mutex_unlock(&mutex);
-        ROS_INFO("points_raw ring buffer is empty");
-        return;
-    }
-    buf_flag = true;
+void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg)
+{
+  pthread_mutex_lock(&mutex);
+  image_raw_ringbuf.push_front(*image_raw_msg);
+  // points_raw is empty
+  if (points_raw_ringbuf.begin() == points_raw_ringbuf.end())
+  {
     pthread_mutex_unlock(&mutex);
+    ROS_INFO("points_raw ring buffer is empty");
+    return;
+  }
+  buf_flag = true;
+  pthread_mutex_unlock(&mutex);
 }
 
-void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg) {
-    pthread_mutex_lock(&mutex);
-    points_raw_ringbuf.push_front(*points_raw_msg);
-    //image_raw is empty
-    if (image_raw_ringbuf.begin() == image_raw_ringbuf.end()) {
-        ROS_INFO("image_raw ring buffer is empty");
-        pthread_mutex_unlock(&mutex);
-        return;
-    }
-
-    buf_flag = true;
+void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg)
+{
+  pthread_mutex_lock(&mutex);
+  points_raw_ringbuf.push_front(*points_raw_msg);
+  // image_raw is empty
+  if (image_raw_ringbuf.begin() == image_raw_ringbuf.end())
+  {
+    ROS_INFO("image_raw ring buffer is empty");
     pthread_mutex_unlock(&mutex);
+    return;
+  }
+
+  buf_flag = true;
+  pthread_mutex_unlock(&mutex);
 }
 
 void publish_msg(sensor_msgs::Image* p_image_raw_buf, sensor_msgs::PointCloud2* p_points_raw_buf)
 {
-    ROS_INFO("publish");
-    image_raw_pub.publish(*p_image_raw_buf);
-    points_raw_pub.publish(*p_points_raw_buf);
+  ROS_INFO("publish");
+  image_raw_pub.publish(*p_image_raw_buf);
+  points_raw_pub.publish(*p_points_raw_buf);
 }
 
-bool publish() {
-    if (buf_flag) {
-        pthread_mutex_lock(&mutex);
+bool publish()
+{
+  if (buf_flag)
+  {
+    pthread_mutex_lock(&mutex);
 
-        //image_raw is empty
-        if (image_raw_ringbuf.begin() == image_raw_ringbuf.end()) {
-            pthread_mutex_unlock(&mutex);
-            ROS_INFO("image_raw ring buffer is empty");
-            return false;
-        }
+    // image_raw is empty
+    if (image_raw_ringbuf.begin() == image_raw_ringbuf.end())
+    {
+      pthread_mutex_unlock(&mutex);
+      ROS_INFO("image_raw ring buffer is empty");
+      return false;
+    }
 
-        //points_raw is empty
-        if (points_raw_ringbuf.begin() == points_raw_ringbuf.end()) {
-            pthread_mutex_unlock(&mutex);
-            ROS_INFO("points_raw ring buffer is empty");
-            return false;
-        }
+    // points_raw is empty
+    if (points_raw_ringbuf.begin() == points_raw_ringbuf.end())
+    {
+      pthread_mutex_unlock(&mutex);
+      ROS_INFO("points_raw ring buffer is empty");
+      return false;
+    }
 
-        // image_raw > points_raw
-        if (get_time(&(image_raw_ringbuf.front().header)) >= get_time(&(points_raw_ringbuf.front().header))) {
-            p_points_raw_buf = &(points_raw_ringbuf.front());
-            boost::circular_buffer<sensor_msgs::Image>::iterator it = image_raw_ringbuf.begin();
-            if (image_raw_ringbuf.size() == 1) {
-                p_image_raw_buf = &*it;
-                publish_msg(p_image_raw_buf, p_points_raw_buf);
-                pthread_mutex_unlock(&mutex);
-                return true;
-            } else {
-                for (it++; it != image_raw_ringbuf.end(); it++) {
-                    if (fabs_time_diff(&(points_raw_ringbuf.front().header), &((it-1)->header))
-                        < fabs_time_diff(&(points_raw_ringbuf.front().header), &(it->header))) {
-                        p_image_raw_buf = &*(it-1);
-                        break;
-                    }
-                }
-                if (it == image_raw_ringbuf.end()) {
-                    p_image_raw_buf = &(image_raw_ringbuf.back());
-                }
-            }
-        }
-        // image_raw < points_raw
-        else {
-            p_image_raw_buf = &(image_raw_ringbuf.front());
-            boost::circular_buffer<sensor_msgs::PointCloud2>::iterator it = points_raw_ringbuf.begin();
-            if (points_raw_ringbuf.size() == 1) {
-                p_points_raw_buf = &*it;
-                publish_msg(p_image_raw_buf, p_points_raw_buf);
-                pthread_mutex_unlock(&mutex);
-                return true;
-            }
-
-            for (it++; it != points_raw_ringbuf.end(); it++) {
-                if (fabs_time_diff(&(image_raw_ringbuf.front().header), &((it-1)->header))
-                    < fabs_time_diff(&(image_raw_ringbuf.front().header), &(it->header))) {
-                    p_points_raw_buf = &*(it-1);
-                    break;
-                }
-            }
-
-            if (it == points_raw_ringbuf.end()) {
-                p_points_raw_buf = &(points_raw_ringbuf.back());
-            }
-        }
+    // image_raw > points_raw
+    if (get_time(&(image_raw_ringbuf.front().header)) >= get_time(&(points_raw_ringbuf.front().header)))
+    {
+      p_points_raw_buf = &(points_raw_ringbuf.front());
+      boost::circular_buffer<sensor_msgs::Image>::iterator it = image_raw_ringbuf.begin();
+      if (image_raw_ringbuf.size() == 1)
+      {
+        p_image_raw_buf = &*it;
         publish_msg(p_image_raw_buf, p_points_raw_buf);
         pthread_mutex_unlock(&mutex);
         return true;
-    } else {
-        return false;
+      }
+      else
+      {
+        for (it++; it != image_raw_ringbuf.end(); it++)
+        {
+          if (fabs_time_diff(&(points_raw_ringbuf.front().header), &((it - 1)->header)) <
+              fabs_time_diff(&(points_raw_ringbuf.front().header), &(it->header)))
+          {
+            p_image_raw_buf = &*(it - 1);
+            break;
+          }
+        }
+        if (it == image_raw_ringbuf.end())
+        {
+          p_image_raw_buf = &(image_raw_ringbuf.back());
+        }
+      }
     }
+    // image_raw < points_raw
+    else
+    {
+      p_image_raw_buf = &(image_raw_ringbuf.front());
+      boost::circular_buffer<sensor_msgs::PointCloud2>::iterator it = points_raw_ringbuf.begin();
+      if (points_raw_ringbuf.size() == 1)
+      {
+        p_points_raw_buf = &*it;
+        publish_msg(p_image_raw_buf, p_points_raw_buf);
+        pthread_mutex_unlock(&mutex);
+        return true;
+      }
+
+      for (it++; it != points_raw_ringbuf.end(); it++)
+      {
+        if (fabs_time_diff(&(image_raw_ringbuf.front().header), &((it - 1)->header)) <
+            fabs_time_diff(&(image_raw_ringbuf.front().header), &(it->header)))
+        {
+          p_points_raw_buf = &*(it - 1);
+          break;
+        }
+      }
+
+      if (it == points_raw_ringbuf.end())
+      {
+        p_points_raw_buf = &(points_raw_ringbuf.back());
+      }
+    }
+    publish_msg(p_image_raw_buf, p_points_raw_buf);
+    pthread_mutex_unlock(&mutex);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 #else
 sensor_msgs::Image image_raw_buf;
 sensor_msgs::PointCloud2 points_raw_buf;
 
-void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg) {
-    pthread_mutex_lock(&mutex);
-    image_raw_ringbuf.push_front(*image_raw_msg);
+void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg)
+{
+  pthread_mutex_lock(&mutex);
+  image_raw_ringbuf.push_front(*image_raw_msg);
 
-    //points_raw is empty
-    if (points_raw_ringbuf.begin() == points_raw_ringbuf.end()) {
-        pthread_mutex_unlock(&mutex);
-        ROS_INFO("points_raw ring buffer is empty");
-        return;
-    }
-
-    buf_flag = true;
-
-    // image_raw > points_raw
-    if (get_time(&(image_raw_ringbuf.front().header)) >= get_time(&(points_raw_ringbuf.front().header))) {
-        points_raw_buf = points_raw_ringbuf.front();
-        boost::circular_buffer<sensor_msgs::Image>::iterator it = image_raw_ringbuf.begin();
-        if (image_raw_ringbuf.size() == 1) {
-            image_raw_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            return;
-        } else {
-            for (it++; it != image_raw_ringbuf.end(); it++) {
-                if (fabs_time_diff(&(points_raw_ringbuf.front().header), &((it-1)->header))
-                    < fabs_time_diff(&(points_raw_ringbuf.front().header), &(it->header))) {
-                    image_raw_buf = *(it-1);
-                    break;
-                }
-            }
-            if (it == image_raw_ringbuf.end()) {
-                image_raw_buf = image_raw_ringbuf.back();
-            }
-        }
-
-    } else {
-        image_raw_buf = image_raw_ringbuf.front();
-        boost::circular_buffer<sensor_msgs::PointCloud2>::iterator it = points_raw_ringbuf.begin();
-        if (points_raw_ringbuf.size() == 1) {
-            points_raw_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            return;
-        }
-
-        for (it++; it != points_raw_ringbuf.end(); it++) {
-            if (fabs_time_diff(&(image_raw_ringbuf.front().header), &((it-1)->header))
-                < fabs_time_diff(&(image_raw_ringbuf.front().header), &(it->header))) {
-                points_raw_buf = *(it-1);
-                break;
-            }
-        }
-
-        if (it == points_raw_ringbuf.end()) {
-            points_raw_buf = points_raw_ringbuf.back();
-        }
-    }
+  // points_raw is empty
+  if (points_raw_ringbuf.begin() == points_raw_ringbuf.end())
+  {
     pthread_mutex_unlock(&mutex);
+    ROS_INFO("points_raw ring buffer is empty");
+    return;
+  }
+
+  buf_flag = true;
+
+  // image_raw > points_raw
+  if (get_time(&(image_raw_ringbuf.front().header)) >= get_time(&(points_raw_ringbuf.front().header)))
+  {
+    points_raw_buf = points_raw_ringbuf.front();
+    boost::circular_buffer<sensor_msgs::Image>::iterator it = image_raw_ringbuf.begin();
+    if (image_raw_ringbuf.size() == 1)
+    {
+      image_raw_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+    else
+    {
+      for (it++; it != image_raw_ringbuf.end(); it++)
+      {
+        if (fabs_time_diff(&(points_raw_ringbuf.front().header), &((it - 1)->header)) <
+            fabs_time_diff(&(points_raw_ringbuf.front().header), &(it->header)))
+        {
+          image_raw_buf = *(it - 1);
+          break;
+        }
+      }
+      if (it == image_raw_ringbuf.end())
+      {
+        image_raw_buf = image_raw_ringbuf.back();
+      }
+    }
+  }
+  else
+  {
+    image_raw_buf = image_raw_ringbuf.front();
+    boost::circular_buffer<sensor_msgs::PointCloud2>::iterator it = points_raw_ringbuf.begin();
+    if (points_raw_ringbuf.size() == 1)
+    {
+      points_raw_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+
+    for (it++; it != points_raw_ringbuf.end(); it++)
+    {
+      if (fabs_time_diff(&(image_raw_ringbuf.front().header), &((it - 1)->header)) <
+          fabs_time_diff(&(image_raw_ringbuf.front().header), &(it->header)))
+      {
+        points_raw_buf = *(it - 1);
+        break;
+      }
+    }
+
+    if (it == points_raw_ringbuf.end())
+    {
+      points_raw_buf = points_raw_ringbuf.back();
+    }
+  }
+  pthread_mutex_unlock(&mutex);
 }
 
-void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg) {
-    pthread_mutex_lock(&mutex);
-    points_raw_ringbuf.push_front(*points_raw_msg);
-    //image_raw is empty
-    if (image_raw_ringbuf.begin() == image_raw_ringbuf.end()) {
-        ROS_INFO("image_raw ring buffer is empty");
-        pthread_mutex_unlock(&mutex);
-        return;
-    }
-
-    buf_flag = true;
-
-    // image_raw > points_raw
-    if (get_time(&(image_raw_ringbuf.front().header)) >= get_time(&(points_raw_ringbuf.front().header))) {
-        points_raw_buf = points_raw_ringbuf.front();
-        boost::circular_buffer<sensor_msgs::Image>::iterator it = image_raw_ringbuf.begin();
-        if (image_raw_ringbuf.size() == 1) {
-            image_raw_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            return;
-        } else {
-            for (it++; it != image_raw_ringbuf.end(); it++) {
-                if (fabs_time_diff(&(points_raw_ringbuf.front().header), &((it-1)->header))
-                    < fabs_time_diff(&(points_raw_ringbuf.front().header), &(it->header))) {
-                    image_raw_buf = *(it-1);
-                    break;
-                }
-            }
-            if (it == image_raw_ringbuf.end()) {
-                image_raw_buf = image_raw_ringbuf.back();
-            }
-        }
-
-    } else {
-        image_raw_buf = image_raw_ringbuf.front();
-        boost::circular_buffer<sensor_msgs::PointCloud2>::iterator it = points_raw_ringbuf.begin();
-        if (points_raw_ringbuf.size() == 1) {
-            points_raw_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            return;
-        }
-
-        for (it++; it != points_raw_ringbuf.end(); it++) {
-            if (fabs_time_diff(&(image_raw_ringbuf.front().header), &((it-1)->header))
-                < fabs_time_diff(&(image_raw_ringbuf.front().header), &(it->header))) {
-                points_raw_buf = *(it-1);
-                break;
-            }
-        }
-
-        if (it == points_raw_ringbuf.end()) {
-            points_raw_buf = points_raw_ringbuf.back();
-        }
-    }
+void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg)
+{
+  pthread_mutex_lock(&mutex);
+  points_raw_ringbuf.push_front(*points_raw_msg);
+  // image_raw is empty
+  if (image_raw_ringbuf.begin() == image_raw_ringbuf.end())
+  {
+    ROS_INFO("image_raw ring buffer is empty");
     pthread_mutex_unlock(&mutex);
+    return;
+  }
+
+  buf_flag = true;
+
+  // image_raw > points_raw
+  if (get_time(&(image_raw_ringbuf.front().header)) >= get_time(&(points_raw_ringbuf.front().header)))
+  {
+    points_raw_buf = points_raw_ringbuf.front();
+    boost::circular_buffer<sensor_msgs::Image>::iterator it = image_raw_ringbuf.begin();
+    if (image_raw_ringbuf.size() == 1)
+    {
+      image_raw_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+    else
+    {
+      for (it++; it != image_raw_ringbuf.end(); it++)
+      {
+        if (fabs_time_diff(&(points_raw_ringbuf.front().header), &((it - 1)->header)) <
+            fabs_time_diff(&(points_raw_ringbuf.front().header), &(it->header)))
+        {
+          image_raw_buf = *(it - 1);
+          break;
+        }
+      }
+      if (it == image_raw_ringbuf.end())
+      {
+        image_raw_buf = image_raw_ringbuf.back();
+      }
+    }
+  }
+  else
+  {
+    image_raw_buf = image_raw_ringbuf.front();
+    boost::circular_buffer<sensor_msgs::PointCloud2>::iterator it = points_raw_ringbuf.begin();
+    if (points_raw_ringbuf.size() == 1)
+    {
+      points_raw_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+
+    for (it++; it != points_raw_ringbuf.end(); it++)
+    {
+      if (fabs_time_diff(&(image_raw_ringbuf.front().header), &((it - 1)->header)) <
+          fabs_time_diff(&(image_raw_ringbuf.front().header), &(it->header)))
+      {
+        points_raw_buf = *(it - 1);
+        break;
+      }
+    }
+
+    if (it == points_raw_ringbuf.end())
+    {
+      points_raw_buf = points_raw_ringbuf.back();
+    }
+  }
+  pthread_mutex_unlock(&mutex);
 }
 
-bool publish() {
-    if (buf_flag) {
-        pthread_mutex_lock(&mutex);
-        // scan_ringbuf.clear();
-        // image_ringbuf.clear();
-        // scan_ringbuf.push_front(scan_buf);
-        // image_ringbuf.push_front(image_buf);
-        ROS_INFO("publish");
-        image_raw_pub.publish(image_raw_buf);
-        points_raw_pub.publish(points_raw_buf);
-        pthread_mutex_unlock(&mutex);
-        return true;
-    } else {
-        ROS_INFO("publish failed");
-        return false;
-    }
+bool publish()
+{
+  if (buf_flag)
+  {
+    pthread_mutex_lock(&mutex);
+    // scan_ringbuf.clear();
+    // image_ringbuf.clear();
+    // scan_ringbuf.push_front(scan_buf);
+    // image_ringbuf.push_front(image_buf);
+    ROS_INFO("publish");
+    image_raw_pub.publish(image_raw_buf);
+    points_raw_pub.publish(points_raw_buf);
+    pthread_mutex_unlock(&mutex);
+    return true;
+  }
+  else
+  {
+    ROS_INFO("publish failed");
+    return false;
+  }
 }
 #endif
 
-void obj_person__image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
-    if (obj_person__image_obj_flag) {
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
-        return;
-    }
+void obj_person__image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg)
+{
+  if (obj_person__image_obj_flag)
+  {
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+    return;
+  }
 
-    obj_person__image_obj_flag = true;
-    if ((points_image_flag || vscan_image_flag) && obj_car__image_obj_flag) {
-        ROS_INFO("catch publish request");
-        if(!publish()) {
-            /* when to publish is failure, republish */
-            struct timespec sleep_time;
-            sleep_time.tv_sec = 0;
-            sleep_time.tv_nsec = 200000000; //5Hz
-            while (!publish() || ros::ok())
-                nanosleep(&sleep_time, NULL);
-        }
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
+  obj_person__image_obj_flag = true;
+  if ((points_image_flag || vscan_image_flag) && obj_car__image_obj_flag)
+  {
+    ROS_INFO("catch publish request");
+    if (!publish())
+    {
+      /* when to publish is failure, republish */
+      struct timespec sleep_time;
+      sleep_time.tv_sec = 0;
+      sleep_time.tv_nsec = 200000000;  // 5Hz
+      while (!publish() || ros::ok())
+        nanosleep(&sleep_time, NULL);
     }
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+  }
 }
 
-void obj_car__image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
-    if (obj_car__image_obj_flag) {
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
-        return;
-    }
+void obj_car__image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg)
+{
+  if (obj_car__image_obj_flag)
+  {
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+    return;
+  }
 
-    obj_car__image_obj_flag = true;
-    if ((points_image_flag || vscan_image_flag) && obj_person__image_obj_flag) {
-        ROS_INFO("catch publish request");
-        if(!publish()) {
-            /* when to publish is failure, republish */
-            struct timespec sleep_time;
-            sleep_time.tv_sec = 0;
-            sleep_time.tv_nsec = 200000000; //5Hz
-            while (!publish() || ros::ok())
-                nanosleep(&sleep_time, NULL);
-        }
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
+  obj_car__image_obj_flag = true;
+  if ((points_image_flag || vscan_image_flag) && obj_person__image_obj_flag)
+  {
+    ROS_INFO("catch publish request");
+    if (!publish())
+    {
+      /* when to publish is failure, republish */
+      struct timespec sleep_time;
+      sleep_time.tv_sec = 0;
+      sleep_time.tv_nsec = 200000000;  // 5Hz
+      while (!publish() || ros::ok())
+        nanosleep(&sleep_time, NULL);
     }
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+  }
 }
 
-void points_image_callback(const points2image::PointsImage::ConstPtr& points_image_msg) {
-    if (points_image_flag) {
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
-        return;
-    }
+void points_image_callback(const points2image::PointsImage::ConstPtr& points_image_msg)
+{
+  if (points_image_flag)
+  {
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+    return;
+  }
 
-    points_image_flag = true;
-    if (obj_person__image_obj_flag && obj_car__image_obj_flag) {
-        ROS_INFO("catch publish request");
-        if(!publish()) {
-            /* when to publish is failure, republish */
-            struct timespec sleep_time;
-            sleep_time.tv_sec = 0;
-            sleep_time.tv_nsec = 200000000; //5Hz
-            while (!publish() || ros::ok())
-                nanosleep(&sleep_time, NULL);
-        }
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
+  points_image_flag = true;
+  if (obj_person__image_obj_flag && obj_car__image_obj_flag)
+  {
+    ROS_INFO("catch publish request");
+    if (!publish())
+    {
+      /* when to publish is failure, republish */
+      struct timespec sleep_time;
+      sleep_time.tv_sec = 0;
+      sleep_time.tv_nsec = 200000000;  // 5Hz
+      while (!publish() || ros::ok())
+        nanosleep(&sleep_time, NULL);
     }
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+  }
 }
 
-void vscan_image_callback(const points2image::PointsImage::ConstPtr& points_image_msg) {
-    if (vscan_image_flag) {
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
-        return;
-    }
+void vscan_image_callback(const points2image::PointsImage::ConstPtr& points_image_msg)
+{
+  if (vscan_image_flag)
+  {
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+    return;
+  }
 
-    vscan_image_flag = true;
-    if (obj_person__image_obj_flag && obj_car__image_obj_flag) {
-        ROS_INFO("catch publish request");
-        if(!publish()) {
-            /* when to publish is failure, republish */
-            struct timespec sleep_time;
-            sleep_time.tv_sec = 0;
-            sleep_time.tv_nsec = 200000000; //5Hz
-            while (!publish() || ros::ok())
-                nanosleep(&sleep_time, NULL);
-        }
-        obj_person__image_obj_flag = false;
-        obj_car__image_obj_flag = false;
-        points_image_flag = false;
-        vscan_image_flag = false;
+  vscan_image_flag = true;
+  if (obj_person__image_obj_flag && obj_car__image_obj_flag)
+  {
+    ROS_INFO("catch publish request");
+    if (!publish())
+    {
+      /* when to publish is failure, republish */
+      struct timespec sleep_time;
+      sleep_time.tv_sec = 0;
+      sleep_time.tv_nsec = 200000000;  // 5Hz
+      while (!publish() || ros::ok())
+        nanosleep(&sleep_time, NULL);
     }
+    obj_person__image_obj_flag = false;
+    obj_car__image_obj_flag = false;
+    points_image_flag = false;
+    vscan_image_flag = false;
+  }
 }
 
 void* thread(void* args)
 {
-    ros::NodeHandle nh_rcv;
-    ros::CallbackQueue rcv_callbackqueue;
-    nh_rcv.setCallbackQueue(&rcv_callbackqueue);
-    ros::Subscriber obj_person__image_obj_sub = nh_rcv.subscribe("/obj_person/image_obj", 5, obj_person__image_obj_callback);
-    ros::Subscriber obj_car__image_obj_sub = nh_rcv.subscribe("/obj_car/image_obj", 5, obj_car__image_obj_callback);
-    ros::Subscriber points_image_sub = nh_rcv.subscribe("/points_image", 5, points_image_callback);
-    ros::Subscriber vscan_image_sub = nh_rcv.subscribe("/vscan_image", 5, vscan_image_callback);
-    bool prev_obj_person__image_obj_flag;
-    bool prev_obj_car__image_obj_flag;
-    bool prev_points_image_flag;
-    bool prev_vscan_image_flag;
+  ros::NodeHandle nh_rcv;
+  ros::CallbackQueue rcv_callbackqueue;
+  nh_rcv.setCallbackQueue(&rcv_callbackqueue);
+  ros::Subscriber obj_person__image_obj_sub =
+      nh_rcv.subscribe("/obj_person/image_obj", 5, obj_person__image_obj_callback);
+  ros::Subscriber obj_car__image_obj_sub = nh_rcv.subscribe("/obj_car/image_obj", 5, obj_car__image_obj_callback);
+  ros::Subscriber points_image_sub = nh_rcv.subscribe("/points_image", 5, points_image_callback);
+  ros::Subscriber vscan_image_sub = nh_rcv.subscribe("/vscan_image", 5, vscan_image_callback);
+  bool prev_obj_person__image_obj_flag;
+  bool prev_obj_car__image_obj_flag;
+  bool prev_points_image_flag;
+  bool prev_vscan_image_flag;
 
-    while (nh_rcv.ok()) {
+  while (nh_rcv.ok())
+  {
+    prev_obj_person__image_obj_flag = obj_person__image_obj_flag;
+    prev_obj_car__image_obj_flag = obj_car__image_obj_flag;
+    prev_points_image_flag = points_image_flag;
+    prev_vscan_image_flag = vscan_image_flag;
 
-        prev_obj_person__image_obj_flag = obj_person__image_obj_flag;
-        prev_obj_car__image_obj_flag = obj_car__image_obj_flag;
-        prev_points_image_flag = points_image_flag;
-        prev_vscan_image_flag = vscan_image_flag;
+    rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
 
-        rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
-
-        if ((obj_person__image_obj_flag == prev_obj_person__image_obj_flag)
-            && (obj_car__image_obj_flag == prev_obj_car__image_obj_flag)
-            && (points_image_flag == prev_points_image_flag || prev_vscan_image_flag == vscan_image_flag)) {
-            ROS_INFO("timeout");
-            if(!publish()) {
-                /* when to publish is failure, republish */
-                struct timespec sleep_time;
-                sleep_time.tv_sec = 0;
-                sleep_time.tv_nsec = 200000000; //5Hz
-                while (!publish() || ros::ok())
-                    nanosleep(&sleep_time, NULL);
-            }
-        }
-    }
-    return NULL;
-}
-
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "sync_server");
-    ros::NodeHandle nh;
-
-    ros::Subscriber image_raw_sub = nh.subscribe("/image_raw", 1, image_raw_callback);
-    ros::Subscriber points_raw_sub = nh.subscribe("/points_raw", 1, points_raw_callback);
-    image_raw_pub = nh.advertise<sensor_msgs::Image>("/image_raw_", 5);
-    points_raw_pub = nh.advertise<sensor_msgs::PointCloud2>("/points_raw_", 5);
-    while (!buf_flag) {
-        ros::spinOnce();
-    }
-    /* create server thread */
-    pthread_t th;
-    pthread_create(&th, NULL, thread, (void *)NULL );
-
-    if(!publish()) {
+    if ((obj_person__image_obj_flag == prev_obj_person__image_obj_flag) &&
+        (obj_car__image_obj_flag == prev_obj_car__image_obj_flag) &&
+        (points_image_flag == prev_points_image_flag || prev_vscan_image_flag == vscan_image_flag))
+    {
+      ROS_INFO("timeout");
+      if (!publish())
+      {
         /* when to publish is failure, republish */
         struct timespec sleep_time;
         sleep_time.tv_sec = 0;
-        sleep_time.tv_nsec = 200000000; //5Hz
+        sleep_time.tv_nsec = 200000000;  // 5Hz
         while (!publish() || ros::ok())
-            nanosleep(&sleep_time, NULL);
+          nanosleep(&sleep_time, NULL);
+      }
     }
+  }
+  return NULL;
+}
 
-    ros::spin();
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "sync_server");
+  ros::NodeHandle nh;
 
-    /* shutdown server thread */
-    ROS_INFO("wait until shutdown a thread");
-    pthread_kill(th, SIGINT);
-    pthread_join(th, NULL);
+  ros::Subscriber image_raw_sub = nh.subscribe("/image_raw", 1, image_raw_callback);
+  ros::Subscriber points_raw_sub = nh.subscribe("/points_raw", 1, points_raw_callback);
+  image_raw_pub = nh.advertise<sensor_msgs::Image>("/image_raw_", 5);
+  points_raw_pub = nh.advertise<sensor_msgs::PointCloud2>("/points_raw_", 5);
+  while (!buf_flag)
+  {
+    ros::spinOnce();
+  }
+  /* create server thread */
+  pthread_t th;
+  pthread_create(&th, NULL, thread, (void*)NULL);
 
-    return 0;
+  if (!publish())
+  {
+    /* when to publish is failure, republish */
+    struct timespec sleep_time;
+    sleep_time.tv_sec = 0;
+    sleep_time.tv_nsec = 200000000;  // 5Hz
+    while (!publish() || ros::ok())
+      nanosleep(&sleep_time, NULL);
+  }
+
+  ros::spin();
+
+  /* shutdown server thread */
+  ROS_INFO("wait until shutdown a thread");
+  pthread_kill(th, SIGINT);
+  pthread_join(th, NULL);
+
+  return 0;
 }

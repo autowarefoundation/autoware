@@ -38,191 +38,189 @@ static void getDrvErrorCode(int error_id, std::string* str);
 
 int main(void)
 {
-	int deviceCount;
-	CUresult error_id = cuInit(0);
+  int deviceCount;
+  CUresult error_id = cuInit(0);
 
-	error_id = cuDeviceGetCount(&deviceCount);
+  error_id = cuDeviceGetCount(&deviceCount);
 
-	if (error_id != CUDA_SUCCESS) {
-#if CUDA_VERSION < 6000         // if CUDA version is under 6.0
-        std::string error_string;
-        getDrvErrorCode(error_id, &error_string);
+  if (error_id != CUDA_SUCCESS)
+  {
+#if CUDA_VERSION < 6000  // if CUDA version is under 6.0
+    std::string error_string;
+    getDrvErrorCode(error_id, &error_string);
 #else
-		const char *error_string;
-		cuGetErrorString(error_id, &error_string);
+    const char* error_string;
+    cuGetErrorString(error_id, &error_string);
 #endif
-		std::cerr << "Failed: cuDeviceGetCount()"
-			  << " = "
-			  << static_cast<int>(error_id)
-			  << " -> "
-			  << error_string
-			  << std::endl;
-		return -1;
-	}
+    std::cerr << "Failed: cuDeviceGetCount()"
+              << " = " << static_cast<int>(error_id) << " -> " << error_string << std::endl;
+    return -1;
+  }
 
-	if (deviceCount == 0) {
-		std::cerr << "No CUDA GPU" << std::endl;
-		return -1;
-	}
+  if (deviceCount == 0)
+  {
+    std::cerr << "No CUDA GPU" << std::endl;
+    return -1;
+  }
 
-	std::vector<int> capability_versions;
-	for (int device = 0; device < deviceCount; ++device) {
-		CUdevice devHandle;
+  std::vector<int> capability_versions;
+  for (int device = 0; device < deviceCount; ++device)
+  {
+    CUdevice devHandle;
 
-		cuDeviceGet(&devHandle, device);
+    cuDeviceGet(&devHandle, device);
 
-		int major = 0, minor = 0;
-		cuDeviceComputeCapability(&major, &minor, devHandle);
+    int major = 0, minor = 0;
+    cuDeviceComputeCapability(&major, &minor, devHandle);
 
-		int capability_version = (10 * major) + minor;
-		capability_versions.push_back(capability_version);
-	}
+    int capability_version = (10 * major) + minor;
+    capability_versions.push_back(capability_version);
+  }
 
-	int min_version = *std::min_element(capability_versions.begin(),
-					    capability_versions.end());
+  int min_version = *std::min_element(capability_versions.begin(), capability_versions.end());
 
-	std::cout << min_version << std::endl;
-	return 0;
+  std::cout << min_version << std::endl;
+  return 0;
 }
 
 static void getDrvErrorCode(int error_id, std::string* str)
 {
   switch (error_id)
-    {
-    case 0 :
+  {
+    case 0:
       *str = "CUDA_SUCCESS";
       break;
-    case 1 :
+    case 1:
       *str = "CUDA_ERROR_INVALID_VALUE";
       break;
-    case 2 :
+    case 2:
       *str = "CUDA_ERROR_OUT_OF_MEMORY";
       break;
-    case 3 :
+    case 3:
       *str = "CUDA_ERROR_NOT_INITIALIZED";
       break;
-    case 4 :
+    case 4:
       *str = "CUDA_ERROR_DEINITIALIZED";
       break;
-    case 5 :
+    case 5:
       *str = "CUDA_ERROR_PROFILER_DISABLED";
       break;
-    case 6 :
+    case 6:
       *str = "CUDA_ERROR_PROFILER_NOT_INITIALIZED";
       break;
-    case 7 :
+    case 7:
       *str = "CUDA_ERROR_PROFILER_ALREADY_STARTED";
       break;
-    case 8 :
+    case 8:
       *str = "CUDA_ERROR_PROFILER_ALREADY_STOPPED";
       break;
-    case 100 :
+    case 100:
       *str = "CUDA_ERROR_NO_DEVICE (no CUDA-capable devices were detected)";
       break;
-    case 101 :
+    case 101:
       *str = "CUDA_ERROR_INVALID_DEVICE (device specified is not a valid CUDA device)";
       break;
-    case 200 :
+    case 200:
       *str = "CUDA_ERROR_INVALID_IMAGE";
       break;
-    case 201 :
+    case 201:
       *str = "CUDA_ERROR_INVALID_CONTEXT";
       break;
-    case 202 :
+    case 202:
       *str = "CUDA_ERROR_CONTEXT_ALREADY_CURRENT";
       break;
-    case 205 :
+    case 205:
       *str = "CUDA_ERROR_MAP_FAILED";
       break;
-    case 206 :
+    case 206:
       *str = "CUDA_ERROR_UNMAP_FAILED";
       break;
-    case 207 :
+    case 207:
       *str = "CUDA_ERROR_ARRAY_IS_MAPPED";
       break;
-    case 208 :
+    case 208:
       *str = "CUDA_ERROR_ALREADY_MAPPED";
       break;
-    case 209 :
+    case 209:
       *str = "CUDA_ERROR_NO_BINARY_FOR_GPU";
       break;
-    case 210 :
+    case 210:
       *str = "CUDA_ERROR_ALREADY_ACQUIRED";
       break;
-    case 211 :
+    case 211:
       *str = "CUDA_ERROR_NOT_MAPPED";
       break;
-    case 212 :
+    case 212:
       *str = "CUDA_ERROR_NOT_MAPPED_AS_ARRAY";
       break;
-    case 213 :
+    case 213:
       *str = "CUDA_ERROR_NOT_MAPPED_AS_POINTER";
       break;
-    case 214 :
+    case 214:
       *str = "CUDA_ERROR_ECC_UNCORRECTABLE";
       break;
-    case 215 :
+    case 215:
       *str = "CUDA_ERROR_UNSUPPORTED_LIMIT";
       break;
-    case 216 :
+    case 216:
       *str = "CUDA_ERROR_CONTEXT_ALREADY_IN_USE";
       break;
-    case 300 :
+    case 300:
       *str = "CUDA_ERROR_INVALID_SOURCE";
       break;
-    case 301 :
+    case 301:
       *str = "CUDA_ERROR_FILE_NOT_FOUND";
       break;
-    case 302 :
+    case 302:
       *str = "CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND";
       break;
-    case 303 :
+    case 303:
       *str = "CUDA_ERROR_SHARED_OBJECT_INIT_FAILED";
       break;
-    case 304 :
+    case 304:
       *str = "CUDA_ERROR_OPERATING_SYSTEM";
       break;
-    case 400 :
+    case 400:
       *str = "CUDA_ERROR_INVALID_HANDLE";
       break;
-    case 500 :
+    case 500:
       *str = "CUDA_ERROR_NOT_FOUND";
       break;
-    case 600 :
+    case 600:
       *str = "CUDA_ERROR_NOT_READY";
       break;
-    case 700 :
+    case 700:
       *str = "CUDA_ERROR_LAUNCH_FAILED";
       break;
-    case 701 :
+    case 701:
       *str = "CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES";
       break;
-    case 702 :
+    case 702:
       *str = "CUDA_ERROR_LAUNCH_TIMEOUT";
       break;
-    case 703 :
+    case 703:
       *str = "CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING";
       break;
-    case 704 :
+    case 704:
       *str = "CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED";
       break;
-    case 705 :
+    case 705:
       *str = "CUDA_ERROR_PEER_ACCESS_NOT_ENABLED";
       break;
-    case 708 :
+    case 708:
       *str = "CUDA_ERROR_PRIMARY_CONTEXT_ACTIVE";
       break;
-    case 709 :
+    case 709:
       *str = "CUDA_ERROR_CONTEXT_IS_DESTROYED";
       break;
-    case 710 :
+    case 710:
       *str = "CUDA_ERROR_ASSERT";
       break;
-    case 999 :
+    case 999:
       *str = "CUDA_ERROR_UNKNOWN";
       break;
-    default :
+    default:
       *str = "Not defined CUDA error in this program";
       break;
-    }
+  }
 }

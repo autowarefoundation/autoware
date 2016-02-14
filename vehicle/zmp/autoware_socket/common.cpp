@@ -38,8 +38,8 @@
 struct struct_PID_controller *shm_ptr;
 
 // these parameters can be configured later.
-int can_tx_interval = 10; // ms
-int cmd_rx_interval = 100; // ms
+int can_tx_interval = 10;   // ms
+int cmd_rx_interval = 100;  // ms
 std::string ros_ip_address = "192.168.1.101";
 
 // vehicle state.
@@ -49,28 +49,38 @@ bool MainWindow::ConfigSocket(void)
 {
   std::ifstream ifs("./config");
   std::string str;
-  if (ifs.fail()) {
+  if (ifs.fail())
+  {
     return false;
   }
 
-  if (getline(ifs,str)) {
+  if (getline(ifs, str))
+  {
     can_tx_interval = atoi(str.c_str());
     cout << "CAN Interval = " << can_tx_interval << " ms" << endl;
-  } else {
+  }
+  else
+  {
     return false;
   }
 
-  if (getline(ifs, str)) {
+  if (getline(ifs, str))
+  {
     cmd_rx_interval = atoi(str.c_str());
     cout << "CMD Interval = " << cmd_rx_interval << " ms" << endl;
-  } else {
+  }
+  else
+  {
     return false;
   }
 
-  if (getline(ifs,str)) {
+  if (getline(ifs, str))
+  {
     ros_ip_address = str;
     cout << "ROS IP Address = " << ros_ip_address << endl;
-  } else {
+  }
+  else
+  {
     return false;
   }
 
@@ -78,7 +88,7 @@ bool MainWindow::ConfigSocket(void)
   key_t shm_key = ftok(SHM_SEED_PATH.c_str(), 1);
 
   // open shared memory
-  int shm_id = shmget(shm_key, sizeof(struct_PID_controller), 0444); // read only
+  int shm_id = shmget(shm_key, sizeof(struct_PID_controller), 0444);  // read only
 
   // get address of shared memory
   shm_ptr = (struct struct_PID_controller *)shmat(shm_id, NULL, 0);
@@ -94,7 +104,7 @@ void MainWindow::UpdateState(void)
   vstate.steering_torque = ZMP_STEERING_TORQUE();
   vstate.steering_angle = ZMP_STEERING_ANGLE();
   vstate.velocity = ZMP_VELOCITY();
-  vstate.tstamp = (long long int) (getTime());
+  vstate.tstamp = (long long int)(getTime());
 }
 
 void MainWindow::ClearCntDiag(void)
