@@ -36,17 +36,18 @@ ros::Publisher cluster_centroids__pub;
 bool obj_pose_flag;
 
 /* ----function---- */
-double fabs_time_diff(std_msgs::Header *timespec1, std_msgs::Header *timespec2) {
-    double time1 = (double)timespec1->stamp.sec + (double)timespec1->stamp.nsec/1000000000L;
-    double time2 = (double)timespec2->stamp.sec + (double)timespec2->stamp.nsec/1000000000L;
+double fabs_time_diff(std_msgs::Header* timespec1, std_msgs::Header* timespec2)
+{
+  double time1 = (double)timespec1->stamp.sec + (double)timespec1->stamp.nsec / 1000000000L;
+  double time2 = (double)timespec2->stamp.sec + (double)timespec2->stamp.nsec / 1000000000L;
 
-    return fabs(time1 - time2);
+  return fabs(time1 - time2);
 }
 
-double get_time(const std_msgs::Header *timespec) {
-    return (double)timespec->stamp.sec + (double)timespec->stamp.nsec/1000000000L;
+double get_time(const std_msgs::Header* timespec)
+{
+  return (double)timespec->stamp.sec + (double)timespec->stamp.nsec / 1000000000L;
 }
-
 
 #if _REQ_PUB
 cv_tracker::obj_label* p_obj_label_buf;
@@ -54,357 +55,430 @@ lidar_tracker::centroids* p_cluster_centroids_buf;
 
 void publish_msg(cv_tracker::obj_label* p_obj_label_buf, lidar_tracker::centroids* p_cluster_centroids_buf)
 {
-    ROS_INFO("publish");
-    obj_label__pub.publish(*p_obj_label_buf);
-    cluster_centroids__pub.publish(*p_cluster_centroids_buf);
+  ROS_INFO("publish");
+  obj_label__pub.publish(*p_obj_label_buf);
+  cluster_centroids__pub.publish(*p_cluster_centroids_buf);
 }
 
-bool publish() {
-    if (buf_flag) {
-        //obj_label is empty
-        if (obj_label_ringbuf.begin() == obj_label_ringbuf.end()) {
-            ROS_INFO("obj_label ring buffer is empty");
-            return false;
-        }
+bool publish()
+{
+  if (buf_flag)
+  {
+    // obj_label is empty
+    if (obj_label_ringbuf.begin() == obj_label_ringbuf.end())
+    {
+      ROS_INFO("obj_label ring buffer is empty");
+      return false;
+    }
 
-        //cluster_centroids is empty
-        if (cluster_centroids_ringbuf.begin() == cluster_centroids_ringbuf.end()) {
-            ROS_INFO("cluster_centroids ring buffer is empty");
-            return false;
-        }
+    // cluster_centroids is empty
+    if (cluster_centroids_ringbuf.begin() == cluster_centroids_ringbuf.end())
+    {
+      ROS_INFO("cluster_centroids ring buffer is empty");
+      return false;
+    }
 
-        // obj_label > cluster_centroids
-        if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header))) {
-            p_cluster_centroids_buf = &(cluster_centroids_ringbuf.front());
-            boost::circular_buffer<cv_tracker::obj_label>::iterator it = obj_label_ringbuf.begin();
-            if (obj_label_ringbuf.size() == 1) {
-                p_obj_label_buf = &*it;
-                publish_msg(p_obj_label_buf, p_cluster_centroids_buf);
-                if (obj_pose_flag == true){
-                    buf_flag = false;
-                    obj_pose_flag = false;
-                    obj_label_ringbuf.clear();
-                    cluster_centroids_ringbuf.clear();
-                }
-                return true;
-            } else {
-                for (it++; it != obj_label_ringbuf.end(); it++) {
-                    if (fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &((it-1)->header))
-                        < fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &(it->header))) {
-                        p_obj_label_buf = &*(it-1);
-                        break;
-                    }
-                }
-                if (it == obj_label_ringbuf.end()) {
-                    p_obj_label_buf = &(obj_label_ringbuf.back());
-                }
-            }
-        }
-        // obj_label < cluster_centroids
-        else {
-            p_obj_label_buf = &(obj_label_ringbuf.front());
-            boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
-            if (cluster_centroids_ringbuf.size() == 1) {
-                p_cluster_centroids_buf = &*it;
-                publish_msg(p_obj_label_buf, p_cluster_centroids_buf);
-                if (obj_pose_flag == true){
-                    buf_flag = false;
-                    obj_pose_flag = false;
-                    obj_label_ringbuf.clear();
-                    cluster_centroids_ringbuf.clear();
-                }
-                return true;
-            }
-
-            for (it++; it != cluster_centroids_ringbuf.end(); it++) {
-                if (fabs_time_diff(&(obj_label_ringbuf.front().header), &((it-1)->header))
-                    < fabs_time_diff(&(obj_label_ringbuf.front().header), &(it->header))) {
-                    p_cluster_centroids_buf = &*(it-1);
-                    break;
-                }
-            }
-
-            if (it == cluster_centroids_ringbuf.end()) {
-                p_cluster_centroids_buf = &(cluster_centroids_ringbuf.back());
-            }
-        }
+    // obj_label > cluster_centroids
+    if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header)))
+    {
+      p_cluster_centroids_buf = &(cluster_centroids_ringbuf.front());
+      boost::circular_buffer<cv_tracker::obj_label>::iterator it = obj_label_ringbuf.begin();
+      if (obj_label_ringbuf.size() == 1)
+      {
+        p_obj_label_buf = &*it;
         publish_msg(p_obj_label_buf, p_cluster_centroids_buf);
-        if (obj_pose_flag == true){
-            buf_flag = false;
-            obj_pose_flag = false;
-            obj_label_ringbuf.clear();
-            cluster_centroids_ringbuf.clear();
+        if (obj_pose_flag == true)
+        {
+          buf_flag = false;
+          obj_pose_flag = false;
+          obj_label_ringbuf.clear();
+          cluster_centroids_ringbuf.clear();
         }
         return true;
-    } else {
-        return false;
+      }
+      else
+      {
+        for (it++; it != obj_label_ringbuf.end(); it++)
+        {
+          if (fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &((it - 1)->header)) <
+              fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &(it->header)))
+          {
+            p_obj_label_buf = &*(it - 1);
+            break;
+          }
+        }
+        if (it == obj_label_ringbuf.end())
+        {
+          p_obj_label_buf = &(obj_label_ringbuf.back());
+        }
+      }
     }
+    // obj_label < cluster_centroids
+    else
+    {
+      p_obj_label_buf = &(obj_label_ringbuf.front());
+      boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
+      if (cluster_centroids_ringbuf.size() == 1)
+      {
+        p_cluster_centroids_buf = &*it;
+        publish_msg(p_obj_label_buf, p_cluster_centroids_buf);
+        if (obj_pose_flag == true)
+        {
+          buf_flag = false;
+          obj_pose_flag = false;
+          obj_label_ringbuf.clear();
+          cluster_centroids_ringbuf.clear();
+        }
+        return true;
+      }
+
+      for (it++; it != cluster_centroids_ringbuf.end(); it++)
+      {
+        if (fabs_time_diff(&(obj_label_ringbuf.front().header), &((it - 1)->header)) <
+            fabs_time_diff(&(obj_label_ringbuf.front().header), &(it->header)))
+        {
+          p_cluster_centroids_buf = &*(it - 1);
+          break;
+        }
+      }
+
+      if (it == cluster_centroids_ringbuf.end())
+      {
+        p_cluster_centroids_buf = &(cluster_centroids_ringbuf.back());
+      }
+    }
+    publish_msg(p_obj_label_buf, p_cluster_centroids_buf);
+    if (obj_pose_flag == true)
+    {
+      buf_flag = false;
+      obj_pose_flag = false;
+      obj_label_ringbuf.clear();
+      cluster_centroids_ringbuf.clear();
+    }
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
-void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) {
-    pthread_mutex_lock(&mutex);
-    obj_label_ringbuf.push_front(*obj_label_msg);
-    //cluster_centroids is empty
-    if (cluster_centroids_ringbuf.begin() == cluster_centroids_ringbuf.end()) {
-        pthread_mutex_unlock(&mutex);
-        ROS_INFO("cluster_centroids ring buffer is empty");
-        return;
-    }
-    buf_flag = true;
+void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg)
+{
+  pthread_mutex_lock(&mutex);
+  obj_label_ringbuf.push_front(*obj_label_msg);
+  // cluster_centroids is empty
+  if (cluster_centroids_ringbuf.begin() == cluster_centroids_ringbuf.end())
+  {
     pthread_mutex_unlock(&mutex);
-    pthread_mutex_lock(&mutex);
-    if (obj_pose_flag == true) {
-        publish();
-    }
-    pthread_mutex_unlock(&mutex);
+    ROS_INFO("cluster_centroids ring buffer is empty");
+    return;
+  }
+  buf_flag = true;
+  pthread_mutex_unlock(&mutex);
+  pthread_mutex_lock(&mutex);
+  if (obj_pose_flag == true)
+  {
+    publish();
+  }
+  pthread_mutex_unlock(&mutex);
 }
 
-void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg) {
-    pthread_mutex_lock(&mutex);
-    cluster_centroids_ringbuf.push_front(*cluster_centroids_msg);
-    //obj_label is empty
-    if (obj_label_ringbuf.begin() == obj_label_ringbuf.end()) {
-        ROS_INFO("obj_label ring buffer is empty");
-        pthread_mutex_unlock(&mutex);
-        return;
-    }
+void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg)
+{
+  pthread_mutex_lock(&mutex);
+  cluster_centroids_ringbuf.push_front(*cluster_centroids_msg);
+  // obj_label is empty
+  if (obj_label_ringbuf.begin() == obj_label_ringbuf.end())
+  {
+    ROS_INFO("obj_label ring buffer is empty");
+    pthread_mutex_unlock(&mutex);
+    return;
+  }
 
-    buf_flag = true;
-    pthread_mutex_unlock(&mutex);
-    pthread_mutex_lock(&mutex);
-    if (obj_pose_flag == true) {
-        publish();
-    }
-    pthread_mutex_unlock(&mutex);
+  buf_flag = true;
+  pthread_mutex_unlock(&mutex);
+  pthread_mutex_lock(&mutex);
+  if (obj_pose_flag == true)
+  {
+    publish();
+  }
+  pthread_mutex_unlock(&mutex);
 }
 
 #else
 cv_tracker::obj_label obj_label_buf;
 lidar_tracker::centroids cluster_centroids_buf;
 
-bool publish() {
-    if (buf_flag) {
-        ROS_INFO("publish");
-        obj_label__pub.publish(obj_label_buf);
-        cluster_centroids__pub.publish(cluster_centroids_buf);
-        if (obj_pose_flag == true){
-            buf_flag = false;
-            obj_pose_flag = false;
-            obj_label_ringbuf.clear();
-            cluster_centroids_ringbuf.clear();
-        }
-        return true;
-    } else {
-        ROS_INFO("publish failed");
-        return false;
+bool publish()
+{
+  if (buf_flag)
+  {
+    ROS_INFO("publish");
+    obj_label__pub.publish(obj_label_buf);
+    cluster_centroids__pub.publish(cluster_centroids_buf);
+    if (obj_pose_flag == true)
+    {
+      buf_flag = false;
+      obj_pose_flag = false;
+      obj_label_ringbuf.clear();
+      cluster_centroids_ringbuf.clear();
     }
+    return true;
+  }
+  else
+  {
+    ROS_INFO("publish failed");
+    return false;
+  }
 }
 
-void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg) {
-    pthread_mutex_lock(&mutex);
-    obj_label_ringbuf.push_front(*obj_label_msg);
+void obj_label_callback(const cv_tracker::obj_label::ConstPtr& obj_label_msg)
+{
+  pthread_mutex_lock(&mutex);
+  obj_label_ringbuf.push_front(*obj_label_msg);
 
-    //cluster_centroids is empty
-    if (cluster_centroids_ringbuf.begin() == cluster_centroids_ringbuf.end()) {
-        pthread_mutex_unlock(&mutex);
-        ROS_INFO("cluster_centroids ring buffer is empty");
-        return;
-    }
-
-    buf_flag = true;
-
-    // obj_label > cluster_centroids
-    if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header))) {
-        cluster_centroids_buf = cluster_centroids_ringbuf.front();
-        boost::circular_buffer<cv_tracker::obj_label>::iterator it = obj_label_ringbuf.begin();
-        if (obj_label_ringbuf.size() == 1) {
-            obj_label_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            pthread_mutex_lock(&mutex);
-            if (obj_pose_flag == true) {
-                publish();
-            }
-            pthread_mutex_unlock(&mutex);
-            return;
-        } else {
-            for (it++; it != obj_label_ringbuf.end(); it++) {
-                if (fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &((it-1)->header))
-                    < fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &(it->header))) {
-                    obj_label_buf = *(it-1);
-                    break;
-                }
-            }
-            if (it == obj_label_ringbuf.end()) {
-                obj_label_buf = obj_label_ringbuf.back();
-            }
-        }
-
-    } else {
-        obj_label_buf = obj_label_ringbuf.front();
-        boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
-        if (cluster_centroids_ringbuf.size() == 1) {
-            cluster_centroids_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            pthread_mutex_lock(&mutex);
-            if (obj_pose_flag == true) {
-                publish();
-            }
-            pthread_mutex_unlock(&mutex);
-            return;
-        }
-
-        for (it++; it != cluster_centroids_ringbuf.end(); it++) {
-            if (fabs_time_diff(&(obj_label_ringbuf.front().header), &((it-1)->header))
-                < fabs_time_diff(&(obj_label_ringbuf.front().header), &(it->header))) {
-                cluster_centroids_buf = *(it-1);
-                break;
-            }
-        }
-
-        if (it == cluster_centroids_ringbuf.end()) {
-            cluster_centroids_buf = cluster_centroids_ringbuf.back();
-        }
-    }
+  // cluster_centroids is empty
+  if (cluster_centroids_ringbuf.begin() == cluster_centroids_ringbuf.end())
+  {
     pthread_mutex_unlock(&mutex);
+    ROS_INFO("cluster_centroids ring buffer is empty");
+    return;
+  }
+
+  buf_flag = true;
+
+  // obj_label > cluster_centroids
+  if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header)))
+  {
+    cluster_centroids_buf = cluster_centroids_ringbuf.front();
+    boost::circular_buffer<cv_tracker::obj_label>::iterator it = obj_label_ringbuf.begin();
+    if (obj_label_ringbuf.size() == 1)
+    {
+      obj_label_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      pthread_mutex_lock(&mutex);
+      if (obj_pose_flag == true)
+      {
+        publish();
+      }
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+    else
+    {
+      for (it++; it != obj_label_ringbuf.end(); it++)
+      {
+        if (fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &((it - 1)->header)) <
+            fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &(it->header)))
+        {
+          obj_label_buf = *(it - 1);
+          break;
+        }
+      }
+      if (it == obj_label_ringbuf.end())
+      {
+        obj_label_buf = obj_label_ringbuf.back();
+      }
+    }
+  }
+  else
+  {
+    obj_label_buf = obj_label_ringbuf.front();
+    boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
+    if (cluster_centroids_ringbuf.size() == 1)
+    {
+      cluster_centroids_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      pthread_mutex_lock(&mutex);
+      if (obj_pose_flag == true)
+      {
+        publish();
+      }
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+
+    for (it++; it != cluster_centroids_ringbuf.end(); it++)
+    {
+      if (fabs_time_diff(&(obj_label_ringbuf.front().header), &((it - 1)->header)) <
+          fabs_time_diff(&(obj_label_ringbuf.front().header), &(it->header)))
+      {
+        cluster_centroids_buf = *(it - 1);
+        break;
+      }
+    }
+
+    if (it == cluster_centroids_ringbuf.end())
+    {
+      cluster_centroids_buf = cluster_centroids_ringbuf.back();
+    }
+  }
+  pthread_mutex_unlock(&mutex);
 }
 
-void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg) {
-    pthread_mutex_lock(&mutex);
-    cluster_centroids_ringbuf.push_front(*cluster_centroids_msg);
-    //obj_label is empty
-    if (obj_label_ringbuf.begin() == obj_label_ringbuf.end()) {
-        ROS_INFO("obj_label ring buffer is empty");
-        pthread_mutex_unlock(&mutex);
-        return;
-    }
-
-    buf_flag = true;
-
-    // obj_label > cluster_centroids
-    if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header))) {
-        cluster_centroids_buf = cluster_centroids_ringbuf.front();
-        boost::circular_buffer<cv_tracker::obj_label>::iterator it = obj_label_ringbuf.begin();
-        if (obj_label_ringbuf.size() == 1) {
-            obj_label_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            pthread_mutex_lock(&mutex);
-            if (obj_pose_flag == true) {
-                publish();
-            }
-            pthread_mutex_unlock(&mutex);
-            return;
-        } else {
-            for (it++; it != obj_label_ringbuf.end(); it++) {
-                if (fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &((it-1)->header))
-                    < fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &(it->header))) {
-                    obj_label_buf = *(it-1);
-                    break;
-                }
-            }
-            if (it == obj_label_ringbuf.end()) {
-                obj_label_buf = obj_label_ringbuf.back();
-            }
-        }
-
-    } else {
-        obj_label_buf = obj_label_ringbuf.front();
-        boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
-        if (cluster_centroids_ringbuf.size() == 1) {
-            cluster_centroids_buf = *it;
-            pthread_mutex_unlock(&mutex);
-            pthread_mutex_lock(&mutex);
-            if (obj_pose_flag == true) {
-                publish();
-            }
-            pthread_mutex_unlock(&mutex);
-            return;
-        }
-
-        for (it++; it != cluster_centroids_ringbuf.end(); it++) {
-            if (fabs_time_diff(&(obj_label_ringbuf.front().header), &((it-1)->header))
-                < fabs_time_diff(&(obj_label_ringbuf.front().header), &(it->header))) {
-                cluster_centroids_buf = *(it-1);
-                break;
-            }
-        }
-
-        if (it == cluster_centroids_ringbuf.end()) {
-            cluster_centroids_buf = cluster_centroids_ringbuf.back();
-        }
-    }
+void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg)
+{
+  pthread_mutex_lock(&mutex);
+  cluster_centroids_ringbuf.push_front(*cluster_centroids_msg);
+  // obj_label is empty
+  if (obj_label_ringbuf.begin() == obj_label_ringbuf.end())
+  {
+    ROS_INFO("obj_label ring buffer is empty");
     pthread_mutex_unlock(&mutex);
+    return;
+  }
+
+  buf_flag = true;
+
+  // obj_label > cluster_centroids
+  if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header)))
+  {
+    cluster_centroids_buf = cluster_centroids_ringbuf.front();
+    boost::circular_buffer<cv_tracker::obj_label>::iterator it = obj_label_ringbuf.begin();
+    if (obj_label_ringbuf.size() == 1)
+    {
+      obj_label_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      pthread_mutex_lock(&mutex);
+      if (obj_pose_flag == true)
+      {
+        publish();
+      }
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+    else
+    {
+      for (it++; it != obj_label_ringbuf.end(); it++)
+      {
+        if (fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &((it - 1)->header)) <
+            fabs_time_diff(&(cluster_centroids_ringbuf.front().header), &(it->header)))
+        {
+          obj_label_buf = *(it - 1);
+          break;
+        }
+      }
+      if (it == obj_label_ringbuf.end())
+      {
+        obj_label_buf = obj_label_ringbuf.back();
+      }
+    }
+  }
+  else
+  {
+    obj_label_buf = obj_label_ringbuf.front();
+    boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
+    if (cluster_centroids_ringbuf.size() == 1)
+    {
+      cluster_centroids_buf = *it;
+      pthread_mutex_unlock(&mutex);
+      pthread_mutex_lock(&mutex);
+      if (obj_pose_flag == true)
+      {
+        publish();
+      }
+      pthread_mutex_unlock(&mutex);
+      return;
+    }
+
+    for (it++; it != cluster_centroids_ringbuf.end(); it++)
+    {
+      if (fabs_time_diff(&(obj_label_ringbuf.front().header), &((it - 1)->header)) <
+          fabs_time_diff(&(obj_label_ringbuf.front().header), &(it->header)))
+      {
+        cluster_centroids_buf = *(it - 1);
+        break;
+      }
+    }
+
+    if (it == cluster_centroids_ringbuf.end())
+    {
+      cluster_centroids_buf = cluster_centroids_ringbuf.back();
+    }
+  }
+  pthread_mutex_unlock(&mutex);
 }
 
 #endif
 
-void obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg) {
-    pthread_mutex_lock(&mutex);
-    obj_pose_flag = true;
-    ROS_INFO("catch publish request");
-    if (publish() == false) {
-        ROS_INFO("waitting...");
-    }
-    pthread_mutex_unlock(&mutex);}
+void obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg)
+{
+  pthread_mutex_lock(&mutex);
+  obj_pose_flag = true;
+  ROS_INFO("catch publish request");
+  if (publish() == false)
+  {
+    ROS_INFO("waitting...");
+  }
+  pthread_mutex_unlock(&mutex);
+}
 
 void* thread(void* args)
 {
-    ros::NodeHandle nh_rcv;
-    ros::CallbackQueue rcv_callbackqueue;
-    nh_rcv.setCallbackQueue(&rcv_callbackqueue);
-    ros::Subscriber obj_pose_sub = nh_rcv.subscribe("obj_pose", 5, obj_pose_callback);
-    while (nh_rcv.ok()) {
-        rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
-        pthread_mutex_lock(&mutex);
-        bool flag = (obj_pose_flag == false && buf_flag == true);
-        if (flag) {
-            ROS_INFO("timeout");
-            if(!publish()) {
-                /* when to publish is failure, republish */
-                struct timespec sleep_time;
-                sleep_time.tv_sec = 0;
-                sleep_time.tv_nsec = 200000000; //5Hz
-                while (!publish() || ros::ok())
-                    nanosleep(&sleep_time, NULL);
-            }
-        }
-        pthread_mutex_unlock(&mutex);
-    }
-    return NULL;
-}
-
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "sync_car_obj_fusion");
-    ros::NodeHandle nh;
-
-    /* create server thread */
-    pthread_t th;
-    pthread_create(&th, NULL, thread, (void *)NULL );
-
-    ros::Subscriber obj_label_sub = nh.subscribe("/obj_car/obj_label", 1, obj_label_callback);
-    ros::Subscriber cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, cluster_centroids_callback);
-    obj_label__pub = nh.advertise<cv_tracker::obj_label>("/obj_car/obj_label_", 5);
-    cluster_centroids__pub = nh.advertise<lidar_tracker::centroids>("/cluster_centroids_", 5);
-    while (!buf_flag) {
-        ros::spinOnce();
-        usleep(100000);
-    }
+  ros::NodeHandle nh_rcv;
+  ros::CallbackQueue rcv_callbackqueue;
+  nh_rcv.setCallbackQueue(&rcv_callbackqueue);
+  ros::Subscriber obj_pose_sub = nh_rcv.subscribe("obj_pose", 5, obj_pose_callback);
+  while (nh_rcv.ok())
+  {
+    rcv_callbackqueue.callAvailable(ros::WallDuration(1.0f));
     pthread_mutex_lock(&mutex);
-    if(!publish()) {
+    bool flag = (obj_pose_flag == false && buf_flag == true);
+    if (flag)
+    {
+      ROS_INFO("timeout");
+      if (!publish())
+      {
         /* when to publish is failure, republish */
         struct timespec sleep_time;
         sleep_time.tv_sec = 0;
-        sleep_time.tv_nsec = 200000000; //5Hz
+        sleep_time.tv_nsec = 200000000;  // 5Hz
         while (!publish() || ros::ok())
-            nanosleep(&sleep_time, NULL);
+          nanosleep(&sleep_time, NULL);
+      }
     }
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_unlock(&mutex);
+  }
+  return NULL;
+}
 
-    ros::spin();
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "sync_car_obj_fusion");
+  ros::NodeHandle nh;
 
-    /* shutdown server thread */
-    ROS_INFO("wait until shutdown a thread");
-    pthread_kill(th, SIGINT);
-    pthread_join(th, NULL);
+  /* create server thread */
+  pthread_t th;
+  pthread_create(&th, NULL, thread, (void*)NULL);
 
-    return 0;
+  ros::Subscriber obj_label_sub = nh.subscribe("/obj_car/obj_label", 1, obj_label_callback);
+  ros::Subscriber cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, cluster_centroids_callback);
+  obj_label__pub = nh.advertise<cv_tracker::obj_label>("/obj_car/obj_label_", 5);
+  cluster_centroids__pub = nh.advertise<lidar_tracker::centroids>("/cluster_centroids_", 5);
+  while (!buf_flag)
+  {
+    ros::spinOnce();
+    usleep(100000);
+  }
+  pthread_mutex_lock(&mutex);
+  if (!publish())
+  {
+    /* when to publish is failure, republish */
+    struct timespec sleep_time;
+    sleep_time.tv_sec = 0;
+    sleep_time.tv_nsec = 200000000;  // 5Hz
+    while (!publish() || ros::ok())
+      nanosleep(&sleep_time, NULL);
+  }
+  pthread_mutex_lock(&mutex);
+
+  ros::spin();
+
+  /* shutdown server thread */
+  ROS_INFO("wait until shutdown a thread");
+  pthread_kill(th, SIGINT);
+  pthread_join(th, NULL);
+
+  return 0;
 }

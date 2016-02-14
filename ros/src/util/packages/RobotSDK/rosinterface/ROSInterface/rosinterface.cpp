@@ -31,103 +31,101 @@
 #include "rosinterface.h"
 #include "rosinterface_moc.cpp"
 
-ROSInterfaceBase::ROSInterfaceBase(QString NodeName, QString ROSMasterURI, QObject *parent)
-    : QObject(parent)
+ROSInterfaceBase::ROSInterfaceBase(QString NodeName, QString ROSMasterURI, QObject *parent) : QObject(parent)
 {
-    qputenv("ROS_MASTER_URI",ROSMasterURI.toUtf8());
-    QStringList arguments=QApplication::instance()->arguments();
-    int argc=1;
-    if(NodeName.isEmpty())
+  qputenv("ROS_MASTER_URI", ROSMasterURI.toUtf8());
+  QStringList arguments = QApplication::instance()->arguments();
+  int argc = 1;
+  if (NodeName.isEmpty())
+  {
+    QFileInfo fileinfo(arguments[0]);
+    if (fileinfo.exists())
     {
-        QFileInfo fileinfo(arguments[0]);
-        if(fileinfo.exists())
-        {
-            NodeName=fileinfo.baseName();
-        }
+      NodeName = fileinfo.baseName();
     }
-    char *argv=arguments[0].toUtf8().data();
+  }
+  char *argv = arguments[0].toUtf8().data();
 
-    ros::init(argc,&argv,NodeName.toStdString());
-    nh=new ros::NodeHandle;
-    this->moveToThread(&thread);
-    thread.start();
+  ros::init(argc, &argv, NodeName.toStdString());
+  nh = new ros::NodeHandle;
+  this->moveToThread(&thread);
+  thread.start();
 }
 
 ROSInterfaceBase::~ROSInterfaceBase()
 {
-    thread.exit();
-    thread.wait();
-    if(nh!=NULL)
+  thread.exit();
+  thread.wait();
+  if (nh != NULL)
+  {
+    if (nh->ok())
     {
-        if(nh->ok())
-        {
-            nh->shutdown();
-        }
-        delete nh;
-        nh=NULL;
+      nh->shutdown();
     }
+    delete nh;
+    nh = NULL;
+  }
 }
 
 ROSSubBase::ROSSubBase(int Interval, QString NodeName, QString ROSMasterURi, QObject *parent)
-    : ROSInterfaceBase(NodeName,ROSMasterURi,parent)
+  : ROSInterfaceBase(NodeName, ROSMasterURi, parent)
 {
-    nh->setCallbackQueue(&queue);
-    timer.setInterval(Interval);
-    connect(&timer,SIGNAL(timeout()),this,SLOT(receiveMessageSlot()));
-    connect(this,SIGNAL(startReceiveSignal()),&timer,SLOT(start()));
-    connect(this,SIGNAL(stopReceiveSignal()),&timer,SLOT(stop()));
-    receiveflag=0;
-    emit startReceiveSignal();
+  nh->setCallbackQueue(&queue);
+  timer.setInterval(Interval);
+  connect(&timer, SIGNAL(timeout()), this, SLOT(receiveMessageSlot()));
+  connect(this, SIGNAL(startReceiveSignal()), &timer, SLOT(start()));
+  connect(this, SIGNAL(stopReceiveSignal()), &timer, SLOT(stop()));
+  receiveflag = 0;
+  emit startReceiveSignal();
 }
 
 ROSSubBase::~ROSSubBase()
 {
-    receiveflag=0;
-    emit stopReceiveSignal();
-    disconnect(&timer,SIGNAL(timeout()),this,SLOT(receiveMessageSlot()));
-    disconnect(this,SIGNAL(startReceiveSignal()),&timer,SLOT(start()));
-    disconnect(this,SIGNAL(stopReceiveSignal()),&timer,SLOT(stop()));
+  receiveflag = 0;
+  emit stopReceiveSignal();
+  disconnect(&timer, SIGNAL(timeout()), this, SLOT(receiveMessageSlot()));
+  disconnect(this, SIGNAL(startReceiveSignal()), &timer, SLOT(start()));
+  disconnect(this, SIGNAL(stopReceiveSignal()), &timer, SLOT(stop()));
 }
 
 void ROSSubBase::startReceiveSlot()
 {
-    lock.lockForWrite();
-    receiveflag=1;
-    clearMessage();
-    lock.unlock();
+  lock.lockForWrite();
+  receiveflag = 1;
+  clearMessage();
+  lock.unlock();
 }
 
 void ROSSubBase::stopReceiveSlot()
 {
-    lock.lockForWrite();
-    receiveflag=0;
-    lock.unlock();
+  lock.lockForWrite();
+  receiveflag = 0;
+  lock.unlock();
 }
 
 void ROSSubBase::receiveMessage(ros::CallbackQueue::CallOneResult result)
 {
-    if(receiveflag)
+  if (receiveflag)
+  {
+    switch (result)
     {
-        switch(result)
-        {
-        case ros::CallbackQueue::Called:
-            emit receiveMessageSignal();
-            break;
-        case ros::CallbackQueue::TryAgain:
-        case ros::CallbackQueue::Disabled:
-        case ros::CallbackQueue::Empty:
-        default:
-            break;
-        }
+      case ros::CallbackQueue::Called:
+        emit receiveMessageSignal();
+        break;
+      case ros::CallbackQueue::TryAgain:
+      case ros::CallbackQueue::Disabled:
+      case ros::CallbackQueue::Empty:
+      default:
+        break;
     }
-    return;
+  }
+  return;
 }
 
 void ROSSubBase::receiveMessageSlot()
 {
-    if(ros::ok()&&nh->ok())
-    {
-        receiveMessage(queue.callOne(ros::WallDuration(0)));
-    }
+  if (ros::ok() && nh->ok())
+  {
+    receiveMessage(queue.callOne(ros::WallDuration(0)));
+  }
 }
-

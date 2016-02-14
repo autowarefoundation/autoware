@@ -1,16 +1,16 @@
 #ifndef __AUTOWARE_CONFIG_H__
 #define __AUTOWARE_CONFIG_H__
 
-
 // zmp parameters
 #define ZMP_CLASS HevCnt
 
 #define ZMP_CLEAR_CNT_DIAG() hev->ClearCntDiag()
-#define ZMP_UPDATE_STATE() {					\
-		hev->GetBrakeInf(&_brakeInf);			\
-		hev->GetDrvInf(&_drvInf);				\
-		hev->GetStrInf(&_strInf);				\
-	}
+#define ZMP_UPDATE_STATE()                                                                                             \
+  {                                                                                                                    \
+    hev->GetBrakeInf(&_brakeInf);                                                                                      \
+    hev->GetDrvInf(&_drvInf);                                                                                          \
+    hev->GetStrInf(&_strInf);                                                                                          \
+  }
 #define ZMP_ACCEL_STROKE() _drvInf.actualPedalStr
 #define ZMP_BRAKE_STROKE() _brakeInf.actualPedalStr
 #define ZMP_STEERING_TORQUE() _strInf.torque
@@ -28,78 +28,89 @@
 #define ZMP_SET_SHIFT_POS_B() hev->SetDrvShiftMode(SHIFT_POS_B)
 #define ZMP_SET_SHIFT_POS_N() hev->SetDrvShiftMode(SHIFT_POS_N)
 
-#define ZMP_STOP() {													\
-	hev->SetDrvStroke(0);												\
-	usleep(200000);														\
-	hev->SetBrakeStroke(4095);											\
-	usleep(200000);														\
-	}
+#define ZMP_STOP()                                                                                                     \
+  {                                                                                                                    \
+    hev->SetDrvStroke(0);                                                                                              \
+    usleep(200000);                                                                                                    \
+    hev->SetBrakeStroke(4095);                                                                                         \
+    usleep(200000);                                                                                                    \
+  }
 
-#define ZMP_DRV_CONTROLLED()											\
-	((_drvInf.mode == 0x10 && _drvInf.servo == 0x10) ? 1 : 0)
+#define ZMP_DRV_CONTROLLED() ((_drvInf.mode == 0x10 && _drvInf.servo == 0x10) ? 1 : 0)
 
-#define ZMP_SET_DRV_MANUAL() {											\
-		if (_drvInf.mode == 0x10) {										\
-			hev->SetDrvMode(0x00);										\
-			usleep(200000);												\
-		}																\
-		if (_drvInf.servo == 0x10)	{									\
-			hev->SetDrvServo(0x00);										\
-			usleep(200000);												\
-		}																\
-	}
+#define ZMP_SET_DRV_MANUAL()                                                                                           \
+  {                                                                                                                    \
+    if (_drvInf.mode == 0x10)                                                                                          \
+    {                                                                                                                  \
+      hev->SetDrvMode(0x00);                                                                                           \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+    if (_drvInf.servo == 0x10)                                                                                         \
+    {                                                                                                                  \
+      hev->SetDrvServo(0x00);                                                                                          \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+  }
 
-#define ZMP_SET_DRV_PROGRAM() {											\
-		if (_drvInf.mode == 0x00) {										\
-			hev->SetDrvMode(0x10);										\
-			usleep(200000);												\
-			hev->SetDrvCMode(CONT_MODE_STROKE);							\
-			usleep(200000);												\
-		}																\
-		if (_drvInf.servo == 0x00)	{									\
-			hev->SetDrvServo(0x10);										\
-			usleep(200000);												\
-		}																\
-	}
+#define ZMP_SET_DRV_PROGRAM()                                                                                          \
+  {                                                                                                                    \
+    if (_drvInf.mode == 0x00)                                                                                          \
+    {                                                                                                                  \
+      hev->SetDrvMode(0x10);                                                                                           \
+      usleep(200000);                                                                                                  \
+      hev->SetDrvCMode(CONT_MODE_STROKE);                                                                              \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+    if (_drvInf.servo == 0x00)                                                                                         \
+    {                                                                                                                  \
+      hev->SetDrvServo(0x10);                                                                                          \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+  }
 
-#define ZMP_STR_CONTROLLED()											\
-	((_strInf.mode == 0x10 && _strInf.servo == 0x10) ? 1 : 0)
+#define ZMP_STR_CONTROLLED() ((_strInf.mode == 0x10 && _strInf.servo == 0x10) ? 1 : 0)
 
-#define ZMP_SET_STR_MANUAL() {											\
-		if (_strInf.mode == 0x10) {										\
-			hev->SetStrMode(0x00);										\
-			usleep(200000);												\
-		}																\
-		if (_strInf.servo == 0x10)	{									\
-			hev->SetStrServo(0x00);										\
-			usleep(200000);												\
-		}																\
-	}
+#define ZMP_SET_STR_MANUAL()                                                                                           \
+  {                                                                                                                    \
+    if (_strInf.mode == 0x10)                                                                                          \
+    {                                                                                                                  \
+      hev->SetStrMode(0x00);                                                                                           \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+    if (_strInf.servo == 0x10)                                                                                         \
+    {                                                                                                                  \
+      hev->SetStrServo(0x00);                                                                                          \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+  }
 
-#define ZMP_SET_STR_PROGRAM() {											\
-		if (_strInf.mode == 0x00) {										\
-			hev->SetStrMode(0x10);										\
-			usleep(200000);												\
-			hev->SetStrCMode(CONT_MODE_TORQUE);							\
-			usleep(200000);												\
-		}																\
-		if (_strInf.servo == 0x00)	{									\
-			hev->SetStrServo(0x10);										\
-			usleep(200000);												\
-		}																\
-	}
+#define ZMP_SET_STR_PROGRAM()                                                                                          \
+  {                                                                                                                    \
+    if (_strInf.mode == 0x00)                                                                                          \
+    {                                                                                                                  \
+      hev->SetStrMode(0x10);                                                                                           \
+      usleep(200000);                                                                                                  \
+      hev->SetStrCMode(CONT_MODE_TORQUE);                                                                              \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+    if (_strInf.servo == 0x00)                                                                                         \
+    {                                                                                                                  \
+      hev->SetStrServo(0x10);                                                                                          \
+      usleep(200000);                                                                                                  \
+    }                                                                                                                  \
+  }
 
 // prius parameters
-#define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
-#define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
-#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
-#define STEERING_ANGLE_MAX 666 // max angle of steering
-#define STEERING_ANGLE_LIMIT 550 // could be STEERING_ANGLE_MAX but...
-#define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
+#define WHEEL_BASE 2.7            // tire-to-tire size of Prius.
+#define WHEEL_ANGLE_MAX 31.28067  // max angle of front tires.
+#define WHEEL_TO_STEERING (STEERING_ANGLE_MAX / WHEEL_ANGLE_MAX)
+#define STEERING_ANGLE_MAX 666       // max angle of steering
+#define STEERING_ANGLE_LIMIT 550     // could be STEERING_ANGLE_MAX but...
+#define STEERING_INTERNAL_PERIOD 20  // ms (10ms is too fast for HEV)
 
 // accel/brake parameters
-#define _K_ACCEL_P 40.0 // 30.0
-#define _K_ACCEL_I 0.1 // 5.0
+#define _K_ACCEL_P 40.0  // 30.0
+#define _K_ACCEL_I 0.1   // 5.0
 #define _K_ACCEL_D 2.0
 #define _K_ACCEL_I_CYCLES 1000
 #define _ACCEL_MAX_I 3000
@@ -123,8 +134,8 @@
 #define _STEERING_MAX_ANGVELSUM 1000
 #define _STEERING_MAX_TORQUE 2000
 #define _STEERING_MAX_SUM 100
-#define _STEERING_ANGVEL_BOUNDARY 500.0 // deg/s
-#define _STEERING_IGNORE_ERROR 1.0 // deg
+#define _STEERING_ANGVEL_BOUNDARY 500.0  // deg/s
+#define _STEERING_IGNORE_ERROR 1.0       // deg
 
 // fast PID factors
 #define _K_STEERING_P 60
@@ -132,10 +143,10 @@
 #define _K_STEERING_D 5.0
 
 // slow PID factors
-#define _K_STEERING_P_SLOW 6.0 // 6.0 // 6.0
-#define _K_STEERING_I_SLOW 6.8 // 7.0 // 5.0
-#define _K_STEERING_D_SLOW 6.1 // 6.0 // 5.0
+#define _K_STEERING_P_SLOW 6.0  // 6.0 // 6.0
+#define _K_STEERING_I_SLOW 6.8  // 7.0 // 5.0
+#define _K_STEERING_D_SLOW 6.1  // 6.0 // 5.0
 
-#define _STEERING_ANGLE_ERROR 0 // deg
+#define _STEERING_ANGLE_ERROR 0  // deg
 
 #endif

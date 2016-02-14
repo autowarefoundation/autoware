@@ -6,6 +6,7 @@ int freeFeatureMapObjectGPU(CvLSVMFeatureMapGPU **obj);
 #ifdef __cplusplus
 extern "C"
 #endif
-int freeFeaturePyramidObjectGPU(CvLSVMFeaturePyramidGPU **obj);
+    int
+    freeFeaturePyramidObjectGPU(CvLSVMFeaturePyramidGPU **obj);
 
 #endif /* _ROUTINE_GPU_H_ */

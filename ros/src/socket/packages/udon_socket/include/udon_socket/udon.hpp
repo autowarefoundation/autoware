@@ -35,21 +35,22 @@
 
 #include <sys/types.h>
 
-namespace udon_socket {
+namespace udon_socket
+{
+namespace udon
+{
+constexpr std::int32_t MODE_NORMAL = 0;
+constexpr std::int32_t MODE_AUTO = 1;
+constexpr std::int32_t MODE_ERROR = 2;
 
-namespace udon {
+struct Location
+{
+  double x;
+  double y;
+  double z;
+  double d;
 
-constexpr std::int32_t MODE_NORMAL	= 0;
-constexpr std::int32_t MODE_AUTO	= 1;
-constexpr std::int32_t MODE_ERROR	= 2;
-
-struct Location {
-	double x;
-	double y;
-	double z;
-	double d;
-
-	bool operator !=(const Location& location) const;
+  bool operator!=(const Location& location) const;
 };
 
 ssize_t send_request(int fd);
@@ -57,8 +58,8 @@ ssize_t send_response(int fd);
 ssize_t send_mode(int fd, std::int32_t mode);
 ssize_t send_location(int fd, const Location& location);
 
-} // namespace udon
+}  // namespace udon
 
-} // namespace udon_socket
+}  // namespace udon_socket
 
-#endif // UDON_SOCKET_UDON_HPP
+#endif  // UDON_SOCKET_UDON_HPP

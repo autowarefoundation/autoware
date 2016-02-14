@@ -44,14 +44,13 @@ struct WP
   double velocity_kmh;
 };
 
-
 static const std::string DRIVING_LANE_CSV = "/tmp/driving_lane.csv";
 static const std::string PASSING_LANE_CSV = "/tmp/passing_lane.csv";
 static double _decelerate = 1.0;
 
 static std::vector<WP> _waypoints;
 
-static WP parseWaypoint(const std::string& line, bool yaw)
+static WP parseWaypoint(const std::string &line, bool yaw)
 {
   std::istringstream ss(line);
   std::vector<std::string> columns;
@@ -82,7 +81,7 @@ static WP parseWaypoint(const std::string& line, bool yaw)
   return waypoint;
 }
 
-static size_t countColumn(const std::string& line)
+static size_t countColumn(const std::string &line)
 {
   std::istringstream ss(line);
   size_t ncol = 0;
@@ -101,7 +100,7 @@ static std::vector<WP> readWaypoint(const char *filename)
   std::ifstream ifs(filename);
   std::string line;
 
-  std::getline(ifs, line); // Remove first line
+  std::getline(ifs, line);  // Remove first line
   size_t ncol = countColumn(line);
 
   std::vector<WP> waypoints;
@@ -118,14 +117,14 @@ static std::vector<WP> readWaypoint(const char *filename)
       double yaw;
       if (i == last)
       {
-        yaw = atan2(waypoints[i-1].pose.position.y - waypoints[i].pose.position.y,
-                    waypoints[i-1].pose.position.x - waypoints[i].pose.position.x);
+        yaw = atan2(waypoints[i - 1].pose.position.y - waypoints[i].pose.position.y,
+                    waypoints[i - 1].pose.position.x - waypoints[i].pose.position.x);
         yaw -= M_PI;
       }
       else
       {
-        yaw = atan2(waypoints[i+1].pose.position.y - waypoints[i].pose.position.y,
-                    waypoints[i+1].pose.position.x - waypoints[i].pose.position.x);
+        yaw = atan2(waypoints[i + 1].pose.position.y - waypoints[i].pose.position.y,
+                    waypoints[i + 1].pose.position.x - waypoints[i].pose.position.x);
       }
       waypoints[i].pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
     }
@@ -143,9 +142,8 @@ static std::vector<WP> readWaypoint(const char *filename)
 
 double decelerate(tf::Vector3 v1, tf::Vector3 v2, double original_velocity_kmh)
 {
-
   double distance = tf::tfDistance(v1, v2);
-  double vel = mps2kmph(sqrt(2 * _decelerate * distance)); //km/h
+  double vel = mps2kmph(sqrt(2 * _decelerate * distance));  // km/h
   if (vel < 1.0)
     vel = 0;
   if (vel > original_velocity_kmh)
@@ -155,10 +153,8 @@ double decelerate(tf::Vector3 v1, tf::Vector3 v2, double original_velocity_kmh)
   return vel;
 }
 
-
 bool verifyFileConsistency(const char *filename)
 {
-
   std::ifstream ifs(filename);
 
   if (!ifs)
@@ -178,7 +174,6 @@ bool verifyFileConsistency(const char *filename)
   return true;
 }
 
-
 waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
 {
   waypoint_follower::lane lane_waypoint;
@@ -195,8 +190,7 @@ waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
 
     wp.twist.header = lane_waypoint.header;
     double vel_kmh = decelerate(point2vector(waypoints[i].pose.position),
-        point2vector(waypoints[waypoints.size() -1 ].pose.position),
-        waypoints[i].velocity_kmh);
+                                point2vector(waypoints[waypoints.size() - 1].pose.position), waypoints[i].velocity_kmh);
     wp.twist.twist.linear.x = kmph2mps(vel_kmh);
 
     lane_waypoint.waypoints.push_back(wp);
@@ -245,5 +239,4 @@ int main(int argc, char **argv)
   lane_pub.publish(lane_array);
 
   ros::spin();
-
 }

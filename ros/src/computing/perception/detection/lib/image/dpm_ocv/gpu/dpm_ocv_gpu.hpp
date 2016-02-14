@@ -5,13 +5,13 @@
 #include <vector>
 #include <opencv2/objdetect/objdetect.hpp>
 
-//class DPMOCVGPULatentSvmDetector : public cv::LatentSvmDetector {
-//private:
+// class DPMOCVGPULatentSvmDetector : public cv::LatentSvmDetector {
+// private:
 //// this is private member in cv::LatentSvmDetector
 //    std::vector<CvLatentSvmDetector*> detectors;
 //    std::vector<std::string> classNames;
 //
-//public:
+// public:
 //    explicit DPMOCVGPULatentSvmDetector(const std::vector<std::string>& filenames,
 //        const float scoreThreshold, const std::vector<std::string>& classNames);
 //    ~DPMOCVGPULatentSvmDetector();

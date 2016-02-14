@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "mode_publisher") ;
+  ros::init(argc, argv, "mode_publisher");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 

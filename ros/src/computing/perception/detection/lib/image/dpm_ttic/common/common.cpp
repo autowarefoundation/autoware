@@ -30,34 +30,34 @@
 
 #include "common.hpp"
 
-void dpm_ttic_add_part_calculation(FLOAT *score, FLOAT*M,int *rootsize,int *partsize,int ax,int ay)
+void dpm_ttic_add_part_calculation(FLOAT *score, FLOAT *M, int *rootsize, int *partsize, int ax, int ay)
 {
-	FLOAT *S = score;
-	int jj_L = ax+2*(rootsize[1]-1)-1;
-	int ii_L = ay+2*(rootsize[0]-1);
-	int axm = ax-1;
+  FLOAT *S = score;
+  int jj_L = ax + 2 * (rootsize[1] - 1) - 1;
+  int ii_L = ay + 2 * (rootsize[0] - 1);
+  int axm = ax - 1;
 
-	//add part score(resolution of part is 2x of root)
-	for(int jj=axm;jj<=jj_L;jj+=2)
-	{
-		int L = jj*partsize[0];
-		for(int ii=ay;ii<=ii_L;ii+=2)
-		{
-			*S -= M[ii+L-1];
-			S++;
-		}
-	}
+  // add part score(resolution of part is 2x of root)
+  for (int jj = axm; jj <= jj_L; jj += 2)
+  {
+    int L = jj * partsize[0];
+    for (int ii = ay; ii <= ii_L; ii += 2)
+    {
+      *S -= M[ii + L - 1];
+      S++;
+    }
+  }
 }
 
-//initialize accumulated score
-FLOAT *dpm_ttic_init_accumulated_score(IplImage *image, size_t& accumulated_size)
+// initialize accumulated score
+FLOAT *dpm_ttic_init_accumulated_score(IplImage *image, size_t &accumulated_size)
 {
-	size_t num = image->height * image->width;
-	accumulated_size = num * sizeof(FLOAT);
+  size_t num = image->height * image->width;
+  accumulated_size = num * sizeof(FLOAT);
 
-	FLOAT *scores = (FLOAT *)calloc(num, sizeof(FLOAT));
-	for(size_t i = 0; i < num; i++)
-		scores[i] = -100.0;
+  FLOAT *scores = (FLOAT *)calloc(num, sizeof(FLOAT));
+  for (size_t i = 0; i < num; i++)
+    scores[i] = -100.0;
 
-	return scores;
+  return scores;
 }

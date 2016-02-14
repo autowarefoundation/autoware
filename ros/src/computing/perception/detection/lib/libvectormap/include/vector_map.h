@@ -19,8 +19,8 @@
 #include <map_file/WhiteLineArray.h>
 #include <map_file/DTLaneArray.h>
 
-
-typedef struct{
+typedef struct
+{
   int pid;
   double bx;
   double ly;
@@ -31,46 +31,51 @@ typedef struct{
   int mcode1;
   int mcode2;
   int mcode3;
-}Point;
+} Point;
 
-typedef struct{
+typedef struct
+{
   int lid;
   int bpid;
   int fpid;
   int blid;
   int flid;
-}Line;
+} Line;
 
-typedef struct{
+typedef struct
+{
   int vid;
   int pid;
   double hang;
   double vang;
-}Vector;
-  
+} Vector;
 
-typedef struct{
+typedef struct
+{
   int id;
   int vid;
   int plid;
   int type;
   int linkid;
-}Signal;
+} Signal;
 
-typedef struct{
+typedef struct
+{
   int id;
   int lid;
   double width;
   char color;
   int type;
   int linkid;
-}WhiteLine;
+} WhiteLine;
 
-typedef struct{
+typedef struct
+{
   int lid;
-}Mark;
+} Mark;
 
-typedef struct{
+typedef struct
+{
   int did;
   double dist;
   int pid;
@@ -81,9 +86,10 @@ typedef struct{
   double cant;
   double lw;
   double rw;
-}DTLane;
+} DTLane;
 
-typedef struct{
+typedef struct
+{
   int lnid;
   int did;
   int blid;
@@ -101,20 +107,19 @@ typedef struct{
   double span;
   int lcnt;
   int lno;
-}Lane;
-
+} Lane;
 
 class VectorMap
 {
- public:
+public:
   bool loaded;
-  std::map<int, Point > points;
-  std::map<int, Line > lines;
-  std::map<int, WhiteLine > whitelines;
-  std::map<int, Lane > lanes;
-  std::map<int, DTLane > dtlanes;
-  std::map<int, Vector > vectors;
-  std::map<int, Signal > signals;
+  std::map<int, Point> points;
+  std::map<int, Line> lines;
+  std::map<int, WhiteLine> whitelines;
+  std::map<int, Lane> lanes;
+  std::map<int, DTLane> dtlanes;
+  std::map<int, Vector> vectors;
+  std::map<int, Signal> signals;
 
   void load_points(const map_file::PointClassArray& msg);
   void load_lines(const map_file::LineClassArray& msg);
@@ -124,18 +129,18 @@ class VectorMap
   void load_whitelines(const map_file::WhiteLineArray& msg);
   void load_dtlanes(const map_file::DTLaneArray& msg);
 
-
-  VectorMap () :
-	  loaded(false) {}
-
-  inline Point3 getPoint (const int idx)
+  VectorMap() : loaded(false)
   {
-	  Point3 p;
-	  Point psrc = points[idx];
-	  p.x() = psrc.bx; p.y() = psrc.ly, p.z() = psrc.h;
-	  return p;
   }
 
+  inline Point3 getPoint(const int idx)
+  {
+    Point3 p;
+    Point psrc = points[idx];
+    p.x() = psrc.bx;
+    p.y() = psrc.ly, p.z() = psrc.h;
+    return p;
+  }
 };
 
 #endif
