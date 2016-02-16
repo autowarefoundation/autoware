@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   runtime_manager
+  points2image
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -20,7 +21,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES debug
-  CATKIN_DEPENDS std_msgs message_runtime runtime_manager
+  CATKIN_DEPENDS std_msgs message_runtime runtime_manager points2image
 #  DEPENDS system_lib
 )
 

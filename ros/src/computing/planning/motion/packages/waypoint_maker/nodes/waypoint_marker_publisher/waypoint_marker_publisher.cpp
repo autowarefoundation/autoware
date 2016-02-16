@@ -40,6 +40,7 @@
 
 #include "waypoint_follower/LaneArray.h"
 #include "waypoint_follower/libwaypoint_follower.h"
+#include <runtime_manager/ConfigLaneStop.h>
 #include "runtime_manager/traffic_light.h"
 
 static ros::Publisher g_lane_mark_pub;
@@ -56,6 +57,7 @@ static const double g_local_alpha = 1.0;
 static int _closest_waypoint = -1;
 static visualization_msgs::MarkerArray g_global_marker_array;
 static visualization_msgs::MarkerArray g_local_waypoints_marker_array;
+static bool g_config_manual_detection = true;
 
 static void publishMarker()
 {
@@ -275,6 +277,23 @@ static void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
   }
 }
 
+static void receiveAutoDetection(const runtime_manager::traffic_lightConstPtr& msg)
+{
+  if (!g_config_manual_detection)
+    lightCallback(msg);
+}
+
+static void receiveManualDetection(const runtime_manager::traffic_lightConstPtr& msg)
+{
+  if (g_config_manual_detection)
+    lightCallback(msg);
+}
+
+static void configParameter(const runtime_manager::ConfigLaneStopConstPtr& msg)
+{
+  g_config_manual_detection = msg->manual_detection;
+}
+
 static void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
@@ -297,7 +316,8 @@ int main(int argc, char **argv)
   ros::NodeHandle private_nh("~");
 
   //subscribe traffic light
-  ros::Subscriber light_sub = nh.subscribe("traffic_light", 10, lightCallback);
+  ros::Subscriber light_sub = nh.subscribe("light_color", 10, receiveAutoDetection);
+  ros::Subscriber light_managed_sub = nh.subscribe("light_color_managed", 10, receiveManualDetection);
 
   //subscribe global waypoints
   ros::Subscriber lane_array_sub = nh.subscribe("lane_waypoints_array", 10, laneArrayCallback);
@@ -306,6 +326,9 @@ int main(int argc, char **argv)
   //subscribe local waypoints
   ros::Subscriber temporal_sub = nh.subscribe("temporal_waypoints", 10, temporalCallback);
   ros::Subscriber closest_sub = nh.subscribe("closest_waypoint", 10, closestCallback);
+
+  //subscribe config
+  ros::Subscriber config_sub = nh.subscribe("config/lane_stop", 10, configParameter);
 
   g_lane_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("lane_waypoint_mark", 10, true);
 

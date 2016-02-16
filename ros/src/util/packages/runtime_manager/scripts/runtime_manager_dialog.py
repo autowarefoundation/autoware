@@ -70,6 +70,7 @@ from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
 from runtime_manager.msg import ConfigLaneSelect
+from runtime_manager.msg import ConfigLaneStop
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
 from tablet_socket.msg import mode_cmd
@@ -656,6 +657,14 @@ class MyFrame(rtmgr.MyFrame):
 		wx.CallAfter(self.label_node_time.GetParent().FitInside)
 
 	#
+	# Setup tab
+	#
+	def OnSetupLocalizer(self, event):
+		obj = self.button_setup_tf
+		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
+		self.update_func(pdic, gdic, prm)
+
+	#
 	# Computing Tab
 	#
 	def OnTreeChecked(self, event):
@@ -897,7 +906,9 @@ class MyFrame(rtmgr.MyFrame):
 			cvdic = { 'True':'true', 'False':'false' }
 			if v in cvdic:
 				v = cvdic.get(v)
-			exist = rosparam in rosparams
+			nm = rosparam
+			nm = ('/' if len(nm) > 0 and nm[0] != '/' else '') + nm
+			exist = nm in rosparams
 			if exist:
 				cmd = [ 'rosparam', 'get', rosparam ]
 				ov = subprocess.check_output(cmd).strip()
@@ -2521,6 +2532,15 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnTrafficGreenLight(self, event):
 		self.pdic['traffic_light'] = 1
 		self.update()
+
+	def OnTrafficLightRecognition(self, event):
+		pub = rospy.Publisher('/config/lane_stop', ConfigLaneStop, latch=True, queue_size=10)
+		msg = ConfigLaneStop()
+		if event.GetEventObject().GetValue():
+			msg.manual_detection = False
+		else:
+			msg.manual_detection = True
+		pub.publish(msg)
 
 	def OnOk(self, event):
 		self.EndModal(0)

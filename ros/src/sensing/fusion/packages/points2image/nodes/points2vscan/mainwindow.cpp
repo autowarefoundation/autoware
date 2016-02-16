@@ -19,6 +19,8 @@ static double MINRANGE;
 static double GRIDSIZE;
 static double IMAGESIZE;
 
+static bool SYNC;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 #ifdef DEBUG_GUI
@@ -28,11 +30,6 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef DEBUG_GUI
     ui->setupUi(this);
 #endif
-    velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("points_raw",1000,10);
-    connect(velodyne,SIGNAL(receiveMessageSignal()),this,SLOT(generateVirtualScanSlot()));
-    vsros=new ROSPub<sensor_msgs::PointCloud2>("/vscan_points",1000);
-    scanros=new ROSPub<sensor_msgs::LaserScan>("/scan",1000);
-
     ros::NodeHandle private_nh("~");
     private_nh.param("BEAMNUM", BEAMNUM, 1440);
     private_nh.param("STEP", STEP, 0.1);
@@ -51,6 +48,18 @@ MainWindow::MainWindow(QWidget *parent) :
     private_nh.param("MINRANGE", MINRANGE, (double)3);
     private_nh.param("GRIDSIZE", GRIDSIZE, 10.0);
     private_nh.param("IMAGESIZE", IMAGESIZE, 1000.0);
+
+    private_nh.param("SYNC", SYNC, false);
+
+    if (SYNC == false) {
+        velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("points_raw",1000,10);
+    } else {
+        velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("/sync_drivers/points_raw",1000,10);
+    }
+    connect(velodyne,SIGNAL(receiveMessageSignal()),this,SLOT(generateVirtualScanSlot()));
+    vsros=new ROSPub<sensor_msgs::PointCloud2>("/vscan_points",1000);
+    scanros=new ROSPub<sensor_msgs::LaserScan>("/scan",1000);
+
 
 #ifdef DEBUG_GUI
     double PI=3.141592654;

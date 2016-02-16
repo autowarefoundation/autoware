@@ -1,29 +1,32 @@
 /*
- * Copyright (C) 2008, Morgan Quigley and Willow Garage, Inc.
+ *  Copyright (c) 2015, Nagoya University
+ *  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *   * Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *   * Neither the names of Stanford University or Willow Garage, Inc. nor the names of its
- *     contributors may be used to endorse or promote products derived from
- *     this software without specific prior written permission.
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #include <ros/ros.h>
 #include <cv_tracker/image_obj_ranged.h>
@@ -35,13 +38,19 @@ static void publishTopic();
 static ros::Publisher fused_objects;
 static std_msgs::Header sensor_header;
 
-static bool ready_;
+bool ready_ = false;
 
 static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 {
-	ready_ = false;
-	setDetectedObjects(image_object);
-	ready_ = true;
+    if (ready_) {
+		sensor_header = image_object.header;
+        setDetectedObjects(image_object);
+        fuse();
+        publishTopic();
+        ready_ = false;
+        return;
+    }
+    ready_ = true;
 }
 
 /*static void ScanImageCallback(const scan2image::ScanImage& scan_image)
@@ -55,15 +64,15 @@ static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 
 static void PointsImageCallback(const points2image::PointsImage& points_image)
 {
-	if (ready_)
-	{
-		setPointsImage(points_image);
+    if (ready_) {
 		sensor_header = points_image.header;
+		setPointsImage(points_image);
 		fuse();
 		publishTopic();
-
-		ready_ = false;
-	}
+        ready_ = false;
+        return;
+    }
+    ready_ = true;
 }
 
 static void publishTopic()
@@ -117,6 +126,7 @@ int main(int argc, char **argv)
 		points_topic = "/vscan_image";
 	}
 
+//	ros::Subscriber image_obj_sub = n.subscribe("/obj_car/image_obj", 1, DetectedObjectsCallback);
 	ros::Subscriber image_obj_sub = n.subscribe(image_topic, 1, DetectedObjectsCallback);
 	//ros::Subscriber scan_image_sub = n.subscribe("scan_image", 1, ScanImageCallback);
 	ros::Subscriber points_image_sub =n.subscribe(points_topic, 1, PointsImageCallback);

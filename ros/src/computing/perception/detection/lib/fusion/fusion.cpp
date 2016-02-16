@@ -33,6 +33,7 @@
 #include <opencv/cxcore.h>
 
 #include "fusion_func.h"
+#include "search_distance.h"
 
 #if _DEBUG //debug
 static const char *window_name = "CAR_TRACK";
@@ -368,23 +369,6 @@ void calcDistance()
 			search_scope_min_y = g_scan_image.min_y;
 		}
 
-#if 0
-		/*
-		 * Search shortest distance in obstacle boxes
-		 */
-		for(int j = g_corner_points[0+i*4]; j <= g_corner_points[0+i*4] + g_corner_points[2+i*4]; j++) {
-			for(int k = search_scope_min_y; k <= search_scope_max_y; k++) {
-				if(g_scan_image.distance[j][k] != NO_DATA) {
-					if(g_scan_image.distance[j][k] < obstacle_distance || obstacle_distance == NO_DATA){
-						obstacle_distance = g_scan_image.distance[j][k];
-					}
-				}
-			}
-		}
-#else
-		/*
-		 * Search median of distance in obstacle boxes
-		 */
 		std::vector<float> distance_candidates;
 		for(int j = g_corner_points[0+i*4]; j <= g_corner_points[0+i*4] + g_corner_points[2+i*4]; j++) {
 		    for(int k = search_scope_min_y; k <= search_scope_max_y; k++) {
@@ -394,21 +378,8 @@ void calcDistance()
 		    }
 		}
 
-		std::sort(distance_candidates.begin(), distance_candidates.end());
-		int num_candidates = distance_candidates.size();
-		if (num_candidates == 0) {
-		    obstacle_distance = NO_DATA;
-		}
-		else if (num_candidates == 1) {
-		    obstacle_distance = distance_candidates.at(0);
-		}
-		else if (num_candidates % 2 == 0) {
-		    obstacle_distance = (distance_candidates.at(num_candidates/2 - 1) + distance_candidates.at(num_candidates/2)) / 2;
-		}
-		else {
-		    obstacle_distance = distance_candidates.at(num_candidates/2);
-		}
-#endif
+                /* calculate mode (most common) value in candidates */
+                obstacle_distance = getMode(distance_candidates);
 
 		g_distances.push_back(obstacle_distance); //unit of length is centimeter
 #if _DEBUG //debug

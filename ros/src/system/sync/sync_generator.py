@@ -127,7 +127,7 @@ if __name__ == "__main__":
         text += '        // %s > %s\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])
         text += '        if (get_time(&(%s_ringbuf.front().header)) >= get_time(&(%s_ringbuf.front().header))) {\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])
         text += '            p_%s_buf = &(%s_ringbuf.front());\n' % (data['sub2'].split('/')[-1], data['sub2'].split('/')[-1])
-        text += '            boost::circular_buffer<%s>::iterator it = %s_ringbuf.begin();\n' % (data['sub2_header'].replace('/', '::'), data['sub1'].split('/')[-1])
+        text += '            boost::circular_buffer<%s>::iterator it = %s_ringbuf.begin();\n' % (data['sub1_header'].replace('/', '::'), data['sub1'].split('/')[-1])
         text += '            if (%s_ringbuf.size() == 1) {\n' % data['sub1'].split('/')[-1]
         text += '                p_%s_buf = &*it;\n' % data['sub1'].split('/')[-1]
         text += '                publish_msg(p_%s_buf, p_%s_buf);\n' % (data['sub1'].split('/')[-1], data['sub2'].split('/')[-1])

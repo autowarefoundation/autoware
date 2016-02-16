@@ -1,0 +1,35 @@
+<!-- -->
+<launch>
+  <!-- send table.xml to param server -->
+  <arg name="car" default="true" />
+  <arg name="pedestrian" default="false" />
+  <arg name="obj_car" default="obj_car" />
+  <arg name="obj_person" default="obj_person" />
+
+
+  <group ns="sync_tracking">
+    <group if="$(arg car)">
+      <group ns="obj_car">
+        <node pkg="synchronization" type="sync_track" name="sync_$(arg obj_car)_tracking">
+          <remap from="/image_obj_ranged" to="/$(arg obj_car)/image_obj_ranged"/>
+          <remap from="/sync_drivers/image_raw" to="/sync_drivers/image_raw"/>
+          <remap from="/image_obj_tracked" to="/$(arg obj_car)/image_obj_tracked"/>
+          <remap from="/sync_tracking/image_obj_ranged" to="/sync_tracking/$(arg obj_car)/image_obj_ranged"/>
+          <remap from="/sync_tracking/image_raw" to="/sync_tracking/$(arg obj_car)/image_raw"/>
+        </node>
+      </group>
+    </group>
+
+    <group if="$(arg pedestrian)">
+      <group ns="obj_person">
+        <node pkg="synchronization" type="sync_track" name="sync_$(arg obj_person)_tracking">
+          <remap from="/image_obj_ranged" to="/$(arg obj_person)/image_obj_ranged"/>
+          <remap from="/sync_drivers/image_raw" to="/sync_drivers/image_raw"/>
+          <remap from="/image_obj_tracked" to="/$(arg obj_person)/image_obj_tracked"/>
+          <remap from="/sync_tracking/image_obj_ranged" to="/sync_tracking/$(arg obj_person)/image_obj_ranged"/>
+          <remap from="/sync_tracking/image_raw" to="/sync_tracking/$(arg obj_person)/image_raw"/>
+        </node>
+      </group>
+    </group>
+  </group>
+</launch>

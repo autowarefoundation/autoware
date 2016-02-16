@@ -14,6 +14,8 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   fusion
   kf
   tf
+  runtime_manager
+  calibration_camera_lidar
 )
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
@@ -43,7 +45,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf
+  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar
 )
 
 ###########
@@ -96,6 +98,7 @@ ENDIF()
 
 ADD_DEPENDENCIES(dpm_ttic
   cv_tracker_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
 )
 
 ## dpm_ocv
@@ -109,6 +112,10 @@ TARGET_LINK_LIBRARIES(dpm_ocv
   libdpm_ocv
   ${catkin_LIBRARIES}
   #${OpenCV_LIBS}
+)
+
+ADD_DEPENDENCIES(dpm_ocv
+  runtime_manager_generate_messages_cpp
 )
 
 IF(CUDA_FOUND)
@@ -142,6 +149,7 @@ TARGET_LINK_LIBRARIES(range_fusion
 
 ADD_DEPENDENCIES(range_fusion
   cv_tracker_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
 )
 
 ## kf_tracker ##
@@ -167,6 +175,7 @@ TARGET_LINK_LIBRARIES(obj_reproj
 
 ADD_DEPENDENCIES(obj_reproj
   cv_tracker_generate_messages_cpp
+  calibration_camera_lidar_generate_messages_cpp
 )
 
 ## klt_tracker ##
@@ -228,7 +237,8 @@ ENDIF()
   )
 
   ADD_DEPENDENCIES(rcnn_node
-    rcnn_node_generate_messages_cpp
+    cv_tracker_generate_messages_cpp
+    runtime_manager_generate_messages_cpp
     librcnn
   )
 else()

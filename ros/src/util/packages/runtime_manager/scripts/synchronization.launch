@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find synchronization)/launch/sync_drivers.launch"/>
+  <include file="$(find synchronization)/launch/time_monitor.launch"/>
+</launch>

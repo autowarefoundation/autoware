@@ -72,6 +72,9 @@ class RosTrackerApp
 
 	bool 				ready_;
 
+	bool				track_ready_;
+	bool				detect_ready_;
+
 	int					num_trackers_;
 
 	std::vector<LkTracker*> obj_trackers_;
@@ -80,6 +83,8 @@ class RosTrackerApp
 	std::vector<float> ranges_;
 	std::vector<float> min_heights_;
 	std::vector<float> max_heights_;
+
+	cv_tracker::image_obj_tracked ros_objects_msg_;//sync
 
 	void Sort(const std::vector<float> in_scores, std::vector<unsigned int>& in_out_indices)
 	{
@@ -165,6 +170,16 @@ class RosTrackerApp
 			}
 		}
 		return ;
+	}
+
+	void publish_if_possible()
+	{
+		if (track_ready_ && detect_ready_)
+		{
+			publisher_tracked_objects_.publish(ros_objects_msg_);
+			track_ready_ = false;
+			detect_ready_ = false;
+		}
 	}
 
 public:
@@ -272,48 +287,60 @@ public:
 
 		obj_detections_.clear();
 
-		cv_tracker::image_obj_tracked ros_objects_msg;
-		ros_objects_msg.type = tracked_type_;
-		ros_objects_msg.total_num = num;
-		copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(ros_objects_msg.rect_ranged)); // copy vector
-		copy(real_data.begin(), real_data.end(), back_inserter(ros_objects_msg.real_data)); // copy vector
-		copy(obj_id.begin(), obj_id.end(), back_inserter(ros_objects_msg.obj_id)); // copy vector
-		copy(lifespan.begin(), lifespan.end(), back_inserter(ros_objects_msg.lifespan)); // copy vector
+		cv_tracker::image_obj_tracked tmp_objects_msg;
 
-		ros_objects_msg.header = image_source.header;
+		tmp_objects_msg.type = tracked_type_;
+		tmp_objects_msg.total_num = num;
+		copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(tmp_objects_msg.rect_ranged)); // copy vector
+		copy(real_data.begin(), real_data.end(), back_inserter(tmp_objects_msg.real_data)); // copy vector
+		copy(obj_id.begin(), obj_id.end(), back_inserter(tmp_objects_msg.obj_id)); // copy vector
+		copy(lifespan.begin(), lifespan.end(), back_inserter(tmp_objects_msg.lifespan)); // copy vector
 
-		publisher_tracked_objects_.publish(ros_objects_msg);
+		tmp_objects_msg.header = image_source.header;
+
+		ros_objects_msg_ = tmp_objects_msg;
+
+		//publisher_tracked_objects_.publish(ros_objects_msg);
 
 		//cv::imshow("KLT",image_track);
 		//cv::waitKey(1);
 
-		ready_ = false;
+		track_ready_ = true;
+		//ready_ = false;
+
+		publish_if_possible();
 
 	}
 
 	void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
 	{
-		if(ready_)
-			return;
-		unsigned int num = image_objects_msg.obj.size();
-		std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
-		tracked_type_ = image_objects_msg.type;
-		//points are X,Y,W,H and repeat for each instance
-		obj_detections_.clear();
-
-		for (unsigned int i=0; i<num;i++)
+		//if(ready_)
+		//	return;
+		if (!detect_ready_)//must NOT overwrite, data is probably being used by tracking.
 		{
-			cv::Rect tmp;
-			tmp.x = objects.at(i).rect.x;
-			tmp.y = objects.at(i).rect.y;
-			tmp.width = objects.at(i).rect.width;
-			tmp.height = objects.at(i).rect.height;
-			obj_detections_.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
-			ranges_.push_back(objects.at(i).range);
-			min_heights_.push_back(objects.at(i).min_height);
-			max_heights_.push_back(objects.at(i).max_height);
+			unsigned int num = image_objects_msg.obj.size();
+			std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
+			tracked_type_ = image_objects_msg.type;
+			//points are X,Y,W,H and repeat for each instance
+			obj_detections_.clear();
+
+			for (unsigned int i=0; i<num;i++)
+			{
+				cv::Rect tmp;
+				tmp.x = objects.at(i).rect.x;
+				tmp.y = objects.at(i).rect.y;
+				tmp.width = objects.at(i).rect.width;
+				tmp.height = objects.at(i).rect.height;
+				obj_detections_.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+				ranges_.push_back(objects.at(i).range);
+				min_heights_.push_back(objects.at(i).min_height);
+				max_heights_.push_back(objects.at(i).max_height);
+			}
+			detect_ready_ = true;
 		}
-		ready_ = true;
+
+		publish_if_possible();
+		//ready_ = true;
 	}
 	/*void detections_callback(cv_tracker::image_obj image_objects_msg)
 	{
@@ -390,6 +417,8 @@ public:
 	{
 		ready_ = true;
 		num_trackers_ = 0;
+		track_ready_  = false;
+		detect_ready_ = false;
 	}
 
 };

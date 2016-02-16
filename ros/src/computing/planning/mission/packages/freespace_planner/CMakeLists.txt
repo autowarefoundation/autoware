@@ -28,3 +28,4 @@ include_directories(
 
 add_executable(astar_navi nodes/astar_navi/astar_navi.cpp)
 target_link_libraries(astar_navi ${catkin_LIBRARIES})
+add_dependencies(astar_navi waypoint_follower_generate_messages_cpp)
