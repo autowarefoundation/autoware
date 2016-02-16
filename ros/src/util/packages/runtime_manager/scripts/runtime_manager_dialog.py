@@ -2424,6 +2424,8 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
 
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
+
 		ok_lb_key = 'open_dialog_ok_label'
 		if dic_list_get(gdic, 'dialog_type', 'config') == 'open' and ok_lb_key in gdic:
 			self.button_1.SetLabel( gdic.get(ok_lb_key) )
@@ -2451,6 +2453,9 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		self.panel.update()
 		self.EndModal(-1)
 
+	def OnClose(self, event):
+		self.OnCancel(event)
+
 class MyDialogDpm(rtmgr.MyDialogDpm):
 	def __init__(self, *args, **kwds):
 		pdic = kwds.pop('pdic')
@@ -2458,6 +2463,8 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		parent = self.panel_v
 		frame = self.GetParent()
@@ -2488,12 +2495,23 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		if obj:
 			self.frame.OnHyperlinked_obj(obj)
 
+	def OnCancel(self, event):
+		self.panel.pdic.update(self.pdic_bak) # restore
+		self.panel.detach_func()
+		self.panel.update()
+		self.EndModal(-1)
+
+	def OnClose(self, event):
+		self.OnCancel(event)
+
 class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 	def __init__(self, *args, **kwds):
 		pdic = kwds.pop('pdic')
 		self.gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogCarPedestrian.__init__(self, *args, **kwds)
+
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
 		frame = self.GetParent()
 		self.frame = frame
@@ -2511,6 +2529,9 @@ class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 		if obj:
 			self.frame.OnHyperlinked_obj(obj)
 		self.EndModal(0)
+
+	def OnClose(self, event):
+		self.EndModal(-1)
 
 class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def __init__(self, *args, **kwds):
