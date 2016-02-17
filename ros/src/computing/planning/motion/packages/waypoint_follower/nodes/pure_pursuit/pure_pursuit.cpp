@@ -63,8 +63,8 @@ static double _current_velocity;
 
 static ros::Publisher _vis_pub;
 static ros::Publisher _stat_pub;
-static bool _waypoint_set = false;
-static bool _pose_set = false;
+static bool g_waypoint_set = false;
+static bool g_pose_set = false;
 
 //config topic
 static int _param_flag = MODE_WAYPOINT; //0 = waypoint, 1 = Dialog
@@ -117,7 +117,7 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
     _current_velocity = msg->twist.twist.linear.x;
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose.pose;
-    _pose_set = true;
+    g_pose_set = true;
   }
 
 }
@@ -128,7 +128,7 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   {
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose;
-    _pose_set = true;
+    g_pose_set = true;
   }
 }
 
@@ -141,7 +141,7 @@ static void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
   _current_waypoints.setPath(*msg);
-  _waypoint_set = true;
+  g_waypoint_set = true;
   //ROS_INFO_STREAM("waypoint subscribed");
 }
 
@@ -730,7 +730,7 @@ ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallbac
     ros::spinOnce();
 
     //check topic
-    if (_waypoint_set == false || _pose_set == false)
+    if (!g_waypoint_set || !g_pose_set)
     {
       ROS_INFO_STREAM("topic waiting...");
       loop_rate.sleep();
