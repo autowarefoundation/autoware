@@ -549,7 +549,7 @@ static int getNextWaypoint()
   double lookahead_threshold = getLookAheadThreshold(0);
 
   // if waypoints are not given, do nothing.
-  if (_current_waypoints.isEmpty())
+  if (path_size == 0)
   {
     return -1;
   }
@@ -637,7 +637,6 @@ static void doPurePursuit()
   int next_waypoint = getNextWaypoint();
   displayNextWaypoint(next_waypoint);
   displaySearchRadius(getLookAheadThreshold(0));
-  //ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
 
   //linear interpolation and calculate angular velocity
   geometry_msgs::Point next_target;
@@ -735,6 +734,10 @@ int main(int argc, char **argv)
       ROS_INFO_STREAM("topic waiting...");
       loop_rate.sleep();
       continue;
+    }
+    else
+    {
+      ROS_INFO("topic subscribed!");
     }
     doPurePursuit();
     loop_rate.sleep();
