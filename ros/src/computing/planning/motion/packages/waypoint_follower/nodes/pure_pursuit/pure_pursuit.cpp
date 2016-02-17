@@ -389,6 +389,12 @@ static double calcRadius(geometry_msgs::Point target)
 //linear interpolation of next target
 static bool interpolateNextTarget(int next_waypoint,geometry_msgs::Point *next_target)
 {
+  int path_size = static_cast<int>(_current_waypoints.getSize());
+  if (next_waypoint == path_size - 1)
+  {
+    *next_target = _current_waypoints.getWaypointPosition (next_waypoint);
+    return true;
+  }
   double search_radius = getLookAheadThreshold(0);
   geometry_msgs::Point zero_p;
   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
@@ -633,15 +639,28 @@ static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs:
 
 static void doPurePursuit()
 {
+  geometry_msgs::TwistStamped twist;
+  std_msgs::Bool wf_stat;
+
   //search next waypoint
   int next_waypoint = getNextWaypoint();
+  if (next_waypoint == -1)
+  {
+    ROS_INFO("lost next waypoint");
+    wf_stat.data = false;
+    _stat_pub.publish (wf_stat);
+    twist.twist.linear.x = 0;
+    twist.twist.angular.z = 0;
+    twist.header.stamp = ros::Time::now ();
+    g_cmd_velocity_publisher.publish (twist);
+    return;
+  }
+
   displayNextWaypoint(next_waypoint);
   displaySearchRadius(getLookAheadThreshold(0));
 
   //linear interpolation and calculate angular velocity
   geometry_msgs::Point next_target;
-  geometry_msgs::TwistStamped twist;
-	std_msgs::Bool wf_stat;
 	bool interpolate_flag = false;
 
   if (!g_linear_interpolate_mode)
