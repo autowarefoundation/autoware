@@ -721,7 +721,7 @@ int main(int argc, char **argv)
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
   ros::Subscriber est_twist_subscriber = nh.subscribe("estimate_twist", 10, estTwistCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
+  ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
   geometry_msgs::TwistStamped twist;
   ros::Rate loop_rate(LOOP_RATE); // by Hz
 
