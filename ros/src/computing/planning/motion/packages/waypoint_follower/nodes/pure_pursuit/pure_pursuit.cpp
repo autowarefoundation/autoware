@@ -63,8 +63,8 @@ static double _current_velocity;
 
 static ros::Publisher _vis_pub;
 static ros::Publisher _stat_pub;
-static bool _waypoint_set = false;
-static bool _pose_set = false;
+static bool g_waypoint_set = false;
+static bool g_pose_set = false;
 
 //config topic
 static int _param_flag = MODE_WAYPOINT; //0 = waypoint, 1 = Dialog
@@ -117,7 +117,7 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
     _current_velocity = msg->twist.twist.linear.x;
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose.pose;
-    _pose_set = true;
+    g_pose_set = true;
   }
 
 }
@@ -128,7 +128,7 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   {
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose;
-    _pose_set = true;
+    g_pose_set = true;
   }
 }
 
@@ -141,7 +141,7 @@ static void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
   _current_waypoints.setPath(*msg);
-  _waypoint_set = true;
+  g_waypoint_set = true;
   //ROS_INFO_STREAM("waypoint subscribed");
 }
 
@@ -389,6 +389,12 @@ static double calcRadius(geometry_msgs::Point target)
 //linear interpolation of next target
 static bool interpolateNextTarget(int next_waypoint,geometry_msgs::Point *next_target)
 {
+  int path_size = static_cast<int>(_current_waypoints.getSize());
+  if (next_waypoint == path_size - 1)
+  {
+    *next_target = _current_waypoints.getWaypointPosition (next_waypoint);
+    return true;
+  }
   double search_radius = getLookAheadThreshold(0);
   geometry_msgs::Point zero_p;
   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
@@ -549,7 +555,7 @@ static int getNextWaypoint()
   double lookahead_threshold = getLookAheadThreshold(0);
 
   // if waypoints are not given, do nothing.
-  if (_current_waypoints.isEmpty())
+  if (path_size == 0)
   {
     return -1;
   }
@@ -633,16 +639,28 @@ static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs:
 
 static void doPurePursuit()
 {
+  geometry_msgs::TwistStamped twist;
+  std_msgs::Bool wf_stat;
+
   //search next waypoint
   int next_waypoint = getNextWaypoint();
+  if (next_waypoint == -1)
+  {
+    ROS_INFO("lost next waypoint");
+    wf_stat.data = false;
+    _stat_pub.publish (wf_stat);
+    twist.twist.linear.x = 0;
+    twist.twist.angular.z = 0;
+    twist.header.stamp = ros::Time::now ();
+    g_cmd_velocity_publisher.publish (twist);
+    return;
+  }
+
   displayNextWaypoint(next_waypoint);
   displaySearchRadius(getLookAheadThreshold(0));
-  //ROS_INFO_STREAM("next waypoint = " << next_waypoint << "/" << path_size - 1);
 
   //linear interpolation and calculate angular velocity
   geometry_msgs::Point next_target;
-  geometry_msgs::TwistStamped twist;
-	std_msgs::Bool wf_stat;
 	bool interpolate_flag = false;
 
   if (!g_linear_interpolate_mode)
@@ -721,7 +739,7 @@ int main(int argc, char **argv)
   ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
   ros::Subscriber est_twist_subscriber = nh.subscribe("estimate_twist", 10, estTwistCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
+  ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
   geometry_msgs::TwistStamped twist;
   ros::Rate loop_rate(LOOP_RATE); // by Hz
 
@@ -730,11 +748,15 @@ ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallbac
     ros::spinOnce();
 
     //check topic
-    if (_waypoint_set == false || _pose_set == false)
+    if (!g_waypoint_set || !g_pose_set)
     {
       ROS_INFO_STREAM("topic waiting...");
       loop_rate.sleep();
       continue;
+    }
+    else
+    {
+      ROS_INFO("topic subscribed!");
     }
     doPurePursuit();
     loop_rate.sleep();
