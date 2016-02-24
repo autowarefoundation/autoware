@@ -141,7 +141,7 @@ static void calc_a_score_GPU(FLOAT *ac_score,  FLOAT **score,
 		exit(1);
 	}
 
-	res = cuMemAlloc(&ssize_dev, NoC*sizeof(int));
+	res = cuMemAlloc(&ssize_dev, 2*NoC*sizeof(int));
 	if(res != CUDA_SUCCESS) {
 		printf("cuMemAlloc(ssize) failed: res = %s\n", cuda_response_to_string(res));
 		exit(1);
@@ -179,7 +179,7 @@ static void calc_a_score_GPU(FLOAT *ac_score,  FLOAT **score,
 		exit(1);
 	}
 
-	res = cuMemcpyHtoD(ssize_dev, &ssize_start[0], NoC*sizeof(int));
+	res = cuMemcpyHtoD(ssize_dev, &ssize_start[0], 2*NoC*sizeof(int));
 	if(res != CUDA_SUCCESS) {
 		printf("cuMemcpyHtoD(ssize) failed: res = %s\n", cuda_response_to_string(res));
 		exit(1);
