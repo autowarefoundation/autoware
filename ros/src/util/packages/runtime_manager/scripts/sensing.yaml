@@ -54,7 +54,7 @@ subs :
         run  : rosrun javad_navsat_driver gnss.sh
         param: serial
       - name : Serial GNSS
-        probe: 
+        probe:
         run  : roslaunch nmea_navsat nmea_navsat.launch
         param: serial
 
@@ -68,7 +68,7 @@ subs :
     subs :
       - name : Velodyne HDL-64e-S2
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne velodyne_hdl64e_s2.launch
+        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
         param: calibration_path
         gui  :
           calibration :
@@ -76,7 +76,7 @@ subs :
             flags : [ center_v ]
       - name : Velodyne HDL-64e-S3
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne velodyne_hdl64e_s3.launch
+        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s3.launch
         param: calibration_path
         gui  :
           calibration :
@@ -84,15 +84,15 @@ subs :
             flags : [ center_v ]
       - name : Velodyne HDL-32e
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne velodyne_hdl32e.launch
+        run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
         param: calibration_path
         gui  :
           calibration :
             prop  : 1
             flags : [ center_v ]
       - name : Velodyne VLP-16
-        probe: 
-        run  : roslaunch velodyne velodyne_vlp16.launch
+        probe:
+        run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
         param: calibration_path
         gui  :
           calibration :
@@ -102,7 +102,7 @@ subs :
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
       - name : Hokuyo 3D-URG
-        probe: 
+        probe:
         run  : roslaunch hokuyo hokuyo_3d.launch
       - name : SICK LMS511
         probe:
@@ -138,8 +138,9 @@ buttons:
         flags : [ nl ]
 
   points_image :
-    run   : rosrun points2image points2image
+    run   : roslaunch runtime_manager points2image.launch
     #param : points_image
+<<<<<<< HEAD
     param : sel_cam
     gui   :
       flags : [ need_camera_info ]
@@ -147,6 +148,12 @@ buttons:
       camera_id :
         border : 16
         flags : [ all ]
+=======
+    param : sync
+    gui   :
+      sync :
+        func : self.button_synchronization.GetValue()
+>>>>>>> master
 
   scan_image :
     run   : rosrun scan2image scan2image
@@ -155,6 +162,7 @@ buttons:
   virtual_scan_image :
     run   : roslaunch runtime_manager vscan.launch
     #param : virtual_scan_image
+<<<<<<< HEAD
     param : sel_cam
     gui   :
       flags : [ need_camera_info ]
@@ -162,6 +170,12 @@ buttons:
       camera_id :
         border : 16
         flags : [ all ]
+=======
+    param : sync
+    gui   :
+      sync :
+        func : self.button_synchronization.GetValue()
+>>>>>>> master
 
   #camera_extrinsicMat_Publisher :
   #  run   : roslaunch runtime_manager ex_mat_pub.launch
@@ -184,6 +198,7 @@ params :
       cmd_param :
         dash : ''
         delim: ':='
+        must : True
 
   - name  : calibration_path_grasshopper3
     vars  :
@@ -194,6 +209,7 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+        must        : True
   - name  : calibration_path_ladybug
     vars  :
     - name  : CalibrationFile
@@ -203,6 +219,7 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+        must        : True
 
 #  - name  : points_image
 #    vars  :
@@ -304,6 +321,7 @@ params :
         dash      : ''
         delim     : ':='
 
+<<<<<<< HEAD
   - name : sel_cam
     vars :
     - name         : camera_id
@@ -315,3 +333,14 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+=======
+  - name : sync
+    vars :
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+>>>>>>> master

@@ -174,12 +174,11 @@ void show(void)
   if(!existImage || !existPoints){
     return;
   }
-  const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
+  const auto& encoding = sensor_msgs::image_encodings::BGR8;
   cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
   IplImage frame = cv_image->image;
 
   cv::Mat matImage(&frame, false);
-  cv::cvtColor(matImage, matImage, CV_BGR2RGB);
 
   /* DRAW RECTANGLES of detected objects */
 #if 0
@@ -203,21 +202,21 @@ void show(void)
   drawRects(&frame,
             car_fused_objects.obj,
             cvScalar(255.0, 255.0, 0,0),
-            matImage.rows*.25);
+            matImage.rows*.10);
 
   drawRects(&frame,
             pedestrian_fused_objects.obj,
             cvScalar(0.0, 255.0, 0,0),
-            matImage.rows*.25);
+            matImage.rows*.10);
 #endif
   /* PUT DISTANCE text on image */
   putDistance(&frame,
               car_fused_objects.obj,
-              matImage.rows*.25,
+              matImage.rows*.10,
               car_fused_objects.type.c_str());
   putDistance(&frame,
               pedestrian_fused_objects.obj,
-              matImage.rows*.25,
+              matImage.rows*.10,
               pedestrian_fused_objects.type.c_str());
 
   /* DRAW POINTS of lidar scanning */

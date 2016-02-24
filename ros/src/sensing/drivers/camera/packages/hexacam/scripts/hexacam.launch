@@ -1,0 +1,11 @@
+<launch>
+
+	<!-- declare arguments with default values -->
+	<arg name="SCALE" default="100"/>
+	<arg name="configfile" default="$(find hexacam)/fullpreview_config.txt"/>
+
+	<node pkg="hexacam" type="hexacam_node" name="hexacam">
+		<!--param name="scale" value="$(arg SCALE)"/-->
+		<param name="configfile" value="$(arg configfile)"/>
+	</node>
+</launch>

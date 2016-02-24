@@ -34,11 +34,7 @@
  Yuki KITSUKAWA
  */
 
-#define DEBUG 0
-// #define VIEW_TIME
 #define OUTPUT // If you want to output "position_log.txt", "#define OUTPUT".
-#define THRESHOLD 1.0
-#define RADIUS 10.0
 
 #include <iostream>
 #include <sstream>
@@ -102,12 +98,12 @@ static geometry_msgs::PoseStamped current_pose_msg;
 static ros::Publisher ndt_stat_pub;
 static std_msgs::Bool ndt_stat_msg;
 
-static int count = 0;
 static int initial_scan_loaded = 0;
 
 static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
-static std::string _scanner = "velodyne";
+static double RANGE = 0.0;
+static double SHIFT = 0.0;
 
 static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
 {
@@ -165,57 +161,38 @@ static void output_callback(const runtime_manager::ConfigNdtMappingOutput::Const
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-
-  //  if(_scanner == "velodyne"){
-    ros::Time scan_time;
-
+    double r;
     pcl::PointXYZI p; 
-    pcl::PointCloud<pcl::PointXYZI> scan;
+    pcl::PointCloud<pcl::PointXYZI> tmp, scan;
     pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
     pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
     tf::Quaternion q;
     Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
-    static tf::TransformBroadcaster br;
+    tf::TransformBroadcaster br;
     tf::Transform transform;
-    
-    //  scan.header = input->header;
-    
-    //     /*
-    //       std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
-    //       std::cout << "scan_time: " << scan_time << std::endl;
-    //       std::cout << "scan_time.sec: " << scan_time.sec << std::endl;
-    //       std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
-    //     */
-    
-    //     t1_start = ros::Time::now();
 
-    /*
-      for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
-      p.x = (double) item->x;
-      p.y = (double) item->y;
-      p.z = (double) item->z;
-      p.intensity = (float) item->intensity;
-      
-      double r = p.x * p.x + p.y * p.y;
+    ros::Time scan_time = input->header.stamp;
 
-      if(r >= RADIUS){
-      scan.points.push_back(p);
-      }
-      }
-    */
-    pcl::fromROSMsg(*input, scan);
-    
+    pcl::fromROSMsg(*input, tmp);
+
+    for (pcl::PointCloud<pcl::PointXYZI>::const_iterator item = tmp.begin(); item != tmp.end(); item++){
+    	p.x = (double) item->x;
+    	p.y = (double) item->y;
+    	p.z = (double) item->z;
+    	p.intensity = (double) item->intensity;
+
+    	r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
+    	if(r > RANGE){
+    		scan.push_back(p);
+    	}
+    }
+
     pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
-    
-    scan_time.sec = scan.header.stamp / 1000000.0;
-    scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
-    
     
     // Add initial point cloud to velodyne_map
     if(initial_scan_loaded == 0){
       map += *scan_ptr;
       initial_scan_loaded = 1;
-      std::cout << "initial_scan_loaded." << std::endl;
     }
     
     // Apply voxelgrid filter
@@ -224,36 +201,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     voxel_grid_filter.setInputCloud(scan_ptr);
     voxel_grid_filter.filter(*filtered_scan_ptr);
     
-    // Matching with map
+    pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
+
     ndt.setTransformationEpsilon(trans_eps);
     ndt.setStepSize(step_size);
     ndt.setResolution(ndt_res);
     ndt.setMaximumIterations(iter);
-    
     ndt.setInputSource(filtered_scan_ptr);
-    
-    pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
-    map_ptr->header.frame_id = "map";
-    
-    // For future improvement
-    // Apply VoxelGrid Filter if # of map points > 500,000
-    /*
-      std::cout << "Map points: " << map.points.size() << std::endl;
-      if(map.points.size() > 500000){
-      pcl::VoxelGrid<pcl::PointXYZI> map_filter;
-      map_filter.setLeafSize(0.2, 0.2, 0.2);
-      map_filter.setInputCloud(map_ptr);
-      map_filter.filter(*map_ptr);
-      map.clear();
-      std::cout << "Map cleared" << std::endl;
-      map += *map_ptr;
-      }
-    */
-    
-    // Setting point cloud to be aligned to.
     ndt.setInputTarget(map_ptr);
-    
-    tf::Matrix3x3 init_rotation;
     
     guess_pos.x = previous_pos.x + offset_x;
     guess_pos.y = previous_pos.y + offset_y;
@@ -274,13 +229,12 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     d3 = t3_end - t3_start;
     
     t4_start = ros::Time::now();
-    //  pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
     pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
     ndt.align(*output_cloud, init_guess);
     
     t = ndt.getFinalTransformation();
     
-    //  pcl::transformPointCloud(*filtered_scan_ptr, *transformed_scan_ptr, t);
     pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, t);
     
     tf::Matrix3x3 tf3d;
@@ -299,7 +253,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
     transform.setRotation(q);
     
-    br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
+    br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "base_link"));
     
     // Calculate the offset (curren_pos - previous_pos)
     offset_x = current_pos.x - previous_pos.x;
@@ -315,11 +269,9 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     previous_pos.pitch = current_pos.pitch;
     previous_pos.yaw = current_pos.yaw;
     
-    // Calculate the offset between added_pos and current_pos
-    double offset = sqrt(pow(current_pos.x-added_pos.x, 2.0) + pow(current_pos.y-added_pos.y, 2.0));
-    std::cout << "offset: " << offset << std::endl;
-    
-    if(offset >= THRESHOLD){
+    // Calculate the shift between added_pos and current_pos
+    double shift = sqrt(pow(current_pos.x-added_pos.x, 2.0) + pow(current_pos.y-added_pos.y, 2.0));
+    if(shift >= SHIFT){
       map += *transformed_scan_ptr;
       added_pos.x = current_pos.x;
       added_pos.y = current_pos.y;
@@ -327,12 +279,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       added_pos.roll = current_pos.roll;
       added_pos.pitch = current_pos.pitch;
       added_pos.yaw = current_pos.yaw;
-      std::cout << "add velodyne_points to map" << std::endl;
     }
     
     sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
     pcl::toROSMsg(*map_ptr, *map_msg_ptr);
-    
     ndt_map_pub.publish(*map_msg_ptr);
     
     q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
@@ -341,15 +291,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_pose_msg.pose.position.x = current_pos.x;
     current_pose_msg.pose.position.y = current_pos.y;
     current_pose_msg.pose.position.z = current_pos.z;
-    current_pose_msg.pose.orientation.x =  q.x();
-    current_pose_msg.pose.orientation.y =  q.y();
-    current_pose_msg.pose.orientation.z =  q.z();
-    current_pose_msg.pose.orientation.w =  q.w();
+    current_pose_msg.pose.orientation.x = q.x();
+    current_pose_msg.pose.orientation.y = q.y();
+    current_pose_msg.pose.orientation.z = q.z();
+    current_pose_msg.pose.orientation.w = q.w();
     
     current_pose_pub.publish(current_pose_msg);
     
     std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << "count: " << count << std::endl;
     std::cout << "Sequence number: " << input->header.seq << std::endl;
     std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
     std::cout << "Number of filtered scan points: " << filtered_scan_ptr->size() << " points." << std::endl;
@@ -362,227 +311,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " << current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
     std::cout << "Transformation Matrix:" << std::endl;
     std::cout << t << std::endl;
+    std::cout << "shift: " << shift << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
     
-    count++;
-    //  }
 }
-
-// static void velodyne_callback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr& input)
-// {
-//   if(_scanner == "velodyne"){
-//     ros::Time scan_time;
-    
-//     pcl::PointXYZI p; 
-//     pcl::PointCloud<pcl::PointXYZI> scan;
-//     pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
-//     pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
-//     tf::Quaternion q;
-//     Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
-//     static tf::TransformBroadcaster br;
-//     tf::Transform transform;
-    
-//     scan.header = input->header;
-//     scan_time.sec = scan.header.stamp / 1000000.0;
-//     scan_time.nsec = (scan.header.stamp - scan_time.sec * 1000000.0) * 1000.0;
-    
-//     //     /*
-//     //       std::cout << "scan.header.stamp: " << scan.header.stamp << std::endl;
-//     //       std::cout << "scan_time: " << scan_time << std::endl;
-//     //       std::cout << "scan_time.sec: " << scan_time.sec << std::endl;
-//     //       std::cout << "scan_time.nsec: " << scan_time.nsec << std::endl;
-//     //     */
-    
-//     //     t1_start = ros::Time::now();
-    
-//     for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = input->begin(); item != input->end(); item++) {
-//       p.x = (double) item->x;
-//       p.y = (double) item->y;
-//       p.z = (double) item->z;
-//       p.intensity = (float) item->intensity;
-      
-//       double r = p.x * p.x + p.y * p.y;
-      
-//       if(r >= RADIUS){
-// 	scan.points.push_back(p);
-//       }
-//     }
-    
-//     pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
-    
-//     // Add initial point cloud to velodyne_map
-//     if(initial_scan_loaded == 0){
-//       map += *scan_ptr;
-//       initial_scan_loaded = 1;
-//       std::cout << "initial_scan_loaded." << std::endl;
-//     }
-    
-//     // Apply voxelgrid filter
-//     pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
-//     voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-//     voxel_grid_filter.setInputCloud(scan_ptr);
-//     voxel_grid_filter.filter(*filtered_scan_ptr);
-    
-//     // Matching with map
-//     ndt.setTransformationEpsilon(trans_eps);
-//     ndt.setStepSize(step_size);
-//     ndt.setResolution(ndt_res);
-//     ndt.setMaximumIterations(iter);
-    
-//     ndt.setInputSource(filtered_scan_ptr);
-    
-//     pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
-//     map_ptr->header.frame_id = "map";
-    
-//     // For future improvement
-//     // Apply VoxelGrid Filter if # of map points > 500,000
-//     /*
-//       std::cout << "Map points: " << map.points.size() << std::endl;
-//       if(map.points.size() > 500000){
-//       pcl::VoxelGrid<pcl::PointXYZI> map_filter;
-//       map_filter.setLeafSize(0.2, 0.2, 0.2);
-//       map_filter.setInputCloud(map_ptr);
-//       map_filter.filter(*map_ptr);
-//       map.clear();
-//       std::cout << "Map cleared" << std::endl;
-//       map += *map_ptr;
-//       }
-//     */
-    
-//     // Setting point cloud to be aligned to.
-//     t1_start = ros::Time::now();
-//     ndt.setInputTarget(map_ptr);
-//     t1_end = ros::Time::now();
-//     d1 = t1_end - t1_start;
-    
-//     tf::Matrix3x3 init_rotation;
-    
-//     guess_pos.x = previous_pos.x + offset_x;
-//     guess_pos.y = previous_pos.y + offset_y;
-//     guess_pos.z = previous_pos.z + offset_z;
-//     guess_pos.roll = previous_pos.roll;
-//     guess_pos.pitch = previous_pos.pitch;
-//     guess_pos.yaw = previous_pos.yaw + offset_yaw;
-    
-//     Eigen::AngleAxisf init_rotation_x(guess_pos.roll, Eigen::Vector3f::UnitX());
-//     Eigen::AngleAxisf init_rotation_y(guess_pos.pitch, Eigen::Vector3f::UnitY());
-//     Eigen::AngleAxisf init_rotation_z(guess_pos.yaw, Eigen::Vector3f::UnitZ());
-    
-//     Eigen::Translation3f init_translation(guess_pos.x, guess_pos.y, guess_pos.z);
-    
-//     Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix();
-    
-//     t3_end = ros::Time::now();
-//     d3 = t3_end - t3_start;
-    
-//     t4_start = ros::Time::now();
-//     //  pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-//     pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    
-//     t2_start = ros::Time::now();
-//     ndt.align(*output_cloud, init_guess);
-    
-//     t = ndt.getFinalTransformation();
-//     t2_end = ros::Time::now();
-//     d2 = t2_end - t2_start;
-    
-//     //  pcl::transformPointCloud(*filtered_scan_ptr, *transformed_scan_ptr, t);
-//     pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, t);
-    
-//     tf::Matrix3x3 tf3d;
-    
-//     tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
-// 		  static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
-// 		  static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
-    
-//     // Update current_pos.
-//     current_pos.x = t(0, 3);
-//     current_pos.y = t(1, 3);
-//     current_pos.z = t(2, 3);
-//     tf3d.getRPY(current_pos.roll, current_pos.pitch, current_pos.yaw, 1);
-    
-//     transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
-//     q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
-//     transform.setRotation(q);
-    
-//     br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "velodyne"));
-    
-//     // Calculate the offset (curren_pos - previous_pos)
-//     offset_x = current_pos.x - previous_pos.x;
-//     offset_y = current_pos.y - previous_pos.y;
-//     offset_z = current_pos.z - previous_pos.z;
-//     offset_yaw = current_pos.yaw - previous_pos.yaw;
-    
-//     // Update position and posture. current_pos -> previous_pos
-//     previous_pos.x = current_pos.x;
-//     previous_pos.y = current_pos.y;
-//     previous_pos.z = current_pos.z;
-//     previous_pos.roll = current_pos.roll;
-//     previous_pos.pitch = current_pos.pitch;
-//     previous_pos.yaw = current_pos.yaw;
-    
-//     // Calculate the offset between added_pos and current_pos
-//     double offset = sqrt(pow(current_pos.x-added_pos.x, 2.0) + pow(current_pos.y-added_pos.y, 2.0));
-//     std::cout << "offset: " << offset << std::endl;
-    
-//     if(offset >= THRESHOLD){
-//       map += *transformed_scan_ptr;
-//       added_pos.x = current_pos.x;
-//       added_pos.y = current_pos.y;
-//       added_pos.z = current_pos.z;
-//       added_pos.roll = current_pos.roll;
-//       added_pos.pitch = current_pos.pitch;
-//       added_pos.yaw = current_pos.yaw;
-//       std::cout << "add velodyne_points to map" << std::endl;
-      
-//       std::ofstream ofs("time.txt", std::ios::app);
-//       ofs << map.points.size() << "," << d1 << "," << d2 << std::endl;
-//     }
-    
-//     sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
-//     pcl::toROSMsg(*map_ptr, *map_msg_ptr);
-    
-//     ndt_map_pub.publish(*map_msg_ptr);
-    
-//     q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
-//     current_pose_msg.header.frame_id = "map";
-//     current_pose_msg.header.stamp = scan_time;
-//     current_pose_msg.pose.position.x = current_pos.x;
-//     current_pose_msg.pose.position.y = current_pos.y;
-//     current_pose_msg.pose.position.z = current_pos.z;
-//     current_pose_msg.pose.orientation.x =  q.x();
-//     current_pose_msg.pose.orientation.y =  q.y();
-//     current_pose_msg.pose.orientation.z =  q.z();
-//     current_pose_msg.pose.orientation.w =  q.w();
-    
-//     current_pose_pub.publish(current_pose_msg);
-    
-//     std::cout << "-----------------------------------------------------------------" << std::endl;
-//     std::cout << "count: " << count << std::endl;
-//     std::cout << "Sequence number: " << input->header.seq << std::endl;
-//     std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
-//     std::cout << "Number of filtered scan points: " << filtered_scan_ptr->size() << " points." << std::endl;
-//     std::cout << "transformed_scan_ptr: " << transformed_scan_ptr->points.size() << " points." << std::endl;
-//     std::cout << "map: " << map.points.size() << " points." << std::endl;
-//     std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
-//     std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
-//     std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
-//     std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
-//     std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " << current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
-//     std::cout << "Transformation Matrix:" << std::endl;
-//     std::cout << t << std::endl;
-//     std::cout << "-----------------------------------------------------------------" << std::endl;
-    
-//     count++;
-//   }
-// }
 
 int main(int argc, char **argv)
 {
-    std::cout << "---------------------------------------------" << std::endl;
-    std::cout << "NDT_MAPPING program coded by Yuki KITSUKAWA" << std::endl;
-    std::cout << "---------------------------------------------" << std::endl;
-
     previous_pos.x = 0.0;
     previous_pos.y = 0.0;
     previous_pos.z = 0.0;
@@ -622,22 +357,18 @@ int main(int argc, char **argv)
     ros::NodeHandle private_nh("~");
 
     // setting parameters
-    private_nh.getParam("scanner", _scanner);
-    std::cout << "scanner: " << _scanner << std::endl;
+    private_nh.getParam("range", RANGE);
+    std::cout << "RANGE: " << RANGE << std::endl;
+    private_nh.getParam("shift", SHIFT);
+    std::cout << "SHIFT: " << SHIFT << std::endl;
 
-    /*
-    ndt.setTransformationEpsilon(trans_eps);
-    ndt.setStepSize(step_size);
-    ndt.setResolution(ndt_res);
-    ndt.setMaximumIterations(iter);
-    */
+    map.header.frame_id = "map";
 
     ndt_map_pub = nh.advertise<sensor_msgs::PointCloud2>("/ndt_map", 1000);
     current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
 
     ros::Subscriber param_sub = nh.subscribe("config/ndt_mapping", 10, param_callback);
     ros::Subscriber output_sub = nh.subscribe("config/ndt_mapping_output", 10, output_callback);
-    //    ros::Subscriber hokuyo_sub = nh.subscribe("hokuyo_3d/hokuyo_cloud2", 100000, hokuyo_callback);
     ros::Subscriber points_sub = nh.subscribe("points_raw", 100000, points_callback);
 
     ros::spin();

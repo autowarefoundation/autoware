@@ -34,6 +34,8 @@ subs :
             user_category : ''
           layer:
             flags : [ nl ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
   - name : Detection
     subs :
@@ -54,11 +56,16 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
+#=======
+          sync :
+            func : self.button_synchronization.GetValue()
+#>>>>>>> master
 
       - name : dpm_ttic
         cmd  : roslaunch cv_tracker dpm_ttic.launch
@@ -77,11 +84,16 @@ subs :
             flags  : [ left ]
           part_model_car :
             flags  : [ hline ]
+#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
+#=======
+          sync :
+            func : self.button_synchronization.GetValue()
+#>>>>>>> master
             
       - name : rcnn_node
         cmd  : roslaunch cv_tracker rcnn.launch
@@ -109,6 +121,15 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
+
+      - name : klt_track
+        cmd  : roslaunch cv_tracker klt_tracking.launch
+        param: car_kf
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
 
       - name : kf_track
         cmd  : roslaunch cv_tracker kf_tracking.launch
@@ -133,11 +154,16 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
+#=======
+          sync :
+            func : self.button_synchronization.GetValue()
+#>>>>>>> master
 
       - name : obj_reproj
         cmd  : roslaunch cv_tracker reprojection.launch
@@ -150,16 +176,25 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
+#=======
+          sync :
+            func : self.button_synchronization.GetValue()
+#>>>>>>> master
 
     - name : lidar_detector
       subs :
       - name : euclidean_cluster
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
+        param: euclidean_cluster
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : obj_fusion
         cmd  : roslaunch lidar_tracker obj_fusion.launch
         param: obj_fusion
@@ -171,6 +206,8 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
 
     - name : road_wizard
       subs :
@@ -268,7 +305,7 @@ subs :
     - name : lane_planner
       subs :
       - name : lane_navi
-        cmd  : rosrun lane_planner lane_navi
+        cmd  : roslaunch lane_planner lane_navi.launch
         param: lane_navi
       - name : lane_rule
         cmd  : rosrun lane_planner lane_rule
@@ -280,6 +317,7 @@ subs :
           dialog: MyDialogLaneStop
       - name : lane_select
         cmd  : rosrun lane_planner lane_select
+        param: lane_select
     - name : freespace_planner
       subs :
       - name : astar_navi
@@ -321,7 +359,7 @@ subs :
          param: waypoint_loader
          gui  :
            lane_waypoint_csv :
-             prop  : 1
+             prop  : 1    
        - name : waypoint_saver
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
          param: waypoint_saver
@@ -351,7 +389,8 @@ subs :
              depend_bool : 'lambda v : v == 0' 
            stat_topic : [ lf ]  
        - name : twist_filter
-         cmd  : rosrun waypoint_follower twist_filter  
+         cmd  : roslaunch waypoint_follower twist_filter.launch
+         param: twist_filter
        - name : wf_simulator
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
@@ -397,6 +436,8 @@ buttons:
     param   : car_kf
   pedestrian_kf :
     param   : pedestrian_kf
+  synchronization :
+    run : roslaunch runtime_manager synchronization.launch
 
 sys_gui:
   dialog   : MyDialogParam
@@ -411,15 +452,22 @@ sys_gui:
   real_time:
     flags         : [ nl, left ]
     border        : 8
+  policy   :
+    border        : 16
+    flags         : [ left ]
+    depend        : real_time
   prio     :
     border        : 16
-    flags         : [ left ]
+    flags         : [ left, nl ]
+    depend        : real_time
   period   :
     border        : 16
-    flags         : [ left ]
+    flags         : [ top, left ]
+    depend        : real_time
   budget   :
     border        : 16
-    flags         : [ left ]
+    flags         : [ top, left ]
+    depend        : real_time
 
 params :
   - name  : sys
@@ -437,6 +485,12 @@ params :
       label    : Real-Time
       kind     : checkbox
       v        : False
+    - name     : policy
+      label    : Policy
+      kind     : menu
+      choices  : [ FIFO, RR ]
+      choices_type : str
+      v        : fifo
     - name     : prio
       label    : 'prio:'
       kind     : num
@@ -490,6 +544,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -499,6 +554,15 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+#=======
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+#>>>>>>> master
 
   - name  : dpm_ttic
     vars  :
@@ -568,6 +632,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -577,6 +642,15 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+#=======
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+#>>>>>>> master
 
   - name  : car_dpm
     topic : /config/car_dpm
@@ -637,6 +711,69 @@ params :
       min   : 2
       max   : 10
       v     : 9
+      
+  - name  : euclidean_cluster
+    vars  :
+    - name    : publish_ground
+      label   : 'publish ground'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : publish_filtered
+      label   : 'publish filtered'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : is_downsampling
+      label   : 'is downsampling'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : distance
+      label   : 'distance'
+      min       : 0
+      max       : 5
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : leaf_size
+      label   : 'leaf size'
+      min       : 0
+      max       : 1
+      v       : 0.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='  
+    - name    : cluster_size_min
+      label   : 'cluster size minimum'
+      min       : 0
+      max       : 3000
+      v       : 50
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : cluster_size_max
+      label   : 'cluster size maximum'
+      min       : 0
+      max       : 3000
+      v       : 2500
+      cmd_param :
+        dash        : ''
+        delim       : ':='              
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : ndt
     topic : /config/ndt
@@ -733,8 +870,152 @@ params :
       min   : -2.0
       max   : 2.0
       v     : 0
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : waypoint_follower
+    topic : /config/waypoint_follower
+    msg   : ConfigWaypointFollower
+    vars  :
+    - name  : param_flag
+      kind  : radio_box
+      choices:
+      - Waypoint
+      - Dialog
+      v     : 1
+    - name  : velocity
+      label : Velocity
+      min   : 0
+      max   : 60
+      v     : 5.0
+    - name  : lookahead_threshold
+      label : Lookahead Threshold
+      min   : 0
+      max   : 30
+      v     : 4.0
+    - name  : threshold_ratio
+      label : threshold_ratio
+      min   : 1.0
+      max   : 5.0
+      v     : 2.0
+    - name  : minimum_lookahead_threshold
+      label : minimum_lookahead_threshold
+      min   : 2.0
+      max   : 10.0
+      v     : 6.0
+    - name  : displacement_threshold
+      label : displacement_threshold
+      min   : 0
+      max   : 1.0
+      v     : 0.0 
+    - name  : relative_angle_threshold
+      label : relative_angle_threshold
+      min   : 0
+      max   : 90
+      v     : 0   
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : linear_interpolate_mode
+      label   : 'Linear Interpolate'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+      
+  - name  : velocity_set
+    topic : /config/velocity_set
+    msg   : ConfigVelocitySet
+    vars  :
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : velocity_limit
+      label : Velocity Limit (km/h)
+      min   : 0
+      max   : 60
+      v     : 42.0
+    - name  : others_distance
+      label : Others Distance (m)
+      min   : 0
+      max   : 50
+      v     : 15.0
+    - name  : cars_distance
+      label : Cars Distance (m)
+      min   : 0
+      max   : 50
+      v     : 15.0
+    - name  : pedestrians_distance
+      label : Pedestrians Distance (m)
+      min   : 0
+      max   : 50
+      v     : 10.0
+    - name  : detection_range
+      label : Detection Range (m)
+      min   : 0
+      max   : 10
+      v     : 1.3
+    - name  : deceleration_range
+      label : Deceleration Range (m)
+      min   : 0
+      max   : 10
+      v     : 1.7
+    - name  : threshold_points
+      label : Points Threshold
+      min   : 0
+      max   : 30
+      v     : 15
+    - name  : detection_height_top
+      label : Detection Height Top (m)
+      min   : 0
+      max   : 10
+      v     : 0.1
+    - name  : detection_height_bottom
+      label : Detection Height Bottom (m)
+      min   : -10
+      max   : 0
+      v     : -1.5
+    - name  : deceleration
+      label : Deceleration (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 1.0
+    - name  : velocity_change_limit
+      label : Velocity Change Limit (km/h)
+      min   : 5
+      max   : 40
+      v     : 15.0
+    - name  : velocity_offset
+      label : Velocity Offset (km/h)
+      min   : 0
+      max   : 40
+      v     : 3.0
+    - name  : deceleration_minimum
+      label : Deceleration Minimum (km/h)
+      min   : 0
+      max   : 40
+      v     : 5.0
+    - name  : temporal_waypoints_size
+      label : Temporal Waypoints (m)
+      min   : 0
+      max   : 150
+      v     : 100.0
+
+  - name  : lane_follower_trajgen
     topic : /config/waypoint_follower
     msg   : ConfigWaypointFollower
     vars  :
@@ -776,115 +1057,30 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-      #rosparam: /pure_pursuit/sim_mode
-      
-  - name  : velocity_set
-    topic : /config/velocity_set
-    msg   : ConfigVelocitySet
-    vars  :
-    - name    : sim_mode
-      label   : 'Simulation Mode'
+    - name    : prius_mode
+      label   : 'Prius Mode'
       kind    : checkbox
       v       : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name  : velocity_limit
-      label : Velocity Limit
-      min   : 0
-      max   : 60
-      v     : 42.0
-    - name  : others_distance
-      label : Others Distance
-      min   : 0
-      max   : 50
-      v     : 15.0
-    - name  : cars_distance
-      label : Cars Distance
-      min   : 0
-      max   : 50
-      v     : 15.0
-    - name  : pedestrians_distance
-      label : Pedestrians Distance
-      min   : 0
-      max   : 50
-      v     : 10.0
-    - name  : detection_range
-      label : Detection Range
-      min   : 0
-      max   : 10
-      v     : 1.3
-    - name  : threshold_points
-      label : Points Threshold
-      min   : 0
-      max   : 30
-      v     : 15
-    - name  : detection_height_top
-      label : Detection Height Top
-      min   : 0
-      max   : 10
-      v     : 2.5
-    - name  : detection_height_bottom
-      label : Detection Height Bottom
-      min   : -10
-      max   : 0
-      v     : -1.5
-    - name  : deceleration
-      label : Deceleration (m/s^2)
-      min   : 0
-      max   : 5
-      v     : 1.5
-    - name  : decel_change_limit
-      label : Deceleration Change Limit
-      min   : 5
-      max   : 40
-      v     : 15.0
-    - name  : accel_bias
-      label : Accel Bias
-      min   : 0
-      max   : 40
-      v     : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : mkz_mode
+      label   : 'MKZ Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
-  - name  : lane_follower_trajgen
-    topic : /config/waypoint_follower
-    msg   : ConfigWaypointFollower
+  - name  : twist_filter
+    topic : /config/twist_filter
+    msg   : ConfigTwistFilter
     vars  :
-    - name  : param_flag
-      kind  : radio_box
-      choices:
-      - Waypoint
-      - Dialog
-      v     : 1
-    - name  : velocity
-      label : Velocity
+    - name    : lateral_accel_limit 
+      label   : 'lateral_accel_limit :'
       min   : 0
-      max   : 60
-      v     : 5.0
-    - name  : lookahead_threshold
-      label : Lookahead Threshold
-      min   : 0
-      max   : 30
-      v     : 4.0
-    - name  : threshold_ratio
-      label : threshold_ratio
-      min   : 1.0
       max   : 5.0
-      v     : 2.0
-    - name  : minimum_lookahead_threshold
-      label : minimum_lookahead_threshold
-      min   : 2.0
-      max   : 10.0
-      v     : 6.0
-    - name  : offset
-      label : offset
-      min   : -5.0
-      max   : 5.0
-      v     : -1.17
-    - name    : sim_mode
-      label   : 'Simulation Mode'
-      kind    : checkbox
-      v       : False
-      rosparam: /lattice_trajectory_gen/sim_mode
+      v         : 0.8
   
   - name  : wf_simulator
     vars  :
@@ -984,6 +1180,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -993,6 +1190,15 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+#=======
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+#>>>>>>> master
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
@@ -1055,6 +1261,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -1064,6 +1271,15 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+#=======
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+#>>>>>>> master
 
   - name : obj_fusion
     vars :
@@ -1081,6 +1297,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name : feat_proj
     topic: /config/adjust_xy
@@ -1141,13 +1364,17 @@ params :
       min       : 0
       max       : 200
       v         : 40.0
-      rosparam  : /lane_navi/velocity
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : output_file
       label     : Output File
       kind      : path
       path_type : save
       v         : /tmp/lane_waypoint.csv
-      rosparam  : /lane_navi/output_file
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : lane_rule
     topic : /config/lane_rule
@@ -1170,11 +1397,22 @@ params :
       v         : 0
 
   - name  : lane_stop
-    topic : /traffic_light
+    topic : /light_color_managed
     msg   : traffic_light
     vars  :
     - name  : traffic_light
       v     : 0
+      
+  - name  : lane_select
+    topic : /config/lane_select
+    msg   : ConfigLaneSelect
+    vars  :
+    - name  : number
+      kind  : radio_box
+      choices:
+      - Driving
+      - Passing
+      v     : 1
 
   - name  : waypoint_saver
     vars  :
@@ -1217,23 +1455,30 @@ params :
       path_type : save
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
-
+        
   - name  : waypoint_loader
     vars  :
-    - name      : lane_waypoint_csv
+    - name      : driving_lane_csv
+      label     : Driving
       kind      : path
-      v         : /tmp/lane_waypoint.csv
-#      rosparam  : /waypoint_loader/lane_waypoint_csv
+      v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : passing_lane_csv
+      label     : Passing
+      kind      : path
+      v         : /tmp/driving_lane.csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='        
     - name      : decelerate  
       label   : 'decelerate :'
       v         : 1.0
-      #rosparam  : /waypoint_loader/decelerate
       cmd_param :
         dash        : ''
         delim       : ':='
+        
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping
@@ -1304,6 +1549,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : pedestrian_fusion
     topic : /config/pedestrian_fusion

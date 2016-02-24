@@ -2,13 +2,10 @@
 <launch>
 
         <arg name="sim_mode" default="false" />
-        <arg name="deceleration_range" default="1.7" />
-        <arg name="deceleration_minimum" default="4.0" />
 
 	<node pkg="driving_planner" type="velocity_set" name="velocity_set" output="screen">
 		<param name="sim_mode" value="$(arg sim_mode)" />
-		<param name="deceleration_range" value="$(arg deceleration_range)" />
-		<param name="deceleration_minimum" value="$(arg deceleration_minimum)" />
+
 	</node>
 
 </launch>

@@ -881,14 +881,14 @@ calc_a_score(
           uintptr_t pointer_RY = (uintptr_t)RY_array;
           for(int k=0; k<component_jj; k++) {
             pointer_score += (uintptr_t)size_score_array[k];
-            pointer_ssize += (uintptr_t)(sizeof(int));
+            pointer_ssize += (uintptr_t)(2 * sizeof(int));
             pointer_RX += (uintptr_t)(sizeof(int));
             pointer_RY += (uintptr_t)(sizeof(int));
           }
 
           FLOAT *score = (FLOAT *)pointer_score;
           int ssize0 = *((int *)pointer_ssize);
-          int ssize1 = *((int *)pointer_ssize + sizeof(int));
+          int ssize1 = *((int *)(pointer_ssize + sizeof(int)));
           int RX = *((int *)pointer_RX);
           int RY = *((int *)pointer_RY);
 

@@ -45,7 +45,7 @@
 #include <errno.h>
 #include <netdb.h>
 
-using namespace zmp::hev;
+using namespace zmp;
 
 #define NO_TSTAMP 0
 
@@ -55,6 +55,15 @@ using namespace zmp::hev;
 #define CMD_GEAR_R 2
 #define CMD_GEAR_B 3
 #define CMD_GEAR_N 4
+
+#define CAN_KEY_MODE	(0)
+#define CAN_KEY_TIME	(1)
+#define CAN_KEY_VELOC	(2)
+#define CAN_KEY_ANGLE	(3)
+#define CAN_KEY_TORQUE	(4)
+#define CAN_KEY_ACCEL	(5)
+#define CAN_KEY_BRAKE	(6)
+#define CAN_KEY_SHIFT	(7)
 
 #define MILLISECOND 1000  
 
@@ -132,12 +141,27 @@ typedef struct vehicle_state {
 	long long int tstamp;
 } vehicle_state_t;
 
+struct PID_valueSet {
+    float P;
+    float I;
+    float D;
+};
+
+struct struct_PID_controller {
+    struct PID_valueSet accel;
+    struct PID_valueSet brake;
+    struct PID_valueSet steer;
+};
+
+const std::string SHM_SEED_PATH = "/tmp/PID_controller";
+
 extern vehicle_state_t vstate;
 extern int can_tx_interval; // ms
 extern int cmd_rx_interval; // ms
 extern std::string ros_ip_address;
 extern double estimate_accel;
 extern double cycle_time;
+extern struct struct_PID_controller *shm_ptr;
 
 // convert km/h to m/s
 static inline double KmhToMs(double v)

@@ -2,10 +2,10 @@
 
   <!-- setting path parameter -->
   <rosparam param="/waypoint_loader/lane_waypoint_csv">
-    /home/pdsljp/.autoware/data/path/aeon_ryusenji.csv
+    ~/.autoware/data/path/aeon_ryusenji.csv
   </rosparam>
   <!-- <rosparam param="/waypoint_loader/vector_map_directory">
-    /home/pdsljp/.autoware/data/map/vector_map
+    ~/.autoware/data/map/vector_map
   </rosparam> -->
 
   <!-- Tablet UI -->

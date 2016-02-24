@@ -1,23 +1,25 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#define BEAMNUM 1440
-#define STEP 0.1
-#define MINFLOOR -3.0
-#define MAXFLOOR -1.3
-#define MAXCEILING 6.0
-#define MINCEILING -0.5
-#define ROADSLOPMINHEIGHT 80.0
-#define ROADSLOPMAXHEIGHT 30.0
-#define ROTATION 3
-#define OBSTACLEMINHEIGHT 1
-#define MAXBACKDISTANCE 1
-#define PASSHEIGHT 3
+static int BEAMNUM;
+static double STEP;
+static double MINFLOOR;
+static double MAXFLOOR;
+static double MAXCEILING;
+static double MINCEILING;
+static double ROADSLOPMINHEIGHT;
+static double ROADSLOPMAXHEIGHT;
+static double ROTATION;
+static double OBSTACLEMINHEIGHT;
+static double MAXBACKDISTANCE;
+static double PASSHEIGHT;
 
-#define MAXRANGE 80.0
-#define MINRANGE 3
-#define GRIDSIZE 10.0
-#define IMAGESIZE 1000.0
+static double MAXRANGE;
+static double MINRANGE;
+static double GRIDSIZE;
+static double IMAGESIZE;
+
+static bool SYNC;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
@@ -28,10 +30,36 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef DEBUG_GUI
     ui->setupUi(this);
 #endif
-    velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("points_raw",1000,10);
+    ros::NodeHandle private_nh("~");
+    private_nh.param("BEAMNUM", BEAMNUM, 1440);
+    private_nh.param("STEP", STEP, 0.1);
+    private_nh.param("MINFLOOR", MINFLOOR, -3.0);
+    private_nh.param("MAXFLOOR", MAXFLOOR, -1.3);
+    private_nh.param("MAXCEILING", MAXCEILING, 6.0);
+    private_nh.param("MINCEILING", MINCEILING, -0.5);
+    private_nh.param("ROADSLOPMINHEIGHT", ROADSLOPMINHEIGHT, 80.0);
+    private_nh.param("ROADSLOPMAXHEIGHT", ROADSLOPMAXHEIGHT, 30.0);
+    private_nh.param("ROTATION", ROTATION, (double)3);
+    private_nh.param("OBSTACLEMINHEIGHT", OBSTACLEMINHEIGHT, (double)1);
+    private_nh.param("MAXBACKDISTANCE", MAXBACKDISTANCE, (double)1);
+    private_nh.param("PASSHEIGHT", PASSHEIGHT, (double)2);
+
+    private_nh.param("MAXRANGE", MAXRANGE, 80.0);
+    private_nh.param("MINRANGE", MINRANGE, (double)3);
+    private_nh.param("GRIDSIZE", GRIDSIZE, 10.0);
+    private_nh.param("IMAGESIZE", IMAGESIZE, 1000.0);
+
+    private_nh.param("SYNC", SYNC, false);
+
+    if (SYNC == false) {
+        velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("points_raw",1000,10);
+    } else {
+        velodyne=new ROSSub<sensor_msgs::PointCloud2ConstPtr>("/sync_drivers/points_raw",1000,10);
+    }
     connect(velodyne,SIGNAL(receiveMessageSignal()),this,SLOT(generateVirtualScanSlot()));
     vsros=new ROSPub<sensor_msgs::PointCloud2>("/vscan_points",1000);
     scanros=new ROSPub<sensor_msgs::LaserScan>("/scan",1000);
+
 
 #ifdef DEBUG_GUI
     double PI=3.141592654;

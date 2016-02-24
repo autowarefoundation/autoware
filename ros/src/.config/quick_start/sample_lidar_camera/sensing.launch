@@ -2,7 +2,7 @@
 
   <!-- calibration file path -->
   <arg name="velodyne_calib" default="/opt/ros/indigo/share/velodyne_pointcloud/params/32db.yaml"/>
-  <arg name="camera_calib" default="/home/pdsljp/.autoware/data/calibration/camera_lidar_3d/prius/nic_150407.yml"/>
+  <arg name="camera_calib" default="~/.autoware/data/calibration/camera_lidar_3d/prius/nic_150407.yml"/>
 
   <!-- HDL-32e -->
   <include file="$(find velodyne)/scripts/velodyne_hdl32e.launch">

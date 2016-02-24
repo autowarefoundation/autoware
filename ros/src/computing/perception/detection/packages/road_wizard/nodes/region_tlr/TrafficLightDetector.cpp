@@ -243,8 +243,10 @@ static cv::Mat signalDetect_inROI(const cv::Mat& roi,
         break;
     }
 
-  // imshow("bright_mask", bright_mask);
-  // waitKey(10);
+#ifdef SHOW_DEBUG_INFO
+  imshow("bright_mask", bright_mask);
+  cv::waitKey(10);
+#endif
 
   unsigned int candidates_num = candidates.size();
 
@@ -391,9 +393,11 @@ void TrafficLightDetector::brightnessDetect(const cv::Mat &input) {
     cv::Mat extracted_HSV;
     roi.copyTo(extracted_HSV, signalMask);
 
-    // extracted_HSV.copyTo(roi);
-    // imshow("tmpImage", tmpImage);
-    // waitKey(5);
+#ifdef SHOW_DEBUG_INFO
+    extracted_HSV.copyTo(roi);
+    imshow("tmpImage", tmpImage);
+    cv::waitKey(5);
+#endif
 
     cvtColor(extracted_HSV, extracted_HSV, CV_BGR2HSV);
 

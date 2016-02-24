@@ -9,9 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   gnss
-  message_generation
   runtime_manager
   waypoint_follower
+  map_file
+  vehicle_socket
+  #dbw_mkz_msgs
 )
 
 ################################################
@@ -27,22 +29,6 @@ IF(USE_OpenMP)
   ENDIF()
 ENDIF()
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-add_message_files(
-  FILES
-  lane.msg
-  waypoint.msg
-  dtlane.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs 
-  geometry_msgs
-)
 
 ###################################
 ## catkin specific configuration ##
@@ -50,7 +36,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libtraj_gen 
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower
+  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket map_file #dbw_mkz_msgs
   DEPENDS gnss
 )
 
@@ -69,21 +55,27 @@ include_directories(
 add_library(libtraj_gen lib/libtraj_gen.cpp)
 target_link_libraries(libtraj_gen ${catkin_LIBRARIES} armadillo)
 
+add_library(libvelocity_set lib/libvelocity_set.cpp)
+add_dependencies(libvelocity_set map_file_generate_messages_cpp)
+
 add_executable(lattice_trajectory_gen nodes/lattice_trajectory_gen/lattice_trajectory_gen.cpp)
 target_link_libraries(lattice_trajectory_gen gnss libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
 add_dependencies(lattice_trajectory_gen
 waypoint_follower_generate_messages_cpp
-runtime_manager_generate_messages_cpp)
+runtime_manager_generate_messages_cpp
+vehicle_socket_generate_messages_cpp)
 
 add_executable(lattice_twist_convert nodes/lattice_twist_convert/lattice_twist_convert.cpp)
 target_link_libraries(lattice_twist_convert libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
 add_dependencies(lattice_twist_convert 
-waypoint_follower_generate_messages_cpp)
+waypoint_follower_generate_messages_cpp
+runtime_manager_generate_messages_cpp)
 
 add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
-target_link_libraries(velocity_set libwaypoint_follower ${catkin_LIBRARIES})
+target_link_libraries(velocity_set libwaypoint_follower libvelocity_set ${catkin_LIBRARIES})
 add_dependencies(velocity_set 
-waypoint_follower_generate_messages_cpp)
+waypoint_follower_generate_messages_cpp
+runtime_manager_generate_messages_cpp)
 
 add_executable(path_select nodes/path_select/path_select.cpp)
 target_link_libraries(path_select libwaypoint_follower  ${catkin_LIBRARIES})

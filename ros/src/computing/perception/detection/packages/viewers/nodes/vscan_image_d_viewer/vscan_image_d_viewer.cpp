@@ -144,12 +144,11 @@ static void show(void)
 	if(!existImage || !existPoints){
 		return;
 	}
-	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
+	const auto& encoding = sensor_msgs::image_encodings::BGR8;
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
 	IplImage frame = cv_image->image;
 
 	cv::Mat matImage(&frame, false);
-	cv::cvtColor(matImage, matImage, CV_BGR2RGB);
 
 	//Draw VScan Points
 	drawVScanPoints(matImage);

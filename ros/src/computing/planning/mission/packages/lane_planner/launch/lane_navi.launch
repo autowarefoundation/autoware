@@ -1,0 +1,14 @@
+<!-- -->
+<launch>
+	<arg name="velocity" default="40" />
+	<arg name="output_file" default="/tmp/lane_waypoint.csv" />
+
+	<node pkg="lane_planner" type="lane_navi" name="lane_navi" output="screen">
+	    <param name="velocity" value="$(arg velocity)" />
+	    <param name="output_file" value="$(arg output_file)" />
+	</node>
+	
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher"/>
+
+
+</launch>

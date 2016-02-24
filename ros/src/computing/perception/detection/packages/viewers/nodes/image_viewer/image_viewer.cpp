@@ -75,7 +75,7 @@ static bool pedestrian_image_obj_ready = false;
 
 static const std::string window_name = "Image Viewer";
 
-static void dashed_rectangle(cv::Mat& img, const cv::Rect& r, const cv::Scalar& color,
+/*static void dashed_rectangle(cv::Mat& img, const cv::Rect& r, const cv::Scalar& color,
 			     int thickness = 2, int dash_length = 10)
 {
 	//draw horizontal dashed lines
@@ -89,7 +89,7 @@ static void dashed_rectangle(cv::Mat& img, const cv::Rect& r, const cv::Scalar& 
 		cv::line(img, cv::Point(r.x, r.y+i), cv::Point(r.x, r.y+i+(dash_length/2)), color, thickness);
 		cv::line(img, cv::Point(r.x +r.width, r.y+i), cv::Point(r.x+ r.width, r.y+i+(dash_length/2)), color, thickness);
 	}
-}
+}*/
 
 static void drawDetections(std::vector<cv::Rect> dets, std::vector<float> scores, std::string objectLabel, IplImage frame)
 {
@@ -121,12 +121,11 @@ static void drawDetections(std::vector<cv::Rect> dets, std::vector<float> scores
 			&text_size,
 			&baseline);
 
-		cvRectangle( &frame,
-			cvPoint(dets[i].x, dets[i].y),
-			cvPoint(dets[i].x+dets[i].width, dets[i].y+dets[i].height),
-			CV_RGB(0, 0, 255), OBJ_RECT_THICKNESS, CV_AA, 0);
-
-		/* draw object label */
+		//cvRectangle( &frame,
+			//cvPoint(dets[i].x, dets[i].y),
+			//cvPoint(dets[i].x+dets[i].width, dets[i].y+dets[i].height),
+			//CV_RGB(0, 0, 255), OBJ_RECT_THICKNESS, CV_AA, 0);
+		cvCircle(&frame, cvPoint(dets[i].x+dets[i].width/2, dets[i].y+dets[i].height/2), 30, cvScalar(0,255,0),3);		/* draw object label */
 		CvPoint textOrg = cvPoint(dets[i].x - OBJ_RECT_THICKNESS, dets[i].y - baseline - OBJ_RECT_THICKNESS);
 
 		cvRectangle(&frame,
@@ -157,13 +156,14 @@ static void drawTracked(std::vector<cv::Rect> dets, std::vector<int> lifespan, s
 		label << objectLabel << "_" << obj_id[i] << ":" << std::setprecision(2) << lifespan[i];
 		std::string text = label.str();
 
-		if (real_data[i])
-			rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3);
-		else
-			dashed_rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3, 10);
+		//if (real_data[i])
+			//rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3);
+	//	else
+			//dashed_rectangle(imageTrack, dets[i], _colors[obj_id[i]], 3, 10);
 
 		putText(imageTrack, text.c_str(), cv::Point(dets[i].x + 4, dets[i].y + 15),
 			cv::FONT_HERSHEY_SIMPLEX, 0.55, _colors[obj_id[i]], 2);
+		cv::circle(imageTrack, cv::Point(dets[i].x+dets[i].width/2, dets[i].y+dets[i].height/2), 30, _colors[obj_id[i]],3);
 	}
 }
 
@@ -171,13 +171,12 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 {
 	_drawing = true;
 
-	const auto& encoding = sensor_msgs::image_encodings::TYPE_8UC3;
+	const auto& encoding = sensor_msgs::image_encodings::BGR8;
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source,
 							     encoding);
 	IplImage frame = cv_image->image;
 
 	cv::Mat matImage(cv_image->image);
-	cvtColor(matImage, matImage, CV_BGR2RGB);
 	cv::Mat imageTrack = matImage.clone();
 
 	//UNTRACKED

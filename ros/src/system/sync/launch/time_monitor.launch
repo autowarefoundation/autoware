@@ -1,0 +1,47 @@
+<!-- -->
+<launch>
+  <!-- send table.xml to param server -->
+  <arg name="pub_times_topic" default="times"/>
+  <arg name="car" default="true" />
+  <arg name="pedestrian" default="false" />
+  <arg name="obj_car" default="obj_car" />
+  <arg name="obj_person" default="obj_person" />
+
+  <group ns="synchronization">
+
+    <group if="$(arg car)">
+      <group ns="obj_car">
+        <node pkg="synchronization" type="time_monitor" name="time_monitor">
+          <remap from="/times" to="$(arg pub_times_topic)"/>
+          <remap from="/image_obj" to="/$(arg obj_car)/image_obj"/>
+          <remap from="/image_obj_ranged" to="/$(arg obj_car)/image_obj_ranged"/>
+          <remap from="/image_obj_tracked" to="/$(arg obj_car)/image_obj_tracked"/>
+          <remap from="/obj_label" to="/$(arg obj_car)/obj_label"/>
+          <remap from="/obj_pose_timestamp" to="/$(arg obj_car)/obj_pose_timestamp"/>
+          <remap from="/sync_ranging/image_obj" to="/sync_ranging/$(arg obj_car)/image_obj"/>
+          <remap from="/sync_tracking/image_obj_ranged" to="/sync_tracking/$(arg obj_car)/image_obj_ranged"/>
+          <remap from="/sync_reprojection/image_obj_tracked" to="/sync_reprojection/$(arg obj_car)/image_obj_tracked"/>
+          <remap from="/sync_obj_fusion/obj_label" to="/sync_obj_fusion/$(arg obj_car)/obj_label"/>
+        </node>
+      </group>
+    </group>
+
+    <group if="$(arg pedestrian)">
+      <group ns="obj_person">
+        <node pkg="synchronization" type="time_monitor" name="time_monitor">
+          <remap from="/times" to="$(arg pub_times_topic)"/>
+          <remap from="/image_obj" to="/$(arg obj_person)/image_obj"/>
+          <remap from="/image_obj_ranged" to="/$(arg obj_person)/image_obj_ranged"/>
+          <remap from="/image_obj_tracked" to="/$(arg obj_person)/image_obj_tracked"/>
+          <remap from="/obj_label" to="/$(arg obj_person)/obj_label"/>
+          <remap from="/obj_pose_timestamp" to="/$(arg obj_person)/obj_pose_timestamp"/>
+          <remap from="/sync_ranging/image_obj" to="/sync_ranging/$(arg obj_person)/image_obj"/>
+          <remap from="/sync_tracking/image_obj_ranged" to="/sync_tracking/$(arg obj_person)/image_obj_ranged"/>
+          <remap from="/sync_reprojection/image_obj_tracked" to="/sync_reprojection/$(arg obj_person)/image_obj_tracked"/>
+          <remap from="/sync_obj_fusion/obj_label" to="/sync_obj_fusion/$(arg obj_person)/obj_label"/>
+        </node>
+      </group>
+    </group>
+
+  </group>
+</launch>

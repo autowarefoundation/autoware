@@ -13,6 +13,9 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   libdpm_ttic
   fusion
   kf
+  tf
+  runtime_manager
+  calibration_camera_lidar
 )
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
@@ -42,7 +45,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf
+  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar
 )
 
 ###########
@@ -95,6 +98,7 @@ ENDIF()
 
 ADD_DEPENDENCIES(dpm_ttic
   cv_tracker_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
 )
 
 ## dpm_ocv
@@ -108,6 +112,10 @@ TARGET_LINK_LIBRARIES(dpm_ocv
   libdpm_ocv
   ${catkin_LIBRARIES}
   #${OpenCV_LIBS}
+)
+
+ADD_DEPENDENCIES(dpm_ocv
+  runtime_manager_generate_messages_cpp
 )
 
 IF(CUDA_FOUND)
@@ -124,9 +132,6 @@ SET_TARGET_PROPERTIES(dpm_ocv
 )
 ENDIF()
 
-ADD_DEPENDENCIES(dpm_ocv
-  dpm_ttic_generate_messages_cpp
-)
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
@@ -144,6 +149,7 @@ TARGET_LINK_LIBRARIES(range_fusion
 
 ADD_DEPENDENCIES(range_fusion
   cv_tracker_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
 )
 
 ## kf_tracker ##
@@ -157,11 +163,6 @@ TARGET_LINK_LIBRARIES(kf_track
   kf
 )
 
-ADD_DEPENDENCIES(kf_track
-  kf_track_generate_messages_cpp
-  libdpm_ocv_generate_messages_cpp
-)
-
 ## obj_reproj ##
 ADD_EXECUTABLE(obj_reproj
   nodes/obj_reproj/obj_reproj.cpp
@@ -173,7 +174,8 @@ TARGET_LINK_LIBRARIES(obj_reproj
 )
 
 ADD_DEPENDENCIES(obj_reproj
-  obj_reproj_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
+  calibration_camera_lidar_generate_messages_cpp
 )
 
 ## klt_tracker ##
@@ -181,8 +183,9 @@ ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
 )
 
+INCLUDE_DIRECTORIES(lib/lktracker)
+
 ADD_LIBRARY(lktracker
-  lib/lktracker/klt.cpp
   lib/lktracker/LkTracker.cpp
 )
 TARGET_LINK_LIBRARIES(lktracker
@@ -199,7 +202,6 @@ TARGET_LINK_LIBRARIES(klt_track
 )
 
 ADD_DEPENDENCIES(klt_track
-  klt_track_generate_messages_cpp
   libdpm_ocv_generate_messages_cpp
 )
 
@@ -235,7 +237,8 @@ ENDIF()
   )
 
   ADD_DEPENDENCIES(rcnn_node
-    rcnn_node_generate_messages_cpp
+    cv_tracker_generate_messages_cpp
+    runtime_manager_generate_messages_cpp
     librcnn
   )
 else()

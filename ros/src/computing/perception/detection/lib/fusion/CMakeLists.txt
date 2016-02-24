@@ -19,16 +19,17 @@ include_directories(
 
 add_library(fusion
   fusion.cpp
+  search_distance.cpp
 )
 
 target_link_libraries(fusion
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
 )
-add_dependencies(fusion point2image_generate_messages_cpp cv_tracker_generate_messages_cpp)
+add_dependencies(fusion points2image_generate_messages_cpp cv_tracker_generate_messages_cpp)
 
 # Mark cpp header files for installation
 install(DIRECTORY include
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
+  FILES_MATCHING PATTERN "fusion_func.h"
 )

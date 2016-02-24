@@ -372,6 +372,11 @@ static void superimpose_cb(const std_msgs::Bool::ConstPtr& config_msg)
 int main(int argc, char* argv[]) {
 
   //	printf("***** Traffic lights app *****\n");
+#ifdef SHOW_DEBUG_INFO
+  cv::namedWindow("tmpImage", cv::WINDOW_NORMAL);
+  cv::namedWindow("bright_mask", cv::WINDOW_NORMAL);
+  cv::startWindowThread();
+#endif
 
   thSet.Red.Hue.upper = (double)DAYTIME_RED_UPPER;
   thSet.Red.Hue.lower = (double)DAYTIME_RED_LOWER;
@@ -498,6 +503,8 @@ void setContexts(TrafficLightDetector &detector,
                 ctx.yellowCenter3d = cv::Point3d( map_x, map_y, map_z );
                 ctx.signalID       = sig_iterator->signalId; // use yellow light signalID as this context's representative
                 break;
+              default:          /* this signal is not for cars (for pedestrian or something) */
+                continue;
               }
               min_radius    = (min_radius > radius) ? radius : min_radius;
               most_left     = (most_left > img_x - radius -   1.5 * min_radius)  ? img_x - radius - 1.5 * min_radius : most_left;

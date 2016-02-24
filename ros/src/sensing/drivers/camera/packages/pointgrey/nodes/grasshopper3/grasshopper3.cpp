@@ -306,6 +306,25 @@ int main(int argc, char **argv)
 				std::exit(-1);
 			}
 
+			// check encoding pattern
+			std::string encoding_pattern;
+			switch (image.GetBayerTileFormat()) {
+			case FlyCapture2::RGGB: 
+			  encoding_pattern = "bayer_rggb8";
+			  break;
+			case FlyCapture2::GRBG:
+			  encoding_pattern = "bayer_grbg8";
+			  break;
+			case FlyCapture2::GBRG:
+			  encoding_pattern = "bayer_gbrg8";
+			  break;
+			case FlyCapture2::BGGR:
+			  encoding_pattern = "bayer_bggr8";
+			  break;
+			default:
+			  encoding_pattern = "rgb8";
+			}
+
 			sensor_msgs::Image msg;
 			//publish*******************
 
@@ -315,7 +334,7 @@ int main(int argc, char **argv)
 			msg.header.stamp.nsec = ros::Time::now().nsec;
 			msg.height = image.GetRows();
 			msg.width  = image.GetCols();
-			msg.encoding = "rgb8";
+			msg.encoding = encoding_pattern;
 			msg.step = image.GetStride();
 
 			size_t image_size = image.GetDataSize();
