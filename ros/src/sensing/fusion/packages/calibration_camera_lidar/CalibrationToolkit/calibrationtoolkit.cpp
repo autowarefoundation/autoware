@@ -511,6 +511,26 @@ bool CalibrateCameraChessboardROS::refreshImage()
     {
         calibimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
     }
+    else if(QString::fromStdString(msg->encoding)=="bayer_rggb8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerBG2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_bggr8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerRG2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_gbrg8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerGR2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_grbg8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerGB2BGR);
+    }
     else
     {
         return 0;
@@ -1181,6 +1201,26 @@ bool CalibrateCameraVelodyneChessboardROS::refreshImage()
     {
         calibimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
     }
+    else if(QString::fromStdString(msg->encoding)=="bayer_rggb8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerBG2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_bggr8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerRG2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_gbrg8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerGR2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_grbg8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerGB2BGR);
+    }
     else
     {
         return 0;
@@ -1676,6 +1716,26 @@ bool CalibrateCameraLidarChessboardROS::refreshImage()
     else if(QString::fromStdString(msg->encoding)=="mono8")
     {
         calibimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_rggb8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerBG2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_bggr8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerRG2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_gbrg8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerGR2BGR);
+    }
+    else if(QString::fromStdString(msg->encoding)=="bayer_grbg8")
+    {
+        cv::Mat tmpimage=cv::Mat(msg->height,msg->width,CV_8UC1,data);
+        cv::cvtColor(tmpimage,calibimage,CV_BayerGB2BGR);
     }
     else
     {
