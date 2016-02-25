@@ -56,16 +56,13 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
-#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
-#=======
           sync :
             func : self.button_synchronization.GetValue()
-#>>>>>>> master
 
       - name : dpm_ttic
         cmd  : roslaunch cv_tracker dpm_ttic.launch
@@ -84,16 +81,13 @@ subs :
             flags  : [ left ]
           part_model_car :
             flags  : [ hline ]
-#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
-#=======
           sync :
             func : self.button_synchronization.GetValue()
-#>>>>>>> master
             
       - name : rcnn_node
         cmd  : roslaunch cv_tracker rcnn.launch
@@ -154,16 +148,13 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
-#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
-#=======
           sync :
             func : self.button_synchronization.GetValue()
-#>>>>>>> master
 
       - name : obj_reproj
         cmd  : roslaunch cv_tracker reprojection.launch
@@ -176,16 +167,13 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
-#<<<<<<< HEAD
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
             border : 16
             flags : [ all ]
-#=======
           sync :
             func : self.button_synchronization.GetValue()
-#>>>>>>> master
 
     - name : lidar_detector
       subs :
@@ -544,7 +532,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -554,7 +541,6 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
-#=======
     - name      : sync
       kind      : hide
       v         : False
@@ -562,7 +548,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-#>>>>>>> master
 
   - name  : dpm_ttic
     vars  :
@@ -632,7 +617,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -642,7 +626,6 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
-#=======
     - name      : sync
       kind      : hide
       v         : False
@@ -650,7 +633,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-#>>>>>>> master
 
   - name  : car_dpm
     topic : /config/car_dpm
@@ -1180,7 +1162,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -1190,7 +1171,6 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
-#=======
     - name      : sync
       kind      : hide
       v         : False
@@ -1198,7 +1178,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-#>>>>>>> master
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
@@ -1261,7 +1240,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-#<<<<<<< HEAD
     - name         : camera_id
       kind         : menu
       label        : Camera ID
@@ -1271,7 +1249,6 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
-#=======
     - name      : sync
       kind      : hide
       v         : False
@@ -1279,7 +1256,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-#>>>>>>> master
 
   - name : obj_fusion
     vars :

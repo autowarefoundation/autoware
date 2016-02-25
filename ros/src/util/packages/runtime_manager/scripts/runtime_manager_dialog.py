@@ -785,11 +785,7 @@ class MyFrame(rtmgr.MyFrame):
 		if info is None:
 			sys_prm = self.get_param('sys')
 			prm_chk = lambda prm : prm is sys_prm if sys else prm is not sys_prm
-<<<<<<< HEAD
-			info = get_top([ v for v in self.config_dic.values() if v.get('obj') is obj and prm_chk(v.get('param')) ])
-=======
 			info = next( ( v for v in self.config_dic.values() if v.get('obj') is obj and prm_chk(v.get('param')) ), None)
->>>>>>> master
 			if info is None:
 				return (None, None, None)
 		pdic = info.get('pdic')
@@ -937,16 +933,12 @@ class MyFrame(rtmgr.MyFrame):
 			cvdic = { 'True':'true', 'False':'false' }
 			if v in cvdic:
 				v = cvdic.get(v)
-<<<<<<< HEAD
 			if rosparams is None:
 				cmd = [ 'rosparam', 'list' ]
 				rosparams = subprocess.check_output(cmd).strip().split('\n')
-			exist = rosparam in rosparams
-=======
 			nm = rosparam
 			nm = ('/' if len(nm) > 0 and nm[0] != '/' else '') + nm
 			exist = nm in rosparams
->>>>>>> master
 			if exist:
 				cmd = [ 'rosparam', 'get', rosparam ]
 				ov = subprocess.check_output(cmd).strip()
@@ -1939,21 +1931,12 @@ class MyFrame(rtmgr.MyFrame):
 
 				pdic = self.load_dic_pdic_setup(name, items)
 				pnl = wx.Panel(tree, wx.ID_ANY)
-<<<<<<< HEAD
-				add_objs = [ wx.StaticText(pnl, wx.ID_ANY, '(') ]
-=======
 				add_objs = []
->>>>>>> master
 				self.new_link(item, name, pdic, self.sys_gdic, pnl, 'sys', 'sys', add_objs)
 				gdic = self.gdic_get_1st(items)
 				if 'param' in items:
 					self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'), add_objs)
-<<<<<<< HEAD
-				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ')') ]
-				szr = sizer_wrap(add_objs, wx.HORIZONTAL, 0, wx.LEFT, 12, pnl)
-=======
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
->>>>>>> master
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
 			self.try_setup_obj_stop(item, items);
@@ -1968,15 +1951,9 @@ class MyFrame(rtmgr.MyFrame):
 			lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
 			fix_link_color(lkc)
 			self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
-<<<<<<< HEAD
-			if len(add_objs) > 1:
-				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
-			add_objs += [ lkc ]
-=======
 			if len(add_objs) > 0:
 				add_objs += [ wx.StaticText(pnl, wx.ID_ANY, ' ') ]
 			add_objs += [ wx.StaticText(pnl, wx.ID_ANY, '['), lkc, wx.StaticText(pnl, wx.ID_ANY, ']') ]
->>>>>>> master
 		prm = self.get_param(prm_name)
 		self.add_cfg_info(lkc if lkc else item, item, name, pdic, gdic, False, prm)
 
@@ -2279,13 +2256,9 @@ class ParamPanel(wx.Panel):
 		self.prm = kwds.pop('prm')
 		wx.Panel.__init__(self, *args, **kwds)
 
-<<<<<<< HEAD
 		self.gdic['param_panel'] = self
 
-		obj = get_top( [ v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm ] )
-=======
 		obj = next( (v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm), None)
->>>>>>> master
 		(_, _, proc) = self.frame.obj_to_cmd_dic_cmd_proc(obj)
 
 		hszr = None
