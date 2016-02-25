@@ -122,6 +122,12 @@ subs :
         cmd  : roslaunch cv_tracker klt_tracking.launch
         param: car_kf
         gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -200,7 +206,7 @@ subs :
     - name : road_wizard
       subs :
       - name : feat_proj
-        cmd  : rosrun road_wizard feat_proj
+        cmd  : roslaunch road_wizard feat_proj.launch
         param: feat_proj
         gui  :
           flags : [ need_camera_info ]

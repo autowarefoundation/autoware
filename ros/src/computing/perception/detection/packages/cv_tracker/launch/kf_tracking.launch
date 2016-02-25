@@ -27,7 +27,7 @@
 
       <node pkg="cv_tracker" name="tracking" type="kf_track">
           <remap from="/config/obj_person/kf" to="/config/pedestrian_kf" />
-          <param name="image_node" type="str" value="$(camera_id)$(arg image_src_pedestrian)"/>
+          <param name="image_node" type="str" value="$(arg camera_id)$(arg image_src_pedestrian)"/>
           <remap from="/obj_person/image_obj_ranged" to="/sync_tracking/obj_person/image_obj_ranged" if="$(arg sync)" />
           <remap from="/image_raw" to="/sync_tracking/image_raw" if="$(arg sync)" />
       </node>

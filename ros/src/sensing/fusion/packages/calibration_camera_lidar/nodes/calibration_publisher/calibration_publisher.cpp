@@ -160,6 +160,11 @@ int main(int argc, char* argv[])
     image_topic_name = name_space_str + image_topic_name;
     camera_info_name = name_space_str + camera_info_name;
     projection_matrix_name = name_space_str + projection_matrix_name;
+    if (name_space_str.substr(0, 2) == "//") {
+      /* if name space obtained by ros::this::node::getNamespace()
+         starts with "//", delete one of them */
+      name_space_str.erase(name_space_str.begin());
+    }
     camera_id_str = name_space_str;
   }
 
