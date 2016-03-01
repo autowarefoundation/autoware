@@ -124,6 +124,10 @@ buttons:
     param : calibration_publisher
     gui   :
       flags : [ open_dialog ]
+      open2_dialog_only : [ camera_id ]
+      camera_id :
+        border : 16
+        flags : [ all ]
       file  :
         prop  : 1
       register_lidar2camera_tf :
@@ -136,8 +140,13 @@ buttons:
   points_image :
     run   : roslaunch runtime_manager points2image.launch
     #param : points_image
-    param : sync
+    param : sel_cam_and_sync
     gui   :
+      flags : [ need_camera_info ]
+      sel_cam_dialog_only : [ camera_id ]
+      camera_id :
+        border : 16
+        flags : [ all ]
       sync :
         func : self.button_synchronization.GetValue()
 
@@ -148,8 +157,13 @@ buttons:
   virtual_scan_image :
     run   : roslaunch runtime_manager vscan.launch
     #param : virtual_scan_image
-    param : sync
+    param : sel_cam_and_sync
     gui   :
+      flags : [ need_camera_info ]
+      sel_cam_dialog_only : [ camera_id ]
+      camera_id :
+        border : 16
+        flags : [ all ]
       sync :
         func : self.button_synchronization.GetValue()
 
@@ -223,6 +237,16 @@ params :
 
   - name  : calibration_publisher
     vars  :
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+        tail         : True
     - name      : file
       kind      : path
       v         : ''
@@ -250,6 +274,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : solo_camera
+      kind      : hide
+      v         : True
+      cmd_param :
+        dash         : ''
+        delim        : ':='
+        only_disable : True
+        tail         : True
 
 #  - name  : camera_extrinsicMat_Publisher
 #    vars  :
@@ -279,8 +311,17 @@ params :
         dash      : ''
         delim     : ':='
 
-  - name : sync
+  - name : sel_cam_and_sync
     vars :
+    - name         : camera_id
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
     - name      : sync
       kind      : hide
       v         : False

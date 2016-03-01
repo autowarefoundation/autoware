@@ -19,6 +19,7 @@ static bool isRegister_tf;
 static bool isPublish_extrinsic;
 static bool isPublish_cameraInfo;
 
+static std::string camera_id_str;
 
 void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 {
@@ -42,8 +43,7 @@ void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 
   transform.setRotation(quaternion);
 
-
-  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", "camera"));
+  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", camera_id_str));
   //broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
 }
 
@@ -66,7 +66,7 @@ void projectionMatrix_sender(const cv::Mat  &projMat)
 {
 	calibration_camera_lidar::projection_matrix projMsg;
 
-	projMsg.header.frame_id="camera";
+	projMsg.header.frame_id=camera_id_str;
 
 	for (int row=0; row<4; row++) {
 	      for (int col=0; col<4; col++) {
@@ -83,7 +83,7 @@ void cameraInfo_sender(const cv::Mat  &camMat,
 {
   sensor_msgs::CameraInfo msg;
 
-  msg.header.frame_id = "camera";
+  msg.header.frame_id = camera_id_str;
 
   msg.height = imgSize.height;
   msg.width  = imgSize.width;
@@ -150,18 +150,36 @@ int main(int argc, char* argv[])
   fs["DistCoeff"] >> DistCoeff;
   fs["ImageSize"] >> ImageSize;
 
+  std::string image_topic_name("/image_raw");
+  std::string camera_info_name("/camera/camera_info");
+  std::string projection_matrix_name("/projection_matrix");
+
+  std::string name_space_str = ros::this_node::getNamespace();
+  camera_id_str = "camera";
+  if (name_space_str != "/") {
+    image_topic_name = name_space_str + image_topic_name;
+    camera_info_name = name_space_str + camera_info_name;
+    projection_matrix_name = name_space_str + projection_matrix_name;
+    if (name_space_str.substr(0, 2) == "//") {
+      /* if name space obtained by ros::this::node::getNamespace()
+         starts with "//", delete one of them */
+      name_space_str.erase(name_space_str.begin());
+    }
+    camera_id_str = name_space_str;
+  }
+
   ros::Subscriber image_sub;
   if (isRegister_tf) {
-    image_sub = n.subscribe("/image_raw", 10, image_raw_cb);
+    image_sub = n.subscribe(image_topic_name, 10, image_raw_cb);
   }
 
   if (isPublish_cameraInfo) {
-    camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/camera/camera_info", 10, true);
+    camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, true);
     cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
   }
 
   if (isPublish_extrinsic) {
-    projection_matrix_pub = n.advertise<calibration_camera_lidar::projection_matrix>("/projection_matrix", 10, true);
+    projection_matrix_pub = n.advertise<calibration_camera_lidar::projection_matrix>(projection_matrix_name, 10, true);
     projectionMatrix_sender(CameraExtrinsicMat);
   }
 

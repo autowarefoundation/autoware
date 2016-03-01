@@ -403,8 +403,11 @@ int main(int argc, char* argv[]) {
   ros::init(argc, argv, "region_tlr");
 
   ros::NodeHandle n;
+  ros::NodeHandle private_nh("~");
+  std::string image_topic_name;
+  private_nh.param<std::string>("image_raw_topic", image_topic_name, "/image_raw");
 
-  ros::Subscriber image_sub       = n.subscribe("/image_raw", 1, image_raw_cb);
+  ros::Subscriber image_sub       = n.subscribe(image_topic_name, 1, image_raw_cb);
   ros::Subscriber position_sub    = n.subscribe("/roi_signal", 1, extractedPos_cb);
   ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
   ros::Subscriber superimpose_sub = n.subscribe("/config/superimpose", 1, superimpose_cb);

@@ -293,7 +293,10 @@ int main(int argc, char **argv)
     std::string car_topic;
     std::string person_topic;
 
-    if (!private_nh.getParam("image_topic", image_topic)) {
+    if (private_nh.getParam("image_raw_topic", image_topic)) {
+      ROS_INFO("Setting image topic to %s", image_topic.c_str());
+    } else {
+      ROS_INFO("No image topic received, defaulting to image_raw, you can use _image_raw_topic:=YOUR_NODE");
       image_topic = "/image_raw";
     }
 

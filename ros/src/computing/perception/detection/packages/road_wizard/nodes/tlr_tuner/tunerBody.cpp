@@ -137,8 +137,11 @@ void TunerBody::image_raw_callBack(const sensor_msgs::Image& image_msg)
 void TunerBody::launch(void)
 {
   ros::NodeHandle n;
+  ros::NodeHandle private_nh("~");
+  std::string image_topic_name;
+  private_nh.param<std::string>("image_raw_topic", image_topic_name, "/image_raw");
 
-  ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_raw_callBack);
+  ros::Subscriber image_sub = n.subscribe(image_topic_name, 1, image_raw_callBack);
 
   ros::Publisher tunedResult_pub = n.advertise <road_wizard::TunedResult> ("tuned_result", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
 

@@ -50,11 +50,10 @@ static bool exist_image = false;
 static bool exist_scan = false;
 static cv::Mat colormap;
 static cv::Size imageSize;
-static bool isIntrinsic = false;
 
 static void show()
 {
-    if(!exist_image || !exist_scan || !isIntrinsic){
+    if(!exist_image || !exist_scan){
         return;
     }
 
@@ -106,31 +105,30 @@ static void scan_image_callback(const scan2image::ScanImage& scan_image_msg)
 
 static void image_callback(const sensor_msgs::Image& image_msg)
 {
+    imageSize.height = image_msg.height;
+    imageSize.width = image_msg.width;
     cv_image = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
     image = cv_image->image;
     exist_image = true;
     show();
 }
 
-static void intrinsic_callback(const sensor_msgs::CameraInfo& msg)
-{
-    printf("intrinsic\n");
-
-	imageSize.height = msg.height;
-	imageSize.width = msg.width;
-
-    isIntrinsic = true;
-}
-
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "scan_image_viewer");
     ros::NodeHandle n;
+    ros::NodeHandle private_nh("~");
+    std::string image_topic_name;
+
+    if (private_nh.getParam("image_raw_topic", image_topic_name)) {
+        ROS_INFO("Setting image topic to %s", image_topic_name.c_str());
+    } else {
+        ROS_INFO("No image topic received, defaulting to image_raw, you can use _image_raw_topic:=YOUR_NODE");
+        image_topic_name = "/image_raw";
+    }
 
     ros::Subscriber scan_image_sub = n.subscribe("/scan_image", 1, scan_image_callback);
-    ros::Subscriber image_sub = n.subscribe("/image_raw", 1, image_callback);
-    ros::Subscriber intrinsic_sub = n.subscribe("camera/camera_info", 1, intrinsic_callback);
+    ros::Subscriber image_sub = n.subscribe(image_topic_name, 1, image_callback);
 
     cv::Mat grayscale(256,1,CV_8UC1);
     for(int i = 0; i < 256; i++) {

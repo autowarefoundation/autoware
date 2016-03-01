@@ -1,5 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <stdio.h>
+#include <string>
+#include <string.h>
+#include <stdlib.h>
 
 #define CALIBCAMERA QString("Camera Only")
 #define CALIBCAMERAVELODYNE QString("Camera -> Velodyne")
@@ -11,6 +15,44 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    std::vector<std::string> image_raw_topics;
+    FILE *fp;
+
+    if(!(fp = popen("rostopic list | grep image_raw", "r"))) {
+      fprintf(stderr, "cannot get image_raw topic list\n");
+      exit(EXIT_FAILURE);
+    }
+
+
+    char topic[256];
+    while((fgets(topic, 256, fp)) != NULL)
+    {
+     if ((strstr(topic, "image_raw")) != NULL)
+     {
+       strtok(topic, "\n\0");  // delete line feed code ('\n')
+       image_raw_topics.push_back(std::string(topic));
+     }
+    }
+
+    if(image_raw_topics.empty())
+    {
+      QMessageBox msgBox(this);
+      msgBox.setWindowTitle(tr("Warning"));
+      msgBox.setIcon(QMessageBox::Warning);
+      msgBox.setText(tr("No image_raw topic found.\nProgram exits."));
+      msgBox.exec();
+      exit(EXIT_FAILURE);
+    }
+
+    pclose(fp);
+
+    QStringList items;
+    for (const auto& ch : image_raw_topics)
+    {
+      items << QString::fromStdString(ch);
+    }
+
+    QString inputcameratopic=QInputDialog::getItem(this, "Select Input", "Select Input Image Topic", items);
     QString selection=QInputDialog::getItem(this,"Choose Calibration Type", "Calibration Type",QStringList()<<CALIBCAMERA<<CALIBCAMERAVELODYNE<<CALIBCAMERA2DLIDAR,0,0);
 
     QSettings settings("RobotSDK","CalibrationToolkit");
@@ -28,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if(selection==CALIBCAMERA)
     {
-        QString cameratopic="/image_raw";
+        QString cameratopic=inputcameratopic;
         CalibrateCameraChessboardROS * calibration=new CalibrateCameraChessboardROS(cameratopic,1000,10,cvpatternsize,cvpatternnum);
         ui->tabWidget->addTab(calibration,CALIBCAMERA);
         connect(ui->grab,SIGNAL(clicked()),calibration,SLOT(grabCalibDataSlot()));
@@ -41,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     else if(selection==CALIBCAMERAVELODYNE)
     {
-        QString cameratopic="/image_raw";
+        QString cameratopic=inputcameratopic;
         QString velodynetopic="/points_raw";
         CalibrateCameraVelodyneChessboardROS * calibration=new CalibrateCameraVelodyneChessboardROS(cameratopic,1000,10,velodynetopic,1000,10,100,cvpatternsize,cvpatternnum);
         ui->tabWidget->addTab(calibration,CALIBCAMERAVELODYNE);
@@ -55,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     else if(selection==CALIBCAMERA2DLIDAR)
     {
-        QString cameratopic="/image_raw";
+        QString cameratopic=inputcameratopic;
         QString lidartopic="/scan";
         CalibrateCameraLidarChessboardROS * calibration=new CalibrateCameraLidarChessboardROS(cameratopic,1000,10,lidartopic,1000,10,100,cvpatternsize,cvpatternnum);
         ui->tabWidget->addTab(calibration,CALIBCAMERA2DLIDAR);

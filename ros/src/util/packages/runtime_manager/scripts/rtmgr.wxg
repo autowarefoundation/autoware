@@ -948,7 +948,7 @@
                                                         <object class="wxToggleButton" name="button_calibration_publisher" base="EditToggleButton">
                                                             <label>Calibration Publisher</label>
                                                             <events>
-                                                                <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
+                                                                <handler event="EVT_TOGGLEBUTTON">OnCalibrationPublisher</handler>
                                                             </events>
                                                         </object>
                                                     </object>

@@ -339,6 +339,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "camera_lidar2d_offline_calib");
     ros::NodeHandle n;
+    ros::NodeHandle private_nh("~");
+    std::string image_topic_name;
+    private_nh.param<std::string>("image_raw_topic", image_topic_name, "image_raw");
 
     /* Read parameter xml */
     std::string param_yaml;
@@ -385,7 +388,7 @@ int main(int argc, char **argv)
     cvCreateTrackbar ("rad_Z", WINDOW_NAME_IMAGE, &default_rad_trackbar, 360, rad_z_bar);
 
     ros::Subscriber scan_sub = n.subscribe("scan", 1, scanCallback);
-    ros::Subscriber image_sub = n.subscribe("image_raw", 1, imageCallback);
+    ros::Subscriber image_sub = n.subscribe(image_topic_name, 1, imageCallback);
 
     ros::spin();
 

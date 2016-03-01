@@ -121,6 +121,14 @@ int main(int argc, char **argv)
 		points_topic = "points_image";
 	}
 
+	std::string image_topic;
+	if (private_nh.getParam("image_raw_topic", image_topic)) {
+		ROS_INFO("Setting image topic to %s", image_topic.c_str());
+	} else {
+		ROS_INFO("No image topic received, defaulting to image_raw, you can use _image_raw_topic:=YOUR_NODE");
+		image_topic = "/image_raw";
+	}
+
 	std::string name_space_str = ros::this_node::getNamespace();
 	window_name = std::string(window_name_base);
 	if (name_space_str != "/") {
@@ -131,7 +139,7 @@ int main(int argc, char **argv)
 	cvNamedWindow(window_name.c_str(), CV_WINDOW_NORMAL);
 	cvStartWindowThread();
 
-	ros::Subscriber sub_image = n.subscribe("image_raw", 1, image_cb);
+	ros::Subscriber sub_image = n.subscribe(image_topic, 1, image_cb);
 	ros::Subscriber sub_points = n.subscribe(points_topic, 1, points_cb);
 
 	cv::Mat grayscale(256,1,CV_8UC1);

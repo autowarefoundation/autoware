@@ -434,6 +434,17 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
+  std::string projectionMat_topic_name;
+  private_nh.param<std::string>("projection_matrix_topic", projectionMat_topic_name, "/projection_matrix");
+  std::string camera_info_topic_name;
+  private_nh.param<std::string>("camera_info_topic", camera_info_topic_name, "/camera/camera_info");
+
+  //get camera ID
+  std::string camera_id_str = camera_info_topic_name;
+  camera_id_str.erase(camera_id_str.find("/camera/camera_info"));
+  if (camera_id_str == "/") {
+    camera_id_str = "camera";
+  }
 
   ros::Subscriber obj_pos_xyz = n.subscribe("image_obj_tracked", 1, obj_pos_xyzCallback);
 
@@ -441,8 +452,8 @@ int main(int argc, char **argv){
   pub = n.advertise<cv_tracker::obj_label>("obj_label",1);
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("obj_label_marker", 1);
 
-  ros::Subscriber projection = n.subscribe("/projection_matrix", 1, projection_callback);
-  ros::Subscriber camera_info = n.subscribe("/camera/camera_info", 1, camera_info_callback);
+  ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
+  ros::Subscriber camera_info = n.subscribe(camera_info_topic_name, 1, camera_info_callback);
 
   //set angle and position flag : false at first
   gnssGetFlag = false;
@@ -454,7 +465,7 @@ int main(int argc, char **argv){
     {
       /* try to get coordinate system conversion from "camera" to "map" */
       try {
-        listener.lookupTransform("map", "camera", ros::Time(0), transformCam2Map);
+        listener.lookupTransform("map", camera_id_str, ros::Time(0), transformCam2Map);
       }
       catch (tf::TransformException ex) {
         ROS_INFO("%s", ex.what());

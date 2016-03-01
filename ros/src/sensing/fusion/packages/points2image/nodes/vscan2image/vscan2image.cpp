@@ -94,6 +94,11 @@ int main(int argc, char *argv[])
 {
 	ros::init(argc, argv, "vscan2image");
 	ros::NodeHandle n;
+	ros::NodeHandle private_nh("~");
+	std::string cameraInfo_topic_name;
+	private_nh.param<std::string>("camera_info_topic", cameraInfo_topic_name, "/camera/camera_info");
+	std::string projectionMat_topic_name;
+	private_nh.param<std::string>("projection_matrix_topic", projectionMat_topic_name, "/projection_matrix");
 
 	/*if(argc < 2){
 		std::cout<<"Need calibration filename as the first parameter.";
@@ -115,8 +120,8 @@ int main(int argc, char *argv[])
 
 	pub = n.advertise<points2image::PointsImage>("vscan_image", 10);
 	ros::Subscriber sub = n.subscribe("vscan_points", 1, callback);
-	ros::Subscriber projection = n.subscribe("projection_matrix", 1, projection_callback);
-	ros::Subscriber intrinsic = n.subscribe("camera/camera_info", 1, intrinsic_callback);
+	ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
+	ros::Subscriber intrinsic = n.subscribe(cameraInfo_topic_name, 1, intrinsic_callback);
 
 	ros::spin();
 	return 0;

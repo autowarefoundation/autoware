@@ -208,19 +208,19 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
-	std::string image_node;
+	std::string image_topic_name;
 	std::string car_node;
 	std::string pedestrian_node;
 	std::string points_node;
 
-	if (private_nh.getParam("image_node", image_node))
+	if (private_nh.getParam("image_raw_topic", image_topic_name))
 	{
-		ROS_INFO("Setting image node to %s", image_node.c_str());
+		ROS_INFO("Setting image topic to %s", image_topic_name.c_str());
 	}
 	else
 	{
-		ROS_INFO("No image node received, defaulting to image_raw, you can use _image_node:=YOUR_NODE");
-		image_node = "/image_raw";
+		ROS_INFO("No image topic received, defaulting to image_raw, you can use _image_raw_topic:=YOUR_NODE");
+		image_topic_name = "/image_raw";
 	}
 
 	if (private_nh.getParam("car_node", car_node))
@@ -255,7 +255,7 @@ int main(int argc, char **argv)
 
 	cv::generateColors(_colors, 25);
 
-	ros::Subscriber scriber = n.subscribe(image_node, 1,
+	ros::Subscriber scriber = n.subscribe(image_topic_name, 1,
 					    image_cb);
 	ros::Subscriber scriber_car = n.subscribe(car_node, 1,
 						car_updater_callback);

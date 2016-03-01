@@ -1,0 +1,8 @@
+<launch>
+  <arg name="camera_id" default="/"/>
+  <arg name="camera_info_src" default="/camera/camera_info"/>
+
+  <node pkg="road_wizard" type="feat_proj" name="feature_projection">
+    <param name="camera_info_topic" type="str" value="$(arg camera_id)$(arg camera_info_src)"/>
+  </node>
+</launch>
