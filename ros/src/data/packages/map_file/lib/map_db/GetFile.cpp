@@ -43,12 +43,12 @@
 
 
 GetFile::GetFile()
-	: GetFile(HTTP_HOSTNAME, HTTP_PORT)
+	: GetFile(HTTP_HOSTNAME, HTTP_PORT, HTTP_USER, HTTP_PASSWORD)
 {
 }
 
-GetFile::GetFile(const std::string& host_name, int port)
-	: host_name_(host_name), port_(port)
+GetFile::GetFile(const std::string& host_name, int port, const std::string& user, const std::string& password)
+	: host_name_(host_name), port_(port), user_(user), password_(password)
 {
 }
 
@@ -83,6 +83,11 @@ int GetFile::GetHTTPFile(const std::string& value)
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, cfile(ofs.rdbuf()));
+	if (user_ != "" && password_ != "") {
+		std::string userpwd = user_ + ":" + password_;
+		curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+		curl_easy_setopt(curl, CURLOPT_USERPWD, userpwd.c_str());
+	}
 	CURLcode res = curl_easy_perform(curl);
 	if (res != CURLE_OK) {
 		std::cerr << "curl_easy_perform failed: " <<
