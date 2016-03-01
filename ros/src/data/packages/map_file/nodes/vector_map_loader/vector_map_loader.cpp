@@ -684,6 +684,10 @@ rosrun map_file vector_map_loader <csv files>
   ros::NodeHandle n;
   bool publish_lane;
   n.param<bool>("/sample_vector_map/publish_lane", publish_lane, false);
+  std::string user;
+  n.param<std::string>("/sample_vector_map/user", user, HTTP_USER);
+  std::string password;
+  n.param<std::string>("/sample_vector_map/password", password, HTTP_PASSWORD);
   ros::Publisher pub = n.advertise<visualization_msgs::MarkerArray>("/vector_map", 1000, true);
   ros::Publisher stat_publisher = n.advertise<std_msgs::Bool>("/vmap_stat", 100);;
   std_msgs::Bool vmap_stat_msg;
@@ -797,7 +801,7 @@ rosrun map_file vector_map_loader <csv files>
     if(argc >= 5){
       std::string host_name = argv[3];
       int port = std::atoi(argv[4]);
-      gf = GetFile(host_name, port);
+      gf = GetFile(host_name, port, user, password);
     } else {
       gf = GetFile();
     }

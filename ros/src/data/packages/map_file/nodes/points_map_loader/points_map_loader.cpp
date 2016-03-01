@@ -344,6 +344,10 @@ int main(int argc, char **argv)
 	pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
 	stat_publisher = n.advertise<std_msgs::Bool>("/pmap_stat", 100);
 	n.param<int>("points_map_loader/update_rate", update_rate, UPDATE_RATE);
+	std::string user;
+	n.param<std::string>("points_map_loader/user", user, HTTP_USER);
+	std::string password;
+	n.param<std::string>("points_map_loader/password", password, HTTP_PASSWORD);
 	std::cout << "update_rate=" << update_rate << std::endl;
 
 	int update = 1;
@@ -404,7 +408,7 @@ int main(int argc, char **argv)
 		if(argc >= 2){
 			std::string host_name = argv[0];
 			int port = std::atoi(argv[1]);
-			gf = GetFile(host_name, port);
+			gf = GetFile(host_name, port, user, password);
 			argc -= 2;
 			argv++;
 			argv++;
