@@ -30,8 +30,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_broadcaster.h>
@@ -53,6 +52,7 @@ static bool _pose_set = false;
 static bool _waypoint_set = false;
 static WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
+ros::Publisher g_velocity_publisher;
 
 static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
@@ -197,13 +197,21 @@ static void publishOdometry()
   odom_broadcaster.sendTransform(odom_trans);
 
   //next, we'll publish the odometry message over ROS
+  std_msgs::Header h;
+  h.stamp = current_time;
+  h.frame_id = MAP_FRAME;
+
   geometry_msgs::PoseStamped ps;
-  ps.header.stamp = current_time;
-  ps.header.frame_id = MAP_FRAME;
+  ps.header = h;
   ps.pose = pose;
+
+  geometry_msgs::Vector3Stamped vs;
+  vs.header = h;
+  vs.vector.x = vx;
 
   //publish the message
   g_odometry_publisher.publish(ps);
+  g_velocity_publisher.publish(vs);
 
   last_time = current_time;
 }
@@ -216,6 +224,7 @@ int main(int argc, char **argv)
   ros::NodeHandle private_nh("~");
 //publish topic
   g_odometry_publisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
+  g_velocity_publisher = nh.advertise<geometry_msgs::Vector3Stamped>("sim_velocity",10);
 
 //subscribe topic
   ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 10, CmdCallBack);

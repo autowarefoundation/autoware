@@ -57,7 +57,6 @@ const int MODE_DIALOG = 1;
 //parameter
 bool _sim_mode = false;
 bool g_linear_interpolate_mode = true;
-std::string g_velocity_source = "ZMP_CAN";//"NDT";
 
 geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
 double _current_velocity;
@@ -85,11 +84,8 @@ ros::Publisher _line_point_pub;
 
 void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
 {
-  if(!_sim_mode && g_velocity_source == "ZMP_CAN")
-  {
     _current_velocity = kmph2mps(msg->speed);
     //ROS_INFO("velocity_source : ZMP_CAN");
-  }
 }
 
 void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
@@ -103,37 +99,17 @@ void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &confi
   g_relative_angle_threshold = config->relative_angle_threshold;
 }
 
-void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
+void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  //std::cout << "odometry callback" << std::endl;
-
-  //
-  // effective for testing.
-  //
-  if (_sim_mode)
-  {
-    _current_velocity = msg->twist.twist.linear.x;
-    _current_pose.header = msg->header;
-    _current_pose.pose = msg->pose.pose;
-    g_pose_set = true;
-  }
-
-}
-
-void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
-{
-  if (!_sim_mode)
-  {
     _current_pose.header = msg->header;
     _current_pose.pose = msg->pose;
     g_pose_set = true;
-  }
 }
 
-void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
+
+void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg)
 {
-  if(!_sim_mode && g_velocity_source == "NDT")
-  _current_velocity = msg->twist.linear.x;
+  _current_velocity = msg->vector.x;
 }
 
 void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
@@ -523,7 +499,7 @@ static bool verifyFollowing()
     //ROS_INFO("Following : False");
     return false;
   }
-
+}
 geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 {
   //verify whether vehicle is following the path
@@ -633,62 +609,70 @@ std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point 
 
 }
 
-void doPurePursuit()
+void publishFailed()
 {
   geometry_msgs::TwistStamped twist;
   std_msgs::Bool wf_stat;
+
+  wf_stat.data = false;
+  _stat_pub.publish(wf_stat);
+  twist.twist.linear.x = 0;
+  twist.twist.angular.z = 0;
+  twist.header.stamp = ros::Time::now();
+  g_cmd_velocity_publisher.publish(twist);
+}
+void publishSuccess(geometry_msgs::Twist t)
+{
+  std_msgs::Bool wf_stat;
+  geometry_msgs::TwistStamped twist;
+  wf_stat.data = true;
+  _stat_pub.publish(wf_stat);
+  twist.twist = t;
+  twist.header.stamp = ros::Time::now();
+  g_cmd_velocity_publisher.publish(twist);
+  return;
+}
+
+void doPurePursuit()
+{
+  bool interpolate_flag = false;
 
   //search next waypoint
   int next_waypoint = getNextWaypoint();
   if (next_waypoint == -1)
   {
     ROS_INFO("lost next waypoint");
-    wf_stat.data = false;
-    _stat_pub.publish (wf_stat);
-    twist.twist.linear.x = 0;
-    twist.twist.angular.z = 0;
-    twist.header.stamp = ros::Time::now ();
-    g_cmd_velocity_publisher.publish (twist);
+    publishFailed();
     return;
   }
 
   displayNextWaypoint(next_waypoint);
   displaySearchRadius(getLookAheadThreshold(0));
 
-  //linear interpolation and calculate angular velocity
   geometry_msgs::Point next_target;
-	bool interpolate_flag = false;
-
-  if (!g_linear_interpolate_mode)
+  //if g_linear_interpolate_mode is false or next waypoint is first or last
+  if(!g_linear_interpolate_mode || next_waypoint == 0 || next_waypoint == (static_cast<int>(_current_waypoints.getSize() -1)))
   {
     next_target = _current_waypoints.getWaypointPosition(next_waypoint);
-  }
-  else
-  {
-    interpolate_flag = interpolateNextTarget(next_waypoint, &next_target);
+    publishSuccess(calcTwist(calcCurvature(next_target), getCmdVelocity(0)));
+    return;
   }
 
-  if (g_linear_interpolate_mode && !interpolate_flag)
+  //linear interpolation and calculate angular velocity
+  interpolate_flag = interpolateNextTarget(next_waypoint, &next_target);
+
+  if (!interpolate_flag)
   {
     ROS_INFO_STREAM("lost target! ");
-    wf_stat.data = false;
-    _stat_pub.publish(wf_stat);
-    twist.twist.linear.x = 0;
-    twist.twist.angular.z = 0;
-    twist.header.stamp = ros::Time::now();
-    g_cmd_velocity_publisher.publish(twist);
+    publishFailed();
     return;
   }
 
   //ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,next_target.z);
   displayNextTarget(next_target);
   displayTrajectoryCircle(generateTrajectoryCircle(next_target));
-  twist.twist = calcTwist(calcCurvature(next_target), getCmdVelocity(0));
 
-  wf_stat.data = true;
-  _stat_pub.publish(wf_stat);
-  twist.header.stamp = ros::Time::now();
-  g_cmd_velocity_publisher.publish(twist);
+  publishSuccess(calcTwist(calcCurvature(next_target), getCmdVelocity(0)));
 
   //ROS_INFO("linear : %lf, angular : %lf",twist.twist.linear.x,twist.twist.angular.z);
 
@@ -713,9 +697,6 @@ int main(int argc, char **argv)
   ros::NodeHandle private_nh("~");
 
   // setting params
-  private_nh.getParam("sim_mode", _sim_mode);
-  ROS_INFO_STREAM("sim_mode : " << _sim_mode);
-
   private_nh.getParam("linear_interpolate_mode", g_linear_interpolate_mode);
   ROS_INFO_STREAM("linear_interpolate_mode : " << g_linear_interpolate_mode);
 
@@ -730,11 +711,11 @@ int main(int argc, char **argv)
 
   //subscribe topic
   ros::Subscriber waypoint_subcscriber = nh.subscribe("final_waypoints", 10, WayPointCallback);
-  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
-  ros::Subscriber ndt_subscriber = nh.subscribe("current_pose", 10, NDTCallback);
-  ros::Subscriber est_twist_subscriber = nh.subscribe("estimate_twist", 10, estTwistCallback);
+  ros::Subscriber ndt_subscriber = nh.subscribe("current_pose", 10, callbackFromCurrentPose);
+
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-  ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
+  ros::Subscriber est_twist_subscriber = nh.subscribe("estimated_vel", 10, callbackFromVector3Stamped);
+
 
   ros::Rate loop_rate(LOOP_RATE); // by Hz
   while (ros::ok())

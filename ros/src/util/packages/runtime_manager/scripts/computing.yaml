@@ -906,13 +906,6 @@ params :
       min   : 0
       max   : 90
       v     : 0   
-    - name    : sim_mode
-      label   : 'Simulation Mode'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : linear_interpolate_mode
       label   : 'Linear Interpolate'
       kind    : checkbox
@@ -920,7 +913,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-      
+        
   - name  : velocity_set
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
