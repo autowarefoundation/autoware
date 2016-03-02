@@ -44,48 +44,51 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "vehicle_socket/CanInfo.h"
 
+namespace
+{
+
 #define DEBUG //if you print debug code
 //#define LOG
 //#define GLOBAL
 
-static const int LOOP_RATE = 30; //Hz
-static const std::string MAP_FRAME = "map";
-static const int MODE_WAYPOINT = 0;
-static const int MODE_DIALOG = 1;
+const int LOOP_RATE = 30; //Hz
+const std::string MAP_FRAME = "map";
+const int MODE_WAYPOINT = 0;
+const int MODE_DIALOG = 1;
 
 //parameter
-static bool _sim_mode = false;
-static bool g_linear_interpolate_mode = true;
-static std::string g_velocity_source = "ZMP_CAN";//"NDT";
+bool _sim_mode = false;
+bool g_linear_interpolate_mode = true;
+std::string g_velocity_source = "ZMP_CAN";//"NDT";
 
-static geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
-static double _current_velocity;
+geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
+double _current_velocity;
 
-static ros::Publisher _vis_pub;
-static ros::Publisher _stat_pub;
-static bool g_waypoint_set = false;
-static bool g_pose_set = false;
+ros::Publisher _vis_pub;
+ros::Publisher _stat_pub;
+bool g_waypoint_set = false;
+bool g_pose_set = false;
 
 //config topic
-static int _param_flag = MODE_WAYPOINT; //0 = waypoint, 1 = Dialog
-static double _lookahead_threshold = 4.0; //meter
-static double _initial_velocity = 5.0; //km/h
-static double g_look_ahead_threshold_calc_ratio = 2.0;
-static double g_minimum_look_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
-static double g_displacement_threshold = 0.2;
-static double g_relative_angle_threshold = 10;
+int _param_flag = MODE_WAYPOINT; //0 = waypoint, 1 = Dialog
+double _lookahead_threshold = 4.0; //meter
+double _initial_velocity = 5.0; //km/h
+double g_look_ahead_threshold_calc_ratio = 2.0;
+double g_minimum_look_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
+double g_displacement_threshold = 0.2;
+double g_relative_angle_threshold = 10;
 
-static WayPoints _current_waypoints;
-static ros::Publisher _traj_circle_pub;
-static ros::Publisher _target_pub;
-static ros::Publisher _search_pub;
+WayPoints _current_waypoints;
+ros::Publisher _traj_circle_pub;
+ros::Publisher _target_pub;
+ros::Publisher _search_pub;
 ros::Publisher g_cmd_velocity_publisher;
 
 #ifdef DEBUG
-static ros::Publisher _line_point_pub;
+ros::Publisher _line_point_pub;
 #endif
 
-static void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
+void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
 {
   if(!_sim_mode && g_velocity_source == "ZMP_CAN")
   {
@@ -94,7 +97,7 @@ static void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
   }
 }
 
-static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
+void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
   _param_flag = config->param_flag;
   _lookahead_threshold = config->lookahead_threshold;
@@ -105,7 +108,7 @@ static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr
   g_relative_angle_threshold = config->relative_angle_threshold;
 }
 
-static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
+void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
   //std::cout << "odometry callback" << std::endl;
 
@@ -122,7 +125,7 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 
 }
 
-static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   if (!_sim_mode)
   {
@@ -132,13 +135,13 @@ static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 }
 
-static void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
+void estTwistCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
   if(!_sim_mode && g_velocity_source == "NDT")
   _current_velocity = msg->twist.linear.x;
 }
 
-static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
+void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 {
   _current_waypoints.setPath(*msg);
   g_waypoint_set = true;
@@ -146,7 +149,7 @@ static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
 }
 
 // display the next waypoint by markers.
-static void displayNextWaypoint(int i)
+void displayNextWaypoint(int i)
 {
 
   visualization_msgs::Marker marker;
@@ -169,7 +172,7 @@ static void displayNextWaypoint(int i)
 }
 
 // display the nexttarget by markers.
-static void displayNextTarget(geometry_msgs::Point target)
+void displayNextTarget(geometry_msgs::Point target)
 {
 
   visualization_msgs::Marker marker;
@@ -194,7 +197,7 @@ static void displayNextTarget(geometry_msgs::Point target)
 }
 
 // display the locus of pure pursuit by markers.
-static void displayTrajectoryCircle(std::vector<geometry_msgs::Point> traj_circle_array)
+void displayTrajectoryCircle(std::vector<geometry_msgs::Point> traj_circle_array)
 {
   visualization_msgs::Marker traj_circle;
   traj_circle.header.frame_id = MAP_FRAME;
@@ -228,7 +231,7 @@ static void displayTrajectoryCircle(std::vector<geometry_msgs::Point> traj_circl
 }
 
 // display the search radius by markers.
-static void displaySearchRadius(double search_radius)
+void displaySearchRadius(double search_radius)
 {
 
   visualization_msgs::Marker marker;
@@ -251,7 +254,7 @@ static void displaySearchRadius(double search_radius)
 }
 #ifdef DEBUG
 // debug tool for interpolateNextTarget
-static void displayLinePoint(double slope, double intercept, geometry_msgs::Point target, geometry_msgs::Point target2,
+void displayLinePoint(double slope, double intercept, geometry_msgs::Point target, geometry_msgs::Point target2,
     geometry_msgs::Point target3)
 {
   visualization_msgs::Marker line;
@@ -321,7 +324,7 @@ static void displayLinePoint(double slope, double intercept, geometry_msgs::Poin
 }
 #endif
 
-static double getCmdVelocity(int waypoint)
+double getCmdVelocity(int waypoint)
 {
 
   if (_param_flag == MODE_DIALOG)
@@ -341,7 +344,7 @@ static double getCmdVelocity(int waypoint)
   return velocity;
 }
 
-static double getLookAheadThreshold(int waypoint)
+double getLookAheadThreshold(int waypoint)
 {
   if (_param_flag == MODE_DIALOG)
     return _lookahead_threshold;
@@ -355,7 +358,7 @@ static double getLookAheadThreshold(int waypoint)
     return current_velocity_mps * g_look_ahead_threshold_calc_ratio;
 }
 
-static double calcCurvature(geometry_msgs::Point target)
+double calcCurvature(geometry_msgs::Point target)
 {
   double kappa;
   double denominator = pow(getPlaneDistance(target, _current_pose.pose.position), 2);
@@ -371,7 +374,7 @@ static double calcCurvature(geometry_msgs::Point target)
 
 }
 
-static double calcRadius(geometry_msgs::Point target)
+double calcRadius(geometry_msgs::Point target)
 {
   double radius;
   double denominator = 2 * calcRelativeCoordinate(target, _current_pose.pose).y;
@@ -387,7 +390,7 @@ static double calcRadius(geometry_msgs::Point target)
 }
 
 //linear interpolation of next target
-static bool interpolateNextTarget(int next_waypoint,geometry_msgs::Point *next_target)
+bool interpolateNextTarget(int next_waypoint,geometry_msgs::Point *next_target)
 {
   int path_size = static_cast<int>(_current_waypoints.getSize());
   if (next_waypoint == path_size - 1)
@@ -526,9 +529,8 @@ static bool verifyFollowing()
     //ROS_INFO("Following : False");
     return false;
   }
-}
 
-static geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
+geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
 {
   //verify whether vehicle is following the path
   bool following_flag = verifyFollowing();
@@ -549,7 +551,7 @@ static geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity)
   return twist;
 }
 
-static int getNextWaypoint()
+int getNextWaypoint()
 {
   int path_size = static_cast<int>(_current_waypoints.getSize());
   double lookahead_threshold = getLookAheadThreshold(0);
@@ -583,7 +585,7 @@ static int getNextWaypoint()
 }
 
 //generate the locus of pure pursuit
-static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target)
+std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target)
 {
   std::vector<geometry_msgs::Point> traj_circle_array;
   double radius = calcRadius(target);
@@ -637,7 +639,7 @@ static std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs:
 
 }
 
-static void doPurePursuit()
+void doPurePursuit()
 {
   geometry_msgs::TwistStamped twist;
   std_msgs::Bool wf_stat;
@@ -703,6 +705,8 @@ static void doPurePursuit()
       << std::endl;
 #endif
 }
+
+} //namespace
 
 int main(int argc, char **argv)
 {
