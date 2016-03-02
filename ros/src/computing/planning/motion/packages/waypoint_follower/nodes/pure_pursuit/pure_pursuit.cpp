@@ -47,9 +47,7 @@
 namespace
 {
 
-#define DEBUG //if you print debug code
 //#define LOG
-//#define GLOBAL
 
 const int LOOP_RATE = 30; //Hz
 const std::string MAP_FRAME = "map";
@@ -83,10 +81,7 @@ ros::Publisher _traj_circle_pub;
 ros::Publisher _target_pub;
 ros::Publisher _search_pub;
 ros::Publisher g_cmd_velocity_publisher;
-
-#ifdef DEBUG
 ros::Publisher _line_point_pub;
-#endif
 
 void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
 {
@@ -252,7 +247,7 @@ void displaySearchRadius(double search_radius)
   marker.frame_locked = true;
   _search_pub.publish(marker);
 }
-#ifdef DEBUG
+
 // debug tool for interpolateNextTarget
 void displayLinePoint(double slope, double intercept, geometry_msgs::Point target, geometry_msgs::Point target2,
     geometry_msgs::Point target3)
@@ -322,7 +317,6 @@ void displayLinePoint(double slope, double intercept, geometry_msgs::Point targe
   marker.frame_locked = true;
   _line_point_pub.publish(marker);
 }
-#endif
 
 double getCmdVelocity(int waypoint)
 {
@@ -731,22 +725,18 @@ int main(int argc, char **argv)
   _stat_pub = nh.advertise<std_msgs::Bool>("wf_stat", 0);
   _target_pub = nh.advertise<visualization_msgs::Marker>("next_target_mark", 0);
   _search_pub = nh.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
-#ifdef DEBUG
   _line_point_pub = nh.advertise<visualization_msgs::Marker>("line_point_mark", 0); //debug tool
-#endif
   _traj_circle_pub = nh.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
 
   //subscribe topic
   ros::Subscriber waypoint_subcscriber = nh.subscribe("final_waypoints", 10, WayPointCallback);
-  // ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
   ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
   ros::Subscriber ndt_subscriber = nh.subscribe("current_pose", 10, NDTCallback);
   ros::Subscriber est_twist_subscriber = nh.subscribe("estimate_twist", 10, estTwistCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
   ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
-  geometry_msgs::TwistStamped twist;
-  ros::Rate loop_rate(LOOP_RATE); // by Hz
 
+  ros::Rate loop_rate(LOOP_RATE); // by Hz
   while (ros::ok())
   {
     ros::spinOnce();
