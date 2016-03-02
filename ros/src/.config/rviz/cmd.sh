@@ -11,7 +11,7 @@ REMOTE=""
 KEYFILE=""
 if [ -e $DIR/host ]; then
   REMOTE=$(sed -n 's/^host *: *//p' $DIR/host)
-  if [ $REMOTE = localhost ]; then
+  if [ "$REMOTE" = "localhost" ]; then
     REMOTE=""
   fi
   KEYFILE=$(sed -n 's/^key *: *//p' $DIR/host)
@@ -33,6 +33,8 @@ else
     cat <<EOF | ssh $KEYOPT $REMOTE
     [ -d /opt/ros/indigo ] && . /opt/ros/indigo/setup.bash
     [ -d /opt/ros/jade ] && . /opt/ros/jade/setup.bash
+    [ -d $DIR/../../../devel ] && . $DIR/../../../devel/setup.bash || \
+      echo "$REMOTE:$DIR/../../../devel: no such directory"
     ROS_IP=$REMOTE
     ROS_MASTER_URI=$ROS_MASTER_URI
     DISPLAY=:0
