@@ -740,7 +740,7 @@ int main(int argc, char **argv)
   ros::Subscriber waypoint_subcscriber = nh.subscribe("final_waypoints", 10, WayPointCallback);
   // ros::Subscriber waypoint_subcscriber = nh.subscribe("safety_waypoint", 10, WayPointCallback);
   ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
-  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
+  ros::Subscriber ndt_subscriber = nh.subscribe("current_pose", 10, NDTCallback);
   ros::Subscriber est_twist_subscriber = nh.subscribe("estimate_twist", 10, estTwistCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
   ros::Subscriber zmp_can_subscriber = nh.subscribe("can_info", 10, CanInfoCallback);
