@@ -68,8 +68,9 @@ int GetFile::GetHTTPFile(const std::string& value)
 		return -1;
 	}
 
+	std::string filepath("/tmp/" + value);
 	std::ofstream ofs;
-	ofs.open("/tmp/" + value);
+	ofs.open(filepath);
 	if (! ofs.is_open()) {
 		std::cerr << "cannot open /tmp/" << value << std::endl;
 		curl_easy_cleanup(curl);
@@ -94,6 +95,7 @@ int GetFile::GetHTTPFile(const std::string& value)
 			curl_easy_strerror(res) << std::endl;
 		curl_easy_cleanup(curl);
 		ofs.close();
+		unlink(filepath.c_str());
 		return -3;
 	}
 	long response_code;
@@ -103,12 +105,14 @@ int GetFile::GetHTTPFile(const std::string& value)
 			curl_easy_strerror(res) << std::endl;
 		curl_easy_cleanup(curl);
 		ofs.close();
+		unlink(filepath.c_str());
 		return -4;
 	}
 	curl_easy_cleanup(curl);
 	ofs.close();
 	if (response_code != 200) {
 		std::cerr << "response_code: " << response_code << std::endl;
+		unlink(filepath.c_str());
 		return -5;
 	}
 
