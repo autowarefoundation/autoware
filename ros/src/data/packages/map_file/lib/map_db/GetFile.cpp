@@ -92,12 +92,12 @@ int GetFile::GetHTTPFile(const std::string& value)
 	if (res != CURLE_OK) {
 		std::cerr << "curl_easy_perform failed: " <<
 			curl_easy_strerror(res) << std::endl;
-		ofs.close();
 		curl_easy_cleanup(curl);
+		ofs.close();
 		return -3;
 	}
-	ofs.close();
 	curl_easy_cleanup(curl);
+	ofs.close();
 
 	return 0;
 }
