@@ -96,8 +96,21 @@ int GetFile::GetHTTPFile(const std::string& value)
 		ofs.close();
 		return -3;
 	}
+	long response_code;
+	res = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+	if (res != CURLE_OK) {
+		std::cerr << "curl_easy_getinfo failed: " <<
+			curl_easy_strerror(res) << std::endl;
+		curl_easy_cleanup(curl);
+		ofs.close();
+		return -4;
+	}
 	curl_easy_cleanup(curl);
 	ofs.close();
+	if (response_code != 200) {
+		std::cerr << "response_code: " << response_code << std::endl;
+		return -5;
+	}
 
 	return 0;
 }
