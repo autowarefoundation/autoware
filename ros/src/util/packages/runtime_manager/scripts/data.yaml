@@ -13,18 +13,30 @@ subs :
   - name : Map
     subs :
     - name  : map_downloader
-      cmd   : echo map_file
-      param : map_file
+      cmd   : roslaunch map_file map_downloader.launch
+      param : map_downloader
       gui   :
-        update_timing :
-          border: 20
-          flags : [ right ]
-        load_map :
-          border: 20
-          flags : [ left, right ]
-        auto_update :
-          border: 20
-          flags : [ right ]
+        host_name :
+          prop   : 1
+          border : 4
+          flags  : [ all, no_category ]
+        port :
+          border : 4
+          flags  : [ all, no_category, nl ]
+        user :
+          prop   : 1
+          border : 4
+          flags  : [ all, no_category, nl ]
+        password :
+          prop   : 1
+          border : 4
+          flags  : [ all, no_category, nl ]
+        update_rate :
+          border : 4
+          flags  : [ all, no_category ]
+        area :
+          border : 4
+          flags  : [ all, no_category, nl ]
 
   - name : Position
     subs :
@@ -121,42 +133,41 @@ subs :
           flags  : [ right ]
 
 params :
-  - name  : map_file
+  - name  : map_downloader
     vars  :
-    - name  : update_timing
-      label : 'Update Timing:'
-      v     : 0
-    - name  : update_rate
-      label : 'Update Rate:'
-      v     : 1000
-    - name  : point_cloud
-      kind  : path
-      label : 'Point Cloud:'
-      v     : pcd_file
-    - name  : vector_map
-      kind  : path
-      label : 'Vector Map:'
-      v     : vector_file
-    - name  : area_lists
-      kind  : path
-      path_type : multi
-      label : 'Area Lists:'
-      v     : arealists_file
-      cmd_param :
-        dash   : '--'
-        delim  : '='
-    - name  : load_map
-      kind  : toggle_button
-      label : Load Map
-      v     : False
-    - name  : auto_update
-      kind  : checkbox
-      label : Auto update
-      v     : True
-    - name  : ignore_db
-      kind  : checkbox
-      label : Ignore DB
-      v     : True
+    - name         : host_name
+      label        : Host Name
+      kind         : str
+      v            : 133.6.148.90
+      rosparam     : /points_map_loader/host_name
+    - name         : port
+      label        : Port
+      v            : 80
+      rosparam     : /points_map_loader/port
+    - name         : user
+      label        : User
+      kind         : str
+      v            : ''
+      rosparam     : /points_map_loader/user
+    - name         : password
+      label        : Password
+      kind         : str
+      str_flags    : [ passwd ]
+      v            : ''
+      rosparam     : /points_map_loader/password
+    - name         : update_rate
+      label        : Update Rate (ms)
+      v            : 1000
+      rosparam     : /points_map_loader/update_rate
+    - name         : area
+      label        : Area
+      kind         : menu
+      choices      : [ 1x1, 3x3, 5x5, 7x7, 9x9 ]
+      choices_type : str
+      v            : 1x1
+      cmd_param    :
+        dash  : ''
+        delim : ':='
 
   - name  : pos_db
     vars  :
