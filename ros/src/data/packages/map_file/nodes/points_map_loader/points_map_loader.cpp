@@ -388,23 +388,6 @@ int main(int argc, char **argv)
 		argc--;
 		argv++;
 
-		if(argc < 2 && update == 0){
-			std::cerr << "Usage: points_map_loader noupdate download <x> <y>\n";
-			std::exit(1);
-		} else if(argc >=2) {
-			dirname = "/data/map/";
-			int i = std::atoi(argv[0]);
-			i -= i % 1000;
-			dirname += std::to_string(i);
-			dirname += "/";
-			i = std::atoi(argv[1]);
-			i -= i % 1000;
-			dirname += std::to_string(i);
-			dirname += "/pointcloud/";
-			argc -= 2;
-			argv++;
-			argv++;
-		}
 		if(argc >= 2){
 			std::string host_name = argv[0];
 			int port = std::atoi(argv[1]);
@@ -415,8 +398,6 @@ int main(int argc, char **argv)
 		} else {
 			gf = GetFile();
 		}
-
-		get_arealist(dirname, gf);
 	} else {
 		std::cerr << "pmap_loader local file mode\n";
 	}
