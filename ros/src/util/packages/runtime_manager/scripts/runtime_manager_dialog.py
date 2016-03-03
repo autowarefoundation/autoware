@@ -2440,7 +2440,9 @@ class VarPanel(wx.Panel):
 			v = path_expand_cmd(v)
 			v = os.path.expandvars(os.path.expanduser(v))
 
-		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=wx.TE_PROCESS_ENTER)
+		style = wx.TE_PROCESS_ENTER + wx_flag_get( self.var.get('str_flags', []) )
+
+		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=style)
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
 
 		if self.kind in ('num', None):
@@ -3125,7 +3127,8 @@ def static_box_sizer(parent, s, orient=wx.VERTICAL):
 def wx_flag_get(flags):
 	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT, 
 		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE,
-		'center_v' : wx.ALIGN_CENTER_VERTICAL, 'center_h' : wx.ALIGN_CENTER_HORIZONTAL }
+		'center_v' : wx.ALIGN_CENTER_VERTICAL, 'center_h' : wx.ALIGN_CENTER_HORIZONTAL,
+		'passwd' : wx.TE_PASSWORD }
 	lst = [ dic.get(f) for f in flags if f in dic ]
 	return reduce(lambda a,b : a+b, [0] + lst)
 
