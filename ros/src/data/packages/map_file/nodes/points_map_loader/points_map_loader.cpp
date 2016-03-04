@@ -58,12 +58,13 @@
 #define DEBUG_PRINT
 
 int update_rate;
+int fallback_time;
 
 ros::Publisher pub;
 ros::Publisher stat_publisher;
+ros::Time gnss_check_time;
+ros::Time current_check_time;
 std_msgs::Bool pmap_stat_msg;
-int gnss_show = 0;
-int current_pose_show = 0;
 int file_num = 0;
 double margin = 0;
 
@@ -287,26 +288,22 @@ int check_load_pcdfile(double x, double y) {
 
 void gnss_pose_callback(const geometry_msgs::PoseStamped msg)
 {
-	if(gnss_show++%update_rate != 0) return;
-
-#ifdef DEBUG_PRINT
-	std::cerr << "call gnss_pose_callback\n";
-#endif
+	ros::Time now = ros::Time::now();
+	if (((now - current_check_time).toSec() * 1000) < fallback_time)
+		return;
+	if (((now - gnss_check_time).toSec() * 1000) < update_rate)
+		return;
 	check_load_pcdfile(msg.pose.position.x, msg.pose.position.y);
-	gnss_show = 1;
+	gnss_check_time = now;
 }
 
 static void current_pose_callback(const geometry_msgs::PoseStamped &pose)
 {
-//	std::cerr << "call current_pose_callback\n";
-//	std::cerr << "x=" << pose.pose.position.x << ", y=" << pose.pose.position.y << ", gnss_show=" << gnss_show << std::endl;
-
-	gnss_show = 1;
-	if(current_pose_show++%update_rate != 0) return;
-
+	ros::Time now = ros::Time::now();
+	if (((now - current_check_time).toSec() * 1000) < update_rate)
+		return;
 	check_load_pcdfile(pose.pose.position.x, pose.pose.position.y);
-	current_pose_show = 1;
-	gnss_show = 1;
+	current_check_time = now;
 }
 
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &input)
@@ -344,6 +341,7 @@ int main(int argc, char **argv)
 	pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
 	stat_publisher = n.advertise<std_msgs::Bool>("/pmap_stat", 100);
 	n.param<int>("points_map_loader/update_rate", update_rate, UPDATE_RATE);
+	fallback_time = update_rate * 2;
 	std::string host_name;
 	n.param<std::string>("points_map_loader/host_name", host_name, HTTP_HOSTNAME);
 	int port;
@@ -398,6 +396,7 @@ int main(int argc, char **argv)
 	}
 
 	if (update) {
+		gnss_check_time = current_check_time = ros::Time::now();
 		gnss_pose_sub = n.subscribe("gnss_pose", 1000, gnss_pose_callback);
 		current_pose_sub = n.subscribe("current_pose", 1000, current_pose_callback);
 		initial_pose_sub = n.subscribe("initialpose", 1000, initialpose_callback);
