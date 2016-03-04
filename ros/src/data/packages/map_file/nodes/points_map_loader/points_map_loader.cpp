@@ -53,7 +53,7 @@
 #include <map_db.h>
 #include <sys/stat.h>
 
-#define UPDATE_RATE	200
+#define UPDATE_RATE	1000
 #define MARGIN		100
 #define DEBUG_PRINT
 
