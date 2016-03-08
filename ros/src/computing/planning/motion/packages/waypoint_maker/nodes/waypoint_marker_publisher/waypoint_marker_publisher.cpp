@@ -46,7 +46,8 @@
 namespace
 {
 
-ros::Publisher g_lane_mark_pub;
+ros::Publisher g_local_mark_pub;
+ros::Publisher g_global_mark_pub;
 
 constexpr int32_t TRAFFIC_LIGHT_RED = 0;
 constexpr int32_t TRAFFIC_LIGHT_GREEN = 1;
@@ -62,7 +63,18 @@ visualization_msgs::MarkerArray g_global_marker_array;
 visualization_msgs::MarkerArray g_local_waypoints_marker_array;
 bool g_config_manual_detection = true;
 
-void publishMarker()
+void publishLocalMarker()
+{
+  visualization_msgs::MarkerArray marker_array;
+
+  //insert local marker
+  marker_array.markers.insert(marker_array.markers.end(), g_local_waypoints_marker_array.markers.begin(),
+                              g_local_waypoints_marker_array.markers.end());
+
+  g_local_mark_pub.publish(marker_array);
+}
+
+void publishGlobalMarker()
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -70,11 +82,7 @@ void publishMarker()
   marker_array.markers.insert(marker_array.markers.end(), g_global_marker_array.markers.begin(),
                               g_global_marker_array.markers.end());
 
-  //insert local marker
-  marker_array.markers.insert(marker_array.markers.end(), g_local_waypoints_marker_array.markers.begin(),
-                              g_local_waypoints_marker_array.markers.end());
-
-  g_lane_mark_pub.publish(marker_array);
+  g_global_mark_pub.publish(marker_array);
 }
 
 void createGlobalLaneArrayVelocityMarker(const waypoint_follower::LaneArray &lane_waypoints_array)
@@ -239,15 +247,6 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::l
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
-{
-  g_global_marker_array.markers.clear();
-  createGlobalLaneArrayVelocityMarker(*msg);
-  createGlobalLaneArrayMarker(_global_color, *msg);
-  createGlobalLaneArrayOrientationMarker(*msg);
-  publishMarker();
-}
-
 void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
 {
   std_msgs::ColorRGBA global_color;
@@ -297,13 +296,22 @@ void configParameter(const runtime_manager::ConfigLaneStopConstPtr& msg)
   g_config_manual_detection = msg->manual_detection;
 }
 
+void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
+{
+  g_global_marker_array.markers.clear();
+  createGlobalLaneArrayVelocityMarker(*msg);
+  createGlobalLaneArrayMarker(_global_color, *msg);
+  createGlobalLaneArrayOrientationMarker(*msg);
+  publishGlobalMarker();
+}
+
 void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
-  publishMarker();
+  publishLocalMarker();
 
 }
 
@@ -334,7 +342,8 @@ int main(int argc, char **argv)
   //subscribe config
   ros::Subscriber config_sub = nh.subscribe("config/lane_stop", 10, configParameter);
 
-  g_lane_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("lane_waypoint_mark", 10, true);
+  g_local_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("local_waypoints_mark", 10, true);
+  g_global_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 10, true);
 
   //initialize path color
   _initial_color.b = 1.0;
