@@ -43,23 +43,26 @@
 #include <runtime_manager/ConfigLaneStop.h>
 #include "runtime_manager/traffic_light.h"
 
-static ros::Publisher g_lane_mark_pub;
+namespace
+{
 
-static constexpr int32_t TRAFFIC_LIGHT_RED = 0;
-static constexpr int32_t TRAFFIC_LIGHT_GREEN = 1;
-static constexpr int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
+ros::Publisher g_lane_mark_pub;
 
-static std_msgs::ColorRGBA _initial_color;
-static std_msgs::ColorRGBA _global_color;
-static std_msgs::ColorRGBA g_local_color;
-static const double g_global_alpha = 0.2;
-static const double g_local_alpha = 1.0;
-static int _closest_waypoint = -1;
-static visualization_msgs::MarkerArray g_global_marker_array;
-static visualization_msgs::MarkerArray g_local_waypoints_marker_array;
-static bool g_config_manual_detection = true;
+constexpr int32_t TRAFFIC_LIGHT_RED = 0;
+constexpr int32_t TRAFFIC_LIGHT_GREEN = 1;
+constexpr int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
 
-static void publishMarker()
+std_msgs::ColorRGBA _initial_color;
+std_msgs::ColorRGBA _global_color;
+std_msgs::ColorRGBA g_local_color;
+const double g_global_alpha = 0.2;
+const double g_local_alpha = 1.0;
+int _closest_waypoint = -1;
+visualization_msgs::MarkerArray g_global_marker_array;
+visualization_msgs::MarkerArray g_local_waypoints_marker_array;
+bool g_config_manual_detection = true;
+
+void publishMarker()
 {
   visualization_msgs::MarkerArray marker_array;
 
@@ -236,7 +239,7 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::l
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
+void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
 {
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
@@ -245,7 +248,7 @@ static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
   publishMarker();
 }
 
-static void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
+void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
 {
   std_msgs::ColorRGBA global_color;
   global_color.a = g_global_alpha;
@@ -277,24 +280,24 @@ static void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
   }
 }
 
-static void receiveAutoDetection(const runtime_manager::traffic_lightConstPtr& msg)
+void receiveAutoDetection(const runtime_manager::traffic_lightConstPtr& msg)
 {
   if (!g_config_manual_detection)
     lightCallback(msg);
 }
 
-static void receiveManualDetection(const runtime_manager::traffic_lightConstPtr& msg)
+void receiveManualDetection(const runtime_manager::traffic_lightConstPtr& msg)
 {
   if (g_config_manual_detection)
     lightCallback(msg);
 }
 
-static void configParameter(const runtime_manager::ConfigLaneStopConstPtr& msg)
+void configParameter(const runtime_manager::ConfigLaneStopConstPtr& msg)
 {
   g_config_manual_detection = msg->manual_detection;
 }
 
-static void temporalCallback(const waypoint_follower::laneConstPtr &msg)
+void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)
@@ -304,9 +307,10 @@ static void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 
 }
 
-static void closestCallback(const std_msgs::Int32ConstPtr &msg)
+void closestCallback(const std_msgs::Int32ConstPtr &msg)
 {
   _closest_waypoint = msg->data;
+}
 }
 
 int main(int argc, char **argv)
