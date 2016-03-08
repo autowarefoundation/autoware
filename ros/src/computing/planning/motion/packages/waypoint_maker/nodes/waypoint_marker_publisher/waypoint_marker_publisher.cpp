@@ -26,7 +26,7 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -68,11 +68,11 @@ void publishMarker()
 
   //insert global marker
   marker_array.markers.insert(marker_array.markers.end(), g_global_marker_array.markers.begin(),
-      g_global_marker_array.markers.end());
+                              g_global_marker_array.markers.end());
 
   //insert local marker
   marker_array.markers.insert(marker_array.markers.end(), g_local_waypoints_marker_array.markers.begin(),
-      g_local_waypoints_marker_array.markers.end());
+                              g_local_waypoints_marker_array.markers.end());
 
   g_lane_mark_pub.publish(marker_array);
 }
@@ -116,11 +116,11 @@ void createGlobalLaneArrayVelocityMarker(const waypoint_follower::LaneArray &lan
   }
 
   g_global_marker_array.markers.insert(g_global_marker_array.markers.end(), tmp_marker_array.markers.begin(),
-      tmp_marker_array.markers.end());
+                                       tmp_marker_array.markers.end());
 }
 
 void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_waypoint,
-    const waypoint_follower::lane &lane_waypoint)
+                                       const waypoint_follower::lane &lane_waypoint)
 {
 
   // display by markers the velocity of each waypoint.
@@ -213,7 +213,7 @@ void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &
   }
 
   g_global_marker_array.markers.insert(g_global_marker_array.markers.end(), tmp_marker_array.markers.begin(),
-        tmp_marker_array.markers.end());
+                                       tmp_marker_array.markers.end());
 }
 
 void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::lane &lane_waypoint)
