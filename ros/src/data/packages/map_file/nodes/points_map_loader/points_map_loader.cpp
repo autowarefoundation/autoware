@@ -265,9 +265,7 @@ int check_load_pcdfile(double x, double y) {
 	    pcd.row_step += add.row_step;
 	    pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
 	  }
-#ifdef DEBUG_PRINT
 	  fprintf(stderr, "load %s\n", files[i].name.c_str());
-#endif
 	}
 
 #ifdef DEBUG_PRINT
@@ -468,9 +466,7 @@ int main(int argc, char **argv)
 	      pcd.row_step += add.row_step;
 	      pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
 	    }
-#ifdef DEBUG_PRINT
 	    fprintf(stderr, "load %s\n", x.c_str());
-#endif
 	  }
 
 	  pmap_stat_msg.data = true;
