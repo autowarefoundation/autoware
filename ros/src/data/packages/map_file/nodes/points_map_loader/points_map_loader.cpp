@@ -455,9 +455,6 @@ int main(int argc, char **argv)
 		}
 	  int loaded = 0;
 		for(auto x: pcd_file_list) {
-#ifdef DEBUG_PRINT
-			fprintf(stderr, "load %s\n", x.c_str());
-#endif
 	    if(loaded == 0) {
 				if(pcl::io::loadPCDFile(x.c_str(), pcd) == -1) {
 					fprintf(stderr, "  load failed %s\n", x.c_str());
@@ -471,6 +468,9 @@ int main(int argc, char **argv)
 	      pcd.row_step += add.row_step;
 	      pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
 	    }
+#ifdef DEBUG_PRINT
+	    fprintf(stderr, "load %s\n", x.c_str());
+#endif
 	  }
 
 	  pmap_stat_msg.data = true;
