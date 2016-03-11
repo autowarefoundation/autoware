@@ -265,9 +265,7 @@ int check_load_pcdfile(double x, double y) {
 	    pcd.row_step += add.row_step;
 	    pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
 	  }
-#ifdef DEBUG_PRINT
 	  fprintf(stderr, "load %s\n", files[i].name.c_str());
-#endif
 	}
 
 #ifdef DEBUG_PRINT
@@ -339,7 +337,7 @@ int main(int argc, char **argv)
 	ros::Subscriber initial_pose_sub;
 
 	pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
-	stat_publisher = n.advertise<std_msgs::Bool>("/pmap_stat", 100);
+	stat_publisher = n.advertise<std_msgs::Bool>("/pmap_stat", 1, true);
 	n.param<int>("points_map_loader/update_rate", update_rate, UPDATE_RATE);
 	fallback_time = update_rate * 2;
 	std::string host_name;
@@ -351,6 +349,9 @@ int main(int argc, char **argv)
 	std::string password;
 	n.param<std::string>("points_map_loader/password", password, HTTP_PASSWORD);
 	std::cout << "update_rate=" << update_rate << std::endl;
+
+	pmap_stat_msg.data = false;
+	stat_publisher.publish(pmap_stat_msg);
 
 	int update = 1;
 
@@ -452,9 +453,6 @@ int main(int argc, char **argv)
 		}
 	  int loaded = 0;
 		for(auto x: pcd_file_list) {
-#ifdef DEBUG_PRINT
-			fprintf(stderr, "load %s\n", x.c_str());
-#endif
 	    if(loaded == 0) {
 				if(pcl::io::loadPCDFile(x.c_str(), pcd) == -1) {
 					fprintf(stderr, "  load failed %s\n", x.c_str());
@@ -468,6 +466,7 @@ int main(int argc, char **argv)
 	      pcd.row_step += add.row_step;
 	      pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
 	    }
+	    fprintf(stderr, "load %s\n", x.c_str());
 	  }
 
 	  pmap_stat_msg.data = true;
