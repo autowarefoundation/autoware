@@ -53,6 +53,69 @@
 #include <map_db.h>
 #include <sys/stat.h>
 
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+
+class RequestQueue {
+private:
+	std::queue<geometry_msgs::Point> queue_;
+	std::queue<geometry_msgs::Point> look_ahead_queue_;
+	std::mutex mtx_;
+	std::condition_variable cv_;
+
+public:
+	void enqueue(const geometry_msgs::Point& p);
+	void enqueue_look_ahead(const geometry_msgs::Point& p);
+	void clear();
+	void clear_look_ahead();
+	geometry_msgs::Point dequeue();
+};
+
+void RequestQueue::enqueue(const geometry_msgs::Point& p)
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	queue_.push(p);
+	cv_.notify_all();
+}
+
+void RequestQueue::enqueue_look_ahead(const geometry_msgs::Point& p)
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	look_ahead_queue_.push(p);
+	cv_.notify_all();
+}
+
+void RequestQueue::clear()
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	while (!queue_.empty())
+		queue_.pop();
+}
+
+void RequestQueue::clear_look_ahead()
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	while (!look_ahead_queue_.empty())
+		look_ahead_queue_.pop();
+}
+
+geometry_msgs::Point RequestQueue::dequeue()
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	while (queue_.empty() && look_ahead_queue_.empty())
+		cv_.wait(lock);
+	if (!queue_.empty()) {
+		geometry_msgs::Point p = queue_.front();
+		queue_.pop();
+		return p;
+	} else {
+		geometry_msgs::Point p = look_ahead_queue_.front();
+		look_ahead_queue_.pop();
+		return p;
+	}
+}
+
 #define UPDATE_RATE	1000
 #define MARGIN		100
 #define DEBUG_PRINT
