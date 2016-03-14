@@ -53,6 +53,71 @@
 #include <map_db.h>
 #include <sys/stat.h>
 
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <waypoint_follower/LaneArray.h>
+
+class RequestQueue {
+private:
+	std::queue<geometry_msgs::Point> queue_;
+	std::queue<geometry_msgs::Point> look_ahead_queue_;
+	std::mutex mtx_;
+	std::condition_variable cv_;
+
+public:
+	void enqueue(const geometry_msgs::Point& p);
+	void enqueue_look_ahead(const geometry_msgs::Point& p);
+	void clear();
+	void clear_look_ahead();
+	geometry_msgs::Point dequeue();
+};
+
+void RequestQueue::enqueue(const geometry_msgs::Point& p)
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	queue_.push(p);
+	cv_.notify_all();
+}
+
+void RequestQueue::enqueue_look_ahead(const geometry_msgs::Point& p)
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	look_ahead_queue_.push(p);
+	cv_.notify_all();
+}
+
+void RequestQueue::clear()
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	while (!queue_.empty())
+		queue_.pop();
+}
+
+void RequestQueue::clear_look_ahead()
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	while (!look_ahead_queue_.empty())
+		look_ahead_queue_.pop();
+}
+
+geometry_msgs::Point RequestQueue::dequeue()
+{
+	std::unique_lock<std::mutex> lock(mtx_);
+	while (queue_.empty() && look_ahead_queue_.empty())
+		cv_.wait(lock);
+	if (!queue_.empty()) {
+		geometry_msgs::Point p = queue_.front();
+		queue_.pop();
+		return p;
+	} else {
+		geometry_msgs::Point p = look_ahead_queue_.front();
+		look_ahead_queue_.pop();
+		return p;
+	}
+}
+
 #define UPDATE_RATE	1000
 #define MARGIN		100
 #define DEBUG_PRINT
@@ -80,13 +145,46 @@ struct PcdFileRange {
 };
 
 std::vector<PcdFileRange> files;
+std::vector<PcdFileRange> areas;
+std::mutex areas_mtx;
 std::vector<std::string> pcd_file_list;
+RequestQueue request_queue;
 std::string dirname;
 GetFile gf;
 int download = 0;
 std::vector<std::string> load_arealists;
 
 typedef std::vector<std::vector<std::string>> Tbl;
+
+static void load_pcd(const geometry_msgs::Point& p)
+{
+	sensor_msgs::PointCloud2 pcd;
+	{
+		sensor_msgs::PointCloud2 part;
+		std::unique_lock<std::mutex> lock(areas_mtx);
+		for (const PcdFileRange& a : areas) {
+			if (a.x_min < p.x && p.x < a.x_max &&
+			    a.y_min < p.y && p.y < a.y_max) {
+				if (pcd.width == 0)
+					pcl::io::loadPCDFile(a.name.c_str(), pcd);
+				else {
+					pcl::io::loadPCDFile(a.name.c_str(), part);
+					pcd.width += part.width;
+					pcd.row_step += part.row_step;
+					pcd.data.insert(pcd.data.end(), part.data.begin(), part.data.end());
+				}
+			}
+		}
+	}
+
+	if (pcd.width != 0) {
+		pcd.header.frame_id = "/map";
+		pub.publish(pcd);
+
+		pmap_stat_msg.data = true;
+		stat_publisher.publish(pmap_stat_msg);
+	}
+}
 
 Tbl read_csv(const char* filename)
 {
@@ -178,112 +276,6 @@ int get_arealist(std::string dirname, GetFile gf) {
 	return 0;
 }
 
-int check_load_pcdfile(double x, double y) {
-	if(download) {
-		std::string tmp_dir1 = "/data/map/";
-		std::string tmp_dir2 = "/data/map/";
-		int x_min = (int)(x - margin);
-		int x_max = (int)(x + margin);
-		int y_min = (int)(y - margin);
-		int y_max = (int)(y + margin);
-		x_min -= x_min % 1000;
-		x_max -= x_max % 1000;
-		y_min -= y_min % 1000;
-		y_max -= y_max % 1000;
-
-		tmp_dir1 += std::to_string(y_min) +  "/" + std::to_string(x_min) + "/pointcloud/";
-		tmp_dir2 += std::to_string(y_max) +  "/" + std::to_string(x_max) + "/pointcloud/";
-
-		int loaded = 0;
-		for(auto list: load_arealists) {
-			if(list.compare(tmp_dir1) == 0) {
-				loaded = 1;
-				break;
-			}
-		}
-		if(loaded == 0) {
-			if(get_arealist(tmp_dir1, gf) == 0) {
-				load_arealists.insert(load_arealists.begin(), tmp_dir1);
-			}
-		}
-
-		if(tmp_dir1 != tmp_dir2) {
-			loaded = 0;
-			for(auto list: load_arealists) {
-				if(list.compare(tmp_dir2) == 0) {
-					loaded = 1;
-					break;
-				}
-			}
-
-			if(loaded == 0) {
-				if(get_arealist(tmp_dir2, gf) == 0) {
-					load_arealists.insert(load_arealists.begin(), tmp_dir2);
-				}
-			}
-		}
-	}
-
-	sensor_msgs::PointCloud2 pcd, add;
-	int loaded = 0;
-
-	for (int i = 0; i < (int)files.size(); i++) {
-#if 0
-		if(files[i].x_min < x && msg.pose.position.x < files[i].x_max &&
-		   files[i].y_min < y && msg.pose.position.y < files[i].y_max &&
-		   files[i].z_min < z && msg.pose.position.z < files[i].z_max) ;
-#else
-		if(files[i].x_min < x && x < files[i].x_max &&
-		   files[i].y_min < y && y < files[i].y_max);
-#endif
-	  else continue;
-
-		if(download) {
-			struct stat st;
-			if(stat(files[i].name.c_str(), &st) != 0) {
-			  std::string filename = files[i].name.substr(4);
-			  std::cerr << "start get file=" << filename;
-			  if(gf.GetHTTPFile(filename) == 0) {
-				std::cerr << " download done" << std::endl;
-			  } else {
-				std::cerr << " download failed" << std::endl;
-			  }
-			}
-		}
-	  if(loaded == 0) {
-	    if(pcl::io::loadPCDFile(files[i].name.c_str(), pcd) == -1) 
-	    {
-	      fprintf(stderr, "load failed %s\n", files[i].name.c_str());
-	    } else loaded = 1;
-	  } else {
-	    if(pcl::io::loadPCDFile(files[i].name.c_str(), add) == -1) 
-	    {
-	      fprintf(stderr, "load failed %s\n", files[i].name.c_str());
-	    }
-
-	    pcd.width += add.width;
-	    pcd.row_step += add.row_step;
-	    pcd.data.insert(pcd.data.end(), add.data.begin(), add.data.end());
-	  }
-	  fprintf(stderr, "load %s\n", files[i].name.c_str());
-	}
-
-#ifdef DEBUG_PRINT
-	  fprintf(stderr, "---\n");
-#endif
-
-	if(loaded == 1) {
-	  pcd.header.frame_id = "/map";
-	  pmap_stat_msg.data = true;
-
-	  pub.publish(pcd);
-	  stat_publisher.publish(pmap_stat_msg);
-	}
-
-	return 0;
-}
-
-
 void gnss_pose_callback(const geometry_msgs::PoseStamped msg)
 {
 	ros::Time now = ros::Time::now();
@@ -291,7 +283,8 @@ void gnss_pose_callback(const geometry_msgs::PoseStamped msg)
 		return;
 	if (((now - gnss_check_time).toSec() * 1000) < update_rate)
 		return;
-	check_load_pcdfile(msg.pose.position.x, msg.pose.position.y);
+	request_queue.enqueue(msg.pose.position);
+	load_pcd(msg.pose.position);
 	gnss_check_time = now;
 }
 
@@ -300,7 +293,8 @@ static void current_pose_callback(const geometry_msgs::PoseStamped &pose)
 	ros::Time now = ros::Time::now();
 	if (((now - current_check_time).toSec() * 1000) < update_rate)
 		return;
-	check_load_pcdfile(pose.pose.position.x, pose.pose.position.y);
+	request_queue.enqueue(pose.pose.position);
+	load_pcd(pose.pose.position);
 	current_check_time = now;
 }
 
@@ -323,10 +317,117 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
 	std::cerr << "x=" << input->pose.pose.position.x + transform.getOrigin().x() << std::endl;
 	std::cerr << "y=" << input->pose.pose.position.y + transform.getOrigin().y() << std::endl;
 
-	check_load_pcdfile(input->pose.pose.position.x + transform.getOrigin().x(), input->pose.pose.position.y + transform.getOrigin().y());
-
+	geometry_msgs::Point p;
+	p.x = input->pose.pose.position.x + transform.getOrigin().x();
+	p.y = input->pose.pose.position.y + transform.getOrigin().y();
+	request_queue.enqueue(p);
+	load_pcd(p);
 }
 
+static void waypoints_callback(const waypoint_follower::LaneArray& msg)
+{
+	if (msg.lanes.size() == 0)
+		return;
+
+	request_queue.clear_look_ahead();
+
+	for (const waypoint_follower::lane& l : msg.lanes) {
+		size_t end = l.waypoints.size() - 1;
+		double distance = 0;
+		double threshold = (MARGIN / 2) + margin; // better way?
+		for (size_t i = 0; i <= end; ++i) {
+			if (i == 0 || i == end) {
+				geometry_msgs::Point p;
+				p.x = l.waypoints[i].pose.pose.position.x;
+				p.y = l.waypoints[i].pose.pose.position.y;
+				request_queue.enqueue_look_ahead(p);
+			} else {
+				geometry_msgs::Point p1, p2;
+				p1.x = l.waypoints[i].pose.pose.position.x;
+				p1.y = l.waypoints[i].pose.pose.position.y;
+				p2.x = l.waypoints[i - 1].pose.pose.position.x;
+				p2.y = l.waypoints[i - 1].pose.pose.position.y;
+				distance += hypot(p2.x - p1.x, p2.y - p1.y);
+				if (distance > threshold) {
+					request_queue.enqueue_look_ahead(p1);
+					distance = 0;
+				}
+			}
+		}
+	}
+}
+
+static void download_map()
+{
+	while (true) {
+		geometry_msgs::Point p = request_queue.dequeue();
+
+		std::string tmp_dir1 = "/data/map/";
+		std::string tmp_dir2 = "/data/map/";
+		int x_min = (int)(p.x - margin);
+		int x_max = (int)(p.x + margin);
+		int y_min = (int)(p.y - margin);
+		int y_max = (int)(p.y + margin);
+		x_min -= x_min % 1000;
+		x_max -= x_max % 1000;
+		y_min -= y_min % 1000;
+		y_max -= y_max % 1000;
+
+		tmp_dir1 += std::to_string(y_min) +  "/" + std::to_string(x_min) + "/pointcloud/";
+		tmp_dir2 += std::to_string(y_max) +  "/" + std::to_string(x_max) + "/pointcloud/";
+
+		bool loaded = false;
+		for (auto list: load_arealists) {
+			if (list.compare(tmp_dir1) == 0) {
+				loaded = true;
+				break;
+			}
+		}
+		if (!loaded) {
+			if (get_arealist(tmp_dir1, gf) == 0)
+				load_arealists.insert(load_arealists.begin(), tmp_dir1);
+		}
+
+		if (tmp_dir1 != tmp_dir2) {
+			loaded = false;
+			for (auto list: load_arealists) {
+				if (list.compare(tmp_dir2) == 0) {
+					loaded = true;
+					break;
+				}
+			}
+			if (!loaded) {
+				if (get_arealist(tmp_dir2, gf) == 0)
+					load_arealists.insert(load_arealists.begin(), tmp_dir2);
+			}
+		}
+
+		for (size_t i = 0; i < files.size(); ++i) {
+			if (files[i].x_min < p.x && p.x < files[i].x_max &&
+			    files[i].y_min < p.y && p.y < files[i].y_max) {
+				bool loaded = false;
+				for (const PcdFileRange& f: areas) {
+					if (f.name.compare(files[i].name) == 0) {
+						loaded = true;
+						break;
+					}
+				}
+				if (!loaded) {
+					struct stat st;
+					if (stat(files[i].name.c_str(), &st) != 0) {
+						if (gf.GetHTTPFile(files[i].name.substr(4)) == 0) {
+							std::unique_lock<std::mutex> lock(areas_mtx);
+							areas.push_back(files[i]);
+						}
+					} else {
+						std::unique_lock<std::mutex> lock(areas_mtx);
+						areas.push_back(files[i]);
+					}
+				}
+			}
+		}
+	}
+}
 
 int main(int argc, char **argv)
 {
@@ -335,6 +436,7 @@ int main(int argc, char **argv)
 	ros::Subscriber gnss_pose_sub;
 	ros::Subscriber current_pose_sub;
 	ros::Subscriber initial_pose_sub;
+	ros::Subscriber waypoints_sub;
 
 	pub = n.advertise<sensor_msgs::PointCloud2>("/points_map", 1, true);
 	stat_publisher = n.advertise<std_msgs::Bool>("/pmap_stat", 1, true);
@@ -401,6 +503,15 @@ int main(int argc, char **argv)
 		gnss_pose_sub = n.subscribe("gnss_pose", 1000, gnss_pose_callback);
 		current_pose_sub = n.subscribe("current_pose", 1000, current_pose_callback);
 		initial_pose_sub = n.subscribe("initialpose", 1000, initialpose_callback);
+		if (download == 1) {
+			waypoints_sub = n.subscribe("traffic_waypoints_array", 1, waypoints_callback);
+			try {
+				std::thread downloader(download_map);
+				downloader.detach();
+			} catch (std::exception &ex) {
+				std::cerr << "failed to create thread from " << ex.what() << std::endl;
+			}
+		}
 
 	  if(argc == 1) {
 			files = read_local_pcdfilerange(argv[0], margin);
