@@ -41,13 +41,15 @@ static waypoint_follower::LaneArray g_lane_array;
 static void configCallback(const runtime_manager::ConfigLaneSelectConstPtr &config)
 {
   g_lane_number = config->number;
-  g_pub.publish(g_lane_array.lanes[g_lane_number]);
+  if ((int)g_lane_array.lanes.size() > g_lane_number)
+    g_pub.publish(g_lane_array.lanes[g_lane_number]);
 }
 
 static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
 {
   g_lane_array = *msg;
-  g_pub.publish(g_lane_array.lanes[g_lane_number]);
+  if ((int)g_lane_array.lanes.size() > g_lane_number)
+    g_pub.publish(g_lane_array.lanes[g_lane_number]);
 }
 
 int main(int argc, char **argv)
