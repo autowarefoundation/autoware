@@ -8,8 +8,10 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>gnss</build_depend>
+  <build_depend>waypoint_follower</build_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>gnss</run_depend>
+  <run_depend>waypoint_follower</run_depend>
   <export>
   </export>
 </package>
