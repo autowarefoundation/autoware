@@ -33,7 +33,6 @@
 import wx
 import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
-import gtk
 import gettext
 import os
 import re
@@ -214,6 +213,7 @@ class MyFrame(rtmgr.MyFrame):
 		#	self.timer.Start(self.probe_interval)
 
 		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
+		buttons_color_hdr_setup(self.dlg_rosbag_record)
 
 		#
 		# for Computing tab
@@ -600,7 +600,7 @@ class MyFrame(rtmgr.MyFrame):
 			act = True if b is push and not v else act
 			act = False if b is not push and v else act
 			if act is not None:
-				b.SetValue(act)
+				set_val(b, act)
 
 	def stat_label_off(self, obj):
 		qs_nms = [ 'map', 'sensing', 'localization', 'detection', 'mission_planning', 'motion_planning' ]
@@ -686,7 +686,7 @@ class MyFrame(rtmgr.MyFrame):
 		dic_list_push(gdic, 'dialog_type', 'config')
 		klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 		dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
-		dlg.ShowModal()
+		show_modal(dlg)
 		dic_list_pop(gdic, 'dialog_type')
 
 	def obj_to_add_args(self, obj, msg_box=True):
@@ -703,7 +703,7 @@ class MyFrame(rtmgr.MyFrame):
 			dic_list_push(gdic, 'dialog_type', 'sel_cam')
 			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
-			dlg_ret = dlg.ShowModal()
+			dlg_ret = show_modal(dlg)
 			dic_list_pop(gdic, 'dialog_type')
 			if dlg_ret != 0:
 				return False			
@@ -712,7 +712,7 @@ class MyFrame(rtmgr.MyFrame):
 			dic_list_push(gdic, 'dialog_type', 'open')
 			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
-			dlg_ret = dlg.ShowModal()
+			dlg_ret = show_modal(dlg)
 			dic_list_pop(gdic, 'dialog_type')
 			if dlg_ret != 0:
 				return False			
@@ -1163,7 +1163,7 @@ class MyFrame(rtmgr.MyFrame):
 			args = { 'pdic':pdic, 'ids':ids, 'param_panel':gdic.get('param_panel'), 'dlg':dlg }
 			gdic_v['hook_var'] = { 'hook':self.camera_id_hook, 'args':args }
 
-			dlg_ret = dlg.ShowModal()
+			dlg_ret = show_modal(dlg)
 
 			dic_list_pop(gdic, 'dialog_type')
 			pdic['camera_id'] = cam_id # restore
@@ -1788,13 +1788,16 @@ class MyFrame(rtmgr.MyFrame):
 		if obj == play:
 			var['v'] = True
 			self.OnLaunchKill_obj(play)
+			button_color_change(play)
 			set_val(stop, False)
 			set_val(pause, False)
 		elif obj == stop:
+			set_val(stop, True)
 			set_val(play, False)
 			set_val(pause, False)
 			var['v'] = False
 			self.OnLaunchKill_obj(play)
+			button_color_change(stop)
 		elif obj == pause:
 			(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(play)
 			if proc:
@@ -1907,7 +1910,7 @@ class MyFrame(rtmgr.MyFrame):
 			if en is not None and o.IsEnabled() != en and not self.is_toggle_button(o):
 				o.Enable(en)
 			if v is not None and getattr(o, 'SetValue', None):
-				o.SetValue(v)
+				set_val(o, v)
 				if getattr(o, 'SetInsertionPointEnd', None):
 					o.SetInsertionPointEnd()
 
@@ -2422,8 +2425,9 @@ class VarPanel(wx.Panel):
 			return
 		if self.kind == 'toggle_button':
 			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
-			self.obj.SetValue(v)
+			set_val(self.obj, v)
 			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnUpdate, self.obj)
+			button_color_hdr_setup(self.obj)
 			return
 		if self.kind == 'hide':
 			self.Hide()
@@ -2468,6 +2472,7 @@ class VarPanel(wx.Panel):
 		if self.kind == 'path':
 			self.ref = wx.Button(self, wx.ID_ANY, 'Ref')
 			self.Bind(wx.EVT_BUTTON, self.OnRef, self.ref)
+			button_color_hdr_setup(self.ref)
 			self.ref.SetMinSize((40,29))
 			szr.Add(self.ref, 0, flag, 4)
 
@@ -2914,6 +2919,7 @@ class MyApp(wx.App):
 		wx.InitAllImageHandlers()
 		frame_1 = MyFrame(None, wx.ID_ANY, "")
 		self.SetTopWindow(frame_1)
+		buttons_color_hdr_setup(frame_1)
 		frame_1.Show()
 		return 1
 
@@ -3028,7 +3034,7 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		st_dic = { 'save' : wx.FD_SAVE, 'multi' : wx.FD_MULTIPLE }
 		dlg = wx.FileDialog(parent, defaultDir=dn, defaultFile=fn, 
 				    style=st_dic.get(path_type, wx.FD_DEFAULT_STYLE))
-	ret = dlg.ShowModal()
+	ret = show_modal(dlg)
 	if ret == wx.ID_OK:
 		path = ','.join(dlg.GetPaths()) if path_type == 'multi' else dlg.GetPath()
 		if path_type == 'dir' and fns:
@@ -3036,6 +3042,43 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		set_path(tc, path)
 	dlg.Destroy()
 	return ret
+
+def button_color_change(btn, v=None):
+	if v is None and type(btn) is wx.ToggleButton:
+		v = btn.GetValue()
+	key = ( v , btn.IsEnabled() )
+	dic = { (True,True):('#F9F9F8','#8B8BB9'), (True,False):('#F9F9F8','#E0E0F0') }
+	(fcol, bcol) = dic.get(key, (wx.NullColour, wx.NullColour))
+	btn.SetForegroundColour(fcol)
+	btn.SetBackgroundColour(bcol)
+
+def OnButtonColorHdr(event):
+	btn = event.GetEventObject()
+	dic = { wx.EVT_TOGGLEBUTTON.typeId : None, 
+		wx.EVT_LEFT_DOWN.typeId	   : True,
+		wx.EVT_LEFT_UP.typeId	   : False }
+	v = dic.get(event.GetEventType(), '?')
+	if v != '?':
+		button_color_change(btn, v)
+	event.Skip()
+
+def button_color_hdr_setup(btn):
+	hdr = OnButtonColorHdr
+	if type(btn) is wx.ToggleButton:
+		btn.Bind(wx.EVT_TOGGLEBUTTON, hdr)
+	elif type(btn) is wx.Button:
+		btn.Bind(wx.EVT_LEFT_DOWN, hdr)
+		btn.Bind(wx.EVT_LEFT_UP, hdr)
+
+def buttons_color_hdr_setup(frm_obj):
+	key = 'button_'
+	btns = [ getattr(frm_obj, nm) for nm in dir(frm_obj) if nm[:len(key)] == key ]
+	for btn in btns:
+		button_color_hdr_setup(btn)
+
+def show_modal(dlg):
+	buttons_color_hdr_setup(dlg)
+	return dlg.ShowModal()
 
 def load_yaml(filename, def_ret=None):
 	dir = rtmgr_src_dir()
@@ -3158,6 +3201,8 @@ def set_val(obj, v):
 	if func:
 		func(v)
 		obj_refresh(obj)
+	if type(obj) is wx.ToggleButton:
+		button_color_change(obj)
 
 def obj_refresh(obj):
 	if type(obj) is CT.GenericTreeItem:
@@ -3271,10 +3316,6 @@ def set_scheduling_policy(proc, policy, priority):
 	return send_to_proc_manager(order)
 
 if __name__ == "__main__":
-	path = rtmgr_src_dir() + 'btnrc'
-	if os.path.exists(path):
-		gtk.rc_parse(path)
-
 	gettext.install("app")
 
 	app = MyApp(0)
