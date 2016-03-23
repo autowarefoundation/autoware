@@ -111,8 +111,11 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 ### Detection
 [![Detection](http://img.youtube.com/vi/UcoYqGniIkE/0.jpg)](https://www.youtube.com/watch?v=UcoYqGniIkE)
 
-### Planning
-[![Planning](http://img.youtube.com/vi/QOrsC1P8nN0/0.jpg)](https://www.youtube.com/watch?v=QOrsC1P8nN0)
+### Planning with ROSBAG
+[![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/0.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
+
+### Planning with wf_simulator
+[![Planning with wf_simulator](http://img.youtube.com/vi/BwFYkh2i4d0/0.jpg)](https://www.youtube.com/watch?v=BwFYkh2i4d0)
 
 ## Sample Data
 
