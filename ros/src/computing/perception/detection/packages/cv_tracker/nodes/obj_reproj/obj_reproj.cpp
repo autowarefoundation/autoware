@@ -70,6 +70,11 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <mutex>
 
+#ifdef HAVE_JSK_PLUGIN
+#include "jsk_recognition_msgs/BoundingBox.h"
+#include "jsk_recognition_msgs/BoundingBoxArray.h"
+#endif  // ifdef HAVE_JSK_PLUGIN
+
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
 
@@ -121,6 +126,9 @@ static double cameraMatrix[4][4] = {
 
 static ros::Publisher pub;
 static ros::Publisher marker_pub;
+#ifdef HAVE_JSK_PLUGIN
+static ros::Publisher jsk_bounding_box_pub;
+#endif // ifdef HAVE_JSK_PLUGIN
 
 static std::string object_type;
 static ros::Time image_obj_tracked_time;
@@ -191,6 +199,29 @@ static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::ob
 
   return ret;
 }
+
+#ifdef HAVE_JSK_PLUGIN
+static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const cv_tracker::obj_label& src)
+{
+  jsk_recognition_msgs::BoundingBoxArray ret;
+
+  for (const auto& reproj_pos : src.reprojected_pos)
+    {
+      jsk_recognition_msgs::BoundingBox bounding_box;
+      bounding_box.header.frame_id = "map";
+
+      bounding_box.pose.position = reproj_pos;
+
+      bounding_box.dimensions.x = 1.5;
+      bounding_box.dimensions.y = 1.5;
+      bounding_box.dimensions.z = 1.5;
+
+      ret.boxes.push_back(bounding_box);
+    }
+
+  return ret;
+}
+#endif  // ifdef HAVE_JSK_PLUGIN
 
 static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
 {
@@ -309,6 +340,11 @@ void locatePublisher(void){
 
   pub.publish(obj_label_msg);
   marker_pub.publish(obj_label_marker_msgs);
+
+#ifdef HAVE_JSK_PLUGIN
+  jsk_recognition_msgs::BoundingBoxArray obj_label_bounding_box_msgs = convertJskBoundingBoxArray(obj_label_msg);
+  jsk_bounding_box_pub.publish(obj_label_bounding_box_msgs);
+#endif  // ifdef HAVE_JSK_PLUGIN
 }
 
 static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objects)
@@ -451,6 +487,10 @@ int main(int argc, char **argv){
   ros::Subscriber ndt_pose = n.subscribe("/current_pose", 1, position_getter_ndt);
   pub = n.advertise<cv_tracker::obj_label>("obj_label",1);
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("obj_label_marker", 1);
+
+#ifdef HAVE_JSK_PLUGIN
+  jsk_bounding_box_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>("obj_lavel_bounding_box", 1);
+#endif
 
   ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
   ros::Subscriber camera_info = n.subscribe(camera_info_topic_name, 1, camera_info_callback);

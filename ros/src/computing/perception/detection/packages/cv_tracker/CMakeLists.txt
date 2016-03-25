@@ -178,6 +178,15 @@ ADD_DEPENDENCIES(obj_reproj
   calibration_camera_lidar_generate_messages_cpp
 )
 
+# check whether jsk library is available or not
+find_package(jsk_recognition_msgs)
+if (jsk_recognition_msgs_FOUND)
+  # if jsk plugin is found, activate macro
+  SET_TARGET_PROPERTIES(obj_reproj
+    PROPERTIES COMPILE_FLAGS
+    "-DHAVE_JSK_PLUGIN")
+endif (jsk_recognition_msgs_FOUND)
+
 ## klt_tracker ##
 ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
