@@ -40,28 +40,31 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 
-static geometry_msgs::Twist _current_velocity;
+namespace
+{
 
-static const std::string SIMULATION_FRAME = "sim_base_link";
-static const std::string MAP_FRAME = "map";
+geometry_msgs::Twist _current_velocity;
 
-static geometry_msgs::Pose _initial_pose;
-static std::string _initialize_source;
-static bool _initial_set = false;
-static bool _pose_set = false;
-static bool _waypoint_set = false;
-static WayPoints _current_waypoints;
+const std::string SIMULATION_FRAME = "sim_base_link";
+const std::string MAP_FRAME = "map";
+
+geometry_msgs::Pose _initial_pose;
+std::string _initialize_source;
+bool _initial_set = false;
+bool _pose_set = false;
+bool _waypoint_set = false;
+WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
 ros::Publisher g_velocity_publisher;
 
-static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
+void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
   _current_velocity = msg->twist;
 }
 
-static void getTransformFromTF(const std::string parent_frame,const std::string child_frame, tf::StampedTransform& transform)
+void getTransformFromTF(const std::string parent_frame,const std::string child_frame, tf::StampedTransform& transform)
 {
-  static tf::TransformListener listener;
+  tf::TransformListener listener;
 
   while (1)
   {
@@ -78,7 +81,7 @@ static void getTransformFromTF(const std::string parent_frame,const std::string 
   }
 }
 
-static void getInitialPoseFromTF()
+void getInitialPoseFromTF()
 {
   if(_initial_set)
     return;
@@ -107,7 +110,7 @@ static void getInitialPoseFromTF()
 
 }
 
-static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
+void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
 {
   if (_initialize_source != "Rviz")
     return;
@@ -126,7 +129,7 @@ static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedCo
   
 }
 
-static void waypointCallback(const waypoint_follower::laneConstPtr &msg)
+void waypointCallback(const waypoint_follower::laneConstPtr &msg)
 {
  // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
@@ -134,14 +137,14 @@ static void waypointCallback(const waypoint_follower::laneConstPtr &msg)
   ROS_INFO_STREAM("waypoint subscribed");
 }
 
-static void publishOdometry()
+void publishOdometry()
 {
 
-  static ros::Time current_time = ros::Time::now();
-  static ros::Time last_time = ros::Time::now();
-  static geometry_msgs::Pose pose;
-  static double th = 0;
-  static tf::TransformBroadcaster odom_broadcaster;
+  ros::Time current_time = ros::Time::now();
+  ros::Time last_time = ros::Time::now();
+  geometry_msgs::Pose pose;
+  double th = 0;
+  tf::TransformBroadcaster odom_broadcaster;
 
   if (!_pose_set)
   {
@@ -215,7 +218,7 @@ static void publishOdometry()
 
   last_time = current_time;
 }
-
+}
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "odom_gen");
