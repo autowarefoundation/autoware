@@ -47,78 +47,81 @@ static const std::string SIMULATION_FRAME = "sim_base_link";
 static const std::string MAP_FRAME = "map";
 
 static geometry_msgs::Pose _initial_pose;
-static std::string _use_pose;
+static std::string _initialize_source;
 static bool _initial_set = false;
 static bool _pose_set = false;
 static bool _waypoint_set = false;
 static WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
 
-static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
-{
-  if (_use_pose != "NDT")
-    return;
-
-  if(_initial_set)
-    return;
-
-  _initial_pose = input->pose;
-  _initial_set = true;
-  _pose_set = false;
-
-  
-}
-
-static void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
-{
-  if (_use_pose != "GNSS")
-    return;
-
-  if(_initial_set)
-    return;
-
-  _initial_pose = input->pose;
-  _initial_set = true;
-  _pose_set = false;
-  
-
-}
-
 static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
   _current_velocity = msg->twist;
 }
 
-static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
+static void getTransformFromTF(const std::string parent_frame,const std::string child_frame, tf::StampedTransform& transform)
 {
-  if (_use_pose != "InitialPos")
+  static tf::TransformListener listener;
+
+  while (1)
+  {
+    try
+    {
+      listener.lookupTransform(parent_frame,child_frame , ros::Time(0), transform);
+      break;
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+    }
+  }
+}
+
+static void getInitialPoseFromTF()
+{
+  if(_initial_set)
     return;
 
-    static tf::TransformListener listener;
-    tf::StampedTransform transform;
-    bool tf_flag = false;
-    while (!tf_flag)
-    {
-      try
-      {
-        listener.lookupTransform("map", "world", ros::Time(0), transform);
-        tf_flag = true;
-      }
-      catch (tf::TransformException ex)
-      {
-        ROS_ERROR("%s", ex.what());
-        ros::Duration(1.0).sleep();
-      }
+  tf::StampedTransform transform;
 
-    }
+  if(_initialize_source == "GNSS")
+  {
+    getTransformFromTF(MAP_FRAME,"gps", transform);
+  }
+  else if(_initialize_source == "Localizer")
+  {
+    getTransformFromTF(MAP_FRAME,"base_link",transform);
+  }
 
-    _initial_pose.position.x = input->pose.pose.position.x + transform.getOrigin().x();
-    _initial_pose.position.y = input->pose.pose.position.y + transform.getOrigin().y();
-    _initial_pose.position.z = input->pose.pose.position.z + transform.getOrigin().z();
-    _initial_pose.orientation = input->pose.pose.orientation;
+  _initial_pose.position.x = transform.getOrigin().x();
+   _initial_pose.position.y = transform.getOrigin().y();
+   _initial_pose.position.z = transform.getOrigin().z();
+   _initial_pose.orientation.x = transform.getRotation().getX();
+   _initial_pose.orientation.y = transform.getRotation().getY();
+   _initial_pose.orientation.z = transform.getRotation().getZ();
+   _initial_pose.orientation.w = transform.getRotation().getW();
+   ROS_INFO("x: %lf,y: %lf,z:%lf",_initial_pose.position.x,_initial_pose.position.y,_initial_pose.position.z);
+   _initial_set = true;
+   _pose_set = false;
 
-    _initial_set = true;
-    _pose_set = false;
+}
+
+static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
+{
+  if (_initialize_source != "Rviz")
+    return;
+
+  tf::StampedTransform transform;
+  getTransformFromTF(MAP_FRAME,"world", transform);
+
+  _initial_pose.position.x = input->pose.pose.position.x + transform.getOrigin().x();
+  _initial_pose.position.y = input->pose.pose.position.y + transform.getOrigin().y();
+  _initial_pose.position.z = input->pose.pose.position.z + transform.getOrigin().z();
+  _initial_pose.orientation = input->pose.pose.orientation;
+
+  _initial_set = true;
+  _pose_set = false;
 
   
 }
@@ -216,18 +219,18 @@ int main(int argc, char **argv)
 
 //subscribe topic
   ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 10, CmdCallBack);
-  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
   ros::Subscriber initialpose_subscriber = nh.subscribe("initialpose", 10, initialposeCallback);
-  ros::Subscriber gnss_subscriber = nh.subscribe("gnss_pose", 1000, GNSSCallback);
 
   ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
 
-  private_nh.getParam("use_pose", _use_pose);
+  private_nh.getParam("initialize_source", _initialize_source);
 
   ros::Rate loop_rate(50); // 50Hz
   while (ros::ok())
   {
     ros::spinOnce(); //check subscribe topic
+    if(_initialize_source != "Rviz")
+      getInitialPoseFromTF();
 
     if (!_waypoint_set)
     {

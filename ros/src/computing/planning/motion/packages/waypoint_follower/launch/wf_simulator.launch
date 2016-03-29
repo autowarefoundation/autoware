@@ -6,9 +6,9 @@
 	<arg name="base_frame" default="sim_base_link"/>
 	</include>
 	
-	<arg name="use_pose" default="InitialPos"/>
+	<arg name="use_pose" default="Rviz"/>
     <node pkg="waypoint_follower" type="odom_gen" name="odom_gen" output="screen">
-    	<param name="use_pose" value="$(arg use_pose)"/>
+    	<param name="initialize_source" value="$(arg initialize_source)"/>
     </node>
 
 </launch>

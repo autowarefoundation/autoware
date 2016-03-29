@@ -1072,12 +1072,12 @@ params :
   
   - name  : wf_simulator
     vars  :
-    - name    : use_pose
-      label   : use_pose
+    - name    : initialize_source
+      label   : Initialize Source
       kind    : radio_box
-      choices : ['InitialPos','NDT','GNSS']
+      choices : ['Rviz','Localizer','GNSS']
       choices_type : str
-      v       : InitialPos
+      v       : Rviz
       cmd_param:
         dash     : ''
         delim    : ':='
