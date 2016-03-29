@@ -7,7 +7,7 @@
 	</include>
 	
 	<arg name="use_pose" default="Rviz"/>
-    <node pkg="waypoint_follower" type="odom_gen" name="odom_gen" output="screen">
+    <node pkg="waypoint_follower" type="wf_simulator" name="wf_simulator" output="screen">
     	<param name="initialize_source" value="$(arg initialize_source)"/>
     </node>
 
