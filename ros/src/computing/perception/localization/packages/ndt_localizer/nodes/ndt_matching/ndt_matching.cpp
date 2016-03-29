@@ -151,7 +151,7 @@ static double angular_velocity = 0.0;
 
 static int use_predict_pose = 0;
 
-static ros::Publisher estimated_vel_mps_pub, estimated_vel_kmph_pub;
+static ros::Publisher estimated_vel_mps_pub, estimated_vel_kmph_pub ,estimated_vel_pub;
 static std_msgs::Float32 estimated_vel_mps, estimated_vel_kmph, previous_estimated_vel_kmph;
 
 static std::chrono::time_point<std::chrono::system_clock> matching_start, matching_end;;
@@ -241,7 +241,6 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 	max = input->max;
 	min = input->min;
 	layer = input->layer;
-
 }
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -569,6 +568,11 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 		estimate_twist_pub.publish(estimate_twist_msg);
 
+		geometry_msgs::Vector3Stamped estimate_vel_msg;
+		estimate_vel_msg.header.stamp = current_scan_time;
+		estimate_vel_msg.vector.x = current_velocity;
+		estimated_vel_pub.publish(estimate_vel_msg);
+
 		// Set values for /ndt_stat
 		ndt_stat_msg.header.stamp = current_scan_time;
 		ndt_stat_msg.exe_time = time_ndt_matching.data;
@@ -741,12 +745,13 @@ int main(int argc, char **argv)
 	// Publishers
 	predict_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose", 1000);
 	ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
-	current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
+	//current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
 	control_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
 	localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 1000);
 	estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist", 1000);
 	estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
 	estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
+        estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 1000);
 	time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
 	ndt_stat_pub = nh.advertise<ndt_localizer::ndt_stat>("/ndt_stat", 1000);
 	ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
