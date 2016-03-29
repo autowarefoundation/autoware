@@ -33,7 +33,7 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
@@ -194,19 +194,13 @@ static void publishOdometry()
   odom_broadcaster.sendTransform(odom_trans);
 
   //next, we'll publish the odometry message over ROS
-  nav_msgs::Odometry odom;
-  odom.header.stamp = current_time;
-  odom.header.frame_id = MAP_FRAME;
+  geometry_msgs::PoseStamped ps;
+  ps.header.stamp = current_time;
+  ps.header.frame_id = MAP_FRAME;
+  ps.pose = pose;
 
-  //set the position
-  odom.pose.pose = pose;
-
-  //set the velocity
-  odom.child_frame_id = SIMULATION_FRAME;
-  odom.twist.twist.linear.x = vx;
-  odom.twist.twist.angular.z = vth;
   //publish the message
-  g_odometry_publisher.publish(odom);
+  g_odometry_publisher.publish(ps);
 
   last_time = current_time;
 }
@@ -218,7 +212,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 //publish topic
-  g_odometry_publisher = nh.advertise<nav_msgs::Odometry>("odom_pose", 10);
+  g_odometry_publisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
 
 //subscribe topic
   ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 10, CmdCallBack);
