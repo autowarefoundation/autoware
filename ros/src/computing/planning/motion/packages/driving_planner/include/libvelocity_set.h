@@ -31,7 +31,7 @@ struct CrossWalkPoints
 
 class CrossWalk
 {
- private:
+private:
   // detection_points_[bdID] has information of each crosswalk
   std::unordered_map<int, CrossWalkPoints> detection_points_;
   int detection_waypoint_;
@@ -39,7 +39,7 @@ class CrossWalk
   std::vector<geometry_msgs::Point> obstacle_points_;
   std::vector<int> bdID_;
 
- public:
+public:
   bool loaded_crosswalk;
   bool loaded_areaclass;
   bool loaded_lineclass;
@@ -64,25 +64,47 @@ class CrossWalk
   geometry_msgs::Point getPoint(const int &pid) const;
   void calcCenterPoints();
   void setCrossWalkPoints();
-  int getSize() const { return detection_points_.size(); }
-  std::vector<int> getBDID() const { return bdID_; }
-  CrossWalkPoints getDetectionPoints(const int &id) const { return detection_points_.at(id); }
-  void setDetectionWaypoint(const int &num) { detection_waypoint_ = num; }
-  int getDetectionWaypoint() const { return detection_waypoint_; }
-  void setDetectionCrossWalkID(const int &id) { detection_crosswalk_id_ = id; }
-  int getDetectionCrossWalkID() const { return detection_crosswalk_id_; }
+  int getSize() const
+  {
+    return detection_points_.size();
+  }
+  std::vector<int> getBDID() const
+  {
+    return bdID_;
+  }
+  CrossWalkPoints getDetectionPoints(const int &id) const
+  {
+    return detection_points_.at(id);
+  }
+  void setDetectionWaypoint(const int &num)
+  {
+    detection_waypoint_ = num;
+  }
+  int getDetectionWaypoint() const
+  {
+    return detection_waypoint_;
+  }
+  void setDetectionCrossWalkID(const int &id)
+  {
+    detection_crosswalk_id_ = id;
+  }
+  int getDetectionCrossWalkID() const
+  {
+    return detection_crosswalk_id_;
+  }
 
-  CrossWalk () :
-    detection_waypoint_(-1),
-    detection_crosswalk_id_(-1),
-    loaded_crosswalk(false),
-    loaded_areaclass(false),
-    loaded_lineclass(false),
-    loaded_pointclass(false),
-    loaded_all(false),
-    set_points(false) {}
+  CrossWalk()
+    : detection_waypoint_(-1)
+    , detection_crosswalk_id_(-1)
+    , loaded_crosswalk(false)
+    , loaded_areaclass(false)
+    , loaded_lineclass(false)
+    , loaded_pointclass(false)
+    , loaded_all(false)
+    , set_points(false)
+  {
+  }
 };
-
 
 //////////////////////////////////////
 // for visualization of obstacles
@@ -94,27 +116,46 @@ private:
   std::vector<geometry_msgs::Point> decelerate_points_;
   geometry_msgs::Point previous_detection_;
   bool decided_;
+
 public:
-  void setStopPoint(const geometry_msgs::Point &p) { stop_points_.push_back(p); }
-  void setDeceleratePoint(const geometry_msgs::Point &p) { decelerate_points_.push_back(p); }
-  void setDecided(const bool &b) { decided_ = b; }
+  void setStopPoint(const geometry_msgs::Point &p)
+  {
+    stop_points_.push_back(p);
+  }
+  void setDeceleratePoint(const geometry_msgs::Point &p)
+  {
+    decelerate_points_.push_back(p);
+  }
+  void setDecided(const bool &b)
+  {
+    decided_ = b;
+  }
   geometry_msgs::Point getObstaclePoint(const EControl &kind);
-  void clearStopPoints() { stop_points_.clear(); }
-  void clearDeceleratePoints() { decelerate_points_.clear(); }
-  bool isDecided() { return decided_; }
-  geometry_msgs::Point getPreviousDetection() { return previous_detection_; }
+  void clearStopPoints()
+  {
+    stop_points_.clear();
+  }
+  void clearDeceleratePoints()
+  {
+    decelerate_points_.clear();
+  }
+  bool isDecided()
+  {
+    return decided_;
+  }
+  geometry_msgs::Point getPreviousDetection()
+  {
+    return previous_detection_;
+  }
 
-  ObstaclePoints () :
-    stop_points_(0),
-    decelerate_points_(0),
-    decided_(false) {}
+  ObstaclePoints() : stop_points_(0), decelerate_points_(0), decided_(false)
+  {
+  }
 };
-
 
 inline double CalcSquareOfLength(const geometry_msgs::Point &p1, const geometry_msgs::Point &p2)
 {
-  return (p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y) + (p1.z-p2.z)*(p1.z-p2.z);
+  return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
 }
-
 
 #endif /* _VELOCITY_SET_H */
