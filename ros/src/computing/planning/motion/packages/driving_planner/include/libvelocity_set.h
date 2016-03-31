@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <math.h>
 
 #include <ros/ros.h>
@@ -31,12 +32,12 @@ struct CrossWalkPoints
 class CrossWalk
 {
  private:
-  // detection_points_[bdID] has points at each crosswalk
-  // detection_points_[0] has no data
-  std::vector<CrossWalkPoints> detection_points_;
+  // detection_points_[bdID] has information of each crosswalk
+  std::unordered_map<int, CrossWalkPoints> detection_points_;
   int detection_waypoint_;
   int detection_crosswalk_id_;
   std::vector<geometry_msgs::Point> obstacle_points_;
+  std::vector<int> bdID_;
 
  public:
   bool loaded_crosswalk;
@@ -56,15 +57,16 @@ class CrossWalk
   void PointclassCallback(const map_file::PointClassArray &msg);
 
   int countAreaSize() const;
-  void getAID(std::vector< std::vector<int> > &aid_crosswalk) const;
-  void calcDetectionArea(const std::vector< std::vector<int> > &aid_crosswalk);
+  void getAID(std::unordered_map<int, std::vector<int>> &aid_crosswalk) const;
+  void calcDetectionArea(const std::unordered_map<int, std::vector<int>> &bdid2aid_map);
   geometry_msgs::Point calcCenterofGravity(const int &aid) const;
   double calcCrossWalkWidth(const int &aid) const;
   geometry_msgs::Point getPoint(const int &pid) const;
   void calcCenterPoints();
   void setCrossWalkPoints();
   int getSize() const { return detection_points_.size(); }
-  CrossWalkPoints getDetectionPoints(const int &id) const { return detection_points_[id]; }
+  std::vector<int> getBDID() const { return bdID_; }
+  CrossWalkPoints getDetectionPoints(const int &id) const { return detection_points_.at(id); }
   void setDetectionWaypoint(const int &num) { detection_waypoint_ = num; }
   int getDetectionWaypoint() const { return detection_waypoint_; }
   void setDetectionCrossWalkID(const int &id) { detection_crosswalk_id_ = id; }
