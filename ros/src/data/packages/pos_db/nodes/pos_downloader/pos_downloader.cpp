@@ -94,7 +94,7 @@ static int ignore_my_pose = 1;
 #ifndef CURRENT_CAR_DIRECTLY
 static map<int, geometry_msgs::Pose> car_map;
 static map<int, ros::Time> now_map;
-static ros::Time prev_time;
+static map<int, ros::Time> prev_map;
 #endif /* ! CURRENT_CAR_DIRECTLY */
 
 #ifdef NEVER
@@ -212,7 +212,7 @@ static void publish_car_summary(ros::Time now)
     int id = itr->first;
     geometry_msgs::Pose pose = itr->second;
     ros::Time cur = now_map[id];
-    if (cur <= prev_time) {
+    if (prev_map.count(id) > 0 && cur <= prev_map[id]) {
       continue;
     }
     marker.header.frame_id = "/map";
@@ -247,7 +247,7 @@ static void publish_car_summary(ros::Time now)
 
     pub.publish(marker);
     dbg_out_marker(marker);
-    prev_time = cur;
+    prev_map[id] = cur;
   }
   car_map.clear();
   now_map.clear();
