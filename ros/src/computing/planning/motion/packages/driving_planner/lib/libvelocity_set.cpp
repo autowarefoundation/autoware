@@ -174,35 +174,37 @@ int CrossWalk::countAreaSize() const
 {
   int count = 0;
   for (const auto &x : crosswalk_.cross_walks)
-    if (x.bdid == 0)
+    if (x.type == 0) // type:0 -> outer frame of crosswalks
       count++;
 
   return count;
 }
 
-void CrossWalk::getAID(std::vector< std::vector<int> > &aid_crosswalk) const
+void CrossWalk::getAID(std::unordered_map<int, std::vector<int>> &bdid2aid_map) const
 {
   for (const auto &x : crosswalk_.cross_walks)
-    if (x.bdid > 0) // if it is not outer frame
-      aid_crosswalk[x.bdid].push_back(x.aid); // save area id
+    if (x.type == 1) { // if it is zebra
+      bdid2aid_map[x.bdid].push_back(x.aid); // save area id
+    }
 }
 
-void CrossWalk::calcDetectionArea(const std::vector< std::vector<int> > &aid_crosswalk)
+void CrossWalk::calcDetectionArea(const std::unordered_map<int, std::vector<int>> &bdid2aid_map)
 {
-  for (unsigned int bdid = 1; bdid < aid_crosswalk.size(); bdid++) {
+  for (const auto &crosswalk_aids : bdid2aid_map) {
+    int bdid = crosswalk_aids.first;
     double width = 0.0;
-    for (const auto &aid : aid_crosswalk[bdid]) {
+    for (const auto &aid : crosswalk_aids.second) {
       detection_points_[bdid].points.push_back(calcCenterofGravity(aid));
       width += calcCrossWalkWidth(aid);
     }
-    width /= aid_crosswalk[bdid].size();
+    width /= crosswalk_aids.second.size();
     detection_points_[bdid].width = width;
   }
 }
 
 void CrossWalk::calcCenterPoints()
 {
-  for (unsigned int i = 1; i < detection_points_.size(); i++) {
+  for (const auto &i : bdID_) {
     geometry_msgs::Point center;
     center.x = 0.0;
     center.y = 0.0;
@@ -222,14 +224,15 @@ void CrossWalk::calcCenterPoints()
 
 void CrossWalk::setCrossWalkPoints()
 {
-  int crosswalk_size = countAreaSize();
+  // bdid2aid_map[BDID] has AIDs of its zebra zone
+  std::unordered_map<int, std::vector<int>> bdid2aid_map;
+  getAID(bdid2aid_map);
 
-  // aid_crosswalk[BDID] has AIDs of its zebra zone
-  std::vector< std::vector<int> > aid_crosswalk(crosswalk_size+1);
-  getAID(aid_crosswalk);
+  // Save key values
+  for (const auto &bdid2aid : bdid2aid_map)
+    bdID_.push_back(bdid2aid.first);
 
-  detection_points_.resize(crosswalk_size+1);
-  calcDetectionArea(aid_crosswalk);
+  calcDetectionArea(bdid2aid_map);
   calcCenterPoints();
 
   ROS_INFO("Set cross walk detection points");

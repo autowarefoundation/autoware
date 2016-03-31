@@ -585,11 +585,12 @@ static int FindCrossWalk()
 
   double find_distance = 2.0*2.0; // meter
   double ignore_distance = 20.0*20.0; // meter
+  static std::vector<int> bdid = vmap.getBDID();
   // Find near cross walk
   for (int num = _closest_waypoint; num < _closest_waypoint+_search_distance; num++) {
     geometry_msgs::Point waypoint = _path_dk.getWaypointPosition(num);
     waypoint.z = 0.0; // ignore Z axis
-    for (int i = 1; i < vmap.getSize(); i++) {
+    for (const auto &i : bdid) {
       // ignore far crosswalk
       geometry_msgs::Point crosswalk_center = vmap.getDetectionPoints(i).center;
       crosswalk_center.z = 0.0;
