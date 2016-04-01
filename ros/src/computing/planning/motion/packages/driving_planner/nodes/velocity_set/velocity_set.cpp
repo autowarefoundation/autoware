@@ -50,53 +50,56 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libvelocity_set.h"
 
-static const int LOOP_RATE = 10;
+namespace
+{
 
-static geometry_msgs::TwistStamped _current_twist;
-static geometry_msgs::PoseStamped _current_pose;  // pose of sensor
-static geometry_msgs::PoseStamped _control_pose;  // pose of base_link
-static geometry_msgs::PoseStamped _sim_ndt_pose;
-static pcl::PointCloud<pcl::PointXYZ> _vscan;
+const int LOOP_RATE = 10;
 
-static const std::string pedestrian_sound = "pedestrian";
-static bool _pose_flag = false;
-static bool _path_flag = false;
-static bool _vscan_flag = false;
-static int _obstacle_waypoint = -1;
-static double _deceleration_search_distance = 30;
-static double _search_distance = 60;
-static int _closest_waypoint = -1;
-static double _current_vel = 0.0;  // subscribe estimated_vel_mps
-static CrossWalk vmap;
-static ObstaclePoints g_obstacle;
-static bool g_sim_mode;
+geometry_msgs::TwistStamped _current_twist;
+geometry_msgs::PoseStamped _current_pose;  // pose of sensor
+geometry_msgs::PoseStamped _control_pose;  // pose of base_link
+geometry_msgs::PoseStamped _sim_ndt_pose;
+pcl::PointCloud<pcl::PointXYZ> _vscan;
+
+const std::string pedestrian_sound = "pedestrian";
+bool _pose_flag = false;
+bool _path_flag = false;
+bool _vscan_flag = false;
+int _obstacle_waypoint = -1;
+double _deceleration_search_distance = 30;
+double _search_distance = 60;
+int _closest_waypoint = -1;
+double _current_vel = 0.0;  // subscribe estimated_vel_mps
+CrossWalk vmap;
+ObstaclePoints g_obstacle;
+bool g_sim_mode;
 
 /* Config Parameter */
-static double _detection_range = 0;                   // if obstacle is in this range, stop
-static double _deceleration_range = 1.8;              // if obstacle is in this range, decelerate
-static double _deceleration_minimum = kmph2mps(4.0);  // until this speed
-static int _threshold_points = 15;
-static double _detection_height_top = 2.0;  // actually +2.0m
-static double _detection_height_bottom = -2.0;
-static double _cars_distance = 15.0;             // meter: stopping distance from cars (using DPM)
-static double _pedestrians_distance = 10.0;      // meter: stopping distance from pedestrians (using DPM)
-static double _others_distance = 8.0;            // meter: stopping distance from obstacles (using VSCAN)
-static double _decel = 1.5;                      // (m/s) deceleration
-static double _velocity_change_limit = 2.778;    // (m/s) about 10 km/h
-static double _velocity_limit = 12.0;            //(m/s) limit velocity for waypoints
-static double _temporal_waypoints_size = 100.0;  // meter
-static double _velocity_offset = 1.389;          // (m/s)
+double _detection_range = 0;                   // if obstacle is in this range, stop
+double _deceleration_range = 1.8;              // if obstacle is in this range, decelerate
+double _deceleration_minimum = kmph2mps(4.0);  // until this speed
+int _threshold_points = 15;
+double _detection_height_top = 2.0;  // actually +2.0m
+double _detection_height_bottom = -2.0;
+double _cars_distance = 15.0;             // meter: stopping distance from cars (using DPM)
+double _pedestrians_distance = 10.0;      // meter: stopping distance from pedestrians (using DPM)
+double _others_distance = 8.0;            // meter: stopping distance from obstacles (using VSCAN)
+double _decel = 1.5;                      // (m/s) deceleration
+double _velocity_change_limit = 2.778;    // (m/s) about 10 km/h
+double _velocity_limit = 12.0;            //(m/s) limit velocity for waypoints
+double _temporal_waypoints_size = 100.0;  // meter
+double _velocity_offset = 1.389;          // (m/s)
 
 // Publisher
-static ros::Publisher _range_pub;
-static ros::Publisher _deceleration_range_pub;
-static ros::Publisher _sound_pub;
-static ros::Publisher _safety_waypoint_pub;
-static ros::Publisher _temporal_waypoints_pub;
-static ros::Publisher _crosswalk_points_pub;
-static ros::Publisher _obstacle_pub;
+ros::Publisher _range_pub;
+ros::Publisher _deceleration_range_pub;
+ros::Publisher _sound_pub;
+ros::Publisher _safety_waypoint_pub;
+ros::Publisher _temporal_waypoints_pub;
+ros::Publisher _crosswalk_points_pub;
+ros::Publisher _obstacle_pub;
 
-static WayPoints _path_dk;
+WayPoints _path_dk;
 
 class PathVset : public WayPoints
 {
@@ -115,7 +118,7 @@ public:
     return temporal_waypoints_;
   }
 };
-static PathVset _path_change;
+PathVset _path_change;
 
 //===============================
 //       class function
@@ -372,7 +375,7 @@ void ObjPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
   ROS_INFO("subscribed obj_pose\n");
 }
 
-static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
+void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
   pcl::PointCloud<pcl::PointXYZ> vscan_raw;
   pcl::fromROSMsg(*msg, vscan_raw);
@@ -394,13 +397,13 @@ static void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
   }
 }
 
-static void ControlCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+void ControlCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   _control_pose.header = msg->header;
   _control_pose.pose = msg->pose;
 }
 
-static void LocalizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+void LocalizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   if (g_sim_mode)
   {
@@ -418,7 +421,7 @@ static void LocalizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 }
 
-static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
+void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
   //
   // effective for testing.
@@ -440,7 +443,7 @@ static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 //          Callback
 //===============================
 
-static void DisplayObstacle(const EControl &kind)
+void DisplayObstacle(const EControl &kind)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/map";
@@ -475,7 +478,7 @@ static void DisplayObstacle(const EControl &kind)
   _obstacle_pub.publish(marker);
 }
 
-static void DisplayDetectionRange(const int &crosswalk_id, const int &num, const EControl &kind)
+void DisplayDetectionRange(const int &crosswalk_id, const int &num, const EControl &kind)
 {
   // set up for marker array
   visualization_msgs::MarkerArray marker_array;
@@ -579,7 +582,7 @@ static void DisplayDetectionRange(const int &crosswalk_id, const int &num, const
   marker_array.markers.clear();
 }
 
-static int FindCrossWalk()
+int FindCrossWalk()
 {
   if (!vmap.set_points || _closest_waypoint < 0)
     return -1;
@@ -616,7 +619,7 @@ static int FindCrossWalk()
   return -1;  // no near crosswalk
 }
 
-static EControl CrossWalkDetection(const int &crosswalk_id)
+EControl CrossWalkDetection(const int &crosswalk_id)
 {
   double search_radius = vmap.getDetectionPoints(crosswalk_id).width / 2;
 
@@ -656,7 +659,7 @@ static EControl CrossWalkDetection(const int &crosswalk_id)
   return KEEP;  // find no obstacles
 }
 
-static EControl vscanDetection()
+EControl vscanDetection()
 {
   if (_vscan.empty() == true || _closest_waypoint < 0)
     return KEEP;
@@ -783,14 +786,14 @@ static EControl vscanDetection()
   return KEEP;  // no obstacles
 }
 
-static void SoundPlay()
+void SoundPlay()
 {
   std_msgs::String string;
   string.data = pedestrian_sound;
   _sound_pub.publish(string);
 }
 
-static EControl ObstacleDetection()
+EControl ObstacleDetection()
 {
   static int false_count = 0;
   static EControl prev_detection = KEEP;
@@ -853,7 +856,7 @@ static EControl ObstacleDetection()
   }
 }
 
-static void ChangeWaypoint(EControl detection_result)
+void ChangeWaypoint(EControl detection_result)
 {
   int obs = _obstacle_waypoint;
 
@@ -893,6 +896,8 @@ static void ChangeWaypoint(EControl detection_result)
   return;
 }
 
+} // end namespace
+
 //======================================
 //                 main
 //======================================
@@ -923,7 +928,7 @@ int main(int argc, char **argv)
   _range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
   _sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
   _temporal_waypoints_pub = nh.advertise<waypoint_follower::lane>("temporal_waypoints", 1000, true);
-  static ros::Publisher closest_waypoint_pub;
+  ros::Publisher closest_waypoint_pub;
   closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
   _obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 0);
 
