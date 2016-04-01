@@ -1,0 +1,16 @@
+.gradle
+local.properties
+import-summary.txt
+
+.idea/workspace.xml
+.idea/libraries/
+
+*.ap_
+*.apk
+*.class
+*.dex
+*.iml
+
+build/
+
+!AutowareTouch.apk
