@@ -1,12 +1,12 @@
 #include "libvelocity_set.h"
 
 // extract edge points from zebra zone
-std::vector<geometry_msgs::Point> RemoveNeedlessPoints(std::vector<geometry_msgs::Point> &area_points)
+std::vector<geometry_msgs::Point> removeNeedlessPoints(std::vector<geometry_msgs::Point> &area_points)
 {
   area_points.push_back(area_points.front());
   std::map<double, int> length_index;
   for (unsigned int i = 0; i < area_points.size() - 1; i++)
-    length_index[CalcSquareOfLength(area_points[i], area_points[i + 1])] = i;
+    length_index[calcSquareOfLength(area_points[i], area_points[i + 1])] = i;
 
   std::vector<geometry_msgs::Point> new_points;
   auto it = length_index.end();
@@ -20,7 +20,7 @@ std::vector<geometry_msgs::Point> RemoveNeedlessPoints(std::vector<geometry_msgs
   return new_points;
 }
 
-void CrossWalk::CrossWalkCallback(const map_file::CrossWalkArray &msg)
+void CrossWalk::crossWalkCallback(const map_file::CrossWalkArray &msg)
 {
   crosswalk_ = msg;
 
@@ -32,7 +32,7 @@ void CrossWalk::CrossWalkCallback(const map_file::CrossWalkArray &msg)
   }
 }
 
-void CrossWalk::AreaclassCallback(const map_file::AreaClassArray &msg)
+void CrossWalk::areaclassCallback(const map_file::AreaClassArray &msg)
 {
   areaclass_ = msg;
 
@@ -44,7 +44,7 @@ void CrossWalk::AreaclassCallback(const map_file::AreaClassArray &msg)
   }
 }
 
-void CrossWalk::LineclassCallback(const map_file::LineClassArray &msg)
+void CrossWalk::lineclassCallback(const map_file::LineClassArray &msg)
 {
   lineclass_ = msg;
 
@@ -56,7 +56,7 @@ void CrossWalk::LineclassCallback(const map_file::LineClassArray &msg)
   }
 }
 
-void CrossWalk::PointclassCallback(const map_file::PointClassArray &msg)
+void CrossWalk::pointclassCallback(const map_file::PointClassArray &msg)
 {
   pointclass_ = msg;
 
@@ -115,7 +115,7 @@ geometry_msgs::Point CrossWalk::calcCenterofGravity(const int &aid) const
   point.z = 0.0;
   if (area_points.size() > 4)
   {
-    std::vector<geometry_msgs::Point> filterd_points = RemoveNeedlessPoints(area_points);
+    std::vector<geometry_msgs::Point> filterd_points = removeNeedlessPoints(area_points);
     for (const auto &p : filterd_points)
     {
       point.x += p.x;
@@ -164,11 +164,11 @@ double CrossWalk::calcCrossWalkWidth(const int &aid) const
   }
 
   area_points.push_back(area_points.front());
-  double max_length = CalcSquareOfLength(area_points[0], area_points[1]);
+  double max_length = calcSquareOfLength(area_points[0], area_points[1]);
   for (unsigned int i = 1; i < area_points.size() - 1; i++)
   {
-    if (CalcSquareOfLength(area_points[i], area_points[i + 1]) > max_length)
-      max_length = CalcSquareOfLength(area_points[i], area_points[i + 1]);
+    if (calcSquareOfLength(area_points[i], area_points[i + 1]) > max_length)
+      max_length = calcSquareOfLength(area_points[i], area_points[i + 1]);
   }
 
   return sqrt(max_length);

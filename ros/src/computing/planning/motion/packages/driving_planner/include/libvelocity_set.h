@@ -51,10 +51,10 @@ public:
   map_file::LineClassArray lineclass_;
   map_file::PointClassArray pointclass_;
 
-  void CrossWalkCallback(const map_file::CrossWalkArray &msg);
-  void AreaclassCallback(const map_file::AreaClassArray &msg);
-  void LineclassCallback(const map_file::LineClassArray &msg);
-  void PointclassCallback(const map_file::PointClassArray &msg);
+  void crossWalkCallback(const map_file::CrossWalkArray &msg);
+  void areaclassCallback(const map_file::AreaClassArray &msg);
+  void lineclassCallback(const map_file::LineClassArray &msg);
+  void pointclassCallback(const map_file::PointClassArray &msg);
 
   int countAreaSize() const;
   void getAID(std::unordered_map<int, std::vector<int>> &aid_crosswalk) const;
@@ -153,7 +153,7 @@ public:
   }
 };
 
-inline double CalcSquareOfLength(const geometry_msgs::Point &p1, const geometry_msgs::Point &p2)
+inline double calcSquareOfLength(const geometry_msgs::Point &p1, const geometry_msgs::Point &p2)
 {
   return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
 }

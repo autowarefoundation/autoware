@@ -332,7 +332,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
 //          Callback
 //===============================
 
-void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
+void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
 {
   _velocity_limit = kmph2mps(config->velocity_limit);
   _others_distance = config->others_distance;
@@ -350,7 +350,7 @@ void ConfigCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   _temporal_waypoints_size = config->temporal_waypoints_size;
 }
 
-void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
+void estimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
 {
   if (g_sim_mode)
     return;
@@ -358,7 +358,7 @@ void EstimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
   _current_vel = msg->data;
 }
 
-void BaseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
+void baseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
 {
   ROS_INFO("subscribed base_waypoint\n");
   _path_dk.setPath(*msg);
@@ -370,12 +370,12 @@ void BaseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
   }
 }
 
-void ObjPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
+void objPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
 {
   ROS_INFO("subscribed obj_pose\n");
 }
 
-void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
+void vscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
   pcl::PointCloud<pcl::PointXYZ> vscan_raw;
   pcl::fromROSMsg(*msg, vscan_raw);
@@ -397,13 +397,13 @@ void VscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
   }
 }
 
-void ControlCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+void controlCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   _control_pose.header = msg->header;
   _control_pose.pose = msg->pose;
 }
 
-void LocalizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+void localizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   if (g_sim_mode)
   {
@@ -421,7 +421,7 @@ void LocalizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 }
 
-void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
+void odometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 {
   //
   // effective for testing.
@@ -443,7 +443,7 @@ void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
 //          Callback
 //===============================
 
-void DisplayObstacle(const EControl &kind)
+void displayObstacle(const EControl &kind)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/map";
@@ -478,7 +478,7 @@ void DisplayObstacle(const EControl &kind)
   _obstacle_pub.publish(marker);
 }
 
-void DisplayDetectionRange(const int &crosswalk_id, const int &num, const EControl &kind)
+void displayDetectionRange(const int &crosswalk_id, const int &num, const EControl &kind)
 {
   // set up for marker array
   visualization_msgs::MarkerArray marker_array;
@@ -582,7 +582,7 @@ void DisplayDetectionRange(const int &crosswalk_id, const int &num, const EContr
   marker_array.markers.clear();
 }
 
-int FindCrossWalk()
+int findCrossWalk()
 {
   if (!vmap.set_points || _closest_waypoint < 0)
     return -1;
@@ -600,13 +600,13 @@ int FindCrossWalk()
       // ignore far crosswalk
       geometry_msgs::Point crosswalk_center = vmap.getDetectionPoints(i).center;
       crosswalk_center.z = 0.0;
-      if (CalcSquareOfLength(crosswalk_center, waypoint) > ignore_distance)
+      if (calcSquareOfLength(crosswalk_center, waypoint) > ignore_distance)
         continue;
 
       for (auto p : vmap.getDetectionPoints(i).points)
       {
         p.z = waypoint.z;
-        if (CalcSquareOfLength(p, waypoint) < find_distance)
+        if (calcSquareOfLength(p, waypoint) < find_distance)
         {
           vmap.setDetectionCrossWalkID(i);
           return num;
@@ -619,7 +619,7 @@ int FindCrossWalk()
   return -1;  // no near crosswalk
 }
 
-EControl CrossWalkDetection(const int &crosswalk_id)
+EControl crossWalkDetection(const int &crosswalk_id)
 {
   double search_radius = vmap.getDetectionPoints(crosswalk_id).width / 2;
 
@@ -683,7 +683,7 @@ EControl vscanDetection()
     // Detection for cross walk
     if (i == vmap.getDetectionWaypoint())
     {
-      if (CrossWalkDetection(vmap.getDetectionCrossWalkID()) == STOP)
+      if (crossWalkDetection(vmap.getDetectionCrossWalkID()) == STOP)
       {
         _obstacle_waypoint = i;
         return STOP;
@@ -786,14 +786,14 @@ EControl vscanDetection()
   return KEEP;  // no obstacles
 }
 
-void SoundPlay()
+void soundPlay()
 {
   std_msgs::String string;
   string.data = pedestrian_sound;
   _sound_pub.publish(string);
 }
 
-EControl ObstacleDetection()
+EControl obstacleDetection()
 {
   static int false_count = 0;
   static EControl prev_detection = KEEP;
@@ -801,13 +801,13 @@ EControl ObstacleDetection()
   std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
   std::cout << "current_velocity : " << mps2kmph(_current_vel) << std::endl;
   EControl vscan_result = vscanDetection();
-  DisplayDetectionRange(vmap.getDetectionCrossWalkID(), _closest_waypoint, vscan_result);
+  displayDetectionRange(vmap.getDetectionCrossWalkID(), _closest_waypoint, vscan_result);
 
   if (prev_detection == KEEP)
   {
     if (vscan_result != KEEP)
     {  // found obstacle
-      DisplayObstacle(vscan_result);
+      displayObstacle(vscan_result);
       std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl
                 << std::endl;
       prev_detection = vscan_result;
@@ -825,7 +825,7 @@ EControl ObstacleDetection()
   {  // prev_detection = STOP or DECELERATE
     if (vscan_result != KEEP)
     {  // found obstacle
-      DisplayObstacle(vscan_result);
+      displayObstacle(vscan_result);
       std::cout << "obstacle waypoint : " << vscan_result << std::endl
                 << std::endl;
       prev_detection = vscan_result;
@@ -849,14 +849,14 @@ EControl ObstacleDetection()
       {
         std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl
                   << std::endl;
-        DisplayObstacle(OTHERS);
+        displayObstacle(OTHERS);
         return prev_detection;
       }
     }
   }
 }
 
-void ChangeWaypoint(EControl detection_result)
+void changeWaypoint(EControl detection_result)
 {
   int obs = _obstacle_waypoint;
 
@@ -909,20 +909,20 @@ int main(int argc, char **argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
-  ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, LocalizerCallback);
-  ros::Subscriber control_pose_sub = nh.subscribe("control_pose", 1, ControlCallback);
-  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, OdometryPoseCallback);
-  ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, VscanCallback);
-  ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, BaseWaypointCallback);
-  ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, ObjPoseCallback);
-  ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel_mps", 1, EstimatedVelCallback);
-  ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, ConfigCallback);
+  ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, localizerCallback);
+  ros::Subscriber control_pose_sub = nh.subscribe("control_pose", 1, controlCallback);
+  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, odometryPoseCallback);
+  ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, vscanCallback);
+  ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, baseWaypointCallback);
+  ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, objPoseCallback);
+  ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel_mps", 1, estimatedVelCallback);
+  ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, configCallback);
 
   //------------------ Vector Map ----------------------//
-  ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::CrossWalkCallback, &vmap);
-  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area_class", 1, &CrossWalk::AreaclassCallback, &vmap);
-  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line_class", 1, &CrossWalk::LineclassCallback, &vmap);
-  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point_class", 1, &CrossWalk::PointclassCallback, &vmap);
+  ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &vmap);
+  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area_class", 1, &CrossWalk::areaclassCallback, &vmap);
+  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line_class", 1, &CrossWalk::lineclassCallback, &vmap);
+  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point_class", 1, &CrossWalk::pointclassCallback, &vmap);
   //----------------------------------------------------//
 
   _range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
@@ -960,11 +960,11 @@ int main(int argc, char **argv)
     _closest_waypoint = getClosestWaypoint(_path_change.getCurrentWaypoints(), _current_pose.pose);
     closest_waypoint_pub.publish(_closest_waypoint);
 
-    vmap.setDetectionWaypoint(FindCrossWalk());
+    vmap.setDetectionWaypoint(findCrossWalk());
 
-    EControl detection_result = ObstacleDetection();
+    EControl detection_result = obstacleDetection();
 
-    ChangeWaypoint(detection_result);
+    changeWaypoint(detection_result);
 
     loop_rate.sleep();
   }
