@@ -1307,7 +1307,7 @@ class MyFrame(rtmgr.MyFrame):
 				v = lst[1] if lst[1] != ':' else lst[2]
 				if v[0] == ':':
 					v = v[1:]
-				fv = float(v)
+				fv = str_to_float(v)
 				col = self.info_col(fv, rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
 
 				if i < cpu_n:
@@ -1362,7 +1362,7 @@ class MyFrame(rtmgr.MyFrame):
 			loads = [ line[i-1:].strip().split(' ')[0] for line in top5 ]
 			
 			for (lb, cmd, load) in zip(self.lb_top5, cmds, loads):
-				col = self.info_col(float(load), rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
+				col = self.info_col(str_to_float(load), rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
 				wx.CallAfter(lb.SetForegroundColour, col)
 				wx.CallAfter(lb.SetLabel, cmd + ' (' + load + ' %CPU)')
 
@@ -1849,9 +1849,9 @@ class MyFrame(rtmgr.MyFrame):
 			if not s:
 				break
 			lst = s.split()
-			pos = float(lst[0])
+			pos = str_to_float(lst[0])
 			# lst[1] is '/'
-			total = float(lst[2])
+			total = str_to_float(lst[2])
 			if total == 0:
 				continue
 			prg = int(100 * pos / total + 0.5)
@@ -2510,7 +2510,7 @@ class VarPanel(wx.Panel):
 
 	def get_tc_v(self):
 		s = self.tc.GetValue()
-		v = float(s) if self.is_float else int(s)
+		v = str_to_float(s) if self.is_float else int(s)
 		if self.has_slider:
 			v = self.min if v < self.min else v
 			v = self.max if v > self.max else v
@@ -2768,7 +2768,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		v = tc.GetValue() if self.radio_btn_filter_resolution.GetValue() else '0.0'
 		msg = self.klass_msg()
 		msg.filename = self.text_ctrl_path.GetValue()
-		msg.filter_res = float(v)
+		msg.filter_res = str_to_float(v)
 		self.pub.publish(msg)
 		
 	def OnOk(self, event):
@@ -3010,7 +3010,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		s = tc.GetValue()
 		mb = 0
 		try:
-			mb = float(s)
+			mb = str_to_float(s)
 		except ValueError:
 			mb = 0
 		if mb <= 0:
@@ -3182,7 +3182,7 @@ def msg_path_to_obj_attr(msg, path):
 		obj = getattr(obj, attr, None)
 	return (obj, lst[-1])
 
-def str_to_rosval(str, type_str, def_ret=None):
+def str_to_rosval(s, type_str, def_ret=None):
 	cvt_dic = {
 		'int8':int , 'int16':int , 'int32':int ,
 		'uint8':int , 'uint16':int , 'uint32':int ,
@@ -3190,7 +3190,11 @@ def str_to_rosval(str, type_str, def_ret=None):
 		'float32':float, 'float64':float,
 	}
 	t = cvt_dic.get(type_str)
-	return t(str) if t else def_ret
+	s = s.replace(',','.') if t is float and type(s) is str else s
+	return t(s) if t else def_ret
+
+def str_to_float(s):
+	return float( s.replace(',','.') )
 
 def set_path(tc, v):
 	tc.SetValue(v)
