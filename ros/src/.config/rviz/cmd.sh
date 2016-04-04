@@ -22,7 +22,7 @@ fi
 
 if [ x"$REMOTE" = x ]; then
   if [ $1 = start ]; then
-    rosrun rviz rviz
+    exec rosrun rviz rviz
   fi
 else
   KEYOPT=""
