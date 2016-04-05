@@ -129,7 +129,7 @@ bool PathVset::checkWaypoint(int num, const char *name) const
 {
   if (num < 0 || num >= getSize())
   {
-    std::cout << name << ": invalid waypoint number" << std::endl;
+    //std::cout << name << ": invalid waypoint number" << std::endl;
     return false;
   }
   return true;
@@ -237,7 +237,6 @@ void PathVset::avoidSuddenBraking()
 
   std::cout << "====avoid sudden braking====" << std::endl;
   std::cout << "vehicle is decelerating..." << std::endl;
-  std::cout << "closest_waypoint: " << _closest_waypoint << std::endl;
 
   // fill in waypoints velocity behind vehicle
   for (num = _closest_waypoint - 1; fill_in_vel > 0; fill_in_vel--)
@@ -271,7 +270,6 @@ void PathVset::avoidSuddenBraking()
     current_waypoints_.waypoints[num + j].twist.twist.linear.x = 0.0;
   }
 
-  std::cout << "====changed waypoints====" << std::endl;
 
   return;
 }
@@ -319,7 +317,6 @@ void PathVset::changeWaypoints(int stop_waypoint)
     current_waypoints_.waypoints[stop_waypoint + j].twist.twist.linear.x = 0.0;
   }
 
-  std::cout << "---changed waypoints---" << std::endl;
 
   return;
 }
@@ -800,8 +797,8 @@ EControl obstacleDetection()
   static int false_count = 0;
   static EControl prev_detection = KEEP;
 
-  std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
-  std::cout << "current_velocity : " << mps2kmph(_current_vel) << std::endl;
+  //std::cout << "closest_waypoint : " << _closest_waypoint << std::endl;
+  //std::cout << "current_velocity : " << mps2kmph(_current_vel) << std::endl;
   EControl vscan_result = vscanDetection();
   displayDetectionRange(vmap.getDetectionCrossWalkID(), _closest_waypoint, vscan_result);
 
@@ -810,8 +807,6 @@ EControl obstacleDetection()
     if (vscan_result != KEEP)
     {  // found obstacle
       displayObstacle(vscan_result);
-      std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl
-                << std::endl;
       prev_detection = vscan_result;
       // SoundPlay();
       false_count = 0;
@@ -828,8 +823,6 @@ EControl obstacleDetection()
     if (vscan_result != KEEP)
     {  // found obstacle
       displayObstacle(vscan_result);
-      std::cout << "obstacle waypoint : " << vscan_result << std::endl
-                << std::endl;
       prev_detection = vscan_result;
       false_count = 0;
       return vscan_result;
@@ -837,7 +830,6 @@ EControl obstacleDetection()
     else
     {  // no obstacle
       false_count++;
-      std::cout << "false_count : " << false_count << std::endl;
 
       // fail-safe
       if (false_count >= LOOP_RATE / 2)
@@ -849,8 +841,6 @@ EControl obstacleDetection()
       }
       else
       {
-        std::cout << "obstacle waypoint : " << _obstacle_waypoint << std::endl
-                  << std::endl;
         displayObstacle(OTHERS);
         return prev_detection;
       }
@@ -862,17 +852,10 @@ void changeWaypoint(EControl detection_result)
 {
   int obs = _obstacle_waypoint;
 
-  if (obs != -1)
-  {
-    std::cout << "====got obstacle waypoint====" << std::endl;
-    std::cout << "=============================" << std::endl;
-  }
-
   if (detection_result == STOP)
   {  // STOP for obstacle
     // stop_waypoint is about _others_distance meter away from obstacles
     int stop_waypoint = obs - ((int)(_others_distance / _path_change.getInterval()));
-    std::cout << "stop_waypoint: " << stop_waypoint << std::endl;
     // change waypoints to stop by the stop_waypoint
     _path_change.changeWaypoints(stop_waypoint);
     _path_change.avoidSuddenBraking();
