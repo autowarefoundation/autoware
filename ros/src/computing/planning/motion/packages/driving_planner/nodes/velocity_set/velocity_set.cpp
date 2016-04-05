@@ -786,12 +786,14 @@ EControl vscanDetection()
   return KEEP;  // no obstacles
 }
 
+  /*
 void soundPlay()
 {
   std_msgs::String string;
   string.data = pedestrian_sound;
   _sound_pub.publish(string);
 }
+  */
 
 EControl obstacleDetection()
 {
