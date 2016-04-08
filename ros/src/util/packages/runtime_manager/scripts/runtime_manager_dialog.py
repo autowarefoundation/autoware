@@ -536,6 +536,7 @@ class MyFrame(rtmgr.MyFrame):
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
 			self.try_setup_obj_stop(obj, d2);
+			gdic = self.gdic_get_1st(d2)
 			if 'param' in d2:
 				pdic = self.load_dic_pdic_setup(k, d2)
 				prm = self.get_param(d2.get('param'))
@@ -543,13 +544,14 @@ class MyFrame(rtmgr.MyFrame):
 					name = var.get('name')
 					if name not in pdic and 'v' in var:
 						pdic[name] = var.get('v')
-				gdic = self.gdic_get_1st(d2)
 
 				for (name, v) in pdic.items():
 					restore = eval( gdic.get(name, {}).get('restore', 'lambda a : None') )
 					restore(v)
 
 				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
+			else:
+				self.add_cfg_info(obj, obj, k, None, gdic, False, None)
 
 	#def OnDrive(self, event):
 	#	obj = event.GetEventObject()
@@ -1067,6 +1069,9 @@ class MyFrame(rtmgr.MyFrame):
 			self.try_setup_obj_stop(obj, dic);
 			if 'param' in dic:
 				obj = self.add_config_link(dic, panel, obj)
+			else:
+				gdic = self.gdic_get_1st(dic)
+				self.add_cfg_info(obj, obj, dic.get('name'), None, gdic, False, None)
 		if sizer:
 			sizer.Add(obj, 0, wx.EXPAND | bdr_flg, 4)
 		else:
@@ -1943,6 +1948,8 @@ class MyFrame(rtmgr.MyFrame):
 				gdic = self.gdic_get_1st(items)
 				if 'param' in items:
 					self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'), add_objs)
+				else:
+					self.add_cfg_info(item, item, name, None, gdic, False, None)
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
