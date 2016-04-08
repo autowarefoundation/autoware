@@ -36,6 +36,19 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+    - name : vel_pose_mux
+      subs :
+      - name : vel_pose_mux
+        cmd  : roslaunch vel_pose_mux vel_pose_mux.launch
+        param: vel_pose_mux
+        gui  :
+           pose_mux_select:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+           vel_mux_select:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+           stat_topic : [ lf ]  
 
   - name : Detection
     subs :
@@ -865,6 +878,32 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+
+  - name  : vel_pose_mux
+    vars  :
+    - name    : pose_mux_select
+      label   : Pose Select 
+      kind    : radio_box
+      choices : ['ndt_matching','gnss']
+      v       : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : vel_mux_select
+      label   : Velocity Select
+      kind    : radio_box
+      choices : ['ndt_matching','CAN']
+      v       : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='        
 
   - name  : waypoint_follower
     topic : /config/waypoint_follower
