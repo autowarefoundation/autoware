@@ -55,7 +55,6 @@ const int MODE_WAYPOINT = 0;
 const int MODE_DIALOG = 1;
 
 //parameter
-bool _sim_mode = false;
 bool g_linear_interpolate_mode = true;
 
 geometry_msgs::PoseStamped _current_pose; // current pose by the global plane.
@@ -81,12 +80,6 @@ ros::Publisher _target_pub;
 ros::Publisher _search_pub;
 ros::Publisher g_cmd_velocity_publisher;
 ros::Publisher _line_point_pub;
-
-void CanInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
-{
-    _current_velocity = kmph2mps(msg->speed);
-    //ROS_INFO("velocity_source : ZMP_CAN");
-}
 
 void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
