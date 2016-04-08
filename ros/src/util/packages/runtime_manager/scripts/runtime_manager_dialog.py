@@ -477,9 +477,11 @@ class MyFrame(rtmgr.MyFrame):
 		self.kill_all()
 
 		save_dic = {}
+		sys_prm = self.get_param('sys')
 		for (name, pdic) in self.load_dic.items():
 			if pdic and pdic != {}:
-				prm = next( (cfg.get('param') for cfg in self.config_dic.values() if cfg.get('name') == name), {})
+				prms = [ cfg.get('param') for cfg in self.config_dic.values() if cfg.get('name') == name ]
+				prm = next( (prm for prm in prms if prm != None and prm != sys_prm), {})
 				no_saves = prm.get('no_save_vars', [])
 				pdic = pdic.copy()
 				for k in pdic.keys():
