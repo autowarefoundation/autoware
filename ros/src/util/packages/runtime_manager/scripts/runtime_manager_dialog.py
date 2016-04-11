@@ -98,7 +98,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.all_procs = []
 		self.all_procs_nodes = {}
 		self.all_cmd_dics = []
-		self.stop_dic = {}
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
 		self.selector = {}
@@ -517,10 +516,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.pub.publish(data.data)
 		r.sleep()
 
-	def try_setup_obj_stop(self, obj, dic):
-		if 'stop' in dic:
-			self.stop_dic[ obj ] = dic.get('stop')
-
 	def setup_buttons(self, d, run_dic):
 		for (k,d2) in d.items():
 			pfs = [ 'button_', 'button_launch_', 'checkbox_' ]
@@ -535,7 +530,6 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
-			self.try_setup_obj_stop(obj, d2);
 			gdic = self.gdic_get_1st(d2)
 			if 'param' in d2:
 				pdic = self.load_dic_pdic_setup(k, d2)
@@ -1066,7 +1060,6 @@ class MyFrame(rtmgr.MyFrame):
 				probe_dic[obj] = (dic['probe'], None)
 			if 'run' in dic:
 				run_dic[obj] = (dic['run'], None)
-			self.try_setup_obj_stop(obj, dic);
 			if 'param' in dic:
 				obj = self.add_config_link(dic, panel, obj)
 			else:
@@ -1953,7 +1946,6 @@ class MyFrame(rtmgr.MyFrame):
 				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
-			self.try_setup_obj_stop(item, items);
 
 		for sub in items.get('subs', []):
 			self.create_tree(parent, sub, tree, item, cmd_dic)
@@ -2079,9 +2071,6 @@ class MyFrame(rtmgr.MyFrame):
 				self.all_procs_nodes.pop(proc, None)
 			proc = None
 
-			stop_cmd = self.stop_dic.get(obj)
-			if stop_cmd:
-				subprocess.call( shlex.split(stop_cmd) )
 		return proc
 
 	def is_boot(self, obj):
