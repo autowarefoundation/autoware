@@ -1,26 +1,19 @@
 <!-- -->
 <launch>
-	
   <arg name="base_frame" default="/base_link"/>
   <arg name="topic_name" default="vehicle_model"/>
-  <arg name="model_path" default="package://model_publisher/../../../.config/model/default.dae"/>
   <arg name="offset_x" default="1.2"/>
   <arg name="offset_y" default="0.0"/>
   <arg name="offset_z" default="0.0"/>
   <arg name="offset_roll" default="0.0"/> <!-- degree -->
   <arg name="offset_pitch" default="0.0"/> <!-- degree -->
   <arg name="offset_yaw" default="0.0"/> <!-- degree -->
-	
-  <node pkg="model_publisher" type="model_publisher" name="model_publisher">
-    <param name="base_frame" value="$(arg base_frame)"/>
-    <param name="topic_name" value="$(arg topic_name)"/>
-    <param name="model_path" value="$(arg model_path)"/>
-    <param name="offset_x" value="$(arg offset_x)"/>
-    <param name="offset_y" value="$(arg offset_y)"/>
-    <param name="offset_z" value="$(arg offset_z)"/>
-    <param name="offset_roll" value="$(arg offset_roll)"/>
-    <param name="offset_pitch" value="$(arg offset_pitch)"/>
-    <param name="offset_yaw" value="$(arg offset_yaw)"/>
-  </node>
+  <arg name="model_path" default="./src/.config/model/default.urdf" />
+  <arg name="gui" default="False" />
+
+  <param name="robot_description" textfile="$(arg model_path)" />
+  <param name="use_gui" value="$(arg gui)"/>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 
 </launch>
