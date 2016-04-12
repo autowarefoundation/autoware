@@ -41,8 +41,7 @@ buttons :
 
   rviz_qs :
     #run : rosrun rviz rviz
-    run  : sh -c '$(rospack find runtime_manager)/../../../.config/rviz/cmd.sh start'
-    stop : sh -c '$(rospack find runtime_manager)/../../../.config/rviz/cmd.sh stop'
+    run  : sh -c '$(rospack find runtime_manager)/../../../.config/rviz/cmd.sh'
 
   rqt_qs :
     run : rqt
