@@ -404,21 +404,6 @@ void localizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 }
 
-void odometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
-{
-  //
-  // effective for testing.
-  //
-
-  g_localizer_pose.header = msg->header;
-  g_localizer_pose.pose = msg->pose.pose;
-  g_current_vel = msg->twist.twist.linear.x;
-  if (g_pose_flag == false)
-  {
-    std::cout << "pose subscribed" << std::endl;
-    g_pose_flag = true;
-  }
-}
 
 //===============================
 //          Callback
@@ -859,8 +844,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
   ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, localizerCallback);
-  ros::Subscriber control_pose_sub = nh.subscribe("control_pose", 1, controlCallback);
-  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 10, odometryPoseCallback);
+  ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, controlCallback);
   ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, vscanCallback);
   ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, baseWaypointCallback);
   ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, objPoseCallback);
