@@ -957,13 +957,6 @@ params :
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
-    - name    : sim_mode
-      label   : 'Simulation Mode'
-      kind    : checkbox
-      v       : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name  : velocity_limit
       label : Velocity Limit (km/h)
       min   : 0

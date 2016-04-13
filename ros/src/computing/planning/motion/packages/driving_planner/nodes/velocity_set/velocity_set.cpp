@@ -58,7 +58,6 @@ const int LOOP_RATE = 10;
 geometry_msgs::TwistStamped g_current_twist;
 geometry_msgs::PoseStamped g_current_pose;  // pose of sensor
 geometry_msgs::PoseStamped g_control_pose;  // pose of base_link
-geometry_msgs::PoseStamped g_sim_ndt_pose;
 pcl::PointCloud<pcl::PointXYZ> g_vscan;
 
 const std::string pedestrian_sound = "pedestrian";
@@ -72,7 +71,6 @@ int g_closest_waypoint = -1;
 double g_current_vel = 0.0;  // subscribe estimated_vel_mps
 CrossWalk vmap;
 ObstaclePoints g_obstacle;
-bool g_sim_mode;
 
 /* Config Parameter */
 double g_detection_range = 0;                   // if obstacle is in this range, stop
@@ -149,8 +147,6 @@ void PathVset::setTemporalWaypoints()
   waypoint_follower::waypoint current_point;
 
   current_point.pose = g_control_pose;
-  if (g_sim_mode)
-    current_point.pose = g_current_pose;
   current_point.twist = current_waypoints_.waypoints[g_closest_waypoint].twist;
   current_point.dtlane = current_waypoints_.waypoints[g_closest_waypoint].dtlane;
   temporal_waypoints_.waypoints.push_back(current_point);
@@ -349,9 +345,6 @@ void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
 
 void estimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
 {
-  if (g_sim_mode)
-    return;
-
   g_current_vel = msg->data;
 }
 
@@ -402,13 +395,6 @@ void controlCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
 void localizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  if (g_sim_mode)
-  {
-    g_sim_ndt_pose.header = msg->header;
-    g_sim_ndt_pose.pose = msg->pose;
-    return;
-  }
-
   g_current_pose.header = msg->header;
   g_current_pose.pose = msg->pose;
   if (g_pose_flag == false)
@@ -423,8 +409,6 @@ void odometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
   //
   // effective for testing.
   //
-  if (!g_sim_mode)
-    return;
 
   g_current_pose.header = msg->header;
   g_current_pose.pose = msg->pose.pose;
@@ -624,8 +608,6 @@ EControl crossWalkDetection(const int &crosswalk_id)
   for (const auto &p : vmap.getDetectionPoints(crosswalk_id).points)
   {
     geometry_msgs::Point detection_point = calcRelativeCoordinate(p, g_current_pose.pose);
-    if (g_sim_mode)
-      detection_point = calcRelativeCoordinate(p, g_sim_ndt_pose.pose);
     tf::Vector3 detection_vector = point2vector(detection_point);
     detection_vector.setZ(0.0);
 
@@ -641,10 +623,7 @@ EControl crossWalkDetection(const int &crosswalk_id)
         vscan_temp.x = vscan.x;
         vscan_temp.y = vscan.y;
         vscan_temp.z = vscan.z;
-        if (g_sim_mode)
-          g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, g_sim_ndt_pose.pose));
-        else
-          g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, g_current_pose.pose));
+	g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, g_current_pose.pose));
       }
       if (stop_count > g_threshold_points)
         return STOP;
@@ -697,15 +676,6 @@ EControl vscanDetection()
     for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = g_vscan.begin(); item != g_vscan.end(); item++)
     {
       tf::Vector3 vscan_vector((double)item->x, (double)item->y, 0);
-      // for simulation
-      if (g_sim_mode)
-      {
-        tf::Transform transform;
-        tf::poseMsgToTF(g_sim_ndt_pose.pose, transform);
-        geometry_msgs::Point world2vscan = vector2point(transform * vscan_vector);
-        vscan_vector = point2vector(calcRelativeCoordinate(world2vscan, g_current_pose.pose));
-        vscan_vector.setZ(0);
-      }
 
       // 2D distance between waypoint and vscan points(obstacle)
       // ---STOP OBSTACLE DETECTION---
@@ -717,10 +687,7 @@ EControl vscanDetection()
         vscan_temp.x = item->x;
         vscan_temp.y = item->y;
         vscan_temp.z = item->z;
-        if (g_sim_mode)
-          g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, g_sim_ndt_pose.pose));
-        else
-          g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, g_current_pose.pose));
+	g_obstacle.setStopPoint(calcAbsoluteCoordinate(vscan_temp, g_current_pose.pose));
       }
       if (stop_point_count > g_threshold_points)
       {
@@ -763,10 +730,7 @@ EControl vscanDetection()
           vscan_temp.x = item->x;
           vscan_temp.y = item->y;
           vscan_temp.z = item->z;
-          if (g_sim_mode)
-            g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(vscan_temp, g_sim_ndt_pose.pose));
-          else
-            g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(vscan_temp, g_current_pose.pose));
+	  g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(vscan_temp, g_current_pose.pose));
         }
       }
 
@@ -916,9 +880,6 @@ int main(int argc, char **argv)
   ros::Publisher closest_waypoint_pub;
   closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
   g_obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 0);
-
-  private_nh.param<bool>("sim_mode", g_sim_mode, false);
-  ROS_INFO_STREAM("sim_mode : " << g_sim_mode);
 
   ros::Rate loop_rate(LOOP_RATE);
   while (ros::ok())
