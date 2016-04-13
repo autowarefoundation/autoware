@@ -32,6 +32,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -68,7 +69,7 @@ int g_obstacle_waypoint = -1;
 double g_deceleration_search_distance = 30;
 double g_search_distance = 60;
 int g_closest_waypoint = -1;
-double g_current_vel = 0.0;  // subscribe estimated_vel_mps
+double g_current_vel = 0.0;  // (m/s) subscribe estimated_vel
 CrossWalk vmap;
 ObstaclePoints g_obstacle;
 
@@ -343,9 +344,9 @@ void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   g_temporal_waypoints_size = config->temporal_waypoints_size;
 }
 
-void estimatedVelCallback(const std_msgs::Float32ConstPtr &msg)
+void estimatedVelCallback(const geometry_msgs::Vector3StampedConstPtr &msg)
 {
-  g_current_vel = msg->data;
+  g_current_vel = msg->vector.x;
 }
 
 void baseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
@@ -848,7 +849,7 @@ int main(int argc, char **argv)
   ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, vscanCallback);
   ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, baseWaypointCallback);
   ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, objPoseCallback);
-  ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel_mps", 1, estimatedVelCallback);
+  ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel", 1, estimatedVelCallback);
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, configCallback);
 
   //------------------ Vector Map ----------------------//
