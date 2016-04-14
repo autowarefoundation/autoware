@@ -64,7 +64,7 @@ void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 
 void getTransformFromTF(const std::string parent_frame,const std::string child_frame, tf::StampedTransform& transform)
 {
-  tf::TransformListener listener;
+  static tf::TransformListener listener;
 
   while (1)
   {
@@ -140,11 +140,11 @@ void waypointCallback(const waypoint_follower::laneConstPtr &msg)
 void publishOdometry()
 {
 
-  ros::Time current_time = ros::Time::now();
-  ros::Time last_time = ros::Time::now();
-  geometry_msgs::Pose pose;
-  double th = 0;
-  tf::TransformBroadcaster odom_broadcaster;
+  static ros::Time current_time = ros::Time::now();
+  static ros::Time last_time = ros::Time::now();
+  static geometry_msgs::Pose pose;
+  static double th = 0;
+  static tf::TransformBroadcaster odom_broadcaster;
 
   if (!_pose_set)
   {
