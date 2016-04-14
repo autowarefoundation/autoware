@@ -707,7 +707,7 @@ int main(int argc, char **argv)
   ros::Subscriber ndt_subscriber = nh.subscribe("current_pose", 10, callbackFromCurrentPose);
 
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-  ros::Subscriber est_twist_subscriber = nh.subscribe("estimated_vel", 10, callbackFromVector3Stamped);
+  ros::Subscriber est_twist_subscriber = nh.subscribe("current_velocity", 10, callbackFromVector3Stamped);
 
 
   ros::Rate loop_rate(LOOP_RATE); // by Hz
