@@ -888,7 +888,7 @@ int main(int argc, char **argv)
       continue;
     }
 
-    g_closest_waypoint = getClosestWaypoint(g_path_change.getCurrentWaypoints(), g_localizer_pose.pose);
+    g_closest_waypoint = getClosestWaypoint(g_path_change.getCurrentWaypoints(), g_control_pose.pose);
     closest_waypoint_pub.publish(g_closest_waypoint);
 
     vmap.setDetectionWaypoint(findCrossWalk());
