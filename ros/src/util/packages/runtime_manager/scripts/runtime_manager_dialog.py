@@ -3064,11 +3064,23 @@ def OnButtonColorHdr(event):
 		button_color_change(btn, v)
 	event.Skip()
 
+btn_null_bgcol = None
+
+def is_btn_null_bgcol(btn):
+	global btn_null_bgcol
+	bak = btn.GetBackgroundColour()
+	if btn_null_bgcol is None:
+		btn.SetBackgroundColour(wx.NullColour)
+		btn_null_bgcol = btn.GetBackgroundColour()
+		if bak != btn_null_bgcol:
+			btn.SetBackgroundColour(bak)
+	return bak == btn_null_bgcol
+
 def button_color_hdr_setup(btn):
 	hdr = OnButtonColorHdr
 	if type(btn) is wx.ToggleButton:
 		btn.Bind(wx.EVT_TOGGLEBUTTON, hdr)
-	elif type(btn) is wx.Button:
+	elif type(btn) is wx.Button and is_btn_null_bgcol(btn):
 		btn.Bind(wx.EVT_LEFT_DOWN, hdr)
 		btn.Bind(wx.EVT_LEFT_UP, hdr)
 
