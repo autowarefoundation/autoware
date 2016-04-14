@@ -390,6 +390,9 @@ void vscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
 void controlCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
+  if (!g_pose_flag)
+    g_pose_flag = true;
+
   g_control_pose.header = msg->header;
   g_control_pose.pose = msg->pose;
 }
@@ -398,11 +401,6 @@ void localizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   g_localizer_pose.header = msg->header;
   g_localizer_pose.pose = msg->pose;
-  if (g_pose_flag == false)
-  {
-    std::cout << "pose subscribed" << std::endl;
-    g_pose_flag = true;
-  }
 }
 
 
