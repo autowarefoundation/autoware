@@ -193,7 +193,7 @@ void publishOdometry()
 }
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "odom_gen");
+  ros::init(argc, argv, "wf_simulator");
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");

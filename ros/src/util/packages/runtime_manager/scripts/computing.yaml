@@ -402,34 +402,6 @@ subs :
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
          
-   #      gui  :
-   #        use_pose:
-  #           flags : [ no_category, nl ]
-  #         x:
-  #           depend      : use_pose
-  #           depend_bool : 'lambda v : v == "Initial Pos"'
-   #          flags : [ no_category ]
-  #         y:
-  #           depend      : use_pose
-  #           depend_bool : 'lambda v : v == "Initial Pos"'
-  #           flags : [ no_category ]
-  #         z:
-  #           depend      : use_pose
-  #           depend_bool : 'lambda v : v == "Initial Pos"'
-  #           flags : [ no_category, nl ]
-  #         roll:
-  #           depend      : use_pose
-   #          depend_bool : 'lambda v : v == "Initial Pos"'
-  #           flags : [ no_category ]
-   #        pitch:
-   #          depend      : use_pose
-   #          depend_bool : 'lambda v : v == "Initial Pos"'
-   #          flags : [ no_category ]
-   #        yaw:
-   #          depend      : use_pose
-   #          depend_bool : 'lambda v : v == "Initial Pos"'
-    #         flags : [ no_category, nl ]
-
 buttons:
   car_dpm :
     param   : car_dpm
@@ -1100,39 +1072,12 @@ params :
     - name    : initialize_source
       label   : Initialize Source
       kind    : radio_box
-      choices : ['Rviz','Localizer','GNSS']
+      choices : ['Rviz','ndt_localizer','GNSS']
       choices_type : str
-      v       : Rviz
+      v       : 0
       cmd_param:
         dash     : ''
-        delim    : ':='
- #     choices_type: str
-
- #     rosparam: /odom_gen/use_pose
- #   - name    : x
- #     label   : 'X:'
- #     v       : 0.0
- #     rosparam: /odom_gen/initial_pos_x
- #   - name    : y
-  #    label   : 'Y:'
-  #    v       : 0.0
- #     rosparam: /odom_gen/initial_pos_y
- #   - name    : z
-  #    label   : 'Z:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_z
-  #  - name    : roll
- #     label   : 'Roll:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_roll
-  #  - name    : pitch
-  #    label   : 'Pitch:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_pitch
-  #  - name    : yaw
-  #    label   : 'Yaw:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_yaw
+        delim    : ':='   
 
   - name  : car_kf
     topic : /config/car_kf

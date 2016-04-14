@@ -106,7 +106,6 @@ int main(int argc, char **argv)
       case 0: //ndt_localizer
       {
         pose_subcscriber = nh.subscribe("ndt_pose", 10, callbackFromPoseStamped);
-
         break;
       }
       case 1: //gnss
