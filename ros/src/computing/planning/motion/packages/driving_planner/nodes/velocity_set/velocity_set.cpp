@@ -344,7 +344,7 @@ void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   g_temporal_waypoints_size = config->temporal_waypoints_size;
 }
 
-void estimatedVelCallback(const geometry_msgs::Vector3StampedConstPtr &msg)
+void currentVelCallback(const geometry_msgs::Vector3StampedConstPtr &msg)
 {
   g_current_vel = msg->vector.x;
 }
@@ -847,7 +847,7 @@ int main(int argc, char **argv)
   ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, vscanCallback);
   ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, baseWaypointCallback);
   ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, objPoseCallback);
-  ros::Subscriber estimated_vel_sub = nh.subscribe("estimated_vel", 1, estimatedVelCallback);
+  ros::Subscriber current_vel_sub = nh.subscribe("current_velocity", 1, currentVelCallback);
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, configCallback);
 
   //------------------ Vector Map ----------------------//
