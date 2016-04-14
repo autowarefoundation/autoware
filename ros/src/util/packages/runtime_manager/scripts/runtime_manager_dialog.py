@@ -2422,6 +2422,8 @@ class VarPanel(wx.Panel):
 				item_n = eval(item_n)
 			self.obj = Checkboxes(self, item_n, label)
 			self.obj.set(v)
+			for box in self.obj.boxes:
+				self.obj.Bind(wx.EVT_CHECKBOX, self.OnUpdate, box)
 			return
 		if self.kind == 'toggle_button':
 			self.obj = wx.ToggleButton(self, wx.ID_ANY, label)
