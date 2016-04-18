@@ -30,10 +30,9 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
@@ -41,99 +40,75 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 
-static geometry_msgs::Twist _current_velocity;
+namespace
+{
+geometry_msgs::Twist _current_velocity;
 
-static const std::string SIMULATION_FRAME = "sim_base_link";
-static const std::string MAP_FRAME = "map";
+const std::string SIMULATION_FRAME = "sim_base_link";
+const std::string MAP_FRAME = "map";
 
-static geometry_msgs::Pose _initial_pose;
-static std::string _use_pose;
-static bool _initial_set = false;
-static bool _pose_set = false;
-static bool _waypoint_set = false;
-static WayPoints _current_waypoints;
+geometry_msgs::Pose _initial_pose;
+bool _initial_set = false;
+bool _pose_set = false;
+bool _waypoint_set = false;
+WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
+ros::Publisher g_velocity_publisher;
 
-static void NDTCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
-{
-  if (_use_pose != "NDT")
-    return;
-
-  if(_initial_set)
-    return;
-
-  _initial_pose = input->pose;
-  _initial_set = true;
-  _pose_set = false;
-
-  
-}
-
-static void GNSSCallback(const geometry_msgs::PoseStamped::ConstPtr& input)
-{
-  if (_use_pose != "GNSS")
-    return;
-
-  if(_initial_set)
-    return;
-
-  _initial_pose = input->pose;
-  _initial_set = true;
-  _pose_set = false;
-  
-
-}
-
-static void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
+void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
 {
   _current_velocity = msg->twist;
 }
 
-static void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
+void getTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
 {
-  if (_use_pose != "InitialPos")
-    return;
+  static tf::TransformListener listener;
 
-    static tf::TransformListener listener;
-    tf::StampedTransform transform;
-    bool tf_flag = false;
-    while (!tf_flag)
+  while (1)
+  {
+    try
     {
-      try
-      {
-        listener.lookupTransform("map", "world", ros::Time(0), transform);
-        tf_flag = true;
-      }
-      catch (tf::TransformException ex)
-      {
-        ROS_ERROR("%s", ex.what());
-        ros::Duration(1.0).sleep();
-      }
-
+      listener.lookupTransform(parent_frame, child_frame, ros::Time(0), transform);
+      break;
     }
-
-    _initial_pose.position.x = input->pose.pose.position.x + transform.getOrigin().x();
-    _initial_pose.position.y = input->pose.pose.position.y + transform.getOrigin().y();
-    _initial_pose.position.z = input->pose.pose.position.z + transform.getOrigin().z();
-    _initial_pose.orientation = input->pose.pose.orientation;
-
-    _initial_set = true;
-    _pose_set = false;
-
-  
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+    }
+  }
 }
 
-static void waypointCallback(const waypoint_follower::laneConstPtr &msg)
+void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
 {
- // _path_og.setPath(msg);
+  tf::StampedTransform transform;
+  getTransformFromTF(MAP_FRAME, "world", transform);
+
+  _initial_pose.position.x = input->pose.pose.position.x + transform.getOrigin().x();
+  _initial_pose.position.y = input->pose.pose.position.y + transform.getOrigin().y();
+  _initial_pose.position.z = input->pose.pose.position.z + transform.getOrigin().z();
+  _initial_pose.orientation = input->pose.pose.orientation;
+
+  _initial_set = true;
+  _pose_set = false;
+}
+
+void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg)
+{
+  _initial_pose = msg->pose;
+  _initial_set = true;
+}
+
+void waypointCallback(const waypoint_follower::laneConstPtr &msg)
+{
+  // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
   ROS_INFO_STREAM("waypoint subscribed");
 }
 
-static void publishOdometry()
+void publishOdometry()
 {
-
   static ros::Time current_time = ros::Time::now();
   static ros::Time last_time = ros::Time::now();
   static geometry_msgs::Pose pose;
@@ -145,12 +120,13 @@ static void publishOdometry()
     pose.position = _initial_pose.position;
     pose.orientation = _initial_pose.orientation;
     th = tf::getYaw(pose.orientation);
-    ROS_INFO_STREAM("pose set : (" << pose.position.x << " " << pose.position.y << " " << pose.position.z << " " << th << ")");
+    ROS_INFO_STREAM("pose set : (" << pose.position.x << " " << pose.position.y << " " << pose.position.z << " " << th
+                                   << ")");
     _pose_set = true;
   }
 
   int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), pose);
-  if(closest_waypoint == -1)
+  if (closest_waypoint == -1)
   {
     ROS_INFO("cannot publish odometry because closest waypoint is -1.");
     return;
@@ -164,7 +140,7 @@ static void publishOdometry()
   double vth = _current_velocity.angular.z;
   current_time = ros::Time::now();
 
-  //compute odometry in a typical way given the velocities of the robot
+  // compute odometry in a typical way given the velocities of the robot
   double dt = (current_time - last_time).toSec();
   double delta_x = (vx * cos(th)) * dt;
   double delta_y = (vx * sin(th)) * dt;
@@ -176,10 +152,12 @@ static void publishOdometry()
   pose.orientation = tf::createQuaternionMsgFromYaw(th);
 
   // std::cout << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
-  //std::cout << "current_velocity(linear.x angular.z) : (" << _current_velocity.linear.x << " " << _current_velocity.angular.z << ")"<< std::endl;
-  //    std::cout << "current_pose : (" << pose.position.x << " " << pose.position.y<< " " << pose.position.z << " " << th << ")" << std::endl << std::endl;
+  // std::cout << "current_velocity(linear.x angular.z) : (" << _current_velocity.linear.x << " " <<
+  // _current_velocity.angular.z << ")"<< std::endl;
+  //    std::cout << "current_pose : (" << pose.position.x << " " << pose.position.y<< " " << pose.position.z << " " <<
+  //    th << ")" << std::endl << std::endl;
 
-  //first, we'll publish the transform over tf
+  // first, we'll publish the transform over tf
   geometry_msgs::TransformStamped odom_trans;
   odom_trans.header.stamp = current_time;
   odom_trans.header.frame_id = MAP_FRAME;
@@ -190,50 +168,70 @@ static void publishOdometry()
   odom_trans.transform.translation.z = pose.position.z;
   odom_trans.transform.rotation = pose.orientation;
 
-  //send the transform
+  // send the transform
   odom_broadcaster.sendTransform(odom_trans);
 
-  //next, we'll publish the odometry message over ROS
-  nav_msgs::Odometry odom;
-  odom.header.stamp = current_time;
-  odom.header.frame_id = MAP_FRAME;
+  // next, we'll publish the odometry message over ROS
+  std_msgs::Header h;
+  h.stamp = current_time;
+  h.frame_id = MAP_FRAME;
 
-  //set the position
-  odom.pose.pose = pose;
+  geometry_msgs::PoseStamped ps;
+  ps.header = h;
+  ps.pose = pose;
 
-  //set the velocity
-  odom.child_frame_id = SIMULATION_FRAME;
-  odom.twist.twist.linear.x = vx;
-  odom.twist.twist.angular.z = vth;
-  //publish the message
-  g_odometry_publisher.publish(odom);
+  geometry_msgs::Vector3Stamped vs;
+  vs.header = h;
+  vs.vector.x = vx;
+
+  // publish the message
+  g_odometry_publisher.publish(ps);
+  g_velocity_publisher.publish(vs);
 
   last_time = current_time;
 }
-
+}
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "odom_gen");
+  ros::init(argc, argv, "wf_simulator");
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
-//publish topic
-  g_odometry_publisher = nh.advertise<nav_msgs::Odometry>("odom_pose", 10);
 
-//subscribe topic
+  std::string initialize_source;
+  private_nh.getParam("initialize_source", initialize_source);
+  ROS_INFO_STREAM("initialize_source : " << initialize_source);
+
+  // publish topic
+  g_odometry_publisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
+  g_velocity_publisher = nh.advertise<geometry_msgs::Vector3Stamped>("sim_velocity", 10);
+
+  // subscribe topic
   ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 10, CmdCallBack);
-  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 10, NDTCallback);
-  ros::Subscriber initialpose_subscriber = nh.subscribe("initialpose", 10, initialposeCallback);
-  ros::Subscriber gnss_subscriber = nh.subscribe("gnss_pose", 1000, GNSSCallback);
-
   ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
+  ros::Subscriber initialpose_subscriber;
 
-  private_nh.getParam("use_pose", _use_pose);
+  if (initialize_source == "Rviz")
+  {
+    initialpose_subscriber = nh.subscribe("initialpose", 10, initialposeCallback);
+  }
+  else if (initialize_source == "ndt_localizer")
+  {
+    initialpose_subscriber = nh.subscribe("ndt_pose", 10, callbackFromPoseStamped);
+  }
+  else if (initialize_source == "GNSS")
+  {
+    initialpose_subscriber = nh.subscribe("gnss_pose", 10, callbackFromPoseStamped);
+  }
+  else
+  {
+    ROS_INFO("Set pose initializer!!");
+  }
 
-  ros::Rate loop_rate(50); // 50Hz
+  ros::Rate loop_rate(50);  // 50Hz
   while (ros::ok())
   {
-    ros::spinOnce(); //check subscribe topic
+    ros::spinOnce();  // check subscribe topic
 
     if (!_waypoint_set)
     {

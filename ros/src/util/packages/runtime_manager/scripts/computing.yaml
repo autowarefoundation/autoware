@@ -36,6 +36,19 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+    - name : vel_pose_mux
+      subs :
+      - name : vel_pose_mux
+        cmd  : roslaunch vel_pose_mux vel_pose_mux.launch
+        param: vel_pose_mux
+        gui  :
+           pose_mux_select:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+           vel_mux_select:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+           stat_topic : [ lf ]  
 
   - name : Detection
     subs :
@@ -389,34 +402,6 @@ subs :
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
          
-   #      gui  :
-   #        use_pose:
-  #           flags : [ no_category, nl ]
-  #         x:
-  #           depend      : use_pose
-  #           depend_bool : 'lambda v : v == "Initial Pos"'
-   #          flags : [ no_category ]
-  #         y:
-  #           depend      : use_pose
-  #           depend_bool : 'lambda v : v == "Initial Pos"'
-  #           flags : [ no_category ]
-  #         z:
-  #           depend      : use_pose
-  #           depend_bool : 'lambda v : v == "Initial Pos"'
-  #           flags : [ no_category, nl ]
-  #         roll:
-  #           depend      : use_pose
-   #          depend_bool : 'lambda v : v == "Initial Pos"'
-  #           flags : [ no_category ]
-   #        pitch:
-   #          depend      : use_pose
-   #          depend_bool : 'lambda v : v == "Initial Pos"'
-   #          flags : [ no_category ]
-   #        yaw:
-   #          depend      : use_pose
-   #          depend_bool : 'lambda v : v == "Initial Pos"'
-    #         flags : [ no_category, nl ]
-
 buttons:
   car_dpm :
     param   : car_dpm
@@ -866,6 +851,32 @@ params :
         delim       : ':='
         only_enable : True
 
+  - name  : vel_pose_mux
+    vars  :
+    - name    : pose_mux_select
+      label   : Pose Select 
+      kind    : radio_box
+      choices : ['ndt_matching','gnss']
+      v       : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : vel_mux_select
+      label   : Velocity Select
+      kind    : radio_box
+      choices : ['ndt_matching','CAN']
+      v       : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : sim_mode
+      label   : 'Simulation Mode'
+      kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='        
+
   - name  : waypoint_follower
     topic : /config/waypoint_follower
     msg   : ConfigWaypointFollower
@@ -906,13 +917,6 @@ params :
       min   : 0
       max   : 90
       v     : 0   
-    - name    : sim_mode
-      label   : 'Simulation Mode'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : linear_interpolate_mode
       label   : 'Linear Interpolate'
       kind    : checkbox
@@ -920,18 +924,11 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-      
+        
   - name  : velocity_set
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
-    - name    : sim_mode
-      label   : 'Simulation Mode'
-      kind    : checkbox
-      v       : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name  : velocity_limit
       label : Velocity Limit (km/h)
       min   : 0
@@ -1072,42 +1069,15 @@ params :
   
   - name  : wf_simulator
     vars  :
-    - name    : use_pose
-      label   : use_pose
+    - name    : initialize_source
+      label   : Initialize Source
       kind    : radio_box
-      choices : ['InitialPos','NDT','GNSS']
+      choices : ['Rviz','ndt_localizer','GNSS']
       choices_type : str
-      v       : InitialPos
+      v       : 0
       cmd_param:
         dash     : ''
-        delim    : ':='
- #     choices_type: str
-
- #     rosparam: /odom_gen/use_pose
- #   - name    : x
- #     label   : 'X:'
- #     v       : 0.0
- #     rosparam: /odom_gen/initial_pos_x
- #   - name    : y
-  #    label   : 'Y:'
-  #    v       : 0.0
- #     rosparam: /odom_gen/initial_pos_y
- #   - name    : z
-  #    label   : 'Z:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_z
-  #  - name    : roll
- #     label   : 'Roll:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_roll
-  #  - name    : pitch
-  #    label   : 'Pitch:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_pitch
-  #  - name    : yaw
-  #    label   : 'Yaw:'
-  #    v       : 0.0
-  #    rosparam: /odom_gen/initial_pos_yaw
+        delim    : ':='   
 
   - name  : car_kf
     topic : /config/car_kf

@@ -1,10 +1,8 @@
 <!-- -->
 <launch>
 
-        <arg name="sim_mode" default="false" />
 
 	<node pkg="driving_planner" type="velocity_set" name="velocity_set" output="screen">
-		<param name="sim_mode" value="$(arg sim_mode)" />
 
 	</node>
 

@@ -64,8 +64,8 @@ waypoint_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp
 vehicle_socket_generate_messages_cpp)
 
-add_executable(odom_gen nodes/odom_gen/odom_gen.cpp)
-target_link_libraries(odom_gen libwaypoint_follower ${catkin_LIBRARIES})
+add_executable(wf_simulator nodes/wf_simulator/wf_simulator.cpp)
+target_link_libraries(wf_simulator libwaypoint_follower ${catkin_LIBRARIES})
 
 add_executable(twist_filter nodes/twist_filter/twist_filter.cpp)
 target_link_libraries(twist_filter ${catkin_LIBRARIES})
