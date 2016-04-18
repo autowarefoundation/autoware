@@ -35,19 +35,15 @@
 
 namespace
 {
-
 ros::Publisher g_vel_publisher;
 ros::Publisher g_pose_publisher;
-
-
 
 void callbackFromCanInfo(const vehicle_socket::CanInfoConstPtr &msg)
 {
   geometry_msgs::Vector3Stamped vel;
   vel.header = msg->header;
-  vel.vector.x = (msg->speed * 1000) / (60 * 60); //km/h -> m/s
+  vel.vector.x = (msg->speed * 1000) / (60 * 60);  // km/h -> m/s
   g_vel_publisher.publish(vel);
-
 }
 
 void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg)
@@ -60,11 +56,10 @@ void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg
   g_vel_publisher.publish(*msg);
 }
 
-} //namespace
+}  // namespace
 
 int main(int argc, char **argv)
 {
-
   // set up ros
   ros::init(argc, argv, "vel_pose_mux");
 
@@ -85,11 +80,11 @@ int main(int argc, char **argv)
   private_nh.getParam("sim_mode", sim_mode);
   ROS_INFO_STREAM("sim_mode : " << sim_mode);
 
-  //publish topic
+  // publish topic
   g_vel_publisher = nh.advertise<geometry_msgs::Vector3Stamped>("current_velocity", 10);
   g_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("current_pose", 10);
 
-  //subscribe topic
+  // subscribe topic
   ros::Subscriber pose_subcscriber;
   ros::Subscriber vel_subcscriber;
 
@@ -100,15 +95,15 @@ int main(int argc, char **argv)
   }
   else
   {
-    //pose
+    // pose
     switch (pose_mux_select)
     {
-      case 0: //ndt_localizer
+      case 0:  // ndt_localizer
       {
         pose_subcscriber = nh.subscribe("ndt_pose", 10, callbackFromPoseStamped);
         break;
       }
-      case 1: //gnss
+      case 1:  // gnss
       {
         pose_subcscriber = nh.subscribe("gnss_pose", 10, callbackFromPoseStamped);
         break;
@@ -117,15 +112,15 @@ int main(int argc, char **argv)
         break;
     }
 
-    //velocity
+    // velocity
     switch (vel_mux_select)
     {
-      case 0: //ndt_localizer
+      case 0:  // ndt_localizer
       {
         vel_subcscriber = nh.subscribe("estimated_vel", 10, callbackFromVector3Stamped);
         break;
       }
-      case 1: //CAN
+      case 1:  // CAN
       {
         vel_subcscriber = nh.subscribe("can_info", 10, callbackFromCanInfo);
         break;
@@ -139,8 +134,3 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
-
-
-
-
