@@ -718,7 +718,7 @@ int main(int argc, char **argv)
     }
     else
     {
-      ROS_INFO("topic subscribed!");
+      //ROS_INFO("topic subscribed!");
     }
     doPurePursuit();
     loop_rate.sleep();
