@@ -115,7 +115,7 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 [![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/0.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
 
 ### Planning with wf_simulator
-[![Planning with wf_simulator](http://img.youtube.com/vi/BwFYkh2i4d0/0.jpg)](https://www.youtube.com/watch?v=BwFYkh2i4d0)
+[![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/0.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
 
 ## Sample Data
 
