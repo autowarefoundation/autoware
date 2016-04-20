@@ -111,7 +111,6 @@ int GetFile::GetHTTPFile(const std::string& value)
 	curl_easy_cleanup(curl);
 	ofs.close();
 	if (response_code != 200) {
-		std::cerr << "response_code: " << response_code << std::endl;
 		unlink(filepath.c_str());
 		return -5;
 	}
