@@ -24,7 +24,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS runtime_manager
+  CATKIN_DEPENDS runtime_manager message_runtime std_msgs
 #  DEPENDS system_lib
 )
 

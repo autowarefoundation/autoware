@@ -33,7 +33,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS cv_tracker points2image
+  CATKIN_DEPENDS cv_tracker points2image message_runtime std_msgs
 )
 ###########
 ## Build ##

@@ -41,7 +41,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES camera_lidar3d
-   CATKIN_DEPENDS rosinterface calibration_camera_lidar
+   CATKIN_DEPENDS rosinterface calibration_camera_lidar message_runtime std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 

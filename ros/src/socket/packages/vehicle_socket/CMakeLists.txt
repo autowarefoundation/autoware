@@ -21,7 +21,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS runtime_manager
+  CATKIN_DEPENDS runtime_manager message_runtime std_msgs
 )
 
 add_executable(vehicle_receiver nodes/vehicle_receiver/vehicle_receiver.cpp)

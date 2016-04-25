@@ -24,7 +24,7 @@ SET(CMAKE_NVCC_FLAGS "-use_fast_math")
 catkin_package(
    INCLUDE_DIRS include/dpm_ocv
    LIBRARIES libdpm_ocv
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+   CATKIN_DEPENDS message_runtime std_msgs
 #  DEPENDS system_lib
 )
 
