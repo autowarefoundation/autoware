@@ -35,7 +35,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES camera
-   CATKIN_DEPENDS glviewer rosinterface
+   CATKIN_DEPENDS glviewer rosinterface std_msgs message_runtime
 #  DEPENDS system_lib
 )
 

@@ -79,7 +79,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES fake_drivers
-   CATKIN_DEPENDS waypoint_follower
+   CATKIN_DEPENDS waypoint_follower message_runtime std_msgs
 #  DEPENDS system_lib
    DEPENDS gnss curl
 )

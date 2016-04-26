@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  tf
   visualization_msgs
   message_generation
 )
@@ -97,8 +96,8 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES particle_filter
-#  CATKIN_DEPENDS roscpp rospy std_msgs tf visualization_msgs
-  DEPENDS system_lib message_runtime
+   CATKIN_DEPENDS message_runtime std_msgs visualization_msgs
+#  DEPENDS system_lib
 )
 
 ###########

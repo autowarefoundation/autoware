@@ -29,7 +29,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS vehicle_socket ndt_localizer tf
+  CATKIN_DEPENDS vehicle_socket ndt_localizer tf message_runtime std_msgs
   DEPENDS gnss
 )
 
