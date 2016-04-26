@@ -37,6 +37,11 @@ import socket
 import yaml
 import ctypes
 import psutil
+import select
+import re
+import pickle
+import time # for *debug*
+#import hashlib
 
 libc = ctypes.CDLL("libc.so.6")
 
@@ -105,6 +110,58 @@ class ProcManager:
 		err = libc.sched_setscheduler(pid, ctypes.c_int(policy), ctypes.byref(param))
 		return err
 
+	def _set_sched_switch(self, t):
+		f = open('/sys/kernel/debug/tracing/events/sched/sched_switch/enable', 'w')
+		f.write('1' if t else '0')
+		f.close()
+
+	def _set_ftrace(self, t):
+		f = open('/sys/kernel/debug/tracing/tracing_on', 'w')
+		f.write('1' if t else '0')
+		f.close()
+
+	def _ftrace(self, sec):
+		ret = {}
+		stime = 0
+		wsec = sec
+		f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
+		while True:
+			(r, _, _) = select.select([f], [], [], wsec)
+			if len(r) <= 0:
+				break
+			l = f.readline()
+			m = re.match('^.* \[([0-9]*)\].* ([0-9]*\.[0-9]*): .*==> next_comm=.* next_pid=([0-9]*) next.*$', l)
+			if m is None:
+				continue
+			cpuno = int(m.group(1))
+			t = float(m.group(2))
+			pid = int(m.group(3))
+			if stime == 0:
+				stime = t
+			t -= stime
+			dat = [pid, t]
+			if cpuno not in ret:
+				ret[cpuno] = []
+			ret[cpuno].append(dat)
+			wsec = sec - t
+			if wsec <= 0:
+				break
+		f.close()
+		return ret
+
+	def get_ftrace(self, sec):
+		st = time.time() # for *debug*
+		self._ftrace(0)
+		self._set_sched_switch(True)
+		self._set_ftrace(True)
+		ret = self._ftrace(1)
+		self._set_ftrace(False)
+		self._set_sched_switch(False)
+		self._ftrace(0)
+		et = time.time() - st # for *debug*
+		print "* ftrace", et, "sec" # for *debug*
+		return ret
+
 	def run(self):
 		while True:
 			conn, addr = self.sock.accept()
@@ -121,6 +178,8 @@ class ProcManager:
 				ret = self.set_scheduling_policy(order['pid'],
 								 order['policy'],
 								 order['priority'])
+			elif order['name'] == 'ftrace':
+				ret = self.get_ftrace(order['sec'])
 			elif order['name'] == 'shutdown':
 				conn.send(str.encode("0"))
 				conn.close()
@@ -129,7 +188,23 @@ class ProcManager:
 			else:
 				print("Error: unknown operation key: '{}'".format(order['name']))
 				ret = -1
-			conn.send(str.encode(str(ret)))
+			if isinstance(ret, (int, long)):
+				conn.send(str.encode(str(ret)))
+			else:
+				st = time.time() # for *debug*
+				#dat = yaml.dump(ret) ## too slow!
+				dat = pickle.dumps(ret)
+				tt = time.time() - st # for *debug*
+				print "** dump", tt, "sec"
+				slen = 0
+				try:
+					while slen < len(dat):
+						slen += conn.send(dat[slen:])
+				except socket.error:
+					print 'socket failed'
+				tt = time.time() - st # for *debug*
+				print "** sent", tt, "sec, size", len(dat)
+				#print "** md5", hashlib.md5(dat).hexdigest()
 			conn.close()
 
 def cap_last_cap():

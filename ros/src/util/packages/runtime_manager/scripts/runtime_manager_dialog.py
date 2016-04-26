@@ -1805,20 +1805,10 @@ class MyFrame(rtmgr.MyFrame):
 			
 	def OnFtrace(self, event):
 		obj = event.GetEventObject()
-		cmd = 'gksudo ./src/util/packages/runtime_manager/scripts/ftrace.py'
-		args = []
-		def getPids(proc):
-			pids = []
-			for cp in proc.get_children():
-				pids.append(str(cp.pid))
-			pids.append(str(proc.pid))
-			return pids
-		for p in self.all_procs:
-			args.extend(getPids(p))
+		cmd = 'rosrun runtime_manager ftrace.py'
 		v = obj.GetValue()
 		self.ftrace_proc_ = self.launch_kill(v, cmd,
-			None if v else self.ftrace_proc_,
-			add_args=args, obj=obj)
+			None if v else self.ftrace_proc_, obj=obj)
 
 	def stdout_file_search(self, file, k):
 		s = ''

@@ -4,92 +4,17 @@
 import wx
 import sys
 import multiprocessing
-import re
-import time
+import socket
 import select
-import threading
-
-class SchedSwitchThread(threading.Thread):
-  def __init__(self):
-    super(SchedSwitchThread, self).__init__()
-    self.toff_ = 0
-    self.tmax_ = 0
-    self.running_ = True
-
-  def stop(self, timeout=None):
-    self.running_ = False
-    self.join(timeout)
-
-  def run(self):
-    self.dat_ = {}
-    # skip old data
-    f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
-    self.doCaptureOnce(f, {})
-    f.close()
-    self.doEnableSchedSwitch(True)
-    self.doTrace(True)
-    stime = time.time()
-    f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
-    self.toff_ = 0
-    while self.running_:
-      self.doCaptureOnce(f, self.dat_)
-      time.sleep(0.05)
-    self.doTrace(False)
-    self.doEnableSchedSwitch(False)
-    self.doCaptureOnce(f, self.dat_)
-    f.close()
-
-  def doEnableSchedSwitch(self, t):
-    f = open('/sys/kernel/debug/tracing/events/sched/sched_switch/enable', 'w')
-    f.write('1' if t else '0')
-    f.close()
-
-  def doTrace(self, t):
-    f = open('/sys/kernel/debug/tracing/tracing_on', 'w')
-    f.write('1' if t else '0')
-    f.close()
-
-  def doCaptureOnce(self, f, ret):
-    dt = 0
-    while True:
-      (r, _, _) = select.select([f], [], [], 0)
-      if len(r) <= 0:
-        break
-      l = f.readline()
-      m = re.match('^.* \[([0-9]*)\].* ([0-9]*\.[0-9]*): .*==> next_comm=(.*) next_pid=([0-9]*) next.*$', l)
-      if m is None:
-        continue
-      dt = float(m.group(2))
-      if self.toff_ == 0:
-        self.toff_ = dt
-      dt -= self.toff_
-      cpuno = int(m.group(1))
-      pid = int(m.group(4))
-      d = (dt, pid, m.group(3))
-      if cpuno not in ret:
-        ret[cpuno] = []
-      ret[cpuno].append(d)
-    if self.tmax_ < dt:
-      self.tmax_ = dt
-
-  def doCapture(self, sec):
-    self.dat_ = {}
-    # skip old data
-    f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
-    self.doCaptureOnce(f, {})
-    f.close()
-
-    self.doEnableSchedSwitch(True)
-    self.doTrace(True)
-    stime = time.time()
-    time.sleep(sec)
-    self.doTrace(False)
-    self.doEnableSchedSwitch(False)
-
-    f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
-    self.toff_ = 0
-    self.doCaptureOnce(f, self.dat_)
-    f.close()
+import yaml
+import pickle
+#import hashlib
+import rosnode
+import rosgraph
+try:
+  from xmlrpc.client import ServerProxy
+except ImportError:
+  from xmlrpclib import ServerProxy
 
 class MyFrame(wx.Frame):
   def __init__(self, parent, id, title):
@@ -126,15 +51,8 @@ class MyFrame(wx.Frame):
 
     spanel = wx.Panel(panel, -1)
     hbox = wx.BoxSizer(wx.HORIZONTAL)
-    #self.text_ = wx.TextCtrl(spanel, -1, str(self.sec_))
-    #hbox.Add(self.text_, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL, border=2)
-    #hbox.Add(wx.StaticText(spanel, -1, " sec  "),
-    #  flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL, border=2)
-    #cbtn = wx.Button(spanel, -1, "capture")
-    #cbtn.Bind(wx.EVT_BUTTON, self.OnClick)
-    #hbox.Add(cbtn, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL, border=2)
-    sbtn = wx.Button(spanel, -1, "start")
-    sbtn.Bind(wx.EVT_BUTTON, self.OnStartStop)
+    sbtn = wx.Button(spanel, -1, "update")
+    sbtn.Bind(wx.EVT_BUTTON, self.OnUpdate)
     hbox.Add(sbtn, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL, border=2)
     ebtn = wx.Button(spanel, -1, "close")
     vbtn = wx.Button(spanel, -1, "cpu/proc")
@@ -169,15 +87,18 @@ class MyFrame(wx.Frame):
         spanel.SetSizer(hbox)
         self.vbox_.Add(spanel, flag=wx.ALL, border=10)
         self.panels_[cpuno] = spanel
-      for pid in self.pids_:
+      for (name, pid) in self.pids_:
         text = wx.StaticText(self.lpanel_, -1, u"■%05d" % (pid))
         text.SetForegroundColour(self.GetColor(0, pid))
+        text.SetToolTip(wx.ToolTip(name))
         self.lbox_.Add(text, flag=wx.ALL, border=2)
     else:
-      for pid in self.pids_:
+      for (name, pid) in self.pids_:
         spanel = wx.Panel(self.vpanel_, -1)
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(wx.StaticText(spanel, -1, "%05d: " % (pid)))
+        text = wx.StaticText(spanel, -1, "%05d" % (pid))
+        text.SetToolTip(wx.ToolTip(name))
+        hbox.Add(text)
         spc = wx.StaticText(spanel, -1, " "*160)
         hbox.Add(spc)
         spanel.SetSizer(hbox)
@@ -208,22 +129,39 @@ class MyFrame(wx.Frame):
         self.sec_ = val
     self.text_.SetValue(str(self.sec_))
 
-  def OnClick(self, event):
-    self.OnText(None)
-    ss = SchedSwitchThread()
-    dat = ss.doCapture(self.sec_)
-    self.UpdateGraph(ss)
+  def _prv_recv(self, sock, dlen):
+    ret = sock.recv(dlen)
+    rlen = len(ret)
+    while rlen < dlen:
+      (r, _, _) = select.select([sock], [], [], 0.2)
+      if len(r) <= 0:
+        break
+      d = sock.recv(dlen - rlen)
+      if len(d) <= 0:
+        break
+      ret += d
+      rlen += len(d)
+    return ret
 
-  def OnStartStop(self, event):
-    btn = event.GetEventObject()
-    if btn.GetLabel() == "start":
-      btn.SetLabel("stop")
-      self.ss_ = SchedSwitchThread()
-      self.ss_.start()
-    else:
-      btn.SetLabel("start")
-      self.ss_.stop()
-      self.UpdateGraph(self.ss_)
+  def OnUpdate(self, event):
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+      sock.connect("/tmp/autoware_proc_manager")
+    except socket.error:
+      print 'Error: cannot connect to proc_manager...'
+      return
+    order = { 'name':'ftrace', 'sec':1 }
+    sock.send(yaml.dump(order))
+    dat = self._prv_recv(sock, 16*1024*1024)
+    sock.close()
+    #print '# recv %d, md5sum %s' % (len(dat), hashlib.md5(dat).hexdigest())
+    dat = pickle.loads(dat)
+    tmax = 0
+    for cpuno in dat:
+      for d in dat[cpuno]:
+        if d[1] > tmax:
+          tmax = d[1]
+    self.UpdateGraph(dat, tmax)
 
   def OnChangeView(self, event):
     self.view_ = 1 if self.view_ == 0 else 0
@@ -241,20 +179,26 @@ class MyFrame(wx.Frame):
       dc.SetBrush(wx.Brush(col))
       dc.DrawRectangle(pos.x, pos.y, rect.width, rect.height)
 
-  def UpdateGraph(self, ss):
+  def UpdateGraph(self, dat, tmax):
     self.ClearGraph()
     for cpuno in range(0, self.cpucount_):
       ptm = 0
       pid = 0
-      for (ctm, cid, _) in ss.dat_[cpuno]:
-        if pid in self.pids_:
-          col = self.GetColor(cpuno, pid)
-        elif self.view_ == 0 and pid != 0:
-          col = '#cccccc'
-        else:
-          ptm = ctm
-          pid = cid
-          continue
+      for d in dat[cpuno]:
+        cid = d[0]
+        ctm = d[1]
+        col = ''
+        for (_, p) in self.pids_:
+          if p == pid:
+            col = self.GetColor(cpuno, pid)
+            break
+        if len(col) == 0:
+          if self.view_ == 0 and pid != 0:
+            col = '#cccccc'
+          else:
+            ptm = ctm
+            pid = cid
+            continue
         panel = self.panels_[cpuno if self.view_ == 0 else pid]
         spc = panel.GetChildren()[1]
         pos = spc.GetPosition()
@@ -262,13 +206,21 @@ class MyFrame(wx.Frame):
         dc = wx.PaintDC(panel)
         dc.SetPen(wx.Pen(col))
         dc.SetBrush(wx.Brush(col))
-        w = rect.width*(ctm-ptm)/ss.tmax_ + 2
-        dc.DrawRectangle(pos.x + rect.width*ptm/ss.tmax_, pos.y, w, rect.height)
+        w = rect.width*(ctm-ptm)/tmax + 2
+        dc.DrawRectangle(pos.x + rect.width*ptm/tmax, pos.y, w, rect.height)
         ptm = ctm
         pid = cid
 
   def GetColor(self, cpuno, pid):
-    return self.colors_[(self.pids_.index(pid) if self.view_ == 0 else cpuno) % len(self.colors_)]
+    if self.view_ == 0:
+      i = 0
+      for (_, p) in self.pids_:
+        if p == pid:
+          return self.colors_[i % len(self.colors_)]
+        i += 1
+      return self.colors_[0]
+    else:
+      return self.colors_[cpuno % len(self.colors_)]
 
 class MyApp(wx.App):
   def OnInit(self):
@@ -279,7 +231,29 @@ class MyApp(wx.App):
   def SetPids(self, pids):
     self.frame_.SetPids(pids)
 
+def getRosNodes():
+  nodes = []
+  try:
+    nodenames = rosnode.get_node_names(None)
+  except Exception as inst:
+    print "Error:", inst
+    sys.exit(2)
+  for nodename in nodenames:
+    #rosnode.rosnode_info(nodename)
+    api = rosnode.get_api_uri(rosgraph.Master('/rosnode'), nodename)
+    if api:
+      try:
+        node = ServerProxy(api)
+        code, msg, pid = node.getPid('/rosnode')
+        if code == 1:
+          nodes.append((nodename, pid))
+      except:
+        pass
+  return nodes
+
 if __name__ == "__main__":
   app = MyApp(0)
-  app.SetPids(map(lambda n:int(n), sys.argv[1:]))
+  rosnodes = getRosNodes()
+  #print '# nodes:', rosnodes
+  app.SetPids(rosnodes)
   app.MainLoop()
