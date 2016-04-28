@@ -1074,7 +1074,7 @@ params :
       kind    : radio_box
       choices : ['Rviz','ndt_localizer','GNSS']
       choices_type : str
-      v       : 0
+      v       : Rviz
       cmd_param:
         dash     : ''
         delim    : ':='   
