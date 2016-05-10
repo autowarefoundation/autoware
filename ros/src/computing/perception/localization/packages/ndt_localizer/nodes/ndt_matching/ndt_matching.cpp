@@ -336,7 +336,7 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
 	offset_yaw = 0.0;
 }
 
-static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
+static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
 	if (map_loaded == 1 && init_pos_set == 1) {
 		matching_start = std::chrono::system_clock::now();
@@ -346,12 +346,13 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		tf::Quaternion predict_q, ndt_q, current_q, control_q, localizer_q;
 
 		pcl::PointXYZ p;
-		pcl::PointCloud<pcl::PointXYZ> scan;
+		pcl::PointCloud<pcl::PointXYZ> filtered_scan;
 
 		current_scan_time = input->header.stamp;
 
-		pcl::fromROSMsg(*input, scan);
+		pcl::fromROSMsg(*input, filtered_scan);
 
+		/*
 		if(_localizer == "velodyne"){
 			pcl::PointCloud<velodyne_pointcloud::PointXYZIR> tmp;
 			pcl::fromROSMsg(*input, tmp);
@@ -366,18 +367,21 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 				}
 			}
 		}
+		*/
 
-		pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
-		pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+//		pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
+		pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(filtered_scan));
 
 		Eigen::Matrix4f t(Eigen::Matrix4f::Identity()); // base_link
 		Eigen::Matrix4f t2(Eigen::Matrix4f::Identity()); // localizer
 
 		// Downsampling the velodyne scan using VoxelGrid filter
+		/*
 		pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
 		voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
 		voxel_grid_filter.setInputCloud(scan_ptr);
 		voxel_grid_filter.filter(*filtered_scan_ptr);
+*/
 
 		// Setting point cloud to be aligned.
 		ndt.setInputSource(filtered_scan_ptr);
@@ -634,7 +638,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		std::cout << "Sequence: " << input->header.seq << std::endl;
 		std::cout << "Timestamp: " << input->header.stamp << std::endl;
 		std::cout << "Frame ID: " << input->header.frame_id << std::endl;
-		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
+//		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
 		std::cout << "Number of Filtered Scan Points: " << filtered_scan_ptr->size() << " points." << std::endl;
 		std::cout << "Leaf Size: " << voxel_leaf_size << std::endl;
 		std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
@@ -761,7 +765,7 @@ int main(int argc, char **argv)
 	ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
 	ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
 	ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
-	ros::Subscriber scan_sub = nh.subscribe("points_raw", _queue_size, scan_callback);
+	ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
 
 	ros::spin();
 

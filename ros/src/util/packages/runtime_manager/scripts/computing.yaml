@@ -42,6 +42,8 @@ subs :
         cmd  : rosrun ring_filter ring_filter
       - name : distance_filter
         cmd  : rosrun distance_filter distance_filter
+      - name : random_filter
+        cmd  : rosrun random_filter random_filter
     - name : vel_pose_mux
       subs :
       - name : vel_pose_mux

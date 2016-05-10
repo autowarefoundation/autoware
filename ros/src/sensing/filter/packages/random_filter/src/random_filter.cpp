@@ -33,7 +33,6 @@
 
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl/filters/voxel_grid.h>
 
 ros::Publisher filtered_points_pub;
 
@@ -50,27 +49,12 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 	filtered_scan_ptr->header = scan.header;
 
 	int points_num = scan.size();
+	int step = points_num / sample_num;
 
-	double w_total = 0.0;
-	double w_step = 0.0;
-	int m = 0;
-	double c = 0.0;
-
-	for(pcl::PointCloud<pcl::PointXYZ>::const_iterator item = scan.begin(); item != scan.end(); item++){
-		w_total += item->x*item->x + item->y*item->y + item->z*item->z;
-	}
-	w_step = w_total / sample_num;
-
-	pcl::PointCloud<pcl::PointXYZ>::const_iterator item= scan.begin();
-	for(m = 0; m < sample_num; m++){
-		while(m * w_step > c){
-			item++;
-			c += item->x*item->x + item->y*item->y + item->z*item->z;
+	for(int i = 0; i < points_num; i++){
+		if(i % step == 0){
+			filtered_scan_ptr->points.push_back(scan.at(i));
 		}
-		sampled_p.x = item->x;
-		sampled_p.y = item->y;
-		sampled_p.z = item->z;
-		filtered_scan_ptr->points.push_back(sampled_p);
 	}
 
 	sensor_msgs::PointCloud2 filtered_msg;
@@ -80,7 +64,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "distance_filter");
+	ros::init(argc, argv, "random_filter");
 
 	ros::NodeHandle nh;
 	ros::NodeHandle private_nh("~");
