@@ -36,6 +36,12 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : voxel_grid_filter
+        cmd  : rosrun voxel_grid_filter voxel_grid_filter
+      - name : ring_filter
+        cmd  : rosrun ring_filter ring_filter
+      - name : distance_filter
+        cmd  : rosrun distance_filter distance_filter
     - name : vel_pose_mux
       subs :
       - name : vel_pose_mux
