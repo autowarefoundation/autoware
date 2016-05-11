@@ -2366,6 +2366,10 @@ class ParamPanel(wx.Panel):
 	def detach_func(self):
 		for var in self.prm.get('vars'):
 			name = var.get('name')
+
+			if not gdic_dialog_type_chk(self.gdic, name):
+				continue
+
 			gdic_v = self.gdic.get(name, {})
 			if 'func' in gdic_v:
 				bak_stk_pop(gdic_v, 'func')
