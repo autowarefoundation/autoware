@@ -5,8 +5,8 @@
   <description>The distance_filter package</description>
   <maintainer email="yuki@ertl.jp">Yuki KITSUKAWA</maintainer>
   <license>BSD</license>
-
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>runtime_manager</build_depend>
   <export>
   </export>
 </package>

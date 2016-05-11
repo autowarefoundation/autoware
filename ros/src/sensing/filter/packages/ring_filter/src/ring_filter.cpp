@@ -37,6 +37,8 @@
 
 #include <velodyne_pointcloud/point_types.h>
 
+#include <runtime_manager/ConfigRingFilter.h>
+
 ros::Publisher filtered_points_pub;
 
 // Leaf size of VoxelGrid filter.
@@ -45,6 +47,12 @@ static double voxel_leaf_size = 2.0;
 int ring_min = 0;
 int ring_max = 63;
 int ring_div = 3;
+
+static void config_callback(const runtime_manager::ConfigRingFilter::ConstPtr& input)
+{
+	ring_div = input->ring_div;
+	voxel_leaf_size = input->voxel_leaf_size;
+}
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
@@ -93,6 +101,7 @@ int main(int argc, char **argv)
     filtered_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/filtered_points", 10);
 
 	// Subscribers
+    ros::Subscriber config_sub = nh.subscribe("config/ring_filter", 10, config_callback);
 	ros::Subscriber scan_sub = nh.subscribe("points_raw", 10, scan_callback);
 
 	ros::spin();

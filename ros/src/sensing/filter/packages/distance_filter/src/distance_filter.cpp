@@ -35,9 +35,16 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/voxel_grid.h>
 
+#include <runtime_manager/ConfigDistanceFilter.h>
+
 ros::Publisher filtered_points_pub;
 
 static int sample_num = 1000;
+
+static void config_callback(const runtime_manager::ConfigDistanceFilter::ConstPtr& input)
+{
+	sample_num = input->sample_num;
+}
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
@@ -89,6 +96,7 @@ int main(int argc, char **argv)
     filtered_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/filtered_points", 10);
 
 	// Subscribers
+    ros::Subscriber config_sub = nh.subscribe("config/distance_filter", 10, config_callback);
 	ros::Subscriber scan_sub = nh.subscribe("points_raw", 10, scan_callback);
 
 	ros::spin();

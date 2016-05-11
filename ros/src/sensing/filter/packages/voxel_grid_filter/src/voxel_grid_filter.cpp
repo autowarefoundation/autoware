@@ -35,10 +35,17 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/voxel_grid.h>
 
+#include <runtime_manager/ConfigVoxelGridFilter.h>
+
 ros::Publisher filtered_points_pub;
 
 // Leaf size of VoxelGrid filter.
 static double voxel_leaf_size = 2.0;
+
+static void config_callback(const runtime_manager::ConfigVoxelGridFilter::ConstPtr& input)
+{
+	voxel_leaf_size = input->voxel_leaf_size;
+}
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
@@ -87,6 +94,7 @@ int main(int argc, char **argv)
     filtered_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/filtered_points", 10);
 
 	// Subscribers
+    ros::Subscriber config_sub = nh.subscribe("config/voxel_grid_filter", 10, config_callback);
 	ros::Subscriber scan_sub = nh.subscribe("points_raw", 10, scan_callback);
 
 	ros::spin();
