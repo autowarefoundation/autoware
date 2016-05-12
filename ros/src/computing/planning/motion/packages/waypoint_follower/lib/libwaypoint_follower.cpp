@@ -246,23 +246,31 @@ int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msg
 
 }
 
-bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *slope, double *intercept)
+// let the linear equation be "ax + by + c = 0"
+// if there are two points (x1,y1) , (x2,y2), a = "y2-y1, b = "(-1) * x2 - x1" ,c = "(-1) * (y2-y1)x1 + (x2-x1)y1"
+bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *a, double *b, double *c)
 {
-  if ((start.x - end.x) == 0)
+  //(x1, y1) = (start.x, star.y), (x2, y2) = (end.x, end.y)
+  double sub_x = fabs(start.x - end.x);
+  double sub_y = fabs(start.y - end.y);
+  double error = pow(10 ,-5); // 0.00001
+
+  if(sub_x < error && sub_y < error)
+  {
+    ROS_INFO("two points are the same point!!");
     return false;
+  }
 
-  //get slope of segment end,start
-  *slope = (start.y - end.y) / (start.x - end.x);
-
-  //get intercept of segment end,start
-  *intercept = (-1) * (*slope) * end.x + end.y;
+  *a = end.y - start.y;
+  *b = (-1) * (end.x - start.x);
+  *c = (-1) * (end.y - start.y) * start.x + (end.x - start.x) * start.y;
 
   return true;
 }
-double getDistanceBetweenLineAndPoint(geometry_msgs::Point point,double slope,double intercept)
+double getDistanceBetweenLineAndPoint(geometry_msgs::Point point, double a, double b, double c)
 {
-  double d = fabs(point.y - slope * point.x - intercept)
-      / sqrt(1 + pow(slope, 2));
+  double d = fabs(a * point.x + b * point.y + c)
+      / sqrt(pow(a, 2) + pow(b, 2));
 
   return d;
 }

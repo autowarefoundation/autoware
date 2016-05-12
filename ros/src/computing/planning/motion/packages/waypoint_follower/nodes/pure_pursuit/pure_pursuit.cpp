@@ -52,6 +52,7 @@ const int LOOP_RATE = 30;  // Hz
 const std::string MAP_FRAME = "map";
 const int MODE_WAYPOINT = 0;
 const int MODE_DIALOG = 1;
+double ERROR = pow(10, -5);  // 0.00001
 
 // parameter
 bool g_linear_interpolate_mode = true;
@@ -214,7 +215,7 @@ void displaySearchRadius(double search_radius)
 }
 
 // debug tool for interpolateNextTarget
-void displayLinePoint(double slope, double intercept, geometry_msgs::Point target, geometry_msgs::Point target2,
+void displayLinePoint(double a, double b, double c, geometry_msgs::Point target, geometry_msgs::Point target2,
                       geometry_msgs::Point target3)
 {
   visualization_msgs::Marker line;
@@ -231,14 +232,27 @@ void displayLinePoint(double slope, double intercept, geometry_msgs::Point targe
   white.r = 1.0;
   white.g = 1.0;
 
-  for (int i = -1000000; i < 1000000;)
+  for (int i = -100000; i < 100000;)
   {
     geometry_msgs::Point p;
-    p.x = i;
-    p.y = slope * i + intercept;
+    if(fabs(a) < ERROR) // linear equation y = n
+    {
+      p.y = (-1) * c / b;
+      p.x = i;
+    }
+    else if(fabs(b) < ERROR) // linear equation x = n
+    {
+      p.x = (-1) * c / a;
+      p.y = i;
+    }
+    else
+    {
+      p.x = i;
+      p.y = (-1) * (a * p.x + c) / b;
+    }
     p.z = _current_pose.pose.position.z;
     line.points.push_back(p);
-    i += 10000;
+    i += 5000;
   }
 
   line.scale.x = 0.3;
@@ -360,21 +374,26 @@ bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target)
   geometry_msgs::Point end = _current_waypoints.getWaypointPosition(next_waypoint);
   geometry_msgs::Point start = _current_waypoints.getWaypointPosition(next_waypoint - 1);
 
-  // let the linear equation be "y = slope * x + intercept"
-  double slope = 0;
-  double intercept = 0;
-  getLinearEquation(start, end, &slope, &intercept);
+  // let the linear equation be "ax + by + c = 0"
+  // if there are two points (x1,y1) , (x2,y2), a = "y2-y1, b = "(-1) * x2 - x1" ,c = "(-1) * (y2-y1)x1 + (x2-x1)y1"
+  double a = 0;
+  double b = 0;
+  double c = 0;
+  double get_linear_flag = getLinearEquation(start, end, &a, &b, &c);
+  if(!get_linear_flag)
+    return false;
 
   // let the center of circle be "(x0,y0)", in my code , the center of circle is vehicle position
   // the distance  "d" between the foot of a perpendicular line and the center of circle is ...
-  //    | y0 - slope * x0 - intercept |
+  //    | a * x0 + b * y0 + c |
   // d = -------------------------------
-  //          √( 1 + slope^2)
-  double d = getDistanceBetweenLineAndPoint(_current_pose.pose.position, slope, intercept);
+  //          √( a~2 + b~2)
+  double d = getDistanceBetweenLineAndPoint(_current_pose.pose.position, a, b, c);
 
-  // ROS_INFO("slope : %lf ", slope);
-  // ROS_INFO("intercept : %lf ", intercept);
-  // ROS_INFO("distance : %lf ", d);
+  //ROS_INFO("a : %lf ", a);
+  //ROS_INFO("b : %lf ", b);
+  //ROS_INFO("c : %lf ", c);
+  //ROS_INFO("distance : %lf ", d);
 
   if (d > search_radius)
     return false;
@@ -398,20 +417,18 @@ bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target)
   h2.y = _current_pose.pose.position.y + d * unit_w2.getY();
   h2.z = _current_pose.pose.position.z;
 
-  double error = pow(10, -5);  // 0.00001
-
   // ROS_INFO("error : %lf", error);
   // ROS_INFO("whether h1 on line : %lf", h1.y - (slope * h1.x + intercept));
   // ROS_INFO("whether h2 on line : %lf", h2.y - (slope * h2.x + intercept));
 
   // check which of two foot of a perpendicular line is on the line equation
   geometry_msgs::Point h;
-  if (fabs(h1.y - (slope * h1.x + intercept)) < error)
+  if (fabs(a * h1.x + b * h1.y + c) < ERROR)
   {
     h = h1;
     //   ROS_INFO("use h1");
   }
-  else if (fabs(h2.y - (slope * h2.x + intercept)) < error)
+  else if (fabs(a * h2.x + b * h2.y + c) < ERROR)
   {
     //   ROS_INFO("use h2");
     h = h2;
@@ -445,7 +462,7 @@ bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target)
 
     // ROS_INFO("target1 : ( %lf , %lf , %lf)", target1.x, target1.y, target1.z);
     // ROS_INFO("target2 : ( %lf , %lf , %lf)", target2.x, target2.y, target2.z);
-    displayLinePoint(slope, intercept, target1, target2, h);  // debug tool
+    displayLinePoint(a, b, c, target1, target2, h);  // debug tool
 
     // check intersection is between end and start
     double interval = getPlaneDistance(end, start);
@@ -471,11 +488,11 @@ bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target)
 
 static bool verifyFollowing()
 {
-  double slope = 0;
-  double intercept = 0;
-  getLinearEquation(_current_waypoints.getWaypointPosition(1), _current_waypoints.getWaypointPosition(2), &slope,
-                    &intercept);
-  double displacement = getDistanceBetweenLineAndPoint(_current_pose.pose.position, slope, intercept);
+  double a = 0;
+  double b = 0;
+  double c = 0;
+  getLinearEquation(_current_waypoints.getWaypointPosition(1), _current_waypoints.getWaypointPosition(2), &a, &b, &c);
+  double displacement = getDistanceBetweenLineAndPoint(_current_pose.pose.position, a, b, c);
   double relative_angle = getRelativeAngle(_current_waypoints.getWaypointPose(1), _current_pose.pose);
   // ROS_INFO("side diff : %lf , angle diff : %lf",displacement,relative_angle);
   if (displacement < g_displacement_threshold || relative_angle < g_relative_angle_threshold)
