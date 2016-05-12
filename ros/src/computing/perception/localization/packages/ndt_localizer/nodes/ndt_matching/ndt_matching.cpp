@@ -143,9 +143,21 @@ static int iteration = 0;
 static double score = 0.0;
 static double trans_probability = 0.0;
 
-static double current_velocity = 0.0, previous_velocity = 0.0; // [m/s]
-static double current_velocity_smooth = 0.0, second_previous_velocity = 0.0;
-static double current_acceleration = 0.0, previous_acceleration = 0.0; // [m/s^2]
+static double diff = 0.0;
+static double diff_x = 0.0, diff_y = 0.0, diff_z = 0.0, diff_yaw;
+
+static double current_velocity = 0.0, previous_velocity = 0.0, previous_previous_velocity = 0.0; // [m/s]
+static double current_velocity_x = 0.0, previous_velocity_x = 0.0;
+static double current_velocity_y = 0.0, previous_velocity_y = 0.0;
+static double current_velocity_z = 0.0, previous_velocity_z = 0.0;
+static double current_velocity_yaw = 0.0, previous_velocity_yaw = 0.0;
+static double current_velocity_smooth = 0.0;
+
+static double current_accel = 0.0, previous_accel = 0.0; // [m/s^2]
+static double current_accel_x = 0.0, previous_accel_x = 0.0;
+static double current_accel_y = 0.0, previous_accel_y = 0.0;
+static double current_accel_z = 0.0, previous_accel_z = 0.0;
+static double current_accel_yaw = 0.0, previous_accel_yaw = 0.0;
 
 static double angular_velocity = 0.0;
 
@@ -169,6 +181,7 @@ static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static std::string _localizer = "velodyne";
+static std::string _offset = "linear"; // linear, zero, quadratic
 
 static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
@@ -351,37 +364,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		current_scan_time = input->header.stamp;
 
 		pcl::fromROSMsg(*input, filtered_scan);
-
-		/*
-		if(_localizer == "velodyne"){
-			pcl::PointCloud<velodyne_pointcloud::PointXYZIR> tmp;
-			pcl::fromROSMsg(*input, tmp);
-			scan.points.clear();
-
-			for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = tmp.begin(); item != tmp.end(); item++) {
-				p.x = (double) item->x;
-				p.y = (double) item->y;
-				p.z = (double) item->z;
-				if(item->ring >= min && item->ring <= max && item->ring % layer == 0 ){
-					scan.points.push_back(p);
-				}
-			}
-		}
-		*/
-
-//		pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
 		pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(filtered_scan));
 
 		Eigen::Matrix4f t(Eigen::Matrix4f::Identity()); // base_link
 		Eigen::Matrix4f t2(Eigen::Matrix4f::Identity()); // localizer
-
-		// Downsampling the velodyne scan using VoxelGrid filter
-		/*
-		pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
-		voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-		voxel_grid_filter.setInputCloud(scan_ptr);
-		voxel_grid_filter.filter(*filtered_scan_ptr);
-*/
 
 		// Setting point cloud to be aligned.
 		ndt.setInputSource(filtered_scan_ptr);
@@ -415,7 +401,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 				static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
 				static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
 
-		// Update ndt_pose
+		// Update localizer_pose
 		localizer_pose.x = t(0, 3);
 		localizer_pose.y = t(1, 3);
 		localizer_pose.z = t(2, 3);
@@ -432,29 +418,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		ndt_pose.z = t2(2, 3);
 		mat_b.getRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw, 1);
 
-		// Compute the velocity
-		scan_duration = current_scan_time - previous_scan_time;
-		double secs = scan_duration.toSec();
-		double distance = sqrt((ndt_pose.x - previous_pose.x) * (ndt_pose.x - previous_pose.x) +
-				(ndt_pose.y - previous_pose.y) * (ndt_pose.y - previous_pose.y) +
-				(ndt_pose.z - previous_pose.z) * (ndt_pose.z - previous_pose.z));
-
+		// Calculate the difference between ndt_pose and predict_pose
 		predict_pose_error = sqrt((ndt_pose.x - predict_pose.x) * (ndt_pose.x - predict_pose.x) +
 				(ndt_pose.y - predict_pose.y) * (ndt_pose.y - predict_pose.y) +
 				(ndt_pose.z - predict_pose.z) * (ndt_pose.z - predict_pose.z));
-
-		current_velocity = distance / secs;
-		current_velocity_smooth = (current_velocity + previous_velocity + second_previous_velocity) / 3.0;
-		if(current_velocity_smooth < 0.2){
-			current_velocity_smooth = 0.0;
-		}
-		current_acceleration = (current_velocity - previous_velocity) / secs;
-
-		estimated_vel_mps.data = current_velocity;
-		estimated_vel_kmph.data = current_velocity * 3.6;
-
-		estimated_vel_mps_pub.publish(estimated_vel_mps);
-		estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
 		if(predict_pose_error <= PREDICT_POSE_THRESHOLD){
 			use_predict_pose = 0;
@@ -479,6 +446,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 			current_pose.yaw = predict_pose.yaw;
 		}
 
+		// Calculate control_pose
 		control_pose.roll = current_pose.roll;
 		control_pose.pitch = current_pose.pitch;
 		control_pose.yaw = current_pose.yaw - angle / 180.0 * M_PI;
@@ -486,6 +454,37 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		control_pose.x = cos(theta) * (-control_shift_x) + sin(theta) * (-control_shift_y) + current_pose.x;
 		control_pose.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pose.y;
 		control_pose.z = current_pose.z - control_shift_z;
+
+		// Compute the velocity and acceleration
+		scan_duration = current_scan_time - previous_scan_time;
+		double secs = scan_duration.toSec();
+		diff_x = current_pose.x - previous_pose.x;
+		diff_y = current_pose.y - previous_pose.y;
+		diff_z = current_pose.z - previous_pose.z;
+		diff_yaw = current_pose.yaw - previous_pose.yaw;
+		diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
+
+		current_velocity = diff / secs;
+		current_velocity_x = diff_x / secs;
+		current_velocity_y = diff_y / secs;
+		current_velocity_z = diff_z / secs;
+		angular_velocity = diff_yaw / secs;
+
+		current_velocity_smooth = (current_velocity + previous_velocity + previous_previous_velocity) / 3.0;
+		if(current_velocity_smooth < 0.2){
+			current_velocity_smooth = 0.0;
+		}
+
+		current_accel = (current_velocity - previous_velocity) / secs;
+		current_accel_x = (current_velocity_x - previous_velocity_x) / secs;
+		current_accel_y = (current_velocity_y - previous_velocity_y) / secs;
+		current_accel_z = (current_velocity_z - previous_velocity_z) / secs;
+
+		estimated_vel_mps.data = current_velocity;
+		estimated_vel_kmph.data = current_velocity * 3.6;
+
+		estimated_vel_mps_pub.publish(estimated_vel_mps);
+		estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
 		// Set values for publishing pose
 		predict_q.setRPY(predict_pose.roll, predict_pose.pitch, predict_pose.yaw);
@@ -560,8 +559,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		time_ndt_matching_pub.publish(time_ndt_matching);
 
 		// Set values for /estimate_twist
-		angular_velocity = (current_pose.yaw - previous_pose.yaw) / secs;
-
 		estimate_twist_msg.header.stamp = current_scan_time;
 		estimate_twist_msg.twist.linear.x = current_velocity;
 		estimate_twist_msg.twist.linear.y = 0.0;
@@ -583,7 +580,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		ndt_stat_msg.iteration = iteration;
 		ndt_stat_msg.score = score;
 		ndt_stat_msg.velocity = current_velocity;
-		ndt_stat_msg.acceleration = current_acceleration;
+		ndt_stat_msg.acceleration = current_accel;
 		ndt_stat_msg.use_predict_pose = 0;
 
 		ndt_stat_pub.publish(ndt_stat_msg);
@@ -628,7 +625,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 				<< ndt_reliability.data << ","
 				<< current_velocity << ","
 				<< current_velocity_smooth << ","
-				<< current_acceleration << ","
+				<< current_accel << ","
 				<< angular_velocity << ","
 				<< time_ndt_matching.data << ","
 				<< std::endl;
@@ -654,12 +651,25 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		std::cout << t << std::endl;
 		std::cout << "-----------------------------------------------------------------" << std::endl;
 
-		// Update previous_***
-		offset_x = current_pose.x - previous_pose.x;
-		offset_y = current_pose.y - previous_pose.y;
-		offset_z = current_pose.z - previous_pose.z;
-		offset_yaw = current_pose.yaw - previous_pose.yaw;
+		// Update offset
+		if(_offset == "linear"){
+			offset_x = diff_x;
+			offset_y = diff_y;
+			offset_z = diff_z;
+			offset_yaw = diff_yaw;
+		}else if(_offset == "quadratic"){
+			offset_x = (current_velocity_x + current_accel_x * secs) * secs;
+			offset_y = (current_velocity_y + current_accel_y * secs) * secs;
+			offset_z = diff_z;
+			offset_yaw = diff_yaw;
+		}else if(_offset == "zero"){
+			offset_x = 0.0;
+			offset_y = 0.0;
+			offset_z = 0.0;
+			offset_yaw = 0.0;
+		}
 
+		// Update previous_***
 		previous_pose.x = current_pose.x;
 		previous_pose.y = current_pose.y;
 		previous_pose.z = current_pose.z;
@@ -670,9 +680,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		previous_scan_time.sec = current_scan_time.sec;
 		previous_scan_time.nsec = current_scan_time.nsec;
 
-		second_previous_velocity = previous_velocity;
+		previous_previous_velocity = previous_velocity;
 		previous_velocity = current_velocity;
-		previous_acceleration = current_acceleration;
+		previous_velocity_x = current_velocity_x;
+		previous_velocity_y = current_velocity_y;
+		previous_velocity_z = current_velocity_z;
+		previous_accel = current_accel;
+
 		previous_estimated_vel_kmph.data = estimated_vel_kmph.data;
 	}
 }
@@ -687,6 +701,7 @@ int main(int argc, char **argv)
 	// setting parameters
 	private_nh.getParam("use_gnss", _use_gnss);
 	private_nh.getParam("queue_size", _queue_size);
+	private_nh.getParam("offset", _offset);
 
 	if(nh.getParam("localizer", _localizer) == false){
 		std::cout << "localizer is not set." << std::endl;
@@ -718,13 +733,13 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	std::cout << "_localizer: " << _localizer << std::endl;
-	std::cout << "_tf_x: " << _tf_x << std::endl;
-	std::cout << "_tf_y: " << _tf_y << std::endl;
-	std::cout << "_tf_z: " << _tf_z << std::endl;
-	std::cout << "_tf_roll: " << _tf_roll << std::endl;
-	std::cout << "_tf_pitch: " << _tf_pitch << std::endl;
-	std::cout << "_tf_yaw: " << _tf_yaw << std::endl;
+	std::cout << "Parameters" << std::endl;
+	std::cout << "use_gnss: " << _use_gnss << std::endl;
+	std::cout << "queue_size: " << _queue_size << std::endl;
+	std::cout << "offset: " << _offset << std::endl;
+	std::cout << "localizer: " << _localizer << std::endl;
+	std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): ("
+			<< _tf_x << ", " << _tf_y << ", " << _tf_z << ", " << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
 
 	Eigen::Translation3f tl_btol(_tf_x, _tf_y, _tf_z); // tl: translation
 	Eigen::AngleAxisf rot_x_btol(_tf_roll, Eigen::Vector3f::UnitX()); //rot: rotation
