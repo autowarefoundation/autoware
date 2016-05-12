@@ -66,9 +66,9 @@ bool g_waypoint_set = false;
 bool g_pose_set = false;
 
 // config topic
-int _param_flag = MODE_WAYPOINT;  // 0 = waypoint, 1 = Dialog
+int _param_flag = MODE_WAYPOINT;    // 0 = waypoint, 1 = Dialog
 double _lookahead_threshold = 4.0;  // meter
-double _initial_velocity = 5.0;  // km/h
+double _initial_velocity = 5.0;     // km/h
 double g_look_ahead_threshold_calc_ratio = 2.0;
 double g_minimum_look_ahead_threshold = 6.0;  // the next waypoint must be outside of this threshold.
 double g_displacement_threshold = 0.2;
@@ -235,12 +235,12 @@ void displayLinePoint(double a, double b, double c, geometry_msgs::Point target,
   for (int i = -100000; i < 100000;)
   {
     geometry_msgs::Point p;
-    if(fabs(a) < ERROR) // linear equation y = n
+    if (fabs(a) < ERROR)  // linear equation y = n
     {
       p.y = (-1) * c / b;
       p.x = i;
     }
-    else if(fabs(b) < ERROR) // linear equation x = n
+    else if (fabs(b) < ERROR)  // linear equation x = n
     {
       p.x = (-1) * c / a;
       p.y = i;
@@ -380,7 +380,7 @@ bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target)
   double b = 0;
   double c = 0;
   double get_linear_flag = getLinearEquation(start, end, &a, &b, &c);
-  if(!get_linear_flag)
+  if (!get_linear_flag)
     return false;
 
   // let the center of circle be "(x0,y0)", in my code , the center of circle is vehicle position
@@ -390,10 +390,10 @@ bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target)
   //          √( a~2 + b~2)
   double d = getDistanceBetweenLineAndPoint(_current_pose.pose.position, a, b, c);
 
-  //ROS_INFO("a : %lf ", a);
-  //ROS_INFO("b : %lf ", b);
-  //ROS_INFO("c : %lf ", c);
-  //ROS_INFO("distance : %lf ", d);
+  // ROS_INFO("a : %lf ", a);
+  // ROS_INFO("b : %lf ", b);
+  // ROS_INFO("c : %lf ", c);
+  // ROS_INFO("distance : %lf ", d);
 
   if (d > search_radius)
     return false;
@@ -403,7 +403,7 @@ bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target)
   tf::Vector3 unit_v = v.normalize();
 
   // normal unit vectors of v
-  tf::Vector3 unit_w1 = rotateUnitVector(unit_v, 90);  // rotate to counter clockwise 90 degree
+  tf::Vector3 unit_w1 = rotateUnitVector(unit_v, 90);   // rotate to counter clockwise 90 degree
   tf::Vector3 unit_w2 = rotateUnitVector(unit_v, -90);  // rotate to counter clockwise 90 degree
 
   // the foot of a perpendicular line
@@ -735,7 +735,7 @@ int main(int argc, char **argv)
     }
     else
     {
-      //ROS_INFO("topic subscribed!");
+      // ROS_INFO("topic subscribed!");
     }
     doPurePursuit();
     loop_rate.sleep();
