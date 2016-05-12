@@ -257,7 +257,7 @@ bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, dou
 
   *a = end.y - start.y;
   *b = (-1) * (end.x - start.x);
-  *c = (-1) * (end.y - start.y) * start.x + (end.x - start.x) * start.y;S
+  *c = (-1) * (end.y - start.y) * start.x + (end.x - start.x) * start.y;
 
   return true;
 }
