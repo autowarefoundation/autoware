@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package>
+  <name>object_map</name>
+  <version>0.0.0</version>
+  <description>The object_map package</description>
+  <maintainer email="antm678@ertl.jp">ando</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  <export>
+  </export>
+</package>

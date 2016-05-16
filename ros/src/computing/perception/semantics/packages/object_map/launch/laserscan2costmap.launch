@@ -1,0 +1,22 @@
+<!-- -->
+<launch>
+    <arg name="resolution" default="0.1" />
+    <arg name="scan_size_x" default="1000" />
+    <arg name="scan_size_y" default="1000" />
+    <arg name="map_size_x" default="500" />
+    <arg name="map_size_y" default="500" />
+    <arg name="scan_topic" default="/scan" />
+    <arg name="sensor_frame" default="/velodyne" />
+
+	<node pkg="object_map" type="laserscan2costmap" name="laserscan2costmap" output="screen">
+        <param name="resolution" value="$(arg resolution)" />
+        <param name="scan_size_x" value="$(arg scan_size_x)" />
+        <param name="scan_size_y" value="$(arg scan_size_y)" />
+        <param name="map_size_x" value="$(arg map_size_x)" />
+        <param name="map_size_y" value="$(arg map_size_y)" />
+        <param name="scan_topic" value="$(arg scan_topic)" />
+        <param name="sensor_frame" value="$(arg sensor_frame)" />
+	</node>
+
+</launch>
+
