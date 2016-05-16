@@ -277,15 +277,13 @@ void create_waypoint(const waypoint_follower::LaneArray& msg)
 	header.stamp = ros::Time::now();
 	header.frame_id = frame_id;
 
+	cached_waypoint.lanes.clear();
+	cached_waypoint.lanes.shrink_to_fit();
+	for (const waypoint_follower::lane& l : msg.lanes)
+		cached_waypoint.lanes.push_back(create_new_lane(l, header));
 	if (all_vmap.points.empty() || all_vmap.lanes.empty() || all_vmap.nodes.empty() ||
 	    all_vmap.stoplines.empty() || all_vmap.dtlanes.empty()) {
-		cached_waypoint.lanes.clear();
-		cached_waypoint.lanes.shrink_to_fit();
-		for (const waypoint_follower::lane& l : msg.lanes)
-			cached_waypoint.lanes.push_back(create_new_lane(l, header));
-
 		traffic_pub.publish(cached_waypoint);
-
 		return;
 	}
 
@@ -390,9 +388,8 @@ void update_values()
 #endif // DEBUG
 
 	if (!cached_waypoint.lanes.empty()) {
-		create_waypoint(cached_waypoint);
-		cached_waypoint.lanes.clear();
-		cached_waypoint.lanes.shrink_to_fit();
+		waypoint_follower::LaneArray update_waypoint = cached_waypoint;
+		create_waypoint(update_waypoint);
 	}
 }
 
@@ -431,6 +428,11 @@ void config_parameter(const runtime_manager::ConfigLaneRule& msg)
 	config_acceleration = msg.acceleration;
 	config_number_of_zeros_ahead = msg.number_of_zeros_ahead;
 	config_number_of_zeros_behind = msg.number_of_zeros_behind;
+
+	if (!cached_waypoint.lanes.empty()) {
+		waypoint_follower::LaneArray update_waypoint = cached_waypoint;
+		create_waypoint(update_waypoint);
+	}
 }
 
 } // namespace
