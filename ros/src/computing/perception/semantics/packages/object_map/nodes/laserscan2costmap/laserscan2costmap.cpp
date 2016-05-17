@@ -260,15 +260,16 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
   // Save costs in this variable
   static std::vector<int> cost_map(g_scan_size_x * g_scan_size_y, -1);
 
-  static int count = 0;
+  static bool initialized_map = false;
   static double prev_x, prev_y;
   static nav_msgs::OccupancyGrid map;
   setOccupancyGridMap(&map, scan.header, transform);
-  if (!count)
+  if (!initialized_map)
   {
     map.data.resize(g_map_size_x * g_map_size_y, -1);
     prev_x = transform.getOrigin().x();
     prev_y = transform.getOrigin().y();
+    initialized_map = true;
   }
 
   // Since we implement as ring buffer, we have to delete old data regularly
@@ -345,7 +346,6 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
   }
 
   g_map_pub.publish(map);
-  count++;
 }
 
 // Make CostMap from LaserScan message
