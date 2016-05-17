@@ -58,6 +58,10 @@ struct Grid
   double x, y;
   double weight;
   double range;
+
+  void calcCoordinate();
+  void calcRange();
+  int calcGlobalIndex(const tf::StampedTransform& transform) const;
 };
 
 ros::Publisher g_map_pub;
@@ -73,32 +77,32 @@ double calcYawFromQuaternion(const tf::Quaternion& q)
 }
 
 // Calcurate grid's coordinate in sensor frame
-void calcCoordinateOfGrid(Grid* g)
+void Grid::calcCoordinate()
 {
   // index coordinate
-  g->index_x = g->index % g_scan_size_x;
-  g->index_y = (g->index - g->x) / g_scan_size_x;
+  index_x = index % g_scan_size_x;
+  index_y = (index - x) / g_scan_size_x;
 
   // actual coordinate
-  g->x = (g->index_x - g_scan_size_x / 2.0) * g_resolution;
-  g->y = (g->index_y - g_scan_size_y / 2.0) * g_resolution;
+  x = (index_x - g_scan_size_x / 2.0) * g_resolution;
+  y = (index_y - g_scan_size_y / 2.0) * g_resolution;
 }
 
 // Calculate a range from sensor in a certain grid
-double calcRangeOfGrid(const Grid& g)
+void Grid::calcRange()
 {
-  double distance_x = g_resolution * fabs(g_scan_size_x / 2 - g.index_x);
-  double distance_y = g_resolution * fabs(g_scan_size_y / 2 - g.index_y);
+  double distance_x = g_resolution * fabs(g_scan_size_x / 2 - index_x);
+  double distance_y = g_resolution * fabs(g_scan_size_y / 2 - index_y);
 
-  return sqrt(distance_x * distance_x + distance_y * distance_y);
+  range = sqrt(distance_x * distance_x + distance_y * distance_y);
 }
 
 // Change local index into global index
-int calcGlobalIndex(const Grid& g, const tf::StampedTransform& transform)
+int Grid::calcGlobalIndex(const tf::StampedTransform& transform) const
 {
   // Calculate index in global frame
-  int ix = (g.x + transform.getOrigin().x()) / g_resolution;
-  int iy = (g.y + transform.getOrigin().y()) / g_resolution;
+  int ix = (x + transform.getOrigin().x()) / g_resolution;
+  int iy = (y + transform.getOrigin().y()) / g_resolution;
 
   // Make indexes positive value
   int global_grid_x = (ix + 100000 * g_scan_size_x) % g_scan_size_x;
@@ -176,8 +180,8 @@ void preCasting(const sensor_msgs::LaserScan& scan, std::vector<std::vector<Grid
       Grid g;
       g.index = unique_index;
       // g.weight = 1.0 * std::count(grid_indexes[i].begin(), grid_indexes[i].end(), unique_index) / max_count;
-      calcCoordinateOfGrid(&g);
-      g.range = calcRangeOfGrid(g);
+      g.calcCoordinate();
+      g.calcRange();
       precasted_grids->at(i).push_back(g);
     }
   }
@@ -306,7 +310,7 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
       // Free range
       if (g.range < range)
       {
-        int global_index = calcGlobalIndex(g, transform);
+        int global_index = g.calcGlobalIndex(transform);
         cost_map[global_index] -= 2;
         if (cost_map[global_index] < 0)
           cost_map[global_index] = 0;
@@ -317,7 +321,7 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
     }
 
     // Obstacle
-    int global_index = calcGlobalIndex(precasted_grids[precasted_index][j], transform);
+    int global_index = precasted_grids[precasted_index][j].calcGlobalIndex(transform);
     cost_map[global_index] += 15;
     if (cost_map[global_index] > 100)
       cost_map[global_index] = 100;
