@@ -261,14 +261,13 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
   static std::vector<int> cost_map(g_scan_size_x * g_scan_size_y, -1);
 
   static bool initialized_map = false;
-  static double prev_x, prev_y;
+  static double prev_x = transform.getOrigin().x();
+  static double prev_y = transform.getOrigin().y();
   static nav_msgs::OccupancyGrid map;
   setOccupancyGridMap(&map, scan.header, transform);
   if (!initialized_map)
   {
     map.data.resize(g_map_size_x * g_map_size_y, -1);
-    prev_x = transform.getOrigin().x();
-    prev_y = transform.getOrigin().y();
     initialized_map = true;
   }
 
