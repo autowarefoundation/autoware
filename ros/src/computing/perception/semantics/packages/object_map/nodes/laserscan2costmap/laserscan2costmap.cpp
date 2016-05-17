@@ -109,7 +109,7 @@ int calcGlobalIndex(const Grid& g, const tf::StampedTransform& transform)
   return global_index;
 }
 
-int calcGlobalIndex(const int& grid_x, const int& grid_y, const tf::StampedTransform& transform)
+int calcGlobalIndex(int grid_x, int grid_y, const tf::StampedTransform& transform)
 {
   // Point coordinate in velodyne(local) frame
   double local_x = (grid_x - g_scan_size_x / 2.0) * g_resolution;
@@ -184,8 +184,7 @@ void preCasting(const sensor_msgs::LaserScan& scan, std::vector<std::vector<Grid
 }
 
 // Delete old cost values
-void deleteOldData(std::vector<int>* cost_map, const double& current_x, const double& current_y, const double& prev_x,
-                   const double& prev_y)
+void deleteOldData(std::vector<int>* cost_map, double current_x, double current_y, double prev_x, double prev_y)
 {
   double begin_x = current_x;
   double begin_y = current_y;
