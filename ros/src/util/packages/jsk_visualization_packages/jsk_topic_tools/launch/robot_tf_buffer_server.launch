@@ -1,0 +1,13 @@
+<launch>
+  <arg name="TF_UPDATE_RATE" default="1.0" />
+  <arg name="TF_CONFIG" default="$(find jsk_topic_tools)/config/tf_buffer.yaml"/>
+
+  <include file="$(find jsk_topic_tools)/launch/tf_buffer_server.launch">
+    <arg name="UPDATE_RATE" value="$(arg TF_UPDATE_RATE)"/>
+    <arg name="TF_CONFIG" value="$(arg TF_CONFIG)"/>
+  </include>
+  <node pkg="jsk_topic_tools" type="joint_state_pruner.py"
+	name="joint_state_pruner" output="screen"/>
+  <node pkg="jsk_topic_tools" type="topic_buffer_server" name="topic_buffer_server_for_joint_state_pruned"
+	args="/joint_states_pruned" output="screen"/>
+</launch>

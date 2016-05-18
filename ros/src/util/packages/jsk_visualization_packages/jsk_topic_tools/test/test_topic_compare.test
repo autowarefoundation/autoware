@@ -1,0 +1,13 @@
+<launch>
+  <node pkg="rostopic"
+        type="rostopic"
+        name="rostopic"
+        args="pub -r 10 /origin std_msgs/String foofoofoo" />
+  <node pkg="topic_tools"
+        type="drop"
+        name="drop"
+        args="/origin 1 2 /half" />
+  <test test-name="topic_compare_test"
+        pkg="jsk_topic_tools" type="test_topic_compare.py"
+        name="test_topic_compare" />
+</launch>

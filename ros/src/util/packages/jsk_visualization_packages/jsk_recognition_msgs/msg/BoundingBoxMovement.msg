@@ -1,0 +1,4 @@
+Header header
+BoundingBox box
+geometry_msgs/Pose handle_pose
+geometry_msgs/PoseStamped destination

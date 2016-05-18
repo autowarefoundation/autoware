@@ -1,0 +1,30 @@
+<launch>
+  <arg name="camera" default="camera" />
+  <arg name="image_topic" default="image_rect_color" />
+  <arg name="depth_topic" default="image_rect_raw" />
+  <arg name="fixed_frame" default="camera_rgb_optical_frame" />
+  <arg name="depth_ns" default="depth" />
+
+  <node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters $(arg camera)/driver">
+    <param name="depth_registration" type="bool" value="true" />
+  </node>
+
+ <node pkg="face_detector" type="face_detector" name="face_detector" output="screen">
+    <remap from="camera" to="$(arg camera)" />
+    <remap from="image_topic" to="$(arg image_topic)" />
+    <remap from="depth_topic" to="$(arg depth_topic)" />
+    <remap from="depth_ns" to="$(arg depth_ns)" />
+    <param name="fixed_frame" type="string" value="$(arg fixed_frame)" />
+    <param name="classifier_name" type="string" value="frontalface" />
+    <param name="classifier_filename" type="string" value="$(env ROS_ROOT)/../OpenCV/haarcascades/haarcascade_frontalface_alt.xml" />
+    <param name="classifier_reliability" type="double" value="0.5"/>
+    <param name="do_continuous" type="bool" value="true" />
+    <param name="do_publish_faces_of_unknown_size" type="bool" value="false" />	
+    <param name="do_display" type="bool" value="true" />
+    <param name="use_rgbd" type="bool" value="true" />
+    <param name="approximate_sync" type="bool" value="true" />
+    <param name="face_size_min_m" value="0.005" />
+	 
+  </node>
+
+</launch>

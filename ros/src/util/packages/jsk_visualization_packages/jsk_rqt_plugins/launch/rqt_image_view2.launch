@@ -1,0 +1,13 @@
+<launch>
+  <arg name="image" />
+  <node pkg="jsk_rqt_plugins" type="rqt_image_view2" name="rqt_image_view2"
+        output="screen">
+    <remap from="event" to="image_view2/event" />
+    <remap from="image_marked" to="image_marked" />
+  </node>
+  <node pkg="image_view2" type="image_view2" name="image_view2"
+        output="screen">
+    <remap from="image" to="$(arg image)" />
+    <param name="use_window" value="false" />
+  </node>
+</launch>

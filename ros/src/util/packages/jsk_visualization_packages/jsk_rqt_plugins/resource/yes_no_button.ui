@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="YesNoButton">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>200</width>
+    <height>100</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+    <string>YesNoButton</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+      <number>0</number>
+    </property>
+    <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+          <widget class="QPushButton" name="yes_button">
+            <property name="toolTip">
+              <string>Yes Button</string>
+            </property>
+            <property name="text">
+              <string>Yes</string>
+            </property>
+            <property name="iconSize">
+              <size>
+                <width>16</width>
+                <height>16</height>
+              </size>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QPushButton" name="no_button">
+            <property name="toolTip">
+              <string>No Button</string>
+            </property>
+            <property name="text">
+              <string>No</string>
+            </property>
+            <property name="iconSize">
+              <size>
+                <width>16</width>
+                <height>16</height>
+              </size>
+            </property>
+          </widget>
+        </item>
+      </layout>
+    </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

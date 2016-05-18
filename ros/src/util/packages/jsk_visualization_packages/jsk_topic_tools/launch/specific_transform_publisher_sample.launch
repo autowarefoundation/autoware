@@ -1,0 +1,17 @@
+<launch>
+  <node pkg="tf" type="static_transform_publisher" name="tf_sample1"
+	args="1 0 0 0 0 0 parent1 child1 100"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_sample2"
+	args="0 1 0 0 0 0 parent2 child2 100"/>
+  <node pkg="jsk_topic_tools" type="specific_transform_publisher" name="sample_specific_transform_publisher" output="screen">
+    <rosparam>
+      parent_frame:
+      - "/parent1"
+      - "/parent2"
+      child_frame:
+      - "/child1"
+      - "/child2"
+    </rosparam>
+  </node>
+
+</launch>

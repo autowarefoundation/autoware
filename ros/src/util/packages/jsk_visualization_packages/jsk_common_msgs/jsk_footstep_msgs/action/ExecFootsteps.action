@@ -1,0 +1,9 @@
+# goal
+uint8 NEW_TARGET=0
+uint8 RESUME=1
+FootstepArray footstep
+uint8 strategy
+---
+# result
+---
+# feedback
