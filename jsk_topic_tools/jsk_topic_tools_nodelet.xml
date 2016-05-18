@@ -1,0 +1,68 @@
+<library path="lib/libjsk_topic_tools">
+  <class name="jsk_topic_tools/Snapshot" type="jsk_topic_tools::Snapshot"
+         base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+  <class name="jsk_topic_tools/VitalCheckerNodelet" type="VitalCheckerNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      check ~input is alive or not and publish the status into /diagnostics.
+      ~title parameter is required.
+    </description>
+  </class>
+  <class name="jsk_topic_tools/HzMeasure" type="HzMeasure"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      subscribe ~input topic and publish the rate of the messages to ~output
+      as std_msgs/Float32.
+    </description>
+  </class>
+  <class name="jsk_topic_tools/LightweightThrottle" type="LightweightThrottle"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      lightweight throttle nodelet.
+      Publish ~output from ~input with the fixed rate specified by
+      ~update_rate parameter.
+    </description>
+  </class>
+  <class name="jsk_topic_tools/MUX" type="MUX"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      mux nodelet.
+      Publish ~output from the list of the topics listed on ~topics parameters.
+      It supports all the API of topic_tools/mux, so you can use mux_select, mux_add,
+      mux_delete, mux_list of topic_tools.
+    </description>
+  </class>
+  <class name="jsk_topic_tools/Relay" type="Relay"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      relay a topic message from ~input to ~output.
+    </description>
+  </class>
+  <class name="jsk_topic_tools/DeprecatedRelay" type="DeprecatedRelay"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      relay a topic message from ~input to ~output with deprecated message.
+    </description>
+  </class>
+  <class name="jsk_topic_tools/Passthrough" type="Passthrough"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      passthrough a topic message from ~input to ~output during specified time.
+    </description>
+  </class>
+  <class name="jsk_topic_tools/Block" type="Block"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      block topic
+    </description>
+  </class>
+  <class name="jsk_topic_tools/StringRelay" type="StringRelay"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      block topic
+    </description>
+  </class>
+</library>

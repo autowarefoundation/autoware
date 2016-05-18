@@ -1,0 +1,155 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+        - /sin plot1
+        - /pie chart1
+      Splitter Ratio: 0.484513
+    Tree Height: 663
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.588679
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+      - /Current View1/Focal Point1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Name: OverlayText
+      Topic: /text_sample
+      Value: true
+    - Buffer length: 100
+      Class: jsk_rviz_plugin/Plotter2D
+      Enabled: true
+      Name: sin plot
+      Topic: /value_sample
+      Value: true
+      background color: 0; 0; 0
+      backround alpha: 0
+      border: true
+      caption: true
+      foreground alpha: 0.7
+      foreground color: 25; 255; 240
+      height: 128
+      left: 620
+      linewidth: 2
+      text size: 12
+      top: 128
+      update interval: 0.04
+      width: 128
+    - Class: jsk_rviz_plugin/PieChart
+      Enabled: true
+      Name: pie chart
+      Topic: /value_sample
+      Value: true
+      background color: 0; 0; 0
+      backround alpha: 0
+      foreground alpha: 0.7
+      foreground alpha 2: 0.4
+      foreground color: 25; 255; 240
+      left: 620
+      max value: 1
+      min value: -1
+      show caption: true
+      size: 128
+      text alpha: 1
+      text color: 25; 255; 240
+      text size: 14
+      top: 300
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: camera_depth_frame
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 2.71087
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0.657525
+        Y: -0.596541
+        Z: 0.393615
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.599797
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 0.925848
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 944
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000001c700000320fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005300fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003400000320000000b500fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000002befc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000034000002be0000009700fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005b10000003efc0100000002fb0000000800540069006d00650100000000000005b10000020c00fffffffb0000000800540069006d00650100000000000004500000000000000000000003e40000032000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1457
+  X: 817
+  Y: 428

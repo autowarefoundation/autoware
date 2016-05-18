@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="jsk_rqt_plugins" type="sample_hist_pub.py" name="sample_hist_pub" />
+  <node pkg="jsk_rqt_plugins" type="rqt_histogram_plot" name="generic_array_plot"
+        args="/normal_array/data" />
+  <node pkg="jsk_rqt_plugins" type="rqt_histogram_plot" name="histogram_with_range_plot"
+        args="/range_array" />
+</launch>

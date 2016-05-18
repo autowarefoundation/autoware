@@ -1,0 +1,28 @@
+<launch>
+  <include file="$(find jsk_topic_tools)/launch/topic_buffer_client_sample.launch" >
+    <arg name="USE_UPDATE_RATE" value="1" />
+    <arg name="OUTPUT" value="log" />
+  </include>
+  <include file="$(find jsk_topic_tools)/launch/topic_buffer_server_sample.launch">
+    <arg name="OUTPUT" value="log" />
+  </include>
+
+  <param name="hztest_chatter/topic" value="chatter" />
+  <param name="hztest_chatter/hz" value="10.0" />
+  <param name="hztest_chatter/hzerror" value="0.5" />
+  <param name="hztest_chatter/test_duration" value="5.0" />
+  <test test-name="hztest_chatter" pkg="rostest" type="hztest" name="hztest_chatter" />
+
+  <param name="hztest_chatter_update/topic" value="chatter_update" />
+  <param name="hztest_chatter_update/hz" value="1" />
+  <param name="hztest_chatter_update/hzerror" value="0.5" />
+  <param name="hztest_chatter_update/test_duration" value="5.0" />
+  <test test-name="hztest_chatter_update" pkg="rostest" type="hztest" name="hztest_chatter_update" />
+
+  <param name="hztest_chatter_buffer/topic" value="chatter_buffered" />
+  <param name="hztest_chatter_buffer/hz" value="10.0" />
+  <param name="hztest_chatter_buffer/hzerror" value="3.0" /> <!-- ????? -->
+  <param name="hztest_chatter_buffer/test_duration" value="5.0" />
+  <test test-name="hztest_chatter_buffer" pkg="rostest" type="hztest" name="hztest_chatter_buffer" />
+
+</launch>

@@ -1,0 +1,10 @@
+# goal
+FootstepArray goal_footstep
+FootstepArray initial_footstep
+duration timeout
+---
+# result
+FootstepArray result
+---
+# feedback
+FootstepArray feedback

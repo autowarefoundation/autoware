@@ -1,0 +1,15 @@
+<launch>
+  <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_another" output="screen">
+    <remap from="/tf" to="/tf_another"/>
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_another/set_dynamic_tf"/>
+    <remap from="/delete_tf" to="/dynamic_tf_publisher_another/delete_tf"/>
+    <remap from="/dissoc_tf" to="/dynamic_tf_publisher_another/dissoc_tf"/>
+    <remap from="/assoc_tf" to="/dynamic_tf_publisher_another/assoc_tf"/>
+    <param name="use_cache" type="bool" value="false"/>
+  </node>
+
+  <node pkg="jsk_topic_tools" type="specific_transform_subscriber" name="sample_specific_transform_subscriber" output="screen">
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_another/set_dynamic_tf"/>
+  </node>
+
+</launch>

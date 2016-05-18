@@ -1,0 +1,26 @@
+<launch>
+  <!-- If you want to update at the arbitrary point of the time, please type following command. Sample programs are in scripts folder.
+       rosservice call /sample_topic_buffer_server/update "/chatter"
+  -->
+  <arg name="USE_FIXED_RATE" default="false" />
+  <arg name="USE_UPDATE_RATE" default="false" />
+  <arg name="UPDATE_RATE" default="1" />
+  <arg name="FIXED_RATE" default="0.1" />
+  <arg name="OUTPUT" default="screen" />
+
+  <node pkg="roscpp_tutorials" type="listener" name="listener"
+        output="$(arg OUTPUT)">
+    <remap from="chatter" to="chatter_buffered"/>
+  </node>
+
+
+  <node pkg="jsk_topic_tools" type="topic_buffer_client" name="sample_topic_buffer_client"
+        output="$(arg OUTPUT)">
+    <remap from="/list" to="/sample_topic_buffer_server/list"/>
+    <remap from="/update" to="/sample_topic_buffer_server/update"/>
+    <param name="update_rate" value="$(arg UPDATE_RATE)" if="$(arg USE_UPDATE_RATE)"  />
+    <param name="fixed_rate" value="$(arg FIXED_RATE)" if="$(arg USE_FIXED_RATE)"/>
+  </node>
+
+
+</launch>

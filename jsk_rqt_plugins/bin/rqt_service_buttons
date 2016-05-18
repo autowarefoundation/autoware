@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+import sys
+
+from rqt_gui.main import Main
+try:
+    from jsk_rqt_plugins.button import ServiceButtons
+except:
+    import roslib; roslib.load_manifest('jsk_rqt_plugins')
+    from jsk_rqt_plugins.button import ServiceButtons
+
+plugin = 'ServiceButtons'
+main = Main(filename=plugin)
+sys.exit(main.main(standalone=plugin))
