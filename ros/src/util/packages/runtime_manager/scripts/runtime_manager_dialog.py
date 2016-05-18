@@ -218,6 +218,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
 		buttons_color_hdr_setup(self.dlg_rosbag_record)
 
+		sense_cmds_dic = dic.get('cmds', {})
+
 		#
 		# for Computing tab
 		#
@@ -245,6 +247,16 @@ class MyFrame(rtmgr.MyFrame):
 		self.Bind(CT.EVT_TREE_ITEM_CHECKED, self.OnTreeChecked)
 
 		self.setup_buttons(items.get('buttons', {}), self.computing_cmd)
+
+		#
+		# for Sensing tab (cmds)
+		#
+		parent = self.tree_ctrl_sense.GetParent()
+		self.tree_ctrl_sense.Destroy()
+		tree_ctrl = self.create_tree(parent, sense_cmds_dic, None, None, self.sensing_cmd)
+		tree_ctrl.ExpandAll()
+		tree_ctrl.SetBackgroundColour(wx.NullColour)
+		self.tree_ctrl_sense = tree_ctrl
 
 		#
 		# for Interface tab
