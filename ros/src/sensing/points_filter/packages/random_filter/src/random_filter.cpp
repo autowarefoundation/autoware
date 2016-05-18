@@ -47,12 +47,12 @@ static void config_callback(const runtime_manager::ConfigRandomFilter::ConstPtr&
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-    pcl::PointXYZ sampled_p;
-    pcl::PointCloud<pcl::PointXYZ> scan;
+    pcl::PointXYZI sampled_p;
+    pcl::PointCloud<pcl::PointXYZI> scan;
 
     pcl::fromROSMsg(*input, scan);
-//    pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
-    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+
+    pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
 	filtered_scan_ptr->header = scan.header;
 
 	int points_num = scan.size();

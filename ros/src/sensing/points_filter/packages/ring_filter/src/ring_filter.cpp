@@ -56,28 +56,33 @@ static void config_callback(const runtime_manager::ConfigRingFilter::ConstPtr& i
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-    pcl::PointXYZ p;
-    pcl::PointCloud<pcl::PointXYZ> scan;
-    pcl::fromROSMsg(*input, scan);
+    pcl::PointXYZI p;
+    pcl::PointCloud<pcl::PointXYZI> scan;
     pcl::PointCloud<velodyne_pointcloud::PointXYZIR> tmp;
+
+    pcl::fromROSMsg(*input, scan);
     pcl::fromROSMsg(*input, tmp);
+
     scan.points.clear();
+
     for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = tmp.begin(); item != tmp.end(); item++) {
     	p.x = (double) item->x;
     	p.y = (double) item->y;
     	p.z = (double) item->z;
+    	p.intensity = (double) item->intensity;
     	if(item->ring >= ring_min && item->ring <= ring_max && item->ring % ring_div == 0 ){
     		scan.points.push_back(p);
     	}
     }
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
+    pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
+
     // if voxel_leaf_size < 0.1 voxel_grid_filter cannot down sample (It is specification in PCL)
     if (voxel_leaf_size >= 0.1) {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+        pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
 
         // Downsampling the velodyne scan using VoxelGrid filter
-        pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
+        pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
         voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
         voxel_grid_filter.setInputCloud(scan_ptr);
         voxel_grid_filter.filter(*filtered_scan_ptr);

@@ -48,12 +48,11 @@ static void config_callback(const runtime_manager::ConfigDistanceFilter::ConstPt
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-    pcl::PointXYZ sampled_p;
-    pcl::PointCloud<pcl::PointXYZ> scan;
+    pcl::PointXYZI sampled_p;
+    pcl::PointCloud<pcl::PointXYZI> scan;
 
     pcl::fromROSMsg(*input, scan);
-//    pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
-    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
 	filtered_scan_ptr->header = scan.header;
 
 	int points_num = scan.size();
@@ -63,12 +62,12 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 	int m = 0;
 	double c = 0.0;
 
-	for(pcl::PointCloud<pcl::PointXYZ>::const_iterator item = scan.begin(); item != scan.end(); item++){
+	for(pcl::PointCloud<pcl::PointXYZI>::const_iterator item = scan.begin(); item != scan.end(); item++){
 		w_total += item->x*item->x + item->y*item->y + item->z*item->z;
 	}
 	w_step = w_total / sample_num;
 
-	pcl::PointCloud<pcl::PointXYZ>::const_iterator item= scan.begin();
+	pcl::PointCloud<pcl::PointXYZI>::const_iterator item= scan.begin();
 	for(m = 0; m < sample_num; m++){
 		while(m * w_step > c){
 			item++;
@@ -77,6 +76,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		sampled_p.x = item->x;
 		sampled_p.y = item->y;
 		sampled_p.z = item->z;
+		sampled_p.intensity = item->intensity;
 		filtered_scan_ptr->points.push_back(sampled_p);
 	}
 
