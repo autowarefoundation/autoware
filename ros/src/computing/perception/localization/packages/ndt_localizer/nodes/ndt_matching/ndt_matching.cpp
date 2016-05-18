@@ -150,14 +150,14 @@ static double current_velocity = 0.0, previous_velocity = 0.0, previous_previous
 static double current_velocity_x = 0.0, previous_velocity_x = 0.0;
 static double current_velocity_y = 0.0, previous_velocity_y = 0.0;
 static double current_velocity_z = 0.0, previous_velocity_z = 0.0;
-static double current_velocity_yaw = 0.0, previous_velocity_yaw = 0.0;
+//static double current_velocity_yaw = 0.0, previous_velocity_yaw = 0.0;
 static double current_velocity_smooth = 0.0;
 
 static double current_accel = 0.0, previous_accel = 0.0; // [m/s^2]
-static double current_accel_x = 0.0, previous_accel_x = 0.0;
-static double current_accel_y = 0.0, previous_accel_y = 0.0;
-static double current_accel_z = 0.0, previous_accel_z = 0.0;
-static double current_accel_yaw = 0.0, previous_accel_yaw = 0.0;
+static double current_accel_x = 0.0;
+static double current_accel_y = 0.0;
+static double current_accel_z = 0.0;
+//static double current_accel_yaw = 0.0;
 
 static double angular_velocity = 0.0;
 

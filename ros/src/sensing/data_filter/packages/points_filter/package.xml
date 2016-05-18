@@ -1,12 +1,20 @@
 <?xml version="1.0"?>
 <package>
-  <name>random_filter</name>
+  <name>points_filter</name>
   <version>0.0.0</version>
-  <description>The random_filter package</description>
+  <description>The points_filter package</description>
   <maintainer email="yuki@ertl.jp">Yuki KITSUKAWA</maintainer>
   <license>BSD</license>
+  
   <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>runtime_manager</build_depend>
+  <build_depend>message_generation</build_depend>
+  
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  
   <export>
   </export>
 </package>

@@ -37,9 +37,14 @@
 
 #include <runtime_manager/ConfigDistanceFilter.h>
 
+#include <points_filter/PointsFilterInfo.h>
+
 ros::Publisher filtered_points_pub;
 
 static int sample_num = 1000;
+
+static ros::Publisher points_filter_info_pub;
+static points_filter::PointsFilterInfo points_filter_info_msg;
 
 static void config_callback(const runtime_manager::ConfigDistanceFilter::ConstPtr& input)
 {
@@ -83,6 +88,15 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 	sensor_msgs::PointCloud2 filtered_msg;
 	pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
 	filtered_points_pub.publish(filtered_msg);
+
+	points_filter_info_msg.header = input->header;
+	points_filter_info_msg.filter_name = "distance_filter";
+	points_filter_info_msg.original_points_size = points_num;
+	points_filter_info_msg.filtered_points_size = filtered_scan_ptr->size();
+	points_filter_info_msg.original_ring_size = 0;
+	points_filter_info_msg.original_ring_size = 0;
+	points_filter_info_pub.publish(points_filter_info_msg);
+
 }
 
 int main(int argc, char **argv)
@@ -94,6 +108,7 @@ int main(int argc, char **argv)
 
     // Publishers
     filtered_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/filtered_points", 10);
+    points_filter_info_pub = nh.advertise<points_filter::PointsFilterInfo>("/points_filter_info", 1000);
 
 	// Subscribers
     ros::Subscriber config_sub = nh.subscribe("config/distance_filter", 10, config_callback);

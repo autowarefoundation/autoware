@@ -120,16 +120,16 @@ cmds:
   - name : Points Filter
     subs :
     - name : voxel_grid_filter
-      cmd  : rosrun voxel_grid_filter voxel_grid_filter
+      cmd  : rosrun points_filter voxel_grid_filter
       param: voxel_grid_filter
     - name : ring_filter
-      cmd  : rosrun ring_filter ring_filter
+      cmd  : rosrun points_filter ring_filter
       param: ring_filter
     - name : distance_filter
-      cmd  : rosrun distance_filter distance_filter
+      cmd  : rosrun points_filter distance_filter
       param: distance_filter
     - name : random_filter
-      cmd  : rosrun random_filter random_filter
+      cmd  : rosrun points_filter random_filter
       param: random_filter
 
 buttons:
