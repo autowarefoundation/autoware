@@ -299,14 +299,22 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
-    - Class: rviz/Marker
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
       Enabled: true
-      Marker Topic: /vehicle_model
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: ""
       Name: Vehicle Model
-      Namespaces:
-        {}
-      Queue Size: 100
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
       Value: true
+      Visual Enabled: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
