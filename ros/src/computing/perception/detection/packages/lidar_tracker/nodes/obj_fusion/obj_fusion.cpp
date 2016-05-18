@@ -64,8 +64,11 @@ static void fusion_objects(void)
 
     if (centroids_current.empty() || reprojected_positions_current.empty()) {
         visualization_msgs::MarkerArray pub_msg;
+        std_msgs::Time time;
         obj_pose_pub.publish(pub_msg);
-        obj_pose_timestamp_pub.publish(obj_pose_timestamp);
+
+        time.data = obj_pose_timestamp;
+        obj_pose_timestamp_pub.publish(time);
         return;
     }
 
@@ -154,7 +157,10 @@ static void fusion_objects(void)
         }
 
         obj_pose_pub.publish(pub_msg);
-        obj_pose_timestamp_pub.publish(obj_pose_timestamp);
+
+        std_msgs::Time time;
+        time.data = obj_pose_timestamp;
+        obj_pose_timestamp_pub.publish(time);
 }
 
 
