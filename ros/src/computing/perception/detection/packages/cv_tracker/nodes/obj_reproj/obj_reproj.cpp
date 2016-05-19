@@ -204,6 +204,7 @@ static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::ob
 static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const cv_tracker::obj_label& src)
 {
   jsk_recognition_msgs::BoundingBoxArray ret;
+  ret.header.frame_id ="map";
 
   for (const auto& reproj_pos : src.reprojected_pos)
     {
