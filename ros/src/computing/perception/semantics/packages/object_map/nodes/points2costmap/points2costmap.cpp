@@ -32,7 +32,6 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <geometry_msgs/PoseStamped.h>
 
 namespace
 {

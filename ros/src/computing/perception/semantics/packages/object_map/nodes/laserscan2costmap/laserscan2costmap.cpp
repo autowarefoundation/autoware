@@ -35,10 +35,8 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
-#include <visualization_msgs/Marker.h>
 #include <tf/transform_listener.h>
 #include <nav_msgs/OccupancyGrid.h>
-#include <geometry_msgs/Point.h>
 
 namespace
 {
