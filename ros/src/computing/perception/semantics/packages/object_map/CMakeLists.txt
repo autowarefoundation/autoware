@@ -3,8 +3,11 @@ project(object_map)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  std_msgs
   pcl_ros
+  pcl_conversions
+  tf
+  sensor_msgs
+  nav_msgs
 )
 
 
@@ -12,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
+  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs
 )
 
 ###########
