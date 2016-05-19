@@ -36,6 +36,11 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+    - name : icp_localizer
+      subs :
+      - name : icp_matching
+        cmd  : roslaunch icp_localizer icp_matching.launch
+        param: ndt
     - name : vel_pose_mux
       subs :
       - name : vel_pose_mux
