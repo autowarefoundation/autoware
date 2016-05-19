@@ -115,6 +115,23 @@ subs :
     subs :
       - {}
 
+cmds:
+  subs :
+  - name : Points Filter
+    subs :
+    - name : voxel_grid_filter
+      cmd  : rosrun points_filter voxel_grid_filter
+      param: voxel_grid_filter
+    - name : ring_filter
+      cmd  : rosrun points_filter ring_filter
+      param: ring_filter
+    - name : distance_filter
+      cmd  : rosrun points_filter distance_filter
+      param: distance_filter
+    - name : random_filter
+      cmd  : rosrun points_filter random_filter
+      param: random_filter
+
 buttons:
   calibration_toolkit :
     run   : rosrun calibration_camera_lidar calibration_toolkit
@@ -234,6 +251,51 @@ params :
 #      cmd_param :
 #        dash : ''
 #        delim: ':='
+
+  - name  : voxel_grid_filter
+    topic : /config/voxel_grid_filter
+    msg   : ConfigVoxelGridFilter
+    vars  :
+    - name  : voxel_leaf_size
+      label : Voxel Leaf Size
+      min   : 0
+      max   : 10
+      v     : 2.0
+
+  - name  : ring_filter
+    topic : /config/ring_filter
+    msg   : ConfigRingFilter
+    vars  :
+    - name  : ring_div
+      label : Ring Div
+      min   : 1
+      max   : 64
+      v     : 3
+    - name  : voxel_leaf_size
+      label : Voxel Leaf Size
+      min   : 0
+      max   : 10
+      v     : 2.0
+
+  - name  : distance_filter
+    topic : /config/distance_filter
+    msg   : ConfigDistanceFilter
+    vars  :
+    - name  : sample_num
+      label : Sample Num
+      min   : 100
+      max   : 30000
+      v     : 10000
+
+  - name  : random_filter
+    topic : /config/random_filter
+    msg   : ConfigRandomFilter
+    vars  :
+    - name  : sample_num
+      label : Sample Num
+      min   : 100
+      max   : 30000
+      v     : 10000
 
   - name  : calibration_publisher
     vars  :

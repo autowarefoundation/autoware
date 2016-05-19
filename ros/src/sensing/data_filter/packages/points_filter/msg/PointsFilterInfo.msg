@@ -1,0 +1,6 @@
+Header header
+string filter_name
+int32 original_points_size
+int32 filtered_points_size
+int32 original_ring_size
+int32 filtered_ring_size
