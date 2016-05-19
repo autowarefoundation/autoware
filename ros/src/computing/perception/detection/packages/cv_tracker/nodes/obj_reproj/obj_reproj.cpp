@@ -490,7 +490,7 @@ int main(int argc, char **argv){
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("obj_label_marker", 1);
 
 #ifdef HAVE_JSK_PLUGIN
-  jsk_bounding_box_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>("obj_lavel_bounding_box", 1);
+  jsk_bounding_box_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>("obj_label_bounding_box", 1);
 #endif
 
   ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
