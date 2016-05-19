@@ -37,9 +37,9 @@ int main(int argc, char **argv)
   PlannerX *planner_x = new PlannerX();
 
   // define subscribers.
-  ros::Subscriber sub_current_pose = nh.subscribe("/current_pose", 1000, &PlannerX::callbackFromCurrentPose,planner_x);
-  ros::Subscriber sub_traffic_light = nh.subscribe("/light_color", 1000, &PlannerX::callbackFromLightColor,planner_x);
-  ros::Subscriber sub_obj_pose = nh.subscribe("/obj_car/obj_label", 1000, &PlannerX::callbackFromObjCar,planner_x);
+  ros::Subscriber sub_current_pose = nh.subscribe("/current_pose", 1000, &PlannerX::callbackFromCurrentPose, planner_x);
+  ros::Subscriber sub_traffic_light = nh.subscribe("/light_color", 1000, &PlannerX::callbackFromLightColor, planner_x);
+  ros::Subscriber sub_obj_pose = nh.subscribe("/obj_car/obj_label", 1000, &PlannerX::callbackFromObjCar, planner_x);
 
   ros::spin();
 

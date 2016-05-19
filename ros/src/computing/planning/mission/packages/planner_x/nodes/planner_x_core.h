@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+// *  Copyright (c) 2015, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -46,12 +46,10 @@ public:
   // Destructor.
   ~PlannerX();
 
-  //Callback function for subscriber.
-  void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
+  // Callback function for subscriber.
+  void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackFromLightColor(const runtime_manager::traffic_light& msg);
   void callbackFromObjCar(const cv_tracker::obj_label& msg);
 };
 
-
-
-#endif // PLANNER_X_H
+#endif  // PLANNER_X_H
