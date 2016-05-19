@@ -29,29 +29,27 @@
 */
 #include "planner_x_core.h"
 
-//Constructor
+// Constructor
 PlannerX::PlannerX()
 {
-
 }
 
-//Destructor
+// Destructor
 PlannerX::~PlannerX()
 {
-
 }
 
-void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
+void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
-  //write procedure for current pose
+  // write procedure for current pose
 }
 
 void PlannerX::callbackFromLightColor(const runtime_manager::traffic_light& msg)
 {
-  //write procedure for traffic light
+  // write procedure for traffic light
 }
 
 void PlannerX::callbackFromObjCar(const cv_tracker::obj_label& msg)
 {
-  //write procedure for car obstacle
+  // write procedure for car obstacle
 }
