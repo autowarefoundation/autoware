@@ -27,21 +27,31 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "planner_x_core.h"
 
-int main(int argc, char **argv)
+#ifndef PLANNER_X_CORE_H
+#define PLANNER_X_CORE_H
+
+// ROS includes
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <cv_tracker/obj_label.h>
+#include <runtime_manager/traffic_light.h>
+
+class PlannerX
 {
-  ros::init(argc, argv, "planner_x");
-  ros::NodeHandle nh;
+public:
+  // Constructor.
+  PlannerX();
 
-  PlannerX *planner_x = new PlannerX();
+  // Destructor.
+  ~PlannerX();
 
-  // define subscribers.
-  ros::Subscriber sub_current_pose = nh.subscribe("/current_pose", 1000, &PlannerX::callbackFromCurrentPose,planner_x);
-  ros::Subscriber sub_traffic_light = nh.subscribe("/light_color", 1000, &PlannerX::callbackFromLightColor,planner_x);
-  ros::Subscriber sub_obj_pose = nh.subscribe("/obj_car/obj_label", 1000, &PlannerX::callbackFromObjCar,planner_x);
+  //Callback function for subscriber.
+  void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
+  void callbackFromLightColor(const runtime_manager::traffic_light& msg);
+  void callbackFromObjCar(const cv_tracker::obj_label& msg);
+};
 
-  ros::spin();
 
-  return 0;
-}
+
+#endif // PLANNER_X_H

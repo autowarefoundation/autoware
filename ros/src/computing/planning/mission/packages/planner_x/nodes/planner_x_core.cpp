@@ -29,19 +29,29 @@
 */
 #include "planner_x_core.h"
 
-int main(int argc, char **argv)
+//Constructor
+PlannerX::PlannerX()
 {
-  ros::init(argc, argv, "planner_x");
-  ros::NodeHandle nh;
 
-  PlannerX *planner_x = new PlannerX();
+}
 
-  // define subscribers.
-  ros::Subscriber sub_current_pose = nh.subscribe("/current_pose", 1000, &PlannerX::callbackFromCurrentPose,planner_x);
-  ros::Subscriber sub_traffic_light = nh.subscribe("/light_color", 1000, &PlannerX::callbackFromLightColor,planner_x);
-  ros::Subscriber sub_obj_pose = nh.subscribe("/obj_car/obj_label", 1000, &PlannerX::callbackFromObjCar,planner_x);
+//Destructor
+PlannerX::~PlannerX()
+{
 
-  ros::spin();
+}
 
-  return 0;
+void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
+{
+  //write procedure for current pose
+}
+
+void PlannerX::callbackFromLightColor(const runtime_manager::traffic_light& msg)
+{
+  //write procedure for traffic light
+}
+
+void PlannerX::callbackFromObjCar(const cv_tracker::obj_label& msg)
+{
+  //write procedure for car obstacle
 }
