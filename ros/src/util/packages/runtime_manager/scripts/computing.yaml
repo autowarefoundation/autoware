@@ -788,21 +788,21 @@ params :
     - name  : yaw
       label : 'yaw:'
       v     : 0.0
-    - name  : lidar_original
-      kind  : radio_box
-      choices:
-      - Lidar
-      - Original
-      v     : 1
-    - name  : max
-      label : 'Max:'
-      v     : 63
-    - name  : min
-      label : 'Min:'
-      v     : 0
-    - name  : layer
-      label : 'Layer:'
-      v     : 1
+#    - name  : lidar_original
+#      kind  : radio_box
+#      choices:
+#      - Lidar
+#      - Original
+#      v     : 1
+#    - name  : max
+#      label : 'Max:'
+#      v     : 63
+#    - name  : min
+#      label : 'Min:'
+#      v     : 0
+#    - name  : layer
+#      label : 'Layer:'
+#      v     : 1
     - name  : use_predict_pose
       label : Predict Pose
       kind  : radio_box
@@ -829,32 +829,32 @@ params :
       min   : 0
       max   : 0.1
       v     : 0.01
-    - name  : leaf_size
-      label : Leaf Size
-      min   : 0
-      max   : 10
-      v     : 2.0
-    - name  : angle_error
-      label : Angle Error
-      min   : -180.0
-      max   : 180.0
-      step  : 0.1
-      v     : 0
-    - name  : shift_x
-      label : Shift X
-      min   : -2.0
-      max   : 2.0
-      v     : 0
-    - name  : shift_y
-      label : Shift Y
-      min   : -2.0
-      max   : 2.0
-      v     : 0
-    - name  : shift_z
-      label : Shift Z
-      min   : -2.0
-      max   : 2.0
-      v     : 0
+#    - name  : leaf_size
+#      label : Leaf Size
+#      min   : 0
+#      max   : 10
+#      v     : 2.0
+#    - name  : angle_error
+#      label : Angle Error
+#      min   : -180.0
+#      max   : 180.0
+#      step  : 0.1
+#      v     : 0
+#    - name  : shift_x
+#      label : Shift X
+#      min   : -2.0
+#      max   : 2.0
+#      v     : 0
+#    - name  : shift_y
+#      label : Shift Y
+#      min   : -2.0
+#      max   : 2.0
+#      v     : 0
+#    - name  : shift_z
+#      label : Shift Z
+#      min   : -2.0
+#      max   : 2.0
+#      v     : 0
     - name      : sync
       kind      : hide
       v         : False

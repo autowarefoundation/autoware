@@ -63,8 +63,6 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/registration/ndt.h>
-#include <pcl/filters/approximate_voxel_grid.h>
-#include <pcl/filters/voxel_grid.h>
 
 #include <runtime_manager/ConfigNdt.h>
 
@@ -86,8 +84,7 @@ struct pose
   double yaw;
 };
 
-static pose initial_pose, predict_pose, previous_pose, ndt_pose, current_pose, control_pose, localizer_pose,
-    previous_gnss_pose, current_gnss_pose;
+static pose initial_pose, predict_pose, previous_pose, ndt_pose, current_pose, localizer_pose, previous_gnss_pose, current_gnss_pose;
 
 static double offset_x, offset_y, offset_z, offset_yaw;  // current_pos - previous_pose
 
@@ -106,9 +103,6 @@ static float ndt_res = 1.0;      // Resolution
 static double step_size = 0.1;   // Step size
 static double trans_eps = 0.01;  // Transformation epsilon
 
-// Leaf size of VoxelGrid filter.
-static double voxel_leaf_size = 2.0;
-
 static ros::Publisher predict_pose_pub;
 static geometry_msgs::PoseStamped predict_pose_msg;
 
@@ -118,23 +112,11 @@ static geometry_msgs::PoseStamped ndt_pose_msg;
 static ros::Publisher current_pose_pub;
 static geometry_msgs::PoseStamped current_pose_msg;
 
-static ros::Publisher control_pose_pub;
-static geometry_msgs::PoseStamped control_pose_msg;
-
 static ros::Publisher localizer_pose_pub;
 static geometry_msgs::PoseStamped localizer_pose_msg;
 
 static ros::Publisher estimate_twist_pub;
 static geometry_msgs::TwistStamped estimate_twist_msg;
-
-static double angle = 0.0;
-static double control_shift_x = 0.0;
-static double control_shift_y = 0.0;
-static double control_shift_z = 0.0;
-
-static int max = 63;
-static int min = 0;
-static int layer = 1;
 
 static ros::Time current_scan_time;
 static ros::Time previous_scan_time;
@@ -204,8 +186,6 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 
   _use_gnss = input->init_pos_gnss;
 
-  voxel_leaf_size = input->leaf_size;
-
   // Setting parameters
   if (input->resolution != ndt_res)
   {
@@ -257,14 +237,6 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     init_pos_set = 1;
   }
 
-  angle = input->angle_error;
-  control_shift_x = input->shift_x;
-  control_shift_y = input->shift_y;
-  control_shift_z = input->shift_z;
-
-  max = input->max;
-  min = input->min;
-  layer = input->layer;
 }
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -374,7 +346,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     static tf::TransformBroadcaster br;
     tf::Transform transform;
-    tf::Quaternion predict_q, ndt_q, current_q, control_q, localizer_q;
+    tf::Quaternion predict_q, ndt_q, current_q, localizer_q;
 
     pcl::PointXYZ p;
     pcl::PointCloud<pcl::PointXYZ> filtered_scan;
@@ -470,15 +442,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       current_pose.yaw = predict_pose.yaw;
     }
 
-    // Calculate control_pose
-    control_pose.roll = current_pose.roll;
-    control_pose.pitch = current_pose.pitch;
-    control_pose.yaw = current_pose.yaw - angle / 180.0 * M_PI;
-    double theta = control_pose.yaw;
-    control_pose.x = cos(theta) * (-control_shift_x) + sin(theta) * (-control_shift_y) + current_pose.x;
-    control_pose.y = -sin(theta) * (-control_shift_x) + cos(theta) * (-control_shift_y) + current_pose.y;
-    control_pose.z = current_pose.z - control_shift_z;
-
     // Compute the velocity and acceleration
     scan_duration = current_scan_time - previous_scan_time;
     double secs = scan_duration.toSec();
@@ -545,17 +508,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_pose_msg.pose.orientation.z = current_q.z();
     current_pose_msg.pose.orientation.w = current_q.w();
 
-    control_q.setRPY(control_pose.roll, control_pose.pitch, control_pose.yaw);
-    control_pose_msg.header.frame_id = "/map";
-    control_pose_msg.header.stamp = current_scan_time;
-    control_pose_msg.pose.position.x = control_pose.x;
-    control_pose_msg.pose.position.y = control_pose.y;
-    control_pose_msg.pose.position.z = control_pose.z;
-    control_pose_msg.pose.orientation.x = control_q.x();
-    control_pose_msg.pose.orientation.y = control_q.y();
-    control_pose_msg.pose.orientation.z = control_q.z();
-    control_pose_msg.pose.orientation.w = control_q.w();
-
     localizer_q.setRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw);
     localizer_pose_msg.header.frame_id = "/map";
     localizer_pose_msg.header.stamp = current_scan_time;
@@ -570,7 +522,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose_pub.publish(predict_pose_msg);
     ndt_pose_pub.publish(ndt_pose_msg);
     current_pose_pub.publish(current_pose_msg);
-    control_pose_pub.publish(control_pose_msg);
     localizer_pose_pub.publish(localizer_pose_msg);
 
     // Send TF "/base_link" to "/map"
@@ -623,7 +574,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       std::cerr << "Could not open 'log.csv'." << std::endl;
       exit(1);
     }
-    ofs_log << input->header.seq << "," << step_size << "," << trans_eps << "," << voxel_leaf_size << ","
+    ofs_log << input->header.seq << "," << step_size << "," << trans_eps << ","
             << current_pose.x << "," << current_pose.y << "," << current_pose.z << "," << current_pose.roll << ","
             << current_pose.pitch << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << ","
             << predict_pose.z << "," << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
@@ -641,7 +592,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Frame ID: " << input->header.frame_id << std::endl;
     //		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
     std::cout << "Number of Filtered Scan Points: " << filtered_scan_ptr->size() << " points." << std::endl;
-    std::cout << "Leaf Size: " << voxel_leaf_size << std::endl;
     std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
     std::cout << "Fitness Score: " << ndt.getFitnessScore() << std::endl;
     std::cout << "Transformation Probability: " << ndt.getTransformationProbability() << std::endl;
@@ -781,7 +731,6 @@ int main(int argc, char** argv)
   predict_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose", 1000);
   ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
   // current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
-  control_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/control_pose", 1000);
   localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 1000);
   estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist", 1000);
   estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
