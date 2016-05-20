@@ -305,6 +305,18 @@ subs :
       - name : traffic_light_viewer
         cmd  : roslaunch viewers viewers.launch viewer_type:=traffic_light_viewer
 
+  - name : Semantics
+    subs :
+    - name : laserscan2costmap
+      cmd  : roslaunch object_map laserscan2costmap.launch
+      param: laserscan2costmap
+      gui  :
+        scan_topic:
+          flags : [ nl ]
+
+    - name : points2costmap
+      cmd  : roslaunch object_map points2costmap.launch
+      param: points2costmap
 
 - subs :
   - name : Mission Planning
@@ -1600,3 +1612,87 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+
+  - name : laserscan2costmap
+    vars :
+    - name      : resolution
+      label     : resolution
+      min       : 0.0
+      max       : 0.2
+      v         : 0.1
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : scan_size_x
+      label     : scan_size_x
+      min       : 0
+      max       : 2000
+      v         : 1000
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : scan_size_y
+      label     : scan_size_y
+      min       : 0
+      max       : 2000
+      v         : 1000
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_size_x
+      label     : map_size_x
+      min       : 0
+      max       : 1000
+      v         : 500
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_size_y
+      label     : map_size_y
+      min       : 0
+      max       : 1000
+      v         : 500
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : scan_topic
+      label     : scan_topic
+      kind      : str
+      v         : /scan
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : sensor_frame
+      label     : sensor_frame
+      v         : /velodyne
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name : points2costmap
+    vars :
+    - name      : resolution
+      label     : resolution
+      min       : 0.0
+      max       : 0.2
+      v         : 0.1
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : call_width
+      label     : call_width
+      min       : 0
+      max       : 1000
+      v         : 500
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : call_height
+      label     : call_height
+      min       : 0
+      max       : 1000
+      v         : 500
+      cmd_param :
+        dash      : ''
+        delim     : ':='
