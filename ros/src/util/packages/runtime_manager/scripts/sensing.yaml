@@ -39,7 +39,7 @@ subs :
             flags : [ center_v ]
       - name : USB Generic
         probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
-        run  : rosrun uvc_camera uvc_camera_node
+        run  : roslaunch runtime_manager uvc_camera.launch
       - name : IEEE1394
         probe:
         run  :
