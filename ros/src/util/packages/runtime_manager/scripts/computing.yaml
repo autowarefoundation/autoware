@@ -2,10 +2,13 @@ name : Computing
 subs :
 - subs :
   - name : Localization
+    desc : "description about localization\n(1) xxx\n(2) xxx"
     subs :
     - name : gnss_localizer
+      desc : "ngss_localizer:\ngnss_localizer is foo, bar, hoge"
       subs :
       - name : fix2tfpose
+        desc : "cmd is 'rosrun gnss_localizer fix2tfpose'"
         cmd  : rosrun gnss_localizer fix2tfpose
         gui  :
           stat_topic : [ gnss ]

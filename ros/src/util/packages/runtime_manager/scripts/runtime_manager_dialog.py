@@ -683,6 +683,15 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Computing Tab
 	#
+	def OnTreeLeftDown(self, event):
+		tree = event.GetEventObject()
+		(item, flags) = tree.HitTest(event.GetPosition())
+		if flags & CT.TREE_HITTEST_ONITEMLABEL:
+			text = item.GetData()
+			if text:
+				wx.TipWindow(tree, text)
+		event.Skip()
+
 	def OnTreeChecked(self, event):
 		self.OnChecked_obj(event.GetItem())
 
@@ -1944,9 +1953,12 @@ class MyFrame(rtmgr.MyFrame):
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, agwStyle=style)
 			item = tree.AddRoot(name, data=tree)
+			tree.Bind(wx.EVT_LEFT_DOWN, self.OnTreeLeftDown)
 		else:
 			ct_type = 1 if 'cmd' in items else 0 # 1:checkbox type
 			item = tree.AppendItem(item, name, ct_type=ct_type)
+			if 'desc' in items:
+				item.SetData(items.get('desc'))
 			if 'cmd' in items:
 				cmd_dic[item] = (items['cmd'], None)
 
