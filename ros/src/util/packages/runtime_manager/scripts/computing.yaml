@@ -1680,16 +1680,16 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : call_width
-      label     : call_width
+    - name      : cell_width
+      label     : map_size_x
       min       : 0
       max       : 1000
       v         : 500
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : call_height
-      label     : call_height
+    - name      : cell_height
+      label     : map_size_y
       min       : 0
       max       : 1000
       v         : 500
