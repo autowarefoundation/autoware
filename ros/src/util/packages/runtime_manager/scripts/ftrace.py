@@ -3,6 +3,7 @@
 
 import wx
 import sys
+import re
 import multiprocessing
 import socket
 import select
@@ -22,10 +23,18 @@ class MyFrame(wx.Frame):
     panel = wx.Panel(self, -1)
     vbox = wx.BoxSizer(wx.VERTICAL)
     panel.SetSizer(vbox)
-    self.vpanel_ = wx.Panel(panel, -1)
-    self.vbox_ = wx.BoxSizer(wx.VERTICAL)
-    self.vpanel_.SetSizer(self.vbox_)
-    self.panels_ = {}
+    self.hpanel_ = wx.Panel(panel, -1)
+    self.hbox_ = wx.BoxSizer(wx.HORIZONTAL)
+    self.hpanel_.SetSizer(self.hbox_)
+    self.clpanel_ = wx.Panel(self.hpanel_, -1)
+    self.clbox_ = wx.BoxSizer(wx.VERTICAL)
+    self.clpanel_.SetSizer(self.clbox_)
+    self.hbox_.Add(self.clpanel_, flag=wx.ALL, border=2)
+    self.cgpanel_ = wx.Panel(self.hpanel_, -1)
+    self.cgbox_ = wx.BoxSizer(wx.VERTICAL)
+    self.cgpanel_.SetSizer(self.cgbox_)
+    self.hbox_.Add(self.cgpanel_, flag=wx.ALL, border=2)
+    self.labels_ = []
     self.cpucount_ = multiprocessing.cpu_count()
     self.sec_ = 1
     self.pids_ = []
@@ -44,7 +53,7 @@ class MyFrame(wx.Frame):
     self.lbox_ = wx.BoxSizer(wx.HORIZONTAL)
 
     self.ChangeView(False)
-    vbox.Add(self.vpanel_, flag=wx.ALL, border=2)
+    vbox.Add(self.hpanel_, flag=wx.ALL, border=2)
 
     self.lpanel_.SetSizer(self.lbox_)
     vbox.Add(self.lpanel_, wx.ALL, border=8)
@@ -70,49 +79,43 @@ class MyFrame(wx.Frame):
 
   def ChangeView(self, fit):
     # remove
-    self.vbox_.Clear(True)
+    self.clbox_.Clear(True)
+    self.cgbox_.Clear(True)
     self.lbox_.Clear(True)
     self.lbox_.Add(wx.StaticText(self.lpanel_, -1, "  "), flag=wx.ALL, border=2)
-    del self.panels_
 
     # add
-    self.panels_ = {}
+    self.labels_ = []
     if self.view_ == 0:
       for cpuno in range(0, self.cpucount_):
-        spanel = wx.Panel(self.vpanel_, -1)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(wx.StaticText(spanel, -1, "CPU%02d: " % (cpuno)))
-        spc = wx.StaticText(spanel, -1, " "*160)
-        hbox.Add(spc)
-        spanel.SetSizer(hbox)
-        self.vbox_.Add(spanel, flag=wx.ALL, border=10)
-        self.panels_[cpuno] = spanel
+        text = wx.StaticText(self.clpanel_, -1, "CPU%02d:" % (cpuno))
+        self.clbox_.Add(text, flag=wx.ALIGN_RIGHT|wx.ALL, border=4)
+        spc = wx.StaticText(self.cgpanel_, -1, " "*160)
+        self.cgbox_.Add(spc, flag=wx.ALL, border=4)
+        self.labels_.append(cpuno)
       for (name, pid) in self.pids_:
-        text = wx.StaticText(self.lpanel_, -1, u"■%05d" % (pid))
+        text = wx.StaticText(self.lpanel_, -1, u"■%d" % (pid))
         text.SetForegroundColour(self.GetColor(0, pid))
         text.SetToolTip(wx.ToolTip(name))
         self.lbox_.Add(text, flag=wx.ALL, border=2)
     else:
       for (name, pid) in self.pids_:
-        spanel = wx.Panel(self.vpanel_, -1)
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        text = wx.StaticText(spanel, -1, "%05d" % (pid))
-        text.SetToolTip(wx.ToolTip(name))
-        hbox.Add(text)
-        spc = wx.StaticText(spanel, -1, " "*160)
-        hbox.Add(spc)
-        spanel.SetSizer(hbox)
-        self.vbox_.Add(spanel, flag=wx.ALL, border=10)
-        self.panels_[pid] = spanel
+        text = wx.StaticText(self.clpanel_, -1, "%s:" % (name))
+        text.SetToolTip(wx.ToolTip("pid=%d" % pid))
+        self.clbox_.Add(text, flag=wx.ALIGN_RIGHT|wx.ALL, border=4)
+        spc = wx.StaticText(self.cgpanel_, -1, " "*160)
+        self.cgbox_.Add(spc, flag=wx.ALL, border=4)
+        self.labels_.append(pid)
       for cpuno in range(0, self.cpucount_):
         text = wx.StaticText(self.lpanel_, -1, u"■CPU%02d" % (cpuno))
         text.SetForegroundColour(self.GetColor(cpuno, 0))
         self.lbox_.Add(text, flag=wx.ALL, border=2)
-    self.vbox_.Layout()
+    self.clbox_.Layout()
+    self.cgbox_.Layout()
     self.lbox_.Layout()
     if fit:
-      self.vpanel_.GetParent().Fit() # panel
-      self.vpanel_.GetParent().GetParent().Fit() # frame
+      self.hpanel_.GetParent().Fit() # panel
+      self.hpanel_.GetParent().GetParent().Fit() # frame
 
   def SetPids(self, pids):
     self.pids_ = pids
@@ -168,16 +171,17 @@ class MyFrame(wx.Frame):
     self.ChangeView(True)
 
   def ClearGraph(self):
-    for cpuno in self.panels_.keys():
-      panel = self.panels_[cpuno]
-      col = panel.GetBackgroundColour()
-      spc = panel.GetChildren()[1]
+    n = 0
+    for cpuno in self.labels_:
+      col = self.cgpanel_.GetBackgroundColour()
+      spc = self.cgpanel_.GetChildren()[n]
       pos = spc.GetPosition()
       rect = spc.GetRect()
-      dc = wx.PaintDC(panel)
+      dc = wx.PaintDC(self.cgpanel_)
       dc.SetPen(wx.Pen(col))
       dc.SetBrush(wx.Brush(col))
       dc.DrawRectangle(pos.x, pos.y, rect.width, rect.height)
+      n += 1
 
   def UpdateGraph(self, dat, tmax):
     self.ClearGraph()
@@ -199,11 +203,11 @@ class MyFrame(wx.Frame):
             ptm = ctm
             pid = cid
             continue
-        panel = self.panels_[cpuno if self.view_ == 0 else pid]
-        spc = panel.GetChildren()[1]
+        n = self.labels_.index(cpuno if self.view_ == 0 else pid)
+        spc = self.cgpanel_.GetChildren()[n]
         pos = spc.GetPosition()
         rect = spc.GetRect()
-        dc = wx.PaintDC(panel)
+        dc = wx.PaintDC(self.cgpanel_)
         dc.SetPen(wx.Pen(col))
         dc.SetBrush(wx.Brush(col))
         w = rect.width*(ctm-ptm)/tmax + 2
@@ -224,7 +228,7 @@ class MyFrame(wx.Frame):
 
 class MyApp(wx.App):
   def OnInit(self):
-    self.frame_ = MyFrame(None, -1, "sched_switch graph")
+    self.frame_ = MyFrame(None, -1, "Ftrace")
     self.SetTopWindow(self.frame_)
     return True
 
@@ -246,7 +250,11 @@ def getRosNodes():
         node = ServerProxy(api)
         code, msg, pid = node.getPid('/rosnode')
         if code == 1:
-          nodes.append((nodename, pid))
+          res = re.search('^(.*)_[0-9]+_[0-9]+$', nodename)
+          if res is None:
+            nodes.append((nodename, pid))
+          else:
+            nodes.append((res.group(1), pid))
       except:
         pass
   return nodes
