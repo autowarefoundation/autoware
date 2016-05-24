@@ -1,21 +1,28 @@
 name : Drivers
+desc : Drivers desc sample
 subs :
   - name : CAN
+    desc : CAN desc sample
     subs :
       - name : can_converter
+        desc : can_converter desc sample
         probe:
         run  : rosrun kvaser can_converter
       - name : can_draw
+        desc : can_draw desc sample
         probe:
         run  : rosrun kvaser can_draw
       - name : can_listener
+        desc : can_listener desc sample
         probe:
         run  : rosrun kvaser can_listener
         param: can_listener
 
   - name : Cameras
+    desc : Cameras desc sample
     subs :
       - name : PointGrey Grasshoper 3 (USB1)
+        desc : PointGrey Grasshoper 3 (USB1) desc sample
         probe: 'lsusb -d 1e10: > /dev/null'
         run  : roslaunch pointgrey grasshopper3.launch
         param: calibration_path_grasshopper3
@@ -24,9 +31,11 @@ subs :
             prop  : 1
             flags : [ center_v ]
       - name : PointGrey Generic
+        desc : PointGrey Generic desc sample
         probe:
         run  : roslaunch pointgrey_camera_driver camera.launch
       - name : PointGrey LadyBug 5
+        desc : PointGrey LadyBug 5 desc sample
         probe:
         run  : roslaunch pointgrey ladybug.launch
         param: calibration_path_ladybug
@@ -38,35 +47,45 @@ subs :
             prop  : 1
             flags : [ center_v ]
       - name : USB Generic
+        desc : USB Generic desc sample
         probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
         run  : roslaunch runtime_manager uvc_camera.launch
       - name : IEEE1394
+        desc : IEEE1394 desc sample
         probe:
         run  :
       - name : Baumer VLG-22
+        desc : Baumer VLG-22 desc sample
         probe:
         run  : roslaunch vlg22c_cam baumer.launch
 
   - name : GNSS
+    desc : GNSS desc sample
     subs :
       - name : Javad Delta 3 (TTY1)
+        desc : Javad Delta 3 (TTY1) desc sample
         probe: 'lsusb -d 0584: > /dev/null' # probed if serial converter is connected
         run  : rosrun javad_navsat_driver gnss.sh
         param: serial
       - name : Serial GNSS
+        desc : Serial GNSS desc sample
         probe:
         run  : roslaunch nmea_navsat nmea_navsat.launch
         param: serial
 
   - name : IMU
+    desc : IMU desc sample
     subs :
       - name : Crossbow vg440
+        desc : Crossbow vg440 desc sample
         probe:
         run  :
 
   - name : LIDARs
+    desc : LIDARs desc sample
     subs :
       - name : Velodyne HDL-64e-S2
+        desc : Velodyne HDL-64e-S2 desc sample
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
         run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
         param: calibration_path
@@ -75,6 +94,7 @@ subs :
             prop  : 1
             flags : [ center_v ]
       - name : Velodyne HDL-64e-S3
+        desc : Velodyne HDL-64e-S3 desc sample
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
         run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s3.launch
         param: calibration_path
@@ -83,6 +103,7 @@ subs :
             prop  : 1
             flags : [ center_v ]
       - name : Velodyne HDL-32e
+        desc : Velodyne HDL-32e desc sample
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
         run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
         param: calibration_path
@@ -91,6 +112,7 @@ subs :
             prop  : 1
             flags : [ center_v ]
       - name : Velodyne VLP-16
+        desc : Velodyne VLP-16 desc sample
         probe:
         run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
         param: calibration_path
@@ -99,44 +121,56 @@ subs :
             prop  : 1
             flags : [ center_v ]
       - name : Hokuyo TOP-URG
+        desc : Hokuyo TOP-URG desc sample
         probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
       - name : Hokuyo 3D-URG
+        desc : Hokuyo 3D-URG desc sample
         probe:
         run  : roslaunch hokuyo hokuyo_3d.launch
       - name : SICK LMS511
+        desc : SICK LMS511 desc sample
         probe:
         run  :
       - name : IBEO 8L Single
+        desc : IBEO 8L Single desc sample
         probe:
         run  :
 
   - name : Other Sensors
+    desc : Other Sensors desc sample
     subs :
       - {}
 
 cmds:
   subs :
   - name : Points Filter
+    desc : Points Filter desc sample
     subs :
     - name : voxel_grid_filter
+      desc : voxel_grid_filter desc sample
       cmd  : rosrun points_filter voxel_grid_filter
       param: voxel_grid_filter
     - name : ring_filter
+      desc : ring_filter desc sample
       cmd  : rosrun points_filter ring_filter
       param: ring_filter
     - name : distance_filter
+      desc : distance_filter desc sample
       cmd  : rosrun points_filter distance_filter
       param: distance_filter
     - name : random_filter
+      desc : random_filter desc sample
       cmd  : rosrun points_filter random_filter
       param: random_filter
 
 buttons:
   calibration_toolkit :
+    desc  : calibration_toolkit desc sample
     run   : rosrun calibration_camera_lidar calibration_toolkit
 
   calibration_publisher :
+    desc  : calibration_publisher desc sample
     run   : roslaunch runtime_manager calibration_publisher.launch
     param : calibration_publisher
     gui   :
@@ -155,6 +189,7 @@ buttons:
         flags : [ nl ]
 
   points_image :
+    desc  : points_image desc sample
     run   : roslaunch runtime_manager points2image.launch
     #param : points_image
     param : sel_cam_and_sync
@@ -168,10 +203,12 @@ buttons:
         func : self.button_synchronization.GetValue()
 
   scan_image :
+    desc  : scan_image desc sample
     run   : rosrun scan2image scan2image
     #param : scan_image
 
   virtual_scan_image :
+    desc  : virtual_scan_image desc sample
     run   : roslaunch runtime_manager vscan.launch
     #param : virtual_scan_image
     param : sel_cam_and_sync
@@ -192,6 +229,7 @@ params :
   - name  : can_listener
     vars  :
     - name      : channel
+      desc      : channel desc sample
       label     : 'Channel:'
       v         : 0
       cmd_param :
@@ -200,6 +238,7 @@ params :
   - name  : calibration_path
     vars  :
     - name  : calibration
+      desc  : calibration desc sample
       kind  : path
       v     : ''
       cmd_param :
@@ -210,6 +249,7 @@ params :
   - name  : calibration_path_grasshopper3
     vars  :
     - name  : CalibrationFile
+      desc  : CalibrationFile desc sample
       kind  : path
       v     : ''
       cmd_param :
@@ -220,6 +260,7 @@ params :
   - name  : calibration_path_ladybug
     vars  :
     - name  : CalibrationFile
+      desc  : CalibrationFile desc sample
       kind  : path
       v     : ''
       cmd_param :
@@ -257,6 +298,7 @@ params :
     msg   : ConfigVoxelGridFilter
     vars  :
     - name  : voxel_leaf_size
+      desc  : voxel_leaf_size desc sample
       label : Voxel Leaf Size
       min   : 0
       max   : 10
@@ -267,11 +309,13 @@ params :
     msg   : ConfigRingFilter
     vars  :
     - name  : ring_div
+      desc  : ring_div desc sample
       label : Ring Div
       min   : 1
       max   : 64
       v     : 3
     - name  : voxel_leaf_size
+      desc  : voxel_leaf_size desc sample
       label : Voxel Leaf Size
       min   : 0
       max   : 10
@@ -282,6 +326,7 @@ params :
     msg   : ConfigDistanceFilter
     vars  :
     - name  : sample_num
+      desc  : sample_num desc sample
       label : Sample Num
       min   : 100
       max   : 30000
@@ -292,6 +337,7 @@ params :
     msg   : ConfigRandomFilter
     vars  :
     - name  : sample_num
+      desc  : sample_num desc sample
       label : Sample Num
       min   : 100
       max   : 30000
@@ -300,6 +346,7 @@ params :
   - name  : calibration_publisher
     vars  :
     - name         : camera_id
+      desc         : camera_id desc sample
       kind         : menu
       label        : Camera ID
       choices_type : str
@@ -310,12 +357,14 @@ params :
         only_enable  : True
         tail         : True
     - name      : file
+      desc      : file desc sample
       kind      : path
       v         : ''
       cmd_param :
         delim     : 'file:='
         must      : True
     - name      : register_lidar2camera_tf
+      desc      : register_lidar2camera_tf desc sample
       label     : register TF between lidar and camera
       kind      : checkbox
       v         : True
@@ -323,6 +372,7 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_extrinsic_mat
+      desc      : publish_extrinsic_mat desc sample
       label     : publish extrinsic matrix
       kind      : checkbox
       v         : True
@@ -330,6 +380,7 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_camera_info
+      desc      : publish_camera_info desc sample
       label     : publish camera_info
       kind      : checkbox
       v         : False
@@ -357,6 +408,7 @@ params :
   - name : serial
     vars :
     - name      : port
+      desc      : port desc sample
       label     : 'Device name:'
       kind      : path
       v         : /dev/ttyUSB0
@@ -364,6 +416,7 @@ params :
         dash      : ''
         delim     : ':='
     - name      : baud
+      desc      : baud desc sample
       label     : 'Baud:'
       kind      : menu
       choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
@@ -376,6 +429,7 @@ params :
   - name : sel_cam_and_sync
     vars :
     - name         : camera_id
+      desc         : camera_id desc sample
       kind         : menu
       label        : Camera ID
       choices_type : str
