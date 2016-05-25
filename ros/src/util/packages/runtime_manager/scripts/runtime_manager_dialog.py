@@ -546,8 +546,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
-			if 'desc' in d2 and getattr(obj, 'SetToolTipString', None):
-				obj.SetToolTipString(d2.get('desc'))
+			set_tooltip(obj, d2)
 			gdic = self.gdic_get_1st(d2)
 			if 'param' in d2:
 				pdic = self.load_dic_pdic_setup(k, d2)
@@ -1101,16 +1100,14 @@ class MyFrame(rtmgr.MyFrame):
 				self.create_checkboxes(d, panel, lst, probe_dic, run_dic, bind_handler)
 			if dic['name']:
 				obj = static_box_sizer(panel, dic.get('name'))
-				if 'desc' in dic:
-					obj.GetStaticBox().SetToolTipString(dic.get('desc'))
+				set_tooltip(obj.GetStaticBox(), dic)
 			else:
 				obj = wx.BoxSizer(wx.VERTICAL)
 			for (o, flg) in lst:
 				obj.Add(o, 0, wx.EXPAND | flg, 4)
 		else:
 			obj = wx.CheckBox(panel, wx.ID_ANY, dic['name'])
-			if 'desc' in dic:
-				obj.SetToolTipString(dic.get('desc'))
+			set_tooltip(obj, dic)
 			self.Bind(wx.EVT_CHECKBOX, bind_handler, obj)
 			bdr_flg = wx.LEFT | wx.RIGHT
 			if 'probe' in dic:
@@ -2553,12 +2550,11 @@ class VarPanel(wx.Panel):
 		self.SetSizer(szr)
 
 	def setup_tooltip(self):
-		if 'descs' in self.var and getattr(self.obj, 'SetItemToolTip', None):
-			for (ix, desc) in enumerate(self.var.get('descs')):
-				self.obj.SetItemToolTip(ix, desc)
-		if 'desc' in self.var:
+		if get_tooltips(self.var):
+			set_tooltips(self.obj, self.var)
+		if get_tooltip(self.var):
 			obj = self.lb if self.lb else (self if self.kind == 'radio_box' else self.obj)
-			obj.SetToolTipString(self.var.get('desc'))
+			set_tooltip(obj, self.var)
 
 	def create_bmbtn(self, filename, hdr):
 		dir = rtmgr_src_dir()
@@ -3235,6 +3231,23 @@ def fix_link_color(obj):
 		obj.SetHyperTextVisitedColour(obj.GetHyperTextNewColour())
 	elif t is wx.HyperlinkCtrl:
 		obj.SetVisitedColour(obj.GetNormalColour())
+
+def get_tooltip(dic):
+	return dic.get('desc')
+
+def get_tooltips(dic):
+	return dic.get('descs', [])
+
+def set_tooltip(obj, dic):
+	s = get_tooltip(dic)
+	if s and getattr(obj, 'SetToolTipString', None):
+		obj.SetToolTipString(s)
+
+def set_tooltips(obj, dic):
+	lst = get_tooltips(dic)
+	if lst and getattr(obj, 'SetItemToolTip', None):
+		for (ix, s) in enumerate(lst):
+			obj.SetItemToolTip(ix, s)
 
 def scaled_bitmap(bm, scale):
 	(w, h) = bm.GetSize()
