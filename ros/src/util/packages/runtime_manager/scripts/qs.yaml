@@ -50,6 +50,9 @@ buttons :
     desc: auto_pilot_qs desc sample
     run : echo 'auto pilot'
 
+  rosbag_qs :
+    desc : rosbag_qs desc sample
+
   rviz_qs :
     desc : rviz_qs desc sample
     #run : rosrun rviz rviz

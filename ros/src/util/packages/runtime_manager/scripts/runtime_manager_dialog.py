@@ -382,20 +382,14 @@ class MyFrame(rtmgr.MyFrame):
 
 		rtmgr.MyFrame.__do_layout(self)
 
-		self.alias_grps = [
-			[ self.button_rviz_qs, self.button_rviz_setup, self.button_rviz_map, 
-			  self.button_rviz_sensing, self.button_rviz_computing,
-			  self.button_rviz_interface, self.button_rviz_database, self.button_rviz_simulation,
-			  self.button_rviz_status, self.button_rviz_topics, ],
-			[ self.button_rqt_qs, self.button_rqt_setup, self.button_rqt_map, 
-			  self.button_rqt_sensing, self.button_rqt_computing,
-			  self.button_rqt_interface, self.button_rqt_database, self.button_rqt_simulation,
-			  self.button_rqt_status, self.button_rqt_topics, ],
-			[ self.button_android_tablet_qs, self.button_android_tablet_interface, ],
-			[ self.button_oculus_rift_qs, self.button_oculus_rift_interface, ],
-			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_interface, ],
-			[ self.button_auto_pilot_qs, self.button_auto_pilot_interface,],
-		]
+		self.tab_names = [ self.name_get(tab).replace('tab_', '', 1) for tab in self.all_tabs ]
+
+		new_btn_grps = ( lambda btn_names, tab_names=self.tab_names :
+			[ [ self.obj_get('button_{}_{}'.format(bn, tn)) for tn in tab_names ] for bn in btn_names ] )
+
+		self.alias_grps = new_btn_grps( ('rosbag', 'rviz', 'rqt') )
+		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'auto_pilot'),
+						 ('qs', 'interface') )
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
 			s = get_tooltip_obj(grp[0])
