@@ -277,6 +277,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     // Setting point cloud to be aligned to.
 //    ndt.setInputTarget(map_ptr);
     icp.setInputTarget(map_ptr);
+    std::cout << "setInputTarget finished." << std::endl;
 
     // Setting NDT parameters to default values
     /*
@@ -408,6 +409,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 //    ndt.align(*output_cloud, init_guess);
+
+    icp.setTransformationEpsilon(0.01);
+    icp.setMaxCorrespondenceDistance(1.0);
+    icp.setMaximumIterations(100);
+    icp.setEuclideanFitnessEpsilon(0.1);
+    icp.setRANSACOutlierRejectionThreshold(1.0);
+
     icp.align(*output_cloud, init_guess);
 
 //    t = ndt.getFinalTransformation();  // localizer
