@@ -382,7 +382,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		rtmgr.MyFrame.__do_layout(self)
 
-		self.tab_names = [ self.name_get(tab).replace('tab_', '', 1) for tab in self.all_tabs ]
+		cond = lambda s : s.startswith('tab_')
+		self.tab_names = [ self.name_get_cond(tab, cond=cond, def_ret='').replace('tab_', '', 1) for tab in self.all_tabs ]
 
 		new_btn_grps = ( lambda btn_names, tab_names=self.tab_names :
 			[ [ self.obj_get('button_{}_{}'.format(bn, tn)) for tn in tab_names ] for bn in btn_names ] )
@@ -2252,6 +2253,9 @@ class MyFrame(rtmgr.MyFrame):
 
 	def name_get(self, obj):
 		return next( (nm for nm in dir(self) if getattr(self, nm) is obj), None)
+
+	def name_get_cond(self, obj, cond=(lambda s : True), def_ret=None):
+		return next( (nm for nm in dir(self) if cond(nm) and getattr(self, nm) is obj), def_ret)
 
 	def val_get(self, name):
 		obj = self.obj_get(name)
