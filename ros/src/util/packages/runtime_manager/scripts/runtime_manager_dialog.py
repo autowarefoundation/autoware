@@ -398,6 +398,10 @@ class MyFrame(rtmgr.MyFrame):
 		]
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
+			s = get_tooltip_obj(grp[0])
+			if s:
+				for obj in grp[1:]:
+					set_tooltip_str(obj, s)
 
 		# Topics tab (need, after layout for sizer)
 		self.topics_dic = self.load_yaml('topics.yaml')
@@ -3239,7 +3243,9 @@ def get_tooltips(dic):
 	return dic.get('descs', [])
 
 def set_tooltip(obj, dic):
-	s = get_tooltip(dic)
+	set_tooltip_str(obj, get_tooltip(dic))
+
+def set_tooltip_str(obj, s):
 	if s and getattr(obj, 'SetToolTipString', None):
 		obj.SetToolTipString(s)
 
@@ -3248,6 +3254,12 @@ def set_tooltips(obj, dic):
 	if lst and getattr(obj, 'SetItemToolTip', None):
 		for (ix, s) in enumerate(lst):
 			obj.SetItemToolTip(ix, s)
+
+def get_tooltip_obj(obj):
+	if getattr(obj, 'GetToolTip', None):
+		t = obj.GetToolTip()
+		return t.GetTip() if t else None
+	return None
 
 def scaled_bitmap(bm, scale):
 	(w, h) = bm.GetSize()

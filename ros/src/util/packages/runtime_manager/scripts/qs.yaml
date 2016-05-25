@@ -7,43 +7,56 @@ exec_time :
 
 buttons :
   map_qs :
+    desc  : map_qs desc sample
     run   : roslaunch
     param : map_qs
     gui   :
       stat_topic : [ pmap, vmap ]
   sensing_qs :
+    desc  : sensing_qs desc sample
     run   : roslaunch
     param : sensing_qs
   localization_qs :
+    desc  : localization_qs desc sample
     run   : roslaunch
     param : localization_qs
   detection_qs :
+    desc  : detection_qs desc sample
     run   : roslaunch
     param : detection_qs
   mission_planning_qs :
+    desc  : mission_planning_qs desc sample
     run   : roslaunch
     param : mission_planning_qs
   motion_planning_qs :
+    desc  : planning_qs desc sample
     run   : roslaunch
     param : motion_planning_qs
 
   android_tablet_qs :
+    desc: android_tablet_qs desc sample
     run : roslaunch runtime_manager tablet_socket.launch
   oculus_rift_qs :
+    desc: oculus_rift_qs desc sample
     run : echo 'oculus rift'
   vehicle_gateway_qs :
+    desc: vehicle_gateway_qs desc sample
     run : roslaunch runtime_manager vehicle_socket.launch
   cloud_data_qs :
+    desc: cloud_data_qs desc sample
     run : rosrun obj_db obj_downloader
 
   auto_pilot_qs :
+    desc: auto_pilot_qs desc sample
     run : echo 'auto pilot'
 
   rviz_qs :
+    desc : rviz_qs desc sample
     #run : rosrun rviz rviz
     run  : sh -c '$(rospack find runtime_manager)/../../../.config/rviz/cmd.sh'
 
   rqt_qs :
+    desc: rqt_qs desc sample
     run : rqt
 
 params :
