@@ -191,6 +191,21 @@ class MyFrame(rtmgr.MyFrame):
 
 		self.pcd_loaded = False
 
+		def hook1G(args):
+			for f in args.get('func')().split(','):
+				sz = os.path.getsize(f)
+				if sz > 1024*1024*1024:
+					wx.MessageBox("Over 1GB\n\n{}\n({:,})".format(f, sz), caption='Warning')
+
+		args = { 'func':self.tc_point_cloud.GetValue }
+		hook_var = { 'hook':hook1G, 'args':args, 'flags':['every_time'] }
+		objs = [ self.button_point_cloud,
+			 self.button_launch_points_map_loader,
+			 self.button_launch_points_map_loader_update ]
+		for obj in objs:
+			gdic_v = self.obj_to_gdic(obj, {}).get('path_pcd', {})
+			gdic_v['hook_var'] = hook_var
+
 		#
 		# for Sensing tab
 		#
@@ -839,8 +854,9 @@ class MyFrame(rtmgr.MyFrame):
 			hook = gdic_v.get('update_hook')
 			if hook:
 				hook(v)
-			if var == gdic.get('update_func_arg_var'):
-				hook_var = gdic_v.get('hook_var', {})
+			hook_var = gdic_v.get('hook_var', {})
+			every_time = 'every_time' in hook_var.get('flags', [])
+			if var == gdic.get('update_func_arg_var') or every_time:
 				hook = hook_var.get('hook')
 				if hook:
 					hook(hook_var.get('args', {}))
