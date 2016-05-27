@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   runtime_manager
   velodyne_pointcloud
   message_generation
+  ndt_localizer
 )
 
 #add_message_files(FILES ndt_stat.msg)
@@ -24,7 +25,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS runtime_manager message_runtime std_msgs
+  CATKIN_DEPENDS runtime_manager message_runtime std_msgs ndt_localizer
 #  DEPENDS system_lib
 )
 
