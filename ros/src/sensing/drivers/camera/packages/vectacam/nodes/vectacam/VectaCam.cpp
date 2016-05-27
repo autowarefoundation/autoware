@@ -49,9 +49,9 @@ void VectaCam::_parse_parameter_file(std::string in_parameter_file, std::vector<
 
 void VectaCam::_send_commands_to_camera(unsigned int in_port, std::vector<VectaCamCommand> in_commands)
 {
+
 	int socket_descriptor;
 	struct sockaddr_in socket_address;
-	sockaddr_in socket_local;
 	if ((socket_descriptor=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 	{
 		std::cout << "Problem creating socket\n";
@@ -60,10 +60,6 @@ void VectaCam::_send_commands_to_camera(unsigned int in_port, std::vector<VectaC
 	memset((char *) &socket_address, 0, sizeof(socket_address));
 	socket_address.sin_family = AF_INET;
 	socket_address.sin_port = htons(in_port);
-	socket_local.sin_family = AF_INET;
-	socket_local.sin_addr.s_addr = htonl(INADDR_ANY);
-	socket_local.sin_port = htons(in_port);
-	bind(socket_descriptor, reinterpret_cast<sockaddr *>(&socket_local), sizeof(socket_local));
 	if (inet_aton("10.0.0.1", &socket_address.sin_addr)==0)
 	{
 		std::cout << "Invalid IP address" << std::endl;
@@ -75,18 +71,16 @@ void VectaCam::_send_commands_to_camera(unsigned int in_port, std::vector<VectaC
 		unsigned char command_buffer[12] = {0x05, 0x00, 0x36, 0x00, 0x00, 0x00,
 									current_command.low_nibble_address, current_command.high_nibble_address, current_command.command_data,
 									0x00, 0x00, 0x00};
-		unsigned int sent_data = sendto(socket_descriptor, command_buffer, sizeof(command_buffer), 0, reinterpret_cast<sockaddr *> (&socket_address), sizeof(socket_address));
+		unsigned int sent_data = sendto(socket_descriptor, command_buffer, sizeof(command_buffer), 0,(struct sockaddr *) &socket_address, sizeof(socket_address));
 		if (sent_data < 0)
 		{
 			std::cout << "Could not send the data to the camera socket" << std::endl;
 		}
 		else
-			std::cout << ".";
-			/*
 			std::cout << std::to_string((int)current_command.high_nibble_address) <<
 						std::to_string((int)current_command.low_nibble_address) << ":" <<
-						std::to_string((int)current_command.command_data) << std::endl;*/
-		usleep(20000);
+						std::to_string((int)current_command.command_data) << std::endl;
+		usleep(50000);
 	}
 }
 
@@ -143,7 +137,7 @@ void VectaCam::_initialize_camera(unsigned int in_configuration_port, unsigned i
 	_parse_parameter_file(parameter_file_, camera_commands_);
 	std::cout << "DONE" << std::endl << "Configuring camera.";
 	_send_commands_to_camera(in_configuration_port, camera_commands_);
-	std::cout << "DONE" << std::endl << "Enabling camera";
+	std::cout << "DONE" << std::endl << "Enabling camera.";
 	_enable_camera(in_data_port, true);
 	std::cout << "DONE" << std::endl;
 }

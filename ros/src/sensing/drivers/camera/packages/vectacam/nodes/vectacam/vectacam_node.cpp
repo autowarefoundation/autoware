@@ -34,12 +34,24 @@
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Image.h>
 #include <thread>
+#include <signal.h>
+#include<unistd.h>
 
 #include "VectaCam.h"
 
 class RosVectaCam
 {
 public:
+	static void signalHandler()
+	{
+
+	}
+
+	void Stop()
+	{
+		running_ = false;
+	}
+
 	void Run()
 	{
 		std::string config_file_path;
@@ -54,7 +66,7 @@ public:
 		else
 		{
 			ROS_INFO("No config file received. Terminating...");
-			config_file_path = "/home/ne0/workspace/VectaCamTester/initialization_params.txt";
+			config_file_path = "../initialization_params.txt";
 			//return;
 		}
 		if (private_node_handle.getParam("camera_ip", camera_ip))
@@ -79,9 +91,10 @@ public:
 		cv::Mat image;
 		std::vector<cv::Mat> camera_images(NUM_CAMERAS);
 		unsigned long int counter = 0;
+		running_ = true;
 		ros::Rate loop_rate(7); // Hz
 		ros::Publisher full_publisher = node_handle_.advertise<sensor_msgs::Image>("image_raw", 1);
-		while(ros::ok())
+		while(ros::ok() && running_)
 		{
 			vectacamera.GetImage(image);
 			if(!image.empty())
@@ -99,6 +112,8 @@ public:
 				//_publish_image(image, publishers_cameras_[NUM_CAMERAS], counter);
 
 				counter++;
+				if (counter<=2)
+					std::cout << "Image received" << std::endl;
 			}
 			else
 			{
@@ -113,6 +128,8 @@ public:
 private:
 	ros::Publisher 		publishers_cameras_[NUM_CAMERAS];
 	ros::NodeHandle 	node_handle_;
+	bool				running_;
+	static RosVectaCam instance;
 
 	void _publish_image(cv::Mat &in_image, ros::Publisher &in_publisher, unsigned long int in_counter)
 	{
@@ -128,19 +145,13 @@ private:
 	}
 };
 
-static void signalHandler(int)
-{
-
-	ros::shutdown();
-}
-
 int main(int argc, char* argv[])
 {
 	ros::init(argc, argv, "vectacam");
 
 	RosVectaCam app;
 
-	//signal(SIGTERM, signalHandler);//detect closing
+	//signal(SIGTERM, &app.signalHandler);//detect closing
 
 	app.Run();
 
