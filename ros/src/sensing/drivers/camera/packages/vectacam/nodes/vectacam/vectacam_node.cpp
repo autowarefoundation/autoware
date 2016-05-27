@@ -42,16 +42,6 @@
 class RosVectaCam
 {
 public:
-	static void signalHandler()
-	{
-
-	}
-
-	void Stop()
-	{
-		running_ = false;
-	}
-
 	void Run()
 	{
 		std::string config_file_path;
@@ -91,10 +81,9 @@ public:
 		cv::Mat image;
 		std::vector<cv::Mat> camera_images(NUM_CAMERAS);
 		unsigned long int counter = 0;
-		running_ = true;
 		ros::Rate loop_rate(7); // Hz
 		ros::Publisher full_publisher = node_handle_.advertise<sensor_msgs::Image>("image_raw", 1);
-		while(ros::ok() && running_)
+		while(ros::ok())
 		{
 			vectacamera.GetImage(image);
 			if(!image.empty())
@@ -128,8 +117,6 @@ public:
 private:
 	ros::Publisher 		publishers_cameras_[NUM_CAMERAS];
 	ros::NodeHandle 	node_handle_;
-	bool				running_;
-	static RosVectaCam instance;
 
 	void _publish_image(cv::Mat &in_image, ros::Publisher &in_publisher, unsigned long int in_counter)
 	{
@@ -150,8 +137,6 @@ int main(int argc, char* argv[])
 	ros::init(argc, argv, "vectacam");
 
 	RosVectaCam app;
-
-	//signal(SIGTERM, &app.signalHandler);//detect closing
 
 	app.Run();
 
