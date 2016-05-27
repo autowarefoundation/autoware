@@ -62,6 +62,7 @@ from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
 from runtime_manager.msg import ConfigNdtMapping
 from runtime_manager.msg import ConfigNdtMappingOutput
+from runtime_manager.msg import ConfigICP
 from runtime_manager.msg import ConfigVoxelGridFilter
 from runtime_manager.msg import ConfigRingFilter
 from runtime_manager.msg import ConfigDistanceFilter

@@ -1,0 +1,15 @@
+Header header
+int32 init_pos_gnss
+float32 x
+float32 y
+float32 z
+float32 roll
+float32 pitch
+float32 yaw
+int32 use_predict_pose
+float32 error_threshold
+int32 maximum_iterations
+float32 transformation_epsilon
+float32 max_correspondence_distance
+float32 euclidean_fitness_epsilon
+float32 ransac_outlier_rejection_threshold

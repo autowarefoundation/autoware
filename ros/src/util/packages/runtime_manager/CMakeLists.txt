@@ -17,6 +17,7 @@ add_message_files(
   ConfigNdt.msg
   ConfigNdtMapping.msg
   ConfigNdtMappingOutput.msg
+  ConfigICP.msg
   ConfigVoxelGridFilter.msg
   ConfigRingFilter.msg
   ConfigDistanceFilter.msg

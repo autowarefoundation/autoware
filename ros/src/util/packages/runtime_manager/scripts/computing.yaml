@@ -40,7 +40,7 @@ subs :
       subs :
       - name : icp_matching
         cmd  : roslaunch icp_localizer icp_matching.launch
-        param: ndt
+        param: icp
     - name : vel_pose_mux
       subs :
       - name : vel_pose_mux
@@ -848,6 +848,79 @@ params :
       min   : -2.0
       max   : 2.0
       v     : 0
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+
+  - name  : icp
+    topic : /config/icp
+    msg   : ConfigICP
+    vars  :
+    - name  : init_pos_gnss
+      kind  : radio_box
+      choices:
+      - Initial Pos
+      - GNSS
+      v     : 1
+    - name  : x
+      label : 'x:'
+      v     : 0.0
+    - name  : y
+      label : 'y:'
+      v     : 0.0
+    - name  : z
+      label : 'z:'
+      v     : 0.0
+    - name  : roll
+      label : 'roll:'
+      v     : 0.0
+    - name  : pitch
+      label : 'pitch:'
+      v     : 0.0
+    - name  : yaw
+      label : 'yaw:'
+      v     : 0.0
+    - name  : use_predict_pose
+      label : Predict Pose
+      kind  : radio_box
+      choices: [ 'OFF', 'ON' ]
+      choices_style: h
+      v     : 1
+    - name  : error_threshold
+      label : Error Threshold
+      min   : 0
+      max   : 10
+      v     : 1.0
+    - name  : maximum_iterations
+      label : Maximum Iterations
+      min   : 10
+      max   : 1000
+      v     : 100
+    - name  : transformation_epsilon
+      label : Transformation Epsilon
+      min   : 0.001
+      max   : 0.1
+      v     : 0.01
+    - name  : max_correspondence_distance
+      label : Max Correspondence Distance
+      min   : 0.1
+      max   : 10
+      v     : 1.0
+    - name  : euclidean_fitness_epsilon
+      label : Euclidean Fitness Epsilon
+      min   : 0.01
+      max   : 10
+      v     : 0.1
+    - name  : ransac_outlier_rejection_threshold
+      label : RANSAC Outlier Rejection Threshold
+      min   : 0.1
+      max   : 10
+      step  : 0.1
+      v     : 1.0
     - name      : sync
       kind      : hide
       v         : False

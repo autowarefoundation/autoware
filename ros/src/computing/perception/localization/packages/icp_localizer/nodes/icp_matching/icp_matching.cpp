@@ -66,7 +66,7 @@
 #include <pcl/registration/icp.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <runtime_manager/ConfigNdt.h>
+#include <runtime_manager/ConfigICP.h>
 
 #include <ndt_localizer/ndt_stat.h>
 
@@ -101,14 +101,12 @@ static int init_pos_set = 0;
 static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 static pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 
-// Default values
-static int iter = 30;            // Maximum iterations
-static float ndt_res = 1.0;      // Resolution
-static double step_size = 0.1;   // Step size
-static double trans_eps = 0.01;  // Transformation epsilon
-
-// Leaf size of VoxelGrid filter.
-static double voxel_leaf_size = 2.0;
+// Default values for ICP
+static int maximum_iterations = 100;
+static double transformation_epsilon = 0.01;
+static double max_correspondence_distance = 1.0;
+static double euclidean_fitness_epsilon = 0.1;
+static double ransac_outlier_rejection_threshold = 1.0;
 
 static ros::Publisher predict_pose_pub;
 static geometry_msgs::PoseStamped predict_pose_msg;
@@ -124,15 +122,6 @@ static geometry_msgs::PoseStamped localizer_pose_msg;
 
 static ros::Publisher estimate_twist_pub;
 static geometry_msgs::TwistStamped estimate_twist_msg;
-
-static double angle = 0.0;
-static double control_shift_x = 0.0;
-static double control_shift_y = 0.0;
-static double control_shift_z = 0.0;
-
-static int max = 63;
-static int min = 0;
-static int layer = 1;
 
 static ros::Time current_scan_time;
 static ros::Time previous_scan_time;
@@ -187,7 +176,7 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 //static ros::Publisher ndt_reliability_pub;
 //static std_msgs::Float32 ndt_reliability;
 
-static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
+static void param_callback(const runtime_manager::ConfigICP::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
   {
@@ -202,26 +191,6 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 
   _use_gnss = input->init_pos_gnss;
 
-  voxel_leaf_size = input->leaf_size;
-
-  // Setting parameters
-  /*
-  if (input->resolution != ndt_res)
-  {
-    ndt_res = input->resolution;
-    ndt.setResolution(ndt_res);
-  }
-  if (input->step_size != step_size)
-  {
-    step_size = input->step_size;
-    ndt.setStepSize(step_size);
-  }
-  if (input->trans_esp != trans_eps)
-  {
-    trans_eps = input->trans_esp;
-    ndt.setTransformationEpsilon(trans_eps);
-  }
-*/
   if (_use_gnss == 0 && init_pos_set == 0)
   {
     initial_pose.x = input->x;
@@ -256,14 +225,12 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     init_pos_set = 1;
   }
 
-  angle = input->angle_error;
-  control_shift_x = input->shift_x;
-  control_shift_y = input->shift_y;
-  control_shift_z = input->shift_z;
+  maximum_iterations = input->maximum_iterations;
+  transformation_epsilon = input->transformation_epsilon;
+  max_correspondence_distance = input->max_correspondence_distance;
+  euclidean_fitness_epsilon = input->euclidean_fitness_epsilon;
+  ransac_outlier_rejection_threshold = input->ransac_outlier_rejection_threshold;
 
-  max = input->max;
-  min = input->min;
-  layer = input->layer;
 }
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -410,11 +377,11 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 //    ndt.align(*output_cloud, init_guess);
 
-    icp.setTransformationEpsilon(0.01);
-    icp.setMaxCorrespondenceDistance(1.0);
-    icp.setMaximumIterations(100);
-    icp.setEuclideanFitnessEpsilon(0.1);
-    icp.setRANSACOutlierRejectionThreshold(1.0);
+    icp.setMaximumIterations(maximum_iterations);
+    icp.setTransformationEpsilon(transformation_epsilon);
+    icp.setMaxCorrespondenceDistance(max_correspondence_distance);
+    icp.setEuclideanFitnessEpsilon(euclidean_fitness_epsilon);
+    icp.setRANSACOutlierRejectionThreshold(ransac_outlier_rejection_threshold);
 
     icp.align(*output_cloud, init_guess);
 
@@ -637,7 +604,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Frame ID: " << input->header.frame_id << std::endl;
     //		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
     std::cout << "Number of Filtered Scan Points: " << filtered_scan_ptr->size() << " points." << std::endl;
-    std::cout << "Leaf Size: " << voxel_leaf_size << std::endl;
     std::cout << "ICP has converged: " << icp.hasConverged() << std::endl;
     std::cout << "Fitness Score: " << icp.getFitnessScore() << std::endl;
 //    std::cout << "Transformation Probability: " << ndt.getTransformationProbability() << std::endl;
@@ -787,7 +753,7 @@ int main(int argc, char** argv)
 //  ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
 
   // Subscribers
-  ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
+  ros::Subscriber param_sub = nh.subscribe("config/icp", 10, param_callback);
   ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
   ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
