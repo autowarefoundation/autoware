@@ -108,6 +108,8 @@ static double SHIFT = 0.0;
 static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
+static bool isMapUpdate = true;
+
 static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
 {
   ndt_res = input->resolution;
@@ -213,8 +215,12 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt.setResolution(ndt_res);
     ndt.setMaximumIterations(iter);
     ndt.setInputSource(filtered_scan_ptr);
-    ndt.setInputTarget(map_ptr);
     
+    if(isMapUpdate == true){
+    	ndt.setInputTarget(map_ptr);
+    	isMapUpdate = false;
+    }
+
     guess_pose.x = previous_pose.x + offset_x;
     guess_pose.y = previous_pose.y + offset_y;
     guess_pose.z = previous_pose.z + offset_z;
@@ -303,6 +309,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       added_pose.roll = current_pose.roll;
       added_pose.pitch = current_pose.pitch;
       added_pose.yaw = current_pose.yaw;
+      isMapUpdate = true;
     }
     
     sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
