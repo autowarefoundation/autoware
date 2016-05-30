@@ -21,6 +21,11 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
+      - name : lazy_ndt_mapping
+        cmd  : roslaunch ndt_localizer lazy_ndt_mapping.launch
+        param: ndt_mapping
+        gui  :
+          dialog : MyDialogNdtMapping
       - name : ndt_matching
         cmd  : roslaunch ndt_localizer ndt_matching.launch
         param: ndt
