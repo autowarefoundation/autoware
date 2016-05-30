@@ -62,7 +62,7 @@
 #include <runtime_manager/ConfigNdtMapping.h>
 #include <runtime_manager/ConfigNdtMappingOutput.h>
 
-struct Position {
+struct pose {
     double x;
     double y;
     double z;
@@ -72,9 +72,9 @@ struct Position {
 };
 
 // global variables
-static Position previous_pos, guess_pos, current_pos, added_pos;
+static pose previous_pose, guess_pose, current_pose, ndt_pose, added_pose, localizer_pose;
 
-static double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pos
+static double offset_x, offset_y, offset_z, offset_yaw; // current_pose - previous_pose
 
 static pcl::PointCloud<pcl::PointXYZI> map;
 
@@ -104,6 +104,9 @@ static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
 static double RANGE = 0.0;
 static double SHIFT = 0.0;
+
+static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
+static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
 {
@@ -167,7 +170,9 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
     pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
     tf::Quaternion q;
-    Eigen::Matrix4f t(Eigen::Matrix4f::Identity());
+
+    Eigen::Matrix4f t_localizer(Eigen::Matrix4f::Identity());
+    Eigen::Matrix4f t_base_link(Eigen::Matrix4f::Identity());
     tf::TransformBroadcaster br;
     tf::Transform transform;
 
@@ -210,20 +215,20 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt.setInputSource(filtered_scan_ptr);
     ndt.setInputTarget(map_ptr);
     
-    guess_pos.x = previous_pos.x + offset_x;
-    guess_pos.y = previous_pos.y + offset_y;
-    guess_pos.z = previous_pos.z + offset_z;
-    guess_pos.roll = previous_pos.roll;
-    guess_pos.pitch = previous_pos.pitch;
-    guess_pos.yaw = previous_pos.yaw + offset_yaw;
+    guess_pose.x = previous_pose.x + offset_x;
+    guess_pose.y = previous_pose.y + offset_y;
+    guess_pose.z = previous_pose.z + offset_z;
+    guess_pose.roll = previous_pose.roll;
+    guess_pose.pitch = previous_pose.pitch;
+    guess_pose.yaw = previous_pose.yaw + offset_yaw;
     
-    Eigen::AngleAxisf init_rotation_x(guess_pos.roll, Eigen::Vector3f::UnitX());
-    Eigen::AngleAxisf init_rotation_y(guess_pos.pitch, Eigen::Vector3f::UnitY());
-    Eigen::AngleAxisf init_rotation_z(guess_pos.yaw, Eigen::Vector3f::UnitZ());
+    Eigen::AngleAxisf init_rotation_x(guess_pose.roll, Eigen::Vector3f::UnitX());
+    Eigen::AngleAxisf init_rotation_y(guess_pose.pitch, Eigen::Vector3f::UnitY());
+    Eigen::AngleAxisf init_rotation_z(guess_pose.yaw, Eigen::Vector3f::UnitZ());
     
-    Eigen::Translation3f init_translation(guess_pos.x, guess_pos.y, guess_pos.z);
+    Eigen::Translation3f init_translation(guess_pose.x, guess_pose.y, guess_pose.z);
     
-    Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix();
+    Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix() * tf_btol;
     
     t3_end = ros::Time::now();
     d3 = t3_end - t3_start;
@@ -233,64 +238,83 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
     ndt.align(*output_cloud, init_guess);
     
-    t = ndt.getFinalTransformation();
+    t_localizer = ndt.getFinalTransformation();
+    t_base_link = t_localizer * tf_ltob;
+
+    pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, t_localizer);
+
+    tf::Matrix3x3 mat_l, mat_b;
+
+    mat_l.setValue(static_cast<double>(t_localizer(0, 0)), static_cast<double>(t_localizer(0, 1)), static_cast<double>(t_localizer(0, 2)),
+		  static_cast<double>(t_localizer(1, 0)), static_cast<double>(t_localizer(1, 1)), static_cast<double>(t_localizer(1, 2)),
+		  static_cast<double>(t_localizer(2, 0)), static_cast<double>(t_localizer(2, 1)), static_cast<double>(t_localizer(2, 2)));
     
-    pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, t);
     
-    tf::Matrix3x3 tf3d;
+    mat_b.setValue(static_cast<double>(t_base_link(0, 0)), static_cast<double>(t_base_link(0, 1)), static_cast<double>(t_base_link(0, 2)),
+		  static_cast<double>(t_base_link(1, 0)), static_cast<double>(t_base_link(1, 1)), static_cast<double>(t_base_link(1, 2)),
+		  static_cast<double>(t_base_link(2, 0)), static_cast<double>(t_base_link(2, 1)), static_cast<double>(t_base_link(2, 2)));
     
-    tf3d.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
-		  static_cast<double>(t(1, 0)), static_cast<double>(t(1, 1)), static_cast<double>(t(1, 2)),
-		  static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)), static_cast<double>(t(2, 2)));
+    // Update localizer_pose.
+    localizer_pose.x = t_localizer(0, 3);
+    localizer_pose.y = t_localizer(1, 3);
+    localizer_pose.z = t_localizer(2, 3);
+    mat_l.getRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw, 1);
     
-    // Update current_pos.
-    current_pos.x = t(0, 3);
-    current_pos.y = t(1, 3);
-    current_pos.z = t(2, 3);
-    tf3d.getRPY(current_pos.roll, current_pos.pitch, current_pos.yaw, 1);
+    // Update ndt_pose.
+    ndt_pose.x = t_base_link(0, 3);
+    ndt_pose.y = t_base_link(1, 3);
+    ndt_pose.z = t_base_link(2, 3);
+    mat_b.getRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw, 1);
     
-    transform.setOrigin(tf::Vector3(current_pos.x, current_pos.y, current_pos.z));
-    q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
+    current_pose.x = ndt_pose.x;
+    current_pose.y = ndt_pose.y;
+    current_pose.z = ndt_pose.z;
+    current_pose.roll = ndt_pose.roll;
+    current_pose.pitch = ndt_pose.pitch;
+    current_pose.yaw = ndt_pose.yaw;
+
+    transform.setOrigin(tf::Vector3(current_pose.x, current_pose.y, current_pose.z));
+    q.setRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
     transform.setRotation(q);
     
     br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "base_link"));
     
     // Calculate the offset (curren_pos - previous_pos)
-    offset_x = current_pos.x - previous_pos.x;
-    offset_y = current_pos.y - previous_pos.y;
-    offset_z = current_pos.z - previous_pos.z;
-    offset_yaw = current_pos.yaw - previous_pos.yaw;
+    offset_x = current_pose.x - previous_pose.x;
+    offset_y = current_pose.y - previous_pose.y;
+    offset_z = current_pose.z - previous_pose.z;
+    offset_yaw = current_pose.yaw - previous_pose.yaw;
     
     // Update position and posture. current_pos -> previous_pos
-    previous_pos.x = current_pos.x;
-    previous_pos.y = current_pos.y;
-    previous_pos.z = current_pos.z;
-    previous_pos.roll = current_pos.roll;
-    previous_pos.pitch = current_pos.pitch;
-    previous_pos.yaw = current_pos.yaw;
+    previous_pose.x = current_pose.x;
+    previous_pose.y = current_pose.y;
+    previous_pose.z = current_pose.z;
+    previous_pose.roll = current_pose.roll;
+    previous_pose.pitch = current_pose.pitch;
+    previous_pose.yaw = current_pose.yaw;
     
     // Calculate the shift between added_pos and current_pos
-    double shift = sqrt(pow(current_pos.x-added_pos.x, 2.0) + pow(current_pos.y-added_pos.y, 2.0));
+    double shift = sqrt(pow(current_pose.x-added_pose.x, 2.0) + pow(current_pose.y-added_pose.y, 2.0));
     if(shift >= SHIFT){
       map += *transformed_scan_ptr;
-      added_pos.x = current_pos.x;
-      added_pos.y = current_pos.y;
-      added_pos.z = current_pos.z;
-      added_pos.roll = current_pos.roll;
-      added_pos.pitch = current_pos.pitch;
-      added_pos.yaw = current_pos.yaw;
+      added_pose.x = current_pose.x;
+      added_pose.y = current_pose.y;
+      added_pose.z = current_pose.z;
+      added_pose.roll = current_pose.roll;
+      added_pose.pitch = current_pose.pitch;
+      added_pose.yaw = current_pose.yaw;
     }
     
     sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
     pcl::toROSMsg(*map_ptr, *map_msg_ptr);
     ndt_map_pub.publish(*map_msg_ptr);
     
-    q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
+    q.setRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
     current_pose_msg.header.frame_id = "map";
     current_pose_msg.header.stamp = scan_time;
-    current_pose_msg.pose.position.x = current_pos.x;
-    current_pose_msg.pose.position.y = current_pos.y;
-    current_pose_msg.pose.position.z = current_pos.z;
+    current_pose_msg.pose.position.x = current_pose.x;
+    current_pose_msg.pose.position.y = current_pose.y;
+    current_pose_msg.pose.position.z = current_pose.z;
     current_pose_msg.pose.orientation.x = q.x();
     current_pose_msg.pose.orientation.y = q.y();
     current_pose_msg.pose.orientation.z = q.z();
@@ -308,9 +332,9 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
     std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
     std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
-    std::cout << "(" << current_pos.x << ", " << current_pos.y << ", " << current_pos.z << ", " << current_pos.roll << ", " << current_pos.pitch << ", " << current_pos.yaw << ")" << std::endl;
+    std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
     std::cout << "Transformation Matrix:" << std::endl;
-    std::cout << t << std::endl;
+    std::cout << t_localizer << std::endl;
     std::cout << "shift: " << shift << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
     
@@ -318,33 +342,40 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 int main(int argc, char **argv)
 {
-    previous_pos.x = 0.0;
-    previous_pos.y = 0.0;
-    previous_pos.z = 0.0;
-    previous_pos.roll = 0.0;
-    previous_pos.pitch = 0.0;
-    previous_pos.yaw = 0.0;
+    previous_pose.x = 0.0;
+    previous_pose.y = 0.0;
+    previous_pose.z = 0.0;
+    previous_pose.roll = 0.0;
+    previous_pose.pitch = 0.0;
+    previous_pose.yaw = 0.0;
 
-    current_pos.x = 0.0;
-    current_pos.y = 0.0;
-    current_pos.z = 0.0;
-    current_pos.roll = 0.0;
-    current_pos.pitch = 0.0;
-    current_pos.yaw = 0.0;
+    ndt_pose.x = 0.0;
+    ndt_pose.y = 0.0;
+    ndt_pose.z = 0.0;
+    ndt_pose.roll = 0.0;
+    ndt_pose.pitch = 0.0;
+    ndt_pose.yaw = 0.0;
 
-    guess_pos.x = 0.0;
-    guess_pos.y = 0.0;
-    guess_pos.z = 0.0;
-    guess_pos.roll = 0.0;
-    guess_pos.pitch = 0.0;
-    guess_pos.yaw = 0.0;
+    current_pose.x = 0.0;
+    current_pose.y = 0.0;
+    current_pose.z = 0.0;
+    current_pose.roll = 0.0;
+    current_pose.pitch = 0.0;
+    current_pose.yaw = 0.0;
 
-    added_pos.x = 0.0;
-    added_pos.y = 0.0;
-    added_pos.z = 0.0;
-    added_pos.roll = 0.0;
-    added_pos.pitch = 0.0;
-    added_pos.yaw = 0.0;
+    guess_pose.x = 0.0;
+    guess_pose.y = 0.0;
+    guess_pose.z = 0.0;
+    guess_pose.roll = 0.0;
+    guess_pose.pitch = 0.0;
+    guess_pose.yaw = 0.0;
+
+    added_pose.x = 0.0;
+    added_pose.y = 0.0;
+    added_pose.z = 0.0;
+    added_pose.roll = 0.0;
+    added_pose.pitch = 0.0;
+    added_pose.yaw = 0.0;
 
     offset_x = 0.0;
     offset_y = 0.0;
@@ -361,6 +392,52 @@ int main(int argc, char **argv)
     std::cout << "RANGE: " << RANGE << std::endl;
     private_nh.getParam("shift", SHIFT);
     std::cout << "SHIFT: " << SHIFT << std::endl;
+
+    if (nh.getParam("tf_x", _tf_x) == false)
+    {
+      std::cout << "tf_x is not set." << std::endl;
+      return 1;
+    }
+    if (nh.getParam("tf_y", _tf_y) == false)
+    {
+      std::cout << "tf_y is not set." << std::endl;
+      return 1;
+    }
+    if (nh.getParam("tf_z", _tf_z) == false)
+    {
+      std::cout << "tf_z is not set." << std::endl;
+      return 1;
+    }
+    if (nh.getParam("tf_roll", _tf_roll) == false)
+    {
+      std::cout << "tf_roll is not set." << std::endl;
+      return 1;
+    }
+    if (nh.getParam("tf_pitch", _tf_pitch) == false)
+    {
+      std::cout << "tf_pitch is not set." << std::endl;
+      return 1;
+    }
+    if (nh.getParam("tf_yaw", _tf_yaw) == false)
+    {
+      std::cout << "tf_yaw is not set." << std::endl;
+      return 1;
+    }
+
+    std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
+              << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
+
+    Eigen::Translation3f tl_btol(_tf_x, _tf_y, _tf_z);  // tl: translation
+    Eigen::AngleAxisf rot_x_btol(_tf_roll, Eigen::Vector3f::UnitX());  // rot: rotation
+    Eigen::AngleAxisf rot_y_btol(_tf_pitch, Eigen::Vector3f::UnitY());
+    Eigen::AngleAxisf rot_z_btol(_tf_yaw, Eigen::Vector3f::UnitZ());
+    tf_btol = (tl_btol * rot_z_btol * rot_y_btol * rot_x_btol).matrix();
+
+    Eigen::Translation3f tl_ltob((-1.0) * _tf_x, (-1.0) * _tf_y, (-1.0) * _tf_z);  // tl: translation
+    Eigen::AngleAxisf rot_x_ltob((-1.0) * _tf_roll, Eigen::Vector3f::UnitX());  // rot: rotation
+    Eigen::AngleAxisf rot_y_ltob((-1.0) * _tf_pitch, Eigen::Vector3f::UnitY());
+    Eigen::AngleAxisf rot_z_ltob((-1.0) * _tf_yaw, Eigen::Vector3f::UnitZ());
+    tf_ltob = (tl_ltob * rot_z_ltob * rot_y_ltob * rot_x_ltob).matrix();
 
     map.header.frame_id = "map";
 
