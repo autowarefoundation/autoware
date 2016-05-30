@@ -6,6 +6,7 @@
   <arg name="shift" default="1.0" />
 
   <!-- rosrun ndt_localizer ndt_mapping  -->
+  <node pkg="ndt_localizer" type="queue_counter" name="queue_counter" output="screen" />
   <node pkg="ndt_localizer" type="ndt_mapping" name="ndt_mapping" output="screen">
   	<param name="range" value="$(arg range)" />
     <param name="shift" value="$(arg shift)" />
