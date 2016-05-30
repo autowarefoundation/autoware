@@ -4,9 +4,9 @@
   <version>0.0.0</version>
   <description>The vectacam package</description>
 
-  <maintainer email="a@a.com">nu-amc</maintainer>
+  <maintainer email="autoware@googlegroups.com">nu-amc</maintainer>
 
-  <license>TODO</license>
+  <license>GPL</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 

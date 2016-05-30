@@ -14,20 +14,21 @@
 
 #include "opencv2/core/core.hpp"
 
-#define DEFAULT_BASE_PORT 	16386
-#define NUM_CAMERAS			8
+#define VECTACAM_CONFIG_PORT 		16385
+#define VECTACAM_DATA_PORT 			16386
+#define VECTACAM_NUM_CAMERAS		8
 
-#define FRAME_START 		(0x01000000)
-#define FRAME_END   		(0x02000000)
+#define VECTACAM_FRAME_START 		(0x01000000)
+#define VECTACAM_FRAME_END   		(0x02000000)
 
-#define DATA_OFFSET 		(16)
+#define VECTACAM_DATA_OFFSET 		(16)
 
-#define MAX_BUFFER 			1024*1024
+#define VECTACAM_MAX_BUFFER 			1024*1024
 
-#define IMG_WIDTH			640
-#define IMG_HEIGHT			480
+#define VECTACAM_IMG_WIDTH			640
+#define VECTACAM_IMG_HEIGHT			480
 
-#define CAMERA_IP			"10.0.0.1"
+#define VECTACAM_CAMERA_IP			"10.0.0.1"
 
 struct VectaCamCommand
 {

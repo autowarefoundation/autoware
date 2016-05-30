@@ -10,8 +10,8 @@ VectaCam::VectaCam(unsigned int in_configuration_port, unsigned int in_data_port
 	this->frame_number_			= 0;
 	this->frame_counter_		= 0;
 	this->payload_offset_ 		= 16;
-	this->image_width_ 			= IMG_WIDTH * NUM_CAMERAS;
-	this->image_height_ 		= IMG_HEIGHT;
+	this->image_width_ 			= VECTACAM_IMG_WIDTH * VECTACAM_NUM_CAMERAS;
+	this->image_height_ 		= VECTACAM_IMG_HEIGHT;
 	this->image_buffer_ 		= new char[image_width_ * 3 * image_height_];
 	this->parameter_file_ 		= in_parameter_file;
 	_initialize_camera(configuration_port_, data_port_, parameter_file_);
@@ -120,7 +120,7 @@ void VectaCam::_enable_camera(unsigned int in_port, bool in_enable)
 	memset((char *) &socket_address, 0, sizeof(socket_address));
 	socket_address.sin_family = AF_INET;
 	socket_address.sin_port = htons(in_port);
-	if (inet_aton(CAMERA_IP, &socket_address.sin_addr)==0)
+	if (inet_aton(VECTACAM_CAMERA_IP, &socket_address.sin_addr)==0)
 	{
 		std::cout << "Invalid IP address" << std::endl;
 		return;
@@ -203,8 +203,9 @@ void VectaCam::StartCamera()
 
 void VectaCam::_udp_receive(int in_socket_descriptor)
 {
-	unsigned int 	length, n;
-	char 			buffer_in[MAX_BUFFER];
+	int 			n;
+	size_t			length;
+	char 			buffer_in[VECTACAM_MAX_BUFFER];
 	struct 			sockaddr_in remote;
 	length = sizeof(remote);
 
@@ -212,21 +213,21 @@ void VectaCam::_udp_receive(int in_socket_descriptor)
 
 	while (this->running_)
 	{
-		n = recvfrom(in_socket_descriptor, buffer_in, MAX_BUFFER, 0, reinterpret_cast<sockaddr *> (&remote), &length);
+		n = recvfrom(in_socket_descriptor, buffer_in, VECTACAM_MAX_BUFFER, 0, reinterpret_cast<sockaddr *> (&remote), (unsigned int*) &length);
 		if (n < 0)
 		{
 			std::cout << "Error receiving data" << std::endl;
 		}
 		else
 		{
-			int packet_offset = ntohl(*(uint32_t*)(buffer_in + 4));
-			int packet_length = ntohl(*(uint32_t*)(buffer_in + 8));
-			int header = ntohl(*(uint32_t*)(buffer_in + 12));
+			uint32_t packet_offset = ntohl(*(uint32_t*)(buffer_in + 4));
+			uint32_t packet_length = ntohl(*(uint32_t*)(buffer_in + 8));
+			uint32_t header = ntohl(*(uint32_t*)(buffer_in + 12));
 
-			if (header == FRAME_START) {
+			if (header == VECTACAM_FRAME_START) {
 				// frame start
 			}
-			else if (header == FRAME_END)
+			else if (header == VECTACAM_FRAME_END)
 			{
 				// frame end
 				this->camera_image_ = cv::Mat(image_height_, image_width_, CV_8UC3, image_buffer_);
