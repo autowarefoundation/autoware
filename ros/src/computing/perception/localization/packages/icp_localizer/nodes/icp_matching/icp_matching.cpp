@@ -68,7 +68,7 @@
 
 #include <runtime_manager/ConfigICP.h>
 
-#include <ndt_localizer/ndt_stat.h>
+#include <icp_localizer/icp_stat.h>
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -162,8 +162,8 @@ static std_msgs::Float32 time_icp_matching;
 
 static int _queue_size = 1000;
 
-static ros::Publisher ndt_stat_pub;
-static ndt_localizer::ndt_stat ndt_stat_msg;
+static ros::Publisher icp_stat_pub;
+static icp_localizer::icp_stat icp_stat_msg;
 
 static double predict_pose_error = 0.0;
 
@@ -558,18 +558,16 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     estimate_vel_msg.vector.x = current_velocity;
     estimated_vel_pub.publish(estimate_vel_msg);
 
-    // Set values for /ndt_stat
-    /*
-    ndt_stat_msg.header.stamp = current_scan_time;
-    ndt_stat_msg.exe_time = time_ndt_matching.data;
-    ndt_stat_msg.iteration = iteration;
-    ndt_stat_msg.score = score;
-    ndt_stat_msg.velocity = current_velocity;
-    ndt_stat_msg.acceleration = current_accel;
-    ndt_stat_msg.use_predict_pose = 0;
+    // Set values for /icp_stat
+    icp_stat_msg.header.stamp = current_scan_time;
+    icp_stat_msg.exe_time = time_icp_matching.data;
+//    icp_stat_msg.iteration = iteration;
+    icp_stat_msg.score = score;
+    icp_stat_msg.velocity = current_velocity;
+    icp_stat_msg.acceleration = current_accel;
+    icp_stat_msg.use_predict_pose = 0;
 
-    ndt_stat_pub.publish(ndt_stat_msg);
-*/
+    icp_stat_pub.publish(icp_stat_msg);
 
     /* Compute NDT_Reliability */
 //    ndt_reliability.data = Wa * (exe_time / 100.0) * 100.0 + Wb * (iteration / 10.0) * 100.0 +
@@ -749,7 +747,7 @@ int main(int argc, char** argv)
   estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
   estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 1000);
   time_icp_matching_pub = nh.advertise<std_msgs::Float32>("/time_icp_matching", 1000);
-//  ndt_stat_pub = nh.advertise<ndt_localizer::ndt_stat>("/ndt_stat", 1000);
+  icp_stat_pub = nh.advertise<icp_localizer::icp_stat>("/icp_stat", 1000);
 //  ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
 
   // Subscribers
