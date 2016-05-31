@@ -345,10 +345,7 @@ class MyFrame(rtmgr.MyFrame):
 
 		# setup for rosbag info
 		gdic = self.obj_to_gdic(btn, {})
-		name = 'file'
-		if name not in gdic:
-			gdic[ name ] = {}
-		gdic_v = gdic.get(name, {})
+		gdic_v = dic_getset(gdic, 'file', {})
 		gdic_v['update_hook'] = self.rosbag_info_hook
 
 		tc = self.obj_to_varpanel_tc(btn, 'file')
@@ -1192,9 +1189,7 @@ class MyFrame(rtmgr.MyFrame):
 			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
 			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
 
-			if 'camera_id' not in gdic:
-				gdic['camera_id'] = {}
-			gdic_v = gdic.get('camera_id', {})
+			gdic_v = dic_getset(gdic, 'camera_id', {})
 			args = { 'pdic':pdic, 'ids':ids, 'param_panel':gdic.get('param_panel'), 'dlg':dlg }
 			gdic_v['hook_var'] = { 'hook':self.camera_id_hook, 'args':args }
 
@@ -2315,9 +2310,7 @@ class ParamPanel(wx.Panel):
 			if not gdic_dialog_type_chk(self.gdic, name):
 				continue
 
-			if name not in self.gdic:
-				self.gdic[ name ] = {}
-			gdic_v = self.gdic.get(name)
+			gdic_v = dic_getset(self.gdic, name, {})
 
 			bak_stk_push(gdic_v, 'func')
 			if gdic_v.get('func'):
@@ -3268,9 +3261,7 @@ def obj_refresh(obj):
 
 # dic_list util (push, pop, get)
 def dic_list_push(dic, key, v):
-	if key not in dic:
-		dic[key] = []
-	dic.get(key).append(v)
+	dic_getset(dic, key, []).append(v)
 
 def dic_list_pop(dic, key):
 	dic.get(key, [None]).pop()
@@ -3281,9 +3272,7 @@ def dic_list_get(dic, key, def_ret=None):
 def bak_stk_push(dic, key):
 	if key in dic:
 		k = key + '_bak_str'
-		if k not in dic:
-			dic[k] = []
-		dic[k].append( dic.get(key) )
+		dic_getset(dic, k, []).append( dic.get(key) )
 
 def bak_stk_pop(dic, key):
 	k = key + '_bak_str'
@@ -3297,6 +3286,17 @@ def bak_stk_set(dic, key, v):
 	bak_str_push(dic, key)
 	dic[key] = v
 
+
+def dic_getset(dic, key, def_ret):
+	if key not in dic:
+		dic[key] = def_ret
+	return dic.get(key)
+
+def lst_append_once(lst, v):
+	exist = v in lst
+	if not exist:
+		lst.append(v)
+	return exist
 
 def get_top(lst, def_ret=None):
 	return lst[0] if len(lst) > 0 else def_ret
