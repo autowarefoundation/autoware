@@ -1,0 +1,10 @@
+<launch>
+
+	<!-- declare arguments with default values -->
+	<arg name="SCALE" default="100"/>
+	<arg name="configfile" default="$(find vectacam)/initialization_params.txt"/>
+
+	<node pkg="vectacam" type="vectacam_node" name="vectacam">
+		<param name="configfile" value="$(arg configfile)"/>
+	</node>
+</launch>

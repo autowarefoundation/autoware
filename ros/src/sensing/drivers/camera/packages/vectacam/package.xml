@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>vectacam</name>
+  <version>0.0.0</version>
+  <description>The vectacam package</description>
+
+  <maintainer email="autoware@googlegroups.com">nu-amc</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>
