@@ -114,6 +114,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.log_que_stdout = Queue.Queue()
 		self.log_que_stderr = Queue.Queue()
 		self.log_que_show = Queue.Queue()
+		self.obj_enables = {}
 
 		#
 		# ros
@@ -937,8 +938,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			depend_bool = eval( gdic_v.get('depend_bool', 'lambda v : bool(v)') )
 			v = depend_bool(v)
-			if vp.IsEnabled() != v:
-				vp.Enable(v)
+			self.obj_enables_set(vp, 'depend', v)
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -1934,7 +1934,9 @@ class MyFrame(rtmgr.MyFrame):
 	def alias_sync(self, obj, v=None):
 		en = None
 		if getattr(obj, 'IsEnabled', None):
-			en = obj.IsEnabled()
+			(key, en) = self.obj_enables_get_last(obj)
+			if not key:
+				en = obj.IsEnabled()
 		grp = self.alias_grp_get(obj)
 		if getattr(obj, 'GetValue', None):
 			v = obj.GetValue()
@@ -1943,7 +1945,10 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			
 			if en is not None and o.IsEnabled() != en and not self.is_toggle_button(o):
-				o.Enable(en)
+				if key:
+					self.obj_enable_set(o, key, en)
+				else:
+					o.Enable(en)
 			if v is not None and getattr(o, 'SetValue', None):
 				set_val(o, v)
 				if getattr(o, 'SetInsertionPointEnd', None):
@@ -2207,11 +2212,30 @@ class MyFrame(rtmgr.MyFrame):
 	def toggle_enables(self, objs):
 		for obj in objs:
 			if getattr(obj, 'IsEnabled', None):
-				obj.Enable(not obj.IsEnabled())
+				en = self.obj_enables_get(obj, 'toggle', obj.IsEnabled())
+				self.obj_enables_set(obj, 'toggle', not en)
 				self.alias_sync(obj)
 
 	def is_toggle_button(self, obj):
 		return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
+
+	def obj_enables_set(self, obj, k, en):
+		d = dic_getset(self.obj_enables, obj, {})
+		d[k] = en
+		d['last_key'] = k
+		obj.Enable( all( d.values() ) )
+
+	def obj_enables_get(self, obj, k, def_ret=None):
+		return self.obj_enables.get(obj, {k:def_ret}).get(k, def_ret)
+
+	def obj_enables_get_last(self, obj):
+		k = self.obj_enables_get(obj, 'last_key')
+		return (k, self.obj_enables_get(obj, k))
+
+	def obj_enables_del(self, obj):
+		d = self.obj_enables
+		if obj in d:
+			del d[obj]
 
 	def obj_name_split(self, obj, pfs):
 		name = self.name_get(obj)
@@ -2374,7 +2398,7 @@ class ParamPanel(wx.Panel):
 			if not self.in_msg(var) and var.get('rosparam'):
 				k = 'ext_toggle_enables'
 				self.gdic[ k ] = self.gdic.get(k, []) + [ vp ]
-				vp.Enable(proc is None)
+				self.frame.obj_enables_set(vp, 'toggle', proc is None)
 
 			if 'disable' in gdic_v.get('flags', []):
 				vp.Enable(False)
@@ -2401,6 +2425,10 @@ class ParamPanel(wx.Panel):
 			gdic_v = self.gdic.get(name, {})
 			if 'func' in gdic_v:
 				bak_stk_pop(gdic_v, 'func')
+
+			vp = gdic_v.get('var')
+			lst_remove_once(self.gdic.get('ext_toggle_enables', []), vp)
+			self.frame.obj_enables_del(vp)
 
 	def in_msg(self, var):
 		if 'topic' not in self.prm or 'msg' not in self.prm:
@@ -3298,6 +3326,12 @@ def lst_append_once(lst, v):
 	exist = v in lst
 	if not exist:
 		lst.append(v)
+	return exist
+
+def lst_remove_once(lst, v):
+	exist = v in lst
+	if exist:
+		lst.remove(v)
 	return exist
 
 def get_top(lst, def_ret=None):
