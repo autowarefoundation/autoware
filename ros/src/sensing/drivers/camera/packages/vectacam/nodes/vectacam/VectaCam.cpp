@@ -23,28 +23,29 @@ void VectaCam::_parse_parameter_file(std::string in_parameter_file, std::vector<
 	std::ifstream config_file (parameter_file_);
 	std::string delimiter = ":";
 	out_commands.clear();
-	if (config_file.is_open())
+	if (!config_file.is_open())
 	{
-		while ( getline (config_file,line) )
-		{
-			std::vector<std::string> tokens;
-			boost::split(tokens, line, boost::is_any_of(":"));
-			if (tokens.size()==2)
-			{
-				VectaCamCommand current_command;
-				int full_address = std::stoi(tokens[0], NULL, 16);
-				current_command.low_nibble_address = (unsigned char)( (full_address>>0) & 0xFF);
-				current_command.high_nibble_address = (unsigned char)((full_address>>8) & 0xFF);
-				current_command.command_data = std::stoi(tokens[1], NULL, 16);
-				out_commands.push_back(current_command);
-			}
-			else
-				std::cout << "Unrecognized command in configuration file: " << parameter_file_ << std::endl;
-		}
-		config_file.close();
-	}
-	else
 		std::cout << "Unable to open file:" << parameter_file_;
+		return;
+	}
+
+	while ( getline (config_file,line) )
+	{
+		std::vector<std::string> tokens;
+		boost::split(tokens, line, boost::is_any_of(":"));
+		if (tokens.size()==2)
+		{
+			VectaCamCommand current_command;
+			int full_address = std::stoi(tokens[0], NULL, 16);
+			current_command.low_nibble_address = (unsigned char)( (full_address>>0) & 0xFF);
+			current_command.high_nibble_address = (unsigned char)((full_address>>8) & 0xFF);
+			current_command.command_data = std::stoi(tokens[1], NULL, 16);
+			out_commands.push_back(current_command);
+		}
+		else
+			std::cout << "Unrecognized command in configuration file: " << parameter_file_ << std::endl;
+	}
+	config_file.close();
 }
 
 void VectaCam::_send_commands_to_camera(unsigned int in_port, std::vector<VectaCamCommand> in_commands)
@@ -71,15 +72,15 @@ void VectaCam::_send_commands_to_camera(unsigned int in_port, std::vector<VectaC
 		unsigned char command_buffer[12] = {0x05, 0x00, 0x36, 0x00, 0x00, 0x00,
 									current_command.low_nibble_address, current_command.high_nibble_address, current_command.command_data,
 									0x00, 0x00, 0x00};
-		unsigned int sent_data = sendto(socket_descriptor, command_buffer, sizeof(command_buffer), 0,(struct sockaddr *) &socket_address, sizeof(socket_address));
+		ssize_t sent_data = sendto(socket_descriptor, command_buffer, sizeof(command_buffer), 0,(struct sockaddr *) &socket_address, sizeof(socket_address));
 		if (sent_data < 0)
 		{
 			std::cout << "Could not send the data to the camera socket" << std::endl;
 		}
 		else
-			std::cout << std::to_string((int)current_command.high_nibble_address) <<
-						std::to_string((int)current_command.low_nibble_address) << ":" <<
-						std::to_string((int)current_command.command_data) << std::endl;
+			std::cout << (int)current_command.high_nibble_address <<
+						(int)current_command.low_nibble_address << ":" <<
+						(int)current_command.command_data << std::endl;
 		usleep(50000);
 	}
 }
@@ -169,7 +170,7 @@ void VectaCam::StartCamera()
 
 	int 		socket_descriptor;
 	struct 		sockaddr_in socket_address;
-	unsigned int length;
+	socklen_t length;
 
 	if ((socket_descriptor = socket( PF_INET, SOCK_DGRAM, 0)) < 0)
 	{
@@ -196,9 +197,29 @@ void VectaCam::StartCamera()
 	this->camera_ready_ = true;
 	this->running_ = true;
 
-	std::cout << "Listening camera in UDP port number " << std::to_string(ntohs(socket_address.sin_port)) << std::endl;
+	std::cout << "Listening camera in UDP port number " << ntohs(socket_address.sin_port) << std::endl;
 
 	_udp_receive(socket_descriptor);
+}
+
+void VectaCam::_form_image(int in_line_number, char* in_buffer, uint32_t in_packet_offset, uint32_t in_packet_length)
+{
+	int p = in_packet_offset * 3;
+	int k = payload_offset_ + 4 * in_packet_length;
+	int total = (in_packet_length);
+	if (in_line_number < image_height_ && total < 1500 && p < image_width_ * 3
+			&& total > 10)
+	{
+		for (int i = 0; i < total; ++i)
+		{
+			image_buffer_[in_line_number * image_width_ * 3 + p + 2] = (((((int) in_buffer[k + 0]) << 4) & 0x3f0) + ((((int) in_buffer[k + 1]) >> 4) & 0xf)) >> 2; // R
+			image_buffer_[in_line_number * image_width_ * 3 + p + 1] = (((((int) in_buffer[k + 1]) << 6) & 0x3c0) + ((((int) in_buffer[k + 2]) >> 2) & 0x3f)) >>2; // G
+			image_buffer_[in_line_number * image_width_ * 3 + p + 0] = (((((int) in_buffer[k + 2]) << 8) & 0x300)	+ ((((int) in_buffer[k + 3]) >> 0) & 0xff)) >> 2; // B
+
+			p += 3;
+			k -= 4;
+		}
+	}
 }
 
 void VectaCam::_udp_receive(int in_socket_descriptor)
@@ -237,23 +258,7 @@ void VectaCam::_udp_receive(int in_socket_descriptor)
 			{
 
 				line_number = header - 1;
-
-				int p = packet_offset * 3;
-				int k = payload_offset_ + 4 * packet_length;
-				int total = (packet_length);
-				if (line_number < image_height_ && total < 1500 && p < image_width_ * 3
-						&& total > 10)
-				{
-					for (int i = 0; i < total; ++i)
-					{
-						image_buffer_[line_number * image_width_ * 3 + p + 2] = (((((int) buffer_in[k + 0]) << 4) & 0x3f0) + ((((int) buffer_in[k + 1]) >> 4) & 0xf)) >> 2; // R
-						image_buffer_[line_number * image_width_ * 3 + p + 1] = (((((int) buffer_in[k + 1]) << 6) & 0x3c0) + ((((int) buffer_in[k + 2]) >> 2) & 0x3f)) >>2; // G
-						image_buffer_[line_number * image_width_ * 3 + p + 0] = (((((int) buffer_in[k + 2]) << 8) & 0x300)	+ ((((int) buffer_in[k + 3]) >> 0) & 0xff)) >> 2; // B
-
-						p += 3;
-						k -= 4;
-					}
-				}
+				_form_image(line_number, buffer_in, packet_offset, packet_length);
 			}
 		}
 	}
