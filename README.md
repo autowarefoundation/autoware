@@ -99,6 +99,9 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 ### Quick Start
 [![Quick Start](http://img.youtube.com/vi/Ursbp2qs1u0/0.jpg)](https://www.youtube.com/watch?v=Ursbp2qs1u0)
 
+### Loading map data
+[![Loading map data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
+
 ### Localization with GNSS
 [![Localization with GNSS](http://img.youtube.com/vi/5x3szHneHzM/0.jpg)](https://www.youtube.com/watch?v=5x3szHneHzM)
 
