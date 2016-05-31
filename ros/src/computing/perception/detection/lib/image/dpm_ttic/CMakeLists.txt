@@ -20,8 +20,8 @@ catkin_package(
   LIBRARIES libdpm_ttic
 )
 
-SET(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
 IF(CUDA_FOUND)
 INCLUDE_DIRECTORIES(
