@@ -49,7 +49,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 EXECUTE_PROCESS(
   COMMAND pkg-config --variable=host_bins Qt5Core
