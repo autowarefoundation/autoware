@@ -109,7 +109,7 @@ See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. Englis
 [![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/0.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
 
 ### Mapping
-[![Mapping](http://img.youtube.com/vi/hsX4HX_XBM4/0.jpg)](https://www.youtube.com/watch?v=hsX4HX_XBM4)
+[![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/0.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
 
 ### Detection
 [![Detection](http://img.youtube.com/vi/UcoYqGniIkE/0.jpg)](https://www.youtube.com/watch?v=UcoYqGniIkE)
