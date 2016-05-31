@@ -6,7 +6,7 @@
 
   <maintainer email="autoware@googlegroups.com">nu-amc</maintainer>
 
-  <license>GPL</license>
+  <license>3-BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
