@@ -505,11 +505,9 @@ class MyFrame(rtmgr.MyFrame):
 		self.kill_all()
 
 		save_dic = {}
-		sys_prm = self.get_param('sys')
 		for (name, pdic) in self.load_dic.items():
 			if pdic and pdic != {}:
-				prms = [ cfg.get('param') for cfg in self.config_dic.values() if cfg.get('name') == name ]
-				prm = next( (prm for prm in prms if prm != None and prm != sys_prm), {})
+				prm = self.cfg_dic( {'name':name, 'pdic':pdic} ).get('param', {})
 				no_saves = prm.get('no_save_vars', [])
 				pdic = pdic.copy()
 				for k in pdic.keys():
@@ -826,15 +824,26 @@ class MyFrame(rtmgr.MyFrame):
 		(_, gdic, _) = self.obj_to_pdic_gdic_prm(obj) if obj else (None, None, None)
 		return gdic if gdic else def_ret
 
-	def cfg_prm_to_obj(self, arg_dic):
-		return next( ( d.get('obj') for d in self.config_dic.values() \
-			if all( [ d.get(k) == v for (k,v) in arg_dic.items() ] ) ), None)
+	def cfg_obj_dic(self, arg_dic, sys=False, def_ret=(None,{})):
+		sys_prm = self.get_param('sys')
+		prm_chk = {
+			True  : (lambda prm : prm is sys_prm),
+			False : (lambda prm : prm is not sys_prm),
+			None  : (lambda prm : True) }.get(sys)
+		arg_dic_chk = lambda dic: all( [ dic.get(k) == v for (k,v) in arg_dic.items() ] )
+		return next( ( (cfg_obj, dic) for (cfg_obj, dic) in self.config_dic.items() \
+			       if arg_dic_chk(dic) and prm_chk(dic.get('param')) ), def_ret)
 
-	def cfg_prm_to_pdic_gdic_prm(self, arg_dic):
-		return self.obj_to_pdic_gdic_prm( self.cfg_prm_to_obj(arg_dic) )
+	def cfg_dic(self, arg_dic, sys=False, def_ret={}):
+		(_, dic) = self.cfg_obj_dic(arg_dic, sys=sys, def_ret=(None, def_ret))
+		return dic
 
-	def name_to_pdic_gdic_prm(self, name):
-		return self.cfg_prm_to_pdic_gdic_prm( {'name':name} )
+	def cfg_prm_to_obj(self, arg_dic, sys=False):
+		return self.cfg_dic(arg_dic, sys=sys).get('obj')
+
+	def name_to_pdic_gdic_prm(self, name, sys=False):
+		d = self.cfg_dic( {'name':name}, sys=sys )
+		return ( d.get('pdic'), d.get('gdic'), d.get('param') )
 
 	def update_func(self, pdic, gdic, prm):
 		pdic_empty = (pdic == {})
@@ -864,9 +873,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.rosparam_set(pdic, prm)
 		self.update_depend_enable(pdic, gdic, prm)
 
-		sys_gdic = getattr(self, 'sys_gdic', None)
-		obj = self.cfg_prm_to_obj( { 'pdic':pdic , 'gdic':sys_gdic , 'param':prm } )
-		self.update_proc_cpu(obj, pdic, prm)
+		d = self.cfg_dic( {'pdic':pdic, 'gdic':gdic, 'param':prm}, sys=True )
+		self.update_proc_cpu(d.get('obj'), d.get('pdic'), d.get('param'))
 
 	def update_proc_cpu(self, obj, pdic=None, prm=None):
 		if obj is None or not obj.GetValue():
@@ -1703,9 +1711,6 @@ class MyFrame(rtmgr.MyFrame):
 		gdic['update_func'] = self.update_func
 		return gdic
 
-	def get_cfg_obj(self, obj):
-		return next( (k for (k,v) in self.config_dic.items() if v['obj'] is obj), None)
-
 	def add_cfg_info(self, cfg_obj, obj, name, pdic, gdic, run_disable, prm):
 		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'gdic':gdic, 
 					       'run_disable':run_disable , 'param':prm }
@@ -2014,8 +2019,8 @@ class MyFrame(rtmgr.MyFrame):
 
 		proc = self.launch_kill(v, cmd, proc, add_args, obj=obj)
 
-		cfg_obj = self.get_cfg_obj(obj)
-		if cfg_obj and self.config_dic[ cfg_obj ]['run_disable']:
+		(cfg_obj, dic) = self.cfg_obj_dic( {'obj':obj} )
+		if cfg_obj and dic.get('run_disable'):
 			cfg_obj.Enable(not v)
 
 		cmd_dic[obj] = (cmd, proc)
@@ -2235,9 +2240,6 @@ class MyFrame(rtmgr.MyFrame):
 	def obj_get(self, name):
 		return getattr(self, name, None)
 
-	def key_get(self, dic, val):
-		return next( (k for (k,v) in dic.items() if v == val), None)
-
 #class MyDialog(rtmgr.MyDialog):
 #	def __init__(self, *args, **kwds):
 #		lbs = kwds.pop('lbs')
@@ -2289,7 +2291,7 @@ class ParamPanel(wx.Panel):
 
 		self.gdic['param_panel'] = self
 
-		obj = next( (v.get('obj') for (cfg_obj, v) in self.frame.config_dic.items() if v.get('param') is self.prm), None)
+		obj = self.frame.cfg_prm_to_obj( {'param':self.prm} )
 		(_, _, proc) = self.frame.obj_to_cmd_dic_cmd_proc(obj)
 
 		hszr = None
