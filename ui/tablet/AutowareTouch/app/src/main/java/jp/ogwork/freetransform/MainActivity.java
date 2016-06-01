@@ -6,9 +6,9 @@ import jp.ogwork.gesturetransformableview.view.GestureTransformableImageView;
 import com.lylc.widget.circularprogressbar.CircularProgressBar;
 import com.lylc.widget.circularprogressbar.CircularProgressBar.ProgressAnimationListener;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -17,70 +17,62 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ToggleButton;
 
-public class MainActivity extends Activity {
+import org.ros.address.InetAddressFactory;
+import org.ros.android.RosActivity;
+import org.ros.node.NodeConfiguration;
+import org.ros.node.NodeMainExecutor;
 
-    public static final String TAG = MainActivity.class.getName();
+public class MainActivity extends RosActivity {
 
     private static final int MP = ViewGroup.LayoutParams.MATCH_PARENT;
 
     private ToggleButton set_btn;
-
     private ToggleButton drive_btn;
+    private ToggleButton navi_btn;
+    private ToggleButton map_btn;
+    private ToggleButton view_btn;
+    private ToggleButton info_btn;
 
     private ImageView compass_view;
 
     private ImageView first_digital_view;
-
     private ImageView second_digital_view;
+
+    private CircularProgressBar gas_circle;
+    private CircularProgressBar brake_circle;
 
     private GestureTransformableImageView handle_view;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    private AutowareTouch autoware_touch;
 
+    public MainActivity() {
+        super("AutowareTouch", "AutowareTouch");
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // if (savedInstanceState == null) {
-        //     getFragmentManager().beginTransaction()
-        //             .add(R.id.container, new MainFragment(), MainFragment.class.getName()).commit();
-        // }
-
         set_btn = (ToggleButton) findViewById(R.id.set_btn);
         drive_btn = (ToggleButton) findViewById(R.id.drive_btn);
+        navi_btn = (ToggleButton) findViewById(R.id.navi_btn);
+        map_btn = (ToggleButton) findViewById(R.id.map_btn);
+        view_btn = (ToggleButton) findViewById(R.id.view_btn);
+        info_btn = (ToggleButton) findViewById(R.id.info_btn);
+
         compass_view = (ImageView) findViewById(R.id.compass_view);
+
         first_digital_view = (ImageView) findViewById(R.id.first_digital_view);
         second_digital_view = (ImageView) findViewById(R.id.second_digital_view);
 
-        CircularProgressBar c1 = (CircularProgressBar) findViewById(R.id.circularprogressbar1);
-        c1.setTitle("Gas");
-        // c1.setSubTitle("2013");
-        c1.setProgress(42);
-        CircularProgressBar c2 = (CircularProgressBar) findViewById(R.id.circularprogressbar2);
-        c2.setTitle("Brake");
-        c2.setProgress(60);
-
-        c2.animateProgressTo(0, 77, new ProgressAnimationListener() {
-
-            @Override
-            public void onAnimationStart() {
-            }
-
-            @Override
-            public void onAnimationProgress(int progress) {
-                // c2.setTitle(progress + "%");
-            }
-
-            @Override
-            public void onAnimationFinish() {
-                // c2.setSubTitle("done");
-            }
-        });
-
-        setDigital(10);
+        gas_circle = (CircularProgressBar) findViewById(R.id.circularprogressbar1);
+        gas_circle.setTitle("Gas");
+        brake_circle = (CircularProgressBar) findViewById(R.id.circularprogressbar2);
+        brake_circle.setTitle("Brake");
 
         handle_view = new GestureTransformableImageView(getApplicationContext(),
-                GestureTransformableImageView.GESTURE_ROTATABLE);
+            GestureTransformableImageView.GESTURE_ROTATABLE);
         handle_view.setScaleType(ImageView.ScaleType.FIT_CENTER);
         handle_view.setImageResource(R.drawable.handle_dark);
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(MP, MP);
@@ -92,10 +84,8 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
-                Log.d("Rotate", Float.toString(handle_view.getAngle()));
                 handle_view.onTouch(v, event);
-                compass_view.setRotation(handle_view.getAngle());
+                autoware_touch.publishAngle(handle_view.getAngle());
                 return true;
             }
         });
@@ -121,15 +111,86 @@ public class MainActivity extends Activity {
                 if (event.getAction() == MotionEvent.ACTION_DOWN && set_btn.isChecked() &&
                     !drive_btn.isChecked()) {
                     driveOn();
-                    connectedAutoware();
                 } else if (event.getAction() == MotionEvent.ACTION_DOWN && set_btn.isChecked() &&
                            drive_btn.isChecked()) {
                     driveOff();
-                    notConnectedAutoware();
                 }
                 return true;
             }
         });
+
+        navi_btn.setOnTouchListener(new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN && !navi_btn.isChecked())
+                    naviOn();
+                else if (event.getAction() == MotionEvent.ACTION_DOWN && navi_btn.isChecked())
+                    naviOff();
+                return true;
+            }
+        });
+
+        map_btn.setOnTouchListener(new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN && !map_btn.isChecked())
+                    mapOn();
+                else if (event.getAction() == MotionEvent.ACTION_DOWN && map_btn.isChecked())
+                    mapOff();
+                return true;
+            }
+        });
+
+        view_btn.setOnTouchListener(new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN && !view_btn.isChecked())
+                    viewOn();
+                else if (event.getAction() == MotionEvent.ACTION_DOWN && view_btn.isChecked())
+                    viewOff();
+                return true;
+            }
+        });
+
+        info_btn.setOnTouchListener(new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN && !info_btn.isChecked())
+                    infoOn();
+                else if (event.getAction() == MotionEvent.ACTION_DOWN && info_btn.isChecked())
+                    infoOff();
+                return true;
+            }
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void init(NodeMainExecutor nodeMainExecutor) {
+        NodeConfiguration nodeConfiguration =
+            NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress());
+        nodeConfiguration.setMasterUri(getMasterUri());
+        nodeConfiguration.setNodeName("autoware_touch");
+
+        autoware_touch = new AutowareTouch(this);
+        nodeMainExecutor.execute(autoware_touch, nodeConfiguration);
     }
 
     private void connectedAutoware() {
@@ -142,35 +203,115 @@ public class MainActivity extends Activity {
 
     private void setOn() {
         set_btn.setChecked(true);
+        autoware_touch.publishSet(true);
         drive_btn.setEnabled(true);
     }
 
     private void setOff() {
         set_btn.setChecked(false);
+        autoware_touch.publishSet(false);
         driveOff();
         drive_btn.setEnabled(false);
     }
 
     private void driveOn() {
         drive_btn.setChecked(true);
+        autoware_touch.publishDrive(true);
     }
 
     private void driveOff() {
         drive_btn.setChecked(false);
+        autoware_touch.publishDrive(false);
     }
 
-    private void setDigital(int speed) {
+    private void naviOn() {
+        navi_btn.setChecked(true);
+        autoware_touch.publishNavi(true);
+    }
 
-        if (speed < 0 || speed > 99) {
-            Log.e("setDigital", "speed is out of range");
-            return;
+    private void naviOff() {
+        navi_btn.setChecked(false);
+        autoware_touch.publishNavi(false);
+    }
+
+    private void mapOn() {
+        map_btn.setChecked(true);
+        autoware_touch.publishMap(true);
+    }
+
+    private void mapOff() {
+        map_btn.setChecked(false);
+        autoware_touch.publishMap(false);
+    }
+
+    private void viewOn() {
+        view_btn.setChecked(true);
+        autoware_touch.publishView(true);
+    }
+
+    private void viewOff() {
+        view_btn.setChecked(false);
+        autoware_touch.publishView(false);
+    }
+
+    private void infoOn() {
+        info_btn.setChecked(true);
+        autoware_touch.publishInfo(true);
+    }
+
+    private void infoOff() {
+        info_btn.setChecked(false);
+        autoware_touch.publishInfo(false);
+    }
+
+    private int getDigitalResource(int x) {
+        if (x < 0 || x > 9)
+            return 0;
+
+        int ret = 0;
+        switch (x) {
+        case 0:
+            ret = R.drawable.digital_0;
+            break;
+        case 1:
+            ret = R.drawable.digital_1;
+            break;
+        case 2:
+            ret = R.drawable.digital_2;
+            break;
+        case 3:
+            ret = R.drawable.digital_3;
+            break;
+        case 4:
+            ret = R.drawable.digital_4;
+            break;
+        case 5:
+            ret = R.drawable.digital_5;
+            break;
+        case 6:
+            ret = R.drawable.digital_6;
+            break;
+        case 7:
+            ret = R.drawable.digital_7;
+            break;
+        case 8:
+            ret = R.drawable.digital_8;
+            break;
+        case 9:
+            ret = R.drawable.digital_9;
+            break;
         }
 
-        int firstDigital = speed % 10;
+        return ret;
+    }
+
+    private void setDigital(int vel) {
+        if (vel < 0 || vel > 99)
+            return;
+        int firstDigital = vel % 10;
         int src = getDigitalResource(firstDigital);
         first_digital_view.setImageResource(src);
-
-        firstDigital = (speed / 10) % 10;
+        firstDigital = (vel / 10) % 10;
         if (firstDigital > 0)
             src = getDigitalResource(firstDigital);
         else
@@ -178,47 +319,96 @@ public class MainActivity extends Activity {
         second_digital_view.setImageResource(src);
     }
 
-    private int getDigitalResource(int x) {
-
-        if (x < 0 || x > 9) {
-            Log.e("getDigitResource", "x is out of range");
-            return 0;
+    private class setDigitalHandle extends Thread {
+        public setDigitalHandle() {
         }
-
-        int res = 0;
-        switch (x) {
-            case 0:
-                res = R.drawable.digital_0;
-                break;
-            case 1:
-                res = R.drawable.digital_1;
-                break;
-            case 2:
-                res = R.drawable.digital_2;
-                break;
-            case 3:
-                res = R.drawable.digital_3;
-                break;
-            case 4:
-                res = R.drawable.digital_4;
-                break;
-            case 5:
-                res = R.drawable.digital_5;
-                break;
-            case 6:
-                res = R.drawable.digital_6;
-                break;
-            case 7:
-                res = R.drawable.digital_7;
-                break;
-            case 8:
-                res = R.drawable.digital_8;
-                break;
-            case 9:
-                res = R.drawable.digital_9;
-                break;
+        public void execute(Looper toLooper, String data) {
+            final int vel = Integer.parseInt(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    setDigital(vel);
+                    return;
+                }
+            });
         }
+    }
 
-        return res;
+    private class setGasHandle extends Thread {
+        public setGasHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final int gas = Integer.parseInt(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    gas_circle.setProgress(gas);
+                    return;
+                }
+            });
+        }
+    }
+
+    private class setBrakeHandle extends Thread {
+        public setBrakeHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final int brake = Integer.parseInt(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    brake_circle.setProgress(brake);
+                    return;
+                }
+            });
+        }
+    }
+
+    private class setConnHandle extends Thread {
+        public setConnHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final boolean conn = Boolean.parseBoolean(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    if (conn)
+                        connectedAutoware();
+                    else
+                        notConnectedAutoware();
+                    return;
+                }
+            });
+        }
+    }
+
+    private class setTwistHandle extends Thread {
+        public setTwistHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final float twist = Float.parseFloat(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    compass_view.setRotation(twist % 360);
+                    return;
+                }
+            });
+        }
+    }
+
+    public void startDigitalHandle(String data) {
+        new setDigitalHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startGasHandle(String data) {
+        new setGasHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startBrakeHandle(String data) {
+        new setBrakeHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startConnHandle(String data) {
+        new setConnHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startTwistHandle(String data) {
+        new setTwistHandle().execute(Looper.getMainLooper(), data);
     }
 }
