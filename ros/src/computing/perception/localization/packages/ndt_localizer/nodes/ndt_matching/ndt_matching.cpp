@@ -62,7 +62,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl/registration/ndt.h>
+//#include <pcl/registration/ndt.h>
+#include <fast_pcl/registration/ndt.h>
 
 #include <runtime_manager/ConfigNdt.h>
 
