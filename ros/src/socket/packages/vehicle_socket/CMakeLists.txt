@@ -21,7 +21,11 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS runtime_manager message_runtime std_msgs
+  CATKIN_DEPENDS roscpp runtime_manager message_runtime std_msgs
+)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(vehicle_receiver nodes/vehicle_receiver/vehicle_receiver.cpp)

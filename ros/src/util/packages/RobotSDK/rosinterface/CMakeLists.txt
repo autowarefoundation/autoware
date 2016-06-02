@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rosinterface)
 
 include(FindPkgConfig)
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED
+  roscpp
+)
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
@@ -19,7 +21,7 @@ pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 catkin_package(
   INCLUDE_DIRS include/rosinterface
   LIBRARIES rosinterface
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
 
@@ -36,6 +38,7 @@ EXECUTE_PROCESS(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
+  ${catkin_INCLUDE_DIRS}
   include/rosinterface
   ${Qt5Core_INCLUDE_DIRS}
   ${Qt5Widgets_INCLUDE_DIRS}

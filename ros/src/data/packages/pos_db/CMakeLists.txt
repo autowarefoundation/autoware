@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   gnss
   visualization_msgs
   tf
+  cv_tracker
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -14,7 +15,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-   CATKIN_DEPENDS roscpp vehicle_socket
+   CATKIN_DEPENDS roscpp vehicle_socket cv_tracker
    DEPENDS ssh2
 )
 
