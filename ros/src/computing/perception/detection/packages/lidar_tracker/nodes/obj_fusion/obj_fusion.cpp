@@ -21,6 +21,7 @@ static constexpr bool ADVERTISE_LATCH = false;
 static constexpr double LOOP_RATE = 15.0;
 
 ros::Publisher obj_pose_pub;
+ros::Publisher obj_pose_textlabel_pub;
 ros::Publisher obj_pose_timestamp_pub;
 
 static std::string object_type;
@@ -101,6 +102,7 @@ static void fusion_objects(void)
 
     /* Publish marker with centroids coordinates */
     visualization_msgs::MarkerArray pub_msg;
+    visualization_msgs::MarkerArray pub_textlabel_msg;
 
     std_msgs::ColorRGBA color_red;
     color_red.r = 1.0f;
@@ -120,15 +122,25 @@ static void fusion_objects(void)
     color_green.b = 0.0f;
     color_green.a = 0.7f;
 
+    std_msgs::ColorRGBA color_white;
+    color_white.r = 1.0f;
+    color_white.g = 1.0f;
+    color_white.b = 1.0f;
+    color_white.a = 0.7f;
+
     for(unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
         visualization_msgs::Marker marker;
+        visualization_msgs::Marker marker_textlabel;
 
         /*Set the frame ID */
         marker.header.frame_id = "map";
+        marker_textlabel.header.frame_id = "map";
 
         /* Set the namespace and id for this marker */
         marker.ns = object_type;
         marker.id = obj_label_current.obj_id.at(i);
+        marker_textlabel.ns = object_type;
+        marker_textlabel.id = obj_label_current.obj_id.at(i);
 
         /* Set the pose of the marker */
         marker.pose.position = centroids_current.at(obj_indices.at(i));
@@ -136,6 +148,11 @@ static void fusion_objects(void)
         marker.pose.orientation.y = 0.0;
         marker.pose.orientation.y = 0.0;
         marker.pose.orientation.w = 0.0;
+        marker_textlabel.pose.position = centroids_current.at(obj_indices.at(i));
+        marker_textlabel.pose.orientation.x = 0.0;
+        marker_textlabel.pose.orientation.y = 0.0;
+        marker_textlabel.pose.orientation.y = 0.0;
+        marker_textlabel.pose.orientation.w = 0.0;
 
         if (object_type == "car") {
             /* Set the marker type */
@@ -173,10 +190,21 @@ static void fusion_objects(void)
 
         marker.lifetime = ros::Duration(0.3);
 
+	/* Set the text label */
+	marker_textlabel.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	marker_textlabel.scale.z = 1.0;
+	marker_textlabel.text = object_type;
+	// marker_textlabel.text = object_type + std::to_string(obj_label_current.obj_id.at(i));
+	marker_textlabel.pose.position.z += marker.scale.z/2 + 0.5;
+	marker_textlabel.color = color_white;
+        marker_textlabel.lifetime = ros::Duration(0.3);
+
         pub_msg.markers.push_back(marker);
+        pub_textlabel_msg.markers.push_back(marker_textlabel);
     }
 
     obj_pose_pub.publish(pub_msg);
+    obj_pose_textlabel_pub.publish(pub_textlabel_msg);
 
     std_msgs::Time time;
     time.data = obj_pose_timestamp;
@@ -279,6 +307,7 @@ int main(int argc, char* argv[])
     ros::Subscriber obj_label_sub         = n.subscribe("obj_label", SUBSCRIBE_QUEUE_SIZE, obj_label_cb);
     ros::Subscriber cluster_centroids_sub = n.subscribe("/cluster_centroids", SUBSCRIBE_QUEUE_SIZE, cluster_centroids_cb);
     obj_pose_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+    obj_pose_textlabel_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose_textlabel", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
     obj_pose_timestamp_pub = n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
 
     tf::TransformListener trf_listener;
