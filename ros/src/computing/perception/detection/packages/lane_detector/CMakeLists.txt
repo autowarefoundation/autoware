@@ -39,6 +39,7 @@ catkin_package(
 ###########
 
 include_directories(
+  ${catkin_INCLUDE_DIRS}
   nodes/lane_detector
   ${OpenCV_INCLUDE_DIRS}
 )

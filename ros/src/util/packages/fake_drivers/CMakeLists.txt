@@ -24,6 +24,8 @@ catkin_package(
 ## Build ##
 ###########
 
+include_directories(include ${catkin_INCLUDE_DIRS})
+
 add_executable(fake_camera nodes/fake_camera/fake_camera.cpp)
 target_link_libraries(fake_camera
    ${catkin_LIBRARIES}

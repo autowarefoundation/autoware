@@ -36,6 +36,7 @@ EXECUTE_PROCESS(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
+  ${catkin_INCLUDE_DIRS}
   include/rosinterface
   ${Qt5Core_INCLUDE_DIRS}
   ${Qt5Widgets_INCLUDE_DIRS}
