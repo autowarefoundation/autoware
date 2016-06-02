@@ -30,7 +30,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_detector
-   CATKIN_DEPENDS message_runtime std_msgs
+   CATKIN_DEPENDS roscpp message_runtime std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 

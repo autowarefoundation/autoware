@@ -2,13 +2,17 @@ cmake_minimum_required(VERSION 2.8.3)
 project(fusion)
 
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   cv_bridge
+  scan2image
+  points2image
 )
 find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES fusion
+  CATKIN_DEPENDS roscpp scan2image points2image
 )
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
