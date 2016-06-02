@@ -23,12 +23,18 @@ static constexpr double LOOP_RATE = 15.0;
 ros::Publisher obj_pose_pub;
 ros::Publisher obj_pose_timestamp_pub;
 
-static std::vector<geometry_msgs::Point> reprojected_positions;
 static std::string object_type;
 static std::vector<geometry_msgs::Point> centroids;
 static ros::Time obj_pose_timestamp;
 
 static tf::StampedTransform transform;
+
+struct obj_label_t {
+    std::vector<geometry_msgs::Point> reprojected_positions;
+    std::vector<int> obj_id;
+};
+
+obj_label_t obj_label;
 
 /* mutex to handle objects from within multi thread safely */
 std::mutex mtx_flag_obj_label;
@@ -51,18 +57,19 @@ static double euclid_distance(const geometry_msgs::Point pos1,
 /* fusion reprojected position and pointcloud centroids */
 static void fusion_objects(void)
 {
-    std::vector<geometry_msgs::Point> reprojected_positions_current;
+    obj_label_t obj_label_current;
     std::vector<geometry_msgs::Point> centroids_current;
 
     LOCK(mtx_reprojected_positions);
-    copy(reprojected_positions.begin(), reprojected_positions.end(), back_inserter(reprojected_positions_current));
+    copy(obj_label.reprojected_positions.begin(), obj_label.reprojected_positions.end(), back_inserter(obj_label_current.reprojected_positions));
+    copy(obj_label.obj_id.begin(), obj_label.obj_id.end(), back_inserter(obj_label_current.obj_id));
     UNLOCK(mtx_reprojected_positions);
 
     LOCK(mtx_centroids);
     copy(centroids.begin(), centroids.end(), back_inserter(centroids_current));
     UNLOCK(mtx_centroids);
 
-    if (centroids_current.empty() || reprojected_positions_current.empty()) {
+    if (centroids_current.empty() || obj_label_current.reprojected_positions.empty() ||  obj_label_current.obj_id.empty()) {
         visualization_msgs::MarkerArray pub_msg;
         std_msgs::Time time;
         obj_pose_pub.publish(pub_msg);
@@ -73,25 +80,24 @@ static void fusion_objects(void)
     }
 
     std::vector<unsigned int> obj_indices;
-    for(const auto& reproj_pos : reprojected_positions_current)
-        {
-            unsigned int min_idx      = 0;
-            double       min_distance = DBL_MAX;
 
-            /* calculate each euclid distance between reprojected position and centroids */
-            for (unsigned int i=0; i<centroids_current.size(); i++)
-                {
-                    double distance = euclid_distance(reproj_pos, centroids_current.at(i));
+    for(unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
+        unsigned int min_idx      = 0;
+        double       min_distance = DBL_MAX;
 
-                    /* Nearest centroid correspond to this reprojected object */
-                    if (distance < min_distance)
-                        {
-                            min_distance = distance;
-                            min_idx      = i;
-                        }
-                }
-            obj_indices.push_back(min_idx);
+        /* calculate each euclid distance between reprojected position and centroids */
+        for (unsigned int j=0; j<centroids_current.size(); j++) {
+            double distance = euclid_distance(obj_label_current.reprojected_positions.at(i), centroids_current.at(j));
+
+            /* Nearest centroid correspond to this reprojected object */
+            if (distance < min_distance)
+            {
+                min_distance = distance;
+                min_idx      = j;
+            }
         }
+        obj_indices.push_back(min_idx);
+    }
 
     /* Publish marker with centroids coordinates */
     visualization_msgs::MarkerArray pub_msg;
@@ -100,67 +106,81 @@ static void fusion_objects(void)
     color_red.r = 1.0f;
     color_red.g = 0.0f;
     color_red.b = 0.0f;
-    color_red.a = 1.0f;
+    color_red.a = 0.7f;
 
     std_msgs::ColorRGBA color_blue;
     color_blue.r = 0.0f;
     color_blue.g = 0.0f;
     color_blue.b = 1.0f;
-    color_blue.a = 1.0f;
+    color_blue.a = 0.7f;
 
     std_msgs::ColorRGBA color_green;
     color_green.r = 0.0f;
     color_green.g = 1.0f;
     color_green.b = 0.0f;
-    color_green.a = 1.0f;
+    color_green.a = 0.7f;
 
-    for (const auto& idx : obj_indices)
-        {
-            visualization_msgs::Marker marker;
+    for(unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
+        visualization_msgs::Marker marker;
 
-            /*Set the frame ID */
-            marker.header.frame_id = "map";
+        /*Set the frame ID */
+        marker.header.frame_id = "map";
 
-            /* Set the namespace and id for this marker */
-            marker.ns = object_type;
-            marker.id = idx;
+        /* Set the namespace and id for this marker */
+        marker.ns = object_type;
+        marker.id = obj_label_current.obj_id.at(i);
 
+        /* Set the pose of the marker */
+        marker.pose.position = centroids_current.at(obj_indices.at(i));
+        marker.pose.orientation.x = 0.0;
+        marker.pose.orientation.y = 0.0;
+        marker.pose.orientation.y = 0.0;
+        marker.pose.orientation.w = 0.0;
+
+        if (object_type == "car") {
             /* Set the marker type */
             marker.type = visualization_msgs::Marker::SPHERE;
-
-            /* Set the pose of the marker */
-            marker.pose.position = centroids_current.at(idx);
-            marker.pose.orientation.x = 0.0;
-            marker.pose.orientation.y = 0.0;
-            marker.pose.orientation.y = 0.0;
-            marker.pose.orientation.w = 0.0;
-
             /* Set the scale of the marker -- We assume object as 1.5m sphere */
             marker.scale.x = (double)1.5;
             marker.scale.y = (double)1.5;
             marker.scale.z = (double)1.5;
 
             /* Set the color */
-            if (object_type == "car") {
-                marker.color = color_blue;
-            }
-            else if (object_type == "person") {
-                marker.color = color_green;
-            }
-            else {
-                marker.color = color_red;
-            }
+            marker.color = color_blue;
+        }
+        else if (object_type == "person") {
+            /* Set the marker type */
+            marker.type = visualization_msgs::Marker::CUBE;
+            /* Set the scale of the marker */
+            marker.scale.x = (double)0.7;
+            marker.scale.y = (double)0.7;
+            marker.scale.z = (double)1.8;
 
-            marker.lifetime = ros::Duration(0.3);
+            /* Set the color */
+            marker.color = color_green;
+        }
+        else {
+            /* Set the marker type */
+            marker.type = visualization_msgs::Marker::SPHERE;
+            /* Set the scale of the marker -- We assume object as 1.5m sphere */
+            marker.scale.x = (double)1.5;
+            marker.scale.y = (double)1.5;
+            marker.scale.z = (double)1.5;
 
-            pub_msg.markers.push_back(marker);
+            /* Set the color */
+            marker.color = color_red;
         }
 
-        obj_pose_pub.publish(pub_msg);
+        marker.lifetime = ros::Duration(0.3);
 
-        std_msgs::Time time;
-        time.data = obj_pose_timestamp;
-        obj_pose_timestamp_pub.publish(time);
+        pub_msg.markers.push_back(marker);
+    }
+
+    obj_pose_pub.publish(pub_msg);
+
+    std_msgs::Time time;
+    time.data = obj_pose_timestamp;
+    obj_pose_timestamp_pub.publish(time);
 }
 
 
@@ -170,14 +190,15 @@ void obj_label_cb(const cv_tracker::obj_label& obj_label_msg)
     obj_pose_timestamp = obj_label_msg.header.stamp;
 
     LOCK(mtx_reprojected_positions);
-    reprojected_positions.clear();
+    obj_label.reprojected_positions.clear();
+    obj_label.obj_id.clear();
     UNLOCK(mtx_reprojected_positions);
 
     LOCK(mtx_reprojected_positions);
-    for (const auto& point : obj_label_msg.reprojected_pos)
-        {
-            reprojected_positions.push_back(point);
-        }
+    for (unsigned int i = 0; i < obj_label_msg.obj_id.size(); ++i) {
+        obj_label.reprojected_positions.push_back(obj_label_msg.reprojected_pos.at(i));
+        obj_label.obj_id.push_back(obj_label_msg.obj_id.at(i));
+    }
     UNLOCK(mtx_reprojected_positions);
 
     /* confirm obj_label is subscribed */
