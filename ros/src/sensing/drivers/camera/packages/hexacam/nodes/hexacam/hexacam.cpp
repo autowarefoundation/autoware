@@ -378,7 +378,7 @@ int CamServer::ConfigSequence( seq &a)
 	std::string str;
 	std::stringstream line;
 again:
-	if(std::getline(m_is,str)==0)
+	if(!std::getline(m_is,str))
 		return 0;
 	line.str(str);
 	a.dir = Write;

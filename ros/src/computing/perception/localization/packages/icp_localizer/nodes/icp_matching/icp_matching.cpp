@@ -577,7 +577,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #ifdef OUTPUT
     // Output log.csv
     std::ofstream ofs_log("log.csv", std::ios::app);
-    if (ofs_log == NULL)
+    if (!ofs_log)
     {
       std::cerr << "Could not open 'log.csv'." << std::endl;
       exit(1);
