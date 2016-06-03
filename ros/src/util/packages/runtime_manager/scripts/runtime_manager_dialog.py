@@ -396,22 +396,21 @@ class MyFrame(rtmgr.MyFrame):
 
 		rtmgr.MyFrame.__do_layout(self)
 
-		self.alias_grps = [
-			[ self.button_rviz_qs, self.button_rviz_setup, self.button_rviz_map, 
-			  self.button_rviz_sensing, self.button_rviz_computing,
-			  self.button_rviz_interface, self.button_rviz_database, self.button_rviz_simulation,
-			  self.button_rviz_status, self.button_rviz_topics, ],
-			[ self.button_rqt_qs, self.button_rqt_setup, self.button_rqt_map, 
-			  self.button_rqt_sensing, self.button_rqt_computing,
-			  self.button_rqt_interface, self.button_rqt_database, self.button_rqt_simulation,
-			  self.button_rqt_status, self.button_rqt_topics, ],
-			[ self.button_android_tablet_qs, self.button_android_tablet_interface, ],
-			[ self.button_oculus_rift_qs, self.button_oculus_rift_interface, ],
-			[ self.button_vehicle_gateway_qs, self.button_vehicle_gateway_interface, ],
-			[ self.button_auto_pilot_qs, self.button_auto_pilot_interface,],
-		]
+		cond = lambda s : s.startswith('tab_')
+		self.tab_names = [ self.name_get_cond(tab, cond=cond, def_ret='').replace('tab_', '', 1) for tab in self.all_tabs ]
+
+		new_btn_grps = ( lambda btn_names, tab_names=self.tab_names :
+			[ [ self.obj_get('button_{}_{}'.format(bn, tn)) for tn in tab_names ] for bn in btn_names ] )
+
+		self.alias_grps = new_btn_grps( ('rosbag', 'rviz', 'rqt') )
+		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'auto_pilot'),
+						 ('qs', 'interface') )
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
+			s = get_tooltip_obj(grp[0])
+			if s:
+				for obj in grp[1:]:
+					set_tooltip_str(obj, s)
 
 		# Topics tab (need, after layout for sizer)
 		self.topics_dic = self.load_yaml('topics.yaml')
@@ -558,6 +557,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			if 'run' in d2:
 				run_dic[obj] = (d2['run'], None)
+			set_tooltip(obj, d2)
 			gdic = self.gdic_get_1st(d2)
 			if 'param' in d2:
 				pdic = self.load_dic_pdic_setup(k, d2)
@@ -695,6 +695,38 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Computing Tab
 	#
+	def OnTreeMotion(self, event):
+		tree = event.GetEventObject()
+		pt = event.GetPosition()
+		event.Skip()
+		(item, flags) = tree.HitTest(pt)
+		if flags & CT.TREE_HITTEST_ONITEMLABEL == 0:
+			return
+		text = item.GetData()
+		if not text:
+			return
+		x = item.GetX()
+		y = item.GetY()
+		w = item.GetWidth()
+		h = item.GetHeight()
+		(x, y) = tree.CalcScrolledPosition(x, y)
+		iw = tree.GetItemWindow(item)
+		w -= iw.GetSize()[0] if iw else 0
+		if not wx.Rect(x, y, w, h).Contains(pt):
+			return
+		(x, y) = tree.ClientToScreen((x, y))
+		self.tip_info = (tree, text, wx.Rect(x, y, w, h))
+		if getattr(self, 'tip_timer', None) is None:
+			self.tip_timer = wx.Timer(self)
+			self.Bind(wx.EVT_TIMER, self.OnTipTimer, self.tip_timer)
+		self.tip_timer.Start(200, oneShot=True)
+
+	def OnTipTimer(self, event):
+		if getattr(self, 'tip_info', None):
+			(tree, text, rect) = self.tip_info
+			(w, h) = self.GetSize()
+			wx.TipWindow(tree, text, maxLength=w, rectBound=rect)
+
 	def OnTreeChecked(self, event):
 		self.OnChecked_obj(event.GetItem())
 
@@ -1084,14 +1116,19 @@ class MyFrame(rtmgr.MyFrame):
 		obj = None
 		bdr_flg = wx.ALL
 		if 'subs' in dic:
+			lst = []
+			for d in dic['subs']:
+				self.create_checkboxes(d, panel, lst, probe_dic, run_dic, bind_handler)
 			if dic['name']:
 				obj = static_box_sizer(panel, dic.get('name'))
+				set_tooltip(obj.GetStaticBox(), dic)
 			else:
 				obj = wx.BoxSizer(wx.VERTICAL)
-			for d in dic['subs']:
-				self.create_checkboxes(d, panel, obj, probe_dic, run_dic, bind_handler)
+			for (o, flg) in lst:
+				obj.Add(o, 0, wx.EXPAND | flg, 4)
 		else:
 			obj = wx.CheckBox(panel, wx.ID_ANY, dic['name'])
+			set_tooltip(obj, dic)
 			self.Bind(wx.EVT_CHECKBOX, bind_handler, obj)
 			bdr_flg = wx.LEFT | wx.RIGHT
 			if 'probe' in dic:
@@ -1103,8 +1140,8 @@ class MyFrame(rtmgr.MyFrame):
 			else:
 				gdic = self.gdic_get_1st(dic)
 				self.add_cfg_info(obj, obj, dic.get('name'), None, gdic, False, None)
-		if sizer:
-			sizer.Add(obj, 0, wx.EXPAND | bdr_flg, 4)
+		if sizer is not None:
+			sizer.append((obj, bdr_flg))
 		else:
 			panel.SetSizer(obj)
 
@@ -1966,9 +2003,12 @@ class MyFrame(rtmgr.MyFrame):
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, agwStyle=style)
 			item = tree.AddRoot(name, data=tree)
+			tree.Bind(wx.EVT_MOTION, self.OnTreeMotion)
 		else:
 			ct_type = 1 if 'cmd' in items else 0 # 1:checkbox type
 			item = tree.AppendItem(item, name, ct_type=ct_type)
+			if 'desc' in items:
+				item.SetData(items.get('desc'))
 			if 'cmd' in items:
 				cmd_dic[item] = (items['cmd'], None)
 
@@ -2255,6 +2295,9 @@ class MyFrame(rtmgr.MyFrame):
 	def name_get(self, obj):
 		return next( (nm for nm in dir(self) if getattr(self, nm) is obj), None)
 
+	def name_get_cond(self, obj, cond=(lambda s : True), def_ret=None):
+		return next( (nm for nm in dir(self) if cond(nm) and getattr(self, nm) is obj), def_ret)
+
 	def val_get(self, name):
 		obj = self.obj_get(name)
 		if obj is None:
@@ -2345,6 +2388,7 @@ class ParamPanel(wx.Panel):
 			v = self.pdic.get(name, var.get('v'))
 
 			vp = VarPanel(self, var=var, v=v, update=self.update)
+			vp.setup_tooltip()
 			self.vps.append(vp)
 
 			gdic_v['var'] = vp
@@ -2451,6 +2495,7 @@ class VarPanel(wx.Panel):
 		self.min = self.var.get('min')
 		self.max = self.var.get('max')
 		self.has_slider = self.min is not None and self.max is not None
+		self.lb = None
 
 		label = self.var.get('label', '')
 		self.kind = self.var.get('kind')
@@ -2467,9 +2512,9 @@ class VarPanel(wx.Panel):
 			self.choices_sel_set(v)
 			self.Bind(wx.EVT_CHOICE, self.OnUpdate, self.obj)
 			if label:
-				lb = wx.StaticText(self, wx.ID_ANY, label)
+				self.lb = wx.StaticText(self, wx.ID_ANY, label)
 				flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
-				sizer_wrap((lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
+				sizer_wrap((self.lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
 			return
 		if self.kind == 'checkbox':
 			self.obj = wx.CheckBox(self, wx.ID_ANY, label)
@@ -2497,9 +2542,9 @@ class VarPanel(wx.Panel):
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
-		lb = wx.StaticText(self, wx.ID_ANY, label)
+		self.lb = wx.StaticText(self, wx.ID_ANY, label)
 		flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
-		szr.Add(lb, 0, flag, 4)
+		szr.Add(self.lb, 0, flag, 4)
 
 		if self.kind == 'path':
 			v = str(v)
@@ -2545,6 +2590,13 @@ class VarPanel(wx.Panel):
 			szr.Add(vszr, 0, wx.ALIGN_CENTER_VERTICAL)
 
 		self.SetSizer(szr)
+
+	def setup_tooltip(self):
+		if get_tooltips(self.var):
+			set_tooltips(self.obj, self.var)
+		if get_tooltip(self.var):
+			obj = self.lb if self.lb else (self if self.kind == 'radio_box' else self.obj)
+			set_tooltip(obj, self.var)
 
 	def create_bmbtn(self, filename, hdr):
 		dir = rtmgr_src_dir()
@@ -3221,6 +3273,31 @@ def fix_link_color(obj):
 		obj.SetHyperTextVisitedColour(obj.GetHyperTextNewColour())
 	elif t is wx.HyperlinkCtrl:
 		obj.SetVisitedColour(obj.GetNormalColour())
+
+def get_tooltip(dic):
+	return dic.get('desc')
+
+def get_tooltips(dic):
+	return dic.get('descs', [])
+
+def set_tooltip(obj, dic):
+	set_tooltip_str(obj, get_tooltip(dic))
+
+def set_tooltip_str(obj, s):
+	if s and getattr(obj, 'SetToolTipString', None):
+		obj.SetToolTipString(s)
+
+def set_tooltips(obj, dic):
+	lst = get_tooltips(dic)
+	if lst and getattr(obj, 'SetItemToolTip', None):
+		for (ix, s) in enumerate(lst):
+			obj.SetItemToolTip(ix, s)
+
+def get_tooltip_obj(obj):
+	if getattr(obj, 'GetToolTip', None):
+		t = obj.GetToolTip()
+		return t.GetTip() if t else None
+	return None
 
 def scaled_bitmap(bm, scale):
 	(w, h) = bm.GetSize()
