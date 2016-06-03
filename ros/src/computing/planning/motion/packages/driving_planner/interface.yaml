@@ -1,0 +1,16 @@
+- name: lattice_trajectry_gen
+  publish: [/next_waypoint_mark, /spline, /state, /cubic_splines_viz]
+  subscribe: [/base_waypoints, /odom_pose, /control_pose, /config/waypoint_follower,
+    /can_info]
+- name: lattice_twist_convert
+  publish: [/twist_raw]
+  subscribe: [/spline, /state]
+- name: velocity_set
+  publish: [/detection_range, /sound_player, /temporal_waypoints, /closest_waypoint,
+    /obstacle]
+  subscribe: [/config/velocity_set, /localizer_pose, /control_pose, /odom_pose, /vscan_points,
+    /base_waypoints, /obj_X/obj_pose, /estimated_vel_mps, /vector_map_info/cross_walk,
+    /vector_map_info/area_class, /vector_map_info/line_class, /vector_map_info/point_class]
+- name: path_select
+  publish: [/final_waypoints]
+  subscribe: [/temporal_waypoints]

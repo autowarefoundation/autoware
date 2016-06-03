@@ -1,0 +1,11 @@
+- name: local2global
+  publish: [/current_pose, /control_pose, /ndt_map]
+  subscribe: [/config/ndt, /gnss_pose, /points_map]
+- name: ndt_mapping
+  publish: [/ndt_map, /current_pose]
+  subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
+- name: ndt_matching
+  publish: [/predict_pose, /ndt_pose, /current_pose, /control_pose, /localizer_pose,
+    /estimate_twist, /estimated_vel_mps, /estimated_vel_kmph, /time_ndt_matching,
+    /ndt_stat]
+  subscribe: [/config/ndt, /gnss_pose, /points_map, /initialpose, /points_raw, /hokuyo_3d/hokuyo_cloud2]

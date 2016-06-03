@@ -1,0 +1,10 @@
+- name: odom_gen
+  publish: [/odom_pose]
+  subscribe: [/twist_cmd, /control_pose, /initialpose, /gnss_pose, /base_waypoints]
+- name: pure_pursuit
+  publish: [/twist_raw, /next_waypoint, /next_target_mark, /search_circle_mark]
+  subscribe: [/config/waypoint_follower, /final_waypoints, /odom_pose, /control_pose,
+    /estimate_twist, /can_info]
+- name: twist_filter
+  publish: [/twist_cmd]
+  subscribe: [/config/twist_filter, /twist_raw]
