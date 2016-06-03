@@ -17,6 +17,7 @@
   <run_depend>runtime_manager</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>velodyne_pointcloud</run_depend>
   <run_depend>filters</run_depend>
   <run_depend>registration</run_depend>
   

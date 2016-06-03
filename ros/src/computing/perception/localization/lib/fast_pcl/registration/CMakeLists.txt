@@ -4,6 +4,9 @@ project(registration)
 find_package(catkin REQUIRED COMPONENTS)
 find_package(PCL REQUIRED)
 
+IF(PCL_VERSION VERSION_LESS "1.7.2")
+message("fast_pcl requires PCL 1.7.2 or higher versions")
+ELSE(PCL_VERSION VERSION_LESS "1.7.2")
 set(SUBSYS_NAME registration)
 set(SUBSYS_DESC "Point cloud registration library")
 set(SUBSYS_DEPS common octree kdtree search sample_consensus features filters)
@@ -67,3 +70,4 @@ include_directories(${PCL_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "$
 add_library("${LIB_NAME}" ${srcs} ${incs} ${impl_incs})
 
 target_link_libraries("${LIB_NAME}" ${PCL_LIBRRIES})
+ENDIF(PCL_VERSION VERSION_LESS "1.7.2")
