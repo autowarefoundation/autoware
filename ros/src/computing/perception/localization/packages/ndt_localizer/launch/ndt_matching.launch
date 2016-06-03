@@ -5,12 +5,14 @@
   <arg name="use_gnss" default="1" />
   <arg name="queue_size" default="10" />
   <arg name="offset" default="linear" />
+  <arg name="use_openmp" default="false" />
   <arg name="sync" default="false" />
   
   <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="queue_size" value="$(arg queue_size)" />
     <param name="offset" value="$(arg offset)" />
+    <param name="use_openmp" value="$(arg use_openmp)" />
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>
   

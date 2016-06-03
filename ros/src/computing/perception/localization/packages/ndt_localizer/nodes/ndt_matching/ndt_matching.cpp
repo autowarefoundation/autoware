@@ -128,7 +128,7 @@ static ros::Duration scan_duration;
 
 static double exe_time = 0.0;
 static int iteration = 0;
-static double score = 0.0;
+static double fitness_score = 0.0;
 static double trans_probability = 0.0;
 
 static double diff = 0.0;
@@ -174,6 +174,8 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 
 static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
+
+static bool _use_openmp = false;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -274,7 +276,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   current_gnss_pose.z = input->pose.position.z;
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
 
-  if ((_use_gnss == 1 && init_pos_set == 0) || score >= 500.0)
+  if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
   {
     previous_pose.x = previous_gnss_pose.x;
     previous_pose.y = previous_gnss_pose.y;
@@ -381,13 +383,21 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x) * tf_btol;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    ndt.align(*output_cloud, init_guess);
+    if(_use_openmp == true){
+    	ndt.omp_align(*output_cloud, init_guess);
+    }else{
+    	ndt.align(*output_cloud, init_guess);
+    }
 
     t = ndt.getFinalTransformation();  // localizer
     t2 = t * tf_ltob;                  // base_link
 
     iteration = ndt.getFinalNumIteration();
-    score = ndt.getFitnessScore();
+    if(_use_openmp == true){
+    	fitness_score = ndt.omp_getFitnessScore();
+    }else{
+    	fitness_score = ndt.getFitnessScore();
+    }
     trans_probability = ndt.getTransformationProbability();
 
     tf::Matrix3x3 mat_l;  // localizer
@@ -558,7 +568,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt_stat_msg.header.stamp = current_scan_time;
     ndt_stat_msg.exe_time = time_ndt_matching.data;
     ndt_stat_msg.iteration = iteration;
-    ndt_stat_msg.score = score;
+    ndt_stat_msg.score = fitness_score;
     ndt_stat_msg.velocity = current_velocity;
     ndt_stat_msg.acceleration = current_accel;
     ndt_stat_msg.use_predict_pose = 0;
@@ -585,7 +595,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
             << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
             << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
             << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
-            << predict_pose_error << "," << iteration << "," << score << "," << trans_probability << ","
+            << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
             << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
             << "," << angular_velocity << "," << time_ndt_matching.data << "," << std::endl;
 #endif
@@ -597,7 +607,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     //		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
     std::cout << "Number of Filtered Scan Points: " << filtered_scan_ptr->size() << " points." << std::endl;
     std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
-    std::cout << "Fitness Score: " << ndt.getFitnessScore() << std::endl;
+    std::cout << "Fitness Score: " << fitness_score << std::endl;
     std::cout << "Transformation Probability: " << ndt.getTransformationProbability() << std::endl;
     std::cout << "Execution Time: " << exe_time << " ms." << std::endl;
     std::cout << "Number of Iterations: " << ndt.getFinalNumIteration() << std::endl;
@@ -665,6 +675,7 @@ int main(int argc, char** argv)
   private_nh.getParam("use_gnss", _use_gnss);
   private_nh.getParam("queue_size", _queue_size);
   private_nh.getParam("offset", _offset);
+  private_nh.getParam("use_openmp", _use_openmp);
 
   if (nh.getParam("localizer", _localizer) == false)
   {
@@ -707,6 +718,7 @@ int main(int argc, char** argv)
   std::cout << "use_gnss: " << _use_gnss << std::endl;
   std::cout << "queue_size: " << _queue_size << std::endl;
   std::cout << "offset: " << _offset << std::endl;
+  std::cout << "use_openmp: " << _use_openmp << std::endl;
   std::cout << "localizer: " << _localizer << std::endl;
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
