@@ -83,15 +83,15 @@ pcl::Registration<PointSource, PointTarget, Scalar>::initCompute ()
     target_cloud_updated_ = false;
   }
 
-  
+
   // Update the correspondence estimation
   if (correspondence_estimation_)
   {
     correspondence_estimation_->setSearchMethodTarget (tree_, force_no_recompute_);
     correspondence_estimation_->setSearchMethodSource (tree_reciprocal_, force_no_recompute_reciprocal_);
   }
-  
-  // Note: we /cannot/ update the search method on all correspondence rejectors, because we know 
+
+  // Note: we /cannot/ update the search method on all correspondence rejectors, because we know
   // nothing about them. If they should be cached, they must be cached individually.
 
   return (PCLBase<PointSource>::initCompute ());
@@ -136,18 +136,39 @@ pcl::Registration<PointSource, PointTarget, Scalar>::getFitnessScore (double max
 
   // Transform the input dataset using the final transformation
   PointCloudSource input_transformed;
-  transformPointCloud (*input_, input_transformed, final_transformation_);
+  // transformPointCloud (*input_, input_transformed, final_transformation_);
+  input_transformed.resize (input_->size ());
+
+#ifdef _OPENMP
+  int nr = 0;
+#pragma omp parallel
+  {
+#pragma omp for
+#endif
+  for (size_t i = 0; i < input_->size (); ++i)
+  {
+    const PointSource &src = input_->points[i];
+    PointTarget &tgt = input_transformed.points[i];
+    tgt.x = static_cast<float> (final_transformation_ (0, 0) * src.x + final_transformation_ (0, 1) * src.y + final_transformation_ (0, 2) * src.z + final_transformation_ (0, 3));
+    tgt.y = static_cast<float> (final_transformation_ (1, 0) * src.x + final_transformation_ (1, 1) * src.y + final_transformation_ (1, 2) * src.z + final_transformation_ (1, 3));
+    tgt.z = static_cast<float> (final_transformation_ (2, 0) * src.x + final_transformation_ (2, 1) * src.y + final_transformation_ (2, 2) * src.z + final_transformation_ (2, 3));
+  }
 
   std::vector<int> nn_indices (1);
   std::vector<float> nn_dists (1);
 
   // For each point in the source dataset
+#ifndef _OPENMP
   int nr = 0;
+#endif
+#ifdef _OPENMP
+#pragma omp for private(nn_dists, nn_indices) reduction(+:fitness_score)
+#endif
   for (size_t i = 0; i < input_transformed.points.size (); ++i)
   {
     // Find its nearest neighbor in the target
     tree_->nearestKSearch (input_transformed.points[i], 1, nn_indices, nn_dists);
-    
+
     // Deal with occlusions (incomplete targets)
     if (nn_dists[0] <= max_range)
     {
@@ -156,6 +177,9 @@ pcl::Registration<PointSource, PointTarget, Scalar>::getFitnessScore (double max
       nr++;
     }
   }
+#ifdef _OPENMP
+  }
+#endif
 
   if (nr > 0)
     return (fitness_score / nr);
@@ -175,7 +199,7 @@ pcl::Registration<PointSource, PointTarget, Scalar>::align (PointCloudSource &ou
 template <typename PointSource, typename PointTarget, typename Scalar> inline void
 pcl::Registration<PointSource, PointTarget, Scalar>::align (PointCloudSource &output, const Matrix4& guess)
 {
-  if (!initCompute ()) 
+  if (!initCompute ())
     return;
 
   // Resize the output dataset
@@ -201,14 +225,14 @@ pcl::Registration<PointSource, PointTarget, Scalar>::align (PointCloudSource &ou
     output.points[i] = input_->points[(*indices_)[i]];
 
   // Set the internal point representation of choice unless otherwise noted
-  if (point_representation_ && !force_no_recompute_) 
+  if (point_representation_ && !force_no_recompute_)
     tree_->setPointRepresentation (point_representation_);
 
   // Perform the actual transformation computation
   converged_ = false;
   final_transformation_ = transformation_ = previous_transformation_ = Matrix4::Identity ();
 
-  // Right before we estimate the transformation, we set all the point.data[3] values to 1 to aid the rigid 
+  // Right before we estimate the transformation, we set all the point.data[3] values to 1 to aid the rigid
   // transformation
   for (size_t i = 0; i < indices_->size (); ++i)
     output.points[i].data[3] = 1.0;
@@ -217,4 +241,3 @@ pcl::Registration<PointSource, PointTarget, Scalar>::align (PointCloudSource &ou
 
   deinitCompute ();
 }
-

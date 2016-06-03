@@ -7,6 +7,12 @@ SET(FAST_PCL_PACKAGES filters registration)
 SET(FAST_PCL_LIBRARIES fast_pcl_filters fast_pcl_registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
+find_package( OpenMP )
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
