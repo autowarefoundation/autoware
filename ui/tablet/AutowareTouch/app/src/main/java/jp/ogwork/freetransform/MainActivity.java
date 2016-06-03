@@ -211,8 +211,8 @@ public class MainActivity extends RosActivity {
                     if (token.countTokens() == 2) {
                         tablet_socket.Waypoint waypoint =
                             autoware_touch.mNode.getTopicMessageFactory().newFromType(tablet_socket.Waypoint._TYPE);
-                        waypoint.setLon(Double.parseDouble(token.nextToken()));
                         waypoint.setLat(Double.parseDouble(token.nextToken()));
+                        waypoint.setLon(Double.parseDouble(token.nextToken()));
                         waypoints.add(waypoint);
                     }
                 }
