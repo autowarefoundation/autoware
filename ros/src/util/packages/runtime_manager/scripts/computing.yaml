@@ -988,6 +988,14 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+    - name      : use_openmp
+      desc      : use_openmp desc sample
+      label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : icp
     topic : /config/icp
@@ -1769,6 +1777,14 @@ params :
       min       : 0.0
       max       : 10.0
       v         : 1.0
+    - name      : use_openmp
+      desc      : use_openmp desc sample
+      label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : car_fusion
     topic : /config/car_fusion
