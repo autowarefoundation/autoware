@@ -7,6 +7,7 @@ import argparse
 import subprocess
 import yaml
 import pygraphviz
+from datetime import datetime
 
 def get_rospack():
   cwd = os.getcwd()
@@ -62,9 +63,11 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Convert YAML into DOT')
   parser.add_argument('input_file', nargs='*', type=str,
     help='input yaml files')
-  parser.add_argument('-f', '--format', default='dot', type=str,
+  parser.add_argument('-f', '--format', default='pdf', type=str,
     help='output format')
-  parser.add_argument('-o', '--output', default=sys.stdout,
+  ofile = os.path.expanduser(
+    datetime.now().strftime('~/.autoware/autoware-graph-%Y%m%d.pdf'))
+  parser.add_argument('-o', '--output', default=ofile,
     type=argparse.FileType('w'), help='output file')
   parser.add_argument('-d', '--detail', const=True, default=False, nargs='?',
     help='show edges between nodes')
@@ -141,6 +144,8 @@ if __name__ == "__main__":
                 graph0.add_edge(sub, n0, lhead=cname)
 
   # output
+  print "# output", args.output
+  print "# format", args.format
   graph0.draw(path=args.output, format=args.format, prog='dot')
   #print "## ", reduce(lambda a,b: a + "\n### " + b, sorted(graph.nodes()))
   print "# total file#=%d node#=%d topic#=%d" % \
