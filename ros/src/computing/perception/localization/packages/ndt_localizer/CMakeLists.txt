@@ -61,7 +61,7 @@ add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
 target_link_libraries(ndt_matching ${catkin_LIBRARIES} ${FAST_PCL_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES} ${FAST_PCL_LIBRARIES})
-target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
+target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES} ${FAST_PCL_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 

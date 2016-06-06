@@ -56,9 +56,14 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#ifdef USE_FAST_PCL
+#include <fast_pcl/registration/ndt.h>
+#include <fast_pcl/filters/voxel_grid.h>
+#else
 #include <pcl/registration/ndt.h>
-#include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
+#endif
 
 #include <runtime_manager/ConfigNdtMapping.h>
 #include <runtime_manager/ConfigNdtMappingOutput.h>
@@ -115,6 +120,10 @@ static Eigen::Matrix4f tf_btol, tf_ltob;
 static bool isMapUpdate = true;
 
 static std::vector<pcl::PointCloud<pcl::PointXYZI>> previous_scans;
+
+static bool _use_openmp = false;
+
+static double fitness_score;
 
 static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
 {
@@ -251,7 +260,17 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     t4_start = ros::Time::now();
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    ndt.align(*output_cloud, init_guess);
+#ifdef USE_FAST_PCL
+    if(_use_openmp == true){
+    	ndt.omp_align(*output_cloud, init_guess);
+    	fitness_score = ndt.omp_getFitnessScore();
+    }else{
+#endif
+    	ndt.align(*output_cloud, init_guess);
+    	fitness_score = ndt.getFitnessScore();
+#ifdef USE_FAST_PCL
+    }
+#endif
     
     t_localizer = ndt.getFinalTransformation();
     t_base_link = t_localizer * tf_ltob;
@@ -363,7 +382,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Map: " << map.points.size() << " points." << std::endl;
     std::cout << "Reference Map: " << reference_map_ptr->size() << "points." << std::endl;
     std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
-    std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
+    std::cout << "Fitness score: " << fitness_score << std::endl;
     std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
     std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
     std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
@@ -416,7 +435,7 @@ int main(int argc, char **argv)
     offset_z = 0.0;
     offset_yaw = 0.0;
 
-    ros::init(argc, argv, "ndt_mapping");
+    ros::init(argc, argv, "lazy_ndt_mapping");
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
@@ -428,6 +447,8 @@ int main(int argc, char **argv)
     std::cout << "SHIFT: " << SHIFT << std::endl;
     private_nh.getParam("reference_map_size", REFERENCE_MAP_SIZE);
     std::cout << "REFERENCE_MAP_SIZE: " << REFERENCE_MAP_SIZE << std::endl;
+    private_nh.getParam("use_openmp", _use_openmp);
+    std::cout << "use_openmp: " << _use_openmp << std::endl;
 
     if (nh.getParam("tf_x", _tf_x) == false)
     {

@@ -55,9 +55,14 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#ifdef USE_FAST_PCL
+#include <fast_pcl/registration/ndt.h>
+#include <fast_pcl/filters/voxel_grid.h>
+#else
 #include <pcl/registration/ndt.h>
-#include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
+#endif
 
 #include <runtime_manager/ConfigNdtMapping.h>
 #include <runtime_manager/ConfigNdtMappingOutput.h>
@@ -109,6 +114,9 @@ static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static bool isMapUpdate = true;
+static bool _use_openmp = false;
+
+static double fitness_score;
 
 static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
 {
@@ -242,7 +250,17 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     t4_start = ros::Time::now();
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    ndt.align(*output_cloud, init_guess);
+#ifdef USE_FAST_PCL
+    if(_use_openmp == true){
+    	ndt.omp_align(*output_cloud, init_guess);
+    	fitness_score = ndt.omp_getFitnessScore();
+    }else{
+#endif
+    	ndt.align(*output_cloud, init_guess);
+    	fitness_score = ndt.getFitnessScore();
+#ifdef USE_FAST_PCL
+    }
+#endif
     
     t_localizer = ndt.getFinalTransformation();
     t_base_link = t_localizer * tf_ltob;
@@ -336,7 +354,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "transformed_scan_ptr: " << transformed_scan_ptr->points.size() << " points." << std::endl;
     std::cout << "map: " << map.points.size() << " points." << std::endl;
     std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
-    std::cout << "Fitness score: " << ndt.getFitnessScore() << std::endl;
+    std::cout << "Fitness score: " << fitness_score << std::endl;
     std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
     std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
     std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
@@ -399,6 +417,8 @@ int main(int argc, char **argv)
     std::cout << "RANGE: " << RANGE << std::endl;
     private_nh.getParam("shift", SHIFT);
     std::cout << "SHIFT: " << SHIFT << std::endl;
+    private_nh.getParam("use_openmp", _use_openmp);
+    std::cout << "use_openmp: " << _use_openmp << std::endl;
 
     if (nh.getParam("tf_x", _tf_x) == false)
     {
