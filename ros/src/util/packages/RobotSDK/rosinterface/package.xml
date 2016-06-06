@@ -6,6 +6,8 @@
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
   <export>
   </export>
 </package>

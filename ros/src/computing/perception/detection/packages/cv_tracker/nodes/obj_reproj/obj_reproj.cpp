@@ -88,6 +88,7 @@ typedef struct _OBJPOS{
   int x2;
   int y2;
   float distance;
+  int id;
 }OBJPOS;
 
 static objLocation ol;
@@ -145,19 +146,19 @@ static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::ob
   color_red.r = 1.0f;
   color_red.g = 0.0f;
   color_red.b = 0.0f;
-  color_red.a = 1.0f;
+  color_red.a = 0.7f;
 
   std_msgs::ColorRGBA color_blue;
   color_blue.r = 0.0f;
   color_blue.g = 0.0f;
   color_blue.b = 1.0f;
-  color_blue.a = 1.0f;
+  color_blue.a = 0.7f;
 
   std_msgs::ColorRGBA color_green;
   color_green.r = 0.0f;
   color_green.g = 1.0f;
   color_green.b = 0.0f;
-  color_green.a = 1.0f;
+  color_green.a = 0.7f;
 
   for (const auto& reproj_pos : src.reprojected_pos)
     {
@@ -170,22 +171,33 @@ static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::ob
       marker.id = index;
       index++;
 
-      /* Set marker shape */
-      marker.type = visualization_msgs::Marker::SPHERE;
-
-      /* set pose of marker  */
-      marker.pose.position = reproj_pos;
-
-      /* set scale of marker */
-      marker.scale.x = (double)1.5;
-      marker.scale.y = (double)1.5;
-      marker.scale.z = (double)1.5;
-
       /* set color */
       if (object_type == "car") {
+        /* Set marker shape */
+        marker.type = visualization_msgs::Marker::SPHERE;
+
+        /* set pose of marker  */
+        marker.pose.position = reproj_pos;
+
+        /* set scale of marker */
+        marker.scale.x = (double)1.5;
+        marker.scale.y = (double)1.5;
+        marker.scale.z = (double)1.5;
+
         marker.color = color_blue;
       }
       else if (object_type == "person") {
+        /* Set marker shape */
+        marker.type = visualization_msgs::Marker::CUBE;
+
+        /* set pose of marker  */
+        marker.pose.position = reproj_pos;
+
+        /* set scale of marker */
+        marker.scale.x = (double)0.7;
+        marker.scale.y = (double)0.7;
+        marker.scale.z = (double)1.8;
+
         marker.color = color_green;
       }
       else {
@@ -284,6 +296,7 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
     tmpPoint.z = converted.z();
 
     send_data.reprojected_pos.push_back(tmpPoint);
+    send_data.obj_id.push_back(cp_iterator->id);
   }
 }
 
@@ -382,6 +395,7 @@ static void obj_pos_xyzCallback(const cv_tracker::image_obj_tracked& fused_objec
         (As received distance is in [cm] unit, I convert unit from [cm] to [mm] here)
       */
       cp.distance = (fused_objects.rect_ranged.at(i).range - cameraMatrix[0][3]) * 10;
+      cp.id = fused_objects.obj_id.at(i);
 
       global_cp_vector.push_back(cp);
     }

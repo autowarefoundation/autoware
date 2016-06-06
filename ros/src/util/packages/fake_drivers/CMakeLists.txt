@@ -16,13 +16,15 @@ find_package(OpenCV REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES fake_drivers
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
+
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(fake_camera nodes/fake_camera/fake_camera.cpp)
 target_link_libraries(fake_camera

@@ -62,7 +62,11 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
+#ifdef USE_FAST_PCL
+#include <fast_pcl/registration/ndt.h>
+#else
 #include <pcl/registration/ndt.h>
+#endif
 
 #include <runtime_manager/ConfigNdt.h>
 
@@ -569,7 +573,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #ifdef OUTPUT
     // Output log.csv
     std::ofstream ofs_log("log.csv", std::ios::app);
-    if (ofs_log == NULL)
+    if (!ofs_log)
     {
       std::cerr << "Could not open 'log.csv'." << std::endl;
       exit(1);

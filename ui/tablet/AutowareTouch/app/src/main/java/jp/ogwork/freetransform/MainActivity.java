@@ -6,7 +6,9 @@ import jp.ogwork.gesturetransformableview.view.GestureTransformableImageView;
 import com.lylc.widget.circularprogressbar.CircularProgressBar;
 import com.lylc.widget.circularprogressbar.CircularProgressBar.ProgressAnimationListener;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.MotionEvent;
@@ -19,8 +21,15 @@ import android.widget.ToggleButton;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
+import org.ros.message.MessageFactory;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class MainActivity extends RosActivity {
 
@@ -86,6 +95,7 @@ public class MainActivity extends RosActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 handle_view.onTouch(v, event);
                 autoware_touch.publishAngle(handle_view.getAngle());
+                autoware_touch.publishSteer((int) handle_view.getAngle());
                 return true;
             }
         });
@@ -124,9 +134,13 @@ public class MainActivity extends RosActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if (event.getAction() == MotionEvent.ACTION_DOWN && !navi_btn.isChecked())
+                if (event.getAction() == MotionEvent.ACTION_DOWN && !navi_btn.isChecked()) {
                     naviOn();
-                else if (event.getAction() == MotionEvent.ACTION_DOWN && navi_btn.isChecked())
+                    Intent intent = new Intent(Intent.ACTION_MAIN);
+                    intent.setClassName("com.example.autowareroute",
+                                        "com.example.autowareroute.MainActivity");
+                    startActivity(intent);
+                } else if (event.getAction() == MotionEvent.ACTION_DOWN && navi_btn.isChecked())
                     naviOff();
                 return true;
             }
@@ -183,6 +197,35 @@ public class MainActivity extends RosActivity {
     }
 
     @Override
+    protected void onRestart() {
+        if (navi_btn.isChecked()) {
+            naviOff();
+            File file = new File(Environment.getExternalStorageDirectory().getPath() + "/MapRoute.txt");
+            try {
+                FileReader reader = new FileReader(file);
+                BufferedReader breader = new BufferedReader(reader);
+                String line;
+                ArrayList<tablet_socket.Waypoint> waypoints = new ArrayList<tablet_socket.Waypoint>();
+                while ((line = breader.readLine()) != null) {
+                    StringTokenizer token = new StringTokenizer(line, ",");
+                    if (token.countTokens() == 2) {
+                        tablet_socket.Waypoint waypoint =
+                            autoware_touch.mNode.getTopicMessageFactory().newFromType(tablet_socket.Waypoint._TYPE);
+                        waypoint.setLat(Double.parseDouble(token.nextToken()));
+                        waypoint.setLon(Double.parseDouble(token.nextToken()));
+                        waypoints.add(waypoint);
+                    }
+                }
+                breader.close();
+                autoware_touch.publishRoute(waypoints);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        super.onRestart();
+    }
+
+    @Override
     protected void init(NodeMainExecutor nodeMainExecutor) {
         NodeConfiguration nodeConfiguration =
             NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress());
@@ -217,11 +260,13 @@ public class MainActivity extends RosActivity {
     private void driveOn() {
         drive_btn.setChecked(true);
         autoware_touch.publishDrive(true);
+        autoware_touch.publishMode(AutowareTouch.DRIVE_MODE_AUTO);
     }
 
     private void driveOff() {
         drive_btn.setChecked(false);
         autoware_touch.publishDrive(false);
+        autoware_touch.publishMode(AutowareTouch.DRIVE_MODE_MANUAL);
     }
 
     private void naviOn() {
@@ -392,6 +437,65 @@ public class MainActivity extends RosActivity {
         }
     }
 
+    private class setCanSpeedHandle extends Thread {
+        public setCanSpeedHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final double canSpeed = Double.parseDouble(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    setDigital((int) canSpeed);
+                    return;
+                }
+            });
+        }
+    }
+
+    private class setCanBrakepedalHandle extends Thread {
+        public setCanBrakepedalHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final int canBrakepedal = Integer.parseInt(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    brake_circle.setProgress(canBrakepedal);
+                    return;
+                }
+            });
+        }
+    }
+
+    private class setCanAngleHandle extends Thread {
+        public setCanAngleHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final double canAngle = Double.parseDouble(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    compass_view.setRotation((float) canAngle % 360);
+                    return;
+                }
+            });
+        }
+    }
+
+    private class setModeHandle extends Thread {
+        public setModeHandle() {
+        }
+        public void execute(Looper toLooper, String data) {
+            final int mode = Integer.parseInt(data);
+            new Handler(toLooper).post(new Runnable() {
+                public void run() {
+                    if (mode == AutowareTouch.DRIVE_MODE_AUTO)
+                        connectedAutoware();
+                    else
+                        notConnectedAutoware();
+                    return;
+                }
+            });
+        }
+    }
+
     public void startDigitalHandle(String data) {
         new setDigitalHandle().execute(Looper.getMainLooper(), data);
     }
@@ -410,5 +514,21 @@ public class MainActivity extends RosActivity {
 
     public void startTwistHandle(String data) {
         new setTwistHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startCanSpeedHandle(String data) {
+        new setCanSpeedHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startCanBrakepedalHandle(String data) {
+        new setCanBrakepedalHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startCanAngleHandle(String data) {
+        new setCanAngleHandle().execute(Looper.getMainLooper(), data);
+    }
+
+    public void startModeHandle(String data) {
+        new setModeHandle().execute(Looper.getMainLooper(), data);
     }
 }

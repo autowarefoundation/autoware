@@ -47,7 +47,7 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
 ```
 
@@ -60,6 +60,9 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 % sudo apt-get install ros-jade-desktop-full ros-jade-nmea-msgs ros-jade-nmea-navsat-driver ros-jade-sound-play
 % sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
 ```
+
+**NOTE: jsk_visualization does not provided in Ubuntu15.04 Jade. Please download from following URL and make manually.  
+https://github.com/jsk-ros-pkg/jsk_visualization**
 
 ## How to Build
 

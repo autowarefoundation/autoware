@@ -22,6 +22,9 @@ dependencies {
     compile 'com.android.support:support-v4:19.1.0'
     compile files('libs/gesturetransformableview.jar')
     compile files('libs/picasso-2.2.0.jar')
+    compile files('libs/runtime_manager-0.0.0.jar')
+    compile files('libs/tablet_socket-0.0.0.jar')
+    compile files('libs/vehicle_socket-0.0.0.jar')
 
     compile 'com.android.support:appcompat-v7:22.0.0'
     compile project(':circular_library')

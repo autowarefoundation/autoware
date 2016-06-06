@@ -10,15 +10,24 @@ import org.ros.node.NodeMain;
 import org.ros.node.topic.Publisher;
 import org.ros.node.topic.Subscriber;
 
+import java.util.ArrayList;
+
 public class AutowareTouch implements NodeMain {
 
-    private ConnectedNode mNode;
+    public static final int DRIVE_MODE_MANUAL = 0;
+    public static final int DRIVE_MODE_AUTO = 1;
+
+    public ConnectedNode mNode;
 
     private int mVel;
     private int mGas;
     private int mBrake;
     private boolean mConn;
     private float mTwist;
+    private double mCanSpeed;
+    private int mCanBrakepedal;
+    private double mCanAngle;
+    private int mMode;
 
     private MainActivity mMain;
 
@@ -29,6 +38,9 @@ public class AutowareTouch implements NodeMain {
     private Publisher<std_msgs.Bool> mMapPublisher;
     private Publisher<std_msgs.Bool> mViewPublisher;
     private Publisher<std_msgs.Bool> mInfoPublisher;
+    private Publisher<runtime_manager.steer_cmd> mSteerPublisher;
+    private Publisher<tablet_socket.mode_cmd> mModePublisher;
+    private Publisher<tablet_socket.route_cmd> mRoutePublisher;
 
     public AutowareTouch(Context context) {
         mMain = (MainActivity)context;
@@ -52,6 +64,9 @@ public class AutowareTouch implements NodeMain {
         mMapPublisher = node.newPublisher("autoware_touch/map", "std_msgs/Bool");
         mViewPublisher = node.newPublisher("autoware_touch/view", "std_msgs/Bool");
         mInfoPublisher = node.newPublisher("autoware_touch/info", "std_msgs/Bool");
+        mSteerPublisher = node.newPublisher("steer_cmd", "runtime_manager/steer_cmd");
+        mModePublisher = node.newPublisher("mode_cmd", "tablet_socket/mode_cmd");
+        mRoutePublisher = node.newPublisher("route_cmd", "tablet_socket/route_cmd");
         mNode = node;
         registerSubscriber();
     }
@@ -106,6 +121,24 @@ public class AutowareTouch implements NodeMain {
         mInfoPublisher.publish(msg);
     }
 
+    public void publishSteer(int i) {
+        runtime_manager.steer_cmd msg = mSteerPublisher.newMessage();
+        msg.setSteer(i);
+        mSteerPublisher.publish(msg);
+    }
+
+    public void publishMode(int i) {
+        tablet_socket.mode_cmd msg = mModePublisher.newMessage();
+        msg.setMode(i);
+        mModePublisher.publish(msg);
+    }
+
+    public void publishRoute(ArrayList<tablet_socket.Waypoint> l) {
+        tablet_socket.route_cmd msg = mRoutePublisher.newMessage();
+        msg.setPoint(l);
+        mRoutePublisher.publish(msg);
+    }
+
     private void registerSubscriber() {
         Subscriber<std_msgs.Int32> vel_sub = mNode.newSubscriber("autoware_touch/vel", "std_msgs/Int32");
         vel_sub.addMessageListener(
@@ -158,6 +191,32 @@ public class AutowareTouch implements NodeMain {
                 public void onNewMessage(std_msgs.Float32 msg) {
                     mTwist = msg.getData();
                     mMain.startTwistHandle(Float.toString(mTwist));
+                }
+            }
+        );
+
+        Subscriber<vehicle_socket.CanInfo> can_sub = mNode.newSubscriber("can_info", "vehicle_socket/CanInfo");
+        can_sub.addMessageListener(
+            new MessageListener<vehicle_socket.CanInfo>() {
+                @Override
+                public void onNewMessage(vehicle_socket.CanInfo msg) {
+                    mCanSpeed = msg.getSpeed();
+                    mCanBrakepedal = msg.getBrakepedal();
+                    mCanAngle = msg.getAngle();
+                    mMain.startCanSpeedHandle(Double.toString(mCanSpeed));
+                    mMain.startCanBrakepedalHandle(Integer.toString(mCanBrakepedal));
+                    mMain.startCanAngleHandle(Double.toString(mCanAngle));
+                }
+            }
+        );
+
+        Subscriber<tablet_socket.mode_info> mode_sub = mNode.newSubscriber("mode_info", "tablet_socket/mode_info");
+        mode_sub.addMessageListener(
+            new MessageListener<tablet_socket.mode_info>() {
+                @Override
+                public void onNewMessage(tablet_socket.mode_info msg) {
+                    mMode = msg.getMode();
+                    mMain.startModeHandle(Integer.toString(mMode));
                 }
             }
         );
