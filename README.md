@@ -36,7 +36,7 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ## Requirements
 
 - ROS indigo(Ubuntu 14.04) or ROS jade(Ubuntu 15.04)
-- OpenCV 2.4.8 or higher **NOTE: Autoware does not support OpenCV 3. Please use OpenCV 2**
+- OpenCV 2.4.10 or higher **NOTE: Autoware does not support OpenCV 3. Please use OpenCV 2**
 - Qt 5.2.1 or higher
 - CUDA(Optional)
 - FlyCapture2(optional)
