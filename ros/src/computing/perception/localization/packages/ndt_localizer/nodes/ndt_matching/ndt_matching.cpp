@@ -383,21 +383,29 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x) * tf_btol;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+#ifdef USE_FAST_PCL
     if(_use_openmp == true){
     	ndt.omp_align(*output_cloud, init_guess);
     }else{
+#endif
     	ndt.align(*output_cloud, init_guess);
+#ifdef USE_FAST_PCL
     }
+#endif
 
     t = ndt.getFinalTransformation();  // localizer
     t2 = t * tf_ltob;                  // base_link
 
     iteration = ndt.getFinalNumIteration();
+#ifdef USE_FAST_PCL
     if(_use_openmp == true){
     	fitness_score = ndt.omp_getFitnessScore();
     }else{
+#endif
     	fitness_score = ndt.getFitnessScore();
+#ifdef USE_FAST_PCL
     }
+#endif
     trans_probability = ndt.getTransformationProbability();
 
     tf::Matrix3x3 mat_l;  // localizer
