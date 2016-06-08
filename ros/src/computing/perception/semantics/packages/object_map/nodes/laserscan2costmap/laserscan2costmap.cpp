@@ -104,7 +104,7 @@ void Grid::calcCoordinate()
 {
   // index coordinate
   index_x = index % g_scan_size_x;
-  index_y = (index - x) / g_scan_size_x;
+  index_y = (index - index_x) / g_scan_size_x;
 
   // actual coordinate
   x = (index_x - g_scan_size_x / 2.0) * g_resolution;
