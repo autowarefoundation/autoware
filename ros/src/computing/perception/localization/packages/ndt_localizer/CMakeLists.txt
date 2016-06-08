@@ -7,6 +7,12 @@ SET(FAST_PCL_PACKAGES filters registration)
 SET(FAST_PCL_LIBRARIES fast_pcl_filters fast_pcl_registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
+find_package( OpenMP )
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
@@ -55,7 +61,7 @@ add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
 target_link_libraries(ndt_matching ${catkin_LIBRARIES} ${FAST_PCL_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES} ${FAST_PCL_LIBRARIES})
-target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
+target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES} ${FAST_PCL_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 

@@ -249,6 +249,9 @@ namespace pcl
       virtual void
       computeTransformation (PointCloudSource &output, const Eigen::Matrix4f &guess);
 
+      virtual void
+      omp_computeTransformation (PointCloudSource &output, const Eigen::Matrix4f &guess);
+
       /** \brief Initiate covariance voxel structure. */
       void inline
       init ()
@@ -269,6 +272,13 @@ namespace pcl
         */
       double
       computeDerivatives (Eigen::Matrix<double, 6, 1> &score_gradient,
+                          Eigen::Matrix<double, 6, 6> &hessian,
+                          PointCloudSource &trans_cloud,
+                          Eigen::Matrix<double, 6, 1> &p,
+                          bool compute_hessian = true);
+
+      double
+      omp_computeDerivatives (Eigen::Matrix<double, 6, 1> &score_gradient,
                           Eigen::Matrix<double, 6, 6> &hessian,
                           PointCloudSource &trans_cloud,
                           Eigen::Matrix<double, 6, 1> &p,

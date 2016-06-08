@@ -43,7 +43,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointSource, typename PointTarget>
-pcl::NormalDistributionsTransform<PointSource, PointTarget>::NormalDistributionsTransform () 
+pcl::NormalDistributionsTransform<PointSource, PointTarget>::NormalDistributionsTransform ()
   : target_cells_ ()
   , resolution_ (1.0f)
   , step_size_ (0.1)
@@ -172,6 +172,105 @@ pcl::NormalDistributionsTransform<PointSource, PointTarget>::computeTransformati
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename PointSource, typename PointTarget> void
+pcl::NormalDistributionsTransform<PointSource, PointTarget>::omp_computeTransformation (PointCloudSource &output, const Eigen::Matrix4f &guess)
+{
+  nr_iterations_ = 0;
+  converged_ = false;
+
+  double gauss_c1, gauss_c2, gauss_d3;
+
+  // Initializes the guassian fitting parameters (eq. 6.8) [Magnusson 2009]
+  gauss_c1 = 10 * (1 - outlier_ratio_);
+  gauss_c2 = outlier_ratio_ / pow (resolution_, 3);
+  gauss_d3 = -log (gauss_c2);
+  gauss_d1_ = -log ( gauss_c1 + gauss_c2 ) - gauss_d3;
+  gauss_d2_ = -2 * log ((-log ( gauss_c1 * exp ( -0.5 ) + gauss_c2 ) - gauss_d3) / gauss_d1_);
+
+  if (guess != Eigen::Matrix4f::Identity ())
+  {
+    // Initialise final transformation to the guessed one
+    final_transformation_ = guess;
+    // Apply guessed transformation prior to search for neighbours
+    transformPointCloud (output, output, guess);
+  }
+
+  // Initialize Point Gradient and Hessian
+  point_gradient_.setZero ();
+  point_gradient_.block<3, 3>(0, 0).setIdentity ();
+  point_hessian_.setZero ();
+
+  Eigen::Transform<float, 3, Eigen::Affine, Eigen::ColMajor> eig_transformation;
+  eig_transformation.matrix () = final_transformation_;
+
+  // Convert initial guess matrix to 6 element transformation vector
+  Eigen::Matrix<double, 6, 1> p, delta_p, score_gradient;
+  Eigen::Vector3f init_translation = eig_transformation.translation ();
+  Eigen::Vector3f init_rotation = eig_transformation.rotation ().eulerAngles (0, 1, 2);
+  p << init_translation (0), init_translation (1), init_translation (2),
+  init_rotation (0), init_rotation (1), init_rotation (2);
+
+  Eigen::Matrix<double, 6, 6> hessian;
+
+  double score = 0;
+  double delta_p_norm;
+
+  // Calculate derivates of initial transform vector, subsequent derivative calculations are done in the step length determination.
+  score = omp_computeDerivatives (score_gradient, hessian, output, p);
+
+  while (!converged_)
+  {
+    // Store previous transformation
+    previous_transformation_ = transformation_;
+
+    // Solve for decent direction using newton method, line 23 in Algorithm 2 [Magnusson 2009]
+    Eigen::JacobiSVD<Eigen::Matrix<double, 6, 6> > sv (hessian, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    // Negative for maximization as opposed to minimization
+    delta_p = sv.solve (-score_gradient);
+
+    //Calculate step length with guarnteed sufficient decrease [More, Thuente 1994]
+    delta_p_norm = delta_p.norm ();
+
+    if (delta_p_norm == 0 || delta_p_norm != delta_p_norm)
+    {
+      trans_probability_ = score / static_cast<double> (input_->points.size ());
+      converged_ = delta_p_norm == delta_p_norm;
+      return;
+    }
+
+    delta_p.normalize ();
+    delta_p_norm = computeStepLengthMT (p, delta_p, delta_p_norm, step_size_, transformation_epsilon_ / 2, score, score_gradient, hessian, output);
+    delta_p *= delta_p_norm;
+
+
+    transformation_ = (Eigen::Translation<float, 3> (static_cast<float> (delta_p (0)), static_cast<float> (delta_p (1)), static_cast<float> (delta_p (2))) *
+                       Eigen::AngleAxis<float> (static_cast<float> (delta_p (3)), Eigen::Vector3f::UnitX ()) *
+                       Eigen::AngleAxis<float> (static_cast<float> (delta_p (4)), Eigen::Vector3f::UnitY ()) *
+                       Eigen::AngleAxis<float> (static_cast<float> (delta_p (5)), Eigen::Vector3f::UnitZ ())).matrix ();
+
+
+    p = p + delta_p;
+
+    // Update Visualizer (untested)
+    if (update_visualizer_ != 0)
+      update_visualizer_ (output, std::vector<int>(), *target_, std::vector<int>() );
+
+    if (nr_iterations_ > max_iterations_ ||
+        (nr_iterations_ && (std::fabs (delta_p_norm) < transformation_epsilon_)))
+    {
+      converged_ = true;
+    }
+
+    nr_iterations_++;
+
+  }
+
+  // Store transformation probability.  The realtive differences within each scan registration are accurate
+  // but the normalization constants need to be modified for it to be globally accurate
+  trans_probability_ = score / static_cast<double> (input_->points.size ());
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointSource, typename PointTarget> double
 pcl::NormalDistributionsTransform<PointSource, PointTarget>::computeDerivatives (Eigen::Matrix<double, 6, 1> &score_gradient,
                                                                                  Eigen::Matrix<double, 6, 6> &hessian,
@@ -225,6 +324,132 @@ pcl::NormalDistributionsTransform<PointSource, PointTarget>::computeDerivatives 
 
     }
   }
+  return (score);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<typename PointSource, typename PointTarget> double
+pcl::NormalDistributionsTransform<PointSource, PointTarget>::omp_computeDerivatives (Eigen::Matrix<double, 6, 1> &score_gradient,
+                                                                                 Eigen::Matrix<double, 6, 6> &hessian,
+                                                                                 PointCloudSource &trans_cloud,
+                                                                                 Eigen::Matrix<double, 6, 1> &p,
+                                                                                 bool compute_hessian)
+{
+  // Original Point and Transformed Point
+  PointSource x_pt, x_trans_pt;
+  // Original Point and Transformed Point (for math)
+  Eigen::Vector3d x, x_trans;
+  // Occupied Voxel
+  TargetGridLeafConstPtr cell;
+  // Inverse Covariance of Occupied Voxel
+  Eigen::Matrix3d c_inv;
+
+  score_gradient.setZero ();
+  hessian.setZero ();
+  double score = 0;
+
+  // Precompute Angular Derivatives (eq. 6.19 and 6.21)[Magnusson 2009]
+  computeAngleDerivatives (p);
+
+#ifdef _OPENMP
+  int num_threads = omp_get_max_threads();
+  Eigen::Matrix<double, 6, 1> score_gradient_i[num_threads];
+  Eigen::Matrix<double, 6, 6> hessian_i[num_threads];
+  for (int i = 0; i < num_threads; ++i) {
+      score_gradient_i[i].setZero ();
+      hessian_i[i].setZero ();
+  }
+
+  omp_set_nested(1);
+  omp_set_dynamic(1);
+#pragma omp parallel for num_threads(num_threads) reduction(+:score) private(x_pt, x_trans_pt, x, x_trans, cell, c_inv)
+#endif
+
+  // Update gradient and hessian for each point, line 17 in Algorithm 2 [Magnusson 2009]
+  for (size_t idx = 0; idx < input_->points.size (); idx++)
+  {
+    x_trans_pt = trans_cloud.points[idx];
+
+    // Find nieghbors (Radius search has been experimentally faster than direct neighbor checking.
+    std::vector<TargetGridLeafConstPtr> neighborhood;
+    std::vector<float> distances;
+    target_cells_.radiusSearch (x_trans_pt, resolution_, neighborhood, distances);
+
+    for (typename std::vector<TargetGridLeafConstPtr>::iterator neighborhood_it = neighborhood.begin (); neighborhood_it != neighborhood.end (); neighborhood_it++)
+    {
+      cell = *neighborhood_it;
+      x_pt = input_->points[idx];
+      x = Eigen::Vector3d (x_pt.x, x_pt.y, x_pt.z);
+
+      x_trans = Eigen::Vector3d (x_trans_pt.x, x_trans_pt.y, x_trans_pt.z);
+
+      // Denorm point, x_k' in Equations 6.12 and 6.13 [Magnusson 2009]
+      x_trans -= cell->getMean ();
+      // Uses precomputed covariance for speed.
+      c_inv = cell->getInverseCov ();
+
+      // Compute derivative of transform function w.r.t. transform vector, J_E and H_E in Equations 6.18 and 6.20 [Magnusson 2009]
+      computePointDerivatives (x);
+      // Update score, gradient and hessian, lines 19-21 in Algorithm 2, according to Equations 6.10, 6.12 and 6.13, respectively [Magnusson 2009]
+      //score += updateDerivatives (score_gradient, hessian, x_trans, c_inv, compute_hessian);
+      {
+          Eigen::Vector3d cov_dxd_pi;
+          // e^(-d_2/2 * (x_k - mu_k)^T Sigma_k^-1 (x_k - mu_k)) Equation 6.9 [Magnusson 2009]
+          double e_x_cov_x = exp (-gauss_d2_ * x_trans.dot (c_inv * x_trans) / 2);
+          // Calculate probability of transtormed points existance, Equation 6.9 [Magnusson 2009]
+          double score_inc = -gauss_d1_ * e_x_cov_x;
+
+          e_x_cov_x = gauss_d2_ * e_x_cov_x;
+
+          // Error checking for invalid values.
+          if (e_x_cov_x > 1 || e_x_cov_x < 0 || e_x_cov_x != e_x_cov_x) {
+              score_inc = 0;
+          } else {
+              // Reusable portion of Equation 6.12 and 6.13 [Magnusson 2009]
+              e_x_cov_x *= gauss_d1_;
+
+
+              for (int i = 0; i < 6; i++)
+              {
+                  // Sigma_k^-1 d(T(x,p))/dpi, Reusable portion of Equation 6.12 and 6.13 [Magnusson 2009o
+                  cov_dxd_pi = c_inv * point_gradient_.col (i);
+
+                  // Update gradient, Equation 6.12 [Magnusson 2009]
+#ifdef _OPENMP
+                  score_gradient_i[omp_get_thread_num()] (i) += x_trans.dot (cov_dxd_pi) * e_x_cov_x;
+#else
+                  score_gradient (i) += x_trans.dot (cov_dxd_pi) * e_x_cov_x;
+#endif
+                  if (compute_hessian)
+                  {
+                      for (int j = 0; j < hessian.cols (); j++)
+                      {
+                          // Update hessian, Equation 6.13 [Magnusson 2009]
+#ifdef _OPENMP
+                          hessian_i[omp_get_thread_num()] (i, j) += e_x_cov_x * (-gauss_d2_ * x_trans.dot (cov_dxd_pi) * x_trans.dot (c_inv * point_gradient_.col (j)) +
+                                                         x_trans.dot (c_inv * point_hessian_.block<3, 1>(3 * i, j)) +
+                                                         point_gradient_.col (j).dot (cov_dxd_pi) );
+#else
+                          hessian (i, j) += e_x_cov_x * (-gauss_d2_ * x_trans.dot (cov_dxd_pi) * x_trans.dot (c_inv * point_gradient_.col (j)) +
+                                                         x_trans.dot (c_inv * point_hessian_.block<3, 1>(3 * i, j)) +
+                                                         point_gradient_.col (j).dot (cov_dxd_pi) );
+#endif
+                      }
+                  }
+              }
+          }
+          score += score_inc;
+      }
+    }
+  }
+#ifdef _OPENMP
+  for (int i = 0; i < num_threads; ++i) {
+    score_gradient += score_gradient_i[i];
+    hessian += hessian_i[i];
+  }
+#endif
+
   return (score);
 }
 

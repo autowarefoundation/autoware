@@ -394,6 +394,9 @@ namespace pcl
       inline double 
       getFitnessScore (double max_range = std::numeric_limits<double>::max ());
 
+      inline double
+	  omp_getFitnessScore (double max_range = std::numeric_limits<double>::max ());
+
       /** \brief Obtain the Euclidean fitness score (e.g., sum of squared distances from the source to the target)
         * from two sets of correspondence distances (distances between source and target points)
         * \param[in] distances_a the first set of distances between correspondences
@@ -420,6 +423,9 @@ namespace pcl
         */
       inline void 
       align (PointCloudSource &output, const Matrix4& guess);
+
+      inline void
+      omp_align (PointCloudSource &output, const Matrix4& guess);
 
       /** \brief Abstract class get name method. */
       inline const std::string&
@@ -599,6 +605,9 @@ namespace pcl
       /** \brief Abstract transformation computation method with initial guess */
       virtual void 
       computeTransformation (PointCloudSource &output, const Matrix4& guess) = 0;
+
+      virtual void
+      omp_computeTransformation (PointCloudSource &output, const Matrix4& guess) = 0;
 
     private:
       /** \brief The point representation used (internal). */
