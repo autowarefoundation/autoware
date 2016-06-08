@@ -332,7 +332,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     if(shift >= SHIFT){
       map += *transformed_scan_ptr;
 
-      if(previous_scans.size() >= REFERENCE_MAP_SIZE){
+      if(previous_scans.size() >= (unsigned int)REFERENCE_MAP_SIZE){
     	  previous_scans.erase(previous_scans.begin());
       }
       previous_scans.push_back(*transformed_scan_ptr);
