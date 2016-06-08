@@ -333,16 +333,12 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
     {
       j++;
 
+      if (g.range > range)
+        break;
+
       // Free range
-      if (g.range < range)
-      {
-        int global_index = g.calcGlobalIndex(transform);
-        cost_map[global_index].accumulateCost(0, FREE_INCREMENT);
-
-        continue;
-      }
-
-      break;
+      int global_index = g.calcGlobalIndex(transform);
+      cost_map[global_index].accumulateCost(0, FREE_INCREMENT);
     }
 
     // Obstacle
