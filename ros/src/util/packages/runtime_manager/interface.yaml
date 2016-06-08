@@ -1,0 +1,8 @@
+- name: runtime_manager
+  publish: [/from_rtmgr, /accel_cmd, /brake_cmd, /gear_cmd, /indicator_cmd, /lamp_cmd,
+    /mode_cmd, /steer_cmd, /twist_cmd, /traffic_light, /config/adjust_xy, /config/X_dpm,
+    /config/X_kf, /config/X_fusion, /config/lane_rule, /config/lane_select, /config/ndt,
+    /config/ndt_mapping, /config/ndt_mapping_output, /config/rcnn, /config/superimpose,
+    /config/twist_filter, /config/velocity_set, /config/waypoint_follower]
+  subscribe: [/to_rtmgr, /ndt_stat, /topic1, /topic2, /route_cmd, /gnss_stat, /pmap_stat,
+    /vmap_stat, /lf_stat]

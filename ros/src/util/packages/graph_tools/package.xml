@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+  <name>graph_tools</name>
+  <version>0.0.0</version>
+  <description>The graph_tools package</description>
+  <maintainer email="usuda@axe.bz">usuda</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>
