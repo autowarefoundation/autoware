@@ -328,10 +328,10 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
       range = scan.range_max;
 
     int precasted_index = (i + index_offset) % iangle_size;
-    int j = -1;
+    int obstacle_index = -1;
     for (const auto& g : precasted_grids[precasted_index])
     {
-      j++;
+      obstacle_index++;
 
       if (g.range > range)
         break;
@@ -342,7 +342,7 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
     }
 
     // Obstacle
-    int global_index = precasted_grids[precasted_index][j].calcGlobalIndex(transform);
+    int global_index = precasted_grids[precasted_index][obstacle_index].calcGlobalIndex(transform);
     cost_map[global_index].accumulateCost(OCCUPIED_INCREMENT, 0);
 
   }
