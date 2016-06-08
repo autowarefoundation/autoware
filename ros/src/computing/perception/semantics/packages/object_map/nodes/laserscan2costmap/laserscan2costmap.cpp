@@ -41,6 +41,10 @@
 namespace
 {
 constexpr auto OGM_FRAME = "/map";
+constexpr int OCCUPIED_MAX = 8;
+constexpr int OCCUPIED_MIN = -8;
+constexpr int OCCUPIED_INCREMENT = 2;
+constexpr int FREE_INCREMENT = 1;
 std::string g_sensor_frame = "/velodyne";  // sensor which publihes lasescan message
 std::string g_scan_topic = "/scan";        // laser scan topic
 double g_resolution = 0.1;                 // [m]
@@ -62,6 +66,14 @@ struct Grid
   int calcGlobalIndex(const tf::StampedTransform& transform) const;
 };
 
+struct Cost
+{
+  int occupied = 0;
+  int free     = 0;
+
+  void accumulateCost(int occ, int free);
+};
+
 ros::Publisher g_map_pub;
 tf::TransformListener* g_tf_listenerp;
 
@@ -72,6 +84,19 @@ double calcYawFromQuaternion(const tf::Quaternion& q)
   m.getRPY(roll, pitch, yaw);
 
   return yaw;
+}
+
+// Accumulate cost value
+void Cost::accumulateCost(int occupied_inc, int free_inc)
+{
+  occupied += occupied_inc - free_inc;
+  free     += free_inc;
+
+  if (occupied > OCCUPIED_MAX)
+    occupied = OCCUPIED_MAX;
+
+  if (occupied < OCCUPIED_MIN)
+    occupied = OCCUPIED_MIN;
 }
 
 // Calcurate grid's coordinate in sensor frame
@@ -185,8 +210,9 @@ void preCasting(const sensor_msgs::LaserScan& scan, std::vector<std::vector<Grid
   }
 }
 
+
 // Delete old cost values
-void deleteOldData(std::vector<int>* cost_map, double current_x, double current_y, double prev_x, double prev_y)
+void deleteOldData(std::vector<Cost>* cost_map, double current_x, double current_y, double prev_x, double prev_y)
 {
   double begin_x = current_x;
   double begin_y = current_y;
@@ -208,7 +234,8 @@ void deleteOldData(std::vector<int>* cost_map, double current_x, double current_
     for (int j = 0; j < g_scan_size_y; j++)
     {
       int global_grid_x = (i + 100000 * g_scan_size_x) % g_scan_size_x;
-      cost_map->at(global_grid_x + j * g_scan_size_x) = -1;
+      cost_map->at(global_grid_x + j * g_scan_size_x).occupied = 0;
+      cost_map->at(global_grid_x + j * g_scan_size_x).free     = 0;
     }
   }
 
@@ -217,7 +244,8 @@ void deleteOldData(std::vector<int>* cost_map, double current_x, double current_
     for (int j = ibegin_y; j < iend_y; j++)
     {
       int global_grid_y = (j + 100000 * g_scan_size_y) % g_scan_size_y;
-      cost_map->at(i + global_grid_y * g_scan_size_x) = -1;
+      cost_map->at(i + global_grid_y * g_scan_size_x).occupied = 0;
+      cost_map->at(i + global_grid_y * g_scan_size_x).free     = 0;
     }
   }
 }
@@ -256,7 +284,7 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
   }
 
   // Save costs in this variable
-  static std::vector<int> cost_map(g_scan_size_x * g_scan_size_y, -1);
+  static std::vector<Cost> cost_map(g_scan_size_x * g_scan_size_y);
 
   static bool initialized_map = false;
   static double prev_x = transform.getOrigin().x();
@@ -295,8 +323,8 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
   {
     double range = scan.ranges[i];
 
-    // If a range is less than range_min, that means there are no obstacles within a sensor range ?
-    if (scan.ranges[i] < scan.range_min)
+    // If laserscan does not reach objects, make a range max
+    if (scan.ranges[i] > scan.range_max)
       range = scan.range_max;
 
     int precasted_index = (i + index_offset) % iangle_size;
@@ -309,9 +337,8 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
       if (g.range < range)
       {
         int global_index = g.calcGlobalIndex(transform);
-        cost_map[global_index] -= 2;
-        if (cost_map[global_index] < 0)
-          cost_map[global_index] = 0;
+        cost_map[global_index].accumulateCost(0, FREE_INCREMENT);
+
         continue;
       }
 
@@ -320,10 +347,10 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
 
     // Obstacle
     int global_index = precasted_grids[precasted_index][j].calcGlobalIndex(transform);
-    cost_map[global_index] += 15;
-    if (cost_map[global_index] > 100)
-      cost_map[global_index] = 100;
+    cost_map[global_index].accumulateCost(OCCUPIED_INCREMENT, 0);
+
   }
+
 
   // Begining of grid index of publishing OGM
   static int origin_index_x = (g_scan_size_x - g_map_size_x) / 2.0;
@@ -337,8 +364,9 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
     {
       int scanmap_index_x = origin_index_x + j;
       int scanmap_index_y = origin_index_y + i;
-      // int local_index = (origin_index + j) + (i * g_scan_size_x);
-      map.data[j + i * g_map_size_x] = cost_map[calcGlobalIndex(scanmap_index_x, scanmap_index_y, transform)];
+
+      int global_index = calcGlobalIndex(scanmap_index_x, scanmap_index_y, transform);
+      map.data[j + i * g_map_size_x] = (cost_map[global_index].occupied + 8) * 6;
     }
   }
 
