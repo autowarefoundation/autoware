@@ -182,7 +182,7 @@ void FastVirtualScan::getVirtualScan(double thetaminheight, double thetamaxheigh
         }
         if(candid>=size||svs[i][candid].rotlength==MAXVIRTUALSCAN)
         {
-            virtualScan[i]=MAXVIRTUALSCAN;
+            virtualScan[i]=0;
             minheights[i]=0;
             maxheights[i]=0;
             continue;
