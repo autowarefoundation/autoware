@@ -361,9 +361,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pcl::fromROSMsg(*input, filtered_scan);
     pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(filtered_scan));
+    int scan_points_num = filtered_scan_ptr->size();
 
     Eigen::Matrix4f t(Eigen::Matrix4f::Identity());   // base_link
     Eigen::Matrix4f t2(Eigen::Matrix4f::Identity());  // localizer
+
+    std::chrono::time_point<std::chrono::system_clock> align_start, align_end, getFitnessScore_start, getFitnessScore_end;
+    static double align_time, getFitnessScore_time = 0.0;
 
     // Setting point cloud to be aligned.
     ndt.setInputSource(filtered_scan_ptr);
@@ -385,13 +389,18 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 #ifdef USE_FAST_PCL
     if(_use_openmp == true){
+        align_start = std::chrono::system_clock::now();
     	ndt.omp_align(*output_cloud, init_guess);
+        align_end = std::chrono::system_clock::now();
     }else{
 #endif
+        align_start = std::chrono::system_clock::now();
     	ndt.align(*output_cloud, init_guess);
+        align_end = std::chrono::system_clock::now();
 #ifdef USE_FAST_PCL
     }
 #endif
+    align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
 
     t = ndt.getFinalTransformation();  // localizer
     t2 = t * tf_ltob;                  // base_link
@@ -399,13 +408,19 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     iteration = ndt.getFinalNumIteration();
 #ifdef USE_FAST_PCL
     if(_use_openmp == true){
+        getFitnessScore_start = std::chrono::system_clock::now();
     	fitness_score = ndt.omp_getFitnessScore();
+        getFitnessScore_end = std::chrono::system_clock::now();
     }else{
 #endif
+        getFitnessScore_start = std::chrono::system_clock::now();
     	fitness_score = ndt.getFitnessScore();
+        getFitnessScore_end = std::chrono::system_clock::now();
 #ifdef USE_FAST_PCL
     }
 #endif
+    getFitnessScore_time = std::chrono::duration_cast<std::chrono::microseconds>(getFitnessScore_end - getFitnessScore_start).count() / 1000.0;
+
     trans_probability = ndt.getTransformationProbability();
 
     tf::Matrix3x3 mat_l;  // localizer
@@ -596,7 +611,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       std::cerr << "Could not open 'log.csv'." << std::endl;
       exit(1);
     }
-    ofs_log << input->header.seq << "," << step_size << "," << trans_eps << ","
+    ofs_log << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << ","
             << current_pose.x << "," << current_pose.y << "," << current_pose.z << "," << current_pose.roll << ","
             << current_pose.pitch << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << ","
             << predict_pose.z << "," << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
@@ -605,7 +620,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
             << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
             << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
             << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
-            << "," << angular_velocity << "," << time_ndt_matching.data << "," << std::endl;
+            << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time << std::endl;
 #endif
 
     std::cout << "-----------------------------------------------------------------" << std::endl;
@@ -613,7 +628,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Timestamp: " << input->header.stamp << std::endl;
     std::cout << "Frame ID: " << input->header.frame_id << std::endl;
     //		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
-    std::cout << "Number of Filtered Scan Points: " << filtered_scan_ptr->size() << " points." << std::endl;
+    std::cout << "Number of Filtered Scan Points: " << scan_points_num << " points." << std::endl;
     std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
     std::cout << "Fitness Score: " << fitness_score << std::endl;
     std::cout << "Transformation Probability: " << ndt.getTransformationProbability() << std::endl;
