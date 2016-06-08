@@ -135,4 +135,4 @@ Autoware Developers (<autoware@googlegroups.com>)
 
 To subscribe the Autoware Developers ML,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
-- If you don't have a Google account, send an email to <autoware+subscribe@googlegroups.com>.
+- If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
