@@ -42,6 +42,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -114,35 +115,17 @@ static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr
   g_minimum_lool_ahead_threshold = config->minimum_lookahead_threshold;
 }
 
-static void OdometryPoseCallback(const nav_msgs::OdometryConstPtr &msg)
+
+
+static void currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  //std::cout << "odometry callback" << std::endl;
-
-  //
-  // effective for testing.
-  //
-  if (g_sim_mode)
-  {
-    g_current_velocity = msg->twist.twist.linear.x;
-    g_current_pose.header = msg->header;
-    g_current_pose.pose = msg->pose.pose;
-    g_pose_set = true;
-  }
-
+  g_current_pose = *msg;
+  g_pose_set = true;
 }
 
-static void NDTCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+static void currentVelCallback(const geometry_msgs::Vector3StampedConstPtr &msg)
 {
-  if (!g_sim_mode)
-  {
-    g_current_pose.header = msg->header;
-    g_current_pose.pose = msg->pose;
-
-    geometry_msgs::Point base_link_point;
-    base_link_point.x = g_offset_base2sensor;
-    g_current_pose.pose.position =  calcAbsoluteCoordinate(base_link_point,g_current_pose.pose);
-    g_pose_set = true;
-  }
+  g_current_velocity = msg->vector.x;
 }
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
@@ -189,7 +172,7 @@ static double getLookAheadThreshold(int waypoint)
 static void canInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
 {
   double steering_wheel_angle = msg->angle;
-  g_current_velocity = (msg->speed)*(1000.00/3600);
+  //g_current_velocity = (msg->speed)*(1000.00/3600);
   steering_wheel_angle = steering_wheel_angle*(3.1496/180.00);
   g_can_info_curvature = (steering_wheel_angle / (double) WHEEL_TO_STEERING) / WHEEL_BASE;
   ROS_INFO_STREAM("Steering Wheel Angle: "<<steering_wheel_angle);
@@ -559,10 +542,9 @@ int main(int argc, char **argv)
   g_marker_pub = nh.advertise<visualization_msgs::Marker>("cubic_splines_viz", 10);
 
   // Subscribe to the following topics: 
-  ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 1, WayPointCallback);
-  ros::Subscriber odometry_subscriber = nh.subscribe("odom_pose", 1, OdometryPoseCallback);
-  ros::Subscriber ndt_subscriber = nh.subscribe("control_pose", 1, NDTCallback);
-  //ros::Subscriber estimated_vel_subscriber = nh.subscribe("estimated_vel", 10, estVelCallback);
+  ros::Subscriber waypoint_subcscriber = nh.subscribe("final_waypoints", 1, WayPointCallback);
+  ros::Subscriber current_pose_subscriber = nh.subscribe("current_pose", 1, currentPoseCallback);
+  ros::Subscriber current_vel_subscriber = nh.subscribe("current_velocity", 1, currentVelCallback);
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 1, ConfigCallback);
   ros::Subscriber sub_steering;
   ros::Subscriber can_info;
