@@ -98,7 +98,6 @@ static int SPLINE_INDEX=0;
 static int g_param_flag = 0; //0 = waypoint, 1 = Dialog
 static double g_lookahead_threshold = 4.0; //meter
 static double g_initial_velocity = 5.0; //km/h
-static double g_offset_base2sensor = 0;
 static double g_look_ahead_threshold_calc_ratio = 2.0;
 static double g_minimum_lool_ahead_threshold = 6.0; // the next waypoint must be outside of this threshold.
 
@@ -109,7 +108,6 @@ static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr
   g_param_flag = config->param_flag;
   g_lookahead_threshold = config->lookahead_threshold;
   g_initial_velocity = config->velocity;
-  //g_offset_base2sensor = config->offset;
   g_look_ahead_threshold_calc_ratio = config->threshold_ratio;
   g_minimum_lool_ahead_threshold = config->minimum_lookahead_threshold;
 }
