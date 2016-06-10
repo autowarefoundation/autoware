@@ -84,7 +84,6 @@ static geometry_msgs::PoseStamped g_current_pose; // current pose by the global 
 static double g_current_velocity;
 static double g_can_info_curvature;
 static double g_prev_velocity = 0;
-static ros::Publisher _vis_pub;
 static ros::Publisher _traj_pub;
 static ros::Publisher _stat_pub;
 static bool g_waypoint_set = false;
@@ -237,7 +236,7 @@ static void displayNextWaypoint(int i)
   marker.color.g = 0.0;
   marker.color.b = 1.0;
   marker.frame_locked = true;
-  _vis_pub.publish(marker);
+  g_vis_pub.publish(marker);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
