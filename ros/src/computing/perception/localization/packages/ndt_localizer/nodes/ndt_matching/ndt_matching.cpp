@@ -34,8 +34,6 @@
  Yuki KITSUKAWA
  */
 
-#define OUTPUT
-
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -176,6 +174,9 @@ static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
 
 static bool _use_openmp = false;
+
+static std::ofstream ofs;
+static std::string filename;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -603,16 +604,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
                            Wc * ((2.0 - trans_probability) / 2.0) * 100.0;
     ndt_reliability_pub.publish(ndt_reliability);
 
-#ifdef OUTPUT
-    // Output log.csv
-    std::ofstream ofs_log("log.csv", std::ios::app);
-    if (!ofs_log)
+    // Write log
+    if (!ofs)
     {
-      std::cerr << "Could not open 'log.csv'." << std::endl;
+      std::cerr << "Could not open " << filename << "." << std::endl;
       exit(1);
     }
-    ofs_log << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << ","
-            << current_pose.x << "," << current_pose.y << "," << current_pose.z << "," << current_pose.roll << ","
+    ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << ","
+    		<< current_pose.x << "," << current_pose.y << "," << current_pose.z << "," << current_pose.roll << ","
             << current_pose.pitch << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << ","
             << predict_pose.z << "," << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
             << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
@@ -621,7 +620,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
             << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
             << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
             << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time << std::endl;
-#endif
 
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Sequence: " << input->header.seq << std::endl;
@@ -694,7 +692,15 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  // setting parameters
+  // Set log file name.
+  char buffer[80];
+  std::time_t now = std::time(NULL);
+  std::tm *pnow = std::localtime(&now);
+  std::strftime(buffer,80,"%Y%m%d_%H%M%S",pnow);
+  filename = "ndt_matching_" + std::string(buffer) + ".csv";
+  ofs.open(filename.c_str(), std::ios::app);
+
+  // Geting parameters
   private_nh.getParam("use_gnss", _use_gnss);
   private_nh.getParam("queue_size", _queue_size);
   private_nh.getParam("offset", _offset);
@@ -737,7 +743,8 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  std::cout << "Parameters" << std::endl;
+  std::cout << "-----------------------------------------------------------------" << std::endl;
+  std::cout << "Log file: " << filename << std::endl;
   std::cout << "use_gnss: " << _use_gnss << std::endl;
   std::cout << "queue_size: " << _queue_size << std::endl;
   std::cout << "offset: " << _offset << std::endl;
@@ -745,6 +752,7 @@ int main(int argc, char** argv)
   std::cout << "localizer: " << _localizer << std::endl;
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
+  std::cout << "-----------------------------------------------------------------" << std::endl;
 
   Eigen::Translation3f tl_btol(_tf_x, _tf_y, _tf_z);  // tl: translation
   Eigen::AngleAxisf rot_x_btol(_tf_roll, Eigen::Vector3f::UnitX());  // rot: rotation
