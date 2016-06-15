@@ -355,7 +355,7 @@ sensor_msgs::PointCloud2 create_pcd(const std::vector<std::string>& pcd_paths, i
 	return pcd;
 }
 
-void publish_pcd(sensor_msgs::PointCloud2 pcd, int* errp = NULL)
+void publish_pcd(sensor_msgs::PointCloud2 pcd, const int* errp = NULL)
 {
 	if (pcd.width != 0) {
 		pcd.header.frame_id = "map";
