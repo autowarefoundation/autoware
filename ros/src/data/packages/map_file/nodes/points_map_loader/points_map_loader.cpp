@@ -330,17 +330,21 @@ sensor_msgs::PointCloud2 create_pcd(const geometry_msgs::Point& p)
 	return pcd;
 }
 
-sensor_msgs::PointCloud2 create_pcd(const std::vector<std::string>& pcd_paths)
+sensor_msgs::PointCloud2 create_pcd(const std::vector<std::string>& pcd_paths, int* ret_err = NULL)
 {
 	sensor_msgs::PointCloud2 pcd, part;
 	for (const std::string& path : pcd_paths) {
 		// Following outputs are used for progress bar of Runtime Manager.
 		if (pcd.width == 0) {
-			if (pcl::io::loadPCDFile(path.c_str(), pcd) == -1)
+			if (pcl::io::loadPCDFile(path.c_str(), pcd) == -1) {
 				std::cerr << "load failed " << path << std::endl;
+				if (ret_err) *ret_err = 1;
+			}
 		} else {
-			if (pcl::io::loadPCDFile(path.c_str(), part) == -1)
+			if (pcl::io::loadPCDFile(path.c_str(), part) == -1) {
 				std::cerr << "load failed " << path << std::endl;
+				if (ret_err) *ret_err = 1;
+			}
 			pcd.width += part.width;
 			pcd.row_step += part.row_step;
 			pcd.data.insert(pcd.data.end(), part.data.begin(), part.data.end());
@@ -351,14 +355,16 @@ sensor_msgs::PointCloud2 create_pcd(const std::vector<std::string>& pcd_paths)
 	return pcd;
 }
 
-void publish_pcd(sensor_msgs::PointCloud2 pcd)
+void publish_pcd(sensor_msgs::PointCloud2 pcd, int* errp = NULL)
 {
 	if (pcd.width != 0) {
 		pcd.header.frame_id = "map";
 		pcd_pub.publish(pcd);
 
-		stat_msg.data = true;
-		stat_pub.publish(stat_msg);
+		if (errp == NULL || *errp == 0) {
+			stat_msg.data = true;
+			stat_pub.publish(stat_msg);
+		}
 	}
 }
 
@@ -522,9 +528,10 @@ int main(int argc, char **argv)
 	ros::Subscriber current_sub;
 	ros::Subscriber initial_sub;
 	ros::Subscriber waypoints_sub;
-	if (margin < 0)
-		publish_pcd(create_pcd(pcd_paths));
-	else {
+	if (margin < 0) {
+		int err = 0;
+		publish_pcd(create_pcd(pcd_paths, &err), &err);
+	} else {
 		n.param<int>("points_map_loader/update_rate", update_rate, DEFAULT_UPDATE_RATE);
 		fallback_rate = update_rate * 2; // XXX better way?
 

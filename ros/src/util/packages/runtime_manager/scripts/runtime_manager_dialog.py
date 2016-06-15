@@ -191,8 +191,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.label_point_cloud_bar = BarLabel(tab, '  Loading...  ')
 		self.label_point_cloud_bar.Enable(False)
 
-		self.pcd_loaded = False
-
 		def hook1G(args):
 			for f in args.get('func')().split(','):
 				sz = os.path.getsize(f)
@@ -653,8 +651,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.route_cmd_waypoint = data.point
 
 	def stat_callback(self, msg, k):
-		if k == 'pmap' and msg.data and not self.pcd_loaded:
-			return
 		self.stat_dic[k] = msg.data
 		if k == 'pmap':
 			v = self.stat_dic.get(k)
@@ -1899,7 +1895,6 @@ class MyFrame(rtmgr.MyFrame):
 		if n == 0:
 			return
 		i = 0
-		self.pcd_loaded = False
 		while not ev.wait(0):
 			s = self.stdout_file_search(file, 'load ')
 			if not s:
@@ -1910,7 +1905,6 @@ class MyFrame(rtmgr.MyFrame):
 			else:
 				i -= 1
 				print s
-			self.pcd_loaded = (i == n)
 			wx.CallAfter(self.label_point_cloud_bar.set, 100 * i / n)
 		wx.CallAfter(self.label_point_cloud_bar.clear)
 
