@@ -898,6 +898,8 @@ int main(int argc, char **argv)
 
     changeWaypoint(detection_result);
 
+    g_vscan.clear();
+
     loop_rate.sleep();
   }
 
