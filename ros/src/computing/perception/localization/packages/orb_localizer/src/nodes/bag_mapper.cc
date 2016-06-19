@@ -117,7 +117,7 @@ int main (int argc, char *argv[])
 			if (tracked==true) {
 //				cout << "Frame Counter: " << frameCounter << endl;
 				cout << "Stopping due to lost after " << frameCounter << " frames, timestamp: " << timestamp << endl;
-				break;
+				return -1;
 			}
 		}
 

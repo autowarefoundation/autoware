@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     	th = image_transport::TransportHints ("compressed");
     }
     image_transport::ImageTransport it (nodeHandler);
-    image_transport::Subscriber sub = it.subscribe ((string)SLAM.fsSettings["Camera.topic"], 1, &ImageGrabber::GrabImage, &igb, th);
+    image_transport::Subscriber sub = it.subscribe ((string)SLAM.fsSettings["Camera.topic"], 100, &ImageGrabber::GrabImage, &igb, th);
 
     cout << endl << "Mono Camera topic: " << (string)SLAM.fsSettings["Camera.topic"] << endl;
     cout << "Compressed images? " << ((int)SLAM.fsSettings["Camera.compressed"]==1 ? "True" : "False") << endl;

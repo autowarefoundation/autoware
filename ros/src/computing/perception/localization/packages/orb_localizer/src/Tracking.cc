@@ -909,6 +909,10 @@ void Tracking::UpdateLastFrame()
 
 bool Tracking::TrackWithMotionModel()
 {
+#ifdef DEBUG_TRACKING
+	cout << "Tracking Mode: TrackWithMotionModel()" << endl;
+#endif
+
     ORBmatcher matcher(0.9,true);
 
     // Update last frame pose according to its reference keyframe
@@ -970,55 +974,81 @@ bool Tracking::TrackWithMotionModel()
     return nmatchesMap>=10;
 }
 
+//bool Tracking::TrackLocalMap()
+//{
+//#ifdef DEBUG_TRACKING
+//	cout << "Tracking Mode: TrackLocalMap()" << endl;
+//#endif
+//
+//    // We have an estimation of the camera pose and some map points tracked in the frame.
+//    // We retrieve the local map and try to find matches to points in the local map.
+//
+//    UpdateLocalMap();
+//
+//    SearchLocalPoints();
+//
+//    // Optimize Pose
+//    Optimizer::PoseOptimization(&mCurrentFrame);
+//    mnMatchesInliers = 0;
+//
+//    // Update MapPoints Statistics
+//    for(int i=0; i<mCurrentFrame.N; i++)
+//    {
+//        if(mCurrentFrame.mvpMapPoints[i])
+//        {
+//            if(!mCurrentFrame.mvbOutlier[i])
+//            {
+//                mCurrentFrame.mvpMapPoints[i]->IncreaseFound();
+//                if(!mbOnlyTracking)
+//                {
+//                    if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
+//                        mnMatchesInliers++;
+//                }
+//                else
+//                    mnMatchesInliers++;
+//            }
+//            else if(mSensor==System::STEREO)
+//                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
+//
+//        }
+//    }
+//
+//    // Decide if the tracking was successful
+//    // More restrictive if there was a relocalization recently
+//    if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && mnMatchesInliers<50) {
+////    	cerr << "TrackLocalMap Failure: A" << endl;
+//        return false;
+//    }
+//
+//    if(mnMatchesInliers<30) {
+////    	cerr << "TrackLocalMap Failure: B" << endl;
+//        return false;
+//    }
+//    else
+//        return true;
+//}
 bool Tracking::TrackLocalMap()
 {
-#ifdef DEBUG_TRACKING
-	cout << "Tracking Mode: TrackLocalMap()" << endl;
-#endif
+	UpdateLocalMap();
+	SearchLocalPoints();
+	mnMatchesInliers = Optimizer::PoseOptimization(&mCurrentFrame);
 
-    // We have an estimation of the camera pose and some map points tracked in the frame.
-    // We retrieve the local map and try to find matches to points in the local map.
+	for (size_t i=0; i<mCurrentFrame.mvpMapPoints.size(); i++) {
+		if (mCurrentFrame.mvpMapPoints[i]) {
+			if (!mCurrentFrame.mvbOutlier[i])
+				mCurrentFrame.mvpMapPoints[i]->IncreaseFound();
+		}
+	}
 
-    UpdateLocalMap();
+	if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && mnMatchesInliers<50)
+		return false;
 
-    SearchLocalPoints();
-
-    // Optimize Pose
-    Optimizer::PoseOptimization(&mCurrentFrame);
-    mnMatchesInliers = 0;
-
-    // Update MapPoints Statistics
-    for(int i=0; i<mCurrentFrame.N; i++)
-    {
-        if(mCurrentFrame.mvpMapPoints[i])
-        {
-            if(!mCurrentFrame.mvbOutlier[i])
-            {
-                mCurrentFrame.mvpMapPoints[i]->IncreaseFound();
-                if(!mbOnlyTracking)
-                {
-                    if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
-                        mnMatchesInliers++;
-                }
-                else
-                    mnMatchesInliers++;
-            }
-            else if(mSensor==System::STEREO)
-                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
-
-        }
-    }
-
-    // Decide if the tracking was successful
-    // More restrictive if there was a relocalization recently
-    if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && mnMatchesInliers<50)
-        return false;
-
-    if(mnMatchesInliers<30)
-        return false;
-    else
-        return true;
+	if(mnMatchesInliers<30)
+		return false;
+	else
+		return true;
 }
+
 
 
 bool Tracking::NeedNewKeyFrame()

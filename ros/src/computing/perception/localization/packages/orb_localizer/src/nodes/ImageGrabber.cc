@@ -204,16 +204,20 @@ tf::Transform ImageGrabber::localizeByReference (
 	double scale = offDistE / offDistO;
 
 	// change orientation from camera to velodyne
-	tf::Transform flipAxes;
-	flipAxes.setOrigin(tf::Vector3(0, 0, 0));
+//	tf::Transform flipAxes;
+//	flipAxes.setOrigin(tf::Vector3(0, 0, 0));
+//	tf::Quaternion fpq;
+//	fpq.setRPY(0,0,0);
+//	fpq.normalize();
+//	flipAxes.setRotation(fpq);
 //	flipAxes.setRotation (tf::Quaternion(-M_PI/2, M_PI/2, 0).normalize());
-	flipAxes.setRotation (tf::Quaternion(M_PI/2, 0, -M_PI/2).normalize());
+//	flipAxes.setRotation (tf::Quaternion(M_PI/2, 0, -M_PI/2).normalize());
 
 	tf::Transform orbRel = tfOrbMap.inverse() * tfOrb;
 
 	tf::Transform scaledRel = orbRel;
 	scaledRel.setOrigin(orbRel.getOrigin() * scale);
-	scaledRel = flipAxes * scaledRel;
+//	scaledRel = flipAxes * scaledRel;
 
 	return realMapPose * scaledRel;
 }

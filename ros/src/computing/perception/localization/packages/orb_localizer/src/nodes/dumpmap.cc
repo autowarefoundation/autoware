@@ -25,8 +25,9 @@ int main (int argc, char **argv)
 
 	vector<KeyFrame*> allKeyFrames = World.kfListSorted;
 
-	cout << std::fixed << setprecision(7) << "First keyframe time: " << allKeyFrames[0]->mTimeStamp << endl;
-	cout << "Last keyframe time: " << allKeyFrames.back()->mTimeStamp << endl;
+	cout << std::fixed << setprecision(7);
+//	cout << "First keyframe time: " << allKeyFrames[0]->mTimeStamp << endl;
+//	cout << "Last keyframe time: " << allKeyFrames.back()->mTimeStamp << endl;
 
 	for (vector<KeyFrame*>::const_iterator it=allKeyFrames.begin(); it!=allKeyFrames.end(); it++) {
 
