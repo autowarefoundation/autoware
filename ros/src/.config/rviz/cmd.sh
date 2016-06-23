@@ -28,7 +28,8 @@ else
     [ -d $DIR/../../../devel ] && . $DIR/../../../devel/setup.bash || \
       echo "$REMOTE:$DIR/../../../devel: no such directory"
     ROS_IP=$REMOTE
-    ROS_MASTER_URI=$ROS_MASTER_URI
+    FROM_IP=\$(echo \$SSH_CONNECTION | cut -d ' ' -f 1)
+    ROS_MASTER_URI=http://\$FROM_IP:11311
     DISPLAY=:0
     export ROS_IP ROS_MASTER_URI DISPLAY
     rosrun rviz rviz
