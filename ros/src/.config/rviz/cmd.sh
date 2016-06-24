@@ -14,9 +14,10 @@ fi
 
 #echo REMOTE=[$REMOTE]
 #echo KEYFILE=[$KEYFILE]
+#echo "$DIR/default.rviz"
 
 if [ x"$REMOTE" = x ]; then
-    rosrun rviz rviz
+    rosrun rviz rviz  -d "$DIR/default.rviz"
 else
   KEYOPT=""
   if [ x"$KEYFILE" != x ]; then
@@ -31,7 +32,7 @@ else
     ROS_MASTER_URI=$ROS_MASTER_URI
     DISPLAY=:0
     export ROS_IP ROS_MASTER_URI DISPLAY
-    rosrun rviz rviz
+    rosrun rviz rviz -d "$DIR/default.rviz"
     #xeyes
 EOF
 fi
