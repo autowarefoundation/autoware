@@ -5,7 +5,8 @@ DIR=$(cd $(dirname $0) ; pwd)
 REMOTE=""
 KEYFILE=""
 if [ -e $DIR/host ]; then
-  REMOTE=$(sed -n 's/^host *: *//p' $DIR/host)
+  REMOTE=$((sed -n 's/^host *: *//p' $DIR/host ; \
+            grep -v -e '^#' -e ':' $DIR/host) | tail -1)
   if [ "$REMOTE" = "localhost" ]; then
     REMOTE=""
   fi
@@ -22,13 +23,14 @@ else
   if [ x"$KEYFILE" != x ]; then
     KEYOPT="-i $KEYFILE"
   fi
-  ssh -tt $KEYOPT $REMOTE <<EOF
+  setsid ssh -tt $KEYOPT $REMOTE <<EOF
     [ -d /opt/ros/indigo ] && . /opt/ros/indigo/setup.bash
     [ -d /opt/ros/jade ] && . /opt/ros/jade/setup.bash
     [ -d $DIR/../../../devel ] && . $DIR/../../../devel/setup.bash || \
       echo "$REMOTE:$DIR/../../../devel: no such directory"
-    ROS_IP=$REMOTE
-    ROS_MASTER_URI=$ROS_MASTER_URI
+    ROS_IP=\$(hostname -I)
+    FROM_IP=\$(echo \$SSH_CONNECTION | cut -d ' ' -f 1)
+    ROS_MASTER_URI=http://\$FROM_IP:11311
     DISPLAY=:0
     export ROS_IP ROS_MASTER_URI DISPLAY
     rosrun rviz rviz

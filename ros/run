@@ -32,6 +32,8 @@ echo "Process Manager"
 gksudo --message "Please input password for launching process manager" \
        -- $MY_PATH/run_proc_manager &
 
+export ROS_IP=$(hostname -I)
+
 # boot ros-master
 ${TERMINAL} ${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}="roscore" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
 
