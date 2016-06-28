@@ -6,7 +6,7 @@ REMOTE=""
 KEYFILE=""
 if [ -e $DIR/host ]; then
   REMOTE=$((sed -n 's/^host *: *//p' $DIR/host ; \
-            grep -v -e '^#' -e ':' $DIR/host) | tail -1)
+            grep -v -e '^#' -e ':' -e '^$' $DIR/host) | tail -1)
   if [ "$REMOTE" = "localhost" ]; then
     REMOTE=""
   fi
