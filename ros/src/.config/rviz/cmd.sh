@@ -23,7 +23,11 @@ else
   if [ x"$KEYFILE" != x ]; then
     KEYOPT="-i $KEYFILE"
   fi
-  setsid ssh -tt $KEYOPT $REMOTE <<EOF
+  [ x"$REMOTE_DISPLAY" = x ] && REMOTE_DISPLAY=:0
+  XOPT=""
+  [ "$REMOTE_DISPLAY" = "-" ] && XOPT="-X"
+
+  setsid ssh -tt $XOPT $KEYOPT $REMOTE <<EOF
     [ -d /opt/ros/indigo ] && . /opt/ros/indigo/setup.bash
     [ -d /opt/ros/jade ] && . /opt/ros/jade/setup.bash
     [ -d $DIR/../../../devel ] && . $DIR/../../../devel/setup.bash || \
@@ -31,7 +35,7 @@ else
     ROS_IP=\$(hostname -I)
     FROM_IP=\$(echo \$SSH_CONNECTION | cut -d ' ' -f 1)
     ROS_MASTER_URI=http://\$FROM_IP:11311
-    DISPLAY=:0
+    [ "$REMOTE_DISPLAY" != "-" ] && DISPLAY=$REMOTE_DISPLAY
     export ROS_IP ROS_MASTER_URI DISPLAY
     rosrun rviz rviz
     #xeyes
