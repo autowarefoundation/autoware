@@ -384,6 +384,12 @@ class MyFrame(rtmgr.MyFrame):
 		self.label_top_cmd.SetFont(font)
 
 		#
+		# for Topics tab
+		#
+		tab = self.tab_topics
+		self.all_tabs.append(tab)
+
+		#
 		# for All
 		#
 		self.nodes_dic = self.nodes_dic_get()
