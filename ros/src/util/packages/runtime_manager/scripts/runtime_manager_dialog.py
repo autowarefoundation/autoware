@@ -1934,6 +1934,8 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(self.label_rosbag_play_pos.SetLabel, pos)
 			wx.CallAfter(self.label_rosbag_play_total.SetLabel, total)
 		wx.CallAfter(self.label_rosbag_play_bar.clear)
+		wx.CallAfter(self.label_rosbag_play_pos.SetLabel, '')
+		wx.CallAfter(self.label_rosbag_play_total.SetLabel, '')
 
 	#def OnPauseRosbagPlay(self, event):
 	#	pause_obj = event.GetEventObject()
