@@ -40,6 +40,7 @@ import psutil
 import select
 import re
 import pickle
+import multiprocessing
 import time # for *debug*
 #import hashlib
 
@@ -120,8 +121,12 @@ class ProcManager:
 		f.write('1' if t else '0')
 		f.close()
 
-	def _ftrace(self, sec):
+	def _ftrace(self, sec, pids=[]):
 		ret = {}
+		opid = {}
+		for cpuno in range(0, multiprocessing.cpu_count()):
+			ret[cpuno] = []
+			opid[cpuno] = 0
 		stime = 0
 		wsec = sec
 		f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
@@ -139,22 +144,34 @@ class ProcManager:
 			if stime == 0:
 				stime = t
 			t -= stime
-			dat = [pid, t]
-			if cpuno not in ret:
-				ret[cpuno] = []
-			ret[cpuno].append(dat)
+			if pid not in pids and pid > 0:
+				pid = 0 # idle...
+			#if pid != opid[cpuno] or pid in pids or opid[cpuno] in pids:
+			if pid != opid[cpuno]:
+				dat = [pid, t]
+				ret[cpuno].append(dat)
+			opid[cpuno] = pid
 			wsec = sec - t
 			if wsec <= 0:
 				break
 		f.close()
 		return ret
 
-	def get_ftrace(self, sec):
+	def _filterNodePid(self, pids):
+		f = open('/sys/kernel/debug/tracing/set_ftrace_pid','w')
+		f.close()
+		for pid in pids:
+			f = open('/sys/kernel/debug/tracing/set_ftrace_pid','a')
+			f.write(str(pid))
+			f.close()
+
+	def get_ftrace(self, sec, pids):
 		st = time.time() # for *debug*
 		self._ftrace(0)
+		self._filterNodePid(pids)
 		self._set_sched_switch(True)
 		self._set_ftrace(True)
-		ret = self._ftrace(1)
+		ret = self._ftrace(1, pids)
 		self._set_ftrace(False)
 		self._set_sched_switch(False)
 		self._ftrace(0)
@@ -179,7 +196,7 @@ class ProcManager:
 								 order['policy'],
 								 order['priority'])
 			elif order['name'] == 'ftrace':
-				ret = self.get_ftrace(order['sec'])
+				ret = self.get_ftrace(order['sec'], order['pids'])
 			elif order['name'] == 'shutdown':
 				conn.send(str.encode("0"))
 				conn.close()

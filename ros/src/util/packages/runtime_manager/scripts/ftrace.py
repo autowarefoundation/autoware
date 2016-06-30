@@ -90,7 +90,7 @@ class MyFrame(wx.Frame):
       for cpuno in range(0, self.cpucount_):
         text = wx.StaticText(self.clpanel_, -1, "CPU%02d:" % (cpuno))
         self.clbox_.Add(text, flag=wx.ALIGN_RIGHT|wx.ALL, border=4)
-        spc = wx.StaticText(self.cgpanel_, -1, " "*160)
+        spc = wx.StaticText(self.cgpanel_, -1, " "*320)
         self.cgbox_.Add(spc, flag=wx.ALL, border=4)
         self.labels_.append(cpuno)
       for (name, pid) in self.pids_:
@@ -103,7 +103,7 @@ class MyFrame(wx.Frame):
         text = wx.StaticText(self.clpanel_, -1, "%s:" % (name))
         text.SetToolTip(wx.ToolTip("pid=%d" % pid))
         self.clbox_.Add(text, flag=wx.ALIGN_RIGHT|wx.ALL, border=4)
-        spc = wx.StaticText(self.cgpanel_, -1, " "*160)
+        spc = wx.StaticText(self.cgpanel_, -1, " "*320)
         self.cgbox_.Add(spc, flag=wx.ALL, border=4)
         self.labels_.append(pid)
       for cpuno in range(0, self.cpucount_):
@@ -153,7 +153,8 @@ class MyFrame(wx.Frame):
     except socket.error:
       print 'Error: cannot connect to proc_manager...'
       return
-    order = { 'name':'ftrace', 'sec':1 }
+    order = { 'name':'ftrace', 'sec':1,
+      'pids':map(lambda n:n[1], self.pids_) }
     sock.send(yaml.dump(order))
     dat = self._prv_recv(sock, 16*1024*1024)
     sock.close()
@@ -250,11 +251,11 @@ def getRosNodes():
         node = ServerProxy(api)
         code, msg, pid = node.getPid('/rosnode')
         if code == 1:
-          res = re.search('^(.*)_[0-9]+_[0-9]+$', nodename)
-          if res is None:
-            nodes.append((nodename, pid))
-          else:
-            nodes.append((res.group(1), pid))
+          res = re.search('^(.*)_[0-9]+$', nodename)
+          while res is not None:
+            nodename = res.group(1)
+            res = re.search('^(.*)_[0-9]+$', nodename)
+          nodes.append((nodename, pid))
       except:
         pass
   return nodes
