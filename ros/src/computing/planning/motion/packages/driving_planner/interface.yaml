@@ -6,11 +6,9 @@
   publish: [/twist_raw]
   subscribe: [/spline, /state]
 - name: velocity_set
-  publish: [/detection_range, /sound_player, /temporal_waypoints, /closest_waypoint,
-    /obstacle]
-  subscribe: [/config/velocity_set, /localizer_pose, /control_pose, /odom_pose, /vscan_points,
-    /base_waypoints, /obj_X/obj_pose, /estimated_vel_mps, /vector_map_info/cross_walk,
-    /vector_map_info/area_class, /vector_map_info/line_class, /vector_map_info/point_class]
+  publish: [/temporal_waypoints, /closest_waypoint]
+  subscribe: [/localizer_pose, /control_pose, /odom_pose, /vscan_points,
+    /base_waypoints, /obj_X/obj_pose, /estimated_vel_mps]
 - name: path_select
   publish: [/final_waypoints]
   subscribe: [/temporal_waypoints]
