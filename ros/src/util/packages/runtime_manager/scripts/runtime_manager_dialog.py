@@ -758,17 +758,17 @@ class MyFrame(rtmgr.MyFrame):
 
 		if 'need_camera_info' in gdic.get('flags', []) and msg_box:
 			ids = self.camera_ids()
-			# after marged to master, udpate to use self.get_var()
-			var = self.prm_var(prm, 'camera_id', {})
-			var['choices'] = ids
+			if ids:
+				var = self.get_var(prm, 'camera_id', {})
+				var['choices'] = ids
 
-			dic_list_push(gdic, 'dialog_type', 'sel_cam')
-			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
-			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
-			dlg_ret = show_modal(dlg)
-			dic_list_pop(gdic, 'dialog_type')
-			if dlg_ret != 0:
-				return False			
+				dic_list_push(gdic, 'dialog_type', 'sel_cam')
+				klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
+				dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
+				dlg_ret = show_modal(dlg)
+				dic_list_pop(gdic, 'dialog_type')
+				if dlg_ret != 0:
+					return False			
 
 		if 'open_dialog' in gdic.get('flags', []) and msg_box:
 			dic_list_push(gdic, 'dialog_type', 'open')
@@ -1161,6 +1161,8 @@ class MyFrame(rtmgr.MyFrame):
 		return hszr
 
 	def camera_ids(self):
+		if self.button_synchronization.GetValue():
+			return []
 		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed s/^$//"
 		return subprocess.check_output(cmd, shell=True).strip().split()
 
@@ -1184,9 +1186,6 @@ class MyFrame(rtmgr.MyFrame):
 		dlg = args.get('dlg')
 		if dlg:
 			dlg.EndModal(idx + 100)
-
-	def prm_var(self, prm, name, def_ret=None):
-		return next( (var for var in prm.get('vars') if var.get('name') == name), def_ret)
 
 	def OnCalibrationPublisher(self, event):
 		obj = event.GetEventObject()
@@ -1221,8 +1220,7 @@ class MyFrame(rtmgr.MyFrame):
 			if not cam_id_obj in cmd_dic:
 				cmd_dic[ cam_id_obj ] = (cmd, None)
 
-		# after marged to master, udpate to use self.get_var()
-		var = self.prm_var(prm, 'camera_id', {})
+		var = self.get_var(prm, 'camera_id', {})
 		var['choices'] = ids
 
 		#
