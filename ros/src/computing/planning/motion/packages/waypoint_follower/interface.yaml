@@ -1,10 +1,9 @@
-- name: odom_gen
-  publish: [/odom_pose]
-  subscribe: [/twist_cmd, /control_pose, /initialpose, /gnss_pose, /base_waypoints]
+- name: wf_simulator
+  publish: [/sim_pose, /sim_velocity]
+  subscribe: [/twist_cmd, /ndt_pose, /initialpose, /gnss_pose, /base_waypoints]
 - name: pure_pursuit
-  publish: [/twist_raw, /next_waypoint, /next_target_mark, /search_circle_mark]
-  subscribe: [/config/waypoint_follower, /final_waypoints, /odom_pose, /control_pose,
-    /estimate_twist, /can_info]
+  publish: [/twist_raw]
+  subscribe: [/final_waypoints, /current_pose, /current_velocity]
 - name: twist_filter
   publish: [/twist_cmd]
-  subscribe: [/config/twist_filter, /twist_raw]
+  subscribe: [/twist_raw]
