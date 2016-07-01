@@ -202,9 +202,13 @@ class MyFrame(rtmgr.MyFrame):
 		objs = [ self.button_point_cloud,
 			 self.button_launch_points_map_loader,
 			 self.button_launch_points_map_loader_update ]
+		tgls = []
 		for obj in objs:
 			gdic_v = self.obj_to_gdic(obj, {}).get('path_pcd', {})
 			gdic_v['hook_var'] = hook_var
+			tgls.append( self.obj_to_gdic(obj, {}).get('ext_toggle_enables', []) )
+		tgls[1].extend(tgls[0])
+		tgls[2].extend(tgls[0])
 
 		#
 		# for Sensing tab
