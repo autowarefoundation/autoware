@@ -769,6 +769,8 @@ class MyFrame(rtmgr.MyFrame):
 				dic_list_pop(gdic, 'dialog_type')
 				if dlg_ret != 0:
 					return False			
+			else:
+				pdic['camera_id'] = ''
 
 		if 'open_dialog' in gdic.get('flags', []) and msg_box:
 			dic_list_push(gdic, 'dialog_type', 'open')
