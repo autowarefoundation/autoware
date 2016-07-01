@@ -114,7 +114,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.log_que_stdout = Queue.Queue()
 		self.log_que_stderr = Queue.Queue()
 		self.log_que_show = Queue.Queue()
-		self.obj_enables = {}
 
 		#
 		# ros
@@ -978,7 +977,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			depend_bool = eval( gdic_v.get('depend_bool', 'lambda v : bool(v)') )
 			v = depend_bool(v)
-			self.obj_enables_set(vp, 'depend', v)
+			enables_set(vp, 'depend', v)
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -1977,7 +1976,7 @@ class MyFrame(rtmgr.MyFrame):
 	def alias_sync(self, obj, v=None):
 		en = None
 		if getattr(obj, 'IsEnabled', None):
-			(key, en) = self.obj_enables_get_last(obj)
+			(key, en) = enables_get_last(obj)
 			if not key:
 				en = obj.IsEnabled()
 		grp = self.alias_grp_get(obj)
@@ -1989,7 +1988,7 @@ class MyFrame(rtmgr.MyFrame):
 			
 			if en is not None and o.IsEnabled() != en and not self.is_toggle_button(o):
 				if key:
-					self.obj_enable_set(o, key, en)
+					enable_set(o, key, en)
 				else:
 					o.Enable(en)
 			if v is not None and getattr(o, 'SetValue', None):
@@ -2258,30 +2257,12 @@ class MyFrame(rtmgr.MyFrame):
 	def toggle_enables(self, objs):
 		for obj in objs:
 			if getattr(obj, 'IsEnabled', None):
-				en = self.obj_enables_get(obj, 'toggle', obj.IsEnabled())
-				self.obj_enables_set(obj, 'toggle', not en)
+				en = enables_get(obj, 'toggle', obj.IsEnabled())
+				enables_set(obj, 'toggle', not en)
 				self.alias_sync(obj)
 
 	def is_toggle_button(self, obj):
 		return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
-
-	def obj_enables_set(self, obj, k, en):
-		d = dic_getset(self.obj_enables, obj, {})
-		d[k] = en
-		d['last_key'] = k
-		obj.Enable( all( d.values() ) )
-
-	def obj_enables_get(self, obj, k, def_ret=None):
-		return self.obj_enables.get(obj, {k:def_ret}).get(k, def_ret)
-
-	def obj_enables_get_last(self, obj):
-		k = self.obj_enables_get(obj, 'last_key')
-		return (k, self.obj_enables_get(obj, k))
-
-	def obj_enables_del(self, obj):
-		d = self.obj_enables
-		if obj in d:
-			del d[obj]
 
 	def obj_name_split(self, obj, pfs):
 		name = self.name_get(obj)
@@ -2448,7 +2429,7 @@ class ParamPanel(wx.Panel):
 			if not self.in_msg(var) and var.get('rosparam'):
 				k = 'ext_toggle_enables'
 				self.gdic[ k ] = self.gdic.get(k, []) + [ vp ]
-				self.frame.obj_enables_set(vp, 'toggle', proc is None)
+				enables_set(vp, 'toggle', proc is None)
 
 			if 'disable' in gdic_v.get('flags', []):
 				vp.Enable(False)
@@ -2478,7 +2459,6 @@ class ParamPanel(wx.Panel):
 
 			vp = gdic_v.get('var')
 			lst_remove_once(self.gdic.get('ext_toggle_enables', []), vp)
-			self.frame.obj_enables_del(vp)
 
 	def in_msg(self, var):
 		if 'topic' not in self.prm or 'msg' not in self.prm:
@@ -3365,6 +3345,25 @@ def set_val(obj, v):
 	if type(obj) is wx.ToggleButton:
 		button_color_change(obj)
 
+def enables_set(obj, k, en):
+	d = attr_getset(obj, 'enabLes', {})
+	d[k] = en
+	d['last_key'] = k
+	obj.Enable( all( d.values() ) )
+	if isinstance(obj, wx.HyperlinkCtrl):
+		if not hasattr(obj, 'coLor'):
+			obj.coLor = { True:obj.GetNormalColour(), False:'#808080' }
+		c = obj.coLor.get(obj.IsEnabled())
+		obj.SetNormalColour(c)
+		obj.SetVisitedColour(c)
+
+def enables_get(obj, k, def_ret=None):
+	return attr_getset(obj, 'enabLes', {}).get(k, def_ret)
+
+def enables_get_last(obj):
+	k = enables_get(obj, 'last_key')
+	return (k, enables_get(obj, k))
+
 def obj_refresh(obj):
 	if type(obj) is CT.GenericTreeItem:
 		while obj.GetParent():
@@ -3399,6 +3398,11 @@ def bak_stk_set(dic, key, v):
 	bak_str_push(dic, key)
 	dic[key] = v
 
+
+def attr_getset(obj, name, def_ret):
+	if not hasattr(obj, name):
+		setattr(obj, name, def_ret)
+	return getattr(obj, name)
 
 def dic_getset(dic, key, def_ret):
 	if key not in dic:
