@@ -73,6 +73,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   sensor_msgs::PointCloud2 filtered_msg;
   pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
+  filtered_msg.header = input->header;
   filtered_points_pub.publish(filtered_msg);
 
   points_filter_info_msg.header = input->header;
