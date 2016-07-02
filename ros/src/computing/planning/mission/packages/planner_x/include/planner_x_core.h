@@ -33,23 +33,68 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <cv_tracker/obj_label.h>
 #include <runtime_manager/traffic_light.h>
+
+#include <map_file/PointClassArray.h>
+#include <map_file/LaneArray.h>
+#include <map_file/NodeArray.h>
+#include <map_file/StopLineArray.h>
+#include <map_file/DTLaneArray.h>
+
+#include <geometry_msgs/Vector3Stamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+#include <tf/tf.h>
+
+
 
 class PlannerX
 {
 public:
+	//bool m_bReadyToPlan;
+	timespec m_Timer;
+	int m_counter;
+	int m_frequency;
+	geometry_msgs::Pose m_InitPos;
+	geometry_msgs::Pose m_GoalPos;
+
+
+	map_file::PointClassArray points;
+	std::vector<map_file::Lane> lanes;
+	std::vector<map_file::Node> nodes;
+	std::vector<map_file::StopLine> stoplines;
+	std::vector<map_file::DTLane> dtlanes;
+
+	ros::Publisher m_PositionPublisher;
+	ros::Publisher m_PathPublisherRviz;
+	ros::Publisher m_PathPublisher;
+
+	ros::NodeHandle* pNodeHandle;
+
+
   // Constructor.
-  PlannerX();
+  PlannerX(ros::NodeHandle* pnh);
 
   // Destructor.
   ~PlannerX();
 
   // Callback function for subscriber.
+  void callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg);
+  void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackFromLightColor(const runtime_manager::traffic_light& msg);
+
   void callbackFromObjCar(const cv_tracker::obj_label& msg);
+
+  void callbackGetVMPoints(const map_file::PointClassArray& msg);
+  void callbackGetVMLanes(const map_file::LaneArray& msg);
+  void callbackGetVMNodes(const map_file::NodeArray& msg);
+  void callbackGetVMStopLines(const map_file::StopLineArray& msg);
+  void callbackGetVMCenterLines(const map_file::DTLaneArray& msg);
+
 };
 
 #endif  // PLANNER_X_H
