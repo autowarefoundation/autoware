@@ -70,6 +70,7 @@ struct Cost
 {
   int occupied = 0;
   int free     = 0;
+  bool unknown = true;
 
   void accumulateCost(int occ, int free);
 };
@@ -91,6 +92,7 @@ void Cost::accumulateCost(int occupied_inc, int free_inc)
 {
   occupied += occupied_inc - free_inc;
   free     += free_inc;
+  unknown   = false;
 
   if (occupied > OCCUPIED_MAX)
     occupied = OCCUPIED_MAX;
@@ -236,6 +238,7 @@ void deleteOldData(std::vector<Cost>* cost_map, double current_x, double current
       int global_grid_x = (i + 100000 * g_scan_size_x) % g_scan_size_x;
       cost_map->at(global_grid_x + j * g_scan_size_x).occupied = 0;
       cost_map->at(global_grid_x + j * g_scan_size_x).free     = 0;
+      cost_map->at(global_grid_x + j * g_scan_size_x).unknown  = true;
     }
   }
 
@@ -246,6 +249,7 @@ void deleteOldData(std::vector<Cost>* cost_map, double current_x, double current
       int global_grid_y = (j + 100000 * g_scan_size_y) % g_scan_size_y;
       cost_map->at(i + global_grid_y * g_scan_size_x).occupied = 0;
       cost_map->at(i + global_grid_y * g_scan_size_x).free     = 0;
+      cost_map->at(i + global_grid_y * g_scan_size_x).unknown  = true;
     }
   }
 }
@@ -362,7 +366,10 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
       int scanmap_index_y = origin_index_y + i;
 
       int global_index = calcGlobalIndex(scanmap_index_x, scanmap_index_y, transform);
-      map.data[j + i * g_map_size_x] = (cost_map[global_index].occupied + 8) * 6;
+      if (cost_map[global_index].unknown)
+        map.data[j + i * g_map_size_x] = -1;
+      else
+        map.data[j + i * g_map_size_x] = (cost_map[global_index].occupied + 8) * 6;
     }
   }
 
