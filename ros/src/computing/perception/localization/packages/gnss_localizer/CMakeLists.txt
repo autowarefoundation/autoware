@@ -4,6 +4,7 @@ project(gnss_localizer)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  nmea_msgs
   tf
   gnss
 )
@@ -14,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lane_follower
-  CATKIN_DEPENDS roscpp std_msgs tf 
+  CATKIN_DEPENDS roscpp std_msgs nmea_msgs tf
   DEPENDS gnss
 )
 

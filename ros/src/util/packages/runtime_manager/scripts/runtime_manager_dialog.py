@@ -114,7 +114,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.log_que_stdout = Queue.Queue()
 		self.log_que_stderr = Queue.Queue()
 		self.log_que_show = Queue.Queue()
-		self.obj_enables = {}
 
 		#
 		# ros
@@ -191,8 +190,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.label_point_cloud_bar = BarLabel(tab, '  Loading...  ')
 		self.label_point_cloud_bar.Enable(False)
 
-		self.pcd_loaded = False
-
 		def hook1G(args):
 			for f in args.get('func')().split(','):
 				sz = os.path.getsize(f)
@@ -204,9 +201,13 @@ class MyFrame(rtmgr.MyFrame):
 		objs = [ self.button_point_cloud,
 			 self.button_launch_points_map_loader,
 			 self.button_launch_points_map_loader_update ]
+		tgls = []
 		for obj in objs:
 			gdic_v = self.obj_to_gdic(obj, {}).get('path_pcd', {})
 			gdic_v['hook_var'] = hook_var
+			tgls.append( self.obj_to_gdic(obj, {}).get('ext_toggle_enables', []) )
+		tgls[1].extend(tgls[0])
+		tgls[2].extend(tgls[0])
 
 		#
 		# for Sensing tab
@@ -384,6 +385,12 @@ class MyFrame(rtmgr.MyFrame):
 
 		font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 		self.label_top_cmd.SetFont(font)
+
+		#
+		# for Topics tab
+		#
+		tab = self.tab_topics
+		self.all_tabs.append(tab)
 
 		#
 		# for All
@@ -653,8 +660,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.route_cmd_waypoint = data.point
 
 	def stat_callback(self, msg, k):
-		if k == 'pmap' and msg.data and not self.pcd_loaded:
-			return
 		self.stat_dic[k] = msg.data
 		if k == 'pmap':
 			v = self.stat_dic.get(k)
@@ -756,17 +761,19 @@ class MyFrame(rtmgr.MyFrame):
 
 		if 'need_camera_info' in gdic.get('flags', []) and msg_box:
 			ids = self.camera_ids()
-			# after marged to master, udpate to use self.get_var()
-			var = self.prm_var(prm, 'camera_id', {})
-			var['choices'] = ids
+			if ids:
+				var = self.get_var(prm, 'camera_id', {})
+				var['choices'] = ids
 
-			dic_list_push(gdic, 'dialog_type', 'sel_cam')
-			klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
-			dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
-			dlg_ret = show_modal(dlg)
-			dic_list_pop(gdic, 'dialog_type')
-			if dlg_ret != 0:
-				return False			
+				dic_list_push(gdic, 'dialog_type', 'sel_cam')
+				klass_dlg = globals().get(gdic_dialog_name_get(gdic), MyDialogParam)
+				dlg = klass_dlg(self, pdic=pdic, gdic=gdic, prm=prm)
+				dlg_ret = show_modal(dlg)
+				dic_list_pop(gdic, 'dialog_type')
+				if dlg_ret != 0:
+					return False			
+			else:
+				pdic['camera_id'] = ''
 
 		if 'open_dialog' in gdic.get('flags', []) and msg_box:
 			dic_list_push(gdic, 'dialog_type', 'open')
@@ -970,7 +977,7 @@ class MyFrame(rtmgr.MyFrame):
 				continue
 			depend_bool = eval( gdic_v.get('depend_bool', 'lambda v : bool(v)') )
 			v = depend_bool(v)
-			self.obj_enables_set(vp, 'depend', v)
+			enables_set(vp, 'depend', v)
 
 	def publish_param_topic(self, pdic, prm):
 		pub = prm['pub']
@@ -1159,6 +1166,8 @@ class MyFrame(rtmgr.MyFrame):
 		return hszr
 
 	def camera_ids(self):
+		if self.button_synchronization.GetValue():
+			return []
 		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed s/^$//"
 		return subprocess.check_output(cmd, shell=True).strip().split()
 
@@ -1182,9 +1191,6 @@ class MyFrame(rtmgr.MyFrame):
 		dlg = args.get('dlg')
 		if dlg:
 			dlg.EndModal(idx + 100)
-
-	def prm_var(self, prm, name, def_ret=None):
-		return next( (var for var in prm.get('vars') if var.get('name') == name), def_ret)
 
 	def OnCalibrationPublisher(self, event):
 		obj = event.GetEventObject()
@@ -1219,8 +1225,7 @@ class MyFrame(rtmgr.MyFrame):
 			if not cam_id_obj in cmd_dic:
 				cmd_dic[ cam_id_obj ] = (cmd, None)
 
-		# after marged to master, udpate to use self.get_var()
-		var = self.prm_var(prm, 'camera_id', {})
+		var = self.get_var(prm, 'camera_id', {})
 		var['choices'] = ids
 
 		#
@@ -1899,7 +1904,6 @@ class MyFrame(rtmgr.MyFrame):
 		if n == 0:
 			return
 		i = 0
-		self.pcd_loaded = False
 		while not ev.wait(0):
 			s = self.stdout_file_search(file, 'load ')
 			if not s:
@@ -1910,7 +1914,6 @@ class MyFrame(rtmgr.MyFrame):
 			else:
 				i -= 1
 				print s
-			self.pcd_loaded = (i == n)
 			wx.CallAfter(self.label_point_cloud_bar.set, 100 * i / n)
 		wx.CallAfter(self.label_point_cloud_bar.clear)
 
@@ -1934,6 +1937,8 @@ class MyFrame(rtmgr.MyFrame):
 			wx.CallAfter(self.label_rosbag_play_pos.SetLabel, pos)
 			wx.CallAfter(self.label_rosbag_play_total.SetLabel, total)
 		wx.CallAfter(self.label_rosbag_play_bar.clear)
+		wx.CallAfter(self.label_rosbag_play_pos.SetLabel, '')
+		wx.CallAfter(self.label_rosbag_play_total.SetLabel, '')
 
 	#def OnPauseRosbagPlay(self, event):
 	#	pause_obj = event.GetEventObject()
@@ -1971,7 +1976,7 @@ class MyFrame(rtmgr.MyFrame):
 	def alias_sync(self, obj, v=None):
 		en = None
 		if getattr(obj, 'IsEnabled', None):
-			(key, en) = self.obj_enables_get_last(obj)
+			(key, en) = enables_get_last(obj)
 			if not key:
 				en = obj.IsEnabled()
 		grp = self.alias_grp_get(obj)
@@ -1983,7 +1988,7 @@ class MyFrame(rtmgr.MyFrame):
 			
 			if en is not None and o.IsEnabled() != en and not self.is_toggle_button(o):
 				if key:
-					self.obj_enable_set(o, key, en)
+					enable_set(o, key, en)
 				else:
 					o.Enable(en)
 			if v is not None and getattr(o, 'SetValue', None):
@@ -2252,30 +2257,12 @@ class MyFrame(rtmgr.MyFrame):
 	def toggle_enables(self, objs):
 		for obj in objs:
 			if getattr(obj, 'IsEnabled', None):
-				en = self.obj_enables_get(obj, 'toggle', obj.IsEnabled())
-				self.obj_enables_set(obj, 'toggle', not en)
+				en = enables_get(obj, 'toggle', obj.IsEnabled())
+				enables_set(obj, 'toggle', not en)
 				self.alias_sync(obj)
 
 	def is_toggle_button(self, obj):
 		return self.name_get(obj).split('_')[0] == 'button' and getattr(obj, 'GetValue', None)
-
-	def obj_enables_set(self, obj, k, en):
-		d = dic_getset(self.obj_enables, obj, {})
-		d[k] = en
-		d['last_key'] = k
-		obj.Enable( all( d.values() ) )
-
-	def obj_enables_get(self, obj, k, def_ret=None):
-		return self.obj_enables.get(obj, {k:def_ret}).get(k, def_ret)
-
-	def obj_enables_get_last(self, obj):
-		k = self.obj_enables_get(obj, 'last_key')
-		return (k, self.obj_enables_get(obj, k))
-
-	def obj_enables_del(self, obj):
-		d = self.obj_enables
-		if obj in d:
-			del d[obj]
 
 	def obj_name_split(self, obj, pfs):
 		name = self.name_get(obj)
@@ -2442,7 +2429,7 @@ class ParamPanel(wx.Panel):
 			if not self.in_msg(var) and var.get('rosparam'):
 				k = 'ext_toggle_enables'
 				self.gdic[ k ] = self.gdic.get(k, []) + [ vp ]
-				self.frame.obj_enables_set(vp, 'toggle', proc is None)
+				enables_set(vp, 'toggle', proc is None)
 
 			if 'disable' in gdic_v.get('flags', []):
 				vp.Enable(False)
@@ -2472,7 +2459,6 @@ class ParamPanel(wx.Panel):
 
 			vp = gdic_v.get('var')
 			lst_remove_once(self.gdic.get('ext_toggle_enables', []), vp)
-			self.frame.obj_enables_del(vp)
 
 	def in_msg(self, var):
 		if 'topic' not in self.prm or 'msg' not in self.prm:
@@ -3359,6 +3345,25 @@ def set_val(obj, v):
 	if type(obj) is wx.ToggleButton:
 		button_color_change(obj)
 
+def enables_set(obj, k, en):
+	d = attr_getset(obj, 'enabLes', {})
+	d[k] = en
+	d['last_key'] = k
+	obj.Enable( all( d.values() ) )
+	if isinstance(obj, wx.HyperlinkCtrl):
+		if not hasattr(obj, 'coLor'):
+			obj.coLor = { True:obj.GetNormalColour(), False:'#808080' }
+		c = obj.coLor.get(obj.IsEnabled())
+		obj.SetNormalColour(c)
+		obj.SetVisitedColour(c)
+
+def enables_get(obj, k, def_ret=None):
+	return attr_getset(obj, 'enabLes', {}).get(k, def_ret)
+
+def enables_get_last(obj):
+	k = enables_get(obj, 'last_key')
+	return (k, enables_get(obj, k))
+
 def obj_refresh(obj):
 	if type(obj) is CT.GenericTreeItem:
 		while obj.GetParent():
@@ -3393,6 +3398,11 @@ def bak_stk_set(dic, key, v):
 	bak_str_push(dic, key)
 	dic[key] = v
 
+
+def attr_getset(obj, name, def_ret):
+	if not hasattr(obj, name):
+		setattr(obj, name, def_ret)
+	return getattr(obj, name)
 
 def dic_getset(dic, key, def_ret):
 	if key not in dic:

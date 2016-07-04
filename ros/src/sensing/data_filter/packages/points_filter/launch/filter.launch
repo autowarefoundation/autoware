@@ -1,0 +1,8 @@
+<launch>
+  <arg name="sync" default="false" />
+  <arg name="node_name" default="voxel_grid_filter" />
+
+  <node pkg="points_filter" name="$(arg node_name)" type="$(arg node_name)">
+    <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+  </node>
+</launch>

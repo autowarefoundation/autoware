@@ -196,7 +196,7 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
 		  break;  // publish the first state in detector.contexts
   }
 
-  //signalState_pub.publish(state_msg);
+  signalState_pub.publish(state_msg);
   if (state_msg.traffic_light != prev_state) {
     signalStateString_pub.publish(state_string_msg);
   } else {

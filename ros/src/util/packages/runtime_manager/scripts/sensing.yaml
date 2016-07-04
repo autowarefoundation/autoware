@@ -149,20 +149,32 @@ cmds:
     subs :
     - name : voxel_grid_filter
       desc : voxel_grid_filter desc sample
-      cmd  : rosrun points_filter voxel_grid_filter
+      cmd  : roslaunch points_filter filter.launch node_name:=voxel_grid_filter
       param: voxel_grid_filter
+      gui  :
+        sync :
+          func : self.button_synchronization.GetValue()
     - name : ring_filter
       desc : ring_filter desc sample
-      cmd  : rosrun points_filter ring_filter
+      cmd  : roslaunch points_filter filter.launch node_name:=ring_filter
       param: ring_filter
+      gui  :
+        sync :
+          func : self.button_synchronization.GetValue()
     - name : distance_filter
       desc : distance_filter desc sample
-      cmd  : rosrun points_filter distance_filter
+      cmd  : roslaunch points_filter filter.launch node_name:=distance_filter
       param: distance_filter
+      gui  :
+        sync :
+          func : self.button_synchronization.GetValue()
     - name : random_filter
       desc : random_filter desc sample
-      cmd  : rosrun points_filter random_filter
+      cmd  : roslaunch points_filter filter.launch node_name:=random_filter
       param: random_filter
+      gui  :
+        sync :
+          func : self.button_synchronization.GetValue()
 
 buttons:
   calibration_toolkit :
@@ -303,6 +315,13 @@ params :
       min   : 0
       max   : 10
       v     : 2.0
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : ring_filter
     topic : /config/ring_filter
@@ -320,6 +339,13 @@ params :
       min   : 0
       max   : 10
       v     : 2.0
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : distance_filter
     topic : /config/distance_filter
@@ -331,6 +357,13 @@ params :
       min   : 100
       max   : 30000
       v     : 10000
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : random_filter
     topic : /config/random_filter
@@ -342,6 +375,13 @@ params :
       min   : 100
       max   : 30000
       v     : 10000
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : calibration_publisher
     vars  :
