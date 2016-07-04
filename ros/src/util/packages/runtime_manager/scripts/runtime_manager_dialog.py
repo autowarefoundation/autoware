@@ -2345,7 +2345,7 @@ class ParamPanel(wx.Panel):
 
 		self.gdic['param_panel'] = self
 
-		obj = self.frame.cfg_prm_to_obj( {'param':self.prm} )
+		obj = self.frame.cfg_prm_to_obj( {'pdic':self.pdic, 'gdic':self.gdic, 'param':self.prm} )
 		(_, _, proc) = self.frame.obj_to_cmd_dic_cmd_proc(obj)
 
 		hszr = None
