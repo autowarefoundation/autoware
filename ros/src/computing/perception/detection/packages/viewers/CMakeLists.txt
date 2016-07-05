@@ -69,7 +69,7 @@ target_link_libraries(points_image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(points_image_d_viewer points2image_generate_messages_cpp)
+add_dependencies(points_image_d_viewer points2image_generate_messages_cpp cv_tracker_generate_messages_cpp)
 
 add_executable(vscan_image_viewer nodes/vscan_image_viewer/vscan_image_viewer.cpp)
 target_link_libraries(vscan_image_viewer
