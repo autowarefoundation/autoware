@@ -25,6 +25,8 @@
 
 #include<mutex>
 
+
+
 namespace ORB_SLAM2
 {
 
@@ -51,8 +53,7 @@ void LocalMapping::Run()
 
     while(1)
     {
-    	localMappingRunMutex.lock ();
-
+//    	localMappingRunMutex.lock ();
 //    	cout << "LocalMapping Run start" << endl;
 
         // Tracking will see that Local Mapping is busy
@@ -101,7 +102,7 @@ void LocalMapping::Run()
             }
 //            localMappingRunMutex.unlock();
             if(CheckFinish()) {
-            	localMappingRunMutex.unlock();
+//            	localMappingRunMutex.unlock();
                 break;
             }
         }
@@ -111,7 +112,7 @@ void LocalMapping::Run()
         // Tracking will see that Local Mapping is busy
         SetAcceptKeyFrames(true);
 //        cout << "LocalMapping Run stop" << endl;
-        localMappingRunMutex.unlock();
+//        localMappingRunMutex.unlock();
 
         if(CheckFinish())
             break;

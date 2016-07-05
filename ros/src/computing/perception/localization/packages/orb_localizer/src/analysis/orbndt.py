@@ -1,4 +1,3 @@
-
 from __future__ import division
 import numpy as np
 import datetime
@@ -17,6 +16,19 @@ ndtFName = '/home/sujiwo/ORB_SLAM/Data/20151106-1/ndt.csv'
 orbFName = '/home/sujiwo/ORB_SLAM/Data/20151106-1/orb-slam.csv'
 
 
+
+def ClosestPointInLine (PointA, PointB, pointChk, ifPointInLine=None):
+    ap = pointChk.coord() - PointA.coord()
+    ab = PointB.coord() - PointA.coord()
+    cs = (np.dot(ap, ab) / np.dot(ab, ab))
+    ptx = PointA.coord() + ab * cs
+    retval = Pose(pointChk.timestamp, \
+        ptx[0], ptx[1], ptx[2], \
+        pointChk.qx, pointChk.qy, pointChk.qz, pointChk.qw)
+    if ifPointInLine is None :
+        return retval
+    else :
+        return retval, cs
 
 class Pose :
     def __init__ (self, t=0, _x=0, _y=0, _z=0, _qx=0, _qy=0, _qz=0, _qw=1):
@@ -39,6 +51,9 @@ class Pose :
             self.qz = _qz
             self.qw = _qw
             
+    def plot (self, size=50, **kwargs):
+        return plt.scatter(self.x, self.y, s=size, linewidths=0, **kwargs)
+            
     @staticmethod
     # RPY must be in Radian
     def xyzEuler (x, y, z, roll, pitch, yaw, timestamp=0):
@@ -49,6 +64,9 @@ class Pose :
         pose.qz = qt[2]
         pose.qw = qt[3]
         return pose
+    
+    def quaternion (self):
+        return np.array([self.qx, self.qy, self.qz, self.qw])
             
     def __str__ (self):
         return "X={}, Y={}, Z={}, Qx={}, Qy={}, Qz={}, Qw={}".format(self.x, self.y, self.z, self.qx, self.qy, self.qz, self.qw)
@@ -163,6 +181,40 @@ class Pose :
                      rotmat1[1][0:3].dot([ot.x, ot.y, ot.z]) + self.y,
                      rotmat1[2][0:3].dot([ot.x, ot.y, ot.z]) + self.z,
                      q[0], q[1], q[2], q[3])
+        
+    def doApplyMe (self, ot):
+        p = self.apply(ot)
+        self.x = p.x
+        self.y = p.y
+        self.z = p.z
+        self.qx = p.qx
+        self.qy = p.qy
+        self.qz = p.qz
+        self.qw = p.qw
+        
+    def measureErrorLateral (self, groundTruth, timeTolerance=0.1, useZ=False):
+        pMin, pMax = groundTruth.findNearPosesByTime (self, timeTolerance)
+        # XXX: I know this is Wrong
+        if pMin is None or pMax is None:
+            return 1000
+
+        pointChk, c = ClosestPointInLine(pMin, pMax, self, True)
+        if c>=0.0 and c<=1.0:
+            if (useZ):
+                return np.linalg.norm([self.x-pointChk.x, self.y-pointChk.y, self.z-pointChk.z], 2)
+            else :
+                return np.linalg.norm([self.x-pointChk.x, self.y-pointChk.y], 2)
+        elif c<0.0:
+            if (useZ):
+                return np.linalg.norm([self.x-pMin.x, self.y-pMin.y, self.z-pMin.z], 2)
+            else :
+                return np.linalg.norm([self.x-pMin.x, self.y-pMin.y], 2)
+        else:
+            if (useZ):
+                return np.linalg.norm([self.x-pMax.x, self.y-pMax.y, self.z-pMax.z], 2)
+            else :
+                return np.linalg.norm([self.x-pMax.x, self.y-pMax.y], 2)                
+
 
 class PoseTable :
     def __init__ (self):
@@ -199,6 +251,11 @@ class PoseTable :
             ckey = max (ckeys)
         self.idList[ckey+1] = self.c
         self.c += 1
+        
+    def apply (self, poseX):
+        for pose in self.table:
+            pose = pose.doApplyMe (poseX)
+        pass
         
     def length (self, tolerance=0):
         """
@@ -245,7 +302,7 @@ class PoseTable :
         if (pose.timestamp < self.table[0].timestamp) :
             raise KeyError ("Timestamp less than table")
         if (pose.timestamp > self.table[self.c-1].timestamp) :
-            raise KeyError ("Timestamp is outside table")
+            raise KeyError ("Timestamp is outside table: " + str(pose.timestamp))
         candidates = set()
         i = 0
         for p in range(len(self.table)) :
@@ -271,9 +328,55 @@ class PoseTable :
                 else:
                     tcandidates.append(c)
             return sorted (tcandidates, key=lambda pose: pose.tdif)
-        return sorted (candidates, key=lambda pose: pose.timestamp)
+        #return sorted (candidates, key=lambda pose: pose.timestamp)
+        return min(candidates, key=lambda p: abs(p.timestamp-pose.timestamp))
+ 
+ 
+    def findNearPosesByTime (self, srcpose, tolerance=0.1):
+        if (srcpose.timestamp < self.table[0].timestamp) :
+            raise KeyError ("Timestamp less than table")
+        if (srcpose.timestamp > self.table[-1].timestamp) :
+            raise KeyError ("Timestamp is outside table: " + str(srcpose.timestamp))
+ 
+        nearMin = None
+        nearMax = None
+        for p in range(len(self)):
+            i = p
+            cpose = self.table[i]
+            if (cpose.timestamp > srcpose.timestamp and abs(cpose.timestamp-srcpose.timestamp)<=tolerance):
+                nearMax = copy(cpose)
+                break
+        while i != 0 :
+            cpose = self.table[i]
+            i -= 1
+            if (cpose.timestamp < srcpose.timestamp and abs(cpose.timestamp-srcpose.timestamp)<=tolerance):
+                nearMin = copy (cpose)
+                break
+        return (nearMin, nearMax)
+    
+    
+    def interpolateByTime (self, srcpose, tolerance=0.1):
+        pmin, pmax = self.findNearPosesByTime (srcpose, tolerance)
+        tRatio = (srcpose.timestamp - pmin.timestamp) / (pmax.timestamp - pmin.timestamp)
         
-    def findNearestInTime (self, timestamp, tolerance):
+        # Interpolation of Position
+        pvmin = pmin.coord()
+        pvmax = pmax.coord()
+        posInt = pvmin + tRatio * (pvmax - pvmin)
+        
+        # Interpolation of orientation
+        qmin = pmin.quaternion()
+        qmax = pmax.quaternion()
+        qInt = trafo.quaternion_slerp(qmin, qmax, tRatio)
+        return Pose(srcpose.timestamp, posInt[0], posInt[1], posInt[2], \
+            qInt[0], qInt[1], qInt[2], qInt[3])
+        
+    
+    def interpolateByProjection (self, srcpose, tolerance=0.1):
+        pmin, pmax = self.findNearPosesByTime (srcpose, tolerance)
+        
+    
+    def findNearestInTime (self, timestamp, tolerance=0.1):
         candidates = set()
         for p in self.table:
             tdiff = abs(p.timestamp - timestamp)
@@ -285,14 +388,21 @@ class PoseTable :
             return None
         return min(candidates, key=lambda p: abs(p.timestamp-timestamp))
             
-    def findNearestByDistance (self, pose, returnIdx=False):
+    def findNearestByDistance (self, pose, returnIdx=False, *args):
         if (returnIdx==False):
             return min(self.table, 
                        key=lambda p: 
                            np.linalg.norm(pose.coord()-p.coord()))
-        else:
+            
+        elif (returnIdx==True) :
             dist = np.array([np.linalg.norm(pose.coord()-p.coord()) for p in self.table])
             return np.argmin(dist)
+        
+        elif len(args)>0 :
+            posecoord = np.array([pose, returnIdx, args[0]])
+            return min(self.table, 
+                key=lambda p: 
+                    np.linalg.norm(posecoord-p.coord()))
             
         
     def last(self):
@@ -306,6 +416,14 @@ class PoseTable :
         array = self.toArray()
         return plt.plot(array[:,col1], array[:,col2], **kwargs)
         
+    def plotRange (self, col1, col2, rangeFrom, rangeTo, **kwargs):
+        array = self.toArray()
+        return plt.plot(array[rangeFrom:rangeTo, col1], array[rangeFrom:rangeTo, col2], **kwargs)
+    
+    # Choosing columns: 1->X, 2->Y, 3->Z
+    def plotTimeToAxis (self, col):
+        matr = self.toArray(True)
+        return plt.plot(matr[:,0], matr[:,col])
     
     @staticmethod 
     def loadCsv (filename):
@@ -379,7 +497,7 @@ class PoseTable :
         return matchInTime
         
     @staticmethod
-    def compareErrors (poseTbl1, poseTbl2, useZ=True):
+    def compareErrorsByTime (poseTbl1, poseTbl2, useZ=True):
         """
         poseTbl1 -> for source table
         poseTbl2 -> for ground truth
@@ -387,24 +505,57 @@ class PoseTable :
         errorVect = []
         i=0
         for pose in poseTbl1.table:
-            nearp = poseTbl2.findNearestByDistance(pose)
-            if (useZ):
-                errv = np.linalg.norm([pose.x-nearp.x, pose.y-nearp.y, pose.z-nearp.z], 2)
-            else:
-                errv = np.linalg.norm([pose.x-nearp.x, pose.y-nearp.y], 2)
-            errorVect.append([pose.timestamp, errv])
-            i+=1
-            #if i>=10000:
-            #    break
-            print ("{} out of {}".format(i, len(poseTbl1)))
+            try:
+                nearp = poseTbl2.findNearestByTime(pose)
+                if (useZ):
+                    errv = np.linalg.norm([pose.x-nearp.x, pose.y-nearp.y, pose.z-nearp.z], 2)
+                else:
+                    errv = np.linalg.norm([pose.x-nearp.x, pose.y-nearp.y], 2)
+                errorVect.append([pose.timestamp, errv])
+                i+=1
+                #if i>=10000:
+                #    break
+                print ("{} out of {}".format(i, len(poseTbl1)))
+            except KeyError as e:
+                print e
         return errorVect
         
 
     @staticmethod
-    def compareErrorsByDistance (poseTblSource, groundTruth):
-        pass        
-        
-        
+    def compareErrorsByDistance (poseTblSource, groundTruth, useZ=True):
+        errorVect = []
+        i=0
+        for pose in poseTblSource.table:
+            try:
+                nearp = groundTruth.findNearestByDistance(pose)
+                if (useZ):
+                    errv = np.linalg.norm([pose.x-nearp.x, pose.y-nearp.y, pose.z-nearp.z], 2)
+                else:
+                    errv = np.linalg.norm([pose.x-nearp.x, pose.y-nearp.y], 2)
+                errorVect.append([pose.timestamp, errv])
+                i+=1
+                #if i>=10000:
+                #    break
+                print ("{} out of {}".format(i, len(poseTblSource)))
+            except KeyError as e:
+                print e
+        return errorVect
+
+    @staticmethod
+    def compareLateralErrors (poseTblSource, groundTruth, tolerance=0.15, useZ=False):
+        errorVect = []
+        i = 0
+        for pose in poseTblSource.table:
+            try:
+                errMeas = pose.measureErrorLateral (groundTruth, tolerance, useZ)
+                errorVect.append ([pose.timestamp, errMeas])
+            except KeyError as e:
+                pass
+            i += 1
+            print ("{} out of {}".format(i, len(poseTblSource)))
+        return errorVect
+
+
     @staticmethod
     # XXX: Unfinished
     def removeSpuriousPoints (poseTbl1):
@@ -666,8 +817,10 @@ def readMessage (bag, topic, timestamp):
 
 
 if __name__ == '__main__' :
-#    pose = Pose(0, -18189.700088140777, -93610.803960086356, 39.017135599450569, -0.34527926961008715, 0.62166549540178306, -0.61414352846965803, 0.34226008274880476)
-    pose1 = Pose.xyzEuler(1,0,0, 0,0,0)
-    pose2 = Pose.xyzEuler(0,0,0, 0,0,np.pi/2)
-    pose3 = pose1.apply (pose2)
+    groundTruth = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/groundTruth.bag')
+    testmap1 = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map1/slowrate.bag', '/ORB_SLAM/World', '/ORB_SLAM/ExtCamera')
+    testpose = testmap1[63766]
+    erz = testpose.measureErrorLateral (groundTruth, timeTolerance=0.2)
+    
+    pass
     

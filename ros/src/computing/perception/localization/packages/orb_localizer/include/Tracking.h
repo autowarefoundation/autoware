@@ -80,6 +80,9 @@ public:
     KeyFrame* getNearestKeyFrame()
     { return mpLastKeyFrame; }
 
+    inline void setFps (int f)
+    {  mMaxFrames = f; }
+
 public:
 
     // Tracking states
@@ -90,6 +93,13 @@ public:
         OK=2,
         LOST=3,
 		MAP_OPEN=4
+    };
+
+    enum trackingMode {
+    	RELOCALIZATION = 0,
+		TRACK_WITH_MOTION_MODEL = 1,
+		TRACK_REFERENCE_KEYFRAME = 2,
+		TRACK_LOCAL_MAP = 3
     };
 
     eTrackingState mState;
@@ -124,6 +134,8 @@ public:
     // used when offline
     LocalMapping *mLocalMapper;
     LoopClosing *mLoopCloser;
+
+    trackingMode lastTrackingMode;
 
 protected:
 

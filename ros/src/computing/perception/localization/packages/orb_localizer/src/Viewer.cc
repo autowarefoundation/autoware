@@ -122,17 +122,6 @@ void Viewer::Run()
             bFollow = false;
         }
 
-//        if(menuLocalizationMode && !bLocalizationMode)
-//        {
-//            mpSystem->ActivateLocalizationMode();
-//            bLocalizationMode = true;
-//        }
-//        else if(!menuLocalizationMode && bLocalizationMode)
-//        {
-//            mpSystem->DeactivateLocalizationMode();
-//            bLocalizationMode = false;
-//        }
-
         d_cam.Activate(s_cam);
         glClearColor(1.0f,1.0f,1.0f,1.0f);
         mpMapDrawer->DrawCurrentCamera(Twc);
@@ -152,10 +141,6 @@ void Viewer::Run()
             menuShowGraph = true;
             menuShowKeyFrames = true;
             menuShowPoints = true;
-//            menuLocalizationMode = false;
-//            if(bLocalizationMode)
-//                mpSystem->DeactivateLocalizationMode();
-//            bLocalizationMode = false;
             bFollow = true;
             menuFollowCamera = true;
             mpSystem->Reset();

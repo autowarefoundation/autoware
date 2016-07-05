@@ -79,8 +79,13 @@ int main (int argc, char *argv[])
 
 	bool tracked = false;
 	uint32_t frameCounter = 0;
+	SLAM.getTracker()->setFps(10);
 
 	foreach (rosbag::MessageInstance const msg, view) {
+
+		frameCounter ++;
+		if (frameCounter % 2 == 1)
+			continue;
 
 		double timestamp;
 
@@ -117,7 +122,7 @@ int main (int argc, char *argv[])
 			if (tracked==true) {
 //				cout << "Frame Counter: " << frameCounter << endl;
 				cout << "Stopping due to lost after " << frameCounter << " frames, timestamp: " << timestamp << endl;
-				return -1;
+				break;
 			}
 		}
 

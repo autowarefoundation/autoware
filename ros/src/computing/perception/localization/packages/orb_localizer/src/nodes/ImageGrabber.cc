@@ -6,9 +6,12 @@
  */
 
 #include "ImageGrabber.h"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 
 using namespace std;
+using namespace boost::posix_time;
+
 using ORB_SLAM2::Frame;
 namespace enc = sensor_msgs::image_encodings;
 
@@ -37,6 +40,9 @@ ImageGrabber::ImageGrabber(ORB_SLAM2::System* pSLAM, bool runOffline) :
 
 		mTfBr->sendTransform(tf::StampedTransform(tfT,ros::Time::now(), "/ORB_SLAM/World", "/ORB_SLAM/Camera"));
 	}
+
+	logFd.open("/tmp/orb_slam.log", ios_base::out);
+	logFd << std::fixed << setprecision(7);
 }
 
 
@@ -53,9 +59,9 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 {
 	// Activate this timer if you need time logging
 //	ros::Time rT1, rT2;
-//	double rtd;
-//
-//	rT1 = ros::Time::now();
+	ptime rT1, rT2;
+	double rtd;
+	rT1 = microsec_clock::local_time();
 
 	// Copy the ros image message to cv::Mat.
 	cv_bridge::CvImageConstPtr cv_ptr;
@@ -95,6 +101,8 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 	else
 		image = cv_ptr->image;
 
+	const double imageTime = msg->header.stamp.toSec();
+
 	// Do Resizing and cropping here
 	cv::resize(image, image,
 		cv::Size(
@@ -109,9 +117,11 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 			(int)mpSLAM->fsSettings["Camera.ROI.height"]
 		)).clone();
 
-	mpSLAM->TrackMonocular(image,cv_ptr->header.stamp.toSec());
+	mpSLAM->TrackMonocular(image, imageTime);
 
 	// Reinsert TF publisher, but only for localization. Original ORB-SLAM2 removes it.
+	bool tfOk = false;
+	tf::Transform locRef;
 	Frame &cframe = mpSLAM->getTracker()->mCurrentFrame;
 	if (mpSLAM->opMode==ORB_SLAM2::System::LOCALIZATION and
 		!cframe.mTcw.empty() and
@@ -119,22 +129,45 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 	) {
 
 		tf::Transform tfTcw = FramePose(&cframe);
-		mTfBr->sendTransform(tf::StampedTransform(tfTcw,ros::Time::now(), "/ORB_SLAM/World", "/ORB_SLAM/Camera"));
+		mTfBr->sendTransform(tf::StampedTransform(tfTcw, ros::Time(imageTime), "/ORB_SLAM/World", "/ORB_SLAM/Camera"));
 
 		// Here, we use offset of external localization from the keyframe
 		if (mpSLAM->getTracker()->mbOnlyTracking==true) {
 //			ORB_SLAM2::KeyFrame *kfRef = cframe.mpReferenceKF;
 			try {
-				tf::Transform locRef = localizeByReference(tfTcw);
-				mTfBr->sendTransform(tf::StampedTransform(locRef, ros::Time::now(), "/ORB_SLAM/World", "/ORB_SLAM/ExtCamera"));
+				locRef = localizeByReference(tfTcw);
+				mTfBr->sendTransform(tf::StampedTransform(locRef, ros::Time(imageTime), "/ORB_SLAM/World", "/ORB_SLAM/ExtCamera"));
+				tfOk = true;
 			} catch (...) {}
 		}
 
 	} else { }
 
-//	rT2 = ros::Time::now();
-//	rtd = (rT2-rT1).toSec();
-//	cout << "Timed: " << rtd << endl;
+	rT2 = microsec_clock::local_time();
+	rtd = (rT2-rT1).total_microseconds() * 1e-6;
+
+	// Log to file
+	// Image timestamp
+	logFd << imageTime << " ";
+	// General status; 1: OK, 0: Lost
+	logFd << (int)tfOk << " ";
+	// Tracking mode
+	logFd << (int)mpSLAM->getTracker()->lastTrackingMode << " ";
+	// Frame processing time
+	logFd << rtd;
+
+	if (mpSLAM->opMode==ORB_SLAM2::System::LOCALIZATION) {
+		if (!cframe.mTcw.empty()) {
+			tf::Vector3 &p = locRef.getOrigin();
+			logFd << " " << p.x() << " " << p.y() << " " << p.z();
+		}
+		else {
+			logFd << " NaN NaN NaN";
+		}
+	}
+
+	logFd << endl;
+	logFd.flush();
 }
 
 

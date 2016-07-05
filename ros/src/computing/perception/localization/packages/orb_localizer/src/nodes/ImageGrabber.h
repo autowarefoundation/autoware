@@ -67,7 +67,6 @@ public:
     	const tf::Transform &realMapPose, const tf::Transform &realMapOffset);
 
 
-
 	static inline tf::Transform getKeyFrameExtPose (const KeyFrame *kf)
 	{
 		tf::Transform Ext;
@@ -120,6 +119,10 @@ public:
 		cvVec[2] = pos.z();
 		return cvVec;
 	}
+
+
+	// Logging
+	fstream logFd;
 };
 
 

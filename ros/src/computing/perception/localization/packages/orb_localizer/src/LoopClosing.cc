@@ -85,7 +85,7 @@ void LoopClosing::Run()
 
     while(1)
     {
-    	loopCloserRunMutex.lock ();
+//    	loopCloserRunMutex.lock ();
 
         // Check if there are keyframes in the queue
         if(CheckNewKeyFrames())
@@ -105,7 +105,7 @@ void LoopClosing::Run()
 
         ResetIfRequested();
 
-        loopCloserRunMutex.unlock();
+//        loopCloserRunMutex.unlock();
 
         if(CheckFinish())
             break;

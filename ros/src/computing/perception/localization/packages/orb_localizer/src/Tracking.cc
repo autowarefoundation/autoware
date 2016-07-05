@@ -530,10 +530,14 @@ void Tracking::Track()
     else
     {
         // This can happen if tracking is lost
-        mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
-        mlpReferences.push_back(mlpReferences.back());
-        mlFrameTimes.push_back(mlFrameTimes.back());
-        mlbLost.push_back(mState==LOST);
+    	if (!mlRelativeFramePoses.empty())
+    		mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
+    	if (!mlpReferences.empty())
+    		mlpReferences.push_back(mlpReferences.back());
+    	if (!mlFrameTimes.empty())
+    		mlFrameTimes.push_back(mlFrameTimes.back());
+    	if (mlbLost.empty())
+    		mlbLost.push_back(mState==LOST);
     }
 
 }
@@ -797,7 +801,8 @@ void Tracking::CheckReplacedInLastFrame()
 bool Tracking::TrackReferenceKeyFrame()
 {
 #ifdef DEBUG_TRACKING
-	cout << "Tracking Mode: TrackReferenceKeyFrame()" << endl;
+//	cout << "Tracking Mode: TrackReferenceKeyFrame()" << endl;
+	lastTrackingMode = TRACK_REFERENCE_KEYFRAME;
 #endif
     // Compute Bag of Words vector
     mCurrentFrame.ComputeBoW();
@@ -910,7 +915,8 @@ void Tracking::UpdateLastFrame()
 bool Tracking::TrackWithMotionModel()
 {
 #ifdef DEBUG_TRACKING
-	cout << "Tracking Mode: TrackWithMotionModel()" << endl;
+//	cout << "Tracking Mode: TrackWithMotionModel()" << endl;
+	lastTrackingMode = TRACK_WITH_MOTION_MODEL;
 #endif
 
     ORBmatcher matcher(0.9,true);
@@ -1027,11 +1033,17 @@ bool Tracking::TrackWithMotionModel()
 //    else
 //        return true;
 //}
+
+// This is taken from ORB-SLAM v1
 bool Tracking::TrackLocalMap()
 {
 	UpdateLocalMap();
 	SearchLocalPoints();
 	mnMatchesInliers = Optimizer::PoseOptimization(&mCurrentFrame);
+#ifdef DEBUG_TRACKING
+//	cout << "Tracking Mode: TrackLocalMap(), matches: " << mnMatchesInliers << endl;
+	lastTrackingMode = TRACK_LOCAL_MAP;
+#endif
 
 	for (size_t i=0; i<mCurrentFrame.mvpMapPoints.size(); i++) {
 		if (mCurrentFrame.mvpMapPoints[i]) {
@@ -1048,7 +1060,6 @@ bool Tracking::TrackLocalMap()
 	else
 		return true;
 }
-
 
 
 bool Tracking::NeedNewKeyFrame()
@@ -1128,6 +1139,7 @@ bool Tracking::NeedNewKeyFrame()
     const bool c1c =  mSensor!=System::MONOCULAR && (mnMatchesInliers<nRefMatches*0.25 || ratioMap<0.3f) ;
     // Condition 2: Few tracked points compared to reference keyframe. Lots of visual odometry compared to map matches.
     const bool c2 = ((mnMatchesInliers<nRefMatches*thRefRatio|| ratioMap<thMapRatio) && mnMatchesInliers>15);
+//    const bool c2 = mnMatchesInliers<nRefMatches*0.78 and mnMatchesInliers>15;
 
 //    cout << "KF Need: " << (int)c1a << " " << (int)c1b << " " << (int)c2 << endl;
 
@@ -1438,7 +1450,8 @@ void Tracking::UpdateLocalKeyFrames()
 bool Tracking::Relocalization()
 {
 #ifdef DEBUG_TRACKING
-	cout << "Tracking Mode: Relocalization()" << endl;
+//	cout << "Tracking Mode: Relocalization()" << endl;
+	lastTrackingMode = RELOCALIZATION;
 #endif
 
     // Compute Bag of Words Vector
