@@ -37,6 +37,8 @@ Synchronizer<T1, T2, T3>::Synchronizer(const std::string sub1_topic, const std::
     type1_ringbuf_(10), type2_ringbuf_(10)
 {
     /* init */
+    pthread_mutex_init(&mutex_, NULL);
+
     ros::NodeHandle nh;
     buf_flag_ = false;
     is_req_ = false;
