@@ -193,27 +193,28 @@ class Pose :
         self.qw = p.qw
         
     def measureErrorLateral (self, groundTruth, timeTolerance=0.1, useZ=False):
+        def doMeasureDistance (p, q, useZ):
+            if useZ :
+                return np.linalg.norm ([p.x-q.x, p.y-q.y, p.z-q.z], 2)
+            else :
+                return np.linalg.norm ([p.x-q.x, p.y-q.y], 2)
+        
         pMin, pMax = groundTruth.findNearPosesByTime (self, timeTolerance)
         # XXX: I know this is Wrong
-        if pMin is None or pMax is None:
-            return 1000
+#         if pMin is None or pMax is None:
+#             return 1000
+        if pMax is None:
+            return doMeasureDistance(self, pMin, useZ)
+        if pMin is None:
+            return doMeasureDistance(self, pMax, useZ)
 
         pointChk, c = ClosestPointInLine(pMin, pMax, self, True)
         if c>=0.0 and c<=1.0:
-            if (useZ):
-                return np.linalg.norm([self.x-pointChk.x, self.y-pointChk.y, self.z-pointChk.z], 2)
-            else :
-                return np.linalg.norm([self.x-pointChk.x, self.y-pointChk.y], 2)
+            return doMeasureDistance(pointChk, self, useZ)
         elif c<0.0:
-            if (useZ):
-                return np.linalg.norm([self.x-pMin.x, self.y-pMin.y, self.z-pMin.z], 2)
-            else :
-                return np.linalg.norm([self.x-pMin.x, self.y-pMin.y], 2)
+            return doMeasureDistance(pMin, self, useZ)
         else:
-            if (useZ):
-                return np.linalg.norm([self.x-pMax.x, self.y-pMax.y, self.z-pMax.z], 2)
-            else :
-                return np.linalg.norm([self.x-pMax.x, self.y-pMax.y], 2)                
+            return doMeasureDistance(pMax, self, useZ)                
 
 
 class PoseTable :
@@ -450,7 +451,8 @@ class PoseTable :
             pose = Pose (timestamp.to_sec(), 
                 transform.translation.x, transform.translation.y, transform.translation.z,
                 transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w)
-            bagRecord[i] = pose
+            pose.counter = i
+            bagRecord[i] = pose 
             i += 1
         return bagRecord
         
@@ -543,17 +545,16 @@ class PoseTable :
 
     @staticmethod
     def compareLateralErrors (poseTblSource, groundTruth, tolerance=0.15, useZ=False):
-        errorVect = []
         i = 0
         for pose in poseTblSource.table:
             try:
                 errMeas = pose.measureErrorLateral (groundTruth, tolerance, useZ)
-                errorVect.append ([pose.timestamp, errMeas])
+                pose.measuredError = errMeas
+#                 errorVect.append ([pose.timestamp, errMeas])
             except KeyError as e:
-                pass
+                pose.measuredError = -1.0
             i += 1
             print ("{} out of {}".format(i, len(poseTblSource)))
-        return errorVect
 
 
     @staticmethod
@@ -819,8 +820,8 @@ def readMessage (bag, topic, timestamp):
 if __name__ == '__main__' :
     groundTruth = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/groundTruth.bag')
     testmap1 = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map1/slowrate.bag', '/ORB_SLAM/World', '/ORB_SLAM/ExtCamera')
-    testpose = testmap1[63766]
-    erz = testpose.measureErrorLateral (groundTruth, timeTolerance=0.2)
+    testpose = testmap1[3590]
+    erz = testpose.measureErrorLateral (groundTruth, timeTolerance=0.25)
     
     pass
     

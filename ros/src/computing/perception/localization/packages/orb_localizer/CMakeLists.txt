@@ -210,19 +210,19 @@ add_custom_target (orb_vocabulary ALL
 )
 
 
-add_executable (orb_slam_mapper
+add_executable (orb_mapping
 	src/nodes/mapper.cc
 	src/nodes/utils.cc
 	src/nodes/ImageGrabber.cc
 )
-target_compile_definitions(orb_slam_mapper PUBLIC ORB_SLAM_VOCABULARY="${orb_slam_vocabulary_file}")
+target_compile_definitions(orb_mapping PUBLIC ORB_SLAM_VOCABULARY="${orb_slam_vocabulary_file}")
 
-add_custom_target (orb_slam_localizer ALL
-	cd ${CATKIN_DEVEL_PREFIX}/lib/${PROJECT_NAME} && ln -sf orb_slam_mapper orb_slam_localizer
+add_custom_target (orb_matching ALL
+	cd ${CATKIN_DEVEL_PREFIX}/lib/${PROJECT_NAME} && ln -sf orb_mapping orb_matching
 )
-add_dependencies (orb_slam_localizer orb_slam_mapper)
+add_dependencies (orb_matching orb_mapping)
 
-target_link_libraries (orb_slam_mapper
+target_link_libraries (orb_mapping
 	${PCL_LIBRARIES}
 	${LIBS}
 	orb_slam2
