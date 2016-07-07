@@ -107,16 +107,19 @@ class Pose :
         return x, y, theta
         
     @staticmethod
-    def interpolate (pose1, pose2, tm):
+    def interpolate (pose1, pose2, ratio):
         if (pose1.timestamp > pose2.timestamp) :
             raise ValueError ("pose1 timestamp must be > pose2")
-        if (tm < pose1.timestamp or tm > pose2.timestamp) :
-            raise ValueError ("Requested timestamp is outside range")
-        v = (tm - pose1.timestamp) / (pose2.timestamp - pose1.timestamp)
-        intpose = Pose(tm, 
-            pose1.x + v*(pose2.x-pose1.x),
-            pose1.y + v*(pose2.y-pose1.y),
-            pose1.z + v*(pose2.z-pose1.z))
+        td = (pose2.timestamp - pose1.timestamp)
+        intpose = Pose(pose1.timestamp + ratio*td, 
+            pose1.x + ratio*(pose2.x-pose1.x),
+            pose1.y + ratio*(pose2.y-pose1.y),
+            pose1.z + ratio*(pose2.z-pose1.z))
+        q1 = pose1.quaternion()
+        q2 = pose2.quaternion()
+        qInt = trafo.quaternion_slerp(q1, q2, ratio)
+        intpose.qx, intpose.qy, intpose.qz, intpose.qw = \
+            qInt[0], qInt[1], qInt[2], qInt[3]
         return intpose
         
     @staticmethod
@@ -203,18 +206,26 @@ class Pose :
         # XXX: I know this is Wrong
 #         if pMin is None or pMax is None:
 #             return 1000
-        if pMax is None:
-            return doMeasureDistance(self, pMin, useZ)
-        if pMin is None:
-            return doMeasureDistance(self, pMax, useZ)
+#         if pMax is None:
+#             return doMeasureDistance(self, pMin, useZ)
+#         if pMin is None:
+#             return doMeasureDistance(self, pMax, useZ)
+        if (pMin is None) or (pMax is None) :
+            return -2.0
 
         pointChk, c = ClosestPointInLine(pMin, pMax, self, True)
+        
+        # Ideal case
         if c>=0.0 and c<=1.0:
             return doMeasureDistance(pointChk, self, useZ)
+        
+        # Bad case
         elif c<0.0:
-            return doMeasureDistance(pMin, self, useZ)
+#             return doMeasureDistance(pMin, self, useZ)
+            return -3.0
         else:
-            return doMeasureDistance(pMax, self, useZ)                
+#             return doMeasureDistance(pMax, self, useZ)
+            return -4.0                
 
 
 class PoseTable :
@@ -344,13 +355,13 @@ class PoseTable :
         for p in range(len(self)):
             i = p
             cpose = self.table[i]
-            if (cpose.timestamp > srcpose.timestamp and abs(cpose.timestamp-srcpose.timestamp)<=tolerance):
+            if (cpose.timestamp > srcpose.timestamp):
                 nearMax = copy(cpose)
                 break
         while i != 0 :
             cpose = self.table[i]
             i -= 1
-            if (cpose.timestamp < srcpose.timestamp and abs(cpose.timestamp-srcpose.timestamp)<=tolerance):
+            if (cpose.timestamp < srcpose.timestamp):
                 nearMin = copy (cpose)
                 break
         return (nearMin, nearMax)
@@ -692,7 +703,25 @@ class PoseTable :
                 continue
         
         return segwayPose
+    
+    
+    def increaseTimeResolution (self, numToAdd=10):
+        NewPoseTable = PoseTable()
+        for i in range(len(self)-1) :
+            p1 = self[i]
+            p2 = self[i+1]
+            NewPoseTable.append(p1)
+            
+            rt = 1.0 / float(numToAdd)
+            j = 0.0
+            while (j < 1.0) :
+                j += rt
+                pnew = Pose.interpolate(p1, p2, j)
+                NewPoseTable.append(pnew)
+            
+            NewPoseTable.append(p2)
         
+        return NewPoseTable
         
         
     
@@ -819,9 +848,10 @@ def readMessage (bag, topic, timestamp):
 
 if __name__ == '__main__' :
     groundTruth = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/groundTruth.bag')
-    testmap1 = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map1/slowrate.bag', '/ORB_SLAM/World', '/ORB_SLAM/ExtCamera')
-    testpose = testmap1[3590]
-    erz = testpose.measureErrorLateral (groundTruth, timeTolerance=0.25)
+    groundTruth.increaseTimeResolution(2)
+#     testmap1 = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map1/slowrate.bag', '/ORB_SLAM/World', '/ORB_SLAM/ExtCamera')
+#     testpose = testmap1[19333]
+#     erz = testpose.measureErrorLateral (groundTruth, timeTolerance=0.25)
     
     pass
     
