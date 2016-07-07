@@ -1,6 +1,7 @@
 Header header
 float64 image_raw
 float64 points_raw
+float64 points_image
 float64 vscan_points
 float64 vscan_image
 float64 image_obj
