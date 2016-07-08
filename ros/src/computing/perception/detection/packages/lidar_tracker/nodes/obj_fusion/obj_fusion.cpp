@@ -258,8 +258,11 @@ void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
     UNLOCK(mtx_centroids);
 
     LOCK(mtx_centroids);
-    for (const auto& point : cluster_centroids_msg.points)
-        {
+    static tf::TransformListener trf_listener;
+    try {
+        trf_listener.lookupTransform("map", "velodyne", ros::Time(0), transform);
+
+        for (const auto& point : cluster_centroids_msg.points) {
             /* convert centroids coodinate from velodyne frame to map frame */
             tf::Vector3 pt(point.x, point.y, point.z);
             tf::Vector3 converted = transform * pt;
@@ -271,6 +274,11 @@ void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
 
             centroids.push_back(point_in_map);
         }
+    }
+    catch (tf::TransformException ex) {
+        ROS_INFO("%s", ex.what());
+        ros::Duration(1.0).sleep();
+    }
     UNLOCK(mtx_centroids);
 
     LOCK(mtx_flag_cluster_centroids);
@@ -309,22 +317,7 @@ int main(int argc, char* argv[])
     obj_pose_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
     obj_pose_textlabel_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose_textlabel", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
     obj_pose_timestamp_pub = n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
-
-    tf::TransformListener trf_listener;
-    ros::Rate loop_rate(LOOP_RATE);  // Try to loop in "LOOP_RATE" [Hz]
-    while (n.ok())
-        {
-            try {
-                trf_listener.lookupTransform("map", "velodyne", ros::Time(0), transform);
-            }
-            catch (tf::TransformException ex) {
-                ROS_INFO("%s", ex.what());
-                ros::Duration(1.0).sleep();
-            }
-
-            ros::spinOnce();
-            loop_rate.sleep();
-        }
+    ros::spin();
 
     return 0;
 }

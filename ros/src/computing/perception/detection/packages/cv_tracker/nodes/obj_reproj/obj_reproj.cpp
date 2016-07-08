@@ -138,6 +138,9 @@ static ros::Time current_pose_time;
 //coordinate system conversion between camera coordinate and map coordinate
 static tf::StampedTransform transformCam2Map;
 
+std::string camera_id_str;
+
+
 static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::obj_label& src)
 {
   visualization_msgs::MarkerArray ret;
@@ -289,6 +292,14 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
 
     /* convert from "camera" coordinate system to "map" coordinate system */
     tf::Vector3 pos_in_camera_coord(ress.X, ress.Y, ress.Z);
+    static tf::TransformListener listener;
+    try {
+        listener.lookupTransform("map", camera_id_str, ros::Time(0), transformCam2Map);
+    }
+    catch (tf::TransformException ex) {
+        ROS_INFO("%s", ex.what());
+        return;
+    }
     tf::Vector3 converted = transformCam2Map * pos_in_camera_coord;
 
     tmpPoint.x = converted.x();
@@ -491,7 +502,7 @@ int main(int argc, char **argv){
   private_nh.param<std::string>("camera_info_topic", camera_info_topic_name, "/camera/camera_info");
 
   //get camera ID
-  std::string camera_id_str = camera_info_topic_name;
+  camera_id_str = camera_info_topic_name;
   camera_id_str.erase(camera_id_str.find("/camera/camera_info"));
   if (camera_id_str == "/") {
     camera_id_str = "camera";
@@ -514,22 +525,7 @@ int main(int argc, char **argv){
   gnssGetFlag = false;
   ndtGetFlag = false;
 
-  tf::TransformListener listener;
-  ros::Rate loop_rate(LOOP_RATE);  // Try to loop in "LOOP_RATE" [Hz]
-  while(n.ok())
-    {
-      /* try to get coordinate system conversion from "camera" to "map" */
-      try {
-        listener.lookupTransform("map", camera_id_str, ros::Time(0), transformCam2Map);
-      }
-      catch (tf::TransformException ex) {
-        ROS_INFO("%s", ex.what());
-        ros::Duration(0.1).sleep();
-      }
+  ros::spin();
 
-      ros::spinOnce();
-      loop_rate.sleep();
-
-    }
   return 0;
 }
