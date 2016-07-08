@@ -206,12 +206,12 @@ class Pose :
         # XXX: I know this is Wrong
 #         if pMin is None or pMax is None:
 #             return 1000
-#         if pMax is None:
-#             return doMeasureDistance(self, pMin, useZ)
-#         if pMin is None:
-#             return doMeasureDistance(self, pMax, useZ)
-        if (pMin is None) or (pMax is None) :
-            return -2.0
+         if pMax is None:
+             return doMeasureDistance(self, pMin, useZ)
+         if pMin is None:
+             return doMeasureDistance(self, pMax, useZ)
+#        if (pMin is None) or (pMax is None) :
+#            return -2.0
 
         pointChk, c = ClosestPointInLine(pMin, pMax, self, True)
         
@@ -221,11 +221,11 @@ class Pose :
         
         # Bad case
         elif c<0.0:
-#             return doMeasureDistance(pMin, self, useZ)
-            return -3.0
+             return doMeasureDistance(pMin, self, useZ)
+#            return -3.0
         else:
-#             return doMeasureDistance(pMax, self, useZ)
-            return -4.0                
+             return doMeasureDistance(pMax, self, useZ)
+#            return -4.0                
 
 
 class PoseTable :

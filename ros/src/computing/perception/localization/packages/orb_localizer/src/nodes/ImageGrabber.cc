@@ -131,16 +131,6 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 		tf::Transform tfTcw = FramePose(&cframe);
 		mTfBr->sendTransform(tf::StampedTransform(tfTcw, ros::Time(imageTime), "/ORB_SLAM/World", "/ORB_SLAM/Camera"));
 
-		// Here, we use offset of external localization from the keyframe
-		if (mpSLAM->getTracker()->mbOnlyTracking==true) {
-//			ORB_SLAM2::KeyFrame *kfRef = cframe.mpReferenceKF;
-			try {
-				locRef = localizeByReference(tfTcw);
-				mTfBr->sendTransform(tf::StampedTransform(locRef, ros::Time(imageTime), "/ORB_SLAM/World", "/ORB_SLAM/ExtCamera"));
-				tfOk = true;
-			} catch (...) {}
-		}
-
 	} else { }
 
 	rT2 = microsec_clock::local_time();
@@ -201,71 +191,6 @@ void ImageGrabber::externalLocalizerGrab()
 	}
 }
 
-
-tf::Transform ImageGrabber::localizeByReference (const tf::Transform &tfOrb, ORB_SLAM2::KeyFrame *kf)
-{
-	ORB_SLAM2::KeyFrame *kOffset = mpSLAM->getMap()->offsetKeyframe(kf, offsetKeyframe);
-	if (kOffset==NULL)
-		throw std::out_of_range("No offset keyframe found");
-
-	if (kf->extPosition.empty() or kOffset->extPosition.empty())
-		throw std::out_of_range("External reference of keyframe not found");
-
-	tf::Transform kfTr = KeyFramePoseToTf(kf);
-	tf::Transform extRef = getKeyFrameExtPose(kf);
-
-	tf::Transform kfTrOffset = KeyFramePoseToTf(kOffset);
-	tf::Transform extRefOffset = getKeyFrameExtPose(kOffset);
-	return localizeByReference (tfOrb, kfTr, kfTrOffset, extRef, extRefOffset);
-}
-
-
-/*
- * Main routine for localization by reference
- */
-tf::Transform ImageGrabber::localizeByReference (
-    	const tf::Transform &tfOrb,
-		const tf::Transform &tfOrbMap, const tf::Transform &tfOrbMapOffset,
-    	const tf::Transform &realMapPose, const tf::Transform &realMapOffset)
-{
-	double offDistO = cv::norm(
-		ImageGrabber::tfToCv(tfOrbMap.getOrigin()) -
-		ImageGrabber::tfToCv(tfOrbMapOffset.getOrigin()));
-	double offDistE = cv::norm(
-		ImageGrabber::tfToCv(realMapPose.getOrigin()) -
-		ImageGrabber::tfToCv(realMapOffset.getOrigin()));
-	double scale = offDistE / offDistO;
-
-	// change orientation from camera to velodyne
-//	tf::Transform flipAxes;
-//	flipAxes.setOrigin(tf::Vector3(0, 0, 0));
-//	tf::Quaternion fpq;
-//	fpq.setRPY(0,0,0);
-//	fpq.normalize();
-//	flipAxes.setRotation(fpq);
-//	flipAxes.setRotation (tf::Quaternion(-M_PI/2, M_PI/2, 0).normalize());
-//	flipAxes.setRotation (tf::Quaternion(M_PI/2, 0, -M_PI/2).normalize());
-
-	tf::Transform orbRel = tfOrbMap.inverse() * tfOrb;
-
-	tf::Transform scaledRel = orbRel;
-	scaledRel.setOrigin(orbRel.getOrigin() * scale);
-//	scaledRel = flipAxes * scaledRel;
-
-	return realMapPose * scaledRel;
-}
-
-
-tf::Transform ImageGrabber::localizeByReference(const tf::Transform &tfOrb)
-{
-	ORB_SLAM2::KeyFrame *kfNear = mpSLAM->getMap()->getNearestKeyFrame(
-		tfOrb.getOrigin().x(),
-		tfOrb.getOrigin().y(),
-		tfOrb.getOrigin().z());
-	if (kfNear==NULL)
-		throw std::out_of_range("No keyframe found");
-	return localizeByReference (tfOrb, kfNear);
-}
 
 
 tf::Transform ImageGrabber::localizeByReference(Frame *sframe)
