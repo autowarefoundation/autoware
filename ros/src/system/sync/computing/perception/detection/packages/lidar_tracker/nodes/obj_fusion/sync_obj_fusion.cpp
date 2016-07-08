@@ -1,3 +1,25 @@
+#include "ros/ros.h"
+#include "cv_tracker/obj_label.h"
+#include "lidar_tracker/centroids.h"
+#include "visualization_msgs/MarkerArray.h"
+#include "sync.hpp"
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "sync_obj_fusion");
+    std::string ns(ros::this_node::getNamespace());
+    std::string sub1("/obj_label");
+    std::string sub2("/cluster_centroids");
+    std::string req("/obj_pose");
+    std::string pub1("/obj_label");
+    std::string pub2("/cluster_centroids");
+
+    Synchronizer<cv_tracker::obj_label, lidar_tracker::centroids, visualization_msgs::MarkerArray> synchronizer(sub1, sub2, pub1, pub2, req, ns);
+    synchronizer.run();
+
+    return 0;
+}
+
+#if 0
 /* ----header---- */
 /* common header */
 #include "ros/ros.h"
@@ -413,3 +435,4 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+#endif

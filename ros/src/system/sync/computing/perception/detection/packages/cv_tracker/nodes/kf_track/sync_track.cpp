@@ -1,3 +1,25 @@
+#include "ros/ros.h"
+#include "sensor_msgs/Image.h"
+#include "cv_tracker/image_obj_tracked.h"
+#include "cv_tracker/image_obj_ranged.h"
+#include "sync.hpp"
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "sync_tracking");
+    std::string ns(ros::this_node::getNamespace());
+    std::string sub1("/image_obj_ranged");
+    std::string sub2("/sync_drivers/image_raw");
+    std::string req("/image_obj_tracked");
+    std::string pub1("/image_obj_ranged");
+    std::string pub2("/image_raw");
+
+    Synchronizer<cv_tracker::image_obj_ranged, sensor_msgs::Image, cv_tracker::image_obj_tracked> synchronizer(sub1, sub2, pub1, pub2, req, ns);
+    synchronizer.run();
+
+    return 0;
+}
+
+#if 0
 /* ----header---- */
 /* common header */
 #include "ros/ros.h"
@@ -398,4 +420,5 @@ bool publish() {
     }
 }
 
+#endif
 #endif

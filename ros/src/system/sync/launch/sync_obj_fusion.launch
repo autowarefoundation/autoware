@@ -7,7 +7,7 @@
   <arg name="obj_person" default="obj_person" />
 
 
-  <group ns="sync_tracking">
+  <group ns="sync_obj_fusion">
     <group if="$(arg car)">
       <group ns="obj_car">
         <node pkg="synchronization" type="sync_obj_fusion" name="sync_$(arg obj_car)_fusion">

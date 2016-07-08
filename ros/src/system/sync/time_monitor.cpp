@@ -97,6 +97,7 @@ class TimeManager
      */
     KeyPair image_raw_;
     KeyPair points_raw_;
+    KeyPair points_image_;
     KeyPair vscan_points_;
     KeyPair vscan_image_;
     KeyPair image_obj_;
@@ -122,6 +123,7 @@ class TimeManager
     // Subscriber
     ros::Subscriber image_raw_sub;
     ros::Subscriber points_raw_sub;
+    ros::Subscriber points_image_sub;
     ros::Subscriber vscan_points_sub;
     ros::Subscriber vscan_image_sub;
     ros::Subscriber image_obj_sub;
@@ -138,6 +140,9 @@ class TimeManager
     ros::Subscriber sync_obj_pose_sub; // sync
     // Publisher
     ros::Publisher time_monitor_pub;
+
+    bool is_points_image_;
+    bool is_vscan_image_;
 
     ros::Time get_walltime_now() {
         ros::WallTime non_sim_current_time = ros::WallTime::now();
@@ -173,6 +178,7 @@ public:
     TimeManager(int);
     void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg);
     void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg);
+    void points_image_callback(const points2image::PointsImage::ConstPtr& points_image_msg);
     void vscan_points_callback(const sensor_msgs::PointCloud2::ConstPtr& vscan_points_msg);
     void vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image_msg);
     void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg);
@@ -195,10 +201,19 @@ public:
 
 TimeManager::TimeManager(int buffer_size) {
     ros::NodeHandle private_nh("~");
+    private_nh.param("is_points_image", is_points_image_, true);
+    private_nh.param("is_vscan_image", is_vscan_image_, false);
 
-    time_monitor_pub = nh.advertise<synchronization::time_monitor> ("/times", 1);
+    if (is_vscan_image_ == is_points_image_) {
+        ROS_ERROR("choose is_points_image or is_vscan_image");
+        is_points_image_ = true;
+        is_vscan_image_ = false;
+    }
+
+    time_monitor_pub = nh.advertise<synchronization::time_monitor> ("/times", 10);
     image_raw_sub = nh.subscribe("/sync_drivers/image_raw", 10, &TimeManager::image_raw_callback, this);
     points_raw_sub = nh.subscribe("/sync_drivers/points_raw", 10, &TimeManager::points_raw_callback, this);
+    points_image_sub = nh.subscribe("/points_image", 10, &TimeManager::points_image_callback, this);
     vscan_points_sub = nh.subscribe("/vscan_points", 10, &TimeManager::vscan_points_callback, this);
     vscan_image_sub = nh.subscribe("/vscan_image", 10, &TimeManager::vscan_image_callback, this);
     image_obj_sub = nh.subscribe("/image_obj", 10, &TimeManager::image_obj_callback, this);
@@ -219,6 +234,7 @@ TimeManager::TimeManager(int buffer_size) {
 
     image_raw_.resize(buffer_size);
     points_raw_.resize(buffer_size);
+    points_image_.resize(buffer_size);
     vscan_points_.resize(buffer_size);
     vscan_image_.resize(buffer_size);
     image_obj_.resize(buffer_size);
@@ -243,6 +259,11 @@ void TimeManager::image_raw_callback(const sensor_msgs::Image::ConstPtr& image_r
 void TimeManager::points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg) {
 //    ROS_INFO("points_raw: \t\t\t%d.%d", points_raw_msg->header.stamp.sec, points_raw_msg->header.stamp.nsec);
     points_raw_.push_front(points_raw_msg->header.stamp, get_walltime_now());
+}
+
+void TimeManager::points_image_callback(const points2image::PointsImage::ConstPtr& points_image_msg) {
+//    ROS_INFO("vscan_image: \t\t\t%d.%d", vscan_image_msg->header.stamp.sec, vscan_image_msg->header.stamp.nsec);
+    points_image_.push_front(points_image_msg->header.stamp, get_walltime_now());
 }
 
 void TimeManager::vscan_points_callback(const sensor_msgs::PointCloud2::ConstPtr& vscan_points_msg) {
@@ -351,46 +372,64 @@ void TimeManager::obj_pose_callback(const std_msgs::Time::ConstPtr& obj_pose_tim
     time_monitor_msg.header.frame_id = "0";
     time_monitor_msg.header.stamp = ros::Time::now();
 
-//    ROS_INFO("-------------------------------------");
-//    ROS_INFO("image_raw");
-    time_monitor_msg.image_raw = time_diff(obj_pose_timestamp_msg->data,
-                                           image_raw_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("points_raw");
-    time_monitor_msg.points_raw = time_diff(obj_pose_timestamp_msg->data,
-                                            points_raw_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("vscan_points");
-    time_monitor_msg.vscan_points = time_diff(points_raw_.find(obj_pose_timestamp_msg->data),
-                                              vscan_points_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("vscan_image");
-    time_monitor_msg.vscan_image = time_diff(vscan_points_.find(obj_pose_timestamp_msg->data),
-                                             vscan_image_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("image_obj");
+    // ROS_INFO("-------------------------------------");
+    // ROS_INFO("image_raw");
+    if (!ros::Time::isSimTime()) {
+        time_monitor_msg.image_raw = time_diff(obj_pose_timestamp_msg->data,
+                                               image_raw_.find(obj_pose_timestamp_msg->data));
+    } else {
+        time_monitor_msg.image_raw = 0;
+    }
+
+    // ROS_INFO("points_raw");
+    if (!ros::Time::isSimTime()) {
+        time_monitor_msg.points_raw = time_diff(obj_pose_timestamp_msg->data,
+                                                points_raw_.find(obj_pose_timestamp_msg->data));
+    } else {
+        time_monitor_msg.points_raw = 0;
+    }
+
+    if (is_points_image_) {
+        // ROS_INFO("points_image");
+        time_monitor_msg.points_image = time_diff(points_raw_.find(obj_pose_timestamp_msg->data),
+                                                  points_image_.find(obj_pose_timestamp_msg->data));
+    }
+    if (is_vscan_image_) {
+        // ROS_INFO("vscan_points");
+        time_monitor_msg.vscan_points = time_diff(points_raw_.find(obj_pose_timestamp_msg->data),
+                                                  vscan_points_.find(obj_pose_timestamp_msg->data));
+        // ROS_INFO("vscan_image");
+        time_monitor_msg.vscan_image = time_diff(vscan_points_.find(obj_pose_timestamp_msg->data),
+        vscan_image_.find(obj_pose_timestamp_msg->data));
+    }
+
+    // ROS_INFO("image_obj");
     time_monitor_msg.image_obj = time_diff(image_raw_.find(obj_pose_timestamp_msg->data),
                                            image_obj_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("image_obj_ranged");
+    // ROS_INFO("image_obj_ranged");
     time_monitor_msg.image_obj_ranged = time_diff(sync_image_obj_ranged_.find(obj_pose_timestamp_msg->data),
                                                   image_obj_ranged_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("image_obj_tracked");
+    // ROS_INFO("image_obj_tracked");
     time_monitor_msg.image_obj_tracked = time_diff(sync_image_obj_tracked_.find(obj_pose_timestamp_msg->data),
                                                    image_obj_tracked_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("current_pose");
+    // ROS_INFO("current_pose");
     time_monitor_msg.current_pose = time_diff(points_raw_.find(obj_pose_timestamp_msg->data),
                                               current_pose_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("obj_label");
+    // ROS_INFO("obj_label");
     time_monitor_msg.obj_label = time_diff(sync_obj_label_.find(obj_pose_timestamp_msg->data),
                                            obj_label_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("cluster_centroids");
+    // ROS_INFO("cluster_centroids");
     time_monitor_msg.cluster_centroids = time_diff(points_raw_.find(obj_pose_timestamp_msg->data),
                                                    cluster_centroids_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("obj_pose");
+    // ROS_INFO("obj_pose");
     time_monitor_msg.obj_pose = time_diff(sync_obj_pose_.find(obj_pose_timestamp_msg->data),
                                           obj_pose_.find(obj_pose_timestamp_msg->data));
-//    ROS_INFO("-------------------------------------");
+    // ROS_INFO("-------------------------------------");
 
-    if (ros::Time::isSimTime()) {
-        time_monitor_msg.execution_time = time_diff(points_raw_.find(obj_pose_timestamp_msg->data), obj_pose_.find(obj_pose_timestamp_msg->data));
-    } else {
+    if (!ros::Time::isSimTime()) {
         time_monitor_msg.execution_time = time_diff(obj_pose_timestamp_msg->data, obj_pose_.find(obj_pose_timestamp_msg->data));
+    } else {
+        time_monitor_msg.execution_time = time_diff(points_raw_.find(obj_pose_timestamp_msg->data), obj_pose_.find(obj_pose_timestamp_msg->data));
     }
 
     time_monitor_msg.cycle_time = time_diff(pre_sensor_time, obj_pose_timestamp_msg->data); // cycle time
