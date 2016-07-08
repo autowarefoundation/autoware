@@ -297,7 +297,7 @@ void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
         listener.lookupTransform("map", camera_id_str, ros::Time(0), transformCam2Map);
     }
     catch (tf::TransformException ex) {
-        ROS_ERROR("%s\n %s", ex.what(), camera_id_str.c_str());
+        ROS_INFO("%s", ex.what());
         return;
     }
     tf::Vector3 converted = transformCam2Map * pos_in_camera_coord;
