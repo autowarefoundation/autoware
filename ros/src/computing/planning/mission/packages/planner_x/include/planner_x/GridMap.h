@@ -40,12 +40,12 @@ public:
   std::vector<double> localize_features;
   GPSPoint forwardCenter;
   GPSPoint backwardCenter;
-  CORRECTION_DIRECTION bDir;	//Moving Direction (forward - backward)
+  DIRECTION_TYPE bDir;
   POINT2D bottom_left;
   POINT2D top_right;
   POINT2D bottom_right;
   POINT2D top_left;
-  int nStaticPoints; //how many obstacle points inside this cell
+  int nStaticPoints;
   int nMovingPoints;
 
   CELL_Info* pInnerMap;

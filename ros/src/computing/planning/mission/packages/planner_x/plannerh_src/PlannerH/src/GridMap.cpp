@@ -1449,7 +1449,7 @@ CELL_Info* GridMap::GetCellFromPointInnerMap(const POINT2D& p)
 		action = -1;
 		forward_heuristicValue = 0;
 		backward_heuristicValue = 0;
-		bDir = STANDSTILL;
+		bDir = STANDSTILL_DIR;
 		closed = false;
 		nMovingPoints = 0;
 		nStaticPoints = 0;
@@ -1494,7 +1494,7 @@ CELL_Info* GridMap::GetCellFromPointInnerMap(const POINT2D& p)
   	value = 0;
   	closed = false;
   	action = -1;
-  	bDir = STANDSTILL;
+  	bDir = STANDSTILL_DIR;
   	if(bMovingOnly == 1)
   	{
   		if(nMovingPoints>0)

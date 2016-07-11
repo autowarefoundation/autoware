@@ -81,7 +81,8 @@ public:
 	void LocalizeMe(const double& dt); // in seconds
 	double GetMomentumScaleFactor(const double& v); //v is in meter/second
 	void UpdateState(const bool& bUseDelay = false);
-	void CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::Obstacle>& obj_list, const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal);
+	void CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::Obstacle>& obj_list,
+			const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map);
 
 };
 

@@ -30,7 +30,8 @@ TrajectoryFollower::TrajectoryFollower()
 	m_PrevContinousHeading = INFINITY;
 	m_PrevContinousTargetHeading = INFINITY;
 
-	m_pidSteer.Init(m_Params.steerPGain, m_Params.steerIGain, m_Params.steerDGain);
+	//m_pidSteer.Init(0.35, 0.01, 0.01); // for 5 m/s
+	m_pidSteer.Init(0.8, 0.1, 0.01); // for 3 m/s
 	m_pidSteer.Setlimit(m_Params.MaxSteerAngle, -m_Params.MaxSteerAngle);
 	m_lowpassSteer.Init(2, 100, 5);
 }
@@ -47,19 +48,12 @@ void TrajectoryFollower::PrepareNextWaypoint(const PlannerHNS::WayPoint& CurPos,
 	//m_ForwardSimulation = SimulatePathFollow(0.01, m_Params.SteeringDelay*currVelocity, m_Path, pred_point, currVelocity, m_Params.Wheelbase);
 
 	m_ForwardSimulation = pred_point;
-//	PredictMotion(m_ForwardSimulation.pos.x, m_ForwardSimulation.pos.y, m_ForwardSimulation.pos.a, currSteering,currVelocity, m_Params.Wheelbase, m_Params.SteeringDelay*2.0);
 	double nIterations = m_Params.SteeringDelay/0.01;
 	for(unsigned int i=0; i< nIterations; i++)
 	{
-		//double prev_a = m_ForwardSimulation.a;
 		PredictMotion(m_ForwardSimulation.pos.x, m_ForwardSimulation.pos.y, m_ForwardSimulation.pos.a, currSteering,currVelocity, m_Params.Wheelbase, 0.01);
-//		if(abs(m_ForwardSimulation.a - prev_a) > 0.01)
-//			prev_a = 0;
 	}
 
-
-//	pred_point.a = m_ForwardSimulation.a;
-//	pred_point.cost = m_ForwardSimulation.cost;
 	m_CurrPos = m_ForwardSimulation;
 
 	bool ret = FindNextWayPoint(m_Path, pred_point, currVelocity, m_FollowMePoint, m_PerpendicularPoint, m_LateralError, m_FollowingDistance);
@@ -82,10 +76,12 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 {
 	if(path.size()==0) return false;
 
-	follow_distance = m_Params.PursuiteDistance + abs(velocity) * 0.4;
+	follow_distance = m_Params.PursuiteDistance + abs(velocity) * 0.25;
 	//follow_distance = m_Params.PursuiteDistance + fabs(velocity) * 0.8;
 	if(follow_distance < m_Params.PursuiteDistance)
 		follow_distance = m_Params.PursuiteDistance;
+
+	//follow_distance = 4.5;
 
 	int iWayPoint =  PlanningHelpers::GetClosestNextPointIndex(path, state);
 	m_iPrevWayPoint = iWayPoint;
@@ -151,8 +147,6 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 	return 1;
 }
 
-
-
 void TrajectoryFollower::PredictMotion(double& x, double &y, double& heading, double steering, double velocity, double wheelbase, double time_elapsed)
 {
 	x += velocity * time_elapsed *  cos(heading);
@@ -165,5 +159,12 @@ void TrajectoryFollower::UpdateParams(const ControllerParams& params)
 	m_Params = params;
 }
 
+int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
+		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity)
+{
+
+	desiredVelocity = 3;
+	return 1;
+}
 
 } /* namespace SimulationNS */

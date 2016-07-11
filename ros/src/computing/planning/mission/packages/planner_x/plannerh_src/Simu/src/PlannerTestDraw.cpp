@@ -12,12 +12,13 @@
 #include "MappingHelpers.h"
 
 using namespace std;
-using namespace PlannerHNS;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMapPath "/home/hatem/workspace/Data/VectorMap/"
-#define kmlTemplateFile "/home/hatem/workspace/Data/templates/PlannerX_MapTemplate.kml"
+#define VectorMapPath "/home/ai-driver/workspace/Data/VectorMap/"
+#define kmlTemplateFile "/home/ai-driver/workspace/Data/templates/PlannerX_MapTemplate.kml"
+#define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
+
 
 namespace Graphics
 {
@@ -36,27 +37,42 @@ PlannerTestDraw::PlannerTestDraw()
 
 	m_CarModel = 0;
 
-	MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMapPath, m_RoadMap);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMapPath, m_RoadMap);
 
 //	ostringstream fileName;
 //	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
 //	fileName << "_RoadNetwork.kml";
 //	MappingHelpers::WriteKML(fileName.str(),kmlTemplateFile , m_RoadMap);
 
-	m_pMap = new GridMap(0,0,60,60,1.0, true);
+	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
 	CAR_BASIC_INFO carInfo;
 	m_State.Init(1.9, 4.2,carInfo);
 
 
-	m_start = WayPoint(20, 2, 0, M_PI);
-	m_start.bDir = FORWARD;
+	//m_start = WayPoint(20, 2, 0, M_PI);
+	m_start = PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
+	m_start.pos.z = 0;
+	m_start.bDir = PlannerHNS::FORWARD_DIR;
 
 	m_State.FirstLocalizeMe(m_start);
 	m_State.InitPolygons();
 
-	m_goal = WayPoint(2, 40, 0, M_PI_2);
-	m_goal.bDir = FORWARD;
+
+	stringstream str_stream(PreDefinedPath);
+
+	string strLine, innerToken;
+	vector<string> header;
+	m_LanesIds.clear();
+
+	while(getline(str_stream, innerToken, ','))
+	{
+		int id = strtol(innerToken.c_str(), NULL, 10);
+		m_LanesIds.push_back(id);
+	}
+
+	m_goal = PlannerHNS::WayPoint(100, 100, 0, M_PI_2);
+	m_goal.bDir = PlannerHNS::FORWARD_DIR;
 
 	m_followX = m_start.pos.x;
 	m_followY = m_start.pos.y;
@@ -112,59 +128,59 @@ void PlannerTestDraw::Reset()
 
 void PlannerTestDraw::PrepareVectorMapForDrawing()
 {
-//	double distance_to_nearest_lane= 1;
-//	int j=0;
-//	int max_number_of_lanes = 500;
-//	double width_ratio = 2.0;
-//
-//	vector<Lane*> currLane;
-//	vector<Lane*> lanes_list;
-//	vector<Lane*> traversed_lanes;
-//
-//	while(distance_to_nearest_lane < 500 && currLane.size() == 0)
-//	{
-//		currLane = m_pRoadNetwork->getLane(point, distance_to_nearest_lane);
-//		distance_to_nearest_lane += 5;
-//	}
-//
-//	for(unsigned int i=0; i< currLane.size(); i++)
-//		lanes_list.push_back(currLane[i]);
-//
-//	m_ReadyToDrawLanes.clear();
-//	m_ReadyToDrawCenterLines.clear();
+	double distance_to_nearest_lane = 1;
+	int j=0;
+	int max_number_of_lanes = 500;
+	double width_ratio = 2.0;
+
+	vector<PlannerHNS::Lane*> currLane;
+	vector<PlannerHNS::Lane*> lanes_list;
+	vector<PlannerHNS::Lane*> traversed_lanes;
+
+	while(distance_to_nearest_lane < 100 && currLane.size() == 0)
+	{
+		PlannerHNS::Lane* pL = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(m_start, m_RoadMap, distance_to_nearest_lane);
+		if(pL)
+			currLane.push_back(pL);
+		distance_to_nearest_lane += 2;
+	}
+
+	for(unsigned int i=0; i< currLane.size(); i++)
+		lanes_list.push_back(currLane[i]);
+
+	m_ReadyToDrawLanes.clear();
+	m_ReadyToDrawCenterLines.clear();
 //	m_TrafficLights.clear();
 //	m_StopSigns.clear();
 //	m_OtherSigns.clear();
-//
-//	if(currLane.size() > 0)
-//	{
-//		vector<vector<Vector2D> > ready_to_draw;
-//
-//		while(lanes_list.size()>0 && j <max_number_of_lanes)
-//		{
-//			ready_to_draw.clear();
-//			Lane* l = lanes_list[0];
-//
-//
-//			vector<Vector2D> path_local;
-//			MappingHelpers::GetLanePointsCart(l, path_local);
-//
-//			//if(l->id.compare("89")==0 || l->id.compare("92")==0 || l->id.compare("94")==0 ||l->id.compare("96")==0)
-//			{
-//				OpenGlUtil::PreparePathForDrawing(path_local,ready_to_draw, l->width / width_ratio, 2);
-//				m_ReadyToDrawLanes.push_back(ready_to_draw);
-//
-//				ready_to_draw.clear();
-//				OpenGlUtil::PreparePathForDrawing(path_local,ready_to_draw, 0.1, 2);
-//				m_ReadyToDrawCenterLines.push_back(ready_to_draw);
-//			}
-//
-//			j++;
-//
-//			MappingHelpers::GetUniqueNextLanes(l, &lanes_list, &traversed_lanes);
-//
-//			//Get the traffic lights pos
-//
+
+	if(currLane.size() > 0)
+	{
+		std::vector<std::vector<PlannerHNS::WayPoint> > ready_to_draw;
+
+		while(lanes_list.size()>0 && j <max_number_of_lanes)
+		{
+			ready_to_draw.clear();
+			PlannerHNS::Lane* l = lanes_list.at(0);
+			lanes_list.erase(lanes_list.begin()+0);
+			traversed_lanes.push_back(l);
+
+
+			vector<PlannerHNS::WayPoint> path_local = l->points;
+
+			DrawingHelpers::PreparePathForDrawing(path_local,ready_to_draw, 2.8 / width_ratio);
+			m_ReadyToDrawLanes.push_back(ready_to_draw);
+
+			ready_to_draw.clear();
+			DrawingHelpers::PreparePathForDrawing(path_local,ready_to_draw, 0.1);
+			m_ReadyToDrawCenterLines.push_back(ready_to_draw);
+
+
+			j++;
+
+			PlannerHNS::MappingHelpers::GetUniqueNextLanes(l, traversed_lanes, lanes_list);
+
+			//Get the traffic lights pos
 //			for(unsigned int itl = 0; itl < l->trafficLights.size(); itl++)
 //			{
 //
@@ -201,29 +217,86 @@ void PlannerTestDraw::PrepareVectorMapForDrawing()
 //				else
 //					m_OtherSigns.push_back(p);
 //			}
-//		}
-//	}
+		}
+	}
 }
 
 void PlannerTestDraw::DrawVectorMap()
 {
+	glDisable(GL_LIGHTING);
+	float PathColor[3];
+	float Color1[3]; Color1[0] = 1.0; Color1[1] = 204.0/256.0; Color1[2] = 51.0/256.0;
+	float Color2[3]; Color2[0] = 1.0; Color2[1] = 102.0/256.0; Color2[2] = 51.0/256.0;
+	float Color3[3]; Color3[0] = 1.0; Color3[1] = 51.0/256.0;  Color3[2] = 102.0/256.0;
+	float Color4[3]; Color4[0] = 204.0/256.0; Color4[1] = 51.0/256.0; Color4[2] = 1.0;
 
+	const float mapdata_z = 0.005;
+
+	for(unsigned int i=0; i<m_ReadyToDrawLanes.size(); i++)
+	{
+		//PathColor[0]=0.5;PathColor[1] = j/20.0; PathColor[2] = j;
+		if(i==0)
+		{
+			PathColor[0]=0.25 ;PathColor[1] = 0.25; PathColor[2] = 0.25;
+		}
+		else
+		{
+			double inc_color = (double)i/25.0;
+			PathColor[0]=0.25 + inc_color; ;PathColor[1] = 0.25+inc_color; PathColor[2] = 0.25 + inc_color;
+		}
+
+		//PathColor[0]=0.25 ;PathColor[1] = 0.25; PathColor[2] = 0.25;
+		if(i%4 == 0)
+		{
+			PathColor[0] = Color1[0]; PathColor[1] = Color1[1]; PathColor[2] = Color1[2];
+		}
+		else if(i%4 == 1)
+		{
+			PathColor[0] = Color2[0]; PathColor[1] = Color2[1]; PathColor[2] = Color2[2];
+		}
+		else if(i%4 == 2)
+		{
+			PathColor[0] = Color3[0]; PathColor[1] = Color3[1]; PathColor[2] = Color3[2];
+		}
+		else if(i%4 == 3)
+		{
+			PathColor[0] = Color4[0]; PathColor[1] = Color4[1]; PathColor[2] = Color4[2];
+		}
+
+		PathColor[0] = PathColor[0]*0.15;
+		PathColor[1] = PathColor[1]*0.95;
+		PathColor[2] = PathColor[2]*0.95;
+		PathColor[0]=0.4;PathColor[1] = 0.4; PathColor[2] = 0.4;
+		DrawingHelpers::DrawPrePreparedPolygons(m_ReadyToDrawLanes[i], mapdata_z, PathColor);
+
+		PathColor[0]=0.97;PathColor[1] = 0.97; PathColor[2] = 0.97;
+		DrawingHelpers::DrawPrePreparedPolygons(m_ReadyToDrawCenterLines[i], mapdata_z+0.015, PathColor, 1);
+	}
+
+	glEnable(GL_LIGHTING);
 }
 
 void PlannerTestDraw::DrawSimu()
 {
 
-	float PlannedPathColor[3] = {0.1, 0.9, 0.1};
+	PrepareVectorMapForDrawing();
+	DrawVectorMap();
+
+	float TotalPathColor[3] = {0.99, 0.99, 0.0};
+	float PlannedPathColor[3] = {0.0, 0.99, 0.0};
 	float ActualPathColor[3] = {0.1, 0.1, 0.9};
 
-	DrawingHelpers::DrawWidePath(m_State.m_Path, 0.1, 0.25, PlannedPathColor);
-	DrawingHelpers::DrawWidePath(m_ActualPath, 0.11, 0.15, ActualPathColor);
+	pthread_mutex_lock(&planning_mutex);
+	DrawingHelpers::DrawWidePath(m_State.m_TotalPath, 0.08, 0.25, TotalPathColor);
+	DrawingHelpers::DrawWidePath(m_State.m_Path, 0.16, 0.2, PlannedPathColor);
+	DrawingHelpers::DrawWidePath(m_ActualPath, 0.18, 0.15, ActualPathColor);
 
 	float RollOutsColor[3] = {0.9, 0.2, 0.1};
 	for(unsigned int i=0; i < m_State.m_RollOuts.size();i++)
 	{
-		DrawingHelpers::DrawWidePath(m_State.m_RollOuts.at(i), 0.2, 0.1, RollOutsColor);
+		DrawingHelpers::DrawWidePath(m_State.m_RollOuts.at(i), 0.14, 0.1, RollOutsColor);
 	}
+	pthread_mutex_unlock(&planning_mutex);
 
 	glColor3f(1,0,0);
 	DrawingHelpers::DrawFilledEllipse(m_FollowPoint.x, m_FollowPoint.y, 0.2, 0.2, 0.2);
@@ -244,8 +317,8 @@ void PlannerTestDraw::DrawSimu()
 	{
 		DrawingHelpers::DrawModel(m_CarModel, m_State.m_CarInfo.wheel_base *0.9,
 				m_State.m_CarInfo.wheel_base*0.9, m_State.m_CarInfo.wheel_base*0.9,
-				m_State.m_OdometryState.pos.x,m_State.m_OdometryState.pos.y,
-				m_State.m_OdometryState.pos.z+0.275, m_State.m_OdometryState.pos.a, 0,0);
+				m_State.state.pos.x,m_State.state.pos.y,
+				m_State.state.pos.z+0.275, m_State.state.pos.a, 0,0);
 	}
 	float CarColor[3] = {0.1, 0.9, 0.9};
 	DrawingHelpers::DrawCustomCarModel(m_State.state, m_State.m_CarShapePolygon, CarColor, 90);
@@ -285,9 +358,9 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 	struct timespec moveTimer;
 	UtilityH::GetTickCount(moveTimer);
 	vector<string> logData;
-	PlanningInternalParams params;
-	PlannerH planner(params);
-	vector<Obstacle> dummyObstacles;
+	PlannerHNS::PlanningInternalParams params;
+	PlannerHNS::PlannerH planner(params);
+	vector<PlannerHNS::Obstacle> dummyObstacles;
 
 
 	while(!pR->m_bCancelThread)
@@ -296,6 +369,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 		if(time_elapsed >= pR->m_PlanningCycleTime)
 		{
+			double dt = time_elapsed;
 			UtilityH::GetTickCount(moveTimer);
 
 
@@ -305,26 +379,26 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 
 			pR->m_State.UpdateState(false);
-			pR->m_State.LocalizeMe(time_elapsed);
-			pR->m_State.CalculateImportantParameterForDecisionMaking(dummyObstacles, pR->m_VehicleState, pR->m_goal.pos);
+			pR->m_State.LocalizeMe(dt);
+			pR->m_State.CalculateImportantParameterForDecisionMaking(dummyObstacles, pR->m_VehicleState, pR->m_goal.pos, pR->m_RoadMap);
 			pR->m_State.m_pCurrentBehaviorState = pR->m_State.m_pCurrentBehaviorState->GetNextState();
 
 			pthread_mutex_lock(&pR->behaviors_mutex);
 
-			PreCalculatedConditions *preCalcPrams = pR->m_State.m_pCurrentBehaviorState->GetCalcParams();
+			PlannerHNS::PreCalculatedConditions *preCalcPrams = pR->m_State.m_pCurrentBehaviorState->GetCalcParams();
 
 			pR->m_CurrentBehavior.state = pR->m_State.m_pCurrentBehaviorState->m_Behavior;
-			if(pR->m_CurrentBehavior.state == FOLLOW_STATE)
+			if(pR->m_CurrentBehavior.state == PlannerHNS::FOLLOW_STATE)
 				pR->m_CurrentBehavior.followDistance = preCalcPrams->distanceToNext;
 			else
 				pR->m_CurrentBehavior.followDistance = 0;
 
 			if(preCalcPrams->bUpcomingRight)
-				pR->m_CurrentBehavior.indicator = INDICATOR_RIGHT;
+				pR->m_CurrentBehavior.indicator = PlannerHNS::INDICATOR_RIGHT;
 			else if(preCalcPrams->bUpcomingLeft)
-				pR->m_CurrentBehavior.indicator = INDICATOR_LEFT;
+				pR->m_CurrentBehavior.indicator = PlannerHNS::INDICATOR_LEFT;
 			else
-				pR->m_CurrentBehavior.indicator = INDICATOR_NONE;
+				pR->m_CurrentBehavior.indicator = PlannerHNS::INDICATOR_NONE;
 
 			//TODO fix this , make get lookahead velocity work
 			double max_velocity = 2; //BehaviorsNS::MappingHelpers::GetLookAheadVelocity(m_CarState.m_Path, GetCarPos(), 25);
@@ -336,32 +410,51 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 			pthread_mutex_unlock(&pR->behaviors_mutex);
 
-			if(pR->m_CurrentBehavior.state == INITIAL_STATE && pR->m_State.m_Path.size() == 0)
+			if(pR->m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE && pR->m_State.m_Path.size() == 0)
 			{
-				vector<WayPoint> generatedPath;
-				planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
-				planner.GenerateRunoffTrajectory(generatedPath, pR->m_State.state, false, 5, 20, 10, 0,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
-						pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-						false, pR->m_State.m_RollOuts);
-
-
-				if(generatedPath.size()> 0 )
-					pR->m_bNewPath = true;
+				vector<PlannerHNS::WayPoint> generatedPath;
+				//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
+				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state, pR->m_goal, pR->m_State.state, 2550,pR->m_LanesIds, generatedPath);
 
 				cout << "Generated Path Length = " << generatedPath.size();
 
 				pthread_mutex_lock(&pR->planning_mutex);
-				pR->m_State.m_Path = generatedPath;
+				pR->m_State.m_TotalPath = generatedPath;
 				pthread_mutex_unlock(&pR->planning_mutex);
+			}
+
+			if(pR->m_State.m_TotalPath.size()>0)
+			{
+				int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(pR->m_State.m_Path, pR->m_State.state);
+				if(pR->m_State.m_RollOuts.size() == 0 || currIndex*2.0 > pR->m_State.m_Path.size())
+				{
+					pthread_mutex_lock(&pR->planning_mutex);
+
+					planner.GenerateRunoffTrajectory(pR->m_State.m_TotalPath, pR->m_State.state, false,  5, 100, 5, 0,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
+							false, pR->m_State.m_RollOuts);
+
+
+					pR->m_State.m_Path = pR->m_State.m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+
+					if(pR->m_State.m_Path.size() >  0 )
+						pR->m_bNewPath = true;
+
+					if(pR->m_State.m_Path.size()<5)
+						preCalcPrams->bGoalReached = true;
+
+					pthread_mutex_unlock(&pR->planning_mutex);
+				}
+
 			}
 
 			if(pR->m_ActualPath.size() > 0 && distance2points(pR->m_ActualPath.at(pR->m_ActualPath.size()-1).pos, pR->m_State.state.pos) > 1 )
@@ -394,14 +487,15 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 
 		if(time_elapsed >= pR->m_ControlCycleTime)
 		{
+			double dt = time_elapsed;
 			UtilityH::GetTickCount(moveTimer);
 
 			pthread_mutex_lock(&pR->behaviors_mutex);
-			BehaviorState currMessage = pR->m_CurrentBehavior;
+			PlannerHNS::BehaviorState currMessage = pR->m_CurrentBehavior;
 			pthread_mutex_unlock(&pR->behaviors_mutex);
 
 
-			vector<WayPoint> generatedPath;
+			vector<PlannerHNS::WayPoint> generatedPath;
 			pthread_mutex_lock(&pR->planning_mutex);
 			generatedPath = pR->m_State.m_Path;
 			pthread_mutex_unlock(&pR->planning_mutex);
@@ -415,29 +509,30 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 				}
 			}
 
-			VehicleState currState;
+			PlannerHNS::VehicleState currState;
 
-			if(currMessage.state == FORWARD_STATE)
+			if(currMessage.state == PlannerHNS::FORWARD_STATE)
 			{
 				if(generatedPath.size()>0)
 				{
 					predControl.PrepareNextWaypoint(pR->m_State.state, pR->m_State.m_CurrentVelocity, pR->m_State.m_CurrentSteering);
-					//predControl.VeclocityControllerUpdate(time_elapsed, pR->m_GlobalVehicleStatus, currMessage,velocity_d);
+					predControl.VeclocityControllerUpdate(dt, currState,currMessage, currState.speed);
 					predControl.SteerControllerUpdate(currState, currMessage, currState.steer);
 
-					currState.speed = 5;
-					currState.shift = SHIFT_POS_DD;
+					//currState.speed = 5;
+					cout << currState.speed << endl;
+					currState.shift = PlannerHNS::SHIFT_POS_DD;
 				}
 			}
-			else if(currMessage.state == STOPPING_STATE)
+			else if(currMessage.state == PlannerHNS::STOPPING_STATE)
 			{
 				currState.speed = 0;
-				currState.shift = SHIFT_POS_DD;
+				currState.shift = PlannerHNS::SHIFT_POS_DD;
 			}
 			else
 			{
 				currState.speed = 0;
-				currState.shift = SHIFT_POS_NN;
+				currState.shift = PlannerHNS::SHIFT_POS_NN;
 			}
 
 			pR->m_FollowPoint  = predControl.m_FollowMePoint.pos;

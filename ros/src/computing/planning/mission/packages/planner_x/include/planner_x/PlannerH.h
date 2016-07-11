@@ -127,6 +127,23 @@ public:
 				const int& rollOutNumber, const double& SmoothDataWeight, const double& SmoothWeight,
 				const double& SmoothTolerance, const double& speedProfileFactor, const bool& bHeadingSmooth, std::vector<std::vector<WayPoint> >& rollOutPaths);
 
+	/**
+	 * @brief Path planning for structured environment using dynamic programming
+	 * @param lane
+	 * @param carPos
+	 * @param goalPos
+	 * @param prevWayPoint
+	 * @param maxPlanningDistance
+	 * @param globalPath
+	 * @param path
+	 * @return generated path length
+	 */
+	double PlanUsingDP(Lane* lane, const WayPoint& carPos,const WayPoint& goalPos,
+			const WayPoint& prevWayPoint, const double& maxPlanningDistance,
+			const std::vector<int>& globalPath, std::vector<WayPoint>& path);
+
+	void DeleteWaypoints(std::vector<WayPoint*>& wps);
+
 	PlanningInternalParams m_Params;
 };
 

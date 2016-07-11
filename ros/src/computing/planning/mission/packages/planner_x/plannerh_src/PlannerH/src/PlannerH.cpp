@@ -6,6 +6,8 @@
  */
 
 #include "PlannerH.h"
+#include "PlanningHelpers.h"
+#include "MappingHelpers.h"
 #include <iostream>
 
 using namespace std;
@@ -144,6 +146,7 @@ PlannerH::PlannerH(const PlanningInternalParams& params)
 	for(unsigned int i=0; i< rollOutPaths.size(); i++)
 	{
 		PlanningHelpers::GenerateRecommendedSpeed(rollOutPaths.at(i), maxSpeed, speedProfileFactor);
+		PlanningHelpers::SmoothSpeedProfiles(rollOutPaths.at(i), 0.15, 0.35, 0.1);
 	}
 
 //Debug code
@@ -161,5 +164,84 @@ PlannerH::PlannerH(const PlanningInternalParams& params)
 // 		  }
 // 	  }
    }
+
+ double PlannerH::PlanUsingDP(Lane* l, const WayPoint& start,const WayPoint& goalPos,
+			const WayPoint& prevWayPoint, const double& maxPlanningDistance,
+			const std::vector<int>& globalPath, std::vector<WayPoint>& path)
+ {
+ 	if(!l)
+ 	{
+ 		cout <<endl<< "Err: PlannerH -> Null Lane !!" << endl;
+ 		return 0;
+ 	}
+
+ 	int nML =0 , nMR = 0;
+ 	WayPoint carPos = start;
+ 	vector<vector<WayPoint> > tempCurrentForwardPathss;
+ 	vector<WayPoint*> all_cell_to_delete;
+ 	vector<WayPoint> mainPath;
+ 	WayPoint* pLaneCell = 0;
+
+ 	int closest_index = PlanningHelpers::GetClosestPointIndex(l->points, carPos);
+ 	WayPoint closest_p = l->points.at(closest_index);
+
+ 	if(distance2points(closest_p.pos, carPos.pos) > 8)
+ 	{
+		cout <<endl<< "Err: PlannerH -> Distance to Lane is: " << distance2points(closest_p.pos, carPos.pos)
+		<< ", Pose: " << carPos.pos.ToString() << ", LanePose:" << closest_p.pos.ToString()
+		<< ", LaneID: " << l->id << " -> Check origin and vector map. " << endl;
+ 		return 0;
+ 	}
+
+ 	WayPoint* pStartWP = &l->points.at(0);
+ 	pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStartWP, prevWayPoint, closest_p, goalPos, globalPath, maxPlanningDistance, nML, nMR, all_cell_to_delete);
+
+ 	if(!pLaneCell)
+ 	{
+ 		cout <<endl<< "Err PlannerH -> Null Tree Head." << endl;
+ 		return 0;
+ 	}
+
+ 	//mainPath.push_back(start);
+ 	//mainPath.push_back(*pLaneCell);
+
+ 	PlanningHelpers::TravesePathTreeBackwards(pLaneCell, pStartWP, globalPath, mainPath, tempCurrentForwardPathss);
+
+
+ 	cout << endl <<"Info: PlannerH -> Path With Size (" << (int)mainPath.size() << "), Extraction Time : " << endl;
+
+ 	if(mainPath.size()<2)
+ 	{
+ 		cout << endl << "Err: PlannerH -> Invalid Path, Car Should Stop." << endl;
+ 		if(pLaneCell)
+ 			DeleteWaypoints(all_cell_to_delete);
+ 		return 0 ;
+ 	}
+
+ //	ostringstream str;
+ //	str << "BehaviorsLog/WholePath_";
+ //	ConfigAndLogNS::LogMgr::WritePathToFile(str.str(), mainPath);
+
+ 	if(pLaneCell)
+ 		DeleteWaypoints(all_cell_to_delete);
+
+ 	path = mainPath;
+
+ 	double totalPlanningDistance = mainPath.at(mainPath.size()-1).cost;
+ 	return totalPlanningDistance;
+ }
+
+ void PlannerH::DeleteWaypoints(vector<WayPoint*>& wps)
+ {
+ 	for(unsigned int i=0; i<wps.size(); i++)
+ 	{
+ 		if(wps.at(i))
+ 		{
+ 			delete wps.at(i);
+ 			wps.at(i) = 0;
+ 		}
+ 	}
+ 	wps.clear();
+ }
 
 }
