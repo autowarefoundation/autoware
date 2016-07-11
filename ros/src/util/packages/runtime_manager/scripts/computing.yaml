@@ -447,6 +447,8 @@ subs :
          gui  :
            save_filename :
              prop  : 1
+           save_velocity :
+             flags : [ nl ]
        - name : waypoint_clicker
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
@@ -1674,26 +1676,19 @@ params :
     vars  :
     - name      : save_filename
       desc      : save_filename desc sample
+      label     : Save File 
       kind      : path
       path_type : save
-      v         : ''
+      v         : '/tmp/saved_waypoints.csv'
       cmd_param :
         var_name    : save_finename
         dash        : ''
         delim       : ':='
-    - name  : velocity_source
-      desc  : velocity_source desc sample
-      label : velocity source
-      kind  : radio_box
-      choices:
-      - None
-      - can_info
-      - points_localizer
-      descs :
-      - None desc sample
-      - can_info desc sample
-      - points_localizer desc sample
-      v     : 0
+    - name  : save_velocity
+      descs : When you save the velocity in each waypoints, Please check if /current_velocity is publishing
+      label : Save /current_velocity
+      kind    : checkbox
+      v       : False
       cmd_param :
         dash        : ''
         delim       : ':='

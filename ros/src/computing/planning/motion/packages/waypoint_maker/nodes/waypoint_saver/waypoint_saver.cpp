@@ -43,12 +43,10 @@
 #include "vehicle_socket/CanInfo.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
-static const int SYNC_FRAMES = 10;
-static const int ZMP_CAN = 1;
-static const int NDT = 2;
+static const int SYNC_FRAMES = 50;
 
-typedef message_filters::sync_policies::ApproximateTime<vehicle_socket::CanInfo, geometry_msgs::PoseStamped> CaninfoPoseSync;
 typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::TwistStamped, geometry_msgs::PoseStamped> TwistPoseSync;
+typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::Vector3Stamped, geometry_msgs::PoseStamped> Vector3PoseSync;
 
 class WaypointSaver
 {
@@ -59,9 +57,9 @@ public:
 private:
 
   //functions
-  void CaninfoPoseCallback(const vehicle_socket::CanInfoConstPtr &can_msg, const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
+
   void TwistPoseCallback(const geometry_msgs::TwistStampedConstPtr &twist_msg, const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
-  void FloatPoseCallback(const std_msgs::Float32ConstPtr &float_msg, const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
+  void Vector3PoseCallback(const geometry_msgs::Vector3StampedConstPtr &twist_msg, const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
   void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
   void displayMarker(geometry_msgs::Pose pose, double velocity) const;
   void outputProcessing(geometry_msgs::Pose current_pose , double velocity) const;
@@ -74,17 +72,16 @@ private:
   ros::Publisher waypoint_saver_pub_;
 
   //subscriber
-  message_filters::Subscriber<vehicle_socket::CanInfo> *zmp_can_sub_;
- // message_filters::Subscriber<geometry_msgs::TwistStamped> *ndt_estimated_sub_;
-  message_filters::Subscriber<geometry_msgs::TwistStamped> *ndt_estimated_sub_;
+  message_filters::Subscriber<geometry_msgs::TwistStamped> *twist_sub_;
+  message_filters::Subscriber<geometry_msgs::Vector3Stamped> *vector3_sub_;
   message_filters::Subscriber<geometry_msgs::PoseStamped> *pose_sub_;
-  message_filters::Synchronizer<CaninfoPoseSync> *sync_cp_;
   message_filters::Synchronizer<TwistPoseSync> *sync_tp_;
+  message_filters::Synchronizer<Vector3PoseSync> *sync_vp_;
 
   //variables
-  int velocity_source_; //0 : none , 1 : ZMP CAN , 2 : kvaser ,3 : NDT
+  bool save_velocity_;
   double interval_;
-  std::string filename_, pose_topic_;
+  std::string filename_, pose_topic_,velocity_topic_;
 };
 
 WaypointSaver::WaypointSaver() :
@@ -93,25 +90,21 @@ WaypointSaver::WaypointSaver() :
   //parameter settings
   private_nh_.param<std::string>("save_filename", filename_, std::string("data.txt"));
   private_nh_.param<std::string>("pose_topic", pose_topic_, std::string("current_pose"));
+  private_nh_.param<std::string>("velocity_topic", velocity_topic_, std::string("current_velocity"));
   private_nh_.param<double>("interval", interval_, 1.0);
-  private_nh_.param<int>("velocity_source", velocity_source_,0);
+  private_nh_.param<bool>("save_velocity", save_velocity_,false);
 
   //subscriber
   pose_sub_ = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, pose_topic_, 50);
 
-  if (velocity_source_ == ZMP_CAN) // ZMP CAN
+  if (save_velocity_)
   {
-    zmp_can_sub_ = new message_filters::Subscriber<vehicle_socket::CanInfo>(nh_, "can_info", 1);
-    sync_cp_ = new message_filters::Synchronizer<CaninfoPoseSync>(CaninfoPoseSync(SYNC_FRAMES), *zmp_can_sub_,
-        *pose_sub_);
-    sync_cp_->registerCallback(boost::bind(&WaypointSaver::CaninfoPoseCallback, this, _1, _2));
-  }
-  else if(velocity_source_ == NDT){
-    ndt_estimated_sub_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(nh_, "estimate_twist", 50);
-
-       sync_tp_ = new message_filters::Synchronizer<TwistPoseSync>(TwistPoseSync(SYNC_FRAMES), *ndt_estimated_sub_,
-           *pose_sub_);
-      sync_tp_->registerCallback(boost::bind(&WaypointSaver::TwistPoseCallback, this, _1, _2));
+    //twist_sub_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(nh_, velocity_topic_, 50);
+    //sync_tp_ = new message_filters::Synchronizer<TwistPoseSync>(TwistPoseSync(SYNC_FRAMES), *twist_sub_, *pose_sub_);
+    //sync_tp_->registerCallback(boost::bind(&WaypointSaver::TwistPoseCallback, this, _1, _2));
+    vector3_sub_ = new message_filters::Subscriber<geometry_msgs::Vector3Stamped>(nh_, velocity_topic_, 50);
+    sync_vp_ = new message_filters::Synchronizer<Vector3PoseSync>(Vector3PoseSync(SYNC_FRAMES), *vector3_sub_, *pose_sub_);
+    sync_vp_->registerCallback(boost::bind(&WaypointSaver::Vector3PoseCallback, this, _1, _2));
 
   }
   else
@@ -126,11 +119,11 @@ WaypointSaver::WaypointSaver() :
 
 WaypointSaver::~WaypointSaver()
 {
-  delete zmp_can_sub_;
-  delete ndt_estimated_sub_;
+  //delete twist_sub_;
+  delete vector3_sub_;
   delete pose_sub_;
-  delete sync_tp_;
-  delete sync_cp_;
+  //delete sync_tp_;
+  delete sync_vp_;
 }
 
 void WaypointSaver::poseCallback (
@@ -139,10 +132,10 @@ void WaypointSaver::poseCallback (
   outputProcessing(pose_msg->pose,0);
 }
 
-void WaypointSaver::CaninfoPoseCallback(const vehicle_socket::CanInfoConstPtr &can_msg,
+void WaypointSaver::Vector3PoseCallback(const geometry_msgs::Vector3StampedConstPtr &vector3_msg,
   const geometry_msgs::PoseStampedConstPtr &pose_msg) const
 {
-  outputProcessing(pose_msg->pose,can_msg->speed);
+  outputProcessing(pose_msg->pose,mps2kmph(vector3_msg->vector.x));
 }
 
 void WaypointSaver::TwistPoseCallback(const geometry_msgs::TwistStampedConstPtr &twist_msg,
