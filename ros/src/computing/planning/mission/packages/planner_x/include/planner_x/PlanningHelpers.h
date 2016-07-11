@@ -57,6 +57,32 @@ public:
 	static void SmoothWayPointsDirections(std::vector<WayPoint>& path_in, double weight_data, double weight_smooth, double tolerance	= 0.1);
 
 	static void GenerateRecommendedSpeed(std::vector<WayPoint>& path, const double& max_speed, const double& speedProfileFactor);
+	static WayPoint* BuildPlanningSearchTree(Lane* l, const WayPoint& prevWayPointIndex,
+			const WayPoint& startPos, const WayPoint& goalPos,
+			const std::vector<int>& globalPath, const double& DistanceLimit,
+			int& nMaxLeftBranches, int& nMaxRightBranches,
+			std::vector<WayPoint*>& all_cells_to_delete );
+
+	static WayPoint* BuildPlanningSearchTreeV2(WayPoint* pStart, const WayPoint& prevWayPointIndex,
+				const WayPoint& startPos, const WayPoint& goalPos,
+				const std::vector<int>& globalPath, const double& DistanceLimit,
+				int& nMaxLeftBranches, int& nMaxRightBranches,
+				std::vector<WayPoint*>& all_cells_to_delete );
+
+	static bool CheckLaneIdExits(const std::vector<int>& lanes, const Lane* pL);
+	static WayPoint* CheckLaneExits(const std::vector<std::pair<Lane*, WayPoint*> >& lanes, const Lane* pL);
+	static WayPoint* CheckNodeExits(const std::vector<WayPoint*>& nodes, const WayPoint* pL);
+
+	static WayPoint* CreateLaneHeadCell(Lane* pLane, WayPoint* pLeft, WayPoint* pRight,
+			WayPoint* pBack);
+	static double GetLanePoints(Lane* l, const WayPoint& prevWayPointIndex,
+			const double& minDistance , const double& prevCost, std::vector<WayPoint>& points);
+
+	static WayPoint* GetMinCostCell(const std::vector<WayPoint*>& cells, const std::vector<int>& globalPathIds);
+
+	static void TravesePathTreeBackwards(WayPoint* pHead, WayPoint* pStartWP, const std::vector<int>& globalPathIds,
+			std::vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths);
+
 };
 
 } /* namespace PlannerHNS */

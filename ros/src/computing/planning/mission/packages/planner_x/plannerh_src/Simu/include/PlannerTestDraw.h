@@ -67,6 +67,11 @@ private:
 	void PrepareVectorMapForDrawing();
 	void DrawVectorMap();
 
+
+	std::vector<int> m_LanesIds;
+	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawLanes;
+	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawCenterLines;
+
 };
 
 } /* namespace Graphics */

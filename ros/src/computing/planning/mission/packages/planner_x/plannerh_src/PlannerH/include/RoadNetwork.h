@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 
 namespace PlannerHNS
@@ -17,8 +18,8 @@ namespace PlannerHNS
 
 class Lane;
 
-enum CORRECTION_DIRECTION {	FORWARD, FORWARD_LEFT, FORWARD_RIGHT,
-	BACKWARD, BACKWARD_LEFT, BACKWARD_RIGHT, STANDSTILL};
+enum DIRECTION_TYPE {	FORWARD_DIR, FORWARD_LEFT_DIR, FORWARD_RIGHT_DIR,
+	BACKWARD_DIR, BACKWARD_LEFT_DIR, BACKWARD_RIGHT_DIR, STANDSTILL_DIR};
 
 enum OBSTACLE_TYPE {SIDEWALK, TREE, CAR, TRUCK, HOUSE, PEDESTRIAN, CYCLIST, GENERAL_OBSTACLE};
 enum DRIVABLE_TYPE {DIRT, TARMAC, PARKINGAREA, INDOOR, GENERAL_AREA};
@@ -29,6 +30,9 @@ enum LIGHT_INDICATOR {INDICATOR_LEFT, INDICATOR_RIGHT, INDICATOR_BOTH , INDICATO
 
 enum SHIFT_POS {SHIFT_POS_PP = 0x60, SHIFT_POS_RR = 0x40, SHIFT_POS_NN = 0x20,
 	SHIFT_POS_DD = 0x10, SHIFT_POS_BB = 0xA0, SHIFT_POS_SS = 0x0f, SHIFT_POS_UU = 0xff };
+
+enum ACTION_TYPE {FORWARD_ACTION, BACKWARD_ACTION, STOP_ACTION, LEFT_TURN_ACTION,
+	RIGHT_TURN_ACTION, U_TURN_ACTION, SWERVE_ACTION, OVERTACK_ACTION};
 
 class POINT2D
 {
@@ -242,10 +246,23 @@ public:
 
 	GPSPoint(const double& x, const double& y, const double& z, const double& a)
 	{
-		this->x = this->lat = x;
-		this->y = this->lon = y;
-		this->z = this->alt = z;
-		this->a = this->dir = a;
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		this->a = a;
+
+		lat = 0;
+		lon = 0;
+		alt = 0;
+		dir = 0;
+	}
+
+	std::string ToString()
+	{
+		std::stringstream str;
+		str << "X:" << x << ", Y:" << y << ", Z:" << z << ", A:" << a << std::endl;
+		str << "Lon:" << lon << ", Lat:" << lat << ", Alt:" << alt << ", Dir:" << dir << std::endl;
+		return str.str();
 	}
 };
 
@@ -275,13 +292,16 @@ public:
 	double   cost;
 	int 	 laneId;
 	int 	 id;
-	CORRECTION_DIRECTION bDir;
+	DIRECTION_TYPE bDir;
 
 	Lane* pLane;
 	WayPoint* pLeft;
 	WayPoint* pRight;
-	WayPoint* pFront;
-	WayPoint* pBack;
+	std::vector<int> 	toIds;
+	std::vector<int> 	fromIds;
+	std::vector<WayPoint*> pFronts;
+	std::vector<WayPoint*> pBacks;
+	std::vector<std::pair<ACTION_TYPE, double> > actionCost;
 
 	WayPoint()
 	{
@@ -292,9 +312,7 @@ public:
 		pLane  = 0;
 		pLeft = 0;
 		pRight = 0;
-		pFront = 0;
-		pBack = 0;
-		bDir = FORWARD;
+		bDir = FORWARD_DIR;
 	}
 
 	WayPoint(const double& x, const double& y, const double& z, const double& a)
@@ -311,9 +329,7 @@ public:
 		pLane  = 0;
 		pLeft = 0;
 		pRight = 0;
-		pFront = 0;
-		pBack = 0;
-		bDir = FORWARD;
+		bDir = FORWARD_DIR;
 	}
 };
 

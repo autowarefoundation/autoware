@@ -641,8 +641,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 
    if(path.size()==1)
    {
-	   if(orientation == -1) path.at(0).bDir = BACKWARD;
-	   	else path.at(0).bDir = FORWARD;
+	   if(orientation == -1) path.at(0).bDir = BACKWARD_DIR;
+	   	else path.at(0).bDir = FORWARD_DIR;
    }
 
    WayPoint p;
@@ -686,16 +686,16 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 			   p.pos.x = center_x + RADCURV*cos(va1);
 			   p.pos.y = center_y + RADCURV*sin(va1);
 			   p.pos.a = mod2pi(t1 + incrt);
-			   if(orientation == -1) p.bDir = BACKWARD;
-			   else p.bDir = FORWARD;
+			   if(orientation == -1) p.bDir = BACKWARD_DIR;
+			   else p.bDir = FORWARD_DIR;
 			   path.push_back(p);
 			}
 			n = nnew;
 			if (remain > fabs(local_delta)/5.)
 			{
 				p = WayPoint(x2, y2, 0, mod2pi(t2));
-				if(orientation == -1) p.bDir = BACKWARD;
-				else p.bDir = FORWARD;
+				if(orientation == -1) p.bDir = BACKWARD_DIR;
+				else p.bDir = FORWARD_DIR;
 				path.push_back(p);
 //			   *(pathx+nnew) = x2;
 //			   *(pathy+nnew) = y2;
@@ -705,8 +705,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 			else
 			{
 				p = WayPoint(x2, y2,0, mod2pi(t2));
-				if(orientation == -1) p.bDir = BACKWARD;
-				else p.bDir = FORWARD;
+				if(orientation == -1) p.bDir = BACKWARD_DIR;
+				else p.bDir = FORWARD_DIR;
 				path.at(path.size()-1) = p;
 //			   *(pathx+nnew-1) = x2;
 //			   *(pathy+nnew-1) = y2;
@@ -746,8 +746,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
            p.pos.x = center_x + RADCURV*cos(va1);
 		   p.pos.y = center_y + RADCURV*sin(va1);
 		   p.pos.a = mod2pi(t1 + incrt);
-		   if(orientation == -1) p.bDir = BACKWARD;
-		   else p.bDir = FORWARD;
+		   if(orientation == -1) p.bDir = BACKWARD_DIR;
+		   else p.bDir = FORWARD_DIR;
 		   path.push_back(p);
 	  }
         n = nnew;
@@ -757,8 +757,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 //           *(pathy+nnew) = y2;
 //           *(patht+nnew) = mod2pi(t2);
         	p = WayPoint(x2, y2, 0, mod2pi(t2));
-			if(orientation == -1) p.bDir = BACKWARD;
-			else p.bDir = FORWARD;
+			if(orientation == -1) p.bDir = BACKWARD_DIR;
+			else p.bDir = FORWARD_DIR;
 			path.push_back(p);
            n++;
 	 }
@@ -768,8 +768,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 //           *(pathy+nnew-1) = y2;
 //           *(patht+nnew-1) = mod2pi(t2);
         	p = WayPoint(x2, y2,0, mod2pi(t2));
-			if(orientation == -1) p.bDir = BACKWARD;
-			else p.bDir = FORWARD;
+			if(orientation == -1) p.bDir = BACKWARD_DIR;
+			else p.bDir = FORWARD_DIR;
 			path.at(path.size()-1) = p;
 	  }
       }
@@ -794,8 +794,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 //           *(pathy+i) = y1 + va2*newval;
 //           *(patht+i) = t1;
         	p = WayPoint(x1 + va1*newval, y1 + va2*newval,0, t1);
-			if(orientation == -1) p.bDir = BACKWARD;
-			else p.bDir = FORWARD;
+			if(orientation == -1) p.bDir = BACKWARD_DIR;
+			else p.bDir = FORWARD_DIR;
 			path.push_back(p);
            newval = newval + PATHDENSITY;
 
@@ -807,8 +807,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 //            *(pathy+nnew) = y2;
 //            *(patht+nnew) = t2;
         	p = WayPoint(x2, y2,0, t2);
-			if(orientation == -1) p.bDir = BACKWARD;
-			else p.bDir = FORWARD;
+			if(orientation == -1) p.bDir = BACKWARD_DIR;
+			else p.bDir = FORWARD_DIR;
 			path.push_back(p);
             n = nnew+1;
 	  }
@@ -818,8 +818,8 @@ int RSPlanner::fct_curve(const int& ty,const int& orientation,const double& val,
 //            *(pathy+nnew-1) = y2;
 //            *(patht+nnew-1) = t2;
         	p = WayPoint(x2, y2,0, t2);
-			if(orientation == -1) p.bDir = BACKWARD;
-			else p.bDir = FORWARD;
+			if(orientation == -1) p.bDir = BACKWARD_DIR;
+			else p.bDir = FORWARD_DIR;
 			path.at(path.size()-1) = p;
             n = nnew;
 	  }

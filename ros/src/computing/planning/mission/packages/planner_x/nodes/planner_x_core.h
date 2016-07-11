@@ -50,25 +50,13 @@
 #include <tf/tf.h>
 
 
-#include "RoadNetwork.h"
-#include "planner_x/UtilityH.h"
-#include "planner_x/PlannerH.h"
-#include "planner_x/MappingHelpers.h"
-#include "UtilityH.h"
-#include "DataRW.h"
-
-
 
 class PlannerX
 {
 public:
-	//bool m_bReadyToPlan;
 	timespec m_Timer;
 	int m_counter;
 	int m_frequency;
-	geometry_msgs::Pose m_InitPos;
-	geometry_msgs::Pose m_GoalPos;
-
 
 	map_file::PointClassArray points;
 	std::vector<map_file::Lane> lanes;
@@ -76,29 +64,13 @@ public:
 	std::vector<map_file::StopLine> stoplines;
 	std::vector<map_file::DTLane> dtlanes;
 
-	ros::Publisher m_PositionPublisher;
-	ros::Publisher m_PathPublisherRviz;
-	ros::Publisher m_PathPublisher;
-
-	ros::NodeHandle* pNodeHandle;
-
-	std::vector<UtilityHNS::AisanLanesFileReader::AisanLane> m_lanes_data;
-	std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints> m_points_data;
-	std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine> m_dt_data;
-	PlannerHNS::RoadNetwork m_Map;
-	PlannerHNS::WayPoint m_origin;
-
-
-
-
   // Constructor.
-  PlannerX(ros::NodeHandle* pnh);
+  PlannerX();
 
   // Destructor.
   ~PlannerX();
 
   // Callback function for subscriber.
-  void callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg);
   void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackFromLightColor(const runtime_manager::traffic_light& msg);
@@ -110,10 +82,6 @@ public:
   void callbackGetVMNodes(const map_file::NodeArray& msg);
   void callbackGetVMStopLines(const map_file::StopLineArray& msg);
   void callbackGetVMCenterLines(const map_file::DTLaneArray& msg);
-
-  void ConvertAndPulishDrivingTrajectory(const std::vector<PlannerHNS::WayPoint>& path);
-
-  void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 
 };
 

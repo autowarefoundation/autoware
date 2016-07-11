@@ -8,6 +8,7 @@
 #include "CarState.h"
 #include "UtilityH.h"
 #include "PlanningHelpers.h"
+#include "MappingHelpers.h"
 
 using namespace PlannerHNS;
 using namespace UtilityHNS;
@@ -83,7 +84,8 @@ void CarState::InitPolygons()
 
  void CarState::FirstLocalizeMe(const WayPoint& initCarPos)
  {
-	 state = initCarPos;
+	pLane = initCarPos.pLane;
+	state = initCarPos;
 	m_OdometryState.pos.a = initCarPos.pos.a;
 	m_OdometryState.pos.x = initCarPos.pos.x + (m_CarInfo.wheel_base/2.0 * cos(initCarPos.pos.a));
 	m_OdometryState.pos.y = initCarPos.pos.y + (m_CarInfo.wheel_base/2.0 * sin(initCarPos.pos.a));
@@ -138,11 +140,21 @@ void CarState::InitPolygons()
 	 m_CurrentVelocity = m_CurrentVelocityD;
   }
 
- void CarState::CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::Obstacle>& obj_list, const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal)
+ void CarState::CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::Obstacle>& obj_list,
+		 const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map)
  {
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
 
- 	pLane = 0;
+ 	PlannerHNS::Lane* pPathLane = MappingHelpers::GetLaneFromPath(state, m_Path);
+ 	PlannerHNS::Lane* pMapLane  = MappingHelpers::GetClosestLaneFromMap(state, map, 3.0);
+
+ 	if(pPathLane)
+ 		pLane = pPathLane;
+ 	else if(pMapLane)
+ 		pLane = pMapLane;
+ 	else
+ 		pLane = 0;
+
  	pValues->minStoppingDistance	= car_state.speed * 3.6 * 1.5;
 
  	//pValues->minStoppingDistance	= 12;
@@ -157,6 +169,7 @@ void CarState::InitPolygons()
  	pValues->currentVelocity 		= car_state.speed;
  	pValues->bTrafficIsRed 			= false;
  	pValues->currentTrafficLightID 	= -1;
+ 	pValues->iCurrSafeTrajectory    = pValues->iCentralTrajectory;
 
 
  	//Mission Complete
