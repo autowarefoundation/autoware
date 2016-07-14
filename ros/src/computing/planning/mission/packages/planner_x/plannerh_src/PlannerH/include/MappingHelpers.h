@@ -44,6 +44,7 @@ public:
 	static void SetLaneLinksList(TiXmlElement* pElem, std::vector<Lane>& lanes);
 
 	static Lane* GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
+	static WayPoint* GetClosestWaypointFromMap(const WayPoint& pos, RoadNetwork& map);
 	static WayPoint GetFirstWaypoint(RoadNetwork& map);
 
 

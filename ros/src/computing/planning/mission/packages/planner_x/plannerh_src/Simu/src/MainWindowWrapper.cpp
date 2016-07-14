@@ -39,7 +39,7 @@ WindowParams::WindowParams()
 	ReCalcSimuWindow();
 
 	bNew = true;
-	bGPU = true;
+	bGPU = false;
 }
 
 void WindowParams::ReCalcSimuWindow()

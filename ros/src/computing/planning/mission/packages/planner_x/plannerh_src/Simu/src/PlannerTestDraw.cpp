@@ -38,7 +38,9 @@ PlannerTestDraw::PlannerTestDraw()
 	m_CarModel = 0;
 
 	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMapPath, m_RoadMap);
-
+	/**
+	 * Writing the kml file for the RoadNetwork Map
+	 */
 //	ostringstream fileName;
 //	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
 //	fileName << "_RoadNetwork.kml";
@@ -50,8 +52,14 @@ PlannerTestDraw::PlannerTestDraw()
 	m_State.Init(1.9, 4.2,carInfo);
 
 
-	//m_start = WayPoint(20, 2, 0, M_PI);
-	m_start = PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
+	m_start = PlannerHNS::WayPoint(2, -50, 0, M_PI);
+	//m_start = PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
+	PlannerHNS::WayPoint* pWS = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(m_start, m_RoadMap);
+	if(pWS)
+		m_start.pos = pWS->pos;
+	else
+		cout << "#Planning Error: Start Position is too far from the road network map!" << endl;
+
 	m_start.pos.z = 0;
 	m_start.bDir = PlannerHNS::FORWARD_DIR;
 
@@ -59,19 +67,29 @@ PlannerTestDraw::PlannerTestDraw()
 	m_State.InitPolygons();
 
 
-	stringstream str_stream(PreDefinedPath);
+	/**
+	 * Planning using predefind path (sequence of lane IDs)
+	 */
+//	stringstream str_stream(PreDefinedPath);
+//	string strLine, innerToken;
+//	m_LanesIds.clear();
+//	while(getline(str_stream, innerToken, ','))
+//	{
+//		int id = strtol(innerToken.c_str(), NULL, 10);
+//		m_LanesIds.push_back(id);
+//	}
 
-	string strLine, innerToken;
-	vector<string> header;
-	m_LanesIds.clear();
 
-	while(getline(str_stream, innerToken, ','))
-	{
-		int id = strtol(innerToken.c_str(), NULL, 10);
-		m_LanesIds.push_back(id);
-	}
-
+	/**
+	 * Planning using goad point
+	 */
 	m_goal = PlannerHNS::WayPoint(100, 100, 0, M_PI_2);
+	PlannerHNS::WayPoint* pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(m_goal, m_RoadMap);
+	if(pW)
+		m_goal.pos = pW->pos;
+	else
+		cout << "#Planning Error: Goal Position is too far from the road network map!" << endl;
+
 	m_goal.bDir = PlannerHNS::FORWARD_DIR;
 
 	m_followX = m_start.pos.x;
@@ -369,7 +387,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 		if(time_elapsed >= pR->m_PlanningCycleTime)
 		{
-			double dt = time_elapsed;
+			double dt = 0.01;
 			UtilityH::GetTickCount(moveTimer);
 
 
@@ -487,7 +505,7 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 
 		if(time_elapsed >= pR->m_ControlCycleTime)
 		{
-			double dt = time_elapsed;
+			double dt = 0.01;
 			UtilityH::GetTickCount(moveTimer);
 
 			pthread_mutex_lock(&pR->behaviors_mutex);
@@ -520,7 +538,7 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 					predControl.SteerControllerUpdate(currState, currMessage, currState.steer);
 
 					//currState.speed = 5;
-					cout << currState.speed << endl;
+					//cout << currState.speed << endl;
 					currState.shift = PlannerHNS::SHIFT_POS_DD;
 				}
 			}
@@ -534,6 +552,8 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 				currState.speed = 0;
 				currState.shift = PlannerHNS::SHIFT_POS_NN;
 			}
+
+			cout << pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(currMessage.state) << endl;
 
 			pR->m_FollowPoint  = predControl.m_FollowMePoint.pos;
 			pR->m_PerpPoint    = predControl.m_PerpendicularPoint.pos;

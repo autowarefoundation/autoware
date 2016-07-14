@@ -540,6 +540,23 @@ void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 	}
 }
 
+WayPoint* MappingHelpers::GetClosestWaypointFromMap(const WayPoint& pos, RoadNetwork& map)
+{
+	double distance_to_nearest_lane = 1;
+	Lane* pLane = 0;
+	while(distance_to_nearest_lane < 100 && pLane == 0)
+	{
+		pLane = GetClosestLaneFromMap(pos, map, distance_to_nearest_lane);
+		distance_to_nearest_lane += 2;
+	}
+
+	if(!pLane) return 0;
+
+	int closest_index = PlanningHelpers::GetClosestPointIndex(pLane->points, pos);
+
+	return &pLane->points.at(closest_index);
+}
+
 Lane* MappingHelpers::GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance)
 {
 	vector<pair<double, Lane*> > laneLinksList;

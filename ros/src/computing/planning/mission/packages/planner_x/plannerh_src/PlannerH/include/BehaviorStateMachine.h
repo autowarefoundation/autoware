@@ -50,7 +50,7 @@ public:
 		maxSpeed 						= 15;
 		minSpeed 						= 1;
 		planningDistance 				= 10000;
-		microPlanDistance 				= 250;
+		microPlanDistance 				= 35;
 		carTipMargin					= 8.0;
 		rollInMargin					= 20.0;
 		rollInSpeedFactor				= 0.25;

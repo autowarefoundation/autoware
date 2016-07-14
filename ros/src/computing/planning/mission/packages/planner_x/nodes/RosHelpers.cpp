@@ -11,6 +11,9 @@
 #include <sstream>
 #include <fstream>
 
+namespace PlannerXNS
+{
+
 RosHelpers::RosHelpers() {
 
 }
@@ -18,21 +21,23 @@ RosHelpers::RosHelpers() {
 RosHelpers::~RosHelpers() {
 }
 
-void RosHelpers::getTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
+void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
 {
-  static tf::TransformListener listener;
+	static tf::TransformListener listener;
 
-  while (1)
-  {
-    try
-    {
-      listener.lookupTransform(parent_frame, child_frame, ros::Time(0), transform);
-      break;
-    }
-    catch (tf::TransformException ex)
-    {
-      ROS_ERROR("%s", ex.what());
-      ros::Duration(1.0).sleep();
-    }
-  }
+	while (1)
+	{
+		try
+		{
+			listener.lookupTransform(parent_frame, child_frame, ros::Time(0), transform);
+			break;
+		}
+		catch (tf::TransformException& ex)
+		{
+			ROS_ERROR("%s", ex.what());
+			ros::Duration(1.0).sleep();
+		}
+	}
+}
+
 }

@@ -38,8 +38,8 @@ include_directories(
 
 link_directories(lib)
 
-add_executable(planner_x nodes/planner_x.cpp nodes/planner_x_core.cpp nodes/RosHelpers.cpp)
-target_link_libraries(planner_x utilityh plannerh ${catkin_LIBRARIES})
+add_executable(planner_x nodes/planner_x.cpp nodes/planner_x_core.cpp nodes/RosHelpers.cpp nodes/PlannerXInterface.cpp nodes/PlannerHHandler.cpp)
+target_link_libraries(planner_x utilityh plannerh simuh ${catkin_LIBRARIES})
 add_dependencies(planner_x 
 runtime_manager_generate_messages_cpp
 cv_tracker_generate_messages_cpp
