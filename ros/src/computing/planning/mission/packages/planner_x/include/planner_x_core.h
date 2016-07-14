@@ -49,72 +49,84 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 
+#include "PlannerXInterface.h"
 
-#include "RoadNetwork.h"
-#include "planner_x/UtilityH.h"
-#include "planner_x/PlannerH.h"
-#include "planner_x/MappingHelpers.h"
-#include "UtilityH.h"
-#include "DataRW.h"
-
-
+namespace PlannerXNS
+{
 
 class PlannerX
 {
-public:
+protected:
 	//bool m_bReadyToPlan;
 	timespec m_Timer;
 	int m_counter;
 	int m_frequency;
+
+	PlannerXNS::AutowareRoadNetwork m_AwMap;
+	PlannerXNS::PlannerX_Interface* m_pPlanner;
+
 	geometry_msgs::Pose m_InitPos;
-	geometry_msgs::Pose m_GoalPos;
+	bool bInitPos;
+	//geometry_msgs::Pose m_GoalPos;
+	bool bGoalPos;
+	geometry_msgs::Pose m_CurrentPos;
+	bool bNewCurrentPos;
+	geometry_msgs::Pose m_OriginPos;
 
+	cv_tracker::obj_label m_DetectedObstacles;
+	bool bNewDetectedObstacles;
 
-	map_file::PointClassArray points;
-	std::vector<map_file::Lane> lanes;
-	std::vector<map_file::Node> nodes;
-	std::vector<map_file::StopLine> stoplines;
-	std::vector<map_file::DTLane> dtlanes;
+	runtime_manager::traffic_light m_TrafficLights;
+	bool bTrafficLights;
+
+	AutowareVehicleState m_VehicleState;
+	bool bVehicleState;
+
+	ros::NodeHandle nh;
 
 	ros::Publisher m_PositionPublisher;
 	ros::Publisher m_PathPublisherRviz;
 	ros::Publisher m_PathPublisher;
 
-	ros::NodeHandle* pNodeHandle;
+	// define subscribers.
+	ros::Subscriber sub_current_pose 		;
+	ros::Subscriber sub_traffic_light 		;
+	ros::Subscriber sub_obj_pose 			;
+	ros::Subscriber point_sub 				;
+	ros::Subscriber lane_sub 				;
+	ros::Subscriber node_sub 				;
+	ros::Subscriber stopline_sub 			;
+	ros::Subscriber dtlane_sub 				;
+	ros::Subscriber initialpose_subscriber 	;
+	ros::Subscriber goalpose_subscriber 	;
 
-	std::vector<UtilityHNS::AisanLanesFileReader::AisanLane> m_lanes_data;
-	std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints> m_points_data;
-	std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine> m_dt_data;
-	PlannerHNS::RoadNetwork m_Map;
-	PlannerHNS::WayPoint m_origin;
 
 
-
-
+public:
   // Constructor.
-  PlannerX(ros::NodeHandle* pnh);
+  PlannerX();
 
   // Destructor.
   ~PlannerX();
 
+  void PlannerMainLoop();
+
+private:
   // Callback function for subscriber.
   void callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg);
   void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackFromLightColor(const runtime_manager::traffic_light& msg);
-
   void callbackFromObjCar(const cv_tracker::obj_label& msg);
-
   void callbackGetVMPoints(const map_file::PointClassArray& msg);
   void callbackGetVMLanes(const map_file::LaneArray& msg);
   void callbackGetVMNodes(const map_file::NodeArray& msg);
   void callbackGetVMStopLines(const map_file::StopLineArray& msg);
   void callbackGetVMCenterLines(const map_file::DTLaneArray& msg);
 
-  void ConvertAndPulishDrivingTrajectory(const std::vector<PlannerHNS::WayPoint>& path);
-
-  void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
-
+  //void ConvertAndPulishDrivingTrajectory(const std::vector<PlannerHNS::WayPoint>& path);
 };
+
+}
 
 #endif  // PLANNER_X_H

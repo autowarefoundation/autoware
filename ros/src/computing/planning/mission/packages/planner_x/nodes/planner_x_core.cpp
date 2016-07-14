@@ -33,182 +33,146 @@
 #include "waypoint_follower/LaneArray.h"
 #include <visualization_msgs/MarkerArray.h>
 #include "geo_pos_conv.hh"
+#include "PlannerHHandler.h"
 
+namespace PlannerXNS
+{
 
-// Constructor
-PlannerX::PlannerX(ros::NodeHandle* pnh)
+PlannerX_Interface* PlannerX_Interface::CreatePlannerInstance(const std::string& plannerName)
+{
+	if(plannerName.compare("PlannerH") == 0)
+		return new PlannerH_Handler;
+	else
+		return 0;
+}
+
+PlannerX::PlannerX()
 {
 	clock_gettime(0, &m_Timer);
 	m_counter = 0;
 	m_frequency = 0;
-	pNodeHandle = pnh;
-	m_PositionPublisher = pNodeHandle->advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
-	m_PathPublisherRviz = pNodeHandle->advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 10, true);
-	m_PathPublisher = pNodeHandle->advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
+	bInitPos = false;
+	bGoalPos = false;
+	bNewCurrentPos = false;
+	bVehicleState = false;
+	bNewDetectedObstacles = false;
+	bTrafficLights = false;
+
+
+
+	m_pPlanner = PlannerXNS::PlannerX_Interface::CreatePlannerInstance("PlannerH");
+
+	tf::StampedTransform transform;
+	RosHelpers::GetTransformFromTF("map", "world", transform);
+	ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
+
+	m_OriginPos.position.x  = transform.getOrigin().x();
+	m_OriginPos.position.y  = transform.getOrigin().y();
+	m_OriginPos.position.z  = transform.getOrigin().z();
+
+	if(m_pPlanner)
+		m_pPlanner->UpdateOriginTransformationPoint(m_OriginPos);
+
+	m_PositionPublisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
+	m_PathPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 10, true);
+	m_PathPublisher = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
+
+	// define subscribers.
+	sub_current_pose 		= nh.subscribe("/current_pose", 				10,
+			&PlannerX::callbackFromCurrentPose, 		this);
+	sub_traffic_light 		= nh.subscribe("/light_color", 					10,
+			&PlannerX::callbackFromLightColor, 			this);
+	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 			10,
+			&PlannerX::callbackFromObjCar, 				this);
+	point_sub 				= nh.subscribe("/vector_map_info/point_class", 	1,
+			&PlannerX::callbackGetVMPoints, 			this);
+	lane_sub 				= nh.subscribe("/vector_map_info/lane", 		1,
+			&PlannerX::callbackGetVMLanes, 				this);
+	node_sub 				= nh.subscribe("/vector_map_info/node", 		1,
+			&PlannerX::callbackGetVMNodes, 				this);
+	stopline_sub 			= nh.subscribe("/vector_map_info/stop_line", 	1,
+			&PlannerX::callbackGetVMStopLines, 			this);
+	dtlane_sub 				= nh.subscribe("/vector_map_info/dtlane", 		1,
+			&PlannerX::callbackGetVMCenterLines, 		this);
+	initialpose_subscriber 	= nh.subscribe("initialpose", 					10,
+			&PlannerX::callbackSimuInitPose, 			this);
+	goalpose_subscriber 	= nh.subscribe("move_base_simple/goal", 		10,
+			&PlannerX::callbackSimuGoalPose, 			this);
+
+
 }
 
-// Destructor
 PlannerX::~PlannerX()
 {
-}
-
-void PlannerX::GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
-{
-  static tf::TransformListener listener;
-
-  while (1)
-  {
-    try
-    {
-      listener.lookupTransform(parent_frame, child_frame, ros::Time(0), transform);
-      break;
-    }
-    catch (tf::TransformException ex)
-    {
-      ROS_ERROR("%s", ex.what());
-      ros::Duration(1.0).sleep();
-    }
-  }
+	if(m_pPlanner)
+		delete m_pPlanner;
 }
 
 void PlannerX::callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg)
 {
 	PlannerHNS::WayPoint p;
 	ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f, freq=%d", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, m_frequency);
-	tf::StampedTransform transform;
-	GetTransformFromTF("map", "world", transform);
 
-	m_GoalPos.position.x  = msg.pose.position.x + transform.getOrigin().x();
-	m_GoalPos.position.y  = msg.pose.position.y + transform.getOrigin().y();
-	m_GoalPos.position.z  = msg.pose.position.z + transform.getOrigin().z();
-	m_GoalPos.orientation = msg.pose.orientation;
+	m_pPlanner->UpdateGlobalGoalPosition(msg.pose);
 
-
-
-
-	PlannerHNS::PlanningInternalParams params;
-	PlannerHNS::PlannerH pathPlanner(params);
-	PlannerHNS::WayPoint start(m_InitPos.position.x, m_InitPos.position.y, m_InitPos.position.z, tf::getYaw(m_InitPos.orientation));
-	PlannerHNS::WayPoint goal(m_GoalPos.position.x, m_GoalPos.position.y, m_GoalPos.position.z, tf::getYaw(m_GoalPos.orientation));
-
-	std::vector<PlannerHNS::WayPoint> path;
-
-	if(m_lanes_data.size() > 0 && m_points_data.size() > 0 && m_dt_data.size()>0)
-	{
-		PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_lanes_data, m_points_data, m_dt_data, m_Map);
-		m_origin = PlannerHNS::MappingHelpers::GetFirstWaypoint(m_Map);
-
-		ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f", m_origin.pos.x, m_origin.pos.y, m_origin.pos.z);
-
-		ROS_INFO("Transformation  : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
-
-		geo_pos_conv geo;
-		geo.set_plane(6);
-		geo.llh_to_xyz(m_origin.pos.lon, m_origin.pos.lat, 0);
-
-		m_origin.pos.x = geo.x();
-		m_origin.pos.y = geo.y();
-
-		ROS_INFO("Cartisian      : x=%f, y=%f, z=%f", m_origin.pos.x, m_origin.pos.y, m_origin.pos.z);
-	}
-
-	//Testing Free Planner
-	//pathPlanner.PlanUsingReedShepp(start, goal,path );
-
-	std::cout << "WayPoints in the generated Path = " << path.size() << std::endl;
-
-
-	ConvertAndPulishDrivingTrajectory(path);
-}
-
-void PlannerX::ConvertAndPulishDrivingTrajectory(const std::vector<PlannerHNS::WayPoint>& path)
-{
-	visualization_msgs::MarkerArray marker_array;
-	waypoint_follower::LaneArray lane_array;
-	waypoint_follower::lane l;
-	lane_array.lanes.push_back(l);
-	for(unsigned int i=0; i < path.size(); i++)
-	{
-		waypoint_follower::waypoint wp;
-		wp.pose.pose.position.x = path.at(i).pos.x;
-		wp.pose.pose.position.y = path.at(i).pos.y;
-		wp.pose.pose.position.z = path.at(i).pos.z;
-		lane_array.lanes.at(0).waypoints.push_back(wp);
-	}
-
-	visualization_msgs::Marker lane_waypoint_marker;
-	lane_waypoint_marker.header.frame_id = "map";
-	lane_waypoint_marker.header.stamp = ros::Time();
-	lane_waypoint_marker.ns = "global_lane_array_marker";
-	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
-	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = 1.0;
-	std_msgs::ColorRGBA color;
-	color.r = 0;
-	color.g = 1;
-	color.b = 0;
-	color.a = 0.5;
-
-	lane_waypoint_marker.color = color;
-	lane_waypoint_marker.frame_locked = true;
-
-	int count = 0;
-	for (unsigned int i = 0; i < lane_array.lanes.size(); i++)
-	{
-	lane_waypoint_marker.points.clear();
-	lane_waypoint_marker.id = count;
-
-	for (unsigned int j=0; j < lane_array.lanes.at(i).waypoints.size(); j++)
-	{
-	  geometry_msgs::Point point;
-	  point = lane_array.lanes.at(i).waypoints.at(j).pose.pose.position;
-	  lane_waypoint_marker.points.push_back(point);
-	}
-	marker_array.markers.push_back(lane_waypoint_marker);
-	count++;
-	}
-
-	m_PathPublisher.publish(lane_array);
-	m_PathPublisherRviz.publish(marker_array);
+	bGoalPos = true;
 }
 
 void PlannerX::callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 {
 	PlannerHNS::WayPoint p;
 	ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
-	tf::StampedTransform transform;
-	GetTransformFromTF("map", "world", transform);
 
-	m_InitPos.position.x  = msg->pose.pose.position.x + transform.getOrigin().x();
-	m_InitPos.position.y  = msg->pose.pose.position.y + transform.getOrigin().y();
-	m_InitPos.position.z  = msg->pose.pose.position.z + transform.getOrigin().z();
+	m_InitPos.position  = msg->pose.pose.position;
 	m_InitPos.orientation = msg->pose.pose.orientation;
 
-	ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
+	bInitPos = true;
 
-	std_msgs::Header h;
-	//h.stamp = current_time;
-	h.frame_id = "StartPosition";
-
-	geometry_msgs::PoseStamped ps;
-	ps.header = h;
-	ps.pose = msg->pose.pose;
-	m_PositionPublisher.publish(ps);
+//
+//
+//	std_msgs::Header h;
+//	//h.stamp = current_time;
+//	h.frame_id = "StartPosition";
+//
+//	geometry_msgs::PoseStamped ps;
+//	ps.header = h;
+//	ps.pose = msg->pose.pose;
+//	m_PositionPublisher.publish(ps);
 }
 
 void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
   // write procedure for current pose
 
-	PlannerHNS::WayPoint p;
-	ROS_INFO("Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, m_frequency);
+	//PlannerHNS::WayPoint p;
+	//ROS_INFO("Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, m_frequency);
 	m_counter++;
-	if(UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer) >= 1.0)
+	double dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer);
+	if(dt >= 1.0)
 	{
 		m_frequency = m_counter;
 		m_counter = 0;
 		clock_gettime(0, &m_Timer);
 	}
+
+	geometry_msgs::Pose p = msg->pose;
+	p.position.x = p.position.x - m_OriginPos.position.x;
+	p.position.y = p.position.y - m_OriginPos.position.y;
+	p.position.z = p.position.z - m_OriginPos.position.z;
+
+	double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
+	m_VehicleState.speed = distance/dt;
+	if(m_VehicleState.speed>0.2 || m_VehicleState.shift == AW_SHIFT_POS_DD )
+		m_VehicleState.shift = AW_SHIFT_POS_DD;
+	else if(m_VehicleState.speed<-0.2)
+		m_VehicleState.shift = AW_SHIFT_POS_RR;
+	else
+		m_VehicleState.shift = AW_SHIFT_POS_NN;
+
+	m_CurrentPos.position  = p.position;
+	m_CurrentPos.orientation = p.orientation;
+
+	bNewCurrentPos = true;
 
 }
 
@@ -225,70 +189,15 @@ void PlannerX::callbackFromObjCar(const cv_tracker::obj_label& msg)
 void PlannerX::callbackGetVMPoints(const map_file::PointClassArray& msg)
 {
 	ROS_INFO("Received Map Points");
-
-	for(unsigned int i=0; i < msg.point_classes.size();i++)
-	{
-		UtilityHNS::AisanPointsFileReader::AisanPoints p;
-		double integ_part = msg.point_classes.at(i).l;
-		double deg = trunc(msg.point_classes.at(i).l);
-		double min = trunc((msg.point_classes.at(i).l - deg) * 100.0) / 60.0;
-		double sec = modf((msg.point_classes.at(i).l - deg) * 100.0, &integ_part)/36.0;
-		double L =  deg + min + sec;
-
-		deg = trunc(msg.point_classes.at(i).b);
-		min = trunc((msg.point_classes.at(i).b - deg) * 100.0) / 60.0;
-		sec = modf((msg.point_classes.at(i).b - deg) * 100.0, &integ_part)/36.0;
-		double B =  deg + min + sec;
-
-
-		p.B 		= B;
-		p.Bx 		= msg.point_classes.at(i).bx;
-		p.H 		= msg.point_classes.at(i).h;
-		p.L 		= L;
-		p.Ly 		= msg.point_classes.at(i).ly;
-		p.MCODE1 	= msg.point_classes.at(i).mcode1;
-		p.MCODE2 	= msg.point_classes.at(i).mcode2;
-		p.MCODE3 	= msg.point_classes.at(i).mcode3;
-		p.PID 		= msg.point_classes.at(i).pid;
-		p.Ref 		= msg.point_classes.at(i).ref;
-
-		m_points_data.push_back(p);
-	}
+	m_AwMap.points = msg;
+	m_AwMap.bPoints = true;
 }
 
 void PlannerX::callbackGetVMLanes(const map_file::LaneArray& msg)
 {
 	ROS_INFO("Received Map Lane Array");
-	for(unsigned int i=0; i < msg.lanes.size();i++)
-	{
-		UtilityHNS::AisanLanesFileReader::AisanLane l;
-		l.BLID 		=  msg.lanes.at(i).blid;
-		l.BLID2 	=  msg.lanes.at(i).blid2;
-		l.BLID3 	=  msg.lanes.at(i).blid3;
-		l.BLID4 	=  msg.lanes.at(i).blid4;
-		l.BNID 		=  msg.lanes.at(i).bnid;
-		l.ClossID 	=  msg.lanes.at(i).clossid;
-		l.DID 		=  msg.lanes.at(i).did;
-		l.FLID 		=  msg.lanes.at(i).flid;
-		l.FLID2 	=  msg.lanes.at(i).flid2;
-		l.FLID3 	=  msg.lanes.at(i).flid3;
-		l.FLID4 	=  msg.lanes.at(i).flid4;
-		l.FNID 		=  msg.lanes.at(i).fnid;
-		l.JCT 		=  msg.lanes.at(i).jct;
-		l.LCnt 		=  msg.lanes.at(i).lcnt;
-		//l.LaneChgFG =  msg.lanes.at(i).;
-		//l.LaneType 	=  msg.lanes.at(i).blid;
-		//l.LimitVel 	=  msg.lanes.at(i).;
-		//l.LinkWAID 	=  msg.lanes.at(i).blid;
-		l.LnID 		=  msg.lanes.at(i).lnid;
-		l.Lno 		=  msg.lanes.at(i).lno;
-		//l.RefVel 	=  msg.lanes.at(i).blid;
-		//l.RoadSecID =  msg.lanes.at(i).;
-		l.Span 		=  msg.lanes.at(i).span;
-
-
-		m_lanes_data.push_back(l);
-	}
+	m_AwMap.lanes = msg.lanes;
+	m_AwMap.bLanes = true;
 }
 
 void PlannerX::callbackGetVMNodes(const map_file::NodeArray& msg)
@@ -306,23 +215,53 @@ void PlannerX::callbackGetVMStopLines(const map_file::StopLineArray& msg)
 void PlannerX::callbackGetVMCenterLines(const map_file::DTLaneArray& msg)
 {
 	ROS_INFO("Received Map Center Lines");
+	m_AwMap.dtlanes = msg.dtlanes;
+	m_AwMap.bDtLanes = true;
+}
 
-	for(unsigned int i=0; i < msg.dtlanes.size();i++)
+void PlannerX::PlannerMainLoop()
+{
+	if(!m_pPlanner)
 	{
-		UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine dt;
-
-		dt.Apara 	= msg.dtlanes.at(i).apara;
-		dt.DID 		= msg.dtlanes.at(i).did;
-		dt.Dir 		= msg.dtlanes.at(i).dir;
-		dt.Dist 	= msg.dtlanes.at(i).dist;
-		dt.LW 		= msg.dtlanes.at(i).lw;
-		dt.PID 		= msg.dtlanes.at(i).pid;
-		dt.RW 		= msg.dtlanes.at(i).rw;
-		dt.cant 	= msg.dtlanes.at(i).cant;
-		dt.r 		= msg.dtlanes.at(i).r;
-		dt.slope 	= msg.dtlanes.at(i).slope;
-
-		m_dt_data.push_back(dt);
-
+		ROS_ERROR("Can't Create Planner Object ! ");
+		return;
 	}
+
+	ros::Rate loop_rate(1);
+
+	while (ros::ok())
+	{
+		ros::spinOnce();
+
+		if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
+			m_pPlanner->UpdateRoadMap(m_AwMap);
+
+		AutowareBehaviorState behState;
+		visualization_msgs::MarkerArray marker_array;
+		waypoint_follower::LaneArray lane_array;
+		bool bNewPlan = false;
+
+		if(bInitPos && bGoalPos)
+		{
+			if(m_VehicleState.shift == AW_SHIFT_POS_DD)
+				bNewPlan = m_pPlanner->GeneratePlan(m_CurrentPos,m_DetectedObstacles, m_TrafficLights, m_VehicleState,
+						behState, marker_array, lane_array);
+			else
+				bNewPlan = m_pPlanner->GeneratePlan(m_InitPos,m_DetectedObstacles, m_TrafficLights, m_VehicleState,
+						behState, marker_array, lane_array);
+		}
+
+		if(bNewPlan)
+		{
+			if(lane_array.lanes.size()>0)
+				std::cout << "New Plan , Path size = " << lane_array.lanes.at(0).waypoints.size() << std::endl;
+			m_PathPublisher.publish(lane_array);
+			m_PathPublisherRviz.publish(marker_array);
+		}
+
+		ROS_INFO("Main Loop Step");
+		loop_rate.sleep();
+	}
+}
+
 }

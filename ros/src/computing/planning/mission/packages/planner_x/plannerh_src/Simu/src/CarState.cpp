@@ -114,8 +114,8 @@ void CarState::InitPolygons()
 	m_OdometryState.pos.a = UtilityH::FixNegativeAngle(m_OdometryState.pos.a);
 
 	state.pos.a = m_OdometryState.pos.a;
-	state.pos.x = m_OdometryState.pos.x;//	 - (m_CurrentVelocity*dt* (m_CarInfo.wheel_base) * cos (m_OdometryState.pos.a));
-	state.pos.y = m_OdometryState.pos.y;//	 - (m_CurrentVelocity*dt* (m_CarInfo.wheel_base/2.0) * sin (m_OdometryState.pos.a));
+	state.pos.x = m_OdometryState.pos.x	 - (m_CurrentVelocity*dt* (m_CarInfo.wheel_base) * cos (m_OdometryState.pos.a));
+	state.pos.y = m_OdometryState.pos.y	 - (m_CurrentVelocity*dt* (m_CarInfo.wheel_base/2.0) * sin (m_OdometryState.pos.a));
 }
 
  double CarState::GetMomentumScaleFactor(const double& v)

@@ -16,11 +16,16 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 
-class RosHelpers {
+namespace PlannerXNS
+{
+
+class RosHelpers
+{
 public:
 	RosHelpers();
 	virtual ~RosHelpers();
-	static void getTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
+	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 };
 
+}
 #endif /* ROSHELPERS_H_ */
