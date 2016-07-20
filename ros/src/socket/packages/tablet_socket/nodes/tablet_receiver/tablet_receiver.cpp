@@ -123,6 +123,17 @@ void stopChildProcess(int signo)
 	_exit(EXIT_SUCCESS);
 }
 
+static int *g_sock_ptr = NULL;
+
+static void my_sigint_hdr(int sig)
+{
+	if (g_sock_ptr && *g_sock_ptr >= 0) {
+		close(*g_sock_ptr);
+		g_sock_ptr = NULL;
+	}
+	ros::shutdown();
+}
+
 int main(int argc, char *argv[])
 {
 	ros::Publisher pub[TOPIC_NR];
@@ -137,7 +148,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	ros::init(argc, argv, NODE_NAME);
+	ros::init(argc, argv, NODE_NAME, ros::init_options::NoSigintHandler);
 	ros::NodeHandle node;
 	pub[0] = node.advertise<tablet_socket::gear_cmd>("gear_cmd", 1);
 	pub[1] = node.advertise<tablet_socket::mode_cmd>("mode_cmd", 1);
@@ -152,6 +163,7 @@ int main(int argc, char *argv[])
 
 	//get connect to android
 	sock = -1;
+	g_sock_ptr = &sock;
 	while (getConnect(port, &sock, &asock) != -1) {
 		struct timeval tv[2];
 		double sec;

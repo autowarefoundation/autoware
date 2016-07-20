@@ -34,6 +34,7 @@
 
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <signal.h>
 
 #include <std_msgs/Bool.h>
 #include <tablet_socket/error_info.h>
@@ -304,12 +305,23 @@ static bool send_beacon(void)
 	return true;
 }
 
+static int g_listenfd = -1;
+
+static void my_sigint_hdr(int sig)
+{
+	if (g_listenfd >= 0) {
+		close(g_listenfd);
+		g_listenfd = -1;
+	}
+	ros::shutdown();
+}
+
 int main(int argc, char **argv)
 {
 	int listenfd, on;
 	sockaddr_in addr;
 
-	ros::init(argc, argv, "tablet_sender");
+	ros::init(argc, argv, "tablet_sender", ros::init_options::NoSigintHandler);
 
 	ros::NodeHandle n;
 	n.param<int>("tablet_sender/port", port, DEFAULT_PORT);
@@ -362,12 +374,17 @@ int main(int argc, char **argv)
 
 	ros::Rate loop_rate(SUBSCRIBE_HZ);
 
+	g_listenfd = listenfd;
+	signal(SIGINT, my_sigint_hdr);
+
 	while (true) {
 		connfd = accept(listenfd, (struct sockaddr *)nullptr,
 				nullptr);
 		if (connfd < 0) {
 			ROS_ERROR("accept: %s", strerror(errno));
-			close(listenfd);
+			if (g_listenfd >= 0) {
+				close(listenfd);
+			}
 			return -1;
 		}
 
