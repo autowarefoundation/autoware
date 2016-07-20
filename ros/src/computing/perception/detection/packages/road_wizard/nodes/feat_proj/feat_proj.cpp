@@ -246,6 +246,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 
 void interrupt (int s)
 {
+  ros::shutdown();
   exit(1);
 }
 
@@ -253,7 +254,7 @@ void interrupt (int s)
 int main (int argc, char *argv[])
 {
 
-  ros::init(argc, argv, "feat_proj");
+  ros::init(argc, argv, "feat_proj", ros::init_options::NoSigintHandler);
   ros::NodeHandle rosnode;
   ros::NodeHandle private_nh("~");
   std::string cameraInfo_topic_name;
