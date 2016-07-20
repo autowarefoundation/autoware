@@ -90,6 +90,7 @@ subs :
         run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
         param: calibration_path
         gui  :
+          flags : [ SIGTERM ]
           calibration :
             prop  : 1
             flags : [ center_v ]
@@ -99,6 +100,7 @@ subs :
         run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s3.launch
         param: calibration_path
         gui  :
+          flags : [ SIGTERM ]
           calibration :
             prop  : 1
             flags : [ center_v ]
@@ -108,6 +110,7 @@ subs :
         run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
         param: calibration_path
         gui  :
+          flags : [ SIGTERM ]
           calibration :
             prop  : 1
             flags : [ center_v ]
@@ -117,6 +120,7 @@ subs :
         run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
         param: calibration_path
         gui  :
+          flags : [ SIGTERM ]
           calibration :
             prop  : 1
             flags : [ center_v ]
@@ -180,6 +184,8 @@ buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
     run   : rosrun calibration_camera_lidar calibration_toolkit
+    gui   :
+      flags : [ SIGTERM ]
 
   calibration_publisher :
     desc  : calibration_publisher desc sample

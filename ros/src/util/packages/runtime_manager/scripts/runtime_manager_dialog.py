@@ -1824,10 +1824,7 @@ class MyFrame(rtmgr.MyFrame):
 		if cmd_dic is None or cmd is None:
 			return
 
-		# ROSBAG Record modify
-		sigint = (key == 'rosbag_record')
-
-		proc = self.launch_kill(False, cmd, proc, sigint=sigint, obj=obj)
+		proc = self.launch_kill(False, cmd, proc, obj=obj)
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
@@ -2109,7 +2106,7 @@ class MyFrame(rtmgr.MyFrame):
 				return (cmd_dic, obj)
 		return (None, None)
 
-	def launch_kill(self, v, cmd, proc, add_args=None, sigint=False, obj=None):
+	def launch_kill(self, v, cmd, proc, add_args=None, sigint=None, obj=None):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
@@ -2146,6 +2143,8 @@ class MyFrame(rtmgr.MyFrame):
 				thinf = th_start(f, {'file':proc.stdout})
 				self.all_th_infs.append(thinf)
 		else:
+			if sigint is None:
+				sigint = 'SIGTERM' not in self.obj_to_gdic(obj, {}).get('flags', [])
 			terminate_children(proc, sigint)
 			terminate(proc, sigint)
 			proc.wait()
