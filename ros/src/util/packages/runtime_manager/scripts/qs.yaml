@@ -12,7 +12,6 @@ buttons :
     param : map_qs
     gui   :
       stat_topic : [ pmap, vmap ]
-      flags : [ SIGTERM ]
   sensing_qs :
     desc  : sensing_qs desc sample
     run   : roslaunch
