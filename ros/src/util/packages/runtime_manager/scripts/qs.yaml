@@ -26,8 +26,6 @@ buttons :
     desc  : detection_qs desc sample
     run   : roslaunch
     param : detection_qs
-    gui   :
-      flags : [ SIGTERM ]
   mission_planning_qs :
     desc  : mission_planning_qs desc sample
     run   : roslaunch
