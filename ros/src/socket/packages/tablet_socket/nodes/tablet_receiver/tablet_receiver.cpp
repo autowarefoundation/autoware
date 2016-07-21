@@ -164,6 +164,7 @@ int main(int argc, char *argv[])
 	//get connect to android
 	sock = -1;
 	g_sock_ptr = &sock;
+	signal(SIGINT, my_sigint_hdr);
 	while (getConnect(port, &sock, &asock) != -1) {
 		struct timeval tv[2];
 		double sec;
