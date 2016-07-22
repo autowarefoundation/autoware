@@ -34,6 +34,7 @@
 
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <signal.h>
 
 #include <std_msgs/Bool.h>
 #include <tablet_socket/error_info.h>
@@ -361,6 +362,11 @@ int main(int argc, char **argv)
 						  subscribe_lf_stat);
 
 	ros::Rate loop_rate(SUBSCRIBE_HZ);
+
+	struct sigaction act;
+	sigaction(SIGINT, NULL, &act);
+	act.sa_flags &= ~SA_RESTART;
+	sigaction(SIGINT, &act, NULL);
 
 	while (true) {
 		connfd = accept(listenfd, (struct sockaddr *)nullptr,
