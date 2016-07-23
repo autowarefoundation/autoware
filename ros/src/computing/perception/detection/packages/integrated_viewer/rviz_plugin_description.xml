@@ -1,0 +1,9 @@
+<library path="lib/libintegrated_viewer">
+  <class name="integrated_viewer/TrafficLightPlugin"
+         type="integrated_viewer::TrafficLightPlugin"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to show traffic light recognition result
+    </description>
+  </class>
+</library>
