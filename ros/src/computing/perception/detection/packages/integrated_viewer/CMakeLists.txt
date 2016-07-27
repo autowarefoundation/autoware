@@ -2,7 +2,6 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(integrated_viewer)
 
-# include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
@@ -43,12 +42,14 @@ add_definitions(-DQT_NO_KEYWORDS)
 # Qt's user-interface compiler.
 qt4_wrap_ui(UI_HEADERS
   node/traffic_light_plugin/form.ui
+  node/image_viewer_plugin/image_viewer_form.ui
   )
 
 # Here we specify which header files need to be run through "moc",
 # Qt's meta-object compiler.
 qt4_wrap_cpp(MOC_FILES
   node/traffic_light_plugin/traffic_light_plugin.h
+  node/image_viewer_plugin/image_viewer_plugin.h
   )
 
 # Here we specify the list of source files, including the output of
@@ -56,6 +57,9 @@ qt4_wrap_cpp(MOC_FILES
 set(SOURCE_FILES
   lib/convert_image.h
   node/traffic_light_plugin/traffic_light_plugin.cpp
+  node/image_viewer_plugin/image_viewer_plugin.cpp
+  node/image_viewer_plugin/draw_rects.cpp
+  node/image_viewer_plugin/draw_points.cpp
   ${MOC_FILES}
   ${UI_HEADERS})
 
@@ -67,6 +71,12 @@ set(SOURCE_FILES
 # 
 add_library(${PROJECT_NAME}
   ${SOURCE_FILES}
+)
+
+set_target_properties(${PROJECT_NAME}
+  PROPERTIES
+  COMPILE_FLAGS
+  "-DIMAGE_VIEWER_DEFAULT_IMAGE=${CMAKE_CURRENT_SOURCE_DIR}/node/image_viewer_plugin/autoware_logo.png"
 )
 
 ## Specify libraries to link a library or executable target against
@@ -88,4 +98,7 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES rviz_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-add_dependencies(${PROJECT_NAME} runtime_manager_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME} 
+  runtime_manager_generate_messages_cpp
+  cv_tracker_generate_messages_cpp
+  points2image_generate_mssages_cpp)
