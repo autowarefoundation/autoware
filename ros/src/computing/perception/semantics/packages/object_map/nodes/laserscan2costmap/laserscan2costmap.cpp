@@ -327,6 +327,10 @@ void createCostMap(const sensor_msgs::LaserScan& scan, const std::vector<std::ve
   {
     double range = scan.ranges[i];
 
+    // Ignore 0 ranges
+    if (range == 0)
+      continue;
+
     // If laserscan does not reach objects, make a range max
     if (scan.ranges[i] > scan.range_max)
       range = scan.range_max;
