@@ -2106,7 +2106,7 @@ class MyFrame(rtmgr.MyFrame):
 				return (cmd_dic, obj)
 		return (None, None)
 
-	def launch_kill(self, v, cmd, proc, add_args=None, sigint=None, obj=None):
+	def launch_kill(self, v, cmd, proc, add_args=None, sigint=None, obj=None, kill_children=None):
 		msg = None
 		msg = 'already launched.' if v and proc else msg
 		msg = 'already terminated.' if not v and proc is None else msg
@@ -2143,9 +2143,13 @@ class MyFrame(rtmgr.MyFrame):
 				thinf = th_start(f, {'file':proc.stdout})
 				self.all_th_infs.append(thinf)
 		else:
+			flags = self.obj_to_gdic(obj, {}).get('flags', [])
 			if sigint is None:
-				sigint = 'SIGTERM' not in self.obj_to_gdic(obj, {}).get('flags', [])
-			terminate_children(proc, sigint)
+				sigint = 'SIGTERM' not in flags
+			if kill_children is None:
+				kill_children = 'kill_children' in flags
+			if kill_children:
+				terminate_children(proc, sigint)
 			terminate(proc, sigint)
 			proc.wait()
 			if proc in self.all_procs:
@@ -3062,7 +3066,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		args += split_arg + size_arg
 
 		(cmd, proc) = self.cmd_dic[ key_obj ]
-		proc = self.parent.launch_kill(True, cmd, proc, add_args=args, obj=key_obj)
+		proc = self.parent.launch_kill(True, cmd, proc, add_args=args, obj=key_obj, kill_children=True)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.parent.toggle_enables(self.toggles)
 
