@@ -103,10 +103,9 @@ protected:
 
 
 public:
-  // Constructor.
-  PlannerX();
+  PlannerX(std::string plannerType);
 
-  // Destructor.
+
   ~PlannerX();
 
   void PlannerMainLoop();

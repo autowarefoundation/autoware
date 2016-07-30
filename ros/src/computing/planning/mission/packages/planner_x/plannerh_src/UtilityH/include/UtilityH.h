@@ -43,6 +43,7 @@ public:
 	static double GetTimeDiff(const struct timespec& old_t,const struct timespec& curr_t);
 	static std::string GetDateTimeStr();
 	static int tsCompare (struct  timespec  time1,   struct  timespec  time2, int micro_tolerance = 10);
+	static int GetSign(double x);
 };
 
 class PIDController

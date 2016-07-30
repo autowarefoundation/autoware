@@ -15,8 +15,8 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMapPath "/home/ai-driver/workspace/Data/VectorMap/"
-#define kmlTemplateFile "/home/ai-driver/workspace/Data/templates/PlannerX_MapTemplate.kml"
+#define VectorMapPath "/home/hatem/workspace/Data/VectorMap/"
+#define kmlTemplateFile "/home/hatem/workspace/Data/templates/PlannerX_MapTemplate.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
 
 
@@ -44,28 +44,13 @@ PlannerTestDraw::PlannerTestDraw()
 //	ostringstream fileName;
 //	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
 //	fileName << "_RoadNetwork.kml";
-//	MappingHelpers::WriteKML(fileName.str(),kmlTemplateFile , m_RoadMap);
+//	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kmlTemplateFile , m_RoadMap);
 
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
 	CAR_BASIC_INFO carInfo;
 	m_State.Init(1.9, 4.2,carInfo);
-
-
-	m_start = PlannerHNS::WayPoint(2, -50, 0, M_PI);
-	//m_start = PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
-	PlannerHNS::WayPoint* pWS = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(m_start, m_RoadMap);
-	if(pWS)
-		m_start.pos = pWS->pos;
-	else
-		cout << "#Planning Error: Start Position is too far from the road network map!" << endl;
-
-	m_start.pos.z = 0;
-	m_start.bDir = PlannerHNS::FORWARD_DIR;
-
-	m_State.FirstLocalizeMe(m_start);
 	m_State.InitPolygons();
-
 
 	/**
 	 * Planning using predefind path (sequence of lane IDs)
@@ -79,11 +64,42 @@ PlannerTestDraw::PlannerTestDraw()
 //		m_LanesIds.push_back(id);
 //	}
 
+	m_followX = m_start.pos.x;
+	m_followY = m_start.pos.y;
+	m_followZ = m_start.pos.z;
+	m_followA = m_start.pos.a;
+
+	m_bNewPath = false;
+	m_bMakeNewPlan = false;
+
+//	pthread_create(&planning_thread_tid, NULL, &PlannerTestDraw::PlanningThreadStaticEntryPoint, this);
+//	pthread_create(&control_thread_tid, NULL, &PlannerTestDraw::ControlThreadStaticEntryPoint, this);
+
+
+	//InitStartAndGoal(2, -50, M_PI, 100, 100, M_PI_2);
+}
+
+void PlannerTestDraw::InitStartAndGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2)
+{
+	m_start = PlannerHNS::WayPoint(x1, y1, 0, a1);
+	//m_start = PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
+	PlannerHNS::WayPoint* pWS = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(m_start, m_RoadMap);
+	if(pWS)
+		m_start.pos = pWS->pos;
+	else
+		cout << "#Planning Error: Start Position is too far from the road network map!" << endl;
+
+	m_start.pos.z = 0;
+	m_start.bDir = PlannerHNS::FORWARD_DIR;
+
+	m_State.FirstLocalizeMe(m_start);
+
+
 
 	/**
 	 * Planning using goad point
 	 */
-	m_goal = PlannerHNS::WayPoint(100, 100, 0, M_PI_2);
+	m_goal = PlannerHNS::WayPoint(x2, y2, 0, a2);
 	PlannerHNS::WayPoint* pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(m_goal, m_RoadMap);
 	if(pW)
 		m_goal.pos = pW->pos;
@@ -92,15 +108,7 @@ PlannerTestDraw::PlannerTestDraw()
 
 	m_goal.bDir = PlannerHNS::FORWARD_DIR;
 
-	m_followX = m_start.pos.x;
-	m_followY = m_start.pos.y;
-	m_followZ = m_start.pos.z;
-	m_followA = m_start.pos.a;
-
-	m_bNewPath = false;
-
-	pthread_create(&planning_thread_tid, NULL, &PlannerTestDraw::PlanningThreadStaticEntryPoint, this);
-	pthread_create(&control_thread_tid, NULL, &PlannerTestDraw::ControlThreadStaticEntryPoint, this);
+	m_bMakeNewPlan = true;
 }
 
 void PlannerTestDraw::LoadMaterials()
@@ -113,14 +121,62 @@ PlannerTestDraw::~PlannerTestDraw()
 {
 	m_bCancelThread = true;
 	PlannerTestDraw* pRet = 0;
-	pthread_join(planning_thread_tid, (void**)&pRet);
-	pthread_join(control_thread_tid, (void**)&pRet);
+	//pthread_join(planning_thread_tid, (void**)&pRet);
+	//pthread_join(control_thread_tid, (void**)&pRet);
 
 	if(m_pMap)
 	{
 		delete m_pMap;
 		m_pMap = 0;
 	}
+}
+
+bool PlannerTestDraw::IsInitState()
+{
+	if(m_State.m_TotalPath.size() > 0)
+		return false;
+	else
+		return true;
+}
+
+void PlannerTestDraw::UpdatePlaneStartGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2)
+{
+	InitStartAndGoal(x1, y1, a1, x2, y2, a2);
+}
+
+void PlannerTestDraw::AddSimulatedCarPos(const double& x,const double& y, const double& a)
+{
+	PlannerHNS::DetectedObject ob;
+	ob.id = m_dummyObstacles.size() + 1;
+	ob.l = 4.0;
+	ob.w = 2.0;
+	ob.center.pos.x = x;
+	ob.center.pos.y = y;
+	ob.center.pos.a = a;
+	ob.center.v = (rand()%70+3)/10.0/3.6;
+
+
+	CarState car;
+	CAR_BASIC_INFO carInfo;
+	car.Init(ob.w, ob.l,carInfo);
+	car.InitPolygons();
+
+	PlannerHNS::WayPoint* pWS = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(ob.center, m_RoadMap);
+	if(pWS)
+	{
+		ob.center.pos = pWS->pos;
+		ob.center.pLane = pWS->pLane;
+		car.pLane = pWS->pLane;
+	}
+	else
+		cout << "#Planning Error: Start Position is too far from the road network map!" << endl;
+
+	ob.center.pos.z = 0;
+	ob.center.bDir = PlannerHNS::FORWARD_DIR;
+
+	car.FirstLocalizeMe(ob.center);
+	m_SimulatedCars.push_back(car);
+	m_dummyObstacles.push_back(ob);
 }
 
 void PlannerTestDraw::Reset()
@@ -306,6 +362,12 @@ void PlannerTestDraw::DrawSimu()
 
 	pthread_mutex_lock(&planning_mutex);
 	DrawingHelpers::DrawWidePath(m_State.m_TotalPath, 0.08, 0.25, TotalPathColor);
+
+	for(unsigned int i =0; i <m_SimulatedCars.size(); i++)
+	{
+		DrawingHelpers::DrawWidePath(m_SimulatedCars.at(i).m_TotalPath, 0.08, 0.25, TotalPathColor);
+	}
+
 	DrawingHelpers::DrawWidePath(m_State.m_Path, 0.16, 0.2, PlannedPathColor);
 	DrawingHelpers::DrawWidePath(m_ActualPath, 0.18, 0.15, ActualPathColor);
 
@@ -341,10 +403,57 @@ void PlannerTestDraw::DrawSimu()
 	float CarColor[3] = {0.1, 0.9, 0.9};
 	DrawingHelpers::DrawCustomCarModel(m_State.state, m_State.m_CarShapePolygon, CarColor, 90);
 
+	for(unsigned int i = 0; i < m_dummyObstacles.size(); i++)
+	{
+		DrawingHelpers::DrawCustomCarModel(m_dummyObstacles.at(i).center, m_State.m_CarShapePolygon, CarColor, 90);
+	}
+
 }
 
-void PlannerTestDraw::DrawInfo()
-{}
+void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int& maxX, const int& maxY)
+{
+	glPushMatrix();
+	glTranslated(centerX, 70, 0);
+	glRotated(-1*m_VehicleState.steer*RAD2DEG*16, 0,0,1);
+	glTranslated(-centerX, -70, 0);
+	glColor3f(0,1,0);
+	DrawingHelpers::DrawFilledEllipse(centerX, 70, 0.5, 60, 60);
+	PlannerHNS::GPSPoint p1(centerX, 70, 0.52, 0), p2(centerX+40, 70-40, 0.52, 0);
+	DrawingHelpers::DrawLinePoygonline(p1, p2, 5);
+
+	PlannerHNS::GPSPoint p11(centerX, 70, 0.52, 0), p22(centerX-40, 70-40, 0.52, 0);
+	DrawingHelpers::DrawLinePoygonline(p11, p22, 5);
+
+	PlannerHNS::GPSPoint p111(centerX, 70, 0.52, 0), p222(centerX, 70+40, 0.52, 0);
+	DrawingHelpers::DrawLinePoygonline(p111, p222, 5);
+	glPopMatrix();
+//
+//	INITIAL_STATE, WAITING_STATE, FORWARD_STATE, STOPPING_STATE, EMERGENCY_STATE,
+//		TRAFFIC_LIGHT_STOP_STATE, STOP_SIGN_STOP_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE
+
+	string str = "Unknown State";
+	switch(m_CurrentBehavior.state)
+	{
+	case PlannerHNS::INITIAL_STATE:
+		str = "Init State";
+		break;
+	case PlannerHNS::WAITING_STATE:
+		str = "Waiting State";
+		break;
+	case PlannerHNS::FORWARD_STATE:
+		str = "Forward State";
+		break;
+	case PlannerHNS::STOPPING_STATE:
+		str = "Stop State";
+		break;
+	}
+
+	glPushMatrix();
+	glColor3f(0.2, 0.2, 0.9);
+	glTranslated(10, centerY, 0);
+	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str.c_str());
+	glPopMatrix();
+}
 
 void PlannerTestDraw::OnLeftClick(const double& x, const double& y)
 {}
@@ -378,7 +487,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 	vector<string> logData;
 	PlannerHNS::PlanningInternalParams params;
 	PlannerHNS::PlannerH planner(params);
-	vector<PlannerHNS::Obstacle> dummyObstacles;
+
 
 
 	while(!pR->m_bCancelThread)
@@ -390,6 +499,24 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			double dt = 0.01;
 			UtilityH::GetTickCount(moveTimer);
 
+			for(unsigned int i =0; i < pR->m_SimulatedCars.size(); i++)
+			{
+				//if(pR->m_SimulatedCars.at(i).m_TotalPath.size() == 0)
+				{
+					vector<PlannerHNS::WayPoint> generatedPath;
+					//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
+					planner.PlanUsingDP(pR->m_SimulatedCars.at(i).pLane, pR->m_SimulatedCars.at(i).state,PlannerHNS::WayPoint() , pR->m_SimulatedCars.at(i).state, 50,pR->m_LanesIds, generatedPath);
+
+					cout << "Generated Path Length = " << generatedPath.size();
+
+					pR->m_SimulatedCars.at(i).m_RollOuts.clear();
+
+					pthread_mutex_lock(&pR->planning_mutex);
+					pR->m_SimulatedCars.at(i).m_TotalPath = generatedPath;
+					pthread_mutex_unlock(&pR->planning_mutex);
+				}
+			}
+
 
 			pthread_mutex_lock(&pR->control_mutex);
 			pR->m_State.SetSimulatedTargetOdometryReadings(pR->m_VehicleState.speed, pR->m_VehicleState.steer, pR->m_VehicleState.shift);
@@ -398,7 +525,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 			pR->m_State.UpdateState(false);
 			pR->m_State.LocalizeMe(dt);
-			pR->m_State.CalculateImportantParameterForDecisionMaking(dummyObstacles, pR->m_VehicleState, pR->m_goal.pos, pR->m_RoadMap);
+			pR->m_State.CalculateImportantParameterForDecisionMaking(pR->m_dummyObstacles, pR->m_VehicleState, pR->m_goal.pos, pR->m_RoadMap);
 			pR->m_State.m_pCurrentBehaviorState = pR->m_State.m_pCurrentBehaviorState->GetNextState();
 
 			pthread_mutex_lock(&pR->behaviors_mutex);
@@ -428,16 +555,19 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 			pthread_mutex_unlock(&pR->behaviors_mutex);
 
-			if(pR->m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE && pR->m_State.m_Path.size() == 0)
+			if((pR->m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE && pR->m_State.m_Path.size() == 0) || pR->m_bMakeNewPlan)
 			{
 				vector<PlannerHNS::WayPoint> generatedPath;
 				//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
-				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state, pR->m_goal, pR->m_State.state, 2550,pR->m_LanesIds, generatedPath);
+				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state, pR->m_goal, pR->m_State.state, 1000000,pR->m_LanesIds, generatedPath);
 
 				cout << "Generated Path Length = " << generatedPath.size();
 
+				pR->m_State.m_RollOuts.clear();
+
 				pthread_mutex_lock(&pR->planning_mutex);
 				pR->m_State.m_TotalPath = generatedPath;
+				pR->m_bMakeNewPlan = false;
 				pthread_mutex_unlock(&pR->planning_mutex);
 			}
 
@@ -477,17 +607,16 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 			if(pR->m_ActualPath.size() > 0 && distance2points(pR->m_ActualPath.at(pR->m_ActualPath.size()-1).pos, pR->m_State.state.pos) > 1 )
 			{
-
 				pR->m_ActualPath.push_back(pR->m_State.state);
 			}
-			else if(pR->m_ActualPath.size()==0)
+			else if(pR->m_ActualPath.size()==0 && pR->m_State.m_Path.size() > 0)
 			{
 				pR->m_ActualPath.push_back(pR->m_State.state);
 			}
 		}
 	}
 
-	return pR;
+	return 0;
 }
 
 void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
@@ -553,7 +682,7 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 				currState.shift = PlannerHNS::SHIFT_POS_NN;
 			}
 
-			cout << pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(currMessage.state) << endl;
+			//cout << pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(currMessage.state) << endl;
 
 			pR->m_FollowPoint  = predControl.m_FollowMePoint.pos;
 			pR->m_PerpPoint    = predControl.m_PerpendicularPoint.pos;
@@ -564,7 +693,7 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 		}
 	}
 
-	return pR;
+	return 0;
 }
 
 } /* namespace Graphics */

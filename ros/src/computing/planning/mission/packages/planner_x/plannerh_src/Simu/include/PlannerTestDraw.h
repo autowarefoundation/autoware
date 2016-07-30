@@ -24,15 +24,21 @@ public:
 	virtual ~PlannerTestDraw();
 
 	void DrawSimu();
-	void DrawInfo();
+	void DrawInfo(const int& centerX, const int& centerY, const int& maxX, const int& maxY);
 	void OnLeftClick(const double& x, const double& y);
 	void OnRightClick(const double& x, const double& y);
 	void OnKeyboardPress(const SPECIAL_KEYS_TYPE& sKey, const unsigned char& key);
 	void LoadMaterials();
 	void Reset();
+    bool IsInitState();
+    void UpdatePlaneStartGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2);
+    void AddSimulatedCarPos(const double& x,const double& y, const double& a);
 
 	 static void* PlanningThreadStaticEntryPoint(void* pThis);
 	 static void* ControlThreadStaticEntryPoint(void* pThis);
+
+
+	 void InitStartAndGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2);
 
 
 public:
@@ -41,6 +47,7 @@ public:
 	PlannerHNS::WayPoint m_goal;
 	PlannerHNS::WayPoint m_start;
 	bool 				 m_bNewPath;
+	bool				 m_bMakeNewPlan;
 
 	pthread_mutex_t planning_mutex;
 	pthread_mutex_t behaviors_mutex;
@@ -57,11 +64,13 @@ public:
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 
 	SimulationNS::CarState 	m_State;
-	PlannerHNS::GPSPoint m_FollowPoint;
-	PlannerHNS::GPSPoint m_PerpPoint;
+	PlannerHNS::GPSPoint 	m_FollowPoint;
+	PlannerHNS::GPSPoint 	m_PerpPoint;
 
 	GLMmodel* m_CarModel;
 	std::vector<PlannerHNS::WayPoint> m_ActualPath;
+	std::vector<PlannerHNS::DetectedObject> m_dummyObstacles;
+	std::vector<SimulationNS::CarState> m_SimulatedCars;
 
 private:
 	void PrepareVectorMapForDrawing();

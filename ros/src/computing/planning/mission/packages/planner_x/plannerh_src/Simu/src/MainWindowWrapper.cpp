@@ -14,6 +14,7 @@
 
 using namespace std;
 using namespace UtilityHNS;
+#include "MatrixOperations.h"
 
 namespace Graphics {
 
@@ -26,7 +27,7 @@ WindowParams::WindowParams()
 
 	x = 10;
 	y = 10;
-	w = 1400;
+	w = 1200;
 	h = 800;
 	info_ratio = 0.15;
 
@@ -69,7 +70,7 @@ DisplayParams::DisplayParams()
 	at[0] = 0.0; at[1] = 0.0; at[2] = 0.0;
 	up[0] = 0.0; up[1] = 1.0; up[2] = 0.0;
 
-	bDisplayMode = DISPLAY_FOLLOW;
+	bDisplayMode = DISPLAY_TOP_FREE;
 
 	bLeftDown =	bRightDown = bCenterDown = false;;
 
@@ -84,6 +85,15 @@ DisplayParams::DisplayParams()
 
 	bFullScreen = false;
 
+	bSelectPosition = 0;
+	StartPos[0] = StartPosFinal[0] = 0;
+	StartPos[1] = StartPosFinal[1] = 0;
+	StartPos[2] = StartPosFinal[2] = 0;
+	GoalPos[0] = GoalPosFinal[0] = 0;
+	GoalPos[1] = GoalPosFinal[1] = 0;
+	GoalPos[2] = GoalPosFinal[1] = 0;
+	SimulatedCarPos[0] = SimulatedCarPos[1] = SimulatedCarPos[2] = 0;
+
 }
 
 int MainWindowWrapper::m_MainWindow = 0;
@@ -95,9 +105,16 @@ DrawObjBase* MainWindowWrapper::m_DrawAndControl = 0;
 MainWindowWrapper::MainWindowWrapper(DrawObjBase* pDraw)
 {
 	m_DrawAndControl = pDraw;
+
 }
 
 MainWindowWrapper::~MainWindowWrapper(){}
+
+void MainWindowWrapper::CleanUp()
+{
+	if(m_DrawAndControl)
+		delete m_DrawAndControl;
+}
 
 void MainWindowWrapper::InitOpenGLWindow(int argc, char** argv)
 {
@@ -135,6 +152,9 @@ void MainWindowWrapper::InitOpenGLWindow(int argc, char** argv)
 
 	//RedisplayAll();
 	glutPostRedisplay();
+
+	atexit(CleanUp);
+
 	glutMainLoop();
 }
 
@@ -161,6 +181,8 @@ void MainWindowWrapper::UpdateParams(const WindowParams& params, const DisplayPa
 {
 	m_params = params;
 	m_DisplayParam = display_params;
+	FromScreenToModelCoordinate(m_params.simu_window.w/2.0, m_params.simu_window.h/2.0,
+				m_DisplayParam.initScreenToCenterMargin[0], m_DisplayParam.initScreenToCenterMargin[1]);
 }
 
 void MainWindowWrapper::MainReshape(int width,  int height)
@@ -225,13 +247,27 @@ void MainWindowWrapper::SimuReshape(int width,  int height)
 
 }
 
+void MainWindowWrapper::FromScreenToModelCoordinate(int sx, int sy, double& modelX, double& modelY)
+{
+	double whole = (double)(m_params.simu_window.w + m_params.simu_window.h)/2.0;
+	double actualViewX = tan(m_DisplayParam.prespective_fov*DEG2RAD) * m_DisplayParam.zoom / whole;
+
+	modelX = sx * actualViewX ;
+	modelY = sy * actualViewX ;
+}
+
+void MainWindowWrapper::FromModelToScreenCoordinate(double modelX, double modelY, int& sx, int& sy)
+{
+	double actualViewX = tan(m_DisplayParam.prespective_fov*DEG2RAD) * m_DisplayParam.zoom / m_params.simu_window.w;
+
+	sx = modelX / actualViewX ;
+	sy = modelY / actualViewX ;
+}
+
 void MainWindowWrapper::SimuDisplay()
 {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
 
 	if(m_DisplayParam.bDisplayMode == DISPLAY_FOLLOW && m_DrawAndControl)
 	{
@@ -272,6 +308,7 @@ void MainWindowWrapper::SimuDisplay()
 		//int roll = (m_DisplayParam.currRotationX/8)%360;
 		//int pitch = (m_DisplayParam.currRotationY/8)%360;
 
+
 		glTranslated(m_DisplayParam.centerRotX, m_DisplayParam.centerRotY, 0);
 		glRotated(yaw, 0,0,1);
 		//glRotated(roll, 1,0,0);
@@ -294,7 +331,60 @@ void MainWindowWrapper::SimuDisplay()
 	else
 		DrawingHelpers::DrawGrid(m_DisplayParam.centerRotX-5, m_DisplayParam.centerRotY-5, 10, 10, 1);
 
+	int yaw = (m_DisplayParam.currRotationZ/8)%360;
+	PlannerHNS::Mat3 rotationMat(-yaw*DEG2RAD);
+	PlannerHNS::Mat3 translationMat(m_DisplayParam.centerRotX, m_DisplayParam.centerRotY);
+	PlannerHNS::Mat3 invTranslationMat(-m_DisplayParam.centerRotX, -m_DisplayParam.centerRotY);
 
+	if(m_DisplayParam.bSelectPosition == 1)
+	{
+		double sx=0, sy=0;
+		FromScreenToModelCoordinate(m_DisplayParam.StartPos[0]-m_params.simu_window.w/2.0,
+				m_params.simu_window.h/2.0 - m_DisplayParam.StartPos[1],sx,sy);
+
+		PlannerHNS::GPSPoint sp(sx+m_DisplayParam.translateX, sy+m_DisplayParam.translateY, 0, 0);
+		sp = translationMat * sp;
+		sp = rotationMat * sp;
+		sp = invTranslationMat  * sp;
+		m_DisplayParam.StartPosFinal[0] = sp.x;
+		m_DisplayParam.StartPosFinal[1] = sp.y;
+		m_DisplayParam.StartPosFinal[2] = m_DisplayParam.StartPos[2];
+
+	}
+	else if(m_DisplayParam.bSelectPosition == 2)
+	{
+		double gx=0,gy=0;
+		FromScreenToModelCoordinate(m_DisplayParam.GoalPos[0]-m_params.simu_window.w/2.0,
+						m_params.simu_window.h/2.0 - m_DisplayParam.GoalPos[1],gx,gy);
+
+		PlannerHNS::GPSPoint gp(gx+m_DisplayParam.translateX, gy+m_DisplayParam.translateY, 0, m_DisplayParam.GoalPos[2]);
+		gp = translationMat * gp;
+		gp = rotationMat * gp;
+		gp = invTranslationMat * gp;
+		m_DisplayParam.GoalPosFinal[0] = gp.x;
+		m_DisplayParam.GoalPosFinal[1] = gp.y;
+		m_DisplayParam.GoalPosFinal[2] = m_DisplayParam.GoalPos[2];
+	}
+	else if(m_DisplayParam.bSelectPosition == 3)
+	{
+		double x=0,y=0;
+		FromScreenToModelCoordinate(m_DisplayParam.SimulatedCarPos[0]-m_params.simu_window.w/2.0,
+						m_params.simu_window.h/2.0 - m_DisplayParam.SimulatedCarPos[1],x,y);
+
+		PlannerHNS::GPSPoint gp(x+m_DisplayParam.translateX, y+m_DisplayParam.translateY, 0, m_DisplayParam.SimulatedCarPos[2]);
+		gp = translationMat * gp;
+		gp = rotationMat * gp;
+		gp = invTranslationMat * gp;
+		m_DisplayParam.SimulatedCarPosFinal[0] = gp.x;
+		m_DisplayParam.SimulatedCarPosFinal[1] = gp.y;
+		m_DisplayParam.SimulatedCarPosFinal[2] = m_DisplayParam.SimulatedCarPos[2];
+	}
+
+	glPushMatrix();
+	DrawingHelpers::DrawArrow(m_DisplayParam.StartPosFinal[0], m_DisplayParam.StartPosFinal[1], m_DisplayParam.StartPosFinal[2]);
+	DrawingHelpers::DrawArrow(m_DisplayParam.GoalPosFinal[0], m_DisplayParam.GoalPosFinal[1], m_DisplayParam.GoalPosFinal[2]);
+	DrawingHelpers::DrawArrow(m_DisplayParam.SimulatedCarPosFinal[0], m_DisplayParam.SimulatedCarPosFinal[1], m_DisplayParam.SimulatedCarPosFinal[2]);
+	glPopMatrix();
 
 
 	glutSwapBuffers();
@@ -367,8 +457,33 @@ void MainWindowWrapper::InfoDisplay()
 
 	//cout << "InfoDisplay" << endl;
 
+	if(m_DisplayParam.bSelectPosition == 1)
+	{
+		glPushMatrix();
+		glColor3f(0.9, 0.2, 0.2);
+		glTranslated(10, m_params.info_window.h - 40, 0);
+		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Start Position");
+		glPopMatrix();
+	}
+	else if(m_DisplayParam.bSelectPosition == 2)
+	{
+		glPushMatrix();
+		glColor3f(0.9, 0.2, 0.2);
+		glTranslated(10, m_params.info_window.h - 40, 0);
+		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Goal Position");
+		glPopMatrix();
+	}
+	else if(m_DisplayParam.bSelectPosition == 3)
+	{
+		glPushMatrix();
+		glColor3f(0.9, 0.2, 0.2);
+		glTranslated(10, m_params.info_window.h - 40, 0);
+		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Simulation Positions");
+		glPopMatrix();
+	}
+
 	if(m_DrawAndControl)
-		m_DrawAndControl->DrawInfo();
+		m_DrawAndControl->DrawInfo(m_params.info_window.w/2, m_params.info_window.h/2, m_params.info_window.w, m_params.info_window.h);
 
 	glutSwapBuffers();
 }
@@ -385,7 +500,28 @@ void MainWindowWrapper::RedisplayAll()
 
 void MainWindowWrapper::MouseMove(int x, int y)
 {
-	if(m_DisplayParam.bLeftDown)
+	if(m_DisplayParam.bSelectPosition == 1)
+	{
+		if(m_DisplayParam.bLeftDown)
+		{
+			m_DisplayParam.StartPos[2] = atan2(m_DisplayParam.StartPos[1] - y, x - m_DisplayParam.StartPos[0]);
+		}
+	}
+	else if(m_DisplayParam.bSelectPosition == 2)
+	{
+		if(m_DisplayParam.bLeftDown)
+		{
+			m_DisplayParam.GoalPos[2] = atan2(m_DisplayParam.GoalPos[1] - y, x - m_DisplayParam.GoalPos[0]);
+		}
+	}
+	else if(m_DisplayParam.bSelectPosition == 3)
+	{
+		if(m_DisplayParam.bLeftDown)
+		{
+			m_DisplayParam.SimulatedCarPos[2] = atan2(m_DisplayParam.SimulatedCarPos[1] - y, x - m_DisplayParam.SimulatedCarPos[0]);
+		}
+	}
+	else if(m_DisplayParam.bLeftDown)
 	{
 		m_DisplayParam.currRotationZ += x-m_DisplayParam.prev_x;
 		m_DisplayParam.prev_x = x;
@@ -428,7 +564,76 @@ void MainWindowWrapper::MouseMove(int x, int y)
 void MainWindowWrapper::MouseCommand(int button, int state, int x, int y)
 {
 	//cout << x << ", " << y << endl;
-	if(button == 0 && state == 0 && !m_DisplayParam.bLeftDown)
+	if(m_DisplayParam.bSelectPosition == 1)
+	{
+		if(button == 0 && state == 0 && !m_DisplayParam.bLeftDown)
+		{
+			m_DisplayParam.bLeftDown = true;
+			m_DisplayParam.StartPos[0] = x;
+			m_DisplayParam.StartPos[1] = y;
+			//cout << "Left Down" << endl;
+		}
+		else if(button == 0 && state == 1)
+		{
+			m_DisplayParam.bLeftDown = false;
+			m_DisplayParam.bSelectPosition = 0;
+		}
+	}
+	else if(m_DisplayParam.bSelectPosition == 2)
+	{
+		if(button == 0 && state == 0 && !m_DisplayParam.bLeftDown)
+		{
+			m_DisplayParam.bLeftDown = true;
+			m_DisplayParam.GoalPos[0] = x;
+			m_DisplayParam.GoalPos[1] = y;
+			//cout << "Left Down" << endl;
+		}
+		else if(button == 0 && state == 1)
+		{
+			m_DisplayParam.bLeftDown = false;
+			m_DisplayParam.bSelectPosition = 0;
+			m_DrawAndControl->UpdatePlaneStartGoal(m_DisplayParam.StartPosFinal[0],
+					m_DisplayParam.StartPosFinal[1], m_DisplayParam.StartPosFinal[2],
+					m_DisplayParam.GoalPosFinal[0], m_DisplayParam.GoalPosFinal[1], m_DisplayParam.GoalPosFinal[2]);
+		}
+	}
+	else if(m_DisplayParam.bSelectPosition == 3)
+	{
+//		if(button == 0 && state == 1)
+//		{
+//			int yaw = (m_DisplayParam.currRotationZ/8)%360;
+//			PlannerHNS::Mat3 rotationMat(-yaw*DEG2RAD);
+//			PlannerHNS::Mat3 translationMat(m_DisplayParam.centerRotX, m_DisplayParam.centerRotY);
+//			PlannerHNS::Mat3 invTranslationMat(-m_DisplayParam.centerRotX, -m_DisplayParam.centerRotY);
+//
+//			double gx=0,gy=0;
+//			FromScreenToModelCoordinate(x-m_params.simu_window.w/2.0, m_params.simu_window.h/2.0 - y,gx,gy);
+//
+//			PlannerHNS::GPSPoint gp(gx+m_DisplayParam.translateX, gy+m_DisplayParam.translateY, 0, 0);
+//			gp = translationMat * gp;
+//			gp = rotationMat * gp;
+//			gp = invTranslationMat * gp;
+//
+//			m_DisplayParam.bSelectPosition = 0;
+//
+//		}
+
+		if(button == 0 && state == 0 && !m_DisplayParam.bLeftDown)
+		{
+			m_DisplayParam.bLeftDown = true;
+			m_DisplayParam.SimulatedCarPos[0] = x;
+			m_DisplayParam.SimulatedCarPos[1] = y;
+			//cout << "Left Down" << endl;
+		}
+		else if(button == 0 && state == 1)
+		{
+			m_DisplayParam.bLeftDown = false;
+			m_DisplayParam.bSelectPosition = 0;
+			m_DrawAndControl->AddSimulatedCarPos(m_DisplayParam.SimulatedCarPosFinal[0],
+					m_DisplayParam.SimulatedCarPosFinal[1], m_DisplayParam.SimulatedCarPosFinal[2]);
+		}
+	}
+	else if(button == 0 && state == 0 && !m_DisplayParam.bLeftDown)
 	{
 		m_DisplayParam.bLeftDown = true;
 		m_DisplayParam.prev_x = x;
@@ -527,6 +732,43 @@ void MainWindowWrapper::KeyboardCommand(unsigned char key, int x, int y)
 	{
 		if(m_DrawAndControl)
 			m_DrawAndControl->Reset();
+	}
+	break;
+	case 'p':
+	{
+		if(m_DisplayParam.bSelectPosition == 1)
+		{
+			m_DisplayParam.bSelectPosition = 0;
+		}
+		else
+		{
+			m_DisplayParam.bSelectPosition = 1;
+		}
+
+	}
+	break;
+	case 'o':
+	{
+		if(m_DisplayParam.bSelectPosition == 2)
+		{
+			m_DisplayParam.bSelectPosition = 0;
+		}
+		else
+		{
+			m_DisplayParam.bSelectPosition = 2;
+		}
+	}
+	break;
+	case 'u':
+	{
+		if(m_DisplayParam.bSelectPosition == 3)
+		{
+			m_DisplayParam.bSelectPosition = 0;
+		}
+		else
+		{
+			m_DisplayParam.bSelectPosition = 3;
+		}
 	}
 	break;
 	}

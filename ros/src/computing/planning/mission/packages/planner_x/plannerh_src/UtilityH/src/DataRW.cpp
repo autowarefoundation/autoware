@@ -8,6 +8,7 @@
 #include "DataRW.h"
 #include <stdlib.h>
 #include <tinyxml.h>
+#include "UtilityH.h"
 
 using namespace std;
 
@@ -22,6 +23,26 @@ DataRW::DataRW()
 
 DataRW::~DataRW()
 {
+}
+
+void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData)
+{
+	ostringstream fileName;
+	fileName << logFolder;
+	fileName << logTitle;
+	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
+	fileName << ".csv";
+
+	std::ofstream f(fileName.str().c_str());
+
+	if(f.is_open())
+	{
+		f << header << "\r\n";
+		for(unsigned int i = 0 ; i < logData.size(); i++)
+			f << logData.at(i) << "\r\n";
+	}
+
+	f.close();
 }
 
 void DataRW::WriteKMLFile(const string& fileName, const vector<string>& gps_list)
@@ -419,6 +440,15 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 		data.RoadSecID	= strtol(lineData.at(0).at(20).c_str(), NULL, 10);
 		data.LaneChgFG 	= strtol(lineData.at(0).at(21).c_str(), NULL, 10);
 		data.LinkWAID	= strtol(lineData.at(0).at(22).c_str(), NULL, 10);
+
+		string str_dir = lineData.at(0).at(23);
+		if(str_dir.size() > 0)
+			data.LaneDir 	= str_dir.at(0);
+		else
+			data.LaneDir  	= 0;
+
+		data.LeftLaneId 	= strtol(lineData.at(0).at(24).c_str(), NULL, 10);
+		data.RightLaneId 	= strtol(lineData.at(0).at(25).c_str(), NULL, 10);
 
 		return true;
 	}

@@ -16,10 +16,10 @@ int main(int argc, char** argv)
 	PlannerTestDraw car;
 	WindowParams pms;
 	DisplayParams dpms;
-	dpms.centerRotX = 10;
-	dpms.centerRotY = 30;
-	dpms.translateX = 10;
-	dpms.translateY = 30;
+	dpms.centerRotX = 0;
+	dpms.centerRotY = 0;
+	dpms.translateX = 0;
+	dpms.translateY = 0;
 	MainWindowWrapper wrapper(&car);
 	wrapper.UpdateParams(pms, dpms);
 	wrapper.InitOpenGLWindow(argc, argv);

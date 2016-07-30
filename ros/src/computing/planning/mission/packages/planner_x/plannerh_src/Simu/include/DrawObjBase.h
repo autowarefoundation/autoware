@@ -19,12 +19,15 @@ class DrawObjBase
   public:
 
     virtual void DrawSimu()=0;
-    virtual void DrawInfo()=0;
+    virtual void DrawInfo(const int& centerX, const int& centerY, const int& maxX, const int& maxY)=0;
     virtual void OnLeftClick(const double& x, const double& y) = 0;
     virtual void OnRightClick(const double& x, const double& y) = 0;
     virtual void OnKeyboardPress(const SPECIAL_KEYS_TYPE& sKey, const unsigned char& key) = 0;
     virtual void LoadMaterials() = 0;
     virtual void Reset() = 0;
+    virtual bool IsInitState() = 0;
+    virtual void UpdatePlaneStartGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2) = 0;
+    virtual void AddSimulatedCarPos(const double& x,const double& y, const double& a) = 0;
 
     DrawObjBase();
     virtual ~DrawObjBase();

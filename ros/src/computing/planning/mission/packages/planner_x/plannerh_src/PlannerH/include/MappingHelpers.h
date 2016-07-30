@@ -2,7 +2,7 @@
  * MappingHelpers.h
  *
  *  Created on: Jul 2, 2016
- *      Author: ai-driver
+ *      Author: Hatem
  */
 
 #ifndef MAPPINGHELPERS_H_
@@ -56,6 +56,8 @@ public:
 	static GPSPoint GetTransformationOrigin();
 
 	static Lane* GetLaneFromPath(const WayPoint& currPos, const std::vector<WayPoint>& currPath);
+	static Lane* GetLaneById(const int& id,RoadNetwork& map);
+	static int GetLaneIdByWaypointId(const int& id,std::vector<Lane>& lanes);
 
 	static WayPoint* FindWaypoint(const int& id, RoadNetwork& map);
 
