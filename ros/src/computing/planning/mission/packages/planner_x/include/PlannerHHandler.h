@@ -55,7 +55,7 @@ protected:
 			const std::vector<PlannerHNS::WayPoint>& curr_path, const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
 				visualization_msgs::MarkerArray& markerArray);
 
-	void ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::Obstacle>& bstacles);
+	void ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles);
 	PlannerHNS::SHIFT_POS ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift);
 	PlannerXNS::AUTOWARE_SHIFT_POS ConvertShiftFromPlannerHToAutoware(const PlannerHNS::SHIFT_POS& shift);
 };

@@ -70,7 +70,7 @@ BehaviorStateMachine* ForwardState::GetNextState()
 		return this; //return this behavior only , without reset
 
 	if(GetCalcParams()->bOutsideControl == 0)
-		return FindBehaviorState(STOPPING_STATE);
+		return FindBehaviorState(WAITING_STATE);
 
 	else if(GetCalcParams()->distanceToStop() > 0 && GetCalcParams()->distanceToStop() < GetCalcParams()->minStoppingDistance && GetCalcParams()->currentStopSignID > -1)
 		return FindBehaviorState(STOP_SIGN_STOP_STATE);

@@ -54,6 +54,7 @@ private:
 
 	double 						m_PrevContinousHeading;
 	double 						m_PrevContinousTargetHeading;
+	std::vector<std::string>    m_LogData;
 
 	bool FindNextWayPoint(const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
 			const double& velocity, PlannerHNS::WayPoint& pursuite_point, PlannerHNS::WayPoint& prep,

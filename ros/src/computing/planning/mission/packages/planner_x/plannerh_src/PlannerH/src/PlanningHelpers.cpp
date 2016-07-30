@@ -898,234 +898,115 @@ void PlanningHelpers::GenerateRecommendedSpeed(vector<WayPoint>& path, const dou
 	path = totalPath;
 }
 
-WayPoint* PlanningHelpers::BuildPlanningSearchTree(Lane* l, const WayPoint& prevWayPointIndex,
-		const WayPoint& startPos, const WayPoint& goalPos,
-		const vector<int>& globalPath, const double& DistanceLimit,
-		int& nMaxLeftBranches, int& nMaxRightBranches,
-		vector<WayPoint*>& all_cells_to_delete )
-{
-	if(!l) return NULL;
-
-	all_cells_to_delete.clear();
-	vector<WayPoint> currentLanePoints;
-	vector<pair<Lane*, WayPoint*> > closed_lanes;
-	vector<pair<Lane*, WayPoint*> > nextLeafToTrace;
-
-
-	WayPoint* pHead = new WayPoint();
-	all_cells_to_delete.push_back(pHead);
-	pHead->pos 		= startPos.pos;
-	pHead->pLane 	= l;
-	pHead->v		= l->speed;
-	pHead->laneId 	= l->id;
-
-	nextLeafToTrace.push_back(make_pair(l,pHead));
-	closed_lanes.push_back(make_pair(l,pHead));
-
-	double 		distance 		= 0;
-	nMaxLeftBranches 			= 0;
-	nMaxRightBranches 			= 0;
-	int 		nCurrBranches 	= 0;
-	WayPoint* 	pc 				= 0;
-	WayPoint* 	pGoalCell 		= 0;
-	bool 		bGoalReached 	= false;
-	double 		d 				= 0;
-	double 		nCounter 		= 0;
-	WayPoint*   pNewCell 		= 0;
-
-	while(nextLeafToTrace.size()>0)
-	{
-		nCounter++;
-		Lane* currL		= nextLeafToTrace.at(0).first;
-		WayPoint* pH 	= nextLeafToTrace.at(0).second;
-
-		assert(pH != 0);
-		assert(currL !=0);
-
-		nextLeafToTrace.erase(nextLeafToTrace.begin()+0);
-
-		//Get the points of the lane ,
-		currentLanePoints.clear();
-		d = GetLanePoints(currL, prevWayPointIndex, DistanceLimit, pH->cost, currentLanePoints);
-
-		WayPoint* pCurrentFirstHead = pH;
-		double closest_to_the_goal = 9999999;
-
-		for(unsigned int i=0; i < currentLanePoints.size(); i++)
-		{
-			if(i>0)
-			{
-				pc 				= new WayPoint;
-				pc->pos 		= currentLanePoints.at(i).pos;
-				pc->pLane 		= currL;
-				pc->pBacks.push_back(pH);
-				pH->pFronts.push_back(pc);
-
-				all_cells_to_delete.push_back(pc);
-
-				pH = pc;
-			}
-
-			double distance_to_goal = distance2points(pH->pos, goalPos.pos);
-			if(distance_to_goal < closest_to_the_goal)
-				closest_to_the_goal = distance_to_goal;
-
-			if( distance_to_goal <= 5.0)
-			{
-				pGoalCell = pH;
-				bGoalReached = true;
-			}
-		}
-
-		if(!bGoalReached)
-		{
-
-			if(currL->pLeftLane && !CheckLaneExits(closed_lanes, currL->pLeftLane) && CheckLaneIdExits(globalPath, currL) && globalPath.size() > 0)
-			{
-				pNewCell = CreateLaneHeadCell(currL->pLeftLane, 0,pCurrentFirstHead, 0);
-				all_cells_to_delete.push_back(pNewCell);
-				nextLeafToTrace.push_back(make_pair(currL->pLeftLane, pNewCell));
-				closed_lanes.push_back(make_pair(currL->pLeftLane, pNewCell));
-			}
-			if(currL->pRightLane && !CheckLaneExits(closed_lanes, currL->pRightLane) && CheckLaneIdExits(globalPath, currL) && globalPath.size() > 0)
-			{
-				pNewCell = CreateLaneHeadCell(currL->pRightLane, pCurrentFirstHead, 0 , 0);
-				all_cells_to_delete.push_back(pNewCell);
-				nextLeafToTrace.push_back(make_pair(currL->pRightLane, pNewCell));
-				closed_lanes.push_back(make_pair(currL->pRightLane, pNewCell));
-			}
-
-			for(unsigned int i =0; i< currL->toLanes.size(); i++)
-			{
-				if(CheckLaneIdExits(globalPath, currL->toLanes.at(i)))
-				{
-					WayPoint* pClosedNextHead = CheckLaneExits(closed_lanes, currL->toLanes.at(i));
-					if(!pClosedNextHead)
-					{
-						pNewCell = CreateLaneHeadCell(currL->toLanes.at(i), 0, 0, pH);
-						all_cells_to_delete.push_back(pNewCell);
-						nextLeafToTrace.push_back(make_pair(currL->toLanes.at(i), pNewCell));
-						closed_lanes.push_back(make_pair(currL->toLanes.at(i), pNewCell));
-					}
-					else
-					{
-						pClosedNextHead->pBacks.push_back(pH);
-						for(unsigned int j=0; j< pClosedNextHead->pBacks.size(); j++)
-						{
-								if(pClosedNextHead->pBacks.at(j)->cost < pClosedNextHead->cost)
-									pClosedNextHead->cost = pClosedNextHead->pBacks.at(j)->cost;
-						}
-					}
-				}
-			}
-		}
-
-		distance+= d;
-
-		if(distance > DistanceLimit && globalPath.size()==0)
-		{
-			//if(!pGoalCell)
-			pGoalCell = pH;
-			break;
-		}
-
-		pGoalCell = pH;
-	}
-
-	currentLanePoints.clear();
-	while(nextLeafToTrace.size()!=0)
-		nextLeafToTrace.pop_back();
-	closed_lanes.clear();
-
-	return pGoalCell;
-}
-
-WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const WayPoint& prevWayPointIndex,
-		const WayPoint& startPos, const WayPoint& goalPos,
-		const vector<int>& globalPath, const double& DistanceLimit,
-		int& nMaxLeftBranches, int& nMaxRightBranches,
-		vector<WayPoint*>& all_cells_to_delete )
-{
-	if(!pStart) return NULL;
-
-	vector<WayPoint*> closed_nodes;
-	vector<pair<WayPoint*, WayPoint*> >nextLeafToTrace;
-
-	WayPoint* pZero = 0;
-	WayPoint* wp    = new WayPoint();
-	*wp = *pStart;
-	nextLeafToTrace.push_back(make_pair(pZero, wp));
-	closed_nodes.push_back(wp);
-	all_cells_to_delete.push_back(wp);
-
-	double 		distance 		= 0;
-	nMaxLeftBranches 			= 0;
-	nMaxRightBranches 			= 0;
-	int 		nCurrBranches 	= 0;
-	WayPoint* 	pGoalCell 		= 0;
-	double 		nCounter 		= 0;
-
-
-	while(nextLeafToTrace.size()>0)
-	{
-		nCounter++;
-		WayPoint* pH 	= nextLeafToTrace.at(0).second;
-		WayPoint* pPrev 	= nextLeafToTrace.at(0).first;
-
-		assert(pH != 0);
-
-		nextLeafToTrace.erase(nextLeafToTrace.begin()+0);
-
-		if(pPrev == 0) // first point
-			pH->cost  = 0;
-		else
-			pH->cost += distance2points(pPrev->pos, pH->pos);
-
-		distance+= pH->cost;
-
-		double distance_to_goal = distance2points(pH->pos, goalPos.pos);
-		if( distance_to_goal <= 5.0)
-		{
-			pGoalCell = pH;
-			break;
-		}
-		else
-		{
-
-			if(pH->pLeft && !CheckNodeExits(closed_nodes, pH->pLeft) && CheckLaneIdExits(globalPath, pH->pLane) && globalPath.size() > 0)
-			{
-				wp = new WayPoint();
-				*wp = *pH->pLeft;
-				nextLeafToTrace.push_back(make_pair(pH, wp));
-				closed_nodes.push_back(wp);
-				all_cells_to_delete.push_back(wp);
-			}
-			if(pH->pRight && !CheckNodeExits(closed_nodes, pH->pRight) && CheckLaneIdExits(globalPath, pH->pLane) && globalPath.size() > 0)
-			{
-				wp = new WayPoint();
-				*wp = *pH->pRight;
-				nextLeafToTrace.push_back(make_pair(pH, wp));
-				closed_nodes.push_back(wp);
-				all_cells_to_delete.push_back(wp);
-			}
-
-			for(unsigned int i =0; i< pH->pFronts.size(); i++)
-			{
-				if(CheckLaneIdExits(globalPath, pH->pLane))
-				{
-					WayPoint* pClosedNextHead = CheckNodeExits(closed_nodes, pH->pFronts.at(i));
-					if(!pClosedNextHead && pH->pFronts.at(i))
-					{
-						if(pH->pBacks.size()==0)
-							pClosedNextHead = 0;
-
-						wp = new WayPoint();
-						*wp = *pH->pFronts.at(i);
-						wp->pBacks.push_back(pH);
-						nextLeafToTrace.push_back(make_pair(pH, wp));
-						closed_nodes.push_back(wp);
-						all_cells_to_delete.push_back(wp);
-					}
+//WayPoint* PlanningHelpers::BuildPlanningSearchTree(Lane* l, const WayPoint& prevWayPointIndex,
+//		const WayPoint& startPos, const WayPoint& goalPos,
+//		const vector<int>& globalPath, const double& DistanceLimit,
+//		int& nMaxLeftBranches, int& nMaxRightBranches,
+//		vector<WayPoint*>& all_cells_to_delete )
+//{
+//	if(!l) return NULL;
+//
+//	all_cells_to_delete.clear();
+//	vector<WayPoint> currentLanePoints;
+//	vector<pair<Lane*, WayPoint*> > closed_lanes;
+//	vector<pair<Lane*, WayPoint*> > nextLeafToTrace;
+//
+//
+//	WayPoint* pHead = new WayPoint();
+//	all_cells_to_delete.push_back(pHead);
+//	pHead->pos 		= startPos.pos;
+//	pHead->pLane 	= l;
+//	pHead->v		= l->speed;
+//	pHead->laneId 	= l->id;
+//
+//	nextLeafToTrace.push_back(make_pair(l,pHead));
+//	closed_lanes.push_back(make_pair(l,pHead));
+//
+//	double 		distance 		= 0;
+//	nMaxLeftBranches 			= 0;
+//	nMaxRightBranches 			= 0;
+//	int 		nCurrBranches 	= 0;
+//	WayPoint* 	pc 				= 0;
+//	WayPoint* 	pGoalCell 		= 0;
+//	bool 		bGoalReached 	= false;
+//	double 		d 				= 0;
+//	double 		nCounter 		= 0;
+//	WayPoint*   pNewCell 		= 0;
+//
+//	while(nextLeafToTrace.size()>0)
+//	{
+//		nCounter++;
+//		Lane* currL		= nextLeafToTrace.at(0).first;
+//		WayPoint* pH 	= nextLeafToTrace.at(0).second;
+//
+//		assert(pH != 0);
+//		assert(currL !=0);
+//
+//		nextLeafToTrace.erase(nextLeafToTrace.begin()+0);
+//
+//		//Get the points of the lane ,
+//		currentLanePoints.clear();
+//		d = GetLanePoints(currL, prevWayPointIndex, DistanceLimit, pH->cost, currentLanePoints);
+//
+//		WayPoint* pCurrentFirstHead = pH;
+//		double closest_to_the_goal = 9999999;
+//
+//		for(unsigned int i=0; i < currentLanePoints.size(); i++)
+//		{
+//			if(i>0)
+//			{
+//				pc 				= new WayPoint;
+//				pc->pos 		= currentLanePoints.at(i).pos;
+//				pc->pLane 		= currL;
+//				pc->pBacks.push_back(pH);
+//				pH->pFronts.push_back(pc);
+//
+//				all_cells_to_delete.push_back(pc);
+//
+//				pH = pc;
+//			}
+//
+//			double distance_to_goal = distance2points(pH->pos, goalPos.pos);
+//			if(distance_to_goal < closest_to_the_goal)
+//				closest_to_the_goal = distance_to_goal;
+//
+//			if( distance_to_goal <= 5.0)
+//			{
+//				pGoalCell = pH;
+//				bGoalReached = true;
+//			}
+//		}
+//
+//		if(!bGoalReached)
+//		{
+//
+//			if(currL->pLeftLane && !CheckLaneExits(closed_lanes, currL->pLeftLane) && CheckLaneIdExits(globalPath, currL) && globalPath.size() > 0)
+//			{
+//				pNewCell = CreateLaneHeadCell(currL->pLeftLane, 0,pCurrentFirstHead, 0);
+//				all_cells_to_delete.push_back(pNewCell);
+//				nextLeafToTrace.push_back(make_pair(currL->pLeftLane, pNewCell));
+//				closed_lanes.push_back(make_pair(currL->pLeftLane, pNewCell));
+//			}
+//			if(currL->pRightLane && !CheckLaneExits(closed_lanes, currL->pRightLane) && CheckLaneIdExits(globalPath, currL) && globalPath.size() > 0)
+//			{
+//				pNewCell = CreateLaneHeadCell(currL->pRightLane, pCurrentFirstHead, 0 , 0);
+//				all_cells_to_delete.push_back(pNewCell);
+//				nextLeafToTrace.push_back(make_pair(currL->pRightLane, pNewCell));
+//				closed_lanes.push_back(make_pair(currL->pRightLane, pNewCell));
+//			}
+//
+//			for(unsigned int i =0; i< currL->toLanes.size(); i++)
+//			{
+//				if(CheckLaneIdExits(globalPath, currL->toLanes.at(i)))
+//				{
+//					WayPoint* pClosedNextHead = CheckLaneExits(closed_lanes, currL->toLanes.at(i));
+//					if(!pClosedNextHead)
+//					{
+//						pNewCell = CreateLaneHeadCell(currL->toLanes.at(i), 0, 0, pH);
+//						all_cells_to_delete.push_back(pNewCell);
+//						nextLeafToTrace.push_back(make_pair(currL->toLanes.at(i), pNewCell));
+//						closed_lanes.push_back(make_pair(currL->toLanes.at(i), pNewCell));
+//					}
 //					else
 //					{
 //						pClosedNextHead->pBacks.push_back(pH);
@@ -1135,6 +1016,142 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 //									pClosedNextHead->cost = pClosedNextHead->pBacks.at(j)->cost;
 //						}
 //					}
+//				}
+//			}
+//		}
+//
+//		distance+= d;
+//
+//		if(distance > DistanceLimit && globalPath.size()==0)
+//		{
+//			//if(!pGoalCell)
+//			pGoalCell = pH;
+//			break;
+//		}
+//
+//		pGoalCell = pH;
+//	}
+//
+//	currentLanePoints.clear();
+//	while(nextLeafToTrace.size()!=0)
+//		nextLeafToTrace.pop_back();
+//	closed_lanes.clear();
+//
+//	return pGoalCell;
+//}
+
+WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const WayPoint& prevWayPointIndex,
+		const WayPoint& startPos, const WayPoint& goalPos,
+		const vector<int>& globalPath, const double& DistanceLimit,
+		int& nMaxLeftBranches, int& nMaxRightBranches,
+		vector<WayPoint*>& all_cells_to_delete )
+{
+	if(!pStart) return NULL;
+
+	vector<pair<WayPoint*, WayPoint*> >nextLeafToTrace;
+
+	WayPoint* pZero = 0;
+	WayPoint* wp    = new WayPoint();
+	*wp = *pStart;
+	nextLeafToTrace.push_back(make_pair(pZero, wp));
+	all_cells_to_delete.push_back(wp);
+
+	double 		distance 		= 0;
+	double      distanceCost	= 0;
+	nMaxLeftBranches 			= 0;
+	nMaxRightBranches 			= 0;
+	WayPoint* 	pGoalCell 		= 0;
+	double 		nCounter 		= 0;
+
+
+	while(nextLeafToTrace.size()>0)
+	{
+		nCounter++;
+
+		unsigned int min_cost_index = 0;
+		double min_cost = 99999999999;
+
+		for(unsigned int i=0; i < nextLeafToTrace.size(); i++)
+		{
+			if(nextLeafToTrace.at(i).second->cost < min_cost)
+			{
+				min_cost = nextLeafToTrace.at(i).second->cost;
+				min_cost_index = i;
+			}
+		}
+
+		WayPoint* pH 	= nextLeafToTrace.at(min_cost_index).second;
+
+		assert(pH != 0);
+
+		nextLeafToTrace.erase(nextLeafToTrace.begin()+min_cost_index);
+
+		double distance_to_goal = distance2points(pH->pos, goalPos.pos);
+		double angle_to_goal = UtilityH::AngleBetweenTwoAnglesPositive(UtilityH::FixNegativeAngle(pH->pos.a), UtilityH::FixNegativeAngle(goalPos.pos.a));
+		if( distance_to_goal <= 5.0 && angle_to_goal < M_PI_4)
+		{
+			cout << "Goal Found, LaneID: " << pH->laneId <<", Distance : " << distance_to_goal << ", Angle: " << angle_to_goal*RAD2DEG << endl;
+			pGoalCell = pH;
+			break;
+		}
+		else
+		{
+
+			if(pH->pLeft && CheckLaneIdExits(globalPath, pH->pLane) && globalPath.size() > 0)
+			{
+				wp = new WayPoint();
+				*wp = *pH->pLeft;
+				nextLeafToTrace.push_back(make_pair(pH, wp));
+				all_cells_to_delete.push_back(wp);
+			}
+			if(pH->pRight && CheckLaneIdExits(globalPath, pH->pLane) && globalPath.size() > 0)
+			{
+				wp = new WayPoint();
+				*wp = *pH->pRight;
+				nextLeafToTrace.push_back(make_pair(pH, wp));
+				all_cells_to_delete.push_back(wp);
+			}
+
+			for(unsigned int i =0; i< pH->pFronts.size(); i++)
+			{
+				if(CheckLaneIdExits(globalPath, pH->pLane) && pH->pFronts.at(i))
+				{
+
+					wp = new WayPoint();
+					*wp = *pH->pFronts.at(i);
+
+					double cost = distance2points(wp->pos, pH->pos);
+					distance += cost;
+					cost += pH->cost;
+
+
+//					ACTION_TYPE t = GetBranchingDirection(*pH, *wp);
+//
+//
+//					if(pH->pFronts.size()==1)
+//						wp->actionCost.push_back(make_pair(FORWARD_ACTION, cost));
+//					else if(t == RIGHT_TURN_ACTION)
+//					{
+//						cost += 1;
+//						wp->actionCost.push_back(make_pair(t, cost));
+//					}
+//					else if(t == LEFT_TURN_ACTION)
+//					{
+//						cost += 1;
+//						wp->actionCost.push_back(make_pair(t, cost));
+//					}
+//					else
+//						wp->actionCost.push_back(make_pair(t, cost));
+					for(unsigned int a = 0; a < wp->actionCost.size(); a++)
+						cost += wp->actionCost.at(a).second;
+
+
+					distanceCost += cost;
+					wp->cost = cost;
+					wp->pBacks.push_back(pH);
+
+					nextLeafToTrace.push_back(make_pair(pH, wp));
+					all_cells_to_delete.push_back(wp);
 				}
 			}
 		}
@@ -1142,16 +1159,17 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 		if(distance > DistanceLimit && globalPath.size()==0)
 		{
 			//if(!pGoalCell)
+			cout << "Goal Not Found, LaneID: " << pH->laneId <<", Distance : " << distance << endl;
 			pGoalCell = pH;
 			break;
 		}
 
-		pGoalCell = pH;
+		//pGoalCell = pH;
 	}
 
 	while(nextLeafToTrace.size()!=0)
 		nextLeafToTrace.pop_back();
-	closed_nodes.clear();
+	//closed_nodes.clear();
 
 	return pGoalCell;
 }
@@ -1263,7 +1281,11 @@ double PlanningHelpers::GetLanePoints(Lane* l, const WayPoint& prevWayPointIndex
 WayPoint* PlanningHelpers::GetMinCostCell(const vector<WayPoint*>& cells, const vector<int>& globalPathIds)
 {
 	if(cells.size() == 1)
+	{
+		for(unsigned int j = 0; j < cells.at(0)->actionCost.size(); j++)
+			cout << "Cost (" << cells.at(0)->laneId << ") of going : " << cells.at(0)->actionCost.at(j).first << ", is : " << cells.at(0)->actionCost.at(j).second << endl;
 		return cells.at(0);
+	}
 
 	WayPoint* pC = cells.at(0); //cost is distance
 	for(unsigned int i=1; i < cells.size(); i++)
@@ -1281,6 +1303,10 @@ WayPoint* PlanningHelpers::GetMinCostCell(const vector<WayPoint*>& cells, const 
 				break;
 			}
 		}
+
+		for(unsigned int j = 0; j < cells.at(0)->actionCost.size(); j++)
+			cout << "Cost ("<< i <<") of going : " << cells.at(0)->actionCost.at(j).first << ", is : " << cells.at(0)->actionCost.at(j).second << endl;
+
 
 		if(cells.at(i)->cost < pC->cost && bFound == true)
 			pC = cells.at(i);
@@ -1334,6 +1360,295 @@ vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths)
 	}
 	else
 		assert(pHead);
+}
+
+ACTION_TYPE PlanningHelpers::GetBranchingDirection(WayPoint& currWP, WayPoint& nextWP)
+{
+	ACTION_TYPE t = FORWARD_ACTION;
+
+	//first Get the average of the next 3 waypoint directions
+	double angle = 0;
+	if(nextWP.pLane->id == 487)
+		angle = 11;
+
+	int counter = 0;
+	angle = 0;
+
+	for(unsigned int i=0; i < nextWP.pLane->points.size() && counter < 10; i++, counter++)
+	{
+		angle += nextWP.pLane->points.at(i).pos.a;
+	}
+	angle = angle / counter;
+
+	//Get Circular angle for correct subtraction
+	double circle_angle = UtilityH::GetCircularAngle(currWP.pos.a, angle);
+
+	if( currWP.pos.a - circle_angle > (7.5*DEG2RAD))
+	{
+		t = RIGHT_TURN_ACTION;
+		cout << "Right Lane, Average Angle = " << angle*RAD2DEG << ", Circle Angle = " << circle_angle*RAD2DEG << ", currAngle = " << currWP.pos.a*RAD2DEG << endl;
+	}
+	else if( currWP.pos.a - circle_angle < (-7.5*DEG2RAD))
+	{
+		t = LEFT_TURN_ACTION;
+		cout << "Left Lane, Average Angle = " << angle*RAD2DEG << ", Circle Angle = " << circle_angle*RAD2DEG << ", currAngle = " << currWP.pos.a*RAD2DEG << endl;
+	}
+
+	return t;
+}
+
+void PlanningHelpers::CalcContourPointsForDetectedObjects(const WayPoint& currPose, vector<DetectedObject>& obj_list, const double& filterDistance)
+{
+	vector<DetectedObject> res_list;
+	for(unsigned int i = 0; i < obj_list.size(); i++)
+	{
+		GPSPoint center = obj_list.at(i).center.pos;
+		double distance = distance2points(center, currPose.pos);
+
+		if(distance < filterDistance)
+		{
+			DetectedObject obj = obj_list.at(i);
+
+			Mat3 rotationMat(center.a);
+			Mat3 translationMat(center.x, center.y);
+			double w2 = obj.w/2.0;
+			double h2 = obj.l/2.0;
+			double z = center.z + obj.h/2.0;
+
+			GPSPoint left_bottom(-w2, -h2, z,0);
+			GPSPoint right_bottom(w2,-h2, z,0);
+			GPSPoint right_top(w2,h2, z,0);
+			GPSPoint left_top(-w2,h2, z,0);
+
+			left_bottom 	= rotationMat * left_bottom;
+			right_bottom 	= rotationMat * right_bottom;
+			right_top 		= rotationMat * right_top;
+			left_top 		= rotationMat * left_top;
+
+			left_bottom 	= translationMat * left_bottom;
+			right_bottom 	= translationMat * right_bottom;
+			right_top 		= translationMat * right_top;
+			left_top 		= translationMat * left_top;
+
+			obj.contour.clear();
+			obj.contour.push_back(left_bottom);
+			obj.contour.push_back(right_bottom);
+			obj.contour.push_back(right_top);
+			obj.contour.push_back(left_top);
+
+			res_list.push_back(obj);
+		}
+	}
+
+	obj_list = res_list;
+}
+
+void PlanningHelpers::ObstacleDetectionStep(const WayPoint& currPose,const std::vector<std::vector<WayPoint> >& pathRollOuts,PreCalculatedConditions& preCalcParams,
+		vector<DetectedObject>& obj_list, std::vector<GPSPoint>& detectedPoints)
+{
+//	vector<pair<DetectedObject*, vector<int> > > objects_busy_tracks;
+//	detectedPoints.clear();
+//	vector<double> 	rollOutDistances;
+//	vector<int> 	allBusyTracks;
+//
+//	int iCentralPath = pathRollOuts.size()/2;
+//	for(int i=0; i< pathRollOuts.size(); i++)
+//	  {
+//		  double end_roll_in_distance = m_BehaviorCpfParams.rollOutDensity *(iCentralPath - i);
+//		  rollOutDistances.push_back(end_roll_in_distance);
+//		  allBusyTracks.push_back(0);
+//	  }
+//
+//	vector<double> distances;
+//
+//	for(unsigned int i = 0; i < obj_list.size(); i++)
+//	{
+//		double yaw = obj_list.at(i).center.pos.a;
+//		vector<int> busyTracks;
+//		double distance = 9999999999;
+//
+//		cout << "### BehaviorGen -> ObjectID = " << obj_list.at(i).id
+//			 << "\t, MotionDir= " << yaw 	<< "\t, CarDir= " << currPose.pos.a << endl;
+//
+//		for(unsigned int k=0; k< obj_list.at(i).contour.size(); k++)
+//		{
+//			GPSPoint corner(obj_list.at(i).contour.at(k).x, obj_list.at(i).contour.at(k).y, obj_list.at(i).contour.at(k).z, yaw);
+//
+//			double d_direct = 0, d_on_path = 0, d_lateral=0;
+//			BehaviorsNS::MappingHelpers::GetAllDistancesOnTrajectory(preCalcParams.m_Path, currPose , corner, d_direct, d_on_path, d_lateral);
+//
+//
+//			if(m_bDebugPrint)
+//			{
+//				cout << "### BehaviorGen -> PntID= " << k << "\t, Direct= " << d_direct << "\t, On Path= " <<  d_on_path << "\t, Lateral= " <<  d_lateral << endl;
+//				cout << "\t\t\t\t\t\t";
+//			}
+//
+//			for(unsigned int r=0; r < rollOutDistances.size(); r++)
+//			{
+//
+//				double w2 = preCalcParams.w/2.0;
+//				double latera_Distance = d_lateral+rollOutDistances.at(r);
+//				//latera_Distance += MathUtil::GetSign(latera_Distance)*w2;
+//
+//				bool bLateralCheck = fabs(latera_Distance) <= (w2 + m_BehaviorCpfParams.marginDistanceFromTrajectory);
+//				if(m_bDebugPrint)
+//				{
+//					cout << "\t, PathID    = " << r;
+//					cout << "\t, Lateral    = " << latera_Distance;
+//				}
+//
+//				if((d_on_path > 0)  && (d_on_path <  m_BehaviorCpfParams.horizonDistance) && (bLateralCheck == true))
+//				{
+//					m_AllDetectedPoints.push_back(corner);
+//					busyTracks.push_back(r);
+//					allBusyTracks.at(r) =  allBusyTracks.at(r) + 1;
+//					if(d_on_path < distance)
+//						distance = d_on_path;
+//				}
+//			}
+//
+//			if(m_bDebugPrint)
+//				cout << endl;
+//		}
+//
+//		//Use if closest point is activate !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//		//double closest_distance = hypot(obj_list.at(i).closestPoint.v0-currPose.p.x, obj_list.at(i).closestPoint.v1-currPose.p.y);
+//		double closest_distance  = distance;
+//
+//		if(m_bDebugPrint)
+//			cout << "### BehaviorGen -> Closest Distance= " <<  closest_distance << endl << endl;
+//
+//		if(busyTracks.size()>0)
+//		{
+//			objects_busy_tracks.push_back(make_pair(&obj_list.at(i), busyTracks));
+//			distances.push_back(closest_distance);
+//		}
+//	}
+//
+//	pthread_mutex_unlock(&detected_objects_mutex);
+//
+//	//Check the Full blockage
+//
+//	bool bAvailablePath = false;
+//	if(m_bDebugPrint)
+//		cout << "### BehaviorGen -> Busy Tracks= ";
+//	for(unsigned int i = 0 ; i < allBusyTracks.size(); i++)
+//	{
+//		if(m_bDebugPrint)
+//			cout << "Index: " << i << ", Hits: " << allBusyTracks.at(i) << ", ";
+//		if(allBusyTracks.at(i) == 0)
+//			bAvailablePath = true;
+//	}
+//	if(m_bDebugPrint)
+//		cout << endl;
+//
+//	if(distances.size()>0 && m_BehaviorCpfParams.enableFollowing)
+//	{
+//		int min_index = 0;
+//		double min_distance = distances.at(0);
+//		for(unsigned int i=1; i< distances.size(); i++)
+//		{
+//			if(distances.at(i) < min_distance)
+//			{
+//				min_distance = distances.at(i);
+//				min_index = i;
+//			}
+//		}
+//
+//		zmp::izac::IzMovingObject* pObj = objects_busy_tracks.at(min_index).first;
+//		//CalculatedSimulatedRelativeVelocity(m_PrevDetectedObj, *pObj);
+//
+//		Mat3 rotationMatCar(currPose.a);
+//		Mat3 translationMatCar(m_GlobalCurrCarPos.vel.pnt.v0, m_GlobalCurrCarPos.vel.pnt.v1);
+//
+//		Vector2D gv(pObj->speed.v0, pObj->speed.v1, pObj->speed.v2, 0);
+//
+//
+//		gv = rotationMatCar * gv;
+//		gv = translationMatCar * gv;
+//
+//		zmp::izac::IzPoint3d globalVelocity = zmp::izac::IzPoint3d(gv.p.x, gv.p.y, gv.p.z);
+////		zmp::izac::IzPoint3d globalVelocity = pObj->speed;
+//
+//		//vector<int> tracks = objects_busy_tracks.at(min_index).second;
+//
+//		if(!bAvailablePath || !m_BehaviorCpfParams.enableSwerving)
+//		{
+//			control_params->distanceToNext = min_distance;
+//			control_params->stoppingDistances.push_back(min_distance);
+//			control_params->velocityOfNext = GetSpeedFromVelocity(globalVelocity) - GetSpeedFromVelocity(m_GlobalCurrCarPos.vel.pnt);
+//			control_params->bFullyBlock = true;
+//
+//			if(m_bDebugPrint)
+//			{
+//				cout << "#### -----------------------------------#####" << endl;
+//				cout << "#### -> Velocity Here IS ( " << globalVelocity.v0 << "," <<globalVelocity.v1<<","<<globalVelocity.v2 <<") -> " << GetSpeedFromVelocity(globalVelocity) <<endl;
+//				cout << "#### -> Current IS 	  ( " << m_GlobalCurrCarPos.vel.pnt.v0 << "," <<m_GlobalCurrCarPos.vel.pnt.v1<<","<<m_GlobalCurrCarPos.vel.pnt.v2 <<") -> "<< GetSpeedFromVelocity(m_GlobalCurrCarPos.vel.pnt) <<endl;
+//				cout << "#### -----------------------------------#####" << endl;
+//			}
+//
+//			return;
+//		}
+//		else
+//		{
+//
+//			//check from center to left
+//			control_params->distanceToNext = min_distance;
+//			//control_params->stoppingDistances.push_back(min_distance);
+//			control_params->velocityOfNext = GetSpeedFromVelocity(pObj->speed) - m_GlobalVehicleStatus.velocity;
+//			control_params->bFullyBlock = true;
+//
+//			bool bFoundWay = false;
+//			if(allBusyTracks.at(iCentralPath) == 0)
+//			{
+//				control_params->iCurrSafeTrajectory = iCentralPath;
+//				control_params->bFullyBlock = false;
+//				bFoundWay = true;
+//			}
+//			else
+//			{
+//				//check left
+//				for(int j=m_iCentralTrajectory-1; j >= 0; j--)
+//				{
+//					if(allBusyTracks.at(j) == 0)
+//					{
+//						control_params->iCurrSafeTrajectory = j;
+//						control_params->bFullyBlock = false;
+//						bFoundWay = true;
+//						break;
+//					}
+//				}
+//
+//				//check right
+//				if(!bFoundWay)
+//				{
+//					for(unsigned int j=iCentralPath+1; j < allBusyTracks.size(); j++)
+//					{
+//						if(allBusyTracks.at(j) == 0)
+//						{
+//							control_params->iCurrSafeTrajectory = j;
+//							control_params->bFullyBlock = false;
+//							bFoundWay = true;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+//	else
+//	{
+//		control_params->iCurrSafeTrajectory = m_iCentralTrajectory;
+//		control_params->bFullyBlock = false;
+//	}
+
+//
+//	pthread_mutex_lock(&detected_objects_mutex);
+//	m_PrevDetectedObjectsList = m_DetectedObjectsList;
+//	m_DetectedObjectsList = res_list;
+//	pthread_mutex_unlock(&detected_objects_mutex);
+
 }
 
 } /* namespace PlannerHNS */

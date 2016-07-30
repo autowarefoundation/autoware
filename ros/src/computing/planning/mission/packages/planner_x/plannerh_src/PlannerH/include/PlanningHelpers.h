@@ -20,6 +20,7 @@ namespace PlannerHNS {
 #define distance2points(from, to) sqrt(pow(to.x - from.x, 2) + pow(to.y - from.y, 2))
 #define distance2pointsSqr(from, to) pow(to.x - from.x, 2) + pow(to.y - from.y, 2)
 #define pointNorm(v) sqrt(v.x*v.x + v.y*v.y)
+#define angle2points(from, to) atan2(to.y - from.y, to.x - from.x )
 #define LANE_CHANGE_SPEED_FACTOR 0.5
 
 class PlanningHelpers {
@@ -57,11 +58,11 @@ public:
 	static void SmoothWayPointsDirections(std::vector<WayPoint>& path_in, double weight_data, double weight_smooth, double tolerance	= 0.1);
 
 	static void GenerateRecommendedSpeed(std::vector<WayPoint>& path, const double& max_speed, const double& speedProfileFactor);
-	static WayPoint* BuildPlanningSearchTree(Lane* l, const WayPoint& prevWayPointIndex,
-			const WayPoint& startPos, const WayPoint& goalPos,
-			const std::vector<int>& globalPath, const double& DistanceLimit,
-			int& nMaxLeftBranches, int& nMaxRightBranches,
-			std::vector<WayPoint*>& all_cells_to_delete );
+//	static WayPoint* BuildPlanningSearchTree(Lane* l, const WayPoint& prevWayPointIndex,
+//			const WayPoint& startPos, const WayPoint& goalPos,
+//			const std::vector<int>& globalPath, const double& DistanceLimit,
+//			int& nMaxLeftBranches, int& nMaxRightBranches,
+//			std::vector<WayPoint*>& all_cells_to_delete );
 
 	static WayPoint* BuildPlanningSearchTreeV2(WayPoint* pStart, const WayPoint& prevWayPointIndex,
 				const WayPoint& startPos, const WayPoint& goalPos,
@@ -82,6 +83,12 @@ public:
 
 	static void TravesePathTreeBackwards(WayPoint* pHead, WayPoint* pStartWP, const std::vector<int>& globalPathIds,
 			std::vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths);
+
+	static ACTION_TYPE GetBranchingDirection(WayPoint& currWP, WayPoint& nextWP);
+
+	static void CalcContourPointsForDetectedObjects(const WayPoint& currPose, std::vector<DetectedObject>& obj_list, const double& filterDistance = 100);
+	static void ObstacleDetectionStep(const WayPoint& currPose,const std::vector<std::vector<WayPoint> >& pathRollOuts,PreCalculatedConditions& preCalcParams,
+			std::vector<DetectedObject>& obj_list, std::vector<GPSPoint>& detectedPoints);
 
 };
 

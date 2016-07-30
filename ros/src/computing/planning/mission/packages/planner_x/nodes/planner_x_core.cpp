@@ -34,19 +34,22 @@
 #include <visualization_msgs/MarkerArray.h>
 #include "geo_pos_conv.hh"
 #include "PlannerHHandler.h"
+#include "FreePlannerHandler.h"
 
 namespace PlannerXNS
 {
 
 PlannerX_Interface* PlannerX_Interface::CreatePlannerInstance(const std::string& plannerName)
 {
-	if(plannerName.compare("PlannerH") == 0)
+	if(plannerName.compare("DP") == 0)
 		return new PlannerH_Handler;
+	else if(plannerName.compare("Free") == 0)
+		return new FreePlannerHandler;
 	else
 		return 0;
 }
 
-PlannerX::PlannerX()
+PlannerX::PlannerX(std::string plannerType)
 {
 	clock_gettime(0, &m_Timer);
 	m_counter = 0;
@@ -60,11 +63,11 @@ PlannerX::PlannerX()
 
 
 
-	m_pPlanner = PlannerXNS::PlannerX_Interface::CreatePlannerInstance("PlannerH");
+	m_pPlanner = PlannerXNS::PlannerX_Interface::CreatePlannerInstance(plannerType);
 
 	tf::StampedTransform transform;
 	RosHelpers::GetTransformFromTF("map", "world", transform);
-	ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
+	//ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
 
 	m_OriginPos.position.x  = transform.getOrigin().x();
 	m_OriginPos.position.y  = transform.getOrigin().y();
@@ -111,7 +114,7 @@ PlannerX::~PlannerX()
 void PlannerX::callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg)
 {
 	PlannerHNS::WayPoint p;
-	ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f, freq=%d", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, m_frequency);
+	//ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f, freq=%d", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, m_frequency);
 
 	m_pPlanner->UpdateGlobalGoalPosition(msg.pose);
 
@@ -121,7 +124,7 @@ void PlannerX::callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg)
 void PlannerX::callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 {
 	PlannerHNS::WayPoint p;
-	ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
+	//ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
 
 	m_InitPos.position  = msg->pose.pose.position;
 	m_InitPos.orientation = msg->pose.pose.orientation;
@@ -188,33 +191,33 @@ void PlannerX::callbackFromObjCar(const cv_tracker::obj_label& msg)
 
 void PlannerX::callbackGetVMPoints(const map_file::PointClassArray& msg)
 {
-	ROS_INFO("Received Map Points");
+	//ROS_INFO("Received Map Points");
 	m_AwMap.points = msg;
 	m_AwMap.bPoints = true;
 }
 
 void PlannerX::callbackGetVMLanes(const map_file::LaneArray& msg)
 {
-	ROS_INFO("Received Map Lane Array");
+	//ROS_INFO("Received Map Lane Array");
 	m_AwMap.lanes = msg.lanes;
 	m_AwMap.bLanes = true;
 }
 
 void PlannerX::callbackGetVMNodes(const map_file::NodeArray& msg)
 {
-	ROS_INFO("Received Map Nodes");
+	//ROS_INFO("Received Map Nodes");
 
 
 }
 
 void PlannerX::callbackGetVMStopLines(const map_file::StopLineArray& msg)
 {
-	ROS_INFO("Received Map Stop Lines");
+	//ROS_INFO("Received Map Stop Lines");
 }
 
 void PlannerX::callbackGetVMCenterLines(const map_file::DTLaneArray& msg)
 {
-	ROS_INFO("Received Map Center Lines");
+	//ROS_INFO("Received Map Center Lines");
 	m_AwMap.dtlanes = msg.dtlanes;
 	m_AwMap.bDtLanes = true;
 }
@@ -259,7 +262,7 @@ void PlannerX::PlannerMainLoop()
 			m_PathPublisherRviz.publish(marker_array);
 		}
 
-		ROS_INFO("Main Loop Step");
+		//ROS_INFO("Main Loop Step");
 		loop_rate.sleep();
 	}
 }

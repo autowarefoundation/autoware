@@ -31,13 +31,17 @@ TrajectoryFollower::TrajectoryFollower()
 	m_PrevContinousTargetHeading = INFINITY;
 
 	//m_pidSteer.Init(0.35, 0.01, 0.01); // for 5 m/s
-	m_pidSteer.Init(0.8, 0.1, 0.01); // for 3 m/s
+	m_pidSteer.Init(0.1, 0.04, 0.5); // for 3 m/s
+	//m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
 	m_pidSteer.Setlimit(m_Params.MaxSteerAngle, -m_Params.MaxSteerAngle);
-	m_lowpassSteer.Init(2, 100, 5);
+	m_lowpassSteer.Init(2, 100, 3);
 }
 
 TrajectoryFollower::~TrajectoryFollower()
 {
+//	DataRW::WriteLogData("", "ControlLog",
+//			"time,X,Y,heading,Target,Error,LateralError,SteerBeforLowPass,Steer",
+//			m_LogData);
 }
 
 
@@ -48,7 +52,8 @@ void TrajectoryFollower::PrepareNextWaypoint(const PlannerHNS::WayPoint& CurPos,
 	//m_ForwardSimulation = SimulatePathFollow(0.01, m_Params.SteeringDelay*currVelocity, m_Path, pred_point, currVelocity, m_Params.Wheelbase);
 
 	m_ForwardSimulation = pred_point;
-	double nIterations = m_Params.SteeringDelay/0.01;
+	double nIterations = m_Params.SteeringDelay/0.01; //angle error
+	//double nIterations = 1.1/0.01; //lateral  error
 	for(unsigned int i=0; i< nIterations; i++)
 	{
 		PredictMotion(m_ForwardSimulation.pos.x, m_ForwardSimulation.pos.y, m_ForwardSimulation.pos.a, currSteering,currVelocity, m_Params.Wheelbase, 0.01);
@@ -132,17 +137,27 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 		return -1;
 
 	//TODO use lateral error instead of angle error
-	//double future_lateral_error = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_Path, m_ForwardSimulation,0)*10.0;
+	//double future_lateral_error = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_Path, m_ForwardSimulation,0);
 
-	m_LateralError = 0;
 
-	if(m_LateralError < 0)
-		steerd = m_pidSteer.getPID(current_a+sqrt(abs(m_LateralError)), target_a);
-	else
-		steerd = m_pidSteer.getPID(current_a-sqrt(m_LateralError), target_a);
+	//steerd = m_pidSteer.getPID( future_lateral_error*-1, 0);
+
+//	if(m_LateralError < 0)
+//		steerd = m_pidSteer.getPID(current_a+sqrt(abs(m_LateralError)), target_a);
+//	else
+//		steerd = m_pidSteer.getPID(current_a-sqrt(m_LateralError), target_a);
+
+	double before_lowpass = m_pidSteer.getPID(current_a, target_a);
 
 	//cout << "Error : " << e << ", Current A: " << current_a << ", Target A: " << target_a <<  " Steeting Angle = " << steerd*RAD2DEG << endl;
-	steerd = m_lowpassSteer.getFilter(steerd);
+	steerd = m_lowpassSteer.getFilter(before_lowpass);
+
+	timespec t;
+	UtilityH::GetTickCount(t);
+	std::ostringstream dataLine;
+	dataLine << t.tv_nsec << "," << state.pos.x << "," << state.pos.y << "," <<  m_PrevContinousHeading << "," <<
+			m_PrevContinousTargetHeading << "," <<  e << "," <<  m_LateralError << "," <<  before_lowpass << "," <<  steerd <<  ",";
+	m_LogData.push_back(dataLine.str());
 
 	return 1;
 }

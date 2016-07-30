@@ -20,6 +20,7 @@ public:
 	static void DrawGrid(const double& x, const double& y, const double& w, const double& h, const double& cell_l);
 	static void DrawCustomOrigin(const double& x, const double& y, const double& z,
 			const int& yaw, const int& roll, const int& pitch, const double& length);
+	static void DrawArrow(const double& x, const double& y, const double& a);
 
 	static std::vector<std::vector<float> > PreparePathForDrawing(const std::vector<PlannerHNS::WayPoint>& path,
 			std::vector<std::vector<PlannerHNS::WayPoint> >& redyForDraw, double w, int resolution = 1);
@@ -33,6 +34,8 @@ public:
 	static void DrawLinePoygonFromCenterX(const PlannerHNS::WayPoint& p1, const double& z,
 			const PlannerHNS::WayPoint& p2, const double& z2, const double& w, const double& h,
 			PlannerHNS::WayPoint& prev_point);
+
+	static void DrawLinePoygonline(const PlannerHNS::GPSPoint& p1, const PlannerHNS::GPSPoint& p2, const double& w);
 
 	static void DrawCustomCarModel(const PlannerHNS::WayPoint& pose,const std::vector<PlannerHNS::GPSPoint>& carPoints,float color[3], const double& angleFix);
 

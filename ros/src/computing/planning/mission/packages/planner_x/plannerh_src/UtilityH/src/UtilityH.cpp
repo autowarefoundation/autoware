@@ -26,6 +26,13 @@ UtilityH::UtilityH()
 {
 }
 
+ int UtilityH::GetSign(double x)
+ {
+	 if(x < 0 )
+		 return -1;
+	 else return 0;
+ }
+
  double UtilityH::FixNegativeAngle(const double& a)
 {
    double angle = 0;
@@ -363,7 +370,7 @@ void LowpassFilter::Init(const int& n, const double& sampleFreq, const double& c
 
 double LowpassFilter::getFilter(const double& value)
 {
-	double ep = 2.0/1.0; // used to normalize
+	double ep = 2.3/1.0; // used to normalize
 	double x = value;
 	for(int i=0; i<m; ++i)
 	{

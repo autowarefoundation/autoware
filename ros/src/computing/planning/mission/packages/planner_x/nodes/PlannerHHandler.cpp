@@ -21,6 +21,8 @@ PlannerH_Handler::PlannerH_Handler()
 
 PlannerH_Handler::~PlannerH_Handler()
 {
+	if(m_pPlannerH)
+		delete m_pPlannerH;
 }
 
 void PlannerH_Handler::UpdateRoadMap(const AutowareRoadNetwork& map)
@@ -157,7 +159,7 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 	bool bNewPath = false;
 	m_State.state = PlannerHNS::WayPoint(currentPose.position.x+m_OriginPoint.pos.x,
 			currentPose.position.y + m_OriginPoint.pos.y, currentPose.position.z + m_OriginPoint.pos.z, tf::getYaw(currentPose.orientation));
-	std::vector<PlannerHNS::Obstacle> obst;
+	std::vector<PlannerHNS::DetectedObject> obst;
 	ConvertFromAutowareObstaclesToPlannerH(detectedObstacles, obst);
 	PlannerHNS::VehicleState vehState;
 	vehState.speed = carState.speed;
@@ -211,7 +213,7 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 		ROS_INFO(m_OriginPoint.pos.ToString().c_str());
 		ROS_INFO(m_State.state.pos.ToString().c_str());
 		ROS_INFO(m_Goal.pos.ToString().c_str());
-		m_pPlannerH->PlanUsingDP(m_State.pLane, m_State.state, m_Goal, m_State.state, 2550, m_PredefinedPath, generatedPath);
+		m_pPlannerH->PlanUsingDP(m_State.pLane, m_State.state, m_Goal, m_State.state, 1000000, m_PredefinedPath, generatedPath);
 
 		m_State.m_TotalPath = generatedPath;
 	}
@@ -224,9 +226,9 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 		if(m_State.m_Path.size()>0)
 		{
 			currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_Path, m_State.state);
-			std::cout << "before Roll Outs .. " << currIndex << std::endl;
-			std::cout << m_State.state.pos.ToString() << std::endl;
-			std::cout << m_State.m_Path.at(0).pos.ToString() << std::endl;
+//			std::cout << "before Roll Outs .. " << currIndex << std::endl;
+//			std::cout << m_State.state.pos.ToString() << std::endl;
+//			std::cout << m_State.m_Path.at(0).pos.ToString() << std::endl;
 		}
 
 		if(m_State.m_RollOuts.size() == 0 || currIndex*2.0 > m_State.m_Path.size())
@@ -244,7 +246,7 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 					m_State.m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
 					false, m_State.m_RollOuts);
 
-			std::cout << "Safe Trajectoy : " << preCalcPrams->iCurrSafeTrajectory << std::endl;
+			//std::cout << "Safe Trajectoy : " << preCalcPrams->iCurrSafeTrajectory << std::endl;
 
 
 			m_State.m_Path = m_State.m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
@@ -255,7 +257,7 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 			if(m_State.m_Path.size()<5)
 				preCalcPrams->bGoalReached = true;
 
-			std::cout << "after get next .. " << std::endl;
+			//std::cout << "after get next .. " << std::endl;
 
 		}
 
@@ -385,7 +387,7 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 	count++;
 }
 
-void PlannerH_Handler::ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::Obstacle>& bstacles)
+void PlannerH_Handler::ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles)
 {
 
 }

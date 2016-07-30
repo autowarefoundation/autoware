@@ -24,6 +24,7 @@ public:
 
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::string>& gps_list);
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::vector<std::string> >& gps_list);
+	static void WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData);
 };
 
 class SimpleReaderBase
@@ -216,6 +217,9 @@ public:
 		int RoadSecID;
 		int LaneChgFG;
 		int LinkWAID;
+		char LaneDir;
+		int  LeftLaneId;
+		int RightLaneId;
 
 	};
 

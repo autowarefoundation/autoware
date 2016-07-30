@@ -140,7 +140,7 @@ void CarState::InitPolygons()
 	 m_CurrentVelocity = m_CurrentVelocityD;
   }
 
- void CarState::CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::Obstacle>& obj_list,
+ void CarState::CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::DetectedObject>& obj_list,
 		 const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map)
  {
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();

@@ -31,8 +31,12 @@
 
 int main(int argc, char **argv)
 {
+	std::string plannerType;
+	if (argc > 1)
+		plannerType = std::string(argv[1]);
+
 	ros::init(argc, argv, "planner_x");
-	PlannerXNS::PlannerX planner_x;
+	PlannerXNS::PlannerX planner_x(plannerType);
 	planner_x.PlannerMainLoop();
 	return 0;
 }

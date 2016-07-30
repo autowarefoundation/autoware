@@ -8,6 +8,7 @@
 
 #include <string>
 #include "DrawObjBase.h"
+#include <vector>
 
 namespace Graphics {
 
@@ -84,10 +85,20 @@ public:
 	bool bLeftDown;
 	bool bRightDown;
 	bool bCenterDown;
+	int  bSelectPosition; //0 nothing,  1 start , 2 goal, 3 simulation
+	double StartPos[3];
+	double GoalPos[3];
+	double StartPosFinal[3];
+	double GoalPosFinal[3];
+
+	double SimulatedCarPos[3];
+	double SimulatedCarPosFinal[3];
+
 
 	double zoom;
 	double actualViewX;
 	double actualViewY;
+	double initScreenToCenterMargin[2];
 
 	DisplayParams();
 };
@@ -121,9 +132,12 @@ public:
 	static void ModifyPopupMenu();
 
 	static void InitLighting();
+	static void FromScreenToModelCoordinate(int sx, int sy, double& modelX, double& modelY);
+	static void FromModelToScreenCoordinate(double modelX, double modelY, int& sx, int& sy);
 
 	static void DrawGrid(const double& x, const double& y, const double& w, const double& h, const double& cell_l);
 
+	static void CleanUp();
 	void RedisplayAll();
 
 private:

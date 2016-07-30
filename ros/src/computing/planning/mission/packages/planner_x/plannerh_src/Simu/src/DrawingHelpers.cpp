@@ -94,6 +94,31 @@ void DrawingHelpers::DrawGrid(const double& x, const double& y, const double& w,
 	glPopMatrix();
 }
 
+void DrawingHelpers::DrawArrow(const double& x, const double& y, const double& a)
+{
+	const int nSlicesStacks = 50;
+	const double percent = 20.0;
+	const double innerPercent = 15.0;
+	double half_length = 10/2.0;
+
+	glPushMatrix();
+	//Draw one cylender and cone
+	glTranslated(x, y, 0.5);
+	glRotated(a*RAD2DEG, 0,0,1);
+
+	//X Axis
+	glPushMatrix();
+	glColor3ub(rand()%100,rand()%255,rand()%200);
+	glRotated(90, 0,1,0);
+	glutSolidCylinder(half_length/percent, half_length,nSlicesStacks,nSlicesStacks);
+	glTranslated(0,0,half_length);
+	glColor3f(1,1,0);
+	glutSolidCone(half_length/innerPercent, half_length/innerPercent,nSlicesStacks,nSlicesStacks);
+	glPopMatrix();
+
+	glPopMatrix();
+}
+
 void DrawingHelpers::DrawCustomOrigin(const double& x, const double& y, const double& z, const int& yaw, const int& roll, const int& pitch, const double& length)
 {
 	const int nSlicesStacks = 50;
@@ -282,6 +307,39 @@ void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_
 	}
 }
 
+void DrawingHelpers::DrawLinePoygonline(const PlannerHNS::GPSPoint& p1, const PlannerHNS::GPSPoint& p2, const double& w)
+{
+	POINT2D center, prev_center ,pa, pb, pc, pd, prev_pa,prev_pb;
+	double a = 0;
+	double prev_angle = 0;
+
+	center.x = p1.x + (p2.x-p1.x)/2.0;
+	center.y = p1.y + (p2.y-p1.y)/2.0;
+
+	 a = atan2(p2.y- p1.y, p2.x- p1.x);
+
+	pa.x = p1.x - w * cos(a - M_PI/2.0);
+	pa.y = p1.y - w * sin(a - M_PI/2.0);
+
+	pb.x = p1.x + w * cos(a - M_PI/2.0);
+	pb.y = p1.y + w * sin(a - M_PI/2.0);
+
+
+	pc.x = p2.x + w * cos(a - M_PI/2.0);
+	pc.y = p2.y + w * sin(a - M_PI/2.0);
+
+	pd.x = p2.x - w * cos(a - M_PI/2.0);
+	pd.y = p2.y - w * sin(a - M_PI/2.0);
+
+	  glBegin(GL_POLYGON);
+		  glNormal3f(0.0, 0.0, 0.1);
+		  glVertex3f(pa.x, pa.y, p1.z);
+		  glVertex3f(pb.x, pb.y, p1.z);
+		  glVertex3f(pc.x, pc.y, p2.z);
+		  glVertex3f(pd.x, pd.y, p2.z);
+	  glEnd();
+}
+
 void DrawingHelpers::DrawLinePoygonFromCenterX(const PlannerHNS::WayPoint& p1, const double& z,
 		const PlannerHNS::WayPoint& p2, const double& z2, const double& w, const double& h,
 		PlannerHNS::WayPoint& prev_point)
@@ -398,7 +456,7 @@ void DrawingHelpers::DrawCustomCarModel(const PlannerHNS::WayPoint& pose,const s
 //	center.p.z  = z_center;
 //	center.p.y -= 2.7/2.0 * sin (pose.a);
 //	center.p.x -=  2.7/2.0 * cos (pose.a);
-	DrawCustomOrigin(pose.pos.x, pose.pos.y, pose.pos.z, pose.pos.a, 0,0, 1);
+	DrawCustomOrigin(pose.pos.x, pose.pos.y, pose.pos.z, pose.pos.a*RAD2DEG, 0,0, 2);
 }
 
 GLMmodel* DrawingHelpers::LoadModel(const char* fileName)
@@ -439,7 +497,7 @@ void DrawingHelpers::DrawFilledEllipse(float x, float y, float z, float width, f
 	glBegin(GL_TRIANGLE_FAN);
 		//All triangles fan out starting with this point
 		glVertex3f (x,y,z);
-		for (float i = 0; i <=M_PI*2*RAD2DEG; i+=0.5)
+		for (float i = 0; i <=M_PI*2*RAD2DEG; i+=0.1)
 		{
 			glVertex3f(x + width*cos(i), y+height*sin(i), z);
 		}
