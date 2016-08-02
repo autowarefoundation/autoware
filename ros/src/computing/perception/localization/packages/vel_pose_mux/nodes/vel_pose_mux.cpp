@@ -36,7 +36,6 @@
 
 namespace vel_pose_mux
 {
-
 inline double kmph2mps(double velocity_kmph)
 {
   return (velocity_kmph * 1000) / (60 * 60);
@@ -79,13 +78,13 @@ int main(int argc, char **argv)
 
   // setting params
   private_nh.param<int32_t>("pose_mux_select", pose_mux_select, int32_t(0));
-  //ROS_INFO_STREAM("pose_mux_select : " << pose_mux_select);
+  // ROS_INFO_STREAM("pose_mux_select : " << pose_mux_select);
 
   private_nh.param<int32_t>("vel_mux_select", vel_mux_select, int32_t(1));
-  //ROS_INFO_STREAM("vel_mux_select : " << vel_mux_select);
+  // ROS_INFO_STREAM("vel_mux_select : " << vel_mux_select);
 
   private_nh.param<bool>("sim_mode", sim_mode, false);
-  //ROS_INFO_STREAM("sim_mode : " << sim_mode);
+  // ROS_INFO_STREAM("sim_mode : " << sim_mode);
 
   // publish topic
   ros::Publisher vel_publisher = nh.advertise<geometry_msgs::TwistStamped>("current_velocity", 10);
