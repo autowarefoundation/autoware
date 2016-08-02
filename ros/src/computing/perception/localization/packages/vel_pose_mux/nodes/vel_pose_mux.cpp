@@ -33,7 +33,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include "vehicle_socket/CanInfo.h"
 
-namespace
+namespace vel_pose_mux
 {
 ros::Publisher g_vel_publisher;
 ros::Publisher g_pose_publisher;
