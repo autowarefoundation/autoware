@@ -66,19 +66,18 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  int32_t pose_mux_select;
-  int32_t vel_mux_select;
+  int32_t pose_mux_select, vel_mux_select;
   bool sim_mode;
 
   // setting params
-  private_nh.getParam("pose_mux_select", pose_mux_select);
-  ROS_INFO_STREAM("pose_mux_select : " << pose_mux_select);
+  private_nh.param<int32_t>("pose_mux_select", pose_mux_select, int32_t(0));
+  //ROS_INFO_STREAM("pose_mux_select : " << pose_mux_select);
 
-  private_nh.getParam("vel_mux_select", vel_mux_select);
-  ROS_INFO_STREAM("vel_mux_select : " << vel_mux_select);
+  private_nh.param<int32_t>("vel_mux_select", vel_mux_select, int32_t(1));
+  //ROS_INFO_STREAM("vel_mux_select : " << vel_mux_select);
 
-  private_nh.getParam("sim_mode", sim_mode);
-  ROS_INFO_STREAM("sim_mode : " << sim_mode);
+  private_nh.param<bool>("sim_mode", sim_mode, false);
+  //ROS_INFO_STREAM("sim_mode : " << sim_mode);
 
   // publish topic
   g_vel_publisher = nh.advertise<geometry_msgs::Vector3Stamped>("current_velocity", 10);
