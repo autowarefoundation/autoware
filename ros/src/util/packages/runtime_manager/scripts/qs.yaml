@@ -17,7 +17,7 @@ buttons :
     run   : roslaunch
     param : sensing_qs
     gui   :
-      flags : [ SIGTERM ]
+      flags : [ SIGTERM, kill_children ]
   localization_qs :
     desc  : localization_qs desc sample
     run   : roslaunch
