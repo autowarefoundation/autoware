@@ -32,7 +32,6 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Point.h>
-#include <geometry_msgs/Vector3Stamped.h>
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -344,9 +343,9 @@ void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
   g_temporal_waypoints_size = config->temporal_waypoints_size;
 }
 
-void currentVelCallback(const geometry_msgs::Vector3StampedConstPtr &msg)
+void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  g_current_vel = msg->vector.x;
+  g_current_vel = msg->twist.linear.x;
 }
 
 void baseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
