@@ -47,8 +47,6 @@ static const int SYNC_FRAMES = 50;
 
 typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::TwistStamped, geometry_msgs::PoseStamped>
     TwistPoseSync;
-typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::Vector3Stamped, geometry_msgs::PoseStamped>
-    Vector3PoseSync;
 
 class WaypointSaver
 {
@@ -61,8 +59,6 @@ private:
 
   void TwistPoseCallback(const geometry_msgs::TwistStampedConstPtr &twist_msg,
                          const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
-  void Vector3PoseCallback(const geometry_msgs::Vector3StampedConstPtr &twist_msg,
-                           const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
   void poseCallback(const geometry_msgs::PoseStampedConstPtr &pose_msg) const;
   void displayMarker(geometry_msgs::Pose pose, double velocity) const;
   void outputProcessing(geometry_msgs::Pose current_pose, double velocity) const;
@@ -76,10 +72,8 @@ private:
 
   // subscriber
   message_filters::Subscriber<geometry_msgs::TwistStamped> *twist_sub_;
-  message_filters::Subscriber<geometry_msgs::Vector3Stamped> *vector3_sub_;
   message_filters::Subscriber<geometry_msgs::PoseStamped> *pose_sub_;
   message_filters::Synchronizer<TwistPoseSync> *sync_tp_;
-  message_filters::Synchronizer<Vector3PoseSync> *sync_vp_;
 
   // variables
   bool save_velocity_;
@@ -101,13 +95,9 @@ WaypointSaver::WaypointSaver() : private_nh_("~")
 
   if (save_velocity_)
   {
-    // twist_sub_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(nh_, velocity_topic_, 50);
-    // sync_tp_ = new message_filters::Synchronizer<TwistPoseSync>(TwistPoseSync(SYNC_FRAMES), *twist_sub_, *pose_sub_);
-    // sync_tp_->registerCallback(boost::bind(&WaypointSaver::TwistPoseCallback, this, _1, _2));
-    vector3_sub_ = new message_filters::Subscriber<geometry_msgs::Vector3Stamped>(nh_, velocity_topic_, 50);
-    sync_vp_ =
-        new message_filters::Synchronizer<Vector3PoseSync>(Vector3PoseSync(SYNC_FRAMES), *vector3_sub_, *pose_sub_);
-    sync_vp_->registerCallback(boost::bind(&WaypointSaver::Vector3PoseCallback, this, _1, _2));
+    twist_sub_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(nh_, velocity_topic_, 50);
+    sync_tp_ = new message_filters::Synchronizer<TwistPoseSync>(TwistPoseSync(SYNC_FRAMES), *twist_sub_, *pose_sub_);
+    sync_tp_->registerCallback(boost::bind(&WaypointSaver::TwistPoseCallback, this, _1, _2));
   }
   else
   {
@@ -120,22 +110,14 @@ WaypointSaver::WaypointSaver() : private_nh_("~")
 
 WaypointSaver::~WaypointSaver()
 {
-  // delete twist_sub_;
-  delete vector3_sub_;
+  delete twist_sub_;
   delete pose_sub_;
-  // delete sync_tp_;
-  delete sync_vp_;
+  delete sync_tp_;
 }
 
 void WaypointSaver::poseCallback(const geometry_msgs::PoseStampedConstPtr &pose_msg) const
 {
   outputProcessing(pose_msg->pose, 0);
-}
-
-void WaypointSaver::Vector3PoseCallback(const geometry_msgs::Vector3StampedConstPtr &vector3_msg,
-                                        const geometry_msgs::PoseStampedConstPtr &pose_msg) const
-{
-  outputProcessing(pose_msg->pose, mps2kmph(vector3_msg->vector.x));
 }
 
 void WaypointSaver::TwistPoseCallback(const geometry_msgs::TwistStampedConstPtr &twist_msg,

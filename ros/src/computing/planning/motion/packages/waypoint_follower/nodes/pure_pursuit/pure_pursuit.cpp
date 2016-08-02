@@ -99,9 +99,9 @@ void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
   g_pose_set = true;
 }
 
-void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg)
+void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  _current_velocity = msg->vector.x;
+  _current_velocity = msg->twist.linear.x;
 }
 
 void WayPointCallback(const waypoint_follower::laneConstPtr &msg)
@@ -719,7 +719,7 @@ int main(int argc, char **argv)
   ros::Subscriber ndt_subscriber = nh.subscribe("current_pose", 10, callbackFromCurrentPose);
 
   ros::Subscriber config_subscriber = nh.subscribe("config/waypoint_follower", 10, ConfigCallback);
-  ros::Subscriber est_twist_subscriber = nh.subscribe("current_velocity", 10, callbackFromVector3Stamped);
+  ros::Subscriber est_twist_subscriber = nh.subscribe("current_velocity", 10, callbackFromCurrentVelocity);
 
   ros::Rate loop_rate(LOOP_RATE);  // by Hz
   while (ros::ok())

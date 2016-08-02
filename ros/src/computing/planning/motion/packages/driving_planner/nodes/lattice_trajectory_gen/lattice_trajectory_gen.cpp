@@ -42,7 +42,6 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/Vector3Stamped.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -120,9 +119,9 @@ static void currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   g_pose_set = true;
 }
 
-static void currentVelCallback(const geometry_msgs::Vector3StampedConstPtr &msg)
+static void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  g_current_velocity = msg->vector.x;
+  g_current_velocity = msg->twist.linear.x;
 }
 
 static void WayPointCallback(const waypoint_follower::laneConstPtr &msg)

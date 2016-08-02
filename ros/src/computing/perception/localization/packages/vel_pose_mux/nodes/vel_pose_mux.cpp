@@ -28,32 +28,39 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+// ROS includes
 #include <ros/ros.h>
-#include <geometry_msgs/Vector3Stamped.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include "vehicle_socket/CanInfo.h"
 
-namespace
+namespace vel_pose_mux
 {
-ros::Publisher g_vel_publisher;
-ros::Publisher g_pose_publisher;
-
-void callbackFromCanInfo(const vehicle_socket::CanInfoConstPtr &msg)
+inline double kmph2mps(double velocity_kmph)
 {
-  geometry_msgs::Vector3Stamped vel;
-  vel.header = msg->header;
-  vel.vector.x = (msg->speed * 1000) / (60 * 60);  // km/h -> m/s
-  g_vel_publisher.publish(vel);
+  return (velocity_kmph * 1000) / (60 * 60);
 }
 
-void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg)
+void callbackFromCanInfoAndPublishAsTwistStamped(const vehicle_socket::CanInfoConstPtr &msg,
+                                                 ros::Publisher *pub_message)
 {
-  g_pose_publisher.publish(*msg);
+  geometry_msgs::TwistStamped tw;
+  tw.header = msg->header;
+
+  // linear velocity
+  tw.twist.linear.x = kmph2mps(msg->speed);  // km/h -> m/s
+
+  pub_message->publish(tw);
 }
 
-void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg)
+void callbackFromPoseStampedAndPublish(const geometry_msgs::PoseStampedConstPtr &msg, ros::Publisher *pub_message)
 {
-  g_vel_publisher.publish(*msg);
+  pub_message->publish(*msg);
+}
+
+void callbackFromTwistStampedAndPublish(const geometry_msgs::TwistStampedConstPtr &msg, ros::Publisher *pub_message)
+{
+  pub_message->publish(*msg);
 }
 
 }  // namespace
@@ -66,23 +73,22 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  int32_t pose_mux_select;
-  int32_t vel_mux_select;
+  int32_t pose_mux_select, vel_mux_select;
   bool sim_mode;
 
   // setting params
-  private_nh.getParam("pose_mux_select", pose_mux_select);
-  ROS_INFO_STREAM("pose_mux_select : " << pose_mux_select);
+  private_nh.param<int32_t>("pose_mux_select", pose_mux_select, int32_t(0));
+  // ROS_INFO_STREAM("pose_mux_select : " << pose_mux_select);
 
-  private_nh.getParam("vel_mux_select", vel_mux_select);
-  ROS_INFO_STREAM("vel_mux_select : " << vel_mux_select);
+  private_nh.param<int32_t>("vel_mux_select", vel_mux_select, int32_t(1));
+  // ROS_INFO_STREAM("vel_mux_select : " << vel_mux_select);
 
-  private_nh.getParam("sim_mode", sim_mode);
-  ROS_INFO_STREAM("sim_mode : " << sim_mode);
+  private_nh.param<bool>("sim_mode", sim_mode, false);
+  // ROS_INFO_STREAM("sim_mode : " << sim_mode);
 
   // publish topic
-  g_vel_publisher = nh.advertise<geometry_msgs::Vector3Stamped>("current_velocity", 10);
-  g_pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("current_pose", 10);
+  ros::Publisher vel_publisher = nh.advertise<geometry_msgs::TwistStamped>("current_velocity", 10);
+  ros::Publisher pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("current_pose", 10);
 
   // subscribe topic
   ros::Subscriber pose_subcscriber;
@@ -90,8 +96,10 @@ int main(int argc, char **argv)
 
   if (sim_mode)
   {
-    vel_subcscriber = nh.subscribe("sim_velocity", 10, callbackFromVector3Stamped);
-    pose_subcscriber = nh.subscribe("sim_pose", 10, callbackFromPoseStamped);
+    vel_subcscriber = nh.subscribe<geometry_msgs::TwistStamped>(
+        "sim_velocity", 10, boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher));
+    pose_subcscriber = nh.subscribe<geometry_msgs::PoseStamped>(
+        "sim_pose", 10, boost::bind(vel_pose_mux::callbackFromPoseStampedAndPublish, _1, &pose_publisher));
   }
   else
   {
@@ -100,12 +108,14 @@ int main(int argc, char **argv)
     {
       case 0:  // ndt_localizer
       {
-        pose_subcscriber = nh.subscribe("ndt_pose", 10, callbackFromPoseStamped);
+        pose_subcscriber = nh.subscribe<geometry_msgs::PoseStamped>(
+            "ndt_pose", 10, boost::bind(vel_pose_mux::callbackFromPoseStampedAndPublish, _1, &pose_publisher));
         break;
       }
       case 1:  // gnss
       {
-        pose_subcscriber = nh.subscribe("gnss_pose", 10, callbackFromPoseStamped);
+        pose_subcscriber = nh.subscribe<geometry_msgs::PoseStamped>(
+            "gnss_pose", 10, boost::bind(vel_pose_mux::callbackFromPoseStampedAndPublish, _1, &pose_publisher));
         break;
       }
       default:
@@ -117,12 +127,14 @@ int main(int argc, char **argv)
     {
       case 0:  // ndt_localizer
       {
-        vel_subcscriber = nh.subscribe("estimated_vel", 10, callbackFromVector3Stamped);
+        vel_subcscriber = nh.subscribe<geometry_msgs::TwistStamped>(
+            "estimate_twist", 10, boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher));
         break;
       }
       case 1:  // CAN
       {
-        vel_subcscriber = nh.subscribe("can_info", 10, callbackFromCanInfo);
+        vel_subcscriber = nh.subscribe<vehicle_socket::CanInfo>(
+            "can_info", 10, boost::bind(vel_pose_mux::callbackFromCanInfoAndPublishAsTwistStamped, _1, &vel_publisher));
         break;
       }
       default:
