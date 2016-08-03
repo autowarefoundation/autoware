@@ -160,7 +160,7 @@ class MyFrame(rtmgr.MyFrame):
 		
 		self.add_params(dic.get('params', []))
 		self.setup_buttons(dic.get('buttons', {}), setup_cmd)
-		for nm in [ 'setup_tf', 'vehicle_model' ]:
+		for nm in [ 'setup_tf', 'vehicle_model', 'vehicle_info' ]:
 			self.set_param_panel(self.obj_get('button_' + nm), self.obj_get('panel_' + nm))
 
 		#
