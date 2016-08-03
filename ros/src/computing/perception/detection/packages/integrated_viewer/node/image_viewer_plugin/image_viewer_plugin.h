@@ -19,6 +19,7 @@
 
 #include <QStringList>
 #include <QWidget>
+#include <QEvent>
 
 #include "convert_image.h"
 #include "ui_image_viewer_form.h"
@@ -41,6 +42,9 @@ namespace integrated_viewer
     // The function to update topic list that can be selected from the UI
     void UpdateTopicList(void);
 
+    // The event filter to catch clicking on combo box
+    bool eventFilter(QObject* object, QEvent* event);
+    
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
     void ImageObjCallback(const cv_tracker::image_obj::ConstPtr& msg);
@@ -92,14 +96,16 @@ namespace integrated_viewer
     DrawRects rects_drawer_;
     DrawPoints points_drawer_;
 
+    // The flag to represent whether default image should be shown or not
+    bool default_image_shown_;
+
     // The behavior definition of the UI
     private Q_SLOTS:
       // We can skip "connect" process by defining naming
       // of slot function like on_"widget_name"_"signal_name"
-      void on_refresh_push_button__clicked(void);
-      void on_image_topic_combo_box__currentIndexChanged(int index);
-      void on_rect_topic_combo_box__currentIndexChanged(int index);
-      void on_point_topic_combo_box__currentIndexChanged(int index);
+      void on_image_topic_combo_box__activated(int index);
+      void on_rect_topic_combo_box__activated(int index);
+      void on_point_topic_combo_box__activated(int index);
 
   }; // end class ImageViewerPlugin
 

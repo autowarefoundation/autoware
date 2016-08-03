@@ -80,18 +80,11 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="4">
-    <widget class="QPushButton" name="refresh_push_button_">
-     <property name="text">
-      <string>Refresh Topic lists</string>
-     </property>
-    </widget>
+   <item row="2" column="0">
+    <widget class="QComboBox" name="image_topic_combo_box_"/>
    </item>
    <item row="2" column="4">
     <widget class="QComboBox" name="point_topic_combo_box_"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QComboBox" name="image_topic_combo_box_"/>
    </item>
    <item row="1" column="1">
     <spacer name="horizontalSpacer">
