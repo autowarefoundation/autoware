@@ -14,6 +14,10 @@ buttons:
     run    : roslaunch model_publisher vehicle_model.launch
     param  : vehicle_model
 
+  vehicle_info:
+    run    : roslaunch runtime_manager setup_vehicle_info.launch
+    param  : vehicle_info
+
 params:
   - name: setup_tf
     vars:
@@ -98,6 +102,16 @@ params:
   - name: vehicle_model
     vars:
     - name        : model_path
+      kind        : path
+      v           : ''
+      cmd_param   :
+        only_enable: True
+        dash       : ''
+        delim      : ':='
+
+  - name: vehicle_info
+    vars:
+    - name        : info_path
       kind        : path
       v           : ''
       cmd_param   :
