@@ -170,19 +170,19 @@ static void output_callback(const runtime_manager::ConfigNdtMappingOutput::Const
   ndt_map_pub.publish(*map_msg_ptr);
 
   // Writing Point Cloud data to PCD file
-  if(voxel_leaf_size == 0.0){
+  if(filter_res == 0.0){
     pcl::io::savePCDFileASCII(filename, *map_ptr);
     std::cout << "Saved " << map_ptr->points.size() << " data points to " << filename << "." << std::endl;
   }else{
     pcl::io::savePCDFileASCII(filename, *map_filtered);
     std::cout << "Saved " << map_filtered->points.size() << " data points to " << filename << "." << std::endl;
-  }    
+  }
 }
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
     double r;
-    pcl::PointXYZI p; 
+    pcl::PointXYZI p;
     pcl::PointCloud<pcl::PointXYZI> tmp, scan;
     pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
     pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
@@ -198,32 +198,32 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::fromROSMsg(*input, tmp);
 
     for (pcl::PointCloud<pcl::PointXYZI>::const_iterator item = tmp.begin(); item != tmp.end(); item++){
-    	p.x = (double) item->x;
-    	p.y = (double) item->y;
-    	p.z = (double) item->z;
-    	p.intensity = (double) item->intensity;
+      p.x = (double) item->x;
+      p.y = (double) item->y;
+      p.z = (double) item->z;
+      p.intensity = (double) item->intensity;
 
-    	r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
-    	if(r > RANGE){
-    		scan.push_back(p);
-    	}
+      r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
+      if(r > RANGE){
+        scan.push_back(p);
+      }
     }
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
-    
+
     // Add initial point cloud to velodyne_map
     if(initial_scan_loaded == 0){
       map += *scan_ptr;
       reference_map += *scan_ptr;
       initial_scan_loaded = 1;
     }
-    
+
     // Apply voxelgrid filter
     pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
     voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
     voxel_grid_filter.setInputCloud(scan_ptr);
     voxel_grid_filter.filter(*filtered_scan_ptr);
-    
+
     pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
     pcl::PointCloud<pcl::PointXYZI>::Ptr reference_map_ptr(new pcl::PointCloud<pcl::PointXYZI>(reference_map));
 
@@ -232,11 +232,11 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt.setResolution(ndt_res);
     ndt.setMaximumIterations(iter);
     ndt.setInputSource(filtered_scan_ptr);
-    
+
     if(isMapUpdate == true){
-//    	ndt.setInputTarget(map_ptr);
-    	ndt.setInputTarget(reference_map_ptr);
-    	isMapUpdate = false;
+//      ndt.setInputTarget(map_ptr);
+      ndt.setInputTarget(reference_map_ptr);
+      isMapUpdate = false;
     }
 
     guess_pose.x = previous_pose.x + offset_x;
@@ -245,33 +245,33 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     guess_pose.roll = previous_pose.roll;
     guess_pose.pitch = previous_pose.pitch;
     guess_pose.yaw = previous_pose.yaw + offset_yaw;
-    
+
     Eigen::AngleAxisf init_rotation_x(guess_pose.roll, Eigen::Vector3f::UnitX());
     Eigen::AngleAxisf init_rotation_y(guess_pose.pitch, Eigen::Vector3f::UnitY());
     Eigen::AngleAxisf init_rotation_z(guess_pose.yaw, Eigen::Vector3f::UnitZ());
-    
+
     Eigen::Translation3f init_translation(guess_pose.x, guess_pose.y, guess_pose.z);
-    
+
     Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x).matrix() * tf_btol;
-    
+
     t3_end = ros::Time::now();
     d3 = t3_end - t3_start;
-    
+
     t4_start = ros::Time::now();
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 #ifdef USE_FAST_PCL
     if(_use_openmp == true){
-    	ndt.omp_align(*output_cloud, init_guess);
-    	fitness_score = ndt.omp_getFitnessScore();
+      ndt.omp_align(*output_cloud, init_guess);
+      fitness_score = ndt.omp_getFitnessScore();
     }else{
 #endif
-    	ndt.align(*output_cloud, init_guess);
-    	fitness_score = ndt.getFitnessScore();
+      ndt.align(*output_cloud, init_guess);
+      fitness_score = ndt.getFitnessScore();
 #ifdef USE_FAST_PCL
     }
 #endif
-    
+
     t_localizer = ndt.getFinalTransformation();
     t_base_link = t_localizer * tf_ltob;
 
@@ -280,26 +280,26 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     tf::Matrix3x3 mat_l, mat_b;
 
     mat_l.setValue(static_cast<double>(t_localizer(0, 0)), static_cast<double>(t_localizer(0, 1)), static_cast<double>(t_localizer(0, 2)),
-		  static_cast<double>(t_localizer(1, 0)), static_cast<double>(t_localizer(1, 1)), static_cast<double>(t_localizer(1, 2)),
-		  static_cast<double>(t_localizer(2, 0)), static_cast<double>(t_localizer(2, 1)), static_cast<double>(t_localizer(2, 2)));
-    
-    
+      static_cast<double>(t_localizer(1, 0)), static_cast<double>(t_localizer(1, 1)), static_cast<double>(t_localizer(1, 2)),
+      static_cast<double>(t_localizer(2, 0)), static_cast<double>(t_localizer(2, 1)), static_cast<double>(t_localizer(2, 2)));
+
+
     mat_b.setValue(static_cast<double>(t_base_link(0, 0)), static_cast<double>(t_base_link(0, 1)), static_cast<double>(t_base_link(0, 2)),
-		  static_cast<double>(t_base_link(1, 0)), static_cast<double>(t_base_link(1, 1)), static_cast<double>(t_base_link(1, 2)),
-		  static_cast<double>(t_base_link(2, 0)), static_cast<double>(t_base_link(2, 1)), static_cast<double>(t_base_link(2, 2)));
-    
+      static_cast<double>(t_base_link(1, 0)), static_cast<double>(t_base_link(1, 1)), static_cast<double>(t_base_link(1, 2)),
+      static_cast<double>(t_base_link(2, 0)), static_cast<double>(t_base_link(2, 1)), static_cast<double>(t_base_link(2, 2)));
+
     // Update localizer_pose.
     localizer_pose.x = t_localizer(0, 3);
     localizer_pose.y = t_localizer(1, 3);
     localizer_pose.z = t_localizer(2, 3);
     mat_l.getRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw, 1);
-    
+
     // Update ndt_pose.
     ndt_pose.x = t_base_link(0, 3);
     ndt_pose.y = t_base_link(1, 3);
     ndt_pose.z = t_base_link(2, 3);
     mat_b.getRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw, 1);
-    
+
     current_pose.x = ndt_pose.x;
     current_pose.y = ndt_pose.y;
     current_pose.z = ndt_pose.z;
@@ -310,15 +310,15 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     transform.setOrigin(tf::Vector3(current_pose.x, current_pose.y, current_pose.z));
     q.setRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
     transform.setRotation(q);
-    
+
     br.sendTransform(tf::StampedTransform(transform, scan_time, "map", "base_link"));
-    
+
     // Calculate the offset (curren_pos - previous_pos)
     offset_x = current_pose.x - previous_pose.x;
     offset_y = current_pose.y - previous_pose.y;
     offset_z = current_pose.z - previous_pose.z;
     offset_yaw = current_pose.yaw - previous_pose.yaw;
-    
+
     // Update position and posture. current_pos -> previous_pos
     previous_pose.x = current_pose.x;
     previous_pose.y = current_pose.y;
@@ -326,21 +326,21 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     previous_pose.roll = current_pose.roll;
     previous_pose.pitch = current_pose.pitch;
     previous_pose.yaw = current_pose.yaw;
-    
+
     // Calculate the shift between added_pose and current_pose
     double shift = sqrt(pow(current_pose.x-added_pose.x, 2.0) + pow(current_pose.y-added_pose.y, 2.0));
     if(shift >= SHIFT){
       map += *transformed_scan_ptr;
 
       if(previous_scans.size() >= (unsigned int)REFERENCE_MAP_SIZE){
-    	  previous_scans.erase(previous_scans.begin());
+        previous_scans.erase(previous_scans.begin());
       }
       previous_scans.push_back(*transformed_scan_ptr);
 
       reference_map.clear();
 
       for(auto item = previous_scans.begin(); item != previous_scans.end(); item++){
-    	  reference_map += *item;
+        reference_map += *item;
       }
 
       added_pose.x = current_pose.x;
@@ -371,9 +371,9 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_pose_msg.pose.orientation.y = q.y();
     current_pose_msg.pose.orientation.z = q.z();
     current_pose_msg.pose.orientation.w = q.w();
-    
+
     current_pose_pub.publish(current_pose_msg);
-    
+
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Sequence number: " << input->header.seq << std::endl;
     std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
@@ -390,7 +390,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << t_localizer << std::endl;
     std::cout << "shift: " << shift << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
-    
+
 }
 
 int main(int argc, char **argv)
