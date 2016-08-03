@@ -574,6 +574,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     // Set values for /estimate_twist
     estimate_twist_msg.header.stamp = current_scan_time;
+    estimate_twist_msg.header.frame_id = "/base_link";
     estimate_twist_msg.twist.linear.x = current_velocity;
     estimate_twist_msg.twist.linear.y = 0.0;
     estimate_twist_msg.twist.linear.z = 0.0;
@@ -611,8 +612,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       exit(1);
     }
     ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << ","
-    		<< current_pose.x << "," << current_pose.y << "," << current_pose.z << "," << current_pose.roll << ","
-            << current_pose.pitch << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << ","
+    		<< std::fixed << std::setprecision(5) << current_pose.x << ","
+			<< std::fixed << std::setprecision(5) << current_pose.y << ","
+			<< std::fixed << std::setprecision(5) << current_pose.z << ","
+			<< current_pose.roll << "," << current_pose.pitch << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << ","
             << predict_pose.z << "," << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
             << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
             << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
