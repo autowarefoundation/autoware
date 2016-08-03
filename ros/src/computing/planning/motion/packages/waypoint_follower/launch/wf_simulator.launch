@@ -1,11 +1,6 @@
 <!-- -->
 <launch>
 
-	<include file="$(find model_publisher)/launch/vehicle_model.launch">
-	<arg name="topic_name" default="sim_vehicle_model"/>
-	<arg name="base_frame" default="sim_base_link"/>
-	</include>
-	
 	<arg name="initialize_source" default="Rviz"/>
     <node pkg="waypoint_follower" type="wf_simulator" name="wf_simulator" output="screen">
     	<param name="initialize_source" value="$(arg initialize_source)"/>
