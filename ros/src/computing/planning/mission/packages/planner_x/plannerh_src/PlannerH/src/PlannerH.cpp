@@ -146,23 +146,15 @@ PlannerH::PlannerH(const PlanningInternalParams& params)
 	for(unsigned int i=0; i< rollOutPaths.size(); i++)
 	{
 		PlanningHelpers::GenerateRecommendedSpeed(rollOutPaths.at(i), maxSpeed, speedProfileFactor);
-		PlanningHelpers::SmoothSpeedProfiles(rollOutPaths.at(i), 0.15, 0.35, 0.1);
+		PlanningHelpers::SmoothSpeedProfiles(rollOutPaths.at(i), 0.15,0.35, 0.1);
+		ostringstream str_out;
+		str_out << DataRW::LoggingFolderPath;
+		str_out << DataRW::PathLogFolderName;
+		str_out << "_";
+		str_out << i;
+		str_out << "_";
+		PlanningHelpers::WritePathToFile(str_out.str(), rollOutPaths.at(i));
 	}
-
-//Debug code
-// 	  if(rollOutPaths.size()>0)
-// 	  {
-// 		  if(m_bDebugPrint)
-// 			  cout << endl << "### -> Planner Z -> Rollout Trajectories (" << RollOutPaths.size() << ") , Size of 0:" <<  RollOutPaths.at(0).size()
-// 						  << ", Distance of 0: " << RollOutPaths.at(0).at(RollOutPaths.at(0).size()-1).cost << ", Processing Time: " << MathUtil::GetTimeDiffNow(t1) << endl;
-//
-// 		  for(unsigned int i=0; i< rollOutPaths.size(); i++)
-// 		  {
-// 			  ostringstream str;
-// 			  str << "BehaviorsLog/Path/RollOutNumber_" << i << "_";
-// 			  ConfigAndLogNS::LogMgr::WritePathToFile(str.str(), rollOutPaths.at(i));
-// 		  }
-// 	  }
    }
 
  double PlannerH::PlanUsingDP(Lane* l, const WayPoint& start,const WayPoint& goalPos,
@@ -193,7 +185,7 @@ PlannerH::PlannerH(const PlanningInternalParams& params)
  		return 0;
  	}
 
- 	WayPoint* pStartWP = &l->points.at(0);
+ 	WayPoint* pStartWP = &l->points.at(closest_index);
  	pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStartWP, prevWayPoint, closest_p, goalPos, globalPath, maxPlanningDistance, nML, nMR, all_cell_to_delete);
 
  	if(!pLaneCell)

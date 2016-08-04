@@ -105,7 +105,6 @@ DrawObjBase* MainWindowWrapper::m_DrawAndControl = 0;
 MainWindowWrapper::MainWindowWrapper(DrawObjBase* pDraw)
 {
 	m_DrawAndControl = pDraw;
-
 }
 
 MainWindowWrapper::~MainWindowWrapper(){}

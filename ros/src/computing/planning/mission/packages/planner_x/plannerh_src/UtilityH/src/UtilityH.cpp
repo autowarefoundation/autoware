@@ -36,9 +36,9 @@ UtilityH::UtilityH()
  double UtilityH::FixNegativeAngle(const double& a)
 {
    double angle = 0;
-   if (a < -2*M_PI || a > 2*M_PI)
+   if (a < -2.0*M_PI || a > 2.0*M_PI)
 	{
-	   angle = fmod(a, 2*M_PI);
+	   angle = fmod(a, 2.0*M_PI);
 	}
    else
 	   angle = a;
@@ -46,7 +46,7 @@ UtilityH::UtilityH()
 
    if(angle < 0)
    {
-	   angle = 2*M_PI + angle;
+	   angle = 2.0*M_PI + angle;
    }
 
    return angle;
@@ -56,18 +56,18 @@ UtilityH::UtilityH()
 {
 	 double angle = a;
 
-	if (a < -2*M_PI || a > 2*M_PI)
+	if (a < -2.0*M_PI || a > 2.0*M_PI)
 	{
-		angle = fmod(a, 2*M_PI);
+		angle = fmod(a, 2.0*M_PI);
 	}
 
 	if (angle > M_PI)
 	{
-		angle -= 2*M_PI;
+		angle -= 2.0*M_PI;
 	}
 	else if (angle < -M_PI)
 	{
-		angle += 2*M_PI;
+		angle += 2.0*M_PI;
 	}
 
 	return angle;
@@ -97,16 +97,28 @@ double UtilityH::AngleBetweenTwoAnglesPositive(const double& a1, const double& a
    return diff;
 }
 
-double UtilityH::GetCircularAngle(const double& prevAngle, const double& currAngle)
+double UtilityH::GetCircularAngle(const double& prevContAngle, const double& prevAngle, const double& currAngle)
 {
-	double delta = currAngle - prevAngle;
 
-	if(delta < -M_PI)
-		delta += M_PI*2.0;
-	else if (delta > M_PI)
-		delta -= M_PI*2.0;
+	double diff = currAngle - prevAngle;
+	if(diff > 2.0*M_PI)
+		diff = diff - 2.0*M_PI;
+	if(diff < -2.0*M_PI)
+		diff = diff + 2.0*M_PI;
 
-	return prevAngle+delta;
+	double c_ang = prevContAngle + diff;
+
+
+//	double delta = currAngle - prevAngle;
+//
+//	if(delta < -M_PI)
+//		delta += M_PI*2.0;
+//	else if (delta > M_PI)
+//		delta -= M_PI*2.0;
+//
+//	double c_ang =  prevAngle+delta;
+
+	return c_ang;
 }
 
 void UtilityH::GetTickCount(struct timespec& t)
@@ -189,9 +201,10 @@ int  UtilityH::tsCompare (struct  timespec  time1,   struct  timespec  time2, in
 
 PIDController::PIDController()
 {
-	kp = 0;
-	ki = 0;
-	kd = 0;
+	kp = kp_v = 0;
+	ki = ki_v = 0;
+	kd = kd_v = 0;
+	pid_lim = pid_v = 0;
 	upper_limit = lower_limit = 0;
 	bEnableLimit= false;
 	accumErr = 0;
@@ -221,11 +234,17 @@ void PIDController::Setlimit(const double& upper,const double& lower)
 
 double PIDController::getPID(const double& currValue, const double& targetValue)
 {
+	double e = targetValue - currValue;
+	return getPID(e);
+}
+
+double PIDController::getPID(const double& e)
+{
 	//TODO Remember to add sampling time and multiply the time elapsed by the error
 	//complex PID error calculation
 	//TODO //De = ( e(i) + 3*e(i-1) - 3*e(i-2) - e(i-3) ) / 6
 
-	double e = targetValue - currValue;
+
 	if(bResetI)
 	{
 		bResetI = false;
@@ -238,26 +257,49 @@ double PIDController::getPID(const double& currValue, const double& targetValue)
 		prevErr = e;
 	}
 
-	accumErr += e;
+	if(pid_v < upper_limit && pid_v > lower_limit)
+		accumErr += e;
 	double edot= e - prevErr;
 
-	double p_part = kp * e;
-	double i_part = ki *  accumErr;
-	double d_part = kd * edot;
+	kp_v = kp * e;
+	ki_v = ki *  accumErr;
+	kd_v = kd * edot;
 
-	double res = p_part + i_part + d_part;
-
+	pid_v = kp_v + ki_v + kd_v;
+	pid_lim = pid_v;
 	if(bEnableLimit)
 	{
-		if(res > upper_limit)
-			res = upper_limit;
-		else if ( res < lower_limit)
-			res = lower_limit;
+		if(pid_v > upper_limit)
+		{
+			pid_lim = upper_limit;
+		}
+		else if ( pid_v < lower_limit)
+		{
+			pid_lim = lower_limit;
+		}
 	}
 
 	prevErr = e;
 
-	return res;
+	return pid_lim;
+}
+
+std::string PIDController::ToStringHeader()
+{
+	std::ostringstream str_out;
+	str_out << "KP" << "," << "KI" << "," << "KD" << "," << "KP_v" << "," << "KI_v" << "," << "KD_v"
+			<< "," << "pid_v" << "," << "," << "pid_lim" << "," << "," << "prevErr" << "," << "accumErr" << "," ;
+	return str_out.str();
+}
+
+std::string PIDController::ToString()
+{
+	std::ostringstream str_out;
+	str_out << kp << "," << ki << "," << kd << "," << kp_v << "," << ki_v << "," << kd_v
+				<< "," << pid_v << "," << "," << pid_lim << "," << "," << prevErr << "," << accumErr << "," ;
+
+	return str_out.str();
+
 }
 
 void PIDController::ResetD()
@@ -293,12 +335,18 @@ LowpassFilter::LowpassFilter()
 
 LowpassFilter::~LowpassFilter()
 {
-	delete [] A;
-	delete [] d1;
-	delete [] d2;
-	delete [] w0;
-	delete [] w1;
-	delete [] w2;
+//	if(A)
+//		delete A;
+//	if(d1)
+//		delete d1;
+//	if(d2)
+//		delete d2;
+//	if(w0)
+//		delete w0;
+//	if(w1)
+//		delete w1;
+//	if(w2)
+//		delete w2;
 }
 
 LowpassFilter::LowpassFilter(const int& filterOrder, const double& sampleFreq, const double& cutOffFreq)
@@ -338,22 +386,22 @@ void LowpassFilter::Init(const int& n, const double& sampleFreq, const double& c
 		double cu = cosh(u/(double)n);
 		double b, c;
 
-		A  = new double[m];
-		d1 = new double[m];
-		d2 = new double[m];
-		w0 = new double[m];
-		w1 = new double[m];
-		w2 = new double[m];
-
-		for(int i=0; i < m ; i++)
-		{
-			A[i]  = 0;
-			d1[i] = 0;
-			d2[i] = 0;
-			w0[i] = 0;
-			w1[i] = 0;
-			w2[i] = 0;
-		}
+//		A  = new double[m];
+//		d1 = new double[m];
+//		d2 = new double[m];
+//		w0 = new double[m];
+//		w1 = new double[m];
+//		w2 = new double[m];
+//
+//		for(int i=0; i < m ; i++)
+//		{
+//			A[i]  = 0;
+//			d1[i] = 0;
+//			d2[i] = 0;
+//			w0[i] = 0;
+//			w1[i] = 0;
+//			w2[i] = 0;
+//		}
 
 		for(int i=0; i< m; ++i)
 		{
@@ -361,9 +409,9 @@ void LowpassFilter::Init(const int& n, const double& sampleFreq, const double& c
 		    c = cos(M_PI*(2.0*i+1.0)/(2.0*n))*cu;
 		    c = b*b + c*c;
 		    s = a2*c + 2.0*a*b + 1.0;
-		    A[i] = a2/(4.0*s); // 4.0
-		    d1[i] = 2.0*(1-a2*c)/s;
-		    d2[i] = -(a2*c - 2.0*a*b + 1.0)/s;
+		    A = a2/(4.0*s); // 4.0
+		    d1 = 2.0*(1-a2*c)/s;
+		    d2 = -(a2*c - 2.0*a*b + 1.0)/s;
 		}
 	}
 }
@@ -374,10 +422,10 @@ double LowpassFilter::getFilter(const double& value)
 	double x = value;
 	for(int i=0; i<m; ++i)
 	{
-		w0[i] = d1[i]*w1[i] + d2[i]*w2[i] + x;
-		x = A[i]*(w0[i] + 2.0*w1[i] + w2[i]);
-		w2[i] = w1[i];
-		w1[i] = w0[i];
+		w0 = d1*w1 + d2*w2 + x;
+		x = A*(w0 + 2.0*w1 + w2);
+		w2 = w1;
+		w1 = w0;
 	}
 	return ep*x;
 }

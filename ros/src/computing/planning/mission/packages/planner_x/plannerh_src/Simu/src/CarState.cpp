@@ -184,4 +184,187 @@ void CarState::InitPolygons()
  }
 
 
+ PlannerHNS::BehaviorState CarState::DoOneStepSimulated(const double& dt, const PlannerHNS::VehicleState& vehicleState, const PlannerHNS::WayPoint& currPose,
+ 			const std::vector<PlannerHNS::DetectedObject>& obj_list, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map)
+ {
+	 SetSimulatedTargetOdometryReadings(vehicleState.speed, vehicleState.steer, vehicleState.shift);
+
+	UpdateState(false);
+	LocalizeMe(dt);
+	CalculateImportantParameterForDecisionMaking(obj_list, vehicleState, goal, map);
+
+	PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
+
+	if(preCalcPrams->iCurrSafeTrajectory >= 0 && preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size())
+		m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+	else if(m_RollOuts.size() > 0)
+		std::cout << "Error .. Error .. Slected Trajectory is out of range !! ( " << preCalcPrams->iCurrSafeTrajectory << ")" << std::endl;
+
+	m_pCurrentBehaviorState = m_pCurrentBehaviorState->GetNextState();
+	PlannerHNS::BehaviorState currentBehavior;
+
+	currentBehavior.state = m_pCurrentBehaviorState->m_Behavior;
+	if(currentBehavior.state == PlannerHNS::FOLLOW_STATE)
+		currentBehavior.followDistance = preCalcPrams->distanceToNext;
+	else
+		currentBehavior.followDistance = 0;
+
+	if(preCalcPrams->bUpcomingRight)
+		currentBehavior.indicator = PlannerHNS::INDICATOR_RIGHT;
+	else if(preCalcPrams->bUpcomingLeft)
+		currentBehavior.indicator = PlannerHNS::INDICATOR_LEFT;
+	else
+		currentBehavior.indicator = PlannerHNS::INDICATOR_NONE;
+
+	currentBehavior.maxVelocity 	= PlannerHNS::PlanningHelpers::GetVelocityAhead(m_Path, currPose, 1.5*vehicleState.speed*3.6);
+	currentBehavior.minVelocity		= 0;
+	currentBehavior.stopDistance 	= preCalcPrams->distanceToStop();
+	currentBehavior.followVelocity 	= preCalcPrams->velocityOfNext;
+
+	return currentBehavior;
+ }
+
+ SimulatedCarState::SimulatedCarState()
+ {
+ 	pLane = 0;
+ 	w = 0;
+ 	l = 0;
+ 	m_CurrentVelocity =  m_CurrentVelocityD =0;
+ 	m_CurrentSteering = m_CurrentSteeringD =0;
+ 	m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
+ 	m_CurrentAccSteerAngle = m_CurrentAccVelocity = 0;
+
+ }
+
+ SimulatedCarState::~SimulatedCarState()
+ {
+
+ }
+
+ void SimulatedCarState::Init(const double& width, const double& length, const CAR_BASIC_INFO& carInfo)
+  	{
+  		m_CarInfo = carInfo;
+  		w = width;
+  		l = length;
+  		m_CurrentVelocity =  m_CurrentVelocityD =0;
+  		m_CurrentSteering = m_CurrentSteeringD =0;
+  		m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
+  		m_CurrentAccSteerAngle = m_CurrentAccVelocity = 0;
+  	}
+
+
+ void SimulatedCarState::InitPolygons()
+ {
+ 	double l2 = l/2.0;
+ 	double w2 = w/2.0;
+
+ 	m_CarShapePolygon.push_back(GPSPoint(-w2, -l2, 0,0));
+ 	m_CarShapePolygon.push_back(GPSPoint(w2, -l2, 0,0));
+ 	m_CarShapePolygon.push_back(GPSPoint(w2, l2, 0,0));
+ 	m_CarShapePolygon.push_back(GPSPoint(-w2, l2, 0,0));
+
+ 	m_CarShapePolygon.push_back(GPSPoint(-w2, -l2, 1,0));
+ 	m_CarShapePolygon.push_back(GPSPoint(w2, -l2, 1,0));
+ 	m_CarShapePolygon.push_back(GPSPoint(w2, l2, 1,0));
+ 	m_CarShapePolygon.push_back(GPSPoint(-w2, l2, 1,0));
+ }
+
+  void SimulatedCarState::FirstLocalizeMe(const WayPoint& initCarPos)
+  {
+ 	pLane = initCarPos.pLane;
+ 	state = initCarPos;
+ 	m_OdometryState.pos.a = initCarPos.pos.a;
+ 	m_OdometryState.pos.x = initCarPos.pos.x + (m_CarInfo.wheel_base/2.0 * cos(initCarPos.pos.a));
+ 	m_OdometryState.pos.y = initCarPos.pos.y + (m_CarInfo.wheel_base/2.0 * sin(initCarPos.pos.a));
+  }
+
+  void SimulatedCarState::LocalizeMe(const double& dt)
+ {
+ 	//calculate the new x, y ,
+ 	 WayPoint currPose = state;
+
+ 	if(m_CurrentShift == SHIFT_POS_DD)
+ 	{
+ 		m_OdometryState.pos.x	 +=  m_CurrentVelocity * dt * cos(currPose.pos.a);
+ 		m_OdometryState.pos.y	 +=  m_CurrentVelocity * dt * sin(currPose.pos.a);
+ 		m_OdometryState.pos.a	 +=  m_CurrentVelocity * dt * tan(m_CurrentSteering)  / m_CarInfo.wheel_base;
+
+ 	}
+ 	else if(m_CurrentShift == SHIFT_POS_RR )
+ 	{
+ 		m_OdometryState.pos.x	 +=  -m_CurrentVelocity * dt * cos(currPose.pos.a);
+ 		m_OdometryState.pos.y	 +=  -m_CurrentVelocity * dt * sin(currPose.pos.a);
+ 		m_OdometryState.pos.a	 +=  -m_CurrentVelocity * dt * tan(m_CurrentSteering);
+ 	}
+
+ 	m_OdometryState.pos.a = atan2(sin(m_OdometryState.pos.a), cos(m_OdometryState.pos.a));
+ 	m_OdometryState.pos.a = UtilityH::FixNegativeAngle(m_OdometryState.pos.a);
+
+ 	state.pos.a = m_OdometryState.pos.a;
+ 	state.pos.x = m_OdometryState.pos.x	 - (m_CurrentVelocity*dt* (m_CarInfo.wheel_base) * cos (m_OdometryState.pos.a));
+ 	state.pos.y = m_OdometryState.pos.y	 - (m_CurrentVelocity*dt* (m_CarInfo.wheel_base/2.0) * sin (m_OdometryState.pos.a));
+ }
+
+  double SimulatedCarState::GetMomentumScaleFactor(const double& v)
+  {
+  	if(v < 0.3)
+  		return 0.6;
+  	else if(v <6.4)
+  		return 0.3;
+  	else if(v < 20)
+  	{
+  		double m = 0.7/3.6;
+  		return m*(v - 6.4) + 0.3;
+  	}
+  	else
+  		return 1.0;
+  }
+
+  void SimulatedCarState::UpdateState(const bool& bUseDelay)
+   {
+ 	 m_CurrentSteering 	= m_CurrentSteeringD;
+ 	 m_CurrentShift 	= m_CurrentShiftD;
+ 	 m_CurrentVelocity = m_CurrentVelocityD;
+   }
+
+  void SimulatedCarState::CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::DetectedObject>& obj_list,
+ 		 const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map)
+  {
+
+  	PlannerHNS::Lane* pPathLane = MappingHelpers::GetLaneFromPath(state, m_Path);
+  	PlannerHNS::Lane* pMapLane  = MappingHelpers::GetClosestLaneFromMap(state, map, 3.0);
+
+  	if(pPathLane)
+  		pLane = pPathLane;
+  	else if(pMapLane)
+  		pLane = pMapLane;
+  	else
+  		pLane = 0;
+
+  	//cout << "Distances: " << pValues->stoppingDistances.size() << ", Distance To Stop : " << pValues->distanceToStop << endl;
+
+  }
+
+
+  PlannerHNS::BehaviorState SimulatedCarState::DoOneStepSimulated(const double& dt, const PlannerHNS::VehicleState& vehicleState, const PlannerHNS::WayPoint& currPose,
+  			const std::vector<PlannerHNS::DetectedObject>& obj_list, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map)
+  {
+ 	 SetSimulatedTargetOdometryReadings(vehicleState.speed, vehicleState.steer, vehicleState.shift);
+
+ 	UpdateState(false);
+ 	LocalizeMe(dt);
+ 	CalculateImportantParameterForDecisionMaking(obj_list, vehicleState, goal, map);
+
+ 	PlannerHNS::BehaviorState currentBehavior;
+
+ 	currentBehavior.state = PlannerHNS::FORWARD_STATE;
+ 	currentBehavior.followDistance = 0;
+ 	currentBehavior.maxVelocity 	= PlannerHNS::PlanningHelpers::GetVelocityAhead(m_Path, currPose, 1.5*vehicleState.speed*3.6);
+ 	currentBehavior.minVelocity		= 0;
+ 	currentBehavior.stopDistance 	= 0;
+ 	currentBehavior.followVelocity 	= 0;
+
+ 	return currentBehavior;
+  }
+
 } /* namespace SimulationNS */

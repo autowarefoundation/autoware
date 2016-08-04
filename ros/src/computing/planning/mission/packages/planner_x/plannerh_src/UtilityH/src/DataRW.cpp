@@ -17,6 +17,11 @@ using namespace std;
 namespace UtilityHNS
 {
 
+std::string DataRW::LoggingFolderPath = "/home/hatem/SimuLogs/";
+std::string DataRW::ControlLogFolderName = "ControlLog/";
+std::string DataRW::PathLogFolderName = "GeneratedTrajectories/";
+std::string DataRW::StatesLogFolderName = "BehaviorsGenerated/";
+
 DataRW::DataRW()
 {
 }
@@ -27,6 +32,9 @@ DataRW::~DataRW()
 
 void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData)
 {
+	if(logData.size() < 3)
+		return;
+
 	ostringstream fileName;
 	fileName << logFolder;
 	fileName << logTitle;

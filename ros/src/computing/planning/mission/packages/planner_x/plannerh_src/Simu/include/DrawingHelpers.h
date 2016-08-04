@@ -5,6 +5,8 @@
  *      Author: hatem
  */
 
+#ifndef DRAWINGHELPERS_H_
+#define DRAWINGHELPERS_H_
 
 #include "glm.h"
 #include "RoadNetwork.h"
@@ -49,3 +51,5 @@ public:
 
 } /* namespace Graphics */
 
+
+#endif

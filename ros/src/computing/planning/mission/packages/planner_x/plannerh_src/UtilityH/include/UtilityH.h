@@ -34,7 +34,7 @@ public:
 	static double SplitPositiveAngle(const double& a);
 	static double InverseAngle(const double& a);
 	static double AngleBetweenTwoAnglesPositive(const double& a1, const double& a2);
-	static double GetCircularAngle(const double& prevAngle, const double& currAngle);
+	static double GetCircularAngle(const double& prevContAngle, const double& prevAngle, const double& currAngle);
 
 	//Time Functions
 	static void GetTickCount(struct timespec& t);
@@ -54,14 +54,22 @@ public:
 	void Init(const double& kp, const double& ki, const double& kd);
 	void Setlimit(const double& upper,const double& lower);
 	double getPID(const double& currValue, const double& targetValue);
+	double getPID(const double& e);
 	void ResetD();
 	void ResetI();
+	std::string ToString();
+	std::string ToStringHeader();
 
 
 private:
 	double kp;
 	double ki;
 	double kd;
+	double kp_v;
+	double ki_v;
+	double kd_v;
+	double pid_v;
+	double pid_lim;
 	double upper_limit;
 	double lower_limit;
 	bool   bEnableLimit;
@@ -87,12 +95,12 @@ private:
 	int m;
 	double sampleF;
 	double cutOffF;
-	double *A  ;
-	double *d1 ;
-	double *d2 ;
-	double *w0 ;
-	double *w1 ;
-	double *w2 ;
+	double A  ;
+	double d1 ;
+	double d2 ;
+	double w0 ;
+	double w1 ;
+	double w2 ;
 
 };
 

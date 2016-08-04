@@ -27,6 +27,20 @@ PlanningHelpers::~PlanningHelpers()
 {
 }
 
+bool PlanningHelpers::CompareTrajectories(const std::vector<WayPoint>& path1, const std::vector<WayPoint>& path2)
+{
+	if(path1.size() != path2.size())
+		return false;
+
+	for(unsigned int i=0; i< path1.size(); i++)
+	{
+		if(path1.at(i).pos.x != path2.at(i).pos.x || path1.at(i).pos.y != path2.at(i).pos.y || path1.at(i).pos.alt != path2.at(i).pos.alt || path1.at(i).pos.lon != path2.at(i).pos.lon)
+			return false;
+	}
+
+	return true;
+}
+
 int PlanningHelpers::GetClosestPointIndex(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
 {
 	if(trajectory.size() == 0)
@@ -119,11 +133,19 @@ WayPoint PlanningHelpers::GetPerpendicularOnTrajectory(const vector<WayPoint>& t
 			p1 = trajectory[next_index+1];
 			p2 = trajectory[next_index+2];
 		}
-		else if(next_index > 0)
+		else if(next_index > 0 && next_index < trajectory.size()-1)
 		{
 			p0 = trajectory[next_index-1];
 			p1 = trajectory[next_index];
 			p2 = trajectory[next_index+1];
+		}
+		else
+		{
+			p0 = trajectory[next_index-1];
+			p2 = trajectory[next_index];
+
+			p1 = WayPoint((p0.pos.x+p2.pos.x)/2.0, (p0.pos.y+p2.pos.y)/2.0, (p0.pos.z+p2.pos.z)/2.0, p0.pos.a);
+
 		}
 	}
 
@@ -356,12 +378,12 @@ void PlanningHelpers::SmoothPath(vector<WayPoint>& path, double weight_data,
 
 double PlanningHelpers::CalcAngleAndCost(vector<WayPoint>& path, const double& lastCost, const bool& bSmooth)
 {
-	path[0].pos.a = atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x );
+	path[0].pos.a = UtilityH::FixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x ));
 	path[0].cost = lastCost;
 
 	for(unsigned int j = 1; j < path.size()-1; j++)
 	{
-		path[j].pos.a 		= atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x );
+		path[j].pos.a 		= UtilityH::FixNegativeAngle(atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x ));
 		path[j].cost 	= path[j-1].cost +  distance2points(path[j-1].pos, path[j].pos);
 	}
 	unsigned int j = path.size()-1;
@@ -379,9 +401,9 @@ double PlanningHelpers::CalcAngleAndCost(vector<WayPoint>& path, const double& l
 
 double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path, const double& lastCost, const bool& bSmooth)
 {
-	path[0].pos.a 		= atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x );
+	path[0].pos.a 	= atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x );
 	path[0].cost 	= lastCost;
-	path[0].pos.z		= 0;
+	path[0].pos.z	= 0;
 
 	double k = 0;
 	GPSPoint center;
@@ -395,10 +417,10 @@ double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path
 		if(k<1)
 			path[j].cost = 0;
 		else
-			path[j].cost 	= 1.0/k;
+			path[j].cost 	= (1.0 - 1.0/k)*10.0;
 
-		path[j].pos.a 		= atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x );
-		path[j].cost 	= path[j-1].cost + distance2points(path[j-1].pos, path[j].pos);
+		path[j].pos.a 	= atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x );
+		//path[j].cost 	= path[j-1].cost + distance2points(path[j-1].pos, path[j].pos);
 		path[j].pos.z 	= 0;
 	}
 	unsigned int j = path.size()-1;
@@ -406,13 +428,13 @@ double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path
 	path[0].cost    = path[1].cost;
 	path[j].cost 	= path[j-1].cost;
 	path[j].pos.a 	= path[j-1].pos.a;
-	path[j].cost 	= path[j-1].cost + distance2points(path[j-1].pos, path[j].pos);
+	path[j].cost 	= path[j-1].cost ;//+ distance2points(path[j-1].pos, path[j].pos);
 	path[j].pos.z 	= 0;
 
 	if(bSmooth)
 	{
 //		SmoothWayPointsDirections(path, 0.05, 0.45, 0.01);
-//		SmoothCurvatureProfiles(path, 0.05, 0.45, 0.01);
+		SmoothCurvatureProfiles(path, 0.3, 0.4, 0.01);
 	}
 
 	return path[j].cost;
@@ -827,75 +849,33 @@ void PlanningHelpers::SmoothWayPointsDirections(vector<WayPoint>& path_in, doubl
 
 void PlanningHelpers::GenerateRecommendedSpeed(vector<WayPoint>& path, const double& max_speed, const double& speedProfileFactor)
 {
-	vector<WayPoint> totalPath, tempPath;
-	unsigned int latestIndex = 0;
-	double latestDistance = 0;
-
 	CalcAngleAndCostAndCurvatureAnd2D(path);
-	//process every 150 meters
-	while(latestIndex < path.size())
+
+	for(unsigned int i = 0 ; i < path.size(); i++)
 	{
-		tempPath.clear();
+		double k_ratio = path.at(i).cost;
 
-		for(;latestIndex < path.size(); latestIndex++)
-		{
-			if((path.at(latestIndex).cost - latestDistance) >= 150)
-			{
-				latestDistance = path.at(latestIndex).cost;
-				break;
-			}
-			tempPath.push_back(path.at(latestIndex));
-		}
+		if(k_ratio <= 8)
+			path.at(i).v = 1.0;
+		else if(k_ratio <= 8.5)
+			path.at(i).v = 1.5;
+		else if(k_ratio <= 9)
+			path.at(i).v = 2.0;
+		else if(k_ratio <= 9.2)
+			path.at(i).v = 3.0;
+		else if(k_ratio <= 9.4)
+			path.at(i).v = 4.0;
+		else if(k_ratio < 9.6)
+			path.at(i).v = 7.0;
+		else if(k_ratio < 9.8)
+			path.at(i).v = 10.0;
+		else if(k_ratio < 9.9)
+			path.at(i).v = 13.0;
 
-		double prev_a = tempPath.at(0).pos.a;
-		double a = prev_a;
+		if(path.at(i).v >= max_speed)
+			path.at(i).v = max_speed;
 
-		for(unsigned int i = 1 ; i < tempPath.size(); i++)
-		{
-			a  = UtilityH::GetCircularAngle(tempPath.at(i-1).pos.a, tempPath.at(i).pos.a);
-
-			double diff = (a - prev_a)*speedProfileFactor;
-			if(speedProfileFactor == 0)
-				tempPath.at(i).v = max_speed;
-			else if(abs(diff) > 1.0 && max_speed > 2) // hard turn , speed = 3.0 m/s
-				tempPath.at(i).v = 2.0;
-			else if(abs(diff) > 0.9 && max_speed > 3) // hard turn , speed = 3.0 m/s
-				tempPath.at(i).v = 3.0;
-			else if(abs(diff) > 0.8 && max_speed > 4) // hard turn , speed = 3.0 m/s
-				tempPath.at(i).v = 4.0;
-			else if(abs(diff) > 0.7 && max_speed > 5) // hard turn , speed = 3.0 m/s
-				tempPath.at(i).v = 5.0;
-			else if(abs(diff) > 0.6 && max_speed > 6) // hard turn , speed = 3.0 m/s
-				tempPath.at(i).v = 6.0;
-			else if(abs(diff) > 0.5 && max_speed > 7) // hard turn , speed = 3.0 m/s
-				tempPath.at(i).v = 7.0;
-			else if(abs(diff) > 0.4 && max_speed > 8) // medium turn , speed = 6.0 m/s
-				tempPath.at(i).v = 8.0;
-			else if(abs(diff) > 0.3 && max_speed > 9) // medium turn , speed = 6.0 m/s
-				tempPath.at(i).v = 9.0;
-			else if(abs(diff) > 0.2 && max_speed > 10) // medium turn , speed = 6.0 m/s
-				tempPath.at(i).v = 10.0;
-//			else if(abs(diff) > 0.25) // light turn , speed = 6.0 m/s
-//				tempPath.at(i).vteer = 8.0;
-			else // max
-				tempPath.at(i).v = max_speed;
-
-			//tempPath.at(i).vteer = abs(diff);
-			//tempPath.at(i).vteer = tempPath.at(i).v / (tempPath.at(i).cost - tempPath.at(i-1).cost);
-			if(i==1)
-			{
-				//tempPath.at(i-1).steer = tempPath.at(i).steer;
-				//tempPath.at(i-1).a = tempPath.at(i).a;
-				tempPath.at(i-1).v = tempPath.at(i).v;
-			}
-
-			prev_a = a;
-		}
-
-		totalPath.insert(totalPath.end(), tempPath.begin(), tempPath.end());
 	}
-
-	path = totalPath;
 }
 
 //WayPoint* PlanningHelpers::BuildPlanningSearchTree(Lane* l, const WayPoint& prevWayPointIndex,
@@ -1114,7 +1094,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 
 			for(unsigned int i =0; i< pH->pFronts.size(); i++)
 			{
-				if(CheckLaneIdExits(globalPath, pH->pLane) && pH->pFronts.at(i))
+				if(CheckLaneIdExits(globalPath, pH->pLane) && pH->pFronts.at(i) && !CheckNodeExits(all_cells_to_delete, pH->pFronts.at(i)))
 				{
 
 					wp = new WayPoint();
@@ -1124,24 +1104,6 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 					distance += cost;
 					cost += pH->cost;
 
-
-//					ACTION_TYPE t = GetBranchingDirection(*pH, *wp);
-//
-//
-//					if(pH->pFronts.size()==1)
-//						wp->actionCost.push_back(make_pair(FORWARD_ACTION, cost));
-//					else if(t == RIGHT_TURN_ACTION)
-//					{
-//						cost += 1;
-//						wp->actionCost.push_back(make_pair(t, cost));
-//					}
-//					else if(t == LEFT_TURN_ACTION)
-//					{
-//						cost += 1;
-//						wp->actionCost.push_back(make_pair(t, cost));
-//					}
-//					else
-//						wp->actionCost.push_back(make_pair(t, cost));
 					for(unsigned int a = 0; a < wp->actionCost.size(); a++)
 						cost += wp->actionCost.at(a).second;
 
@@ -1282,8 +1244,8 @@ WayPoint* PlanningHelpers::GetMinCostCell(const vector<WayPoint*>& cells, const 
 {
 	if(cells.size() == 1)
 	{
-		for(unsigned int j = 0; j < cells.at(0)->actionCost.size(); j++)
-			cout << "Cost (" << cells.at(0)->laneId << ") of going : " << cells.at(0)->actionCost.at(j).first << ", is : " << cells.at(0)->actionCost.at(j).second << endl;
+//		for(unsigned int j = 0; j < cells.at(0)->actionCost.size(); j++)
+//			cout << "Cost (" << cells.at(0)->laneId << ") of going : " << cells.at(0)->actionCost.at(j).first << ", is : " << cells.at(0)->actionCost.at(j).second << endl;
 		return cells.at(0);
 	}
 
@@ -1304,8 +1266,8 @@ WayPoint* PlanningHelpers::GetMinCostCell(const vector<WayPoint*>& cells, const 
 			}
 		}
 
-		for(unsigned int j = 0; j < cells.at(0)->actionCost.size(); j++)
-			cout << "Cost ("<< i <<") of going : " << cells.at(0)->actionCost.at(j).first << ", is : " << cells.at(0)->actionCost.at(j).second << endl;
+//		for(unsigned int j = 0; j < cells.at(0)->actionCost.size(); j++)
+//			cout << "Cost ("<< i <<") of going : " << cells.at(0)->actionCost.at(j).first << ", is : " << cells.at(0)->actionCost.at(j).second << endl;
 
 
 		if(cells.at(i)->cost < pC->cost && bFound == true)
@@ -1366,33 +1328,33 @@ ACTION_TYPE PlanningHelpers::GetBranchingDirection(WayPoint& currWP, WayPoint& n
 {
 	ACTION_TYPE t = FORWARD_ACTION;
 
-	//first Get the average of the next 3 waypoint directions
-	double angle = 0;
-	if(nextWP.pLane->id == 487)
-		angle = 11;
-
-	int counter = 0;
-	angle = 0;
-
-	for(unsigned int i=0; i < nextWP.pLane->points.size() && counter < 10; i++, counter++)
-	{
-		angle += nextWP.pLane->points.at(i).pos.a;
-	}
-	angle = angle / counter;
-
-	//Get Circular angle for correct subtraction
-	double circle_angle = UtilityH::GetCircularAngle(currWP.pos.a, angle);
-
-	if( currWP.pos.a - circle_angle > (7.5*DEG2RAD))
-	{
-		t = RIGHT_TURN_ACTION;
-		cout << "Right Lane, Average Angle = " << angle*RAD2DEG << ", Circle Angle = " << circle_angle*RAD2DEG << ", currAngle = " << currWP.pos.a*RAD2DEG << endl;
-	}
-	else if( currWP.pos.a - circle_angle < (-7.5*DEG2RAD))
-	{
-		t = LEFT_TURN_ACTION;
-		cout << "Left Lane, Average Angle = " << angle*RAD2DEG << ", Circle Angle = " << circle_angle*RAD2DEG << ", currAngle = " << currWP.pos.a*RAD2DEG << endl;
-	}
+//	//first Get the average of the next 3 waypoint directions
+//	double angle = 0;
+//	if(nextWP.pLane->id == 487)
+//		angle = 11;
+//
+//	int counter = 0;
+//	angle = 0;
+//
+//	for(unsigned int i=0; i < nextWP.pLane->points.size() && counter < 10; i++, counter++)
+//	{
+//		angle += nextWP.pLane->points.at(i).pos.a;
+//	}
+//	angle = angle / counter;
+//
+//	//Get Circular angle for correct subtraction
+//	double circle_angle = UtilityH::GetCircularAngle(currWP.pos.a, angle);
+//
+//	if( currWP.pos.a - circle_angle > (7.5*DEG2RAD))
+//	{
+//		t = RIGHT_TURN_ACTION;
+//		cout << "Right Lane, Average Angle = " << angle*RAD2DEG << ", Circle Angle = " << circle_angle*RAD2DEG << ", currAngle = " << currWP.pos.a*RAD2DEG << endl;
+//	}
+//	else if( currWP.pos.a - circle_angle < (-7.5*DEG2RAD))
+//	{
+//		t = LEFT_TURN_ACTION;
+//		cout << "Left Lane, Average Angle = " << angle*RAD2DEG << ", Circle Angle = " << circle_angle*RAD2DEG << ", currAngle = " << currWP.pos.a*RAD2DEG << endl;
+//	}
 
 	return t;
 }
@@ -1649,6 +1611,42 @@ void PlanningHelpers::ObstacleDetectionStep(const WayPoint& currPose,const std::
 //	m_DetectedObjectsList = res_list;
 //	pthread_mutex_unlock(&detected_objects_mutex);
 
+}
+
+double PlanningHelpers::GetVelocityAhead(const std::vector<WayPoint>& path, const WayPoint& pose, const double& distance)
+{
+	int iStart = GetClosestNextPointIndex(path, pose);
+
+	double d = 0;
+	double min_v = 99999;
+	for(unsigned int i=iStart; i< path.size(); i++)
+	{
+		d  += distance2points(path.at(i).pos, pose.pos);
+
+		if(path.at(i).v < min_v)
+			min_v = path.at(i).v;
+
+		if(d >= distance)
+			return min_v;
+	}
+	return 0;
+}
+
+void PlanningHelpers::WritePathToFile(const string& fileName, const vector<WayPoint>& path)
+{
+	DataRW  dataFile;
+	ostringstream str_header;
+	str_header << "laneID" << "," << "wpID"  << "," "x" << "," << "y" << "," << "a"<<","<< "cost" << "," << "Speed" << "," ;
+	vector<string> dataList;
+	 for(unsigned int i=0; i<path.size(); i++)
+	 {
+		 ostringstream strwp;
+		 strwp << path.at(i).laneId << "," << path.at(i).id <<","<<path.at(i).pos.x<<","<< path.at(i).pos.y
+				 <<","<< path.at(i).pos.a << "," << path.at(i).cost << "," << path.at(i).v << ",";
+		 dataList.push_back(strwp.str());
+	 }
+
+	 dataFile.WriteLogData("", fileName, str_header.str(), dataList);
 }
 
 } /* namespace PlannerHNS */
