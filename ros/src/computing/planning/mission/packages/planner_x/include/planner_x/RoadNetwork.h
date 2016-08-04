@@ -609,7 +609,7 @@ public:
 		carTipMargin					= 8.0;
 		rollInMargin					= 20.0;
 		rollInSpeedFactor				= 0.25;
-		pathDensity						= 0.5;
+		pathDensity						= 0.25;
 		rollOutDensity					= 0.7;
 		rollOutNumber					= 6;
 		marginDistanceFromTrajectory	= 2.0;
@@ -617,7 +617,7 @@ public:
 		minFollowingDistance			= 35;
 		maxFollowingDistance			= 40;
 		minDistanceToAvoid				= 10;
-		speedProfileFactor				= 25.0;
+		speedProfileFactor				= 1.5;
 		curvatureCalculationPoints		= 1;
 		smoothingDataWeight				= 0.35;
 		smoothingSmoothWeight			= 0.3;

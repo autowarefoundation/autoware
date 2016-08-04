@@ -13,6 +13,8 @@
 #include "RoadNetwork.h"
 #include "CarState.h"
 #include "DrawingHelpers.h"
+#include "TrajectoryFollower.h"
+#include "SimulatedTrajectoryFollower.h"
 
 namespace Graphics
 {
@@ -36,6 +38,7 @@ public:
 
 	 static void* PlanningThreadStaticEntryPoint(void* pThis);
 	 static void* ControlThreadStaticEntryPoint(void* pThis);
+	 static void* SimulationThreadStaticEntryPoint(void* pThis);
 
 
 	 void InitStartAndGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2);
@@ -46,15 +49,15 @@ public:
 	PlannerHNS::GridMap* m_pMap;
 	PlannerHNS::WayPoint m_goal;
 	PlannerHNS::WayPoint m_start;
-	bool 				 m_bNewPath;
 	bool				 m_bMakeNewPlan;
 
 	pthread_mutex_t planning_mutex;
-	pthread_mutex_t behaviors_mutex;
 	pthread_mutex_t control_mutex;
+	pthread_mutex_t simulation_mutex;
 
 	pthread_t planning_thread_tid;
 	pthread_t control_thread_tid;
+	pthread_t simulation_thread_tid;
 	bool m_bCancelThread;
 
 	double m_PlanningCycleTime;
@@ -70,7 +73,11 @@ public:
 	GLMmodel* m_CarModel;
 	std::vector<PlannerHNS::WayPoint> m_ActualPath;
 	std::vector<PlannerHNS::DetectedObject> m_dummyObstacles;
-	std::vector<SimulationNS::CarState> m_SimulatedCars;
+	std::vector<SimulationNS::SimulatedCarState> m_SimulatedCars;
+	std::vector<PlannerHNS::BehaviorState> m_SimulatedBehaviors;
+	std::vector<PlannerHNS::VehicleState>  m_SimulatedVehicleState;
+	std::vector<std::vector<PlannerHNS::WayPoint> > m_SimulatedPrevTrajectory;
+	std::vector<SimulationNS::SimulatedTrajectoryFollower> m_SimulatedPathFollower;
 
 private:
 	void PrepareVectorMapForDrawing();

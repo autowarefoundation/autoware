@@ -7,7 +7,8 @@
 
 #include "CommonSimuDefinitions.h"
 
-namespace SimulationNS {
+namespace SimulationNS
+{
 
 
 } /* namespace SimulationNS */

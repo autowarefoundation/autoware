@@ -291,7 +291,7 @@ void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_
 	int size = path_points.size();
 	WayPoint prev_point = p1;
 
-	for(int i=1; i < size; i++)
+	for(int i=1; i < size; i+=2)
 	{
 		p2 = path_points[i];
 		localColor[0] = color[0] * (float)(i+20)*3/(float)size;
