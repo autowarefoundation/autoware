@@ -37,6 +37,7 @@ else
     ROS_MASTER_URI=http://\$FROM_IP:11311
     [ "$REMOTE_DISPLAY" != "-" ] && DISPLAY=$REMOTE_DISPLAY
     export ROS_IP ROS_MASTER_URI DISPLAY
+    export GNOME_DESKTOP_SESSION_ID="this-is-deprecated"
     rosrun rviz rviz
     #xeyes
 EOF
