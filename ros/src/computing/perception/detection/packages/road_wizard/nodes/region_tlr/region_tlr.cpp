@@ -19,6 +19,7 @@ thresholdSet thSet;
 static ros::Publisher signalState_pub;
 static ros::Publisher signalStateString_pub;
 static ros::Publisher marker_pub;
+static ros::Publisher superimpose_image_pub;
 static constexpr int32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool    ADVERTISE_LATCH      = true;
 static uint32_t          shape                = visualization_msgs::Marker::SPHERE;
@@ -134,21 +135,30 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
   //  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source);
   frame = cv_image->image.clone();
 
+  /* Draw superimpose result on image */
+  cv::Mat targetScope = frame.clone();
+  for (unsigned int i=0; i<detector.contexts.size(); i++)
+    {
+      /* draw superimposed position of traffic lights */
+      circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
+      circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
+      circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
+    }
+
+  /* draw detection results */
+  putResult_inText(&targetScope, detector.contexts);
+
+
+  /* Publish superimpose result image */
+  cv_bridge::CvImage msg_converter;
+  msg_converter.header = image_source.header;
+  msg_converter.encoding = sensor_msgs::image_encodings::BGR8;
+  msg_converter.image = targetScope;
+  superimpose_image_pub.publish(msg_converter.toImageMsg());
+
+  /* Display superimpose result image in separate window*/
   if (show_superimpose_result)
     {
-      /* display superimpose result */
-      cv::Mat targetScope = frame.clone();
-      for (unsigned int i=0; i<detector.contexts.size(); i++)
-        {
-          /* draw superimposed position of traffic lights */
-          circle(targetScope, detector.contexts.at(i).redCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 0, 0), 1, 0);
-          circle(targetScope, detector.contexts.at(i).yellowCenter, detector.contexts.at(i).lampRadius, CV_RGB(255, 255, 0), 1, 0);
-          circle(targetScope, detector.contexts.at(i).greenCenter, detector.contexts.at(i).lampRadius, CV_RGB(0, 255, 0), 1, 0);
-        }
-
-      /* draw detection results */
-      putResult_inText(&targetScope, detector.contexts);
-
       if (cvGetWindowHandle(window_name.c_str()) != NULL) // Guard not to write destroyed window by using close button on the window
         {
           imshow(window_name, targetScope);
@@ -415,6 +425,7 @@ int main(int argc, char* argv[]) {
   signalState_pub       = n.advertise<runtime_manager::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
   marker_pub            = n.advertise<visualization_msgs::MarkerArray>("tlr_result", ADVERTISE_QUEUE_SIZE);
+  superimpose_image_pub= n.advertise<sensor_msgs::Image>("tlr_superimpose_image", ADVERTISE_QUEUE_SIZE);
 
   ros::spin();
 
