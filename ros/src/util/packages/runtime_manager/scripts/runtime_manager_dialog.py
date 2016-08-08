@@ -101,7 +101,6 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
-		self.all_procs_nodes = {}
 		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
@@ -2104,7 +2103,6 @@ class MyFrame(rtmgr.MyFrame):
 
 			proc = psutil.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
 			self.all_procs.append(proc)
-			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 
 			if f == self.log_th:
 				thinf = th_start(f, {'file':proc.stdout, 'que':self.log_que_stdout})
@@ -2126,7 +2124,6 @@ class MyFrame(rtmgr.MyFrame):
 			proc.wait()
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
-				self.all_procs_nodes.pop(proc, None)
 			proc = None
 
 		return proc
