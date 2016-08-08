@@ -1764,10 +1764,6 @@ class MyFrame(rtmgr.MyFrame):
 		#print 'add_args', add_args
 		if add_args is False:
 			return
-		if self.is_boot(obj):
-			wx.MessageBox('Already, booted')
-			return
-
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
 			return
@@ -2035,10 +2031,6 @@ class MyFrame(rtmgr.MyFrame):
 			print('not implemented.')
 			return
 		v = obj.GetValue()
-		if v and self.is_boot(obj):
-			wx.MessageBox('Already, booted')
-			set_val(obj, not v)
-			return
 
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
@@ -2138,14 +2130,6 @@ class MyFrame(rtmgr.MyFrame):
 			proc = None
 
 		return proc
-
-	def is_boot(self, obj):
-		nodes = self.nodes_dic.get(obj)
-		if nodes is None:
-			return False
-		boot_nodes = reduce(lambda a,b:a+b, [[]] + self.all_procs_nodes.values())
-		boot_nodes_set = set(boot_nodes)
-		return nodes and boot_nodes_set.issuperset(nodes)
 
 	def nodes_dic_get(self):
 		print 'creating item node list ',
