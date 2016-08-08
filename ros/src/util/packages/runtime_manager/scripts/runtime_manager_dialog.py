@@ -1027,26 +1027,6 @@ class MyFrame(rtmgr.MyFrame):
 			print(cmd)
 			subprocess.call(cmd)
 
-	def OnRefresh(self, event):
-		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
-		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
-		run_nodes_set = set(run_nodes)
-		targ_objs = self.computing_cmd.keys() + self.data_cmd.keys()
-		for (obj, nodes) in self.nodes_dic.items():
-			if obj not in targ_objs:
-				continue
-			if getattr(obj, 'GetValue', None) is None:
-				continue
-			if nodes is None or nodes == []:
-				continue
-			#v = nodes and run_nodes_set.issuperset(nodes)
-			v = len(run_nodes_set.intersection(nodes)) != 0
-			if obj.GetValue() != v:
-				if obj.IsEnabled() and not v:
-					self.kill_obj(obj)
-				set_val(obj, v)
-				obj.Enable(not v)
-
 	#
 	# Viewer Tab
 	#
