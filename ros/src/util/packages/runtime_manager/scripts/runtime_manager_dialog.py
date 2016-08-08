@@ -1152,7 +1152,7 @@ class MyFrame(rtmgr.MyFrame):
 		cam_id_obj = self.cfg_prm_to_obj( {'name':cam_id} )
 		if cam_id_obj is None:
 			cam_id_obj = StrValObj(cam_id, v)
-		cam_id_obj.v = v
+		cam_id_obj.SetValue(v)
 		return cam_id_obj
 
 	def camera_id_hook(self, args):
@@ -2934,6 +2934,8 @@ class StrValObj:
 		self.v = v
 	def GetValue(self):
 		return self.v
+	def SetValue(self, v):
+		self.v = v
 
 class MyApp(wx.App):
 	def OnInit(self):
