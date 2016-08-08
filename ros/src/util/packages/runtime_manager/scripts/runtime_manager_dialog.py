@@ -101,7 +101,6 @@ class MyFrame(rtmgr.MyFrame):
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
-		self.all_procs_nodes = {}
 		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
@@ -395,8 +394,6 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for All
 		#
-		self.nodes_dic = self.nodes_dic_get()
-
 		self.bitmap_logo.Destroy()
 		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'autoware_logo_1.png'), 0.2)
 		self.bitmap_logo = wx.StaticBitmap(self, wx.ID_ANY, bm)
@@ -1027,26 +1024,6 @@ class MyFrame(rtmgr.MyFrame):
 			print(cmd)
 			subprocess.call(cmd)
 
-	def OnRefresh(self, event):
-		subprocess.call([ 'sh', '-c', 'echo y | rosnode cleanup' ])
-		run_nodes = subprocess.check_output([ 'rosnode', 'list' ]).strip().split('\n')
-		run_nodes_set = set(run_nodes)
-		targ_objs = self.computing_cmd.keys() + self.data_cmd.keys()
-		for (obj, nodes) in self.nodes_dic.items():
-			if obj not in targ_objs:
-				continue
-			if getattr(obj, 'GetValue', None) is None:
-				continue
-			if nodes is None or nodes == []:
-				continue
-			#v = nodes and run_nodes_set.issuperset(nodes)
-			v = len(run_nodes_set.intersection(nodes)) != 0
-			if obj.GetValue() != v:
-				if obj.IsEnabled() and not v:
-					self.kill_obj(obj)
-				set_val(obj, v)
-				obj.Enable(not v)
-
 	#
 	# Viewer Tab
 	#
@@ -1457,17 +1434,6 @@ class MyFrame(rtmgr.MyFrame):
 				wx.CallAfter(self.set_bg_all_tabs, col)
 				time.sleep(0.05)
 
-	# ps command thread
-	#def ps_cmd_th(self, ev, interval):
-	#	nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
-	#	while not ev.wait(interval):
-	#		lb = ''
-	#		for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
-	#			if ('/' + s.split('/')[-1]) in nodes:
-	#				lb += s + '\n'
-	#		wx.CallAfter(self.label_node_time.SetLabel, lb)
-	#		wx.CallAfter(self.label_node_time.GetParent().FitInside)
-
 	def log_th(self, file, que, ev):
 		while not ev.wait(0):
 			s = file.readline()
@@ -1784,10 +1750,6 @@ class MyFrame(rtmgr.MyFrame):
 		#print 'add_args', add_args
 		if add_args is False:
 			return
-		if self.is_boot(obj):
-			wx.MessageBox('Already, booted')
-			return
-
 		key = self.obj_key_get(obj, ['button_launch_'])
 		if not key:
 			return
@@ -2055,10 +2017,6 @@ class MyFrame(rtmgr.MyFrame):
 			print('not implemented.')
 			return
 		v = obj.GetValue()
-		if v and self.is_boot(obj):
-			wx.MessageBox('Already, booted')
-			set_val(obj, not v)
-			return
 
 		(cmd, proc) = cmd_dic[obj]
 		if not cmd:
@@ -2132,7 +2090,6 @@ class MyFrame(rtmgr.MyFrame):
 
 			proc = psutil.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
 			self.all_procs.append(proc)
-			self.all_procs_nodes[ proc ] = self.nodes_dic.get(obj, [])
 
 			if f == self.log_th:
 				thinf = th_start(f, {'file':proc.stdout, 'que':self.log_que_stdout})
@@ -2154,48 +2111,9 @@ class MyFrame(rtmgr.MyFrame):
 			proc.wait()
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
-				self.all_procs_nodes.pop(proc, None)
 			proc = None
 
 		return proc
-
-	def is_boot(self, obj):
-		nodes = self.nodes_dic.get(obj)
-		if nodes is None:
-			return False
-		boot_nodes = reduce(lambda a,b:a+b, [[]] + self.all_procs_nodes.values())
-		boot_nodes_set = set(boot_nodes)
-		return nodes and boot_nodes_set.issuperset(nodes)
-
-	def nodes_dic_get(self):
-		print 'creating item node list ',
-		nodes_dic = {}
-		for cmd_dic in self.all_cmd_dics:
-			sys.stdout.write('.')
-			sys.stdout.flush()
-			for (obj, (cmd, _)) in cmd_dic.items():
-				if not cmd:
-					continue
-				nodes = []
-				cmd = shlex.split(cmd)
-				cmd2 = cmd
-				if cmd[0] == 'sh' and cmd[1] == '-c':
-					cmd2 = cmd[2].split(' ') + cmd[3:] # split ' '
-				if cmd2[0] == 'roslaunch':
-					add_args = self.obj_to_add_args(obj, msg_box=False)
-					if add_args is False:
-						continue
-					if add_args:
-						cmd2 += add_args
-					cmd2.insert(1, '--node')
-					if cmd[0] == 'sh' and cmd[1] == '-c':
-						cmd[2] = ' '.join(cmd2)
-					nodes = self.roslaunch_to_nodes(cmd)
-				elif cmd2[0] == 'rosrun':
-					nodes = [ '/' + cmd2[2] ]
-				nodes_dic[ obj ] = nodes
-		print ''
-		return nodes_dic
 
 	def roslaunch_to_nodes(self, cmd):
 		try:
