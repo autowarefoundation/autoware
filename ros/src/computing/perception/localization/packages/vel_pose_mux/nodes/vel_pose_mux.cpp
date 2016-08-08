@@ -103,8 +103,6 @@ void callbackFromCanInfoAndPublishAsTwistStamped(const vehicle_socket::CanInfoCo
   std_msgs::Float32 fl;
   fl.data = msg->speed;
   pub_float->publish(fl);
-
-
 }
 
 void callbackFromPoseStampedAndPublish(const geometry_msgs::PoseStampedConstPtr &msg, ros::Publisher *pub_message)
@@ -112,7 +110,8 @@ void callbackFromPoseStampedAndPublish(const geometry_msgs::PoseStampedConstPtr 
   pub_message->publish(*msg);
 }
 
-void callbackFromTwistStampedAndPublish(const geometry_msgs::TwistStampedConstPtr &msg, ros::Publisher *pub_twist_stamped, ros::Publisher *pub_float)
+void callbackFromTwistStampedAndPublish(const geometry_msgs::TwistStampedConstPtr &msg,
+                                        ros::Publisher *pub_twist_stamped, ros::Publisher *pub_float)
 {
   pub_twist_stamped->publish(*msg);
 
@@ -168,7 +167,7 @@ int main(int argc, char **argv)
   // publish topic
   ros::Publisher vel_publisher = nh.advertise<geometry_msgs::TwistStamped>("current_velocity", 10);
   ros::Publisher pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("current_pose", 10);
-  ros::Publisher linear_viz_publisher = nh.advertise<std_msgs::Float32>("linear_velocity_viz",10);
+  ros::Publisher linear_viz_publisher = nh.advertise<std_msgs::Float32>("linear_velocity_viz", 10);
 
   // subscribe topic
   ros::Subscriber pose_subcscriber;
@@ -177,7 +176,8 @@ int main(int argc, char **argv)
   if (sim_mode)
   {
     vel_subcscriber = nh.subscribe<geometry_msgs::TwistStamped>(
-        "sim_velocity", 10, boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
+        "sim_velocity", 10,
+        boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
     pose_subcscriber = nh.subscribe<geometry_msgs::PoseStamped>(
         "sim_pose", 10, boost::bind(vel_pose_mux::callbackFromPoseStampedAndPublish, _1, &pose_publisher));
   }
@@ -208,7 +208,8 @@ int main(int argc, char **argv)
       case 0:  // ndt_localizer
       {
         vel_subcscriber = nh.subscribe<geometry_msgs::TwistStamped>(
-            "estimate_twist", 10, boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
+            "estimate_twist", 10,
+            boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
         break;
       }
       case 1:  // CAN
