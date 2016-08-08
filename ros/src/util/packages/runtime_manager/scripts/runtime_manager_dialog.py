@@ -394,8 +394,6 @@ class MyFrame(rtmgr.MyFrame):
 		#
 		# for All
 		#
-		self.nodes_dic = self.nodes_dic_get()
-
 		self.bitmap_logo.Destroy()
 		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'autoware_logo_1.png'), 0.2)
 		self.bitmap_logo = wx.StaticBitmap(self, wx.ID_ANY, bm)
@@ -1436,17 +1434,6 @@ class MyFrame(rtmgr.MyFrame):
 				wx.CallAfter(self.set_bg_all_tabs, col)
 				time.sleep(0.05)
 
-	# ps command thread
-	#def ps_cmd_th(self, ev, interval):
-	#	nodes = reduce(lambda a,b:a+b, [[]] + self.nodes_dic.values())
-	#	while not ev.wait(interval):
-	#		lb = ''
-	#		for s in subprocess.check_output(['ps', '-eo' 'etime,args']).strip().split('\n')[1:]:
-	#			if ('/' + s.split('/')[-1]) in nodes:
-	#				lb += s + '\n'
-	#		wx.CallAfter(self.label_node_time.SetLabel, lb)
-	#		wx.CallAfter(self.label_node_time.GetParent().FitInside)
-
 	def log_th(self, file, que, ev):
 		while not ev.wait(0):
 			s = file.readline()
@@ -2127,36 +2114,6 @@ class MyFrame(rtmgr.MyFrame):
 			proc = None
 
 		return proc
-
-	def nodes_dic_get(self):
-		print 'creating item node list ',
-		nodes_dic = {}
-		for cmd_dic in self.all_cmd_dics:
-			sys.stdout.write('.')
-			sys.stdout.flush()
-			for (obj, (cmd, _)) in cmd_dic.items():
-				if not cmd:
-					continue
-				nodes = []
-				cmd = shlex.split(cmd)
-				cmd2 = cmd
-				if cmd[0] == 'sh' and cmd[1] == '-c':
-					cmd2 = cmd[2].split(' ') + cmd[3:] # split ' '
-				if cmd2[0] == 'roslaunch':
-					add_args = self.obj_to_add_args(obj, msg_box=False)
-					if add_args is False:
-						continue
-					if add_args:
-						cmd2 += add_args
-					cmd2.insert(1, '--node')
-					if cmd[0] == 'sh' and cmd[1] == '-c':
-						cmd[2] = ' '.join(cmd2)
-					nodes = self.roslaunch_to_nodes(cmd)
-				elif cmd2[0] == 'rosrun':
-					nodes = [ '/' + cmd2[2] ]
-				nodes_dic[ obj ] = nodes
-		print ''
-		return nodes_dic
 
 	def roslaunch_to_nodes(self, cmd):
 		try:
