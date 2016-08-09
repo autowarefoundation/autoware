@@ -580,18 +580,8 @@ class MyFrame(rtmgr.MyFrame):
 			else:
 				self.add_cfg_info(obj, obj, k, None, gdic, False, None)
 
-	#def OnDrive(self, event):
-	#	obj = event.GetEventObject()
-	#	v = obj.GetValue()
-	#	pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
-	#	pub.publish(mode_cmd(mode=v))
-
 	def OnTextRoute(self, event):
 		pass
-
-	#def OnLoadMap(self, event):
-	#	obj = event.GetEventObject()
-	#	self.OnSelector_obj(obj)
 
 	def OnGear(self, event):
 		grp = { self.button_statchk_d : 1,
@@ -735,9 +725,6 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnChecked_obj(self, obj):
 		self.OnLaunchKill_obj(obj)
-
-	#def OnTreeHyperlinked(self, event):
-	#	self.OnHyperlinked_obj(event.GetItem())
 
 	def OnHyperlinked(self, event):
 		self.OnHyperlinked_obj(event.GetEventObject())
@@ -1026,69 +1013,10 @@ class MyFrame(rtmgr.MyFrame):
 			subprocess.call(cmd)
 
 	#
-	# Viewer Tab
-	#
-	#def create_viewer_btns(self, parent, sizer, lst):
-	#	for dic in lst:
-	#		lb = dic.get('label')
-	#		prop = 0
-	#		flag = wx.ALL | wx.EXPAND
-	#		border = 4
-	#		if 'subs' in dic:
-	#			if lb:
-	#				obj = static_box_sizer(parent, lb)
-	#			else:
-	#				obj = wx.BoxSizer(wx.VERTICAL)
-	#			self.create_viewer_btns(parent, obj, dic['subs'])
-	#		else:
-	#			obj = wx.ToggleButton(parent, wx.ID_ANY, lb)
-	#			self.Bind(wx.EVT_TOGGLEBUTTON, self.OnViewer, obj)
-	#			self.viewer_cmd[obj] = (dic['cmd'], None)
-	#
-	#		if sizer is self.sizer_viewer:
-	#			prop = 1
-	#			flag = wx.ALL | wx.ALIGN_CENTER_VERTICAL
-	#		sizer.Add(obj, prop, flag, border)
-
-	#def OnViewer(self, event):
-	#	self.launch_kill_proc(event.GetEventObject(), self.viewer_cmd)
-
-	#
 	# Sensing Tab
 	#
 	def OnSensingDriver(self, event):
 		self.OnChecked_obj(event.GetEventObject())
-
-	#def OnAutoProbe(self, event):
-	#	if event.GetEventObject().GetValue():
-	#		self.OnProbe(None)
-	#		self.timer.Start(self.probe_interval)
-	#	else:
-	#		self.timer.Stop()
-
-	#def OnProbe(self, event):
-	#	#print('probe') # for debug
-	#	items = self.drv_probe_cmd.items()
-	#	for (obj, (cmd, bak_res)) in items:
-	#		res = (os.system(cmd) == 0) if cmd else False
-	#		if res == bak_res:
-	#			continue
-	#		self.drv_probe_cmd[obj] = (cmd, res)
-	#		cfg_obj = self.get_cfg_obj(obj)
-	#		en = obj.IsShown()
-	#		if res and not en:
-	#			obj.Show()
-	#			if cfg_obj:
-	#				cfg_obj.Show()
-	#			continue
-	#		if not res and en:
-	#			v = obj.GetValue()
-	#			if v:
-	#				obj.SetValue(False)	
-	#				self.launch_kill_proc(obj, self.sensing_cmd)
-	#			obj.Hide()
-	#			if cfg_obj:
-	#				cfg_obj.Hide()
 
 	def OnRosbagRecord(self, event):
 		self.dlg_rosbag_record.Show()
@@ -1260,27 +1188,6 @@ class MyFrame(rtmgr.MyFrame):
 		s = subprocess.check_output([ 'rosbag', 'info', v ], stderr=err).strip()
 		self.label_rosbag_info.SetLabel(s)
 		self.label_rosbag_info.GetParent().FitInside()
-
-	#def OnSimulation(self, event):
-	#	self.OnChecked_obj(event.GetEventObject())
-
-	#def OnSimTime(self, event):
-	#	obj = event.GetEventObject()
-	#	self.alias_sync(obj)
-	#	obj = self.alias_grp_top_obj(obj)
-	#	cmd_dic = self.simulation_cmd
-	#	(cmd, proc) = cmd_dic.get(obj, (None, None))
-	#	if cmd and type(cmd) is dict:
-	#		cmd = cmd.get(obj.GetValue())
-	#	if cmd:
-	#		print(cmd)
-	#		os.system(cmd)
-
-	#def OnPointMapUpdate(self, event):
-	#	sdic = self.selector.get('pmap', {})
-	#	if sdic.get('launched'):
-	#		self.OnKillPmap(None)
-	#		self.OnLaunchPmap(None)
 
 	#
 	# Data Tab
@@ -1844,10 +1751,6 @@ class MyFrame(rtmgr.MyFrame):
 		if file_dialog(self, tc, btn_ref_inf.get(key, {})) == wx.ID_OK:
 			self.alias_sync(tc)
 
-	#def OnAliasSync(self, event):
-	#	obj = event.GetEventObject()
-	#	self.alias_sync(obj)
-
 	def alias_sync(self, obj, v=None):
 		en = None
 		if getattr(obj, 'IsEnabled', None):
@@ -2024,30 +1927,9 @@ class MyFrame(rtmgr.MyFrame):
 		for tab in self.all_tabs + add_pnls:
 			tab.SetBackgroundColour(col)
 
-	#def modal_dialog(self, lst, title=''):
-	#	(lbs, cmds) = zip(*lst)
-	#	dlg = MyDialog(self, lbs=lbs)
-	#	dlg.SetTitle(title)
-	#	r = dlg.ShowModal()
-	#	ok = (0 <= r and r < len(cmds))
-	#	return cmds[r] if ok else None
-
 	def get_autoware_dir(self):
 		dir = rtmgr_src_dir() + '../../../../../../'
 		return os.path.abspath(dir)
-
-	#def get_static_bitmap(self, parent, filename, scale):
-	#	bm = self.get_bitmap(filename, scale)
-	#	return wx.StaticBitmap(parent, wx.ID_ANY, bm)
-
-	#def get_bitmap(self, filename, scale):
-	#	dir = rtmgr_src_dir()
-	#	bm = wx.Bitmap(dir + filename, wx.BITMAP_TYPE_ANY)
-	#	(w, h) = bm.GetSize()
-	#	img = wx.ImageFromBitmap(bm)
-	#	img = img.Scale(w * scale, h * scale, wx.IMAGE_QUALITY_HIGH)
-	#	bm = wx.BitmapFromImage(img)
-	#	return bm
 
 	def load_yaml(self, filename, def_ret=None):
 		return load_yaml(filename, def_ret)
@@ -2104,30 +1986,6 @@ class MyFrame(rtmgr.MyFrame):
 
 	def obj_get(self, name):
 		return getattr(self, name, None)
-
-#class MyDialog(rtmgr.MyDialog):
-#	def __init__(self, *args, **kwds):
-#		lbs = kwds.pop('lbs')
-#		rtmgr.MyDialog.__init__(self, *args, **kwds)
-#
-#		self.radio_box.Destroy()
-#		self.radio_box = wx.RadioBox(self.panel_2, wx.ID_ANY, "", choices=lbs, majorDimension=0, style=wx.RA_SPECIFY_ROWS)
-#
-#		rtmgr.MyDialog.__set_properties(self)
-#		rtmgr.MyDialog.__do_layout(self)
-#
-#	def __set_properties(self):
-#		pass
-#
-#	def __do_layout(self):
-#		pass
-#
-#	def OnOk(self, event):
-#		ret = self.radio_box.GetSelection()
-#		self.EndModal(ret)
-#
-#	def OnCancel(self, event):
-#		self.EndModal(-1)
 
 def gdic_dialog_type_chk(gdic, name):
 	dlg_type = dic_list_get(gdic, 'dialog_type', 'config')
