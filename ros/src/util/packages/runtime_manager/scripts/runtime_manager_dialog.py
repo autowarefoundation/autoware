@@ -580,9 +580,6 @@ class MyFrame(rtmgr.MyFrame):
 			else:
 				self.add_cfg_info(obj, obj, k, None, gdic, False, None)
 
-	def OnTextRoute(self, event):
-		pass
-
 	def OnGear(self, event):
 		grp = { self.button_statchk_d : 1,
 			self.button_statchk_r : 2,
@@ -1733,23 +1730,6 @@ class MyFrame(rtmgr.MyFrame):
 		wx.CallAfter(self.label_rosbag_play_bar.clear)
 		wx.CallAfter(self.label_rosbag_play_pos.SetLabel, '')
 		wx.CallAfter(self.label_rosbag_play_total.SetLabel, '')
-
-	def OnRef(self, event):
-		btn_ref_inf = {
-			'point_cloud'	: { 'path_type' : 'multi' },
-			'pmap'		: { 'path_type' : 'multi' },
-			'vector_map'	: { 'path_type' : 'multi' },
-			'calibration'	: { 'path_type' : 'dir'	  },
-			'rosbag_record' : { 'path_type' : 'save'  } }
-		obj = event.GetEventObject()
-		key = self.obj_key_get(obj, [ 'button_ref_' ])
-		if key is None:
-			return
-		tc = self.obj_get('text_ctrl_' + key)
-		if tc is None:
-			return
-		if file_dialog(self, tc, btn_ref_inf.get(key, {})) == wx.ID_OK:
-			self.alias_sync(tc)
 
 	def alias_sync(self, obj, v=None):
 		en = None
