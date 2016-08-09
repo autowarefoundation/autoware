@@ -506,7 +506,10 @@ class MyFrame(rtmgr.MyFrame):
 		pass
 
 	def OnClose(self, event):
-		self.kill_all()
+		# kill_all
+		for proc in self.all_procs[:]: # copy
+			(_, obj) = self.proc_to_cmd_dic_obj(proc)
+			self.launch_kill(False, 'dmy', proc, obj=obj)
 
 		save_dic = {}
 		for (name, pdic) in self.load_dic.items():
@@ -2031,31 +2034,6 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 		if not v:
 			self.stat_label_off(obj)
-
-	def kill_all(self):
-		all = self.all_procs[:] # copy
-		for proc in all:
-			self.kill_proc(proc)
-
-	def kill_proc(self, proc):
-		(cmd_dic, obj) = self.proc_to_cmd_dic_obj(proc)
-		self.kill_obj(obj, cmd_dic, proc)
-
-	def kill_obj(self, obj, cmd_dic=None, proc=None):
-		key = self.obj_key_get(obj, [ 'button_launch_' ])
-		if key:
-			self.OnKill_kill_obj(self.obj_get('button_kill_' + key))
-			return
-		set_val(obj, False)
-		if cmd_dic is None:
-			cmd_dic = self.obj_to_cmd_dic(obj)
-		v = cmd_dic.get(obj)
-		if v is None:
-			return
-		(cmd, proc) = (v[0], proc) if proc else v
-		cmd_dic[ obj ] = (cmd, None)
-		self.launch_kill(False, 'dmy', proc, obj=obj)
-		self.stat_label_off(obj)
 
 	def proc_to_cmd_dic_obj(self, proc):
 		for cmd_dic in self.all_cmd_dics:
