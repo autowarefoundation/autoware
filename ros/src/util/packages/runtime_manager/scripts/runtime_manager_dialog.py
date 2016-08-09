@@ -2634,8 +2634,8 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 
 	def OnLink(self, event):
 		obj = event.GetEventObject()
-		dic = { self.hyperlink_car : self.frame.button_launch_car_dpm,
-			self.hyperlink_pedestrian : self.frame.button_launch_pedestrian_dpm }
+		dic = { self.hyperlink_car : self.frame.button_car_dpm,
+			self.hyperlink_pedestrian : self.frame.button_pedestrian_dpm }
 		obj = dic.get(obj)
 		if obj:
 			self.frame.OnHyperlinked_obj(obj)
@@ -2670,7 +2670,7 @@ class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 		obj = event.GetEventObject()
 		car_ped = { self.hyperlink_car : 'car', self.hyperlink_pedestrian : 'pedestrian' }.get(obj, 'car')
 		obj_key = self.gdic.get('car_pedestrian_obj_key', {}).get(car_ped)
-		obj = getattr(self.frame, 'button_launch_' + obj_key, None) if obj_key else None
+		obj = getattr(self.frame, 'button_' + obj_key, None) if obj_key else None
 		if obj:
 			self.frame.OnHyperlinked_obj(obj)
 		self.EndModal(0)
