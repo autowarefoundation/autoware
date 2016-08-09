@@ -1742,9 +1742,6 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic.get(obj, (None, None))
 		return (cmd_dic, cmd, proc)
 
-	def OnLaunch(self, event):
-		self.OnLaunch_obj(event.GetEventObject())
-
 	def OnLaunch_obj(self, obj):
 		obj = self.alias_grp_top_obj(obj)
 		self.alias_sync(obj, v=True)
@@ -1773,9 +1770,6 @@ class MyFrame(rtmgr.MyFrame):
 		cmd_dic[obj] = (cmd, proc)
 
 		self.toggle_enable_obj(obj)
-
-	def OnKill(self, event):
-		self.OnKill_kill_obj(event.GetEventObject())
 
 	def OnKill_kill_obj(self, kill_obj):
 		kill_obj = self.alias_grp_top_obj(kill_obj)
