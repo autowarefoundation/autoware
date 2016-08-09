@@ -1673,26 +1673,17 @@ class MyFrame(rtmgr.MyFrame):
 		sdic = self.selector.get(key)
 		if sdic is None:
 			return None
-		if v:
-			sels = eval(sdic.get('sel', 'None'))
-			if sels is None or sels == []:
-				return None
-			for sel in sels:
-				name = sdic.get(sel)
-				if name is None:
-					continue
-				obj = self.obj_get('button_launch_' + name)
-				self.OnLaunch_obj(obj)
-			sdic['launched'] = sels
-		else:
-			sels = sdic.get('launched', [])
-			for sel in sels:
-				name = sdic.get(sel)
-				if name is None:
-					continue
-				kill_obj = self.obj_get('button_kill_' + name)
-				self.OnKill_kill_obj(kill_obj)
-			sdic['launched'] = None
+		sels = eval(sdic.get('sel', 'None')) if v else sdic.get('launched', [])
+		if v and ( sels is None or sels == [] ):
+			return None
+		for sel in sels:
+			name = sdic.get(sel)
+			if name is None:
+				continue
+			obj = self.obj_get('button_' + name)
+			obj.SetValue(v)
+			self.OnLaunchKill_obj(obj)
+		sdic['launched'] = sels if v else None
 		return True
 
 	def set_param_panel(self, obj, parent):
