@@ -1736,53 +1736,6 @@ class MyFrame(rtmgr.MyFrame):
 		(cmd, proc) = cmd_dic.get(obj, (None, None))
 		return (cmd_dic, cmd, proc)
 
-	def OnLaunch_obj(self, obj):
-		obj = self.alias_grp_top_obj(obj)
-		self.alias_sync(obj, v=True)
-
-		add_args = self.obj_to_add_args(obj)
-		#print 'add_args', add_args
-		if add_args is False:
-			return
-		key = self.obj_key_get(obj, ['button_launch_'])
-		if not key:
-			return
-		tc = self.obj_get('text_ctrl_' + key) 
-		path = tc.GetValue() if tc else None
-
-		if tc and not path:
-			return
-
-		(cmd_dic, cmd, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
-		if cmd_dic is None or cmd is None:
-			return
-
-		if path:
-			add_args = ( add_args if add_args else [] ) + path.split(',')
-
-		proc = self.launch_kill(True, cmd, proc, add_args, obj=obj)
-		cmd_dic[obj] = (cmd, proc)
-
-		self.toggle_enable_obj(obj)
-
-	def OnKill_kill_obj(self, kill_obj):
-		kill_obj = self.alias_grp_top_obj(kill_obj)
-		self.alias_sync(kill_obj, v=False)
-
-		key = self.obj_key_get(kill_obj, ['button_kill_'])
-		if not key:
-			return
-		obj = self.obj_get('button_launch_' + key)
-		(cmd_dic, cmd, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
-		if cmd_dic is None or cmd is None:
-			return
-
-		proc = self.launch_kill(False, cmd, proc, obj=obj)
-		cmd_dic[obj] = (cmd, proc)
-
-		self.toggle_enable_obj(obj)
-		self.stat_label_off(obj)
-
 	def OnLaunchKill(self, event):
 		self.OnLaunchKill_obj(event.GetEventObject())
 
