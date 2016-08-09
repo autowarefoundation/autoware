@@ -560,6 +560,9 @@ class MyFrame(rtmgr.MyFrame):
 				obj = s
 				s = 'button_kill_' + k
 				setattr(self, s, s)
+				s = 'button_' + k
+				obj = StrValObj(s, False)
+				setattr(self, s, obj)
 			if not d2 or type(d2) is not dict:
 				continue
 			if 'run' in d2:
