@@ -198,8 +198,8 @@ class MyFrame(rtmgr.MyFrame):
 		args = { 'func':self.tc_point_cloud.GetValue }
 		hook_var = { 'hook':hook1G, 'args':args, 'flags':['every_time'] }
 		objs = [ self.button_point_cloud,
-			 self.button_launch_points_map_loader,
-			 self.button_launch_points_map_loader_update ]
+			 self.button_points_map_loader,
+			 self.button_points_map_loader_update ]
 		tgls = []
 		for obj in objs:
 			gdic_v = self.obj_to_gdic(obj, {}).get('path_pcd', {})
@@ -552,14 +552,9 @@ class MyFrame(rtmgr.MyFrame):
 
 	def setup_buttons(self, d, run_dic):
 		for (k,d2) in d.items():
-			pfs = [ 'button_', 'button_launch_', 'checkbox_' ]
+			pfs = [ 'button_', 'checkbox_' ]
 			obj = next( (self.obj_get(pf+k) for pf in pfs if self.obj_get(pf+k)), None)
 			if not obj:
-				s = 'button_launch_' + k
-				setattr(self, s, s)
-				obj = s
-				s = 'button_kill_' + k
-				setattr(self, s, s)
 				s = 'button_' + k
 				obj = StrValObj(s, False)
 				setattr(self, s, obj)
@@ -1281,12 +1276,6 @@ class MyFrame(rtmgr.MyFrame):
 	#		print(cmd)
 	#		os.system(cmd)
 
-	#def OnLaunchPmap(self, event):
-	#	self.OnSelector_obj(self.button_launch_pmap)
-
-	#def OnKillPmap(self, event):
-	#	self.OnSelector_obj(self.button_kill_pmap)
-
 	#def OnPointMapUpdate(self, event):
 	#	sdic = self.selector.get('pmap', {})
 	#	if sdic.get('launched'):
@@ -1653,18 +1642,13 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnSelector_obj(event.GetEventObject())
 
 	def OnSelector_obj(self, obj):
-		pfs = ('button_launch_', 'button_kill_', 'button_', 'checkbox_')
-		vs = (True, False, None, None)
-		pfinf = dict(zip(pfs, vs))
-
-		(pf, key) = self.obj_name_split(obj, pfs)
+		pfs = ('button_', 'checkbox_')
+		key = self.obj_key_get(obj, pfs)
 		if key is None:
 			return
-		v = pfinf.get(pf)
-		if v is None and getattr(obj, 'GetValue', None):
-			v = obj.GetValue()
-		if v is None:
+		if not hasattr(obj, 'GetValue'):
 			return
+		v = obj.GetValue()
 		if self.OnSelector_name(key, v) is None:
 			if getattr(obj, 'SetValue', None):
 				set_val(obj, not v)
@@ -1842,18 +1826,6 @@ class MyFrame(rtmgr.MyFrame):
 		wx.CallAfter(self.label_rosbag_play_bar.clear)
 		wx.CallAfter(self.label_rosbag_play_pos.SetLabel, '')
 		wx.CallAfter(self.label_rosbag_play_total.SetLabel, '')
-
-	#def OnPauseRosbagPlay(self, event):
-	#	pause_obj = event.GetEventObject()
-	#	pause_obj = self.alias_grp_top_obj(pause_obj)
-	#
-	#	key = self.obj_key_get(pause_obj, ['button_pause_'])
-	#	if not key:
-	#		return
-	#	obj = self.obj_get('button_launch_' + key)
-	#	(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(obj)
-	#	if proc:
-	#		proc.stdin.write(' ')
 
 	def OnRef(self, event):
 		btn_ref_inf = {
@@ -2082,8 +2054,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def toggle_enable_obj(self, obj):
 		objs = []
-		pfs = [ 'button_launch_', 'button_kill_',
-			'button_play_', 'button_stop_', 'button_pause_',
+		pfs = [ 'button_play_', 'button_stop_', 'button_pause_',
 			'button_ref_', 'text_ctrl_' ]
 		key = self.obj_key_get(obj, pfs)
 		if key:
