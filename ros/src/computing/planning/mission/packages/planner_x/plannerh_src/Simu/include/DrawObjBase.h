@@ -8,11 +8,28 @@
 #ifndef DRAWOBJBASE_H_
 #define DRAWOBJBASE_H_
 
-
+#include <string>
 namespace Graphics
 {
 
+enum DISPLAY_SHAP {DISP_WHEEL, DISP_PEDAL, DISP_TEXT};
 enum SPECIAL_KEYS_TYPE { UP_KEY, DOWN_KEY, LEFT_KEY, RIGHT_KEY, LEFT_CTRL_KEY, RIGHT_CTRL_KEY, LEFT_SHIFT_KEY, RIGHT_SHIFT_KEY, SPACE_KEY, CHAR_KEY,};
+
+class DisplayDataObj
+{
+public:
+	double x;
+	double y;
+	double value;
+	std::string text;
+	DISPLAY_SHAP shape;
+
+	DisplayDataObj()
+	{
+		x = y = value = 0;
+		shape = DISP_TEXT;
+	}
+};
 
 class DrawObjBase
   {

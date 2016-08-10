@@ -76,16 +76,18 @@ PlannerX::PlannerX(std::string plannerType)
 	if(m_pPlanner)
 		m_pPlanner->UpdateOriginTransformationPoint(m_OriginPos);
 
-	m_PositionPublisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
-	m_PathPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 10, true);
-	m_PathPublisher = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
+	m_PositionPublisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
+	m_PathPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 100, true);
+	m_PathPublisher = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 100, true);
+	m_TrajectoryFinalWaypointPublisher = nh.advertise<waypoint_follower::lane>("final_waypoints", 100,true);
+	m_BehaviorPublisher = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 100);
 
 	// define subscribers.
-	sub_current_pose 		= nh.subscribe("/current_pose", 				10,
+	sub_current_pose 		= nh.subscribe("/current_pose", 				100,
 			&PlannerX::callbackFromCurrentPose, 		this);
-	sub_traffic_light 		= nh.subscribe("/light_color", 					10,
+	sub_traffic_light 		= nh.subscribe("/light_color", 			100,
 			&PlannerX::callbackFromLightColor, 			this);
-	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 			10,
+	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 		100,
 			&PlannerX::callbackFromObjCar, 				this);
 	point_sub 				= nh.subscribe("/vector_map_info/point_class", 	1,
 			&PlannerX::callbackGetVMPoints, 			this);
@@ -95,12 +97,14 @@ PlannerX::PlannerX(std::string plannerType)
 			&PlannerX::callbackGetVMNodes, 				this);
 	stopline_sub 			= nh.subscribe("/vector_map_info/stop_line", 	1,
 			&PlannerX::callbackGetVMStopLines, 			this);
-	dtlane_sub 				= nh.subscribe("/vector_map_info/dtlane", 		1,
+	dtlane_sub 				= nh.subscribe("/vector_map_info/dtlane", 	1,
 			&PlannerX::callbackGetVMCenterLines, 		this);
-	initialpose_subscriber 	= nh.subscribe("initialpose", 					10,
+	initialpose_subscriber 	= nh.subscribe("initialpose", 				10,
 			&PlannerX::callbackSimuInitPose, 			this);
-	goalpose_subscriber 	= nh.subscribe("move_base_simple/goal", 		10,
+	goalpose_subscriber 	= nh.subscribe("move_base_simple/goal", 			10,
 			&PlannerX::callbackSimuGoalPose, 			this);
+	sub_vehicle_status	 	= nh.subscribe("vehicle_status", 			100,
+				&PlannerX::callbackFromVehicleStatus, 			this);
 
 
 }
@@ -111,10 +115,26 @@ PlannerX::~PlannerX()
 		delete m_pPlanner;
 }
 
+void PlannerX::callbackFromVehicleStatus(const geometry_msgs::Vector3StampedConstPtr& msg)
+{
+	m_VehicleState.steer = msg->vector.x;
+	m_VehicleState.speed = msg->vector.y;
+	if(msg->vector.z == 0x00)
+		m_VehicleState.shift = AW_SHIFT_POS_BB;
+	else if(msg->vector.z == 0x10)
+		m_VehicleState.shift = AW_SHIFT_POS_DD;
+	else if(msg->vector.z == 0x20)
+		m_VehicleState.shift = AW_SHIFT_POS_NN;
+	else if(msg->vector.z == 0x40)
+		m_VehicleState.shift = AW_SHIFT_POS_RR;
+
+	std::cout << "PlannerX: Read Status ("<<m_VehicleState.steer<< ", " << m_VehicleState.speed<<", " << msg->vector.z << ")" << std::endl;
+}
+
 void PlannerX::callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg)
 {
 	PlannerHNS::WayPoint p;
-	//ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f, freq=%d", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, m_frequency);
+	ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f, freq=%d", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, m_frequency);
 
 	m_pPlanner->UpdateGlobalGoalPosition(msg.pose);
 
@@ -124,7 +144,7 @@ void PlannerX::callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg)
 void PlannerX::callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 {
 	PlannerHNS::WayPoint p;
-	//ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
+	ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
 
 	m_InitPos.position  = msg->pose.pose.position;
 	m_InitPos.orientation = msg->pose.pose.orientation;
@@ -230,7 +250,7 @@ void PlannerX::PlannerMainLoop()
 		return;
 	}
 
-	ros::Rate loop_rate(1);
+	ros::Rate loop_rate(50);
 
 	while (ros::ok())
 	{
@@ -247,11 +267,30 @@ void PlannerX::PlannerMainLoop()
 		if(bInitPos && bGoalPos)
 		{
 			if(m_VehicleState.shift == AW_SHIFT_POS_DD)
+			{
 				bNewPlan = m_pPlanner->GeneratePlan(m_CurrentPos,m_DetectedObstacles, m_TrafficLights, m_VehicleState,
 						behState, marker_array, lane_array);
+			}
 			else
+			{
 				bNewPlan = m_pPlanner->GeneratePlan(m_InitPos,m_DetectedObstacles, m_TrafficLights, m_VehicleState,
 						behState, marker_array, lane_array);
+			}
+
+			geometry_msgs::Twist t;
+			geometry_msgs::TwistStamped behavior;
+			t.linear.x = behState.followDistance;
+			t.linear.y = behState.stopDistance;
+			t.linear.z = (int)behState.indicator;
+
+			t.angular.x = behState.followVelocity;
+			t.angular.y = behState.maxVelocity;
+			t.angular.z = (int)behState.state;
+
+			behavior.twist = t;
+			behavior.header.stamp = ros::Time::now();
+
+			m_BehaviorPublisher.publish(behavior);
 		}
 
 		if(bNewPlan)
@@ -260,6 +299,7 @@ void PlannerX::PlannerMainLoop()
 				std::cout << "New Plan , Path size = " << lane_array.lanes.at(0).waypoints.size() << std::endl;
 			m_PathPublisher.publish(lane_array);
 			m_PathPublisherRviz.publish(marker_array);
+			m_TrajectoryFinalWaypointPublisher.publish(lane_array.lanes.at(0));
 		}
 
 		//ROS_INFO("Main Loop Step");

@@ -87,6 +87,8 @@ protected:
 	ros::Publisher m_PositionPublisher;
 	ros::Publisher m_PathPublisherRviz;
 	ros::Publisher m_PathPublisher;
+	ros::Publisher m_TrajectoryFinalWaypointPublisher;
+	ros::Publisher m_BehaviorPublisher;
 
 	// define subscribers.
 	ros::Subscriber sub_current_pose 		;
@@ -99,6 +101,7 @@ protected:
 	ros::Subscriber dtlane_sub 				;
 	ros::Subscriber initialpose_subscriber 	;
 	ros::Subscriber goalpose_subscriber 	;
+	ros::Subscriber sub_vehicle_status 	;
 
 
 
@@ -122,6 +125,8 @@ private:
   void callbackGetVMNodes(const map_file::NodeArray& msg);
   void callbackGetVMStopLines(const map_file::StopLineArray& msg);
   void callbackGetVMCenterLines(const map_file::DTLaneArray& msg);
+  void callbackFromVehicleStatus(const geometry_msgs::Vector3StampedConstPtr& msg);
+
 
   //void ConvertAndPulishDrivingTrajectory(const std::vector<PlannerHNS::WayPoint>& path);
 };

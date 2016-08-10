@@ -9,6 +9,7 @@
 #include "PlannerH.h"
 #include "PlanningHelpers.h"
 #include "MappingHelpers.h"
+#include <sstream>
 
 using namespace std;
 using namespace SimulationNS;
@@ -420,34 +421,57 @@ void PlannerTestDraw::DrawSimu()
 	}
 
 	DrawingHelpers::DrawCustomCarModel(m_State.state, m_State.m_CarShapePolygon, CarColor, 90);
-
-
-
-
-
 }
 
 void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int& maxX, const int& maxY)
 {
+	double left_shift = 25;
+	glDisable(GL_LIGHTING);
 	glPushMatrix();
-	glTranslated(centerX, 70, 0);
+	glTranslated(centerX-left_shift, 70, 0);
 	glRotated(-1*m_VehicleState.steer*RAD2DEG*16, 0,0,1);
-	glTranslated(-centerX, -70, 0);
-	glColor3f(0,1,0);
-	DrawingHelpers::DrawFilledEllipse(centerX, 70, 0.5, 60, 60);
-	PlannerHNS::GPSPoint p1(centerX, 70, 0.52, 0), p2(centerX+40, 70-40, 0.52, 0);
+	glTranslated(-(centerX-left_shift), -70, 0);
+
+	float wheel_color[3] = {0.1, 0.2, 0.3};
+	DrawingHelpers::DrawWideEllipse(centerX-left_shift, 70, 0.5, 60, 55, 54, wheel_color);
+
+	glColor3f(0.3,0.2, 0.1);
+	PlannerHNS::GPSPoint p1(centerX-left_shift, 70, 0.52, 0), p2(centerX-left_shift+38, 70-38, 0.52, 0);
 	DrawingHelpers::DrawLinePoygonline(p1, p2, 5);
 
-	PlannerHNS::GPSPoint p11(centerX, 70, 0.52, 0), p22(centerX-40, 70-40, 0.52, 0);
+	PlannerHNS::GPSPoint p11(centerX-left_shift, 70, 0.52, 0), p22(centerX-left_shift-38, 70-38, 0.52, 0);
 	DrawingHelpers::DrawLinePoygonline(p11, p22, 5);
 
-	PlannerHNS::GPSPoint p111(centerX, 70, 0.52, 0), p222(centerX, 70+40, 0.52, 0);
+	PlannerHNS::GPSPoint p111(centerX-left_shift, 70, 0.52, 0), p222(centerX-left_shift, 70+52, 0.52, 0);
 	DrawingHelpers::DrawLinePoygonline(p111, p222, 5);
 	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(centerX-left_shift-15, 70+85, 0);
+	std::ostringstream str_out ;
+	str_out.precision(2);
+	str_out <<  m_VehicleState.steer*RAD2DEG;
+	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
+	glPopMatrix();
+
+	double speed = m_VehicleState.speed*3.6;
+	float pedal_color[3] = {0.1, 0.7, 0.3};
+	DrawingHelpers::DrawPedal(centerX + 70, 70, 0, 30.0, 100.0, speed*2.5,pedal_color );
+	glPushMatrix();
+	glTranslated(centerX+60, 70+85, 0);
+	std::ostringstream v_out ;
+	v_out.precision(2);
+	v_out <<  speed;
+	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)v_out.str().c_str());
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
 //
 //	INITIAL_STATE, WAITING_STATE, FORWARD_STATE, STOPPING_STATE, EMERGENCY_STATE,
 //		TRAFFIC_LIGHT_STOP_STATE, STOP_SIGN_STOP_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE
 
+	std::ostringstream state_out ;
+	state_out << "Behavior: ";
 	string str = "Unknown State";
 	switch(m_CurrentBehavior.state)
 	{
@@ -466,12 +490,21 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 	case PlannerHNS::FINISH_STATE:
 		str = "End State";
 		break;
+	default:
+		str = "Unknown State";
+		break;
 	}
-
+	state_out << str;
 	glPushMatrix();
 	glColor3f(0.2, 0.2, 0.9);
-	glTranslated(10, centerY, 0);
-	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str.c_str());
+	glTranslated(10, 200, 0);
+	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)state_out.str().c_str());
+
+	std::ostringstream sim_n_out ;
+	sim_n_out << "Simulated Cars:";
+	sim_n_out << m_SimulatedCars.size();
+	glColor3f(0.6, 0.6, 0.9);
+	DrawingHelpers::DrawString(0, 30, GLUT_BITMAP_TIMES_ROMAN_24, (char*)sim_n_out.str().c_str());
 	glPopMatrix();
 }
 
@@ -521,6 +554,11 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			vector<vector<PlannerHNS::WayPoint> > rollOuts;
 			bool bNewPlan = false;
 			bool bNewRollOuts = false;
+			PlannerHNS::VehicleState currState;
+			pthread_mutex_lock(&pR->control_mutex);
+			currState = pR->m_VehicleState;
+			pthread_mutex_unlock(&pR->control_mutex);
+
 			/**
 			 * Path Planning Step (Global Planning)
 			 */
@@ -558,7 +596,11 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 					index_limit =  pR->m_State.m_Path.size()/2.0;
 				if(pR->m_State.m_RollOuts.size() == 0 || currIndex > index_limit)
 				{
-					planner.GenerateRunoffTrajectory(pR->m_State.m_TotalPath, pR->m_State.state, false,  3, 150, 5, 0,
+					planner.GenerateRunoffTrajectory(pR->m_State.m_TotalPath, pR->m_State.state, false,
+							currState.speed,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
+							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.minSpeed,
 							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
 							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
 							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
@@ -577,17 +619,14 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			/**
 			 * Behavior Generator , State Machine , Decision making Step
 			 */
-			PlannerHNS::VehicleState currState;
-			pthread_mutex_lock(&pR->control_mutex);
-			currState = pR->m_VehicleState;
-			pthread_mutex_unlock(&pR->control_mutex);
+
 
 			pthread_mutex_lock(&pR->planning_mutex);
 			if(bNewRollOuts)
 				pR->m_State.m_RollOuts  = rollOuts;
 			if(bNewPlan)
 				pR->m_State.m_TotalPath = generatedTotalPath;
-			pR->m_CurrentBehavior = pR->m_State.DoOneStepSimulated(dt, currState, pR->m_State.state, pR->m_dummyObstacles, pR->m_goal.pos, pR->m_RoadMap);
+			pR->m_CurrentBehavior = pR->m_State.DoOneStep(dt, currState, pR->m_dummyObstacles, pR->m_goal.pos, pR->m_RoadMap);
 			pthread_mutex_unlock(&pR->planning_mutex);
 
 			if(pR->m_ActualPath.size() > 0 && distance2points(pR->m_ActualPath.at(pR->m_ActualPath.size()-1).pos, pR->m_State.state.pos) > 1 )
@@ -720,7 +759,7 @@ void* PlannerTestDraw::SimulationThreadStaticEntryPoint(void* pThis)
 
 
 
-				pR->m_SimulatedBehaviors.at(i) = pR->m_SimulatedCars.at(i).DoOneStepSimulated(dt, pR->m_SimulatedVehicleState.at(i),
+				pR->m_SimulatedBehaviors.at(i) = pR->m_SimulatedCars.at(i).DoOneStep(dt, pR->m_SimulatedVehicleState.at(i),
 										pR->m_SimulatedCars.at(i).state, dummyObstacles, pR->m_goal.pos, pR->m_RoadMap);
 
 				bool bNewPath = false;

@@ -42,10 +42,15 @@ protected:
 	PlannerHNS::RoadNetwork m_Map;
 	SimulationNS::CarState m_State;
 	PlannerHNS::WayPoint   m_Goal;
+	PlannerHNS::WayPoint   m_Start;
+	bool				   m_bFirstCall;
+	bool				   m_bMakeNewPlan;
 	PlannerHNS::WayPoint   m_OriginPoint;
 	std::vector<int> m_PredefinedPath;
 	PlannerHNS::PlanningInternalParams m_PlanningParams;
 	PlannerHNS::PlannerH* m_pPlannerH;
+	PlannerHNS::BehaviorState m_CurrentBehavior;
+	struct timespec m_PlanningTimer;
 
 
 	void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
@@ -58,6 +63,7 @@ protected:
 	void ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles);
 	PlannerHNS::SHIFT_POS ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift);
 	PlannerXNS::AUTOWARE_SHIFT_POS ConvertShiftFromPlannerHToAutoware(const PlannerHNS::SHIFT_POS& shift);
+	PlannerXNS::AutowareBehaviorState ConvertBehaviorStateFromPlannerHToAutoware(const PlannerHNS::BehaviorState& beh);
 };
 
 } /* namespace PlannerXNS */

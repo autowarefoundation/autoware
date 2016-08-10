@@ -602,25 +602,25 @@ public:
 
 	PlanningParams()
 	{
-		maxSpeed 						= 15;
-		minSpeed 						= 1;
+		maxSpeed 						= 3;
+		minSpeed 						= 0;
 		planningDistance 				= 10000;
 		microPlanDistance 				= 35;
 		carTipMargin					= 8.0;
 		rollInMargin					= 20.0;
 		rollInSpeedFactor				= 0.25;
 		pathDensity						= 0.25;
-		rollOutDensity					= 0.7;
-		rollOutNumber					= 6;
+		rollOutDensity					= 0.5;
+		rollOutNumber					= 4;
 		marginDistanceFromTrajectory	= 2.0;
-		horizonDistance					= 500;
+		horizonDistance					= 120;
 		minFollowingDistance			= 35;
 		maxFollowingDistance			= 40;
 		minDistanceToAvoid				= 10;
 		speedProfileFactor				= 1.5;
 		curvatureCalculationPoints		= 1;
-		smoothingDataWeight				= 0.35;
-		smoothingSmoothWeight			= 0.3;
+		smoothingDataWeight				= 0.3;
+		smoothingSmoothWeight			= 0.35;
 		smoothingToleranceError			= 0.1;
 
 		enableSwerving 					= false;
@@ -782,6 +782,23 @@ public:
 		}
 
 		return str.str();
+	}
+};
+
+class TrajectoryCost
+{
+public:
+	int index;
+	double priority_cost; //0 to 1
+	double transition_cost; // 0 to 1
+	double closest_obj_cost; // 0 to 1
+
+	TrajectoryCost()
+	{
+		index = -100;
+		priority_cost = 0;
+		transition_cost = 0;
+		closest_obj_cost = 0;
 	}
 };
 
