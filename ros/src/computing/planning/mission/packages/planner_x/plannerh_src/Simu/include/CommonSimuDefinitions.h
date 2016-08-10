@@ -145,8 +145,8 @@ public:
 	  initialSpeed			= 0;
 	  max_speed_forward		= 25;
 	  max_speed_backword	= 4;
-	  max_steer_value		= 700;
-	  min_steer_value		= -700;
+	  max_steer_value		= 660;
+	  min_steer_value		= -660;
 	  max_brake_value		= 0;
 	  min_brake_value		= 0;
 	  distance_factor		= 1;

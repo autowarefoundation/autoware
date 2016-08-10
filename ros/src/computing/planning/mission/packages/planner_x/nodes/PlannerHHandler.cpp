@@ -17,6 +17,10 @@ PlannerH_Handler::PlannerH_Handler()
 	m_State.Init(1.9, 4.2,carInfo);
 
 	m_pPlannerH = new PlannerHNS::PlannerH(m_PlanningParams);
+
+	m_bFirstCall = false;
+	m_bMakeNewPlan = true;
+	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 }
 
 PlannerH_Handler::~PlannerH_Handler()
@@ -120,7 +124,10 @@ void PlannerH_Handler::UpdateRoadMap(const AutowareRoadNetwork& map)
 	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes,
 			points, dts, origin, m_Map);
 
-	ROS_INFO("Map Data is Updated Successfully.");
+	//PlannerHNS::WayPoint wp =  PlannerHNS::MappingHelpers::GetFirstWaypoint(m_Map);
+	//std::cout << "Map First Point: " << wp.pos.ToString() << std::endl;
+
+	//ROS_INFO("Map Data is Updated Successfully.");
 	bMap = true;
 }
 
@@ -140,6 +147,7 @@ void PlannerH_Handler::UpdateGlobalGoalPosition(const geometry_msgs::Pose& goalP
 	m_State.m_TotalPath.clear();
 	m_State.m_RollOuts.clear();
 	m_State.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
+	m_bMakeNewPlan = true;
 
 	bGoal = true;
 }
@@ -156,84 +164,85 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 		waypoint_follower::LaneArray& pathToFollow)
 {
 
-	bool bNewPath = false;
+
 	m_State.state = PlannerHNS::WayPoint(currentPose.position.x+m_OriginPoint.pos.x,
 			currentPose.position.y + m_OriginPoint.pos.y, currentPose.position.z + m_OriginPoint.pos.z, tf::getYaw(currentPose.orientation));
+
+	std::cout << "## Position After Receiving "<< m_State.state.pos.ToString() << std::endl;
+
+	if(!m_bFirstCall)
+	{
+		m_Start = m_State.state;
+		m_bFirstCall = true;
+	}
+
 	std::vector<PlannerHNS::DetectedObject> obst;
 	ConvertFromAutowareObstaclesToPlannerH(detectedObstacles, obst);
 	PlannerHNS::VehicleState vehState;
 	vehState.speed = carState.speed;
 	vehState.steer = carState.steer;
 	vehState.shift = ConvertShiftFromAutowareToPlannerH(carState.shift);
-	PlannerHNS::BehaviorState behavior;
+
 
 	if(vehState.shift == PlannerHNS::SHIFT_POS_DD)
 		std::cout << "Shift DDDDD" << std::endl;
 	else 	if(vehState.shift == PlannerHNS::SHIFT_POS_NN)
 		std::cout << "Shift NNNNN" << std::endl;
 
-	if(vehState.shift == PlannerHNS::SHIFT_POS_DD)
+	//if(vehState.shift == PlannerHNS::SHIFT_POS_DD)
 		m_State.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
-	else
-		m_State.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 0;
+	//else
+	//	m_State.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 0;
 
-	m_State.CalculateImportantParameterForDecisionMaking(obst, vehState, m_Goal.pos, m_Map);\
+	std::vector<PlannerHNS::WayPoint> generatedTotalPath = m_State.m_TotalPath;
+	std::vector<std::vector<PlannerHNS::WayPoint> > rollOuts;
+	bool bNewPlan = false;
+	bool bNewRollOuts = false;
+	/**
+	 * Path Planning Step (Global Planning)
+	 */
+	int currIndexToal = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_TotalPath, m_State.state);
+	int index_limit_total = m_State.m_TotalPath.size() - 6;
+	if(index_limit_total<=0)
+		index_limit_total =  m_State.m_TotalPath.size()/2.0;
 
-
-	m_State.m_pCurrentBehaviorState = m_State.m_pCurrentBehaviorState->GetNextState();
-
-	PlannerHNS::PreCalculatedConditions *preCalcPrams = m_State.m_pCurrentBehaviorState->GetCalcParams();
-	behavior.state = m_State.m_pCurrentBehaviorState->m_Behavior;
-	if(behavior.state == PlannerHNS::FOLLOW_STATE)
-		behavior.followDistance = preCalcPrams->distanceToNext;
-	else
-		behavior.followDistance = 0;
-
-	if(preCalcPrams->bUpcomingRight)
-		behavior.indicator = PlannerHNS::INDICATOR_RIGHT;
-	else if(preCalcPrams->bUpcomingLeft)
-		behavior.indicator = PlannerHNS::INDICATOR_LEFT;
-	else
-		behavior.indicator = PlannerHNS::INDICATOR_NONE;
-
-	//TODO fix this , make get lookahead velocity work
-	double max_velocity = 2; //BehaviorsNS::MappingHelpers::GetLookAheadVelocity(m_CarState.m_Path, GetCarPos(), 25);
-
-	behavior.maxVelocity   = max_velocity;
-	behavior.minVelocity	= 0;
-	behavior.stopDistance 	= preCalcPrams->distanceToStop();
-	behavior.followVelocity = preCalcPrams->velocityOfNext;
-
-	std::cout <<  preCalcPrams->ToString(behavior.state) << std::endl;
-
-	if(behavior.state == PlannerHNS::INITIAL_STATE && m_State.m_Path.size() == 0)
+	if(currIndexToal > index_limit_total)
 	{
-		std::vector<PlannerHNS::WayPoint> generatedPath;
-		//planner.PlanUsingReedShepp(m_State.state, m_goal, generatedPath);
-		ROS_INFO(m_OriginPoint.pos.ToString().c_str());
-		ROS_INFO(m_State.state.pos.ToString().c_str());
-		ROS_INFO(m_Goal.pos.ToString().c_str());
-		m_pPlannerH->PlanUsingDP(m_State.pLane, m_State.state, m_Goal, m_State.state, 1000000, m_PredefinedPath, generatedPath);
-
-		m_State.m_TotalPath = generatedPath;
+		std::cout << "Switch Start and Goal Positions " << std::endl;
+		PlannerHNS::WayPoint g_p = m_Goal;
+		m_Goal = m_Start;
+		m_Start = g_p;
+		m_bMakeNewPlan = true;
 	}
 
-	if(m_State.m_TotalPath.size()>0)
+	if((m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE && m_State.m_Path.size() == 0 && m_bMakeNewPlan) || m_bMakeNewPlan)
 	{
+		//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
+		double ret = m_pPlannerH->PlanUsingDP(m_State.pLane, m_State.state, m_Goal, m_State.state, 1000000, m_PredefinedPath, generatedTotalPath);
+		if(ret == 0) generatedTotalPath.clear();
 
-		int currIndex = 1;
-
-		if(m_State.m_Path.size()>0)
+		if(generatedTotalPath.size() > 0)
 		{
-			currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_Path, m_State.state);
-//			std::cout << "before Roll Outs .. " << currIndex << std::endl;
-//			std::cout << m_State.state.pos.ToString() << std::endl;
-//			std::cout << m_State.m_Path.at(0).pos.ToString() << std::endl;
+			std::cout << "New DP Path -> " << generatedTotalPath.size() << std::endl;
+			m_Goal = generatedTotalPath.at(generatedTotalPath.size()-1);
+			bNewPlan = true;
+			m_bMakeNewPlan = false;
 		}
+	}
 
-		if(m_State.m_RollOuts.size() == 0 || currIndex*2.0 > m_State.m_Path.size())
+	//bool bNewTrajectory = false;
+	/**
+	 * Trajectory Planning Step, Roll outs , (Micro planner)
+	 */
+	if(generatedTotalPath.size()>0)
+	{
+		int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_Path, m_State.state);
+		int index_limit = m_State.m_Path.size() - 20;
+		if(index_limit<=0)
+			index_limit =  m_State.m_Path.size()/2.0;
+		if(m_State.m_RollOuts.size() == 0 || currIndex > index_limit)
 		{
-			m_pPlannerH->GenerateRunoffTrajectory(m_State.m_TotalPath, m_State.state, false,  5, 35, 5, 0,
+			m_pPlannerH->GenerateRunoffTrajectory(m_State.m_TotalPath, m_State.state, false,  3, 35, 3, 0,
 					m_State.m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
 					m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
 					m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
@@ -244,38 +253,35 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 					m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
 					m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
 					m_State.m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-					false, m_State.m_RollOuts);
-
-			//std::cout << "Safe Trajectoy : " << preCalcPrams->iCurrSafeTrajectory << std::endl;
-
-
-			m_State.m_Path = m_State.m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
-
-			if(m_State.m_Path.size() >  0 )
-				bNewPath = true;
-
-			if(m_State.m_Path.size()<5)
-				preCalcPrams->bGoalReached = true;
-
-			//std::cout << "after get next .. " << std::endl;
-
+					false, rollOuts);
+			bNewRollOuts = true;
 		}
-
 	}
 
+	/**
+	 * Behavior Generator , State Machine , Decision making Step
+	 */
+	if(bNewRollOuts)
+		m_State.m_RollOuts  = rollOuts;
+	if(bNewPlan)
+		m_State.m_TotalPath = generatedTotalPath;
 
-//	ROS_INFO(preCalcPrams->ToString(behavior.state).c_str());
+	double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
+	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
+	m_CurrentBehavior = m_State.DoOneStep(dt, vehState, obst, m_Goal.pos, m_Map, true);
+	m_CurrentBehavior.maxVelocity = 2.0;
+	std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Lane : " << m_State.pLane << std::endl;
 
+	behaviorState = ConvertBehaviorStateFromPlannerHToAutoware(m_CurrentBehavior);
 
-	//behaviorState = behavior;
-	if(bNewPath)
+	if(bNewRollOuts)
 	{
-		ROS_INFO("Convert New Path To Visualization.");
+		//ROS_INFO("Convert New Path To Visualization.");
 		ConvertFromPlannerHToAutowarePathFormat(m_State.m_Path, pathToFollow);
 		ConvertFromPlannerHToAutowareVisualizePathFormat(m_State.m_TotalPath, m_State.m_Path, m_State.m_RollOuts, pathToVisualize);
 	}
 
-	return bNewPath;
+	return bNewRollOuts;
 }
 
 void PlannerH_Handler::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
@@ -291,7 +297,8 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowarePathFormat(const std::vector
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
-
+		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
+		wp.twist.twist.linear.x = path.at(i).v;
 		//PlannerHNS::GPSPoint p = path.at(i).pos;
 		//std::cout << p.ToString() << std::endl;
 
@@ -426,6 +433,52 @@ PlannerXNS::AUTOWARE_SHIFT_POS PlannerH_Handler::ConvertShiftFromPlannerHToAutow
 		return PlannerXNS::AW_SHIFT_POS_SS;
 	else
 		return PlannerXNS::AW_SHIFT_POS_UU;
+}
+
+PlannerXNS::AutowareBehaviorState PlannerH_Handler::ConvertBehaviorStateFromPlannerHToAutoware(const PlannerHNS::BehaviorState& beh)
+{
+	PlannerXNS::AutowareBehaviorState arw_state;
+	arw_state.followDistance = beh.followDistance;
+	arw_state.followVelocity = beh.followVelocity;
+	arw_state.maxVelocity = beh.maxVelocity;
+	arw_state.minVelocity = beh.minVelocity;
+	arw_state.stopDistance = beh.stopDistance;
+
+	if(beh.indicator == PlannerHNS::LIGHT_INDICATOR::INDICATOR_LEFT)
+		arw_state.indicator = PlannerXNS::AW_INDICATOR_LEFT;
+	else if(beh.indicator == PlannerHNS::LIGHT_INDICATOR::INDICATOR_RIGHT)
+		arw_state.indicator = PlannerXNS::AW_INDICATOR_RIGHT;
+	else if(beh.indicator == PlannerHNS::LIGHT_INDICATOR::INDICATOR_BOTH)
+		arw_state.indicator = PlannerXNS::AW_INDICATOR_BOTH;
+	else if(beh.indicator == PlannerHNS::LIGHT_INDICATOR::INDICATOR_NONE)
+		arw_state.indicator = PlannerXNS::AW_INDICATOR_NONE;
+
+	if(beh.state == PlannerHNS::INITIAL_STATE)
+		arw_state.state = PlannerXNS::AW_INITIAL_STATE;
+	else if(beh.state == PlannerHNS::WAITING_STATE)
+		arw_state.state = PlannerXNS::AW_WAITING_STATE;
+	else if(beh.state == PlannerHNS::FORWARD_STATE)
+		arw_state.state = PlannerXNS::AW_FORWARD_STATE;
+	else if(beh.state == PlannerHNS::STOPPING_STATE)
+		arw_state.state = PlannerXNS::AW_STOPPING_STATE;
+	else if(beh.state == PlannerHNS::EMERGENCY_STATE)
+		arw_state.state = PlannerXNS::AW_EMERGENCY_STATE;
+	else if(beh.state == PlannerHNS::TRAFFIC_LIGHT_STOP_STATE)
+		arw_state.state = PlannerXNS::AW_TRAFFIC_LIGHT_STOP_STATE;
+	else if(beh.state == PlannerHNS::STOP_SIGN_STOP_STATE)
+		arw_state.state = PlannerXNS::AW_STOP_SIGN_STOP_STATE;
+	else if(beh.state == PlannerHNS::FOLLOW_STATE)
+		arw_state.state = PlannerXNS::AW_FOLLOW_STATE;
+	else if(beh.state == PlannerHNS::LANE_CHANGE_STATE)
+		arw_state.state = PlannerXNS::AW_LANE_CHANGE_STATE;
+	else if(beh.state == PlannerHNS::OBSTACLE_AVOIDANCE_STATE)
+		arw_state.state = PlannerXNS::AW_OBSTACLE_AVOIDANCE_STATE;
+	else if(beh.state == PlannerHNS::FINISH_STATE)
+		arw_state.state = PlannerXNS::AW_FINISH_STATE;
+
+
+	return arw_state;
+
 }
 
 } /* namespace PlannerXNS */

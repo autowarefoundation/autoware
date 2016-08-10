@@ -311,7 +311,6 @@ void DrawingHelpers::DrawLinePoygonline(const PlannerHNS::GPSPoint& p1, const Pl
 {
 	POINT2D center, prev_center ,pa, pb, pc, pd, prev_pa,prev_pb;
 	double a = 0;
-	double prev_angle = 0;
 
 	center.x = p1.x + (p2.x-p1.x)/2.0;
 	center.y = p1.y + (p2.y-p1.y)/2.0;
@@ -331,13 +330,13 @@ void DrawingHelpers::DrawLinePoygonline(const PlannerHNS::GPSPoint& p1, const Pl
 	pd.x = p2.x - w * cos(a - M_PI/2.0);
 	pd.y = p2.y - w * sin(a - M_PI/2.0);
 
-	  glBegin(GL_POLYGON);
-		  glNormal3f(0.0, 0.0, 0.1);
-		  glVertex3f(pa.x, pa.y, p1.z);
-		  glVertex3f(pb.x, pb.y, p1.z);
-		  glVertex3f(pc.x, pc.y, p2.z);
-		  glVertex3f(pd.x, pd.y, p2.z);
-	  glEnd();
+	glBegin(GL_POLYGON);
+	  glNormal3f(0.1, 0.1, 0.1);
+	  glVertex3f(pa.x, pa.y, p1.z);
+	  glVertex3f(pb.x, pb.y, p1.z);
+	  glVertex3f(pc.x, pc.y, p2.z);
+	  glVertex3f(pd.x, pd.y, p2.z);
+	glEnd();
 }
 
 void DrawingHelpers::DrawLinePoygonFromCenterX(const PlannerHNS::WayPoint& p1, const double& z,
@@ -379,7 +378,7 @@ void DrawingHelpers::DrawLinePoygonFromCenterX(const PlannerHNS::WayPoint& p1, c
 	}
 
 	  glBegin(GL_POLYGON);
-		  glNormal3f(0.0, 0.0, 0.1);
+		  glNormal3f(0.1, 0.1, 0.1);
 		  glVertex3f(pa.x, pa.y,z);
 		  glVertex3f(pb.x, pb.y, z);
 		  glVertex3f(pc.x, pc.y,z);
@@ -503,6 +502,51 @@ void DrawingHelpers::DrawFilledEllipse(float x, float y, float z, float width, f
 		}
 	glEnd();
 	glEnable(GL_LIGHTING);
+}
+
+void DrawingHelpers::DrawWideEllipse(float x, float y, float z, float outer_width, float outer_height,
+		float inner_width,float color[3])
+{
+	std::vector<WayPoint> ellipse_points;
+	for (float i = 0; i <=M_PI*2*RAD2DEG; i+=0.1)
+	{
+		ellipse_points.push_back(WayPoint(x + outer_width*cos(i), y+outer_height*sin(i), z, 0));
+	}
+
+	DrawWidePath(ellipse_points, z, outer_width - inner_width,color);
+}
+
+void DrawingHelpers::DrawPedal(float x, float y, float z, float width, float height, float inner_height, float color[3])
+{
+	POINT2D pa, pb, pc, pd;
+	double w2 = width/2.0;
+	double h2 = height/2.0;
+
+	pa.x = x - w2;
+	pa.y = y - h2;
+
+	pb.x = x + w2;
+	pb.y = y - h2;
+
+	pc.x = x + w2;
+	pc.y = y + h2;
+
+	pd.x = x - w2;
+	pd.y = y + h2;
+
+	glBegin(GL_LINE_LOOP);
+	  glVertex3f(pa.x, pa.y, z);
+	  glVertex3f(pb.x, pb.y, z);
+	  glVertex3f(pc.x, pc.y, z);
+	  glVertex3f(pd.x, pd.y, z);
+	glEnd();
+
+	GPSPoint p1(x, y + h2, z, 0);
+	GPSPoint p2(x, y + h2 - inner_height, z, 0);
+
+	glColor3f(0.8, 0.1, 0.7);
+	DrawLinePoygonline(p1,p2,w2);
+
 }
 
 } /* namespace Graphics */

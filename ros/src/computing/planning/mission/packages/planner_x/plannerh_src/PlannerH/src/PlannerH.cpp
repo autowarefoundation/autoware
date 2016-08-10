@@ -143,18 +143,18 @@ PlannerH::PlannerH(const PlanningInternalParams& params)
  				 rollInSpeedFactor, pathDensity, rollOutDensity,rollOutNumber,
  				 SmoothDataWeight, SmoothWeight, SmoothTolerance, bHeadingSmooth);
 
-	for(unsigned int i=0; i< rollOutPaths.size(); i++)
-	{
-		PlanningHelpers::GenerateRecommendedSpeed(rollOutPaths.at(i), maxSpeed, speedProfileFactor);
-		PlanningHelpers::SmoothSpeedProfiles(rollOutPaths.at(i), 0.15,0.35, 0.1);
-		ostringstream str_out;
-		str_out << DataRW::LoggingFolderPath;
-		str_out << DataRW::PathLogFolderName;
-		str_out << "_";
-		str_out << i;
-		str_out << "_";
-		PlanningHelpers::WritePathToFile(str_out.str(), rollOutPaths.at(i));
-	}
+//	for(unsigned int i=0; i< rollOutPaths.size(); i++)
+//	{
+//		PlanningHelpers::GenerateRecommendedSpeed(rollOutPaths.at(i), maxSpeed, speedProfileFactor);
+//		PlanningHelpers::SmoothSpeedProfiles(rollOutPaths.at(i), 0.15,0.35, 0.1);
+//		ostringstream str_out;
+//		str_out << DataRW::LoggingFolderPath;
+//		str_out << DataRW::PathLogFolderName;
+//		str_out << "_";
+//		str_out << i;
+//		str_out << "_";
+//		PlanningHelpers::WritePathToFile(str_out.str(), rollOutPaths.at(i));
+//	}
    }
 
  double PlannerH::PlanUsingDP(Lane* l, const WayPoint& start,const WayPoint& goalPos,

@@ -37,6 +37,8 @@ public:
 	PlannerHNS::InitState* 					m_pInitState;
 	PlannerHNS::MissionAccomplishedState*	m_pMissionCompleteState;
 
+	std::vector<PlannerHNS::TrajectoryCost> m_TrajectoryCosts;
+
 	void InitBehaviorStates();
 
 	void SetSimulatedTargetOdometryReadings(const double& velocity_d, const double& steering_d, const PlannerHNS::SHIFT_POS& shift_d)
@@ -81,15 +83,24 @@ public:
 	void LocalizeMe(const double& dt); // in seconds
 	double GetMomentumScaleFactor(const double& v); //v is in meter/second
 	void UpdateState(const bool& bUseDelay = false);
-	void CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::DetectedObject>& obj_list,
-			const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map);
+	void CalculateImportantParameterForDecisionMaking(const PlannerHNS::VehicleState& car_state,
+			const PlannerHNS::GPSPoint& goal);
 
-	PlannerHNS::BehaviorState DoOneStepSimulated(const double& dt, const PlannerHNS::VehicleState& state, const PlannerHNS::WayPoint& currPose,
-			const std::vector<PlannerHNS::DetectedObject>& obj_list, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map);
+	PlannerHNS::BehaviorState DoOneStep(const double& dt, const PlannerHNS::VehicleState& state,
+			const std::vector<PlannerHNS::DetectedObject>& obj_list,
+			const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map
+			,const bool& bLive = false);
 
-	PlannerHNS::BehaviorState DoOneStepLive(const double& dt, const PlannerHNS::VehicleState& state, const PlannerHNS::WayPoint& currPose,
-				const std::vector<PlannerHNS::DetectedObject>& obj_list, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map);
-
+private:
+	//Obstacle avoidance functionalities
+	void InitializeTrajectoryCosts();
+	void CalculateTransitionCosts();
+	void CalculateDistanceCosts(const PlannerHNS::VehicleState& state, const std::vector<PlannerHNS::DetectedObject>& obj_list);
+	bool IsGoalAchieved(const PlannerHNS::GPSPoint& goal);
+	void SimulateOdoPosition(const double& dt, const PlannerHNS::VehicleState& vehicleState);
+	void UpdateCurrentLane(PlannerHNS::RoadNetwork& map, const double& search_distance);
+	void SelectSafeTrajectoryAndSpeedProfile();
+	PlannerHNS::BehaviorState GenerateBehaviorState(const PlannerHNS::VehicleState& vehicleState);
 };
 
 class SimulatedCarState
@@ -150,11 +161,9 @@ public:
 	void CalculateImportantParameterForDecisionMaking(const std::vector<PlannerHNS::DetectedObject>& obj_list,
 			const PlannerHNS::VehicleState& car_state, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map);
 
-	PlannerHNS::BehaviorState DoOneStepSimulated(const double& dt, const PlannerHNS::VehicleState& state, const PlannerHNS::WayPoint& currPose,
-			const std::vector<PlannerHNS::DetectedObject>& obj_list, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map);
-
-	PlannerHNS::BehaviorState DoOneStepLive(const double& dt, const PlannerHNS::VehicleState& state, const PlannerHNS::WayPoint& currPose,
-				const std::vector<PlannerHNS::DetectedObject>& obj_list, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map);
+	PlannerHNS::BehaviorState DoOneStep(const double& dt, const PlannerHNS::VehicleState& state, const PlannerHNS::WayPoint& currPose,
+				const std::vector<PlannerHNS::DetectedObject>& obj_list, const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map,
+				const bool& bLive = false);
 
 };
 

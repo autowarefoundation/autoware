@@ -69,6 +69,7 @@ public:
 	SimulationNS::CarState 	m_State;
 	PlannerHNS::GPSPoint 	m_FollowPoint;
 	PlannerHNS::GPSPoint 	m_PerpPoint;
+	std::vector<DisplayDataObj> m_DisplayList;
 
 	GLMmodel* m_CarModel;
 	std::vector<PlannerHNS::WayPoint> m_ActualPath;
@@ -87,6 +88,8 @@ private:
 	std::vector<int> m_LanesIds;
 	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawLanes;
 	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawCenterLines;
+
+
 
 };
 
