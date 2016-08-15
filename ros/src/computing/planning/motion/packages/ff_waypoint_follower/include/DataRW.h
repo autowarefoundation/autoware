@@ -26,7 +26,6 @@ public:
 	static std::string ControlLogFolderName;
 	static std::string PathLogFolderName;
 	static std::string StatesLogFolderName;
-	static std::string SimulationFolderName;
 
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::string>& gps_list);
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::vector<std::string> >& gps_list);
@@ -64,7 +63,7 @@ public:
 
 protected:
 	bool ReadAllData();
-	bool ReadSingleLine(std::vector<std::vector<std::string> >& line);
+	bool ReadSignleLine(std::vector<std::vector<std::string> >& line);
 
 };
 
@@ -107,33 +106,6 @@ protected:
 //	bool ReadNextLine( MsgMovingObject& state, double& logTime);
 //	void ReadAllData(vector<pair<double,  MsgMovingObject> >& state_list);
 //};
-
-class SimulationFileReader : public SimpleReaderBase
-{
-public:
-	struct SimulationPoint
-	{
-		double x;
-		double y;
-		double z;
-		double a;
-		double c;
-		double v;
-	};
-
-	struct SimulationData
-	{
-		SimulationPoint startPoint;
-		SimulationPoint goalPoint;
-		std::vector<SimulationPoint> simuCars;
-	};
-
-	SimulationFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
-	~SimulationFileReader(){}
-
-	bool ReadNextLine(SimulationPoint& data);
-	void ReadAllData(SimulationData& data_list);
-};
 
 class AisanPointsFileReader : public SimpleReaderBase
 {

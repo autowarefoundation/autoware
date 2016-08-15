@@ -80,6 +80,8 @@ public:
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_SimulatedPrevTrajectory;
 	std::vector<SimulationNS::SimulatedTrajectoryFollower> m_SimulatedPathFollower;
 
+
+
 private:
 	void PrepareVectorMapForDrawing();
 	void DrawVectorMap();
@@ -90,6 +92,13 @@ private:
 	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawCenterLines;
 
 
+	void DetectSimulatedObstacles(std::vector<PlannerHNS::DetectedObject>& obj_list);
+	void TransToCarCoordinates(const PlannerHNS::WayPoint& currPose, std::vector<PlannerHNS::DetectedObject>& obj_list);
+	void TransToWorldCoordinates(const PlannerHNS::WayPoint& currPose, std::vector<PlannerHNS::DetectedObject>& obj_list);
+
+	void SaveSimulationData();
+	void LoadSimulationData();
+	void AddSimulatedCar(const double& x,const double& y, const double& a, const double& v);
 
 };
 

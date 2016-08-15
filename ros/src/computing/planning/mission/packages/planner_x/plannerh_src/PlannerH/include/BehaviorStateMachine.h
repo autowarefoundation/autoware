@@ -72,6 +72,26 @@ public:
 	virtual BehaviorStateMachine* GetNextState();
 };
 
+class FollowState : public BehaviorStateMachine
+{
+public:
+	FollowState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = FOLLOW_STATE;}
+	virtual ~FollowState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class SwerveState : public BehaviorStateMachine
+{
+public:
+	SwerveState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = OBSTACLE_AVOIDANCE_STATE;}
+	virtual ~SwerveState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
 class StopState : public BehaviorStateMachine
 {
 public:

@@ -1,0 +1,6 @@
+<!-- -->
+<launch>
+	<node pkg="ff_waypoint_follower" type="ff_waypoint_follower" name="ff_waypoint_follower" output="screen">
+	</node>
+
+</launch>

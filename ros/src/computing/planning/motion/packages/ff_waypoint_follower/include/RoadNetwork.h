@@ -554,7 +554,6 @@ public:
 	int id;
 	OBSTACLE_TYPE t;
 	WayPoint center;
-	WayPoint predicted_center;
 	std::vector<GPSPoint> contour;
 	double w;
 	double l;
@@ -603,25 +602,25 @@ public:
 
 	PlanningParams()
 	{
-		maxSpeed 						= 3;
-		minSpeed 						= 0;
+		maxSpeed 						= 15;
+		minSpeed 						= 1;
 		planningDistance 				= 10000;
 		microPlanDistance 				= 35;
 		carTipMargin					= 8.0;
 		rollInMargin					= 20.0;
 		rollInSpeedFactor				= 0.25;
 		pathDensity						= 0.25;
-		rollOutDensity					= 0.5;
-		rollOutNumber					= 4;
+		rollOutDensity					= 0.7;
+		rollOutNumber					= 6;
 		marginDistanceFromTrajectory	= 2.0;
-		horizonDistance					= 120;
+		horizonDistance					= 500;
 		minFollowingDistance			= 35;
 		maxFollowingDistance			= 40;
-		minDistanceToAvoid				= 15;
+		minDistanceToAvoid				= 10;
 		speedProfileFactor				= 1.5;
 		curvatureCalculationPoints		= 1;
-		smoothingDataWeight				= 0.3;
-		smoothingSmoothWeight			= 0.35;
+		smoothingDataWeight				= 0.35;
+		smoothingSmoothWeight			= 0.3;
 		smoothingToleranceError			= 0.1;
 
 		enableSwerving 					= false;
@@ -661,7 +660,6 @@ public:
 	bool 				bTrafficIsRed; //On , off status
 	//-------------------------------------------//
 	//Swerving
-	int 				iPrevSafeTrajectory;
 	int 				iCurrSafeTrajectory;
 	int 				iCentralTrajectory;
 	bool 				bRePlan;
@@ -705,7 +703,6 @@ public:
 		iCurrSafeTrajectory		= -1;
 		bFullyBlock				= false;
 
-		iPrevSafeTrajectory		= -1;
 		iCentralTrajectory		= -1;
 		bRePlan					= false;
 
@@ -785,49 +782,6 @@ public:
 		}
 
 		return str.str();
-	}
-};
-
-class TrajectoryCost
-{
-public:
-	int index;
-	int relative_index;
-	double closest_obj_velocity;
-	double distance_from_center;
-	double priority_cost; //0 to 1
-	double transition_cost; // 0 to 1
-	double closest_obj_cost; // 0 to 1
-	double cost;
-	double closest_obj_distance;
-
-
-	TrajectoryCost()
-	{
-		index = -1;
-		relative_index = -100;
-		closest_obj_velocity = 0;
-		priority_cost = 0;
-		transition_cost = 0;
-		closest_obj_cost = 0;
-		distance_from_center = 0;
-		cost = 0;
-		closest_obj_distance = -1;
-	}
-
-	std::string ToString()
-	{
-		std::ostringstream str;
-		str.precision(4);
-		str << "Index        : " << relative_index;
-		str << ", Total Cost : " << cost;
-		str << ", Distance   : " << closest_obj_distance;
-		str << ", Dist Cost  : " << closest_obj_cost;
-		str << ", Priority   : " << priority_cost;
-		str << ", Transition : " << transition_cost;
-
-		return str.str();
-
 	}
 };
 

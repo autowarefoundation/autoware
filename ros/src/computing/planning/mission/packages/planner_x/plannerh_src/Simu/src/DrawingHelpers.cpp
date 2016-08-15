@@ -391,25 +391,25 @@ void DrawingHelpers::DrawCustomCarModel(const PlannerHNS::WayPoint& pose,const s
 {
 	double z_center  = 0.5;
 
-	if(carPoints.size() == 8)
+	if(carPoints.size() == 4)
 	{
 
 		z_center = pose.pos.z + (carPoints[7].z - carPoints[0].z)/2.0;
-		glDisable(GL_LIGHTING);
+		//glDisable(GL_LIGHTING);
 		glPushMatrix();
 		glTranslated(pose.pos.x, pose.pos.y, pose.pos.z);
 		glRotated(pose.pos.a*RAD2DEG + angleFix, 0,0,1);
 		for(unsigned  int i = 0; i < 4; i++)
-			{
-				glBegin(GL_LINE_STRIP);
-				//glColor3f(0,1,1);
-				glColor3f(color[0],color[1],color[2]);
+		{
+			glBegin(GL_LINE_STRIP);
+			//glColor3f(0,1,1);
+			glColor3f(color[0],color[1],color[2]);
 
-				glVertex3f(carPoints[i].x, carPoints[i].y, carPoints[i].z);
-				glVertex3f(carPoints[i+4].x, carPoints[i+4].y, carPoints[i+4].z);
+			glVertex3f(carPoints[i].x, carPoints[i].y, carPoints[i].z);
+			glVertex3f(carPoints[i].x, carPoints[i].y, carPoints[i].z+1);
 
-				glEnd();
-			}
+			glEnd();
+		}
 
 
 
@@ -430,26 +430,43 @@ void DrawingHelpers::DrawCustomCarModel(const PlannerHNS::WayPoint& pose,const s
 
 		glEnd();
 
-
 		glBegin(GL_LINE_LOOP);
+		//glColor3f(0,0,1);
 		glColor3f(color[0],color[0],color[2]);
-			glVertex3f(carPoints[4].x, carPoints[4].y, carPoints[4].z);
-			glVertex3f(carPoints[5].x, carPoints[5].y, carPoints[5].z);
-			glVertex3f(carPoints[6].x, carPoints[6].y, carPoints[6].z);
-			glVertex3f(carPoints[7].x, carPoints[7].y, carPoints[7].z);
-			glVertex3f(carPoints[4].x, carPoints[4].y, carPoints[4].z);
+			glVertex3f(carPoints[0].x, carPoints[0].y, carPoints[0].z+1);
+			glVertex3f(carPoints[1].x, carPoints[1].y, carPoints[1].z+1);
+			glVertex3f(carPoints[2].x, carPoints[2].y, carPoints[2].z+1);
+			glVertex3f(carPoints[3].x, carPoints[3].y, carPoints[3].z+1);
+			glVertex3f(carPoints[0].x, carPoints[0].y, carPoints[0].z+1);
 
+			glVertex3f(carPoints[0].x, carPoints[0].y, carPoints[0].z+1);
+			glVertex3f(carPoints[2].x, carPoints[2].y, carPoints[2].z+1);
 
-			glVertex3f(carPoints[4].x, carPoints[4].y, carPoints[4].z);
-			glVertex3f(carPoints[6].x, carPoints[6].y, carPoints[6].z);
+			glVertex3f(carPoints[1].x, carPoints[1].y, carPoints[1].z+1);
+			glVertex3f(carPoints[3].x, carPoints[3].y, carPoints[3].z+1);
 
-			glVertex3f(carPoints[5].x, carPoints[5].y, carPoints[5].z);
-			glVertex3f(carPoints[7].x, carPoints[7].y, carPoints[7].z);
 		glEnd();
 
 
+//		glBegin(GL_LINE_LOOP);
+//		glColor3f(color[0],color[0],color[2]);
+//			glVertex3f(carPoints[4].x, carPoints[4].y, carPoints[4].z);
+//			glVertex3f(carPoints[5].x, carPoints[5].y, carPoints[5].z);
+//			glVertex3f(carPoints[6].x, carPoints[6].y, carPoints[6].z);
+//			glVertex3f(carPoints[7].x, carPoints[7].y, carPoints[7].z);
+//			glVertex3f(carPoints[4].x, carPoints[4].y, carPoints[4].z);
+//
+//
+//			glVertex3f(carPoints[4].x, carPoints[4].y, carPoints[4].z);
+//			glVertex3f(carPoints[6].x, carPoints[6].y, carPoints[6].z);
+//
+//			glVertex3f(carPoints[5].x, carPoints[5].y, carPoints[5].z);
+//			glVertex3f(carPoints[7].x, carPoints[7].y, carPoints[7].z);
+//		glEnd();
+
+
 		glPopMatrix();
-		glEnable(GL_LIGHTING);
+		//glEnable(GL_LIGHTING);
 	}
 
 //	center.p.z  = z_center;

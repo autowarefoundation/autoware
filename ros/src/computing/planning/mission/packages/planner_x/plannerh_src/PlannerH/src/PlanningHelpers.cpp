@@ -293,6 +293,32 @@ WayPoint PlanningHelpers::GetNextPointOnTrajectory(const vector<WayPoint>& traje
 	return abs_waypoint;
 }
 
+double PlanningHelpers::GetDistanceOnTrajectory(std::vector<WayPoint>& path, const int& start_index, const WayPoint& p)
+{
+
+	int end_point_index = GetClosestPointIndex(path, p);
+	if(end_point_index > 0)
+		end_point_index--;
+
+	double padding_distance = distance2points(path.at(end_point_index).pos, p.pos);
+
+	double d_on_path = 0;
+	if(end_point_index >= start_index)
+	{
+		for(unsigned int i = start_index; i < end_point_index; i++)
+			d_on_path += distance2points(path.at(i).pos, path.at(i+1).pos);
+
+		d_on_path += padding_distance;
+	}
+	else
+	{
+		for(unsigned int i = start_index; i > end_point_index; i--)
+			d_on_path -= distance2points(path.at(i).pos, path.at(i-1).pos);
+	}
+
+	return d_on_path;
+}
+
 void PlanningHelpers::FixPathDensity(vector<WayPoint>& path, const double& distanceDensity)
 {
 	double d2 = distanceDensity*2.0;

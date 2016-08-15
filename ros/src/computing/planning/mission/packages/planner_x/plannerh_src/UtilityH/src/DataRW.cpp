@@ -21,6 +21,7 @@ std::string DataRW::LoggingFolderPath = "/home/hatem/SimuLogs/";
 std::string DataRW::ControlLogFolderName = "ControlLog/";
 std::string DataRW::PathLogFolderName = "GeneratedTrajectories/";
 std::string DataRW::StatesLogFolderName = "BehaviorsGenerated/";
+std::string DataRW::SimulationFolderName = "SimulationData/";
 
 DataRW::DataRW()
 {
@@ -188,7 +189,7 @@ SimpleReaderBase::~SimpleReaderBase()
 		m_pFile->close();
 }
 
-bool SimpleReaderBase::ReadSignleLine(vector<vector<string> >& line)
+bool SimpleReaderBase::ReadSingleLine(vector<vector<string> >& line)
 {
 	if(!m_pFile->is_open() || m_pFile->eof()) return false;
 
@@ -249,7 +250,7 @@ bool SimpleReaderBase::ReadAllData()
 	vector<vector<string> > singleLine;
 	while(!m_pFile->eof())
 	{
-		ReadSignleLine(singleLine);
+		ReadSingleLine(singleLine);
 		m_AllData.push_back(singleLine);
 	}
 
@@ -287,11 +288,51 @@ void SimpleReaderBase::ParseDataTitles(const string& header)
 	}
 }
 
+bool SimulationFileReader::ReadNextLine(SimulationPoint& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 5) return false;
+
+		data.x = strtod(lineData.at(0).at(0).c_str(), NULL);
+		data.y = strtod(lineData.at(0).at(1).c_str(), NULL);
+		data.z = strtod(lineData.at(0).at(2).c_str(), NULL);
+		data.a = strtod(lineData.at(0).at(3).c_str(), NULL);
+		data.c = strtod(lineData.at(0).at(4).c_str(), NULL);
+		data.v = strtod(lineData.at(0).at(5).c_str(), NULL);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void SimulationFileReader::ReadAllData(SimulationData& data_list)
+{
+	data_list.simuCars.clear();
+	SimulationPoint data;
+	double logTime = 0;
+	int count = 0;
+	while(ReadNextLine(data))
+	{
+		if(count == 0)
+			data_list.startPoint = data;
+		else if(count == 1)
+			data_list.goalPoint = data;
+		else
+			data_list.simuCars.push_back(data);
+
+		count++;
+	}
+}
 
 bool AisanNodesFileReader::ReadNextLine(AisanNode& data)
 {
 	vector<vector<string> > lineData;
-	if(ReadSignleLine(lineData))
+	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
 		if(lineData.at(0).size() < 10) return false;
@@ -318,7 +359,7 @@ void AisanNodesFileReader::ReadAllData(vector<AisanNode>& data_list)
 bool AisanPointsFileReader::ReadNextLine(AisanPoints& data)
 {
 	vector<vector<string> > lineData;
-	if(ReadSignleLine(lineData))
+	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
 		if(lineData.at(0).size() < 10) return false;
@@ -354,7 +395,7 @@ void AisanPointsFileReader::ReadAllData(vector<AisanPoints>& data_list)
 bool AisanLinesFileReader::ReadNextLine(AisanLine& data)
 {
 	vector<vector<string> > lineData;
-	if(ReadSignleLine(lineData))
+	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
 		if(lineData.at(0).size() < 5) return false;
@@ -383,7 +424,7 @@ void AisanLinesFileReader::ReadAllData(vector<AisanLine>& data_list)
 bool AisanCenterLinesFileReader::ReadNextLine(AisanCenterLine& data)
 {
 	vector<vector<string> > lineData;
-	if(ReadSignleLine(lineData))
+	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
 		if(lineData.at(0).size() < 5) return false;
@@ -418,7 +459,7 @@ void AisanCenterLinesFileReader::ReadAllData(vector<AisanCenterLine>& data_list)
 bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 {
 	vector<vector<string> > lineData;
-	if(ReadSignleLine(lineData))
+	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
 		if(lineData.at(0).size() < 5) return false;
