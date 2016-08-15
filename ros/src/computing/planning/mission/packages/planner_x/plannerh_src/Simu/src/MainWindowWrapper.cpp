@@ -872,19 +872,35 @@ void MainWindowWrapper::ModifyPopupMenu()
 
 void MainWindowWrapper::CreateRightClickMenu()
 {
-	m_PopupMenu = glutCreateMenu(MenuCommand);
+	if(m_PopupMenu==0)
+		m_PopupMenu = glutCreateMenu(MenuCommand);
+	else
+		glutSetMenu(m_PopupMenu);
+
 	glutAddMenuEntry("Start/Stop  (s)", 's');
 	glutAddMenuEntry("Restart     (r)", 'r');
+
 	glutAddMenuEntry("------------", 0);
+
 	glutAddMenuEntry("Full Screen (f)", 'f');
 	glutAddMenuEntry("Follow CAM  (c)", 'c');
 	glutAddMenuEntry("Top CAM     (t)", 't');
 	glutAddMenuEntry("Free CAM    (e)", 'e');
+
 	glutAddMenuEntry("------------", 0);
+
+	glutAddMenuEntry("Start Pose  (p)", 0);
+	glutAddMenuEntry("End   Pose  (o)", 0);
+	glutAddMenuEntry("Add Sim Car (u)", 0);
+	glutAddMenuEntry("Save Sim Points(v)", 0);
+	glutAddMenuEntry("Load Sim Points(l)", 0);
+
+	glutAddMenuEntry("------------", 0);
+
 	glutAddMenuEntry("Exit        (Esc)", 27);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
-	glutMenuStatusFunc(ProcessMenuStatus);
+	//glutMenuStatusFunc(ProcessMenuStatus);
 }
 
 

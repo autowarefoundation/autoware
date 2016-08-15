@@ -36,6 +36,8 @@ public:
 	PlannerHNS::WaitState* 					m_pWaitState;
 	PlannerHNS::InitState* 					m_pInitState;
 	PlannerHNS::MissionAccomplishedState*	m_pMissionCompleteState;
+	PlannerHNS::FollowState*				m_pFollowState;
+	PlannerHNS::SwerveState*				m_pAvoidObstacleState;
 
 	std::vector<PlannerHNS::TrajectoryCost> m_TrajectoryCosts;
 
@@ -96,11 +98,14 @@ private:
 	void InitializeTrajectoryCosts();
 	void CalculateTransitionCosts();
 	void CalculateDistanceCosts(const PlannerHNS::VehicleState& state, const std::vector<PlannerHNS::DetectedObject>& obj_list);
+	void FindSafeTrajectory(int& safe_index, double& closest_distance, double& closest_velocity);
+	void FindNextBestSafeTrajectory(int& safe_index);
 	bool IsGoalAchieved(const PlannerHNS::GPSPoint& goal);
 	void SimulateOdoPosition(const double& dt, const PlannerHNS::VehicleState& vehicleState);
 	void UpdateCurrentLane(PlannerHNS::RoadNetwork& map, const double& search_distance);
 	void SelectSafeTrajectoryAndSpeedProfile();
 	PlannerHNS::BehaviorState GenerateBehaviorState(const PlannerHNS::VehicleState& vehicleState);
+	void TransformPoint(const PlannerHNS::WayPoint& refPose, PlannerHNS::GPSPoint& p);
 };
 
 class SimulatedCarState
@@ -108,7 +113,7 @@ class SimulatedCarState
 public:
 	PlannerHNS::WayPoint state;
 	CAR_BASIC_INFO m_CarInfo;
-	double w,l;
+	double w,l, maxSpeed;
 	std::vector<PlannerHNS::GPSPoint> m_CarShapePolygon;
 	std::vector<PlannerHNS::WayPoint> m_Path;
 	std::vector<PlannerHNS::WayPoint> m_TotalPath;

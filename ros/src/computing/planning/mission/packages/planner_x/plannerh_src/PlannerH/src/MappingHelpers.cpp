@@ -302,8 +302,6 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 			}
 		}
 	}
-
-
 }
 
 WayPoint* MappingHelpers::FindWaypoint(const int& id, RoadNetwork& map)

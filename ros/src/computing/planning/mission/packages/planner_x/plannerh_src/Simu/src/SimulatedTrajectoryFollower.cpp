@@ -115,7 +115,7 @@ void SimulatedTrajectoryFollower::UpdateParams(const ControllerParams& params)
 int SimulatedTrajectoryFollower::VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
 		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity)
 {
-	desiredVelocity = 3;
+	desiredVelocity = CurrBehavior.maxVelocity;
 	return 1;
 }
 
