@@ -2,8 +2,10 @@
 <launch>
 
 	<arg name="initialize_source" default="Rviz"/>
+	<arg name="accel_rate" default="1.0"/>
     <node pkg="waypoint_follower" type="wf_simulator" name="wf_simulator" output="screen">
     	<param name="initialize_source" value="$(arg initialize_source)"/>
+    	<param name="accel_rate" value="$(arg accel_rate)"/>
     </node>
 
 </launch>
