@@ -484,6 +484,10 @@ subs :
          desc : wf_simulator desc sample
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
+         gui  :
+           initialize_source :
+             flags : [ nl ]
+
          
 buttons:
   car_dpm :
@@ -1324,6 +1328,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='   
+    - name      : accel_rate
+      desc      : 
+      label   : 'accel_rate(m/s^2) :'
+      v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : car_kf
     topic : /config/car_kf
