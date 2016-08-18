@@ -39,7 +39,7 @@
 #include <ext/stdio_filebuf.h>
 #include <curl/curl.h>
 
-#include <map_file.h>
+#include <map_file/get_file.h>
 
 
 GetFile::GetFile()

@@ -39,7 +39,7 @@
 
 #include <waypoint_follower/LaneArray.h>
 
-#include <map_file.h>
+#include <map_file/get_file.h>
 
 namespace {
 

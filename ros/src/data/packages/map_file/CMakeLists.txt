@@ -96,13 +96,13 @@ include_directories(
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-add_library(map_file
-  lib/map_file/GetFile.cpp
+add_library(get_file
+  lib/map_file/get_file.cpp
 )
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
-target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} map_file curl)
+target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} get_file curl)
 add_dependencies(points_map_loader waypoint_follower_generate_messages_cpp)
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
-target_link_libraries(vector_map_loader ${catkin_LIBRARIES} map_file curl)
+target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file curl)
 add_dependencies(vector_map_loader map_file_generate_messages_cpp)
