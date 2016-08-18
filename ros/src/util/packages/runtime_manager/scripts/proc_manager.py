@@ -40,6 +40,7 @@ import psutil
 import select
 import re
 import pickle
+import threading
 import multiprocessing
 import time # for *debug*
 #import hashlib
@@ -122,16 +123,15 @@ class ProcManager:
 		f.close()
 
 	def _ftrace(self, sec, pids=[]):
+		opid = [0] * multiprocessing.cpu_count()
 		ret = {}
-		opid = {}
 		for cpuno in range(0, multiprocessing.cpu_count()):
 			ret[cpuno] = []
-			opid[cpuno] = 0
-		stime = 0
 		wsec = sec
 		f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
+		time.sleep(wsec)
 		while True:
-			(r, _, _) = select.select([f], [], [], wsec)
+			(r, _, _) = select.select([f], [], [], 0)
 			if len(r) <= 0:
 				break
 			l = f.readline()
@@ -143,7 +143,6 @@ class ProcManager:
 			pid = int(m.group(3))
 			if stime == 0:
 				stime = t
-			t -= stime
 			if pid not in pids and pid > 0:
 				pid = 0 # idle...
 			#if pid != opid[cpuno] or pid in pids or opid[cpuno] in pids:
@@ -151,9 +150,6 @@ class ProcManager:
 				dat = [pid, t]
 				ret[cpuno].append(dat)
 			opid[cpuno] = pid
-			wsec = sec - t
-			if wsec <= 0:
-				break
 		f.close()
 		return ret
 
@@ -179,6 +175,48 @@ class ProcManager:
 		print "* ftrace", et, "sec" # for *debug*
 		return ret
 
+	def get_ftrace_cont(self, conn, interval, pids):
+		self._filterNodePid(pids)
+		self._set_sched_switch(True)
+		self._set_ftrace(True)
+		f = open('/sys/kernel/debug/tracing/trace_pipe', 'r')
+		while True:
+			opid = [0] * multiprocessing.cpu_count()
+			ret = {}
+			for cpuno in range(0, multiprocessing.cpu_count()):
+				ret[cpuno] = []
+			time.sleep(interval)
+			while True:
+				(r, _, _) = select.select([f], [], [], 0)
+				if len(r) <= 0:
+					break
+				l = f.readline()
+				m = re.match('^.* \[([0-9]*)\].* ([0-9]*\.[0-9]*): .*==> next_comm=.* next_pid=([0-9]*) next.*$', l)
+				if m is None:
+					continue
+				cpuno = int(m.group(1))
+				t = float(m.group(2))
+				pid = int(m.group(3))
+				if pid not in pids and pid > 0:
+					pid = 0 # idle...
+				#if pid != opid[cpuno] or pid in pids or opid[cpuno] in pids:
+				if pid != opid[cpuno]:
+					dat = [pid, t]
+					ret[cpuno].append(dat)
+				opid[cpuno] = pid
+			dat = pickle.dumps(ret)
+			slen = 0
+			try:
+				while slen < len(dat):
+					slen += conn.send(dat[slen:])
+			except socket.error:
+				print "ftrace disconnected"
+				break
+		f.close()
+		self._set_ftrace(False)
+		self._set_sched_switch(False)
+		conn.close()
+
 	def run(self):
 		while True:
 			conn, addr = self.sock.accept()
@@ -197,6 +235,12 @@ class ProcManager:
 								 order['priority'])
 			elif order['name'] == 'ftrace':
 				ret = self.get_ftrace(order['sec'], order['pids'])
+			elif order['name'] == 'ftrace_cont':
+				th = threading.Thread(target=self.get_ftrace_cont,
+						      name="ftrace_cont",
+						      args=(conn, order['interval'], order['pids']))
+				th.start()
+				continue
 			elif order['name'] == 'shutdown':
 				conn.send(str.encode("0"))
 				conn.close()
@@ -237,7 +281,6 @@ def drop_capabilities():
 		if cap not in KEEP_CAPS:
 			libc.prctl(PR_CAPBSET_DROP, cap)
 
-
 if __name__ == "__main__":
 	if os.getuid() != 0:
 		print("You must run runtime manger as root user")
@@ -247,3 +290,4 @@ if __name__ == "__main__":
 
 	manager = ProcManager()
 	manager.run()
+
