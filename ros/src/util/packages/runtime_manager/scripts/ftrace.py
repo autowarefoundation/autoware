@@ -276,17 +276,23 @@ class MyFrame(wx.Frame):
         ptm = ctm
         pid = cid
 
-    # 時刻描画
+    # 目盛と時刻の描画
     dc = wx.PaintDC(self.cgpanels_[self.itmcount_])
     dc.SetPen(wx.Pen(self.bgcol_))
     dc.SetBrush(wx.Brush(self.bgcol_))
-    dc.DrawRectangle(0, 0, self.cgtw_, self.cgth_) # 時刻欄の描画領域クリア
+    dc.DrawRectangle(0, 0, self.cgtw_, self.cgth_) # 描画領域クリア
     dc.SetTextForeground((0,0,0))
-    tint = self.cgtw_ / self.dtimespan # 時刻表示間隔
-    tofs = self.cgtw_ * (1 - (ctime.microsecond / self.dtimespan / 1000000)) # 時刻表示オフセット
+    tint = self.cgtw_ / self.dtimespan # 表示間隔
+    tofs = self.cgtw_ * (1 - (ctime.microsecond / self.dtimespan / 1000000)) # 表示オフセット
     tmin = ctime.minute
     tsec = ctime.second
-    for t in range(0, 4):
+    dc.SetPen(wx.Pen('blue'))
+    for t in range(-10, 30): # 目盛の描画
+      x = tofs - (t / 10.0) * tint
+      dc.DrawLine(x, 0, x, 4)
+      if (t % 5) == 0:
+        dc.DrawLine(x - 1, 0, x - 1, 4)
+    for t in range(0, 4): # 時刻の描画
       ttext = "%02d:%02d" % (tmin, tsec)
       txtw,_ = dc.GetTextExtent(ttext) # 時刻表示の文字列幅の取得
       dc.DrawText(ttext, tofs - (txtw / 2), 0) # 時刻描画
