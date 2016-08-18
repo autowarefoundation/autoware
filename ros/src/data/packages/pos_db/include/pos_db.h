@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _MAP_DB_H_
-#define _MAP_DB_H_
+#ifndef _POS_DB_H_
+#define _POS_DB_H_
 
 #include <cstdint>
 #include <string>
@@ -82,4 +82,4 @@ extern std::string make_header(int32_t sql_inst, int32_t sql_num);
 extern int probe_mac_addr(char *mac_addr);
 #define MAC_ADDRBUFSIZ	20
 
-#endif /* _MAP_DB_H_ */
+#endif /* _POS_DB_H_ */

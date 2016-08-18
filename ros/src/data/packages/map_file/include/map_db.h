@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _MAP_DB_H_
-#define _MAP_DB_H_
+#ifndef _MAP_FILE_H_
+#define _MAP_FILE_H_
 
 #include <cstdint>
 #include <string>
@@ -57,4 +57,4 @@ public:
 };
 
 
-#endif /* _MAP_DB_H_ */
+#endif /* _MAP_FILE_H_ */

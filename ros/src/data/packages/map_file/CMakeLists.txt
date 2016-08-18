@@ -97,7 +97,7 @@ include_directories(
 )
 
 add_library(map_file
-  lib/map_db/GetFile.cpp
+  lib/map_file/GetFile.cpp
 )
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} map_file curl)
