@@ -197,10 +197,7 @@ void CarState::InitPolygons()
  	pValues->bRePlan 				= false;
  	FindSafeTrajectory(pValues->iCurrSafeTrajectory, pValues->distanceToNext, pValues->velocityOfNext);
  	if(pValues->iCurrSafeTrajectory == -1)
- 	{
- 		FindNextBestSafeTrajectory(pValues->iCurrSafeTrajectory);
  		pValues->bFullyBlock = true;
- 	}
  	else
  		pValues->bFullyBlock = false;
 
@@ -433,7 +430,10 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 		int index_limit = m_Path.size() - 20;
 		if(index_limit<=0)
 			index_limit =  m_Path.size()/2.0;
-		if(m_RollOuts.size() == 0 || currIndex > index_limit || m_pCurrentBehaviorState->GetCalcParams()->bRePlan)
+		if(m_RollOuts.size() == 0
+				|| currIndex > index_limit
+				|| m_pCurrentBehaviorState->GetCalcParams()->bRePlan
+				|| m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
 		{
 			PlannerHNS::PlanningInternalParams params;
 			PlannerHNS::PlannerH planner(params);
@@ -453,11 +453,22 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
 					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
 					false, m_RollOuts);
+
 			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
 
+			//FindNextBestSafeTrajectory(pValues->iCurrSafeTrajectory);
 			if(preCalcPrams->iCurrSafeTrajectory >= 0 && preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size())
 			{
-				m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+				if(m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
+				{
+					preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
+					m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+				}
+				else
+				{
+					preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCentralTrajectory;
+					m_Path = m_RollOuts.at(preCalcPrams->iCentralTrajectory);
+				}
 				PlanningHelpers::GenerateRecommendedSpeed(m_Path,
 						m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
 						m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
