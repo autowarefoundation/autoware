@@ -12,13 +12,15 @@
 #include <sstream>
 #include "MatrixOperations.h"
 #include "SimpleTracker.h"
+#include "DataRW.h"
 
 using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMapPath "/home/hatem/workspace/Data/VectorMap/"
-#define kmlTemplateFile "/home/hatem/workspace/Data/templates/PlannerX_MapTemplate.kml"
+#define VectorMapPath "/home/ai-driver/workspace/Data/VectorMap/"
+#define kmlMapPath	"/home/ai-driver/SimuLogs/7th_floor_10m.kml"
+#define kmlTemplateFile "/home/ai-driver/workspace/Data/templates/PlannerX_MapTemplate.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
 
 namespace Graphics
@@ -34,13 +36,16 @@ PlannerTestDraw::PlannerTestDraw()
 
 	planning_thread_tid = 0;
 	control_thread_tid = 0;
+	simulation_thread_tid = 0;
 	m_bCancelThread = false;
 	m_PlanningCycleTime = 0.01;
 	m_ControlCycleTime  = 0.01;
+	m_SimulationCycleTime = 0.02;
 
 	m_CarModel = 0;
 
 	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMapPath, m_RoadMap);
+	//PlannerHNS::MappingHelpers::LoadKML(kmlMapPath, m_RoadMap);
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
@@ -76,7 +81,7 @@ PlannerTestDraw::PlannerTestDraw()
 
 	pthread_create(&planning_thread_tid, NULL, &PlannerTestDraw::PlanningThreadStaticEntryPoint, this);
 	pthread_create(&control_thread_tid, NULL, &PlannerTestDraw::ControlThreadStaticEntryPoint, this);
-	//pthread_create(&simulation_thread_tid, NULL, &PlannerTestDraw::SimulationThreadStaticEntryPoint, this);
+	pthread_create(&simulation_thread_tid, NULL, &PlannerTestDraw::SimulationThreadStaticEntryPoint, this);
 
 
 	//InitStartAndGoal(2, -50, M_PI, 100, 100, M_PI_2);
@@ -219,7 +224,7 @@ void PlannerTestDraw::DetectSimulatedObstacles(std::vector<PlannerHNS::DetectedO
 
 void PlannerTestDraw::AddSimulatedCarPos(const double& x,const double& y, const double& a)
 {
-	double v  = (rand()%70+5)/10.0/3.6;
+	double v  = 0;//(rand()%70+5)/10.0/3.6;
 	AddSimulatedCar(x,y,a,v);
 }
 
@@ -291,6 +296,13 @@ void PlannerTestDraw::PrepareVectorMapForDrawing()
 		if(pL)
 			currLane.push_back(pL);
 		distance_to_nearest_lane += 2;
+	}
+
+	if(currLane.size()==0)
+	{
+		if(m_RoadMap.roadSegments.size() > 0)
+			if(m_RoadMap.roadSegments.at(0).Lanes.size()>0)
+				currLane.push_back(&m_RoadMap.roadSegments.at(0).Lanes.at(0));
 	}
 
 	for(unsigned int i=0; i< currLane.size(); i++)
@@ -452,7 +464,7 @@ void PlannerTestDraw::DrawSimu()
 		glPushMatrix();
 		glTranslated(m_dummyObstacles.at(i).center.pos.x, m_dummyObstacles.at(i).center.pos.y, 1.3);
 		std::ostringstream str_out ;
-		str_out.precision(2);
+		str_out.precision(4);
 		str_out <<  m_dummyObstacles.at(i).center.v *3.6;
 		DrawingHelpers::DrawString(0, 0,
 				GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
@@ -463,9 +475,9 @@ void PlannerTestDraw::DrawSimu()
 
 	float CarColor[3] = {0.1, 0.9, 0.9};
 
-//	pthread_mutex_lock(&simulation_mutex);
-//	for(unsigned int i =0; i <m_SimulatedCars.size(); i++)
-//	{
+	pthread_mutex_lock(&simulation_mutex);
+	for(unsigned int i =0; i <m_SimulatedCars.size(); i++)
+	{
 //		DrawingHelpers::DrawCustomCarModel(m_SimulatedCars.at(i).state, m_State.m_CarShapePolygon, CarColor, 90);
 //
 //		glPushMatrix();
@@ -476,11 +488,11 @@ void PlannerTestDraw::DrawSimu()
 //		DrawingHelpers::DrawString(0, 1,
 //				GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
 //		glPopMatrix();
-//
-//		float TotalPathColor[3] = {0.99, 0.0, 0.99};
-//		DrawingHelpers::DrawWidePath(m_SimulatedCars.at(i).m_TotalPath, 0.08, 0.25, TotalPathColor);
-//	}
-//	pthread_mutex_unlock(&simulation_mutex);
+
+		float TotalPathColor[3] = {0.99, 0.0, 0.99};
+		DrawingHelpers::DrawWidePath(m_SimulatedCars.at(i).m_TotalPath, 0.08, 0.25, TotalPathColor);
+	}
+	pthread_mutex_unlock(&simulation_mutex);
 
 	glColor3f(1,0,0);
 	DrawingHelpers::DrawFilledEllipse(m_FollowPoint.x, m_FollowPoint.y, 0.2, 0.2, 0.2);
@@ -497,13 +509,13 @@ void PlannerTestDraw::DrawSimu()
 	m_followZ = m_State.state.pos.z;
 	m_followA = m_State.state.pos.a;
 
-	if(m_CarModel)
-	{
-		DrawingHelpers::DrawModel(m_CarModel, m_State.m_CarInfo.wheel_base *0.9,
-				m_State.m_CarInfo.wheel_base*0.9, m_State.m_CarInfo.wheel_base*0.9,
-				m_State.state.pos.x,m_State.state.pos.y,
-				m_State.state.pos.z+0.275, m_State.state.pos.a, 0,0);
-	}
+//	if(m_CarModel)
+//	{
+//		DrawingHelpers::DrawModel(m_CarModel, m_State.m_CarInfo.wheel_base *0.9,
+//				m_State.m_CarInfo.wheel_base*0.9, m_State.m_CarInfo.wheel_base*0.9,
+//				m_State.state.pos.x,m_State.state.pos.y,
+//				m_State.state.pos.z+0.275, m_State.state.pos.a, 0,0);
+//	}
 
 	DrawingHelpers::DrawCustomCarModel(m_State.state, m_State.m_CarShapePolygon, CarColor, 90);
 }
@@ -540,7 +552,7 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 	glPopMatrix();
 
 	double speed = m_VehicleState.speed*3.6;
-	float pedal_color[3] = {0.1, 0.7, 0.3};
+	float pedal_color[3] = {0.1, 0.7, 0.8};
 	DrawingHelpers::DrawPedal(centerX + 70, 70, 0, 30.0, 100.0, speed*5.5,pedal_color );
 	glPushMatrix();
 	glTranslated(centerX+60, 70+85, 0);
@@ -627,6 +639,17 @@ void PlannerTestDraw::OnKeyboardPress(const SPECIAL_KEYS_TYPE& sKey, const unsig
 		LoadSimulationData();
 	}
 	break;
+	case 'n':
+	{
+		pthread_mutex_lock(&simulation_mutex);
+		m_SimulatedCars.clear();
+		m_SimulatedBehaviors.clear();
+		m_SimulatedVehicleState.clear();
+		m_SimulatedPrevTrajectory.clear();
+		m_SimulatedPathFollower.clear();
+		pthread_mutex_unlock(&simulation_mutex);
+	}
+	break;
 	default:
 		break;
 
@@ -676,6 +699,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 	PlannerHNS::PlannerH planner(params);
 	SimpleTracker obstacleTracking;
 	obstacleTracking.Initialize(pR->m_State.state);
+	vector<string> behaviorsLogData;
 
 	while(!pR->m_bCancelThread)
 	{
@@ -687,9 +711,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			UtilityH::GetTickCount(moveTimer);
 #ifdef EnableThreadBody
 			vector<PlannerHNS::WayPoint> generatedTotalPath = pR->m_State.m_TotalPath;
-			vector<vector<PlannerHNS::WayPoint> > rollOuts;
 			bool bNewPlan = false;
-			bool bNewRollOuts = false;
 			PlannerHNS::VehicleState currState;
 			pthread_mutex_lock(&pR->control_mutex);
 			currState = pR->m_VehicleState;
@@ -715,52 +737,16 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			{
 				//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
 				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state, pR->m_goal, pR->m_State.state, 1000000,pR->m_LanesIds, generatedTotalPath);
-				pR->m_goal = generatedTotalPath.at(generatedTotalPath.size()-1);
+				if(generatedTotalPath.size()>0)
+					pR->m_goal = generatedTotalPath.at(generatedTotalPath.size()-1);
 				pR->m_bMakeNewPlan = false;
 				bNewPlan = true;
-			}
-
-			//bool bNewTrajectory = false;
-			/**
-			 * Trajectory Planning Step, Roll outs , (Micro planner)
-			 */
-			if(generatedTotalPath.size()>0)
-			{
-				int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(pR->m_State.m_Path, pR->m_State.state);
-				int index_limit = pR->m_State.m_Path.size() - 20;
-				if(index_limit<=0)
-					index_limit =  pR->m_State.m_Path.size()/2.0;
-				if(pR->m_State.m_RollOuts.size() == 0 || currIndex > index_limit || pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->bRePlan)
-				{
-					planner.GenerateRunoffTrajectory(pR->m_State.m_TotalPath, pR->m_State.state, false,
-							currState.speed,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.minSpeed,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
-							pR->m_State.m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-							false, rollOuts);
-					bNewRollOuts = true;
-					pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
-				}
 			}
 
 			/**
 			 * Behavior Generator , State Machine , Decision making Step
 			 */
-
-
 			pthread_mutex_lock(&pR->planning_mutex);
-			if(bNewRollOuts)
-				pR->m_State.m_RollOuts  = rollOuts;
 			if(bNewPlan)
 				pR->m_State.m_TotalPath = generatedTotalPath;
 
@@ -771,11 +757,15 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			pthread_mutex_unlock(&pR->simulation_mutex);
 
 			//pR->TransToCarCoordinates(pR->m_State.state, obj_list);
-			//obstacleTracking.DoOneStep(pR->m_State.state, obj_list);
-			//obj_list = obstacleTracking.m_DetectedObjects;
+			obstacleTracking.DoOneStep(pR->m_State.state, obj_list);
+			obj_list = obstacleTracking.m_DetectedObjects;
+			//pR->TransToWorldCoordinates(pR->m_State.state, obj_list);
+
 			pR->m_CurrentBehavior = pR->m_State.DoOneStep(dt, currState, obj_list, pR->m_goal.pos, pR->m_RoadMap);
 
-			//pR->TransToWorldCoordinates(pR->m_State.state, obj_list);
+			if(pR->m_CurrentBehavior.state != PlannerHNS::INITIAL_STATE)
+				behaviorsLogData.push_back(pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(pR->m_CurrentBehavior.state));
+
 			pR->m_dummyObstacles = obj_list;
 
 			pthread_mutex_unlock(&pR->planning_mutex);
@@ -791,6 +781,9 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 #endif
 		}
 	}
+
+	DataRW::WriteLogData(DataRW::LoggingFolderPath+DataRW::StatesLogFolderName, "BehaviorsLog",
+			pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->ToStringHeader(), behaviorsLogData );
 
 	return 0;
 }
@@ -813,7 +806,7 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 
 		if(time_elapsed >= pR->m_ControlCycleTime)
 		{
-			double dt = time_elapsed;
+			double dt = 0.01;
 			UtilityH::GetTickCount(moveTimer);
 
 #ifdef EnableThreadBody
@@ -869,7 +862,7 @@ void* PlannerTestDraw::SimulationThreadStaticEntryPoint(void* pThis)
 	{
 		double time_elapsed  = UtilityH::GetTimeDiffNow(moveTimer);
 
-		if(time_elapsed >= 0.02)
+		if(time_elapsed >= pR->m_SimulationCycleTime)
 		{
 			double dt = 0.02;
 			UtilityH::GetTickCount(moveTimer);

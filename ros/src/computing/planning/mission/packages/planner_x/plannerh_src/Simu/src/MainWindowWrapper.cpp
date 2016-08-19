@@ -40,7 +40,7 @@ WindowParams::WindowParams()
 	ReCalcSimuWindow();
 
 	bNew = true;
-	bGPU = false;
+	bGPU = true;
 }
 
 void WindowParams::ReCalcSimuWindow()
@@ -444,10 +444,10 @@ void MainWindowWrapper::InfoDisplay()
 	glDisable(GL_LIGHTING);
 	glPushMatrix();
 	glBegin(GL_POLYGON);
-	glColor3f(0.0,0.0,0.0);
+	glColor3f(0.1,0.1,0.1);
 	glVertex2i(0,0);
 	glVertex2i(0,m_params.info_window.h);
-	glColor3f(1,1,1);
+	glColor3f(0.3,0.3,0.3);
 	glVertex2i(m_params.info_window.w,m_params.info_window.h);
 	glVertex2i(m_params.info_window.w,0);
 	glEnd();
@@ -892,6 +892,7 @@ void MainWindowWrapper::CreateRightClickMenu()
 	glutAddMenuEntry("Start Pose  (p)", 0);
 	glutAddMenuEntry("End   Pose  (o)", 0);
 	glutAddMenuEntry("Add Sim Car (u)", 0);
+	glutAddMenuEntry("Delete Sim Cars (n)", 0);
 	glutAddMenuEntry("Save Sim Points(v)", 0);
 	glutAddMenuEntry("Load Sim Points(l)", 0);
 

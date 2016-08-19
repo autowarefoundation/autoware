@@ -34,12 +34,13 @@
 #include <std_msgs/Float32.h>
 #include "geo_pos_conv.hh"
 #include "UtilityH.h"
+#include "math.h"
 
 
 namespace FFSteerControlNS
 {
 
-
+#define kmlTemplateFile "/home/ai-driver/workspace/Data/templates/PlannerX_MapTemplate.kml"
 
 FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 {
@@ -50,9 +51,9 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 
 	m_CmdParams = params;
 
-	m_pComm = new HevComm();
-	m_pComm->InitializeComm(carInfo);
-	m_pComm->StartComm();
+	m_pComm = 0;
+
+
 
 	m_counter = 0;
 	m_frequency = 0;
@@ -64,14 +65,20 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	bInitPos = false;
 
 
-	tf::StampedTransform transform;
-	GetTransformFromTF("map", "world", transform);
-	//ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
+	if(m_CmdParams.iLocalizationSource != 2)
+	{
+		m_pComm = new HevComm();
+		m_pComm->InitializeComm(carInfo);
+		m_pComm->StartComm();
 
-	m_OriginPos.position.x  = transform.getOrigin().x();
-	m_OriginPos.position.y  = transform.getOrigin().y();
-	m_OriginPos.position.z  = transform.getOrigin().z();
+		tf::StampedTransform transform;
+		GetTransformFromTF("map", "world", transform);
+		ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
 
+		m_OriginPos.position.x  = transform.getOrigin().x();
+		m_OriginPos.position.y  = transform.getOrigin().y();
+		m_OriginPos.position.z  = transform.getOrigin().z();
+	}
 
 	//m_PositionPublisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
 	//m_PathPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 10, true);
@@ -81,6 +88,8 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	m_simulated_pos_pub 		= nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
   	m_simulated_velocity_pub 	= nh.advertise<geometry_msgs::Vector3Stamped>("sim_velocity", 100);
   	m_current_vehicle_status	= nh.advertise<geometry_msgs::Vector3Stamped>("vehicle_status", 100);
+  	m_segway_rpm_cmd			= nh.advertise<geometry_msgs::Twist>("action", 100);
+
 
 
 	// define subscribers.
@@ -92,24 +101,27 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 			&FFSteerControl::callbackFromVector3Stamped, 	this);
 	initialpose_subscriber 	= nh.subscribe("initialpose", 					100,
 			&FFSteerControl::callbackSimuInitPose, 			this);
-	sub_behavior_state 	= nh.subscribe("current_behavior",		10,
+	sub_behavior_state 	= nh.subscribe("current_behavior",					10,
 			&FFSteerControl::callbackFromBehaviorState, 	this);
+	sub_segway_rpm_odom		= nh.subscribe("/segway_rmp_node/odom",			100,
+			&FFSteerControl::callbackFromSegwayRPM, 		this);
 
 
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
+	std::cout << "ff_waypoint_follower initialized successfully " << std::endl;
 
 }
 
 FFSteerControl::~FFSteerControl()
 {
-//	if(m_pComm)
-//		delete m_pComm;
+	if(m_pComm)
+		delete m_pComm;
 }
 
 void FFSteerControl::callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg)
 {
-	if(m_pComm && m_pComm->IsAuto())
+	if(m_pComm && m_pComm->IsAuto() && m_CmdParams.iLocalizationSource == 0)
 	{
 		m_CurrentVelocity = msg->vector.x;
 		cout << "### Current Velocity CallBaclk -> " << m_CurrentVelocity << endl;
@@ -205,12 +217,37 @@ void FFSteerControl::callbackFromBehaviorState(const geometry_msgs::TwistStamped
 	bNewBehaviorState = true;
 }
 
+void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg)
+{
+	if(m_CmdParams.iLocalizationSource == 2) //segway odometry
+	{
+		m_CurrentPos = PlannerHNS::WayPoint(msg->pose.pose.position.x,
+				msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
+
+		m_segway_status.vector.x = msg->twist.twist.angular.z;
+		m_segway_status.vector.y = msg->twist.twist.linear.x;
+		m_segway_status.vector.z = (int)PlannerHNS::SHIFT_POS_DD;
+
+		std::cout << "### Current Pose From Segway Odometry -> " << m_CurrentPos.pos.ToString() << std::endl;
+	}
+	else
+	{
+		PlannerHNS::WayPoint p(msg->pose.pose.position.x,
+						msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
+		std::cout << "### Current Pose From Segway Odometry (Ignored) -> " << p.pos.ToString() << std::endl;
+	}
+}
+
 void FFSteerControl::PlannerMainLoop()
 {
 
 	ros::Rate loop_rate(100);
 	if(m_pComm)
 		m_pComm->GoLive(true);
+
+	vector<PlannerHNS::WayPoint> path;
+	PlannerHNS::WayPoint p2;
+	double totalDistance = 0;
 
 	while (ros::ok())
 	{
@@ -226,18 +263,19 @@ void FFSteerControl::PlannerMainLoop()
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
-			if(m_CmdParams.bTest)
-			{
-				currState.speed = m_CmdParams.targetVelocity;
-				currState.steer = m_CmdParams.targetSteer;
-				if(currState.speed < 0.15)
-					currState.shift = PlannerHNS::SHIFT_POS_NN;
-				else
-					currState.shift = PlannerHNS::SHIFT_POS_DD;
-
-				cout << m_CmdParams.targetVelocity << ", " << m_CmdParams.targetSteer << ", " << endl;
-			}
-			else if(m_CmdParams.bVehicleConnect)
+//			if(m_CmdParams.bTest)
+//			{
+//				currState.speed = m_CmdParams.targetVelocity;
+//				currState.steer = m_CmdParams.targetSteer;
+//				if(currState.speed < 0.15)
+//					currState.shift = PlannerHNS::SHIFT_POS_NN;
+//				else
+//					currState.shift = PlannerHNS::SHIFT_POS_DD;
+//
+//				cout << m_CmdParams.targetVelocity << ", " << m_CmdParams.targetSteer << ", " << endl;
+//			}
+//			else
+			if(m_CmdParams.iLocalizationSource == 0)
 			{
 				//Read StateData From Control Box
 				if(m_pComm && m_pComm->IsAuto())
@@ -255,20 +293,25 @@ void FFSteerControl::PlannerMainLoop()
 				}
 
 				//Send status over message to planner
-				geometry_msgs::Vector3Stamped curr_status;
-				curr_status.header.stamp = ros::Time::now();
-				curr_status.vector.x = currState.steer;
-				curr_status.vector.y = currState.speed;
-				curr_status.vector.z = (int)currState.shift;
-				m_current_vehicle_status.publish(curr_status);
+				geometry_msgs::Vector3Stamped vehicle_status;
+				vehicle_status.header.stamp = ros::Time::now();
+				vehicle_status.vector.x = currState.steer;
+				vehicle_status.vector.y = currState.speed;
+				vehicle_status.vector.z = (int)currState.shift;
+				m_current_vehicle_status.publish(vehicle_status);
 			}
-
-			if(m_pComm && !m_pComm->IsAuto())
+			else if(m_CmdParams.iLocalizationSource == 3)
 			{
 				m_State.SetSimulatedTargetOdometryReadings(currState.speed, currState.steer, currState.shift);
 				m_State.UpdateState(false);
 				m_State.LocalizeMe(dt);
 				m_CurrentPos = m_State.state;
+			}
+			else if(m_CmdParams.iLocalizationSource == 2)
+			{
+				currState.steer = m_segway_status.vector.x;
+				currState.speed = m_segway_status.vector.y;
+				currState.shift = PlannerHNS::SHIFT_POS_DD;
 			}
 
 			if(!m_CmdParams.bTest)
@@ -295,7 +338,7 @@ void FFSteerControl::PlannerMainLoop()
 			}
 
 
-			if(m_CmdParams.bVehicleConnect) //send directly to ZMP control box
+			if(m_CmdParams.iLocalizationSource == 0) //send directly to ZMP control box
 			{
 				m_PrevStepTargetStatus = targetState;
 
@@ -308,7 +351,7 @@ void FFSteerControl::PlannerMainLoop()
 							<< ", " << targetState.shift << ")" << endl;
 				}
 			}
-			else //send to autoware
+			else if (m_CmdParams.iLocalizationSource == 1)//send to autoware
 			{
 				cout << "Send Data To Autoware" << endl;
 				geometry_msgs::Twist t;
@@ -323,12 +366,20 @@ void FFSteerControl::PlannerMainLoop()
 				m_velocity_publisher.publish(twist);
 				m_stat_pub.publish(wf_stat);
 			}
+			else if(m_CmdParams.iLocalizationSource == 2)
+			{
+				cout << "Send Data To Segway" << endl;
+				geometry_msgs::Twist t;
+				t.linear.x = targetState.speed;
+				t.angular.z = targetState.steer;
+				m_segway_rpm_cmd.publish(t);
+			}
 
 			geometry_msgs::Vector3Stamped vel;
 			geometry_msgs::PoseStamped pose;
 			pose.header.stamp = ros::Time::now();
 			vel.header.stamp = ros::Time::now();
-			vel.vector.x = targetState.speed;
+			vel.vector.x = currState.speed;
 			pose.pose.position.x = m_CurrentPos.pos.x;
 			pose.pose.position.y = m_CurrentPos.pos.y;
 			pose.pose.position.z = m_CurrentPos.pos.z;
@@ -341,6 +392,48 @@ void FFSteerControl::PlannerMainLoop()
 		else
 		{
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
+		}
+
+		double _d = hypot(m_CurrentPos.pos.y - p2.pos.y, m_CurrentPos.pos.x - p2.pos.x);
+		if(_d > 0.1)
+		{
+			p2 = m_CurrentPos;
+
+			if(path.size() > 0)
+				totalDistance += _d;
+
+			m_CurrentPos.pos.lat = m_CurrentPos.pos.x;
+			m_CurrentPos.pos.lon = m_CurrentPos.pos.y;
+			m_CurrentPos.pos.alt = m_CurrentPos.pos.z;
+
+			path.push_back(m_CurrentPos);
+			std::cout << "Record One Point To Path: " <<  m_CurrentPos.pos.ToString() << std::endl;
+		}
+
+		if(totalDistance > 50.0)
+		{
+			PlannerHNS::RoadNetwork roadMap;
+			PlannerHNS::RoadSegment segment;
+
+			segment.id = 1;
+
+
+			PlannerHNS::Lane lane;
+			lane.id = 1;
+			lane.num = 0;
+			lane.roadId = 1;
+			lane.points = path;
+
+			segment.Lanes.push_back(lane);
+			roadMap.roadSegments.push_back(segment);
+
+			ostringstream fileName;
+			fileName << "/home/ai-driver/SimuLogs/";
+			fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
+			fileName << "_RoadNetwork.kml";
+			PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kmlTemplateFile , roadMap);
+			std::cout << " Mapped Saved Successfuly ... " << std::endl;
+			break;
 		}
 
 		loop_rate.sleep();

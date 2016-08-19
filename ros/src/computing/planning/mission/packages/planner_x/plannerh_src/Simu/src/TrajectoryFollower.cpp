@@ -26,14 +26,14 @@ TrajectoryFollower::TrajectoryFollower()
 	m_PrevDesiredSteer	= 0;
 	m_FollowAcceleration= 0;
 	m_iPrevWayPoint 	= -1;
+	m_StartFollowDistance = 0;
 
 	//m_pidSteer.Init(0.1, 0.005, 0.001); // for 5 m/s
 	m_pidSteer.Init(0.07, 0.02, 0.01); // for 3 m/s
 	//m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
 	m_pidSteer.Setlimit(m_Params.MaxSteerAngle, -m_Params.MaxSteerAngle);
-	m_pidVelocity.Setlimit(3.0, 0);
-	m_pidVelocity.Init(0.1, 0.01, 0);
 
+	m_pidVelocity.Init(0.1, 0.005, 0.1);
 	m_lowpassSteer.Init(2, 100, 5);
 }
 
@@ -182,12 +182,48 @@ void TrajectoryFollower::UpdateParams(const ControllerParams& params)
 }
 
 int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
-		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity)
+		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity, PlannerHNS::SHIFT_POS& desiredShift)
 {
 
-	desiredVelocity = CurrBehavior.maxVelocity;
-	//desiredVelocity = m_pidVelocity.getPID(CurrStatus.speed, CurrBehavior.maxVelocity);
-	//m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
+	if(CurrBehavior.state == FORWARD_STATE)
+	{
+		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
+		double e = CurrBehavior.maxVelocity - CurrStatus.speed;
+		desiredVelocity = m_pidVelocity.getPID(e);
+		m_StartFollowDistance = 0;
+	}
+	else if(CurrBehavior.state == WAITING_STATE || CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == FINISH_STATE)
+	{
+		//m_pidVelocity.Setlimit(2.0, 0);
+		desiredVelocity = m_pidVelocity.getPID(-CurrStatus.speed);
+		m_StartFollowDistance = 0;
+	}
+	else if(CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE)
+	{
+		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity*0.75, 0);
+		double e = CurrBehavior.maxVelocity - CurrStatus.speed;
+		desiredVelocity = m_pidVelocity.getPID(e);
+		m_StartFollowDistance = 0;
+	}
+	else if(CurrBehavior.state == FOLLOW_STATE)
+	{
+		if(m_StartFollowDistance == 0)
+			m_StartFollowDistance = CurrBehavior.followDistance;
+
+		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
+		//double e = (CurrBehavior.followDistance - m_StartFollowDistance)/3.6;
+		//double e = (10.0 - CurrBehavior.followDistance)/10.0
+		double e = CurrBehavior.followVelocity - CurrStatus.speed;
+		desiredVelocity = m_pidVelocity.getPID(e);
+	}
+//	else
+//	{
+//		desiredVelocity = CurrBehavior.maxVelocity;
+//	}
+
+
+	desiredShift = PlannerHNS::SHIFT_POS_DD;
+	m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
 	return 1;
 }
 
@@ -204,28 +240,21 @@ PlannerHNS::VehicleState TrajectoryFollower::DoOneStep(const double& dt, const P
 
 	PlannerHNS::VehicleState currState;
 
-	if(behavior.state == PlannerHNS::FORWARD_STATE)
+	if(m_Path.size()>0)
 	{
-		if(m_Path.size()>0)
-		{
-			PrepareNextWaypoint(currPose, vehicleState.speed, vehicleState.steer);
-			VeclocityControllerUpdate(dt, currState,behavior, currState.speed);
-			SteerControllerUpdate(currState, behavior, currState.steer);
-
-			//currState.speed = 5;
-			//cout << currState.speed << endl;
-			currState.shift = PlannerHNS::SHIFT_POS_DD;
-		}
-	}
-	else if(behavior.state == PlannerHNS::STOPPING_STATE)
-	{
-		currState.speed = 0;
-		currState.shift = PlannerHNS::SHIFT_POS_DD;
+		PrepareNextWaypoint(currPose, vehicleState.speed, vehicleState.steer);
+		VeclocityControllerUpdate(dt, vehicleState, behavior, currState.speed, currState.shift);
+		SteerControllerUpdate(vehicleState, behavior, currState.steer);
 	}
 	else
 	{
-		currState.speed = 0;
-		currState.shift = PlannerHNS::SHIFT_POS_NN;
+		if(behavior.state != INITIAL_STATE)
+		{
+			currState.steer = 0;
+			currState.speed = 0;
+			currState.shift = PlannerHNS::SHIFT_POS_DD;
+			cout << ">>> Error, Very Dangerous, Following No Path !!." << endl;
+		}
 	}
 
 	return currState;

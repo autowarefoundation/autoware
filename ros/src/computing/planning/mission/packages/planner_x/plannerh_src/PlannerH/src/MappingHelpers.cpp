@@ -466,6 +466,95 @@ bool MappingHelpers::GetWayPoint(const int& id, const int& laneID,const double& 
 	return 0;
 }
 
+void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
+{
+	//First, Get the main element
+	TiXmlElement* pHeadElem = 0;
+	TiXmlElement* pElem = 0;
+
+	TiXmlDocument doc(kmlFile);
+	if(!doc.LoadFile())
+	{
+		cout << "KML Custom Reader Error, Can't Load .kml File, path is: "<<  kmlFile << endl;
+		return;
+	}
+	else
+		pElem = doc.FirstChildElement();
+
+	pHeadElem = GetHeadElement(pElem);
+
+	vector<Lane> laneLinksList = GetLanesList(pHeadElem);
+	vector<RoadSegment> roadLinksList = GetRoadSegmentsList(pHeadElem);
+
+	//Fill the relations
+	for(unsigned int i= 0; i<roadLinksList.size(); i++ )
+	{
+		for(unsigned int j=0; j < laneLinksList.size(); j++)
+		{
+			if(laneLinksList.at(j).roadId == roadLinksList.at(i).id)
+			{
+				roadLinksList.at(i).Lanes.push_back(laneLinksList.at(j));
+			}
+		}
+	}
+
+	map.roadSegments.clear();
+	map.roadSegments = roadLinksList;
+
+	//Link Lanes and lane's waypoints by pointers
+	for(unsigned int rs = 0; rs < map.roadSegments.size(); rs++)
+	{
+		//Link Lanes
+		for(unsigned int i =0; i < map.roadSegments.at(rs).Lanes.size(); i++)
+		{
+			Lane* pL = &map.roadSegments.at(rs).Lanes.at(i);
+			for(unsigned int j = 0 ; j < pL->fromIds.size(); j++)
+			{
+				for(unsigned int l= 0; l < map.roadSegments.at(rs).Lanes.size(); l++)
+				{
+					if(map.roadSegments.at(rs).Lanes.at(l).id == pL->fromIds.at(j))
+					{
+						pL->fromLanes.push_back(&map.roadSegments.at(rs).Lanes.at(l));
+					}
+				}
+			}
+
+			for(unsigned int j = 0 ; j < pL->toIds.size(); j++)
+			{
+				for(unsigned int l= 0; l < map.roadSegments.at(rs).Lanes.size(); l++)
+				{
+					if(map.roadSegments.at(rs).Lanes.at(l).id == pL->toIds.at(j))
+					{
+						pL->toLanes.push_back(&map.roadSegments.at(rs).Lanes.at(l));
+					}
+				}
+			}
+
+			for(unsigned int j = 0 ; j < pL->points.size(); j++)
+			{
+				pL->points.at(j).pLane  = pL;
+			}
+		}
+	}
+
+	//Link waypoints
+	for(unsigned int rs = 0; rs < map.roadSegments.size(); rs++)
+	{
+		for(unsigned int i =0; i < map.roadSegments.at(rs).Lanes.size(); i++)
+		{
+			for(unsigned int p= 0; p < map.roadSegments.at(rs).Lanes.at(i).points.size(); p++)
+			{
+				WayPoint* pWP = &map.roadSegments.at(rs).Lanes.at(i).points.at(p);
+				for(unsigned int j = 0 ; j < pWP->toIds.size(); j++)
+				{
+					pWP->pFronts.push_back(FindWaypoint(pWP->toIds.at(j), map));
+				}
+			}
+		}
+	}
+
+}
+
 void MappingHelpers::WriteKML(const string& kmlFile, const string& kmlTemplat, RoadNetwork& map)
 {
 	//First, Get the main element
@@ -756,5 +845,157 @@ Lane* MappingHelpers::GetLaneFromPath(const WayPoint& currPos, const std::vector
 
 	return currPath.at(closest_index).pLane;
 }
+
+
+vector<Lane> MappingHelpers::GetLanesList(TiXmlElement* pElem)
+{
+	vector<Lane> llList;
+	TiXmlElement* pLaneLinks = GetDataFolder("LaneLinks", pElem);
+
+	TiXmlElement* pE = pLaneLinks->FirstChildElement("Folder");
+	for( ; pE; pE=pE->NextSiblingElement())
+	{
+		string tfID;
+		TiXmlElement* pNameXml =pE->FirstChildElement("description");
+		if(pNameXml)
+		  tfID = pNameXml->GetText();
+
+		Lane ll;
+		ll.id = GetIDsFromPrefix(tfID, "LL", "RL").at(0);
+		ll.roadId = GetIDsFromPrefix(tfID, "RL", "NUM").at(0);
+		ll.num = GetIDsFromPrefix(tfID, "NUM", "From").at(0);
+		ll.fromIds = GetIDsFromPrefix(tfID, "From", "To");
+		ll.toIds = GetIDsFromPrefix(tfID, "To", "");
+		ll.points = GetCenterLaneData(pE, ll.id);
+		llList.push_back(ll);
+	}
+
+	return llList;
+}
+
+vector<RoadSegment> MappingHelpers::GetRoadSegmentsList(TiXmlElement* pElem)
+{
+	vector<RoadSegment> rlList;
+	TiXmlElement* pRoadLinks = GetDataFolder("RoadLinks", pElem);
+
+	TiXmlElement* pE = pRoadLinks->FirstChildElement("Placemark");
+	for( ; pE; pE=pE->NextSiblingElement())
+	{
+		string tfID;
+		TiXmlElement* pNameXml =pE->FirstChildElement("description");
+		if(pNameXml)
+		  tfID = pNameXml->GetText();
+
+		RoadSegment rl;
+		rl.id = GetIDsFromPrefix(tfID, "RL", "RV").at(0);
+		rl.fromIds = GetIDsFromPrefix(tfID, "RV", "Seq");
+		rlList.push_back(rl);
+	}
+
+	return rlList;
+}
+
+vector<WayPoint> MappingHelpers::GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID)
+{
+	vector<WayPoint> gps_points;
+
+	TiXmlElement* pV = pElem->FirstChildElement("Placemark");
+
+	if(pV)
+	 pV = pV->FirstChildElement("LineString");
+
+	if(pV)
+		pV = pV->FirstChildElement("coordinates");
+
+	if(pV)
+	{
+		string coordinate_list;
+		if(!pV->NoChildren())
+			coordinate_list = pV->GetText();
+
+		istringstream str_stream(coordinate_list);
+		string token, temp;
+
+
+		while(getline(str_stream, token, ' '))
+		{
+			string lat, lon, alt;
+			double numLat=0, numLon=0, numAlt=0;
+
+			istringstream ss(token);
+
+			getline(ss, lon, ',');
+			getline(ss, lat, ',');
+			getline(ss, alt, ',');
+
+			numLat = atof(lat.c_str());
+			numLon = atof(lon.c_str());
+			numAlt = atof(alt.c_str());
+
+			WayPoint wp;
+
+			wp.pos.x = wp.pos.lat = numLat;
+			wp.pos.y = wp.pos.lon = numLon;
+			wp.pos.z = wp.pos.alt = numAlt;
+
+			wp.laneId = currLaneID;
+			gps_points.push_back(wp);
+
+
+		}
+	}
+
+	return gps_points;
+}
+
+vector<int> MappingHelpers::GetIDsFromPrefix(const string& str, const string& prefix, const string& postfix)
+{
+	int index1 = str.find(prefix)+prefix.size();
+	int index2 = str.find(postfix, index1);
+	if(index2<0  || postfix.size() ==0)
+		index2 = str.size();
+
+	string str_ids = str.substr(index1, index2-index1);
+
+	vector<int> ids;
+	vector<string> idstr = SplitString(str_ids, "_");
+
+	for(unsigned  int i=0; i< idstr.size(); i++ )
+	{
+		if(idstr.at(i).size()>0)
+		{
+			int num = atoi(idstr.at(i).c_str());
+			//if(num>-1)
+				ids.push_back(num);
+		}
+	}
+
+	return ids;
+}
+
+vector<string> MappingHelpers::SplitString(const string& str, const string& token)
+{
+	vector<string> str_parts;
+	int iFirstPart = str.find(token);
+
+	while(iFirstPart >= 0)
+	{
+		iFirstPart++;
+		int iSecondPart = str.find(token, iFirstPart);
+		if(iSecondPart>0)
+		{
+			str_parts.push_back(str.substr(iFirstPart,iSecondPart - iFirstPart));
+		}
+		else
+		{
+			str_parts.push_back(str.substr(iFirstPart,str.size() - iFirstPart));
+		}
+
+		iFirstPart = iSecondPart;
+	}
+
+	return str_parts;
+}
+
 
 } /* namespace PlannerHNS */

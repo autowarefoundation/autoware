@@ -45,6 +45,7 @@
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
@@ -52,6 +53,7 @@
 #include "TrajectoryFollower.h"
 #include "CarState.h"
 #include "PlannerH.h"
+#include "MappingHelpers.h"
 #include "HevComm.h"
 
 namespace FFSteerControlNS
@@ -65,7 +67,11 @@ public:
 	bool bSignal; // true -> signal parameter entered at command line
 	double targetSteer; // test steering angle
 	double targetVelocity; // test velocity
-	bool bVehicleConnect; // true -> send signal to control box, false -> send signal to autoware
+	int iLocalizationSource;
+	//0 -> control box (zmp)
+	//1 -> autoware
+	//2 -> segway
+	//3 -> simulation
 	bool bTorqueMode; // true -> torque and stroke mode, false -> angle and velocity mode
 
 	ControlCommandParams()
@@ -75,7 +81,7 @@ public:
 		bSignal = false;
 		targetVelocity = 0;
 		targetSteer = 0;
-		bVehicleConnect = false;
+		iLocalizationSource = 3;
 		bTorqueMode = false;
 	}
 };
@@ -107,6 +113,7 @@ protected:
 	PlannerHNS::WayPoint m_PerpPoint;
 
 	PlannerHNS::VehicleState m_PrevStepTargetStatus;
+	geometry_msgs::Vector3Stamped m_segway_status;
 	bool bVehicleStatus;
 	ControlCommandParams m_CmdParams;
 
@@ -120,6 +127,7 @@ protected:
 	ros::Publisher m_simulated_pos_pub;
 	ros::Publisher m_simulated_velocity_pub;
 	ros::Publisher m_current_vehicle_status;
+	ros::Publisher m_segway_rpm_cmd;
 
 	// define subscribers.
 	ros::Subscriber sub_current_pose ;
@@ -127,6 +135,7 @@ protected:
 	ros::Subscriber sub_current_trajectory;
 	ros::Subscriber sub_twist_velocity;
 	ros::Subscriber initialpose_subscriber 	;
+	ros::Subscriber sub_segway_rpm_odom;
 
 
 
@@ -148,6 +157,7 @@ private:
 	void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg);
 	void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
 	void callbackFromBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
+	void callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg);
 
   void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 

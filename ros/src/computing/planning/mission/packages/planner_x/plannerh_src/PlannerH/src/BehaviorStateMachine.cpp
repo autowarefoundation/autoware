@@ -27,6 +27,8 @@ BehaviorStateMachine::BehaviorStateMachine(BehaviorStateMachine* nextState)
 		pNextStates.push_back(nextState);
 
 	pNextStates.push_back(this);
+
+	Init();
 }
 
 void BehaviorStateMachine::InsertNextState(BehaviorStateMachine* nextState)
@@ -139,7 +141,7 @@ BehaviorStateMachine* FollowState::GetNextState()
 	else if(GetCalcParams()->bGoalReached)
 		return FindBehaviorState(STOPPING_STATE);
 
-	else if(GetCalcParams()->bFullyBlock && !GetCalcParams()->bCanChangeLane && GetCalcParams()->distanceToNext < m_PlanningParams.minFollowingDistance)
+	else if(GetCalcParams()->bFullyBlock && !GetCalcParams()->bCanChangeLane && GetCalcParams()->distanceToNext < m_PlanningParams.maxFollowingDistance)
 		return FindBehaviorState(this->m_Behavior);
 
 	else if(GetCalcParams()->distanceToNext > 0 && GetCalcParams()->distanceToNext < m_PlanningParams.minDistanceToAvoid && !GetCalcParams()->bFullyBlock)

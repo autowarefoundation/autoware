@@ -62,6 +62,7 @@ public:
 
 	double m_PlanningCycleTime;
 	double m_ControlCycleTime;
+	double m_SimulationCycleTime;
 
 	PlannerHNS::VehicleState m_VehicleState;
 	PlannerHNS::BehaviorState m_CurrentBehavior;

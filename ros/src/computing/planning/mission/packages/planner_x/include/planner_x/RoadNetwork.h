@@ -800,6 +800,7 @@ public:
 	double closest_obj_cost; // 0 to 1
 	double cost;
 	double closest_obj_distance;
+	std::vector<std::pair<int, double> > lateral_costs;
 
 
 	TrajectoryCost()
@@ -825,6 +826,11 @@ public:
 		str << ", Dist Cost  : " << closest_obj_cost;
 		str << ", Priority   : " << priority_cost;
 		str << ", Transition : " << transition_cost;
+		str << "\n";
+		for (unsigned int i=0; i<lateral_costs.size(); i++ )
+		{
+			str << " - (" << lateral_costs.at(i).first << ", " << lateral_costs.at(i).second << ")";
+		}
 
 		return str.str();
 

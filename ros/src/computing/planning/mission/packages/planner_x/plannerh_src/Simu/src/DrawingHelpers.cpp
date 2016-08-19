@@ -108,7 +108,7 @@ void DrawingHelpers::DrawArrow(const double& x, const double& y, const double& a
 
 	//X Axis
 	glPushMatrix();
-	glColor3ub(rand()%100,rand()%255,rand()%200);
+	glColor3ub(200,200,200);
 	glRotated(90, 0,1,0);
 	glutSolidCylinder(half_length/percent, half_length,nSlicesStacks,nSlicesStacks);
 	glTranslated(0,0,half_length);

@@ -12,12 +12,12 @@
 
 using namespace std;
 
-#define kmlTemplateFile "/home/hatem/workspace/Data/templates/KmlTemplate.kml"
+#define kmlTemplateFile "/home/ai-driver/workspace/Data/templates/KmlTemplate.kml"
 
 namespace UtilityHNS
 {
 
-std::string DataRW::LoggingFolderPath = "/home/hatem/SimuLogs/";
+std::string DataRW::LoggingFolderPath = "/home/ai-driver/SimuLogs/";
 std::string DataRW::ControlLogFolderName = "ControlLog/";
 std::string DataRW::PathLogFolderName = "GeneratedTrajectories/";
 std::string DataRW::StatesLogFolderName = "BehaviorsGenerated/";
@@ -33,7 +33,7 @@ DataRW::~DataRW()
 
 void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData)
 {
-	if(logData.size() < 3)
+	if(logData.size() < 2)
 		return;
 
 	ostringstream fileName;
