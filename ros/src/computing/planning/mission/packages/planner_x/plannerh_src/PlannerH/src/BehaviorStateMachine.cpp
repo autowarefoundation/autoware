@@ -85,7 +85,6 @@ BehaviorStateMachine* ForwardState::GetNextState()
 			&& !GetCalcParams()->bFullyBlock
 			&& GetCalcParams()->iCurrSafeTrajectory != GetCalcParams()->iPrevSafeTrajectory)
 	{
-		GetCalcParams()->bRePlan = true;
 		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
 	}
 	else
@@ -146,7 +145,6 @@ BehaviorStateMachine* FollowState::GetNextState()
 
 	else if(GetCalcParams()->distanceToNext > 0 && GetCalcParams()->distanceToNext < m_PlanningParams.minDistanceToAvoid && !GetCalcParams()->bFullyBlock)
 	{
-		GetCalcParams()->bRePlan = true;
 		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
 	}
 	else
@@ -157,8 +155,6 @@ BehaviorStateMachine* SwerveState::GetNextState()
 {
 	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
 		return this; //return this behavior only , without reset
-
-	GetCalcParams()->iPrevSafeTrajectory = GetCalcParams()->iCurrSafeTrajectory;
 
 	if(GetCalcParams()->bOutsideControl == 0)
 		return FindBehaviorState(WAITING_STATE);
