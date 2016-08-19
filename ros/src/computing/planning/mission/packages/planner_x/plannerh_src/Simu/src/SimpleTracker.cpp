@@ -52,8 +52,6 @@ void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<Detect
 //
 //		}
 //	}
-
-
 	m_DetectedObjects = obj_list;
 	m_Car.center = currPose;
 
@@ -76,7 +74,9 @@ void SimpleTracker::AssociateObjects()
 //			minID = 0;
 
 		DetectedObject trans_obj = m_DetectedObjects.at(i);
-		CoordinateTransform(m_PrevState, trans_obj);
+//		WayPoint prevStateTrans = m_PrevState;
+//		CoordinateTransformPoint(m_Car.center, prevStateTrans.pos);
+//		CoordinateTransform(prevStateTrans, trans_obj);
 
 		for(unsigned int j = 0; j < m_PrevDetectedObjects.size(); j++)
 		{
@@ -87,7 +87,7 @@ void SimpleTracker::AssociateObjects()
 //					m_DetectedObjects.at(i).center.cost += distance2points(trans_obj.contour.at(k), m_PrevDetectedObjects.at(j).contour.at(k));
 //			}
 
-			std::cout << "Cost Cost (" << i << "), " << m_PrevDetectedObjects.at(j).id << ","
+			std::cout << "Cost Cost (" << i << "), " << m_PrevDetectedObjects.at(j).center.pos.ToString() << ","
 					<< m_DetectedObjects.at(i).center.cost <<  ", contour: " << trans_obj.contour.size()
 					<< ", " << trans_obj.center.pos.ToString() << std::endl;
 
@@ -198,11 +198,19 @@ void SimpleTracker::CoordinateTransform(const WayPoint& refCoordinate, DetectedO
 	Mat3 translationMat(-refCoordinate.pos.x, -refCoordinate.pos.y);
 	obj.center.pos = translationMat*obj.center.pos;
 	obj.center.pos = rotationMat*obj.center.pos;
-	for(unsigned int j = 0 ; j < obj.contour.size(); j++)
-	{
-		obj.contour.at(j) = translationMat*obj.contour.at(j);
-		obj.contour.at(j) = rotationMat*obj.contour.at(j);
-	}
+//	for(unsigned int j = 0 ; j < obj.contour.size(); j++)
+//	{
+//		obj.contour.at(j) = translationMat*obj.contour.at(j);
+//		obj.contour.at(j) = rotationMat*obj.contour.at(j);
+//	}
+}
+
+void SimpleTracker::CoordinateTransformPoint(const WayPoint& refCoordinate, GPSPoint& obj)
+{
+	Mat3 rotationMat(-refCoordinate.pos.a);
+	Mat3 translationMat(-refCoordinate.pos.x, -refCoordinate.pos.y);
+	obj = translationMat*obj;
+	obj = rotationMat*obj;
 }
 
 } /* namespace BehaviorsNS */

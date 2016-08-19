@@ -29,6 +29,23 @@
 */
 #include "ff_waypoint_follower_core.h"
 
+void printHelp()
+{
+	cout << "-test" << endl;
+	cout << "      steering angle in degrees" << endl;
+	cout << "      velocity in meter / second" << endl;
+	cout << "-mode" << endl;
+	cout << "      torque" << endl;
+	cout << "      angle" << endl;
+	cout << "-signal" << endl;
+	cout << "      vehicle" << endl;
+	cout << "      autoware" << endl;
+	cout << "      segway" << endl;
+	cout << "      simulation" << endl;
+	cout << "-h" << endl;
+}
+
+
 int main(int argc, char **argv)
 {
 	FFSteerControlNS::ControlCommandParams params;
@@ -50,11 +67,21 @@ int main(int argc, char **argv)
 			{
 				params.targetSteer = strtod(cmdData.at(i).c_str(), NULL);
 			}
+			else
+			{
+				printHelp();
+				return 0;
+			}
 
 			i++;
 			if(i < cmdData.size())
 			{
 				params.targetVelocity = strtod(cmdData.at(i).c_str(), NULL);
+			}
+			else
+			{
+				printHelp();
+				return 0;
 			}
 
 		}
@@ -68,6 +95,10 @@ int main(int argc, char **argv)
 				{
 					params.bTorqueMode = true;
 				}
+				else if(cmdData.at(i).compare("angle") == 0)
+				{
+					params.bTorqueMode = false;
+				}
 			}
 
 		}
@@ -79,9 +110,32 @@ int main(int argc, char **argv)
 			{
 				if(cmdData.at(i).compare("vehicle") == 0)
 				{
-					params.bVehicleConnect = true;
+					params.iLocalizationSource = 0;
+				}
+				else if(cmdData.at(i).compare("autoware") == 0)
+				{
+					params.iLocalizationSource = 1;
+				}
+				else if(cmdData.at(i).compare("segway") == 0)
+				{
+					params.iLocalizationSource = 2;
+					cout << "segway Option" << endl;
+				}
+				else if(cmdData.at(i).compare("simulation") == 0)
+				{
+					params.iLocalizationSource = 3;
 				}
 			}
+			else
+			{
+				printHelp();
+				return 0;
+			}
+		}
+		else if(cmdData.at(i).compare("-h") == 0)
+		{
+			printHelp();
+			return 0;
 		}
 
 	}

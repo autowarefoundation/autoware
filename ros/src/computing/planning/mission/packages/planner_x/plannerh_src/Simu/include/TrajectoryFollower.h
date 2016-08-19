@@ -27,7 +27,7 @@ public:
 	int SteerControllerUpdate(const PlannerHNS::VehicleState& CurrStatus,
 			const PlannerHNS::BehaviorState& CurrBehavior, double& desiredSteerAngle);
 	int VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
-			const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity);
+			const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity, PlannerHNS::SHIFT_POS& desiredShift);
 
 	void UpdateParams(const ControllerParams& params);
 
@@ -44,6 +44,7 @@ public:
 	PlannerHNS::WayPoint 	m_CurrPos;
 
 private:
+	double 						m_StartFollowDistance;
 	ControllerParams 			m_Params;
 	std::vector<PlannerHNS::WayPoint> 	m_Path;
 	PlannerHNS::WayPoint 		m_DesPos;

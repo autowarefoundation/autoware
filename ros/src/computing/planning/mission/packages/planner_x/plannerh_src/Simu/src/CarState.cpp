@@ -10,6 +10,7 @@
 #include "PlanningHelpers.h"
 #include "MappingHelpers.h"
 #include "MatrixOperations.h"
+#include "PlannerH.h"
 #include <cmath>
 
 using namespace PlannerHNS;
@@ -156,6 +157,20 @@ void CarState::InitPolygons()
 	 m_CurrentVelocity = m_CurrentVelocityD;
   }
 
+ void CarState::AddAndTransformContourPoints(const PlannerHNS::DetectedObject& obj, std::vector<PlannerHNS::WayPoint>& contourPoints)
+ {
+	 contourPoints.clear();
+	 WayPoint  p;
+	 for(unsigned int i=0; i< obj.contour.size(); i++)
+	 {
+		 p.pos = obj.contour.at(i);
+		 TransformPoint(obj.center, p.pos);
+		 contourPoints.push_back(p);
+	 }
+
+	 contourPoints.push_back(obj.center);
+ }
+
  void CarState::TransformPoint(const PlannerHNS::WayPoint& refPose, PlannerHNS::GPSPoint& p)
  {
  	PlannerHNS::Mat3 rotationMat(refPose.pos.a);
@@ -258,34 +273,52 @@ void CarState::CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, c
 	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
 	double critical_lateral_distance = pParams->rollOutDensity/2.0 + m_CarInfo.width/2.0;
 
+	if(m_TotalPath.size()==0) return;
+
 	//First Filtering
 	int iEgoIndex = PlanningHelpers::GetClosestPointIndex(m_TotalPath, state);
 	for(unsigned int i = 0 ; i < obj_list.size(); i++)
 	{
-		for(unsigned int j = 0; j < obj_list.at(i).contour.size(); j++)
+		std::vector<WayPoint> contourPoints;
+		AddAndTransformContourPoints(obj_list.at(i), contourPoints);
+
+		double distance_direct_smallest = 9999999;
+		double distance_on_trajectory_smallest = 9999999;
+		for(unsigned int j = 0; j < contourPoints.size(); j++)
+		{
+			double distance_direct = distance2points(state.pos, contourPoints.at(j).pos);
+			if(distance_direct < distance_direct_smallest)
+				distance_direct_smallest = distance_direct;
+
+			double distance_on_trajectory  = PlanningHelpers::GetDistanceOnTrajectory(m_TotalPath, iEgoIndex, contourPoints.at(j)) - m_CarInfo.length/2.0;
+			if(distance_on_trajectory < distance_on_trajectory_smallest)
+				distance_on_trajectory_smallest = distance_on_trajectory;
+		}
+
+		for(unsigned int j = 0; j < contourPoints.size(); j++)
 		{
 			PlannerHNS::WayPoint wp;
-			wp.pos = obj_list.at(i).contour.at(j);
-			TransformPoint(obj_list.at(i).center, wp.pos);
+			wp = contourPoints.at(j);
 
-			double distance_direct = distance2points(state.pos, wp.pos);
-			double distance_on_trajectory  = PlanningHelpers::GetDistanceOnTrajectory(m_TotalPath, iEgoIndex, wp) - m_CarInfo.length/2.0;
 			double distance_lateral = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_TotalPath, wp);
 
-			if(distance_direct > pParams->horizonDistance || distance_on_trajectory > pParams->minFollowingDistance || distance_on_trajectory < 0)
-				continue;
+//			if(distance_direct > pParams->horizonDistance)
+//				continue;
 
 			for(unsigned int c = 0; c < m_TrajectoryCosts.size(); c++)
 			{
-				double normalized_cost = 1.0 - (distance_on_trajectory / pParams->horizonDistance);
+				double normalized_cost = 1.0 - (distance_on_trajectory_smallest / pParams->horizonDistance);
 				double d_diff = fabs(distance_lateral - m_TrajectoryCosts.at(c).distance_from_center);
+				m_TrajectoryCosts.at(c).lateral_costs.push_back(std::make_pair(j,d_diff));
+
 				if(d_diff < critical_lateral_distance)
 				{
-					if(normalized_cost > m_TrajectoryCosts.at(c).closest_obj_cost)
+					//if(normalized_cost > m_TrajectoryCosts.at(c).closest_obj_cost)
 					{
 						m_TrajectoryCosts.at(c).closest_obj_cost = normalized_cost;
-						m_TrajectoryCosts.at(c).closest_obj_distance = distance_on_trajectory;
+						m_TrajectoryCosts.at(c).closest_obj_distance = distance_on_trajectory_smallest;
 						m_TrajectoryCosts.at(c).closest_obj_velocity = obj_list.at(i).center.v;
+
 					}
 				}
 			}
@@ -299,11 +332,13 @@ void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, do
 
 	//if the  closest_obj_cost is less than 0.9 (12 meter) consider this trajectory blocked
 	closest_distance = pParams->horizonDistance;
+	std::cout << "----------------------------------------------------" << std::endl;
 	std::cout << ">> Costs: " << std::endl;
 	for(unsigned int c = 0; c < m_TrajectoryCosts.size(); c++)
 	{
 		std::cout << m_TrajectoryCosts.at(c).ToString() << std::endl;
-		if(m_TrajectoryCosts.at(c).closest_obj_cost >= 0.9)
+
+		if(m_TrajectoryCosts.at(c).closest_obj_cost >= 0.8)
 			m_TrajectoryCosts.at(c).cost = 1;
 		else
 			m_TrajectoryCosts.at(c).cost =
@@ -318,8 +353,6 @@ void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, do
 		}
 	}
 
-	std::cout << "----------------------------------------------------" << std::endl;
-
 	int smallestIndex = -1;
 	double smallestCost = 1;
 	for(unsigned int c = 0; c < m_TrajectoryCosts.size(); c++)
@@ -332,6 +365,9 @@ void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, do
 	}
 
 	safe_index = smallestIndex;
+
+	std::cout << "Selected Trajectory: " << safe_index << ", Closest Distance: " << closest_distance << std::endl;
+	std::cout << "----------------------------------------------------" << std::endl;
 }
 
 void CarState::FindNextBestSafeTrajectory(int& safe_index)
@@ -387,26 +423,56 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 		return false;
  }
 
- void CarState::SelectSafeTrajectoryAndSpeedProfile()
+ void CarState::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState)
  {
 	 PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
 
-	if(preCalcPrams->iCurrSafeTrajectory >= 0 && preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size())
+	if(m_TotalPath.size()>0)
 	{
-		m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
-		PlanningHelpers::GenerateRecommendedSpeed(m_Path,
-				m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-				m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
-		PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
-		std::ostringstream str_out;
-		str_out << DataRW::LoggingFolderPath;
-		str_out << DataRW::PathLogFolderName;
-		str_out << "_";
-		PlanningHelpers::WritePathToFile(str_out.str(), m_Path);
-	}
-	else if(m_RollOuts.size() > 0)
-		std::cout << "Error .. Error .. Slected Trajectory is out of range !! ( " << preCalcPrams->iCurrSafeTrajectory << ")" << std::endl;
+		int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_Path, state);
+		int index_limit = m_Path.size() - 20;
+		if(index_limit<=0)
+			index_limit =  m_Path.size()/2.0;
+		if(m_RollOuts.size() == 0 || currIndex > index_limit || m_pCurrentBehaviorState->GetCalcParams()->bRePlan)
+		{
+			PlannerHNS::PlanningInternalParams params;
+			PlannerHNS::PlannerH planner(params);
+			planner.GenerateRunoffTrajectory(m_TotalPath, state, false,
+					vehicleState.speed,
+					m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
+					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
+					m_pCurrentBehaviorState->m_PlanningParams.minSpeed,
+					m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
+					m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
+					m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
+					m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
+					m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
+					m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
+					m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
+					m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
+					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
+					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
+					false, m_RollOuts);
+			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
 
+			if(preCalcPrams->iCurrSafeTrajectory >= 0 && preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size())
+			{
+				m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+				PlanningHelpers::GenerateRecommendedSpeed(m_Path,
+						m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
+						m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
+				PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
+				std::ostringstream str_out;
+				str_out << DataRW::LoggingFolderPath;
+				str_out << DataRW::PathLogFolderName;
+				str_out << "_";
+				PlanningHelpers::WritePathToFile(str_out.str(), m_Path);
+			}
+			else if(m_RollOuts.size() > 0)
+				std::cout << "Error .. Error .. Slected Trajectory is out of range !! ( " << preCalcPrams->iCurrSafeTrajectory << ")" << std::endl;
+
+		}
+	}
  }
 
  PlannerHNS::BehaviorState CarState::GenerateBehaviorState(const PlannerHNS::VehicleState& vehicleState)
@@ -455,9 +521,11 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 
 	CalculateImportantParameterForDecisionMaking(vehicleState, goal);
 
-	SelectSafeTrajectoryAndSpeedProfile();
+	 PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
 
-	return GenerateBehaviorState(vehicleState);
+	SelectSafeTrajectoryAndSpeedProfile(vehicleState);
+
+	return beh;
  }
 
 
