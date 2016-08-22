@@ -17,17 +17,17 @@ try:
 except ImportError:
   from xmlrpclib import ServerProxy
 
-# メインフレームクラス
+# Class main Frame
 class MyFrame(wx.Frame):
-  # MyFrame: 初期画面表示関数
+  # Constructor(MyFrame): function for initial display
   def __init__(self, parent, id, title):
-    # 基底パネルの設定
     wx.Frame.__init__(self, parent, id, title)
+    # setup base panel
     panel = wx.Panel(self, -1)
     vbox = wx.BoxSizer(wx.VERTICAL)
     panel.SetSizer(vbox)
 
-    # 上部バネル(グラフ表示部)の設定
+    # setup upper panel(for graphic display base)
     self.hpanel_ = wx.Panel(panel, -1)
     self.hbox_ = wx.BoxSizer(wx.HORIZONTAL)
     self.hpanel_.SetSizer(self.hbox_)
@@ -41,13 +41,13 @@ class MyFrame(wx.Frame):
     self.hbox_.Add(self.cgpanel_, flag=wx.ALL, border=2)
     vbox.Add(self.hpanel_, flag=wx.ALL, border=2)
 
-    # 中部バネル(コメント表示)の設定
+    # setup middle panel(for comment display base)
     self.lpanel_ = wx.Panel(panel, -1)
     self.lbox_ = wx.BoxSizer(wx.HORIZONTAL)
     self.lpanel_.SetSizer(self.lbox_)
     vbox.Add(self.lpanel_, wx.ALL, border=8)
 
-    # 下部バネル(操作ボタン表示)の設定
+    # setup lower panel(for button display base)
     spanel = wx.Panel(panel, -1)
     hbox = wx.BoxSizer(wx.HORIZONTAL)
     self.sbtn = wx.Button(spanel, -1, "Start/Stop")
@@ -62,13 +62,13 @@ class MyFrame(wx.Frame):
     spanel.SetSizer(hbox)
     vbox.Add(spanel, flag=wx.ALL, border=10)
 
-    # 初期値設定
+    # initial settings
     self.labels_ = []
     self.cgpanels_ = []
     self.cpucount_ = multiprocessing.cpu_count()
     self.pids_ = []
     self.view_ = 0 # 0=CPUno, 1=ROSnode(pid)
-    self.itmcount_ = 0 # 表示アイテム数（時刻欄を除く）
+    self.itmcount_ = 0 # disply-item count (except time)
     self.itmcolors_ = [
       '#cc0000', '#00cc00', '#0000cc',
       '#cccc00', '#cc00cc', '#00cccc',
@@ -78,28 +78,28 @@ class MyFrame(wx.Frame):
       '#666600', '#660066', '#006666',
       '#330000', '#003300', '#000033',
       '#333300', '#330033', '#003333']
-    self.bgcol_ = '#ffffff' # 描画背景色
-    self.cgtw_, self.cgth_ = wx.StaticText(self.cgpanel_, -1, " "*320).GetSize() # 描画欄の幅と高さの取得
+    self.bgcol_ = '#ffffff' # background color for graph drawing
+    self.cgtw_, self.cgth_ = wx.StaticText(self.cgpanel_, -1, " "*320).GetSize() # get size for graphic drawing area
 
-    # 画面表示
-    self.ChangeView(False)
+    # initial display
+    self.ChangeView()
     self.SetSize(panel.GetBestSize())
     self.Centre()
     self.Show(True)
 
-    # タイマ準備
+    # Timer setting
     self.timer = wx.Timer(self)
     self.Bind(wx.EVT_TIMER, self.OnTimer)
 
-    # 制御変数の初期設定
+    # parameter settings
     self.update = False # 1=update executing
     self.sock = None # comm with proc_manager.py
-    self.dtimespan = 3.0 # 描画されるデータの時間 [s]
-    self.dtime = 0 # 描画されたデータの最新の時刻 [s]
+    self.dtimespan = 3.0 # period for graphic disply [s]
+    self.dtime = 0 # latest time for drawing data [s]
 
-  # MyFrame: CPUno／ROSnode 表示形態変更関数
-  def ChangeView(self, fit):
-    # 今までのフォーマットを消去
+  # Function(MyFrame): Change display mode of CPUno／ROSnode
+  def ChangeView(self):
+    # erase current format
     self.clbox_.Clear(True)
     self.cgbox_.Clear(True)
     self.lbox_.Clear(True)
@@ -108,7 +108,7 @@ class MyFrame(wx.Frame):
     self.cgpanels_ = []
     self.pids_ = self.getRosNodes()
 
-    # 新しいフォーマットに描き直し
+    # redraw new format
     if self.view_ == 0:
       self.itmcount_ = self.cpucount_
       for cpuno in range(0, self.cpucount_):
@@ -134,7 +134,7 @@ class MyFrame(wx.Frame):
         text.SetForegroundColour(self.GetColor(cpuno, 0))
         self.lbox_.Add(text, flag=wx.ALL, border=2)
 
-    text = wx.StaticText(self.clpanel_, -1, "Time:") # 時刻欄を追加
+    text = wx.StaticText(self.clpanel_, -1, "Time:") # add time line
     self.clbox_.Add(text, flag=wx.ALIGN_RIGHT|wx.ALL, border=4)
 
     for n in range(0, self.itmcount_ + 1):
@@ -146,14 +146,13 @@ class MyFrame(wx.Frame):
     self.clbox_.Layout()
     self.cgbox_.Layout()
     self.lbox_.Layout()
-    if fit:
-      self.hpanel_.GetParent().Fit() # panel
-      self.hpanel_.GetParent().GetParent().Fit() # frame
+    self.hpanel_.GetParent().Fit()
+    self.hpanel_.GetParent().GetParent().Fit()
 
-  # MyFrame: updateボタンによるftrace処理開始／停止処理関数
+  # Function(MyFrame): Start/Stop ftrace funvtion by Start/Stop button
   def OnUpdateCont(self, event):
     if self.update == False:
-      # proc_managerに接続
+      # connect to proc_manager
       self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
       try:
         self.sock.connect("/tmp/autoware_proc_manager")
@@ -164,44 +163,41 @@ class MyFrame(wx.Frame):
       try:
         order = { "name":"ftrace_cont", "interval":0.1, "pids":map(lambda n:n[1], self.pids_) }
         self.sock.send(yaml.dump(order))
-        #print "DEBUG;[OnUpdateCont] sended"
       except socket.error:
         self.sock.close()
         self.sock = None
         print "ERROR:[OnUpdateCont-02] cannot send to proc_manager"
         return
-      # ftrace開始
+      # start ftrace
       self.sbtn.SetBackgroundColour("#CCFFCC")
       self.update = True
       self.dtime = 0
-      #print "DEBUG;[OnUpdateCont] cont on"
       self.timer.Start(100)
 
     else:
-      # ftrace停止
+      # stop ftrace
       self.sbtn.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
       self.update = False
-      #print "DEBUG;[OnUpdateCont] cont off"
       self.timer.Stop()
 
       if self.sock is not None:
         self.sock.close()
         self.sock = None
 
-  # MyFrame: cpu/procボタンによる CPU毎／ROSnode毎の表示形態変更処理関数
+  # Function(MyFrame): Change CPU／ROSnode display format by CPU/Proc button
   def OnChangeView(self, event):
     self.view_ = 1 if self.view_ == 0 else 0
-    self.ChangeView(True)
+    self.ChangeView()
 
-  # MyFrame: closeボタンによる終了処理関数
+  # Function(MyFrame): Exit by close button
   def OnExit(self, event):
     sys.exit(0)
 
-  # MyFrame: タイマ割り込み処理関数(ftraceデータ受信、描画)
+  # Function(MyFrame): Timer interrupt(for receive ftrace data and draw)
   def OnTimer(self, event):
     dat = ""
     while True:
-      (r, _, _) = select.select([self.sock], [], [], 0.01) # 10ms待ち
+      (r, _, _) = select.select([self.sock], [], [], 0.01) # wait10ms
       if len(r) <= 0:
         break
       d = self.sock.recv(1000000)
@@ -214,42 +210,42 @@ class MyFrame(wx.Frame):
       dat = pickle.loads(dat)
       self.UpdateGraph(dat)
 
-  # MyFrame: グラフ描画更新処理関数
+  # Function(MyFrame): Draw graph
   def UpdateGraph(self, dat):
-    # 新しいデータの最後と最初の時刻を取得
-    etime = 0 # 最後の時刻(グラフの右端となる)
+    # get first and last time for new data
+    etime = 0 # last time(right side for graph)
     for cpuno in dat:
       for d in dat[cpuno]:
         if d[1] > etime:
           etime = d[1]
-    stime = etime - self.dtimespan # 最初の時刻(グラフの左端となる)
-    ctime = datetime.datetime.now() # 現在時刻の取得
+    stime = etime - self.dtimespan # first time(left side for graph)
+    ctime = datetime.datetime.now() # get current time(for time scale diplay)
 
-    # 過去描画のシフト
+    # shift previous drawing
     if self.itmcount_ > 0:
-      # シフト量の計算
-      sft = self.cgtw_ * (etime - self.dtime) / self.dtimespan # シフト量 [pixel]
+      # calcurate graphic shift value
+      sft = self.cgtw_ * (etime - self.dtime) / self.dtimespan # shift [pixel]
       if sft > self.cgtw_:
-        sft = self.cgtw_ # 全領域クリア
+        sft = self.cgtw_ # clear all area
 
       for n in range(0, self.itmcount_):
         dc = wx.PaintDC(self.cgpanels_[n])
         dc.SetPen(wx.Pen(self.bgcol_))
         dc.SetBrush(wx.Brush(self.bgcol_))
-        # 過去データの描画をシフト
+        # shift previous drawing
         dc.Blit(0, 0, self.cgtw_ - sft, self.cgth_, dc, sft, 0)
-        # 新データの描画領域クリア
+        # clear new data drawing area
         dc.DrawRectangle(self.cgtw_ - sft, 0, sft, self.cgth_)
     self.dtime = etime
 
-    # 新データのグラフ描画
+    # draw graph of new data
     for cpuno in range(0, self.cpucount_):
-      pid = 0 # 前回pid
-      ptm = 0 # 前回時刻
+      pid = 0 # previous pid
+      ptm = 0 # previous time
       for d in dat[cpuno]:
-        cid = d[0] # 今回pid
-        ctm = d[1] # 今回時刻
-        col = ''   # 描画色(前回のpidに依存)
+        cid = d[0] # current pid
+        ctm = d[1] # current time
+        col = ''   # drawing color(depend on previous pid)
         for (_, p) in self.pids_:
           if p == pid:
             col = self.GetColor(cpuno, pid)
@@ -276,26 +272,26 @@ class MyFrame(wx.Frame):
         ptm = ctm
         pid = cid
 
-    # 目盛と時刻の描画
+    # draw scale and time
     dc = wx.PaintDC(self.cgpanels_[self.itmcount_])
     dc.SetPen(wx.Pen(self.bgcol_))
     dc.SetBrush(wx.Brush(self.bgcol_))
-    dc.DrawRectangle(0, 0, self.cgtw_, self.cgth_) # 描画領域クリア
+    dc.DrawRectangle(0, 0, self.cgtw_, self.cgth_) # clear drawing area
     dc.SetTextForeground((0,0,0))
-    tint = self.cgtw_ / self.dtimespan # 表示間隔
-    tofs = self.cgtw_ * (1 - (ctime.microsecond / self.dtimespan / 1000000)) # 表示オフセット
+    tint = self.cgtw_ / self.dtimespan # period for time display
+    tofs = self.cgtw_ * (1 - (ctime.microsecond / self.dtimespan / 1000000)) # offset for drawing
     tmin = ctime.minute
     tsec = ctime.second
     dc.SetPen(wx.Pen('blue'))
-    for t in range(-10, 30): # 目盛の描画
+    for t in range(-10, 30): # draw scale
       x = tofs - (t / 10.0) * tint
       dc.DrawLine(x, 0, x, 4)
       if (t % 5) == 0:
         dc.DrawLine(x - 1, 0, x - 1, 4)
-    for t in range(0, 4): # 時刻の描画
+    for t in range(0, 4): # draw time
       ttext = "%02d:%02d" % (tmin, tsec)
-      txtw,_ = dc.GetTextExtent(ttext) # 時刻表示の文字列幅の取得
-      dc.DrawText(ttext, tofs - (txtw / 2), 0) # 時刻描画
+      txtw,_ = dc.GetTextExtent(ttext) # get text width for time display
+      dc.DrawText(ttext, tofs - (txtw / 2), 0) # draw time
       tofs -= tint
       tsec -= 1
       if tsec < 0:
@@ -304,7 +300,7 @@ class MyFrame(wx.Frame):
         if tmin < 0:
           tmin = 59
 
-  # MyFrame: グラフ描画色の取得関数
+  # Function(MyFrame): Get drawing color
   def GetColor(self, cpuno, pid):
     if self.view_ == 0:
       i = 0
@@ -316,7 +312,7 @@ class MyFrame(wx.Frame):
     else:
       return self.itmcolors_[cpuno % len(self.itmcolors_)]
 
-  # MyFrame: ROSノードのpidを取得する関数
+  # Function(MyFrame): Get ROSnode pid
   def getRosNodes(self):
     nodes = []
     try:
@@ -342,7 +338,7 @@ class MyFrame(wx.Frame):
           pass
     return nodes
 
-# メイン処理
+# Main
 if __name__ == "__main__":
   myapp = wx.App(0)
   frame = MyFrame(None, -1, "Ftrace")
