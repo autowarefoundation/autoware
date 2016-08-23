@@ -2728,7 +2728,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 	def OnStop(self, event):
 		key_obj = self.button_start
 		(cmd, proc) = self.cmd_dic[ key_obj ]
-		proc = self.parent.launch_kill(False, cmd, proc, sigint=True, obj=key_obj)
+		proc = self.parent.launch_kill(False, cmd, proc, sigint=True, obj=key_obj, kill_children=True)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.parent.toggle_enables(self.toggles)
 		self.Hide()
