@@ -1671,6 +1671,13 @@ class MyFrame(rtmgr.MyFrame):
 			if proc:
 				proc.stdin.write(' ')
 			
+	def OnFtrace(self, event):
+		obj = event.GetEventObject()
+		cmd = 'rosrun runtime_manager ftrace.py'
+		v = obj.GetValue()
+		self.ftrace_proc_ = self.launch_kill(v, cmd,
+			None if v else self.ftrace_proc_, obj=obj)
+
 	def stdout_file_search(self, file, k):
 		s = ''
 		while True:

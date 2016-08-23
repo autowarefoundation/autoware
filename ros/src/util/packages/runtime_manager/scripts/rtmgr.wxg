@@ -2018,6 +2018,17 @@
                                                     </events>
                                                 </object>
                                             </object>
+                                            <object class="sizeritem">
+                                                <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                                                <border>4</border>
+                                                <option>0</option>
+                                                <object class="wxToggleButton" name="button_ftrace" base="EditToggleButton">
+                                                    <label>Ftrace</label>
+                                                    <events>
+                                                        <handler event="EVT_TOGGLEBUTTON">OnFtrace</handler>
+                                                    </events>
+                                                </object>
+                                            </object>
                                         </object>
                                     </object>
                                     <object class="sizeritem">

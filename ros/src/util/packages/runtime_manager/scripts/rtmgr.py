@@ -166,6 +166,7 @@ class MyFrame(wx.Frame):
 		self.text_ctrl_stdout = wx.TextCtrl(self.tab_status, wx.ID_ANY, "", style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL)
 		self.sizer_stdout_staticbox = wx.StaticBox(self.tab_status, wx.ID_ANY, "")
 		self.button_system_monitor = wx.ToggleButton(self.tab_status, wx.ID_ANY, _("System Monitor"))
+		self.button_ftrace = wx.ToggleButton(self.tab_status, wx.ID_ANY, _("Ftrace"))
 		self.button_rosbag_status = wx.ToggleButton(self.tab_status, wx.ID_ANY, _("ROSBAG"))
 		self.button_rviz_status = wx.ToggleButton(self.tab_status, wx.ID_ANY, _("RViz"))
 		self.button_rqt_status = wx.ToggleButton(self.tab_status, wx.ID_ANY, _("RQT"))
@@ -254,6 +255,7 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_simulation)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_simulation)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_system_monitor)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnFtrace, self.button_ftrace)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_status)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_status)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_status)
@@ -644,6 +646,7 @@ class MyFrame(wx.Frame):
 		sizer_20.Add(sizer_stdout, 1, wx.EXPAND, 0)
 		sizer_85.Add(sizer_20, 1, wx.EXPAND, 0)
 		sizer_60_copy.Add(self.button_system_monitor, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
+		sizer_60_copy.Add(self.button_ftrace, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
 		sizer_51_copy.Add(sizer_60_copy, 1, wx.EXPAND, 0)
 		sizer_52_copy_1.Add(self.button_rosbag_status, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
 		sizer_52_copy_1.Add(self.button_rviz_status, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 4)
@@ -731,6 +734,10 @@ class MyFrame(wx.Frame):
 
 	def OnRosbagPlay(self, event):  # wxGlade: MyFrame.<event_handler>
 		print "Event handler 'OnRosbagPlay' not implemented!"
+		event.Skip()
+
+	def OnFtrace(self, event):  # wxGlade: MyFrame.<event_handler>
+		print "Event handler 'OnFtrace' not implemented!"
 		event.Skip()
 
 	def OnEcho(self, event):  # wxGlade: MyFrame.<event_handler>
