@@ -35,6 +35,7 @@
 #include "geo_pos_conv.hh"
 #include "PlannerHHandler.h"
 #include "FreePlannerHandler.h"
+#include "MappingHelpers.h"
 
 namespace PlannerXNS
 {
@@ -49,7 +50,7 @@ PlannerX_Interface* PlannerX_Interface::CreatePlannerInstance(const std::string&
 		return 0;
 }
 
-PlannerX::PlannerX(std::string plannerType)
+PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::string kmlMapPath)
 {
 	clock_gettime(0, &m_Timer);
 	m_counter = 0;
@@ -60,50 +61,62 @@ PlannerX::PlannerX(std::string plannerType)
 	bVehicleState = false;
 	bNewDetectedObstacles = false;
 	bTrafficLights = false;
+	m_bAutoware = bAutoware;
+	m_KmlMapPath = kmlMapPath;
+	m_bKML_Map = bKML;
 
 
 
 	m_pPlanner = PlannerXNS::PlannerX_Interface::CreatePlannerInstance(plannerType);
 
-	tf::StampedTransform transform;
-	RosHelpers::GetTransformFromTF("map", "world", transform);
-	//ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
+	if(m_bAutoware)
+	{
+		tf::StampedTransform transform;
+		RosHelpers::GetTransformFromTF("map", "world", transform);
+		//ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
 
-	m_OriginPos.position.x  = transform.getOrigin().x();
-	m_OriginPos.position.y  = transform.getOrigin().y();
-	m_OriginPos.position.z  = transform.getOrigin().z();
+		m_OriginPos.position.x  = transform.getOrigin().x();
+		m_OriginPos.position.y  = transform.getOrigin().y();
+		m_OriginPos.position.z  = transform.getOrigin().z();
+	}
 
 	if(m_pPlanner)
 		m_pPlanner->UpdateOriginTransformationPoint(m_OriginPos);
 
-	m_PositionPublisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
+
 	m_PathPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 100, true);
+	m_MapPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines", 100, true);
+
 	m_PathPublisher = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 100, true);
 	m_TrajectoryFinalWaypointPublisher = nh.advertise<waypoint_follower::lane>("final_waypoints", 100,true);
 	m_BehaviorPublisher = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 100);
 
+
 	// define subscribers.
 	sub_current_pose 		= nh.subscribe("/current_pose", 				100,
 			&PlannerX::callbackFromCurrentPose, 		this);
-	sub_traffic_light 		= nh.subscribe("/light_color", 			100,
+	sub_traffic_light 		= nh.subscribe("/light_color", 					100,
 			&PlannerX::callbackFromLightColor, 			this);
-	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 		100,
+	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 			100,
 			&PlannerX::callbackFromObjCar, 				this);
-	point_sub 				= nh.subscribe("/vector_map_info/point_class", 	1,
-			&PlannerX::callbackGetVMPoints, 			this);
-	lane_sub 				= nh.subscribe("/vector_map_info/lane", 		1,
-			&PlannerX::callbackGetVMLanes, 				this);
-	node_sub 				= nh.subscribe("/vector_map_info/node", 		1,
-			&PlannerX::callbackGetVMNodes, 				this);
-	stopline_sub 			= nh.subscribe("/vector_map_info/stop_line", 	1,
-			&PlannerX::callbackGetVMStopLines, 			this);
-	dtlane_sub 				= nh.subscribe("/vector_map_info/dtlane", 	1,
-			&PlannerX::callbackGetVMCenterLines, 		this);
-	initialpose_subscriber 	= nh.subscribe("initialpose", 				10,
+	if(m_bAutoware)
+	{
+		point_sub 				= nh.subscribe("/vector_map_info/point_class", 	1,
+				&PlannerX::callbackGetVMPoints, 			this);
+		lane_sub 				= nh.subscribe("/vector_map_info/lane", 		1,
+				&PlannerX::callbackGetVMLanes, 				this);
+		node_sub 				= nh.subscribe("/vector_map_info/node", 		1,
+				&PlannerX::callbackGetVMNodes, 				this);
+		stopline_sub 			= nh.subscribe("/vector_map_info/stop_line", 	1,
+				&PlannerX::callbackGetVMStopLines, 			this);
+		dtlane_sub 				= nh.subscribe("/vector_map_info/dtlane", 		1,
+				&PlannerX::callbackGetVMCenterLines, 		this);
+	}
+	initialpose_subscriber 	= nh.subscribe("initialpose", 					10,
 			&PlannerX::callbackSimuInitPose, 			this);
-	goalpose_subscriber 	= nh.subscribe("move_base_simple/goal", 			10,
+	goalpose_subscriber 	= nh.subscribe("move_base_simple/goal", 		10,
 			&PlannerX::callbackSimuGoalPose, 			this);
-	sub_vehicle_status	 	= nh.subscribe("vehicle_status", 			100,
+	sub_vehicle_status	 	= nh.subscribe("ff_vehicle_status", 				100,
 				&PlannerX::callbackFromVehicleStatus, 			this);
 
 
@@ -150,17 +163,6 @@ void PlannerX::callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStamp
 	m_InitPos.orientation = msg->pose.pose.orientation;
 
 	bInitPos = true;
-
-//
-//
-//	std_msgs::Header h;
-//	//h.stamp = current_time;
-//	h.frame_id = "StartPosition";
-//
-//	geometry_msgs::PoseStamped ps;
-//	ps.header = h;
-//	ps.pose = msg->pose.pose;
-//	m_PositionPublisher.publish(ps);
 }
 
 void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -183,14 +185,14 @@ void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr&
 	p.position.y = p.position.y - m_OriginPos.position.y;
 	p.position.z = p.position.z - m_OriginPos.position.z;
 
-	double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
-	m_VehicleState.speed = distance/dt;
-	if(m_VehicleState.speed>0.2 || m_VehicleState.shift == AW_SHIFT_POS_DD )
-		m_VehicleState.shift = AW_SHIFT_POS_DD;
-	else if(m_VehicleState.speed<-0.2)
-		m_VehicleState.shift = AW_SHIFT_POS_RR;
-	else
-		m_VehicleState.shift = AW_SHIFT_POS_NN;
+//	double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
+//	m_VehicleState.speed = distance/dt;
+//	if(m_VehicleState.speed>0.2 || m_VehicleState.shift == AW_SHIFT_POS_DD )
+//		m_VehicleState.shift = AW_SHIFT_POS_DD;
+//	else if(m_VehicleState.speed<-0.2)
+//		m_VehicleState.shift = AW_SHIFT_POS_RR;
+//	else
+//		m_VehicleState.shift = AW_SHIFT_POS_NN;
 
 	m_CurrentPos.position  = p.position;
 	m_CurrentPos.orientation = p.orientation;
@@ -256,7 +258,15 @@ void PlannerX::PlannerMainLoop()
 	{
 		ros::spinOnce();
 
-		if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
+		if(!m_bAutoware)
+		{
+			visualization_msgs::MarkerArray map_marker_array;
+			bool bNewMap = m_pPlanner->LoadRoadMap(m_KmlMapPath, m_bKML_Map, map_marker_array);
+			if(bNewMap)
+				m_MapPublisherRviz.publish(map_marker_array);
+
+		}
+		else if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
 			m_pPlanner->UpdateRoadMap(m_AwMap);
 
 		AutowareBehaviorState behState;

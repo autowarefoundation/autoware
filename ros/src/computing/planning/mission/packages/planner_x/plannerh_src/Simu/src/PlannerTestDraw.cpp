@@ -18,9 +18,9 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMapPath "/home/ai-driver/workspace/Data/VectorMap/"
-#define kmlMapPath	"/home/ai-driver/SimuLogs/7th_floor_10m.kml"
-#define kmlTemplateFile "/home/ai-driver/workspace/Data/templates/PlannerX_MapTemplate.kml"
+#define VectorMapPath "/home/hatem/workspace/Data/VectorMap/"
+#define kmlMapPath	"/home/hatem/SimuLogs/7th_floor_10m.kml"
+#define kmlTemplateFile "/home/hatem/workspace/Data/templates/PlannerX_MapTemplate.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
 
 namespace Graphics
@@ -164,7 +164,7 @@ void PlannerTestDraw::LoadSimulationData()
 	for(unsigned  int i=0; i < data.simuCars.size(); i++)
 	{
 		AddSimulatedCar(data.simuCars.at(i).x, data.simuCars.at(i).y,
-				data.simuCars.at(i).a, data.simuCars.at(i).v);
+				data.simuCars.at(i).a, (6.0 + rand()%6)/3.6);
 	}
 }
 
@@ -224,7 +224,7 @@ void PlannerTestDraw::DetectSimulatedObstacles(std::vector<PlannerHNS::DetectedO
 
 void PlannerTestDraw::AddSimulatedCarPos(const double& x,const double& y, const double& a)
 {
-	double v  = 0;//(rand()%70+5)/10.0/3.6;
+	double v  = (6.0 + rand()%6)/3.6;
 	AddSimulatedCar(x,y,a,v);
 }
 
@@ -545,6 +545,7 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 
 	glPushMatrix();
 	glTranslated(centerX-left_shift-15, 70+85, 0);
+	glColor3f(0.8, 0.1, 0.7);
 	std::ostringstream str_out ;
 	str_out.precision(2);
 	str_out <<  m_VehicleState.steer*RAD2DEG;
@@ -568,46 +569,59 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 //		TRAFFIC_LIGHT_STOP_STATE, STOP_SIGN_STOP_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE
 
 	std::ostringstream state_out ;
-	state_out << "Behavior: ";
-	string str = "Unknown State";
+	state_out.precision(4);
+	state_out << "State-> ";
+	string str = "Unknown";
 	switch(m_CurrentBehavior.state)
 	{
 	case PlannerHNS::INITIAL_STATE:
-		str = "Init State";
+		str = "Init";
 		break;
 	case PlannerHNS::WAITING_STATE:
-		str = "Waiting State";
+		str = "Waiting";
 		break;
 	case PlannerHNS::FORWARD_STATE:
-		str = "Forward State";
+		str = "Forward";
 		break;
 	case PlannerHNS::STOPPING_STATE:
-		str = "Stop State";
+		str = "Stop";
 		break;
 	case PlannerHNS::FINISH_STATE:
-		str = "End State";
+		str = "End";
 		break;
 	case PlannerHNS::FOLLOW_STATE:
-		str = "Follow State";
+		str = "Follow";
 		break;
 	case PlannerHNS::OBSTACLE_AVOIDANCE_STATE:
-		str = "Swerving State";
+		str = "Swerving";
 		break;
 	default:
-		str = "Unknown State";
+		str = "Unknown";
 		break;
 	}
 	state_out << str;
+	state_out << " (" << m_CurrentBehavior.followDistance << ";"
+			<< m_CurrentBehavior.followVelocity*3.6 << ";"
+			<< m_CurrentBehavior.stopDistance << ";"
+			<< m_State.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory << ";"
+			<< m_State.m_pCurrentBehaviorState->GetCalcParams()->iPrevSafeTrajectory << ")";
+
 	glPushMatrix();
-	glColor3f(0.2, 0.2, 0.9);
+	glColor3f(0.8, 0.5, 0.7);
 	glTranslated(10, 200, 0);
 	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)state_out.str().c_str());
 
-	std::ostringstream sim_n_out ;
-	sim_n_out << "Simulated Cars:";
-	sim_n_out << m_SimulatedCars.size();
-	glColor3f(0.6, 0.6, 0.9);
-	DrawingHelpers::DrawString(0, 30, GLUT_BITMAP_TIMES_ROMAN_24, (char*)sim_n_out.str().c_str());
+	double y = 30;
+	for(unsigned int i = 0; i < m_dummyObstacles.size(); i++)
+	{
+		std::ostringstream sim_n_out ;
+		sim_n_out << "Simu Car (:" << m_dummyObstacles.at(i).id << ") -> ";
+		sim_n_out << m_dummyObstacles.at(i).center.v;
+		glColor3f(0.6, 0.6, 0.9);
+		DrawingHelpers::DrawString(0, y, GLUT_BITMAP_TIMES_ROMAN_24, (char*)sim_n_out.str().c_str());
+		y+=30;
+	}
+
 	glPopMatrix();
 }
 

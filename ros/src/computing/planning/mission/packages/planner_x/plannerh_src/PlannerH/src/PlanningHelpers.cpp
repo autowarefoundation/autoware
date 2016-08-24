@@ -429,7 +429,7 @@ double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path
 {
 	path[0].pos.a 	= atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x );
 	path[0].cost 	= lastCost;
-	path[0].pos.z	= 0;
+	//path[0].pos.z	= 0;
 
 	double k = 0;
 	GPSPoint center;
@@ -447,7 +447,7 @@ double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path
 
 		path[j].pos.a 	= atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x );
 		//path[j].cost 	= path[j-1].cost + distance2points(path[j-1].pos, path[j].pos);
-		path[j].pos.z 	= 0;
+		//path[j].pos.z 	= 0;
 	}
 	unsigned int j = path.size()-1;
 
@@ -455,7 +455,7 @@ double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path
 	path[j].cost 	= path[j-1].cost;
 	path[j].pos.a 	= path[j-1].pos.a;
 	path[j].cost 	= path[j-1].cost ;//+ distance2points(path[j-1].pos, path[j].pos);
-	path[j].pos.z 	= 0;
+	//path[j].pos.z 	= 0;
 
 	if(bSmooth)
 	{
@@ -897,6 +897,8 @@ void PlanningHelpers::GenerateRecommendedSpeed(vector<WayPoint>& path, const dou
 			path.at(i).v = 10.0;
 		else if(k_ratio < 9.9)
 			path.at(i).v = 13.0;
+		else
+			path.at(i).v = 15.0;
 
 		if(path.at(i).v >= max_speed)
 			path.at(i).v = max_speed;

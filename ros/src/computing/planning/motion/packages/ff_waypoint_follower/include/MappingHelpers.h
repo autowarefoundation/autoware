@@ -37,6 +37,7 @@ public:
 			const GPSPoint& origin, WayPoint& way_point);
 
 	static void WriteKML(const std::string& kmlFile, const std::string& kmlTemplat, RoadNetwork& ap);
+	static void LoadKML(const std::string& kmlMap, RoadNetwork& map);
 
 	static void SetLaneLinesList(TiXmlElement* pElem, std::vector<Lane>& stopLines);
 	static TiXmlElement* GetHeadElement(TiXmlElement* pMainElem);
@@ -60,6 +61,13 @@ public:
 	static int GetLaneIdByWaypointId(const int& id,std::vector<Lane>& lanes);
 
 	static WayPoint* FindWaypoint(const int& id, RoadNetwork& map);
+
+
+	static std::vector<Lane> GetLanesList(TiXmlElement* pElem);
+	static std::vector<RoadSegment> GetRoadSegmentsList(TiXmlElement* pElem);
+	static std::vector<int> GetIDsFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
+	static std::vector<WayPoint> GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID);
+	static std::vector<std::string> SplitString(const std::string& str, const std::string& token);
 
 };
 

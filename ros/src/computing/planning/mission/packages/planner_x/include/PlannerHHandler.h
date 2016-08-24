@@ -15,6 +15,7 @@
 #include "UtilityH.h"
 #include "DataRW.h"
 #include "CarState.h"
+#include "SimpleTracker.h"
 
 namespace PlannerXNS
 {
@@ -26,6 +27,8 @@ public:
 	virtual ~PlannerH_Handler();
 
 	virtual void UpdateRoadMap(const AutowareRoadNetwork& map);
+
+	virtual bool LoadRoadMap(const std::string& mapFilePath, const bool& bKML_Map, visualization_msgs::MarkerArray& mapToVisualize);
 
 	virtual void UpdateOriginTransformationPoint(const geometry_msgs::Pose& originPoint);
 
@@ -51,6 +54,7 @@ protected:
 	PlannerHNS::PlannerH* m_pPlannerH;
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	struct timespec m_PlanningTimer;
+	SimulationNS::SimpleTracker m_ObstacleTracking;
 
 
 	void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
@@ -59,6 +63,8 @@ protected:
 	void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& total_path,
 			const std::vector<PlannerHNS::WayPoint>& curr_path, const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
 				visualization_msgs::MarkerArray& markerArray);
+
+	void ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray);
 
 	void ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles);
 	PlannerHNS::SHIFT_POS ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift);

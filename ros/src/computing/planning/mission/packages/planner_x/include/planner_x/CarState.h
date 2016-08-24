@@ -103,7 +103,7 @@ private:
 	bool IsGoalAchieved(const PlannerHNS::GPSPoint& goal);
 	void SimulateOdoPosition(const double& dt, const PlannerHNS::VehicleState& vehicleState);
 	void UpdateCurrentLane(PlannerHNS::RoadNetwork& map, const double& search_distance);
-	void SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState);
+	bool SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState);
 	PlannerHNS::BehaviorState GenerateBehaviorState(const PlannerHNS::VehicleState& vehicleState);
 	void TransformPoint(const PlannerHNS::WayPoint& refPose, PlannerHNS::GPSPoint& p);
 	void AddAndTransformContourPoints(const PlannerHNS::DetectedObject& obj, std::vector<PlannerHNS::WayPoint>& contourPoints);

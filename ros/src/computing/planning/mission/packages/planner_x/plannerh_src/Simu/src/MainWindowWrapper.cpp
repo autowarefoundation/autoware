@@ -29,7 +29,7 @@ WindowParams::WindowParams()
 	y = 10;
 	w = 1200;
 	h = 800;
-	info_ratio = 0.15;
+	info_ratio = 0.25;
 
 	UI_CONST.GAP = 20;
 	UI_CONST.MAX_ZOOM = 6000.0;
@@ -40,7 +40,7 @@ WindowParams::WindowParams()
 	ReCalcSimuWindow();
 
 	bNew = true;
-	bGPU = true;
+	bGPU = false;
 }
 
 void WindowParams::ReCalcSimuWindow()
@@ -151,6 +151,8 @@ void MainWindowWrapper::InitOpenGLWindow(int argc, char** argv)
 
 	//RedisplayAll();
 	glutPostRedisplay();
+
+	KeyboardCommand('f', 0,0);
 
 	atexit(CleanUp);
 

@@ -59,30 +59,28 @@
 namespace FFSteerControlNS
 {
 
+enum STATUS_TYPE{CONTROL_BOX_STATUS, AUTOWARE_STATUS, SEGWAY_STATUS, SIMULATION_STATUS};
+
 class ControlCommandParams
 {
 public:
-	bool bTest; // true -> Test parameter entered at command line
 	bool bMode; // true -> mode parameter entered at command line
 	bool bSignal; // true -> signal parameter entered at command line
-	double targetSteer; // test steering angle
-	double targetVelocity; // test velocity
-	int iLocalizationSource;
+	STATUS_TYPE statusSource;
 	//0 -> control box (zmp)
 	//1 -> autoware
 	//2 -> segway
 	//3 -> simulation
+	int iMapping; // 1 create map
 	bool bTorqueMode; // true -> torque and stroke mode, false -> angle and velocity mode
 
 	ControlCommandParams()
 	{
-		bTest = false;
 		bMode = false;
 		bSignal = false;
-		targetVelocity = 0;
-		targetSteer = 0;
-		iLocalizationSource = 3;
+		statusSource = SIMULATION_STATUS;
 		bTorqueMode = false;
+		iMapping = 0;
 	}
 };
 
@@ -96,6 +94,7 @@ protected:
 	int m_counter;
 	int m_frequency;
 
+
 	PlannerHNS::WayPoint m_InitPos;
 	bool bInitPos;
 	PlannerHNS::WayPoint m_CurrentPos;
@@ -106,14 +105,16 @@ protected:
 	bool bNewBehaviorState;
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	bool bNewVelocity;
-	double m_CurrentVelocity;
+	//double m_CurrentVelocity;
 	SimulationNS::CarState m_State;
 	struct timespec m_PlanningTimer;
 	PlannerHNS::WayPoint m_FollowPoint;
 	PlannerHNS::WayPoint m_PerpPoint;
 
 	PlannerHNS::VehicleState m_PrevStepTargetStatus;
-	geometry_msgs::Vector3Stamped m_segway_status;
+	PlannerHNS::VehicleState m_CurrVehicleStatus;
+
+	//geometry_msgs::Vector3Stamped m_segway_status;
 	bool bVehicleStatus;
 	ControlCommandParams m_CmdParams;
 
@@ -123,9 +124,14 @@ protected:
 	//ros::Publisher m_PathPublisherRviz;
 	ros::Publisher m_velocity_publisher;
 	ros::Publisher m_stat_pub;
-	ros::Publisher m_target_pub;
+
+	ros::Publisher m_curr_pos_pub;
+	ros::Publisher m_perp_pos_pub;
+	ros::Publisher m_follow_pos_pub;
+
 	ros::Publisher m_simulated_pos_pub;
-	ros::Publisher m_simulated_velocity_pub;
+	ros::Publisher m_autoware_pos_pub;
+	//ros::Publisher m_simulated_velocity_pub;
 	ros::Publisher m_current_vehicle_status;
 	ros::Publisher m_segway_rpm_cmd;
 
@@ -133,7 +139,7 @@ protected:
 	ros::Subscriber sub_current_pose ;
 	ros::Subscriber sub_behavior_state;
 	ros::Subscriber sub_current_trajectory;
-	ros::Subscriber sub_twist_velocity;
+	//ros::Subscriber sub_twist_velocity;
 	ros::Subscriber initialpose_subscriber 	;
 	ros::Subscriber sub_segway_rpm_odom;
 
@@ -154,7 +160,7 @@ private:
 
 	void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackFromCurrentTrajectory(const waypoint_follower::laneConstPtr& msg);
-	void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg);
+	//void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg);
 	void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
 	void callbackFromBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
 	void callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg);
@@ -162,7 +168,7 @@ private:
   void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 
 
-  void displayNextTarget(PlannerHNS::WayPoint target);
+  void displayFollowingInfo(PlannerHNS::WayPoint& curr_pose, PlannerHNS::WayPoint& perp_pose, PlannerHNS::WayPoint& follow_pose);
 
   PlannerHNS::BehaviorState ConvertBehaviorStateFromAutowareToPlannerH(const geometry_msgs::TwistStampedConstPtr& msg);
 

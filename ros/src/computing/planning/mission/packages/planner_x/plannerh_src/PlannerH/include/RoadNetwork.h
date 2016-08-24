@@ -532,6 +532,7 @@ public:
 	double followVelocity;
 	double followDistance;
 	LIGHT_INDICATOR indicator;
+	bool bNewPlan;
 
 
 	BehaviorState()
@@ -543,6 +544,7 @@ public:
 		followVelocity = 0;
 		followDistance = 0;
 		indicator  = INDICATOR_NONE;
+		bNewPlan = false;
 
 	}
 
