@@ -221,6 +221,7 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 //		desiredVelocity = CurrBehavior.maxVelocity;
 //	}
 
+	//desiredVelocity = 2.0;
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;
 	m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());

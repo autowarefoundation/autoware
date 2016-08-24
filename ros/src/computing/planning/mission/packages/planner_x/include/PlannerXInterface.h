@@ -111,6 +111,8 @@ public:
 
 	virtual void UpdateRoadMap(const AutowareRoadNetwork& map) = 0;
 
+	virtual bool LoadRoadMap(const std::string& mapFilePath, const bool& bKML_Map, visualization_msgs::MarkerArray& mapToVisualize) = 0;
+
 	virtual void UpdateOriginTransformationPoint(const geometry_msgs::Pose& originPoint) = 0;
 
 	virtual void UpdateGlobalGoalPosition(const geometry_msgs::Pose& goalPose) = 0;

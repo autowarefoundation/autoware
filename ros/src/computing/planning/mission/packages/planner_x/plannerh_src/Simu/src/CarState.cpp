@@ -288,7 +288,7 @@ void CarState::CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, c
 				distance_direct_smallest = distance_direct;
 
 			double distance_on_trajectory  = PlanningHelpers::GetDistanceOnTrajectory(m_TotalPath, iEgoIndex, contourPoints.at(j)) - m_CarInfo.length/2.0;
-			if(distance_on_trajectory < distance_on_trajectory_smallest)
+			if(distance_on_trajectory > 0 && distance_on_trajectory < distance_on_trajectory_smallest)
 				distance_on_trajectory_smallest = distance_on_trajectory;
 		}
 
@@ -308,7 +308,7 @@ void CarState::CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, c
 				double d_diff = fabs(distance_lateral - m_TrajectoryCosts.at(c).distance_from_center);
 				m_TrajectoryCosts.at(c).lateral_costs.push_back(std::make_pair(j,d_diff));
 
-				if(d_diff < critical_lateral_distance)
+				if(d_diff < critical_lateral_distance && (distance_on_trajectory_smallest < m_TrajectoryCosts.at(c).closest_obj_distance || m_TrajectoryCosts.at(c).closest_obj_distance <= 0))
 				{
 					//if(normalized_cost > m_TrajectoryCosts.at(c).closest_obj_cost)
 					{
@@ -329,11 +329,11 @@ void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, do
 
 	//if the  closest_obj_cost is less than 0.9 (12 meter) consider this trajectory blocked
 	closest_distance = pParams->horizonDistance;
-	std::cout << "----------------------------------------------------" << std::endl;
-	std::cout << ">> Costs: " << std::endl;
+//	std::cout << "----------------------------------------------------" << std::endl;
+//	std::cout << ">> Costs: " << std::endl;
 	for(unsigned int c = 0; c < m_TrajectoryCosts.size(); c++)
 	{
-		std::cout << m_TrajectoryCosts.at(c).ToString() << std::endl;
+//		std::cout << m_TrajectoryCosts.at(c).ToString() << std::endl;
 
 		if(m_TrajectoryCosts.at(c).closest_obj_cost >= 0.8)
 			m_TrajectoryCosts.at(c).cost = 1;
@@ -343,7 +343,7 @@ void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, do
 					m_TrajectoryCosts.at(c).priority_cost +
 					m_TrajectoryCosts.at(c).transition_cost)/3.0;
 
-		if(m_TrajectoryCosts.at(c).closest_obj_distance < closest_distance)
+		if(m_TrajectoryCosts.at(c).closest_obj_distance > 0 && m_TrajectoryCosts.at(c).closest_obj_distance < closest_distance)
 		{
 			closest_distance = m_TrajectoryCosts.at(c).closest_obj_distance;
 			closest_velocity = m_TrajectoryCosts.at(c).closest_obj_velocity;
@@ -363,8 +363,8 @@ void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, do
 
 	safe_index = smallestIndex;
 
-	std::cout << "Selected Trajectory: " << safe_index << ", Closest Distance: " << closest_distance << std::endl;
-	std::cout << "----------------------------------------------------" << std::endl;
+//	std::cout << "Selected Trajectory: " << safe_index << ", Closest Distance: " << closest_distance << std::endl;
+//	std::cout << "----------------------------------------------------" << std::endl;
 }
 
 void CarState::FindNextBestSafeTrajectory(int& safe_index)
@@ -420,10 +420,11 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 		return false;
  }
 
- void CarState::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState)
+ bool CarState::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState)
  {
 	 PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
 
+	bool bNewTrajectory = false;
 	if(m_TotalPath.size()>0)
 	{
 		int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_Path, state);
@@ -457,33 +458,38 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
 
 			//FindNextBestSafeTrajectory(pValues->iCurrSafeTrajectory);
-			if(preCalcPrams->iCurrSafeTrajectory >= 0 && preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size())
+			if(preCalcPrams->iCurrSafeTrajectory >= 0
+					&& preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size()
+					&& m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
 			{
-				if(m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
-				{
-					preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
-					m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
-				}
-				else
-				{
-					preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCentralTrajectory;
-					m_Path = m_RollOuts.at(preCalcPrams->iCentralTrajectory);
-				}
-				PlanningHelpers::GenerateRecommendedSpeed(m_Path,
-						m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-						m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
-				PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
-				std::ostringstream str_out;
-				str_out << DataRW::LoggingFolderPath;
-				str_out << DataRW::PathLogFolderName;
-				str_out << "_";
-				PlanningHelpers::WritePathToFile(str_out.str(), m_Path);
+				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
+				m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+				bNewTrajectory = true;
 			}
-			else if(m_RollOuts.size() > 0)
-				std::cout << "Error .. Error .. Slected Trajectory is out of range !! ( " << preCalcPrams->iCurrSafeTrajectory << ")" << std::endl;
+			else
+			{
+				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCentralTrajectory;
+				m_Path = m_RollOuts.at(preCalcPrams->iCentralTrajectory);
+				bNewTrajectory = true;
+			}
+
+			PlanningHelpers::GenerateRecommendedSpeed(m_Path,
+					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
+					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
+			PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
+			std::ostringstream str_out;
+			str_out << DataRW::LoggingFolderPath;
+			str_out << DataRW::PathLogFolderName;
+			str_out << "_";
+			PlanningHelpers::WritePathToFile(str_out.str(), m_Path);
+//			}
+//			else if(m_RollOuts.size() > 0)
+//				std::cout << "Error .. Error .. Slected Trajectory is out of range !! ( " << preCalcPrams->iCurrSafeTrajectory << ")" << std::endl;
 
 		}
 	}
+
+	return bNewTrajectory;
  }
 
  PlannerHNS::BehaviorState CarState::GenerateBehaviorState(const PlannerHNS::VehicleState& vehicleState)
@@ -532,9 +538,9 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 
 	CalculateImportantParameterForDecisionMaking(vehicleState, goal);
 
-	 PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
+	PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
 
-	SelectSafeTrajectoryAndSpeedProfile(vehicleState);
+	beh.bNewPlan = SelectSafeTrajectoryAndSpeedProfile(vehicleState);
 
 	return beh;
  }

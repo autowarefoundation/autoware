@@ -28,15 +28,125 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "planner_x_core.h"
+#include <iostream>
+
+using namespace std;
+
+void printHelp()
+{
+	cout << "-planner" << endl;
+	cout << "      'DP'" << endl;
+	cout << "      'Free'" << endl;
+	cout << "-system" << endl;
+	cout << "      'autoware'" << endl;
+	cout << "      'segway'" << endl;
+	cout << "-map" << endl;
+	cout << "      'kml'" << endl;
+	cout << "      map path" << endl;
+	cout << "-h" << endl;
+	cout << "      Help" << endl;
+}
 
 int main(int argc, char **argv)
 {
-	std::string plannerType;
-	if (argc > 1)
-		plannerType = std::string(argv[1]);
+	std::string plannerType = "DP";
+	bool bAutoware = true;
+	std::string kmlMapPath = "";
+	bool bKML_Map = false;
+
+	vector<string> cmdData;
+		for ( unsigned int i = 1 ;  i < (unsigned int)argc; i++)
+		{
+			cmdData.push_back(std::string(argv[i]));
+		}
+
+		for(unsigned int i=0; i < cmdData.size(); i++)
+		{
+			if(cmdData.at(i).compare("-planner") == 0)
+			{
+				i++;
+				if(i < cmdData.size())
+				{
+					if(cmdData.at(i).compare("DP") == 0 || cmdData.at(i).compare("Free")==0)
+						plannerType = cmdData.at(i);
+					else
+					{
+						printHelp();
+						return 0;
+					}
+				}
+				else
+				{
+					cout << "Missing parameters ! " << endl;
+					printHelp();
+					return 0;
+				}
+			}
+			else if(cmdData.at(i).compare("-system") == 0)
+			{
+				i++;
+				if(i < cmdData.size())
+				{
+					if(cmdData.at(i).compare("autoware") == 0)
+						bAutoware = true;
+					else if (cmdData.at(i).compare("segway")==0)
+						bAutoware  = false;
+					else
+					{
+						printHelp();
+						return 0;
+					}
+				}
+				else
+				{
+					cout << "Missing parameters ! " << endl;
+					printHelp();
+					return 0;
+				}
+
+			}
+			else if(cmdData.at(i).compare("-map") == 0)
+			{
+				i++;
+				if(i < cmdData.size())
+				{
+					if(cmdData.at(i).compare("kml") == 0)
+					{
+						i++;
+						if(i < cmdData.size())
+						{
+							bKML_Map = true;
+							kmlMapPath = cmdData.at(i);
+						}
+						else
+						{
+							cout << "Map Path is needed ! " << endl;
+							printHelp();
+							return 0;
+						}
+					}
+					else
+					{
+						bKML_Map = false;
+						kmlMapPath = cmdData.at(i);
+					}
+				}
+				else
+				{
+					cout << "Map Path is needed ! " << endl;
+					printHelp();
+					return 0;
+				}
+			}
+			else if(cmdData.at(i).compare("-h") == 0)
+			{
+				printHelp();
+				return 0;
+			}
+		}
 
 	ros::init(argc, argv, "planner_x");
-	PlannerXNS::PlannerX planner_x(plannerType);
+	PlannerXNS::PlannerX planner_x(plannerType,bAutoware, bKML_Map, kmlMapPath);
 	planner_x.PlannerMainLoop();
 	return 0;
 }

@@ -62,6 +62,9 @@ protected:
 	int m_counter;
 	int m_frequency;
 
+	std::string m_KmlMapPath;
+	bool m_bAutoware;
+	bool m_bKML_Map;
 	PlannerXNS::AutowareRoadNetwork m_AwMap;
 	PlannerXNS::PlannerX_Interface* m_pPlanner;
 
@@ -84,8 +87,8 @@ protected:
 
 	ros::NodeHandle nh;
 
-	ros::Publisher m_PositionPublisher;
 	ros::Publisher m_PathPublisherRviz;
+	ros::Publisher m_MapPublisherRviz;
 	ros::Publisher m_PathPublisher;
 	ros::Publisher m_TrajectoryFinalWaypointPublisher;
 	ros::Publisher m_BehaviorPublisher;
@@ -106,7 +109,7 @@ protected:
 
 
 public:
-  PlannerX(std::string plannerType);
+  PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::string kmlMapPath);
 
 
   ~PlannerX();

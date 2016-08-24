@@ -31,17 +31,16 @@
 
 void printHelp()
 {
-	cout << "-test" << endl;
-	cout << "      steering angle in degrees" << endl;
-	cout << "      velocity in meter / second" << endl;
-	cout << "-mode" << endl;
-	cout << "      torque" << endl;
-	cout << "      angle" << endl;
+//	cout << "-mode" << endl;
+//	cout << "      torque" << endl;
+//	cout << "      angle" << endl;
 	cout << "-signal" << endl;
 	cout << "      vehicle" << endl;
 	cout << "      autoware" << endl;
 	cout << "      segway" << endl;
 	cout << "      simulation" << endl;
+	cout << "-map" << endl;
+	cout << "      kml" << endl;
 	cout << "-h" << endl;
 }
 
@@ -58,34 +57,7 @@ int main(int argc, char **argv)
 
 	for(unsigned int i=0; i < cmdData.size(); i++)
 	{
-		if(cmdData.at(i).compare("-test") == 0)
-		{
-			params.bTest = true;
-			// try to read Steering Angle
-			i++;
-			if(i < cmdData.size())
-			{
-				params.targetSteer = strtod(cmdData.at(i).c_str(), NULL);
-			}
-			else
-			{
-				printHelp();
-				return 0;
-			}
-
-			i++;
-			if(i < cmdData.size())
-			{
-				params.targetVelocity = strtod(cmdData.at(i).c_str(), NULL);
-			}
-			else
-			{
-				printHelp();
-				return 0;
-			}
-
-		}
-		else if(cmdData.at(i).compare("-mode") == 0)
+		if(cmdData.at(i).compare("-mode") == 0)
 		{
 			params.bMode = true;
 			i++;
@@ -110,26 +82,34 @@ int main(int argc, char **argv)
 			{
 				if(cmdData.at(i).compare("vehicle") == 0)
 				{
-					params.iLocalizationSource = 0;
+					params.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
 				}
 				else if(cmdData.at(i).compare("autoware") == 0)
 				{
-					params.iLocalizationSource = 1;
+					params.statusSource = FFSteerControlNS::AUTOWARE_STATUS;
 				}
 				else if(cmdData.at(i).compare("segway") == 0)
 				{
-					params.iLocalizationSource = 2;
+					params.statusSource = FFSteerControlNS::SEGWAY_STATUS;
 					cout << "segway Option" << endl;
 				}
 				else if(cmdData.at(i).compare("simulation") == 0)
 				{
-					params.iLocalizationSource = 3;
+					params.statusSource = FFSteerControlNS::SIMULATION_STATUS;
 				}
 			}
 			else
 			{
 				printHelp();
 				return 0;
+			}
+		}
+		else if(cmdData.at(i).compare("-map") == 0)
+		{
+			i++;
+			if(cmdData.at(i).compare("kml") == 0)
+			{
+				params.iMapping = 1;
 			}
 		}
 		else if(cmdData.at(i).compare("-h") == 0)

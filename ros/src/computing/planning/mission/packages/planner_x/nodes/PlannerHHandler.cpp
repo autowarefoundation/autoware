@@ -131,6 +131,21 @@ void PlannerH_Handler::UpdateRoadMap(const AutowareRoadNetwork& map)
 	bMap = true;
 }
 
+bool PlannerH_Handler::LoadRoadMap(const std::string& mapFilePath, const bool& bKML_Map, visualization_msgs::MarkerArray& mapToVisualize)
+{
+	if(bMap) return false;
+
+	if(bKML_Map)
+		PlannerHNS::MappingHelpers::LoadKML(mapFilePath, m_Map);
+	else
+		PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(mapFilePath, m_Map);
+
+	ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, mapToVisualize);
+
+	bMap = true;
+	return true;
+}
+
 void PlannerH_Handler::UpdateOriginTransformationPoint(const geometry_msgs::Pose& originPoint)
 {
 	m_OriginPoint = PlannerHNS::WayPoint(originPoint.position.x, originPoint.position.y,
@@ -168,16 +183,15 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 	m_State.state = PlannerHNS::WayPoint(currentPose.position.x+m_OriginPoint.pos.x,
 			currentPose.position.y + m_OriginPoint.pos.y, currentPose.position.z + m_OriginPoint.pos.z, tf::getYaw(currentPose.orientation));
 
-	std::cout << "## Position After Receiving "<< m_State.state.pos.ToString() << std::endl;
+	//std::cout << "## Position After Receiving "<< m_State.state.pos.ToString() << std::endl;
 
 	if(!m_bFirstCall)
 	{
 		m_Start = m_State.state;
 		m_bFirstCall = true;
+		m_ObstacleTracking.Initialize(m_State.state);
 	}
 
-	std::vector<PlannerHNS::DetectedObject> obst;
-	ConvertFromAutowareObstaclesToPlannerH(detectedObstacles, obst);
 	PlannerHNS::VehicleState vehState;
 	vehState.speed = carState.speed;
 	vehState.steer = carState.steer;
@@ -197,7 +211,6 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 	std::vector<PlannerHNS::WayPoint> generatedTotalPath = m_State.m_TotalPath;
 	std::vector<std::vector<PlannerHNS::WayPoint> > rollOuts;
 	bool bNewPlan = false;
-	bool bNewRollOuts = false;
 	/**
 	 * Path Planning Step (Global Planning)
 	 */
@@ -230,58 +243,36 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 		}
 	}
 
-	//bool bNewTrajectory = false;
-	/**
-	 * Trajectory Planning Step, Roll outs , (Micro planner)
-	 */
-	if(generatedTotalPath.size()>0)
-	{
-		int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_Path, m_State.state);
-		int index_limit = m_State.m_Path.size() - 20;
-		if(index_limit<=0)
-			index_limit =  m_State.m_Path.size()/2.0;
-		if(m_State.m_RollOuts.size() == 0 || currIndex > index_limit)
-		{
-			m_pPlannerH->GenerateRunoffTrajectory(m_State.m_TotalPath, m_State.state, false,  3, 35, 3, 0,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
-					m_State.m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-					false, rollOuts);
-			bNewRollOuts = true;
-		}
-	}
-
 	/**
 	 * Behavior Generator , State Machine , Decision making Step
 	 */
-	if(bNewRollOuts)
-		m_State.m_RollOuts  = rollOuts;
+
 	if(bNewPlan)
 		m_State.m_TotalPath = generatedTotalPath;
 
+
+	std::vector<PlannerHNS::DetectedObject> obj_list;
+	ConvertFromAutowareObstaclesToPlannerH(detectedObstacles, obj_list);
+	m_ObstacleTracking.DoOneStep(m_State.state, obj_list);
+	obj_list = m_ObstacleTracking.m_DetectedObjects;
+
+
 	double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
-	m_CurrentBehavior = m_State.DoOneStep(dt, vehState, obst, m_Goal.pos, m_Map, true);
-	m_CurrentBehavior.maxVelocity = 2.0;
-	std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Lane : " << m_State.pLane << std::endl;
+	m_CurrentBehavior = m_State.DoOneStep(dt, vehState, obj_list, m_Goal.pos, m_Map, true);
+
+	std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
 
 	behaviorState = ConvertBehaviorStateFromPlannerHToAutoware(m_CurrentBehavior);
 
-	if(bNewRollOuts)
+	if(m_CurrentBehavior.bNewPlan)
 	{
 		//ROS_INFO("Convert New Path To Visualization.");
 		ConvertFromPlannerHToAutowarePathFormat(m_State.m_Path, pathToFollow);
 		ConvertFromPlannerHToAutowareVisualizePathFormat(m_State.m_TotalPath, m_State.m_Path, m_State.m_RollOuts, pathToVisualize);
 	}
 
-	return bNewRollOuts;
+	return m_CurrentBehavior.bNewPlan;
 }
 
 void PlannerH_Handler::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
@@ -306,6 +297,48 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowarePathFormat(const std::vector
 	}
 }
 
+void PlannerH_Handler::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray)
+{
+	visualization_msgs::Marker lane_waypoint_marker;
+	lane_waypoint_marker.header.frame_id = "map";
+	lane_waypoint_marker.header.stamp = ros::Time();
+	lane_waypoint_marker.ns = "road_network_vector_map";
+	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+	lane_waypoint_marker.scale.x = 0.25;
+	std_msgs::ColorRGBA roll_color, total_color, curr_color;
+	roll_color.r = 1;
+	roll_color.g = 1;
+	roll_color.b = 1;
+	roll_color.a = 0.5;
+
+	lane_waypoint_marker.color = roll_color;
+	lane_waypoint_marker.frame_locked = true;
+
+	markerArray.markers.clear();
+
+	for(unsigned int i = 0; i< map.roadSegments.size(); i++)
+	{
+		for(unsigned int j = 0; j < map.roadSegments.at(i).Lanes.size(); j++)
+		{
+			lane_waypoint_marker.points.clear();
+			lane_waypoint_marker.id = map.roadSegments.at(i).Lanes.at(j).id;
+			for(unsigned int p = 0; p < map.roadSegments.at(i).Lanes.at(j).points.size(); p++)
+			{
+				geometry_msgs::Point point;
+
+				  point.x = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.x;
+				  point.y = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.y;
+				  point.z = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.z;
+
+				  lane_waypoint_marker.points.push_back(point);
+			}
+
+			markerArray.markers.push_back(lane_waypoint_marker);
+		}
+	}
+}
+
 void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& total_path,
 		const std::vector<PlannerHNS::WayPoint>& curr_path, const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
 			visualization_msgs::MarkerArray& markerArray)
@@ -317,6 +350,7 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
 	lane_waypoint_marker.scale.x = 0.5;
+	lane_waypoint_marker.scale.y = 0.5;
 	std_msgs::ColorRGBA roll_color, total_color, curr_color;
 	roll_color.r = 0;
 	roll_color.g = 1;
@@ -350,6 +384,7 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 	lane_waypoint_marker.points.clear();
 	lane_waypoint_marker.id = count;
 	lane_waypoint_marker.scale.x = 0.75;
+	lane_waypoint_marker.scale.y = 0.75;
 	total_color.r = 1;
 	total_color.g = 0;
 	total_color.b = 0;
@@ -373,6 +408,7 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 	lane_waypoint_marker.points.clear();
 	lane_waypoint_marker.id = count;
 	lane_waypoint_marker.scale.x = 0.5;
+	lane_waypoint_marker.scale.y = 0.5;
 	curr_color.r = 1;
 	curr_color.g = 0;
 	curr_color.b = 1;

@@ -12,12 +12,12 @@
 
 using namespace std;
 
-#define kmlTemplateFile "/home/ai-driver/workspace/Data/templates/KmlTemplate.kml"
+#define kmlTemplateFile "/home/hatem/workspace/Data/templates/KmlTemplate.kml"
 
 namespace UtilityHNS
 {
 
-std::string DataRW::LoggingFolderPath = "/home/ai-driver/SimuLogs/";
+std::string DataRW::LoggingFolderPath = "/home/hatem/SimuLogs/";
 std::string DataRW::ControlLogFolderName = "ControlLog/";
 std::string DataRW::PathLogFolderName = "GeneratedTrajectories/";
 std::string DataRW::StatesLogFolderName = "BehaviorsGenerated/";
