@@ -18,9 +18,10 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMapPath "/home/hatem/workspace/Data/VectorMap/"
-#define kmlMapPath	"/home/hatem/SimuLogs/7th_floor_10m.kml"
-#define kmlTemplateFile "/home/hatem/workspace/Data/templates/PlannerX_MapTemplate.kml"
+#define VectorMap "ToyotaCity/"
+#define kmlMap	"ToyotaKML.kml"
+#define kmlTemplateFile "PlannerX_MapTemplate.kml"
+#define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
 
 namespace Graphics
@@ -44,15 +45,23 @@ PlannerTestDraw::PlannerTestDraw()
 
 	m_CarModel = 0;
 
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMapPath, m_RoadMap);
-	//PlannerHNS::MappingHelpers::LoadKML(kmlMapPath, m_RoadMap);
+//	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
+//			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);
+//
+//	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
+//	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
+//	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
+
+	PlannerHNS::MappingHelpers::LoadKML(UtilityH::GetHomeDirectory() +
+			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName + kmlMap, m_RoadMap);
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
 //	ostringstream fileName;
 //	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
 //	fileName << "_RoadNetwork.kml";
-//	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kmlTemplateFile , m_RoadMap);
+//	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),UtilityH::GetHomeDirectory()+
+//			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile, m_RoadMap);
 
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
@@ -148,13 +157,13 @@ void PlannerTestDraw::SaveSimulationData()
 		simulationDataPoints.push_back(carStr.str());
 	}
 
-	DataRW::WriteLogData(DataRW::LoggingFolderPath+DataRW::SimulationFolderName, "SimulationFile",
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::SimulationFolderName, "SimulationFile",
 				"X,Y,Z,A,C,V,",	simulationDataPoints);
 }
 
 void PlannerTestDraw::LoadSimulationData()
 {
-	string simuDataFileName = DataRW::LoggingFolderPath+DataRW::SimulationFolderName + "s1.csv";
+	string simuDataFileName = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::SimulationFolderName + "s1.csv";
 	SimulationFileReader sfr(simuDataFileName);
 	SimulationFileReader::SimulationData data;
 	sfr.ReadAllData(data);
@@ -796,7 +805,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 		}
 	}
 
-	DataRW::WriteLogData(DataRW::LoggingFolderPath+DataRW::StatesLogFolderName, "BehaviorsLog",
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::StatesLogFolderName, "BehaviorsLog",
 			pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->ToStringHeader(), behaviorsLogData );
 
 	return 0;

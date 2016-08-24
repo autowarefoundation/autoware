@@ -10,6 +10,10 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
 
 using namespace std;
 
@@ -25,6 +29,13 @@ UtilityH::UtilityH()
  UtilityH::~UtilityH()
 {
 }
+
+ std::string UtilityH::GetHomeDirectory()
+ {
+	struct passwd *pw = getpwuid(getuid());
+	const char *homedir = pw->pw_dir;
+	return string(homedir);
+ }
 
  int UtilityH::GetSign(double x)
  {

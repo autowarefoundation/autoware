@@ -478,7 +478,8 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
 			PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
 			std::ostringstream str_out;
-			str_out << DataRW::LoggingFolderPath;
+			str_out << UtilityH::GetHomeDirectory();
+			str_out << DataRW::LoggingMainfolderName;
 			str_out << DataRW::PathLogFolderName;
 			str_out << "_";
 			PlanningHelpers::WritePathToFile(str_out.str(), m_Path);

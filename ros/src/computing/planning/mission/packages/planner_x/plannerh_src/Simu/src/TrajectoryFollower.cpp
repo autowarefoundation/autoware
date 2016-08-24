@@ -39,12 +39,12 @@ TrajectoryFollower::TrajectoryFollower()
 
 TrajectoryFollower::~TrajectoryFollower()
 {
-	DataRW::WriteLogData(DataRW::LoggingFolderPath+DataRW::ControlLogFolderName, "ControlLog",
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "ControlLog",
 			"time,X,Y,heading, Target, error,LateralError,SteerBeforLowPass,Steer,iIndex, pathSize",
 			m_LogData);
 
-	DataRW::WriteLogData(DataRW::LoggingFolderPath+DataRW::ControlLogFolderName, "SteeringPIDLog",m_pidSteer.ToStringHeader(), m_LogSteerPIDData );
-	DataRW::WriteLogData(DataRW::LoggingFolderPath+DataRW::ControlLogFolderName, "VelocityPIDLog",m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData );
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "SteeringPIDLog",m_pidSteer.ToStringHeader(), m_LogSteerPIDData );
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "VelocityPIDLog",m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData );
 }
 
 
