@@ -12,16 +12,16 @@
 
 using namespace std;
 
-#define kmlTemplateFile "/home/hatem/workspace/Data/templates/KmlTemplate.kml"
-
 namespace UtilityHNS
 {
 
-std::string DataRW::LoggingFolderPath = "/home/hatem/SimuLogs/";
-std::string DataRW::ControlLogFolderName = "ControlLog/";
-std::string DataRW::PathLogFolderName = "GeneratedTrajectories/";
-std::string DataRW::StatesLogFolderName = "BehaviorsGenerated/";
-std::string DataRW::SimulationFolderName = "SimulationData/";
+std::string DataRW::LoggingMainfolderName 	= "/SimuLogs/";
+std::string DataRW::ControlLogFolderName 	= "ControlLog/";
+std::string DataRW::PathLogFolderName 		= "GeneratedTrajectories/";
+std::string DataRW::StatesLogFolderName 	= "BehaviorsGenerated/";
+std::string DataRW::SimulationFolderName 	= "SimulationData/";
+std::string DataRW::KmlMapsFolderName 		= "KmlMaps/";
+std::string DataRW::VectorMapsFolderName 	= "VectorMaps/";
 
 DataRW::DataRW()
 {
@@ -56,7 +56,7 @@ void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTi
 
 void DataRW::WriteKMLFile(const string& fileName, const vector<string>& gps_list)
 {
-	TiXmlDocument kmldoc(kmlTemplateFile);
+	TiXmlDocument kmldoc(UtilityH::GetHomeDirectory()+DataRW::KmlMapsFolderName + "KmlTemplate.kml");
 
 	bool bkmlFileLoaded =  kmldoc.LoadFile();
 
@@ -97,7 +97,7 @@ void DataRW::WriteKMLFile(const string& fileName, const vector<string>& gps_list
 
 void DataRW::WriteKMLFile(const string& fileName, const vector<vector<string> >& gps_list)
   {
-	  TiXmlDocument kmldoc(kmlTemplateFile);
+	  TiXmlDocument kmldoc(UtilityH::GetHomeDirectory()+DataRW::KmlMapsFolderName + "KmlTemplate.kml");
 
 	  	bool bkmlFileLoaded =  kmldoc.LoadFile();
 
