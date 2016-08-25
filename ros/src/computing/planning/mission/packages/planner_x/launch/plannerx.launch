@@ -1,6 +1,0 @@
-<!-- -->
-<launch>
-	<node pkg="planner_x" type="planner_x" name="planner_x" output="screen">
-	</node>
-
-</launch>

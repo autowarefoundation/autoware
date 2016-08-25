@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "planner_x_core.h"
+#include "dp_planner_core.h"
 #include <iostream>
 
 using namespace std;
@@ -145,8 +145,8 @@ int main(int argc, char **argv)
 			}
 		}
 
-	ros::init(argc, argv, "planner_x");
-	PlannerXNS::PlannerX planner_x(plannerType,bAutoware, bKML_Map, kmlMapPath);
-	planner_x.PlannerMainLoop();
+	ros::init(argc, argv, "dp_planner");
+	PlannerXNS::PlannerX dp_planner(plannerType,bAutoware, bKML_Map, kmlMapPath);
+	dp_planner.PlannerMainLoop();
 	return 0;
 }
