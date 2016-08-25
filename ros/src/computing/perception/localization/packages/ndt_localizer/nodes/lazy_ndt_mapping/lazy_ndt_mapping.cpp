@@ -170,7 +170,7 @@ static void output_callback(const runtime_manager::ConfigNdtMappingOutput::Const
   ndt_map_pub.publish(*map_msg_ptr);
 
   // Writing Point Cloud data to PCD file
-  if(voxel_leaf_size == 0.0){
+  if(filter_res == 0.0){
     pcl::io::savePCDFileASCII(filename, *map_ptr);
     std::cout << "Saved " << map_ptr->points.size() << " data points to " << filename << "." << std::endl;
   }else{

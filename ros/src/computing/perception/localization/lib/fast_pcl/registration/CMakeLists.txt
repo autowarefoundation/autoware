@@ -11,8 +11,12 @@ set(SUBSYS_NAME registration)
 set(SUBSYS_DESC "Point cloud registration library")
 set(SUBSYS_DEPS common octree kdtree search sample_consensus features filters)
 
+set(LIB_NAME "fast_pcl_registration")
+
 catkin_package(
   DEPENDS ${SUBSYS_DEPS}
+  INCLUDE_DIRS include
+  LIBRARIES ${LIB_NAME}
   )
 
 set(srcs
@@ -62,8 +66,6 @@ set(impl_incs
   "include/fast_pcl/registration/impl/transformation_estimation_lm.hpp"
   "include/fast_pcl/registration/impl/transformation_estimation_point_to_plane_lls.hpp"
 )
-
-set(LIB_NAME "fast_pcl_registration")
 
 include_directories(${PCL_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/../filters/include")
 
