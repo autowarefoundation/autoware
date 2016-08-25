@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef PLANNER_X_CORE_H
-#define PLANNER_X_CORE_H
+#ifndef dp_planner_CORE_H
+#define dp_planner_CORE_H
 
 // ROS includes
 #include <ros/ros.h>
@@ -136,4 +136,4 @@ private:
 
 }
 
-#endif  // PLANNER_X_H
+#endif  // dp_planner_H

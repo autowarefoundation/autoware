@@ -1,0 +1,6 @@
+<!-- -->
+<launch>
+	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
+	</node>
+
+</launch>

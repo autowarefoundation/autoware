@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>planner_x</name>
+  <name>dp_planner</name>
   <version>0.0.0</version>
-  <description>The planner_x package</description>
+  <description>The dynamic programming planner package</description>
   <maintainer email="h_ohta@ertl.jp">Hiroki Ohta</maintainer>
   <license>BSD</license>
 

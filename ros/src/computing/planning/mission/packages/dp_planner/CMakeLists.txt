@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(planner_x)
+project(dp_planner)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -29,18 +29,18 @@ catkin_package(
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(
-  include include/planner_x
+  include include/plannerh
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-#add_library(libplanner_x lib/libplanner_x.cpp)
+#add_library(libdp_planner lib/libdp_planner.cpp)
 
 link_directories(lib)
 
-add_executable(planner_x nodes/planner_x.cpp nodes/planner_x_core.cpp nodes/RosHelpers.cpp nodes/PlannerXInterface.cpp nodes/PlannerHHandler.cpp nodes/FreePlannerHandler.cpp)
-target_link_libraries(planner_x utilityh plannerh simuh ${catkin_LIBRARIES})
-add_dependencies(planner_x 
+add_executable(dp_planner nodes/dp_planner.cpp nodes/dp_planner_core.cpp nodes/RosHelpers.cpp nodes/PlannerXInterface.cpp nodes/PlannerHHandler.cpp nodes/FreePlannerHandler.cpp)
+target_link_libraries(dp_planner utilityh plannerh simuh ${catkin_LIBRARIES})
+add_dependencies(dp_planner 
 runtime_manager_generate_messages_cpp
 cv_tracker_generate_messages_cpp
 waypoint_follower_generate_messages_cpp
