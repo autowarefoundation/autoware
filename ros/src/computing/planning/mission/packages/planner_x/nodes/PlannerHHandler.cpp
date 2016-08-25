@@ -214,19 +214,19 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 	/**
 	 * Path Planning Step (Global Planning)
 	 */
-	int currIndexToal = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_TotalPath, m_State.state);
-	int index_limit_total = m_State.m_TotalPath.size() - 6;
-	if(index_limit_total<=0)
-		index_limit_total =  m_State.m_TotalPath.size()/2.0;
-
-	if(currIndexToal > index_limit_total)
-	{
-		std::cout << "Switch Start and Goal Positions " << std::endl;
-		PlannerHNS::WayPoint g_p = m_Goal;
-		m_Goal = m_Start;
-		m_Start = g_p;
-		m_bMakeNewPlan = true;
-	}
+//	int currIndexToal = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_TotalPath, m_State.state);
+//	int index_limit_total = m_State.m_TotalPath.size() - 6;
+//	if(index_limit_total<=0)
+//		index_limit_total =  m_State.m_TotalPath.size()/2.0;
+//
+//	if(currIndexToal > index_limit_total)
+//	{
+//		std::cout << "Switch Start and Goal Positions " << std::endl;
+//		PlannerHNS::WayPoint g_p = m_Goal;
+//		m_Goal = m_Start;
+//		m_Start = g_p;
+//		m_bMakeNewPlan = true;
+//	}
 
 	if((m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE && m_State.m_Path.size() == 0 && m_bMakeNewPlan) || m_bMakeNewPlan)
 	{

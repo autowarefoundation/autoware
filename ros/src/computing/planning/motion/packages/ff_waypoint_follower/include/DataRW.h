@@ -22,11 +22,13 @@ public:
 	DataRW();
 	virtual ~DataRW();
 
-	static std::string LoggingFolderPath;
+	static std::string LoggingMainfolderName;
 	static std::string ControlLogFolderName;
 	static std::string PathLogFolderName;
 	static std::string StatesLogFolderName;
 	static std::string SimulationFolderName;
+	static std::string KmlMapsFolderName;
+	static std::string VectorMapsFolderName;
 
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::string>& gps_list);
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::vector<std::string> >& gps_list);

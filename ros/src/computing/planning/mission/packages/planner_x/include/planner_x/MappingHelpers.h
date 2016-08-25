@@ -40,6 +40,8 @@ public:
 	static void LoadKML(const std::string& kmlMap, RoadNetwork& map);
 
 	static void SetLaneLinesList(TiXmlElement* pElem, std::vector<Lane>& stopLines);
+	static void SetRoadLinksList(TiXmlElement* pElem, std::vector<RoadSegment>& roadSegments);
+
 	static TiXmlElement* GetHeadElement(TiXmlElement* pMainElem);
 	static TiXmlElement* GetDataFolder(const std::string& folderName, TiXmlElement* pMainElem);
 	static void SetLaneLinksList(TiXmlElement* pElem, std::vector<Lane>& lanes);
@@ -66,6 +68,7 @@ public:
 	static std::vector<Lane> GetLanesList(TiXmlElement* pElem);
 	static std::vector<RoadSegment> GetRoadSegmentsList(TiXmlElement* pElem);
 	static std::vector<int> GetIDsFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
+	static std::vector<double> GetDoubleFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::vector<WayPoint> GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID);
 	static std::vector<std::string> SplitString(const std::string& str, const std::string& token);
 
