@@ -11,8 +11,12 @@ set(SUBSYS_NAME filters)
 set(SUBSYS_DESC "Point cloud filters library")
 set(SUBSYS_DEPS common sample_consensus search kdtree octree)
 
+set(LIB_NAME "fast_pcl_filters")
+
 catkin_package(
   DEPENDS ${SUBSYS_DEPS}
+  INCLUDE_DIRS include
+  LIBRARIES ${LIB_NAME}
   )
 
 set(srcs
@@ -33,8 +37,6 @@ set(impl_incs
   "include/fast_pcl/filters/impl/voxel_grid.hpp"
   "include/fast_pcl/filters/impl/voxel_grid_covariance.hpp"
 )
-
-set(LIB_NAME "fast_pcl_filters")
     
 include_directories(${PCL_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
