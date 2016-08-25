@@ -40,7 +40,7 @@ void printHelp()
 	cout << "      segway" << endl;
 	cout << "      simulation" << endl;
 	cout << "-map" << endl;
-	cout << "      kml" << endl;
+	cout << "      record distance" << endl;
 	cout << "-h" << endl;
 }
 
@@ -106,10 +106,12 @@ int main(int argc, char **argv)
 		}
 		else if(cmdData.at(i).compare("-map") == 0)
 		{
+			params.iMapping = 1;
+
 			i++;
-			if(cmdData.at(i).compare("kml") == 0)
+			if(i < cmdData.size())
 			{
-				params.iMapping = 1;
+				params.recordDistance = atof(cmdData.at(i).c_str());
 			}
 		}
 		else if(cmdData.at(i).compare("-h") == 0)

@@ -72,6 +72,7 @@ public:
 	//2 -> segway
 	//3 -> simulation
 	int iMapping; // 1 create map
+	double recordDistance;
 	bool bTorqueMode; // true -> torque and stroke mode, false -> angle and velocity mode
 
 	ControlCommandParams()
@@ -81,6 +82,7 @@ public:
 		statusSource = SIMULATION_STATUS;
 		bTorqueMode = false;
 		iMapping = 0;
+		recordDistance = 5.0;
 	}
 };
 

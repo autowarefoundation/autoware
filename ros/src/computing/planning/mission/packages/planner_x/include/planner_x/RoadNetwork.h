@@ -750,14 +750,14 @@ public:
 		}
 		else if(beh == FOLLOW_STATE)
 		{
-			str << "General>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str << "Following>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					"Following>>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
 		}
 		else if(beh == OBSTACLE_AVOIDANCE_STATE)
 		{
-			str << "General>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str << "Avoidance>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					"Swerving>>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
@@ -765,7 +765,7 @@ public:
 		}
 		else if(beh == TRAFFIC_LIGHT_STOP_STATE)
 		{
-			str << "General>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str << "Traffic_Light>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					"TL Stop>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
@@ -773,7 +773,14 @@ public:
 		}
 		else if(beh == WAITING_STATE)
 		{
-			str << "General>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str << "Waiting>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
+					"TL Wait>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
+					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
+		}
+		else if(beh == STOPPING_STATE)
+		{
+			str << "Stopping>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					"TL Wait>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";

@@ -96,7 +96,7 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	m_autoware_pos_pub			= nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
   	//m_simulated_velocity_pub 	= nh.advertise<geometry_msgs::Vector3Stamped>("sim_velocity", 100);
   	m_current_vehicle_status	= nh.advertise<geometry_msgs::Vector3Stamped>("ff_vehicle_status", 100);
-  	m_segway_rpm_cmd			= nh.advertise<geometry_msgs::Twist>("action", 100);
+  	m_segway_rpm_cmd			= nh.advertise<geometry_msgs::Twist>("joy_action", 100);
 
 
 
@@ -143,7 +143,7 @@ void FFSteerControl::callbackFromCurrentPose(const geometry_msgs::PoseStampedCon
 
 	//ROS_INFO("Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, m_frequency);
 
-	if(m_CmdParams.statusSource != SIMULATION_STATUS)
+	if(m_CmdParams.statusSource != SIMULATION_STATUS )
 	{
 		m_counter++;
 		double dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer);
@@ -226,8 +226,8 @@ void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg
 {
 	if(m_CmdParams.statusSource == SEGWAY_STATUS) //segway odometry
 	{
-		m_CurrentPos = PlannerHNS::WayPoint(msg->pose.pose.position.x,
-				msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
+//		m_CurrentPos = PlannerHNS::WayPoint(msg->pose.pose.position.x,
+//				msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
 
 		m_CurrVehicleStatus.shift = PlannerHNS::SHIFT_POS_DD;
 		m_CurrVehicleStatus.speed = msg->twist.twist.linear.x;
@@ -237,14 +237,14 @@ void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg
 //		m_segway_status.vector.y = msg->twist.twist.linear.x;
 //		m_segway_status.vector.z = (int)PlannerHNS::SHIFT_POS_DD;
 
-		std::cout << "### Current Pose From Segway Odometry -> " << m_CurrentPos.pos.ToString() << std::endl;
+		std::cout << "### Current Status From Segway Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
 	}
-	else
-	{
-		PlannerHNS::WayPoint p(msg->pose.pose.position.x,
-						msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
-		std::cout << "### Current Pose From Segway Odometry (Ignored) -> " << p.pos.ToString() << std::endl;
-	}
+//	else
+//	{
+//		PlannerHNS::WayPoint p(msg->pose.pose.position.x,
+//						msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
+//		std::cout << "### Current Pose From Segway Odometry (Ignored) -> " << p.pos.ToString() << std::endl;
+//	}
 }
 
 void FFSteerControl::PlannerMainLoop()
@@ -412,6 +412,8 @@ void FFSteerControl::PlannerMainLoop()
 				cout << "Send Data To Segway" << endl;
 				geometry_msgs::Twist t;
 				t.linear.x = m_PrevStepTargetStatus.speed;
+				if(t.linear.x > 0.5)
+					t.linear.x = 0.5;
 				t.angular.z = m_PrevStepTargetStatus.steer;
 				m_segway_rpm_cmd.publish(t);
 			}
@@ -426,10 +428,11 @@ void FFSteerControl::PlannerMainLoop()
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 		}
 
-		 if (m_CmdParams.iMapping == 4)
+		 if (m_CmdParams.iMapping == 1 && bNewCurrentPos == true)
 		 {
+			 bNewCurrentPos = false;
 			double _d = hypot(m_CurrentPos.pos.y - p2.pos.y, m_CurrentPos.pos.x - p2.pos.x);
-			if(_d > 0.1)
+			if(_d > 0.2)
 			{
 				p2 = m_CurrentPos;
 
@@ -439,12 +442,22 @@ void FFSteerControl::PlannerMainLoop()
 				m_CurrentPos.pos.lat = m_CurrentPos.pos.x;
 				m_CurrentPos.pos.lon = m_CurrentPos.pos.y;
 				m_CurrentPos.pos.alt = m_CurrentPos.pos.z;
+				m_CurrentPos.pos.dir = m_CurrentPos.pos.a;
+
+				m_CurrentPos.laneId = 1;
+				m_CurrentPos.id = path.size()+1;
+				if(path.size() > 0)
+				{
+					path.at(path.size()-1).toIds.push_back(m_CurrentPos.id);
+					m_CurrentPos.fromIds.clear();
+					m_CurrentPos.fromIds.push_back(path.at(path.size()-1).id);
+				}
 
 				path.push_back(m_CurrentPos);
 				std::cout << "Record One Point To Path: " <<  m_CurrentPos.pos.ToString() << std::endl;
 			}
 
-			if(totalDistance > 50.0)
+			if(totalDistance > m_CmdParams.recordDistance)
 			{
 				PlannerHNS::RoadNetwork roadMap;
 				PlannerHNS::RoadSegment segment;
@@ -465,7 +478,13 @@ void FFSteerControl::PlannerMainLoop()
 				fileName << "/home/hatem/SimuLogs/";
 				fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
 				fileName << "_RoadNetwork.kml";
-				PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kmlTemplateFile , roadMap);
+				string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
+
+				PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
+
+										//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
+					//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
+
 				std::cout << " Mapped Saved Successfuly ... " << std::endl;
 				break;
 			}

@@ -491,7 +491,7 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 	{
 		for(unsigned int j=0; j < laneLinksList.size(); j++)
 		{
-			if(laneLinksList.at(j).roadId == roadLinksList.at(i).id)
+			//if(laneLinksList.at(j).roadId == roadLinksList.at(i).id)
 			{
 				roadLinksList.at(i).Lanes.push_back(laneLinksList.at(j));
 			}
@@ -571,18 +571,18 @@ void MappingHelpers::WriteKML(const string& kmlFile, const string& kmlTemplat, R
 
 	pHeadElem = GetHeadElement(pElem);
 
-	vector<Lane> allLaneLinks;
-	vector<RoadSegment> roadLinks;
+	vector<Lane> allLanes;
+	vector<RoadSegment> roadSegments;
 
 	for(unsigned int j=0; j< map.roadSegments.size(); j++)
 	{
-		allLaneLinks.insert(allLaneLinks.end(), map.roadSegments.at(j).Lanes.begin(),
+		allLanes.insert(allLanes.end(), map.roadSegments.at(j).Lanes.begin(),
 				map.roadSegments.at(j).Lanes.end());
-		roadLinks.push_back(map.roadSegments.at(j));
+		roadSegments.push_back(map.roadSegments.at(j));
 	}
 
-	SetLaneLinksList(pHeadElem, allLaneLinks);
-	//SetRoadLinksList(pHeadElem, roadLinks);
+	SetLaneLinksList(pHeadElem, allLanes);
+	SetRoadLinksList(pHeadElem, roadSegments);
 
 	doc.SaveFile(kmlFile.c_str());
 }
@@ -622,7 +622,7 @@ TiXmlElement* MappingHelpers::GetDataFolder(const string& folderName, TiXmlEleme
 
 void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 {
-	TiXmlElement* pLaneLinks = GetDataFolder("LaneLinks", pElem);
+	TiXmlElement* pLaneLinks = GetDataFolder("Lanes", pElem);
 	TiXmlNode* pE = pLaneLinks->FirstChild("Folder");
 	TiXmlNode* pN = pE;
 	TiXmlText * pText = 0;
@@ -647,19 +647,21 @@ void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 			pN = pE->Clone();
 
 		ostringstream name, desc;
-		name << "LL_" << pLane->id;
+		name << "LID_" << pLane->id;
 		pElement = pN->FirstChild("name")->ToElement();
 		pText = new TiXmlText(name.str());
 		pElement->Clear();
 		pElement->LinkEndChild(pText);
 
-		desc << "LL_" << pLane->id << "_RL_" << pLane->roadId << "_NUM_" << pLane->num << "_From_";
+		desc << "LID_" << pLane->id << "_RSID_" << pLane->roadId << "_NUM_" << pLane->num << "_From_";
 		for(unsigned int j=0; j< pLane->fromIds.size(); j++)
 			desc << pLane->fromIds.at(j) << "_";
 
 		desc << "To";
 		for(unsigned int j=0; j< pLane->toIds.size(); j++)
 			desc << "_" << pLane->toIds.at(j);
+
+		desc << "_Vel_" << pLane->speed;
 
 		pElement = pN->FirstChild("description")->ToElement();
 		pText = new TiXmlText(desc.str());
@@ -682,14 +684,84 @@ void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 		for(unsigned int j =0; j < pLane->points.size() ; j++)
 		{
 			GPSPoint p = pLane->points.at(j).pos;
-			val << p.lat << "," << p.lon << "," << p.alt <<  " ";
+			val << p.x << "," << p.y << "," << p.z <<  " ";
 		}
 
 		pText = new TiXmlText(val.str());
 		pElement->Clear();
 		pElement->LinkEndChild(pText);
+
+		TiXmlNode* pWPNode = pN->FirstChild("Folder");
+		TiXmlNode* pWPNodeCopy =  pWPNode;
+
+		ostringstream valInfo;
+		for(unsigned int j =0; j < pLane->points.size() ; j++)
+		{
+			char action = 'F';
+
+//			if(pLane->points.at(j).actionCost. == LEFT_TURN_ACTION)
+//				action = 'L';
+//			else if(pLane->points.at(j).actionCost == RIGHT_TURN_ACTION)
+//				action = 'R';
+
+			valInfo << "WPID_" << pLane->points.at(j).id
+					<< "_C_" << action << "_From_";
+
+			for(unsigned int k=0; k< pLane->points.at(j).fromIds.size(); k++)
+				valInfo << pLane->points.at(j).fromIds.at(k) << "_";
+
+			valInfo << "To";
+			for(unsigned int k=0; k< pLane->points.at(j).toIds.size(); k++)
+				valInfo << "_" << pLane->points.at(j).toIds.at(k);
+
+			valInfo << "_Vel_" << pLane->points.at(j).v;
+			valInfo << "_Dir_" << pLane->points.at(j).pos.a;
+
+			valInfo << ",";
+		}
+
+		TiXmlElement* pWPElem = pWPNodeCopy->FirstChild("description")->ToElement();
+		pText = new TiXmlText(valInfo.str());
+		pWPElem->Clear();
+		pWPElem->LinkEndChild(pText);
+
 		if(i>0)
 			pLaneLinks->InsertEndChild(*pN);
+	}
+}
+
+void MappingHelpers::SetRoadLinksList(TiXmlElement* pElem, vector<RoadSegment>& roadSegments)
+{
+	TiXmlElement* pRoadLinks = GetDataFolder("RoadSegments", pElem);
+	TiXmlNode* pE = pRoadLinks->FirstChild("Placemark");
+	TiXmlNode* pN = pE;
+	TiXmlText * pText = 0;
+	TiXmlElement* pElement = 0;
+
+	if(roadSegments.size() ==0)
+		pE->Clear();
+
+	for(unsigned int i=0; i< roadSegments.size(); i++)
+	{
+		RoadSegment* pRS = &roadSegments.at(i);
+
+		if(i>0)
+			pN = pE->Clone();
+
+		ostringstream name, desc;
+		name << "RSID_" << pRS->id;
+		pElement = pN->FirstChild("name")->ToElement();
+		pElement->Clear();
+		pText = new TiXmlText(name.str());
+		pElement->LinkEndChild(pText);
+
+		desc << "RSID_" << pRS->id;
+		pElement = pN->FirstChild("description")->ToElement();
+		pElement->Clear();
+		pText = new TiXmlText(desc.str());
+		pElement->LinkEndChild(pText);
+		if(i>0)
+			pRoadLinks->InsertEndChild(*pN);
 	}
 }
 
@@ -850,7 +922,7 @@ Lane* MappingHelpers::GetLaneFromPath(const WayPoint& currPos, const std::vector
 vector<Lane> MappingHelpers::GetLanesList(TiXmlElement* pElem)
 {
 	vector<Lane> llList;
-	TiXmlElement* pLaneLinks = GetDataFolder("LaneLinks", pElem);
+	TiXmlElement* pLaneLinks = GetDataFolder("Lanes", pElem);
 
 	TiXmlElement* pE = pLaneLinks->FirstChildElement("Folder");
 	for( ; pE; pE=pE->NextSiblingElement())
@@ -861,12 +933,16 @@ vector<Lane> MappingHelpers::GetLanesList(TiXmlElement* pElem)
 		  tfID = pNameXml->GetText();
 
 		Lane ll;
-		ll.id = GetIDsFromPrefix(tfID, "LL", "RL").at(0);
-		ll.roadId = GetIDsFromPrefix(tfID, "RL", "NUM").at(0);
+		ll.id = GetIDsFromPrefix(tfID, "LID", "RSID").at(0);
+		ll.roadId = GetIDsFromPrefix(tfID, "RSID", "NUM").at(0);
 		ll.num = GetIDsFromPrefix(tfID, "NUM", "From").at(0);
 		ll.fromIds = GetIDsFromPrefix(tfID, "From", "To");
-		ll.toIds = GetIDsFromPrefix(tfID, "To", "");
+		ll.toIds = GetIDsFromPrefix(tfID, "To", "Vel");
+		ll.speed = GetIDsFromPrefix(tfID, "Vel", "").at(0);
 		ll.points = GetCenterLaneData(pE, ll.id);
+
+
+
 		llList.push_back(ll);
 	}
 
@@ -876,7 +952,7 @@ vector<Lane> MappingHelpers::GetLanesList(TiXmlElement* pElem)
 vector<RoadSegment> MappingHelpers::GetRoadSegmentsList(TiXmlElement* pElem)
 {
 	vector<RoadSegment> rlList;
-	TiXmlElement* pRoadLinks = GetDataFolder("RoadLinks", pElem);
+	TiXmlElement* pRoadLinks = GetDataFolder("RoadSegments", pElem);
 
 	TiXmlElement* pE = pRoadLinks->FirstChildElement("Placemark");
 	for( ; pE; pE=pE->NextSiblingElement())
@@ -887,8 +963,7 @@ vector<RoadSegment> MappingHelpers::GetRoadSegmentsList(TiXmlElement* pElem)
 		  tfID = pNameXml->GetText();
 
 		RoadSegment rl;
-		rl.id = GetIDsFromPrefix(tfID, "RL", "RV").at(0);
-		rl.fromIds = GetIDsFromPrefix(tfID, "RV", "Seq");
+		rl.id = GetIDsFromPrefix(tfID, "RSID", "").at(0);
 		rlList.push_back(rl);
 	}
 
@@ -924,8 +999,8 @@ vector<WayPoint> MappingHelpers::GetCenterLaneData(TiXmlElement* pElem, const in
 
 			istringstream ss(token);
 
-			getline(ss, lon, ',');
 			getline(ss, lat, ',');
+			getline(ss, lon, ',');
 			getline(ss, alt, ',');
 
 			numLat = atof(lat.c_str());
@@ -940,8 +1015,25 @@ vector<WayPoint> MappingHelpers::GetCenterLaneData(TiXmlElement* pElem, const in
 
 			wp.laneId = currLaneID;
 			gps_points.push_back(wp);
+		}
 
-
+		TiXmlElement* pInfoEl =pElem->FirstChildElement("Folder")->FirstChildElement("description");
+		string additional_info;
+		if(pInfoEl)
+			additional_info = pInfoEl->GetText();
+		additional_info.insert(additional_info.begin(), ',');
+		additional_info.erase(additional_info.end()-1);
+		vector<string> add_info_list = SplitString(additional_info, ",");
+		if(gps_points.size() == add_info_list.size())
+		{
+			for(unsigned int i=0; i< gps_points.size(); i++)
+			{
+				gps_points.at(i).id =  GetIDsFromPrefix(add_info_list.at(i), "WPID", "C").at(0);
+				gps_points.at(i).fromIds =  GetIDsFromPrefix(add_info_list.at(i), "From", "To");
+				gps_points.at(i).toIds =  GetIDsFromPrefix(add_info_list.at(i), "To", "Vel");
+				gps_points.at(i).v =  GetDoubleFromPrefix(add_info_list.at(i), "Vel", "Dir").at(0);
+				gps_points.at(i).pos.a = gps_points.at(i).pos.dir =  GetDoubleFromPrefix(add_info_list.at(i), "Dir", "").at(0);
+			}
 		}
 	}
 
@@ -965,6 +1057,31 @@ vector<int> MappingHelpers::GetIDsFromPrefix(const string& str, const string& pr
 		if(idstr.at(i).size()>0)
 		{
 			int num = atoi(idstr.at(i).c_str());
+			//if(num>-1)
+				ids.push_back(num);
+		}
+	}
+
+	return ids;
+}
+
+vector<double> MappingHelpers::GetDoubleFromPrefix(const string& str, const string& prefix, const string& postfix)
+{
+	int index1 = str.find(prefix)+prefix.size();
+	int index2 = str.find(postfix, index1);
+	if(index2<0  || postfix.size() ==0)
+		index2 = str.size();
+
+	string str_ids = str.substr(index1, index2-index1);
+
+	vector<double> ids;
+	vector<string> idstr = SplitString(str_ids, "_");
+
+	for(unsigned  int i=0; i< idstr.size(); i++ )
+	{
+		if(idstr.at(i).size()>0)
+		{
+			double num = atof(idstr.at(i).c_str());
 			//if(num>-1)
 				ids.push_back(num);
 		}
