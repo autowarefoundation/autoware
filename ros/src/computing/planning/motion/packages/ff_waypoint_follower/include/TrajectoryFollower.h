@@ -29,7 +29,7 @@ public:
 	int VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
 			const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity, PlannerHNS::SHIFT_POS& desiredShift);
 
-	void UpdateParams(const ControllerParams& params);
+	void Init(const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo);
 
 	PlannerHNS::VehicleState DoOneStep(const double& dt, const PlannerHNS::BehaviorState& behavior,
 				const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& currPose,
@@ -46,6 +46,7 @@ public:
 private:
 	double 						m_StartFollowDistance;
 	ControllerParams 			m_Params;
+	CAR_BASIC_INFO 				m_VehicleInfo;
 	std::vector<PlannerHNS::WayPoint> 	m_Path;
 	PlannerHNS::WayPoint 		m_DesPos;
 	double						m_PrevDesiredSteer; // control output

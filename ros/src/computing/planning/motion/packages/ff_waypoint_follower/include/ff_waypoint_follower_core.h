@@ -64,8 +64,7 @@ enum STATUS_TYPE{CONTROL_BOX_STATUS, AUTOWARE_STATUS, SEGWAY_STATUS, SIMULATION_
 class ControlCommandParams
 {
 public:
-	bool bMode; // true -> mode parameter entered at command line
-	bool bSignal; // true -> signal parameter entered at command line
+	bool bAutoware;
 	STATUS_TYPE statusSource;
 	//0 -> control box (zmp)
 	//1 -> autoware
@@ -73,16 +72,21 @@ public:
 	//3 -> simulation
 	int iMapping; // 1 create map
 	double recordDistance;
+	double recordDensity;
 	bool bTorqueMode; // true -> torque and stroke mode, false -> angle and velocity mode
+	bool bAngleMode;
+	bool bVelocityMode;
 
 	ControlCommandParams()
 	{
-		bMode = false;
-		bSignal = false;
+		bAutoware = true;
 		statusSource = SIMULATION_STATUS;
 		bTorqueMode = false;
 		iMapping = 0;
 		recordDistance = 5.0;
+		recordDensity = 0.5;
+		bAngleMode = true;
+		bVelocityMode = true;
 	}
 };
 
@@ -101,6 +105,8 @@ protected:
 	bool bInitPos;
 	PlannerHNS::WayPoint m_CurrentPos;
 	bool bNewCurrentPos;
+	PlannerHNS::WayPoint m_CurrentSegwayPos;
+	bool bNewCurrentSegwayPos;
 	geometry_msgs::Pose m_OriginPos;
 	bool bNewTrajectory;
 	std::vector<PlannerHNS::WayPoint> m_FollowingTrajectory;
@@ -119,6 +125,8 @@ protected:
 	//geometry_msgs::Vector3Stamped m_segway_status;
 	bool bVehicleStatus;
 	ControlCommandParams m_CmdParams;
+	SimulationNS::CAR_BASIC_INFO m_CarInfo;
+	SimulationNS::ControllerParams m_ControlParams;
 
 	ros::NodeHandle nh;
 
@@ -169,6 +177,8 @@ private:
 
   void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 
+  void ReadParamFromLaunchFile(SimulationNS::CAR_BASIC_INFO& m_CarInfo,
+		  SimulationNS::ControllerParams& m_ControlParams);
 
   void displayFollowingInfo(PlannerHNS::WayPoint& curr_pose, PlannerHNS::WayPoint& perp_pose, PlannerHNS::WayPoint& follow_pose);
 

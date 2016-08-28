@@ -14,69 +14,58 @@ namespace PlannerHNS
 enum PLANDIRECTION {MOVE_FORWARD_ONLY, MOVE_BACKWARD_ONLY, 	MOVE_FREE};
 enum HeuristicConstrains {EUCLIDEAN, NEIGBORHOOD,DIRECTION };
 
-class PlanningInternalParams
-{
-public:
-	double 	pathDensity;
-	double 	dataWeight;
-	double 	smoothWeight;
-	double 	tolerance;
-	bool 	bOuterPath;
-
-	double 	MoveCycleTime;
-	double 	SpeedCurvatureCoefficient;
-	int 	PlanSimulationResolution;
-
-	double 	turning_radius;
-	double 	wheel_base;
-	double 	max_speed;
-	double 	min_speed;
-	double 	max_curvature;
-	double 	max_steer;
-
-	double car_width;
-	double car_length;
-
-	double ReedSheppSmoothnessFactor;
-
-	PLANDIRECTION dir;
-	HeuristicConstrains heuristics;
-
-	PlanningInternalParams()
-	{
-
-
-		pathDensity = 0.25;
-		dataWeight = 0.3;
-		smoothWeight = 0.35;
-		tolerance = 0.1;
-		bOuterPath = 0;
-
-		MoveCycleTime = 0.01;
-		SpeedCurvatureCoefficient = 20;
-		PlanSimulationResolution = 3;
-
-		turning_radius = 3.2;
-		wheel_base = 1.53;
-		max_speed = 5;
-		min_speed = -1;
-		max_steer = 0.42;
-		max_curvature  = 250;
-
-		car_width = 1.2;
-		car_length = 3.0;
-
-		ReedSheppSmoothnessFactor = 12.0; //From 1 - 20
-
-		dir = MOVE_FORWARD_ONLY;
-		heuristics = EUCLIDEAN;
-	}
-};
+//class PlanningInternalParams
+//{
+//public:
+//	double 	pathDensity;
+//	double 	dataWeight;
+//	double 	smoothWeight;
+//	double 	tolerance;
+//	double 	SpeedCurvatureCoefficient;
+//
+//	double 	turning_radius;
+//	double 	wheel_base;
+//	double 	max_speed;
+//	double 	min_speed;
+//	double 	max_steer;
+//
+//	double car_width;
+//	double car_length;
+//
+//	double ReedSheppSmoothnessFactor;
+//
+//	PLANDIRECTION dir;
+//	HeuristicConstrains heuristics;
+//
+//	PlanningInternalParams()
+//	{
+//
+//
+//		pathDensity = 0.25;
+//		dataWeight = 0.3;
+//		smoothWeight = 0.35;
+//		tolerance = 0.1;
+//		SpeedCurvatureCoefficient = 1.0;
+//		turning_radius = 3.2;
+//		wheel_base = 1.53;
+//		max_speed = 5;
+//		min_speed = -1;
+//		max_steer = 0.42;
+//
+//		car_width = 1.2;
+//		car_length = 3.0;
+//
+//		ReedSheppSmoothnessFactor = 12.0; //From 1 - 20
+//
+//		dir = MOVE_FORWARD_ONLY;
+//		heuristics = EUCLIDEAN;
+//	}
+//};
 
 class PlannerH
 {
 public:
-	PlannerH(const PlanningInternalParams& params);
+	PlannerH();
 	virtual ~PlannerH(); 
 
 
@@ -88,7 +77,8 @@ public:
 	 * @param generatedPath: pointer to return the smooth trajectory. - Better Not to use this
 	 * @return path length
 	 */
-	double PlanUsingReedSheppWithObstacleDetection(const WayPoint& start, const WayPoint& goal, GridMap& map, std::vector<WayPoint>& genSmoothedPath);
+	double PlanUsingReedSheppWithObstacleDetection(const WayPoint& start, const WayPoint& goal, GridMap& map, std::vector<WayPoint>& genSmoothedPath,
+			const double pathDensity = 0.25, const double smoothFactor = 12.0);
 
 	/**
 	 * @brief Generates Trajectory using Reeds Shepp, this method will not try to avoid obstacles , but if there an obstacle on the trajectory function will fail. , also this function does not guaranteed to generate trajectories
@@ -97,7 +87,8 @@ public:
 	 * @param generatedPath: pointer to return the smooth trajectory. - Better Not to use this
 	 * @return path length
 	 */
-	double PlanUsingReedShepp(const WayPoint& start, const WayPoint& goal, std::vector<WayPoint>& generatedPath);
+	double PlanUsingReedShepp(const WayPoint& start, const WayPoint& goal, std::vector<WayPoint>& generatedPath,
+			const double pathDensity = 0.25, const double smoothFactor = 12.0);
 
 
 	/**
@@ -144,7 +135,7 @@ public:
 
 	void DeleteWaypoints(std::vector<WayPoint*>& wps);
 
-	PlanningInternalParams m_Params;
+	//PlanningInternalParams m_Params;
 };
 
 }

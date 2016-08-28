@@ -99,7 +99,57 @@ public:
 		steer = 0;
 		shift = AW_SHIFT_POS_NN;
 	}
+};
 
+class AutowarePlanningParams
+{
+public:
+	double 	maxSpeed;
+	double 	minSpeed;
+	double 	planningDistance;
+	double 	microPlanDistance;
+	double 	carTipMargin;
+	double 	rollInMargin;
+	double 	rollInSpeedFactor;
+	double 	pathDensity;
+	double 	rollOutDensity;
+	int 	rollOutNumber;
+	double 	horizonDistance;
+	double 	minFollowingDistance;
+	double 	maxFollowingDistance;
+	double 	minDistanceToAvoid;
+	double 	speedProfileFactor;
+
+	bool 	enableLaneChange;
+	bool 	enableSwerving;
+	bool 	enableFollowing;
+	bool 	enableHeadingSmoothing;
+	bool 	enableTrafficLightBehavior;
+
+	AutowarePlanningParams()
+	{
+		maxSpeed 						= 3;
+		minSpeed 						= 0;
+		planningDistance 				= 10000;
+		microPlanDistance 				= 35;
+		carTipMargin					= 8.0;
+		rollInMargin					= 20.0;
+		rollInSpeedFactor				= 0.25;
+		pathDensity						= 0.25;
+		rollOutDensity					= 0.5;
+		rollOutNumber					= 4;
+		horizonDistance					= 120;
+		minFollowingDistance			= 35;
+		maxFollowingDistance			= 40;
+		minDistanceToAvoid				= 15;
+		speedProfileFactor				= 1.0;
+
+		enableHeadingSmoothing			= false;
+		enableSwerving 					= false;
+		enableFollowing					= false;
+		enableTrafficLightBehavior		= false;
+		enableLaneChange 				= false;
+	}
 };
 
 class PlannerX_Interface
@@ -108,6 +158,10 @@ public:
 	PlannerX_Interface();
 	virtual ~PlannerX_Interface();
 	static PlannerX_Interface* CreatePlannerInstance(const std::string& plannerName);
+
+	virtual void UpdateVehicleInfo(const double& width, const double& length, const double& wheelBase, const double& maxSteerAngle, const double& turningRadius) = 0;
+
+	virtual void UpdatePlanningParams(const AutowarePlanningParams& planningParams) = 0;
 
 	virtual void UpdateRoadMap(const AutowareRoadNetwork& map) = 0;
 

@@ -66,7 +66,9 @@ PlannerTestDraw::PlannerTestDraw()
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
 	CAR_BASIC_INFO carInfo;
-	m_State.Init(1.9, 4.2,carInfo);
+	carInfo.width = 1.9;
+	carInfo.length = 4.2;
+	m_State.Init(carInfo);
 	m_State.InitPolygons();
 
 	/**
@@ -153,7 +155,7 @@ void PlannerTestDraw::SaveSimulationData()
 				<< m_SimulatedCars.at(i).state.pos.z << ","
 				<< m_SimulatedCars.at(i).state.pos.a << ","
 				<< m_SimulatedCars.at(i).state.cost << ","
-				<< m_SimulatedCars.at(i).maxSpeed << "," ;
+				<< m_SimulatedCars.at(i).m_CarInfo.max_speed_forward << "," ;
 		simulationDataPoints.push_back(carStr.str());
 	}
 
@@ -222,8 +224,8 @@ void PlannerTestDraw::DetectSimulatedObstacles(std::vector<PlannerHNS::DetectedO
 	{
 		PlannerHNS::DetectedObject ob;
 		ob.id = 0;
-		ob.l = m_SimulatedCars.at(i).l;
-		ob.w = m_SimulatedCars.at(i).w;
+		ob.l = m_SimulatedCars.at(i).m_CarInfo.length;
+		ob.w = m_SimulatedCars.at(i).m_CarInfo.width;
 		ob.center.pos = m_SimulatedCars.at(i).state.pos;
 		ob.contour = m_SimulatedCars.at(i).m_CarShapePolygon;
 		ob.center.pLane = m_SimulatedCars.at(i).state.pLane;
@@ -241,10 +243,23 @@ void PlannerTestDraw::AddSimulatedCar(const double& x,const double& y, const dou
 {
 	SimulatedCarState car;
 	CAR_BASIC_INFO carInfo;
-	car.Init(4.0, 1.8,carInfo);
+	ControllerParams params;
+
+
+	carInfo.width  = 1.8;
+	carInfo.length = 4.1;
+	carInfo.max_speed_forward = v;
+	carInfo.max_steer_angle = 0.42;
+	carInfo.turning_radius = 4.0;
+	carInfo.wheel_base = 2.0;
+
+	params.Steering_Gain = PID_CONST(1.5, 0.0, 0.0);
+	params.minPursuiteDistance = 3.0;
+
+
+	car.Init(carInfo);
 	car.InitPolygons();
 	car.state.pos = PlannerHNS::GPSPoint(x,y,0,a);
-	car.maxSpeed  = v;
 
 	PlannerHNS::WayPoint* pWS = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(car.state, m_RoadMap);
 	if(pWS)
@@ -263,7 +278,9 @@ void PlannerTestDraw::AddSimulatedCar(const double& x,const double& y, const dou
 	m_SimulatedBehaviors.push_back(PlannerHNS::BehaviorState());
 	m_SimulatedVehicleState.push_back(PlannerHNS::VehicleState());
 	m_SimulatedPrevTrajectory.push_back(vector<PlannerHNS::WayPoint>());
-	m_SimulatedPathFollower.push_back(SimulatedTrajectoryFollower());
+	SimulatedTrajectoryFollower pf;
+	pf.Init(params, carInfo);
+	m_SimulatedPathFollower.push_back(pf);
 	pthread_mutex_unlock(&simulation_mutex);
 }
 
@@ -718,8 +735,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 	struct timespec moveTimer;
 	UtilityH::GetTickCount(moveTimer);
 	vector<string> logData;
-	PlannerHNS::PlanningInternalParams params;
-	PlannerHNS::PlannerH planner(params);
+	PlannerHNS::PlannerH planner;
 	SimpleTracker obstacleTracking;
 	obstacleTracking.Initialize(pR->m_State.state);
 	vector<string> behaviorsLogData;
@@ -816,6 +832,12 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 	PlannerTestDraw* pR = (PlannerTestDraw*)pThis;
 	struct timespec moveTimer;
 	TrajectoryFollower predControl;
+	CAR_BASIC_INFO carInfo;
+	ControllerParams params;
+	params.Steering_Gain = PID_CONST(0.07, 0.02, 0.01);
+	params.Velocity_Gain = PID_CONST(0.1, 0.005, 0.1);
+	predControl.Init(params, carInfo);
+
 	UtilityH::GetTickCount(moveTimer);
 	vector<string> logData;
 	vector<PlannerHNS::WayPoint> generatedPath;
@@ -876,9 +898,10 @@ void* PlannerTestDraw::SimulationThreadStaticEntryPoint(void* pThis)
 	struct timespec moveTimer;
 	UtilityH::GetTickCount(moveTimer);
 	vector<string> logData;
-	PlannerHNS::PlanningInternalParams params;
-	PlannerHNS::PlannerH planner(params);
+	PlannerHNS::PlannerH planner;
 	std::vector<PlannerHNS::DetectedObject> dummyObstacles;
+	PlannerHNS::PlanningParams planningDefaultParams;
+	planningDefaultParams.rollOutNumber = 0;
 
 
 	while(!pR->m_bCancelThread)
@@ -906,25 +929,32 @@ void* PlannerTestDraw::SimulationThreadStaticEntryPoint(void* pThis)
 							pR->m_SimulatedCars.at(i).state, 150,pR->m_LanesIds, generatedPath);
 					pR->m_SimulatedCars.at(i).m_RollOuts.clear();
 					pR->m_SimulatedCars.at(i).m_TotalPath = generatedPath;
-					PlannerHNS::PlanningParams planningDefaultParams;
-					planner.GenerateRunoffTrajectory(pR->m_SimulatedCars.at(i).m_TotalPath, pR->m_SimulatedCars.at(i).state,
-							false,  pR->m_SimulatedCars.at(i).state.v, 30, pR->m_SimulatedCars.at(i).maxSpeed, 0,
+
+					planner.GenerateRunoffTrajectory(pR->m_SimulatedCars.at(i).m_TotalPath,
+							pR->m_SimulatedCars.at(i).state,
+							planningDefaultParams.enableLaneChange,
+							pR->m_SimulatedCars.at(i).state.v,
+							30,
+							pR->m_SimulatedCars.at(i).m_CarInfo.max_speed_forward,
+							planningDefaultParams.minSpeed,
 							planningDefaultParams.carTipMargin,
 							planningDefaultParams.rollInMargin,
 							planningDefaultParams.rollInSpeedFactor,
 							planningDefaultParams.pathDensity,
 							planningDefaultParams.rollOutDensity,
-							0,
+							planningDefaultParams.rollOutNumber,
 							planningDefaultParams.smoothingDataWeight,
 							planningDefaultParams.smoothingSmoothWeight,
 							planningDefaultParams.smoothingToleranceError,
-							planningDefaultParams.speedProfileFactor, false, pR->m_SimulatedCars.at(i).m_RollOuts);
+							planningDefaultParams.speedProfileFactor,
+							planningDefaultParams.enableHeadingSmoothing,
+							pR->m_SimulatedCars.at(i).m_RollOuts);
 
 					if(pR->m_SimulatedCars.at(i).m_RollOuts.size()>0)
 					{
 						pR->m_SimulatedCars.at(i).m_Path = pR->m_SimulatedCars.at(i).m_RollOuts.at(0);
 						PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(pR->m_SimulatedCars.at(i).m_Path,
-								pR->m_SimulatedCars.at(i).maxSpeed, 1.5);
+								pR->m_SimulatedCars.at(i).m_CarInfo.max_speed_forward, 1.5);
 						PlannerHNS::PlanningHelpers::SmoothSpeedProfiles(pR->m_SimulatedCars.at(i).m_Path, 0.15,0.35, 0.1);
 					}
 				}

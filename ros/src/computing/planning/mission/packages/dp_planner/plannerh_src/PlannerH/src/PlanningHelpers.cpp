@@ -536,8 +536,8 @@ void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& ori
 
 	extractedPath = tempPath;
 
-	if(extractedPath.at(extractedPath.size()-1).cost < 35)
-		cout << endl << "### Planner Z . Extracted Rollout Path is too Short, Distance =  " << extractedPath.at(extractedPath.size()-1).cost << endl;
+//	if(extractedPath.at(extractedPath.size()-1).cost < 35)
+//		cout << endl << "### Planner Z . Extracted Rollout Path is too Short, Distance =  " << extractedPath.at(extractedPath.size()-1).cost << endl;
 }
 
 void PlanningHelpers::CalculateRollInTrajectories(const WayPoint& carPos, const double& speed, const vector<WayPoint>& originalCenter, int& start_index,
@@ -882,23 +882,23 @@ void PlanningHelpers::GenerateRecommendedSpeed(vector<WayPoint>& path, const dou
 		double k_ratio = path.at(i).cost;
 
 		if(k_ratio <= 8)
-			path.at(i).v = 1.0;
+			path.at(i).v = 1.0*speedProfileFactor;
 		else if(k_ratio <= 8.5)
-			path.at(i).v = 1.5;
+			path.at(i).v = 1.5*speedProfileFactor;
 		else if(k_ratio <= 9)
-			path.at(i).v = 2.0;
+			path.at(i).v = 2.0*speedProfileFactor;
 		else if(k_ratio <= 9.2)
-			path.at(i).v = 3.0;
+			path.at(i).v = 3.0*speedProfileFactor;
 		else if(k_ratio <= 9.4)
-			path.at(i).v = 4.0;
+			path.at(i).v = 4.0*speedProfileFactor;
 		else if(k_ratio < 9.6)
-			path.at(i).v = 7.0;
+			path.at(i).v = 7.0*speedProfileFactor;
 		else if(k_ratio < 9.8)
-			path.at(i).v = 10.0;
+			path.at(i).v = 10.0*speedProfileFactor;
 		else if(k_ratio < 9.9)
-			path.at(i).v = 13.0;
+			path.at(i).v = 13.0*speedProfileFactor;
 		else
-			path.at(i).v = 15.0;
+			path.at(i).v = 15.0*speedProfileFactor;
 
 		if(path.at(i).v >= max_speed)
 			path.at(i).v = max_speed;
@@ -1096,7 +1096,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 
 		double distance_to_goal = distance2points(pH->pos, goalPos.pos);
 		double angle_to_goal = UtilityH::AngleBetweenTwoAnglesPositive(UtilityH::FixNegativeAngle(pH->pos.a), UtilityH::FixNegativeAngle(goalPos.pos.a));
-		if( distance_to_goal <= 5.0 && angle_to_goal < M_PI_4)
+		if( distance_to_goal <= 0.1 && angle_to_goal < M_PI_4)
 		{
 			cout << "Goal Found, LaneID: " << pH->laneId <<", Distance : " << distance_to_goal << ", Angle: " << angle_to_goal*RAD2DEG << endl;
 			pGoalCell = pH;
@@ -1431,214 +1431,6 @@ void PlanningHelpers::CalcContourPointsForDetectedObjects(const WayPoint& currPo
 	}
 
 	obj_list = res_list;
-}
-
-void PlanningHelpers::ObstacleDetectionStep(const WayPoint& currPose,const std::vector<std::vector<WayPoint> >& pathRollOuts,PreCalculatedConditions& preCalcParams,
-		vector<DetectedObject>& obj_list, std::vector<GPSPoint>& detectedPoints)
-{
-//	vector<pair<DetectedObject*, vector<int> > > objects_busy_tracks;
-//	detectedPoints.clear();
-//	vector<double> 	rollOutDistances;
-//	vector<int> 	allBusyTracks;
-//
-//	int iCentralPath = pathRollOuts.size()/2;
-//	for(int i=0; i< pathRollOuts.size(); i++)
-//	  {
-//		  double end_roll_in_distance = m_BehaviorCpfParams.rollOutDensity *(iCentralPath - i);
-//		  rollOutDistances.push_back(end_roll_in_distance);
-//		  allBusyTracks.push_back(0);
-//	  }
-//
-//	vector<double> distances;
-//
-//	for(unsigned int i = 0; i < obj_list.size(); i++)
-//	{
-//		double yaw = obj_list.at(i).center.pos.a;
-//		vector<int> busyTracks;
-//		double distance = 9999999999;
-//
-//		cout << "### BehaviorGen -> ObjectID = " << obj_list.at(i).id
-//			 << "\t, MotionDir= " << yaw 	<< "\t, CarDir= " << currPose.pos.a << endl;
-//
-//		for(unsigned int k=0; k< obj_list.at(i).contour.size(); k++)
-//		{
-//			GPSPoint corner(obj_list.at(i).contour.at(k).x, obj_list.at(i).contour.at(k).y, obj_list.at(i).contour.at(k).z, yaw);
-//
-//			double d_direct = 0, d_on_path = 0, d_lateral=0;
-//			BehaviorsNS::MappingHelpers::GetAllDistancesOnTrajectory(preCalcParams.m_Path, currPose , corner, d_direct, d_on_path, d_lateral);
-//
-//
-//			if(m_bDebugPrint)
-//			{
-//				cout << "### BehaviorGen -> PntID= " << k << "\t, Direct= " << d_direct << "\t, On Path= " <<  d_on_path << "\t, Lateral= " <<  d_lateral << endl;
-//				cout << "\t\t\t\t\t\t";
-//			}
-//
-//			for(unsigned int r=0; r < rollOutDistances.size(); r++)
-//			{
-//
-//				double w2 = preCalcParams.w/2.0;
-//				double latera_Distance = d_lateral+rollOutDistances.at(r);
-//				//latera_Distance += MathUtil::GetSign(latera_Distance)*w2;
-//
-//				bool bLateralCheck = fabs(latera_Distance) <= (w2 + m_BehaviorCpfParams.marginDistanceFromTrajectory);
-//				if(m_bDebugPrint)
-//				{
-//					cout << "\t, PathID    = " << r;
-//					cout << "\t, Lateral    = " << latera_Distance;
-//				}
-//
-//				if((d_on_path > 0)  && (d_on_path <  m_BehaviorCpfParams.horizonDistance) && (bLateralCheck == true))
-//				{
-//					m_AllDetectedPoints.push_back(corner);
-//					busyTracks.push_back(r);
-//					allBusyTracks.at(r) =  allBusyTracks.at(r) + 1;
-//					if(d_on_path < distance)
-//						distance = d_on_path;
-//				}
-//			}
-//
-//			if(m_bDebugPrint)
-//				cout << endl;
-//		}
-//
-//		//Use if closest point is activate !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//		//double closest_distance = hypot(obj_list.at(i).closestPoint.v0-currPose.p.x, obj_list.at(i).closestPoint.v1-currPose.p.y);
-//		double closest_distance  = distance;
-//
-//		if(m_bDebugPrint)
-//			cout << "### BehaviorGen -> Closest Distance= " <<  closest_distance << endl << endl;
-//
-//		if(busyTracks.size()>0)
-//		{
-//			objects_busy_tracks.push_back(make_pair(&obj_list.at(i), busyTracks));
-//			distances.push_back(closest_distance);
-//		}
-//	}
-//
-//	pthread_mutex_unlock(&detected_objects_mutex);
-//
-//	//Check the Full blockage
-//
-//	bool bAvailablePath = false;
-//	if(m_bDebugPrint)
-//		cout << "### BehaviorGen -> Busy Tracks= ";
-//	for(unsigned int i = 0 ; i < allBusyTracks.size(); i++)
-//	{
-//		if(m_bDebugPrint)
-//			cout << "Index: " << i << ", Hits: " << allBusyTracks.at(i) << ", ";
-//		if(allBusyTracks.at(i) == 0)
-//			bAvailablePath = true;
-//	}
-//	if(m_bDebugPrint)
-//		cout << endl;
-//
-//	if(distances.size()>0 && m_BehaviorCpfParams.enableFollowing)
-//	{
-//		int min_index = 0;
-//		double min_distance = distances.at(0);
-//		for(unsigned int i=1; i< distances.size(); i++)
-//		{
-//			if(distances.at(i) < min_distance)
-//			{
-//				min_distance = distances.at(i);
-//				min_index = i;
-//			}
-//		}
-//
-//		zmp::izac::IzMovingObject* pObj = objects_busy_tracks.at(min_index).first;
-//		//CalculatedSimulatedRelativeVelocity(m_PrevDetectedObj, *pObj);
-//
-//		Mat3 rotationMatCar(currPose.a);
-//		Mat3 translationMatCar(m_GlobalCurrCarPos.vel.pnt.v0, m_GlobalCurrCarPos.vel.pnt.v1);
-//
-//		Vector2D gv(pObj->speed.v0, pObj->speed.v1, pObj->speed.v2, 0);
-//
-//
-//		gv = rotationMatCar * gv;
-//		gv = translationMatCar * gv;
-//
-//		zmp::izac::IzPoint3d globalVelocity = zmp::izac::IzPoint3d(gv.p.x, gv.p.y, gv.p.z);
-////		zmp::izac::IzPoint3d globalVelocity = pObj->speed;
-//
-//		//vector<int> tracks = objects_busy_tracks.at(min_index).second;
-//
-//		if(!bAvailablePath || !m_BehaviorCpfParams.enableSwerving)
-//		{
-//			control_params->distanceToNext = min_distance;
-//			control_params->stoppingDistances.push_back(min_distance);
-//			control_params->velocityOfNext = GetSpeedFromVelocity(globalVelocity) - GetSpeedFromVelocity(m_GlobalCurrCarPos.vel.pnt);
-//			control_params->bFullyBlock = true;
-//
-//			if(m_bDebugPrint)
-//			{
-//				cout << "#### -----------------------------------#####" << endl;
-//				cout << "#### -> Velocity Here IS ( " << globalVelocity.v0 << "," <<globalVelocity.v1<<","<<globalVelocity.v2 <<") -> " << GetSpeedFromVelocity(globalVelocity) <<endl;
-//				cout << "#### -> Current IS 	  ( " << m_GlobalCurrCarPos.vel.pnt.v0 << "," <<m_GlobalCurrCarPos.vel.pnt.v1<<","<<m_GlobalCurrCarPos.vel.pnt.v2 <<") -> "<< GetSpeedFromVelocity(m_GlobalCurrCarPos.vel.pnt) <<endl;
-//				cout << "#### -----------------------------------#####" << endl;
-//			}
-//
-//			return;
-//		}
-//		else
-//		{
-//
-//			//check from center to left
-//			control_params->distanceToNext = min_distance;
-//			//control_params->stoppingDistances.push_back(min_distance);
-//			control_params->velocityOfNext = GetSpeedFromVelocity(pObj->speed) - m_GlobalVehicleStatus.velocity;
-//			control_params->bFullyBlock = true;
-//
-//			bool bFoundWay = false;
-//			if(allBusyTracks.at(iCentralPath) == 0)
-//			{
-//				control_params->iCurrSafeTrajectory = iCentralPath;
-//				control_params->bFullyBlock = false;
-//				bFoundWay = true;
-//			}
-//			else
-//			{
-//				//check left
-//				for(int j=m_iCentralTrajectory-1; j >= 0; j--)
-//				{
-//					if(allBusyTracks.at(j) == 0)
-//					{
-//						control_params->iCurrSafeTrajectory = j;
-//						control_params->bFullyBlock = false;
-//						bFoundWay = true;
-//						break;
-//					}
-//				}
-//
-//				//check right
-//				if(!bFoundWay)
-//				{
-//					for(unsigned int j=iCentralPath+1; j < allBusyTracks.size(); j++)
-//					{
-//						if(allBusyTracks.at(j) == 0)
-//						{
-//							control_params->iCurrSafeTrajectory = j;
-//							control_params->bFullyBlock = false;
-//							bFoundWay = true;
-//							break;
-//						}
-//					}
-//				}
-//			}
-//		}
-//	}
-//	else
-//	{
-//		control_params->iCurrSafeTrajectory = m_iCentralTrajectory;
-//		control_params->bFullyBlock = false;
-//	}
-
-//
-//	pthread_mutex_lock(&detected_objects_mutex);
-//	m_PrevDetectedObjectsList = m_DetectedObjectsList;
-//	m_DetectedObjectsList = res_list;
-//	pthread_mutex_unlock(&detected_objects_mutex);
-
 }
 
 double PlanningHelpers::GetVelocityAhead(const std::vector<WayPoint>& path, const WayPoint& pose, const double& distance)

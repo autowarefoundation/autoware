@@ -15,32 +15,33 @@ using namespace UtilityHNS;
 
 namespace PlannerHNS
 {
-PlannerH::PlannerH(const PlanningInternalParams& params)
+PlannerH::PlannerH()
 {
-	m_Params = params;
+	//m_Params = params;
 }
 
  PlannerH::~PlannerH()
 {
 }
 
- double PlannerH::PlanUsingReedShepp(const WayPoint& start, const WayPoint& goal, vector<WayPoint>& generatedPath)
+ double PlannerH::PlanUsingReedShepp(const WayPoint& start, const WayPoint& goal, vector<WayPoint>& generatedPath, const double pathDensity, const double smoothFactor)
  {
- 	RSPlanner rs_planner(m_Params.ReedSheppSmoothnessFactor);
+ 	RSPlanner rs_planner(smoothFactor);
  	int numero = 0;
  	double t=0, u=0 , v=0;
- 	rs_planner.PATHDENSITY = m_Params.pathDensity;
+ 	rs_planner.PATHDENSITY = pathDensity;
  	double length = rs_planner.min_length_rs(start.pos.x, start.pos.y, start.pos.a, goal.pos.x, goal.pos.y, goal.pos.a, numero, t , u , v);
  	rs_planner.constRS(numero, t, u , v, start.pos.x, start.pos.y, start.pos.a, rs_planner.PATHDENSITY, generatedPath);
  	return length;
  }
 
- double PlannerH::PlanUsingReedSheppWithObstacleDetection(const WayPoint& start, const WayPoint& goal,GridMap& map, vector<WayPoint>& genSmoothedPath)
+ double PlannerH::PlanUsingReedSheppWithObstacleDetection(const WayPoint& start, const WayPoint& goal,GridMap& map, vector<WayPoint>& genSmoothedPath,
+		 const double pathDensity , const double smoothFactor )
  {
- 	RSPlanner rs_planner(m_Params.ReedSheppSmoothnessFactor);
+ 	RSPlanner rs_planner(smoothFactor);
  	int numero = 0;
  	double t=0, u=0 , v=0;
- 	rs_planner.PATHDENSITY = m_Params.pathDensity;
+ 	rs_planner.PATHDENSITY = pathDensity;
 
  	genSmoothedPath.clear();
  	genSmoothedPath.clear();
@@ -96,7 +97,7 @@ PlannerH::PlannerH(const PlanningInternalParams& params)
  		}
  	}
 
- 	if(nChanges > 3 || nMinChangeDistance < m_Params.turning_radius)
+ 	if(nChanges > 3 || nMinChangeDistance < 3.2)
  	{
  		cout << "\n Too much gear changes \n";
  		genSmoothedPath.clear();

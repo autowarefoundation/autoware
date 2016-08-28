@@ -29,9 +29,18 @@ SimulatedTrajectoryFollower::SimulatedTrajectoryFollower()
 
 
 	//m_pidSteer.Init(0.35, 0.01, 0.01); // for 5 m/s
-	m_pidSteer.Init(1.5, 0.00, 0.00); // for 3 m/s
+	//m_pidSteer.Init(1.5, 0.00, 0.00); // for 3 m/s
+
 	//m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
-	m_pidSteer.Setlimit(m_Params.MaxSteerAngle, -m_Params.MaxSteerAngle);
+
+}
+
+void SimulatedTrajectoryFollower::Init(const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo)
+{
+	m_Params = params;
+	m_VehicleInfo = vehicleInfo;
+	m_pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD); // for 3 m/s
+	m_pidSteer.Setlimit(vehicleInfo.max_steer_angle, -vehicleInfo.max_steer_angle);
 }
 
 SimulatedTrajectoryFollower::~SimulatedTrajectoryFollower()
@@ -56,7 +65,7 @@ bool SimulatedTrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS:
 {
 	if(path.size()==0) return false;
 
-	follow_distance = m_Params.PursuiteDistance+1;
+	follow_distance = m_Params.minPursuiteDistance;
 
 	int iWayPoint =  PlanningHelpers::GetClosestNextPointIndex(path, state);
 
@@ -105,11 +114,6 @@ int SimulatedTrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint&
 	steerd = m_pidSteer.getPID(e);
 
 	return 1;
-}
-
-void SimulatedTrajectoryFollower::UpdateParams(const ControllerParams& params)
-{
-	m_Params = params;
 }
 
 int SimulatedTrajectoryFollower::VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,

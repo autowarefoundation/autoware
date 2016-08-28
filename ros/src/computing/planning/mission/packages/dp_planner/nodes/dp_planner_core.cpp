@@ -120,6 +120,44 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 				&PlannerX::callbackFromVehicleStatus, 			this);
 
 
+	AutowarePlanningParams params;
+
+	nh.getParam("/dp_planner/maxVelocity", params.maxSpeed);
+	nh.getParam("/dp_planner/minVelocity", params.minSpeed);
+	nh.getParam("/dp_planner/velocityProfileFactor", params.speedProfileFactor);
+	nh.getParam("/dp_planner/maxPlanningDistance", params.planningDistance);
+	nh.getParam("/dp_planner/maxLocalPlanDistance", params.microPlanDistance);
+	nh.getParam("/dp_planner/samplingTipMargin", params.carTipMargin);
+	nh.getParam("/dp_planner/samplingOutMargin", params.rollInMargin);
+	nh.getParam("/dp_planner/samplingSpeedFactor", params.rollInSpeedFactor);
+
+	nh.getParam("/dp_planner/pathDensity", params.pathDensity);
+	nh.getParam("/dp_planner/rollOutDensity", params.rollOutDensity);
+	nh.getParam("/dp_planner/rollOutsNumber", params.rollOutNumber);
+	nh.getParam("/dp_planner/horizonDistance", params.horizonDistance);
+	nh.getParam("/dp_planner/minFollowingDistance", params.minFollowingDistance);
+	nh.getParam("/dp_planner/maxFollowingDistance", params.maxFollowingDistance);
+	nh.getParam("/dp_planner/minDistanceToAvoid", params.minDistanceToAvoid);
+	nh.getParam("/dp_planner/speedProfileFactor", params.speedProfileFactor);
+
+	nh.getParam("/dp_planner/enableSwerving", params.enableSwerving);
+	nh.getParam("/dp_planner/enableFollowing", params.enableFollowing);
+	nh.getParam("/dp_planner/enableHeadingSmoothing", params.enableHeadingSmoothing);
+	nh.getParam("/dp_planner/enableTrafficLightBehavior", params.enableTrafficLightBehavior);
+	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
+
+	m_pPlanner->UpdatePlanningParams(params);
+
+
+	double w = 0, l = 0, tr = 0, maxA = 0, wb = 0;
+
+	nh.getParam("/dp_planner/width", w);
+	nh.getParam("/dp_planner/length", l);
+	nh.getParam("/dp_planner/wheelBaseLength", wb);
+	nh.getParam("/dp_planner/turningRadius", tr);
+	nh.getParam("/dp_planner/maxSteerAngle", maxA);
+
+	m_pPlanner->UpdateVehicleInfo(w,l, wb, maxA, tr);
 }
 
 PlannerX::~PlannerX()

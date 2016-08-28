@@ -585,22 +585,19 @@ public:
 	double 	pathDensity;
 	double 	rollOutDensity;
 	int 	rollOutNumber;
-	double 	marginDistanceFromTrajectory;
 	double 	horizonDistance;
 	double 	minFollowingDistance;
 	double 	maxFollowingDistance;
 	double 	minDistanceToAvoid;
 	double 	speedProfileFactor;
-	int 	curvatureCalculationPoints;
 	double 	smoothingDataWeight;
 	double 	smoothingSmoothWeight;
 	double 	smoothingToleranceError;
 
+	bool 	enableLaneChange;
 	bool 	enableSwerving;
 	bool 	enableFollowing;
-	bool 	enablePlanningAnywhere;
 	bool 	enableHeadingSmoothing;
-	bool 	enableWaitingBehavior;
 	bool 	enableTrafficLightBehavior;
 
 	PlanningParams()
@@ -615,23 +612,20 @@ public:
 		pathDensity						= 0.25;
 		rollOutDensity					= 0.5;
 		rollOutNumber					= 4;
-		marginDistanceFromTrajectory	= 2.0;
 		horizonDistance					= 120;
 		minFollowingDistance			= 35;
 		maxFollowingDistance			= 40;
 		minDistanceToAvoid				= 15;
-		speedProfileFactor				= 1.5;
-		curvatureCalculationPoints		= 1;
+		speedProfileFactor				= 1.0;
 		smoothingDataWeight				= 0.3;
 		smoothingSmoothWeight			= 0.35;
 		smoothingToleranceError			= 0.1;
 
-		enableSwerving 					= false;
-		enableFollowing					= true;
-		enablePlanningAnywhere			= false;
 		enableHeadingSmoothing			= false;
-		enableWaitingBehavior			= false;
+		enableSwerving 					= false;
+		enableFollowing					= false;
 		enableTrafficLightBehavior		= false;
+		enableLaneChange 				= false;
 	}
 };
 

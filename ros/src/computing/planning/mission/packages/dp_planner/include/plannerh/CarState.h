@@ -22,7 +22,6 @@ class CarState
 public:
 	PlannerHNS::WayPoint state;
 	CAR_BASIC_INFO m_CarInfo;
-	double w,l;
 	std::vector<PlannerHNS::GPSPoint> m_CarShapePolygon;
 	std::vector<PlannerHNS::WayPoint> m_Path;
 	std::vector<PlannerHNS::WayPoint> m_TotalPath;
@@ -79,7 +78,7 @@ public:
 
 	CarState();
 	virtual ~CarState();
-	void Init(const double& width, const double& length, const CAR_BASIC_INFO& carInfo);
+	void Init(const CAR_BASIC_INFO& carInfo);
 	void InitPolygons();
 	void FirstLocalizeMe(const PlannerHNS::WayPoint& initCarPos);
 	void LocalizeMe(const double& dt); // in seconds
@@ -114,7 +113,6 @@ class SimulatedCarState
 public:
 	PlannerHNS::WayPoint state;
 	CAR_BASIC_INFO m_CarInfo;
-	double w,l, maxSpeed;
 	std::vector<PlannerHNS::GPSPoint> m_CarShapePolygon;
 	std::vector<PlannerHNS::WayPoint> m_Path;
 	std::vector<PlannerHNS::WayPoint> m_TotalPath;
@@ -158,7 +156,7 @@ public:
 
 	SimulatedCarState();
 	virtual ~SimulatedCarState();
-	void Init(const double& width, const double& length, const CAR_BASIC_INFO& carInfo);
+	void Init(const CAR_BASIC_INFO& carInfo);
 	void InitPolygons();
 	void FirstLocalizeMe(const PlannerHNS::WayPoint& initCarPos);
 	void LocalizeMe(const double& dt); // in seconds

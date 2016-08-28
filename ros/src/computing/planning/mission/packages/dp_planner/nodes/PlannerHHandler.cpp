@@ -13,10 +13,9 @@ namespace PlannerXNS
 PlannerH_Handler::PlannerH_Handler()
 {
 	//TODO Make sure these number are correct
-	SimulationNS::CAR_BASIC_INFO carInfo;
-	m_State.Init(1.9, 4.2,carInfo);
 
-	m_pPlannerH = new PlannerHNS::PlannerH(m_PlanningParams);
+
+	m_pPlannerH = new PlannerHNS::PlannerH();
 
 	m_bFirstCall = false;
 	m_bMakeNewPlan = true;
@@ -27,6 +26,41 @@ PlannerH_Handler::~PlannerH_Handler()
 {
 	if(m_pPlannerH)
 		delete m_pPlannerH;
+}
+
+void PlannerH_Handler::UpdateVehicleInfo(const double& width, const double& length, const double& wheelBase, const double& maxSteerAngle, const double& turningRadius)
+{
+	SimulationNS::CAR_BASIC_INFO carInfo;
+	carInfo.wheel_base = wheelBase;
+	carInfo.turning_radius = turningRadius;
+	carInfo.max_steer_angle = maxSteerAngle;
+	carInfo.width = width;
+	carInfo.length = length;
+	m_State.Init(carInfo);
+}
+
+void PlannerH_Handler::UpdatePlanningParams(const AutowarePlanningParams& planningParams)
+{
+	m_PlanningParams.carTipMargin 				= planningParams.carTipMargin 				;
+	m_PlanningParams.enableFollowing 			= planningParams.enableFollowing 			;
+	m_PlanningParams.enableHeadingSmoothing 	= planningParams.enableHeadingSmoothing 	;
+	m_PlanningParams.enableLaneChange 			= planningParams.enableLaneChange 			;
+	m_PlanningParams.enableSwerving 			= planningParams.enableSwerving 			;
+	m_PlanningParams.enableTrafficLightBehavior = planningParams.enableTrafficLightBehavior ;
+	m_PlanningParams.horizonDistance 			= planningParams.horizonDistance 			;
+	m_PlanningParams.maxFollowingDistance 		= planningParams.maxFollowingDistance 		;
+	m_PlanningParams.maxSpeed 					= planningParams.maxSpeed 					;
+	m_PlanningParams.microPlanDistance 			= planningParams.microPlanDistance 			;
+	m_PlanningParams.minDistanceToAvoid 		= planningParams.minDistanceToAvoid 		;
+	m_PlanningParams.minFollowingDistance 		= planningParams.minFollowingDistance 		;
+	m_PlanningParams.minSpeed 					= planningParams.minSpeed 					;
+	m_PlanningParams.pathDensity 				= planningParams.pathDensity 				;
+	m_PlanningParams.planningDistance 			= planningParams.planningDistance 			;
+	m_PlanningParams.rollInMargin 				= planningParams.rollInMargin 				;
+	m_PlanningParams.rollInSpeedFactor 			= planningParams.rollInSpeedFactor 			;
+	m_PlanningParams.rollOutDensity 			= planningParams.rollOutDensity 			;
+	m_PlanningParams.rollOutNumber 				= planningParams.rollOutNumber 				;
+	m_PlanningParams.speedProfileFactor 		= planningParams.speedProfileFactor 		;
 }
 
 void PlannerH_Handler::UpdateRoadMap(const AutowareRoadNetwork& map)
@@ -349,8 +383,8 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 	lane_waypoint_marker.ns = "global_lane_array_marker";
 	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = 0.5;
-	lane_waypoint_marker.scale.y = 0.5;
+	lane_waypoint_marker.scale.x = 0.1;
+	lane_waypoint_marker.scale.y = 0.1;
 	std_msgs::ColorRGBA roll_color, total_color, curr_color;
 	roll_color.r = 0;
 	roll_color.g = 1;
@@ -383,8 +417,8 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 
 	lane_waypoint_marker.points.clear();
 	lane_waypoint_marker.id = count;
-	lane_waypoint_marker.scale.x = 0.75;
-	lane_waypoint_marker.scale.y = 0.75;
+	lane_waypoint_marker.scale.x = 0.35;
+	lane_waypoint_marker.scale.y = 0.35;
 	total_color.r = 1;
 	total_color.g = 0;
 	total_color.b = 0;
@@ -407,8 +441,8 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 
 	lane_waypoint_marker.points.clear();
 	lane_waypoint_marker.id = count;
-	lane_waypoint_marker.scale.x = 0.5;
-	lane_waypoint_marker.scale.y = 0.5;
+	lane_waypoint_marker.scale.x = 0.1;
+	lane_waypoint_marker.scale.y = 0.1;
 	curr_color.r = 1;
 	curr_color.g = 0;
 	curr_color.b = 1;

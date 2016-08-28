@@ -27,14 +27,24 @@ TrajectoryFollower::TrajectoryFollower()
 	m_FollowAcceleration= 0;
 	m_iPrevWayPoint 	= -1;
 	m_StartFollowDistance = 0;
+}
+
+void TrajectoryFollower::Init(const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo)
+{
+	m_Params = params;
+	m_VehicleInfo = vehicleInfo;
 
 	//m_pidSteer.Init(0.1, 0.005, 0.001); // for 5 m/s
-	m_pidSteer.Init(0.07, 0.02, 0.01); // for 3 m/s
+	//m_pidSteer.Init(0.07, 0.02, 0.01); // for 3 m/s
 	//m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
-	m_pidSteer.Setlimit(m_Params.MaxSteerAngle, -m_Params.MaxSteerAngle);
+	//m_pidVelocity.Init(0.1, 0.005, 0.1);
+	//m_lowpassSteer.Init(2, 100, 5);
 
-	m_pidVelocity.Init(0.1, 0.005, 0.1);
-	m_lowpassSteer.Init(2, 100, 5);
+	m_pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD); // for 3 m/s
+	m_pidSteer.Setlimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
+
+	m_pidVelocity.Init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
+
 }
 
 TrajectoryFollower::~TrajectoryFollower()
@@ -59,7 +69,7 @@ void TrajectoryFollower::PrepareNextWaypoint(const PlannerHNS::WayPoint& CurPos,
 	//double nIterations = 0.5/0.01; //lateral  error
 	for(unsigned int i=0; i< nIterations; i++)
 	{
-		PredictMotion(m_ForwardSimulation.pos.x, m_ForwardSimulation.pos.y, m_ForwardSimulation.pos.a, currSteering,currVelocity, m_Params.Wheelbase, 0.01);
+		PredictMotion(m_ForwardSimulation.pos.x, m_ForwardSimulation.pos.y, m_ForwardSimulation.pos.a, currSteering,currVelocity, m_VehicleInfo.wheel_base, 0.01);
 	}
 
 	m_CurrPos = m_ForwardSimulation;
@@ -85,11 +95,11 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 	if(path.size()==0) return false;
 
 	if(velocity > 3.0)
-		follow_distance = m_Params.PursuiteDistance + abs(velocity) * 0.5;
+		follow_distance = m_Params.minPursuiteDistance + abs(velocity) * 0.5;
 	else
-		follow_distance = m_Params.PursuiteDistance + fabs(velocity) * 0.25;
-	if(follow_distance < m_Params.PursuiteDistance)
-		follow_distance = m_Params.PursuiteDistance;
+		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.25;
+	if(follow_distance < m_Params.minPursuiteDistance)
+		follow_distance = m_Params.minPursuiteDistance;
 
 	//follow_distance = 4.5;
 
@@ -174,11 +184,6 @@ void TrajectoryFollower::PredictMotion(double& x, double &y, double& heading, do
 	x += velocity * time_elapsed *  cos(heading);
 	y += velocity * time_elapsed *  sin(heading);
 	heading = heading + ((velocity*time_elapsed*tan(steering))  / (wheelbase) );
-}
-
-void TrajectoryFollower::UpdateParams(const ControllerParams& params)
-{
-	m_Params = params;
 }
 
 int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
