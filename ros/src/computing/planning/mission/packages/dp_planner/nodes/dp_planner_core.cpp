@@ -223,14 +223,17 @@ void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr&
 	p.position.y = p.position.y - m_OriginPos.position.y;
 	p.position.z = p.position.z - m_OriginPos.position.z;
 
-//	double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
-//	m_VehicleState.speed = distance/dt;
-//	if(m_VehicleState.speed>0.2 || m_VehicleState.shift == AW_SHIFT_POS_DD )
-//		m_VehicleState.shift = AW_SHIFT_POS_DD;
-//	else if(m_VehicleState.speed<-0.2)
-//		m_VehicleState.shift = AW_SHIFT_POS_RR;
-//	else
-//		m_VehicleState.shift = AW_SHIFT_POS_NN;
+	if(m_bAutoware)
+	{
+		double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
+		m_VehicleState.speed = distance/dt;
+		if(m_VehicleState.speed>0.2 || m_VehicleState.shift == AW_SHIFT_POS_DD )
+			m_VehicleState.shift = AW_SHIFT_POS_DD;
+		else if(m_VehicleState.speed<-0.2)
+			m_VehicleState.shift = AW_SHIFT_POS_RR;
+		else
+			m_VehicleState.shift = AW_SHIFT_POS_NN;
+	}
 
 	m_CurrentPos.position  = p.position;
 	m_CurrentPos.orientation = p.orientation;

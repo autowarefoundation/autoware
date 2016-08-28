@@ -26,7 +26,7 @@
 	<arg name="velocityGainKD" 				default="0.1" />
 	
 	<arg name="system" 						default="autoware" /> <!-- segway or autoware -->
-	<arg name="signal" 						default="simulation" /> <!-- simulation or vehicle or autoware -->
+	<arg name="signal" 						default="autoware" /> <!-- simulation or vehicle or autoware -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
 	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
 	

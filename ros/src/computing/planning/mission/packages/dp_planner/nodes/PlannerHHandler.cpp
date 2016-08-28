@@ -192,6 +192,10 @@ void PlannerH_Handler::UpdateGlobalGoalPosition(const geometry_msgs::Pose& goalP
 	m_Goal = PlannerHNS::WayPoint(goalPose.position.x+m_OriginPoint.pos.x,
 			goalPose.position.y + m_OriginPoint.pos.y, goalPose.position.z + m_OriginPoint.pos.z, tf::getYaw(goalPose.orientation));
 
+	PlannerHNS::WayPoint* pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(m_Goal, m_Map);
+	if(pW)
+		m_Goal.pos = pW->pos;
+
 	m_State.m_Path.clear();
 	m_State.m_TotalPath.clear();
 	m_State.m_RollOuts.clear();
@@ -265,7 +269,8 @@ bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, cons
 	if((m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE && m_State.m_Path.size() == 0 && m_bMakeNewPlan) || m_bMakeNewPlan)
 	{
 		//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
-		double ret = m_pPlannerH->PlanUsingDP(m_State.pLane, m_State.state, m_Goal, m_State.state, 1000000, m_PredefinedPath, generatedTotalPath);
+		double ret = m_pPlannerH->PlanUsingDP(m_State.pLane, m_State.state, m_Goal,
+				m_State.state, m_PlanningParams.planningDistance, m_PredefinedPath, generatedTotalPath);
 		if(ret == 0) generatedTotalPath.clear();
 
 		if(generatedTotalPath.size() > 0)
