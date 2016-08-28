@@ -22,8 +22,6 @@ namespace SimulationNS
 CarState::CarState()
 {
 	pLane = 0;
-	w = 0;
-	l = 0;
 	m_CurrentVelocity =  m_CurrentVelocityD =0;
 	m_CurrentSteering = m_CurrentSteeringD =0;
 	m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
@@ -44,11 +42,9 @@ CarState::~CarState()
 
 }
 
-void CarState::Init(const double& width, const double& length, const CAR_BASIC_INFO& carInfo)
+void CarState::Init(const CAR_BASIC_INFO& carInfo)
  	{
  		m_CarInfo = carInfo;
- 		w = width;
- 		l = length;
  		m_CurrentVelocity =  m_CurrentVelocityD =0;
  		m_CurrentSteering = m_CurrentSteeringD =0;
  		m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
@@ -85,8 +81,8 @@ void CarState::InitBehaviorStates()
 
 void CarState::InitPolygons()
 {
-	double l2 = l/2.0;
-	double w2 = w/2.0;
+	double l2 = m_CarInfo.length/2.0;
+	double w2 = m_CarInfo.width/2.0;
 
 	m_CarShapePolygon.push_back(GPSPoint(-w2, -l2, 0,0));
 	m_CarShapePolygon.push_back(GPSPoint(w2, -l2, 0,0));
@@ -436,9 +432,9 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 				|| m_pCurrentBehaviorState->GetCalcParams()->bRePlan
 				|| m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
 		{
-			PlannerHNS::PlanningInternalParams params;
-			PlannerHNS::PlannerH planner(params);
-			planner.GenerateRunoffTrajectory(m_TotalPath, state, false,
+			PlannerHNS::PlannerH planner;
+			planner.GenerateRunoffTrajectory(m_TotalPath, state,
+					m_pCurrentBehaviorState->m_PlanningParams.enableLaneChange,
 					vehicleState.speed,
 					m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
 					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
@@ -453,7 +449,8 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 					m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
 					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
 					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-					false, m_RollOuts);
+					m_pCurrentBehaviorState->m_PlanningParams.enableHeadingSmoothing,
+					m_RollOuts);
 
 			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
 
@@ -550,9 +547,6 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
  SimulatedCarState::SimulatedCarState()
  {
  	pLane = 0;
- 	w = 0;
- 	l = 0;
- 	maxSpeed = 0;
  	m_CurrentVelocity =  m_CurrentVelocityD =0;
  	m_CurrentSteering = m_CurrentSteeringD =0;
  	m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
@@ -565,11 +559,9 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 
  }
 
- void SimulatedCarState::Init(const double& width, const double& length, const CAR_BASIC_INFO& carInfo)
+ void SimulatedCarState::Init(const CAR_BASIC_INFO& carInfo)
   	{
   		m_CarInfo = carInfo;
-  		w = width;
-  		l = length;
   		m_CurrentVelocity =  m_CurrentVelocityD =0;
   		m_CurrentSteering = m_CurrentSteeringD =0;
   		m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
@@ -579,8 +571,8 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 
  void SimulatedCarState::InitPolygons()
  {
- 	double l2 = l/2.0;
- 	double w2 = w/2.0;
+ 	double l2 = m_CarInfo.length/2.0;
+ 	double w2 = m_CarInfo.width/2.0;
 
  	m_CarShapePolygon.push_back(GPSPoint(-w2, -l2, 0,0));
  	m_CarShapePolygon.push_back(GPSPoint(w2, -l2, 0,0));

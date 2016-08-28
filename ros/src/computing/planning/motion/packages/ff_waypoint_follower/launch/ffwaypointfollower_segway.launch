@@ -1,20 +1,20 @@
 <!-- -->
 <launch>
 
-	<arg name="width" 						default="1.82" />
-	<arg name="length" 						default="4.3" />
-	<arg name="wheelBaseLength" 			default="2.7" />
-	<arg name="turningRadius"				default="5.2" />
-	<arg name="maxSteerAngle" 				default="0.42" />
+	<arg name="width" 						default="0.8" />
+	<arg name="length" 						default="0.9" />
+	<arg name="wheelBaseLength" 			default="0.6" />
+	<arg name="turningRadius"				default="1.5" />
+	<arg name="maxSteerAngle" 				default="0.75" />
 	
-	<arg name="maxSteerValue" 				default="660" />
-	<arg name="minSteerValue" 				default="-660" />
+	<arg name="maxSteerValue" 				default="3.14" />
+	<arg name="minSteerValue" 				default="-3.14" />
 	<arg name="maxVelocity" 				default="1.0" />
 	<arg name="minVelocity" 				default="0.0" />
 		
-	<arg name="steeringDelay" 				default="0.8" />
-	<arg name="minPursuiteDistance" 		default="2.0" />
-	<arg name="followDistance" 				default="10.0" />
+	<arg name="steeringDelay" 				default="0.4" />
+	<arg name="minPursuiteDistance" 		default="1.0" />
+	<arg name="followDistance" 				default="3.0" />
 	<arg name="lowpassSteerCutoff" 			default="5.0" />
 	
 	<arg name="steerGainKP" 				default="0.07" />
@@ -25,14 +25,14 @@
 	<arg name="velocityGainKI" 				default="0.005" />
 	<arg name="velocityGainKD" 				default="0.1" />
 	
-	<arg name="system" 						default="autoware" /> <!-- segway or autoware -->
+	<arg name="system" 						default="segway" /> <!-- segway or autoware -->
 	<arg name="signal" 						default="simulation" /> <!-- simulation or vehicle or autoware -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
 	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
 	
 	<arg name="mapRecorder" 				default="0" /><!-- 0 or 1  -->
-	<arg name="mapDistance" 				default="100.0" /> <!-- meters -->
-	<arg name="mapDensity" 					default="0.5" /> <!-- meters -->
+	<arg name="mapDistance" 				default="25.0" /> <!-- meters -->
+	<arg name="mapDensity" 					default="0.2" /> <!-- meters -->
 	
 	<node pkg="ff_waypoint_follower" type="ff_waypoint_follower" name="ff_waypoint_follower" output="screen">
 	

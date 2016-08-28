@@ -26,6 +26,10 @@ public:
 	PlannerH_Handler();
 	virtual ~PlannerH_Handler();
 
+	virtual void UpdateVehicleInfo(const double& width, const double& length, const double& wheelBase, const double& maxSteerAngle, const double& turningRadius);
+
+	virtual void UpdatePlanningParams(const AutowarePlanningParams& planningParams);
+
 	virtual void UpdateRoadMap(const AutowareRoadNetwork& map);
 
 	virtual bool LoadRoadMap(const std::string& mapFilePath, const bool& bKML_Map, visualization_msgs::MarkerArray& mapToVisualize);
@@ -50,7 +54,7 @@ protected:
 	bool				   m_bMakeNewPlan;
 	PlannerHNS::WayPoint   m_OriginPoint;
 	std::vector<int> m_PredefinedPath;
-	PlannerHNS::PlanningInternalParams m_PlanningParams;
+	PlannerHNS::PlanningParams m_PlanningParams;
 	PlannerHNS::PlannerH* m_pPlannerH;
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	struct timespec m_PlanningTimer;

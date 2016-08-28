@@ -49,80 +49,131 @@ int main(int argc, char **argv)
 {
 	FFSteerControlNS::ControlCommandParams params;
 
-	vector<string> cmdData;
-	for ( unsigned int i = 1 ;  i < (unsigned int)argc; i++)
-	{
-		cmdData.push_back(std::string(argv[i]));
-	}
-
-	for(unsigned int i=0; i < cmdData.size(); i++)
-	{
-		if(cmdData.at(i).compare("-mode") == 0)
-		{
-			params.bMode = true;
-			i++;
-			if(i < cmdData.size())
-			{
-				if(cmdData.at(i).compare("torque") == 0)
-				{
-					params.bTorqueMode = true;
-				}
-				else if(cmdData.at(i).compare("angle") == 0)
-				{
-					params.bTorqueMode = false;
-				}
-			}
-
-		}
-		else if(cmdData.at(i).compare("-signal") == 0)
-		{
-			params.bSignal = true;
-			i++;
-			if(i < cmdData.size())
-			{
-				if(cmdData.at(i).compare("vehicle") == 0)
-				{
-					params.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
-				}
-				else if(cmdData.at(i).compare("autoware") == 0)
-				{
-					params.statusSource = FFSteerControlNS::AUTOWARE_STATUS;
-				}
-				else if(cmdData.at(i).compare("segway") == 0)
-				{
-					params.statusSource = FFSteerControlNS::SEGWAY_STATUS;
-					cout << "segway Option" << endl;
-				}
-				else if(cmdData.at(i).compare("simulation") == 0)
-				{
-					params.statusSource = FFSteerControlNS::SIMULATION_STATUS;
-				}
-			}
-			else
-			{
-				printHelp();
-				return 0;
-			}
-		}
-		else if(cmdData.at(i).compare("-map") == 0)
-		{
-			params.iMapping = 1;
-
-			i++;
-			if(i < cmdData.size())
-			{
-				params.recordDistance = atof(cmdData.at(i).c_str());
-			}
-		}
-		else if(cmdData.at(i).compare("-h") == 0)
-		{
-			printHelp();
-			return 0;
-		}
-
-	}
+//	vector<string> cmdData;
+//	for ( unsigned int i = 1 ;  i < (unsigned int)argc; i++)
+//	{
+//		cmdData.push_back(std::string(argv[i]));
+//	}
+//
+//	for(unsigned int i=0; i < cmdData.size(); i++)
+//	{
+//		if(cmdData.at(i).compare("-mode") == 0)
+//		{
+//			params.bMode = true;
+//			i++;
+//			if(i < cmdData.size())
+//			{
+//				if(cmdData.at(i).compare("torque") == 0)
+//				{
+//					params.bTorqueMode = true;
+//				}
+//				else if(cmdData.at(i).compare("angle") == 0)
+//				{
+//					params.bTorqueMode = false;
+//				}
+//			}
+//
+//		}
+//		else if(cmdData.at(i).compare("-signal") == 0)
+//		{
+//			params.bSignal = true;
+//			i++;
+//			if(i < cmdData.size())
+//			{
+//				if(cmdData.at(i).compare("vehicle") == 0)
+//				{
+//					params.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
+//				}
+//				else if(cmdData.at(i).compare("autoware") == 0)
+//				{
+//					params.statusSource = FFSteerControlNS::AUTOWARE_STATUS;
+//				}
+//				else if(cmdData.at(i).compare("segway") == 0)
+//				{
+//					params.statusSource = FFSteerControlNS::SEGWAY_STATUS;
+//					cout << "segway Option" << endl;
+//				}
+//				else if(cmdData.at(i).compare("simulation") == 0)
+//				{
+//					params.statusSource = FFSteerControlNS::SIMULATION_STATUS;
+//				}
+//			}
+//			else
+//			{
+//				printHelp();
+//				return 0;
+//			}
+//		}
+//		else if(cmdData.at(i).compare("-map") == 0)
+//		{
+//			params.iMapping = 1;
+//
+//			i++;
+//			if(i < cmdData.size())
+//			{
+//				params.recordDistance = atof(cmdData.at(i).c_str());
+//			}
+//		}
+//		else if(cmdData.at(i).compare("-h") == 0)
+//		{
+//			printHelp();
+//			return 0;
+//		}
+//
+//	}
 
 	ros::init(argc, argv, "ff_waypoint_follower");
+
+	ros::NodeHandle nh;
+	string sysStr;
+	nh.getParam("/ff_waypoint_follower/system",sysStr );
+	if(sysStr.compare("autoware")!=0)
+		params.bAutoware = false;
+
+	string signalStr;
+	nh.getParam("/ff_waypoint_follower/signal", signalStr );
+	if(signalStr.compare("simulation") == 0)
+		params.statusSource = FFSteerControlNS::SIMULATION_STATUS;
+	else if(signalStr.compare("vehicle") == 0)
+		params.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
+	else if(signalStr.compare("autoware") == 0)
+		params.statusSource = FFSteerControlNS::AUTOWARE_STATUS;
+
+	string steerModeStr;
+	nh.getParam("/ff_waypoint_follower/steerMode", steerModeStr );
+	if(steerModeStr.compare("angle") == 0)
+		params.bAngleMode = true;
+	else if(steerModeStr.compare("torque") == 0)
+		params.bAngleMode = false;
+
+	string driveModeStr;
+	nh.getParam("/ff_waypoint_follower/driveMode", driveModeStr );
+	if(driveModeStr.compare("velocity") == 0)
+		params.bVelocityMode = true;
+	else if(driveModeStr.compare("stroke") == 0)
+		params.bVelocityMode = false;
+
+	string mapRecStr;
+	nh.getParam("/ff_waypoint_follower/mapRecorder", mapRecStr );
+	if(mapRecStr.compare("0") == 0)
+		params.iMapping = 0;
+	else if(mapRecStr.compare("1") == 0)
+		params.iMapping = 1;
+
+	string distanceStr;
+	nh.getParam("/ff_waypoint_follower/mapDistance", distanceStr );
+	params.recordDistance = atof(distanceStr.c_str());
+
+	string densityStr;
+	nh.getParam("/ff_waypoint_follower/mapDistance", densityStr );
+	params.recordDensity = atof(densityStr.c_str());
+
+	cout << "Initialize Planning System .. " << sysStr << ", "
+			<< signalStr << "," << steerModeStr << ", "
+			<< driveModeStr << ", " << mapRecStr << ", "
+			<< distanceStr << ", " << densityStr << endl;
+
+
 	FFSteerControlNS::FFSteerControl controller_x(params);
 	controller_x.PlannerMainLoop();
 	return 0;

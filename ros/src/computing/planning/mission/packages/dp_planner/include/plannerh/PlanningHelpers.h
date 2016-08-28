@@ -88,8 +88,6 @@ public:
 	static ACTION_TYPE GetBranchingDirection(WayPoint& currWP, WayPoint& nextWP);
 
 	static void CalcContourPointsForDetectedObjects(const WayPoint& currPose, std::vector<DetectedObject>& obj_list, const double& filterDistance = 100);
-	static void ObstacleDetectionStep(const WayPoint& currPose,const std::vector<std::vector<WayPoint> >& pathRollOuts,PreCalculatedConditions& preCalcParams,
-			std::vector<DetectedObject>& obj_list, std::vector<GPSPoint>& detectedPoints);
 
 	static double GetVelocityAhead(const std::vector<WayPoint>& path, const WayPoint& pose, const double& distance);
 	static bool CompareTrajectories(const std::vector<WayPoint>& path1, const std::vector<WayPoint>& path2);

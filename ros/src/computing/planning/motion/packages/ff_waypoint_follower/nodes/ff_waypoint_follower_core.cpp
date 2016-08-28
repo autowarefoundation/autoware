@@ -46,15 +46,14 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 {
 	clock_gettime(0, &m_Timer);
 
-	SimulationNS::CAR_BASIC_INFO carInfo;
-	m_State.Init(1.9, 4.2, carInfo);
+	ReadParamFromLaunchFile(m_CarInfo, m_ControlParams);
+
+	m_PredControl.Init(m_ControlParams, m_CarInfo);
+	m_State.Init(m_CarInfo);
 
 	m_CmdParams = params;
 
 	m_pComm = 0;
-
-
-
 	m_counter = 0;
 	m_frequency = 0;
 	bNewCurrentPos = false;
@@ -68,7 +67,7 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	if(m_CmdParams.statusSource == CONTROL_BOX_STATUS)
 	{
 		m_pComm = new HevComm();
-		m_pComm->InitializeComm(carInfo);
+		m_pComm->InitializeComm(m_CarInfo);
 		m_pComm->StartComm();
 	}
 
@@ -118,6 +117,35 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
 	std::cout << "ff_waypoint_follower initialized successfully " << std::endl;
+
+}
+
+void FFSteerControl::ReadParamFromLaunchFile(SimulationNS::CAR_BASIC_INFO& m_CarInfo,
+		  SimulationNS::ControllerParams& m_ControlParams)
+{
+	nh.getParam("/ff_waypoint_follower/width", 			m_CarInfo.width );
+	nh.getParam("/ff_waypoint_follower/length", 		m_CarInfo.length );
+	nh.getParam("/ff_waypoint_follower/wheelBaseLength", m_CarInfo.wheel_base );
+	nh.getParam("/ff_waypoint_follower/turningRadius", m_CarInfo.turning_radius );
+	nh.getParam("/ff_waypoint_follower/maxSteerAngle", m_CarInfo.max_steer_angle );
+
+	nh.getParam("/ff_waypoint_follower/maxSteerValue", m_CarInfo.max_steer_value );
+	nh.getParam("/ff_waypoint_follower/minSteerValue", m_CarInfo.min_steer_value );
+	nh.getParam("/ff_waypoint_follower/maxVelocity", m_CarInfo.max_speed_forward );
+	nh.getParam("/ff_waypoint_follower/minVelocity", m_CarInfo.max_speed_backword );
+
+	nh.getParam("/ff_waypoint_follower/steeringDelay", m_ControlParams.SteeringDelay );
+	nh.getParam("/ff_waypoint_follower/minPursuiteDistance", m_ControlParams.minPursuiteDistance );
+	nh.getParam("/ff_waypoint_follower/followDistance", m_ControlParams.FollowDistance );
+	nh.getParam("/ff_waypoint_follower/lowpassSteerCutoff", m_ControlParams.LowpassSteerCutoff );
+
+	nh.getParam("/ff_waypoint_follower/steerGainKP", m_ControlParams.Steering_Gain.kP );
+	nh.getParam("/ff_waypoint_follower/steerGainKI", m_ControlParams.Steering_Gain.kI );
+	nh.getParam("/ff_waypoint_follower/steerGainKD", m_ControlParams.Steering_Gain.kD );
+
+	nh.getParam("/ff_waypoint_follower/velocityGainKP", m_ControlParams.Velocity_Gain.kP );
+	nh.getParam("/ff_waypoint_follower/velocityGainKI", m_ControlParams.Velocity_Gain.kI );
+	nh.getParam("/ff_waypoint_follower/velocityGainKD", m_ControlParams.Velocity_Gain.kD );
 
 }
 
@@ -226,8 +254,10 @@ void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg
 {
 	if(m_CmdParams.statusSource == SEGWAY_STATUS) //segway odometry
 	{
-//		m_CurrentPos = PlannerHNS::WayPoint(msg->pose.pose.position.x,
-//				msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
+		m_CurrentSegwayPos = PlannerHNS::WayPoint(msg->pose.pose.position.x,
+				msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
+
+		bNewCurrentSegwayPos = true;
 
 		m_CurrVehicleStatus.shift = PlannerHNS::SHIFT_POS_DD;
 		m_CurrVehicleStatus.speed = msg->twist.twist.linear.x;
@@ -432,7 +462,7 @@ void FFSteerControl::PlannerMainLoop()
 		 {
 			 bNewCurrentPos = false;
 			double _d = hypot(m_CurrentPos.pos.y - p2.pos.y, m_CurrentPos.pos.x - p2.pos.x);
-			if(_d > 0.2)
+			if(_d > m_CmdParams.recordDensity)
 			{
 				p2 = m_CurrentPos;
 
