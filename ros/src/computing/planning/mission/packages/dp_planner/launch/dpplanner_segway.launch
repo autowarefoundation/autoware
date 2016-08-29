@@ -28,12 +28,12 @@
 	<arg name="length" 						default="0.9" />
 	<arg name="wheelBaseLength" 			default="0.6" />
 	<arg name="turningRadius"				default="1.5" />
-	<arg name="maxSteerAngle" 				default="0.75" />
+	<arg name="maxSteerAngle" 				default="0.45" />
 	
 	<arg name="planner" 					default="DP" />
 	<arg name="system" 						default="segway" />
 	<arg name="map" 						default="kml" />
-	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/KmlMaps/7th floor 100.kml" />
+	<arg name="mapDirectory" 				default="/home/user/SimuLogs/KmlMaps/7thf_75.kml" />
 	
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
