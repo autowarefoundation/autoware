@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
 		true,
 		mapPath,
 		ORB_SLAM2::System::MAPPING);
-	ImageGrabber GrabBag (&SLAM, true);
+	ImageGrabber GrabBag (&SLAM, NULL, true);
 	TfTimeTree TfSource (groundTruth, SLAM.fsSettings["ExternalLocalization.frame1"], SLAM.fsSettings["ExternalLocalization.frame2"]);
 
 	// Build ROSBag Query

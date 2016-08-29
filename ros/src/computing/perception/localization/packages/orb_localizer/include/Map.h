@@ -44,6 +44,10 @@ class KeyFrame;
 class KeyFrameDatabase;
 
 
+/*
+ * Warning: please do NOT modify this point structure
+ * We have observed significant performance reduction.
+ */
 struct KeyFramePt {
 	PCL_ADD_POINT4D;
 	ORB_SLAM2::KeyFrame *kf;
@@ -98,7 +102,7 @@ public:
 			numOfReferencePoint;
 	};
 
-	KeyFrame* getNearestKeyFrame (const float &x, const float &y, const float &z);
+	KeyFrame* getNearestKeyFrame (const float &x, const float &y, const float &z, const float fdir_x, const float fdir_y, const float fdir_z);
 	KeyFrame* offsetKeyframe (KeyFrame* kfSrc, int offset);
 //	KeyFrame* offsetKeyframe (KeyFrame* kfSrc, float offset);
 

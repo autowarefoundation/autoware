@@ -37,7 +37,7 @@ FrameDrawer::FrameDrawer(Map* pMap):mpMap(pMap)
 
 cv::Mat FrameDrawer::DrawFrame()
 {
-    cv::Mat im;
+//    cv::Mat im;
     vector<cv::KeyPoint> vIniKeys; // Initialization: KeyPoints in reference frame
     vector<int> vMatches; // Initialization: correspondeces with reference keypoints
     vector<cv::KeyPoint> vCurrentKeys; // KeyPoints in current frame
@@ -51,7 +51,7 @@ cv::Mat FrameDrawer::DrawFrame()
         if(mState==Tracking::SYSTEM_NOT_READY)
             mState=Tracking::NO_IMAGES_YET;
 
-        mIm.copyTo(im);
+        mIm.copyTo(workingFrame);
 
         if(mState==Tracking::NOT_INITIALIZED)
         {
@@ -71,21 +71,21 @@ cv::Mat FrameDrawer::DrawFrame()
         }
     } // destroy scoped mutex -> release mutex
 
-    if(im.channels()<3) //this should be always true
-        cvtColor(im,im,CV_GRAY2BGR);
+    if(workingFrame.channels()<3) //this should be always true
+    	cvtColor(workingFrame, workingFrame, CV_GRAY2BGR);
 
-    //Draw
-    if(state==Tracking::NOT_INITIALIZED) //INITIALIZING
-    {
-        for(unsigned int i=0; i<vMatches.size(); i++)
-        {
-            if(vMatches[i]>=0)
-            {
-                cv::line(im,vIniKeys[i].pt,vCurrentKeys[vMatches[i]].pt,
-                        cv::Scalar(0,255,0));
-            }
-        }        
-    }
+	//Draw
+	if(state==Tracking::NOT_INITIALIZED) //INITIALIZING
+	{
+		for(unsigned int i=0; i<vMatches.size(); i++)
+		{
+			if(vMatches[i]>=0)
+			{
+				cv::line(workingFrame, vIniKeys[i].pt, vCurrentKeys[vMatches[i]].pt,
+					cv::Scalar(0,255,0));
+			}
+		}
+	}
     else if(state==Tracking::OK) //TRACKING
     {
         mnTracked=0;
@@ -104,14 +104,14 @@ cv::Mat FrameDrawer::DrawFrame()
                 // This is a match to a MapPoint in the map
                 if(vbMap[i])
                 {
-                    cv::rectangle(im,pt1,pt2,cv::Scalar(0,255,0));
-                    cv::circle(im,vCurrentKeys[i].pt,2,cv::Scalar(0,255,0),-1);
+                    cv::rectangle(workingFrame, pt1,pt2,cv::Scalar(0,255,0));
+                    cv::circle(workingFrame, vCurrentKeys[i].pt,2,cv::Scalar(0,255,0),-1);
                     mnTracked++;
                 }
                 else // This is match to a "visual odometry" MapPoint created in the last frame
                 {
-                    cv::rectangle(im,pt1,pt2,cv::Scalar(255,0,0));
-                    cv::circle(im,vCurrentKeys[i].pt,2,cv::Scalar(255,0,0),-1);
+                    cv::rectangle(workingFrame, pt1, pt2, cv::Scalar(255,0,0));
+                    cv::circle(workingFrame, vCurrentKeys[i].pt, 2, cv::Scalar(255,0,0), -1);
                     mnTrackedVO++;
                 }
             }
@@ -119,8 +119,9 @@ cv::Mat FrameDrawer::DrawFrame()
     }
 
     cv::Mat imWithInfo;
-    DrawTextInfo(im,state, imWithInfo);
+    DrawTextInfo(workingFrame,state, imWithInfo);
 
+    imWithInfo.copyTo(workingFrame);
     return imWithInfo;
 }
 

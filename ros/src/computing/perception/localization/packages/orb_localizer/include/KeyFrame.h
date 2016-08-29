@@ -139,6 +139,8 @@ public:
     // Called after map loading for each keyframe
     void fixConnections (Map *smap, KeyFrameDatabase *kfdb);
 
+    /* Returns normalized keyframe's direction vector (really axis of quaternion) */
+    void getDirectionVector (float &dirX, float &dirY, float &dirZ);
 
     // The following variables are accesed from only 1 thread or never change (no mutex needed).
 public:

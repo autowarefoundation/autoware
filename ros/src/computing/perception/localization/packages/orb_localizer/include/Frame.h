@@ -97,6 +97,9 @@ public:
     // Backprojects a keypoint (if stereo/depth info available) into 3D world coordinates.
     cv::Mat UnprojectStereo(const int &i);
 
+    /* Returns normalized frame's direction vector (really axis of quaternion) */
+    void getDirectionVector (float &dirX, float &dirY, float &dirZ);
+
 public:
     // Vocabulary used for relocalization.
     ORBVocabulary* mpORBvocabulary;

@@ -728,5 +728,15 @@ void KeyFrame::fixConnections (Map *smap, KeyFrameDatabase *kfdb)
 }
 
 
+void KeyFrame::getDirectionVector (float &dirX, float &dirY, float &dirZ)
+{
+	cv::Mat orient = this->GetRotation().t();
+	vector<float> q = ORB_SLAM2::Converter::toQuaternion(orient);
+	float norm = sqrtf(q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
+	dirX = q[0]/norm;
+	dirY = q[1]/norm;
+	dirZ = q[2]/norm;
+}
+
 
 } //namespace ORB_SLAM

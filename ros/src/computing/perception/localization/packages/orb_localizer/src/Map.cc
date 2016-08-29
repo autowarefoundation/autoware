@@ -207,6 +207,7 @@ void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb)
 {
 	MapFileHeader header;
 
+	cout << "Opening " << filename << " ...\n";
 	fstream mapFileFd;
 	mapFileFd.open (filename.c_str(), fstream::in);
 	if (!mapFileFd.is_open())
@@ -307,12 +308,15 @@ void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb)
 }
 
 
-KeyFrame* Map::getNearestKeyFrame (const float &x, const float &y, const float &z)
+// we expect direction vector has been normalized,
+// as returned by Frame::getDirectionVector()
+KeyFrame* Map::getNearestKeyFrame (const float &x, const float &y, const float &z,
+	const float fdir_x, const float fdir_y, const float fdir_z)
 {
 	KeyFramePt queryPoint;
 	queryPoint.x = x, queryPoint.y = y, queryPoint.z = z;
 
-	const int k = 2;
+	const int k = 10;
 	vector<int> idcs;
 	vector<float> sqrDist;
 	idcs.resize(k);
@@ -321,8 +325,21 @@ KeyFrame* Map::getNearestKeyFrame (const float &x, const float &y, const float &
 	int r = kfOctree->nearestKSearch(queryPoint, k, idcs, sqrDist);
 	if (r==0)
 		return NULL;
-	KeyFrame *kfn = kfCloud->at(idcs[0]).kf;
-	return kfn;
+
+	for (auto ip: idcs) {
+		float dirx, diry, dirz, cosT;
+		KeyFrame *ckf = kfCloud->at(ip).kf;
+		ckf->getDirectionVector(dirx, diry, dirz);
+		cosT = dirx*fdir_x + diry*fdir_y + dirz*fdir_z;
+		if (cosT <= 0.86)
+			continue;
+		else
+			return ckf;
+	}
+
+	return NULL;
+//	KeyFrame *kfn = kfCloud->at(idcs[0]).kf;
+//	return kfn;
 }
 
 

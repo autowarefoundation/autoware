@@ -206,12 +206,12 @@ class Pose :
         # XXX: I know this is Wrong
 #         if pMin is None or pMax is None:
 #             return 1000
-#         if pMax is None:
-#             return doMeasureDistance(self, pMin, useZ)
-#         if pMin is None:
-#             return doMeasureDistance(self, pMax, useZ)
-        if (pMin is None) or (pMax is None) :
-            return -2.0
+        if pMax is None:
+            return doMeasureDistance(self, pMin, useZ)
+        if pMin is None:
+            return doMeasureDistance(self, pMax, useZ)
+#         if (pMin is None) or (pMax is None) :
+#             return -2.0
 
         pointChk, c = ClosestPointInLine(pMin, pMax, self, True)
         
@@ -221,11 +221,11 @@ class Pose :
         
         # Bad case
         elif c<0.0:
-#             return doMeasureDistance(pMin, self, useZ)
-            return -3.0
+            return doMeasureDistance(pMin, self, useZ)
+#             return -3.0
         else:
-#             return doMeasureDistance(pMax, self, useZ)
-            return -4.0                
+            return doMeasureDistance(pMax, self, useZ)
+#             return -4.0
 
 
 class PoseTable :
@@ -452,17 +452,21 @@ class PoseTable :
         #topicInfo = bagsrc.get_type_and_topic_info('/tf')
         i = 0
         bagRecord = PoseTable ()
-        for topic, msg, timestamp in bagsrc.read_messages('/tf') :
+        # Message timestamp is what recorded by `rosbag record'
+        # Transform timestamp is what reported by publisher
+        for topic, msg, msgTimestamp in bagsrc.read_messages('/tf') :
             transform = msg.transforms[0].transform
             header = msg.transforms[0].header
+            tfTimestamp = header.stamp
             child_frame_id = msg.transforms[0].child_frame_id
             if (sourceFrameName!=None and targetFrameName!=None) :
                 if header.frame_id!=sourceFrameName or child_frame_id!=targetFrameName :
                     continue
-            pose = Pose (timestamp.to_sec(), 
+            pose = Pose (tfTimestamp.to_sec(), 
                 transform.translation.x, transform.translation.y, transform.translation.z,
                 transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w)
             pose.counter = i
+            pose.msgTimestamp = msgTimestamp.to_sec()
             bagRecord[i] = pose 
             i += 1
         return bagRecord
@@ -639,7 +643,7 @@ class PoseTable :
         return blankDistFront + blankDistMid + blankDistRear
         
 
-    def saveToBag (self, bagFileName, parentFrame, childFrame):
+    def saveToBag (self, bagFileName, parentFrame, childFrame, append=False):
         from tf2_msgs.msg import TFMessage
         from std_msgs.msg import Header
         from geometry_msgs.msg import Transform, TransformStamped, Vector3, Quaternion
@@ -659,11 +663,15 @@ class PoseTable :
                 w=pose.qw)
             return tfmsg
 
-        bagfile = rosbag.Bag(bagFileName, mode='w')
+        bagfile = None
+        if (append==False):
+            bagfile = rosbag.Bag(bagFileName, mode='w')
+        else :
+            bagfile = rosbag.Bag(bagFileName, mode='a')
         i = 0
         for pose in self.table:
             tfmsg = create_tf_message(pose)
-            bagfile.write('/tf', tfmsg, t=tfmsg.transforms[0].header.stamp)
+            bagfile.write('/tf', tfmsg, t=rospy.Time.from_sec(pose.msgTimestamp))
             print ("{} / {}".format(i, len(self.table)))
             i+=1
         bagfile.close()
@@ -821,6 +829,25 @@ def OrbFixOffline (orbLocalisationBagFilename, mapCsv):
     
 
 
+# Custom bag reader class
+class BagReader (rosbag.Bag):
+    
+    def __init__ (self, bagpath, topicname=None):
+        super(BagReader, self).__init__(bagpath, 'r')
+        self.rTopicName = topicname
+        
+    def readByTime (self, second):
+        rtm = rospy.Time.from_sec(second)
+        if self.rTopicName is not None:
+            for topic,msg,time in self.read_messages(topics=self.rTopicName, start_time=rtm):
+                if msg is None:
+                    raise KeyError("Message not found in that time")
+                return copy(msg)
+    
+    def readByCount (self, counter):
+        pass
+
+
 def formatResultAsRecords (resultMat):
     records = PoseTable()
     for r in range(len(resultMat)) :
@@ -847,8 +874,8 @@ def readMessage (bag, topic, timestamp):
 
 
 if __name__ == '__main__' :
-    groundTruth = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/groundTruth.bag')
-    groundTruth.increaseTimeResolution(2)
+    imageList = BagReader ('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map2/resultz.bag', '/orbslamdebug/compressed')
+    msg = imageList.readByTime(1454648393.2110474)
 #     testmap1 = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map1/slowrate.bag', '/ORB_SLAM/World', '/ORB_SLAM/ExtCamera')
 #     testpose = testmap1[19333]
 #     erz = testpose.measureErrorLateral (groundTruth, timeTolerance=0.25)

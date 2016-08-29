@@ -27,6 +27,9 @@
 #include <tf/transform_listener.h>
 #include <thread>
 
+// I Know this is unstable
+#include <tf2_msgs/TFMessage.h>
+#include <orb_localizer/debug.h>
 
 using namespace std;
 using ORB_SLAM2::KeyFrame;
@@ -36,7 +39,7 @@ using ORB_SLAM2::Frame;
 class ImageGrabber
 {
 public:
-	ImageGrabber(ORB_SLAM2::System* pSLAM, bool runOffline=false);
+	ImageGrabber(ORB_SLAM2::System* pSLAM, ros::NodeHandle *nh, bool runOffline=false);
 	~ImageGrabber ();
 
     void GrabImage(const sensor_msgs::ImageConstPtr& msg);
@@ -45,6 +48,7 @@ public:
     void externalLocalizerGrab ();
 
     ORB_SLAM2::System* mpSLAM;
+    ros::NodeHandle *rosNode;
 
     // External localization
     tf::TransformBroadcaster *mTfBr;
@@ -66,63 +70,34 @@ public:
 		const tf::Transform &tfOrbMap, const tf::Transform &tfOrbMapOffset,
     	const tf::Transform &realMapPose, const tf::Transform &realMapOffset);
 
+    static tf::Transform localizeByReference (const tf::Transform &tfOrb, ORB_SLAM2::Map *mapsrc, const int offsetNum);
 
-	static inline tf::Transform getKeyFrameExtPose (const KeyFrame *kf)
-	{
-		tf::Transform Ext;
-		Ext.setOrigin (tf::Vector3(
-			kf->extPosition.at<double>(0),
-			kf->extPosition.at<double>(1),
-			kf->extPosition.at<double>(2) ));
-		Ext.setRotation(tf::Quaternion(
-			kf->extOrientation.at<double>(0),
-			kf->extOrientation.at<double>(1),
-			kf->extOrientation.at<double>(2),
-			kf->extOrientation.at<double>(3) ));
-		return Ext;
-	}
+	static tf::Transform getKeyFrameExtPose (const KeyFrame *kf);
 
+	static tf::Transform KeyFramePoseToTf (KeyFrame *kf);
 
-	static inline tf::Transform KeyFramePoseToTf (KeyFrame *kf)
-	{
-		tf::Transform kfpose;
+	static tf::Transform FramePose (Frame *cframe);
 
-		cv::Mat t = kf->GetCameraCenter();
-		cv::Mat orient = kf->GetRotation().t();
-		vector<float> q = ORB_SLAM2::Converter::toQuaternion(orient);
+	static cv::Vec3d tfToCv (const tf::Vector3 &pos);
 
-		kfpose.setOrigin(tf::Vector3(t.at<float>(0), t.at<float>(1), t.at<float>(2)));
-		kfpose.setRotation(tf::Quaternion(q[0], q[1], q[2], q[3]));
+	static cv::Mat tfToCv (const tf::Transform &tfsrc);
 
-		return kfpose;
-	}
-
-
-	static inline tf::Transform FramePose (Frame *cframe)
-	{
-		cv::Mat Rwc = cframe->mTcw.rowRange(0,3).colRange(0,3).t();
-		cv::Mat twc = -Rwc * cframe->mTcw.rowRange(0,3).col(3);
-		tf::Matrix3x3 M(Rwc.at<float>(0,0),Rwc.at<float>(0,1),Rwc.at<float>(0,2),
-						Rwc.at<float>(1,0),Rwc.at<float>(1,1),Rwc.at<float>(1,2),
-						Rwc.at<float>(2,0),Rwc.at<float>(2,1),Rwc.at<float>(2,2));
-		tf::Vector3 V(twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
-
-		return tf::Transform(M, V);
-	}
-
-
-	static inline cv::Vec3d tfToCv (const tf::Vector3 &pos)
-	{
-		cv::Vec3d cvVec;
-		cvVec[0] = pos.x();
-		cvVec[1] = pos.y();
-		cvVec[2] = pos.z();
-		return cvVec;
-	}
+	// I Know this is unstable
+	static tf2_msgs::TFMessage createTfMessage (const tf::Transform &srcTransform, const string &frameSrc, const string &frameTarget, double timestamp);
 
 
 	// Logging
-	fstream logFd;
+	image_transport::ImageTransport *imageTransport;
+	image_transport::Publisher visualDebugView;
+	ros::Publisher debugMsgPublisher;
+
+	cv::Mat framebufferDebug;
+	uint32_t lastKeyframeId;
+	double cputimeDebug;
+	double lastImageTimestamp;
+
+private:
+	void publishDebug ();
 };
 
 

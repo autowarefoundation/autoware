@@ -307,7 +307,8 @@ void Tracking::Track()
         else
             MonocularInitialization();
 
-        mpFrameDrawer->Update(this);
+        if (mpFrameDrawer != NULL)
+        	mpFrameDrawer->Update(this);
 
         if(mState!=OK)
             return;
@@ -444,7 +445,8 @@ void Tracking::Track()
             mState=LOST;
 
         // Update drawer
-        mpFrameDrawer->Update(this);
+        if (mpFrameDrawer != NULL)
+        	mpFrameDrawer->Update(this);
 
         // If tracking were good, check if we insert a keyframe
         if(bOK)
@@ -460,7 +462,8 @@ void Tracking::Track()
             else
                 mVelocity = cv::Mat();
 
-            mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.mTcw);
+            if (mpMapDrawer != NULL)
+            	mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.mTcw);
 
             // Clean temporal point matches
             for(int i=0; i<mCurrentFrame.N; i++)
@@ -484,13 +487,10 @@ void Tracking::Track()
 
             // Check if we need to insert a new keyframe
             if(NeedNewKeyFrame()) {
-#ifdef DEBUG_TRACKING
-            	cout << "XXX: Keyframe creation" << endl;
-#endif
                 CreateNewKeyFrame();
             }
 
-            // We allow points with high innovation (considererd outliers by the Huber Function)
+            // We allow points with high innovation (considered outliers by the Huber Function)
             // pass to the new keyframe, so that bundle adjustment will finally decide
             // if they are outliers or not. We don't want next frame to estimate its position
             // with those points so we discard them in the frame.
@@ -521,11 +521,15 @@ void Tracking::Track()
     // Store frame pose information to retrieve the complete camera trajectory afterwards.
     if(!mCurrentFrame.mTcw.empty())
     {
-        cv::Mat Tcr = mCurrentFrame.mTcw*mCurrentFrame.mpReferenceKF->GetPoseInverse();
-        mlRelativeFramePoses.push_back(Tcr);
-        mlpReferences.push_back(mpReferenceKF);
-        mlFrameTimes.push_back(mCurrentFrame.mTimeStamp);
-        mlbLost.push_back(mState==LOST);
+    	// XXX: We found some occurences of empty pose from mpReferenceKF
+		if (mCurrentFrame.mpReferenceKF->GetPose().empty()==true)
+			cout << "XXX: KF pose is empty" << endl;
+		cv::Mat Tcr = mCurrentFrame.mTcw*mCurrentFrame.mpReferenceKF->GetPoseInverse();
+//		cout << mCurrentFrame.mpReferenceKF << endl;
+		mlRelativeFramePoses.push_back(Tcr);
+		mlpReferences.push_back(mpReferenceKF);
+		mlFrameTimes.push_back(mCurrentFrame.mTimeStamp);
+		mlbLost.push_back(mState==LOST);
     }
     else
     {
@@ -1597,6 +1601,8 @@ bool Tracking::Relocalization()
                 if(nGood>=50)
                 {
                     bMatch = true;
+//                    cout << "Relocalization successful" << endl;
+//                    mpReferenceKF = vpCandidateKFs[i];
                     break;
                 }
             }

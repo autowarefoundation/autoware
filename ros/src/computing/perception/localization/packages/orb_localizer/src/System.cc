@@ -206,22 +206,10 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     }
     }
 
-    return mpTracker->GrabImageMonocular(im,timestamp);
+    cv::Mat camPosOrb = mpTracker->GrabImageMonocular(im,timestamp);
+    return camPosOrb;
 }
 
-//void System::ActivateLocalizationMode()
-//{
-//    unique_lock<mutex> lock(mMutexMode);
-//    mbActivateLocalizationMode = true;
-//    mpTracker->InformOnlyTracking(true);
-//}
-//
-//void System::DeactivateLocalizationMode()
-//{
-//    unique_lock<mutex> lock(mMutexMode);
-//    mbDeactivateLocalizationMode = true;
-//    mpTracker->InformOnlyTracking(false);
-//}
 
 void System::Reset()
 {
@@ -229,12 +217,14 @@ void System::Reset()
     mbReset = true;
 }
 
+
 void System::Shutdown()
 {
-	mpViewer->RequestFinish();
 
 	// Wait until all thread have effectively stopped
 	if (opMode==System::MAPPING) {
+
+		mpViewer->RequestFinish();
 
 		mpLocalMapper->RequestFinish();
 		mpLoopCloser->RequestFinish();
@@ -249,17 +239,14 @@ void System::Shutdown()
 			mpMap->saveToDisk(mapFileName, mpKeyFrameDatabase);
 		} catch (...) {}
 
-	}
-
-	// Localization
-	else {
 		while (!mpViewer->isFinished())
 			usleep (5000);
+
+		pangolin::BindToContext("ORB-SLAM2: Map Viewer");
 	}
 
-    pangolin::BindToContext("ORB-SLAM2: Map Viewer");
-
 }
+
 
 void System::SaveTrajectoryTUM(const string &filename)
 {

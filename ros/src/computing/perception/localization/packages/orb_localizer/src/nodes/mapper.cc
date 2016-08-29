@@ -39,17 +39,18 @@ int main(int argc, char **argv)
 	string myname (basename(argv[0]));
 	ORB_SLAM2::System::operationMode opMode;
 	// Which name was we called by ?
-	if (myname.compare(myname.size()-6, 6, "mapper")==0) {
+	if (myname.compare(myname.size()-7, 7, "mapping")==0) {
 		opMode = ORB_SLAM2::System::MAPPING;
 		cout << "Mode: Mapper" << endl;
 	}
-	else {
+	else {  // == "matching"
 		opMode = ORB_SLAM2::System::LOCALIZATION;
 		cout << "Mode: Localizer" << endl;
 	}
 
     ros::init(argc, argv, "orb_slam_mapper");
     ros::start();
+    ros::NodeHandle nodeHandler;
 
     if(argc < 2)
     {
@@ -63,17 +64,21 @@ int main(int argc, char **argv)
 
     // This macro should be set by Cmake
     string orbVocabFile (ORB_SLAM_VOCABULARY);
-    ORB_SLAM2::System SLAM(orbVocabFile,argv[1],ORB_SLAM2::System::MONOCULAR,true, mapPath,
+    const bool useVisualization = opMode==ORB_SLAM2::System::MAPPING ? true : false;
+    ORB_SLAM2::System SLAM(orbVocabFile,
+    	argv[1],
+		ORB_SLAM2::System::MONOCULAR,
+		useVisualization,
+		mapPath,
     	opMode);
 
     std::thread* tExtLocalizer;
-    ImageGrabber igb(&SLAM);
+    ImageGrabber igb(&SLAM, &nodeHandler);
     if (opMode==ORB_SLAM2::System::MAPPING)
     	tExtLocalizer = new std::thread (&ImageGrabber::externalLocalizerGrab, &igb);
     else
     	tExtLocalizer = NULL;
 
-    ros::NodeHandle nodeHandler;
     image_transport::TransportHints th;
     if ((int)SLAM.fsSettings["Camera.compressed"]==0) {
     	th = image_transport::TransportHints ("raw");
@@ -82,7 +87,7 @@ int main(int argc, char **argv)
     	th = image_transport::TransportHints ("compressed");
     }
     image_transport::ImageTransport it (nodeHandler);
-    image_transport::Subscriber sub = it.subscribe ((string)SLAM.fsSettings["Camera.topic"], 100, &ImageGrabber::GrabImage, &igb, th);
+    image_transport::Subscriber sub = it.subscribe ((string)SLAM.fsSettings["Camera.topic"], 1, &ImageGrabber::GrabImage, &igb, th);
 
     cout << endl << "Mono Camera topic: " << (string)SLAM.fsSettings["Camera.topic"] << endl;
     cout << "Compressed images? " << ((int)SLAM.fsSettings["Camera.compressed"]==1 ? "True" : "False") << endl;

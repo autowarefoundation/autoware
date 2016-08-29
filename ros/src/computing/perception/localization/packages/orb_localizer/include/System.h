@@ -135,6 +135,7 @@ public:
     Map* getMap() { return mpMap; }
     LoopClosing* getLoopCloser() { return mpLoopCloser; }
     LocalMapping* getLocalMapper() { return mpLocalMapper; }
+    FrameDrawer* getFrameDrawer() { return mpFrameDrawer; }
 
     const operationMode opMode;
 

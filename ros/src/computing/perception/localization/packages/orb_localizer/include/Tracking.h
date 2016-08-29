@@ -137,6 +137,9 @@ public:
 
     trackingMode lastTrackingMode;
 
+    bool trackingIsGood() const
+    {return mLastProcessedState==ORB_SLAM2::Tracking::OK and !mCurrentFrame.mTcw.empty(); }
+
 protected:
 
     // Main tracking function. It is independent of the input sensor.

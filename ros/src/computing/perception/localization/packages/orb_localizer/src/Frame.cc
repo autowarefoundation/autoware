@@ -679,4 +679,10 @@ cv::Mat Frame::UnprojectStereo(const int &i)
         return cv::Mat();
 }
 
+
+void Frame::getDirectionVector (float &dirX, float &dirY, float &dirZ)
+{
+
+}
+
 } //namespace ORB_SLAM

@@ -48,12 +48,15 @@ public:
     // Draw last processed frame.
     cv::Mat DrawFrame();
 
+    inline cv::Mat getLastFrame ()
+    { return workingFrame; }
+
 protected:
 
     void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);
 
     // Info of the frame to be drawn
-    cv::Mat mIm;
+    cv::Mat mIm, workingFrame;
     int N;
     vector<cv::KeyPoint> mvCurrentKeys;
     vector<bool> mvbMap, mvbVO;

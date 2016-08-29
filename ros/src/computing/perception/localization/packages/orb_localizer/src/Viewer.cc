@@ -132,8 +132,11 @@ void Viewer::Run()
 
         pangolin::FinishFrame();
 
-        cv::Mat im = mpFrameDrawer->DrawFrame();
-        cv::imshow(mapViewTitle, im);
+        mpFrameDrawer->DrawFrame();
+        cv::Mat im = mpFrameDrawer->getLastFrame();
+        if (im.empty() == false) {
+        	cv::imshow(mapViewTitle, im);
+        }
         cv::waitKey(mT);
 
         if(menuReset and modeLocalization==false)
