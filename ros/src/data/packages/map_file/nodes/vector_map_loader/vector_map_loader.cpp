@@ -31,8 +31,9 @@
 #include <ros/console.h>
 #include <std_msgs/Bool.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <tf/transform_datatypes.h>
 #include <vector_map/vector_map.h>
+#include <map_file/get_file.h>
+#include <sys/stat.h>
 
 using vector_map::VectorMap;
 using vector_map::Category;
@@ -104,6 +105,9 @@ using vector_map::WallArray;
 using vector_map::FenceArray;
 using vector_map::RailCrossingArray;
 
+using vector_map::convertPointToGeomPoint;
+using vector_map::convertVectorToGeomQuaternion;
+
 namespace
 {
 enum Color : int
@@ -135,29 +139,6 @@ U createObjectArray(const std::string& file_path)
   obj_array.header.frame_id = "map";
   obj_array.data = vector_map::parse<T>(file_path);
   return obj_array;
-}
-
-double convertDegreeToRadian(double degree)
-{
-  return (degree * M_PI) / 180;
-}
-
-geometry_msgs::Point createGeomPoint(const Point& point)
-{
-  geometry_msgs::Point geom_point;
-  // NOTE: Autwoare use Japan Plane Rectangular Coordinate System.
-  // Therefore we swap x and y axis.
-  geom_point.x = point.ly;
-  geom_point.y = point.bx;
-  geom_point.z = point.h;
-  return geom_point;
-}
-
-geometry_msgs::Quaternion createGeomQuaternion(const Vector& vector)
-{
-  double pitch = convertDegreeToRadian(vector.vang - 90); // convert vertical angle to pitch
-  double yaw = convertDegreeToRadian(-vector.hang + 90); // convert horizontal angle to yaw
-  return tf::createQuaternionMsgFromRollPitchYaw(0, pitch, yaw);
 }
 
 std_msgs::ColorRGBA createColorRGBA(Color color)
@@ -234,7 +215,7 @@ std_msgs::ColorRGBA createColorRGBA(Color color)
     color_rgba.b = 1.0;
     break;
   default:
-    ROS_ERROR_STREAM("unknown color: " << color);
+    ROS_ERROR_STREAM("invalid color: " << color);
     color_rgba.a = 0.0; // hide color from view
     break;
   }
@@ -279,8 +260,8 @@ visualization_msgs::Marker createPointMarker(const std::string& ns, int id, Colo
   if (point.pid == 0)
     return marker;
 
-  marker.pose.position = createGeomPoint(point);
-  marker.pose.orientation = createGeomQuaternion(Vector());
+  marker.pose.position = convertPointToGeomPoint(point);
+  marker.pose.orientation = convertVectorToGeomQuaternion(Vector());
   marker.scale.x = 0.08;
   marker.scale.y = 0.08;
   marker.scale.z = 0.08;
@@ -301,8 +282,8 @@ visualization_msgs::Marker createVectorMarker(const std::string& ns, int id, Col
   if (point.pid == 0)
     return marker;
 
-  marker.pose.position = createGeomPoint(point);
-  marker.pose.orientation = createGeomQuaternion(vector);
+  marker.pose.position = convertPointToGeomPoint(point);
+  marker.pose.orientation = convertVectorToGeomQuaternion(vector);
   marker.scale.x = 0.64;
   marker.scale.y = 0.08;
   marker.scale.z = 0.08;
@@ -327,8 +308,8 @@ visualization_msgs::Marker createLineMarker(const std::string& ns, int id, Color
   if (fp.pid == 0)
     return marker;
 
-  marker.points.push_back(createGeomPoint(bp));
-  marker.points.push_back(createGeomPoint(fp));
+  marker.points.push_back(convertPointToGeomPoint(bp));
+  marker.points.push_back(convertPointToGeomPoint(fp));
 
   marker.scale.x = 0.08;
   marker.scale.y = 0.0;
@@ -358,8 +339,8 @@ visualization_msgs::Marker createLinkedLineMarker(const std::string& ns, int id,
     if (fp.pid == 0)
       return marker;
 
-    marker.points.push_back(createGeomPoint(bp));
-    marker.points.push_back(createGeomPoint(fp));
+    marker.points.push_back(convertPointToGeomPoint(bp));
+    marker.points.push_back(convertPointToGeomPoint(fp));
 
     line = vmap.findByKey(Key<Line>(line.flid));
     if (line.lid == 0)
@@ -374,8 +355,8 @@ visualization_msgs::Marker createLinkedLineMarker(const std::string& ns, int id,
   if (fp.pid == 0)
     return marker;
 
-  marker.points.push_back(createGeomPoint(bp));
-  marker.points.push_back(createGeomPoint(fp));
+  marker.points.push_back(convertPointToGeomPoint(bp));
+  marker.points.push_back(convertPointToGeomPoint(fp));
 
   marker.scale.x = 0.08;
   marker.scale.y = 0.0;
@@ -409,7 +390,7 @@ visualization_msgs::Marker createPoleMarker(const std::string& ns, int id, Color
   // XXX: The following conditions are workaround for pole.csv of Nagoya University's campus.
   if (pole.length == 0 || pole.dim == 0)
   {
-    ROS_ERROR_STREAM("bad format pole: " << pole);
+    ROS_ERROR_STREAM("wrong format pole: " << pole);
     return marker;
   }
 
@@ -419,7 +400,7 @@ visualization_msgs::Marker createPoleMarker(const std::string& ns, int id, Color
   // XXX: The visualization_msgs::Marker::CYLINDER is difficult to display other than vertical pole.
   if (vector.vang != 0)
   {
-    ROS_ERROR_STREAM("bad format vector: " << vector);
+    ROS_ERROR_STREAM("wrong format vector: " << vector);
     return marker;
   }
 
@@ -427,11 +408,11 @@ visualization_msgs::Marker createPoleMarker(const std::string& ns, int id, Color
   if (point.pid == 0)
     return marker;
 
-  geometry_msgs::Point geom_point = createGeomPoint(point);
+  geometry_msgs::Point geom_point = convertPointToGeomPoint(point);
   geom_point.z += pole.length / 2;
   marker.pose.position = geom_point;
   vector.vang -= 90;
-  marker.pose.orientation = createGeomQuaternion(vector);
+  marker.pose.orientation = convertVectorToGeomQuaternion(vector);
   marker.scale.x = pole.dim;
   marker.scale.y = pole.dim;
   marker.scale.z = pole.length;
@@ -465,10 +446,10 @@ visualization_msgs::Marker createBoxMarker(const std::string& ns, int id, Color 
     return marker;
 
   std::vector<geometry_msgs::Point> bottom_points(4);
-  bottom_points[0] = createGeomPoint(p1);
-  bottom_points[1] = createGeomPoint(p2);
-  bottom_points[2] = createGeomPoint(p3);
-  bottom_points[3] = createGeomPoint(p4);
+  bottom_points[0] = convertPointToGeomPoint(p1);
+  bottom_points[1] = convertPointToGeomPoint(p2);
+  bottom_points[2] = convertPointToGeomPoint(p3);
+  bottom_points[3] = convertPointToGeomPoint(p4);
 
   std::vector<geometry_msgs::Point> top_points(4);
   for (size_t i = 0; i < 4; ++i)
@@ -511,6 +492,11 @@ visualization_msgs::Marker createBoxMarker(const std::string& ns, int id, Color 
 
   enableMarker(marker);
   return marker;
+}
+
+void insertMarkerArray(visualization_msgs::MarkerArray& a1, const visualization_msgs::MarkerArray& a2)
+{
+  a1.markers.insert(a1.markers.end(), a2.markers.begin(), a2.markers.end());
 }
 
 visualization_msgs::MarkerArray createRoadEdgeMarkerArray(const VectorMap& vmap, Color color)
@@ -1041,6 +1027,12 @@ visualization_msgs::MarkerArray createRailCrossingMarkerArray(const VectorMap& v
   return marker_array;
 }
 
+bool isDownloaded(const std::string& local_path)
+{
+  struct stat st;
+  return stat(local_path.c_str(), &st) == 0;
+}
+
 void printUsage()
 {
   ROS_ERROR_STREAM("Usage:");
@@ -1110,7 +1102,80 @@ int main(int argc, char **argv)
   std::vector<std::string> file_paths;
   if (mode == "download")
   {
-    ; // XXX: This version of Autoware don't support map download function now.
+    std::string host_name;
+    nh.param<std::string>("vector_map_loader/host_name", host_name, HTTP_HOSTNAME);
+    int port;
+    nh.param<int>("vector_map_loader/port", port, HTTP_PORT);
+    std::string user;
+    nh.param<std::string>("vector_map_loader/user", user, HTTP_USER);
+    std::string password;
+    nh.param<std::string>("vector_map_loader/password", password, HTTP_PASSWORD);
+    GetFile gf = GetFile(host_name, port, user, password);
+
+    std::string remote_path = "/data/map";
+    int x = std::atoi(argv[2]);
+    int y = std::atoi(argv[3]);
+    x -= x % 1000 + 1000;
+    y -= y % 1000 + 1000;
+    remote_path += std::to_string(x) + "/" + std::to_string(y) + "/vector";
+
+    std::string local_path = "/tmp" + remote_path;
+    if (!isDownloaded(local_path))
+    {
+      std::istringstream iss(remote_path);
+      std::string column;
+      std::getline(iss, column, '/');
+      std::string mkdir_path = "/tmp";
+      while (std::getline(iss, column, '/'))
+      {
+        mkdir_path += "/" + column;
+        mkdir(mkdir_path.c_str(), 0755);
+      }
+    }
+
+    std::vector<std::string> file_names
+    {
+      "idx.csv",
+      "point.csv",
+      "vector.csv",
+      "line.csv",
+      "area.csv",
+      "pole.csv",
+      "box.csv",
+      "dtlane.csv",
+      "node.csv",
+      "lane.csv",
+      "wayarea.csv",
+      "roadedge.csv",
+      "gutter.csv",
+      "curb.csv",
+      "whiteline.csv",
+      "stopline.csv",
+      "zebrazone.csv",
+      "crosswalk.csv",
+      "road_surface_mark.csv",
+      "poledata.csv",
+      "roadsign.csv",
+      "signaldata.csv",
+      "streetlight.csv",
+      "utilitypole.csv",
+      "guardrail.csv",
+      "sidewalk.csv",
+      "driveon_portion.csv",
+      "intersection.csv",
+      "sidestrip.csv",
+      "curvemirror.csv",
+      "wall.csv",
+      "fence.csv",
+      "railroad_crossing.csv"
+    };
+    for (const auto& file_name : file_names)
+    {
+      if (gf.GetHTTPFile(remote_path + "/" + file_name) == 0)
+        file_paths.push_back("/tmp" + remote_path + "/" + file_name);
+      else
+        ROS_ERROR_STREAM("download failure: " << remote_path + "/" + file_name);
+    }
   }
   else
   {
@@ -1122,7 +1187,7 @@ int main(int argc, char **argv)
   }
 
   vector_map::category_t category = Category::NONE;
-  for (const auto& file_path: file_paths)
+  for (const auto& file_path : file_paths)
   {
     std::string file_name(basename(file_path.c_str()));
     if (file_name == "idx.csv")
@@ -1296,28 +1361,30 @@ int main(int argc, char **argv)
   VectorMap vmap;
   vmap.subscribe(nh, category);
 
-  marker_array_pub.publish(createRoadEdgeMarkerArray(vmap, GRAY));
-  marker_array_pub.publish(createGutterMarkerArray(vmap, GRAY, GRAY, GRAY));
-  marker_array_pub.publish(createCurbMarkerArray(vmap, GRAY));
-  marker_array_pub.publish(createWhiteLineMarkerArray(vmap, WHITE, YELLOW));
-  marker_array_pub.publish(createStopLineMarkerArray(vmap, WHITE));
-  marker_array_pub.publish(createZebraZoneMarkerArray(vmap, WHITE));
-  marker_array_pub.publish(createCrossWalkMarkerArray(vmap, WHITE));
-  marker_array_pub.publish(createRoadMarkMarkerArray(vmap, WHITE));
-  marker_array_pub.publish(createRoadPoleMarkerArray(vmap, GRAY));
-  marker_array_pub.publish(createRoadSignMarkerArray(vmap, GREEN, GRAY));
-  marker_array_pub.publish(createSignalMarkerArray(vmap, RED, BLUE, YELLOW, CYAN, GRAY));
-  marker_array_pub.publish(createStreetLightMarkerArray(vmap, YELLOW, GRAY));
-  marker_array_pub.publish(createUtilityPoleMarkerArray(vmap, GRAY));
-  marker_array_pub.publish(createGuardRailMarkerArray(vmap, LIGHT_BLUE));
-  marker_array_pub.publish(createSideWalkMarkerArray(vmap, GRAY));
-  marker_array_pub.publish(createDriveOnPortionMarkerArray(vmap, LIGHT_CYAN));
-  marker_array_pub.publish(createCrossRoadMarkerArray(vmap, LIGHT_GREEN));
-  marker_array_pub.publish(createSideStripMarkerArray(vmap, GRAY));
-  marker_array_pub.publish(createCurveMirrorMarkerArray(vmap, MAGENTA, GRAY));
-  marker_array_pub.publish(createWallMarkerArray(vmap, LIGHT_YELLOW));
-  marker_array_pub.publish(createFenceMarkerArray(vmap, LIGHT_RED));
-  marker_array_pub.publish(createRailCrossingMarkerArray(vmap, LIGHT_MAGENTA));
+  visualization_msgs::MarkerArray marker_array;
+  insertMarkerArray(marker_array, createRoadEdgeMarkerArray(vmap, GRAY));
+  insertMarkerArray(marker_array, createGutterMarkerArray(vmap, GRAY, GRAY, GRAY));
+  insertMarkerArray(marker_array, createCurbMarkerArray(vmap, GRAY));
+  insertMarkerArray(marker_array, createWhiteLineMarkerArray(vmap, WHITE, YELLOW));
+  insertMarkerArray(marker_array, createStopLineMarkerArray(vmap, WHITE));
+  insertMarkerArray(marker_array, createZebraZoneMarkerArray(vmap, WHITE));
+  insertMarkerArray(marker_array, createCrossWalkMarkerArray(vmap, WHITE));
+  insertMarkerArray(marker_array, createRoadMarkMarkerArray(vmap, WHITE));
+  insertMarkerArray(marker_array, createRoadPoleMarkerArray(vmap, GRAY));
+  insertMarkerArray(marker_array, createRoadSignMarkerArray(vmap, GREEN, GRAY));
+  insertMarkerArray(marker_array, createSignalMarkerArray(vmap, RED, BLUE, YELLOW, CYAN, GRAY));
+  insertMarkerArray(marker_array, createStreetLightMarkerArray(vmap, YELLOW, GRAY));
+  insertMarkerArray(marker_array, createUtilityPoleMarkerArray(vmap, GRAY));
+  insertMarkerArray(marker_array, createGuardRailMarkerArray(vmap, LIGHT_BLUE));
+  insertMarkerArray(marker_array, createSideWalkMarkerArray(vmap, GRAY));
+  insertMarkerArray(marker_array, createDriveOnPortionMarkerArray(vmap, LIGHT_CYAN));
+  insertMarkerArray(marker_array, createCrossRoadMarkerArray(vmap, LIGHT_GREEN));
+  insertMarkerArray(marker_array, createSideStripMarkerArray(vmap, GRAY));
+  insertMarkerArray(marker_array, createCurveMirrorMarkerArray(vmap, MAGENTA, GRAY));
+  insertMarkerArray(marker_array, createWallMarkerArray(vmap, LIGHT_YELLOW));
+  insertMarkerArray(marker_array, createFenceMarkerArray(vmap, LIGHT_RED));
+  insertMarkerArray(marker_array, createRailCrossingMarkerArray(vmap, LIGHT_MAGENTA));
+  marker_array_pub.publish(marker_array);
 
   stat.data = true;
   stat_pub.publish(stat);
