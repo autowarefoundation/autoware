@@ -16,7 +16,7 @@ namespace UtilityHNS
 {
 
 std::string DataRW::LoggingMainfolderName 	= "/SimuLogs/";
-std::string DataRW::ControlLogFolderName 	= "ControlLog/";
+std::string DataRW::ControlLogFolderName 	= "ControlLogs/";
 std::string DataRW::PathLogFolderName 		= "GeneratedTrajectories/";
 std::string DataRW::StatesLogFolderName 	= "BehaviorsGenerated/";
 std::string DataRW::SimulationFolderName 	= "SimulationData/";
