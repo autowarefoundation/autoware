@@ -17,7 +17,7 @@
 	<arg name="followDistance" 				default="3.0" />
 	<arg name="lowpassSteerCutoff" 			default="5.0" />
 	
-	<arg name="steerGainKP" 				default="0.02" />
+	<arg name="steerGainKP" 				default="0.9" />
 	<arg name="steerGainKI" 				default="0.0" />
 	<arg name="steerGainKD" 				default="0.0" />
 	

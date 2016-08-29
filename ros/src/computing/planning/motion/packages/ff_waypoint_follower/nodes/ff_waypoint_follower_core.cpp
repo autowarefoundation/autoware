@@ -379,6 +379,12 @@ void FFSteerControl::PlannerMainLoop()
 			}
 			else if(m_CmdParams.statusSource == SEGWAY_STATUS)
 			{
+				geometry_msgs::Vector3Stamped vehicle_status;
+				vehicle_status.header.stamp = ros::Time::now();
+				vehicle_status.vector.x = m_CurrVehicleStatus.steer;
+				vehicle_status.vector.y = m_CurrVehicleStatus.speed;
+				vehicle_status.vector.z = (int)m_CurrVehicleStatus.shift;
+				m_current_vehicle_status.publish(vehicle_status);
 			}
 			//----------------------------------------------------------------------------------------------//
 
