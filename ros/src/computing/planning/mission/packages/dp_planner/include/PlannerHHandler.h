@@ -55,6 +55,7 @@ protected:
 	PlannerHNS::WayPoint   m_OriginPoint;
 	std::vector<int> m_PredefinedPath;
 	PlannerHNS::PlanningParams m_PlanningParams;
+	SimulationNS::CAR_BASIC_INFO m_VehicleInfo;
 	PlannerHNS::PlannerH* m_pPlannerH;
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	struct timespec m_PlanningTimer;

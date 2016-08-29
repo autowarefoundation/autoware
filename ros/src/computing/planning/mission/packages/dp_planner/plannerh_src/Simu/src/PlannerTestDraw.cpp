@@ -66,9 +66,12 @@ PlannerTestDraw::PlannerTestDraw()
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
 	CAR_BASIC_INFO carInfo;
+	PlannerHNS::PlanningParams planning_params;
+	planning_params.microPlanDistance = 10;
+
 	carInfo.width = 1.9;
 	carInfo.length = 4.2;
-	m_State.Init(carInfo);
+	m_State.Init(planning_params, carInfo);
 	m_State.InitPolygons();
 
 	/**

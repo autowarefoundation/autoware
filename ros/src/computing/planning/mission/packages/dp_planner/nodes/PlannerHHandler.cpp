@@ -30,13 +30,13 @@ PlannerH_Handler::~PlannerH_Handler()
 
 void PlannerH_Handler::UpdateVehicleInfo(const double& width, const double& length, const double& wheelBase, const double& maxSteerAngle, const double& turningRadius)
 {
-	SimulationNS::CAR_BASIC_INFO carInfo;
-	carInfo.wheel_base = wheelBase;
-	carInfo.turning_radius = turningRadius;
-	carInfo.max_steer_angle = maxSteerAngle;
-	carInfo.width = width;
-	carInfo.length = length;
-	m_State.Init(carInfo);
+
+	m_VehicleInfo.wheel_base = wheelBase;
+	m_VehicleInfo.turning_radius = turningRadius;
+	m_VehicleInfo.max_steer_angle = maxSteerAngle;
+	m_VehicleInfo.width = width;
+	m_VehicleInfo.length = length;
+	m_State.Init(m_PlanningParams, m_VehicleInfo);
 }
 
 void PlannerH_Handler::UpdatePlanningParams(const AutowarePlanningParams& planningParams)
@@ -61,6 +61,8 @@ void PlannerH_Handler::UpdatePlanningParams(const AutowarePlanningParams& planni
 	m_PlanningParams.rollOutDensity 			= planningParams.rollOutDensity 			;
 	m_PlanningParams.rollOutNumber 				= planningParams.rollOutNumber 				;
 	m_PlanningParams.speedProfileFactor 		= planningParams.speedProfileFactor 		;
+
+	m_State.Init(m_PlanningParams, m_VehicleInfo);
 }
 
 void PlannerH_Handler::UpdateRoadMap(const AutowareRoadNetwork& map)
