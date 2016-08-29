@@ -182,7 +182,6 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 		tf::Transform tfTcw = FramePose(&cframe);
 		mTfBr->sendTransform(tf::StampedTransform(tfTcw, ros::Time(imageTime), "/ORB_SLAM/World", "/ORB_SLAM/Camera"));
 
-<<<<<<< HEAD
 //		 Here, we use offset of external localization from the keyframe
 		if (mpSLAM->getTracker()->mbOnlyTracking==true) {
 //			ORB_SLAM2::KeyFrame *kfRef = cframe.mpReferenceKF;
@@ -197,9 +196,6 @@ void ImageGrabber::GrabImage(const sensor_msgs::ImageConstPtr& msg)
 	} else {
 //		cout << "Got Lost" << endl;
 	}
-=======
-	} else { }
->>>>>>> 64f9754ad879ae78658631074702a9f3c897bbf6
 
 	rT2 = microsec_clock::local_time();
 	cputimeDebug = (rT2-rT1).total_microseconds() * 1e-6;
@@ -262,7 +258,6 @@ void ImageGrabber::externalLocalizerGrab()
 }
 
 
-<<<<<<< HEAD
 tf::Transform ImageGrabber::localizeByReference (const tf::Transform &tfOrb, ORB_SLAM2::KeyFrame *kf)
 {
 	lastKeyframeId = kf->mnId;
@@ -341,8 +336,6 @@ tf::Transform ImageGrabber::localizeByReference(const tf::Transform &tfOrb)
 	return localizeByReference (tfOrb, kfNear);
 }
 
-=======
->>>>>>> 64f9754ad879ae78658631074702a9f3c897bbf6
 
 tf::Transform ImageGrabber::localizeByReference(Frame *sframe)
 {

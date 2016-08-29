@@ -224,6 +224,10 @@ int main (int argc, char *argv[])
 				continue;
 			tf::Transform orbMapOff = fakeMap->orbMapAt(ptId);
 			tf::Transform realMapOff = fakeMap->realMapAt(ptId);
+			realPos = ImageGrabber::localizeByReference(
+				orbPos,
+				orbMapPos, orbMapOff,
+				realMapPos, realMapOff);
 		}
 		else {
 			KeyFrame *kfReference = SLAM.getMap()->getNearestKeyFrame(x, y, z),
