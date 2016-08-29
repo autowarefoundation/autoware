@@ -138,6 +138,8 @@ int main(int argc, char **argv)
 		params.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
 	else if(signalStr.compare("autoware") == 0)
 		params.statusSource = FFSteerControlNS::AUTOWARE_STATUS;
+	else if(signalStr.compare("segway") == 0)
+		params.statusSource = FFSteerControlNS::SEGWAY_STATUS;
 
 	string steerModeStr;
 	nh.getParam("/ff_waypoint_follower/steerMode", steerModeStr );
@@ -154,24 +156,24 @@ int main(int argc, char **argv)
 		params.bVelocityMode = false;
 
 	string mapRecStr;
-	nh.getParam("/ff_waypoint_follower/mapRecorder", mapRecStr );
-	if(mapRecStr.compare("0") == 0)
-		params.iMapping = 0;
-	else if(mapRecStr.compare("1") == 0)
-		params.iMapping = 1;
+	nh.getParam("/ff_waypoint_follower/mapRecorder", params.iMapping );
+//	if(mapRecStr.compare("0") == 0)
+//		params.iMapping = 0;
+//	else if(mapRecStr.compare("1") == 0)
+//		params.iMapping = 1;
 
 	string distanceStr;
-	nh.getParam("/ff_waypoint_follower/mapDistance", distanceStr );
-	params.recordDistance = atof(distanceStr.c_str());
+	nh.getParam("/ff_waypoint_follower/mapDistance", params.recordDistance );
+	//params.recordDistance = atof(distanceStr.c_str());
 
 	string densityStr;
-	nh.getParam("/ff_waypoint_follower/mapDistance", densityStr );
-	params.recordDensity = atof(densityStr.c_str());
+	nh.getParam("/ff_waypoint_follower/mapDensity", params.recordDensity );
+	//params.recordDensity = atof(densityStr.c_str());
 
 	cout << "Initialize Planning System .. " << sysStr << ", "
 			<< signalStr << "," << steerModeStr << ", "
-			<< driveModeStr << ", " << mapRecStr << ", "
-			<< distanceStr << ", " << densityStr << endl;
+			<< driveModeStr << ", " << params.iMapping << ", "
+			<< params.recordDistance << ", " << params.recordDensity << endl;
 
 
 	FFSteerControlNS::FFSteerControl controller_x(params);

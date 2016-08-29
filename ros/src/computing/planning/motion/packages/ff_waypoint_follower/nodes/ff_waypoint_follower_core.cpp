@@ -191,7 +191,7 @@ void FFSteerControl::callbackFromCurrentPose(const geometry_msgs::PoseStampedCon
 		m_CurrentPos = PlannerHNS::WayPoint(p.position.x, p.position.y
 				, p.position.z , tf::getYaw(p.orientation));
 
-		cout << "### Current Pose CallBaclk -> " << m_CurrentPos.pos.ToString() << endl;
+		//cout << "### Current Pose CallBaclk -> " << m_CurrentPos.pos.ToString() << endl;
 
 //	double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
 //	m_VehicleState.speed = distance/dt;
@@ -267,7 +267,7 @@ void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg
 //		m_segway_status.vector.y = msg->twist.twist.linear.x;
 //		m_segway_status.vector.z = (int)PlannerHNS::SHIFT_POS_DD;
 
-		std::cout << "### Current Status From Segway Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
+		//std::cout << "### Current Status From Segway Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
 	}
 //	else
 //	{
