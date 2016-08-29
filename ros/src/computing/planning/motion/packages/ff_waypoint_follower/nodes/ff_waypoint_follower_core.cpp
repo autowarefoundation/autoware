@@ -505,7 +505,7 @@ void FFSteerControl::PlannerMainLoop()
 				roadMap.roadSegments.push_back(segment);
 
 				ostringstream fileName;
-				fileName << "/home/hatem/SimuLogs/";
+				fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName;
 				fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
 				fileName << "_RoadNetwork.kml";
 				string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
