@@ -49,7 +49,7 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	ReadParamFromLaunchFile(m_CarInfo, m_ControlParams);
 
 	m_PredControl.Init(m_ControlParams, m_CarInfo);
-	m_State.Init(m_CarInfo);
+	m_State.Init(m_PlanningParams, m_CarInfo);
 
 	m_CmdParams = params;
 
@@ -147,6 +147,8 @@ void FFSteerControl::ReadParamFromLaunchFile(SimulationNS::CAR_BASIC_INFO& m_Car
 	nh.getParam("/ff_waypoint_follower/velocityGainKI", m_ControlParams.Velocity_Gain.kI );
 	nh.getParam("/ff_waypoint_follower/velocityGainKD", m_ControlParams.Velocity_Gain.kD );
 
+	m_PlanningParams.maxSpeed = m_CarInfo.max_speed_forward;
+	m_PlanningParams.minSpeed = 0;
 }
 
 FFSteerControl::~FFSteerControl()

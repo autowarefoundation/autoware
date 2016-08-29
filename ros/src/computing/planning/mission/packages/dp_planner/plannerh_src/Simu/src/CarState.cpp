@@ -42,13 +42,16 @@ CarState::~CarState()
 
 }
 
-void CarState::Init(const CAR_BASIC_INFO& carInfo)
+void CarState::Init(const PlannerHNS::PlanningParams& params,const CAR_BASIC_INFO& carInfo)
  	{
  		m_CarInfo = carInfo;
  		m_CurrentVelocity =  m_CurrentVelocityD =0;
  		m_CurrentSteering = m_CurrentSteeringD =0;
  		m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
  		m_CurrentAccSteerAngle = m_CurrentAccVelocity = 0;
+
+ 		if(m_pCurrentBehaviorState)
+ 			m_pCurrentBehaviorState->SetBehaviorsParams(params);
  	}
 
 void CarState::InitBehaviorStates()

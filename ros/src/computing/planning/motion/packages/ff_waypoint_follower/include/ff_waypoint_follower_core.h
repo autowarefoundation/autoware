@@ -127,6 +127,7 @@ protected:
 	ControlCommandParams m_CmdParams;
 	SimulationNS::CAR_BASIC_INFO m_CarInfo;
 	SimulationNS::ControllerParams m_ControlParams;
+	PlannerHNS::PlanningParams m_PlanningParams;
 
 	ros::NodeHandle nh;
 

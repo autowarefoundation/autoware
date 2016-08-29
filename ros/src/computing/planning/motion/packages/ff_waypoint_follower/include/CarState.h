@@ -78,7 +78,7 @@ public:
 
 	CarState();
 	virtual ~CarState();
-	void Init(const CAR_BASIC_INFO& carInfo);
+	void Init(const PlannerHNS::PlanningParams& params, const CAR_BASIC_INFO& carInfo);
 	void InitPolygons();
 	void FirstLocalizeMe(const PlannerHNS::WayPoint& initCarPos);
 	void LocalizeMe(const double& dt); // in seconds
