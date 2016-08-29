@@ -33,6 +33,8 @@
 
 #include <fstream>
 #include <ros/ros.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
 
 #include <vector_map_msgs/PointArray.h>
 #include <vector_map_msgs/VectorArray.h>
@@ -335,7 +337,15 @@ void updateCurveMirror(std::map<Key<CurveMirror>, CurveMirror>& map, const Curve
 void updateWall(std::map<Key<Wall>, Wall>& map, const WallArray& msg);
 void updateFence(std::map<Key<Fence>, Fence>& map, const FenceArray& msg);
 void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const RailCrossingArray& msg);
+
+double convertDegreeToRadian(double degree);
+double convertRadianToDegree(double radian);
 } // namespace
+
+geometry_msgs::Point convertPointToGeomPoint(const Point& point);
+Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point);
+geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector);
+Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quaternion);
 
 class VectorMap
 {
@@ -374,11 +384,13 @@ private:
   Handle<RailCrossing, RailCrossingArray> rail_crossing_;
 
   bool hasSubscribed(category_t category) const;
+  void registerSubscriber(ros::NodeHandle& nh, category_t category);
 
 public:
   VectorMap();
 
   void subscribe(ros::NodeHandle& nh, category_t category);
+  void subscribe(ros::NodeHandle& nh, category_t category, const ros::Duration& timeout);
 
   Point findByKey(const Key<Point>& key) const;
   Vector findByKey(const Key<Vector>& key) const;

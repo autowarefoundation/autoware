@@ -28,6 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <tf/transform_datatypes.h>
 #include <vector_map/vector_map.h>
 
 namespace vector_map
@@ -257,7 +258,57 @@ void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const Ra
   for (const auto& item : msg.data)
     map.insert(std::make_pair(Key<RailCrossing>(item.id), item));
 }
+
+double convertDegreeToRadian(double degree)
+{
+  return degree * M_PI / 180;
+}
+
+double convertRadianToDegree(double radian)
+{
+  return radian * 180 / M_PI;
+}
 } // namespace
+
+geometry_msgs::Point convertPointToGeomPoint(const Point& point)
+{
+  geometry_msgs::Point geom_point;
+  // NOTE: Autwoare use Japan Plane Rectangular Coordinate System.
+  // Therefore we swap x and y axis.
+  geom_point.x = point.ly;
+  geom_point.y = point.bx;
+  geom_point.z = point.h;
+  return geom_point;
+}
+
+Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point)
+{
+  Point point;
+  // NOTE: Autwoare use Japan Plane Rectangular Coordinate System.
+  // Therefore we swap x and y axis.
+  point.bx = geom_point.y;
+  point.ly = geom_point.x;
+  point.h = geom_point.z;
+  return point;
+}
+
+geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector)
+{
+  double pitch = convertDegreeToRadian(vector.vang - 90); // convert vertical angle to pitch
+  double yaw = convertDegreeToRadian(-vector.hang + 90); // convert horizontal angle to yaw
+  return tf::createQuaternionMsgFromRollPitchYaw(0, pitch, yaw);
+}
+
+Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quaternion)
+{
+  tf::Quaternion quaternion(geom_quaternion.x, geom_quaternion.y, geom_quaternion.z, geom_quaternion.w);
+  double roll, pitch, yaw;
+  tf::Matrix3x3(quaternion).getRPY(roll, pitch, yaw);
+  Vector vector;
+  vector.vang = convertRadianToDegree(pitch) + 90;
+  vector.hang = -convertRadianToDegree(yaw) + 90;
+  return vector;
+}
 
 bool VectorMap::hasSubscribed(category_t category) const
 {
@@ -424,11 +475,7 @@ bool VectorMap::hasSubscribed(category_t category) const
   return true;
 }
 
-VectorMap::VectorMap()
-{
-}
-
-void VectorMap::subscribe(ros::NodeHandle& nh, category_t category)
+void VectorMap::registerSubscriber(ros::NodeHandle& nh, category_t category)
 {
   if (category & POINT)
   {
@@ -590,8 +637,29 @@ void VectorMap::subscribe(ros::NodeHandle& nh, category_t category)
     rail_crossing_.registerSubscriber(nh, "vector_map_info/rail_crossing");
     rail_crossing_.registerUpdater(updateRailCrossing);
   }
+}
+
+VectorMap::VectorMap()
+{
+}
+
+void VectorMap::subscribe(ros::NodeHandle& nh, category_t category)
+{
+  registerSubscriber(nh, category);
   ros::Rate rate(1);
   while (ros::ok() && !hasSubscribed(category))
+  {
+    ros::spinOnce();
+    rate.sleep();
+  }
+}
+
+void VectorMap::subscribe(ros::NodeHandle& nh, category_t category, const ros::Duration& timeout)
+{
+  registerSubscriber(nh, category);
+  ros::Rate rate(1);
+  ros::Time end = ros::Time::now() + timeout;
+  while (ros::ok() && !hasSubscribed(category) && ros::Time::now() < end)
   {
     ros::spinOnce();
     rate.sleep();
