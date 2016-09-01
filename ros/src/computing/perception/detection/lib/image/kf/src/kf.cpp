@@ -111,7 +111,7 @@ std::vector<float> _max_heights;
 
 std_msgs::Header    image_objects_header;
 
-bool _ready =false;
+//static bool _ready;
 
 long int _counter = 0;
 //
@@ -797,10 +797,10 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 
 	cv::TickMeter tm;
 	tm.start();
-	//std::cout << endl << "START tracking...";
+	//std::cout << "START tracking...";
 	doTracking(detections, frameNumber, kstates, active, image, tracked_detections, colors);
 	tm.stop();
-	//std::cout << "END Tracking time = " << tm.getTimeSec() << " sec" << endl;
+	//std::cout << "END Tracking time = " << tm.getTimeSec() << " sec" << std::endl;
 
 	//ROS
 	int num = tracked_detections.size();
@@ -835,16 +835,19 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 		//ENDROS
 	}
 	//more ros
-	kf_objects_msg_.type = object_type;
-	kf_objects_msg_.total_num = num;
-	copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(kf_objects_msg_.rect_ranged)); // copy vector
-	copy(real_data.begin(), real_data.end(), back_inserter(kf_objects_msg_.real_data)); // copy vector
-	copy(obj_id.begin(), obj_id.end(), back_inserter(kf_objects_msg_.obj_id)); // copy vector
-	copy(lifespan.begin(), lifespan.end(), back_inserter(kf_objects_msg_.lifespan)); // copy vector
+	cv_tracker::image_obj_tracked kf_objects_msg;
+
+	kf_objects_msg.type = object_type;
+	kf_objects_msg.total_num = num;
+	copy(rect_ranged_array.begin(), rect_ranged_array.end(), back_inserter(kf_objects_msg.rect_ranged)); // copy vector
+	copy(real_data.begin(), real_data.end(), back_inserter(kf_objects_msg.real_data)); // copy vector
+	copy(obj_id.begin(), obj_id.end(), back_inserter(kf_objects_msg.obj_id)); // copy vector
+	copy(lifespan.begin(), lifespan.end(), back_inserter(kf_objects_msg.lifespan)); // copy vector
 
 //	kf_objects_msg_.header = image_source.header;
-	kf_objects_msg_.header = image_objects_header;
-
+	kf_objects_msg.header = image_objects_header;
+	kf_objects_msg_ = kf_objects_msg;;
+	track_ready_ = true;
 	publish_if_possible();
 
 	//cout << "."<< endl;
@@ -852,8 +855,8 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 
 void image_callback(const sensor_msgs::Image& image_source)
 {
-	if (!_ready)
-		return;
+	//if (!_ready)
+	//	return;
 
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 	cv::Mat imageTrack = cv_image->image;
@@ -980,6 +983,8 @@ int kf_main(int argc, char* argv[])
 	//TimeSynchronizer<Image, dpm::ImageObjects> sync(image_sub, pos_sub, 10);
 
 	//sync.registerCallback(boost::bind(&sync_callback, _1, _2));
+	track_ready_ = false;
+	detect_ready_ = false;
 
 	ros::spin();
 	return 0;
