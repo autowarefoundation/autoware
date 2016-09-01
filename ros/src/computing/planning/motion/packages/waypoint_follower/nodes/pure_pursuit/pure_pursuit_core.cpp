@@ -36,10 +36,10 @@ namespace waypoint_follower
 void PurePursuit::callbackFromConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
   param_flag_ = config->param_flag;
-  lookahead_threshold_ = config->lookahead_threshold;
+  const_lookahead_distance_ = config->lookahead_distance;
   initial_velocity_ = config->velocity;
-  look_ahead_threshold_calc_ratio_ = config->threshold_ratio;
-  minimum_look_ahead_threshold_ = config->minimum_lookahead_threshold;
+  lookahead_distance_calc_ratio_ = config->lookahead_ratio;
+  minimum_lookahead_distance_ = config->minimum_lookahead_distance;
   displacement_threshold_ = config->displacement_threshold;
   relative_angle_threshold_ = config->relative_angle_threshold;
 }
@@ -83,18 +83,26 @@ double PurePursuit::getCmdVelocity(int waypoint) const
   return velocity;
 }
 
-double PurePursuit::getLookAheadThreshold(int waypoint) const
+void PurePursuit::calcLookaheadDistance(int waypoint)
 {
   if (param_flag_ == static_cast<int>(Mode::dialog))
-    return lookahead_threshold_;
+  {
+    lookahead_distance_ = const_lookahead_distance_;
+    return;
+  }
 
   // double current_velocity_mps = _current_waypoints.getWaypointVelocityMPS(waypoint);
   double current_velocity_mps = current_velocity_.twist.linear.x;
+  double ld = current_velocity_mps * lookahead_distance_calc_ratio_;
 
-  if (current_velocity_mps * look_ahead_threshold_calc_ratio_ < minimum_look_ahead_threshold_)
-    return minimum_look_ahead_threshold_;
-  else
-    return current_velocity_mps * look_ahead_threshold_calc_ratio_;
+  ROS_INFO("lookahead distance: %f",ld);
+  double maximum_lookahead_distance =  current_velocity_mps * 10;
+  if (ld < minimum_lookahead_distance_)
+    lookahead_distance_ = minimum_lookahead_distance_;
+  else if(ld > maximum_lookahead_distance)
+    lookahead_distance_ = maximum_lookahead_distance;
+    lookahead_distance_ = ld;
+  return;
 }
 
 double PurePursuit::calcCurvature(geometry_msgs::Point target) const
@@ -123,7 +131,7 @@ bool PurePursuit::interpolateNextTarget(int next_waypoint, geometry_msgs::Point 
     *next_target = current_waypoints_.getWaypointPosition(next_waypoint);
     return true;
   }
-  double search_radius = getLookAheadThreshold(0);
+  double search_radius = lookahead_distance_;
   geometry_msgs::Point zero_p;
   geometry_msgs::Point end = current_waypoints_.getWaypointPosition(next_waypoint);
   geometry_msgs::Point start = current_waypoints_.getWaypointPosition(next_waypoint - 1);
@@ -284,7 +292,6 @@ geometry_msgs::Twist PurePursuit::calcTwist(double curvature, double cmd_velocit
 void PurePursuit::getNextWaypoint()
 {
   int path_size = static_cast<int>(current_waypoints_.getSize());
-  double lookahead_threshold = getLookAheadThreshold(0);
 
   // if waypoints are not given, do nothing.
   if (path_size == 0)
@@ -305,7 +312,7 @@ void PurePursuit::getNextWaypoint()
     }
 
     // if there exists an effective waypoint
-    if (getPlaneDistance(current_waypoints_.getWaypointPosition(i), current_pose_.pose.position) > lookahead_threshold)
+    if (getPlaneDistance(current_waypoints_.getWaypointPosition(i), current_pose_.pose.position) > lookahead_distance_)
     {
       num_of_next_waypoint_ = i;
       return;
@@ -343,6 +350,7 @@ geometry_msgs::TwistStamped PurePursuit::go()
 
   bool interpolate_flag = false;
 
+  calcLookaheadDistance(1);
   // search next waypoint
   getNextWaypoint();
   if (num_of_next_waypoint_ == -1)

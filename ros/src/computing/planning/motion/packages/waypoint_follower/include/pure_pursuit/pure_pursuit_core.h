@@ -57,10 +57,10 @@ private:
 
   // config topic
   int param_flag_;              // 0 = waypoint, 1 = Dialog
-  double lookahead_threshold_;  // meter
+  double const_lookahead_distance_;  // meter
   double initial_velocity_;     // km/h
-  double look_ahead_threshold_calc_ratio_;
-  double minimum_look_ahead_threshold_;  // the next waypoint must be outside of this threshold.
+  double lookahead_distance_calc_ratio_;
+  double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
   double displacement_threshold_;
   double relative_angle_threshold_;
 
@@ -69,13 +69,14 @@ private:
   bool velocity_set_;
   int num_of_next_waypoint_;
   geometry_msgs::Point position_of_next_target_;
+  double lookahead_distance_;
 
   geometry_msgs::PoseStamped current_pose_;
   geometry_msgs::TwistStamped current_velocity_;
   WayPoints current_waypoints_;
 
   double getCmdVelocity(int waypoint) const;
-
+  void calcLookaheadDistance(int waypoint);
   double calcCurvature(geometry_msgs::Point target) const;
   double calcRadius(geometry_msgs::Point target) const;
   bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const;
@@ -89,16 +90,17 @@ public:
   PurePursuit(bool linear_interpolate_mode)
     : linear_interpolate_(linear_interpolate_mode)
     , param_flag_(0)
-    , lookahead_threshold_(4.0)
+    , const_lookahead_distance_(4.0)
     , initial_velocity_(5.0)
-    , look_ahead_threshold_calc_ratio_(2.0)
-    , minimum_look_ahead_threshold_(6.0)
+    , lookahead_distance_calc_ratio_(2.0)
+    , minimum_lookahead_distance_(6.0)
     , displacement_threshold_(0.2)
     , relative_angle_threshold_(10)
     , waypoint_set_(false)
     , pose_set_(false)
     , velocity_set_(false)
     , num_of_next_waypoint_(-1)
+    , lookahead_distance_(0)
   {
   }
   ~PurePursuit()
@@ -124,8 +126,11 @@ public:
   {
     return current_pose_.pose;
   }
-  double getLookAheadThreshold(int waypoint) const;
 
+  double getLookaheadDistance() const
+  {
+    return lookahead_distance_;
+  }
   // processing for ROS
   geometry_msgs::TwistStamped go();
 };

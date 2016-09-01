@@ -1129,21 +1129,21 @@ params :
       min   : 0
       max   : 60
       v     : 5.0
-    - name  : lookahead_threshold
-      desc  : lookahead_threshold desc sample
-      label : Lookahead Threshold
+    - name  : lookahead_distance
+      desc  : lookahead_distance desc sample
+      label : Lookahead Distance
       min   : 0
       max   : 30
       v     : 4.0
-    - name  : threshold_ratio
-      desc  : threshold_ratio desc sample
-      label : threshold_ratio
+    - name  : lookahead_ratio
+      desc  : lookahead_ratio desc sample
+      label : lookahead_ratio
       min   : 1.0
       max   : 5.0
       v     : 2.0
-    - name  : minimum_lookahead_threshold
-      desc  : minimum_lookahead_threshold desc sample
-      label : minimum_lookahead_threshold
+    - name  : minimum_lookahead_distance
+      desc  : minimum_lookahead_distance desc sample
+      label : minimum_lookahead_distance
       min   : 2.0
       max   : 10.0
       v     : 6.0
@@ -1255,30 +1255,24 @@ params :
       min   : 0
       max   : 60
       v     : 5.0
-    - name  : lookahead_threshold
-      desc  : lookahead_threshold desc sample
-      label : Lookahead Threshold
+    - name  : lookahead_distance
+      desc  : lookahead_distance desc sample
+      label : Lookahead Distance
       min   : 0
       max   : 30
       v     : 4.0
-    - name  : threshold_ratio
-      desc  : threshold_ratio desc sample
-      label : threshold_ratio
+    - name  : lookahead_ratio
+      desc  : lookahead_ratio desc sample
+      label : lookahead_ratio
       min   : 1.0
       max   : 5.0
       v     : 2.0
-    - name  : minimum_lookahead_threshold
-      desc  : minimum_lookahead_threshold desc sample
-      label : minimum_lookahead_threshold
+    - name  : minimum_lookahead_distance
+      desc  : minimum_lookahead_distance desc sample
+      label : minimum_lookahead_distance
       min   : 2.0
       max   : 10.0
       v     : 6.0
-    - name  : offset
-      desc  : offset desc sample
-      label : offset
-      min   : -5.0
-      max   : 5.0
-      v     : -1.17
     - name    : sim_mode
       desc    : sim_mode desc sample
       label   : 'Simulation Mode'
