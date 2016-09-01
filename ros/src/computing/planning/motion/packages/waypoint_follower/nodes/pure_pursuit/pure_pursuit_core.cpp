@@ -114,9 +114,13 @@ double PurePursuit::calcCurvature(geometry_msgs::Point target) const
   if (denominator != 0)
     kappa = numerator / denominator;
   else
-    kappa = 0;
-
-  // ROS_INFO("kappa : %lf", kappa);
+  {
+    if(numerator > 0)
+     kappa = KAPPA_MIN_;
+    else
+      kappa = -KAPPA_MIN_;
+  }
+  ROS_INFO("kappa : %lf", kappa);
   return kappa;
 }
 
