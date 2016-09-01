@@ -105,10 +105,10 @@ static WayPoints g_current_waypoints;
 static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
   g_param_flag = config->param_flag;
-  g_lookahead_threshold = config->lookahead_threshold;
+  g_lookahead_threshold = config->lookahead_distance;
   g_initial_velocity = config->velocity;
-  g_look_ahead_threshold_calc_ratio = config->threshold_ratio;
-  g_minimum_look_ahead_threshold = config->minimum_lookahead_threshold;
+  g_look_ahead_threshold_calc_ratio = config->lookahead_ratio;
+  g_minimum_look_ahead_threshold = config->minimum_lookahead_distance;
 }
 
 

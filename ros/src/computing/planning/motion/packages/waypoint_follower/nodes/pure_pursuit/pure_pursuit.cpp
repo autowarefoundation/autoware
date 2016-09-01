@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
     // for visualization with Rviz
     vis_pub.publish(waypoint_follower::displayNextWaypoint(pp.getPoseOfNextWaypoint()));
-    search_pub.publish(waypoint_follower::displaySearchRadius(pp.getCurrentPose().position, pp.getLookAheadThreshold(0)));
+    search_pub.publish(waypoint_follower::displaySearchRadius(pp.getCurrentPose().position, pp.getLookaheadDistance()));
     target_pub.publish(waypoint_follower::displayNextTarget(pp.getPoseOfNextTarget()));
     traj_circle_pub.publish(waypoint_follower::displayTrajectoryCircle(
         waypoint_follower::generateTrajectoryCircle(pp.getPoseOfNextTarget(), pp.getCurrentPose())));
