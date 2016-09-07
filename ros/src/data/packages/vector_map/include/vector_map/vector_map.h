@@ -35,6 +35,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Quaternion.h>
+#include <visualization_msgs/Marker.h>
 
 #include <vector_map_msgs/PointArray.h>
 #include <vector_map_msgs/VectorArray.h>
@@ -182,6 +183,25 @@ enum Category : category_t
   RAIL_CROSSING = 1LLU << 31,
 
   ALL = (1LLU << 32) - 1
+};
+
+enum Color : int
+{
+  BLACK,
+  GRAY,
+  LIGHT_RED,
+  LIGHT_GREEN,
+  LIGHT_BLUE,
+  LIGHT_YELLOW,
+  LIGHT_CYAN,
+  LIGHT_MAGENTA,
+  RED,
+  GREEN,
+  BLUE,
+  YELLOW,
+  CYAN,
+  MAGENTA,
+  WHITE
 };
 
 template <class T>
@@ -337,15 +357,7 @@ void updateCurveMirror(std::map<Key<CurveMirror>, CurveMirror>& map, const Curve
 void updateWall(std::map<Key<Wall>, Wall>& map, const WallArray& msg);
 void updateFence(std::map<Key<Fence>, Fence>& map, const FenceArray& msg);
 void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const RailCrossingArray& msg);
-
-double convertDegreeToRadian(double degree);
-double convertRadianToDegree(double radian);
 } // namespace
-
-geometry_msgs::Point convertPointToGeomPoint(const Point& point);
-Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point);
-geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector);
-Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quaternion);
 
 class VectorMap
 {
@@ -491,6 +503,32 @@ public:
   void registerCallback(const Callback<FenceArray>& cb);
   void registerCallback(const Callback<RailCrossingArray>& cb);
 };
+
+std_msgs::ColorRGBA createColorRGBA(Color color);
+
+void enableMarker(visualization_msgs::Marker& marker);
+void disableMarker(visualization_msgs::Marker& marker);
+bool isValidMarker(const visualization_msgs::Marker& marker);
+
+visualization_msgs::Marker createMarker(const std::string& ns, int id, int type);
+visualization_msgs::Marker createPointMarker(const std::string& ns, int id, Color color, const Point& point);
+visualization_msgs::Marker createVectorMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                              const Vector& vector);
+visualization_msgs::Marker createLineMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                            const Line& line);
+visualization_msgs::Marker createAreaMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                            const Area& area);
+visualization_msgs::Marker createPoleMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                            const Pole& pole);
+visualization_msgs::Marker createBoxMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                           const Box& box);
+
+double convertDegreeToRadian(double degree);
+double convertRadianToDegree(double radian);
+geometry_msgs::Point convertPointToGeomPoint(const Point& point);
+Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point);
+geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector);
+Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quaternion);
 } // namespace vector_map
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Point& obj);

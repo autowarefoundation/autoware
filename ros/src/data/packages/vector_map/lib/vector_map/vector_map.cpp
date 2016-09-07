@@ -258,57 +258,7 @@ void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const Ra
   for (const auto& item : msg.data)
     map.insert(std::make_pair(Key<RailCrossing>(item.id), item));
 }
-
-double convertDegreeToRadian(double degree)
-{
-  return degree * M_PI / 180;
-}
-
-double convertRadianToDegree(double radian)
-{
-  return radian * 180 / M_PI;
-}
 } // namespace
-
-geometry_msgs::Point convertPointToGeomPoint(const Point& point)
-{
-  geometry_msgs::Point geom_point;
-  // NOTE: Autwoare use Japan Plane Rectangular Coordinate System.
-  // Therefore we swap x and y axis.
-  geom_point.x = point.ly;
-  geom_point.y = point.bx;
-  geom_point.z = point.h;
-  return geom_point;
-}
-
-Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point)
-{
-  Point point;
-  // NOTE: Autwoare use Japan Plane Rectangular Coordinate System.
-  // Therefore we swap x and y axis.
-  point.bx = geom_point.y;
-  point.ly = geom_point.x;
-  point.h = geom_point.z;
-  return point;
-}
-
-geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector)
-{
-  double pitch = convertDegreeToRadian(vector.vang - 90); // convert vertical angle to pitch
-  double yaw = convertDegreeToRadian(-vector.hang + 90); // convert horizontal angle to yaw
-  return tf::createQuaternionMsgFromRollPitchYaw(0, pitch, yaw);
-}
-
-Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quaternion)
-{
-  tf::Quaternion quaternion(geom_quaternion.x, geom_quaternion.y, geom_quaternion.z, geom_quaternion.w);
-  double roll, pitch, yaw;
-  tf::Matrix3x3(quaternion).getRPY(roll, pitch, yaw);
-  Vector vector;
-  vector.vang = convertRadianToDegree(pitch) + 90;
-  vector.hang = -convertRadianToDegree(yaw) + 90;
-  return vector;
-}
 
 bool VectorMap::hasSubscribed(category_t category) const
 {
@@ -1144,6 +1094,404 @@ void VectorMap::registerCallback(const Callback<FenceArray>& cb)
 void VectorMap::registerCallback(const Callback<RailCrossingArray>& cb)
 {
   rail_crossing_.registerCallback(cb);
+}
+
+std_msgs::ColorRGBA createColorRGBA(Color color)
+{
+  std_msgs::ColorRGBA color_rgba;
+  color_rgba.r = 0.0;
+  color_rgba.g = 0.0;
+  color_rgba.b = 0.0;
+  color_rgba.a = 1.0;
+
+  switch (color)
+  {
+  case BLACK:
+    break;
+  case GRAY:
+    color_rgba.r = 0.5;
+    color_rgba.g = 0.5;
+    color_rgba.b = 0.5;
+    break;
+  case LIGHT_RED:
+    color_rgba.r = 0.93;
+    color_rgba.g = 0.56;
+    color_rgba.b = 0.56;
+    break;
+  case LIGHT_GREEN:
+    color_rgba.r = 0.56;
+    color_rgba.g = 0.93;
+    color_rgba.b = 0.56;
+    break;
+  case LIGHT_BLUE:
+    color_rgba.r = 0.56;
+    color_rgba.g = 0.56;
+    color_rgba.b = 0.93;
+    break;
+  case LIGHT_YELLOW:
+    color_rgba.r = 0.93;
+    color_rgba.g = 0.93;
+    color_rgba.b = 0.56;
+    break;
+  case LIGHT_CYAN:
+    color_rgba.r = 0.56;
+    color_rgba.g = 0.93;
+    color_rgba.b = 0.93;
+    break;
+  case LIGHT_MAGENTA:
+    color_rgba.r = 0.93;
+    color_rgba.g = 0.56;
+    color_rgba.b = 0.93;
+    break;
+  case RED:
+    color_rgba.r = 1.0;
+    break;
+  case GREEN:
+    color_rgba.g = 1.0;
+    break;
+  case BLUE:
+    color_rgba.b = 1.0;
+    break;
+  case YELLOW:
+    color_rgba.r = 1.0;
+    color_rgba.g = 1.0;
+    break;
+  case CYAN:
+    color_rgba.g = 1.0;
+    color_rgba.b = 1.0;
+    break;
+  case MAGENTA:
+    color_rgba.r = 1.0;
+    color_rgba.b = 1.0;
+    break;
+  case WHITE:
+    color_rgba.r = 1.0;
+    color_rgba.g = 1.0;
+    color_rgba.b = 1.0;
+    break;
+  default:
+    color_rgba.a = 0.0; // hide color from view
+    break;
+  }
+
+  return color_rgba;
+}
+
+void enableMarker(visualization_msgs::Marker& marker)
+{
+  marker.action = visualization_msgs::Marker::ADD;
+}
+
+void disableMarker(visualization_msgs::Marker& marker)
+{
+  marker.action = visualization_msgs::Marker::DELETE;
+}
+
+bool isValidMarker(const visualization_msgs::Marker& marker)
+{
+  return marker.action == visualization_msgs::Marker::ADD;
+}
+
+visualization_msgs::Marker createMarker(const std::string& ns, int id, int type)
+{
+  visualization_msgs::Marker marker;
+  // NOTE: Autoware want to use map messages with or without /use_sim_time.
+  // Therefore we don't set marker.header.stamp.
+  // marker.header.stamp = ros::Time::now();
+  marker.header.frame_id = "map";
+  marker.ns = ns;
+  marker.id = id;
+  marker.type = type;
+  marker.lifetime = ros::Duration();
+  marker.frame_locked = true;
+  disableMarker(marker);
+  return marker;
+}
+
+visualization_msgs::Marker createPointMarker(const std::string& ns, int id, Color color, const Point& point)
+{
+  visualization_msgs::Marker marker = createMarker(ns, id, visualization_msgs::Marker::SPHERE);
+  if (point.pid == 0)
+    return marker;
+
+  marker.pose.position = convertPointToGeomPoint(point);
+  marker.pose.orientation = convertVectorToGeomQuaternion(Vector());
+  marker.scale.x = 0.08;
+  marker.scale.y = 0.08;
+  marker.scale.z = 0.08;
+  marker.color = createColorRGBA(color);
+  if (marker.color.a == 0.0)
+    return marker;
+
+  enableMarker(marker);
+  return marker;
+}
+
+visualization_msgs::Marker createVectorMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                              const Vector& vector)
+{
+  visualization_msgs::Marker marker = createMarker(ns, id, visualization_msgs::Marker::ARROW);
+  if (vector.vid == 0)
+    return marker;
+
+  Point point = vmap.findByKey(Key<Point>(vector.pid));
+  if (point.pid == 0)
+    return marker;
+
+  marker.pose.position = convertPointToGeomPoint(point);
+  marker.pose.orientation = convertVectorToGeomQuaternion(vector);
+  marker.scale.x = 0.64;
+  marker.scale.y = 0.08;
+  marker.scale.z = 0.08;
+  marker.color = createColorRGBA(color);
+  if (marker.color.a == 0.0)
+    return marker;
+
+  enableMarker(marker);
+  return marker;
+}
+
+visualization_msgs::Marker createLineMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                            const Line& line)
+{
+  visualization_msgs::Marker marker = createMarker(ns, id, visualization_msgs::Marker::LINE_STRIP);
+  if (line.lid == 0)
+    return marker;
+
+  Point bp = vmap.findByKey(Key<Point>(line.bpid));
+  if (bp.pid == 0)
+    return marker;
+
+  Point fp = vmap.findByKey(Key<Point>(line.fpid));
+  if (fp.pid == 0)
+    return marker;
+
+  marker.points.push_back(convertPointToGeomPoint(bp));
+  marker.points.push_back(convertPointToGeomPoint(fp));
+
+  marker.scale.x = 0.08;
+  marker.scale.y = 0.0;
+  marker.scale.z = 0.0;
+  marker.color = createColorRGBA(color);
+  if (marker.color.a == 0.0)
+    return marker;
+
+  enableMarker(marker);
+  return marker;
+}
+
+visualization_msgs::Marker createAreaMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                            const Area& area)
+{
+  visualization_msgs::Marker marker = createMarker(ns, id, visualization_msgs::Marker::LINE_STRIP);
+  if (area.aid == 0)
+    return marker;
+
+  Line line = vmap.findByKey(Key<Line>(area.slid));
+  if (line.lid == 0)
+    return marker;
+  if (line.blid != 0) // must set beginning line
+    return marker;
+
+  while (line.flid != 0)
+  {
+    Point bp = vmap.findByKey(Key<Point>(line.bpid));
+    if (bp.pid == 0)
+      return marker;
+
+    Point fp = vmap.findByKey(Key<Point>(line.fpid));
+    if (fp.pid == 0)
+      return marker;
+
+    marker.points.push_back(convertPointToGeomPoint(bp));
+    marker.points.push_back(convertPointToGeomPoint(fp));
+
+    line = vmap.findByKey(Key<Line>(line.flid));
+    if (line.lid == 0)
+      return marker;
+  }
+
+  Point bp = vmap.findByKey(Key<Point>(line.bpid));
+  if (bp.pid == 0)
+    return marker;
+
+  Point fp = vmap.findByKey(Key<Point>(line.fpid));
+  if (fp.pid == 0)
+    return marker;
+
+  marker.points.push_back(convertPointToGeomPoint(bp));
+  marker.points.push_back(convertPointToGeomPoint(fp));
+
+  marker.scale.x = 0.08;
+  marker.scale.y = 0.0;
+  marker.scale.z = 0.0;
+  marker.color = createColorRGBA(color);
+  if (marker.color.a == 0.0)
+    return marker;
+
+  enableMarker(marker);
+  return marker;
+}
+
+visualization_msgs::Marker createPoleMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                            const Pole& pole)
+{
+  visualization_msgs::Marker marker = createMarker(ns, id, visualization_msgs::Marker::CYLINDER);
+  if (pole.plid == 0)
+    return marker;
+  // XXX: The following conditions are workaround for pole.csv of Nagoya University's campus.
+  if (pole.length == 0 || pole.dim == 0)
+    return marker;
+
+  Vector vector = vmap.findByKey(Key<Vector>(pole.vid));
+  if (vector.vid == 0)
+    return marker;
+  // XXX: The visualization_msgs::Marker::CYLINDER is difficult to display other than vertical pole.
+  if (vector.vang != 0)
+    return marker;
+
+  Point point = vmap.findByKey(Key<Point>(vector.pid));
+  if (point.pid == 0)
+    return marker;
+
+  geometry_msgs::Point geom_point = convertPointToGeomPoint(point);
+  geom_point.z += pole.length / 2;
+  marker.pose.position = geom_point;
+  vector.vang -= 90;
+  marker.pose.orientation = convertVectorToGeomQuaternion(vector);
+  marker.scale.x = pole.dim;
+  marker.scale.y = pole.dim;
+  marker.scale.z = pole.length;
+  marker.color = createColorRGBA(color);
+  if (marker.color.a == 0.0)
+    return marker;
+
+  enableMarker(marker);
+  return marker;
+}
+
+visualization_msgs::Marker createBoxMarker(const std::string& ns, int id, Color color, const VectorMap& vmap,
+                                           const Box& box)
+{
+  visualization_msgs::Marker marker = createMarker(ns, id, visualization_msgs::Marker::LINE_STRIP);
+  if (box.bid == 0)
+    return marker;
+
+  Point p1 = vmap.findByKey(Key<Point>(box.pid1));
+  if (p1.pid == 0)
+    return marker;
+
+  Point p2 = vmap.findByKey(Key<Point>(box.pid2));
+  if (p2.pid == 0)
+    return marker;
+
+  Point p3 = vmap.findByKey(Key<Point>(box.pid3));
+  if (p3.pid == 0)
+    return marker;
+
+  Point p4 = vmap.findByKey(Key<Point>(box.pid4));
+  if (p4.pid == 0)
+    return marker;
+
+  std::vector<geometry_msgs::Point> bottom_points(4);
+  bottom_points[0] = convertPointToGeomPoint(p1);
+  bottom_points[1] = convertPointToGeomPoint(p2);
+  bottom_points[2] = convertPointToGeomPoint(p3);
+  bottom_points[3] = convertPointToGeomPoint(p4);
+
+  std::vector<geometry_msgs::Point> top_points(4);
+  for (size_t i = 0; i < 4; ++i)
+  {
+    top_points[i] = bottom_points[i];
+    top_points[i].z += box.height;
+  }
+
+  for (size_t i = 0; i < 4; ++i)
+  {
+    marker.points.push_back(bottom_points[i]);
+    marker.points.push_back(top_points[i]);
+    marker.points.push_back(top_points[i]);
+    if (i != 3)
+    {
+      marker.points.push_back(top_points[i + 1]);
+      marker.points.push_back(top_points[i + 1]);
+      marker.points.push_back(bottom_points[i + 1]);
+    }
+    else
+    {
+      marker.points.push_back(top_points[0]);
+      marker.points.push_back(top_points[0]);
+      marker.points.push_back(bottom_points[0]);
+    }
+  }
+  for (size_t i = 0; i < 4; ++i)
+  {
+    marker.points.push_back(bottom_points[i]);
+    if (i != 3)
+      marker.points.push_back(bottom_points[i + 1]);
+    else
+      marker.points.push_back(bottom_points[0]);
+  }
+
+  marker.scale.x = 0.08;
+  marker.scale.y = 0.0;
+  marker.scale.z = 0.0;
+  marker.color = createColorRGBA(color);
+  if (marker.color.a == 0.0)
+    return marker;
+
+  enableMarker(marker);
+  return marker;
+}
+
+double convertDegreeToRadian(double degree)
+{
+  return degree * M_PI / 180;
+}
+
+double convertRadianToDegree(double radian)
+{
+  return radian * 180 / M_PI;
+}
+
+geometry_msgs::Point convertPointToGeomPoint(const Point& point)
+{
+  geometry_msgs::Point geom_point;
+  // NOTE: Autwoare use Japan Plane Rectangular Coordinate System.
+  // Therefore we swap x and y axis.
+  geom_point.x = point.ly;
+  geom_point.y = point.bx;
+  geom_point.z = point.h;
+  return geom_point;
+}
+
+Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point)
+{
+  Point point;
+  // NOTE: Autwoare use Japan Plane Rectangular Coordinate System.
+  // Therefore we swap x and y axis.
+  point.bx = geom_point.y;
+  point.ly = geom_point.x;
+  point.h = geom_point.z;
+  return point;
+}
+
+geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector)
+{
+  double pitch = convertDegreeToRadian(vector.vang - 90); // convert vertical angle to pitch
+  double yaw = convertDegreeToRadian(-vector.hang + 90); // convert horizontal angle to yaw
+  return tf::createQuaternionMsgFromRollPitchYaw(0, pitch, yaw);
+}
+
+Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quaternion)
+{
+  tf::Quaternion quaternion(geom_quaternion.x, geom_quaternion.y, geom_quaternion.z, geom_quaternion.w);
+  double roll, pitch, yaw;
+  tf::Matrix3x3(quaternion).getRPY(roll, pitch, yaw);
+  Vector vector;
+  vector.vang = convertRadianToDegree(pitch) + 90;
+  vector.hang = -convertRadianToDegree(yaw) + 90;
+  return vector;
 }
 } // namespace vector_map
 
