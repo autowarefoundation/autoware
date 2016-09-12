@@ -8,7 +8,7 @@
   <arg name="use_openmp" default="false" />
   <arg name="sync" default="false" />
   
-  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
+  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log">
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="queue_size" value="$(arg queue_size)" />
     <param name="offset" value="$(arg offset)" />

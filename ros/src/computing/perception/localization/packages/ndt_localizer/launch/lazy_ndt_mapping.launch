@@ -9,7 +9,7 @@
 
   <!-- rosrun ndt_localizer lazy_ndt_mapping  -->
   <node pkg="ndt_localizer" type="queue_counter" name="queue_counter" output="screen" />
-  <node pkg="ndt_localizer" type="lazy_ndt_mapping" name="lazy_ndt_mapping" output="screen">
+  <node pkg="ndt_localizer" type="lazy_ndt_mapping" name="lazy_ndt_mapping" output="log">
   	<param name="range" value="$(arg range)" />
     <param name="shift" value="$(arg shift)" />
     <param name="reference_map_size" value="$(arg reference_map_size)" />
