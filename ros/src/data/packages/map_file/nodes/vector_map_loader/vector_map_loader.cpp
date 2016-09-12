@@ -162,7 +162,7 @@ visualization_msgs::MarkerArray createRoadEdgeMarkerArray(const VectorMap& vmap,
     Line line = vmap.findByKey(Key<Line>(road_edge.lid));
     if (line.lid == 0)
     {
-      ROS_ERROR_STREAM("[createRoadEdgeMarkerArray] invalid line[]: " << line);
+      ROS_ERROR_STREAM("[createRoadEdgeMarkerArray] invalid line: " << line);
       continue;
     }
 
@@ -194,20 +194,20 @@ visualization_msgs::MarkerArray createGutterMarkerArray(const VectorMap& vmap, C
     Area area = vmap.findByKey(Key<Area>(gutter.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createGutterMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createGutterMarkerArray] invalid area: " << area);
       continue;
     }
 
     visualization_msgs::Marker marker;
     switch (gutter.type)
     {
-    case vector_map::Gutter::NO_COVER:
+    case Gutter::NO_COVER:
       marker = createAreaMarker("gutter", id++, no_cover_color, vmap, area);
       break;
-    case vector_map::Gutter::COVER:
+    case Gutter::COVER:
       marker = createAreaMarker("gutter", id++, cover_color, vmap, area);
       break;
-    case vector_map::Gutter::GRATING:
+    case Gutter::GRATING:
       marker = createAreaMarker("gutter", id++, grating_color, vmap, area);
       break;
     default:
@@ -237,7 +237,7 @@ visualization_msgs::MarkerArray createCurbMarkerArray(const VectorMap& vmap, Col
     Line line = vmap.findByKey(Key<Line>(curb.lid));
     if (line.lid == 0)
     {
-      ROS_ERROR_STREAM("[createCurbMarkerArray] invalid line[]: " << line);
+      ROS_ERROR_STREAM("[createCurbMarkerArray] invalid line: " << line);
       continue;
     }
 
@@ -266,13 +266,13 @@ visualization_msgs::MarkerArray createWhiteLineMarkerArray(const VectorMap& vmap
       ROS_ERROR_STREAM("[createWhiteLineMarkerArray] invalid white_line: " << white_line);
       continue;
     }
-    if (white_line.type == vector_map::WhiteLine::DASHED_LINE_BLANK) // if invisible line
+    if (white_line.type == WhiteLine::DASHED_LINE_BLANK) // if invisible line
       continue;
 
     Line line = vmap.findByKey(Key<Line>(white_line.lid));
     if (line.lid == 0)
     {
-      ROS_ERROR_STREAM("[createWhiteLineMarkerArray] invalid line[]: " << line);
+      ROS_ERROR_STREAM("[createWhiteLineMarkerArray] invalid line: " << line);
       continue;
     }
 
@@ -316,7 +316,7 @@ visualization_msgs::MarkerArray createStopLineMarkerArray(const VectorMap& vmap,
     Line line = vmap.findByKey(Key<Line>(stop_line.lid));
     if (line.lid == 0)
     {
-      ROS_ERROR_STREAM("[createStopLineMarkerArray] invalid line[]: " << line);
+      ROS_ERROR_STREAM("[createStopLineMarkerArray] invalid line: " << line);
       continue;
     }
 
@@ -347,7 +347,7 @@ visualization_msgs::MarkerArray createZebraZoneMarkerArray(const VectorMap& vmap
     Area area = vmap.findByKey(Key<Area>(zebra_zone.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createZebraZoneMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createZebraZoneMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -375,7 +375,7 @@ visualization_msgs::MarkerArray createCrossWalkMarkerArray(const VectorMap& vmap
     Area area = vmap.findByKey(Key<Area>(cross_walk.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createCrossWalkMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createCrossWalkMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -403,7 +403,7 @@ visualization_msgs::MarkerArray createRoadMarkMarkerArray(const VectorMap& vmap,
     Area area = vmap.findByKey(Key<Area>(road_mark.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createRoadMarkMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createRoadMarkMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -431,7 +431,7 @@ visualization_msgs::MarkerArray createRoadPoleMarkerArray(const VectorMap& vmap,
     Pole pole = vmap.findByKey(Key<Pole>(road_pole.plid));
     if (pole.plid == 0)
     {
-      ROS_ERROR_STREAM("[createRoadPoleMarkerArray] invalid pole[]: " << pole);
+      ROS_ERROR_STREAM("[createRoadPoleMarkerArray] invalid pole: " << pole);
       continue;
     }
 
@@ -459,7 +459,7 @@ visualization_msgs::MarkerArray createRoadSignMarkerArray(const VectorMap& vmap,
     Vector vector = vmap.findByKey(Key<Vector>(road_sign.vid));
     if (vector.vid == 0)
     {
-      ROS_ERROR_STREAM("[createRoadSignMarkerArray] invalid vector[]: " << vector);
+      ROS_ERROR_STREAM("[createRoadSignMarkerArray] invalid vector: " << vector);
       continue;
     }
 
@@ -469,7 +469,7 @@ visualization_msgs::MarkerArray createRoadSignMarkerArray(const VectorMap& vmap,
       pole = vmap.findByKey(Key<Pole>(road_sign.plid));
       if (pole.plid == 0)
       {
-        ROS_ERROR_STREAM("[createRoadSignMarkerArray] invalid pole[]: " << pole);
+        ROS_ERROR_STREAM("[createRoadSignMarkerArray] invalid pole: " << pole);
         continue;
       }
     }
@@ -508,7 +508,7 @@ visualization_msgs::MarkerArray createSignalMarkerArray(const VectorMap& vmap, C
     Vector vector = vmap.findByKey(Key<Vector>(signal.vid));
     if (vector.vid == 0)
     {
-      ROS_ERROR_STREAM("[createSignalMarkerArray] invalid vector[]: " << vector);
+      ROS_ERROR_STREAM("[createSignalMarkerArray] invalid vector: " << vector);
       continue;
     }
 
@@ -518,7 +518,7 @@ visualization_msgs::MarkerArray createSignalMarkerArray(const VectorMap& vmap, C
       pole = vmap.findByKey(Key<Pole>(signal.plid));
       if (pole.plid == 0)
       {
-        ROS_ERROR_STREAM("[createSignalMarkerArray] invalid pole[]: " << pole);
+        ROS_ERROR_STREAM("[createSignalMarkerArray] invalid pole: " << pole);
         continue;
       }
     }
@@ -526,18 +526,18 @@ visualization_msgs::MarkerArray createSignalMarkerArray(const VectorMap& vmap, C
     visualization_msgs::Marker vector_marker;
     switch (signal.type)
     {
-    case vector_map::Signal::RED:
-    case vector_map::Signal::PEDESTRIAN_RED:
+    case Signal::RED:
+    case Signal::PEDESTRIAN_RED:
       vector_marker = createVectorMarker("signal", id++, red_color, vmap, vector);
       break;
-    case vector_map::Signal::BLUE:
-    case vector_map::Signal::PEDESTRIAN_BLUE:
+    case Signal::BLUE:
+    case Signal::PEDESTRIAN_BLUE:
       vector_marker = createVectorMarker("signal", id++, blue_color, vmap, vector);
       break;
-    case vector_map::Signal::YELLOW:
+    case Signal::YELLOW:
       vector_marker = createVectorMarker("signal", id++, yellow_color, vmap, vector);
       break;
-    case vector_map::Signal::OTHER:
+    case Signal::OTHER:
       vector_marker = createVectorMarker("signal", id++, other_color, vmap, vector);
       break;
     default:
@@ -577,7 +577,7 @@ visualization_msgs::MarkerArray createStreetLightMarkerArray(const VectorMap& vm
     Line line = vmap.findByKey(Key<Line>(street_light.lid));
     if (line.lid == 0)
     {
-      ROS_ERROR_STREAM("[createStreetLightMarkerArray] invalid line[]: " << line);
+      ROS_ERROR_STREAM("[createStreetLightMarkerArray] invalid line: " << line);
       continue;
     }
 
@@ -587,7 +587,7 @@ visualization_msgs::MarkerArray createStreetLightMarkerArray(const VectorMap& vm
       pole = vmap.findByKey(Key<Pole>(street_light.plid));
       if (pole.plid == 0)
       {
-        ROS_ERROR_STREAM("[createStreetLightMarkerArray] invalid pole[]: " << pole);
+        ROS_ERROR_STREAM("[createStreetLightMarkerArray] invalid pole: " << pole);
         continue;
       }
     }
@@ -628,7 +628,7 @@ visualization_msgs::MarkerArray createUtilityPoleMarkerArray(const VectorMap& vm
     Pole pole = vmap.findByKey(Key<Pole>(utility_pole.plid));
     if (pole.plid == 0)
     {
-      ROS_ERROR_STREAM("[createUtilityPoleMarkerArray] invalid pole[]: " << pole);
+      ROS_ERROR_STREAM("[createUtilityPoleMarkerArray] invalid pole: " << pole);
       continue;
     }
 
@@ -656,7 +656,7 @@ visualization_msgs::MarkerArray createGuardRailMarkerArray(const VectorMap& vmap
     Area area = vmap.findByKey(Key<Area>(guard_rail.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createGuardRailMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createGuardRailMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -684,7 +684,7 @@ visualization_msgs::MarkerArray createSideWalkMarkerArray(const VectorMap& vmap,
     Area area = vmap.findByKey(Key<Area>(side_walk.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createSideWalkMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createSideWalkMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -712,7 +712,7 @@ visualization_msgs::MarkerArray createDriveOnPortionMarkerArray(const VectorMap&
     Area area = vmap.findByKey(Key<Area>(drive_on_portion.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createDriveOnPortionMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createDriveOnPortionMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -740,7 +740,7 @@ visualization_msgs::MarkerArray createCrossRoadMarkerArray(const VectorMap& vmap
     Area area = vmap.findByKey(Key<Area>(cross_road.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createCrossRoadMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createCrossRoadMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -768,7 +768,7 @@ visualization_msgs::MarkerArray createSideStripMarkerArray(const VectorMap& vmap
     Line line = vmap.findByKey(Key<Line>(side_strip.lid));
     if (line.lid == 0)
     {
-      ROS_ERROR_STREAM("[createSideStripMarkerArray] invalid line[]: " << line);
+      ROS_ERROR_STREAM("[createSideStripMarkerArray] invalid line: " << line);
       continue;
     }
 
@@ -800,14 +800,14 @@ visualization_msgs::MarkerArray createCurveMirrorMarkerArray(const VectorMap& vm
     Vector vector = vmap.findByKey(Key<Vector>(curve_mirror.vid));
     if (vector.vid == 0)
     {
-      ROS_ERROR_STREAM("[createCurveMirrorMarkerArray] invalid vector[]: " << vector);
+      ROS_ERROR_STREAM("[createCurveMirrorMarkerArray] invalid vector: " << vector);
       continue;
     }
 
     Pole pole = vmap.findByKey(Key<Pole>(curve_mirror.plid));
     if (pole.plid == 0)
     {
-      ROS_ERROR_STREAM("[createCurveMirrorMarkerArray] invalid pole[]: " << pole);
+      ROS_ERROR_STREAM("[createCurveMirrorMarkerArray] invalid pole: " << pole);
       continue;
     }
 
@@ -841,7 +841,7 @@ visualization_msgs::MarkerArray createWallMarkerArray(const VectorMap& vmap, Col
     Area area = vmap.findByKey(Key<Area>(wall.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createWallMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createWallMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -869,7 +869,7 @@ visualization_msgs::MarkerArray createFenceMarkerArray(const VectorMap& vmap, Co
     Area area = vmap.findByKey(Key<Area>(fence.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createFenceMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createFenceMarkerArray] invalid area: " << area);
       continue;
     }
 
@@ -897,7 +897,7 @@ visualization_msgs::MarkerArray createRailCrossingMarkerArray(const VectorMap& v
     Area area = vmap.findByKey(Key<Area>(rail_crossing.aid));
     if (area.aid == 0)
     {
-      ROS_ERROR_STREAM("[createRailCrossingMarkerArray] invalid area[]: " << area);
+      ROS_ERROR_STREAM("[createRailCrossingMarkerArray] invalid area: " << area);
       continue;
     }
 
