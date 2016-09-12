@@ -128,6 +128,26 @@ static void NmeaCallback(const nmea_msgs::Sentence::ConstPtr& msg)
             //    printf("pos %f  %f %f %f\n",gga_time,geo.x,geo.y,geo.z);
         }
 
+
+        if (nmea[0] == "$PASHR") {
+          pc_time = msg->header.stamp;
+          qq_time = stod(nmea[1]);
+          roll    = stod(nmea[4]) * M_PI / 180.;
+          pitch   = -1 * stod(nmea[5]) * M_PI / 180.;
+          yaw     = -1 * stod(nmea[2]) * M_PI / 180. + M_PI / 2;
+        }
+
+        if (nmea[0] == "$GNGGA") {
+            pc_time    = msg->header.stamp;
+            gga_time   = stod(nmea[1]);
+            double lat = stod(nmea[2]);
+            double lon = stod(nmea[4]);
+            double h   = stod(nmea[9]);
+
+            geo.set_llh_nmea_degrees(lat, lon, h);
+        }
+
+
         // if (qq_time == gga_time) {
         if (fabs(qq_time - gga_time) <= __FLT_EPSILON__) {
             //printf("%f %f %f %f %f  %f %f %f\n", pc_time.toSec(), gga_time, geo.x(), geo.y(), geo.z(), roll, pitch, yaw);
