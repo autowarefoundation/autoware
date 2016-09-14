@@ -813,7 +813,6 @@ void changeWaypoint(EControl detection_result)
 
 int main(int argc, char **argv)
 {
-  int i = 0;  ///
   ros::init(argc, argv, "velocity_set");
 
   ros::NodeHandle nh;
