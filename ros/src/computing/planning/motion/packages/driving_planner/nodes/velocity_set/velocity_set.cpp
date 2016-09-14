@@ -122,7 +122,6 @@ bool PathVset::checkWaypoint(int num, const char *name) const
 {
   if (num < 0 || num >= getSize())
   {
-    //std::cout << name << ": invalid waypoint number" << std::endl;
     return false;
   }
   return true;
@@ -228,9 +227,6 @@ void PathVset::avoidSuddenBraking()
       return;
   }
 
-  std::cout << "====avoid sudden braking====" << std::endl;
-  std::cout << "vehicle is decelerating..." << std::endl;
-
   // fill in waypoints velocity behind vehicle
   for (num = g_closest_waypoint - 1; fill_in_vel > 0; fill_in_vel--)
   {
@@ -283,14 +279,9 @@ void PathVset::changeWaypoints(int stop_waypoint)
 
     changed_vel = sqrt(2.0 * g_decel * (interval * i));  // sqrt(2*a*x)
 
-    // std::cout << "changed_vel[" << num << "]: " << mps2kmph(changed_vel) << " (km/h)";
-    // std::cout << "   distance: " << (g_obstacle_waypoint-num)*interval << " (m)";
-    // std::cout << "   current_vel: " << mps2kmph(g_current_vel) << std::endl;
-
     waypoint_follower::waypoint initial_waypoint = g_path_dk.getCurrentWaypoints().waypoints[num];
     if (changed_vel > initial_waypoint.twist.twist.linear.x)
     {  // avoid acceleration
-      // std::cout << "too large velocity!!" << std::endl;
       current_waypoints_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
     }
     else
@@ -341,19 +332,17 @@ void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 
 void baseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-  ROS_INFO("subscribed base_waypoint\n");
   g_path_dk.setPath(*msg);
   g_path_change.setPath(*msg);
   if (g_path_flag == false)
   {
-    std::cout << "waypoint subscribed" << std::endl;
     g_path_flag = true;
   }
 }
 
 void objPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
 {
-  ROS_INFO("subscribed obj_pose\n");
+  //ROS_INFO("subscribed obj_pose\n");
 }
 
 void vscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
@@ -373,7 +362,6 @@ void vscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
   if (g_vscan_flag == false)
   {
-    std::cout << "vscan subscribed" << std::endl;
     g_vscan_flag = true;
   }
 }
@@ -735,8 +723,6 @@ EControl obstacleDetection()
   static int false_count = 0;
   static EControl prev_detection = KEEP;
 
-  //std::cout << "closest_waypoint : " << g_closest_waypoint << std::endl;
-  //std::cout << "current_velocity : " << mps2kmph(g_current_vel) << std::endl;
   EControl vscan_result = vscanDetection();
   displayDetectionRange(vmap.getDetectionCrossWalkID(), g_closest_waypoint, vscan_result);
 
@@ -864,14 +850,6 @@ int main(int argc, char **argv)
 
     if (g_pose_flag == false || g_path_flag == false)
     {
-      std::cout << "\rtopic waiting          \rtopic waiting";
-      for (int j = 0; j < i; j++)
-      {
-        std::cout << ".";
-      }
-      i++;
-      i = i % 10;
-      std::cout << std::flush;
       loop_rate.sleep();
       continue;
     }
