@@ -1166,30 +1166,12 @@ params :
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
-    - name  : velocity_limit
-      desc  : velocity_limit desc sample
-      label : Velocity Limit (km/h)
-      min   : 0
-      max   : 60
-      v     : 42.0
     - name  : others_distance
       desc  : others_distance desc sample
       label : Others Distance (m)
       min   : 0
       max   : 50
       v     : 15.0
-    - name  : cars_distance
-      desc  : cars_distance desc sample
-      label : Cars Distance (m)
-      min   : 0
-      max   : 50
-      v     : 15.0
-    - name  : pedestrians_distance
-      desc  : pedestrians_distance desc sample
-      label : Pedestrians Distance (m)
-      min   : 0
-      max   : 50
-      v     : 10.0
     - name  : detection_range
       desc  : detection_range desc sample
       label : Detection Range (m)
@@ -1232,18 +1214,6 @@ params :
       min   : 5
       max   : 40
       v     : 15.0
-    - name  : velocity_offset
-      desc  : velocity_offset desc sample
-      label : Velocity Offset (km/h)
-      min   : 0
-      max   : 40
-      v     : 3.0
-    - name  : deceleration_minimum
-      desc  : deceleration_minimum desc sample
-      label : Deceleration Minimum (km/h)
-      min   : 0
-      max   : 40
-      v     : 5.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
       label : Temporal Waypoints (m)
