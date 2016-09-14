@@ -818,6 +818,10 @@ int main(int argc, char **argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+
+  bool use_crosswalk_detection;
+  private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
+
   ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, localizerCallback);
   ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, controlCallback);
   ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, vscanCallback);
@@ -860,7 +864,8 @@ int main(int argc, char **argv)
     closest_waypoint.data = g_closest_waypoint;
     closest_waypoint_pub.publish(closest_waypoint);
 
-    vmap.setDetectionWaypoint(findCrossWalk());
+    if (use_crosswalk_detection)
+      vmap.setDetectionWaypoint(findCrossWalk());
 
     EControl detection_result = obstacleDetection();
 
