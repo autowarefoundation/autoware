@@ -405,6 +405,8 @@ subs :
         desc : velocity_set desc sample
         cmd  : roslaunch driving_planner velocity_set.launch
         param: velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
       - name : path_select
         desc : path_select desc sample
         cmd  : rosrun driving_planner path_select
@@ -1166,6 +1168,14 @@ params :
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
+    - name  : use_crosswalk_detection
+      desc  : use_crosswalk_detection desc sample
+      label : Use Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name  : others_distance
       desc  : others_distance desc sample
       label : Others Distance (m)
