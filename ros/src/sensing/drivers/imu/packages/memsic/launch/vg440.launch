@@ -1,0 +1,4 @@
+<!-- --> 
+<launch>
+	<node pkg="memsic_imu" type="vg440_node" name="vg440_node"/>
+</launch>
