@@ -25,6 +25,8 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(pcd_filter nodes/pcd_filter/pcd_filter.cpp)
 add_executable(pcd_binarizer nodes/pcd_binarizer/pcd_binarizer.cpp)
+add_executable(pcd_arealist nodes/pcd_arealist/pcd_arealist.cpp)
 
 target_link_libraries(pcd_filter ${catkin_LIBRARIES})
 target_link_libraries(pcd_binarizer ${catkin_LIBRARIES})
+target_link_libraries(pcd_arealist ${catkin_LIBRARIES})
