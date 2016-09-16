@@ -1,15 +1,5 @@
-selector :
-  point_cloud :
-    sel   : '[ self.checkbox_auto_update.GetValue() ]'
-    False : points_map_loader
-    True  : points_map_loader_update
-
 buttons :
   point_cloud :
-    run   : echo 'point cloud' # event handler is OnSelector()
-    param : point_cloud
-
-  points_map_loader :
     run   : rosrun map_file points_map_loader
     param : points_map_loader
     gui   :
@@ -18,77 +8,51 @@ buttons :
       - self.checkbox_auto_update
       - self.choice_scene_num
       - self.panel_area_lists
-      - self.label_point_cloud_bar
+      - >-
+        self.label_point_cloud_bar
+        if not self.checkbox_auto_update.GetValue() else None
       stat_topic : [ pmap ]
-      path_pcd :
-        func    : self.tc_point_cloud.GetValue()
-
-  points_map_loader_update :
-    run   : rosrun map_file points_map_loader
-    param : points_map_loader_update
-    gui   :
-      ext_toggle_enables :
-      - self.checkbox_auto_update
-      - self.choice_scene_num
-      - self.panel_area_lists
-      stat_topic : [ pmap ]
+      panel     : self.panel_point_cloud
       scene_num :
-        func    : self.choice_scene_num.GetStringSelection()
+        func    : >-
+          self.choice_scene_num.GetStringSelection()
+          if self.checkbox_auto_update.GetValue() else 'noupdate'
         restore : self.choice_scene_num.SetStringSelection
       path_area_list :
-        func    : self.tc_area_list.GetValue()
-      path_pcd :
-        func    : self.tc_point_cloud.GetValue()
+        panel   : self.panel_area_lists
+      path_area_list_cmd_param :
+        func    : >-
+          pdic.get('path_area_list')
+          if self.checkbox_auto_update.GetValue() else None
 
   vector_map :
     run   : rosrun map_file vector_map_loader
     param : vector_map_loader
     gui   :
       stat_topic : [ vmap ]
-
-  area_lists :
-    run   : echo 'area lists'
-    param : area_lists
+      panel : self.panel_vector_map
 
   tf :
     run    : roslaunch
     param  : tf
+    gui    :
+      panel  : self.panel_tf
 
   pcd_filter :
     run   : rosrun map_tools pcd_filter
     param : pcd_filter
     gui   :
       show_order : [ path_pcd_filter, leaf_size ]
+      panel      : self.panel_pcd_filter
 
   pcd_binarizer :
     run   : rosrun map_tools pcd_binarizer
     param : pcd_binarizer
+    gui   :
+      panel : self.panel_pcd_binarizer
 
 params :
-  - name  : point_cloud
-    vars  :
-    - name      : path_pcd
-      kind      : path
-      path_type : multi
-      v         : ''
-      cmd_param :
-        delim     : ''
-        unpack    : ','
-
   - name  : points_map_loader
-    vars  :
-    - name  : scene_num
-      kind  : hide
-      v     : noupdate
-      cmd_param :
-        delim     : ''
-    - name  : path_pcd
-      kind  : path
-      cmd_param :
-        delim     : ''
-        unpack    : ','
-
-  - name  : points_map_loader_update
     vars  :
     - name  : scene_num
       kind  : menu
@@ -96,11 +60,16 @@ params :
         delim     : ''
     - name  : path_area_list
       kind  : path
+    - name  : path_area_list_cmd_param
+      kind  : hide
       cmd_param :
         delim     : ''
-        must      : True
+        must      : self.checkbox_auto_update.GetValue()
+        only_enable : True
     - name  : path_pcd
       kind  : path
+      path_type : multi
+      v         : ''
       cmd_param :
         delim     : ''
         unpack    : ','
@@ -116,13 +85,6 @@ params :
         unpack    : ','
         must      : True
 
-  - name  : area_lists
-    vars  :
-    - name  : path_area_list
-      kind  : path
-      cmd_param :
-        delim     : ''
-    
   - name  : tf
     vars  :
     - name      : file
