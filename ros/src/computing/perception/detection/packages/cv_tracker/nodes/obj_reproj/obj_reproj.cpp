@@ -219,72 +219,6 @@ static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const c
 }
 #endif  // ifdef HAVE_JSK_PLUGIN
 
-//coordinate system conversion between camera coordinate and map coordinate
-static tf::StampedTransform transformCam2Map;
-
-static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker::obj_label& src)
-{
-  visualization_msgs::MarkerArray ret;
-  int index = 0;
-  std_msgs::ColorRGBA color_red;
-  color_red.r = 1.0f;
-  color_red.g = 0.0f;
-  color_red.b = 0.0f;
-  color_red.a = 1.0f;
-
-  std_msgs::ColorRGBA color_blue;
-  color_blue.r = 0.0f;
-  color_blue.g = 0.0f;
-  color_blue.b = 1.0f;
-  color_blue.a = 1.0f;
-  
-  std_msgs::ColorRGBA color_green;
-  color_green.r = 0.0f;
-  color_green.g = 1.0f;
-  color_green.b = 0.0f;
-  color_green.a = 1.0f;
-  
-  for (const auto& reproj_pos : src.reprojected_pos)
-    {
-      visualization_msgs::Marker marker;
-      /* Set frame ID */
-      marker.header.frame_id = "map";
-
-      /* Set namespace adn id for this marker */
-      marker.ns = object_type;
-      marker.id = index;
-      index++;
-
-      /* Set marker shape */
-      marker.type = visualization_msgs::Marker::SPHERE;
-
-      /* set pose of marker  */
-      marker.pose.position = reproj_pos;
-
-      /* set scale of marker */
-      marker.scale.x = (double)1.5;
-      marker.scale.y = (double)1.5;
-      marker.scale.z = (double)1.5;
-
-      /* set color */
-      if (object_type == "car") {
-        marker.color = color_blue;
-      }
-      else if (object_type == "person") {
-        marker.color = color_green;
-      }
-      else {
-        marker.color = color_red;
-      }
-
-      marker.lifetime = ros::Duration(0.3);
-
-      ret.markers.push_back(marker);
-    }
-
-  return ret;
-}
-
 static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
 {
   for (int row=0; row<4; row++) {
@@ -451,7 +385,6 @@ int main(int argc, char **argv){
    */
   ros::NodeHandle n;
   ros::NodeHandle private_nh("~");
-
   std::string projectionMat_topic_name;
   private_nh.param<std::string>("projection_matrix_topic", projectionMat_topic_name, "/projection_matrix");
   std::string camera_info_topic_name;
@@ -476,20 +409,7 @@ int main(int argc, char **argv){
   ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
   ros::Subscriber camera_info = n.subscribe(camera_info_topic_name, 1, camera_info_callback);
 
-  tf::TransformListener listener;
-  while(n.ok())
-    {
-      /* try to get coordinate system conversion from "camera" to "map" */
-      try {
-        listener.lookupTransform("map", "camera", ros::Time(0), transformCam2Map);
-      }
-      catch (tf::TransformException ex) {
-        ROS_INFO("%s", ex.what());
-        ros::Duration(0.1).sleep();
-      }
+  ros::spin();
 
-      ros::spinOnce();
-
-    }
   return 0;
 }
