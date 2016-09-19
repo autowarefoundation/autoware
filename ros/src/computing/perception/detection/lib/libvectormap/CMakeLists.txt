@@ -5,7 +5,7 @@ project(libvectormap)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  map_file
+  vector_map
   )
 
 ## System dependencies are found with CMake's conventions
@@ -91,7 +91,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 catkin_package(
 INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
 LIBRARIES vectormap
-CATKIN_DEPENDS map_file
+CATKIN_DEPENDS vector_map
 )
 
 include_directories(
@@ -105,6 +105,7 @@ add_library(vectormap STATIC
    src/vector_map.cpp
 )
 
-add_dependencies(vectormap
-  map_file_generate_messages_cpp
+target_link_libraries(vectormap
+  ${catkin_LIBRARIES}
+  vector_map
   )
