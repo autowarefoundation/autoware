@@ -9,10 +9,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
-#include <map_file/CrossWalkArray.h>
-#include <map_file/AreaClassArray.h>
-#include <map_file/LineClassArray.h>
-#include <map_file/PointClassArray.h>
+#include <vector_map/vector_map.h>
 
 enum EControl
 {
@@ -41,20 +38,20 @@ private:
 
 public:
   bool loaded_crosswalk;
-  bool loaded_areaclass;
-  bool loaded_lineclass;
-  bool loaded_pointclass;
+  bool loaded_area;
+  bool loaded_line;
+  bool loaded_point;
   bool loaded_all;
   bool set_points;
-  map_file::CrossWalkArray crosswalk_;
-  map_file::AreaClassArray areaclass_;
-  map_file::LineClassArray lineclass_;
-  map_file::PointClassArray pointclass_;
+  vector_map::CrossWalkArray crosswalk_;
+  vector_map::AreaArray area_;
+  vector_map::LineArray line_;
+  vector_map::PointArray point_;
 
-  void crossWalkCallback(const map_file::CrossWalkArray &msg);
-  void areaclassCallback(const map_file::AreaClassArray &msg);
-  void lineclassCallback(const map_file::LineClassArray &msg);
-  void pointclassCallback(const map_file::PointClassArray &msg);
+  void crossWalkCallback(const vector_map::CrossWalkArray &msg);
+  void areaCallback(const vector_map::AreaArray &msg);
+  void lineCallback(const vector_map::LineArray &msg);
+  void pointCallback(const vector_map::PointArray &msg);
 
   int countAreaSize() const;
   void getAID(std::unordered_map<int, std::vector<int>> &aid_crosswalk) const;
@@ -97,9 +94,9 @@ public:
     : detection_waypoint_(-1)
     , detection_crosswalk_id_(-1)
     , loaded_crosswalk(false)
-    , loaded_areaclass(false)
-    , loaded_lineclass(false)
-    , loaded_pointclass(false)
+    , loaded_area(false)
+    , loaded_line(false)
+    , loaded_point(false)
     , loaded_all(false)
     , set_points(false)
   {

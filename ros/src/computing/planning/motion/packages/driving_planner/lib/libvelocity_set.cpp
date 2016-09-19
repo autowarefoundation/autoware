@@ -20,48 +20,48 @@ std::vector<geometry_msgs::Point> removeNeedlessPoints(std::vector<geometry_msgs
   return new_points;
 }
 
-void CrossWalk::crossWalkCallback(const map_file::CrossWalkArray &msg)
+void CrossWalk::crossWalkCallback(const vector_map::CrossWalkArray &msg)
 {
   crosswalk_ = msg;
 
   loaded_crosswalk = true;
-  if (loaded_crosswalk && loaded_areaclass && loaded_lineclass && loaded_pointclass)
+  if (loaded_crosswalk && loaded_area && loaded_line && loaded_point)
   {
     loaded_all = true;
     ROS_INFO("All VectorMap loaded");
   }
 }
 
-void CrossWalk::areaclassCallback(const map_file::AreaClassArray &msg)
+void CrossWalk::areaCallback(const vector_map::AreaArray &msg)
 {
-  areaclass_ = msg;
+  area_ = msg;
 
-  loaded_areaclass = true;
-  if (loaded_crosswalk && loaded_areaclass && loaded_lineclass && loaded_pointclass)
+  loaded_area = true;
+  if (loaded_crosswalk && loaded_area && loaded_line && loaded_point)
   {
     loaded_all = true;
     ROS_INFO("All VectorMap loaded");
   }
 }
 
-void CrossWalk::lineclassCallback(const map_file::LineClassArray &msg)
+void CrossWalk::lineCallback(const vector_map::LineArray &msg)
 {
-  lineclass_ = msg;
+  line_ = msg;
 
-  loaded_lineclass = true;
-  if (loaded_crosswalk && loaded_areaclass && loaded_lineclass && loaded_pointclass)
+  loaded_line = true;
+  if (loaded_crosswalk && loaded_area && loaded_line && loaded_point)
   {
     loaded_all = true;
     ROS_INFO("All VectorMap loaded");
   }
 }
 
-void CrossWalk::pointclassCallback(const map_file::PointClassArray &msg)
+void CrossWalk::pointCallback(const vector_map::PointArray &msg)
 {
-  pointclass_ = msg;
+  point_ = msg;
 
-  loaded_pointclass = true;
-  if (loaded_crosswalk && loaded_areaclass && loaded_lineclass && loaded_pointclass)
+  loaded_point = true;
+  if (loaded_crosswalk && loaded_area && loaded_line && loaded_point)
   {
     loaded_all = true;
     ROS_INFO("All VectorMap loaded");
@@ -71,7 +71,7 @@ void CrossWalk::pointclassCallback(const map_file::PointClassArray &msg)
 geometry_msgs::Point CrossWalk::getPoint(const int &pid) const
 {
   geometry_msgs::Point point;
-  for (const auto &p : pointclass_.point_classes)
+  for (const auto &p : point_.data)
   {
     if (p.pid == pid)
     {
@@ -89,7 +89,7 @@ geometry_msgs::Point CrossWalk::getPoint(const int &pid) const
 geometry_msgs::Point CrossWalk::calcCenterofGravity(const int &aid) const
 {
   int search_lid = -1;
-  for (const auto &area : areaclass_.area_classes)
+  for (const auto &area : area_.data)
     if (area.aid == aid)
     {
       search_lid = area.slid;
@@ -99,7 +99,7 @@ geometry_msgs::Point CrossWalk::calcCenterofGravity(const int &aid) const
   std::vector<geometry_msgs::Point> area_points;
   while (search_lid)
   {
-    for (const auto &line : lineclass_.line_classes)
+    for (const auto &line : line_.data)
     {
       if (line.lid == search_lid)
       {
@@ -142,7 +142,7 @@ geometry_msgs::Point CrossWalk::calcCenterofGravity(const int &aid) const
 double CrossWalk::calcCrossWalkWidth(const int &aid) const
 {
   int search_lid = -1;
-  for (const auto &area : areaclass_.area_classes)
+  for (const auto &area : area_.data)
     if (area.aid == aid)
     {
       search_lid = area.slid;
@@ -152,7 +152,7 @@ double CrossWalk::calcCrossWalkWidth(const int &aid) const
   std::vector<geometry_msgs::Point> area_points;
   while (search_lid)
   {
-    for (const auto &line : lineclass_.line_classes)
+    for (const auto &line : line_.data)
     {
       if (line.lid == search_lid)
       {
@@ -178,7 +178,7 @@ double CrossWalk::calcCrossWalkWidth(const int &aid) const
 int CrossWalk::countAreaSize() const
 {
   int count = 0;
-  for (const auto &x : crosswalk_.cross_walks)
+  for (const auto &x : crosswalk_.data)
     if (x.type == 0)  // type:0 -> outer frame of crosswalks
       count++;
 
@@ -187,7 +187,7 @@ int CrossWalk::countAreaSize() const
 
 void CrossWalk::getAID(std::unordered_map<int, std::vector<int>> &bdid2aid_map) const
 {
-  for (const auto &x : crosswalk_.cross_walks)
+  for (const auto &x : crosswalk_.data)
     if (x.type == 1)
     {                                         // if it is zebra
       bdid2aid_map[x.bdid].push_back(x.aid);  // save area id

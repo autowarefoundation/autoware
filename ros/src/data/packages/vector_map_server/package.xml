@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>vector_map_server</name>
+  <version>0.0.0</version>
+  <description>The vector_map_server package</description>
+  <maintainer email="syouji@axe.bz">syouji</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>waypoint_follower</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>vector_map_msgs</build_depend>
+  <build_depend>vector_map</build_depend>
+  <build_depend>message_generation</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>waypoint_follower</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>vector_map_msgs</run_depend>
+  <run_depend>vector_map</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <export>
+  </export>
+</package>

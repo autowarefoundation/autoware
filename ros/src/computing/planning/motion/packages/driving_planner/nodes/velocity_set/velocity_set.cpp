@@ -831,9 +831,9 @@ int main(int argc, char **argv)
 
   //------------------ Vector Map ----------------------//
   ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &vmap);
-  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area_class", 1, &CrossWalk::areaclassCallback, &vmap);
-  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line_class", 1, &CrossWalk::lineclassCallback, &vmap);
-  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point_class", 1, &CrossWalk::pointclassCallback, &vmap);
+  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area", 1, &CrossWalk::areaCallback, &vmap);
+  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line", 1, &CrossWalk::lineCallback, &vmap);
+  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point", 1, &CrossWalk::pointCallback, &vmap);
   //----------------------------------------------------//
 
   g_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
