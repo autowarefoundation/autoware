@@ -109,10 +109,14 @@ int main(int argc, char **argv)
   ros::Subscriber waypoints_sub = nh.subscribe("final_waypoints", 1, &VectorMapClient::setWaypoints, &vmc);
 
   visualization_msgs::MarkerArray marker_array;
-  ros::ServiceClient white_line_cli = nh.serviceClient<vector_map_server::GetWhiteLine>("get_white_line");
-  ros::ServiceClient stop_line_cli = nh.serviceClient<vector_map_server::GetStopLine>("get_stop_line");
-  ros::ServiceClient cross_walk_cli = nh.serviceClient<vector_map_server::GetCrossWalk>("get_cross_walk");
-  ros::ServiceClient signal_cli = nh.serviceClient<vector_map_server::GetSignal>("get_signal");
+  ros::ServiceClient white_line_cli =
+    nh.serviceClient<vector_map_server::GetWhiteLine>("vector_map_server/get_white_line");
+  ros::ServiceClient stop_line_cli =
+    nh.serviceClient<vector_map_server::GetStopLine>("vector_map_server/get_stop_line");
+  ros::ServiceClient cross_walk_cli =
+    nh.serviceClient<vector_map_server::GetCrossWalk>("vector_map_server/get_cross_walk");
+  ros::ServiceClient signal_cli =
+    nh.serviceClient<vector_map_server::GetSignal>("vector_map_server/get_signal");
   ros::Rate rate(1);
   while (ros::ok())
   {
