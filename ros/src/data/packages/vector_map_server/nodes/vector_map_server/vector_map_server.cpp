@@ -878,49 +878,49 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   VectorMapServer vms(nh);
 
-  ros::ServiceServer get_road_edge_srv = nh.advertiseService("get_road_edge",
+  ros::ServiceServer get_road_edge_srv = nh.advertiseService("vector_map_server/get_road_edge",
                                                              &VectorMapServer::getRoadEdge, &vms);
-  ros::ServiceServer get_gutter_srv = nh.advertiseService("get_gutter",
+  ros::ServiceServer get_gutter_srv = nh.advertiseService("vector_map_server/get_gutter",
                                                           &VectorMapServer::getGutter, &vms);
-  ros::ServiceServer get_curb_srv = nh.advertiseService("get_curb",
+  ros::ServiceServer get_curb_srv = nh.advertiseService("vector_map_server/get_curb",
                                                         &VectorMapServer::getCurb, &vms);
-  ros::ServiceServer get_white_line_srv = nh.advertiseService("get_white_line",
+  ros::ServiceServer get_white_line_srv = nh.advertiseService("vector_map_server/get_white_line",
                                                               &VectorMapServer::getWhiteLine, &vms);
-  ros::ServiceServer get_stop_line_srv = nh.advertiseService("get_stop_line",
+  ros::ServiceServer get_stop_line_srv = nh.advertiseService("vector_map_server/get_stop_line",
                                                              &VectorMapServer::getStopLine, &vms);
-  ros::ServiceServer get_zebra_zone_srv = nh.advertiseService("get_zebra_zone",
+  ros::ServiceServer get_zebra_zone_srv = nh.advertiseService("vector_map_server/get_zebra_zone",
                                                               &VectorMapServer::getZebraZone, &vms);
-  ros::ServiceServer get_cross_walk_srv = nh.advertiseService("get_cross_walk",
+  ros::ServiceServer get_cross_walk_srv = nh.advertiseService("vector_map_server/get_cross_walk",
                                                               &VectorMapServer::getCrossWalk, &vms);
-  ros::ServiceServer get_road_mark_srv = nh.advertiseService("get_road_mark",
+  ros::ServiceServer get_road_mark_srv = nh.advertiseService("vector_map_server/get_road_mark",
                                                              &VectorMapServer::getRoadMark, &vms);
-  ros::ServiceServer get_road_pole_srv = nh.advertiseService("get_road_pole",
+  ros::ServiceServer get_road_pole_srv = nh.advertiseService("vector_map_server/get_road_pole",
                                                              &VectorMapServer::getRoadPole, &vms);
-  ros::ServiceServer get_road_sign_srv = nh.advertiseService("get_road_sign",
+  ros::ServiceServer get_road_sign_srv = nh.advertiseService("vector_map_server/get_road_sign",
                                                              &VectorMapServer::getRoadSign, &vms);
-  ros::ServiceServer get_signal_srv = nh.advertiseService("get_signal",
+  ros::ServiceServer get_signal_srv = nh.advertiseService("vector_map_server/get_signal",
                                                           &VectorMapServer::getSignal, &vms);
-  ros::ServiceServer get_street_light_srv = nh.advertiseService("get_street_light",
+  ros::ServiceServer get_street_light_srv = nh.advertiseService("vector_map_server/get_street_light",
                                                                 &VectorMapServer::getStreetLight, &vms);
-  ros::ServiceServer get_utility_pole_srv = nh.advertiseService("get_utility_pole",
+  ros::ServiceServer get_utility_pole_srv = nh.advertiseService("vector_map_server/get_utility_pole",
                                                                 &VectorMapServer::getUtilityPole, &vms);
-  ros::ServiceServer get_guard_rail_srv = nh.advertiseService("get_guard_rail",
+  ros::ServiceServer get_guard_rail_srv = nh.advertiseService("vector_map_server/get_guard_rail",
                                                               &VectorMapServer::getGuardRail, &vms);
-  ros::ServiceServer get_side_walk_srv = nh.advertiseService("get_side_walk",
+  ros::ServiceServer get_side_walk_srv = nh.advertiseService("vector_map_server/get_side_walk",
                                                              &VectorMapServer::getSideWalk, &vms);
-  ros::ServiceServer get_drive_on_portion_srv = nh.advertiseService("get_drive_on_portion",
+  ros::ServiceServer get_drive_on_portion_srv = nh.advertiseService("vector_map_server/get_drive_on_portion",
                                                                     &VectorMapServer::getDriveOnPortion, &vms);
-  ros::ServiceServer get_cross_road_srv = nh.advertiseService("get_cross_road",
+  ros::ServiceServer get_cross_road_srv = nh.advertiseService("vector_map_server/get_cross_road",
                                                               &VectorMapServer::getCrossRoad, &vms);
-  ros::ServiceServer get_side_strip_srv = nh.advertiseService("get_side_strip",
+  ros::ServiceServer get_side_strip_srv = nh.advertiseService("vector_map_server/get_side_strip",
                                                               &VectorMapServer::getSideStrip, &vms);
-  ros::ServiceServer get_curve_mirror_srv = nh.advertiseService("get_curve_mirror",
+  ros::ServiceServer get_curve_mirror_srv = nh.advertiseService("vector_map_server/get_curve_mirror",
                                                                 &VectorMapServer::getCurveMirror, &vms);
-  ros::ServiceServer get_wall_srv = nh.advertiseService("get_wall",
+  ros::ServiceServer get_wall_srv = nh.advertiseService("vector_map_server/get_wall",
                                                         &VectorMapServer::getWall, &vms);
-  ros::ServiceServer get_fence_srv = nh.advertiseService("get_fence",
+  ros::ServiceServer get_fence_srv = nh.advertiseService("vector_map_server/get_fence",
                                                          &VectorMapServer::getFence, &vms);
-  ros::ServiceServer get_rail_crossing_srv = nh.advertiseService("get_rail_crossing",
+  ros::ServiceServer get_rail_crossing_srv = nh.advertiseService("vector_map_server/get_rail_crossing",
                                                                  &VectorMapServer::getRailCrossing, &vms);
 
   ros::spin();
