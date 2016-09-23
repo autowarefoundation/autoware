@@ -15,6 +15,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 add_service_files(
   FILES
+  GetDTLane.srv
+  GetNode.srv
+  GetLane.srv
+  GetWayArea.srv
   GetRoadEdge.srv
   GetGutter.srv
   GetCurb.srv

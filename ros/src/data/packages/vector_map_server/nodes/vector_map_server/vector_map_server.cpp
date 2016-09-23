@@ -33,6 +33,10 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <vector_map/vector_map.h>
 
+#include <vector_map_server/GetDTLane.h>
+#include <vector_map_server/GetNode.h>
+#include <vector_map_server/GetLane.h>
+#include <vector_map_server/GetWayArea.h>
 #include <vector_map_server/GetRoadEdge.h>
 #include <vector_map_server/GetGutter.h>
 #include <vector_map_server/GetCurb.h>
@@ -145,6 +149,15 @@ Point findEndPoint(const VectorMap& vmap, const Lane& lane)
   if (node.nid == 0)
     return end_point;
   return vmap.findByKey(Key<Point>(node.pid));
+}
+
+Point createMedianPoint(const Point& p1, const Point& p2)
+{
+  Point point;
+  point.bx = (p1.bx + p2.bx) / 2;
+  point.ly = (p1.ly + p2.ly) / 2;
+  point.h = (p1.h + p2.h) / 2;
+  return point;
 }
 
 std::vector<Point> findStartPoints(const VectorMap& vmap)
@@ -311,7 +324,11 @@ Lane findNearestLane(const VectorMap& vmap, const std::vector<Lane>& lanes, cons
     Point start_point = findStartPoint(vmap, lane);
     if (start_point.pid == 0)
       continue;
-    double distance = computeDistance(base_point, start_point);
+    Point end_point = findEndPoint(vmap, lane);
+    if (end_point.pid == 0)
+      continue;
+    Point median_point = createMedianPoint(start_point, end_point);
+    double distance = computeDistance(base_point, median_point);
     if (distance <= min_distance)
     {
       nearest_lane = lane;
@@ -330,7 +347,11 @@ std::vector<Lane> findNearLanes(const VectorMap& vmap, const std::vector<Lane>& 
     Point start_point = findStartPoint(vmap, lane);
     if (start_point.pid == 0)
       continue;
-    if (computeDistance(base_point, start_point) <= radius)
+    Point end_point = findEndPoint(vmap, lane);
+    if (end_point.pid == 0)
+      continue;
+    Point median_point = createMedianPoint(start_point, end_point);
+    if (computeDistance(base_point, median_point) <= radius)
       near_lanes.push_back(lane);
   }
   return near_lanes;
@@ -515,6 +536,74 @@ public:
     nh.param<bool>("vector_map_server/debug", debug_, false);
     if (debug_)
       marker_array_pub_ = nh.advertise<visualization_msgs::MarkerArray>("vector_map_server", 10, true);
+  }
+
+  bool getDTLane(vector_map_server::GetDTLane::Request& request,
+                 vector_map_server::GetDTLane::Response& response)
+  {
+    std::vector<Lane> traveling_route = createTravelingRoute(request.pose, request.waypoints);
+    if (traveling_route.empty())
+      return false;
+    response.objects.header.frame_id = "map";
+    for (const auto& lane : traveling_route)
+    {
+      DTLane dtlane = vmap_.findByKey(Key<DTLane>(lane.did));
+      if (dtlane.did == 0)
+        return false;
+      response.objects.data.push_back(dtlane);
+    }
+    return true;
+  }
+
+  bool getNode(vector_map_server::GetNode::Request& request,
+               vector_map_server::GetNode::Response& response)
+  {
+    std::vector<Lane> traveling_route = createTravelingRoute(request.pose, request.waypoints);
+    if (traveling_route.empty())
+      return false;
+    response.objects.header.frame_id = "map";
+    for (const auto& lane : traveling_route)
+    {
+      Node node = vmap_.findByKey(Key<Node>(lane.bnid));
+      if (node.nid == 0)
+        return false;
+      response.objects.data.push_back(node);
+    }
+    Lane end_lane = traveling_route[traveling_route.size() - 1];
+    Node end_node = vmap_.findByKey(Key<Node>(end_lane.fnid));
+    if (end_node.nid == 0)
+      return false;
+    response.objects.data.push_back(end_node);
+    return true;
+  }
+
+  bool getLane(vector_map_server::GetLane::Request& request,
+               vector_map_server::GetLane::Response& response)
+  {
+    std::vector<Lane> traveling_route = createTravelingRoute(request.pose, request.waypoints);
+    if (traveling_route.empty())
+      return false;
+    response.objects.header.frame_id = "map";
+    for (const auto& lane : traveling_route)
+      response.objects.data.push_back(lane);
+    return true;
+  }
+
+  bool getWayArea(vector_map_server::GetWayArea::Request& request,
+                  vector_map_server::GetWayArea::Response& response)
+  {
+    std::vector<Lane> traveling_route = createTravelingRoute(request.pose, request.waypoints);
+    if (traveling_route.empty())
+      return false;
+    response.objects.header.frame_id = "map";
+    for (const auto& lane : traveling_route)
+    {
+      WayArea way_area = vmap_.findByKey(Key<WayArea>(lane.linkwaid));
+      if (way_area.waid == 0)
+        return false;
+      response.objects.data.push_back(way_area);
+    }
+    return true;
   }
 
   bool getRoadEdge(vector_map_server::GetRoadEdge::Request& request,
@@ -878,6 +967,14 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   VectorMapServer vms(nh);
 
+  ros::ServiceServer get_dtlane_srv = nh.advertiseService("vector_map_server/get_dtlane",
+                                                          &VectorMapServer::getDTLane, &vms);
+  ros::ServiceServer get_node_srv = nh.advertiseService("vector_map_server/get_node",
+                                                        &VectorMapServer::getNode, &vms);
+  ros::ServiceServer get_lane_srv = nh.advertiseService("vector_map_server/get_lane",
+                                                        &VectorMapServer::getLane, &vms);
+  ros::ServiceServer get_way_area_srv = nh.advertiseService("vector_map_server/get_way_area",
+                                                            &VectorMapServer::getWayArea, &vms);
   ros::ServiceServer get_road_edge_srv = nh.advertiseService("vector_map_server/get_road_edge",
                                                              &VectorMapServer::getRoadEdge, &vms);
   ros::ServiceServer get_gutter_srv = nh.advertiseService("vector_map_server/get_gutter",
