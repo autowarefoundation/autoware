@@ -471,7 +471,11 @@ private:
   {
     std::vector<Lane> null_lanes;
 
-    std::vector<Lane> fine_lanes = createFineLanes(vmap_, waypoints, radius_, loops_);
+    std::vector<Lane> fine_lanes;
+    if (waypoints.waypoints.empty())
+      fine_lanes = vmap_.findByFilter([](const Lane& lane){return true;});
+    else
+      fine_lanes = createFineLanes(vmap_, waypoints, radius_, loops_);
     if (fine_lanes.empty())
       return null_lanes;
 
@@ -480,40 +484,41 @@ private:
       return null_lanes;
 
     std::vector<Lane> traveling_route;
-    visualization_msgs::MarkerArray marker_array_buffer;
-    int id = 0;
-    bool future = false;
-    for (const auto& fine_lane : fine_lanes)
+    if (waypoints.waypoints.empty())
+      traveling_route.push_back(nearest_lane);
+    else
     {
-      if (fine_lane.lnid == nearest_lane.lnid)
-        future = true;
-      if (future)
+      bool future = false;
+      for (const auto& fine_lane : fine_lanes)
       {
-        if (debug_)
-        {
-          Point start_point = findStartPoint(vmap_, fine_lane);
-          if (start_point.pid != 0)
-          {
-            visualization_msgs::Marker marker = createPointMarker("traveling_route", id++, Color::YELLOW,
-                                                                  start_point);
-            if (isValidMarker(marker))
-              marker_array_buffer.markers.push_back(marker);
-          }
-          Point end_point = findEndPoint(vmap_, fine_lane);
-          if (end_point.pid != 0)
-          {
-            visualization_msgs::Marker marker = createPointMarker("traveling_route", id++, Color::YELLOW,
-                                                                  end_point);
-            if (isValidMarker(marker))
-              marker_array_buffer.markers.push_back(marker);
-          }
-        }
-        traveling_route.push_back(fine_lane);
+        if (fine_lane.lnid == nearest_lane.lnid)
+          future = true;
+        if (future)
+          traveling_route.push_back(fine_lane);
       }
     }
 
     if (debug_)
     {
+      visualization_msgs::MarkerArray marker_array_buffer;
+      int id = 0;
+      for (const auto& lane : traveling_route)
+      {
+        Point start_point = findStartPoint(vmap_, lane);
+        if (start_point.pid != 0)
+        {
+          visualization_msgs::Marker marker = createPointMarker("traveling_route", id++, Color::YELLOW, start_point);
+          if (isValidMarker(marker))
+            marker_array_buffer.markers.push_back(marker);
+        }
+        Point end_point = findEndPoint(vmap_, lane);
+        if (end_point.pid != 0)
+        {
+          visualization_msgs::Marker marker = createPointMarker("traveling_route", id++, Color::YELLOW, end_point);
+          if (isValidMarker(marker))
+            marker_array_buffer.markers.push_back(marker);
+        }
+      }
       if (!marker_array_.markers.empty())
       {
         for (auto& marker : marker_array_.markers)
