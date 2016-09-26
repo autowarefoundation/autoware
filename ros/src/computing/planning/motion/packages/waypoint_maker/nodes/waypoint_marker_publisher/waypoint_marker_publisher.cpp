@@ -270,8 +270,12 @@ void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
       g_local_color = local_color;
       break;
     case TRAFFIC_LIGHT_UNKNOWN:
-      _global_color = _initial_color;
-      g_local_color = _initial_color;
+      global_color.b = 1.0;
+      global_color.g = 0.7;
+      _global_color = global_color;
+      local_color.b = 1.0;
+      local_color.g = 0.7;
+      g_local_color = local_color;
       break;
     default:
       ROS_ERROR("unknown traffic_light");
