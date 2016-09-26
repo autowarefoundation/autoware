@@ -255,6 +255,7 @@ void Control(vel_data_t vel, void* p)
     //////////////////////////////////////////////////////
     
     main->StrokeControl(current_velocity, cmd_velocity);
+    //main->VelocityControl(current_velocity, cmd_velocity);
     
     //////////////////////////////////////////////////////
     // Steering
