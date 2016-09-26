@@ -131,7 +131,7 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
 
     /* reset PID variables. */
     e_prev = 0;
-    clear_diff();
+    //clear_diff();
   }
   else { // PID control
     double target_accel_stroke;
@@ -162,7 +162,14 @@ double _accel_stroke_pid_control(double current_velocity, double cmd_velocity)
     }
 
 #if 1
-    target_accel_stroke = _K_ACCEL_P * e + _K_ACCEL_I * e_i + _K_ACCEL_D * e_d;
+    //target_accel_stroke = _K_ACCEL_P * e + _K_ACCEL_I * e_i + _K_ACCEL_D * e_d;
+    if (current_velocity > 15/***10**20160905***/) {
+      target_accel_stroke = _K_ACCEL_P_UNTIL20 * e + _K_ACCEL_I_UNTIL20 * e_i +
+	_K_ACCEL_D_UNTIL20 * e_d;
+    } else {
+      target_accel_stroke = _K_ACCEL_P_UNTIL10 * e + _K_ACCEL_I_UNTIL10 * e_i +
+	_K_ACCEL_D_UNTIL10 * e_d;
+    }
 #else
     printf("accel_p = %lf, accel_i = %lf, accel_d = %lf\n", shm_ptr->accel.P, shm_ptr->accel.I, shm_ptr->accel.D);
     target_accel_stroke = shm_ptr->accel.P * e + shm_ptr->accel.I * e_i + shm_ptr->accel.D * e_d;
@@ -221,17 +228,21 @@ double _brake_stroke_pid_control(double current_velocity, double cmd_velocity)
 
     /* reset PID variables. */
     e_prev = 0;
-    clear_diff();
+    //clear_diff();
   }
   else { // PID control
     double target_brake_stroke;
 
     // since this is braking, multiply -1.
     e = -1 * (cmd_velocity - current_velocity);
+    if (e > 0 && e <= 1) { // added @ 2016/Aug/29
+        e = 0;
+    }
 
     e_d = e - e_prev;
     
     brake_diff_sum += e;
+#if 0
     brake_diff_buffer.push(e);
     if (brake_diff_buffer.size() > _K_BRAKE_I_CYCLES) {
       double e_old = brake_diff_buffer.front();
@@ -241,6 +252,7 @@ double _brake_stroke_pid_control(double current_velocity, double cmd_velocity)
       }
       brake_diff_buffer.pop();
     }
+#endif
 
     if (brake_diff_sum > _BRAKE_MAX_I) {
       e_i = _BRAKE_MAX_I;
@@ -257,9 +269,13 @@ double _brake_stroke_pid_control(double current_velocity, double cmd_velocity)
       target_brake_stroke = 0;
     }
 
+    cout << "target: " << target_brake_stroke << endl;
+    cout << "vstate: " << vstate.brake_stroke << endl;
+#ifdef USE_BRAKE_STROKE_DELTA_MAX // should I use??
     if (target_brake_stroke - vstate.brake_stroke > _BRAKE_STROKE_DELTA_MAX) {
       target_brake_stroke = vstate.brake_stroke + _BRAKE_STROKE_DELTA_MAX;
     }
+#endif
 
     cout << "e = " << e << endl;
     cout << "e_i = " << e_i << endl;
@@ -277,6 +293,7 @@ double _brake_stroke_pid_control(double current_velocity, double cmd_velocity)
       << e_i << " " 
       << e_d << " " 
       << target_brake_stroke << " " 
+      << vstate.brake_stroke << " "
       << endl;
 #endif
   }
@@ -287,30 +304,30 @@ double _brake_stroke_pid_control(double current_velocity, double cmd_velocity)
 double _stopping_control(double current_velocity)
 {
   double ret;
-  static double old_brake_stroke = _BRAKE_PEDAL_MED;
+  static double old_brake_stroke = _BRAKE_PEDAL_STOPPING_MED;
 
   // decelerate by using brake	
   if (current_velocity < 0.1) {
     // nearly at stop -> apply full brake. brake_stroke should reach BRAKE_PEDAL_MAX in one second.
-    int gain = (int)(((double)_BRAKE_PEDAL_MAX)*cycle_time);
+    int gain = (int)(((double)_BRAKE_PEDAL_STOPPING_MAX)*cycle_time);
     ret = old_brake_stroke + gain;
-    if ((int)ret > _BRAKE_PEDAL_MAX)
-      ret = _BRAKE_PEDAL_MAX;
+    if ((int)ret > _BRAKE_PEDAL_STOPPING_MAX)
+      ret = _BRAKE_PEDAL_STOPPING_MAX;
     old_brake_stroke = ret;
   }
   else {
     /*
     // one second is approximately how fast full brakes applied in sharp stop
-    int gain = (int)(((double)_BRAKE_PEDAL_MED)*cycle_time);
+    int gain = (int)(((double)_BRAKE_PEDAL_STOPPING_MED)*cycle_time);
     ret = vstate.brake_stroke + gain;
-    if ((int)ret > _BRAKE_PEDAL_MED)
-      ret = _BRAKE_PEDAL_MED;
+    if ((int)ret > _BRAKE_PEDAL_STOPPING_MED)
+      ret = _BRAKE_PEDAL_STOPPING_MED;
     */
 
     // vstate has some delay until applying the current state.
     // perhaps we can just set BRAKE_PEDAL_MED to avoid deceleration delay.
-    ret = _BRAKE_PEDAL_MED;
-    old_brake_stroke = _BRAKE_PEDAL_MED;
+    ret = _BRAKE_PEDAL_STOPPING_MED;
+    old_brake_stroke = _BRAKE_PEDAL_STOPPING_MED;
   }
 
   return ret;
@@ -325,6 +342,10 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
   // don't control if not in program mode.
   if (!ZMP_DRV_CONTROLLED()) {
     clear_diff();
+#ifdef USE_BRAKE_LAMP
+    sndBrkLampOff();
+#endif /* USE_BRAKE_LAMP */
+
     return;
   }
 
@@ -349,6 +370,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     if (accel_stroke > 0) {
       cout << "ZMP_SET_DRV_STROKE(" << accel_stroke << ")" << endl;
       ZMP_SET_DRV_STROKE(accel_stroke);
+      ZMP_SET_BRAKE_STROKE(0);
     }
     else {
       cout << "ZMP_SET_DRV_STROKE(0)" << endl;
@@ -356,7 +378,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
       cout << "ZMP_SET_BRAKE_STROKE(" << -accel_stroke << ")" << endl;
       ZMP_SET_BRAKE_STROKE(-accel_stroke);
     }
-  } 
+  }
   else if (fabs(cmd_velocity) < current_velocity
            && fabs(cmd_velocity) > 0.0) {
     double brake_stroke;
@@ -366,6 +388,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     if (brake_stroke > 0) {
       cout << "ZMP_SET_BRAKE_STROKE(" << brake_stroke << ")" << endl;
       ZMP_SET_BRAKE_STROKE(brake_stroke);
+      ZMP_SET_DRV_STROKE(0);
     }
     else {
       cout << "ZMP_SET_BRAKE_STROKE(0)" << endl;
@@ -378,7 +401,7 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     double brake_stroke;
     cout << "stopping: current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << endl;
-    if (current_velocity < 3.0) { // nearly stopping
+    if (current_velocity < 4.0) { // nearly stopping
       ZMP_SET_DRV_STROKE(0);
       brake_stroke = _stopping_control(current_velocity);
       cout << "ZMP_SET_BRAKE_STROKE(" << brake_stroke << ")" << endl;
@@ -402,6 +425,14 @@ void MainWindow::StrokeControl(double current_velocity, double cmd_velocity)
     cout << "unknown: current_velocity=" << current_velocity 
          << ", cmd_velocity=" << cmd_velocity << endl;
   }
+
+#if 1 /* log */
+      ofstream ofs("/tmp/driving.log", ios::app);
+      ofs << cmd_velocity << " "
+      << current_velocity << " "
+      << endl;
+#endif
+
 }
 
 void MainWindow::VelocityControl(double current_velocity, double cmd_velocity)
