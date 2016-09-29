@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     {
       for (const auto& white_line : white_line_srv.response.objects.data)
       {
-        if (white_line.id == 0 || white_line.lid == 0)
+        if (white_line.lid == 0)
           continue;
 
         Line line = vmap.findByKey(Key<Line>(white_line.lid));
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
     {
       for (const auto& stop_line : stop_line_srv.response.objects.data)
       {
-        if (stop_line.id == 0 || stop_line.lid == 0)
+        if (stop_line.lid == 0)
           continue;
 
         Line line = vmap.findByKey(Key<Line>(stop_line.lid));
@@ -180,7 +180,7 @@ int main(int argc, char **argv)
     {
       for (const auto& cross_walk : cross_walk_srv.response.objects.data)
       {
-        if (cross_walk.id == 0 || cross_walk.aid == 0)
+        if (cross_walk.aid == 0)
           continue;
 
         Area area = vmap.findByKey(Key<Area>(cross_walk.aid));
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
     {
       for (const auto& signal : signal_srv.response.objects.data)
       {
-        if (signal.id == 0 || signal.vid == 0)
+        if (signal.vid == 0)
           continue;
 
         Vector vector = vmap.findByKey(Key<Vector>(signal.vid));
