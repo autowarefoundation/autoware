@@ -165,8 +165,6 @@ std::vector<Point> findStartPoints(const VectorMap& vmap)
   std::vector<Point> start_points;
   for (const auto& lane : vmap.findByFilter([](const Lane& lane){return true;}))
   {
-    if (lane.lnid == 0)
-      continue;
     Node node = vmap.findByKey(Key<Node>(lane.bnid));
     if (node.nid == 0)
       continue;
@@ -183,8 +181,6 @@ std::vector<Point> findEndPoints(const VectorMap& vmap)
   std::vector<Point> end_points;
   for (const auto& lane : vmap.findByFilter([](const Lane& lane){return true;}))
   {
-    if (lane.lnid == 0)
-      continue;
     Node node = vmap.findByKey(Key<Node>(lane.fnid));
     if (node.nid == 0)
       continue;
@@ -228,14 +224,8 @@ std::vector<Lane> findLanesByStartPoint(const VectorMap& vmap, const Point& star
   std::vector<Lane> lanes;
   for (const auto& node : vmap.findByFilter([&start_point](const Node& node){return node.pid == start_point.pid;}))
   {
-    if (node.nid == 0)
-      continue;
     for (const auto& lane : vmap.findByFilter([&node](const Lane& lane){return lane.bnid == node.nid;}))
-    {
-      if (lane.lnid == 0)
-        continue;
       lanes.push_back(lane);
-    }
   }
   return lanes;
 }
@@ -245,14 +235,8 @@ std::vector<Lane> findLanesByEndPoint(const VectorMap& vmap, const Point& end_po
   std::vector<Lane> lanes;
   for (const auto& node : vmap.findByFilter([&end_point](const Node& node){return node.pid == end_point.pid;}))
   {
-    if (node.nid == 0)
-      continue;
     for (const auto& lane : vmap.findByFilter([&node](const Lane& lane){return lane.fnid == node.nid;}))
-    {
-      if (lane.lnid == 0)
-        continue;
       lanes.push_back(lane);
-    }
   }
   return lanes;
 }
@@ -420,8 +404,6 @@ std::vector<Lane> createFineLanes(const VectorMap& vmap, const waypoint_follower
       for (const auto& lane : vmap.findByFilter(is_next_lane))
       {
         Lane next_lane = lane;
-        if (next_lane.lnid == 0)
-          continue;
         Point next_point = findEndPoint(vmap, next_lane);
         if (next_point.pid == 0)
           continue;
