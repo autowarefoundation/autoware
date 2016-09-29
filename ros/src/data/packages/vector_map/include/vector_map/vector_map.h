@@ -504,11 +504,24 @@ public:
   void registerCallback(const Callback<RailCrossingArray>& cb);
 };
 
+extern const double COLOR_VALUE_MIN;
+extern const double COLOR_VALUE_MAX;
+extern const double COLOR_VALUE_MEDIAN;
+extern const double COLOR_VALUE_LIGHT_LOW;
+extern const double COLOR_VALUE_LIGHT_HIGH;
+
 std_msgs::ColorRGBA createColorRGBA(Color color);
 
 void enableMarker(visualization_msgs::Marker& marker);
 void disableMarker(visualization_msgs::Marker& marker);
 bool isValidMarker(const visualization_msgs::Marker& marker);
+
+extern const double MAKER_SCALE_POINT;
+extern const double MAKER_SCALE_VECTOR;
+extern const double MAKER_SCALE_VECTOR_LENGTH;
+extern const double MAKER_SCALE_LINE;
+extern const double MAKER_SCALE_AREA;
+extern const double MAKER_SCALE_BOX;
 
 visualization_msgs::Marker createMarker(const std::string& ns, int id, int type);
 visualization_msgs::Marker createPointMarker(const std::string& ns, int id, Color color, const Point& point);
