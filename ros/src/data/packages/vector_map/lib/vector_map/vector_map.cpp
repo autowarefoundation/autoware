@@ -39,224 +39,352 @@ void updatePoint(std::map<Key<Point>, Point>& map, const PointArray& msg)
 {
   map = std::map<Key<Point>, Point>();
   for (const auto& item : msg.data)
+  {
+    if (item.pid == 0)
+      continue;
     map.insert(std::make_pair(Key<Point>(item.pid), item));
+  }
 }
 
 void updateVector(std::map<Key<Vector>, Vector>& map, const VectorArray& msg)
 {
   map = std::map<Key<Vector>, Vector>();
   for (const auto& item : msg.data)
+  {
+    if (item.vid == 0)
+      continue;
     map.insert(std::make_pair(Key<Vector>(item.vid), item));
+  }
 }
 
 void updateLine(std::map<Key<Line>, Line>& map, const LineArray& msg)
 {
   map = std::map<Key<Line>, Line>();
   for (const auto& item : msg.data)
+  {
+    if (item.lid == 0)
+      continue;
     map.insert(std::make_pair(Key<Line>(item.lid), item));
+  }
 }
 
 void updateArea(std::map<Key<Area>, Area>& map, const AreaArray& msg)
 {
   map = std::map<Key<Area>, Area>();
   for (const auto& item : msg.data)
+  {
+    if (item.aid == 0)
+      continue;
     map.insert(std::make_pair(Key<Area>(item.aid), item));
+  }
 }
 
 void updatePole(std::map<Key<Pole>, Pole>& map, const PoleArray& msg)
 {
   map = std::map<Key<Pole>, Pole>();
   for (const auto& item : msg.data)
+  {
+    if (item.plid == 0)
+      continue;
     map.insert(std::make_pair(Key<Pole>(item.plid), item));
+  }
 }
 
 void updateBox(std::map<Key<Box>, Box>& map, const BoxArray& msg)
 {
   map = std::map<Key<Box>, Box>();
   for (const auto& item : msg.data)
+  {
+    if (item.bid == 0)
+      continue;
     map.insert(std::make_pair(Key<Box>(item.bid), item));
+  }
 }
 
 void updateDTLane(std::map<Key<DTLane>, DTLane>& map, const DTLaneArray& msg)
 {
   map = std::map<Key<DTLane>, DTLane>();
   for (const auto& item : msg.data)
+  {
+    if (item.did == 0)
+      continue;
     map.insert(std::make_pair(Key<DTLane>(item.did), item));
+  }
 }
 
 void updateNode(std::map<Key<Node>, Node>& map, const NodeArray& msg)
 {
   map = std::map<Key<Node>, Node>();
   for (const auto& item : msg.data)
+  {
+    if (item.nid == 0)
+      continue;
     map.insert(std::make_pair(Key<Node>(item.nid), item));
+  }
 }
 
 void updateLane(std::map<Key<Lane>, Lane>& map, const LaneArray& msg)
 {
   map = std::map<Key<Lane>, Lane>();
   for (const auto& item : msg.data)
+  {
+    if (item.lnid == 0)
+      continue;
     map.insert(std::make_pair(Key<Lane>(item.lnid), item));
+  }
 }
 
 void updateWayArea(std::map<Key<WayArea>, WayArea>& map, const WayAreaArray& msg)
 {
   map = std::map<Key<WayArea>, WayArea>();
   for (const auto& item : msg.data)
+  {
+    if (item.waid == 0)
+      continue;
     map.insert(std::make_pair(Key<WayArea>(item.waid), item));
+  }
 }
 
 void updateRoadEdge(std::map<Key<RoadEdge>, RoadEdge>& map, const RoadEdgeArray& msg)
 {
   map = std::map<Key<RoadEdge>, RoadEdge>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<RoadEdge>(item.id), item));
+  }
 }
 
 void updateGutter(std::map<Key<Gutter>, Gutter>& map, const GutterArray& msg)
 {
   map = std::map<Key<Gutter>, Gutter>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<Gutter>(item.id), item));
+  }
 }
 
 void updateCurb(std::map<Key<Curb>, Curb>& map, const CurbArray& msg)
 {
   map = std::map<Key<Curb>, Curb>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<Curb>(item.id), item));
+  }
 }
 
 void updateWhiteLine(std::map<Key<WhiteLine>, WhiteLine>& map, const WhiteLineArray& msg)
 {
   map = std::map<Key<WhiteLine>, WhiteLine>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<WhiteLine>(item.id), item));
+  }
 }
 
 void updateStopLine(std::map<Key<StopLine>, StopLine>& map, const StopLineArray& msg)
 {
   map = std::map<Key<StopLine>, StopLine>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<StopLine>(item.id), item));
+  }
 }
 
 void updateZebraZone(std::map<Key<ZebraZone>, ZebraZone>& map, const ZebraZoneArray& msg)
 {
   map = std::map<Key<ZebraZone>, ZebraZone>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<ZebraZone>(item.id), item));
+  }
 }
 
 void updateCrossWalk(std::map<Key<CrossWalk>, CrossWalk>& map, const CrossWalkArray& msg)
 {
   map = std::map<Key<CrossWalk>, CrossWalk>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<CrossWalk>(item.id), item));
+  }
 }
 
 void updateRoadMark(std::map<Key<RoadMark>, RoadMark>& map, const RoadMarkArray& msg)
 {
   map = std::map<Key<RoadMark>, RoadMark>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<RoadMark>(item.id), item));
+  }
 }
 
 void updateRoadPole(std::map<Key<RoadPole>, RoadPole>& map, const RoadPoleArray& msg)
 {
   map = std::map<Key<RoadPole>, RoadPole>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<RoadPole>(item.id), item));
+  }
 }
 
 void updateRoadSign(std::map<Key<RoadSign>, RoadSign>& map, const RoadSignArray& msg)
 {
   map = std::map<Key<RoadSign>, RoadSign>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<RoadSign>(item.id), item));
+  }
 }
 
 void updateSignal(std::map<Key<Signal>, Signal>& map, const SignalArray& msg)
 {
   map = std::map<Key<Signal>, Signal>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<Signal>(item.id), item));
+  }
 }
 
 void updateStreetLight(std::map<Key<StreetLight>, StreetLight>& map, const StreetLightArray& msg)
 {
   map = std::map<Key<StreetLight>, StreetLight>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<StreetLight>(item.id), item));
+  }
 }
 
 void updateUtilityPole(std::map<Key<UtilityPole>, UtilityPole>& map, const UtilityPoleArray& msg)
 {
   map = std::map<Key<UtilityPole>, UtilityPole>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<UtilityPole>(item.id), item));
+  }
 }
 
 void updateGuardRail(std::map<Key<GuardRail>, GuardRail>& map, const GuardRailArray& msg)
 {
   map = std::map<Key<GuardRail>, GuardRail>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<GuardRail>(item.id), item));
+  }
 }
 
 void updateSideWalk(std::map<Key<SideWalk>, SideWalk>& map, const SideWalkArray& msg)
 {
   map = std::map<Key<SideWalk>, SideWalk>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<SideWalk>(item.id), item));
+  }
 }
 
 void updateDriveOnPortion(std::map<Key<DriveOnPortion>, DriveOnPortion>& map, const DriveOnPortionArray& msg)
 {
   map = std::map<Key<DriveOnPortion>, DriveOnPortion>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<DriveOnPortion>(item.id), item));
+  }
 }
 
 void updateCrossRoad(std::map<Key<CrossRoad>, CrossRoad>& map, const CrossRoadArray& msg)
 {
   map = std::map<Key<CrossRoad>, CrossRoad>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<CrossRoad>(item.id), item));
+  }
 }
 
 void updateSideStrip(std::map<Key<SideStrip>, SideStrip>& map, const SideStripArray& msg)
 {
   map = std::map<Key<SideStrip>, SideStrip>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<SideStrip>(item.id), item));
+  }
 }
 
 void updateCurveMirror(std::map<Key<CurveMirror>, CurveMirror>& map, const CurveMirrorArray& msg)
 {
   map = std::map<Key<CurveMirror>, CurveMirror>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<CurveMirror>(item.id), item));
+  }
 }
 
 void updateWall(std::map<Key<Wall>, Wall>& map, const WallArray& msg)
 {
   map = std::map<Key<Wall>, Wall>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<Wall>(item.id), item));
+  }
 }
 
 void updateFence(std::map<Key<Fence>, Fence>& map, const FenceArray& msg)
 {
   map = std::map<Key<Fence>, Fence>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<Fence>(item.id), item));
+  }
 }
 
 void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const RailCrossingArray& msg)
 {
   map = std::map<Key<RailCrossing>, RailCrossing>();
   for (const auto& item : msg.data)
+  {
+    if (item.id == 0)
+      continue;
     map.insert(std::make_pair(Key<RailCrossing>(item.id), item));
+  }
 }
 } // namespace
 
