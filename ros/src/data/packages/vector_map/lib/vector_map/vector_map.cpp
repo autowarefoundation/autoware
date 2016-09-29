@@ -1224,81 +1224,87 @@ void VectorMap::registerCallback(const Callback<RailCrossingArray>& cb)
   rail_crossing_.registerCallback(cb);
 }
 
+const double COLOR_VALUE_MIN = 0.0;
+const double COLOR_VALUE_MAX = 1.0;
+const double COLOR_VALUE_MEDIAN = 0.5;
+const double COLOR_VALUE_LIGHT_LOW = 0.56;
+const double COLOR_VALUE_LIGHT_HIGH = 0.93;
+
 std_msgs::ColorRGBA createColorRGBA(Color color)
 {
   std_msgs::ColorRGBA color_rgba;
-  color_rgba.r = 0.0;
-  color_rgba.g = 0.0;
-  color_rgba.b = 0.0;
-  color_rgba.a = 1.0;
+  color_rgba.r = COLOR_VALUE_MIN;
+  color_rgba.g = COLOR_VALUE_MIN;
+  color_rgba.b = COLOR_VALUE_MIN;
+  color_rgba.a = COLOR_VALUE_MAX;
 
   switch (color)
   {
   case BLACK:
     break;
   case GRAY:
-    color_rgba.r = 0.5;
-    color_rgba.g = 0.5;
-    color_rgba.b = 0.5;
+    color_rgba.r = COLOR_VALUE_MEDIAN;
+    color_rgba.g = COLOR_VALUE_MEDIAN;
+    color_rgba.b = COLOR_VALUE_MEDIAN;
     break;
   case LIGHT_RED:
-    color_rgba.r = 0.93;
-    color_rgba.g = 0.56;
-    color_rgba.b = 0.56;
+    color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
+    color_rgba.g = COLOR_VALUE_LIGHT_LOW;
+    color_rgba.b = COLOR_VALUE_LIGHT_LOW;
     break;
   case LIGHT_GREEN:
-    color_rgba.r = 0.56;
-    color_rgba.g = 0.93;
-    color_rgba.b = 0.56;
+    color_rgba.r = COLOR_VALUE_LIGHT_LOW;
+    color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
+    color_rgba.b = COLOR_VALUE_LIGHT_LOW;
     break;
   case LIGHT_BLUE:
-    color_rgba.r = 0.56;
-    color_rgba.g = 0.56;
-    color_rgba.b = 0.93;
+    color_rgba.r = COLOR_VALUE_LIGHT_LOW;
+    color_rgba.g = COLOR_VALUE_LIGHT_LOW;
+    color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
     break;
   case LIGHT_YELLOW:
-    color_rgba.r = 0.93;
-    color_rgba.g = 0.93;
-    color_rgba.b = 0.56;
+    color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
+    color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
+    color_rgba.b = COLOR_VALUE_LIGHT_LOW;
     break;
   case LIGHT_CYAN:
-    color_rgba.r = 0.56;
-    color_rgba.g = 0.93;
-    color_rgba.b = 0.93;
+    color_rgba.r = COLOR_VALUE_LIGHT_LOW;
+    color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
+    color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
     break;
   case LIGHT_MAGENTA:
-    color_rgba.r = 0.93;
-    color_rgba.g = 0.56;
-    color_rgba.b = 0.93;
+    color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
+    color_rgba.g = COLOR_VALUE_LIGHT_LOW;
+    color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
     break;
   case RED:
-    color_rgba.r = 1.0;
+    color_rgba.r = COLOR_VALUE_MAX;
     break;
   case GREEN:
-    color_rgba.g = 1.0;
+    color_rgba.g = COLOR_VALUE_MAX;
     break;
   case BLUE:
-    color_rgba.b = 1.0;
+    color_rgba.b = COLOR_VALUE_MAX;
     break;
   case YELLOW:
-    color_rgba.r = 1.0;
-    color_rgba.g = 1.0;
+    color_rgba.r = COLOR_VALUE_MAX;
+    color_rgba.g = COLOR_VALUE_MAX;
     break;
   case CYAN:
-    color_rgba.g = 1.0;
-    color_rgba.b = 1.0;
+    color_rgba.g = COLOR_VALUE_MAX;
+    color_rgba.b = COLOR_VALUE_MAX;
     break;
   case MAGENTA:
-    color_rgba.r = 1.0;
-    color_rgba.b = 1.0;
+    color_rgba.r = COLOR_VALUE_MAX;
+    color_rgba.b = COLOR_VALUE_MAX;
     break;
   case WHITE:
-    color_rgba.r = 1.0;
-    color_rgba.g = 1.0;
-    color_rgba.b = 1.0;
+    color_rgba.r = COLOR_VALUE_MAX;
+    color_rgba.g = COLOR_VALUE_MAX;
+    color_rgba.b = COLOR_VALUE_MAX;
     break;
   default:
-    color_rgba.a = 0.0; // hide color from view
+    color_rgba.a = COLOR_VALUE_MIN; // hide color from view
     break;
   }
 
@@ -1319,6 +1325,13 @@ bool isValidMarker(const visualization_msgs::Marker& marker)
 {
   return marker.action == visualization_msgs::Marker::ADD;
 }
+
+extern const double MAKER_SCALE_POINT = 0.08;
+extern const double MAKER_SCALE_VECTOR = 0.08;
+extern const double MAKER_SCALE_VECTOR_LENGTH = 0.64;
+extern const double MAKER_SCALE_LINE = 0.08;
+extern const double MAKER_SCALE_AREA = 0.08;
+extern const double MAKER_SCALE_BOX = 0.08;
 
 visualization_msgs::Marker createMarker(const std::string& ns, int id, int type)
 {
@@ -1344,11 +1357,11 @@ visualization_msgs::Marker createPointMarker(const std::string& ns, int id, Colo
 
   marker.pose.position = convertPointToGeomPoint(point);
   marker.pose.orientation = convertVectorToGeomQuaternion(Vector());
-  marker.scale.x = 0.08;
-  marker.scale.y = 0.08;
-  marker.scale.z = 0.08;
+  marker.scale.x = MAKER_SCALE_POINT;
+  marker.scale.y = MAKER_SCALE_POINT;
+  marker.scale.z = MAKER_SCALE_POINT;
   marker.color = createColorRGBA(color);
-  if (marker.color.a == 0.0)
+  if (marker.color.a == COLOR_VALUE_MIN)
     return marker;
 
   enableMarker(marker);
@@ -1368,11 +1381,11 @@ visualization_msgs::Marker createVectorMarker(const std::string& ns, int id, Col
 
   marker.pose.position = convertPointToGeomPoint(point);
   marker.pose.orientation = convertVectorToGeomQuaternion(vector);
-  marker.scale.x = 0.64;
-  marker.scale.y = 0.08;
-  marker.scale.z = 0.08;
+  marker.scale.x = MAKER_SCALE_VECTOR_LENGTH;
+  marker.scale.y = MAKER_SCALE_VECTOR;
+  marker.scale.z = MAKER_SCALE_VECTOR;
   marker.color = createColorRGBA(color);
-  if (marker.color.a == 0.0)
+  if (marker.color.a == COLOR_VALUE_MIN)
     return marker;
 
   enableMarker(marker);
@@ -1397,11 +1410,9 @@ visualization_msgs::Marker createLineMarker(const std::string& ns, int id, Color
   marker.points.push_back(convertPointToGeomPoint(bp));
   marker.points.push_back(convertPointToGeomPoint(fp));
 
-  marker.scale.x = 0.08;
-  marker.scale.y = 0.0;
-  marker.scale.z = 0.0;
+  marker.scale.x = MAKER_SCALE_LINE;
   marker.color = createColorRGBA(color);
-  if (marker.color.a == 0.0)
+  if (marker.color.a == COLOR_VALUE_MIN)
     return marker;
 
   enableMarker(marker);
@@ -1450,11 +1461,9 @@ visualization_msgs::Marker createAreaMarker(const std::string& ns, int id, Color
   marker.points.push_back(convertPointToGeomPoint(bp));
   marker.points.push_back(convertPointToGeomPoint(fp));
 
-  marker.scale.x = 0.08;
-  marker.scale.y = 0.0;
-  marker.scale.z = 0.0;
+  marker.scale.x = MAKER_SCALE_AREA;
   marker.color = createColorRGBA(color);
-  if (marker.color.a == 0.0)
+  if (marker.color.a == COLOR_VALUE_MIN)
     return marker;
 
   enableMarker(marker);
@@ -1491,7 +1500,7 @@ visualization_msgs::Marker createPoleMarker(const std::string& ns, int id, Color
   marker.scale.y = pole.dim;
   marker.scale.z = pole.length;
   marker.color = createColorRGBA(color);
-  if (marker.color.a == 0.0)
+  if (marker.color.a == COLOR_VALUE_MIN)
     return marker;
 
   enableMarker(marker);
@@ -1561,11 +1570,9 @@ visualization_msgs::Marker createBoxMarker(const std::string& ns, int id, Color 
       marker.points.push_back(bottom_points[0]);
   }
 
-  marker.scale.x = 0.08;
-  marker.scale.y = 0.0;
-  marker.scale.z = 0.0;
+  marker.scale.x = MAKER_SCALE_BOX;
   marker.color = createColorRGBA(color);
-  if (marker.color.a == 0.0)
+  if (marker.color.a == COLOR_VALUE_MIN)
     return marker;
 
   enableMarker(marker);
