@@ -46,7 +46,7 @@ struct WP
   double velocity_kmh;
 };
 
-double _decelerate = 1.0;
+double g_decelerate = 1.0;
 const std::string MULTI_LANE_CSV = "/tmp/driving_lane.csv";
 
 void parseColumns(const std::string &line, std::vector<std::string> *columns)
@@ -147,7 +147,7 @@ double decelerate(tf::Vector3 v1, tf::Vector3 v2, double original_velocity_kmh)
 {
 
   double distance = tf::tfDistance(v1, v2);
-  double vel = mps2kmph(sqrt(2 * _decelerate * distance)); //km/h
+  double vel = mps2kmph(sqrt(2 * g_decelerate * distance)); //km/h
   if (vel < 1.0)
     vel = 0;
   if (vel > original_velocity_kmh)
@@ -215,8 +215,8 @@ int main(int argc, char **argv)
 
   std::string multi_lane_csv;
 
-  private_nh.getParam("decelerate", _decelerate);
-  ROS_INFO_STREAM("decelerate :" << _decelerate);
+  private_nh.getParam("decelerate", g_decelerate);
+  ROS_INFO_STREAM("decelerate :" << g_decelerate);
   private_nh.param<std::string>("multi_lane_csv", multi_lane_csv, MULTI_LANE_CSV);
 
   ros::Publisher lane_pub = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
