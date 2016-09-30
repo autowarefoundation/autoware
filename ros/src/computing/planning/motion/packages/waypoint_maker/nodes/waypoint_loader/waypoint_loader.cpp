@@ -38,6 +38,8 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "waypoint_follower/LaneArray.h"
 
+namespace {
+
 struct WP
 {
   geometry_msgs::Pose pose;
@@ -45,13 +47,13 @@ struct WP
 };
 
 
-static const std::string DRIVING_LANE_CSV = "/tmp/driving_lane.csv";
-static const std::string PASSING_LANE_CSV = "/tmp/passing_lane.csv";
-static double _decelerate = 1.0;
+const std::string DRIVING_LANE_CSV = "/tmp/driving_lane.csv";
+const std::string PASSING_LANE_CSV = "/tmp/passing_lane.csv";
+double _decelerate = 1.0;
 
-static std::vector<WP> _waypoints;
+std::vector<WP> _waypoints;
 
-static WP parseWaypoint(const std::string& line, bool yaw)
+WP parseWaypoint(const std::string& line, bool yaw)
 {
   std::istringstream ss(line);
   std::vector<std::string> columns;
@@ -82,7 +84,7 @@ static WP parseWaypoint(const std::string& line, bool yaw)
   return waypoint;
 }
 
-static size_t countColumn(const std::string& line)
+size_t countColumn(const std::string& line)
 {
   std::istringstream ss(line);
   size_t ncol = 0;
@@ -96,7 +98,7 @@ static size_t countColumn(const std::string& line)
   return ncol;
 }
 
-static std::vector<WP> readWaypoint(const char *filename)
+std::vector<WP> readWaypoint(const char *filename)
 {
   std::ifstream ifs(filename);
   std::string line;
@@ -203,6 +205,7 @@ waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
   }
   return lane_waypoint;
 }
+} //namespace
 
 int main(int argc, char **argv)
 {
