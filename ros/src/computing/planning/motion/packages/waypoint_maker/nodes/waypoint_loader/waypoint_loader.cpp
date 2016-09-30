@@ -46,23 +46,23 @@ struct WP
   double velocity_kmh;
 };
 
-
-const std::string DRIVING_LANE_CSV = "/tmp/driving_lane.csv";
-const std::string PASSING_LANE_CSV = "/tmp/passing_lane.csv";
 double _decelerate = 1.0;
+const std::string MULTI_LANE_CSV = "/tmp/driving_lane.csv";
 
-std::vector<WP> _waypoints;
+void parseColumns(const std::string &line, std::vector<std::string> *columns)
+{
+  std::istringstream ss(line);
+  std::string column;
+  while (std::getline(ss, column, ','))
+    {
+      columns->push_back(column);
+    }
+}
 
 WP parseWaypoint(const std::string& line, bool yaw)
 {
-  std::istringstream ss(line);
   std::vector<std::string> columns;
-
-  std::string column;
-  while (std::getline(ss, column, ','))
-  {
-    columns.push_back(column);
-  }
+  parseColumns(line, &columns);
 
   WP waypoint;
   if (yaw)
@@ -213,36 +213,29 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  std::string driving_lane_csv;
-  std::string passing_lane_csv;
+  std::string multi_lane_csv;
 
-  private_nh.param<std::string>("driving_lane_csv", driving_lane_csv, DRIVING_LANE_CSV);
-  private_nh.param<std::string>("passing_lane_csv", passing_lane_csv, PASSING_LANE_CSV);
   private_nh.getParam("decelerate", _decelerate);
   ROS_INFO_STREAM("decelerate :" << _decelerate);
+  private_nh.param<std::string>("multi_lane_csv", multi_lane_csv, MULTI_LANE_CSV);
 
   ros::Publisher lane_pub = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
   waypoint_follower::LaneArray lane_array;
 
-  if (!verifyFileConsistency(driving_lane_csv.c_str()))
+  std::vector<std::string> multi_file_path;
+  parseColumns(multi_lane_csv, &multi_file_path);
+  for(auto el : multi_file_path)
   {
-    ROS_ERROR("driving lane data is something wrong...");
-    exit(-1);
-  }
-  else
-  {
-    ROS_INFO("driving lane data is valid. publishing...");
-    lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(driving_lane_csv.c_str())));
-  }
-
-  if (!verifyFileConsistency(passing_lane_csv.c_str()))
-  {
-    ROS_INFO("no passing lane data...");
-  }
-  else
-  {
-    ROS_INFO("passing lane data is valid. publishing...");
-    lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(passing_lane_csv.c_str())));
+    if (!verifyFileConsistency(el.c_str()))
+    {
+      ROS_ERROR("lane data is something wrong...");
+      exit(-1);
+    }
+    else
+    {
+      ROS_INFO("lane data is valid. publishing...");
+      lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(el.c_str())));
+    }
   }
 
   lane_pub.publish(lane_array);

@@ -1933,22 +1933,15 @@ params :
         
   - name  : waypoint_loader
     vars  :
-    - name      : driving_lane_csv
+    - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
-      label     : Driving
+      label     : Test
       kind      : path
+      path_type : multi
       v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : passing_lane_csv
-      desc      : passing_lane_csv desc sample
-      label     : Passing
-      kind      : path
-      v         : /tmp/driving_lane.csv
-      cmd_param :
-        dash        : ''
-        delim       : ':='        
     - name      : decelerate  
       desc      : decelerate   desc sample
       label   : 'decelerate :'
