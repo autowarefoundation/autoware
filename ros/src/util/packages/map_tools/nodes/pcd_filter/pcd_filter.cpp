@@ -45,7 +45,7 @@ int main (int argc, char** argv)
     prefix += "_";
     std::string output = input.insert(tmp+1, prefix);
 
-    pcl::io::savePCDFileASCII(output, *filtered_cloud);
+    pcl::io::savePCDFileBinary(output, *filtered_cloud);
     std::cout << "Output: " << output << " (" << filtered_cloud->size () << " points) " << std::endl;
     std::cout << "Voxel Leaf Size: " << leaf_size << std::endl << std::endl;
   }
