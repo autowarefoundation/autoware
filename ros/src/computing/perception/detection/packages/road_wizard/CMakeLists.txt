@@ -54,6 +54,7 @@ generate_messages(DEPENDENCIES
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
+  include
 )
 
 catkin_package(
@@ -67,16 +68,21 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## Build ##
 ###########
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
+
+add_library(libcontext lib/Context.cpp)
+add_dependencies(libcontext
+  road_wizard_generate_messages_cpp)
+
 ### region_tlr ###
 add_executable(region_tlr
   nodes/region_tlr/region_tlr.cpp
   nodes/region_tlr/TrafficLightDetector.cpp
-  nodes/region_tlr/Context.cpp
   )
 
 target_link_libraries(region_tlr
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
+  libcontext
 )
 
 add_dependencies(region_tlr
