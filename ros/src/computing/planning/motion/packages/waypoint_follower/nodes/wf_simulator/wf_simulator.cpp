@@ -54,9 +54,38 @@ WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
 ros::Publisher g_velocity_publisher;
 
-void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
+constexpr int LOOP_RATE = 50; // 50Hz
+
+void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_rate)
 {
-  _current_velocity = msg->twist;
+
+  static double previous_linear_velocity = 0;
+
+  if(_current_velocity.linear.x < msg->twist.linear.x)
+  {
+    _current_velocity.linear.x = previous_linear_velocity + accel_rate / (double)LOOP_RATE;
+
+    if(_current_velocity.linear.x > msg->twist.linear.x)
+    {
+      _current_velocity.linear.x = msg->twist.linear.x;
+    }
+  }
+  else
+  {
+    _current_velocity.linear.x = previous_linear_velocity - accel_rate / (double)LOOP_RATE;
+
+    if(_current_velocity.linear.x < msg->twist.linear.x)
+    {
+      _current_velocity.linear.x = msg->twist.linear.x;
+    }
+  }
+
+  previous_linear_velocity = _current_velocity.linear.x;
+
+  _current_velocity.angular.z = msg->twist.angular.z;
+
+
+  //_current_velocity = msg->twist;
 }
 
 void getTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
@@ -202,12 +231,15 @@ int main(int argc, char **argv)
   private_nh.getParam("initialize_source", initialize_source);
   ROS_INFO_STREAM("initialize_source : " << initialize_source);
 
+  double accel_rate;
+  private_nh.param("accel_rate",accel_rate,double(1.0));
+  ROS_INFO_STREAM("accel_rate : " << accel_rate);
   // publish topic
   g_odometry_publisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
   g_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("sim_velocity", 10);
 
   // subscribe topic
-  ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 10, CmdCallBack);
+  ros::Subscriber cmd_subscriber = nh.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 10, boost::bind(CmdCallBack, _1, accel_rate));
   ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
   ros::Subscriber initialpose_subscriber;
 
@@ -228,7 +260,7 @@ int main(int argc, char **argv)
     ROS_INFO("Set pose initializer!!");
   }
 
-  ros::Rate loop_rate(50);  // 50Hz
+  ros::Rate loop_rate(LOOP_RATE);
   while (ros::ok())
   {
     ros::spinOnce();  // check subscribe topic

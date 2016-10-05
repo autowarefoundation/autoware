@@ -37,6 +37,13 @@
 
 namespace vel_pose_mux
 {
+
+struct VehicleInfo {
+  double wheel_base;
+  double minimum_turning_radius;
+  double maximum_steering_angle;
+};
+
 inline double kmph2mps(double velocity_kmph)
 {
   return (velocity_kmph * 1000) / (60 * 60);
@@ -45,6 +52,41 @@ inline double kmph2mps(double velocity_kmph)
 inline double mps2kmph(double velocity_mps)
 {
   return (velocity_mps * 60 * 60) / 1000;
+}
+
+// convert degree to radian
+inline double deg2rad(double deg)
+{
+  return deg * M_PI / 180;
+}
+
+// convert degree to radian
+inline double rad2deg(double rad)
+{
+  return rad * 180 / M_PI;
+}
+
+void callbackFromCanInfoAndPublishAsTwistStamped(const vehicle_socket::CanInfoConstPtr &msg,
+                                                 ros::Publisher *pub_twist_stamped, ros::Publisher *pub_float,
+                                                 const VehicleInfo &vehicle_info)
+{
+  geometry_msgs::TwistStamped tw;
+  tw.header = msg->header;
+
+  // linear velocity
+  tw.twist.linear.x = kmph2mps(msg->speed);  // km/h -> m/s
+
+  // angular velocity
+  double maximum_tire_angle = rad2deg(asin(vehicle_info.wheel_base / vehicle_info.minimum_turning_radius));  //[degree]
+  double current_tire_angle =
+      msg->angle * maximum_tire_angle / vehicle_info.maximum_steering_angle;  // steering [degree] -> tire [degree]
+  tw.twist.angular.z = sin(deg2rad(current_tire_angle)) * kmph2mps(msg->speed) / vehicle_info.wheel_base;
+
+  pub_twist_stamped->publish(tw);
+
+  std_msgs::Float32 fl;
+  fl.data = msg->speed;
+  pub_float->publish(fl);
 }
 
 void callbackFromCanInfoAndPublishAsTwistStamped(const vehicle_socket::CanInfoConstPtr &msg,
@@ -61,8 +103,6 @@ void callbackFromCanInfoAndPublishAsTwistStamped(const vehicle_socket::CanInfoCo
   std_msgs::Float32 fl;
   fl.data = msg->speed;
   pub_float->publish(fl);
-
-
 }
 
 void callbackFromPoseStampedAndPublish(const geometry_msgs::PoseStampedConstPtr &msg, ros::Publisher *pub_message)
@@ -70,7 +110,8 @@ void callbackFromPoseStampedAndPublish(const geometry_msgs::PoseStampedConstPtr 
   pub_message->publish(*msg);
 }
 
-void callbackFromTwistStampedAndPublish(const geometry_msgs::TwistStampedConstPtr &msg, ros::Publisher *pub_twist_stamped, ros::Publisher *pub_float)
+void callbackFromTwistStampedAndPublish(const geometry_msgs::TwistStampedConstPtr &msg,
+                                        ros::Publisher *pub_twist_stamped, ros::Publisher *pub_float)
 {
   pub_twist_stamped->publish(*msg);
 
@@ -102,10 +143,31 @@ int main(int argc, char **argv)
   private_nh.param<bool>("sim_mode", sim_mode, false);
   // ROS_INFO_STREAM("sim_mode : " << sim_mode);
 
+  bool vehicle_info_flag = false;
+  vel_pose_mux::VehicleInfo vehicle_info;
+  if (!nh.hasParam("/vehicle_info/wheel_base") || !nh.hasParam("/vehicle_info/minimum_turning_radius") ||
+      !nh.hasParam("/vehicle_info/maximum_steering_angle"))
+  {
+    ROS_INFO("vehicle_info is not set");
+  }
+  else
+  {
+    private_nh.getParam("/vehicle_info/wheel_base", vehicle_info.wheel_base);
+    // ROS_INFO_STREAM("wheel_base : " << wheel_base);
+
+    private_nh.getParam("/vehicle_info/minimum_turning_radius", vehicle_info.minimum_turning_radius);
+    // ROS_INFO_STREAM("minimum_turning_radius : " << minimum_turning_radius);
+
+    private_nh.getParam("/vehicle_info/maximum_steering_angle", vehicle_info.maximum_steering_angle);  //[degree:
+    // ROS_INFO_STREAM("maximum_steering_angle : " << maximum_steering_angle);
+
+    vehicle_info_flag = true;
+  }
+
   // publish topic
   ros::Publisher vel_publisher = nh.advertise<geometry_msgs::TwistStamped>("current_velocity", 10);
   ros::Publisher pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("current_pose", 10);
-  ros::Publisher linear_viz_publisher = nh.advertise<std_msgs::Float32>("linear_velocity_viz",10);
+  ros::Publisher linear_viz_publisher = nh.advertise<std_msgs::Float32>("linear_velocity_viz", 10);
 
   // subscribe topic
   ros::Subscriber pose_subcscriber;
@@ -114,7 +176,8 @@ int main(int argc, char **argv)
   if (sim_mode)
   {
     vel_subcscriber = nh.subscribe<geometry_msgs::TwistStamped>(
-        "sim_velocity", 10, boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
+        "sim_velocity", 10,
+        boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
     pose_subcscriber = nh.subscribe<geometry_msgs::PoseStamped>(
         "sim_pose", 10, boost::bind(vel_pose_mux::callbackFromPoseStampedAndPublish, _1, &pose_publisher));
   }
@@ -145,13 +208,25 @@ int main(int argc, char **argv)
       case 0:  // ndt_localizer
       {
         vel_subcscriber = nh.subscribe<geometry_msgs::TwistStamped>(
-            "estimate_twist", 10, boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
+            "estimate_twist", 10,
+            boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher, &linear_viz_publisher));
         break;
       }
       case 1:  // CAN
       {
-        vel_subcscriber = nh.subscribe<vehicle_socket::CanInfo>(
-            "can_info", 10, boost::bind(vel_pose_mux::callbackFromCanInfoAndPublishAsTwistStamped, _1, &vel_publisher, &linear_viz_publisher));
+        if (vehicle_info_flag)  // has vehicle info
+        {
+          vel_subcscriber = nh.subscribe<vehicle_socket::CanInfo>(
+              "can_info", 10, boost::bind(vel_pose_mux::callbackFromCanInfoAndPublishAsTwistStamped, _1, &vel_publisher,
+                                          &linear_viz_publisher, vehicle_info));
+        }
+        else
+        {
+          vel_subcscriber = nh.subscribe<vehicle_socket::CanInfo>(
+              "can_info", 10, boost::bind(vel_pose_mux::callbackFromCanInfoAndPublishAsTwistStamped, _1, &vel_publisher,
+                                          &linear_viz_publisher));
+        }
+
         break;
       }
       default:
