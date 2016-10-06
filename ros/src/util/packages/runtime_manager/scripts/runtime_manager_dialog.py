@@ -1163,10 +1163,13 @@ class MyFrame(rtmgr.MyFrame):
 	def rosbag_info_hook(self, v):
 		if not v:
 			return
+		th_start(self.rosbag_info_hook_th, {'v':v} )
+
+	def rosbag_info_hook_th(self, ev, v):  # thread
 		err = subprocess.STDOUT
 		s = subprocess.check_output([ 'rosbag', 'info', v ], stderr=err).strip()
-		self.label_rosbag_info.SetLabel(s)
-		self.label_rosbag_info.GetParent().FitInside()
+		wx.CallAfter(self.label_rosbag_info.SetLabel, s)
+		wx.CallAfter(self.label_rosbag_info.GetParent().FitInside)
 
 	#
 	# Data Tab
