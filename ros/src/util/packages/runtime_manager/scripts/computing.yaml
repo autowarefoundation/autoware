@@ -466,13 +466,13 @@ subs :
            velocity:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
-           lookahead_threshold:
+           lookahead_distance:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
-           minimum_lookahead_threshold:
+           minimum_lookahead_distance:
              depend : param_flag   
              depend_bool : 'lambda v : v == 0'          
-           threshold_ratio:
+           lookahead_ratio:
              depend : param_flag
              depend_bool : 'lambda v : v == 0' 
            stat_topic : [ lf ]  

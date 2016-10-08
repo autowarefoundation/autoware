@@ -35,11 +35,15 @@
 
 #include "runtime_manager/ConfigTwistFilter.h"
 
-//Publisher
-static ros::Publisher g_twist_pub;
-static double g_lateral_accel_limit = 0.8;
+namespace {
 
-static void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
+//Publisher
+ros::Publisher g_twist_pub;
+double g_lateral_accel_limit = 5.0;
+constexpr double RADIUS_MAX = 9e10;
+constexpr double ERROR = 1e-8;
+
+void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
 {
   g_lateral_accel_limit = config->lateral_accel_limit;
   ROS_INFO("g_lateral_accel_limit = %lf",g_lateral_accel_limit);
@@ -47,33 +51,32 @@ static void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &con
 
 void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  geometry_msgs::TwistStamped twist;
-  twist.twist.linear.x = msg->twist.linear.x;
 
-  double accel = msg->twist.linear.x * msg->twist.angular.z;
-  ROS_INFO("lateral accel = %lf",accel);
+  double v = msg->twist.linear.x;
+  double omega = msg->twist.angular.z;
 
-
-
-  if(fabs(accel) > g_lateral_accel_limit)
-  {
-    ROS_INFO("limit over! filtering...");
-    if(accel < 0)
-      twist.twist.angular.z = (-1) * g_lateral_accel_limit / msg->twist.linear.x;
-    else
-      twist.twist.angular.z = g_lateral_accel_limit / msg->twist.linear.x;
-  }
-  else
-  {
-    //ROS_INFO("limit clear!");
-    twist.twist.angular.z = msg->twist.angular.z;
+  if(fabs(omega) < ERROR){
+    g_twist_pub.publish(*msg);
+    return;
   }
 
-  ROS_INFO("twist.linear.x = %lf, twist.angular.z = %lf",twist.twist.linear.x,twist.twist.angular.z);
-  g_twist_pub.publish(twist);
+  double max_v = g_lateral_accel_limit / omega;
+
+  geometry_msgs::TwistStamped tp;
+  tp.header = msg->header;
+
+  double a = v * omega;
+  ROS_INFO("lateral accel = %lf", a);
+
+  tp.twist.linear.x = fabs(a) > g_lateral_accel_limit ? max_v
+                    : v;
+  tp.twist.angular.z = omega;
+
+  ROS_INFO("v: %f -> %f",v,tp.twist.linear.x);
+  g_twist_pub.publish(tp);
 
 }
-
+} // namespace
 
 int main(int argc, char **argv)
 {
