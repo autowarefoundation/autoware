@@ -91,18 +91,17 @@ void PurePursuit::calcLookaheadDistance(int waypoint)
     return;
   }
 
-  // double current_velocity_mps = _current_waypoints.getWaypointVelocityMPS(waypoint);
   double current_velocity_mps = current_velocity_.twist.linear.x;
+  double maximum_lookahead_distance =  current_velocity_mps * 10;
   double ld = current_velocity_mps * lookahead_distance_calc_ratio_;
 
-  ROS_INFO("lookahead distance: %f",ld);
-  double maximum_lookahead_distance =  current_velocity_mps * 10;
-  if (ld < minimum_lookahead_distance_)
-    lookahead_distance_ = minimum_lookahead_distance_;
-  else if(ld > maximum_lookahead_distance)
-    lookahead_distance_ = maximum_lookahead_distance;
-    lookahead_distance_ = ld;
-  return;
+  lookahead_distance_ = ld < minimum_lookahead_distance_ ? minimum_lookahead_distance_
+                      : ld > maximum_lookahead_distance ? maximum_lookahead_distance
+                      : ld ;
+
+  ROS_INFO("lookahead distance: %f",lookahead_distance_);
+
+  return ;
 }
 
 double PurePursuit::calcCurvature(geometry_msgs::Point target) const
