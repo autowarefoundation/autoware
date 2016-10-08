@@ -3,7 +3,7 @@
 
 	<arg name="linear_interpolate_mode" default="True"/>
 	<!-- rosrun waypoint_follower pure_pursuit -->
-	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="screen">
+	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="log">
 		<param name="linear_interpolate_mode" value="$(arg linear_interpolate_mode)"/>
 	</node>
 
