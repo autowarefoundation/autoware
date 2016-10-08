@@ -35,11 +35,13 @@
 
 #include "runtime_manager/ConfigTwistFilter.h"
 
-//Publisher
-static ros::Publisher g_twist_pub;
-static double g_lateral_accel_limit = 0.8;
+namespace {
 
-static void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
+//Publisher
+ros::Publisher g_twist_pub;
+double g_lateral_accel_limit = 5.0;
+
+void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
 {
   g_lateral_accel_limit = config->lateral_accel_limit;
   ROS_INFO("g_lateral_accel_limit = %lf",g_lateral_accel_limit);
@@ -73,7 +75,7 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   g_twist_pub.publish(twist);
 
 }
-
+} // namespace
 
 int main(int argc, char **argv)
 {
