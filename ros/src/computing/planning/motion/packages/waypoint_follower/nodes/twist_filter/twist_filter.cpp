@@ -40,6 +40,8 @@ namespace {
 //Publisher
 ros::Publisher g_twist_pub;
 double g_lateral_accel_limit = 5.0;
+constexpr double RADIUS_MAX = 9e10;
+constexpr double ERROR = 1e-8;
 
 void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
 {

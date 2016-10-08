@@ -93,7 +93,7 @@ private:
 
 public:
   PurePursuit(bool linear_interpolate_mode)
-    : RADIUS_MAX_(90000000000)
+    : RADIUS_MAX_(9e10)
     , KAPPA_MIN_(1/RADIUS_MAX_)
     , linear_interpolate_(linear_interpolate_mode)
     , param_flag_(0)
