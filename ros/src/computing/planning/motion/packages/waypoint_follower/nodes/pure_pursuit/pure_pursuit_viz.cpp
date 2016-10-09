@@ -100,8 +100,10 @@ std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point 
 {
   std::vector<geometry_msgs::Point> traj_circle_array;
   double radius = calcRadius(target, current_pose);
+  double range = M_PI / 8;
+  double increment = 0.01;
 
-  for (double i = 0; i < M_PI / 2; i += 0.1)
+  for (double i = 0; i < range; i += increment)
   {
     // calc a point of circumference
     geometry_msgs::Point p;
@@ -125,7 +127,7 @@ std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point 
   // reverse vector
   std::reverse(traj_circle_array.begin(), traj_circle_array.end());
 
-  for (double i = 0; i > (-1) * M_PI / 2; i -= 0.1)
+  for (double i = 0; i > (-1) * range; i -= increment)
   {
     // calc a point of circumference
     geometry_msgs::Point p;
