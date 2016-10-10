@@ -712,13 +712,13 @@ int main (int argc, char** argv)
 		ROS_INFO("euclidean_cluster > No points node received, defaulting to points_raw, you can use _points_node:=YOUR_TOPIC");
 		points_topic = "/points_raw";
 	}
-	publish_ground = false;
+	_publish_ground = false;
 	if (private_nh.getParam("publish_ground", _publish_ground))
 	{
 		ROS_INFO("Publishing /points_ground point cloud...");
 		_pub_ground = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
 	}
-	publish_filtered = false;
+	_publish_filtered = false;
 	if (private_nh.getParam("publish_filtered", _publish_filtered))
 	{
 		ROS_INFO("Publishing /points_filtered point cloud...");
