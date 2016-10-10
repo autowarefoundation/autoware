@@ -418,22 +418,24 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		bounding_box.dimensions.y = ((w<0)?-1*w:w);
 		bounding_box.dimensions.z = ((h<0)?-1*h:h);
 
-		//pose estimation for the cluster
-		//test using linear regression
-		//Slope(b) = (NΣXY - (ΣX)(ΣY)) / (NΣX2 - (ΣX)2)
-		/*float sum_x=0, sum_y=0, sum_xy=0, sum_xx=0;
+		std::vector<cv::Point2f> inner_points;
 		for (unsigned int i=0; i<current_cluster->points.size(); i++)
 		{
-			sum_x+= current_cluster->points[i].x;
-			sum_y+= current_cluster->points[i].y;
-			sum_xy+= current_cluster->points[i].x*current_cluster->points[i].y;
-			sum_xx+= current_cluster->points[i].x*current_cluster->points[i].x;
+			inner_points.push_back(cv::Point2f((current_cluster->points[i].x + fabs(min_point.x))*8, (current_cluster->points[i].y + fabs(min_point.y) ))*8);
 		}
-		double slope= (current_cluster->points.size()*sum_xy - (sum_x*sum_y))/(current_cluster->points.size()*sum_xx - sum_x*sum_x);
 
-		double rz = atan(slope);
-		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, rz);*/
-		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, 0.0);
+
+		cv::Mat points_mat = cv::Mat(inner_points);
+		double rz = 0;
+		if (inner_points.size() > 0)
+		{
+			cv::RotatedRect rot_box = cv::minAreaRect(points_mat);
+			rz = atan(rot_box.angle);
+		}
+
+
+		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, rz);
+		//tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, 0.0);
 
 		tf::quaternionTFToMsg(quat, bounding_box.pose.orientation);
 
