@@ -9,17 +9,30 @@
 
 #include <pcl/ModelCoefficients.h>
 #include <pcl/point_types.h>
-#include <pcl/io/pcd_io.h>
+
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/conditional_removal.h>
+
 #include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/features/don.h>
+
 #include <pcl/kdtree/kdtree.h>
+
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
+
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/conditional_euclidean_clustering.h>
+
 #include <pcl/common/common.h>
+
+#include <pcl/search/organized.h>
+#include <pcl/search/kdtree.h>
+
+#include <pcl/segmentation/extract_clusters.h>
 
 #include <visualization_msgs/Marker.h>
 #include <lidar_tracker/centroids.h>
@@ -43,31 +56,33 @@
 using namespace cv;
 
 std::vector<cv::Scalar> _colors;
-ros::Publisher pub_cluster_cloud;
-ros::Publisher pub_filtered;
-ros::Publisher pub_ground;
-ros::Publisher centroid_pub;
-ros::Publisher marker_pub;
-visualization_msgs::Marker visualization_marker;
+ros::Publisher _pub_cluster_cloud;
+ros::Publisher _pub_ground_cloud;
+ros::Publisher _pub_filtered;
+ros::Publisher _pub_ground;
+ros::Publisher _centroid_pub;
+ros::Publisher _marker_pub;
+visualization_msgs::Marker _visualization_marker;
 
-ros::Publisher pub_points_lanes_cloud;
-ros::Publisher pub_jsk_boundingboxes;
+ros::Publisher _pub_points_lanes_cloud;
+ros::Publisher _pub_jsk_boundingboxes;
 
 std_msgs::Header _velodyne_header;
 
 pcl::PointCloud<pcl::PointXYZ> _sensor_cloud;
 
 /* parameters for tuning */
-static bool is_downsampling;
-static double distance;
-static double leaf_size;
-static int cluster_size_min;
-static int cluster_size_max;
+static bool _downsample_cloud;
+static double _distance;
+static double _leaf_size;
+static int _cluster_size_min;
+static int _cluster_size_max;
 
-static bool publish_ground;	//only ground
-static bool publish_filtered;	//pc with no ground
+static bool _publish_ground;	//only ground
+static bool _publish_filtered;	//pc with no ground
 
 static bool _using_sensor_cloud;
+static bool _use_diffnormals;
 
 void publishCloud(ros::Publisher* in_publisher, pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_to_publish_ptr)
 {
@@ -86,6 +101,7 @@ void publishColorCloud(ros::Publisher* in_publisher, pcl::PointCloud<pcl::PointX
 
 void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 {
+	//ORIGINAL EUCLIDEAN CLUSTERING CODE
 	// Container for original & filtered data
 	pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2;
 	pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
@@ -103,8 +119,8 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>());
 
-	if (is_downsampling)
-	  {
+	if (_downsample_cloud)
+	{
 		/////////////////////////////////
 		//---	ex. Down Sampling
 		/////////////////////////////////
@@ -112,11 +128,11 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::VoxelGrid<pcl::PointXYZ> sor;
 		sor.setInputCloud(cloud1);
-		sor.setLeafSize((float)leaf_size, (float)leaf_size, (float)leaf_size);
+		sor.setLeafSize((float)_leaf_size, (float)_leaf_size, (float)_leaf_size);
 		sor.filter(*cloud_filtered);
 
 		*cloud1 = *cloud_filtered;
-	  }
+	}
 
 	/////////////////////////////////
 	//---	1. Remove planes (floor)
@@ -126,7 +142,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	seg.setModelType (pcl::SACMODEL_PLANE);
 	seg.setMethodType (pcl::SAC_RANSAC);
 	seg.setMaxIterations (100);
-	seg.setDistanceThreshold ((float)distance);
+	seg.setDistanceThreshold ((float)_distance);
 	// Segment the largest planar component from the remaining cloud
 	seg.setInputCloud (cloud1);
 	seg.segment (*inliers, *coefficients);
@@ -163,8 +179,8 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
 	ec.setClusterTolerance (0.8); //
-	ec.setMinClusterSize (cluster_size_min);
-	ec.setMaxClusterSize (cluster_size_max);
+	ec.setMinClusterSize (_cluster_size_min);
+	ec.setMaxClusterSize (_cluster_size_max);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud (cloud1);
 	ec.extract (cluster_indices);
@@ -220,7 +236,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 		centroid.y /= it->indices.size();
 		centroid.z /= it->indices.size();
 		centroids.points.push_back(centroid);
-		visualization_marker.points.push_back(centroid);
+		_visualization_marker.points.push_back(centroid);
 
 	}
 	auto end2 = std::chrono::system_clock::now(); //end time
@@ -237,25 +253,25 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 ///////////////////////////////////////////////
 	//4.5 Publish Filtered PointClouds if requested 
 	//////////////////////////////////////////////
-	if(publish_filtered)	//points, no ground
+	if(_publish_filtered)	//points, no ground
 	{
 		pcl_conversions::toPCL(input->header, cloud_f->header);
 		// Publish the data
-		pub_filtered.publish (cloud_f);
+		_pub_filtered.publish (cloud_f);
 	}
-	if(publish_ground)		//only ground
+	if(_publish_ground)		//only ground
 	{
 		pcl_conversions::toPCL(input->header, cloud_plane->header);
 		// Publish the data
-		pub_ground.publish (cloud_plane);
+		_pub_ground.publish (cloud_plane);
 	}
 
 	centroids.header = input->header;
-	centroid_pub.publish(centroids);
+	_centroid_pub.publish(centroids);
 
 
-  marker_pub.publish(visualization_marker);
-  visualization_marker.points.clear();
+	_marker_pub.publish(_visualization_marker);
+	_visualization_marker.points.clear();
 }
 
 void keepLanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
@@ -291,16 +307,21 @@ void keepLanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 bool independentDistance (const pcl::PointXYZ& in_point_a, const pcl::PointXYZ& in_point_b, float squared_distance)
 {
-	if (fabs (in_point_a.x - in_point_b.x) <= (distance *1.0f) &&
-			fabs (in_point_a.y - in_point_b.y) <= (distance *1.0f) &&
-			fabs (in_point_a.z - in_point_b.z) <= (distance *2.0f))
+	if (fabs (in_point_a.x - in_point_b.x) <= (_distance *1.0f) &&
+			fabs (in_point_a.y - in_point_b.y) <= (_distance *1.0f) &&
+			fabs (in_point_a.z - in_point_b.z) <= (_distance *2.0f))
 	{
 		return (true);
 	}
 	else
 		return (false);
 }
-void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr, double in_max_cluster_distance=0.5)
+
+void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
+		jsk_recognition_msgs::BoundingBoxArray& in_boundingbox_array,
+		lidar_tracker::centroids& in_centroids,
+		double in_max_cluster_distance=0.5)
 {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 
@@ -309,9 +330,9 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 	std::vector<pcl::PointIndices> cluster_indices;
 
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance (distance); //
-	ec.setMinClusterSize (cluster_size_min);
-	ec.setMaxClusterSize (cluster_size_max);
+	ec.setClusterTolerance (_distance); //
+	ec.setMinClusterSize (_cluster_size_min);
+	ec.setMaxClusterSize (_cluster_size_max);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud (in_cloud_ptr);
 	ec.extract (cluster_indices);
@@ -322,7 +343,7 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 	cec.setConditionFunction (&independentDistance);
 	cec.setMinClusterSize (cluster_size_min);
 	cec.setMaxClusterSize (cluster_size_max);
-	cec.setClusterTolerance (distance*2.0f);
+	cec.setClusterTolerance (_distance*2.0f);
 	cec.segment (cluster_indices);*/
 
 	/////////////////////////////////
@@ -331,11 +352,6 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 	int j = 0;
 	unsigned int k = 0;
 	//pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
-
-	jsk_recognition_msgs::BoundingBoxArray boundingbox_array;
-	boundingbox_array.header = _velodyne_header;
-
-	lidar_tracker::centroids centroids;
 
 	std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> objects_cloud_clusters;
 	//pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);//coord + color cluster
@@ -426,9 +442,9 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 				bounding_box.dimensions.x < 15 && bounding_box.dimensions.y >0 && bounding_box.dimensions.y < 15 &&
 				max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0 )
 		{
-			boundingbox_array.boxes.push_back(bounding_box);
-			centroids.points.push_back(centroid);
-			visualization_marker.points.push_back(centroid);
+			in_boundingbox_array.boxes.push_back(bounding_box);
+			in_centroids.points.push_back(centroid);
+			_visualization_marker.points.push_back(centroid);
 		}
 
 		current_cluster->width = current_cluster->points.size();
@@ -441,20 +457,59 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 
 		j++; k++;
 	}
-	std::cout << "Clusters: " << k << std::endl;
+	//std::cout << "Clusters: " << k << std::endl;
 
-	//---	4. Publish
-	// Publish BB
-	pub_jsk_boundingboxes.publish(boundingbox_array);
-	centroids.header = _velodyne_header;
-	centroid_pub.publish(centroids);
 
-	marker_pub.publish(visualization_marker);
-	visualization_marker.points.clear();
 }
 
+void segmentByDistance(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
+		jsk_recognition_msgs::BoundingBoxArray& in_boundingbox_array,
+		lidar_tracker::centroids& in_centroids,
+		double in_max_cluster_distance=0.5)
+{
+	//cluster the pointcloud according to the distance of the points using different thresholds (not only one for the entire pc)
+	//in this way, the points farther in the pc will also be clustered
 
-void removeFloor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.35)
+	//0 => 0-15m d=0.5
+	//1 => 15-30 d=1
+	//2 => 30-45 d=1.6
+	//3 => 45-60 d=2.1
+	//4 => >60   d=2.6
+
+	std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_segments_array(5);
+	std::vector<double> thresholds = {1.5, 2.1, 2.6, 3.3, 4.0f};
+
+	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
+	{
+		pcl::PointCloud<pcl::PointXYZ>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+		cloud_segments_array[i] = tmp_cloud;
+	}
+
+	for (unsigned int i=0; i<in_cloud_ptr->points.size(); i++)
+	{
+		pcl::PointXYZ current_point;
+		current_point.x = in_cloud_ptr->points[i].x;
+		current_point.y = in_cloud_ptr->points[i].y;
+		current_point.z = in_cloud_ptr->points[i].z;
+
+		float origin_distance = sqrt(current_point.x*current_point.x + current_point.y+current_point.y);
+
+		if 		(origin_distance < 15 )	{cloud_segments_array[0]->points.push_back (current_point);}
+		else if(origin_distance < 30)	{cloud_segments_array[1]->points.push_back (current_point);}
+		else if(origin_distance < 45)	{cloud_segments_array[2]->points.push_back (current_point);}
+		else if(origin_distance < 60)	{cloud_segments_array[3]->points.push_back (current_point);}
+		else							{cloud_segments_array[4]->points.push_back (current_point);}
+	}
+
+	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
+	{
+		clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_boundingbox_array, in_centroids, thresholds[i]);
+	}
+
+}
+
+void removeFloor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.35)
 {
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
 	pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
@@ -481,7 +536,11 @@ void removeFloor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointClo
 	extract.setInputCloud (in_cloud_ptr);
 	extract.setIndices(inliers);
 	extract.setNegative(true);//true removes the indices, false leaves only the indices
-	extract.filter(*out_cloud_ptr);
+	extract.filter(*out_nofloor_cloud_ptr);
+
+	/*EXTRACT THE FLOOR FROM THE CLOUD*/
+	extract.setNegative(false);//true removes the indices, false leaves only the indices
+	extract.filter(*out_onlyfloor_cloud_ptr);
 }
 
 void downsampleCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_leaf_size=0.2)
@@ -494,6 +553,71 @@ void downsampleCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 
 }
 
+void differenceNormalsSegmentation(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr)
+{
+
+	float small_scale=0.5;
+	float large_scale=2.0;
+	float angle_threshold=0.5;
+	pcl::search::Search<pcl::PointXYZ>::Ptr tree;
+	if (in_cloud_ptr->isOrganized ())
+	{
+		tree.reset (new pcl::search::OrganizedNeighbor<pcl::PointXYZ> ());
+	}
+	else
+	{
+		tree.reset (new pcl::search::KdTree<pcl::PointXYZ> (false));
+	}
+
+	// Set the input pointcloud for the search tree
+	tree->setInputCloud (in_cloud_ptr);
+
+	pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::PointNormal> normal_estimation;
+	//pcl::gpu::NormalEstimation<pcl::PointXYZ, pcl::PointNormal> normal_estimation;
+	normal_estimation.setInputCloud (in_cloud_ptr);
+	normal_estimation.setSearchMethod (tree);
+
+	normal_estimation.setViewPoint (std::numeric_limits<float>::max (), std::numeric_limits<float>::max (), std::numeric_limits<float>::max ());
+
+	pcl::PointCloud<pcl::PointNormal>::Ptr normals_small_scale (new pcl::PointCloud<pcl::PointNormal>);
+	pcl::PointCloud<pcl::PointNormal>::Ptr normals_large_scale (new pcl::PointCloud<pcl::PointNormal>);
+
+	normal_estimation.setRadiusSearch (small_scale);
+	normal_estimation.compute (*normals_small_scale);
+
+	normal_estimation.setRadiusSearch (large_scale);
+	normal_estimation.compute (*normals_large_scale);
+
+	pcl::PointCloud<pcl::PointNormal>::Ptr diffnormals_cloud (new pcl::PointCloud<pcl::PointNormal>);
+	pcl::copyPointCloud<pcl::PointXYZ, pcl::PointNormal>(*in_cloud_ptr, *diffnormals_cloud);
+
+	// Create DoN operator
+	pcl::DifferenceOfNormalsEstimation<pcl::PointXYZ, pcl::PointNormal, pcl::PointNormal> diffnormals_estimator;
+	diffnormals_estimator.setInputCloud (in_cloud_ptr);
+	diffnormals_estimator.setNormalScaleLarge (normals_large_scale);
+	diffnormals_estimator.setNormalScaleSmall (normals_small_scale);
+
+	diffnormals_estimator.initCompute();
+
+	diffnormals_estimator.computeFeature(*diffnormals_cloud);
+
+	pcl::ConditionOr<pcl::PointNormal>::Ptr range_cond (new pcl::ConditionOr<pcl::PointNormal>() );
+	range_cond->addComparison (pcl::FieldComparison<pcl::PointNormal>::ConstPtr (
+			new pcl::FieldComparison<pcl::PointNormal> ("curvature", pcl::ComparisonOps::GT, angle_threshold) )
+			);
+	// Build the filter
+	pcl::ConditionalRemoval<pcl::PointNormal> cond_removal;
+	cond_removal.setCondition(range_cond);
+	cond_removal.setInputCloud (diffnormals_cloud);
+
+	pcl::PointCloud<pcl::PointNormal>::Ptr diffnormals_cloud_filtered (new pcl::PointCloud<pcl::PointNormal>);
+
+	// Apply filter
+	cond_removal.filter (*diffnormals_cloud_filtered);
+
+	pcl::copyPointCloud<pcl::PointNormal, pcl::PointXYZ>(*diffnormals_cloud, *out_cloud_ptr);
+}
+
 void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 {
 	if (!_using_sensor_cloud)
@@ -504,25 +628,54 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr inlanes_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr nofloor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
+		pcl::PointCloud<pcl::PointXYZ>::Ptr onlyfloor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
+		pcl::PointCloud<pcl::PointXYZ>::Ptr diffnormals_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_clustered_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+		lidar_tracker::centroids centroids;
+		jsk_recognition_msgs::BoundingBoxArray boundingbox_array;
 
 		pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
 
 		_velodyne_header = in_sensor_cloud->header;
 
-		//downsampleCloud(current_sensor_cloud_ptr, downsampled_cloud_ptr, leaf_size);
+		if (_downsample_cloud)
+			downsampleCloud(current_sensor_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
+		else
+			downsampled_cloud_ptr=current_sensor_cloud_ptr;
 
 		//keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr);
 		//keepLanePoints(current_sensor_cloud_ptr, inlanes_cloud_ptr);
 
-		removeFloor(current_sensor_cloud_ptr, nofloor_cloud_ptr);
+		removeFloor(current_sensor_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
 		//removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr);
 
-		publishCloud(&pub_points_lanes_cloud, nofloor_cloud_ptr);
+		publishCloud(&_pub_points_lanes_cloud, nofloor_cloud_ptr);
 
-		clusterAndColor(nofloor_cloud_ptr, colored_clustered_cloud_ptr, distance);
+		publishCloud(&_pub_ground_cloud, onlyfloor_cloud_ptr);
 
-		publishColorCloud(&pub_cluster_cloud, colored_clustered_cloud_ptr);
+		//clusterAndColor(nofloor_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
+
+		if (_use_diffnormals)
+			differenceNormalsSegmentation(nofloor_cloud_ptr, diffnormals_cloud_ptr);
+		else
+			diffnormals_cloud_ptr = nofloor_cloud_ptr;
+
+		//clusterAndColor(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
+
+		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
+
+		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
+
+		// Publish BB
+		boundingbox_array.header = _velodyne_header;
+		_pub_jsk_boundingboxes.publish(boundingbox_array);
+
+		centroids.header = _velodyne_header;
+		_centroid_pub.publish(centroids);
+
+		_marker_pub.publish(_visualization_marker);
+		_visualization_marker.points.clear();
 
 		_using_sensor_cloud = false;
 	}
@@ -538,14 +691,15 @@ int main (int argc, char** argv)
 
 	cv::generateColors(_colors, 100);
 
-	pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster",1);
-	centroid_pub = h.advertise<lidar_tracker::centroids>("/cluster_centroids",1);
-	marker_pub = h.advertise<visualization_msgs::Marker>("centroid_marker",1);
+	_pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster",1);
+	_pub_ground_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
+	_centroid_pub = h.advertise<lidar_tracker::centroids>("/cluster_centroids",1);
+	_marker_pub = h.advertise<visualization_msgs::Marker>("centroid_marker",1);
 
-	pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes",1);
-	pub_jsk_boundingboxes = h.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes",1);
+	_pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes",1);
+	_pub_jsk_boundingboxes = h.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes",1);
 
-	string points_topic;
+	std::string points_topic;
 
 	_using_sensor_cloud = false;
 
@@ -559,45 +713,53 @@ int main (int argc, char** argv)
 		points_topic = "/points_raw";
 	}
 	publish_ground = false;
-	if (private_nh.getParam("publish_ground", publish_ground))
+	if (private_nh.getParam("publish_ground", _publish_ground))
 	{
 		ROS_INFO("Publishing /points_ground point cloud...");
-		pub_ground = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
+		_pub_ground = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
 	}
 	publish_filtered = false;
-	if (private_nh.getParam("publish_filtered", publish_filtered))
+	if (private_nh.getParam("publish_filtered", _publish_filtered))
 	{
 		ROS_INFO("Publishing /points_filtered point cloud...");
-		pub_filtered = h.advertise<sensor_msgs::PointCloud2>("/points_filtered",1);
+		_pub_filtered = h.advertise<sensor_msgs::PointCloud2>("/points_filtered",1);
+	}
+
+	_use_diffnormals = false;
+	if (private_nh.getParam("use_diffnormals", _use_diffnormals))
+	{
+		if (_use_diffnormals)
+			ROS_INFO("Euclidean Clustering: Applying difference of normals on clustering pipeline");
+		else
+			ROS_INFO("Euclidean Clustering: Difference of Normals will not be used.");
 	}
 
 	/* Initialize tuning parameter */
-	private_nh.param("is_downsampling", is_downsampling, false);
-	private_nh.param("distance", distance, 0.5);
-	private_nh.param("leaf_size", leaf_size, 0.1);
-	private_nh.param("cluster_size_min", cluster_size_min, 10);
-	private_nh.param("cluster_size_max", cluster_size_max, 5000);
+	private_nh.param("downsample_cloud", _downsample_cloud, false);
+	private_nh.param("distance", _distance, 0.5);
+	private_nh.param("leaf_size", _leaf_size, 0.1);
+	private_nh.param("cluster_size_min", _cluster_size_min, 20);
+	private_nh.param("cluster_size_max", _cluster_size_max, 100000);
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
 
 
-	    visualization_marker.header.frame_id = "velodyne";
-	    visualization_marker.header.stamp = ros::Time();
-	    visualization_marker.ns = "my_namespace";
-	    visualization_marker.id = 0;
-	    visualization_marker.type = visualization_msgs::Marker::SPHERE_LIST;
-	    visualization_marker.action = visualization_msgs::Marker::ADD;
-	    visualization_marker.scale.x = 1.0;
-	    visualization_marker.scale.y = 1.0;
-	    visualization_marker.scale.z = 1.0;
-	    visualization_marker.color.a = 1.0;
-	    visualization_marker.color.r = 0.0;
-	    visualization_marker.color.g = 0.0;
-	    visualization_marker.color.b = 1.0;
-	   // marker.lifetime = ros::Duration(0.1);
-	    visualization_marker.frame_locked = true;
-
+	_visualization_marker.header.frame_id = "velodyne";
+	_visualization_marker.header.stamp = ros::Time();
+	_visualization_marker.ns = "my_namespace";
+	_visualization_marker.id = 0;
+	_visualization_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+	_visualization_marker.action = visualization_msgs::Marker::ADD;
+	_visualization_marker.scale.x = 1.0;
+	_visualization_marker.scale.y = 1.0;
+	_visualization_marker.scale.z = 1.0;
+	_visualization_marker.color.a = 1.0;
+	_visualization_marker.color.r = 0.0;
+	_visualization_marker.color.g = 0.0;
+	_visualization_marker.color.b = 1.0;
+	// marker.lifetime = ros::Duration(0.1);
+	_visualization_marker.frame_locked = true;
 
 
 	// Spin
