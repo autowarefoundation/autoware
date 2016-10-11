@@ -818,6 +818,22 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : pose_estimation
+      desc    : pose_estimation desc sample
+      label   : 'pose_estimation'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_diffnormals
+      desc    : use_diffnormals desc sample
+      label   : 'use_diffnormals'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : publish_filtered
       desc    : publish_filtered desc sample
       label   : 'publish filtered'
@@ -826,9 +842,9 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : is_downsampling
-      desc    : is_downsampling desc sample
-      label   : 'is downsampling'
+    - name    : downsample_cloud
+      desc    : downsample_cloud desc sample
+      label   : 'downsample_cloud'
       kind    : checkbox
       v       : False
       cmd_param :
@@ -856,8 +872,8 @@ params :
       desc    : cluster_size_min desc sample
       label   : 'cluster size minimum'
       min       : 0
-      max       : 3000
-      v       : 50
+      max       : 100000
+      v       : 20
       cmd_param :
         dash        : ''
         delim       : ':='   
@@ -865,8 +881,8 @@ params :
       desc    : cluster_size_max desc sample
       label   : 'cluster size maximum'
       min       : 0
-      max       : 3000
-      v       : 2500
+      max       : 100000
+      v       : 100000
       cmd_param :
         dash        : ''
         delim       : ':='              
