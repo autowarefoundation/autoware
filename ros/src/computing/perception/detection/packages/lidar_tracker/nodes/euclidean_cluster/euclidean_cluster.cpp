@@ -73,6 +73,7 @@ pcl::PointCloud<pcl::PointXYZ> _sensor_cloud;
 
 /* parameters for tuning */
 static bool _downsample_cloud;
+static bool _pose_estimation;
 static double _distance;
 static double _leaf_size;
 static int _cluster_size_min;
@@ -330,7 +331,7 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	std::vector<pcl::PointIndices> cluster_indices;
 
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance (_distance); //
+	ec.setClusterTolerance (in_max_cluster_distance); //
 	ec.setMinClusterSize (_cluster_size_min);
 	ec.setMaxClusterSize (_cluster_size_max);
 	ec.setSearchMethod(tree);
@@ -418,19 +419,23 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		bounding_box.dimensions.y = ((w<0)?-1*w:w);
 		bounding_box.dimensions.z = ((h<0)?-1*h:h);
 
-		std::vector<cv::Point2f> inner_points;
-		for (unsigned int i=0; i<current_cluster->points.size(); i++)
-		{
-			inner_points.push_back(cv::Point2f((current_cluster->points[i].x + fabs(min_point.x))*8, (current_cluster->points[i].y + fabs(min_point.y) ))*8);
-		}
-
-
-		cv::Mat points_mat = cv::Mat(inner_points);
 		double rz = 0;
-		if (inner_points.size() > 0)
+
+		if (_pose_estimation)
 		{
-			cv::RotatedRect rot_box = cv::minAreaRect(points_mat);
-			rz = atan(rot_box.angle);
+			std::vector<cv::Point2f> inner_points;
+			for (unsigned int i=0; i<current_cluster->points.size(); i++)
+			{
+				inner_points.push_back(cv::Point2f((current_cluster->points[i].x + fabs(min_point.x))*8, (current_cluster->points[i].y + fabs(min_point.y) ))*8);
+			}
+
+			cv::Mat points_mat = cv::Mat(inner_points);
+
+			if (inner_points.size() > 0)
+			{
+				cv::RotatedRect rot_box = cv::minAreaRect(points_mat);
+				rz = atan(rot_box.angle);
+			}
 		}
 
 
@@ -480,7 +485,7 @@ void segmentByDistance(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	//4 => >60   d=2.6
 
 	std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_segments_array(5);
-	std::vector<double> thresholds = {1.5, 2.1, 2.6, 3.3, 4.0f};
+	std::vector<double> thresholds = {0.5, 1.1, 1.6, 2.3, 2.0f};
 
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
@@ -742,6 +747,7 @@ int main (int argc, char** argv)
 	private_nh.param("leaf_size", _leaf_size, 0.1);
 	private_nh.param("cluster_size_min", _cluster_size_min, 20);
 	private_nh.param("cluster_size_max", _cluster_size_max, 100000);
+	private_nh.param("pose_estimation", _pose_estimation, false);
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
