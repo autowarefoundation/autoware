@@ -165,3 +165,22 @@ target_link_libraries(tlr_tuner
   ${OpenCV_LIBS}
   )
 endif()
+
+
+### roi_extractorp ###
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  include
+)
+
+add_executable(roi_extractor
+  nodes/roi_extractor/roi_extractor.cpp
+  )
+
+target_link_libraries(roi_extractor
+  ${catkin_LIBRARIES}
+  libcontext
+)
+
+add_dependencies(region_tlr
+road_wizard_generate_messages_cpp)
