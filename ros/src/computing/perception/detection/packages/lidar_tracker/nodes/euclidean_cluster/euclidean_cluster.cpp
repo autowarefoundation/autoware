@@ -85,14 +85,18 @@ static bool _publish_filtered;	//pc with no ground
 static bool _using_sensor_cloud;
 static bool _use_diffnormals;
 
-void publishCloud(ros::Publisher* in_publisher, pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_to_publish_ptr)
+static double _clip_min_height;
+static double _clip_max_height;
+
+void publishCloud(const ros::Publisher* in_publisher, const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_to_publish_ptr)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
 	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
+	cloud_msg.header=_velodyne_header;
 	in_publisher->publish(cloud_msg);
 }
 
-void publishColorCloud(ros::Publisher* in_publisher, pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud_to_publish_ptr)
+void publishColorCloud(const ros::Publisher* in_publisher, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud_to_publish_ptr)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
 	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
@@ -275,7 +279,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 	_visualization_marker.points.clear();
 }
 
-void keepLanePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 					pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr,
 					float in_x_threshold = 40, //keep upto 50 meters ahead and behind
 					float in_y_threshold = 5, //lane's width is about 3.5 (adjacent) + 1.5 (current center) Japan's lane 3.25~3.5m width
@@ -318,10 +322,10 @@ bool independentDistance (const pcl::PointXYZ& in_point_a, const pcl::PointXYZ& 
 		return (false);
 }
 
-void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
-		jsk_recognition_msgs::BoundingBoxArray& in_boundingbox_array,
-		lidar_tracker::centroids& in_centroids,
+		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
+		lidar_tracker::centroids& in_out_centroids,
 		double in_max_cluster_distance=0.5)
 {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
@@ -376,16 +380,12 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 			centroid.y += in_cloud_ptr->points[*pit].y;
 			centroid.z += in_cloud_ptr->points[*pit].z;
 
-			if (p.z > -1.3 && p.z < 0.5)
-			{
-				current_cluster->points.push_back(p);
-			}
+			current_cluster->points.push_back(p);
 		}
 
 		centroid.x /= it->indices.size();
 		centroid.y /= it->indices.size();
 		centroid.z /= it->indices.size();
-
 
 		//get min, max
 		float min_x=std::numeric_limits<float>::max();float max_x=-std::numeric_limits<float>::max();
@@ -449,8 +449,8 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 				bounding_box.dimensions.x < 15 && bounding_box.dimensions.y >0 && bounding_box.dimensions.y < 15 &&
 				max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0 )
 		{
-			in_boundingbox_array.boxes.push_back(bounding_box);
-			in_centroids.points.push_back(centroid);
+			in_out_boundingbox_array.boxes.push_back(bounding_box);
+			in_out_centroids.points.push_back(centroid);
 			_visualization_marker.points.push_back(centroid);
 		}
 
@@ -469,10 +469,10 @@ void clusterAndColor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 }
 
-void segmentByDistance(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
-		jsk_recognition_msgs::BoundingBoxArray& in_boundingbox_array,
-		lidar_tracker::centroids& in_centroids,
+		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
+		lidar_tracker::centroids& in_out_centroids,
 		double in_max_cluster_distance=0.5)
 {
 	//cluster the pointcloud according to the distance of the points using different thresholds (not only one for the entire pc)
@@ -485,7 +485,7 @@ void segmentByDistance(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	//4 => >60   d=2.6
 
 	std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_segments_array(5);
-	std::vector<double> thresholds = {0.5, 1.1, 1.6, 2.3, 2.0f};
+	std::vector<double> thresholds = {0.5, 1.1, 1.6, 2.3, 2.6f};
 
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
@@ -500,7 +500,7 @@ void segmentByDistance(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		current_point.y = in_cloud_ptr->points[i].y;
 		current_point.z = in_cloud_ptr->points[i].z;
 
-		float origin_distance = sqrt(current_point.x*current_point.x + current_point.y+current_point.y);
+		float origin_distance = sqrt( pow(current_point.x,2) + pow(current_point.y,2) );
 
 		if 		(origin_distance < 15 )	{cloud_segments_array[0]->points.push_back (current_point);}
 		else if(origin_distance < 30)	{cloud_segments_array[1]->points.push_back (current_point);}
@@ -511,12 +511,11 @@ void segmentByDistance(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
-		clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_boundingbox_array, in_centroids, thresholds[i]);
+		clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, thresholds[i]);
 	}
-
 }
 
-void removeFloor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.35)
+void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.35)
 {
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
 	pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
@@ -550,7 +549,7 @@ void removeFloor(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointClo
 	extract.filter(*out_onlyfloor_cloud_ptr);
 }
 
-void downsampleCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_leaf_size=0.2)
+void downsampleCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_leaf_size=0.2)
 {
 
 	pcl::VoxelGrid<pcl::PointXYZ> sor;
@@ -560,7 +559,20 @@ void downsampleCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 
 }
 
-void differenceNormalsSegmentation(pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr)
+void clipCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_min_height=-1.3, float in_max_height=0.5)
+{
+	out_cloud_ptr->points.clear();
+	for (unsigned int i=0; i<in_cloud_ptr->points.size(); i++)
+	{
+		if (in_cloud_ptr->points[i].z >= in_min_height &&
+				in_cloud_ptr->points[i].z <= in_max_height)
+		{
+			out_cloud_ptr->points.push_back(in_cloud_ptr->points[i]);
+		}
+	}
+}
+
+void differenceNormalsSegmentation(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr)
 {
 
 	float small_scale=0.5;
@@ -637,6 +649,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		pcl::PointCloud<pcl::PointXYZ>::Ptr nofloor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr onlyfloor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr diffnormals_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
+		pcl::PointCloud<pcl::PointXYZ>::Ptr clipped_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_clustered_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
 		lidar_tracker::centroids centroids;
@@ -654,19 +667,21 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		//keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr);
 		//keepLanePoints(current_sensor_cloud_ptr, inlanes_cloud_ptr);
 
-		removeFloor(current_sensor_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
+		removeFloor(downsampled_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
 		//removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr);
 
-		publishCloud(&_pub_points_lanes_cloud, nofloor_cloud_ptr);
+		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
+
+		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
 
 		publishCloud(&_pub_ground_cloud, onlyfloor_cloud_ptr);
 
 		//clusterAndColor(nofloor_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
 
 		if (_use_diffnormals)
-			differenceNormalsSegmentation(nofloor_cloud_ptr, diffnormals_cloud_ptr);
+			differenceNormalsSegmentation(clipped_cloud_ptr, diffnormals_cloud_ptr);
 		else
-			diffnormals_cloud_ptr = nofloor_cloud_ptr;
+			diffnormals_cloud_ptr = clipped_cloud_ptr;
 
 		//clusterAndColor(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
 
@@ -742,16 +757,17 @@ int main (int argc, char** argv)
 	}
 
 	/* Initialize tuning parameter */
-	private_nh.param("downsample_cloud", _downsample_cloud, false);
-	private_nh.param("distance", _distance, 0.5);
-	private_nh.param("leaf_size", _leaf_size, 0.1);
-	private_nh.param("cluster_size_min", _cluster_size_min, 20);
-	private_nh.param("cluster_size_max", _cluster_size_max, 100000);
-	private_nh.param("pose_estimation", _pose_estimation, false);
+	private_nh.param("downsample_cloud", _downsample_cloud, false);	ROS_INFO("downsample_cloud: %d", _downsample_cloud);
+	private_nh.param("distance", _distance, 0.5);					ROS_INFO("Initial clustering distance: %f", _distance);
+	private_nh.param("leaf_size", _leaf_size, 0.1);					ROS_INFO("leaf_size: %f", _leaf_size);
+	private_nh.param("cluster_size_min", _cluster_size_min, 20);	ROS_INFO("cluster_size_min %d", _cluster_size_min);
+	private_nh.param("cluster_size_max", _cluster_size_max, 100000);ROS_INFO("cluster_size_max: %d", _cluster_size_max);
+	private_nh.param("pose_estimation", _pose_estimation, false);	ROS_INFO("pose_estimation: %d", _pose_estimation);
+	private_nh.param("clip_min_height", _clip_min_height, -1.3);	ROS_INFO("clip_min_height: %f", _clip_min_height);
+	private_nh.param("clip_max_height", _clip_max_height, 0.5);		ROS_INFO("clip_max_height: %f", _clip_max_height);
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
-
 
 	_visualization_marker.header.frame_id = "velodyne";
 	_visualization_marker.header.stamp = ros::Time();
@@ -768,7 +784,6 @@ int main (int argc, char** argv)
 	_visualization_marker.color.b = 1.0;
 	// marker.lifetime = ros::Duration(0.1);
 	_visualization_marker.frame_locked = true;
-
 
 	// Spin
 	ros::spin ();
