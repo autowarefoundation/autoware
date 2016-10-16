@@ -30,7 +30,6 @@ SimulatedTrajectoryFollower::SimulatedTrajectoryFollower()
 
 	//m_pidSteer.Init(0.35, 0.01, 0.01); // for 5 m/s
 	//m_pidSteer.Init(1.5, 0.00, 0.00); // for 3 m/s
-
 	//m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
 
 }

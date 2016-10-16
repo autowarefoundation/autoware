@@ -525,12 +525,22 @@ void DrawingHelpers::DrawWideEllipse(float x, float y, float z, float outer_widt
 		float inner_width,float color[3])
 {
 	std::vector<WayPoint> ellipse_points;
-	for (float i = 0; i <=M_PI*2*RAD2DEG; i+=0.1)
+	for (float i = 0; i <= M_PI*2 + 0.1; i+=0.1)
 	{
 		ellipse_points.push_back(WayPoint(x + outer_width*cos(i), y+outer_height*sin(i), z, 0));
 	}
 
 	DrawWidePath(ellipse_points, z, outer_width - inner_width,color);
+}
+
+void DrawingHelpers::DrawSimpleEllipse(float x, float y, float z, float outer_width, float outer_height)
+{
+	glBegin(GL_LINE_STRIP);
+	for (float jj = 0; jj <=M_PI*2.0; jj+=0.1)
+	{
+		glVertex3f(x + outer_width*cos(jj), y+ outer_height*sin(jj),z);
+	}
+	glEnd();
 }
 
 void DrawingHelpers::DrawPedal(float x, float y, float z, float width, float height, float inner_height, float color[3])

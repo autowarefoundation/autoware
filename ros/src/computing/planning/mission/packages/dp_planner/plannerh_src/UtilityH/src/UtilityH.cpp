@@ -37,11 +37,27 @@ UtilityH::UtilityH()
 	return string(homedir);
  }
 
+ double UtilityH::GetMomentumScaleFactor(const double& v)
+ {
+ 	if(v < 0.3)
+ 		return 0.6;
+ 	else if(v <6.4)
+ 		return 0.3;
+ 	else if(v < 20)
+ 	{
+ 		double m = 0.7/3.6;
+ 		return m*(v - 6.4) + 0.3;
+ 	}
+ 	else
+ 		return 0.9;
+ }
+
  int UtilityH::GetSign(double x)
  {
 	 if(x < 0 )
 		 return -1;
-	 else return 0;
+	 else
+		 return 1;
  }
 
  double UtilityH::FixNegativeAngle(const double& a)

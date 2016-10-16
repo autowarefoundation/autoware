@@ -35,6 +35,18 @@ enum SHIFT_POS {SHIFT_POS_PP = 0x60, SHIFT_POS_RR = 0x40, SHIFT_POS_NN = 0x20,
 enum ACTION_TYPE {FORWARD_ACTION, BACKWARD_ACTION, STOP_ACTION, LEFT_TURN_ACTION,
 	RIGHT_TURN_ACTION, U_TURN_ACTION, SWERVE_ACTION, OVERTACK_ACTION};
 
+class ObjTimeStamp
+{
+public:
+	timespec tStamp;
+
+	ObjTimeStamp()
+	{
+		tStamp.tv_nsec = 0;
+		tStamp.tv_sec = 0;
+	}
+};
+
 class POINT2D
 {
 public:
@@ -82,7 +94,7 @@ public:
   virtual ~RECTANGLE(){}
 };
 
-class GPSPoint
+class GPSPoint : public ObjTimeStamp
 {
 public:
 	double lat, x;
@@ -294,6 +306,9 @@ public:
 	Rotation rot;
 	double   v;
 	double   cost;
+	double   timeCost;
+	double   totalReward;
+	double   collisionCost;
 	int 	 laneId;
 	int 	 id;
 	int LeftLaneId;
@@ -321,6 +336,9 @@ public:
 		bDir = FORWARD_DIR;
 		LeftLaneId = 0;
 		RightLaneId = 0;
+		timeCost = 0;
+		totalReward = 0;
+		collisionCost = 0;
 	}
 
 	WayPoint(const double& x, const double& y, const double& z, const double& a)
@@ -340,6 +358,9 @@ public:
 		bDir = FORWARD_DIR;
 		LeftLaneId = 0;
 		RightLaneId = 0;
+		timeCost = 0;
+		totalReward = 0;
+		collisionCost = 0;
 	}
 };
 
@@ -506,7 +527,7 @@ public:
 	std::vector<RoadSegment> roadSegments;
 };
 
-class VehicleState
+class VehicleState : public ObjTimeStamp
 {
 public:
 	double speed;
@@ -522,7 +543,7 @@ public:
 
 };
 
-class BehaviorState
+class BehaviorState : public ObjTimeStamp
 {
 public:
 	STATE_TYPE state;
@@ -605,9 +626,9 @@ public:
 		maxSpeed 						= 3;
 		minSpeed 						= 0;
 		planningDistance 				= 10000;
-		microPlanDistance 				= 35;
-		carTipMargin					= 8.0;
-		rollInMargin					= 20.0;
+		microPlanDistance 				= 50;
+		carTipMargin					= 4.0;
+		rollInMargin					= 10.0;
 		rollInSpeedFactor				= 0.25;
 		pathDensity						= 0.25;
 		rollOutDensity					= 0.5;
@@ -617,9 +638,9 @@ public:
 		maxFollowingDistance			= 40;
 		minDistanceToAvoid				= 15;
 		speedProfileFactor				= 1.0;
-		smoothingDataWeight				= 0.3;
+		smoothingDataWeight				= 0.4;
 		smoothingSmoothWeight			= 0.35;
-		smoothingToleranceError			= 0.1;
+		smoothingToleranceError			= 0.01;
 
 		enableHeadingSmoothing			= false;
 		enableSwerving 					= false;
