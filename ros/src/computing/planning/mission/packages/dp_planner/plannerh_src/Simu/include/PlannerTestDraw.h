@@ -15,6 +15,7 @@
 #include "DrawingHelpers.h"
 #include "TrajectoryFollower.h"
 #include "SimulatedTrajectoryFollower.h"
+#include "Graph2dBase.h"
 
 namespace Graphics
 {
@@ -50,6 +51,7 @@ public:
 	PlannerHNS::WayPoint m_goal;
 	PlannerHNS::WayPoint m_start;
 	bool				 m_bMakeNewPlan;
+	bool 				m_bResetForSimulation;
 
 	pthread_mutex_t planning_mutex;
 	pthread_mutex_t control_mutex;
@@ -59,17 +61,21 @@ public:
 	pthread_t control_thread_tid;
 	pthread_t simulation_thread_tid;
 	bool m_bCancelThread;
-
+	SimulationNS::ControllerParams m_ControlParams;
+	SimulationNS::CAR_BASIC_INFO m_CarInfo;
+	PlannerHNS::PlanningParams m_PlanningParams;
 	double m_PlanningCycleTime;
 	double m_ControlCycleTime;
 	double m_SimulationCycleTime;
 
-	PlannerHNS::VehicleState m_VehicleState;
+	PlannerHNS::VehicleState m_VehicleTargetState;
+	PlannerHNS::VehicleState m_VehicleCurrentState;
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 
 	SimulationNS::CarState 	m_State;
 	PlannerHNS::GPSPoint 	m_FollowPoint;
 	PlannerHNS::GPSPoint 	m_PerpPoint;
+	double m_LateralError;
 	std::vector<DisplayDataObj> m_DisplayList;
 
 	GLMmodel* m_CarModel;
@@ -100,6 +106,19 @@ private:
 	void SaveSimulationData();
 	void LoadSimulationData();
 	void AddSimulatedCar(const double& x,const double& y, const double& a, const double& v);
+
+
+	/**
+	 * Draw Infor Section
+	 */
+	Graph2dBase* m_pVelocityGraph;
+	Graph2dBase* m_pSteeringGraph;
+	Graph2dBase* m_pLateralErrGraph;
+
+	double m_GlobalPlanningTime;
+	double m_LocalPlanningTIme;
+	double m_SimulationTime;
+
 
 };
 

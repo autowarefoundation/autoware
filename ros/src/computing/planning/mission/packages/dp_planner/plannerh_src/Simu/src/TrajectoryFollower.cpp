@@ -27,6 +27,8 @@ TrajectoryFollower::TrajectoryFollower()
 	m_FollowAcceleration= 0;
 	m_iPrevWayPoint 	= -1;
 	m_StartFollowDistance = 0;
+	m_FollowAcc = 0.5;
+	m_iCalculatedIndex = 0;
 }
 
 void TrajectoryFollower::Init(const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo)
@@ -42,9 +44,7 @@ void TrajectoryFollower::Init(const ControllerParams& params, const CAR_BASIC_IN
 
 	m_pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD); // for 3 m/s
 	m_pidSteer.Setlimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
-
 	m_pidVelocity.Init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
-
 }
 
 TrajectoryFollower::~TrajectoryFollower()
@@ -56,7 +56,6 @@ TrajectoryFollower::~TrajectoryFollower()
 	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "SteeringPIDLog",m_pidSteer.ToStringHeader(), m_LogSteerPIDData );
 	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "VelocityPIDLog",m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData );
 }
-
 
 void TrajectoryFollower::PrepareNextWaypoint(const PlannerHNS::WayPoint& CurPos, const double& currVelocity, const double& currSteering)
 {
@@ -94,16 +93,21 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 {
 	if(path.size()==0) return false;
 
-	if(velocity > 3.0)
-		follow_distance = m_Params.minPursuiteDistance + abs(velocity) * 0.5;
-	else
-		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.25;
+//	if(velocity > 3.0)
+//		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.5;
+//	else
+//		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.25;
+//	if(follow_distance < m_Params.minPursuiteDistance)
+//		follow_distance = m_Params.minPursuiteDistance;
+
+	follow_distance = m_Params.minPursuiteDistance + m_Params.SteeringDelay*fabs(velocity);
 	if(follow_distance < m_Params.minPursuiteDistance)
 		follow_distance = m_Params.minPursuiteDistance;
 
-	//follow_distance = 4.5;
-
 	int iWayPoint =  PlanningHelpers::GetClosestNextPointIndex(path, state);
+	m_iCalculatedIndex = iWayPoint;
+
+
 	if(m_iPrevWayPoint >=0  && m_iPrevWayPoint < path.size() && iWayPoint < m_iPrevWayPoint)
 		iWayPoint = m_iPrevWayPoint;
 
@@ -190,49 +194,78 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity, PlannerHNS::SHIFT_POS& desiredShift)
 {
 
-	if(CurrBehavior.state == FORWARD_STATE)
+	double acc_const = 0.5; // m / sec sec
+	if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE)
 	{
 		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
 		double e = CurrBehavior.maxVelocity - CurrStatus.speed;
-		desiredVelocity = m_pidVelocity.getPID(e);
+
+		//desiredVelocity = m_pidVelocity.getPID(e);
+		acc_const = acc_const * UtilityH::GetSign(e);
+		if(abs(e)>0.2)
+			desiredVelocity = (acc_const * dt) + CurrStatus.speed;
+		else
+			desiredVelocity = CurrBehavior.maxVelocity;
+
 		m_StartFollowDistance = 0;
 	}
 	else if(CurrBehavior.state == WAITING_STATE || CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == FINISH_STATE)
 	{
-		//m_pidVelocity.Setlimit(2.0, 0);
-		desiredVelocity = m_pidVelocity.getPID(-CurrStatus.speed);
+		//desiredVelocity = m_pidVelocity.getPID(-CurrStatus.speed);
+		double e = -CurrStatus.speed;
+		if(abs(e)>0.2)
+			desiredVelocity = (-acc_const * dt) + CurrStatus.speed;
+		else
+			desiredVelocity = 0;
+
 		m_StartFollowDistance = 0;
 	}
-	else if(CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE)
-	{
-		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity*0.75, 0);
-		double e = CurrBehavior.maxVelocity - CurrStatus.speed;
-		desiredVelocity = m_pidVelocity.getPID(e);
-		m_StartFollowDistance = 0;
-	}
+//	else if(CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE)
+//	{
+//		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity*0.75, 0);
+//		double e = CurrBehavior.maxVelocity - CurrStatus.speed;
+//		desiredVelocity = m_pidVelocity.getPID(e);
+//
+//
+//		m_StartFollowDistance = 0;
+//	}
 	else if(CurrBehavior.state == FOLLOW_STATE)
 	{
 		if(m_StartFollowDistance == 0)
+		{
 			m_StartFollowDistance = CurrBehavior.followDistance;
+		}
 
-		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
-		//double e = (CurrBehavior.followDistance - m_StartFollowDistance)/3.6;
-		//double e = (10.0 - CurrBehavior.followDistance)/10.0
-		double e = CurrBehavior.followVelocity - CurrStatus.speed;
-		desiredVelocity = m_pidVelocity.getPID(e);
+		double slowingDownDistance = m_StartFollowDistance - m_Params.FollowDistance;
+		if(slowingDownDistance <= 0)
+			desiredVelocity = CurrBehavior.followVelocity;
+		else
+		{
+			acc_const = 0.8;
+			//m_FollowAcc = (CurrBehavior.followVelocity*CurrBehavior.followVelocity - CurrStatus.speed * CurrStatus.speed)/(2.0*slowingDownDistance);
+			double e = CurrBehavior.followVelocity - CurrStatus.speed;
+			acc_const = acc_const * UtilityH::GetSign(e);
+			if(abs(e)>0.2)
+				desiredVelocity = (acc_const * dt) + CurrStatus.speed;
+			else
+				desiredVelocity = CurrBehavior.followVelocity;
+		}
+		//m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
+		//desiredVelocity = m_pidVelocity.getPID(e);
 	}
 //	else
 //	{
 //		desiredVelocity = CurrBehavior.maxVelocity;
 //	}
 
+	if(desiredVelocity > CurrBehavior.maxVelocity)
+		desiredVelocity = CurrBehavior.maxVelocity;
 	//desiredVelocity = 2.0;
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;
 	m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
 	return 1;
 }
-
 
 PlannerHNS::VehicleState TrajectoryFollower::DoOneStep(const double& dt, const PlannerHNS::BehaviorState& behavior,
 		const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& currPose,
@@ -246,7 +279,7 @@ PlannerHNS::VehicleState TrajectoryFollower::DoOneStep(const double& dt, const P
 
 	PlannerHNS::VehicleState currState;
 
-	if(m_Path.size()>0)
+	if(m_Path.size()>0 && behavior.state != WAITING_STATE && behavior.state != INITIAL_STATE)
 	{
 		PrepareNextWaypoint(currPose, vehicleState.speed, vehicleState.steer);
 		VeclocityControllerUpdate(dt, vehicleState, behavior, currState.speed, currState.shift);
@@ -264,6 +297,16 @@ PlannerHNS::VehicleState TrajectoryFollower::DoOneStep(const double& dt, const P
 	}
 
 	return currState;
+}
+
+PlannerHNS::WayPoint TrajectoryFollower::SimulatePathFollow(const double& sampling_rate, const double& sim_distance,
+			const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
+			const double& velocity, const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo)
+{
+	UtilityHNS::PIDController pidSteer, pidVelocity;
+	pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD); // for 3 m/s
+	pidSteer.Setlimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
+	pidVelocity.Init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
 }
 
 } /* namespace SimulationNS */

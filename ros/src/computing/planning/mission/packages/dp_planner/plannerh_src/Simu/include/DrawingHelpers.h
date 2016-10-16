@@ -49,6 +49,8 @@ public:
 
 	static void DrawWideEllipse(float x, float y, float z, float outer_width, float outer_height, float inner_width,float color[3]);
 
+	static void DrawSimpleEllipse(float x, float y, float z, float outer_width, float outer_height);
+
 	static void DrawPedal(float x, float y, float z, float width, float height, float inner_height, float color[3]);
 
 };

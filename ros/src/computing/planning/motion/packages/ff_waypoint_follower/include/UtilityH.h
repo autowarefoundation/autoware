@@ -45,6 +45,7 @@ public:
 	static int tsCompare (struct  timespec  time1,   struct  timespec  time2, int micro_tolerance = 10);
 	static int GetSign(double x);
 	static std::string GetHomeDirectory();
+	static double GetMomentumScaleFactor(const double& v);
 };
 
 class PIDController

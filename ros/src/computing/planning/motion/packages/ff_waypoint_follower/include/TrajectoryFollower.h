@@ -42,9 +42,12 @@ public:
 	double 					m_LateralError;
 	double 					m_FollowingDistance;
 	PlannerHNS::WayPoint 	m_CurrPos;
+	int 					m_iCalculatedIndex;
+
 
 private:
 	double 						m_StartFollowDistance;
+	double 						m_FollowAcc;
 	ControllerParams 			m_Params;
 	CAR_BASIC_INFO 				m_VehicleInfo;
 	std::vector<PlannerHNS::WayPoint> 	m_Path;
@@ -74,7 +77,7 @@ private:
 
 	PlannerHNS::WayPoint SimulatePathFollow(const double& sampling_rate, const double& sim_distance,
 			const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
-			const double& velocity, const double& wheelbase);
+			const double& velocity, const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo);
 
 	double GetPID_LinearChange(double minVal, double maxVal, double speedMax, double currSpeed);
 
