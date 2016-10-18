@@ -29,6 +29,9 @@
 
 #include<rbsspfvehicletracker.h>
 
+#include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+
 namespace Ui {
 class MainWindow;
 }
@@ -97,6 +100,7 @@ private:
 public:
     ROSSub<sensor_msgs::LaserScanConstPtr> * scansub;
     ROSSub<cv_tracker::obj_label::ConstPtr> * detectionsub;
+    ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr> * boxessub;
     ROSTFSub * tfsub;
     ROSTFSub * tfMap2Lidarsub;
     QList< QPair<QTime,LaserScan> > scanlist;
@@ -112,6 +116,7 @@ public:
 public slots:
     void slotReceive();
     void slotReceiveDetection();
+    void slotReceiveBoxes();
     void slotReceiveTF();
     void slotReceiveTFMap2Lidar();
     void slotShowScan();

@@ -269,7 +269,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     scansub=new ROSSub<sensor_msgs::LaserScanConstPtr>("/scan",1000,10,this);
-    detectionsub=new ROSSub<cv_tracker::obj_label::ConstPtr>("obj_label",1000,10,this);
+    //detectionsub=new ROSSub<cv_tracker::obj_label::ConstPtr>("obj_label",1000,10,this);
+    boxessub=new ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr>("bounding_boxes",1000,10,this);
     tfsub=new ROSTFSub("/world","/velodyne",10,this);
     tfMap2Lidarsub=new ROSTFSub("/velodyne","/map",10,this); // obj_pose is published into "map" frame
 
@@ -277,7 +278,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //subscribe vehicle detection results (array of [x,y,theta])
 
     connect(scansub,SIGNAL(receiveMessageSignal()),this,SLOT(slotReceive()));
-    connect(detectionsub,SIGNAL(receiveMessageSignal()), this, SLOT(slotReceiveDetection()));
+    //connect(detectionsub,SIGNAL(receiveMessageSignal()), this, SLOT(slotReceiveDetection()));
+    connect(boxessub,SIGNAL(receiveMessageSignal()), this, SLOT(slotReceiveBoxes()));
     connect(tfsub,SIGNAL(receiveTFSignal()),this,SLOT(slotReceiveTF()));
     connect(tfMap2Lidarsub,SIGNAL(receiveTFSignal()),this,SLOT(slotReceiveTFMap2Lidar()));
 
@@ -294,15 +296,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(vehicletracker,SIGNAL(signalUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)),updateview,SLOT(slotUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)));
 
     scansub->startReceiveSlot();
-    detectionsub->startReceiveSlot();
+    //detectionsub->startReceiveSlot();
+    boxessub->startReceiveSlot();
     tfsub->startReceiveSlot();
     tfMap2Lidarsub->startReceiveSlot();
+
 }
 
 MainWindow::~MainWindow()
 {
     scansub->stopReceiveSlot();
-    detectionsub->stopReceiveSlot();
+    //detectionsub->stopReceiveSlot();
+    boxessub->stopReceiveSlot();
     tfsub->stopReceiveSlot();
     tfMap2Lidarsub->stopReceiveSlot();
     delete ui;
@@ -343,6 +348,31 @@ void MainWindow::slotReceiveDetection()
         state.y = converted.y();
 
         detectionlist.push_back(QPair<QTime, VehicleState >(timestamp,state));
+        if(ui->trigger->isChecked())
+            {
+                slotShowScan();
+            }
+    }
+}
+
+void MainWindow::slotReceiveBoxes()
+{
+	jsk_recognition_msgs::BoundingBoxArray::ConstPtr msg=boxessub->getMessage();
+    for (const auto& box : msg->boxes) {
+        int msec=(msg->header.stamp.sec)%(24*60*60)*1000+(msg->header.stamp.nsec)/1000000;
+        QTime timestamp=QTime::fromMSecsSinceStartOfDay(msec);
+        VehicleState vstate;
+        //fill state from msg;
+        // convert object position from map coordinate to sensor coordinate
+        tf::Vector3 pt(box.pose.position.x, box.pose.position.y, box.pose.position.z);
+        //tf::Vector3 converted = transformMap2Lidar * pt;
+        vstate.x = pt.x();
+        vstate.y = pt.y();
+        tf::Quaternion quat;
+        tf::quaternionMsgToTF(box.pose.orientation, quat);
+        vstate.theta = tf::getYaw(quat);
+
+        detectionlist.push_back(QPair<QTime, VehicleState >(timestamp,vstate));
         if(ui->trigger->isChecked())
             {
                 slotShowScan();

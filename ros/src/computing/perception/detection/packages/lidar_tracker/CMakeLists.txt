@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   message_generation
   tf
-  #vector_map_server
   rosinterface
 )
 
@@ -82,7 +81,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros #vector_map_server
+   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros
 )
 
 include_directories(
@@ -91,13 +90,6 @@ include_directories(
 link_directories(${PCL_LIBRARY_DIRS})
 
 #euclidean_clustering node
-<<<<<<< HEAD
-add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp)
-#target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib ${catkin_LIBRARIES} ${PCL_LIBRARIES} vector_map)
-#add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
-target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
-=======
 add_executable(euclidean_cluster
   nodes/euclidean_cluster/euclidean_cluster.cpp)
 
@@ -105,12 +97,12 @@ target_link_libraries(euclidean_cluster
   opencv_highgui
   opencv_core
   opencv_contrib
+  opencv_imgproc
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
 
 add_dependencies(euclidean_cluster
   lidar_tracker_generate_messages_cpp)
->>>>>>> -Now it compiles
 
 #vscan_filling node
 add_executable(vscan_filling

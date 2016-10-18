@@ -423,10 +423,12 @@ void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 		if (_pose_estimation)
 		{
+			/*
+			//pose estimation using rotating calipers
 			std::vector<cv::Point2f> inner_points;
 			for (unsigned int i=0; i<current_cluster->points.size(); i++)
 			{
-				inner_points.push_back(cv::Point2f((current_cluster->points[i].x + fabs(min_point.x))*8, (current_cluster->points[i].y + fabs(min_point.y) ))*8);
+				inner_points.push_back(cv::Point2f((current_cluster->points[i].x + fabs(min_point.x)), (current_cluster->points[i].y + fabs(min_point.y) )));
 			}
 
 			cv::Mat points_mat = cv::Mat(inner_points);
@@ -435,7 +437,21 @@ void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 			{
 				cv::RotatedRect rot_box = cv::minAreaRect(points_mat);
 				rz = atan(rot_box.angle);
+			}*/
+
+			//pose estimation for the cluster
+			//test using linear regression
+			//Slope(b) = (NΣXY - (ΣX)(ΣY)) / (NΣX2 - (ΣX)2)
+			float sum_x=0, sum_y=0, sum_xy=0, sum_xx=0;
+			for (unsigned int i=0; i<current_cluster->points.size(); i++)
+			{
+				sum_x+= current_cluster->points[i].x;
+				sum_y+= current_cluster->points[i].y;
+				sum_xy+= current_cluster->points[i].x*current_cluster->points[i].y;
+				sum_xx+= current_cluster->points[i].x*current_cluster->points[i].x;
 			}
+			double slope= (current_cluster->points.size()*sum_xy - (sum_x*sum_y))/(current_cluster->points.size()*sum_xx - sum_x*sum_x);
+			rz= atan(slope);
 		}
 
 
