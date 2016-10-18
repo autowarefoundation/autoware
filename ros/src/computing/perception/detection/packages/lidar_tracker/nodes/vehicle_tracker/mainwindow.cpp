@@ -300,7 +300,6 @@ MainWindow::MainWindow(QWidget *parent) :
     boxessub->startReceiveSlot();
     tfsub->startReceiveSlot();
     tfMap2Lidarsub->startReceiveSlot();
-
 }
 
 MainWindow::~MainWindow()

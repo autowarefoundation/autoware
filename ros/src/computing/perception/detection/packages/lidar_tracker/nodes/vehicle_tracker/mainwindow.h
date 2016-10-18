@@ -29,9 +29,12 @@
 
 #include<rbsspfvehicletracker.h>
 
+<<<<<<< HEAD
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 
+=======
+>>>>>>> fe2dc4132145fe265996417fb7cada057541bad4
 namespace Ui {
 class MainWindow;
 }

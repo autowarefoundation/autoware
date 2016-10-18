@@ -57,6 +57,7 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
+
   <!--<run_depend>vector_map_server</run_depend>-->
   <run_depend>rosinterface</run_depend>
 
