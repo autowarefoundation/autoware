@@ -121,7 +121,7 @@ int main(int argc, char **argv)
   private_nh.param<int>("cell_height", g_cell_height, 50);
 
   g_costmap_pub = nh.advertise<nav_msgs::OccupancyGrid>("realtime_cost_map", 10);
-  ros::Subscriber velodyne_sub = nh.subscribe("points_filtered", 10, createOccupancyGrid);
+  ros::Subscriber velodyne_sub = nh.subscribe("points_lanes", 10, createOccupancyGrid);
 
   ros::spin();
 }
