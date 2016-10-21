@@ -98,6 +98,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  nodes/euclidean_cluster/includes
   ${catkin_INCLUDE_DIRS}
 )
 link_directories(${PCL_LIBRARY_DIRS})
@@ -118,7 +119,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp)
+add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
 #target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib ${catkin_LIBRARIES} ${PCL_LIBRARIES} vector_map)
 #add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
 target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})

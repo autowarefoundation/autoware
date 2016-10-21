@@ -4,7 +4,6 @@
 	<arg name="publish_ground" default="true" />
 	<arg name="publish_filtered" default="true" />
 	<arg name="downsample_cloud" default="false" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
-	<arg name="distance" default="0.5" /><!-- Euclidean Clustering threshold distance -->
 	<arg name="leaf_size" default="0.1" /><!-- Voxel Grid Filter leaf size-->
 	<arg name="cluster_size_min" default="20" /><!-- Minimum number of points to consider a cluster as valid-->
 	<arg name="cluster_size_max" default="100000" /><!-- Maximum number of points to allow inside a cluster-->
@@ -13,6 +12,13 @@
 	<arg name="pose_estimation" default="true" />
 	<arg name="clip_min_height" default="-1.3" />
 	<arg name="clip_max_height" default="0.5" />
+	
+	<arg name="keep_lanes" default="false" />
+	<arg name="keep_lane_left_distance" default="5" />
+	<arg name="keep_lane_right_distance" default="5" />
+	<arg name="clustering_distances" default="[15,30,45,60]" /><!-- Distances to segment pointcloud -->
+	<arg name="clustering_thresholds" default="[0.5,1.1,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
+	<arg name="max_boundingbox_side" default="10" />
 
 	<!-- rosrun lidar_tracker vscan_filling -->
 	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
@@ -23,12 +29,15 @@
 		<param name="publish_ground" value="$(arg publish_ground)" />
 		<param name="publish_filtered" value="$(arg publish_filtered)"/>
 		<param name="downsample_cloud" value="$(arg downsample_cloud)" />
-		<param name="distance" value="$(arg distance)" />
 		<param name="leaf_size" value="$(arg leaf_size)" />
 		<param name="cluster_size_min" value="$(arg cluster_size_min)" />
 		<param name="cluster_size_max" value="$(arg cluster_size_max)" />
 		<param name="use_diffnormals" value="$(arg use_diffnormals)" />
 		<param name="pose_estimation" value="$(arg pose_estimation)" />
+		<param name="keep_lanes" value="$(arg keep_lanes)" />
+		<param name="keep_lane_left_distance" value="$(arg keep_lane_left_distance)" />
+		<param name="keep_lane_right_distance" value="$(arg keep_lane_right_distance)" />
+		<param name="max_boundingbox_side" value="$(arg max_boundingbox_side)" />
 		<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
 	</node>
 
