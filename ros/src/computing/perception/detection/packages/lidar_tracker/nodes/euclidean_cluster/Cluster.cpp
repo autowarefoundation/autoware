@@ -99,7 +99,7 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 
 	bounding_box_.pose.position.x = min_point_.x + length_/2;
 	bounding_box_.pose.position.y = min_point_.y + width_/2;
-	bounding_box_.pose.position.z = min_point_.z + width_/2;
+	bounding_box_.pose.position.z = min_point_.z + height_/2;
 
 	bounding_box_.dimensions.x = ((length_<0)?-1*length_:length_);
 	bounding_box_.dimensions.y = ((width_<0)?-1*width_:width_);
