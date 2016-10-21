@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl/point_types.h>
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 #include <pcl_ros/transforms.h>
@@ -49,6 +48,8 @@
 
 #include <chrono>
 #include <iostream>
+
+#include "Cluster.h"
 
 //#include <vector_map/vector_map.h>
 //#include <vector_map_server/GetSignal.h>
@@ -281,7 +282,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 
 void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 					pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr,
-					float in_x_threshold = 40, //keep upto 50 meters ahead and behind
+					float in_x_threshold = 100, //keep upto 50 meters ahead and behind
 					float in_y_threshold = 5, //lane's width is about 3.5 (adjacent) + 1.5 (current center) Japan's lane 3.25~3.5m width
 					float in_z_threshold = 2) // keep upto 2 meters above
 {
@@ -293,9 +294,9 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		current_point.y=in_cloud_ptr->points[i].y;
 		current_point.z=in_cloud_ptr->points[i].z;
 
-		if (	current_point.x > in_x_threshold || current_point.x < -1.0*in_x_threshold ||
-				current_point.y > in_y_threshold || current_point.y < -1.0*in_y_threshold ||
-				current_point.z < -1.8 || current_point.z > 2.0)//remove points which do not belong to an adjacent lane
+		if (
+				current_point.y > (1.5) || current_point.y < -1.5*in_y_threshold
+			)
 		{
 			far_indices->indices.push_back(i);
 		}
@@ -322,7 +323,7 @@ bool independentDistance (const pcl::PointXYZ& in_point_a, const pcl::PointXYZ& 
 		return (false);
 }
 
-void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
 		lidar_tracker::centroids& in_out_centroids,
@@ -350,6 +351,56 @@ void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	cec.setMaxClusterSize (cluster_size_max);
 	cec.setClusterTolerance (_distance*2.0f);
 	cec.segment (cluster_indices);*/
+
+	/////////////////////////////////
+	//---	3. Color clustered points
+	/////////////////////////////////
+	unsigned int k = 0;
+	//pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+	std::vector<ClusterPtr> clusters;
+	//pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);//coord + color cluster
+	for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
+	{
+		ClusterPtr cluster(new Cluster());
+		cluster->SetCloud(in_cloud_ptr, it->indices, k, (int)_colors[k].val[0], (int)_colors[k].val[1], (int)_colors[k].val[2], "", false);
+		clusters.push_back(cluster);
+
+		k++;
+	}
+	//std::cout << "Clusters: " << k << std::endl;
+	return clusters;
+
+}
+
+/*void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
+		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
+		lidar_tracker::centroids& in_out_centroids,
+		double in_max_cluster_distance=0.5)
+{
+	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+
+	tree->setInputCloud (in_cloud_ptr);
+
+	std::vector<pcl::PointIndices> cluster_indices;
+
+	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+	ec.setClusterTolerance (in_max_cluster_distance); //
+	ec.setMinClusterSize (_cluster_size_min);
+	ec.setMaxClusterSize (_cluster_size_max);
+	ec.setSearchMethod(tree);
+	ec.setInputCloud (in_cloud_ptr);
+	ec.extract (cluster_indices);
+
+
+	pcl::ConditionalEuclideanClustering<pcl::PointXYZ> cec (true);
+	cec.setInputCloud (in_cloud_ptr);
+	cec.setConditionFunction (&independentDistance);
+	cec.setMinClusterSize (cluster_size_min);
+	cec.setMaxClusterSize (cluster_size_max);
+	cec.setClusterTolerance (_distance*2.0f);
+	cec.segment (cluster_indices);
 
 	/////////////////////////////////
 	//---	3. Color clustered points
@@ -446,7 +497,7 @@ void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 		if (	//(fabs(bounding_box.pose.position.x) > 2.1 && fabs(bounding_box.pose.position.y) > 0.8 ) && //ignore points that belong to our car
 				bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0 &&
-				bounding_box.dimensions.x < 15 && bounding_box.dimensions.y >0 && bounding_box.dimensions.y < 15 &&
+				bounding_box.dimensions.x < 10 && bounding_box.dimensions.y >0 && bounding_box.dimensions.y < 10 &&
 				max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0 )
 		{
 			in_out_boundingbox_array.boxes.push_back(bounding_box);
@@ -467,7 +518,7 @@ void clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	//std::cout << "Clusters: " << k << std::endl;
 
 
-}
+}*/
 
 void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
@@ -509,9 +560,39 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		else							{cloud_segments_array[4]->points.push_back (current_point);}
 	}
 
+	std::vector <ClusterPtr> all_clusters;
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
-		clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, thresholds[i]);
+		std::vector<ClusterPtr> local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, thresholds[i]);
+
+		all_clusters.insert(all_clusters.end(), local_clusters.begin(), local_clusters.end());
+	}
+
+	//Clusters can be merged or checked in here
+	//....
+	//Get final PointCloud to be published
+
+	for(unsigned int i=0; i<all_clusters.size(); i++)
+	{
+		*out_cloud_ptr = *out_cloud_ptr + *(all_clusters[i]->GetCloud());
+
+		jsk_recognition_msgs::BoundingBox bounding_box = all_clusters[i]->GetBoundingBox();
+		pcl::PointXYZ min_point = all_clusters[i]->GetMinPoint();
+		pcl::PointXYZ max_point = all_clusters[i]->GetMaxPoint();
+		pcl::PointXYZ center_point = all_clusters[i]->GetCentroid();
+		geometry_msgs::Point centroid;
+		centroid.x = center_point.x; centroid.y = center_point.y; centroid.z = center_point.z;
+		bounding_box.header = _velodyne_header;
+
+		if (	//(fabs(bounding_box.pose.position.x) > 2.1 && fabs(bounding_box.pose.position.y) > 0.8 ) && //ignore points that belong to our car
+				bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0 &&
+				bounding_box.dimensions.x < 10 && bounding_box.dimensions.y >0 && bounding_box.dimensions.y < 10 &&
+				max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0 )
+		{
+			in_out_boundingbox_array.boxes.push_back(bounding_box);
+			in_out_centroids.points.push_back(centroid);
+			_visualization_marker.points.push_back(centroid);
+		}
 	}
 }
 
@@ -668,7 +749,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		//keepLanePoints(current_sensor_cloud_ptr, inlanes_cloud_ptr);
 
 		removeFloor(downsampled_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
-		//removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr);
+		//removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
 
 		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
 
