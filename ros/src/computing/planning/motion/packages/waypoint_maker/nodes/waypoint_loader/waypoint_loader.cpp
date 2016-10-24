@@ -40,6 +40,14 @@
 
 namespace {
 
+enum class FileFormat
+{
+  ver1,  //x,y,z,(velocity)
+  ver2,  //x,y,z,yaw,(velocity)
+  ver3,  //first line consists on explanation of values
+  unknown,
+};
+
 struct WP
 {
   geometry_msgs::Pose pose;
@@ -84,7 +92,7 @@ WP parseWaypoint(const std::string& line, bool yaw)
   return waypoint;
 }
 
-size_t countColumn(const std::string& line)
+size_t countColumns(const std::string& line)
 {
   std::istringstream ss(line);
   size_t ncol = 0;
@@ -205,6 +213,41 @@ waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
   }
   return lane_waypoint;
 }
+
+FileFormat checkFileFormat(const char* filename)
+{
+
+  std::ifstream ifs(filename);
+
+  if (!ifs)
+  {
+    return FileFormat::unknown;
+  }
+
+  // get first line
+  std::string line;
+  std::getline(ifs, line);
+
+  //parse first line
+  std::vector<std::string> parsed_columns;
+  parseColumns(line, &parsed_columns);
+
+  //check if first element in the first column does not include digit
+  if (!std::any_of(parsed_columns.at(0).cbegin(),parsed_columns.at(0).cend(),isdigit))
+  {
+    return FileFormat::ver3;
+  }
+
+  //if element consists only digit
+  int num_of_columns = countColumns(line);
+  ROS_INFO("columns size: %d",num_of_columns);
+
+  return (num_of_columns == 3 ? FileFormat::ver1  // if data consists "x y z (velocity)"
+         : num_of_columns == 4 ? FileFormat::ver2  // if data consists "x y z yaw (velocity)
+                               : FileFormat::unknown
+          );
+}
+
 } //namespace
 
 int main(int argc, char **argv)
