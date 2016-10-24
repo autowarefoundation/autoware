@@ -35,6 +35,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cctype>
+#include <algorithm>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "waypoint_follower/LaneArray.h"
 
@@ -52,6 +54,7 @@ struct WP
 {
   geometry_msgs::Pose pose;
   double velocity_kmh;
+  int32_t change_flag;
 };
 
 double g_decelerate = 1.0;
@@ -67,29 +70,30 @@ void parseColumns(const std::string &line, std::vector<std::string> *columns)
     }
 }
 
-WP parseWaypoint(const std::string& line, bool yaw)
+void parseWaypoint(const std::string& line, FileFormat format, WP *waypoint)
 {
   std::vector<std::string> columns;
   parseColumns(line, &columns);
 
-  WP waypoint;
-  if (yaw)
-  {
-    waypoint.pose.position.x = std::stod(columns[0]);
-    waypoint.pose.position.y = std::stod(columns[1]);
-    waypoint.pose.position.z = std::stod(columns[2]);
-    waypoint.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[3]));
-    waypoint.velocity_kmh = std::stod(columns[4]);
-  }
-  else
-  {
-    waypoint.pose.position.x = std::stod(columns[0]);
-    waypoint.pose.position.y = std::stod(columns[1]);
-    waypoint.pose.position.z = std::stod(columns[2]);
-    waypoint.velocity_kmh = std::stod(columns[3]);
-  }
+  waypoint->pose.position.x = std::stod(columns[0]);
+  waypoint->pose.position.y = std::stod(columns[1]);
+  waypoint->pose.position.z = std::stod(columns[2]);
 
-  return waypoint;
+  if (format == FileFormat::ver2)
+  {
+    waypoint->pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[3]));
+    waypoint->velocity_kmh = std::stod(columns[4]);
+  }
+  else if (format == FileFormat::ver1)
+  {
+    waypoint->velocity_kmh = std::stod(columns[3]);
+  }
+  else if (format == FileFormat::ver3)
+  {
+    waypoint->pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(columns[3]));
+    waypoint->velocity_kmh = std::stod(columns[4]);
+    waypoint->change_flag = std::stoi(columns[5]);
+  }
 }
 
 size_t countColumns(const std::string& line)
@@ -106,49 +110,50 @@ size_t countColumns(const std::string& line)
   return ncol;
 }
 
-std::vector<WP> readWaypoint(const char *filename)
+bool readWaypoint(const char *filename, FileFormat format, std::vector<WP> *waypoints)
 {
   std::ifstream ifs(filename);
-  std::string line;
 
-  std::getline(ifs, line); // Remove first line
-  size_t ncol = countColumn(line);
-
-  std::vector<WP> waypoints;
-  if (ncol == 3)
+  if(!ifs)
   {
-    while (std::getline(ifs, line))
-    {
-      waypoints.push_back(parseWaypoint(line, false));
-    }
+    return false;
+  }
 
-    size_t last = waypoints.size() - 1;
-    for (size_t i = 0; i < waypoints.size(); ++i)
+  std::string line;
+  std::getline(ifs, line); // Remove first line
+
+  if(format == FileFormat::ver3)
+  {
+    std::getline(ifs, line);  //remove second line
+  }
+
+  while (std::getline(ifs, line))
+  {
+    WP wp;
+    parseWaypoint(line, format, &wp);
+    waypoints->push_back(wp);
+  }
+
+  if (format == FileFormat::ver1)
+  {
+    size_t last = waypoints->size() - 1;
+    for (size_t i = 0; i < waypoints->size(); ++i)
     {
-      double yaw;
-      if (i == last)
+      if (i != last)
       {
-        yaw = atan2(waypoints[i-1].pose.position.y - waypoints[i].pose.position.y,
-                    waypoints[i-1].pose.position.x - waypoints[i].pose.position.x);
-        yaw -= M_PI;
+        double yaw = atan2(waypoints->at(i+1).pose.position.y - waypoints->at(i).pose.position.y,
+                   waypoints->at(i+1).pose.position.x - waypoints->at(i).pose.position.x);
+        waypoints->at(i).pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
       }
       else
       {
-        yaw = atan2(waypoints[i+1].pose.position.y - waypoints[i].pose.position.y,
-                    waypoints[i+1].pose.position.x - waypoints[i].pose.position.x);
+        waypoints->at(i).pose.orientation = waypoints->at(i-1).pose.orientation;
       }
-      waypoints[i].pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-    }
-  }
-  else if (ncol == 4)
-  {
-    while (std::getline(ifs, line))
-    {
-      waypoints.push_back(parseWaypoint(line, true));
+
     }
   }
 
-  return waypoints;
+  return true;
 }
 
 double decelerate(tf::Vector3 v1, tf::Vector3 v2, double original_velocity_kmh)
@@ -166,9 +171,9 @@ double decelerate(tf::Vector3 v1, tf::Vector3 v2, double original_velocity_kmh)
 }
 
 
-bool verifyFileConsistency(const char *filename)
+bool verifyFileConsistency(const char *filename, FileFormat format)
 {
-
+  ROS_INFO("verify...");
   std::ifstream ifs(filename);
 
   if (!ifs)
@@ -177,19 +182,21 @@ bool verifyFileConsistency(const char *filename)
   }
 
   std::string line;
-  std::getline(ifs, line);
-  size_t ncol = countColumn(line);
+  std::getline(ifs, line); //get first line
+  std::getline(ifs, line); //get second line
 
-  while (std::getline(ifs, line))
+  size_t ncol = countColumns(line);
+
+   while (std::getline(ifs, line))
   {
-    if (countColumn(line) != ncol + 1)
+    if (countColumns(line) != ncol)
       return false;
   }
   return true;
 }
 
 
-waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
+waypoint_follower::lane createLaneWaypoint(const std::vector<WP> &waypoints)
 {
   waypoint_follower::lane lane_waypoint;
   lane_waypoint.header.frame_id = "/map";
@@ -208,6 +215,7 @@ waypoint_follower::lane createLaneWaypoint(std::vector<WP> waypoints)
         point2vector(waypoints[waypoints.size() -1 ].pose.position),
         waypoints[i].velocity_kmh);
     wp.twist.twist.linear.x = kmph2mps(vel_kmh);
+    wp.change_flag = waypoints[i].change_flag;
 
     lane_waypoint.waypoints.push_back(wp);
   }
@@ -267,18 +275,22 @@ int main(int argc, char **argv)
 
   std::vector<std::string> multi_file_path;
   parseColumns(multi_lane_csv, &multi_file_path);
-  for(auto el : multi_file_path)
+
+  for (auto el : multi_file_path)
   {
-    if (!verifyFileConsistency(el.c_str()))
+    FileFormat file_format = checkFileFormat(el.c_str());
+    ROS_INFO("Format: %d", file_format);
+
+    if (!verifyFileConsistency(el.c_str(),file_format))
     {
       ROS_ERROR("lane data is something wrong...");
       exit(-1);
     }
-    else
-    {
-      ROS_INFO("lane data is valid. publishing...");
-      lane_array.lanes.push_back(createLaneWaypoint(readWaypoint(el.c_str())));
-    }
+
+    ROS_INFO("lane data is valid. publishing...");
+    std::vector<WP> wps;
+    readWaypoint(el.c_str(), file_format, &wps);
+    lane_array.lanes.push_back(createLaneWaypoint(wps));
   }
 
   lane_pub.publish(lane_array);
