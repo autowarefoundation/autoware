@@ -59,8 +59,6 @@ using namespace cv;
 std::vector<cv::Scalar> _colors;
 ros::Publisher _pub_cluster_cloud;
 ros::Publisher _pub_ground_cloud;
-ros::Publisher _pub_filtered;
-ros::Publisher _pub_ground;
 ros::Publisher _centroid_pub;
 ros::Publisher _marker_pub;
 visualization_msgs::Marker _visualization_marker;
@@ -83,8 +81,7 @@ static double _leaf_size;
 static int _cluster_size_min;
 static int _cluster_size_max;
 
-static bool _publish_ground;	//only ground
-static bool _publish_filtered;	//pc with no ground
+static bool _remove_ground;	//only ground
 
 static bool _using_sensor_cloud;
 static bool _use_diffnormals;
@@ -164,7 +161,8 @@ std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Pt
 {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 
-	tree->setInputCloud (in_cloud_ptr);
+	if (in_cloud_ptr->points.size() > 0)
+		tree->setInputCloud (in_cloud_ptr);
 
 	std::vector<pcl::PointIndices> cluster_indices;
 
@@ -436,13 +434,17 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		else
 			inlanes_cloud_ptr = downsampled_cloud_ptr;
 
-		removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
+		if(_remove_ground)
+		{
+			removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
+			publishCloud(&_pub_ground_cloud, onlyfloor_cloud_ptr);
+		}
+		else
+			nofloor_cloud_ptr = inlanes_cloud_ptr;
 
 		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
 
 		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
-
-		publishCloud(&_pub_ground_cloud, onlyfloor_cloud_ptr);
 
 		//clusterAndColor(nofloor_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
 
@@ -502,18 +504,6 @@ int main (int argc, char** argv)
 		ROS_INFO("euclidean_cluster > No points node received, defaulting to points_raw, you can use _points_node:=YOUR_TOPIC");
 		points_topic = "/points_raw";
 	}
-	_publish_ground = false;
-	if (private_nh.getParam("publish_ground", _publish_ground))
-	{
-		ROS_INFO("Publishing /points_ground point cloud...");
-		_pub_ground = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
-	}
-	_publish_filtered = false;
-	if (private_nh.getParam("publish_filtered", _publish_filtered))
-	{
-		ROS_INFO("Publishing /points_filtered point cloud...");
-		_pub_filtered = h.advertise<sensor_msgs::PointCloud2>("/points_filtered",1);
-	}
 
 	_use_diffnormals = false;
 	if (private_nh.getParam("use_diffnormals", _use_diffnormals))
@@ -526,6 +516,7 @@ int main (int argc, char** argv)
 
 	/* Initialize tuning parameter */
 	private_nh.param("downsample_cloud", _downsample_cloud, false);	ROS_INFO("downsample_cloud: %d", _downsample_cloud);
+	private_nh.param("remove_ground", _remove_ground, true);		ROS_INFO("remove_ground: %d", _remove_ground);
 	private_nh.param("distance", _distance, 0.5);					ROS_INFO("Initial clustering distance: %f", _distance);
 	private_nh.param("leaf_size", _leaf_size, 0.1);					ROS_INFO("leaf_size: %f", _leaf_size);
 	private_nh.param("cluster_size_min", _cluster_size_min, 20);	ROS_INFO("cluster_size_min %d", _cluster_size_min);

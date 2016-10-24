@@ -810,11 +810,11 @@ params :
       
   - name  : euclidean_cluster
     vars  :
-    - name    : publish_ground
-      desc    : publish_ground desc sample
-      label   : 'publish ground'
+    - name    : remove_ground
+      desc    : remove_ground desc sample
+      label   : 'remove ground'
       kind    : checkbox
-      v       : False
+      v       : True
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -879,7 +879,7 @@ params :
         delim       : ':='  
     - name    : clip_min_height
       desc    : clip_min_height desc sample
-      label   : 'clip_min_height'
+      label   : 'clip_min_height (~sensor height)'
       min       : -5
       max       : 5
       v       : -1.3
@@ -888,7 +888,7 @@ params :
         delim       : ':='   
     - name    : clip_max_height
       desc    : clip_max_height desc sample
-      label   : 'clip_max_height'
+      label   : 'clip_max_height (above sensor)'
       min       : 0
       max       : 5
       v       : 0.5
