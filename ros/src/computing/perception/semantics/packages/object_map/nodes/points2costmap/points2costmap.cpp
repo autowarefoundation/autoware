@@ -85,7 +85,7 @@ void setOccupancyGrid(nav_msgs::OccupancyGrid *og)
   og->info.origin.orientation.x = 0.0;
   og->info.origin.orientation.y = 0.0;
   og->info.origin.orientation.z = 0.0;
-  og->info.origin.orientation.w = 0.0;
+  og->info.origin.orientation.w = 1.0;
 }
 
 void createOccupancyGrid(const sensor_msgs::PointCloud2::ConstPtr &input)
