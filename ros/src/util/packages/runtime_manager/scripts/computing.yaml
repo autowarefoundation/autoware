@@ -2091,3 +2091,11 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : points_topic
+      desc      : Subscribing topic for generating a cost map (PointCloud2 message)
+      label     : Points Topic
+      kind      : str
+      v         : /points_lanes
+      cmd_param :
+        dash      : ''
+        delim     : ':='
