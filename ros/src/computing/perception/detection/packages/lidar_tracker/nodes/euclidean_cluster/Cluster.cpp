@@ -36,7 +36,50 @@ pcl::PointXYZ Cluster::GetCentroid()
 	return centroid_;
 }
 
-void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose)
+pcl::PointXYZ Cluster::GetAveragePoint()
+{
+	return average_point_;
+}
+
+double Cluster::GetOrientationAngle()
+{
+	return orientation_angle_;
+}
+
+void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudCluster& out_cluster_message)
+{
+	sensor_msgs::PointCloud2 cloud_msg;
+
+	pcl::toROSMsg(*(this->GetCloud()), cloud_msg);
+	cloud_msg.header=in_ros_header;
+
+	out_cluster_message.header = in_ros_header;
+
+	out_cluster_message.cloud = cloud_msg;
+	out_cluster_message.min_point.x = this->GetMinPoint().x;
+	out_cluster_message.min_point.y = this->GetMinPoint().y;
+	out_cluster_message.min_point.z = this->GetMinPoint().z;
+
+	out_cluster_message.max_point.x = this->GetMaxPoint().x;
+	out_cluster_message.max_point.y = this->GetMaxPoint().y;
+	out_cluster_message.max_point.z = this->GetMaxPoint().z;
+
+	out_cluster_message.avg_point.x = this->GetAveragePoint().x;
+	out_cluster_message.avg_point.y = this->GetAveragePoint().y;
+	out_cluster_message.avg_point.z = this->GetAveragePoint().z;
+
+	out_cluster_message.centroid_point.x = this->GetCentroid().x;
+	out_cluster_message.centroid_point.y = this->GetCentroid().y;
+	out_cluster_message.centroid_point.z = this->GetCentroid().z;
+
+	out_cluster_message.estimated_angle = this->GetOrientationAngle();
+
+	out_cluster_message.dimensions = this->GetBoundingBox().dimensions;
+
+	out_cluster_message.bounding_box = this->GetBoundingBox();
+}
+
+void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose)
 {
 	label_ 	= in_label;	id_		= in_id;
 	r_		= in_r;	g_		= in_g;	b_		= in_b;
@@ -95,7 +138,7 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 	width_ = max_point_.y - min_point_.y;
 	height_ = max_point_.z - min_point_.z;
 
-	//bounding_box_.header = _velodyne_header;
+	bounding_box_.header = in_ros_header;
 
 	bounding_box_.pose.position.x = min_point_.x + length_/2;
 	bounding_box_.pose.position.y = min_point_.y + width_/2;

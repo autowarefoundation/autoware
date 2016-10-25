@@ -42,6 +42,8 @@
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 
+#include <lidar_tracker/CloudCluster.h>
+
 #include <limits>
 #include <cmath>
 
@@ -60,13 +62,6 @@ class Cluster {
 	int									id_;
 	int									r_, g_, b_;
 public:
-	/* \brief Constructor. Creates a Cluster object using the specified PointCloud
-	 * \param[in] in_cloud_ptr 			PointCloud of the Cluster
-	 * \param[in] in_id 				ID of the cluster
-	 * \param[in] in_label 				Label to identify this cluster (optional)
-	 * \param[in] in_estimate_pose		Flag to enable Pose Estimation of the Bounding Box
-	 * */
-	/*Cluster(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose);*/
 	/* \brief Constructor. Creates a Cluster object using the specified points in a PointCloud
 	 * \param[in] in_origin_cloud_ptr 	Origin PointCloud
 	 * \param[in] in_cluster_indices 	Indices of the Origin Pointcloud to create the Cluster
@@ -77,7 +72,11 @@ public:
 	 * \param[in] in_label 				Label to identify this cluster (optional)
 	 * \param[in] in_estimate_pose		Flag to enable Pose Estimation of the Bounding Box
 	 * */
-	void SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose);
+	void SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose);
+
+	/* \brief Returns the lidar_tracker::CloudCluster message associated to this Cluster */
+	void ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudCluster& out_cluster_message);
+
 	Cluster();
 	virtual ~Cluster();
 
@@ -87,6 +86,8 @@ public:
 	pcl::PointXYZ 						GetMinPoint();
 	/* \brief Returns the maximum point in the cluster*/
 	pcl::PointXYZ 						GetMaxPoint();
+	/* \brief Returns the average point in the cluster*/
+	pcl::PointXYZ 						GetAveragePoint();
 	/* \brief Returns the centroid point in the cluster */
 	pcl::PointXYZ 						GetCentroid();
 	/* \brief Returns the calculated BoundingBox of the object */
@@ -99,9 +100,9 @@ public:
 	float								GetWidth();
 	/* \brief Returns the Height of the Cluster */
 	float								GetHeight();
-	/* \brief Returns the Height of the Cluster */
+	/* \brief Returns the Id of the Cluster */
 	int									GetId();
-	/* \brief Returns the Height of the Cluster */
+	/* \brief Returns the Label of the Cluster */
 	std::string							GetLabel();
 
 	/* \brief Returns a pointer to a PointCloud object containing the merged points between current Cluster and the specified PointCloud

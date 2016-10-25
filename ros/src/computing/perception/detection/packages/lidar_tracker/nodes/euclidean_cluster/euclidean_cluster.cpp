@@ -35,6 +35,8 @@
 
 #include <visualization_msgs/Marker.h>
 #include <lidar_tracker/centroids.h>
+#include <lidar_tracker/CloudCluster.h>
+#include <lidar_tracker/CloudClusterArray.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -61,6 +63,7 @@ ros::Publisher _pub_cluster_cloud;
 ros::Publisher _pub_ground_cloud;
 ros::Publisher _centroid_pub;
 ros::Publisher _marker_pub;
+ros::Publisher _pub_clusters_message;
 visualization_msgs::Marker _visualization_marker;
 
 ros::Publisher _pub_points_lanes_cloud;
@@ -76,7 +79,6 @@ std::vector<double> _clustering_distances;
 /* parameters for tuning */
 static bool _downsample_cloud;
 static bool _pose_estimation;
-static double _distance;
 static double _leaf_size;
 static int _cluster_size_min;
 static int _cluster_size_max;
@@ -141,7 +143,7 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	extract.filter(*out_cloud_ptr);
 }
 
-bool independentDistance (const pcl::PointXYZ& in_point_a, const pcl::PointXYZ& in_point_b, float squared_distance)
+/*bool independentDistance (const pcl::PointXYZ& in_point_a, const pcl::PointXYZ& in_point_b, float squared_distance)
 {
 	if (fabs (in_point_a.x - in_point_b.x) <= (_distance *1.0f) &&
 			fabs (in_point_a.y - in_point_b.y) <= (_distance *1.0f) &&
@@ -151,7 +153,7 @@ bool independentDistance (const pcl::PointXYZ& in_point_a, const pcl::PointXYZ& 
 	}
 	else
 		return (false);
-}
+}*/
 
 std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
@@ -194,7 +196,7 @@ std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Pt
 	for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
 	{
 		ClusterPtr cluster(new Cluster());
-		cluster->SetCloud(in_cloud_ptr, it->indices, k, (int)_colors[k].val[0], (int)_colors[k].val[1], (int)_colors[k].val[2], "", false);
+		cluster->SetCloud(in_cloud_ptr, it->indices, _velodyne_header, k, (int)_colors[k].val[0], (int)_colors[k].val[1], (int)_colors[k].val[2], "", false);
 		clusters.push_back(cluster);
 
 		k++;
@@ -208,7 +210,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
 		lidar_tracker::centroids& in_out_centroids,
-		double in_max_cluster_distance=0.5)
+		lidar_tracker::CloudClusterArray& in_out_clusters)
 {
 	//cluster the pointcloud according to the distance of the points using different thresholds (not only one for the entire pc)
 	//in this way, the points farther in the pc will also be clustered
@@ -276,6 +278,10 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 			in_out_boundingbox_array.boxes.push_back(bounding_box);
 			in_out_centroids.points.push_back(centroid);
 			_visualization_marker.points.push_back(centroid);
+
+			lidar_tracker::CloudCluster cloud_cluster;
+			all_clusters[i]->ToRosMessage(_velodyne_header, cloud_cluster);
+			in_out_clusters.clusters.push_back(cloud_cluster);
 		}
 	}
 }
@@ -418,6 +424,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_clustered_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
 		lidar_tracker::centroids centroids;
+		lidar_tracker::CloudClusterArray cloud_clusters;
 		jsk_recognition_msgs::BoundingBoxArray boundingbox_array;
 
 		pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
@@ -455,7 +462,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		//clusterAndColor(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
 
-		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
+		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters);
 
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
 
@@ -468,6 +475,9 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		_marker_pub.publish(_visualization_marker);
 		_visualization_marker.points.clear();
+
+		cloud_clusters.header = _velodyne_header;
+		_pub_clusters_message.publish(cloud_clusters);
 
 		_using_sensor_cloud = false;
 	}
@@ -490,6 +500,7 @@ int main (int argc, char** argv)
 
 	_pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes",1);
 	_pub_jsk_boundingboxes = h.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes",1);
+	_pub_clusters_message = h.advertise<lidar_tracker::CloudClusterArray>("/cloud_clusters",1);
 
 	std::string points_topic;
 
@@ -517,7 +528,6 @@ int main (int argc, char** argv)
 	/* Initialize tuning parameter */
 	private_nh.param("downsample_cloud", _downsample_cloud, false);	ROS_INFO("downsample_cloud: %d", _downsample_cloud);
 	private_nh.param("remove_ground", _remove_ground, true);		ROS_INFO("remove_ground: %d", _remove_ground);
-	private_nh.param("distance", _distance, 0.5);					ROS_INFO("Initial clustering distance: %f", _distance);
 	private_nh.param("leaf_size", _leaf_size, 0.1);					ROS_INFO("leaf_size: %f", _leaf_size);
 	private_nh.param("cluster_size_min", _cluster_size_min, 20);	ROS_INFO("cluster_size_min %d", _cluster_size_min);
 	private_nh.param("cluster_size_max", _cluster_size_max, 100000);ROS_INFO("cluster_size_max: %d", _cluster_size_max);
