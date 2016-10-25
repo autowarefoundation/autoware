@@ -83,12 +83,12 @@ ENV PATH $PATH:$CUDA_HOME/bin
 # Install OpenCV
 RUN apt-get update && apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libpng12-0 libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libtbb-dev libqt4-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip
 
-RUN wget https://github.com/opencv/opencv/archive/2.4.11.zip && \
-    unzip 2.4.11.zip && \
-    cd opencv-2.4.11/ && \
+RUN git clone https://github.com/opencv/opencv && \
+    cd opencv/ && \
+    git checkout refs/tags/2.4.13.1 && \
     mkdir build && \
     cd build/ && \
-    cmake -D WITH_TBB=ON -D BUILD_NEW_PYTHON_SUPPORT=ON -D WITH_V4L=ON -D INSTALL_C_EXAMPLES=ON -D INSTALL_PYTHON_EXAMPLES=ON -D BUILD_EXAMPLES=ON -D CUDA_GENERATION=Fermi -D WITH_QT=ON -D WITH_OPENGL=ON -D WITH_VTK=ON .. && \
+    cmake -D WITH_TBB=ON -D BUILD_NEW_PYTHON_SUPPORT=ON -D WITH_V4L=ON -D CUDA_GENERATION=Auto -D WITH_QT=ON -D WITH_OPENGL=ON -D WITH_VTK=ON .. && \
     make -j8 && \
     make install 
 ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
