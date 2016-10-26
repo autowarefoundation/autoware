@@ -42,9 +42,9 @@ bool ready_ = false;
 
 static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 {
+    sensor_header = image_object.header;
+    setDetectedObjects(image_object);
     if (ready_) {
-		sensor_header = image_object.header;
-        setDetectedObjects(image_object);
         fuse();
         publishTopic();
         ready_ = false;
@@ -64,9 +64,9 @@ static void DetectedObjectsCallback(const cv_tracker::image_obj& image_object)
 
 static void PointsImageCallback(const points2image::PointsImage& points_image)
 {
+    sensor_header = points_image.header;
+    setPointsImage(points_image);
     if (ready_) {
-		sensor_header = points_image.header;
-		setPointsImage(points_image);
 		fuse();
 		publishTopic();
         ready_ = false;

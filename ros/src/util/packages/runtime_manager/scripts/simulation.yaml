@@ -3,9 +3,11 @@ buttons:
     run   : rosbag play
     param : rosbag_play
     gui   :
+      flags : [ kill_children ]
       stdout_func : self.rosbag_play_progress_bar
       ext_toggle_enables :
       - self.label_rosbag_play_bar
+      panel : self.panel_rosbag_play
       start :
         border : 20
         flags  : [ left ]

@@ -39,7 +39,7 @@
 
 #include <waypoint_follower/LaneArray.h>
 
-#include <map_db.h> // XXX wrong name
+#include <map_file/get_file.h>
 
 namespace {
 
@@ -350,6 +350,7 @@ sensor_msgs::PointCloud2 create_pcd(const std::vector<std::string>& pcd_paths, i
 			pcd.data.insert(pcd.data.end(), part.data.begin(), part.data.end());
 		}
 		std::cerr << "load " << path << std::endl;
+		if (!ros::ok()) break;
 	}
 
 	return pcd;

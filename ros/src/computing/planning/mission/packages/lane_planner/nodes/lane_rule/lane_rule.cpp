@@ -36,11 +36,7 @@
 
 #include <ros/console.h>
 
-#include <map_file/PointClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/NodeArray.h>
-#include <map_file/StopLineArray.h>
-#include <map_file/DTLaneArray.h>
+#include <vector_map/vector_map.h>
 #include <runtime_manager/ConfigLaneRule.h>
 #include <waypoint_follower/LaneArray.h>
 
@@ -127,7 +123,7 @@ waypoint_follower::lane apply_crossroad_acceleration(const waypoint_follower::la
 	std::vector<size_t> start_indexes;
 	std::vector<size_t> end_indexes;
 	for (size_t i = 0; i < l.waypoints.size(); ++i) {
-		map_file::DTLane dtlane = lane_planner::vmap::create_map_file_dtlane(l.waypoints[i].dtlane);
+		vector_map::DTLane dtlane = lane_planner::vmap::create_vector_map_dtlane(l.waypoints[i].dtlane);
 		if (i == 0) {
 			crossroad = lane_planner::vmap::is_crossroad_dtlane(dtlane);
 			continue;
@@ -199,7 +195,7 @@ waypoint_follower::lane apply_stopline_acceleration(const waypoint_follower::lan
 
 double create_reduction(const lane_planner::vmap::VectorMap& fine_vmap, int index)
 {
-	const map_file::DTLane& dtlane = fine_vmap.dtlanes[index];
+	const vector_map::DTLane& dtlane = fine_vmap.dtlanes[index];
 
 	if (lane_planner::vmap::is_straight_dtlane(dtlane))
 		return 1;
@@ -358,7 +354,7 @@ void update_values()
 	curve_radius_min = lane_planner::vmap::RADIUS_MAX;
 	crossroad_radius_min = lane_planner::vmap::RADIUS_MAX;
 	clothoid_radius_min = lane_planner::vmap::RADIUS_MAX;
-	for (const map_file::DTLane& d : lane_vmap.dtlanes) {
+	for (const vector_map::DTLane& d : lane_vmap.dtlanes) {
 		double radius_min = fabs(d.r);
 		if (lane_planner::vmap::is_curve_dtlane(d)) {
 			if (lane_planner::vmap::is_crossroad_dtlane(d)) {
@@ -393,33 +389,33 @@ void update_values()
 	}
 }
 
-void cache_point(const map_file::PointClassArray& msg)
+void cache_point(const vector_map::PointArray& msg)
 {
-	all_vmap.points = msg.point_classes;
+	all_vmap.points = msg.data;
 	update_values();
 }
 
-void cache_lane(const map_file::LaneArray& msg)
+void cache_lane(const vector_map::LaneArray& msg)
 {
-	all_vmap.lanes = msg.lanes;
+	all_vmap.lanes = msg.data;
 	update_values();
 }
 
-void cache_node(const map_file::NodeArray& msg)
+void cache_node(const vector_map::NodeArray& msg)
 {
-	all_vmap.nodes = msg.nodes;
+	all_vmap.nodes = msg.data;
 	update_values();
 }
 
-void cache_stopline(const map_file::StopLineArray& msg)
+void cache_stopline(const vector_map::StopLineArray& msg)
 {
-	all_vmap.stoplines = msg.stop_lines;
+	all_vmap.stoplines = msg.data;
 	update_values();
 }
 
-void cache_dtlane(const map_file::DTLaneArray& msg)
+void cache_dtlane(const vector_map::DTLaneArray& msg)
 {
-	all_vmap.dtlanes = msg.dtlanes;
+	all_vmap.dtlanes = msg.data;
 	update_values();
 }
 
@@ -487,7 +483,7 @@ int main(int argc, char **argv)
 #endif // DEBUG
 
 	ros::Subscriber waypoint_sub = n.subscribe("/lane_waypoints_array", sub_waypoint_queue_size, create_waypoint);
-	ros::Subscriber point_sub = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
+	ros::Subscriber point_sub = n.subscribe("/vector_map_info/point", sub_vmap_queue_size, cache_point);
 	ros::Subscriber lane_sub = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
 	ros::Subscriber node_sub = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
 	ros::Subscriber stopline_sub = n.subscribe("/vector_map_info/stop_line", sub_vmap_queue_size, cache_stopline);

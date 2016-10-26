@@ -246,6 +246,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 
 void interrupt (int s)
 {
+  ros::shutdown();
   exit(1);
 }
 
@@ -253,7 +254,7 @@ void interrupt (int s)
 int main (int argc, char *argv[])
 {
 
-  ros::init(argc, argv, "feat_proj");
+  ros::init(argc, argv, "feat_proj", ros::init_options::NoSigintHandler);
   ros::NodeHandle rosnode;
   ros::NodeHandle private_nh("~");
   std::string cameraInfo_topic_name;
@@ -267,11 +268,11 @@ int main (int argc, char *argv[])
   }
   
   /* load vector map */
-  ros::Subscriber sub_point     = rosnode.subscribe("vector_map_info/point_class",
+  ros::Subscriber sub_point     = rosnode.subscribe("vector_map_info/point",
                                                     SUBSCRIBE_QUEUE_SIZE,
                                                     &VectorMap::load_points,
                                                     &vmap);
-  ros::Subscriber sub_line      = rosnode.subscribe("vector_map_info/line_class",
+  ros::Subscriber sub_line      = rosnode.subscribe("vector_map_info/line",
                                                     SUBSCRIBE_QUEUE_SIZE,
                                                     &VectorMap::load_lines,
                                                     &vmap);
@@ -279,7 +280,7 @@ int main (int argc, char *argv[])
                                                     SUBSCRIBE_QUEUE_SIZE,
                                                     &VectorMap::load_lanes,
                                                     &vmap);
-  ros::Subscriber sub_vector    = rosnode.subscribe("vector_map_info/vector_class",
+  ros::Subscriber sub_vector    = rosnode.subscribe("vector_map_info/vector",
                                                     SUBSCRIBE_QUEUE_SIZE,
                                                     &VectorMap::load_vectors,
                                                     &vmap);

@@ -1,0 +1,4 @@
+geometry_msgs/PoseStamped pose
+waypoint_follower/lane waypoints
+---
+vector_map_msgs/DTLaneArray objects

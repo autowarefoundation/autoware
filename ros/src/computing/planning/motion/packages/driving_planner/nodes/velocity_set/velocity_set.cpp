@@ -32,7 +32,6 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Point.h>
-#include <geometry_msgs/Vector3Stamped.h>
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -76,18 +75,13 @@ ObstaclePoints g_obstacle;
 /* Config Parameter */
 double g_detection_range = 0;                   // if obstacle is in this range, stop
 double g_deceleration_range = 1.8;              // if obstacle is in this range, decelerate
-double g_deceleration_minimum = kmph2mps(4.0);  // until this speed
 int g_threshold_points = 15;
 double g_detection_height_top = 2.0;  // actually +2.0m
 double g_detection_height_bottom = -2.0;
-double g_cars_distance = 15.0;             // meter: stopping distance from cars (using DPM)
-double g_pedestrians_distance = 10.0;      // meter: stopping distance from pedestrians (using DPM)
 double g_others_distance = 8.0;            // meter: stopping distance from obstacles (using VSCAN)
 double g_decel = 1.5;                      // (m/s) deceleration
 double g_velocity_change_limit = 2.778;    // (m/s) about 10 km/h
-double g_velocity_limit = 12.0;            //(m/s) limit velocity for waypoints
 double g_temporal_waypoints_size = 100.0;  // meter
-double g_velocity_offset = 1.389;          // (m/s)
 
 // Publisher
 ros::Publisher g_range_pub;
@@ -128,7 +122,6 @@ bool PathVset::checkWaypoint(int num, const char *name) const
 {
   if (num < 0 || num >= getSize())
   {
-    //std::cout << name << ": invalid waypoint number" << std::endl;
     return false;
   }
   return true;
@@ -167,6 +160,7 @@ void PathVset::setDeceleration()
   double intervel = getInterval();
   double temp1 = g_current_vel * g_current_vel;
   double temp2 = 2 * g_decel * intervel;
+  double deceleration_minimum = kmph2mps(4.0);
 
   for (int i = 0; i < velocity_change_range; i++)
   {
@@ -176,13 +170,13 @@ void PathVset::setDeceleration()
     double changed_vel = temp1 - temp2;
     if (changed_vel < 0)
     {
-      changed_vel = g_deceleration_minimum * g_deceleration_minimum;
+      changed_vel = deceleration_minimum * deceleration_minimum;
     }
-    if (sqrt(changed_vel) > waypoint_velocity || g_deceleration_minimum > waypoint_velocity)
+    if (sqrt(changed_vel) > waypoint_velocity || deceleration_minimum > waypoint_velocity)
       continue;
-    if (sqrt(changed_vel) < g_deceleration_minimum)
+    if (sqrt(changed_vel) < deceleration_minimum)
     {
-      current_waypoints_.waypoints[g_closest_waypoint + i].twist.twist.linear.x = g_deceleration_minimum;
+      current_waypoints_.waypoints[g_closest_waypoint + i].twist.twist.linear.x = deceleration_minimum;
       continue;
     }
     current_waypoints_.waypoints[g_closest_waypoint + i].twist.twist.linear.x = sqrt(changed_vel);
@@ -197,12 +191,13 @@ void PathVset::avoidSuddenAceleration()
   double interval = getInterval();
   double temp1 = g_current_vel * g_current_vel;
   double temp2 = 2 * g_decel * interval;
+  double velocity_offset = 1.389; // m/s
 
   for (int i = 0;; i++)
   {
     if (!checkWaypoint(g_closest_waypoint + i, "avoidSuddenAceleration"))
       return;
-    changed_vel = sqrt(temp1 + temp2 * (double)(i + 1)) + g_velocity_offset;
+    changed_vel = sqrt(temp1 + temp2 * (double)(i + 1)) + velocity_offset;
     if (changed_vel > current_waypoints_.waypoints[g_closest_waypoint + i].twist.twist.linear.x)
       return;
     current_waypoints_.waypoints[g_closest_waypoint + i].twist.twist.linear.x = changed_vel;
@@ -231,9 +226,6 @@ void PathVset::avoidSuddenBraking()
     if (j == examin_range - 1)  // we don't have to change waypoints
       return;
   }
-
-  std::cout << "====avoid sudden braking====" << std::endl;
-  std::cout << "vehicle is decelerating..." << std::endl;
 
   // fill in waypoints velocity behind vehicle
   for (num = g_closest_waypoint - 1; fill_in_vel > 0; fill_in_vel--)
@@ -287,15 +279,9 @@ void PathVset::changeWaypoints(int stop_waypoint)
 
     changed_vel = sqrt(2.0 * g_decel * (interval * i));  // sqrt(2*a*x)
 
-    // std::cout << "changed_vel[" << num << "]: " << mps2kmph(changed_vel) << " (km/h)";
-    // std::cout << "   distance: " << (g_obstacle_waypoint-num)*interval << " (m)";
-    // std::cout << "   current_vel: " << mps2kmph(g_current_vel) << std::endl;
-
     waypoint_follower::waypoint initial_waypoint = g_path_dk.getCurrentWaypoints().waypoints[num];
-    if (changed_vel > g_velocity_limit ||  //
-        changed_vel > initial_waypoint.twist.twist.linear.x)
+    if (changed_vel > initial_waypoint.twist.twist.linear.x)
     {  // avoid acceleration
-      // std::cout << "too large velocity!!" << std::endl;
       current_waypoints_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
     }
     else
@@ -328,42 +314,35 @@ void PathVset::changeWaypoints(int stop_waypoint)
 
 void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
 {
-  g_velocity_limit = kmph2mps(config->velocity_limit);
   g_others_distance = config->others_distance;
-  g_cars_distance = config->cars_distance;
-  g_pedestrians_distance = config->pedestrians_distance;
   g_detection_range = config->detection_range;
   g_threshold_points = config->threshold_points;
   g_detection_height_top = config->detection_height_top;
   g_detection_height_bottom = config->detection_height_bottom;
   g_decel = config->deceleration;
   g_velocity_change_limit = kmph2mps(config->velocity_change_limit);
-  g_velocity_offset = kmph2mps(config->velocity_offset);
   g_deceleration_range = config->deceleration_range;
-  g_deceleration_minimum = kmph2mps(config->deceleration_minimum);
   g_temporal_waypoints_size = config->temporal_waypoints_size;
 }
 
-void currentVelCallback(const geometry_msgs::Vector3StampedConstPtr &msg)
+void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  g_current_vel = msg->vector.x;
+  g_current_vel = msg->twist.linear.x;
 }
 
 void baseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
 {
-  ROS_INFO("subscribed base_waypoint\n");
   g_path_dk.setPath(*msg);
   g_path_change.setPath(*msg);
   if (g_path_flag == false)
   {
-    std::cout << "waypoint subscribed" << std::endl;
     g_path_flag = true;
   }
 }
 
 void objPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
 {
-  ROS_INFO("subscribed obj_pose\n");
+  //ROS_INFO("subscribed obj_pose\n");
 }
 
 void vscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
@@ -383,7 +362,6 @@ void vscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 
   if (g_vscan_flag == false)
   {
-    std::cout << "vscan subscribed" << std::endl;
     g_vscan_flag = true;
   }
 }
@@ -745,8 +723,6 @@ EControl obstacleDetection()
   static int false_count = 0;
   static EControl prev_detection = KEEP;
 
-  //std::cout << "closest_waypoint : " << g_closest_waypoint << std::endl;
-  //std::cout << "current_velocity : " << mps2kmph(g_current_vel) << std::endl;
   EControl vscan_result = vscanDetection();
   displayDetectionRange(vmap.getDetectionCrossWalkID(), g_closest_waypoint, vscan_result);
 
@@ -837,11 +813,14 @@ void changeWaypoint(EControl detection_result)
 
 int main(int argc, char **argv)
 {
-  int i = 0;  ///
   ros::init(argc, argv, "velocity_set");
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+
+  bool use_crosswalk_detection;
+  private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
+
   ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, localizerCallback);
   ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, controlCallback);
   ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, vscanCallback);
@@ -852,9 +831,9 @@ int main(int argc, char **argv)
 
   //------------------ Vector Map ----------------------//
   ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &vmap);
-  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area_class", 1, &CrossWalk::areaclassCallback, &vmap);
-  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line_class", 1, &CrossWalk::lineclassCallback, &vmap);
-  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point_class", 1, &CrossWalk::pointclassCallback, &vmap);
+  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area", 1, &CrossWalk::areaCallback, &vmap);
+  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line", 1, &CrossWalk::lineCallback, &vmap);
+  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point", 1, &CrossWalk::pointCallback, &vmap);
   //----------------------------------------------------//
 
   g_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
@@ -874,14 +853,6 @@ int main(int argc, char **argv)
 
     if (g_pose_flag == false || g_path_flag == false)
     {
-      std::cout << "\rtopic waiting          \rtopic waiting";
-      for (int j = 0; j < i; j++)
-      {
-        std::cout << ".";
-      }
-      i++;
-      i = i % 10;
-      std::cout << std::flush;
       loop_rate.sleep();
       continue;
     }
@@ -892,7 +863,8 @@ int main(int argc, char **argv)
     closest_waypoint.data = g_closest_waypoint;
     closest_waypoint_pub.publish(closest_waypoint);
 
-    vmap.setDetectionWaypoint(findCrossWalk());
+    if (use_crosswalk_detection)
+      vmap.setDetectionWaypoint(findCrossWalk());
 
     EControl detection_result = obstacleDetection();
 

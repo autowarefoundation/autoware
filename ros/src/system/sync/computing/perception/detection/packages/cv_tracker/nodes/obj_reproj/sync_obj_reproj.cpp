@@ -1,3 +1,25 @@
+#include "ros/ros.h"
+#include "cv_tracker/image_obj_tracked.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "cv_tracker/obj_label.h"
+#include "sync.hpp"
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "sync_reprojection");
+    std::string ns(ros::this_node::getNamespace());
+    std::string sub1("/image_obj_tracked");
+    std::string sub2("/current_pose");
+    std::string req("/obj_label");
+    std::string pub1("/image_obj_tracked");
+    std::string pub2("/current_pose");
+
+    Synchronizer<cv_tracker::image_obj_tracked, geometry_msgs::PoseStamped, cv_tracker::obj_label> synchronizer(sub1, sub2, pub1, pub2, req, ns);
+    synchronizer.run();
+
+    return 0;
+}
+
+#if 0
 /* ----header---- */
 /* common header */
 #include "ros/ros.h"
@@ -424,4 +446,5 @@ bool publish() {
         return false;
     }
 }
+#endif
 #endif

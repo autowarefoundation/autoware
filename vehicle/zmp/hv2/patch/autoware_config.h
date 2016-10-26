@@ -18,7 +18,19 @@
 
 #define ZMP_SET_DRV_VELOC(x) hev->SetDrvVeloc((x))
 #define ZMP_SET_DRV_STROKE(x) hev->SetDrvStroke((x))
+#define USE_BRAKE_LAMP
+#ifdef USE_BRAKE_LAMP
+#define ZMP_SET_BRAKE_STROKE(x) do { \
+	hev->SetBrakeStroke((x)); \
+	if ((x) > 0) { \
+		sndBrkLampOn(); \
+	} else { \
+		sndBrkLampOff(); \
+	} \
+    } while(0)
+#else
 #define ZMP_SET_BRAKE_STROKE(x) hev->SetBrakeStroke((x))
+#endif /* USE_BRAKE_LAMP */
 #define ZMP_SET_STR_TORQUE(x) hev->SetStrTorque((x))
 #define ZMP_SET_STR_ANGLE(x) hev->SetStrAngle((x))
 
@@ -88,68 +100,68 @@
 		}																\
 	}
 
-// prius parameters
-#define WHEEL_BASE 2.7 // tire-to-tire size of Prius.
-#define WHEEL_ANGLE_MAX 31.28067 // max angle of front tires.
+// estima parameters
+#define WHEEL_BASE 2.95 // tire-to-tire size of Estima.
+#define WHEEL_ANGLE_MAX 31.16764 // max angle of front tires.
 #define WHEEL_TO_STEERING (STEERING_ANGLE_MAX/WHEEL_ANGLE_MAX)
-#define STEERING_ANGLE_MAX 666 // max angle of steering
+#define STEERING_ANGLE_MAX 600 // max angle of steering
 #define STEERING_ANGLE_LIMIT 550 // could be STEERING_ANGLE_MAX but...
 #define STEERING_INTERNAL_PERIOD 20 // ms (10ms is too fast for HEV)
 
 // accel/brake parameters
-#define _K_ACCEL_P 30.0
-#define _K_ACCEL_I 2.0
-#define _K_ACCEL_D 2.0
-#define _K_ACCEL_I_CYCLES 100
-#define _ACCEL_MAX_I 600
+#define _K_ACCEL_P_UNTIL20 120.0
+#define _K_ACCEL_I_UNTIL20 0.3
+#define _K_ACCEL_D_UNTIL20 2.0
+#define _K_ACCEL_P_UNTIL10 90.0 // 40.0 (for 0-10km/h) // 30.0
+#define _K_ACCEL_I_UNTIL10 0.2 // 0.1 (for 0-10km/h) // 5.0
+#define _K_ACCEL_D_UNTIL10 2.0
+#define _K_ACCEL_I_CYCLES 1000
+#define _ACCEL_MAX_I 3000
 #define _ACCEL_STROKE_DELTA_MAX 1000
 #define _ACCEL_RELEASE_STEP 400
-#define _ACCEL_PEDAL_MAX 1700
+#define _ACCEL_PEDAL_MAX 2000 // 1700
 #define _ACCEL_PEDAL_OFFSET 200
 
-#define _K_BRAKE_P 40.0
-#define _K_BRAKE_I 10.0
-#define _K_BRAKE_D 10.0
+#define _K_BRAKE_P 170.0 // 190.0 // 100.0
+#define _K_BRAKE_I 0.5 // 0.7
+#define _K_BRAKE_D 10.0 // 10.0
 #define _K_BRAKE_I_CYCLES 100
-#define _BRAKE_MAX_I 200
+#define _BRAKE_MAX_I 4095 // 200
 #define _BRAKE_STROKE_DELTA_MAX 1000
 #define _BRAKE_RELEASE_STEP 500
-#define _BRAKE_PEDAL_MAX 4095
-#define _BRAKE_PEDAL_MED 3200
+#define _BRAKE_PEDAL_MAX 1900 // 2200 // 2016/09/12 1900 // 2016/09/05 1750 // 4095 // 1800-kitui
+//#define _BRAKE_PEDAL_MED 2000
+#define _BRAKE_PEDAL_STOPPING_MAX 2500 // 3000 // 2016/09/12 2500
+#define _BRAKE_PEDAL_STOPPING_MED 2000 // 2500 // 2016/09/12 2000
+
 #define _BRAKE_PEDAL_OFFSET 1000
 
 // steering parameters
 #define _STEERING_MAX_ANGVELSUM 1000
-#define _K_STEERING_TORQUE 10
-#define _K_STEERING_TORQUE_I 0.5
-#define _STEERING_MAX_TORQUE 2000
-#define _STEERING_MAX_SUM 100 //deg*0.1s for I control
+#define _STEERING_MAX_TORQUE 4000
+#define _STEERING_MAX_SUM 100
+#define _STEERING_ANGVEL_BOUNDARY 500.0 // deg/s
+#define _STEERING_IGNORE_ERROR 1.0 // deg
+#define _STEERING_DIFF_SMALL 10 // deg
 
-// default params.
-#define _K_STEERING_P 8
-#define _K_STEERING_I 4
-#define _K_STEERING_D 2
+// fast PID factors
+#define _K_STEERING_P 60
+#define _K_STEERING_I 5.0
+#define _K_STEERING_D 5.0
 
-// when slower than 40km/h
-#define _K_STEERING_P_40 6
-#define _K_STEERING_I_40 3
-#define _K_STEERING_D_40 2
+// fast PID factors
+#define _K_STEERING_P_STRICT 7.0 // 8.0 //60
+#define _K_STEERING_I_STRICT 4.0 // 0.8 //5.0
+#define _K_STEERING_D_STRICT 4.0 // 1.5 //5.0
 
-// when slower than 30km/h
-#define _K_STEERING_P_30 5
-#define _K_STEERING_I_30 2
-#define _K_STEERING_D_30 2
+// slow PID factors
+#define _K_STEERING_P_SLOW 7.0 // 6.0 // 6.0
+#define _K_STEERING_I_SLOW 4.0 // 7.0 // 5.0
+#define _K_STEERING_D_SLOW 4.0 // 6.0 // 5.0
 
-// when slower than 20km/h
-#define _K_STEERING_P_20 4
-#define _K_STEERING_I_20 2
-#define _K_STEERING_D_20 2
+#define _STEERING_ANGLE_ERROR 0 // deg
 
-// when slower than 10km/h
-#define _K_STEERING_P_10 4
-#define _K_STEERING_I_10 2
-#define _K_STEERING_D_10 2
-
-#define _STEERING_ANGLE_ERROR -12 // deg
+//added by zmp
+#define _TORQUE_ARRAY_NUM 15
 
 #endif

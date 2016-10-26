@@ -370,7 +370,7 @@ void calcDistance()
 		}
 
 		std::vector<float> distance_candidates;
-		for(int j = g_corner_points[0+i*4]; j <= g_corner_points[0+i*4] + g_corner_points[2+i*4]; j++) {
+		for(int j = g_corner_points[0+i*4]; j < g_corner_points[0+i*4] + g_corner_points[2+i*4]; j++) {
 		    for(int k = search_scope_min_y; k <= search_scope_max_y; k++) {
 			if(g_scan_image.distance[j][k] != NO_DATA) {
 			    distance_candidates.push_back(g_scan_image.distance[j][k]);

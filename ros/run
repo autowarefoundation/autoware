@@ -32,6 +32,11 @@ echo "Process Manager"
 gksudo --message "Please input password for launching process manager" \
        -- $MY_PATH/run_proc_manager &
 
+ADDR=$($MY_PATH/src/.config/rviz/subnet_chk.py -)
+if [ "$?" == "0" ]; then
+  export ROS_IP=$ADDR
+fi
+
 # boot ros-master
 ${TERMINAL} ${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}="roscore" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
 

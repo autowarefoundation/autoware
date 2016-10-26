@@ -57,12 +57,11 @@ add_library(libwaypoint_follower lib/libwaypoint_follower.cpp)
 add_dependencies(libwaypoint_follower
 waypoint_follower_generate_messages_cpp)
 
-add_executable(pure_pursuit nodes/pure_pursuit/pure_pursuit.cpp)
-target_link_libraries(pure_pursuit gnss libwaypoint_follower ${catkin_LIBRARIES})
+add_executable(pure_pursuit nodes/pure_pursuit/pure_pursuit.cpp nodes/pure_pursuit/pure_pursuit_core.cpp nodes/pure_pursuit/pure_pursuit_viz.cpp)
+target_link_libraries(pure_pursuit libwaypoint_follower ${catkin_LIBRARIES})
 add_dependencies(pure_pursuit 
 waypoint_follower_generate_messages_cpp
-runtime_manager_generate_messages_cpp
-vehicle_socket_generate_messages_cpp)
+runtime_manager_generate_messages_cpp)
 
 add_executable(wf_simulator nodes/wf_simulator/wf_simulator.cpp)
 target_link_libraries(wf_simulator libwaypoint_follower ${catkin_LIBRARIES})

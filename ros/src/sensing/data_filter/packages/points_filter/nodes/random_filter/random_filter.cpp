@@ -38,12 +38,20 @@
 
 #include <points_filter/PointsFilterInfo.h>
 
+#include <chrono>
+
 ros::Publisher filtered_points_pub;
 
 static int sample_num = 1000;
 
 static ros::Publisher points_filter_info_pub;
 static points_filter::PointsFilterInfo points_filter_info_msg;
+
+static std::chrono::time_point<std::chrono::system_clock> filter_start, filter_end;
+
+static bool _output_log = false;
+static std::ofstream ofs;
+static std::string filename;
 
 static void config_callback(const runtime_manager::ConfigRandomFilter::ConstPtr& input)
 {
@@ -60,6 +68,8 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
   filtered_scan_ptr->header = scan.header;
 
+  filter_start = std::chrono::system_clock::now();
+
   int points_num = scan.size();
   int step = points_num / sample_num;
 
@@ -73,6 +83,10 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   sensor_msgs::PointCloud2 filtered_msg;
   pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
+
+  filter_end = std::chrono::system_clock::now();
+
+  filtered_msg.header = input->header;
   filtered_points_pub.publish(filtered_msg);
 
   points_filter_info_msg.header = input->header;
@@ -81,7 +95,26 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   points_filter_info_msg.filtered_points_size = filtered_scan_ptr->size();
   points_filter_info_msg.original_ring_size = 0;
   points_filter_info_msg.filtered_ring_size = 0;
+  points_filter_info_msg.exe_time = std::chrono::duration_cast<std::chrono::microseconds>(filter_end - filter_start).count() / 1000.0;
   points_filter_info_pub.publish(points_filter_info_msg);
+
+  if(_output_log == true){
+	  if(!ofs){
+		  std::cerr << "Could not open " << filename << "." << std::endl;
+		  exit(1);
+	  }
+	  ofs << points_filter_info_msg.header.seq << ","
+		  << points_filter_info_msg.header.stamp << ","
+		  << points_filter_info_msg.header.frame_id << ","
+		  << points_filter_info_msg.filter_name << ","
+		  << points_filter_info_msg.original_points_size << ","
+		  << points_filter_info_msg.filtered_points_size << ","
+		  << points_filter_info_msg.original_ring_size << ","
+		  << points_filter_info_msg.filtered_ring_size << ","
+		  << points_filter_info_msg.exe_time << ","
+		  << std::endl;
+  }
+
 }
 
 int main(int argc, char** argv)
@@ -90,6 +123,16 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+
+  private_nh.getParam("output_log", _output_log);
+  if(_output_log == true){
+	  char buffer[80];
+	  std::time_t now = std::time(NULL);
+	  std::tm *pnow = std::localtime(&now);
+	  std::strftime(buffer,80,"%Y%m%d_%H%M%S",pnow);
+	  filename = "random_filter_" + std::string(buffer) + ".csv";
+	  ofs.open(filename.c_str(), std::ios::app);
+  }
 
   // Publishers
   filtered_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/filtered_points", 10);

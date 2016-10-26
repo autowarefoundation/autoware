@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <name>integrated_viewer</name>
+  <version>0.0.0</version>
+  <description>The integrated_viewer package</description>
+
+  <maintainer email="hirabayashi@ertl.jp">hirabayashi</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cv_tracker</build_depend>
+  <build_depend>points2image</build_depend>
+  <build_depend>runtime_manager</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>rviz</build_depend>
+
+  <run_depend>cv_tracker</run_depend>
+  <run_depend>points2image</run_depend>
+  <run_depend>runtime_manager</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>rviz</run_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+    <rviz plugin="${prefix}/rviz_plugin_description.xml" />
+  </export>
+</package>

@@ -11,13 +11,7 @@
 #include <string>
 #include "Math.h"
 
-#include <map_file/PointClassArray.h>
-#include <map_file/LineClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/VectorClassArray.h>
-#include <map_file/SignalArray.h>
-#include <map_file/WhiteLineArray.h>
-#include <map_file/DTLaneArray.h>
+#include <vector_map/vector_map.h>
 
 
 typedef struct{
@@ -116,13 +110,13 @@ class VectorMap
   std::map<int, Vector > vectors;
   std::map<int, Signal > signals;
 
-  void load_points(const map_file::PointClassArray& msg);
-  void load_lines(const map_file::LineClassArray& msg);
-  void load_lanes(const map_file::LaneArray& msg);
-  void load_vectors(const map_file::VectorClassArray& msg);
-  void load_signals(const map_file::SignalArray& msg);
-  void load_whitelines(const map_file::WhiteLineArray& msg);
-  void load_dtlanes(const map_file::DTLaneArray& msg);
+  void load_points(const vector_map::PointArray& msg);
+  void load_lines(const vector_map::LineArray& msg);
+  void load_lanes(const vector_map::LaneArray& msg);
+  void load_vectors(const vector_map::VectorArray& msg);
+  void load_signals(const vector_map::SignalArray& msg);
+  void load_whitelines(const vector_map::WhiteLineArray& msg);
+  void load_dtlanes(const vector_map::DTLaneArray& msg);
 
 
   VectorMap () :

@@ -8,9 +8,9 @@
 #include <map>
 #include <tf/transform_listener.h>
 
-void VectorMap::load_points(const map_file::PointClassArray& msg)
+void VectorMap::load_points(const vector_map::PointArray& msg)
 {
-  for (const auto& point : msg.point_classes)
+  for (const auto& point : msg.data)
     {
       Point tmp;
       tmp.pid	 = point.pid;
@@ -29,9 +29,9 @@ void VectorMap::load_points(const map_file::PointClassArray& msg)
 } /* void VectorMap::load_points() */
 
 
-void VectorMap::load_lines(const map_file::LineClassArray& msg)
+void VectorMap::load_lines(const vector_map::LineArray& msg)
 {
-  for (const auto& line : msg.line_classes)
+  for (const auto& line : msg.data)
     {
       Line tmp;
       tmp.lid  = line.lid;
@@ -46,9 +46,9 @@ void VectorMap::load_lines(const map_file::LineClassArray& msg)
 } /* void VectorMap::load_lines() */
 
 
-void VectorMap::load_lanes(const map_file::LaneArray& msg)
+void VectorMap::load_lanes(const vector_map::LaneArray& msg)
 {
-  for (const auto& lane : msg.lanes)
+  for (const auto& lane : msg.data)
     {
       Lane tmp;
       tmp.lnid    = lane.lnid;
@@ -75,9 +75,9 @@ void VectorMap::load_lanes(const map_file::LaneArray& msg)
 } /* void VectorMap::load_lanes() */
 
 
-void VectorMap::load_vectors(const map_file::VectorClassArray& msg)
+void VectorMap::load_vectors(const vector_map::VectorArray& msg)
 {
-  for (const auto& vector : msg.vector_classes)
+  for (const auto& vector : msg.data)
     {
       Vector tmp;
       tmp.vid  = vector.vid;
@@ -91,9 +91,9 @@ void VectorMap::load_vectors(const map_file::VectorClassArray& msg)
 } /* void VectorMap::load_vectors() */
 
 
-void VectorMap::load_signals(const map_file::SignalArray& msg)
+void VectorMap::load_signals(const vector_map::SignalArray& msg)
 {
-  for (const auto& signal : msg.signals)
+  for (const auto& signal : msg.data)
     {
       Signal tmp;
       tmp.id     = signal.id;
@@ -108,9 +108,9 @@ void VectorMap::load_signals(const map_file::SignalArray& msg)
 } /* void VectorMap::load_signals() */
 
 
-void VectorMap::load_whitelines(const map_file::WhiteLineArray& msg)
+void VectorMap::load_whitelines(const vector_map::WhiteLineArray& msg)
 {
-  for (const auto& white_line : msg.white_lines)
+  for (const auto& white_line : msg.data)
     {
       WhiteLine tmp;
       tmp.id     = white_line.id;
@@ -126,9 +126,9 @@ void VectorMap::load_whitelines(const map_file::WhiteLineArray& msg)
 } /* void VectorMap::load_whitelines() */
 
 
-void VectorMap::load_dtlanes(const map_file::DTLaneArray& msg)
+void VectorMap::load_dtlanes(const vector_map::DTLaneArray& msg)
 {
-  for (const auto& dtlane : msg.dtlanes)
+  for (const auto& dtlane : msg.data)
     {
       DTLane tmp;
       tmp.did   = dtlane.did;

@@ -353,7 +353,7 @@ pcl::NormalDistributionsTransform<PointSource, PointTarget>::omp_computeDerivati
   computeAngleDerivatives (p);
 
 #ifdef _OPENMP
-  int num_threads = omp_get_max_threads();
+  int num_threads = omp_get_max_threads() * 2;
   Eigen::Matrix<double, 6, 1> score_gradient_i[num_threads];
   Eigen::Matrix<double, 6, 6> hessian_i[num_threads];
   for (int i = 0; i < num_threads; ++i) {
@@ -890,7 +890,7 @@ pcl::NormalDistributionsTransform<PointSource, PointTarget>::computeStepLengthMT
 
   // Updates score, gradient and hessian.  Hessian calculation is unessisary but testing showed that most step calculations use the
   // initial step suggestion and recalculation the reusable portions of the hessian would intail more computation time.
-  score = computeDerivatives (score_gradient, hessian, trans_cloud, x_t, true);
+  score = omp_computeDerivatives (score_gradient, hessian, trans_cloud, x_t, true);
 
   // Calculate phi(alpha_t)
   double phi_t = -score;
@@ -934,7 +934,7 @@ pcl::NormalDistributionsTransform<PointSource, PointTarget>::computeStepLengthMT
     transformPointCloud (*input_, trans_cloud, final_transformation_);
 
     // Updates score, gradient. Values stored to prevent wasted computation.
-    score = computeDerivatives (score_gradient, hessian, trans_cloud, x_t, false);
+    score = omp_computeDerivatives (score_gradient, hessian, trans_cloud, x_t, false);
 
     // Calculate phi(alpha_t+)
     phi_t = -score;

@@ -152,6 +152,11 @@ int main(int argc, char *argv[])
 
 	//get connect to android
 	sock = -1;
+
+	sigaction(SIGINT, NULL, &act);
+	act.sa_flags &= ~SA_RESTART;
+	sigaction(SIGINT, &act, NULL);
+
 	while (getConnect(port, &sock, &asock) != -1) {
 		struct timeval tv[2];
 		double sec;

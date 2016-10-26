@@ -405,6 +405,8 @@ subs :
         desc : velocity_set desc sample
         cmd  : roslaunch driving_planner velocity_set.launch
         param: velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
       - name : path_select
         desc : path_select desc sample
         cmd  : rosrun driving_planner path_select
@@ -447,6 +449,8 @@ subs :
          gui  :
            save_filename :
              prop  : 1
+           save_velocity :
+             flags : [ nl ]
        - name : waypoint_clicker
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
@@ -462,13 +466,13 @@ subs :
            velocity:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
-           lookahead_threshold:
+           lookahead_distance:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
-           minimum_lookahead_threshold:
+           minimum_lookahead_distance:
              depend : param_flag   
              depend_bool : 'lambda v : v == 0'          
-           threshold_ratio:
+           lookahead_ratio:
              depend : param_flag
              depend_bool : 'lambda v : v == 0' 
            stat_topic : [ lf ]  
@@ -480,6 +484,10 @@ subs :
          desc : wf_simulator desc sample
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
+         gui  :
+           initialize_source :
+             flags : [ nl ]
+
          
 buttons:
   car_dpm :
@@ -810,6 +818,22 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : pose_estimation
+      desc    : pose_estimation desc sample
+      label   : 'pose_estimation'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_diffnormals
+      desc    : use_diffnormals desc sample
+      label   : 'use_diffnormals'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : publish_filtered
       desc    : publish_filtered desc sample
       label   : 'publish filtered'
@@ -818,20 +842,11 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : is_downsampling
-      desc    : is_downsampling desc sample
-      label   : 'is downsampling'
+    - name    : downsample_cloud
+      desc    : downsample_cloud desc sample
+      label   : 'downsample_cloud'
       kind    : checkbox
       v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : distance
-      desc    : distance desc sample
-      label   : 'distance'
-      min       : 0
-      max       : 5
-      v       : 0.5
       cmd_param :
         dash        : ''
         delim       : ':='   
@@ -848,8 +863,8 @@ params :
       desc    : cluster_size_min desc sample
       label   : 'cluster size minimum'
       min       : 0
-      max       : 3000
-      v       : 50
+      max       : 100000
+      v       : 20
       cmd_param :
         dash        : ''
         delim       : ':='   
@@ -857,8 +872,68 @@ params :
       desc    : cluster_size_max desc sample
       label   : 'cluster size maximum'
       min       : 0
-      max       : 3000
-      v       : 2500
+      max       : 100000
+      v       : 100000
+      cmd_param :
+        dash        : ''
+        delim       : ':='  
+    - name    : clip_min_height
+      desc    : clip_min_height desc sample
+      label   : 'clip_min_height'
+      min       : -5
+      max       : 5
+      v       : -1.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : clip_max_height
+      desc    : clip_max_height desc sample
+      label   : 'clip_max_height'
+      min       : 0
+      max       : 5
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : keep_lanes
+      desc    : keep_lanes desc sample
+      label   : 'keep_only_lanes_points'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='  
+    - name    : keep_lane_left_distance
+      desc    : keep_lane_left_distance desc sample
+      label   : 'keep_lane_left_distance'
+      min       : 0
+      max       : 100
+      v       : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : keep_lane_right_distance
+      desc    : keep_lane_right_distance desc sample
+      label   : 'keep_lane_right_distance'
+      min       : 0
+      max       : 100
+      v       : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : clustering_distances
+      desc    : clustering_distances desc sample
+      label   : 'clustering_distances (no spaces)'
+      kind    : str
+      v       : [15,30,45,60]
+      cmd_param :
+        dash        : ''
+        delim       : ':='   
+    - name    : clustering_thresholds
+      desc    : clustering_thresholds desc sample
+      label   : 'clustering_thresholds (no spaces)'
+      kind    : str
+      v       : [0.5,1.1,1.6,2.1,2.6]
       cmd_param :
         dash        : ''
         delim       : ':='              
@@ -869,6 +944,7 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+
 
   - name  : ndt
     topic : /config/ndt
@@ -1121,21 +1197,21 @@ params :
       min   : 0
       max   : 60
       v     : 5.0
-    - name  : lookahead_threshold
-      desc  : lookahead_threshold desc sample
-      label : Lookahead Threshold
+    - name  : lookahead_distance
+      desc  : lookahead_distance desc sample
+      label : Lookahead Distance
       min   : 0
       max   : 30
       v     : 4.0
-    - name  : threshold_ratio
-      desc  : threshold_ratio desc sample
-      label : threshold_ratio
+    - name  : lookahead_ratio
+      desc  : lookahead_ratio desc sample
+      label : lookahead_ratio
       min   : 1.0
       max   : 5.0
       v     : 2.0
-    - name  : minimum_lookahead_threshold
-      desc  : minimum_lookahead_threshold desc sample
-      label : minimum_lookahead_threshold
+    - name  : minimum_lookahead_distance
+      desc  : minimum_lookahead_distance desc sample
+      label : minimum_lookahead_distance
       min   : 2.0
       max   : 10.0
       v     : 6.0
@@ -1164,30 +1240,20 @@ params :
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
-    - name  : velocity_limit
-      desc  : velocity_limit desc sample
-      label : Velocity Limit (km/h)
-      min   : 0
-      max   : 60
-      v     : 42.0
+    - name  : use_crosswalk_detection
+      desc  : use_crosswalk_detection desc sample
+      label : Use Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name  : others_distance
       desc  : others_distance desc sample
       label : Others Distance (m)
       min   : 0
       max   : 50
       v     : 15.0
-    - name  : cars_distance
-      desc  : cars_distance desc sample
-      label : Cars Distance (m)
-      min   : 0
-      max   : 50
-      v     : 15.0
-    - name  : pedestrians_distance
-      desc  : pedestrians_distance desc sample
-      label : Pedestrians Distance (m)
-      min   : 0
-      max   : 50
-      v     : 10.0
     - name  : detection_range
       desc  : detection_range desc sample
       label : Detection Range (m)
@@ -1230,18 +1296,6 @@ params :
       min   : 5
       max   : 40
       v     : 15.0
-    - name  : velocity_offset
-      desc  : velocity_offset desc sample
-      label : Velocity Offset (km/h)
-      min   : 0
-      max   : 40
-      v     : 3.0
-    - name  : deceleration_minimum
-      desc  : deceleration_minimum desc sample
-      label : Deceleration Minimum (km/h)
-      min   : 0
-      max   : 40
-      v     : 5.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
       label : Temporal Waypoints (m)
@@ -1269,30 +1323,24 @@ params :
       min   : 0
       max   : 60
       v     : 5.0
-    - name  : lookahead_threshold
-      desc  : lookahead_threshold desc sample
-      label : Lookahead Threshold
+    - name  : lookahead_distance
+      desc  : lookahead_distance desc sample
+      label : Lookahead Distance
       min   : 0
       max   : 30
       v     : 4.0
-    - name  : threshold_ratio
-      desc  : threshold_ratio desc sample
-      label : threshold_ratio
+    - name  : lookahead_ratio
+      desc  : lookahead_ratio desc sample
+      label : lookahead_ratio
       min   : 1.0
       max   : 5.0
       v     : 2.0
-    - name  : minimum_lookahead_threshold
-      desc  : minimum_lookahead_threshold desc sample
-      label : minimum_lookahead_threshold
+    - name  : minimum_lookahead_distance
+      desc  : minimum_lookahead_distance desc sample
+      label : minimum_lookahead_distance
       min   : 2.0
       max   : 10.0
       v     : 6.0
-    - name  : offset
-      desc  : offset desc sample
-      label : offset
-      min   : -5.0
-      max   : 5.0
-      v     : -1.17
     - name    : sim_mode
       desc    : sim_mode desc sample
       label   : 'Simulation Mode'
@@ -1342,6 +1390,13 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='   
+    - name      : accel_rate
+      desc      : 
+      label   : 'accel_rate(m/s^2) :'
+      v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : car_kf
     topic : /config/car_kf
@@ -1674,26 +1729,19 @@ params :
     vars  :
     - name      : save_filename
       desc      : save_filename desc sample
+      label     : Save File 
       kind      : path
       path_type : save
-      v         : ''
+      v         : '/tmp/saved_waypoints.csv'
       cmd_param :
         var_name    : save_finename
         dash        : ''
         delim       : ':='
-    - name  : velocity_source
-      desc  : velocity_source desc sample
-      label : velocity source
-      kind  : radio_box
-      choices:
-      - None
-      - can_info
-      - points_localizer
-      descs :
-      - None desc sample
-      - can_info desc sample
-      - points_localizer desc sample
-      v     : 0
+    - name  : save_velocity
+      descs : When you save the velocity in each waypoints, Please check if /current_velocity is publishing
+      label : Save /current_velocity
+      kind    : checkbox
+      v       : False
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -2040,6 +2088,14 @@ params :
       min       : 0
       max       : 1000
       v         : 500
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : points_topic
+      desc      : Subscribing topic for generating a cost map (PointCloud2 message)
+      label     : Points Topic
+      kind      : str
+      v         : /points_lanes
       cmd_param :
         dash      : ''
         delim     : ':='

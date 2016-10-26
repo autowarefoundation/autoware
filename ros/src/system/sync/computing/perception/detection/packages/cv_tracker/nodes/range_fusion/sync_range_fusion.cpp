@@ -1,3 +1,25 @@
+#include "ros/ros.h"
+#include "cv_tracker/image_obj.h"
+#include "points2image/PointsImage.h"
+#include "cv_tracker/image_obj_ranged.h"
+#include "sync.hpp"
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "sync_ranging");
+    std::string ns(ros::this_node::getNamespace());
+    std::string sub1("/image_obj");
+    std::string sub2("/vscan_image");
+    std::string req("/image_obj_ranged");
+    std::string pub1("/image_obj");
+    std::string pub2("/vscan_image");
+
+    Synchronizer<cv_tracker::image_obj, points2image::PointsImage, cv_tracker::image_obj_ranged> synchronizer(sub1, sub2, pub1, pub2, req, ns);
+    synchronizer.run();
+
+    return 0;
+}
+
+#if 0
 /* ----header---- */
 /* common header */
 #include "ros/ros.h"
@@ -398,4 +420,5 @@ bool publish() {
     }
 }
 
+#endif
 #endif

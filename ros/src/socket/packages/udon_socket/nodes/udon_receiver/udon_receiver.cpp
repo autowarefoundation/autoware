@@ -30,6 +30,7 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <signal.h>
 
 #include <thread>
 
@@ -127,6 +128,11 @@ int main(int argc, char **argv)
 		goto close_listen_fd;
 	}
 	ROS_INFO_STREAM("listen " << astr << ":" << ntohs(server_addr.sin_port));
+
+	struct sigaction act;
+	sigaction(SIGINT, NULL, &act);
+	act.sa_flags &= ~SA_RESTART;
+	sigaction(SIGINT, &act, NULL);
 
 	int connect_fd;
 	while (true) {
