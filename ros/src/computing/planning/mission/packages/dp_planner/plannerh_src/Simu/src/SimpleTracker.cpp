@@ -87,9 +87,10 @@ void SimpleTracker::AssociateObjects()
 //					m_DetectedObjects.at(i).center.cost += distance2points(trans_obj.contour.at(k), m_PrevDetectedObjects.at(j).contour.at(k));
 //			}
 
-			std::cout << "Cost Cost (" << i << "), " << m_PrevDetectedObjects.at(j).center.pos.ToString() << ","
-					<< m_DetectedObjects.at(i).center.cost <<  ", contour: " << trans_obj.contour.size()
-					<< ", " << trans_obj.center.pos.ToString() << std::endl;
+			if(DEBUG_TRACKER)
+				std::cout << "Cost Cost (" << i << "), " << m_PrevDetectedObjects.at(j).center.pos.ToString() << ","
+						<< m_DetectedObjects.at(i).center.cost <<  ", contour: " << trans_obj.contour.size()
+						<< ", " << trans_obj.center.pos.ToString() << std::endl;
 
 			//m_DetectedObjects.at(i).center.cost = m_DetectedObjects.at(i).center.cost/(double)(trans_obj.contour.size()+1);
 
@@ -104,12 +105,14 @@ void SimpleTracker::AssociateObjects()
 		{
 			iTracksNumber = iTracksNumber + 1;
 			m_DetectedObjects.at(i).id = iTracksNumber;
-			std::cout << "New Matching " << m_DetectedObjects.at(i).id << ", "<< minCost<< ", " << iTracksNumber << std::endl;
+			if(DEBUG_TRACKER)
+				std::cout << "New Matching " << m_DetectedObjects.at(i).id << ", "<< minCost<< ", " << iTracksNumber << std::endl;
 		}
 		else
 		{
 			m_DetectedObjects.at(i).id = minID;
-			std::cout << "Matched with ID  " << m_DetectedObjects.at(i).id << ", "<< minCost<< std::endl;
+			if(DEBUG_TRACKER)
+				std::cout << "Matched with ID  " << m_DetectedObjects.at(i).id << ", "<< minCost<< std::endl;
 		}
 	}
 

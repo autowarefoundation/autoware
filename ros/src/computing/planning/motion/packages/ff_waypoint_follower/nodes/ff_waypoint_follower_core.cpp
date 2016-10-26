@@ -47,9 +47,19 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	clock_gettime(0, &m_Timer);
 
 	ReadParamFromLaunchFile(m_CarInfo, m_ControlParams);
+	m_ControlParams.SteeringDelayPercent = 17.5;
 
 	m_PredControl.Init(m_ControlParams, m_CarInfo);
-	m_State.Init(m_PlanningParams, m_CarInfo);
+
+//	m_ControlParams.Steering_Gain = SimulationNS::PID_CONST(0.07, 0.02, 0.01);
+//	m_ControlParams.SteeringDelay = 0.85;
+//	m_ControlParams.Steering_Gain.kD = 0.5;
+//	m_ControlParams.Steering_Gain.kP = 0.1;
+//	m_ControlParams.Steering_Gain.kI = 0.03;
+
+
+	//m_ControlParams.Velocity_Gain = SimulationNS::PID_CONST(0.1, 0.005, 0.1);
+	m_State.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
 
 	m_CmdParams = params;
 
@@ -295,6 +305,7 @@ void FFSteerControl::PlannerMainLoop()
 		ros::spinOnce();
 
 		PlannerHNS::BehaviorState currMessage = m_CurrentBehavior;
+		//cout << "Main Loop Started ! " << endl;
 
 		if(currMessage.state != PlannerHNS::INITIAL_STATE &&  (bInitPos || bNewCurrentPos))
 		{
@@ -332,9 +343,10 @@ void FFSteerControl::PlannerMainLoop()
 			else if(m_CmdParams.statusSource == SIMULATION_STATUS)
 			{
 				m_CurrVehicleStatus = m_PrevStepTargetStatus;
-				m_State.SetSimulatedTargetOdometryReadings(m_CurrVehicleStatus.speed, m_CurrVehicleStatus.steer, m_CurrVehicleStatus.shift);
-				m_State.UpdateState(false);
-				m_State.LocalizeMe(dt);
+//				m_State.SetSimulatedTargetOdometryReadings(m_CurrVehicleStatus.speed, m_CurrVehicleStatus.steer, m_CurrVehicleStatus.shift);
+//				m_State.UpdateState(false);
+//				m_State.LocalizeMe(dt);
+				m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
 				m_CurrentPos = m_State.state;
 
 				geometry_msgs::Vector3Stamped vehicle_status;
@@ -356,9 +368,10 @@ void FFSteerControl::PlannerMainLoop()
 			else if(m_CmdParams.statusSource == AUTOWARE_STATUS)
 			{
 				m_CurrVehicleStatus = m_PrevStepTargetStatus;
-				m_State.SetSimulatedTargetOdometryReadings(m_CurrVehicleStatus.speed, m_CurrVehicleStatus.steer, m_CurrVehicleStatus.shift);
-				m_State.UpdateState(false);
-				m_State.LocalizeMe(dt);
+//				m_State.SetSimulatedTargetOdometryReadings(m_CurrVehicleStatus.speed, m_CurrVehicleStatus.steer, m_CurrVehicleStatus.shift);
+//				m_State.UpdateState(false);
+//				m_State.LocalizeMe(dt);
+				m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
 				m_CurrentPos = m_State.state;
 
 				geometry_msgs::Vector3Stamped vehicle_status;
@@ -402,6 +415,9 @@ void FFSteerControl::PlannerMainLoop()
 				cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
 			}
 
+			SimulationNS::ControllerParams c_params = m_ControlParams;
+			c_params.SteeringDelay = m_ControlParams.SteeringDelay / (1.0- UtilityHNS::UtilityH::GetMomentumScaleFactor(m_CurrVehicleStatus.speed));
+			m_PredControl.Init(c_params, m_CarInfo);
 			m_PrevStepTargetStatus = m_PredControl.DoOneStep(dt, currMessage, m_FollowingTrajectory, m_CurrentPos, m_CurrVehicleStatus, bNewPath);
 			//m_PrevStepTargetStatus.speed = 3.0;
 			m_State.state.pos.z = m_PerpPoint.pos.z;

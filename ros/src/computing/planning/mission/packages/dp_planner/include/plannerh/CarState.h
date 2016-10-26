@@ -24,12 +24,13 @@ public:
 	std::vector<PlannerHNS::GPSPoint> m_CarShapePolygon;
 	std::vector<PlannerHNS::WayPoint> m_Path;
 	std::vector<PlannerHNS::WayPoint> m_TotalPath;
+	std::vector<std::vector<PlannerHNS::WayPoint> > m_PredictedPath;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_RollOuts;
 	std::string carId;
 	PlannerHNS::Lane* pLane;
 	double m_delayFactor; //second , time that every degree change in the steering wheel takes
 	timespec m_SteerDelayTimer;
-	timespec m_PredictionTimer;
+	double m_PredictionTime;
 
 	PlannerHNS::BehaviorStateMachine* 		m_pCurrentBehaviorState;
 	PlannerHNS::ForwardState * 				m_pGoToGoalState;
@@ -96,19 +97,31 @@ public:
 			PlannerHNS::RoadNetwork& map,
 			const bool& bLive = false);
 
+	void SimulateOdoPosition(const double& dt, const PlannerHNS::VehicleState& vehicleState);
+
 private:
+
 	//Obstacle avoidance functionalities
 	void InitializeTrajectoryCosts();
 	void CalculateTransitionCosts();
 	void CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list);
-	void CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list);
-	double PredictTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::VehicleState& vstatus, const PlannerHNS::WayPoint& currState);
-	void PredictObstacleTrajectory(PlannerHNS::RoadNetwork& map, const PlannerHNS::WayPoint& pos, const double& predTime, std::vector<PlannerHNS::WayPoint>& path);
-	void CalculateIntersectionVelocities(std::vector<PlannerHNS::WayPoint>& path, std::vector<PlannerHNS::WayPoint>& predctedPath, const PlannerHNS::DetectedObject& obj);
+	bool CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list);
+
+	double PredictTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>& path,
+			const PlannerHNS::VehicleState& vstatus,
+			const PlannerHNS::WayPoint& currState);
+
+	void PredictObstacleTrajectory(PlannerHNS::RoadNetwork& map,
+			const PlannerHNS::WayPoint& pos,
+			const double& predTime,
+			std::vector<std::vector<PlannerHNS::WayPoint> >& paths);
+
+	bool CalculateIntersectionVelocities(std::vector<PlannerHNS::WayPoint>& path,
+			std::vector<std::vector<PlannerHNS::WayPoint> >& predctedPath,
+			const PlannerHNS::DetectedObject& obj);
 	void FindSafeTrajectory(int& safe_index, double& closest_distance, double& closest_velocity);
 	void FindNextBestSafeTrajectory(int& safe_index);
 	bool IsGoalAchieved(const PlannerHNS::GPSPoint& goal);
-	void SimulateOdoPosition(const double& dt, const PlannerHNS::VehicleState& vehicleState);
 	void UpdateCurrentLane(PlannerHNS::RoadNetwork& map, const double& search_distance);
 	bool SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState);
 	PlannerHNS::BehaviorState GenerateBehaviorState(const PlannerHNS::VehicleState& vehicleState);

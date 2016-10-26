@@ -188,7 +188,7 @@ vector<vector<float> > DrawingHelpers::PreparePathForDrawing(const std::vector<P
 		color_vector.clear();
 		four_temp.clear();
 
-		p2 = path[i];
+		pa = p2 = path[i];
 
 		color_vector.push_back(p1.v/12.0);
 		color_vector.push_back(p1.v/12.0);
@@ -256,7 +256,9 @@ void DrawingHelpers::DrawPrePreparedPolygons(std::vector<std::vector<PlannerHNS:
 	{
 		if(path[i].size() == 4)
 		{
-			if(colorProfile)
+			if(path[i][0].pLane && (path[i][0].pLane->pRightLane || path[i][0].pLane->pLeftLane))
+				glColor3f(1, 0, 0);
+			else if(colorProfile)
 			{
 				glColor3f(color[0]*(*colorProfile)[i][0], color[1] * (*colorProfile)[i][1], color[2] * (*colorProfile)[i][2]);
 			}

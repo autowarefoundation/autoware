@@ -492,6 +492,7 @@ public:
 	int num; //lane number in the road segment from left to right
 	double speed;
 	double length;
+	double dir;
 	LaneType type;
 	std::vector<TrafficSign> signs;
 	std::vector<WayPoint> points;
@@ -512,6 +513,7 @@ public:
 		num		= 0;
 		speed 	= 0;
 		length 	= 0;
+		dir		= 0;
 		type 	= NORMAL_LANE;
 		pLeftLane = 0;
 		pRightLane = 0;
@@ -627,8 +629,8 @@ public:
 		minSpeed 						= 0;
 		planningDistance 				= 10000;
 		microPlanDistance 				= 50;
-		carTipMargin					= 4.0;
-		rollInMargin					= 10.0;
+		carTipMargin					= 8.0;
+		rollInMargin					= 20.0;
 		rollInSpeedFactor				= 0.25;
 		pathDensity						= 0.25;
 		rollOutDensity					= 0.5;
@@ -640,7 +642,7 @@ public:
 		speedProfileFactor				= 1.0;
 		smoothingDataWeight				= 0.4;
 		smoothingSmoothWeight			= 0.35;
-		smoothingToleranceError			= 0.01;
+		smoothingToleranceError			= 0.1;
 
 		enableHeadingSmoothing			= false;
 		enableSwerving 					= false;

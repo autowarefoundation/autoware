@@ -194,29 +194,30 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity, PlannerHNS::SHIFT_POS& desiredShift)
 {
 
-	double acc_const = 0.5; // m / sec sec
-	if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE)
+	double acc_const = 0.65; // m / sec sec
+	if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE )
 	{
-		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
+
 		double e = CurrBehavior.maxVelocity - CurrStatus.speed;
 
+		//Using PID for velocity
+		//m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
 		//desiredVelocity = m_pidVelocity.getPID(e);
+
+		//Using constant acceleration for velocity
 		acc_const = acc_const * UtilityH::GetSign(e);
-		if(abs(e)>0.2)
-			desiredVelocity = (acc_const * dt) + CurrStatus.speed;
-		else
-			desiredVelocity = CurrBehavior.maxVelocity;
+		desiredVelocity = (acc_const * dt) + CurrStatus.speed;
 
 		m_StartFollowDistance = 0;
 	}
 	else if(CurrBehavior.state == WAITING_STATE || CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == FINISH_STATE)
 	{
-		//desiredVelocity = m_pidVelocity.getPID(-CurrStatus.speed);
-		double e = -CurrStatus.speed;
-		if(abs(e)>0.2)
-			desiredVelocity = (-acc_const * dt) + CurrStatus.speed;
-		else
-			desiredVelocity = 0;
+		desiredVelocity = m_pidVelocity.getPID(-CurrStatus.speed);
+//		double e = -CurrStatus.speed;
+//		//if(abs(e)>0.2)
+//			desiredVelocity = (-acc_const * dt) + CurrStatus.speed;
+////		else
+////			desiredVelocity = 0;
 
 		m_StartFollowDistance = 0;
 	}
@@ -241,14 +242,12 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 			desiredVelocity = CurrBehavior.followVelocity;
 		else
 		{
-			acc_const = 0.8;
 			//m_FollowAcc = (CurrBehavior.followVelocity*CurrBehavior.followVelocity - CurrStatus.speed * CurrStatus.speed)/(2.0*slowingDownDistance);
 			double e = CurrBehavior.followVelocity - CurrStatus.speed;
 			acc_const = acc_const * UtilityH::GetSign(e);
-			if(abs(e)>0.2)
-				desiredVelocity = (acc_const * dt) + CurrStatus.speed;
-			else
-				desiredVelocity = CurrBehavior.followVelocity;
+			desiredVelocity = (acc_const * dt) + CurrStatus.speed;
+			if(desiredVelocity > CurrBehavior.maxVelocity)
+				desiredVelocity = CurrBehavior.maxVelocity;
 		}
 		//m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
 		//desiredVelocity = m_pidVelocity.getPID(e);
@@ -258,8 +257,10 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 //		desiredVelocity = CurrBehavior.maxVelocity;
 //	}
 
-	if(desiredVelocity > CurrBehavior.maxVelocity)
-		desiredVelocity = CurrBehavior.maxVelocity;
+	if(desiredVelocity > m_VehicleInfo.max_speed_forward)
+		desiredVelocity = m_VehicleInfo.max_speed_forward;
+	else if (desiredVelocity < 0)
+		desiredVelocity = 0;
 	//desiredVelocity = 2.0;
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;

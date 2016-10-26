@@ -36,7 +36,18 @@ void PlannerH_Handler::UpdateVehicleInfo(const double& width, const double& leng
 	m_VehicleInfo.max_steer_angle = maxSteerAngle;
 	m_VehicleInfo.width = width;
 	m_VehicleInfo.length = length;
-	m_State.Init(m_PlanningParams, m_VehicleInfo);
+
+
+	m_ControlParams.Steering_Gain = SimulationNS::PID_CONST(0.07, 0.02, 0.01);
+	m_ControlParams.SteeringDelay = 0.85;
+	m_ControlParams.Steering_Gain.kD = 0.5;
+	m_ControlParams.Steering_Gain.kP = 0.1;
+	m_ControlParams.Steering_Gain.kI = 0.03;
+	m_ControlParams.SteeringDelayPercent = 17.5;
+
+	m_ControlParams.Velocity_Gain = SimulationNS::PID_CONST(0.1, 0.005, 0.1);
+
+	m_State.Init(m_ControlParams, m_PlanningParams, m_VehicleInfo);
 }
 
 void PlannerH_Handler::UpdatePlanningParams(const AutowarePlanningParams& planningParams)
@@ -62,7 +73,16 @@ void PlannerH_Handler::UpdatePlanningParams(const AutowarePlanningParams& planni
 	m_PlanningParams.rollOutNumber 				= planningParams.rollOutNumber 				;
 	m_PlanningParams.speedProfileFactor 		= planningParams.speedProfileFactor 		;
 
-	m_State.Init(m_PlanningParams, m_VehicleInfo);
+	m_ControlParams.Steering_Gain = SimulationNS::PID_CONST(0.07, 0.02, 0.01);
+	m_ControlParams.SteeringDelay = 0.85;
+	m_ControlParams.Steering_Gain.kD = 0.5;
+	m_ControlParams.Steering_Gain.kP = 0.1;
+	m_ControlParams.Steering_Gain.kI = 0.03;
+	m_ControlParams.SteeringDelayPercent = 17.5;
+
+	m_ControlParams.Velocity_Gain = SimulationNS::PID_CONST(0.1, 0.005, 0.1);
+
+	m_State.Init(m_ControlParams, m_PlanningParams, m_VehicleInfo);
 }
 
 void PlannerH_Handler::UpdateRoadMap(const AutowareRoadNetwork& map)

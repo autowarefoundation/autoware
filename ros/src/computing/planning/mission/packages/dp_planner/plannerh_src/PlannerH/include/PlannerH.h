@@ -133,6 +133,18 @@ public:
 			const WayPoint& prevWayPoint, const double& maxPlanningDistance,
 			const std::vector<int>& globalPath, std::vector<WayPoint>& path);
 
+
+	/**
+	 * @brief Return all possible trajectories from current position to max planning distance in all directions
+	 * @param lane
+	 * @param carPos
+	 * @param maxPlanningDistance
+	 * @param paths
+	 * @return
+	 */
+	double PredictPlanUsingDP(Lane* lane, const WayPoint& carPos, const double& maxPlanningDistance,
+			std::vector<std::vector<WayPoint> >& paths);
+
 	void DeleteWaypoints(std::vector<WayPoint*>& wps);
 
 	//PlanningInternalParams m_Params;

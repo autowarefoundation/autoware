@@ -41,6 +41,7 @@ public:
 	double 					m_LateralError;
 	double 					m_FollowingDistance;
 	PlannerHNS::WayPoint 	m_CurrPos;
+	int 					m_iCalculatedIndex;
 
 private:
 	ControllerParams 			m_Params;

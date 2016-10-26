@@ -116,7 +116,9 @@ private:
 	Graph2dBase* m_pLateralErrGraph;
 
 	double m_GlobalPlanningTime;
-	double m_LocalPlanningTIme;
+	double m_LocalPlanningTime;
+	double m_ControllingTime;
+	double m_ObjectTrakingTime;
 	double m_SimulationTime;
 
 
