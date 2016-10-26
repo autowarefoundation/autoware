@@ -5,10 +5,10 @@ string label
 
 sensor_msgs/PointCloud2 cloud
 
-geometry_msgs/Point min_point
-geometry_msgs/Point max_point
-geometry_msgs/Point avg_point
-geometry_msgs/Point centroid_point
+geometry_msgs/PointStamped min_point
+geometry_msgs/PointStamped max_point
+geometry_msgs/PointStamped avg_point
+geometry_msgs/PointStamped centroid_point
 
 float64 estimated_angle
 

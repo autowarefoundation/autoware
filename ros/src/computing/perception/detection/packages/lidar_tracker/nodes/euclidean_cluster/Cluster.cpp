@@ -56,21 +56,25 @@ void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudC
 	out_cluster_message.header = in_ros_header;
 
 	out_cluster_message.cloud = cloud_msg;
-	out_cluster_message.min_point.x = this->GetMinPoint().x;
-	out_cluster_message.min_point.y = this->GetMinPoint().y;
-	out_cluster_message.min_point.z = this->GetMinPoint().z;
+	out_cluster_message.min_point.header = in_ros_header;
+	out_cluster_message.min_point.point.x = this->GetMinPoint().x;
+	out_cluster_message.min_point.point.y = this->GetMinPoint().y;
+	out_cluster_message.min_point.point.z = this->GetMinPoint().z;
 
-	out_cluster_message.max_point.x = this->GetMaxPoint().x;
-	out_cluster_message.max_point.y = this->GetMaxPoint().y;
-	out_cluster_message.max_point.z = this->GetMaxPoint().z;
+	out_cluster_message.max_point.header = in_ros_header;
+	out_cluster_message.max_point.point.x = this->GetMaxPoint().x;
+	out_cluster_message.max_point.point.y = this->GetMaxPoint().y;
+	out_cluster_message.max_point.point.z = this->GetMaxPoint().z;
 
-	out_cluster_message.avg_point.x = this->GetAveragePoint().x;
-	out_cluster_message.avg_point.y = this->GetAveragePoint().y;
-	out_cluster_message.avg_point.z = this->GetAveragePoint().z;
+	out_cluster_message.avg_point.header = in_ros_header;
+	out_cluster_message.avg_point.point.x = this->GetAveragePoint().x;
+	out_cluster_message.avg_point.point.y = this->GetAveragePoint().y;
+	out_cluster_message.avg_point.point.z = this->GetAveragePoint().z;
 
-	out_cluster_message.centroid_point.x = this->GetCentroid().x;
-	out_cluster_message.centroid_point.y = this->GetCentroid().y;
-	out_cluster_message.centroid_point.z = this->GetCentroid().z;
+	out_cluster_message.centroid_point.header = in_ros_header;
+	out_cluster_message.centroid_point.point.x = this->GetCentroid().x;
+	out_cluster_message.centroid_point.point.y = this->GetCentroid().y;
+	out_cluster_message.centroid_point.point.z = this->GetCentroid().z;
 
 	out_cluster_message.estimated_angle = this->GetOrientationAngle();
 
