@@ -4,11 +4,11 @@
 	<arg name="minVelocity" 				default="0.0" />
 	<arg name="velocityProfileFactor" 		default="1.0" />
 	<arg name="maxPlanningDistance" 		default="1000000.0" />
-	<arg name="maxLocalPlanDistance" 		default="35.0" />
+	<arg name="maxLocalPlanDistance" 		default="55.0" />
 	<arg name="samplingTipMargin" 			default="8.0" />
 	<arg name="samplingOutMargin" 			default="20.0" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
-	<arg name="pathDensity" 				default="0.5" />
+	<arg name="pathDensity" 				default="0.25" />
 	<arg name="rollOutDensity" 				default="0.5" />
 	<arg name="rollOutsNumber" 				default="4" />
 	<arg name="horizonDistance" 			default="120" />
@@ -31,9 +31,9 @@
 	<arg name="maxSteerAngle" 				default="0.42" />
 	
 	<arg name="planner" 					default="DP" />
-	<arg name="system" 						default="autoware" /> <!-- segway or autoware -->
-	<arg name="map" 						default="" />
-	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/VectorMaps/ToyotaCity" />
+	<arg name="system" 						default="segway" /> <!-- segway or autoware -->
+	<arg name="map" 						default="" /> <!-- kml or empty -->
+	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/VectorMaps/ToyotaCity/" />
 	
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">

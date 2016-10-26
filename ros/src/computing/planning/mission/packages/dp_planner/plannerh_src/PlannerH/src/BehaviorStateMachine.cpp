@@ -42,7 +42,7 @@ BehaviorStateMachine* BehaviorStateMachine::FindBehaviorState(const STATE_TYPE& 
 	for(unsigned int i = 0 ; i < pNextStates.size(); i++)
 	{
 		BehaviorStateMachine* pState = pNextStates.at(i);
-		if(pState && behavior == pState->m_Behavior)
+		if(pState && behavior == pState->m_Behavior )
 		{
 			pState->Reset();
 			return pState;
@@ -68,8 +68,8 @@ BehaviorStateMachine::~BehaviorStateMachine()
 
 BehaviorStateMachine* ForwardState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this; //return this behavior only , without reset
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//		return this; //return this behavior only , without reset
 
 	if(GetCalcParams()->bOutsideControl == 0)
 		return FindBehaviorState(WAITING_STATE);
@@ -100,24 +100,24 @@ BehaviorStateMachine* ForwardState::GetNextState()
 
 BehaviorStateMachine* MissionAccomplishedState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this; //return this behavior only , without reset
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//		return this; //return this behavior only , without reset
 
 	return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 BehaviorStateMachine* StopState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this; //return this behavior only , without reset
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//		return this; //return this behavior only , without reset
 
 	return this;
 }
 
 BehaviorStateMachine* WaitState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this; //return this behavior only , without reset
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//		return this; //return this behavior only , without reset
 
 	if(GetCalcParams()->bOutsideControl  == 1)
 		return FindBehaviorState(FORWARD_STATE);
@@ -127,8 +127,8 @@ BehaviorStateMachine* WaitState::GetNextState()
 
 BehaviorStateMachine* InitState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this; //return this behavior only , without reset
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//		return this; //return this behavior only , without reset
 
 	if(GetCalcParams()->bOutsideControl == 1)
 		return FindBehaviorState(FORWARD_STATE);
@@ -138,8 +138,8 @@ BehaviorStateMachine* InitState::GetNextState()
 
 BehaviorStateMachine* FollowState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-			return this; //return this behavior only , without reset
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//			return this; //return this behavior only , without reset
 
 	if(GetCalcParams()->bOutsideControl == 0)
 		return FindBehaviorState(WAITING_STATE);
@@ -164,8 +164,8 @@ BehaviorStateMachine* FollowState::GetNextState()
 
 BehaviorStateMachine* SwerveState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this; //return this behavior only , without reset
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//		return this; //return this behavior only , without reset
 
 	if(GetCalcParams()->bOutsideControl == 0)
 		return FindBehaviorState(WAITING_STATE);

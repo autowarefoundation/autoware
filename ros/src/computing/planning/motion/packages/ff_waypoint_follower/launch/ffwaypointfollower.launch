@@ -12,7 +12,7 @@
 	<arg name="maxVelocity" 				default="1.0" />
 	<arg name="minVelocity" 				default="0.0" />
 		
-	<arg name="steeringDelay" 				default="0.8" />
+	<arg name="steeringDelay" 				default="0.85" />
 	<arg name="minPursuiteDistance" 		default="2.0" />
 	<arg name="followDistance" 				default="10.0" />
 	<arg name="lowpassSteerCutoff" 			default="5.0" />
@@ -25,8 +25,8 @@
 	<arg name="velocityGainKI" 				default="0.005" />
 	<arg name="velocityGainKD" 				default="0.1" />
 	
-	<arg name="system" 						default="autoware" /> <!-- segway or autoware -->
-	<arg name="signal" 						default="autoware" /> <!-- simulation or vehicle or autoware -->
+	<arg name="system" 						default="segway" /> <!-- segway or autoware -->
+	<arg name="signal" 						default="simulation" /> <!-- simulation or vehicle or autoware -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
 	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
 	

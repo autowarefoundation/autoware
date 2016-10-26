@@ -124,38 +124,26 @@ PlannerH::PlannerH()
  {
 
 	 if(referencePath.size()==0) return;
-	 timespec t1;
-	 UtilityH::GetTickCount(t1);
+	 if(microPlanDistance <=0 ) return;
+
 	 vector<WayPoint> centerTrajectory = referencePath;
 	 vector<WayPoint> centerTrajectorySmoothed;
 
-
-
- 	int s_index, e_index;
+ 	int s_index = 0, e_index = 0;
  	vector<double> e_distances;
 
  	 //Get position of the rear axe:
- 	 PlanningHelpers::ExtractPartFromPointToDistance(centerTrajectory, carPos, microPlanDistance*2.0, pathDensity, centerTrajectorySmoothed,
+ 	 PlanningHelpers::ExtractPartFromPointToDistance(centerTrajectory, carPos,
+ 			 microPlanDistance, pathDensity, centerTrajectorySmoothed,
  			 SmoothDataWeight, SmoothWeight, SmoothTolerance);
 
+ 	rollOutPaths.clear();
+ 	rollOutPaths.push_back(centerTrajectorySmoothed);
 
  	PlanningHelpers::CalculateRollInTrajectories(carPos, speed, centerTrajectorySmoothed, s_index, e_index, e_distances,
  			rollOutPaths, microPlanDistance, maxSpeed, carTipMargin, rollInMargin,
  				 rollInSpeedFactor, pathDensity, rollOutDensity,rollOutNumber,
  				 SmoothDataWeight, SmoothWeight, SmoothTolerance, bHeadingSmooth);
-
-//	for(unsigned int i=0; i< rollOutPaths.size(); i++)
-//	{
-//		PlanningHelpers::GenerateRecommendedSpeed(rollOutPaths.at(i), maxSpeed, speedProfileFactor);
-//		PlanningHelpers::SmoothSpeedProfiles(rollOutPaths.at(i), 0.15,0.35, 0.1);
-//		ostringstream str_out;
-//		str_out << DataRW::LoggingFolderPath;
-//		str_out << DataRW::PathLogFolderName;
-//		str_out << "_";
-//		str_out << i;
-//		str_out << "_";
-//		PlanningHelpers::WritePathToFile(str_out.str(), rollOutPaths.at(i));
-//	}
    }
 
  double PlannerH::PlanUsingDP(Lane* l, const WayPoint& start,const WayPoint& goalPos,
@@ -177,6 +165,7 @@ PlannerH::PlannerH()
 
  	int closest_index = PlanningHelpers::GetClosestPointIndex(l->points, carPos);
  	WayPoint closest_p = l->points.at(closest_index);
+ 	WayPoint* pStartWP = &l->points.at(closest_index);
 
  	if(distance2points(closest_p.pos, carPos.pos) > 8)
  	{
@@ -186,8 +175,8 @@ PlannerH::PlannerH()
  		return 0;
  	}
 
- 	WayPoint* pStartWP = &l->points.at(closest_index);
- 	pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStartWP, prevWayPoint, closest_p, goalPos, globalPath, maxPlanningDistance, nML, nMR, all_cell_to_delete);
+
+ 	pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStartWP, prevWayPoint, goalPos, globalPath, maxPlanningDistance, nML, nMR, all_cell_to_delete);
 
  	if(!pLaneCell)
  	{
@@ -198,7 +187,7 @@ PlannerH::PlannerH()
  	//mainPath.push_back(start);
  	//mainPath.push_back(*pLaneCell);
 
- 	PlanningHelpers::TravesePathTreeBackwards(pLaneCell, pStartWP, globalPath, mainPath, tempCurrentForwardPathss);
+ 	PlanningHelpers::TraversePathTreeBackwards(pLaneCell, pStartWP, globalPath, mainPath, tempCurrentForwardPathss);
 
 
  	cout << endl <<"Info: PlannerH -> Path With Size (" << (int)mainPath.size() << "), Extraction Time : " << endl;
@@ -218,11 +207,68 @@ PlannerH::PlannerH()
  	if(pLaneCell)
  		DeleteWaypoints(all_cell_to_delete);
 
+ 	//PlanningHelpers::FixPathDensity(mainPath, 0.5);
+ 	//PlanningHelpers::SmoothPath(mainPath, 0.3 , 0.3,0.1);
+
  	path = mainPath;
 
  	double totalPlanningDistance = mainPath.at(mainPath.size()-1).cost;
  	return totalPlanningDistance;
  }
+
+ double PlannerH::PredictPlanUsingDP(Lane* l, const WayPoint& start, const double& maxPlanningDistance,
+			std::vector<std::vector<WayPoint> >& paths)
+  {
+  	if(!l)
+  	{
+  		cout <<endl<< "Err: PredictPlanUsingDP, PlannerH -> Null Lane !!" << endl;
+  		return 0;
+  	}
+
+  	WayPoint carPos = start;
+  	vector<vector<WayPoint> > tempCurrentForwardPathss;
+  	vector<WayPoint*> all_cell_to_delete;
+  	vector<int> globalPath;
+
+  	int closest_index = PlanningHelpers::GetClosestPointIndex(l->points, carPos);
+  	WayPoint closest_p = l->points.at(closest_index);
+  	WayPoint* pStartWP = &l->points.at(closest_index);
+
+  	if(distance2points(closest_p.pos, carPos.pos) > 8)
+  	{
+ 		cout <<endl<< "Err: PredictiveDP PlannerH -> Distance to Lane is: " << distance2points(closest_p.pos, carPos.pos)
+ 		<< ", Pose: " << carPos.pos.ToString() << ", LanePose:" << closest_p.pos.ToString()
+ 		<< ", LaneID: " << l->id << " -> Check origin and vector map. " << endl;
+  		return 0;
+  	}
+
+  	vector<WayPoint*> pLaneCells;
+  	int nPaths =  PlanningHelpers::PredictiveDP(pStartWP, maxPlanningDistance, all_cell_to_delete, pLaneCells);
+
+  	if(nPaths==0)
+  	{
+  		cout <<endl<< "Err PlannerH -> Null Tree Head." << endl;
+  		return 0;
+  	}
+
+  	double totalPlanDistance  = 0;
+  	for(unsigned int i = 0; i< pLaneCells.size(); i++)
+  	{
+  		std::vector<WayPoint> path;
+  		PlanningHelpers::TraversePathTreeBackwards(pLaneCells.at(i), pStartWP, globalPath, path, tempCurrentForwardPathss);
+  		if(path.size()>0)
+  			totalPlanDistance+= path.at(path.size()-1).cost;
+
+  		PlanningHelpers::FixPathDensity(path, 0.5);
+  		PlanningHelpers::SmoothPath(path, 0.3 , 0.3,0.1);
+
+  		paths.push_back(path);
+  	}
+
+  	DeleteWaypoints(all_cell_to_delete);
+
+  	return totalPlanDistance;
+  }
 
  void PlannerH::DeleteWaypoints(vector<WayPoint*>& wps)
  {
