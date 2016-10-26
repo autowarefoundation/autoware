@@ -22,6 +22,9 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 
+#include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+
 #include "RosHelpers.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "waypoint_follower/LaneArray.h"
@@ -173,7 +176,7 @@ public:
 
 	virtual void UpdatePredefinedPath(const std::vector<int>& predefinedPath) = 0;
 
-	virtual bool GeneratePlan(const geometry_msgs::Pose& currentPose, const cv_tracker::obj_label& detectedObstacles,
+	virtual bool GeneratePlan(const geometry_msgs::Pose& currentPose, const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 			const runtime_manager::traffic_light& trafficLight, const AutowareVehicleState& carState,
 			AutowareBehaviorState& behaviorState, visualization_msgs::MarkerArray& pathToVisualize, waypoint_follower::LaneArray& pathToFollow) = 0;
 

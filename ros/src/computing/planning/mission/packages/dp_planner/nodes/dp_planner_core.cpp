@@ -97,8 +97,11 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 			&PlannerX::callbackFromCurrentPose, 		this);
 	sub_traffic_light 		= nh.subscribe("/light_color", 					100,
 			&PlannerX::callbackFromLightColor, 			this);
-	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 			100,
+//	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 			100,
+//			&PlannerX::callbackFromObjCar, 				this);
+	sub_bounding_boxs = nh.subscribe("/bounding_boxes",						1,
 			&PlannerX::callbackFromObjCar, 				this);
+
 	if(m_bAutoware)
 	{
 		point_sub 				= nh.subscribe("/vector_map_info/point_class", 	1,
@@ -247,9 +250,11 @@ void PlannerX::callbackFromLightColor(const runtime_manager::traffic_light& msg)
   // write procedure for traffic light
 }
 
-void PlannerX::callbackFromObjCar(const cv_tracker::obj_label& msg)
+void PlannerX::callbackFromObjCar(const jsk_recognition_msgs::BoundingBoxArray& msg)
 {
   // write procedure for car obstacle
+	m_DetectedObstacles = msg;
+	bNewDetectedObstacles = true;
 }
 
 void PlannerX::callbackGetVMPoints(const map_file::PointClassArray& msg)

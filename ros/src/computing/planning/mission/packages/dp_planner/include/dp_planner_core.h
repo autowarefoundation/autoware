@@ -76,7 +76,9 @@ protected:
 	bool bNewCurrentPos;
 	geometry_msgs::Pose m_OriginPos;
 
-	cv_tracker::obj_label m_DetectedObstacles;
+
+	cv_tracker::obj_label m_VisionDetectedObstacles;
+	jsk_recognition_msgs::BoundingBoxArray m_DetectedObstacles;
 	bool bNewDetectedObstacles;
 
 	runtime_manager::traffic_light m_TrafficLights;
@@ -96,7 +98,8 @@ protected:
 	// define subscribers.
 	ros::Subscriber sub_current_pose 		;
 	ros::Subscriber sub_traffic_light 		;
-	ros::Subscriber sub_obj_pose 			;
+	//ros::Subscriber sub_obj_pose 			;
+	ros::Subscriber sub_bounding_boxs		;
 	ros::Subscriber point_sub 				;
 	ros::Subscriber lane_sub 				;
 	ros::Subscriber node_sub 				;
@@ -122,7 +125,7 @@ private:
   void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackFromLightColor(const runtime_manager::traffic_light& msg);
-  void callbackFromObjCar(const cv_tracker::obj_label& msg);
+  void callbackFromObjCar(const jsk_recognition_msgs::BoundingBoxArray& msg);
   void callbackGetVMPoints(const map_file::PointClassArray& msg);
   void callbackGetVMLanes(const map_file::LaneArray& msg);
   void callbackGetVMNodes(const map_file::NodeArray& msg);

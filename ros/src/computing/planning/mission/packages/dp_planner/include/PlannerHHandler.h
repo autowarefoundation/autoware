@@ -40,7 +40,7 @@ public:
 
 	virtual void UpdatePredefinedPath(const std::vector<int>& predefinedPath);
 
-	virtual bool GeneratePlan(const geometry_msgs::Pose& currentPose, const cv_tracker::obj_label& detectedObstacles,
+	virtual bool GeneratePlan(const geometry_msgs::Pose& currentPose, const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 			const runtime_manager::traffic_light& trafficLight, const AutowareVehicleState& carState,
 			AutowareBehaviorState& behaviorState, visualization_msgs::MarkerArray& pathToVisualize,
 			waypoint_follower::LaneArray& pathToFollow);
@@ -72,7 +72,7 @@ protected:
 
 	void ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray);
 
-	void ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles);
+	void ConvertFromAutowareObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles);
 	PlannerHNS::SHIFT_POS ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift);
 	PlannerXNS::AUTOWARE_SHIFT_POS ConvertShiftFromPlannerHToAutoware(const PlannerHNS::SHIFT_POS& shift);
 	PlannerXNS::AutowareBehaviorState ConvertBehaviorStateFromPlannerHToAutoware(const PlannerHNS::BehaviorState& beh);

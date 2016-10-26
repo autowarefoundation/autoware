@@ -233,7 +233,7 @@ void PlannerH_Handler::UpdatePredefinedPath(const std::vector<int>& predefinedPa
 	bPredefinedPath = true;
 }
 
-bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, const cv_tracker::obj_label& detectedObstacles,
+bool PlannerH_Handler::GeneratePlan(const geometry_msgs::Pose& currentPose, const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 		const runtime_manager::traffic_light& trafficLight, const AutowareVehicleState& carState,
 		AutowareBehaviorState& behaviorState, visualization_msgs::MarkerArray& pathToVisualize,
 		waypoint_follower::LaneArray& pathToFollow)
@@ -491,9 +491,21 @@ void PlannerH_Handler::ConvertFromPlannerHToAutowareVisualizePathFormat(const st
 	count++;
 }
 
-void PlannerH_Handler::ConvertFromAutowareObstaclesToPlannerH(const cv_tracker::obj_label& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles)
+void PlannerH_Handler::ConvertFromAutowareObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& obstacles_list)
 {
-
+	obstacles_list.clear();
+	for(unsigned int i =0; i < detectedObstacles.boxes.size(); i++)
+	{
+		PlannerHNS::DetectedObject obj;
+		obj.center = PlannerHNS::WayPoint(detectedObstacles.boxes.at(i).pose.position.x,
+				detectedObstacles.boxes.at(i).pose.position.y,
+				detectedObstacles.boxes.at(i).pose.position.z,
+				detectedObstacles.boxes.at(i).pose.orientation.z);
+		obj.w = detectedObstacles.boxes.at(i).dimensions.y;
+		obj.l = detectedObstacles.boxes.at(i).dimensions.x;
+		obj.h = detectedObstacles.boxes.at(i).dimensions.z;
+		obstacles_list.push_back(obj);
+	}
 }
 
 PlannerHNS::SHIFT_POS PlannerH_Handler::ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift)
