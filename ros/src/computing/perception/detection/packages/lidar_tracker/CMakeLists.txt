@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tf
   #vector_map_server
+  jsk_recognition_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -51,7 +52,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
  add_message_files(
    FILES
    centroids.msg
-
+   CloudCluster.msg
+   CloudClusterArray.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -73,6 +75,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
    DEPENDENCIES
    std_msgs 
    geometry_msgs
+   sensor_msgs
+   jsk_recognition_msgs
  )
 
 ###################################
