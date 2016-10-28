@@ -63,6 +63,17 @@ visualization_msgs::MarkerArray g_global_marker_array;
 visualization_msgs::MarkerArray g_local_waypoints_marker_array;
 bool g_config_manual_detection = true;
 
+enum class ChangeFlag : int32_t
+{
+  straight,
+  right,
+  left,
+
+  unknown = -1,
+};
+
+typedef std::underlying_type<ChangeFlag>::type ChangeFlagInteger;
+
 void publishLocalMarker()
 {
   visualization_msgs::MarkerArray marker_array;
@@ -158,19 +169,19 @@ void createGlobalLaneArrayChangeFlagMarker(const waypoint_follower::LaneArray &l
 
       // double to string
       std::string str = "";
-      if(lane.waypoints[i].change_flag == 0)
+      if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::straight))
       {
         str = "S";
       }
-      else if(lane.waypoints[i].change_flag == 1)
+      else if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::right))
       {
         str = "R";
       }
-      else if(lane.waypoints[i].change_flag == 2)
+      else if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::left))
       {
         str = "L";
       }
-      else if(lane.waypoints[i].change_flag == 3)
+      else if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::unknown))
       {
         str = "U";
       }
