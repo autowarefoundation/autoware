@@ -38,7 +38,13 @@ if [ "$?" == "0" ]; then
 fi
 
 # boot ros-master
+if [ $(TERMINAL) ]; then
 ${TERMINAL} ${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}="roscore" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
 
 # boot runtime_manager
 ${TERMINAL} ${OPTION_RM_GEOMETRY} ${OPTION_TITLE}="runtime_manager" --${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
+
+else
+     bash -c 'source ./devel/setup.bash; roscore'&
+     bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'
+fi
