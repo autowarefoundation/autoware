@@ -47,4 +47,4 @@ ${TERMINAL} ${OPTION_RM_GEOMETRY} ${OPTION_TITLE}="runtime_manager" --${OPTION_W
 else
      bash -c 'source ./devel/setup.bash; roscore'&
      bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'
-if
+fi
