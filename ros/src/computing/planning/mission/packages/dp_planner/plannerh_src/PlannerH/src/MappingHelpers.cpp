@@ -14,7 +14,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define FIND_LEFT_RIGHT_LANES_
+#define FIND_LEFT_RIGHT_LANES
 
 
 namespace PlannerHNS {

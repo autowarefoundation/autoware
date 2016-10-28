@@ -939,8 +939,10 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 
   void SimulatedCarState::UpdateCurrentLane(PlannerHNS::RoadNetwork& map, const double& search_distance)
   {
+	  PlannerHNS::Lane* pMapLane = 0;
  	PlannerHNS::Lane* pPathLane = MappingHelpers::GetLaneFromPath(state, m_Path);
- 	PlannerHNS::Lane* pMapLane  = MappingHelpers::GetClosestLaneFromMap(state, map, search_distance);
+ 	if(!pPathLane)
+ 		pMapLane  = MappingHelpers::GetClosestLaneFromMap(state, map, search_distance);
 
  	if(pPathLane)
  		pLane = pPathLane;

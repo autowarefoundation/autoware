@@ -1288,7 +1288,7 @@ void* PlannerTestDraw::SimulationThreadStaticEntryPoint(void* pThis)
 
 		if(time_elapsed >= 0.05)
 		{
-			double dt = time_elapsed;
+			double dt = 0.05;
 			UtilityH::GetTickCount(moveTimer);
 
 #ifdef EnableThreadBody
