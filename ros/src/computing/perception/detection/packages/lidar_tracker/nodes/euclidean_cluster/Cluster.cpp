@@ -36,7 +36,79 @@ pcl::PointXYZ Cluster::GetCentroid()
 	return centroid_;
 }
 
-void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose)
+pcl::PointXYZ Cluster::GetAveragePoint()
+{
+	return average_point_;
+}
+
+double Cluster::GetOrientationAngle()
+{
+	return orientation_angle_;
+}
+
+Eigen::Matrix3f Cluster::GetEigenVectors()
+{
+	return eigen_vectors_;
+}
+
+Eigen::Vector3f Cluster::GetEigenValues()
+{
+	return eigen_values_;
+}
+
+void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudCluster& out_cluster_message)
+{
+	sensor_msgs::PointCloud2 cloud_msg;
+
+	pcl::toROSMsg(*(this->GetCloud()), cloud_msg);
+	cloud_msg.header=in_ros_header;
+
+	out_cluster_message.header = in_ros_header;
+
+	out_cluster_message.cloud = cloud_msg;
+	out_cluster_message.min_point.header = in_ros_header;
+	out_cluster_message.min_point.point.x = this->GetMinPoint().x;
+	out_cluster_message.min_point.point.y = this->GetMinPoint().y;
+	out_cluster_message.min_point.point.z = this->GetMinPoint().z;
+
+	out_cluster_message.max_point.header = in_ros_header;
+	out_cluster_message.max_point.point.x = this->GetMaxPoint().x;
+	out_cluster_message.max_point.point.y = this->GetMaxPoint().y;
+	out_cluster_message.max_point.point.z = this->GetMaxPoint().z;
+
+	out_cluster_message.avg_point.header = in_ros_header;
+	out_cluster_message.avg_point.point.x = this->GetAveragePoint().x;
+	out_cluster_message.avg_point.point.y = this->GetAveragePoint().y;
+	out_cluster_message.avg_point.point.z = this->GetAveragePoint().z;
+
+	out_cluster_message.centroid_point.header = in_ros_header;
+	out_cluster_message.centroid_point.point.x = this->GetCentroid().x;
+	out_cluster_message.centroid_point.point.y = this->GetCentroid().y;
+	out_cluster_message.centroid_point.point.z = this->GetCentroid().z;
+
+	out_cluster_message.estimated_angle = this->GetOrientationAngle();
+
+	out_cluster_message.dimensions = this->GetBoundingBox().dimensions;
+
+	out_cluster_message.bounding_box = this->GetBoundingBox();
+
+	Eigen::Vector3f eigen_values = this->GetEigenValues();
+	out_cluster_message.eigen_values.x = eigen_values.x();
+	out_cluster_message.eigen_values.y = eigen_values.y();
+	out_cluster_message.eigen_values.z = eigen_values.z();
+
+	Eigen::Matrix3f eigen_vectors = this->GetEigenVectors();
+	for (unsigned int i=0; i < 3 ; i++)
+	{
+		geometry_msgs::Vector3 eigen_vector;
+		eigen_vector.x = eigen_vectors(i, 0);
+		eigen_vector.y = eigen_vectors(i, 1);
+		eigen_vector.z = eigen_vectors(i, 2);
+		out_cluster_message.eigen_vectors.push_back(eigen_vector);
+	}
+}
+
+void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose)
 {
 	label_ 	= in_label;	id_		= in_id;
 	r_		= in_r;	g_		= in_g;	b_		= in_b;
@@ -60,9 +132,7 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 		p.b = in_b;
 
 		average_x+=p.x;		average_y+=p.y;		average_z+=p.z;
-
 		centroid_.x += p.x; centroid_.y += p.y;	centroid_.z += p.z;
-
 		current_cluster->points.push_back(p);
 
 		if(p.x<min_x)	min_x = p.x;
@@ -95,7 +165,7 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 	width_ = max_point_.y - min_point_.y;
 	height_ = max_point_.z - min_point_.z;
 
-	//bounding_box_.header = _velodyne_header;
+	bounding_box_.header = in_ros_header;
 
 	bounding_box_.pose.position.x = min_point_.x + length_/2;
 	bounding_box_.pose.position.y = min_point_.y + width_/2;
@@ -130,19 +200,22 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 	tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, rz);
 	tf::quaternionTFToMsg(quat, bounding_box_.pose.orientation);
 
-	/*if (	//(fabs(bounding_box.pose.position.x) > 2.1 && fabs(bounding_box.pose.position.y) > 0.8 ) && //ignore points that belong to our car
-			bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0 &&
-			bounding_box.dimensions.x < 15 && bounding_box.dimensions.y >0 && bounding_box.dimensions.y < 15 &&
-			max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0 )
-	{
-		in_out_boundingbox_array.boxes.push_back(bounding_box);
-		in_out_centroids.points.push_back(centroid);
-		_visualization_marker.points.push_back(centroid);
-	}*/
-
 	current_cluster->width = current_cluster->points.size();
 	current_cluster->height = 1;
 	current_cluster->is_dense = true;
+
+	//Get EigenValues, eigenvectors
+	if (current_cluster->points.size() > 0)
+	{
+		pcl::PCA<pcl::PointXYZ> current_cluster_pca;
+		pcl::PointCloud<pcl::PointXYZ>::Ptr current_cluster_mono (new pcl::PointCloud<pcl::PointXYZ>);
+
+		pcl::copyPointCloud<pcl::PointXYZRGB, pcl::PointXYZ>(*current_cluster, *current_cluster_mono);
+
+		current_cluster_pca.setInputCloud(current_cluster_mono);
+		eigen_vectors_ = current_cluster_pca.getEigenVectors();
+		eigen_values_ = current_cluster_pca.getEigenValues();
+	}
 
 	pointcloud_ = current_cluster;
 }
