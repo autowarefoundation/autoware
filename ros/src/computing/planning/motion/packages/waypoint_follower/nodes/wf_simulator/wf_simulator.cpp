@@ -132,7 +132,7 @@ void waypointCallback(const waypoint_follower::laneConstPtr &msg)
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
-  ROS_INFO_STREAM("waypoint subscribed");
+  //ROS_INFO_STREAM("waypoint subscribed");
 }
 
 void publishOdometry()
@@ -153,7 +153,7 @@ void publishOdometry()
     _pose_set = true;
   }
 
-  int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), pose);
+  /*int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), pose);
   if (closest_waypoint == -1)
   {
     ROS_INFO("cannot publish odometry because closest waypoint is -1.");
@@ -163,6 +163,8 @@ void publishOdometry()
   {
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
   }
+*/if(_waypoint_set)
+    pose.position.z = _current_waypoints.getWaypointPosition(1).z;
 
   double vx = _current_velocity.linear.x;
   double vth = _current_velocity.angular.z;
@@ -265,11 +267,11 @@ int main(int argc, char **argv)
   {
     ros::spinOnce();  // check subscribe topic
 
-    if (!_waypoint_set)
+    /*if (!_waypoint_set)
     {
       loop_rate.sleep();
       continue;
-    }
+    }*/
 
     if (!_initial_set)
     {
