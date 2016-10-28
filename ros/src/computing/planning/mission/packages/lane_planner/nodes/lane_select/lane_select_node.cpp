@@ -26,41 +26,18 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
 
+// ROS Includes
 #include <ros/ros.h>
-#include <iostream>
 
-#include "waypoint_follower/LaneArray.h"
-#include "runtime_manager/ConfigLaneSelect.h"
-
-static ros::Publisher g_pub;
-static int g_lane_number = 0;
-static waypoint_follower::LaneArray g_lane_array;
-
-static void configCallback(const runtime_manager::ConfigLaneSelectConstPtr &config)
-{
-  g_lane_number = config->number;
-  if ((int)g_lane_array.lanes.size() > g_lane_number)
-    g_pub.publish(g_lane_array.lanes[g_lane_number]);
-}
-
-static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
-{
-  g_lane_array = *msg;
-  if ((int)g_lane_array.lanes.size() > g_lane_number)
-    g_pub.publish(g_lane_array.lanes[g_lane_number]);
-}
+#include "lane_select_core.h"
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "lane_select");
-
-  ros::NodeHandle nh;
-  ros::Subscriber config_sub = nh.subscribe("/config/lane_select", 1, configCallback);
-  ros::Subscriber sub = nh.subscribe("traffic_waypoints_array", 1, laneArrayCallback);
-  g_pub = nh.advertise<waypoint_follower::lane>("base_waypoints", 10, true);
-
+  lane_planner::LaneSelectNode lsn;
   ros::spin();
+
   return 0;
 }
