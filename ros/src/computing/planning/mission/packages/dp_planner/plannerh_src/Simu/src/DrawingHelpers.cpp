@@ -526,13 +526,23 @@ void DrawingHelpers::DrawFilledEllipse(float x, float y, float z, float width, f
 void DrawingHelpers::DrawWideEllipse(float x, float y, float z, float outer_width, float outer_height,
 		float inner_width,float color[3])
 {
-	std::vector<WayPoint> ellipse_points;
-	for (float i = 0; i <= M_PI*2 + 0.1; i+=0.1)
+	//std::vector<WayPoint> ellipse_points;
+	glColor3f(color[0], color[1], color[2]);
+	GPSPoint p1 = GPSPoint(x + outer_width*cos(0),y + outer_height*sin(0),z,0);
+	GPSPoint p2 = p1;
+	for (float i = 0.1; i <= M_PI*2 + 0.1; i+=0.1)
 	{
-		ellipse_points.push_back(WayPoint(x + outer_width*cos(i), y+outer_height*sin(i), z, 0));
+		//ellipse_points.push_back(WayPoint(x + outer_width*cos(i), y+outer_height*sin(i), z, 0));
+		p2.x = x + outer_width*cos(i);
+		p2.y = y + outer_height*sin(i);
+		p2.z = z;
+
+		DrawLinePoygonline(p1,p2, outer_width - inner_width);
+		p1 = p2;
+
 	}
 
-	DrawWidePath(ellipse_points, z, outer_width - inner_width,color);
+	//DrawWidePath(ellipse_points, z, outer_width - inner_width,color);
 }
 
 void DrawingHelpers::DrawSimpleEllipse(float x, float y, float z, float outer_width, float outer_height)
@@ -573,7 +583,7 @@ void DrawingHelpers::DrawPedal(float x, float y, float z, float width, float hei
 	GPSPoint p1(x, y + h2, z, 0);
 	GPSPoint p2(x, y + h2 - inner_height, z, 0);
 
-	glColor3f(0.8, 0.1, 0.7);
+	glColor3f(color[0], color[1], color[2]);
 	DrawLinePoygonline(p1,p2,w2);
 
 }

@@ -92,11 +92,7 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 	m_BehaviorPublisher = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 100);
 
 
-	// define subscribers.
-	sub_current_pose 		= nh.subscribe("/current_pose", 				100,
-			&PlannerX::callbackFromCurrentPose, 		this);
-	sub_traffic_light 		= nh.subscribe("/light_color", 					100,
-			&PlannerX::callbackFromLightColor, 			this);
+
 //	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 			100,
 //			&PlannerX::callbackFromObjCar, 				this);
 	sub_bounding_boxs = nh.subscribe("/bounding_boxes",						1,
@@ -114,12 +110,24 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 				&PlannerX::callbackGetVMStopLines, 			this);
 		dtlane_sub 				= nh.subscribe("/vector_map_info/dtlane", 		1,
 				&PlannerX::callbackGetVMCenterLines, 		this);
+
+		// define subscribers.
+		sub_current_pose 		= nh.subscribe("/current_pose", 				100,
+				&PlannerX::callbackFromCurrentPose, 		this);
+		sub_traffic_light 		= nh.subscribe("/light_color", 					100,
+				&PlannerX::callbackFromLightColor, 			this);
 	}
+	else
+	{
+		sub_current_pose 		= nh.subscribe("/ndt_pose", 				100,
+						&PlannerX::callbackFromCurrentPose, 		this);
+	}
+
 	initialpose_subscriber 	= nh.subscribe("initialpose", 					10,
 			&PlannerX::callbackSimuInitPose, 			this);
 	goalpose_subscriber 	= nh.subscribe("move_base_simple/goal", 		10,
 			&PlannerX::callbackSimuGoalPose, 			this);
-	sub_vehicle_status	 	= nh.subscribe("ff_vehicle_status", 				100,
+	sub_vehicle_status	 	= nh.subscribe("ff_vehicle_status", 			100,
 				&PlannerX::callbackFromVehicleStatus, 			this);
 
 

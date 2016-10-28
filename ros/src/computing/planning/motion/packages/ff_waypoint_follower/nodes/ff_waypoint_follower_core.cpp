@@ -47,7 +47,6 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	clock_gettime(0, &m_Timer);
 
 	ReadParamFromLaunchFile(m_CarInfo, m_ControlParams);
-	m_ControlParams.SteeringDelayPercent = 17.5;
 
 	m_PredControl.Init(m_ControlParams, m_CarInfo);
 
@@ -97,6 +96,7 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	m_velocity_publisher 		= nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 100);
 	m_stat_pub 					= nh.advertise<std_msgs::Bool>("wf_stat", 100);
 
+	//For rviz visualization
 	m_curr_pos_pub				= nh.advertise<visualization_msgs::Marker>("curr_simu_pose", 100);
 	m_perp_pos_pub				= nh.advertise<visualization_msgs::Marker>("perp_pose", 100);
 	m_follow_pos_pub			= nh.advertise<visualization_msgs::Marker>("follow_pose", 100);
@@ -105,23 +105,33 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	m_autoware_pos_pub			= nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
   	//m_simulated_velocity_pub 	= nh.advertise<geometry_msgs::Vector3Stamped>("sim_velocity", 100);
   	m_current_vehicle_status	= nh.advertise<geometry_msgs::Vector3Stamped>("ff_vehicle_status", 100);
-  	m_segway_rpm_cmd			= nh.advertise<geometry_msgs::Twist>("joy_action", 100);
+  	m_segway_rpm_cmd			= nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 100);
 
 
 
 	// define subscribers.
-	sub_current_pose 		= nh.subscribe("/current_pose", 				100,
+  	if(m_CmdParams.statusSource == SEGWAY_STATUS)
+  	{
+  		sub_current_pose 		= nh.subscribe("/ndt_pose", 				100,
 			&FFSteerControl::callbackFromCurrentPose, 		this);
+  		sub_segway_rpm_odom		= nh.subscribe("/odom",			100,
+  				&FFSteerControl::callbackFromSegwayRPM, 		this);
+  	}
+  	else
+  	{
+		sub_current_pose 		= nh.subscribe("/current_pose", 				100,
+				&FFSteerControl::callbackFromCurrentPose, 		this);
+		//	sub_twist_velocity		= nh.subscribe("current_velocity", 				100,
+		//			&FFSteerControl::callbackFromVector3Stamped, 	this);
+  	}
+
 	sub_current_trajectory 	= nh.subscribe("final_waypoints", 				100,
 			&FFSteerControl::callbackFromCurrentTrajectory, this);
-//	sub_twist_velocity		= nh.subscribe("current_velocity", 				100,
-//			&FFSteerControl::callbackFromVector3Stamped, 	this);
 	initialpose_subscriber 	= nh.subscribe("initialpose", 					100,
 			&FFSteerControl::callbackSimuInitPose, 			this);
 	sub_behavior_state 	= nh.subscribe("current_behavior",					10,
 			&FFSteerControl::callbackFromBehaviorState, 	this);
-	sub_segway_rpm_odom		= nh.subscribe("/segway_rmp_node/odom",			100,
-			&FFSteerControl::callbackFromSegwayRPM, 		this);
+
 
 
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
@@ -415,9 +425,9 @@ void FFSteerControl::PlannerMainLoop()
 				cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
 			}
 
-			SimulationNS::ControllerParams c_params = m_ControlParams;
-			c_params.SteeringDelay = m_ControlParams.SteeringDelay / (1.0- UtilityHNS::UtilityH::GetMomentumScaleFactor(m_CurrVehicleStatus.speed));
-			m_PredControl.Init(c_params, m_CarInfo);
+//			SimulationNS::ControllerParams c_params = m_ControlParams;
+//			c_params.SteeringDelay = m_ControlParams.SteeringDelay / (1.0- UtilityHNS::UtilityH::GetMomentumScaleFactor(m_CurrVehicleStatus.speed));
+//			m_PredControl.Init(c_params, m_CarInfo);
 			m_PrevStepTargetStatus = m_PredControl.DoOneStep(dt, currMessage, m_FollowingTrajectory, m_CurrentPos, m_CurrVehicleStatus, bNewPath);
 			//m_PrevStepTargetStatus.speed = 3.0;
 			m_State.state.pos.z = m_PerpPoint.pos.z;
@@ -465,11 +475,15 @@ void FFSteerControl::PlannerMainLoop()
 			{
 				cout << "Send Data To Segway" << endl;
 				geometry_msgs::Twist t;
+				geometry_msgs::TwistStamped twist;
 				t.linear.x = m_PrevStepTargetStatus.speed;
 				if(t.linear.x > 0.5)
 					t.linear.x = 0.5;
 				t.angular.z = m_PrevStepTargetStatus.steer;
-				m_segway_rpm_cmd.publish(t);
+				twist.twist = t;
+				twist.header.stamp = ros::Time::now();
+
+				m_segway_rpm_cmd.publish(twist);
 			}
 			else if(m_CmdParams.statusSource == SIMULATION_STATUS)
 			{

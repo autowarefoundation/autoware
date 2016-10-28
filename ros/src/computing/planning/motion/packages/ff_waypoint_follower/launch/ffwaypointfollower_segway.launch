@@ -2,8 +2,8 @@
 <launch>
 
 	<arg name="width" 						default="0.8" />
-	<arg name="length" 						default="0.9" />
-	<arg name="wheelBaseLength" 			default="0.6" />
+	<arg name="length" 						default="1.4" />
+	<arg name="wheelBaseLength" 			default="1.0" />
 	<arg name="turningRadius"				default="1.5" />
 	<arg name="maxSteerAngle" 				default="0.45" />
 	

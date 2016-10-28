@@ -288,26 +288,23 @@ PlannerHNS::VehicleState TrajectoryFollower::DoOneStep(const double& dt, const P
 	}
 	else
 	{
-		if(behavior.state != INITIAL_STATE)
-		{
-			currState.steer = 0;
-			currState.speed = 0;
-			currState.shift = PlannerHNS::SHIFT_POS_DD;
-			cout << ">>> Error, Very Dangerous, Following No Path !!." << endl;
-		}
+		currState.steer = 0;
+		currState.speed = 0;
+		currState.shift = PlannerHNS::SHIFT_POS_DD;
+		//cout << ">>> Error, Very Dangerous, Following No Path !!." << endl;
 	}
 
 	return currState;
 }
 
-PlannerHNS::WayPoint TrajectoryFollower::SimulatePathFollow(const double& sampling_rate, const double& sim_distance,
-			const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
-			const double& velocity, const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo)
-{
-	UtilityHNS::PIDController pidSteer, pidVelocity;
-	pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD); // for 3 m/s
-	pidSteer.Setlimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
-	pidVelocity.Init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
-}
+//PlannerHNS::WayPoint TrajectoryFollower::SimulatePathFollow(const double& sampling_rate, const double& sim_distance,
+//			const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
+//			const double& velocity, const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo)
+//{
+//	UtilityHNS::PIDController pidSteer, pidVelocity;
+//	pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD); // for 3 m/s
+//	pidSteer.Setlimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
+//	pidVelocity.Init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
+//}
 
 } /* namespace SimulationNS */

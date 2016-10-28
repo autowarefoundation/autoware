@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-	<arg name="maxVelocity" 				default="1.0" />
+	<arg name="maxVelocity" 				default="3.0" />
 	<arg name="minVelocity" 				default="0.0" />
 	<arg name="velocityProfileFactor" 		default="1.0" />
 	<arg name="maxPlanningDistance" 		default="1000000.0" />
@@ -10,8 +10,8 @@
 	<arg name="samplingSpeedFactor" 		default="0.25" />
 	<arg name="pathDensity" 				default="0.25" />
 	<arg name="rollOutDensity" 				default="0.25" />
-	<arg name="rollOutsNumber" 				default="6" />
-	<arg name="horizonDistance" 			default="15" />
+	<arg name="rollOutsNumber" 				default="4" />
+	<arg name="horizonDistance" 			default="20" />
 	
 	<arg name="minFollowingDistance" 		default="5.0" />
 	<arg name="maxFollowingDistance" 		default="7.0" />
@@ -25,15 +25,15 @@
 	<arg name="enableLaneChange" 			default="0" />
 	
 	<arg name="width" 						default="0.8" />
-	<arg name="length" 						default="0.9" />
-	<arg name="wheelBaseLength" 			default="0.6" />
+	<arg name="length" 						default="1.4" />
+	<arg name="wheelBaseLength" 			default="1.0" />
 	<arg name="turningRadius"				default="1.5" />
 	<arg name="maxSteerAngle" 				default="0.45" />
 	
 	<arg name="planner" 					default="DP" />
 	<arg name="system" 						default="segway" />
 	<arg name="map" 						default="kml" />
-	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/KmlMaps/7th_floor_100.kml" />
+	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/KmlMaps/7th_floor_75.kml" />
 	
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">

@@ -1071,18 +1071,19 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 int PlanningHelpers::PredictiveDP(WayPoint* pStart, const double& DistanceLimit,
 		vector<WayPoint*>& all_cells_to_delete,vector<WayPoint*>& end_waypoints)
 {
-	if(!pStart) return NULL;
+	if(!pStart) return 0;
 
 	vector<pair<WayPoint*, WayPoint*> >nextLeafToTrace;
 
 	WayPoint* pZero = 0;
 	WayPoint* wp    = new WayPoint();
 	*wp = *pStart;
+	wp->pLeft = 0;
+	wp->pRight = 0;
 	nextLeafToTrace.push_back(make_pair(pZero, wp));
 	all_cells_to_delete.push_back(wp);
 
 	double 		distance 		= 0;
-	double      distanceCost	= 0;
 	end_waypoints.clear();
 	double 		nCounter 		= 0;
 
@@ -1096,21 +1097,6 @@ int PlanningHelpers::PredictiveDP(WayPoint* pStart, const double& DistanceLimit,
 
 		nextLeafToTrace.erase(nextLeafToTrace.begin()+0);
 
-		if(pH->pLeft)
-		{
-			wp = new WayPoint();
-			*wp = *pH->pLeft;
-			nextLeafToTrace.push_back(make_pair(pH, wp));
-			all_cells_to_delete.push_back(wp);
-		}
-		if(pH->pRight)
-		{
-			wp = new WayPoint();
-			*wp = *pH->pRight;
-			nextLeafToTrace.push_back(make_pair(pH, wp));
-			all_cells_to_delete.push_back(wp);
-		}
-
 		for(unsigned int i =0; i< pH->pFronts.size(); i++)
 		{
 			if(pH->pFronts.at(i) && !CheckNodeExits(all_cells_to_delete, pH->pFronts.at(i)))
@@ -1120,17 +1106,12 @@ int PlanningHelpers::PredictiveDP(WayPoint* pStart, const double& DistanceLimit,
 					wp = new WayPoint();
 					*wp = *pH->pFronts.at(i);
 
-					double cost = distance2points(wp->pos, pH->pos);
-					distance += cost;
-					cost += pH->cost;
-
-					for(unsigned int a = 0; a < wp->actionCost.size(); a++)
-						cost += wp->actionCost.at(a).second;
-
-
-					distanceCost += cost;
-					wp->cost = cost;
+					double d = distance2points(wp->pos, pH->pos);
+					distance += d;
+					wp->cost = pH->cost + d;
 					wp->pBacks.push_back(pH);
+					wp->pLeft = 0;
+					wp->pRight = 0;
 
 					nextLeafToTrace.push_back(make_pair(pH, wp));
 					all_cells_to_delete.push_back(wp);

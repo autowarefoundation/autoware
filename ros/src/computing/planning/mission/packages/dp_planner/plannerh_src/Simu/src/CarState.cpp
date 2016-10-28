@@ -34,7 +34,7 @@ CarState::CarState()
 	m_pMissionCompleteState= 0;
 	m_pAvoidObstacleState = 0;
 	m_pFollowState = 0;
-	m_delayFactor = 0.1;
+	m_SimulationSteeringDelayFactor = 0.1;
 	UtilityH::GetTickCount(m_SteerDelayTimer);
 	m_PredictionTime = 0;
 
@@ -142,7 +142,7 @@ void CarState::InitPolygons()
 
  void CarState::UpdateState(const PlannerHNS::VehicleState& state, const bool& bUseDelay)
   {
-	 if(!bUseDelay)
+	 if(!bUseDelay || m_SimulationSteeringDelayFactor == 0)
 	 {
 		 m_CurrentSteering 	= m_CurrentSteeringD;
 	 }
@@ -158,7 +158,7 @@ void CarState::InitPolygons()
 		 if(abs(diff) < 1.0 )
 			 inc = diff;
 
-		 if(UtilityH::GetTimeDiffNow(m_SteerDelayTimer) > m_delayFactor*mFact)
+		 if(UtilityH::GetTimeDiffNow(m_SteerDelayTimer) > m_SimulationSteeringDelayFactor*mFact)
 		 {
 			 UtilityH::GetTickCount(m_SteerDelayTimer);
 			 currSteerDeg += inc;

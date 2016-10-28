@@ -75,22 +75,22 @@ PlannerTestDraw::PlannerTestDraw()
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
 	m_ControlParams.Steering_Gain = PID_CONST(0.07, 0.02, 0.01);
-	m_ControlParams.SteeringDelay = 0.85;
-	m_ControlParams.Steering_Gain.kD = 0.5;
-	m_ControlParams.Steering_Gain.kP = 0.1;
-	m_ControlParams.Steering_Gain.kI = 0.03;
-	m_ControlParams.SteeringDelayPercent = 17.5;
-
-	m_ControlParams.Velocity_Gain = PID_CONST(0.1, 0.005, 0.1);
-
-//	m_PlanningParams.microPlanDistance = 50;
+//	m_ControlParams.SimulationSteeringDelay = 0.1;
+//
+//	m_ControlParams.SteeringDelay = 0.85;
+//	m_ControlParams.Steering_Gain.kD = 0.5;
+//	m_ControlParams.Steering_Gain.kP = 0.1;
+//	m_ControlParams.Steering_Gain.kI = 0.03;
+//	m_ControlParams.Velocity_Gain = PID_CONST(0.1, 0.005, 0.1);
 
 	m_CarInfo.width = 1.9;
 	m_CarInfo.length = 4.2;
 	m_CarInfo.max_speed_forward = 2.0;
-	m_PlanningParams.pathDensity = 0.5;
+	m_PlanningParams.pathDensity = 0.25;
+	m_State.m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
 	m_State.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
 	m_State.InitPolygons();
+
 
 	/**
 	 * Planning using predefind path (sequence of lane IDs)
@@ -207,6 +207,7 @@ void PlannerTestDraw::LoadSimulationData()
 
 	m_State = CarState();
 
+	m_State.m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
 	m_State.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
 	m_State.InitPolygons();
 	m_ActualPath.clear();
@@ -303,7 +304,7 @@ void PlannerTestDraw::AddSimulatedCar(const double& x,const double& y, const dou
 
 	carInfo.width  = 1.8;
 	carInfo.length = 4.1;
-	carInfo.max_speed_forward = v;
+	carInfo.max_speed_forward = 2;
 	carInfo.max_steer_angle = 0.42;
 	carInfo.min_steer_angle = -0.42;
 	carInfo.turning_radius = 4.0;
@@ -716,10 +717,10 @@ void PlannerTestDraw::DrawSimu()
 
 	if(m_CarModel)
 	{
-		DrawingHelpers::DrawModel(m_CarModel, m_State.m_CarInfo.wheel_base *0.9,
-				m_State.m_CarInfo.wheel_base*0.9, m_State.m_CarInfo.wheel_base*0.9,
-				m_State.state.pos.x,m_State.state.pos.y,
-				m_State.state.pos.z+0.275, m_State.state.pos.a, 0,0);
+//		DrawingHelpers::DrawModel(m_CarModel, m_State.m_CarInfo.wheel_base *0.9,
+//				m_State.m_CarInfo.wheel_base*0.9, m_State.m_CarInfo.wheel_base*0.9,
+//				m_State.state.pos.x,m_State.state.pos.y,
+//				m_State.state.pos.z+0.275, m_State.state.pos.a, 0,0);
 	}
 
 	DrawingHelpers::DrawCustomCarModel(m_State.state, m_State.m_CarShapePolygon, CarColor, 90);
@@ -734,10 +735,10 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 	glRotated(-1*m_VehicleCurrentState.steer*RAD2DEG*16, 0,0,1);
 	glTranslated(-(centerX-left_shift), -70, 0);
 
-	float wheel_color[3] = {0.1, 0.2, 0.3};
+	float wheel_color[3] = {0.6, 0.7, 0.8};
 	DrawingHelpers::DrawWideEllipse(centerX-left_shift, 70, 0.5, 60, 55, 54, wheel_color);
 
-	glColor3f(0.3,0.2, 0.1);
+	glColor3f(0.5,0.4, 0.3);
 	PlannerHNS::GPSPoint p1(centerX-left_shift, 70, 0.52, 0), p2(centerX-left_shift+38, 70-38, 0.52, 0);
 	DrawingHelpers::DrawLinePoygonline(p1, p2, 5);
 
@@ -748,6 +749,11 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 	DrawingHelpers::DrawLinePoygonline(p111, p222, 5);
 	glPopMatrix();
 
+	double speed = m_VehicleCurrentState.speed*3.6;
+	float pedal_color[3] = {0.5,0.4, 0.3};
+	glColor3f(wheel_color[0],wheel_color[1],wheel_color[2]);
+	DrawingHelpers::DrawPedal(centerX + 70, 70, 0, 30.0, 100.0, speed*5.5,pedal_color );
+
 	glPushMatrix();
 	glTranslated(centerX-left_shift-15, 70+85, 0);
 	glColor3f(0.8, 0.1, 0.7);
@@ -757,11 +763,9 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
 	glPopMatrix();
 
-	double speed = m_VehicleCurrentState.speed*3.6;
-	float pedal_color[3] = {0.1, 0.7, 0.8};
-	DrawingHelpers::DrawPedal(centerX + 70, 70, 0, 30.0, 100.0, speed*5.5,pedal_color );
 	glPushMatrix();
 	glTranslated(centerX+60, 70+85, 0);
+	glColor3f(0.8, 0.1, 0.7);
 	std::ostringstream v_out ;
 	v_out.precision(2);
 	v_out <<  speed;
@@ -1199,7 +1203,7 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 						{
 							bCalibrationMode = false;
 							timeDelay = (timeTotal / (double)counter) / (pR->m_State.m_CarInfo.max_steer_angle*RAD2DEG/2.0);
-							timeDelay = timeDelay*pR->m_ControlParams.SteeringDelayPercent;
+							timeDelay = timeDelay*17.5;
 
 						}
 					}

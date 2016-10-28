@@ -46,7 +46,7 @@ public:
 class ControllerParams
 {
 public:
-	double SteeringDelayPercent;
+	double SimulationSteeringDelay;
 	double SteeringDelay;
 	double minPursuiteDistance;
 	PID_CONST Steering_Gain;
@@ -61,7 +61,7 @@ public:
 
 	ControllerParams()
 	{
-		SteeringDelayPercent = 10.0;
+		SimulationSteeringDelay = 0.0;
 		SteeringDelay 		= 0.8;
 		Acceleration		= 0.05;
 		Deceleration		= 1.6;

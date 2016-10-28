@@ -75,9 +75,9 @@ private:
 	void PredictMotion(double& x, double &y, double& heading, double steering, double velocity,
 			double wheelbase, double time_elapsed);
 
-	PlannerHNS::WayPoint SimulatePathFollow(const double& sampling_rate, const double& sim_distance,
-			const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
-			const double& velocity, const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo);
+//	PlannerHNS::WayPoint SimulatePathFollow(const double& sampling_rate, const double& sim_distance,
+//			const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
+//			const double& velocity, const ControllerParams& params, const CAR_BASIC_INFO& vehicleInfo);
 
 	double GetPID_LinearChange(double minVal, double maxVal, double speedMax, double currSpeed);
 

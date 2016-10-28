@@ -28,7 +28,7 @@ public:
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_RollOuts;
 	std::string carId;
 	PlannerHNS::Lane* pLane;
-	double m_delayFactor; //second , time that every degree change in the steering wheel takes
+	double m_SimulationSteeringDelayFactor; //second , time that every degree change in the steering wheel takes
 	timespec m_SteerDelayTimer;
 	double m_PredictionTime;
 
