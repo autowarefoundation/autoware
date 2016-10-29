@@ -258,27 +258,13 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 			far_indices->indices.push_back(i);
 		}
 	}
-
 	out_cloud_ptr->points.clear();
-
 	pcl::ExtractIndices<pcl::PointXYZ> extract;
 	extract.setInputCloud (in_cloud_ptr);
 	extract.setIndices(far_indices);
 	extract.setNegative(true);//true removes the indices, false leaves only the indices
 	extract.filter(*out_cloud_ptr);
 }
-
-/*bool independentDistance (const pcl::PointXYZ& in_point_a, const pcl::PointXYZ& in_point_b, float squared_distance)
-{
-	if (fabs (in_point_a.x - in_point_b.x) <= (_distance *1.0f) &&
-			fabs (in_point_a.y - in_point_b.y) <= (_distance *1.0f) &&
-			fabs (in_point_a.z - in_point_b.z) <= (_distance *2.0f))
-	{
-		return (true);
-	}
-	else
-		return (false);
-}*/
 
 std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
@@ -577,14 +563,11 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
 		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
 
-		//clusterAndColor(nofloor_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
-
 		if (_use_diffnormals)
 			differenceNormalsSegmentation(clipped_cloud_ptr, diffnormals_cloud_ptr);
 		else
 			diffnormals_cloud_ptr = clipped_cloud_ptr;
 
-		//clusterAndColor(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
 		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters);
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
 		// Publish BB
