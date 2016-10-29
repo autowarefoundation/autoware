@@ -33,6 +33,7 @@
 
 #include <pcl/segmentation/extract_clusters.h>
 
+#include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <lidar_tracker/centroids.h>
 #include <lidar_tracker/CloudCluster.h>
@@ -40,6 +41,8 @@
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
+
+#include <tf/tf.h>
 
 #include <limits>
 #include <cmath>
@@ -50,6 +53,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <vector>
 
 #include "Cluster.h"
 
@@ -76,7 +80,12 @@ pcl::PointCloud<pcl::PointXYZ> _sensor_cloud;
 std::vector<double> _clustering_thresholds;
 std::vector<double> _clustering_distances;
 
-/* parameters for tuning */
+tf::StampedTransform* _transform;
+tf::StampedTransform* _velodyne_output_transform;
+tf::TransformListener* _transform_listener;
+
+std::string _output_frame;
+static bool _velodyne_transform_available;
 static bool _downsample_cloud;
 static bool _pose_estimation;
 static double _leaf_size;
@@ -97,19 +106,137 @@ static double _keep_lane_right_distance;
 
 static double _max_boundingbox_side;
 
+void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbox, jsk_recognition_msgs::BoundingBox& out_boundingbox, const std::string& in_target_frame, const std_msgs::Header& in_header)
+{
+	geometry_msgs::PoseStamped pose_in, pose_out;
+	pose_in.header = in_header;
+	pose_in.pose = in_boundingbox.pose;
+	try
+	{
+		_transform_listener->transformPose(in_target_frame, ros::Time(), pose_in, in_header.frame_id,  pose_out);
+	}
+	catch (tf::TransformException &ex)
+	{
+		ROS_ERROR("transformBoundingBox: %s",ex.what());
+	}
+	out_boundingbox.pose = pose_out.pose;
+	out_boundingbox.header = in_header;
+	out_boundingbox.header.frame_id = in_target_frame;
+	out_boundingbox.dimensions = in_boundingbox.dimensions;
+	out_boundingbox.value = in_boundingbox.value;
+	out_boundingbox.label = in_boundingbox.label;
+}
+
+void publishCloudClusters(const ros::Publisher* in_publisher, const lidar_tracker::CloudClusterArray& in_clusters, const std::string& in_target_frame, const std_msgs::Header& in_header)
+{
+	if (in_target_frame!=in_header.frame_id)
+	{
+		lidar_tracker::CloudClusterArray clusters_transformed;
+		clusters_transformed.header = in_header;
+		clusters_transformed.header.frame_id = in_target_frame;
+		for (auto i=clusters_transformed.clusters.begin(); i!= clusters_transformed.clusters.end(); i++)
+		{
+			lidar_tracker::CloudCluster cluster_transformed;
+			cluster_transformed.header = in_header;
+			try
+			{
+				_transform_listener->lookupTransform(in_target_frame, _velodyne_header.frame_id,
+										ros::Time(), *_transform);
+				pcl_ros::transformPointCloud(in_target_frame, *_transform, i->cloud, cluster_transformed.cloud);
+
+				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->min_point, in_header.frame_id, cluster_transformed.min_point);
+				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->max_point, in_header.frame_id, cluster_transformed.max_point);
+				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->avg_point, in_header.frame_id, cluster_transformed.avg_point);
+				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->centroid_point, in_header.frame_id, cluster_transformed.centroid_point);
+
+				cluster_transformed.dimensions = i->dimensions;
+				cluster_transformed.eigen_values = i->eigen_values;
+				cluster_transformed.eigen_vectors = i->eigen_vectors;
+
+				transformBoundingBox(i->bounding_box, cluster_transformed.bounding_box, in_target_frame, in_header);
+
+				clusters_transformed.clusters.push_back(cluster_transformed);
+			}
+			catch (tf::TransformException &ex)
+			{
+				ROS_ERROR("publishCloudClusters: %s",ex.what());
+			}
+		}
+		in_publisher->publish(clusters_transformed);
+	}
+	else
+	{
+		in_publisher->publish(in_clusters);
+	}
+}
+
+void publishCentroids(const ros::Publisher* in_publisher, const lidar_tracker::centroids& in_centroids, const std::string& in_target_frame, const std_msgs::Header& in_header)
+{
+	if (in_target_frame!=in_header.frame_id)
+	{
+		lidar_tracker::centroids centroids_transformed;
+		centroids_transformed.header = in_header;
+		centroids_transformed.header.frame_id = in_target_frame;
+		for (auto i=centroids_transformed.points.begin(); i!= centroids_transformed.points.end(); i++)
+		{
+			geometry_msgs::PointStamped centroid_in, centroid_out;
+			centroid_in.header = in_header;
+			centroid_in.point = *i;
+			try
+			{
+				_transform_listener->transformPoint(in_target_frame, ros::Time(), centroid_in, in_header.frame_id, centroid_out);
+
+				centroids_transformed.points.push_back(centroid_out.point);
+			}
+			catch (tf::TransformException &ex)
+			{
+				ROS_ERROR("publishCentroids: %s",ex.what());
+			}
+		}
+		in_publisher->publish(centroids_transformed);
+	}
+	else
+	{
+		in_publisher->publish(in_centroids);
+	}
+}
+
+void publishBoundingBoxArray(const ros::Publisher* in_publisher, const jsk_recognition_msgs::BoundingBoxArray& in_boundingbox_array, const std::string& in_target_frame, const std_msgs::Header& in_header)
+{
+	if (in_target_frame!=in_header.frame_id)
+	{
+		jsk_recognition_msgs::BoundingBoxArray boundingboxes_transformed;
+		boundingboxes_transformed.header = in_header;
+		boundingboxes_transformed.header.frame_id = in_target_frame;
+		for (auto i=in_boundingbox_array.boxes.begin(); i!= in_boundingbox_array.boxes.end(); i++)
+		{
+			jsk_recognition_msgs::BoundingBox boundingbox_transformed;
+			transformBoundingBox(*i, boundingbox_transformed, in_target_frame, in_header);
+			boundingboxes_transformed.boxes.push_back(boundingbox_transformed);
+		}
+		in_publisher->publish(boundingboxes_transformed);
+	}
+	else
+	{
+		in_publisher->publish(in_boundingbox_array);
+	}
+}
+
 void publishCloud(const ros::Publisher* in_publisher, const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_to_publish_ptr)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
-	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
+
 	cloud_msg.header=_velodyne_header;
+	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
 	in_publisher->publish(cloud_msg);
 }
 
 void publishColorCloud(const ros::Publisher* in_publisher, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud_to_publish_ptr)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
-	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
+
 	cloud_msg.header=_velodyne_header;
+	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
 	in_publisher->publish(cloud_msg);
 }
 
@@ -196,7 +323,7 @@ std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Pt
 	for (auto it = cluster_indices.begin(); it != cluster_indices.end(); ++it)
 	{
 		ClusterPtr cluster(new Cluster());
-		cluster->SetCloud(in_cloud_ptr, it->indices, _velodyne_header, k, (int)_colors[k].val[0], (int)_colors[k].val[1], (int)_colors[k].val[2], "", false);
+		cluster->SetCloud(in_cloud_ptr, it->indices, _velodyne_header, k, (int)_colors[k].val[0], (int)_colors[k].val[1], (int)_colors[k].val[2], "", _pose_estimation);
 		clusters.push_back(cluster);
 
 		k++;
@@ -450,7 +577,6 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 			nofloor_cloud_ptr = inlanes_cloud_ptr;
 
 		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
-
 		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
 
 		//clusterAndColor(nofloor_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
@@ -461,27 +587,66 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 			diffnormals_cloud_ptr = clipped_cloud_ptr;
 
 		//clusterAndColor(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, _distance);
-
 		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters);
-
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
-
 		// Publish BB
 		boundingbox_array.header = _velodyne_header;
-		_pub_jsk_boundingboxes.publish(boundingbox_array);
-
+		publishBoundingBoxArray(&_pub_jsk_boundingboxes, boundingbox_array, _output_frame, _velodyne_header);
 		centroids.header = _velodyne_header;
-		_centroid_pub.publish(centroids);
+		publishCentroids(&_centroid_pub, centroids, _output_frame, _velodyne_header);
 
 		_marker_pub.publish(_visualization_marker);
-		_visualization_marker.points.clear();
-
+		_visualization_marker.points.clear();//transform? is it used?
 		cloud_clusters.header = _velodyne_header;
-		_pub_clusters_message.publish(cloud_clusters);
+		publishCloudClusters(&_pub_clusters_message, cloud_clusters, _output_frame, _velodyne_header);
 
 		_using_sensor_cloud = false;
 	}
 }
+
+/*
+void vectormap_callback(const visualization_msgs::MarkerArray::Ptr in_vectormap_markers)
+{
+	float min_x=std::numeric_limits<float>::max();float max_x=-std::numeric_limits<float>::max();
+	float min_y=std::numeric_limits<float>::max();float max_y=-std::numeric_limits<float>::max();
+	pcl::PointXYZ min_point;
+	pcl::PointXYZ max_point;
+	std::vector<geometry_msgs::Point> vectormap_points;
+	for(auto i=in_vectormap_markers->markers.begin(); i!= in_vectormap_markers->markers.end(); i++)
+	{
+		visualization_msgs::Marker current_marker = *i;
+		if (current_marker.ns == "road_edge")
+		{
+			for (unsigned int j=0; j< current_marker.points.size(); j++)
+			{
+				geometry_msgs::Point p = current_marker.points[j];
+				if(p.x<min_x)	min_x = p.x;
+				if(p.y<min_y)	min_y = p.y;
+				if(p.x>max_x)	max_x = p.x;
+				if(p.y>max_y)	max_y = p.y;
+				vectormap_points.push_back(p);
+			}
+		}
+	}
+	min_point.x = min_x;	min_point.y = min_y;
+	max_point.x = max_x;	max_point.y = max_y;
+
+	min_point.x*=-1.0;
+	min_point.y*=-1.0;
+	//translate the points to the minimum point
+	for (auto i=vectormap_points.begin(); i!=vectormap_points.end(); i++)
+	{
+		(*i).x+=min_point.x;
+		(*i).y+=min_point.y;
+	}
+	//get world tf
+	_transform_listener->lookupTransform("/map", "/world",
+					ros::Time(_velodyne_header.stamp), *_transform);
+
+	Vector3 map_origin_point;
+	map_origin_point = _transform->getOrigin();
+
+}*/
 
 int main (int argc, char** argv)
 {
@@ -490,6 +655,12 @@ int main (int argc, char** argv)
 
 	ros::NodeHandle h;
 	ros::NodeHandle private_nh("~");
+
+	tf::StampedTransform transform;
+	tf::TransformListener listener;
+
+	_transform = &transform;
+	_transform_listener = &listener;
 
 	cv::generateColors(_colors, 100);
 
@@ -540,6 +711,9 @@ int main (int argc, char** argv)
 	private_nh.param("clustering_thresholds", _clustering_thresholds);
 	private_nh.param("clustering_distances", _clustering_distances);
 	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);			ROS_INFO("_max_boundingbox_side: %f", _max_boundingbox_side);
+	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
+
+	_velodyne_transform_available = false;
 
 	if (_clustering_distances.size()!=4)
 	{
@@ -555,6 +729,7 @@ int main (int argc, char** argv)
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
+	//ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
 
 	_visualization_marker.header.frame_id = "velodyne";
 	_visualization_marker.header.stamp = ros::Time();

@@ -936,7 +936,15 @@ params :
       v       : [0.5,1.1,1.6,2.1,2.6]
       cmd_param :
         dash        : ''
-        delim       : ':='              
+        delim       : ':='
+    - name    : output_frame
+      desc    : output_frame desc sample
+      label   : 'output_frame'
+      kind    : str
+      v       : velodyne
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : sync
       kind      : hide
       v         : False
