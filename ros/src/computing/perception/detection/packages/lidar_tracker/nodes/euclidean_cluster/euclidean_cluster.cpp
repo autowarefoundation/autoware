@@ -225,18 +225,16 @@ void publishBoundingBoxArray(const ros::Publisher* in_publisher, const jsk_recog
 void publishCloud(const ros::Publisher* in_publisher, const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_to_publish_ptr)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
-
-	cloud_msg.header=_velodyne_header;
 	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
+	cloud_msg.header=_velodyne_header;
 	in_publisher->publish(cloud_msg);
 }
 
 void publishColorCloud(const ros::Publisher* in_publisher, const pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud_to_publish_ptr)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
-
-	cloud_msg.header=_velodyne_header;
 	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
+	cloud_msg.header=_velodyne_header;
 	in_publisher->publish(cloud_msg);
 }
 
