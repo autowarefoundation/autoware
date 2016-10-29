@@ -24,7 +24,7 @@
 	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
 
 	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
-	<node pkg="lidar_tracker" type="euclidean_cluster" name="euclidean_cluster" output="screen">
+	<node pkg="lidar_tracker" type="euclidean_cluster" name="euclidean_cluster">
 		<param name="points_node" value="$(arg points_node)" /> <!-- Can be used to select which pointcloud node will be used as input for the clustering -->
 		<param name="remove_ground" value="$(arg remove_ground)" />
 		<param name="downsample_cloud" value="$(arg downsample_cloud)" />
