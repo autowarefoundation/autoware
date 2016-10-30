@@ -1080,6 +1080,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : get_height
+      desc      : get_height desc sample
+      label     : Get Height
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : icp
     topic : /config/icp
