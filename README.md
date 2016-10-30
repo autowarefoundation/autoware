@@ -96,21 +96,26 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 
 ## Main Packages
 
+### Localization
 - ndt_localizer
 - icp_localizer
 
+### Detection
 - lidar_tracker
 - cv_tracker
 - road_wizard
 
+### Mission (Global) Planning
 - lane_planner
 - way_planner
 - freespace_planner
 
+### Motion (Local) Planning
 - astar_planner
 - lattice_planner
 - dp_planner
 
+### Vehicle Control
 - waypoint_follower
 - waypoint_maker
 
