@@ -174,6 +174,7 @@ static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
 
 static bool _use_openmp = false;
+static bool _get_height = false;
 
 static std::ofstream ofs;
 static std::string filename;
@@ -331,6 +332,21 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   current_pose.y = input->pose.pose.position.y + transform.getOrigin().y();
   current_pose.z = input->pose.pose.position.z + transform.getOrigin().z();
   m.getRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
+  if (_get_height == true && map_loaded == 1)
+  {
+    double min_distance = DBL_MAX;
+    double nearest_z = current_pose.z;
+    for (const auto& p : map)
+    {
+      double distance = hypot(current_pose.x - p.x, current_pose.y - p.y);
+      if (distance < min_distance)
+      {
+        min_distance = distance;
+        nearest_z = p.z;
+      }
+    }
+    current_pose.z = nearest_z;
+  }
 
   previous_pose.x = current_pose.x;
   previous_pose.y = current_pose.y;
@@ -708,6 +724,7 @@ int main(int argc, char** argv)
   private_nh.getParam("queue_size", _queue_size);
   private_nh.getParam("offset", _offset);
   private_nh.getParam("use_openmp", _use_openmp);
+  private_nh.getParam("get_height", _get_height);
 
   if (nh.getParam("localizer", _localizer) == false)
   {
@@ -752,6 +769,7 @@ int main(int argc, char** argv)
   std::cout << "queue_size: " << _queue_size << std::endl;
   std::cout << "offset: " << _offset << std::endl;
   std::cout << "use_openmp: " << _use_openmp << std::endl;
+  std::cout << "get_height: " << _get_height << std::endl;
   std::cout << "localizer: " << _localizer << std::endl;
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
