@@ -69,7 +69,7 @@ void LaneSelectNode::initPublisher()
 void LaneSelectNode::initParameter()
 {
   private_nh_.param<int32_t>("size_of_waypoints", size_of_waypoints_, int32_t(30));
-  private_nh_.param<int32_t>("lane_change_interval",lane_change_interval_,int32_t(2));
+  private_nh_.param<int32_t>("lane_change_interval", lane_change_interval_, int32_t(2));
 }
 
 void LaneSelectNode::publishLocalLane()
@@ -84,8 +84,8 @@ void LaneSelectNode::publishLocalLane()
     num_of_lane_++;
 
   ros::Time current_time = ros::Time::now();
-  double dt = (current_time -last_time_).toSec();
-  ROS_INFO("dt: %lf",dt);
+  double dt = (current_time - last_time_).toSec();
+  ROS_INFO("dt: %lf", dt);
   if (dt > 1.0 && (change_flag_ == ChangeFlag::right && num_of_lane_ < static_cast<int32_t>(lane_array_.lanes.size())))
   {
     num_of_lane_++;
@@ -102,8 +102,8 @@ void LaneSelectNode::publishLocalLane()
   createLocalLane(&local_lane);
   pub_.publish(local_lane);
 
-  //if (current_lane.waypoints.at(num_of_closest_).change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::right) &&
-   //   num_of_lane_ != lane_array_.size() - 1)
+  // if (current_lane.waypoints.at(num_of_closest_).change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::right) &&
+  //   num_of_lane_ != lane_array_.size() - 1)
   //{
   //  num_of_lane_++;
   //}
@@ -128,11 +128,10 @@ void LaneSelectNode::createLocalLane(waypoint_follower::lane *lane)
   // push some waypoints
   for (auto i = 0; i < size_of_waypoints_; i++)
   {
-    if(num_of_closest_ + i > static_cast<int32_t>(lane_array_.lanes.at(num_of_lane_).waypoints.size() -1) )
+    if (num_of_closest_ + i > static_cast<int32_t>(lane_array_.lanes.at(num_of_lane_).waypoints.size() - 1))
       break;
 
     lane->waypoints.push_back(lane_array_.lanes.at(num_of_lane_).waypoints.at(num_of_closest_ + i));
-
   }
 
   // push current_pose as first waypoint
@@ -141,10 +140,9 @@ void LaneSelectNode::createLocalLane(waypoint_follower::lane *lane)
   first_waypoint.pose.pose.position.x = current_pose_.pose.position.x;
   first_waypoint.pose.pose.position.y = current_pose_.pose.position.y;
   auto it = lane->waypoints.begin();
-  lane->waypoints.insert(it,first_waypoint);
+  lane->waypoints.insert(it, first_waypoint);
   change_flag_ = static_cast<ChangeFlag>(lane_array_.lanes.at(num_of_lane_).waypoints.at(num_of_closest_).change_flag);
   ROS_INFO("change_flag: %d", static_cast<ChangeFlagInteger>(change_flag_));
-
 }
 
 void LaneSelectNode::callbackFromLaneArray(const waypoint_follower::LaneArrayConstPtr &msg)
