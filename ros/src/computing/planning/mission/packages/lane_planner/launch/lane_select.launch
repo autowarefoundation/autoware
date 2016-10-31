@@ -1,0 +1,11 @@
+<!-- -->
+<launch>
+	<arg name="size_of_waypoints" default="30" />
+	<arg name="lane_change_interval" default="2" />
+
+	<node pkg="lane_planner" type="lane_select" name="lane_select" output="screen">
+	    <param name="size_of_waypoints" value="$(arg size_of_waypoints)" />
+	    <param name="lane_change_interval" value="$(arg lane_change_interval)" />
+	</node>
+	
+</launch>

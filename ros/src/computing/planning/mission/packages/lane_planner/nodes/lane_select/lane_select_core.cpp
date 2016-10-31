@@ -86,13 +86,13 @@ void LaneSelectNode::publishLocalLane()
   ros::Time current_time = ros::Time::now();
   double dt = (current_time - last_time_).toSec();
   ROS_INFO("dt: %lf", dt);
-  if (dt > 1.0 && (change_flag_ == ChangeFlag::right && num_of_lane_ < static_cast<int32_t>(lane_array_.lanes.size())))
+  if (dt > lane_change_interval_ && (change_flag_ == ChangeFlag::right && num_of_lane_ < static_cast<int32_t>(lane_array_.lanes.size())))
   {
     num_of_lane_++;
     last_time_ = current_time;
   }
 
-  if (dt > 1.0 && (change_flag_ == ChangeFlag::left && num_of_lane_ > 0))
+  if (dt > lane_change_interval_ && (change_flag_ == ChangeFlag::left && num_of_lane_ > 0))
   {
     num_of_lane_--;
     last_time_ = current_time;
