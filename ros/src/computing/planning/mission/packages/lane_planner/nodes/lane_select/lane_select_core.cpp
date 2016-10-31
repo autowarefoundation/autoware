@@ -102,12 +102,6 @@ void LaneSelectNode::publishLocalLane()
   createLocalLane(&local_lane);
   pub_.publish(local_lane);
 
-  // if (current_lane.waypoints.at(num_of_closest_).change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::right) &&
-  //   num_of_lane_ != lane_array_.size() - 1)
-  //{
-  //  num_of_lane_++;
-  //}
-
   is_current_pose_subscribed_ = false;
 }
 
