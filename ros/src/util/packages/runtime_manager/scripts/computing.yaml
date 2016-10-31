@@ -412,7 +412,7 @@ subs :
           dialog: MyDialogLaneStop
       - name : lane_select
         desc : lane_select desc sample
-        cmd  : rosrun lane_planner lane_select
+        cmd  : roslaunch lane_planner lane_select.launch
         param: lane_select
     - name : freespace_planner
       desc : freespace_planner desc sample
@@ -1852,19 +1852,27 @@ params :
       v     : False
 
   - name  : lane_select
-    topic : /config/lane_select
-    msg   : ConfigLaneSelect
     vars  :
-    - name  : number
-      desc  : number desc sample
-      kind  : radio_box
-      choices:
-      - Driving
-      - Passing
-      descs :
-      - Driving desc sample
-      - Passing desc sample
-      v     : 1
+    - name      : size_of_waypoints
+      desc      : size_of_waypoints desc sample
+      label     : Size of Waypoints
+      min       : 0
+      max       : 100
+      v         : 30
+      cmd_param :
+        var_name    : size_of_waypoints
+        dash        : ''
+        delim       : ':='
+    - name      : lane_change_interval
+      desc      : lane_change_interval desc sample
+      label     : Lane Change Interval (s)
+      min       : 0
+      max       : 30
+      v         : 1
+      cmd_param :
+        var_name    : lane_change_interval
+        dash        : ''
+        delim       : ':='
 
   - name  : astar_navi
     vars  :
@@ -1935,7 +1943,7 @@ params :
     vars  :
     - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
-      label     : Test
+      label     : Multi Lane
       kind      : path
       path_type : multi
       v         : /tmp/driving_lane.csv
