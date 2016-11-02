@@ -13,22 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   waypoint_follower
   vector_map
   vehicle_socket
-  #dbw_mkz_msgs
 )
-
-################################################
-## Find OpenMP in order to parallelize loops  ##
-################################################
-
-OPTION (USE_OpenMP "Use OpenMP" ON)
-IF(USE_OpenMP)
-  FIND_PACKAGE(OpenMP)
-  IF(OPENMP_FOUND)
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  ENDIF()
-ENDIF()
-
 
 ###################################
 ## catkin specific configuration ##
@@ -36,7 +21,7 @@ ENDIF()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libvelocity_set
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket vector_map #dbw_mkz_msgs
+  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket vector_map
   DEPENDS gnss
 )
 
