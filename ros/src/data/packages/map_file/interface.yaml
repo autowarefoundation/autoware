@@ -1,0 +1,12 @@
+- name: points_map_loader
+  publish: [/points_map, /pmap_stat]
+  subscribe: [/gnss_pose, /current_pose, /initialpose]
+- name: vector_map_loader
+  publish: [/vector_map, /vmap_stat, /vector_map_info/point_class, /vector_map_info/vector_class,
+    /vector_map_info/line_class, /vector_map_info/area_class, /vector_map_info/pole_class,
+    /vector_map_info/box_class, /vector_map_info/dtlane, /vector_map_info/node, /vector_map_info/lane,
+    /vector_map_info/road_edge, /vector_map_info/gutter, /vector_map_info/curb, /vector_map_info/white_line,
+    /vector_map_info/stop_line, /vector_map_info/zebra_zone, /vector_map_info/cross_walk,
+    /vector_map_info/road_mark, /vector_map_info/pole, /vector_map_info/road_sign,
+    /vector_map_info/signal, /vector_map_info/street_light, /vector_map_info/utility_pole,
+    /vector_map_info/guard_rail, /vector_map_info/side_walk, /vector_map_info/cross_road]
