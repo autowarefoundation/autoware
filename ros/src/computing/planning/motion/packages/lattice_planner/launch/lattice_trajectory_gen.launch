@@ -4,7 +4,7 @@
     <arg name="prius_mode" default="false" />
     <!-- rosrun driving_planner lattice_trajectory_gen-->
    
-    <node pkg="lattice_planner" type="lattice_trajectory_gen" name="lattice_trajectory_gen" output="screen">
+    <node pkg="lattice_planner" type="lattice_trajectory_gen" name="lattice_trajectory_gen" output="log">
         <param name="sim_mode" value="$(arg sim_mode)" />
         <param name="prius_mode" value="$(arg prius_mode)" />
     </node>
