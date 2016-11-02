@@ -398,21 +398,33 @@ subs :
   - name : Motion Planning
     desc : Motion Planning desc sample
     subs :
-    - name : driving_planner
-      desc : driving_planner desc sample
+    - name : astar_planner
+      desc : astar_planner desc sample
       subs :
       - name : velocity_set
         desc : velocity_set desc sample
-        cmd  : roslaunch driving_planner velocity_set.launch
+        cmd  : roslaunch astar_planner velocity_set.launch
         param: velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
+      - name : obstacle_avoid
+        desc : obstacle_avoid desc sample
+        cmd  : rosrun astar_planner obstacle_avoid
+    - name : lattice_planner
+      desc : lattice_planner desc sample
+      subs :
+      - name : lattice_velocity_set
+        desc : lattice_velocity_set desc sample
+        cmd  : roslaunch lattice_planner lattice_velocity_set.launch
+        param: lattice_velocity_set
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
       - name : path_select
         desc : path_select desc sample
-        cmd  : rosrun driving_planner path_select
+        cmd  : rosrun lattice_planner path_select
       - name : lattice_trajectory_gen
         desc : lattice_trajectory_gen desc sample
-        cmd  : roslaunch driving_planner lattice_trajectory_gen.launch
+        cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
         param: lane_follower_trajgen
         gui  :
           velocity:
@@ -430,7 +442,7 @@ subs :
           stat_topic : [ lf ]
       - name : lattice_twist_convert
         desc : lattice_twist_convert desc sample
-        cmd  : rosrun driving_planner lattice_twist_convert
+        cmd  : rosrun lattice_planner lattice_twist_convert
 
     - name : waypoint_maker
       desc : waypoint_maker desc sample
@@ -1318,6 +1330,74 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
+
+  - name  : lattice_velocity_set
+    topic : /config/lattice_velocity_set
+    msg   : ConfigLatticeVelocitySet
+    vars  :
+    - name  : use_crosswalk_detection
+      desc  : use_crosswalk_detection desc sample
+      label : Use Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : others_distance
+      desc  : others_distance desc sample
+      label : Others Distance (m)
+      min   : 0
+      max   : 50
+      v     : 15.0
+    - name  : detection_range
+      desc  : detection_range desc sample
+      label : Detection Range (m)
+      min   : 0
+      max   : 10
+      v     : 1.3
+    - name  : deceleration_range
+      desc  : deceleration_range desc sample
+      label : Deceleration Range (m)
+      min   : 0
+      max   : 10
+      v     : 1.7
+    - name  : threshold_points
+      desc  : threshold_points desc sample
+      label : Points Threshold
+      min   : 0
+      max   : 30
+      v     : 15
+    - name  : detection_height_top
+      desc  : detection_height_top desc sample
+      label : Detection Height Top (m)
+      min   : 0
+      max   : 10
+      v     : 0.1
+    - name  : detection_height_bottom
+      desc  : detection_height_bottom desc sample
+      label : Detection Height Bottom (m)
+      min   : -10
+      max   : 0
+      v     : -1.5
+    - name  : deceleration
+      desc  : deceleration desc sample
+      label : Deceleration (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 1.0
+    - name  : velocity_change_limit
+      desc  : velocity_change_limit desc sample
+      label : Velocity Change Limit (km/h)
+      min   : 5
+      max   : 40
+      v     : 15.0
+    - name  : temporal_waypoints_size
+      desc  : temporal_waypoints_size desc sample
+      label : Temporal Waypoints (m)
+      min   : 0
+      max   : 150
+      v     : 100.0
+
 
   - name  : lane_follower_trajgen
     topic : /config/waypoint_follower

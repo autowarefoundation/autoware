@@ -70,6 +70,7 @@ from runtime_manager.msg import ConfigRandomFilter
 from runtime_manager.msg import ConfigWaypointFollower
 from runtime_manager.msg import ConfigTwistFilter
 from runtime_manager.msg import ConfigVelocitySet
+from runtime_manager.msg import ConfigLatticeVelocitySet
 from runtime_manager.msg import ConfigCarKf
 from runtime_manager.msg import ConfigPedestrianKf
 from runtime_manager.msg import ConfigLaneRule
