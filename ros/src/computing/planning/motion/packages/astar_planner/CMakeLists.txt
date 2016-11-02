@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(driving_planner)
+project(astar_planner)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -35,7 +35,7 @@ ENDIF()
 ###################################
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES libtraj_gen 
+  LIBRARIES libvelocity_set
   CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket vector_map #dbw_mkz_msgs
   DEPENDS gnss
 )
@@ -52,24 +52,10 @@ include_directories(
 )
 
 
-add_library(libtraj_gen lib/libtraj_gen.cpp)
-target_link_libraries(libtraj_gen ${catkin_LIBRARIES} armadillo)
+
 
 add_library(libvelocity_set lib/libvelocity_set.cpp)
 target_link_libraries(libvelocity_set ${catkin_LIBRARIES} vector_map)
-
-add_executable(lattice_trajectory_gen nodes/lattice_trajectory_gen/lattice_trajectory_gen.cpp)
-target_link_libraries(lattice_trajectory_gen gnss libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
-add_dependencies(lattice_trajectory_gen
-waypoint_follower_generate_messages_cpp
-runtime_manager_generate_messages_cpp
-vehicle_socket_generate_messages_cpp)
-
-add_executable(lattice_twist_convert nodes/lattice_twist_convert/lattice_twist_convert.cpp)
-target_link_libraries(lattice_twist_convert libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
-add_dependencies(lattice_twist_convert 
-waypoint_follower_generate_messages_cpp
-runtime_manager_generate_messages_cpp)
 
 add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
 target_link_libraries(velocity_set libwaypoint_follower libvelocity_set ${catkin_LIBRARIES})
@@ -77,9 +63,9 @@ add_dependencies(velocity_set
 waypoint_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
-add_executable(path_select nodes/path_select/path_select.cpp)
-target_link_libraries(path_select libwaypoint_follower  ${catkin_LIBRARIES})
-add_dependencies(path_select 
+add_executable(obstacle_avoid nodes/obstacle_avoid/obstacle_avoid.cpp)
+target_link_libraries(obstacle_avoid libwaypoint_follower  ${catkin_LIBRARIES})
+add_dependencies(obstacle_avoid 
 waypoint_follower_generate_messages_cpp)
 
 
