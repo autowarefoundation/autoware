@@ -51,6 +51,7 @@ public:
 	static std::vector<Lane*> GetClosestMultipleLanesFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
 	static WayPoint* GetClosestWaypointFromMap(const WayPoint& pos, RoadNetwork& map);
 	static WayPoint GetFirstWaypoint(RoadNetwork& map);
+	static WayPoint* GetLastWaypoint(RoadNetwork& map);
 
 
 	static void llaToxyz(GPSPoint& lla_p, const GPSPoint& origin);
@@ -73,6 +74,9 @@ public:
 	static std::vector<double> GetDoubleFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::vector<WayPoint> GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID);
 	static std::vector<std::string> SplitString(const std::string& str, const std::string& token);
+
+	static void CreateKmlFromLocalizationPathFile(const std::string& pathFileName,const std::vector<TrafficLight>& trafficLights, const std::vector<GPSPoint> stopLines);
+	static void InsertTrafficLightToMap(const TrafficLight& trafficLightPose, const double& stopingDistance, RoadNetwork& map);
 
 };
 

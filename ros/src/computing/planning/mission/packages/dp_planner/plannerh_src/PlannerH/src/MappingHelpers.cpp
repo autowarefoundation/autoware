@@ -32,7 +32,8 @@ MappingHelpers::~MappingHelpers() {
 
 GPSPoint MappingHelpers::GetTransformationOrigin()
 {
-	return GPSPoint(-3700, 99427, -88,0);
+	//return GPSPoint(-3700, 99427, -88,0);
+	return GPSPoint(18221.1, 93546.1, -36.19, 0);
 }
 
 Lane* MappingHelpers::GetLaneById(const int& id,RoadNetwork& map)
@@ -945,6 +946,18 @@ WayPoint MappingHelpers::GetFirstWaypoint(RoadNetwork& map)
 	return WayPoint();
 }
 
+WayPoint* MappingHelpers::GetLastWaypoint(RoadNetwork& map)
+{
+	if(map.roadSegments.size() > 0 && map.roadSegments.at(map.roadSegments.size()-1).Lanes.size() > 0)
+	{
+		std::vector<Lane>* lanes = &map.roadSegments.at(map.roadSegments.size()-1).Lanes;
+		if(lanes->at(lanes->size()-1).points.size() > 0)
+			return &lanes->at(lanes->size()-1).points.at(lanes->at(lanes->size()-1).points.size()-1);
+	}
+
+	return 0;
+}
+
 void MappingHelpers::llaToxyz(GPSPoint& lla_p, const GPSPoint& origin)
 {
 	projPJ pj_latlong, pj_utm;
@@ -1215,5 +1228,95 @@ vector<string> MappingHelpers::SplitString(const string& str, const string& toke
 	return str_parts;
 }
 
+void MappingHelpers::InsertTrafficLightToMap(const TrafficLight& trafficLightPose, const double& stopingDistance, RoadNetwork& map)
+{
+	WayPoint wp;
+	wp.pos = trafficLightPose.pos;
+	WayPoint* pWP =  GetClosestWaypointFromMap(wp, map);
+	if(pWP)
+	{
+		pWP->pLane->trafficlight = trafficLightPose;
+		pWP->pLane->trafficlight.pLane = pWP->pLane;
+	}
+}
+
+void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFileName,
+		const std::vector<TrafficLight>& trafficLights,
+		const std::vector<GPSPoint> stopLines)
+{
+
+	//Read Data From csv file
+	LocalizationPathReader pathReader(pathFileName);
+	vector<LocalizationPathReader::LocalizationWayPoint> path_data;
+	pathReader.ReadAllData(path_data);
+	PlannerHNS::RoadSegment segment;
+	segment.id = 1;
+
+	double d_accum = 0;
+	double laneMaxLength = 40;
+
+	std::vector<WayPoint> wayPointsList;
+
+	PlannerHNS::Lane lane;
+	lane.id = 1;
+	lane.num = 0;
+	lane.roadId = 1;
+	WayPoint p_prev;
+
+	for(unsigned int i=0; i< path_data.size() ; i++)
+	{
+		WayPoint p(path_data.at(i).x,path_data.at(i).y,path_data.at(i).z,path_data.at(i).a );
+		p.pos.lat = p.pos.x;
+		p.pos.lon = p.pos.y;
+		p.pos.alt = p.pos.z;
+		p.pos.dir = p.pos.a;
+		p.v = path_data.at(i).v;
+		p.laneId = lane.id;
+		p.id = i+1;
+		if(i>0)
+		{
+			p.fromIds.push_back(i);
+			d_accum += hypot(p.pos.y-p_prev.pos.y, p.pos.x-p_prev.pos.x);
+		}
+
+		if(i<path_data.size()-1)
+			p.toIds.push_back(i+2);
+
+		wayPointsList.push_back(p);
+
+		p_prev = p;
+
+		if(d_accum > laneMaxLength)
+		{
+			if(segment.Lanes.size()>0)
+				lane.fromIds.push_back(segment.Lanes.at(segment.Lanes.size()-1).id);
+			lane.toIds.push_back(lane.id+1);
+			lane.points = wayPointsList;
+			segment.Lanes.push_back(lane);
+
+			d_accum = 0;
+			PlannerHNS::Lane n_lane;
+			n_lane.id = lane.id+1;
+			n_lane.num = 0;
+			n_lane.roadId = 1;
+			lane = n_lane;
+			wayPointsList.clear();
+		}
+	}
+
+	if(segment.Lanes.size()>0)
+		segment.Lanes.at(segment.Lanes.size()-1).toIds.clear();
+
+	PlannerHNS::RoadNetwork roadMap;
+	roadMap.roadSegments.push_back(segment);
+
+	ostringstream fileName;
+	fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName;
+	fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
+	fileName << "_RoadNetwork.kml";
+	string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
+
+	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
+}
 
 } /* namespace PlannerHNS */

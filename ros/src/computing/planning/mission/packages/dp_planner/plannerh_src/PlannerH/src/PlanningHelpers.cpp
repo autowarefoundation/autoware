@@ -109,6 +109,87 @@ int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory
 	return min_index;
 }
 
+int PlanningHelpers::GetClosestPointIndexWithDirection(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+{
+	if(trajectory.size() == 0)
+		return 0;
+
+	double d = 0, minD = 9999999999;
+	if(prevIndex < 0) return 0;
+
+	double min_index  = prevIndex;
+
+	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
+	{
+		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
+		//if((p.pLane == 0 || trajectory.at(i).pLane == p.pLane) && d < minD)
+		if(d < minD)
+		{
+			min_index = i;
+			minD = d;
+		}
+	}
+
+//	double a  = 0;
+//	if(min_index >= trajectory.size())
+//	{
+//		WayPoint prevP = trajectory.at(min_index-1);
+//		a = angle2points(prevP, trajectory.at(min_index));
+//	}
+//	else
+//	{
+//
+//	}
+//
+//	double a_diff = UtilityH::AngleBetweenTwoAnglesPositive(a, p.pos.a);
+//	if(a <= M_PI_4)
+
+
+	return min_index;
+}
+
+int PlanningHelpers::GetClosestNextPointIndexWithDirection(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+{
+	if(trajectory.size() == 0)
+		return 0;
+
+	double d = 0, minD = 9999999999;
+	if(prevIndex < 0) return 0;
+
+	double min_index  = prevIndex;
+
+	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
+	{
+		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
+		//if((p.pLane == 0 || trajectory.at(i).pLane == p.pLane) && d < minD)
+		if(d < minD)
+		{
+			min_index = i;
+			minD = d;
+		}
+	}
+
+	if(min_index < trajectory.size()-2)
+	{
+		GPSPoint curr, next;
+		curr = trajectory.at(min_index).pos;
+		next = trajectory.at(min_index+1).pos;
+		POINT2D v_1(p.pos.x - curr.x   ,p.pos.y - curr.y);
+		double norm1 = pointNorm(v_1);
+		POINT2D v_2(next.x - curr.x,next.y - curr.y);
+		double norm2 = pointNorm(v_2);
+
+		double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
+
+		double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
+
+		if(a <= M_PI_2)
+			min_index = min_index+1;
+	}
+
+	return min_index;
+}
+
 WayPoint PlanningHelpers::GetPerpendicularOnTrajectory(const vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex )
 {
 

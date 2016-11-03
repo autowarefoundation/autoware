@@ -32,7 +32,7 @@ WindowParams::WindowParams()
 	info_ratio = 0.25;
 
 	UI_CONST.GAP = 20;
-	UI_CONST.MAX_ZOOM = 6000.0;
+	UI_CONST.MAX_ZOOM = 600000.0;
 	UI_CONST.MIN_ZOOM = 2.01;
 	UI_CONST.INIT_ZOOM = 7.0;
 	UI_CONST.FOLLOW_CONST_ZOOM = 2.5;
@@ -214,6 +214,8 @@ void MainWindowWrapper::SimuReshape(int width,  int height)
 	double y_max = sqrt(pow(m_params.simu_window.w,2) + pow(m_params.simu_window.h,2))/2.0;
 	if(y_max > 0.05 && y_max < (m_params.simu_window.w*m_params.simu_window.h))
 		m_DisplayParam.prespective_z = y_max;
+
+	m_DisplayParam.prespective_z = 10000;
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

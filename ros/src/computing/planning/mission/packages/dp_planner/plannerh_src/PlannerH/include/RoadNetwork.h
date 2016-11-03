@@ -26,7 +26,7 @@ enum OBSTACLE_TYPE {SIDEWALK, TREE, CAR, TRUCK, HOUSE, PEDESTRIAN, CYCLIST, GENE
 enum DRIVABLE_TYPE {DIRT, TARMAC, PARKINGAREA, INDOOR, GENERAL_AREA};
 
 enum STATE_TYPE {INITIAL_STATE, WAITING_STATE, FORWARD_STATE, STOPPING_STATE, EMERGENCY_STATE,
-	TRAFFIC_LIGHT_STOP_STATE, STOP_SIGN_STOP_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE};
+	TRAFFIC_LIGHT_STOP_STATE,TRAFFIC_LIGHT_WAIT_STATE, STOP_SIGN_STOP_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE};
 enum LIGHT_INDICATOR {INDICATOR_LEFT, INDICATOR_RIGHT, INDICATOR_BOTH , INDICATOR_NONE};
 
 enum SHIFT_POS {SHIFT_POS_PP = 0x60, SHIFT_POS_RR = 0x40, SHIFT_POS_NN = 0x20,
@@ -445,11 +445,13 @@ public:
 	int id;
 	GPSPoint pos;
 	TrafficLightState lightState;
+	double stoppingDistance;
 
 	Lane* pLane;
 
 	TrafficLight()
 	{
+		stoppingDistance = 2;
 		id 			= 0;
 		lightState	= GREEN_LIGHT;
 		pLane 		= 0;
@@ -677,6 +679,7 @@ public:
 	//Traffic Lights
 	int 				currentStopSignID;
 	int 				currentTrafficLightID;
+	int 				prevTrafficLightID;
 	bool 				bTrafficIsRed; //On , off status
 	//-------------------------------------------//
 	//Swerving
@@ -720,6 +723,7 @@ public:
 		distanceToNext			= 0;
 		velocityOfNext			= 0;
 		currentTrafficLightID	= -1;
+		prevTrafficLightID		= -1;
 		bTrafficIsRed			= false;
 		iCurrSafeTrajectory		= -1;
 		bFullyBlock				= false;

@@ -31,6 +31,10 @@ public:
 
 	static int GetClosestNextPointIndex(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
 	static int GetClosestPointIndex(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
+
+	static int GetClosestNextPointIndexWithDirection(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+	static int GetClosestPointIndexWithDirection(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
+
 	static WayPoint GetPerpendicularOnTrajectory(const std::vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex = 0);
 	static double GetPerpDistanceToTrajectorySimple(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
 	static double GetPerpDistanceToVectorSimple(const WayPoint& p1, const WayPoint& p2, const WayPoint& pose);

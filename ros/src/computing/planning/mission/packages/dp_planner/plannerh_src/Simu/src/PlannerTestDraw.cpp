@@ -19,8 +19,8 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMap "ToyotaCity/"
-#define kmlMap	"ToyotaKML.kml"
+#define VectorMap "NagoyaUniversity/"
+#define kmlMap	"tsukuba_multy_2_11.kml"
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -51,18 +51,20 @@ PlannerTestDraw::PlannerTestDraw()
 	m_ControllingTime = 0;
 	m_ObjectTrakingTime = 0;
 	m_SimulationTime = 0;
-
+	m_iCurrentGoal = 0;
 	m_CarModel = 0;
 
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
-			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);
+//	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/hatem/Downloads/path_16_2.csv");
+
+//	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
+//			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);
 
 //	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
 //	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
 //	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
-//	PlannerHNS::MappingHelpers::LoadKML(UtilityH::GetHomeDirectory() +
-//			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName + kmlMap, m_RoadMap);
+	PlannerHNS::MappingHelpers::LoadKML(UtilityH::GetHomeDirectory() +
+			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName + kmlMap, m_RoadMap);
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
@@ -72,9 +74,29 @@ PlannerTestDraw::PlannerTestDraw()
 //	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),UtilityH::GetHomeDirectory()+
 //			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile, m_RoadMap);
 
+	//Initialize Static Traffic Light
+	PlannerHNS::TrafficLight t1, t2;
+	t1.id = 1;
+	t1.stoppingDistance = 10;
+	t1.pos = PlannerHNS::GPSPoint(555.72,193.23, 0, 91.65*DEG2RAD);
+	m_State.m_TrafficLights.push_back(t1);
+	t2.id = 2;
+	t2.stoppingDistance = 10;
+	t2.pos = PlannerHNS::GPSPoint(552.33, 181.42, 0, 270*DEG2RAD);
+	m_State.m_TrafficLights.push_back(t2);
+
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
-	m_ControlParams.Steering_Gain = PID_CONST(0.07, 0.02, 0.01);
+	//Tsukuba Test
+	m_ControlParams.Steering_Gain = PID_CONST(0.4, 0.1, 0.1);
+	m_ControlParams.minPursuiteDistance = 2.0;
+	m_ControlParams.SteeringDelay = 0.6;
+	m_CarInfo.width = 0.9;
+	m_CarInfo.length = 1.4;
+	m_CarInfo.max_speed_forward = 3.5;
+	m_CarInfo.max_steer_angle = 1.0;
+
+//	m_ControlParams.Steering_Gain = PID_CONST(0.07, 0.02, 0.01);
 //	m_ControlParams.SimulationSteeringDelay = 0.1;
 //
 //	m_ControlParams.SteeringDelay = 0.85;
@@ -83,10 +105,10 @@ PlannerTestDraw::PlannerTestDraw()
 //	m_ControlParams.Steering_Gain.kI = 0.03;
 //	m_ControlParams.Velocity_Gain = PID_CONST(0.1, 0.005, 0.1);
 
-	m_CarInfo.width = 1.9;
-	m_CarInfo.length = 4.2;
-	m_CarInfo.max_speed_forward = 2.0;
-	m_PlanningParams.pathDensity = 0.25;
+//	m_CarInfo.width = 1.9;
+//	m_CarInfo.length = 4.2;
+//	m_CarInfo.max_speed_forward = 2.0;
+//	m_PlanningParams.pathDensity = 0.25;
 	m_State.m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
 	m_State.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
 	m_State.InitPolygons();
@@ -145,23 +167,56 @@ void PlannerTestDraw::InitStartAndGoal(const double& x1,const double& y1, const 
 
 	m_State.FirstLocalizeMe(m_start);
 
-
-
-
 	/**
 	 * Planning using goad point
 	 */
-	m_goal = PlannerHNS::WayPoint(x2, y2, 0, a2);
-	PlannerHNS::WayPoint* pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(m_goal, m_RoadMap);
+
+
+//	PlannerHNS::WayPoint gp(x2, y2, 0, a2);
+//	PlannerHNS::WayPoint* pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(gp, m_RoadMap);
+//	if(pW)
+//	{
+//		pW->bDir = PlannerHNS::FORWARD_DIR;
+//		m_goals.push_back(*pW);
+//	}
+//	else
+//		cout << "#Planning Error: Goal Position is too far from the road network map!" << endl;
+
+	//try fixed goal positions :
+
+	PlannerHNS::WayPoint g1(555.92, 181.83, 0, 0);
+	PlannerHNS::WayPoint g2(553.03, 195.59, 0, 0);
+	PlannerHNS::WayPoint g3(-57.23, 60.67, 0, 0);
+
+	PlannerHNS::WayPoint* pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(g1, m_RoadMap);
 	if(pW)
-		m_goal.pos = pW->pos;
+	{
+		pW->bDir = PlannerHNS::FORWARD_DIR;
+		m_goals.push_back(*pW);
+	}
 	else
 		cout << "#Planning Error: Goal Position is too far from the road network map!" << endl;
 
-	m_goal.bDir = PlannerHNS::FORWARD_DIR;
+	 pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(g2, m_RoadMap);
+	if(pW)
+	{
+		pW->bDir = PlannerHNS::FORWARD_DIR;
+		m_goals.push_back(*pW);
+	}
+	else
+		cout << "#Planning Error: Goal Position is too far from the road network map!" << endl;
+
+	pW = PlannerHNS::MappingHelpers::GetLastWaypoint(m_RoadMap);
+	if(pW)
+	{
+		pW->bDir = PlannerHNS::FORWARD_DIR;
+		m_goals.push_back(*pW);
+	}
+	else
+		cout << "#Planning Error: Goal Position is too far from the road network map!" << endl;
+
 
 	m_bMakeNewPlan = true;
-
 
 }
 
@@ -174,8 +229,8 @@ void PlannerTestDraw::SaveSimulationData()
 	simulationDataPoints.push_back(startStr.str());
 
 	std::ostringstream goalStr;
-	goalStr << m_goal.pos.x << "," << m_goal.pos.y << "," << m_goal.pos.z << ","
-			<< m_goal.pos.a << "," << m_goal.cost << "," << m_goal.v << "," ;
+//	goalStr << m_goal.pos.x << "," << m_goal.pos.y << "," << m_goal.pos.z << ","
+//			<< m_goal.pos.a << "," << m_goal.cost << "," << m_goal.v << "," ;
 	simulationDataPoints.push_back(goalStr.str());
 
 	for(unsigned int i = 0; i < m_SimulatedCars.size(); i++)
@@ -724,6 +779,19 @@ void PlannerTestDraw::DrawSimu()
 	}
 
 	DrawingHelpers::DrawCustomCarModel(m_State.state, m_State.m_CarShapePolygon, CarColor, 90);
+
+
+	//Draw Traffic Light :
+	glDisable(GL_LIGHTING);
+	for(unsigned int i=0 ; i < m_State.m_TrafficLights.size(); i++)
+	{
+		glColor3f(1,0,0);
+		DrawingHelpers::DrawFilledEllipse(m_State.m_TrafficLights.at(i).pos.x, m_State.m_TrafficLights.at(i).pos.y, 1, 1,1);
+		glColor3f(0,1,0);
+		DrawingHelpers::DrawFilledEllipse(m_State.m_TrafficLights.at(i).pos.x+1.2, m_State.m_TrafficLights.at(i).pos.y, 1, 1,1);
+		DrawingHelpers::DrawArrow(m_State.m_TrafficLights.at(i).pos.x+2.5, m_State.m_TrafficLights.at(i).pos.y, m_State.m_TrafficLights.at(i).pos.a);
+	}
+	glEnable(GL_LIGHTING);
 }
 
 void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int& maxX, const int& maxY)
@@ -803,6 +871,12 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 		break;
 	case PlannerHNS::OBSTACLE_AVOIDANCE_STATE:
 		str = "Swerving";
+		break;
+	case PlannerHNS::TRAFFIC_LIGHT_STOP_STATE:
+		str = "Light Stop";
+		break;
+	case PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE:
+		str = "Light Wait";
 		break;
 	default:
 		str = "Unknown";
@@ -965,6 +1039,14 @@ void PlannerTestDraw::OnKeyboardPress(const SPECIAL_KEYS_TYPE& sKey, const unsig
 		pthread_mutex_unlock(&simulation_mutex);
 	}
 	break;
+	case 'g':
+	{
+		if(m_bGreenTrafficLight)
+			m_bGreenTrafficLight = false;
+		else
+			m_bGreenTrafficLight = true;
+	}
+	break;
 	default:
 		break;
 
@@ -1035,16 +1117,27 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			 * Path Planning Step (Global Planning)
 			 */
 			int currIndexToal = PlannerHNS::PlanningHelpers::GetClosestPointIndex(pR->m_State.m_TotalPath, pR->m_State.state);
-			int index_limit_total = pR->m_State.m_TotalPath.size() - 25;
-			if(index_limit_total<=0)
-				index_limit_total =  pR->m_State.m_TotalPath.size()/2.0;
+//			int index_limit_total = pR->m_State.m_TotalPath.size() - 25;
+//			if(index_limit_total<=0)
+//				index_limit_total =  pR->m_State.m_TotalPath.size()/2.0;
+//
+//			if(currIndexToal > index_limit_total)
+//			{
+//				pR->m_bMakeNewPlan = true;
+//				PlannerHNS::WayPoint g_p = pR->m_goals.at(m_iCurrentGoal);
+//				pR->m_goal = pR->m_start;
+//				pR->m_start = g_p;
+//			}
 
-			if(currIndexToal > index_limit_total)
+
+			if(pR->m_bMakeNewPlan == false && pR->m_CurrentBehavior.state == PlannerHNS::STOPPING_STATE && (pR->m_iCurrentGoal+1) < pR->m_goals.size())
 			{
-				pR->m_bMakeNewPlan = true;
-				PlannerHNS::WayPoint g_p = pR->m_goal;
-				pR->m_goal = pR->m_start;
-				pR->m_start = g_p;
+				if(pR->m_State.m_TotalPath.size() > 0 && currIndexToal > pR->m_State.m_TotalPath.size() - 8)
+				{
+					pR->m_iCurrentGoal = pR->m_iCurrentGoal + 1;
+					pR->m_bMakeNewPlan = true;
+					pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = true;
+				}
 			}
 
 			if((pR->m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE && pR->m_State.m_Path.size() == 0 && pR->m_bMakeNewPlan) || pR->m_bMakeNewPlan )
@@ -1052,11 +1145,11 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
 				timespec planTime;
 				UtilityH::GetTickCount(planTime);
-				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state, pR->m_goal, pR->m_State.state, 1000000,pR->m_LanesIds, generatedTotalPath);
+				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state, pR->m_goals.at(pR->m_iCurrentGoal), pR->m_State.state, 1000000,pR->m_LanesIds, generatedTotalPath);
 				pR->m_GlobalPlanningTime = UtilityH::GetTimeDiffNow(planTime);
 
 				if(generatedTotalPath.size()>0)
-					pR->m_goal = generatedTotalPath.at(generatedTotalPath.size()-1);
+					pR->m_goals.at(pR->m_iCurrentGoal) = generatedTotalPath.at(generatedTotalPath.size()-1);
 				pR->m_bMakeNewPlan = false;
 				bNewPlan = true;
 			}
@@ -1085,7 +1178,16 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 			timespec localPlannerTimer;
 			UtilityH::GetTickCount(localPlannerTimer);
-			pR->m_CurrentBehavior = pR->m_State.DoOneStep(dt, currTargetState, obj_list, pR->m_goal.pos, pR->m_RoadMap);
+			PlannerHNS::WayPoint goal_wp;
+			if(pR->m_iCurrentGoal+1 < pR->m_goals.size())
+				goal_wp = pR->m_goals.at(pR->m_iCurrentGoal);
+
+			bool bEmergencyStop = false;
+
+			if(pR->m_State.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 1 && pR->m_CurrentBehavior.state != PlannerHNS::INITIAL_STATE)
+				bEmergencyStop = true;
+
+			pR->m_CurrentBehavior = pR->m_State.DoOneStep(dt, currTargetState, obj_list, goal_wp.pos, pR->m_RoadMap, bEmergencyStop, pR->m_bGreenTrafficLight);
 			pR->m_LocalPlanningTime = UtilityH::GetTimeDiffNow(localPlannerTimer);
 			pR->m_VehicleCurrentState.steer = pR->m_State.m_CurrentSteering;
 			pR->m_VehicleCurrentState.speed = pR->m_State.m_CurrentVelocity;
@@ -1302,7 +1404,7 @@ void* PlannerTestDraw::SimulationThreadStaticEntryPoint(void* pThis)
 					pR->m_SimulatedBehaviors.at(i) = pR->m_SimulatedCars.at(i).DoOneStep(
 							dt, pR->m_SimulatedVehicleState.at(i),
 							pR->m_SimulatedCars.at(i).state,
-							pR->m_goal.pos, pR->m_RoadMap);
+							PlannerHNS::GPSPoint(), pR->m_RoadMap);
 
 					if(pR->m_SimulatedCars.at(i).m_Path.size() == 0)
 					{

@@ -40,6 +40,9 @@ public:
 	PlannerHNS::MissionAccomplishedState*	m_pMissionCompleteState;
 	PlannerHNS::FollowState*				m_pFollowState;
 	PlannerHNS::SwerveState*				m_pAvoidObstacleState;
+	PlannerHNS::TrafficLightStopState*		m_pTrafficLightStopState;
+	PlannerHNS::TrafficLightWaitState*		m_pTrafficLightWaitState;
+
 
 	std::vector<PlannerHNS::TrajectoryCost> m_TrajectoryCosts;
 
@@ -76,6 +79,7 @@ public:
 
 	double m_CurrentAccSteerAngle; //degrees steer wheel range
 	double m_CurrentAccVelocity; // kilometer/hour
+	std::vector<PlannerHNS::TrafficLight> m_TrafficLights;
 
 public:
 
@@ -87,7 +91,9 @@ public:
 	void LocalizeMe(const double& dt); // in seconds
 	void UpdateState(const PlannerHNS::VehicleState& state, const bool& bUseDelay = false);
 	void CalculateImportantParameterForDecisionMaking(const PlannerHNS::VehicleState& car_state,
-			const PlannerHNS::GPSPoint& goal);
+			const PlannerHNS::GPSPoint& goal,
+			const bool& bEmergencyStop,
+			const bool& bGreenTrafficLight);
 
 	PlannerHNS::BehaviorState DoOneStep(
 			const double& dt,
@@ -95,6 +101,8 @@ public:
 			const std::vector<PlannerHNS::DetectedObject>& obj_list,
 			const PlannerHNS::GPSPoint& goal,
 			PlannerHNS::RoadNetwork& map,
+			const bool& bEmergencyStop,
+			const bool& bGreenTrafficLight,
 			const bool& bLive = false);
 
 	void SimulateOdoPosition(const double& dt, const PlannerHNS::VehicleState& vehicleState);
@@ -121,6 +129,7 @@ private:
 			const PlannerHNS::DetectedObject& obj);
 	void FindSafeTrajectory(int& safe_index, double& closest_distance, double& closest_velocity);
 	void FindNextBestSafeTrajectory(int& safe_index);
+	bool GetNextTrafficLight(const int& prevTrafficLightId, const std::vector<PlannerHNS::TrafficLight>& trafficLights, PlannerHNS::TrafficLight& trafficL);
 	bool IsGoalAchieved(const PlannerHNS::GPSPoint& goal);
 	void UpdateCurrentLane(PlannerHNS::RoadNetwork& map, const double& search_distance);
 	bool SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState);

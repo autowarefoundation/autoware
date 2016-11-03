@@ -329,6 +329,36 @@ void SimulationFileReader::ReadAllData(SimulationData& data_list)
 	}
 }
 
+bool LocalizationPathReader::ReadNextLine(LocalizationWayPoint& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 5) return false;
+
+		data.x = strtod(lineData.at(0)[0].c_str(), NULL);
+		data.y = strtod(lineData.at(0)[1].c_str(), NULL);
+		data.z = strtod(lineData.at(0)[2].c_str(), NULL);
+		data.a = strtod(lineData.at(0)[3].c_str(), NULL);
+		data.v = strtod(lineData.at(0)[4].c_str(), NULL);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void LocalizationPathReader::ReadAllData(vector<LocalizationWayPoint>& data_list)
+{
+	data_list.clear();
+	LocalizationWayPoint data;
+	double logTime = 0;
+	while(ReadNextLine(data))
+		data_list.push_back(data);
+}
+
 bool AisanNodesFileReader::ReadNextLine(AisanNode& data)
 {
 	vector<vector<string> > lineData;
@@ -490,14 +520,15 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 		data.LaneChgFG 	= strtol(lineData.at(0).at(21).c_str(), NULL, 10);
 		data.LinkWAID	= strtol(lineData.at(0).at(22).c_str(), NULL, 10);
 
-		string str_dir = lineData.at(0).at(23);
-		if(str_dir.size() > 0)
-			data.LaneDir 	= str_dir.at(0);
-		else
-			data.LaneDir  	= 0;
-
-		data.LeftLaneId 	= strtol(lineData.at(0).at(24).c_str(), NULL, 10);
-		data.RightLaneId 	= strtol(lineData.at(0).at(25).c_str(), NULL, 10);
+//		string str_dir = lineData.at(0).at(23);
+//		if(str_dir.size() > 0)
+//			data.LaneDir 	= str_dir.at(0);
+//		else
+			data.LaneDir  	= 'F';
+			data.LeftLaneId  = 0;
+			data.RightLaneId = 0;
+//		data.LeftLaneId 	= strtol(lineData.at(0).at(24).c_str(), NULL, 10);
+//		data.RightLaneId 	= strtol(lineData.at(0).at(25).c_str(), NULL, 10);
 
 		return true;
 	}

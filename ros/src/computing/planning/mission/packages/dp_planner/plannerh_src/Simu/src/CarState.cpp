@@ -12,7 +12,7 @@
 #include "MatrixOperations.h"
 #include "PlannerH.h"
 #include "SimulatedTrajectoryFollower.h"
-#include <cmath>
+
 
 using namespace PlannerHNS;
 using namespace UtilityHNS;
@@ -33,6 +33,8 @@ CarState::CarState()
 	m_pWaitState= 0;
 	m_pMissionCompleteState= 0;
 	m_pAvoidObstacleState = 0;
+	m_pTrafficLightStopState = 0;
+	m_pTrafficLightWaitState = 0;
 	m_pFollowState = 0;
 	m_SimulationSteeringDelayFactor = 0.1;
 	UtilityH::GetTickCount(m_SteerDelayTimer);
@@ -69,20 +71,33 @@ void CarState::InitBehaviorStates()
 	m_pInitState 				= new InitState(m_pGoToGoalState);
 	m_pFollowState				= new FollowState(m_pGoToGoalState);
 	m_pAvoidObstacleState		= new SwerveState(m_pGoToGoalState);
+	m_pTrafficLightStopState	= new TrafficLightStopState(m_pGoToGoalState);
+	m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pGoToGoalState);
+
 
 	m_pGoToGoalState->InsertNextState(m_pStopState);
 	m_pGoToGoalState->InsertNextState(m_pWaitState);
 	m_pGoToGoalState->InsertNextState(m_pFollowState);
 	m_pGoToGoalState->InsertNextState(m_pAvoidObstacleState);
+	m_pGoToGoalState->InsertNextState(m_pTrafficLightStopState);
 
 	m_pAvoidObstacleState->InsertNextState(m_pStopState);
 	m_pAvoidObstacleState->InsertNextState(m_pWaitState);
 	m_pAvoidObstacleState->InsertNextState(m_pFollowState);
 	m_pAvoidObstacleState->decisionMakingTime = 0.0;
+	m_pAvoidObstacleState->InsertNextState(m_pTrafficLightStopState);
 
 	m_pFollowState->InsertNextState(m_pStopState);
 	m_pFollowState->InsertNextState(m_pWaitState);
 	m_pFollowState->InsertNextState(m_pAvoidObstacleState);
+	m_pFollowState->InsertNextState(m_pTrafficLightStopState);
+
+	m_pStopState->InsertNextState(m_pGoToGoalState);
+
+	m_pTrafficLightStopState->InsertNextState(m_pTrafficLightWaitState);
+
+	m_pTrafficLightWaitState->InsertNextState(m_pTrafficLightStopState);
+
 
 	m_pCurrentBehaviorState = m_pInitState;
 
@@ -194,8 +209,32 @@ void CarState::InitPolygons()
 	p = translationMat*p;
  }
 
+ bool CarState::GetNextTrafficLight(const int& prevTrafficLightId, const std::vector<PlannerHNS::TrafficLight>& trafficLights, PlannerHNS::TrafficLight& trafficL)
+ {
+	 for(unsigned int i = 0; i < trafficLights.size(); i++)
+	 {
+		 double d = hypot(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x);
+		 if(d <= trafficLights.at(i).stoppingDistance)
+		 {
+			 //double a = UtilityH::FixNegativeAngle(atan2(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x));
+			 double a_diff = UtilityH::AngleBetweenTwoAnglesPositive(UtilityH::FixNegativeAngle(trafficLights.at(i).pos.a) , UtilityH::FixNegativeAngle(state.pos.a));
+
+			 if(a_diff < M_PI_2 && trafficLights.at(i).id != prevTrafficLightId)
+			 {
+				 std::cout << "Detected Light, ID = " << trafficLights.at(i).id << ", Distance = " << d << ", Angle = " << trafficLights.at(i).pos.a*RAD2DEG << ", Car Heading = " << state.pos.a*RAD2DEG << ", Diff = " << a_diff*RAD2DEG << std::endl;
+				 trafficL = trafficLights.at(i);
+				 return true;
+			 }
+		 }
+	 }
+
+	 return false;
+ }
+
  void CarState::CalculateImportantParameterForDecisionMaking(const PlannerHNS::VehicleState& car_state,
-		 const PlannerHNS::GPSPoint& goal)
+		 const PlannerHNS::GPSPoint& goal,
+			const bool& bEmergencyStop,
+			const bool& bGreenTrafficLight)
  {
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
 
@@ -210,11 +249,22 @@ void CarState::InitPolygons()
  	pValues->bTrafficIsRed 			= false;
  	pValues->currentTrafficLightID 	= -1;
  	pValues->bRePlan 				= false;
+ 	pValues->bFullyBlock 			= false;
+
  	FindSafeTrajectory(pValues->iCurrSafeTrajectory, pValues->distanceToNext, pValues->velocityOfNext);
- 	if(pValues->iCurrSafeTrajectory == -1)
+ 	if((pValues->iCurrSafeTrajectory == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_PlanningParams.minFollowingDistance) || bEmergencyStop )
  		pValues->bFullyBlock = true;
- 	else
- 		pValues->bFullyBlock = false;
+
+
+ 	TrafficLight tl;
+
+ 	if(GetNextTrafficLight(pValues->prevTrafficLightID, m_TrafficLights, tl))
+ 	{
+ 		pValues->currentTrafficLightID = tl.id;
+
+ 	}
+
+ 	pValues->bTrafficIsRed = !bGreenTrafficLight;
 
  	//cout << "Distances: " << pValues->stoppingDistances.size() << ", Distance To Stop : " << pValues->distanceToStop << endl;
  }
@@ -778,7 +828,10 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
  PlannerHNS::BehaviorState CarState::DoOneStep(const double& dt,
 		 const PlannerHNS::VehicleState& vehicleState,
 		 const std::vector<PlannerHNS::DetectedObject>& obj_list,
-		 const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map	,const bool& bLive)
+		 const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map	,
+		const bool& bEmergencyStop,
+		const bool& bGreenTrafficLight,
+		const bool& bLive)
 {
 	 if(!bLive)
 		 SimulateOdoPosition(dt, vehicleState);
@@ -791,7 +844,7 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 
 	CalculateDistanceCosts(vehicleState, obj_list);
 
-	CalculateImportantParameterForDecisionMaking(vehicleState, goal);
+	CalculateImportantParameterForDecisionMaking(vehicleState, goal, bEmergencyStop, bGreenTrafficLight);
 
 	PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
 
@@ -802,8 +855,8 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 	UtilityH::GetTickCount(predictionTime);
 	//if(UtilityH::GetTimeDiffNow(m_PredictionTimer) > 0.5 || beh.bNewPlan)
 	{
-		CalculateObstacleCosts(map, vehicleState, obj_list);
-		m_PredictionTime = UtilityH::GetTimeDiffNow(predictionTime);
+		//CalculateObstacleCosts(map, vehicleState, obj_list);
+		//m_PredictionTime = UtilityH::GetTimeDiffNow(predictionTime);
 	}
 
 

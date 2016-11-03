@@ -137,6 +137,25 @@ public:
 	void ReadAllData(SimulationData& data_list);
 };
 
+class LocalizationPathReader : public SimpleReaderBase
+{
+public:
+	struct LocalizationWayPoint
+	{
+		double x;
+		double y;
+		double z;
+		double a;
+		double v;
+	};
+
+	LocalizationPathReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	~LocalizationPathReader(){}
+
+	bool ReadNextLine(LocalizationWayPoint& data);
+	void ReadAllData(std::vector<LocalizationWayPoint>& data_list);
+};
+
 class AisanPointsFileReader : public SimpleReaderBase
 {
 public:

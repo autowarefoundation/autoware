@@ -102,6 +102,26 @@ public:
 
 };
 
+class TrafficLightStopState : public BehaviorStateMachine
+{
+public:
+	TrafficLightStopState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = TRAFFIC_LIGHT_STOP_STATE;}
+	virtual ~TrafficLightStopState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class TrafficLightWaitState : public BehaviorStateMachine
+{
+public:
+	TrafficLightWaitState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = TRAFFIC_LIGHT_WAIT_STATE;}
+	virtual ~TrafficLightWaitState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
 class WaitState : public BehaviorStateMachine
 {
 public:

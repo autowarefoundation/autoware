@@ -48,10 +48,12 @@ public:
 public:
 	 PlannerHNS::RoadNetwork m_RoadMap;
 	PlannerHNS::GridMap* m_pMap;
-	PlannerHNS::WayPoint m_goal;
+	std::vector<PlannerHNS::WayPoint> m_goals;
+	int m_iCurrentGoal;
 	PlannerHNS::WayPoint m_start;
 	bool				 m_bMakeNewPlan;
 	bool 				m_bResetForSimulation;
+	bool			m_bGreenTrafficLight;
 
 	pthread_mutex_t planning_mutex;
 	pthread_mutex_t control_mutex;
