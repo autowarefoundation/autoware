@@ -111,6 +111,7 @@ runtime_manager_generate_messages_cpp
 road_wizard_generate_messages_cpp
 )
 
+### tlr_tuner ###
 EXECUTE_PROCESS(
   COMMAND pkg-config --variable=host_bins Qt5Core
   OUTPUT_VARIABLE Qt5BIN
@@ -167,7 +168,7 @@ target_link_libraries(tlr_tuner
 endif()
 
 
-### roi_extractorp ###
+### roi_extractor ###
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include
@@ -184,3 +185,42 @@ target_link_libraries(roi_extractor
 
 add_dependencies(region_tlr
 road_wizard_generate_messages_cpp)
+
+
+### label_maker ###
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  nodes/label_maker/
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
+  )
+
+file(GLOB SOURCES "nodes/label_maker/*.cpp")
+file(GLOB HEADERS "nodes/label_maker/*.h")
+file(GLOB UI_SOURCES "nodes/label_maker/*.ui")
+
+qt5_wrap_ui(UI_HEADERS ${UI_SOURCES})
+
+add_executable(label_maker
+  ${SOURCES}
+  ${HEADERS}
+  ${UI_HEADERS}
+  )
+
+set_target_properties(label_maker
+  PROPERTIES COMPILE_FLAGS "-fPIC"
+  )
+
+target_link_libraries(label_maker
+  ${catkin_LIBRARIES}
+  Qt5::Core
+  Qt5::Gui
+  Qt5::Widgets
+  )
