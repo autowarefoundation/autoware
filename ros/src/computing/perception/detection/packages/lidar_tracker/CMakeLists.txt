@@ -106,46 +106,20 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 link_directories(${PCL_LIBRARY_DIRS})
-## Declare a cpp library
-# add_library(lidar_tracker
-#   src/${PROJECT_NAME}/lidar_tracker.cpp
-# )
 
-## Declare a cpp executable
-# add_executable(lidar_tracker_node src/lidar_tracker_node.cpp)
-
-## Add cmake target dependencies of the executable/library
-## as an example, message headers may need to be generated before nodes
-# add_dependencies(lidar_tracker_node lidar_tracker_generate_messages_cpp)
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(lidar_tracker_node
-#   ${catkin_LIBRARIES}
-# )
-
+#Euclidean Clustering
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
-#target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib ${catkin_LIBRARIES} ${PCL_LIBRARIES} vector_map)
-#add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
 target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
 
+#Vscan Filling
 add_executable(vscan_filling nodes/vscan_filling/vscan_filling.cpp)
 target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
-add_executable(obj_fusion
-  nodes/obj_fusion/obj_fusion.cpp
-)
-
-target_link_libraries(obj_fusion
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  m
-)
-
-add_dependencies(obj_fusion
-  lidar_tracker_generate_messages_cpp
-  cv_tracker_generate_messages_cpp
-)
+#Object Fusion
+add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
+target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
+add_dependencies(obj_fusion lidar_tracker_generate_messages_cpp cv_tracker_generate_messages_cpp)
 
 #############
 ## Install ##

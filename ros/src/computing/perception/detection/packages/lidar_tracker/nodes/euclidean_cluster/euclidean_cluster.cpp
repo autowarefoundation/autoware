@@ -620,13 +620,23 @@ void vectormap_callback(const visualization_msgs::MarkerArray::Ptr in_vectormap_
 		(*i).x+=min_point.x;
 		(*i).y+=min_point.y;
 	}
+	max_point.x+=min_point.x;
+	max_point.y+=min_point.y;
 	//get world tf
 	_transform_listener->lookupTransform("/map", "/world",
 					ros::Time(_velodyne_header.stamp), *_transform);
 
-	Vector3 map_origin_point;
+	tf::Vector3 map_origin_point;
 	map_origin_point = _transform->getOrigin();
 
+	cv::Mat map_image = cv::Mat::zeros(max_point.x, max_point.y, CV_8UC1);
+
+	for (auto i=vectormap_points.begin(); i!=vectormap_points.end(); i++)
+	{
+		map_image.at<uchar>( (int)(i->x), (int)(i->y) ) = 255;
+	}
+	cv::imshow("vectormap", map_image);
+	cv::waitKey(0);
 }*/
 
 int main (int argc, char** argv)
@@ -710,7 +720,7 @@ int main (int argc, char** argv)
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
-	//ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
+	ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
 
 	_visualization_marker.header.frame_id = "velodyne";
 	_visualization_marker.header.stamp = ros::Time();
