@@ -1,0 +1,13 @@
+- name: waypoint_clicker
+  publish: [/waypoint_guide]
+  subscribe: [/clicked_point, /vector_map_info/point_class, /vector_map_info/lane,
+    /vector_map_info/node]
+- name: waypoint_loader
+  publish: [/lane_waypoint_array]
+- name: waypoint_marker_publisher
+  publish: [/lane_waypoint_mark]
+  subscribe: [/traffic_light, /lane_waypoints_array, /traffic_waypoints_array, /temporal_waypoints,
+    /closest_waypoint]
+- name: waypoint_saver
+  publish: [/waypoint_saver_mark]
+  subscribe: [/current_pose, /can_info, /estimate_twist]

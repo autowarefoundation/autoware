@@ -1,0 +1,12 @@
+- name: points2image
+  publish: [/points_image, /threeD_calibration]
+  subscribe: [/projection_matrix, /camera/camera_info, /points_raw]
+- name: points2vscan
+  publish: [/scan, /vscan_points]
+  subscribe: [/points_raw]
+- name: vscan2image
+  publish: [/vscan_image]
+  subscribe: [/vscan_points, /projection_matrix, /camera/camera_info]
+- name: vscan2linelist
+  publish: [/vscan_linelist]
+  subscribe: [/vscan_points]

@@ -1,0 +1,4 @@
+- name: astar_navi
+  publish: [/start_pose, /car_footprint, /lane_waypoint, /traffic_waypoint, /poses,
+    /static_map]
+  subscribe: [/map, /move_base_simple/goal, /initialpose]
