@@ -67,15 +67,19 @@ void WaypointLoaderNode::publishLaneArray()
   std::vector<std::string> multi_file_path;
   parseColumns(multi_lane_csv_, &multi_file_path);
   waypoint_follower::LaneArray lane_array;
+  createLaneArray(multi_file_path, &lane_array);
+  lane_pub_.publish(lane_array);
+}
 
-  for (auto el : multi_file_path)
+void WaypointLoaderNode::createLaneArray(const std::vector<std::string> &paths,
+                                         waypoint_follower::LaneArray *lane_array)
+{
+  for (auto el : paths)
   {
     waypoint_follower::lane lane;
     createLaneWaypoint(el, &lane);
-    lane_array.lanes.push_back(lane);
+    lane_array->lanes.push_back(lane);
   }
-
-  lane_pub_.publish(lane_array);
 }
 
 void WaypointLoaderNode::createLaneWaypoint(const std::string &file_path, waypoint_follower::lane *lane)
