@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(points_filter)
+project(points_downsampler)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  PointsFilterInfo.msg
+  PointsDownsamplerInfo.msg
 )
 
 generate_messages(

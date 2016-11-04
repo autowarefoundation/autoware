@@ -37,7 +37,7 @@
 
 #include <runtime_manager/ConfigDistanceFilter.h>
 
-#include <points_filter/PointsFilterInfo.h>
+#include <points_downsampler/PointsDownsamplerInfo.h>
 
 #include <chrono>
 
@@ -45,8 +45,8 @@ ros::Publisher filtered_points_pub;
 
 static int sample_num = 1000;
 
-static ros::Publisher points_filter_info_pub;
-static points_filter::PointsFilterInfo points_filter_info_msg;
+static ros::Publisher points_downsampler_info_pub;
+static points_downsampler::PointsDownsamplerInfo points_downsampler_info_msg;
 
 static std::chrono::time_point<std::chrono::system_clock> filter_start, filter_end;
 
@@ -106,29 +106,29 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   filtered_msg.header = input->header;
   filtered_points_pub.publish(filtered_msg);
 
-  points_filter_info_msg.header = input->header;
-  points_filter_info_msg.filter_name = "distance_filter";
-  points_filter_info_msg.original_points_size = points_num;
-  points_filter_info_msg.filtered_points_size = filtered_scan_ptr->size();
-  points_filter_info_msg.original_ring_size = 0;
-  points_filter_info_msg.original_ring_size = 0;
-  points_filter_info_msg.exe_time = std::chrono::duration_cast<std::chrono::microseconds>(filter_end - filter_start).count() / 1000.0;
-  points_filter_info_pub.publish(points_filter_info_msg);
+  points_downsampler_info_msg.header = input->header;
+  points_downsampler_info_msg.filter_name = "distance_filter";
+  points_downsampler_info_msg.original_points_size = points_num;
+  points_downsampler_info_msg.filtered_points_size = filtered_scan_ptr->size();
+  points_downsampler_info_msg.original_ring_size = 0;
+  points_downsampler_info_msg.original_ring_size = 0;
+  points_downsampler_info_msg.exe_time = std::chrono::duration_cast<std::chrono::microseconds>(filter_end - filter_start).count() / 1000.0;
+  points_downsampler_info_pub.publish(points_downsampler_info_msg);
 
   if(_output_log == true){
 	  if(!ofs){
 		  std::cerr << "Could not open " << filename << "." << std::endl;
 		  exit(1);
 	  }
-	  ofs << points_filter_info_msg.header.seq << ","
-		  << points_filter_info_msg.header.stamp << ","
-		  << points_filter_info_msg.header.frame_id << ","
-		  << points_filter_info_msg.filter_name << ","
-		  << points_filter_info_msg.original_points_size << ","
-		  << points_filter_info_msg.filtered_points_size << ","
-		  << points_filter_info_msg.original_ring_size << ","
-		  << points_filter_info_msg.filtered_ring_size << ","
-		  << points_filter_info_msg.exe_time << ","
+	  ofs << points_downsampler_info_msg.header.seq << ","
+		  << points_downsampler_info_msg.header.stamp << ","
+		  << points_downsampler_info_msg.header.frame_id << ","
+		  << points_downsampler_info_msg.filter_name << ","
+		  << points_downsampler_info_msg.original_points_size << ","
+		  << points_downsampler_info_msg.filtered_points_size << ","
+		  << points_downsampler_info_msg.original_ring_size << ","
+		  << points_downsampler_info_msg.filtered_ring_size << ","
+		  << points_downsampler_info_msg.exe_time << ","
 		  << std::endl;
   }
 
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 
   // Publishers
   filtered_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/filtered_points", 10);
-  points_filter_info_pub = nh.advertise<points_filter::PointsFilterInfo>("/points_filter_info", 1000);
+  points_downsampler_info_pub = nh.advertise<points_downsampler::PointsDownsamplerInfo>("/points_downsampler_info", 1000);
 
   // Subscribers
   ros::Subscriber config_sub = nh.subscribe("config/distance_filter", 10, config_callback);
