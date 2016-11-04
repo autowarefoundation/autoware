@@ -720,7 +720,7 @@ int main (int argc, char** argv)
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
-	ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
+	//ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
 
 	_visualization_marker.header.frame_id = "velodyne";
 	_visualization_marker.header.stamp = ros::Time();

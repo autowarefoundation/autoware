@@ -54,6 +54,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
    centroids.msg
    CloudCluster.msg
    CloudClusterArray.msg
+   DetectedObject.msg
+   DetectedObjectArray.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -107,10 +109,25 @@ include_directories(
 )
 link_directories(${PCL_LIBRARY_DIRS})
 
-#Euclidean Clustering
+#Euclidean Cluster
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
 target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
+
+#SVM Detect
+add_executable(svm_lidar_detect nodes/svm_lidar_detect/svm_lidar_detect.cpp)
+target_link_libraries(svm_lidar_detect ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(svm_lidar_detect lidar_tracker_generate_messages_cpp)
+
+#ParticleFilter Track
+add_executable(pf_lidar_track nodes/pf_lidar_track/pf_lidar_track.cpp)
+target_link_libraries(pf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(pf_lidar_track lidar_tracker_generate_messages_cpp)
+
+#KalmanFilter Track
+add_executable(kf_lidar_track nodes/kf_lidar_track/kf_lidar_track.cpp)
+target_link_libraries(kf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(kf_lidar_track lidar_tracker_generate_messages_cpp)
 
 #Vscan Filling
 add_executable(vscan_filling nodes/vscan_filling/vscan_filling.cpp)
