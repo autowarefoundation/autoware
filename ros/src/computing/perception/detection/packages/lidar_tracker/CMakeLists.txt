@@ -4,6 +4,7 @@ project(lidar_tracker)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
@@ -11,12 +12,18 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   message_generation
   tf
-  #vector_map_server
   jsk_recognition_msgs
+  rosinterface
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+pkg_check_modules(Qt5Core REQUIRED Qt5Core)
+pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
+
+execute_process(
+  COMMAND pkg-config --variable=host_bins Qt5Core
+  OUTPUT_VARIABLE Qt5BIN
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -56,21 +63,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
    CloudClusterArray.msg
    DetectedObject.msg
    DetectedObjectArray.msg
+   geometric_rectangle.msg
+   vscan_tracked.msg
+   vscan_tracked_array.msg
  )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
 
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
@@ -80,6 +76,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
    sensor_msgs
    jsk_recognition_msgs
  )
+
 
 ###################################
 ## catkin specific configuration ##
@@ -91,18 +88,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros #vector_map_server
+   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
   nodes/euclidean_cluster/includes
   ${catkin_INCLUDE_DIRS}
@@ -138,50 +126,143 @@ add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
 target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
 add_dependencies(obj_fusion lidar_tracker_generate_messages_cpp cv_tracker_generate_messages_cpp)
 
-#############
-## Install ##
-#############
+# Vscan Track
+execute_process(
+  COMMAND uname -m
+  OUTPUT_VARIABLE ARCHITECTURE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
+#set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+if(EXISTS "/usr/local/cuda")
+  include_directories(
+    ${catkin_INCLUDE_DIRS}
+    "/usr/local/cuda/include"
+    )
 
-## Mark executables and/or libraries for installation
-# install(TARGETS lidar_tracker lidar_tracker_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+  if("${ARCHITECTURE}" MATCHES "^arm")
+    LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+  endif()
 
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+  set(CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
 
-## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+  if("${ARCHITECTURE}" MATCHES "^arm")
+    set(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)
+  else()
+    set(CUDA_LDFLAGS -lcuda)
+  endif()
 
-#############
-## Testing ##
-#############
+  set(CUDA_CAPABILITY_VERSION_CHECKER
+    "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
+    )
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_lidar_tracker.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+  add_custom_target(gpu_arch_version_checker)
+  add_dependencies(gpu_arch_version_checker
+    libdpm_ttic
+    )
 
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+  execute_process(
+    COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+    OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+  if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+    set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+  else()
+    set(CUDA_ARCH "sm_52")
+  endif()
+
+  #QT Stuff
+  # set(CMAKE_AUTOMOC ON)
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+  add_custom_command(
+    OUTPUT ui_mainwindow.h
+    COMMAND
+    ${Qt5BIN}/uic
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/ui_mainwindow.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/mainwindow.ui"
+    )
+  add_custom_target(vehicle_tracker_ui_mainwindow DEPENDS ui_mainwindow.h)
+
+  add_custom_command(
+    OUTPUT moc_mainwindow.cpp
+    COMMAND
+    ${Qt5BIN}/moc
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/moc_mainwindow.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/mainwindow.h"
+    )
+  add_custom_target(vehicle_tracker_moc_mainwindow DEPENDS moc_mainwindow.cpp)
+
+  add_custom_command(
+    OUTPUT moc_rbsspfvehicletracker.cpp
+    COMMAND
+    ${Qt5BIN}/moc
+    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/moc_rbsspfvehicletracker.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/rbsspfvehicletracker.h"
+    )
+  add_custom_target(vehicle_tracker_moc_rbsspfvehicletracker DEPENDS moc_rbsspfvehicletracker.cpp)
+  
+  # find_package(Qt5Core REQUIRED)
+  # find_package(Qt5Widgets REQUIRED)
+  
+  #QT Stuff
+  
+  FIND_PACKAGE(CUDA REQUIRED)
+  INCLUDE(FindCUDA)
+  
+  # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
+  
+  INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS})
+
+  #cuda pf lib
+  cuda_add_library(rbsspfvehicletracker
+        nodes/vscan_lidar_track/rbsspfvehicletracker.cu
+        nodes/vscan_lidar_track/rbsspfvehicletracker.cuh)
+
+  catkin_package(
+    CATKIN_DEPENDS rosinterface
+    )
+
+  #qt exe
+  include_directories(${Qt5Core_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
+    nodes/vscan_lidar_track/)
+
+  add_definitions(${Qt5Core_DEFINITIONS})
+  add_definitions(${Qt5Widgets_DEFINITIONS})
+  
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
+  add_executable(vscan_lidar_track
+    nodes/vscan_lidar_track/rbsspfvehicletracker.h
+    nodes/vscan_lidar_track/main.cpp
+    nodes/vscan_lidar_track/mainwindow.cpp
+    nodes/vscan_lidar_track/rbsspfvehicletracker.cpp
+    )
+
+  set_target_properties(vscan_lidar_track
+    PROPERTIES COMPILE_FLAGS "-fPIC"
+    )
+
+  add_dependencies(vscan_lidar_track
+    vehicle_tracker_moc_mainwindow
+    vehicle_tracker_moc_rbsspfvehicletracker
+    vehicle_tracker_ui_mainwindow
+    cv_tracker_generate_messages_cpp
+    )
+
+  target_link_libraries(vscan_lidar_track
+    ${catkin_LIBRARIES}
+    rosinterface
+    ${Qt5Core_LIBRARIES}
+    ${Qt5Widgets_LIBRARIES}
+    rbsspfvehicletracker
+    )
+
+
+endif()
