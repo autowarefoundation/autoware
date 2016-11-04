@@ -38,7 +38,6 @@ WaypointLoaderNode::WaypointLoaderNode() : private_nh_("~")
 {
   initParameter();
   initPublisher();
-
 }
 
 // Destructor
@@ -50,7 +49,6 @@ void WaypointLoaderNode::initPublisher()
 {
   // setup publisher
   lane_pub_ = nh_.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 10, true);
-
 }
 
 void WaypointLoaderNode::initParameter()
@@ -95,7 +93,7 @@ void WaypointLoaderNode::createLaneWaypoint(const std::string &file_path, waypoi
   std::vector<waypoint_follower::waypoint> wps;
   if (format == FileFormat::ver1)
     loadWaypointsForVer1(file_path.c_str(), &wps);
-  else if(format == FileFormat::ver2)
+  else if (format == FileFormat::ver2)
     loadWaypointsForVer2(file_path.c_str(), &wps);
   else
     loadWaypoints(file_path.c_str(), &wps);
@@ -103,8 +101,6 @@ void WaypointLoaderNode::createLaneWaypoint(const std::string &file_path, waypoi
   lane->header.frame_id = "/map";
   lane->header.stamp = ros::Time(0);
   lane->waypoints = wps;
-
-
 }
 
 void WaypointLoaderNode::loadWaypointsForVer1(const char *filename, std::vector<waypoint_follower::waypoint> *wps)
@@ -141,11 +137,9 @@ void WaypointLoaderNode::loadWaypointsForVer1(const char *filename, std::vector<
     wps->at(i).twist.twist.linear.x = decelerate(
         wps->at(i).pose.pose.position, wps->at(wps->size() - 1).pose.pose.position, wps->at(i).twist.twist.linear.x);
   }
-
-
 }
 
-void WaypointLoaderNode::parseWaypointForVer1(const std::string& line, waypoint_follower::waypoint *wp)
+void WaypointLoaderNode::parseWaypointForVer1(const std::string &line, waypoint_follower::waypoint *wp)
 {
   std::vector<std::string> columns;
   parseColumns(line, &columns);
@@ -174,7 +168,7 @@ void WaypointLoaderNode::loadWaypointsForVer2(const char *filename, std::vector<
   }
 }
 
-void WaypointLoaderNode::parseWaypointForVer2(const std::string& line, waypoint_follower::waypoint *wp)
+void WaypointLoaderNode::parseWaypointForVer2(const std::string &line, waypoint_follower::waypoint *wp)
 {
   std::vector<std::string> columns;
   parseColumns(line, &columns);
@@ -196,9 +190,9 @@ void WaypointLoaderNode::loadWaypoints(const char *filename, std::vector<waypoin
   std::string line;
   std::getline(ifs, line);  // get first line
   std::vector<std::string> contents;
-  parseColumns(line,&contents);
+  parseColumns(line, &contents);
 
-  std::getline(ifs,line);  // remove second line
+  std::getline(ifs, line);  // remove second line
   while (std::getline(ifs, line))
   {
     waypoint_follower::waypoint wp;
@@ -208,11 +202,11 @@ void WaypointLoaderNode::loadWaypoints(const char *filename, std::vector<waypoin
 }
 
 void WaypointLoaderNode::parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
-                          waypoint_follower::waypoint *wp)
+                                       waypoint_follower::waypoint *wp)
 {
   std::vector<std::string> columns;
   parseColumns(line, &columns);
-  std::unordered_map<std::string,std::string> map;
+  std::unordered_map<std::string, std::string> map;
   for (size_t i = 0; i < contents.size(); i++)
   {
     map[contents.at(i)] = columns.at(i);
@@ -224,12 +218,10 @@ void WaypointLoaderNode::parseWaypoint(const std::string &line, const std::vecto
   wp->pose.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(map["yaw"]));
   wp->twist.twist.linear.x = kmph2mps(std::stod(map["velocity"]));
   wp->change_flag = std::stoi(map["change_flag"]);
-
 }
 
-FileFormat WaypointLoaderNode::checkFileFormat(const char* filename)
+FileFormat WaypointLoaderNode::checkFileFormat(const char *filename)
 {
-
   std::ifstream ifs(filename);
 
   if (!ifs)
@@ -241,21 +233,21 @@ FileFormat WaypointLoaderNode::checkFileFormat(const char* filename)
   std::string line;
   std::getline(ifs, line);
 
-  //parse first line
+  // parse first line
   std::vector<std::string> parsed_columns;
   parseColumns(line, &parsed_columns);
 
-  //check if first element in the first column does not include digit
-  if (!std::any_of(parsed_columns.at(0).cbegin(),parsed_columns.at(0).cend(),isdigit))
+  // check if first element in the first column does not include digit
+  if (!std::any_of(parsed_columns.at(0).cbegin(), parsed_columns.at(0).cend(), isdigit))
   {
     return FileFormat::ver3;
   }
 
-  //if element consists only digit
+  // if element consists only digit
   int num_of_columns = countColumns(line);
-  ROS_INFO("columns size: %d",num_of_columns);
+  ROS_INFO("columns size: %d", num_of_columns);
 
-  return (num_of_columns == 3 ? FileFormat::ver1  // if data consists "x y z (velocity)"
+  return ( num_of_columns == 3 ? FileFormat::ver1  // if data consists "x y z (velocity)"
          : num_of_columns == 4 ? FileFormat::ver2  // if data consists "x y z yaw (velocity)
                                : FileFormat::unknown
           );
@@ -263,9 +255,8 @@ FileFormat WaypointLoaderNode::checkFileFormat(const char* filename)
 
 double WaypointLoaderNode::decelerate(geometry_msgs::Point p1, geometry_msgs::Point p2, double original_velocity_mps)
 {
-
-  double distance = sqrt(pow(p2.x - p1.x,2) + pow(p2.y - p1.y,2) + pow(p2.z - p1.z,2));
-  double vel = sqrt(2 * decelerate_ * distance); //km/h
+  double distance = sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2) + pow(p2.z - p1.z, 2));
+  double vel = sqrt(2 * decelerate_ * distance);  // km/h
 
   if (mps2kmph(vel) < 1.0)
     vel = 0;
@@ -293,13 +284,13 @@ bool WaypointLoaderNode::verifyFileConsistency(const char *filename)
   }
 
   std::string line;
-  std::getline(ifs, line); //remove first line
+  std::getline(ifs, line);  // remove first line
 
   size_t ncol = format == FileFormat::ver1 ? 4 //x,y,z,velocity
-               : format == FileFormat::ver2 ? 5 //x,y,z,yaw,velocity
-               : countColumns(line);
+              : format == FileFormat::ver2 ? 5 //x,y,z,yaw,velocity
+              : countColumns(line);
 
-   while (std::getline(ifs, line)) //search from second line
+  while (std::getline(ifs, line))  // search from second line
   {
     if (countColumns(line) != ncol)
       return false;
@@ -317,7 +308,7 @@ void parseColumns(const std::string &line, std::vector<std::string> *columns)
   }
 }
 
-size_t countColumns(const std::string& line)
+size_t countColumns(const std::string &line)
 {
   std::istringstream ss(line);
   size_t ncol = 0;
@@ -331,4 +322,4 @@ size_t countColumns(const std::string& line)
   return ncol;
 }
 
-} // waypoint_maker
+}  // waypoint_maker
