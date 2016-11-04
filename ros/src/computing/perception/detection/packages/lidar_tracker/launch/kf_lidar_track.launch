@@ -1,0 +1,6 @@
+<!-- Launch file for Kalman Filter Tracker -->
+<launch>
+	<!-- rosrun lidar_tracker kf_track -->
+	<node pkg="lidar_tracker" type="kf_lidar_track" name="kf_lidar_track" />
+
+</launch>

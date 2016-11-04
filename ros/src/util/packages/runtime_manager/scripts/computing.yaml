@@ -232,6 +232,20 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+      - name : svm_lidar_detect
+        desc : svm_lidar_detect desc sample
+        cmd  : roslaunch lidar_tracker svm_lidar_detect.launch
+        param: svm_lidar_detect
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : pf_lidar_track
+        desc : pf_lidar_track desc sample
+        cmd  : roslaunch lidar_tracker pf_lidar_track.launch
+        param: pf_lidar_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch lidar_tracker obj_fusion.launch
