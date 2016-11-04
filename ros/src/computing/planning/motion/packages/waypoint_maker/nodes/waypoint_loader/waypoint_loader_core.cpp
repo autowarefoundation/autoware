@@ -61,7 +61,7 @@ void WaypointLoaderNode::initParameter()
   private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, MULTI_LANE_CSV);
 }
 
-void WaypointLoaderNode::publishWaypointsArray()
+void WaypointLoaderNode::publishLaneArray()
 {
   // extract file paths
   std::vector<std::string> multi_file_path;

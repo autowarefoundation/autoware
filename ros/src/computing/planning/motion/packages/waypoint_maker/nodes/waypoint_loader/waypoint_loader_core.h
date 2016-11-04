@@ -75,7 +75,7 @@ public:
   WaypointLoaderNode();
   ~WaypointLoaderNode();
 
-  void publishWaypointsArray();
+  void publishLaneArray();
 
 private:
 
@@ -97,6 +97,8 @@ private:
   // functions
 
   void createLaneWaypoint(const std::string &file_path, waypoint_follower::lane *lane);
+  void createLaneArray(const std::vector<std::string> &paths, waypoint_follower::LaneArray *lane_array);
+
   FileFormat checkFileFormat(const char *filename);
   bool verifyFileConsistency(const char *filename);
   void loadWaypointsForVer1(const char *filename, std::vector<waypoint_follower::waypoint> *wps);
@@ -112,7 +114,6 @@ private:
 
 void parseColumns(const std::string &line, std::vector<std::string> *columns);
 size_t countColumns(const std::string& line);
-
 
 }
 #endif  // _WAYPOINT_LOADER_CORE_H_
