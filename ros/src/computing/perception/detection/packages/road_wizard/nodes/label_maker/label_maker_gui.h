@@ -34,12 +34,14 @@ private slots:
   void SaveAndGoNext();
   void SaveAndGoPrevious();
 
+  // The behavior of "Reset Selection" button
+  void ResetSelection();
 private:
   // The utility function to get directory path
   QString GetTargetDirectoryPath();
 
   // Reset radio buttons status
-  void ResetRadioButtons();
+  void ResetRadioButtonsBackGround();
 
   // Save the current status
   bool SaveCurrentState();

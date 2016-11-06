@@ -21,12 +21,12 @@ LabelMakerGui::LabelMakerGui(QWidget *parent) :
   image_list_ = file_system_operator_.GetImageList(dataset_path_.toStdString() + "/Images/");
 
   // Open target file for saving data
-  file_system_operator_.CheckFileExistance(dataset_path_.toStdString() + "/label.csv");
+  file_system_operator_.CheckPreSavedData(dataset_path_.toStdString() + "/Annotations/");
 
   // Setup GUI
   ui_->image_id_horizontal_slider_->setMaximum(image_list_.size() - 1);
   ui_->image_id_spin_box_->setMaximum(image_list_.size() - 1);
-  ResetRadioButtons();
+  ResetRadioButtonsBackGround();
 
   // Display first image
   ShowImage();
@@ -62,6 +62,10 @@ LabelMakerGui::LabelMakerGui(QWidget *parent) :
           this,
           SLOT(SaveAndGoPrevious()));
 
+  connect(ui_->reset_push_button_,
+          SIGNAL(pressed()),
+          this,
+          SLOT(ResetSelection()));
 } // LabelMakerGui::LabelMakerGui()
 
 
@@ -105,7 +109,7 @@ QString LabelMakerGui::GetTargetDirectoryPath() {
 } // QString LabelMakerGui::GetTargetDirectoryPath() {
 
 
-void LabelMakerGui::ResetRadioButtons() {
+void LabelMakerGui::ResetRadioButtonsBackGround() {
   // Reset radio buttons' background color
   ui_->green_radio_button_->setStyleSheet("background-color:grey");
   ui_->yellow_radio_button_->setStyleSheet("background-color:grey");
@@ -132,7 +136,7 @@ void LabelMakerGui::ShowImage() {
 
 void LabelMakerGui::SetRadioButtonsColor(QAbstractButton *selected_button) {
   // Reset background
-  ResetRadioButtons();
+  ResetRadioButtonsBackGround();
 
   // Change background color of radio button to corresponding color
   QString button_name = selected_button->text();
@@ -172,10 +176,25 @@ bool LabelMakerGui::SaveCurrentState() {
   }
 
   int current_image_id = ui_->image_id_spin_box_->text().toInt();
-  std::string current_image_file = "Images/" + image_list_[current_image_id]; // Image file should be under "Image" directory
+
+  // Get selected area
+  QPoint start;
+  QPoint end;
+  if (!ui_->graphics_view_->GetSelectedArea(&start, &end)) {
+    QMessageBox::warning(this,
+                         "WARNING",
+                         "No Area is specified.");
+    return false;
+  }
 
   // Save specified state into file
-  file_system_operator_.WriteStateToFile(current_image_file, state);
+  file_system_operator_.WriteStateToFile("Images", // Image file should be under "Image" directory
+                                         image_list_[current_image_id],
+                                         state,
+                                         start.x(),
+                                         start.y(),
+                                         end.x(),
+                                         end.y());
   return true;
 }
 
@@ -215,4 +234,21 @@ void LabelMakerGui::SaveAndGoPrevious() {
     return;
   }
   ui_->image_id_spin_box_->setValue(image_id);
+}
+
+
+void LabelMakerGui::ResetSelection() {
+  // Reset radiobutton selection
+  ui_->radio_button_group_->setExclusive(false);
+  ui_->green_radio_button_->setChecked(false);
+  ui_->yellow_radio_button_->setChecked(false);
+  ui_->red_radio_button_->setChecked(false);
+  ui_->unknown_radio_button_->setChecked(false);
+  ui_->radio_button_group_->setExclusive(true);
+
+  // Reset radiobuttons background
+  ResetRadioButtonsBackGround();
+
+  // Reset selected area
+  ui_->graphics_view_->ResetSelectedArea();
 }

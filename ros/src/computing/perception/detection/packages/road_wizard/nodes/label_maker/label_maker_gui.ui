@@ -18,7 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="1">
+    <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QLabel" name="label">
@@ -56,7 +56,7 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="2">
+    <item row="1" column="1">
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -236,13 +236,25 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="1">
+    <item row="1" column="0">
      <widget class="CustomGraphicsView" name="graphics_view_"/>
     </item>
-    <item row="2" column="1">
+    <item row="3" column="0">
      <widget class="QLabel" name="label_2">
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
       <property name="text">
-       <string>mouse wheel: Zoom In / Out</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;[&lt;span style=&quot; font-weight:600;&quot;&gt;Mouse Drag&lt;/span&gt;]: Specify traffic light area,  [&lt;span style=&quot; font-weight:600;&quot;&gt;Mouse Wheel&lt;/span&gt;]: Zoom In / Out&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="reset_push_button_">
+      <property name="text">
+       <string>Reset Selection</string>
       </property>
      </widget>
     </item>

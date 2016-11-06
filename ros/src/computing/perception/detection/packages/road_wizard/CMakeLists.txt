@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   libvectormap
   runtime_manager
+  cmake_modules
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
@@ -192,11 +193,14 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
+find_package(TinyXML REQUIRED)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${TinyXML_INCLUDE_DIRS}
   nodes/label_maker/
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -220,6 +224,7 @@ set_target_properties(label_maker
 
 target_link_libraries(label_maker
   ${catkin_LIBRARIES}
+  ${TinyXML_LIBRARIES}
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
