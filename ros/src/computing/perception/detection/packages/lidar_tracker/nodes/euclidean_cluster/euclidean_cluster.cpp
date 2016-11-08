@@ -54,6 +54,7 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <string>
 
 #include "Cluster.h"
 
@@ -593,14 +594,19 @@ void vectormap_callback(const visualization_msgs::MarkerArray::Ptr in_vectormap_
 	pcl::PointXYZ min_point;
 	pcl::PointXYZ max_point;
 	std::vector<geometry_msgs::Point> vectormap_points;
+	std::string marker_frame;
+	double map_scale = -10.0;
 	for(auto i=in_vectormap_markers->markers.begin(); i!= in_vectormap_markers->markers.end(); i++)
 	{
 		visualization_msgs::Marker current_marker = *i;
+		marker_frame = current_marker.header.frame_id;
 		if (current_marker.ns == "road_edge")
 		{
 			for (unsigned int j=0; j< current_marker.points.size(); j++)
 			{
 				geometry_msgs::Point p = current_marker.points[j];
+				p.x*=map_scale;
+				p.y*=map_scale;
 				if(p.x<min_x)	min_x = p.x;
 				if(p.y<min_y)	min_y = p.y;
 				if(p.x>max_x)	max_x = p.x;
@@ -623,18 +629,34 @@ void vectormap_callback(const visualization_msgs::MarkerArray::Ptr in_vectormap_
 	max_point.x+=min_point.x;
 	max_point.y+=min_point.y;
 	//get world tf
-	_transform_listener->lookupTransform("/map", "/world",
-					ros::Time(_velodyne_header.stamp), *_transform);
-
+	std::string error_transform_msg;
 	tf::Vector3 map_origin_point;
-	map_origin_point = _transform->getOrigin();
+	if(_transform_listener->waitForTransform("/map", marker_frame, ros::Time(0), ros::Duration(5), ros::Duration(0.1), &error_transform_msg))
+	{
+		_transform_listener->lookupTransform("/map", marker_frame, ros::Time(0), *_transform);
+		map_origin_point = _transform->getOrigin();
+		map_origin_point.setX( map_origin_point.x() - min_point.x);
+		map_origin_point.setY( map_origin_point.y() - min_point.y);
+	}
+	else
+	{
+		ROS_INFO("Euclidean Cluster (vectormap_callback): %s", error_transform_msg.c_str());
+	}
 
-	cv::Mat map_image = cv::Mat::zeros(max_point.x, max_point.y, CV_8UC1);
+	cv::Mat map_image = cv::Mat::zeros(max_point.y, max_point.x, CV_8UC3);
 
+	std::cout << "W,H:" << max_point << std::endl;
+
+	cv::Point image_start_point (vectormap_points[0].x, vectormap_points[0].y);
+	cv::Point prev_point = image_start_point;
 	for (auto i=vectormap_points.begin(); i!=vectormap_points.end(); i++)
 	{
-		map_image.at<uchar>( (int)(i->x), (int)(i->y) ) = 255;
+		cv::line(map_image, prev_point, cv::Point((int)(i->x), (int)(i->y)), cv::Scalar::all(255));
+
+		prev_point.x = (int)(i->x);
+		prev_point.y = (int)(i->y);
 	}
+	cv::circle(map_image, image_start_point, 3, cv::Scalar(255,0,0));
 	cv::imshow("vectormap", map_image);
 	cv::waitKey(0);
 }*/
