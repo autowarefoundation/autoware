@@ -67,6 +67,13 @@ catkin_package(
 	CATKIN_DEPENDS message_runtime
 )
 
+ 
+configure_file (
+	config/orb-slam2.yaml.in
+	${CATKIN_PACKAGE_ETC_DESTINATION}/orb-slam2.yaml
+)
+
+
 include_directories (
 	
 # my own

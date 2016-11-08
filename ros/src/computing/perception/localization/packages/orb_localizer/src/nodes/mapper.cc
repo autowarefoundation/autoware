@@ -19,7 +19,6 @@
 */
 
 
-#include <libgen.h>
 #include <iostream>
 #include <string>
 #include "ImageGrabber.h"
