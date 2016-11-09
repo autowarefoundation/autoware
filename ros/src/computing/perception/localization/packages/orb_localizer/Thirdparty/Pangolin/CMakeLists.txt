@@ -1,3 +1,11 @@
+cmake_minimum_required (VERSION 2.8.3)
+
+set (LibName pangolin)
+
+find_package (OpenGL REQUIRED)
+find_package (GLEW REQUIRED)
+find_package (X11 REQUIRED)
+
 SET (_UNIX_ 1)
 SET (_GCC_ 1)
 SET (BUILD_PANGOLIN_GUI 1)
@@ -31,62 +39,15 @@ function(embed_binary_files file_glob output)
     endforeach()
 endfunction()
 
-## Header only includes / core headers
-set( INCDIR ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/Pangolin/include/pangolin )
-set( HEADERS
-  ${INCDIR}/pangolin.h
-  ${INCDIR}/platform.h
-)
-set ( SRCDIR ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/Pangolin/src )
-
-append_glob(HEADERS ${INCDIR}/utils/*.h*)
-append_glob(HEADERS ${INCDIR}/image/*.h*)
-append_glob(HEADERS ${INCDIR}/log/*.h*)
-
-### Store list of source files
-append_glob(SOURCES ${SRCDIR}/utils/*.cpp)
-append_glob(SOURCES ${SRCDIR}/image/*.cpp)
-append_glob(SOURCES ${SRCDIR}/log/*.cpp)
-
-# GUI Parts
-append_glob(HEADERS ${INCDIR}/gl/*.h*)
-append_glob(HEADERS ${INCDIR}/display/*.h*)
-append_glob(HEADERS ${INCDIR}/handler/*.h*)
+set (SRCDIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 embed_binary_files( "${SRCDIR}/_embed_/fonts/*.ttf" "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
-list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
+list ( APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
 
-append_glob(SOURCES ${SRCDIR}/gl/*.cpp)
-append_glob(SOURCES ${SRCDIR}/display/*.cpp)
-append_glob(SOURCES ${SRCDIR}/handler/*.cpp)
-
-append_glob(HEADERS ${INCDIR}/var/*.h*)
-append_glob(SOURCES ${SRCDIR}/var/*.cpp)
-
-list(APPEND HEADERS ${INCDIR}/display/widgets/widgets.h )
-append_glob(SOURCES ${SRCDIR}/display/widgets/*.cpp )
-
-find_package (OpenGL REQUIRED)
-list(APPEND USER_INC  "${OPENGL_INCLUDE_DIR}" )
-list(APPEND LINK_LIBS "${OPENGL_LIBRARIES}" )
-
-find_package (GLEW REQUIRED)
-list(APPEND USER_INC  "${GLEW_INCLUDE_DIR}" )
-list(APPEND LINK_LIBS "${GLEW_LIBRARY}" )
-
-find_package(X11 REQUIRED)
-list(APPEND USER_INC ${X11_INCLUDE_DIR})
-list(APPEND SOURCES ${SRCDIR}/display/device/display_x11.cpp )
-list(APPEND LINK_LIBS ${X11_LIBRARIES} )
-
-set(HAVE_GLEW 1)
-
-set (LibName pangolin)
-
-configure_file(
-  "${SRCDIR}/config.h.in"
-  "${INCDIR}/config.h"
-)
+append_glob (SOURCES ${SRCDIR}/gl/*.cpp)
+append_glob (SOURCES ${SRCDIR}/display/*.cpp)
+append_glob (SOURCES ${SRCDIR}/handler/*.cpp)
+append_glob (SOURCES ${SRCDIR}/var/*.cpp)
+append_glob (SOURCES ${SRCDIR}/display/widgets/*.cpp )
 
 add_library (${LibName} STATIC ${SOURCES})
-set_target_properties(${LibName} PROPERTIES LINKER_LANGUAGE CXX)

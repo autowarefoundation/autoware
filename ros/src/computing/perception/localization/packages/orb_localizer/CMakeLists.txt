@@ -51,4 +51,6 @@ configure_file (
 )
 
 # For building Pangolin
-include (Thirdparty/Pangolin/CMakeLists.txt)
+#include (Thirdparty/Pangolin/CMakeLists.txt)
+add_subdirectory (Thirdparty/Pangolin)
+
