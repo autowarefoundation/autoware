@@ -67,16 +67,18 @@ list(APPEND HEADERS ${INCDIR}/display/widgets/widgets.h )
 append_glob(SOURCES ${SRCDIR}/display/widgets/*.cpp )
 
 find_package (OpenGL REQUIRED)
+list(APPEND USER_INC  "${OPENGL_INCLUDE_DIR}" )
+list(APPEND LINK_LIBS "${OPENGL_LIBRARIES}" )
+
 find_package (GLEW REQUIRED)
 list(APPEND USER_INC  "${GLEW_INCLUDE_DIR}" )
 list(APPEND LINK_LIBS "${GLEW_LIBRARY}" )
-find_package (FREEGLUT REQUIRED)
-if(FREEGLUT_FOUND)
-	set(HAVE_GLUT 1)
-	list(APPEND HEADERS ${INCDIR}/display/device/display_glut.h )
-	list(APPEND SOURCES ${SRCDIR}/display/device/display_glut.cpp )
-	message(STATUS "Glut Found and Enabled")
-endif()
+
+find_package(X11 REQUIRED)
+list(APPEND USER_INC ${X11_INCLUDE_DIR})
+list(APPEND SOURCES ${SRCDIR}/display/device/display_x11.cpp )
+list(APPEND LINK_LIBS ${X11_LIBRARIES} )
+
 set(HAVE_GLEW 1)
 
 set (LibName pangolin)
