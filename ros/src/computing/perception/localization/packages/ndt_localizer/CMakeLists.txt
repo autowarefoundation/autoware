@@ -58,11 +58,21 @@ add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
 add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
+add_executable(ndt3d nodes/ndt_matching_tku/ndt3d.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
+add_executable(ndt3d_voxel nodes/ndt_matching_tku/ndt3d_voxel.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
+add_executable(ndt3d_offline nodes/ndt_matching_tku/ndt3d_offline.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
+add_executable(mapping nodes/ndt_matching_tku/mapping.cpp)
+
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
+
+target_link_libraries(ndt3d ${catkin_LIBRARIES})
+target_link_libraries(ndt3d_voxel ${catkin_LIBRARIES})
+target_link_libraries(ndt3d_offline ${catkin_LIBRARIES})
+target_link_libraries(mapping ${catkin_LIBRARIES})
 
 add_dependencies(ndt_matching runtime_manager_generate_messages_cpp ndt_localizer_generate_messages_cpp)
 add_dependencies(ndt_mapping runtime_manager_generate_messages_cpp)
