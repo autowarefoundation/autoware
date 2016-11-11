@@ -3,7 +3,7 @@ project(DBoW2)
 
 find_package (OpenCV REQUIRED)
 
-add_library(DBoW2
+add_library(DBoW2 STATIC
 	BowVector.cpp
 	FORB.cpp      
 	FeatureVector.cpp

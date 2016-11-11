@@ -58,3 +58,61 @@ add_subdirectory (Thirdparty/DBoW2)
 
 # For building g2o
 add_subdirectory (Thirdparty/g2o)
+
+
+include_directories (
+	# my own
+	include
+	${catkin_INCLUDE_DIRS}
+	
+# Important libraries
+	${OpenCV_INCLUDE_DIRS}
+	${PCL_INCLUDE_DIRS}
+	${Pangolin_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${PYTHON_INCLUDE_DIR}
+	
+# Third parties
+	Thirdparty
+	Thirdparty/g2o
+	Thirdparty/Pangolin/include
+	
+)
+
+
+add_library(
+	orb_slam2 STATIC
+		src/System.cc
+		src/Tracking.cc
+		src/LocalMapping.cc
+		src/LoopClosing.cc
+		src/ORBextractor.cc
+		src/ORBmatcher.cc
+		src/FrameDrawer.cc
+		src/Converter.cc
+		src/MapPoint.cc
+		src/KeyFrame.cc
+		src/Map.cc
+		src/MapDrawer.cc
+		src/Optimizer.cc
+		src/PnPsolver.cc
+		src/Frame.cc
+		src/KeyFrameDatabase.cc
+		src/Sim3Solver.cc
+		src/Initializer.cc
+		src/Viewer.cc
+)
+
+
+target_link_libraries(
+	orb_slam2
+	${OpenCV_LIBS}
+	${EIGEN3_LIBS}
+	pangolin
+	DBoW2
+	g2o
+	boost_system
+	boost_serialization
+	${PCL_LIBRARIES}
+	GLEW
+)

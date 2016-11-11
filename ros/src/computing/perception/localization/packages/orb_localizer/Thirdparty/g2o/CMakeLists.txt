@@ -27,9 +27,6 @@ configure_file(
 
 include_directories (
 	${CMAKE_CURRENT_SOURCE_DIR}
-#	core
-#	types
-#	stuff 
 	${G2O_EIGEN3_INCLUDE}
 )
 
