@@ -24,60 +24,70 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef G2O_BASE_UNARY_EDGE_H
-#define G2O_BASE_UNARY_EDGE_H
+#ifndef G2O_BASE_MULTI_EDGE_H
+#define G2O_BASE_MULTI_EDGE_H
 
 #include <iostream>
-#include <cassert>
+#include <iomanip>
 #include <limits>
+
+#include <Eigen/StdVector>
 
 #include "g2o/core/base_edge.h"
 #include "g2o/core/robust_kernel.h"
-#include "../config.h"
+#include "g2o/config.h"
 
 namespace g2o {
 
   using namespace Eigen;
 
-  template <int D, typename E, typename VertexXi>
-  class BaseUnaryEdge : public BaseEdge<D,E>
+  /**
+   * \brief base class to represent an edge connecting an arbitrary number of nodes
+   *
+   * D - Dimension of the measurement
+   * E - type to represent the measurement
+   */
+  template <int D, typename E>
+  class BaseMultiEdge : public BaseEdge<D,E>
   {
     public:
-      static const int Dimension = BaseEdge<D, E>::Dimension;
+      /**
+       * \brief helper for mapping the Hessian memory of the upper triangular block
+       */
+      struct HessianHelper {
+        Eigen::Map<MatrixXd> matrix;     ///< the mapped memory
+        bool transposed;          ///< the block has to be transposed
+        HessianHelper() : matrix(0, 0, 0), transposed(false) {}
+      };
+
+    public:
+      static const int Dimension = BaseEdge<D,E>::Dimension;
       typedef typename BaseEdge<D,E>::Measurement Measurement;
-      typedef VertexXi VertexXiType;
-      typedef typename Matrix<double, D, VertexXiType::Dimension>::AlignedMapType JacobianXiOplusType;
+      typedef MatrixXd::MapType JacobianType;
       typedef typename BaseEdge<D,E>::ErrorVector ErrorVector;
       typedef typename BaseEdge<D,E>::InformationType InformationType;
+      typedef Eigen::Map<MatrixXd, MatrixXd::Flags & AlignedBit ? Aligned : Unaligned > HessianBlockType;
 
-      BaseUnaryEdge() : BaseEdge<D,E>(),
-        _jacobianOplusXi(0, D, VertexXiType::Dimension)
+      BaseMultiEdge() : BaseEdge<D,E>()
       {
-        _vertices.resize(1);
       }
-
-      virtual void resize(size_t size);
-
-      virtual bool allVerticesFixed() const;
-
+      
       virtual void linearizeOplus(JacobianWorkspace& jacobianWorkspace);
 
       /**
        * Linearizes the oplus operator in the vertex, and stores
-       * the result in temporary variables _jacobianOplusXi and _jacobianOplusXj
+       * the result in temporary variable vector _jacobianOplus
        */
       virtual void linearizeOplus();
+      
+      virtual void resize(size_t size);
 
-      //! returns the result of the linearization in the manifold space for the node xi
-      const JacobianXiOplusType& jacobianOplusXi() const { return _jacobianOplusXi;}
+      virtual bool allVerticesFixed() const;
 
-      virtual void constructQuadraticForm();
+      virtual void constructQuadraticForm() ;
 
-      virtual void initialEstimate(const OptimizableGraph::VertexSet& from, OptimizableGraph::Vertex* to);
+      virtual void mapHessianMemory(double* d, int i, int j, bool rowMajor);
 
-      virtual void mapHessianMemory(double*, int, int, bool) {assert(0 && "BaseUnaryEdge does not map memory of the Hessian");}
-
-      using BaseEdge<D,E>::resize;
       using BaseEdge<D,E>::computeError;
 
     protected:
@@ -87,13 +97,16 @@ namespace g2o {
       using BaseEdge<D,E>::_vertices;
       using BaseEdge<D,E>::_dimension;
 
-      JacobianXiOplusType _jacobianOplusXi;
+      std::vector<HessianHelper> _hessian;
+      std::vector<JacobianType, aligned_allocator<JacobianType> > _jacobianOplus; ///< jacobians of the edge (w.r.t. oplus)
+
+      void computeQuadraticForm(const InformationType& omega, const ErrorVector& weightedError);
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   };
 
-#include "g2o/core/base_unary_edge.hpp"
+#include "g2o/core/base_multi_edge.hpp"
 
 } // end namespace g2o
 

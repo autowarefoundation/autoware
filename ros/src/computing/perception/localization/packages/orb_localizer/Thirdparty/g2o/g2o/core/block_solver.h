@@ -33,7 +33,7 @@
 #include "g2o/core/solver.h"
 #include "g2o/core/sparse_block_matrix.h"
 #include "g2o/core/sparse_block_matrix_diagonal.h"
-#include "../config.h"
+#include "g2o/config.h"
 
 namespace g2o {
   using namespace Eigen;

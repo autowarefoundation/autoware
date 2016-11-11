@@ -32,7 +32,7 @@
 #include "g2o/core/solver.h"
 #include "g2o/core/sparse_optimizer.h"
 #include "g2o/stuff/timeutil.h"
-#include "../stuff/macros.h"
+#include "g2o/stuff/macros.h"
 
 using namespace std;
 

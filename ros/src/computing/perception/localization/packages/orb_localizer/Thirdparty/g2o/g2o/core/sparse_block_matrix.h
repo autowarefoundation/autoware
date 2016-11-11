@@ -38,7 +38,7 @@
 #include "g2o/core/matrix_operations.h"
 #include "g2o/core/matrix_structure.h"
 #include "g2o/core/sparse_block_matrix_ccs.h"
-#include "../config.h"
+#include "g2o/config.h"
 
 namespace g2o {
   using namespace Eigen;

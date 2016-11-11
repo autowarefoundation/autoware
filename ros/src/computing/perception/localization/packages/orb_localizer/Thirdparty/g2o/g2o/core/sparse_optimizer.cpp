@@ -40,8 +40,8 @@
 #include "g2o/core/robust_kernel.h"
 #include "g2o/stuff/misc.h"
 #include "g2o/stuff/timeutil.h"
-#include "../stuff/macros.h"
-#include "../config.h"
+#include "g2o/stuff/macros.h"
+#include "g2o/config.h"
 
 namespace g2o{
   using namespace std;

@@ -27,7 +27,7 @@
 #ifndef G2O_GRAPH_OPTIMIZER_CHOL_H_
 #define G2O_GRAPH_OPTIMIZER_CHOL_H_
 
-#include "../stuff/macros.h"
+#include "g2o/stuff/macros.h"
 
 #include <map>
 #include "g2o/core/batch_stats.h"

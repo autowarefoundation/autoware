@@ -30,8 +30,8 @@
 
 #include <vector>
 #include <utility>
-#include<Eigen/Core>
-#include<Eigen/Cholesky>
+#include <Eigen/Core>
+#include <Eigen/Cholesky>
 #include "g2o/core/batch_stats.h"
 #include "g2o/core/linear_solver.h"
 

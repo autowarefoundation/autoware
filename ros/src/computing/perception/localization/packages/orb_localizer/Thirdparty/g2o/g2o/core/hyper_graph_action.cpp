@@ -26,7 +26,7 @@
 
 #include "g2o/core/hyper_graph_action.h"
 
-#include "../stuff/macros.h"
+#include "g2o/stuff/macros.h"
 
 
 #include <iostream>

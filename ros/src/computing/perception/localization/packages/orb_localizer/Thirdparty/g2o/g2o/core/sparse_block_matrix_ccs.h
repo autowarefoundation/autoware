@@ -32,7 +32,7 @@
 #include <Eigen/Core>
 
 #include "g2o/core/matrix_operations.h"
-#include "../config.h"
+#include "g2o/config.h"
 
 #ifdef _MSC_VER
 #include <unordered_map>

@@ -27,7 +27,7 @@
 #ifndef G2O_FACTORY_H
 #define G2O_FACTORY_H
 
-#include "../config.h"
+#include "g2o/config.h"
 #include <string>
 #include <map>
 #include <iostream>

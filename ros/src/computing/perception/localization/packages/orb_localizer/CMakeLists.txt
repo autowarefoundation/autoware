@@ -51,6 +51,10 @@ configure_file (
 )
 
 # For building Pangolin
-#include (Thirdparty/Pangolin/CMakeLists.txt)
 add_subdirectory (Thirdparty/Pangolin)
 
+# For building DBoW2
+add_subdirectory (Thirdparty/DBoW2)
+
+# For building g2o
+add_subdirectory (Thirdparty/g2o)

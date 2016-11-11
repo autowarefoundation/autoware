@@ -41,9 +41,9 @@
 #include "g2o/core/optimization_algorithm_property.h"
 #include "g2o/core/robust_kernel.h"
 #include "g2o/stuff/color_macros.h"
-#include "../stuff/macros.h"
-#include "../stuff/string_tools.h"
-#include "../stuff/misc.h"
+#include "g2o/stuff/macros.h"
+#include "g2o/stuff/string_tools.h"
+#include "g2o/stuff/misc.h"
 
 namespace g2o {
 

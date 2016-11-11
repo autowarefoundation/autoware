@@ -24,7 +24,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "../../../Thirdparty/g2o/stuff/os_specific.h"
+#include "g2o/stuff/os_specific.h"
 
 #ifdef WINDOWS
 

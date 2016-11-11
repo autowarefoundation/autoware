@@ -27,7 +27,7 @@
 #ifndef G2O_BASE_VERTEX_H
 #define G2O_BASE_VERTEX_H
 
-#include "../stuff/macros.h"
+#include "g2o/stuff/macros.h"
 
 #include <Eigen/Core>
 #include <Eigen/Dense>

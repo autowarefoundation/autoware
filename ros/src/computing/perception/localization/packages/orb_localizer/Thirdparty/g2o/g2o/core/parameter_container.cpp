@@ -32,7 +32,7 @@
 #include "g2o/core/parameter.h"
 #include "g2o/stuff/color_macros.h"
 #include "g2o/stuff/string_tools.h"
-#include "../stuff/macros.h"
+#include "g2o/stuff/macros.h"
 
 namespace g2o {
 

@@ -28,10 +28,10 @@
 #include <fstream>
 #include <iomanip>
 
-#include "../../../Thirdparty/g2o/core/sparse_optimizer.h"
-#include "../../../Thirdparty/g2o/stuff/misc.h"
-#include "../stuff/timeutil.h"
-#include "../stuff/macros.h"
+#include "g2o/core/sparse_optimizer.h"
+#include "g2o/stuff/misc.h"
+#include "g2o/stuff/timeutil.h"
+#include "g2o/stuff/macros.h"
 
 namespace g2o {
 

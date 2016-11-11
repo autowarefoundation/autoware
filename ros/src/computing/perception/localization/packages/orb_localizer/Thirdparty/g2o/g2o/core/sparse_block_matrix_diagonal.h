@@ -32,7 +32,7 @@
 #include <Eigen/StdVector>
 
 #include "g2o/core/matrix_operations.h"
-#include "../config.h"
+#include "g2o/config.h"
 
 namespace g2o {
 

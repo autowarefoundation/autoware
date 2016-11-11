@@ -34,8 +34,8 @@
 #ifndef G2O_SIX_DOF_TYPES_EXPMAP
 #define G2O_SIX_DOF_TYPES_EXPMAP
 
-#include "../core/base_vertex.h"
-#include "../core/base_binary_edge.h"
+#include "g2o/core/base_vertex.h"
+#include "g2o/core/base_binary_edge.h"
 #include <Eigen/Geometry>
 #include "g2o/core/base_unary_edge.h"
 #include "g2o/types/se3_ops.h"
