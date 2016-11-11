@@ -24,7 +24,7 @@ Camera.p2: 0
 Camera.k3: 0
 
 # Camera frames per second 
-Camera.fps: 20.0
+Camera.fps: 25
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
@@ -35,14 +35,14 @@ Camera.WorkingResolution.Height: 600
 Camera.ROI.x0: 0
 Camera.ROI.y0: 0
 Camera.ROI.width: 800
-Camera.ROI.height: 429
+Camera.ROI.height: 600
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
 
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 2000
+ORBextractor.nFeatures: 3000
 
 # ORB Extractor: Scale factor between levels in the scale pyramid 	
 ORBextractor.scaleFactor: 1.2
@@ -73,9 +73,12 @@ Viewer.ViewpointF: 500
 
 MapFileName: "/tmp/test.map"
 #Camera.topic: "/camera1/image_color"
-Camera.topic: "/camera1/image_raw"
+Camera.topic: "/camera/image_raw"
 Camera.compressed: 0
 #Camera.ROS.ImageType: "color"
-ExternalLocalization.frame1: "world"
-ExternalLocalization.frame2: "camera1"
+ExternalReference.Mapping.frame1: "world"
+ExternalReference.Mapping.frame2: "velodyne"
+Localization.frame1: "world"
+Localization.frame2: "camera"
+
 ExternalLocalization.OffsetKeyframes: 10

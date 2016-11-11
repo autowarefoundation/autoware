@@ -39,15 +39,33 @@ function(embed_binary_files file_glob output)
     endforeach()
 endfunction()
 
-set (SRCDIR ${CMAKE_CURRENT_SOURCE_DIR})
+set (SRCDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+message ( STATUS "XXX SourceDir: ${SRCDIR}" )
 
 embed_binary_files( "${SRCDIR}/_embed_/fonts/*.ttf" "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
 list ( APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
 
+append_glob (SOURCES ${SRCDIR}/utils/*.cpp)
+append_glob (SOURCES ${SRCDIR}/image/*.cpp)
+append_glob (SOURCES ${SRCDIR}/log/*.cpp)
 append_glob (SOURCES ${SRCDIR}/gl/*.cpp)
 append_glob (SOURCES ${SRCDIR}/display/*.cpp)
 append_glob (SOURCES ${SRCDIR}/handler/*.cpp)
 append_glob (SOURCES ${SRCDIR}/var/*.cpp)
-append_glob (SOURCES ${SRCDIR}/display/widgets/*.cpp )
+append_glob (SOURCES ${SRCDIR}/display/widgets/*.cpp)
+list (APPEND SOURCES ${SRCDIR}/display/device/display_x11.cpp)
+
+set (HAVE_GLEW 1)
+
+configure_file (
+	src/config.h.in
+	${CMAKE_CURRENT_SOURCE_DIR}/include/pangolin/config.h
+)
+
+
+include_directories (
+	include
+)
 
 add_library (${LibName} STATIC ${SOURCES})
+set_target_properties(${LibName} PROPERTIES LINKER_LANGUAGE CXX)
