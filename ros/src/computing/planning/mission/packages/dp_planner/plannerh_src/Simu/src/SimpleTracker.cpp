@@ -16,7 +16,7 @@ using namespace PlannerHNS;
 
 SimpleTracker::SimpleTracker()
 {
-	m_pCarTracker = 0;
+
 	iTracksNumber = 1;
 	m_Car.center.cost = 0;
 	m_Car.l = 4.5;
@@ -139,16 +139,6 @@ void SimpleTracker::AssociateObjects()
 	m_DetectedObjects.insert(m_DetectedObjects.begin(), hidden_list.begin(), hidden_list.end());
 }
 
-void SimpleTracker::Initialize(const WayPoint& currPose)
-{
-	//iTracksNumber = 1;
-	m_Car.center.pos = currPose.pos;
-	m_pCarTracker = new KFTrack(currPose.pos.x, currPose.pos.y, currPose.pos.a, 1);
-	m_pCarTracker->UpdateTracking(m_Car.center.pos.x, m_Car.center.pos.y,m_Car.center.pos.a,
-			m_Car.center.pos.x, m_Car.center.pos.y, m_Car.center.pos.a, m_Car.center.v);
-
-}
-
 void SimpleTracker::CreateTrack(DetectedObject& o)
 {
 	KFTrack* pT = new KFTrack(o.center.pos.x, o.center.pos.y,o.center.pos.a, o.id);
@@ -171,9 +161,6 @@ KFTrack* SimpleTracker::FindTrack(long index)
 
 void SimpleTracker::Track(std::vector<DetectedObject>& objects_list)
 {
-	m_pCarTracker->UpdateTracking(m_Car.center.pos.x, m_Car.center.pos.y, m_Car.center.pos.a,
-				m_Car.center.pos.x, m_Car.center.pos.y, m_Car.center.pos.a, m_Car.center.v);
-
 	for(unsigned int i =0; i<objects_list.size(); i++)
 	{
 		if(objects_list[i].id >= 0)

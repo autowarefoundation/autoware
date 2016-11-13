@@ -148,7 +148,7 @@ PlannerH::PlannerH()
 
  double PlannerH::PlanUsingDP(Lane* l, const WayPoint& start,const WayPoint& goalPos,
 			const WayPoint& prevWayPoint, const double& maxPlanningDistance,
-			const std::vector<int>& globalPath, std::vector<WayPoint>& path)
+			const std::vector<int>& globalPath, std::vector<std::vector<WayPoint> >& paths)
  {
  	if(!l)
  	{
@@ -187,7 +187,8 @@ PlannerH::PlannerH()
  	//mainPath.push_back(start);
  	//mainPath.push_back(*pLaneCell);
 
- 	PlanningHelpers::TraversePathTreeBackwards(pLaneCell, pStartWP, globalPath, mainPath, tempCurrentForwardPathss);
+ 	std::vector<WayPoint> path;
+ 	PlanningHelpers::TraversePathTreeBackwards(pLaneCell, pStartWP, globalPath, path, tempCurrentForwardPathss);
 
 
  	cout << endl <<"Info: PlannerH -> Path With Size (" << (int)mainPath.size() << "), Extraction Time : " << endl;
@@ -210,7 +211,7 @@ PlannerH::PlannerH()
  	//PlanningHelpers::FixPathDensity(mainPath, 0.5);
  	//PlanningHelpers::SmoothPath(mainPath, 0.3 , 0.3,0.1);
 
- 	path = mainPath;
+ 	paths.push_back(path);
 
  	double totalPlanningDistance = mainPath.at(mainPath.size()-1).cost;
  	return totalPlanningDistance;

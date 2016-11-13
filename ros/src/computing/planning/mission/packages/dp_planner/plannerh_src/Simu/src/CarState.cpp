@@ -817,7 +817,7 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 		currentBehavior.indicator = PlannerHNS::INDICATOR_LEFT;
 	else
 		currentBehavior.indicator = PlannerHNS::INDICATOR_NONE;
-	currentBehavior.maxVelocity 	= PlannerHNS::PlanningHelpers::GetVelocityAhead(m_Path, state, 1.5*vehicleState.speed*3.6);
+	currentBehavior.maxVelocity 	= PlannerHNS::PlanningHelpers::GetVelocityAhead(m_Path, state, vehicleState.speed*3.6);
 	currentBehavior.minVelocity		= 0;
 	currentBehavior.stopDistance 	= preCalcPrams->distanceToStop();
 	currentBehavior.followVelocity 	= preCalcPrams->velocityOfNext;
@@ -851,8 +851,8 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 	beh.bNewPlan = SelectSafeTrajectoryAndSpeedProfile(vehicleState);
 
 
-	timespec predictionTime;
-	UtilityH::GetTickCount(predictionTime);
+//	timespec predictionTime;
+//	UtilityH::GetTickCount(predictionTime);
 	//if(UtilityH::GetTimeDiffNow(m_PredictionTimer) > 0.5 || beh.bNewPlan)
 	{
 		//CalculateObstacleCosts(map, vehicleState, obj_list);
@@ -1042,11 +1042,12 @@ bool SimulatedCarState::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::Ve
 		PlannerHNS::PlannerH planner;
 		std::vector<int> LanesIds;
 
-		std::vector<PlannerHNS::WayPoint> generatedPath;
+		std::vector<std::vector<PlannerHNS::WayPoint> > generatedPath;
 		planner.PlanUsingDP(pLane, state, PlannerHNS::WayPoint(),
 				state, 150, LanesIds, generatedPath);
 		m_RollOuts.clear();
-		m_TotalPath = generatedPath;
+		if(generatedPath.size()>0)
+			m_TotalPath = generatedPath.at(0);
 
 
 		planner.GenerateRunoffTrajectory(m_TotalPath, state,

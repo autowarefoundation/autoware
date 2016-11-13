@@ -1,0 +1,27 @@
+<!-- -->
+<launch>
+	<arg name="pathDensity" 					default="0.5" /> <!-- distance between each two waypoints-->
+	<arg name="enableSmoothing" 				default="0" /> <!-- 1 or 0 -->
+	<arg name="enableLaneChange" 				default="1" /> <!-- 1 or 0 -->
+	<arg name="mapSource" 						default="kml" /> <!-- map_loader, map_server, kml -->
+	<arg name="mapFileName" 					default="/home/hatem/SimuLogs/VectorMaps/ToyotaCity/" /> <!-- incase of kml map source -->
+	
+	<arg name="enableKmlMapCreation" 			default="0"> <!-- 1 or 0 --> 
+	<arg name="kmlMapDensity" 					default="0.5" /> <!-- distance between each two waypoints in the map-->
+	<arg name="kmlMapPath" 						default="/home/hatem/SimuLogs/" /> 
+	
+	
+	<node pkg="way_planner" type="way_planner" name="way_planner" output="screen">
+		
+		<param name="pathDensity" 				value="$(arg pathDensity)" />
+		<param name="enableSmoothing" 			value="$(arg enableSmoothing)" />
+		<param name="enableLaneChange" 			value="$(arg enableLaneChange)" />
+		<param name="mapSource" 				value="$(arg mapSource)" />
+		<param name="mapFileName" 				value="$(arg mapFileName)" />
+		
+		<param name="enableKmlMapCreation" 		value="$(arg enableKmlMapCreation)" />
+		<param name="kmlMapDensity" 			value="$(arg kmlMapDensity)" />
+		<param name="kmlMapPath" 				value="$(arg kmlMapPath)" />
+	    
+	</node>
+</launch>

@@ -29,13 +29,20 @@
 */
 #include "dp_planner_core.h"
 #include "RosHelpers.h"
-#include "waypoint_follower/libwaypoint_follower.h"
-#include "waypoint_follower/LaneArray.h"
 #include <visualization_msgs/MarkerArray.h>
 #include "geo_pos_conv.hh"
 #include "PlannerHHandler.h"
 #include "FreePlannerHandler.h"
 #include "MappingHelpers.h"
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/io/io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
+#include <lidar_tracker/centroids.h>
+#include <lidar_tracker/CloudCluster.h>
+#include <lidar_tracker/CloudClusterArray.h>
 
 namespace PlannerXNS
 {
@@ -64,8 +71,19 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 	m_bAutoware = bAutoware;
 	m_KmlMapPath = kmlMapPath;
 	m_bKML_Map = bKML;
-
-
+	bNewEmergency = false;
+	m_bEmergencyStop = 0;
+	bNewTrafficLigh = false;
+	m_bGreenLight = 0;
+	bNewOutsideControl = false;
+	m_bOutsideControl = 0;
+	bNewOutsideControl = false;
+	m_bOutsideControl = 0;
+	bNewAStarPath = true;
+	m_bExternalPlanning = false;
+	m_bStartAStartPlanner = false;
+	m_bInitPoseFromMap = false;
+	UtilityHNS::UtilityH::GetTickCount(m_AStartPlanningTimer);
 
 	m_pPlanner = PlannerXNS::PlannerX_Interface::CreatePlannerInstance(plannerType);
 
@@ -84,19 +102,30 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 		m_pPlanner->UpdateOriginTransformationPoint(m_OriginPos);
 
 
+	m_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 100, true);
 	m_PathPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 100, true);
 	m_MapPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines", 100, true);
 
 	m_PathPublisher = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 100, true);
 	m_TrajectoryFinalWaypointPublisher = nh.advertise<waypoint_follower::lane>("final_waypoints", 100,true);
 	m_BehaviorPublisher = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 100);
-
+	m_TrackedObstaclesRviz  = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 100);
+	m_GlobalPlannerStart = nh.advertise<geometry_msgs::PoseStamped>("global_plan_start", 100);
+	m_GlobalPlannerGoal = nh.advertise<geometry_msgs::PoseStamped>("global_plan_goal", 100);
 
 
 //	sub_obj_pose 			= nh.subscribe("/obj_car/obj_label", 			100,
 //			&PlannerX::callbackFromObjCar, 				this);
-	sub_bounding_boxs = nh.subscribe("/bounding_boxes",						1,
+	sub_bounding_boxs = nh.subscribe("/bounding_boxes",						10,
 			&PlannerX::callbackFromObjCar, 				this);
+	sub_cluster_cloud = nh.subscribe("/cloud_clusters",						10,
+			&PlannerX::callbackGetPointsClusters, 				this);
+//	sub_centroids = nh.subscribe("/cluster_centroids",						1,
+//			&PlannerX::callbackGetCentroids, 				this);
+//	sub_AStarPlan = nh.subscribe("",						1,
+//			&PlannerX::callbackGetAStarPath, 				this);
+	sub_current_pose 		= nh.subscribe("/current_pose", 				100,
+					&PlannerX::callbackFromCurrentPose, 		this);
 
 	if(m_bAutoware)
 	{
@@ -110,17 +139,19 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 				&PlannerX::callbackGetVMStopLines, 			this);
 		dtlane_sub 				= nh.subscribe("/vector_map_info/dtlane", 		1,
 				&PlannerX::callbackGetVMCenterLines, 		this);
-
-		// define subscribers.
-		sub_current_pose 		= nh.subscribe("/current_pose", 				100,
-				&PlannerX::callbackFromCurrentPose, 		this);
 		sub_traffic_light 		= nh.subscribe("/light_color", 					100,
 				&PlannerX::callbackFromLightColor, 			this);
 	}
 	else
 	{
-		sub_current_pose 		= nh.subscribe("/ndt_pose", 				100,
-						&PlannerX::callbackFromCurrentPose, 		this);
+		sub_EmergencyStop	 	= nh.subscribe("/emergency_stop_signal", 		100,
+					&PlannerX::callbackGetEmergencyStop, 			this);
+		sub_TrafficLight	 	= nh.subscribe("/traffic_signal_info", 			100,
+					&PlannerX::callbackGetTrafficLight, 			this);
+		sub_OutsideControl	 	= nh.subscribe("/usb_controller_r_signal", 		100,
+					&PlannerX::callbackGetOutsideControl, 			this);
+
+		m_bOutsideControl = 1;
 	}
 
 	initialpose_subscriber 	= nh.subscribe("initialpose", 					10,
@@ -129,6 +160,8 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 			&PlannerX::callbackSimuGoalPose, 			this);
 	sub_vehicle_status	 	= nh.subscribe("ff_vehicle_status", 			100,
 				&PlannerX::callbackFromVehicleStatus, 			this);
+
+
 
 
 	AutowarePlanningParams params;
@@ -169,12 +202,67 @@ PlannerX::PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::stri
 	nh.getParam("/dp_planner/maxSteerAngle", maxA);
 
 	m_pPlanner->UpdateVehicleInfo(w,l, wb, maxA, tr);
+
+	std::string strInitPose, strGoals;
+	nh.getParam("/dp_planner/InitialPose", strInitPose);
+	nh.getParam("/dp_planner/GoalsPose", strGoals);
+
+	if(strInitPose.compare("init") == 0)
+		m_bInitPoseFromMap = true;
+
+	if(strGoals.compare("rviz") == 0)
+		m_bInitPoseFromMap = true;
+
+
 }
 
 PlannerX::~PlannerX()
 {
 	if(m_pPlanner)
 		delete m_pPlanner;
+}
+
+void PlannerX::callbackGetPointsClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg)
+{
+	//pcl::fromROSMsg(*msg, m_Points_Clusters);
+	std::cout << " Number of Detected Clusters =" << msg->clusters.size() << std::endl;
+	m_Points_Clusters = *msg;
+
+}
+
+void PlannerX::callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg)
+{
+	if(msg->lanes.size() > 0 && m_bExternalPlanning)
+	{
+		m_bExternalPlanning = false;
+		bNewAStarPath = true;
+		m_AStarPath = msg->lanes.at(0);
+	}
+}
+
+void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
+{
+	bNewOutsideControl = true;
+	m_bOutsideControl  = msg.data;
+	std::cout << "Received Outside Control : " << msg.data << std::endl;
+}
+
+void PlannerX::callbackGetEmergencyStop(const std_msgs::Int8& msg)
+{
+	bNewEmergency  = true;
+	m_bEmergencyStop = msg.data;
+	std::cout << "Received Emergency Stop : " << msg.data << std::endl;
+}
+
+void PlannerX::callbackGetTrafficLight(const std_msgs::Int8& msg)
+{
+	std::cout << "Received Traffic Light : " << msg.data << std::endl;
+
+	bNewTrafficLigh = true;
+	if(msg.data == 2)
+		m_bGreenLight = 1;
+	else
+		m_bGreenLight = 0;
 }
 
 void PlannerX::callbackFromVehicleStatus(const geometry_msgs::Vector3StampedConstPtr& msg)
@@ -195,23 +283,25 @@ void PlannerX::callbackFromVehicleStatus(const geometry_msgs::Vector3StampedCons
 
 void PlannerX::callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg)
 {
-	PlannerHNS::WayPoint p;
-	ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f, freq=%d", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, m_frequency);
-
-	m_pPlanner->UpdateGlobalGoalPosition(msg.pose);
-
-	bGoalPos = true;
+	if(!bGoalPos)
+	{
+		PlannerHNS::WayPoint p;
+		ROS_INFO("Target Pose Data: x=%f, y=%f, z=%f, freq=%d", msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, m_frequency);
+		m_pPlanner->UpdateGlobalGoalPosition(msg.pose);
+		bGoalPos = true;
+	}
 }
 
 void PlannerX::callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 {
-	PlannerHNS::WayPoint p;
-	ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
-
-	m_InitPos.position  = msg->pose.pose.position;
-	m_InitPos.orientation = msg->pose.pose.orientation;
-
-	bInitPos = true;
+	if(!bInitPos)
+	{
+		PlannerHNS::WayPoint p;
+		ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
+		m_InitPos.position  = msg->pose.pose.position;
+		m_InitPos.orientation = msg->pose.pose.orientation;
+		bInitPos = true;
+	}
 }
 
 void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -219,7 +309,7 @@ void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr&
   // write procedure for current pose
 
 	//PlannerHNS::WayPoint p;
-	//ROS_INFO("Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, m_frequency);
+	//std::cout<< "Pose Data: x=%f, y=%f, z=%f, freq=%d" << std::endl;//, msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, m_frequency);
 	m_counter++;
 	double dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer);
 	if(dt >= 1.0)
@@ -248,8 +338,11 @@ void PlannerX::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr&
 
 	m_CurrentPos.position  = p.position;
 	m_CurrentPos.orientation = p.orientation;
+	m_InitPos = m_CurrentPos;
 
 	bNewCurrentPos = true;
+	bInitPos = true;
+
 
 }
 
@@ -263,18 +356,19 @@ void PlannerX::callbackFromObjCar(const jsk_recognition_msgs::BoundingBoxArray& 
   // write procedure for car obstacle
 	m_DetectedObstacles = msg;
 	bNewDetectedObstacles = true;
+	//std::cout << "Recieved Obstacles" << msg.boxes.size() << std::endl;
 }
 
 void PlannerX::callbackGetVMPoints(const map_file::PointClassArray& msg)
 {
-	//ROS_INFO("Received Map Points");
+	ROS_INFO("Received Map Points");
 	m_AwMap.points = msg;
 	m_AwMap.bPoints = true;
 }
 
 void PlannerX::callbackGetVMLanes(const map_file::LaneArray& msg)
 {
-	//ROS_INFO("Received Map Lane Array");
+	ROS_INFO("Received Map Lane Array");
 	m_AwMap.lanes = msg.lanes;
 	m_AwMap.bLanes = true;
 }
@@ -293,10 +387,12 @@ void PlannerX::callbackGetVMStopLines(const map_file::StopLineArray& msg)
 
 void PlannerX::callbackGetVMCenterLines(const map_file::DTLaneArray& msg)
 {
-	//ROS_INFO("Received Map Center Lines");
+	ROS_INFO("Received Map Center Lines");
 	m_AwMap.dtlanes = msg.dtlanes;
 	m_AwMap.bDtLanes = true;
 }
+
+
 
 void PlannerX::PlannerMainLoop()
 {
@@ -317,28 +413,44 @@ void PlannerX::PlannerMainLoop()
 			visualization_msgs::MarkerArray map_marker_array;
 			bool bNewMap = m_pPlanner->LoadRoadMap(m_KmlMapPath, m_bKML_Map, map_marker_array);
 			if(bNewMap)
+			{
+				bInitPos = bGoalPos = false;
 				m_MapPublisherRviz.publish(map_marker_array);
+			}
 
 		}
 		else if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
+		{
 			m_pPlanner->UpdateRoadMap(m_AwMap);
+			bInitPos = bGoalPos = false;
+			m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
+		}
 
 		AutowareBehaviorState behState;
 		visualization_msgs::MarkerArray marker_array;
+		visualization_msgs::MarkerArray detectedPolygons;
 		waypoint_follower::LaneArray lane_array;
+		jsk_recognition_msgs::BoundingBoxArray trackedObjects;
+
 		bool bNewPlan = false;
 
 		if(bInitPos && bGoalPos)
 		{
 			if(m_VehicleState.shift == AW_SHIFT_POS_DD)
 			{
-				bNewPlan = m_pPlanner->GeneratePlan(m_CurrentPos,m_DetectedObstacles, m_TrafficLights, m_VehicleState,
-						behState, marker_array, lane_array);
+				bNewPlan = m_pPlanner->GeneratePlan(m_CurrentPos,m_DetectedObstacles,
+						m_Points_Clusters, m_TrafficLights, m_VehicleState,
+						behState, marker_array, lane_array, trackedObjects, detectedPolygons, m_bEmergencyStop, m_bGreenLight, m_bOutsideControl,
+						m_AStarPath, m_StartPoint, m_GoalPoints.at(0), m_bExternalPlanning);
 			}
 			else
 			{
-				bNewPlan = m_pPlanner->GeneratePlan(m_InitPos,m_DetectedObstacles, m_TrafficLights, m_VehicleState,
-						behState, marker_array, lane_array);
+				bNewPlan = m_pPlanner->GeneratePlan(m_InitPos,m_DetectedObstacles,
+						m_Points_Clusters, m_TrafficLights, m_VehicleState,
+						behState, marker_array, lane_array, trackedObjects, detectedPolygons, m_bEmergencyStop, m_bGreenLight, m_bOutsideControl,
+						m_AStarPath, m_StartPoint, m_GoalPoints.at(0), m_bExternalPlanning);
+
+				std::cout << "Init Position Entry " << std::endl;
 			}
 
 			geometry_msgs::Twist t;
@@ -355,6 +467,17 @@ void PlannerX::PlannerMainLoop()
 			behavior.header.stamp = ros::Time::now();
 
 			m_BehaviorPublisher.publish(behavior);
+			m_DetectedPolygonsRviz.publish(detectedPolygons);
+			m_TrackedObstaclesRviz.publish(trackedObjects);
+
+			if(m_bExternalPlanning && !m_bStartAStartPlanner )
+			{
+				m_GlobalPlannerStart.publish(m_StartPoint);
+				m_GlobalPlannerGoal.publish(m_GoalPoints.at(0));
+				UtilityHNS::UtilityH::GetTickCount(m_AStartPlanningTimer);
+				m_bStartAStartPlanner = true;
+
+			}
 		}
 
 		if(bNewPlan)
@@ -365,6 +488,8 @@ void PlannerX::PlannerMainLoop()
 			m_PathPublisherRviz.publish(marker_array);
 			m_TrajectoryFinalWaypointPublisher.publish(lane_array.lanes.at(0));
 		}
+
+
 
 		//ROS_INFO("Main Loop Step");
 		loop_rate.sleep();

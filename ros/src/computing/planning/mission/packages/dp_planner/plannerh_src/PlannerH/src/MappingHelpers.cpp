@@ -10,6 +10,7 @@
 #include "PlanningHelpers.h"
 #include "proj_api.h"
 #include "geo_pos_conv.hh"
+#include "math.h"
 
 
 using namespace UtilityHNS;

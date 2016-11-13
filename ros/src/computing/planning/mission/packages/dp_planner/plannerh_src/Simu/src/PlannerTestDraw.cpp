@@ -76,14 +76,21 @@ PlannerTestDraw::PlannerTestDraw()
 
 	//Initialize Static Traffic Light
 	PlannerHNS::TrafficLight t1, t2;
+	PlannerHNS::GPSPoint st1(555.84,181.89,0,0);
 	t1.id = 1;
-	t1.stoppingDistance = 10;
 	t1.pos = PlannerHNS::GPSPoint(555.72,193.23, 0, 91.65*DEG2RAD);
+	t1.stoppingDistance = hypot(t1.pos.y - st1.y, t1.pos.x - st1.x);
 	m_State.m_TrafficLights.push_back(t1);
+
+	PlannerHNS::GPSPoint st2(553.85,193.94,0,0);
 	t2.id = 2;
-	t2.stoppingDistance = 10;
 	t2.pos = PlannerHNS::GPSPoint(552.33, 181.42, 0, 270*DEG2RAD);
+	t2.stoppingDistance = hypot(t2.pos.y - st2.y, t2.pos.x - st2.x);
 	m_State.m_TrafficLights.push_back(t2);
+
+	m_SlowDown.pos = PlannerHNS::GPSPoint(287.504799, 112.376465, 0,0);
+	m_GoNormal.pos = PlannerHNS::GPSPoint(257.398966, 146.998802,0,0);
+	m_bStartSlow = false;
 
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
@@ -184,13 +191,14 @@ void PlannerTestDraw::InitStartAndGoal(const double& x1,const double& y1, const 
 
 	//try fixed goal positions :
 
-	PlannerHNS::WayPoint g1(555.92, 181.83, 0, 0);
+	PlannerHNS::WayPoint g1(557.1, 177.43, 0, 0);
 	PlannerHNS::WayPoint g2(553.03, 195.59, 0, 0);
 	PlannerHNS::WayPoint g3(-57.23, 60.67, 0, 0);
 
 	PlannerHNS::WayPoint* pW = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(g1, m_RoadMap);
 	if(pW)
 	{
+		//pW->pos = g1.pos;
 		pW->bDir = PlannerHNS::FORWARD_DIR;
 		m_goals.push_back(*pW);
 	}
@@ -201,6 +209,7 @@ void PlannerTestDraw::InitStartAndGoal(const double& x1,const double& y1, const 
 	if(pW)
 	{
 		pW->bDir = PlannerHNS::FORWARD_DIR;
+		//pW->pos = g2.pos;
 		m_goals.push_back(*pW);
 	}
 	else
@@ -209,6 +218,7 @@ void PlannerTestDraw::InitStartAndGoal(const double& x1,const double& y1, const 
 	pW = PlannerHNS::MappingHelpers::GetLastWaypoint(m_RoadMap);
 	if(pW)
 	{
+		//pW->pos = g3.pos;
 		pW->bDir = PlannerHNS::FORWARD_DIR;
 		m_goals.push_back(*pW);
 	}
@@ -791,6 +801,18 @@ void PlannerTestDraw::DrawSimu()
 		DrawingHelpers::DrawFilledEllipse(m_State.m_TrafficLights.at(i).pos.x+1.2, m_State.m_TrafficLights.at(i).pos.y, 1, 1,1);
 		DrawingHelpers::DrawArrow(m_State.m_TrafficLights.at(i).pos.x+2.5, m_State.m_TrafficLights.at(i).pos.y, m_State.m_TrafficLights.at(i).pos.a);
 	}
+
+	for(unsigned int i=0 ; i < m_goals.size(); i++)
+	{
+		glColor3f(1,0,1);
+		DrawingHelpers::DrawFilledEllipse(m_goals.at(i).pos.x, m_goals.at(i).pos.y, 1.2, 0.2,0.2);
+		DrawingHelpers::DrawArrow(m_goals.at(i).pos.x+2.5, m_goals.at(i).pos.y, m_goals.at(i).pos.a);
+	}
+
+	glColor3f(0,1,1);
+	DrawingHelpers::DrawFilledEllipse(287.504799, 112.376465, 1.2, 0.5,0.5);
+	DrawingHelpers::DrawFilledEllipse(257.398966, 146.998802, 1.2, 0.5,0.5);
+
 	glEnable(GL_LIGHTING);
 }
 
@@ -1094,7 +1116,6 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 	vector<string> logData;
 	PlannerHNS::PlannerH planner;
 	SimpleTracker obstacleTracking;
-	obstacleTracking.Initialize(pR->m_State.state);
 	vector<string> behaviorsLogData;
 
 	while(!pR->m_bCancelThread)
@@ -1106,7 +1127,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			double dt = time_elapsed;
 			UtilityH::GetTickCount(moveTimer);
 #ifdef EnableThreadBody
-			vector<PlannerHNS::WayPoint> generatedTotalPath = pR->m_State.m_TotalPath;
+			vector<vector<PlannerHNS::WayPoint> > generatedTotalPath;// = pR->m_State.m_TotalPath;
 			bool bNewPlan = false;
 			PlannerHNS::VehicleState currTargetState;
 			pthread_mutex_lock(&pR->control_mutex);
@@ -1145,13 +1166,18 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				//planner.PlanUsingReedShepp(pR->m_State.state, pR->m_goal, generatedPath);
 				timespec planTime;
 				UtilityH::GetTickCount(planTime);
-				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state, pR->m_goals.at(pR->m_iCurrentGoal), pR->m_State.state, 1000000,pR->m_LanesIds, generatedTotalPath);
+				planner.PlanUsingDP(pR->m_State.pLane, pR->m_State.state,
+						pR->m_goals.at(pR->m_iCurrentGoal), pR->m_State.state,
+						1000000,pR->m_LanesIds, generatedTotalPath);
 				pR->m_GlobalPlanningTime = UtilityH::GetTimeDiffNow(planTime);
 
-				if(generatedTotalPath.size()>0)
-					pR->m_goals.at(pR->m_iCurrentGoal) = generatedTotalPath.at(generatedTotalPath.size()-1);
-				pR->m_bMakeNewPlan = false;
-				bNewPlan = true;
+				if(generatedTotalPath.size()>0 && generatedTotalPath.at(0).size()>0)
+				{
+					pR->m_goals.at(pR->m_iCurrentGoal) = generatedTotalPath.at(0).at(generatedTotalPath.at(0).size()-1);
+					pR->m_bMakeNewPlan = false;
+					bNewPlan = true;
+				}
+
 			}
 
 			/**
@@ -1159,7 +1185,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			 */
 			pthread_mutex_lock(&pR->planning_mutex);
 			if(bNewPlan)
-				pR->m_State.m_TotalPath = generatedTotalPath;
+				pR->m_State.m_TotalPath = generatedTotalPath.at(0);
 
 
 
@@ -1188,6 +1214,19 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				bEmergencyStop = true;
 
 			pR->m_CurrentBehavior = pR->m_State.DoOneStep(dt, currTargetState, obj_list, goal_wp.pos, pR->m_RoadMap, bEmergencyStop, pR->m_bGreenTrafficLight);
+
+			double d_slowDown = hypot(pR->m_SlowDown.pos.y - pR->m_State.state.pos.y, pR->m_SlowDown.pos.x - pR->m_State.state.pos.x);
+			if(d_slowDown < 3)
+				pR->m_bStartSlow = true;
+
+			if(pR->m_bStartSlow)
+				pR->m_CurrentBehavior.maxVelocity = 1;
+
+			double d_goNormal = hypot(pR->m_GoNormal.pos.y - pR->m_State.state.pos.y, pR->m_GoNormal.pos.x - pR->m_State.state.pos.x);
+			if(d_slowDown < 3)
+				pR->m_bStartSlow = false;
+
+
 			pR->m_LocalPlanningTime = UtilityH::GetTimeDiffNow(localPlannerTimer);
 			pR->m_VehicleCurrentState.steer = pR->m_State.m_CurrentSteering;
 			pR->m_VehicleCurrentState.speed = pR->m_State.m_CurrentVelocity;

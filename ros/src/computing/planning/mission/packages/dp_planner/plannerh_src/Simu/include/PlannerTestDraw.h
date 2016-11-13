@@ -54,6 +54,9 @@ public:
 	bool				 m_bMakeNewPlan;
 	bool 				m_bResetForSimulation;
 	bool			m_bGreenTrafficLight;
+	PlannerHNS::WayPoint m_SlowDown;
+	PlannerHNS::WayPoint m_GoNormal;
+	bool m_bStartSlow;
 
 	pthread_mutex_t planning_mutex;
 	pthread_mutex_t control_mutex;

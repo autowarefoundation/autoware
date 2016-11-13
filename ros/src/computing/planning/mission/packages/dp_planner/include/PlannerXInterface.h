@@ -24,136 +24,25 @@
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/io/io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 
-#include "RosHelpers.h"
+#include <lidar_tracker/centroids.h>
+#include <lidar_tracker/CloudCluster.h>
+#include <lidar_tracker/CloudClusterArray.h>
+
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "waypoint_follower/LaneArray.h"
 #include <visualization_msgs/MarkerArray.h>
 #include "geo_pos_conv.hh"
 
+#include "RosHelpers.h"
 
 
 namespace PlannerXNS
 {
-
-class AutowareRoadNetwork
-{
-public:
-	map_file::PointClassArray 		points;
-	std::vector<map_file::Lane> 	lanes;
-	std::vector<map_file::Node> 	nodes;
-	std::vector<map_file::StopLine> stoplines;
-	std::vector<map_file::DTLane> 	dtlanes; //center lines
-	bool bPoints;
-	bool bLanes;
-	bool bNodes;
-	bool bStopLines;
-	bool bDtLanes;
-
-	AutowareRoadNetwork()
-	{
-		bPoints 	= false;
-		bLanes  	= false;
-		bStopLines 	= false;
-		bDtLanes  	= false;
-		bNodes 		= false;
-	}
-};
-
-enum AUTOWARE_STATE_TYPE {AW_INITIAL_STATE, AW_WAITING_STATE, AW_FORWARD_STATE, AW_STOPPING_STATE, AW_EMERGENCY_STATE,
-	AW_TRAFFIC_LIGHT_STOP_STATE, AW_STOP_SIGN_STOP_STATE, AW_FOLLOW_STATE, AW_LANE_CHANGE_STATE, AW_OBSTACLE_AVOIDANCE_STATE, AW_FINISH_STATE};
-enum AUTOWARE_LIGHT_INDICATOR {AW_INDICATOR_LEFT, AW_INDICATOR_RIGHT, AW_INDICATOR_BOTH , AW_INDICATOR_NONE};
-enum AUTOWARE_SHIFT_POS {AW_SHIFT_POS_PP = 0x60, AW_SHIFT_POS_RR = 0x40, AW_SHIFT_POS_NN = 0x20,
-	AW_SHIFT_POS_DD = 0x10, AW_SHIFT_POS_BB = 0xA0, AW_SHIFT_POS_SS = 0x0f, AW_SHIFT_POS_UU = 0xff };
-
-class AutowareBehaviorState
-{
-public:
-	AUTOWARE_STATE_TYPE state;
-	double maxVelocity;
-	double minVelocity;
-	double stopDistance;
-	double followVelocity;
-	double followDistance;
-	AUTOWARE_LIGHT_INDICATOR indicator;
-
-	AutowareBehaviorState()
-	{
-		state = AW_INITIAL_STATE;
-		maxVelocity = 0;
-		minVelocity = 0;
-		stopDistance = 0;
-		followVelocity = 0;
-		followDistance = 0;
-		indicator  = AW_INDICATOR_NONE;
-	}
-};
-
-class AutowareVehicleState
-{
-public:
-	double speed;
-	double steer;
-	AUTOWARE_SHIFT_POS shift;
-
-	AutowareVehicleState()
-	{
-		speed = 0;
-		steer = 0;
-		shift = AW_SHIFT_POS_NN;
-	}
-};
-
-class AutowarePlanningParams
-{
-public:
-	double 	maxSpeed;
-	double 	minSpeed;
-	double 	planningDistance;
-	double 	microPlanDistance;
-	double 	carTipMargin;
-	double 	rollInMargin;
-	double 	rollInSpeedFactor;
-	double 	pathDensity;
-	double 	rollOutDensity;
-	int 	rollOutNumber;
-	double 	horizonDistance;
-	double 	minFollowingDistance;
-	double 	maxFollowingDistance;
-	double 	minDistanceToAvoid;
-	double 	speedProfileFactor;
-
-	bool 	enableLaneChange;
-	bool 	enableSwerving;
-	bool 	enableFollowing;
-	bool 	enableHeadingSmoothing;
-	bool 	enableTrafficLightBehavior;
-
-	AutowarePlanningParams()
-	{
-		maxSpeed 						= 3;
-		minSpeed 						= 0;
-		planningDistance 				= 10000;
-		microPlanDistance 				= 35;
-		carTipMargin					= 8.0;
-		rollInMargin					= 20.0;
-		rollInSpeedFactor				= 0.25;
-		pathDensity						= 0.25;
-		rollOutDensity					= 0.5;
-		rollOutNumber					= 4;
-		horizonDistance					= 120;
-		minFollowingDistance			= 35;
-		maxFollowingDistance			= 40;
-		minDistanceToAvoid				= 15;
-		speedProfileFactor				= 1.0;
-
-		enableHeadingSmoothing			= false;
-		enableSwerving 					= false;
-		enableFollowing					= false;
-		enableTrafficLightBehavior		= false;
-		enableLaneChange 				= false;
-	}
-};
 
 class PlannerX_Interface
 {
@@ -177,8 +66,15 @@ public:
 	virtual void UpdatePredefinedPath(const std::vector<int>& predefinedPath) = 0;
 
 	virtual bool GeneratePlan(const geometry_msgs::Pose& currentPose, const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
+			const lidar_tracker::CloudClusterArray& clusters,
 			const runtime_manager::traffic_light& trafficLight, const AutowareVehicleState& carState,
-			AutowareBehaviorState& behaviorState, visualization_msgs::MarkerArray& pathToVisualize, waypoint_follower::LaneArray& pathToFollow) = 0;
+			AutowareBehaviorState& behaviorState, visualization_msgs::MarkerArray& pathToVisualize,
+			waypoint_follower::LaneArray& pathToFollow,
+			jsk_recognition_msgs::BoundingBoxArray& trackedObjects,
+			visualization_msgs::MarkerArray& detectedPolygons,
+			const bool& bEmergencyStop, const bool& bGreenLight, const bool& bOutsideControl,
+			const waypoint_follower::lane& aStarPath, geometry_msgs::PoseStamped& startPoint,
+			geometry_msgs::PoseStamped& goalPoint, bool& bExternalPlanning) = 0;
 
 protected:
 	bool bMap;

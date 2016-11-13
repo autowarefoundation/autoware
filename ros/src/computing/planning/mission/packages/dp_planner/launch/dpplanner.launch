@@ -31,9 +31,12 @@
 	<arg name="maxSteerAngle" 				default="0.42" />
 	
 	<arg name="planner" 					default="DP" />
-	<arg name="system" 						default="segway" /> <!-- segway or autoware -->
+	<arg name="system" 						default="autoware" /> <!-- segway or autoware -->
 	<arg name="map" 						default="" /> <!-- kml or empty -->
 	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/VectorMaps/ToyotaCity/" />
+	
+	<arg name="InitialPose" 				default="rviz" /> <!-- (rviz) , (empty) will take lozalization pose curr_pose, (intit) take first map positions -->
+	<arg name="GoalsPose" 					default="rviz" /> <!-- (rviz) , (x1,y1,z1,theta1; .. ; xn,yn,zn,thetan) position points list -->
 	
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
@@ -72,6 +75,10 @@
 		<param name="system" 						value="$(arg system)" />
 		<param name="map" 							value="$(arg map)" />
 		<param name="mapDirectory" 					value="$(arg mapDirectory)" />
+		
+		<param name="InitialPose" 					value="$(arg InitialPose)" /> 
+		<param name="GoalsPose" 					value="$(arg GoalsPose)" /> 
+		
 	    
 	    
 	</node>

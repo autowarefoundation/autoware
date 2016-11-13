@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include "UtilityH.h"
 
 
 namespace PlannerHNS
@@ -630,7 +631,7 @@ public:
 		maxSpeed 						= 3;
 		minSpeed 						= 0;
 		planningDistance 				= 10000;
-		microPlanDistance 				= 50;
+		microPlanDistance 				= 30;
 		carTipMargin					= 8.0;
 		rollInMargin					= 20.0;
 		rollInSpeedFactor				= 0.25;
@@ -753,7 +754,7 @@ public:
 
 	std::string ToStringHeader()
 	{
-		return "General>>:currentVelocity:distanceToStop:minStoppingDistance:bStartBehaviorGenerator:bGoalReached:"
+		return "Time:General>>:currentVelocity:distanceToStop:minStoppingDistance:bStartBehaviorGenerator:bGoalReached:"
 				"Following>>:velocityOfNext:distanceToNext:"
 				"TrafficLight>>:currentTrafficLightID:bTrafficIsRed:"
 				"Swerving>>:iSafeTrajectory:bFullyBlock:";
@@ -762,6 +763,7 @@ public:
 	std::string ToString(STATE_TYPE beh)
 	{
 		std::ostringstream str;
+		timespec t_stamp;
 		if(beh == FORWARD_STATE)
 		{
 			str << "GoToGoal>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
@@ -771,14 +773,14 @@ public:
 		}
 		else if(beh == FOLLOW_STATE)
 		{
-			str << "Following>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str  <<"Following>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					"Following>>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
 		}
 		else if(beh == OBSTACLE_AVOIDANCE_STATE)
 		{
-			str << "Avoidance>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str  <<"Avoidance>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					"Swerving>>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
@@ -786,7 +788,7 @@ public:
 		}
 		else if(beh == TRAFFIC_LIGHT_STOP_STATE)
 		{
-			str << "Traffic_Light>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str  <<"Traffic_Light>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					"TL Stop>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
@@ -794,21 +796,21 @@ public:
 		}
 		else if(beh == WAITING_STATE)
 		{
-			str << "Waiting>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str  <<"Waiting>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					"TL Wait>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
 		}
 		else if(beh == STOPPING_STATE)
 		{
-			str << "Stopping>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str  << "Stopping>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					"TL Wait>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
 		}
 		else
 		{
-			str << ">>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
+			str  << ">>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
 					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
 					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
 					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";

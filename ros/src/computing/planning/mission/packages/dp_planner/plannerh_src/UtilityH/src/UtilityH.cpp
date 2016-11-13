@@ -226,6 +226,21 @@ int  UtilityH::tsCompare (struct  timespec  time1,   struct  timespec  time2, in
 
 }
 
+timespec UtilityH::GetTimeSpec(const time_t& srcT)
+{
+	timespec dstT;
+	dstT.tv_sec = srcT/1000000000;
+	dstT.tv_nsec = srcT - (dstT.tv_sec*1000000000);
+	return dstT;
+}
+
+time_t UtilityH::GetLongTime(const struct timespec& srcT)
+{
+	time_t dstT;
+	dstT = srcT.tv_sec * 1000000000 + srcT.tv_nsec;
+	return dstT;
+}
+
 PIDController::PIDController()
 {
 	kp = kp_v = 0;
@@ -314,7 +329,7 @@ double PIDController::getPID(const double& e)
 std::string PIDController::ToStringHeader()
 {
 	std::ostringstream str_out;
-	str_out << "KP" << "," << "KI" << "," << "KD" << "," << "KP_v" << "," << "KI_v" << "," << "KD_v"
+	str_out << "Time" << "," <<"KP" << "," << "KI" << "," << "KD" << "," << "KP_v" << "," << "KI_v" << "," << "KD_v"
 			<< "," << "pid_v" << "," << "," << "pid_lim" << "," << "," << "prevErr" << "," << "accumErr" << "," ;
 	return str_out.str();
 }
@@ -322,7 +337,9 @@ std::string PIDController::ToStringHeader()
 std::string PIDController::ToString()
 {
 	std::ostringstream str_out;
-	str_out << kp << "," << ki << "," << kd << "," << kp_v << "," << ki_v << "," << kd_v
+	timespec t_stamp;
+	UtilityH::GetTickCount(t_stamp);
+	str_out << UtilityH::GetLongTime(t_stamp) << "," <<kp << "," << ki << "," << kd << "," << kp_v << "," << ki_v << "," << kd_v
 				<< "," << pid_v << "," << "," << pid_lim << "," << "," << prevErr << "," << accumErr << "," ;
 
 	return str_out.str();

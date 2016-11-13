@@ -112,7 +112,7 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 	// define subscribers.
   	if(m_CmdParams.statusSource == SEGWAY_STATUS)
   	{
-  		sub_current_pose 		= nh.subscribe("/ndt_pose", 				100,
+  		sub_current_pose 		= nh.subscribe("/current_pose", 				100,
 			&FFSteerControl::callbackFromCurrentPose, 		this);
   		sub_segway_rpm_odom		= nh.subscribe("/odom",			100,
   				&FFSteerControl::callbackFromSegwayRPM, 		this);
@@ -207,7 +207,7 @@ void FFSteerControl::callbackFromCurrentPose(const geometry_msgs::PoseStampedCon
 		geometry_msgs::Pose p = msg->pose;
 		p.position.x  = msg->pose.position.x + m_OriginPos.position.x;
 		p.position.y  = msg->pose.position.y + m_OriginPos.position.y;
-		p.position.z  = msg->pose.position.z + m_OriginPos.position.z;
+		p.position.z  = 0;
 		p.orientation = msg->pose.orientation;
 
 		m_CurrentPos = PlannerHNS::WayPoint(p.position.x, p.position.y
@@ -237,7 +237,7 @@ void FFSteerControl::callbackSimuInitPose(const geometry_msgs::PoseWithCovarianc
 	geometry_msgs::Pose p;
 	p.position.x  = msg->pose.pose.position.x + m_OriginPos.position.x;
 	p.position.y  = msg->pose.pose.position.y + m_OriginPos.position.y;
-	p.position.z  = msg->pose.pose.position.z + m_OriginPos.position.z;
+	p.position.z  = 0;
 	p.orientation = msg->pose.pose.orientation;
 
 	m_InitPos =  PlannerHNS::WayPoint(p.position.x, p.position.y, p.position.z
@@ -274,6 +274,7 @@ void FFSteerControl::callbackFromBehaviorState(const geometry_msgs::TwistStamped
 
 void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg)
 {
+
 	if(m_CmdParams.statusSource == SEGWAY_STATUS) //segway odometry
 	{
 		m_CurrentSegwayPos = PlannerHNS::WayPoint(msg->pose.pose.position.x,
@@ -289,7 +290,7 @@ void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg
 //		m_segway_status.vector.y = msg->twist.twist.linear.x;
 //		m_segway_status.vector.z = (int)PlannerHNS::SHIFT_POS_DD;
 
-		//std::cout << "### Current Status From Segway Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
+		std::cout << "###### Current Status From Segway Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
 	}
 //	else
 //	{
@@ -473,12 +474,13 @@ void FFSteerControl::PlannerMainLoop()
 			}
 			else if(m_CmdParams.statusSource == SEGWAY_STATUS)
 			{
-				cout << "Send Data To Segway" << endl;
+				//cout << "Send Data To Segway : Max Speed=" << m_CarInfo.max_speed_forward << ", actual = " <<  m_PrevStepTargetStatus.speed << endl;
 				geometry_msgs::Twist t;
 				geometry_msgs::TwistStamped twist;
 				t.linear.x = m_PrevStepTargetStatus.speed;
-				if(t.linear.x > 0.5)
-					t.linear.x = 0.5;
+				//t.linear.x = 0.2;
+				if(t.linear.x > 1.0)
+					t.linear.x = 1.0;
 				t.angular.z = m_PrevStepTargetStatus.steer;
 				twist.twist = t;
 				twist.header.stamp = ros::Time::now();

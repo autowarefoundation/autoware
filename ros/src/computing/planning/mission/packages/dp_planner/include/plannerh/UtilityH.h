@@ -46,6 +46,8 @@ public:
 	static int GetSign(double x);
 	static std::string GetHomeDirectory();
 	static double GetMomentumScaleFactor(const double& v);
+	static timespec GetTimeSpec(const time_t& srcT);
+	static time_t GetLongTime(const struct timespec& srcT);
 };
 
 class PIDController

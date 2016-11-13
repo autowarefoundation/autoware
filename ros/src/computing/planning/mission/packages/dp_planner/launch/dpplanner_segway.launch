@@ -1,21 +1,21 @@
 <!-- -->
 <launch>
-	<arg name="maxVelocity" 				default="3.0" />
+	<arg name="maxVelocity" 				default="0.8" />
 	<arg name="minVelocity" 				default="0.0" />
 	<arg name="velocityProfileFactor" 		default="1.0" />
 	<arg name="maxPlanningDistance" 		default="1000000.0" />
-	<arg name="maxLocalPlanDistance" 		default="10.0" />
-	<arg name="samplingTipMargin" 			default="1.5" />
-	<arg name="samplingOutMargin" 			default="4.0" />
+	<arg name="maxLocalPlanDistance" 		default="20.0" />
+	<arg name="samplingTipMargin" 			default="1.0" />
+	<arg name="samplingOutMargin" 			default="2.0" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
 	<arg name="pathDensity" 				default="0.25" />
 	<arg name="rollOutDensity" 				default="0.25" />
-	<arg name="rollOutsNumber" 				default="4" />
-	<arg name="horizonDistance" 			default="20" />
+	<arg name="rollOutsNumber" 				default="6" />
+	<arg name="horizonDistance" 			default="10" />
 	
-	<arg name="minFollowingDistance" 		default="5.0" />
-	<arg name="maxFollowingDistance" 		default="7.0" />
-	<arg name="minDistanceToAvoid" 			default="3.0" />
+	<arg name="minFollowingDistance" 		default="4.5" />
+	<arg name="maxFollowingDistance" 		default="4.75" />
+	<arg name="minDistanceToAvoid" 			default="3.5" />
 	<arg name="speedProfileFactor"			default="1.0" />
 	
 	<arg name="enableSwerving" 				default="1" />
@@ -24,16 +24,20 @@
 	<arg name="enableTrafficLightBehavior" 	default="0" />
 	<arg name="enableLaneChange" 			default="0" />
 	
-	<arg name="width" 						default="0.8" />
-	<arg name="length" 						default="1.4" />
+	<arg name="width" 						default="1.0" />
+	<arg name="length" 						default="1.2" />
 	<arg name="wheelBaseLength" 			default="1.0" />
-	<arg name="turningRadius"				default="1.5" />
-	<arg name="maxSteerAngle" 				default="0.45" />
+	<arg name="turningRadius"				default="2.5" />
+	<arg name="maxSteerAngle" 				default="1.0" />
 	
 	<arg name="planner" 					default="DP" />
 	<arg name="system" 						default="segway" />
 	<arg name="map" 						default="kml" />
-	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/KmlMaps/7th_floor_75.kml" />
+	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/KmlMaps/tsukuba_multy_2_11.kml" />
+	
+	<arg name="InitialPose" 				default="rviz" /> <!-- (rviz) , (empty) will take lozalization pose curr_pose, (intit) take first map positions -->
+	<arg name="GoalsPose" 					default="rviz" /> <!-- (rviz) , (x1,y1,z1,theta1; .. ; xn,yn,zn,thetan) position points list -->
+	
 	
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
@@ -72,6 +76,9 @@
 		<param name="system" 						value="$(arg system)" />
 		<param name="map" 							value="$(arg map)" />
 		<param name="mapDirectory" 					value="$(arg mapDirectory)" />
+		
+		<param name="InitialPose" 					value="$(arg InitialPose)" /> 
+		<param name="GoalsPose" 					value="$(arg GoalsPose)" />
 	    
 	    
 	</node>

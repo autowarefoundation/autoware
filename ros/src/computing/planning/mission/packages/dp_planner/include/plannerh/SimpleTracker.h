@@ -116,7 +116,6 @@ class SimpleTracker
 {
 public:
 	PlannerHNS::DetectedObject m_Car;
-	KFTrack* m_pCarTracker;
 	std::vector<KFTrack*> m_Tracks;
 	long iTracksNumber;
 	PlannerHNS::WayPoint m_PrevState;
@@ -128,7 +127,6 @@ public:
 	void Track(std::vector<PlannerHNS::DetectedObject>& objects_list);
 	void CoordinateTransform(const PlannerHNS::WayPoint& refCoordinate, PlannerHNS::DetectedObject& obj);
 	void CoordinateTransformPoint(const PlannerHNS::WayPoint& refCoordinate, PlannerHNS::GPSPoint& obj);
-	void Initialize(const PlannerHNS::WayPoint& currPose);
 	void AssociateObjects();
 	void DoOneStep(const PlannerHNS::WayPoint& currPose, const std::vector<PlannerHNS::DetectedObject>& obj_list);
 

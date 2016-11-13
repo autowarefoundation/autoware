@@ -175,7 +175,7 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 	timespec t;
 	UtilityH::GetTickCount(t);
 	std::ostringstream dataLine;
-	dataLine << t.tv_nsec << "," << state.pos.x << "," << state.pos.y << "," <<  current_a << "," <<
+	dataLine << UtilityH::GetLongTime(t) << "," << state.pos.x << "," << state.pos.y << "," <<  current_a << "," <<
 			target_a << "," <<  e << "," <<m_LateralError << "," <<  before_lowpass << "," <<  steerd <<  "," <<
 			m_iPrevWayPoint << "," << m_Path.size() << ",";
 	m_LogData.push_back(dataLine.str());
@@ -208,19 +208,24 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		acc_const = acc_const * UtilityH::GetSign(e);
 		desiredVelocity = (acc_const * dt) + CurrStatus.speed;
 
-		m_StartFollowDistance = 0;
-	}
-	else if(CurrBehavior.state == WAITING_STATE || CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == FINISH_STATE)
-	{
-		desiredVelocity = m_pidVelocity.getPID(-CurrStatus.speed);
-//		double e = -CurrStatus.speed;
-//		//if(abs(e)>0.2)
-//			desiredVelocity = (-acc_const * dt) + CurrStatus.speed;
-////		else
-////			desiredVelocity = 0;
+		if(desiredVelocity<0.1)
+			desiredVelocity = 0.1;
+
+		//std::cout << "Velocity from follower : dt=" << dt << ", e= " << e << ", acc_const=" << acc_const << ", desiredVelocity = "<<desiredVelocity<<  std::endl;
 
 		m_StartFollowDistance = 0;
 	}
+//	else if(CurrBehavior.state == WAITING_STATE || CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == FINISH_STATE)
+//	{
+//		desiredVelocity = m_pidVelocity.getPID(-CurrStatus.speed);
+////		double e = -CurrStatus.speed;
+////		//if(abs(e)>0.2)
+////			desiredVelocity = (-acc_const * dt) + CurrStatus.speed;
+//////		else
+//////			desiredVelocity = 0;
+//
+//		m_StartFollowDistance = 0;
+//	}
 //	else if(CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE)
 //	{
 //		m_pidVelocity.Setlimit(CurrBehavior.maxVelocity*0.75, 0);
@@ -252,16 +257,18 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		//m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
 		//desiredVelocity = m_pidVelocity.getPID(e);
 	}
-//	else
-//	{
-//		desiredVelocity = CurrBehavior.maxVelocity;
-//	}
+	else
+	{
+		desiredVelocity = 0;
+	}
 
 	if(desiredVelocity > m_VehicleInfo.max_speed_forward)
 		desiredVelocity = m_VehicleInfo.max_speed_forward;
 	else if (desiredVelocity < 0)
 		desiredVelocity = 0;
 	//desiredVelocity = 2.0;
+
+
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;
 	m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());

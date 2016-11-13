@@ -40,17 +40,24 @@ public:
 
 	virtual void UpdatePredefinedPath(const std::vector<int>& predefinedPath);
 
-	virtual bool GeneratePlan(const geometry_msgs::Pose& currentPose, const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
-			const runtime_manager::traffic_light& trafficLight, const AutowareVehicleState& carState,
-			AutowareBehaviorState& behaviorState, visualization_msgs::MarkerArray& pathToVisualize,
-			waypoint_follower::LaneArray& pathToFollow);
+	virtual bool GeneratePlan(const geometry_msgs::Pose& currentPose,
+			const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
+			const lidar_tracker::CloudClusterArray& clusters,
+			const runtime_manager::traffic_light& trafficLight,
+			const AutowareVehicleState& carState,
+			AutowareBehaviorState& behaviorState,
+			visualization_msgs::MarkerArray& pathToVisualize,
+			waypoint_follower::LaneArray& pathToFollow,
+			jsk_recognition_msgs::BoundingBoxArray& trackedObjects,
+			visualization_msgs::MarkerArray& detectedPolygons,
+			const bool& bEmergencyStop, const bool& bGreenLight, const bool& bOutsideControl,
+			const waypoint_follower::lane& aStarPath, geometry_msgs::PoseStamped& startPoint,
+			geometry_msgs::PoseStamped& goalPoint, 	bool& bExternalPlanning);
 
 protected:
 	PlannerHNS::RoadNetwork m_Map;
 	SimulationNS::CarState m_State;
-	PlannerHNS::WayPoint   m_Goal;
-	PlannerHNS::WayPoint   m_Start;
-	bool				   m_bFirstCall;
+	//PlannerHNS::WayPoint   m_Goal;
 	bool				   m_bMakeNewPlan;
 	PlannerHNS::WayPoint   m_OriginPoint;
 	std::vector<int> m_PredefinedPath;
@@ -61,21 +68,15 @@ protected:
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	struct timespec m_PlanningTimer;
 	SimulationNS::SimpleTracker m_ObstacleTracking;
+	std::vector<PlannerHNS::WayPoint> m_goals;
+	int m_iCurrentGoal;
+	bool m_bSlowDown;
+	PlannerHNS::GPSPoint m_SlowDownPoint;
+	PlannerHNS::GPSPoint m_GoNormalPoint;
 
+	void InitStaticGoals(PlannerHNS::RoadNetwork& map);
 
-	void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
-			waypoint_follower::LaneArray& laneArray);
-
-	void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& total_path,
-			const std::vector<PlannerHNS::WayPoint>& curr_path, const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
-				visualization_msgs::MarkerArray& markerArray);
-
-	void ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray);
-
-	void ConvertFromAutowareObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles, std::vector<PlannerHNS::DetectedObject>& bstacles);
-	PlannerHNS::SHIFT_POS ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift);
-	PlannerXNS::AUTOWARE_SHIFT_POS ConvertShiftFromPlannerHToAutoware(const PlannerHNS::SHIFT_POS& shift);
-	PlannerXNS::AutowareBehaviorState ConvertBehaviorStateFromPlannerHToAutoware(const PlannerHNS::BehaviorState& beh);
+	lidar_tracker::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
 };
 
 } /* namespace PlannerXNS */

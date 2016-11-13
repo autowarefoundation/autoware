@@ -48,6 +48,12 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
+#include <std_msgs/Int8.h>
+#include "waypoint_follower/libwaypoint_follower.h"
+#include "waypoint_follower/LaneArray.h"
+
+
+#include <lidar_tracker/CloudCluster.h>
 
 #include "PlannerXInterface.h"
 
@@ -75,8 +81,27 @@ protected:
 	geometry_msgs::Pose m_CurrentPos;
 	bool bNewCurrentPos;
 	geometry_msgs::Pose m_OriginPos;
+	bool bNewEmergency;
+	int m_bEmergencyStop;
+	bool bNewTrafficLigh;
+	int m_bGreenLight;
+	bool bNewOutsideControl;
+	int m_bOutsideControl;
+
+	bool bNewAStarPath;
+	waypoint_follower::lane m_AStarPath;
+
+	bool m_bExternalPlanning;
+
+	timespec m_AStartPlanningTimer;
+	bool m_bStartAStartPlanner;
+	geometry_msgs::PoseStamped m_StartPoint;
+	std::vector<geometry_msgs::PoseStamped> m_GoalPoints;
+	bool m_bInitPoseFromMap;
 
 
+
+	lidar_tracker::CloudClusterArray m_Points_Clusters;
 	cv_tracker::obj_label m_VisionDetectedObstacles;
 	jsk_recognition_msgs::BoundingBoxArray m_DetectedObstacles;
 	bool bNewDetectedObstacles;
@@ -89,11 +114,16 @@ protected:
 
 	ros::NodeHandle nh;
 
+	ros::Publisher m_DetectedPolygonsRviz;
 	ros::Publisher m_PathPublisherRviz;
 	ros::Publisher m_MapPublisherRviz;
 	ros::Publisher m_PathPublisher;
 	ros::Publisher m_TrajectoryFinalWaypointPublisher;
 	ros::Publisher m_BehaviorPublisher;
+	ros::Publisher m_TrackedObstaclesRviz;
+	ros::Publisher m_GlobalPlannerStart;
+	ros::Publisher m_GlobalPlannerGoal;
+
 
 	// define subscribers.
 	ros::Subscriber sub_current_pose 		;
@@ -107,7 +137,13 @@ protected:
 	ros::Subscriber dtlane_sub 				;
 	ros::Subscriber initialpose_subscriber 	;
 	ros::Subscriber goalpose_subscriber 	;
-	ros::Subscriber sub_vehicle_status 	;
+	ros::Subscriber sub_vehicle_status 		;
+	ros::Subscriber sub_cluster_cloud		;
+	ros::Subscriber sub_centroids			;
+	ros::Subscriber sub_EmergencyStop		;
+	ros::Subscriber sub_TrafficLight		;
+	ros::Subscriber sub_OutsideControl		;
+	ros::Subscriber sub_AStarPlan			;
 
 
 
@@ -132,9 +168,16 @@ private:
   void callbackGetVMStopLines(const map_file::StopLineArray& msg);
   void callbackGetVMCenterLines(const map_file::DTLaneArray& msg);
   void callbackFromVehicleStatus(const geometry_msgs::Vector3StampedConstPtr& msg);
+  void callbackGetPointsClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg);
+  void callbackGetEmergencyStop(const std_msgs::Int8& msg);
+  void callbackGetTrafficLight(const std_msgs::Int8& msg);
+  void callbackGetOutsideControl(const std_msgs::Int8& msg);
+  void callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg);
 
 
-  //void ConvertAndPulishDrivingTrajectory(const std::vector<PlannerHNS::WayPoint>& path);
+
+
+
 };
 
 }
