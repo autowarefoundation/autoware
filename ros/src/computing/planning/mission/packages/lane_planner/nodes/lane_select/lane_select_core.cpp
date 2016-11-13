@@ -145,6 +145,11 @@ void LaneSelectNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedCon
   publishLocalLane();
 }
 
+void LaneSelectNode::run()
+{
+  ros::spin();
+}
+
 // get closest waypoint from current pose
 /*int32_t getClosestWaypoint(const waypoint_follower::lane &current_path, const geometry_msgs::Pose &current_pose)
 {

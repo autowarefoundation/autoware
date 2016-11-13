@@ -60,6 +60,8 @@ public:
   LaneSelectNode();
   ~LaneSelectNode();
 
+  void run();
+
 private:
   // handle
   ros::NodeHandle nh_;
