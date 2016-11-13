@@ -35,9 +35,12 @@
 
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
+
 #include <lidar_tracker/centroids.h>
 #include <lidar_tracker/CloudCluster.h>
 #include <lidar_tracker/CloudClusterArray.h>
+
+#include <vector_map_server/PositionState.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -74,6 +77,8 @@ visualization_msgs::Marker _visualization_marker;
 ros::Publisher _pub_points_lanes_cloud;
 ros::Publisher _pub_jsk_boundingboxes;
 
+ros::ServiceClient _vectormap_server;
+
 std_msgs::Header _velodyne_header;
 
 pcl::PointCloud<pcl::PointXYZ> _sensor_cloud;
@@ -86,6 +91,7 @@ tf::StampedTransform* _velodyne_output_transform;
 tf::TransformListener* _transform_listener;
 
 std::string _output_frame;
+std::string _vectormap_frame;
 static bool _velodyne_transform_available;
 static bool _downsample_cloud;
 static bool _pose_estimation;
@@ -97,6 +103,7 @@ static bool _remove_ground;	//only ground
 
 static bool _using_sensor_cloud;
 static bool _use_diffnormals;
+static bool _use_vector_map;
 
 static double _clip_min_height;
 static double _clip_max_height;
@@ -144,7 +151,6 @@ void publishCloudClusters(const ros::Publisher* in_publisher, const lidar_tracke
 				_transform_listener->lookupTransform(in_target_frame, _velodyne_header.frame_id,
 										ros::Time(), *_transform);
 				pcl_ros::transformPointCloud(in_target_frame, *_transform, i->cloud, cluster_transformed.cloud);
-
 				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->min_point, in_header.frame_id, cluster_transformed.min_point);
 				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->max_point, in_header.frame_id, cluster_transformed.max_point);
 				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->avg_point, in_header.frame_id, cluster_transformed.avg_point);
@@ -367,6 +373,52 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 	//Clusters can be merged or checked in here
 	//....
+	tf::StampedTransform vectormap_transform;
+	if (_use_vector_map)
+	{
+		try
+		{
+			//if the frame of the vectormap is different than the input, obtain transform
+			if (_vectormap_frame != _velodyne_header.frame_id)
+			{
+				_transform_listener->lookupTransform(_vectormap_frame, _velodyne_header.frame_id, ros::Time(), vectormap_transform);
+			}
+			//check if centroids are inside the drivable area
+			for(unsigned int i=0; i<all_clusters.size(); i++)
+			{
+				//transform centroid points to vectormap frame
+				pcl::PointXYZ pcl_centroid = all_clusters[i]->GetCentroid();
+				tf::Vector3 vector_centroid (pcl_centroid.x, pcl_centroid.y, pcl_centroid.z);
+				tf::Vector3 transformed_centroid;
+
+				if (_vectormap_frame != _velodyne_header.frame_id)
+					transformed_centroid = vectormap_transform*vector_centroid;
+				else
+					transformed_centroid = vector_centroid;
+
+				vector_map_server::PositionState position_state;
+				position_state.request.position.x = transformed_centroid.getX();
+				position_state.request.position.y = transformed_centroid.getY();
+				position_state.request.position.z = transformed_centroid.getZ();
+				if (_vectormap_server.call(position_state))
+				{
+					all_clusters[i]->SetValidity(position_state.response.state);
+					/*std::cout << "Original:" << pcl_centroid.x << "," << pcl_centroid.y << "," << pcl_centroid.z <<
+							" Transformed:" << transformed_centroid.x() << "," << transformed_centroid.y() << "," << transformed_centroid.z() <<
+							" Validity:" << position_state.response.state << std::endl;*/
+				}
+				else
+				{
+					ROS_INFO("vectormap_filtering: VectorMap Server Call failed. Make sure vectormap_server is running. No filtering performed.");
+					all_clusters[i]->SetValidity(true);
+				}
+			}
+		}
+		catch(tf::TransformException &ex)
+		{
+			ROS_INFO("vectormap_filtering: %s", ex.what());
+		}
+	}
 	//Get final PointCloud to be published
 
 	for(unsigned int i=0; i<all_clusters.size(); i++)
@@ -381,7 +433,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		centroid.x = center_point.x; centroid.y = center_point.y; centroid.z = center_point.z;
 		bounding_box.header = _velodyne_header;
 
-		if (	//(fabs(bounding_box.pose.position.x) > 2.1 && fabs(bounding_box.pose.position.y) > 0.8 ) && //ignore points that belong to our car
+		if (	all_clusters[i]->IsValid() &&
 				bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0 &&
 				bounding_box.dimensions.x < _max_boundingbox_side && bounding_box.dimensions.y < _max_boundingbox_side
 				&&max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0
@@ -723,8 +775,10 @@ int main (int argc, char** argv)
 	private_nh.param("keep_lane_right_distance", _keep_lane_right_distance, 5.0);	ROS_INFO("keep_lane_right_distance: %f", _keep_lane_right_distance);
 	private_nh.param("clustering_thresholds", _clustering_thresholds);
 	private_nh.param("clustering_distances", _clustering_distances);
-	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);			ROS_INFO("_max_boundingbox_side: %f", _max_boundingbox_side);
+	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);				ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
 	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
+	private_nh.param("use_vector_map", _use_vector_map, false);							ROS_INFO("use_vector_map: %d", _use_vector_map);
+	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");			ROS_INFO("vectormap_frame: %s", _output_frame.c_str());
 
 	_velodyne_transform_available = false;
 
@@ -743,6 +797,7 @@ int main (int argc, char** argv)
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
 	//ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
+	_vectormap_server = h.serviceClient<vector_map_server::PositionState>("vector_map_server/is_way_area");
 
 	_visualization_marker.header.frame_id = "velodyne";
 	_visualization_marker.header.stamp = ros::Time();

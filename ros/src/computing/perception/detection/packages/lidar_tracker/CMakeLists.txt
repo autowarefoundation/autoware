@@ -88,7 +88,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros
+   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros vector_map_server
 )
 
 include_directories(
@@ -100,7 +100,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 #Euclidean Cluster
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
 target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
+add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
 
 #SVM Detect
 add_executable(svm_lidar_detect nodes/svm_lidar_detect/svm_lidar_detect.cpp)

@@ -65,6 +65,8 @@ class Cluster {
 
 	Eigen::Matrix3f 					eigen_vectors_;
 	Eigen::Vector3f 					eigen_values_;
+
+	bool								valid_cluster_;
 public:
 	/* \brief Constructor. Creates a Cluster object using the specified points in a PointCloud
 	 * \param[in] in_origin_cloud_ptr 	Origin PointCloud
@@ -112,6 +114,11 @@ public:
 	Eigen::Matrix3f						GetEigenVectors();
 	/* \brief Returns the Eigen Values of the Cluster */
 	Eigen::Vector3f						GetEigenValues();
+
+	/* \brief Returns if the Cluster is marked as valid or not*/
+	bool								IsValid();
+	/* \brief Sets whether the Cluster is valid or not*/
+	void								SetValidity(bool in_valid);
 
 	/* \brief Returns a pointer to a PointCloud object containing the merged points between current Cluster and the specified PointCloud
 	 * \param[in] in_cloud_ptr 	Origin PointCloud

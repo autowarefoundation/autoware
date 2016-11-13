@@ -8,7 +8,9 @@
 #include "Cluster.h"
 
 Cluster::Cluster()
-{}
+{
+
+}
 
 
 jsk_recognition_msgs::BoundingBox Cluster::GetBoundingBox()
@@ -217,7 +219,18 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 		eigen_values_ = current_cluster_pca.getEigenValues();
 	}
 
+	valid_cluster_ = true;
 	pointcloud_ = current_cluster;
+}
+
+bool Cluster::IsValid()
+{
+	return valid_cluster_;
+}
+
+void Cluster::SetValidity(bool in_valid)
+{
+	valid_cluster_ = in_valid;
 }
 
 Cluster::~Cluster() {
