@@ -1,0 +1,6 @@
+- name: fix2tfpose
+  publish: [/gnss_pose, /gnss_stat]
+  subscribe: [/fix]
+- name: nmea2tfpose
+  publish: [/gnss_pose, /gnss_stat]
+  subscribe: [/nmea_sentence]

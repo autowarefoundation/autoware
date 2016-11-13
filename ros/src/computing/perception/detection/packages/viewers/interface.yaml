@@ -1,0 +1,18 @@
+- name: image_d_viewer
+  subscribe: [/image_raw, /obj_X/image_obj_ranged]
+- name: image_viewer
+  subscribe: [/image_raw, /obj_X/image_obj, /obj_X/image_obj_tracked]
+- name: points_image_d_viewer
+  subscribe: [/image_raw, /points_image, /obj_X/image_obj_ranged]
+- name: points_image_viewer
+  subscribe: [/image_raw, /points_image]
+- name: scan_image_d_viewer
+  subscribe: [/image_raw, /scan_image, /obj_X/image_obj_ranged]
+- name: scan_image_viewer
+  subscribe: [/image_raw, /scan_image, /camera/camera_info]
+- name: traffic_light_viewer
+  subscribe: [/light_color]
+- name: vscan_image_d_viewer
+  subscribe: [/image_raw, /obj_X/image_obj_ranged, /vscan_image]
+- name: vscan_image_viewer
+  subscribe: [/image_raw, /vscan_image]

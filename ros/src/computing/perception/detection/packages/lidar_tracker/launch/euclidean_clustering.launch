@@ -18,6 +18,7 @@
 	<arg name="clustering_distances" default="[15,30,45,60]" /><!-- Distances to segment pointcloud -->
 	<arg name="clustering_thresholds" default="[0.5,1.1,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
 	<arg name="max_boundingbox_side" default="10" />
+	<arg name="output_frame" default="velodyne" />
 
 	<!-- rosrun lidar_tracker vscan_filling -->
 	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
@@ -38,6 +39,7 @@
 		<param name="max_boundingbox_side" value="$(arg max_boundingbox_side)" />
 		<param name="clip_min_height" value="$(arg clip_min_height)" />
 		<param name="clip_max_height" value="$(arg clip_max_height)" />
+		<param name="output_frame" value="$(arg output_frame)" />
 		<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
 	</node>
 

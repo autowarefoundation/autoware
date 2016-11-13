@@ -41,6 +41,7 @@ add_service_files(
   GetWall.srv
   GetFence.srv
   GetRailCrossing.srv
+  PositionState.srv
 )
 
 generate_messages(

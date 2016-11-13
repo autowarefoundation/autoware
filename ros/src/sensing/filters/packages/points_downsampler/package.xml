@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>points_downsampler</name>
+  <version>0.0.0</version>
+  <description>The points_downsampler package</description>
+  <maintainer email="yuki@ertl.jp">Yuki KITSUKAWA</maintainer>
+  <license>BSD</license>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>velodyne_pointcloud</build_depend>
+  <build_depend>runtime_manager</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>velodyne_pointcloud</run_depend>
+  <run_depend>message_runtime</run_depend>
+  
+  <export>
+  </export>
+</package>

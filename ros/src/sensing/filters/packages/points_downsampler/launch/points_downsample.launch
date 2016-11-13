@@ -1,0 +1,10 @@
+<launch>
+  <arg name="sync" default="false" />
+  <arg name="node_name" default="voxel_grid_filter" />
+  <arg name="output_log" default="false" />
+
+  <node pkg="points_downsampler" name="$(arg node_name)" type="$(arg node_name)">
+    <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+    <param name="output_log" value="$(arg output_log)" />
+  </node>
+</launch>

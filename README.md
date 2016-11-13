@@ -12,13 +12,14 @@ Integrated open-source software for urban autonomous driving. The following func
 - Traffic Signal Detection
 - Traffic Light Recognition
 - Lane Detection
-- Moving Object Tracking
+- Object Tracking
 - Sensor Calibration
 - Sensor Fusion
-- Cloud-based Dynamic Maps
-- Android Navigation
-- Simulation
-- Gamificated HMI
+- Cloud-oriented Maps
+- Connected Automation
+- Smartphone Navigation
+- Software Simulation
+- Virtual Reality
 
 Autoware is protected by BSD License. Please use it on your own responsibility. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case that you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
@@ -36,7 +37,7 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ## Requirements
 
 - ROS indigo(Ubuntu 14.04) or ROS jade(Ubuntu 15.04)
-- OpenCV 2.4.10 or higher **NOTE: Autoware does not support OpenCV 3. Please use OpenCV 2**
+- OpenCV 2.4.10 or higher **NOTE: As of Octber 2016, Autoware does not support OpenCV 3 or higher. Please use OpenCV 2**
 - Qt 5.2.1 or higher
 - CUDA(Optional)
 - FlyCapture2(optional)
@@ -61,7 +62,7 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 % sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
 ```
 
-**NOTE: jsk_visualization does not provided in Ubuntu15.04 Jade. Please download from following URL and make manually.  
+**NOTE: jsk_visualization is not provided in Ubuntu15.04 Jade. Please download it from the following repository and build it by yourself.  
 https://github.com/jsk-ros-pkg/jsk_visualization**
 
 ## How to Build
@@ -91,7 +92,32 @@ repository, you must use **git subtree push**. (Please never change and push cod
 
 ## Documents
 
-See Autoware/docs. As of Aug 25 2015, we provide only Japanese documents. English documents will be added shortly.
+See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English documents will be added shortly.
+
+## Main Packages
+
+### Localization
+- ndt_localizer
+- icp_localizer
+
+### Detection
+- lidar_tracker
+- cv_tracker
+- road_wizard
+
+### Mission (Global) Planning
+- lane_planner
+- way_planner
+- freespace_planner
+
+### Motion (Local) Planning
+- astar_planner
+- lattice_planner
+- dp_planner
+
+### Vehicle Control
+- waypoint_follower
+- waypoint_maker
 
 ## Research Papers for Citation
 

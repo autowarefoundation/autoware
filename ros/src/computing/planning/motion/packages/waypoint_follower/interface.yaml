@@ -1,0 +1,9 @@
+- name: wf_simulator
+  publish: [/sim_pose, /sim_velocity]
+  subscribe: [/twist_cmd, /ndt_pose, /initialpose, /gnss_pose, /base_waypoints]
+- name: pure_pursuit
+  publish: [/twist_raw]
+  subscribe: [/final_waypoints, /current_pose, /current_velocity]
+- name: twist_filter
+  publish: [/twist_cmd]
+  subscribe: [/twist_raw]
