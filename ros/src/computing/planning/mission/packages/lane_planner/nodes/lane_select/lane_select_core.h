@@ -29,8 +29,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _LANE_SELECT_CORE_H_
-#define _LANE_SELECT_CORE_H_
+#ifndef LANE_SELECT_CORE_H
+#define LANE_SELECT_CORE_H
 
 // ROS includes
 #include <ros/ros.h>
@@ -98,4 +98,4 @@ private:
 
 int32_t getNumOfClosest(const waypoint_follower::lane &current_path, const geometry_msgs::Pose &current_pose);
 }
-#endif  // _LANE_SELECT_CORE_H_
+#endif  // LANE_SELECT_CORE_H
