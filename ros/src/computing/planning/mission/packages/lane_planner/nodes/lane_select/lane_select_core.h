@@ -87,9 +87,7 @@ private:
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
 
   // initializer
-  void initSubscriber();
-  void initPublisher();
-  void initParameter();
+  void initForROS();
 
   // functions
   void publishLocalLane();

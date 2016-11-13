@@ -43,9 +43,7 @@ LaneSelectNode::LaneSelectNode()
   , is_current_pose_subscribed_(false)
   , last_time_(ros::Time::now())
 {
-  initParameter();
-  initSubscriber();
-  initPublisher();
+  initForROS();
 }
 
 // Destructor
@@ -53,21 +51,16 @@ LaneSelectNode::~LaneSelectNode()
 {
 }
 
-void LaneSelectNode::initSubscriber()
+void LaneSelectNode::initForROS()
 {
   // setup subscriber
   sub1_ = nh_.subscribe("traffic_waypoints_array", 100, &LaneSelectNode::callbackFromLaneArray, this);
   sub2_ = nh_.subscribe("current_pose", 100, &LaneSelectNode::callbackFromCurrentPose, this);
-}
 
-void LaneSelectNode::initPublisher()
-{
   // setup publisher
   pub_ = nh_.advertise<waypoint_follower::lane>("base_waypoints", 10, true);
-}
 
-void LaneSelectNode::initParameter()
-{
+  // get from rosparam
   private_nh_.param<int32_t>("size_of_waypoints", size_of_waypoints_, int32_t(30));
   private_nh_.param<int32_t>("lane_change_interval", lane_change_interval_, int32_t(2));
 }
