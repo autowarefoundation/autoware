@@ -143,6 +143,7 @@ list (APPEND ORB_BIN_LINKS
 add_executable (
 	orb_mapping
 		nodes/orb_mapping/orb_mapping.cpp
+		nodes/common.cc
 )
 
 target_link_libraries (

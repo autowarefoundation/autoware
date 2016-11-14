@@ -59,7 +59,6 @@ Tracking::Tracking (
     mState(NO_IMAGES_YET), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpORBVocabulary(pVoc),
     mpKeyFrameDB(pKFDB), mpInitializer(static_cast<Initializer*>(NULL)), mpSystem(pSys),
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0),
-
 	mLocalMapper(NULL), mLoopCloser(NULL)
 
 {
@@ -1698,6 +1697,18 @@ void Tracking::ChangeCalibration(const string &strSettingPath)
 
     Frame::mbInitialComputations = true;
 }
+
+
+void Tracking::ChangeCalibration(const double fx, const double fy, const double cx, const double cy)
+{
+    cv::Mat K = cv::Mat::eye(3,3,CV_32F);
+    K.at<float>(0,0) = fx;
+    K.at<float>(1,1) = fy;
+    K.at<float>(0,2) = cx;
+    K.at<float>(1,2) = cy;
+    K.copyTo(mK);
+}
+
 
 void Tracking::InformOnlyTracking(const bool &flag)
 {
