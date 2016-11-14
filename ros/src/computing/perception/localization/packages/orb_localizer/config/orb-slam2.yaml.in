@@ -5,16 +5,16 @@
 #--------------------------------------------------------------------------------------------
 
 # Camera calibration and distortion parameters (OpenCV) 
-Camera.fx: 479.570576946
-Camera.fy: 479.570576946
-Camera.cx: 411.879719484
-Camera.cy: 288.668313855
+#Camera.fx: 479.570576946
+#Camera.fy: 479.570576946
+#Camera.cx: 411.879719484
+#Camera.cy: 288.668313855
 
 #Original (unresized, uncropped)
-#Camera.fx: 1150.96938467
-#Camera.fy: 1150.96938467
-#Camera.cx: 988.511326762
-#Camera.cy: 692.803953253
+Camera.fx: 1150.96938467
+Camera.fy: 1150.96938467
+Camera.cx: 988.511326762
+Camera.cy: 692.803953253
 
 
 Camera.k1: 0
@@ -80,6 +80,7 @@ ExternalReference.Mapping.frame1: "world"
 ExternalReference.Mapping.frame2: "velodyne"
 Localization.frame1: "world"
 Localization.frame2: "camera"
+Localization.poseTopic: "/camera_pose"
 
 ExternalLocalization.OffsetKeyframes: 10
  

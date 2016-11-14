@@ -143,10 +143,21 @@ list (APPEND ORB_BIN_LINKS
 add_executable (
 	orb_mapping
 		nodes/orb_mapping/orb_mapping.cpp
-		nodes/common.cc
+		nodes/common.cpp
 )
 
 target_link_libraries (
 	orb_mapping
 		${ORB_BIN_LINKS}		
+)
+
+add_executable (
+	orb_matching
+		nodes/orb_matching/orb_matching.cpp
+		nodes/common.cpp
+)
+
+target_link_libraries (
+	orb_matching
+		${ORB_BIN_LINKS}
 )

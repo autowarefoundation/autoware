@@ -47,3 +47,23 @@ void recomputeNewCameraParameter (
 	cx2 = cx1 / ratio;
 	cy2 = cy1 / ratio;
 }
+
+
+void tf2positiondirection (const tf::Transform &pose, float positiondirection[6])
+{
+	// position
+	positiondirection[0] = pose.getOrigin().x();
+	positiondirection[1] = pose.getOrigin().y();
+	positiondirection[2] = pose.getOrigin().z();
+	float fdirx = pose.getRotation().x(),
+		fdiry = pose.getRotation().y(),
+		fdirz = pose.getRotation().z(),
+		fdirnorm;
+	fdirnorm = sqrtf(fdirx*fdirx + fdiry*fdiry + fdirz*fdirz);
+	fdirx /= fdirnorm;
+	fdiry /= fdirnorm;
+	fdirz /= fdirnorm;
+	positiondirection[3] = fdirx;
+	positiondirection[4] = fdiry;
+	positiondirection[5] = fdirz;
+}

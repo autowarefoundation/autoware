@@ -193,9 +193,11 @@ private:
 
 public:
 	volatile bool doStop;
+
 	image_transport::TransportHints th;
 	image_transport::ImageTransport *imageBuf;
 	image_transport::Subscriber imageSub;
+
 	thread *externalLocalizerThread;
 
 };

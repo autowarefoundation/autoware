@@ -25,7 +25,7 @@ void recomputeNewCameraParameter (
 	int width2, int height2
 );
 
-
+void tf2positiondirection (const tf::Transform &pose, float positiondirection[6]);
 
 
 #endif /* _ORB_UTILS_H */
