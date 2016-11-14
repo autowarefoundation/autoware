@@ -485,14 +485,20 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 	TiXmlElement* pElem = 0;
 
 	TiXmlDocument doc(kmlFile);
-	if(!doc.LoadFile())
+
+	try
+	{
+		doc.LoadFile();
+	}
+	catch(exception& e)
 	{
 		cout << "KML Custom Reader Error, Can't Load .kml File, path is: "<<  kmlFile << endl;
+		cout << e.what() << endl;
 		return;
 	}
-	else
-		pElem = doc.FirstChildElement();
 
+
+	pElem = doc.FirstChildElement();
 	pHeadElem = GetHeadElement(pElem);
 
 	vector<Lane> laneLinksList = GetLanesList(pHeadElem);

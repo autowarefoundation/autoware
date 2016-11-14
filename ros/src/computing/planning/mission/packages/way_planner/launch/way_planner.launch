@@ -1,15 +1,14 @@
 <!-- -->
 <launch>
-	<arg name="pathDensity" 					default="0.5" /> <!-- distance between each two waypoints-->
-	<arg name="enableSmoothing" 				default="0" /> <!-- 1 or 0 -->
-	<arg name="enableLaneChange" 				default="1" /> <!-- 1 or 0 -->
-	<arg name="enableLaneChange" 				default="1" /> <!-- 1 or 0 -->
-	<arg name="enableRvizInput" 				default="1" /> <!-- 1 or 0 -->
-	<arg name="mapSource" 						default="2" /> <!-- map_loader=0, map_server=1, kml=2 -->
+	<arg name="pathDensity" 					default="0.25" /> <!-- distance between each two waypoints-->
+	<arg name="enableSmoothing" 				default="true" /> <!-- 1 or 0 -->
+	<arg name="enableLaneChange" 				default="true" /> <!-- 1 or 0 -->
+	<arg name="enableRvizInput" 				default="true" /> <!-- 1 or 0 -->
+	<arg name="mapSource" 						default="0" /> <!-- map_loader=0, map_server=1, kml=2 -->
 	<arg name="mapFileName" 					default="/home/hatem/SimuLogs/VectorMaps/ToyotaCity/" /> <!-- incase of kml map source -->
 	
 	
-	<node pkg="way_planner" type="way_planner" name="way_planner" output="screen">
+<node pkg="way_planner" type="way_planner" name="way_planner" output="screen">
 		
 		<param name="pathDensity" 				value="$(arg pathDensity)" />
 		<param name="enableSmoothing" 			value="$(arg enableSmoothing)" />
@@ -19,5 +18,6 @@
 		<param name="mapFileName" 				value="$(arg mapFileName)" />
 		
 	    
-	</node>
+	</node> 
+	
 </launch>

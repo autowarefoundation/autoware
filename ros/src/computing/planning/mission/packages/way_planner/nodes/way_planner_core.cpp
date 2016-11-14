@@ -76,18 +76,18 @@ way_planner_core::way_planner_core()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_Paths = nh.advertise<waypoint_follower::LaneArray>("global_plan_paths", 1, true);
+	pub_Paths = nh.advertise<waypoint_follower::LaneArray>("lane_waypoints_array", 1, true);
 	pub_PathsRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_rviz", 1, true);
 	pub_StartPointRviz = nh.advertise<visualization_msgs::Marker>("Global_StartPoint_rviz", 1, true);
 	pub_GoalPointRviz = nh.advertise<visualization_msgs::MarkerArray>("Global_GoalPoints_rviz", 1, true);
 	pub_NodesListRviz = nh.advertise<visualization_msgs::MarkerArray>("Goal_Nodes_Points_rviz", 1, true);
-	pub_MapRviz  = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines_rviz", 1, true);
+	pub_MapRviz  = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines_rviz", 100, true);
 
 	/** @todo To achieve perfection , you need to start sometime */
 
 	if(m_params.bEnableRvizInput)
 	{
-		sub_start_pose 	= nh.subscribe("initialpose", 					1, &way_planner_core::callbackGetStartPose, 		this);
+		sub_start_pose 	= nh.subscribe("/initialpose", 					1, &way_planner_core::callbackGetStartPose, 		this);
 		sub_goal_pose 	= nh.subscribe("move_base_simple/goal", 		1, &way_planner_core::callbackGetGoalPose, 		this);
 	}
 	else
@@ -100,7 +100,7 @@ way_planner_core::way_planner_core()
 
 	if(m_params.mapSource == MAP_LOADER || m_params.mapSource == MAP_SERVER)
 	{
-		sub_map_points 	= nh.subscribe("/vector_map_info/point_class", 	1, &way_planner_core::callbackGetVMPoints, 		this);
+		sub_map_points 	= nh.subscribe("/vector_map_info/point", 		1, &way_planner_core::callbackGetVMPoints, 		this);
 		sub_map_lanes 	= nh.subscribe("/vector_map_info/lane", 		1, &way_planner_core::callbackGetVMLanes, 		this);
 		sub_map_nodes 	= nh.subscribe("/vector_map_info/node", 		1, &way_planner_core::callbackGetVMNodes, 		this);
 		sup_stop_lines 	= nh.subscribe("/vector_map_info/stop_line",	1, &way_planner_core::callbackGetVMStopLines, 	this);
@@ -115,7 +115,6 @@ way_planner_core::way_planner_core()
 way_planner_core::~way_planner_core(){
 }
 
-
 void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
 	if(bStartPos)
@@ -123,8 +122,12 @@ void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConst
 		m_GoalPos = msg->pose;
 
 		bool bNewPlan = false;
-		PlannerHNS::WayPoint startPoint(m_StartPos.position.x, m_StartPos.position.y, m_StartPos.position.z, tf::getYaw(m_StartPos.orientation));
-		PlannerHNS::WayPoint goalPoint(m_GoalPos.position.x, m_GoalPos.position.y, m_GoalPos.position.z, tf::getYaw(m_GoalPos.orientation));
+		PlannerHNS::WayPoint startPoint(m_StartPos.position.x+m_OriginPos.position.x,
+				m_StartPos.position.y+m_OriginPos.position.y,
+				m_StartPos.position.z+m_OriginPos.position.z, tf::getYaw(m_StartPos.orientation));
+		PlannerHNS::WayPoint goalPoint(m_GoalPos.position.x+m_OriginPos.position.x,
+				m_GoalPos.position.y+m_OriginPos.position.y,
+				m_GoalPos.position.z+m_OriginPos.position.z, tf::getYaw(m_GoalPos.orientation));
 
 		PlannerHNS::WayPoint* pStart = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(startPoint, m_Map);
 		PlannerHNS::WayPoint* pGoal = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(goalPoint, m_Map);
@@ -141,6 +144,17 @@ void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConst
 
 			if(generatedTotalPaths.size() > 0 && generatedTotalPaths.at(0).size()>0)
 			{
+				for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
+				{
+					PlannerHNS::PlanningHelpers::FixPathDensity(generatedTotalPaths.at(i), m_params.pathDensity);
+					if(m_params.bEnableSmoothing)
+					{
+						PlannerHNS::PlanningHelpers::SmoothPath(generatedTotalPaths.at(i), 0.49, 0.35 , 0.01);
+						PlannerHNS::PlanningHelpers::CalcAngleAndCost(generatedTotalPaths.at(i));
+					}
+
+
+				}
 				std::cout << "New DP Path -> " << generatedTotalPaths.size() << std::endl;
 				bNewPlan = true;
 			}
@@ -155,7 +169,15 @@ void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConst
 			pub_Paths.publish(lane_array);
 
 			visualization_msgs::MarkerArray pathsToVisualize;
-			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
+			std_msgs::ColorRGBA total_color;
+			total_color.r = 0;
+			total_color.g = 0.7;
+			total_color.b = 1.0;
+			total_color.a = 0.2;
+			RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
+			RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
+			RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
+			//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
 			pub_PathsRviz.publish(pathsToVisualize);
 		}
 		else
@@ -168,49 +190,49 @@ void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConst
 
 }
 
-void way_planner_core::callbackGetStartPose(const geometry_msgs::PoseStampedConstPtr &msg)
+void way_planner_core::callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 {
 	if(!bStartPos)
 	{
-		m_StartPos = msg->pose;
+		m_StartPos = msg->pose.pose;
 		bStartPos = true;
 	}
 }
 
-void way_planner_core::callbackGetVMPoints(const map_file::PointClassArray& msg)
+void way_planner_core::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
 {
 	ROS_INFO("Received Map Points");
 	m_AwMap.points = msg;
 	m_AwMap.bPoints = true;
 }
 
-void way_planner_core::callbackGetVMLanes(const map_file::LaneArray& msg)
+void way_planner_core::callbackGetVMLanes(const vector_map_msgs::LaneArray& msg)
 {
 	ROS_INFO("Received Map Lane Array");
-	m_AwMap.lanes = msg.lanes;
+	m_AwMap.lanes = msg;
 	m_AwMap.bLanes = true;
 }
 
-void way_planner_core::callbackGetVMNodes(const map_file::NodeArray& msg)
+void way_planner_core::callbackGetVMNodes(const vector_map_msgs::NodeArray& msg)
 {
 	//ROS_INFO("Received Map Nodes");
 
 
 }
 
-void way_planner_core::callbackGetVMStopLines(const map_file::StopLineArray& msg)
+void way_planner_core::callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg)
 {
 	//ROS_INFO("Received Map Stop Lines");
 }
 
-void way_planner_core::callbackGetVMCenterLines(const map_file::DTLaneArray& msg)
+void way_planner_core::callbackGetVMCenterLines(const vector_map_msgs::DTLaneArray& msg)
 {
 	ROS_INFO("Received Map Center Lines");
-	m_AwMap.dtlanes = msg.dtlanes;
+	m_AwMap.dtlanes = msg;
 	m_AwMap.bDtLanes = true;
 }
 
-void way_planner_core::callbackGetNodesList(const map_file::NodeArray& msg)
+void way_planner_core::callbackGetNodesList(const vector_map_msgs::NodeArray& msg)
 {
 
 }
@@ -218,26 +240,28 @@ void way_planner_core::callbackGetNodesList(const map_file::NodeArray& msg)
 void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map)
 {
 	std::vector<UtilityHNS::AisanLanesFileReader::AisanLane> lanes;
-	for(unsigned int i=0; i < src_map.lanes.size();i++)
+	for(unsigned int i=0; i < src_map.lanes.data.size();i++)
 	{
 		UtilityHNS::AisanLanesFileReader::AisanLane l;
-		l.BLID 		=  src_map.lanes.at(i).blid;
-		l.BLID2 	=  src_map.lanes.at(i).blid2;
-		l.BLID3 	=  src_map.lanes.at(i).blid3;
-		l.BLID4 	=  src_map.lanes.at(i).blid4;
-		l.BNID 		=  src_map.lanes.at(i).bnid;
-		l.ClossID 	=  src_map.lanes.at(i).clossid;
-		l.DID 		=  src_map.lanes.at(i).did;
-		l.FLID 		=  src_map.lanes.at(i).flid;
-		l.FLID2 	=  src_map.lanes.at(i).flid2;
-		l.FLID3 	=  src_map.lanes.at(i).flid3;
-		l.FLID4 	=  src_map.lanes.at(i).flid4;
-		l.FNID 		=  src_map.lanes.at(i).fnid;
-		l.JCT 		=  src_map.lanes.at(i).jct;
-		l.LCnt 		=  src_map.lanes.at(i).lcnt;
-		l.LnID 		=  src_map.lanes.at(i).lnid;
-		l.Lno 		=  src_map.lanes.at(i).lno;
-		l.Span 		=  src_map.lanes.at(i).span;
+		l.BLID 		=  src_map.lanes.data.at(i).blid;
+		l.BLID2 	=  src_map.lanes.data.at(i).blid2;
+		l.BLID3 	=  src_map.lanes.data.at(i).blid3;
+		l.BLID4 	=  src_map.lanes.data.at(i).blid4;
+		l.BNID 		=  src_map.lanes.data.at(i).bnid;
+		l.ClossID 	=  src_map.lanes.data.at(i).clossid;
+		l.DID 		=  src_map.lanes.data.at(i).did;
+		l.FLID 		=  src_map.lanes.data.at(i).flid;
+		l.FLID2 	=  src_map.lanes.data.at(i).flid2;
+		l.FLID3 	=  src_map.lanes.data.at(i).flid3;
+		l.FLID4 	=  src_map.lanes.data.at(i).flid4;
+		l.FNID 		=  src_map.lanes.data.at(i).fnid;
+		l.JCT 		=  src_map.lanes.data.at(i).jct;
+		l.LCnt 		=  src_map.lanes.data.at(i).lcnt;
+		l.LnID 		=  src_map.lanes.data.at(i).lnid;
+		l.Lno 		=  src_map.lanes.data.at(i).lno;
+		l.Span 		=  src_map.lanes.data.at(i).span;
+		l.RefVel	=  src_map.lanes.data.at(i).refvel;
+		l.LimitVel	=  src_map.lanes.data.at(i).limitvel;
 
 //		l.LaneChgFG =  src_map.lanes.at(i).;
 //		l.LaneType 	=  src_map.lanes.at(i).blid;
@@ -251,55 +275,55 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 
 	std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints> points;
 
-	for(unsigned int i=0; i < src_map.points.point_classes.size();i++)
+	for(unsigned int i=0; i < src_map.points.data.size();i++)
 	{
 		UtilityHNS::AisanPointsFileReader::AisanPoints p;
-		double integ_part = src_map.points.point_classes.at(i).l;
-		double deg = trunc(src_map.points.point_classes.at(i).l);
-		double min = trunc((src_map.points.point_classes.at(i).l - deg) * 100.0) / 60.0;
-		double sec = modf((src_map.points.point_classes.at(i).l - deg) * 100.0, &integ_part)/36.0;
+		double integ_part = src_map.points.data.at(i).l;
+		double deg = trunc(src_map.points.data.at(i).l);
+		double min = trunc((src_map.points.data.at(i).l - deg) * 100.0) / 60.0;
+		double sec = modf((src_map.points.data.at(i).l - deg) * 100.0, &integ_part)/36.0;
 		double L =  deg + min + sec;
 
-		deg = trunc(src_map.points.point_classes.at(i).b);
-		min = trunc((src_map.points.point_classes.at(i).b - deg) * 100.0) / 60.0;
-		sec = modf((src_map.points.point_classes.at(i).b - deg) * 100.0, &integ_part)/36.0;
+		deg = trunc(src_map.points.data.at(i).b);
+		min = trunc((src_map.points.data.at(i).b - deg) * 100.0) / 60.0;
+		sec = modf((src_map.points.data.at(i).b - deg) * 100.0, &integ_part)/36.0;
 		double B =  deg + min + sec;
 
 		p.B 		= B;
-		p.Bx 		= src_map.points.point_classes.at(i).bx;
-		p.H 		= src_map.points.point_classes.at(i).h;
+		p.Bx 		= src_map.points.data.at(i).bx;
+		p.H 		= src_map.points.data.at(i).h;
 		p.L 		= L;
-		p.Ly 		= src_map.points.point_classes.at(i).ly;
-		p.MCODE1 	= src_map.points.point_classes.at(i).mcode1;
-		p.MCODE2 	= src_map.points.point_classes.at(i).mcode2;
-		p.MCODE3 	= src_map.points.point_classes.at(i).mcode3;
-		p.PID 		= src_map.points.point_classes.at(i).pid;
-		p.Ref 		= src_map.points.point_classes.at(i).ref;
+		p.Ly 		= src_map.points.data.at(i).ly;
+		p.MCODE1 	= src_map.points.data.at(i).mcode1;
+		p.MCODE2 	= src_map.points.data.at(i).mcode2;
+		p.MCODE3 	= src_map.points.data.at(i).mcode3;
+		p.PID 		= src_map.points.data.at(i).pid;
+		p.Ref 		= src_map.points.data.at(i).ref;
 
 		points.push_back(p);
 	}
 
 
 	std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine> dts;
-	for(unsigned int i=0; i < src_map.dtlanes.size();i++)
+	for(unsigned int i=0; i < src_map.dtlanes.data.size();i++)
 	{
 		UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine dt;
 
-		dt.Apara 	= src_map.dtlanes.at(i).apara;
-		dt.DID 		= src_map.dtlanes.at(i).did;
-		dt.Dir 		= src_map.dtlanes.at(i).dir;
-		dt.Dist 	= src_map.dtlanes.at(i).dist;
-		dt.LW 		= src_map.dtlanes.at(i).lw;
-		dt.PID 		= src_map.dtlanes.at(i).pid;
-		dt.RW 		= src_map.dtlanes.at(i).rw;
-		dt.cant 	= src_map.dtlanes.at(i).cant;
-		dt.r 		= src_map.dtlanes.at(i).r;
-		dt.slope 	= src_map.dtlanes.at(i).slope;
+		dt.Apara 	= src_map.dtlanes.data.at(i).apara;
+		dt.DID 		= src_map.dtlanes.data.at(i).did;
+		dt.Dir 		= src_map.dtlanes.data.at(i).dir;
+		dt.Dist 	= src_map.dtlanes.data.at(i).dist;
+		dt.LW 		= src_map.dtlanes.data.at(i).lw;
+		dt.PID 		= src_map.dtlanes.data.at(i).pid;
+		dt.RW 		= src_map.dtlanes.data.at(i).rw;
+		dt.cant 	= src_map.dtlanes.data.at(i).cant;
+		dt.r 		= src_map.dtlanes.data.at(i).r;
+		dt.slope 	= src_map.dtlanes.data.at(i).slope;
 
 		dts.push_back(dt);
 	}
 
-	PlannerHNS::GPSPoint origin(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
+	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
 	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, origin, out_map);
 }
 
@@ -311,7 +335,7 @@ void way_planner_core::PlannerMainLoop()
 	{
 		ros::spinOnce();
 
-		std::cout << "Main Loop ! " << std::endl;
+		//std::cout << "Main Loop ! " << std::endl;
 		if(m_params.mapSource == KML_MAP && !m_bKmlMap)
 		{
 			m_bKmlMap = true;

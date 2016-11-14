@@ -6,7 +6,7 @@ project(way_planner)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
-  map_file
+  vector_map_msgs
   roscpp
   rospy
   std_msgs
@@ -110,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES way_planner
-  CATKIN_DEPENDS geometry_msgs map_file roscpp rospy std_msgs waypoint_follower 
+  CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower 
   DEPENDS system_lib
 )
 

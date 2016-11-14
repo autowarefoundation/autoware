@@ -33,11 +33,16 @@
 
 #include <ros/ros.h>
 
-#include <map_file/PointClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/NodeArray.h>
-#include <map_file/StopLineArray.h>
-#include <map_file/DTLaneArray.h>
+//#include <map_file/PointClassArray.h>
+//#include <map_file/LaneArray.h>
+//#include <map_file/NodeArray.h>
+//#include <map_file/StopLineArray.h>
+//#include <map_file/DTLaneArray.h>
+#include <vector_map_msgs/PointArray.h>
+#include <vector_map_msgs/LaneArray.h>
+#include <vector_map_msgs/NodeArray.h>
+#include <vector_map_msgs/StopLineArray.h>
+#include <vector_map_msgs/DTLaneArray.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -64,11 +69,11 @@ namespace WayPlannerNS {
 class AutowareRoadNetwork
 {
 public:
-	map_file::PointClassArray 		points;
-	std::vector<map_file::Lane> 	lanes;
-	std::vector<map_file::Node> 	nodes;
-	std::vector<map_file::StopLine> stoplines;
-	std::vector<map_file::DTLane> 	dtlanes; //center lines
+	vector_map_msgs::PointArray 	points;
+	vector_map_msgs::LaneArray	 	lanes;
+	vector_map_msgs::NodeArray 		nodes;
+	vector_map_msgs::StopLineArray 	stoplines;
+	vector_map_msgs::DTLaneArray 	dtlanes; //center lines
 	bool bPoints;
 	bool bLanes;
 	bool bNodes;
@@ -153,13 +158,14 @@ private:
 
   // Callback function for subscriber.
   void callbackGetGoalPose(const geometry_msgs::PoseStampedConstPtr &msg);
-  void callbackGetStartPose(const geometry_msgs::PoseStampedConstPtr &input);
-  void callbackGetVMPoints(const map_file::PointClassArray& msg);
-  void callbackGetVMLanes(const map_file::LaneArray& msg);
-  void callbackGetVMNodes(const map_file::NodeArray& msg);
-  void callbackGetVMStopLines(const map_file::StopLineArray& msg);
-  void callbackGetVMCenterLines(const map_file::DTLaneArray& msg);
-  void callbackGetNodesList(const map_file::NodeArray& msg);
+  void callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
+
+  void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);
+  void callbackGetVMLanes(const vector_map_msgs::LaneArray& msg);
+  void callbackGetVMNodes(const vector_map_msgs::NodeArray& msg);
+  void callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg);
+  void callbackGetVMCenterLines(const vector_map_msgs::DTLaneArray& msg);
+  void callbackGetNodesList(const vector_map_msgs::NodeArray& msg);
 
   protected:
   	PlannerHNS::RoadNetwork m_Map;

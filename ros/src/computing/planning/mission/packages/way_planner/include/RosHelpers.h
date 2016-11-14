@@ -56,6 +56,14 @@ public:
 				visualization_msgs::MarkerArray& markerArray);
 
 	static void ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray);
+
+	static void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const waypoint_follower::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray);
+
+	static void createGlobalLaneArrayVelocityMarker(const waypoint_follower::LaneArray &lane_waypoints_array
+			, visualization_msgs::MarkerArray& markerArray);
+
+	static void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &lane_waypoints_array
+			, visualization_msgs::MarkerArray& markerArray);
 };
 
 }

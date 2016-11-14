@@ -160,7 +160,6 @@ PlannerH::PlannerH()
  	WayPoint carPos = start;
  	vector<vector<WayPoint> > tempCurrentForwardPathss;
  	vector<WayPoint*> all_cell_to_delete;
- 	vector<WayPoint> mainPath;
  	WayPoint* pLaneCell = 0;
 
  	int closest_index = PlanningHelpers::GetClosestPointIndex(l->points, carPos);
@@ -191,9 +190,9 @@ PlannerH::PlannerH()
  	PlanningHelpers::TraversePathTreeBackwards(pLaneCell, pStartWP, globalPath, path, tempCurrentForwardPathss);
 
 
- 	cout << endl <<"Info: PlannerH -> Path With Size (" << (int)mainPath.size() << "), Extraction Time : " << endl;
+ 	cout << endl <<"Info: PlannerH -> Path With Size (" << (int)path.size() << "), Extraction Time : " << endl;
 
- 	if(mainPath.size()<2)
+ 	if(path.size()<2)
  	{
  		cout << endl << "Err: PlannerH -> Invalid Path, Car Should Stop." << endl;
  		if(pLaneCell)
@@ -213,7 +212,7 @@ PlannerH::PlannerH()
 
  	paths.push_back(path);
 
- 	double totalPlanningDistance = mainPath.at(mainPath.size()-1).cost;
+ 	double totalPlanningDistance = path.at(path.size()-1).cost;
  	return totalPlanningDistance;
  }
 
