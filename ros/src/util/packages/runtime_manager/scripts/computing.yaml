@@ -1811,6 +1811,12 @@ params :
       min       : 0
       max       : 100
       v         : 1.0
+    - name      : stopline_search_radius
+      desc      : stopline_search_radius desc sample
+      label     : Stopline Search Radius (m)
+      min       : 0
+      max       : 100
+      v         : 1.0
     - name      : number_of_zeros_ahead
       desc      : number_of_zeros_ahead desc sample
       label     : Number of Zeros Ahead
