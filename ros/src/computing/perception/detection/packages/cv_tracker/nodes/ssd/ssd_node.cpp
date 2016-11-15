@@ -234,7 +234,7 @@ public:
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "ssd_node");
+	ros::init(argc, argv, "ssd_unc");
 
 	RosSsdApp app;
 
