@@ -58,12 +58,12 @@ const int LOOP_RATE = 10;
 geometry_msgs::TwistStamped g_current_twist;
 geometry_msgs::PoseStamped g_localizer_pose;  // pose of sensor
 geometry_msgs::PoseStamped g_control_pose;  // pose of base_link
-pcl::PointCloud<pcl::PointXYZ> g_vscan;
+pcl::PointCloud<pcl::PointXYZ> g_points;
 
 const std::string pedestrian_sound = "pedestrian";
 bool g_pose_flag = false;
 bool g_path_flag = false;
-bool g_vscan_flag = false;
+bool g_points_flag = false;
 int g_obstacle_waypoint = -1;
 double g_deceleration_search_distance = 30;
 double g_search_distance = 60;
@@ -345,24 +345,24 @@ void objPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
   //ROS_INFO("subscribed obj_pose\n");
 }
 
-void vscanCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
+void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-  pcl::PointCloud<pcl::PointXYZ> vscan_raw;
-  pcl::fromROSMsg(*msg, vscan_raw);
+  pcl::PointCloud<pcl::PointXYZ> sub_points;
+  pcl::fromROSMsg(*msg, sub_points);
 
-  g_vscan.clear();
-  for (const auto &v : vscan_raw)
+  g_points.clear();
+  for (const auto &v : sub_points)
   {
     if (v.x == 0 && v.y == 0)
       continue;
     if (v.z > g_detection_height_top || v.z < g_detection_height_bottom)
       continue;
-    g_vscan.push_back(v);
+    g_points.push_back(v);
   }
 
-  if (g_vscan_flag == false)
+  if (g_points_flag == false)
   {
-    g_vscan_flag = true;
+    g_points_flag = true;
   }
 }
 
@@ -418,7 +418,7 @@ void displayObstacle(const EControl &kind)
   marker.lifetime = ros::Duration(0.1);
   marker.frame_locked = true;
 
-  g_obstacle_pub.publish(marker);
+  //g_obstacle_pub.publish(marker);
 }
 
 void displayDetectionRange(const int &crosswalk_id, const int &num, const EControl &kind)
@@ -574,7 +574,7 @@ EControl crossWalkDetection(const int &crosswalk_id)
     detection_vector.setZ(0.0);
 
     int stop_count = 0;  // the number of points in the detection area
-    for (const auto &vscan : g_vscan)
+    for (const auto &vscan : g_points)
     {
       tf::Vector3 vscan_vector(vscan.x, vscan.y, 0.0);
       double distance = tf::tfDistance(vscan_vector, detection_vector);
@@ -599,7 +599,7 @@ EControl crossWalkDetection(const int &crosswalk_id)
 
 EControl vscanDetection()
 {
-  if (g_vscan.empty() == true || g_closest_waypoint < 0)
+  if (g_points.empty() == true || g_closest_waypoint < 0)
     return KEEP;
 
   int decelerate_or_stop = -10000;
@@ -635,7 +635,7 @@ EControl vscanDetection()
 
     int stop_point_count = 0;
     int decelerate_point_count = 0;
-    for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = g_vscan.begin(); item != g_vscan.end(); item++)
+    for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = g_points.begin(); item != g_points.end(); item++)
     {
       tf::Vector3 vscan_vector((double)item->x, (double)item->y, 0);
 
@@ -819,11 +819,13 @@ int main(int argc, char **argv)
   ros::NodeHandle private_nh("~");
 
   bool use_crosswalk_detection;
+  std::string points_topic;
   private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
+  private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
 
   ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, localizerCallback);
   ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, controlCallback);
-  ros::Subscriber vscan_sub = nh.subscribe("vscan_points", 1, vscanCallback);
+  ros::Subscriber points_sub = nh.subscribe(points_topic, 1, pointsCallback);
   ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, baseWaypointCallback);
   ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, objPoseCallback);
   ros::Subscriber current_vel_sub = nh.subscribe("current_velocity", 1, currentVelCallback);
@@ -870,7 +872,7 @@ int main(int argc, char **argv)
 
     changeWaypoint(detection_result);
 
-    g_vscan.clear();
+    g_points.clear();
 
     loop_rate.sleep();
   }
