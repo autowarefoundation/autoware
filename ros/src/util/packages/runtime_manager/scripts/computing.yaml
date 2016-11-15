@@ -125,8 +125,8 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
             
-      - name : rcnn_node
-        desc : rcnn_node desc sample
+      - name : rcnn_msr
+        desc : rcnn_msr desc sample
         cmd  : roslaunch cv_tracker rcnn.launch
         param: rcnn
         gui   :
@@ -137,8 +137,8 @@ subs :
             border : 16
             flags : [ all ]
 
-      - name : ssd_node
-        desc : ssd_node desc sample
+      - name : ssd_unc
+        desc : ssd_unc desc sample
         cmd  : roslaunch cv_tracker ssd.launch
         param: ssd
         gui   :
