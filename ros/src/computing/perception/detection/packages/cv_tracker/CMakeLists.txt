@@ -232,11 +232,11 @@ IF(HDF5_FOUND)
   INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
 ENDIF()
 
-  ADD_EXECUTABLE(rcnn_node
+  ADD_EXECUTABLE(rcnn_msr
     nodes/rcnn/rcnn_node.cpp
   )
 
-  TARGET_LINK_LIBRARIES(rcnn_node
+  TARGET_LINK_LIBRARIES(rcnn_msr
     librcnn
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
@@ -245,18 +245,18 @@ ENDIF()
     ${CUDA_curand_LIBRARY}
   )
 
-  TARGET_INCLUDE_DIRECTORIES (rcnn_node PRIVATE
+  TARGET_INCLUDE_DIRECTORIES (rcnn_msr PRIVATE
     ${librcnn_INCLUDE_DIRS}
     ${RCNN_CAFFE_PATH}/include
   )
 
-  ADD_DEPENDENCIES(rcnn_node
+  ADD_DEPENDENCIES(rcnn_msr
     cv_tracker_generate_messages_cpp
     runtime_manager_generate_messages_cpp
     librcnn
   )
 else()
-  message("'FastRCNN/Caffe' are not installed. 'rcnn_node' will not be built.")
+  message("'FastRCNN/Caffe' are not installed. 'rcnn_msr' will not be built.")
 endif()
 
 #####SSD########
@@ -274,12 +274,12 @@ IF(HDF5_FOUND)
   INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
 ENDIF()
 
-  ADD_EXECUTABLE(ssd_node
+  ADD_EXECUTABLE(ssd_unc
     nodes/ssd/ssd_node.cpp
     nodes/ssd/ssd_detector.cpp
   )
 
-  TARGET_LINK_LIBRARIES(ssd_node
+  TARGET_LINK_LIBRARIES(ssd_unc
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
     ${CUDA_LIBRARIES}
@@ -289,15 +289,15 @@ ENDIF()
     glog
   )
 
-  TARGET_INCLUDE_DIRECTORIES( ssd_node PRIVATE
+  TARGET_INCLUDE_DIRECTORIES( ssd_unc PRIVATE
     ${SSD_CAFFE_PATH}/include
     nodes/ssd/include
   )
 
-  ADD_DEPENDENCIES(ssd_node
+  ADD_DEPENDENCIES(ssd_unc
     cv_tracker_generate_messages_cpp
     runtime_manager_generate_messages_cpp
   )
 else()
-  message("'SSD/Caffe' is not installed. 'ssd_node' will not be built.")
+  message("'SSD/Caffe' is not installed. 'ssd_unc' will not be built.")
 endif()

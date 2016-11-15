@@ -14,7 +14,7 @@
 	<arg name="image_src" default="/image_raw"/>
 	
 	<!-- SSD -->
-	<node pkg="cv_tracker" name="rcnn" type="ssd_node" output="screen">
+	<node pkg="cv_tracker" name="ssd" type="ssd_unc">
 		<param name="network_definition_file" type="str" value="$(arg network_definition_file)"/>
 		<param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)"/>
 		<param name="use_gpu" type="bool" value="$(arg use_gpu)"/>

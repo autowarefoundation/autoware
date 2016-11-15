@@ -250,7 +250,7 @@ public:
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "rcnn_node");
+	ros::init(argc, argv, "rcnn_msr");
 
 	RosRcnnApp app;
 
