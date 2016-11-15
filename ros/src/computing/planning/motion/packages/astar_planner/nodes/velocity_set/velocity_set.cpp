@@ -418,7 +418,7 @@ void displayObstacle(const EControl &kind)
   marker.lifetime = ros::Duration(0.1);
   marker.frame_locked = true;
 
-  g_obstacle_pub.publish(marker);
+  //g_obstacle_pub.publish(marker);
 }
 
 void displayDetectionRange(const int &crosswalk_id, const int &num, const EControl &kind)
