@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(cv_tracker)
 
 include(FindPkgConfig)
@@ -218,16 +218,16 @@ ADD_DEPENDENCIES(klt_track
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 ##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	 	### 
-set(CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")
+set(RCNN_CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")
 ####################################################################################################
 
-if(EXISTS "${CAFFE_PATH}")
+if(EXISTS "${RCNN_CAFFE_PATH}")
   find_package(librcnn)
+#  INCLUDE_DIRECTORIES(
+#    ${librcnn_INCLUDE_DIRS}
+#    ${RCNN_CAFFE_PATH}/include
+#  )
 
-  INCLUDE_DIRECTORIES(
-    ${librcnn_INCLUDE_DIRS}
-    ${CAFFE_PATH}/include
-  )
 IF(HDF5_FOUND)
   INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
 ENDIF()
@@ -245,6 +245,11 @@ ENDIF()
     ${CUDA_curand_LIBRARY}
   )
 
+  TARGET_INCLUDE_DIRECTORIES (rcnn_node PRIVATE
+    ${librcnn_INCLUDE_DIRS}
+    ${RCNN_CAFFE_PATH}/include
+  )
+
   ADD_DEPENDENCIES(rcnn_node
     cv_tracker_generate_messages_cpp
     runtime_manager_generate_messages_cpp
@@ -252,4 +257,47 @@ ENDIF()
   )
 else()
   message("'FastRCNN/Caffe' are not installed. 'rcnn_node' will not be built.")
+endif()
+
+#####SSD########
+##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
+set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
+####################################################################################################
+if(EXISTS "${SSD_CAFFE_PATH}")
+
+#  INCLUDE_DIRECTORIES(
+#    ${SSD_CAFFE_PATH}/include
+#    nodes/ssd/include
+#  )
+
+IF(HDF5_FOUND)
+  INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
+ENDIF()
+
+  ADD_EXECUTABLE(ssd_node
+    nodes/ssd/ssd_node.cpp
+    nodes/ssd/ssd_detector.cpp
+  )
+
+  TARGET_LINK_LIBRARIES(ssd_node
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${CUDA_LIBRARIES}
+    ${CUDA_CUBLAS_LIBRARIES}
+    ${CUDA_curand_LIBRARY}
+    ${SSD_CAFFE_PATH}/lib/libcaffe.so
+    glog
+  )
+
+  TARGET_INCLUDE_DIRECTORIES( ssd_node PRIVATE
+    ${SSD_CAFFE_PATH}/include
+    nodes/ssd/include
+  )
+
+  ADD_DEPENDENCIES(ssd_node
+    cv_tracker_generate_messages_cpp
+    runtime_manager_generate_messages_cpp
+  )
+else()
+  message("'SSD/Caffe' is not installed. 'ssd_node' will not be built.")
 endif()

@@ -137,6 +137,18 @@ subs :
             border : 16
             flags : [ all ]
 
+      - name : ssd_node
+        desc : ssd_node desc sample
+        cmd  : roslaunch cv_tracker ssd.launch
+        param: ssd
+        gui   :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
       - name : range_fusion
         desc : range_fusion desc sample
         cmd  : roslaunch cv_tracker ranging.launch
