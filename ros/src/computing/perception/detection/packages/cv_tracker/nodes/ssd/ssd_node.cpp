@@ -30,39 +30,33 @@
 #include <string>
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
-#include <runtime_manager/ConfigRcnn.h>
+//#include <runtime_manager/ConfigRcnn.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_tracker/image_obj.h>
 
-#include <rcnn_detector.h>
 #include <rect_class_score.h>
 
 #include <opencv2/contrib/contrib.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-class RosRcnnApp
+#include "ssd_detector.h"
+
+class RosSsdApp
 {
 	ros::Subscriber subscriber_image_raw_;
-	ros::Subscriber subscriber_rcnn_config_;
+	ros::Subscriber subscriber_ssd_config_;
 	ros::Publisher publisher_car_objects_;
 	ros::Publisher publisher_person_objects_;
 	ros::NodeHandle node_handle_;
 
+	cv::Scalar pixel_mean_;
+
 	//Caffe based Object Detection ConvNet
-	RcnnDetector* rcnn_detector_;
+	SsdDetector* ssd_detector_;
 
 	//The minimum score required to filter the detected objects by the ConvNet
 	float score_threshold_;
-
-	//The percentage area to group bounding boxes obtained by the ConvNet
-	float group_threshold_;
-
-	//Number of slices to use for the creation of proposals for the ConvNet
-	float image_slices_;
-
-	//percentage of overlapping between the slices
-	float slices_overlap_;
 
 	//If GPU is enabled, stores the GPU Device to use
 	unsigned int gpu_device_id_;
@@ -78,8 +72,8 @@ class RosRcnnApp
 		for (unsigned int i = 0; i < in_objects.size(); ++i)
 		{
 			if ( (in_objects[i].score > score_threshold_)
-				&& (	(in_class == "car" && (in_objects[i].class_type == Rcnn::CAR || in_objects[i].class_type == Rcnn::BUS))
-						|| (in_class == "person" && (in_objects[i].class_type == Rcnn::PERSON || in_objects[i].class_type == Rcnn::BICYCLE))
+				&& (	(in_class == "car" && (in_objects[i].class_type == Ssd::CAR || in_objects[i].class_type == Ssd::BUS))
+						|| (in_class == "person" && (in_objects[i].class_type == Ssd::PERSON || in_objects[i].class_type == Ssd::BICYCLE))
 					)
 
 				)//check if the score is larger than minimum required
@@ -118,7 +112,7 @@ class RosRcnnApp
 		std::vector< RectClassScore<float> > detections;
 		//cv::TickMeter timer; timer.start();
 		//std::cout << "score:" << score_threshold_ << " slices:" << image_slices_ << " slices overlap:" << slices_overlap_ << "nms" << group_threshold_ << std::endl;
-		detections = rcnn_detector_->Detect(image, detect_classes_, score_threshold_, image_slices_, slices_overlap_, group_threshold_);
+		detections = ssd_detector_->Detect(image);
 
 		//timer.stop();
 		//std::cout << "Detection took: " << timer.getTimeMilli() << std::endl;
@@ -141,18 +135,7 @@ class RosRcnnApp
 		publisher_person_objects_.publish(output_person_message);
 	}
 
-	void config_cb(const runtime_manager::ConfigRcnn::ConstPtr& param)
-	{
-		rcnn_detector_->SetPixelMean(cv::Scalar(param->b_mean, param->g_mean, param->r_mean));
 
-		score_threshold_ 	= param->score_threshold;
-		group_threshold_ 	= param->group_threshold;
-		image_slices_		= param->image_slices;
-		slices_overlap_		= param->slices_overlap;
-
-		/*use_gpu_			= param->use_gpu;
-		gpu_device_id_		= param->gpu_device_id;*/
-	}
 public:
 	void Run()
 	{
@@ -193,6 +176,11 @@ public:
 			return;
 		}
 
+		if (private_node_handle.getParam("score_threshold", score_threshold_))
+		{
+			ROS_INFO("Score Threshold: %f", score_threshold_);
+		}
+
 		if (private_node_handle.getParam("use_gpu", use_gpu_))
 		{
 			ROS_INFO("GPU Mode: %d", use_gpu_);
@@ -204,55 +192,51 @@ public:
 			gpu_device_id_ = (unsigned int) gpu_id;
 		}
 
-		detect_classes_.push_back(Rcnn::CAR);
-		detect_classes_.push_back(Rcnn::PERSON);
-		detect_classes_.push_back(Rcnn::BUS);
-		//RCNN STUFF
-		rcnn_detector_ = new RcnnDetector(network_definition_file, pretrained_model_file, use_gpu_, gpu_device_id_);
+		//SSD STUFF
+		ssd_detector_ = new SsdDetector(network_definition_file, pretrained_model_file, pixel_mean_, use_gpu_, gpu_device_id_);
 
-		if (NULL == rcnn_detector_)
+		if (NULL == ssd_detector_)
 		{
-			ROS_INFO("Error while creating RCNN Object");
+			ROS_INFO("Error while creating SSD Object");
 			return;
 		}
+		ROS_INFO("SSD Detector initialized.");
 
 		publisher_car_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_car/image_obj", 1);
 		publisher_person_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_person/image_obj", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
-		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosRcnnApp::image_callback, this);
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
 
-		std::string config_topic("/config");	config_topic += ros::this_node::getNamespace() + "/rcnn";
-		subscriber_rcnn_config_ =node_handle_.subscribe(config_topic, 1, &RosRcnnApp::config_cb, this);
+		/*std::string config_topic("/config");	config_topic += ros::this_node::getNamespace() + "/ssd";
+		subscriber_ssd_config_ =node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);*/
 
 		ros::spin();
-		ROS_INFO("END rcnn");
+		ROS_INFO("END Ssd");
 
 	}
 
-	~RosRcnnApp()
+	~RosSsdApp()
 	{
-		if (NULL != rcnn_detector_)
-			delete rcnn_detector_;
+		if (NULL != ssd_detector_)
+			delete ssd_detector_;
 	}
 
-	RosRcnnApp()
+	RosSsdApp()
 	{
-		rcnn_detector_ 	= NULL;
-		score_threshold_= 0.6;
-		group_threshold_= 0.8;
-		image_slices_ 	= 16;
+		ssd_detector_ 	= NULL;
+		score_threshold_= 0.5;
 		use_gpu_ 		= false;
 		gpu_device_id_ 	= 0;
-		slices_overlap_ = 0.7;
+		pixel_mean_		= cv::Scalar(102.9801, 115.9465, 122.7717);
 	}
 };
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "rcnn_msr");
+	ros::init(argc, argv, "ssd_unc");
 
-	RosRcnnApp app;
+	RosSsdApp app;
 
 	app.Run();
 

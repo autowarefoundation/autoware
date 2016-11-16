@@ -1,9 +1,11 @@
 <!-- -->
 <launch>
     <arg name="use_crosswalk_detection" default="true" />
+    <arg name="points_topic" default="points_lanes" />
 
 	<node pkg="astar_planner" type="velocity_set" name="velocity_set" output="log">
         <param name="use_crosswalk_detection" value="$(arg use_crosswalk_detection)" />
+        <param name="points_topic" value="$(arg points_topic)" />
 
 	</node>
 

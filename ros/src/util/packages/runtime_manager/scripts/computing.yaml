@@ -125,10 +125,22 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
             
-      - name : rcnn_node
-        desc : rcnn_node desc sample
+      - name : rcnn_msr
+        desc : rcnn_msr desc sample
         cmd  : roslaunch cv_tracker rcnn.launch
         param: rcnn
+        gui   :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
+      - name : ssd_unc
+        desc : ssd_unc desc sample
+        cmd  : roslaunch cv_tracker ssd.launch
+        param: ssd
         gui   :
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
@@ -1796,6 +1808,12 @@ params :
     - name      : acceleration
       desc      : acceleration desc sample
       label     : Acceleration (m/s^2)
+      min       : 0
+      max       : 100
+      v         : 1.0
+    - name      : stopline_search_radius
+      desc      : stopline_search_radius desc sample
+      label     : Stopline Search Radius (m)
       min       : 0
       max       : 100
       v         : 1.0
