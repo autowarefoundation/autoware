@@ -376,6 +376,8 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	tf::StampedTransform vectormap_transform;
 	if (_use_vector_map)
 	{
+		cv::TickMeter timer;
+
 		try
 		{
 			//if the frame of the vectormap is different than the input, obtain transform
@@ -383,6 +385,9 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 			{
 				_transform_listener->lookupTransform(_vectormap_frame, _velodyne_header.frame_id, ros::Time(), vectormap_transform);
 			}
+
+			timer.reset();timer.start();
+
 			//check if centroids are inside the drivable area
 			for(unsigned int i=0; i<all_clusters.size(); i++)
 			{
@@ -400,6 +405,9 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 				position_state.request.position.x = transformed_centroid.getX();
 				position_state.request.position.y = transformed_centroid.getY();
 				position_state.request.position.z = transformed_centroid.getZ();
+
+
+
 				if (_vectormap_server.call(position_state))
 				{
 					all_clusters[i]->SetValidity(position_state.response.state);
@@ -412,12 +420,18 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 					ROS_INFO("vectormap_filtering: VectorMap Server Call failed. Make sure vectormap_server is running. No filtering performed.");
 					all_clusters[i]->SetValidity(true);
 				}
+
 			}
+
+			timer.stop();
+			std::cout << "vm server took " << timer.getTimeMilli() << " ms to check " << all_clusters.size() << std::endl;
+
 		}
 		catch(tf::TransformException &ex)
 		{
 			ROS_INFO("vectormap_filtering: %s", ex.what());
 		}
+
 	}
 	//Get final PointCloud to be published
 
@@ -595,16 +609,23 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		_velodyne_header = in_sensor_cloud->header;
 
+		cv::TickMeter timer;
+
+		timer.reset();timer.start();
 		if (_downsample_cloud)
 			downsampleCloud(current_sensor_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
 		else
 			downsampled_cloud_ptr=current_sensor_cloud_ptr;
+		timer.stop(); std::cout << "downsampleCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 
+		timer.reset();timer.start();
 		if(_keep_lanes)
 			keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
 		else
 			inlanes_cloud_ptr = downsampled_cloud_ptr;
+		timer.stop(); std::cout << "keepLanePoints:" << timer.getTimeMilli() << "ms" << std::endl;
 
+		timer.reset();timer.start();
 		if(_remove_ground)
 		{
 			removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
@@ -612,27 +633,46 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		}
 		else
 			nofloor_cloud_ptr = inlanes_cloud_ptr;
+		timer.stop(); std::cout << "removeFloor:" << timer.getTimeMilli() << "ms" << std::endl;
 
+		timer.reset();timer.start();
 		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
 		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
+		timer.stop(); std::cout << "clipCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 
+		timer.reset();timer.start();
 		if (_use_diffnormals)
 			differenceNormalsSegmentation(clipped_cloud_ptr, diffnormals_cloud_ptr);
 		else
 			diffnormals_cloud_ptr = clipped_cloud_ptr;
+		timer.stop(); std::cout << "differenceNormalsSegmentation:" << timer.getTimeMilli() << "ms" << std::endl;
 
+		timer.reset();timer.start();
 		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters);
+		timer.stop(); std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
+
+		timer.reset();timer.start();
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
+		timer.stop(); std::cout << "publishColorCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 		// Publish BB
 		boundingbox_array.header = _velodyne_header;
+
+		timer.reset();timer.start();
 		publishBoundingBoxArray(&_pub_jsk_boundingboxes, boundingbox_array, _output_frame, _velodyne_header);
 		centroids.header = _velodyne_header;
+		timer.stop(); std::cout << "publishBoundingBoxArray:" << timer.getTimeMilli() << "ms" << std::endl;
+
+		timer.reset();timer.start();
 		publishCentroids(&_centroid_pub, centroids, _output_frame, _velodyne_header);
+		timer.stop(); std::cout << "publishCentroids:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		_marker_pub.publish(_visualization_marker);
 		_visualization_marker.points.clear();//transform? is it used?
 		cloud_clusters.header = _velodyne_header;
+
+		timer.reset();timer.start();
 		publishCloudClusters(&_pub_clusters_message, cloud_clusters, _output_frame, _velodyne_header);
+		timer.stop(); std::cout << "publishCloudClusters:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		_using_sensor_cloud = false;
 	}
