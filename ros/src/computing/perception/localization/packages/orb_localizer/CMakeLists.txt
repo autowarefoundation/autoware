@@ -135,7 +135,6 @@ list (APPEND ORB_BIN_LINKS
 	DBoW2
 	g2o
 	pangolin
-	${LINK_LIBRARIES}
 )
 
 
@@ -148,7 +147,8 @@ add_executable (
 
 target_link_libraries (
 	orb_mapping
-		${ORB_BIN_LINKS}		
+		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}	
 )
 
 add_executable (
@@ -160,6 +160,7 @@ add_executable (
 target_link_libraries (
 	orb_matching
 		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}
 )
 
 add_executable (dumpmap
@@ -168,4 +169,17 @@ add_executable (dumpmap
 
 target_link_libraries (dumpmap
 	${ORB_BIN_LINKS}
+	${LINK_LIBRARIES}
+)
+
+add_executable (
+	orb_evaluator
+		nodes/orb_evaluator/orb_evaluator.cpp
+)
+
+target_link_libraries (
+	orb_evaluator
+		${catkin_LIBRARIES}
+		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}
 )
