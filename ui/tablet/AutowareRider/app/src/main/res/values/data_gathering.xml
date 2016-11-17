@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="can_gather">CanGather</string>
+    <string name="car_link_bluetooth">CarLink (Bluetooth)</string>
+    <string name="car_link_usb">CarLink (USB)</string>
+
+</resources>
