@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="ros_pc">ROS PC</string>
+    <string name="ros_ip_address">IPアドレス:</string>
+    <string name="ros_command_port_number">命令受信ポート番号:</string>
+    <string name="ros_information_port_number">情報送信ポート番号:</string>
+
+    <string name="data_gathering">データ収集</string>
+    <string name="gathering_table_name">テーブル名:</string>
+
+    <string name="ssh">SSH</string>
+    <string name="ssh_host_name">ホスト名:</string>
+    <string name="ssh_port_number">ポート番号:</string>
+    <string name="ssh_user_name">ユーザ名:</string>
+    <string name="ssh_password">パスワード:</string>
+
+    <string name="port_forwarding">ポートフォワーディング</string>
+    <string name="forwarding_local_port_number">ローカルポート番号:</string>
+    <string name="forwarding_remote_host_name">リモートホスト名:</string>
+    <string name="forwarding_remote_port_number">リモートポート番号:</string>
+
+</resources>
