@@ -35,6 +35,7 @@
 #include <std_msgs/Float32.h>
 #include "vehicle_socket/CanInfo.h"
 
+
 namespace vel_pose_mux
 {
 
@@ -226,6 +227,14 @@ int main(int argc, char **argv)
               "can_info", 10, boost::bind(vel_pose_mux::callbackFromCanInfoAndPublishAsTwistStamped, _1, &vel_publisher,
                                           &linear_viz_publisher));
         }
+
+        break;
+      }
+      case 2:  // MKZ
+      {
+          vel_subcscriber = nh.subscribe<geometry_msgs::TwistStamped>(
+              "vehicle/twist", 10, boost::bind(vel_pose_mux::callbackFromTwistStampedAndPublish, _1, &vel_publisher,
+                                          &linear_viz_publisher));
 
         break;
       }
