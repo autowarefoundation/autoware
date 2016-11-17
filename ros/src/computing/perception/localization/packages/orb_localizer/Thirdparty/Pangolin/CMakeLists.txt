@@ -40,7 +40,6 @@ function(embed_binary_files file_glob output)
 endfunction()
 
 set (SRCDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-message ( STATUS "XXX SourceDir: ${SRCDIR}" )
 
 embed_binary_files( "${SRCDIR}/_embed_/fonts/*.ttf" "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
 list ( APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )

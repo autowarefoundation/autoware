@@ -1,3 +1,6 @@
+# Taken from
+# https://sourceware.org/ml/gdb/2013-04/msg00104.html
+
 import gdb
 import cv2.cv as cv
 import numpy as np

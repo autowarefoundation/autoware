@@ -144,6 +144,34 @@ public:
 			)).clone();
 
 		SLAMSystem.TrackMonocular(image, imageTime);
+
+		// Reinsert TF publisher, but only for localization. Original ORB-SLAM2 removes it.
+		bool tfOk = false;
+		tf::Transform locRef;
+
+		Frame &cframe = SLAMSystem.getTracker()->mCurrentFrame;
+		if (SLAMSystem.getTracker()->trackingIsGood())
+		{
+
+			tf::Transform tfTcw = FramePose(&cframe);
+			mTfBr->sendTransform(tf::StampedTransform(tfTcw, ros::Time(imageTime), "/ORB_SLAM/World", "/ORB_SLAM/Camera"));
+
+	//		 Here, we use offset of external localization from the keyframe
+
+				try {
+					locRef = localizeByReference(tfTcw);
+					publishPose(&locRef);
+					tfOk = true;
+//					lastDebugMessage = "";
+				} catch (exception &e) {
+//					lastDebugMessage = e.what();
+					publishPose(NULL);
+				}
+
+		} else { }
+
+		rT2 = microsec_clock::local_time();
+//		cputimeDebug = (rT2-rT1).total_microseconds() * 1e-6;
 	}
 
 private:
@@ -489,6 +517,7 @@ int main (int argc, char *argv[])
 		System::LOCALIZATION);
 
 	ORB_Matcher Matcher (SLAM, nodeHandler);
+	Matcher.imageSub = Matcher.imageBuf->subscribe ((string)SLAM.fsSettings["Camera.topic"], 1, &ORB_Matcher::imageCallback, &Matcher, Matcher.th);
 
 	ros::spin();
 

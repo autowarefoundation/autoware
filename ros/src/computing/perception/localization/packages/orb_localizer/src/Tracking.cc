@@ -125,6 +125,9 @@ Tracking::Tracking (
     // Load ORB parameters
 
     int nFeatures = fSettings["ORBextractor.nFeatures"];
+    if (pSys->opMode==System::MAPPING)
+    	nFeatures *= 2;
+
     float fScaleFactor = fSettings["ORBextractor.scaleFactor"];
     int nLevels = fSettings["ORBextractor.nLevels"];
     int fIniThFAST = fSettings["ORBextractor.iniThFAST"];
@@ -1707,6 +1710,7 @@ void Tracking::ChangeCalibration(const double fx, const double fy, const double 
     K.at<float>(0,2) = cx;
     K.at<float>(1,2) = cy;
     K.copyTo(mK);
+    printf ("IntrinsicMatrix changed to %f,%f,%f,%f\n", fx, fy, cx, cy);
 }
 
 

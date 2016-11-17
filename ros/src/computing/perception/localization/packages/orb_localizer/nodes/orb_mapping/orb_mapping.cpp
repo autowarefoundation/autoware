@@ -16,6 +16,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <tf/transform_listener.h>
+#include <geometry_msgs/PoseStamped.h>
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "System.h"
@@ -36,7 +37,7 @@ public:
 		rosnode (nh),
 		extListener (NULL),
 		lastImageTimestamp (0.0),
-		doStop (false),
+//		doStop (false),
 		externalLocalizerThread (NULL),
 		gotFirstFrame (false)
 	{
@@ -55,6 +56,9 @@ public:
 	    }
 		imageBuf = new image_transport::ImageTransport(rosnode);
 //		imageSub = imageBuf->subscribe((string)SLAMSystem.fsSettings["Camera.topic"], 1, &ORB_Mapper::imageCallback, this, th);
+
+		// XXX: put topic name into ros parameter
+		poseSub = rosnode.subscribe ("ndt_current_pose", 2, &ORB_Mapper::poseCallback, this);
 	}
 
 
@@ -66,33 +70,50 @@ public:
 	}
 
 
-	void externalLocalizerGrab ()
+//	void externalLocalizerGrab ()
+//	{
+//		if (extListener==NULL)
+//			extListener = new tf::TransformListener ();
+//
+//		ros::Rate fps((int)SLAMSystem.fsSettings["Camera.fps"] * 2);
+//
+//		while (ros::ok()) {
+//
+//			if (doStop == true)
+//				break;
+//
+//			try {
+//
+//				extListener->lookupTransform (externalFrameFixed, externalFrameMoving, ros::Time(0), extPose);
+//				unique_lock<mutex> lock(ORB_SLAM2::KeyFrame::extPoseMutex);
+//				tfToCV (extPose, ORB_SLAM2::KeyFrame::extEgoPosition, ORB_SLAM2::KeyFrame::extEgoOrientation);
+//
+//			} catch (tf::TransformException &e) {
+//
+//				unique_lock<mutex> lock(ORB_SLAM2::KeyFrame::extPoseMutex);
+//				ORB_SLAM2::KeyFrame::extEgoPosition.release();
+//				ORB_SLAM2::KeyFrame::extEgoOrientation.release();
+//
+//			}
+//			fps.sleep();
+//		}
+//	}
+
+
+	void poseCallback (const geometry_msgs::PoseStampedConstPtr &cpose)
 	{
-		if (extListener==NULL)
-			extListener = new tf::TransformListener ();
+//		printf ("%f %f %f\n", cpose->pose.position.x, cpose->pose.position.y, cpose->pose.position.z);
+		unique_lock <mutex> lock (ORB_SLAM2::KeyFrame::extPoseMutex);
+		ORB_SLAM2::KeyFrame::extEgoPosition = cv::Mat (3,1,CV_64F);
+		ORB_SLAM2::KeyFrame::extEgoPosition.at<double>(0) = cpose->pose.position.x,
+		ORB_SLAM2::KeyFrame::extEgoPosition.at<double>(1) = cpose->pose.position.y,
+		ORB_SLAM2::KeyFrame::extEgoPosition.at<double>(2) = cpose->pose.position.z;
 
-		ros::Rate fps((int)SLAMSystem.fsSettings["Camera.fps"] * 2);
-
-		while (ros::ok()) {
-
-			if (doStop == true)
-				break;
-
-			try {
-
-				extListener->lookupTransform (externalFrameFixed, externalFrameMoving, ros::Time(0), extPose);
-				unique_lock<mutex> lock(ORB_SLAM2::KeyFrame::extPoseMutex);
-				tfToCV (extPose, ORB_SLAM2::KeyFrame::extEgoPosition, ORB_SLAM2::KeyFrame::extEgoOrientation);
-
-			} catch (tf::TransformException &e) {
-
-				unique_lock<mutex> lock(ORB_SLAM2::KeyFrame::extPoseMutex);
-				ORB_SLAM2::KeyFrame::extEgoPosition.release();
-				ORB_SLAM2::KeyFrame::extEgoOrientation.release();
-
-			}
-			fps.sleep();
-		}
+		ORB_SLAM2::KeyFrame::extEgoOrientation = cv::Mat (4,1,CV_64F);
+		ORB_SLAM2::KeyFrame::extEgoOrientation.at<double>(0) = cpose->pose.orientation.x,
+		ORB_SLAM2::KeyFrame::extEgoOrientation.at<double>(1) = cpose->pose.orientation.y,
+		ORB_SLAM2::KeyFrame::extEgoOrientation.at<double>(2) = cpose->pose.orientation.z,
+		ORB_SLAM2::KeyFrame::extEgoOrientation.at<double>(3) = cpose->pose.orientation.w;
 	}
 
 
@@ -184,6 +205,7 @@ private:
 
 	ros::NodeHandle &rosnode;
 	ORB_SLAM2::System &SLAMSystem;
+	ros::Subscriber poseSub;
 
 	string externalFrameFixed;
 	string externalFrameMoving;
@@ -192,7 +214,7 @@ private:
 	bool gotFirstFrame;
 
 public:
-	volatile bool doStop;
+//	volatile bool doStop;
 
 	image_transport::TransportHints th;
 	image_transport::ImageTransport *imageBuf;
@@ -226,14 +248,14 @@ int main (int argc, char *argv[])
 
     ORB_Mapper Mapper (SLAM, nodeHandler);
     // these two cannot be included into the above class, why ?
-    Mapper.externalLocalizerThread = new std::thread (&ORB_Mapper::externalLocalizerGrab, &Mapper);
+//    Mapper.externalLocalizerThread = new std::thread (&ORB_Mapper::externalLocalizerGrab, &Mapper);
     Mapper.imageSub = Mapper.imageBuf->subscribe ((string)SLAM.fsSettings["Camera.topic"], 1,  &ORB_Mapper::imageCallback, &Mapper, Mapper.th);
 
     ros::spin();
 
     SLAM.Shutdown();
-    Mapper.doStop = true;
-    Mapper.externalLocalizerThread->join();
+//    Mapper.doStop = true;
+//    Mapper.externalLocalizerThread->join();
 
     ros::shutdown();
 

@@ -161,3 +161,11 @@ target_link_libraries (
 	orb_matching
 		${ORB_BIN_LINKS}
 )
+
+add_executable (dumpmap
+	nodes/dumpmap/dumpmap.cc
+)
+
+target_link_libraries (dumpmap
+	${ORB_BIN_LINKS}
+)
