@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">MingAutowareRider</string>
-    <string name="app_label">Ming Autoware</string>
+    <string name="app_name">AutowareRiderAS</string>
+    <string name="app_label">AS Autoware Rider</string>
 
 </resources>
