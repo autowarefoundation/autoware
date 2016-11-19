@@ -46,10 +46,21 @@ void RoiExtractor::RoiSignalCallback(const road_wizard::Signals::ConstPtr &extra
   cv::Mat roi = frame_(cv::Rect(signal_positions.at(0).topLeft, signal_positions.at(0).botRight));
   std::string file_name = target_directory_ + std::to_string(file_count_) + ".png";
 
+  // Reject image if its height is smaller than threshold
+  if (roi.size().height < k_minimum_height_) {
+    return;
+  }
+
+  // Reject image if its similarity level with previous saved ROI is higher than threshold 
+  if (k_similarity_threshold_ < CalculateSimilarity(roi, previous_saved_frame_)) {
+    return;
+  }
+
   cv::imwrite(file_name.c_str(), roi);
   file_count_++;
   
   previous_timestamp_ = frame_timestamp_;
+  previous_saved_frame_ = roi.clone();
 } // void RoiExtractor::RoiSignalCallback()
 
 
@@ -114,6 +125,54 @@ void RoiExtractor::MakeDirectoryTree(const std::string &target,
   }
 } // void RoiExtractor::MakeDirectoryTree()
 
+
+// calculae similarity of specified two images
+// by comparing their histogram, which is sensitive filter for color
+double RoiExtractor::CalculateSimilarity(const cv::Mat &image1, const cv::Mat &image2) {
+  if (image1.empty() || image2.empty()) {
+    return 0.0;
+  }
+
+  // Compare by histogram
+  cv::Mat image1_hsv, image2_hsv;
+  cv::cvtColor(image1, image1_hsv, CV_BGR2HSV);
+  cv::cvtColor(image2, image2_hsv, CV_BGR2HSV);
+
+  const int channel[] = {0};
+
+  // Hue range in OpenCV is 0 to 180
+  const float hue_ranges[] = {0, 180};
+  const float* ranges[] = {hue_ranges};
+
+  // Quantize hue value into 6
+  int hist_size[] = {6};
+
+  cv::Mat histogram1;
+  cv::calcHist(&image1_hsv,
+               1,               // Use this image only to create histogram
+               channel,
+               cv::Mat(),       // No mask is used
+               histogram1,
+               1,               // The dimension of histogram is 1
+               hist_size,
+               ranges);
+
+   cv::Mat histogram2;
+   cv::calcHist(&image2_hsv,
+                1,              // Use this image only to create histogram
+                channel,
+                cv::Mat(),      // No mask is used
+                histogram2,
+                1,              // The dimension of histogram is 1
+                hist_size,
+                ranges);
+
+   double similarity = cv::compareHist(histogram1, histogram2, CV_COMP_CORREL);
+
+   return similarity;
+} // void RoiExtractor::CalculateSimilarity()
+
+
 // Entry Point of this node
 int main (int argc, char *argv[]) {
   // Initialize ROS node
@@ -123,11 +182,15 @@ int main (int argc, char *argv[]) {
   ros::NodeHandle private_node_handler;
   std::string image_topic_name;
   std::string target_directory_name = std::string(getenv("HOME")) + "/.autoware";
+  int minimum_height = 32;
+  double similarity_threshold = 0.9;
   private_node_handler.param<std::string>("image_raw_topic", image_topic_name, "/image_raw");
   private_node_handler.param<std::string>("target_directory", target_directory_name, target_directory_name);
+  private_node_handler.param<int>("minimum_height", minimum_height, 32); // The default minimum height is 32
+  private_node_handler.param<double>("similarity_threshold", similarity_threshold, 0.9); // The default similarity threshold is 0.9
 
   // Get directory name which roi images will be saved
-  RoiExtractor extractor;
+  RoiExtractor extractor(minimum_height, similarity_threshold);
   extractor.CreateTargetDirectory(target_directory_name);
 
   // Launch callback function to subscribe images and signal position

@@ -14,7 +14,12 @@
 
 class RoiExtractor {
  public:
-  explicit RoiExtractor(){};
+  explicit RoiExtractor(int minimum_height, double similarity_threshold):
+    k_minimum_height_(minimum_height),
+    k_similarity_threshold_(similarity_threshold),
+    previous_saved_frame_(cv::Mat())
+  {};
+
   ~RoiExtractor(){};
 
   // Callback functions to obtain images and signal position
@@ -31,6 +36,9 @@ class RoiExtractor {
   // Utility function to create directory tree
   void MakeDirectoryTree(const std::string &target, const std::string &base, const mode_t &mode);
 
+  // The function to calculate similarity of two image
+  double CalculateSimilarity(const cv::Mat &image1, const cv::Mat &image2);
+
   // Directory path that extracted ROI images will be saved
   std::string target_directory_;
 
@@ -43,6 +51,15 @@ class RoiExtractor {
 
   // The number of files contained in the target directory
   int file_count_;
+
+  // The minimum height threshold of ROI image that will be saved
+  const int k_minimum_height_;
+
+  // The threshold of the level of similarity
+  const double k_similarity_threshold_;
+
+  // The image saved last time
+  cv::Mat previous_saved_frame_;
 };
 
 #endif // ROI_EXTRACTOR_H
