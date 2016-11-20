@@ -77,9 +77,10 @@ $ ./catkin_make_release
 ```
 ###Caffe based object detectors
 CV based detectors RCNN and SSD nodes are not automatically built.
+
 To build these nodes please follow the respective node's README
-[RCNN!](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
-[SSD!](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
+[RCNN](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
+[SSD](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
 
 
 ## How to Start
