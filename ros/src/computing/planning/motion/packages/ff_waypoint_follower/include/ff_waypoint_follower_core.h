@@ -36,12 +36,6 @@
 #include <cv_tracker/obj_label.h>
 #include <runtime_manager/traffic_light.h>
 
-#include <map_file/PointClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/NodeArray.h>
-#include <map_file/StopLineArray.h>
-#include <map_file/DTLaneArray.h>
-
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
