@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <cmath>
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
@@ -43,6 +44,8 @@ public:
 		externalFrameFixed = (string)pSL.fsSettings["Localization.frame1"];
 		externalFrameMoving = (string)pSL.fsSettings["Localization.frame2"];
 		offsetKeyframe = SLAMSystem.fsSettings["ExternalLocalization.OffsetKeyframes"];
+
+		cout << "TF: From " << externalFrameFixed << " to " << externalFrameMoving << endl;
 
 		// Image Subscription
 	    if ((int)SLAMSystem.fsSettings["Camera.compressed"]==0) {
@@ -168,7 +171,9 @@ public:
 					publishPose(NULL);
 				}
 
-		} else { }
+		} else {
+			publishPose (NULL);
+		}
 
 		rT2 = microsec_clock::local_time();
 //		cputimeDebug = (rT2-rT1).total_microseconds() * 1e-6;
@@ -423,6 +428,7 @@ private:
 			gpose.pose.orientation.y = pose->getRotation().y();
 			gpose.pose.orientation.z = pose->getRotation().z();
 			gpose.pose.orientation.w = pose->getRotation().w();
+			mTfBr->sendTransform (tf::StampedTransform(*pose, ros::Time(lastImageTimestamp), externalFrameFixed, externalFrameMoving));
 		}
 
 		posePublisher.publish (gpose);
@@ -512,7 +518,7 @@ int main (int argc, char *argv[])
 	ORB_SLAM2::System SLAM(orbVocabFile,
 		configFile,
 		ORB_SLAM2::System::MONOCULAR,
-		true,
+		false,
 		mapPath,
 		System::LOCALIZATION);
 
