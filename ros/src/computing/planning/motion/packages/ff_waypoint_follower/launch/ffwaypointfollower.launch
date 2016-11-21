@@ -25,8 +25,7 @@
 	<arg name="velocityGainKI" 				default="0.005" />
 	<arg name="velocityGainKD" 				default="0.1" />
 	
-	<arg name="system" 						default="segway" /> <!-- segway or autoware -->
-	<arg name="signal" 						default="simulation" /> <!-- simulation or vehicle or autoware -->
+	<arg name="signal" 						default="simulation" /> <!-- simulation or vehicle or autoware or robot -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
 	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
 	
@@ -60,7 +59,6 @@
 		<param name="velocityGainKI" 				value="$(arg velocityGainKI)" />
 		<param name="velocityGainKD" 				value="$(arg velocityGainKD)" />
 		
-		<param name="system" 						value="$(arg system)" />
 		<param name="signal" 						value="$(arg signal)" />
 		<param name="steerMode" 					value="$(arg steerMode)" />
 		<param name="driveMode" 					value="$(arg driveMode)" />

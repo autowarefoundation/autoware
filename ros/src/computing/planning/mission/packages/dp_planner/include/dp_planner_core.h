@@ -1,5 +1,5 @@
 /*
-// *  Copyright (c) 2015, Nagoya University
+// *  Copyright (c) 2016, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,18 +33,13 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include <cv_tracker/obj_label.h>
-#include <runtime_manager/traffic_light.h>
-
-#include <map_file/PointClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/NodeArray.h>
-#include <map_file/StopLineArray.h>
-#include <map_file/DTLaneArray.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
+#include <nav_msgs/Odometry.h>
+
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
@@ -52,131 +47,149 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "waypoint_follower/LaneArray.h"
 
-
 #include <lidar_tracker/CloudCluster.h>
+#include <lidar_tracker/CloudClusterArray.h>
 
-#include "PlannerXInterface.h"
+#include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+
+#include "RoadNetwork.h"
+#include "MappingHelpers.h"
+#include "PlanningHelpers.h"
+#include "CarState.h"
+#include "RosHelpers.h"
 
 namespace PlannerXNS
 {
 
+enum SIGNAL_TYPE{SIMULATION_SIGNAL, ROBOT_SIGNAL};
+
 class PlannerX
 {
 protected:
-	//bool m_bReadyToPlan;
+	//For Testing
 	timespec m_Timer;
 	int m_counter;
 	int m_frequency;
 
-	std::string m_KmlMapPath;
-	bool m_bAutoware;
-	bool m_bKML_Map;
-	PlannerXNS::AutowareRoadNetwork m_AwMap;
-	PlannerXNS::PlannerX_Interface* m_pPlanner;
+protected:
+	SimulationNS::CarState m_State;
 
-	geometry_msgs::Pose m_InitPos;
-	bool bInitPos;
-	//geometry_msgs::Pose m_GoalPos;
-	bool bGoalPos;
-	geometry_msgs::Pose m_CurrentPos;
-	bool bNewCurrentPos;
 	geometry_msgs::Pose m_OriginPos;
+
+	PlannerHNS::WayPoint m_InitPos;
+	bool bInitPos;
+
+	PlannerHNS::WayPoint m_CurrentPos;
+	bool bNewCurrentPos;
+
+	SIGNAL_TYPE m_bSignal;
+
+	std::vector<PlannerHNS::DetectedObject> m_DetectedClusters;
+	std::vector<PlannerHNS::DetectedObject> m_DetectedBoxes;
+	bool bNewClusters;
+	jsk_recognition_msgs::BoundingBoxArray m_BoundingBoxes;
+	bool bNewBoxes;
+
+	PlannerHNS::VehicleState m_VehicleState;
+	bool bVehicleState;
+
 	bool bNewEmergency;
 	int m_bEmergencyStop;
+
 	bool bNewTrafficLigh;
 	int m_bGreenLight;
+
 	bool bNewOutsideControl;
 	int m_bOutsideControl;
 
+	std::vector<PlannerHNS::WayPoint> m_AStarPath;
 	bool bNewAStarPath;
-	waypoint_follower::lane m_AStarPath;
-
-	bool m_bExternalPlanning;
-
 	timespec m_AStartPlanningTimer;
-	bool m_bStartAStartPlanner;
-	geometry_msgs::PoseStamped m_StartPoint;
-	std::vector<geometry_msgs::PoseStamped> m_GoalPoints;
-	bool m_bInitPoseFromMap;
+
+	std::vector<std::vector<PlannerHNS::WayPoint> > m_WayPlannerPaths;
+	bool bWayPlannerPath;
 
 
+	//Planning Related variables
+	PlannerHNS::BehaviorState m_CurrentBehavior;
+	//std::vector<PlannerHNS::WayPoint> m_goals;
+	//int m_iCurrentGoal;
+	PlannerHNS::WayPoint m_CurrentGoal;
+	struct timespec m_PlanningTimer;
+	AutowareRoadNetwork m_AwMap;
+  	PlannerHNS::RoadNetwork m_Map;
+  	bool	m_bKmlMap;
+  	bool	bKmlMapLoaded;
+  	std::string m_KmlMapPath;
 
-	lidar_tracker::CloudClusterArray m_Points_Clusters;
-	cv_tracker::obj_label m_VisionDetectedObstacles;
-	jsk_recognition_msgs::BoundingBoxArray m_DetectedObstacles;
-	bool bNewDetectedObstacles;
-
-	runtime_manager::traffic_light m_TrafficLights;
-	bool bTrafficLights;
-
-	AutowareVehicleState m_VehicleState;
-	bool bVehicleState;
+protected:
+	//ROS messages (topics)
 
 	ros::NodeHandle nh;
 
-	ros::Publisher m_DetectedPolygonsRviz;
-	ros::Publisher m_PathPublisherRviz;
-	ros::Publisher m_MapPublisherRviz;
-	ros::Publisher m_PathPublisher;
-	ros::Publisher m_TrajectoryFinalWaypointPublisher;
-	ros::Publisher m_BehaviorPublisher;
-	ros::Publisher m_TrackedObstaclesRviz;
-	ros::Publisher m_GlobalPlannerStart;
-	ros::Publisher m_GlobalPlannerGoal;
+	//define publishers
+	ros::Publisher pub_LocalPath;
+	ros::Publisher pub_BehaviorState;
+	ros::Publisher pub_GlobalPlanNodes;
+	ros::Publisher pub_StartPoint;
+	ros::Publisher pub_GoalPoint;
+	ros::Publisher pub_AStarStartPoint;
+	ros::Publisher pub_AStarGoalPoint;
 
+	ros::Publisher pub_DetectedPolygonsRviz;
+	ros::Publisher pub_TrackedObstaclesRviz;
+	ros::Publisher pub_LocalTrajectoriesRviz;
 
 	// define subscribers.
+	ros::Subscriber sub_initialpose			;
 	ros::Subscriber sub_current_pose 		;
-	ros::Subscriber sub_traffic_light 		;
-	//ros::Subscriber sub_obj_pose 			;
-	ros::Subscriber sub_bounding_boxs		;
-	ros::Subscriber point_sub 				;
-	ros::Subscriber lane_sub 				;
-	ros::Subscriber node_sub 				;
-	ros::Subscriber stopline_sub 			;
-	ros::Subscriber dtlane_sub 				;
-	ros::Subscriber initialpose_subscriber 	;
-	ros::Subscriber goalpose_subscriber 	;
-	ros::Subscriber sub_vehicle_status 		;
 	ros::Subscriber sub_cluster_cloud		;
-	ros::Subscriber sub_centroids			;
+	ros::Subscriber sub_bounding_boxs		;
+	ros::Subscriber sub_vehicle_status 		;
+	ros::Subscriber sub_robot_odom			;
 	ros::Subscriber sub_EmergencyStop		;
 	ros::Subscriber sub_TrafficLight		;
 	ros::Subscriber sub_OutsideControl		;
-	ros::Subscriber sub_AStarPlan			;
+	ros::Subscriber sub_AStarPath			;
+	ros::Subscriber sub_WayPlannerPaths		;
 
+	//vector map subscription
+	ros::Subscriber sub_map_points;
+	ros::Subscriber sub_map_lanes;
+	ros::Subscriber sub_map_nodes;
+	ros::Subscriber sup_stop_lines;
+	ros::Subscriber sub_dtlanes;
+
+	// Callback function for subscriber.
+	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
+	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
+	void callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg);
+	void callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg);
+	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
+	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
+	void callbackGetEmergencyStop(const std_msgs::Int8& msg);
+	void callbackGetTrafficLight(const std_msgs::Int8& msg);
+	void callbackGetOutsideControl(const std_msgs::Int8& msg);
+	void callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg);
+	void callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConstPtr& msg);
+
+	//Vector map callbacks
+	void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);
+	void callbackGetVMLanes(const vector_map_msgs::LaneArray& msg);
+	void callbackGetVMNodes(const vector_map_msgs::NodeArray& msg);
+	void callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg);
+	void callbackGetVMCenterLines(const vector_map_msgs::DTLaneArray& msg);
 
 
 public:
-  PlannerX(std::string plannerType, bool bAutoware, bool bKML, std::string kmlMapPath);
-
-
+  PlannerX();
   ~PlannerX();
-
   void PlannerMainLoop();
 
-private:
-  // Callback function for subscriber.
-  void callbackSimuGoalPose(const geometry_msgs::PoseStamped &msg);
-  void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
-  void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
-  void callbackFromLightColor(const runtime_manager::traffic_light& msg);
-  void callbackFromObjCar(const jsk_recognition_msgs::BoundingBoxArray& msg);
-  void callbackGetVMPoints(const map_file::PointClassArray& msg);
-  void callbackGetVMLanes(const map_file::LaneArray& msg);
-  void callbackGetVMNodes(const map_file::NodeArray& msg);
-  void callbackGetVMStopLines(const map_file::StopLineArray& msg);
-  void callbackGetVMCenterLines(const map_file::DTLaneArray& msg);
-  void callbackFromVehicleStatus(const geometry_msgs::Vector3StampedConstPtr& msg);
-  void callbackGetPointsClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg);
-  void callbackGetEmergencyStop(const std_msgs::Int8& msg);
-  void callbackGetTrafficLight(const std_msgs::Int8& msg);
-  void callbackGetOutsideControl(const std_msgs::Int8& msg);
-  void callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg);
-
-
-
-
+protected:
+  //Helper Functions
+  void UpdatePlanningParams();
 
 };
 

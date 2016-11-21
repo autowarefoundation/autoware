@@ -30,15 +30,9 @@
 	<arg name="turningRadius"				default="2.5" />
 	<arg name="maxSteerAngle" 				default="1.0" />
 	
-	<arg name="planner" 					default="DP" />
-	<arg name="system" 						default="segway" />
+	<arg name="signal" 						default="simulation" /> <!-- simulation or empty "" -->
 	<arg name="map" 						default="kml" />
 	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/KmlMaps/tsukuba_multy_2_11.kml" />
-	
-	<arg name="InitialPose" 				default="rviz" /> <!-- (rviz) , (empty) will take lozalization pose curr_pose, (intit) take first map positions -->
-	<arg name="GoalsPose" 					default="rviz" /> <!-- (rviz) , (x1,y1,z1,theta1; .. ; xn,yn,zn,thetan) position points list -->
-	
-	
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
@@ -72,15 +66,10 @@
 		<param name="turningRadius" 				value="$(arg turningRadius)" />
 		<param name="maxSteerAngle" 				value="$(arg maxSteerAngle)" />
 		
-		<param name="planner" 						value="$(arg planner)" />
-		<param name="system" 						value="$(arg system)" />
+		<param name="signal" 						value="$(arg signal)" />
 		<param name="map" 							value="$(arg map)" />
 		<param name="mapDirectory" 					value="$(arg mapDirectory)" />
 		
-		<param name="InitialPose" 					value="$(arg InitialPose)" /> 
-		<param name="GoalsPose" 					value="$(arg GoalsPose)" />
-	    
-	    
 	</node>
 
 </launch>

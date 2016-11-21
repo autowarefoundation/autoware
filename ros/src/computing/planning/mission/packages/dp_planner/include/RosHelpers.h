@@ -10,11 +10,11 @@
 
 #include <ros/ros.h>
 
-#include <map_file/PointClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/NodeArray.h>
-#include <map_file/StopLineArray.h>
-#include <map_file/DTLaneArray.h>
+#include <vector_map_msgs/PointArray.h>
+#include <vector_map_msgs/LaneArray.h>
+#include <vector_map_msgs/NodeArray.h>
+#include <vector_map_msgs/StopLineArray.h>
+#include <vector_map_msgs/DTLaneArray.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -47,11 +47,11 @@ namespace PlannerXNS
 class AutowareRoadNetwork
 {
 public:
-	map_file::PointClassArray 		points;
-	std::vector<map_file::Lane> 	lanes;
-	std::vector<map_file::Node> 	nodes;
-	std::vector<map_file::StopLine> stoplines;
-	std::vector<map_file::DTLane> 	dtlanes; //center lines
+	vector_map_msgs::PointArray 	points;
+	vector_map_msgs::LaneArray	 	lanes;
+	vector_map_msgs::NodeArray 		nodes;
+	vector_map_msgs::StopLineArray 	stoplines;
+	vector_map_msgs::DTLaneArray 	dtlanes; //center lines
 	bool bPoints;
 	bool bLanes;
 	bool bNodes;
@@ -170,7 +170,7 @@ public:
 	virtual ~RosHelpers();
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
-				waypoint_follower::LaneArray& laneArray);
+				waypoint_follower::lane & trajectory);
 
 	static void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
 			const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
@@ -188,12 +188,13 @@ public:
 			std::vector<PlannerHNS::DetectedObject>& impObstacles);
 
 	static void ConvertFromPlannerObstaclesToAutoware(const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
-			jsk_recognition_msgs::BoundingBoxArray& obstaclesBoxes,
 			visualization_msgs::MarkerArray& detectedPolygons);
 
 	static PlannerHNS::SHIFT_POS ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift);
 	static PlannerXNS::AUTOWARE_SHIFT_POS ConvertShiftFromPlannerHToAutoware(const PlannerHNS::SHIFT_POS& shift);
 	static PlannerXNS::AutowareBehaviorState ConvertBehaviorStateFromPlannerHToAutoware(const PlannerHNS::BehaviorState& beh);
+
+	static void UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map);
 
 };
 

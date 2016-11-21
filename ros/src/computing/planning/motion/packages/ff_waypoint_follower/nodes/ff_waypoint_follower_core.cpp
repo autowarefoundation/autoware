@@ -40,27 +40,54 @@
 
 namespace FFSteerControlNS
 {
-#define kmlTemplateFile "/home/hatem/workspace/Data/templates/PlannerX_MapTemplate.kml"
+//#define kmlTemplateFile "/home/hatem/workspace/Data/templates/PlannerX_MapTemplate.kml"
 
-FFSteerControl::FFSteerControl(const ControlCommandParams& params)
+FFSteerControl::FFSteerControl()
 {
 	clock_gettime(0, &m_Timer);
+
+	string signalStr;
+	nh.getParam("/ff_waypoint_follower/signal", signalStr );
+	if(signalStr.compare("simulation") == 0)
+		m_CmdParams.statusSource = FFSteerControlNS::SIMULATION_STATUS;
+	else if(signalStr.compare("vehicle") == 0)
+		m_CmdParams.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
+	else if(signalStr.compare("autoware") == 0)
+		m_CmdParams.statusSource = FFSteerControlNS::AUTOWARE_STATUS;
+	else if(signalStr.compare("robot") == 0)
+		m_CmdParams.statusSource = FFSteerControlNS::ROBOT_STATUS;
+
+	string steerModeStr;
+	nh.getParam("/ff_waypoint_follower/steerMode", steerModeStr );
+	if(steerModeStr.compare("angle") == 0)
+		m_CmdParams.bAngleMode = true;
+	else if(steerModeStr.compare("torque") == 0)
+		m_CmdParams.bAngleMode = false;
+
+	string driveModeStr;
+	nh.getParam("/ff_waypoint_follower/driveMode", driveModeStr );
+	if(driveModeStr.compare("velocity") == 0)
+		m_CmdParams.bVelocityMode = true;
+	else if(driveModeStr.compare("stroke") == 0)
+		m_CmdParams.bVelocityMode = false;
+
+	string mapRecStr;
+	nh.getParam("/ff_waypoint_follower/mapRecorder", m_CmdParams.iMapping );
+
+	nh.getParam("/ff_waypoint_follower/mapDistance", m_CmdParams.recordDistance );
+
+	nh.getParam("/ff_waypoint_follower/mapDensity", m_CmdParams.recordDensity );
+
+	cout << "Initialize Controller .. " << ", "
+			<< signalStr << "," << steerModeStr << ", "
+			<< driveModeStr << ", " << m_CmdParams.iMapping << ", "
+			<< m_CmdParams.recordDistance << ", " << m_CmdParams.recordDensity << endl;
 
 	ReadParamFromLaunchFile(m_CarInfo, m_ControlParams);
 
 	m_PredControl.Init(m_ControlParams, m_CarInfo);
 
-//	m_ControlParams.Steering_Gain = SimulationNS::PID_CONST(0.07, 0.02, 0.01);
-//	m_ControlParams.SteeringDelay = 0.85;
-//	m_ControlParams.Steering_Gain.kD = 0.5;
-//	m_ControlParams.Steering_Gain.kP = 0.1;
-//	m_ControlParams.Steering_Gain.kI = 0.03;
-
-
-	//m_ControlParams.Velocity_Gain = SimulationNS::PID_CONST(0.1, 0.005, 0.1);
 	m_State.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
-
-	m_CmdParams = params;
 
 	m_pComm = 0;
 	m_counter = 0;
@@ -80,58 +107,38 @@ FFSteerControl::FFSteerControl(const ControlCommandParams& params)
 		m_pComm->StartComm();
 	}
 
-	if(m_CmdParams.statusSource == AUTOWARE_STATUS)
-	{
-		tf::StampedTransform transform;
-		GetTransformFromTF("map", "world", transform);
-		ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
 
-		m_OriginPos.position.x  = transform.getOrigin().x();
-		m_OriginPos.position.y  = transform.getOrigin().y();
-		m_OriginPos.position.z  = transform.getOrigin().z();
-	}
+	tf::StampedTransform transform;
+	GetTransformFromTF("map", "world", transform);
+	ROS_INFO("Origin : x=%f, y=%f, z=%f", transform.getOrigin().x(),transform.getOrigin().y(), transform.getOrigin().z());
 
-	//m_PositionPublisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
-	//m_PathPublisherRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 10, true);
-	m_velocity_publisher 		= nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 100);
-	m_stat_pub 					= nh.advertise<std_msgs::Bool>("wf_stat", 100);
+	m_OriginPos.position.x  = transform.getOrigin().x();
+	m_OriginPos.position.y  = transform.getOrigin().y();
+	m_OriginPos.position.z  = transform.getOrigin().z();
+
+
+	pub_VelocityAutoware 		= nh.advertise<geometry_msgs::TwistStamped>("twist_raw", 100);
+	pub_StatusAutoware 			= nh.advertise<std_msgs::Bool>("wf_stat", 100);
 
 	//For rviz visualization
-	m_curr_pos_pub				= nh.advertise<visualization_msgs::Marker>("curr_simu_pose", 100);
-	m_perp_pos_pub				= nh.advertise<visualization_msgs::Marker>("perp_pose", 100);
-	m_follow_pos_pub			= nh.advertise<visualization_msgs::Marker>("follow_pose", 100);
+	pub_CurrPoseRviz			= nh.advertise<visualization_msgs::Marker>("curr_simu_pose", 100);
+	pub_FollowPointRviz			= nh.advertise<visualization_msgs::Marker>("follow_pose", 100);
 
-	m_simulated_pos_pub 		= nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 100);
-	m_autoware_pos_pub			= nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
-  	//m_simulated_velocity_pub 	= nh.advertise<geometry_msgs::Vector3Stamped>("sim_velocity", 100);
-  	m_current_vehicle_status	= nh.advertise<geometry_msgs::Vector3Stamped>("ff_vehicle_status", 100);
-  	m_segway_rpm_cmd			= nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 100);
-
-
+	pub_SimulatedCurrentPose 	= nh.advertise<geometry_msgs::PoseStamped>("current_pose", 100);
+	pub_AutowareSimuPose		= nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
+	pub_VehicleStatus			= nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 100);
+	pub_ControlBoxOdom			= nh.advertise<nav_msgs::Odometry>("ControlBoxOdom", 100);
 
 	// define subscribers.
-  	if(m_CmdParams.statusSource == SEGWAY_STATUS)
-  	{
-  		sub_current_pose 		= nh.subscribe("/current_pose", 				100,
-			&FFSteerControl::callbackFromCurrentPose, 		this);
-  		sub_segway_rpm_odom		= nh.subscribe("/odom",			100,
-  				&FFSteerControl::callbackFromSegwayRPM, 		this);
-  	}
-  	else
-  	{
-		sub_current_pose 		= nh.subscribe("/current_pose", 				100,
-				&FFSteerControl::callbackFromCurrentPose, 		this);
-		//	sub_twist_velocity		= nh.subscribe("current_velocity", 				100,
-		//			&FFSteerControl::callbackFromVector3Stamped, 	this);
-  	}
+	sub_initialpose 		= nh.subscribe("/initialpose", 		100, &FFSteerControl::callbackGetInitPose, 			this);
 
-	sub_current_trajectory 	= nh.subscribe("final_waypoints", 				100,
-			&FFSteerControl::callbackFromCurrentTrajectory, this);
-	initialpose_subscriber 	= nh.subscribe("initialpose", 					100,
-			&FFSteerControl::callbackSimuInitPose, 			this);
-	sub_behavior_state 	= nh.subscribe("current_behavior",					10,
-			&FFSteerControl::callbackFromBehaviorState, 	this);
+  	if(m_CmdParams.statusSource != SIMULATION_STATUS)
+  		sub_current_pose 	= nh.subscribe("/current_pose", 	100, &FFSteerControl::callbackGetCurrentPose, 		this);
 
+  	sub_behavior_state 		= nh.subscribe("/current_behavior",	10,  &FFSteerControl::callbackGetBehaviorState, 	this);
+  	sub_current_trajectory 	= nh.subscribe("/final_waypoints", 	10,	&FFSteerControl::callbackGetCurrentTrajectory, this);
+  	sub_autoware_odom 		= nh.subscribe("/twist_odom", 		10,	&FFSteerControl::callbackGetAutowareOdom, this);
+  	sub_robot_odom			= nh.subscribe("/odom",				100, &FFSteerControl::callbackGetRobotOdom, 		this);
 
 
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
@@ -177,77 +184,46 @@ FFSteerControl::~FFSteerControl()
 		delete m_pComm;
 }
 
-//void FFSteerControl::callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg)
-//{
-//	if(m_pComm && m_pComm->IsAuto() && m_CmdParams.iLocalizationSource == 0)
-//	{
-//		m_CurrentVelocity = msg->vector.x;
-//		cout << "### Current Velocity CallBaclk -> " << m_CurrentVelocity << endl;
-//		bNewVelocity = true;
-//	}
-//}
-
-void FFSteerControl::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
+void FFSteerControl::callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 {
-  // write procedure for current pose
-
-	//ROS_INFO("Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, m_frequency);
-
-	if(m_CmdParams.statusSource != SIMULATION_STATUS )
-	{
-		m_counter++;
-		double dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer);
-		if(dt >= 1.0)
-		{
-			m_frequency = m_counter;
-			m_counter = 0;
-			clock_gettime(0, &m_Timer);
-		}
-
-		geometry_msgs::Pose p = msg->pose;
-		p.position.x  = msg->pose.position.x + m_OriginPos.position.x;
-		p.position.y  = msg->pose.position.y + m_OriginPos.position.y;
-		p.position.z  = 0;
-		p.orientation = msg->pose.orientation;
-
-		m_CurrentPos = PlannerHNS::WayPoint(p.position.x, p.position.y
-				, p.position.z , tf::getYaw(p.orientation));
-
-		//cout << "### Current Pose CallBaclk -> " << m_CurrentPos.pos.ToString() << endl;
-
-//	double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
-//	m_VehicleState.speed = distance/dt;
-//	if(m_VehicleState.speed>0.2 || m_VehicleState.shift == AW_SHIFT_POS_DD )
-//		m_VehicleState.shift = AW_SHIFT_POS_DD;
-//	else if(m_VehicleState.speed<-0.2)
-//		m_VehicleState.shift = AW_SHIFT_POS_RR;
-//	else
-//		m_VehicleState.shift = AW_SHIFT_POS_NN;
-
-		bNewCurrentPos = true;
-	}
-
-}
-
-void FFSteerControl::callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
-{
-
-	//ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
+	ROS_INFO("init Simulation Rviz Pose Data: x=%f, y=%f, z=%f, freq=%d", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z, m_frequency);
 
 	geometry_msgs::Pose p;
 	p.position.x  = msg->pose.pose.position.x + m_OriginPos.position.x;
 	p.position.y  = msg->pose.pose.position.y + m_OriginPos.position.y;
-	p.position.z  = 0;
+	p.position.z  = msg->pose.pose.position.z + m_OriginPos.position.z;
 	p.orientation = msg->pose.pose.orientation;
 
-	m_InitPos =  PlannerHNS::WayPoint(p.position.x, p.position.y, p.position.z
-			, tf::getYaw(p.orientation));
+	m_InitPos =  PlannerHNS::WayPoint(p.position.x, p.position.y, p.position.z , tf::getYaw(p.orientation));
 	m_State.FirstLocalizeMe(m_InitPos);
 	m_CurrentPos = m_InitPos;
 	bInitPos = true;
 }
 
-void FFSteerControl::callbackFromCurrentTrajectory(const waypoint_follower::laneConstPtr &msg)
+void FFSteerControl::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
+{
+	m_counter++;
+	double dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer);
+	if(dt >= 1.0)
+	{
+		m_frequency = m_counter;
+		m_counter = 0;
+		clock_gettime(0, &m_Timer);
+	}
+
+	m_CurrentPos = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y,
+						msg->pose.position.z, tf::getYaw(msg->pose.orientation));
+
+	bNewCurrentPos = true;
+}
+
+void FFSteerControl::callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg )
+{
+	m_CurrentBehavior = ConvertBehaviorStateFromAutowareToPlannerH(msg);
+	bNewBehaviorState = true;
+}
+
+void FFSteerControl::callbackGetCurrentTrajectory(const waypoint_follower::laneConstPtr &msg)
 {
 	m_State.m_Path.clear();
 	for(unsigned int i = 0 ; i < msg->waypoints.size(); i++)
@@ -256,48 +232,161 @@ void FFSteerControl::callbackFromCurrentTrajectory(const waypoint_follower::lane
 				msg->waypoints.at(i).pose.pose.position.y, msg->waypoints.at(i).pose.pose.position.z,
 				tf::getYaw(msg->waypoints.at(i).pose.pose.orientation));
 		wp.v = msg->waypoints.at(i).twist.twist.linear.x;
+
+		if(msg->waypoints.at(i).twist.twist.linear.z == 0)
+			wp.bDir = PlannerHNS::FORWARD_DIR;
+		else if(msg->waypoints.at(i).twist.twist.linear.z == 1)
+			wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
+		else if(msg->waypoints.at(i).twist.twist.linear.z == 2)
+			wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
+		else if(msg->waypoints.at(i).twist.twist.linear.z == 3)
+			wp.bDir = PlannerHNS::BACKWARD_DIR;
+		else if(msg->waypoints.at(i).twist.twist.linear.z == 4)
+			wp.bDir = PlannerHNS::BACKWARD_LEFT_DIR;
+		else if(msg->waypoints.at(i).twist.twist.linear.z == 5)
+			wp.bDir = PlannerHNS::BACKWARD_RIGHT_DIR;
+		else if(msg->waypoints.at(i).twist.twist.linear.z == 6)
+			wp.bDir = PlannerHNS::STANDSTILL_DIR;
+		else
+			wp.bDir = PlannerHNS::STANDSTILL_DIR;
+
 		m_State.m_Path.push_back(wp);
 	}
 
 	cout << "### Current Trajectory CallBaclk -> " << m_State.m_Path.size() << endl;
 
 	bNewTrajectory = true;
-  // ROS_INFO_STREAM("waypoint subscribed");
 }
 
-void FFSteerControl::callbackFromBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg )
+void FFSteerControl::callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-	m_CurrentBehavior = ConvertBehaviorStateFromAutowareToPlannerH(msg);
-	cout << "New Behavior: " << m_CurrentBehavior.maxVelocity << ", " << m_CurrentBehavior.state << endl;
-	bNewBehaviorState = true;
 }
 
-void FFSteerControl::callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg)
+void FFSteerControl::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 {
-
-	if(m_CmdParams.statusSource == SEGWAY_STATUS) //segway odometry
+	if(m_CmdParams.statusSource == ROBOT_STATUS)
 	{
-		m_CurrentSegwayPos = PlannerHNS::WayPoint(msg->pose.pose.position.x,
-				msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
-
-		bNewCurrentSegwayPos = true;
+//		PlannerHNS::WayPoint odoPose = PlannerHNS::WayPoint(msg->pose.pose.position.x,
+//				msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
 
 		m_CurrVehicleStatus.shift = PlannerHNS::SHIFT_POS_DD;
 		m_CurrVehicleStatus.speed = msg->twist.twist.linear.x;
-		m_CurrVehicleStatus.steer = msg->twist.twist.angular.z;
-
-//		m_segway_status.vector.x = msg->twist.twist.angular.z;
-//		m_segway_status.vector.y = msg->twist.twist.linear.x;
-//		m_segway_status.vector.z = (int)PlannerHNS::SHIFT_POS_DD;
+		m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+		UtilityHNS::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
 
 		std::cout << "###### Current Status From Segway Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
 	}
-//	else
-//	{
-//		PlannerHNS::WayPoint p(msg->pose.pose.position.x,
-//						msg->pose.pose.position.y,msg->pose.pose.position.z , tf::getYaw(msg->pose.pose.orientation));
-//		std::cout << "### Current Pose From Segway Odometry (Ignored) -> " << p.pos.ToString() << std::endl;
-//	}
+}
+
+void FFSteerControl::GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
+{
+	static tf::TransformListener listener;
+
+	while (1)
+	{
+		try
+		{
+			listener.lookupTransform(parent_frame, child_frame, ros::Time(0), transform);
+			break;
+		}
+		catch (tf::TransformException& ex)
+		{
+			ROS_ERROR("%s", ex.what());
+			ros::Duration(1.0).sleep();
+		}
+	}
+}
+
+void FFSteerControl::displayFollowingInfo(PlannerHNS::WayPoint& curr_pose, PlannerHNS::WayPoint& perp_pose, PlannerHNS::WayPoint& follow_pose)
+{
+  visualization_msgs::Marker m1,m2,m3;
+  m1.header.frame_id = "map";
+  m1.header.stamp = ros::Time();
+  m1.ns = "curr_simu_pose";
+  m1.type = visualization_msgs::Marker::ARROW;
+  m1.action = visualization_msgs::Marker::ADD;
+  m1.pose.position.x = curr_pose.pos.x;
+  m1.pose.position.y = curr_pose.pos.y;
+  m1.pose.position.z = curr_pose.pos.z;
+  m1.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(curr_pose.pos.a));
+  std_msgs::ColorRGBA green;
+  green.a = 1.0;
+  green.b = 0.0;
+  green.r = 0.0;
+  green.g = 1.0;
+  m1.color = green;
+  m1.scale.x = 1.8;
+  m1.scale.y = 0.5;
+  m1.scale.z = 0.5;
+  m1.frame_locked = true;
+  pub_CurrPoseRviz.publish(m1);
+
+  m3.header.frame_id = "map";
+  m3.header.stamp = ros::Time();
+  m3.ns = "follow_pose";
+  m3.type = visualization_msgs::Marker::SPHERE;
+  m3.action = visualization_msgs::Marker::ADD;
+  m3.pose.position.x = follow_pose.pos.x;
+  m3.pose.position.y = follow_pose.pos.y;
+  m3.pose.position.z = follow_pose.pos.z;
+  m3.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(follow_pose.pos.a));
+  std_msgs::ColorRGBA red;
+  red.a = 1.0;
+  red.b = 0.0;
+  red.r = 1.0;
+  red.g = 0.0;
+  m3.color = red;
+  m3.scale.x = 0.7;
+  m3.scale.y = 0.7;
+  m3.scale.z = 0.7;
+  m3.frame_locked = true;
+  pub_FollowPointRviz.publish(m3);
+}
+
+PlannerHNS::BehaviorState FFSteerControl::ConvertBehaviorStateFromAutowareToPlannerH(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+	PlannerHNS::BehaviorState behavior;
+	behavior.followDistance 	= msg->twist.linear.x;
+	behavior.stopDistance 		= msg->twist.linear.y;
+	behavior.followVelocity 	= msg->twist.angular.x;
+	behavior.maxVelocity 		= msg->twist.angular.y;
+
+
+	if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_LEFT)
+		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_LEFT;
+	else if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_RIGHT)
+		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_RIGHT;
+	else if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_BOTH)
+		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_BOTH;
+	else if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_NONE)
+		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_NONE;
+
+	if(msg->twist.angular.z == PlannerHNS::INITIAL_STATE)
+		behavior.state = PlannerHNS::INITIAL_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::WAITING_STATE)
+		behavior.state = PlannerHNS::WAITING_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::FORWARD_STATE)
+		behavior.state = PlannerHNS::FORWARD_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::STOPPING_STATE)
+		behavior.state = PlannerHNS::STOPPING_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::EMERGENCY_STATE)
+		behavior.state = PlannerHNS::EMERGENCY_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::TRAFFIC_LIGHT_STOP_STATE)
+		behavior.state = PlannerHNS::TRAFFIC_LIGHT_STOP_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::STOP_SIGN_STOP_STATE)
+		behavior.state = PlannerHNS::STOP_SIGN_STOP_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::FOLLOW_STATE)
+		behavior.state = PlannerHNS::FOLLOW_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::LANE_CHANGE_STATE)
+		behavior.state = PlannerHNS::LANE_CHANGE_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::OBSTACLE_AVOIDANCE_STATE)
+		behavior.state = PlannerHNS::OBSTACLE_AVOIDANCE_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::FINISH_STATE)
+		behavior.state = PlannerHNS::FINISH_STATE;
+
+
+	return behavior;
+
 }
 
 void FFSteerControl::PlannerMainLoop()
@@ -316,13 +405,11 @@ void FFSteerControl::PlannerMainLoop()
 		ros::spinOnce();
 
 		PlannerHNS::BehaviorState currMessage = m_CurrentBehavior;
-		//cout << "Main Loop Started ! " << endl;
+		double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
+		UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
 		if(currMessage.state != PlannerHNS::INITIAL_STATE &&  (bInitPos || bNewCurrentPos))
 		{
-			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
-			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
-
 			/**
 			 * Localization and Status Reading Part
 			 * -----------------------------------------------------------------------------------
@@ -337,12 +424,18 @@ void FFSteerControl::PlannerMainLoop()
 					m_CurrVehicleStatus.shift = m_pComm->GetCurrentShift();
 
 					//Send status over message to planner
-					geometry_msgs::Vector3Stamped vehicle_status;
-					vehicle_status.header.stamp = ros::Time::now();
-					vehicle_status.vector.x = m_CurrVehicleStatus.steer;
-					vehicle_status.vector.y = m_CurrVehicleStatus.speed;
-					vehicle_status.vector.z = (int)m_CurrVehicleStatus.shift;
-					m_current_vehicle_status.publish(vehicle_status);
+					nav_msgs::Odometry control_box_status;
+					control_box_status.header.stamp = ros::Time::now();
+					control_box_status.twist.twist.angular.z = m_CurrVehicleStatus.steer;
+					control_box_status.twist.twist.linear.x = m_CurrVehicleStatus.speed;
+					control_box_status.twist.twist.linear.z = (int)m_CurrVehicleStatus.shift;
+
+					control_box_status.pose.pose.position.x = m_CurrentPos.pos.x;
+					control_box_status.pose.pose.position.y = m_CurrentPos.pos.y;
+					control_box_status.pose.pose.position.z = m_CurrentPos.pos.z;
+					control_box_status.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
+
+					pub_ControlBoxOdom.publish(control_box_status);
 
 					cout << "Read Live Car Info .. " << endl;
 				}
@@ -354,18 +447,15 @@ void FFSteerControl::PlannerMainLoop()
 			else if(m_CmdParams.statusSource == SIMULATION_STATUS)
 			{
 				m_CurrVehicleStatus = m_PrevStepTargetStatus;
-//				m_State.SetSimulatedTargetOdometryReadings(m_CurrVehicleStatus.speed, m_CurrVehicleStatus.steer, m_CurrVehicleStatus.shift);
-//				m_State.UpdateState(false);
-//				m_State.LocalizeMe(dt);
 				m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
 				m_CurrentPos = m_State.state;
 
-				geometry_msgs::Vector3Stamped vehicle_status;
+				geometry_msgs::TwistStamped vehicle_status;
 				vehicle_status.header.stamp = ros::Time::now();
-				vehicle_status.vector.x = m_CurrVehicleStatus.steer;
-				vehicle_status.vector.y = m_CurrVehicleStatus.speed;
-				vehicle_status.vector.z = (int)m_CurrVehicleStatus.shift;
-				m_current_vehicle_status.publish(vehicle_status);
+				vehicle_status.twist.angular.z = m_CurrVehicleStatus.steer;
+				vehicle_status.twist.linear.x = m_CurrVehicleStatus.speed;
+				vehicle_status.twist.linear.z = (int)m_CurrVehicleStatus.shift;
+				pub_VehicleStatus.publish(vehicle_status);
 
 				geometry_msgs::PoseStamped pose;
 				pose.header.stamp = ros::Time::now();
@@ -374,41 +464,38 @@ void FFSteerControl::PlannerMainLoop()
 				pose.pose.position.z = m_CurrentPos.pos.z;
 				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
 				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
-				m_simulated_pos_pub.publish(pose);
+				pub_SimulatedCurrentPose.publish(pose);
 			}
 			else if(m_CmdParams.statusSource == AUTOWARE_STATUS)
 			{
-				m_CurrVehicleStatus = m_PrevStepTargetStatus;
-//				m_State.SetSimulatedTargetOdometryReadings(m_CurrVehicleStatus.speed, m_CurrVehicleStatus.steer, m_CurrVehicleStatus.shift);
-//				m_State.UpdateState(false);
-//				m_State.LocalizeMe(dt);
-				m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
-				m_CurrentPos = m_State.state;
-
-				geometry_msgs::Vector3Stamped vehicle_status;
-				vehicle_status.header.stamp = ros::Time::now();
-				vehicle_status.vector.x = m_CurrVehicleStatus.steer;
-				vehicle_status.vector.y = m_CurrVehicleStatus.speed;
-				vehicle_status.vector.z = (int)m_CurrVehicleStatus.shift;
-				m_current_vehicle_status.publish(vehicle_status);
-
-				geometry_msgs::PoseStamped pose;
-				pose.header.stamp = ros::Time::now();
-				pose.pose.position.x = m_CurrentPos.pos.x;
-				pose.pose.position.y = m_CurrentPos.pos.y;
-				pose.pose.position.z = m_CurrentPos.pos.z;
-				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
-				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
-				m_autoware_pos_pub.publish(pose);
+//				m_CurrVehicleStatus = m_PrevStepTargetStatus;
+//				m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
+//				m_CurrentPos = m_State.state;
+//
+//				geometry_msgs::TwistStamped vehicle_status;
+//				vehicle_status.header.stamp = ros::Time::now();
+//				vehicle_status.twist.angular.z = m_CurrVehicleStatus.steer;
+//				vehicle_status.twist.linear.x = m_CurrVehicleStatus.speed;
+//				vehicle_status.twist.linear.z = (int)m_CurrVehicleStatus.shift;
+//				pub_VehicleStatus.publish(vehicle_status);
+//
+//				geometry_msgs::PoseStamped pose;
+//				pose.header.stamp = ros::Time::now();
+//				pose.pose.position.x = m_CurrentPos.pos.x;
+//				pose.pose.position.y = m_CurrentPos.pos.y;
+//				pose.pose.position.z = m_CurrentPos.pos.z;
+//				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
+//				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
+//				pub_AutowareSimuPose.publish(pose);
 			}
-			else if(m_CmdParams.statusSource == SEGWAY_STATUS)
+			else if(m_CmdParams.statusSource == ROBOT_STATUS)
 			{
-				geometry_msgs::Vector3Stamped vehicle_status;
-				vehicle_status.header.stamp = ros::Time::now();
-				vehicle_status.vector.x = m_CurrVehicleStatus.steer;
-				vehicle_status.vector.y = m_CurrVehicleStatus.speed;
-				vehicle_status.vector.z = (int)m_CurrVehicleStatus.shift;
-				m_current_vehicle_status.publish(vehicle_status);
+//				geometry_msgs::TwistStamped vehicle_status;
+//				vehicle_status.header.stamp = ros::Time::now();
+//				vehicle_status.twist.angular.z = m_CurrVehicleStatus.steer;
+//				vehicle_status.twist.linear.x = m_CurrVehicleStatus.speed;
+//				vehicle_status.twist.linear.z = (int)m_CurrVehicleStatus.shift;
+//				pub_VehicleStatus.publish(vehicle_status);
 			}
 			//----------------------------------------------------------------------------------------------//
 
@@ -459,43 +546,46 @@ void FFSteerControl::PlannerMainLoop()
 			}
 			else if (m_CmdParams.statusSource == AUTOWARE_STATUS)//send to autoware
 			{
-				cout << "Send Data To Autoware" << endl;
-				geometry_msgs::Twist t;
-				geometry_msgs::TwistStamped twist;
-				std_msgs::Bool wf_stat;
-				t.linear.x = m_PrevStepTargetStatus.speed;
-				t.angular.z = m_PrevStepTargetStatus.steer;
-				wf_stat.data = true;
-				twist.twist = t;
-				twist.header.stamp = ros::Time::now();
-
-				m_velocity_publisher.publish(twist);
-				m_stat_pub.publish(wf_stat);
+//				cout << "Send Data To Autoware" << endl;
+//				geometry_msgs::Twist t;
+//				geometry_msgs::TwistStamped twist;
+//				std_msgs::Bool wf_stat;
+//				t.linear.x = m_PrevStepTargetStatus.speed;
+//				t.angular.z = m_PrevStepTargetStatus.steer;
+//				wf_stat.data = true;
+//				twist.twist = t;
+//				twist.header.stamp = ros::Time::now();
+//
+//				pub_VelocityAutoware.publish(twist);
+//				pub_StatusAutoware.publish(wf_stat);
 			}
-			else if(m_CmdParams.statusSource == SEGWAY_STATUS)
+			else if(m_CmdParams.statusSource == ROBOT_STATUS)
 			{
 				//cout << "Send Data To Segway : Max Speed=" << m_CarInfo.max_speed_forward << ", actual = " <<  m_PrevStepTargetStatus.speed << endl;
 				geometry_msgs::Twist t;
 				geometry_msgs::TwistStamped twist;
 				t.linear.x = m_PrevStepTargetStatus.speed;
-				//t.linear.x = 0.2;
-				if(t.linear.x > 1.0)
-					t.linear.x = 1.0;
+
+				if(t.linear.x > m_CarInfo.max_speed_forward)
+					t.linear.x = m_CarInfo.max_speed_forward;
+
 				t.angular.z = m_PrevStepTargetStatus.steer;
+
+				if(t.angular.z > m_CarInfo.max_steer_angle)
+					t.angular.z = m_CarInfo.max_steer_angle;
+				else if(t.angular.z < -m_CarInfo.max_steer_angle)
+					t.angular.z = -m_CarInfo.max_steer_angle;
+
 				twist.twist = t;
 				twist.header.stamp = ros::Time::now();
 
-				m_segway_rpm_cmd.publish(twist);
+				pub_VehicleStatus.publish(twist);
 			}
 			else if(m_CmdParams.statusSource == SIMULATION_STATUS)
 			{
 			}
 
 			displayFollowingInfo(m_CurrentPos, m_PerpPoint, m_FollowPoint);
-		}
-		else
-		{
-			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 		}
 
 		 if (m_CmdParams.iMapping == 1 && bNewCurrentPos == true)
@@ -534,7 +624,6 @@ void FFSteerControl::PlannerMainLoop()
 
 				segment.id = 1;
 
-
 				PlannerHNS::Lane lane;
 				lane.id = 1;
 				lane.num = 0;
@@ -563,138 +652,5 @@ void FFSteerControl::PlannerMainLoop()
 		loop_rate.sleep();
 	}
 }
-
-void FFSteerControl::GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
-{
-	static tf::TransformListener listener;
-
-	while (1)
-	{
-		try
-		{
-			listener.lookupTransform(parent_frame, child_frame, ros::Time(0), transform);
-			break;
-		}
-		catch (tf::TransformException& ex)
-		{
-			//ROS_ERROR("%s", ex.what());
-			ros::Duration(1.0).sleep();
-		}
-	}
-}
-
-void FFSteerControl::displayFollowingInfo(PlannerHNS::WayPoint& curr_pose, PlannerHNS::WayPoint& perp_pose, PlannerHNS::WayPoint& follow_pose)
-{
-  visualization_msgs::Marker m1,m2,m3;
-  m1.header.frame_id = "map";
-  m1.header.stamp = ros::Time();
-  m1.ns = "curr_simu_pose";
-  m1.type = visualization_msgs::Marker::ARROW;
-  m1.action = visualization_msgs::Marker::ADD;
-  m1.pose.position.x = curr_pose.pos.x;
-  m1.pose.position.y = curr_pose.pos.y;
-  m1.pose.position.z = curr_pose.pos.z;
-  m1.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(curr_pose.pos.a));
-  std_msgs::ColorRGBA green;
-  green.a = 1.0;
-  green.b = 0.0;
-  green.r = 0.0;
-  green.g = 1.0;
-  m1.color = green;
-  m1.scale.x = 1.8;
-  m1.scale.y = 0.5;
-  m1.scale.z = 0.5;
-  m1.frame_locked = true;
-  m_curr_pos_pub.publish(m1);
-
-  m2.header.frame_id = "map";
-  m2.header.stamp = ros::Time();
-  m2.ns = "perp_pose";
-  m2.type = visualization_msgs::Marker::SPHERE;
-  m2.action = visualization_msgs::Marker::ADD;
-  m2.pose.position.x = perp_pose.pos.x;
-  m2.pose.position.y = perp_pose.pos.y;
-  m2.pose.position.z = perp_pose.pos.z;
-  m2.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(perp_pose.pos.a));
-  std_msgs::ColorRGBA blue;
-  blue.a = 1.0;
-  blue.b = 1.0;
-  blue.r = 0.0;
-  blue.g = 0.0;
-  m2.color = blue;
-  m2.scale.x = 0.75;
-  m2.scale.y = 0.75;
-  m2.scale.z = 0.75;
-  m2.frame_locked = true;
-  //m_perp_pos_pub.publish(m2);
-
-  m3.header.frame_id = "map";
-  m3.header.stamp = ros::Time();
-  m3.ns = "follow_pose";
-  m3.type = visualization_msgs::Marker::SPHERE;
-  m3.action = visualization_msgs::Marker::ADD;
-  m3.pose.position.x = follow_pose.pos.x;
-  m3.pose.position.y = follow_pose.pos.y;
-  m3.pose.position.z = follow_pose.pos.z;
-  m3.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(follow_pose.pos.a));
-  std_msgs::ColorRGBA red;
-  red.a = 1.0;
-  red.b = 0.0;
-  red.r = 1.0;
-  red.g = 0.0;
-  m3.color = red;
-  m3.scale.x = 0.7;
-  m3.scale.y = 0.7;
-  m3.scale.z = 0.7;
-  m3.frame_locked = true;
-  m_follow_pos_pub.publish(m3);
-}
-
-PlannerHNS::BehaviorState FFSteerControl::ConvertBehaviorStateFromAutowareToPlannerH(const geometry_msgs::TwistStampedConstPtr& msg)
-{
-	PlannerHNS::BehaviorState behavior;
-	behavior.followDistance 	= msg->twist.linear.x;
-	behavior.stopDistance 		= msg->twist.linear.y;
-	behavior.followVelocity 	= msg->twist.angular.x;
-	behavior.maxVelocity 		= msg->twist.angular.y;
-
-
-	if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_LEFT)
-		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_LEFT;
-	else if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_RIGHT)
-		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_RIGHT;
-	else if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_BOTH)
-		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_BOTH;
-	else if(msg->twist.linear.z == PlannerHNS::LIGHT_INDICATOR::INDICATOR_NONE)
-		behavior.indicator = PlannerHNS::LIGHT_INDICATOR::INDICATOR_NONE;
-
-	if(msg->twist.angular.z == PlannerHNS::INITIAL_STATE)
-		behavior.state = PlannerHNS::INITIAL_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::WAITING_STATE)
-		behavior.state = PlannerHNS::WAITING_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::FORWARD_STATE)
-		behavior.state = PlannerHNS::FORWARD_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::STOPPING_STATE)
-		behavior.state = PlannerHNS::STOPPING_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::EMERGENCY_STATE)
-		behavior.state = PlannerHNS::EMERGENCY_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::TRAFFIC_LIGHT_STOP_STATE)
-		behavior.state = PlannerHNS::TRAFFIC_LIGHT_STOP_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::STOP_SIGN_STOP_STATE)
-		behavior.state = PlannerHNS::STOP_SIGN_STOP_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::FOLLOW_STATE)
-		behavior.state = PlannerHNS::FOLLOW_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::LANE_CHANGE_STATE)
-		behavior.state = PlannerHNS::LANE_CHANGE_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::OBSTACLE_AVOIDANCE_STATE)
-		behavior.state = PlannerHNS::OBSTACLE_AVOIDANCE_STATE;
-	else if(msg->twist.angular.z == PlannerHNS::FINISH_STATE)
-		behavior.state = PlannerHNS::FINISH_STATE;
-
-
-	return behavior;
-
-}
-
 
 }

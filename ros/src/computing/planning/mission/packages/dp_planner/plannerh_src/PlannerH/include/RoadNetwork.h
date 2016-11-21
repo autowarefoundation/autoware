@@ -95,7 +95,7 @@ public:
   virtual ~RECTANGLE(){}
 };
 
-class GPSPoint : public ObjTimeStamp
+class GPSPoint
 {
 public:
 	double lat, x;
@@ -548,7 +548,7 @@ public:
 
 };
 
-class BehaviorState : public ObjTimeStamp
+class BehaviorState
 {
 public:
 	STATE_TYPE state;
@@ -763,7 +763,6 @@ public:
 	std::string ToString(STATE_TYPE beh)
 	{
 		std::ostringstream str;
-		timespec t_stamp;
 		if(beh == FORWARD_STATE)
 		{
 			str << "GoToGoal>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<

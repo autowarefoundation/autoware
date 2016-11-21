@@ -10,11 +10,11 @@
 
 #include <ros/ros.h>
 
-#include <map_file/PointClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/NodeArray.h>
-#include <map_file/StopLineArray.h>
-#include <map_file/DTLaneArray.h>
+#include <vector_map_msgs/PointArray.h>
+#include <vector_map_msgs/LaneArray.h>
+#include <vector_map_msgs/NodeArray.h>
+#include <vector_map_msgs/StopLineArray.h>
+#include <vector_map_msgs/DTLaneArray.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>

@@ -12,6 +12,7 @@
 #include <fstream>
 #include <math.h>
 #include "PolygonGenerator.h"
+#include "MappingHelpers.h"
 
 namespace PlannerXNS
 {
@@ -43,10 +44,9 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
-		waypoint_follower::LaneArray& laneArray)
+		waypoint_follower::lane& trajectory)
 {
-	waypoint_follower::lane l;
-
+	trajectory.waypoints.clear();
 	for(unsigned int i=0; i < path.size(); i++)
 	{
 		waypoint_follower::waypoint wp;
@@ -64,11 +64,8 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		//PlannerHNS::GPSPoint p = path.at(i).pos;
 		//std::cout << p.ToString() << std::endl;
 
-		l.waypoints.push_back(wp);
+		trajectory.waypoints.push_back(wp);
 	}
-
-	if(l.waypoints.size()>0)
-		laneArray.lanes.push_back(l);
 }
 
 void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray)
@@ -227,37 +224,8 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 }
 
 void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
-		jsk_recognition_msgs::BoundingBoxArray& obstaclesBoxes,
 		visualization_msgs::MarkerArray& detectedPolygons)
 {
-	obstaclesBoxes.boxes.clear();
-
-//	obstaclesBoxes.header.frame_id = "map";
-//	obstaclesBoxes.header.stamp = ros::Time();
-//
-//	for(unsigned int i =0; i < trackedObstacles.size(); i++)
-//	{
-//		jsk_recognition_msgs::BoundingBox box;
-//		box.header.frame_id = "map";
-//		box.header.stamp = ros::Time();
-//		box.header.seq = i;
-//
-//		box.dimensions.x = trackedObstacles.at(i).l;
-//		box.dimensions.y = trackedObstacles.at(i).w;
-//		box.dimensions.z = trackedObstacles.at(i).h;
-//
-//		box.pose.position.x = trackedObstacles.at(i).center.pos.x;
-//		box.pose.position.y = trackedObstacles.at(i).center.pos.y;
-//		box.pose.position.z = trackedObstacles.at(i).center.pos.z;
-//		box.pose.orientation = tf::createQuaternionMsgFromYaw(trackedObstacles.at(i).center.pos.a);
-//
-//		box.label = trackedObstacles.at(i).t;
-//		box.value = trackedObstacles.at(i).center.v;
-//
-//
-//		obstaclesBoxes.boxes.push_back(box);
-//	}
-
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
 	lane_waypoint_marker.header.stamp = ros::Time();
@@ -326,7 +294,7 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 		obj.w = detectedObstacles.boxes.at(i).dimensions.y;
 		obj.l = detectedObstacles.boxes.at(i).dimensions.x;
 		obj.h = detectedObstacles.boxes.at(i).dimensions.z;
-		double objSize = obj.w*obj.l;
+		//double objSize = obj.w*obj.l;
 		//double d = hypot(m_State.state.pos.y - obj.center.pos.y, m_State.state.pos.x - obj.center.pos.x);
 		//std::cout << ", Distance of  : " << d;
 		//if(d < 7)
@@ -450,6 +418,96 @@ PlannerXNS::AutowareBehaviorState RosHelpers::ConvertBehaviorStateFromPlannerHTo
 
 	return arw_state;
 
+}
+
+void RosHelpers::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map)
+{
+	std::vector<UtilityHNS::AisanLanesFileReader::AisanLane> lanes;
+	for(unsigned int i=0; i < src_map.lanes.data.size();i++)
+	{
+		UtilityHNS::AisanLanesFileReader::AisanLane l;
+		l.BLID 		=  src_map.lanes.data.at(i).blid;
+		l.BLID2 	=  src_map.lanes.data.at(i).blid2;
+		l.BLID3 	=  src_map.lanes.data.at(i).blid3;
+		l.BLID4 	=  src_map.lanes.data.at(i).blid4;
+		l.BNID 		=  src_map.lanes.data.at(i).bnid;
+		l.ClossID 	=  src_map.lanes.data.at(i).clossid;
+		l.DID 		=  src_map.lanes.data.at(i).did;
+		l.FLID 		=  src_map.lanes.data.at(i).flid;
+		l.FLID2 	=  src_map.lanes.data.at(i).flid2;
+		l.FLID3 	=  src_map.lanes.data.at(i).flid3;
+		l.FLID4 	=  src_map.lanes.data.at(i).flid4;
+		l.FNID 		=  src_map.lanes.data.at(i).fnid;
+		l.JCT 		=  src_map.lanes.data.at(i).jct;
+		l.LCnt 		=  src_map.lanes.data.at(i).lcnt;
+		l.LnID 		=  src_map.lanes.data.at(i).lnid;
+		l.Lno 		=  src_map.lanes.data.at(i).lno;
+		l.Span 		=  src_map.lanes.data.at(i).span;
+		l.RefVel	=  src_map.lanes.data.at(i).refvel;
+		l.LimitVel	=  src_map.lanes.data.at(i).limitvel;
+
+//		l.LaneChgFG =  src_map.lanes.at(i).;
+//		l.LaneType 	=  src_map.lanes.at(i).blid;
+//		l.LimitVel 	=  src_map.lanes.at(i).;
+//		l.LinkWAID 	=  src_map.lanes.at(i).blid;
+//		l.RefVel 	=  src_map.lanes.at(i).blid;
+//		l.RoadSecID =  src_map.lanes.at(i).;
+
+		lanes.push_back(l);
+	}
+
+	std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints> points;
+
+	for(unsigned int i=0; i < src_map.points.data.size();i++)
+	{
+		UtilityHNS::AisanPointsFileReader::AisanPoints p;
+		double integ_part = src_map.points.data.at(i).l;
+		double deg = trunc(src_map.points.data.at(i).l);
+		double min = trunc((src_map.points.data.at(i).l - deg) * 100.0) / 60.0;
+		double sec = modf((src_map.points.data.at(i).l - deg) * 100.0, &integ_part)/36.0;
+		double L =  deg + min + sec;
+
+		deg = trunc(src_map.points.data.at(i).b);
+		min = trunc((src_map.points.data.at(i).b - deg) * 100.0) / 60.0;
+		sec = modf((src_map.points.data.at(i).b - deg) * 100.0, &integ_part)/36.0;
+		double B =  deg + min + sec;
+
+		p.B 		= B;
+		p.Bx 		= src_map.points.data.at(i).bx;
+		p.H 		= src_map.points.data.at(i).h;
+		p.L 		= L;
+		p.Ly 		= src_map.points.data.at(i).ly;
+		p.MCODE1 	= src_map.points.data.at(i).mcode1;
+		p.MCODE2 	= src_map.points.data.at(i).mcode2;
+		p.MCODE3 	= src_map.points.data.at(i).mcode3;
+		p.PID 		= src_map.points.data.at(i).pid;
+		p.Ref 		= src_map.points.data.at(i).ref;
+
+		points.push_back(p);
+	}
+
+
+	std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine> dts;
+	for(unsigned int i=0; i < src_map.dtlanes.data.size();i++)
+	{
+		UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine dt;
+
+		dt.Apara 	= src_map.dtlanes.data.at(i).apara;
+		dt.DID 		= src_map.dtlanes.data.at(i).did;
+		dt.Dir 		= src_map.dtlanes.data.at(i).dir;
+		dt.Dist 	= src_map.dtlanes.data.at(i).dist;
+		dt.LW 		= src_map.dtlanes.data.at(i).lw;
+		dt.PID 		= src_map.dtlanes.data.at(i).pid;
+		dt.RW 		= src_map.dtlanes.data.at(i).rw;
+		dt.cant 	= src_map.dtlanes.data.at(i).cant;
+		dt.r 		= src_map.dtlanes.data.at(i).r;
+		dt.slope 	= src_map.dtlanes.data.at(i).slope;
+
+		dts.push_back(dt);
+	}
+
+	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, origin, out_map);
 }
 
 }

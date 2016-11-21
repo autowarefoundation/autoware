@@ -59,17 +59,16 @@
 namespace FFSteerControlNS
 {
 
-enum STATUS_TYPE{CONTROL_BOX_STATUS, AUTOWARE_STATUS, SEGWAY_STATUS, SIMULATION_STATUS};
+enum STATUS_TYPE{CONTROL_BOX_STATUS, AUTOWARE_STATUS, ROBOT_STATUS, SIMULATION_STATUS};
 
 class ControlCommandParams
 {
 public:
-	bool bAutoware;
 	STATUS_TYPE statusSource;
-	//0 -> control box (zmp)
-	//1 -> autoware
-	//2 -> segway
-	//3 -> simulation
+	//0 -> Control box (zmp)
+	//1 -> Autoware
+	//2 -> Robot
+	//3 -> Simulation
 	int iMapping; // 1 create map
 	double recordDistance;
 	double recordDensity;
@@ -79,7 +78,6 @@ public:
 
 	ControlCommandParams()
 	{
-		bAutoware = true;
 		statusSource = SIMULATION_STATUS;
 		bTorqueMode = false;
 		iMapping = 0;
@@ -105,8 +103,6 @@ protected:
 	bool bInitPos;
 	PlannerHNS::WayPoint m_CurrentPos;
 	bool bNewCurrentPos;
-	PlannerHNS::WayPoint m_CurrentSegwayPos;
-	bool bNewCurrentSegwayPos;
 	geometry_msgs::Pose m_OriginPos;
 	bool bNewTrajectory;
 	std::vector<PlannerHNS::WayPoint> m_FollowingTrajectory;
@@ -122,6 +118,7 @@ protected:
 	PlannerHNS::VehicleState m_PrevStepTargetStatus;
 	PlannerHNS::VehicleState m_CurrVehicleStatus;
 
+
 	//geometry_msgs::Vector3Stamped m_segway_status;
 	bool bVehicleStatus;
 	ControlCommandParams m_CmdParams;
@@ -129,52 +126,41 @@ protected:
 	SimulationNS::ControllerParams m_ControlParams;
 	PlannerHNS::PlanningParams m_PlanningParams;
 
+	SimulationNS::TrajectoryFollower m_PredControl;
+
 	ros::NodeHandle nh;
 
-	//ros::Publisher m_PositionPublisher;
-	//ros::Publisher m_PathPublisherRviz;
-	ros::Publisher m_velocity_publisher;
-	ros::Publisher m_stat_pub;
-
-	ros::Publisher m_curr_pos_pub;
-	ros::Publisher m_perp_pos_pub;
-	ros::Publisher m_follow_pos_pub;
-
-	ros::Publisher m_simulated_pos_pub;
-	ros::Publisher m_autoware_pos_pub;
-	//ros::Publisher m_simulated_velocity_pub;
-	ros::Publisher m_current_vehicle_status;
-	ros::Publisher m_segway_rpm_cmd;
+	ros::Publisher pub_VelocityAutoware;
+	ros::Publisher pub_StatusAutoware;
+	ros::Publisher pub_AutowareSimuPose;
+	ros::Publisher pub_SimulatedCurrentPose;
+	ros::Publisher pub_CurrPoseRviz;
+	ros::Publisher pub_FollowPointRviz;
+	ros::Publisher pub_VehicleStatus;
+	ros::Publisher pub_ControlBoxOdom;
 
 	// define subscribers.
+	ros::Subscriber sub_initialpose;
 	ros::Subscriber sub_current_pose ;
 	ros::Subscriber sub_behavior_state;
 	ros::Subscriber sub_current_trajectory;
-	//ros::Subscriber sub_twist_velocity;
-	ros::Subscriber initialpose_subscriber 	;
-	ros::Subscriber sub_segway_rpm_odom;
+	ros::Subscriber sub_autoware_odom;
+	ros::Subscriber sub_robot_odom;
 
-
-
-	SimulationNS::TrajectoryFollower m_PredControl;
-
+	// Callback function for subscriber.
+	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
+	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
+	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
+	void callbackGetCurrentTrajectory(const waypoint_follower::laneConstPtr& msg);
+	void callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg);
+	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 
 public:
-	FFSteerControl(const ControlCommandParams& params);
+	FFSteerControl();
 
 	virtual ~FFSteerControl();
 
 	void PlannerMainLoop();
-
-private:
-  // Callback function for subscriber.
-
-	void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
-	void callbackFromCurrentTrajectory(const waypoint_follower::laneConstPtr& msg);
-	//void callbackFromVector3Stamped(const geometry_msgs::Vector3StampedConstPtr &msg);
-	void callbackSimuInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
-	void callbackFromBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
-	void callbackFromSegwayRPM(const nav_msgs::OdometryConstPtr& msg);
 
   void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 

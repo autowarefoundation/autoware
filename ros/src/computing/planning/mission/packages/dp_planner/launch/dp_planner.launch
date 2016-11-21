@@ -8,7 +8,7 @@
 	<arg name="samplingTipMargin" 			default="8.0" />
 	<arg name="samplingOutMargin" 			default="20.0" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
-	<arg name="pathDensity" 				default="0.25" />
+	<arg name="pathDensity" 				default="0.2" />
 	<arg name="rollOutDensity" 				default="0.5" />
 	<arg name="rollOutsNumber" 				default="4" />
 	<arg name="horizonDistance" 			default="120" />
@@ -25,20 +25,15 @@
 	<arg name="enableLaneChange" 			default="0" />
 	
 	<arg name="width" 						default="4.2" />
-	<arg name="length" 						default="1.85" />
+	<arg name="length" 						default="1.85"/>
 	<arg name="wheelBaseLength" 			default="2.5" />
 	<arg name="turningRadius"				default="3.2" />
 	<arg name="maxSteerAngle" 				default="0.42" />
 	
-	<arg name="planner" 					default="DP" />
-	<arg name="system" 						default="autoware" /> <!-- segway or autoware -->
+	<arg name="signal" 						default="simulation" /> <!-- simulation or empty "" -->
 	<arg name="map" 						default="" /> <!-- kml or empty -->
 	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/VectorMaps/ToyotaCity/" />
-	
-	<arg name="InitialPose" 				default="rviz" /> <!-- (rviz) , (empty) will take lozalization pose curr_pose, (intit) take first map positions -->
-	<arg name="GoalsPose" 					default="rviz" /> <!-- (rviz) , (x1,y1,z1,theta1; .. ; xn,yn,zn,thetan) position points list -->
-	
-	
+
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
 	    <param name="minVelocity" 					value="$(arg minVelocity)" />
@@ -71,16 +66,10 @@
 		<param name="turningRadius" 				value="$(arg turningRadius)" />
 		<param name="maxSteerAngle" 				value="$(arg maxSteerAngle)" />
 		
-		<param name="planner" 						value="$(arg planner)" />
-		<param name="system" 						value="$(arg system)" />
+		<param name="signal" 						value="$(arg signal)" />
 		<param name="map" 							value="$(arg map)" />
 		<param name="mapDirectory" 					value="$(arg mapDirectory)" />
-		
-		<param name="InitialPose" 					value="$(arg InitialPose)" /> 
-		<param name="GoalsPose" 					value="$(arg GoalsPose)" /> 
-		
-	    
-	    
+
 	</node>
 
 </launch>

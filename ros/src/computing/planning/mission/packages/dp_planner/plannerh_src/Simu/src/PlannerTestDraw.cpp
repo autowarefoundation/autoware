@@ -20,7 +20,9 @@ using namespace SimulationNS;
 using namespace UtilityHNS;
 
 #define VectorMap "NagoyaUniversity/"
-#define kmlMap	"tsukuba_multy_2_11.kml"
+//#define kmlMap	"tsukuba_multy_2_11.kml"
+
+#define kmlMap	"ToyotaKML.kml"
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -94,19 +96,19 @@ PlannerTestDraw::PlannerTestDraw()
 
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
 
-	//Tsukuba Test
-	m_ControlParams.Steering_Gain = PID_CONST(0.4, 0.1, 0.1);
-	m_ControlParams.minPursuiteDistance = 2.0;
-	m_ControlParams.SteeringDelay = 0.6;
-	m_CarInfo.width = 0.9;
-	m_CarInfo.length = 1.4;
-	m_CarInfo.max_speed_forward = 3.5;
-	m_CarInfo.max_steer_angle = 1.0;
+//	//Tsukuba Test
+//	m_ControlParams.Steering_Gain = PID_CONST(0.4, 0.1, 0.1);
+//	m_ControlParams.minPursuiteDistance = 2.0;
+//	m_ControlParams.SteeringDelay = 0.6;
+//	m_CarInfo.width = 0.9;
+//	m_CarInfo.length = 1.4;
+//	m_CarInfo.max_speed_forward = 3.5;
+//	m_CarInfo.max_steer_angle = 1.0;
 
-//	m_ControlParams.Steering_Gain = PID_CONST(0.07, 0.02, 0.01);
+	m_ControlParams.Steering_Gain = PID_CONST(0.07, 0.02, 0.01);
 //	m_ControlParams.SimulationSteeringDelay = 0.1;
-//
-//	m_ControlParams.SteeringDelay = 0.85;
+
+	m_ControlParams.SteeringDelay = 0.85;
 //	m_ControlParams.Steering_Gain.kD = 0.5;
 //	m_ControlParams.Steering_Gain.kP = 0.1;
 //	m_ControlParams.Steering_Gain.kI = 0.03;
