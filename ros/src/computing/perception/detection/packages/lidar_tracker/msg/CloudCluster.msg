@@ -16,4 +16,7 @@ geometry_msgs/Vector3 dimensions
 geometry_msgs/Vector3 eigen_values
 geometry_msgs/Vector3[] eigen_vectors
 
+#Array of 33 floats containing the FPFH descriptor
+std_msgs/Float32MultiArray fpfh_descriptor 
+
 jsk_recognition_msgs/BoundingBox bounding_box

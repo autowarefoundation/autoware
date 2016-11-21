@@ -16,6 +16,7 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/don.h>
+#include <pcl/features/fpfh_omp.h>
 
 #include <pcl/kdtree/kdtree.h>
 
@@ -25,6 +26,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/conditional_euclidean_clustering.h>
+#include <pcl/segmentation/progressive_morphological_filter.h>
 
 #include <pcl/common/common.h>
 
@@ -35,6 +37,10 @@
 
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
+
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/MultiArrayLayout.h>
+#include <std_msgs/MultiArrayDimension.h>
 
 #include <lidar_tracker/centroids.h>
 #include <lidar_tracker/CloudCluster.h>
@@ -407,7 +413,6 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 				position_state.request.position.z = transformed_centroid.getZ();
 
 
-
 				if (_vectormap_server.call(position_state))
 				{
 					all_clusters[i]->SetValidity(position_state.response.state);
@@ -420,18 +425,14 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 					ROS_INFO("vectormap_filtering: VectorMap Server Call failed. Make sure vectormap_server is running. No filtering performed.");
 					all_clusters[i]->SetValidity(true);
 				}
-
 			}
-
 			timer.stop();
-			std::cout << "vm server took " << timer.getTimeMilli() << " ms to check " << all_clusters.size() << std::endl;
-
+			//std::cout << "vm server took " << timer.getTimeMilli() << " ms to check " << all_clusters.size() << std::endl;
 		}
 		catch(tf::TransformException &ex)
 		{
 			ROS_INFO("vectormap_filtering: %s", ex.what());
 		}
-
 	}
 	//Get final PointCloud to be published
 
@@ -466,6 +467,27 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.35)
 {
+	/*pcl::PointIndicesPtr ground (new pcl::PointIndices);
+	// Create the filtering object
+	pcl::ProgressiveMorphologicalFilter<pcl::PointXYZ> pmf;
+	pmf.setInputCloud (in_cloud_ptr);
+	pmf.setMaxWindowSize (20);
+	pmf.setSlope (1.0f);
+	pmf.setInitialDistance (0.5f);
+	pmf.setMaxDistance (3.0f);
+	pmf.extract (ground->indices);
+
+	// Create the filtering object
+	pcl::ExtractIndices<pcl::PointXYZ> extract;
+	extract.setInputCloud (in_cloud_ptr);
+	extract.setIndices (ground);
+	extract.setNegative(true);//true removes the indices, false leaves only the indices
+	extract.filter(*out_nofloor_cloud_ptr);
+
+	//EXTRACT THE FLOOR FROM THE CLOUD
+	extract.setNegative(false);//true removes the indices, false leaves only the indices
+	extract.filter(*out_onlyfloor_cloud_ptr);*/
+
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
 	pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
 	pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
@@ -486,14 +508,14 @@ void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Po
 		std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
 	}
 
-	/*REMOVE THE FLOOR FROM THE CLOUD*/
+	//REMOVE THE FLOOR FROM THE CLOUD
 	pcl::ExtractIndices<pcl::PointXYZ> extract;
 	extract.setInputCloud (in_cloud_ptr);
 	extract.setIndices(inliers);
 	extract.setNegative(true);//true removes the indices, false leaves only the indices
 	extract.filter(*out_nofloor_cloud_ptr);
 
-	/*EXTRACT THE FLOOR FROM THE CLOUD*/
+	//EXTRACT THE FLOOR FROM THE CLOUD
 	extract.setNegative(false);//true removes the indices, false leaves only the indices
 	extract.filter(*out_onlyfloor_cloud_ptr);
 }
@@ -616,14 +638,14 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 			downsampleCloud(current_sensor_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
 		else
 			downsampled_cloud_ptr=current_sensor_cloud_ptr;
-		timer.stop(); std::cout << "downsampleCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "downsampleCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		if(_keep_lanes)
 			keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
 		else
 			inlanes_cloud_ptr = downsampled_cloud_ptr;
-		timer.stop(); std::cout << "keepLanePoints:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "keepLanePoints:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		if(_remove_ground)
@@ -633,38 +655,38 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		}
 		else
 			nofloor_cloud_ptr = inlanes_cloud_ptr;
-		timer.stop(); std::cout << "removeFloor:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "removeFloor:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
 		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
-		timer.stop(); std::cout << "clipCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "clipCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		if (_use_diffnormals)
 			differenceNormalsSegmentation(clipped_cloud_ptr, diffnormals_cloud_ptr);
 		else
 			diffnormals_cloud_ptr = clipped_cloud_ptr;
-		timer.stop(); std::cout << "differenceNormalsSegmentation:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "differenceNormalsSegmentation:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters);
-		timer.stop(); std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
-		timer.stop(); std::cout << "publishColorCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "publishColorCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 		// Publish BB
 		boundingbox_array.header = _velodyne_header;
 
 		timer.reset();timer.start();
 		publishBoundingBoxArray(&_pub_jsk_boundingboxes, boundingbox_array, _output_frame, _velodyne_header);
 		centroids.header = _velodyne_header;
-		timer.stop(); std::cout << "publishBoundingBoxArray:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "publishBoundingBoxArray:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		publishCentroids(&_centroid_pub, centroids, _output_frame, _velodyne_header);
-		timer.stop(); std::cout << "publishCentroids:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "publishCentroids:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		_marker_pub.publish(_visualization_marker);
 		_visualization_marker.points.clear();//transform? is it used?
@@ -672,7 +694,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		timer.reset();timer.start();
 		publishCloudClusters(&_pub_clusters_message, cloud_clusters, _output_frame, _velodyne_header);
-		timer.stop(); std::cout << "publishCloudClusters:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); //std::cout << "publishCloudClusters:" << timer.getTimeMilli() << "ms" << std::endl << std::endl;
 
 		_using_sensor_cloud = false;
 	}

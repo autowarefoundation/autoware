@@ -12,7 +12,6 @@ Cluster::Cluster()
 
 }
 
-
 jsk_recognition_msgs::BoundingBox Cluster::GetBoundingBox()
 {
 	return bounding_box_;
@@ -108,6 +107,9 @@ void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudC
 		eigen_vector.z = eigen_vectors(i, 2);
 		out_cluster_message.eigen_vectors.push_back(eigen_vector);
 	}
+
+	std::vector<float> fpfh_descriptor = GetFpfhDescriptor(8, 0.3, 0.3);
+	out_cluster_message.fpfh_descriptor.data = fpfh_descriptor;
 }
 
 void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose)
@@ -221,6 +223,57 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 
 	valid_cluster_ = true;
 	pointcloud_ = current_cluster;
+}
+
+std::vector<float> Cluster::GetFpfhDescriptor(const unsigned int& in_ompnum_threads, const double& in_normal_search_radius, const double& in_fpfh_search_radius)
+{
+	std::vector<float> cluster_fpfh_histogram(33,0.0);
+
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr norm_tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
+	if (pointcloud_->points.size() > 0)
+		norm_tree->setInputCloud(pointcloud_);
+
+	pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
+	pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> normal_estimation;
+	normal_estimation.setNumberOfThreads(in_ompnum_threads);
+	normal_estimation.setInputCloud (pointcloud_);
+	normal_estimation.setSearchMethod (norm_tree);
+	normal_estimation.setViewPoint (std::numeric_limits<float>::max (), std::numeric_limits<float>::max (),std::numeric_limits<float>::max ());
+	normal_estimation.setRadiusSearch (in_normal_search_radius);
+	normal_estimation.compute (*normals);
+
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_histograms (new pcl::PointCloud<pcl::FPFHSignature33> ());
+
+	pcl::FPFHEstimationOMP<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh;
+	fpfh.setNumberOfThreads(in_ompnum_threads);
+	fpfh.setInputCloud(pointcloud_);
+	fpfh.setInputNormals(normals);
+	fpfh.setSearchMethod(norm_tree);
+	fpfh.setRadiusSearch(in_fpfh_search_radius);
+	fpfh.compute(*fpfh_histograms);
+
+	float fpfh_max = std::numeric_limits<float>::min();
+	float fpfh_min = std::numeric_limits<float>::max();
+
+	for (unsigned int i=0; i<fpfh_histograms->size(); i++) //for each point fpfh
+	{
+		for(unsigned int j=0; j< cluster_fpfh_histogram.size(); j++)//sum each histogram's bin for all points, get min/max
+		{
+			cluster_fpfh_histogram[j]= cluster_fpfh_histogram[j] + fpfh_histograms->points[i].histogram[j];
+			if(cluster_fpfh_histogram[j] < fpfh_min)
+				fpfh_min = cluster_fpfh_histogram[j];
+			if(cluster_fpfh_histogram[j] > fpfh_max)
+				fpfh_max = cluster_fpfh_histogram[j];
+		}
+
+		float fpfh_dif = fpfh_max - fpfh_min;
+		for(unsigned int j=0; fpfh_dif > 0, j < cluster_fpfh_histogram.size(); j++)//substract the min from each and normalize
+		{
+			cluster_fpfh_histogram[j]= (cluster_fpfh_histogram[j] - fpfh_min)/fpfh_dif;
+		}
+	}
+
+	return cluster_fpfh_histogram;
 }
 
 bool Cluster::IsValid()

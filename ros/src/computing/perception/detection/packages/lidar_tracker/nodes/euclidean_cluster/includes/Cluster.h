@@ -20,7 +20,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/conditional_removal.h>
 
-#include <pcl/features/normal_3d.h>
+#include <pcl/features/fpfh_omp.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/don.h>
 
@@ -124,6 +124,11 @@ public:
 	 * \param[in] in_cloud_ptr 	Origin PointCloud
 	 * */
 	pcl::PointCloud<pcl::PointXYZ>::Ptr	JoinCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr);
+
+	/* \brief Calculates and returns a pointer to the FPFH Descriptor of this cluster
+	 *
+	 */
+	std::vector<float> GetFpfhDescriptor(const unsigned int& in_ompnum_threads, const double& in_normal_search_radius, const double& in_fpfh_search_radius);
 
 };
 
