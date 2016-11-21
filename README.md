@@ -75,6 +75,13 @@ $ catkin_init_workspace
 $ cd ../
 $ ./catkin_make_release
 ```
+###Caffe based object detectors
+CV based detectors RCNN and SSD nodes are not automatically built.
+
+To build these nodes please follow the respective node's README
+[RCNN](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
+[SSD](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
+
 
 ## How to Start
 
@@ -154,6 +161,10 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 [3D map of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
 
 [ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
+
+## IROS 2016 Data
+
+[ROSBAG data of Nagoya driving](http://db3.ertl.jp/autoware/sample_data/iros2016_two_vehicle_data.tar.gz)
 
 ## Contact
 

@@ -350,12 +350,16 @@ void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
   pcl::PointCloud<pcl::PointXYZ> sub_points;
   pcl::fromROSMsg(*msg, sub_points);
 
+  // if x is less than this, we regard the point as our vehicle's one
+  double ignore_range = 2.0;
   g_points.clear();
   for (const auto &v : sub_points)
   {
     if (v.x == 0 && v.y == 0)
       continue;
     if (v.z > g_detection_height_top || v.z < g_detection_height_bottom)
+      continue;
+    if (v.x < ignore_range)
       continue;
     g_points.push_back(v);
   }

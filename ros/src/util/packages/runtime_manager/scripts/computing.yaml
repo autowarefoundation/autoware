@@ -1233,8 +1233,8 @@ params :
       desc    : vel_mux_select desc sample
       label   : Velocity Select
       kind    : radio_box
-      choices : ['ndt_matching','CAN']
-      descs   : ['ndt_matching desc sample', 'CAN desc sample']
+      choices : ['ndt_matching','CAN','MKZ']
+      descs   : ['ndt_matching desc sample', 'CAN desc sample', 'MKZ desc sample']
       v       : 0
       cmd_param:
         dash     : ''
