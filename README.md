@@ -133,7 +133,7 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ## Instruction Videos
 
 ### Quick Start
-[![Quick Start](http://img.youtube.com/vi/Ursbp2qs1u0/0.jpg)](https://www.youtube.com/watch?v=Ursbp2qs1u0)
+[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
 ### Loading map data
 [![Loading map data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
