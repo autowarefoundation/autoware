@@ -156,6 +156,9 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ### Detection with Euclidean Clustering
 [![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/0.jpg)](https://youtu.be/Tma2DKMxt4Y)
 
+### Traffic Light Recognition
+[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/0.jpg)](https://youtu.be/KmOdBms9r2w)
+
 ### Planning with ROSBAG
 [![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/0.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
 
