@@ -1,0 +1,11 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="downsampler" default="voxel_grid" />
+  
+  <node pkg="ndt_localizer" type="ndt_matching_tku" name="ndt_matching_tku" output="screen">
+    <param name="downsampler" value="$(arg downsampler)" />
+  </node>
+  
+</launch>

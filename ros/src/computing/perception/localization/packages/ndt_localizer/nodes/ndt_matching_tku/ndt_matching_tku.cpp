@@ -10,9 +10,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <unistd.h>
 #include <math.h>
 #include <GL/glut.h>
+#include <chrono>
 #include "ndt.h"
 #include "algebra.h"
 
@@ -26,7 +28,7 @@
 #include <iostream>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-
+#include <pcl/filters/voxel_grid.h>
 
 #define DEFAULT_NDMAP_FILE "../data/nd_dat"
 
@@ -73,7 +75,20 @@ void print_matrix3d(double mat[3][3]);
 void matrix_test(void);
 void print_matrix6d(double mat[6][6]);
 
-double pose_mod(Posture *pose){
+void save_nd_map(char* name);
+
+static pcl::PointCloud<pcl::PointXYZ> map;
+static int map_loaded = 0;
+
+static ros::Publisher ndmap_pub;
+
+static std::chrono::time_point<std::chrono::system_clock> matching_start, matching_end;
+static double exe_time = 0.0;
+
+static std::string _downsampler = "voxel_grid";
+
+//double pose_mod(Posture *pose){
+void pose_mod(Posture *pose){
   while(pose->theta  < -M_PI)pose->theta  += 2*M_PI;
   while(pose->theta  >  M_PI)pose->theta  -= 2*M_PI;
   while(pose->theta2 < -M_PI)pose->theta2 += 2*M_PI;
@@ -88,8 +103,58 @@ double nrand(double n){
   return r;
 }
 
-void velodyneCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
+static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
+  if (map_loaded == 0)
+  {
+    // Convert the data type(from sensor_msgs to pcl).
+    pcl::fromROSMsg(*input, map);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
+    /*
+    // Setting point cloud to be aligned to.
+    ndt.setInputTarget(map_ptr);
+
+    // Setting NDT parameters to default values
+    ndt.setMaximumIterations(iter);
+    ndt.setResolution(ndt_res);
+    ndt.setStepSize(step_size);
+    ndt.setTransformationEpsilon(trans_eps);
+*/
+
+/*
+    for(int i=2;i<argc;i++){
+        printf("load(%d/%d) %s\n",i-2,argc-2,argv[i]);
+        load(argv[i]);
+      }
+*/
+    Point p;
+    for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = map_ptr->begin(); item != map_ptr->end(); item++){
+
+    	p.x=(item->x-g_map_center_x)*cos(-g_map_rotation)-(item->y-g_map_center_y)*sin(-g_map_rotation);
+        p.y=(item->x-g_map_center_x)*sin(-g_map_rotation)+(item->y-g_map_center_y)*cos(-g_map_rotation);
+        p.z=item->z-g_map_center_z;
+
+    	/*
+    	p.x = item->x;
+    	p.y = item->y;
+    	p.z = item->z;
+    	*/
+        add_point_map(NDmap, &p);
+    }
+    std::cout << "Finished loading point cloud map." << std::endl;
+    std::cout << "Map points num: " << map_ptr->size() << " points." << std::endl;
+
+    save_nd_map(g_ndmap_name);
+    is_map_exist=1;
+
+    map_loaded = 1;
+  }
+}
+
+void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
+{
+  matching_start = std::chrono::system_clock::now();
   static int count=0;
   static tf::TransformBroadcaster br;
   static FILE *log_fp;
@@ -97,10 +162,21 @@ void velodyneCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
   static tf::TransformListener listener;
   std_msgs::Header header;
 
+  static int iteration;
+  int j = 0;
+
+  Posture pose, bpose,initial_pose;
+  static Posture key_pose;
+//  double e=0,theta,x2,y2;
+  double e=0;
+  double x_offset,y_offset,z_offset,theta_offset;
+//  double distance,diff;
+  double distance;
+
   //  pcl_conversions::fromPCL(msg->header.stamp,time);
   pcl_conversions::fromPCL(msg->header,header);
   
-  ROS_INFO("%s",msg->header.frame_id.c_str());
+//  ROS_INFO("%s",msg->header.frame_id.c_str());
   //  ROS_INFO("%f",msg->header.stamp.toSec());// + (double)msg->header.stamp.nsec/1000000000.);
   
   /*  ros::Time stamp;
@@ -112,18 +188,54 @@ void velodyneCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
   //  ROS_INFO("get data %d",msg->points.size());
   count++;
   scan_points_totalweight=0;
-  {
+
+  if(_downsampler == "voxel_grid"){
+    pcl::PointCloud<pcl::PointXYZ> scan;
+
+    for(int i = 0; i < (int)msg->points.size(); i++){
+	scan.points.push_back (pcl::PointXYZ(msg->points[i].x, msg->points[i].y,msg->points[i].z));
+    }
+    scan.header=msg->header;
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
+    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+
+    pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
+    voxel_grid_filter.setLeafSize(0.5,0.5,0.5);
+    voxel_grid_filter.setInputCloud(scan_ptr);
+    voxel_grid_filter.filter(*filtered_scan_ptr);
+    j=0;
+    for(int i = 0; i < (int)filtered_scan_ptr->points.size(); i++){
+    	scan_points[j].x = filtered_scan_ptr->points[i].x+nrand(0.01);
+    	scan_points[j].y = filtered_scan_ptr->points[i].y+nrand(0.01);
+    	scan_points[j].z = filtered_scan_ptr->points[i].z+nrand(0.01);
+    	scan_points_i[j] = 100;//filterd_scan_ptr->points[i].intensity;
+
+    	double dist=scan_points[j].x*scan_points[j].x + scan_points[j].y*scan_points[j].y + scan_points[j].z*scan_points[j].z;
+    	if(dist<3*3)continue;
+    	if(scan_points[j].z>-1&&scan_points[j].z<0 && scan_points[j].y>-20&&scan_points[j].y<20)continue;
+
+    	scan_points_weight[j]=1;
+    	scan_points_totalweight+=scan_points_weight[j];
+    	j++;
+    	if(j>130000)break;
+    }
+    scan_points_num = j;
+    mapping_points_num= j;
+//    printf("points_num = %d \n",scan_points_num);
+  }
+
+  if(_downsampler == "distance"){
+
     /*----------����ǡ����ɤ߼��---------*/  
-    int j=0;
-    for(int i=0;i<msg->points.size(); i++){
+    j=0;
+    for(int i = 0; i < (int)msg->points.size(); i++){
       scan_points[j].x = msg->points[i].x+nrand(0.01);
       scan_points[j].y = msg->points[i].y+nrand(0.01);
       scan_points[j].z = msg->points[i].z+nrand(0.01);
       scan_points_i[j] = msg->points[i].intensity;
  
-      double dist=scan_points[j].x*scan_points[j].x
-	+scan_points[j].y*scan_points[j].y
-	+scan_points[j].z*scan_points[j].z;
+      double dist=scan_points[j].x*scan_points[j].x+scan_points[j].y*scan_points[j].y+scan_points[j].z*scan_points[j].z;
       if(dist<3*3)continue;
       scan_points_weight[j]=(dist)* (1.2-exp(-1*(-0.5 - scan_points[j].z)*(-0.5 - scan_points[j].z)/2.0));
       //scan_points_weight[j]= (1.2-exp(-1*(-0.5 - scan_points[j].z)*(-0.5 - scan_points[j].z)/2.0));
@@ -133,16 +245,18 @@ void velodyneCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
       if(j>130000)break;
     }
     scan_points_num = j;
-    mapping_points_num= j;      
-    printf("points_num = %d \n",scan_points_num);
+    mapping_points_num= j;
+//    printf("points_num = %d \n",scan_points_num);
+  }
 
-    /*--matching---*/    
+    /*--matching---*/
+    /*
     Posture pose, bpose,initial_pose;
     static Posture key_pose;
     double e=0,theta,x2,y2;
     double x_offset,y_offset,z_offset,theta_offset;
     double distance,diff; 
-       
+*/
     //calc offset
     x_offset = prev_pose.x -prev_pose2.x;
     y_offset = prev_pose.y -prev_pose2.y;
@@ -166,110 +280,111 @@ void velodyneCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     
     //matching
     for(layer_select = 1; layer_select>=1; layer_select-=1){
-      printf("layer=%d\n",layer_select);
-      for(j = 0;j < 100; j++){
-	if(layer_select!=1 && j>2)break;
-	bpose = pose;
+//    	printf("layer=%d\n",layer_select);
+    	for(j = 0;j < 100; j++){
+    		if(layer_select!=1 && j>2){
+    			break;
+    		}
+    		bpose = pose;
 	
-	e =adjust3d(scan_points, scan_points_num, &pose, layer_select);
-	//	printf("%f\n",e);
+    		e = adjust3d(scan_points, scan_points_num, &pose, layer_select);
+    		//	printf("%f\n",e);
 
-	pose_mod(&pose);
+    		pose_mod(&pose);
 	
-	if((bpose.x-pose.x)*(bpose.x-pose.x)+
-	   (bpose.y-pose.y)*(bpose.y-pose.y)+
-	   (bpose.z-pose.z)*(bpose.z-pose.z)+
-	   3*(bpose.theta-pose.theta)*(bpose.theta-pose.theta)+
-	   3*(bpose.theta2-pose.theta2)*(bpose.theta2-pose.theta2)+
-	   3*(bpose.theta3-pose.theta3)*(bpose.theta3-pose.theta3)<0.00001 )break;
-      }
-      printf("%d itteration \n",j);
+    		if((bpose.x-pose.x)*(bpose.x-pose.x)+(bpose.y-pose.y)*(bpose.y-pose.y)+(bpose.z-pose.z)*(bpose.z-pose.z)
+    				+3*(bpose.theta-pose.theta)*(bpose.theta-pose.theta)
+					+3*(bpose.theta2-pose.theta2)*(bpose.theta2-pose.theta2)
+					+3*(bpose.theta3-pose.theta3)*(bpose.theta3-pose.theta3) < 0.00001){
+    			break;
+    		}
+    	}
+    	iteration = j;
 
-
-      /*gps resetting*/
-      if(g_use_gnss){
-      static FILE *e_fp;
-      if(!e_fp)e_fp=fopen("/tmp/e_log","w");
-      fprintf(e_fp,"%f\n",e);
-      if(layer_select==1&&e<1000){
-	printf("reset\n");
-	tf::StampedTransform gps_tf_on_world;
-	try{
-	  listener.lookupTransform("world","gps",ros::Time(0),gps_tf_on_world);
-	}catch(tf::TransformException ex){
-	  ROS_ERROR("%s",ex.what());
-	  return;
-	}printf("set initial position by gps posiotion\n");
-	pose.x=gps_tf_on_world.getOrigin().x();
-	pose.y=gps_tf_on_world.getOrigin().y();
-	pose.z=gps_tf_on_world.getOrigin().z()+nrand(5);
-	tf::Quaternion q(gps_tf_on_world.getRotation().x(),
-			 gps_tf_on_world.getRotation().y(),
-			 gps_tf_on_world.getRotation().z(),
-			 gps_tf_on_world.getRotation().w()
-			 );
-	double roll,pitch,yaw;
-	tf::Matrix3x3 m(q);
-	m.getRPY(roll,pitch,yaw);
-	pose.theta=roll;
-	pose.theta2=pitch+0.22;
-	pose.theta3=yaw+nrand(0.7);
-	prev_pose2=prev_pose=pose;
-	printf("reset %f %f %f %f %f %f\n", pose.x, pose.y, pose.z,
-	       pose.theta, pose.theta2, pose.theta3);
-	//reset
+    	/*gps resetting*/
+    	if(g_use_gnss){
+    		static FILE *e_fp;
+    		if(!e_fp){
+    			e_fp=fopen("/tmp/e_log","w");
+    		}
+    		fprintf(e_fp,"%f\n",e);
+    		if(layer_select==1&&e<1000){
+    			printf("reset\n");
+    			tf::StampedTransform gps_tf_on_world;
+    			try{
+    				listener.lookupTransform("world","gps",ros::Time(0),gps_tf_on_world);
+    			}
+    			catch(tf::TransformException ex){
+    				ROS_ERROR("%s",ex.what());
+    				return;
+    			}
+    			printf("set initial position by gps posiotion\n");
+    			pose.x=gps_tf_on_world.getOrigin().x();
+    			pose.y=gps_tf_on_world.getOrigin().y();
+    			pose.z=gps_tf_on_world.getOrigin().z()+nrand(5);
+    			tf::Quaternion q(gps_tf_on_world.getRotation().x(), gps_tf_on_world.getRotation().y(), gps_tf_on_world.getRotation().z(), gps_tf_on_world.getRotation().w());
+    			double roll,pitch,yaw;
+    			tf::Matrix3x3 m(q);
+    			m.getRPY(roll,pitch,yaw);
+    			pose.theta=roll;
+    			pose.theta2=pitch+0.22;
+    			pose.theta3=yaw+nrand(0.7);
+    			prev_pose2=prev_pose=pose;
+    			printf("reset %f %f %f %f %f %f\n", pose.x, pose.y, pose.z,
+    					pose.theta, pose.theta2, pose.theta3);
+    			//reset
 	
-	/*	tf::Transform transform;    
-	//tf::Quaternion q;
+    			/*	tf::Transform transform;
+		//tf::Quaternion q;
 	transform.setOrigin( tf::Vector3(pose.x, pose.y, pose.z) );
 	q.setRPY(pose.theta,pose.theta2,pose.theta3);
 	transform.setRotation(q);
 	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),  "world", "ndt_frame"));
 	*/
-	return;
-      }
-      }
+    			return;
+    		}
+    	}
       //unti-distotion
-      if(layer_select==2 && 1){
-	double rate,angle,xrate,yrate,dx,dy,dtheta;
-	double tempx,tempy;
-	int i;
+
+    	if(layer_select==2 && 1){
+//    		double rate,angle,xrate,yrate,dx,dy,dtheta;
+    		double rate,xrate,yrate,dx,dy,dtheta;
+    		double tempx,tempy;
+    		int i;
 	
-	tempx=(pose.x - prev_pose.x);
-	tempy=(pose.y - prev_pose.y);
-	dx = tempx*cos(-prev_pose.theta3) 
-	  -  tempy*sin(-prev_pose.theta3);
-	dy = tempx*sin(-prev_pose.theta3) 
-	  +  tempy*cos(-prev_pose.theta3);
-	dtheta= pose.theta3-prev_pose.theta3;
-	if(dtheta < -M_PI)dtheta+=2*M_PI;
-	if(dtheta >  M_PI)dtheta-=2*M_PI;	  
+    		tempx=(pose.x - prev_pose.x);
+    		tempy=(pose.y - prev_pose.y);
+    		dx = tempx*cos(-prev_pose.theta3) - tempy*sin(-prev_pose.theta3);
+    		dy = tempx*sin(-prev_pose.theta3) + tempy*cos(-prev_pose.theta3);
+    		dtheta= pose.theta3-prev_pose.theta3;
+    		if(dtheta < -M_PI){
+    			dtheta+=2*M_PI;
+    		}
+    		if(dtheta >  M_PI){
+    			dtheta-=2*M_PI;
+    		}
 	
+    		rate = dtheta/(double)scan_points_num;
+    		xrate=dx/(double)scan_points_num;
+    		yrate=dy/(double)scan_points_num;
 	
-	rate = dtheta/(double)scan_points_num;
-	xrate=dx/(double)scan_points_num;
-	yrate=dy/(double)scan_points_num;
+    		printf("untidist x %f y %f yaw %f\n",dx,dy,dtheta);
 	
-	printf("untidist x %f y %f yaw %f\n",dx,dy,dtheta);
-	
-	dx=-dx;
-	dy=-dy;
-	dtheta =-dtheta;
-	for(i=0;i<scan_points_num;i++){
-	  tempx = scan_points[i].x * cos(dtheta) 
-	    -scan_points[i].y * sin(dtheta)+dx;
-	  tempy = scan_points[i].x * sin(dtheta) 
-	    +scan_points[i].y * cos(dtheta)+dy;
+    		dx=-dx;
+    		dy=-dy;
+    		dtheta =-dtheta;
+    		for(i=0;i<scan_points_num;i++){
+    			tempx = scan_points[i].x * cos(dtheta) - scan_points[i].y * sin(dtheta)+dx;
+    			tempy = scan_points[i].x * sin(dtheta) + scan_points[i].y * cos(dtheta)+dy;
 	  
-	  scan_points[i].x =tempx;
-	  scan_points[i].y =tempy;
+    			scan_points[i].x =tempx;
+    			scan_points[i].y =tempy;
 	  
-	  dtheta +=rate;
-	  dx    +=xrate;
-	  dy    +=yrate;
-	}
-      }
-      //
+    			dtheta += rate;
+    			dx += xrate;
+    			dy += yrate;
+    		}
+    	}
     }
     
     scan_transrate(scan_points, map_points, &pose, scan_points_num);
@@ -300,9 +415,10 @@ void velodyneCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
       prev_pose2=prev_pose;
       is_first_time=0;
     }
+    /*
     printf("%f %f %f %f %f %f %f %d \n",0,//(double)msg->header.stamp.toSec(),
 	   pose.x,pose.y,pose.z,pose.theta,pose.theta2,pose.theta3,NDs_num) ; 
-
+*/
     fprintf(log_fp,"%f %f %f %f %f %f %f\n",
 	    (double)header.stamp.toSec(),
 	    pose.x*cos(g_map_rotation)-pose.y*sin(g_map_rotation)+g_map_center_x,
@@ -316,11 +432,23 @@ void velodyneCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     q.setRPY(pose.theta,pose.theta2,pose.theta3);
     transform.setRotation(q);
 
-    br.sendTransform(tf::StampedTransform(transform, header.stamp,  "world", "ndt_frame"));
-}
+//    br.sendTransform(tf::StampedTransform(transform, header.stamp,  "world", "ndt_frame"));
+    br.sendTransform(tf::StampedTransform(transform, header.stamp,  "map", "velodyne"));
+
+    matching_end = std::chrono::system_clock::now();
+    exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() / 1000.0;
+
+  std::cout << "-----------------------------------------------------------------" << std::endl;
+  std::cout << "Sequence number: " << msg->header.seq << std::endl;
+  std::cout << "Number of scan points: " << msg->size() << " points." << std::endl;
+  std::cout << "Number of filtered scan points: " << scan_points_num << " points." << std::endl;
+  std::cout << "Number of iteration: " << iteration << std::endl;
+  std::cout << "Execution time: " << exe_time << std::endl;
+  std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
+  std::cout << "(" << pose.x << ", " << pose.y << ", " << pose.z << ", " << pose.theta << ", " << pose.theta2 << ", " << pose.theta3 << ")" << std::endl;
+  std::cout << "-----------------------------------------------------------------" << std::endl;
   
-  
-  ROS_INFO("get data %d",msg->points.size());
+//  ROS_INFO("get data %d",msg->points.size());
 
 }
 
@@ -533,13 +661,14 @@ NDPtr add_ND(void){
 }
 
 NDMapPtr initialize_NDmap_layer(int layer, NDMapPtr child){
-  int i,j,k,i2,i3,m;
+//int i,j,k,i2,i3,m;
+  int i,j,k;
   int x,y,z;
   NDPtr    *nd,*ndp;
   NDMapPtr ndmap;
   
-  i2 = i3 = 0;
-  printf("Initializing...layer %d\n",layer);
+//  i2 = i3 = 0;
+//  printf("Initializing...layer %d\n",layer);
   
   
   x = (g_map_x >> layer)+1;
@@ -559,9 +688,10 @@ NDMapPtr initialize_NDmap_layer(int layer, NDMapPtr child){
   ndmap->nd = nd;
   ndmap->next = child;
   ndmap->size = g_map_cellsize * ((int)1<<layer);
-  printf("size %f\n",ndmap->size);
+//  printf("size %f\n",ndmap->size);
   
   ndp = nd;
+
   /*�쥤�䡼�ν��*/
   for(i = 0; i < x; i++){
     for(j = 0; j < y; j++){
@@ -571,6 +701,7 @@ NDMapPtr initialize_NDmap_layer(int layer, NDMapPtr child){
       }
     }
   }
+
   /*�쥤�䡼�֤�Ϣ�롩*/
   return ndmap;
 }
@@ -581,7 +712,7 @@ NDMapPtr initialize_NDmap(void){
   NDMapPtr ndmap;
   NDPtr null_nd;
 
-  printf("Initializing");
+  printf("Initialize NDmap\n");
   ndmap = 0;
 
   //init NDs
@@ -594,11 +725,10 @@ NDMapPtr initialize_NDmap(void){
     ndmap = initialize_NDmap_layer(i,ndmap);
 
     /*progress dots*/
-    printf("layer %d\n",i);
+//    printf("layer %d\n",i);
   }
 
-
-  printf("done\n");
+//  printf("done\n");
 
   return ndmap;/*���ֲ����ؤΥݥ��󥿤��֤�*/
 }
@@ -728,21 +858,27 @@ void save_nd_map(char* name){
 	  ndp++;
 	}
       }
-      printf("a\n");
+//      printf("a\n");
     }
     ndmap=ndmap->next;
     
   }
-  printf("done\n");
+//  printf("done\n");
   fclose(ofp);
 
 
   //save pcd
 
+  cloud.header.frame_id = "/map";
   cloud.width=cloud.points.size();
   cloud.height=1;
   pcl::io::savePCDFileASCII ("/tmp/ndmap.pcd", cloud);
-  printf("%d\n",cloud.points.size());  
+  printf("NDMap points num: %d points.\n", (int)cloud.points.size());
+
+  sensor_msgs::PointCloud2::Ptr ndmap_ptr(new sensor_msgs::PointCloud2);
+  pcl::toROSMsg(cloud, *ndmap_ptr);
+  ndmap_pub.publish(*ndmap_ptr);
+
 }
 
 //load ndt setting file
@@ -774,7 +910,7 @@ int load_ndt_ini(char* name){
 }
 
 int load_nd_map(char* name){
-  int i,j,k,layer;
+//  int i,j,k,layer;
   NDData nddat;
   NDMapPtr ndmap[2];
   NDPtr ndp;
@@ -806,17 +942,27 @@ int load_nd_map(char* name){
 /*�ᥤ��ؿ�*/
 int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "ndt3d");
-  ros::NodeHandle n;
-  ros::Subscriber sub = n.subscribe("velodyne_points", 1000, velodyneCallback);
-  //ros::Subscriber sub = n.subscribe("hokuyo3d/slice", 1000, velodyneCallback);
-  char nd_filename[500];
+	printf("----------------------\n");
+	printf(" 3D NDT scan matching \n");
+	printf("----------------------\n");
 
-  printf("-------------------------------\n");
-  printf("3D NDT scan matching           \n");
-  printf("------------------------------\n\n"); 
+  ros::init(argc, argv, "ndt_matching_tku");
+
+  ros::NodeHandle nh;
+  ros::NodeHandle private_nh("~");
+
+  private_nh.getParam("downsampler", _downsampler);
+  std::cout << "Downsampler: " << _downsampler << std::endl;
+
+  ndmap_pub = nh.advertise<sensor_msgs::PointCloud2>("/ndmap", 1000);
+
+  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
+  ros::Subscriber points_sub = nh.subscribe("points_raw", 1000, points_callback);
+  //ros::Subscriber sub = n.subscribe("hokuyo3d/slice", 1000, velodyneCallback);
+//  char nd_filename[500];
 
   //load setting files
+  /*
   if(argc>1){
     if(!load_ndt_ini(argv[1])){
       printf("setting file error\n");
@@ -826,26 +972,46 @@ int main(int argc, char* argv[])
     printf("can not find setting file\n");
     return 0;
   }
- 	
+*/
+
+  //map path
+  sprintf(g_ndmap_name, "%s", "ndmap");
+
+  //map size
+  g_map_x = 2000;
+  g_map_y = 2000;
+  g_map_z = 200;
+  g_map_cellsize = 1.0;
+  //map center
+  g_map_center_x = 3700.2;
+  g_map_center_y = -99426.4;
+  g_map_center_z = 85.7;
+  g_map_rotation = 0.0;
+  //use gnss
+  g_use_gnss = 0;
+  //initial pose
+  g_ini_x = 3700.2;
+  g_ini_y = -99426.4;
+  g_ini_z = 85.7;
+  g_ini_roll = 0.0;
+  g_ini_pitch = 0.0;
+  g_ini_yaw = 0.0;
+/*
   printf("Map size\nx = %d(%5.2fm) \ny= %d(%5.2fm) \nz = %d(%5.2fm)\nmemory size = %dMB(Map%dMB)\n",
 	 g_map_x, g_map_x*g_map_cellsize,
 	 g_map_y, g_map_y*g_map_cellsize,
 	 g_map_z, g_map_z*g_map_cellsize,
-	 (g_map_x*g_map_y*g_map_z*(1+1/64.) * sizeof(NDPtr)+
-	  MAX_ND_NUM*sizeof(NormalDistribution))/(1024*1024),
-	 (g_map_x*g_map_y*g_map_z*(1+1/64.) * sizeof(NDPtr)+
-	  MAX_ND_NUM*sizeof(NormalDistribution))/(1024*1024)
-	 ); 
-  sprintf(scan_file_base_name,"%s",argv[1]);
+	 (g_map_x*g_map_y*g_map_z*(1+1/64.) * sizeof(NDPtr)+MAX_ND_NUM*sizeof(NormalDistribution))/(1024*1024),
+	 (g_map_x*g_map_y*g_map_z*(1+1/64.) * sizeof(NDPtr)+MAX_ND_NUM*sizeof(NormalDistribution))/(1024*1024));
+	 */
+//  sprintf(scan_file_base_name,"%s",argv[1]);
   	
   /*initialize(clear) NDmap data*/
   NDmap = initialize_NDmap();
 
   //load map
-  prev_pose.x = (g_ini_x-g_map_center_x)*cos(-g_map_rotation)
-    - (g_ini_y-g_map_center_y)*sin(-g_map_rotation);
-  prev_pose.y = (g_ini_x-g_map_center_x)*sin(-g_map_rotation)
-    + (g_ini_y-g_map_center_y)*cos(-g_map_rotation);
+  prev_pose.x = (g_ini_x-g_map_center_x)*cos(-g_map_rotation) - (g_ini_y-g_map_center_y)*sin(-g_map_rotation);
+  prev_pose.y = (g_ini_x-g_map_center_x)*sin(-g_map_rotation) + (g_ini_y-g_map_center_y)*cos(-g_map_rotation);
   prev_pose.z = g_ini_z - g_map_center_z;
   prev_pose.theta  = g_ini_roll;
   prev_pose.theta2 = g_ini_pitch;
@@ -854,7 +1020,7 @@ int main(int argc, char* argv[])
   prev_pose2=prev_pose;
   is_first_time=1;
 
-
+  /*
   if(argc>2){
     printf("load point cloud map\n");    
     for(int i=2;i<argc;i++){
@@ -868,11 +1034,14 @@ int main(int argc, char* argv[])
     if(load_nd_map(g_ndmap_name))  
       is_map_exist=1;
   }
-
+*/
+/*
   while (ros::ok()){
     ros::spinOnce();
   }
-  save_nd_map("/tmp/ndmap");
+*/
+  ros::spin();
+
+  save_nd_map((char*)"/tmp/ndmap");
   return 1;
 }
-

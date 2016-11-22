@@ -29,9 +29,9 @@ void save_data(PointPtr scan, int num, PosturePtr pose);
 void depth(PointPtr scan, int num, PosturePtr pose);
 
 /*
-¹¹¿·ÎÌ¤òµá¤á¤ë¤¿¤á¤Î·×»»¡Ê°ìÅÀÊ¬¡Ë
-¥Ø¥Ã¥»¹ÔÎó¤Î·×»»¤â¤¦¾¯¤·³Ú¤Ç¤­¤ë¤«¤â¡£
-°ì¼¡ÈùÊ¬¤ÏÅÀ¤Î¿ô¤À¤±·×»»¤·¤Æ¡¢¥Ø¥Ã¥»¹ÔÎó¤Ï¤½¤ì¤Îº¹Ê¬¤«¤éµá¤á¤ë¡£*/
+ï¿½ï¿½ï¿½ï¿½ï¿½Ì¤ï¿½ï¿½ï¿½ë¤¿ï¿½ï¿½Î·×»ï¿½ï¿½Ê°ï¿½ï¿½ï¿½Ê¬ï¿½ï¿½
+ï¿½Ø¥Ã¥ï¿½ï¿½ï¿½ï¿½ï¿½Î·×»ï¿½ï¿½â¤¦ï¿½ï¿½ï¿½ï¿½ï¿½Ú¤Ç¤ï¿½ï¿½ë¤«ï¿½â¡£
+ï¿½ì¼¡ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×»ï¿½ï¿½ï¿½ï¿½Æ¡ï¿½ï¿½Ø¥Ã¥ï¿½ï¿½ï¿½ï¿½ï¿½Ï¤ï¿½ï¿½ï¿½Îºï¿½Ê¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë¡£*/
 double calc_summand3d( PointPtr p,NDPtr nd,PosturePtr pose, 
 		       double *g,double H[6][6],double qd3_d[6][3],double dist){ 
 
@@ -41,12 +41,12 @@ double calc_summand3d( PointPtr p,NDPtr nd,PosturePtr pose,
   double qda[6][3],*qda_p;//,*qdd_p;
   int i,j;
 
-  /*q¤Î·×»»*/ 
+  /*qï¿½Î·×»ï¿½*/ 
   q[0] = p->x - nd->mean.x;
   q[1] = p->y - nd->mean.y;
   q[2] = p->z - nd->mean.z; 
  
-  /*exp¤Î·×»»*/
+  /*expï¿½Î·×»ï¿½*/
   //  e = probability_on_ND(nd, p->x, p->y, p->z); 
   e = probability_on_ND(nd, q[0],q[1],q[2])*dist;
   
@@ -107,7 +107,7 @@ double calc_summand3d( PointPtr p,NDPtr nd,PosturePtr pose,
   return e;
 }
 
-/*»È¤Ã¤Æ¤Ê¤¤¡©*/
+/*ï¿½È¤Ã¤Æ¤Ê¤ï¿½ï¿½ï¿½*/
 int check_Hessian(double H[3][3]){
   int i,j;
   for(i = 0;i < 3;i++){
@@ -118,7 +118,7 @@ int check_Hessian(double H[3][3]){
   return 1;
 }
 
-/*¥Ç¡¼¥¿¤ÎÊÝÂ¸*/
+/*ï¿½Ç¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¸*/
 void save_data(PointPtr scan, int num, PosturePtr pose){
  double sc[3][3],x,y,z;
  int i;
@@ -167,7 +167,7 @@ void scan_transrate(PointPtr src, PointPtr dst ,PosturePtr pose, int num){
   }
 }
 
-/*¡©*/
+/*ï¿½ï¿½*/
 void depth(PointPtr scan, int num, PosturePtr pose){
  double sc[3][3],x,y,z;
  int i;
@@ -193,22 +193,28 @@ void depth(PointPtr scan, int num, PosturePtr pose){
 
 
 
-/*°ì²óÊ¬¤Î½¤Àµ*/
+/*ï¿½ï¿½ï¿½Ê¬ï¿½Î½ï¿½ï¿½ï¿½*/
 double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
-  double gsum[6], Hsum[6][6],Hsumh[6][6],Hinv[6][6],g[6],gd[6],ge[6][6],H[6][6],hH[6][6];
-  double sc[3][3],sc_d[3][3][3],sc_dd[3][3][3][3],sce[3][3][3];
-  double *work,*work2,*work3;
+  //double gsum[6], Hsum[6][6],Hsumh[6][6],Hinv[6][6],g[6],gd[6],ge[6][6],H[6][6],hH[6][6];
+  double gsum[6], Hsum[6][6],Hsumh[6][6],Hinv[6][6],g[6],H[6][6],hH[6][6];
+  //double sc[3][3],sc_d[3][3][3],sc_dd[3][3][3][3],sce[3][3][3];
+  double sc[3][3],sc_d[3][3][3],sc_dd[3][3][3][3];
+  //double *work,*work2,*work3;
+  double *work;
   double esum = 0,gnum = 0;
   NDPtr nd[8];
   NDMapPtr nd_map;
   int i,j,n,m,k,layer;
   double x,y,z;//,sa,ca,sb,cb,sg,cg;
   PosturePtr pose;
-  Point p,pe[6],pd;
+  //Point p,pe[6],pd;
+  Point p;
   PointPtr scanptr;
-  int inc,count;
+  //int inc,count;
+  int inc;
   int ndmode;
-  double dist,weight_total,weight_sum,weight_next;
+  //double dist,weight_total,weight_sum,weight_next;
+  double dist;
   
   /*initialize*/
   gsum[0] = 0; gsum[1] = 0; gsum[2] = 0;
@@ -218,16 +224,16 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
   zero_matrix6d(Hsumh);
   pose = initial;
   
-  /*ÊÑ´¹¹ÔÎó¡Ê1¼¡ÈùÊ¬Ê¬¤â´Þ¤à¡Ë¤Î²óÅ¾Ê¬¤ò·×»»*/
+  /*ï¿½Ñ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½Ê¬Ê¬ï¿½ï¿½Þ¤ï¿½Ë¤Î²ï¿½Å¾Ê¬ï¿½ï¿½×»ï¿½*/
   set_sincos( pose->theta,         pose->theta2,         pose->theta3,         sc_d);
   set_sincos( pose->theta+E_THETA, pose->theta2,         pose->theta3,         sc_dd[0]);
   set_sincos( pose->theta,         pose->theta2+E_THETA, pose->theta3,         sc_dd[1]);
   set_sincos( pose->theta,         pose->theta2,         pose->theta3+E_THETA, sc_dd[2]);
   
-  /*ºÂÉ¸ÊÑ´¹ÍÑ*/
+  /*ï¿½ï¿½É¸ï¿½Ñ´ï¿½ï¿½ï¿½*/
   set_sincos2(pose->theta,         pose->theta2,         pose->theta3,sc);
 
-  /*°ì¼¡ÈùÊ¬¹ÔÎó¤ÎÊÑ²½¤·¤Ê¤¤ÉôÊ¬¤Î·×»»*/
+  /*ï¿½ì¼¡ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ²ï¿½ï¿½ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½Ê¬ï¿½Î·×»ï¿½*/
   qd3[0][0] = 1;  
   qd3[0][1] = 0;
   qd3[0][2] = 0;
@@ -245,7 +251,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
   
 
 #if WEIGHTED_SELECT    
-  /*¥Ç¡¼¥¿¤ÎÈô¤Ð¤·¶ñ¹ç¡Ê1=°ì¤Ä¤Å¤Ä¡Ë*/
+  /*ï¿½Ç¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¤ï¿½ï¿½ï¿½ï¿½ï¿½1=ï¿½ï¿½Ä¤Å¤Ä¡ï¿½*/
   switch(target){
   case 3:
     inc =  1;
@@ -265,7 +271,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     break;
   }
 #else
-  /*¥Ç¡¼¥¿¤ÎÈô¤Ð¤·¶ñ¹ç¡Ê1=°ì¤Ä¤Å¤Ä¡Ë*/
+  /*ï¿½Ç¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¤ï¿½ï¿½ï¿½ï¿½ï¿½1=ï¿½ï¿½Ä¤Å¤Ä¡ï¿½*/
   switch(target){
   case 3:
     inc =  1;
@@ -290,7 +296,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
 
   scanptr = scan;
 
-  /*ÅÀÎó¤Ë¤Ä¤¤¤Æ·«¤êÊÖ¤··×»»*/
+  /*ï¿½ï¿½ï¿½ï¿½Ë¤Ä¤ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½×»ï¿½*/
 #if WEIGHTED_SELECT    
   weight_total=scan_points_totalweight;;
   weight_next=0;
@@ -305,7 +311,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
       continue;
     }
 
-    /*ÅÀ¤ÎºÂÉ¸ÊÑ´¹·×»»*/  
+    /*ï¿½ï¿½ï¿½Îºï¿½É¸ï¿½Ñ´ï¿½ï¿½×»ï¿½*/  
     x   = scanptr->x;
     y   = scanptr->y;
     z   = scanptr->z;  
@@ -319,7 +325,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
       //    dist = (x*x+y*y+z*z);
       //dist *= (1.2-exp(-1*(-1 - z)*(-1 - z)/4.0));
     //    if(dist>2500)dist=2500;
-    /*ÅÀ¤ÎºÂÉ¸ÊÑ´¹·×»»*/  
+    /*ï¿½ï¿½ï¿½Îºï¿½É¸ï¿½Ñ´ï¿½ï¿½×»ï¿½*/  
     x   = scanptr->x;
     y   = scanptr->y;
     z   = scanptr->z;  
@@ -332,7 +338,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     p.z = x*sc[2][0] +y*sc[2][1]+ z*sc[2][2] + pose->z;
 
 
-    /*ÆþÎÏ¥¹¥­¥ã¥ó¤Ë¤è¤ë²òÁüÅÙÁªÂò*/
+    /*ï¿½ï¿½ï¿½Ï¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
     if(ndmode==1)layer = 1;//layer_select;
     if(ndmode==0)layer = 0;//layer_select;
     nd_map = NDmap;
@@ -342,13 +348,13 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
       layer--;
     }
     
-    /*ÅÀ¤ËÂÐ±þ¤¹¤ëND¥Ü¥¯¥»¥ë¤ò¼èÆÀ¡£Æ±»þ¤Ë¼èÆÀ¤·¤¿ND¥Ü¥¯¥»¥ë¤ò¹¹¿·¡£
-      ºÙ¤«¤¤¤Î¤ò¤Ä¤«¤¦¤«¹Ó¤¤¤ä¤Ä¤ò¤Ä¤«¤¦¤«*/
+    /*ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½NDï¿½Ü¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ±ï¿½ï¿½ï¿½Ë¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½NDï¿½Ü¥ï¿½ï¿½ï¿½ï¿½ï¿½ò¹¹¿ï¿½ï¿½ï¿½
+      ï¿½Ù¤ï¿½ï¿½ï¿½ï¿½Î¤ï¿½Ä¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¤ï¿½ï¿½ï¿½Ä¤ï¿½Ä¤ï¿½ï¿½ï¿½ï¿½ï¿½*/
   
     if(!get_ND(nd_map,&p,nd,target))continue;
    
 
-    /*q¤Î°ì¼¡ÈùÊ¬(ÊÑ²½¤¹¤ë¾ì½ê¤Î¤ß)*/   
+    /*qï¿½Î°ì¼¡ï¿½ï¿½Ê¬(ï¿½Ñ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¤ï¿½)*/   
     work = (double*)sc_d;
     for(m = 0;m < 3;m++){
       for(k = 0;k < 3;k++){
@@ -360,7 +366,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     }
 
 
-    /*q¤ÎÆó¼¡ÈùÊ¬¡ÊÊÑ²½¤¹¤ë¾ì½ê¤Î¤ß¡Ë*/
+    /*qï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¬ï¿½ï¿½ï¿½Ñ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¤ß¡ï¿½*/
     work = (double*)sc_dd;   
     for(n = 0;n < 3;n++){
       for(m = 0;m < 3;m++){ 
@@ -372,10 +378,10 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
       }
     }
     
-    /*¹¹¿·ÎÌ·×»»*/
+    /*ï¿½ï¿½ï¿½ï¿½ï¿½Ì·×»ï¿½*/
     if(nd[j]){
       if(nd[j]->num > 10 && nd[j]->sign==1){
-	double e;
+//	double e;
 	
 	esum += calc_summand3d(&p,nd[j],pose,g,hH,qd3,dist);
 	add_matrix6d(Hsumh,hH,Hsumh);
@@ -407,7 +413,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     
   ginverse_matrix6d(Hsumh,Hinv);
 
-  /*----------------¹¹¿·------------------------*/
+  /*----------------ï¿½ï¿½ï¿½ï¿½------------------------*/
   pose->x      -=  ( Hinv[0][0]*gsum[0]+ Hinv[0][1]*gsum[1]+ Hinv[0][2]*gsum[2]+
 		     Hinv[0][3]*gsum[3]+ Hinv[0][4]*gsum[4]+ Hinv[0][5]*gsum[5]);
   pose->y      -=  ( Hinv[1][0]*gsum[0]+ Hinv[1][1]*gsum[1]+ Hinv[1][2]*gsum[2]+
@@ -496,7 +502,7 @@ void set_sincos2(double a,double b,double g,double sc[3][3]){
 }
 
 void set_sincos (double a,double b,double g,double sc[3][3][3]){
-  double sa,ca,sb,cb,sg,cg;
+//  double sa,ca,sb,cb,sg,cg;
   double dd[3][3][3],d[3][3];
   int i,j,k;
 
