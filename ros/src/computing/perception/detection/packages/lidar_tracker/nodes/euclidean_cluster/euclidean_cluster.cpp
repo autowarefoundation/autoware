@@ -522,12 +522,10 @@ void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Po
 
 void downsampleCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_leaf_size=0.2)
 {
-
 	pcl::VoxelGrid<pcl::PointXYZ> sor;
 	sor.setInputCloud(in_cloud_ptr);
 	sor.setLeafSize((float)in_leaf_size, (float)in_leaf_size, (float)in_leaf_size);
 	sor.filter(*out_cloud_ptr);
-
 }
 
 void clipCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_min_height=-1.3, float in_max_height=0.5)
@@ -545,7 +543,6 @@ void clipCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 
 void differenceNormalsSegmentation(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr)
 {
-
 	float small_scale=0.5;
 	float large_scale=2.0;
 	float angle_threshold=0.5;
