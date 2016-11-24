@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   velodyne_pointcloud
   message_generation
   ${FAST_PCL_PACKAGES}
+  ndt_tku
 )
 
 add_message_files(FILES ndt_stat.msg)
@@ -37,6 +38,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
   CATKIN_DEPENDS runtime_manager message_runtime std_msgs velodyne_pointcloud ${FAST_PCL_PACKAGES}
+  DEPENDS ndt_tku
 #  DEPENDS system_lib
 )
 
@@ -58,10 +60,10 @@ add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
 add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
-add_executable(ndt_matching_tku nodes/ndt_matching_tku/ndt_matching_tku.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
-add_executable(ndt_mapping_tku nodes/ndt_matching_tku/ndt_mapping_tku.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
-#add_executable(ndt3d_offline nodes/ndt_matching_tku/ndt3d_offline.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
-add_executable(mapping nodes/ndt_matching_tku/mapping.cpp)
+#add_executable(ndt_matching_tku nodes/ndt_matching_tku/ndt_matching_tku.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
+add_executable(ndt_matching_tku nodes/ndt_matching_tku/ndt_matching_tku.cpp)
+add_executable(ndt_mapping_tku nodes/ndt_mapping_tku/ndt_mapping_tku.cpp)
+add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
@@ -69,10 +71,9 @@ target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 
-target_link_libraries(ndt_matching_tku ${catkin_LIBRARIES})
-target_link_libraries(ndt_mapping_tku ${catkin_LIBRARIES})
-#target_link_libraries(ndt3d_offline ${catkin_LIBRARIES})
-target_link_libraries(mapping ${catkin_LIBRARIES})
+target_link_libraries(ndt_matching_tku ndt_tku ${catkin_LIBRARIES})
+target_link_libraries(ndt_mapping_tku ndt_tku ${catkin_LIBRARIES})
+target_link_libraries(mapping ndt_tku ${catkin_LIBRARIES})
 
 add_dependencies(ndt_matching runtime_manager_generate_messages_cpp ndt_localizer_generate_messages_cpp)
 add_dependencies(ndt_mapping runtime_manager_generate_messages_cpp)
