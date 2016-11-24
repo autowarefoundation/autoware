@@ -79,7 +79,6 @@ void save_nd_map(char* name);
 void publish_nd_map();
 
 static pcl::PointCloud<pcl::PointXYZ> map;
-static int map_loaded = 0;
 
 static ros::Publisher ndmap_pub;
 

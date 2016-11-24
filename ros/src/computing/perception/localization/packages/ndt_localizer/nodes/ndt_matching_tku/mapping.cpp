@@ -44,7 +44,7 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
   count++;
   //usleep(50000);
   tf::StampedTransform transform;
-  if(prev_points.points.size()>0){
+  if((int)prev_points.points.size() > 0){
     //  tf_listener->waitForTransform("/world", header.frame_id, header.stamp, ros::Duration(1));
     //pcl_ros::transformPointCloud("/world", *msg, pcl_out, *tf_listener);
     try{
@@ -61,7 +61,7 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
       return;
     }
     
-    for(int i=0;i<prev_points.points.size(); i++){
+    for(int i=0;i<(int)prev_points.points.size(); i++){
       tf::Point pt(prev_points[i].x,prev_points[i].y,prev_points[i].z);
       tf::Point pt_world = transform * pt;
       pcl::PointXYZI wp;
@@ -85,7 +85,7 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 //      FILE* fp_points=fopen(fname,"w");
 //      FILE* fp_points=fopen("/home/kitsukawa/ndt_map","w");
       
-      for(int i=0;i<pcl_out.points.size(); i++){
+      for(int i=0;i<(int)pcl_out.points.size(); i++){
 //    	  fprintf(fp_points,"%.3f %.3f %.3f %.1f\n", pcl_out.points[i].y, pcl_out.points[i].x, pcl_out.points[i].z, pcl_out.points[i].intensity);
     	  ofs << pcl_out.points[i].x << "," << pcl_out.points[i].y << "," << pcl_out.points[i].z << "," << pcl_out.points[i].intensity << std::endl;
 //    	  ofs << pcl_out.points[i].x << " " << pcl_out.points[i].y << " " << pcl_out.points[i].z << " " << pcl_out.points[i].intensity << std::endl;
