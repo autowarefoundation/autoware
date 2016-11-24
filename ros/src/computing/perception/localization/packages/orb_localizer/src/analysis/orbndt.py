@@ -474,10 +474,12 @@ class PoseTable :
     
     
     @staticmethod
-    def loadFromPoseStampedBag (filename):
+    def loadFromPoseStampedBag (filename, topicName=None):
         bagsrc = rosbag.Bag (filename, mode='r')
         poseRecord = PoseTable()
         for topic, msg, msgTimestamp in bagsrc.read_messages():
+            if (topicName is not None and topic != topicName):
+                continue
             if (msg._type != 'geometry_msgs/PoseStamped') :
                 continue
             cpose = Pose(msgTimestamp.to_sec(), msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, 

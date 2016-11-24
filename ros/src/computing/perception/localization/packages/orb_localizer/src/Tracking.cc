@@ -100,20 +100,6 @@ Tracking::Tracking (
     mMinFrames = 0;
     mMaxFrames = fps;
 
-//    cout << endl << "Camera Parameters: " << endl;
-//    cout << "- fx: " << fx << endl;
-//    cout << "- fy: " << fy << endl;
-//    cout << "- cx: " << cx << endl;
-//    cout << "- cy: " << cy << endl;
-//    cout << "- k1: " << DistCoef.at<float>(0) << endl;
-//    cout << "- k2: " << DistCoef.at<float>(1) << endl;
-//    if(DistCoef.rows==5)
-//        cout << "- k3: " << DistCoef.at<float>(4) << endl;
-//    cout << "- p1: " << DistCoef.at<float>(2) << endl;
-//    cout << "- p2: " << DistCoef.at<float>(3) << endl;
-//    cout << "- fps: " << fps << endl;
-
-
     int nRGB = fSettings["Camera.RGB"];
     mbRGB = nRGB;
 

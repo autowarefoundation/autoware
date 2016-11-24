@@ -58,7 +58,9 @@ public:
 //		imageSub = imageBuf->subscribe((string)SLAMSystem.fsSettings["Camera.topic"], 1, &ORB_Mapper::imageCallback, this, th);
 
 		// XXX: put topic name into ros parameter
-		poseSub = rosnode.subscribe ("ndt_current_pose", 2, &ORB_Mapper::poseCallback, this);
+		string groundTruthPose;
+		rosnode.getParam("external_localization_topic", groundTruthPose);
+		poseSub = rosnode.subscribe (groundTruthPose, 2, &ORB_Mapper::poseCallback, this);
 	}
 
 
@@ -231,13 +233,17 @@ public:
 
 int main (int argc, char *argv[])
 {
-	const string mapPath = (argc==3) ? argv[2] : string();
 	const string orbVocabFile (ORB_SLAM_VOCABULARY);
-	const string configFile = argv[1];
 
-	ros::init(argc, argv, "orb_mapping");
+	ros::init(argc, argv, "orb_mapping", ros::init_options::AnonymousName);
 	ros::start();
-	ros::NodeHandle nodeHandler;
+	ros::NodeHandle nodeHandler("~");
+
+	string mapPath;
+	nodeHandler.getParam("map_file", mapPath);
+
+	string configFile;
+	nodeHandler.getParam("configuration_file", configFile);
 
     ORB_SLAM2::System SLAM(orbVocabFile,
     	configFile,
@@ -249,7 +255,11 @@ int main (int argc, char *argv[])
     ORB_Mapper Mapper (SLAM, nodeHandler);
     // these two cannot be included into the above class, why ?
 //    Mapper.externalLocalizerThread = new std::thread (&ORB_Mapper::externalLocalizerGrab, &Mapper);
-    Mapper.imageSub = Mapper.imageBuf->subscribe ((string)SLAM.fsSettings["Camera.topic"], 1,  &ORB_Mapper::imageCallback, &Mapper, Mapper.th);
+//    Mapper.imageSub = Mapper.imageBuf->subscribe ((string)SLAM.fsSettings["Camera.topic"], 1,  &ORB_Mapper::imageCallback, &Mapper, Mapper.th);
+
+    string imageTopic;
+    nodeHandler.getParam("image_topic", imageTopic);
+    Mapper.imageSub = Mapper.imageBuf->subscribe (imageTopic, 1,  &ORB_Mapper::imageCallback, &Mapper, Mapper.th);
 
     ros::spin();
 
