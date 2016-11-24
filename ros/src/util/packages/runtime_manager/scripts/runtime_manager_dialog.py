@@ -2418,6 +2418,11 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 		rtmgr.MyDialogLaneStop.__init__(self, *args, **kwds)
 		self.frame = self.GetParent()
 
+		name = 'lane_stop'
+		var = next( ( var for var in self.prm.get('vars', []) if var.get('name') == name ), {} )
+		v = self.pdic.get( name, var.get('v', False) )
+		set_val(self.checkbox_lane_stop, v)
+
 	def update(self):
 		update_func = self.gdic.get('update_func')
 		if update_func:
@@ -2434,10 +2439,9 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnTrafficLightRecognition(self, event):
 		pub = rospy.Publisher('/config/lane_stop', ConfigLaneStop, latch=True, queue_size=10)
 		msg = ConfigLaneStop()
-		if event.GetEventObject().GetValue():
-			msg.manual_detection = False
-		else:
-			msg.manual_detection = True
+		v = event.GetEventObject().GetValue()
+		self.pdic['lane_stop'] = v
+		msg.manual_detection = not v
 		pub.publish(msg)
 
 	def OnOk(self, event):
