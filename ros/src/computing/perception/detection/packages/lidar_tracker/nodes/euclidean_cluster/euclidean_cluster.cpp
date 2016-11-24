@@ -119,6 +119,7 @@ static double _keep_lane_left_distance;
 static double _keep_lane_right_distance;
 
 static double _max_boundingbox_side;
+static double _remove_points_upto;
 
 void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbox, jsk_recognition_msgs::BoundingBox& out_boundingbox, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
@@ -362,11 +363,14 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 		float origin_distance = sqrt( pow(current_point.x,2) + pow(current_point.y,2) );
 
-		if 		(origin_distance < _clustering_distances[0] )	{cloud_segments_array[0]->points.push_back (current_point);}
-		else if(origin_distance < _clustering_distances[1])		{cloud_segments_array[1]->points.push_back (current_point);}
-		else if(origin_distance < _clustering_distances[2])		{cloud_segments_array[2]->points.push_back (current_point);}
-		else if(origin_distance < _clustering_distances[3])		{cloud_segments_array[3]->points.push_back (current_point);}
-		else													{cloud_segments_array[4]->points.push_back (current_point);}
+		if (origin_distance > _remove_points_upto)
+		{
+			if 		(origin_distance < _clustering_distances[0] )	{cloud_segments_array[0]->points.push_back (current_point);}
+			else if(origin_distance < _clustering_distances[1])		{cloud_segments_array[1]->points.push_back (current_point);}
+			else if(origin_distance < _clustering_distances[2])		{cloud_segments_array[2]->points.push_back (current_point);}
+			else if(origin_distance < _clustering_distances[3])		{cloud_segments_array[3]->points.push_back (current_point);}
+			else													{cloud_segments_array[4]->points.push_back (current_point);}
+		}
 	}
 
 	std::vector <ClusterPtr> all_clusters;
@@ -836,8 +840,12 @@ int main (int argc, char** argv)
 	private_nh.param("clustering_distances", _clustering_distances);
 	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);				ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
 	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
+
 	private_nh.param("use_vector_map", _use_vector_map, false);							ROS_INFO("use_vector_map: %d", _use_vector_map);
 	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");			ROS_INFO("vectormap_frame: %s", _output_frame.c_str());
+
+	private_nh.param("remove_points_upto", _remove_points_upto, 0.0);		ROS_INFO("remove_points_upto: %f", _remove_points_upto);
+
 
 	_velodyne_transform_available = false;
 

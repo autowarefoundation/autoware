@@ -133,7 +133,7 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ## Instruction Videos
 
 ### Quick Start
-[![Quick Start](http://img.youtube.com/vi/Ursbp2qs1u0/0.jpg)](https://www.youtube.com/watch?v=Ursbp2qs1u0)
+[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
 ### Loading map data
 [![Loading map data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
@@ -147,14 +147,17 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ### Mapping
 [![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/0.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
 
-### SSD CV Detector
+### Detection with SSD
 [![SSD](http://img.youtube.com/vi/EjamMJjkjBA/0.jpg)](https://youtu.be/EjamMJjkjBA)
 
-### DPM CV Detector
+### Detection with DPM
 [![DPM](http://img.youtube.com/vi/P_BFQNbudlg/0.jpg)](https://youtu.be/P_BFQNbudlg)
 
-### Clustering
+### Detection with Euclidean Clustering
 [![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/0.jpg)](https://youtu.be/Tma2DKMxt4Y)
+
+### Traffic Light Recognition
+[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/0.jpg)](https://youtu.be/KmOdBms9r2w)
 
 ### Planning with ROSBAG
 [![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/0.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
