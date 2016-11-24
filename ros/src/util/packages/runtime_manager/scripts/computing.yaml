@@ -933,6 +933,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : remove_points_upto
+      desc    : remove_points_upto desc sample
+      label   : 'remove_points_upto (ignore points up to this distance)'
+      min       : 0
+      max       : 2.5
+      v       : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : keep_lanes
       desc    : keep_lanes desc sample
       label   : 'keep_only_lanes_points'
