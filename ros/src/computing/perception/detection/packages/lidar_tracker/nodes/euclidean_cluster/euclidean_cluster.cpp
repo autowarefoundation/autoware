@@ -350,14 +350,11 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 		float origin_distance = sqrt( pow(current_point.x,2) + pow(current_point.y,2) );
 
-		if (origin_distance > _remove_points_upto)
-		{
-			if 		(origin_distance < _clustering_distances[0] )	{cloud_segments_array[0]->points.push_back (current_point);}
-			else if(origin_distance < _clustering_distances[1])		{cloud_segments_array[1]->points.push_back (current_point);}
-			else if(origin_distance < _clustering_distances[2])		{cloud_segments_array[2]->points.push_back (current_point);}
-			else if(origin_distance < _clustering_distances[3])		{cloud_segments_array[3]->points.push_back (current_point);}
-			else													{cloud_segments_array[4]->points.push_back (current_point);}
-		}
+		if 		(origin_distance < _clustering_distances[0] )	{cloud_segments_array[0]->points.push_back (current_point);}
+		else if(origin_distance < _clustering_distances[1])		{cloud_segments_array[1]->points.push_back (current_point);}
+		else if(origin_distance < _clustering_distances[2])		{cloud_segments_array[2]->points.push_back (current_point);}
+		else if(origin_distance < _clustering_distances[3])		{cloud_segments_array[3]->points.push_back (current_point);}
+		else													{cloud_segments_array[4]->points.push_back (current_point);}
 	}
 
 	std::vector <ClusterPtr> all_clusters;
@@ -523,6 +520,19 @@ void differenceNormalsSegmentation(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_
 	pcl::copyPointCloud<pcl::PointNormal, pcl::PointXYZ>(*diffnormals_cloud, *out_cloud_ptr);
 }
 
+void removePointsUpTo(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, const double in_distance)
+{
+	out_cloud_ptr->points.clear();
+	for (unsigned int i=0; i<in_cloud_ptr->points.size(); i++)
+	{
+		float origin_distance = sqrt( pow(in_cloud_ptr->points[i].x,2) + pow(in_cloud_ptr->points[i].y,2) );
+		if (origin_distance > in_distance)
+		{
+			out_cloud_ptr->points.push_back(in_cloud_ptr->points[i]);
+		}
+	}
+}
+
 void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 {
 	if (!_using_sensor_cloud)
@@ -530,6 +540,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		_using_sensor_cloud = true;
 
 		pcl::PointCloud<pcl::PointXYZ>::Ptr current_sensor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
+		pcl::PointCloud<pcl::PointXYZ>::Ptr removed_points_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr inlanes_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr nofloor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
@@ -546,10 +557,17 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		_velodyne_header = in_sensor_cloud->header;
 
-		if (_downsample_cloud)
-			downsampleCloud(current_sensor_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
+		if (_remove_points_upto > 0.0)
+		{
+			removePointsUpTo(current_sensor_cloud_ptr, removed_points_cloud_ptr, _remove_points_upto);
+		}
 		else
-			downsampled_cloud_ptr=current_sensor_cloud_ptr;
+			removed_points_cloud_ptr = current_sensor_cloud_ptr;
+
+		if (_downsample_cloud)
+			downsampleCloud(removed_points_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
+		else
+			downsampled_cloud_ptr=removed_points_cloud_ptr;
 
 		if(_keep_lanes)
 			keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
