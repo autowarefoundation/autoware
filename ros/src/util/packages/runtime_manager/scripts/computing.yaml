@@ -1842,11 +1842,14 @@ params :
   - name  : lane_stop
     topic : /light_color_managed
     msg   : traffic_light
+    no_save_vars : [ lane_stop ]
     vars  :
     - name  : traffic_light
       desc  : traffic_light desc sample
       v     : 0
-      
+    - name  : lane_stop
+      v     : False
+
   - name  : lane_select
     topic : /config/lane_select
     msg   : ConfigLaneSelect
