@@ -59,6 +59,7 @@ add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
 add_executable(ndt_matching_tku nodes/ndt_matching_tku/ndt_matching_tku.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
+add_executable(ndt_mapping_tku nodes/ndt_matching_tku/ndt_mapping_tku.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
 #add_executable(ndt3d_offline nodes/ndt_matching_tku/ndt3d_offline.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
 add_executable(mapping nodes/ndt_matching_tku/mapping.cpp)
 
@@ -69,6 +70,7 @@ target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 
 target_link_libraries(ndt_matching_tku ${catkin_LIBRARIES})
+target_link_libraries(ndt_mapping_tku ${catkin_LIBRARIES})
 #target_link_libraries(ndt3d_offline ${catkin_LIBRARIES})
 target_link_libraries(mapping ${catkin_LIBRARIES})
 

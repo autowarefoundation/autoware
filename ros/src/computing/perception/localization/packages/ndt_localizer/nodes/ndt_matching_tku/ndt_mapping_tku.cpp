@@ -76,6 +76,7 @@ void matrix_test(void);
 void print_matrix6d(double mat[6][6]);
 
 void save_nd_map(char* name);
+void publish_nd_map();
 
 static pcl::PointCloud<pcl::PointXYZ> map;
 static int map_loaded = 0;
@@ -85,7 +86,7 @@ static ros::Publisher ndmap_pub;
 static std::chrono::time_point<std::chrono::system_clock> matching_start, matching_end;
 static double exe_time = 0.0;
 
-std::string _downsampler = "voxel_grid";
+static std::string _downsampler = "voxel_grid";
 int _downsampler_num = 1;
 
 //double pose_mod(Posture *pose){
@@ -104,6 +105,7 @@ double nrand(double n){
   return r;
 }
 
+/*
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
   if (map_loaded == 0)
@@ -112,23 +114,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::fromROSMsg(*input, map);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
-    /*
-    // Setting point cloud to be aligned to.
-    ndt.setInputTarget(map_ptr);
 
-    // Setting NDT parameters to default values
-    ndt.setMaximumIterations(iter);
-    ndt.setResolution(ndt_res);
-    ndt.setStepSize(step_size);
-    ndt.setTransformationEpsilon(trans_eps);
-*/
-
-/*
-    for(int i=2;i<argc;i++){
-        printf("load(%d/%d) %s\n",i-2,argc-2,argv[i]);
-        load(argv[i]);
-      }
-*/
     Point p;
     for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = map_ptr->begin(); item != map_ptr->end(); item++){
 
@@ -136,11 +122,6 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         p.y=(item->x-g_map_center_x)*sin(-g_map_rotation)+(item->y-g_map_center_y)*cos(-g_map_rotation);
         p.z=item->z-g_map_center_z;
 
-    	/*
-    	p.x = item->x;
-    	p.y = item->y;
-    	p.z = item->z;
-    	*/
         add_point_map(NDmap, &p);
     }
     std::cout << "Finished loading point cloud map." << std::endl;
@@ -152,6 +133,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     map_loaded = 1;
   }
 }
+*/
 
 void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
@@ -214,6 +196,7 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 
     	double dist=scan_points[j].x*scan_points[j].x + scan_points[j].y*scan_points[j].y + scan_points[j].z*scan_points[j].z;
     	if(dist<3*3)continue;
+    	if(scan_points[j].z>-1&&scan_points[j].z<0 && scan_points[j].y>-20&&scan_points[j].y<20)continue;
 
     	scan_points_weight[j]=1;
     	scan_points_totalweight+=scan_points_weight[j];
@@ -400,12 +383,13 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
       (key_pose.z-pose.z)* (key_pose.z-pose.z);
    
     if(g_map_update&&(!is_map_exist || (distance>0.1*0.1 && scan_points_num > 100))){
-      int i;
-      for(i = 0;i < scan_points_num;i++){
-	add_point_map(NDmap,&map_points[i]);
-      }
-      key_pose = pose;
-      is_map_exist=1;
+    	int i;
+    	for(i = 0;i < scan_points_num;i++){
+    		add_point_map(NDmap,&map_points[i]);
+    	}
+    	key_pose = pose;
+    	is_map_exist=1;
+//    	publish_nd_map();
     }
     
     prev_pose2=prev_pose;
@@ -881,6 +865,81 @@ void save_nd_map(char* name){
 
 }
 
+
+
+
+
+void publish_nd_map(){
+  int i,j,k,layer;
+  NDData nddat;
+  NDMapPtr ndmap;
+  NDPtr *ndp;
+
+  //for pcd
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  pcl::PointXYZ p;
+
+  //cloud.is_dense = false;
+  //cloud.points.resize (cloud.width * cloud.height);
+  //ros::Time stamp;
+  //stamp = msg->header.stamp;
+  //double now = ros::Time::now().toSec();
+
+  ndmap=NDmap;
+
+  for(layer=0;layer<2;layer++){
+    ndp = ndmap->nd;
+    /*�쥤�䡼�ν��*/
+    for(i = 0; i < ndmap->x; i++){
+      for(j = 0; j < ndmap->y; j++){
+	for(k = 0; k < ndmap->z; k++){
+	  if(*ndp){
+	    update_covariance(*ndp);
+	    nddat.nd = **ndp;
+	    nddat.x =i;
+	    nddat.y =j;
+	    nddat.z =k;
+	    nddat.layer= layer;
+
+	    //regist the point to pcd data;
+	    p.x = (*ndp)->mean.x;
+	    p.y = (*ndp)->mean.y;
+	    p.z = (*ndp)->mean.z;
+	    cloud.points.push_back(p);
+
+	  }
+	  ndp++;
+	}
+      }
+//      printf("a\n");
+    }
+    ndmap=ndmap->next;
+
+  }
+
+  //save pcd
+
+  cloud.header.frame_id = "/map";
+  cloud.width=cloud.points.size();
+  cloud.height=1;
+//  pcl::io::savePCDFileASCII ("/tmp/ndmap.pcd", cloud);
+//  printf("NDMap points num: %d points.\n", (int)cloud.points.size());
+
+  sensor_msgs::PointCloud2::Ptr ndmap_ptr(new sensor_msgs::PointCloud2);
+  pcl::toROSMsg(cloud, *ndmap_ptr);
+  ndmap_pub.publish(*ndmap_ptr);
+
+}
+
+
+
+
+
+
+
+
+
+
 //load ndt setting file
 int load_ndt_ini(char* name){
   FILE *ifp;
@@ -962,7 +1021,7 @@ int main(int argc, char* argv[])
 
   ndmap_pub = nh.advertise<sensor_msgs::PointCloud2>("/ndmap", 1000);
 
-  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
+//  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
   ros::Subscriber points_sub = nh.subscribe("points_raw", 1000, points_callback);
   //ros::Subscriber sub = n.subscribe("hokuyo3d/slice", 1000, velodyneCallback);
 //  char nd_filename[500];
@@ -989,16 +1048,16 @@ int main(int argc, char* argv[])
   g_map_z = 200;
   g_map_cellsize = 1.0;
   //map center
-  g_map_center_x = 3700.2;
-  g_map_center_y = -99426.4;
-  g_map_center_z = 85.7;
+  g_map_center_x = 0.0;
+  g_map_center_y = 0.0;
+  g_map_center_z = 0.0;
   g_map_rotation = 0.0;
   //use gnss
   g_use_gnss = 0;
   //initial pose
-  g_ini_x = 3700.2;
-  g_ini_y = -99426.4;
-  g_ini_z = 85.7;
+  g_ini_x = 0.0;
+  g_ini_y = 0.0;
+  g_ini_z = 0.0;
   g_ini_roll = 0.0;
   g_ini_pitch = 0.0;
   g_ini_yaw = 0.0;

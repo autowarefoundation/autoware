@@ -1,6 +1,7 @@
-#include<math.h>
-#include<stdio.h>
-#include<stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
 
 #include"ndt.h"
 #include"algebra.h"
@@ -16,6 +17,8 @@ extern int layer_select;
 
 extern double scan_points_weight[];
 extern double scan_points_totalweight;
+
+extern int _downsampler_num;
 
 double qdd[3][3][2];
 double qd[3][2];
@@ -213,9 +216,8 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
   //int inc,count;
   int inc;
   int ndmode;
-  //double dist,weight_total,weight_sum,weight_next;
-  double dist;
-  
+  double dist,weight_total,weight_sum,weight_next;
+
   /*initialize*/
   gsum[0] = 0; gsum[1] = 0; gsum[2] = 0;
   gsum[3] = 0; gsum[4] = 0; gsum[5] = 0;
@@ -250,7 +252,8 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
   }}}
   
 
-#if WEIGHTED_SELECT    
+//#if WEIGHTED_SELECT
+  if(_downsampler_num == 0){
   /*�ǡ��������Ф�����1=��ĤŤġ�*/
   switch(target){
   case 3:
@@ -270,7 +273,9 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     ndmode = 0;
     break;
   }
-#else
+  }
+//#else
+  if(_downsampler_num == 1){
   /*�ǡ��������Ф�����1=��ĤŤġ�*/
   switch(target){
   case 3:
@@ -290,14 +295,19 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     ndmode = 0;
     break;
   }
-#endif
+  }
+//#endif
 
 
 
   scanptr = scan;
 
   /*����ˤĤ��Ʒ����֤��׻�*/
-#if WEIGHTED_SELECT    
+
+
+
+//#if WEIGHTED_SELECT
+  if(_downsampler_num == 0){
   weight_total=scan_points_totalweight;;
   weight_next=0;
   weight_sum=0;
@@ -320,7 +330,77 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     scanptr++;
     weight_next+=weight_total/(double)inc;//1000;
     dist =1;
-#else 
+
+
+
+
+    p.x = x*sc[0][0] +y*sc[0][1]+ z*sc[0][2] + pose->x;
+    p.y = x*sc[1][0] +y*sc[1][1]+ z*sc[1][2] + pose->y;
+    p.z = x*sc[2][0] +y*sc[2][1]+ z*sc[2][2] + pose->z;
+
+
+    /*���ϥ������ˤ�����������*/
+    if(ndmode==1)layer = 1;//layer_select;
+    if(ndmode==0)layer = 0;//layer_select;
+    nd_map = NDmap;
+
+    while(layer > 0){
+      if(nd_map->next)nd_map = nd_map->next;
+      layer--;
+    }
+
+    /*�����б�����ND�ܥ�����������Ʊ���˼�������ND�ܥ�����򹹿���
+      �٤����Τ�Ĥ������Ӥ���Ĥ�Ĥ�����*/
+
+    if(!get_ND(nd_map,&p,nd,target))continue;
+
+
+    /*q�ΰ켡��ʬ(�Ѳ�������Τ�)*/
+    work = (double*)sc_d;
+    for(m = 0;m < 3;m++){
+      for(k = 0;k < 3;k++){
+	//qd3[txtytzabg][xyz]
+	qd3[m+3][k] =   x*(*work) +y*(*(work+1)) +z*(*(work+2));
+	//x*sc_d[m][k][0] + y*sc_d[m][k][1] + z*sc_d[m][k][2];
+	work+=3;
+      }
+    }
+
+
+    /*q������ʬ���Ѳ�������Τߡ�*/
+    work = (double*)sc_dd;
+    for(n = 0;n < 3;n++){
+    	for(m = 0;m < 3;m++){
+    		for(k = 0;k < 3;k++){
+    			qdd3[n+3][m+3][k] = (*work*x + *(work+1)*y + *(work+2)*z - qd3[m+3][k])/E_THETA;
+    			work+=3;
+    		}
+    	}
+    }
+
+    /*�����̷׻�*/
+    if(nd[j]){
+    	if(nd[j]->num > 10 && nd[j]->sign==1){
+//	double e;
+    		esum += calc_summand3d(&p,nd[j],pose,g,hH,qd3,dist);
+    		add_matrix6d(Hsumh,hH,Hsumh);
+
+	//	  dist =1;
+    		gsum[0] += g[0];//*nd[j]->w;
+    		gsum[1] += g[1];//*nd[j]->w;
+    		gsum[2] += g[2]+pose->z*0;//*nd[j]->w;
+    		gsum[3] += g[3];//*nd[j]->w;
+    		gsum[4] += g[4];//+(pose->theta2-(0.0))*1;//*nd[j]->w;
+    		gsum[5] += g[5];//*nd[j]->w;
+    		gnum+=1;//nd[j]->w;
+    	}
+    }
+    }
+  }
+
+
+//#else
+  if(_downsampler_num == 1){
     for(i = 0;i < num; i+=inc){
       //    dist = (x*x+y*y+z*z);
       //dist *= (1.2-exp(-1*(-1 - z)*(-1 - z)/4.0));
@@ -331,7 +411,10 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     z   = scanptr->z;  
     dist=1;  
     scanptr+=inc;
-#endif
+
+
+
+
 
     p.x = x*sc[0][0] +y*sc[0][1]+ z*sc[0][2] + pose->x;
     p.y = x*sc[1][0] +y*sc[1][1]+ z*sc[1][2] + pose->y;
@@ -369,35 +452,39 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial,int target){
     /*q������ʬ���Ѳ�������Τߡ�*/
     work = (double*)sc_dd;   
     for(n = 0;n < 3;n++){
-      for(m = 0;m < 3;m++){ 
-	for(k = 0;k < 3;k++){
-	    qdd3[n+3][m+3][k] = 
-	      (*work*x + *(work+1)*y + *(work+2)*z - qd3[m+3][k])/E_THETA;
-	      work+=3;
-	}
-      }
+    	for(m = 0;m < 3;m++){
+    		for(k = 0;k < 3;k++){
+    			qdd3[n+3][m+3][k] = (*work*x + *(work+1)*y + *(work+2)*z - qd3[m+3][k])/E_THETA;
+    			work+=3;
+    		}
+    	}
     }
     
     /*�����̷׻�*/
     if(nd[j]){
-      if(nd[j]->num > 10 && nd[j]->sign==1){
+    	if(nd[j]->num > 10 && nd[j]->sign==1){
 //	double e;
-	
-	esum += calc_summand3d(&p,nd[j],pose,g,hH,qd3,dist);
-	add_matrix6d(Hsumh,hH,Hsumh);
+    		esum += calc_summand3d(&p,nd[j],pose,g,hH,qd3,dist);
+    		add_matrix6d(Hsumh,hH,Hsumh);
 	
 	//	  dist =1;	  
-	gsum[0] += g[0];//*nd[j]->w;
-	gsum[1] += g[1];//*nd[j]->w;
-	gsum[2] += g[2]+pose->z*0;//*nd[j]->w;
-	gsum[3] += g[3];//*nd[j]->w;
-	gsum[4] += g[4];//+(pose->theta2-(0.0))*1;//*nd[j]->w;
-	gsum[5] += g[5];//*nd[j]->w;
-	gnum+=1;//nd[j]->w;	
-      }
+    		gsum[0] += g[0];//*nd[j]->w;
+    		gsum[1] += g[1];//*nd[j]->w;
+    		gsum[2] += g[2]+pose->z*0;//*nd[j]->w;
+    		gsum[3] += g[3];//*nd[j]->w;
+    		gsum[4] += g[4];//+(pose->theta2-(0.0))*1;//*nd[j]->w;
+    		gsum[5] += g[5];//*nd[j]->w;
+    		gnum+=1;//nd[j]->w;
+    	}
+    }
     }
   }
-    
+//#endif
+
+
+
+
+
     if(gnum>1){
   //  printf("gnum=%lf\n",gnum);
     //    fclose(point_fp);  
