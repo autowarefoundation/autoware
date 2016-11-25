@@ -26,6 +26,7 @@ __pycache__/
 
 # CLion
 .idea/
+cmake-build-debug/
 
 # clang-format
 .clang-format
