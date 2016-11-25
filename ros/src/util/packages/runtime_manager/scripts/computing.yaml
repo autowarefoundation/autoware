@@ -1853,14 +1853,14 @@ params :
 
   - name  : lane_select
     vars  :
-    - name      : size_of_waypoints
-      desc      : size_of_waypoints desc sample
-      label     : Size of Waypoints
+    - name      : distance_threshold
+      desc      : distance_threshold desc sample
+      label     : distance threshold to neighbor (m)
       min       : 0
-      max       : 100
-      v         : 30
+      max       : 20
+      v         : 5.0
       cmd_param :
-        var_name    : size_of_waypoints
+        var_name    : distance_threshold
         dash        : ''
         delim       : ':='
     - name      : lane_change_interval

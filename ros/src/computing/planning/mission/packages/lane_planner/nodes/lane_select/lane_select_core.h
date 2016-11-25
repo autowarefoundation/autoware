@@ -34,10 +34,15 @@
 
 // ROS includes
 #include <ros/ros.h>
+#include <tf/transform_datatypes.h>
+#include <std_msgs/Int32.h>
+#include <visualization_msgs/MarkerArray.h>
 
 // C++ includes
 #include <iostream>
+#include <numeric>
 
+// User defined includes
 #include "waypoint_follower/LaneArray.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
@@ -54,6 +59,12 @@ enum class ChangeFlag : int32_t
 
 typedef std::underlying_type<ChangeFlag>::type ChangeFlagInteger;
 
+template <class T>
+typename std::underlying_type<T>::type enumToInteger(T t)
+{
+  return static_cast<typename std::underlying_type<T>::type>(t);
+}
+
 class LaneSelectNode
 {
 public:
@@ -68,34 +79,62 @@ private:
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher pub_;
+  ros::Publisher pub1_, pub2_;
+  ros::Publisher vis_pub1_;
 
   // subscriber
-  ros::Subscriber sub1_, sub2_;
+  ros::Subscriber sub1_, sub2_, sub3_;
 
   // variables
-  int32_t num_of_lane_;  // the number of lane we are driving
-  int32_t num_of_closest_;
-  int32_t size_of_waypoints_;
+  int32_t current_lane_idx_;  // the index of the lane we are driving
+  int32_t right_lane_idx_;
+  int32_t left_lane_idx_;
   int32_t lane_change_interval_;
-  ChangeFlag change_flag_;
-  waypoint_follower::LaneArray lane_array_;
+  std::vector<std::tuple<waypoint_follower::lane, int32_t>> tuple_vec_;  // lane, closest_waypoint
   geometry_msgs::PoseStamped current_pose_;
-  bool is_lane_array_subscribed_, is_current_pose_subscribed_;
-  ros::Time last_time_;
+  geometry_msgs::TwistStamped current_velocity_;
+  bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_;
+  ros::Time last_change_time_;
+  double distance_threshold_;
+
+  // for visualize
+  visualization_msgs::Marker current_lane_marker_;
+  visualization_msgs::Marker right_lane_marker_;
+  visualization_msgs::Marker left_lane_marker_;
+  visualization_msgs::Marker closest_waypoints_marker_;
 
   // callbacks
   void callbackFromLaneArray(const waypoint_follower::LaneArrayConstPtr &msg);
-  void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
+  void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
+  void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
 
   // initializer
   void initForROS();
+  void initForViz();
+  void initCommonParamForLaneMarker(visualization_msgs::Marker *marker);
 
   // functions
-  void publishLocalLane();
-  void createLocalLane(waypoint_follower::lane *lane);
+  void publish();
+  void createCurrentLaneMarker();
+  void createRightLaneMarker();
+  void createLeftLaneMarker();
+  void createClosestWaypointsMarker();
+  void publishForVisualize();
+  void processing();
+  bool getClosestWaypointNumberForEachLanes();
+  int32_t findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p);
+  void findCurrentLane();
+  void findNeighborLanes();
+  void changeLane(const int32_t &change_flag);
 };
 
-int32_t getNumOfClosest(const waypoint_follower::lane &current_path, const geometry_msgs::Pose &current_pose);
+int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, const geometry_msgs::Pose &current_pose,
+                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number);
+
+double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geometry_msgs::Point &target2);
+
+void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose,
+                                        geometry_msgs::Point *output_point);
+double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry_msgs::Pose &current_pose);
 }
 #endif  // LANE_SELECT_CORE_H
