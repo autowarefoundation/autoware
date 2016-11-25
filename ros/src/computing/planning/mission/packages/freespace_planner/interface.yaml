@@ -1,4 +1,3 @@
 - name: astar_navi
-  publish: [/start_pose, /car_footprint, /lane_waypoint, /traffic_waypoint, /poses,
-    /static_map]
-  subscribe: [/map, /move_base_simple/goal, /initialpose]
+  publish: [/lane_waypoints_array]
+  subscribe: [/ring_ogm, /current_pose, /move_base_simple/goal]
