@@ -317,6 +317,32 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::l
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
+void createLocalPointMarker(const waypoint_follower::lane &lane_waypoint)
+{
+  visualization_msgs::Marker lane_waypoint_marker;
+  lane_waypoint_marker.header.frame_id = "map";
+  lane_waypoint_marker.header.stamp = ros::Time();
+  lane_waypoint_marker.ns = "local_point_marker";
+  lane_waypoint_marker.id = 0;
+  lane_waypoint_marker.type = visualization_msgs::Marker::CUBE_LIST;
+  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.scale.x = 0.2;
+  lane_waypoint_marker.scale.y = 0.2;
+  lane_waypoint_marker.scale.z = 0.2;
+  lane_waypoint_marker.color.r = 1.0;
+   lane_waypoint_marker.color.a = 1.0;
+  lane_waypoint_marker.frame_locked = true;
+
+  for (unsigned int i = 0; i < lane_waypoint.waypoints.size(); i++)
+  {
+    geometry_msgs::Point point;
+    point = lane_waypoint.waypoints[i].pose.pose.position;
+    lane_waypoint_marker.points.push_back(point);
+
+  }
+  g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
+}
+
 void lightCallback(const runtime_manager::traffic_lightConstPtr& msg)
 {
   std_msgs::ColorRGBA global_color;
@@ -374,7 +400,7 @@ void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
 {
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
-  createGlobalLaneArrayMarker(_global_color, *msg);
+  //createGlobalLaneArrayMarker(_global_color, *msg);
   createGlobalLaneArrayOrientationMarker(*msg);
   createGlobalLaneArrayChangeFlagMarker(*msg);
   publishGlobalMarker();
@@ -383,9 +409,10 @@ void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
 void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
-  if (_closest_waypoint != -1)
-    createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
+  //if (_closest_waypoint != -1)
+   // createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
+  createLocalPointMarker(*msg);
   publishLocalMarker();
 
 }
