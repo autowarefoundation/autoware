@@ -54,8 +54,8 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &msg)
       pcl_ros::transformPointCloud("/japan_7", *msg, pcl_out, *tf_listener);
       */
       //    tf_listener->waitForTransform("/world", header.frame_id, header.stamp, ros::Duration(1));
-      tf_listener->waitForTransform("map", "velodyne", prev_time /*header.stamp*/, ros::Duration(1));
-      tf_listener->lookupTransform("map", "velodyne", prev_time, transform);
+      tf_listener->waitForTransform("map", "base_link", prev_time /*header.stamp*/, ros::Duration(1));
+      tf_listener->lookupTransform("map", "base_link", prev_time, transform);
       /*pcl_ros::transformPointCloud("world", prev_time, prev_points, "ndt_frame", pcl_out, *tf_listener);
        */
     }
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
   std::time_t now = std::time(NULL);
   std::tm *pnow = std::localtime(&now);
   std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
-  filename = "ndt_matpping_tku_" + std::string(buffer) + ".csv";
+  filename = "ndt_mapping_tku_" + std::string(buffer) + ".csv";
   ofs.open(filename.c_str(), std::ios::app);
 
   ros::Subscriber points_sub = n.subscribe("points_raw", 10, points_callback);

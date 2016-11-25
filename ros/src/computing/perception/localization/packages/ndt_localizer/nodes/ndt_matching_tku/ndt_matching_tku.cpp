@@ -4,6 +4,12 @@
   2005/4/24 tku
 */
 
+// number of cells
+#define G_MAP_X 2000
+#define G_MAP_Y 2000
+#define G_MAP_Z 200
+#define G_MAP_CELLSIZE 1.0
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -21,6 +27,8 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "sensor_msgs/PointCloud2.h"
+#include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include "velodyne_pointcloud/point_types.h"
 #include "velodyne_pointcloud/rawdata.h"
 #include <tf/transform_broadcaster.h>
@@ -69,7 +77,11 @@ int g_use_gnss;
 int g_map_update = 1;
 double g_ini_x, g_ini_y, g_ini_z, g_ini_roll, g_ini_pitch, g_ini_yaw;
 
-/**/
+static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
+static Eigen::Matrix4f tf_btol, tf_ltob; // tf between base_link and localizer
+static tf::Quaternion q_local_to_global;
+static Eigen::Matrix4f tf_local_to_global;
+
 void print_matrix3d(double mat[3][3]);
 void matrix_test(void);
 void print_matrix6d(double mat[6][6]);
@@ -86,6 +98,10 @@ static double exe_time = 0.0;
 
 std::string _downsampler = "voxel_grid";
 int _downsampler_num = 1;
+
+static ros::Publisher localizer_pose_pub, ndt_pose_pub;
+static geometry_msgs::PoseStamped localizer_pose_msg, ndt_pose_msg;
+
 
 // double pose_mod(Posture *pose){
 void pose_mod(Posture *pose)
@@ -180,6 +196,8 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &msg)
   double x_offset, y_offset, z_offset, theta_offset;
   //  double distance,diff;
   double distance;
+
+  tf::Quaternion ndt_q, localizer_q;
 
   //  pcl_conversions::fromPCL(msg->header.stamp,time);
   pcl_conversions::fromPCL(msg->header, header);
@@ -419,6 +437,51 @@ br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),  "world", "nd
     }
   }
 
+  // localizer
+  Eigen::Translation3f translation(pose.x, pose.y, pose.z);
+  Eigen::AngleAxisf rotation_x(pose.theta, Eigen::Vector3f::UnitX());
+  Eigen::AngleAxisf rotation_y(pose.theta2, Eigen::Vector3f::UnitY());
+  Eigen::AngleAxisf rotation_z(pose.theta3, Eigen::Vector3f::UnitZ());
+  Eigen::Matrix4f local_t = (translation * rotation_z * rotation_y * rotation_x).matrix();
+  Eigen::Matrix4f global_t = tf_local_to_global * local_t;
+
+  tf::Matrix3x3 mat_l;
+  mat_l.setValue(static_cast<double>(global_t(0, 0)), static_cast<double>(global_t(0, 1)), static_cast<double>(global_t(0, 2)),
+                 static_cast<double>(global_t(1, 0)), static_cast<double>(global_t(1, 1)), static_cast<double>(global_t(1, 2)),
+                 static_cast<double>(global_t(2, 0)), static_cast<double>(global_t(2, 1)), static_cast<double>(global_t(2, 2)));
+
+  mat_l.getRotation(localizer_q);
+  localizer_pose_msg.header.frame_id = "/map";
+  localizer_pose_msg.header.stamp = header.stamp;
+  localizer_pose_msg.pose.position.x = global_t(0, 3);
+  localizer_pose_msg.pose.position.y = global_t(1, 3);
+  localizer_pose_msg.pose.position.z = global_t(2, 3);
+  localizer_pose_msg.pose.orientation.x = localizer_q.x();
+  localizer_pose_msg.pose.orientation.y = localizer_q.y();
+  localizer_pose_msg.pose.orientation.z = localizer_q.z();
+  localizer_pose_msg.pose.orientation.w = localizer_q.w();
+
+  // base_link
+  Eigen::Matrix4f global_t2 = global_t * tf_ltob;
+  tf::Matrix3x3 mat_b;  // base_link
+  mat_b.setValue(static_cast<double>(global_t2(0, 0)), static_cast<double>(global_t2(0, 1)), static_cast<double>(global_t2(0, 2)),
+                 static_cast<double>(global_t2(1, 0)), static_cast<double>(global_t2(1, 1)), static_cast<double>(global_t2(1, 2)),
+                 static_cast<double>(global_t2(2, 0)), static_cast<double>(global_t2(2, 1)), static_cast<double>(global_t2(2, 2)));
+  mat_b.getRotation(ndt_q);
+
+  ndt_pose_msg.header.frame_id = "/map";
+  ndt_pose_msg.header.stamp = header.stamp;
+  ndt_pose_msg.pose.position.x = global_t2(0, 3);
+  ndt_pose_msg.pose.position.y = global_t2(1, 3);
+  ndt_pose_msg.pose.position.z = global_t2(2, 3);
+  ndt_pose_msg.pose.orientation.x = ndt_q.x();
+  ndt_pose_msg.pose.orientation.y = ndt_q.y();
+  ndt_pose_msg.pose.orientation.z = ndt_q.z();
+  ndt_pose_msg.pose.orientation.w = ndt_q.w();
+
+  localizer_pose_pub.publish(localizer_pose_msg);
+  ndt_pose_pub.publish(ndt_pose_msg);
+
   scan_transrate(scan_points, map_points, &pose, scan_points_num);
 
   for (int i = 0; i < scan_points_num; i++)
@@ -460,13 +523,16 @@ br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),  "world", "nd
 
   fflush(log_fp);
   tf::Transform transform;
-  tf::Quaternion q;
-  transform.setOrigin(tf::Vector3(pose.x, pose.y, pose.z));
-  q.setRPY(pose.theta, pose.theta2, pose.theta3);
-  transform.setRotation(q);
+//  tf::Quaternion q;
+//  transform.setOrigin(tf::Vector3(pose.x, pose.y, pose.z));
+//  transform.setOrigin(tf::Vector3(pose.x + g_map_center_x, pose.y + g_map_center_y, pose.z + g_map_center_z));
+  transform.setOrigin(tf::Vector3(global_t2(0, 3), global_t2(1, 3), global_t2(2, 3)));
+//  q.setRPY(pose.theta, pose.theta2, pose.theta3);
+//  transform.setRotation(q_local_to_global * q);
+  transform.setRotation(ndt_q);
 
-  //    br.sendTransform(tf::StampedTransform(transform, header.stamp,  "world", "ndt_frame"));
-  br.sendTransform(tf::StampedTransform(transform, header.stamp, "map", "velodyne"));
+//  br.sendTransform(tf::StampedTransform(transform, header.stamp, "map", "velodyne"));
+  br.sendTransform(tf::StampedTransform(transform, header.stamp, "map", "base_link"));
 
   matching_end = std::chrono::system_clock::now();
   exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() / 1000.0;
@@ -1028,6 +1094,13 @@ int main(int argc, char *argv[])
   ros::NodeHandle private_nh("~");
 
   private_nh.getParam("downsampler", _downsampler);
+  private_nh.getParam("init_x", g_ini_x);
+  private_nh.getParam("init_y", g_ini_y);
+  private_nh.getParam("init_z", g_ini_z);
+  private_nh.getParam("init_roll", g_ini_roll);
+  private_nh.getParam("init_pitch", g_ini_pitch);
+  private_nh.getParam("init_yaw", g_ini_yaw);
+
   std::cout << "Downsampler: " << _downsampler << std::endl;
   if (_downsampler == "voxel_grid")
   {
@@ -1038,57 +1111,71 @@ int main(int argc, char *argv[])
     _downsampler_num = 0;
   }
 
-  ndmap_pub = nh.advertise<sensor_msgs::PointCloud2>("/ndmap", 1000);
-
-  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
-  ros::Subscriber points_sub = nh.subscribe("points_raw", 1000, points_callback);
-  // ros::Subscriber sub = n.subscribe("hokuyo3d/slice", 1000, velodyneCallback);
-  //  char nd_filename[500];
-
-  // load setting files
-  /*
-  if(argc>1){
-    if(!load_ndt_ini(argv[1])){
-      printf("setting file error\n");
-      return 0;
-    }
-  }else{
-    printf("can not find setting file\n");
-    return 0;
+  if (nh.getParam("tf_x", _tf_x) == false)
+  {
+    std::cout << "tf_x is not set." << std::endl;
+    return 1;
   }
-*/
+  if (nh.getParam("tf_y", _tf_y) == false)
+  {
+    std::cout << "tf_y is not set." << std::endl;
+    return 1;
+  }
+  if (nh.getParam("tf_z", _tf_z) == false)
+  {
+    std::cout << "tf_z is not set." << std::endl;
+    return 1;
+  }
+  if (nh.getParam("tf_roll", _tf_roll) == false)
+  {
+    std::cout << "tf_roll is not set." << std::endl;
+    return 1;
+  }
+  if (nh.getParam("tf_pitch", _tf_pitch) == false)
+  {
+    std::cout << "tf_pitch is not set." << std::endl;
+    return 1;
+  }
+  if (nh.getParam("tf_yaw", _tf_yaw) == false)
+  {
+    std::cout << "tf_yaw is not set." << std::endl;
+    return 1;
+  }
+
+  Eigen::Translation3f tl_btol(_tf_x, _tf_y, _tf_z);  // tl: translation
+  Eigen::AngleAxisf rot_x_btol(_tf_roll, Eigen::Vector3f::UnitX());  // rot: rotation
+  Eigen::AngleAxisf rot_y_btol(_tf_pitch, Eigen::Vector3f::UnitY());
+  Eigen::AngleAxisf rot_z_btol(_tf_yaw, Eigen::Vector3f::UnitZ());
+  tf_btol = (tl_btol * rot_z_btol * rot_y_btol * rot_x_btol).matrix();
+
+  Eigen::Translation3f tl_ltob((-1.0) * _tf_x, (-1.0) * _tf_y, (-1.0) * _tf_z);  // tl: translation
+  Eigen::AngleAxisf rot_x_ltob((-1.0) * _tf_roll, Eigen::Vector3f::UnitX());  // rot: rotation
+  Eigen::AngleAxisf rot_y_ltob((-1.0) * _tf_pitch, Eigen::Vector3f::UnitY());
+  Eigen::AngleAxisf rot_z_ltob((-1.0) * _tf_yaw, Eigen::Vector3f::UnitZ());
+  tf_ltob = (tl_ltob * rot_z_ltob * rot_y_ltob * rot_x_ltob).matrix();
 
   // map path
   sprintf(g_ndmap_name, "%s", "ndmap");
 
   // map size
-  g_map_x = 2000;
-  g_map_y = 2000;
-  g_map_z = 200;
-  g_map_cellsize = 1.0;
+  g_map_x = G_MAP_X;
+  g_map_y = G_MAP_Y;
+  g_map_z = G_MAP_Z;
+  g_map_cellsize = G_MAP_CELLSIZE;
   // map center
-  g_map_center_x = 3700.2;
-  g_map_center_y = -99426.4;
-  g_map_center_z = 85.7;
+  g_map_center_x = g_ini_x;
+  g_map_center_y = g_ini_y;
+  g_map_center_z = g_ini_z;
   g_map_rotation = 0.0;
   // use gnss
   g_use_gnss = 0;
-  // initial pose
-  g_ini_x = 3700.2;
-  g_ini_y = -99426.4;
-  g_ini_z = 85.7;
-  g_ini_roll = 0.0;
-  g_ini_pitch = 0.0;
-  g_ini_yaw = 0.0;
-  /*
-    printf("Map size\nx = %d(%5.2fm) \ny= %d(%5.2fm) \nz = %d(%5.2fm)\nmemory size = %dMB(Map%dMB)\n",
-     g_map_x, g_map_x*g_map_cellsize,
-     g_map_y, g_map_y*g_map_cellsize,
-     g_map_z, g_map_z*g_map_cellsize,
-     (g_map_x*g_map_y*g_map_z*(1+1/64.) * sizeof(NDPtr)+MAX_ND_NUM*sizeof(NormalDistribution))/(1024*1024),
-     (g_map_x*g_map_y*g_map_z*(1+1/64.) * sizeof(NDPtr)+MAX_ND_NUM*sizeof(NormalDistribution))/(1024*1024));
-     */
-  //  sprintf(scan_file_base_name,"%s",argv[1]);
+
+  Eigen::Translation3f tl_local_to_global(g_map_center_x, g_map_center_y, g_map_center_z);  // tl: translation
+  Eigen::AngleAxisf rot_x_local_to_global(0.0, Eigen::Vector3f::UnitX());  // rot: rotation
+  Eigen::AngleAxisf rot_y_local_to_global(0.0, Eigen::Vector3f::UnitY());
+  Eigen::AngleAxisf rot_z_local_to_global(g_map_rotation, Eigen::Vector3f::UnitZ());
+  q_local_to_global.setRPY(0.0, 0.0, g_map_rotation);
+  tf_local_to_global = (tl_local_to_global * rot_z_local_to_global * rot_y_local_to_global * rot_x_local_to_global).matrix();
 
   /*initialize(clear) NDmap data*/
   NDmap = initialize_NDmap();
@@ -1104,21 +1191,13 @@ int main(int argc, char *argv[])
   prev_pose2 = prev_pose;
   is_first_time = 1;
 
-  /*
-  if(argc>2){
-    printf("load point cloud map\n");
-    for(int i=2;i<argc;i++){
-      printf("load(%d/%d) %s\n",i-2,argc-2,argv[i]);
-      load(argv[i]);
-    }
-    save_nd_map(g_ndmap_name);
-    is_map_exist=1;
-  }else if(argc>1){
-    printf("load \n");
-    if(load_nd_map(g_ndmap_name))
-      is_map_exist=1;
-  }
-*/
+  ndmap_pub = nh.advertise<sensor_msgs::PointCloud2>("/ndmap", 1000);
+  ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
+  localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 1000);
+
+  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
+  ros::Subscriber points_sub = nh.subscribe("points_raw", 1000, points_callback);
+
   /*
     while (ros::ok()){
       ros::spinOnce();
