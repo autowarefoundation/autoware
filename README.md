@@ -1,6 +1,6 @@
 # Autoware
 
-Integrated open-source software for urban autonomous driving. The following functions are supported:
+Integrated open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
 
 - 3D Localization
 - 3D Mapping
