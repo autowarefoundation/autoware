@@ -419,7 +419,7 @@ subs :
       subs :
       - name : astar_navi
         desc : astar_navi desc sample
-        cmd  : rosrun freespace_planner astar_navi
+        cmd  : roslaunch freespace_planner astar_navi.launch
 
   - name : Motion Planning
     desc : Motion Planning desc sample
