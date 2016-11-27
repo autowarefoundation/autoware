@@ -2,6 +2,7 @@ std_msgs/Header header
 
 uint32 id
 string label
+float64 score
 
 sensor_msgs/PointCloud2 cloud
 

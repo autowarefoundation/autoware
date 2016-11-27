@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tf
   jsk_recognition_msgs
+  jsk_rviz_plugins
   rosinterface
 )
 
@@ -75,6 +76,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
    geometry_msgs
    sensor_msgs
    jsk_recognition_msgs
+   jsk_rviz_plugins
  )
 
 
@@ -104,7 +106,15 @@ add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_ma
 
 #SVM Detect
 add_executable(svm_lidar_detect nodes/svm_lidar_detect/svm_lidar_detect.cpp)
-target_link_libraries(svm_lidar_detect ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_library(svm SHARED nodes/svm_lidar_detect/libsvm/svm.cpp)
+target_link_libraries (svm_lidar_detect PRIVATE
+	${catkin_LIBRARIES} 
+	${PCL_LIBRARIES} 
+	svm
+	opencv_highgui opencv_core opencv_contrib
+)
+
+target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)
 add_dependencies(svm_lidar_detect lidar_tracker_generate_messages_cpp)
 
 #ParticleFilter Track
