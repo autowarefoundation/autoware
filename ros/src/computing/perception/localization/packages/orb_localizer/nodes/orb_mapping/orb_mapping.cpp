@@ -197,6 +197,15 @@ public:
 			)).clone();
 
 		SLAMSystem.TrackMonocular(image, imageTime);
+
+//		if (SLAMSystem.getTracker()->trackingIsGood()) {
+//			tf::Transform currentPose = FramePose(&SLAMSystem.getTracker()->mCurrentFrame);
+//			double roll, pitch, yaw;
+//			tf::Vector3 o = currentPose.getOrigin();
+//			currentPose.getBasis().getRPY(roll, pitch, yaw);
+//			fprintf (stderr, "Position: %f %f %f ", o.x(), o.y(), o.z());
+//			fprintf (stderr, "* Rotation: %f %f %f\n", roll, pitch, yaw);
+//		}
 	}
 
 
@@ -253,9 +262,6 @@ int main (int argc, char *argv[])
     	System::MAPPING);
 
     ORB_Mapper Mapper (SLAM, nodeHandler);
-    // these two cannot be included into the above class, why ?
-//    Mapper.externalLocalizerThread = new std::thread (&ORB_Mapper::externalLocalizerGrab, &Mapper);
-//    Mapper.imageSub = Mapper.imageBuf->subscribe ((string)SLAM.fsSettings["Camera.topic"], 1,  &ORB_Mapper::imageCallback, &Mapper, Mapper.th);
 
     string imageTopic;
     nodeHandler.getParam("image_topic", imageTopic);

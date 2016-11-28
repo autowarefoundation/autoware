@@ -67,3 +67,16 @@ void tf2positiondirection (const tf::Transform &pose, float positiondirection[6]
 	positiondirection[4] = fdiry;
 	positiondirection[5] = fdirz;
 }
+
+
+tf::Transform FramePose (ORB_SLAM2::Frame *cframe)
+{
+	cv::Mat Rwc = cframe->mTcw.rowRange(0,3).colRange(0,3).t();
+	cv::Mat twc = -Rwc * cframe->mTcw.rowRange(0,3).col(3);
+	tf::Matrix3x3 M(Rwc.at<float>(0,0),Rwc.at<float>(0,1),Rwc.at<float>(0,2),
+					Rwc.at<float>(1,0),Rwc.at<float>(1,1),Rwc.at<float>(1,2),
+					Rwc.at<float>(2,0),Rwc.at<float>(2,1),Rwc.at<float>(2,2));
+	tf::Vector3 V(twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
+
+	return tf::Transform(M, V);
+}

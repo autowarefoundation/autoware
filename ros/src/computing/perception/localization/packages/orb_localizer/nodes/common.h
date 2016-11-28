@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include "Frame.h"
 
 
 using std::string;
@@ -26,6 +27,8 @@ void recomputeNewCameraParameter (
 );
 
 void tf2positiondirection (const tf::Transform &pose, float positiondirection[6]);
+
+tf::Transform FramePose (ORB_SLAM2::Frame *cframe);
 
 
 #endif /* _ORB_UTILS_H */

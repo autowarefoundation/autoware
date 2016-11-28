@@ -665,6 +665,8 @@ void Tracking::MonocularInitialization()
             tcw.copyTo(Tcw.rowRange(0,3).col(3));
             mCurrentFrame.SetPose(Tcw);
 
+            cerr << Tcw << endl;
+
             CreateInitialMapMonocular();
         }
     }
