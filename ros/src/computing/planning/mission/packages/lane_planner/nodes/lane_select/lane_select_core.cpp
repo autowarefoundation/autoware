@@ -403,7 +403,9 @@ void LaneSelectNode::callbackFromLaneArray(const waypoint_follower::LaneArrayCon
     tuple_vec_.push_back(t);
   }
 
-  // lane_array_ = *msg;
+  current_lane_idx_ = -1;
+  right_lane_idx_ = -1;
+  left_lane_idx_ = -1;
   is_lane_array_subscribed_ = true;
 
   processing();
