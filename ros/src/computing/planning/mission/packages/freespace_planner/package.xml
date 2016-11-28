@@ -3,17 +3,25 @@
   <name>freespace_planner</name>
   <version>0.0.0</version>
   <description>The freespace_planner package</description>
-  <maintainer email="tomo@axe-inc.co.jp">Tomomi HORII</maintainer>
+  <maintainer email="antm678@ertl.jp">Tomohito ANDO</maintainer>
+
   <license>BSD</license>
+
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>tablet_socket</build_depend>
+
+  <build_depend>roscpp</build_depend>
   <build_depend>waypoint_follower</build_depend>
-  <build_depend>runtime_manager</build_depend>
-  <build_depend>gnss</build_depend>
-  <run_depend>tablet_socket</run_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
   <run_depend>waypoint_follower</run_depend>
-  <run_depend>runtime_manager</run_depend>
-  <run_depend>gnss</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+
+
   <export>
   </export>
 </package>
