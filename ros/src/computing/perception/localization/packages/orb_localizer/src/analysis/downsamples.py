@@ -77,7 +77,6 @@ def ImageCallback (imageMsg):
     logger.dataEx.acquire()
     cImage = logger.bridge.imgmsg_to_cv2(imageMsg, 'bgr8')
     logger.currentImage = copy (cImage)
-    print ("Got image")
     logger.dataEx.release()
     
 
@@ -88,14 +87,13 @@ def PoseCallback (poseMsg):
     # Put into datawriter
     logger.dataEx.acquire()
     logger.currentPose = copy(poseMsg.pose)
-    print ("Got pose")
     logger.dataEx.release()
     
 
 if __name__ == '__main__' :
     rospy.init_node ("ImagePoseSubscriber", anonymous=True)
     
-    logger = DataWriter('/tmp/resample') 
+    logger = DataWriter(sys.argv[1]) 
     
     rospy.Subscriber ("/camera/image_raw", Image, ImageCallback)
     rospy.Subscriber ("/filtered_ndt_current_pose", PoseStamped, PoseCallback)
