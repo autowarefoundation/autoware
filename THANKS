@@ -7,19 +7,26 @@ NEC CORPORATION
 DENSO CORPORATION
 PANASONIC CORPORATION
 TOSHIBA CORPORATION
+AISIN AW
+UDACITY
 
 Academic Partners
 -----------------
 AIST, JP
+Carnegie Mellon University, US
+Keio University, JP
 Nagasaki University, JP
+Nagoya Univeristy, JP
 Osaka University, JP
 Ritsumeikan University, JP
+The University of Tokyo, JP
 Waseda University, JP
 University of Pennsylvania, US
 
 Urban Drive WG
 --------------
 AISAN TECHNOLOGY
+AISIN AW
 ESOL
 GNSS TECHNOLOGIES
 HERE
@@ -28,15 +35,17 @@ IIC CORPORATION
 INCREMENT P CORPORATION
 INTEL
 KEENO CONSULTING
+SB Drive
 ZMP
 
 Maintainer
 ----------
-Nagoya University
-AXE
 Tier IV
+AXE
+Nagoya University
 
 Funding Acknowledgement
 -----------------------
+JST CREST "Risk and Anomaly Prediction for Fully Autonomous Driving"
 JST CREST "Modeling and Detecting Overtrust from Behavior Signals"
 JST COI STREAM "A Diverse and Individualized Social Innovation Hub"
