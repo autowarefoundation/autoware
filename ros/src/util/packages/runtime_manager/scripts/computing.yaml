@@ -972,7 +972,7 @@ params :
       desc    : clustering_distances desc sample
       label   : 'clustering_distances (no spaces)'
       kind    : str
-      v       : [15,30,45,60]
+      v       : '[15,30,45,60]'
       cmd_param :
         dash        : ''
         delim       : ':='   
@@ -980,7 +980,7 @@ params :
       desc    : clustering_thresholds desc sample
       label   : 'clustering_thresholds (no spaces)'
       kind    : str
-      v       : [0.5,1.1,1.6,2.1,2.6]
+      v       : '[0.5,1.1,1.6,2.1,2.6]'
       cmd_param :
         dash        : ''
         delim       : ':='
