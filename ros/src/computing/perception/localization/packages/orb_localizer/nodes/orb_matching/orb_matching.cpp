@@ -59,6 +59,10 @@ public:
 		// Result Publishers
 		posePublisher = rosnode.advertise<geometry_msgs::PoseStamped> ((string)SLAMSystem.fsSettings["Localization.poseTopic"], 1);
 		mTfBr = new tf::TransformBroadcaster();
+
+		// start of debug preparation
+		cout << std::fixed << setprecision(7);
+		visualDebugView = imageBuf->advertise("framebuffer", 1);
 	}
 
 
@@ -177,6 +181,15 @@ public:
 
 		rT2 = microsec_clock::local_time();
 //		cputimeDebug = (rT2-rT1).total_microseconds() * 1e-6;
+
+		// Debugging
+		SLAMSystem.getFrameDrawer()->DrawFrame();
+		cv::Mat framebufferDbg = SLAMSystem.getFrameDrawer()->getLastFrame();
+		cv_bridge::CvImage bagImage;
+		bagImage.image = framebufferDbg;
+		bagImage.header.stamp = ros::Time(lastImageTimestamp);
+		bagImage.encoding = "bgr8";
+		visualDebugView.publish(bagImage.toImageMsg());
 	}
 
 private:
@@ -471,6 +484,9 @@ private:
 	ORB_SLAM2::System &SLAMSystem;
 	ros::Publisher posePublisher;
 	tf::TransformBroadcaster *mTfBr;
+
+	// Debug
+	image_transport::Publisher visualDebugView;
 
 	string externalFrameFixed;
 	string externalFrameMoving;

@@ -1,5 +1,5 @@
 When launched by roslaunch, orb_mapping may be unable to save the map, 
-especially for large maps. This is because roslaunch escalates signal to 
+especially for large ones. This is because roslaunch escalates signal to 
 SIGTERM or even SIGKILL, when timeout is reached. The current solution is 
 to modify the script:
 
