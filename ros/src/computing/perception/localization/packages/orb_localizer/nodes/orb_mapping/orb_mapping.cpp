@@ -198,14 +198,6 @@ public:
 
 		SLAMSystem.TrackMonocular(image, imageTime);
 
-//		if (SLAMSystem.getTracker()->trackingIsGood()) {
-//			tf::Transform currentPose = FramePose(&SLAMSystem.getTracker()->mCurrentFrame);
-//			double roll, pitch, yaw;
-//			tf::Vector3 o = currentPose.getOrigin();
-//			currentPose.getBasis().getRPY(roll, pitch, yaw);
-//			fprintf (stderr, "Position: %f %f %f ", o.x(), o.y(), o.z());
-//			fprintf (stderr, "* Rotation: %f %f %f\n", roll, pitch, yaw);
-//		}
 	}
 
 
@@ -254,26 +246,25 @@ int main (int argc, char *argv[])
 	string configFile;
 	nodeHandler.getParam("configuration_file", configFile);
 
-    ORB_SLAM2::System SLAM(orbVocabFile,
-    	configFile,
+	ORB_SLAM2::System SLAM(orbVocabFile,
+		configFile,
 		ORB_SLAM2::System::MONOCULAR,
 		true,
 		mapPath,
-    	System::MAPPING);
+		System::MAPPING);
 
-    ORB_Mapper Mapper (SLAM, nodeHandler);
+	ORB_Mapper Mapper (SLAM, nodeHandler);
 
-    string imageTopic;
-    nodeHandler.getParam("image_topic", imageTopic);
-    Mapper.imageSub = Mapper.imageBuf->subscribe (imageTopic, 1,  &ORB_Mapper::imageCallback, &Mapper, Mapper.th);
+	string imageTopic;
+	nodeHandler.getParam("image_topic", imageTopic);
+	Mapper.imageSub = Mapper.imageBuf->subscribe (imageTopic, 1,  &ORB_Mapper::imageCallback, &Mapper, Mapper.th);
 
-    ros::spin();
-
-    SLAM.Shutdown();
+	ros::spin();
 //    Mapper.doStop = true;
 //    Mapper.externalLocalizerThread->join();
 
     ros::shutdown();
+    SLAM.Shutdown();
 
     return 0;
 }

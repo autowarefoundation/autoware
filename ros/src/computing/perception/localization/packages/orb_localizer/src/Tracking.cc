@@ -278,6 +278,8 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 
 void Tracking::Track()
 {
+//	printf ("fx: %f, fy: %f, cx: %f, cy: %f\n", mK.at<float>(0,0), mK.at<float>(1,1), mK.at<float>(0,2), mK.at<float>(1,2));
+
     if(mState==NO_IMAGES_YET)
     {
         mState = NOT_INITIALIZED;

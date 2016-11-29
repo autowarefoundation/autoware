@@ -12,7 +12,7 @@ find_package (catkin REQUIRED
 		std_msgs
 )
 
-LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_NAME_SOURCE_DIR}/cmake_modules)
+LIST(APPEND CMAKE_MODULE_PATH ${SOURCE_DIR}/cmake_modules)
 
 # Force using C++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
@@ -21,9 +21,9 @@ find_package (Boost REQUIRED COMPONENTS system python)
 find_package (OpenCV REQUIRED)
 find_package (OpenGL REQUIRED)
 find_package (GLEW REQUIRED)
-find_package (X11 REQUIRED)
 find_package (BLAS REQUIRED)
 find_package (LAPACK REQUIRED)
+find_package (GLUT REQUIRED)
 find_package (OpenMP)
 find_package (Eigen3 3.1.0 REQUIRED)
 find_package (PCL 1.7 REQUIRED COMPONENTS common octree)
@@ -82,7 +82,6 @@ include_directories (
 # Important libraries
 	${OpenCV_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
-	${Pangolin_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${PYTHON_INCLUDE_DIR}
 	
@@ -128,6 +127,7 @@ list (APPEND LINK_LIBRARIES
 	${OPENGL_LIBRARIES}
 	${GLEW_LIBRARIES}
 	${PCL_LIBRARIES}
+	${GLUT_LIBRARIES}
 )
 
 list (APPEND ORB_BIN_LINKS
