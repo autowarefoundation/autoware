@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// ROS Includes
+// ROS includes
 #include <ros/ros.h>
 
 #include "lane_select_core.h"
