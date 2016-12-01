@@ -5,9 +5,8 @@
  *      Author: sujiwo
  */
 
-#include "ImageGrabber.h"
+#include "../__nodes/ImageGrabber.h"
 
-// XXX: Change to appropriate custom message
 #include <std_msgs/UInt32.h>
 #include <std_msgs/Float64.h>
 

@@ -16,7 +16,8 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseArray.h>
-#include "ImageGrabber.h"
+
+#include "../__nodes/ImageGrabber.h"
 
 
 using namespace std;

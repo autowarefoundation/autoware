@@ -26,7 +26,7 @@
 #include "System.h"
 #include "Map.h"
 #include "KeyFrame.h"
-#include "ImageGrabber.h"
+#include "../__nodes/ImageGrabber.h"
 
 
 using namespace std;

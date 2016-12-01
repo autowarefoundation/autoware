@@ -17,7 +17,6 @@
 #include "Frame.h"
 #include "KeyFrame.h"
 #include "Converter.h"
-#include "utils.h"
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
@@ -30,6 +29,7 @@
 // I Know this is unstable
 #include <tf2_msgs/TFMessage.h>
 #include <orb_localizer/debug.h>
+#include "../__nodes/utils.h"
 
 using namespace std;
 using ORB_SLAM2::KeyFrame;

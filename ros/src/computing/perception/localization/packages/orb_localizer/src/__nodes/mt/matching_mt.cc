@@ -4,14 +4,13 @@
 #include <iostream>
 
 #include "Map.h"
-#include "TrackingThread.h"
-#include "SystemMT.h"
-
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
+#include "../../__nodes/mt/SystemMT.h"
+#include "../../__nodes/mt/TrackingThread.h"
 
 
 

@@ -5,8 +5,9 @@
  *      Author: sujiwo
  */
 
-#include "DebugMT.h"
-#include "TrackingThread.h"
+#include "../../__nodes/mt/DebugMT.h"
+
+#include "../../__nodes/mt/TrackingThread.h"
 
 
 

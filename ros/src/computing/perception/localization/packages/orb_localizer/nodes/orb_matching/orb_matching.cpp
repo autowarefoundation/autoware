@@ -57,7 +57,9 @@ public:
 		imageBuf = new image_transport::ImageTransport(rosnode);
 
 		// Result Publishers
-		posePublisher = rosnode.advertise<geometry_msgs::PoseStamped> ((string)SLAMSystem.fsSettings["Localization.poseTopic"], 1);
+		string poseTopic;
+		rosnode.getParam("pose_topic", poseTopic);
+		posePublisher = rosnode.advertise<geometry_msgs::PoseStamped> (poseTopic, 1);
 		mTfBr = new tf::TransformBroadcaster();
 
 		// start of debug preparation
@@ -510,13 +512,19 @@ public:
 
 int main (int argc, char *argv[])
 {
-	const string mapPath = (argc==3) ? argv[2] : string();
+//	const string mapPath = (argc==3) ? argv[2] : string();
 	const string orbVocabFile (ORB_SLAM_VOCABULARY);
-	const string configFile = argv[1];
+//	const string configFile = argv[1];
 
-	ros::init(argc, argv, "orb_matching");
+	ros::init(argc, argv, "orb_matching", ros::init_options::AnonymousName);
 	ros::start();
-	ros::NodeHandle nodeHandler;
+	ros::NodeHandle nodeHandler ("~");
+
+	string mapPath;
+	nodeHandler.getParam("map_file", mapPath);
+
+	string configFile;
+	nodeHandler.getParam("configuration_file", configFile);
 
 	ORB_SLAM2::System SLAM(orbVocabFile,
 		configFile,
@@ -526,7 +534,9 @@ int main (int argc, char *argv[])
 		System::LOCALIZATION);
 
 	ORB_Matcher Matcher (SLAM, nodeHandler);
-	Matcher.imageSub = Matcher.imageBuf->subscribe ((string)SLAM.fsSettings["Camera.topic"], 1, &ORB_Matcher::imageCallback, &Matcher, Matcher.th);
+	string imageTopic;
+	nodeHandler.getParam("image_topic", imageTopic);
+	Matcher.imageSub = Matcher.imageBuf->subscribe (imageTopic, 1, &ORB_Matcher::imageCallback, &Matcher, Matcher.th);
 
 	ros::spin();
 

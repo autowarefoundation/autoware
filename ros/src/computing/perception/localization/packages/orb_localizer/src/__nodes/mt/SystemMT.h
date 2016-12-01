@@ -17,10 +17,10 @@
 #include <tf/tf.h>
 
 //#include "System.h"
-#include "TrackingThread.h"
 #include "KeyFrameDatabase.h"
 #include "ORBVocabulary.h"
 #include "ParticleFilter.h"
+#include "../../__nodes/mt/TrackingThread.h"
 
 //#include <sensor_msgs/Image.h>
 //#include <sensor_msgs/image_encodings.h>

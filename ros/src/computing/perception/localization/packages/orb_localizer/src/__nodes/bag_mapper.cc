@@ -9,15 +9,14 @@
 #include <signal.h>
 #include <iostream>
 #include <string>
-#include "ImageGrabber.h"
-#include "utils.h"
-
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CompressedImage.h>
 
 #include <boost/foreach.hpp>
+#include "../__nodes/ImageGrabber.h"
+#include "../__nodes/utils.h"
 
 
 using namespace std;

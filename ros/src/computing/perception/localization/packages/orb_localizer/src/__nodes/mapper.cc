@@ -21,7 +21,8 @@
 
 #include <iostream>
 #include <string>
-#include "ImageGrabber.h"
+
+#include "../__nodes/ImageGrabber.h"
 
 
 

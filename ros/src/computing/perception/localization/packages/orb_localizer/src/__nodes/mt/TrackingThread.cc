@@ -1,11 +1,11 @@
-#include "TrackingThread.h"
-#include "SystemMT.h"
+#include "../../__nodes/mt/TrackingThread.h"
+
 #include "System.h"
 // XXX: Refactor ImageGrabber.{cc,h}
-#include "../ImageGrabber.h"
-#include "DebugMT.h"
-
 #include <tf/tf.h>
+#include "../../__nodes/ImageGrabber.h"
+#include "../../__nodes/mt/DebugMT.h"
+#include "../../__nodes/mt/SystemMT.h"
 
 
 using ORB_SLAM2::Map;
