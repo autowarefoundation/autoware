@@ -45,36 +45,51 @@ private:
 
 	std::string model_file_path_;
 
+	FILE *model_file_handle_;
 	svm_model* model_ptr_;
 
 	void CloudClustersCallback(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
 	void ClassifyFpfhDescriptor(const std::vector<float>& in_fpfh_descriptor, double& out_label, std::vector<double>& out_scores, double& out_sum_scores);
 	svm_model* LoadSvmModel(const std::string& in_model_path);
+
+	void CloseModel();
 };
+
+void SvmDetect::CloseModel()
+{
+	svm_free_and_destroy_model(&model_ptr_);
+	fclose(model_file_handle_);
+}
 
 SvmDetect::~SvmDetect()
 {
-	svm_free_and_destroy_model(&model_ptr_);
+	CloseModel();
 }
 
 SvmDetect::SvmDetect() :
-		node_handle_("~"),
-		model_ptr_(NULL)
+		node_handle_("~")
 {
 
 }
 
 svm_model* SvmDetect::LoadSvmModel(const std::string& in_model_path)
 {
-	FILE *input;
-	input = fopen(in_model_path.c_str(),"r");
-	if(input == NULL)
+
+	model_file_handle_ = fopen(in_model_path.c_str(),"r");
+	if(model_file_handle_ == NULL)
 	{
 		ROS_INFO("SvmDetect. can't open model file %s", in_model_path.c_str());
 		return NULL;
 	}
 
 	svm_model* model = svm_load_model(in_model_path.c_str());
+
+	if(svm_check_probability_model(model) == 0)
+	{
+		CloseModel();
+		ROS_INFO("SvmDetect. Model does not support probability estimates");
+		return NULL;
+	}
 
 	return model;
 }
@@ -127,7 +142,7 @@ void SvmDetect::ClassifyFpfhDescriptor(const std::vector<float>& in_fpfh_descrip
 	features[feature_number].index = -1;//end of the linked list
 
 	double *dec_values = (double *) malloc(sizeof(double) * num_class*(num_class-1)/2);
-	out_label = svm_predict_values(model_ptr_, features, dec_values);
+	out_label = svm_predict_probability(model_ptr_, features, dec_values);
 	out_scores.clear();
 	out_sum_scores = 0.0;
 	std::cout << " predicted value: " << out_label << ": ";
@@ -167,23 +182,24 @@ void SvmDetect::CloudClustersCallback(const lidar_tracker::CloudClusterArray::Pt
 			switch(svm_label_int)
 			{
 				case 0:
-					svm_class_label_str = "other";
+					svm_class_label_str = "o ";
 					break;
 				case 1:
-					svm_class_label_str = "car";
+					svm_class_label_str = "c ";
 					break;
 				case 2:
-					svm_class_label_str = "bicycle";
+					svm_class_label_str = "b ";
 					break;
 				case 3:
-					svm_class_label_str = "person";
+					svm_class_label_str = "p ";
 					break;
 				default:
-					svm_class_label_str = "unknown";
+					svm_class_label_str = "u ";
 					break;
 			}
 			float class_score = label_scores[svm_label_int-1]/sum_scores;
 			current_cluster.label = svm_class_label_str;
+			current_cluster.score = label_scores[svm_label_int-1];
 
 			std::cout << "Object detected as:" << svm_label_float << " str " << svm_class_label_str << " score: " << class_score << std::endl;
 			classified_clusters.clusters.push_back(current_cluster);
@@ -203,7 +219,12 @@ void SvmDetect::CloudClustersCallback(const lidar_tracker::CloudClusterArray::Pt
 
 			std::stringstream float_str;
 			float_str << std::fixed << std::setprecision(2) << class_score;
-			pictogram_cluster.character = svm_class_label_str + float_str.str();
+
+			//if (label_scores[svm_label_int-1]>0.9)
+				pictogram_cluster.character = svm_class_label_str + float_str.str();
+			//else
+			//	pictogram_cluster.character = "";
+
 
 			pictograms_clusters.pictograms.push_back(pictogram_cluster);
 		}
