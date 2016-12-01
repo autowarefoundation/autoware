@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _WAYPOINT_LOADER_CORE_H_
-#define _WAYPOINT_LOADER_CORE_H_
+#ifndef WAYPOINT_LOADER_CORE_H
+#define WAYPOINT_LOADER_CORE_H
 
 // ROS includes
 #include <ros/ros.h>
@@ -116,4 +116,4 @@ void parseColumns(const std::string &line, std::vector<std::string> *columns);
 size_t countColumns(const std::string& line);
 
 }
-#endif  // _WAYPOINT_LOADER_CORE_H_
+#endif  // WAYPOINT_LOADER_CORE_H
