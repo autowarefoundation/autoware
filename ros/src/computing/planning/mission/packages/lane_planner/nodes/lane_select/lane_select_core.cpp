@@ -149,18 +149,24 @@ void LaneSelectNode::processing()
     return;
   }
 
-  // if closest waypoint on current lane is not -1,
-  if (std::get<1>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_))) != -1)
+  // if closest waypoint on current lane is -1,
+  if (std::get<1>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_))) == -1)
   {
-    const int32_t &change_flag =
-        std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))
-            .waypoints.at(static_cast<uint32_t>(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))))
-            .change_flag;
-
-    // if change flag of current_lane is left or right, lane change
-    if (change_flag == enumToInteger(ChangeFlag::right) || change_flag == enumToInteger(ChangeFlag::left))
-      changeLane(change_flag);
+    current_lane_idx_ = -1;
+    right_lane_idx_ = -1;
+    left_lane_idx_ = -1;
+    return;
   }
+
+  findNeighborLanes();
+  const int32_t &change_flag =
+      std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))
+          .waypoints.at(static_cast<uint32_t>(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))))
+          .change_flag;
+
+  // if change flag of current_lane is left or right, lane change
+  if (change_flag == enumToInteger(ChangeFlag::right) || change_flag == enumToInteger(ChangeFlag::left))
+    changeLane(change_flag);
 
   publish();
   return;
