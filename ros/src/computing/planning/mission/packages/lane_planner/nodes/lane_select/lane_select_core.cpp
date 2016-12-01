@@ -396,6 +396,8 @@ void LaneSelectNode::publish()
 
 void LaneSelectNode::callbackFromLaneArray(const waypoint_follower::LaneArrayConstPtr &msg)
 {
+  tuple_vec_.clear();
+  tuple_vec_.shrink_to_fit();
   tuple_vec_.reserve(msg->lanes.size());
   for (const auto &el : msg->lanes)
   {
