@@ -537,7 +537,7 @@ int main (int argc, char *argv[])
 	string imageTopic;
 	nodeHandler.getParam("image_topic", imageTopic);
 	Matcher.imageSub = Matcher.imageBuf->subscribe (imageTopic, 1, &ORB_Matcher::imageCallback, &Matcher, Matcher.th);
-
+	cerr << "ORB Localizer ready" << endl;
 	ros::spin();
 
 	SLAM.Shutdown();
