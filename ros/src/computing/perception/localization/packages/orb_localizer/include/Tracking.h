@@ -70,6 +70,7 @@ public:
     // The focal length should be similar or scale prediction will fail when projecting points
     // TODO: Modify MapPoint::PredictScale to take into account focal length
     void ChangeCalibration(const string &strSettingPath);
+    void ChangeCalibration(const double fx, const double fy, const double cx, const double cy);
 
     // Use this function if you have deactivated local mapping and you only want to localize the camera.
     void InformOnlyTracking(const bool &flag);

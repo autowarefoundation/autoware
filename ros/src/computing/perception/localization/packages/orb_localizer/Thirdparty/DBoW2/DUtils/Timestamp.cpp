@@ -30,7 +30,7 @@
 #include <sys/time.h>
 #endif
 
-#include "DUtils/Timestamp.h"
+#include "Timestamp.h"
 
 using namespace std;
 
