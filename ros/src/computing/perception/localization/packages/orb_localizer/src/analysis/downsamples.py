@@ -32,6 +32,7 @@ class DataWriter:
         self.currentPose = None
         self.fps = fps
         self.bridge = CvBridge()
+        self.currentTimestamp = 0.0
 
         # Prepare multiprocessing
         self.dataEx = Lock()
@@ -87,6 +88,7 @@ def PoseCallback (poseMsg):
     
     # Put into datawriter
     logger.dataEx.acquire()
+    logger.currentTimestamp = poseMsg.header.stamp.to_sec()
     logger.currentPose = copy(poseMsg.pose)
     logger.dataEx.release()
     

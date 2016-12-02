@@ -183,3 +183,15 @@ target_link_libraries (
 		${ORB_BIN_LINKS}
 		${LINK_LIBRARIES}
 )
+
+
+add_executable (
+	test_single
+		nodes/test_single.cpp
+)
+
+target_link_libraries (
+	test_single
+		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}
+)

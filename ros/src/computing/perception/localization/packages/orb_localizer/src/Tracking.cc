@@ -276,6 +276,23 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 }
 
 
+Transform3 Tracking::LocalizeImage (const cv::Mat &image, const double &timestamp)
+{
+	mImGray = image;
+
+	if(mbRGB)
+		cvtColor(mImGray,mImGray,CV_RGB2GRAY);
+	else
+		cvtColor(mImGray,mImGray,CV_BGR2GRAY);
+
+	mCurrentFrame = Frame (mImGray, timestamp, mpIniORBextractor, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+
+	bool bOK = Relocalization();
+	if (bOK) {
+
+	}
+}
+
 void Tracking::Track()
 {
 //	printf ("fx: %f, fy: %f, cx: %f, cy: %f\n", mK.at<float>(0,0), mK.at<float>(1,1), mK.at<float>(0,2), mK.at<float>(1,2));

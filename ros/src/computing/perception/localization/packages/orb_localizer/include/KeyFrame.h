@@ -213,6 +213,7 @@ public:
     int mnMaxY;
     cv::Mat mK;
 
+    void debug (const string &dirname="debug");
 
     // The following variables need to be accessed trough a mutex to be thread safe.
 protected:
