@@ -332,6 +332,66 @@ public:
 	void ReadAllData(std::vector<AisanLane>& data_list);
 };
 
+class AisanStopLineFileReader : public SimpleReaderBase
+{
+public:
+
+	struct AisanStopLine
+	{
+		int 	ID;
+		int 	LID;
+		int 	TLID;
+		int 	SignID;
+		int 	LinkID;
+	};
+
+	AisanStopLineFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	~AisanStopLineFileReader(){}
+
+	bool ReadNextLine(AisanStopLine& data);
+	void ReadAllData(std::vector<AisanStopLine>& data_list);
+};
+
+class AisanRoadSignFileReader : public SimpleReaderBase
+{
+public:
+
+	struct AisanRoadSign
+	{
+		int 	ID;
+		int 	VID;
+		int 	PLID;
+		int 	Type;
+		int 	LinkID;
+	};
+
+	AisanRoadSignFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	~AisanRoadSignFileReader(){}
+
+	bool ReadNextLine(AisanRoadSign& data);
+	void ReadAllData(std::vector<AisanRoadSign>& data_list);
+};
+
+class AisanSignalFileReader : public SimpleReaderBase
+{
+public:
+
+	struct AisanSignal
+	{
+		int 	ID;
+		int 	VID;
+		int 	PLID;
+		int 	Type;
+		int 	LinkID;
+	};
+
+	AisanSignalFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	~AisanSignalFileReader(){}
+
+	bool ReadNextLine(AisanSignal& data);
+	void ReadAllData(std::vector<AisanSignal>& data_list);
+};
+
 } /* namespace UtilityHNS */
 
 #endif /* DATARW_H_ */

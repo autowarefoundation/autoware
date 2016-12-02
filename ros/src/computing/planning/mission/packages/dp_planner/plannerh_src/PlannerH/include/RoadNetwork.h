@@ -536,6 +536,9 @@ class RoadNetwork
 {
 public:
 	std::vector<RoadSegment> roadSegments;
+	std::vector<TrafficLight> trafficLights;
+	std::vector<StopLine> stopLines;
+
 };
 
 class VehicleState : public ObjTimeStamp

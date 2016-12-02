@@ -629,4 +629,94 @@ void AisanIntersectionFileReader::ReadAllData(vector<AisanIntersection>& data_li
 		data_list.push_back(data);
 }
 
+bool AisanStopLineFileReader::ReadNextLine(AisanStopLine& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 5) return false;
+
+		data.ID 	= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.LID 	= strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+		data.TLID 	= strtol(lineData.at(0).at(2).c_str(), NULL, 10);
+		data.SignID = strtol(lineData.at(0).at(3).c_str(), NULL, 10);
+		data.LinkID = strtol(lineData.at(0).at(4).c_str(), NULL, 10);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void AisanStopLineFileReader::ReadAllData(vector<AisanStopLine>& data_list)
+{
+	data_list.clear();
+	AisanStopLine data;
+	//double logTime = 0;
+	while(ReadNextLine(data))
+		data_list.push_back(data);
+}
+
+bool AisanRoadSignFileReader::ReadNextLine(AisanRoadSign& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 5) return false;
+
+		data.ID 	= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.VID 	= strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+		data.PLID 	= strtol(lineData.at(0).at(2).c_str(), NULL, 10);
+		data.Type 	= strtol(lineData.at(0).at(3).c_str(), NULL, 10);
+		data.LinkID = strtol(lineData.at(0).at(4).c_str(), NULL, 10);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void AisanRoadSignFileReader::ReadAllData(vector<AisanRoadSign>& data_list)
+{
+	data_list.clear();
+	AisanRoadSign data;
+	//double logTime = 0;
+	while(ReadNextLine(data))
+		data_list.push_back(data);
+}
+
+bool AisanSignalFileReader::ReadNextLine(AisanSignal& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 5) return false;
+
+		data.ID 	= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.VID 	= strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+		data.PLID 	= strtol(lineData.at(0).at(2).c_str(), NULL, 10);
+		data.Type 	= strtol(lineData.at(0).at(3).c_str(), NULL, 10);
+		data.LinkID = strtol(lineData.at(0).at(4).c_str(), NULL, 10);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void AisanSignalFileReader::ReadAllData(vector<AisanSignal>& data_list)
+{
+	data_list.clear();
+	AisanSignal data;
+	//double logTime = 0;
+	while(ReadNextLine(data))
+		data_list.push_back(data);
+}
+
 } /* namespace UtilityHNS */
