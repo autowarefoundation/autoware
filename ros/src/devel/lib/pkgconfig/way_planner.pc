@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: way_planner
+Description: Description of way_planner
+Version: 0.0.1
+Cflags: -I/home/user/Autoware/Autoware/ros/src/computing/planning/mission/packages/way_planner/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib -lway_planner
+Requires: geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower

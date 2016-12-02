@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: vector_map_server
+Description: Description of vector_map_server
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/devel/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: message_runtime roscpp geometry_msgs waypoint_follower visualization_msgs vector_map_msgs vector_map

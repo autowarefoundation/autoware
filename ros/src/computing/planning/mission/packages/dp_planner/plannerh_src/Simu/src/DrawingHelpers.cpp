@@ -281,7 +281,7 @@ void DrawingHelpers::DrawPrePreparedPolygons(std::vector<std::vector<PlannerHNS:
 
 }
 
-void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_points, const double& z, const double& width, float color[3])
+void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_points, const double& z, const double& width, float color[3], bool bGadient)
 {
 	if(path_points.size()==0) return;
 
@@ -296,9 +296,12 @@ void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_
 	for(int i=1; i < size; i+=2)
 	{
 		p2 = path_points[i];
-		localColor[0] = color[0] * (float)(i+20)*3/(float)size;
-		localColor[1] = color[1] * (float)(i+20)*3/(float)size;
-		localColor[2] = color[2] * (float)(i+20)*3/(float)size;
+		if(bGadient)
+		{
+			localColor[0] = color[0] * (float)(i+20)*3/(float)size;
+			localColor[1] = color[1] * (float)(i+20)*3/(float)size;
+			localColor[2] = color[2] * (float)(i+20)*3/(float)size;
+		}
 		glColor3f(localColor[0],localColor[1],localColor[2]);
 
 		DrawLinePoygonFromCenterX(p1, z, p2, z, width, 0, prev_point);

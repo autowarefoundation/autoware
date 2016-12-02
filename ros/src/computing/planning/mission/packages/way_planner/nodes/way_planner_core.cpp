@@ -323,8 +323,11 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 		dts.push_back(dt);
 	}
 
+	std::vector<UtilityHNS::AisanAreasFileReader::AisanArea> areas;
+	std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection> inters;
+
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, origin, out_map);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts,inters, areas, origin, out_map);
 }
 
 void way_planner_core::PlannerMainLoop()

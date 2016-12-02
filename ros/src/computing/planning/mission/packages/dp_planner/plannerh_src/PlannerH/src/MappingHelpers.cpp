@@ -11,11 +11,13 @@
 #include "proj_api.h"
 #include "geo_pos_conv.hh"
 #include "math.h"
+#include <fstream>
 
 
 using namespace UtilityHNS;
 using namespace std;
 #define FIND_LEFT_RIGHT_LANES
+#define SMOOTH_MAP_WAYPOINTS
 
 
 namespace PlannerHNS {
@@ -70,6 +72,8 @@ int MappingHelpers::GetLaneIdByWaypointId(const int& id,std::vector<Lane>& lanes
 void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 		const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
 		const std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine>& dt_data,
+		const std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection>& intersection_data,
+		const std::vector<UtilityHNS::AisanAreasFileReader::AisanArea>& area_data,
 		const GPSPoint& origin, RoadNetwork& map)
 {
 	vector<Lane> roadLanes;
@@ -84,6 +88,9 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 			if(laneIDSeq != 0) //first lane
 			{
 				lane_obj.toIds.push_back(prev_FLID);
+#ifdef SMOOTH_MAP_WAYPOINTS
+				PlanningHelpers::SmoothPath(lane_obj.points, 0.49, 0.15 , 0.01);
+#endif
 				roadLanes.push_back(lane_obj);
 //				if(lane_obj.points.size() <= 1)
 //					prev_FLID = 0;
@@ -342,11 +349,15 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
 	string center_lines_info = vectoMapPath + "dtlane.csv";
 	string lane_info = vectoMapPath + "lane.csv";
 	string node_info = vectoMapPath + "node.csv";
+	string area_info = vectoMapPath + "area.csv";
+	string intersection_info = vectoMapPath + "intersection.csv";
 
 	AisanCenterLinesFileReader  center_lanes(center_lines_info);
 	AisanLanesFileReader lanes(lane_info);
 	AisanPointsFileReader points(laneLinesDetails);
 	AisanNodesFileReader nodes(node_info);
+	AisanAreasFileReader areas(node_info);
+	AisanIntersectionFileReader intersections(node_info);
 
 
 	vector<AisanNodesFileReader::AisanNode> nodes_data;
@@ -361,8 +372,14 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
 	vector<AisanCenterLinesFileReader::AisanCenterLine> dt_data;
 	center_lanes.ReadAllData(dt_data);
 
+	vector<AisanAreasFileReader::AisanArea> area_data;
+	center_lanes.ReadAllData(dt_data);
 
-	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data,GetTransformationOrigin(), map);
+	vector<AisanIntersectionFileReader::AisanIntersection> intersection_data;
+	center_lanes.ReadAllData(dt_data);
+
+
+	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, GetTransformationOrigin(), map);
 
 
 	WayPoint origin = GetFirstWaypoint(map);
@@ -450,16 +467,16 @@ bool MappingHelpers::GetWayPoint(const int& id, const int& laneID,const double& 
 					wp.id = id;
 					wp.laneId = laneID;
 					wp.v = refVel;
-					double integ_part = points.at(p).L;
-					double deg = trunc(points.at(p).L);
-					double min = trunc((points.at(p).L - deg) * 100.0) / 60.0;
-					double sec = modf((points.at(p).L - deg) * 100.0, &integ_part)/36.0;
-					double L =  deg + min + sec;
+//					double integ_part = points.at(p).L;
+//					double deg = trunc(points.at(p).L);
+//					double min = trunc((points.at(p).L - deg) * 100.0) / 60.0;
+//					double sec = modf((points.at(p).L - deg) * 100.0, &integ_part)/36.0;
+//					double L =  deg + min + sec;
 
-					deg = trunc(points.at(p).B);
-					min = trunc((points.at(p).B - deg) * 100.0) / 60.0;
-					sec = modf((points.at(p).B - deg) * 100.0, &integ_part)/36.0;
-					double B = deg + min + sec;
+//					deg = trunc(points.at(p).B);
+//					min = trunc((points.at(p).B - deg) * 100.0) / 60.0;
+//					sec = modf((points.at(p).B - deg) * 100.0, &integ_part)/36.0;
+//					double B = deg + min + sec;
 
 					wp.pos = GPSPoint(points.at(p).Ly + origin.x, points.at(p).Bx + origin.y, points.at(p).H + origin.z, dtpoints.at(dtp).Dir);
 
@@ -484,8 +501,14 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 	TiXmlElement* pHeadElem = 0;
 	TiXmlElement* pElem = 0;
 
-	TiXmlDocument doc(kmlFile);
+	ifstream f(kmlFile.c_str());
+	if(!f.good())
+	{
+		cout << "Can't Open KML Map File: (" << kmlFile << ")" << endl;
+		return;
+	}
 
+	TiXmlDocument doc(kmlFile);
 	try
 	{
 		doc.LoadFile();
@@ -511,6 +534,9 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 		{
 			//if(laneLinksList.at(j).roadId == roadLinksList.at(i).id)
 			{
+#ifdef SMOOTH_MAP_WAYPOINTS
+				PlanningHelpers::SmoothPath(laneLinksList.at(j).points, 0.49, 0.15 , 0.01);
+#endif
 				roadLinksList.at(i).Lanes.push_back(laneLinksList.at(j));
 			}
 		}
@@ -578,6 +604,13 @@ void MappingHelpers::WriteKML(const string& kmlFile, const string& kmlTemplat, R
 	//First, Get the main element
 	TiXmlElement* pHeadElem = 0;
 	TiXmlElement* pElem = 0;
+
+	ifstream f(kmlTemplat.c_str());
+	if(!f.good())
+	{
+		cout << "Can't Open KML Template File: (" << kmlFile << ")" << endl;
+		return;
+	}
 
 	TiXmlDocument doc(kmlTemplat);
 	if(!doc.LoadFile())

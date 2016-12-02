@@ -24,6 +24,8 @@ public:
 	static void ConstructRoadNetworkFromRosMessage(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 			const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
 			const std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine>& dt_data,
+			const std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection>& intersection_data,
+			const std::vector<UtilityHNS::AisanAreasFileReader::AisanArea>& area_data,
 			const GPSPoint& origin, RoadNetwork& map);
 
 	static void ConstructRoadNetworkFromDataFiles(const std::string vectoMapPath, RoadNetwork& map);

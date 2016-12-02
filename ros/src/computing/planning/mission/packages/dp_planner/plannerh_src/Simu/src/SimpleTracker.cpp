@@ -9,6 +9,14 @@
 #include "MatrixOperations.h"
 #include "PlanningHelpers.h"
 
+#include <iostream>
+#include <vector>
+#include <cstdio>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/video/tracking.hpp>
+
 namespace SimulationNS
 {
 
@@ -16,7 +24,6 @@ using namespace PlannerHNS;
 
 SimpleTracker::SimpleTracker()
 {
-
 	iTracksNumber = 1;
 	m_Car.center.cost = 0;
 	m_Car.l = 4.5;
@@ -141,14 +148,14 @@ void SimpleTracker::AssociateObjects()
 
 void SimpleTracker::CreateTrack(DetectedObject& o)
 {
-	KFTrack* pT = new KFTrack(o.center.pos.x, o.center.pos.y,o.center.pos.a, o.id);
+	KFTrackV* pT = new KFTrackV(o.center.pos.x, o.center.pos.y,o.center.pos.a, o.id);
 	o.id = pT->GetTrackID();
 	pT->UpdateTracking(o.center.pos.x, o.center.pos.y, o.center.pos.a,
 			o.center.pos.x, o.center.pos.y,o.center.pos.a, o.center.v);
 	m_Tracks.push_back(pT);
 }
 
-KFTrack* SimpleTracker::FindTrack(long index)
+KFTrackV* SimpleTracker::FindTrack(long index)
 {
 	for(unsigned int i=0; i< m_Tracks.size(); i++)
 	{
@@ -165,7 +172,7 @@ void SimpleTracker::Track(std::vector<DetectedObject>& objects_list)
 	{
 		if(objects_list[i].id >= 0)
 		{
-			KFTrack* pT = FindTrack(objects_list[i].id);
+			KFTrackV* pT = FindTrack(objects_list[i].id);
 			if(pT)
 			{
 				pT->UpdateTracking(objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,

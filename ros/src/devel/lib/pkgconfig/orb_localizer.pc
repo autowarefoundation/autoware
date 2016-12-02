@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: orb_localizer
+Description: Description of orb_localizer
+Version: 2.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/devel/include -I/home/user/Autoware/Autoware/ros/src/computing/perception/localization/packages/orb_localizer/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: message_runtime

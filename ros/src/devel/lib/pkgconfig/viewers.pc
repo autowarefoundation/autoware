@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: viewers
+Description: Description of viewers
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: std_msgs message_runtime runtime_manager points2image

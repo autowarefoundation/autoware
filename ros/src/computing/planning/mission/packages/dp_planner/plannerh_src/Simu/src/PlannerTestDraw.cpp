@@ -22,7 +22,7 @@ using namespace UtilityHNS;
 #define VectorMap "NagoyaUniversity/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
-#define kmlMap	"ToyotaKML.kml"
+#define kmlMap	"/home/user/data/ToyotaCity1/map/kml/ToyotaKML.kml"
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -65,8 +65,7 @@ PlannerTestDraw::PlannerTestDraw()
 //	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
 //	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
-	PlannerHNS::MappingHelpers::LoadKML(UtilityH::GetHomeDirectory() +
-			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName + kmlMap, m_RoadMap);
+	PlannerHNS::MappingHelpers::LoadKML(kmlMap, m_RoadMap);
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
@@ -94,7 +93,7 @@ PlannerTestDraw::PlannerTestDraw()
 	m_GoNormal.pos = PlannerHNS::GPSPoint(257.398966, 146.998802,0,0);
 	m_bStartSlow = false;
 
-	m_pMap = new PlannerHNS::GridMap(0,0,60,60,1.0, true);
+	m_pMap = new PlannerHNS::GridMap(0,0,60,60,5.0, true);
 
 //	//Tsukuba Test
 //	m_ControlParams.Steering_Gain = PID_CONST(0.4, 0.1, 0.1);
@@ -371,7 +370,7 @@ void PlannerTestDraw::AddSimulatedCar(const double& x,const double& y, const dou
 
 	carInfo.width  = 1.8;
 	carInfo.length = 4.1;
-	carInfo.max_speed_forward = 2;
+	carInfo.max_speed_forward = v;
 	carInfo.max_steer_angle = 0.42;
 	carInfo.min_steer_angle = -0.42;
 	carInfo.turning_radius = 4.0;

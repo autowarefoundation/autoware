@@ -21,7 +21,7 @@ std::string DataRW::PathLogFolderName 		= "GeneratedTrajectories/";
 std::string DataRW::StatesLogFolderName 	= "BehaviorsGenerated/";
 std::string DataRW::SimulationFolderName 	= "SimulationData/";
 std::string DataRW::KmlMapsFolderName 		= "KmlMaps/";
-std::string DataRW::VectorMapsFolderName 	= "VectorMaps/";
+
 
 DataRW::DataRW()
 {
@@ -288,6 +288,34 @@ void SimpleReaderBase::ParseDataTitles(const string& header)
 	}
 }
 
+bool GPSDataReader::ReadNextLine(GPSBasicData& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 5) return false;
+
+		data.lat = strtod(lineData.at(0).at(2).c_str(), NULL);
+		data.lon = strtod(lineData.at(0).at(3).c_str(), NULL);
+		data.alt = strtod(lineData.at(0).at(4).c_str(), NULL);
+		data.distance = strtod(lineData.at(0).at(5).c_str(), NULL);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void GPSDataReader::ReadAllData(vector<GPSBasicData>& data_list)
+{
+	data_list.clear();
+	GPSBasicData data;
+	while(ReadNextLine(data))
+		data_list.push_back(data);
+}
+
 bool SimulationFileReader::ReadNextLine(SimulationPoint& data)
 {
 	vector<vector<string> > lineData;
@@ -314,7 +342,7 @@ void SimulationFileReader::ReadAllData(SimulationData& data_list)
 {
 	data_list.simuCars.clear();
 	SimulationPoint data;
-	double logTime = 0;
+	//double logTime = 0;
 	int count = 0;
 	while(ReadNextLine(data))
 	{
@@ -354,7 +382,7 @@ void LocalizationPathReader::ReadAllData(vector<LocalizationWayPoint>& data_list
 {
 	data_list.clear();
 	LocalizationWayPoint data;
-	double logTime = 0;
+	//double logTime = 0;
 	while(ReadNextLine(data))
 		data_list.push_back(data);
 }
@@ -381,7 +409,7 @@ void AisanNodesFileReader::ReadAllData(vector<AisanNode>& data_list)
 {
 	data_list.clear();
 	AisanNode data;
-	double logTime = 0;
+	//double logTime = 0;
 	while(ReadNextLine(data))
 		data_list.push_back(data);
 }
@@ -417,7 +445,7 @@ void AisanPointsFileReader::ReadAllData(vector<AisanPoints>& data_list)
 {
 	data_list.clear();
 	AisanPoints data;
-	double logTime = 0;
+	//double logTime = 0;
 	while(ReadNextLine(data))
 		data_list.push_back(data);
 }
@@ -446,7 +474,7 @@ void AisanLinesFileReader::ReadAllData(vector<AisanLine>& data_list)
 {
 	data_list.clear();
 	AisanLine data;
-	double logTime = 0;
+	//double logTime = 0;
 	while(ReadNextLine(data))
 		data_list.push_back(data);
 }
@@ -481,7 +509,7 @@ void AisanCenterLinesFileReader::ReadAllData(vector<AisanCenterLine>& data_list)
 {
 	data_list.clear();
 	AisanCenterLine data;
-	double logTime = 0;
+	//double logTime = 0;
 	while(ReadNextLine(data))
 		data_list.push_back(data);
 }
@@ -540,7 +568,63 @@ void AisanLanesFileReader::ReadAllData(vector<AisanLane>& data_list)
 {
 	data_list.clear();
 	AisanLane data;
-	double logTime = 0;
+	//double logTime = 0;
+	while(ReadNextLine(data))
+		data_list.push_back(data);
+}
+
+bool AisanAreasFileReader::ReadNextLine(AisanArea& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 3) return false;
+
+		data.AID = strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.SLID = strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+		data.ELID = strtol(lineData.at(0).at(2).c_str(), NULL, 10);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void AisanAreasFileReader::ReadAllData(vector<AisanArea>& data_list)
+{
+	data_list.clear();
+	AisanArea data;
+	//double logTime = 0;
+	while(ReadNextLine(data))
+		data_list.push_back(data);
+}
+
+bool AisanIntersectionFileReader::ReadNextLine(AisanIntersection& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 3) return false;
+
+		data.ID = strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.AID = strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+		data.LinkID = strtol(lineData.at(0).at(2).c_str(), NULL, 10);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+void AisanIntersectionFileReader::ReadAllData(vector<AisanIntersection>& data_list)
+{
+	data_list.clear();
+	AisanIntersection data;
+	//double logTime = 0;
 	while(ReadNextLine(data))
 		data_list.push_back(data);
 }

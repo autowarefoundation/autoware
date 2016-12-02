@@ -28,7 +28,7 @@ public:
 	static std::string StatesLogFolderName;
 	static std::string SimulationFolderName;
 	static std::string KmlMapsFolderName;
-	static std::string VectorMapsFolderName;
+
 
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::string>& gps_list);
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::vector<std::string> >& gps_list);
@@ -80,15 +80,27 @@ protected:
 //		void ReadAllData(vector<pair<double,  MsgEstPose> >& pos_list);
 //};
 //
-//class GPSDataReader : public SimpleReaderBase
-//{
-//	public:
-//	GPSDataReader(const string& fileName) : SimpleReaderBase(fileName){}
-//	~GPSDataReader(){}
-//
-//	bool ReadNextLine( MsgGPSStandard& pos, double& logTime);
-//	void ReadAllData(vector<pair<double,  MsgGPSStandard> >& pos_list);
-//};
+class GPSDataReader : public SimpleReaderBase
+{
+public:
+	struct GPSBasicData
+	{
+		double lat;
+		double lon;
+		double alt;
+		double dir;
+		double distance;
+
+	};
+
+	public:
+	GPSDataReader(const std::string& fileName) : SimpleReaderBase(fileName){}
+	~GPSDataReader(){}
+
+	bool ReadNextLine(GPSBasicData& data);
+	void ReadAllData(std::vector<GPSBasicData>& data_list);
+};
+
 //
 //class VehicleStateReader : public SimpleReaderBase
 //{
@@ -240,6 +252,42 @@ public:
 
 	bool ReadNextLine(AisanCenterLine& data);
 	void ReadAllData(std::vector<AisanCenterLine>& data_list);
+};
+
+class AisanAreasFileReader : public SimpleReaderBase
+{
+public:
+
+	struct AisanArea
+	{
+		int 	AID;
+		int 	SLID;
+		int 	ELID;
+	};
+
+	AisanAreasFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	~AisanAreasFileReader(){}
+
+	bool ReadNextLine(AisanArea& data);
+	void ReadAllData(std::vector<AisanArea>& data_list);
+};
+
+class AisanIntersectionFileReader : public SimpleReaderBase
+{
+public:
+
+	struct AisanIntersection
+	{
+		int 	ID;
+		int 	AID;
+		int 	LinkID;
+	};
+
+	AisanIntersectionFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	~AisanIntersectionFileReader(){}
+
+	bool ReadNextLine(AisanIntersection& data);
+	void ReadAllData(std::vector<AisanIntersection>& data_list);
 };
 
 class AisanLanesFileReader : public SimpleReaderBase

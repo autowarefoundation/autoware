@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: object_map
+Description: Description of object_map
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs

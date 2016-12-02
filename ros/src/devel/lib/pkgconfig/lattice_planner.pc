@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: lattice_planner
+Description: Description of lattice_planner
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/computing/planning/motion/packages/lattice_planner/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib -llibtraj_gen -llibvelocity_set
+Requires: roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket vector_map gnss

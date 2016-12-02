@@ -31,7 +31,7 @@ public:
 			double z, float color[3],int nSkipPoints = 1, const std::vector<std::vector<float> >* colorProfile = 0);
 
 	static void DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_points, const double& z,
-			const double& width, float color[3]);
+			const double& width, float color[3], bool bGadient = true);
 
 	static void DrawLinePoygonFromCenterX(const PlannerHNS::WayPoint& p1, const double& z,
 			const PlannerHNS::WayPoint& p2, const double& z2, const double& w, const double& h,

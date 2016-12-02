@@ -294,14 +294,18 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 
 void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg)
 {
-	std::cout << " Number of Detected Clusters =" << msg->clusters.size() << std::endl;
+	//std::cout << " Number of Detected Clusters =" << msg->clusters.size() << std::endl;
 	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(*msg, m_DetectedClusters);
+	//obstacleTracking.DoOneStep(pR->m_State.state, obj_list);
+	visualization_msgs::MarkerArray detectedPolygons;
+	RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_DetectedClusters, detectedPolygons);
+	pub_DetectedPolygonsRviz.publish(detectedPolygons);
 	bNewClusters = true;
 }
 
 void PlannerX::callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg)
 {
-	std::cout << " Number of Detected Boxes =" << msg->boxes.size() << std::endl;
+	//std::cout << " Number of Detected Boxes =" << msg->boxes.size() << std::endl;
 	RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(*msg, m_DetectedBoxes);
 	bNewBoxes = true;
 }
@@ -457,7 +461,8 @@ void PlannerX::PlannerMainLoop()
 			 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		 }
 
-		if(bInitPos && m_State.m_TotalPath.size()>0)
+		//if(bInitPos && m_State.m_TotalPath.size()>0)
+		if(bInitPos)
 		{
 //			bool bMakeNewPlan = false;
 			m_State.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
@@ -485,13 +490,13 @@ void PlannerX::PlannerMainLoop()
 //			if(m_iCurrentGoal+1 < m_goals.size())
 //				goal_wp = m_goals.at(m_iCurrentGoal);
 
-			m_CurrentBehavior = m_State.DoOneStep(dt, m_VehicleState, m_DetectedClusters, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
+			//m_CurrentBehavior = m_State.DoOneStep(dt, m_VehicleState, m_DetectedClusters, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
 
-			std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
-
-			visualization_msgs::MarkerArray detectedPolygons;
-			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_DetectedClusters, detectedPolygons);
-			pub_DetectedPolygonsRviz.publish(detectedPolygons);
+			//std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
+			//std::cout << "Planning Time = " << dt << std::endl;
+//			visualization_msgs::MarkerArray detectedPolygons;
+//			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_DetectedClusters, detectedPolygons);
+//			pub_DetectedPolygonsRviz.publish(detectedPolygons);
 
 			geometry_msgs::Twist t;
 			geometry_msgs::TwistStamped behavior;

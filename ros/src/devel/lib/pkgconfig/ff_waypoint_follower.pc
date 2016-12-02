@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: ff_waypoint_follower
+Description: Description of ff_waypoint_follower
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/computing/planning/motion/packages/ff_waypoint_follower/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: roscpp geometry_msgs runtime_manager cv_tracker map_file

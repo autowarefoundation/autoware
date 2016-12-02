@@ -8,12 +8,19 @@
 #include <iostream>
 #include "MainWindowWrapper.h"
 #include "PlannerTestDraw.h"
+#include "AlternativeVisualizer.h"
 
 using namespace  Graphics;
+#define USE_ALT_VISUALIZER 0
 
 int main(int argc, char** argv)
 {
-	PlannerTestDraw* pSimulator = new PlannerTestDraw();
+	DrawObjBase* pSimulator =  0;
+	if(USE_ALT_VISUALIZER == 1)
+		pSimulator = new AlternativeVisualizer();
+	else
+		pSimulator = new PlannerTestDraw();
+
 	WindowParams pms;
 	DisplayParams dpms;
 	dpms.centerRotX = 0;

@@ -284,6 +284,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const std::vector<Planner
 void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 		std::vector<PlannerHNS::DetectedObject>& obstacles_list)
 {
+	obstacles_list.clear();
 	for(unsigned int i =0; i < detectedObstacles.boxes.size(); i++)
 	{
 		PlannerHNS::DetectedObject obj;
@@ -315,6 +316,7 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const lidar_tracker::CloudClusterArray& clusters,
 		std::vector<PlannerHNS::DetectedObject>& obstacles_list)
 {
+	obstacles_list.clear();
 	for(unsigned int i =0; i < clusters.clusters.size(); i++)
 	{
 		PolygonGenerator polyGen;
@@ -506,8 +508,11 @@ void RosHelpers::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::R
 		dts.push_back(dt);
 	}
 
+	std::vector<UtilityHNS::AisanAreasFileReader::AisanArea> areas;
+	std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection> inters;
+
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, origin, out_map);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, origin, out_map);
 }
 
 }

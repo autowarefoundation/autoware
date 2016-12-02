@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: libdpm_ocv
+Description: Description of libdpm_ocv
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/devel/include -I/home/user/Autoware/Autoware/ros/src/computing/perception/detection/lib/image/dpm_ocv/include/dpm_ocv
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib -llibdpm_ocv
+Requires: message_runtime std_msgs

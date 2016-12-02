@@ -490,6 +490,9 @@ class Lane
 public:
 	int id;
 	int roadId;
+	int areaId;
+	int fromAreaId;
+	int toAreaId;
 	std::vector<int> fromIds;
 	std::vector<int> toIds;
 	int num; //lane number in the road segment from left to right
@@ -522,6 +525,9 @@ public:
 		pRightLane = 0;
 		pRoad	= 0;
 		roadId = 0;
+		areaId = 0;
+		fromAreaId = 0;
+		toAreaId = 0;
 	}
 
 };

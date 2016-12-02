@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/user/Autoware/Autoware/ros/src/devel/setup.sh
