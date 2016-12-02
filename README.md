@@ -1,6 +1,6 @@
 # Autoware
 
-Integrated open-source software for urban autonomous driving. The following functions are supported:
+Integrated open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
 
 - 3D Localization
 - 3D Mapping
@@ -75,6 +75,13 @@ $ catkin_init_workspace
 $ cd ../
 $ ./catkin_make_release
 ```
+###Caffe based object detectors
+CV based detectors RCNN and SSD nodes are not automatically built.
+
+To build these nodes please follow the respective node's README
+[RCNN](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
+[SSD](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
+
 
 ## How to Start
 
@@ -126,7 +133,7 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ## Instruction Videos
 
 ### Quick Start
-[![Quick Start](http://img.youtube.com/vi/Ursbp2qs1u0/0.jpg)](https://www.youtube.com/watch?v=Ursbp2qs1u0)
+[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
 ### Loading map data
 [![Loading map data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
@@ -140,8 +147,17 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ### Mapping
 [![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/0.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
 
-### Detection
-[![Detection](http://img.youtube.com/vi/UcoYqGniIkE/0.jpg)](https://www.youtube.com/watch?v=UcoYqGniIkE)
+### Detection with SSD
+[![SSD](http://img.youtube.com/vi/EjamMJjkjBA/0.jpg)](https://youtu.be/EjamMJjkjBA)
+
+### Detection with DPM
+[![DPM](http://img.youtube.com/vi/P_BFQNbudlg/0.jpg)](https://youtu.be/P_BFQNbudlg)
+
+### Detection with Euclidean Clustering
+[![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/0.jpg)](https://youtu.be/Tma2DKMxt4Y)
+
+### Traffic Light Recognition
+[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/0.jpg)](https://youtu.be/KmOdBms9r2w)
 
 ### Planning with ROSBAG
 [![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/0.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
@@ -154,6 +170,10 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 [3D map of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
 
 [ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
+
+## IROS 2016 Data
+
+[ROSBAG data of Nagoya driving](http://db3.ertl.jp/autoware/sample_data/iros2016_two_vehicle_data.tar.gz)
 
 ## Contact
 

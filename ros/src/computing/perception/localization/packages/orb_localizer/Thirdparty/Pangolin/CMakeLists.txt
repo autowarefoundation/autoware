@@ -1,3 +1,12 @@
+cmake_minimum_required (VERSION 2.8.3)
+
+set (LibName pangolin)
+
+find_package (OpenGL REQUIRED)
+find_package (GLEW REQUIRED)
+find_package (GLUT REQUIRED)
+
+
 SET (_UNIX_ 1)
 SET (_GCC_ 1)
 SET (BUILD_PANGOLIN_GUI 1)
@@ -31,59 +40,33 @@ function(embed_binary_files file_glob output)
     endforeach()
 endfunction()
 
-## Header only includes / core headers
-set( INCDIR ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/Pangolin/include/pangolin )
-set( HEADERS
-  ${INCDIR}/pangolin.h
-  ${INCDIR}/platform.h
-)
-set ( SRCDIR ${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/Pangolin/src )
-
-append_glob(HEADERS ${INCDIR}/utils/*.h*)
-append_glob(HEADERS ${INCDIR}/image/*.h*)
-append_glob(HEADERS ${INCDIR}/log/*.h*)
-
-### Store list of source files
-append_glob(SOURCES ${SRCDIR}/utils/*.cpp)
-append_glob(SOURCES ${SRCDIR}/image/*.cpp)
-append_glob(SOURCES ${SRCDIR}/log/*.cpp)
-
-# GUI Parts
-append_glob(HEADERS ${INCDIR}/gl/*.h*)
-append_glob(HEADERS ${INCDIR}/display/*.h*)
-append_glob(HEADERS ${INCDIR}/handler/*.h*)
+set (SRCDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 embed_binary_files( "${SRCDIR}/_embed_/fonts/*.ttf" "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
-list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
+list ( APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/fonts.c" )
 
-append_glob(SOURCES ${SRCDIR}/gl/*.cpp)
-append_glob(SOURCES ${SRCDIR}/display/*.cpp)
-append_glob(SOURCES ${SRCDIR}/handler/*.cpp)
+append_glob (SOURCES ${SRCDIR}/utils/*.cpp)
+append_glob (SOURCES ${SRCDIR}/image/*.cpp)
+append_glob (SOURCES ${SRCDIR}/log/*.cpp)
+append_glob (SOURCES ${SRCDIR}/gl/*.cpp)
+append_glob (SOURCES ${SRCDIR}/display/*.cpp)
+append_glob (SOURCES ${SRCDIR}/handler/*.cpp)
+append_glob (SOURCES ${SRCDIR}/var/*.cpp)
+append_glob (SOURCES ${SRCDIR}/display/widgets/*.cpp)
+list (APPEND SOURCES ${SRCDIR}/display/device/display_glut.cpp)
 
-append_glob(HEADERS ${INCDIR}/var/*.h*)
-append_glob(SOURCES ${SRCDIR}/var/*.cpp)
+set (HAVE_GLUT 1)
+set (HAVE_GLEW 1)
+message (STATUS "GLUT Enabled")
 
-list(APPEND HEADERS ${INCDIR}/display/widgets/widgets.h )
-append_glob(SOURCES ${SRCDIR}/display/widgets/*.cpp )
+configure_file (
+	src/config.h.in
+	${CMAKE_CURRENT_SOURCE_DIR}/include/pangolin/config.h
+)
 
-find_package (OpenGL REQUIRED)
-find_package (GLEW REQUIRED)
-list(APPEND USER_INC  "${GLEW_INCLUDE_DIR}" )
-list(APPEND LINK_LIBS "${GLEW_LIBRARY}" )
-find_package (FREEGLUT REQUIRED)
-if(FREEGLUT_FOUND)
-	set(HAVE_GLUT 1)
-	list(APPEND HEADERS ${INCDIR}/display/device/display_glut.h )
-	list(APPEND SOURCES ${SRCDIR}/display/device/display_glut.cpp )
-	message(STATUS "Glut Found and Enabled")
-endif()
-set(HAVE_GLEW 1)
 
-set (LibName pangolin)
-
-configure_file(
-  "${SRCDIR}/config.h.in"
-  "${INCDIR}/config.h"
+include_directories (
+	include
 )
 
 add_library (${LibName} STATIC ${SOURCES})

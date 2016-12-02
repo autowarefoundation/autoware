@@ -59,7 +59,6 @@ Tracking::Tracking (
     mState(NO_IMAGES_YET), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpORBVocabulary(pVoc),
     mpKeyFrameDB(pKFDB), mpInitializer(static_cast<Initializer*>(NULL)), mpSystem(pSys),
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0),
-
 	mLocalMapper(NULL), mLoopCloser(NULL)
 
 {
@@ -101,20 +100,6 @@ Tracking::Tracking (
     mMinFrames = 0;
     mMaxFrames = fps;
 
-//    cout << endl << "Camera Parameters: " << endl;
-//    cout << "- fx: " << fx << endl;
-//    cout << "- fy: " << fy << endl;
-//    cout << "- cx: " << cx << endl;
-//    cout << "- cy: " << cy << endl;
-//    cout << "- k1: " << DistCoef.at<float>(0) << endl;
-//    cout << "- k2: " << DistCoef.at<float>(1) << endl;
-//    if(DistCoef.rows==5)
-//        cout << "- k3: " << DistCoef.at<float>(4) << endl;
-//    cout << "- p1: " << DistCoef.at<float>(2) << endl;
-//    cout << "- p2: " << DistCoef.at<float>(3) << endl;
-//    cout << "- fps: " << fps << endl;
-
-
     int nRGB = fSettings["Camera.RGB"];
     mbRGB = nRGB;
 
@@ -126,6 +111,9 @@ Tracking::Tracking (
     // Load ORB parameters
 
     int nFeatures = fSettings["ORBextractor.nFeatures"];
+    if (pSys->opMode==System::MAPPING)
+    	nFeatures *= 2;
+
     float fScaleFactor = fSettings["ORBextractor.scaleFactor"];
     int nLevels = fSettings["ORBextractor.nLevels"];
     int fIniThFAST = fSettings["ORBextractor.iniThFAST"];
@@ -290,6 +278,8 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 
 void Tracking::Track()
 {
+//	printf ("fx: %f, fy: %f, cx: %f, cy: %f\n", mK.at<float>(0,0), mK.at<float>(1,1), mK.at<float>(0,2), mK.at<float>(1,2));
+
     if(mState==NO_IMAGES_YET)
     {
         mState = NOT_INITIALIZED;
@@ -676,6 +666,8 @@ void Tracking::MonocularInitialization()
             Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
             tcw.copyTo(Tcw.rowRange(0,3).col(3));
             mCurrentFrame.SetPose(Tcw);
+
+            cerr << Tcw << endl;
 
             CreateInitialMapMonocular();
         }
@@ -1698,6 +1690,19 @@ void Tracking::ChangeCalibration(const string &strSettingPath)
 
     Frame::mbInitialComputations = true;
 }
+
+
+void Tracking::ChangeCalibration(const double fx, const double fy, const double cx, const double cy)
+{
+    cv::Mat K = cv::Mat::eye(3,3,CV_32F);
+    K.at<float>(0,0) = fx;
+    K.at<float>(1,1) = fy;
+    K.at<float>(0,2) = cx;
+    K.at<float>(1,2) = cy;
+    K.copyTo(mK);
+    printf ("IntrinsicMatrix changed to %f,%f,%f,%f\n", fx, fy, cx, cy);
+}
+
 
 void Tracking::InformOnlyTracking(const bool &flag)
 {

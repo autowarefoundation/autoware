@@ -105,6 +105,7 @@ static double _keep_lane_left_distance;
 static double _keep_lane_right_distance;
 
 static double _max_boundingbox_side;
+static double _remove_points_upto;
 
 void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbox, jsk_recognition_msgs::BoundingBox& out_boundingbox, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
@@ -519,6 +520,19 @@ void differenceNormalsSegmentation(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_
 	pcl::copyPointCloud<pcl::PointNormal, pcl::PointXYZ>(*diffnormals_cloud, *out_cloud_ptr);
 }
 
+void removePointsUpTo(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, const double in_distance)
+{
+	out_cloud_ptr->points.clear();
+	for (unsigned int i=0; i<in_cloud_ptr->points.size(); i++)
+	{
+		float origin_distance = sqrt( pow(in_cloud_ptr->points[i].x,2) + pow(in_cloud_ptr->points[i].y,2) );
+		if (origin_distance > in_distance)
+		{
+			out_cloud_ptr->points.push_back(in_cloud_ptr->points[i]);
+		}
+	}
+}
+
 void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 {
 	if (!_using_sensor_cloud)
@@ -526,6 +540,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		_using_sensor_cloud = true;
 
 		pcl::PointCloud<pcl::PointXYZ>::Ptr current_sensor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
+		pcl::PointCloud<pcl::PointXYZ>::Ptr removed_points_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr inlanes_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZ>::Ptr nofloor_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
@@ -542,10 +557,17 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		_velodyne_header = in_sensor_cloud->header;
 
-		if (_downsample_cloud)
-			downsampleCloud(current_sensor_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
+		if (_remove_points_upto > 0.0)
+		{
+			removePointsUpTo(current_sensor_cloud_ptr, removed_points_cloud_ptr, _remove_points_upto);
+		}
 		else
-			downsampled_cloud_ptr=current_sensor_cloud_ptr;
+			removed_points_cloud_ptr = current_sensor_cloud_ptr;
+
+		if (_downsample_cloud)
+			downsampleCloud(removed_points_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
+		else
+			downsampled_cloud_ptr=removed_points_cloud_ptr;
 
 		if(_keep_lanes)
 			keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
@@ -703,6 +725,7 @@ int main (int argc, char** argv)
 	private_nh.param("clustering_distances", _clustering_distances);
 	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);			ROS_INFO("_max_boundingbox_side: %f", _max_boundingbox_side);
 	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
+	private_nh.param("remove_points_upto", _remove_points_upto, 0.0);		ROS_INFO("remove_points_upto: %f", _remove_points_upto);
 
 	_velodyne_transform_available = false;
 

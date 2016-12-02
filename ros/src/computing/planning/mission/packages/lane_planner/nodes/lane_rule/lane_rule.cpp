@@ -45,6 +45,7 @@
 namespace {
 
 double config_acceleration = 1; // m/s^2
+double config_stopline_search_radius = 1; // meter
 int config_number_of_zeros_ahead = 0;
 int config_number_of_zeros_behind = 0;
 
@@ -193,6 +194,104 @@ waypoint_follower::lane apply_stopline_acceleration(const waypoint_follower::lan
 	return l;
 }
 
+std::vector<vector_map::Point> create_stop_points(const lane_planner::vmap::VectorMap& vmap)
+{
+	std::vector<vector_map::Point> stop_points;
+	for (const vector_map::StopLine& s : vmap.stoplines) {
+		for (const vector_map::Lane& l : vmap.lanes) {
+			if (l.lnid != s.linkid)
+				continue;
+			for (const vector_map::Node& n : vmap.nodes) {
+				if (n.nid != l.bnid)
+					continue;
+				for (const vector_map::Point& p : vmap.points) {
+					if (p.pid != n.pid)
+						continue;
+					bool hit = false;
+					for (const vector_map::Point& sp : stop_points) {
+						if (sp.pid == p.pid) {
+							hit = true;
+							break;
+						}
+					}
+					if (!hit)
+						stop_points.push_back(p);
+				}
+			}
+		}
+	}
+
+	return stop_points;
+}
+
+std::vector<size_t> create_stop_indexes(const lane_planner::vmap::VectorMap& vmap,
+					const waypoint_follower::lane& lane, double stopline_search_radius)
+{
+	std::vector<size_t> stop_indexes;
+	for (const vector_map::Point& p : create_stop_points(vmap)) {
+		size_t index = SIZE_MAX;
+		double distance = DBL_MAX;
+		for (size_t i = 0; i < lane.waypoints.size(); ++i) {
+			vector_map::Point point =
+				lane_planner::vmap::create_vector_map_point(lane.waypoints[i].pose.pose.position);
+			double d = hypot(p.bx - point.bx, p.ly - point.ly);
+			if (d <= distance) {
+				index = i;
+				distance = d;
+			}
+		}
+		if (index != SIZE_MAX && distance <= stopline_search_radius) {
+			stop_indexes.push_back(index);
+		}
+	}
+	std::sort(stop_indexes.begin(), stop_indexes.end());
+
+	return stop_indexes;
+}
+
+waypoint_follower::lane apply_stopline_acceleration(const waypoint_follower::lane& lane, double acceleration,
+						    double stopline_search_radius, size_t ahead_cnt, size_t behind_cnt)
+{
+	waypoint_follower::lane l = lane;
+
+	std::vector<size_t> indexes = create_stop_indexes(lane_vmap, l, stopline_search_radius);
+	if (indexes.empty())
+		return l;
+
+	for (const size_t i : indexes)
+		l = apply_acceleration(l, acceleration, i, behind_cnt + 1, 0);
+
+	std::reverse(l.waypoints.begin(), l.waypoints.end());
+
+	std::vector<size_t> reverse_indexes;
+	for (const size_t i : indexes)
+		reverse_indexes.push_back(l.waypoints.size() - i - 1);
+	std::reverse(reverse_indexes.begin(), reverse_indexes.end());
+
+	for (const size_t i : reverse_indexes)
+		l = apply_acceleration(l, acceleration, i, ahead_cnt + 1, 0);
+
+	std::reverse(l.waypoints.begin(), l.waypoints.end());
+
+	return l;
+}
+
+bool is_fine_vmap(const lane_planner::vmap::VectorMap& fine_vmap, const waypoint_follower::lane& lane)
+{
+	if (fine_vmap.points.size() != lane.waypoints.size())
+		return false;
+
+	for (size_t i = 0; i < fine_vmap.points.size(); ++i) {
+		vector_map::Point point =
+			lane_planner::vmap::create_vector_map_point(lane.waypoints[i].pose.pose.position);
+		double distance = hypot(fine_vmap.points[i].bx - point.bx, fine_vmap.points[i].ly - point.ly);
+		if (distance > 0.1)
+			return false;
+	}
+
+	return true;
+}
+
 double create_reduction(const lane_planner::vmap::VectorMap& fine_vmap, int index)
 {
 	const vector_map::DTLane& dtlane = fine_vmap.dtlanes[index];
@@ -303,8 +402,13 @@ void create_waypoint(const waypoint_follower::LaneArray& msg)
 		lane_planner::vmap::VectorMap fine_vmap =
 			lane_planner::vmap::create_fine_vmap(lane_vmap, lane_planner::vmap::LNO_ALL, coarse_vmap,
 							     search_radius, waypoint_max);
-		if (fine_vmap.points.size() < 2 || fine_vmap.points.size() != lane.waypoints.size()) {
+		if (fine_vmap.points.size() < 2 || !is_fine_vmap(fine_vmap, lane)) {
 			traffic_waypoint.lanes.push_back(lane);
+			green_waypoint.lanes.push_back(lane);
+			lane = apply_stopline_acceleration(lane, config_acceleration, config_stopline_search_radius,
+							   config_number_of_zeros_ahead,
+							   config_number_of_zeros_behind);
+			red_waypoint.lanes.push_back(lane);
 			continue;
 		}
 
@@ -422,6 +526,7 @@ void cache_dtlane(const vector_map::DTLaneArray& msg)
 void config_parameter(const runtime_manager::ConfigLaneRule& msg)
 {
 	config_acceleration = msg.acceleration;
+	config_stopline_search_radius = msg.stopline_search_radius;
 	config_number_of_zeros_ahead = msg.number_of_zeros_ahead;
 	config_number_of_zeros_behind = msg.number_of_zeros_behind;
 
