@@ -187,10 +187,17 @@ bool LabelMakerGui::SaveCurrentState() {
     return false;
   }
 
+  // Get image property
+  QSize image_size = ui_->graphics_view_->GetImageSize();
+  int image_depth = 3; // This program assume input image is color (3 channel) image
+
   // Save specified state into file
   file_system_operator_.WriteStateToFile("Images", // Image file should be under "Image" directory
                                          image_list_[current_image_id],
                                          state,
+                                         image_size.height(),
+                                         image_size.width(),
+                                         image_depth,
                                          start.x(),
                                          start.y(),
                                          end.x(),

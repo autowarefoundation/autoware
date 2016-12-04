@@ -30,6 +30,9 @@ public:
   // The function to reset selected area
   void ResetSelectedArea();
 
+  // The function to return original image's size
+  QSize GetImageSize();
+
 private slots:
   void ScalingTime(qreal /* x */);
   void FinishAnimation();

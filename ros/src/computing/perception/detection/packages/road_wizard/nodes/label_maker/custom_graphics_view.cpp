@@ -202,3 +202,8 @@ void CustomGraphicsView::ResetSelectedArea() {
   start_position_ = k_initial_position_;
   end_position_ = k_initial_position_;
 }
+
+
+QSize CustomGraphicsView::GetImageSize() {
+  return original_image_.size();
+}

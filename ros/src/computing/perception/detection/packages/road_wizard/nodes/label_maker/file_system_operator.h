@@ -25,6 +25,9 @@ public:
   void WriteStateToFile(std::string folder_name,
                         std::string file_name,
                         LightState state,
+                        int image_height,
+                        int image_width,
+                        int image_depth,
                         int x_start,
                         int y_start,
                         int x_end,
@@ -36,6 +39,9 @@ private:
     std::string folder_name;
     std::string file_name;
     LightState state;
+    int height;
+    int width;
+    int depth;
     int x_start;
     int y_start;
     int x_end;

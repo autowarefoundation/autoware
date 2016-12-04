@@ -90,6 +90,14 @@ void FileSystemOperator::LoadPreSavedContents() {
       TiXmlElement* file = root->FirstChildElement("filename");
       loaded_data.file_name = std::string(file->GetText());
 
+      TiXmlElement* size = root->FirstChildElement("size");
+      TiXmlElement* width = size->FirstChildElement("width");
+      TiXmlElement* height = size->FirstChildElement("height");
+      TiXmlElement* depth = size->FirstChildElement("depth");
+      loaded_data.width = std::atoi(width->GetText());
+      loaded_data.height = std::atoi(height->GetText());
+      loaded_data.depth = std::atoi(depth->GetText());
+
       TiXmlElement* object = root->FirstChildElement("object");
       TiXmlElement* name = object->FirstChildElement("name");
       loaded_data.state = static_cast<LightState>(std::atoi(name->GetText()));
@@ -115,6 +123,9 @@ void FileSystemOperator::LoadPreSavedContents() {
 void FileSystemOperator::WriteStateToFile(std::string folder_name,
                                           std::string file_name,
                                           LightState state,
+                                          int image_height,
+                                          int image_width,
+                                          int image_depth,
                                           int x_start,
                                           int y_start,
                                           int x_end,
@@ -123,6 +134,9 @@ void FileSystemOperator::WriteStateToFile(std::string folder_name,
   LabelData label_data{folder_name,
         file_name,
         state,
+        image_height,
+        image_width,
+        image_depth,
         x_start,
         y_start,
         x_end,
@@ -144,6 +158,18 @@ void FileSystemOperator::WriteStateToFile(std::string folder_name,
   TiXmlElement* file = new TiXmlElement("filename");
   file->LinkEndChild(new TiXmlText(label_data_list_[image_id].file_name));
   root->LinkEndChild(file);
+
+  TiXmlElement* size = new TiXmlElement("size");
+  TiXmlElement* width = new TiXmlElement("width");
+  width->LinkEndChild(new TiXmlText(std::to_string(label_data_list_[image_id].width)));
+  TiXmlElement* height = new TiXmlElement("height");
+  height->LinkEndChild(new TiXmlText(std::to_string(label_data_list_[image_id].height)));
+  TiXmlElement* depth = new TiXmlElement("depth");
+  depth->LinkEndChild(new TiXmlText(std::to_string(label_data_list_[image_id].depth)));
+  size->LinkEndChild(width);
+  size->LinkEndChild(height);
+  size->LinkEndChild(depth);
+  root->LinkEndChild(size);
 
   TiXmlElement* object = new TiXmlElement("object");
   TiXmlElement* name = new TiXmlElement("name");
