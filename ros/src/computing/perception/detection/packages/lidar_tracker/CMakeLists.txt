@@ -173,6 +173,7 @@ if(EXISTS "/usr/local/cuda")
   else()
     set(CUDA_ARCH "sm_52")
   endif()
+  
 
   #QT Stuff
   # set(CMAKE_AUTOMOC ON)
@@ -214,7 +215,12 @@ if(EXISTS "/usr/local/cuda")
   INCLUDE(FindCUDA)
   
   # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
+  if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+     set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+  else()
+     set(CUDA_ARCH "sm_52")
+  endif()
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_${CUDA_ARCH};-std=c++11)
   
   INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS})
