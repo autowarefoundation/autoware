@@ -174,6 +174,10 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 
 [ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
 
+[Script for generating demo launch files of Moriyama](http://db3.ertl.jp/autoware/sample_data/my_launch.sh)
+
+[ROSBAG data for Calibration](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
+
 ## IROS 2016 Data
 
 [ROSBAG data of Nagoya driving](http://db3.ertl.jp/autoware/sample_data/iros2016_two_vehicle_data.tar.gz)
