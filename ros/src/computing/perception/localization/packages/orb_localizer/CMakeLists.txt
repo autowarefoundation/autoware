@@ -195,3 +195,16 @@ target_link_libraries (
 		${ORB_BIN_LINKS}
 		${LINK_LIBRARIES}
 )
+
+
+add_executable (
+	orb_mapping_offline
+		nodes/orb_mapping/orb_mapping_offline.cpp
+		nodes/common.cpp
+)
+
+target_link_libraries (
+	orb_mapping_offline
+		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}
+)
