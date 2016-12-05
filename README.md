@@ -165,11 +165,18 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ### Planning with wf_simulator
 [![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/0.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
 
+### Calibration Toolkit
+[![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/0.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
+
 ## Sample Data
 
 [3D map of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
 
 [ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
+
+[Script for generating demo launch files of Moriyama](http://db3.ertl.jp/autoware/sample_data/my_launch.sh)
+
+[ROSBAG data for Calibration](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
 
 ## IROS 2016 Data
 
