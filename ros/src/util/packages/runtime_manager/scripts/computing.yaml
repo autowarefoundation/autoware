@@ -1855,7 +1855,7 @@ params :
     vars  :
     - name      : distance_threshold
       desc      : distance_threshold desc sample
-      label     : distance threshold to neighbor (m)
+      label     : Distance threshold to neighbor lanes (m)
       min       : 0
       max       : 20
       v         : 5.0
@@ -1865,7 +1865,7 @@ params :
         delim       : ':='
     - name      : lane_change_interval
       desc      : lane_change_interval desc sample
-      label     : Lane Change Interval (s)
+      label     : Lane change interval (s)
       min       : 0
       max       : 30
       v         : 1
