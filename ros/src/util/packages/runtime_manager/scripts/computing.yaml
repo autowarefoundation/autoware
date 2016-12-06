@@ -1299,6 +1299,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : publishes_for_steering_robot
+      desc    : linear_interpolate_mode desc sample
+      label   : 'Publishes topic for steering robot'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
         
   - name  : velocity_set
     topic : /config/velocity_set

@@ -33,7 +33,7 @@
 namespace waypoint_follower
 {
 // Constructor
-PurePursuitNode::PurePursuitNode() : private_nh_("~"), pp_(), LOOP_RATE_(30)
+PurePursuitNode::PurePursuitNode() : private_nh_("~"), pp_(), LOOP_RATE_(30), current_velocity_(0), cmd_velocity_(0)
 {
   initForROS();
 }
@@ -49,6 +49,8 @@ void PurePursuitNode::initForROS()
   private_nh_.param("is_linear_interpolation", is_linear_interpolation_, bool(true));
   // ROS_INFO_STREAM("is_linear_interpolation : " << is_linear_interpolation_);
   pp_.getLinearInterpolationParameter(is_linear_interpolation_);
+  private_nh_.param("publishes_for_steering_robot",publishes_for_steering_robot_,bool(false));
+  private_nh_.param("vehicle_info/wheel_base",wheel_base_,double(2.7));
 
   // setup subscriber
   sub1_ = nh_.subscribe("final_waypoints", 10, &PurePursuitNode::callbackFromWayPoints, this);
@@ -58,7 +60,7 @@ void PurePursuitNode::initForROS()
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
-  // pub2_ = nh_advertise<>("",10);
+  pub2_ = nh_.advertise<waypoint_follower::ControlCommandStamped>("ctrl_cmd",10);
   pub11_ = nh_.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   pub12_ = nh_.advertise<visualization_msgs::Marker>("next_target_mark", 0);
   pub13_ = nh_.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
@@ -75,6 +77,24 @@ void PurePursuitNode::run()
   {
     ros::spinOnce();
     pub1_.publish(pp_.go());
+
+    double kappa = 0;
+    if(publishes_for_steering_robot_)
+    {
+      waypoint_follower::ControlCommandStamped ccs;
+      ccs.header.stamp = ros::Time::now();
+      if(pp_.canGetCurvature(&kappa))
+      {
+        ccs.cmd.linear_velocity = cmd_velocity_;
+        ccs.cmd.steering_angle = convertCurvatureToSteeringAngle(wheel_base_,kappa);
+      }
+      else
+      {
+        ccs.cmd.linear_velocity = 0;
+        ccs.cmd.steering_angle = 0;
+      }
+      pub2_.publish(ccs);
+    }
 
     // for visualization with Rviz
     pub11_.publish(displayNextWaypoint(pp_.getPoseOfNextWaypoint()));
@@ -98,11 +118,19 @@ void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedCo
 
 void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+  current_velocity_ = msg->twist.linear.x;
   pp_.getCurrentVelocityForROS(msg);
 }
 
 void PurePursuitNode::callbackFromWayPoints(const waypoint_follower::laneConstPtr &msg)
 {
+  cmd_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
   pp_.getWayPointsForROS(msg);
 }
+
+double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa)
+{
+  return atan(wheel_base * kappa);
+}
+
 }  // waypoint_follower

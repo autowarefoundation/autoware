@@ -82,6 +82,7 @@ public:
   }
   // processing
   geometry_msgs::TwistStamped go();
+  bool canGetCurvature(double *output_kappa);
 
 private:
   // constant

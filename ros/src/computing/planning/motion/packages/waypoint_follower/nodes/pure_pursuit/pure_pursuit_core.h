@@ -40,6 +40,7 @@
 // User defined includes
 #include "runtime_manager/ConfigWaypointFollower.h"
 #include "waypoint_follower/lane.h"
+#include "waypoint_follower/ControlCommandStamped.h"
 #include "pure_pursuit_viz.h"
 #include "pure_pursuit.h"
 
@@ -71,7 +72,9 @@ private:
   const int LOOP_RATE_;  // processing frequency
 
   // variables
-  bool is_linear_interpolation_;
+  bool is_linear_interpolation_,publishes_for_steering_robot_;
+  double current_velocity_, cmd_velocity_;
+  double wheel_base_;
 
   // callbacks
   void callbackFromConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config);
@@ -86,6 +89,8 @@ private:
   //void publish();
 
 };
+
+double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa);
 }  // waypoint_follower
 
 #endif  // PURE_PURSUIT_CORE_H

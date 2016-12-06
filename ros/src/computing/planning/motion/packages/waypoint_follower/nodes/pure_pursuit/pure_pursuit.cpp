@@ -421,4 +421,46 @@ geometry_msgs::TwistStamped PurePursuit::go()
       << std::endl;
 #endif
 }
+
+bool PurePursuit::canGetCurvature(double *output_kappa)
+{
+  if (!is_pose_set_ || !is_waypoint_set_ || !is_velocity_set_)
+  {
+    ROS_INFO("something is missing... ");
+    return false;
+  }
+
+  calcLookaheadDistance();
+  // search next waypoint
+  getNextWaypoint();
+  if (next_waypoint_number_ == -1)
+  {
+    ROS_INFO("lost next waypoint");
+    return false;
+  }
+
+  // if g_linear_interpolate_mode is false or next waypoint is first or last
+  if (!is_linear_interpolation_ || next_waypoint_number_ == 0 ||
+      next_waypoint_number_ == (static_cast<int>(current_waypoints_.getSize() - 1)))
+  {
+    next_target_position_ = current_waypoints_.getWaypointPosition(next_waypoint_number_);
+    *output_kappa = calcCurvature(next_target_position_);
+    return true;
+  }
+
+  // linear interpolation and calculate angular velocity
+  bool interpolation = interpolateNextTarget(next_waypoint_number_, &next_target_position_);
+
+  if (!interpolation)
+  {
+    ROS_INFO_STREAM("lost target! ");
+    return false;
+  }
+
+  // ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,next_target.z);
+
+  *output_kappa = calcCurvature(next_target_position_);
+  return true;
+}
+
 }  // waypoint_follower
