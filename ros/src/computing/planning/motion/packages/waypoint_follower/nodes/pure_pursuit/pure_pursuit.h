@@ -91,7 +91,6 @@ private:
   // variables
   bool is_linear_interpolation_;
 
-  // config topic
   int param_flag_;                   // 0 = waypoint, 1 = Dialog
   double const_lookahead_distance_;  // meter
   double initial_velocity_;          // km/h
@@ -111,6 +110,7 @@ private:
   geometry_msgs::TwistStamped current_velocity_;
   WayPoints current_waypoints_;
 
+  //functions
   double getCmdVelocity(int waypoint) const;
   void calcLookaheadDistance();
   double calcCurvature(geometry_msgs::Point target) const;
