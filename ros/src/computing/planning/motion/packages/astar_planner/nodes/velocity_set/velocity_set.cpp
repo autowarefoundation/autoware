@@ -385,6 +385,10 @@ void localizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   g_localizer_pose.pose = msg->pose;
 }
 
+void closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
+{
+  g_closest_waypoint = msg->data;
+}
 
 //===============================
 //          Callback
@@ -834,6 +838,7 @@ int main(int argc, char **argv)
   ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, objPoseCallback);
   ros::Subscriber current_vel_sub = nh.subscribe("current_velocity", 1, currentVelCallback);
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, configCallback);
+  ros::Subscriber closest_waypoint_sub = nh.subscribe("closest_waypoint", 1, closestWaypointCallback);
 
   //------------------ Vector Map ----------------------//
   ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &vmap);
@@ -845,8 +850,6 @@ int main(int argc, char **argv)
   g_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
   g_sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
   g_temporal_waypoints_pub = nh.advertise<waypoint_follower::lane>("temporal_waypoints", 1000, true);
-  ros::Publisher closest_waypoint_pub;
-  closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
   g_obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 0);
 
   ros::Rate loop_rate(LOOP_RATE);
@@ -862,12 +865,6 @@ int main(int argc, char **argv)
       loop_rate.sleep();
       continue;
     }
-
-    g_closest_waypoint = getClosestWaypoint(g_path_change.getCurrentWaypoints(), g_control_pose.pose);
-
-    std_msgs::Int32 closest_waypoint;
-    closest_waypoint.data = g_closest_waypoint;
-    closest_waypoint_pub.publish(closest_waypoint);
 
     if (use_crosswalk_detection)
       vmap.setDetectionWaypoint(findCrossWalk());
