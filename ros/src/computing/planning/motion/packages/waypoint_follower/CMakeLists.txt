@@ -24,6 +24,8 @@ add_message_files(
   waypoint.msg
   dtlane.msg
   LaneArray.msg
+  ControlCommand.msg
+  ControlCommandStamped.msg
 )
 
 generate_messages(
