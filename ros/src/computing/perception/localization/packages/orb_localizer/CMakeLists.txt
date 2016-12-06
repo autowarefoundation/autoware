@@ -207,4 +207,5 @@ target_link_libraries (
 	orb_mapping_offline
 		${ORB_BIN_LINKS}
 		${LINK_LIBRARIES}
+		boost_program_options
 )

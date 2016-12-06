@@ -8,6 +8,9 @@
 #include <sys/types.h>
 #include <cstdio>
 #include <unistd.h>
+#include <signal.h>
+
+#include <boost/program_options.hpp>
 
 #include "System.h"
 #include "../common.h"
@@ -15,7 +18,7 @@
 
 using namespace std;
 using namespace ORB_SLAM2;
-
+namespace po = boost::program_options;
 
 typedef Eigen::Transform<float,3,Eigen::Affine> Transform3;
 
@@ -25,6 +28,12 @@ struct imagePose {
 	vector<Transform3> poses;
 };
 
+
+bool interruptStop = false;
+void interruptHandler (int s)
+{
+	interruptStop = true;
+}
 
 
 void loadData (const string &dataDir, imagePose& dataset)
@@ -88,10 +97,38 @@ void loadData (const string &dataDir, imagePose& dataset)
 
 int main (int argc, char *argv[])
 {
+
+	po::options_description mapperOpts ("Mapper Options");
+	mapperOpts.add_options()
+		("help", "produce help messages")
+		("config", po::value<string>(), "Configuration File")
+		("mapfile", po::value<string>(), "Path for saved map")
+		("datadir", po::value<string>(), "Path for image and pose directories")
+		("start", po::value<int>(), "Start from numbered image")
+	;
+	po::variables_map mapperOptMap;
+	po::store (po::parse_command_line(argc, argv, mapperOpts), mapperOptMap);
+	po::notify(mapperOptMap);
+
+	if (mapperOptMap.count("help") or
+		!mapperOptMap.count("config") or
+		!mapperOptMap.count("mapfile") or
+		!mapperOptMap.count("datadir"))
+	{
+		cout << mapperOpts << endl;
+		return 1;
+	}
+
 	const string orbVocabFile (ORB_SLAM_VOCABULARY);
-	string configFile = argv[1];
-	string mapPath = argv[2];
-	string dataDir = argv[3];
+	string configFile = mapperOptMap["config"].as<string>();
+	string mapPath = mapperOptMap["mapfile"].as<string>();
+	string dataDir = mapperOptMap["datadir"].as<string>();
+	int startNum;
+	try {
+		startNum = mapperOptMap["start"].as<int>();
+	} catch (boost::bad_any_cast &e) {
+		startNum = 0;
+	}
 
 	imagePose mDataSet;
 
@@ -102,7 +139,9 @@ int main (int argc, char *argv[])
 		ORB_SLAM2::System::MONOCULAR,
 		true,
 		mapPath,
-		System::MAPPING, true);
+		System::MAPPING,
+		// offline flag
+		true);
 
 	double fx2, fy2, cx2, cy2;
 	recomputeNewCameraParameter (
@@ -117,8 +156,12 @@ int main (int argc, char *argv[])
 	// send camera parameters to tracker
 	SLAM.getTracker()->ChangeCalibration (fx2, fy2, cx2, cy2);
 
+	signal (SIGINT, interruptHandler);
 
-	for (int i=0; i<mDataSet.poses.size(); i++) {
+	for (int i=startNum; i<mDataSet.poses.size(); i++) {
+
+		if (interruptStop==true)
+			break;
 
 		const string &path = mDataSet.imagePaths[i];
 		Transform3 pose = mDataSet.poses[i];
@@ -158,10 +201,13 @@ int main (int argc, char *argv[])
 		}
 
 		SLAM.TrackMonocular (image, timestamp);
-//		usleep (2e5);
+
+		// Check status
+		if (SLAM.getTracker()->mState==Tracking::LOST) {
+			cout << "Lost in sequence #" << i << endl;
+		}
 
 	}
-
 
 	SLAM.Shutdown();
 	return 0;
