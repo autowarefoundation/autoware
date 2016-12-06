@@ -295,8 +295,6 @@ Transform3 Tracking::LocalizeImage (const cv::Mat &image, const double &timestam
 
 void Tracking::Track()
 {
-//	printf ("fx: %f, fy: %f, cx: %f, cy: %f\n", mK.at<float>(0,0), mK.at<float>(1,1), mK.at<float>(0,2), mK.at<float>(1,2));
-
     if(mState==NO_IMAGES_YET)
     {
         mState = NOT_INITIALIZED;
@@ -1087,8 +1085,10 @@ bool Tracking::NeedNewKeyFrame()
     const int nKFs = mpMap->KeyFramesInMap();
 
     // Do not insert keyframes if not enough frames have passed from last relocalisation
-    if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && nKFs>mMaxFrames)
-        return false;
+    if (mpSystem->offlineMapping==false) {
+		if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && nKFs>mMaxFrames)
+			return false;
+    }
 
     // Tracked MapPoints in the reference keyframe
     int nMinObs = 3;
@@ -1097,7 +1097,12 @@ bool Tracking::NeedNewKeyFrame()
     int nRefMatches = mpReferenceKF->TrackedMapPoints(nMinObs);
 
     // Local Mapping accept keyframes?
-    bool bLocalMappingIdle = mpLocalMapper->AcceptKeyFrames();
+    bool bLocalMappingIdle;
+    if (mpSystem->offlineMapping==false) {
+    	bLocalMappingIdle = mpLocalMapper->AcceptKeyFrames();
+    }
+    else
+    	bLocalMappingIdle = true;
 
 #ifdef DEBUG_TRACKING
 //	cout << "Checking if we need new keyframe" << endl;
@@ -1184,7 +1189,7 @@ bool Tracking::NeedNewKeyFrame()
 
 void Tracking::CreateNewKeyFrame()
 {
-    if(!mpLocalMapper->SetNotStop(true))
+    if(mpSystem->offlineMapping==false and !mpLocalMapper->SetNotStop(true))
         return;
 
     KeyFrame* pKF = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
@@ -1256,7 +1261,8 @@ void Tracking::CreateNewKeyFrame()
 
     mpLocalMapper->InsertKeyFrame(pKF);
 
-    mpLocalMapper->SetNotStop(false);
+    if (mpSystem->offlineMapping==false)
+    	mpLocalMapper->SetNotStop(false);
 
     mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKF;

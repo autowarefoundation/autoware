@@ -102,7 +102,7 @@ int main (int argc, char *argv[])
 		ORB_SLAM2::System::MONOCULAR,
 		true,
 		mapPath,
-		System::MAPPING);
+		System::MAPPING, true);
 
 	double fx2, fy2, cx2, cy2;
 	recomputeNewCameraParameter (
@@ -158,7 +158,7 @@ int main (int argc, char *argv[])
 		}
 
 		SLAM.TrackMonocular (image, timestamp);
-		usleep (2e5);
+//		usleep (2e5);
 
 	}
 

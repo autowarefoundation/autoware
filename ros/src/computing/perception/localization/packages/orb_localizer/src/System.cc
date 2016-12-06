@@ -33,13 +33,16 @@ namespace ORB_SLAM2
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer,
 			   const string &mpMapFileName,
-			   const operationMode mode):
+			   const operationMode mode,
+			   bool doOfflineMapping):
 				mSensor(sensor),
 				mapFileName(mpMapFileName),
 				mbReset(false),
 				mbActivateLocalizationMode(false),
 				mbDeactivateLocalizationMode(false),
-				opMode (mode)
+				opMode (mode),
+
+				offlineMapping(doOfflineMapping)
 {
     // Output welcome message
     cout << endl <<
@@ -108,11 +111,13 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     if (opMode==System::MAPPING) {
 
-		//Initialize the Local Mapping thread and launch
-		mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,mpLocalMapper);
+    	if (offlineMapping==false) {
+			//Initialize the Local Mapping thread and launch
+			mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,mpLocalMapper);
 
-		//Initialize the Loop Closing thread and launch
-		mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
+			//Initialize the Loop Closing thread and launch
+			mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
+    	}
 
 	    mpLocalMapper->SetTracker(mpTracker);
 	    mpLocalMapper->SetLoopCloser(mpLoopCloser);
@@ -207,6 +212,12 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     }
 
     cv::Mat camPosOrb = mpTracker->GrabImageMonocular(im,timestamp);
+
+    if (offlineMapping==true) {
+    	mpLocalMapper->RunOnce();
+    	mpLoopCloser->RunOnce();
+    }
+
     return camPosOrb;
 }
 

@@ -126,8 +126,6 @@ void LocalMapping::Run()
 
 void LocalMapping::RunOnce()
 {
-    mbFinished = false;
-
 	// Check if there are keyframes in the queue
 	if(CheckNewKeyFrames())
 	{
@@ -148,7 +146,7 @@ void LocalMapping::RunOnce()
 
 		mbAbortBA = false;
 
-		if(!CheckNewKeyFrames() && !stopRequested())
+		if(!CheckNewKeyFrames())
 		{
 			// Local BA
 			if(mpMap->KeyFramesInMap()>2)
@@ -160,11 +158,6 @@ void LocalMapping::RunOnce()
 
 		mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
 	}
-
-	// Tracking will see that Local Mapping is busy
-	SetAcceptKeyFrames(true);
-
-    SetFinish();
 }
 
 
