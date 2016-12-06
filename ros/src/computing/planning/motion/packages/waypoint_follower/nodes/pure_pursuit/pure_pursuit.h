@@ -112,7 +112,7 @@ private:
   WayPoints current_waypoints_;
 
   double getCmdVelocity(int waypoint) const;
-  void calcLookaheadDistance(int waypoint);
+  void calcLookaheadDistance();
   double calcCurvature(geometry_msgs::Point target) const;
   double calcRadius(geometry_msgs::Point target) const;
   bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const;

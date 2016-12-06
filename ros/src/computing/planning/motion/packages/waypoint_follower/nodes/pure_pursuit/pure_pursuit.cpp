@@ -112,7 +112,7 @@ double PurePursuit::getCmdVelocity(int waypoint) const
   return velocity;
 }
 
-void PurePursuit::calcLookaheadDistance(int waypoint)
+void PurePursuit::calcLookaheadDistance()
 {
   if (param_flag_ == static_cast<int>(Mode::dialog))
   {
@@ -382,7 +382,7 @@ geometry_msgs::TwistStamped PurePursuit::go()
     return outputZero();
   }
 
-  calcLookaheadDistance(1);
+  calcLookaheadDistance();
   // search next waypoint
   getNextWaypoint();
   if (next_waypoint_number_ == -1)
