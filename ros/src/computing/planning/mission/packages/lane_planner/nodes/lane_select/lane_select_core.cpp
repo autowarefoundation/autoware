@@ -127,7 +127,7 @@ void LaneSelectNode::processing()
 {
   if (!is_current_pose_subscribed_ || !is_lane_array_subscribed_ || !is_current_velocity_subscribed_)
   {
-    ROS_ERROR("Necessary topics are not subscribed yet.");
+    ROS_WARN("Necessary topics are not subscribed yet. Waiting...");
     return;
   }
 
@@ -202,7 +202,7 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
     ROS_INFO("closest: %d", std::get<1>(el));
   }
 
-  // confirm if all closest waypoint numbers are -1. If so, output error
+  // confirm if all closest waypoint numbers are -1. If so, output warning
   int32_t accum = 0;
   for (const auto &el : tuple_vec_)
   {
@@ -210,7 +210,7 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
   }
   if (accum == (-1) * static_cast<int32_t>(tuple_vec_.size()))
   {
-    ROS_ERROR("cannot get closest waypoints");
+    ROS_WARN("Cannot get closest waypoints. All closest waypoints are changed to -1...");
     return false;
   }
 
