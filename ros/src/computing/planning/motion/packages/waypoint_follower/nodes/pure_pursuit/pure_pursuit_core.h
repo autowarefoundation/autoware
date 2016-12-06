@@ -83,7 +83,8 @@ private:
   void initForROS();
 
   // functions
-  void publish();
+  //void publish();
+
 };
 }  // waypoint_follower
 
