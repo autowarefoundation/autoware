@@ -21,7 +21,7 @@
 #ifndef OPTIMIZER_H
 #define OPTIMIZER_H
 
-#include "Map.h"
+//#include "Map.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "LoopClosing.h"
@@ -33,6 +33,7 @@ namespace ORB_SLAM2
 {
 
 class LoopClosing;
+class Map;
 
 class Optimizer
 {

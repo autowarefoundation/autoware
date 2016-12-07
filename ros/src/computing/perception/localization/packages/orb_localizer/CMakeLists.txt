@@ -25,7 +25,7 @@ find_package (BLAS REQUIRED)
 find_package (LAPACK REQUIRED)
 find_package (GLUT REQUIRED)
 find_package (OpenMP)
-find_package (Eigen3 3.1.0 REQUIRED)
+find_package (Eigen3 REQUIRED)
 find_package (PCL 1.7 REQUIRED COMPONENTS common octree)
 find_package (PythonLibs REQUIRED)
 
