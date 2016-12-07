@@ -12,8 +12,22 @@ __pycache__/
 *~
 \#*\#
 
-#eclipse settings
+# backup files
+*.bak
+
+# Eclipse
 .cproject
 .project
 .pydevproject
 .settings/
+
+# Visual Studio Code
+.vscode/
+
+# CLion
+.idea/
+cmake-build-debug/
+
+# clang-format
+.clang-format
+
