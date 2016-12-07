@@ -350,13 +350,11 @@ void way_planner_core::PlannerMainLoop()
 			 {
 				 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
 				 UpdateRoadMap(m_AwMap,m_Map);
+				visualization_msgs::MarkerArray map_marker_array;
+				RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+				pub_MapRviz.publish(map_marker_array);
 			 }
 		}
-
-		visualization_msgs::MarkerArray map_marker_array;
-		RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
-		pub_MapRviz.publish(map_marker_array);
-
 		//ROS_INFO("Main Loop Step");
 		loop_rate.sleep();
 	}

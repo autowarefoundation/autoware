@@ -294,20 +294,18 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 
 void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg)
 {
-	//std::cout << " Number of Detected Clusters =" << msg->clusters.size() << std::endl;
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(*msg, m_DetectedClusters);
-	//obstacleTracking.DoOneStep(pR->m_State.state, obj_list);
-	visualization_msgs::MarkerArray detectedPolygons;
-	RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_DetectedClusters, detectedPolygons);
-	pub_DetectedPolygonsRviz.publish(detectedPolygons);
+	timespec timerTemp;
+	UtilityHNS::UtilityH::GetTickCount(timerTemp);
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_State.m_CarInfo, *msg, m_DetectedClusters);
+	//std::cout << "Calculating Contour Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << ", For Objectis: " << m_DetectedClusters.size() <<  std::endl;
 	bNewClusters = true;
 }
 
 void PlannerX::callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg)
 {
-	//std::cout << " Number of Detected Boxes =" << msg->boxes.size() << std::endl;
-	RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(*msg, m_DetectedBoxes);
-	bNewBoxes = true;
+//	std::cout << " Number of Detected Boxes =" << msg->boxes.size() << std::endl;
+//	RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(*msg, m_DetectedBoxes);
+//	bNewBoxes = true;
 }
 
 void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
@@ -456,8 +454,11 @@ void PlannerX::PlannerMainLoop()
 		}
 		else if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
 		 {
+			timespec timerTemp;
+			UtilityHNS::UtilityH::GetTickCount(timerTemp);
 			 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
 			 RosHelpers::UpdateRoadMap(m_AwMap,m_Map);
+			 std::cout << "Converting Vector Map Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << std::endl;
 			 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		 }
 
@@ -486,6 +487,16 @@ void PlannerX::PlannerMainLoop()
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
+			std::vector<PlannerHNS::DetectedObject> obj_list;
+			m_ObstacleTracking.DoOneStep(m_State.state, m_DetectedClusters);
+			obj_list = m_ObstacleTracking.m_DetectedObjects;
+			visualization_msgs::MarkerArray detectedPolygons;
+			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, obj_list, detectedPolygons);
+
+			m_DetectedClusters.clear();
+
+
+
 //			PlannerHNS::WayPoint goal_wp;
 //			if(m_iCurrentGoal+1 < m_goals.size())
 //				goal_wp = m_goals.at(m_iCurrentGoal);
@@ -512,6 +523,7 @@ void PlannerX::PlannerMainLoop()
 			behavior.header.stamp = ros::Time::now();
 
 			pub_BehaviorState.publish(behavior);
+			pub_DetectedPolygonsRviz.publish(detectedPolygons);
 
 		}
 		else

@@ -73,73 +73,71 @@ void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<Detect
 void SimpleTracker::AssociateObjects()
 {
 	std::vector<DetectedObject> hidden_list;
+	DetectedObject* prev_obj;
+	DetectedObject* curr_obj;
+
 	for(unsigned int i = 0 ; i < m_DetectedObjects.size(); i++)
 	{
 		double minCost = 99999999;
 		double minID = -1;
-//		if(m_DetectedObjects.size()>1)
-//			minID = 0;
 
-		DetectedObject trans_obj = m_DetectedObjects.at(i);
-//		WayPoint prevStateTrans = m_PrevState;
-//		CoordinateTransformPoint(m_Car.center, prevStateTrans.pos);
-//		CoordinateTransform(prevStateTrans, trans_obj);
+		curr_obj = &m_DetectedObjects.at(i);
+		curr_obj->center.cost = 0;
 
 		for(unsigned int j = 0; j < m_PrevDetectedObjects.size(); j++)
 		{
-			m_DetectedObjects.at(i).center.cost = distance2points(trans_obj.center.pos, m_PrevDetectedObjects.at(j).center.pos);
-//			for(unsigned int k = 0; k < trans_obj.contour.size(); k++)
-//			{
-//				//if(k < m_PrevDetectedObjects.at(j).contour.size())
-//					m_DetectedObjects.at(i).center.cost += distance2points(trans_obj.contour.at(k), m_PrevDetectedObjects.at(j).contour.at(k));
-//			}
+			prev_obj = &m_PrevDetectedObjects.at(j);
+			//curr_obj.center.cost = distance2points(trans_obj.center.pos, m_PrevDetectedObjects.at(j).center.pos);
+			for(unsigned int k = 0; k < curr_obj->contour.size(); k++)
+				for(unsigned int pk = 0; pk < prev_obj->contour.size(); pk++)
+					curr_obj->center.cost += distance2points(curr_obj->contour.at(k), prev_obj->contour.at(pk));
+
+			curr_obj->center.cost = curr_obj->center.cost/(double)(curr_obj->contour.size()*prev_obj->contour.size());
 
 			if(DEBUG_TRACKER)
-				std::cout << "Cost Cost (" << i << "), " << m_PrevDetectedObjects.at(j).center.pos.ToString() << ","
-						<< m_DetectedObjects.at(i).center.cost <<  ", contour: " << trans_obj.contour.size()
-						<< ", " << trans_obj.center.pos.ToString() << std::endl;
+				std::cout << "Cost Cost (" << i << "), " << prev_obj->center.pos.ToString() << ","
+						<< curr_obj->center.cost <<  ", contour: " << curr_obj->contour.size()
+						<< ", " << curr_obj->center.pos.ToString() << std::endl;
 
-			//m_DetectedObjects.at(i).center.cost = m_DetectedObjects.at(i).center.cost/(double)(trans_obj.contour.size()+1);
-
-			if(m_DetectedObjects.at(i).center.cost < minCost)
+			if(curr_obj->center.cost < minCost)
 			{
-				minCost = m_DetectedObjects.at(i).center.cost;
-				minID = m_PrevDetectedObjects.at(j).id;
+				minCost = curr_obj->center.cost;
+				minID = prev_obj->id;
 			}
 		}
 
-		if(minID <= 0 || minCost > 1.5) // new Object enter the scene
+		if(minID <= 0 || minCost > MAX_ASSOCIATION_DISTANCE) // new Object enter the scene
 		{
 			iTracksNumber = iTracksNumber + 1;
-			m_DetectedObjects.at(i).id = iTracksNumber;
+			 curr_obj->id = iTracksNumber;
 			if(DEBUG_TRACKER)
-				std::cout << "New Matching " << m_DetectedObjects.at(i).id << ", "<< minCost<< ", " << iTracksNumber << std::endl;
+				std::cout << "New Matching " << curr_obj->id << ", "<< minCost<< ", " << iTracksNumber << std::endl;
 		}
 		else
 		{
-			m_DetectedObjects.at(i).id = minID;
+			 curr_obj->id = minID;
 			if(DEBUG_TRACKER)
-				std::cout << "Matched with ID  " << m_DetectedObjects.at(i).id << ", "<< minCost<< std::endl;
+				std::cout << "Matched with ID  " << curr_obj->id << ", "<< minCost<< std::endl;
 		}
 	}
 
 	for(unsigned int i = 0 ; i < m_PrevDetectedObjects.size(); i++)
 	{
-		DetectedObject* obj = &m_PrevDetectedObjects.at(i);
+		prev_obj = &m_PrevDetectedObjects.at(i);
 		bool bFound = false;
 		for(unsigned int j = 0; j < m_DetectedObjects.size(); j++)
 		{
-			if(m_PrevDetectedObjects.at(i).id == m_DetectedObjects.at(j).id)
+			if(prev_obj->id == m_DetectedObjects.at(j).id)
 			{
 				bFound = true;
 				break;
 			}
 		}
 
-		if(!bFound && obj->predicted_center.cost < 300)
+		if(!bFound && prev_obj->predicted_center.cost < MAX_TRACKS_AFTER_LOSING)
 		{
-			obj->predicted_center.cost++;
-			hidden_list.push_back(*obj);
+			prev_obj->predicted_center.cost++;
+			hidden_list.push_back(*prev_obj);
 		}
 	}
 

@@ -40,6 +40,7 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include "RoadNetwork.h"
+#include "CommonSimuDefinitions.h"
 
 namespace PlannerXNS
 {
@@ -184,10 +185,11 @@ public:
 	static void ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 			std::vector<PlannerHNS::DetectedObject>& impObstacles);
 
-	static void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const lidar_tracker::CloudClusterArray& clusters,
+	static void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const SimulationNS::CAR_BASIC_INFO& car_info,
+			const lidar_tracker::CloudClusterArray& clusters,
 			std::vector<PlannerHNS::DetectedObject>& impObstacles);
 
-	static void ConvertFromPlannerObstaclesToAutoware(const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
+	static void ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
 			visualization_msgs::MarkerArray& detectedPolygons);
 
 	static PlannerHNS::SHIFT_POS ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift);

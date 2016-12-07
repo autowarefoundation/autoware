@@ -18,7 +18,8 @@
 namespace SimulationNS
 {
 
-#define MAX_ASSOCIATION_DISTANCE 2.0
+#define MAX_ASSOCIATION_DISTANCE 4.0
+#define MAX_TRACKS_AFTER_LOSING  25
 #define DEBUG_TRACKER 0
 
 class KFTrack

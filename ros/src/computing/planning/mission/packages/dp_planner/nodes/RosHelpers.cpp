@@ -13,6 +13,8 @@
 #include <math.h>
 #include "PolygonGenerator.h"
 #include "MappingHelpers.h"
+#include "MatrixOperations.h"
+
 
 namespace PlannerXNS
 {
@@ -223,7 +225,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	}
 }
 
-void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
+void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
 		visualization_msgs::MarkerArray& detectedPolygons)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
@@ -232,27 +234,44 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const std::vector<Planner
 	lane_waypoint_marker.ns = "detected_polygons";
 	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = .05;
-	lane_waypoint_marker.scale.y = .05;
-	lane_waypoint_marker.scale.z = .05;
+	lane_waypoint_marker.scale.x = .15;
+	lane_waypoint_marker.scale.y = .15;
+	lane_waypoint_marker.color.a = 0.9;
+	lane_waypoint_marker.frame_locked = false;
 
-	lane_waypoint_marker.frame_locked = true;
 
+	 visualization_msgs::Marker velocity_marker;
+	velocity_marker.header.frame_id = "map";
+	velocity_marker.header.stamp = ros::Time();
+	velocity_marker.ns = "detected_polygons_velocity";
+	velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	velocity_marker.action = visualization_msgs::Marker::ADD;
+	velocity_marker.scale.z = 0.8;
+	velocity_marker.scale.x = 0.8;
+	velocity_marker.scale.y = 0.8;
+	velocity_marker.color.a = 0.8;
+
+	velocity_marker.frame_locked = false;
 	detectedPolygons.markers.clear();
-
-
 
 	for(unsigned int i =0; i < trackedObstacles.size(); i++)
 	{
-		std_msgs::ColorRGBA roll_color, total_color, curr_color;
-		roll_color.r = 0;
-		roll_color.g = 0;//(double)((int)(i*10.0)%256)/256.0;
-		roll_color.b = 1;//(double)((int)(256-i*10.0)%256)/256.0;
-		roll_color.a = 0.5;
+		double distance = hypot(currState.pos.y-trackedObstacles.at(i).center.pos.y, currState.pos.x-trackedObstacles.at(i).center.pos.x);
 
-		lane_waypoint_marker.color = roll_color;
+		lane_waypoint_marker.color.g = distance/40.;
+		lane_waypoint_marker.color.r = 1.0 - distance/40.;
+		lane_waypoint_marker.color.b = 0;
+
+		velocity_marker.color.r = trackedObstacles.at(i).center.v/16.0;
+		velocity_marker.color.g = 1.0 - trackedObstacles.at(i).center.v/16.0;
+		velocity_marker.color.b = 1;
+
 		lane_waypoint_marker.points.clear();
 		lane_waypoint_marker.id = i;
+		velocity_marker.id = i;
+
+		std::cout << " Distance : " << distance << ", Of Object" << trackedObstacles.at(i).id << std::endl;
+
 		for(unsigned int p = 0; p < trackedObstacles.at(i).contour.size(); p++)
 		{
 
@@ -260,7 +279,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const std::vector<Planner
 
 			  point.x = trackedObstacles.at(i).contour.at(p).x;
 			  point.y = trackedObstacles.at(i).contour.at(p).y;
-			  //point.z = trackedObstacles.at(i).contour.at(p).z;
+			  point.z = trackedObstacles.at(i).contour.at(p).z;
 
 			  lane_waypoint_marker.points.push_back(point);
 		}
@@ -271,14 +290,37 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const std::vector<Planner
 
 		  point.x = trackedObstacles.at(i).contour.at(0).x;
 		  point.y = trackedObstacles.at(i).contour.at(0).y;
-		  //point.z = trackedObstacles.at(i).contour.at(p).z;
+		  point.z = trackedObstacles.at(i).contour.at(0).z;
 
 		  lane_waypoint_marker.points.push_back(point);
 		}
 
-		detectedPolygons.markers.push_back(lane_waypoint_marker);
-	}
 
+		geometry_msgs::Point point;
+
+		point.x = trackedObstacles.at(i).center.pos.x;
+		point.y = trackedObstacles.at(i).center.pos.y;
+		point.z = trackedObstacles.at(i).center.pos.z;
+
+//		geometry_msgs::Point relative_p;
+		//relative_p.y = 0.5;
+//		velocity_marker.pose.position = calcAbsoluteCoordinate(relative_p, point);
+		velocity_marker.pose.position = point;
+	  velocity_marker.pose.position.z += 0.5;
+
+	  // double to string
+	  std::ostringstream str_out;
+	  if(trackedObstacles.at(i).center.v > 0.75)
+		  str_out << trackedObstacles.at(i).id << " (" << trackedObstacles.at(i).center.v*3.6 << ")";
+	  else
+		  str_out << trackedObstacles.at(i).id;
+	  //std::string vel = str_out.str();
+	  velocity_marker.text = str_out.str();//vel.erase(vel.find_first_of(".") + 2);
+
+
+		detectedPolygons.markers.push_back(lane_waypoint_marker);
+		detectedPolygons.markers.push_back(velocity_marker);
+	}
 }
 
 void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
@@ -313,10 +355,13 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 	}
 }
 
-void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const lidar_tracker::CloudClusterArray& clusters,
-		std::vector<PlannerHNS::DetectedObject>& obstacles_list)
+void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const SimulationNS::CAR_BASIC_INFO& car_info,
+		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list)
 {
 	obstacles_list.clear();
+	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
+	PlannerHNS::Mat3 translationMat(-currState.pos.x, -currState.pos.y);
+
 	for(unsigned int i =0; i < clusters.clusters.size(); i++)
 	{
 		PolygonGenerator polyGen;
@@ -332,9 +377,22 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const lidar_
 		obj.w = clusters.clusters.at(i).dimensions.y;
 		obj.l = clusters.clusters.at(i).dimensions.x;
 		obj.h = clusters.clusters.at(i).dimensions.z;
+		obj.id = 0;
 
-		//double d = hypot(m_State.state.pos.y - obj.center.pos.y, m_State.state.pos.x - obj.center.pos.x);
-		//std::cout << " Distance of  : " << d << ", ";
+
+		PlannerHNS::GPSPoint relative_point;
+		relative_point = translationMat*obj.center.pos;
+		relative_point = rotationMat*relative_point;
+
+		double distance_x = abs(relative_point.x);
+		double distance_y = abs(relative_point.y);
+
+		double size = (obj.w+obj.l)/2.0;
+		if(size <= 0.25 || size >= 5 || (distance_x <= car_info.length/2.0 && distance_y <= car_info.width/2.0))
+			continue;
+
+
+		//std::cout << " Distance_X: " << distance_x << ", " << " Distance_Y: " << distance_y << ", " << " Size: " << size << std::endl;
 
 		obstacles_list.push_back(obj);
 	}

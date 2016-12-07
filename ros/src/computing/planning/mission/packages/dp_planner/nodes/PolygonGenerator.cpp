@@ -41,12 +41,13 @@ std::vector<GPSPoint> PolygonGenerator::EstimateClusterPolygon(const pcl::PointC
 {
 	std::vector<QuarterView> quarters = CreateQuarterViews(QUARTERS_NUMBER);
 
+
 	for(unsigned int i=0; i< cluster.points.size(); i++)
 	{
 		WayPoint p;
 		p.pos.x = cluster.points.at(i).x;
 		p.pos.y = cluster.points.at(i).y;
-		p.pos.z = cluster.points.at(i).z;
+		p.pos.z = original_centroid.z;
 
 		POINT2D v(p.pos.x - original_centroid.x , p.pos.y - original_centroid.y);
 		p.cost = pointNorm(v);

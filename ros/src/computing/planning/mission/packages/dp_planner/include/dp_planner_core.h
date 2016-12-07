@@ -58,6 +58,7 @@
 #include "PlanningHelpers.h"
 #include "CarState.h"
 #include "RosHelpers.h"
+#include "SimpleTracker.h"
 
 namespace PlannerXNS
 {
@@ -73,6 +74,7 @@ protected:
 	int m_frequency;
 
 protected:
+	SimulationNS::SimpleTracker m_ObstacleTracking;
 	SimulationNS::CarState m_State;
 
 	geometry_msgs::Pose m_OriginPos;

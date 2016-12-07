@@ -772,8 +772,8 @@ void PlannerTestDraw::DrawSimu()
 	glColor3f(0,0,1);
 	DrawingHelpers::DrawFilledEllipse(m_PerpPoint.x, m_PerpPoint.y, 0.2, 0.2, 0.2);
 
-	if(m_pMap)
-		DrawingHelpers::DrawGrid(m_pMap->origin_x, m_pMap->origin_y, m_pMap->w, m_pMap->h, m_pMap->cell_l);
+//	if(m_pMap)
+//		DrawingHelpers::DrawGrid(m_pMap->origin_x, m_pMap->origin_y, m_pMap->w, m_pMap->h, m_pMap->cell_l);
 
 
 	m_followX = m_State.state.pos.x;

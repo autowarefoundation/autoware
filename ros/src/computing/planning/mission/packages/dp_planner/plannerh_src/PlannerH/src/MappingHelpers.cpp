@@ -16,7 +16,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define FIND_LEFT_RIGHT_LANES
+#define _FIND_LEFT_RIGHT_LANES
 #define SMOOTH_MAP_WAYPOINTS
 
 
@@ -210,7 +210,6 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 	}
 
 	roadLanes.push_back(lane_obj);
-	cout << "Lanes No = " << roadLanes.size() << endl;
 
 	//map has one road segment
 	RoadSegment roadSegment1;
@@ -321,6 +320,8 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 			}
 		}
 	}
+
+	cout << "Lanes No = " << roadLanes.size() << endl;
 }
 
 WayPoint* MappingHelpers::FindWaypoint(const int& id, RoadNetwork& map)

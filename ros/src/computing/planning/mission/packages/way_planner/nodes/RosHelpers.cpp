@@ -74,45 +74,46 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 
 void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray)
 {
-	visualization_msgs::Marker lane_waypoint_marker;
-	lane_waypoint_marker.header.frame_id = "map";
-	lane_waypoint_marker.header.stamp = ros::Time();
-	lane_waypoint_marker.ns = "vector_map_center_lines_rviz";
-	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
-	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = 0.25;
-	std_msgs::ColorRGBA roll_color, total_color, curr_color;
-	roll_color.r = 1;
-	roll_color.g = 1;
-	roll_color.b = 1;
-	roll_color.a = 0.5;
-
-	lane_waypoint_marker.color = roll_color;
-	lane_waypoint_marker.frame_locked = true;
-
 	markerArray.markers.clear();
-
+	waypoint_follower::LaneArray map_lane_array;
 	for(unsigned int i = 0; i< map.roadSegments.size(); i++)
-	{
 		for(unsigned int j = 0; j < map.roadSegments.at(i).Lanes.size(); j++)
-		{
-			lane_waypoint_marker.points.clear();
+			RosHelpers::ConvertFromPlannerHToAutowarePathFormat(map.roadSegments.at(i).Lanes.at(j).points, map_lane_array);
 
-			lane_waypoint_marker.id = map.roadSegments.at(i).Lanes.at(j).id;
-			for(unsigned int p = 0; p < map.roadSegments.at(i).Lanes.at(j).points.size(); p++)
-			{
-				geometry_msgs::Point point;
+	std_msgs::ColorRGBA total_color;
+	total_color.r = 0.8;
+	total_color.g = 0.8;
+	total_color.b = 0.8;
+	total_color.a = 0.85;
 
-				  point.x = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.x;
-				  point.y = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.y;
-				  //point.z = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.z;
+	visualization_msgs::Marker lane_waypoint_marker;
+	  lane_waypoint_marker.header.frame_id = "map";
+	  lane_waypoint_marker.header.stamp = ros::Time();
+	  lane_waypoint_marker.ns = "vector_map_center_lines_rviz";
+	  lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+	  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+	  lane_waypoint_marker.scale.x = 0.15;
+	  lane_waypoint_marker.scale.y = 0.15;
+	  lane_waypoint_marker.color = total_color;
+	  lane_waypoint_marker.frame_locked = false;
 
-				  lane_waypoint_marker.points.push_back(point);
-			}
+	  int count = 0;
+	  for (unsigned int i=0; i<  map_lane_array.lanes.size(); i++)
+	  {
+	    lane_waypoint_marker.points.clear();
+	    lane_waypoint_marker.id = count;
 
-			markerArray.markers.push_back(lane_waypoint_marker);
-		}
-	}
+	    for (unsigned int j=0; j < map_lane_array.lanes.at(i).waypoints.size(); j++)
+	    {
+	      geometry_msgs::Point point;
+	      point = map_lane_array.lanes.at(i).waypoints.at(j).pose.pose.position;
+	      lane_waypoint_marker.points.push_back(point);
+	    }
+	    markerArray.markers.push_back(lane_waypoint_marker);
+	    count++;
+	  }
+
+	  RosHelpers::createGlobalLaneArrayOrientationMarker(map_lane_array, markerArray);
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
