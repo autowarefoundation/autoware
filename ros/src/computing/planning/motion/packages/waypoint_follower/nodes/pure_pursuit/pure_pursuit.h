@@ -83,13 +83,11 @@ public:
   {
     return current_pose_;
   }
-
   double getLookaheadDistance() const
   {
     return lookahead_distance_;
   }
   // processing
-  geometry_msgs::TwistStamped go();
   bool canGetCurvature(double *output_kappa);
 
 private:
@@ -108,13 +106,8 @@ private:
 
   // functions
   double calcCurvature(geometry_msgs::Point target) const;
-  double calcRadius(geometry_msgs::Point target) const;
   bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const;
-  bool verifyFollowing() const;
-  geometry_msgs::Twist calcTwist(double curvature, double cmd_velocity) const;
   void getNextWaypoint();
-  geometry_msgs::TwistStamped outputZero() const;
-  geometry_msgs::TwistStamped outputTwist(geometry_msgs::Twist t) const;
 };
 }  // waypoint_follower
 

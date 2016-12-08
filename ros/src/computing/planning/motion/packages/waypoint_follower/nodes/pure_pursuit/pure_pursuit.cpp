@@ -195,48 +195,6 @@ bool PurePursuit::interpolateNextTarget(int next_waypoint, geometry_msgs::Point 
   }
 }
 
-bool PurePursuit::verifyFollowing() const
-{
-  double a = 0;
-  double b = 0;
-  double c = 0;
-  getLinearEquation(current_waypoints_.getWaypointPosition(1), current_waypoints_.getWaypointPosition(2), &a, &b, &c);
-  double displacement = getDistanceBetweenLineAndPoint(current_pose_.pose.position, a, b, c);
-  double relative_angle = getRelativeAngle(current_waypoints_.getWaypointPose(1), current_pose_.pose);
-  // ROS_INFO("side diff : %lf , angle diff : %lf",displacement,relative_angle);
-  if (displacement < displacement_threshold_ || relative_angle < relative_angle_threshold_)
-  {
-    // ROS_INFO("Following : True");
-    return true;
-  }
-  else
-  {
-    // ROS_INFO("Following : False");
-    return false;
-  }
-}
-
-geometry_msgs::Twist PurePursuit::calcTwist(double curvature, double cmd_velocity) const
-{
-  // verify whether vehicle is following the path
-  bool following_flag = verifyFollowing();
-  static double prev_angular_velocity = 0;
-
-  geometry_msgs::Twist twist;
-  twist.linear.x = cmd_velocity;
-  if (!following_flag)
-  {
-    twist.angular.z = current_velocity_.twist.linear.x * curvature;
-  }
-  else
-  {
-    twist.angular.z = prev_angular_velocity;
-  }
-
-  prev_angular_velocity = twist.angular.z;
-  return twist;
-}
-
 void PurePursuit::getNextWaypoint()
 {
   int path_size = static_cast<int>(current_waypoints_.size());
@@ -270,71 +228,6 @@ void PurePursuit::getNextWaypoint()
   // if this program reaches here , it means we lost the waypoint!
   next_waypoint_number_ = -1;
   return;
-}
-
-geometry_msgs::TwistStamped PurePursuit::outputZero() const
-{
-  geometry_msgs::TwistStamped twist;
-  twist.twist.linear.x = 0;
-  twist.twist.angular.z = 0;
-  twist.header.stamp = ros::Time::now();
-  return twist;
-}
-
-geometry_msgs::TwistStamped PurePursuit::outputTwist(geometry_msgs::Twist t) const
-{
-  geometry_msgs::TwistStamped twist;
-  twist.twist = t;
-  twist.header.stamp = ros::Time::now();
-  return twist;
-}
-
-geometry_msgs::TwistStamped PurePursuit::go()
-{
-  if (!is_pose_set_ || !is_waypoint_set_ || !is_velocity_set_)
-  {
-    ROS_INFO("somethins is missing... ");
-    return outputZero();
-  }
-
-  calcLookaheadDistance();
-  // search next waypoint
-  getNextWaypoint();
-  if (next_waypoint_number_ == -1)
-  {
-    ROS_INFO("lost next waypoint");
-    return outputZero();
-  }
-
-  // if g_linear_interpolate_mode is false or next waypoint is first or last
-  if (!is_linear_interpolation_ || next_waypoint_number_ == 0 ||
-      next_waypoint_number_ == (static_cast<int>(current_waypoints_.getSize() - 1)))
-  {
-    next_target_position_ = current_waypoints_.getWaypointPosition(next_waypoint_number_);
-    return outputTwist(calcTwist(calcCurvature(next_target_position_), getCmdVelocity(0)));
-  }
-
-  // linear interpolation and calculate angular velocity
-  bool interpolation = interpolateNextTarget(next_waypoint_number_, &next_target_position_);
-
-  if (!interpolation)
-  {
-    ROS_INFO_STREAM("lost target! ");
-    return outputZero();
-  }
-
-  // ROS_INFO("next_target : ( %lf , %lf , %lf)", next_target.x, next_target.y,next_target.z);
-
-  return outputTwist(calcTwist(calcCurvature(next_target_position_), getCmdVelocity(0)));
-
-// ROS_INFO("linear : %lf, angular : %lf",twist.twist.linear.x,twist.twist.angular.z);
-
-#ifdef LOG
-  std::ofstream ofs("/tmp/pure_pursuit.log", std::ios::app);
-  ofs << _current_waypoints.getWaypointPosition(next_waypoint).x << " "
-      << _current_waypoints.getWaypointPosition(next_waypoint).y << " " << next_target.x << " " << next_target.y
-      << std::endl;
-#endif
 }
 
 bool PurePursuit::canGetCurvature(double *output_kappa)
