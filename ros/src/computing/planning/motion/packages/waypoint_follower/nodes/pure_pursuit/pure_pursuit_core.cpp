@@ -36,6 +36,9 @@ namespace waypoint_follower
 PurePursuitNode::PurePursuitNode() : private_nh_("~"), pp_(), LOOP_RATE_(30), current_velocity_(0), cmd_velocity_(0)
 {
   initForROS();
+
+  // initialize for PurePursuit
+  pp_.setLinearInterpolationParameter(is_linear_interpolation_);
 }
 
 // Destructor
@@ -48,7 +51,6 @@ void PurePursuitNode::initForROS()
   // ros parameter settings
   private_nh_.param("is_linear_interpolation", is_linear_interpolation_, bool(true));
   // ROS_INFO_STREAM("is_linear_interpolation : " << is_linear_interpolation_);
-  pp_.getLinearInterpolationParameter(is_linear_interpolation_);
   private_nh_.param("publishes_for_steering_robot",publishes_for_steering_robot_,bool(false));
   private_nh_.param("vehicle_info/wheel_base",wheel_base_,double(2.7));
 
