@@ -51,8 +51,8 @@ void PurePursuitNode::initForROS()
   // ros parameter settings
   private_nh_.param("is_linear_interpolation", is_linear_interpolation_, bool(true));
   // ROS_INFO_STREAM("is_linear_interpolation : " << is_linear_interpolation_);
-  private_nh_.param("publishes_for_steering_robot",publishes_for_steering_robot_,bool(false));
-  private_nh_.param("vehicle_info/wheel_base",wheel_base_,double(2.7));
+  private_nh_.param("publishes_for_steering_robot", publishes_for_steering_robot_, bool(false));
+  private_nh_.param("vehicle_info/wheel_base", wheel_base_, double(2.7));
 
   // setup subscriber
   sub1_ = nh_.subscribe("final_waypoints", 10, &PurePursuitNode::callbackFromWayPoints, this);
@@ -62,7 +62,7 @@ void PurePursuitNode::initForROS()
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
-  pub2_ = nh_.advertise<waypoint_follower::ControlCommandStamped>("ctrl_cmd",10);
+  pub2_ = nh_.advertise<waypoint_follower::ControlCommandStamped>("ctrl_cmd", 10);
   pub11_ = nh_.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   pub12_ = nh_.advertise<visualization_msgs::Marker>("next_target_mark", 0);
   pub13_ = nh_.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
