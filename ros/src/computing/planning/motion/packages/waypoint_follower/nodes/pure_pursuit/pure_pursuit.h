@@ -39,33 +39,41 @@
 // User defined includes
 #include "waypoint_follower/lane.h"
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "runtime_manager/ConfigWaypointFollower.h"
 
 namespace waypoint_follower
 {
-enum class Mode
-{
-  waypoint,
-  dialog
-};
-
 class PurePursuit
 {
 public:
   PurePursuit();
   ~PurePursuit();
 
-  // for getting data from ROS
-  void getConfigForROS(const runtime_manager::ConfigWaypointFollowerConstPtr &config);
-  void getCurrentPoseForROS(const geometry_msgs::PoseStampedConstPtr &msg);
-  void getCurrentVelocityForROS(const geometry_msgs::TwistStampedConstPtr &msg);
-  void getWayPointsForROS(const waypoint_follower::laneConstPtr &msg);
-  void getLinearInterpolationParameter(const bool &param);
+  // for setting data
+  void setLookaheadDistance(const double &ld)
+  {
+    lookahead_distance_ = ld;
+  }
+  void setCurrentVelocity(const double &cur_vel)
+  {
+    current_linear_velocity_ = cur_vel;
+  }
+  void setCurrentWaypoints(const std::vector<waypoint_follower::waypoint> &wps)
+  {
+    current_waypoints_ = wps;
+  }
+  void setCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
+  {
+    current_pose_ = msg->pose;
+  }
+  void setLinearInterpolationParameter(const bool &param)
+  {
+    is_linear_interpolation_ = param;
+  }
 
   // for debug on ROS
   geometry_msgs::Point getPoseOfNextWaypoint() const
   {
-    return current_waypoints_.getWaypointPosition(next_waypoint_number_);
+    return current_waypoints_.at(next_waypoint_number_).pose.pose.position;
   }
   geometry_msgs::Point getPoseOfNextTarget() const
   {
@@ -73,7 +81,7 @@ public:
   }
   geometry_msgs::Pose getCurrentPose() const
   {
-    return current_pose_.pose;
+    return current_pose_;
   }
 
   double getLookaheadDistance() const
@@ -91,29 +99,14 @@ private:
 
   // variables
   bool is_linear_interpolation_;
-
-  int param_flag_;                   // 0 = waypoint, 1 = Dialog
-  double const_lookahead_distance_;  // meter
-  double initial_velocity_;          // km/h
-  double lookahead_distance_calc_ratio_;
-  double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
-  double displacement_threshold_;
-  double relative_angle_threshold_;
-
-  bool is_waypoint_set_;
-  bool is_pose_set_;
-  bool is_velocity_set_;
   int next_waypoint_number_;
   geometry_msgs::Point next_target_position_;
   double lookahead_distance_;
+  geometry_msgs::Pose current_pose_;
+  double current_linear_velocity_;
+  std::vector<waypoint_follower::waypoint> current_waypoints_;
 
-  geometry_msgs::PoseStamped current_pose_;
-  geometry_msgs::TwistStamped current_velocity_;
-  WayPoints current_waypoints_;
-
-  //functions
-  double getCmdVelocity(int waypoint) const;
-  void calcLookaheadDistance();
+  // functions
   double calcCurvature(geometry_msgs::Point target) const;
   double calcRadius(geometry_msgs::Point target) const;
   bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const;

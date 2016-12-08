@@ -46,6 +46,20 @@
 
 namespace waypoint_follower
 {
+enum class Mode : int32_t
+{
+  waypoint,
+  dialog,
+
+  unknown = -1,
+};
+
+template <class T>
+typename std::underlying_type<T>::type enumToInteger(T t)
+{
+  return static_cast<typename std::underlying_type<T>::type>(t);
+}
+
 class PurePursuitNode
 {
 public:
@@ -72,9 +86,16 @@ private:
   const int LOOP_RATE_;  // processing frequency
 
   // variables
-  bool is_linear_interpolation_,publishes_for_steering_robot_;
-  double current_velocity_, cmd_velocity_;
+  bool is_linear_interpolation_, publishes_for_steering_robot_;
+  bool is_waypoint_set_, is_pose_set_, is_velocity_set_, is_config_set_;
+  double current_linear_velocity_, command_linear_velocity_;
   double wheel_base_;
+
+  int32_t param_flag_;               // 0 = waypoint, 1 = Dialog
+  double const_lookahead_distance_;  // meter
+  double const_velocity_;            // km/h
+  double lookahead_distance_ratio_;
+  double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
 
   // callbacks
   void callbackFromConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config);
@@ -86,11 +107,20 @@ private:
   void initForROS();
 
   // functions
-  //void publish();
+  void publishTwistStamped(const bool &can_get_curvature, const double &kappa) const;
+  void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
 
+  double computeLookaheadDistance() const;
+  double computeCommandVelocity() const;
 };
 
 double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa);
+
+inline double kmph2mps(double velocity_kmph)
+{
+  return (velocity_kmph * 1000) / (60 * 60);
+}
+
 }  // waypoint_follower
 
 #endif  // PURE_PURSUIT_CORE_H

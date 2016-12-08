@@ -33,7 +33,21 @@
 namespace waypoint_follower
 {
 // Constructor
-PurePursuitNode::PurePursuitNode() : private_nh_("~"), pp_(), LOOP_RATE_(30), current_velocity_(0), cmd_velocity_(0)
+PurePursuitNode::PurePursuitNode()
+  : private_nh_("~")
+  , pp_()
+  , LOOP_RATE_(30)
+  , is_waypoint_set_(false)
+  , is_pose_set_(false)
+  , is_velocity_set_(false)
+  , is_config_set_(false)
+  , current_linear_velocity_(0)
+  , command_linear_velocity_(0)
+  , param_flag_(-1)
+  , const_lookahead_distance_(4.0)
+  , const_velocity_(5.0)
+  , lookahead_distance_ratio_(2.0)
+  , minimum_lookahead_distance_(6.0)
 {
   initForROS();
 
@@ -78,25 +92,19 @@ void PurePursuitNode::run()
   while (ros::ok())
   {
     ros::spinOnce();
-    pub1_.publish(pp_.go());
+    if (!is_pose_set_ || !is_waypoint_set_ || !is_velocity_set_ || !is_config_set_)
+    {
+      ROS_WARN("Necessary topics are not subscribed yet ... ");
+      loop_rate.sleep();
+      continue;
+    }
+
+    pp_.setLookaheadDistance(computeLookaheadDistance());
 
     double kappa = 0;
-    if(publishes_for_steering_robot_)
-    {
-      waypoint_follower::ControlCommandStamped ccs;
-      ccs.header.stamp = ros::Time::now();
-      if(pp_.canGetCurvature(&kappa))
-      {
-        ccs.cmd.linear_velocity = cmd_velocity_;
-        ccs.cmd.steering_angle = convertCurvatureToSteeringAngle(wheel_base_,kappa);
-      }
-      else
-      {
-        ccs.cmd.linear_velocity = 0;
-        ccs.cmd.steering_angle = 0;
-      }
-      pub2_.publish(ccs);
-    }
+    bool can_get_curvature = pp_.canGetCurvature(&kappa);
+    publishTwistStamped(can_get_curvature, kappa);
+    publishControlCommandStamped(can_get_curvature, kappa);
 
     // for visualization with Rviz
     pub11_.publish(displayNextWaypoint(pp_.getPoseOfNextWaypoint()));
@@ -104,30 +112,89 @@ void PurePursuitNode::run()
     pub12_.publish(displayNextTarget(pp_.getPoseOfNextTarget()));
     pub15_.publish(displayTrajectoryCircle(
         waypoint_follower::generateTrajectoryCircle(pp_.getPoseOfNextTarget(), pp_.getCurrentPose())));
+
+    is_pose_set_ = false;
+    is_velocity_set_ = false;
+    is_waypoint_set_ = false;
     loop_rate.sleep();
   }
 }
 
+void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const double &kappa) const
+{
+  geometry_msgs::TwistStamped ts;
+  ts.header.stamp = ros::Time::now();
+  ts.twist.linear.x = can_get_curvature ? command_linear_velocity_ : 0;
+  ts.twist.angular.z = can_get_curvature ? kappa * ts.twist.linear.x : 0;
+  pub1_.publish(ts);
+}
+
+void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const
+{
+  if (!publishes_for_steering_robot_)
+    return;
+
+  waypoint_follower::ControlCommandStamped ccs;
+  ccs.header.stamp = ros::Time::now();
+  ccs.cmd.linear_velocity = can_get_curvature ? computeCommandVelocity() : 0;
+  ccs.cmd.steering_angle = can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa) : 0;
+
+  pub2_.publish(ccs);
+}
+
+double PurePursuitNode::computeLookaheadDistance() const
+{
+  if (param_flag_ == enumToInteger(Mode::dialog))
+    return const_lookahead_distance_;
+
+  double maximum_lookahead_distance = current_linear_velocity_ * 10;
+  double ld = current_linear_velocity_ * lookahead_distance_ratio_;
+
+  return ld < minimum_lookahead_distance_ ? minimum_lookahead_distance_
+        : ld > maximum_lookahead_distance ? maximum_lookahead_distance
+        : ld;
+}
+
+double PurePursuitNode::computeCommandVelocity() const
+{
+  if (param_flag_ == enumToInteger(Mode::dialog))
+    return kmph2mps(const_velocity_);
+
+  return command_linear_velocity_;
+}
+
 void PurePursuitNode::callbackFromConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
 {
-  pp_.getConfigForROS(config);
+  param_flag_ = config->param_flag;
+  const_lookahead_distance_ = config->lookahead_distance;
+  const_velocity_ = config->velocity;
+  lookahead_distance_ratio_ = config->lookahead_ratio;
+  minimum_lookahead_distance_ = config->minimum_lookahead_distance;
+  is_config_set_ = true;
 }
 
 void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  pp_.getCurrentPoseForROS(msg);
+  pp_.setCurrentPose(msg);
+  is_pose_set_ = true;
 }
 
 void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
 {
-  current_velocity_ = msg->twist.linear.x;
-  pp_.getCurrentVelocityForROS(msg);
+  current_linear_velocity_ = msg->twist.linear.x;
+  pp_.setCurrentVelocity(current_linear_velocity_);
+  is_velocity_set_ = true;
 }
 
 void PurePursuitNode::callbackFromWayPoints(const waypoint_follower::laneConstPtr &msg)
 {
-  cmd_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
-  pp_.getWayPointsForROS(msg);
+  if (!msg->waypoints.empty())
+    command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
+  else
+    command_linear_velocity_ = 0;
+
+  pp_.setCurrentWaypoints(msg->waypoints);
+  is_waypoint_set_ = true;
 }
 
 double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa)
