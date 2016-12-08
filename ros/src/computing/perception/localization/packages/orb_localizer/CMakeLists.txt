@@ -12,7 +12,7 @@ find_package (catkin REQUIRED
 		std_msgs
 )
 
-LIST(APPEND CMAKE_MODULE_PATH ${SOURCE_DIR}/cmake_modules)
+LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 
 # Force using C++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
