@@ -52,7 +52,7 @@ class DataWriter:
                 cpPose = copy (self.currentPose)
                 self.dataEx.release()
                 
-                cv2.imwrite (self.path + "/{0:06d}.png".format(counter), self.currentImage)
+                cv2.imwrite (self.path + "/{0:06d}.jpg".format(counter), self.currentImage)
                 poseStr = "{:.6f} {} {} {} {} {} {} {}".format(
                     rospy.Time.now().to_sec(),
                     cpPose.position.x,

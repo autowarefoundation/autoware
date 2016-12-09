@@ -209,3 +209,15 @@ target_link_libraries (
 		${LINK_LIBRARIES}
 		boost_program_options
 )
+
+
+add_executable (
+	test_debayer
+		nodes/test_debayer.cpp
+)
+
+target_link_libraries (
+	test_debayer
+		${catkin_LIBRARIES}
+		raw
+)
