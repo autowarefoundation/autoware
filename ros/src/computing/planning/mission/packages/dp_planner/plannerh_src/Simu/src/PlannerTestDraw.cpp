@@ -56,8 +56,6 @@ PlannerTestDraw::PlannerTestDraw()
 	m_iCurrentGoal = 0;
 	m_CarModel = 0;
 
-//	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/hatem/Downloads/path_16_2.csv");
-
 //	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
 //			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);
 

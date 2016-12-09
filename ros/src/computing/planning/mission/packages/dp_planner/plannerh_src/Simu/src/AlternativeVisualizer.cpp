@@ -29,7 +29,7 @@ namespace Graphics
 AlternativeVisualizer::AlternativeVisualizer()
 {
 
-//	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/hatem/Downloads/path_16_2.csv");
+	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/pose.csv");
 
 //	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
 //			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);

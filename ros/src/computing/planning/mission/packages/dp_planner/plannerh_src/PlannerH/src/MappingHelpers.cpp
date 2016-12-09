@@ -1306,12 +1306,12 @@ void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFi
 
 	for(unsigned int i=0; i< path_data.size() ; i++)
 	{
-		WayPoint p(path_data.at(i).x,path_data.at(i).y,path_data.at(i).z,path_data.at(i).a );
+		WayPoint p(path_data.at(i).x,path_data.at(i).y,path_data.at(i).z,0);
 		p.pos.lat = p.pos.x;
 		p.pos.lon = p.pos.y;
 		p.pos.alt = p.pos.z;
-		p.pos.dir = p.pos.a;
-		p.v = path_data.at(i).v;
+		//p.pos.dir = p.pos.a;
+		//p.v = path_data.at(i).v;
 		p.laneId = lane.id;
 		p.id = i+1;
 		if(i>0)
@@ -1346,7 +1346,13 @@ void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFi
 	}
 
 	if(segment.Lanes.size()>0)
+	{
 		segment.Lanes.at(segment.Lanes.size()-1).toIds.clear();
+		for(unsigned int i=0; i < segment.Lanes.size(); i++)
+		{
+		  	PlanningHelpers::FixPathDensity(segment.Lanes.at(i).points, 0.5);
+		}
+	}
 
 	PlannerHNS::RoadNetwork roadMap;
 	roadMap.roadSegments.push_back(segment);
