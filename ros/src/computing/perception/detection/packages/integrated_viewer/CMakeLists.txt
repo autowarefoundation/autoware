@@ -101,4 +101,4 @@ install(FILES rviz_plugin_description.xml
 add_dependencies(${PROJECT_NAME} 
   runtime_manager_generate_messages_cpp
   cv_tracker_generate_messages_cpp
-  points2image_generate_mssages_cpp)
+  points2image_generate_messages_cpp)
