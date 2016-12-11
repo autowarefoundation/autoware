@@ -179,7 +179,7 @@ int main (int argc, char *argv[]) {
   ros::init(argc, argv, "roi_extractor");
 
   // Get source topic name of image from ROS private parameter
-  ros::NodeHandle private_node_handler;
+  ros::NodeHandle private_node_handler("~");
   std::string image_topic_name;
   std::string target_directory_name = std::string(getenv("HOME")) + "/.autoware";
   int minimum_height = 32;
