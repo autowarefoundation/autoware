@@ -194,7 +194,7 @@ void CarState::InitPolygons()
 	 for(unsigned int i=0; i< obj.contour.size(); i++)
 	 {
 		 p.pos = obj.contour.at(i);
-		 TransformPoint(p_center, p.pos);
+		 //TransformPoint(p_center, p.pos);
 		 contourPoints.push_back(p);
 	 }
 
@@ -605,7 +605,7 @@ void CarState::CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, c
 
 			for(unsigned int c = 0; c < m_TrajectoryCosts.size(); c++)
 			{
-				double normalized_cost = 1.0 - (distance_on_trajectory_smallest / pParams->horizonDistance);
+				double normalized_cost = 1.0 - (distance_on_trajectory_smallest / pParams->minFollowingDistance);
 				double d_diff = fabs(distance_lateral - m_TrajectoryCosts.at(c).distance_from_center);
 				m_TrajectoryCosts.at(c).lateral_costs.push_back(std::make_pair(j,d_diff));
 
@@ -636,7 +636,7 @@ void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, do
 	{
 //		std::cout << m_TrajectoryCosts.at(c).ToString() << std::endl;
 
-		if(m_TrajectoryCosts.at(c).closest_obj_cost >= 0.8)
+		if(m_TrajectoryCosts.at(c).closest_obj_cost >= 0.6)
 			m_TrajectoryCosts.at(c).cost = 1;
 		else
 			m_TrajectoryCosts.at(c).cost =

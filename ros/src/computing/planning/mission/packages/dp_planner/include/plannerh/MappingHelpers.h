@@ -77,7 +77,7 @@ public:
 	static std::vector<WayPoint> GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID);
 	static std::vector<std::string> SplitString(const std::string& str, const std::string& token);
 
-	static void CreateKmlFromLocalizationPathFile(const std::string& pathFileName,const std::vector<TrafficLight>& trafficLights, const std::vector<GPSPoint> stopLines);
+	static void CreateKmlFromLocalizationPathFile(const std::string& pathFileName,const double& maxLaneDistance, const double& density,const std::vector<TrafficLight>& trafficLights, const std::vector<GPSPoint>& stopLines);
 	static void InsertTrafficLightToMap(const TrafficLight& trafficLightPose, const double& stopingDistance, RoadNetwork& map);
 
 };

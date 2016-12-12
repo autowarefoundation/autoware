@@ -9,7 +9,7 @@
 	
 	<arg name="maxSteerValue" 				default="1.0" />
 	<arg name="minSteerValue" 				default="-1.0" />
-	<arg name="maxVelocity" 				default="0.8" />
+	<arg name="maxVelocity" 				default="1.8" />
 	<arg name="minVelocity" 				default="0.0" />
 		
 	<arg name="steeringDelay" 				default="0.0" />

@@ -428,34 +428,78 @@ double PlanningHelpers::GetDistanceOnTrajectory(std::vector<WayPoint>& path, con
 
 void PlanningHelpers::FixPathDensity(vector<WayPoint>& path, const double& distanceDensity)
 {
-	double d_diff = 0;
+	if(path.size() == 0 || distanceDensity==0) return;
+
+	double d = 0, a = 0;
+	double margin = distanceDensity*0.01;
 	double remaining = 0;
 	int nPoints = 0;
 	vector<WayPoint> fixedPath;
-	for(unsigned int i = 0; i < path.size()-1; i++)
+	fixedPath.push_back(path.at(0));
+	for(unsigned int si = 0, ei=1; ei < path.size(); )
 	{
-		d_diff = hypot(path.at(i+1).pos.x- path.at(i).pos.x, path.at(i+1).pos.y- path.at(i).pos.y) + remaining;
-		nPoints = d_diff  / distanceDensity;
-		WayPoint pm = path.at(i);
-		if(remaining == 0 && d_diff > 0.05)
-			fixedPath.push_back(pm);
+		d += hypot(path.at(ei).pos.x- path.at(ei-1).pos.x, path.at(ei).pos.y- path.at(ei-1).pos.y) + remaining;
+		a = atan2(path.at(ei).pos.y - path.at(si).pos.y, path.at(ei).pos.x - path.at(si).pos.x);
 
-		double a = atan2(path.at(i+1).pos.y - path.at(i).pos.y, path.at(i+1).pos.x - path.at(i).pos.x);
-		for(int k = 0; k < nPoints-1; k++)
+		if(d < distanceDensity - margin ) // skip
 		{
-			double tempDensity = distanceDensity;
-			if(k==0)
-				tempDensity = distanceDensity - remaining;
-
-			pm.pos.x = pm.pos.x + tempDensity * cos(a);
-			pm.pos.y = pm.pos.y + tempDensity * sin(a);
-			fixedPath.push_back(pm);
+			ei++;
+			remaining = 0;
 		}
-
-		float rem_mod = fmod(d_diff, distanceDensity);
-		remaining = roundf(rem_mod*100)/100;
-
+		else if(d > (distanceDensity +  margin)) // skip
+		{
+			WayPoint pm = path.at(si);
+			nPoints = d  / distanceDensity;
+			for(int k = 0; k < nPoints; k++)
+			{
+				pm.pos.x = pm.pos.x + distanceDensity * cos(a);
+				pm.pos.y = pm.pos.y + distanceDensity * sin(a);
+				fixedPath.push_back(pm);
+			}
+			remaining = d - nPoints*distanceDensity;
+			path.at(si) = pm;
+			d = 0;
+			ei++;
+		}
+		else
+		{
+			d = 0;
+			remaining = 0;
+			fixedPath.push_back(path.at(ei));
+			ei++;
+			si = ei - 1;
+		}
 	}
+
+//	path = fixedPath;
+//	fixedPath.clear();
+//
+//	for(unsigned int i = 0; i < path.size()-1; i++)
+//	{
+//		d = hypot(path.at(i+1).pos.x- path.at(i).pos.x, path.at(i+1).pos.y- path.at(i).pos.y) + remaining;
+//		a = atan2(path.at(i+1).pos.y - path.at(i).pos.y, path.at(i+1).pos.x - path.at(i).pos.x);
+//
+//		nPoints = d  / distanceDensity;
+//		WayPoint pm = path.at(i);
+//		if((remaining == 0 && d > margin) || i==0)
+//			fixedPath.push_back(pm);
+//
+//		for(int k = 0; k < nPoints-1; k++)
+//		{
+//			double tempDensity = distanceDensity;
+//			if(k==0)
+//				tempDensity = distanceDensity - remaining;
+//
+//			pm.pos.x = pm.pos.x + tempDensity * cos(a);
+//			pm.pos.y = pm.pos.y + tempDensity * sin(a);
+//			fixedPath.push_back(pm);
+//		}
+//
+//		float rem_mod = fmod(d, distanceDensity);
+//		remaining = roundf(rem_mod*100)/100;
+//
+//	}
+
 	path = fixedPath;
 }
 

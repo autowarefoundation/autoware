@@ -22,7 +22,7 @@ using namespace UtilityHNS;
 #define VectorMap "NagoyaUniversity/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
-#define kmlMap	"/home/user/data/ToyotaCity1/map/kml/ToyotaKML.kml"
+#define kmlMap	"/home/user/SimuLogs/tsukuba_road_network_test.kml"
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -55,6 +55,12 @@ PlannerTestDraw::PlannerTestDraw()
 	m_SimulationTime = 0;
 	m_iCurrentGoal = 0;
 	m_CarModel = 0;
+
+
+	std::vector<PlannerHNS::TrafficLight> trafficLights;
+	std::vector<PlannerHNS::GPSPoint> stopLines;
+
+	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/path1016_3.csv", 105, 1.5, trafficLights, stopLines);
 
 //	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
 //			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);
@@ -132,6 +138,7 @@ PlannerTestDraw::PlannerTestDraw()
 //		m_LanesIds.push_back(id);
 //	}
 
+	m_start =  PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
 	m_followX = m_start.pos.x;
 	m_followY = m_start.pos.y;
 	m_followZ = m_start.pos.z;

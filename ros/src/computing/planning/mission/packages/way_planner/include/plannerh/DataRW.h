@@ -47,6 +47,7 @@ private:
 	int m_nVarPerObj;
 	int m_nLineHeaders;
 	std::string m_HeaderRepeatKey;
+	char m_Separator;
 
 	void ReadHeaders();
 	void ParseDataTitles(const std::string& header);
@@ -59,7 +60,7 @@ public:
 	 * @param iDataTitles which row contains the data titles
 	 * @param nVariablesForOneObject 0 means each row represents one object
 	 */
-	SimpleReaderBase(const std::string& fileName, const int& nHeaders = 2,
+	SimpleReaderBase(const std::string& fileName, const int& nHeaders = 2, const char& separator = ',',
 			const int& iDataTitles = 1, const int& nVariablesForOneObject = 0,
 			const int& nLineHeaders = 0, const std::string& headerRepeatKey = "...");
 	~SimpleReaderBase();
@@ -154,6 +155,7 @@ class LocalizationPathReader : public SimpleReaderBase
 public:
 	struct LocalizationWayPoint
 	{
+		double t;
 		double x;
 		double y;
 		double z;
@@ -161,7 +163,7 @@ public:
 		double v;
 	};
 
-	LocalizationPathReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	LocalizationPathReader(const std::string& fileName, const char& separator) : SimpleReaderBase(fileName, 1, separator){}
 	~LocalizationPathReader(){}
 
 	bool ReadNextLine(LocalizationWayPoint& data);

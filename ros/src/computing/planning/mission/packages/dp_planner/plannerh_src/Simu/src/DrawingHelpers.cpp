@@ -168,7 +168,7 @@ void DrawingHelpers::DrawCustomOrigin(const double& x, const double& y, const do
 }
 
 vector<vector<float> > DrawingHelpers::PreparePathForDrawing(const std::vector<PlannerHNS::WayPoint>& path,
-		std::vector<std::vector<PlannerHNS::WayPoint> >& redyForDraw, double w, int resolution)
+		std::vector<std::vector<PlannerHNS::WayPoint> >& redyForDraw, double w, double resolution)
 {
 	vector<vector<float> > colorProfiles;
 	if(path.size() < 2) return colorProfiles;

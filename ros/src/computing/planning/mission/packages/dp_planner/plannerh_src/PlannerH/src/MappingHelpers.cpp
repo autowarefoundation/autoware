@@ -17,7 +17,7 @@
 using namespace UtilityHNS;
 using namespace std;
 #define _FIND_LEFT_RIGHT_LANES
-#define SMOOTH_MAP_WAYPOINTS
+#define _SMOOTH_MAP_WAYPOINTS
 
 
 namespace PlannerHNS {
@@ -312,6 +312,7 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		{
 			for(unsigned int p= 0; p < map.roadSegments.at(rs).Lanes.at(i).points.size(); p++)
 			{
+
 				WayPoint* pWP = &map.roadSegments.at(rs).Lanes.at(i).points.at(p);
 				for(unsigned int j = 0 ; j < pWP->toIds.size(); j++)
 				{
@@ -321,7 +322,7 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		}
 	}
 
-	cout << "Lanes No = " << roadLanes.size() << endl;
+	cout << "Map loaded from data with " << roadLanes.size()  << " lanes" << endl;
 }
 
 WayPoint* MappingHelpers::FindWaypoint(const int& id, RoadNetwork& map)
@@ -528,6 +529,7 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 	vector<Lane> laneLinksList = GetLanesList(pHeadElem);
 	vector<RoadSegment> roadLinksList = GetRoadSegmentsList(pHeadElem);
 
+
 	//Fill the relations
 	for(unsigned int i= 0; i<roadLinksList.size(); i++ )
 	{
@@ -538,6 +540,7 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 #ifdef SMOOTH_MAP_WAYPOINTS
 				PlanningHelpers::SmoothPath(laneLinksList.at(j).points, 0.49, 0.15 , 0.01);
 #endif
+				PlanningHelpers::CalcAngleAndCost(laneLinksList.at(j).points);
 				roadLinksList.at(i).Lanes.push_back(laneLinksList.at(j));
 			}
 		}
@@ -597,6 +600,8 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 			}
 		}
 	}
+
+	cout << "Map loaded from kml file with " << laneLinksList.size()  << " lanes" << endl;
 
 }
 
@@ -1085,20 +1090,19 @@ vector<Lane> MappingHelpers::GetLanesList(TiXmlElement* pElem)
 		string tfID;
 		TiXmlElement* pNameXml =pE->FirstChildElement("description");
 		if(pNameXml)
+		{
 		  tfID = pNameXml->GetText();
 
-		Lane ll;
-		ll.id = GetIDsFromPrefix(tfID, "LID", "RSID").at(0);
-		ll.roadId = GetIDsFromPrefix(tfID, "RSID", "NUM").at(0);
-		ll.num = GetIDsFromPrefix(tfID, "NUM", "From").at(0);
-		ll.fromIds = GetIDsFromPrefix(tfID, "From", "To");
-		ll.toIds = GetIDsFromPrefix(tfID, "To", "Vel");
-		ll.speed = GetIDsFromPrefix(tfID, "Vel", "").at(0);
-		ll.points = GetCenterLaneData(pE, ll.id);
-
-
-
-		llList.push_back(ll);
+			Lane ll;
+			ll.id = GetIDsFromPrefix(tfID, "LID", "RSID").at(0);
+			ll.roadId = GetIDsFromPrefix(tfID, "RSID", "NUM").at(0);
+			ll.num = GetIDsFromPrefix(tfID, "NUM", "From").at(0);
+			ll.fromIds = GetIDsFromPrefix(tfID, "From", "To");
+			ll.toIds = GetIDsFromPrefix(tfID, "To", "Vel");
+			ll.speed = GetIDsFromPrefix(tfID, "Vel", "").at(0);
+			ll.points = GetCenterLaneData(pE, ll.id);
+			llList.push_back(ll);
+		}
 	}
 
 	return llList;
@@ -1282,19 +1286,20 @@ void MappingHelpers::InsertTrafficLightToMap(const TrafficLight& trafficLightPos
 }
 
 void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFileName,
+		const double& maxLaneDistance, const double& density,
 		const std::vector<TrafficLight>& trafficLights,
-		const std::vector<GPSPoint> stopLines)
+		const std::vector<GPSPoint>& stopLines)
 {
 
 	//Read Data From csv file
-	LocalizationPathReader pathReader(pathFileName);
+	LocalizationPathReader pathReader(pathFileName, ',');
 	vector<LocalizationPathReader::LocalizationWayPoint> path_data;
 	pathReader.ReadAllData(path_data);
 	PlannerHNS::RoadSegment segment;
 	segment.id = 1;
 
 	double d_accum = 0;
-	double laneMaxLength = 40;
+	double laneMaxLength = maxLaneDistance;
 
 	std::vector<WayPoint> wayPointsList;
 
@@ -1327,7 +1332,7 @@ void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFi
 
 		p_prev = p;
 
-		if(d_accum > laneMaxLength)
+		if(d_accum > laneMaxLength || i+1 == path_data.size())
 		{
 			if(segment.Lanes.size()>0)
 				lane.fromIds.push_back(segment.Lanes.at(segment.Lanes.size()-1).id);
@@ -1348,9 +1353,29 @@ void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFi
 	if(segment.Lanes.size()>0)
 	{
 		segment.Lanes.at(segment.Lanes.size()-1).toIds.clear();
-		for(unsigned int i=0; i < segment.Lanes.size(); i++)
+		if(density > 0)
 		{
-		  	PlanningHelpers::FixPathDensity(segment.Lanes.at(i).points, 0.5);
+			for(unsigned int i=0; i < segment.Lanes.size(); i++)
+				PlanningHelpers::FixPathDensity(segment.Lanes.at(i).points, density);
+
+			int fnID=0;
+			for(unsigned int i=0; i < segment.Lanes.size(); i++)
+			{
+				if(segment.Lanes.at(i).points.size() > 0)
+				{
+					for(unsigned int j =0; j < segment.Lanes.at(i).points.size(); j++)
+					{
+						fnID ++;
+						segment.Lanes.at(i).points.at(j).id = fnID ;
+						segment.Lanes.at(i).points.at(j).fromIds.clear();
+						segment.Lanes.at(i).points.at(j).toIds.clear();
+						if(!(i == 0 && j == 0))
+							segment.Lanes.at(i).points.at(j).fromIds.push_back(fnID - 1);
+						if(!(i+1 ==  segment.Lanes.size() && j+1 == segment.Lanes.at(i).points.size()))
+							segment.Lanes.at(i).points.at(j).toIds.push_back(fnID + 1);
+					}
+				}
+			}
 		}
 	}
 
@@ -1363,7 +1388,7 @@ void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFi
 	fileName << "_RoadNetwork.kml";
 	string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
 
-	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
+	PlannerHNS::MappingHelpers::WriteKML("/home/user/SimuLogs/tsukuba_road_network_test.kml",kml_templateFilePath , roadMap);
 }
 
 } /* namespace PlannerHNS */

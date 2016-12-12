@@ -36,6 +36,7 @@ void way_planner_core::GetTransformFromTF(const std::string parent_frame, const 
 {
 	static tf::TransformListener listener;
 
+	int nFailedCounter = 0;
 	while (1)
 	{
 		try
@@ -45,8 +46,12 @@ void way_planner_core::GetTransformFromTF(const std::string parent_frame, const 
 		}
 		catch (tf::TransformException& ex)
 		{
-			ROS_ERROR("%s", ex.what());
+			if(nFailedCounter > 2)
+			{
+				ROS_ERROR("%s", ex.what());
+			}
 			ros::Duration(1.0).sleep();
+			nFailedCounter ++;
 		}
 	}
 }
@@ -162,7 +167,7 @@ void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConst
 
 		if(bNewPlan)
 		{
-			bStartPos = false;
+			//bStartPos = false;
 			waypoint_follower::LaneArray lane_array;
 			for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 				RosHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
@@ -343,6 +348,9 @@ void way_planner_core::PlannerMainLoop()
 		{
 			m_bKmlMap = true;
 			PlannerHNS::MappingHelpers::LoadKML(m_params.KmlMapPath, m_Map);
+			visualization_msgs::MarkerArray map_marker_array;
+			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			pub_MapRviz.publish(map_marker_array);
 		}
 		else if(m_params.mapSource == MAP_LOADER || m_params.mapSource == MAP_SERVER)
 		{

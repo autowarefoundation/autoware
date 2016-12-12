@@ -162,7 +162,7 @@ void DataRW::WriteKMLFile(const string& fileName, const vector<vector<string> >&
 	  	kmldoc.SaveFile(fileName);
   }
 
-SimpleReaderBase::SimpleReaderBase(const string& fileName, const int& nHeaders,
+SimpleReaderBase::SimpleReaderBase(const string& fileName, const int& nHeaders,const char& separator,
 		  const int& iDataTitles, const int& nVariablesForOneObject ,
 		  const int& nLineHeaders, const string& headerRepeatKey)
 {
@@ -178,6 +178,7 @@ SimpleReaderBase::SimpleReaderBase(const string& fileName, const int& nHeaders,
 	m_nVarPerObj = nVariablesForOneObject;
 	m_HeaderRepeatKey = headerRepeatKey;
 	m_nLineHeaders = nLineHeaders;
+	m_Separator = separator;
 	m_pFile->precision(16);
 
 	ReadHeaders();
@@ -203,7 +204,7 @@ bool SimpleReaderBase::ReadSingleLine(vector<vector<string> >& line)
 
 	if(m_nVarPerObj == 0)
 	{
-		while(getline(str_stream, innerToken, ','))
+		while(getline(str_stream, innerToken, m_Separator))
 		{
 			obj_part.push_back(innerToken);
 		}
@@ -214,7 +215,7 @@ bool SimpleReaderBase::ReadSingleLine(vector<vector<string> >& line)
 	else
 	{
 		int iCounter = 0;
-		while(iCounter < m_nLineHeaders && getline(str_stream, innerToken, ','))
+		while(iCounter < m_nLineHeaders && getline(str_stream, innerToken, m_Separator))
 		{
 			header.push_back(innerToken);
 			iCounter++;
@@ -223,7 +224,7 @@ bool SimpleReaderBase::ReadSingleLine(vector<vector<string> >& line)
 
 		iCounter = 1;
 
-		while(getline(str_stream, innerToken, ','))
+		while(getline(str_stream, innerToken, m_Separator))
 		{
 			obj_part.push_back(innerToken);
 			if(iCounter == m_nVarPerObj)
@@ -281,7 +282,7 @@ void SimpleReaderBase::ParseDataTitles(const string& header)
 	string innerToken;
 	istringstream str_stream(header);
 	m_DataTitlesHeader.clear();
-	while(getline(str_stream, innerToken, ','))
+	while(getline(str_stream, innerToken, m_Separator))
 	{
 		if(innerToken.compare(m_HeaderRepeatKey)!=0)
 			m_DataTitlesHeader.push_back(innerToken);
@@ -365,11 +366,12 @@ bool LocalizationPathReader::ReadNextLine(LocalizationWayPoint& data)
 		if(lineData.size()==0) return false;
 		if(lineData.at(0).size() < 5) return false;
 
-		data.x = strtod(lineData.at(0)[0].c_str(), NULL);
-		data.y = strtod(lineData.at(0)[1].c_str(), NULL);
-		data.z = strtod(lineData.at(0)[2].c_str(), NULL);
-		data.a = strtod(lineData.at(0)[3].c_str(), NULL);
-		data.v = strtod(lineData.at(0)[4].c_str(), NULL);
+		//data.t = strtod(lineData.at(0).at(0).c_str(), NULL);
+		data.x = strtod(lineData.at(0).at(0).c_str(), NULL);
+		data.y = strtod(lineData.at(0).at(1).c_str(), NULL);
+		data.z = strtod(lineData.at(0).at(2).c_str(), NULL);
+		data.a = strtod(lineData.at(0).at(3).c_str(), NULL);
+		data.v = strtod(lineData.at(0).at(4).c_str(), NULL);
 
 		return true;
 

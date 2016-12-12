@@ -50,7 +50,8 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		waypoint_follower::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
-		wp.pose.pose.position.z = path.at(i).pos.z;
+		//wp.pose.pose.position.z = path.at(i).pos.z;
+		wp.pose.pose.position.z = 5;
 		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
 		wp.twist.twist.linear.x = path.at(i).v;
 //		if(path.at(i).bDir == PlannerHNS::FORWARD_DIR)
@@ -92,8 +93,8 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 	  lane_waypoint_marker.ns = "vector_map_center_lines_rviz";
 	  lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	  lane_waypoint_marker.scale.x = 0.15;
-	  lane_waypoint_marker.scale.y = 0.15;
+	  lane_waypoint_marker.scale.x = 0.75;
+	  lane_waypoint_marker.scale.y = 0.75;
 	  lane_waypoint_marker.color = total_color;
 	  lane_waypoint_marker.frame_locked = false;
 
@@ -350,9 +351,9 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
   lane_waypoint_marker.header.stamp = ros::Time();
   lane_waypoint_marker.type = visualization_msgs::Marker::ARROW;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-  lane_waypoint_marker.scale.x = 0.5;
-  lane_waypoint_marker.scale.y = 0.1;
-  lane_waypoint_marker.scale.z = 0.1;
+  lane_waypoint_marker.scale.x = 1.0;
+  lane_waypoint_marker.scale.y = 0.5;
+  lane_waypoint_marker.scale.z = 0.5;
   lane_waypoint_marker.color.r = 1.0;
   lane_waypoint_marker.color.a = 1.0;
   lane_waypoint_marker.frame_locked = true;

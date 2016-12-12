@@ -28,8 +28,10 @@ namespace Graphics
 
 AlternativeVisualizer::AlternativeVisualizer()
 {
+	std::vector<TrafficLight> trafficLights;
+	std::vector<GPSPoint> stopLines;
 
-	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/pose.csv");
+	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/pose.csv", 50, 0.5, trafficLights, stopLines);
 
 //	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
 //			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);
@@ -38,7 +40,7 @@ AlternativeVisualizer::AlternativeVisualizer()
 //	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
 //	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
-	PlannerHNS::MappingHelpers::LoadKML("/home/user/data/ToyotaCity1/map/kml/ToyotaKML.kml", m_RoadMap);
+	PlannerHNS::MappingHelpers::LoadKML("/home/user/SimuLogs/road_network_test.kml", m_RoadMap);
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
@@ -51,10 +53,11 @@ AlternativeVisualizer::AlternativeVisualizer()
 	//Initialize Static Traffic Light
 
 
-//	m_followX = m_start.pos.x;
-//	m_followY = m_start.pos.y;
-//	m_followZ = m_start.pos.z;
-//	m_followA = m_start.pos.a;
+	m_start =  PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
+	//m_followX = m_start.pos.x;
+	//m_followY = m_start.pos.y;
+	//m_followZ = m_start.pos.z;
+	//m_followA = m_start.pos.a;
 
 
 	PrepareVectorMapForDrawing();
@@ -141,11 +144,11 @@ void AlternativeVisualizer::PrepareVectorMapForDrawing()
 
 			vector<PlannerHNS::WayPoint> path_local = l->points;
 
-			DrawingHelpers::PreparePathForDrawing(path_local,ready_to_draw, 2.8 / width_ratio);
+			DrawingHelpers::PreparePathForDrawing(path_local,ready_to_draw, 2.8 / width_ratio, 0.5);
 			m_ReadyToDrawLanes.push_back(ready_to_draw);
 
 			ready_to_draw.clear();
-			DrawingHelpers::PreparePathForDrawing(path_local,ready_to_draw, 0.1);
+			DrawingHelpers::PreparePathForDrawing(path_local,ready_to_draw, 0.1, 0.5);
 			m_ReadyToDrawCenterLines.push_back(ready_to_draw);
 
 
@@ -385,8 +388,20 @@ void AlternativeVisualizer::DrawVectorMap()
 void AlternativeVisualizer::DrawSimu()
 {
 
-	DrawGPSData();
-	//DrawVectorMap();
+	//DrawGPSData();
+	DrawVectorMap();
+
+	glDisable(GL_LIGHTING);
+	glColor3f(1,0,0);
+	for(unsigned int i=0; i < m_RoadMap.roadSegments.at(0).Lanes.size(); i++)
+	{
+		for(unsigned int j=0; j < m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size(); j++)
+		{
+			PlannerHNS::WayPoint* p = &m_RoadMap.roadSegments.at(0).Lanes.at(i).points.at(j);
+			DrawingHelpers::DrawSimpleEllipse(p->pos.x, p->pos.y, 0.25, 1.0, 1.0);
+		}
+	}
+	glEnable(GL_LIGHTING);
 
 //	float TotalPathColor[3] = {0.99, 0.99, 0.0};
 //	float PlannedPathColor[3] = {0.0, 0.99, 0.0};

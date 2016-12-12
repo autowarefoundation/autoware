@@ -25,7 +25,7 @@ public:
 	static void DrawArrow(const double& x, const double& y, const double& a);
 
 	static std::vector<std::vector<float> > PreparePathForDrawing(const std::vector<PlannerHNS::WayPoint>& path,
-			std::vector<std::vector<PlannerHNS::WayPoint> >& redyForDraw, double w, int resolution = 1);
+			std::vector<std::vector<PlannerHNS::WayPoint> >& redyForDraw, double w, double resolution = 1);
 
 	static void DrawPrePreparedPolygons(std::vector<std::vector<PlannerHNS::WayPoint> >& path,
 			double z, float color[3],int nSkipPoints = 1, const std::vector<std::vector<float> >* colorProfile = 0);

@@ -64,6 +64,7 @@ PlannerX::PlannerX()
 	UtilityHNS::UtilityH::GetTickCount(m_AStartPlanningTimer);
 	bWayPlannerPath = false;
 	bKmlMapLoaded = false;
+	m_bEnableTracking = true;
 
 	std::string str_signal;
 	nh.getParam("/dp_planner/signal", str_signal);
@@ -124,7 +125,10 @@ PlannerX::PlannerX()
 	sup_stop_lines 	= nh.subscribe("/vector_map_info/stop_line",	1, &PlannerX::callbackGetVMStopLines, 	this);
 	sub_dtlanes 	= nh.subscribe("/vector_map_info/dtlane", 		1, &PlannerX::callbackGetVMCenterLines,	this);
 
-	m_bOutsideControl = 1;
+	sub_simulated_obstacle_pose_rviz = nh.subscribe("/clicked_point", 		1, &PlannerX::callbackGetRvizPoint,	this);
+
+	if(!m_bEnableOutsideControl)
+		m_bOutsideControl = 1;
 
 //	PlannerHNS::WayPoint g1(557.1, 177.43, 0, 0);
 //	PlannerHNS::WayPoint g2(553.03, 195.59, 0, 0);
@@ -216,6 +220,8 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/enableTrafficLightBehavior", params.enableTrafficLightBehavior);
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
 
+	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
+	nh.getParam("/dp_planner/enableOutsideControl", m_bEnableOutsideControl);
 
 	SimulationNS::ControllerParams controlParams;
 	controlParams.Steering_Gain = SimulationNS::PID_CONST(0.07, 0.02, 0.01);
@@ -252,6 +258,26 @@ void PlannerX::callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampe
 		m_CurrentPos = m_InitPos;
 		bInitPos = true;
 	}
+}
+
+void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg)
+{
+	PlannerHNS::WayPoint p(msg->point.x+m_OriginPos.position.x,
+					msg->point.y+m_OriginPos.position.y,
+					msg->point.z+m_OriginPos.position.z,0);
+
+	//Add Simulated Obstacle polygon
+
+	timespec t;
+	UtilityHNS::UtilityH::GetTickCount(t);
+	srand(t.tv_nsec);
+	double width = ((double)(rand()%10)/10.0) * 1.5 + 0.25;
+	double length = ((double)(rand()%10)/10.0) * 0.5 + 0.25;
+
+	lidar_tracker::CloudClusterArray clusters_array;
+	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 75, *msg));
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_State.m_CarInfo, clusters_array, m_DetectedClusters);
+
 }
 
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -292,6 +318,40 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 
 }
 
+lidar_tracker::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
+{
+	lidar_tracker::CloudCluster cluster;
+	cluster.centroid_point.point = centerPose.point;
+	cluster.dimensions.x = x_rand;
+	cluster.dimensions.y = y_rand;
+	cluster.dimensions.z = z_rand;
+	pcl::PointCloud<pcl::PointXYZ> point_cloud;
+
+	timespec t;
+	for(int i=1; i < nPoints; i++)
+	{
+		UtilityHNS::UtilityH::GetTickCount(t);
+		pcl::PointXYZ p;
+		srand(t.tv_nsec/i);
+		double x = (double)(rand()%100)/100.0 - 0.5;
+
+		srand(t.tv_nsec/i*i);
+		double y = (double)(rand()%100)/100.0 - 0.5;
+
+		srand(t.tv_nsec);
+		double z = (double)(rand()%100)/100.0 - 0.5;
+
+		p.x = centerPose.point.x + x*x_rand;
+		p.y = centerPose.point.y + y*y_rand;
+		p.z = centerPose.point.z + z*z_rand;
+		point_cloud.points.push_back(p);
+	}
+
+	pcl::toROSMsg(point_cloud, cluster.cloud);
+
+	return cluster;
+}
+
 void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg)
 {
 	timespec timerTemp;
@@ -323,7 +383,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 //	else if(msg->vector.z == 0x40)
 //		m_VehicleState.shift = AW_SHIFT_POS_RR;
 
-	std::cout << "PlannerX: Read Status Twist_cmd ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
+	//std::cout << "PlannerX: Read Status Twist_cmd ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
 }
 
 void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
@@ -364,7 +424,11 @@ void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
 {
 	std::cout << "Received Outside Control : " << msg.data << std::endl;
 	bNewOutsideControl = true;
-	m_bOutsideControl  = msg.data;
+
+	if(m_bEnableOutsideControl && m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE)
+		m_bOutsideControl  = msg.data;
+	else if(m_bEnableOutsideControl && m_CurrentBehavior.state == PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE)
+		m_bGreenLight = 1;
 }
 
 void PlannerX::callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg)
@@ -441,6 +505,7 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 void PlannerX::PlannerMainLoop()
 {
 	ros::Rate loop_rate(100);
+	std::vector<PlannerHNS::DetectedObject> obj_list;
 
 	while (ros::ok())
 	{
@@ -462,15 +527,15 @@ void PlannerX::PlannerMainLoop()
 			 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		 }
 
-		//if(bInitPos && m_State.m_TotalPath.size()>0)
-		if(bInitPos)
+		if(bInitPos && m_State.m_TotalPath.size()>0)
+		//if(bInitPos)
 		{
-//			bool bMakeNewPlan = false;
+			bool bMakeNewPlan = false;
 			m_State.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
 
-//			double drift = hypot(m_State.state.pos.y-m_CurrentPos.pos.y, m_State.state .pos.x-m_CurrentPos.pos.x);
-//			if(drift > 10)
-//				bMakeNewPlan = true;
+			double drift = hypot(m_State.state.pos.y-m_CurrentPos.pos.y, m_State.state .pos.x-m_CurrentPos.pos.x);
+			if(drift > 10)
+				bMakeNewPlan = true;
 
 			m_State.state = m_CurrentPos;
 
@@ -484,16 +549,20 @@ void PlannerX::PlannerMainLoop()
 //				}
 //			}
 
-			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
-			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
-			std::vector<PlannerHNS::DetectedObject> obj_list;
-			m_ObstacleTracking.DoOneStep(m_State.state, m_DetectedClusters);
-			obj_list = m_ObstacleTracking.m_DetectedObjects;
-			visualization_msgs::MarkerArray detectedPolygons;
-			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, obj_list, detectedPolygons);
 
-			m_DetectedClusters.clear();
+			if(m_bEnableTracking)
+			{
+				m_ObstacleTracking.DoOneStep(m_State.state, m_DetectedClusters);
+				obj_list = m_ObstacleTracking.m_DetectedObjects;
+			}
+			else
+			{
+				obj_list = m_DetectedClusters;
+			}
+
+
+
 
 
 
@@ -501,13 +570,17 @@ void PlannerX::PlannerMainLoop()
 //			if(m_iCurrentGoal+1 < m_goals.size())
 //				goal_wp = m_goals.at(m_iCurrentGoal);
 
-			//m_CurrentBehavior = m_State.DoOneStep(dt, m_VehicleState, m_DetectedClusters, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
+			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
+			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
-			//std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
+			m_CurrentBehavior = m_State.DoOneStep(dt, m_VehicleState, obj_list, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
+
+			if(m_CurrentBehavior.state != m_PrevBehavior.state)
+			{
+				std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
+				m_PrevBehavior = m_CurrentBehavior;
+			}
 			//std::cout << "Planning Time = " << dt << std::endl;
-//			visualization_msgs::MarkerArray detectedPolygons;
-//			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_DetectedClusters, detectedPolygons);
-//			pub_DetectedPolygonsRviz.publish(detectedPolygons);
 
 			geometry_msgs::Twist t;
 			geometry_msgs::TwistStamped behavior;
@@ -523,6 +596,9 @@ void PlannerX::PlannerMainLoop()
 			behavior.header.stamp = ros::Time::now();
 
 			pub_BehaviorState.publish(behavior);
+
+			visualization_msgs::MarkerArray detectedPolygons;
+			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, obj_list, detectedPolygons);
 			pub_DetectedPolygonsRviz.publish(detectedPolygons);
 
 		}

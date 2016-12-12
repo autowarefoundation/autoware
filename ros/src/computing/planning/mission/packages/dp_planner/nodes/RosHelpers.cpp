@@ -30,6 +30,7 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 {
 	static tf::TransformListener listener;
 
+	int nFailedCounter = 0;
 	while (1)
 	{
 		try
@@ -39,8 +40,12 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 		}
 		catch (tf::TransformException& ex)
 		{
-			ROS_ERROR("%s", ex.what());
+			if(nFailedCounter > 2)
+			{
+				ROS_ERROR("%s", ex.what());
+			}
 			ros::Duration(1.0).sleep();
+			nFailedCounter ++;
 		}
 	}
 }
@@ -125,6 +130,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
 	lane_waypoint_marker.scale.x = 0.1;
 	lane_waypoint_marker.scale.y = 0.1;
+	lane_waypoint_marker.frame_locked = false;
 	std_msgs::ColorRGBA roll_color, total_color, curr_color;
 	roll_color.r = 0;
 	roll_color.g = 1;
@@ -132,7 +138,6 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	roll_color.a = 0.5;
 
 	lane_waypoint_marker.color = roll_color;
-	lane_waypoint_marker.frame_locked = true;
 
 	int count = 0;
 	for (unsigned int i = 0; i < paths.size(); i++)
@@ -155,15 +160,23 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 		count++;
 	}
 
-	lane_waypoint_marker.points.clear();
-	lane_waypoint_marker.id = count;
-	lane_waypoint_marker.scale.x = 0.1;
-	lane_waypoint_marker.scale.y = 0.1;
+
+	visualization_msgs::Marker curr_lane_waypoint_marker;
+	curr_lane_waypoint_marker.header.frame_id = "map";
+	curr_lane_waypoint_marker.header.stamp = ros::Time();
+	curr_lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+	curr_lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+	curr_lane_waypoint_marker.ns = "current_lane_array_marker";
+	curr_lane_waypoint_marker.points.clear();
+	curr_lane_waypoint_marker.id = count;
+	curr_lane_waypoint_marker.scale.x = 0.1;
+	curr_lane_waypoint_marker.scale.y = 0.1;
+	curr_lane_waypoint_marker.frame_locked = false;
 	curr_color.r = 1;
 	curr_color.g = 0;
 	curr_color.b = 1;
 	curr_color.a = 0.9;
-	lane_waypoint_marker.color = curr_color;
+	curr_lane_waypoint_marker.color = curr_color;
 
 	for (unsigned int j=0; j < curr_path.size(); j++)
 	{
@@ -171,12 +184,13 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 
 	  point.x = curr_path.at(j).pos.x;
 	  point.y = curr_path.at(j).pos.y;
+	  point.z = 0.05;
 	  //point.z = curr_path.at(j).pos.z;
 
-	  lane_waypoint_marker.points.push_back(point);
+	  curr_lane_waypoint_marker.points.push_back(point);
 	}
 
-	markerArray.markers.push_back(lane_waypoint_marker);
+	markerArray.markers.push_back(curr_lane_waypoint_marker);
 	count++;
 }
 
@@ -270,7 +284,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 		lane_waypoint_marker.id = i;
 		velocity_marker.id = i;
 
-		std::cout << " Distance : " << distance << ", Of Object" << trackedObstacles.at(i).id << std::endl;
+		//std::cout << " Distance : " << distance << ", Of Object" << trackedObstacles.at(i).id << std::endl;
 
 		for(unsigned int p = 0; p < trackedObstacles.at(i).contour.size(); p++)
 		{
@@ -384,15 +398,15 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 		relative_point = translationMat*obj.center.pos;
 		relative_point = rotationMat*relative_point;
 
-		double distance_x = abs(relative_point.x);
-		double distance_y = abs(relative_point.y);
+		double distance_x = fabs(relative_point.x);
+		double distance_y = fabs(relative_point.y);
 
 		double size = (obj.w+obj.l)/2.0;
-		if(size <= 0.25 || size >= 5 || (distance_x <= car_info.length/2.0 && distance_y <= car_info.width/2.0))
-			continue;
+//		if(size <= 0.25 || size >= 5 || (distance_x <= car_info.length/2.0 && distance_y <= car_info.width/2.0))
+//			continue;
 
 
-		//std::cout << " Distance_X: " << distance_x << ", " << " Distance_Y: " << distance_y << ", " << " Size: " << size << std::endl;
+		std::cout << " Distance_X: " << distance_x << ", " << " Distance_Y: " << distance_y << ", " << " Size: " << size << std::endl;
 
 		obstacles_list.push_back(obj);
 	}

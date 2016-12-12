@@ -30,9 +30,12 @@
 	<arg name="turningRadius"				default="3.2" />
 	<arg name="maxSteerAngle" 				default="0.42" />
 	
+	<arg name="enableObjectTracking" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
+	<arg name="enableOutsideControl" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->
+	
 	<arg name="signal" 						default="simulation" /> <!-- simulation or empty "" -->
-	<arg name="map" 						default="" /> <!-- kml or empty -->
-	<arg name="mapDirectory" 				default="/home/hatem/SimuLogs/VectorMaps/ToyotaCity/" />
+	<arg name="map" 						default="kml" /> <!-- kml or empty -->
+	<arg name="mapDirectory" 				default="/home/user/data/Around_NIC/map/kml/NIC_Exp.kml" />
 
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
@@ -65,6 +68,9 @@
 		<param name="wheelBaseLength" 				value="$(arg wheelBaseLength)" />
 		<param name="turningRadius" 				value="$(arg turningRadius)" />
 		<param name="maxSteerAngle" 				value="$(arg maxSteerAngle)" />
+		
+		<param name="enableObjectTracking" 			value="$(arg enableObjectTracking)" />
+		<param name="enableOutsideControl" 			value="$(arg enableOutsideControl)" />
 		
 		<param name="signal" 						value="$(arg signal)" />
 		<param name="map" 							value="$(arg map)" />

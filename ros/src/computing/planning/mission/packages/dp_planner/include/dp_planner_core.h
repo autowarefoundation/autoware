@@ -115,6 +115,7 @@ protected:
 
 	//Planning Related variables
 	PlannerHNS::BehaviorState m_CurrentBehavior;
+	PlannerHNS::BehaviorState m_PrevBehavior;
 	//std::vector<PlannerHNS::WayPoint> m_goals;
 	//int m_iCurrentGoal;
 	PlannerHNS::WayPoint m_CurrentGoal;
@@ -124,6 +125,10 @@ protected:
   	bool	m_bKmlMap;
   	bool	bKmlMapLoaded;
   	std::string m_KmlMapPath;
+
+  	bool m_bEnableTracking;
+  	bool m_bEnableOutsideControl;
+
 
 protected:
 	//ROS messages (topics)
@@ -163,6 +168,8 @@ protected:
 	ros::Subscriber sup_stop_lines;
 	ros::Subscriber sub_dtlanes;
 
+	ros::Subscriber sub_simulated_obstacle_pose_rviz;
+
 	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
@@ -183,6 +190,9 @@ protected:
 	void callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg);
 	void callbackGetVMCenterLines(const vector_map_msgs::DTLaneArray& msg);
 
+	//for simulation
+	void callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg);
+
 
 public:
   PlannerX();
@@ -192,6 +202,8 @@ public:
 protected:
   //Helper Functions
   void UpdatePlanningParams();
+
+  lidar_tracker::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
 
 };
 

@@ -44,7 +44,7 @@ BehaviorStateMachine* BehaviorStateMachine::FindBehaviorState(const STATE_TYPE& 
 		BehaviorStateMachine* pState = pNextStates.at(i);
 		if(pState && behavior == pState->m_Behavior )
 		{
-			pState->Reset();
+			pState->ResetTimer();
 			return pState;
 		}
 	}
@@ -57,7 +57,7 @@ void BehaviorStateMachine::Init()
 	UtilityH::GetTickCount(m_StateTimer);
 }
 
-void BehaviorStateMachine::Reset()
+void BehaviorStateMachine::ResetTimer()
 {
 	UtilityH::GetTickCount(m_StateTimer);
 }

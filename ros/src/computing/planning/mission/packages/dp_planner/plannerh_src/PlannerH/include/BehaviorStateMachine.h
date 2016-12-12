@@ -21,7 +21,7 @@ class BehaviorStateMachine
 public:
 	virtual BehaviorStateMachine* GetNextState() = 0;
 	virtual void Init();
-	virtual void Reset();
+	virtual void ResetTimer();
 	virtual void InsertNextState(BehaviorStateMachine* nextState);
 	BehaviorStateMachine(BehaviorStateMachine* nextState);
 	virtual ~BehaviorStateMachine() ;
