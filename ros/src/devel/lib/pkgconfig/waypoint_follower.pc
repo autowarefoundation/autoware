@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: waypoint_follower
+Description: Description of waypoint_follower
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/devel/include -I/home/user/Autoware/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib -llibwaypoint_follower
+Requires: roscpp std_msgs tf runtime_manager vehicle_socket message_runtime geometry_msgs gnss

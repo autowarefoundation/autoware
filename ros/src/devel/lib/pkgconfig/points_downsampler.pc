@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: points_downsampler
+Description: Description of points_downsampler
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/devel/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: sensor_msgs

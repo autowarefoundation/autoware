@@ -8,6 +8,12 @@ Panels:
         - /Camera1/Visibility1
         - /Vehicle Model1/Status1
         - /Local Waypoints1/Status1
+        - /CenterLinesMap1
+        - /GlobalPlan1
+        - /LocalTrajectories1
+        - /CarPose1
+        - /FollowingPoint1
+        - /DetectedPolygons1
       Splitter Ratio: 0.695804
     Tree Height: 759
   - Class: rviz/Selection
@@ -58,6 +64,8 @@ Visualization Manager:
         base_footprint:
           Value: true
         base_link:
+          Value: true
+        gps:
           Value: true
         map:
           Value: true
@@ -152,13 +160,18 @@ Visualization Manager:
       Value: false
       Visibility:
         "": true
+        CarPose: true
+        CenterLinesMap: true
         Control Pose: true
         Current Pose: true
         Detection Range: true
+        FollowingPoint: true
         Global Waypoints: true
+        GlobalPlan: true
         Grid: true
         Image: true
         Local Waypoints: true
+        LocalTrajectories: true
         Next Waypoint Mark: true
         Object Pose: true
         PP Trajectory Mark: true
@@ -395,10 +408,39 @@ Visualization Manager:
       max color: 255; 0; 0
       max value: 1
       min value: -1
+      show caption: true
       text size: 12
       top: 10
       update interval: 0.04
       width: 100
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /vector_map_center_lines_rviz
+      Name: CenterLinesMap
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /global_waypoints_rviz
+      Name: GlobalPlan
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /local_trajectories
+      Name: LocalTrajectories
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /curr_simu_pose
+      Name: CarPose
     - Class: jsk_rviz_plugin/BoundingBoxArray
       Enabled: true
       Name: Bounding Boxes
@@ -419,6 +461,22 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /follow_pose
+      Name: FollowingPoint
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /detected_polygons
+      Name: DetectedPolygons
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -451,18 +509,18 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 10
+      Scale: 12.3906
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 0
-      Y: 0
+      X: 18.0312
+      Y: -1.10411
     Saved: ~
 Window Geometry:
   Camera:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 961
+  Height: 1416
   Hide Left Dock: false
   Hide Right Dock: false
   Image:

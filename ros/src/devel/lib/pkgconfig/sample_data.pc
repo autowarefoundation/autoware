@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: sample_data
+Description: Description of sample_data
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: gnss

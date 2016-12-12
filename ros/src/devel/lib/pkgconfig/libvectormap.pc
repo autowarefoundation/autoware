@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: libvectormap
+Description: Description of libvectormap
+Version: 0.1.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/computing/perception/detection/lib/libvectormap/include -I/usr/include/eigen3
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib -lvectormap
+Requires: vector_map

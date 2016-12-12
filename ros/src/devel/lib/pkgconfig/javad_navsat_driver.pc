@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: javad_navsat_driver
+Description: Description of javad_navsat_driver
+Version: 0.0.1
+Cflags: 
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: freespace_planner
+Description: Description of freespace_planner
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: tablet_socket waypoint_follower runtime_manager gnss

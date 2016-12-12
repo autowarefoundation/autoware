@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: kvaser
+Description: Description of kvaser
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/devel/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib 
+Requires: message_runtime std_msgs visualization_msgs

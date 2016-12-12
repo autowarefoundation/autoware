@@ -1,0 +1,81 @@
+<!-- -->
+<launch>
+	<arg name="maxVelocity" 				default="1.0" />
+	<arg name="minVelocity" 				default="0.0" />
+	<arg name="velocityProfileFactor" 		default="1.0" />
+	<arg name="maxPlanningDistance" 		default="1000000.0" />
+	<arg name="maxLocalPlanDistance" 		default="20.0" />
+	<arg name="samplingTipMargin" 			default="2.0" />
+	<arg name="samplingOutMargin" 			default="4.0" />
+	<arg name="samplingSpeedFactor" 		default="0.25" />
+	<arg name="pathDensity" 				default="0.25" />
+	<arg name="rollOutDensity" 				default="0.5" />
+	<arg name="rollOutsNumber" 				default="4" />
+	<arg name="horizonDistance" 			default="10" />
+	
+	<arg name="minFollowingDistance" 		default="7.5" />
+	<arg name="maxFollowingDistance" 		default="7.75" />
+	<arg name="minDistanceToAvoid" 			default="6.5" />
+	<arg name="speedProfileFactor"			default="1.0" />
+	
+	<arg name="enableSwerving" 				default="1" />
+	<arg name="enableFollowing" 			default="1" />
+	<arg name="enableHeadingSmoothing" 		default="0" />
+	<arg name="enableTrafficLightBehavior" 	default="1" />
+	<arg name="enableLaneChange" 			default="0" />
+	
+	<arg name="width" 						default="1.0" />
+	<arg name="length" 						default="1.2" />
+	<arg name="wheelBaseLength" 			default="1.0" />
+	<arg name="turningRadius"				default="2.5" />
+	<arg name="maxSteerAngle" 				default="1.0" />
+	
+	<arg name="enableObjectTracking" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->
+	<arg name="enableOutsideControl" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->
+	
+	<arg name="signal" 						default="simulation" /> <!-- simulation or empty "" -->
+	<arg name="map" 						default="kml" />
+	<arg name="mapDirectory" 				default="/home/user/data/Around_NIC/map/kml/NIC_Exp.kml" />
+	
+	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
+		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
+	    <param name="minVelocity" 					value="$(arg minVelocity)" />
+	    
+	    <param name="velocityProfileFactor" 		value="$(arg velocityProfileFactor)" />
+		<param name="maxPlanningDistance" 			value="$(arg maxPlanningDistance)" />
+		<param name="maxLocalPlanDistance" 			value="$(arg maxLocalPlanDistance)" />
+		<param name="samplingTipMargin" 			value="$(arg samplingTipMargin)" />
+		<param name="samplingOutMargin" 			value="$(arg samplingOutMargin)" />
+		<param name="samplingSpeedFactor" 			value="$(arg samplingSpeedFactor)" />
+		<param name="pathDensity" 					value="$(arg pathDensity)" />
+		<param name="rollOutDensity" 				value="$(arg rollOutDensity)" />
+		<param name="rollOutsNumber" 				value="$(arg rollOutsNumber)" />
+		<param name="horizonDistance" 				value="$(arg horizonDistance)" />
+		
+		<param name="minFollowingDistance" 			value="$(arg minFollowingDistance)" />
+		<param name="maxFollowingDistance" 			value="$(arg maxFollowingDistance)" />
+		<param name="minDistanceToAvoid" 			value="$(arg minDistanceToAvoid)" />
+		<param name="speedProfileFactor"			value="$(arg speedProfileFactor)" />
+		
+		<param name="enableSwerving" 				value="$(arg enableSwerving)" />
+		<param name="enableFollowing" 				value="$(arg enableFollowing)" />
+		<param name="enableHeadingSmoothing" 		value="$(arg enableHeadingSmoothing)" />
+		<param name="enableTrafficLightBehavior" 	value="$(arg enableTrafficLightBehavior)" />
+		<param name="enableLaneChange" 				value="$(arg enableLaneChange)" />
+		
+		<param name="width" 						value="$(arg width)" />
+		<param name="length" 						value="$(arg length)" />
+		<param name="wheelBaseLength" 				value="$(arg wheelBaseLength)" />
+		<param name="turningRadius" 				value="$(arg turningRadius)" />
+		<param name="maxSteerAngle" 				value="$(arg maxSteerAngle)" />
+		
+		<param name="enableObjectTracking" 			value="$(arg enableObjectTracking)" />
+		<param name="enableOutsideControl" 			value="$(arg enableOutsideControl)" />
+		
+		<param name="signal" 						value="$(arg signal)" />
+		<param name="map" 							value="$(arg map)" />
+		<param name="mapDirectory" 					value="$(arg mapDirectory)" />
+		
+	</node>
+
+</launch>

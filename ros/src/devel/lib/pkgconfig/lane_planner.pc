@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: lane_planner
+Description: Description of lane_planner
+Version: 0.0.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/computing/planning/mission/packages/lane_planner/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib -lvmap
+Requires: tablet_socket waypoint_follower runtime_manager vector_map gnss

@@ -1,0 +1,8 @@
+prefix=/home/user/Autoware/Autoware/ros/src/devel
+
+Name: velodyne_driver
+Description: Description of velodyne_driver
+Version: 1.2.0
+Cflags: -I/home/user/Autoware/Autoware/ros/src/sensing/drivers/lidar/packages/velodyne/velodyne_driver/include
+Libs: -L/home/user/Autoware/Autoware/ros/src/devel/lib -lvelodyne_input
+Requires: diagnostic_updater nodelet roscpp tf velodyne_msgs
