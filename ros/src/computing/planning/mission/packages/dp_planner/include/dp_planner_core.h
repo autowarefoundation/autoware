@@ -56,7 +56,8 @@
 #include "RoadNetwork.h"
 #include "MappingHelpers.h"
 #include "PlanningHelpers.h"
-#include "CarState.h"
+//#include "CarState.h"
+#include "LocalPlannerH.h"
 #include "RosHelpers.h"
 #include "SimpleTracker.h"
 
@@ -75,7 +76,8 @@ protected:
 
 protected:
 	SimulationNS::SimpleTracker m_ObstacleTracking;
-	SimulationNS::CarState m_State;
+	//SimulationNS::CarState m_State;
+	PlannerHNS::LocalPlannerH m_LocalPlanner;
 
 	geometry_msgs::Pose m_OriginPos;
 

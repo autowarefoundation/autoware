@@ -5,7 +5,7 @@
 	<arg name="enableLaneChange" 				default="true" /> <!-- 1 or 0 -->
 	<arg name="enableRvizInput" 				default="true" /> <!-- 1 or 0 -->
 	<arg name="mapSource" 						default="2" /> <!-- map_loader=0, map_server=1, kml=2 -->
-	<arg name="mapFileName" 					default="/home/hatem/data/Around_NIC/map/kml/NIC_Exp.kml" /> <!-- incase of kml map source -->
+	<arg name="mapFileName" 					default="/home/user/data/Around_NIC/map/kml/NIC_Exp.kml" /> <!-- incase of kml map source -->
 	
 	
 <node pkg="way_planner" type="way_planner" name="way_planner" output="screen">

@@ -840,11 +840,18 @@ public:
 	double closest_obj_cost; // 0 to 1
 	double cost;
 	double closest_obj_distance;
+
+	int lane_index;
+	double lane_change_cost;
+	double lateral_cost;
+	double longitudinal_cost;
+	bool bBlocked;
 	std::vector<std::pair<int, double> > lateral_costs;
 
 
 	TrajectoryCost()
 	{
+		lane_index = -1;
 		index = -1;
 		relative_index = -100;
 		closest_obj_velocity = 0;
@@ -854,13 +861,18 @@ public:
 		distance_from_center = 0;
 		cost = 0;
 		closest_obj_distance = -1;
+		lane_change_cost = 0;
+		lateral_cost = 0;
+		longitudinal_cost = 0;
+		bBlocked = false;
 	}
 
 	std::string ToString()
 	{
 		std::ostringstream str;
 		str.precision(4);
-		str << "Index        : " << relative_index;
+		str << "LaneIndex    : " << lane_index;
+		str << ", Index      : " << relative_index;
 		str << ", Total Cost : " << cost;
 		str << ", Distance   : " << closest_obj_distance;
 		str << ", Dist Cost  : " << closest_obj_cost;

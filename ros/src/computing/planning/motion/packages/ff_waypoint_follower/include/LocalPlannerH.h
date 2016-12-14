@@ -11,6 +11,7 @@
 #include "BehaviorStateMachine.h"
 #include "PlannerCommonDef.h"
 #include "RoadNetwork.h"
+#include "TrajectoryCosts.h"
 
 namespace PlannerHNS
 {
@@ -25,7 +26,7 @@ public:
 	std::vector<WayPoint> m_Path;
 	std::vector<std::vector<WayPoint> > m_TotalPath;
 	std::vector<std::vector<WayPoint> > m_PredictedPath;
-	std::vector<std::vector<WayPoint> > m_RollOuts;
+	std::vector<std::vector<std::vector<WayPoint> > > m_RollOuts;
 	std::string carId;
 	Lane* pLane;
 	double m_SimulationSteeringDelayFactor; //second , time that every degree change in the steering wheel takes
@@ -43,8 +44,7 @@ public:
 	TrafficLightStopState*		m_pTrafficLightStopState;
 	TrafficLightWaitState*		m_pTrafficLightWaitState;
 
-
-	std::vector<TrajectoryCost> m_TrajectoryCosts;
+	TrajectoryCosts m_TrajectoryCostsCalculatotor;
 
 	void InitBehaviorStates();
 
@@ -91,9 +91,8 @@ public:
 	void LocalizeMe(const double& dt); // in seconds
 	void UpdateState(const VehicleState& state, const bool& bUseDelay = false);
 	void CalculateImportantParameterForDecisionMaking(const VehicleState& car_state,
-			const GPSPoint& goal,
-			const bool& bEmergencyStop,
-			const bool& bGreenTrafficLight);
+			const GPSPoint& goal, const bool& bEmergencyStop, const bool& bGreenTrafficLight,
+			const TrajectoryCost& bestTrajectory);
 
 	BehaviorState DoOneStep(
 			const double& dt,
@@ -110,9 +109,6 @@ public:
 private:
 
 	//Obstacle avoidance functionalities
-	void InitializeTrajectoryCosts();
-	void CalculateTransitionCosts();
-	void CalculateDistanceCosts(const VehicleState& vstatus, const std::vector<DetectedObject>& obj_list);
 	bool CalculateObstacleCosts(RoadNetwork& map, const VehicleState& vstatus, const std::vector<DetectedObject>& obj_list);
 
 	double PredictTimeCostForTrajectory(std::vector<WayPoint>& path,
@@ -127,8 +123,7 @@ private:
 	bool CalculateIntersectionVelocities(std::vector<WayPoint>& path,
 			std::vector<std::vector<WayPoint> >& predctedPath,
 			const DetectedObject& obj);
-	void FindSafeTrajectory(int& safe_index, double& closest_distance, double& closest_velocity);
-	void FindNextBestSafeTrajectory(int& safe_index);
+
 	bool GetNextTrafficLight(const int& prevTrafficLightId, const std::vector<TrafficLight>& trafficLights, TrafficLight& trafficL);
 	bool IsGoalAchieved(const GPSPoint& goal);
 	void UpdateCurrentLane(RoadNetwork& map, const double& search_distance);

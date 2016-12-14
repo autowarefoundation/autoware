@@ -400,7 +400,7 @@ WayPoint PlanningHelpers::GetNextPointOnTrajectory(const vector<WayPoint>& traje
 	return abs_waypoint;
 }
 
-double PlanningHelpers::GetDistanceOnTrajectory(std::vector<WayPoint>& path, const int& start_index, const WayPoint& p)
+double PlanningHelpers::GetDistanceOnTrajectory(const std::vector<WayPoint>& path, const int& start_index, const WayPoint& p)
 {
 
 	int end_point_index = GetClosestPointIndex(path, p);

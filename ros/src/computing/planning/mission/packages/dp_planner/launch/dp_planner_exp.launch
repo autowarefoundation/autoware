@@ -9,13 +9,13 @@
 	<arg name="samplingOutMargin" 			default="4.0" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
 	<arg name="pathDensity" 				default="0.25" />
-	<arg name="rollOutDensity" 				default="0.5" />
-	<arg name="rollOutsNumber" 				default="4" />
+	<arg name="rollOutDensity" 				default="0.25" />
+	<arg name="rollOutsNumber" 				default="6" />
 	<arg name="horizonDistance" 			default="10" />
 	
-	<arg name="minFollowingDistance" 		default="7.5" />
-	<arg name="maxFollowingDistance" 		default="7.75" />
-	<arg name="minDistanceToAvoid" 			default="6.5" />
+	<arg name="minFollowingDistance" 		default="5.5" />
+	<arg name="maxFollowingDistance" 		default="5.75" />
+	<arg name="minDistanceToAvoid" 			default="4.5" />
 	<arg name="speedProfileFactor"			default="1.0" />
 	
 	<arg name="enableSwerving" 				default="1" />
@@ -35,7 +35,7 @@
 	
 	<arg name="signal" 						default="simulation" /> <!-- simulation or empty "" -->
 	<arg name="map" 						default="kml" />
-	<arg name="mapDirectory" 				default="/home/hatem/data/Around_NIC/map/kml/NIC_Exp.kml" />
+	<arg name="mapDirectory" 				default="/home/user/data/Around_NIC/map/kml/NIC_Exp.kml" />
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />

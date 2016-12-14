@@ -223,16 +223,16 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
 	nh.getParam("/dp_planner/enableOutsideControl", m_bEnableOutsideControl);
 
-	SimulationNS::ControllerParams controlParams;
-	controlParams.Steering_Gain = SimulationNS::PID_CONST(0.07, 0.02, 0.01);
+	PlannerHNS::ControllerParams controlParams;
+	controlParams.Steering_Gain = PlannerHNS::PID_CONST(0.07, 0.02, 0.01);
 //	m_ControlParams.SteeringDelay = 0.85;
 //	m_ControlParams.Steering_Gain.kD = 0.5;
 //	m_ControlParams.Steering_Gain.kP = 0.1;
 //	m_ControlParams.Steering_Gain.kI = 0.03;
-	controlParams.Velocity_Gain = SimulationNS::PID_CONST(0.1, 0.005, 0.1);
+	controlParams.Velocity_Gain = PlannerHNS::PID_CONST(0.1, 0.005, 0.1);
 
 
-	SimulationNS::CAR_BASIC_INFO vehicleInfo;
+	PlannerHNS::CAR_BASIC_INFO vehicleInfo;
 
 	nh.getParam("/dp_planner/width", vehicleInfo.width);
 	nh.getParam("/dp_planner/length", vehicleInfo.length);
@@ -240,9 +240,9 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/turningRadius", vehicleInfo.turning_radius);
 	nh.getParam("/dp_planner/maxSteerAngle", vehicleInfo.max_steer_angle);
 
-	m_State.m_SimulationSteeringDelayFactor = controlParams.SimulationSteeringDelay;
-	m_State.Init(controlParams, params, vehicleInfo);
-	m_State.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
+	m_LocalPlanner.m_SimulationSteeringDelayFactor = controlParams.SimulationSteeringDelay;
+	m_LocalPlanner.Init(controlParams, params, vehicleInfo);
+	m_LocalPlanner.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
 }
 
 void PlannerX::callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
@@ -276,7 +276,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 
 	lidar_tracker::CloudClusterArray clusters_array;
 	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 75, *msg));
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_State.m_CarInfo, clusters_array, m_DetectedClusters);
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_DetectedClusters);
 
 }
 
@@ -356,7 +356,7 @@ void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayCo
 {
 	timespec timerTemp;
 	UtilityHNS::UtilityH::GetTickCount(timerTemp);
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_State.m_CarInfo, *msg, m_DetectedClusters);
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_DetectedClusters);
 	//std::cout << "Calculating Contour Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << ", For Objectis: " << m_DetectedClusters.size() <<  std::endl;
 	bNewClusters = true;
 }
@@ -389,7 +389,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 {
 	m_VehicleState.speed = msg->twist.twist.linear.x;
-	m_VehicleState.steer = atan(m_State.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+	m_VehicleState.steer = atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 //	if(msg->vector.z == 0x00)
 //		m_VehicleState.shift = AW_SHIFT_POS_BB;
@@ -450,7 +450,7 @@ void PlannerX::callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& 
 			}
 		}
 		bNewAStarPath = true;
-		m_State.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = true;
+		m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = true;
 	}
 }
 
@@ -495,10 +495,10 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 		}
 
 		bWayPlannerPath = true;
-		m_State.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = true;
+		m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = true;
 		//m_goals.at(m_iCurrentGoal) = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
 		m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
-		m_State.m_TotalPath = m_WayPlannerPaths.at(0);
+		m_LocalPlanner.m_TotalPath = m_WayPlannerPaths;
 	}
 }
 
@@ -527,17 +527,17 @@ void PlannerX::PlannerMainLoop()
 			 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		 }
 
-		if(bInitPos && m_State.m_TotalPath.size()>0)
+		if(bInitPos && m_LocalPlanner.m_TotalPath.size()>0)
 		//if(bInitPos)
 		{
 			bool bMakeNewPlan = false;
-			m_State.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
+			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
 
-			double drift = hypot(m_State.state.pos.y-m_CurrentPos.pos.y, m_State.state .pos.x-m_CurrentPos.pos.x);
+			double drift = hypot(m_LocalPlanner.state.pos.y-m_CurrentPos.pos.y, m_LocalPlanner.state .pos.x-m_CurrentPos.pos.x);
 			if(drift > 10)
 				bMakeNewPlan = true;
 
-			m_State.state = m_CurrentPos;
+			m_LocalPlanner.state = m_CurrentPos;
 
 //			int currIndexToal = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_TotalPath, m_State.state);
 //			if(bMakeNewPlan == false && m_CurrentBehavior.state == PlannerHNS::STOPPING_STATE && (m_iCurrentGoal+1) < m_goals.size())
@@ -553,7 +553,7 @@ void PlannerX::PlannerMainLoop()
 
 			if(m_bEnableTracking)
 			{
-				m_ObstacleTracking.DoOneStep(m_State.state, m_DetectedClusters);
+				m_ObstacleTracking.DoOneStep(m_LocalPlanner.state, m_DetectedClusters);
 				obj_list = m_ObstacleTracking.m_DetectedObjects;
 			}
 			else
@@ -573,11 +573,11 @@ void PlannerX::PlannerMainLoop()
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
-			m_CurrentBehavior = m_State.DoOneStep(dt, m_VehicleState, obj_list, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
+			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, obj_list, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
 
 			if(m_CurrentBehavior.state != m_PrevBehavior.state)
 			{
-				std::cout << m_State.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
+				std::cout << m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
 				m_PrevBehavior = m_CurrentBehavior;
 			}
 			//std::cout << "Planning Time = " << dt << std::endl;
@@ -611,11 +611,11 @@ void PlannerX::PlannerMainLoop()
 		if(m_CurrentBehavior.bNewPlan)
 		{
 			waypoint_follower::lane current_trajectory;
-			RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_State.m_Path, current_trajectory);
+			RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_LocalPlanner.m_Path, current_trajectory);
 			pub_LocalPath.publish(current_trajectory);
 
 			visualization_msgs::MarkerArray all_rollOuts;
-			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_State.m_Path, m_State.m_RollOuts, all_rollOuts);
+			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts.at(0), all_rollOuts);
 			pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 		}
 

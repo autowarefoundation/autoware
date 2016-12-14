@@ -45,7 +45,8 @@ public:
 	static double CalcCircle(const GPSPoint& pt1, const GPSPoint& pt2, const GPSPoint& pt3, GPSPoint& center);
 	static double CalcAngleAndCost(std::vector<WayPoint>& path, const double& lastCost = 0, const bool& bSmooth = true );
 	static double CalcAngleAndCostAndCurvatureAnd2D(std::vector<WayPoint>& path, const double& lastCost = 0, const bool& bSmooth = true );
-	static double GetDistanceOnTrajectory(std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
+	static double GetDistanceOnTrajectory(const std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
+	static double GetAccurateDistanceOnTrajectory(std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
 
 	static void ExtractPartFromPointToDistance(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
 			const double& pathDensity, std::vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance);

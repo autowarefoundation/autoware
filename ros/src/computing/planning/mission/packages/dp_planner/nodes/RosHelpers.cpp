@@ -369,7 +369,7 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 	}
 }
 
-void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const SimulationNS::CAR_BASIC_INFO& car_info,
+void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
 		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list)
 {
 	obstacles_list.clear();
