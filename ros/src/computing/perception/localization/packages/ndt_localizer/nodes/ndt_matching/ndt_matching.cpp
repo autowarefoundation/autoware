@@ -66,6 +66,9 @@
 #include <pcl/registration/ndt.h>
 #endif
 
+#include <pcl_ros/point_cloud.h>
+#include <pcl_ros/transforms.h>
+
 #include <runtime_manager/ConfigNdt.h>
 
 #include <ndt_localizer/ndt_stat.h>
@@ -111,8 +114,11 @@ static geometry_msgs::PoseStamped predict_pose_msg;
 static ros::Publisher ndt_pose_pub;
 static geometry_msgs::PoseStamped ndt_pose_msg;
 
+// current_pose is published by vel_pose_mux
+/*
 static ros::Publisher current_pose_pub;
 static geometry_msgs::PoseStamped current_pose_msg;
+*/
 
 static ros::Publisher localizer_pose_pub;
 static geometry_msgs::PoseStamped localizer_pose_msg;
@@ -175,9 +181,13 @@ static std_msgs::Float32 ndt_reliability;
 
 static bool _use_openmp = false;
 static bool _get_height = false;
+static bool _use_local_transform = false;
 
 static std::ofstream ofs;
 static std::string filename;
+
+//static tf::TransformListener local_transform_listener;
+static tf::StampedTransform local_transform;
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -220,6 +230,26 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     initial_pose.pitch = input->pitch;
     initial_pose.yaw = input->yaw;
 
+	if(_use_local_transform == true){
+		tf::Vector3 v(input->x, input->y, input->z);
+		tf::Quaternion q;
+		q.setRPY(input->roll, input->pitch, input->yaw);
+		tf::Transform transform (q, v);
+		initial_pose.x = (local_transform.inverse() * transform).getOrigin().getX();
+		initial_pose.y = (local_transform.inverse() * transform).getOrigin().getY();
+		initial_pose.z = (local_transform.inverse() * transform).getOrigin().getZ();
+
+		tf::Matrix3x3 m(q);
+		m.getRPY(initial_pose.roll, initial_pose.pitch, initial_pose.yaw);
+
+		std::cout << "initial_pose.x: " << initial_pose.x << std::endl;
+		std::cout << "initial_pose.y: " << initial_pose.y << std::endl;
+		std::cout << "initial_pose.z: " << initial_pose.z << std::endl;
+		std::cout << "initial_pose.roll: " << initial_pose.roll << std::endl;
+		std::cout << "initial_pose.pitch: " << initial_pose.pitch << std::endl;
+		std::cout << "initial_pose.yaw: " << initial_pose.yaw << std::endl;
+	}
+
     // Setting position and posture for the first time.
     localizer_pose.x = initial_pose.x;
     localizer_pose.y = initial_pose.y;
@@ -253,6 +283,20 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   {
     // Convert the data type(from sensor_msgs to pcl).
     pcl::fromROSMsg(*input, map);
+
+    if(_use_local_transform == true){
+    	tf::TransformListener local_transform_listener;
+    	try{
+    		ros::Time now = ros::Time(0);
+    		local_transform_listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
+    		local_transform_listener.lookupTransform("/map", "world", now, local_transform);
+    	}
+    	catch (tf::TransformException& ex){
+    		ROS_ERROR("%s", ex.what());
+    	}
+
+    	pcl_ros::transformPointCloud(map, map, local_transform.inverse());
+    }
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
     // Setting point cloud to be aligned to.
@@ -328,10 +372,18 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   tf::Quaternion q(input->pose.pose.orientation.x, input->pose.pose.orientation.y, input->pose.pose.orientation.z,
                    input->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
-  current_pose.x = input->pose.pose.position.x + transform.getOrigin().x();
-  current_pose.y = input->pose.pose.position.y + transform.getOrigin().y();
-  current_pose.z = input->pose.pose.position.z + transform.getOrigin().z();
+
+  if(_use_local_transform == true){
+	  current_pose.x = input->pose.pose.position.x;
+	  current_pose.y = input->pose.pose.position.y;
+	  current_pose.z = input->pose.pose.position.z;
+  }else{
+	  current_pose.x = input->pose.pose.position.x + transform.getOrigin().x();
+	  current_pose.y = input->pose.pose.position.y + transform.getOrigin().y();
+	  current_pose.z = input->pose.pose.position.z + transform.getOrigin().z();
+  }
   m.getRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
+
   if (_get_height == true && map_loaded == 1)
   {
     double min_distance = DBL_MAX;
@@ -529,29 +581,59 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
     // Set values for publishing pose
-    predict_q.setRPY(predict_pose.roll, predict_pose.pitch, predict_pose.yaw);
-    predict_pose_msg.header.frame_id = "/map";
-    predict_pose_msg.header.stamp = current_scan_time;
-    predict_pose_msg.pose.position.x = predict_pose.x;
-    predict_pose_msg.pose.position.y = predict_pose.y;
-    predict_pose_msg.pose.position.z = predict_pose.z;
-    predict_pose_msg.pose.orientation.x = predict_q.x();
-    predict_pose_msg.pose.orientation.y = predict_q.y();
-    predict_pose_msg.pose.orientation.z = predict_q.z();
-    predict_pose_msg.pose.orientation.w = predict_q.w();
+	predict_q.setRPY(predict_pose.roll, predict_pose.pitch, predict_pose.yaw);
+    if(_use_local_transform == true){
+    	tf::Vector3 v(predict_pose.x, predict_pose.y, predict_pose.z);
+    	tf::Transform transform (predict_q, v);
+    	predict_pose_msg.header.frame_id = "/map";
+    	predict_pose_msg.header.stamp = current_scan_time;
+    	predict_pose_msg.pose.position.x = (local_transform * transform).getOrigin().getX();
+    	predict_pose_msg.pose.position.y = (local_transform * transform).getOrigin().getY();
+    	predict_pose_msg.pose.position.z = (local_transform * transform).getOrigin().getZ();
+    	predict_pose_msg.pose.orientation.x = (local_transform * transform).getRotation().x();
+    	predict_pose_msg.pose.orientation.y = (local_transform * transform).getRotation().y();
+    	predict_pose_msg.pose.orientation.z = (local_transform * transform).getRotation().z();
+    	predict_pose_msg.pose.orientation.w = (local_transform * transform).getRotation().w();
+    }else{
+    	predict_pose_msg.header.frame_id = "/map";
+    	predict_pose_msg.header.stamp = current_scan_time;
+    	predict_pose_msg.pose.position.x = predict_pose.x;
+    	predict_pose_msg.pose.position.y = predict_pose.y;
+    	predict_pose_msg.pose.position.z = predict_pose.z;
+    	predict_pose_msg.pose.orientation.x = predict_q.x();
+    	predict_pose_msg.pose.orientation.y = predict_q.y();
+    	predict_pose_msg.pose.orientation.z = predict_q.z();
+    	predict_pose_msg.pose.orientation.w = predict_q.w();
+    }
 
     ndt_q.setRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw);
-    ndt_pose_msg.header.frame_id = "/map";
-    ndt_pose_msg.header.stamp = current_scan_time;
-    ndt_pose_msg.pose.position.x = ndt_pose.x;
-    ndt_pose_msg.pose.position.y = ndt_pose.y;
-    ndt_pose_msg.pose.position.z = ndt_pose.z;
-    ndt_pose_msg.pose.orientation.x = ndt_q.x();
-    ndt_pose_msg.pose.orientation.y = ndt_q.y();
-    ndt_pose_msg.pose.orientation.z = ndt_q.z();
-    ndt_pose_msg.pose.orientation.w = ndt_q.w();
+    if(_use_local_transform == true){
+    	tf::Vector3 v(ndt_pose.x, ndt_pose.y, ndt_pose.z);
+    	tf::Transform transform (ndt_q, v);
+    	ndt_pose_msg.header.frame_id = "/map";
+    	ndt_pose_msg.header.stamp = current_scan_time;
+    	ndt_pose_msg.pose.position.x = (local_transform * transform).getOrigin().getX();
+    	ndt_pose_msg.pose.position.y = (local_transform * transform).getOrigin().getY();
+    	ndt_pose_msg.pose.position.z = (local_transform * transform).getOrigin().getZ();
+    	ndt_pose_msg.pose.orientation.x = (local_transform * transform).getRotation().x();
+    	ndt_pose_msg.pose.orientation.y = (local_transform * transform).getRotation().y();
+    	ndt_pose_msg.pose.orientation.z = (local_transform * transform).getRotation().z();
+    	ndt_pose_msg.pose.orientation.w = (local_transform * transform).getRotation().w();
+    }else{
+    	ndt_pose_msg.header.frame_id = "/map";
+    	ndt_pose_msg.header.stamp = current_scan_time;
+    	ndt_pose_msg.pose.position.x = ndt_pose.x;
+    	ndt_pose_msg.pose.position.y = ndt_pose.y;
+    	ndt_pose_msg.pose.position.z = ndt_pose.z;
+    	ndt_pose_msg.pose.orientation.x = ndt_q.x();
+    	ndt_pose_msg.pose.orientation.y = ndt_q.y();
+    	ndt_pose_msg.pose.orientation.z = ndt_q.z();
+    	ndt_pose_msg.pose.orientation.w = ndt_q.w();
+    }
 
     current_q.setRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
+    // current_pose is published by vel_pose_mux
+    /*
     current_pose_msg.header.frame_id = "/map";
     current_pose_msg.header.stamp = current_scan_time;
     current_pose_msg.pose.position.x = current_pose.x;
@@ -561,27 +643,48 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_pose_msg.pose.orientation.y = current_q.y();
     current_pose_msg.pose.orientation.z = current_q.z();
     current_pose_msg.pose.orientation.w = current_q.w();
+    */
 
-    localizer_q.setRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw);
-    localizer_pose_msg.header.frame_id = "/map";
-    localizer_pose_msg.header.stamp = current_scan_time;
-    localizer_pose_msg.pose.position.x = localizer_pose.x;
-    localizer_pose_msg.pose.position.y = localizer_pose.y;
-    localizer_pose_msg.pose.position.z = localizer_pose.z;
-    localizer_pose_msg.pose.orientation.x = localizer_q.x();
-    localizer_pose_msg.pose.orientation.y = localizer_q.y();
-    localizer_pose_msg.pose.orientation.z = localizer_q.z();
-    localizer_pose_msg.pose.orientation.w = localizer_q.w();
+	localizer_q.setRPY(localizer_pose.roll, localizer_pose.pitch, localizer_pose.yaw);
+    if(_use_local_transform == true){
+    	tf::Vector3 v(localizer_pose.x, localizer_pose.y, localizer_pose.z);
+    	tf::Transform transform (localizer_q, v);
+    	localizer_pose_msg.header.frame_id = "/map";
+    	localizer_pose_msg.header.stamp = current_scan_time;
+    	localizer_pose_msg.pose.position.x = (local_transform * transform).getOrigin().getX();
+    	localizer_pose_msg.pose.position.y = (local_transform * transform).getOrigin().getY();
+    	localizer_pose_msg.pose.position.z = (local_transform * transform).getOrigin().getZ();
+    	localizer_pose_msg.pose.orientation.x = (local_transform * transform).getRotation().x();
+    	localizer_pose_msg.pose.orientation.y = (local_transform * transform).getRotation().y();
+    	localizer_pose_msg.pose.orientation.z = (local_transform * transform).getRotation().z();
+    	localizer_pose_msg.pose.orientation.w = (local_transform * transform).getRotation().w();
+    }else{
+    	localizer_pose_msg.header.frame_id = "/map";
+    	localizer_pose_msg.header.stamp = current_scan_time;
+    	localizer_pose_msg.pose.position.x = localizer_pose.x;
+    	localizer_pose_msg.pose.position.y = localizer_pose.y;
+    	localizer_pose_msg.pose.position.z = localizer_pose.z;
+    	localizer_pose_msg.pose.orientation.x = localizer_q.x();
+    	localizer_pose_msg.pose.orientation.y = localizer_q.y();
+    	localizer_pose_msg.pose.orientation.z = localizer_q.z();
+    	localizer_pose_msg.pose.orientation.w = localizer_q.w();
+    }
 
     predict_pose_pub.publish(predict_pose_msg);
     ndt_pose_pub.publish(ndt_pose_msg);
-    current_pose_pub.publish(current_pose_msg);
+    // current_pose is published by vel_pose_mux
+//    current_pose_pub.publish(current_pose_msg);
     localizer_pose_pub.publish(localizer_pose_msg);
 
     // Send TF "/base_link" to "/map"
     transform.setOrigin(tf::Vector3(current_pose.x, current_pose.y, current_pose.z));
     transform.setRotation(current_q);
-    br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/base_link"));
+//    br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/base_link"));
+    if(_use_local_transform == true){
+    	br.sendTransform(tf::StampedTransform(local_transform * transform, current_scan_time, "/map", "/base_link"));
+    }else{
+    	br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/base_link"));
+    }
 
     matching_end = std::chrono::system_clock::now();
     exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() / 1000.0;
@@ -725,6 +828,7 @@ int main(int argc, char** argv)
   private_nh.getParam("offset", _offset);
   private_nh.getParam("use_openmp", _use_openmp);
   private_nh.getParam("get_height", _get_height);
+  private_nh.getParam("use_local_transform", _use_local_transform);
 
   if (nh.getParam("localizer", _localizer) == false)
   {
@@ -770,6 +874,7 @@ int main(int argc, char** argv)
   std::cout << "offset: " << _offset << std::endl;
   std::cout << "use_openmp: " << _use_openmp << std::endl;
   std::cout << "get_height: " << _get_height << std::endl;
+  std::cout << "use_local_transform: " << _use_local_transform << std::endl;
   std::cout << "localizer: " << _localizer << std::endl;
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
