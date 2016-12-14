@@ -142,6 +142,7 @@ public:
     const operationMode opMode;
 
     const bool offlineMapping;
+    float fps;
 
 private:
 

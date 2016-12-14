@@ -57,7 +57,7 @@ void loadData (const string &dataDir, imagePose& dataset)
 		} catch (out_of_range &e) {
 			continue;
 		}
-		if (ext != "png")
+		if (ext != "jpg")
 			continue;
 
 		dataset.imagePaths.push_back(dataDir + '/' + fname);
@@ -160,8 +160,13 @@ int main (int argc, char *argv[])
 
 	for (int i=startNum; i<mDataSet.poses.size(); i++) {
 
-		if (interruptStop==true)
+		cout << "Processing Frame# " << i << "\r";
+		cout.flush();
+
+		if (interruptStop==true) {
+			cout << "Stopped in Frame# " << i << endl;
 			break;
+		}
 
 		const string &path = mDataSet.imagePaths[i];
 		Transform3 pose = mDataSet.poses[i];
@@ -200,11 +205,17 @@ int main (int argc, char *argv[])
 //			cout << ORB_SLAM2::KeyFrame::extEgoOrientation << endl;
 		}
 
-		SLAM.TrackMonocular (image, timestamp);
+		try {
+			SLAM.TrackMonocular (image, timestamp);
+		} catch (cv::Exception &e) {
+			cerr << "CV Exception" << endl;
+			raise (SIGSEGV);
+		}
 
 		// Check status
 		if (SLAM.getTracker()->mState==Tracking::LOST) {
 			cout << "Lost in sequence #" << i << endl;
+			break;
 		}
 
 	}

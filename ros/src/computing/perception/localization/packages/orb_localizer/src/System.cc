@@ -41,7 +41,6 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 				mbActivateLocalizationMode(false),
 				mbDeactivateLocalizationMode(false),
 				opMode (mode),
-
 				offlineMapping(doOfflineMapping)
 {
     // Output welcome message
@@ -82,6 +81,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 		}
 		cout << "Vocabulary loaded!" << endl << endl;
     }
+    fps = (float)fsSettings["Camera.fps"];
 
     //Create KeyFrame Database
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
@@ -106,8 +106,8 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     if (mpMap->mbMapUpdated)
     	mpTracker->setMapLoaded();
 
-    mpLocalMapper = new LocalMapping(mpMap, mSensor==MONOCULAR);
-    mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR);
+    mpLocalMapper = new LocalMapping(mpMap, mSensor==MONOCULAR, offlineMapping);
+    mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR, offlineMapping);
 
     if (opMode==System::MAPPING) {
 
@@ -214,8 +214,10 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     cv::Mat camPosOrb = mpTracker->GrabImageMonocular(im,timestamp);
 
     if (offlineMapping==true) {
+    	int ifps = (int)fps;
     	mpLocalMapper->RunOnce();
-    	mpLoopCloser->RunOnce();
+    	if (mpTracker->mCurrentFrame.mnId % ifps == 0)
+    		mpLoopCloser->RunOnce();
     }
 
     return camPosOrb;

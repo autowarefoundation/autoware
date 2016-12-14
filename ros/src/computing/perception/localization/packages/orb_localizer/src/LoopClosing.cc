@@ -35,10 +35,11 @@
 namespace ORB_SLAM2
 {
 
-LoopClosing::LoopClosing(Map *pMap, KeyFrameDatabase *pDB, ORBVocabulary *pVoc, const bool bFixScale):
+LoopClosing::LoopClosing(Map *pMap, KeyFrameDatabase *pDB, ORBVocabulary *pVoc, const bool bFixScale, const bool offlineMode):
     mbResetRequested(false), mbFinishRequested(false), mbFinished(true), mpMap(pMap),
     mpKeyFrameDB(pDB), mpORBVocabulary(pVoc), mLastLoopKFid(0), mbRunningGBA(false), mbFinishedGBA(true),
-    mbStopGBA(false), mbFixScale(bFixScale)
+    mbStopGBA(false), mbFixScale(bFixScale),
+	offlineMapping (offlineMode)
 {
     mnCovisibilityConsistencyTh = 3;
     mpMatchedKF = NULL;
@@ -434,7 +435,8 @@ void LoopClosing::CorrectLoop()
 
     // Send a stop signal to Local Mapping
     // Avoid new keyframes are inserted while correcting the loop
-    mpLocalMapper->RequestStop();
+    if (offlineMapping==false)
+    	mpLocalMapper->RequestStop();
 
     // If a Global Bundle Adjustment is running, abort it
     if(isRunningGBA())
@@ -449,9 +451,11 @@ void LoopClosing::CorrectLoop()
     }
 
     // Wait until Local Mapping has effectively stopped
-    while(!mpLocalMapper->isStopped())
-    {
-        usleep(1000);
+    if (offlineMapping==false) {
+		while(!mpLocalMapper->isStopped())
+		{
+			usleep(1000);
+		}
     }
 
     // Ensure current keyframe is updated
@@ -690,12 +694,14 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
         {
             cout << "Global Bundle Adjustment finished" << endl;
             cout << "Updating map ..." << endl;
-            mpLocalMapper->RequestStop();
-            // Wait until Local Mapping has effectively stopped
 
-            while(!mpLocalMapper->isStopped() && !mpLocalMapper->isFinished())
-            {
-                usleep(1000);
+            if (offlineMapping==false) {
+            	mpLocalMapper->RequestStop();
+            // Wait until Local Mapping has effectively stopped
+				while(!mpLocalMapper->isStopped() && !mpLocalMapper->isFinished())
+				{
+					usleep(1000);
+				}
             }
 
             // Get Map Mutex
