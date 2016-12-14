@@ -123,7 +123,7 @@ int main (int argc, char *argv[])
 	string configFile = mapperOptMap["config"].as<string>();
 	string mapPath = mapperOptMap["mapfile"].as<string>();
 	string dataDir = mapperOptMap["datadir"].as<string>();
-	int startNum;
+	int startNum, stopNum;
 	try {
 		startNum = mapperOptMap["start"].as<int>();
 	} catch (boost::bad_any_cast &e) {
@@ -133,6 +133,7 @@ int main (int argc, char *argv[])
 	imagePose mDataSet;
 
 	loadData (dataDir, mDataSet);
+	stopNum = mDataSet.poses.size();
 
 	ORB_SLAM2::System SLAM(orbVocabFile,
 		configFile,
@@ -158,7 +159,7 @@ int main (int argc, char *argv[])
 
 	signal (SIGINT, interruptHandler);
 
-	for (int i=startNum; i<mDataSet.poses.size(); i++) {
+	for (int i=startNum; i<stopNum; i++) {
 
 		cout << "Processing Frame# " << i << "\r";
 		cout.flush();
@@ -215,7 +216,7 @@ int main (int argc, char *argv[])
 		// Check status
 		if (SLAM.getTracker()->mState==Tracking::LOST) {
 			cout << "Lost in sequence #" << i << endl;
-			break;
+//			break;
 		}
 
 	}
