@@ -35,7 +35,7 @@
 	
 	<arg name="signal" 						default="simulation" /> <!-- simulation or empty "" -->
 	<arg name="map" 						default="kml" />
-	<arg name="mapDirectory" 				default="/home/user/data/Around_NIC/map/kml/NIC_Exp.kml" />
+	<arg name="mapDirectory" 				default="/home/hatem/data/Around_NIC/map/kml/NIC_Exp.kml" />
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
