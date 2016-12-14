@@ -420,6 +420,7 @@ subs :
       - name : astar_navi
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
+        param: astar_navi
 
   - name : Motion Planning
     desc : Motion Planning desc sample
@@ -1864,6 +1865,26 @@ params :
       - Driving desc sample
       - Passing desc sample
       v     : 1
+
+  - name  : astar_navi
+    vars  :
+    - name  : use_back
+      desc  : Use reverse motion for planning
+      label : Use Reverse Motion
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : waypoint_velocity_kmph
+      desc      : Velocity of planned waypoints
+      label     : Waypoint Velocity
+      min       : 0.0
+      max       : 40.0
+      v         : 5.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : waypoint_saver
     vars  :
