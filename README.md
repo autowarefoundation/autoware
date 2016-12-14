@@ -165,6 +165,9 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ### Planning with wf_simulator
 [![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/0.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
 
+### Planning with Hybrid State A*
+[![Planning with wf_simulator](http://img.youtube.com/vi/1WiqAHZHj8U/0.jpg)](https://www.youtube.com/watch?v=1WiqAHZHj8U)
+
 ### Calibration Toolkit
 [![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/0.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
 
