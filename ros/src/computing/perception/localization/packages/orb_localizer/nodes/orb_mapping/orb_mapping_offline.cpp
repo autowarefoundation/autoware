@@ -105,6 +105,7 @@ int main (int argc, char *argv[])
 		("mapfile", po::value<string>(), "Path for saved map")
 		("datadir", po::value<string>(), "Path for image and pose directories")
 		("start", po::value<int>(), "Start from numbered image")
+		("delay", po::value<int>(), "Delay between frames in microseconds")
 	;
 	po::variables_map mapperOptMap;
 	po::store (po::parse_command_line(argc, argv, mapperOpts), mapperOptMap);
@@ -142,7 +143,16 @@ int main (int argc, char *argv[])
 		mapPath,
 		System::MAPPING,
 		// offline flag
-		true);
+		false);
+
+	int usecDelay;
+	try {
+		usecDelay = mapperOptMap["delay"].as<int>();
+	} catch (boost::bad_any_cast &e) {
+		float us = 1 / (float)SLAM.fsSettings["Camera.fps"];
+		usecDelay = (int) (us * 1e6);
+	}
+	cout << "Delay: " << usecDelay << " microseconds" << endl;
 
 	double fx2, fy2, cx2, cy2;
 	recomputeNewCameraParameter (
@@ -219,6 +229,7 @@ int main (int argc, char *argv[])
 //			break;
 		}
 
+		usleep (usecDelay);
 	}
 
 	SLAM.Shutdown();
