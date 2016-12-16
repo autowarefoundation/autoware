@@ -41,6 +41,7 @@ enum class StateList : int32_t
 {
   MOVE_FORWARD,
   TRAFFIC_LIGHT_STOP,
+  LANE_CHANGE,
   MISSION_COMPLETE,
 
   EMERGENCY = -1,
@@ -51,6 +52,15 @@ enum class TrafficLight : int32_t
   RED,
   GREEN,
   UNKNOWN,
+};
+
+enum class ChangeFlag : int32_t
+{
+  straight,
+  right,
+  left,
+
+  unknown = -1,
 };
 
 template <class T>
@@ -107,7 +117,23 @@ private:
   StateTrafficLightStop() = default;
 };
 
+// State : LANE_CHANGE
+class StateLaneChange : public BaseState
+{
+ public:
+  void update(StateContext *context) override;
+  int32_t getStateName() override
+  {
+    return enumToInteger(StateList::LANE_CHANGE);
+  }
+  static std::unique_ptr<BaseState> create() const
+  {
+    return std::unique_ptr<BaseState>(new StateLaneChange);
+  };
 
+ private:
+  StateLaneChange() = default;
+};
 
 // State : EMERGENCY
 class StateEmergency : public BaseState
@@ -165,6 +191,10 @@ public:
   {
     light_color_ = static_cast<TrafficLight>(msg);
   }
+  void setChangeFlag(const int32_t &msg)
+  {
+    change_flag_ = static_cast<ChangeFlag>(msg);
+  }
 
   TrafficLight getLightColor() const
   {
@@ -178,6 +208,7 @@ public:
 private:
   std::unique_ptr<BaseState> state_;
   TrafficLight light_color_;
+  ChangeFlag change_flag_;
 };
 
 }  // state_machine

@@ -47,4 +47,9 @@ void StateMoveForward::update(StateContext *context)
     context->setState(StateTrafficLightStop::create());
 }
 
+void StateLaneChange::update(StateContext *context)
+{
+  //lane change
+}
+
 }  // state_machine
