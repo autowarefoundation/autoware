@@ -557,6 +557,8 @@ void PlanningHelpers::SmoothPath(vector<WayPoint>& path, double weight_data,
 
 double PlanningHelpers::CalcAngleAndCost(vector<WayPoint>& path, const double& lastCost, const bool& bSmooth)
 {
+	if(path.size() <= 2.0) return 0;
+
 	path[0].pos.a = UtilityH::FixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x ));
 	path[0].cost = lastCost;
 

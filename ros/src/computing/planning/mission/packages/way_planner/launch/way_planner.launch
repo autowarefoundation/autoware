@@ -1,8 +1,8 @@
 <!-- -->
 <launch>
-	<arg name="pathDensity" 					default="0.25" /> <!-- distance between each two waypoints-->
-	<arg name="enableSmoothing" 				default="true" /> <!-- 1 or 0 -->
-	<arg name="enableLaneChange" 				default="true" /> <!-- 1 or 0 -->
+	<arg name="pathDensity" 					default="0.75" /> <!-- distance between each two waypoints-->
+	<arg name="enableSmoothing" 				default="false" /> <!-- 1 or 0 -->
+	<arg name="enableLaneChange" 				default="false" /> <!-- 1 or 0 -->
 	<arg name="enableRvizInput" 				default="true" /> <!-- 1 or 0 -->
 	<arg name="mapSource" 						default="2" /> <!-- map_loader=0, map_server=1, kml=2 -->
 	<arg name="mapFileName" 					default="/home/user/data/Around_NIC/map/kml/NIC_Exp.kml" /> <!-- incase of kml map source -->

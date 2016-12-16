@@ -75,6 +75,7 @@ protected:
 	int m_frequency;
 
 protected:
+	int m_nOriginalObstacles;
 	SimulationNS::SimpleTracker m_ObstacleTracking;
 	//SimulationNS::CarState m_State;
 	PlannerHNS::LocalPlannerH m_LocalPlanner;

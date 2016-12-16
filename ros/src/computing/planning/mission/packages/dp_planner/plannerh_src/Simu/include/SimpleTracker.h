@@ -18,8 +18,7 @@
 namespace SimulationNS
 {
 
-#define MAX_ASSOCIATION_DISTANCE 4.0
-#define MAX_TRACKS_AFTER_LOSING  25
+
 #define DEBUG_TRACKER 0
 
 class KFTrack
@@ -236,6 +235,13 @@ public:
 
 	SimpleTracker();
 	virtual ~SimpleTracker();
+
+public:
+	double m_MAX_ASSOCIATION_DISTANCE;
+	int m_MAX_TRACKS_AFTER_LOSING;
+	bool m_bUseCenterOnly;
+	PlannerHNS::WayPoint m_transform_ref;
+
 };
 
 } /* namespace BehaviorsNS */

@@ -65,6 +65,10 @@ PlannerX::PlannerX()
 	bWayPlannerPath = false;
 	bKmlMapLoaded = false;
 	m_bEnableTracking = true;
+	m_nOriginalObstacles = 0;
+	m_ObstacleTracking.m_MAX_ASSOCIATION_DISTANCE = 5.5;
+	m_ObstacleTracking.m_MAX_TRACKS_AFTER_LOSING = 5;
+	m_ObstacleTracking.m_bUseCenterOnly = true;
 
 	std::string str_signal;
 	nh.getParam("/dp_planner/signal", str_signal);
@@ -90,22 +94,22 @@ PlannerX::PlannerX()
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
 
-	pub_LocalPath = nh.advertise<waypoint_follower::lane>("final_waypoints", 10,true);
-	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 10);
-	pub_GlobalPlanNodes = nh.advertise<geometry_msgs::PoseArray>("global_plan_nodes", 10);
-	pub_StartPoint = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("GlobalStartpose", 10);
-	pub_GoalPoint = nh.advertise<geometry_msgs::PoseStamped>("GlobalGoalPose", 10);
-	pub_AStarStartPoint = nh.advertise<geometry_msgs::PoseStamped>("global_plan_start", 10);
-	pub_AStarGoalPoint = nh.advertise<geometry_msgs::PoseStamped>("global_plan_goal", 10);
+	pub_LocalPath = nh.advertise<waypoint_follower::lane>("final_waypoints", 1,true);
+	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
+	pub_GlobalPlanNodes = nh.advertise<geometry_msgs::PoseArray>("global_plan_nodes", 1);
+	pub_StartPoint = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("GlobalStartpose", 1);
+	pub_GoalPoint = nh.advertise<geometry_msgs::PoseStamped>("GlobalGoalPose", 1);
+	pub_AStarStartPoint = nh.advertise<geometry_msgs::PoseStamped>("global_plan_start", 1);
+	pub_AStarGoalPoint = nh.advertise<geometry_msgs::PoseStamped>("global_plan_goal", 1);
 
-	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 10, true);
-	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 10);
-	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 10);
+	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1, true);
+	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
+	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
 
-	sub_initialpose 	= nh.subscribe("/initialpose", 				10,		&PlannerX::callbackGetInitPose, 		this);
+	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&PlannerX::callbackGetInitPose, 		this);
 	sub_current_pose 	= nh.subscribe("/current_pose", 			100,	&PlannerX::callbackGetCurrentPose, 		this);
-	sub_cluster_cloud 	= nh.subscribe("/cloud_clusters",			10,		&PlannerX::callbackGetCloudClusters, 	this);
-	sub_bounding_boxs  	= nh.subscribe("/bounding_boxes",			10,		&PlannerX::callbackGetBoundingBoxes, 	this);
+	sub_cluster_cloud 	= nh.subscribe("/cloud_clusters",			1,		&PlannerX::callbackGetCloudClusters, 	this);
+	sub_bounding_boxs  	= nh.subscribe("/bounding_boxes",			1,		&PlannerX::callbackGetBoundingBoxes, 	this);
 	/**
 	 * @todo This works only in simulation (Autoware or ff_Waypoint_follower), twist_cmd should be changed, consult team
 	 */
@@ -117,13 +121,16 @@ PlannerX::PlannerX()
 	sub_TrafficLight 	= nh.subscribe("/traffic_signal_info", 		10,		&PlannerX::callbackGetTrafficLight, 	this);
 	sub_OutsideControl 	= nh.subscribe("/usb_controller_r_signal", 	10,		&PlannerX::callbackGetOutsideControl, 	this);
 	sub_AStarPath 		= nh.subscribe("/astar_path", 				10,		&PlannerX::callbackGetAStarPath, 		this);
-	sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
+	sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&PlannerX::callbackGetWayPlannerPath, 	this);
 
-	sub_map_points 	= nh.subscribe("/vector_map_info/point", 		1, &PlannerX::callbackGetVMPoints, 		this);
-	sub_map_lanes 	= nh.subscribe("/vector_map_info/lane", 		1, &PlannerX::callbackGetVMLanes, 		this);
-	sub_map_nodes 	= nh.subscribe("/vector_map_info/node", 		1, &PlannerX::callbackGetVMNodes, 		this);
-	sup_stop_lines 	= nh.subscribe("/vector_map_info/stop_line",	1, &PlannerX::callbackGetVMStopLines, 	this);
-	sub_dtlanes 	= nh.subscribe("/vector_map_info/dtlane", 		1, &PlannerX::callbackGetVMCenterLines,	this);
+	if(!m_bKmlMap)
+	{
+		sub_map_points 	= nh.subscribe("/vector_map_info/point", 		1, &PlannerX::callbackGetVMPoints, 		this);
+		sub_map_lanes 	= nh.subscribe("/vector_map_info/lane", 		1, &PlannerX::callbackGetVMLanes, 		this);
+		sub_map_nodes 	= nh.subscribe("/vector_map_info/node", 		1, &PlannerX::callbackGetVMNodes, 		this);
+		sup_stop_lines 	= nh.subscribe("/vector_map_info/stop_line",	1, &PlannerX::callbackGetVMStopLines, 	this);
+		sub_dtlanes 	= nh.subscribe("/vector_map_info/dtlane", 		1, &PlannerX::callbackGetVMCenterLines,	this);
+	}
 
 	sub_simulated_obstacle_pose_rviz = nh.subscribe("/clicked_point", 		1, &PlannerX::callbackGetRvizPoint,	this);
 
@@ -354,9 +361,15 @@ lidar_tracker::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const dou
 
 void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg)
 {
-	timespec timerTemp;
-	UtilityHNS::UtilityH::GetTickCount(timerTemp);
+//	timespec timerTemp;
+//	UtilityHNS::UtilityH::GetTickCount(timerTemp);
+	m_nOriginalObstacles = msg->clusters.size();
 	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_DetectedClusters);
+	if(m_bEnableTracking)
+	{
+		m_ObstacleTracking.DoOneStep(m_CurrentPos, m_DetectedClusters);
+		m_DetectedClusters = m_ObstacleTracking.m_DetectedObjects;
+	}
 	//std::cout << "Calculating Contour Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << ", For Objectis: " << m_DetectedClusters.size() <<  std::endl;
 	bNewClusters = true;
 }
@@ -509,6 +522,9 @@ void PlannerX::PlannerMainLoop()
 
 	while (ros::ok())
 	{
+		timespec iterationTime;
+		UtilityHNS::UtilityH::GetTickCount(iterationTime);
+
 		ros::spinOnce();
 
 		if(m_bKmlMap && !bKmlMapLoaded)
@@ -517,7 +533,7 @@ void PlannerX::PlannerMainLoop()
 			PlannerHNS::MappingHelpers::LoadKML(m_KmlMapPath, m_Map);
 			//sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		}
-		else if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
+		else if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints && !m_bKmlMap)
 		 {
 			timespec timerTemp;
 			UtilityHNS::UtilityH::GetTickCount(timerTemp);
@@ -550,20 +566,7 @@ void PlannerX::PlannerMainLoop()
 //			}
 
 
-
-			if(m_bEnableTracking)
-			{
-				m_ObstacleTracking.DoOneStep(m_LocalPlanner.state, m_DetectedClusters);
-				obj_list = m_ObstacleTracking.m_DetectedObjects;
-			}
-			else
-			{
-				obj_list = m_DetectedClusters;
-			}
-
-
-
-
+			obj_list = m_DetectedClusters;
 
 
 //			PlannerHNS::WayPoint goal_wp;
@@ -620,6 +623,10 @@ void PlannerX::PlannerMainLoop()
 		}
 
 		loop_rate.sleep();
+
+		double onePassTime = UtilityHNS::UtilityH::GetTimeDiffNow(iterationTime);
+		if(onePassTime > 0.1)
+			std::cout << "Slow Iteration Time = " << onePassTime << " , for Obstacles : (" << m_DetectedClusters.size() << ", " << m_nOriginalObstacles << ")" <<  std::endl;
 	}
 }
 

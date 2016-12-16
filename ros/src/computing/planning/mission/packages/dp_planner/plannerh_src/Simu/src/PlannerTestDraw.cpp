@@ -19,10 +19,10 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMap "NagoyaUniversity/"
+#define VectorMap "/home/user/data/Moriyama2/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
-#define kmlMap	"/home/user/SimuLogs/tsukuba_road_network_test.kml"
+#define kmlMap	"/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml"
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -59,11 +59,13 @@ PlannerTestDraw::PlannerTestDraw()
 
 	std::vector<PlannerHNS::TrafficLight> trafficLights;
 	std::vector<PlannerHNS::GPSPoint> stopLines;
+	PlannerHNS::RoadNetwork roadMap;
 
-	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/path1016_3.csv", 105, 1.5, trafficLights, stopLines);
+//	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/path1016_3.csv", 105, 1.5, trafficLights, stopLines);
 
-//	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(UtilityH::GetHomeDirectory()+
-//			DataRW::LoggingMainfolderName + DataRW::VectorMapsFolderName+VectorMap, m_RoadMap);
+//	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMap, roadMap);
+//	string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
+//	PlannerHNS::MappingHelpers::WriteKML("/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml",kml_templateFilePath , roadMap);
 
 //	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
 //	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;

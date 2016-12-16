@@ -30,6 +30,9 @@ SimpleTracker::SimpleTracker()
 	m_Car.w = 1.9;
 	m_Car.id = 0;
 	m_Car.t = CAR;
+	m_MAX_ASSOCIATION_DISTANCE = 4.0;
+	m_MAX_TRACKS_AFTER_LOSING = 25;
+	m_bUseCenterOnly = false;
 }
 
 SimpleTracker::~SimpleTracker()
@@ -67,7 +70,13 @@ void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<Detect
 	Track(m_DetectedObjects);
 
 	m_PrevDetectedObjects = m_DetectedObjects;
+
+	m_transform_ref.pos.x = m_PrevState.pos.x - currPose.pos.x;
+	m_transform_ref.pos.y = m_PrevState.pos.y - currPose.pos.y;
+	m_transform_ref.pos.a = m_PrevState.pos.a - currPose.pos.a;
+
 	m_PrevState = currPose;
+
 }
 
 void SimpleTracker::AssociateObjects()
@@ -75,6 +84,8 @@ void SimpleTracker::AssociateObjects()
 	std::vector<DetectedObject> hidden_list;
 	DetectedObject* prev_obj;
 	DetectedObject* curr_obj;
+	DetectedObject curr_obj_transformed;
+
 
 	for(unsigned int i = 0 ; i < m_DetectedObjects.size(); i++)
 	{
@@ -83,16 +94,29 @@ void SimpleTracker::AssociateObjects()
 
 		curr_obj = &m_DetectedObjects.at(i);
 		curr_obj->center.cost = 0;
+		curr_obj_transformed = *curr_obj;
+		CoordinateTransform(m_transform_ref, curr_obj_transformed);
 
 		for(unsigned int j = 0; j < m_PrevDetectedObjects.size(); j++)
 		{
 			prev_obj = &m_PrevDetectedObjects.at(j);
-			//curr_obj.center.cost = distance2points(trans_obj.center.pos, m_PrevDetectedObjects.at(j).center.pos);
-			for(unsigned int k = 0; k < curr_obj->contour.size(); k++)
-				for(unsigned int pk = 0; pk < prev_obj->contour.size(); pk++)
-					curr_obj->center.cost += distance2points(curr_obj->contour.at(k), prev_obj->contour.at(pk));
+			if(m_bUseCenterOnly)
+			{
+				//curr_obj->center.cost = distance2points(curr_obj->center.pos, curr_obj->center.pos);
+				curr_obj->center.cost = distance2points(curr_obj_transformed.center.pos, curr_obj->center.pos);
+			}
+			else
+			{
+//				for(unsigned int k = 0; k < curr_obj->contour.size(); k++)
+//					for(unsigned int pk = 0; pk < prev_obj->contour.size(); pk++)
+//						curr_obj->center.cost += distance2points(curr_obj->contour.at(k), prev_obj->contour.at(pk));
 
-			curr_obj->center.cost = curr_obj->center.cost/(double)(curr_obj->contour.size()*prev_obj->contour.size());
+				for(unsigned int k = 0; k < curr_obj_transformed.contour.size(); k++)
+					for(unsigned int pk = 0; pk < prev_obj->contour.size(); pk++)
+						curr_obj->center.cost += distance2points(curr_obj_transformed.contour.at(k), prev_obj->contour.at(pk));
+
+				curr_obj->center.cost = curr_obj->center.cost/(double)(curr_obj->contour.size()*prev_obj->contour.size());
+			}
 
 			if(DEBUG_TRACKER)
 				std::cout << "Cost Cost (" << i << "), " << prev_obj->center.pos.ToString() << ","
@@ -106,7 +130,7 @@ void SimpleTracker::AssociateObjects()
 			}
 		}
 
-		if(minID <= 0 || minCost > MAX_ASSOCIATION_DISTANCE) // new Object enter the scene
+		if(minID <= 0 || minCost > m_MAX_ASSOCIATION_DISTANCE) // new Object enter the scene
 		{
 			iTracksNumber = iTracksNumber + 1;
 			 curr_obj->id = iTracksNumber;
@@ -134,7 +158,7 @@ void SimpleTracker::AssociateObjects()
 			}
 		}
 
-		if(!bFound && prev_obj->predicted_center.cost < MAX_TRACKS_AFTER_LOSING)
+		if(!bFound && prev_obj->predicted_center.cost < m_MAX_TRACKS_AFTER_LOSING)
 		{
 			prev_obj->predicted_center.cost++;
 			hidden_list.push_back(*prev_obj);
@@ -193,11 +217,11 @@ void SimpleTracker::CoordinateTransform(const WayPoint& refCoordinate, DetectedO
 	Mat3 translationMat(-refCoordinate.pos.x, -refCoordinate.pos.y);
 	obj.center.pos = translationMat*obj.center.pos;
 	obj.center.pos = rotationMat*obj.center.pos;
-//	for(unsigned int j = 0 ; j < obj.contour.size(); j++)
-//	{
-//		obj.contour.at(j) = translationMat*obj.contour.at(j);
-//		obj.contour.at(j) = rotationMat*obj.contour.at(j);
-//	}
+	for(unsigned int j = 0 ; j < obj.contour.size(); j++)
+	{
+		obj.contour.at(j) = translationMat*obj.contour.at(j);
+		obj.contour.at(j) = rotationMat*obj.contour.at(j);
+	}
 }
 
 void SimpleTracker::CoordinateTransformPoint(const WayPoint& refCoordinate, GPSPoint& obj)

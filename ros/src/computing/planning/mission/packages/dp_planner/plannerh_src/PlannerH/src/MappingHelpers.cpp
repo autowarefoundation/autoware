@@ -36,7 +36,8 @@ MappingHelpers::~MappingHelpers() {
 GPSPoint MappingHelpers::GetTransformationOrigin()
 {
 	//return GPSPoint(-3700, 99427, -88,0);
-	return GPSPoint(18221.1, 93546.1, -36.19, 0);
+	//return GPSPoint(18221.1, 93546.1, -36.19, 0);
+	return GPSPoint(14805.945, 84680.211, -39.59, 0); // for moriyama map
 }
 
 Lane* MappingHelpers::GetLaneById(const int& id,RoadNetwork& map)
@@ -181,11 +182,13 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 //					", BLID4: " << lanes_data.at(l).BLID4 << ", FLID4: " << lanes_data.at(l).FLID4 << endl;
 	}
 
-//	//delete first two lanes !!!!! Don't know why
-	if(roadLanes.size() > 0)
-		roadLanes.erase(roadLanes.begin()+0);
-	if(roadLanes.size() > 0)
-		roadLanes.erase(roadLanes.begin()+0);
+//	//delete first two lanes !!!!! Don't know why , you don't know why ! , these two line cost you a lot .. ! why why
+//	if(roadLanes.size() > 0)
+//		roadLanes.erase(roadLanes.begin()+0);
+//	if(roadLanes.size() > 0)
+//		roadLanes.erase(roadLanes.begin()+0);
+
+	roadLanes.push_back(lane_obj);
 
 	//For each lane, the previous code set the fromId as the id of the last waypoint of the previos lane.
 	//here we fix that by finding from each fromID the corresponding point and replace the fromId by the LaneID associated with that point.
@@ -208,8 +211,6 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		}
 		roadLanes.at(l).dir = sum_a/(double)roadLanes.at(l).points.size();
 	}
-
-	roadLanes.push_back(lane_obj);
 
 	//map has one road segment
 	RoadSegment roadSegment1;
@@ -358,8 +359,8 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
 	AisanLanesFileReader lanes(lane_info);
 	AisanPointsFileReader points(laneLinesDetails);
 	AisanNodesFileReader nodes(node_info);
-	AisanAreasFileReader areas(node_info);
-	AisanIntersectionFileReader intersections(node_info);
+	//AisanAreasFileReader areas(node_info);
+	//AisanIntersectionFileReader intersections(node_info);
 
 
 	vector<AisanNodesFileReader::AisanNode> nodes_data;
@@ -375,13 +376,16 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
 	center_lanes.ReadAllData(dt_data);
 
 	vector<AisanAreasFileReader::AisanArea> area_data;
-	center_lanes.ReadAllData(dt_data);
-
 	vector<AisanIntersectionFileReader::AisanIntersection> intersection_data;
-	center_lanes.ReadAllData(dt_data);
 
 
-	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, GetTransformationOrigin(), map);
+
+	// use this to transform data to origin (0,0,0)
+//	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, GetTransformationOrigin(), map);
+
+	//use this when using the same coordinates as the map
+	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, GPSPoint(), map);
+
 
 
 	WayPoint origin = GetFirstWaypoint(map);

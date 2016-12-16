@@ -8,10 +8,10 @@
 	<arg name="samplingTipMargin" 			default="8.0" />
 	<arg name="samplingOutMargin" 			default="20.0" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
-	<arg name="pathDensity" 				default="0.2" />
+	<arg name="pathDensity" 				default="0.5" />
 	<arg name="rollOutDensity" 				default="0.5" />
 	<arg name="rollOutsNumber" 				default="4" />
-	<arg name="horizonDistance" 			default="120" />
+	<arg name="horizonDistance" 			default="100" />
 	
 	<arg name="minFollowingDistance" 		default="35.0" />
 	<arg name="maxFollowingDistance" 		default="40.0" />
@@ -24,8 +24,8 @@
 	<arg name="enableTrafficLightBehavior" 	default="0" />
 	<arg name="enableLaneChange" 			default="0" />
 	
-	<arg name="width" 						default="4.2" />
-	<arg name="length" 						default="1.85"/>
+	<arg name="width" 						default="1.85" />
+	<arg name="length" 						default="4.2"/>
 	<arg name="wheelBaseLength" 			default="2.5" />
 	<arg name="turningRadius"				default="3.2" />
 	<arg name="maxSteerAngle" 				default="0.42" />
@@ -35,7 +35,7 @@
 	
 	<arg name="signal" 						default="simulation" /> <!-- simulation or empty "" -->
 	<arg name="map" 						default="kml" /> <!-- kml or empty -->
-	<arg name="mapDirectory" 				default="/home/user/data/Around_NIC/map/kml/NIC_Exp.kml" />
+	<arg name="mapDirectory" 				default="/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml" />
 
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />

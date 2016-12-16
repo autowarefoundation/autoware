@@ -120,7 +120,9 @@ protected:
 	WayPlannerParams m_params;
 	AutowareRoadNetwork m_AwMap;
 	geometry_msgs::Pose m_StartPos;
+	geometry_msgs::Pose m_CurrentPose;
 	bool bStartPos;
+	bool bUsingCurrentPose;
 	geometry_msgs::Pose m_GoalPos;
 	//bool bGoalPos;
 	geometry_msgs::Pose m_OriginPos;
@@ -140,6 +142,7 @@ protected:
 
 	ros::Subscriber sub_start_pose;
 	ros::Subscriber sub_goal_pose;
+	ros::Subscriber sub_current_pose;
 	ros::Subscriber sub_nodes_list;
 	ros::Subscriber sub_map_points;
 	ros::Subscriber sub_map_lanes;
@@ -159,6 +162,7 @@ private:
   // Callback function for subscriber.
   void callbackGetGoalPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
+  void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 
   void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);
   void callbackGetVMLanes(const vector_map_msgs::LaneArray& msg);

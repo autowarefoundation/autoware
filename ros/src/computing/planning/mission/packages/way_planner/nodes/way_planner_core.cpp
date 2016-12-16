@@ -61,6 +61,7 @@ way_planner_core::way_planner_core()
 
 	m_bKmlMap = false;
 	bStartPos = false;
+	bUsingCurrentPose = false;
 	nh.getParam("/way_planner/pathDensity" 			, m_params.pathDensity);
 	nh.getParam("/way_planner/enableSmoothing" 		, m_params.bEnableSmoothing);
 	nh.getParam("/way_planner/enableLaneChange" 	, m_params.bEnableLaneChange);
@@ -94,6 +95,7 @@ way_planner_core::way_planner_core()
 	{
 		sub_start_pose 	= nh.subscribe("/initialpose", 					1, &way_planner_core::callbackGetStartPose, 		this);
 		sub_goal_pose 	= nh.subscribe("move_base_simple/goal", 		1, &way_planner_core::callbackGetGoalPose, 		this);
+		sub_current_pose = nh.subscribe("/current_pose", 				100,&way_planner_core::callbackGetCurrentPose, 		this);
 	}
 	else
 	{
@@ -122,23 +124,40 @@ way_planner_core::~way_planner_core(){
 
 void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-	if(bStartPos)
+	if(bStartPos || bUsingCurrentPose)
 	{
+		ROS_INFO("Received Goal Pose");
 		m_GoalPos = msg->pose;
 
 		bool bNewPlan = false;
-		PlannerHNS::WayPoint startPoint(m_StartPos.position.x+m_OriginPos.position.x,
-				m_StartPos.position.y+m_OriginPos.position.y,
-				m_StartPos.position.z+m_OriginPos.position.z, tf::getYaw(m_StartPos.orientation));
-		PlannerHNS::WayPoint goalPoint(m_GoalPos.position.x+m_OriginPos.position.x,
-				m_GoalPos.position.y+m_OriginPos.position.y,
-				m_GoalPos.position.z+m_OriginPos.position.z, tf::getYaw(m_GoalPos.orientation));
+		PlannerHNS::WayPoint startPoint;
+		PlannerHNS::WayPoint goalPoint;
+
+		if(bUsingCurrentPose)
+		{
+			startPoint = PlannerHNS::WayPoint(m_CurrentPose.position.x,
+					m_CurrentPose.position.y,
+					m_CurrentPose.position.z, tf::getYaw(m_CurrentPose.orientation));
+			goalPoint = PlannerHNS::WayPoint(m_GoalPos.position.x+m_OriginPos.position.x,
+					m_GoalPos.position.y+m_OriginPos.position.y,
+					m_GoalPos.position.z+m_OriginPos.position.z, tf::getYaw(m_GoalPos.orientation));
+		}
+		else
+		{
+			startPoint = PlannerHNS::WayPoint(m_StartPos.position.x+m_OriginPos.position.x,
+					m_StartPos.position.y+m_OriginPos.position.y,
+					m_StartPos.position.z+m_OriginPos.position.z, tf::getYaw(m_StartPos.orientation));
+
+			goalPoint = PlannerHNS::WayPoint(m_GoalPos.position.x+m_OriginPos.position.x,
+					m_GoalPos.position.y+m_OriginPos.position.y,
+					m_GoalPos.position.z+m_OriginPos.position.z, tf::getYaw(m_GoalPos.orientation));
+		}
 
 		PlannerHNS::WayPoint* pStart = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(startPoint, m_Map);
 		PlannerHNS::WayPoint* pGoal = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(goalPoint, m_Map);
 		std::vector<int> predefinedLanesIds;
 		std::vector<std::vector<PlannerHNS::WayPoint> > generatedTotalPaths;
-		if(pStart && pGoal && bStartPos)
+		if(pStart && pGoal && (bStartPos || bUsingCurrentPose))
 		{
 			double ret = m_PlannerH.PlanUsingDP(pStart->pLane,
 					*pStart, *pGoal,
@@ -151,9 +170,9 @@ void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConst
 			{
 				for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 				{
-					PlannerHNS::PlanningHelpers::FixPathDensity(generatedTotalPaths.at(i), m_params.pathDensity);
 					if(m_params.bEnableSmoothing)
 					{
+						PlannerHNS::PlanningHelpers::FixPathDensity(generatedTotalPaths.at(i), m_params.pathDensity);
 						PlannerHNS::PlanningHelpers::SmoothPath(generatedTotalPaths.at(i), 0.49, 0.35 , 0.01);
 						PlannerHNS::PlanningHelpers::CalcAngleAndCost(generatedTotalPaths.at(i));
 					}
@@ -169,21 +188,27 @@ void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConst
 		{
 			//bStartPos = false;
 			waypoint_follower::LaneArray lane_array;
+			visualization_msgs::MarkerArray pathsToVisualize;
+
 			for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 				RosHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
-			pub_Paths.publish(lane_array);
 
-			visualization_msgs::MarkerArray pathsToVisualize;
 			std_msgs::ColorRGBA total_color;
 			total_color.r = 0;
 			total_color.g = 0.7;
 			total_color.b = 1.0;
-			total_color.a = 0.2;
+			total_color.a = 0.4;
 			RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
-			RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
-			RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
+
+
+
+
+
+			//RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
+			//RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
 			//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
 			pub_PathsRviz.publish(pathsToVisualize);
+			pub_Paths.publish(lane_array);
 		}
 		else
 		{
@@ -199,8 +224,18 @@ void way_planner_core::callbackGetStartPose(const geometry_msgs::PoseWithCovaria
 {
 	if(!bStartPos)
 	{
+		ROS_INFO("Received Start pose");
 		m_StartPos = msg->pose.pose;
 		bStartPos = true;
+	}
+}
+
+void way_planner_core::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
+{
+	if(m_params.bEnableRvizInput)
+	{
+		m_CurrentPose = msg->pose;
+		bUsingCurrentPose = true;
 	}
 }
 
