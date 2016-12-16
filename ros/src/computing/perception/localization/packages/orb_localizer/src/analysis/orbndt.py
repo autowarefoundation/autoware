@@ -482,8 +482,9 @@ class PoseTable :
                 continue
             if (msg._type != 'geometry_msgs/PoseStamped') :
                 continue
-            cpose = Pose(msgTimestamp.to_sec(), msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, 
+            cpose = Pose(msg.header.stamp.to_sec(), msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, 
                 msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
+            cpose.msgTimestamp = msgTimestamp.to_sec()
             poseRecord.append(cpose)
         return poseRecord
         

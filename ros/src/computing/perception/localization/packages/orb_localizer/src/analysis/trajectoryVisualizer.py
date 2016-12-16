@@ -29,7 +29,7 @@ def createGeomPose (pose):
 if __name__ == '__main__' :
     
     print ("Loading ground truth")
-    groundTruth = orbndt.PoseTable.loadFromBagFile (sys.argv[1], 'world', 'camera1')
+    groundTruth = orbndt.PoseTable.loadFromBagFile (sys.argv[1], 'world', 'base_link')
     print ("Done Loading")
     
     rospy.init_node('GroundTruthPublisher', anonymous=True)
