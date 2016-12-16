@@ -105,6 +105,7 @@ int main (int argc, char *argv[])
 		("mapfile", po::value<string>(), "Path for saved map")
 		("datadir", po::value<string>(), "Path for image and pose directories")
 		("start", po::value<int>(), "Start from numbered image")
+		("stop", po::value<int>(), "Stop in sequence number")
 		("delay", po::value<int>(), "Delay between frames in microseconds")
 	;
 	po::variables_map mapperOptMap;
@@ -134,7 +135,14 @@ int main (int argc, char *argv[])
 	imagePose mDataSet;
 
 	loadData (dataDir, mDataSet);
-	stopNum = mDataSet.poses.size();
+//	stopNum = mDataSet.poses.size();
+	try {
+		stopNum = mapperOptMap["stop"].as<int>();
+		if (stopNum >= mDataSet.poses.size())
+			throw boost::bad_any_cast();
+	} catch (boost::bad_any_cast &e) {
+		stopNum = mDataSet.poses.size();
+	}
 
 	ORB_SLAM2::System SLAM(orbVocabFile,
 		configFile,
