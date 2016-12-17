@@ -167,6 +167,7 @@ void LaneSelectNode::processing()
   ROS_INFO("current_lane_idx: %d", current_lane_idx_);
   ROS_INFO("right_lane_idx: %d", right_lane_idx_);
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
+  ROS_INFO("current change_flag: %d", enumToInteger(std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))));
 
   // if change flag of current_lane is left or right, lane change
   if (change_flag == enumToInteger(ChangeFlag::right) || change_flag == enumToInteger(ChangeFlag::left))
