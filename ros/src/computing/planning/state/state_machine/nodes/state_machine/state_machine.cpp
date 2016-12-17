@@ -51,4 +51,9 @@ void StateLaneChange::update(StateContext *context)
   // lane change
 }
 
+void StateStopSignStop::update(StateContext *context)
+{
+  // stop sign stop
+}
+
 }  // state_machine
