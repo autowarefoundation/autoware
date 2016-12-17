@@ -41,8 +41,8 @@ enum class StateList : int32_t
   MOVE_FORWARD,
   TRAFFIC_LIGHT_STOP,
   LANE_CHANGE,
-  MISSION_COMPLETE,
 
+  MISSION_COMPLETE = 100,
   EMERGENCY = -1,
 };
 
