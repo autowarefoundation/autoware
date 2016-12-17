@@ -41,6 +41,7 @@
 // C++ includes
 #include <iostream>
 #include <numeric>
+#include <tuple>
 
 // User defined includes
 #include "waypoint_follower/LaneArray.h"
