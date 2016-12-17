@@ -90,7 +90,7 @@ public:
   {
     return enumToInteger(StateList::MOVE_FORWARD);
   }
-  static std::unique_ptr<BaseState> create() const
+  static std::unique_ptr<BaseState> create()
   {
     return std::unique_ptr<BaseState>(new StateMoveForward);
   };
@@ -108,7 +108,7 @@ public:
   {
     return enumToInteger(StateList::TRAFFIC_LIGHT_STOP);
   }
-  static std::unique_ptr<BaseState> create() const
+  static std::unique_ptr<BaseState> create()
   {
     return std::unique_ptr<BaseState>(new StateTrafficLightStop);
   };
@@ -126,7 +126,7 @@ class StateLaneChange : public BaseState
   {
     return enumToInteger(StateList::LANE_CHANGE);
   }
-  static std::unique_ptr<BaseState> create() const
+  static std::unique_ptr<BaseState> create()
   {
     return std::unique_ptr<BaseState>(new StateLaneChange);
   };
@@ -144,7 +144,7 @@ class StateEmergency : public BaseState
   {
     return enumToInteger(StateList::EMERGENCY);
   }
-  static std::unique_ptr<BaseState> create() const
+  static std::unique_ptr<BaseState> create()
   {
     return std::unique_ptr<BaseState>(new StateEmergency);
   };
@@ -162,7 +162,7 @@ class StateMissionComplete : public BaseState
   {
     return enumToInteger(StateList::MISSION_COMPLETE);
   }
-  static std::unique_ptr<BaseState> create() const
+  static std::unique_ptr<BaseState> create()
   {
     return std::unique_ptr<BaseState>(new StateMissionComplete);
   };
