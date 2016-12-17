@@ -111,24 +111,24 @@ void LaneSelectNode::processing()
   ROS_INFO("current_lane_idx: %d", current_lane_idx_);
   ROS_INFO("right_lane_idx: %d", right_lane_idx_);
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
-  ROS_INFO("current change_flag: %d", enumToInteger(std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))));
+  ROS_INFO("current change_flag: %d",
+           enumToInteger(std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))));
 
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
   // if change flag of current_lane is left or right, lane change
   if (current_state_ == "LANE_CHANGE")
   {
-    if(change_flag == ChangeFlag::right && right_lane_idx_ != -1)
-      if(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(right_lane_idx_))) != -1)
+    if (change_flag == ChangeFlag::right && right_lane_idx_ != -1)
+      if (std::get<1>(tuple_vec_.at(static_cast<uint32_t>(right_lane_idx_))) != -1)
         changeLane();
 
-    if(change_flag == ChangeFlag::left && left_lane_idx_ != -1)
-      if(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(left_lane_idx_))) != -1)
+    if (change_flag == ChangeFlag::left && left_lane_idx_ != -1)
+      if (std::get<1>(tuple_vec_.at(static_cast<uint32_t>(left_lane_idx_))) != -1)
         changeLane();
   }
 
   publish();
   publishVisualizer();
-
 }
 
 void LaneSelectNode::changeLane()
@@ -156,10 +156,11 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
         getClosestWaypointNumber(std::get<0>(el), current_pose_.pose, current_velocity_.twist, std::get<1>(el));
     ROS_INFO("closest: %d", std::get<1>(el));
 
-    std::get<2>(el) = (std::get<1>(el) != -1)
+    std::get<2>(el) =
+        (std::get<1>(el) != -1)
             ? static_cast<ChangeFlag>(std::get<0>(el).waypoints.at(static_cast<uint32_t>(std::get<1>(el))).change_flag)
             : ChangeFlag::unknown;
-    ROS_INFO("change_flag: %d",enumToInteger(std::get<2>(el)));
+    ROS_INFO("change_flag: %d", enumToInteger(std::get<2>(el)));
   }
 
   // confirm if all closest waypoint numbers are -1. If so, output warning
@@ -188,7 +189,6 @@ void LaneSelectNode::findCurrentLane()
     idx_vec.push_back(i);
   }
   current_lane_idx_ = findMostClosestLane(idx_vec, current_pose_.pose.position);
-
 }
 
 int32_t LaneSelectNode::findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p)
@@ -243,7 +243,6 @@ void LaneSelectNode::findNeighborLanes()
   if (!left_lane_idx_vec.empty())
   {
     left_lane_idx_ = findMostClosestLane(left_lane_idx_vec, current_closest_pose.position);
-
   }
   else
   {
@@ -252,7 +251,6 @@ void LaneSelectNode::findNeighborLanes()
   if (!right_lane_idx_vec.empty())
   {
     right_lane_idx_ = findMostClosestLane(right_lane_idx_vec, current_closest_pose.position);
-
   }
   else
   {
@@ -318,10 +316,10 @@ void LaneSelectNode::createRightLaneMarker(visualization_msgs::Marker *marker)
   std_msgs::ColorRGBA color_neighbor_change;
   color_neighbor_change.b = 0.7;
   color_neighbor_change.g = 1.0;
-   color_neighbor_change.a = 0.2;
+  color_neighbor_change.a = 0.2;
 
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
-  marker->color =  change_flag == ChangeFlag::right ? color_neighbor_change : color_neighbor;
+  marker->color = change_flag == ChangeFlag::right ? color_neighbor_change : color_neighbor;
 
   const std::vector<waypoint_follower::waypoint> &wps =
       std::get<0>(tuple_vec_.at(static_cast<uint32_t>(right_lane_idx_))).waypoints;
@@ -361,8 +359,7 @@ void LaneSelectNode::createLeftLaneMarker(visualization_msgs::Marker *marker)
   color_neighbor_change.a = 0.2;
 
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
-  marker->color = change_flag == ChangeFlag::left ? color_neighbor_change
-                                                  : color_neighbor;
+  marker->color = change_flag == ChangeFlag::left ? color_neighbor_change : color_neighbor;
 
   const std::vector<waypoint_follower::waypoint> &wps =
       std::get<0>(tuple_vec_.at(static_cast<uint32_t>(left_lane_idx_))).waypoints;
@@ -397,8 +394,8 @@ void LaneSelectNode::createClosestWaypointsMarker(visualization_msgs::Marker *ma
       continue;
 
     marker->points.push_back(std::get<0>(tuple_vec_.at(i))
-                                                   .waypoints.at(static_cast<uint32_t>(std::get<1>(tuple_vec_.at(i))))
-                                                   .pose.pose.position);
+                                 .waypoints.at(static_cast<uint32_t>(std::get<1>(tuple_vec_.at(i))))
+                                 .pose.pose.position);
   }
 }
 
