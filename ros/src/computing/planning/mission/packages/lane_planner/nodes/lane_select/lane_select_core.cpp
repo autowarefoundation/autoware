@@ -159,35 +159,38 @@ void LaneSelectNode::processing()
     return;
   }
 
-  findNeighborLanes();
-  const int32_t &change_flag =
-      std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))
-          .waypoints.at(static_cast<uint32_t>(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))))
-          .change_flag;
   ROS_INFO("current_lane_idx: %d", current_lane_idx_);
   ROS_INFO("right_lane_idx: %d", right_lane_idx_);
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
   ROS_INFO("current change_flag: %d", enumToInteger(std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))));
 
+  const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
   // if change flag of current_lane is left or right, lane change
-  if (change_flag == enumToInteger(ChangeFlag::right) || change_flag == enumToInteger(ChangeFlag::left))
-    changeLane(change_flag);
+  if (current_state_ == "LANE_CHANGE")
+  {
+    if(change_flag == ChangeFlag::right && right_lane_idx_ != -1)
+      if(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(right_lane_idx_))) != -1)
+        changeLane();
+
+    if(change_flag == ChangeFlag::left && left_lane_idx_ != -1)
+      if(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(left_lane_idx_))) != -1)
+        changeLane();
+  }
 
   publish();
-  return;
 }
 
-void LaneSelectNode::changeLane(const int32_t &change_flag)
+void LaneSelectNode::changeLane()
 {
   ros::Time current_time = ros::Time::now();
   double dt = (current_time - last_change_time_).toSec();
   if (dt < lane_change_interval_)
     return;
 
-  if (change_flag == enumToInteger(ChangeFlag::right) && right_lane_idx_ != -1)
-    current_lane_idx_ = right_lane_idx_;
-  else if (change_flag == enumToInteger(ChangeFlag::left) && left_lane_idx_ != -1)
-    current_lane_idx_ = left_lane_idx_;
+  const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
+  current_lane_idx_ = change_flag == ChangeFlag::right ? right_lane_idx_
+                                                       : change_flag == ChangeFlag::left ? left_lane_idx_
+                                                                                         : current_lane_idx_;
 
   findNeighborLanes();
 

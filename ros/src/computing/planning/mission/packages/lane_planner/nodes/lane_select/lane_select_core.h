@@ -125,7 +125,7 @@ private:
   int32_t findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p);
   void findCurrentLane();
   void findNeighborLanes();
-  void changeLane(const int32_t &change_flag);
+  void changeLane();
 };
 
 int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, const geometry_msgs::Pose &current_pose,
