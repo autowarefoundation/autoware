@@ -164,6 +164,9 @@ void LaneSelectNode::processing()
       std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))
           .waypoints.at(static_cast<uint32_t>(std::get<1>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)))))
           .change_flag;
+  ROS_INFO("current_lane_idx: %d", current_lane_idx_);
+  ROS_INFO("right_lane_idx: %d", right_lane_idx_);
+  ROS_INFO("left_lane_idx: %d", left_lane_idx_);
 
   // if change flag of current_lane is left or right, lane change
   if (change_flag == enumToInteger(ChangeFlag::right) || change_flag == enumToInteger(ChangeFlag::left))
@@ -387,10 +390,6 @@ void LaneSelectNode::publishForVisualize()
 
 void LaneSelectNode::publish()
 {
-  ROS_INFO("current_lane_idx: %d", current_lane_idx_);
-  ROS_INFO("right_lane_idx: %d", right_lane_idx_);
-  ROS_INFO("left_lane_idx: %d", left_lane_idx_);
-
   // publish current global lane
   waypoint_follower::lane global_lane;
   global_lane = std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
