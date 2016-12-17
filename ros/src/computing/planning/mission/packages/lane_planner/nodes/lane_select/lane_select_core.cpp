@@ -43,6 +43,7 @@ LaneSelectNode::LaneSelectNode()
   , is_current_pose_subscribed_(false)
   , is_current_velocity_subscribed_(false)
   , last_change_time_(ros::Time::now())
+  , current_state_("LANE_CHANGE")
 {
   initForROS();
   initForViz();

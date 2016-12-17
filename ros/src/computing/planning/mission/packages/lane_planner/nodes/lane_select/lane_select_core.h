@@ -97,6 +97,7 @@ private:
   bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_;
   ros::Time last_change_time_;
   double distance_threshold_;
+  std::string current_state_;
 
   // for visualize
   visualization_msgs::Marker current_lane_marker_;
