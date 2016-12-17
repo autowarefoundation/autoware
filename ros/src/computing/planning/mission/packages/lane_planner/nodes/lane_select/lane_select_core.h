@@ -97,12 +97,6 @@ private:
   double distance_threshold_;
   std::string current_state_;
 
-  // for visualize
-  visualization_msgs::Marker current_lane_marker_;
-  visualization_msgs::Marker right_lane_marker_;
-  visualization_msgs::Marker left_lane_marker_;
-  visualization_msgs::Marker closest_waypoints_marker_;
-
   // callbacks
   void callbackFromLaneArray(const waypoint_follower::LaneArrayConstPtr &msg);
   void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
@@ -110,16 +104,14 @@ private:
 
   // initializer
   void initForROS();
-  void initForViz();
-  void initCommonParamForLaneMarker(visualization_msgs::Marker *marker);
 
   // functions
   void publish();
-  void createCurrentLaneMarker();
-  void createRightLaneMarker();
-  void createLeftLaneMarker();
-  void createClosestWaypointsMarker();
-  void publishForVisualize();
+  void publishVisualizer();
+  void createCurrentLaneMarker(visualization_msgs::Marker *marker);
+  void createRightLaneMarker(visualization_msgs::Marker *marker);
+  void createLeftLaneMarker(visualization_msgs::Marker *marker);
+  void createClosestWaypointsMarker(visualization_msgs::Marker *marker);
   void processing();
   bool getClosestWaypointNumberForEachLanes();
   int32_t findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p);

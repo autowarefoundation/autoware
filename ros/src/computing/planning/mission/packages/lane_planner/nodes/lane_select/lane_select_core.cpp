@@ -46,7 +46,6 @@ LaneSelectNode::LaneSelectNode()
   , current_state_("LANE_CHANGE")
 {
   initForROS();
-  initForViz();
 }
 
 // Destructor
@@ -71,59 +70,6 @@ void LaneSelectNode::initForROS()
   private_nh_.param<double>("distance_threshold", distance_threshold_, double(3.0));
 }
 
-void LaneSelectNode::initCommonParamForLaneMarker(visualization_msgs::Marker *marker)
-{
-  marker->header.frame_id = "map";
-  marker->header.stamp = ros::Time();
-  marker->type = visualization_msgs::Marker::LINE_STRIP;
-  marker->action = visualization_msgs::Marker::ADD;
-  marker->scale.x = 1.0;
-}
-
-void LaneSelectNode::initForViz()
-{
-  std_msgs::ColorRGBA color_current;
-  color_current.b = 1.0;
-  color_current.g = 0.7;
-  color_current.a = 0.2;
-
-  std_msgs::ColorRGBA color_neighbor;
-  color_neighbor.r = 0.5;
-  color_neighbor.b = 0.5;
-  color_neighbor.g = 0.5;
-  color_neighbor.a = 0.2;
-
-  std_msgs::ColorRGBA color_closest_wp;
-  color_closest_wp.r = 1.0;
-  color_closest_wp.b = 1.0;
-  color_closest_wp.g = 1.0;
-  color_closest_wp.a = 1.0;
-
-  // current_lane_marker_
-  initCommonParamForLaneMarker(&current_lane_marker_);
-  current_lane_marker_.ns = "current_lane_marker";
-  current_lane_marker_.color = color_current;
-
-  // left_lane_marker_
-  initCommonParamForLaneMarker(&left_lane_marker_);
-  left_lane_marker_.ns = "left_lane_marker";
-  left_lane_marker_.color = color_neighbor;
-
-  // right_lane_marker_
-  initCommonParamForLaneMarker(&right_lane_marker_);
-  right_lane_marker_.ns = "right_lane_marker";
-  right_lane_marker_.color = color_neighbor;
-
-  // closest_waypoints_marker_
-  closest_waypoints_marker_.header.frame_id = "map";
-  closest_waypoints_marker_.header.stamp = ros::Time();
-  closest_waypoints_marker_.ns = "closest_waypoints_marker";
-  closest_waypoints_marker_.type = visualization_msgs::Marker::POINTS;
-  closest_waypoints_marker_.action = visualization_msgs::Marker::ADD;
-  closest_waypoints_marker_.scale.x = 0.5;
-  closest_waypoints_marker_.color = color_closest_wp;
-}
-
 void LaneSelectNode::processing()
 {
   if (!is_current_pose_subscribed_ || !is_lane_array_subscribed_ || !is_current_velocity_subscribed_)
@@ -138,6 +84,7 @@ void LaneSelectNode::processing()
     current_lane_idx_ = -1;
     right_lane_idx_ = -1;
     left_lane_idx_ = -1;
+    publishVisualizer();
     return;
   }
 
@@ -147,6 +94,7 @@ void LaneSelectNode::processing()
     findCurrentLane();
     findNeighborLanes();
     publish();
+    publishVisualizer();
     return;
   }
 
@@ -156,6 +104,7 @@ void LaneSelectNode::processing()
     current_lane_idx_ = -1;
     right_lane_idx_ = -1;
     left_lane_idx_ = -1;
+    publishVisualizer();
     return;
   }
 
@@ -178,6 +127,8 @@ void LaneSelectNode::processing()
   }
 
   publish();
+  publishVisualizer();
+
 }
 
 void LaneSelectNode::changeLane()
@@ -193,9 +144,6 @@ void LaneSelectNode::changeLane()
                                                                                          : current_lane_idx_;
 
   findNeighborLanes();
-
-  // for visualize
-  createCurrentLaneMarker();
 
   last_change_time_ = ros::Time::now();
 }
@@ -226,8 +174,6 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
     return false;
   }
 
-  // for visualize
-  createClosestWaypointsMarker();
   return true;
 }
 
@@ -243,8 +189,6 @@ void LaneSelectNode::findCurrentLane()
   }
   current_lane_idx_ = findMostClosestLane(idx_vec, current_pose_.pose.position);
 
-  // for visualize
-  createCurrentLaneMarker();
 }
 
 int32_t LaneSelectNode::findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p)
@@ -300,8 +244,6 @@ void LaneSelectNode::findNeighborLanes()
   {
     left_lane_idx_ = findMostClosestLane(left_lane_idx_vec, current_closest_pose.position);
 
-    // for visualize
-    createLeftLaneMarker();
   }
   else
   {
@@ -311,8 +253,6 @@ void LaneSelectNode::findNeighborLanes()
   {
     right_lane_idx_ = findMostClosestLane(right_lane_idx_vec, current_closest_pose.position);
 
-    // for visualize
-    createRightLaneMarker();
   }
   else
   {
@@ -320,74 +260,167 @@ void LaneSelectNode::findNeighborLanes()
   }
 }
 
-void LaneSelectNode::createCurrentLaneMarker()
+void LaneSelectNode::createCurrentLaneMarker(visualization_msgs::Marker *marker)
 {
+  marker->header.frame_id = "map";
+  marker->header.stamp = ros::Time();
+  marker->ns = "current_lane_marker";
+
+  if (current_lane_idx_ == -1)
+  {
+    marker->action = visualization_msgs::Marker::DELETE;
+    return;
+  }
+
+  marker->type = visualization_msgs::Marker::LINE_STRIP;
+  marker->action = visualization_msgs::Marker::ADD;
+  marker->scale.x = 1.0;
+
+  std_msgs::ColorRGBA color_current;
+  color_current.b = 1.0;
+  color_current.g = 0.7;
+  color_current.a = 0.2;
+
+  marker->color = color_current;
+
   const std::vector<waypoint_follower::waypoint> &wps =
       std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_))).waypoints;
-  current_lane_marker_.points.clear();
-  current_lane_marker_.points.shrink_to_fit();
-  current_lane_marker_.points.reserve(wps.size());
+
+  marker->points.reserve(wps.size());
   for (const auto &el : wps)
   {
-    current_lane_marker_.points.push_back(el.pose.pose.position);
+    marker->points.push_back(el.pose.pose.position);
   }
-  publishForVisualize();
 }
 
-void LaneSelectNode::createRightLaneMarker()
+void LaneSelectNode::createRightLaneMarker(visualization_msgs::Marker *marker)
 {
+  marker->header.frame_id = "map";
+  marker->header.stamp = ros::Time();
+  marker->ns = "right_lane_marker";
+
+  if (right_lane_idx_ == -1)
+  {
+    marker->action = visualization_msgs::Marker::DELETE;
+    return;
+  }
+
+  marker->type = visualization_msgs::Marker::LINE_STRIP;
+  marker->action = visualization_msgs::Marker::ADD;
+  marker->scale.x = 1.0;
+
+  std_msgs::ColorRGBA color_neighbor;
+  color_neighbor.r = 0.5;
+  color_neighbor.b = 0.5;
+  color_neighbor.g = 0.5;
+  color_neighbor.a = 0.2;
+
+  std_msgs::ColorRGBA color_neighbor_change;
+  color_neighbor_change.b = 0.7;
+  color_neighbor_change.g = 1.0;
+   color_neighbor_change.a = 0.2;
+
+  const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
+  marker->color =  change_flag == ChangeFlag::right ? color_neighbor_change : color_neighbor;
+
   const std::vector<waypoint_follower::waypoint> &wps =
       std::get<0>(tuple_vec_.at(static_cast<uint32_t>(right_lane_idx_))).waypoints;
 
-  right_lane_marker_.points.clear();
-  right_lane_marker_.points.shrink_to_fit();
-  right_lane_marker_.points.reserve(wps.size());
+  marker->points.reserve(wps.size());
   for (const auto &el : wps)
   {
-    right_lane_marker_.points.push_back(el.pose.pose.position);
+    marker->points.push_back(el.pose.pose.position);
   }
-  publishForVisualize();
 }
 
-void LaneSelectNode::createLeftLaneMarker()
+void LaneSelectNode::createLeftLaneMarker(visualization_msgs::Marker *marker)
 {
+  marker->header.frame_id = "map";
+  marker->header.stamp = ros::Time();
+  marker->ns = "left_lane_marker";
+
+  if (left_lane_idx_ == -1)
+  {
+    marker->action = visualization_msgs::Marker::DELETE;
+    return;
+  }
+
+  marker->type = visualization_msgs::Marker::LINE_STRIP;
+  marker->action = visualization_msgs::Marker::ADD;
+  marker->scale.x = 1.0;
+
+  std_msgs::ColorRGBA color_neighbor;
+  color_neighbor.r = 0.5;
+  color_neighbor.b = 0.5;
+  color_neighbor.g = 0.5;
+  color_neighbor.a = 0.2;
+
+  std_msgs::ColorRGBA color_neighbor_change;
+  color_neighbor_change.b = 0.7;
+  color_neighbor_change.g = 1.0;
+  color_neighbor_change.a = 0.2;
+
+  const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
+  marker->color = change_flag == ChangeFlag::left ? color_neighbor_change
+                                                  : color_neighbor;
+
   const std::vector<waypoint_follower::waypoint> &wps =
       std::get<0>(tuple_vec_.at(static_cast<uint32_t>(left_lane_idx_))).waypoints;
 
-  left_lane_marker_.points.clear();
-  left_lane_marker_.points.shrink_to_fit();
-  left_lane_marker_.points.reserve(wps.size());
+  marker->points.reserve(wps.size());
   for (const auto &el : wps)
   {
-    left_lane_marker_.points.push_back(el.pose.pose.position);
+    marker->points.push_back(el.pose.pose.position);
   }
-  publishForVisualize();
 }
 
-void LaneSelectNode::createClosestWaypointsMarker()
+void LaneSelectNode::createClosestWaypointsMarker(visualization_msgs::Marker *marker)
 {
-  closest_waypoints_marker_.points.clear();
-  closest_waypoints_marker_.points.shrink_to_fit();
-  closest_waypoints_marker_.points.reserve(tuple_vec_.size());
+  std_msgs::ColorRGBA color_closest_wp;
+  color_closest_wp.r = 1.0;
+  color_closest_wp.b = 1.0;
+  color_closest_wp.g = 1.0;
+  color_closest_wp.a = 1.0;
+
+  marker->header.frame_id = "map";
+  marker->header.stamp = ros::Time();
+  marker->ns = "closest_waypoints_marker";
+  marker->type = visualization_msgs::Marker::POINTS;
+  marker->action = visualization_msgs::Marker::ADD;
+  marker->scale.x = 0.5;
+  marker->color = color_closest_wp;
+
+  marker->points.reserve(tuple_vec_.size());
   for (uint32_t i = 0; i < tuple_vec_.size(); i++)
   {
     if (std::get<1>(tuple_vec_.at(i)) == -1)
       continue;
 
-    closest_waypoints_marker_.points.push_back(std::get<0>(tuple_vec_.at(i))
+    marker->points.push_back(std::get<0>(tuple_vec_.at(i))
                                                    .waypoints.at(static_cast<uint32_t>(std::get<1>(tuple_vec_.at(i))))
                                                    .pose.pose.position);
   }
-  publishForVisualize();
 }
 
-void LaneSelectNode::publishForVisualize()
+void LaneSelectNode::publishVisualizer()
 {
   visualization_msgs::MarkerArray marker_array;
-  marker_array.markers.push_back(closest_waypoints_marker_);
-  marker_array.markers.push_back(current_lane_marker_);
-  marker_array.markers.push_back(left_lane_marker_);
-  marker_array.markers.push_back(right_lane_marker_);
+
+  visualization_msgs::Marker current_lane_marker;
+  createCurrentLaneMarker(&current_lane_marker);
+  marker_array.markers.push_back(current_lane_marker);
+
+  visualization_msgs::Marker right_lane_marker;
+  createRightLaneMarker(&right_lane_marker);
+  marker_array.markers.push_back(right_lane_marker);
+
+  visualization_msgs::Marker left_lane_marker;
+  createLeftLaneMarker(&left_lane_marker);
+  marker_array.markers.push_back(left_lane_marker);
+
+  visualization_msgs::Marker closest_waypoints_marker;
+  createClosestWaypointsMarker(&closest_waypoints_marker);
+  marker_array.markers.push_back(closest_waypoints_marker);
 
   vis_pub1_.publish(marker_array);
 }
