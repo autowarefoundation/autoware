@@ -197,12 +197,14 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
 {
   for (auto &el : tuple_vec_)
   {
-    int32_t number =
+    std::get<1>(el) =
         getClosestWaypointNumber(std::get<0>(el), current_pose_.pose, current_velocity_.twist, std::get<1>(el));
-    std::get<1>(el) = number;
     ROS_INFO("closest: %d", std::get<1>(el));
 
-    std::get<2>(el) = static_cast<ChangeFlag>(std::get<0>(el).waypoints.at(static_cast<uint32_t>(std::get<1>(el))).change_flag);
+    std::get<2>(el) = (std::get<1>(el) != -1)
+            ? static_cast<ChangeFlag>(std::get<0>(el).waypoints.at(static_cast<uint32_t>(std::get<1>(el))).change_flag)
+            : ChangeFlag::unknown;
+    ROS_INFO("change_flag: %d",enumToInteger(std::get<2>(el)));
   }
 
   // confirm if all closest waypoint numbers are -1. If so, output warning
