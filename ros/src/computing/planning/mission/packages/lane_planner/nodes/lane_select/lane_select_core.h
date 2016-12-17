@@ -89,7 +89,7 @@ private:
   int32_t right_lane_idx_;
   int32_t left_lane_idx_;
   int32_t lane_change_interval_;
-  std::vector<std::tuple<waypoint_follower::lane, int32_t, int32_t>> tuple_vec_;  // lane, closest_waypoint, change_flag
+  std::vector<std::tuple<waypoint_follower::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint, change_flag
   geometry_msgs::PoseStamped current_pose_;
   geometry_msgs::TwistStamped current_velocity_;
   bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_;
