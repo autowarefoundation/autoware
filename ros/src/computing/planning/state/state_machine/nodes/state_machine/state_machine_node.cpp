@@ -38,6 +38,6 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "state_machine");
   state_machine::StateMachineNode smn;
   smn.run();
- 
+
   return 0;
 }

@@ -34,9 +34,7 @@
 namespace state_machine
 {
 // Constructor
-StateMachineNode::StateMachineNode()
-  : private_nh_("~")
-  , sc_()
+StateMachineNode::StateMachineNode() : private_nh_("~"), sc_()
 {
   initForROS();
 }
@@ -49,14 +47,14 @@ StateMachineNode::~StateMachineNode()
 void StateMachineNode::initForROS()
 {
   // ros parameter settings
-  private_nh_.param<bool>("is_manual_light_detection",is_manual_light_detection_,true);
+  private_nh_.param<bool>("is_manual_light_detection", is_manual_light_detection_, true);
 
   // setup subscriber
   sub1_ = nh_.subscribe("light_color", 100, &StateMachineNode::callbackFromLightColor, this);
   sub2_ = nh_.subscribe("light_color_managed", 100, &StateMachineNode::callbackFromLightColorManaged, this);
 
   // setup publisher
-  pub_ = nh_.advertise<std_msgs::String>("state",10);
+  pub_ = nh_.advertise<std_msgs::String>("state", 10);
 }
 
 void StateMachineNode::run()
@@ -88,7 +86,6 @@ void StateMachineNode::callbackFromLightColor(const runtime_manager::traffic_lig
   sc_.setLightColor(msg->traffic_light);
   sc_.update();
   publish();
-
 }
 
 void StateMachineNode::callbackFromLightColorManaged(const runtime_manager::traffic_lightConstPtr& msg)
@@ -102,4 +99,4 @@ void StateMachineNode::callbackFromLightColorManaged(const runtime_manager::traf
   publish();
 }
 
-} //state_machine
+}  // state_machine

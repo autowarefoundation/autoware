@@ -36,7 +36,6 @@
 
 namespace state_machine
 {
-
 enum class StateList : int32_t
 {
   MOVE_FORWARD,
@@ -69,7 +68,7 @@ typename std::underlying_type<T>::type enumToInteger(T t)
   return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
-//Forward Decralation
+// Forward Decralation
 class StateContext;
 
 // abstract class for states
@@ -78,8 +77,14 @@ class BaseState
 public:
   virtual ~BaseState() = default;
   virtual void update(StateContext *context) = 0;
-  virtual int32_t getStateName() { return 0;};
-  virtual std::unique_ptr<std::string> getStateNameString() { return 0;};
+  virtual int32_t getStateName()
+  {
+    return 0;
+  };
+  virtual std::unique_ptr<std::string> getStateNameString()
+  {
+    return 0;
+  };
 };
 
 // State : MOVE_FORWARD
@@ -129,7 +134,7 @@ private:
 // State : LANE_CHANGE
 class StateLaneChange : public BaseState
 {
- public:
+public:
   void update(StateContext *context) override;
   int32_t getStateName() override
   {
@@ -144,14 +149,14 @@ class StateLaneChange : public BaseState
     return std::unique_ptr<BaseState>(new StateLaneChange);
   };
 
- private:
+private:
   StateLaneChange() = default;
 };
 
 // State : EMERGENCY
 class StateEmergency : public BaseState
 {
- public:
+public:
   void update(StateContext *context) override;
   int32_t getStateName() override
   {
@@ -166,14 +171,14 @@ class StateEmergency : public BaseState
     return std::unique_ptr<BaseState>(new StateEmergency);
   };
 
- private:
+private:
   StateEmergency() = default;
 };
 
 // State : MISSION_COMPLETE
 class StateMissionComplete : public BaseState
 {
- public:
+public:
   void update(StateContext *context) override;
   int32_t getStateName() override
   {
@@ -188,18 +193,14 @@ class StateMissionComplete : public BaseState
     return std::unique_ptr<BaseState>(new StateMissionComplete);
   };
 
- private:
+private:
   StateMissionComplete() = default;
 };
-
 
 class StateContext
 {
 public:
-  StateContext()
-    : state_(StateMoveForward::create())
-    , light_color_(TrafficLight::UNKNOWN)
-  {};
+  StateContext() : state_(StateMoveForward::create()), light_color_(TrafficLight::UNKNOWN){};
   void setState(std::unique_ptr<BaseState> newState)
   {
     state_ = std::move(newState);

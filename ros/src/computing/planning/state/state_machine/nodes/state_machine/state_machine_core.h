@@ -45,14 +45,12 @@ namespace state_machine
 class StateMachineNode
 {
 public:
-
   StateMachineNode();
   ~StateMachineNode();
 
   void run();
 
 private:
-
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
@@ -64,7 +62,7 @@ private:
   ros::Publisher pub_;
 
   // subscriber
-  ros::Subscriber sub1_,sub2_;
+  ros::Subscriber sub1_, sub2_;
 
   // variables
   bool is_manual_light_detection_;
@@ -79,5 +77,5 @@ private:
   // functions
   void publish() const;
 };
-} // state_machine
+}  // state_machine
 #endif  // STATE_MACHINE_CORE_H
