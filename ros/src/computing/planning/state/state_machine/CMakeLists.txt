@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  INCLUDE_DIRS include
+#  INCLUDE_DIRS include
 #  LIBRARIES libnode_template
   CATKIN_DEPENDS roscpp geometry_msgs runtime_manager
 #  DEPENDS system_lib
