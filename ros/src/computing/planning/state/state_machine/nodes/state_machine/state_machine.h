@@ -79,6 +79,7 @@ public:
   virtual ~BaseState() = default;
   virtual void update(StateContext *context) = 0;
   virtual int32_t getStateName() { return 0;};
+  virtual std::unique_ptr<std::string> getStateNameString() { return 0;};
 };
 
 // State : MOVE_FORWARD
@@ -89,6 +90,10 @@ public:
   int32_t getStateName() override
   {
     return enumToInteger(StateList::MOVE_FORWARD);
+  }
+  std::unique_ptr<std::string> getStateNameString() override
+  {
+    return std::unique_ptr<std::string>(new std::string("MOVE_FORWARD"));
   }
   static std::unique_ptr<BaseState> create()
   {
@@ -108,6 +113,10 @@ public:
   {
     return enumToInteger(StateList::TRAFFIC_LIGHT_STOP);
   }
+  std::unique_ptr<std::string> getStateNameString() override
+  {
+    return std::unique_ptr<std::string>(new std::string("TRAFFIC_LIGHT_STOP"));
+  }
   static std::unique_ptr<BaseState> create()
   {
     return std::unique_ptr<BaseState>(new StateTrafficLightStop);
@@ -125,6 +134,10 @@ class StateLaneChange : public BaseState
   int32_t getStateName() override
   {
     return enumToInteger(StateList::LANE_CHANGE);
+  }
+  std::unique_ptr<std::string> getStateNameString() override
+  {
+    return std::unique_ptr<std::string>(new std::string("LANE_CHANGE"));
   }
   static std::unique_ptr<BaseState> create()
   {
@@ -144,6 +157,10 @@ class StateEmergency : public BaseState
   {
     return enumToInteger(StateList::EMERGENCY);
   }
+  std::unique_ptr<std::string> getStateNameString() override
+  {
+    return std::unique_ptr<std::string>(new std::string("EMERGENCY"));
+  }
   static std::unique_ptr<BaseState> create()
   {
     return std::unique_ptr<BaseState>(new StateEmergency);
@@ -161,6 +178,10 @@ class StateMissionComplete : public BaseState
   int32_t getStateName() override
   {
     return enumToInteger(StateList::MISSION_COMPLETE);
+  }
+  std::unique_ptr<std::string> getStateNameString() override
+  {
+    return std::unique_ptr<std::string>(new std::string("MISSION_COMPLETE"));
   }
   static std::unique_ptr<BaseState> create()
   {
@@ -203,6 +224,10 @@ public:
   int32_t getCurrentState() const
   {
     return state_->getStateName();
+  }
+  std::unique_ptr<std::string> getCurrentStateString() const
+  {
+    return state_->getStateNameString();
   }
 
 private:

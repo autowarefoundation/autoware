@@ -56,7 +56,7 @@ void StateMachineNode::initForROS()
   sub2_ = nh_.subscribe("light_color_managed", 100, &StateMachineNode::callbackFromLightColorManaged, this);
 
   // setup publisher
-  pub_ = nh_.advertise<std_msgs::Int32>("state",10);
+  pub_ = nh_.advertise<std_msgs::String>("state",10);
 }
 
 void StateMachineNode::run()
@@ -66,11 +66,17 @@ void StateMachineNode::run()
 
 void StateMachineNode::publish() const
 {
+  /*
   std_msgs::Int32 msg;
   msg.data = sc_.getCurrentState();
   ROS_INFO("Current State: %d",sc_.getCurrentState());
   pub_.publish(msg);
+  */
 
+  std_msgs::String msg;
+  msg.data = *sc_.getCurrentStateString();
+  ROS_INFO_STREAM("Current State String : " << msg.data);
+  pub_.publish(msg);
 }
 
 void StateMachineNode::callbackFromLightColor(const runtime_manager::traffic_lightConstPtr& msg)

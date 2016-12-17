@@ -33,6 +33,7 @@
 
 // ROS includes
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
 
 // User Defined includes
