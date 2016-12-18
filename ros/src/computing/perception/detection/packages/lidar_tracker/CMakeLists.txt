@@ -214,7 +214,7 @@ if(EXISTS "/usr/local/cuda")
   INCLUDE(FindCUDA)
   
   # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11)
   
   INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS})
