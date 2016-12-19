@@ -516,9 +516,7 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
                                  const geometry_msgs::Twist &current_velocity, const int32_t previous_number)
 {
   if (current_lane.waypoints.empty())
-  {
     return -1;
-  }
 
   // ROS_INFO("number: %d",previous_number);
   std::vector<uint32_t> idx_vec;
