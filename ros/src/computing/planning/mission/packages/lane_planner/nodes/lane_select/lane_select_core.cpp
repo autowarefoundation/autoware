@@ -543,6 +543,9 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
     double minimum_dt = 2.0;
     double dt = current_velocity.linear.x * ratio > minimum_dt ? current_velocity.linear.x * ratio : minimum_dt;
 
+    if(dt < getTwoDimensionalDistance(current_lane.waypoints.at(previous_number).pose.pose.position,current_pose.position))
+      return -1;
+
     idx_vec.reserve(static_cast<uint32_t>(dt));
 
     auto range_max = static_cast<uint32_t>(previous_number + dt) < current_lane.waypoints.size()
