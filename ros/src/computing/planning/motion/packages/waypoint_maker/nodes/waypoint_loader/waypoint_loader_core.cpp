@@ -166,6 +166,7 @@ void WaypointLoaderNode::loadWaypointsForVer2(const char *filename, std::vector<
     parseWaypointForVer2(line, &wp);
     wps->push_back(wp);
   }
+  planningVelocity(&*wps);
 }
 
 void WaypointLoaderNode::parseWaypointForVer2(const std::string &line, waypoint_follower::waypoint *wp)
@@ -199,6 +200,7 @@ void WaypointLoaderNode::loadWaypoints(const char *filename, std::vector<waypoin
     parseWaypoint(line, contents, &wp);
     wps->push_back(wp);
   }
+  planningVelocity(&*wps);
 }
 
 void WaypointLoaderNode::parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
@@ -251,6 +253,15 @@ FileFormat WaypointLoaderNode::checkFileFormat(const char *filename)
          : num_of_columns == 4 ? FileFormat::ver2  // if data consists "x y z yaw (velocity)
                                : FileFormat::unknown
           );
+}
+
+void WaypointLoaderNode::planningVelocity(std::vector<waypoint_follower::waypoint> *wps)
+{
+  for (size_t i = 0; i < wps->size(); ++i)
+  {
+    wps->at(i).twist.twist.linear.x = decelerate(
+      wps->at(i).pose.pose.position, wps->at(wps->size() - 1).pose.pose.position, wps->at(i).twist.twist.linear.x);
+  }
 }
 
 double WaypointLoaderNode::decelerate(geometry_msgs::Point p1, geometry_msgs::Point p2, double original_velocity_mps)

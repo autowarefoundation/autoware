@@ -108,6 +108,7 @@ private:
   void loadWaypoints(const char *filename, std::vector<waypoint_follower::waypoint> *wps);
   void parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
                             waypoint_follower::waypoint *wp);
+  void planningVelocity(std::vector<waypoint_follower::waypoint> *wps);
   double decelerate(geometry_msgs::Point p1, geometry_msgs::Point p2, double original_velocity_mps);
 
 };
