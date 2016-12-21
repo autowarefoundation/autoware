@@ -44,6 +44,7 @@ LaneSelectNode::LaneSelectNode()
   , is_current_velocity_subscribed_(false)
   , last_change_time_(ros::Time::now())
   , current_state_("LANE_CHANGE")
+  , LANE_SIZE_(1.0)
 {
   initForROS();
 }
@@ -264,7 +265,7 @@ void LaneSelectNode::createCurrentLaneMarker(visualization_msgs::Marker *marker)
   marker->header.stamp = ros::Time();
   marker->ns = "current_lane_marker";
 
-  if (current_lane_idx_ == -1)
+  if (current_lane_idx_ == -1 || std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints.empty())
   {
     marker->action = visualization_msgs::Marker::DELETE;
     return;
@@ -272,23 +273,16 @@ void LaneSelectNode::createCurrentLaneMarker(visualization_msgs::Marker *marker)
 
   marker->type = visualization_msgs::Marker::LINE_STRIP;
   marker->action = visualization_msgs::Marker::ADD;
-  marker->scale.x = 1.0;
+  marker->scale.x = 0.05;
 
   std_msgs::ColorRGBA color_current;
   color_current.b = 1.0;
   color_current.g = 0.7;
-  color_current.a = 0.2;
-
+  color_current.a = 1.0;
   marker->color = color_current;
 
-  const std::vector<waypoint_follower::waypoint> &wps =
-      std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_))).waypoints;
+  marker->points = *createRectangleFromWaypoints(std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints, LANE_SIZE_);
 
-  marker->points.reserve(wps.size());
-  for (const auto &el : wps)
-  {
-    marker->points.push_back(el.pose.pose.position);
-  }
 }
 
 void LaneSelectNode::createRightLaneMarker(visualization_msgs::Marker *marker)
@@ -297,7 +291,7 @@ void LaneSelectNode::createRightLaneMarker(visualization_msgs::Marker *marker)
   marker->header.stamp = ros::Time();
   marker->ns = "right_lane_marker";
 
-  if (right_lane_idx_ == -1)
+  if (right_lane_idx_ == -1 || std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints.empty())
   {
     marker->action = visualization_msgs::Marker::DELETE;
     return;
@@ -305,30 +299,23 @@ void LaneSelectNode::createRightLaneMarker(visualization_msgs::Marker *marker)
 
   marker->type = visualization_msgs::Marker::LINE_STRIP;
   marker->action = visualization_msgs::Marker::ADD;
-  marker->scale.x = 1.0;
+  marker->scale.x = 0.05;
 
   std_msgs::ColorRGBA color_neighbor;
   color_neighbor.r = 0.5;
   color_neighbor.b = 0.5;
   color_neighbor.g = 0.5;
-  color_neighbor.a = 0.2;
+  color_neighbor.a = 1.0;
 
   std_msgs::ColorRGBA color_neighbor_change;
   color_neighbor_change.b = 0.7;
   color_neighbor_change.g = 1.0;
-  color_neighbor_change.a = 0.2;
+  color_neighbor_change.a = 1.0;
 
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
   marker->color = change_flag == ChangeFlag::right ? color_neighbor_change : color_neighbor;
 
-  const std::vector<waypoint_follower::waypoint> &wps =
-      std::get<0>(tuple_vec_.at(static_cast<uint32_t>(right_lane_idx_))).waypoints;
-
-  marker->points.reserve(wps.size());
-  for (const auto &el : wps)
-  {
-    marker->points.push_back(el.pose.pose.position);
-  }
+  marker->points = *createRectangleFromWaypoints(std::get<0>(tuple_vec_.at(right_lane_idx_)).waypoints, LANE_SIZE_);
 }
 
 void LaneSelectNode::createLeftLaneMarker(visualization_msgs::Marker *marker)
@@ -337,7 +324,7 @@ void LaneSelectNode::createLeftLaneMarker(visualization_msgs::Marker *marker)
   marker->header.stamp = ros::Time();
   marker->ns = "left_lane_marker";
 
-  if (left_lane_idx_ == -1)
+  if (left_lane_idx_ == -1 || std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints.empty())
   {
     marker->action = visualization_msgs::Marker::DELETE;
     return;
@@ -345,30 +332,23 @@ void LaneSelectNode::createLeftLaneMarker(visualization_msgs::Marker *marker)
 
   marker->type = visualization_msgs::Marker::LINE_STRIP;
   marker->action = visualization_msgs::Marker::ADD;
-  marker->scale.x = 1.0;
+  marker->scale.x = 0.05;
 
   std_msgs::ColorRGBA color_neighbor;
   color_neighbor.r = 0.5;
   color_neighbor.b = 0.5;
   color_neighbor.g = 0.5;
-  color_neighbor.a = 0.2;
+  color_neighbor.a = 1.0;
 
   std_msgs::ColorRGBA color_neighbor_change;
   color_neighbor_change.b = 0.7;
   color_neighbor_change.g = 1.0;
-  color_neighbor_change.a = 0.2;
+  color_neighbor_change.a = 1.0;
 
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_)));
   marker->color = change_flag == ChangeFlag::left ? color_neighbor_change : color_neighbor;
 
-  const std::vector<waypoint_follower::waypoint> &wps =
-      std::get<0>(tuple_vec_.at(static_cast<uint32_t>(left_lane_idx_))).waypoints;
-
-  marker->points.reserve(wps.size());
-  for (const auto &el : wps)
-  {
-    marker->points.push_back(el.pose.pose.position);
-  }
+  marker->points = *createRectangleFromWaypoints(std::get<0>(tuple_vec_.at(left_lane_idx_)).waypoints, LANE_SIZE_);
 }
 
 void LaneSelectNode::createClosestWaypointsMarker(visualization_msgs::Marker *marker)
@@ -399,6 +379,165 @@ void LaneSelectNode::createClosestWaypointsMarker(visualization_msgs::Marker *ma
   }
 }
 
+std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneFlagMarker()
+{
+  std::unique_ptr<visualization_msgs::Marker> marker(new visualization_msgs::Marker);
+  marker->header.frame_id = "map";
+  marker->header.stamp = ros::Time();
+  marker->ns = "current_lane_flag_marker";
+
+  if (current_lane_idx_ == -1)
+  {
+    marker->action = visualization_msgs::Marker::DELETE;
+    return marker;
+  }
+
+  std_msgs::ColorRGBA red;
+  red.r = 1.0;
+  red.a = 1.0;
+
+  marker->type = visualization_msgs::Marker::LINE_STRIP;
+  marker->action = visualization_msgs::Marker::ADD;
+  marker->scale.x = 0.05;
+  marker->color = red;
+
+  const uint32_t &start = static_cast<uint32_t>(std::get<1>(tuple_vec_.at(current_lane_idx_)));
+  const size_t &end = std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints.size();
+  const auto &wps = std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints;
+
+
+  std::vector<waypoint_follower::waypoint> wps_extracted;
+  for (uint32_t i = start; i < end; i++)
+  {
+    if (static_cast<ChangeFlag>(wps.at(i).change_flag) == ChangeFlag::right)
+    {
+      wps_extracted.push_back(wps.at(i));
+      if (i == end - 1)
+        break;
+
+      if (static_cast<ChangeFlag>(wps.at(i + 1).change_flag) != ChangeFlag::right)
+        break;
+    }
+    else if (static_cast<ChangeFlag>(wps.at(i).change_flag) == ChangeFlag::left)
+    {
+      wps_extracted.push_back(wps.at(i));
+      if (i == end - 1)
+        break;
+
+      if (static_cast<ChangeFlag>(wps.at(i + 1).change_flag) != ChangeFlag::left)
+        break;
+    }
+  }
+
+  if(wps_extracted.empty())
+  {
+    marker->action = visualization_msgs::Marker::DELETE;
+    return marker;
+  }
+  marker->points = *createRectangleFromWaypoints(wps_extracted, LANE_SIZE_* 0.8);
+
+  return marker;
+}
+
+std::unique_ptr<std::vector<geometry_msgs::Point>>
+LaneSelectNode::createRectangleFromWaypoints(const std::vector<waypoint_follower::waypoint> &wps, const double &width)
+{
+  std::vector<std::tuple<geometry_msgs::Point, geometry_msgs::Point>> vertex;
+
+  for (const auto &el : wps)
+  {
+    geometry_msgs::Point relative_p1;
+    relative_p1.y = width / 2;
+    geometry_msgs::Point relative_p2;
+    relative_p2.y = -width / 2;
+    vertex.push_back(std::make_tuple(*convertPointIntoWorldCoordinate(relative_p1, el.pose.pose),
+                                     *convertPointIntoWorldCoordinate(relative_p2, el.pose.pose)));
+  }
+
+  std::unique_ptr<std::vector<geometry_msgs::Point>> rectangle(new std::vector<geometry_msgs::Point>);
+  for (const auto &el : vertex)
+    rectangle->push_back(std::get<0>(el));
+
+  std::reverse(vertex.begin(), vertex.end());
+  for (const auto &el : vertex)
+    rectangle->push_back(std::get<1>(el));
+  std::reverse(vertex.begin(), vertex.end());
+  rectangle->push_back(std::get<0>(vertex.at(0)));
+
+  return rectangle;
+}
+
+std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneFlagArrowMarker()
+{
+  std::unique_ptr<visualization_msgs::Marker> marker(new visualization_msgs::Marker);
+
+
+  marker->header.frame_id = "map";
+  marker->header.stamp = ros::Time();
+  marker->ns = "current_lane_flag_arrow_marker";
+
+  if (current_lane_idx_ == -1)
+  {
+    marker->action = visualization_msgs::Marker::DELETE;
+    return marker;
+  }
+
+  std_msgs::ColorRGBA red;
+  red.r = 1.0;
+  red.a = 1.0;
+
+  //marker->type = visualization_msgs::Marker::TRIANGLE_LIST;
+  marker->type = visualization_msgs::Marker::ARROW;
+  marker->action = visualization_msgs::Marker::ADD;
+  marker->color = red;
+  marker->scale.x = 0.25;
+  marker->scale.y = 0.5;
+
+  const uint32_t &start = static_cast<uint32_t>(std::get<1>(tuple_vec_.at(current_lane_idx_)));
+  const uint32_t &end = std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_))).waypoints.size();
+  const auto &wps = std::get<0>(tuple_vec_.at(static_cast<uint32_t>(current_lane_idx_))).waypoints;
+
+  std::vector<waypoint_follower::waypoint> wps_extracted;
+  for (uint32_t i = start; i < end; i++)
+  {
+    if (static_cast<ChangeFlag>(wps.at(i).change_flag) == ChangeFlag::right)
+    {
+      wps_extracted.push_back(wps.at(i));
+      if (i == end - 1)
+        break;
+
+      if (static_cast<ChangeFlag>(wps.at(i + 1).change_flag) != ChangeFlag::right)
+        break;
+    }
+    else if (static_cast<ChangeFlag>(wps.at(i).change_flag) == ChangeFlag::left)
+    {
+      wps_extracted.push_back(wps.at(i));
+      if (i == end - 1)
+        break;
+
+      if (static_cast<ChangeFlag>(wps.at(i + 1).change_flag) != ChangeFlag::left)
+        break;
+    }
+  }
+
+  if(wps_extracted.empty())
+  {
+    marker->action = visualization_msgs::Marker::DELETE;
+    return marker;
+  }
+  uint32_t num = static_cast<uint32_t>(wps_extracted.size() / 2.0);
+  geometry_msgs::Point relative_p1;
+  relative_p1.y =
+    static_cast<ChangeFlag>(wps_extracted.at(0).change_flag) == ChangeFlag::right ? -LANE_SIZE_/2 : LANE_SIZE_/2;
+  marker->points.push_back(*convertPointIntoWorldCoordinate(relative_p1, wps_extracted.at(num).pose.pose));
+  geometry_msgs::Point relative_p2;
+  relative_p2.y = 3 * relative_p1.y;
+  marker->points.push_back(*convertPointIntoWorldCoordinate(relative_p2, wps_extracted.at(num).pose.pose));
+
+  return marker;
+}
+
+
 void LaneSelectNode::publishVisualizer()
 {
   visualization_msgs::MarkerArray marker_array;
@@ -406,6 +545,9 @@ void LaneSelectNode::publishVisualizer()
   visualization_msgs::Marker current_lane_marker;
   createCurrentLaneMarker(&current_lane_marker);
   marker_array.markers.push_back(current_lane_marker);
+
+  marker_array.markers.push_back(*createCurrentLaneFlagMarker());
+  marker_array.markers.push_back(*createCurrentLaneFlagArrowMarker());
 
   visualization_msgs::Marker right_lane_marker;
   createRightLaneMarker(&right_lane_marker);
@@ -496,6 +638,20 @@ void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point,
   pointMsgToTF(input_point, p);
   tf::Point tf_p = transform * p;
   pointTFToMsg(tf_p, *output_point);
+}
+
+std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose)
+{
+  tf::Transform inverse;
+  tf::poseMsgToTF(pose, inverse);
+
+  tf::Point p;
+  pointMsgToTF(input_point, p);
+  tf::Point tf_p = inverse * p;
+
+  std::unique_ptr<geometry_msgs::Point> tf_point_msg(new geometry_msgs::Point);
+  pointTFToMsg(tf_p, *tf_point_msg);
+  return tf_point_msg;
 }
 
 double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry_msgs::Pose &current_pose)

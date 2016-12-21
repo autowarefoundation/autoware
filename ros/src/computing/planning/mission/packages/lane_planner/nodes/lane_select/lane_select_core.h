@@ -110,8 +110,13 @@ private:
   void initForROS();
 
   // visualizer
+  const double LANE_SIZE_;
   void publishVisualizer();
   void createCurrentLaneMarker(visualization_msgs::Marker *marker);
+  std::unique_ptr<visualization_msgs::Marker> createCurrentLaneFlagMarker();
+  std::unique_ptr<visualization_msgs::Marker> createCurrentLaneFlagArrowMarker();
+  std::unique_ptr<std::vector<geometry_msgs::Point>>
+  createRectangleFromWaypoints(const std::vector<waypoint_follower::waypoint> &wps, const double &width);
   void createRightLaneMarker(visualization_msgs::Marker *marker);
   void createLeftLaneMarker(visualization_msgs::Marker *marker);
   void createClosestWaypointsMarker(visualization_msgs::Marker *marker);
@@ -133,6 +138,8 @@ double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geom
 
 void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose,
                                         geometry_msgs::Point *output_point);
+
+std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose);
 double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry_msgs::Pose &current_pose);
 }
 #endif  // LANE_SELECT_CORE_H
