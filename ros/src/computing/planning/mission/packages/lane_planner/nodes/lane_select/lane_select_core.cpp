@@ -544,7 +544,10 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
     double dt = current_velocity.linear.x * ratio > minimum_dt ? current_velocity.linear.x * ratio : minimum_dt;
 
     if(dt < getTwoDimensionalDistance(current_lane.waypoints.at(previous_number).pose.pose.position,current_pose.position))
+    {
+      ROS_WARN("Current_pose is far away from previous closest waypoint. Initilized...");
       return -1;
+    }
 
     idx_vec.reserve(static_cast<uint32_t>(dt));
 
