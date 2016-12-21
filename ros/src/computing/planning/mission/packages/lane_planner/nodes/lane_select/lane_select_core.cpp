@@ -112,8 +112,7 @@ void LaneSelectNode::processing()
   ROS_INFO("current_lane_idx: %d", current_lane_idx_);
   ROS_INFO("right_lane_idx: %d", right_lane_idx_);
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
-  ROS_INFO("current change_flag: %d",
-           enumToInteger(std::get<2>(tuple_vec_.at(current_lane_idx_))));
+  ROS_INFO("current change_flag: %d", enumToInteger(std::get<2>(tuple_vec_.at(current_lane_idx_))));
 
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(current_lane_idx_));
   // if change flag of current_lane is left or right, lane change
@@ -140,9 +139,9 @@ void LaneSelectNode::changeLane()
     return;
 
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(current_lane_idx_));
-  current_lane_idx_ = change_flag == ChangeFlag::right ? right_lane_idx_
-                                                       : change_flag == ChangeFlag::left ? left_lane_idx_
-                                                                                         : current_lane_idx_;
+  current_lane_idx_ = change_flag == ChangeFlag::right ? right_lane_idx_ : change_flag == ChangeFlag::left
+                                                                               ? left_lane_idx_
+                                                                               : current_lane_idx_;
 
   findNeighborLanes();
 
@@ -157,10 +156,9 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
         getClosestWaypointNumber(std::get<0>(el), current_pose_.pose, current_velocity_.twist, std::get<1>(el));
     ROS_INFO("closest: %d", std::get<1>(el));
 
-    std::get<2>(el) =
-        (std::get<1>(el) != -1)
-            ? static_cast<ChangeFlag>(std::get<0>(el).waypoints.at(std::get<1>(el)).change_flag)
-            : ChangeFlag::unknown;
+    std::get<2>(el) = (std::get<1>(el) != -1)
+                          ? static_cast<ChangeFlag>(std::get<0>(el).waypoints.at(std::get<1>(el)).change_flag)
+                          : ChangeFlag::unknown;
     ROS_INFO("change_flag: %d", enumToInteger(std::get<2>(el)));
   }
 
@@ -208,8 +206,7 @@ int32_t LaneSelectNode::findMostClosestLane(const std::vector<uint32_t> idx_vec,
 
 void LaneSelectNode::findNeighborLanes()
 {
-  int32_t current_closest_num =
-      std::get<1>(tuple_vec_.at(current_lane_idx_));
+  int32_t current_closest_num = std::get<1>(tuple_vec_.at(current_lane_idx_));
   const geometry_msgs::Pose &current_closest_pose =
       std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints.at(current_closest_num).pose.pose;
 
@@ -250,7 +247,6 @@ void LaneSelectNode::findNeighborLanes()
     right_lane_idx_ = findMostClosestLane(right_lane_idx_vec, current_closest_pose.position);
   else
     right_lane_idx_ = -1;
-
 }
 
 std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneMarker()
@@ -376,9 +372,8 @@ std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createClosestWaypoin
     if (std::get<1>(tuple_vec_.at(i)) == -1)
       continue;
 
-    marker->points.push_back(std::get<0>(tuple_vec_.at(i))
-                                 .waypoints.at(std::get<1>(tuple_vec_.at(i)))
-                                 .pose.pose.position);
+    marker->points.push_back(
+        std::get<0>(tuple_vec_.at(i)).waypoints.at(std::get<1>(tuple_vec_.at(i))).pose.pose.position);
   }
 
   return marker;
@@ -410,7 +405,6 @@ std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneFla
   const size_t &end = std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints.size();
   const auto &wps = std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints;
 
-
   std::vector<waypoint_follower::waypoint> wps_extracted;
   for (uint32_t i = start; i < end; i++)
   {
@@ -434,12 +428,12 @@ std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneFla
     }
   }
 
-  if(wps_extracted.empty())
+  if (wps_extracted.empty())
   {
     marker->action = visualization_msgs::Marker::DELETE;
     return marker;
   }
-  marker->points = *createRectangleFromWaypoints(wps_extracted, LANE_SIZE_* 0.8);
+  marker->points = *createRectangleFromWaypoints(wps_extracted, LANE_SIZE_ * 0.8);
 
   return marker;
 }
@@ -475,7 +469,6 @@ LaneSelectNode::createRectangleFromWaypoints(const std::vector<waypoint_follower
 std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneFlagArrowMarker()
 {
   std::unique_ptr<visualization_msgs::Marker> marker(new visualization_msgs::Marker);
-
 
   marker->header.frame_id = "map";
   marker->header.stamp = ros::Time();
@@ -524,7 +517,7 @@ std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneFla
     }
   }
 
-  if(wps_extracted.empty())
+  if (wps_extracted.empty())
   {
     marker->action = visualization_msgs::Marker::DELETE;
     return marker;
@@ -532,7 +525,7 @@ std::unique_ptr<visualization_msgs::Marker> LaneSelectNode::createCurrentLaneFla
   uint32_t num = static_cast<uint32_t>(wps_extracted.size() / 2.0);
   geometry_msgs::Point relative_p1;
   relative_p1.y =
-    static_cast<ChangeFlag>(wps_extracted.at(0).change_flag) == ChangeFlag::right ? -LANE_SIZE_/2 : LANE_SIZE_/2;
+      static_cast<ChangeFlag>(wps_extracted.at(0).change_flag) == ChangeFlag::right ? -LANE_SIZE_ / 2 : LANE_SIZE_ / 2;
   marker->points.push_back(*convertPointIntoWorldCoordinate(relative_p1, wps_extracted.at(num).pose.pose));
   geometry_msgs::Point relative_p2;
   relative_p2.y = 3 * relative_p1.y;
@@ -631,7 +624,8 @@ void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point,
   pointTFToMsg(tf_p, *output_point);
 }
 
-std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose)
+std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
+                                                                      const geometry_msgs::Pose &pose)
 {
   tf::Transform inverse;
   tf::poseMsgToTF(pose, inverse);
@@ -690,7 +684,8 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
     double minimum_dt = 2.0;
     double dt = current_velocity.linear.x * ratio > minimum_dt ? current_velocity.linear.x * ratio : minimum_dt;
 
-    if(dt < getTwoDimensionalDistance(current_lane.waypoints.at(previous_number).pose.pose.position,current_pose.position))
+    if (dt <
+        getTwoDimensionalDistance(current_lane.waypoints.at(previous_number).pose.pose.position, current_pose.position))
     {
       ROS_WARN("Current_pose is far away from previous closest waypoint. Initilized...");
       return -1;

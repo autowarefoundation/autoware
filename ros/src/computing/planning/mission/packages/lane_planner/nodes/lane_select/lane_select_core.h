@@ -88,7 +88,8 @@ private:
   int32_t current_lane_idx_;  // the index of the lane we are driving
   int32_t right_lane_idx_;
   int32_t left_lane_idx_;
-  std::vector<std::tuple<waypoint_follower::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint, change_flag
+  std::vector<std::tuple<waypoint_follower::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint,
+                                                                                     // change_flag
   bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_;
   ros::Time last_change_time_;
 
@@ -139,7 +140,8 @@ double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geom
 void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose,
                                         geometry_msgs::Point *output_point);
 
-std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose);
+std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
+                                                                      const geometry_msgs::Pose &pose);
 double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry_msgs::Pose &current_pose);
 }
 #endif  // LANE_SELECT_CORE_H
