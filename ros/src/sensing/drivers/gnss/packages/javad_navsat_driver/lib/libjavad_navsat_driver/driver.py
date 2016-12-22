@@ -54,7 +54,7 @@ class RosNMEADriver(object):
     # nmea_string
     def add_sentence(self, nmea_string, frame_id, timestamp=None):
         if not check_nmea_checksum(nmea_string):
-            rospy.logwarn("Received a sentence with an invalid checksum. "
+            rospy.logwarn("Received a sentence with an invalid checksum. " +
                           "Sentence was: %s" % repr(nmea_string))
             return False
 
