@@ -214,7 +214,7 @@ void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb)
 		throw BadMapFile();
 	mapFileFd.read ((char*)&header, sizeof(header));
 
-	if (strcmp(header.signature, signature) !=0)
+	if (strncmp(header.signature, signature, sizeof(signature)-1) !=0)
 		throw BadMapFile();
 	cout << "Keyframes: " << header.numOfKeyFrame << ", MapPoint: " << header.numOfMapPoint << endl;
 
