@@ -35,6 +35,7 @@
 #include <runtime_manager/accel_cmd.h>
 #include <runtime_manager/brake_cmd.h>
 #include <runtime_manager/steer_cmd.h>
+#include <waypoint_follower/ControlCommandStamped.h>
 
 #include <iostream>
 #include <string>
@@ -54,6 +55,8 @@ struct CommandData {
   int accellValue;
   int brakeValue;
   int steerValue;
+  double linear_velocity;
+  double steering_angle;
 
   void reset();
 };
@@ -67,6 +70,8 @@ void CommandData::reset()
   accellValue = 0;
   brakeValue  = 0;
   steerValue  = 0;
+  linear_velocity = -1;
+  steering_angle = 0;
 }
 
 static CommandData command_data;
@@ -106,6 +111,12 @@ static void brakeCMDCallback(const runtime_manager::brake_cmd &brake)
   command_data.brakeValue = brake.brake;
 }
 
+static void ctrlCMDCallback(const waypoint_follower::ControlCommandStamped& msg)
+{
+  command_data.linear_velocity = msg.cmd.linear_velocity;
+  command_data.steering_angle = msg.cmd.steering_angle;
+}
+
 static void *sendCommand(void *arg)
 {
   int *client_sockp = static_cast<int*>(arg);
@@ -119,7 +130,9 @@ static void *sendCommand(void *arg)
   oss << command_data.gearValue << ",";
   oss << command_data.accellValue << ",";
   oss << command_data.brakeValue << ",";
-  oss << command_data.steerValue;
+  oss << command_data.steerValue << ",";
+  oss << command_data.linear_velocity << ",";
+  oss << command_data.steering_angle;
 
   std::string cmd(oss.str());
   ssize_t n = write(client_sock, cmd.c_str(), cmd.size());
@@ -204,13 +217,14 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub[6];
+  ros::Subscriber sub[7];
   sub[0] = nh.subscribe("/twist_cmd", 1, twistCMDCallback);
   sub[1] = nh.subscribe("/mode_cmd",  1, modeCMDCallback);
   sub[2] = nh.subscribe("/gear_cmd",  1, gearCMDCallback);
   sub[3] = nh.subscribe("/accel_cmd", 1, accellCMDCallback);
   sub[4] = nh.subscribe("/steer_cmd", 1, steerCMDCallback);
   sub[5] = nh.subscribe("/brake_cmd", 1, brakeCMDCallback);
+  sub[6] = nh.subscribe("/ctrl_cmd", 1, ctrlCMDCallback);
 
   command_data.reset();
 
