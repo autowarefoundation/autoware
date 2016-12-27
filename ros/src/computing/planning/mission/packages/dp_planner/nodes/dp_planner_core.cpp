@@ -81,10 +81,13 @@ PlannerX::PlannerX()
 
 	int iSource = 0;
 	nh.getParam("/dp_planner/mapSource", iSource);
-	if(iSource == 2)
-		m_bKmlMap = true;
-	else
-		m_bKmlMap = false;
+	if(iSource == 0)
+		m_MapSource = MAP_AUTOWARE;
+	else if (iSource == 1)
+		m_MapSource = MAP_FOLDER;
+	else if(iSource == 2)
+		m_MapSource = MAP_KML_FILE;
+
 	nh.getParam("/dp_planner/mapFileName", m_KmlMapPath);
 
 	UpdatePlanningParams();
@@ -125,7 +128,7 @@ PlannerX::PlannerX()
 	sub_AStarPath 		= nh.subscribe("/astar_path", 				10,		&PlannerX::callbackGetAStarPath, 		this);
 	sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&PlannerX::callbackGetWayPlannerPath, 	this);
 
-	if(!m_bKmlMap)
+	if(m_MapSource == MAP_AUTOWARE)
 	{
 		sub_map_points 	= nh.subscribe("/vector_map_info/point", 		1, &PlannerX::callbackGetVMPoints, 		this);
 		sub_map_lanes 	= nh.subscribe("/vector_map_info/lane", 		1, &PlannerX::callbackGetVMLanes, 		this);
@@ -533,21 +536,29 @@ void PlannerX::PlannerMainLoop()
 
 		ros::spinOnce();
 
-		if(m_bKmlMap && !bKmlMapLoaded)
+		if(m_MapSource == MAP_KML_FILE && !bKmlMapLoaded)
 		{
 			bKmlMapLoaded = true;
 			PlannerHNS::MappingHelpers::LoadKML(m_KmlMapPath, m_Map);
 			//sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		}
-		else if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints && !m_bKmlMap)
-		 {
-			timespec timerTemp;
-			UtilityHNS::UtilityH::GetTickCount(timerTemp);
-			 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
-			 RosHelpers::UpdateRoadMap(m_AwMap,m_Map);
-			 std::cout << "Converting Vector Map Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << std::endl;
-			 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
-		 }
+		else if(m_MapSource == MAP_FOLDER && !bKmlMapLoaded)
+		{
+			bKmlMapLoaded = true;
+			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_KmlMapPath, m_Map);
+		}
+		else if(m_MapSource == MAP_AUTOWARE)
+		{
+			 if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
+			 {
+				timespec timerTemp;
+				UtilityHNS::UtilityH::GetTickCount(timerTemp);
+				 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
+				 RosHelpers::UpdateRoadMap(m_AwMap,m_Map);
+				 std::cout << "Converting Vector Map Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << std::endl;
+				 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
+			 }
+		}
 
 		if(bInitPos && m_LocalPlanner.m_TotalPath.size()>0)
 		//if(bInitPos)

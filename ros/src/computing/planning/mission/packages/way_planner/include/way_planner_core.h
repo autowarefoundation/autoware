@@ -108,7 +108,7 @@ public:
 	}
 };
 
-enum MAP_SOURCE_TYPE{MAP_LOADER, MAP_SERVER, KML_MAP};
+enum MAP_SOURCE_TYPE{MAP_AUTOWARE, MAP_FOLDER, MAP_KML_FILE};
 
 class WayPlannerParams
 {
@@ -127,7 +127,7 @@ public:
 		bEnableLaneChange 	= false;
 		bEnableRvizInput 	= true;
 		pathDensity			= 0.5;
-		mapSource 			= KML_MAP;
+		mapSource 			= MAP_KML_FILE;
 	}
 };
 

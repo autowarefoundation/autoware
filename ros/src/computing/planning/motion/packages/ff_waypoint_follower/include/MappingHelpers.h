@@ -68,7 +68,7 @@ public:
 
 	static void GetUniqueNextLanes(const Lane* l,  const std::vector<Lane*>& traversed_lanes, std::vector<Lane*>& lanes_list);
 
-	static GPSPoint GetTransformationOrigin();
+	static GPSPoint GetTransformationOrigin(const bool& bToyotaCityMap = true);
 
 	static Lane* GetLaneFromPath(const WayPoint& currPos, const std::vector<WayPoint>& currPath);
 	static Lane* GetLaneById(const int& id,RoadNetwork& map);

@@ -65,6 +65,7 @@ namespace PlannerXNS
 {
 
 enum SIGNAL_TYPE{SIMULATION_SIGNAL, ROBOT_SIGNAL};
+enum MAP_SOURCE_TYPE{MAP_AUTOWARE, MAP_FOLDER, MAP_KML_FILE};
 
 class PlannerX
 {
@@ -126,7 +127,7 @@ protected:
 	struct timespec m_PlanningTimer;
 	AutowareRoadNetwork m_AwMap;
   	PlannerHNS::RoadNetwork m_Map;
-  	bool	m_bKmlMap;
+  	MAP_SOURCE_TYPE	m_MapSource;
   	bool	bKmlMapLoaded;
   	std::string m_KmlMapPath;
 

@@ -69,11 +69,12 @@ way_planner_core::way_planner_core()
 	int iSource = 0;
 	nh.getParam("/way_planner/mapSource" 			, iSource);
 	if(iSource == 0)
-		m_params.mapSource = MAP_LOADER;
+		m_params.mapSource = MAP_AUTOWARE;
 	else if (iSource == 1)
-		m_params.mapSource = MAP_SERVER;
+		m_params.mapSource = MAP_FOLDER;
 	else if(iSource == 2)
-		m_params.mapSource = KML_MAP;
+		m_params.mapSource = MAP_KML_FILE;
+
 	nh.getParam("/way_planner/mapFileName" 			, m_params.KmlMapPath);
 
 	tf::StampedTransform transform;
@@ -105,17 +106,13 @@ way_planner_core::way_planner_core()
 
 	sub_nodes_list 		= nh.subscribe("/GlobalNodesList", 				1, &way_planner_core::callbackGetNodesList, 		this);
 
-	if(m_params.mapSource == MAP_LOADER || m_params.mapSource == MAP_SERVER)
+	if(m_params.mapSource == MAP_AUTOWARE)
 	{
 		sub_map_points 	= nh.subscribe("/vector_map_info/point", 		1, &way_planner_core::callbackGetVMPoints, 		this);
 		sub_map_lanes 	= nh.subscribe("/vector_map_info/lane", 		1, &way_planner_core::callbackGetVMLanes, 		this);
 		sub_map_nodes 	= nh.subscribe("/vector_map_info/node", 		1, &way_planner_core::callbackGetVMNodes, 		this);
 		sup_stop_lines 	= nh.subscribe("/vector_map_info/stop_line",	1, &way_planner_core::callbackGetVMStopLines, 	this);
 		sub_dtlanes 	= nh.subscribe("/vector_map_info/dtlane", 		1, &way_planner_core::callbackGetVMCenterLines,	this);
-	}
-	else if(m_params.mapSource == KML_MAP)
-	{
-
 	}
 }
 
@@ -384,7 +381,7 @@ void way_planner_core::PlannerMainLoop()
 		ros::spinOnce();
 
 		//std::cout << "Main Loop ! " << std::endl;
-		if(m_params.mapSource == KML_MAP && !m_bKmlMap)
+		if(m_params.mapSource == MAP_KML_FILE && !m_bKmlMap)
 		{
 			m_bKmlMap = true;
 			PlannerHNS::MappingHelpers::LoadKML(m_params.KmlMapPath, m_Map);
@@ -392,7 +389,16 @@ void way_planner_core::PlannerMainLoop()
 			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 			pub_MapRviz.publish(map_marker_array);
 		}
-		else if(m_params.mapSource == MAP_LOADER || m_params.mapSource == MAP_SERVER)
+		else if (m_params.mapSource == MAP_FOLDER && !m_bKmlMap)
+		{
+			m_bKmlMap = true;
+			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_params.KmlMapPath, m_Map);
+			visualization_msgs::MarkerArray map_marker_array;
+			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			pub_MapRviz.publish(map_marker_array);
+
+		}
+		else if(m_params.mapSource == MAP_AUTOWARE)
 		{
 			 if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
 			 {
