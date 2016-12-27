@@ -33,7 +33,7 @@ public:
 			const std::vector<UtilityHNS::AisanDataConnFileReader::DataConn>& conn_data,
 			const GPSPoint& origin, RoadNetwork& map);
 
-	static void ConstructRoadNetworkFromDataFiles(const std::string vectoMapPath, RoadNetwork& map);
+	static void ConstructRoadNetworkFromDataFiles(const std::string vectoMapPath, RoadNetwork& map, const bool& bZeroOrigin = false);
 
 	static void SaveTrajectoryLonLatToKMLFile(const std::string& fileName, const std::vector<std::vector<WayPoint> >& trajectory);
 
@@ -68,7 +68,7 @@ public:
 
 	static void GetUniqueNextLanes(const Lane* l,  const std::vector<Lane*>& traversed_lanes, std::vector<Lane*>& lanes_list);
 
-	static GPSPoint GetTransformationOrigin(const bool& bToyotaCityMap = true);
+	static GPSPoint GetTransformationOrigin(const int& bToyotaCityMap = 0);
 
 	static Lane* GetLaneFromPath(const WayPoint& currPos, const std::vector<WayPoint>& currPath);
 	static Lane* GetLaneById(const int& id,RoadNetwork& map);

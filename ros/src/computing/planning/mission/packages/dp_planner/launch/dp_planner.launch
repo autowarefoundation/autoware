@@ -18,11 +18,11 @@
 	<arg name="minDistanceToAvoid" 			default="15.0" />
 	<arg name="speedProfileFactor"			default="1.0" />
 	
-	<arg name="enableSwerving" 				default="1" />
-	<arg name="enableFollowing" 			default="1" />
-	<arg name="enableHeadingSmoothing" 		default="0" />
-	<arg name="enableTrafficLightBehavior" 	default="0" />
-	<arg name="enableLaneChange" 			default="0" />
+	<arg name="enableSwerving" 				default="true" />
+	<arg name="enableFollowing" 			default="true" />
+	<arg name="enableHeadingSmoothing" 		default="false" />
+	<arg name="enableTrafficLightBehavior" 	default="true" />
+	<arg name="enableLaneChange" 			default="false" />
 	
 	<arg name="width" 						default="1.85" />
 	<arg name="length" 						default="4.2"/>

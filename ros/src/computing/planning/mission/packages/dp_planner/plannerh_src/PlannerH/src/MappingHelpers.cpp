@@ -31,20 +31,19 @@ namespace PlannerHNS {
 
 
 MappingHelpers::MappingHelpers() {
-	// TODO Auto-generated constructor stub
-
 }
 
 MappingHelpers::~MappingHelpers() {
-	// TODO Auto-generated destructor stub
 }
 
-GPSPoint MappingHelpers::GetTransformationOrigin(const bool& bToyotaCityMap)
+GPSPoint MappingHelpers::GetTransformationOrigin(const int& bToyotaCityMap)
 {
-	if(bToyotaCityMap)
+	if(bToyotaCityMap == 1)
 		return GPSPoint(-3700, 99427, -88,0); //toyota city
-	else
+	else if(bToyotaCityMap == 2)
 		return GPSPoint(14805.945, 84680.211, -39.59, 0); // for moriyama map
+	else
+		return GPSPoint();
 	//return GPSPoint(18221.1, 93546.1, -36.19, 0);
 }
 
@@ -435,7 +434,7 @@ WayPoint* MappingHelpers::FindWaypoint(const int& id, RoadNetwork& map)
 	return 0;
 }
 
-void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMapPath, RoadNetwork& map)
+void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMapPath, RoadNetwork& map, const bool& bZeroOrigin)
 {
 	/**
 	 * Exporting the center lines
@@ -498,15 +497,17 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
 	// 1 Red , 2 Green, 3 Yellow -> traffic light that is important for cars (normal traffic lights )
 
 
-	bool bToyotaCityMap = false;
-	if(vectoMapPath.find("toyota") == 0 || vectoMapPath.find("Toyota") == 0)
-		bToyotaCityMap = true;
+	int bToyotaCityMap = 0;
+	if((vectoMapPath.find("toyota") >= 0 || vectoMapPath.find("Toyota") >= 0) && !bZeroOrigin)
+		bToyotaCityMap = 1;
+	else if((vectoMapPath.find("moriyama") >= 0 || vectoMapPath.find("Moriyama") >= 0) && ! bZeroOrigin)
+		bToyotaCityMap = 2;
 
 	// use this to transform data to origin (0,0,0)
 	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, line_data, stop_line_data, signal_data, vector_data,conn_data, GetTransformationOrigin(bToyotaCityMap), map);
 
 	//use this when using the same coordinates as the map
-	//ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, GPSPoint(), map);
+//	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, GPSPoint(), map);
 
 
 

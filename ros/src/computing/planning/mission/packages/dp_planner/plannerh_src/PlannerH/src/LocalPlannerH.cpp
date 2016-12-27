@@ -273,7 +273,7 @@ void LocalPlannerH::InitPolygons()
  	double distanceToClosestStopLine = 0;
 
  	if(m_TotalPath.size()>0)
- 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(m_iCurrentTotalPathId), state, stopLineID, stopSignID, trafficLightID);
+ 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(m_iCurrentTotalPathId), state, stopLineID, stopSignID, trafficLightID) - m_CarInfo.length/2.0;
 
  	if(distanceToClosestStopLine < pValues->minStoppingDistance && m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
  	{

@@ -105,7 +105,7 @@ protected:
 	int m_bEmergencyStop;
 
 	bool bNewTrafficLigh;
-	int m_bGreenLight;
+	bool m_bGreenLight;
 
 	bool bNewOutsideControl;
 	int m_bOutsideControl;
@@ -152,6 +152,7 @@ protected:
 	ros::Publisher pub_DetectedPolygonsRviz;
 	ros::Publisher pub_TrackedObstaclesRviz;
 	ros::Publisher pub_LocalTrajectoriesRviz;
+	ros::Publisher pub_BehaviorStateRviz;
 
 	// define subscribers.
 	ros::Subscriber sub_initialpose			;

@@ -91,6 +91,7 @@ FFSteerControl::FFSteerControl()
 	m_PredControl.Init(m_ControlParams, m_CarInfo);
 
 	m_State.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
+	m_State.m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
 
 	m_counter = 0;
 	m_frequency = 0;
@@ -260,7 +261,7 @@ void FFSteerControl::callbackGetCurrentTrajectory(const waypoint_follower::laneC
 		m_State.m_Path.push_back(wp);
 	}
 
-	cout << "### Current Trajectory CallBaclk -> " << m_State.m_Path.size() << endl;
+	//cout << "### Current Trajectory CallBaclk -> " << m_State.m_Path.size() << endl;
 
 	bNewTrajectory = true;
 }
@@ -474,8 +475,23 @@ void FFSteerControl::PlannerMainLoop()
 				pose.pose.position.y = m_CurrentPos.pos.y;
 				pose.pose.position.z = m_CurrentPos.pos.z;
 				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
-				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
+//				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
+
 				pub_SimulatedCurrentPose.publish(pose);
+
+				static tf::TransformBroadcaster odom_broadcaster;
+				geometry_msgs::TransformStamped odom_trans;
+				odom_trans.header.stamp = ros::Time::now();
+				odom_trans.header.frame_id = "map";
+				odom_trans.child_frame_id = "simu_base_link";
+
+				odom_trans.transform.translation.x = pose.pose.position.x;
+				odom_trans.transform.translation.y = pose.pose.position.y;
+				odom_trans.transform.translation.z = pose.pose.position.z;
+				odom_trans.transform.rotation = pose.pose.orientation;
+
+				// send the transform
+				odom_broadcaster.sendTransform(odom_trans);
 			}
 			else if(m_CmdParams.statusSource == AUTOWARE_STATUS)
 			{
@@ -521,7 +537,7 @@ void FFSteerControl::PlannerMainLoop()
 			{
 				m_FollowingTrajectory = m_State.m_Path;
 				bNewPath = true;
-				cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
+				//cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
 			}
 
 //			SimulationNS::ControllerParams c_params = m_ControlParams;
@@ -533,8 +549,8 @@ void FFSteerControl::PlannerMainLoop()
 			m_FollowPoint  = m_PredControl.m_FollowMePoint;
 			m_PerpPoint    = m_PredControl.m_PerpendicularPoint;
 
-			cout << "Target Status (" <<m_PrevStepTargetStatus.steer << ", " << m_PrevStepTargetStatus.speed
-					<< ", " << m_PrevStepTargetStatus.shift << ")" << endl;
+//			cout << "Target Status (" <<m_PrevStepTargetStatus.steer << ", " << m_PrevStepTargetStatus.speed
+//					<< ", " << m_PrevStepTargetStatus.shift << ")" << endl;
 
 			//----------------------------------------------------------------------------------------------//
 

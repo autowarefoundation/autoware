@@ -1922,20 +1922,24 @@ params :
       label: Map Source
       kind : radio_box
       choices:
-      - Map Loader
-      - Map Server
-      - KML Map
+      - Autoware
+      - Folder
+      - KML
       descs :
-      - use map server
-      - use autoware loaded vector map 
-      - use custom kml map 
+      - use Autoware Map
+      - custom read from folder
+      - custom read from kml file
       v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : mapFileName
       desc : select kml map file if applicable 
       label: Map File
       kind : path
-      v    : ' '  
-
+      cmd_param:
+        dash     : ''
+        delim    : ':='
   - name  : dp_planner
     vars  :
     - name : pathDensity
@@ -2021,23 +2025,28 @@ params :
       label: Map Source
       kind : radio_box
       choices:
-      - Map Loader
-      - Map Server
-      - KML Map
+      - Autoware
+      - Folder
+      - KML
       descs :
-      - use map server
-      - use autoware loaded vector map 
-      - use custom kml map 
+      - use Autoware Map
+      - custom read from folder
+      - custom read from kml file
       v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : mapFileName
       desc : select kml map file if applicable 
       label: Map File
       kind : path
-      v    : ' '  
+      cmd_param:
+        dash     : ''
+        delim    : ':='
   - name  : ff_waypoint_follower
     vars  :
     - name : maxVelocity
-      desc : maximum allowed velocity in meter/second
+      desc : maximum allowed velocity in 
       label: Max Velocity
       min  : 0.0
       max  : 20.0
@@ -2052,8 +2061,8 @@ params :
       desc : Minimum Follow Point Distance 
       label: Follow Distance 
       min  : 0.0
-      max  : 2.0
-      v    : 0.85
+      max  : 5.0
+      v    : 2.5
     - name : steerGainKP
       desc : Gain proportional component
       label: KP 
@@ -2087,6 +2096,9 @@ params :
       - Autoware Other Nodes
       - Smaller Robot
       v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : waypoint_saver
     vars  :

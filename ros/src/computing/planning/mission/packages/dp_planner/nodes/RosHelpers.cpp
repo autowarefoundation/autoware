@@ -340,6 +340,69 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	}
 }
 
+void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, visualization_msgs::Marker& behaviorMarker)
+{
+	behaviorMarker.header.frame_id = "map";
+	behaviorMarker.header.stamp = ros::Time();
+	behaviorMarker.ns = "detected_polygons_velocity";
+	behaviorMarker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	behaviorMarker.scale.z = 1.5;
+	behaviorMarker.scale.x = 1.5;
+	behaviorMarker.scale.y = 1.5;
+	behaviorMarker.color.a = 0.9;
+	behaviorMarker.frame_locked = false;
+	behaviorMarker.color.r = 1;//trackedObstacles.at(i).center.v/16.0;
+	behaviorMarker.color.g = 1;// - trackedObstacles.at(i).center.v/16.0;
+	behaviorMarker.color.b = 0;
+	behaviorMarker.id = 0;
+	geometry_msgs::Point point;
+
+	point.x = currState.pos.x;
+	point.y = currState.pos.y;
+	point.z = currState.pos.z+2.0;
+
+	behaviorMarker.pose.position = point;
+
+	std::ostringstream str_out;
+	str_out << "";
+	std::string str = "Unknown";
+	switch(beh.state)
+	{
+	case PlannerHNS::INITIAL_STATE:
+		str = "Init";
+		break;
+	case PlannerHNS::WAITING_STATE:
+		str = "Waiting";
+		break;
+	case PlannerHNS::FORWARD_STATE:
+		str = "Forward";
+		break;
+	case PlannerHNS::STOPPING_STATE:
+		str = "Stop";
+		break;
+	case PlannerHNS::FINISH_STATE:
+		str = "End";
+		break;
+	case PlannerHNS::FOLLOW_STATE:
+		str = "Follow";
+		break;
+	case PlannerHNS::OBSTACLE_AVOIDANCE_STATE:
+		str = "Swerving";
+		break;
+	case PlannerHNS::TRAFFIC_LIGHT_STOP_STATE:
+		str = "Light Stop";
+		break;
+	case PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE:
+		str = "Light Wait";
+		break;
+	default:
+		str = "Unknown";
+		break;
+	}
+	str_out << str;
+	behaviorMarker.text = str_out.str();
+}
+
 void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 		std::vector<PlannerHNS::DetectedObject>& obstacles_list)
 {

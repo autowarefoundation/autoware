@@ -57,11 +57,9 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        base_link:
+          Value: true
         map:
-          Value: true
-        mobility:
-          Value: true
-        sim_base_link:
           Value: true
         world:
           Value: true
@@ -73,9 +71,7 @@ Visualization Manager:
       Tree:
         world:
           map:
-            mobility:
-              {}
-            sim_base_link:
+            base_link:
               {}
       Update Interval: 0
       Value: true
@@ -114,17 +110,24 @@ Visualization Manager:
       Marker Topic: /vector_map
       Name: Vector Map
       Namespaces:
+        cross_road: true
         cross_walk: true
         curb: true
+        curve_mirror: true
+        fence: true
+        guard_rail: true
         gutter: true
+        rail_crossing: true
         road_edge: true
         road_mark: true
         road_pole: true
         road_sign: true
+        side_walk: true
         signal: true
         stop_line: true
         street_light: true
         utility_pole: true
+        wall: true
         white_line: true
         zebra_zone: true
       Queue Size: 100
@@ -170,6 +173,8 @@ Visualization Manager:
         Points Cluster: true
         Points Map: true
         Points Raw: true
+        Simulated Following Point: true
+        SimulatedCar Pose: true
         Stixel: true
         TF: false
         Tracked Contours: true
@@ -276,9 +281,7 @@ Visualization Manager:
       Marker Topic: /detection_range
       Name: Detection Range
       Namespaces:
-        Crosswalk Detection: true
-        Decelerate Detection: true
-        Stop Detection: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -286,7 +289,7 @@ Visualization Manager:
       Marker Topic: /next_target_mark
       Name: Next Waypoint Mark
       Namespaces:
-        next_target_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -294,7 +297,7 @@ Visualization Manager:
       Marker Topic: /trajectory_circle_mark
       Name: PP Trajectory Mark
       Namespaces:
-        trajectory_circle_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -483,6 +486,14 @@ Visualization Manager:
         follow_pose: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /behavior_state
+      Name: Behavior State
+      Namespaces:
+        detected_polygons_velocity: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -507,22 +518,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 25.2098
+      Distance: 43.9976
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 34.6797
+        Y: 19.3244
+        Z: -1.65964e-05
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.864797
+      Pitch: 0.559797
       Target Frame: sim_base_link
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.1804
+      Yaw: 3.12041
     Saved: ~
 Window Geometry:
   Camera:
@@ -544,5 +555,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1453
-  X: 684
-  Y: 174
+  X: 567
+  Y: 244

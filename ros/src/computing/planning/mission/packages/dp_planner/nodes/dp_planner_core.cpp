@@ -59,7 +59,7 @@ PlannerX::PlannerX()
 	bNewEmergency = false;
 	m_bEmergencyStop = 0;
 	bNewTrafficLigh = false;
-	m_bGreenLight = 0;
+	m_bGreenLight = false;
 	bNewOutsideControl = false;
 	m_bOutsideControl = 0;
 	bNewAStarPath = false;
@@ -110,6 +110,8 @@ PlannerX::PlannerX()
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1, true);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
+	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
+
 
 	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&PlannerX::callbackGetInitPose, 		this);
 	sub_current_pose 	= nh.subscribe("/current_pose", 			100,	&PlannerX::callbackGetCurrentPose, 		this);
@@ -229,6 +231,8 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/enableFollowing", params.enableFollowing);
 	nh.getParam("/dp_planner/enableHeadingSmoothing", params.enableHeadingSmoothing);
 	nh.getParam("/dp_planner/enableTrafficLightBehavior", params.enableTrafficLightBehavior);
+	if(params.enableTrafficLightBehavior)
+		std::cout << "Enaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaableeeeee" << std::endl;
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
 
 	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
@@ -280,9 +284,20 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	double width = ((double)(rand()%10)/10.0) * 1.5 + 0.25;
 	double length = ((double)(rand()%10)/10.0) * 0.5 + 0.25;
 
+	geometry_msgs::PointStamped point;
+	point.point.x = msg->point.x+m_OriginPos.position.x;
+	point.point.x = msg->point.y+m_OriginPos.position.y;
+	point.point.x = msg->point.z+m_OriginPos.position.z;
+
 	lidar_tracker::CloudClusterArray clusters_array;
-	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 150, *msg));
+	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 150, point));
 	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters);
+
+	if(m_bGreenLight)
+		m_bGreenLight = false;
+	else
+		m_bGreenLight = true;
+
 }
 
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -434,9 +449,9 @@ void PlannerX::callbackGetTrafficLight(const std_msgs::Int8& msg)
 	std::cout << "Received Traffic Light : " << msg.data << std::endl;
 	bNewTrafficLigh = true;
 	if(msg.data == 2)
-		m_bGreenLight = 1;
+		m_bGreenLight = true;
 	else
-		m_bGreenLight = 0;
+		m_bGreenLight = false;
 }
 
 void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
@@ -447,7 +462,7 @@ void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
 	if(m_bEnableOutsideControl && m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE)
 		m_bOutsideControl  = msg.data;
 	else if(m_bEnableOutsideControl && m_CurrentBehavior.state == PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE)
-		m_bGreenLight = 1;
+		m_bGreenLight = true;
 }
 
 void PlannerX::callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg)
@@ -489,24 +504,41 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 						msg->lanes.at(i).waypoints.at(j).pose.pose.position.z,
 						tf::getYaw(msg->lanes.at(i).waypoints.at(j).pose.pose.orientation));
 				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
-				//wp.bDir = msg->lanes.at(i).waypoints.at(j).dtlane.dir;
+				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
+				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
+				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
+				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
+				if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 0)
+					wp.bDir = PlannerHNS::FORWARD_DIR;
+				else if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 1)
+					wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
+				else if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 2)
+					wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
 
-				PlannerHNS::Lane* pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMapDirectionBased(wp, m_Map, 1);
-				if(!pLane && !pPrevValid)
-				{
-					ROS_ERROR("Map inconsistency between Global Path add Lal Planer, Can't identify current lane.");
-					return;
-				}
-
+				PlannerHNS::Lane* pLane = 0;
+				pLane = PlannerHNS::MappingHelpers::GetLaneById(wp.laneId, m_Map);
 				if(!pLane)
-					wp.pLane = pPrevValid;
-				else
 				{
-					wp.pLane = pLane;
-					pPrevValid = pLane ;
-				}
+					pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMapDirectionBased(wp, m_Map, 1);
 
-				wp.laneId = wp.pLane->id;
+					if(!pLane && !pPrevValid)
+					{
+						ROS_ERROR("Map inconsistency between Global Path add Lal Planer, Can't identify current lane.");
+						return;
+					}
+
+					if(!pLane)
+						wp.pLane = pPrevValid;
+					else
+					{
+						wp.pLane = pLane;
+						pPrevValid = pLane ;
+					}
+
+					wp.laneId = wp.pLane->id;
+				}
+				else
+					wp.pLane = pLane;
 
 				path.push_back(wp);
 			}
@@ -545,7 +577,7 @@ void PlannerX::PlannerMainLoop()
 		else if(m_MapSource == MAP_FOLDER && !bKmlMapLoaded)
 		{
 			bKmlMapLoaded = true;
-			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_KmlMapPath, m_Map);
+			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_KmlMapPath, m_Map, true);
 		}
 		else if(m_MapSource == MAP_AUTOWARE)
 		{
@@ -571,67 +603,19 @@ void PlannerX::PlannerMainLoop()
 			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
 			m_LocalPlanner.state = m_CurrentPos;
 
-//			int currIndexToal = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_State.m_TotalPath, m_State.state);
-//			if(bMakeNewPlan == false && m_CurrentBehavior.state == PlannerHNS::STOPPING_STATE && (m_iCurrentGoal+1) < m_goals.size())
-//			{
-//				if(m_State.m_TotalPath.size() > 0 && currIndexToal > m_State.m_TotalPath.size() - 8)
-//				{
-//					m_iCurrentGoal = m_iCurrentGoal + 1;
-//					bMakeNewPlan = true;
-//				}
-//			}
-
-
-//			if(m_bEnableTracking == true && UtilityHNS::UtilityH::GetTimeDiffNow(trackingTimer) > 0.15)
-//			{
-//				double travelled_distance = 0;
-//				for(unsigned int i_c = 0; i_c < m_OriginalClusters.size(); i_c++)
-//				{
-//					timespec t;
-//					UtilityHNS::UtilityH::GetTickCount(t);
-//					srand(t.tv_nsec);
-//					double err = 0;//((double)(rand()%10)/10.0) * 0.1;
-//
-//					state_change.pos.x = m_CurrentPos.pos.x - prevState.pos.x  + err;
-//					state_change.pos.y = m_CurrentPos.pos.y - prevState.pos.y  + err;
-//					state_change.pos.a = m_CurrentPos.pos.a - prevState.pos.a;
-//					travelled_distance = hypot(state_change.pos.y, state_change.pos.x);
-//
-//					PlannerHNS::Mat3 rotationMat(state_change.pos.a);
-//					PlannerHNS::Mat3 translationMat(state_change.pos.x, state_change.pos.y);
-//
-//					m_OriginalClusters.at(i_c).center.pos = translationMat*m_OriginalClusters.at(i_c).center.pos;
-//					//m_OriginalClusters.at(i_c).center.pos = rotationMat*m_OriginalClusters.at(i_c).center.pos;
-//
-//					for(unsigned int i_con = 0; i_con < m_OriginalClusters.at(i_c).contour.size(); i_con++)
-//					{
-//						m_OriginalClusters.at(i_c).contour.at(i_con) = translationMat*m_OriginalClusters.at(i_c).contour.at(i_con);
-//						//m_OriginalClusters.at(i_c).contour.at(i_con) = rotationMat*m_OriginalClusters.at(i_c).contour.at(i_con);
-//					}
-//
-//				}
-//				m_ObstacleTracking.DoOneStep(m_CurrentPos, m_OriginalClusters);
-//				m_TrackedClusters = m_ObstacleTracking.m_DetectedObjects;
-//				std::cout << "Tracked Obstacles : " << m_TrackedClusters.size() << " , Original : " << m_OriginalClusters.size()  << ", Distance : " << travelled_distance <<  std::endl;
-//				UtilityHNS::UtilityH::GetTickCount(trackingTimer);
-//				prevState = m_CurrentPos;
-//			}
-
-			//obj_list = m_DetectedClusters;
-
-
-//			PlannerHNS::WayPoint goal_wp;
-//			if(m_iCurrentGoal+1 < m_goals.size())
-//				goal_wp = m_goals.at(m_iCurrentGoal);
-
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
 			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
 
+			visualization_msgs::Marker behavior_rviz;
+			RosHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, behavior_rviz);
+			pub_BehaviorStateRviz.publish(behavior_rviz);
+
 			if(m_CurrentBehavior.state != m_PrevBehavior.state)
 			{
-				std::cout << m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
+				//std::cout << m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
+
 				m_PrevBehavior = m_CurrentBehavior;
 			}
 			//std::cout << "Planning Time = " << dt << std::endl;

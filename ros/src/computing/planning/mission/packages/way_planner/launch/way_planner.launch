@@ -4,9 +4,9 @@
 	<arg name="enableSmoothing" 				default="false" /> <!-- 1 or 0 -->
 	<arg name="enableLaneChange" 				default="false" /> <!-- 1 or 0 -->
 	<arg name="enableRvizInput" 				default="true" /> <!-- 1 or 0 -->
-	<arg name="mapSource" 						default="2" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
-	<arg name="mapFileName" 					default="/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml" /> <!-- incase of kml map source -->
-	
+	<arg name="enableReplan"    				default="true" /> <!-- 1 or 0 -->
+	<arg name="mapSource" 						default="1" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
+	<arg name="mapFileName" 					default="/home/user/data/ToyotaCity2/map/vector_map/" /> <!-- incase of kml map source -->	
 	
 <node pkg="way_planner" type="way_planner" name="way_planner" output="screen">
 		
@@ -14,6 +14,7 @@
 		<param name="enableSmoothing" 			value="$(arg enableSmoothing)" />
 		<param name="enableLaneChange" 			value="$(arg enableLaneChange)" />
 		<param name="enableRvizInput" 			value="$(arg enableRvizInput)" />
+		<param name="enableReplan" 				value="$(arg enableReplan)" />
 		<param name="mapSource" 				value="$(arg mapSource)" />
 		<param name="mapFileName" 				value="$(arg mapFileName)" />
 		

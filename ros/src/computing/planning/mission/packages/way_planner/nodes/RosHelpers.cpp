@@ -54,12 +54,16 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		//wp.pose.pose.position.z = 5;
 		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
 		wp.twist.twist.linear.x = path.at(i).v;
-//		if(path.at(i).bDir == PlannerHNS::FORWARD_DIR)
-//			wp.dtlane.dir = 0;
-//		else if(path.at(i).bDir == PlannerHNS::FORWARD_LEFT_DIR)
-//			wp.dtlane.dir = 1;
-//		else if(path.at(i).bDir == PlannerHNS::FORWARD_RIGHT_DIR)
-//			wp.dtlane.dir = 2;
+		wp.twist.twist.linear.y = path.at(i).laneId;
+		wp.twist.twist.linear.z = path.at(i).stopLineID;
+		wp.twist.twist.angular.x = path.at(i).LeftLaneId;
+		wp.twist.twist.angular.y = path.at(i).RightLaneId;
+		if(path.at(i).bDir == PlannerHNS::FORWARD_DIR)
+			wp.twist.twist.angular.z = 0;
+		else if(path.at(i).bDir == PlannerHNS::FORWARD_LEFT_DIR)
+			wp.twist.twist.angular.z = 1;
+		else if(path.at(i).bDir == PlannerHNS::FORWARD_RIGHT_DIR)
+			wp.twist.twist.angular.z = 2;
 
 		//wp.dtlane.dir = path.at(i).pos.a;
 

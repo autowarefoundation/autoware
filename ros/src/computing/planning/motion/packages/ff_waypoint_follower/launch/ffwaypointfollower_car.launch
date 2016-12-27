@@ -5,11 +5,11 @@
 	<arg name="length" 						default="4.3" />
 	<arg name="wheelBaseLength" 			default="2.7" />
 	<arg name="turningRadius"				default="5.2" />
-	<arg name="maxSteerAngle" 				default="0.42" />
+	<arg name="maxSteerAngle" 				default="0.5" />
 	
 	<arg name="maxSteerValue" 				default="660" />
 	<arg name="minSteerValue" 				default="-660" />
-	<arg name="maxVelocity" 				default="1.0" />
+	<arg name="maxVelocity" 				default="3.0" />
 	<arg name="minVelocity" 				default="0.0" />
 		
 	<arg name="steeringDelay" 				default="0.85" />

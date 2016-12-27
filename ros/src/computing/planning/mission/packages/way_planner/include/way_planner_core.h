@@ -141,7 +141,8 @@ protected:
 	geometry_msgs::Pose m_CurrentPose;
 	bool bStartPos;
 	bool bUsingCurrentPose;
-	geometry_msgs::Pose m_GoalPos;
+	int m_iCurrentGoalIndex;
+	std::vector<geometry_msgs::Pose> m_GoalsPos;
 	//bool bGoalPos;
 	geometry_msgs::Pose m_OriginPos;
 
@@ -193,7 +194,13 @@ private:
   	PlannerHNS::RoadNetwork m_Map;
   	bool	m_bKmlMap;
   	PlannerHNS::PlannerH m_PlannerH;
+  	double m_ReplanDistanceFromEnd;
+  	std::vector<std::vector<PlannerHNS::WayPoint> > m_GeneratedTotalPaths;
+
   	void UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map);
+  	bool GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, PlannerHNS::WayPoint& goalPoint, std::vector<std::vector<PlannerHNS::WayPoint> >& generatedTotalPaths);
+  	void VisualizeAndSend(const std::vector<std::vector<PlannerHNS::WayPoint> > generatedTotalPaths);
+
 
 
 };
