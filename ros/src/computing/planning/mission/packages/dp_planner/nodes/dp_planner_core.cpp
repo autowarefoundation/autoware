@@ -170,6 +170,8 @@ PlannerX::PlannerX()
 
 PlannerX::~PlannerX()
 {
+	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName, "MainLog",
+			"time,", m_LogData);
 }
 
 void PlannerX::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
@@ -286,12 +288,14 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 
 	geometry_msgs::PointStamped point;
 	point.point.x = msg->point.x+m_OriginPos.position.x;
-	point.point.x = msg->point.y+m_OriginPos.position.y;
-	point.point.x = msg->point.z+m_OriginPos.position.z;
+	point.point.y = msg->point.y+m_OriginPos.position.y;
+	point.point.z = msg->point.z+m_OriginPos.position.z;
 
 	lidar_tracker::CloudClusterArray clusters_array;
 	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 150, point));
+	m_OriginalClusters.clear();
 	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters);
+	m_TrackedClusters = m_OriginalClusters;
 
 	if(m_bGreenLight)
 		m_bGreenLight = false;
@@ -609,16 +613,23 @@ void PlannerX::PlannerMainLoop()
 			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
 
 			visualization_msgs::Marker behavior_rviz;
-			RosHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, behavior_rviz);
+
+			int iDirection = 0;
+			if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory > m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
+				iDirection = 1;
+			else if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory < m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
+				iDirection = -1;
+
+			RosHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, m_bGreenLight, iDirection, behavior_rviz);
+
 			pub_BehaviorStateRviz.publish(behavior_rviz);
 
 			if(m_CurrentBehavior.state != m_PrevBehavior.state)
 			{
 				//std::cout << m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->ToString(m_CurrentBehavior.state) << ", Speed : " << m_CurrentBehavior.maxVelocity << std::endl;
-
 				m_PrevBehavior = m_CurrentBehavior;
 			}
-			//std::cout << "Planning Time = " << dt << std::endl;
+
 
 			geometry_msgs::Twist t;
 			geometry_msgs::TwistStamped behavior;
@@ -639,6 +650,12 @@ void PlannerX::PlannerMainLoop()
 			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, m_TrackedClusters, detectedPolygons);
 			pub_DetectedPolygonsRviz.publish(detectedPolygons);
 
+			timespec log_t;
+			UtilityHNS::UtilityH::GetTickCount(log_t);
+			std::ostringstream dataLine;
+			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) << "," ;
+			m_LogData.push_back(dataLine.str());
+
 		}
 		else
 		{
@@ -651,6 +668,12 @@ void PlannerX::PlannerMainLoop()
 			waypoint_follower::lane current_trajectory;
 			RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_LocalPlanner.m_Path, current_trajectory);
 			pub_LocalPath.publish(current_trajectory);
+
+			std::ostringstream str_out;
+			str_out << UtilityHNS::UtilityH::GetHomeDirectory();
+			str_out << UtilityHNS::DataRW::LoggingMainfolderName;
+			str_out << "LocalPath_";
+			PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), m_LocalPlanner.m_Path);
 
 			visualization_msgs::MarkerArray all_rollOuts;
 			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts.at(0), all_rollOuts);

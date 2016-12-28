@@ -13,8 +13,8 @@
 	<arg name="rollOutsNumber" 				default="4" />
 	<arg name="horizonDistance" 			default="200" />
 	
-	<arg name="minFollowingDistance" 		default="35.0" />
-	<arg name="maxFollowingDistance" 		default="40.0" />
+	<arg name="minFollowingDistance" 		default="16.0" />
+	<arg name="maxFollowingDistance" 		default="20.0" />
 	<arg name="minDistanceToAvoid" 			default="15.0" />
 	<arg name="speedProfileFactor"			default="1.0" />
 	

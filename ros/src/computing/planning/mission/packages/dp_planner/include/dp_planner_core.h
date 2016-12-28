@@ -134,6 +134,8 @@ protected:
   	bool m_bEnableTracking;
   	bool m_bEnableOutsideControl;
 
+  	std::vector<std::string>    m_LogData;
+
 
 protected:
 	//ROS messages (topics)

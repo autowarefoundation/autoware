@@ -49,12 +49,12 @@ void TrajectoryFollower::Init(const ControllerParams& params, const CAR_BASIC_IN
 
 TrajectoryFollower::~TrajectoryFollower()
 {
-	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "ControlLog",
-			"time,X,Y,heading, Target, error,LateralError,SteerBeforLowPass,Steer,iIndex, pathSize",
-			m_LogData);
-
-	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "SteeringPIDLog",m_pidSteer.ToStringHeader(), m_LogSteerPIDData );
-	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "VelocityPIDLog",m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData );
+//	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "ControlLog",
+//			"time,X,Y,heading, Target, error,LateralError,SteerBeforLowPass,Steer,iIndex, pathSize",
+//			m_LogData);
+//
+//	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "SteeringPIDLog",m_pidSteer.ToStringHeader(), m_LogSteerPIDData );
+//	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "VelocityPIDLog",m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData );
 }
 
 void TrajectoryFollower::PrepareNextWaypoint(const PlannerHNS::WayPoint& CurPos, const double& currVelocity, const double& currSteering)
@@ -152,7 +152,7 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 //		return -1;
 
 	double before_lowpass = m_pidSteer.getPID(e);
-	m_LogSteerPIDData.push_back(m_pidSteer.ToString());
+	//m_LogSteerPIDData.push_back(m_pidSteer.ToString());
 
 	//TODO use lateral error instead of angle error
 	//double future_lateral_error = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_Path, m_ForwardSimulation,0);
@@ -172,13 +172,13 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 //	else
 		steerd = before_lowpass;
 
-	timespec t;
-	UtilityH::GetTickCount(t);
-	std::ostringstream dataLine;
-	dataLine << UtilityH::GetLongTime(t) << "," << state.pos.x << "," << state.pos.y << "," <<  current_a << "," <<
-			target_a << "," <<  e << "," <<m_LateralError << "," <<  before_lowpass << "," <<  steerd <<  "," <<
-			m_iPrevWayPoint << "," << m_Path.size() << ",";
-	m_LogData.push_back(dataLine.str());
+//	timespec t;
+//	UtilityH::GetTickCount(t);
+//	std::ostringstream dataLine;
+//	dataLine << UtilityH::GetLongTime(t) << "," << state.pos.x << "," << state.pos.y << "," <<  current_a << "," <<
+//			target_a << "," <<  e << "," <<m_LateralError << "," <<  before_lowpass << "," <<  steerd <<  "," <<
+//			m_iPrevWayPoint << "," << m_Path.size() << ",";
+//	m_LogData.push_back(dataLine.str());
 
 	return 1;
 }
@@ -261,7 +261,7 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;
-	m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
+	//m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
 	return 1;
 }
 

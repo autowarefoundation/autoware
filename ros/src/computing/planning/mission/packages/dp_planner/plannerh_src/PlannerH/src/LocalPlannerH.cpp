@@ -620,12 +620,6 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
 					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
 			PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
-			std::ostringstream str_out;
-			str_out << UtilityH::GetHomeDirectory();
-			str_out << DataRW::LoggingMainfolderName;
-			str_out << DataRW::PathLogFolderName;
-			str_out << "_";
-			PlanningHelpers::WritePathToFile(str_out.str(), m_Path);
 
 			if(m_RollOuts.size() > 0)
 				m_RollOuts.at(0) = localRollouts;

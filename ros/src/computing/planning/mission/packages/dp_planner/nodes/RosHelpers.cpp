@@ -340,21 +340,30 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	}
 }
 
-void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, visualization_msgs::Marker& behaviorMarker)
+void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker)
 {
 	behaviorMarker.header.frame_id = "map";
 	behaviorMarker.header.stamp = ros::Time();
 	behaviorMarker.ns = "detected_polygons_velocity";
 	behaviorMarker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-	behaviorMarker.scale.z = 1.5;
-	behaviorMarker.scale.x = 1.5;
-	behaviorMarker.scale.y = 1.5;
+	behaviorMarker.scale.z = 1.3;
+	behaviorMarker.scale.x = 1.3;
+	behaviorMarker.scale.y = 1.3;
 	behaviorMarker.color.a = 0.9;
 	behaviorMarker.frame_locked = false;
-	behaviorMarker.color.r = 1;//trackedObstacles.at(i).center.v/16.0;
-	behaviorMarker.color.g = 1;// - trackedObstacles.at(i).center.v/16.0;
-	behaviorMarker.color.b = 0;
-	behaviorMarker.id = 0;
+	if(bGreenLight)
+	{
+		behaviorMarker.color.r = 0.1;//trackedObstacles.at(i).center.v/16.0;
+		behaviorMarker.color.g = 1;// - trackedObstacles.at(i).center.v/16.0;
+		behaviorMarker.color.b = 0.1;
+	}
+	else
+	{
+		behaviorMarker.color.r = 1;//trackedObstacles.at(i).center.v/16.0;
+		behaviorMarker.color.g = 0.1;// - trackedObstacles.at(i).center.v/16.0;
+		behaviorMarker.color.b = 0.1;
+		behaviorMarker.id = 0;
+	}
 	geometry_msgs::Point point;
 
 	point.x = currState.pos.x;
@@ -364,7 +373,8 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 	behaviorMarker.pose.position = point;
 
 	std::ostringstream str_out;
-	str_out << "";
+	if(avoidDirection == -1)
+		str_out << "<< ";
 	std::string str = "Unknown";
 	switch(beh.state)
 	{
@@ -400,6 +410,8 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 		break;
 	}
 	str_out << str;
+	if(avoidDirection == 1)
+		str_out << " >>";
 	behaviorMarker.text = str_out.str();
 }
 

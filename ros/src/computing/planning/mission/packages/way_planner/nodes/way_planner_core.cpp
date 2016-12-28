@@ -349,6 +349,17 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
 	pub_PathsRviz.publish(pathsToVisualize);
 	pub_Paths.publish(lane_array);
+
+	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
+	{
+		std::ostringstream str_out;
+		str_out << UtilityHNS::UtilityH::GetHomeDirectory();
+		str_out << UtilityHNS::DataRW::LoggingMainfolderName;
+		str_out << "GlobalPath_";
+		str_out << i;
+		str_out << "_";
+		PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), generatedTotalPaths.at(i));
+	}
 }
 
 void way_planner_core::PlannerMainLoop()
