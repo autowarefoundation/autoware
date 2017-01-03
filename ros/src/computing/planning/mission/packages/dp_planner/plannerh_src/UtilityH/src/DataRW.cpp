@@ -756,11 +756,12 @@ bool AisanDataConnFileReader::ReadNextLine(DataConn& data)
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
-		if(lineData.at(0).size() < 3) return false;
+		if(lineData.at(0).size() < 4) return false;
 
 		data.LID 	= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
 		data.SLID 	= strtol(lineData.at(0).at(1).c_str(), NULL, 10);
 		data.SID 	= strtol(lineData.at(0).at(2).c_str(), NULL, 10);
+		data.SSID 	= strtol(lineData.at(0).at(3).c_str(), NULL, 10);
 
 		return true;
 

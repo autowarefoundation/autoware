@@ -340,6 +340,52 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	}
 }
 
+std::string RosHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& behState)
+{
+	std::string str = "Unknown";
+	switch(behState)
+	{
+	case PlannerHNS::INITIAL_STATE:
+		str = "Init";
+		break;
+	case PlannerHNS::WAITING_STATE:
+		str = "Waiting";
+		break;
+	case PlannerHNS::FORWARD_STATE:
+		str = "Forward";
+		break;
+	case PlannerHNS::STOPPING_STATE:
+		str = "Stop";
+		break;
+	case PlannerHNS::FINISH_STATE:
+		str = "End";
+		break;
+	case PlannerHNS::FOLLOW_STATE:
+		str = "Follow";
+		break;
+	case PlannerHNS::OBSTACLE_AVOIDANCE_STATE:
+		str = "Swerving";
+		break;
+	case PlannerHNS::TRAFFIC_LIGHT_STOP_STATE:
+		str = "Light Stop";
+		break;
+	case PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE:
+		str = "Light Wait";
+		break;
+	case PlannerHNS::STOP_SIGN_STOP_STATE:
+		str = "Sign Stop";
+		break;
+	case PlannerHNS::STOP_SIGN_WAIT_STATE:
+		str = "Sign Wait";
+		break;
+	default:
+		str = "Unknown";
+		break;
+	}
+
+	return str;
+}
+
 void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker)
 {
 	behaviorMarker.header.frame_id = "map";
@@ -375,41 +421,8 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 	std::ostringstream str_out;
 	if(avoidDirection == -1)
 		str_out << "<< ";
-	std::string str = "Unknown";
-	switch(beh.state)
-	{
-	case PlannerHNS::INITIAL_STATE:
-		str = "Init";
-		break;
-	case PlannerHNS::WAITING_STATE:
-		str = "Waiting";
-		break;
-	case PlannerHNS::FORWARD_STATE:
-		str = "Forward";
-		break;
-	case PlannerHNS::STOPPING_STATE:
-		str = "Stop";
-		break;
-	case PlannerHNS::FINISH_STATE:
-		str = "End";
-		break;
-	case PlannerHNS::FOLLOW_STATE:
-		str = "Follow";
-		break;
-	case PlannerHNS::OBSTACLE_AVOIDANCE_STATE:
-		str = "Swerving";
-		break;
-	case PlannerHNS::TRAFFIC_LIGHT_STOP_STATE:
-		str = "Light Stop";
-		break;
-	case PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE:
-		str = "Light Wait";
-		break;
-	default:
-		str = "Unknown";
-		break;
-	}
-	str_out << str;
+
+	str_out << GetBehaviorNameFromCode(beh.state);
 	if(avoidDirection == 1)
 		str_out << " >>";
 	behaviorMarker.text = str_out.str();
@@ -448,11 +461,14 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 }
 
 void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list)
+		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
+		int& nOriginalPoints, int& nContourPoints)
 {
 	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
 	PlannerHNS::Mat3 translationMat(-currState.pos.x, -currState.pos.y);
 
+	int nPoints = 0;
+	int nOrPoints = 0;
 	for(unsigned int i =0; i < clusters.clusters.size(); i++)
 	{
 		PolygonGenerator polyGen;
@@ -486,10 +502,15 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 			continue;
 
 
+		nOrPoints += point_cloud.points.size();
+		nPoints += obj.contour.size();
 		//std::cout << " Distance_X: " << distance_x << ", " << " Distance_Y: " << distance_y << ", " << " Size: " << size << std::endl;
 
 		obstacles_list.push_back(obj);
 	}
+
+	nOriginalPoints = nOrPoints;
+	nContourPoints =  nPoints;
 }
 
 PlannerHNS::SHIFT_POS RosHelpers::ConvertShiftFromAutowareToPlannerH(const PlannerXNS::AUTOWARE_SHIFT_POS& shift)

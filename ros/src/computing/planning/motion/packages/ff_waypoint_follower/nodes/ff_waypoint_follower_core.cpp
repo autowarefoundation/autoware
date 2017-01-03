@@ -483,7 +483,7 @@ void FFSteerControl::PlannerMainLoop()
 				geometry_msgs::TransformStamped odom_trans;
 				odom_trans.header.stamp = ros::Time::now();
 				odom_trans.header.frame_id = "map";
-				odom_trans.child_frame_id = "simu_base_link";
+				odom_trans.child_frame_id = "base_link";
 
 				odom_trans.transform.translation.x = pose.pose.position.x;
 				odom_trans.transform.translation.y = pose.pose.position.y;

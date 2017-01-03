@@ -89,6 +89,9 @@ BehaviorStateMachine* ForwardState::GetNextState()
 	else if(GetCalcParams()->currentTrafficLightID > 0 && GetCalcParams()->bTrafficIsRed && GetCalcParams()->currentTrafficLightID != GetCalcParams()->prevTrafficLightID)
 		return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
 
+	else if(GetCalcParams()->currentStopSignID > 0 && GetCalcParams()->currentStopSignID != GetCalcParams()->prevStopSignID)
+			return FindBehaviorState(STOP_SIGN_STOP_STATE);
+
 	else
 	{
 		if(GetCalcParams()->iCurrSafeTrajectory == GetCalcParams()->iCentralTrajectory
@@ -134,7 +137,7 @@ BehaviorStateMachine* TrafficLightStopState::GetNextState()
 		return FindBehaviorState(FORWARD_STATE);
 	}
 
-	else if(GetCalcParams()->currentTrafficLightID > 0 && GetCalcParams()->bTrafficIsRed && GetCalcParams()->currentVelocity < 0.02)
+	else if(GetCalcParams()->bTrafficIsRed && GetCalcParams()->currentVelocity < ZERO_VELOCITY)
 			return FindBehaviorState(TRAFFIC_LIGHT_WAIT_STATE);
 	else
 		return this;
@@ -151,8 +154,39 @@ BehaviorStateMachine* TrafficLightWaitState::GetNextState()
 		return FindBehaviorState(FORWARD_STATE);
 	}
 
-	else if(GetCalcParams()->currentVelocity > 0.02)
+	else if(GetCalcParams()->currentVelocity > ZERO_VELOCITY)
 		return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
+
+	else
+		return this;
+
+}
+
+BehaviorStateMachine* StopSignStopState::GetNextState()
+{
+//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+//		return this; //return this behavior only , without reset
+
+	if(GetCalcParams()->bFullyBlock)
+		return FindBehaviorState(FOLLOW_STATE);
+
+	else if(GetCalcParams()->currentVelocity < ZERO_VELOCITY)
+		return FindBehaviorState(STOP_SIGN_WAIT_STATE);
+
+	else
+		return this;
+}
+
+BehaviorStateMachine* StopSignWaitState::GetNextState()
+{
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) > decisionMakingTime)
+	{
+		GetCalcParams()->prevStopSignID = GetCalcParams()->currentStopSignID;
+		return FindBehaviorState(FORWARD_STATE);
+	}
+
+	else if(GetCalcParams()->currentVelocity > ZERO_VELOCITY)
+		return FindBehaviorState(STOP_SIGN_STOP_STATE);
 
 	else
 		return this;
@@ -209,6 +243,9 @@ BehaviorStateMachine* FollowState::GetNextState()
 
 	else if(GetCalcParams()->currentTrafficLightID > 0 && GetCalcParams()->bTrafficIsRed && GetCalcParams()->currentTrafficLightID != GetCalcParams()->prevTrafficLightID)
 			return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
+
+	else if(GetCalcParams()->currentStopSignID > 0 && GetCalcParams()->currentStopSignID != GetCalcParams()->prevStopSignID)
+			return FindBehaviorState(STOP_SIGN_STOP_STATE);
 
 	else
 		return FindBehaviorState(FORWARD_STATE); // return and reset

@@ -23,7 +23,7 @@ using namespace UtilityHNS;
 #define VectorMap "/home/user/data/ToyotaCity2/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
-#define kmlMap	"/home/user/data/ToyotaCity1/map/kml/ToyotaKML.kml"
+#define kmlMap	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/Around_NIC/map/kml/Around_NIC_With_Traffic.kml"
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -65,15 +65,15 @@ PlannerTestDraw::PlannerTestDraw()
 
 //	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/path1016_3.csv", 105, 1.5, trafficLights, stopLines);
 
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMap, m_RoadMap);
+//	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMap, m_RoadMap);
 //	string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
 //	PlannerHNS::MappingHelpers::WriteKML("/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml",kml_templateFilePath , roadMap);
 
 //	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
-//	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
+//	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+ "MapWithStopLines.kml";
 //	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
-	//PlannerHNS::MappingHelpers::LoadKML(kmlMap, m_RoadMap);
+	PlannerHNS::MappingHelpers::LoadKML(kmlMap, m_RoadMap);
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
@@ -83,23 +83,115 @@ PlannerTestDraw::PlannerTestDraw()
 //	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),UtilityH::GetHomeDirectory()+
 //			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile, m_RoadMap);
 
-	//Initialize Static Traffic Light
-//	PlannerHNS::TrafficLight t1, t2;
-//	PlannerHNS::GPSPoint st1(555.84,181.89,0,0);
+//	PlannerHNS::StopLine st1, st2, st3, st4,st5,st6,st7;
+//	st1.id = 1;
+//	st1.stopSignID = 1;
+//	st1.trafficLightID = -1;
+//	st1.points.push_back(PlannerHNS::GPSPoint(102,-27.9,1.59,0));
+//	st1.points.push_back(PlannerHNS::GPSPoint(105,-25.9,1.59,0));
+//	PlannerHNS::WayPoint wp;
+//	wp.pos = PlannerHNS::GPSPoint(102,-27.9,1.59,0);
+//	st1.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap, 30);
+//	if(st1.pLane)
+//		st1.laneId = st1.pLane->id;
+//
+//	st2.id = 2;
+//	st2.stopSignID = -1;
+//	st2.trafficLightID = 1;
+//	st2.points.push_back(PlannerHNS::GPSPoint(172,2.06,6,0));
+//	st2.points.push_back(PlannerHNS::GPSPoint(174,-2.97,6,0));
+//	wp.pos = PlannerHNS::GPSPoint(172,2.06,6,0);
+//	st2.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st2.pLane)
+//		st2.laneId = st2.pLane->id;
+//
+//	st3.id = 3;
+//	st3.stopSignID = -1;
+//	st3.trafficLightID = 2;
+//	st3.points.push_back(PlannerHNS::GPSPoint(257,46.7,20.5,0));
+//	st3.points.push_back(PlannerHNS::GPSPoint(260,40,20.5,0));
+//	wp.pos = PlannerHNS::GPSPoint(257,46.7,20.5,0);
+//	st3.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st3.pLane)
+//		st3.laneId = st3.pLane->id;
+//
+//	st4.id = 4;
+//	st4.stopSignID = 2;
+//	st4.trafficLightID = -1;
+//	st4.points.push_back(PlannerHNS::GPSPoint(311,69.3,34.4,0));
+//	st4.points.push_back(PlannerHNS::GPSPoint(313,67,34.4,0));
+//	wp.pos = PlannerHNS::GPSPoint(311,69.3,34.4,0);
+//	st4.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st4.pLane)
+//		st4.laneId = st4.pLane->id;
+//
+//	st5.id = 5;
+//	st5.stopSignID = 3;
+//	st5.trafficLightID = -1;
+//	st5.points.push_back(PlannerHNS::GPSPoint(250,31,18,0));
+//	st5.points.push_back(PlannerHNS::GPSPoint(247,35,18,0));
+//	wp.pos = PlannerHNS::GPSPoint(250,31,18,0);
+//	st5.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st5.pLane)
+//		st5.laneId = st5.pLane->id;
+//
+//	st6.id = 6;
+//	st6.stopSignID = -1;
+//	st6.trafficLightID = 3;
+//	st6.points.push_back(PlannerHNS::GPSPoint(127,-24.5,3,0));
+//	st6.points.push_back(PlannerHNS::GPSPoint(125,-21.5,3,0));
+//	wp.pos = PlannerHNS::GPSPoint(127,-24.5,3,0);
+//	st6.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st6.pLane)
+//		st6.laneId = st6.pLane->id;
+//
+//	st7.id = 7;
+//	st7.stopSignID = -1;
+//	st7.trafficLightID = 4;
+//	st7.points.push_back(PlannerHNS::GPSPoint(89.8,47.8,-2.0,0));
+//	st7.points.push_back(PlannerHNS::GPSPoint(91.7,49.1,-2.0,0));
+//	wp.pos = PlannerHNS::GPSPoint(89.8,47.8,-2.0,0);
+//	st7.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st7.pLane)
+//		st7.laneId = st7.pLane->id;
+//
+//
+//	PlannerHNS::TrafficLight t1, t2, t3, t4;
 //	t1.id = 1;
-//	t1.pos = PlannerHNS::GPSPoint(555.72,193.23, 0, 91.65*DEG2RAD);
-//	t1.stoppingDistance = hypot(t1.pos.y - st1.y, t1.pos.x - st1.x);
-//	m_LocalPlanner.m_TrafficLights.push_back(t1);
+//	t1.laneIds.push_back(st2.laneId);
+//	t1.pLanes.push_back(st2.pLane);
+//	t1.pos = PlannerHNS::GPSPoint(189,14.1,8.9,0);
 //
-//	PlannerHNS::GPSPoint st2(553.85,193.94,0,0);
 //	t2.id = 2;
-//	t2.pos = PlannerHNS::GPSPoint(552.33, 181.42, 0, 270*DEG2RAD);
-//	t2.stoppingDistance = hypot(t2.pos.y - st2.y, t2.pos.x - st2.x);
-//	m_LocalPlanner.m_TrafficLights.push_back(t2);
+//	t2.laneIds.push_back(st3.laneId);
+//	t2.pLanes.push_back(st3.pLane);
+//	t2.pos = PlannerHNS::GPSPoint(268,50.8,21.9,0);
 //
-//	m_SlowDown.pos = PlannerHNS::GPSPoint(287.504799, 112.376465, 0,0);
-//	m_GoNormal.pos = PlannerHNS::GPSPoint(257.398966, 146.998802,0,0);
-//	m_bStartSlow = false;
+//	t3.id = 3;
+//	t3.laneIds.push_back(st6.laneId);
+//	t3.pLanes.push_back(st6.pLane);
+//	t3.pos = PlannerHNS::GPSPoint(122,-29.6,-7.0,0);
+//
+//	t4.id = 4;
+//	t4.laneIds.push_back(st7.laneId);
+//	t4.pLanes.push_back(st7.pLane);
+//	t4.pos = PlannerHNS::GPSPoint(88,56.7,-1.5,0);
+//
+//
+//	m_RoadMap.trafficLights.push_back(t1);
+//	m_RoadMap.trafficLights.push_back(t2);
+//	m_RoadMap.trafficLights.push_back(t3);
+//	m_RoadMap.trafficLights.push_back(t4);
+//
+//	m_RoadMap.stopLines.push_back(st1);
+//	m_RoadMap.stopLines.push_back(st2);
+//	m_RoadMap.stopLines.push_back(st3);
+//	m_RoadMap.stopLines.push_back(st4);
+//	m_RoadMap.stopLines.push_back(st5);
+//	m_RoadMap.stopLines.push_back(st6);
+//	m_RoadMap.stopLines.push_back(st7);
+
+
 
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,5.0, true);
 
@@ -129,7 +221,7 @@ PlannerTestDraw::PlannerTestDraw()
 	m_PlanningParams.enableTrafficLightBehavior = true;
 	m_PlanningParams.pathDensity = 0.5;
 	m_PlanningParams.smoothingDataWeight = 0.45;
-	m_PlanningParams.smoothingSmoothWeight = 0.45;
+	m_PlanningParams.smoothingSmoothWeight = 0.35;
 	m_PlanningParams.smoothingToleranceError = 0.01;
 	m_PlanningParams.microPlanDistance = 40;
 	m_LocalPlanner.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
@@ -664,13 +756,13 @@ void PlannerTestDraw::DrawTrafficInfo_StopLines_Lights()
 		DrawingHelpers::DrawFilledEllipse(m_RoadMap.trafficLights.at(i).pos.x+1.2, m_RoadMap.trafficLights.at(i).pos.y, 1, 0.5,0.5);
 		glPopMatrix();
 
-//		glPushMatrix();
-//		glTranslated(m_RoadMap.trafficLights.at(i).pos.x, m_RoadMap.trafficLights.at(i).pos.y, 1.5);
-//		std::ostringstream str_out ;
-//		str_out.precision(4);
-//		str_out << "TFID: "<< m_RoadMap.trafficLights.at(i).id;
-//		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//		glPopMatrix();
+		glPushMatrix();
+		glTranslated(m_RoadMap.trafficLights.at(i).pos.x, m_RoadMap.trafficLights.at(i).pos.y, 1.5);
+		std::ostringstream str_out ;
+		str_out.precision(4);
+		str_out << "TFID: "<< m_RoadMap.trafficLights.at(i).id;
+		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
+		glPopMatrix();
 	}
 
 	for(unsigned int i=0 ; i < m_RoadMap.stopLines.size(); i++)
@@ -684,38 +776,41 @@ void PlannerTestDraw::DrawTrafficInfo_StopLines_Lights()
 			line_points.push_back(wp);
 		}
 		DrawingHelpers::DrawWidePath(line_points, 0.2, 0.15, stop_line_Color);
-//		PlannerHNS::GPSPoint p;
-//		p.x = (m_RoadMap.stopLines.at(i).points.at(0).x + m_RoadMap.stopLines.at(i).points.at(1).x)/2.0;
-//		p.y = (m_RoadMap.stopLines.at(i).points.at(0).y + m_RoadMap.stopLines.at(i).points.at(1).y)/2.0;
-//
-//		glPushMatrix();
-//		glTranslated(p.x, p.y, 1.5);
-//		std::ostringstream str_out ;
-//		str_out.precision(4);
-//		str_out << "SLID: "<< m_RoadMap.stopLines.at(i).id;
-//		glColor3f(0,1,0);
-//		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//		glPopMatrix();
+		PlannerHNS::GPSPoint p;
+		if(m_RoadMap.stopLines.at(i).points.size() > 1)
+		{
+			p.x = (m_RoadMap.stopLines.at(i).points.at(0).x + m_RoadMap.stopLines.at(i).points.at(1).x)/2.0;
+			p.y = (m_RoadMap.stopLines.at(i).points.at(0).y + m_RoadMap.stopLines.at(i).points.at(1).y)/2.0;
+		}
+
+		glPushMatrix();
+		glTranslated(p.x, p.y, 1.5);
+		std::ostringstream str_out ;
+		str_out.precision(4);
+		str_out << "SLID: "<< m_RoadMap.stopLines.at(i).id;
+		glColor3f(0,1,0);
+		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
+		glPopMatrix();
 	}
 
-//	if(m_RoadMap.roadSegments.size()>0)
-//	{
-//		for(unsigned int i=0 ; i < m_RoadMap.roadSegments.at(0).Lanes.size(); i++)
-//		{
-//			if(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size() > 0)
-//			{
-//				PlannerHNS::GPSPoint p = m_RoadMap.roadSegments.at(0).Lanes.at(i).points.at(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size()/2).pos;
-//				glPushMatrix();
-//				glTranslated(p.x, p.y, 1.5);
-//				std::ostringstream str_out ;
-//				str_out.precision(4);
-//				str_out << "LID: "<< m_RoadMap.roadSegments.at(0).Lanes.at(i).id;
-//				glColor3f(1,0,0);
-//				DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//				glPopMatrix();
-//			}
-//		}
-//	}
+	if(m_RoadMap.roadSegments.size()>0)
+	{
+		for(unsigned int i=0 ; i < m_RoadMap.roadSegments.at(0).Lanes.size(); i++)
+		{
+			if(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size() > 0)
+			{
+				PlannerHNS::GPSPoint p = m_RoadMap.roadSegments.at(0).Lanes.at(i).points.at(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size()/2).pos;
+				glPushMatrix();
+				glTranslated(p.x, p.y, 1.5);
+				std::ostringstream str_out ;
+				str_out.precision(4);
+				str_out << "LID: "<< m_RoadMap.roadSegments.at(0).Lanes.at(i).id;
+				glColor3f(1,0,0);
+				DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
+				glPopMatrix();
+			}
+		}
+	}
 
 	glEnable(GL_LIGHTING);
 }
@@ -1019,6 +1114,12 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 		break;
 	case PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE:
 		str = "Light Wait";
+		break;
+	case PlannerHNS::STOP_SIGN_STOP_STATE:
+		str = "Sign Stop";
+		break;
+	case PlannerHNS::STOP_SIGN_WAIT_STATE:
+		str = "Sign Wait";
 		break;
 	default:
 		str = "Unknown";

@@ -33,6 +33,9 @@ public:
 	double m_SimulationSteeringDelayFactor; //second , time that every degree change in the steering wheel takes
 	timespec m_SteerDelayTimer;
 	double m_PredictionTime;
+	double m_CostCalculationTime;
+	double m_BehaviorGenTime;
+	double m_RollOutsGenerationTime;
 
 	BehaviorStateMachine* 		m_pCurrentBehaviorState;
 	ForwardState * 				m_pGoToGoalState;
@@ -44,6 +47,8 @@ public:
 	SwerveState*				m_pAvoidObstacleState;
 	TrafficLightStopState*		m_pTrafficLightStopState;
 	TrafficLightWaitState*		m_pTrafficLightWaitState;
+	StopSignStopState* 			m_pStopSignStopState;
+	StopSignWaitState* 			m_pStopSignWaitState;
 
 	TrajectoryCosts m_TrajectoryCostsCalculatotor;
 

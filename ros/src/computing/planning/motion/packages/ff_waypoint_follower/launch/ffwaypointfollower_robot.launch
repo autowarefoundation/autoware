@@ -25,7 +25,7 @@
 	<arg name="velocityGainKI" 				default="0.005" />
 	<arg name="velocityGainKD" 				default="0.1" />
 	
-	<arg name="signal" 						default="simulation" /> <!-- simulation or vehicle or autoware or robot -->
+	<arg name="signal" 						default="0" /> <!-- 0 : simulation or 1 : vehicle or 2 : autoware or 3 : robot -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
 	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
 	

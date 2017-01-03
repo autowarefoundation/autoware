@@ -129,9 +129,11 @@ int TrajectoryFollower::SteerControllerUpdate(const PlannerHNS::VehicleState& Cu
 		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredSteerAngle)
 {
 	if(m_Path.size()==0) return -1;
-
+	int ret = -1;
 	//AdjustPID(CurrStatus.velocity, 18.0, m_Params.Gain);
-	int ret = SteerControllerPart(m_CurrPos, m_DesPos, m_LateralError, desiredSteerAngle);
+	if(!(CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == TRAFFIC_LIGHT_WAIT_STATE || CurrBehavior.state == STOP_SIGN_WAIT_STATE || CurrBehavior.state == INITIAL_STATE || CurrBehavior.state == FINISH_STATE))
+		ret = SteerControllerPart(m_CurrPos, m_DesPos, m_LateralError, desiredSteerAngle);
+
 	if(ret < 0)
 		desiredSteerAngle = m_PrevDesiredSteer;
 	else
@@ -151,7 +153,9 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 //	if(e > M_PI_2 || e < -M_PI_2)
 //		return -1;
 
+
 	double before_lowpass = m_pidSteer.getPID(e);
+
 	//m_LogSteerPIDData.push_back(m_pidSteer.ToString());
 
 	//TODO use lateral error instead of angle error

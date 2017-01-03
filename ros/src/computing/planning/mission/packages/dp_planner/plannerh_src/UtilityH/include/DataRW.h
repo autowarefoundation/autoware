@@ -419,9 +419,10 @@ public:
 
 	struct DataConn
 	{
-		int 	LID;
-		int 	SLID;
-		int 	SID;
+		int 	LID; // lane id
+		int 	SLID; // stop line id
+		int 	SID; // signal id
+		int 	SSID; // stop sign id
 	};
 
 	AisanDataConnFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}

@@ -46,12 +46,15 @@ public:
 	static void WriteKML(const std::string& kmlFile, const std::string& kmlTemplat, RoadNetwork& ap);
 	static void LoadKML(const std::string& kmlMap, RoadNetwork& map);
 
-	static void SetLaneLinesList(TiXmlElement* pElem, std::vector<Lane>& stopLines);
 	static void SetRoadLinksList(TiXmlElement* pElem, std::vector<RoadSegment>& roadSegments);
+	static void SetLaneLinksList(TiXmlElement* pElem, std::vector<Lane>& lanes);
+	static void SetStopLinesList(TiXmlElement* pElem, std::vector<StopLine>& stopLines);
+	static void SetTrafficLightsList(TiXmlElement* pElem, std::vector<TrafficLight>& trafficLights);
+	static void SetTrafficSignsList(TiXmlElement* pElem, std::vector<TrafficSign>& trafficSignes);
 
 	static TiXmlElement* GetHeadElement(TiXmlElement* pMainElem);
 	static TiXmlElement* GetDataFolder(const std::string& folderName, TiXmlElement* pMainElem);
-	static void SetLaneLinksList(TiXmlElement* pElem, std::vector<Lane>& lanes);
+
 
 	static Lane* GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
 	static Lane* GetClosestLaneFromMapDirectionBased(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
@@ -77,11 +80,14 @@ public:
 	static WayPoint* FindWaypoint(const int& id, RoadNetwork& map);
 
 
+	static std::vector<TrafficLight> GetTrafficLightsList(TiXmlElement* pElem);
+	static std::vector<StopLine> GetStopLinesList(TiXmlElement* pElem);
 	static std::vector<Lane> GetLanesList(TiXmlElement* pElem);
 	static std::vector<RoadSegment> GetRoadSegmentsList(TiXmlElement* pElem);
 	static std::vector<int> GetIDsFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::vector<double> GetDoubleFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::vector<WayPoint> GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID);
+	static std::vector<GPSPoint> GetPointsData(TiXmlElement* pElem);
 	static std::vector<std::string> SplitString(const std::string& str, const std::string& token);
 
 	static void CreateKmlFromLocalizationPathFile(const std::string& pathFileName,const double& maxLaneDistance, const double& density,const std::vector<TrafficLight>& trafficLights, const std::vector<GPSPoint>& stopLines);

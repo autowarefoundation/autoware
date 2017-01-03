@@ -14,6 +14,7 @@
 namespace PlannerHNS
 {
 
+#define ZERO_VELOCITY 0.05
 
 
 class BehaviorStateMachine
@@ -118,6 +119,26 @@ public:
 	TrafficLightWaitState(BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pNextState){m_Behavior = TRAFFIC_LIGHT_WAIT_STATE;}
 	virtual ~TrafficLightWaitState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class StopSignStopState : public BehaviorStateMachine
+{
+public:
+	StopSignStopState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = STOP_SIGN_STOP_STATE;}
+	virtual ~StopSignStopState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class StopSignWaitState : public BehaviorStateMachine
+{
+public:
+	StopSignWaitState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = STOP_SIGN_WAIT_STATE;}
+	virtual ~StopSignWaitState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
 };

@@ -35,7 +35,7 @@
 	<arg name="enableSimulation"			default="true" /> <!-- simulation or empty "" -->
 	
 	<arg name="mapSource" 					default="2" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
-	<arg name="mapFileName" 				default="/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml" />
+	<arg name="mapFileName" 				default="/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/TsukubaChallenge/map/kml/tsukuba_complete.kml" />
 
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />

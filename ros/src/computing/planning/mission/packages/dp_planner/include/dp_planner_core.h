@@ -71,8 +71,13 @@ class PlannerX
 {
 protected:
 	//For Testing
-	timespec m_DetectionTimer;
+	double m_TrackingTime;
+	int m_nTrackObjects;
+	int m_nContourPoints;
+	int m_nOriginalPoints;
+
 	timespec m_Timer;
+	timespec m_TrafficLightTimer;
 	int m_counter;
 	int m_frequency;
 

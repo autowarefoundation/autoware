@@ -1948,48 +1948,72 @@ params :
       min  : 0.1
       max  : 3.0
       v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : maxVelocity
       desc : maximum allowed velocity in meter/second
       label: Max Velocity
       min  : 0.0
       max  : 20.0
       v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : maxLocalPlanDistance
       desc : max length of the local plan
       label: Plan Ditance
       min  : 10.0
       max  : 150.0
       v    : 60.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : samplingTipMargin
       desc : Car Tip Initial Margin
       label: Tip Margin
       min  : 2.5
       max  : 10.0
       v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : samplingOutMargin
       desc : Roll In Margin
       label: Roll In Margin
       min  : 5.0
       max  : 30.0
       v    : 12.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : rollOutDensity
       desc : Roll outs density 
       label: Horizontal Density
       min  : 0.1
       max  : 2.0
       v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : rollOutsNumber
       desc : Number of roll outs  
       label: Rollouts Number
       min  : 0
       max  : 20
       v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : minDistanceToAvoid
       desc : Avoidance and Following threshold Distance 
       label: Avoiding Distance
       min  : 4.0
       max  : 40.0
       v    : 15.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : enableSwerving
       desc : Enable avoidance inside the lane
       label: Enable Avoidance

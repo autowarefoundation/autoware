@@ -51,6 +51,10 @@ PlannerX::PlannerX()
 	m_frequency = 0;
 	m_bSignal = ROBOT_SIGNAL;
 
+	m_nTrackObjects = 0;
+	m_nContourPoints = 0;
+	m_nOriginalPoints = 0;
+	m_TrackingTime = 0;
 	bInitPos = false;
 	bNewCurrentPos = false;
 	bNewClusters = false;
@@ -59,7 +63,7 @@ PlannerX::PlannerX()
 	bNewEmergency = false;
 	m_bEmergencyStop = 0;
 	bNewTrafficLigh = false;
-	m_bGreenLight = false;
+	m_bGreenLight = false; UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
 	bNewOutsideControl = false;
 	m_bOutsideControl = 0;
 	bNewAStarPath = false;
@@ -143,35 +147,13 @@ PlannerX::PlannerX()
 
 	if(!m_bEnableOutsideControl)
 		m_bOutsideControl = 1;
-
-//	PlannerHNS::WayPoint g1(557.1, 177.43, 0, 0);
-//	PlannerHNS::WayPoint g2(553.03, 195.59, 0, 0);
-//	PlannerHNS::WayPoint g3(-57.23, 60.67, 0, 0);
-//	m_goals.push_back(g1);
-//	m_goals.push_back(g2);
-//	m_goals.push_back(g3);
-//	m_iCurrentGoal = 0;
-
-//	//Initialize Static Traffic Light
-//	PlannerHNS::TrafficLight t1, t2;
-//	PlannerHNS::GPSPoint stopT1(555.84, 181.89,0,0);
-//	t1.id = 1;
-//	t1.pos = PlannerHNS::GPSPoint(555.72,193.23, 0, 91.65 * DEG2RAD);
-//	t1.stoppingDistance = hypot(t1.pos.y-stopT1.y, t1.pos.x - stopT1.x);
-//	m_State.m_TrafficLights.push_back(t1);
-//
-//	PlannerHNS::GPSPoint stopT2(553.85,193.14,0,0);
-//	t2.id = 2;
-//	t2.pos = PlannerHNS::GPSPoint(552.33, 181.42, 0, 270 * DEG2RAD);
-//	t2.stoppingDistance = hypot(t2.pos.y-stopT2.y, t2.pos.x - stopT2.x);
-//	m_State.m_TrafficLights.push_back(t2);
-
 }
 
 PlannerX::~PlannerX()
 {
 	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName, "MainLog",
-			"time,", m_LogData);
+			"time,Behavior,Tracked_Objects_Num, Cluster_Points_Num, Contour_Points_Num, Tracking_Time, Calc_Cost_Time, Behavior_Gen_Time, Roll_Out_Gen_Time, RollOuts_Num, Full_Block, idx_Central_traj, idx_safe_traj, id_stop_sign, id_traffic_light, Min_Stop_Distance, Velocity, follow_distance, follow_velocity, X, Y, Z, heading,"
+			, m_LogData);
 }
 
 void PlannerX::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
@@ -190,14 +172,10 @@ void PlannerX::callbackGetVMLanes(const vector_map_msgs::LaneArray& msg)
 
 void PlannerX::callbackGetVMNodes(const vector_map_msgs::NodeArray& msg)
 {
-	//ROS_INFO("Received Map Nodes");
-
-
 }
 
 void PlannerX::callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg)
 {
-	//ROS_INFO("Received Map Stop Lines");
 }
 
 void PlannerX::callbackGetVMCenterLines(const vector_map_msgs::DTLaneArray& msg)
@@ -223,6 +201,7 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/pathDensity", params.pathDensity);
 	nh.getParam("/dp_planner/rollOutDensity", params.rollOutDensity);
 	nh.getParam("/dp_planner/rollOutsNumber", params.rollOutNumber);
+
 	nh.getParam("/dp_planner/horizonDistance", params.horizonDistance);
 	nh.getParam("/dp_planner/minFollowingDistance", params.minFollowingDistance);
 	nh.getParam("/dp_planner/maxFollowingDistance", params.maxFollowingDistance);
@@ -233,8 +212,7 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/enableFollowing", params.enableFollowing);
 	nh.getParam("/dp_planner/enableHeadingSmoothing", params.enableHeadingSmoothing);
 	nh.getParam("/dp_planner/enableTrafficLightBehavior", params.enableTrafficLightBehavior);
-	if(params.enableTrafficLightBehavior)
-		std::cout << "Enaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaableeeeee" << std::endl;
+
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
 
 	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
@@ -294,14 +272,9 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	lidar_tracker::CloudClusterArray clusters_array;
 	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 150, point));
 	m_OriginalClusters.clear();
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters);
+	int nNum1, nNum2;
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
 	m_TrackedClusters = m_OriginalClusters;
-
-	if(m_bGreenLight)
-		m_bGreenLight = false;
-	else
-		m_bGreenLight = true;
-
 }
 
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -322,24 +295,6 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 
 	bNewCurrentPos = true;
 	bInitPos = true;
-
-//	geometry_msgs::Pose p = msg->pose;
-//	p.position.x = p.position.x - m_OriginPos.position.x;
-//	p.position.y = p.position.y - m_OriginPos.position.y;
-//	p.position.z = p.position.z - m_OriginPos.position.z;
-//
-//	if(m_bAutoware)
-//	{
-//		double distance = hypot(m_CurrentPos.position.y-p.position.y, m_CurrentPos.position.x-p.position.x);
-//		m_VehicleState.speed = distance/dt;
-//		if(m_VehicleState.speed>0.2 || m_VehicleState.shift == AW_SHIFT_POS_DD )
-//			m_VehicleState.shift = AW_SHIFT_POS_DD;
-//		else if(m_VehicleState.speed<-0.2)
-//			m_VehicleState.shift = AW_SHIFT_POS_RR;
-//		else
-//			m_VehicleState.shift = AW_SHIFT_POS_NN;
-//	}
-
 }
 
 lidar_tracker::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
@@ -380,11 +335,9 @@ void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayCo
 {
 	timespec timerTemp;
 	UtilityHNS::UtilityH::GetTickCount(timerTemp);
-	//m_ObstacleTracking.m_DT = UtilityHNS::UtilityH::GetTimeDiffNow(m_DetectionTimer);
-	UtilityHNS::UtilityH::GetTickCount(m_DetectionTimer);
 
 	m_OriginalClusters.clear();
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters);
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters, m_nOriginalPoints, m_nContourPoints);
 	if(m_bEnableTracking)
 	{
 		m_ObstacleTracking.DoOneStep(m_CurrentPos, m_OriginalClusters);
@@ -392,10 +345,9 @@ void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayCo
 	}
 	else
 		m_TrackedClusters = m_OriginalClusters;
-	//std::cout << "Calculating Contour Time : " << UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << ", For Objectis: " << m_TrackedClusters.size() << ",  Detection Time = " <<  UtilityHNS::UtilityH::GetTimeDiffNow(m_DetectionTimer) << std::endl;
 
-
-
+	m_nTrackObjects = m_TrackedClusters.size();
+	m_TrackingTime = UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp);
 	bNewClusters = true;
 }
 
@@ -411,6 +363,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 	m_VehicleState.speed = msg->twist.linear.x;
 	m_VehicleState.steer = msg->twist.angular.z;
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+	// If steering is in angular velocity
 	//m_VehicleState.steer = atan(m_State.m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
 //	if(msg->vector.z == 0x00)
 //		m_VehicleState.shift = AW_SHIFT_POS_BB;
@@ -443,7 +396,7 @@ void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 
 void PlannerX::callbackGetEmergencyStop(const std_msgs::Int8& msg)
 {
-	std::cout << "Received Emergency Stop : " << msg.data << std::endl;
+	//std::cout << "Received Emergency Stop : " << msg.data << std::endl;
 	bNewEmergency  = true;
 	m_bEmergencyStop = msg.data;
 }
@@ -597,7 +550,6 @@ void PlannerX::PlannerMainLoop()
 		}
 
 		if(bInitPos && m_LocalPlanner.m_TotalPath.size()>0)
-		//if(bInitPos)
 		{
 //			bool bMakeNewPlan = false;
 //			double drift = hypot(m_LocalPlanner.state.pos.y-m_CurrentPos.pos.y, m_LocalPlanner.state .pos.x-m_CurrentPos.pos.x);
@@ -653,7 +605,22 @@ void PlannerX::PlannerMainLoop()
 			timespec log_t;
 			UtilityHNS::UtilityH::GetTickCount(log_t);
 			std::ostringstream dataLine;
-			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) << "," ;
+			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) << "," << m_CurrentBehavior.state << ","<< RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
+					m_nTrackObjects << "," << m_nOriginalPoints << "," << m_nContourPoints << "," << m_TrackingTime << "," <<
+					m_LocalPlanner.m_CostCalculationTime << "," << m_LocalPlanner.m_BehaviorGenTime << "," << m_LocalPlanner.m_RollOutsGenerationTime << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentStopSignID << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentTrafficLightID << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->minStoppingDistance << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentVelocity << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->distanceToNext << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->velocityOfNext << "," <<
+					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << m_LocalPlanner.state.pos.a << ",";
+
+
 			m_LogData.push_back(dataLine.str());
 
 		}
@@ -678,6 +645,18 @@ void PlannerX::PlannerMainLoop()
 			visualization_msgs::MarkerArray all_rollOuts;
 			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts.at(0), all_rollOuts);
 			pub_LocalTrajectoriesRviz.publish(all_rollOuts);
+		}
+
+		//Traffic Light Simulation Part
+		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 8.5)
+		{
+			m_bGreenLight = false;
+			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
+		}
+		else if(!m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 8.5)
+		{
+			m_bGreenLight = true;
+			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
 		}
 
 		loop_rate.sleep();

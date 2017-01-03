@@ -17,8 +17,6 @@
 namespace PlannerHNS
 {
 
-class Lane;
-
 
 enum DIRECTION_TYPE {	FORWARD_DIR, FORWARD_LEFT_DIR, FORWARD_RIGHT_DIR,
 	BACKWARD_DIR, BACKWARD_LEFT_DIR, BACKWARD_RIGHT_DIR, STANDSTILL_DIR};
@@ -27,7 +25,7 @@ enum OBSTACLE_TYPE {SIDEWALK, TREE, CAR, TRUCK, HOUSE, PEDESTRIAN, CYCLIST, GENE
 enum DRIVABLE_TYPE {DIRT, TARMAC, PARKINGAREA, INDOOR, GENERAL_AREA};
 
 enum STATE_TYPE {INITIAL_STATE, WAITING_STATE, FORWARD_STATE, STOPPING_STATE, EMERGENCY_STATE,
-	TRAFFIC_LIGHT_STOP_STATE,TRAFFIC_LIGHT_WAIT_STATE, STOP_SIGN_STOP_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE};
+	TRAFFIC_LIGHT_STOP_STATE,TRAFFIC_LIGHT_WAIT_STATE, STOP_SIGN_STOP_STATE, STOP_SIGN_WAIT_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE};
 enum LIGHT_INDICATOR {INDICATOR_LEFT, INDICATOR_RIGHT, INDICATOR_BOTH , INDICATOR_NONE};
 
 enum SHIFT_POS {SHIFT_POS_PP = 0x60, SHIFT_POS_RR = 0x40, SHIFT_POS_NN = 0x20,
@@ -35,6 +33,10 @@ enum SHIFT_POS {SHIFT_POS_PP = 0x60, SHIFT_POS_RR = 0x40, SHIFT_POS_NN = 0x20,
 
 enum ACTION_TYPE {FORWARD_ACTION, BACKWARD_ACTION, STOP_ACTION, LEFT_TURN_ACTION,
 	RIGHT_TURN_ACTION, U_TURN_ACTION, SWERVE_ACTION, OVERTACK_ACTION};
+
+
+class Lane;
+class TrafficLight;
 
 class ObjTimeStamp
 {
@@ -454,15 +456,24 @@ public:
 	GPSPoint pos;
 	TrafficLightState lightState;
 	double stoppingDistance;
-
-	Lane* pLane;
+	std::vector<int> laneIds;
+	std::vector<Lane*> pLanes;
 
 	TrafficLight()
 	{
 		stoppingDistance = 2;
 		id 			= 0;
 		lightState	= GREEN_LIGHT;
-		pLane 		= 0;
+	}
+
+	bool CheckLane(const int& laneId)
+	{
+		for(unsigned int i=0; i < laneIds.size(); i++)
+		{
+			if(laneId == laneIds.at(i))
+				return true;
+		}
+		return false;
 	}
 };
 
@@ -693,8 +704,9 @@ public:
 	bool				bCanChangeLane;
 	bool				bTargetLaneSafe;
 	//-------------------------------------------//
-	//Traffic Lights
+	//Traffic Lights & Stop Sign
 	int 				currentStopSignID;
+	int 				prevStopSignID;
 	int 				currentTrafficLightID;
 	int 				prevTrafficLightID;
 	bool 				bTrafficIsRed; //On , off status
@@ -739,6 +751,8 @@ public:
 		//distance to stop
 		distanceToNext			= 0;
 		velocityOfNext			= 0;
+		currentStopSignID		= -1;
+		prevStopSignID			= -1;
 		currentTrafficLightID	= -1;
 		prevTrafficLightID		= -1;
 		bTrafficIsRed			= false;
@@ -761,7 +775,6 @@ public:
 		targetLaneID			= -1;
 		currentLaneID			= -1;
 		originalLaneID			= -1;
-		currentStopSignID		= -1;
 
 		indicator 				= INDICATOR_NONE;
 	}
