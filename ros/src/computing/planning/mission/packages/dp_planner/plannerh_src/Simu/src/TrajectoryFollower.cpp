@@ -212,6 +212,8 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		else
 			desiredVelocity = (m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
 
+		if(desiredVelocity<0.2)
+			desiredVelocity = 0.2;
 
 		//std::cout << "Velocity from follower : dt=" << dt << ", e= " << e << ", acc_const=" << acc_const << ", desiredVelocity = "<<desiredVelocity<<  std::endl;
 

@@ -1,12 +1,12 @@
 <!-- -->
 <launch>
-	<arg name="pathDensity" 					default="0.75" /> <!-- distance between each two waypoints-->
+	<arg name="pathDensity" 					default="0.25" /> <!-- distance between each two waypoints-->
 	<arg name="enableSmoothing" 				default="false" /> <!-- 1 or 0 -->
 	<arg name="enableLaneChange" 				default="false" /> <!-- 1 or 0 -->
 	<arg name="enableRvizInput" 				default="true" /> <!-- 1 or 0 -->
-	<arg name="enableReplan"    				default="true" /> <!-- 1 or 0 -->
-	<arg name="mapSource" 						default="1" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
-	<arg name="mapFileName" 					default="/home/user/data/ToyotaCity2/map/vector_map/" /> <!-- incase of kml map source -->	
+	<arg name="enableReplan"    				default="false" /> <!-- 1 or 0 -->
+	<arg name="mapSource" 						default="2" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
+	<arg name="mapFileName" 					default="/home/user/maps/nic7f/inlab.kml" /> <!-- incase of kml map source -->	
 	
 <node pkg="way_planner" type="way_planner" name="way_planner" output="screen">
 		

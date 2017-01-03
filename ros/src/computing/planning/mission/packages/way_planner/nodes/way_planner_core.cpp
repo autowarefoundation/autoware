@@ -63,11 +63,14 @@ way_planner_core::way_planner_core()
 	m_bKmlMap = false;
 	bStartPos = false;
 	bUsingCurrentPose = false;
+	bEnableReplanning = false;
 	m_ReplanDistanceFromEnd = 20; // meters
 	nh.getParam("/way_planner/pathDensity" 			, m_params.pathDensity);
 	nh.getParam("/way_planner/enableSmoothing" 		, m_params.bEnableSmoothing);
 	nh.getParam("/way_planner/enableLaneChange" 	, m_params.bEnableLaneChange);
 	nh.getParam("/way_planner/enableRvizInput" 		, m_params.bEnableRvizInput);
+	nh.getParam("/way_planner/enableReplan" 		, bEnableReplanning);
+
 	int iSource = 0;
 	nh.getParam("/way_planner/mapSource" 			, iSource);
 	if(iSource == 0)
@@ -421,30 +424,41 @@ void way_planner_core::PlannerMainLoop()
 			}
 
 			bool bMakeNewPlan = false;
-			if(m_GeneratedTotalPaths.size() > 0 && m_GeneratedTotalPaths.at(0).size() > 3)
+			if(bEnableReplanning)
 			{
-				double calcDensity = hypot(m_GeneratedTotalPaths.at(0).at(1).pos.y - m_GeneratedTotalPaths.at(0).at(0).pos.y,
-						m_GeneratedTotalPaths.at(0).at(1).pos.x - m_GeneratedTotalPaths.at(0).at(0).pos.x);
-
-				if(calcDensity < 0.1)
-					calcDensity = hypot(m_GeneratedTotalPaths.at(0).at(2).pos.y - m_GeneratedTotalPaths.at(0).at(1).pos.y,
-									m_GeneratedTotalPaths.at(0).at(2).pos.x - m_GeneratedTotalPaths.at(0).at(1).pos.x);
-
-				if(calcDensity == 0)
-					calcDensity = 0.25;
-
-				int nReplanIndex = m_ReplanDistanceFromEnd / calcDensity;
-				int nToEndPoints = m_GeneratedTotalPaths.at(0).size() - PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_GeneratedTotalPaths.at(0), startPoint);
-				if(nToEndPoints <= nReplanIndex)
+				if(m_GeneratedTotalPaths.size() > 0 && m_GeneratedTotalPaths.at(0).size() > 3)
 				{
-					m_iCurrentGoalIndex = m_iCurrentGoalIndex + 1;
+					double calcDensity = hypot(m_GeneratedTotalPaths.at(0).at(1).pos.y - m_GeneratedTotalPaths.at(0).at(0).pos.y,
+							m_GeneratedTotalPaths.at(0).at(1).pos.x - m_GeneratedTotalPaths.at(0).at(0).pos.x);
+
+					if(calcDensity < 0.1)
+						calcDensity = hypot(m_GeneratedTotalPaths.at(0).at(2).pos.y - m_GeneratedTotalPaths.at(0).at(1).pos.y,
+										m_GeneratedTotalPaths.at(0).at(2).pos.x - m_GeneratedTotalPaths.at(0).at(1).pos.x);
+
+					if(calcDensity == 0)
+						calcDensity = 0.25;
+
+					int nReplanIndex = m_ReplanDistanceFromEnd / calcDensity;
+					int nToEndPoints = m_GeneratedTotalPaths.at(0).size() - PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_GeneratedTotalPaths.at(0), startPoint);
+					if(nToEndPoints <= nReplanIndex)
+					{
+						m_iCurrentGoalIndex = m_iCurrentGoalIndex + 1;
+						bMakeNewPlan = true;
+					}
+				}
+				else if(m_GoalsPos.size() > 0)
+				{
+					m_iCurrentGoalIndex = 0;
 					bMakeNewPlan = true;
 				}
 			}
-			else if(m_GoalsPos.size() > 0)
+			else
 			{
-				m_iCurrentGoalIndex = 0;
-				bMakeNewPlan = true;
+				if(m_GeneratedTotalPaths.size() == 0 && m_GoalsPos.size() > 0)
+				{
+					m_iCurrentGoalIndex = 0;
+					bMakeNewPlan = true;
+				}
 			}
 
 			if(bMakeNewPlan)

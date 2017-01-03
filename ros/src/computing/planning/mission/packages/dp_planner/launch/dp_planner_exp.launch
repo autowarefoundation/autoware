@@ -1,12 +1,12 @@
 <!-- -->
 <launch>
-	<arg name="maxVelocity" 				default="2.0" />
+	<arg name="maxVelocity" 				default="1.2" />
 	<arg name="minVelocity" 				default="0.0" />
 	<arg name="velocityProfileFactor" 		default="1.0" />
 	<arg name="maxPlanningDistance" 		default="1000000.0" />
-	<arg name="maxLocalPlanDistance" 		default="20.0" />
-	<arg name="samplingTipMargin" 			default="2.0" />
-	<arg name="samplingOutMargin" 			default="4.0" />
+	<arg name="maxLocalPlanDistance" 		default="12.0" />
+	<arg name="samplingTipMargin" 			default="0.75" />
+	<arg name="samplingOutMargin" 			default="1.25" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
 	<arg name="pathDensity" 				default="0.25" />
 	<arg name="rollOutDensity" 				default="0.25" />
@@ -18,13 +18,13 @@
 	<arg name="minDistanceToAvoid" 			default="4.5" />
 	<arg name="speedProfileFactor"			default="1.0" />
 	
-	<arg name="enableSwerving" 				default="1" />
-	<arg name="enableFollowing" 			default="1" />
-	<arg name="enableHeadingSmoothing" 		default="0" />
-	<arg name="enableTrafficLightBehavior" 	default="1" />
-	<arg name="enableLaneChange" 			default="0" />
+	<arg name="enableSwerving" 				default="true" />
+	<arg name="enableFollowing" 			default="true" />
+	<arg name="enableHeadingSmoothing" 		default="false" />
+	<arg name="enableTrafficLightBehavior" 	default="true" />
+	<arg name="enableLaneChange" 			default="false" />
 	
-	<arg name="width" 						default="1.0" />
+	<arg name="width" 						default="0.7" />
 	<arg name="length" 						default="1.2" />
 	<arg name="wheelBaseLength" 			default="1.0" />
 	<arg name="turningRadius"				default="2.5" />
@@ -32,10 +32,10 @@
 	
 	<arg name="enableObjectTracking" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
 	<arg name="enableOutsideControl" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->
-	<arg name="enableSimulation"			default="true" /> <!-- simulation or empty "" -->
+	<arg name="enableSimulation"			default="false" /> <!-- simulation or empty "" -->
 		
 	<arg name="mapSource" 					default="2" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
-	<arg name="mapFileName" 				default="/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/TsukubaChallenge/map/kml/tsukuba_complete.kml" />
+	<arg name="mapFileName" 				default="/home/user/maps/nic7f/inlab.kml" />
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
