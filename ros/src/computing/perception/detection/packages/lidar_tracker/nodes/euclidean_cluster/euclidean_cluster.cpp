@@ -135,7 +135,7 @@ void publishCloudClusters(const ros::Publisher* in_publisher, const lidar_tracke
 		lidar_tracker::CloudClusterArray clusters_transformed;
 		clusters_transformed.header = in_header;
 		clusters_transformed.header.frame_id = in_target_frame;
-		for (auto i=clusters_transformed.clusters.begin(); i!= clusters_transformed.clusters.end(); i++)
+		for (auto i=in_clusters.clusters.begin(); i!= in_clusters.clusters.end(); i++)
 		{
 			lidar_tracker::CloudCluster cluster_transformed;
 			cluster_transformed.header = in_header;

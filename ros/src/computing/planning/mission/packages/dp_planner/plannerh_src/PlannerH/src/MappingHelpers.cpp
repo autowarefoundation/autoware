@@ -194,11 +194,11 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 //					", BLID4: " << lanes_data.at(l).BLID4 << ", FLID4: " << lanes_data.at(l).FLID4 << endl;
 	}
 
-//	//delete first two lanes !!!!! Don't know why , you don't know why ! , these two line cost you a lot .. ! why why
-	if(roadLanes.size() > 0)
-		roadLanes.erase(roadLanes.begin()+0);
-	if(roadLanes.size() > 0)
-		roadLanes.erase(roadLanes.begin()+0);
+//	//delete first two lanes !!!!! Don't know why , you don't know why ! , these two line cost you a lot .. ! why why , works for toyota map , but not with moriyama
+//	if(roadLanes.size() > 0)
+//		roadLanes.erase(roadLanes.begin()+0);
+//	if(roadLanes.size() > 0)
+//		roadLanes.erase(roadLanes.begin()+0);
 
 	roadLanes.push_back(lane_obj);
 

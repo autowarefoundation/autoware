@@ -125,9 +125,13 @@ PlannerX::PlannerX()
 	 * @todo This works only in simulation (Autoware or ff_Waypoint_follower), twist_cmd should be changed, consult team
 	 */
 	if(m_bSignal == SIMULATION_SIGNAL)
+	{
 		sub_vehicle_status 	= nh.subscribe("/twist_cmd", 				100,	&PlannerX::callbackGetVehicleStatus, 	this);
+		sub_vehicle_simu_status 	= nh.subscribe("/estimate_twist",	100,	&PlannerX::callbackGetVehicleSimulatedStatus, 	this);
+	}
 	else
 		sub_robot_odom 		= nh.subscribe("/odom", 					100,	&PlannerX::callbackGetRobotOdom, 	this);
+
 	sub_EmergencyStop 	= nh.subscribe("/emergency_stop_signal", 	100,	&PlannerX::callbackGetEmergencyStop, 	this);
 	sub_TrafficLight 	= nh.subscribe("/traffic_signal_info", 		10,		&PlannerX::callbackGetTrafficLight, 	this);
 	sub_OutsideControl 	= nh.subscribe("/usb_controller_r_signal", 	10,		&PlannerX::callbackGetOutsideControl, 	this);
@@ -152,7 +156,7 @@ PlannerX::PlannerX()
 PlannerX::~PlannerX()
 {
 	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName, "MainLog",
-			"time,Behavior,Tracked_Objects_Num, Cluster_Points_Num, Contour_Points_Num, Tracking_Time, Calc_Cost_Time, Behavior_Gen_Time, Roll_Out_Gen_Time, RollOuts_Num, Full_Block, idx_Central_traj, idx_safe_traj, id_stop_sign, id_traffic_light, Min_Stop_Distance, Velocity, follow_distance, follow_velocity, X, Y, Z, heading,"
+			"time,idx_behavior,behavior,num_Tracked_Objects,num_Cluster_Points,num_Contour_Points,t_Tracking,t_Calc_Cost, t_Behavior_Gen, t_Roll_Out_Gen, num_RollOuts, Full_Block, idx_Central_traj, idx_safe_traj, id_stop_sign, id_traffic_light, Min_Stop_Distance, Velocity, follow_distance, follow_velocity, X, Y, Z, heading,"
 			, m_LogData);
 }
 
@@ -356,6 +360,13 @@ void PlannerX::callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxA
 //	std::cout << " Number of Detected Boxes =" << msg->boxes.size() << std::endl;
 //	RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(*msg, m_DetectedBoxes);
 //	bNewBoxes = true;
+}
+
+void PlannerX::callbackGetVehicleSimulatedStatus(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+	m_VehicleState.speed = msg->twist.linear.x;
+	m_VehicleState.steer = msg->twist.angular.z;
+	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
 void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)

@@ -498,7 +498,7 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 //		if(size <= 0.25 || size >= 5 || distance_y > 20.0 || distance_x > 20.0)
 //			continue;
 
-		if(distance_x <= car_info.length/2.0 && distance_y <= car_info.width/2.0) // don't detect yourself
+		if(distance_x <= car_info.length && distance_y <= car_info.width/1.5) // don't detect yourself
 			continue;
 
 
