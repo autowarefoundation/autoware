@@ -392,6 +392,8 @@ PlannerHNS::BehaviorState FFSteerControl::ConvertBehaviorStateFromAutowareToPlan
 		behavior.state = PlannerHNS::TRAFFIC_LIGHT_STOP_STATE;
 	else if(msg->twist.angular.z == PlannerHNS::STOP_SIGN_STOP_STATE)
 		behavior.state = PlannerHNS::STOP_SIGN_STOP_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::STOP_SIGN_WAIT_STATE)
+		behavior.state = PlannerHNS::STOP_SIGN_WAIT_STATE;
 	else if(msg->twist.angular.z == PlannerHNS::FOLLOW_STATE)
 		behavior.state = PlannerHNS::FOLLOW_STATE;
 	else if(msg->twist.angular.z == PlannerHNS::LANE_CHANGE_STATE)

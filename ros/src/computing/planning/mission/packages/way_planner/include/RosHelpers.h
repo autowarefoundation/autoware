@@ -64,6 +64,9 @@ public:
 
 	static void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &lane_waypoints_array
 			, visualization_msgs::MarkerArray& markerArray);
+
+	static void ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
+			waypoint_follower::LaneArray& laneArray);
 };
 
 }

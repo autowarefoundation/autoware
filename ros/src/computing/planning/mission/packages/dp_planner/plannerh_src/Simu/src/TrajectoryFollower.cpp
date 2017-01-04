@@ -225,8 +225,8 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 	}
 	else if(CurrBehavior.state == TRAFFIC_LIGHT_STOP_STATE || CurrBehavior.state == STOP_SIGN_STOP_STATE)
 	{
-		double deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.stopDistance);
-		desiredVelocity = (m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
+		//double deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.stopDistance);
+		desiredVelocity = 0;//(m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
 	}
 	else if(CurrBehavior.state == FOLLOW_STATE)
 	{

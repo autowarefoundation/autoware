@@ -31,11 +31,11 @@
 	<arg name="maxSteerAngle" 				default="1.0" />
 	
 	<arg name="enableObjectTracking" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
-	<arg name="enableOutsideControl" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->
+	<arg name="enableOutsideControl" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
 	<arg name="enableSimulation"			default="false" /> <!-- simulation or empty "" -->
 		
 	<arg name="mapSource" 					default="2" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
-	<arg name="mapFileName" 				default="/home/user/maps/nic7f/inlab.kml" />
+	<arg name="mapFileName" 				default="/home/user/maps/AroundNIC_Dec2016/kml/NicMapWithTraffic.kml" />
 	
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
