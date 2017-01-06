@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# coding:utf-8
 
 # Software License Agreement (BSD License)
 #
@@ -46,13 +47,28 @@ if __name__ == '__main__':
 
     serial_port = rospy.get_param('~port','/dev/ttyUSB0')
     serial_baud = rospy.get_param('~baud',4800)
-
+    em_file = rospy.get_param('~em_file','')
+    dm_file = rospy.get_param('~dm_file','')
+    em_lines = open(em_file, 'r').readlines()
+    dm_lines = open(dm_file, 'r').readlines()
+    
     # Get the frame_id
     frame_id = RosNMEADriver.get_frame_id()
 
     try:
         GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=2)
+        
+        for line in em_lines:
+            GPS.write(line)
+        
         while not rospy.is_shutdown():
+            
+            def shutdown_hook():
+                for line in dm_lines:
+                    GPS.write(line)
+
+            rospy.on_shutdown(shutdown_hook) 
+            
             data = GPS.readline().strip()
 
             sentence = Sentence()
