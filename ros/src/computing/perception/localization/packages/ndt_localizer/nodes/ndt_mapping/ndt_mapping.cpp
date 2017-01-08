@@ -206,7 +206,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     
     // Add initial point cloud to velodyne_map
     if(initial_scan_loaded == 0){
-      map += *scan_ptr;
+      pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, tf_btol);
+      map += *transformed_scan_ptr;
       initial_scan_loaded = 1;
     }
     
