@@ -29,19 +29,8 @@
  */
 
 #include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/PoseArray.h>
-#include <geometry_msgs/Point.h>
-#include <nav_msgs/Odometry.h>
-#include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl/io/io.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Float32.h>
 #include <std_msgs/Int32.h>
 #include <runtime_manager/ConfigVelocitySet.h>
 #include <iostream>

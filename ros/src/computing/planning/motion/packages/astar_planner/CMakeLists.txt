@@ -6,13 +6,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   pcl_ros
   pcl_conversions
-  sensor_msgs
   tf
-  gnss
   runtime_manager
   waypoint_follower
   vector_map
-  vehicle_socket
 )
 
 ###################################
@@ -21,8 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libvelocity_set
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket vector_map
-  DEPENDS gnss
+  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vector_map
 )
 
 ###########
