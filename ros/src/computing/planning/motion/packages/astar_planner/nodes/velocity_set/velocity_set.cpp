@@ -43,15 +43,12 @@ namespace
 {
 const int LOOP_RATE = 10;
 
-geometry_msgs::TwistStamped g_current_twist;
 geometry_msgs::PoseStamped g_localizer_pose;  // pose of sensor
 geometry_msgs::PoseStamped g_control_pose;  // pose of base_link
 pcl::PointCloud<pcl::PointXYZ> g_points;
 
-const std::string pedestrian_sound = "pedestrian";
 bool g_pose_flag = false;
 bool g_path_flag = false;
-bool g_points_flag = false;
 int g_obstacle_waypoint = -1;
 double g_deceleration_search_distance = 30;
 double g_search_distance = 60;
@@ -72,10 +69,7 @@ double g_temporal_waypoints_size = 100.0;  // (meter)
 
 // Publisher
 ros::Publisher g_range_pub;
-ros::Publisher g_deceleration_range_pub;
-ros::Publisher g_safety_waypoint_pub;
 ros::Publisher g_temporal_waypoints_pub;
-ros::Publisher g_crosswalk_points_pub;
 ros::Publisher g_obstacle_pub;
 
 WayPoints g_path_dk;
@@ -126,11 +120,6 @@ void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
     if (v.x < ignore_range)
       continue;
     g_points.push_back(v);
-  }
-
-  if (g_points_flag == false)
-  {
-    g_points_flag = true;
   }
 }
 
