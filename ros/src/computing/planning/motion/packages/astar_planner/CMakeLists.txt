@@ -42,7 +42,7 @@ include_directories(
 add_library(libvelocity_set lib/libvelocity_set.cpp)
 target_link_libraries(libvelocity_set ${catkin_LIBRARIES} vector_map)
 
-add_executable(velocity_set nodes/velocity_set/velocity_set.cpp)
+add_executable(velocity_set nodes/velocity_set/velocity_set.cpp nodes/velocity_set/velocity_set_path.cpp)
 target_link_libraries(velocity_set libwaypoint_follower libvelocity_set ${catkin_LIBRARIES})
 add_dependencies(velocity_set 
 waypoint_follower_generate_messages_cpp
