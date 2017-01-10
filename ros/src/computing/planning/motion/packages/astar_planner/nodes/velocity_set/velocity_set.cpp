@@ -52,7 +52,6 @@
 
 namespace
 {
-
 const int LOOP_RATE = 10;
 
 geometry_msgs::TwistStamped g_current_twist;
@@ -67,25 +66,24 @@ bool g_points_flag = false;
 int g_obstacle_waypoint = -1;
 double g_deceleration_search_distance = 30;
 double g_search_distance = 60;
-double g_current_vel = 0.0;  // (m/s) subscribe estimated_vel
+double g_current_vel = 0.0;  // (m/s)
 CrossWalk vmap;
 ObstaclePoints g_obstacle;
 
-/* Config Parameter */
+// Config Parameter
 double g_detection_range = 0;                   // if obstacle is in this range, stop
 double g_deceleration_range = 1.8;              // if obstacle is in this range, decelerate
 int g_threshold_points = 15;
-double g_detection_height_top = 2.0;  // actually +2.0m
+double g_detection_height_top = 2.0;
 double g_detection_height_bottom = -2.0;
-double g_others_distance = 8.0;            // meter: stopping distance from obstacles (using VSCAN)
-double g_decel = 1.5;                      // (m/s) deceleration
-double g_velocity_change_limit = 2.778;    // (m/s) about 10 km/h
-double g_temporal_waypoints_size = 100.0;  // meter
+double g_others_distance = 8.0;            // (meter) stopping distance from obstacles
+double g_decel = 1.5;                      // (m/s^2) deceleration
+double g_velocity_change_limit = 2.778;    // (m/s)
+double g_temporal_waypoints_size = 100.0;  // (meter)
 
 // Publisher
 ros::Publisher g_range_pub;
 ros::Publisher g_deceleration_range_pub;
-ros::Publisher g_sound_pub;
 ros::Publisher g_safety_waypoint_pub;
 ros::Publisher g_temporal_waypoints_pub;
 ros::Publisher g_crosswalk_points_pub;
@@ -93,11 +91,6 @@ ros::Publisher g_obstacle_pub;
 
 WayPoints g_path_dk;
 VelocitySetPath g_path_change;
-
-
-//===============================
-//          Callback
-//===============================
 
 void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
 {
@@ -172,11 +165,7 @@ void localizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   g_localizer_pose.pose = msg->pose;
 }
 
-
-//===============================
-//          Callback
-//===============================
-
+// Display a detected obstacle
 void displayObstacle(const EControl &kind)
 {
   visualization_msgs::Marker marker;
@@ -316,6 +305,7 @@ void displayDetectionRange(const int &crosswalk_id, const int &num, const EContr
   marker_array.markers.clear();
 }
 
+// find the closest cross walk against following waypoints
 int findCrossWalk(int closest_waypoint)
 {
   if (!vmap.set_points || closest_waypoint < 0)
@@ -353,6 +343,7 @@ int findCrossWalk(int closest_waypoint)
   return -1;  // no near crosswalk
 }
 
+// obstacle detection for crosswalk
 EControl crossWalkDetection(const int &crosswalk_id)
 {
   double search_radius = vmap.getDetectionPoints(crosswalk_id).width / 2;
@@ -388,6 +379,7 @@ EControl crossWalkDetection(const int &crosswalk_id)
   return KEEP;  // find no obstacles
 }
 
+// Detect an obstacle by using pointcloud
 EControl vscanDetection(int closest_waypoint)
 {
   if (g_points.empty() == true || closest_waypoint < 0)
@@ -500,15 +492,6 @@ EControl vscanDetection(int closest_waypoint)
   return KEEP;  // no obstacles
 }
 
-  /*
-void soundPlay()
-{
-  std_msgs::String string;
-  string.data = pedestrian_sound;
-  g_sound_pub.publish(string);
-}
-  */
-
 EControl obstacleDetection(int closest_waypoint)
 {
   static int false_count = 0;
@@ -598,9 +581,6 @@ void changeWaypoint(EControl detection_result, int closest_waypoint)
 
 } // end namespace
 
-//======================================
-//                 main
-//======================================
 
 int main(int argc, char **argv)
 {
@@ -622,15 +602,13 @@ int main(int argc, char **argv)
   ros::Subscriber current_vel_sub = nh.subscribe("current_velocity", 1, currentVelCallback);
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, configCallback);
 
-  //------------------ Vector Map ----------------------//
+  // vector map subscribers
   ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &vmap);
   ros::Subscriber sub_area = nh.subscribe("vector_map_info/area", 1, &CrossWalk::areaCallback, &vmap);
   ros::Subscriber sub_line = nh.subscribe("vector_map_info/line", 1, &CrossWalk::lineCallback, &vmap);
   ros::Subscriber sub_point = nh.subscribe("vector_map_info/point", 1, &CrossWalk::pointCallback, &vmap);
-  //----------------------------------------------------//
 
   g_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
-  g_sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
   g_temporal_waypoints_pub = nh.advertise<waypoint_follower::lane>("temporal_waypoints", 1000, true);
   ros::Publisher closest_waypoint_pub;
   closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
