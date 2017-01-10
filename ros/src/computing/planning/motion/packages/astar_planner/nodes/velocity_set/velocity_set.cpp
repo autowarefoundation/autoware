@@ -174,7 +174,7 @@ void displayObstacle(const EControl &kind)
   //g_obstacle_pub.publish(marker);
 }
 
-void displayDetectionRange(const int &crosswalk_id, const int &num, const EControl &kind)
+void displayDetectionRange(const int crosswalk_id, const int num, const EControl &kind)
 {
   // set up for marker array
   visualization_msgs::MarkerArray marker_array;
@@ -317,7 +317,7 @@ int findCrossWalk(int closest_waypoint)
 }
 
 // obstacle detection for crosswalk
-EControl crossWalkDetection(const int &crosswalk_id)
+EControl crossWalkDetection(const int crosswalk_id)
 {
   double search_radius = vmap.getDetectionPoints(crosswalk_id).width / 2;
 
