@@ -120,11 +120,6 @@ void baseWaypointCallback(const waypoint_follower::laneConstPtr &msg)
   }
 }
 
-void objPoseCallback(const visualization_msgs::MarkerConstPtr &msg)
-{
-  //ROS_INFO("subscribed obj_pose\n");
-}
-
 void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
   pcl::PointCloud<pcl::PointXYZ> sub_points;
@@ -598,7 +593,6 @@ int main(int argc, char **argv)
   ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, controlCallback);
   ros::Subscriber points_sub = nh.subscribe(points_topic, 1, pointsCallback);
   ros::Subscriber base_waypoint_sub = nh.subscribe("base_waypoints", 1, baseWaypointCallback);
-  ros::Subscriber obj_pose_sub = nh.subscribe("obj_pose", 1, objPoseCallback);
   ros::Subscriber current_vel_sub = nh.subscribe("current_velocity", 1, currentVelCallback);
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, configCallback);
 
