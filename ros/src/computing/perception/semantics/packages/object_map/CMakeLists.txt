@@ -8,6 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   sensor_msgs
   nav_msgs
+  grid_map_ros
+  grid_map_cv
+  grid_map_msgs
 )
 
 
@@ -34,3 +37,6 @@ target_link_libraries(laserscan2costmap ${catkin_LIBRARIES})
 
 add_executable(points2costmap nodes/points2costmap/points2costmap.cpp)
 target_link_libraries(points2costmap ${catkin_LIBRARIES})
+
+add_executable(potential_field nodes/potential_field/potential_field.cpp)
+target_link_libraries(potential_field ${catkin_LIBRARIES})

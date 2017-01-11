@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+
+	<node pkg="object_map" type="potential_field" name="potential_field" output="screen">
+	</node>
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+    <rosparam command="load" file="$(find object_map)/config/potential.yaml" />
+  </node>
+
+</launch>
