@@ -350,117 +350,159 @@ EControl crossWalkDetection(const int crosswalk_id)
   return KEEP;  // find no obstacles
 }
 
-// Detect an obstacle by using pointcloud
-EControl pointsDetection(int closest_waypoint)
+int detectStopObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::PointXYZ>& points)
 {
-  if (g_points.empty() == true || closest_waypoint < 0)
-    return KEEP;
-
-  int decelerate_or_stop = -10000;
-  int decelerate2stop_waypoints = 15;
-
+  int stop_obstacle_waypoint = -1;
+  // start search from the closest waypoint
   for (int i = closest_waypoint; i < closest_waypoint + g_search_distance; i++)
   {
-    g_obstacle.clearStopPoints();
-    if (!g_obstacle.isDecided())
-      g_obstacle.clearDeceleratePoints();
-
-    decelerate_or_stop++;
-    if (decelerate_or_stop > decelerate2stop_waypoints || (decelerate_or_stop >= 0 && i >= g_prev_path.getSize() - 1) ||
-        (decelerate_or_stop >= 0 && i == closest_waypoint + g_search_distance - 1))
-      return DECELERATE;
-    if (i > g_prev_path.getSize() - 1)
-      return KEEP;
+    // reach the end of waypoints
+    if (i >= g_prev_path.getSize())
+      break;
 
     // Detection for cross walk
     if (i == g_cross_walk.getDetectionWaypoint())
     {
+      // found an obstacle in the cross walk
       if (crossWalkDetection(g_cross_walk.getDetectionCrossWalkID()) == STOP)
       {
-        g_obstacle_waypoint = i;
-        return STOP;
+        stop_obstacle_waypoint = i;
+        break;
       }
     }
 
-    // waypoint seen by vehicle
+    // waypoint seen by localizer
     geometry_msgs::Point waypoint = calcRelativeCoordinate(g_prev_path.getWaypointPosition(i), g_localizer_pose.pose);
     tf::Vector3 tf_waypoint = point2vector(waypoint);
     tf_waypoint.setZ(0);
 
     int stop_point_count = 0;
-    int decelerate_point_count = 0;
-    for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = g_points.begin(); item != g_points.end(); item++)
+    for (const auto& p : points)
     {
-      tf::Vector3 point_vector((double)item->x, (double)item->y, 0);
+      tf::Vector3 point_vector(p.x, p.y, 0);
 
-      // 2D distance between waypoint and points(obstacle)
-      // ---STOP OBSTACLE DETECTION---
+      // 2D distance between waypoint and points (obstacle)
       double dt = tf::tfDistance(point_vector, tf_waypoint);
       if (dt < g_stop_range)
       {
         stop_point_count++;
         geometry_msgs::Point point_temp;
-        point_temp.x = item->x;
-        point_temp.y = item->y;
-        point_temp.z = item->z;
+        point_temp.x = p.x;
+        point_temp.y = p.y;
+        point_temp.z = p.z;
 	g_obstacle.setStopPoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
       }
-      if (stop_point_count > g_threshold_points)
-      {
-        g_obstacle_waypoint = i;
-        return STOP;
-      }
-
-      // without deceleration range
-      if (g_deceleration_range < 0.01)
-        continue;
-      // deceleration search runs "decelerate_search_distance" waypoints from closest
-      if (i > closest_waypoint + g_deceleration_search_distance || decelerate_or_stop >= 0)
-        continue;
-
-      // ---DECELERATE OBSTACLE DETECTION---
-      if (dt > g_stop_range && dt < g_stop_range + g_deceleration_range)
-      {
-        bool count_flag = true;
-
-        // search overlaps between DETECTION range and DECELERATION range
-        for (int waypoint_search = -5; waypoint_search <= 5; waypoint_search++)
-        {
-          if (i + waypoint_search < 0 || i + waypoint_search >= g_prev_path.getSize() || !waypoint_search)
-            continue;
-          geometry_msgs::Point temp_waypoint =
-              calcRelativeCoordinate(g_prev_path.getWaypointPosition(i + waypoint_search), g_localizer_pose.pose);
-          tf::Vector3 waypoint_vector = point2vector(temp_waypoint);
-          waypoint_vector.setZ(0);
-          // if there is a overlap, give priority to DETECTION range
-          if (tf::tfDistance(point_vector, waypoint_vector) < g_stop_range)
-          {
-            count_flag = false;
-            break;
-          }
-        }
-        if (count_flag)
-        {
-          decelerate_point_count++;
-          geometry_msgs::Point point_temp;
-          point_temp.x = item->x;
-          point_temp.y = item->y;
-          point_temp.z = item->z;
-	  g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
-        }
-      }
-
-      // found obstacle to DECELERATE
-      if (decelerate_point_count > g_threshold_points)
-      {
-        g_obstacle_waypoint = i;
-        decelerate_or_stop = 0;  // for searching near STOP obstacle
-        g_obstacle.setDecided(true);
-      }
     }
+
+    // there is an obstacle if the number of points exceeded the threshold
+    if (stop_point_count > g_threshold_points)
+    {
+      stop_obstacle_waypoint = i;
+      break;
+    }
+
+    g_obstacle.clearStopPoints();
+
+    // check next waypoint...
   }
 
-  return KEEP;  // no obstacles
+  return stop_obstacle_waypoint;
+}
+
+int detectDecelerateObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::PointXYZ>& points)
+{
+  int decelerate_obstacle_waypoint = -1;
+  // start search from the closest waypoint
+  for (int i = closest_waypoint; i < closest_waypoint + g_deceleration_search_distance; i++)
+  {
+    // reach the end of waypoints
+    if (i >= g_prev_path.getSize())
+      break;
+
+    // waypoint seen by localizer
+    geometry_msgs::Point waypoint = calcRelativeCoordinate(g_prev_path.getWaypointPosition(i), g_localizer_pose.pose);
+    tf::Vector3 tf_waypoint = point2vector(waypoint);
+    tf_waypoint.setZ(0);
+
+    int decelerate_point_count = 0;
+    for (const auto& p : points)
+    {
+      tf::Vector3 point_vector(p.x, p.y, 0);
+
+      // 2D distance between waypoint and points (obstacle)
+      double dt = tf::tfDistance(point_vector, tf_waypoint);
+      if (dt > g_stop_range && dt < g_stop_range + g_deceleration_range)
+      {
+        decelerate_point_count++;
+        geometry_msgs::Point point_temp;
+        point_temp.x = p.x;
+        point_temp.y = p.y;
+        point_temp.z = p.z;
+	g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
+      }
+    }
+
+    // there is an obstacle if the number of points exceeded the threshold
+    if (decelerate_point_count > g_threshold_points)
+    {
+      decelerate_obstacle_waypoint = i;
+      break;
+    }
+
+    g_obstacle.clearDeceleratePoints();
+
+    // check next waypoint...
+  }
+
+  return decelerate_obstacle_waypoint;
+}
+
+
+// Detect an obstacle by using pointcloud
+EControl pointsDetection(const int closest_waypoint)
+{
+  if (g_points.empty() == true || closest_waypoint < 0)
+    return KEEP;
+
+  int stop_obstacle_waypoint = detectStopObstacle(closest_waypoint, g_points);
+
+  // skip searching deceleration range
+  if (g_deceleration_range < 0.01)
+  {
+    g_obstacle_waypoint = stop_obstacle_waypoint;
+    return stop_obstacle_waypoint < 0 ? KEEP : STOP;
+  }
+
+  int decelerate_obstacle_waypoint = detectDecelerateObstacle(closest_waypoint, g_points);
+
+  // stop obstacle was not found
+  if (stop_obstacle_waypoint < 0)
+  {
+    g_obstacle_waypoint  = decelerate_obstacle_waypoint;
+    return decelerate_obstacle_waypoint < 0 ? KEEP : DECELERATE;
+  }
+
+  // stop obstacle was found but decelerate obstacle was not found
+  if (decelerate_obstacle_waypoint < 0)
+  {
+    g_obstacle_waypoint = stop_obstacle_waypoint;
+    return STOP;
+  }
+
+  int stop_decelerate_threshold = 5.0 / g_prev_path.getInterval(); // about 5.0 meter
+
+  // both were found
+  if (stop_obstacle_waypoint - decelerate_obstacle_waypoint > stop_decelerate_threshold)
+  {
+    g_obstacle_waypoint = decelerate_obstacle_waypoint;
+    return DECELERATE;
+  }
+  else
+  {
+    g_obstacle_waypoint = stop_obstacle_waypoint;
+    return STOP;
+  }
+
 }
 
 EControl obstacleDetection(int closest_waypoint)
