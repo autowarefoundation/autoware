@@ -41,7 +41,7 @@
 
 namespace
 {
-const int LOOP_RATE = 10;
+constexpr int LOOP_RATE = 10;
 
 geometry_msgs::PoseStamped g_localizer_pose;  // pose of sensor
 geometry_msgs::PoseStamped g_control_pose;  // pose of base_link
@@ -50,8 +50,8 @@ pcl::PointCloud<pcl::PointXYZ> g_points;
 bool g_pose_flag = false;
 bool g_path_flag = false;
 int g_obstacle_waypoint = -1;
-double g_deceleration_search_distance = 30;
-double g_search_distance = 60;
+constexpr double g_deceleration_search_distance = 30;
+constexpr double g_search_distance = 60;
 double g_current_vel = 0.0;  // (m/s)
 CrossWalk g_cross_walk;
 ObstaclePoints g_obstacle;
