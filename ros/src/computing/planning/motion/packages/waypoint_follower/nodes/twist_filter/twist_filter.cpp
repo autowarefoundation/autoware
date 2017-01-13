@@ -42,6 +42,8 @@ ros::Publisher g_twist_pub;
 double g_lateral_accel_limit = 5.0;
 constexpr double RADIUS_MAX = 9e10;
 constexpr double ERROR = 1e-8;
+const double g_lowpass_gain_linear_x = 0.9;
+const double g_lowpass_gain_angular_z = 0.9;
 
 void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
 {
@@ -68,9 +70,18 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   double a = v * omega;
   ROS_INFO("lateral accel = %lf", a);
 
+
   tp.twist.linear.x = fabs(a) > g_lateral_accel_limit ? max_v
                     : v;
   tp.twist.angular.z = omega;
+
+  static double lowpass_linear_x = 0;
+  static double lowpass_angular_z = 0;
+  lowpass_linear_x = g_lowpass_gain_linear_x * lowpass_linear_x + (1 - g_lowpass_gain_linear_x) * tp.twist.linear.x;
+  lowpass_angular_z = g_lowpass_gain_angular_z * lowpass_angular_z + (1 - g_lowpass_gain_angular_z) * tp.twist.angular.z;
+
+  tp.twist.linear.x = lowpass_linear_x;
+  tp.twist.angular.z = lowpass_angular_z;
 
   ROS_INFO("v: %f -> %f",v,tp.twist.linear.x);
   g_twist_pub.publish(tp);
