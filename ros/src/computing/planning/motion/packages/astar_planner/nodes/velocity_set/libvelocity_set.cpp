@@ -248,10 +248,47 @@ void CrossWalk::setCrossWalkPoints()
   set_points = true;
 }
 
-geometry_msgs::Point ObstaclePoints::getObstaclePoint(const EControl &kind)
+int CrossWalk::findClosestCrosswalk(const int closest_waypoint, const waypoint_follower::lane& lane, const int search_distance)
+{
+  if (!set_points || closest_waypoint < 0)
+    return -1;
+
+  double find_distance = 2.0 * 2.0;      // meter
+  double ignore_distance = 20.0 * 20.0;  // meter
+  static std::vector<int> bdid = getBDID();
+  // Find near cross walk
+  for (int num = closest_waypoint; num < closest_waypoint + search_distance; num++)
+  {
+    geometry_msgs::Point waypoint = lane.waypoints[num].pose.pose.position;
+    waypoint.z = 0.0;  // ignore Z axis
+    for (const auto &i : bdid)
+    {
+      // ignore far crosswalk
+      geometry_msgs::Point crosswalk_center = getDetectionPoints(i).center;
+      crosswalk_center.z = 0.0;
+      if (calcSquareOfLength(crosswalk_center, waypoint) > ignore_distance)
+        continue;
+
+      for (auto p : getDetectionPoints(i).points)
+      {
+        p.z = waypoint.z;
+        if (calcSquareOfLength(p, waypoint) < find_distance)
+        {
+          setDetectionCrossWalkID(i);
+          return num;
+        }
+      }
+    }
+  }
+
+  setDetectionCrossWalkID(-1);
+  return -1;  // no near crosswalk
+
+}
+
+geometry_msgs::Point ObstaclePoints::getObstaclePoint(const EControl &kind) const
 {
   geometry_msgs::Point point;
-  decided_ = false;
 
   if (kind == STOP)
   {
@@ -265,10 +302,9 @@ geometry_msgs::Point ObstaclePoints::getObstaclePoint(const EControl &kind)
     point.y /= stop_points_.size();
     point.z /= stop_points_.size();
 
-    previous_detection_ = point;
     return point;
   }
-  else if (kind == DECELERATE)
+  else // kind == DECELERATE
   {
     for (const auto &p : decelerate_points_)
     {
@@ -280,11 +316,6 @@ geometry_msgs::Point ObstaclePoints::getObstaclePoint(const EControl &kind)
     point.y /= decelerate_points_.size();
     point.z /= decelerate_points_.size();
 
-    previous_detection_ = point;
     return point;
-  }
-  else
-  {
-    return previous_detection_;
   }
 }

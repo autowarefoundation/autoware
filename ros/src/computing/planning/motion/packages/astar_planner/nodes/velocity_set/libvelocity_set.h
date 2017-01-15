@@ -11,6 +11,8 @@
 #include <geometry_msgs/Point.h>
 #include <vector_map/vector_map.h>
 
+#include "waypoint_follower/libwaypoint_follower.h"
+
 enum EControl
 {
   KEEP = -1,
@@ -61,6 +63,7 @@ public:
   geometry_msgs::Point getPoint(const int &pid) const;
   void calcCenterPoints();
   void setCrossWalkPoints();
+  int findClosestCrosswalk(const int closest_waypoint, const waypoint_follower::lane& lane, const int search_distance);
   int getSize() const
   {
     return detection_points_.size();
@@ -112,7 +115,6 @@ private:
   std::vector<geometry_msgs::Point> stop_points_;
   std::vector<geometry_msgs::Point> decelerate_points_;
   geometry_msgs::Point previous_detection_;
-  bool decided_;
 
 public:
   void setStopPoint(const geometry_msgs::Point &p)
@@ -123,11 +125,7 @@ public:
   {
     decelerate_points_.push_back(p);
   }
-  void setDecided(const bool &b)
-  {
-    decided_ = b;
-  }
-  geometry_msgs::Point getObstaclePoint(const EControl &kind);
+  geometry_msgs::Point getObstaclePoint(const EControl &kind) const;
   void clearStopPoints()
   {
     stop_points_.clear();
@@ -136,16 +134,8 @@ public:
   {
     decelerate_points_.clear();
   }
-  bool isDecided()
-  {
-    return decided_;
-  }
-  geometry_msgs::Point getPreviousDetection()
-  {
-    return previous_detection_;
-  }
 
-  ObstaclePoints() : stop_points_(0), decelerate_points_(0), decided_(false)
+  ObstaclePoints() : stop_points_(0), decelerate_points_(0)
   {
   }
 };

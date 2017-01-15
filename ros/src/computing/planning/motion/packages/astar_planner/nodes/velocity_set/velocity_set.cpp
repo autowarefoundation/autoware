@@ -35,7 +35,6 @@
 #include <runtime_manager/ConfigVelocitySet.h>
 #include <iostream>
 
-#include "waypoint_follower/libwaypoint_follower.h"
 #include "libvelocity_set.h"
 #include "velocity_set_path.h"
 
@@ -49,12 +48,9 @@ pcl::PointCloud<pcl::PointXYZ> g_points;
 
 bool g_pose_flag = false;
 bool g_path_flag = false;
-int g_obstacle_waypoint = -1;
 constexpr double g_deceleration_search_distance = 30;
 constexpr double g_search_distance = 60;
 double g_current_vel = 0.0;  // (m/s)
-CrossWalk g_cross_walk;
-ObstaclePoints g_obstacle;
 
 // Config Parameter
 double g_stop_range = 0;                   // if obstacle is in this range, stop
@@ -137,7 +133,7 @@ void localizerCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 }
 
 // Display a detected obstacle
-void displayObstacle(const EControl &kind)
+void displayObstacle(const EControl &kind, const ObstaclePoints& obstacle_points)
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "/map";
@@ -146,10 +142,19 @@ void displayObstacle(const EControl &kind)
   marker.id = 0;
   marker.type = visualization_msgs::Marker::CUBE;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position = g_obstacle.getObstaclePoint(kind);
-  if (kind == OTHERS)
-    marker.pose.position = g_obstacle.getPreviousDetection();
+
+  static geometry_msgs::Point prev_obstacle_point;
+  if (kind == STOP || kind == DECELERATE)
+  {
+    marker.pose.position = obstacle_points.getObstaclePoint(kind);
+    prev_obstacle_point = marker.pose.position;
+  }
+  else // kind == OTHERS
+  {
+    marker.pose.position = prev_obstacle_point;
+  }
   marker.pose.orientation = g_localizer_pose.pose.orientation;
+
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
   marker.scale.z = 2.0;
@@ -169,10 +174,10 @@ void displayObstacle(const EControl &kind)
   marker.lifetime = ros::Duration(0.1);
   marker.frame_locked = true;
 
-  //g_obstacle_pub.publish(marker);
+  g_obstacle_pub.publish(marker);
 }
 
-void displayDetectionRange(const int crosswalk_id, const int num, const EControl &kind)
+void displayDetectionRange(const CrossWalk& crosswalk, const int num, const EControl &kind, const int obstacle_waypoint)
 {
   // set up for marker array
   visualization_msgs::MarkerArray marker_array;
@@ -217,10 +222,10 @@ void displayDetectionRange(const int crosswalk_id, const int num, const EControl
   waypoint_marker_decelerate.color.b = 0.0;
   waypoint_marker_decelerate.frame_locked = true;
 
-  if (g_obstacle_waypoint > -1)
+  if (obstacle_waypoint > -1)
   {
-    stop_line.pose.position = g_prev_path.getWaypointPosition(g_obstacle_waypoint);
-    stop_line.pose.orientation = g_prev_path.getWaypointOrientation(g_obstacle_waypoint);
+    stop_line.pose.position = g_prev_path.getWaypointPosition(obstacle_waypoint);
+    stop_line.pose.orientation = g_prev_path.getWaypointOrientation(obstacle_waypoint);
   }
   stop_line.pose.position.z += 1.0;
   stop_line.scale.x = 0.1;
@@ -233,8 +238,9 @@ void displayDetectionRange(const int crosswalk_id, const int num, const EControl
   stop_line.lifetime = ros::Duration(0.1);
   stop_line.frame_locked = true;
 
+  int crosswalk_id = crosswalk.getDetectionCrossWalkID();
   if (crosswalk_id > 0)
-    scale = g_cross_walk.getDetectionPoints(crosswalk_id).width;
+    scale = crosswalk.getDetectionPoints(crosswalk_id).width;
   crosswalk_marker.scale.x = scale;
   crosswalk_marker.scale.y = scale;
   crosswalk_marker.scale.z = scale;
@@ -262,7 +268,7 @@ void displayDetectionRange(const int crosswalk_id, const int num, const EControl
 
   if (crosswalk_id > 0)
   {
-    for (const auto &p : g_cross_walk.getDetectionPoints(crosswalk_id).points)
+    for (const auto &p : crosswalk.getDetectionPoints(crosswalk_id).points)
       crosswalk_marker.points.push_back(p);
   }
 
@@ -276,51 +282,14 @@ void displayDetectionRange(const int crosswalk_id, const int num, const EControl
   marker_array.markers.clear();
 }
 
-// find the closest cross walk against following waypoints
-int findCrossWalk(int closest_waypoint)
-{
-  if (!g_cross_walk.set_points || closest_waypoint < 0)
-    return -1;
-
-  double find_distance = 2.0 * 2.0;      // meter
-  double ignore_distance = 20.0 * 20.0;  // meter
-  static std::vector<int> bdid = g_cross_walk.getBDID();
-  // Find near cross walk
-  for (int num = closest_waypoint; num < closest_waypoint + g_search_distance; num++)
-  {
-    geometry_msgs::Point waypoint = g_prev_path.getWaypointPosition(num);
-    waypoint.z = 0.0;  // ignore Z axis
-    for (const auto &i : bdid)
-    {
-      // ignore far crosswalk
-      geometry_msgs::Point crosswalk_center = g_cross_walk.getDetectionPoints(i).center;
-      crosswalk_center.z = 0.0;
-      if (calcSquareOfLength(crosswalk_center, waypoint) > ignore_distance)
-        continue;
-
-      for (auto p : g_cross_walk.getDetectionPoints(i).points)
-      {
-        p.z = waypoint.z;
-        if (calcSquareOfLength(p, waypoint) < find_distance)
-        {
-          g_cross_walk.setDetectionCrossWalkID(i);
-          return num;
-        }
-      }
-    }
-  }
-
-  g_cross_walk.setDetectionCrossWalkID(-1);
-  return -1;  // no near crosswalk
-}
-
 // obstacle detection for crosswalk
-EControl crossWalkDetection(const int crosswalk_id)
+EControl crossWalkDetection(const CrossWalk& crosswalk, ObstaclePoints* obstacle_points)
 {
-  double search_radius = g_cross_walk.getDetectionPoints(crosswalk_id).width / 2;
+  int crosswalk_id = crosswalk.getDetectionCrossWalkID();
+  double search_radius = crosswalk.getDetectionPoints(crosswalk_id).width / 2;
 
   // Search each calculated points in the crosswalk
-  for (const auto &p : g_cross_walk.getDetectionPoints(crosswalk_id).points)
+  for (const auto &p : crosswalk.getDetectionPoints(crosswalk_id).points)
   {
     geometry_msgs::Point detection_point = calcRelativeCoordinate(p, g_localizer_pose.pose);
     tf::Vector3 detection_vector = point2vector(detection_point);
@@ -338,19 +307,19 @@ EControl crossWalkDetection(const int crosswalk_id)
         point_temp.x = p.x;
         point_temp.y = p.y;
         point_temp.z = p.z;
-	g_obstacle.setStopPoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
+	obstacle_points->setStopPoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
       }
       if (stop_count > g_threshold_points)
         return STOP;
     }
 
-    g_obstacle.clearStopPoints();
+    obstacle_points->clearStopPoints();
   }
 
   return KEEP;  // find no obstacles
 }
 
-int detectStopObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::PointXYZ>& points)
+int detectStopObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::PointXYZ>& points, const CrossWalk& crosswalk, ObstaclePoints* obstacle_points)
 {
   int stop_obstacle_waypoint = -1;
   // start search from the closest waypoint
@@ -361,10 +330,10 @@ int detectStopObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::Po
       break;
 
     // Detection for cross walk
-    if (i == g_cross_walk.getDetectionWaypoint())
+    if (i == crosswalk.getDetectionWaypoint())
     {
       // found an obstacle in the cross walk
-      if (crossWalkDetection(g_cross_walk.getDetectionCrossWalkID()) == STOP)
+      if (crossWalkDetection(crosswalk, obstacle_points) == STOP)
       {
         stop_obstacle_waypoint = i;
         break;
@@ -390,7 +359,7 @@ int detectStopObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::Po
         point_temp.x = p.x;
         point_temp.y = p.y;
         point_temp.z = p.z;
-	g_obstacle.setStopPoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
+	obstacle_points->setStopPoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
       }
     }
 
@@ -401,7 +370,7 @@ int detectStopObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::Po
       break;
     }
 
-    g_obstacle.clearStopPoints();
+    obstacle_points->clearStopPoints();
 
     // check next waypoint...
   }
@@ -409,7 +378,7 @@ int detectStopObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::Po
   return stop_obstacle_waypoint;
 }
 
-int detectDecelerateObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::PointXYZ>& points)
+int detectDecelerateObstacle(const int closest_waypoint, const pcl::PointCloud<pcl::PointXYZ>& points, ObstaclePoints* obstacle_points)
 {
   int decelerate_obstacle_waypoint = -1;
   // start search from the closest waypoint
@@ -438,7 +407,7 @@ int detectDecelerateObstacle(const int closest_waypoint, const pcl::PointCloud<p
         point_temp.x = p.x;
         point_temp.y = p.y;
         point_temp.z = p.z;
-	g_obstacle.setDeceleratePoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
+	obstacle_points->setDeceleratePoint(calcAbsoluteCoordinate(point_temp, g_localizer_pose.pose));
       }
     }
 
@@ -449,7 +418,7 @@ int detectDecelerateObstacle(const int closest_waypoint, const pcl::PointCloud<p
       break;
     }
 
-    g_obstacle.clearDeceleratePoints();
+    obstacle_points->clearDeceleratePoints();
 
     // check next waypoint...
   }
@@ -459,33 +428,33 @@ int detectDecelerateObstacle(const int closest_waypoint, const pcl::PointCloud<p
 
 
 // Detect an obstacle by using pointcloud
-EControl pointsDetection(const int closest_waypoint)
+EControl pointsDetection(const int closest_waypoint, const CrossWalk& crosswalk, int* obstacle_waypoint, ObstaclePoints* obstacle_points)
 {
   if (g_points.empty() == true || closest_waypoint < 0)
     return KEEP;
 
-  int stop_obstacle_waypoint = detectStopObstacle(closest_waypoint, g_points);
+  int stop_obstacle_waypoint = detectStopObstacle(closest_waypoint, g_points, crosswalk, obstacle_points);
 
   // skip searching deceleration range
   if (g_deceleration_range < 0.01)
   {
-    g_obstacle_waypoint = stop_obstacle_waypoint;
+    *obstacle_waypoint = stop_obstacle_waypoint;
     return stop_obstacle_waypoint < 0 ? KEEP : STOP;
   }
 
-  int decelerate_obstacle_waypoint = detectDecelerateObstacle(closest_waypoint, g_points);
+  int decelerate_obstacle_waypoint = detectDecelerateObstacle(closest_waypoint, g_points, obstacle_points);
 
   // stop obstacle was not found
   if (stop_obstacle_waypoint < 0)
   {
-    g_obstacle_waypoint  = decelerate_obstacle_waypoint;
+    *obstacle_waypoint  = decelerate_obstacle_waypoint;
     return decelerate_obstacle_waypoint < 0 ? KEEP : DECELERATE;
   }
 
   // stop obstacle was found but decelerate obstacle was not found
   if (decelerate_obstacle_waypoint < 0)
   {
-    g_obstacle_waypoint = stop_obstacle_waypoint;
+    *obstacle_waypoint = stop_obstacle_waypoint;
     return STOP;
   }
 
@@ -494,30 +463,31 @@ EControl pointsDetection(const int closest_waypoint)
   // both were found
   if (stop_obstacle_waypoint - decelerate_obstacle_waypoint > stop_decelerate_threshold)
   {
-    g_obstacle_waypoint = decelerate_obstacle_waypoint;
+    *obstacle_waypoint = decelerate_obstacle_waypoint;
     return DECELERATE;
   }
   else
   {
-    g_obstacle_waypoint = stop_obstacle_waypoint;
+    *obstacle_waypoint = stop_obstacle_waypoint;
     return STOP;
   }
 
 }
 
-EControl obstacleDetection(int closest_waypoint)
+EControl obstacleDetection(int closest_waypoint, int* obstacle_waypoint, const CrossWalk& crosswalk)
 {
   static int false_count = 0;
   static EControl prev_detection = KEEP;
 
-  EControl detection_result = pointsDetection(closest_waypoint);
-  displayDetectionRange(g_cross_walk.getDetectionCrossWalkID(), closest_waypoint, detection_result);
+  ObstaclePoints obstacle_points;
+  EControl detection_result = pointsDetection(closest_waypoint, crosswalk, obstacle_waypoint, &obstacle_points);
+  displayDetectionRange(crosswalk, closest_waypoint, detection_result, *obstacle_waypoint);
 
   if (prev_detection == KEEP)
   {
     if (detection_result != KEEP)
     {  // found obstacle
-      displayObstacle(detection_result);
+      displayObstacle(detection_result, obstacle_points);
       prev_detection = detection_result;
       // SoundPlay();
       false_count = 0;
@@ -533,7 +503,7 @@ EControl obstacleDetection(int closest_waypoint)
   {  // prev_detection = STOP or DECELERATE
     if (detection_result != KEEP)
     {  // found obstacle
-      displayObstacle(detection_result);
+      displayObstacle(detection_result, obstacle_points);
       prev_detection = detection_result;
       false_count = 0;
       return detection_result;
@@ -545,28 +515,26 @@ EControl obstacleDetection(int closest_waypoint)
       // fail-safe
       if (false_count >= LOOP_RATE / 2)
       {
-        g_obstacle_waypoint = -1;
+        *obstacle_waypoint = -1;
         false_count = 0;
         prev_detection = KEEP;
         return detection_result;
       }
       else
       {
-        displayObstacle(OTHERS);
+        displayObstacle(OTHERS, obstacle_points);
         return prev_detection;
       }
     }
   }
 }
 
-void changeWaypoint(EControl detection_result, int closest_waypoint)
+void changeWaypoint(EControl detection_result, int closest_waypoint, int obstacle_waypoint)
 {
-  int obs = g_obstacle_waypoint;
-
   if (detection_result == STOP)
   {  // STOP for obstacle
     // stop_waypoint is about g_stop_distance meter away from obstacles
-    int stop_waypoint = obs - ((int)(g_stop_distance / g_new_path.getInterval()));
+    int stop_waypoint = obstacle_waypoint - ((int)(g_stop_distance / g_new_path.getInterval()));
     // change waypoints to stop by the stop_waypoint
     g_new_path.changeWaypoints(stop_waypoint, closest_waypoint, g_decel, g_prev_path);
     g_new_path.avoidSuddenBraking(g_velocity_change_limit, g_current_vel, g_decel, closest_waypoint);
@@ -607,6 +575,9 @@ int main(int argc, char **argv)
   private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
 
+  // classes
+  CrossWalk crosswalk;
+
   ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, localizerCallback);
   ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, controlCallback);
   ros::Subscriber points_sub = nh.subscribe(points_topic, 1, pointsCallback);
@@ -615,10 +586,10 @@ int main(int argc, char **argv)
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 10, configCallback);
 
   // vector map subscribers
-  ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &g_cross_walk);
-  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area", 1, &CrossWalk::areaCallback, &g_cross_walk);
-  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line", 1, &CrossWalk::lineCallback, &g_cross_walk);
-  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point", 1, &CrossWalk::pointCallback, &g_cross_walk);
+  ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &crosswalk);
+  ros::Subscriber sub_area = nh.subscribe("vector_map_info/area", 1, &CrossWalk::areaCallback, &crosswalk);
+  ros::Subscriber sub_line = nh.subscribe("vector_map_info/line", 1, &CrossWalk::lineCallback, &crosswalk);
+  ros::Subscriber sub_point = nh.subscribe("vector_map_info/point", 1, &CrossWalk::pointCallback, &crosswalk);
 
   g_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
   g_temporal_waypoints_pub = nh.advertise<waypoint_follower::lane>("temporal_waypoints", 1000, true);
@@ -631,8 +602,8 @@ int main(int argc, char **argv)
   {
     ros::spinOnce();
 
-    if (g_cross_walk.loaded_all && !g_cross_walk.set_points)
-      g_cross_walk.setCrossWalkPoints();
+    if (crosswalk.loaded_all && !crosswalk.set_points)
+      crosswalk.setCrossWalkPoints();
 
     if (g_pose_flag == false || g_path_flag == false)
     {
@@ -647,11 +618,12 @@ int main(int argc, char **argv)
     closest_waypoint_pub.publish(closest_waypoint_msg);
 
     if (use_crosswalk_detection)
-      g_cross_walk.setDetectionWaypoint(findCrossWalk(closest_waypoint));
+      crosswalk.setDetectionWaypoint(crosswalk.findClosestCrosswalk(closest_waypoint, g_prev_path.getCurrentWaypoints(), g_search_distance));
 
-    EControl detection_result = obstacleDetection(closest_waypoint);
+    int obstacle_waypoint = -1;
+    EControl detection_result = obstacleDetection(closest_waypoint, &obstacle_waypoint, crosswalk);
 
-    changeWaypoint(detection_result, closest_waypoint);
+    changeWaypoint(detection_result, closest_waypoint, obstacle_waypoint);
 
     g_points.clear();
 
