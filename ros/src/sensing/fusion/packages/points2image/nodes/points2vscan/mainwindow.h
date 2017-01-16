@@ -9,6 +9,7 @@
 #include<rosinterface.h>
 #include<fastvirtualscan.h>
 #include<sensor_msgs/LaserScan.h>
+#include<string>
 
 //#define DEBUG_GUI
 

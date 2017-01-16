@@ -21,8 +21,10 @@
     <arg name="grid_size" default="10.0" />
     <arg name="image_size" default="1000.0" />
     <arg name="sync" default="false" />
+    <arg name="points_node" default="points_raw" />
 
   <node pkg="points2image" type="points2vscan" name="points2vscan" output="screen" >
+      <param name="points_node" type="string" value="$(arg points_node)" />
       <param name="BEAMNUM" type="int" value="$(arg beam_num)" />
       <param name="STEP" type="double" value="$(arg step)" />
       <param name="MINFLOOR" type="double" value="$(arg min_floor)" />

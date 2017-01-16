@@ -197,7 +197,7 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 		}
 		double slope= (current_cluster->points.size()*sum_xy - (sum_x*sum_y))/(current_cluster->points.size()*sum_xx - sum_x*sum_x);
 
-		rz = atan(slope);
+		rz = atan(-slope);
 	}
 
 	//set bounding box direction

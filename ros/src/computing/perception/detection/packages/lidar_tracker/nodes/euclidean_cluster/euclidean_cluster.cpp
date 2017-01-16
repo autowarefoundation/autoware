@@ -452,7 +452,6 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		if (	all_clusters[i]->IsValid() &&
 				bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0 &&
 				bounding_box.dimensions.x < _max_boundingbox_side && bounding_box.dimensions.y < _max_boundingbox_side
-				&&max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0
 				)
 		{
 			in_out_boundingbox_array.boxes.push_back(bounding_box);
@@ -466,7 +465,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	}
 }
 
-void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.35)
+void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.1)
 {
 	/*pcl::PointIndicesPtr ground (new pcl::PointIndices);
 	// Create the filtering object
@@ -643,7 +642,6 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		_velodyne_header = in_sensor_cloud->header;
 
-
 		cv::TickMeter timer;
 
 		timer.reset();timer.start();
@@ -655,20 +653,25 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		else
 			removed_points_cloud_ptr = current_sensor_cloud_ptr;
 
+		//std::cout << "Downsample before: " <<removed_points_cloud_ptr->points.size();
 		if (_downsample_cloud)
 			downsampleCloud(removed_points_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
 		else
-			downsampled_cloud_ptr=current_sensor_cloud_ptr;
-		timer.stop(); //std::cout << "downsampleCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+			downsampled_cloud_ptr =removed_points_cloud_ptr;
 
-		downsampled_cloud_ptr=removed_points_cloud_ptr;
+		//std::cout << " after: " <<downsampled_cloud_ptr->points.size();
+		timer.stop(); std::cout << "downsampleCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+
+		timer.reset();timer.start();
+		clipCloud(downsampled_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
+		timer.stop(); std::cout << "clipCloud:" << clipped_cloud_ptr->points.size() << "time " << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		if(_keep_lanes)
-			keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
+			keepLanePoints(clipped_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
 		else
-			inlanes_cloud_ptr = downsampled_cloud_ptr;
-		timer.stop(); //std::cout << "keepLanePoints:" << timer.getTimeMilli() << "ms" << std::endl;
+			inlanes_cloud_ptr = clipped_cloud_ptr;
+		timer.stop(); std::cout << "keepLanePoints:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		if(_remove_ground)
@@ -678,38 +681,35 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		}
 		else
 			nofloor_cloud_ptr = inlanes_cloud_ptr;
-		timer.stop(); //std::cout << "removeFloor:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); std::cout << "removeFloor:" << timer.getTimeMilli() << "ms" << std::endl;
 
-		timer.reset();timer.start();
-		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
-		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
-		timer.stop(); //std::cout << "clipCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+		publishCloud(&_pub_points_lanes_cloud, nofloor_cloud_ptr);
 
 		timer.reset();timer.start();
 		if (_use_diffnormals)
-			differenceNormalsSegmentation(clipped_cloud_ptr, diffnormals_cloud_ptr);
+			differenceNormalsSegmentation(nofloor_cloud_ptr, diffnormals_cloud_ptr);
 		else
-			diffnormals_cloud_ptr = clipped_cloud_ptr;
-		timer.stop(); //std::cout << "differenceNormalsSegmentation:" << timer.getTimeMilli() << "ms" << std::endl;
+			diffnormals_cloud_ptr = nofloor_cloud_ptr;
+		timer.stop(); std::cout << "differenceNormalsSegmentation:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters);
-		timer.stop(); //std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
-		timer.stop(); //std::cout << "publishColorCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); std::cout << "publishColorCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 		// Publish BB
 		boundingbox_array.header = _velodyne_header;
 
 		timer.reset();timer.start();
 		publishBoundingBoxArray(&_pub_jsk_boundingboxes, boundingbox_array, _output_frame, _velodyne_header);
 		centroids.header = _velodyne_header;
-		timer.stop(); //std::cout << "publishBoundingBoxArray:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); std::cout << "publishBoundingBoxArray:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		publishCentroids(&_centroid_pub, centroids, _output_frame, _velodyne_header);
-		timer.stop(); //std::cout << "publishCentroids:" << timer.getTimeMilli() << "ms" << std::endl;
+		timer.stop(); std::cout << "publishCentroids:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		_marker_pub.publish(_visualization_marker);
 		_visualization_marker.points.clear();//transform? is it used?
@@ -717,7 +717,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		timer.reset();timer.start();
 		publishCloudClusters(&_pub_clusters_message, cloud_clusters, _output_frame, _velodyne_header);
-		timer.stop(); //std::cout << "publishCloudClusters:" << timer.getTimeMilli() << "ms" << std::endl << std::endl;
+		timer.stop(); std::cout << "publishCloudClusters:" << timer.getTimeMilli() << "ms" << std::endl << std::endl;
 
 		_using_sensor_cloud = false;
 	}
