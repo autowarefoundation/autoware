@@ -93,6 +93,8 @@ public:
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_SimulatedPrevTrajectory;
 	std::vector<SimulationNS::SimulatedTrajectoryFollower> m_SimulatedPathFollower;
 
+	std::vector<PlannerHNS::WayPoint*> m_all_cell_to_delete;
+
 
 
 private:

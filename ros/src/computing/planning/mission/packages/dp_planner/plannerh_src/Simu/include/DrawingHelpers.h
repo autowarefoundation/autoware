@@ -33,6 +33,8 @@ public:
 	static void DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_points, const double& z,
 			const double& width, float color[3], bool bGadient = true);
 
+	static void DrawCostPath(const std::vector<PlannerHNS::WayPoint*>& path_points, const double& z, const double& width);
+
 	static void DrawLinePoygonFromCenterX(const PlannerHNS::WayPoint& p1, const double& z,
 			const PlannerHNS::WayPoint& p2, const double& z2, const double& w, const double& h,
 			PlannerHNS::WayPoint& prev_point);

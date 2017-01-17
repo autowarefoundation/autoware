@@ -151,7 +151,7 @@ PlannerH::PlannerH()
 
  double PlannerH::PlanUsingDP(Lane* l, const WayPoint& start,const WayPoint& goalPos,
 			const WayPoint& prevWayPoint, const double& maxPlanningDistance,
-			const std::vector<int>& globalPath, std::vector<std::vector<WayPoint> >& paths)
+			const std::vector<int>& globalPath, std::vector<std::vector<WayPoint> >& paths, vector<WayPoint*>& all_cell_to_delete)
  {
  	if(!l)
  	{
@@ -162,7 +162,7 @@ PlannerH::PlannerH()
  	int nML =0 , nMR = 0;
  	WayPoint carPos = start;
  	vector<vector<WayPoint> > tempCurrentForwardPathss;
- 	vector<WayPoint*> all_cell_to_delete;
+ 	//vector<WayPoint*> all_cell_to_delete;
  	WayPoint* pLaneCell = 0;
 
  	int closest_index = PlanningHelpers::GetClosestPointIndex(l->points, carPos);
@@ -198,8 +198,8 @@ PlannerH::PlannerH()
  	if(path.size()<2)
  	{
  		cout << endl << "Err: PlannerH -> Invalid Path, Car Should Stop." << endl;
- 		if(pLaneCell)
- 			DeleteWaypoints(all_cell_to_delete);
+// 		if(pLaneCell)
+// 			DeleteWaypoints(all_cell_to_delete);
  		return 0 ;
  	}
 
@@ -207,8 +207,8 @@ PlannerH::PlannerH()
  //	str << "BehaviorsLog/WholePath_";
  //	ConfigAndLogNS::LogMgr::WritePathToFile(str.str(), mainPath);
 
- 	if(pLaneCell)
- 		DeleteWaypoints(all_cell_to_delete);
+// 	if(pLaneCell)
+// 		DeleteWaypoints(all_cell_to_delete);
 
  	//PlanningHelpers::FixPathDensity(mainPath, 0.5);
  	//PlanningHelpers::SmoothPath(mainPath, 0.3 , 0.3,0.1);

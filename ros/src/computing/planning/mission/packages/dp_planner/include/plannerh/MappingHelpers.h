@@ -31,7 +31,7 @@ public:
 			const std::vector<UtilityHNS::AisanSignalFileReader::AisanSignal>& signal_data,
 			const std::vector<UtilityHNS::AisanVectorFileReader::AisanVector>& vector_data,
 			const std::vector<UtilityHNS::AisanDataConnFileReader::DataConn>& conn_data,
-			const GPSPoint& origin, RoadNetwork& map);
+			const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag = false);
 
 	static void ConstructRoadNetworkFromDataFiles(const std::string vectoMapPath, RoadNetwork& map, const bool& bZeroOrigin = false);
 
@@ -86,6 +86,7 @@ public:
 	static std::vector<RoadSegment> GetRoadSegmentsList(TiXmlElement* pElem);
 	static std::vector<int> GetIDsFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::vector<double> GetDoubleFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
+	static std::pair<ACTION_TYPE, double> GetActionPairFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::vector<WayPoint> GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID);
 	static std::vector<GPSPoint> GetPointsData(TiXmlElement* pElem);
 	static std::vector<std::string> SplitString(const std::string& str, const std::string& token);

@@ -118,7 +118,7 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 	    count++;
 	  }
 
-	  //RosHelpers::createGlobalLaneArrayOrientationMarker(map_lane_array, markerArray);
+	  RosHelpers::createGlobalLaneArrayOrientationMarker(map_lane_array, markerArray);
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,

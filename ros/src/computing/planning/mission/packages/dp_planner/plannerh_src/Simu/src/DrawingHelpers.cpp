@@ -281,6 +281,51 @@ void DrawingHelpers::DrawPrePreparedPolygons(std::vector<std::vector<PlannerHNS:
 
 }
 
+void DrawingHelpers::DrawCostPath(const std::vector<PlannerHNS::WayPoint*>& path_points, const double& z, const double& width)
+{
+	if(path_points.size()==0) return;
+
+	WayPoint p1 = *path_points[0];
+	WayPoint p2 = p1;
+	float color[3] = {0,0,0};
+
+	double max_cost = 0;
+	for(unsigned int i=0; i < path_points.size(); i++)
+	{
+		if(path_points.at(i)->cost > max_cost)
+			max_cost = path_points.at(i)->cost;
+	}
+
+	int size = path_points.size();
+	WayPoint prev_point = p1;
+
+	for(int i=1; i < size; i+=2)
+	{
+		p2 = *path_points[i];
+		double norm_cost = path_points.at(i)->cost / max_cost * 2.0;
+		if(norm_cost <= 1.0)
+		{
+			color[0] = norm_cost;
+			color[1] = 1.0;
+		}
+		else if(norm_cost > 1.0)
+		{
+			color[0] = 1.0;
+			color[1] = 2.0 - norm_cost;
+		}
+
+		glColor3f(color[0], color[1], color[2]);
+
+		//DrawLinePoygonFromCenterX(p1, z, p2, z, width, 0, prev_point);
+		DrawWideEllipse(p1.pos.x, p1.pos.y, z, 0.5, 0.5, 0.25, color);
+
+
+		prev_point = p1;
+
+		p1 = p2;
+	}
+}
+
 void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_points, const double& z, const double& width, float color[3], bool bGadient)
 {
 	if(path_points.size()==0) return;

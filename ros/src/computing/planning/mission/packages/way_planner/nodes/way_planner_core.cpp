@@ -344,8 +344,8 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	total_color.a = 0.4;
 	RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
 
-	//RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
-	//RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
+	RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
+	RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
 	//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
 	pub_PathsRviz.publish(pathsToVisualize);
 	pub_Paths.publish(lane_array);

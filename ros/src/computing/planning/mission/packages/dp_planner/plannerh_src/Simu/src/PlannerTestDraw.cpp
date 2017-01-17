@@ -23,7 +23,9 @@ using namespace UtilityHNS;
 #define VectorMap "/home/user/data/ToyotaCity2/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
-#define kmlMap	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/Around_NIC/map/kml/Around_NIC_With_Traffic.kml"
+//#define kmlMap	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/Around_NIC/map/kml/NicMapWithTraffic.kml"
+#define kmlMap "/home/user/data/ToyotaCity2/map/kml/ToyotaCityCustomInfo.kml"
+
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -69,9 +71,9 @@ PlannerTestDraw::PlannerTestDraw()
 //	string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
 //	PlannerHNS::MappingHelpers::WriteKML("/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml",kml_templateFilePath , roadMap);
 
-//	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
-//	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+ "MapWithStopLines.kml";
-//	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
+	//string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
+	//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+ "ToyotaCityCustomInfo.kml";
+	//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
 	PlannerHNS::MappingHelpers::LoadKML(kmlMap, m_RoadMap);
 	/**
@@ -265,7 +267,7 @@ PlannerTestDraw::PlannerTestDraw()
 	PrepareVectorMapForDrawing();
 
 
-	}
+}
 
 void PlannerTestDraw::InitStartAndGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2)
 {
@@ -593,7 +595,6 @@ void PlannerTestDraw::PrepareVectorMapForDrawing()
 			DrawingHelpers::PreparePathForDrawing(path_local,ready_to_draw, 0.1);
 			m_ReadyToDrawCenterLines.push_back(ready_to_draw);
 
-
 			j++;
 
 			PlannerHNS::MappingHelpers::GetUniqueNextLanes(l, traversed_lanes, lanes_list);
@@ -756,13 +757,13 @@ void PlannerTestDraw::DrawTrafficInfo_StopLines_Lights()
 		DrawingHelpers::DrawFilledEllipse(m_RoadMap.trafficLights.at(i).pos.x+1.2, m_RoadMap.trafficLights.at(i).pos.y, 1, 0.5,0.5);
 		glPopMatrix();
 
-		glPushMatrix();
-		glTranslated(m_RoadMap.trafficLights.at(i).pos.x, m_RoadMap.trafficLights.at(i).pos.y, 1.5);
-		std::ostringstream str_out ;
-		str_out.precision(4);
-		str_out << "TFID: "<< m_RoadMap.trafficLights.at(i).id;
-		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-		glPopMatrix();
+//		glPushMatrix();
+//		glTranslated(m_RoadMap.trafficLights.at(i).pos.x, m_RoadMap.trafficLights.at(i).pos.y, 1.5);
+//		std::ostringstream str_out ;
+//		str_out.precision(4);
+//		str_out << "TFID: "<< m_RoadMap.trafficLights.at(i).id;
+//		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
+//		glPopMatrix();
 	}
 
 	for(unsigned int i=0 ; i < m_RoadMap.stopLines.size(); i++)
@@ -783,34 +784,34 @@ void PlannerTestDraw::DrawTrafficInfo_StopLines_Lights()
 			p.y = (m_RoadMap.stopLines.at(i).points.at(0).y + m_RoadMap.stopLines.at(i).points.at(1).y)/2.0;
 		}
 
-		glPushMatrix();
-		glTranslated(p.x, p.y, 1.5);
-		std::ostringstream str_out ;
-		str_out.precision(4);
-		str_out << "SLID: "<< m_RoadMap.stopLines.at(i).id;
-		glColor3f(0,1,0);
-		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-		glPopMatrix();
+//		glPushMatrix();
+//		glTranslated(p.x, p.y, 1.5);
+//		std::ostringstream str_out ;
+//		str_out.precision(4);
+//		str_out << "SLID: "<< m_RoadMap.stopLines.at(i).id;
+//		glColor3f(0,1,0);
+//		DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
+//		glPopMatrix();
 	}
 
-	if(m_RoadMap.roadSegments.size()>0)
-	{
-		for(unsigned int i=0 ; i < m_RoadMap.roadSegments.at(0).Lanes.size(); i++)
-		{
-			if(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size() > 0)
-			{
-				PlannerHNS::GPSPoint p = m_RoadMap.roadSegments.at(0).Lanes.at(i).points.at(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size()/2).pos;
-				glPushMatrix();
-				glTranslated(p.x, p.y, 1.5);
-				std::ostringstream str_out ;
-				str_out.precision(4);
-				str_out << "LID: "<< m_RoadMap.roadSegments.at(0).Lanes.at(i).id;
-				glColor3f(1,0,0);
-				DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-				glPopMatrix();
-			}
-		}
-	}
+//	if(m_RoadMap.roadSegments.size()>0)
+//	{
+//		for(unsigned int i=0 ; i < m_RoadMap.roadSegments.at(0).Lanes.size(); i++)
+//		{
+//			if(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size() > 0)
+//			{
+//				PlannerHNS::GPSPoint p = m_RoadMap.roadSegments.at(0).Lanes.at(i).points.at(m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size()/2).pos;
+//				glPushMatrix();
+//				glTranslated(p.x, p.y, 1.5);
+//				std::ostringstream str_out ;
+//				str_out.precision(4);
+//				str_out << "LID: "<< m_RoadMap.roadSegments.at(0).Lanes.at(i).id;
+//				glColor3f(1,0,0);
+//				DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
+//				glPopMatrix();
+//			}
+//		}
+//	}
 
 	glEnable(GL_LIGHTING);
 }
@@ -892,6 +893,9 @@ void PlannerTestDraw::DrawPaths()
 	if(m_iStepNumber%4 == 0)
 	{
 		DrawingHelpers::DrawWidePath(m_LocalPlanner.m_PathSection, 0.08, 0.25, TotalPathColor);
+
+		DrawingHelpers::DrawCostPath(m_all_cell_to_delete, 0.5, 0.5);
+
 	}
 	else if(m_iStepNumber%4 == 1)
 	{
@@ -1026,6 +1030,7 @@ void PlannerTestDraw::DrawPaths()
 //		}
 //
 //	}
+
 	}
 	pthread_mutex_unlock(&planning_mutex);
 	glEnable(GL_LIGHTING);
@@ -1409,7 +1414,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				UtilityH::GetTickCount(planTime);
 				planner.PlanUsingDP(pR->m_LocalPlanner.pLane, pR->m_LocalPlanner.state,
 						pR->m_goals.at(pR->m_iCurrentGoal), pR->m_LocalPlanner.state,
-						1000000,pR->m_LanesIds, generatedTotalPath);
+						1000000,pR->m_LanesIds, generatedTotalPath, pR->m_all_cell_to_delete);
 				pR->m_GlobalPlanningTime = UtilityH::GetTimeDiffNow(planTime);
 
 				if(generatedTotalPath.size()>0 && generatedTotalPath.at(0).size()>0)

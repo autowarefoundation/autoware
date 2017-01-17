@@ -22,7 +22,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define _FIND_LEFT_RIGHT_LANES
+#define FIND_LEFT_RIGHT_LANES
 #define _SMOOTH_MAP_WAYPOINTS
 
 
@@ -87,7 +87,7 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		const std::vector<UtilityHNS::AisanSignalFileReader::AisanSignal>& signal_data,
 		const std::vector<UtilityHNS::AisanVectorFileReader::AisanVector>& vector_data,
 		const std::vector<UtilityHNS::AisanDataConnFileReader::DataConn>& conn_data,
-		const GPSPoint& origin, RoadNetwork& map)
+		const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag)
 {
 	vector<Lane> roadLanes;
 	Lane lane_obj;
@@ -131,7 +131,7 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		}
 		else  if(lanes_data.at(l).LaneDir == 'R')
 		{
-			wp.actionCost.push_back(make_pair(RIGHT_TURN_ACTION, -5));
+			wp.actionCost.push_back(make_pair(RIGHT_TURN_ACTION, 15));
 			//std::cout << " Right Lane : " << lanes_data.at(l).LnID << std::endl ;
 		}
 		else
@@ -195,10 +195,13 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 	}
 
 //	//delete first two lanes !!!!! Don't know why , you don't know why ! , these two line cost you a lot .. ! why why , works for toyota map , but not with moriyama
-//	if(roadLanes.size() > 0)
-//		roadLanes.erase(roadLanes.begin()+0);
-//	if(roadLanes.size() > 0)
-//		roadLanes.erase(roadLanes.begin()+0);
+	if(bSpecialFlag)
+	{
+		if(roadLanes.size() > 0)
+			roadLanes.erase(roadLanes.begin()+0);
+		if(roadLanes.size() > 0)
+			roadLanes.erase(roadLanes.begin()+0);
+	}
 
 	roadLanes.push_back(lane_obj);
 
@@ -506,7 +509,7 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
 		bToyotaCityMap = 2;
 
 	// use this to transform data to origin (0,0,0)
-	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, line_data, stop_line_data, signal_data, vector_data,conn_data, GetTransformationOrigin(bToyotaCityMap), map);
+	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, line_data, stop_line_data, signal_data, vector_data,conn_data, GetTransformationOrigin(bToyotaCityMap), map, bToyotaCityMap == 1);
 
 	//use this when using the same coordinates as the map
 //	ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data, GPSPoint(), map);
@@ -729,6 +732,23 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 				for(unsigned int j = 0 ; j < pWP->toIds.size(); j++)
 				{
 					pWP->pFronts.push_back(FindWaypoint(pWP->toIds.at(j), map));
+					if(pWP->LeftLaneId > 0)
+					{
+						pWP->pLeft = FindWaypoint(pWP->LeftLaneId, map);
+						if(pWP->pLeft)
+							pWP->LeftLaneId = pWP->pLeft->laneId;
+
+						pWP->pLane->pLeftLane = pWP->pLeft->pLane;
+					}
+
+					if(pWP->RightLaneId > 0)
+					{
+						pWP->pRight = FindWaypoint(pWP->RightLaneId, map);
+						if(pWP->pRight)
+							pWP->RightLaneId = pWP->pRight->laneId;
+
+						pWP->pLane->pRightLane = pWP->pRight->pLane;
+					}
 				}
 			}
 		}
@@ -920,14 +940,22 @@ void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 		for(unsigned int j =0; j < pLane->points.size() ; j++)
 		{
 			char action = 'F';
+			int cost = 0;
 
-//			if(pLane->points.at(j).actionCost. == LEFT_TURN_ACTION)
-//				action = 'L';
-//			else if(pLane->points.at(j).actionCost == RIGHT_TURN_ACTION)
-//				action = 'R';
+			if(pLane->points.at(j).actionCost.size() > 0)
+			{
+				if(pLane->points.at(j).actionCost.at(0).first == FORWARD_ACTION)
+					action = 'F';
+				else if(pLane->points.at(j).actionCost.at(0).first == LEFT_TURN_ACTION)
+					action = 'L';
+				else if(pLane->points.at(j).actionCost.at(0).first == RIGHT_TURN_ACTION)
+					action = 'R';
+
+				cost = 	pLane->points.at(j).actionCost.at(0).second;
+			}
 
 			valInfo << "WPID_" << pLane->points.at(j).id
-					<< "_C_" << action << "_From_";
+					<< "_AC_" << action << "_" << cost << "_From_";
 
 			for(unsigned int k=0; k< pLane->points.at(j).fromIds.size(); k++)
 				valInfo << pLane->points.at(j).fromIds.at(k) << "_";
@@ -935,6 +963,16 @@ void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 			valInfo << "To";
 			for(unsigned int k=0; k< pLane->points.at(j).toIds.size(); k++)
 				valInfo << "_" << pLane->points.at(j).toIds.at(k);
+
+			if(pLane->points.at(j).pLeft)
+				valInfo << "_Lid_" << pLane->points.at(j).pLeft->id;
+			else
+				valInfo << "_Lid_" << 0;
+
+			if(pLane->points.at(j).pRight)
+				valInfo << "_Rid_" << pLane->points.at(j).pRight->id;
+			else
+				valInfo << "_Rid_" << 0;
 
 			valInfo << "_Vel_" << pLane->points.at(j).v;
 			valInfo << "_Dir_" << pLane->points.at(j).pos.a;
@@ -1602,9 +1640,14 @@ vector<WayPoint> MappingHelpers::GetCenterLaneData(TiXmlElement* pElem, const in
 		{
 			for(unsigned int i=0; i< gps_points.size(); i++)
 			{
-				gps_points.at(i).id =  GetIDsFromPrefix(add_info_list.at(i), "WPID", "C").at(0);
+				gps_points.at(i).id =  GetIDsFromPrefix(add_info_list.at(i), "WPID", "AC").at(0);
+				gps_points.at(i).actionCost.push_back(GetActionPairFromPrefix(add_info_list.at(i), "AC", "From"));
 				gps_points.at(i).fromIds =  GetIDsFromPrefix(add_info_list.at(i), "From", "To");
-				gps_points.at(i).toIds =  GetIDsFromPrefix(add_info_list.at(i), "To", "Vel");
+				gps_points.at(i).toIds =  GetIDsFromPrefix(add_info_list.at(i), "To", "Lid");
+
+				gps_points.at(i).LeftLaneId =  GetIDsFromPrefix(add_info_list.at(i), "Lid", "Rid").at(0);
+				gps_points.at(i).RightLaneId =  GetIDsFromPrefix(add_info_list.at(i), "Rid", "Vel").at(0);
+
 				gps_points.at(i).v =  GetDoubleFromPrefix(add_info_list.at(i), "Vel", "Dir").at(0);
 				gps_points.at(i).pos.a = gps_points.at(i).pos.dir =  GetDoubleFromPrefix(add_info_list.at(i), "Dir", "").at(0);
 			}
@@ -1662,6 +1705,33 @@ vector<double> MappingHelpers::GetDoubleFromPrefix(const string& str, const stri
 	}
 
 	return ids;
+}
+
+pair<ACTION_TYPE, double> MappingHelpers::GetActionPairFromPrefix(const string& str, const string& prefix, const string& postfix)
+{
+	int index1 = str.find(prefix)+prefix.size();
+	int index2 = str.find(postfix, index1);
+	if(index2<0  || postfix.size() ==0)
+		index2 = str.size();
+
+	string str_ids = str.substr(index1, index2-index1);
+
+	pair<ACTION_TYPE, double> act_cost;
+	act_cost.first = FORWARD_ACTION;
+	act_cost.second = 0;
+
+	vector<string> idstr = SplitString(str_ids, "_");
+	if(idstr.size() == 2)
+	{
+		if(idstr.at(0).size() > 0 && idstr.at(0).at(0) == 'L')
+			act_cost.first = LEFT_TURN_ACTION;
+		else if(idstr.at(0).size() > 0 && idstr.at(0).at(0) == 'R')
+			act_cost.first = RIGHT_TURN_ACTION;
+		if(idstr.at(1).size() > 0)
+			act_cost.second = atof(idstr.at(1).c_str());
+	}
+
+	return act_cost;
 }
 
 vector<string> MappingHelpers::SplitString(const string& str, const string& token)
