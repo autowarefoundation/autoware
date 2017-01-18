@@ -101,6 +101,7 @@ FFSteerControl::FFSteerControl()
 	bNewVelocity = false;
 	bNewBehaviorState = false;
 	bInitPos = false;
+	m_bOutsideControl = 0;
 
 
 #ifdef ENABLE_ZMP_LIBRARY_LINK
@@ -145,6 +146,7 @@ FFSteerControl::FFSteerControl()
   	sub_current_trajectory 	= nh.subscribe("/final_waypoints", 	10,	&FFSteerControl::callbackGetCurrentTrajectory, this);
   	sub_autoware_odom 		= nh.subscribe("/twist_odom", 		10,	&FFSteerControl::callbackGetAutowareOdom, this);
   	sub_robot_odom			= nh.subscribe("/odom",				100, &FFSteerControl::callbackGetRobotOdom, 		this);
+  	sub_OutsideControl 	= nh.subscribe("/usb_controller_r_signal", 	10,		&FFSteerControl::callbackGetOutsideControl, 	this);
 
 
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
@@ -190,6 +192,13 @@ FFSteerControl::~FFSteerControl()
 	if(m_pComm)
 		delete m_pComm;
 #endif
+}
+
+void FFSteerControl::callbackGetOutsideControl(const std_msgs::Int8& msg)
+{
+	//std::cout << "Received Outside Control : " << msg.data << std::endl;
+
+	m_bOutsideControl  = msg.data;
 }
 
 void FFSteerControl::callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
@@ -261,7 +270,7 @@ void FFSteerControl::callbackGetCurrentTrajectory(const waypoint_follower::laneC
 		m_State.m_Path.push_back(wp);
 	}
 
-	//cout << "### Current Trajectory CallBaclk -> " << m_State.m_Path.size() << endl;
+	cout << "### Current Trajectory CallBaclk -> " << m_State.m_Path.size() << endl;
 
 	bNewTrajectory = true;
 }
@@ -282,7 +291,7 @@ void FFSteerControl::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 		m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
 		UtilityHNS::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
 
-		std::cout << "###### Current Status From Segway Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
+//		std::cout << "###### Current Status From Robot Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
 	}
 }
 
@@ -383,6 +392,8 @@ PlannerHNS::BehaviorState FFSteerControl::ConvertBehaviorStateFromAutowareToPlan
 		behavior.state = PlannerHNS::TRAFFIC_LIGHT_STOP_STATE;
 	else if(msg->twist.angular.z == PlannerHNS::STOP_SIGN_STOP_STATE)
 		behavior.state = PlannerHNS::STOP_SIGN_STOP_STATE;
+	else if(msg->twist.angular.z == PlannerHNS::STOP_SIGN_WAIT_STATE)
+		behavior.state = PlannerHNS::STOP_SIGN_WAIT_STATE;
 	else if(msg->twist.angular.z == PlannerHNS::FOLLOW_STATE)
 		behavior.state = PlannerHNS::FOLLOW_STATE;
 	else if(msg->twist.angular.z == PlannerHNS::LANE_CHANGE_STATE)
@@ -475,23 +486,23 @@ void FFSteerControl::PlannerMainLoop()
 				pose.pose.position.y = m_CurrentPos.pos.y;
 				pose.pose.position.z = m_CurrentPos.pos.z;
 				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
-//				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
+				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
 
 				pub_SimulatedCurrentPose.publish(pose);
 
-				static tf::TransformBroadcaster odom_broadcaster;
-				geometry_msgs::TransformStamped odom_trans;
-				odom_trans.header.stamp = ros::Time::now();
-				odom_trans.header.frame_id = "map";
-				odom_trans.child_frame_id = "base_link";
-
-				odom_trans.transform.translation.x = pose.pose.position.x;
-				odom_trans.transform.translation.y = pose.pose.position.y;
-				odom_trans.transform.translation.z = pose.pose.position.z;
-				odom_trans.transform.rotation = pose.pose.orientation;
-
-				// send the transform
-				odom_broadcaster.sendTransform(odom_trans);
+//				static tf::TransformBroadcaster odom_broadcaster;
+//				geometry_msgs::TransformStamped odom_trans;
+//				odom_trans.header.stamp = ros::Time::now();
+//				odom_trans.header.frame_id = "map";
+//				odom_trans.child_frame_id = "base_link";
+//
+//				odom_trans.transform.translation.x = pose.pose.position.x;
+//				odom_trans.transform.translation.y = pose.pose.position.y;
+//				odom_trans.transform.translation.z = pose.pose.position.z;
+//				odom_trans.transform.rotation = pose.pose.orientation;
+//
+//				// send the transform
+//				odom_broadcaster.sendTransform(odom_trans);
 			}
 			else if(m_CmdParams.statusSource == AUTOWARE_STATUS)
 			{
@@ -537,7 +548,7 @@ void FFSteerControl::PlannerMainLoop()
 			{
 				m_FollowingTrajectory = m_State.m_Path;
 				bNewPath = true;
-				//cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
+				cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
 			}
 
 //			SimulationNS::ControllerParams c_params = m_ControlParams;
@@ -590,7 +601,7 @@ void FFSteerControl::PlannerMainLoop()
 			}
 			else if(m_CmdParams.statusSource == ROBOT_STATUS)
 			{
-				//cout << "Send Data To Segway : Max Speed=" << m_CarInfo.max_speed_forward << ", actual = " <<  m_PrevStepTargetStatus.speed << endl;
+				cout << "Send Data To Robot : Max Speed=" << m_CarInfo.max_speed_forward << ", actual = " <<  m_PrevStepTargetStatus.speed << endl;
 				geometry_msgs::Twist t;
 				geometry_msgs::TwistStamped twist;
 				t.linear.x = m_PrevStepTargetStatus.speed;
@@ -646,7 +657,7 @@ void FFSteerControl::PlannerMainLoop()
 				std::cout << "Record One Point To Path: " <<  m_CurrentPos.pos.ToString() << std::endl;
 			}
 
-			if(totalDistance > m_CmdParams.recordDistance)
+			if(totalDistance > m_CmdParams.recordDistance || m_bOutsideControl != 0)
 			{
 				PlannerHNS::RoadNetwork roadMap;
 				PlannerHNS::RoadSegment segment;

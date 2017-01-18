@@ -127,14 +127,18 @@ PlannerX::PlannerX()
 	if(m_bSignal == SIMULATION_SIGNAL)
 	{
 		sub_vehicle_status 	= nh.subscribe("/twist_cmd", 				100,	&PlannerX::callbackGetVehicleStatus, 	this);
-		sub_vehicle_simu_status 	= nh.subscribe("/estimate_twist",	100,	&PlannerX::callbackGetVehicleSimulatedStatus, 	this);
+		//sub_vehicle_simu_status 	= nh.subscribe("/estimate_twist",	100,	&PlannerX::callbackGetVehicleSimulatedStatus, 	this);
 	}
 	else
 		sub_robot_odom 		= nh.subscribe("/odom", 					100,	&PlannerX::callbackGetRobotOdom, 	this);
 
 	sub_EmergencyStop 	= nh.subscribe("/emergency_stop_signal", 	100,	&PlannerX::callbackGetEmergencyStop, 	this);
 	sub_TrafficLight 	= nh.subscribe("/traffic_signal_info", 		10,		&PlannerX::callbackGetTrafficLight, 	this);
-	sub_OutsideControl 	= nh.subscribe("/usb_controller_r_signal", 	10,		&PlannerX::callbackGetOutsideControl, 	this);
+	if(m_bEnableOutsideControl)
+		sub_OutsideControl 	= nh.subscribe("/usb_controller_r_signal", 	10,		&PlannerX::callbackGetOutsideControl, 	this);
+	else
+		m_bOutsideControl = 1;
+
 	sub_AStarPath 		= nh.subscribe("/astar_path", 				10,		&PlannerX::callbackGetAStarPath, 		this);
 	sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&PlannerX::callbackGetWayPlannerPath, 	this);
 
@@ -148,9 +152,6 @@ PlannerX::PlannerX()
 	}
 
 	sub_simulated_obstacle_pose_rviz = nh.subscribe("/clicked_point", 		1, &PlannerX::callbackGetRvizPoint,	this);
-
-	if(!m_bEnableOutsideControl)
-		m_bOutsideControl = 1;
 }
 
 PlannerX::~PlannerX()
@@ -391,7 +392,9 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 {
 	m_VehicleState.speed = msg->twist.twist.linear.x;
-	m_VehicleState.steer = atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+	//if(msg->twist.twist.linear.x != 0)
+		//m_VehicleState.steer += atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 //	if(msg->vector.z == 0x00)
 //		m_VehicleState.shift = AW_SHIFT_POS_BB;
@@ -402,7 +405,7 @@ void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 //	else if(msg->vector.z == 0x40)
 //		m_VehicleState.shift = AW_SHIFT_POS_RR;
 
-	std::cout << "PlannerX: Read Odometry ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
+	//std::cout << "PlannerX: Read Odometry ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
 }
 
 void PlannerX::callbackGetEmergencyStop(const std_msgs::Int8& msg)
@@ -426,11 +429,7 @@ void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
 {
 	std::cout << "Received Outside Control : " << msg.data << std::endl;
 	bNewOutsideControl = true;
-
-	if(m_bEnableOutsideControl && m_CurrentBehavior.state == PlannerHNS::INITIAL_STATE)
-		m_bOutsideControl  = msg.data;
-	else if(m_bEnableOutsideControl && m_CurrentBehavior.state == PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE)
-		m_bGreenLight = true;
+	m_bOutsideControl  = msg.data;
 }
 
 void PlannerX::callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg)

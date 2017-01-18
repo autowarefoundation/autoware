@@ -141,6 +141,7 @@ protected:
 	geometry_msgs::Pose m_CurrentPose;
 	bool bStartPos;
 	bool bUsingCurrentPose;
+	bool bEnableReplanning;
 	int m_iCurrentGoalIndex;
 	std::vector<geometry_msgs::Pose> m_GoalsPos;
 	//bool bGoalPos;

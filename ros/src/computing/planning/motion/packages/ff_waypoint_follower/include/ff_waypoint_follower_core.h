@@ -45,6 +45,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
+#include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "TrajectoryFollower.h"
 #include "CarState.h"
@@ -99,6 +100,7 @@ protected:
 	timespec m_Timer;
 	int m_counter;
 	int m_frequency;
+	int m_bOutsideControl;
 
 
 	PlannerHNS::WayPoint m_InitPos;
@@ -148,6 +150,7 @@ protected:
 	ros::Subscriber sub_current_trajectory;
 	ros::Subscriber sub_autoware_odom;
 	ros::Subscriber sub_robot_odom;
+	ros::Subscriber sub_OutsideControl		;
 
 	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
@@ -156,6 +159,7 @@ protected:
 	void callbackGetCurrentTrajectory(const waypoint_follower::laneConstPtr& msg);
 	void callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
+	void callbackGetOutsideControl(const std_msgs::Int8& msg);
 
 public:
 	FFSteerControl();

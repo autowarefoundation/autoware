@@ -40,6 +40,27 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 	}
 }
 
+void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
+		waypoint_follower::LaneArray& laneArray)
+{
+	waypoint_follower::lane l;
+
+	for(unsigned int i=0; i < path.size(); i++)
+	{
+		waypoint_follower::waypoint wp;
+		wp.pose.pose.position.x = path.at(i).x;
+		wp.pose.pose.position.y = path.at(i).y;
+		wp.pose.pose.position.z = path.at(i).z;
+		//wp.pose.pose.position.z = 5;
+		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).a));
+
+		l.waypoints.push_back(wp);
+	}
+
+	if(l.waypoints.size()>0)
+		laneArray.lanes.push_back(l);
+}
+
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
 		waypoint_follower::LaneArray& laneArray)
 {
@@ -118,7 +139,53 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 	    count++;
 	  }
 
+<<<<<<< HEAD
 	  RosHelpers::createGlobalLaneArrayOrientationMarker(map_lane_array, markerArray);
+=======
+		total_color.r = 0.99;
+		total_color.g = 0.99;
+		total_color.b = 0.99;
+		total_color.a = 0.85;
+
+		visualization_msgs::Marker stop_waypoint_marker;
+		  stop_waypoint_marker.header.frame_id = "map";
+		  stop_waypoint_marker.header.stamp = ros::Time();
+		  stop_waypoint_marker.ns = "stop_lines_rviz";
+		  stop_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+		  stop_waypoint_marker.action = visualization_msgs::Marker::ADD;
+		  stop_waypoint_marker.scale.x = 0.4;
+		  stop_waypoint_marker.scale.y = 0.4;
+		  stop_waypoint_marker.color = total_color;
+		  stop_waypoint_marker.frame_locked = false;
+
+
+		  for (unsigned int i=0; i<  map.stopLines.size(); i++)
+		  {
+			  waypoint_follower::LaneArray lane_array_2;
+			  RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(map.stopLines.at(i).points, lane_array_2);
+
+			  stop_waypoint_marker.points.clear();
+			  stop_waypoint_marker.id = count;
+			  for (unsigned int j=0; j<  lane_array_2.lanes.size(); j++)
+			  {
+
+
+				for (unsigned int k=0; k < lane_array_2.lanes.at(j).waypoints.size(); k++)
+				{
+				  geometry_msgs::Point point;
+				  point = lane_array_2.lanes.at(j).waypoints.at(k).pose.pose.position;
+				  stop_waypoint_marker.points.push_back(point);
+				}
+
+				markerArray.markers.push_back(stop_waypoint_marker);
+				count++;
+			  }
+		  }
+
+
+
+	  //RosHelpers::createGlobalLaneArrayOrientationMarker(map_lane_array, markerArray);
+>>>>>>> aa2899fc9e5f34df27cbf43e3dee514cee172c62
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
