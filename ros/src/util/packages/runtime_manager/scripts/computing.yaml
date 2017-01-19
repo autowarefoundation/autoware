@@ -412,7 +412,7 @@ subs :
           dialog: MyDialogLaneStop
       - name : lane_select
         desc : lane_select desc sample
-        cmd  : rosrun lane_planner lane_select
+        cmd  : roslaunch lane_planner lane_select.launch
         param: lane_select
     - name : freespace_planner
       desc : freespace_planner desc sample
@@ -1860,19 +1860,27 @@ params :
       v     : False
 
   - name  : lane_select
-    topic : /config/lane_select
-    msg   : ConfigLaneSelect
     vars  :
-    - name  : number
-      desc  : number desc sample
-      kind  : radio_box
-      choices:
-      - Driving
-      - Passing
-      descs :
-      - Driving desc sample
-      - Passing desc sample
-      v     : 1
+    - name      : distance_threshold
+      desc      : distance_threshold desc sample
+      label     : Distance threshold to neighbor lanes (m)
+      min       : 0
+      max       : 20
+      v         : 5.0
+      cmd_param :
+        var_name    : distance_threshold
+        dash        : ''
+        delim       : ':='
+    - name      : lane_change_interval
+      desc      : lane_change_interval desc sample
+      label     : Lane change interval (s)
+      min       : 0
+      max       : 30
+      v         : 1
+      cmd_param :
+        var_name    : lane_change_interval
+        dash        : ''
+        delim       : ':='
 
   - name  : astar_navi
     vars  :
@@ -1941,22 +1949,15 @@ params :
         
   - name  : waypoint_loader
     vars  :
-    - name      : driving_lane_csv
+    - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
-      label     : Driving
+      label     : Multi Lane
       kind      : path
+      path_type : multi
       v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : passing_lane_csv
-      desc      : passing_lane_csv desc sample
-      label     : Passing
-      kind      : path
-      v         : /tmp/driving_lane.csv
-      cmd_param :
-        dash        : ''
-        delim       : ':='        
     - name      : decelerate  
       desc      : decelerate   desc sample
       label   : 'decelerate :'

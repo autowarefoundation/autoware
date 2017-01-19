@@ -63,6 +63,17 @@ visualization_msgs::MarkerArray g_global_marker_array;
 visualization_msgs::MarkerArray g_local_waypoints_marker_array;
 bool g_config_manual_detection = true;
 
+enum class ChangeFlag : int32_t
+{
+  straight,
+  right,
+  left,
+
+  unknown = -1,
+};
+
+typedef std::underlying_type<ChangeFlag>::type ChangeFlagInteger;
+
 void publishLocalMarker()
 {
   visualization_msgs::MarkerArray marker_array;
@@ -119,6 +130,65 @@ void createGlobalLaneArrayVelocityMarker(const waypoint_follower::LaneArray &lan
       velocity_marker.text = vel.erase(vel.find_first_of(".") + 2);
 
       tmp_marker_array.markers.push_back(velocity_marker);
+    }
+    count++;
+  }
+
+  g_global_marker_array.markers.insert(g_global_marker_array.markers.end(), tmp_marker_array.markers.begin(),
+                                       tmp_marker_array.markers.end());
+}
+
+void createGlobalLaneArrayChangeFlagMarker(const waypoint_follower::LaneArray &lane_waypoints_array)
+{
+  visualization_msgs::MarkerArray tmp_marker_array;
+  // display by markers the velocity of each waypoint.
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "map";
+  marker.header.stamp = ros::Time();
+  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.scale.z = 0.4;
+  marker.color.a = 1.0;
+  marker.color.r = 1;
+  marker.color.g = 1;
+  marker.color.b = 1;
+  marker.frame_locked = true;
+
+  int count = 1;
+  for (auto lane : lane_waypoints_array.lanes)
+  {
+    marker.ns = "global_change_flag_lane_" + std::to_string(count);
+    for (int i = 0; i < static_cast<int>(lane.waypoints.size()); i++)
+    {
+      //std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " << _waypoints[i].GetVelocity_kmh() << std::endl;
+      marker.id = i;
+      geometry_msgs::Point relative_p;
+      relative_p.x = -0.1;
+      marker.pose.position = calcAbsoluteCoordinate(relative_p, lane.waypoints[i].pose.pose);
+      marker.pose.position.z += 0.2;
+
+      // double to string
+      std::string str = "";
+      if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::straight))
+      {
+        str = "S";
+      }
+      else if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::right))
+      {
+        str = "R";
+      }
+      else if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::left))
+      {
+        str = "L";
+      }
+      else if(lane.waypoints[i].change_flag == static_cast<ChangeFlagInteger>(ChangeFlag::unknown))
+      {
+        str = "U";
+      }
+
+      marker.text = str;
+
+      tmp_marker_array.markers.push_back(marker);
     }
     count++;
   }
@@ -199,9 +269,9 @@ void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &
   lane_waypoint_marker.header.stamp = ros::Time();
   lane_waypoint_marker.type = visualization_msgs::Marker::ARROW;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-  lane_waypoint_marker.scale.x = 0.5;
-  lane_waypoint_marker.scale.y = 0.1;
-  lane_waypoint_marker.scale.z = 0.1;
+  lane_waypoint_marker.scale.x = 0.25;
+  lane_waypoint_marker.scale.y = 0.05;
+  lane_waypoint_marker.scale.z = 0.05;
   lane_waypoint_marker.color.r = 1.0;
   lane_waypoint_marker.color.a = 1.0;
   lane_waypoint_marker.frame_locked = true;
@@ -235,6 +305,32 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::l
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
   lane_waypoint_marker.scale.x = 0.2;
   lane_waypoint_marker.color = color;
+  lane_waypoint_marker.frame_locked = true;
+
+  for (unsigned int i = 0; i < lane_waypoint.waypoints.size(); i++)
+  {
+    geometry_msgs::Point point;
+    point = lane_waypoint.waypoints[i].pose.pose.position;
+    lane_waypoint_marker.points.push_back(point);
+
+  }
+  g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
+}
+
+void createLocalPointMarker(const waypoint_follower::lane &lane_waypoint)
+{
+  visualization_msgs::Marker lane_waypoint_marker;
+  lane_waypoint_marker.header.frame_id = "map";
+  lane_waypoint_marker.header.stamp = ros::Time();
+  lane_waypoint_marker.ns = "local_point_marker";
+  lane_waypoint_marker.id = 0;
+  lane_waypoint_marker.type = visualization_msgs::Marker::CUBE_LIST;
+  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.scale.x = 0.2;
+  lane_waypoint_marker.scale.y = 0.2;
+  lane_waypoint_marker.scale.z = 0.2;
+  lane_waypoint_marker.color.r = 1.0;
+   lane_waypoint_marker.color.a = 1.0;
   lane_waypoint_marker.frame_locked = true;
 
   for (unsigned int i = 0; i < lane_waypoint.waypoints.size(); i++)
@@ -304,17 +400,19 @@ void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
 {
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
-  createGlobalLaneArrayMarker(_global_color, *msg);
+  //createGlobalLaneArrayMarker(_global_color, *msg);
   createGlobalLaneArrayOrientationMarker(*msg);
+  createGlobalLaneArrayChangeFlagMarker(*msg);
   publishGlobalMarker();
 }
 
 void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
-  if (_closest_waypoint != -1)
-    createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
+  //if (_closest_waypoint != -1)
+   // createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
+  createLocalPointMarker(*msg);
   publishLocalMarker();
 
 }
