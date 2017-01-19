@@ -28,11 +28,10 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "pure_pursuit/pure_pursuit_viz.h"
+#include "pure_pursuit_viz.h"
 
 namespace waypoint_follower
 {
-
 const std::string MAP_FRAME = "map";
 // display the next waypoint by markers.
 visualization_msgs::Marker displayNextWaypoint(geometry_msgs::Point position)
@@ -96,7 +95,8 @@ double calcRadius(geometry_msgs::Point target, geometry_msgs::Pose current_pose)
 }
 
 // generate the locus of pure pursuit
-std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target, geometry_msgs::Pose current_pose)
+std::vector<geometry_msgs::Point> generateTrajectoryCircle(geometry_msgs::Point target,
+                                                           geometry_msgs::Pose current_pose)
 {
   std::vector<geometry_msgs::Point> traj_circle_array;
   double radius = calcRadius(target, current_pose);
