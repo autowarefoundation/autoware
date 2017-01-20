@@ -66,7 +66,7 @@ void displayObstacle(const EControl &kind, const ObstaclePoints& obstacle_points
     marker.pose.position = prev_obstacle_point;
   }
   geometry_msgs::Quaternion quat;
-  marker.pose.orientation = quat;//g_localizer_pose.pose.orientation;
+  marker.pose.orientation = quat;
 
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
