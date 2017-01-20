@@ -32,25 +32,63 @@
 #define VELOCITY_SET_PATH_H
 
 #include "waypoint_follower/libwaypoint_follower.h"
-
-class VelocitySetPath : public WayPoints
+class VelocitySetPath
 {
  private:
+  waypoint_follower::lane prev_waypoints_;
+  waypoint_follower::lane new_waypoints_;
   waypoint_follower::lane temporal_waypoints_;
+  bool set_path_;
+  double current_vel_;
 
   bool checkWaypoint(int num, const char *name) const;
 
  public:
-  void changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration, const WayPoints& prev_path);
-  void avoidSuddenBraking(double velocity_change_limit, double current_velocity, double deceleration, int closest_waypoint);
-  void avoidSuddenAceleration(double current_velocity, double decelerationint, int closest_waypoint);
-  void setDeceleration(double current_velocity, double deceleration, int closest_waypoint);
+  VelocitySetPath();
+  ~VelocitySetPath();
+
+  void changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration);
+  void avoidSuddenBraking(double velocity_change_limit, double deceleration, int closest_waypoint);
+  void avoidSuddenAceleration(double decelerationint, int closest_waypoint);
+  void setDeceleration(double deceleration, int closest_waypoint);
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
+  void initializeNewWaypoints();
+
+  // ROS Callbacks
+  void waypointsCallback(const waypoint_follower::laneConstPtr& msg);
+  void currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr& msg);
+
+  double calcInterval(const int begin, const int end) const;
+
+  waypoint_follower::lane getPrevWaypoints() const
+  {
+    return prev_waypoints_;
+  }
+
+  waypoint_follower::lane getNewWaypoints() const
+  {
+    return new_waypoints_;
+  }
 
   waypoint_follower::lane getTemporalWaypoints() const
   {
     return temporal_waypoints_;
   }
+
+  bool getSetPath() const
+  {
+    return set_path_;
+  }
+
+  double getCurrentVelocity() const
+  {
+    return current_vel_;
+  }
+
+  int getPrevWaypointsSize() const
+  {
+    return prev_waypoints_.waypoints.size();
+  }  
 };
 
 #endif // VELOCITY_SET_PATH_H

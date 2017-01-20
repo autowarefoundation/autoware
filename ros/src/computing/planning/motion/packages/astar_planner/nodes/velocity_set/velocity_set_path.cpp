@@ -30,10 +30,20 @@
 
 #include "velocity_set_path.h"
 
+VelocitySetPath::VelocitySetPath()
+  : set_path_(false),
+    current_vel_(0)
+{
+}
+
+VelocitySetPath::~VelocitySetPath()
+{
+}
+
 // check if waypoint number is valid
 bool VelocitySetPath::checkWaypoint(int num, const char *name) const
 {
-  if (num < 0 || num >= getSize())
+  if (num < 0 || num >= getPrevWaypointsSize())
   {
     return false;
   }
@@ -45,33 +55,33 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
 {
   if (closest_waypoint < 0)
     return;
-  int size = (int)(temporal_waypoints_size / getInterval()) + 1;
+  int size = temporal_waypoints_size / calcInterval(0, 1);
 
   temporal_waypoints_.waypoints.clear();
-  temporal_waypoints_.header = current_waypoints_.header;
-  temporal_waypoints_.increment = current_waypoints_.increment;
+  temporal_waypoints_.header = new_waypoints_.header;
+  temporal_waypoints_.increment = new_waypoints_.increment;
   // push current pose
   waypoint_follower::waypoint current_point;
 
   current_point.pose = control_pose;
-  current_point.twist = current_waypoints_.waypoints[closest_waypoint].twist;
-  current_point.dtlane = current_waypoints_.waypoints[closest_waypoint].dtlane;
+  current_point.twist = new_waypoints_.waypoints[closest_waypoint].twist;
+  current_point.dtlane = new_waypoints_.waypoints[closest_waypoint].dtlane;
   temporal_waypoints_.waypoints.push_back(current_point);
   for (int i = 0; i < size; i++)
   {
-    if (closest_waypoint + i >= getSize())
+    if (closest_waypoint + i >= getPrevWaypointsSize())
       return;
-    temporal_waypoints_.waypoints.push_back(current_waypoints_.waypoints[closest_waypoint + i]);
+    temporal_waypoints_.waypoints.push_back(new_waypoints_.waypoints[closest_waypoint + i]);
   }
 
   return;
 }
 
-void VelocitySetPath::setDeceleration(double current_velocity, double deceleration, int closest_waypoint)
+void VelocitySetPath::setDeceleration(double deceleration, int closest_waypoint)
 {
   int velocity_change_range = 5;
-  double intervel = getInterval();
-  double temp1 = current_velocity * current_velocity;
+  double intervel = calcInterval(0, 1);
+  double temp1 = current_vel_ * current_vel_;
   double temp2 = 2 * deceleration * intervel;
   double deceleration_minimum = kmph2mps(4.0);
 
@@ -79,7 +89,7 @@ void VelocitySetPath::setDeceleration(double current_velocity, double decelerati
   {
     if (!checkWaypoint(closest_waypoint + i, "setDeceleration"))
       continue;
-    double waypoint_velocity = current_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x;
+    double waypoint_velocity = prev_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x;
     double changed_vel = temp1 - temp2;
     if (changed_vel < 0)
     {
@@ -89,20 +99,20 @@ void VelocitySetPath::setDeceleration(double current_velocity, double decelerati
       continue;
     if (sqrt(changed_vel) < deceleration_minimum)
     {
-      current_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = deceleration_minimum;
+      new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = deceleration_minimum;
       continue;
     }
-    current_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = sqrt(changed_vel);
+    new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = sqrt(changed_vel);
   }
 
   return;
 }
 
-void VelocitySetPath::avoidSuddenAceleration(double current_velocity, double deceleration, int closest_waypoint)
+void VelocitySetPath::avoidSuddenAceleration(double deceleration, int closest_waypoint)
 {
   double changed_vel;
-  double interval = getInterval();
-  double temp1 = current_velocity * current_velocity;
+  double interval = calcInterval(0, 1);
+  double temp1 = current_vel_ * current_vel_;
   double temp2 = 2 * deceleration * interval;
   double velocity_offset = 1.389; // m/s
 
@@ -111,56 +121,58 @@ void VelocitySetPath::avoidSuddenAceleration(double current_velocity, double dec
     if (!checkWaypoint(closest_waypoint + i, "avoidSuddenAceleration"))
       return;
     changed_vel = sqrt(temp1 + temp2 * (double)(i + 1)) + velocity_offset;
-    if (changed_vel > current_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x)
+    if (changed_vel > prev_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x)
       return;
-    current_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = changed_vel;
+    new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = changed_vel;
   }
 
   return;
 }
 
-void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double current_velocity, double deceleration, int closest_waypoint)
+void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double deceleration, int closest_waypoint)
 {
   int i = 0;
   int fill_in_zero = 20;
   int fill_in_vel = 15;
   int examin_range = 1;  // need to change according to waypoint interval?
   int num;
-  double interval = getInterval();
+  double interval = calcInterval(0, 1);
   double changed_vel;
 
   for (int j = -1; j < examin_range; j++)
   {
     if (!checkWaypoint(closest_waypoint + j, "avoidSuddenBraking"))
       return;
-    if (getWaypointVelocityMPS(closest_waypoint + j) <
-        current_velocity - velocity_change_limit)  // we must change waypoints
+    if (new_waypoints_.waypoints[closest_waypoint + j].twist.twist.linear.x <
+        current_vel_ - velocity_change_limit)  // we must change waypoints
       break;
     if (j == examin_range - 1)  // we don't have to change waypoints
       return;
   }
+
+  ROS_INFO("avoid sudden braking!!");
 
   // fill in waypoints velocity behind vehicle
   for (num = closest_waypoint - 1; fill_in_vel > 0; fill_in_vel--)
   {
     if (!checkWaypoint(num - fill_in_vel, "avoidSuddenBraking"))
       continue;
-    current_waypoints_.waypoints[num - fill_in_vel].twist.twist.linear.x = current_velocity;
+    new_waypoints_.waypoints[num - fill_in_vel].twist.twist.linear.x = current_vel_;
   }
 
   // decelerate gradually
-  double temp1 = (current_velocity - velocity_change_limit + 1.389) * (current_velocity - velocity_change_limit + 1.389);
+  double temp1 = (current_vel_ - velocity_change_limit + 1.389) * (current_vel_ - velocity_change_limit + 1.389);
   double temp2 = 2 * deceleration * interval;
   for (num = closest_waypoint - 1;; num++)
   {
-    if (num >= getSize())
+    if (num >= getPrevWaypointsSize())
       return;
     if (!checkWaypoint(num, "avoidSuddenBraking"))
       continue;
     changed_vel = temp1 - temp2 * (double)i;  // sqrt(v^2 - 2*a*x)
     if (changed_vel <= 0)
       break;
-    current_waypoints_.waypoints[num].twist.twist.linear.x = sqrt(changed_vel);
+    new_waypoints_.waypoints[num].twist.twist.linear.x = sqrt(changed_vel);
 
     i++;
   }
@@ -169,20 +181,20 @@ void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double cu
   {
     if (!checkWaypoint(num + j, "avoidSuddenBraking"))
       continue;
-    current_waypoints_.waypoints[num + j].twist.twist.linear.x = 0.0;
+    new_waypoints_.waypoints[num + j].twist.twist.linear.x = 0.0;
   }
 
 
   return;
 }
 
-void VelocitySetPath::changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration, const WayPoints& prev_path)
+void VelocitySetPath::changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration)
 {
   int i = 0;
   int close_waypoint_threshold = 4;
   int fill_in_zero = 20;
   double changed_vel;
-  double interval = getInterval();
+  double interval = calcInterval(0, 1);
 
   // change waypoints to decelerate
   for (int num = stop_waypoint; num > closest_waypoint - close_waypoint_threshold; num--)
@@ -192,14 +204,14 @@ void VelocitySetPath::changeWaypoints(int stop_waypoint, int closest_waypoint, d
 
     changed_vel = sqrt(2.0 * deceleration * (interval * i));  // sqrt(2*a*x)
 
-    waypoint_follower::waypoint initial_waypoint = prev_path.getCurrentWaypoints().waypoints[num];
+    waypoint_follower::waypoint initial_waypoint = prev_waypoints_.waypoints[num];
     if (changed_vel > initial_waypoint.twist.twist.linear.x)
     {  // avoid acceleration
-      current_waypoints_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
+      new_waypoints_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
     }
     else
     {
-      current_waypoints_.waypoints[num].twist.twist.linear.x = changed_vel;
+      new_waypoints_.waypoints[num].twist.twist.linear.x = changed_vel;
     }
 
     i++;
@@ -210,10 +222,54 @@ void VelocitySetPath::changeWaypoints(int stop_waypoint, int closest_waypoint, d
   {
     if (!checkWaypoint(stop_waypoint + j, "changeWaypoints"))
       continue;
-    current_waypoints_.waypoints[stop_waypoint + j].twist.twist.linear.x = 0.0;
+    new_waypoints_.waypoints[stop_waypoint + j].twist.twist.linear.x = 0.0;
   }
 
 
   return;
 }
 
+void VelocitySetPath::initializeNewWaypoints()
+{
+  new_waypoints_ = prev_waypoints_;
+}
+
+double VelocitySetPath::calcInterval(const int begin, const int end) const
+{
+  // check index
+  if (begin < 0 || begin >= getPrevWaypointsSize() || end < 0 || end >= getPrevWaypointsSize())
+  {
+    ROS_WARN("Invalid index");
+    return -1;
+  }
+
+  // Calculate the inteval of waypoints
+  double dist_sum = 0;
+  for (int i = begin; i < end; i++)
+  {
+    tf::Vector3 v1(prev_waypoints_.waypoints[i].pose.pose.position.x,
+                   prev_waypoints_.waypoints[i].pose.pose.position.y, 0);
+
+    tf::Vector3 v2(prev_waypoints_.waypoints[i + 1].pose.pose.position.x,
+                   prev_waypoints_.waypoints[i + 1].pose.pose.position.y, 0);
+
+    dist_sum += tf::tfDistance(v1, v2);
+  }
+
+  return dist_sum;
+}
+
+
+void VelocitySetPath::waypointsCallback(const waypoint_follower::laneConstPtr& msg)
+{
+  prev_waypoints_ = *msg;
+  new_waypoints_ = *msg;
+
+  if (!set_path_)
+    set_path_ = true;
+}
+
+void VelocitySetPath::currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+  current_vel_ = msg->twist.linear.x;
+}
