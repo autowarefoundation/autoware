@@ -124,7 +124,7 @@ void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const d
 {
   geometry_msgs::TwistStamped ts;
   ts.header.stamp = ros::Time::now();
-  ts.twist.linear.x = can_get_curvature ? command_linear_velocity_ : 0;
+  ts.twist.linear.x = can_get_curvature ? computeCommandVelocity() : 0;
   ts.twist.angular.z = can_get_curvature ? kappa * ts.twist.linear.x : 0;
   pub1_.publish(ts);
 }

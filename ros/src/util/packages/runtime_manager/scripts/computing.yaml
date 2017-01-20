@@ -1291,9 +1291,9 @@ params :
       min   : 0
       max   : 90
       v     : 0   
-    - name    : linear_interpolate_mode
+    - name    : is_linear_interpolation
       desc    : linear_interpolate_mode desc sample
-      label   : 'Linear Interpolate'
+      label   : 'Linear Interpolation'
       kind    : checkbox
       v       : True
       cmd_param :
