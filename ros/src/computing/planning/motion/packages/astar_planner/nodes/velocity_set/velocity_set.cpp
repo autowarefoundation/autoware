@@ -391,61 +391,42 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
 
 EControl obstacleDetection(int closest_waypoint, const waypoint_follower::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo vs_info, const ros::Publisher& detection_range_pub, const ros::Publisher& obstacle_pub, int* obstacle_waypoint)
 {
-  static int false_count = 0;
-  static EControl prev_detection = KEEP;
-  static int prev_obstacle_waypoint = -1;
-
   ObstaclePoints obstacle_points;
   EControl detection_result = pointsDetection(vs_info.getPoints(), closest_waypoint, lane, crosswalk, vs_info, obstacle_waypoint, &obstacle_points);
   displayDetectionRange(lane, crosswalk, closest_waypoint, detection_result, *obstacle_waypoint, vs_info.getStopRange(), vs_info.getDecelerationRange(), detection_range_pub);
 
-  if (prev_detection == KEEP)
-  {
-    if (detection_result != KEEP)
-    {  // found obstacle
-      displayObstacle(detection_result, obstacle_points, obstacle_pub);
-      prev_detection = detection_result;
-      // SoundPlay();
-      false_count = 0;
-      prev_obstacle_waypoint = *obstacle_waypoint;
-      return detection_result;
-    }
-    else
-    {  // no obstacle
-      prev_detection = KEEP;
-      return detection_result;
-    }
-  }
-  else
-  {  // prev_detection = STOP or DECELERATE
-    if (detection_result != KEEP)
-    {  // found obstacle
-      displayObstacle(detection_result, obstacle_points, obstacle_pub);
-      prev_detection = detection_result;
-      false_count = 0;
-      prev_obstacle_waypoint = *obstacle_waypoint;
-      return detection_result;
-    }
-    else
-    {  // no obstacle
-      false_count++;
+  static int false_count = 0;
+  static EControl prev_detection = KEEP;
+  static int prev_obstacle_waypoint = -1;
 
-      // fail-safe
-      if (false_count >= LOOP_RATE / 2)
-      {
-        *obstacle_waypoint = -1;
-        false_count = 0;
-        prev_detection = KEEP;
-        return detection_result;
-      }
-      else
-      {
-        *obstacle_waypoint = prev_obstacle_waypoint;
-        displayObstacle(OTHERS, obstacle_points, obstacle_pub);
-        return prev_detection;
-      }
+  // stop or decelerate because we found obstacles
+  if (detection_result == STOP || detection_result == DECELERATE)
+  {
+    displayObstacle(detection_result, obstacle_points, obstacle_pub);
+      prev_detection = detection_result;
+      false_count = 0;
+      prev_obstacle_waypoint = *obstacle_waypoint;
+      return detection_result;
+  }
+
+  // there are no obstacles, but wait a little for safety
+  if (prev_detection == STOP || prev_detection == DECELERATE)
+  {
+    false_count++;
+
+    if (false_count < LOOP_RATE / 2)
+    {
+      *obstacle_waypoint = prev_obstacle_waypoint;
+      displayObstacle(OTHERS, obstacle_points, obstacle_pub);
+      return prev_detection;
     }
   }
+
+  // there are no obstacles, so we move forward
+  *obstacle_waypoint = -1;
+  false_count = 0;
+  prev_detection = KEEP;
+  return detection_result;
 }
 
 void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_result, int closest_waypoint, int obstacle_waypoint, const ros::Publisher& temporal_waypoints_pub, VelocitySetPath* vs_path)
