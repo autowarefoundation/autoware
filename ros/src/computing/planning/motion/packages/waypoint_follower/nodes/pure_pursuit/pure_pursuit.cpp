@@ -240,7 +240,7 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
     return false;
   }
 
-  // if g_linear_interpolate_mode is false or next waypoint is first or last
+  // if is_linear_interpolation_ is false or next waypoint is first or last
   if (!is_linear_interpolation_ || next_waypoint_number_ == 0 ||
       next_waypoint_number_ == (static_cast<int>(current_waypoints_.size() - 1)))
   {
