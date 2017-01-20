@@ -40,8 +40,8 @@
 namespace
 {
 constexpr int LOOP_RATE = 10;
-constexpr double g_deceleration_search_distance = 30;
-constexpr double g_search_distance = 60;
+constexpr double DECELERATION_SEARCH_DISTANCE = 30;
+constexpr double STOP_SEARCH_DISTANCE = 60;
 
 
 // Display a detected obstacle
@@ -164,7 +164,7 @@ void displayDetectionRange(const waypoint_follower::lane& lane, const CrossWalk&
   crosswalk_marker.frame_locked = true;
 
   // set marker points coordinate
-  for (int i = 0; i < g_search_distance; i++)
+  for (int i = 0; i < STOP_SEARCH_DISTANCE; i++)
   {
     if (closest_waypoint < 0 || i + closest_waypoint > static_cast<int>(lane.waypoints.size()) - 1)
       break;
@@ -174,7 +174,7 @@ void displayDetectionRange(const waypoint_follower::lane& lane, const CrossWalk&
 
     waypoint_marker_stop.points.push_back(point);
 
-    if (i > g_deceleration_search_distance)
+    if (i > DECELERATION_SEARCH_DISTANCE)
       continue;
     waypoint_marker_decelerate.points.push_back(point);
   }
@@ -236,7 +236,7 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
 {
   int stop_obstacle_waypoint = -1;
   // start search from the closest waypoint
-  for (int i = closest_waypoint; i < closest_waypoint + g_search_distance; i++)
+  for (int i = closest_waypoint; i < closest_waypoint + STOP_SEARCH_DISTANCE; i++)
   {
     // reach the end of waypoints
     if (i >= static_cast<int>(lane.waypoints.size()))
@@ -295,7 +295,7 @@ int detectDecelerateObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const
 {
   int decelerate_obstacle_waypoint = -1;
   // start search from the closest waypoint
-  for (int i = closest_waypoint; i < closest_waypoint + g_deceleration_search_distance; i++)
+  for (int i = closest_waypoint; i < closest_waypoint + DECELERATION_SEARCH_DISTANCE; i++)
   {
     // reach the end of waypoints
     if (i >= static_cast<int>(lane.waypoints.size()))
@@ -522,7 +522,7 @@ int main(int argc, char **argv)
     closest_waypoint_pub.publish(closest_waypoint_msg);
 
     if (use_crosswalk_detection)
-      crosswalk.setDetectionWaypoint(crosswalk.findClosestCrosswalk(closest_waypoint, vs_path.getPrevWaypoints(), g_search_distance));
+      crosswalk.setDetectionWaypoint(crosswalk.findClosestCrosswalk(closest_waypoint, vs_path.getPrevWaypoints(), STOP_SEARCH_DISTANCE));
 
     int obstacle_waypoint = -1;
     EControl detection_result = obstacleDetection(closest_waypoint, vs_path.getPrevWaypoints(), crosswalk, vs_info, detection_range_pub, obstacle_pub, &obstacle_waypoint);
