@@ -87,7 +87,7 @@ void displayObstacle(const EControl &kind, const ObstaclePoints& obstacle_points
   marker.lifetime = ros::Duration(0.1);
   marker.frame_locked = true;
 
-  obstacle_pub.publish(marker);
+  //obstacle_pub.publish(marker);
 }
 
 void displayDetectionRange(const waypoint_follower::lane& lane, const CrossWalk& crosswalk, const int closest_waypoint, const EControl &kind, const int obstacle_waypoint, const double stop_range, const double deceleration_range, const ros::Publisher& detection_range_pub)
