@@ -37,6 +37,7 @@
 #include <tf/tf.h>
 #include <iostream>
 #include <std_msgs/Int32.h>
+#include <random>
 
 #include "waypoint_follower/libwaypoint_follower.h"
 
@@ -56,6 +57,8 @@ WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
 ros::Publisher g_velocity_publisher;
 int32_t g_closest_waypoint = -1;
+double g_position_error;
+double g_angle_error;
 
 constexpr int LOOP_RATE = 50; // 50Hz
 
@@ -180,10 +183,17 @@ void publishOdometry()
   current_time = ros::Time::now();
 
   // compute odometry in a typical way given the velocities of the robot
+  std::random_device rnd;
+  std::mt19937 mt(rnd());
+  std::uniform_real_distribution<double> rnd_dist(0.0, 2.0);
+  double rnd_value_x = rnd_dist(mt) - 1.0;
+  double rnd_value_y = rnd_dist(mt) - 1.0;
+  double rnd_value_th = rnd_dist(mt) - 1.0;
+
   double dt = (current_time - last_time).toSec();
-  double delta_x = (vx * cos(th)) * dt;
-  double delta_y = (vx * sin(th)) * dt;
-  double delta_th = vth * dt;
+  double delta_x = (vx * cos(th)) * dt + rnd_value_x * g_position_error;
+  double delta_y = (vx * sin(th)) * dt + rnd_value_y * g_position_error;
+  double delta_th = vth * dt + rnd_value_th * g_angle_error * M_PI / 180;
 
   pose.position.x += delta_x;
   pose.position.y += delta_y;
@@ -245,6 +255,10 @@ int main(int argc, char **argv)
   double accel_rate;
   private_nh.param("accel_rate",accel_rate,double(1.0));
   ROS_INFO_STREAM("accel_rate : " << accel_rate);
+
+
+  private_nh.param("position_error", g_position_error, double(0.0));
+  private_nh.param("angle_error", g_angle_error, double(0.0));
   // publish topic
   g_odometry_publisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
   g_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("sim_velocity", 10);
