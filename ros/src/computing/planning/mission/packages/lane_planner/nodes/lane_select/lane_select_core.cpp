@@ -43,6 +43,7 @@ LaneSelectNode::LaneSelectNode()
   , is_current_pose_subscribed_(false)
   , is_current_velocity_subscribed_(false)
   , last_change_time_(ros::Time::now())
+  , current_change_flag_(ChangeFlag::unknown)
   , current_state_("LANE_CHANGE")
   , LANE_SIZE_(1.0)
 {
@@ -64,6 +65,7 @@ void LaneSelectNode::initForROS()
   // setup publisher
   pub1_ = nh_.advertise<waypoint_follower::lane>("base_waypoints", 10);
   pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 10);
+  pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 10);
   vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 10);
 
   // get from rosparam
@@ -125,21 +127,61 @@ void LaneSelectNode::processing()
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
   ROS_INFO("current change_flag: %d", enumToInteger(std::get<2>(tuple_vec_.at(current_lane_idx_))));
 
-  const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(current_lane_idx_));
-  // if change flag of current_lane is left or right, lane change
+  updateChangeFlag();
   if (current_state_ == "LANE_CHANGE")
-  {
-    if (change_flag == ChangeFlag::right && right_lane_idx_ != -1)
-      if (std::get<1>(tuple_vec_.at(right_lane_idx_)) != -1)
-        changeLane();
-
-    if (change_flag == ChangeFlag::left && left_lane_idx_ != -1)
-      if (std::get<1>(tuple_vec_.at(left_lane_idx_)) != -1)
-        changeLane();
-  }
+    changeLane();
 
   publish();
   publishVisualizer();
+}
+
+
+
+void LaneSelectNode::updateChangeFlag()
+{
+  if(current_change_flag_ == ChangeFlag::unknown || current_change_flag_ == ChangeFlag::straight)
+  {
+    current_change_flag_ = std::get<2>(tuple_vec_.at(current_lane_idx_));
+
+    if ((current_change_flag_ == ChangeFlag::left && left_lane_idx_ == -1) ||
+        (current_change_flag_ == ChangeFlag::right && right_lane_idx_ == -1))
+      current_change_flag_ = ChangeFlag::straight;
+    return;
+  }
+
+  // if current change flag is right or left
+  double a, b, c;
+
+  if (std::get<1>(tuple_vec_.at(current_lane_idx_)) == 0 ||
+                  std::get<1>(tuple_vec_.at(current_lane_idx_)) ==
+                    static_cast<int32_t>(std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints.size()))
+  {
+    geometry_msgs::Point &closest_p = std::get<0>(tuple_vec_.at(current_lane_idx_))
+                                          .waypoints.at(std::get<1>(tuple_vec_.at(current_lane_idx_)))
+                                          .pose.pose.position;
+    geometry_msgs::Point &front_of_closest_p = std::get<0>(tuple_vec_.at(current_lane_idx_))
+                                                   .waypoints.at(std::get<1>(tuple_vec_.at(current_lane_idx_)) - 1)
+                                                   .pose.pose.position;
+    getLinearEquation(front_of_closest_p, closest_p, &a, &b, &c);
+  }
+  else
+  {
+    geometry_msgs::Point &closest_p = std::get<0>(tuple_vec_.at(current_lane_idx_))
+                                          .waypoints.at(std::get<1>(tuple_vec_.at(current_lane_idx_)) - 1)
+                                          .pose.pose.position;
+    geometry_msgs::Point &front_of_closest_p = std::get<0>(tuple_vec_.at(current_lane_idx_))
+                                                   .waypoints.at(std::get<1>(tuple_vec_.at(current_lane_idx_)))
+                                                   .pose.pose.position;
+    getLinearEquation(front_of_closest_p, closest_p, &a, &b, &c);
+  }
+  geometry_msgs::Point &current_point = current_pose_.pose.position;
+  double d = getDistanceBetweenLineAndPoint(current_point, a, b, c);
+
+  double threshold = 1.0;
+  if(d < threshold)
+  {
+    current_change_flag_ = std::get<2>(tuple_vec_.at(current_lane_idx_));
+  }
 }
 
 void LaneSelectNode::changeLane()
@@ -149,14 +191,27 @@ void LaneSelectNode::changeLane()
   if (dt < lane_change_interval_)
     return;
 
-  const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(current_lane_idx_));
-  current_lane_idx_ = change_flag == ChangeFlag::right ? right_lane_idx_ : change_flag == ChangeFlag::left
-                                                                               ? left_lane_idx_
-                                                                               : current_lane_idx_;
+  if (current_change_flag_ == ChangeFlag::right && right_lane_idx_ != -1)
+  {
+    if (std::get<1>(tuple_vec_.at(right_lane_idx_)) != -1)
+    {
+      current_lane_idx_ = right_lane_idx_;
+      findNeighborLanes();
+      last_change_time_ = ros::Time::now();
+      return;
+    }
+  }
 
-  findNeighborLanes();
-
-  last_change_time_ = ros::Time::now();
+  if (current_change_flag_ == ChangeFlag::left && left_lane_idx_ != -1)
+  {
+    if (std::get<1>(tuple_vec_.at(left_lane_idx_)) != -1)
+    {
+      current_lane_idx_ = left_lane_idx_;
+      findNeighborLanes();
+      last_change_time_ = ros::Time::now();
+      return;
+    }
+  }
 }
 
 bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
@@ -571,6 +626,10 @@ void LaneSelectNode::publish()
   closest_waypoint.data = std::get<1>(tuple_vec_.at(current_lane_idx_));
   pub2_.publish(closest_waypoint);
 
+  std_msgs::Int32 change_flag;
+  change_flag.data = enumToInteger(current_change_flag_);
+  pub3_.publish(change_flag);
+
   is_current_pose_subscribed_ = false;
   is_current_velocity_subscribed_ = false;
 }
@@ -736,6 +795,34 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
   int32_t found_number = idx_vec.at(static_cast<uint32_t>(std::distance(dist_vec.begin(), itr)));
   // ROS_INFO("found number: %d",found_number);
   return found_number;
+}
+
+// let the linear equation be "ax + by + c = 0"
+// if there are two points (x1,y1) , (x2,y2), a = "y2-y1, b = "(-1) * x2 - x1" ,c = "(-1) * (y2-y1)x1 + (x2-x1)y1"
+bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *a, double *b, double *c)
+{
+  //(x1, y1) = (start.x, star.y), (x2, y2) = (end.x, end.y)
+  double sub_x = fabs(start.x - end.x);
+  double sub_y = fabs(start.y - end.y);
+  double error = pow(10, -5);  // 0.00001
+
+  if (sub_x < error && sub_y < error)
+  {
+    ROS_INFO("two points are the same point!!");
+    return false;
+  }
+
+  *a = end.y - start.y;
+  *b = (-1) * (end.x - start.x);
+  *c = (-1) * (end.y - start.y) * start.x + (end.x - start.x) * start.y;
+
+  return true;
+}
+double getDistanceBetweenLineAndPoint(geometry_msgs::Point point, double a, double b, double c)
+{
+  double d = fabs(a * point.x + b * point.y + c) / sqrt(pow(a, 2) + pow(b, 2));
+
+  return d;
 }
 
 }  // lane_planner

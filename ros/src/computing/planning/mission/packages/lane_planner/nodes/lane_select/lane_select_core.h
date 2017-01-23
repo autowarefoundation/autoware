@@ -78,7 +78,7 @@ private:
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher pub1_, pub2_;
+  ros::Publisher pub1_, pub2_, pub3_;
   ros::Publisher vis_pub1_;
 
   // subscriber
@@ -92,6 +92,7 @@ private:
                                                                                      // change_flag
   bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_;
   ros::Time last_change_time_;
+  ChangeFlag current_change_flag_;
 
   // rosparam
   double distance_threshold_;
@@ -130,6 +131,7 @@ private:
   void findCurrentLane();
   void findNeighborLanes();
   void changeLane();
+  void updateChangeFlag();
 };
 
 int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, const geometry_msgs::Pose &current_pose,
@@ -143,5 +145,7 @@ void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point,
 std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
                                                                       const geometry_msgs::Pose &pose);
 double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry_msgs::Pose &current_pose);
+bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *a, double *b, double *c);
+double getDistanceBetweenLineAndPoint(geometry_msgs::Point point, double sa, double b, double c);
 }
 #endif  // LANE_SELECT_CORE_H
