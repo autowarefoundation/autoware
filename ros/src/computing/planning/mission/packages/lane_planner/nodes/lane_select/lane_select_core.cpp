@@ -109,6 +109,17 @@ void LaneSelectNode::processing()
     return;
   }
 
+  if(right_lane_idx_ != -1)
+  {
+    if (std::get<1>(tuple_vec_.at(right_lane_idx_)) == -1)
+      right_lane_idx_ = -1;
+  }
+  if(left_lane_idx_ != -1)
+  {
+    if (std::get<1>(tuple_vec_.at(left_lane_idx_)) == -1)
+      left_lane_idx_ = -1;
+  }
+
   ROS_INFO("current_lane_idx: %d", current_lane_idx_);
   ROS_INFO("right_lane_idx: %d", right_lane_idx_);
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
