@@ -30,7 +30,6 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <std_msgs/Int32.h>
 #include <iostream>
 
 #include "libvelocity_set.h"
