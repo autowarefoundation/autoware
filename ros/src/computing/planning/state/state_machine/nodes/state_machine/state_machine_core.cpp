@@ -103,7 +103,7 @@ void StateMachineNode::callbackFromLightColorManaged(const runtime_manager::traf
 
 void StateMachineNode::callbackFromChangeFlag(const std_msgs::Int32ConstPtr& msg)
 {
-  ROS_INFO("Change flag callback");
+  ROS_INFO("Change flag callback: %d",msg->data);
   sc_.setChangeFlag(msg->data);
   sc_.update();
   publish();
