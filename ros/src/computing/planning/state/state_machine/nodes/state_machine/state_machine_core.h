@@ -62,7 +62,7 @@ private:
   ros::Publisher pub_;
 
   // subscriber
-  ros::Subscriber sub1_, sub2_;
+  ros::Subscriber sub1_, sub2_, sub3_;
 
   // variables
   bool is_manual_light_detection_;
@@ -70,6 +70,7 @@ private:
   // callbacks
   void callbackFromLightColor(const runtime_manager::traffic_lightConstPtr &msg);
   void callbackFromLightColorManaged(const runtime_manager::traffic_lightConstPtr &msg);
+  void callbackFromChangeFlag(const std_msgs::Int32ConstPtr& msg);
 
   // initializer
   void initForROS();

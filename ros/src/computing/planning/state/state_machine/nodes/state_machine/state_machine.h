@@ -223,7 +223,8 @@ private:
 class StateContext
 {
 public:
-  StateContext() : state_(StateMoveForward::create()), light_color_(TrafficLight::UNKNOWN){};
+  StateContext()
+    : state_(StateMoveForward::create()), light_color_(TrafficLight::UNKNOWN), change_flag_(ChangeFlag::unknown){};
   void setState(std::unique_ptr<BaseState> newState)
   {
     state_ = std::move(newState);

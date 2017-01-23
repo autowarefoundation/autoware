@@ -53,6 +53,8 @@ void StateMachineNode::initForROS()
   sub1_ = nh_.subscribe("light_color", 100, &StateMachineNode::callbackFromLightColor, this);
   sub2_ = nh_.subscribe("light_color_managed", 100, &StateMachineNode::callbackFromLightColorManaged, this);
 
+  sub3_ = nh_.subscribe("change_flag", 100, &StateMachineNode::callbackFromChangeFlag, this);
+
   // setup publisher
   pub_ = nh_.advertise<std_msgs::String>("state", 10);
 }
@@ -99,4 +101,11 @@ void StateMachineNode::callbackFromLightColorManaged(const runtime_manager::traf
   publish();
 }
 
+void StateMachineNode::callbackFromChangeFlag(const std_msgs::Int32ConstPtr& msg)
+{
+  ROS_INFO("Change flag callback");
+  sc_.setChangeFlag(msg->data);
+  sc_.update();
+  publish();
+}
 }  // state_machine
