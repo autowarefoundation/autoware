@@ -43,10 +43,15 @@ void StateMoveForward::update(StateContext *context)
   // if light is RED, Go to TRAFFIC_LIGHT_STOP
   if (context->getLightColor() == TrafficLight::RED)
     context->setState(StateTrafficLightStop::create());
+
+  if(context->getChangeFlag() != ChangeFlag::straight)
+    context->setState(StateLaneChange::create());
 }
 
 void StateLaneChange::update(StateContext *context)
 {
+  if(context->getChangeFlag() != ChangeFlag::right || context->getChangeFlag() != ChangeFlag::left)
+    context->setState(StateMoveForward::create());
 }
 
 void StateStopSignStop::update(StateContext *context)

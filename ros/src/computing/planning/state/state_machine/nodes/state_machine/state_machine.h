@@ -246,6 +246,10 @@ public:
   {
     return light_color_;
   }
+  ChangeFlag getChangeFlag() const
+  {
+    return change_flag_;
+  }
   int32_t getCurrentState() const
   {
     return state_->getStateName();
