@@ -514,14 +514,6 @@ int main(int argc, char **argv)
       continue;
     }
 
-    /*
-    int closest_waypoint = getClosestWaypoint(vs_path.getPrevWaypoints(), vs_info.getControlPose().pose);
-
-    std_msgs::Int32 closest_waypoint_msg;
-    closest_waypoint_msg.data = closest_waypoint;
-    closest_waypoint_pub.publish(closest_waypoint_msg);
-    */
-
     if (use_crosswalk_detection)
       crosswalk.setDetectionWaypoint(crosswalk.findClosestCrosswalk(vs_info.getClosestWaypoint(), vs_path.getPrevWaypoints(), STOP_SEARCH_DISTANCE));
 
