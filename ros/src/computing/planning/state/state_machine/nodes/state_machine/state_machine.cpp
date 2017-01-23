@@ -43,13 +43,13 @@ void StateMoveForward::update(StateContext *context)
   if (context->getLightColor() == TrafficLight::RED)
     context->setState(StateTrafficLightStop::create());
 
-  if(context->getChangeFlag() != ChangeFlag::straight)
+  if(context->getChangeFlag() == ChangeFlag::right || context->getChangeFlag() == ChangeFlag::left)
     context->setState(StateLaneChange::create());
 }
 
 void StateLaneChange::update(StateContext *context)
 {
-  if(context->getChangeFlag() != ChangeFlag::right || context->getChangeFlag() != ChangeFlag::left)
+  if(context->getChangeFlag() == ChangeFlag::straight)
     context->setState(StateMoveForward::create());
 }
 
