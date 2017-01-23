@@ -42,9 +42,10 @@ LaneSelectNode::LaneSelectNode()
   , is_lane_array_subscribed_(false)
   , is_current_pose_subscribed_(false)
   , is_current_velocity_subscribed_(false)
+  , is_current_state_subscribed_(false)
   , last_change_time_(ros::Time::now())
   , current_change_flag_(ChangeFlag::unknown)
-  , current_state_("LANE_CHANGE")
+  , current_state_("UNKNOWN")
   , LANE_SIZE_(1.0)
 {
   initForROS();
@@ -61,6 +62,7 @@ void LaneSelectNode::initForROS()
   sub1_ = nh_.subscribe("traffic_waypoints_array", 100, &LaneSelectNode::callbackFromLaneArray, this);
   sub2_ = nh_.subscribe("current_pose", 100, &LaneSelectNode::callbackFromPoseStamped, this);
   sub3_ = nh_.subscribe("current_velocity", 100, &LaneSelectNode::callbackFromTwistStamped, this);
+  sub4_ = nh_.subscribe("state", 100, &LaneSelectNode::callbackFromState, this);
 
   // setup publisher
   pub1_ = nh_.advertise<waypoint_follower::lane>("base_waypoints", 10);
@@ -632,6 +634,7 @@ void LaneSelectNode::publish()
 
   is_current_pose_subscribed_ = false;
   is_current_velocity_subscribed_ = false;
+  is_current_state_subscribed_ = false;
 }
 
 void LaneSelectNode::callbackFromLaneArray(const waypoint_follower::LaneArrayConstPtr &msg)
@@ -665,6 +668,14 @@ void LaneSelectNode::callbackFromTwistStamped(const geometry_msgs::TwistStampedC
 {
   current_velocity_ = *msg;
   is_current_velocity_subscribed_ = true;
+
+  processing();
+}
+
+void LaneSelectNode::callbackFromState(const std_msgs::StringConstPtr &msg)
+{
+  current_state_ = msg->data;
+  is_current_state_subscribed_ = true;
 
   processing();
 }

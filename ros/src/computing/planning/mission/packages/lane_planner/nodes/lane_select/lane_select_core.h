@@ -37,6 +37,7 @@
 #include <tf/transform_datatypes.h>
 #include <std_msgs/Int32.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <std_msgs/String.h>
 
 // C++ includes
 #include <iostream>
@@ -82,7 +83,7 @@ private:
   ros::Publisher vis_pub1_;
 
   // subscriber
-  ros::Subscriber sub1_, sub2_, sub3_;
+  ros::Subscriber sub1_, sub2_, sub3_, sub4_;
 
   // variables
   int32_t current_lane_idx_;  // the index of the lane we are driving
@@ -90,7 +91,7 @@ private:
   int32_t left_lane_idx_;
   std::vector<std::tuple<waypoint_follower::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint,
                                                                                      // change_flag
-  bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_;
+  bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_, is_current_state_subscribed_;
   ros::Time last_change_time_;
   ChangeFlag current_change_flag_;
 
@@ -107,6 +108,7 @@ private:
   void callbackFromLaneArray(const waypoint_follower::LaneArrayConstPtr &msg);
   void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
+  void callbackFromState(const std_msgs::StringConstPtr &msg);
 
   // initializer
   void initForROS();
