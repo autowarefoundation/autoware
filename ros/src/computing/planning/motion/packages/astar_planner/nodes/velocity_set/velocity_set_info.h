@@ -34,6 +34,7 @@
 #include <ros/ros.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Int32.h>
 
 #include "runtime_manager/ConfigVelocitySet.h"
 
@@ -54,6 +55,7 @@ class VelocitySetInfo
   pcl::PointCloud<pcl::PointXYZ> points_;
   geometry_msgs::PoseStamped localizer_pose_;  // pose of sensor
   geometry_msgs::PoseStamped control_pose_;    // pose of base_link
+  int closest_waypoint_;
   bool set_pose_;
 
  public:
@@ -65,6 +67,7 @@ class VelocitySetInfo
   void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
   void controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
+  void closestWaypointCallback(const std_msgs::Int32ConstPtr &msg);
 
   void clearPoints();
 
@@ -126,6 +129,11 @@ class VelocitySetInfo
   geometry_msgs::PoseStamped getLocalizerPose() const
   {
     return localizer_pose_;
+  }
+
+  int getClosestWaypoint() const
+  {
+    return closest_waypoint_;
   }
 
   bool getSetPose() const

@@ -40,6 +40,7 @@ VelocitySetInfo::VelocitySetInfo()
     decel_(0.8),
     velocity_change_limit_(2.77),
     temporal_waypoints_size_(100),
+    closest_waypoint_(-1),
     set_pose_(false)
 {
 }
@@ -95,4 +96,9 @@ void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstP
 void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   localizer_pose_ = *msg;
+}
+
+void VelocitySetInfo::closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
+{
+  closest_waypoint_ = msg->data;
 }
