@@ -42,6 +42,7 @@ enum class StateList : int32_t
   TRAFFIC_LIGHT_STOP,
   LANE_CHANGE,
   STOP_SIGN_STOP,
+  OBSTACLE_AVOIDANCE,
 
   MISSION_COMPLETE = 100,
   EMERGENCY = -1,
@@ -174,6 +175,28 @@ class StateStopSignStop : public BaseState
 
  private:
   StateStopSignStop() = default;
+};
+
+// State : Obstacle Avoidance
+class StateObstacleAvoidance : public BaseState
+{
+ public:
+  void update(StateContext *context) override;
+  int32_t getStateName() override
+  {
+    return enumToInteger(StateList::STOP_SIGN_STOP);
+  }
+  std::unique_ptr<std::string> getStateNameString() override
+  {
+    return std::unique_ptr<std::string>(new std::string("OBSTACLE_AVOIDANCE"));
+  }
+  static std::unique_ptr<BaseState> create()
+  {
+    return std::unique_ptr<BaseState>(new StateObstacleAvoidance);
+  };
+
+ private:
+  StateObstacleAvoidance() = default;
 };
 
 // State : EMERGENCY

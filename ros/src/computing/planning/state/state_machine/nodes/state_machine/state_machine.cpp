@@ -68,6 +68,11 @@ void StateEmergency::update(StateContext *context)
   // Emergency
 }
 
+void StateObstacleAvoidance::update(StateContext *context)
+{
+  // Obstacle Avoidance
+}
+
 
 
 }  // state_machine
