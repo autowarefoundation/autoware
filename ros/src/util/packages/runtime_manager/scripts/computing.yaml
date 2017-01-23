@@ -1337,13 +1337,13 @@ params :
       label : Deceleration Range (m)
       min   : 0
       max   : 10
-      v     : 1.7
+      v     : 0
     - name  : threshold_points
       desc  : threshold_points desc sample
       label : Points Threshold
       min   : 0
       max   : 30
-      v     : 15
+      v     : 5
     - name  : detection_height_top
       desc  : detection_height_top desc sample
       label : Detection Height Top (m)
@@ -1361,13 +1361,13 @@ params :
       label : Deceleration (m/s^2)
       min   : 0
       max   : 5
-      v     : 1.0
+      v     : 0.7
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
       min   : 5
       max   : 40
-      v     : 15.0
+      v     : 7.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
       label : Temporal Waypoints (m)
@@ -1404,7 +1404,7 @@ params :
       label : Deceleration Range (m)
       min   : 0
       max   : 10
-      v     : 1.7
+      v     : 0
     - name  : threshold_points
       desc  : threshold_points desc sample
       label : Points Threshold
@@ -1428,13 +1428,13 @@ params :
       label : Deceleration (m/s^2)
       min   : 0
       max   : 5
-      v     : 1.0
+      v     : 0.7
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
       min   : 5
       max   : 40
-      v     : 15.0
+      v     : 7.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
       label : Temporal Waypoints (m)
