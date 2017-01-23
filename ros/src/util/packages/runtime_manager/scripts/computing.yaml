@@ -1270,14 +1270,14 @@ params :
     - name  : lookahead_ratio
       desc  : lookahead_ratio desc sample
       label : lookahead_ratio
-      min   : 1.0
+      min   : 0.0
       max   : 5.0
       v     : 2.0
     - name  : minimum_lookahead_distance
       desc  : minimum_lookahead_distance desc sample
       label : minimum_lookahead_distance
-      min   : 2.0
-      max   : 10.0
+      min   : 0.0
+      max   : 20.0
       v     : 6.0
     - name  : displacement_threshold
       desc  : displacement_threshold desc sample
