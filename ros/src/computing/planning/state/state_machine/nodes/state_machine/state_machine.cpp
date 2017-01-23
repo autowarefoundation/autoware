@@ -34,7 +34,6 @@ namespace state_machine
 {
 void StateTrafficLightStop::update(StateContext *context)
 {
-  // if light is GREEN, Go to MOVE_FORWARD
   if (context->getLightColor() == TrafficLight::GREEN)
     context->setState(StateMoveForward::create());
 }
@@ -48,7 +47,6 @@ void StateMoveForward::update(StateContext *context)
 
 void StateLaneChange::update(StateContext *context)
 {
-  // lane change
 }
 
 void StateStopSignStop::update(StateContext *context)
