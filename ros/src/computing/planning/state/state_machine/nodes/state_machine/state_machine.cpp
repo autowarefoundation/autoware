@@ -58,4 +58,16 @@ void StateStopSignStop::update(StateContext *context)
   // stop sign stop
 }
 
+void StateMissionComplete::update(StateContext *context)
+{
+  // Mission complete
+}
+
+void StateEmergency::update(StateContext *context)
+{
+  // Emergency
+}
+
+
+
 }  // state_machine
