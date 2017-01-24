@@ -526,8 +526,16 @@ subs :
          gui  :
            initialize_source :
              flags : [ nl ]
+  - name : State
+    desc : State desc sample
+    subs :
+    - name : state_machine
+      desc : state_machine desc sample
+      subs :
+      - name : state_machine
+        desc : state_machine desc sample
+        cmd  : rosrun state_machine state_machine
 
-         
 buttons:
   car_dpm :
     param   : car_dpm
