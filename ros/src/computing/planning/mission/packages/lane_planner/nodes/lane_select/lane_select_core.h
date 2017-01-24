@@ -137,7 +137,7 @@ private:
 };
 
 int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, const geometry_msgs::Pose &current_pose,
-                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number);
+                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number, const double distance_threshold);
 
 double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geometry_msgs::Point &target2);
 

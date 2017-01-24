@@ -220,8 +220,8 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
 {
   for (auto &el : tuple_vec_)
   {
-    std::get<1>(el) =
-        getClosestWaypointNumber(std::get<0>(el), current_pose_.pose, current_velocity_.twist, std::get<1>(el));
+    std::get<1>(el) = getClosestWaypointNumber(std::get<0>(el), current_pose_.pose, current_velocity_.twist,
+                                               std::get<1>(el), distance_threshold_);
     ROS_INFO("closest: %d", std::get<1>(el));
 
     std::get<2>(el) = (std::get<1>(el) != -1)
@@ -735,7 +735,8 @@ double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry
 
 // get closest waypoint from current pose
 int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, const geometry_msgs::Pose &current_pose,
-                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number)
+                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number,
+                                 const double distance_threshold)
 {
   if (current_lane.waypoints.empty())
     return -1;
@@ -761,18 +762,16 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
   }
   else
   {
-    double ratio = 3;
-    double minimum_dt = 2.0;
-    double dt = current_velocity.linear.x * ratio > minimum_dt ? current_velocity.linear.x * ratio : minimum_dt;
-
-    if (dt <
+    if (distance_threshold <
         getTwoDimensionalDistance(current_lane.waypoints.at(previous_number).pose.pose.position, current_pose.position))
     {
       ROS_WARN("Current_pose is far away from previous closest waypoint. Initilized...");
       return -1;
     }
 
-    idx_vec.reserve(static_cast<uint32_t>(dt));
+    double ratio = 3;
+    double minimum_dt = 2.0;
+    double dt = current_velocity.linear.x * ratio > minimum_dt ? current_velocity.linear.x * ratio : minimum_dt;
 
     auto range_max = static_cast<uint32_t>(previous_number + dt) < current_lane.waypoints.size()
                          ? static_cast<uint32_t>(previous_number + dt)
