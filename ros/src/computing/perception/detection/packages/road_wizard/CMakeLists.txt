@@ -229,3 +229,50 @@ target_link_libraries(label_maker
   Qt5::Gui
   Qt5::Widgets
   )
+
+
+### region_tlr_ssd ###
+##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
+# set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
+set(SSD_CAFFE_PATH "$ENV{HOME}/test/caffe/distribute")
+####################################################################################################
+if(EXISTS "${SSD_CAFFE_PATH}")
+
+find_package(CUDA)
+pkg_check_modules(HDF5 hdf5)
+
+if(HDF5_FOUND)
+  include_directories(${HDF5_INCLUDE_DIRS})
+endif()
+
+add_executable(region_tlr_ssd
+  nodes/region_tlr_ssd/region_tlr_ssd.cpp
+  nodes/region_tlr_ssd/traffic_light_recognizer.cpp
+  )
+
+target_link_libraries(region_tlr_ssd
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${CUDA_LIBRARIES}
+  ${CUDA_CUBLAS_LIBRARIES}
+  ${CUDA_curand_LIBRARY}
+  ${SSD_CAFFE_PATH}/lib/libcaffe.so
+  glog
+  libcontext
+  )
+
+target_include_directories(region_tlr_ssd PRIVATE
+  ${SSD_CAFFE_PATH}/include
+  ${CUDA_INCLUDE_DIRS}
+  nodes/region_tlr_ssd/
+  )
+
+add_dependencies(region_tlr_ssd
+  cv_tracker_generate_messages_cpp
+  runtime_manager_generate_messages_cpp
+  road_wizard_generate_messages_cpp
+  )
+
+else()                          # if(EXISTS "${SSD_CAFFE_PATH}")
+  message("'SSD/Caffe' is not installed. 'region_tlr_ssd' will not be built.")
+endif()                         # if(EXISTS "${SSD_CAFFE_PATH}")
