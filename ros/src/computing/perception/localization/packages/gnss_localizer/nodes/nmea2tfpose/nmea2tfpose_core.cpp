@@ -110,29 +110,52 @@ void Nmea2TFPoseNode::callbackFromNmeaSentence(const nmea_msgs::Sentence::ConstP
   // QQ
   if (nmea.at(0).compare(0, 2, "QQ") == 0)
   {
-    orientation_time_ = stod(nmea.at(3));
-    roll_ = stod(nmea.at(4)) * M_PI / 180.;
-    pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
-    yaw_ = -1 * stod(nmea.at(6)) * M_PI / 180. + M_PI / 2;
-    orientation_stamp_ = msg->header.stamp;
+    try
+    {
+      orientation_time_ = stod(nmea.at(3));
+      roll_ = stod(nmea.at(4)) * M_PI / 180.;
+      pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
+      yaw_ = -1 * stod(nmea.at(6)) * M_PI / 180. + M_PI / 2;
+      orientation_stamp_ = msg->header.stamp;
+    }
+    catch (const std::exception &e)
+    {
+      ROS_WARN_STREAM("$QQ*** is invalid : " << e.what());
+    }
+    ROS_INFO("QQ is subscribed.");
   }
 
   if (nmea.at(0) == "$PASHR")
   {
-    orientation_time_ = stod(nmea.at(1));
-    roll_ = stod(nmea.at(4)) * M_PI / 180.;
-    pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
-    yaw_ = -1 * stod(nmea.at(2)) * M_PI / 180. + M_PI / 2;
+    try
+    {
+      orientation_time_ = stod(nmea.at(1));
+      roll_ = stod(nmea.at(4)) * M_PI / 180.;
+      pitch_ = -1 * stod(nmea.at(5)) * M_PI / 180.;
+      yaw_ = -1 * stod(nmea.at(2)) * M_PI / 180. + M_PI / 2;
+    }
+    catch (const std::exception &e)
+    {
+      ROS_WARN_STREAM("$PASHR is invalid : " << e.what());
+    }
   }
 
   // GGA
   if (nmea.at(0).compare(3, 3, "GGA") == 0)
   {
-    position_time_ = stod(nmea.at(1));
-    double lat = stod(nmea.at(2));
-    double lon = stod(nmea.at(4));
-    double h = stod(nmea.at(9));
-    geo_.set_llh_nmea_degrees(lat, lon, h);
+    try
+    {
+      position_time_ = stod(nmea.at(1));
+      double lat = stod(nmea.at(2));
+      double lon = stod(nmea.at(4));
+      double h = stod(nmea.at(9));
+      geo_.set_llh_nmea_degrees(lat, lon, h);
+    }
+    catch (const std::exception &e)
+    {
+      ROS_WARN_STREAM("$**GGA is invalid : " << e.what());
+    }
+
   }
 
   double timeout = 10.0;
