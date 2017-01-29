@@ -36,7 +36,7 @@ ENDIF()
 ###################################
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES libtraj_gen libvelocity_set
+  LIBRARIES libtraj_gen
   CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket vector_map #dbw_mkz_msgs
   DEPENDS gnss
 )
@@ -69,8 +69,8 @@ add_dependencies(lattice_twist_convert
 waypoint_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
-add_executable(lattice_velocity_set nodes/lattice_velocity_set/lattice_velocity_set.cpp)
-target_link_libraries(lattice_velocity_set libwaypoint_follower libvelocity_set ${catkin_LIBRARIES})
+add_executable(lattice_velocity_set nodes/lattice_velocity_set/lattice_velocity_set.cpp nodes/lattice_velocity_set/libvelocity_set.cpp)
+target_link_libraries(lattice_velocity_set libwaypoint_follower ${catkin_LIBRARIES})
 add_dependencies(lattice_velocity_set 
 waypoint_follower_generate_messages_cpp
 runtime_manager_generate_messages_cpp)

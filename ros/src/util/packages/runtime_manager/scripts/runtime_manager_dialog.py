@@ -1054,7 +1054,7 @@ class MyFrame(rtmgr.MyFrame):
 	def camera_ids(self):
 		if self.button_synchronization.GetValue():
 			return []
-		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed s/^$//"
+		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed 's/^$/\//'"
 		return subprocess.check_output(cmd, shell=True).strip().split()
 
 	def cam_id_to_obj(self, cam_id, v):

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+// *  Copyright (c) 2015, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -26,41 +26,70 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
 
+#ifndef NMEA2TFPOSE_CORE_H
+#define NMEA2TFPOSE_CORE_H
+
+// C++ includes
+#include <string>
+#include <memory>
+
+// ROS includes
 #include <ros/ros.h>
-#include <iostream>
+#include <geometry_msgs/PoseStamped.h>
+#include <nmea_msgs/Sentence.h>
+#include <tf/transform_broadcaster.h>
 
-#include "waypoint_follower/LaneArray.h"
-#include "runtime_manager/ConfigLaneSelect.h"
+#include "geo_pos_conv.hh"
 
-static ros::Publisher g_pub;
-static int g_lane_number = 0;
-static waypoint_follower::LaneArray g_lane_array;
-
-static void configCallback(const runtime_manager::ConfigLaneSelectConstPtr &config)
+namespace gnss_localizer
 {
-  g_lane_number = config->number;
-  if ((int)g_lane_array.lanes.size() > g_lane_number)
-    g_pub.publish(g_lane_array.lanes[g_lane_number]);
-}
-
-static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
+class Nmea2TFPoseNode
 {
-  g_lane_array = *msg;
-  if ((int)g_lane_array.lanes.size() > g_lane_number)
-    g_pub.publish(g_lane_array.lanes[g_lane_number]);
-}
+public:
+  Nmea2TFPoseNode();
+  ~Nmea2TFPoseNode();
 
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "lane_select");
+  void run();
 
-  ros::NodeHandle nh;
-  ros::Subscriber config_sub = nh.subscribe("/config/lane_select", 1, configCallback);
-  ros::Subscriber sub = nh.subscribe("traffic_waypoints_array", 1, laneArrayCallback);
-  g_pub = nh.advertise<waypoint_follower::lane>("base_waypoints", 10, true);
+private:
+  // handle
+  ros::NodeHandle nh_;
+  ros::NodeHandle private_nh_;
 
-  ros::spin();
-  return 0;
-}
+  // publisher
+  ros::Publisher pub1_;
+
+  // subscriber
+  ros::Subscriber sub1_;
+
+  // constants
+  const std::string MAP_FRAME_;
+  const std::string GPS_FRAME_;
+
+  // variables
+  int32_t plane_number_;
+  geo_pos_conv geo_;
+  geo_pos_conv last_geo_;
+  double roll_, pitch_, yaw_;
+  double orientation_time_, position_time_;
+  ros::Time current_time_, orientation_stamp_;
+  tf::TransformBroadcaster br_;
+
+  // callbacks
+  void callbackFromNmeaSentence(const nmea_msgs::Sentence::ConstPtr &msg);
+
+  // initializer
+  void initForROS();
+
+  // functions
+  void publishPoseStamped();
+  void publishTF();
+  void createOrientation();
+};
+
+std::vector<std::string> split(const std::string &string);
+
+}  // gnss_localizer
+#endif  // NMEA2TFPOSE_CORE_H
