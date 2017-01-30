@@ -132,7 +132,7 @@ public:
 	 */
 	double PlanUsingDP(Lane* lane, const WayPoint& carPos,const WayPoint& goalPos,
 			const WayPoint& prevWayPoint, const double& maxPlanningDistance,
-			const std::vector<int>& globalPath, std::vector<std::vector<WayPoint> >& paths, std::vector<WayPoint*>& all_cell_to_delete);
+			const std::vector<int>& globalPath, std::vector<std::vector<WayPoint> >& paths, std::vector<WayPoint*>* all_cell_to_delete = 0);
 
 
 	/**

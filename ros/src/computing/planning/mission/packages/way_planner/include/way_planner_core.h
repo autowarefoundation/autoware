@@ -70,6 +70,7 @@ namespace WayPlannerNS {
 
 
 #define MAX_GLOBAL_PLAN_DISTANCE 10000
+#define _ENABLE_VISUALIZE_PLAN
 
 class AutowareRoadNetwork
 {
@@ -203,6 +204,20 @@ private:
   	void VisualizeAndSend(const std::vector<std::vector<PlannerHNS::WayPoint> > generatedTotalPaths);
 
 
+
+  private: //debug variables
+  	PlannerHNS::WayPoint* m_pCurrGoal;
+#ifdef ENABLE_VISUALIZE_PLAN
+  	ros::Publisher pub_GlobalPlanAnimationRviz;
+  	void CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS::WayPoint*>& level, visualization_msgs::MarkerArray& markerArray, double max_cost = 1);
+  	std::vector<PlannerHNS::WayPoint*> m_PlanningVisualizeTree;
+  	std::vector<PlannerHNS::WayPoint*> m_CurrentLevel;
+  	visualization_msgs::MarkerArray m_AccumPlanLevels;
+  	unsigned int m_iCurrLevel;
+  	unsigned int m_nLevelSize;
+  	double m_CurrMaxCost;
+  	int m_bSwitch;
+#endif
 
 };
 

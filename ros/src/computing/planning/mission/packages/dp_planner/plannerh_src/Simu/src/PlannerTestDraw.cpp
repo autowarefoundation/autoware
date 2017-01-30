@@ -23,13 +23,8 @@ using namespace UtilityHNS;
 #define VectorMap "/home/user/data/ToyotaCity2/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
-<<<<<<< HEAD
-//#define kmlMap	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/Around_NIC/map/kml/NicMapWithTraffic.kml"
-#define kmlMap "/home/user/data/ToyotaCity2/map/kml/ToyotaCityCustomInfo.kml"
+#define kmlMapPath	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/kml/ToyotaCityCustomInfo.kml"
 
-=======
-#define kmlMap	"/home/user/maps/AroundNIC_Dec2016/kml/NIC_Exp_Smooth.kml"
->>>>>>> aa2899fc9e5f34df27cbf43e3dee514cee172c62
 #define kmlTemplateFile "PlannerX_MapTemplate.kml"
 #define kmltargetFile "ToyotaKML.kml"
 #define PreDefinedPath  "11,333,1090,1704,147, 1791,801, 431, 1522, 372, 791, 1875, 1872,171,108,21,"
@@ -79,127 +74,172 @@ PlannerTestDraw::PlannerTestDraw()
 	//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+ "ToyotaCityCustomInfo.kml";
 	//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
-	PlannerHNS::MappingHelpers::LoadKML(kmlMap, m_RoadMap);
+	PlannerHNS::MappingHelpers::LoadKML(kmlMapPath, m_RoadMap);
+
+	//stop line : 554.318849669619908,183.992441420792119,31.8523999999999994
+	//Traffic Light : 552.116878887182907,187.472750477604876,27.5702239999999996
+	//Stop Line : 552.116878887182907,187.472750477604876,27.5702239999999996
+	//TGraffic Light: 549.620514013766524,153.862837466717821,29.4425120000000007
+
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
-	ostringstream fileName;
-	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
-	fileName << "_RoadNetwork.kml";
-	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),UtilityH::GetHomeDirectory()+
-			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile, m_RoadMap);
+//	ostringstream fileName;
+//	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
+//	fileName << "_RoadNetwork.kml";
+//	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),UtilityH::GetHomeDirectory()+
+//			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile, m_RoadMap);
+//
+//	PlannerHNS::StopLine st1, st2, st3, st4,st5,st6,st7;
+//	st1.id = 1;
+//	st1.stopSignID = 1;
+//	st1.trafficLightID = -1;
+//	st1.points.push_back(PlannerHNS::GPSPoint(102,-27.9,1.59,0));
+//	st1.points.push_back(PlannerHNS::GPSPoint(105,-25.9,1.59,0));
+//	PlannerHNS::WayPoint wp;
+//	wp.pos = PlannerHNS::GPSPoint(102,-27.9,1.59,0);
+//	st1.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap, 30);
+//	if(st1.pLane)
+//		st1.laneId = st1.pLane->id;
+//
+//	st2.id = 2;
+//	st2.stopSignID = -1;
+//	st2.trafficLightID = 1;
+//	st2.points.push_back(PlannerHNS::GPSPoint(172,2.06,6,0));
+//	st2.points.push_back(PlannerHNS::GPSPoint(174,-2.97,6,0));
+//	wp.pos = PlannerHNS::GPSPoint(172,2.06,6,0);
+//	st2.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st2.pLane)
+//		st2.laneId = st2.pLane->id;
+//
+//	st3.id = 3;
+//	st3.stopSignID = -1;
+//	st3.trafficLightID = 2;
+//	st3.points.push_back(PlannerHNS::GPSPoint(257,46.7,20.5,0));
+//	st3.points.push_back(PlannerHNS::GPSPoint(260,40,20.5,0));
+//	wp.pos = PlannerHNS::GPSPoint(257,46.7,20.5,0);
+//	st3.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st3.pLane)
+//		st3.laneId = st3.pLane->id;
+//
+//	st4.id = 4;
+//	st4.stopSignID = 2;
+//	st4.trafficLightID = -1;
+//	st4.points.push_back(PlannerHNS::GPSPoint(311,69.3,34.4,0));
+//	st4.points.push_back(PlannerHNS::GPSPoint(313,67,34.4,0));
+//	wp.pos = PlannerHNS::GPSPoint(311,69.3,34.4,0);
+//	st4.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st4.pLane)
+//		st4.laneId = st4.pLane->id;
+//
+//	st5.id = 5;
+//	st5.stopSignID = 3;
+//	st5.trafficLightID = -1;
+//	st5.points.push_back(PlannerHNS::GPSPoint(250,31,18,0));
+//	st5.points.push_back(PlannerHNS::GPSPoint(247,35,18,0));
+//	wp.pos = PlannerHNS::GPSPoint(250,31,18,0);
+//	st5.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st5.pLane)
+//		st5.laneId = st5.pLane->id;
+//
+//	st6.id = 6;
+//	st6.stopSignID = -1;
+//	st6.trafficLightID = 3;
+//	st6.points.push_back(PlannerHNS::GPSPoint(127,-24.5,3,0));
+//	st6.points.push_back(PlannerHNS::GPSPoint(125,-21.5,3,0));
+//	wp.pos = PlannerHNS::GPSPoint(127,-24.5,3,0);
+//	st6.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st6.pLane)
+//		st6.laneId = st6.pLane->id;
+//
+//	st7.id = 7;
+//	st7.stopSignID = -1;
+//	st7.trafficLightID = 4;
+//	st7.points.push_back(PlannerHNS::GPSPoint(89.8,47.8,-2.0,0));
+//	st7.points.push_back(PlannerHNS::GPSPoint(91.7,49.1,-2.0,0));
+//	wp.pos = PlannerHNS::GPSPoint(89.8,47.8,-2.0,0);
+//	st7.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st7.pLane)
+//		st7.laneId = st7.pLane->id;
+//
+//
+//	PlannerHNS::TrafficLight t1, t2, t3, t4;
+//	t1.id = 1;
+//	t1.laneIds.push_back(st2.laneId);
+//	t1.pLanes.push_back(st2.pLane);
+//	t1.pos = PlannerHNS::GPSPoint(189,14.1,8.9,0);
+//
+//	t2.id = 2;
+//	t2.laneIds.push_back(st3.laneId);
+//	t2.pLanes.push_back(st3.pLane);
+//	t2.pos = PlannerHNS::GPSPoint(268,50.8,21.9,0);
+//
+//	t3.id = 3;
+//	t3.laneIds.push_back(st6.laneId);
+//	t3.pLanes.push_back(st6.pLane);
+//	t3.pos = PlannerHNS::GPSPoint(122,-29.6,-7.0,0);
+//
+//	t4.id = 4;
+//	t4.laneIds.push_back(st7.laneId);
+//	t4.pLanes.push_back(st7.pLane);
+//	t4.pos = PlannerHNS::GPSPoint(88,56.7,-1.5,0);
+//
+//
+//	m_RoadMap.trafficLights.push_back(t1);
+//	m_RoadMap.trafficLights.push_back(t2);
+//	m_RoadMap.trafficLights.push_back(t3);
+//	m_RoadMap.trafficLights.push_back(t4);
+//
+//	m_RoadMap.stopLines.push_back(st1);
+//	m_RoadMap.stopLines.push_back(st2);
+//	m_RoadMap.stopLines.push_back(st3);
+//	m_RoadMap.stopLines.push_back(st4);
+//	m_RoadMap.stopLines.push_back(st5);
+//	m_RoadMap.stopLines.push_back(st6);
+//	m_RoadMap.stopLines.push_back(st7);
 
-	PlannerHNS::StopLine st1, st2, st3, st4,st5,st6,st7;
-	st1.id = 1;
-	st1.stopSignID = 1;
-	st1.trafficLightID = -1;
-	st1.points.push_back(PlannerHNS::GPSPoint(102,-27.9,1.59,0));
-	st1.points.push_back(PlannerHNS::GPSPoint(105,-25.9,1.59,0));
-	PlannerHNS::WayPoint wp;
-	wp.pos = PlannerHNS::GPSPoint(102,-27.9,1.59,0);
-	st1.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap, 30);
-	if(st1.pLane)
-		st1.laneId = st1.pLane->id;
 
-	st2.id = 2;
-	st2.stopSignID = -1;
-	st2.trafficLightID = 1;
-	st2.points.push_back(PlannerHNS::GPSPoint(172,2.06,6,0));
-	st2.points.push_back(PlannerHNS::GPSPoint(174,-2.97,6,0));
-	wp.pos = PlannerHNS::GPSPoint(172,2.06,6,0);
-	st2.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
-	if(st2.pLane)
-		st2.laneId = st2.pLane->id;
-
-	st3.id = 3;
-	st3.stopSignID = -1;
-	st3.trafficLightID = 2;
-	st3.points.push_back(PlannerHNS::GPSPoint(257,46.7,20.5,0));
-	st3.points.push_back(PlannerHNS::GPSPoint(260,40,20.5,0));
-	wp.pos = PlannerHNS::GPSPoint(257,46.7,20.5,0);
-	st3.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
-	if(st3.pLane)
-		st3.laneId = st3.pLane->id;
-
-	st4.id = 4;
-	st4.stopSignID = 2;
-	st4.trafficLightID = -1;
-	st4.points.push_back(PlannerHNS::GPSPoint(311,69.3,34.4,0));
-	st4.points.push_back(PlannerHNS::GPSPoint(313,67,34.4,0));
-	wp.pos = PlannerHNS::GPSPoint(311,69.3,34.4,0);
-	st4.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
-	if(st4.pLane)
-		st4.laneId = st4.pLane->id;
-
-	st5.id = 5;
-	st5.stopSignID = 3;
-	st5.trafficLightID = -1;
-	st5.points.push_back(PlannerHNS::GPSPoint(250,31,18,0));
-	st5.points.push_back(PlannerHNS::GPSPoint(247,35,18,0));
-	wp.pos = PlannerHNS::GPSPoint(250,31,18,0);
-	st5.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
-	if(st5.pLane)
-		st5.laneId = st5.pLane->id;
-
-	st6.id = 6;
-	st6.stopSignID = -1;
-	st6.trafficLightID = 3;
-	st6.points.push_back(PlannerHNS::GPSPoint(127,-24.5,3,0));
-	st6.points.push_back(PlannerHNS::GPSPoint(125,-21.5,3,0));
-	wp.pos = PlannerHNS::GPSPoint(127,-24.5,3,0);
-	st6.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
-	if(st6.pLane)
-		st6.laneId = st6.pLane->id;
-
-	st7.id = 7;
-	st7.stopSignID = -1;
-	st7.trafficLightID = 4;
-	st7.points.push_back(PlannerHNS::GPSPoint(89.8,47.8,-2.0,0));
-	st7.points.push_back(PlannerHNS::GPSPoint(91.7,49.1,-2.0,0));
-	wp.pos = PlannerHNS::GPSPoint(89.8,47.8,-2.0,0);
-	st7.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
-	if(st7.pLane)
-		st7.laneId = st7.pLane->id;
-
-
-	PlannerHNS::TrafficLight t1, t2, t3, t4;
-	t1.id = 1;
-	t1.laneIds.push_back(st2.laneId);
-	t1.pLanes.push_back(st2.pLane);
-	t1.pos = PlannerHNS::GPSPoint(189,14.1,8.9,0);
-
-	t2.id = 2;
-	t2.laneIds.push_back(st3.laneId);
-	t2.pLanes.push_back(st3.pLane);
-	t2.pos = PlannerHNS::GPSPoint(268,50.8,21.9,0);
-
-	t3.id = 3;
-	t3.laneIds.push_back(st6.laneId);
-	t3.pLanes.push_back(st6.pLane);
-	t3.pos = PlannerHNS::GPSPoint(122,-29.6,-7.0,0);
-
-	t4.id = 4;
-	t4.laneIds.push_back(st7.laneId);
-	t4.pLanes.push_back(st7.pLane);
-	t4.pos = PlannerHNS::GPSPoint(88,56.7,-1.5,0);
-
-
-	m_RoadMap.trafficLights.push_back(t1);
-	m_RoadMap.trafficLights.push_back(t2);
-	m_RoadMap.trafficLights.push_back(t3);
-	m_RoadMap.trafficLights.push_back(t4);
-
-	m_RoadMap.stopLines.push_back(st1);
-	m_RoadMap.stopLines.push_back(st2);
-	m_RoadMap.stopLines.push_back(st3);
-	m_RoadMap.stopLines.push_back(st4);
-	m_RoadMap.stopLines.push_back(st5);
-	m_RoadMap.stopLines.push_back(st6);
-	m_RoadMap.stopLines.push_back(st7);
-
-	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
-	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+ "NicMapWithStopLines.kml";
-	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
+//	PlannerHNS::StopLine st_tsu_1, st_tsu2;
+//	st_tsu_1.id = 1;
+//	st_tsu_1.stopSignID = -1;
+//	st_tsu_1.trafficLightID = 1;
+//	st_tsu_1.points.push_back(PlannerHNS::GPSPoint(555.0,178.1,31.8,0));
+//	st_tsu_1.points.push_back(PlannerHNS::GPSPoint(556.3,179.9,31.8,0));
+//	PlannerHNS::WayPoint wp;
+//	wp.pos = PlannerHNS::GPSPoint(555.0,178.1,31.8,0);
+//	st_tsu_1.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap, 30);
+//	if(st_tsu_1.pLane)
+//		st_tsu_1.laneId = st_tsu_1.pLane->id;
+//
+//	st_tsu2.id = 2;
+//	st_tsu2.stopSignID = -1;
+//	st_tsu2.trafficLightID = 2;
+//	st_tsu2.points.push_back(PlannerHNS::GPSPoint(551.2,197.6,26.6,0));
+//	st_tsu2.points.push_back(PlannerHNS::GPSPoint(550.6,196.2,26.6,0));
+//	wp.pos = PlannerHNS::GPSPoint(551.2,197.6,26.6,0);
+//	st_tsu2.pLane = PlannerHNS::MappingHelpers::GetClosestLaneFromMap(wp,m_RoadMap);
+//	if(st_tsu2.pLane)
+//		st_tsu2.laneId = st_tsu2.pLane->id;
+//
+//	PlannerHNS::TrafficLight t1, t2, t3, t4;
+//	t1.id = 1;
+//	t1.laneIds.push_back(st_tsu_1.laneId);
+//	t1.pLanes.push_back(st_tsu_1.pLane);
+//	t1.pos = PlannerHNS::GPSPoint(553.5,214.6,26.6,0);
+//
+//	t2.id = 2;
+//	t2.laneIds.push_back(st_tsu2.laneId);
+//	t2.pLanes.push_back(st_tsu2.pLane);
+//	t2.pos = PlannerHNS::GPSPoint(554.4,168.2,29.3,0);
+//	m_RoadMap.trafficLights.push_back(t1);
+//	m_RoadMap.trafficLights.push_back(t2);
+//
+//	m_RoadMap.stopLines.push_back(st_tsu_1);
+//	m_RoadMap.stopLines.push_back(st_tsu2);
+//
+//	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
+//	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+ "TsukubaMapWithStopLines.kml";
+//	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
 
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,5.0, true);
@@ -920,9 +960,9 @@ void PlannerTestDraw::DrawPaths()
 	{
 
 	for(unsigned int i=0; i< m_LocalPlanner.m_TotalPath.size(); i++)
-		DrawingHelpers::DrawWidePath(m_LocalPlanner.m_TotalPath.at(i), 0.08, 0.25, TotalPathColor);
+		DrawingHelpers::DrawWidePath(m_LocalPlanner.m_TotalPath.at(i), 0.08, 0.1, TotalPathColor);
 
-	DrawingHelpers::DrawWidePath(m_LocalPlanner.m_Path, 0.16, 0.08, PlannedPathColor);
+	DrawingHelpers::DrawWidePath(m_LocalPlanner.m_Path, 0.16, 0.06, PlannedPathColor);
 	DrawingHelpers::DrawWidePath(m_ActualPath, 0.1, 0.15, ActualPathColor);
 
 	for(unsigned int i = 0; i < m_LocalPlanner.m_Path.size(); i+=2 )
@@ -964,7 +1004,7 @@ void PlannerTestDraw::DrawPaths()
 	{
 		for(unsigned int ti=0; ti < m_LocalPlanner.m_RollOuts.at(li).size(); ti++)
 		{
-			DrawingHelpers::DrawWidePath(m_LocalPlanner.m_RollOuts.at(li).at(ti), 0.14, 0.12, RollOutsColor);
+			DrawingHelpers::DrawWidePath(m_LocalPlanner.m_RollOuts.at(li).at(ti), 0.14, 0.06, RollOutsColor);
 
 			for(unsigned int i = 0; i < m_LocalPlanner.m_RollOuts.at(li).at(ti).size(); i+=2 )
 			{
@@ -1421,7 +1461,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				UtilityH::GetTickCount(planTime);
 				planner.PlanUsingDP(pR->m_LocalPlanner.pLane, pR->m_LocalPlanner.state,
 						pR->m_goals.at(pR->m_iCurrentGoal), pR->m_LocalPlanner.state,
-						1000000,pR->m_LanesIds, generatedTotalPath, pR->m_all_cell_to_delete);
+						1000000,pR->m_LanesIds, generatedTotalPath, &pR->m_all_cell_to_delete);
 				pR->m_GlobalPlanningTime = UtilityH::GetTimeDiffNow(planTime);
 
 				if(generatedTotalPath.size()>0 && generatedTotalPath.at(0).size()>0)

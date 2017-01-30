@@ -46,7 +46,8 @@ void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTi
 
 	if(f.is_open())
 	{
-		f << header << "\r\n";
+		if(header.size() > 0)
+			f << header << "\r\n";
 		for(unsigned int i = 0 ; i < logData.size(); i++)
 			f << logData.at(i) << "\r\n";
 	}
@@ -521,8 +522,8 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 	vector<vector<string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
-		if(lineData.size()==0) return false;
-		if(lineData.at(0).size() < 5) return false;
+		if(lineData.size() == 0) return false;
+		if(lineData.at(0).size() < 17) return false;
 
 		data.LnID		= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
 		data.DID		= strtol(lineData.at(0).at(1).c_str(), NULL, 10);
@@ -538,11 +539,13 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 		data.FLID3		= strtol(lineData.at(0).at(11).c_str(), NULL, 10);
 		data.FLID4		= strtol(lineData.at(0).at(12).c_str(), NULL, 10);
 		data.ClossID 	= strtol(lineData.at(0).at(13).c_str(), NULL, 10);
-
-		data.Span 	= strtod(lineData.at(0).at(14).c_str(), NULL);
-
+		data.Span 		= strtod(lineData.at(0).at(14).c_str(), NULL);
 		data.LCnt	 	= strtol(lineData.at(0).at(15).c_str(), NULL, 10);
 		data.Lno	  	= strtol(lineData.at(0).at(16).c_str(), NULL, 10);
+
+
+		if(lineData.at(0).size() < 23) return true;
+
 		data.LaneType	= strtol(lineData.at(0).at(17).c_str(), NULL, 10);
 		data.LimitVel	= strtol(lineData.at(0).at(18).c_str(), NULL, 10);
 		data.RefVel	 	= strtol(lineData.at(0).at(19).c_str(), NULL, 10);
@@ -550,15 +553,19 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 		data.LaneChgFG 	= strtol(lineData.at(0).at(21).c_str(), NULL, 10);
 		data.LinkWAID	= strtol(lineData.at(0).at(22).c_str(), NULL, 10);
 
+
+//		if(lineData.at(0).size() < 26) return true;
+//
 //		string str_dir = lineData.at(0).at(23);
 //		if(str_dir.size() > 0)
 //			data.LaneDir 	= str_dir.at(0);
 //		else
-			data.LaneDir  	= 'F';
-			data.LeftLaneId  = 0;
-			data.RightLaneId = 0;
+//			data.LaneDir  	= 'F';
+//			data.LeftLaneId  = 0;
+//			data.RightLaneId = 0;
 //		data.LeftLaneId 	= strtol(lineData.at(0).at(24).c_str(), NULL, 10);
 //		data.RightLaneId 	= strtol(lineData.at(0).at(25).c_str(), NULL, 10);
+
 
 		return true;
 	}

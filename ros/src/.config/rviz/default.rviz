@@ -8,8 +8,11 @@ Panels:
         - /Camera1/Visibility1
         - /Vehicle Model1/Status1
         - /Local Waypoints1/Status1
+        - /Vector Map CenterLines1/Status1
+        - /Vector Map CenterLines1/Namespaces1
         - /Global Path1/Namespaces1
         - /Local Rollouts1/Namespaces1
+        - /GlobalPathAnimation1/Status1
       Splitter Ratio: 0.695804
     Tree Height: 978
   - Class: rviz/Selection
@@ -61,6 +64,8 @@ Visualization Manager:
           Value: true
         map:
           Value: true
+        velodyne:
+          Value: true
         world:
           Value: true
       Marker Scale: 5
@@ -71,8 +76,7 @@ Visualization Manager:
       Tree:
         world:
           map:
-            base_link:
-              {}
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 0.05
@@ -155,13 +159,14 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
-        "": true
+        Behavior State: true
         Bounding Boxes: true
         Control Pose: true
         Current Pose: true
         Detection Range: true
         Global Path: true
         Global Waypoints: true
+        GlobalPathAnimation: true
         Grid: true
         Image: true
         Laserscan Costmap: true
@@ -442,7 +447,7 @@ Visualization Manager:
       Marker Topic: /vector_map_center_lines_rviz
       Name: Vector Map CenterLines
       Namespaces:
-        vector_map_center_lines_rviz: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -450,7 +455,7 @@ Visualization Manager:
       Marker Topic: /global_waypoints_rviz
       Name: Global Path
       Namespaces:
-        global_lane_array_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -458,8 +463,7 @@ Visualization Manager:
       Marker Topic: /local_trajectories
       Name: Local Rollouts
       Namespaces:
-        current_lane_array_marker: true
-        global_lane_array_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -475,7 +479,7 @@ Visualization Manager:
       Marker Topic: /curr_simu_pose
       Name: SimulatedCar Pose
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -483,7 +487,7 @@ Visualization Manager:
       Marker Topic: /follow_pose
       Name: Simulated Following Point
       Namespaces:
-        follow_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -491,7 +495,15 @@ Visualization Manager:
       Marker Topic: /behavior_state
       Name: Behavior State
       Namespaces:
-        detected_polygons_velocity: true
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /AnimateGlobalPlan
+      Name: GlobalPathAnimation
+      Namespaces:
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -517,23 +529,20 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/ThirdPersonFollower
-      Distance: 43.9976
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 34.6797
-        Y: 19.3244
-        Z: -1.65964e-05
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.559797
+      Scale: 10
       Target Frame: sim_base_link
-      Value: ThirdPersonFollower (rviz)
-      Yaw: 3.12041
+      Value: TopDownOrtho (rviz)
+      X: 13.1821
+      Y: 0.755968
     Saved: ~
 Window Geometry:
   Camera:
@@ -555,5 +564,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1453
-  X: 567
-  Y: 244
+  X: 689
+  Y: 160

@@ -39,6 +39,7 @@ LocalPlannerH::LocalPlannerH()
 	UtilityH::GetTickCount(m_SteerDelayTimer);
 	m_PredictionTime = 0;
 	m_iCurrentTotalPathId = 0;
+	m_iSafeTrajectory = 0;
 
 	InitBehaviorStates();
 }
@@ -609,6 +610,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 					localRollouts, m_PathSection, m_SampledPoints);
 
 			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
+			m_iSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
 
 			if(preCalcPrams->iCurrSafeTrajectory >= 0
 					&& preCalcPrams->iCurrSafeTrajectory < localRollouts.size()

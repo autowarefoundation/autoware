@@ -51,6 +51,7 @@ PlannerX::PlannerX()
 	m_frequency = 0;
 	m_bSignal = ROBOT_SIGNAL;
 
+
 	m_nTrackObjects = 0;
 	m_nContourPoints = 0;
 	m_nOriginalPoints = 0;
@@ -121,6 +122,35 @@ PlannerX::PlannerX()
 	sub_current_pose 	= nh.subscribe("/current_pose", 			100,	&PlannerX::callbackGetCurrentPose, 		this);
 	sub_cluster_cloud 	= nh.subscribe("/cloud_clusters",			1,		&PlannerX::callbackGetCloudClusters, 	this);
 	sub_bounding_boxs  	= nh.subscribe("/bounding_boxes",			1,		&PlannerX::callbackGetBoundingBoxes, 	this);
+#ifdef DATASET_GENERATION_BLOCK
+
+	m_iRecordNumber = 0;
+//	tf::StampedTransform base_transform;
+//	int nFailedCounter = 0;
+//	while (1)
+//	{
+//		try
+//		{
+//			m_Transformation.lookupTransform("base_link", "world", ros::Time(0), base_transform);
+//			break;
+//		}
+//		catch (tf::TransformException& ex)
+//		{
+//			if(nFailedCounter > 2)
+//			{
+//				ROS_ERROR("%s", ex.what());
+//			}
+//			ros::Duration(1.0).sleep();
+//			nFailedCounter ++;
+//		}
+//	}
+
+	m_ImagesVectors.open("/home/user/data/db/input.csv");
+	m_TrajVectors.open("/home/user/data/db/output.csv");
+
+	sub_image_reader = nh.subscribe("/image_raw", 1, &PlannerX::callbackReadImage, 		this);
+#endif
+
 	/**
 	 * @todo This works only in simulation (Autoware or ff_Waypoint_follower), twist_cmd should be changed, consult team
 	 */
@@ -157,9 +187,150 @@ PlannerX::PlannerX()
 PlannerX::~PlannerX()
 {
 	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName, "MainLog",
-			"time,idx_behavior,behavior,num_Tracked_Objects,num_Cluster_Points,num_Contour_Points,t_Tracking,t_Calc_Cost, t_Behavior_Gen, t_Roll_Out_Gen, num_RollOuts, Full_Block, idx_Central_traj, idx_safe_traj, id_stop_sign, id_traffic_light, Min_Stop_Distance, Velocity, follow_distance, follow_velocity, X, Y, Z, heading,"
+			"time,Behavior State,behavior,num_Tracked_Objects,num_Cluster_Points,num_Contour_Points,t_Tracking,t_Calc_Cost, t_Behavior_Gen, t_Roll_Out_Gen, num_RollOuts, Full_Block, idx_Central_traj, iTrajectory, Stop Sign, Traffic Light, Min_Stop_Distance, follow_distance, follow_velocity, Velocity, Steering, X, Y, Z, heading,"
 			, m_LogData);
+
+#ifdef DATASET_GENERATION_BLOCK
+	m_ImagesVectors.close();
+	m_TrajVectors.close();
+#endif
 }
+
+#ifdef DATASET_GENERATION_BLOCK
+void PlannerX::callbackReadImage(const sensor_msgs::ImageConstPtr& img)
+{
+	//std::cout << "Reading Image Data ... " << std::endl;
+	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
+	m_CurrImage = cv_image->image;
+
+}
+
+void PlannerX::ExtractPathFromDriveData(double max_extraction)
+{
+	double d = 0;
+	DataPairs dp;
+
+	for(int i = m_DrivePoints.size()-1; i >= 0 ; i--)
+	{
+		d += m_DrivePoints.at(i).currentPos.cost;
+
+		if(d >= 30)
+		{
+			dp.image =  m_DrivePoints.at(i).image.clone();
+			dp.currentPos =  m_DrivePoints.at(i).currentPos;
+			dp.vehicleState = m_DrivePoints.at(i).vehicleState;
+			cv::Mat gray_image;
+			cvtColor( dp.image, gray_image, cv::COLOR_BGR2GRAY);
+			cv::Rect roi;
+			roi.x = 0;
+			roi.y = gray_image.rows/3;
+			roi.width = gray_image.cols;
+			roi.height = gray_image.rows - gray_image.rows/3;
+			cv::Mat halfImg = gray_image(roi);
+
+			std::ostringstream image_name;
+			image_name << "/home/user/data/db/vis/image_" << m_iRecordNumber << ".png";
+			std::ostringstream half_image_name;
+			half_image_name <<  "/home/user/data/db/img/img_"  << m_iRecordNumber << ".png";
+			std::ostringstream label_name ;
+			label_name << "/home/user/data/db/csv/lbl_" << m_iRecordNumber << ".csv";
+
+
+			PlannerHNS::Mat3 rotationMat(-dp.currentPos.pos.a);
+			PlannerHNS::Mat3 translationMat(-dp.currentPos.pos.x, -dp.currentPos.pos.y);
+			for(unsigned int ip=0; ip < dp.path.size(); ip++)
+			{
+				dp.path.at(ip).pos = translationMat*dp.path.at(ip).pos;
+				dp.path.at(ip).pos = rotationMat*dp.path.at(ip).pos;
+			}
+
+			PlannerHNS::PlanningHelpers::SmoothPath(dp.path, 0.45, 0.3, 0.01);
+			PlannerHNS::PlanningHelpers::FixPathDensity(dp.path, d/20.0);
+			PlannerHNS::PlanningHelpers::SmoothPath(dp.path, 0.45, 0.35, 0.01);
+
+			for(unsigned int ip=0; ip <dp.path.size()-1; ip++)
+			{
+				cv::Point p1;
+				p1.y = dp.image.rows - (fabs(dp.path.at(ip).pos.x) *  halfImg.rows  / 40.0);
+				p1.x = halfImg.cols/2 + (-dp.path.at(ip).pos.y * halfImg.cols / 20.0);
+
+				cv::Point p2;
+				p2.y = dp.image.rows - (fabs(dp.path.at(ip+1).pos.x) *  halfImg.rows  / 40.0);
+				p2.x = halfImg.cols/2 + (-dp.path.at(ip+1).pos.y * halfImg.cols / 20.0);
+
+				cv::line(dp.image, p1, p2,  cv::Scalar( 0, 255, 0 ), 2, 8);
+			}
+
+			WritePathCSV(label_name.str(), dp.path);
+			imwrite(image_name.str(),  dp.image);
+			imwrite(half_image_name.str(),  halfImg);
+
+			WriteImageAndPathCSV(halfImg.clone(), dp.path);
+
+			for(int j = 0; j <= i; j++)
+				if(m_DrivePoints.size() > 0)
+					m_DrivePoints.erase(m_DrivePoints.begin()+0);
+
+			m_iRecordNumber++;
+			std::cout << "Extract Data: " << "Cost: " << d << ", Index: " << i << ", Path Size: " << dp.path.size() << std::endl;
+			return;
+		}
+
+		dp.path.insert(dp.path.begin(), m_DrivePoints.at(i).currentPos);
+	}
+}
+
+void PlannerX::WriteImageAndPathCSV(cv::Mat img,std::vector<PlannerHNS::WayPoint>& path)
+{
+	if(m_ImagesVectors.is_open())
+	{
+		ostringstream str_img;
+		str_img.precision(0);
+		for(int c=0; c<img.cols; c++)
+		{
+			for(int r=0; r<img.rows; r++)
+			{
+				short x = img.at<uchar>(r, c);
+				str_img << x << ',';
+			}
+		}
+
+		m_ImagesVectors << str_img.str() << "\r\n";
+	}
+
+	if(m_TrajVectors.is_open())
+	{
+		ostringstream strwp;
+		 for(unsigned int i=0; i<path.size(); i++)
+		 {
+			 strwp << path.at(i).pos.x<<","<< path.at(i).pos.y << ",";
+		 }
+		m_TrajVectors << strwp.str() << "\r\n";
+	}
+}
+
+void PlannerX::WritePathCSV(const std::string& fName, std::vector<PlannerHNS::WayPoint>& path)
+{
+	vector<string> dataList;
+	 for(unsigned int i=0; i<path.size(); i++)
+	 {
+		 ostringstream strwp;
+		 strwp << path.at(i).pos.x<<","<< path.at(i).pos.y <<","<< path.at(i).v << ",";
+		 dataList.push_back(strwp.str());
+	 }
+
+	 std::ofstream f(fName.c_str());
+
+	if(f.is_open())
+	{
+		for(unsigned int i = 0 ; i < dataList.size(); i++)
+			f << dataList.at(i) << "\r\n";
+	}
+
+	f.close();
+}
+
+#endif
 
 void PlannerX::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
 {
@@ -300,6 +471,43 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 
 	bNewCurrentPos = true;
 	bInitPos = true;
+#ifdef DATASET_GENERATION_BLOCK
+
+	PlannerHNS::WayPoint p(m_CurrentPos.pos.x, m_CurrentPos.pos.y, 0, m_CurrentPos.pos.a);
+	p.v = m_VehicleState.speed;
+
+	DataPairs dp;
+	if(m_DrivePoints.size() == 0)
+	{
+		dp.image = m_CurrImage;
+		dp.currentPos = p;
+		dp.vehicleState = m_VehicleState;
+		m_DrivePoints.push_back(dp);
+	}
+	else
+	{
+		p.cost = hypot(p.pos.y - m_DrivePoints.at(m_DrivePoints.size()-1).currentPos.pos.y, p.pos.x - m_DrivePoints.at(m_DrivePoints.size()-1).currentPos.pos.x);
+		if(p.cost >= 0.25 && p.cost <= 3.0)
+		{
+			dp.image = m_CurrImage;
+			dp.currentPos = p;
+			dp.vehicleState = m_VehicleState;
+			m_DrivePoints.push_back(dp);
+			//std::cout << "Insert Pose: " << "Cost: " << p.cost << ", Speed: " << p.v << ", Size: " << m_DrivePoints.size() << std::endl;
+		}
+		else
+		{
+			//std::cout << "Miss Pose: " << "Cost: " << p.cost << ", Speed: " << p.v << ", Size: " << m_DrivePoints.size() << std::endl;
+			if(m_DrivePoints.size() == 1)
+				m_DrivePoints.clear();
+		}
+	}
+
+
+	if(m_DrivePoints.size() >= 20)
+		ExtractPathFromDriveData();
+
+#endif
 }
 
 lidar_tracker::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
@@ -621,14 +829,15 @@ void PlannerX::PlannerMainLoop()
 					m_LocalPlanner.m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory << "," <<
-					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory << "," <<
+					m_LocalPlanner.m_iSafeTrajectory << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentStopSignID << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentTrafficLightID << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->minStoppingDistance << "," <<
-					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentVelocity << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->distanceToNext << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->velocityOfNext << "," <<
-					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << m_LocalPlanner.state.pos.a << ",";
+					m_VehicleState.speed << "," <<
+					m_VehicleState.steer << "," <<
+					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a)+M_PI << ",";
 
 
 			m_LogData.push_back(dataLine.str());
@@ -653,17 +862,18 @@ void PlannerX::PlannerMainLoop()
 			PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), m_LocalPlanner.m_Path);
 
 			visualization_msgs::MarkerArray all_rollOuts;
-			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts.at(0), all_rollOuts);
+
+			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts.at(0), m_LocalPlanner, all_rollOuts);
 			pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 		}
 
 		//Traffic Light Simulation Part
-		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 8.5)
+		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 2)
 		{
 			m_bGreenLight = false;
 			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
 		}
-		else if(!m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 8.5)
+		else if(!m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 25.0)
 		{
 			m_bGreenLight = true;
 			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);

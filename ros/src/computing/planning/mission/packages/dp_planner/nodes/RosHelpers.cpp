@@ -120,7 +120,7 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
-		const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
+		const std::vector<std::vector<PlannerHNS::WayPoint> >& paths, const PlannerHNS::LocalPlannerH& localPlanner,
 			visualization_msgs::MarkerArray& markerArray)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
@@ -131,14 +131,10 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
 	lane_waypoint_marker.scale.x = 0.1;
 	lane_waypoint_marker.scale.y = 0.1;
+	lane_waypoint_marker.scale.z = 0.1;
 	lane_waypoint_marker.frame_locked = false;
-	std_msgs::ColorRGBA roll_color, total_color, curr_color;
-	roll_color.r = 0;
-	roll_color.g = 1;
-	roll_color.b = 0;
-	roll_color.a = 0.5;
+	std_msgs::ColorRGBA  total_color, curr_color;
 
-	lane_waypoint_marker.color = roll_color;
 
 	int count = 0;
 	for (unsigned int i = 0; i < paths.size(); i++)
@@ -157,6 +153,31 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 		  lane_waypoint_marker.points.push_back(point);
 		}
 
+
+		if(localPlanner.m_TrajectoryCostsCalculatotor.m_TrajectoryCosts.size() == paths.size())
+		{
+			float norm_cost = localPlanner.m_TrajectoryCostsCalculatotor.m_TrajectoryCosts.at(i).cost * paths.size();
+			if(norm_cost <= 1.0)
+			{
+				lane_waypoint_marker.color.r = norm_cost;
+				lane_waypoint_marker.color.g = 1.0;
+			}
+			else if(norm_cost > 1.0)
+			{
+				lane_waypoint_marker.color.r = 1.0;
+				lane_waypoint_marker.color.g = 2.0 - norm_cost;
+			}
+		}
+		else
+		{
+			lane_waypoint_marker.color.r = 0.0;
+			lane_waypoint_marker.color.g = 1.0;
+		}
+
+		lane_waypoint_marker.color.b = 0;
+		lane_waypoint_marker.color.a = 0.9;
+
+
 		markerArray.markers.push_back(lane_waypoint_marker);
 		count++;
 	}
@@ -172,6 +193,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	curr_lane_waypoint_marker.id = count;
 	curr_lane_waypoint_marker.scale.x = 0.1;
 	curr_lane_waypoint_marker.scale.y = 0.1;
+	curr_lane_waypoint_marker.scale.z = 0.1;
 	curr_lane_waypoint_marker.frame_locked = false;
 	curr_color.r = 1;
 	curr_color.g = 0;
@@ -185,8 +207,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 
 	  point.x = curr_path.at(j).pos.x;
 	  point.y = curr_path.at(j).pos.y;
-	  //point.z = 0.05;
-	  point.z = curr_path.at(j).pos.z;
+	  point.z = curr_path.at(j).pos.z + 0.5;
 
 	  curr_lane_waypoint_marker.points.push_back(point);
 	}
@@ -249,10 +270,23 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	lane_waypoint_marker.ns = "detected_polygons";
 	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = .15;
-	lane_waypoint_marker.scale.y = .15;
-	lane_waypoint_marker.color.a = 0.9;
+	lane_waypoint_marker.scale.x = .05;
+	lane_waypoint_marker.scale.y = .05;
+	lane_waypoint_marker.scale.z = .05;
+	lane_waypoint_marker.color.a = 0.8;
 	lane_waypoint_marker.frame_locked = false;
+
+	visualization_msgs::Marker corner_marker;
+	corner_marker.header.frame_id = "map";
+	corner_marker.header.stamp = ros::Time();
+	corner_marker.ns = "detected_polygons";
+	corner_marker.type = visualization_msgs::Marker::SPHERE;
+	corner_marker.action = visualization_msgs::Marker::ADD;
+	corner_marker.scale.x = .3;
+	corner_marker.scale.y = .3;
+	corner_marker.scale.z = .3;
+	corner_marker.color.a = 0.9;
+	corner_marker.frame_locked = false;
 
 
 	 visualization_msgs::Marker velocity_marker;
@@ -261,10 +295,10 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	velocity_marker.ns = "detected_polygons_velocity";
 	velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	//velocity_marker.action = visualization_msgs::Marker::ADD;
-	velocity_marker.scale.z = 1.8;
-	velocity_marker.scale.x = 1.8;
-	velocity_marker.scale.y = 1.8;
-	velocity_marker.color.a = 0.9;
+	velocity_marker.scale.z = 0.5;
+	velocity_marker.scale.x = 0.5;
+	velocity_marker.scale.y = 0.5;
+	velocity_marker.color.a = 0.75;
 
 	velocity_marker.frame_locked = false;
 	detectedPolygons.markers.clear();
@@ -275,11 +309,11 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 		lane_waypoint_marker.color.g = distance/40.;
 		lane_waypoint_marker.color.r = 1.0 - distance/40.;
-		lane_waypoint_marker.color.b = 0;
+		lane_waypoint_marker.color.b = 1;
 
 		velocity_marker.color.r = 1;//trackedObstacles.at(i).center.v/16.0;
 		velocity_marker.color.g = 1;// - trackedObstacles.at(i).center.v/16.0;
-		velocity_marker.color.b = 0;
+		velocity_marker.color.b = 1;
 
 		lane_waypoint_marker.points.clear();
 		lane_waypoint_marker.id = i;
@@ -297,6 +331,15 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 			  point.z = trackedObstacles.at(i).contour.at(p).z;
 
 			  lane_waypoint_marker.points.push_back(point);
+
+			  corner_marker.pose.position = point;
+			  corner_marker.color.r = 1;
+			  corner_marker.color.g = 0;
+			  corner_marker.color.b = 0;
+			  corner_marker.color.a = 0.95;
+			  corner_marker.id = p*i;
+
+			  detectedPolygons.markers.push_back(corner_marker);
 		}
 
 		if(trackedObstacles.at(i).contour.size()>0)
@@ -308,6 +351,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 		  point.z = trackedObstacles.at(i).contour.at(0).z;
 
 		  lane_waypoint_marker.points.push_back(point);
+
 		}
 
 
@@ -315,7 +359,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 		point.x = trackedObstacles.at(i).center.pos.x;
 		point.y = trackedObstacles.at(i).center.pos.y;
-		point.z = trackedObstacles.at(i).center.pos.z+1.5;
+		point.z = trackedObstacles.at(i).center.pos.z+0.5;
 
 //		geometry_msgs::Point relative_p;
 		//relative_p.y = 0.5;
@@ -333,10 +377,12 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 //		  str_out << trackedObstacles.at(i).id;
 	  //std::string vel = str_out.str();
 	  velocity_marker.text = str_out.str();//vel.erase(vel.find_first_of(".") + 2);
+	  if(speed > 0.5)
+		  detectedPolygons.markers.push_back(velocity_marker);
 
 
 		detectedPolygons.markers.push_back(lane_waypoint_marker);
-		detectedPolygons.markers.push_back(velocity_marker);
+
 	}
 }
 

@@ -58,7 +58,7 @@ void way_planner_core::GetTransformFromTF(const std::string parent_frame, const 
 
 way_planner_core::way_planner_core()
 {
-
+	m_pCurrGoal = 0;
 	m_iCurrentGoalIndex = -1;
 	m_bKmlMap = false;
 	bStartPos = false;
@@ -96,6 +96,14 @@ way_planner_core::way_planner_core()
 	pub_NodesListRviz = nh.advertise<visualization_msgs::MarkerArray>("Goal_Nodes_Points_rviz", 1, true);
 	pub_MapRviz  = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines_rviz", 100, true);
 	pub_TrafficInfoRviz = nh.advertise<visualization_msgs::MarkerArray>("Traffic_Lights_rviz", 1, true);
+
+#ifdef ENABLE_VISUALIZE_PLAN
+	m_CurrMaxCost = 1;
+	m_iCurrLevel = 0;
+	m_nLevelSize = 1;
+	m_bSwitch = 0;
+	pub_GlobalPlanAnimationRviz = nh.advertise<visualization_msgs::MarkerArray>("AnimateGlobalPlan", 1, true);
+#endif
 
 	/** @todo To achieve perfection , you need to start sometime */
 
@@ -141,6 +149,7 @@ void way_planner_core::callbackGetStartPose(const geometry_msgs::PoseWithCovaria
 		bStartPos = true;
 	}
 }
+
 
 void way_planner_core::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
@@ -296,10 +305,28 @@ bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, Plan
 	if(pStart && pGoal)
 	{
 		generatedTotalPaths.clear();
+#ifdef ENABLE_VISUALIZE_PLAN
+		if(m_PlanningVisualizeTree.size() > 0)
+		{
+			m_PlannerH.DeleteWaypoints(m_PlanningVisualizeTree);
+			m_AccumPlanLevels.markers.clear();
+			m_iCurrLevel = 0;
+			m_nLevelSize = 1;
+		}
+
 		double ret = m_PlannerH.PlanUsingDP(pStart->pLane,
 				*pStart, *pGoal,
 				*pStart, MAX_GLOBAL_PLAN_DISTANCE,
-				predefinedLanesIds, generatedTotalPaths);
+				predefinedLanesIds, generatedTotalPaths, &m_PlanningVisualizeTree);
+
+		m_pCurrGoal = pGoal;
+
+#else
+		double ret = m_PlannerH.PlanUsingDP(pStart->pLane,
+						*pStart, *pGoal,
+						*pStart, MAX_GLOBAL_PLAN_DISTANCE,
+						predefinedLanesIds, generatedTotalPaths);
+#endif
 
 		if(ret == 0) generatedTotalPaths.clear();
 
@@ -366,9 +393,94 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	}
 }
 
+#ifdef ENABLE_VISUALIZE_PLAN
+void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS::WayPoint*>& level, visualization_msgs::MarkerArray& markerArray, double max_cost)
+{
+	if(level.size() == 0 && m_pCurrGoal)
+		return;
+
+	std::vector<PlannerHNS::WayPoint*> newlevel;
+
+	//lane_waypoint_marker.frame_locked = false;
+
+	for(unsigned int i = 0; i < level.size(); i++)
+	{
+		visualization_msgs::Marker lane_waypoint_marker;
+		lane_waypoint_marker.header.frame_id = "map";
+		lane_waypoint_marker.header.stamp = ros::Time();
+		lane_waypoint_marker.type = visualization_msgs::Marker::ARROW;
+		lane_waypoint_marker.ns = "tree_levels";
+		lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+		lane_waypoint_marker.scale.x = 1.0;
+		lane_waypoint_marker.scale.y = 0.5;
+		lane_waypoint_marker.scale.z = 0.5;
+		lane_waypoint_marker.color.a = 0.8;
+		lane_waypoint_marker.color.b = 0.0;
+
+		float norm_cost = level.at(i)->cost / max_cost * 2.0;
+		if(norm_cost <= 1.0)
+		{
+			lane_waypoint_marker.color.r = norm_cost;
+			lane_waypoint_marker.color.g = 1.0;
+		}
+		else if(norm_cost > 1.0)
+		{
+			lane_waypoint_marker.color.r = 1.0;
+			lane_waypoint_marker.color.g = 2.0 - norm_cost;
+		}
+
+		if(markerArray.markers.size() == 0)
+			lane_waypoint_marker.id = 0;
+		else
+			lane_waypoint_marker.id = markerArray.markers.at(markerArray.markers.size()-1).id + 1;
+
+		lane_waypoint_marker.pose.position.x = level.at(i)->pos.x;
+		lane_waypoint_marker.pose.position.y = level.at(i)->pos.y;
+		lane_waypoint_marker.pose.position.z = level.at(i)->pos.z;
+		double a = UtilityHNS::UtilityH::SplitPositiveAngle(level.at(i)->pos.a);
+		lane_waypoint_marker.pose.orientation = tf::createQuaternionMsgFromYaw(a);
+		markerArray.markers.push_back(lane_waypoint_marker);
+
+		if(level.at(i)->pLeft)
+		{
+			lane_waypoint_marker.pose.orientation = tf::createQuaternionMsgFromYaw(a + M_PI_2);
+			newlevel.push_back(level.at(i)->pLeft);
+			lane_waypoint_marker.id = markerArray.markers.at(markerArray.markers.size()-1).id + 1;
+			markerArray.markers.push_back(lane_waypoint_marker);
+		}
+		if(level.at(i)->pRight)
+		{
+			newlevel.push_back(level.at(i)->pRight);
+			lane_waypoint_marker.pose.orientation = tf::createQuaternionMsgFromYaw(a - M_PI_2);
+			lane_waypoint_marker.id = markerArray.markers.at(markerArray.markers.size()-1).id + 1;
+			markerArray.markers.push_back(lane_waypoint_marker);
+		}
+
+		for(unsigned int j = 0; j < level.at(i)->pFronts.size(); j++)
+			if(level.at(i)->pFronts.at(j))
+				newlevel.push_back(level.at(i)->pFronts.at(j));
+
+		if(hypot(m_pCurrGoal->pos.y - level.at(i)->pos.y, m_pCurrGoal->pos.x - level.at(i)->pos.x) < 0.5)
+		{
+			newlevel.clear();
+			break;
+		}
+
+		std::cout << "Levels: " <<  lane_waypoint_marker.id << ", pLeft:" << level.at(i)->pLeft << ", pRight:" << level.at(i)->pRight << ", nFront:" << level.at(i)->pFronts.size() << ", Cost: "<< norm_cost<< std::endl;
+	}
+
+	level = newlevel;
+
+	//std::cout << "Levels: " <<  level.size() << std::endl;
+}
+
+#endif
+
 void way_planner_core::PlannerMainLoop()
 {
 	ros::Rate loop_rate(10);
+	timespec animation_timer;
+	UtilityHNS::UtilityH::GetTickCount(animation_timer);
 
 	while (ros::ok())
 	{
@@ -379,15 +491,17 @@ void way_planner_core::PlannerMainLoop()
 		{
 			m_bKmlMap = true;
 			PlannerHNS::MappingHelpers::LoadKML(m_params.KmlMapPath, m_Map);
+			//PlannerHNS::MappingHelpers::WriteKML("/home/user/SimuLogs/KmlMaps/HalfNicMap.kml", "/home/user/SimuLogs/KmlMaps/PlannerX_MapTemplate.kml", m_Map);
 			visualization_msgs::MarkerArray map_marker_array;
 			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+
 			pub_MapRviz.publish(map_marker_array);
 		}
 		else if (m_params.mapSource == MAP_FOLDER && !m_bKmlMap)
 		{
 			m_bKmlMap = true;
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_params.KmlMapPath, m_Map, true);
-			PlannerHNS::MappingHelpers::WriteKML("/home/user/SimuLogs/KmlMaps/ToyotaCity_NoTransform.kml", "/home/user/SimuLogs/KmlMaps/PlannerX_MapTemplate.kml", m_Map);
+//			PlannerHNS::MappingHelpers::WriteKML("/home/user/SimuLogs/KmlMaps/ToyotaCity_NoTransform.kml", "/home/user/SimuLogs/KmlMaps/PlannerX_MapTemplate.kml", m_Map);
 			visualization_msgs::MarkerArray map_marker_array;
 			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 
@@ -475,9 +589,76 @@ void way_planner_core::PlannerMainLoop()
 					bool bNewPlan = GenerateGlobalPlan(startPoint, goalPoint, m_GeneratedTotalPaths);
 
 					if(bNewPlan)
+					{
 						VisualizeAndSend(m_GeneratedTotalPaths);
+#ifdef ENABLE_VISUALIZE_PLAN
+						//calculate new max_cost
+						if(m_PlanningVisualizeTree.size() > 1)
+						{
+							m_CurrentLevel.push_back(m_PlanningVisualizeTree.at(0));
+							m_CurrMaxCost = 0;
+							for(unsigned int itree = 0; itree < m_PlanningVisualizeTree.size(); itree++)
+							{
+								if(m_PlanningVisualizeTree.at(itree)->cost > m_CurrMaxCost)
+									m_CurrMaxCost = m_PlanningVisualizeTree.at(itree)->cost;
+							}
+						}
+#endif
+					}
 				}
 			}
+
+#ifdef ENABLE_VISUALIZE_PLAN
+			if(UtilityHNS::UtilityH::GetTimeDiffNow(animation_timer) > 0.5)
+			{
+				UtilityHNS::UtilityH::GetTickCount(animation_timer);
+				m_CurrentLevel.clear();
+
+				for(unsigned int ilev = 0; ilev < m_nLevelSize && m_iCurrLevel < m_PlanningVisualizeTree.size() ; ilev ++)
+				{
+					m_CurrentLevel.push_back(m_PlanningVisualizeTree.at(m_iCurrLevel));
+					m_nLevelSize += m_PlanningVisualizeTree.at(m_iCurrLevel)->pFronts.size() - 1;
+					m_iCurrLevel++;
+				}
+
+
+				if(m_CurrentLevel.size() == 0 && m_GeneratedTotalPaths.size() > 0)
+				{
+					m_bSwitch++;
+					m_AccumPlanLevels.markers.clear();
+
+					if(m_bSwitch == 2)
+					{
+						for(unsigned int il = 0; il < m_GeneratedTotalPaths.size(); il++)
+							for(unsigned int ip = 0; ip < m_GeneratedTotalPaths.at(il).size(); ip ++)
+								m_CurrentLevel.push_back(&m_GeneratedTotalPaths.at(il).at(ip));
+
+						std::cout << "Switch On " << std::endl;
+
+						m_bSwitch = 0;
+
+					}
+					else
+					{
+						for(unsigned int ilev = 0; ilev < m_PlanningVisualizeTree.size()+200 ; ilev ++)
+							m_CurrentLevel.push_back(m_PlanningVisualizeTree.at(0));
+
+						std::cout << "Switch Off " << std::endl;
+					}
+
+					CreateNextPlanningTreeLevelMarker(m_CurrentLevel, m_AccumPlanLevels, m_CurrMaxCost);
+					pub_GlobalPlanAnimationRviz.publish(m_AccumPlanLevels);
+				}
+				else
+				{
+					CreateNextPlanningTreeLevelMarker(m_CurrentLevel, m_AccumPlanLevels, m_CurrMaxCost);
+
+					if(m_AccumPlanLevels.markers.size() > 0)
+						pub_GlobalPlanAnimationRviz.publish(m_AccumPlanLevels);
+				}
+			}
+#endif
+
 		}
 
 		//ROS_INFO("Main Loop Step");

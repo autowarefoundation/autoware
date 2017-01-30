@@ -27,7 +27,7 @@ public:
 			const WayPoint& currState, const int& currTrajectoryIndex, const PlanningParams& params,
 			const CAR_BASIC_INFO& carInfo,const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
-private:
+public:
 	int m_CurrentTrajectoryIndex;
 	vector<TrajectoryCost> m_TrajectoryCosts;
 	PlanningParams m_Params;

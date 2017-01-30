@@ -22,13 +22,13 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define FIND_LEFT_RIGHT_LANES
+#define _FIND_LEFT_RIGHT_LANES
 #define _SMOOTH_MAP_WAYPOINTS
 
 
 namespace PlannerHNS {
 
-
+double MappingHelpers::m_USING_VER_ZERO = 0;
 
 MappingHelpers::MappingHelpers() {
 }
@@ -736,18 +736,20 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 					{
 						pWP->pLeft = FindWaypoint(pWP->LeftLaneId, map);
 						if(pWP->pLeft)
+						{
 							pWP->LeftLaneId = pWP->pLeft->laneId;
-
-						pWP->pLane->pLeftLane = pWP->pLeft->pLane;
+							pWP->pLane->pLeftLane = pWP->pLeft->pLane;
+						}
 					}
 
 					if(pWP->RightLaneId > 0)
 					{
 						pWP->pRight = FindWaypoint(pWP->RightLaneId, map);
 						if(pWP->pRight)
+						{
 							pWP->RightLaneId = pWP->pRight->laneId;
-
-						pWP->pLane->pRightLane = pWP->pRight->pLane;
+							pWP->pLane->pRightLane = pWP->pRight->pLane;
+						}
 					}
 				}
 			}
@@ -784,7 +786,7 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 		}
 	}
 
-	cout << "Map loaded from kml file with " << laneLinksList.size()  << " lanes" << endl;
+	cout << "Map loaded from kml file with (" << laneLinksList.size()  << ") lanes, First Point ( " << GetFirstWaypoint(map).pos.ToString() << ")"<< endl;
 
 }
 
@@ -954,6 +956,21 @@ void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 				cost = 	pLane->points.at(j).actionCost.at(0).second;
 			}
 
+if(m_USING_VER_ZERO == 1)
+{
+			valInfo << "WPID_" << pLane->points.at(j).id
+					<< "_C_" << action << "_" << cost << "_From_";
+
+			for(unsigned int k=0; k< pLane->points.at(j).fromIds.size(); k++)
+				valInfo << pLane->points.at(j).fromIds.at(k) << "_";
+
+			valInfo << "To";
+			for(unsigned int k=0; k< pLane->points.at(j).toIds.size(); k++)
+				valInfo << "_" << pLane->points.at(j).toIds.at(k);
+
+}
+else
+{
 			valInfo << "WPID_" << pLane->points.at(j).id
 					<< "_AC_" << action << "_" << cost << "_From_";
 
@@ -973,6 +990,7 @@ void MappingHelpers::SetLaneLinksList(TiXmlElement* pElem, vector<Lane>& lanes)
 				valInfo << "_Rid_" << pLane->points.at(j).pRight->id;
 			else
 				valInfo << "_Rid_" << 0;
+}
 
 			valInfo << "_Vel_" << pLane->points.at(j).v;
 			valInfo << "_Dir_" << pLane->points.at(j).pos.a;
@@ -1514,7 +1532,11 @@ vector<Lane> MappingHelpers::GetLanesList(TiXmlElement* pElem)
 			ll.fromIds = GetIDsFromPrefix(tfID, "From", "To");
 			ll.toIds = GetIDsFromPrefix(tfID, "To", "Vel");
 			ll.speed = GetIDsFromPrefix(tfID, "Vel", "").at(0);
+	if(m_USING_VER_ZERO == 1)
+			ll.points = GetCenterLaneDataVer0(pE, ll.id);
+	else
 			ll.points = GetCenterLaneData(pE, ll.id);
+
 			llList.push_back(ll);
 		}
 	}
@@ -1645,11 +1667,99 @@ vector<WayPoint> MappingHelpers::GetCenterLaneData(TiXmlElement* pElem, const in
 				gps_points.at(i).fromIds =  GetIDsFromPrefix(add_info_list.at(i), "From", "To");
 				gps_points.at(i).toIds =  GetIDsFromPrefix(add_info_list.at(i), "To", "Lid");
 
-				gps_points.at(i).LeftLaneId =  GetIDsFromPrefix(add_info_list.at(i), "Lid", "Rid").at(0);
-				gps_points.at(i).RightLaneId =  GetIDsFromPrefix(add_info_list.at(i), "Rid", "Vel").at(0);
+				vector<int> ids = GetIDsFromPrefix(add_info_list.at(i), "Lid", "Rid");
+				if(ids.size() > 0)
+					gps_points.at(i).LeftLaneId =  ids.at(0);
 
+				ids = GetIDsFromPrefix(add_info_list.at(i), "Rid", "Vel");
+				if(ids.size() > 0)
+					gps_points.at(i).RightLaneId =  ids.at(0);
+
+				vector<double> dnums = GetDoubleFromPrefix(add_info_list.at(i), "Vel", "Dir");
+				if(dnums.size() > 0)
+					gps_points.at(i).v =  dnums.at(0);
+
+				dnums = GetDoubleFromPrefix(add_info_list.at(i), "Dir", "");
+				if(dnums.size() > 0)
+					gps_points.at(i).pos.a = gps_points.at(i).pos.dir =  dnums.at(0);
+			}
+		}
+	}
+
+	return gps_points;
+}
+
+vector<WayPoint> MappingHelpers::GetCenterLaneDataVer0(TiXmlElement* pElem, const int& currLaneID)
+{
+	vector<WayPoint> gps_points;
+
+	TiXmlElement* pV = pElem->FirstChildElement("Placemark");
+
+	if(pV)
+	 pV = pV->FirstChildElement("LineString");
+
+	if(pV)
+		pV = pV->FirstChildElement("coordinates");
+
+	if(pV)
+	{
+		string coordinate_list;
+		if(!pV->NoChildren())
+			coordinate_list = pV->GetText();
+
+		istringstream str_stream(coordinate_list);
+		string token, temp;
+
+
+		while(getline(str_stream, token, ' '))
+		{
+			string lat, lon, alt;
+			double numLat=0, numLon=0, numAlt=0;
+
+			istringstream ss(token);
+
+			getline(ss, lat, ',');
+			getline(ss, lon, ',');
+			getline(ss, alt, ',');
+
+			numLat = atof(lat.c_str());
+			numLon = atof(lon.c_str());
+			numAlt = atof(alt.c_str());
+
+			WayPoint wp;
+
+			wp.pos.x = wp.pos.lat = numLat;
+			wp.pos.y = wp.pos.lon = numLon;
+			wp.pos.z = wp.pos.alt = numAlt;
+
+			wp.laneId = currLaneID;
+			gps_points.push_back(wp);
+		}
+
+		TiXmlElement* pInfoEl =pElem->FirstChildElement("Folder")->FirstChildElement("description");
+		string additional_info;
+		if(pInfoEl)
+			additional_info = pInfoEl->GetText();
+		additional_info.insert(additional_info.begin(), ',');
+		additional_info.erase(additional_info.end()-1);
+		vector<string> add_info_list = SplitString(additional_info, ",");
+		if(gps_points.size() == add_info_list.size())
+		{
+			for(unsigned int i=0; i< gps_points.size(); i++)
+			{
+				gps_points.at(i).id =  GetIDsFromPrefix(add_info_list.at(i), "WPID", "C").at(0);
+				gps_points.at(i).fromIds =  GetIDsFromPrefix(add_info_list.at(i), "From", "To");
+				gps_points.at(i).toIds =  GetIDsFromPrefix(add_info_list.at(i), "To", "Vel");
 				gps_points.at(i).v =  GetDoubleFromPrefix(add_info_list.at(i), "Vel", "Dir").at(0);
 				gps_points.at(i).pos.a = gps_points.at(i).pos.dir =  GetDoubleFromPrefix(add_info_list.at(i), "Dir", "").at(0);
+//				if(currLaneID == 11115)
+//				{
+//
+//					pair<ACTION_TYPE, double> act_cost;
+//						act_cost.first = FORWARD_ACTION;
+//						act_cost.second = 100;
+//					gps_points.at(i).actionCost.push_back(act_cost);
+//				}
 			}
 		}
 	}
@@ -1661,7 +1771,7 @@ vector<int> MappingHelpers::GetIDsFromPrefix(const string& str, const string& pr
 {
 	int index1 = str.find(prefix)+prefix.size();
 	int index2 = str.find(postfix, index1);
-	if(index2<0  || postfix.size() ==0)
+	if(index2 < 0  || postfix.size() ==0)
 		index2 = str.size();
 
 	string str_ids = str.substr(index1, index2-index1);
@@ -1686,7 +1796,7 @@ vector<double> MappingHelpers::GetDoubleFromPrefix(const string& str, const stri
 {
 	int index1 = str.find(prefix)+prefix.size();
 	int index2 = str.find(postfix, index1);
-	if(index2<0  || postfix.size() ==0)
+	if(index2 < 0  || postfix.size() ==0)
 		index2 = str.size();
 
 	string str_ids = str.substr(index1, index2-index1);

@@ -286,7 +286,6 @@ void DrawingHelpers::DrawCostPath(const std::vector<PlannerHNS::WayPoint*>& path
 	if(path_points.size()==0) return;
 
 	WayPoint p1 = *path_points[0];
-	WayPoint p2 = p1;
 	float color[3] = {0,0,0};
 
 	double max_cost = 0;
@@ -297,11 +296,10 @@ void DrawingHelpers::DrawCostPath(const std::vector<PlannerHNS::WayPoint*>& path
 	}
 
 	int size = path_points.size();
-	WayPoint prev_point = p1;
 
-	for(int i=1; i < size; i+=2)
+	for(int i=0; i < size; i++)
 	{
-		p2 = *path_points[i];
+		p1 = *path_points[i];
 		double norm_cost = path_points.at(i)->cost / max_cost * 2.0;
 		if(norm_cost <= 1.0)
 		{
@@ -318,11 +316,6 @@ void DrawingHelpers::DrawCostPath(const std::vector<PlannerHNS::WayPoint*>& path
 
 		//DrawLinePoygonFromCenterX(p1, z, p2, z, width, 0, prev_point);
 		DrawWideEllipse(p1.pos.x, p1.pos.y, z, 0.5, 0.5, 0.25, color);
-
-
-		prev_point = p1;
-
-		p1 = p2;
 	}
 }
 

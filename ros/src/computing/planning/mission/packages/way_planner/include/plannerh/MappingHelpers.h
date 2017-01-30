@@ -14,7 +14,9 @@
 #include "DataRW.h"
 #include "tinyxml.h"
 
+
 namespace PlannerHNS {
+
 
 class MappingHelpers {
 public:
@@ -88,10 +90,14 @@ public:
 	static std::vector<double> GetDoubleFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::pair<ACTION_TYPE, double> GetActionPairFromPrefix(const std::string& str, const std::string& prefix, const std::string& postfix);
 	static std::vector<WayPoint> GetCenterLaneData(TiXmlElement* pElem, const int& currLaneID);
+	static std::vector<WayPoint> GetCenterLaneDataVer0(TiXmlElement* pElem, const int& currLaneID);
 	static std::vector<GPSPoint> GetPointsData(TiXmlElement* pElem);
 	static std::vector<std::string> SplitString(const std::string& str, const std::string& token);
 
 	static void CreateKmlFromLocalizationPathFile(const std::string& pathFileName,const double& maxLaneDistance, const double& density,const std::vector<TrafficLight>& trafficLights, const std::vector<GPSPoint>& stopLines);
+
+
+	static double m_USING_VER_ZERO;
 
 };
 

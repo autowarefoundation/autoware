@@ -51,6 +51,7 @@ public:
 	StopSignWaitState* 			m_pStopSignWaitState;
 
 	TrajectoryCosts m_TrajectoryCostsCalculatotor;
+	int m_iSafeTrajectory;
 
 
 	//for debugging

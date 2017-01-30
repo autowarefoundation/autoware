@@ -11,6 +11,7 @@
 #include <ros/ros.h>
 #include "RoadNetwork.h"
 #include "PlannerCommonDef.h"
+#include "LocalPlannerH.h"
 
 #include <vector_map_msgs/PointArray.h>
 #include <vector_map_msgs/LaneArray.h>
@@ -179,11 +180,11 @@ public:
 				waypoint_follower::lane & trajectory);
 
 	static void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
-			const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
+			const std::vector<std::vector<PlannerHNS::WayPoint> >& paths, const PlannerHNS::LocalPlannerH& localPlanner,
 				visualization_msgs::MarkerArray& markerArray);
 
 	static void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths,
-				visualization_msgs::MarkerArray& markerArray);
+			  visualization_msgs::MarkerArray& markerArray);
 
 	static void ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray);
 

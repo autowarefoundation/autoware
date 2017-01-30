@@ -61,8 +61,18 @@
 #include "RosHelpers.h"
 #include "SimpleTracker.h"
 
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/contrib/contrib.hpp>
+#include <opencv2/core/core.hpp>
+#include <cv_bridge/cv_bridge.h>
+#include <cv.h>
+#include <highgui.h>
+#include <opencv2/imgproc/imgproc.hpp>
+
 namespace PlannerXNS
 {
+
+#define _DATASET_GENERATION_BLOCK
 
 enum SIGNAL_TYPE{SIMULATION_SIGNAL, ROBOT_SIGNAL};
 enum MAP_SOURCE_TYPE{MAP_AUTOWARE, MAP_FOLDER, MAP_KML_FILE};
@@ -219,6 +229,33 @@ protected:
   void UpdatePlanningParams();
 
   lidar_tracker::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
+
+#ifdef DATASET_GENERATION_BLOCK
+private:
+  struct DataPairs
+  {
+	  cv::Mat image;
+	  PlannerHNS::VehicleState vehicleState;
+	  PlannerHNS::WayPoint currentPos;
+	  std::vector<PlannerHNS::WayPoint> path;
+	  std::vector< std::vector<PlannerHNS::WayPoint> > predictedPaths;
+  };
+
+  int m_iRecordNumber;
+  cv::Mat m_CurrImage;
+  std::vector<DataPairs> m_DrivePoints;
+
+  //tf::TransformListener m_Transformation;
+  std::ofstream m_ImagesVectors;
+  std::ofstream m_TrajVectors;
+
+  ros::Subscriber sub_image_reader;
+  void callbackReadImage(const sensor_msgs::ImageConstPtr& msg);
+  void ExtractPathFromDriveData(double max_extraction = 50);
+  void WritePathCSV(const std::string& fName, std::vector<PlannerHNS::WayPoint>& path);
+  void WriteImageAndPathCSV(cv::Mat img, std::vector<PlannerHNS::WayPoint>& path);
+
+#endif
 
 };
 

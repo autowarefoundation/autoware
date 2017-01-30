@@ -1164,6 +1164,12 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 				double d = distance2points(wp->pos, pH->pos)-5;
 				distance += d;
 
+				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
+				{
+					if(wp->actionCost.at(a).first == LEFT_TURN_ACTION)
+						d += wp->actionCost.at(a).second;
+				}
+
 				wp->cost = pH->cost + d;
 				wp->pRight = pH;
 				wp->pRight = 0;
@@ -1179,11 +1185,11 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 				double d = distance2points(wp->pos, pH->pos)-5;
 				distance += d;
 
-//				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
-//				{
-//					if(wp->actionCost.at(a).first == RIGHT_TURN_ACTION)
-//						d += wp->actionCost.at(a).second;
-//				}
+				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
+				{
+					if(wp->actionCost.at(a).first == RIGHT_TURN_ACTION)
+						d += wp->actionCost.at(a).second;
+				}
 
 				wp->cost = pH->cost + d;
 				wp->pLeft = pH;
@@ -1204,11 +1210,11 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 					distance += d;
 
 
-//					for(unsigned int a = 0; a < wp->actionCost.size(); a++)
-//					{
-//						if(wp->actionCost.at(a).first == FORWARD_ACTION)
-//							d += wp->actionCost.at(a).second;
-//					}
+					for(unsigned int a = 0; a < wp->actionCost.size(); a++)
+					{
+						if(wp->actionCost.at(a).first == FORWARD_ACTION)
+							d += wp->actionCost.at(a).second;
+					}
 
 					wp->cost = pH->cost + d;
 					wp->pBacks.push_back(pH);

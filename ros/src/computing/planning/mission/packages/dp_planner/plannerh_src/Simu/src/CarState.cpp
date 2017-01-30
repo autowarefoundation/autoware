@@ -1045,10 +1045,8 @@ bool SimulatedCarState::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::Ve
 		std::vector<int> LanesIds;
 
 		std::vector<std::vector<PlannerHNS::WayPoint> > generatedPath;
-		std::vector<WayPoint*> all_cell_to_delete;
 		planner.PlanUsingDP(pLane, state, PlannerHNS::WayPoint(),
-				state, 150, LanesIds, generatedPath, all_cell_to_delete);
-		planner.DeleteWaypoints(all_cell_to_delete);
+				state, 150, LanesIds, generatedPath);
 		m_RollOuts.clear();
 		if(generatedPath.size()>0)
 			m_TotalPath = generatedPath.at(0);
