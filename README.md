@@ -97,6 +97,16 @@ Original repository is [here](https://github.com/CPFL/velodyne). If you change t
 repository, you must use **git subtree push**. (Please never change and push code if you don't understand
 `git subtree` well).
 
+GitFlow, git branching model, is introduced in Autoware repository.
+- When you adding new features, you can branch off your feature branch from `develop`.  
+  you can use the following command.  
+  `$ git checkout -b feature/[your_branch_name] develop`
+- When you find bugs in `master` branch, you can branch off your hotfix branch from `master`.  
+  you can use the following command.  
+  `$ git checkout -b hotfix/[your_branch_name] master`
+  
+More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
+
 ## Documents
 
 See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English documents will be added shortly.
