@@ -490,19 +490,19 @@ void FFSteerControl::PlannerMainLoop()
 
 				pub_SimulatedCurrentPose.publish(pose);
 
-//				static tf::TransformBroadcaster odom_broadcaster;
-//				geometry_msgs::TransformStamped odom_trans;
-//				odom_trans.header.stamp = ros::Time::now();
-//				odom_trans.header.frame_id = "map";
-//				odom_trans.child_frame_id = "base_link";
-//
-//				odom_trans.transform.translation.x = pose.pose.position.x;
-//				odom_trans.transform.translation.y = pose.pose.position.y;
-//				odom_trans.transform.translation.z = pose.pose.position.z;
-//				odom_trans.transform.rotation = pose.pose.orientation;
-//
-//				// send the transform
-//				odom_broadcaster.sendTransform(odom_trans);
+				static tf::TransformBroadcaster odom_broadcaster;
+				geometry_msgs::TransformStamped odom_trans;
+				odom_trans.header.stamp = ros::Time::now();
+				odom_trans.header.frame_id = "map";
+				odom_trans.child_frame_id = "base_link";
+
+				odom_trans.transform.translation.x = pose.pose.position.x;
+				odom_trans.transform.translation.y = pose.pose.position.y;
+				odom_trans.transform.translation.z = pose.pose.position.z;
+				odom_trans.transform.rotation = pose.pose.orientation;
+
+				// send the transform
+				odom_broadcaster.sendTransform(odom_trans);
 			}
 			else if(m_CmdParams.statusSource == AUTOWARE_STATUS)
 			{

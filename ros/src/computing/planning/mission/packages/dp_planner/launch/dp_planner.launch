@@ -13,15 +13,15 @@
 	<arg name="rollOutsNumber" 				default="12" />
 	<arg name="horizonDistance" 			default="200" />
 	
-	<arg name="minFollowingDistance" 		default="16.0" />
-	<arg name="maxFollowingDistance" 		default="20.0" />
+	<arg name="minFollowingDistance" 		default="10.0" />
+	<arg name="maxFollowingDistance" 		default="13.0" />
 	<arg name="minDistanceToAvoid" 			default="15.0" />
 	<arg name="speedProfileFactor"			default="1.0" />
 	
-	<arg name="enableSwerving" 				default="true" />
-	<arg name="enableFollowing" 			default="true" />
+	<arg name="enableSwerving" 				default="false" />
+	<arg name="enableFollowing" 			default="false" />
 	<arg name="enableHeadingSmoothing" 		default="false" />
-	<arg name="enableTrafficLightBehavior" 	default="true" />
+	<arg name="enableTrafficLightBehavior" 	default="false" />
 	<arg name="enableLaneChange" 			default="false" />
 	
 	<arg name="width" 						default="1.85" />

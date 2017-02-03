@@ -27,7 +27,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 {
 	TrajectoryCost bestTrajectory;
 	bestTrajectory.bBlocked = true;
-	bestTrajectory.closest_obj_distance = 0;
+	bestTrajectory.closest_obj_distance = params.horizonDistance;
 	bestTrajectory.closest_obj_velocity = 0;
 	bestTrajectory.index = -1;
 

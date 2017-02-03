@@ -733,9 +733,9 @@ void PlannerTestDraw::DrawVectorMap()
 		PathColor[1] = PathColor[1]*0.95;
 		PathColor[2] = PathColor[2]*0.95;
 		PathColor[0]=0.4;PathColor[1] = 0.4; PathColor[2] = 0.4;
-		DrawingHelpers::DrawPrePreparedPolygons(m_ReadyToDrawLanes[i], mapdata_z, PathColor);
+		//DrawingHelpers::DrawPrePreparedPolygons(m_ReadyToDrawLanes[i], mapdata_z, PathColor);
 
-		PathColor[0]=0.97;PathColor[1] = 0.97; PathColor[2] = 0.97;
+		PathColor[0]=0.1;PathColor[1] = 0.1; PathColor[2] = 0.1;
 		DrawingHelpers::DrawPrePreparedPolygons(m_ReadyToDrawCenterLines[i], mapdata_z+0.015, PathColor, 1);
 	}
 
@@ -941,7 +941,7 @@ void PlannerTestDraw::DrawPaths()
 	{
 		DrawingHelpers::DrawWidePath(m_LocalPlanner.m_PathSection, 0.08, 0.25, TotalPathColor);
 
-		DrawingHelpers::DrawCostPath(m_all_cell_to_delete, 0.5, 0.5);
+		//DrawingHelpers::DrawCostPath(m_all_cell_to_delete, 0.5, 0.5);
 
 	}
 	else if(m_iStepNumber%4 == 1)

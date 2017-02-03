@@ -2010,13 +2010,39 @@ params :
       v    : 4
       cmd_param:
         dash     : ''
-        delim    : ':='
+        delim    : ':='  
+    - name : minFollowingDistance
+      desc : Distance to start follow Next Car 
+      label: Follow Distance
+      min  : 1.0
+      max  : 30.0
+      v    : 10.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='  
+    - name : maxFollowingDistance
+      desc : Distance to give up follow Next Car 
+      label: Unfollow Distance
+      min  : 2.0
+      max  : 40.0
+      v    : 13.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='  
     - name : minDistanceToAvoid
       desc : Avoidance and Following threshold Distance 
       label: Avoiding Distance
       min  : 4.0
       max  : 40.0
       v    : 15.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableFollowing
+      desc : Enable stop and follow obstacles
+      label: Enable Following
+      kind : checkbox
+      v    : True
       cmd_param:
         dash     : ''
         delim    : ':='

@@ -57,6 +57,7 @@ void LocalPlannerH::Init(const ControllerParams& ctrlParams, const PlannerHNS::P
  		m_CurrentSteering = m_CurrentSteeringD =0;
  		m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
  		m_CurrentAccSteerAngle = m_CurrentAccVelocity = 0;
+ 		m_params = params;
 
  		if(m_pCurrentBehaviorState)
  			m_pCurrentBehaviorState->SetBehaviorsParams(params);
@@ -70,12 +71,16 @@ void LocalPlannerH::InitBehaviorStates()
 	m_pGoToGoalState 			= new ForwardState(m_pMissionCompleteState);
 	m_pWaitState 				= new WaitState(m_pGoToGoalState);
 	m_pInitState 				= new InitState(m_pGoToGoalState);
-	m_pFollowState				= new FollowState(m_pGoToGoalState);
-	m_pAvoidObstacleState		= new SwerveState(m_pGoToGoalState);
-	m_pTrafficLightStopState	= new TrafficLightStopState(m_pGoToGoalState);
-	m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pGoToGoalState);
-	m_pStopSignWaitState		= new StopSignWaitState(m_pGoToGoalState);
-	m_pStopSignStopState		= new StopSignStopState(m_pStopSignWaitState);
+	if(m_params.enableFollowing)
+		m_pFollowState			= new FollowState(m_pGoToGoalState);
+	if(m_params.enableSwerving)
+		m_pAvoidObstacleState	= new SwerveState(m_pGoToGoalState);
+	if(m_params.enableTrafficLightBehavior)
+		m_pTrafficLightStopState	= new TrafficLightStopState(m_pGoToGoalState);
+		m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pGoToGoalState);
+	if(m_params.enableStopSignBehavior)
+		m_pStopSignWaitState		= new StopSignWaitState(m_pGoToGoalState);
+		m_pStopSignStopState		= new StopSignStopState(m_pStopSignWaitState);
 
 	m_pGoToGoalState->InsertNextState(m_pStopState);
 	m_pGoToGoalState->InsertNextState(m_pWaitState);
@@ -84,28 +89,38 @@ void LocalPlannerH::InitBehaviorStates()
 	m_pGoToGoalState->InsertNextState(m_pTrafficLightStopState);
 	m_pGoToGoalState->InsertNextState(m_pStopSignStopState);
 
-	m_pAvoidObstacleState->InsertNextState(m_pStopState);
-	m_pAvoidObstacleState->InsertNextState(m_pWaitState);
-	m_pAvoidObstacleState->InsertNextState(m_pFollowState);
-	m_pAvoidObstacleState->decisionMakingTime = 0.0;
-	m_pAvoidObstacleState->InsertNextState(m_pTrafficLightStopState);
-
-	m_pFollowState->InsertNextState(m_pStopState);
-	m_pFollowState->InsertNextState(m_pWaitState);
-	m_pFollowState->InsertNextState(m_pAvoidObstacleState);
-	m_pFollowState->InsertNextState(m_pTrafficLightStopState);
-	m_pFollowState->InsertNextState(m_pStopSignStopState);
-
 	m_pStopState->InsertNextState(m_pGoToGoalState);
 
-	m_pTrafficLightStopState->InsertNextState(m_pTrafficLightWaitState);
+	if(m_params.enableSwerving)
+	{
+		m_pAvoidObstacleState->InsertNextState(m_pStopState);
+		m_pAvoidObstacleState->InsertNextState(m_pWaitState);
+		m_pAvoidObstacleState->InsertNextState(m_pFollowState);
+		m_pAvoidObstacleState->decisionMakingTime = 0.0;
+		m_pAvoidObstacleState->InsertNextState(m_pTrafficLightStopState);
+	}
 
-	m_pTrafficLightWaitState->InsertNextState(m_pTrafficLightStopState);
+	if(m_params.enableFollowing)
+	{
+		m_pFollowState->InsertNextState(m_pStopState);
+		m_pFollowState->InsertNextState(m_pWaitState);
+		m_pFollowState->InsertNextState(m_pAvoidObstacleState);
+		m_pFollowState->InsertNextState(m_pTrafficLightStopState);
+		m_pFollowState->InsertNextState(m_pStopSignStopState);
+	}
 
-	m_pStopSignWaitState->decisionMakingTime = 5.0;
-	m_pStopSignWaitState->InsertNextState(m_pStopSignStopState);
+	if(m_params.enableTrafficLightBehavior)
+	{
+		m_pTrafficLightStopState->InsertNextState(m_pTrafficLightWaitState);
+		m_pTrafficLightWaitState->InsertNextState(m_pTrafficLightStopState);
+	}
 
-	m_pStopSignStopState->InsertNextState(m_pFollowState);
+	if(m_params.enableStopSignBehavior)
+	{
+		m_pStopSignWaitState->decisionMakingTime = 5.0;
+		m_pStopSignWaitState->InsertNextState(m_pStopSignStopState);
+		m_pStopSignStopState->InsertNextState(m_pFollowState);
+	}
 
 	m_pCurrentBehaviorState = m_pInitState;
 

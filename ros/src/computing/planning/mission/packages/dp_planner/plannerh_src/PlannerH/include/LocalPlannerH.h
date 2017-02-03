@@ -143,6 +143,8 @@ private:
 	BehaviorState GenerateBehaviorState(const VehicleState& vehicleState);
 	void TransformPoint(const WayPoint& refPose, GPSPoint& p);
 	void AddAndTransformContourPoints(const DetectedObject& obj, std::vector<WayPoint>& contourPoints);
+
+	PlannerHNS::PlanningParams m_params;
 };
 
 } /* namespace PlannerHNS */

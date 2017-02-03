@@ -365,6 +365,15 @@ void PlannerX::UpdatePlanningParams()
 {
 	PlannerHNS::PlanningParams params;
 
+	nh.getParam("/dp_planner/enableSwerving", params.enableSwerving);
+	if(params.enableSwerving)
+		params.enableFollowing = true;
+	else
+		nh.getParam("/dp_planner/enableFollowing", params.enableFollowing);
+
+	nh.getParam("/dp_planner/enableHeadingSmoothing", params.enableHeadingSmoothing);
+	nh.getParam("/dp_planner/enableTrafficLightBehavior", params.enableTrafficLightBehavior);
+
 	nh.getParam("/dp_planner/maxVelocity", params.maxSpeed);
 	nh.getParam("/dp_planner/minVelocity", params.minSpeed);
 	nh.getParam("/dp_planner/velocityProfileFactor", params.speedProfileFactor);
@@ -376,18 +385,16 @@ void PlannerX::UpdatePlanningParams()
 
 	nh.getParam("/dp_planner/pathDensity", params.pathDensity);
 	nh.getParam("/dp_planner/rollOutDensity", params.rollOutDensity);
-	nh.getParam("/dp_planner/rollOutsNumber", params.rollOutNumber);
+	if(params.enableSwerving)
+		nh.getParam("/dp_planner/rollOutsNumber", params.rollOutNumber);
+	else
+		params.rollOutNumber = 0;
 
 	nh.getParam("/dp_planner/horizonDistance", params.horizonDistance);
 	nh.getParam("/dp_planner/minFollowingDistance", params.minFollowingDistance);
 	nh.getParam("/dp_planner/maxFollowingDistance", params.maxFollowingDistance);
 	nh.getParam("/dp_planner/minDistanceToAvoid", params.minDistanceToAvoid);
 	nh.getParam("/dp_planner/speedProfileFactor", params.speedProfileFactor);
-
-	nh.getParam("/dp_planner/enableSwerving", params.enableSwerving);
-	nh.getParam("/dp_planner/enableFollowing", params.enableFollowing);
-	nh.getParam("/dp_planner/enableHeadingSmoothing", params.enableHeadingSmoothing);
-	nh.getParam("/dp_planner/enableTrafficLightBehavior", params.enableTrafficLightBehavior);
 
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
 
@@ -868,12 +875,12 @@ void PlannerX::PlannerMainLoop()
 		}
 
 		//Traffic Light Simulation Part
-		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 2)
+		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 5)
 		{
 			m_bGreenLight = false;
 			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
 		}
-		else if(!m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 25.0)
+		else if(!m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 10.0)
 		{
 			m_bGreenLight = true;
 			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);

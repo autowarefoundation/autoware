@@ -163,6 +163,16 @@ public:
 
 };
 
+class GoalState : public BehaviorStateMachine
+{
+public:
+	GoalState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = GOAL_STATE;}
+	virtual ~GoalState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
 } /* namespace PlannerHNS */
 
 #endif /* BEHAVIORSTATEMACHINE_H_ */
