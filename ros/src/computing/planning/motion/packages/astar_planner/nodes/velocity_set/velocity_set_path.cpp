@@ -120,9 +120,12 @@ void VelocitySetPath::avoidSuddenAceleration(double deceleration, int closest_wa
   {
     if (!checkWaypoint(closest_waypoint + i, "avoidSuddenAceleration"))
       return;
+
     changed_vel = sqrt(temp1 + temp2 * (double)(i + 1)) + velocity_offset;
-    if (changed_vel > prev_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x)
+
+    if (changed_vel > new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x)
       return;
+
     new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = changed_vel;
   }
 
