@@ -55,7 +55,6 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
 {
   if (closest_waypoint < 0)
     return;
-  int size = temporal_waypoints_size / calcInterval(0, 1);
 
   temporal_waypoints_.waypoints.clear();
   temporal_waypoints_.header = new_waypoints_.header;
@@ -67,10 +66,11 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   current_point.twist = new_waypoints_.waypoints[closest_waypoint].twist;
   current_point.dtlane = new_waypoints_.waypoints[closest_waypoint].dtlane;
   temporal_waypoints_.waypoints.push_back(current_point);
-  for (int i = 0; i < size; i++)
+  for (int i = 0; i < temporal_waypoints_size; i++)
   {
-    if (closest_waypoint + i >= getPrevWaypointsSize())
+    if (closest_waypoint + i >= getNewWaypoints().waypoints.size())
       return;
+
     temporal_waypoints_.waypoints.push_back(new_waypoints_.waypoints[closest_waypoint + i]);
   }
 
