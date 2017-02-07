@@ -92,6 +92,11 @@ class VelocitySetPath
   {
     return prev_waypoints_.waypoints.size();
   }  
+
+  int getNewWaypointsSize() const
+  {
+    return new_waypoints_.waypoints.size();
+  }
 };
 
 #endif // VELOCITY_SET_PATH_H

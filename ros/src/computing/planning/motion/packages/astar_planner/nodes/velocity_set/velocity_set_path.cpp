@@ -70,7 +70,7 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   temporal_waypoints_.waypoints.push_back(current_point);
   for (int i = 0; i < temporal_waypoints_size; i++)
   {
-    if (closest_waypoint + i >= getNewWaypoints().waypoints.size())
+    if (closest_waypoint + i >= getNewWaypointsSize())
       return;
 
     temporal_waypoints_.waypoints.push_back(new_waypoints_.waypoints[closest_waypoint + i]);
