@@ -41,6 +41,9 @@ class VelocitySetPath
   bool set_path_;
   double current_vel_;
 
+  // ROS param
+  double velocity_offset_; // m/s
+
   bool checkWaypoint(int num, const char *name) const;
 
  public:

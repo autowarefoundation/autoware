@@ -34,6 +34,8 @@ VelocitySetPath::VelocitySetPath()
   : set_path_(false),
     current_vel_(0)
 {
+  ros::NodeHandle private_nh_("~");
+  private_nh_.param<double>("velocity_offset", velocity_offset_, 1.2);
 }
 
 VelocitySetPath::~VelocitySetPath()
@@ -110,19 +112,18 @@ void VelocitySetPath::setDeceleration(double deceleration, int closest_waypoint)
 
 void VelocitySetPath::avoidSuddenAceleration(double deceleration, int closest_waypoint)
 {
-  double changed_vel;
-  double interval = calcInterval(0, 1);
-  double temp1 = current_vel_ * current_vel_;
-  double temp2 = 2 * deceleration * interval;
-  double velocity_offset = 1.389; // m/s
+  double square_current_vel = current_vel_ * current_vel_;
 
   for (int i = 0;; i++)
   {
     if (!checkWaypoint(closest_waypoint + i, "avoidSuddenAceleration"))
       return;
 
-    changed_vel = sqrt(temp1 + temp2 * (double)(i + 1)) + velocity_offset;
+    // accelerate with constant acceleration
+    // v = root((v0)^2 + 2ax)
+    double changed_vel = std::sqrt(square_current_vel + 2 * deceleration * calcInterval(closest_waypoint, closest_waypoint + i)) + velocity_offset_;
 
+    // Don't exceed original velocity
     if (changed_vel > new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x)
       return;
 
