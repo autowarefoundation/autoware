@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <name>point_cloud_converter</name>
+  <version>0.0.0</version>
+  <description>The point_cloud_converter package to convert PointCloud to PointCloud2 or PointCloud2 to PointCloud. Basically the node of
+  http://wiki.ros.org/point_cloud_converter by Radu Bogdan Rusu revived.</description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
+  <!-- Example:  -->
+  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
+  <maintainer email="sam.pfeiffer@pal-robotics.com">Sammy Pfeiffer</maintainer>
+
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- You can specify that this package is a metapackage here: -->
+    <!-- <metapackage/> -->
+
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
