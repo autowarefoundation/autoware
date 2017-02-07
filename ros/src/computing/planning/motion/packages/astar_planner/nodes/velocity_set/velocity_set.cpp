@@ -437,7 +437,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
 
     // change waypoints to stop by the stop_waypoint
     vs_path->changeWaypoints(stop_waypoint, closest_waypoint, vs_info.getDeceleration());
-    vs_path->avoidSuddenAceleration(vs_info.getDeceleration(), closest_waypoint);
+    vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
     vs_path->avoidSuddenBraking(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());
@@ -450,9 +450,9 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
   else
-  {  // ACELERATE or KEEP
+  {  // ACCELERATE or KEEP
     vs_path->initializeNewWaypoints();
-    vs_path->avoidSuddenAceleration(vs_info.getDeceleration(), closest_waypoint);
+    vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
     vs_path->avoidSuddenBraking(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());

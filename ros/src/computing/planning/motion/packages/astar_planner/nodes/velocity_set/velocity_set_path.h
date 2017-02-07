@@ -52,7 +52,7 @@ class VelocitySetPath
 
   void changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration);
   void avoidSuddenBraking(double velocity_change_limit, double deceleration, int closest_waypoint);
-  void avoidSuddenAceleration(double decelerationint, int closest_waypoint);
+  void avoidSuddenAcceleration(double decelerationint, int closest_waypoint);
   void setDeceleration(double deceleration, int closest_waypoint);
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
   void initializeNewWaypoints();

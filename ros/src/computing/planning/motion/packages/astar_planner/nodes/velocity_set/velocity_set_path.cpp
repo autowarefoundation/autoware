@@ -110,13 +110,13 @@ void VelocitySetPath::setDeceleration(double deceleration, int closest_waypoint)
   return;
 }
 
-void VelocitySetPath::avoidSuddenAceleration(double deceleration, int closest_waypoint)
+void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_waypoint)
 {
   double square_current_vel = current_vel_ * current_vel_;
 
   for (int i = 0;; i++)
   {
-    if (!checkWaypoint(closest_waypoint + i, "avoidSuddenAceleration"))
+    if (!checkWaypoint(closest_waypoint + i, "avoidSuddenAcceleration"))
       return;
 
     // accelerate with constant acceleration
