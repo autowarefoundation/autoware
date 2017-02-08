@@ -161,45 +161,37 @@ void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double de
 
 }
 
-void VelocitySetPath::changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration)
+void VelocitySetPath::changeWaypoints(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration)
 {
-  int i = 0;
-  int close_waypoint_threshold = 4;
-  int fill_in_zero = 20;
-  double changed_vel;
-  double interval = calcInterval(0, 1);
+  if (closest_waypoint < 0)
+    return;
 
-  // change waypoints to decelerate
-  for (int num = stop_waypoint; num > closest_waypoint - close_waypoint_threshold; num--)
+  // decelerate with constant deceleration
+  for (int index = stop_waypoint; index >= closest_waypoint; index--)
   {
-    if (!checkWaypoint(num, "changeWaypoints"))
+    if (!checkWaypoint(index, __FUNCTION__))
       continue;
 
-    changed_vel = sqrt(2.0 * deceleration * (interval * i));  // sqrt(2*a*x)
+    // v = (v0)^2 + 2ax, and v0 = 0
+    double changed_vel = std::sqrt(2.0 * deceleration * calcInterval(index, stop_waypoint));
 
-    waypoint_follower::waypoint initial_waypoint = prev_waypoints_.waypoints[num];
-    if (changed_vel > initial_waypoint.twist.twist.linear.x)
-    {  // avoid acceleration
-      new_waypoints_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
+    double prev_vel = prev_waypoints_.waypoints[index].twist.twist.linear.x;
+    if (changed_vel > prev_vel)
+    {
+      new_waypoints_.waypoints[index].twist.twist.linear.x = prev_vel;
     }
     else
     {
-      new_waypoints_.waypoints[num].twist.twist.linear.x = changed_vel;
+      new_waypoints_.waypoints[index].twist.twist.linear.x = changed_vel;
     }
-
-    i++;
   }
 
-  // fill in 0
-  for (int j = 1; j < fill_in_zero; j++)
+  // fill velocity with 0 for stopping
+  for (int i = stop_waypoint; i <= obstacle_waypoint; i++)
   {
-    if (!checkWaypoint(stop_waypoint + j, "changeWaypoints"))
-      continue;
-    new_waypoints_.waypoints[stop_waypoint + j].twist.twist.linear.x = 0.0;
+    new_waypoints_.waypoints[i].twist.twist.linear.x = 0;
   }
 
-
-  return;
 }
 
 void VelocitySetPath::initializeNewWaypoints()

@@ -50,7 +50,7 @@ class VelocitySetPath
   VelocitySetPath();
   ~VelocitySetPath();
 
-  void changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration);
+  void changeWaypoints(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration);
   void avoidSuddenBraking(double velocity_change_limit, double deceleration, int closest_waypoint);
   void avoidSuddenAcceleration(double decelerationint, int closest_waypoint);
   void setDeceleration(double deceleration, int closest_waypoint);
