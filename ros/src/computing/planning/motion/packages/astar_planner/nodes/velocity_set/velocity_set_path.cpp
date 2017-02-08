@@ -135,61 +135,30 @@ void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_w
 
 void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double deceleration, int closest_waypoint)
 {
-  int i = 0;
-  int fill_in_zero = 20;
-  int fill_in_vel = 15;
-  int examin_range = 1;  // need to change according to waypoint interval?
-  int num;
-  double interval = calcInterval(0, 1);
-  double changed_vel;
+  if (closest_waypoint < 0)
+    return;
 
-  for (int j = -1; j < examin_range; j++)
+  // not avoid braking
+  if (current_vel_ - new_waypoints_.waypoints[closest_waypoint].twist.twist.linear.x < velocity_change_limit)
+    return;
+
+  //std::cout << "avoid sudden braking!" << std::endl;
+
+  double square_vel = (current_vel_ - velocity_change_limit) * (current_vel_ - velocity_change_limit);
+  for (int i = 0;; i++)
   {
-    if (!checkWaypoint(closest_waypoint + j, "avoidSuddenBraking"))
+    if (!checkWaypoint(i, "avoidSuddenBraking"))
       return;
-    if (new_waypoints_.waypoints[closest_waypoint + j].twist.twist.linear.x <
-        current_vel_ - velocity_change_limit)  // we must change waypoints
+
+    // sqrt(v^2 - 2ax)
+    double changed_vel = square_vel - 2 * deceleration * calcInterval(closest_waypoint, closest_waypoint + i);
+
+    if (changed_vel < 0)
       break;
-    if (j == examin_range - 1)  // we don't have to change waypoints
-      return;
+
+    new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = std::sqrt(changed_vel);
   }
 
-  ROS_INFO("avoid sudden braking!!");
-
-  // fill in waypoints velocity behind vehicle
-  for (num = closest_waypoint - 1; fill_in_vel > 0; fill_in_vel--)
-  {
-    if (!checkWaypoint(num - fill_in_vel, "avoidSuddenBraking"))
-      continue;
-    new_waypoints_.waypoints[num - fill_in_vel].twist.twist.linear.x = current_vel_;
-  }
-
-  // decelerate gradually
-  double temp1 = (current_vel_ - velocity_change_limit + 1.389) * (current_vel_ - velocity_change_limit + 1.389);
-  double temp2 = 2 * deceleration * interval;
-  for (num = closest_waypoint - 1;; num++)
-  {
-    if (num >= getPrevWaypointsSize())
-      return;
-    if (!checkWaypoint(num, "avoidSuddenBraking"))
-      continue;
-    changed_vel = temp1 - temp2 * (double)i;  // sqrt(v^2 - 2*a*x)
-    if (changed_vel <= 0)
-      break;
-    new_waypoints_.waypoints[num].twist.twist.linear.x = sqrt(changed_vel);
-
-    i++;
-  }
-
-  for (int j = 0; j < fill_in_zero; j++)
-  {
-    if (!checkWaypoint(num + j, "avoidSuddenBraking"))
-      continue;
-    new_waypoints_.waypoints[num + j].twist.twist.linear.x = 0.0;
-  }
-
-
-  return;
 }
 
 void VelocitySetPath::changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration)
