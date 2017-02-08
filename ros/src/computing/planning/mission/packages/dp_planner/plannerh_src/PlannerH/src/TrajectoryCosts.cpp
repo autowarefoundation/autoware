@@ -6,6 +6,7 @@
  */
 
 #include "TrajectoryCosts.h"
+#include "MatrixOperations.h"
 
 namespace PlannerHNS
 {
@@ -96,18 +97,53 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 {
 	double critical_lateral_distance = params.rollOutDensity + carInfo.width/2.0;
 	int iCostIndex = 0;
+	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
+	PlannerHNS::Mat3 translationMat(-currState.pos.x, -currState.pos.y);
+
+
 
 	for(unsigned int il=0; il < rollOuts.size(); il++)
 	{
 		int iCurrIndex = PlanningHelpers::GetClosestPointIndex(totalPaths.at(il), currState);
+
 		for(unsigned int it=0; it< rollOuts.at(il).size(); it++)
 		{
+			int iCurrIndex = PlanningHelpers::GetClosestPointIndex(totalPaths.at(il), currState);
+			//int iCurrLocalIndex = PlanningHelpers::GetClosestPointIndex(rollOuts.at(il).at(it), currState);
+//			double distanceOnLocal = 0;
+//			for(int iLocalTraj = 1; iLocalTraj <= iCurrLocalIndex; iLocalTraj++)
+//				distanceOnLocal += hypot(rollOuts.at(il).at(it).at(iLocalTraj).pos.y - rollOuts.at(il).at(it).at(iLocalTraj-1).pos.y , rollOuts.at(il).at(it).at(iLocalTraj).pos.x - rollOuts.at(il).at(it).at(iLocalTraj-1).pos.x);
+
+
+
 			for(unsigned int icon = 0; icon < contourPoints.size(); icon++)
 			{
-				double lateralDist =  fabs(PlanningHelpers::GetPerpDistanceToTrajectorySimple(totalPaths.at(il), contourPoints.at(icon), iCurrIndex) - trajectoryCosts.at(iCostIndex).distance_from_center);
-				double longitudinalDist = PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon)) - carInfo.length/2.0;
+				double longitudinalDist = PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon));
 
-				if(lateralDist < critical_lateral_distance && longitudinalDist >= 0 &&  longitudinalDist < params.minFollowingDistance)
+				if(longitudinalDist< -carInfo.length/2.0) continue;
+
+				double close_in_percentage = 1;
+//				if(longitudinalDist > (params.carTipMargin + params.rollInMargin - distanceOnLocal))
+//					close_in_percentage = 1;
+//				else if(longitudinalDist <= (params.carTipMargin-distanceOnLocal))
+//					close_in_percentage = 0;
+//				else
+//					close_in_percentage = (longitudinalDist+carInfo.length/2.0)/params.rollInMargin;
+//
+//				if(close_in_percentage>1) close_in_percentage = 1;
+//				if(close_in_percentage<0) close_in_percentage = 0;
+
+				PlannerHNS::GPSPoint relative_point;
+				relative_point = translationMat*contourPoints.at(icon).pos;
+				relative_point = rotationMat*relative_point;
+
+
+				double lateralDist =  fabs(PlanningHelpers::GetPerpDistanceToTrajectorySimple(totalPaths.at(il), contourPoints.at(icon), iCurrIndex) - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
+
+				cout << "close_in_percentage: " << close_in_percentage  << ", LateralD: " << lateralDist << ", Longit: " << longitudinalDist << endl;
+
+				longitudinalDist = longitudinalDist - carInfo.length/2.0;
+				if((lateralDist <= critical_lateral_distance && longitudinalDist >= 0 &&  longitudinalDist < params.minFollowingDistance) || (longitudinalDist < params.maxDistanceToAvoid && fabs(relative_point.y) <= critical_lateral_distance ))
 					trajectoryCosts.at(iCostIndex).bBlocked = true;
 
 				if(lateralDist==0)

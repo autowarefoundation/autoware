@@ -16,6 +16,7 @@
 	<arg name="minFollowingDistance" 		default="10" />
 	<arg name="maxFollowingDistance" 		default="9" />
 	<arg name="minDistanceToAvoid" 			default="6" />
+	<arg name="maxDistanceToAvoid" 			default="3" />
 	<arg name="speedProfileFactor"			default="1.0" />
 	
 	<arg name="enableSwerving" 				default="true" />
@@ -55,6 +56,7 @@
 		<param name="minFollowingDistance" 			value="$(arg minFollowingDistance)" />
 		<param name="maxFollowingDistance" 			value="$(arg maxFollowingDistance)" />
 		<param name="minDistanceToAvoid" 			value="$(arg minDistanceToAvoid)" />
+		<param name="maxDistanceToAvoid" 			value="$(arg maxDistanceToAvoid)" />
 		<param name="speedProfileFactor"			value="$(arg speedProfileFactor)" />
 		
 		<param name="enableSwerving" 				value="$(arg enableSwerving)" />

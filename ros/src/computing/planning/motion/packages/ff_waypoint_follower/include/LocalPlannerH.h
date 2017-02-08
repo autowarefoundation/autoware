@@ -43,6 +43,7 @@ public:
 	WaitState* 					m_pWaitState;
 	InitState* 					m_pInitState;
 	MissionAccomplishedState*	m_pMissionCompleteState;
+	GoalState*					m_pGoalState;
 	FollowState*				m_pFollowState;
 	SwerveState*				m_pAvoidObstacleState;
 	TrafficLightStopState*		m_pTrafficLightStopState;
@@ -52,6 +53,7 @@ public:
 
 	TrajectoryCosts m_TrajectoryCostsCalculatotor;
 	int m_iSafeTrajectory;
+	int m_iGlobalPathPrevID;
 
 
 	//for debugging
@@ -103,14 +105,14 @@ public:
 	void LocalizeMe(const double& dt); // in seconds
 	void UpdateState(const VehicleState& state, const bool& bUseDelay = false);
 	void CalculateImportantParameterForDecisionMaking(const VehicleState& car_state,
-			const GPSPoint& goal, const bool& bEmergencyStop, const bool& bGreenTrafficLight,
+			const int& goalID, const bool& bEmergencyStop, const bool& bGreenTrafficLight,
 			const TrajectoryCost& bestTrajectory);
 
 	BehaviorState DoOneStep(
 			const double& dt,
 			const VehicleState& state,
 			const std::vector<DetectedObject>& obj_list,
-			const GPSPoint& goal,
+			const int& goalID,
 			RoadNetwork& map,
 			const bool& bEmergencyStop,
 			const bool& bGreenTrafficLight,
@@ -137,12 +139,15 @@ private:
 			const DetectedObject& obj);
 
 	bool GetNextTrafficLight(const int& prevTrafficLightId, const std::vector<TrafficLight>& trafficLights, TrafficLight& trafficL);
-	bool IsGoalAchieved(const GPSPoint& goal);
 	void UpdateCurrentLane(RoadNetwork& map, const double& search_distance);
 	bool SelectSafeTrajectoryAndSpeedProfile(const VehicleState& vehicleState);
 	BehaviorState GenerateBehaviorState(const VehicleState& vehicleState);
 	void TransformPoint(const WayPoint& refPose, GPSPoint& p);
 	void AddAndTransformContourPoints(const DetectedObject& obj, std::vector<WayPoint>& contourPoints);
+
+	bool NoWayTest(const double& min_distance);
+
+	PlannerHNS::PlanningParams m_params;
 };
 
 } /* namespace PlannerHNS */

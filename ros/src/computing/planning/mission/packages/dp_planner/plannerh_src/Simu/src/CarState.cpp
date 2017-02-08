@@ -239,7 +239,7 @@ void CarState::InitPolygons()
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
 
  	//Mission Complete
- 	pValues->bGoalReached = IsGoalAchieved(goal);
+ 	//pValues->bGoalReached = IsGoalAchieved(goal);
  	pValues->minStoppingDistance	= car_state.speed * 3.6 * 1.5;
  	if(pValues->distanceToNext > 0 || pValues->distanceToStop()>0)
  		pValues->minStoppingDistance += 1.0;

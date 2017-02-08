@@ -394,6 +394,7 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/minFollowingDistance", params.minFollowingDistance);
 	nh.getParam("/dp_planner/maxFollowingDistance", params.maxFollowingDistance);
 	nh.getParam("/dp_planner/minDistanceToAvoid", params.minDistanceToAvoid);
+	nh.getParam("/dp_planner/maxDistanceToAvoid", params.maxDistanceToAvoid);
 	nh.getParam("/dp_planner/speedProfileFactor", params.speedProfileFactor);
 
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
@@ -444,8 +445,8 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	timespec t;
 	UtilityHNS::UtilityH::GetTickCount(t);
 	srand(t.tv_nsec);
-	double width = ((double)(rand()%10)/10.0) * 1.5 + 0.25;
-	double length = ((double)(rand()%10)/10.0) * 0.5 + 0.25;
+	double width = 0.1;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
+	double length = 0.1;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
 
 	geometry_msgs::PointStamped point;
 	point.point.x = msg->point.x+m_OriginPos.position.x;
@@ -453,7 +454,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	point.point.z = msg->point.z+m_OriginPos.position.z;
 
 	lidar_tracker::CloudClusterArray clusters_array;
-	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 150, point));
+	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 50, point));
 	m_OriginalClusters.clear();
 	int nNum1, nNum2;
 	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
@@ -729,8 +730,7 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 
 		bWayPlannerPath = true;
 		m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = true;
-		//m_goals.at(m_iCurrentGoal) = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
-		m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
+		//m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
 		m_LocalPlanner.m_TotalPath = m_WayPlannerPaths;
 	}
 }
@@ -787,7 +787,7 @@ void PlannerX::PlannerMainLoop()
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
-			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, m_CurrentGoal.pos, m_Map, m_bEmergencyStop, m_bGreenLight, true);
+			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, 1, m_Map, m_bEmergencyStop, m_bGreenLight, true);
 
 			visualization_msgs::Marker behavior_rviz;
 

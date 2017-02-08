@@ -14,7 +14,7 @@
 namespace PlannerHNS
 {
 
-#define ZERO_VELOCITY 0.05
+#define ZERO_VELOCITY 0.1
 
 
 class BehaviorStateMachine
@@ -159,6 +159,16 @@ public:
 	InitState(BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pNextState){m_Behavior = INITIAL_STATE;}
 	virtual ~InitState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class GoalState : public BehaviorStateMachine
+{
+public:
+	GoalState(BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pNextState){m_Behavior = GOAL_STATE;}
+	virtual ~GoalState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
 };

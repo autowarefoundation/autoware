@@ -19,6 +19,7 @@ namespace PlannerHNS
 
 LocalPlannerH::LocalPlannerH()
 {
+	m_iGlobalPathPrevID = 0;
 	pLane = 0;
 	m_CurrentVelocity =  m_CurrentVelocityD =0;
 	m_CurrentSteering = m_CurrentSteeringD =0;
@@ -68,19 +69,16 @@ void LocalPlannerH::InitBehaviorStates()
 
 	m_pStopState 				= new StopState(0);
 	m_pMissionCompleteState 	= new MissionAccomplishedState(0);
-	m_pGoToGoalState 			= new ForwardState(m_pMissionCompleteState);
+	m_pGoalState				= new GoalState(m_pMissionCompleteState);
+	m_pGoToGoalState 			= new ForwardState(m_pGoalState);
 	m_pWaitState 				= new WaitState(m_pGoToGoalState);
 	m_pInitState 				= new InitState(m_pGoToGoalState);
-	if(m_params.enableFollowing)
-		m_pFollowState			= new FollowState(m_pGoToGoalState);
-	if(m_params.enableSwerving)
-		m_pAvoidObstacleState	= new SwerveState(m_pGoToGoalState);
-	if(m_params.enableTrafficLightBehavior)
-		m_pTrafficLightStopState	= new TrafficLightStopState(m_pGoToGoalState);
-		m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pGoToGoalState);
-	if(m_params.enableStopSignBehavior)
-		m_pStopSignWaitState		= new StopSignWaitState(m_pGoToGoalState);
-		m_pStopSignStopState		= new StopSignStopState(m_pStopSignWaitState);
+	m_pFollowState			= new FollowState(m_pGoToGoalState);
+	m_pAvoidObstacleState	= new SwerveState(m_pGoToGoalState);
+	m_pTrafficLightStopState	= new TrafficLightStopState(m_pGoToGoalState);
+	m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pGoToGoalState);
+	m_pStopSignWaitState		= new StopSignWaitState(m_pGoToGoalState);
+	m_pStopSignStopState		= new StopSignStopState(m_pStopSignWaitState);
 
 	m_pGoToGoalState->InsertNextState(m_pStopState);
 	m_pGoToGoalState->InsertNextState(m_pWaitState);
@@ -91,39 +89,13 @@ void LocalPlannerH::InitBehaviorStates()
 
 	m_pStopState->InsertNextState(m_pGoToGoalState);
 
-	if(m_params.enableSwerving)
-	{
-		m_pAvoidObstacleState->InsertNextState(m_pStopState);
-		m_pAvoidObstacleState->InsertNextState(m_pWaitState);
-		m_pAvoidObstacleState->InsertNextState(m_pFollowState);
-		m_pAvoidObstacleState->decisionMakingTime = 0.0;
-		m_pAvoidObstacleState->InsertNextState(m_pTrafficLightStopState);
-	}
+	m_pTrafficLightStopState->InsertNextState(m_pTrafficLightWaitState);
+	m_pTrafficLightWaitState->InsertNextState(m_pTrafficLightStopState);
 
-	if(m_params.enableFollowing)
-	{
-		m_pFollowState->InsertNextState(m_pStopState);
-		m_pFollowState->InsertNextState(m_pWaitState);
-		m_pFollowState->InsertNextState(m_pAvoidObstacleState);
-		m_pFollowState->InsertNextState(m_pTrafficLightStopState);
-		m_pFollowState->InsertNextState(m_pStopSignStopState);
-	}
-
-	if(m_params.enableTrafficLightBehavior)
-	{
-		m_pTrafficLightStopState->InsertNextState(m_pTrafficLightWaitState);
-		m_pTrafficLightWaitState->InsertNextState(m_pTrafficLightStopState);
-	}
-
-	if(m_params.enableStopSignBehavior)
-	{
-		m_pStopSignWaitState->decisionMakingTime = 5.0;
-		m_pStopSignWaitState->InsertNextState(m_pStopSignStopState);
-		m_pStopSignStopState->InsertNextState(m_pFollowState);
-	}
+	m_pStopSignWaitState->decisionMakingTime = 5.0;
+	m_pStopSignWaitState->InsertNextState(m_pStopSignStopState);
 
 	m_pCurrentBehaviorState = m_pInitState;
-
 }
 
 void LocalPlannerH::InitPolygons()
@@ -250,17 +222,19 @@ void LocalPlannerH::InitPolygons()
  }
 
  void LocalPlannerH::CalculateImportantParameterForDecisionMaking(const PlannerHNS::VehicleState& car_state,
-		 const PlannerHNS::GPSPoint& goal, const bool& bEmergencyStop, const bool& bGreenTrafficLight,
+		 const int& goalID, const bool& bEmergencyStop, const bool& bGreenTrafficLight,
 		 const TrajectoryCost& bestTrajectory)
  {
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
 
- 	//Mission Complete
- 	pValues->bGoalReached = IsGoalAchieved(goal);
-
- 	pValues->minStoppingDistance = (-car_state.speed*car_state.speed)/2.0*m_CarInfo.max_deceleration + m_CarInfo.length/2.0;
+ 	pValues->minStoppingDistance = 0;//(-car_state.speed*car_state.speed)/2.0*m_CarInfo.max_deceleration + m_CarInfo.length/2.0;
  	if(pValues->distanceToNext > 0 || pValues->distanceToStop()>0)
  		pValues->minStoppingDistance += 0.5;
+
+ 	if(NoWayTest(pValues->minStoppingDistance))
+ 		pValues->currentGoalID = -1;
+ 	else
+ 		pValues->currentGoalID = goalID;
 
  	pValues->iCentralTrajectory		= m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber/2;
 
@@ -574,13 +548,19 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 	LocalizeMe(dt);
  }
 
- bool LocalPlannerH::IsGoalAchieved(const PlannerHNS::GPSPoint& goal)
+ bool LocalPlannerH::NoWayTest(const double& min_distance)
  {
-	double distance_to_goal = distance2points(state.pos , goal);
-	if(distance_to_goal < 3.5)
-		return true;
-	else
-		return false;
+	 m_iGlobalPathPrevID = PlanningHelpers::GetClosestNextPointIndexWithDirection(m_TotalPath.at(m_iCurrentTotalPathId), state, m_iGlobalPathPrevID);
+
+	 double d = 0;
+	 for(unsigned int i = m_iGlobalPathPrevID; i < m_TotalPath.at(m_iCurrentTotalPathId).size()-1; i++)
+	 {
+		 d+= hypot(m_TotalPath.at(m_iCurrentTotalPathId).at(i+1).pos.y - m_TotalPath.at(m_iCurrentTotalPathId).at(i).pos.y, m_TotalPath.at(m_iCurrentTotalPathId).at(i+1).pos.x - m_TotalPath.at(m_iCurrentTotalPathId).at(i).pos.x);
+		 if(d > min_distance)
+			 return false;
+	 }
+
+	 return true;
  }
 
  bool LocalPlannerH::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::VehicleState& vehicleState)
@@ -665,10 +645,10 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 	PlannerHNS::BehaviorState currentBehavior;
 
 	currentBehavior.state = m_pCurrentBehaviorState->m_Behavior;
-	if(currentBehavior.state == PlannerHNS::FOLLOW_STATE)
+	//if(currentBehavior.state == PlannerHNS::FOLLOW_STATE)
 		currentBehavior.followDistance = preCalcPrams->distanceToNext;
-	else
-		currentBehavior.followDistance = 0;
+	//else
+	//	currentBehavior.followDistance = 0;
 
 	if(preCalcPrams->bUpcomingRight)
 		currentBehavior.indicator = PlannerHNS::INDICATOR_RIGHT;
@@ -688,7 +668,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 		 const double& dt,
 		const PlannerHNS::VehicleState& vehicleState,
 		const std::vector<PlannerHNS::DetectedObject>& obj_list,
-		const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map	,
+		const int& goalID, PlannerHNS::RoadNetwork& map	,
 		const bool& bEmergencyStop,
 		const bool& bGreenTrafficLight,
 		const bool& bLive)
@@ -709,7 +689,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 
 	timespec behTimer;
 	UtilityH::GetTickCount(behTimer);
-	CalculateImportantParameterForDecisionMaking(vehicleState, goal, bEmergencyStop, bGreenTrafficLight, tc);
+	CalculateImportantParameterForDecisionMaking(vehicleState, goalID, bEmergencyStop, bGreenTrafficLight, tc);
 
 	PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
 	m_BehaviorGenTime = UtilityH::GetTimeDiffNow(behTimer);

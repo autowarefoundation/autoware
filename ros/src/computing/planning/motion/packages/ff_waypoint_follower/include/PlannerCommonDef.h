@@ -63,13 +63,13 @@ public:
 	{
 		SimulationSteeringDelay = 0.0;
 		SteeringDelay 		= 0.8;
-		Acceleration		= 0.05;
-		Deceleration		= 1.6;
+		Acceleration		= 0.5;
+		Deceleration		= -0.8;
 		FollowDistance		= 8.0;
 		LowpassSteerCutoff	= 5.0;
-		maxAccel			= 0.7;
+		maxAccel			= 0.9;
 		minPursuiteDistance = 2.0;
-		maxDecel 			= 0.5;
+		maxDecel 			= -1.5;
 	}
 };
 
@@ -81,6 +81,7 @@ public:
   double turning_radius;
   double wheel_base;
   double max_speed_forward;
+  double min_speed_forward;
   double max_speed_backword;
   double max_steer_value;
   double min_steer_value;
@@ -99,6 +100,7 @@ public:
 	  turning_radius 		= 5.2;
 	  wheel_base			= 2.7;
 	  max_speed_forward		= 3.0;
+	  min_speed_forward		= 0.0;
 	  max_speed_backword	= 1.0;
 	  max_steer_value		= 660;
 	  min_steer_value		= -660;

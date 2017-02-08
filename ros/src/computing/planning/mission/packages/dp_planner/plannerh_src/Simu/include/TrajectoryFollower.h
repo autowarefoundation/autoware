@@ -43,6 +43,8 @@ public:
 	double 					m_FollowingDistance;
 	PlannerHNS::WayPoint 	m_CurrPos;
 	int 					m_iCalculatedIndex;
+	bool					m_bEndPath;
+	double 					m_WayPointsDensity;
 
 
 private:

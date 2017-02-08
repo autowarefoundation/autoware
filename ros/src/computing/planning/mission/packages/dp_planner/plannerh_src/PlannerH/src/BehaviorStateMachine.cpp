@@ -73,29 +73,32 @@ BehaviorStateMachine* ForwardState::GetNextState()
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
-	if(pCParams->bGoalReached)
+	if(pCParams->currentGoalID != pCParams->prevGoalID)
 		return FindBehaviorState(GOAL_STATE);
 
-	if(pCParams->distanceToNext <= m_PlanningParams.maxDistanceToAvoid)
-		return FindBehaviorState(STOPPING_STATE);
-
-	else if(pCParams->bFullyBlock)
-		return FindBehaviorState(FOLLOW_STATE);
-
-	else if(pCParams->distanceToNext > m_PlanningParams.maxDistanceToAvoid
+	else if(m_PlanningParams.enableSwerving
 			&& pCParams->distanceToNext <= m_PlanningParams.minDistanceToAvoid
 			&& !pCParams->bFullyBlock
 			&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory)
 		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
 
-	else if(pCParams->currentTrafficLightID > 0
+	else if(m_PlanningParams.enableTrafficLightBehavior
+			&& pCParams->currentTrafficLightID > 0
 			&& pCParams->bTrafficIsRed
 			&& pCParams->currentTrafficLightID != pCParams->prevTrafficLightID)
 		return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
 
-	else if(pCParams->currentStopSignID > 0
+	else if(m_PlanningParams.enableStopSignBehavior
+			&& pCParams->currentStopSignID > 0
 			&& pCParams->currentStopSignID != pCParams->prevStopSignID)
 			return FindBehaviorState(STOP_SIGN_STOP_STATE);
+
+	else if(m_PlanningParams.enableFollowing
+			&& pCParams->bFullyBlock)
+			return FindBehaviorState(FOLLOW_STATE);
+
+//	else if(pCParams->distanceToNext <= m_PlanningParams.maxDistanceToAvoid)
+//		return FindBehaviorState(STOPPING_STATE);
 
 	else
 	{
@@ -109,32 +112,29 @@ BehaviorStateMachine* ForwardState::GetNextState()
 
 BehaviorStateMachine* MissionAccomplishedState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
-
 	return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 BehaviorStateMachine* StopState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
-
-	if(pCParams->bOutsideControl  == 1)
-	{
-		pCParams->bOutsideControl = 0;
-		pCParams->bRePlan = true;
-		return FindBehaviorState(FORWARD_STATE);
-	}
-	else
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
 		return this;
+
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->distanceToNext > m_PlanningParams.maxDistanceToAvoid)
+		return FindBehaviorState(FORWARD_STATE);
+
+	else
+		return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 BehaviorStateMachine* TrafficLightStopState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+		return this;
 
+	PreCalculatedConditions* pCParams = GetCalcParams();
 
 	if(!pCParams->bTrafficIsRed)
 	{
@@ -142,16 +142,18 @@ BehaviorStateMachine* TrafficLightStopState::GetNextState()
 		return FindBehaviorState(FORWARD_STATE);
 	}
 
-	else if(pCParams->bTrafficIsRed && pCParams->currentVelocity < ZERO_VELOCITY)
+	else if(pCParams->bTrafficIsRed && pCParams->currentVelocity <= ZERO_VELOCITY)
 			return FindBehaviorState(TRAFFIC_LIGHT_WAIT_STATE);
 	else
-		return this;
+		return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 BehaviorStateMachine* TrafficLightWaitState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+		return this;
+
+	PreCalculatedConditions* pCParams = GetCalcParams();
 
 	if(!pCParams->bTrafficIsRed)
 	{
@@ -163,141 +165,114 @@ BehaviorStateMachine* TrafficLightWaitState::GetNextState()
 		return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
 
 	else
-		return this;
+		return FindBehaviorState(this->m_Behavior); // return and reset
 
 }
 
 BehaviorStateMachine* StopSignStopState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+		return this;
 
-	if(pCParams->bFullyBlock
-			&& m_PlanningParams.enableFollowing)
-		return FindBehaviorState(FOLLOW_STATE);
+	PreCalculatedConditions* pCParams = GetCalcParams();
 
-	else if(pCParams->currentVelocity < ZERO_VELOCITY)
+	if(pCParams->currentVelocity < ZERO_VELOCITY)
 		return FindBehaviorState(STOP_SIGN_WAIT_STATE);
 
 	else
-		return this;
+		return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 BehaviorStateMachine* StopSignWaitState::GetNextState()
 {
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) > decisionMakingTime)
-	{
-		pCParams->prevStopSignID = pCParams->currentStopSignID;
-		return FindBehaviorState(FORWARD_STATE);
-	}
-
-	else if(pCParams->currentVelocity > ZERO_VELOCITY)
-		return FindBehaviorState(STOP_SIGN_STOP_STATE);
-
-	else
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
 		return this;
 
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	pCParams->prevStopSignID = pCParams->currentStopSignID;
+	return FindBehaviorState(FORWARD_STATE);
 }
 
 BehaviorStateMachine* WaitState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
-
-	if(pCParams->bOutsideControl  == 1)
-	{
-		pCParams->bOutsideControl = 0;
-		return FindBehaviorState(FORWARD_STATE);
-	}
-	else
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
 		return this;
+
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	return FindBehaviorState(FORWARD_STATE);
 }
 
 BehaviorStateMachine* InitState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+		return this;
+
+	PreCalculatedConditions* pCParams = GetCalcParams();
 
 	if(pCParams->bOutsideControl == 1)
 	{
-		pCParams->bOutsideControl = 0;
+		pCParams->prevGoalID = pCParams->currentGoalID;
 		return FindBehaviorState(FORWARD_STATE);
 	}
+
 	else
-		return this;
+		return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 BehaviorStateMachine* FollowState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//			return this; //return this behavior only , without reset
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+			return this;
 
-//	if(pCParams->bOutsideControl == 0)
-//		return FindBehaviorState(WAITING_STATE);
+	PreCalculatedConditions* pCParams = GetCalcParams();
 
-	if(pCParams->bGoalReached)
-		return FindBehaviorState(STOPPING_STATE);
-
-	else if(pCParams->bFullyBlock)
-		return FindBehaviorState(this->m_Behavior);
-
-	else if(pCParams->distanceToNext > 0
-			&& pCParams->distanceToNext < m_PlanningParams.minDistanceToAvoid
-			&& !pCParams->bFullyBlock
-			&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory
-			&& m_PlanningParams.enableSwerving)
-		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
-
-	else if(pCParams->currentTrafficLightID > 0 && pCParams->bTrafficIsRed && pCParams->currentTrafficLightID != pCParams->prevTrafficLightID)
-			return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
-
-	else if(pCParams->currentStopSignID > 0 && pCParams->currentStopSignID != pCParams->prevStopSignID)
-			return FindBehaviorState(STOP_SIGN_STOP_STATE);
+	if(pCParams->currentGoalID != pCParams->prevGoalID
+			|| !pCParams->bFullyBlock
+			|| pCParams->currentStopSignID > 0
+			|| pCParams->currentTrafficLightID > 0)
+		return FindBehaviorState(FORWARD_STATE);
 
 	else
-		return FindBehaviorState(FORWARD_STATE); // return and reset
+		return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 BehaviorStateMachine* SwerveState::GetNextState()
 {
-//	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-//		return this; //return this behavior only , without reset
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+		return this;
 
-//	if(pCParams->bOutsideControl == 0)
-//		return FindBehaviorState(WAITING_STATE);
+	PreCalculatedConditions* pCParams = GetCalcParams();
 
-	if(pCParams->bGoalReached)
-		return FindBehaviorState(STOPPING_STATE);
-
-	else if(pCParams->bFullyBlock && m_PlanningParams.enableFollowing)
-		return FindBehaviorState(FOLLOW_STATE);
-
-	else if(pCParams->distanceToNext > 0
+	if(pCParams->distanceToNext > 0
 				&& pCParams->distanceToNext < m_PlanningParams.minDistanceToAvoid
 				&& !pCParams->bFullyBlock
 				&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory)
 		return FindBehaviorState(this->m_Behavior);
 
-	else if(pCParams->currentTrafficLightID > 0 && pCParams->bTrafficIsRed && pCParams->currentTrafficLightID != pCParams->prevTrafficLightID)
-			return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
-
 	else
 		return FindBehaviorState(FORWARD_STATE);
 }
 
-
 BehaviorStateMachine* GoalState::GetNextState()
 {
 	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this; //return this behavior only , without reset
+		return this;
 
-	if(pCParams->bOutsideControl == 1)
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID == -1)
+		return FindBehaviorState(FINISH_STATE);
+
+	else if(pCParams->currentGoalID != pCParams->prevGoalID)
 	{
-		pCParams->bOutsideControl = 0;
+		pCParams->prevGoalID = pCParams->currentGoalID;
 		return FindBehaviorState(FORWARD_STATE);
 	}
+
 	else
-		return this;
+		return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
 } /* namespace PlannerHNS */

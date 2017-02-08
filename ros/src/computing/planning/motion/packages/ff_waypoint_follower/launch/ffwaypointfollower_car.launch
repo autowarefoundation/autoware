@@ -1,29 +1,31 @@
 <!-- -->
 <launch>
 
-	<arg name="width" 						default="1.82" />
+	<arg name="width" 						default="2.1" />
 	<arg name="length" 						default="4.3" />
 	<arg name="wheelBaseLength" 			default="2.7" />
 	<arg name="turningRadius"				default="5.2" />
 	<arg name="maxSteerAngle" 				default="0.5" />
 	
-	<arg name="maxSteerValue" 				default="660" />
+	<arg name="maxSteerValue" 				default="660"  />
 	<arg name="minSteerValue" 				default="-660" />
-	<arg name="maxVelocity" 				default="3.0" />
-	<arg name="minVelocity" 				default="0.0" />
+	<arg name="maxVelocity" 				default="3.0"  />
+	<arg name="minVelocity" 				default="0.2"  />
 		
-	<arg name="steeringDelay" 				default="0.85" />
-	<arg name="minPursuiteDistance" 		default="2.0" />
+	<arg name="steeringDelay" 				default="1.2" />
+	<arg name="minPursuiteDistance" 		default="3.0"  />
 	<arg name="followDistance" 				default="10.0" />
-	<arg name="lowpassSteerCutoff" 			default="5.0" />
+	<arg name="lowpassSteerCutoff" 			default="5.0"  />
 	
 	<arg name="steerGainKP" 				default="0.07" />
 	<arg name="steerGainKI" 				default="0.02" />
 	<arg name="steerGainKD" 				default="0.01" />
 	
-	<arg name="velocityGainKP" 				default="0.1" />
+	<arg name="velocityGainKP" 				default="0.1"   />
 	<arg name="velocityGainKI" 				default="0.005" />
-	<arg name="velocityGainKD" 				default="0.1" />
+	<arg name="velocityGainKD" 				default="0.1"   />
+	<arg name="maxAcceleration"				default="0.6"   />
+	<arg name="maxDeceleration"				default="-1.0"   />
 	
 	<arg name="signal" 						default="0" /> <!-- 0 : simulation or 1 : vehicle or 2 : autoware or 3 : robot -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
@@ -58,6 +60,8 @@
 		<param name="velocityGainKP" 				value="$(arg velocityGainKP)" />
 		<param name="velocityGainKI" 				value="$(arg velocityGainKI)" />
 		<param name="velocityGainKD" 				value="$(arg velocityGainKD)" />
+		<param name="maxAcceleration" 				value="$(arg maxAcceleration)" />
+		<param name="maxDeceleration" 				value="$(arg maxDeceleration)" />
 		
 		<param name="signal" 						value="$(arg signal)" />
 		<param name="steerMode" 					value="$(arg steerMode)" />

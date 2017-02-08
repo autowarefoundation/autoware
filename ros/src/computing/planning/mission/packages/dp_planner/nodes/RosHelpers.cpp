@@ -131,7 +131,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
 	lane_waypoint_marker.scale.x = 0.1;
 	lane_waypoint_marker.scale.y = 0.1;
-	lane_waypoint_marker.scale.z = 0.1;
+	//lane_waypoint_marker.scale.z = 0.1;
 	lane_waypoint_marker.frame_locked = false;
 	std_msgs::ColorRGBA  total_color, curr_color;
 
@@ -193,7 +193,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	curr_lane_waypoint_marker.id = count;
 	curr_lane_waypoint_marker.scale.x = 0.1;
 	curr_lane_waypoint_marker.scale.y = 0.1;
-	curr_lane_waypoint_marker.scale.z = 0.1;
+	//curr_lane_waypoint_marker.scale.z = 0.1;
 	curr_lane_waypoint_marker.frame_locked = false;
 	curr_color.r = 1;
 	curr_color.g = 0;
@@ -207,7 +207,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 
 	  point.x = curr_path.at(j).pos.x;
 	  point.y = curr_path.at(j).pos.y;
-	  point.z = curr_path.at(j).pos.z + 0.5;
+	  point.z = curr_path.at(j).pos.z;
 
 	  curr_lane_waypoint_marker.points.push_back(point);
 	}
@@ -387,7 +387,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	  //velocity_marker.pose.position.z += 0.5;
 
 
-		for(unsigned int iq = 0; iq < 16; iq++)
+		for(unsigned int iq = 0; iq < 8; iq++)
 		{
 			quarters_marker.points.clear();
 			quarters_marker.id = quartersIds;
@@ -500,6 +500,9 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 	behaviorMarker.pose.position = point;
 
 	std::ostringstream str_out;
+
+	str_out << "(" << (int)(beh.followDistance * 100) / 100 <<")";
+
 	if(avoidDirection == -1)
 		str_out << "<< ";
 
@@ -579,8 +582,8 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 //		if(size <= 0.25 || size >= 5 || distance_y > 20.0 || distance_x > 20.0)
 //			continue;
 
-		if(distance_x <= car_info.length && distance_y <= car_info.width/1.5) // don't detect yourself
-			continue;
+//		if(distance_x <= car_info.length && distance_y <= car_info.width/1.5) // don't detect yourself
+//			continue;
 
 
 		nOrPoints += point_cloud.points.size();

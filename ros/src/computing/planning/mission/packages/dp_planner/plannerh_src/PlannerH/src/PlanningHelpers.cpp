@@ -189,9 +189,13 @@ int PlanningHelpers::GetClosestNextPointIndexWithDirection(const vector<WayPoint
 	double d = 0, minD = 9999999999;
 	if(prevIndex < 0) return 0;
 
-	double min_index  = prevIndex;
+	double localPrevIndex = prevIndex;
+	if(localPrevIndex>0)
+		localPrevIndex = localPrevIndex - 1;
 
-	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
+	double min_index  = localPrevIndex;
+
+	for(unsigned int i=localPrevIndex; i< trajectory.size(); i++)
 	{
 		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
 		//if((p.pLane == 0 || trajectory.at(i).pLane == p.pLane) && d < minD)
@@ -698,16 +702,15 @@ void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& ori
 	if(close_index >= 5) close_index -=5;
 	else close_index = 0;
 
-	for(unsigned int i=close_index; i< originalPath.size()-1; i++)
+	for(unsigned int i=close_index; i< originalPath.size(); i++)
 	{
 		tempPath.push_back(originalPath.at(i));
-		d_limit += distance2points(originalPath.at(i).pos, originalPath.at(i+1).pos);
 
-		if(d_limit >= minDistance)
-		{
-			tempPath.push_back(originalPath.at(i+1));
+		if(i>0)
+			d_limit += hypot(originalPath.at(i).pos.y - originalPath.at(i-1).pos.y, originalPath.at(i).pos.x - originalPath.at(i-1).pos.x);
+
+		if(d_limit > minDistance)
 			break;
-		}
 	}
 
 	if(tempPath.size() < 2)

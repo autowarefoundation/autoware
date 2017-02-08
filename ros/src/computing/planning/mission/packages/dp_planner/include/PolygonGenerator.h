@@ -21,7 +21,7 @@ namespace PlannerXNS
 
 using namespace PlannerHNS;
 
-#define QUARTERS_NUMBER 16
+#define QUARTERS_NUMBER 8
 #define MIN_POINTS_PER_QUARTER 1
 
 class QuarterView

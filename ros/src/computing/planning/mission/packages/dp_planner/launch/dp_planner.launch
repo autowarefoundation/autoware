@@ -4,30 +4,31 @@
 	<arg name="minVelocity" 				default="0.0" />
 	<arg name="velocityProfileFactor" 		default="1.0" />
 	<arg name="maxPlanningDistance" 		default="1000000.0" />
-	<arg name="maxLocalPlanDistance" 		default="55.0" />
-	<arg name="samplingTipMargin" 			default="4.0" />
+	<arg name="maxLocalPlanDistance" 		default="50.0" />
+	<arg name="samplingTipMargin" 			default="3.0"  />
 	<arg name="samplingOutMargin" 			default="12.0" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
-	<arg name="pathDensity" 				default="0.5" />
-	<arg name="rollOutDensity" 				default="0.2" />
-	<arg name="rollOutsNumber" 				default="12" />
-	<arg name="horizonDistance" 			default="200" />
+	<arg name="pathDensity" 				default="0.25" />
+	<arg name="rollOutDensity" 				default="0.25" />
+	<arg name="rollOutsNumber" 				default="8"    />
+	<arg name="horizonDistance" 			default="200"  />
 	
-	<arg name="minFollowingDistance" 		default="10.0" />
-	<arg name="maxFollowingDistance" 		default="13.0" />
-	<arg name="minDistanceToAvoid" 			default="15.0" />
-	<arg name="speedProfileFactor"			default="1.0" />
+	<arg name="minFollowingDistance" 		default="8.0"  />
+	<arg name="maxFollowingDistance" 		default="10.0" />
+	<arg name="minDistanceToAvoid" 			default="16.0" />
+	<arg name="maxDistanceToAvoid" 			default="6.0"  />
+	<arg name="speedProfileFactor"			default="1.0"  />
 	
-	<arg name="enableSwerving" 				default="false" />
+	<arg name="enableSwerving" 				default="true"  />
 	<arg name="enableFollowing" 			default="false" />
 	<arg name="enableHeadingSmoothing" 		default="false" />
 	<arg name="enableTrafficLightBehavior" 	default="false" />
 	<arg name="enableLaneChange" 			default="false" />
 	
-	<arg name="width" 						default="1.85" />
-	<arg name="length" 						default="4.2"/>
-	<arg name="wheelBaseLength" 			default="2.5" />
-	<arg name="turningRadius"				default="3.2" />
+	<arg name="width" 						default="2.1"  />
+	<arg name="length" 						default="4.2"  />
+	<arg name="wheelBaseLength" 			default="2.5"  />
+	<arg name="turningRadius"				default="3.2"  />
 	<arg name="maxSteerAngle" 				default="0.42" />
 	
 	<arg name="enableObjectTracking" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
@@ -55,6 +56,7 @@
 		<param name="minFollowingDistance" 			value="$(arg minFollowingDistance)" />
 		<param name="maxFollowingDistance" 			value="$(arg maxFollowingDistance)" />
 		<param name="minDistanceToAvoid" 			value="$(arg minDistanceToAvoid)" />
+		<param name="maxDistanceToAvoid" 			value="$(arg maxDistanceToAvoid)" />
 		<param name="speedProfileFactor"			value="$(arg speedProfileFactor)" />
 		
 		<param name="enableSwerving" 				value="$(arg enableSwerving)" />

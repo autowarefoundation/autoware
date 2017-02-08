@@ -136,9 +136,7 @@ protected:
 	//Planning Related variables
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	PlannerHNS::BehaviorState m_PrevBehavior;
-	//std::vector<PlannerHNS::WayPoint> m_goals;
-	//int m_iCurrentGoal;
-	PlannerHNS::WayPoint m_CurrentGoal;
+	//PlannerHNS::WayPoint m_CurrentGoal;
 	struct timespec m_PlanningTimer;
 	AutowareRoadNetwork m_AwMap;
   	PlannerHNS::RoadNetwork m_Map;

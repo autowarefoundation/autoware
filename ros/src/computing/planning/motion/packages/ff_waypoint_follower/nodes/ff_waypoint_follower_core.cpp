@@ -167,6 +167,7 @@ void FFSteerControl::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m_CarIn
 	nh.getParam("/ff_waypoint_follower/maxSteerValue", m_CarInfo.max_steer_value );
 	nh.getParam("/ff_waypoint_follower/minSteerValue", m_CarInfo.min_steer_value );
 	nh.getParam("/ff_waypoint_follower/maxVelocity", m_CarInfo.max_speed_forward );
+	nh.getParam("/ff_waypoint_follower/minVelocity", m_CarInfo.min_speed_forward );
 	nh.getParam("/ff_waypoint_follower/minVelocity", m_CarInfo.max_speed_backword );
 
 	nh.getParam("/ff_waypoint_follower/steeringDelay", m_ControlParams.SteeringDelay );
@@ -181,9 +182,14 @@ void FFSteerControl::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m_CarIn
 	nh.getParam("/ff_waypoint_follower/velocityGainKP", m_ControlParams.Velocity_Gain.kP );
 	nh.getParam("/ff_waypoint_follower/velocityGainKI", m_ControlParams.Velocity_Gain.kI );
 	nh.getParam("/ff_waypoint_follower/velocityGainKD", m_ControlParams.Velocity_Gain.kD );
+	nh.getParam("/ff_waypoint_follower/maxAcceleration", m_CarInfo.max_acceleration );
+	nh.getParam("/ff_waypoint_follower/maxDeceleration", m_CarInfo.max_deceleration );
 
 	m_PlanningParams.maxSpeed = m_CarInfo.max_speed_forward;
-	m_PlanningParams.minSpeed = 0;
+	m_PlanningParams.minSpeed = m_CarInfo.min_speed_forward;
+
+
+
 }
 
 FFSteerControl::~FFSteerControl()
@@ -486,7 +492,7 @@ void FFSteerControl::PlannerMainLoop()
 				pose.pose.position.y = m_CurrentPos.pos.y;
 				pose.pose.position.z = m_CurrentPos.pos.z;
 				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
-				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
+				//cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
 
 				pub_SimulatedCurrentPose.publish(pose);
 
@@ -551,9 +557,9 @@ void FFSteerControl::PlannerMainLoop()
 				cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
 			}
 
-//			SimulationNS::ControllerParams c_params = m_ControlParams;
-//			c_params.SteeringDelay = m_ControlParams.SteeringDelay / (1.0- UtilityHNS::UtilityH::GetMomentumScaleFactor(m_CurrVehicleStatus.speed));
-//			m_PredControl.Init(c_params, m_CarInfo);
+			//PlannerHNS::ControllerParams c_params = m_ControlParams;
+			//c_params.SteeringDelay = m_ControlParams.SteeringDelay / (1.0- UtilityHNS::UtilityH::GetMomentumScaleFactor(m_CurrVehicleStatus.speed));
+			//m_PredControl.Init(c_params, m_CarInfo);
 			m_PrevStepTargetStatus = m_PredControl.DoOneStep(dt, currMessage, m_FollowingTrajectory, m_CurrentPos, m_CurrVehicleStatus, bNewPath);
 			//m_PrevStepTargetStatus.speed = 3.0;
 			m_State.state.pos.z = m_PerpPoint.pos.z;

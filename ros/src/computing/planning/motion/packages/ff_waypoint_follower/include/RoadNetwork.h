@@ -653,6 +653,7 @@ public:
 	bool 	enableFollowing;
 	bool 	enableHeadingSmoothing;
 	bool 	enableTrafficLightBehavior;
+	bool 	enableStopSignBehavior;
 
 	PlanningParams()
 	{
@@ -681,6 +682,7 @@ public:
 		enableFollowing					= false;
 		enableTrafficLightBehavior		= false;
 		enableLaneChange 				= false;
+		enableStopSignBehavior			= false;
 	}
 };
 
@@ -688,6 +690,10 @@ public:
 class PreCalculatedConditions
 {
 public:
+	//-------------------------------------------//
+	//Global Goals
+	int 				currentGoalID;
+	int 				prevGoalID;
 	//-------------------------------------------//
 	//Following
 	double 				distanceToNext;
@@ -717,16 +723,15 @@ public:
 	int 				iPrevSafeTrajectory;
 	int 				iCurrSafeTrajectory;
 	int 				iCentralTrajectory;
-	bool 				bRePlan;
 	bool				bFullyBlock;
 	LIGHT_INDICATOR 	indicator;
 
 	//-------------------------------------------//
 	//General
+	bool 				bRePlan;
 	double 				currentVelocity;
 	double				minStoppingDistance; //comfortably
-	bool 				bGoalReached;
-	int 				bOutsideControl; // 0 waiting, 1 start, 2 Stop, 3 Green Traffic Light, 4 Red Traffic Light
+	int 				bOutsideControl; // 0 waiting, 1 start, 2 Green Traffic Light, 3 Red Traffic Light, 5 Emergency Stop
 	bool				bGreenOutsideControl;
 	std::vector<double> stoppingDistances;
 
@@ -745,13 +750,14 @@ public:
 
 	PreCalculatedConditions()
 	{
-
+		currentGoalID 			= 0;
+		prevGoalID				= -1;
 		currentVelocity 		= 0;
 		minStoppingDistance		= 1;
 		bOutsideControl			= 0;
 		bGreenOutsideControl	= false;
 		//distance to stop
-		distanceToNext			= 0;
+		distanceToNext			= -1;
 		velocityOfNext			= 0;
 		currentStopSignID		= -1;
 		prevStopSignID			= -1;
@@ -770,7 +776,6 @@ public:
 		timeToGoBack			= 0;
 		distanceToChangeLane	= 0;
 		timeToChangeLane		= 0;
-		bGoalReached			= false;
 		bTargetLaneSafe			= true;
 		bUpcomingLeft			= false;
 		bUpcomingRight			= false;
@@ -793,60 +798,48 @@ public:
 
 	std::string ToString(STATE_TYPE beh)
 	{
-		std::ostringstream str;
-		if(beh == FORWARD_STATE)
+		std::string str = "Unknown";
+		switch(beh)
 		{
-			str << "GoToGoal>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
-					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
-					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
-					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
-		}
-		else if(beh == FOLLOW_STATE)
-		{
-			str  <<"Following>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
-					"Following>>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
-					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
-					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
-		}
-		else if(beh == OBSTACLE_AVOIDANCE_STATE)
-		{
-			str  <<"Avoidance>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
-					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
-					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
-					"Swerving>>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
-
-		}
-		else if(beh == TRAFFIC_LIGHT_STOP_STATE)
-		{
-			str  <<"Traffic_Light>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
-					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
-					"TL Stop>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
-					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
-
-		}
-		else if(beh == WAITING_STATE)
-		{
-			str  <<"Waiting>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
-					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
-					"TL Wait>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
-					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
-		}
-		else if(beh == STOPPING_STATE)
-		{
-			str  << "Stopping>>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
-					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
-					"TL Wait>>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
-					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
-		}
-		else
-		{
-			str  << ">>:"<<currentVelocity<<":"<<distanceToStop()<<":"<<minStoppingDistance<<":"<<bGreenOutsideControl<<":"<<bGoalReached<<":" <<
-					">>:"<<velocityOfNext<<":"<<distanceToNext<<":" <<
-					">>:"<<currentTrafficLightID<<":"<<bTrafficIsRed<<":" <<
-					">>:"<<iCurrSafeTrajectory<<":"<<bFullyBlock<<":";
+		case PlannerHNS::INITIAL_STATE:
+			str = "Init";
+			break;
+		case PlannerHNS::WAITING_STATE:
+			str = "Waiting";
+			break;
+		case PlannerHNS::FORWARD_STATE:
+			str = "Forward";
+			break;
+		case PlannerHNS::STOPPING_STATE:
+			str = "Stop";
+			break;
+		case PlannerHNS::FINISH_STATE:
+			str = "End";
+			break;
+		case PlannerHNS::FOLLOW_STATE:
+			str = "Follow";
+			break;
+		case PlannerHNS::OBSTACLE_AVOIDANCE_STATE:
+			str = "Swerving";
+			break;
+		case PlannerHNS::TRAFFIC_LIGHT_STOP_STATE:
+			str = "Light Stop";
+			break;
+		case PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE:
+			str = "Light Wait";
+			break;
+		case PlannerHNS::STOP_SIGN_STOP_STATE:
+			str = "Sign Stop";
+			break;
+		case PlannerHNS::STOP_SIGN_WAIT_STATE:
+			str = "Sign Wait";
+			break;
+		default:
+			str = "Unknown";
+			break;
 		}
 
-		return str.str();
+		return str;
 	}
 };
 

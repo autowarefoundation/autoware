@@ -1508,7 +1508,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			if(pR->m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 1 && pR->m_CurrentBehavior.state != PlannerHNS::INITIAL_STATE)
 				bEmergencyStop = true;
 
-			pR->m_CurrentBehavior = pR->m_LocalPlanner.DoOneStep(dt, currTargetState, obj_list, goal_wp.pos, pR->m_RoadMap, bEmergencyStop, pR->m_bGreenTrafficLight);
+			pR->m_CurrentBehavior = pR->m_LocalPlanner.DoOneStep(dt, currTargetState, obj_list, 1, pR->m_RoadMap, bEmergencyStop, pR->m_bGreenTrafficLight);
 
 //			double d_slowDown = hypot(pR->m_SlowDown.pos.y - pR->m_LocalPlanner.state.pos.y, pR->m_SlowDown.pos.x - pR->m_LocalPlanner.state.pos.x);
 //			if(d_slowDown < 3)

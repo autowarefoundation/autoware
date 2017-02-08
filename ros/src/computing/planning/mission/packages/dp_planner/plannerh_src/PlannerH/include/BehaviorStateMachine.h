@@ -14,7 +14,7 @@
 namespace PlannerHNS
 {
 
-#define ZERO_VELOCITY 0.05
+#define ZERO_VELOCITY 0.1
 
 
 class BehaviorStateMachine

@@ -21,6 +21,8 @@ namespace SimulationNS
 
 TrajectoryFollower::TrajectoryFollower()
 {
+	m_WayPointsDensity = 1;
+	m_bEndPath = false;
 	m_FollowingDistance = 0;
 	m_LateralError 		= 0;
 	m_PrevDesiredSteer	= 0;
@@ -84,6 +86,9 @@ void TrajectoryFollower::PrepareNextWaypoint(const PlannerHNS::WayPoint& CurPos,
 void TrajectoryFollower::UpdateCurrentPath(const std::vector<PlannerHNS::WayPoint>& path)
 {
 	//BehaviorsNS::MappingHelpers::ConvertFromWaypointsToVectorPath(path, m_Path);
+	if(path.size()>0)
+		m_WayPointsDensity = hypot(path.at(1).pos.y - path.at(0).pos.y, path.at(1).pos.x - path.at(0).pos.x);
+
 	m_Path = path;
 }
 
@@ -93,14 +98,13 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 {
 	if(path.size()==0) return false;
 
-//	if(velocity > 3.0)
-//		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.5;
-//	else
-//		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.25;
-//	if(follow_distance < m_Params.minPursuiteDistance)
-//		follow_distance = m_Params.minPursuiteDistance;
+	if(velocity > 3.0)
+		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.5;
+	else
+		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.25;
+	//follow_distance = m_Params.minPursuiteDistance + m_Params.SteeringDelay*fabs(velocity);
 
-	follow_distance = m_Params.minPursuiteDistance + m_Params.SteeringDelay*fabs(velocity);
+
 	if(follow_distance < m_Params.minPursuiteDistance)
 		follow_distance = m_Params.minPursuiteDistance;
 
@@ -120,7 +124,18 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 	//m_LateralError = CalculateLateralDistanceToCurve(m_Path, state, m_iNextWayPoint);
 	pursuite_point = PlanningHelpers::GetNextPointOnTrajectory(path, follow_distance - distance_to_perp, iWayPoint);
 
-	//lateral_err = distance_to_perp;
+
+	double d_critical = (-velocity*velocity)/2.0*m_VehicleInfo.max_deceleration;
+	int nPointToEnd = path.size() - m_iPrevWayPoint;
+	double totalD = m_WayPointsDensity*nPointToEnd;
+
+	if(totalD <= 1 || totalD <= d_critical)
+	{
+		m_bEndPath = true;
+		cout << "Critical Distance: " << d_critical << endl;
+	}
+	else
+		m_bEndPath = false;
 
 	return true;
 }
@@ -131,7 +146,7 @@ int TrajectoryFollower::SteerControllerUpdate(const PlannerHNS::VehicleState& Cu
 	if(m_Path.size()==0) return -1;
 	int ret = -1;
 	//AdjustPID(CurrStatus.velocity, 18.0, m_Params.Gain);
-	if(!(CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == TRAFFIC_LIGHT_WAIT_STATE || CurrBehavior.state == STOP_SIGN_WAIT_STATE || CurrBehavior.state == INITIAL_STATE || CurrBehavior.state == FINISH_STATE))
+	if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == TRAFFIC_LIGHT_STOP_STATE || CurrBehavior.state == STOP_SIGN_STOP_STATE)
 		ret = SteerControllerPart(m_CurrPos, m_DesPos, m_LateralError, desiredSteerAngle);
 
 	if(ret < 0)
@@ -197,7 +212,12 @@ void TrajectoryFollower::PredictMotion(double& x, double &y, double& heading, do
 int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
 		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity, PlannerHNS::SHIFT_POS& desiredShift)
 {
-	if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE )
+	if(CurrBehavior.state == TRAFFIC_LIGHT_STOP_STATE || CurrBehavior.state == STOP_SIGN_STOP_STATE || m_bEndPath)
+	{
+		//double deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.stopDistance);
+		desiredVelocity = 0;//(m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
+	}
+	else if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE )
 	{
 
 		double e = CurrBehavior.maxVelocity - CurrStatus.speed;
@@ -212,21 +232,16 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		else
 			desiredVelocity = (m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
 
-		if(desiredVelocity<0.2)
-			desiredVelocity = 0.2;
+		if(desiredVelocity<m_VehicleInfo.min_speed_forward)
+			desiredVelocity = m_VehicleInfo.min_speed_forward;
 
 		//std::cout << "Velocity from follower : dt=" << dt << ", e= " << e << ", acc_const=" << acc_const << ", desiredVelocity = "<<desiredVelocity<<  std::endl;
 
 		m_StartFollowDistance = 0;
 	}
-	else if(CurrBehavior.state == WAITING_STATE || CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == FINISH_STATE)
+	else if(CurrBehavior.state == STOPPING_STATE || CurrBehavior.state == FINISH_STATE)
 	{
 		desiredVelocity = 0;
-	}
-	else if(CurrBehavior.state == TRAFFIC_LIGHT_STOP_STATE || CurrBehavior.state == STOP_SIGN_STOP_STATE)
-	{
-		//double deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.stopDistance);
-		desiredVelocity = 0;//(m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
 	}
 	else if(CurrBehavior.state == FOLLOW_STATE)
 	{
@@ -283,7 +298,7 @@ PlannerHNS::VehicleState TrajectoryFollower::DoOneStep(const double& dt, const P
 
 	PlannerHNS::VehicleState currState;
 
-	if(m_Path.size()>0 && behavior.state != WAITING_STATE && behavior.state != INITIAL_STATE)
+	if(m_Path.size()>0 && behavior.state != INITIAL_STATE )
 	{
 		PrepareNextWaypoint(currPose, vehicleState.speed, vehicleState.steer);
 		VeclocityControllerUpdate(dt, vehicleState, behavior, currState.speed, currState.shift);
