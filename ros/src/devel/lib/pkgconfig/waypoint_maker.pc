@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: waypoint_maker
+Description: Description of waypoint_maker
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: roscpp std_msgs tf vehicle_socket waypoint_follower runtime_manager vector_map lane_planner gnss waypoint_follower

@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: map_file
+Description: Description of map_file
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: waypoint_follower std_msgs vector_map gnss

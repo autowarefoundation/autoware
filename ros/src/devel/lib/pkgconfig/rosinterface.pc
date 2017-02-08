@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: rosinterface
+Description: Description of rosinterface
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/util/packages/RobotSDK/rosinterface/include/rosinterface
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -lrosinterface
+Requires: roscpp

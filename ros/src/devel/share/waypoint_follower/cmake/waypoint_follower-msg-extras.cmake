@@ -1,0 +1,2 @@
+set(waypoint_follower_MESSAGE_FILES "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg")
+set(waypoint_follower_SERVICE_FILES "")

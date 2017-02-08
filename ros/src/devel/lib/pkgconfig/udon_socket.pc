@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: udon_socket
+Description: Description of udon_socket
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/socket/packages/udon_socket/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -ludon
+Requires: tablet_socket

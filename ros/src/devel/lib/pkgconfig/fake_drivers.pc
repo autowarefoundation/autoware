@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: fake_drivers
+Description: Description of fake_drivers
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: roscpp std_msgs sensor_msgs

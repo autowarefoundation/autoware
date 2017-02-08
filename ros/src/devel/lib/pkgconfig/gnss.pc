@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: gnss
+Description: Description of gnss
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/computing/perception/localization/lib/gnss/include/gnss
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -lgnss
+Requires: 

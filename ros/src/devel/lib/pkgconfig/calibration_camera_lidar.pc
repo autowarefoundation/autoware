@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: calibration_camera_lidar
+Description: Description of calibration_camera_lidar
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/devel/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: glviewer rosinterface std_msgs message_runtime

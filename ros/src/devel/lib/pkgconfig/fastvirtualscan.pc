@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: fastvirtualscan
+Description: Description of fastvirtualscan
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/util/packages/RobotSDK/fastvirtualscan/include/fastvirtualscan
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -lfastvirtualscan
+Requires: roscpp sensor_msgs

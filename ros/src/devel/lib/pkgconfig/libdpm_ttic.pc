@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: libdpm_ttic
+Description: Description of libdpm_ttic
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/computing/perception/detection/lib/image/dpm_ttic/include/dpm_ttic
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -llibdpm_ttic
+Requires: 

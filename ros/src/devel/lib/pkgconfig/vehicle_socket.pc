@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: vehicle_socket
+Description: Description of vehicle_socket
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/devel/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: roscpp runtime_manager message_runtime std_msgs

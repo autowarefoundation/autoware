@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/hatem/autoware-dev/Autoware/ros/src/devel/setup.sh

@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: orb_localizer
+Description: Description of orb_localizer
+Version: 2.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/devel/include -I/home/hatem/autoware-dev/Autoware/ros/src/computing/perception/localization/packages/orb_localizer/include -I/usr/local/include/opencv -I/usr/local/include -I/usr/include -I/usr/include/pcl-1.7 -I/usr/include/eigen3
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -l:/usr/local/lib/libopencv_videostab.so.2.4.13 -l:/usr/local/lib/libopencv_video.so.2.4.13 -l:/usr/local/lib/libopencv_superres.so.2.4.13 -l:/usr/local/lib/libopencv_stitching.so.2.4.13 -l:/usr/local/lib/libopencv_photo.so.2.4.13 -l:/usr/local/lib/libopencv_ocl.so.2.4.13 -l:/usr/local/lib/libopencv_objdetect.so.2.4.13 -l:/usr/local/lib/libopencv_nonfree.so.2.4.13 -l:/usr/local/lib/libopencv_ml.so.2.4.13 -l:/usr/local/lib/libopencv_legacy.so.2.4.13 -l:/usr/local/lib/libopencv_imgproc.so.2.4.13 -l:/usr/local/lib/libopencv_highgui.so.2.4.13 -l:/usr/local/lib/libopencv_gpu.so.2.4.13 -l:/usr/local/lib/libopencv_flann.so.2.4.13 -l:/usr/local/lib/libopencv_features2d.so.2.4.13 -l:/usr/local/lib/libopencv_core.so.2.4.13 -l:/usr/local/lib/libopencv_contrib.so.2.4.13 -l:/usr/local/lib/libopencv_calib3d.so.2.4.13 -l:/usr/lib/x86_64-linux-gnu/libGLEW.so -l:/usr/lib/libpcl_common.so -l:/usr/lib/libpcl_octree.so -l:/usr/lib/x86_64-linux-gnu/libboost_system.so -l:/usr/lib/x86_64-linux-gnu/libboost_filesystem.so -l:/usr/lib/x86_64-linux-gnu/libboost_thread.so -l:/usr/lib/x86_64-linux-gnu/libboost_date_time.so -l:/usr/lib/x86_64-linux-gnu/libboost_iostreams.so -l:/usr/lib/x86_64-linux-gnu/libboost_serialization.so -l:/usr/lib/x86_64-linux-gnu/libpthread.so
+Requires: message_runtime

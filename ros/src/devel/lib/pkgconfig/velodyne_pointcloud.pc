@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: velodyne_pointcloud
+Description: Description of velodyne_pointcloud
+Version: 1.2.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/devel/include -I/home/hatem/autoware-dev/Autoware/ros/src/sensing/drivers/lidar/packages/velodyne/velodyne_pointcloud/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -lvelodyne_rawdata
+Requires: angles nodelet pcl_ros roscpp roslib sensor_msgs tf velodyne_driver velodyne_msgs

@@ -1,0 +1,2 @@
+set(points2image_MESSAGE_FILES "/home/hatem/autoware-dev/Autoware/ros/src/sensing/fusion/packages/points2image/msg/PointsImage.msg")
+set(points2image_SERVICE_FILES "")

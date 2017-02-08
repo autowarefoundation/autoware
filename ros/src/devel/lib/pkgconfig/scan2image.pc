@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: scan2image
+Description: Description of scan2image
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/devel/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: cv_bridge image_transport roscpp sensor_msgs std_msgs calibration_camera_lidar message_runtime
