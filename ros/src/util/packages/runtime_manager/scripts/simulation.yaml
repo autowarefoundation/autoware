@@ -21,6 +21,11 @@ buttons:
         border : 20
         flags  : [ left, no_category ]
 
+  gazebo :
+    run : sh -c "$(rospack find runtime_manager)/scripts/gazebo.sh"
+    gui :
+      flags : [ kill_children ]
+
 params :
   - name  : rosbag_play
     no_save_vars : [ clock, sim_time ]
