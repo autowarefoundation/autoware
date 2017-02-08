@@ -446,6 +446,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
   {  // DECELERATE for obstacles
     vs_path->initializeNewWaypoints();
     vs_path->setDeceleration(vs_info.getDeceleration(), closest_waypoint);
+    vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
