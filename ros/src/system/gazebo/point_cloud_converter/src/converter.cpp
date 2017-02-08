@@ -144,7 +144,7 @@ class PointCloudConverter
       sensor_msgs::PointCloud2 filtered_output;
       for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = pcl_output.begin(); item != pcl_output.end(); item++)
       {
-        if (item->x * item->x + item->y * item->y + item->z * item->z > 10000.0)
+        if (item->x * item->x + item->y * item->y + item->z * item->z > 100.0*100.0)
 	  continue;
         pcl::PointXYZI sampled_p;
         sampled_p.x = item->x;

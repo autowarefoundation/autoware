@@ -43,7 +43,7 @@ Sensors are included separately, based on the arguments passed to the xacro incl
         <sensor type="ray" name="lidar_sensor">
               <pose>0 0 0 0 0 0</pose>
                    <visualize>false</visualize>
-                    <update_rate>10</update_rate>
+                    <update_rate>30</update_rate>
                        <ray>
                            <scan>
                                 <horizontal>
@@ -55,9 +55,9 @@ Sensors are included separately, based on the arguments passed to the xacro incl
 				<vertical>
 					<samples>32</samples>
 					<resolution>1</resolution>
-					<min_angle>-0.53529248</min_angle>
+					<min_angle>-0.18622663</min_angle>
 					<!--<max_angle>0.432841654</max_angle> -->
-					<max_angle>0.18622663</max_angle>
+					<max_angle>0.53529248</max_angle>
 				</vertical>
                            </scan>
                            <range>
@@ -76,7 +76,7 @@ Sensors are included separately, based on the arguments passed to the xacro incl
 			      <robotNamespace>/$(arg roboname)</robotNamespace>
 			      <topicName>points_raw</topicName>
 			      <gaussianNoise>0.02</gaussianNoise>
-			      <updateRate>10</updateRate>
+			      <updateRate>30</updateRate>
                  </plugin>
       </sensor>
 </gazebo>

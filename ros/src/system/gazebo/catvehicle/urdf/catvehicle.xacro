@@ -123,13 +123,13 @@ http://www.car-engineer.com/vehicle-inertia-calculation-tool/
 <joint name="inertial_joint" type="fixed">
       <parent link="base_link"/>
       <child link="main_mass"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="${tyre_x} 0 ${base_height}" rpy="0 0 0"/>
 </joint>
 
 <link name="main_mass" type="fixed">
      <parent link="inertial_joint"/>
      <inertial>
-        <origin xyz="${tyre_x} 0 ${base_height}" rpy="0 0 0"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
         <mass value="${base_mass}"/>
         <inertia
           ixx="${base_mass_ixx}"  ixy="0.000000" ixz="${base_mass_ixz}"
