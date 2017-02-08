@@ -79,7 +79,7 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   return;
 }
 
-void VelocitySetPath::setDeceleration(double deceleration, int closest_waypoint)
+void VelocitySetPath::changeWaypointsForDeceleration(double deceleration, int closest_waypoint)
 {
   int velocity_change_range = 5;
   double intervel = calcInterval(0, 1);
@@ -116,7 +116,7 @@ void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_w
 
   for (int i = 0;; i++)
   {
-    if (!checkWaypoint(closest_waypoint + i, "avoidSuddenAcceleration"))
+    if (!checkWaypoint(closest_waypoint + i, __FUNCTION__))
       return;
 
     // accelerate with constant acceleration
@@ -133,7 +133,7 @@ void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_w
   return;
 }
 
-void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double deceleration, int closest_waypoint)
+void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, double deceleration, int closest_waypoint)
 {
   if (closest_waypoint < 0)
     return;
@@ -147,7 +147,7 @@ void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double de
   double square_vel = (current_vel_ - velocity_change_limit) * (current_vel_ - velocity_change_limit);
   for (int i = 0;; i++)
   {
-    if (!checkWaypoint(i, "avoidSuddenBraking"))
+    if (!checkWaypoint(i, __FUNCTION__))
       return;
 
     // sqrt(v^2 - 2ax)
@@ -161,7 +161,7 @@ void VelocitySetPath::avoidSuddenBraking(double velocity_change_limit, double de
 
 }
 
-void VelocitySetPath::changeWaypoints(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration)
+void VelocitySetPath::changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration)
 {
   if (closest_waypoint < 0)
     return;
