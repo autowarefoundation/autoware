@@ -1375,7 +1375,7 @@ params :
       v     : 7.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
-      label : Temporal Waypoints (m)
+      label : Temporal Waypoints Size
       min   : 0
       max   : 150
       v     : 100.0

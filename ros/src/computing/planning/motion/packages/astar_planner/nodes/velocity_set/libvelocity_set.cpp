@@ -290,7 +290,7 @@ geometry_msgs::Point ObstaclePoints::getObstaclePoint(const EControl &kind) cons
 {
   geometry_msgs::Point point;
 
-  if (kind == STOP)
+  if (kind == EControl::STOP)
   {
     for (const auto &p : stop_points_)
     {

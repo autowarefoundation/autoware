@@ -41,16 +41,20 @@ class VelocitySetPath
   bool set_path_;
   double current_vel_;
 
+  // ROS param
+  double velocity_offset_; // m/s
+  double decelerate_vel_min_; // m/s
+
   bool checkWaypoint(int num, const char *name) const;
 
  public:
   VelocitySetPath();
   ~VelocitySetPath();
 
-  void changeWaypoints(int stop_waypoint, int closest_waypoint, double deceleration);
-  void avoidSuddenBraking(double velocity_change_limit, double deceleration, int closest_waypoint);
-  void avoidSuddenAceleration(double decelerationint, int closest_waypoint);
-  void setDeceleration(double deceleration, int closest_waypoint);
+  void changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration);
+  void avoidSuddenDeceleration(double velocity_change_limit, double deceleration, int closest_waypoint);
+  void avoidSuddenAcceleration(double decelerationint, int closest_waypoint);
+  void changeWaypointsForDeceleration(double deceleration, int closest_waypoint, int obstacle_waypoint);
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
   void initializeNewWaypoints();
 
@@ -89,6 +93,11 @@ class VelocitySetPath
   {
     return prev_waypoints_.waypoints.size();
   }  
+
+  int getNewWaypointsSize() const
+  {
+    return new_waypoints_.waypoints.size();
+  }
 };
 
 #endif // VELOCITY_SET_PATH_H

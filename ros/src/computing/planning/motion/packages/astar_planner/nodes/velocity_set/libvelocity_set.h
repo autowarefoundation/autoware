@@ -13,7 +13,7 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 
-enum EControl
+enum class EControl
 {
   KEEP = -1,
   STOP = 1,
