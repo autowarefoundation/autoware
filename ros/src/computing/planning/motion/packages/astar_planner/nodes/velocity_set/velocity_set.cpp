@@ -55,7 +55,7 @@ void displayObstacle(const EControl &kind, const ObstaclePoints& obstacle_points
   marker.action = visualization_msgs::Marker::ADD;
 
   static geometry_msgs::Point prev_obstacle_point;
-  if (kind == STOP || kind == DECELERATE)
+  if (kind == EControl::STOP || kind == EControl::DECELERATE)
   {
     marker.pose.position = obstacle_points.getObstaclePoint(kind);
     prev_obstacle_point = marker.pose.position;
@@ -71,7 +71,7 @@ void displayObstacle(const EControl &kind, const ObstaclePoints& obstacle_points
   marker.scale.y = 1.0;
   marker.scale.z = 2.0;
   marker.color.a = 0.7;
-  if (kind == STOP)
+  if (kind == EControl::STOP)
   {
     marker.color.r = 1.0;
     marker.color.g = 0.0;
@@ -188,7 +188,7 @@ void displayDetectionRange(const waypoint_follower::lane& lane, const CrossWalk&
   marker_array.markers.push_back(crosswalk_marker);
   marker_array.markers.push_back(waypoint_marker_stop);
   marker_array.markers.push_back(waypoint_marker_decelerate);
-  if (kind == STOP)
+  if (kind == EControl::STOP)
     marker_array.markers.push_back(stop_line);
   detection_range_pub.publish(marker_array);
   marker_array.markers.clear();
@@ -222,13 +222,13 @@ EControl crossWalkDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const 
 	obstacle_points->setStopPoint(calcAbsoluteCoordinate(point_temp, localizer_pose.pose));
       }
       if (stop_count > points_threshold)
-        return STOP;
+        return EControl::STOP;
     }
 
     obstacle_points->clearStopPoints();
   }
 
-  return KEEP;  // find no obstacles
+  return EControl::KEEP;  // find no obstacles
 }
 
 int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const waypoint_follower::lane& lane, const CrossWalk& crosswalk, double stop_range, double points_threshold, const geometry_msgs::PoseStamped& localizer_pose, ObstaclePoints* obstacle_points)
@@ -245,7 +245,7 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
     if (i == crosswalk.getDetectionWaypoint())
     {
       // found an obstacle in the cross walk
-      if (crossWalkDetection(points, crosswalk, localizer_pose, points_threshold, obstacle_points) == STOP)
+      if (crossWalkDetection(points, crosswalk, localizer_pose, points_threshold, obstacle_points) == EControl::STOP)
       {
         stop_obstacle_waypoint = i;
         break;
@@ -343,7 +343,7 @@ int detectDecelerateObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const
 EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const waypoint_follower::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo& vs_info, int* obstacle_waypoint, ObstaclePoints* obstacle_points)
 {
   if (points.empty() == true || closest_waypoint < 0)
-    return KEEP;
+    return EControl::KEEP;
 
   int stop_obstacle_waypoint = detectStopObstacle(points, closest_waypoint, lane, crosswalk, vs_info.getStopRange(), vs_info.getPointsThreshold(), vs_info.getLocalizerPose(), obstacle_points);
 
@@ -351,7 +351,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   if (vs_info.getDecelerationRange() < 0.01)
   {
     *obstacle_waypoint = stop_obstacle_waypoint;
-    return stop_obstacle_waypoint < 0 ? KEEP : STOP;
+    return stop_obstacle_waypoint < 0 ? EControl::KEEP : EControl::STOP;
   }
 
   int decelerate_obstacle_waypoint = detectDecelerateObstacle(points, closest_waypoint, lane, vs_info.getStopRange(), vs_info.getDecelerationRange(), vs_info.getPointsThreshold(), vs_info.getLocalizerPose(), obstacle_points);
@@ -360,14 +360,14 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   if (stop_obstacle_waypoint < 0)
   {
     *obstacle_waypoint  = decelerate_obstacle_waypoint;
-    return decelerate_obstacle_waypoint < 0 ? KEEP : DECELERATE;
+    return decelerate_obstacle_waypoint < 0 ? EControl::KEEP : EControl::DECELERATE;
   }
 
   // stop obstacle was found but decelerate obstacle was not found
   if (decelerate_obstacle_waypoint < 0)
   {
     *obstacle_waypoint = stop_obstacle_waypoint;
-    return STOP;
+    return EControl::STOP;
   }
 
   // about 5.0 meter
@@ -378,12 +378,12 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   if (stop_obstacle_waypoint - decelerate_obstacle_waypoint > stop_decelerate_threshold)
   {
     *obstacle_waypoint = decelerate_obstacle_waypoint;
-    return DECELERATE;
+    return EControl::DECELERATE;
   }
   else
   {
     *obstacle_waypoint = stop_obstacle_waypoint;
-    return STOP;
+    return EControl::STOP;
   }
 
 }
@@ -395,11 +395,11 @@ EControl obstacleDetection(int closest_waypoint, const waypoint_follower::lane& 
   displayDetectionRange(lane, crosswalk, closest_waypoint, detection_result, *obstacle_waypoint, vs_info.getStopRange(), vs_info.getDecelerationRange(), detection_range_pub);
 
   static int false_count = 0;
-  static EControl prev_detection = KEEP;
+  static EControl prev_detection = EControl::KEEP;
   static int prev_obstacle_waypoint = -1;
 
   // stop or decelerate because we found obstacles
-  if (detection_result == STOP || detection_result == DECELERATE)
+  if (detection_result == EControl::STOP || detection_result == EControl::DECELERATE)
   {
     displayObstacle(detection_result, obstacle_points, obstacle_pub);
       prev_detection = detection_result;
@@ -409,14 +409,14 @@ EControl obstacleDetection(int closest_waypoint, const waypoint_follower::lane& 
   }
 
   // there are no obstacles, but wait a little for safety
-  if (prev_detection == STOP || prev_detection == DECELERATE)
+  if (prev_detection == EControl::STOP || prev_detection == EControl::DECELERATE)
   {
     false_count++;
 
     if (false_count < LOOP_RATE / 2)
     {
       *obstacle_waypoint = prev_obstacle_waypoint;
-      displayObstacle(OTHERS, obstacle_points, obstacle_pub);
+      displayObstacle(EControl::OTHERS, obstacle_points, obstacle_pub);
       return prev_detection;
     }
   }
@@ -424,13 +424,13 @@ EControl obstacleDetection(int closest_waypoint, const waypoint_follower::lane& 
   // there are no obstacles, so we move forward
   *obstacle_waypoint = -1;
   false_count = 0;
-  prev_detection = KEEP;
+  prev_detection = EControl::KEEP;
   return detection_result;
 }
 
 void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_result, int closest_waypoint, int obstacle_waypoint, const ros::Publisher& temporal_waypoints_pub, VelocitySetPath* vs_path)
 {
-  if (detection_result == STOP)
+  if (detection_result == EControl::STOP)
   {  // STOP for obstacle
     // stop_waypoint is about g_stop_distance meter away from obstacles
     int stop_waypoint = obstacle_waypoint - vs_info.getStopDistance() / vs_path->calcInterval(0, 1);
@@ -442,7 +442,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
-  else if (detection_result == DECELERATE)
+  else if (detection_result == EControl::DECELERATE)
   {  // DECELERATE for obstacles
     vs_path->initializeNewWaypoints();
     vs_path->changeWaypointsForDeceleration(vs_info.getDeceleration(), closest_waypoint, obstacle_waypoint);
