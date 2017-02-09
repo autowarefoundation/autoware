@@ -438,14 +438,15 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
     // change waypoints to stop by the stop_waypoint
     vs_path->changeWaypointsForStopping(stop_waypoint, obstacle_waypoint, closest_waypoint, vs_info.getDeceleration());
     vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
-    vs_path->avoidSuddenBraking(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
   else if (detection_result == DECELERATE)
   {  // DECELERATE for obstacles
     vs_path->initializeNewWaypoints();
-    vs_path->changeWaypointsForDeceleration(vs_info.getDeceleration(), closest_waypoint);
+    vs_path->changeWaypointsForDeceleration(vs_info.getDeceleration(), closest_waypoint, obstacle_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
     vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());
@@ -454,7 +455,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
   {  // ACCELERATE or KEEP
     vs_path->initializeNewWaypoints();
     vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
-    vs_path->avoidSuddenBraking(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     temporal_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }

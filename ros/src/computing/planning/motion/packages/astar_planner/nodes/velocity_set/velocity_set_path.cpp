@@ -36,6 +36,7 @@ VelocitySetPath::VelocitySetPath()
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<double>("velocity_offset", velocity_offset_, 1.2);
+  private_nh_.param<double>("decelerate_vel_min", decelerate_vel_min_, 1.3);
 }
 
 VelocitySetPath::~VelocitySetPath()
@@ -79,35 +80,31 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   return;
 }
 
-void VelocitySetPath::changeWaypointsForDeceleration(double deceleration, int closest_waypoint)
+void VelocitySetPath::changeWaypointsForDeceleration(double deceleration, int closest_waypoint, int obstacle_waypoint)
 {
-  int velocity_change_range = 5;
-  double intervel = calcInterval(0, 1);
-  double temp1 = current_vel_ * current_vel_;
-  double temp2 = 2 * deceleration * intervel;
-  double deceleration_minimum = kmph2mps(4.0);
+  double square_vel_min = decelerate_vel_min_ * decelerate_vel_min_;
+  int extra = 4; // for safety
 
-  for (int i = 0; i < velocity_change_range; i++)
+  // decelerate with constant deceleration
+  for (int index = obstacle_waypoint + extra; index >= closest_waypoint; index--)
   {
-    if (!checkWaypoint(closest_waypoint + i, "setDeceleration"))
+    if (!checkWaypoint(index, __FUNCTION__))
       continue;
-    double waypoint_velocity = prev_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x;
-    double changed_vel = temp1 - temp2;
-    if (changed_vel < 0)
+
+    // v = sqrt( (v0)^2 + 2ax )
+    double changed_vel = std::sqrt(square_vel_min + 2.0 * deceleration * calcInterval(index, obstacle_waypoint));
+
+    double prev_vel = prev_waypoints_.waypoints[index].twist.twist.linear.x;
+    if (changed_vel > prev_vel)
     {
-      changed_vel = deceleration_minimum * deceleration_minimum;
+      new_waypoints_.waypoints[index].twist.twist.linear.x = prev_vel;
     }
-    if (sqrt(changed_vel) > waypoint_velocity || deceleration_minimum > waypoint_velocity)
-      continue;
-    if (sqrt(changed_vel) < deceleration_minimum)
+    else
     {
-      new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = deceleration_minimum;
-      continue;
+      new_waypoints_.waypoints[index].twist.twist.linear.x = changed_vel;
     }
-    new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = sqrt(changed_vel);
   }
 
-  return;
 }
 
 void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_waypoint)
