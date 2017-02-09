@@ -87,6 +87,7 @@ private:
   void publishPoseStamped();
   void publishTF();
   void createOrientation();
+  void convert(std::vector<std::string> nmea, ros::Time current_stamp);
 };
 
 std::vector<std::string> split(const std::string &string);
