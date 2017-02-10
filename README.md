@@ -143,7 +143,7 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ## Demo Videos
 
 ### Public Road Testing
-[![Public Road Testing][https://www.youtube.com/watch?v=EcRdoJATdzE](https://www.youtube.com/watch?v=EcRdoJATdzE)
+[![Public Road Testing](https://www.youtube.com/watch?v=EcRdoJATdzE)](https://www.youtube.com/watch?v=EcRdoJATdzE)
 
 ## Instruction Videos
 
