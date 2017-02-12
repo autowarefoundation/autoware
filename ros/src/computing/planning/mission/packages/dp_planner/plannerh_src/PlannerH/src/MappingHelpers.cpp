@@ -22,7 +22,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define _FIND_LEFT_RIGHT_LANES
+#define FIND_LEFT_RIGHT_LANES
 #define _SMOOTH_MAP_WAYPOINTS
 
 

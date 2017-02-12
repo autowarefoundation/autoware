@@ -299,8 +299,8 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	quarters_marker.scale.y = .03;
 	//quarters_marker.scale.z = .1;
 	quarters_marker.color.a = 0.8;
-	quarters_marker.color.r = 1;
-	quarters_marker.color.g = 1;
+	quarters_marker.color.r = 0.6;
+	quarters_marker.color.g = 0.5;
 	quarters_marker.color.b = 0;
 	quarters_marker.frame_locked = false;
 
@@ -311,10 +311,10 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	velocity_marker.ns = "detected_polygons_velocity";
 	velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	//velocity_marker.action = visualization_msgs::Marker::ADD;
-	velocity_marker.scale.z = 0.2;
+	//velocity_marker.scale.z = 0.2;
 	velocity_marker.scale.x = 0.2;
 	velocity_marker.scale.y = 0.2;
-	velocity_marker.color.a = 0.75;
+	velocity_marker.color.a = 0.5;
 
 	velocity_marker.frame_locked = false;
 	detectedPolygons.markers.clear();
@@ -346,15 +346,15 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 			  point.x = trackedObstacles.at(i).contour.at(p).x;
 			  point.y = trackedObstacles.at(i).contour.at(p).y;
-			  point.z = trackedObstacles.at(i).contour.at(p).z;
+			  //point.z = trackedObstacles.at(i).contour.at(p).z;
 
 			  lane_waypoint_marker.points.push_back(point);
 
 			  corner_marker.pose.position = point;
-			  corner_marker.color.r = 1;
+			  corner_marker.color.r = 0.8;
 			  corner_marker.color.g = 0;
-			  corner_marker.color.b = 1;
-			  corner_marker.color.a = 0.95;
+			  corner_marker.color.b = 0.7;
+			  corner_marker.color.a = 0.5;
 			  corner_marker.id = pointID;
 			  pointID++;
 
@@ -393,9 +393,9 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 			quarters_marker.id = quartersIds;
 			quarters_marker.points.push_back(point);
 			geometry_msgs::Point point2 = point;
-			double a_q = UtilityHNS::UtilityH::SplitPositiveAngle(trackedObstacles.at(i).center.pos.a+(iq*M_PI_4/2.0));
-			point2.x += 1.5*cos(a_q);
-			point2.y += 1.5*sin(a_q);
+			double a_q = UtilityHNS::UtilityH::SplitPositiveAngle(trackedObstacles.at(i).center.pos.a+(iq*M_PI_4));
+			point2.x += 2.5*cos(a_q);
+			point2.y += 2.5*sin(a_q);
 			quarters_marker.points.push_back(point2);
 
 			quartersIds++;

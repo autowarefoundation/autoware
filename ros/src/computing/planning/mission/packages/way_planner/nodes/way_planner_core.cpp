@@ -415,18 +415,18 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 		lane_waypoint_marker.scale.y = 0.5;
 		lane_waypoint_marker.scale.z = 0.5;
 		lane_waypoint_marker.color.a = 0.8;
-		lane_waypoint_marker.color.b = 0.0;
+		lane_waypoint_marker.color.b = 1-0.0;
 
 		float norm_cost = level.at(i)->cost / max_cost * 2.0;
 		if(norm_cost <= 1.0)
 		{
-			lane_waypoint_marker.color.r = norm_cost;
-			lane_waypoint_marker.color.g = 1.0;
+			lane_waypoint_marker.color.r = 1-norm_cost;
+			lane_waypoint_marker.color.g = 1-1.0;
 		}
 		else if(norm_cost > 1.0)
 		{
-			lane_waypoint_marker.color.r = 1.0;
-			lane_waypoint_marker.color.g = 2.0 - norm_cost;
+			lane_waypoint_marker.color.r = 1-1.0;
+			lane_waypoint_marker.color.g = 1- (2.0 - norm_cost);
 		}
 
 		if(markerArray.markers.size() == 0)

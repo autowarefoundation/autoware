@@ -116,6 +116,7 @@ PlannerX::PlannerX()
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
+	pub_cluster_cloud = nh.advertise<sensor_msgs::PointCloud2>("simu_points_cluster",1);
 
 
 	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&PlannerX::callbackGetInitPose, 		this);
@@ -445,8 +446,8 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	timespec t;
 	UtilityHNS::UtilityH::GetTickCount(t);
 	srand(t.tv_nsec);
-	double width = 0.1;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
-	double length = 0.1;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
+	double width = 4;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
+	double length = 2;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
 
 	geometry_msgs::PointStamped point;
 	point.point.x = msg->point.x+m_OriginPos.position.x;
@@ -459,6 +460,13 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	int nNum1, nNum2;
 	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
 	m_TrackedClusters = m_OriginalClusters;
+
+	pcl::PointCloud<pcl::PointXYZ> point_cloud;
+	pcl::fromROSMsg(clusters_array.clusters.at(0).cloud, point_cloud);
+	sensor_msgs::PointCloud2 cloud_msg;
+	pcl::toROSMsg(point_cloud, cloud_msg);
+	cloud_msg.header.frame_id = "map";
+	pub_cluster_cloud.publish(cloud_msg);
 }
 
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
