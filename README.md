@@ -48,7 +48,7 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization  
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map
 % sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
 ```
@@ -64,8 +64,9 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 % sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
 ```
 
-**NOTE: jsk_visualization is not provided in Ubuntu15.04 Jade. Please download it from the following repository and build it by yourself.  
+**NOTE: jsk_visualization and grid_map is not provided in Ubuntu15.04 Jade. Please download it from the following repository and build it by yourself.
 https://github.com/jsk-ros-pkg/jsk_visualization**
+https://github.com/ethz-asl/grid_map
 
 ## How to Build
 

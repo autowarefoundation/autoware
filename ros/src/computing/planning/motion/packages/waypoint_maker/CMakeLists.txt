@@ -33,7 +33,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader.cpp)
+add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader_core nodes/waypoint_loader/waypoint_loader_node.cpp)
 target_link_libraries(waypoint_loader libwaypoint_follower ${catkin_LIBRARIES})
 add_dependencies(waypoint_loader
   waypoint_follower_generate_messages_cpp

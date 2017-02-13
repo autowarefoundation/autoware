@@ -6,8 +6,8 @@
   subscribe: [/lane_waypoints_array, /vector_map_info/point_class, /vector_map_info/lane,
     /vector_map_info/node, /vector_map_info/stop_line, /vector_map_info/dtlane, /config/lane_rule]
 - name: lane_select
-  publish: [/base_waypoints]
-  subscribe: [/config/lane_select, /lane_waypoints_array]
+  publish: [/base_waypoints, /closest_waypoint]
+  subscribe: [/traffic_waypoints_array, /current_pose, /current_velocity]
 - name: lane_stop
   publish: [/traffic_waypoints_array]
   subscribe: [/traffic_light, /red_waypoints_array, /green_waypoints_array]

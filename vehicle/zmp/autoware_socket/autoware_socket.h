@@ -83,6 +83,8 @@ typedef struct pose_data {
 typedef struct vel_data {
   double tv;
   double sv;
+  double lv; // linear_velocity
+  double sa; // steering_angle
   long long int tstamp;
 } vel_data_t;
 
