@@ -40,15 +40,19 @@ namespace {
 //Publisher
 ros::Publisher g_twist_pub;
 double g_lateral_accel_limit = 5.0;
+double g_lowpass_gain_linear_x = 0.0;
+double g_lowpass_gain_angular_z = 0.0;
 constexpr double RADIUS_MAX = 9e10;
 constexpr double ERROR = 1e-8;
-const double g_lowpass_gain_linear_x = 0.9;
-const double g_lowpass_gain_angular_z = 0.9;
 
 void configCallback(const runtime_manager::ConfigTwistFilterConstPtr &config)
 {
   g_lateral_accel_limit = config->lateral_accel_limit;
   ROS_INFO("g_lateral_accel_limit = %lf",g_lateral_accel_limit);
+  g_lowpass_gain_linear_x = config->lowpass_gain_linear_x;
+  ROS_INFO("lowpass_gain_linear_x = %lf",g_lowpass_gain_linear_x);
+  g_lowpass_gain_angular_z = config->lowpass_gain_angular_z;
+  ROS_INFO("lowpass_gain_angular_z = %lf",g_lowpass_gain_angular_z);
 }
 
 void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
