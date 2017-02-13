@@ -48,7 +48,8 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization  
+% sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
 ```
 
@@ -59,6 +60,7 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 
 ```
 % sudo apt-get install ros-jade-desktop-full ros-jade-nmea-msgs ros-jade-nmea-navsat-driver ros-jade-sound-play
+% sudo apt-get install ros-jade-controller-manager ros-jade-ros-control ros-jade-ros-controllers ros-jade-gazebo-ros-control ros-jade-sicktoolbox ros-jade-sicktoolbox-wrapper ros-jade-joystick-drivers ros-jade-novatel-span-driver
 % sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
 ```
 
@@ -104,7 +106,7 @@ GitFlow, git branching model, is introduced in Autoware repository.
 - When you find bugs in `master` branch, you can branch off your hotfix branch from `master`.  
   you can use the following command.  
   `$ git checkout -b hotfix/[your_branch_name] master`
-  
+
 More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## Documents
