@@ -26,41 +26,53 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
 
-#include <ros/ros.h>
-#include <iostream>
+#include "state_machine.h"
 
-#include "waypoint_follower/LaneArray.h"
-#include "runtime_manager/ConfigLaneSelect.h"
-
-static ros::Publisher g_pub;
-static int g_lane_number = 0;
-static waypoint_follower::LaneArray g_lane_array;
-
-static void configCallback(const runtime_manager::ConfigLaneSelectConstPtr &config)
+namespace state_machine
 {
-  g_lane_number = config->number;
-  if ((int)g_lane_array.lanes.size() > g_lane_number)
-    g_pub.publish(g_lane_array.lanes[g_lane_number]);
+void StateTrafficLightStop::update(StateContext *context)
+{
+  if (context->getLightColor() == TrafficLight::GREEN)
+    context->setState(StateMoveForward::create());
 }
 
-static void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
+void StateMoveForward::update(StateContext *context)
 {
-  g_lane_array = *msg;
-  if ((int)g_lane_array.lanes.size() > g_lane_number)
-    g_pub.publish(g_lane_array.lanes[g_lane_number]);
+  if (context->getLightColor() == TrafficLight::RED)
+    context->setState(StateTrafficLightStop::create());
+
+  if(context->getChangeFlag() == ChangeFlag::right || context->getChangeFlag() == ChangeFlag::left)
+    context->setState(StateLaneChange::create());
 }
 
-int main(int argc, char **argv)
+void StateLaneChange::update(StateContext *context)
 {
-  ros::init(argc, argv, "lane_select");
-
-  ros::NodeHandle nh;
-  ros::Subscriber config_sub = nh.subscribe("/config/lane_select", 1, configCallback);
-  ros::Subscriber sub = nh.subscribe("traffic_waypoints_array", 1, laneArrayCallback);
-  g_pub = nh.advertise<waypoint_follower::lane>("base_waypoints", 10, true);
-
-  ros::spin();
-  return 0;
+  if(context->getChangeFlag() == ChangeFlag::straight)
+    context->setState(StateMoveForward::create());
 }
+
+void StateStopSignStop::update(StateContext *context)
+{
+  // stop sign stop
+}
+
+void StateMissionComplete::update(StateContext *context)
+{
+  // Mission complete
+}
+
+void StateEmergency::update(StateContext *context)
+{
+  // Emergency
+}
+
+void StateObstacleAvoidance::update(StateContext *context)
+{
+  // Obstacle Avoidance
+}
+
+
+
+}  // state_machine

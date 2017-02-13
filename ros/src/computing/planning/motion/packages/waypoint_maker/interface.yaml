@@ -10,4 +10,4 @@
     /closest_waypoint]
 - name: waypoint_saver
   publish: [/waypoint_saver_mark]
-  subscribe: [/current_pose, /can_info, /estimate_twist]
+  subscribe: [/current_pose, /current_velocity]

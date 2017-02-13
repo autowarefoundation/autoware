@@ -53,7 +53,7 @@ add_dependencies(lane_stop
   runtime_manager_generate_messages_cpp
 )
 
-add_executable(lane_select nodes/lane_select/lane_select.cpp)
+add_executable(lane_select nodes/lane_select/lane_select_node.cpp nodes/lane_select/lane_select_core.cpp)
 target_link_libraries(lane_select ${catkin_LIBRARIES})
 add_dependencies(lane_select
   waypoint_follower_generate_messages_cpp

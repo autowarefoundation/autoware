@@ -36,6 +36,7 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <iostream>
+#include <std_msgs/Int32.h>
 
 #include "waypoint_follower/libwaypoint_follower.h"
 
@@ -50,9 +51,11 @@ geometry_msgs::Pose _initial_pose;
 bool _initial_set = false;
 bool _pose_set = false;
 bool _waypoint_set = false;
+bool g_is_closest_waypoint_subscribed = false;
 WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
 ros::Publisher g_velocity_publisher;
+int32_t g_closest_waypoint = -1;
 
 constexpr int LOOP_RATE = 50; // 50Hz
 
@@ -132,7 +135,13 @@ void waypointCallback(const waypoint_follower::laneConstPtr &msg)
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
-  ROS_INFO_STREAM("waypoint subscribed");
+  //ROS_INFO_STREAM("waypoint subscribed");
+}
+
+void callbackFromClosestWaypoint(const std_msgs::Int32ConstPtr &msg)
+{
+  g_closest_waypoint = msg->data;
+  g_is_closest_waypoint_subscribed = true;
 }
 
 void publishOdometry()
@@ -153,7 +162,7 @@ void publishOdometry()
     _pose_set = true;
   }
 
-  int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), pose);
+  /*int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), pose);
   if (closest_waypoint == -1)
   {
     ROS_INFO("cannot publish odometry because closest waypoint is -1.");
@@ -163,6 +172,8 @@ void publishOdometry()
   {
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
   }
+*/if(_waypoint_set && g_is_closest_waypoint_subscribed)
+    pose.position.z = _current_waypoints.getWaypointPosition(g_closest_waypoint).z;
 
   double vx = _current_velocity.linear.x;
   double vth = _current_velocity.angular.z;
@@ -241,6 +252,7 @@ int main(int argc, char **argv)
   // subscribe topic
   ros::Subscriber cmd_subscriber = nh.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 10, boost::bind(CmdCallBack, _1, accel_rate));
   ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
+  ros::Subscriber closest_sub = nh.subscribe("closest_waypoint", 10, callbackFromClosestWaypoint);
   ros::Subscriber initialpose_subscriber;
 
   if (initialize_source == "Rviz")
@@ -265,11 +277,11 @@ int main(int argc, char **argv)
   {
     ros::spinOnce();  // check subscribe topic
 
-    if (!_waypoint_set)
+    /*if (!_waypoint_set)
     {
       loop_rate.sleep();
       continue;
-    }
+    }*/
 
     if (!_initial_set)
     {

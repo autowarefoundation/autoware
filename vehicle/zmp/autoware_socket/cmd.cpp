@@ -135,7 +135,7 @@ void Getter(CMDDATA &cmddata)
   // string version
   std::vector<std::string> cmdVector;
   cmdVector = split(cmdRes,',');
-  if (cmdVector.size() == 7) {
+  if (cmdVector.size() == 7 || cmdVector.size() == 9) {
     cmddata.vel.tv = atof(cmdVector[0].c_str());
     cmddata.vel.sv = atof(cmdVector[1].c_str());
     
@@ -155,6 +155,14 @@ void Getter(CMDDATA &cmddata)
     cmddata.accel = atoi(cmdVector[4].c_str());
     cmddata.steer = atoi(cmdVector[5].c_str());
     cmddata.brake = atoi(cmdVector[6].c_str());
+
+    if (cmdVector.size() == 7) {
+      cmddata.vel.lv = -1;
+      cmddata.vel.sa = 0;
+    } else {
+      cmddata.vel.lv = atof(cmdVector[7].c_str());
+      cmddata.vel.sa = atof(cmdVector[8].c_str());
+    }
   } else {
     fprintf(stderr,"cmd : Recv data is invalid\n");
   }
@@ -199,7 +207,12 @@ void Control(vel_data_t vel, void* p)
   double current_velocity = vstate.velocity; // km/h
   double current_steering_angle = vstate.steering_angle; // degree
  
-  int cmd_velocity = vel.tv * 3.6;
+  int cmd_velocity;
+  if (vel.lv < 0) {
+    cmd_velocity = vel.tv * 3.6;
+  } else {
+    cmd_velocity = vel.lv * 3.6;
+  }
   int cmd_steering_angle;
 
   // We assume that the slope against the entire arc toward the 
@@ -208,13 +221,29 @@ void Control(vel_data_t vel, void* p)
   // \theta = cmd_wheel_angle
   // vel.sv/vel.tv = Radius
   // l \simeq VEHICLE_LENGTH
-  if (vel.tv < 0.1) { // just avoid divided by zero.
+  if (vel.tv < 0.1 && vel.lv < 0) { // just avoid divided by zero.
     cmd_steering_angle = current_steering_angle;
   }
   else {
-    double wheel_angle_pi = (vel.sv / vel.tv) * WHEEL_BASE;
-    double wheel_angle = (wheel_angle_pi / M_PI) * 180.0;
+    double wheel_angle_pi;
+    double wheel_angle;
+    if (vel.lv < 0) {
+      wheel_angle_pi = (vel.sv / vel.tv) * WHEEL_BASE;
+    } else {
+      wheel_angle_pi = vel.sa;
+    }
+    wheel_angle = (wheel_angle_pi / M_PI) * 180.0;
     cmd_steering_angle = wheel_angle * WHEEL_TO_STEERING;
+#if 0 /* log */
+    ofstream ofs("/tmp/lvsa.log", ios::app);
+    ofs << vel.tv << " " 
+      << vel.sv << " " 
+      << vel.lv << " " 
+      << vel.sa << " " 
+      << (((vel.sv / vel.tv) * WHEEL_BASE)/M_PI*180.0) << " "
+      << (vel.sa/M_PI*180.0) << " "
+      << endl;
+#endif
   }
 
 #if 0 /* just for a debug */
