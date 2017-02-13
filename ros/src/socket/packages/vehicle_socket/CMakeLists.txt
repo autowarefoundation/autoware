@@ -41,4 +41,5 @@ add_dependencies(vehicle_sender
   vehicle_socket_generate_messages_cpp
   tablet_socket_generate_messages_cpp
   runtime_manager_generate_messages_cpp
+  waypoint_follower_generate_messages_cpp
 )
