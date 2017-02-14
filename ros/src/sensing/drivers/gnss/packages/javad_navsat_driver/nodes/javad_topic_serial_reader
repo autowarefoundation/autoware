@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
             sentence = Sentence()
             sentence.header.stamp = rospy.get_rostime()
-	    sentence.header.frame_id = frame_id
+            sentence.header.frame_id = frame_id
             sentence.sentence = data
 
             nmea_pub.publish(sentence)
