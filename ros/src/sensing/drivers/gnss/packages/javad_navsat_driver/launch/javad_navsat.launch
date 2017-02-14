@@ -14,7 +14,7 @@
  <!-- rosrun nmea_navsat_driver nmea_topic_driver -->
 
 <!--read sentence and publish topic-->
-<node pkg="javad_navsat_driver" type="javad_topic_serial_reader" name="javad_topic_serial_reader" output="screen">
+<node pkg="javad_navsat_driver" type="javad_topic_serial_reader" name="javad_topic_serial_reader" output="log">
   <param name="port" value="$(arg port)" />
   <param name="baud" value="$(arg baud)" />
   <param name="em_file" value="$(arg em_file)" />
