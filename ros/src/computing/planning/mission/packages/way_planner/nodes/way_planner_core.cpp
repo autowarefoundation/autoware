@@ -58,6 +58,7 @@ void way_planner_core::GetTransformFromTF(const std::string parent_frame, const 
 
 way_planner_core::way_planner_core()
 {
+
 	m_pCurrGoal = 0;
 	m_iCurrentGoalIndex = -1;
 	m_bKmlMap = false;
@@ -105,21 +106,27 @@ way_planner_core::way_planner_core()
 	pub_GlobalPlanAnimationRviz = nh.advertise<visualization_msgs::MarkerArray>("AnimateGlobalPlan", 1, true);
 #endif
 
+#ifdef ENABLE_HMI
+	m_AvgResponseTime = 3.5;
+	m_SocketServer.InitSocket(10001);
+#endif
+
 	/** @todo To achieve perfection , you need to start sometime */
 
-	if(m_params.bEnableRvizInput)
+	//if(m_params.bEnableRvizInput)
 	{
 		sub_start_pose 	= nh.subscribe("/initialpose", 					1, &way_planner_core::callbackGetStartPose, 		this);
 		sub_goal_pose 	= nh.subscribe("move_base_simple/goal", 		1, &way_planner_core::callbackGetGoalPose, 		this);
-		sub_current_pose = nh.subscribe("/current_pose", 				100,&way_planner_core::callbackGetCurrentPose, 		this);
 	}
-	else
-	{
-		sub_start_pose 	= nh.subscribe("/GlobalStartPose", 				1, &way_planner_core::callbackGetStartPose, 		this);
-		sub_goal_pose 	= nh.subscribe("/GlobalGoalPose", 				1, &way_planner_core::callbackGetGoalPose, 		this);
-	}
+//	else
+//	{
+//		sub_start_pose 	= nh.subscribe("/GlobalStartPose", 				1, &way_planner_core::callbackGetStartPose, 		this);
+//		sub_goal_pose 	= nh.subscribe("/GlobalGoalPose", 				1, &way_planner_core::callbackGetGoalPose, 		this);
+//	}
 
-	sub_nodes_list 		= nh.subscribe("/GlobalNodesList", 				1, &way_planner_core::callbackGetNodesList, 		this);
+	sub_current_pose 		= nh.subscribe("/current_pose", 			100,	&way_planner_core::callbackGetCurrentPose, 		this);
+	sub_current_velocity 	= nh.subscribe("/current_velocity",			100,	&way_planner_core::callbackGetVehicleStatus, 	this);
+	sub_nodes_list 			= nh.subscribe("/GlobalNodesList", 			1, 		&way_planner_core::callbackGetNodesList, 		this);
 
 	if(m_params.mapSource == MAP_AUTOWARE)
 	{
@@ -150,14 +157,19 @@ void way_planner_core::callbackGetStartPose(const geometry_msgs::PoseWithCovaria
 	}
 }
 
-
 void way_planner_core::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
-	if(m_params.bEnableRvizInput)
+	//if(m_params.bEnableRvizInput)
 	{
 		m_CurrentPose = msg->pose;
 		bUsingCurrentPose = true;
 	}
+}
+
+void way_planner_core::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+	m_VehicleState.speed = msg->twist.linear.x;
+	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
 void way_planner_core::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
@@ -476,6 +488,26 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 
 #endif
 
+#ifdef ENABLE_HMI
+  	void way_planner_core::HMI_DoOneStep()
+  	{
+  		double min_distance = m_AvgResponseTime * m_VehicleState.speed;
+  		std::vector<PlannerHNS::WayPoint> branches;
+  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths, min_distance, branches);
+  		if(branches.size() > 0)
+  		{
+			HMI_MSG msg;
+			msg.type = OPTIONS_MSG;
+			msg.options.clear();
+			for(unsigned int i = 0; i< branches.size(); i++)
+				msg.options.push_back(branches.at(i).actionCost.at(0).first);
+
+			std::cout << "Send Message To Socket Thread with (" <<  branches.size() << ") Branches" << std::endl;
+			m_SocketServer.SendMSG(msg);
+  		}
+  	}
+#endif
+
 void way_planner_core::PlannerMainLoop()
 {
 	ros::Rate loop_rate(10);
@@ -485,6 +517,9 @@ void way_planner_core::PlannerMainLoop()
 	while (ros::ok())
 	{
 		ros::spinOnce();
+#ifdef ENABLE_HMI
+		HMI_DoOneStep();
+#endif
 
 		//std::cout << "Main Loop ! " << std::endl;
 		if(m_params.mapSource == MAP_KML_FILE && !m_bKmlMap)

@@ -49,8 +49,6 @@ PlannerX::PlannerX()
 	clock_gettime(0, &m_Timer);
 	m_counter = 0;
 	m_frequency = 0;
-	m_bSignal = ROBOT_SIGNAL;
-
 
 	m_nTrackObjects = 0;
 	m_nContourPoints = 0;
@@ -77,12 +75,6 @@ PlannerX::PlannerX()
 	m_ObstacleTracking.m_DT = 0.12;
 	m_ObstacleTracking.m_bUseCenterOnly = true;
 
-	bool bSimulation = false;
-	nh.getParam("/dp_planner/enableSimulation", bSimulation);
-	if(bSimulation)
-		m_bSignal = SIMULATION_SIGNAL;
-	else
-		m_bSignal = ROBOT_SIGNAL;
 
 	int iSource = 0;
 	nh.getParam("/dp_planner/mapSource", iSource);
@@ -155,16 +147,17 @@ PlannerX::PlannerX()
 	/**
 	 * @todo This works only in simulation (Autoware or ff_Waypoint_follower), twist_cmd should be changed, consult team
 	 */
-	if(m_bSignal == SIMULATION_SIGNAL)
-	{
-		sub_vehicle_status 	= nh.subscribe("/twist_cmd", 				100,	&PlannerX::callbackGetVehicleStatus, 	this);
-		//sub_vehicle_simu_status 	= nh.subscribe("/estimate_twist",	100,	&PlannerX::callbackGetVehicleSimulatedStatus, 	this);
-	}
-	else
+	bool bUseOdometry = false;
+	nh.getParam("/dp_planner/enableOdometryStatus", bUseOdometry);
+	if(bUseOdometry)
 		sub_robot_odom 		= nh.subscribe("/odom", 					100,	&PlannerX::callbackGetRobotOdom, 	this);
+	else
+		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&PlannerX::callbackGetVehicleStatus, 	this);
+
 
 	sub_EmergencyStop 	= nh.subscribe("/emergency_stop_signal", 	100,	&PlannerX::callbackGetEmergencyStop, 	this);
 	sub_TrafficLight 	= nh.subscribe("/traffic_signal_info", 		10,		&PlannerX::callbackGetTrafficLight, 	this);
+
 	if(m_bEnableOutsideControl)
 		sub_OutsideControl 	= nh.subscribe("/usb_controller_r_signal", 	10,		&PlannerX::callbackGetOutsideControl, 	this);
 	else
@@ -587,18 +580,12 @@ void PlannerX::callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxA
 //	bNewBoxes = true;
 }
 
-void PlannerX::callbackGetVehicleSimulatedStatus(const geometry_msgs::TwistStampedConstPtr& msg)
-{
-	m_VehicleState.speed = msg->twist.linear.x;
-	m_VehicleState.steer = msg->twist.angular.z;
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
-}
-
 void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
 {
 	m_VehicleState.speed = msg->twist.linear.x;
-	m_VehicleState.steer = msg->twist.angular.z;
+	m_VehicleState.steer = atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+
 	// If steering is in angular velocity
 	//m_VehicleState.steer = atan(m_State.m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
 //	if(msg->vector.z == 0x00)
@@ -616,8 +603,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 {
 	m_VehicleState.speed = msg->twist.twist.linear.x;
-	//if(msg->twist.twist.linear.x != 0)
-		//m_VehicleState.steer += atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+	m_VehicleState.steer += atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
 
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 //	if(msg->vector.z == 0x00)

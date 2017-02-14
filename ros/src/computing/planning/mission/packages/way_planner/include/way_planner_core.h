@@ -65,12 +65,14 @@
 #include "MappingHelpers.h"
 #include "PlannerH.h"
 #include "RosHelpers.h"
+#include "SocketServer.h"
 
 namespace WayPlannerNS {
 
 
 #define MAX_GLOBAL_PLAN_DISTANCE 10000
-#define ENABLE_VISUALIZE_PLAN
+#define _ENABLE_VISUALIZE_PLAN
+#define ENABLE_HMI
 
 class AutowareRoadNetwork
 {
@@ -147,6 +149,8 @@ protected:
 	std::vector<geometry_msgs::Pose> m_GoalsPos;
 	//bool bGoalPos;
 	geometry_msgs::Pose m_OriginPos;
+	PlannerHNS::VehicleState m_VehicleState;
+
 
 	std::vector<geometry_msgs::PoseStamped> m_NodesList;
 
@@ -164,6 +168,7 @@ protected:
 	ros::Subscriber sub_start_pose;
 	ros::Subscriber sub_goal_pose;
 	ros::Subscriber sub_current_pose;
+	ros::Subscriber sub_current_velocity;
 	ros::Subscriber sub_nodes_list;
 	ros::Subscriber sub_map_points;
 	ros::Subscriber sub_map_lanes;
@@ -184,6 +189,7 @@ private:
   void callbackGetGoalPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
+  void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 
   void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);
   void callbackGetVMLanes(const vector_map_msgs::LaneArray& msg);
@@ -217,6 +223,12 @@ private:
   	unsigned int m_nLevelSize;
   	double m_CurrMaxCost;
   	int m_bSwitch;
+#endif
+
+#ifdef ENABLE_HMI
+  	double m_AvgResponseTime; //seconds
+  	HMISocketServer m_SocketServer;
+  	void HMI_DoOneStep();
 #endif
 
 };

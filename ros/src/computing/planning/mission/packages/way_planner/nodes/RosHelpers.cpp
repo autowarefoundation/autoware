@@ -79,12 +79,16 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		wp.twist.twist.linear.z = path.at(i).stopLineID;
 		wp.twist.twist.angular.x = path.at(i).LeftLaneId;
 		wp.twist.twist.angular.y = path.at(i).RightLaneId;
-		if(path.at(i).bDir == PlannerHNS::FORWARD_DIR)
-			wp.twist.twist.angular.z = 0;
-		else if(path.at(i).bDir == PlannerHNS::FORWARD_LEFT_DIR)
-			wp.twist.twist.angular.z = 1;
-		else if(path.at(i).bDir == PlannerHNS::FORWARD_RIGHT_DIR)
-			wp.twist.twist.angular.z = 2;
+		for(unsigned int iaction = 0; iaction < path.at(i).actionCost.size(); iaction++)
+		{
+			if(path.at(i).actionCost.at(iaction).first == PlannerHNS::RIGHT_TURN_ACTION)
+				wp.twist.twist.angular.z = 1;
+			else if(path.at(i).actionCost.at(iaction).first == PlannerHNS::LEFT_TURN_ACTION)
+				wp.twist.twist.angular.z = 2;
+			else
+				wp.twist.twist.angular.z = 0;
+		}
+
 
 		//wp.dtlane.dir = path.at(i).pos.a;
 
@@ -438,7 +442,26 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
   {
     for (unsigned int j=0; j < lane_waypoints_array.lanes.at(i).waypoints.size(); j++)
     {
-    	lane_waypoint_marker.id = count;
+    	if(lane_waypoints_array.lanes.at(i).waypoints.at(j).twist.twist.angular.z == 1)
+    	{
+    		lane_waypoint_marker.color.r = 0.0;
+    		lane_waypoint_marker.color.g = 1.0;
+    		lane_waypoint_marker.color.b = 0.0;
+    	}
+    	else if(lane_waypoints_array.lanes.at(i).waypoints.at(j).twist.twist.angular.z == 2)
+    	{
+    		lane_waypoint_marker.color.r = 0.0;
+			lane_waypoint_marker.color.g = 0.0;
+			lane_waypoint_marker.color.b = 1.0;
+    	}
+    	else
+    	{
+    		lane_waypoint_marker.color.r = 1.0;
+			lane_waypoint_marker.color.g = 0.0;
+			lane_waypoint_marker.color.b = 0.0;
+    	}
+
+      lane_waypoint_marker.id = count;
       lane_waypoint_marker.pose = lane_waypoints_array.lanes.at(i).waypoints.at(j).pose.pose;
       tmp_marker_array.markers.push_back(lane_waypoint_marker);
       count++;
@@ -448,6 +471,46 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
   markerArray.markers.insert(markerArray.markers.end(), tmp_marker_array.markers.begin(),
                                          tmp_marker_array.markers.end());
 
+}
+
+void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const double& min_distance,
+			std::vector<PlannerHNS::WayPoint>& branches)
+{
+	static int detection_range = 20; // meter
+	if(globalPaths.size() > 0)
+	{
+		double d = 0;
+		for(unsigned int i=1; i < globalPaths.at(0).size(); i++)
+		{
+			d += hypot(globalPaths.at(0).at(i).pos.y - globalPaths.at(0).at(i-1).pos.y, globalPaths.at(0).at(i).pos.x - globalPaths.at(0).at(i-1).pos.x);
+
+			if(d - min_distance > detection_range)
+				return;
+
+			if(d > min_distance)
+			{
+				if(globalPaths.at(0).at(i).actionCost.size() > 0)
+				{
+					PlannerHNS::ACTION_TYPE act_type = globalPaths.at(0).at(i).actionCost.at(0).first;
+					bool bFound = false;
+					for(unsigned int ib=0; ib< branches.size(); ib++)
+					{
+						if(branches.at(ib).actionCost.at(0).first == act_type)
+						{
+							bFound = true;
+							break;
+						}
+					}
+
+					if(!bFound)
+					{
+						PlannerHNS::WayPoint wp =  globalPaths.at(0).at(i);
+						branches.push_back(wp);
+					}
+				}
+			}
+		}
+	}
 }
 
 }

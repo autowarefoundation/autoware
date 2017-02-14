@@ -554,15 +554,17 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 		data.LinkWAID	= strtol(lineData.at(0).at(22).c_str(), NULL, 10);
 
 
-//		if(lineData.at(0).size() < 26) return true;
-//
-//		string str_dir = lineData.at(0).at(23);
-//		if(str_dir.size() > 0)
-//			data.LaneDir 	= str_dir.at(0);
-//		else
-//			data.LaneDir  	= 'F';
-//			data.LeftLaneId  = 0;
-//			data.RightLaneId = 0;
+		if(lineData.at(0).size() > 23)
+		{
+			string str_dir = lineData.at(0).at(23);
+			if(str_dir.size() > 0)
+				data.LaneDir 	= str_dir.at(0);
+			else
+				data.LaneDir  	= 'F';
+		}
+
+//		data.LeftLaneId  = 0;
+//		data.RightLaneId = 0;
 //		data.LeftLaneId 	= strtol(lineData.at(0).at(24).c_str(), NULL, 10);
 //		data.RightLaneId 	= strtol(lineData.at(0).at(25).c_str(), NULL, 10);
 

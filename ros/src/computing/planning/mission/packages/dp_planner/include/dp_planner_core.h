@@ -104,8 +104,6 @@ protected:
 	PlannerHNS::WayPoint m_CurrentPos;
 	bool bNewCurrentPos;
 
-	SIGNAL_TYPE m_bSignal;
-
 	std::vector<PlannerHNS::DetectedObject> m_OriginalClusters;
 	std::vector<PlannerHNS::DetectedObject> m_TrackedClusters;
 	std::vector<PlannerHNS::DetectedObject> m_DetectedBoxes;
@@ -173,9 +171,9 @@ protected:
 	// define subscribers.
 	ros::Subscriber sub_initialpose			;
 	ros::Subscriber sub_current_pose 		;
+	ros::Subscriber sub_current_velocity	;
 	ros::Subscriber sub_cluster_cloud		;
 	ros::Subscriber sub_bounding_boxs		;
-	ros::Subscriber sub_vehicle_status 		;
 	ros::Subscriber sub_vehicle_simu_status ;
 	ros::Subscriber sub_robot_odom			;
 	ros::Subscriber sub_EmergencyStop		;
@@ -199,7 +197,6 @@ protected:
 	void callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg);
 	void callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
-	void callbackGetVehicleSimulatedStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetEmergencyStop(const std_msgs::Int8& msg);
 	void callbackGetTrafficLight(const std_msgs::Int8& msg);

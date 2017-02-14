@@ -27,7 +27,7 @@
 	<arg name="maxAcceleration"				default="0.6"   />
 	<arg name="maxDeceleration"				default="-1.0"   />
 	
-	<arg name="signal" 						default="0" /> <!-- 0 : simulation or 1 : vehicle or 2 : autoware or 3 : robot -->
+	<arg name="signal" 						default="0" /> <!-- 0 : simulation or 1 : vehicle or 2 : robot -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
 	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
 	

@@ -42,7 +42,7 @@ link_directories(lib)
 
 
 ## Declare a C++ executable
- add_executable(way_planner nodes/way_planner.cpp nodes/way_planner_core.cpp nodes/RosHelpers.cpp)
+ add_executable(way_planner nodes/way_planner.cpp nodes/way_planner_core.cpp nodes/RosHelpers.cpp nodes/SocketClient.cpp nodes/SocketServer.cpp)
  # add_executable(way_planner nodes/kml_map_recorder.cpp)
 
 ## Add cmake target dependencies of the executable

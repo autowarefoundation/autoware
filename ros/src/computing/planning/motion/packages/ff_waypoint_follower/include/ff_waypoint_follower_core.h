@@ -60,7 +60,7 @@
 namespace FFSteerControlNS
 {
 
-enum STATUS_TYPE{CONTROL_BOX_STATUS, AUTOWARE_STATUS, ROBOT_STATUS, SIMULATION_STATUS};
+enum STATUS_TYPE{CONTROL_BOX_STATUS, ROBOT_STATUS, SIMULATION_STATUS};
 
 class ControlCommandParams
 {
@@ -136,28 +136,30 @@ protected:
 
 	ros::Publisher pub_VelocityAutoware;
 	ros::Publisher pub_StatusAutoware;
-	ros::Publisher pub_AutowareSimuPose;
-	ros::Publisher pub_SimulatedCurrentPose;
+	ros::Publisher pub_SimuPose;
+	ros::Publisher pub_SimuVelocity;
 	ros::Publisher pub_CurrPoseRviz;
 	ros::Publisher pub_FollowPointRviz;
-	ros::Publisher pub_VehicleStatus;
+	ros::Publisher pub_VehicleCommand;
 	ros::Publisher pub_ControlBoxOdom;
 
 	// define subscribers.
 	ros::Subscriber sub_initialpose;
 	ros::Subscriber sub_current_pose ;
+	ros::Subscriber sub_current_velocity ;
 	ros::Subscriber sub_behavior_state;
 	ros::Subscriber sub_current_trajectory;
-	ros::Subscriber sub_autoware_odom;
+	//ros::Subscriber sub_autoware_odom;
 	ros::Subscriber sub_robot_odom;
 	ros::Subscriber sub_OutsideControl		;
 
 	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
+	void callbackGetCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
 	void callbackGetCurrentTrajectory(const waypoint_follower::laneConstPtr& msg);
-	void callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg);
+	//void callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);
 

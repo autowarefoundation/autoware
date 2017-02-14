@@ -56,8 +56,6 @@ FFSteerControl::FFSteerControl()
 	else if(iSignal == 1)
 		m_CmdParams.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
 	else if(iSignal == 2)
-		m_CmdParams.statusSource = FFSteerControlNS::AUTOWARE_STATUS;
-	else if(iSignal == 3)
 		m_CmdParams.statusSource = FFSteerControlNS::ROBOT_STATUS;
 
 	string steerModeStr;
@@ -131,22 +129,31 @@ FFSteerControl::FFSteerControl()
 	pub_CurrPoseRviz			= nh.advertise<visualization_msgs::Marker>("curr_simu_pose", 100);
 	pub_FollowPointRviz			= nh.advertise<visualization_msgs::Marker>("follow_pose", 100);
 
-	pub_SimulatedCurrentPose 	= nh.advertise<geometry_msgs::PoseStamped>("current_pose", 100);
-	pub_AutowareSimuPose		= nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
-	pub_VehicleStatus			= nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 100);
+	pub_SimuPose				= nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 100);
+	pub_SimuVelocity			= nh.advertise<geometry_msgs::TwistStamped>("sim_velocity", 100);
+
+	pub_VehicleCommand			= nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 100);
 	pub_ControlBoxOdom			= nh.advertise<nav_msgs::Odometry>("ControlBoxOdom", 100);
 
 	// define subscribers.
 	sub_initialpose 		= nh.subscribe("/initialpose", 		100, &FFSteerControl::callbackGetInitPose, 			this);
 
   	if(m_CmdParams.statusSource != SIMULATION_STATUS)
-  		sub_current_pose 	= nh.subscribe("/current_pose", 	100, &FFSteerControl::callbackGetCurrentPose, 		this);
+  		sub_current_pose 	= nh.subscribe("/current_pose", 		100, &FFSteerControl::callbackGetCurrentPose, 		this);
+
+  	if(m_CmdParams.statusSource == ROBOT_STATUS)
+		sub_robot_odom			= nh.subscribe("/odom",				100, &FFSteerControl::callbackGetRobotOdom, 		this);
+  	else
+  		sub_current_velocity= nh.subscribe("/current_velocity", 	100, &FFSteerControl::callbackGetCurrentVelocity, 		this);
 
   	sub_behavior_state 		= nh.subscribe("/current_behavior",	10,  &FFSteerControl::callbackGetBehaviorState, 	this);
   	sub_current_trajectory 	= nh.subscribe("/final_waypoints", 	10,	&FFSteerControl::callbackGetCurrentTrajectory, this);
-  	sub_autoware_odom 		= nh.subscribe("/twist_odom", 		10,	&FFSteerControl::callbackGetAutowareOdom, this);
-  	sub_robot_odom			= nh.subscribe("/odom",				100, &FFSteerControl::callbackGetRobotOdom, 		this);
+
+
+
   	sub_OutsideControl 	= nh.subscribe("/usb_controller_r_signal", 	10,		&FFSteerControl::callbackGetOutsideControl, 	this);
+
+  	//sub_autoware_odom 		= nh.subscribe("/twist_odom", 		10,	&FFSteerControl::callbackGetAutowareOdom, this);
 
 
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
@@ -234,10 +241,17 @@ void FFSteerControl::callbackGetCurrentPose(const geometry_msgs::PoseStampedCons
 		clock_gettime(0, &m_Timer);
 	}
 
-	m_CurrentPos = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y,
-						msg->pose.position.z, tf::getYaw(msg->pose.orientation));
+	m_CurrentPos = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z, tf::getYaw(msg->pose.orientation));
 
 	bNewCurrentPos = true;
+}
+
+void FFSteerControl::callbackGetCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+	m_CurrVehicleStatus.shift = PlannerHNS::SHIFT_POS_DD;
+	m_CurrVehicleStatus.speed = msg->twist.linear.x;
+	m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
+	UtilityHNS::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
 }
 
 void FFSteerControl::callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg )
@@ -281,9 +295,9 @@ void FFSteerControl::callbackGetCurrentTrajectory(const waypoint_follower::laneC
 	bNewTrajectory = true;
 }
 
-void FFSteerControl::callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg)
-{
-}
+//void FFSteerControl::callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg)
+//{
+//}
 
 void FFSteerControl::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 {
@@ -481,10 +495,11 @@ void FFSteerControl::PlannerMainLoop()
 
 				geometry_msgs::TwistStamped vehicle_status;
 				vehicle_status.header.stamp = ros::Time::now();
-				vehicle_status.twist.angular.z = m_CurrVehicleStatus.steer;
 				vehicle_status.twist.linear.x = m_CurrVehicleStatus.speed;
+				vehicle_status.twist.angular.z = ( vehicle_status.twist.linear.x / m_CarInfo.wheel_base ) * tan(m_CurrVehicleStatus.steer);
+
 				vehicle_status.twist.linear.z = (int)m_CurrVehicleStatus.shift;
-				pub_VehicleStatus.publish(vehicle_status);
+				pub_SimuVelocity.publish(vehicle_status);
 
 				geometry_msgs::PoseStamped pose;
 				pose.header.stamp = ros::Time::now();
@@ -494,7 +509,7 @@ void FFSteerControl::PlannerMainLoop()
 				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
 				//cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
 
-				pub_SimulatedCurrentPose.publish(pose);
+				pub_SimuPose.publish(pose);
 
 				static tf::TransformBroadcaster odom_broadcaster;
 				geometry_msgs::TransformStamped odom_trans;
@@ -509,28 +524,6 @@ void FFSteerControl::PlannerMainLoop()
 
 				// send the transform
 				odom_broadcaster.sendTransform(odom_trans);
-			}
-			else if(m_CmdParams.statusSource == AUTOWARE_STATUS)
-			{
-//				m_CurrVehicleStatus = m_PrevStepTargetStatus;
-//				m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
-//				m_CurrentPos = m_State.state;
-//
-//				geometry_msgs::TwistStamped vehicle_status;
-//				vehicle_status.header.stamp = ros::Time::now();
-//				vehicle_status.twist.angular.z = m_CurrVehicleStatus.steer;
-//				vehicle_status.twist.linear.x = m_CurrVehicleStatus.speed;
-//				vehicle_status.twist.linear.z = (int)m_CurrVehicleStatus.shift;
-//				pub_VehicleStatus.publish(vehicle_status);
-//
-//				geometry_msgs::PoseStamped pose;
-//				pose.header.stamp = ros::Time::now();
-//				pose.pose.position.x = m_CurrentPos.pos.x;
-//				pose.pose.position.y = m_CurrentPos.pos.y;
-//				pose.pose.position.z = m_CurrentPos.pos.z;
-//				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
-//				cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
-//				pub_AutowareSimuPose.publish(pose);
 			}
 			else if(m_CmdParams.statusSource == ROBOT_STATUS)
 			{
@@ -590,21 +583,6 @@ void FFSteerControl::PlannerMainLoop()
 				}
 #endif
 			}
-			else if (m_CmdParams.statusSource == AUTOWARE_STATUS)//send to autoware
-			{
-//				cout << "Send Data To Autoware" << endl;
-//				geometry_msgs::Twist t;
-//				geometry_msgs::TwistStamped twist;
-//				std_msgs::Bool wf_stat;
-//				t.linear.x = m_PrevStepTargetStatus.speed;
-//				t.angular.z = m_PrevStepTargetStatus.steer;
-//				wf_stat.data = true;
-//				twist.twist = t;
-//				twist.header.stamp = ros::Time::now();
-//
-//				pub_VelocityAutoware.publish(twist);
-//				pub_StatusAutoware.publish(wf_stat);
-			}
 			else if(m_CmdParams.statusSource == ROBOT_STATUS)
 			{
 				cout << "Send Data To Robot : Max Speed=" << m_CarInfo.max_speed_forward << ", actual = " <<  m_PrevStepTargetStatus.speed << endl;
@@ -625,7 +603,7 @@ void FFSteerControl::PlannerMainLoop()
 				twist.twist = t;
 				twist.header.stamp = ros::Time::now();
 
-				pub_VehicleStatus.publish(twist);
+				pub_VehicleCommand.publish(twist);
 			}
 			else if(m_CmdParams.statusSource == SIMULATION_STATUS)
 			{

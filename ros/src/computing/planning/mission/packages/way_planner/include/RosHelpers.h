@@ -37,7 +37,25 @@
 #include <tf/tf.h>
 #include "RoadNetwork.h"
 
-namespace WayPlannerNS {
+namespace WayPlannerNS
+{
+
+enum MSG_TYPE{COMMAND_MSG = 0, CONFIRM_MSG = 1, OPTIONS_MSG = 2, UNKNOWN_MSG = 5};
+
+class HMI_MSG
+{
+public:
+	MSG_TYPE type;
+	std::vector<PlannerHNS::ACTION_TYPE> options;
+	bool bErr;
+	std::string err_msg;
+	HMI_MSG()
+	{
+		type = OPTIONS_MSG;
+		options.push_back(PlannerHNS::FORWARD_ACTION);
+		bErr = false;
+	}
+};
 
 class RosHelpers
 {
@@ -67,6 +85,9 @@ public:
 
 	static void ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
 			waypoint_follower::LaneArray& laneArray);
+
+	static void FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const double& min_distance,
+			std::vector<PlannerHNS::WayPoint>& branches);
 };
 
 }

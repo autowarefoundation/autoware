@@ -27,7 +27,15 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-//#include "way_planner_core.h"
+
+/**
+ * @brief Way Planner represents the Global planning Module, to generate global plan (reference path) the nodes takes start position, goal position and return sequence of waypoints.
+ * @brief Once the node starts (depending on the mapping option) it will load the vector map (road network) and send it to be visualized by RViz. topic name "/vector_map_center_lines_rviz"
+ * @param Start_Position in simulation environment like rviz, this node require the user to select start position using "2D Pose Estimate" button and select starting position from the global path, //
+ * if localization node is working and ndt_pose or curr_pose messages are published the node will use localization as starting position instead of "2D Pose Estimate"
+ * @param Goal_Position destination to generate global plan to. if "replan" option selection used can choose multiple goal positions. goal positions are selected from Rviz using "2D Nav Goal" button.
+ * @return global , reference path as list of waypoints. data type is "waypoint_follower::LaneArray" , and the topic name is "lane_waypoints_array"
+ */
 
 #include <ros/ros.h>
 #include "way_planner_core.h"

@@ -494,7 +494,8 @@ void PlanningHelpers::FixPathDensity(vector<WayPoint>& path, const double& dista
 				fixedPath.push_back(pm);
 			}
 			remaining = d - nPoints*distanceDensity;
-			path.at(si) = pm;
+			si++;
+			path.at(si).pos = pm.pos;
 			d = 0;
 			ei++;
 		}
@@ -507,35 +508,6 @@ void PlanningHelpers::FixPathDensity(vector<WayPoint>& path, const double& dista
 			si = ei - 1;
 		}
 	}
-
-//	path = fixedPath;
-//	fixedPath.clear();
-//
-//	for(unsigned int i = 0; i < path.size()-1; i++)
-//	{
-//		d = hypot(path.at(i+1).pos.x- path.at(i).pos.x, path.at(i+1).pos.y- path.at(i).pos.y) + remaining;
-//		a = atan2(path.at(i+1).pos.y - path.at(i).pos.y, path.at(i+1).pos.x - path.at(i).pos.x);
-//
-//		nPoints = d  / distanceDensity;
-//		WayPoint pm = path.at(i);
-//		if((remaining == 0 && d > margin) || i==0)
-//			fixedPath.push_back(pm);
-//
-//		for(int k = 0; k < nPoints-1; k++)
-//		{
-//			double tempDensity = distanceDensity;
-//			if(k==0)
-//				tempDensity = distanceDensity - remaining;
-//
-//			pm.pos.x = pm.pos.x + tempDensity * cos(a);
-//			pm.pos.y = pm.pos.y + tempDensity * sin(a);
-//			fixedPath.push_back(pm);
-//		}
-//
-//		float rem_mod = fmod(d, distanceDensity);
-//		remaining = roundf(rem_mod*100)/100;
-//
-//	}
 
 	path = fixedPath;
 }
