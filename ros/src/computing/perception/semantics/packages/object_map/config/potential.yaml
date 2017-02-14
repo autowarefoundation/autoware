@@ -1,0 +1,42 @@
+grid_map_topic: /potential_field
+
+grid_map_visualizations:
+
+  - name: elevation_points
+    type: point_cloud
+    params:
+      layer: potential_field
+
+  - name: map_region
+    type: map_region
+    params:
+      color: 3289650
+      line_width: 0.003
+
+  - name: traversability_grid
+    type: occupancy_grid
+    params:
+      layer: traversability
+      data_min: 0.08
+      data_max: -0.16
+
+  - name: elevation_cells
+    type: grid_cells
+    params:
+      layer: potential_field
+      lower_threshold: 0.0
+      upper_threshold: 0.5
+
+  - name: flat_grid
+    type: flat_point_cloud
+    params:
+      height: 0.0
+
+  - name: surface_normals
+    type: vectors
+    params:
+      layer_prefix: normal_
+      position_layer: potential_field
+      scale: 0.06
+      line_width: 0.005
+      color: 15600153 # red

@@ -67,7 +67,7 @@ subs :
            vel_mux_select:
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
-           stat_topic : [ lf ]  
+           stat_topic : [ lf ]
 
   - name : Detection
     desc : Detection desc sample
@@ -124,7 +124,7 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-            
+
       - name : rcnn_msr
         desc : rcnn_msr desc sample
         cmd  : roslaunch cv_tracker rcnn.launch
@@ -388,6 +388,11 @@ subs :
       desc : points2costmap desc sample
       cmd  : roslaunch object_map points2costmap.launch
       param: points2costmap
+      
+    - name : potential_field
+      desc : potential_field desc sample
+      cmd  : roslaunch object_map potential_field.launch
+      param: potential_field
 
 - subs :
   - name : Mission Planning
@@ -461,11 +466,11 @@ subs :
             depend : param_flag
             depend_bool : 'lambda v : v == 1'
           minimum_lookahead_threshold:
-            depend : param_flag   
-            depend_bool : 'lambda v : v == 0'          
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0'
           threshold_ratio:
             depend : param_flag
-            depend_bool : 'lambda v : v == 0' 
+            depend_bool : 'lambda v : v == 0'
           stat_topic : [ lf ]
       - name : lattice_twist_convert
         desc : lattice_twist_convert desc sample
@@ -480,7 +485,7 @@ subs :
          param: waypoint_loader
          gui  :
            lane_waypoint_csv :
-             prop  : 1    
+             prop  : 1
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -496,7 +501,7 @@ subs :
          param: waypoint_clicker
     - name : waypoint_follower
       desc : waypoint_follower desc sample
-      subs :   
+      subs :
        - name : pure_pursuit
          desc : pure_pursuit desc sample
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
@@ -509,12 +514,12 @@ subs :
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
            minimum_lookahead_distance:
-             depend : param_flag   
-             depend_bool : 'lambda v : v == 0'          
+             depend : param_flag
+             depend_bool : 'lambda v : v == 0'
            lookahead_ratio:
              depend : param_flag
-             depend_bool : 'lambda v : v == 0' 
-           stat_topic : [ lf ]  
+             depend_bool : 'lambda v : v == 0'
+           stat_topic : [ lf ]
        - name : twist_filter
          desc : twist_filter desc sample
          cmd  : roslaunch waypoint_follower twist_filter.launch
@@ -530,9 +535,17 @@ subs :
              flags : [ nl ]
            position_error :
              flags : [ nl ]
+             
+  - name : State
+    desc : State desc sample
+    subs :
+    - name : state_machine
+      desc : state_machine desc sample
+      subs :
+      - name : state_machine
+        desc : state_machine desc sample
+        cmd  : rosrun state_machine state_machine
 
-
-         
 buttons:
   car_dpm :
     param   : car_dpm
@@ -851,7 +864,7 @@ params :
       min   : 2
       max   : 10
       v     : 9
-      
+
   - name  : euclidean_cluster
     vars  :
     - name    : remove_ground
@@ -893,7 +906,7 @@ params :
       v       : False
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
     - name    : leaf_size
       desc    : leaf_size desc sample
       label   : 'leaf size'
@@ -902,7 +915,7 @@ params :
       v       : 0.1
       cmd_param :
         dash        : ''
-        delim       : ':='  
+        delim       : ':='
     - name    : cluster_size_min
       desc    : cluster_size_min desc sample
       label   : 'cluster size minimum'
@@ -911,7 +924,7 @@ params :
       v       : 20
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
     - name    : cluster_size_max
       desc    : cluster_size_max desc sample
       label   : 'cluster size maximum'
@@ -920,7 +933,7 @@ params :
       v       : 100000
       cmd_param :
         dash        : ''
-        delim       : ':='  
+        delim       : ':='
     - name    : clip_min_height
       desc    : clip_min_height desc sample
       label   : 'clip_min_height (~sensor height)'
@@ -929,7 +942,7 @@ params :
       v       : -1.3
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
     - name    : clip_max_height
       desc    : clip_max_height desc sample
       label   : 'clip_max_height (above sensor)'
@@ -955,7 +968,7 @@ params :
       v       : False
       cmd_param :
         dash        : ''
-        delim       : ':='  
+        delim       : ':='
     - name    : keep_lane_left_distance
       desc    : keep_lane_left_distance desc sample
       label   : 'keep_lane_left_distance'
@@ -964,7 +977,7 @@ params :
       v       : 5.0
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
     - name    : keep_lane_right_distance
       desc    : keep_lane_right_distance desc sample
       label   : 'keep_lane_right_distance'
@@ -973,7 +986,7 @@ params :
       v       : 5.0
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
     - name    : clustering_distances
       desc    : clustering_distances desc sample
       label   : 'clustering_distances (no spaces)'
@@ -981,7 +994,7 @@ params :
       v       : '[15,30,45,60]'
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
     - name    : clustering_thresholds
       desc    : clustering_thresholds desc sample
       label   : 'clustering_thresholds (no spaces)'
@@ -1219,7 +1232,7 @@ params :
     vars  :
     - name    : pose_mux_select
       desc    : pose_mux_select desc sample
-      label   : Pose Select 
+      label   : Pose Select
       kind    : radio_box
       choices : ['ndt_matching','gnss']
       descs   : ['ndt_matching desc sample', 'gnss desc sample']
@@ -1244,7 +1257,7 @@ params :
       v       : False
       cmd_param:
         dash     : ''
-        delim    : ':='        
+        delim    : ':='
 
   - name  : waypoint_follower
     topic : /config/waypoint_follower
@@ -1289,7 +1302,7 @@ params :
       label : displacement_threshold
       min   : 0
       max   : 1.0
-      v     : 0.0 
+      v     : 0.0
     - name  : relative_angle_threshold
       desc  : relative_angle_threshold desc sample
       label : relative_angle_threshold
@@ -1342,13 +1355,13 @@ params :
       label : Deceleration Range (m)
       min   : 0
       max   : 10
-      v     : 1.7
+      v     : 0
     - name  : threshold_points
       desc  : threshold_points desc sample
       label : Points Threshold
       min   : 0
       max   : 30
-      v     : 15
+      v     : 5
     - name  : detection_height_top
       desc  : detection_height_top desc sample
       label : Detection Height Top (m)
@@ -1366,16 +1379,16 @@ params :
       label : Deceleration (m/s^2)
       min   : 0
       max   : 5
-      v     : 1.0
+      v     : 0.7
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
       min   : 5
       max   : 40
-      v     : 15.0
+      v     : 7.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
-      label : Temporal Waypoints (m)
+      label : Temporal Waypoints Size
       min   : 0
       max   : 150
       v     : 100.0
@@ -1409,7 +1422,7 @@ params :
       label : Deceleration Range (m)
       min   : 0
       max   : 10
-      v     : 1.7
+      v     : 0
     - name  : threshold_points
       desc  : threshold_points desc sample
       label : Points Threshold
@@ -1433,13 +1446,13 @@ params :
       label : Deceleration (m/s^2)
       min   : 0
       max   : 5
-      v     : 1.0
+      v     : 0.7
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
       min   : 5
       max   : 40
-      v     : 15.0
+      v     : 7.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
       label : Temporal Waypoints (m)
@@ -1515,13 +1528,13 @@ params :
     topic : /config/twist_filter
     msg   : ConfigTwistFilter
     vars  :
-    - name    : lateral_accel_limit 
+    - name    : lateral_accel_limit
       desc    : lateral_accel_limit  desc sample
       label   : 'lateral_accel_limit :'
       min   : 0
       max   : 5.0
       v         : 0.8
-  
+
   - name  : wf_simulator
     vars  :
     - name    : initialize_source
@@ -1534,9 +1547,9 @@ params :
       v       : Rviz
       cmd_param:
         dash     : ''
-        delim    : ':='   
+        delim    : ':='
     - name      : accel_rate
-      desc      : 
+      desc      :
       label   : 'accel_rate(m/s^2) :'
       v         : 1.0
       cmd_param :
@@ -1925,7 +1938,7 @@ params :
     vars  :
     - name      : save_filename
       desc      : save_filename desc sample
-      label     : Save File 
+      label     : Save File
       kind      : path
       path_type : save
       v         : '/tmp/saved_waypoints.csv'
@@ -1965,7 +1978,7 @@ params :
       path_type : save
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
-        
+
   - name  : waypoint_loader
     vars  :
     - name      : multi_lane_csv
@@ -1984,7 +1997,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping

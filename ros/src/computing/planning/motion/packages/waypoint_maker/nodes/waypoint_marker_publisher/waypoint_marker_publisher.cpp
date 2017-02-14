@@ -409,8 +409,8 @@ void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
 void temporalCallback(const waypoint_follower::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
-  //if (_closest_waypoint != -1)
-   // createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
+  if (_closest_waypoint != -1)
+    createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
   createLocalPointMarker(*msg);
   publishLocalMarker();
