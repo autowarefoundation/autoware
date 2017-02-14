@@ -57,7 +57,8 @@ if __name__ == '__main__':
 
     try:
         GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=2)
-        
+        GPS.write("dummy")
+
         for line in em_lines:
             GPS.write(line)
         
