@@ -6,8 +6,8 @@
 
   <arg name="port" default="/dev/ttyUSB0"/>
   <arg name="baud" default="57600" />
-  <arg name="em_file" default="$(find javad_navsat_driver)/cfg/enable.cfg"/>
-  <arg name="dm_file" default="$(find javad_navsat_driver)/cfg/disable.cfg"/>
+  <arg name="enable_file" default="$(find javad_navsat_driver)/cfg/enable.cfg"/>
+  <arg name="disable_file" default="$(find javad_navsat_driver)/cfg/disable.cfg"/>
  
   <!-- HOW TO RUN using rosrun:-->
   <!-- rosrun nmea_navsat_driver nmea_topic_serial_driver _port:=/dev/ttyUSB0 _baud:=57600 -->
@@ -17,8 +17,8 @@
 <node pkg="javad_navsat_driver" type="javad_topic_serial_reader" name="javad_topic_serial_reader" output="log">
   <param name="port" value="$(arg port)" />
   <param name="baud" value="$(arg baud)" />
-  <param name="em_file" value="$(arg em_file)" />
-  <param name="dm_file" value="$(arg dm_file)" />
+  <param name="enable_file" value="$(arg enable_file)" />
+  <param name="disable_file" value="$(arg disable_file)" />
 </node>
 
 <!--subscribe topic-->
