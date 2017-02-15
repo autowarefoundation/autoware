@@ -493,7 +493,26 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
   	{
   		double min_distance = m_AvgResponseTime * m_VehicleState.speed;
   		std::vector<PlannerHNS::WayPoint> branches;
-  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths, min_distance, branches);
+
+  		PlannerHNS::WayPoint startPoint;
+
+  		if(bStartPos || bUsingCurrentPose)
+  		{
+			if(bUsingCurrentPose)
+			{
+				startPoint = PlannerHNS::WayPoint(m_CurrentPose.position.x,
+						m_CurrentPose.position.y,
+						m_CurrentPose.position.z, tf::getYaw(m_CurrentPose.orientation));
+			}
+			else
+			{
+				startPoint = PlannerHNS::WayPoint(m_StartPos.position.x+m_OriginPos.position.x,
+						m_StartPos.position.y+m_OriginPos.position.y,
+						m_StartPos.position.z+m_OriginPos.position.z, tf::getYaw(m_StartPos.orientation));
+			}
+  		}
+
+  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches);
   		if(branches.size() > 0)
   		{
 			HMI_MSG msg;
@@ -502,7 +521,17 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 			for(unsigned int i = 0; i< branches.size(); i++)
 				msg.options.push_back(branches.at(i).actionCost.at(0).first);
 
-			std::cout << "Send Message To Socket Thread with (" <<  branches.size() << ") Branches" << std::endl;
+			std::cout << "Send Message (" <<  branches.size() << ") Branches (" ;
+			for(unsigned int i=0; i< branches.size(); i++)
+			{
+				if(branches.at(i).actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
+					std::cout << "F,";
+				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
+					std::cout << "L,";
+				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
+					std::cout << "R,";
+			}
+			std::cout << ")" << std::endl;
 			m_SocketServer.SendMSG(msg);
   		}
   	}

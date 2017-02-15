@@ -11,6 +11,7 @@
 #include <sstream>
 #include <fstream>
 #include <math.h>
+#include "PlanningHelpers.h"
 
 namespace WayPlannerNS {
 
@@ -458,7 +459,7 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
     	{
     		lane_waypoint_marker.color.r = 1.0;
 			lane_waypoint_marker.color.g = 0.0;
-			lane_waypoint_marker.color.b = 0.0;
+			lane_waypoint_marker.color.b = 1.0;
     	}
 
       lane_waypoint_marker.id = count;
@@ -473,40 +474,39 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
 
 }
 
-void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const double& min_distance,
+void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose,const double& min_distance,
 			std::vector<PlannerHNS::WayPoint>& branches)
 {
 	static int detection_range = 20; // meter
 	if(globalPaths.size() > 0)
 	{
+		int close_index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(globalPaths.at(0), currPose);
+		PlannerHNS::WayPoint closest_wp = globalPaths.at(0).at(close_index);
 		double d = 0;
-		for(unsigned int i=1; i < globalPaths.at(0).size(); i++)
+		for(unsigned int i=close_index+1; i < globalPaths.at(0).size(); i++)
 		{
 			d += hypot(globalPaths.at(0).at(i).pos.y - globalPaths.at(0).at(i-1).pos.y, globalPaths.at(0).at(i).pos.x - globalPaths.at(0).at(i-1).pos.x);
 
 			if(d - min_distance > detection_range)
 				return;
 
-			if(d > min_distance)
+			if(d > min_distance && globalPaths.at(0).at(i).pFronts.size() > 1)
 			{
-				if(globalPaths.at(0).at(i).actionCost.size() > 0)
+				for(unsigned int j = 0; j< globalPaths.at(0).at(i).pFronts.size(); j++)
 				{
-					PlannerHNS::ACTION_TYPE act_type = globalPaths.at(0).at(i).actionCost.at(0).first;
+					PlannerHNS::WayPoint wp =  *globalPaths.at(0).at(i).pFronts.at(j);
 					bool bFound = false;
 					for(unsigned int ib=0; ib< branches.size(); ib++)
 					{
-						if(branches.at(ib).actionCost.at(0).first == act_type)
+						if(branches.at(ib).actionCost.at(0).first == wp.actionCost.at(0).first)
 						{
 							bFound = true;
 							break;
 						}
 					}
 
-					if(!bFound)
-					{
-						PlannerHNS::WayPoint wp =  globalPaths.at(0).at(i);
+					if(!bFound && closest_wp.laneId != wp.laneId)
 						branches.push_back(wp);
-					}
 				}
 			}
 		}

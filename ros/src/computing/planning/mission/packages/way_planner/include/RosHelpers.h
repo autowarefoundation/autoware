@@ -86,7 +86,7 @@ public:
 	static void ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
 			waypoint_follower::LaneArray& laneArray);
 
-	static void FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const double& min_distance,
+	static void FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose, const double& min_distance,
 			std::vector<PlannerHNS::WayPoint>& branches);
 };
 
