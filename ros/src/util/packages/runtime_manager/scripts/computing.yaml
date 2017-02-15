@@ -531,6 +531,11 @@ subs :
          gui  :
            initialize_source :
              flags : [ nl ]
+           accel_rate :
+             flags : [ nl ]
+           position_error :
+             flags : [ nl ]
+             
   - name : State
     desc : State desc sample
     subs :
@@ -1547,6 +1552,20 @@ params :
       desc      :
       label   : 'accel_rate(m/s^2) :'
       v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : position_error
+      desc      :
+      label   : 'position_error(m) :'
+      v         : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : angle_error
+      desc      :
+      label   : 'angle_error(degree) :'
+      v         : 0.0
       cmd_param :
         dash        : ''
         delim       : ':='
