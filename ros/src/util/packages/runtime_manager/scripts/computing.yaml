@@ -544,7 +544,7 @@ subs :
       subs :
       - name : state_machine
         desc : state_machine desc sample
-        cmd  : rosrun state_machine state_machine
+        cmd  : roslaunch state_machine state_machine.launch
 
 buttons:
   car_dpm :
