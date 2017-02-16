@@ -1905,20 +1905,20 @@ params :
       desc      : lane_change_interval desc sample
       label     : Lane Change Interval After Lane merge (m)
       min       : 1.0
-      max       : 20.0
+      max       : 50.0
       v         : 10.0
     - name      : lane_change_target_ratio
       desc      : lane_change_target_ratio desc sample
       label     : Lane Change Target Ratio
       min       : 0
-      max       : 10
-      v         : 2.0
+      max       : 20
+      v         : 5.0
     - name      : lane_change_target_minimum
       desc      : lane_change_target_minimum desc sample
       label     : Lane Change Target Minimum (m)
       min       : 2.0
-      max       : 10.0
-      v         : 3.0
+      max       : 30.0
+      v         : 10.0
     - name      : vector_length_hermite_curve
       desc      : vector_length_hermite_curve desc sample
       label     : Vector Length of Hermite Curve (m)
