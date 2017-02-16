@@ -94,7 +94,6 @@ private:
                                                                                      // change_flag
   std::tuple<waypoint_follower::lane, int32_t, ChangeFlag> lane_for_change_;
   bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_, is_current_state_subscribed_;
-  ros::Time last_change_time_;
 
   // rosparam
   double distance_threshold_;

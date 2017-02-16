@@ -43,7 +43,6 @@ LaneSelectNode::LaneSelectNode()
   , is_current_pose_subscribed_(false)
   , is_current_velocity_subscribed_(false)
   , is_current_state_subscribed_(false)
-  , last_change_time_(ros::Time::now())
   , current_state_("UNKNOWN")
 {
   initForROS();
@@ -275,7 +274,6 @@ void LaneSelectNode::changeLane()
   }
 
   findNeighborLanes();
-  last_change_time_ = ros::Time::now();
   return;
 }
 
