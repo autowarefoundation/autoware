@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vel_pose_mux)
+project(autoware_connector)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   vehicle_socket
+  tf
 )
 
 
@@ -38,6 +39,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(vel_pose_mux nodes/vel_pose_mux.cpp)
-target_link_libraries(vel_pose_mux ${catkin_LIBRARIES})
-add_dependencies(vel_pose_mux vehicle_socket_generate_messages_cpp)
+add_executable(can_info_translator nodes/can_info_translator/can_info_translator_node.cpp
+  nodes/can_info_translator/can_info_translator_core.cpp)
+target_link_libraries(can_info_translator ${catkin_LIBRARIES})
+add_dependencies(can_info_translator vehicle_socket_generate_messages_cpp)

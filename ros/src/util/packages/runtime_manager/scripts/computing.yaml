@@ -53,20 +53,22 @@ subs :
       - name : icp_matching
         cmd  : roslaunch icp_localizer icp_matching.launch
         param: icp
-    - name : vel_pose_mux
-      desc : vel_pose_mux desc sample
+    - name : autoware_connector
+      desc : autoware_connector desc sample
       subs :
-      - name : vel_pose_mux
-        desc : vel_pose_mux desc sample
-        cmd  : roslaunch vel_pose_mux vel_pose_mux.launch
-        param: vel_pose_mux
+      - name : vel_pose_connect
+        desc : vel_pose_connect desc sample
+        cmd  : roslaunch autoware_connector vel_pose_connect.launch
+        param: vel_pose_connect
         gui  :
-           pose_mux_select:
+           topic_pose_stamped:
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
-           vel_mux_select:
+             flags : [ nl ]
+           topic_twist_stamped:
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
            stat_topic : [ lf ]
 
   - name : Detection
@@ -1228,28 +1230,24 @@ params :
         delim       : ':='
         only_enable : True
 
-  - name  : vel_pose_mux
+  - name  : vel_pose_connect
     vars  :
-    - name    : pose_mux_select
-      desc    : pose_mux_select desc sample
-      label   : Pose Select
-      kind    : radio_box
-      choices : ['ndt_matching','gnss']
-      descs   : ['ndt_matching desc sample', 'gnss desc sample']
-      v       : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name    : vel_mux_select
-      desc    : vel_mux_select desc sample
-      label   : Velocity Select
-      kind    : radio_box
-      choices : ['ndt_matching','CAN','MKZ']
-      descs   : ['ndt_matching desc sample', 'CAN desc sample', 'MKZ desc sample']
-      v       : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
+    - name      : topic_pose_stamped
+      desc      : topic_pose_stamped desc sample
+      label     : geometry_msgs/PoseStamped
+      kind      : str
+      v         : /ndt_pose
+      cmd_param :
+        dash    : ''
+        delim   : ':='
+    - name      : topic_twist_stamped
+      desc      : topic_twist_stamped desc sample
+      label     : geometry_msgs/TwistStamped
+      kind      : str
+      v         : /estimate_twist
+      cmd_param :
+         dash    : ''
+         delim   : ':='
     - name    : sim_mode
       desc    : sim_mode desc sample
       label   : 'Simulation Mode'
