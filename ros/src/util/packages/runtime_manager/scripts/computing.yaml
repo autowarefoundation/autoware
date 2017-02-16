@@ -1534,6 +1534,18 @@ params :
       min   : 0
       max   : 5.0
       v         : 0.8
+    - name    : lowpass_gain_linear_x
+      desc    : lowpass_gain_linear_x  desc sample
+      label   : 'lowpass_gain_linear_x :'
+      min   : 0
+      max   : 1.0
+      v         : 0.0
+    - name    : lowpass_gain_angular_z
+      desc    : lowpass_gain_angular_z  desc sample
+      label   : 'lowpass_gain_angular_z :'
+      min   : 0
+      max   : 1.0
+      v         : 0.0
 
   - name  : wf_simulator
     vars  :
@@ -1990,7 +2002,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : decelerate  
+    - name      : decelerate 
       desc      : decelerate   desc sample
       label   : 'decelerate :'
       v         : 1.0
