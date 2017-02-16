@@ -95,9 +95,9 @@ std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D
 {
   std::vector<Element2D> result;
   const double interval = 1.0;
-  const double error = 1e-3;
   int32_t divide = 2;
-  while (divide < 100)
+  const int32_t loop = 100;
+  while (divide < loop)
   {
     result.reserve(divide);
     for (int32_t i = 0; i < divide; i++)
@@ -114,9 +114,10 @@ std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D
           Element2D((p0.x * coeff_p0 + vlength * v0.x * coeff_v0 + p1.x * coeff_p1 + vlength * v1.x * coeff_v1),
                     (p0.y * coeff_p0 + vlength * v0.y * coeff_v0 + p1.y * coeff_p1 + vlength * v1.y * coeff_v1)));
     }
-    ROS_INFO_STREAM(sqrt(pow((result.at(0).x - result.at(1).x), 2) + pow((result.at(0).y - result.at(1).y), 2)));
-    if (fabs(interval < sqrt(pow((result.at(0).x - result.at(1).x), 2) + pow((result.at(0).y - result.at(1).y), 2))) <
-        error)
+
+    double dt = sqrt(pow((result.at(divide/2 - 1).x - result.at(divide/2).x), 2) + pow((result.at(divide/2 - 1).y - result.at(divide/2).y), 2));
+    std::cout << "interval : " << dt << std::endl;
+    if (interval > dt || divide == loop -1)
       return result;
     else
     {
