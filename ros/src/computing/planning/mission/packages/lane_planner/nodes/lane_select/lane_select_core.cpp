@@ -741,7 +741,7 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
   if (current_lane.waypoints.empty())
     return -1;
 
-  // ROS_INFO("number: %d",previous_number);
+
   std::vector<uint32_t> idx_vec;
   // if previous number is -1, search closest waypoint from waypoints in front of current pose
   if (previous_number == -1)
@@ -752,12 +752,8 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
       geometry_msgs::Point converted_p;
       convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose, &converted_p);
       double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
-      // ROS_INFO("angle: %lf",angle);
       if (converted_p.x > 0 && angle < 90)
-      {
         idx_vec.push_back(i);
-        // ROS_INFO("input idx: %d",i);
-      }
     }
   }
   else
@@ -781,12 +777,9 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
       geometry_msgs::Point converted_p;
       convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose, &converted_p);
       double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
-      // ROS_INFO("angle: %lf",angle);
       if (converted_p.x > 0 && angle < 90)
-      {
         idx_vec.push_back(i);
-        // ROS_INFO("input idx: %d",i);
-      }
+
     }
   }
 
@@ -799,11 +792,9 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
   {
     double dt = getTwoDimensionalDistance(current_pose.position, current_lane.waypoints.at(el).pose.pose.position);
     dist_vec.push_back(dt);
-    // ROS_INFO("dt: %lf",dt);
   }
   std::vector<double>::iterator itr = std::min_element(dist_vec.begin(), dist_vec.end());
   int32_t found_number = idx_vec.at(static_cast<uint32_t>(std::distance(dist_vec.begin(), itr)));
-  // ROS_INFO("found number: %d",found_number);
   return found_number;
 }
 
