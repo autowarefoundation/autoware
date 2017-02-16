@@ -501,7 +501,7 @@ visualization_msgs::Marker LaneSelectNode::createChangeLaneMarker()
 
   std_msgs::ColorRGBA color;
   color.r = 1.0;
-  color.a = 0.5;
+  color.a = 1.0;
 
   std_msgs::ColorRGBA color_current;
   color_current.b = 1.0;
