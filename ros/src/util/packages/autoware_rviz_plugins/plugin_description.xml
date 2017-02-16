@@ -1,0 +1,11 @@
+<library path="lib/libautoware_rviz_plugins">
+
+    <class name="autoware_rviz_plugins/State"
+           type="autoware_rviz_plugins::StatePanel"
+           base_class_type="rviz::Panel">
+        <description>
+            State Panel on rviz
+        </description>
+    </class>
+
+</library>

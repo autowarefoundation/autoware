@@ -540,6 +540,11 @@ subs :
          gui  :
            initialize_source :
              flags : [ nl ]
+           accel_rate :
+             flags : [ nl ]
+           position_error :
+             flags : [ nl ]
+             
   - name : State
     desc : State desc sample
     subs :
@@ -548,7 +553,7 @@ subs :
       subs :
       - name : state_machine
         desc : state_machine desc sample
-        cmd  : rosrun state_machine state_machine
+        cmd  : roslaunch state_machine state_machine.launch
 
 buttons:
   car_dpm :
@@ -1538,6 +1543,18 @@ params :
       min   : 0
       max   : 5.0
       v         : 0.8
+    - name    : lowpass_gain_linear_x
+      desc    : lowpass_gain_linear_x  desc sample
+      label   : 'lowpass_gain_linear_x :'
+      min   : 0
+      max   : 1.0
+      v         : 0.0
+    - name    : lowpass_gain_angular_z
+      desc    : lowpass_gain_angular_z  desc sample
+      label   : 'lowpass_gain_angular_z :'
+      min   : 0
+      max   : 1.0
+      v         : 0.0
 
   - name  : wf_simulator
     vars  :
@@ -1556,6 +1573,20 @@ params :
       desc      :
       label   : 'accel_rate(m/s^2) :'
       v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : position_error
+      desc      :
+      label   : 'position_error(m) :'
+      v         : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : angle_error
+      desc      :
+      label   : 'angle_error(degree) :'
+      v         : 0.0
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1882,27 +1913,39 @@ params :
       v     : False
 
   - name  : lane_select
+    topic : /config/lane_select
+    msg   : ConfigLaneSelect
     vars  :
-    - name      : distance_threshold
-      desc      : distance_threshold desc sample
+    - name      : distance_threshold_neighbor_lanes
+      desc      : distance_threshold_neighbor_lanes desc sample
       label     : Distance threshold to neighbor lanes (m)
+      min       : 1.0
+      max       : 10.0
+      v         : 5.0
+    - name      : lane_change_interval
+      desc      : lane_change_interval desc sample
+      label     : Lane Change Interval After Lane merge (m)
+      min       : 1.0
+      max       : 50.0
+      v         : 10.0
+    - name      : lane_change_target_ratio
+      desc      : lane_change_target_ratio desc sample
+      label     : Lane Change Target Ratio
       min       : 0
       max       : 20
       v         : 5.0
-      cmd_param :
-        var_name    : distance_threshold
-        dash        : ''
-        delim       : ':='
-    - name      : lane_change_interval
-      desc      : lane_change_interval desc sample
-      label     : Lane change interval (s)
-      min       : 0
-      max       : 30
-      v         : 1
-      cmd_param :
-        var_name    : lane_change_interval
-        dash        : ''
-        delim       : ':='
+    - name      : lane_change_target_minimum
+      desc      : lane_change_target_minimum desc sample
+      label     : Lane Change Target Minimum (m)
+      min       : 2.0
+      max       : 30.0
+      v         : 10.0
+    - name      : vector_length_hermite_curve
+      desc      : vector_length_hermite_curve desc sample
+      label     : Vector Length of Hermite Curve (m)
+      min       : 1.0
+      max       : 50
+      v         : 10.0
 
   - name  : astar_navi
     vars  :
@@ -1980,7 +2023,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : decelerate
+    - name      : decelerate 
       desc      : decelerate   desc sample
       label   : 'decelerate :'
       v         : 1.0
