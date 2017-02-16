@@ -687,8 +687,7 @@ double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry
 
 // get closest waypoint from current pose
 int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, const geometry_msgs::Pose &current_pose,
-                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number,
-                                 const double distance_threshold)
+                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number, const double distance_threshold)
 {
   if (current_lane.waypoints.empty())
     return -1;
