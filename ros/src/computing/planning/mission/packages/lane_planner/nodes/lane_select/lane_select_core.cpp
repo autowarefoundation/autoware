@@ -238,7 +238,7 @@ void LaneSelectNode::createLaneForChange()
     el.change_flag = cur_lane.waypoints.at(num_lane_change).change_flag;
 
   std::get<0>(lane_for_change_).waypoints.reserve(nghbr_lane.waypoints.size() + hermite_wps.size());
-  std::copy(hermite_wps.begin(), hermite_wps.end(), std::back_inserter(std::get<0>(lane_for_change_).waypoints));
+  std::move(hermite_wps.begin(), hermite_wps.end(), std::back_inserter(std::get<0>(lane_for_change_).waypoints));
   auto itr = nghbr_lane.waypoints.begin();
   std::advance(itr, target_num);
   for(auto i = itr; i != nghbr_lane.waypoints.end();i++)
