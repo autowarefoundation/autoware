@@ -346,8 +346,7 @@ void LaneSelectNode::findNeighborLanes()
     int32_t target_num = std::get<1>(tuple_vec_.at(i));
     const geometry_msgs::Point &target_p = std::get<0>(tuple_vec_.at(i)).waypoints.at(target_num).pose.pose.position;
 
-    geometry_msgs::Point converted_p;
-    convertPointIntoRelativeCoordinate(target_p, current_closest_pose, &converted_p);
+    geometry_msgs::Point converted_p = convertPointIntoRelativeCoordinate(target_p, current_closest_pose);
 
     ROS_INFO("distance: %lf", converted_p.y);
     if (fabs(converted_p.y) > distance_threshold_)
@@ -636,8 +635,7 @@ double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geom
   return distance;
 }
 
-void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose,
-                                        geometry_msgs::Point *output_point)
+geometry_msgs::Point convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose)
 {
   tf::Transform inverse;
   tf::poseMsgToTF(pose, inverse);
@@ -646,10 +644,12 @@ void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point,
   tf::Point p;
   pointMsgToTF(input_point, p);
   tf::Point tf_p = transform * p;
-  pointTFToMsg(tf_p, *output_point);
+  geometry_msgs::Point tf_point_msg;
+  pointTFToMsg(tf_p, tf_point_msg);
+  return tf_point_msg;
 }
 
-std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
+geometry_msgs::Point convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
                                                                       const geometry_msgs::Pose &pose)
 {
   tf::Transform inverse;
@@ -659,8 +659,8 @@ std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geom
   pointMsgToTF(input_point, p);
   tf::Point tf_p = inverse * p;
 
-  std::unique_ptr<geometry_msgs::Point> tf_point_msg(new geometry_msgs::Point);
-  pointTFToMsg(tf_p, *tf_point_msg);
+  geometry_msgs::Point tf_point_msg;
+  pointTFToMsg(tf_p, tf_point_msg);
   return tf_point_msg;
 }
 
@@ -693,8 +693,7 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
     idx_vec.reserve(current_lane.waypoints.size());
     for (uint32_t i = 0; i < current_lane.waypoints.size(); i++)
     {
-      geometry_msgs::Point converted_p;
-      convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose, &converted_p);
+      geometry_msgs::Point converted_p = convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose);
       double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
       if (converted_p.x > 0 && angle < 90)
         idx_vec.push_back(i);
@@ -718,8 +717,7 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
                          : current_lane.waypoints.size();
     for (uint32_t i = static_cast<uint32_t>(previous_number); i < range_max; i++)
     {
-      geometry_msgs::Point converted_p;
-      convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose, &converted_p);
+      geometry_msgs::Point converted_p = convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose);
       double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
       if (converted_p.x > 0 && angle < 90)
         idx_vec.push_back(i);

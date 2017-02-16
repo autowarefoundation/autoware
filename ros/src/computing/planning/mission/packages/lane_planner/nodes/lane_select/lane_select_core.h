@@ -142,10 +142,9 @@ int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, co
 
 double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geometry_msgs::Point &target2);
 
-void convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose,
-                                        geometry_msgs::Point *output_point);
+geometry_msgs::Point convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose);
 
-std::unique_ptr<geometry_msgs::Point> convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
+geometry_msgs::Point convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
                                                                       const geometry_msgs::Pose &pose);
 double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry_msgs::Pose &current_pose);
 bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *a, double *b, double *c);
