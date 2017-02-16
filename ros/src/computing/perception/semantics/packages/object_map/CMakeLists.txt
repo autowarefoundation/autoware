@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_ros
   grid_map_cv
   grid_map_msgs
+  lidar_tracker
 )
 find_package( OpenMP )
 if (OPENMP_FOUND)

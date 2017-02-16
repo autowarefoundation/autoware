@@ -4,6 +4,8 @@
 #include <grid_map_msgs/GridMap.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <iostream>
+#include <lidar_tracker/DetectedObject.h>
+#include <lidar_tracker/DetectedObjectArray.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -49,7 +51,7 @@ private:
     double around_y;
   };
 
-  void obj_callback(jsk_recognition_msgs::BoundingBoxArray::ConstPtr obj_msg);
+  void obj_callback(lidar_tracker::DetectedObjectArray::ConstPtr obj_msg);
   void target_waypoint_callback(
       visualization_msgs::Marker::ConstPtr target_point_msgs);
   void vscan_points_callback(sensor_msgs::PointCloud2::ConstPtr vscan_msg);
@@ -95,7 +97,7 @@ PotentialField::PotentialField()
       nh_.advertise<grid_map_msgs::GridMap>("/potential_field", 1, true);
 
   if (use_obstacle_box_)
-    obj_subscriber_ = nh_.subscribe("/bounding_boxes", 1,
+    obj_subscriber_ = nh_.subscribe("/detected_objects", 1,
                                     &PotentialField::obj_callback, this);
   if (use_vscan_points_)
     vscan_subscriber_ = nh_.subscribe(
@@ -135,7 +137,7 @@ void PotentialField::publish_potential_field() {
                     message.info.header.stamp.toSec());
 }
 void PotentialField::obj_callback(
-    jsk_recognition_msgs::BoundingBoxArray::ConstPtr
+    lidar_tracker::DetectedObjectArray::ConstPtr
         obj_msg) { // Create grid map.
   static ObstacleFieldParameter param;
   double ver_x_p(param.ver_x_p);
@@ -149,17 +151,17 @@ void PotentialField::obj_callback(
     Position position;
     map_.getPosition(*it, position);
     map_.at("obstacle_field", *it) = 0.0;
-    for (int i(0); i < (int)obj_msg->boxes.size(); ++i) {
-      double pos_x = obj_msg->boxes.at(i).pose.position.x + tf_x_;
-      double pos_y = obj_msg->boxes.at(i).pose.position.y;
-      double len_x = obj_msg->boxes.at(i).dimensions.x / 2.0;
-      double len_y = obj_msg->boxes.at(i).dimensions.y / 2.0;
+    for (int i(0); i < (int)obj_msg->objects.size(); ++i) {
+      double pos_x = obj_msg->objects.at(i).pose.position.x + tf_x_;
+      double pos_y = obj_msg->objects.at(i).pose.position.y;
+      double len_x = obj_msg->objects.at(i).dimensions.x / 2.0;
+      double len_y = obj_msg->objects.at(i).dimensions.y / 2.0;
 
       double r, p, y;
-      tf::Quaternion quat(obj_msg->boxes.at(i).pose.orientation.x,
-                          obj_msg->boxes.at(i).pose.orientation.y,
-                          obj_msg->boxes.at(i).pose.orientation.z,
-                          obj_msg->boxes.at(i).pose.orientation.w);
+      tf::Quaternion quat(obj_msg->objects.at(i).pose.orientation.x,
+                          obj_msg->objects.at(i).pose.orientation.y,
+                          obj_msg->objects.at(i).pose.orientation.z,
+                          obj_msg->objects.at(i).pose.orientation.w);
       tf::Matrix3x3(quat).getRPY(r, p, y);
 
       double rotated_pos_x = std::cos(-1.0 * y) * (position.x() - pos_x) -
