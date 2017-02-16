@@ -47,6 +47,7 @@
 // User defined includes
 #include "waypoint_follower/LaneArray.h"
 #include "waypoint_follower/libwaypoint_follower.h"
+#include "runtime_manager/ConfigLaneSelect.h"
 #include "hermite_curve.h"
 
 namespace lane_planner
@@ -84,7 +85,7 @@ private:
   ros::Publisher vis_pub1_;
 
   // subscriber
-  ros::Subscriber sub1_, sub2_, sub3_, sub4_;
+  ros::Subscriber sub1_, sub2_, sub3_, sub4_, sub5_;
 
   // variables
   int32_t current_lane_idx_;  // the index of the lane we are driving
@@ -93,11 +94,10 @@ private:
   std::vector<std::tuple<waypoint_follower::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint,
                                                                                      // change_flag
   std::tuple<waypoint_follower::lane, int32_t, ChangeFlag> lane_for_change_;
-  bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_, is_current_state_subscribed_;
+  bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_, is_current_state_subscribed_, is_config_subscribed_;
 
-  // rosparam
-  double distance_threshold_;
-  int32_t lane_change_interval_;
+  // parameter from runtime manager
+  double distance_threshold_, lane_change_interval_, lane_change_target_ratio_, lane_change_target_minimum_, vlength_hermite_curve_;
 
   // topics
   geometry_msgs::PoseStamped current_pose_;
@@ -109,6 +109,7 @@ private:
   void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromState(const std_msgs::StringConstPtr &msg);
+  void callbackFromConfig(const runtime_manager::ConfigLaneSelectConstPtr &msg);
 
   // initializer
   void initForROS();

@@ -43,6 +43,12 @@ LaneSelectNode::LaneSelectNode()
   , is_current_pose_subscribed_(false)
   , is_current_velocity_subscribed_(false)
   , is_current_state_subscribed_(false)
+  , is_config_subscribed_(false)
+  , distance_threshold_(3.0)
+  , lane_change_interval_(10.0)
+  , lane_change_target_ratio_(2.0)
+  , lane_change_target_minimum_(5.0)
+  , vlength_hermite_curve_(10)
   , current_state_("UNKNOWN")
 {
   initForROS();
@@ -60,6 +66,7 @@ void LaneSelectNode::initForROS()
   sub2_ = nh_.subscribe("current_pose", 100, &LaneSelectNode::callbackFromPoseStamped, this);
   sub3_ = nh_.subscribe("current_velocity", 100, &LaneSelectNode::callbackFromTwistStamped, this);
   sub4_ = nh_.subscribe("state", 100, &LaneSelectNode::callbackFromState, this);
+  sub5_ = nh_.subscribe("/config/lane_select", 100, &LaneSelectNode::callbackFromConfig, this);
 
   // setup publisher
   pub1_ = nh_.advertise<waypoint_follower::lane>("base_waypoints", 10);
@@ -68,7 +75,7 @@ void LaneSelectNode::initForROS()
   vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 10);
 
   // get from rosparam
-  private_nh_.param<int32_t>("lane_change_interval", lane_change_interval_, int32_t(2));
+  private_nh_.param<double>("lane_change_interval", lane_change_interval_, double(2));
   private_nh_.param<double>("distance_threshold", distance_threshold_, double(3.0));
 }
 
@@ -189,7 +196,7 @@ void LaneSelectNode::createLaneForChange()
   ROS_INFO("num_lane_change: %d",num_lane_change);
   if (num_lane_change < 0 || num_lane_change >= static_cast<int32_t>(cur_lane.waypoints.size()))
   {
-    ROS_INFO("current lane doesn't have change flag");
+    ROS_WARN("current lane doesn't have change flag");
     return;
   }
 
@@ -202,9 +209,7 @@ void LaneSelectNode::createLaneForChange()
 
 
   double dt = getTwoDimensionalDistance(cur_lane.waypoints.at(num_lane_change).pose.pose.position, cur_lane.waypoints.at(clst_wp).pose.pose.position);
-  double ratio = 3.0;
-  double minimum = 5.0;
-  double dt_by_vel = current_velocity_.twist.linear.x * ratio > minimum ? current_velocity_.twist.linear.x * ratio : minimum;
+  double dt_by_vel = current_velocity_.twist.linear.x * lane_change_target_ratio_ > lane_change_target_minimum_ ? current_velocity_.twist.linear.x * lane_change_target_ratio_ : lane_change_target_minimum_;
   ROS_INFO("dt : %lf, dt_by_vel : %lf",dt,dt_by_vel);
   waypoint_follower::lane &nghbr_lane =
       static_cast<ChangeFlag>(cur_lane.waypoints.at(num_lane_change).change_flag) == ChangeFlag::right
@@ -232,7 +237,7 @@ void LaneSelectNode::createLaneForChange()
   std::get<0>(lane_for_change_).header.stamp = nghbr_lane.header.stamp;
   std::vector<waypoint_follower::waypoint> hermite_wps = generateHermiteCurveForROS(
       cur_lane.waypoints.at(num_lane_change).pose.pose, nghbr_lane.waypoints.at(target_num).pose.pose,
-      cur_lane.waypoints.at(num_lane_change).twist.twist.linear.x, 5);
+      cur_lane.waypoints.at(num_lane_change).twist.twist.linear.x, vlength_hermite_curve_);
 
   for(auto &&el : hermite_wps)
     el.change_flag = cur_lane.waypoints.at(num_lane_change).change_flag;
@@ -243,7 +248,7 @@ void LaneSelectNode::createLaneForChange()
   std::advance(itr, target_num);
   for(auto i = itr; i != nghbr_lane.waypoints.end();i++)
   {
-    if(getTwoDimensionalDistance(itr->pose.pose.position,i->pose.pose.position) < 10)
+    if(getTwoDimensionalDistance(itr->pose.pose.position,i->pose.pose.position) < lane_change_interval_)
       i->change_flag = enumToInteger(ChangeFlag::straight);
     else
       break;
@@ -624,6 +629,21 @@ void LaneSelectNode::callbackFromState(const std_msgs::StringConstPtr &msg)
 {
   current_state_ = msg->data;
   is_current_state_subscribed_ = true;
+
+  if(current_lane_idx_ == -1)
+    initForLaneSelect();
+  else
+    processing();
+}
+
+void LaneSelectNode::callbackFromConfig(const runtime_manager::ConfigLaneSelectConstPtr &msg)
+{
+  distance_threshold_ = msg-> distance_threshold_neighbor_lanes;
+  lane_change_interval_= msg->lane_change_interval;
+    lane_change_target_ratio_ = msg->lane_change_target_ratio;
+  lane_change_target_minimum_ = msg->lane_change_target_minimum;
+    vlength_hermite_curve_= msg->vector_length_hermite_curve;
+  is_config_subscribed_ = true;
 
   if(current_lane_idx_ == -1)
     initForLaneSelect();
