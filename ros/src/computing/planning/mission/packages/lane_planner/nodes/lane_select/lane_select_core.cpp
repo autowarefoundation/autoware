@@ -62,17 +62,17 @@ LaneSelectNode::~LaneSelectNode()
 void LaneSelectNode::initForROS()
 {
   // setup subscriber
-  sub1_ = nh_.subscribe("traffic_waypoints_array", 100, &LaneSelectNode::callbackFromLaneArray, this);
-  sub2_ = nh_.subscribe("current_pose", 100, &LaneSelectNode::callbackFromPoseStamped, this);
-  sub3_ = nh_.subscribe("current_velocity", 100, &LaneSelectNode::callbackFromTwistStamped, this);
-  sub4_ = nh_.subscribe("state", 100, &LaneSelectNode::callbackFromState, this);
-  sub5_ = nh_.subscribe("/config/lane_select", 100, &LaneSelectNode::callbackFromConfig, this);
+  sub1_ = nh_.subscribe("traffic_waypoints_array", 1, &LaneSelectNode::callbackFromLaneArray, this);
+  sub2_ = nh_.subscribe("current_pose", 1, &LaneSelectNode::callbackFromPoseStamped, this);
+  sub3_ = nh_.subscribe("current_velocity", 1, &LaneSelectNode::callbackFromTwistStamped, this);
+  sub4_ = nh_.subscribe("state", 1, &LaneSelectNode::callbackFromState, this);
+  sub5_ = nh_.subscribe("/config/lane_select", 1, &LaneSelectNode::callbackFromConfig, this);
 
   // setup publisher
-  pub1_ = nh_.advertise<waypoint_follower::lane>("base_waypoints", 10);
-  pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 10);
-  pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 10);
-  vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 10);
+  pub1_ = nh_.advertise<waypoint_follower::lane>("base_waypoints", 1);
+  pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 1);
+  pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
+  vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 1);
 
   // get from rosparam
   private_nh_.param<double>("lane_change_interval", lane_change_interval_, double(2));
