@@ -63,8 +63,11 @@ struct Element2D
   double y;
 };
 
-std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D &v0, const Element2D &p1, const Element2D &v1, const double vlength = 20);
-std::vector<waypoint_follower::waypoint> generateHermiteCurveForROS(const geometry_msgs::Pose &start, const geometry_msgs::Pose &end, const double velocity,  const double vlength);
+std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D &v0, const Element2D &p1,
+                                            const Element2D &v1, const double vlength = 20);
+std::vector<waypoint_follower::waypoint> generateHermiteCurveForROS(const geometry_msgs::Pose &start,
+                                                                    const geometry_msgs::Pose &end,
+                                                                    const double velocity, const double vlength);
 void createVectorFromPose(const geometry_msgs::Pose &p, tf::Vector3 *v);
 }  // namespace
 #endif  // HERMITE_CURVE_H

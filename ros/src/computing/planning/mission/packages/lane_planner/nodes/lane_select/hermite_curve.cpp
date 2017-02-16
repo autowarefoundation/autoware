@@ -70,9 +70,9 @@ std::vector<waypoint_follower::waypoint> generateHermiteCurveForROS(const geomet
     wp.twist.twist.linear.x = velocity_mps;
 
     // height
-    wp.pose.pose.position.z = (i == 0) ? start.position.z
-                                       : (i == result.size() - 1) ? end.position.z
-                                       : start.position.z < end.position.z ?start.position.z + height_d * i / result.size()
+    wp.pose.pose.position.z = (i == 0) ? start.position.z : (i == result.size() - 1)
+                                       ? end.position.z : start.position.z < end.position.z
+                                       ? start.position.z + height_d * i / result.size()
                                        : start.position.z - height_d * i / result.size();
 
     // orientation
@@ -91,7 +91,8 @@ std::vector<waypoint_follower::waypoint> generateHermiteCurveForROS(const geomet
   return wps;
 }
 
-std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D &v0, const Element2D &p1, const Element2D &v1, const double vlength)
+std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D &v0, const Element2D &p1,
+                                            const Element2D &v1, const double vlength)
 {
   std::vector<Element2D> result;
   const double interval = 1.0;
@@ -109,15 +110,17 @@ std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D
       double coeff_v0 = u_cube - 2 * u_square + u;
       double coeff_p1 = (-1) * 2 * u_cube + 3 * u_square;
       double coeff_v1 = u_cube - u_square;
-      //printf("u: %lf, u^2: %lf, u^3: %lf, coeff_p0: %lf, coeff_v0: %lf, coeff_p1: %lf, coeff_v1: %lf\n", u, u_square, u_cube, coeff_p0, coeff_p1, coeff_v0, coeff_v1);
+      // printf("u: %lf, u^2: %lf, u^3: %lf, coeff_p0: %lf, coeff_v0: %lf, coeff_p1: %lf, coeff_v1: %lf\n", u, u_square,
+      // u_cube, coeff_p0, coeff_p1, coeff_v0, coeff_v1);
       result.push_back(
           Element2D((p0.x * coeff_p0 + vlength * v0.x * coeff_v0 + p1.x * coeff_p1 + vlength * v1.x * coeff_v1),
                     (p0.y * coeff_p0 + vlength * v0.y * coeff_v0 + p1.y * coeff_p1 + vlength * v1.y * coeff_v1)));
     }
 
-    double dt = sqrt(pow((result.at(divide/2 - 1).x - result.at(divide/2).x), 2) + pow((result.at(divide/2 - 1).y - result.at(divide/2).y), 2));
+    double dt = sqrt(pow((result.at(divide / 2 - 1).x - result.at(divide / 2).x), 2) +
+                     pow((result.at(divide / 2 - 1).y - result.at(divide / 2).y), 2));
     std::cout << "interval : " << dt << std::endl;
-    if (interval > dt || divide == loop -1)
+    if (interval > dt || divide == loop - 1)
       return result;
     else
     {
