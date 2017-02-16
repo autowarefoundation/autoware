@@ -117,7 +117,7 @@ void RoiExtractor::MakeDirectoryTree(const std::string &target,
   size_t separator_end = sub_tree.find("/", separator_start + 1);
   std::string path = base;
   while (separator_end != std::string::npos) {
-    std::string sub_directory = sub_tree.substr(separator_start, separator_end);
+    std::string sub_directory = sub_tree.substr(separator_start, separator_end - separator_start);
     path = path + sub_directory;
     mkdir(path.c_str(), mode);
     separator_start = separator_end;
