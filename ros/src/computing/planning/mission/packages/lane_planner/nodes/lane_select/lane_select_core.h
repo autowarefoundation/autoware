@@ -47,6 +47,7 @@
 // User defined includes
 #include "waypoint_follower/LaneArray.h"
 #include "waypoint_follower/libwaypoint_follower.h"
+#include "hermite_curve.h"
 
 namespace lane_planner
 {
@@ -91,9 +92,9 @@ private:
   int32_t left_lane_idx_;
   std::vector<std::tuple<waypoint_follower::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint,
                                                                                      // change_flag
+  std::tuple<waypoint_follower::lane, int32_t, ChangeFlag> lane_for_change_;
   bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_, is_current_state_subscribed_;
   ros::Time last_change_time_;
-  ChangeFlag current_change_flag_;
 
   // rosparam
   double distance_threshold_;
@@ -112,28 +113,29 @@ private:
 
   // initializer
   void initForROS();
+  void initForLaneSelect();
 
   // visualizer
-  const double LANE_SIZE_;
   void publishVisualizer();
-  std::unique_ptr<visualization_msgs::Marker> createCurrentLaneMarker();
-  std::unique_ptr<visualization_msgs::Marker> createCurrentLaneFlagMarker();
-  std::unique_ptr<visualization_msgs::Marker> createCurrentLaneFlagArrowMarker();
-  std::unique_ptr<std::vector<geometry_msgs::Point>>
-  createRectangleFromWaypoints(const std::vector<waypoint_follower::waypoint> &wps, const double &width);
-  std::unique_ptr<visualization_msgs::Marker> createRightLaneMarker();
-  std::unique_ptr<visualization_msgs::Marker> createLeftLaneMarker();
-  std::unique_ptr<visualization_msgs::Marker> createClosestWaypointsMarker();
+  visualization_msgs::Marker createCurrentLaneMarker();
+  visualization_msgs::Marker createRightLaneMarker();
+  visualization_msgs::Marker createLeftLaneMarker();
+  visualization_msgs::Marker createClosestWaypointsMarker();
+  visualization_msgs::Marker createChangeLaneMarker();
 
   // functions
+  void resetLaneIdx();
+  bool isAllTopicsSubscribed();
   void processing();
-  void publish();
+  void publish(const waypoint_follower::lane &lane, const int32_t clst_wp, const ChangeFlag flag);
   bool getClosestWaypointNumberForEachLanes();
   int32_t findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p);
   void findCurrentLane();
   void findNeighborLanes();
   void changeLane();
   void updateChangeFlag();
+  void createLaneForChange();
+  int32_t getClosestLaneChangeWaypointNumber(const std::vector<waypoint_follower::waypoint> &wps, int32_t cl_wp);
 };
 
 int32_t getClosestWaypointNumber(const waypoint_follower::lane &current_lane, const geometry_msgs::Pose &current_pose,
