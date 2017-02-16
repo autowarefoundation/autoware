@@ -29,12 +29,12 @@ class RegionTlrSsdRosNode {
   /* Light state transition probably happen in Japanese traffic light */
   const LightState kStateTransitionMatrix[4][4] = {
     /* current: */
-    /* GREEN   , YELLOW    , RED       , UNDEFINED  */
+    /* GREEN   , YELLOW    , RED    , UNDEFINED  */
     /* -------------------------------------------  */
-    {GREEN     , YELLOW    , UNDEFINED , GREEN}  ,  /* | previous = GREEN */
-    {UNDEFINED , YELLOW    , RED       , YELLOW} ,  /* | previous = YELLOW */
-    {GREEN     , UNDEFINED , RED       , RED}    ,  /* | previous = RED */
-    {GREEN     , YELLOW    , RED       , UNDEFINED} /* | previous = UNDEFINED */
+    {GREEN     , YELLOW    , YELLOW , GREEN}  ,  /* | previous = GREEN */
+    {UNDEFINED , YELLOW    , RED    , YELLOW} ,  /* | previous = YELLOW */
+    {GREEN     , RED       , RED    , RED}    ,  /* | previous = RED */
+    {GREEN     , YELLOW    , RED    , UNDEFINED} /* | previous = UNDEFINED */
   };
 
 
