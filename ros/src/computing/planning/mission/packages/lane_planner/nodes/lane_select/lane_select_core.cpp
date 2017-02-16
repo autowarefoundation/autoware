@@ -193,6 +193,14 @@ void LaneSelectNode::createLaneForChange()
     return;
   }
 
+  if((static_cast<ChangeFlag>(cur_lane.waypoints.at(num_lane_change).change_flag) == ChangeFlag::right && right_lane_idx_ < 0)
+    || (static_cast<ChangeFlag>(cur_lane.waypoints.at(num_lane_change).change_flag) == ChangeFlag::left && left_lane_idx_ < 0))
+  {
+    ROS_WARN("current lane doesn't have the lane for lane change");
+    return;
+  }
+
+
   double dt = getTwoDimensionalDistance(cur_lane.waypoints.at(num_lane_change).pose.pose.position, cur_lane.waypoints.at(clst_wp).pose.pose.position);
   double ratio = 3.0;
   double minimum = 5.0;
