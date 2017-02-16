@@ -723,7 +723,7 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 		}
 
 		bWayPlannerPath = true;
-		m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = true;
+		m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = true;
 		//m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
 		m_LocalPlanner.m_TotalPath = m_WayPlannerPaths;
 	}

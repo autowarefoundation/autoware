@@ -22,7 +22,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define FIND_LEFT_RIGHT_LANES
+#define _FIND_LEFT_RIGHT_LANES
 #define _SMOOTH_MAP_WAYPOINTS
 
 
@@ -127,12 +127,12 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		if(lanes_data.at(l).LaneDir == 'L')
 		{
 			wp.actionCost.push_back(make_pair(LEFT_TURN_ACTION, 0));
-			std::cout << " Left Lane : " << lanes_data.at(l).LnID << std::endl ;
+			//std::cout << " Left Lane : " << lanes_data.at(l).LnID << std::endl ;
 		}
 		else  if(lanes_data.at(l).LaneDir == 'R')
 		{
 			wp.actionCost.push_back(make_pair(RIGHT_TURN_ACTION, 0));
-			std::cout << " Right Lane : " << lanes_data.at(l).LnID << std::endl ;
+			//std::cout << " Right Lane : " << lanes_data.at(l).LnID << std::endl ;
 		}
 		else
 		{

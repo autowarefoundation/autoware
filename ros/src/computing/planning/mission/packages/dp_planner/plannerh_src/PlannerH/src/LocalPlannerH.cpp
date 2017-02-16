@@ -582,6 +582,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 		if(localRollouts.size() == 0
 				|| currIndex > index_limit
 				|| m_pCurrentBehaviorState->GetCalcParams()->bRePlan
+				|| m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath
 				|| m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
 		{
 			PlannerHNS::PlannerH planner;
@@ -605,6 +606,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 					localRollouts, m_PathSection, m_SampledPoints);
 
 			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
+			m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = false;
 			m_iSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
 
 			if(preCalcPrams->iCurrSafeTrajectory >= 0

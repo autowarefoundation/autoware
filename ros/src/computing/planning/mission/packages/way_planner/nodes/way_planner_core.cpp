@@ -108,7 +108,8 @@ way_planner_core::way_planner_core()
 
 #ifdef ENABLE_HMI
 	m_AvgResponseTime = 3.5;
-	m_SocketServer.InitSocket(10001);
+	m_SocketServer.InitSocket(10001, 10002);
+
 #endif
 
 	/** @todo To achieve perfection , you need to start sometime */
@@ -340,7 +341,13 @@ bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, Plan
 						predefinedLanesIds, generatedTotalPaths);
 #endif
 
+		for(unsigned int im = 0; im < m_ModifiedWayPointsCosts.size(); im++)
+			m_ModifiedWayPointsCosts.at(im)->actionCost.at(0).second = 0;
+
+		m_ModifiedWayPointsCosts.clear();
+
 		if(ret == 0) generatedTotalPaths.clear();
+
 
 		if(generatedTotalPaths.size() > 0 && generatedTotalPaths.at(0).size()>0)
 		{
@@ -489,10 +496,10 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 #endif
 
 #ifdef ENABLE_HMI
-  	void way_planner_core::HMI_DoOneStep()
+  	bool way_planner_core::HMI_DoOneStep()
   	{
   		double min_distance = m_AvgResponseTime * m_VehicleState.speed;
-  		std::vector<PlannerHNS::WayPoint> branches;
+  		std::vector<PlannerHNS::WayPoint*> branches;
 
   		PlannerHNS::WayPoint startPoint;
 
@@ -519,21 +526,49 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 			msg.type = OPTIONS_MSG;
 			msg.options.clear();
 			for(unsigned int i = 0; i< branches.size(); i++)
-				msg.options.push_back(branches.at(i).actionCost.at(0).first);
+				msg.options.push_back(branches.at(i)->actionCost.at(0).first);
 
-			std::cout << "Send Message (" <<  branches.size() << ") Branches (" ;
-			for(unsigned int i=0; i< branches.size(); i++)
-			{
-				if(branches.at(i).actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
-					std::cout << "F,";
-				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
-					std::cout << "L,";
-				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
-					std::cout << "R,";
-			}
-			std::cout << ")" << std::endl;
+//			std::cout << "Send Message (" <<  branches.size() << ") Branches (" ;
+//			for(unsigned int i=0; i< branches.size(); i++)
+//			{
+//				if(branches.at(i).actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
+//					std::cout << "F,";
+//				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
+//					std::cout << "L,";
+//				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
+//					std::cout << "R,";
+//			}
+//			std::cout << ")" << std::endl;
 			m_SocketServer.SendMSG(msg);
+
+			double total_d = 0;
+			for(unsigned int iwp =1; iwp < m_GeneratedTotalPaths.at(0).size(); iwp++)
+			{
+				total_d += hypot(m_GeneratedTotalPaths.at(0).at(iwp).pos.y - m_GeneratedTotalPaths.at(0).at(iwp-1).pos.y, m_GeneratedTotalPaths.at(0).at(iwp).pos.x - m_GeneratedTotalPaths.at(0).at(iwp-1).pos.x);
+			}
+
+			HMI_MSG inc_msg;
+			int bNew = m_SocketServer.GetLatestMSG(inc_msg);
+			if(bNew>0)
+			{
+				for(unsigned int i = 0; i< branches.size(); i++)
+				{
+					for(unsigned int j = 0; j< inc_msg.options.size(); j++)
+					{
+						if(branches.at(i)->actionCost.at(0).first == inc_msg.options.at(j))
+						{
+							branches.at(i)->actionCost.at(0).second = -total_d*4.0;
+							m_ModifiedWayPointsCosts.push_back(branches.at(i));
+						}
+					}
+				}
+
+				return true;
+			}
   		}
+
+  		return false;
+
   	}
 #endif
 
@@ -545,9 +580,15 @@ void way_planner_core::PlannerMainLoop()
 
 	while (ros::ok())
 	{
+
 		ros::spinOnce();
+
+		bool bMakeNewPlan = false;
+
+
+
 #ifdef ENABLE_HMI
-		HMI_DoOneStep();
+		bMakeNewPlan = HMI_DoOneStep();
 #endif
 
 		//std::cout << "Main Loop ! " << std::endl;
@@ -602,7 +643,7 @@ void way_planner_core::PlannerMainLoop()
 						m_StartPos.position.z+m_OriginPos.position.z, tf::getYaw(m_StartPos.orientation));
 			}
 
-			bool bMakeNewPlan = false;
+
 			if(bEnableReplanning)
 			{
 				if(m_GeneratedTotalPaths.size() > 0 && m_GeneratedTotalPaths.at(0).size() > 3)

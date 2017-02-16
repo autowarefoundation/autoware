@@ -228,7 +228,8 @@ private:
 #ifdef ENABLE_HMI
   	double m_AvgResponseTime; //seconds
   	HMISocketServer m_SocketServer;
-  	void HMI_DoOneStep();
+  	std::vector<PlannerHNS::WayPoint*> m_ModifiedWayPointsCosts;
+  	bool HMI_DoOneStep();
 #endif
 
 };

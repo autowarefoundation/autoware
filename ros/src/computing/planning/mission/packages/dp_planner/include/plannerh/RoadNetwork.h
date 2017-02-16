@@ -741,6 +741,7 @@ public:
 
 	//-------------------------------------------//
 	//General
+	bool 				bNewGlobalPath;
 	bool 				bRePlan;
 	double 				currentVelocity;
 	double				minStoppingDistance; //comfortably
@@ -783,6 +784,7 @@ public:
 		iPrevSafeTrajectory		= -1;
 		iCentralTrajectory		= -1;
 		bRePlan					= false;
+		bNewGlobalPath			= false;
 
 		bCanChangeLane			= false;
 		distanceToGoBack		= 0;

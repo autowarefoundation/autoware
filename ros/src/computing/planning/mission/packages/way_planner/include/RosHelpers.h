@@ -52,8 +52,63 @@ public:
 	HMI_MSG()
 	{
 		type = OPTIONS_MSG;
-		options.push_back(PlannerHNS::FORWARD_ACTION);
 		bErr = false;
+	}
+
+	static HMI_MSG FromString(std::string msg)
+	{
+		HMI_MSG recieved_msg;
+		std::vector<std::string> sections = SplitString(msg, ",");
+		if (sections.size() == 4)
+		{
+			int type_str = atoi(sections.at(0).c_str());
+			switch (type_str)
+			{
+			case 0:
+				recieved_msg.type = COMMAND_MSG;
+				break;
+			case 1:
+				recieved_msg.type = CONFIRM_MSG;
+				break;
+			case 2:
+				recieved_msg.type = OPTIONS_MSG;
+				break;
+			default:
+				recieved_msg.type = UNKNOWN_MSG;
+				break;
+			}
+
+			std::vector<std::string> directions = SplitString(sections.at(1), ";");
+			for (unsigned int i = 0; i < directions.size(); i++)
+			{
+				int idirect = atoi(directions.at(i).c_str());
+				if(idirect == 0)
+					recieved_msg.options.push_back(PlannerHNS::FORWARD_ACTION);
+				else if (idirect == 3)
+					recieved_msg.options.push_back(PlannerHNS::LEFT_TURN_ACTION);
+				else if (idirect == 4)
+					recieved_msg.options.push_back(PlannerHNS::RIGHT_TURN_ACTION);
+			}
+			recieved_msg.bErr = atoi(sections.at(2).c_str());
+			recieved_msg.err_msg = sections.at(3);
+		}
+		return recieved_msg;
+	}
+
+	static std::vector<std::string> SplitString(const std::string& str, const std::string& token)
+	{
+		std::vector<std::string> str_parts;
+		int iFirstPart = 0;
+		int iSecondPart = str.find(token, iFirstPart);
+
+		while (iSecondPart > 0 && iSecondPart < str.size())
+		{
+			str_parts.push_back(str.substr(iFirstPart, iSecondPart- iFirstPart));
+			iFirstPart = iSecondPart+1;
+			iSecondPart = str.find(token, iFirstPart);
+		}
+
+		return str_parts;
 	}
 };
 
@@ -87,7 +142,7 @@ public:
 			waypoint_follower::LaneArray& laneArray);
 
 	static void FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose, const double& min_distance,
-			std::vector<PlannerHNS::WayPoint>& branches);
+			std::vector<PlannerHNS::WayPoint*>& branches);
 };
 
 }

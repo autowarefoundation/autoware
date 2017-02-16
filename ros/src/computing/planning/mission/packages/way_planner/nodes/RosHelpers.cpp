@@ -475,7 +475,7 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
 }
 
 void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose,const double& min_distance,
-			std::vector<PlannerHNS::WayPoint>& branches)
+			std::vector<PlannerHNS::WayPoint*>& branches)
 {
 	static int detection_range = 20; // meter
 	if(globalPaths.size() > 0)
@@ -494,18 +494,18 @@ void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS:
 			{
 				for(unsigned int j = 0; j< globalPaths.at(0).at(i).pFronts.size(); j++)
 				{
-					PlannerHNS::WayPoint wp =  *globalPaths.at(0).at(i).pFronts.at(j);
+					PlannerHNS::WayPoint* wp =  globalPaths.at(0).at(i).pFronts.at(j);
 					bool bFound = false;
 					for(unsigned int ib=0; ib< branches.size(); ib++)
 					{
-						if(branches.at(ib).actionCost.at(0).first == wp.actionCost.at(0).first)
+						if(branches.at(ib)->actionCost.at(0).first == wp->actionCost.at(0).first)
 						{
 							bFound = true;
 							break;
 						}
 					}
 
-					if(!bFound && closest_wp.laneId != wp.laneId)
+					if(!bFound && closest_wp.laneId != wp->laneId)
 						branches.push_back(wp);
 				}
 			}
