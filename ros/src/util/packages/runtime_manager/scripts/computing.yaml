@@ -213,7 +213,16 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-
+      - name : dummy_track
+        desc : dummy_track desc sample
+        cmd  : roslaunch cv_tracker dummy_track.launch
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : obj_reproj
         desc : obj_reproj desc sample
         cmd  : roslaunch cv_tracker reprojection.launch
@@ -388,7 +397,7 @@ subs :
       desc : points2costmap desc sample
       cmd  : roslaunch object_map points2costmap.launch
       param: points2costmap
-      
+
     - name : potential_field
       desc : potential_field desc sample
       cmd  : roslaunch object_map potential_field.launch
@@ -1303,7 +1312,7 @@ params :
       label : relative_angle_threshold
       min   : 0
       max   : 90
-      v     : 0   
+      v     : 0
     - name    : is_linear_interpolation
       desc    : linear_interpolate_mode desc sample
       label   : 'Linear Interpolation'
@@ -1320,7 +1329,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : velocity_set
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
@@ -1971,7 +1980,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : decelerate  
+    - name      : decelerate
       desc      : decelerate   desc sample
       label   : 'decelerate :'
       v         : 1.0
