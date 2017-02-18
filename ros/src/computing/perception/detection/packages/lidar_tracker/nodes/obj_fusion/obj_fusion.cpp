@@ -1,8 +1,9 @@
 #include <ros/ros.h>
 #include <cv_tracker/obj_label.h>
-#include <lidar_tracker/centroids.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <lidar_tracker/CloudCluster.h>
+#include <lidar_tracker/CloudClusterArray.h>
 #include <geometry_msgs/Point.h>
 #include <math.h>
 #include <float.h>
@@ -21,13 +22,15 @@ static constexpr bool ADVERTISE_LATCH = false;
 static constexpr double LOOP_RATE = 15.0;
 
 ros::Publisher obj_pose_pub;
-ros::Publisher obj_pose_textlabel_pub;
 ros::Publisher obj_pose_timestamp_pub;
+ros::Publisher cluster_class_pub;
 
 static std::string object_type;
 static std::vector<geometry_msgs::Point> centroids;
+static std_msgs::Header sensor_header;
+static std::vector<lidar_tracker::CloudCluster> v_cloud_cluster;
 static ros::Time obj_pose_timestamp;
-
+static double threshold_min_dist;
 static tf::StampedTransform transform;
 
 struct obj_label_t {
@@ -59,6 +62,8 @@ static double euclid_distance(const geometry_msgs::Point pos1,
 static void fusion_objects(void)
 {
     obj_label_t obj_label_current;
+    std::vector<lidar_tracker::CloudCluster> v_cloud_cluster_current;
+    std_msgs::Header header = sensor_header;
     std::vector<geometry_msgs::Point> centroids_current;
 
     LOCK(mtx_reprojected_positions);
@@ -68,10 +73,12 @@ static void fusion_objects(void)
 
     LOCK(mtx_centroids);
     copy(centroids.begin(), centroids.end(), back_inserter(centroids_current));
+    copy(v_cloud_cluster.begin(), v_cloud_cluster.end(), back_inserter(v_cloud_cluster_current));
     UNLOCK(mtx_centroids);
 
     if (centroids_current.empty() || obj_label_current.reprojected_positions.empty() ||  obj_label_current.obj_id.empty()) {
-        visualization_msgs::MarkerArray pub_msg;
+        jsk_recognition_msgs::BoundingBoxArray pub_msg;
+        pub_msg.header = header;
         std_msgs::Time time;
         obj_pose_pub.publish(pub_msg);
 
@@ -80,7 +87,7 @@ static void fusion_objects(void)
         return;
     }
 
-    std::vector<unsigned int> obj_indices;
+    std::vector<int> obj_indices;
 
     for(unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
         unsigned int min_idx      = 0;
@@ -97,115 +104,39 @@ static void fusion_objects(void)
                 min_idx      = j;
             }
         }
-        obj_indices.push_back(min_idx);
+        if (min_distance < threshold_min_dist) {
+            obj_indices.push_back(min_idx);
+        } else {
+            obj_indices.push_back(-1);
+        }
     }
 
     /* Publish marker with centroids coordinates */
-    visualization_msgs::MarkerArray pub_msg;
-    visualization_msgs::MarkerArray pub_textlabel_msg;
-
-    std_msgs::ColorRGBA color_red;
-    color_red.r = 1.0f;
-    color_red.g = 0.0f;
-    color_red.b = 0.0f;
-    color_red.a = 0.7f;
-
-    std_msgs::ColorRGBA color_blue;
-    color_blue.r = 0.0f;
-    color_blue.g = 0.0f;
-    color_blue.b = 1.0f;
-    color_blue.a = 0.7f;
-
-    std_msgs::ColorRGBA color_green;
-    color_green.r = 0.0f;
-    color_green.g = 1.0f;
-    color_green.b = 0.0f;
-    color_green.a = 0.7f;
-
-    std_msgs::ColorRGBA color_white;
-    color_white.r = 1.0f;
-    color_white.g = 1.0f;
-    color_white.b = 1.0f;
-    color_white.a = 0.7f;
+    jsk_recognition_msgs::BoundingBoxArray pub_msg;
+    pub_msg.header = header;
+    lidar_tracker::CloudClusterArray cloud_clusters_msg;
+    cloud_clusters_msg.header = header;
 
     for(unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
-        visualization_msgs::Marker marker;
-        visualization_msgs::Marker marker_textlabel;
+        jsk_recognition_msgs::BoundingBox bounding_box;
+        if (obj_indices.at(i) == -1)
+            continue;
 
-        /*Set the frame ID */
-        marker.header.frame_id = "map";
-        marker_textlabel.header.frame_id = "map";
+        if(object_type == "car")
+          v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.label = 0;
+        else if(object_type == "person")
+          v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.label = 1;
+        else
+          v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.label = 2;
 
-        /* Set the namespace and id for this marker */
-        marker.ns = object_type;
-        marker.id = obj_label_current.obj_id.at(i);
-        marker_textlabel.ns = object_type;
-        marker_textlabel.id = obj_label_current.obj_id.at(i);
-
-        /* Set the pose of the marker */
-        marker.pose.position = centroids_current.at(obj_indices.at(i));
-        marker.pose.orientation.x = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.w = 0.0;
-        marker_textlabel.pose.position = centroids_current.at(obj_indices.at(i));
-        marker_textlabel.pose.orientation.x = 0.0;
-        marker_textlabel.pose.orientation.y = 0.0;
-        marker_textlabel.pose.orientation.y = 0.0;
-        marker_textlabel.pose.orientation.w = 0.0;
-
-        if (object_type == "car") {
-            /* Set the marker type */
-            marker.type = visualization_msgs::Marker::SPHERE;
-            /* Set the scale of the marker -- We assume object as 1.5m sphere */
-            marker.scale.x = (double)1.5;
-            marker.scale.y = (double)1.5;
-            marker.scale.z = (double)1.5;
-
-            /* Set the color */
-            marker.color = color_blue;
-        }
-        else if (object_type == "person") {
-            /* Set the marker type */
-            marker.type = visualization_msgs::Marker::CUBE;
-            /* Set the scale of the marker */
-            marker.scale.x = (double)0.7;
-            marker.scale.y = (double)0.7;
-            marker.scale.z = (double)1.8;
-
-            /* Set the color */
-            marker.color = color_green;
-        }
-        else {
-            /* Set the marker type */
-            marker.type = visualization_msgs::Marker::SPHERE;
-            /* Set the scale of the marker -- We assume object as 1.5m sphere */
-            marker.scale.x = (double)1.5;
-            marker.scale.y = (double)1.5;
-            marker.scale.z = (double)1.5;
-
-            /* Set the color */
-            marker.color = color_red;
-        }
-
-        marker.lifetime = ros::Duration(0.3);
-
-	/* Set the text label */
-	marker_textlabel.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-	marker_textlabel.scale.z = 1.0;
-	marker_textlabel.text = object_type;
-	// marker_textlabel.text = object_type + std::to_string(obj_label_current.obj_id.at(i));
-	marker_textlabel.pose.position.z += marker.scale.z/2 + 0.5;
-	marker_textlabel.color = color_white;
-        marker_textlabel.lifetime = ros::Duration(0.3);
-
-        pub_msg.markers.push_back(marker);
-        pub_textlabel_msg.markers.push_back(marker_textlabel);
+        v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.value = obj_label_current.obj_id.at(i);
+        bounding_box = v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box;
+        pub_msg.boxes.push_back(bounding_box);
+        cloud_clusters_msg.clusters.push_back(v_cloud_cluster_current.at(obj_indices.at(i)));
     }
 
     obj_pose_pub.publish(pub_msg);
-    obj_pose_textlabel_pub.publish(pub_textlabel_msg);
-
+    cluster_class_pub.publish(cloud_clusters_msg);
     std_msgs::Time time;
     time.data = obj_pose_timestamp;
     obj_pose_timestamp_pub.publish(time);
@@ -251,22 +182,24 @@ void obj_label_cb(const cv_tracker::obj_label& obj_label_msg)
 } /* void obj_label_cb() */
 
 
-void cluster_centroids_cb(const lidar_tracker::centroids& cluster_centroids_msg)
+void cluster_centroids_cb(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
 {
     LOCK(mtx_centroids);
     centroids.clear();
+    v_cloud_cluster.clear();
     UNLOCK(mtx_centroids);
 
     LOCK(mtx_centroids);
     static tf::TransformListener trf_listener;
     try {
         trf_listener.lookupTransform("map", "velodyne", ros::Time(0), transform);
-
-        for (const auto& point : cluster_centroids_msg.points) {
+        for (int i(0) ; i < (int)in_cloud_cluster_array_ptr->clusters.size(); ++i) {
+            lidar_tracker::CloudCluster cloud_cluster = in_cloud_cluster_array_ptr->clusters.at(i);
             /* convert centroids coodinate from velodyne frame to map frame */
-            tf::Vector3 pt(point.x, point.y, point.z);
+            tf::Vector3 pt(cloud_cluster.centroid_point.point.x, cloud_cluster.centroid_point.point.y, cloud_cluster.centroid_point.point.z);
             tf::Vector3 converted = transform * pt;
-
+            sensor_header = cloud_cluster.header;
+            v_cloud_cluster.push_back(cloud_cluster);
             geometry_msgs::Point point_in_map;
             point_in_map.x = converted.x();
             point_in_map.y = converted.y();
@@ -307,15 +240,20 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "obj_fusion");
 
     ros::NodeHandle n;
+    ros::NodeHandle private_n ("~");
 
+    if (private_n.getParam("min_dist", threshold_min_dist))
+  	{
+      threshold_min_dist = 5.0;
+  	}
     /* Initialize flags */
     isReady_obj_label         = false;
     isReady_cluster_centroids = false;
 
     ros::Subscriber obj_label_sub         = n.subscribe("obj_label", SUBSCRIBE_QUEUE_SIZE, obj_label_cb);
-    ros::Subscriber cluster_centroids_sub = n.subscribe("/cluster_centroids", SUBSCRIBE_QUEUE_SIZE, cluster_centroids_cb);
-    obj_pose_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
-    obj_pose_textlabel_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose_textlabel", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+    ros::Subscriber cluster_centroids_sub = n.subscribe("/cloud_clusters", SUBSCRIBE_QUEUE_SIZE, cluster_centroids_cb);
+    obj_pose_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+	  cluster_class_pub = n.advertise<lidar_tracker::CloudClusterArray>("/cloud_cluster_class", ADVERTISE_QUEUE_SIZE);
     obj_pose_timestamp_pub = n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
     ros::spin();
 
