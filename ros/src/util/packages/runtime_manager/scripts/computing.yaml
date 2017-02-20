@@ -1115,12 +1115,18 @@ params :
       min   : 0
       max   : 1
       v     : 0.1
-    - name  : trans_esp
-      desc  : trans_esp desc sample
-      label : Trans ESP
+    - name  : trans_epsilon
+      desc  : trans_epsilon desc sample
+      label : Transformation Epsilon
       min   : 0
       max   : 0.1
       v     : 0.01
+    - name  : max_iterations
+      desc  : max_iterations desc sample
+      label : Maximum Iterations
+      min   : 1
+      max   : 300
+      v     : 30
 #    - name  : leaf_size
 #      label : Leaf Size
 #      min   : 0
@@ -2055,12 +2061,18 @@ params :
       min       : 0.0
       max       : 1.0
       v         : 0.1
-    - name      : trans_eps
-      desc      : trans_eps desc sample
-      label     : Trans EPS
+    - name      : trans_epsilon
+      desc      : trans_epsilon desc sample
+      label     : Transformation Epsilon
       min       : 0.0
       max       : 0.1
       v         : 0.01
+    - name      : max_iterations
+      desc      : max_iterations desc sample
+      label     : Maximum Iterations
+      min       : 1
+      max       : 300
+      v         : 30
     - name      : leaf_size
       desc      : leaf_size desc sample
       label     : Leaf Size

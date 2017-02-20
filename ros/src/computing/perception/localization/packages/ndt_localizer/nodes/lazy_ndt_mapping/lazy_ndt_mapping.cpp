@@ -87,7 +87,7 @@ static pcl::PointCloud<pcl::PointXYZI> reference_map;
 
 static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
 // Default values
-static int iter = 30; // Maximum iterations
+static int max_iter = 30; // Maximum iterations
 static float ndt_res = 1.0; // Resolution
 static double step_size = 0.1; // Step size
 static double trans_eps = 0.01; // Transformation epsilon
@@ -129,13 +129,15 @@ static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& in
 {
   ndt_res = input->resolution;
   step_size = input->step_size;
-  trans_eps = input->trans_eps;
+  trans_eps = input->trans_epsilon;
+  max_iter = input->max_iterations;
   voxel_leaf_size = input->leaf_size;
 
   std::cout << "param_callback" << std::endl;
   std::cout << "ndt_res: " << ndt_res << std::endl;
   std::cout << "step_size: " << step_size << std::endl;
-  std::cout << "trans_eps: " << trans_eps << std::endl;
+  std::cout << "trans_epsilon: " << trans_eps << std::endl;
+  std::cout << "max_iter: " << max_iter << std::endl;
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
 }
 
@@ -230,7 +232,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt.setTransformationEpsilon(trans_eps);
     ndt.setStepSize(step_size);
     ndt.setResolution(ndt_res);
-    ndt.setMaximumIterations(iter);
+    ndt.setMaximumIterations(max_iter);
     ndt.setInputSource(filtered_scan_ptr);
     
     if(isMapUpdate == true){
