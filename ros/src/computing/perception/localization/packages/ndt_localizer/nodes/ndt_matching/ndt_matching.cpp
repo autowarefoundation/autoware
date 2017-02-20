@@ -40,6 +40,8 @@
 #include <string>
 #include <chrono>
 
+#include <pthread.h>
+
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
@@ -190,6 +192,10 @@ static std::string filename;
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
 
+static int points_map_num = 0;
+
+pthread_mutex_t mutex;
+
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
@@ -280,8 +286,10 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-  if (map_loaded == 0)
+  //if (map_loaded == 0)
+  if (points_map_num != input->width)
   {
+    std::cout << "Update points_map." << std::endl;
     // Convert the data type(from sensor_msgs to pcl).
     pcl::fromROSMsg(*input, map);
 
@@ -303,14 +311,20 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
+
+    pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> new_ndt;
     // Setting point cloud to be aligned to.
-    ndt.setInputTarget(map_ptr);
+    new_ndt.setInputTarget(map_ptr);
 
     // Setting NDT parameters to default values
-    ndt.setMaximumIterations(iter);
-    ndt.setResolution(ndt_res);
-    ndt.setStepSize(step_size);
-    ndt.setTransformationEpsilon(trans_eps);
+    new_ndt.setMaximumIterations(iter);
+    new_ndt.setResolution(ndt_res);
+    new_ndt.setStepSize(step_size);
+    new_ndt.setTransformationEpsilon(trans_eps);
+
+    pthread_mutex_lock(&mutex);
+    ndt = new_ndt;
+    pthread_mutex_unlock(&mutex);
 
     map_loaded = 1;
   }
@@ -447,6 +461,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     static double align_time, getFitnessScore_time = 0.0;
 
     // Setting point cloud to be aligned.
+    pthread_mutex_lock(&mutex);
     ndt.setInputSource(filtered_scan_ptr);
 
     // Guess the initial gross estimation of the transformation
@@ -507,6 +522,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         1000.0;
 
     trans_probability = ndt.getTransformationProbability();
+    pthread_mutex_unlock(&mutex);
 
     tf::Matrix3x3 mat_l;  // localizer
     mat_l.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
@@ -835,9 +851,23 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
 }
 
+void *thread_func(void *args)
+{
+  ros::NodeHandle nh_map;
+  ros::CallbackQueue map_callback_queue;
+  nh_map.setCallbackQueue(&map_callback_queue);
+
+  ros::Subscriber map_sub = nh_map.subscribe("points_map", 10, map_callback);
+  while (nh_map.ok())
+  {
+    map_callback_queue.callAvailable(ros::WallDuration());
+  }
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ndt_matching");
+  pthread_mutex_init(&mutex, NULL);
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
@@ -944,9 +974,12 @@ int main(int argc, char** argv)
   // Subscribers
   ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
   ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
-  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
+//  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
+
+  pthread_t thread;
+  pthread_create(&thread, NULL, thread_func, NULL);
 
   ros::spin();
 
