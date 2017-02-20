@@ -8,6 +8,7 @@
     <group ns="obj_car">
 
       <node pkg="lidar_tracker" name="fusion" type="obj_fusion">
+        <param name="min_dist" value="2.0" />
         <remap from="/obj_car/obj_label" to="/sync_obj_fusion/obj_car/obj_label" if="$(arg sync)" />
         <remap from="/cluster_centroids" to="/sync_obj_fusion/obj_car/cluster_centroids" if="$(arg sync)" />
       </node>
@@ -20,6 +21,7 @@
     <group ns="obj_person">
 
       <node pkg="lidar_tracker" name="fusion" type="obj_fusion">
+        <param name="min_dist" value="2.0" />
         <remap from="/obj_person/obj_label" to="/sync_obj_fusion/obj_person/obj_label" if="$(arg sync)" />
         <remap from="/cluster_centroids" to="/sync_obj_fusion/obj_person/cluster_centroids" if="$(arg sync)" />
       </node>
