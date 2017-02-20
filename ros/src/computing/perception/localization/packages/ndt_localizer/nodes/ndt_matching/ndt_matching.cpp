@@ -286,7 +286,7 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-  //if (map_loaded == 0)
+  // if (map_loaded == 0)
   if (points_map_num != input->width)
   {
     std::cout << "Update points_map." << std::endl;
@@ -854,7 +854,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
 }
 
-void *thread_func(void *args)
+void* thread_func(void* args)
 {
   ros::NodeHandle nh_map;
   ros::CallbackQueue map_callback_queue;
@@ -977,7 +977,7 @@ int main(int argc, char** argv)
   // Subscribers
   ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
   ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
-//  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
+  //  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
 
