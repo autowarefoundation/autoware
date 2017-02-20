@@ -290,6 +290,9 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   if (points_map_num != input->width)
   {
     std::cout << "Update points_map." << std::endl;
+
+    points_map_num = input->width;
+
     // Convert the data type(from sensor_msgs to pcl).
     pcl::fromROSMsg(*input, map);
 
