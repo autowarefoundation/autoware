@@ -267,6 +267,13 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+      - name : euclidean_lidar_track
+        desc : euclidean_lidar_track desc sample
+        cmd  : roslaunch lidar_tracker euclidean_lidar_track.launch
+        param: euclidean_lidar_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch lidar_tracker obj_fusion.launch
@@ -544,7 +551,7 @@ subs :
              flags : [ nl ]
            position_error :
              flags : [ nl ]
-             
+
   - name : State
     desc : State desc sample
     subs :
@@ -2023,7 +2030,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : decelerate 
+    - name      : decelerate
       desc      : decelerate   desc sample
       label   : 'decelerate :'
       v         : 1.0
