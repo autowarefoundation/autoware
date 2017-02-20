@@ -4,7 +4,7 @@
   	<rosparam command="load" file="$(find object_map)/config/potential.yaml" />
   </node>
   <arg name="use_obstacle_box" default="true" />
-  <arg name="use_vscan_points" default="true" />
+  <arg name="use_vscan_points" default="false" />
   <arg name="use_target_waypoint" default="false" />
 
   <arg name="map_resolution" default="0.25" />
