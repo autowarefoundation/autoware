@@ -54,6 +54,8 @@ static bool _output_log = false;
 static std::ofstream ofs;
 static std::string filename;
 
+static std::string POINTS_TOPIC;
+
 static void config_callback(const runtime_manager::ConfigDistanceFilter::ConstPtr& input)
 {
   sample_num = input->sample_num;
@@ -141,6 +143,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
+  private_nh.getParam("points_topic", POINTS_TOPIC);
   private_nh.getParam("output_log", _output_log);
   if(_output_log == true){
 	  char buffer[80];
@@ -157,7 +160,7 @@ int main(int argc, char** argv)
 
   // Subscribers
   ros::Subscriber config_sub = nh.subscribe("config/distance_filter", 10, config_callback);
-  ros::Subscriber scan_sub = nh.subscribe("points_raw", 10, scan_callback);
+  ros::Subscriber scan_sub = nh.subscribe(POINTS_TOPIC, 10, scan_callback);
 
   ros::spin();
 
