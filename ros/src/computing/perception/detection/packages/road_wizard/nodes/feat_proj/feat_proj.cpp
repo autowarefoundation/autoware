@@ -15,12 +15,16 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <signal.h>
 #include <cstdio>
 #include "Math.h"
 #include <Eigen/Eigen>
 #include "road_wizard/Signals.h"
 #include <runtime_manager/adjust_xy.h>
+#include <vector_map/vector_map.h>
+#include <vector_map_server/GetSignal.h>
+#include <waypoint_follower/lane.h>
 
 static std::string camera_id_str;
 
@@ -48,7 +52,50 @@ static  float fx,
   cy;
 static tf::StampedTransform trf;
 
+static bool g_use_vector_map_server; // Switch flag whether vecter-map-server function will be used
+static ros::ServiceClient g_ros_client;
+
 #define SignalLampRadius 0.3
+
+/* Define utility class to use vector map server */
+namespace
+{
+  class VectorMapClient
+  {
+  private:
+    geometry_msgs::PoseStamped pose_;
+    waypoint_follower::lane waypoints_;
+
+  public:
+    VectorMapClient()
+    {}
+
+    ~VectorMapClient()
+    {}
+
+    geometry_msgs::PoseStamped pose() const
+    {
+      return pose_;
+    }
+
+    waypoint_follower::lane waypoints() const
+    {
+      return waypoints_;
+    }
+
+    void set_pose(const geometry_msgs::PoseStamped& pose)
+    {
+      pose_ = pose;
+    }
+
+    void set_waypoints(const waypoint_follower::lane& waypoints)
+    {
+      waypoints_ = waypoints;
+    }
+  }; // Class VectorMapClient
+} // namespace
+static VectorMapClient g_vector_map_client;
+
 
 /* Callback function to shift projection result */
 void adjust_xyCallback (const runtime_manager::adjust_xy::ConstPtr& config_msg)
@@ -183,6 +230,35 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
   int countPoint = 0;
   road_wizard::Signals signalsInFrame;
 
+  /* Get signals on the path if vecter_map_server is enabled */
+  if (g_use_vector_map_server) {
+    vector_map_server::GetSignal service;
+    /* Set server's request */
+    service.request.pose = g_vector_map_client.pose();
+    service.request.waypoints = g_vector_map_client.waypoints();
+
+    /* Get server's response*/
+    if (g_ros_client.call(service)) {
+      /* Reset signal data container */
+      vmap.signals.clear();
+
+      /* Newle insert signal data on the path */
+      for (const auto& response: service.response.objects.data) {
+        if (response.id == 0)
+          continue;
+
+        Signal signal;
+        signal.id = response.id;
+        signal.vid = response.vid;
+        signal.plid = response.plid;
+        signal.type = response.type;
+        signal.linkid = response.linkid;
+
+        vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
+      }
+    }
+  }
+
   for (unsigned int i=1; i<=vmap.signals.size(); i++) {
     Signal signal = vmap.signals[i];
     int pid = vmap.vectors[signal.vid].pid;
@@ -267,6 +343,9 @@ int main (int argc, char *argv[])
     camera_id_str = "camera";
   }
   
+  /* Get Flag wheter vecter_map_server function will be used  */
+  private_nh.param<bool>("use_path_info", g_use_vector_map_server, false);
+
   /* load vector map */
   ros::Subscriber sub_point     = rosnode.subscribe("vector_map_info/point",
                                                     SUBSCRIBE_QUEUE_SIZE,
@@ -311,7 +390,15 @@ int main (int argc, char *argv[])
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe (cameraInfo_topic_name, 100, cameraInfoCallback);
   ros::Subscriber adjust_xySubscriber  = rosnode.subscribe("/config/adjust_xy", 100, adjust_xyCallback);
-  //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/current_pose", 10, ndtPoseCallback);
+  if (g_use_vector_map_server) {
+    /* Create subscribers which deliver informations requested by server */
+    ros::Subscriber current_pose_subscriber = rosnode.subscribe("/current_pose", 1, &VectorMapClient::set_pose, &g_vector_map_client);
+    ros::Subscriber waypoint_subscriber     = rosnode.subscribe("/final_waypoints", 1, &VectorMapClient::set_waypoints, &g_vector_map_client);
+
+    /* Create ros client to use Server-Client communication */
+    g_ros_client = rosnode.serviceClient<vector_map_server::GetSignal>("vector_map_server/get_signal");
+  }
+
   ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);
   signal (SIGINT, interrupt);
 

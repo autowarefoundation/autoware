@@ -16,6 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   libvectormap
   runtime_manager
+  vector_map_server
+  geometry_msgs
+  waypoint_follower
   cmake_modules
   )
 find_package(OpenCV REQUIRED)
@@ -60,7 +63,7 @@ include_directories(
 
 catkin_package(
   INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
+  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager vector_map_server geometry_msgs waypoint_follower
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -105,11 +108,15 @@ target_link_libraries(feat_proj
   ${catkin_LIBRARIES}
   ${libvectormap_LIBRARIES}
   ${OpenCV_LIBS}
+  vector_map
 )
 
 add_dependencies(feat_proj
 runtime_manager_generate_messages_cpp
 road_wizard_generate_messages_cpp
+vector_map_server_generate_messages_cpp
+geometry_msgs_generate_messages_cpp
+waypoint_follower_generate_messages_cpp
 )
 
 ### tlr_tuner ###
