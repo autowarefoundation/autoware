@@ -258,7 +258,10 @@ void LocalPlannerH::InitPolygons()
  	if(bestTrajectory.index>=0)
  		pValues->iCurrSafeTrajectory = bestTrajectory.index;
 
- 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_PlanningParams.minFollowingDistance)
+// 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_PlanningParams.minFollowingDistance)
+// 		pValues->bFullyBlock = true;
+
+  	if(bestTrajectory.index == -1)
  		pValues->bFullyBlock = true;
 
  	int stopLineID = -1;

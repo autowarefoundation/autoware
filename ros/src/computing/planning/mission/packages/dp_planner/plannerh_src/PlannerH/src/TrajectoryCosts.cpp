@@ -87,6 +87,8 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 		bestTrajectory.index = smallestIndex;
 	}
 
+	cout << "Blockage Test: " << smallestIndex << ", currentTrajIndex: " << currTrajectoryIndex << ", Trajectory Cost Size: " << m_TrajectoryCosts.size() << ", Best Block: " << bestTrajectory.bBlocked <<", Best Index: " << bestTrajectory.index<< endl;
+
 	return bestTrajectory;
 }
 
@@ -95,16 +97,51 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 		const WayPoint& currState, const vector<WayPoint>& contourPoints, const PlanningParams& params,
 		const CAR_BASIC_INFO& carInfo)
 {
-	double critical_lateral_distance = params.rollOutDensity + carInfo.width/2.0;
+	double critical_lateral_distance =  carInfo.width/2.0 + params.horizontalSafetyDistancel;
+	double critical_long_front_distance =  carInfo.wheel_base/2.0 + carInfo.length/2.0 + params.verticalSafetyDistance;
+	double critical_long_back_distance =  carInfo.length/2.0 + params.verticalSafetyDistance - carInfo.wheel_base/2.0;
 	int iCostIndex = 0;
 	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
 	PlannerHNS::Mat3 translationMat(-currState.pos.x, -currState.pos.y);
+	PlannerHNS::Mat3 invRotationMat(currState.pos.a-M_PI_2);
+	PlannerHNS::Mat3 invTranslationMat(currState.pos.x, currState.pos.y);
+
+	GPSPoint bottom_left(-critical_lateral_distance ,-critical_long_back_distance,  currState.pos.z, 0);
+	GPSPoint bottom_right(critical_lateral_distance, -critical_long_back_distance,  currState.pos.z, 0);
+
+	GPSPoint top_right(critical_lateral_distance , critical_long_front_distance,  currState.pos.z, 0);
+	GPSPoint top_left(-critical_lateral_distance , critical_long_front_distance, currState.pos.z, 0);
+
+	bottom_left = invRotationMat*bottom_left;
+	bottom_left = invTranslationMat*bottom_left;
+
+	top_right = invRotationMat*top_right;
+	top_right = invTranslationMat*top_right;
+
+	bottom_right = invRotationMat*bottom_right;
+	bottom_right = invTranslationMat*bottom_right;
+
+	top_left = invRotationMat*top_left;
+	top_left = invTranslationMat*top_left;
+
+	m_SafetyBox.clear();
+	m_SafetyBox.push_back(bottom_left);
+	m_SafetyBox.push_back(bottom_right);
+	m_SafetyBox.push_back(top_right);
+	m_SafetyBox.push_back(top_left);
+
+	m_SafetyBorder.points.clear();
+	m_SafetyBorder.points.push_back(bottom_left) ;
+	m_SafetyBorder.points.push_back(bottom_right) ;
+	m_SafetyBorder.points.push_back(top_right) ;
+	m_SafetyBorder.points.push_back(top_left) ;
+
 
 
 
 	for(unsigned int il=0; il < rollOuts.size(); il++)
 	{
-		int iCurrIndex = PlanningHelpers::GetClosestPointIndex(totalPaths.at(il), currState);
+		//int iCurrIndex = PlanningHelpers::GetClosestPointIndex(totalPaths.at(il), currState);
 
 		for(unsigned int it=0; it< rollOuts.at(il).size(); it++)
 		{
@@ -120,7 +157,11 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 			{
 				double longitudinalDist = PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon));
 
-				if(longitudinalDist< -carInfo.length/2.0) continue;
+				if(longitudinalDist< -carInfo.length)
+				{
+					cout << "Skip , long Dist: " << longitudinalDist << endl;
+					continue;
+				}
 
 				double close_in_percentage = 1;
 //				if(longitudinalDist > (params.carTipMargin + params.rollInMargin - distanceOnLocal))
@@ -133,18 +174,20 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 //				if(close_in_percentage>1) close_in_percentage = 1;
 //				if(close_in_percentage<0) close_in_percentage = 0;
 
-				PlannerHNS::GPSPoint relative_point;
-				relative_point = translationMat*contourPoints.at(icon).pos;
-				relative_point = rotationMat*relative_point;
+//				PlannerHNS::GPSPoint relative_point;
+//				relative_point = translationMat*contourPoints.at(icon).pos;
+//				relative_point = rotationMat*relative_point;
 
 
 				double lateralDist =  fabs(PlanningHelpers::GetPerpDistanceToTrajectorySimple(totalPaths.at(il), contourPoints.at(icon), iCurrIndex) - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
 
-				cout << "close_in_percentage: " << close_in_percentage  << ", LateralD: " << lateralDist << ", Longit: " << longitudinalDist << endl;
 
-				longitudinalDist = longitudinalDist - carInfo.length/2.0;
-				if((lateralDist <= critical_lateral_distance && longitudinalDist >= 0 &&  longitudinalDist < params.minFollowingDistance) || (longitudinalDist < params.maxDistanceToAvoid && fabs(relative_point.y) <= critical_lateral_distance ))
+				longitudinalDist = longitudinalDist - critical_long_back_distance;
+				if((lateralDist <= critical_lateral_distance && longitudinalDist >= 0 &&  longitudinalDist < params.minFollowingDistance) || (m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos) == true))// || (longitudinalDist < params.maxDistanceToAvoid && fabs(relative_point.y) <= critical_lateral_distance ))
 					trajectoryCosts.at(iCostIndex).bBlocked = true;
+
+				cout << ", Lat D: " << lateralDist << ", Lat C: " << critical_lateral_distance <<", Lon D: " << longitudinalDist << ", Lon C: "<< critical_long_back_distance << ", Safety Box: " << m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos)<< endl;
+
 
 				if(lateralDist==0)
 					trajectoryCosts.at(iCostIndex).lateral_cost += 999999;

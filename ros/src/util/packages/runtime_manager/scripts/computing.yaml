@@ -1948,6 +1948,22 @@ params :
         delim    : ':='
   - name  : dp_planner
     vars  :
+    - name : enableOutsideControl
+      desc : Enable User Input Control  
+      label: Enable user control
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSimulation
+      desc : Enable Simulation  
+      label: Enable Simulation
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : pathDensity
       desc : distance between each two waypoints
       label: Path Density
@@ -2011,6 +2027,22 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='  
+    - name : enableFollowing
+      desc : Enable stop and follow obstacles
+      label: Enable Following
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSwerving
+      desc : Enable avoidance inside the lane
+      label: Enable Avoidance
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : minFollowingDistance
       desc : Distance to start follow Next Car 
       label: Follow Distance
@@ -2038,22 +2070,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : enableFollowing
-      desc : Enable stop and follow obstacles
-      label: Enable Following
-      kind : checkbox
-      v    : True
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : enableSwerving
-      desc : Enable avoidance inside the lane
-      label: Enable Avoidance
-      kind : checkbox
-      v    : True
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name : enableTrafficLightBehavior
       desc : Enable traffic light check  
       label: Enable Traffic Light
@@ -2078,19 +2094,11 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : enableOutsideControl
-      desc : Enable User Input Control  
-      label: Enable user control
-      kind : checkbox
-      v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : enableSimulation
-      desc : Enable Simulation  
-      label: Enable Simulation
-      kind : checkbox
-      v    : True
+
+    - name : mapFileName
+      desc : select kml map file if applicable 
+      label: Map File
+      kind : path
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -2107,13 +2115,6 @@ params :
       - custom read from folder
       - custom read from kml file
       v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : mapFileName
-      desc : select kml map file if applicable 
-      label: Map File
-      kind : path
       cmd_param:
         dash     : ''
         delim    : ':='

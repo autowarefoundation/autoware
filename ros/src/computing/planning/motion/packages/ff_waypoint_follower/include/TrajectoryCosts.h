@@ -31,6 +31,9 @@ public:
 	int m_CurrentTrajectoryIndex;
 	vector<TrajectoryCost> m_TrajectoryCosts;
 	PlanningParams m_Params;
+	PolygonShape m_SafetyBorder;
+	vector<GPSPoint> m_SafetyBox;
+
 
 
 private:

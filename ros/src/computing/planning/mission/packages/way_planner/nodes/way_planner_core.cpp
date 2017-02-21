@@ -341,11 +341,12 @@ bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, Plan
 						predefinedLanesIds, generatedTotalPaths);
 #endif
 
+#ifdef ENABLE_HMI
 		for(unsigned int im = 0; im < m_ModifiedWayPointsCosts.size(); im++)
 			m_ModifiedWayPointsCosts.at(im)->actionCost.at(0).second = 0;
 
 		m_ModifiedWayPointsCosts.clear();
-
+#endif
 		if(ret == 0) generatedTotalPaths.clear();
 
 

@@ -72,6 +72,8 @@ public:
     }
 };
 
+
+
 class RECTANGLE
 
 {
@@ -81,6 +83,8 @@ public:
   double width;
   double length;
   bool bObstacle;
+
+
   inline bool PointInRect(POINT2D p)
   {
     return p.x >= bottom_left.x && p.x <= top_right.x && p.y >= bottom_left.y && p.y <= top_right.y;
@@ -137,6 +141,50 @@ public:
 		str << "X:" << x << ", Y:" << y << ", Z:" << z << ", A:" << a << std::endl;
 		str << "Lon:" << lon << ", Lat:" << lat << ", Alt:" << alt << ", Dir:" << dir << std::endl;
 		return str.str();
+	}
+};
+
+class PolygonShape
+{
+public:
+	std::vector<GPSPoint> points;
+
+	inline int PointInsidePolygon(const PolygonShape& polygon,const GPSPoint& p)
+	{
+		int counter = 0;
+		  int i;
+		  double xinters;
+		  GPSPoint p1,p2;
+		  int N = polygon.points.size();
+		  if(N <=0 ) return -1;
+
+		  p1 = polygon.points.at(0);
+		  for (i=1;i<=N;i++)
+		  {
+		    p2 = polygon.points.at(i % N);
+
+		    if (p.y > MIN(p1.y,p2.y))
+		    {
+		      if (p.y <= MAX(p1.y,p2.y))
+		      {
+		        if (p.x <= MAX(p1.x,p2.x))
+		        {
+		          if (p1.y != p2.y)
+		          {
+		            xinters = (p.y-p1.y)*(p2.x-p1.x)/(p2.y-p1.y)+p1.x;
+		            if (p1.x == p2.x || p.x <= xinters)
+		              counter++;
+		          }
+		        }
+		      }
+		    }
+		    p1 = p2;
+		  }
+
+		  if (counter % 2 == 0)
+		    return 0;
+		  else
+		    return 1;
 	}
 };
 
@@ -652,6 +700,9 @@ public:
 	double 	smoothingSmoothWeight;
 	double 	smoothingToleranceError;
 
+	double verticalSafetyDistance;
+	double horizontalSafetyDistancel;
+
 	bool 	enableLaneChange;
 	bool 	enableSwerving;
 	bool 	enableFollowing;
@@ -680,6 +731,9 @@ public:
 		smoothingDataWeight				= 0.4;
 		smoothingSmoothWeight			= 0.35;
 		smoothingToleranceError			= 0.1;
+
+		verticalSafetyDistance 			= 0.0;
+		horizontalSafetyDistancel		= 0.0;
 
 		enableHeadingSmoothing			= false;
 		enableSwerving 					= false;

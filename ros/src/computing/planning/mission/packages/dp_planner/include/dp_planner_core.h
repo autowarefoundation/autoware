@@ -166,6 +166,7 @@ protected:
 	ros::Publisher pub_TrackedObstaclesRviz;
 	ros::Publisher pub_LocalTrajectoriesRviz;
 	ros::Publisher pub_BehaviorStateRviz;
+	ros::Publisher pub_SafetyBorderRviz;
 	ros::Publisher pub_cluster_cloud;
 
 	// define subscribers.

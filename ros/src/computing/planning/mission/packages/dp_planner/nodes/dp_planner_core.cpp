@@ -108,6 +108,7 @@ PlannerX::PlannerX()
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
+	pub_SafetyBorderRviz  = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
 	pub_cluster_cloud = nh.advertise<sensor_msgs::PointCloud2>("simu_points_cluster",1);
 
 
@@ -391,6 +392,9 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/maxDistanceToAvoid", params.maxDistanceToAvoid);
 	nh.getParam("/dp_planner/speedProfileFactor", params.speedProfileFactor);
 
+	nh.getParam("/dp_planner/horizontalSafetyDistancel", params.horizontalSafetyDistancel);
+	nh.getParam("/dp_planner/verticalSafetyDistance", params.verticalSafetyDistance);
+
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
 
 	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
@@ -439,8 +443,8 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	timespec t;
 	UtilityHNS::UtilityH::GetTickCount(t);
 	srand(t.tv_nsec);
-	double width = 4;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
-	double length = 2;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
+	double width = 0.25;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
+	double length = 0.25;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
 
 	geometry_msgs::PointStamped point;
 	point.point.x = msg->point.x+m_OriginPos.position.x;
@@ -820,6 +824,9 @@ void PlannerX::PlannerMainLoop()
 			visualization_msgs::MarkerArray detectedPolygons;
 			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, m_TrackedClusters, detectedPolygons);
 			pub_DetectedPolygonsRviz.publish(detectedPolygons);
+			visualization_msgs::Marker safety_box;
+			RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBox, safety_box);
+			pub_SafetyBorderRviz.publish(safety_box);
 
 			timespec log_t;
 			UtilityHNS::UtilityH::GetTickCount(log_t);

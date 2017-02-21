@@ -179,6 +179,9 @@ public:
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
 				waypoint_follower::lane & trajectory);
 
+	static void ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
+			visualization_msgs::Marker& marker);
+
 	static void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
 			const std::vector<std::vector<PlannerHNS::WayPoint> >& paths, const PlannerHNS::LocalPlannerH& localPlanner,
 				visualization_msgs::MarkerArray& markerArray);

@@ -19,17 +19,20 @@
 	<arg name="maxDistanceToAvoid" 			default="6.0"  />
 	<arg name="speedProfileFactor"			default="1.0"  />
 	
+	<arg name="horizontalSafetyDistancel"	default="0.2"  />
+	<arg name="verticalSafetyDistance"		default="0.5"  />
+	
 	<arg name="enableSwerving" 				default="true"  />
 	<arg name="enableFollowing" 			default="false" />
 	<arg name="enableHeadingSmoothing" 		default="false" />
 	<arg name="enableTrafficLightBehavior" 	default="false" />
 	<arg name="enableLaneChange" 			default="false" />
 	
-	<arg name="width" 						default="2.1"  />
+	<arg name="width" 						default="2.0"  />
 	<arg name="length" 						default="4.2"  />
 	<arg name="wheelBaseLength" 			default="2.5"  />
 	<arg name="turningRadius"				default="3.2"  />
-	<arg name="maxSteerAngle" 				default="0.42" />
+	<arg name="maxSteerAngle" 				default="0.45" />
 	
 	<arg name="enableObjectTracking" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
 	<arg name="enableOutsideControl" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->	
@@ -58,6 +61,9 @@
 		<param name="minDistanceToAvoid" 			value="$(arg minDistanceToAvoid)" />
 		<param name="maxDistanceToAvoid" 			value="$(arg maxDistanceToAvoid)" />
 		<param name="speedProfileFactor"			value="$(arg speedProfileFactor)" />
+		
+		<param name="horizontalSafetyDistancel"		value="$(arg horizontalSafetyDistancel)" />
+		<param name="verticalSafetyDistance"		value="$(arg verticalSafetyDistance)" />
 		
 		<param name="enableSwerving" 				value="$(arg enableSwerving)" />
 		<param name="enableFollowing" 				value="$(arg enableFollowing)" />
