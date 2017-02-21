@@ -104,7 +104,7 @@ static int init_pos_set = 0;
 
 static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 // Default values
-static int iter = 30;            // Maximum iterations
+static int max_iter = 30;        // Maximum iterations
 static float ndt_res = 1.0;      // Resolution
 static double step_size = 0.1;   // Step size
 static double trans_eps = 0.01;  // Transformation epsilon
@@ -216,10 +216,15 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     step_size = input->step_size;
     ndt.setStepSize(step_size);
   }
-  if (input->trans_esp != trans_eps)
+  if (input->trans_epsilon != trans_eps)
   {
-    trans_eps = input->trans_esp;
+    trans_eps = input->trans_epsilon;
     ndt.setTransformationEpsilon(trans_eps);
+  }
+  if (input->max_iterations != max_iter)
+  {
+    max_iter = input->max_iterations;
+    ndt.setMaximumIterations(max_iter);
   }
 
   if (_use_gnss == 0 && init_pos_set == 0)
@@ -307,7 +312,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt.setInputTarget(map_ptr);
 
     // Setting NDT parameters to default values
-    ndt.setMaximumIterations(iter);
+    ndt.setMaximumIterations(max_iter);
     ndt.setResolution(ndt_res);
     ndt.setStepSize(step_size);
     ndt.setTransformationEpsilon(trans_eps);

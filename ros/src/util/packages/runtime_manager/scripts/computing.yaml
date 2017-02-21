@@ -27,16 +27,21 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
+          dialog_width  : 400
+          dialog_height : 450
       - name : lazy_ndt_mapping
         cmd  : roslaunch ndt_localizer lazy_ndt_mapping.launch
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
+          dialog_width  : 400
+          dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
         cmd  : roslaunch ndt_localizer ndt_matching.launch
         param: ndt
         gui  :
+          dialog_height : 350
           stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
           x  :
             user_category : ''
@@ -1117,12 +1122,18 @@ params :
       min   : 0
       max   : 1
       v     : 0.1
-    - name  : trans_esp
-      desc  : trans_esp desc sample
-      label : Trans ESP
+    - name  : trans_epsilon
+      desc  : trans_epsilon desc sample
+      label : Transformation Epsilon
       min   : 0
       max   : 0.1
       v     : 0.01
+    - name  : max_iterations
+      desc  : max_iterations desc sample
+      label : Maximum Iterations
+      min   : 1
+      max   : 300
+      v     : 30
 #    - name  : leaf_size
 #      label : Leaf Size
 #      min   : 0
@@ -2053,15 +2064,33 @@ params :
       min       : 0.0
       max       : 1.0
       v         : 0.1
-    - name      : trans_eps
-      desc      : trans_eps desc sample
-      label     : Trans EPS
+    - name      : trans_epsilon
+      desc      : trans_epsilon desc sample
+      label     : Transformation Epsilon
       min       : 0.0
       max       : 0.1
       v         : 0.01
+    - name      : max_iterations
+      desc      : max_iterations desc sample
+      label     : Maximum Iterations
+      min       : 1
+      max       : 300
+      v         : 30
     - name      : leaf_size
       desc      : leaf_size desc sample
       label     : Leaf Size
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : min_scan_range
+      desc      : min_scan_range desc sample
+      label     : Minimum Scan Range
+      min       : 0.0
+      max       : 30.0
+      v         : 5.0
+    - name      : min_add_scan_shift
+      desc      : min_add_scan_shift desc sample
+      label     : Minimum Add Scan Shift
       min       : 0.0
       max       : 10.0
       v         : 1.0
