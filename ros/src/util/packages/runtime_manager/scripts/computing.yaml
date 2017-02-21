@@ -27,14 +27,14 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 360
+          dialog_width  : 400
           dialog_height : 450
       - name : lazy_ndt_mapping
         cmd  : roslaunch ndt_localizer lazy_ndt_mapping.launch
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 360
+          dialog_width  : 400
           dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
