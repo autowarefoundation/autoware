@@ -2079,6 +2079,18 @@ params :
       min       : 0.0
       max       : 10.0
       v         : 1.0
+    - name      : min_scan_range
+      desc      : min_scan_range desc sample
+      label     : Minimum Scan Range
+      min       : 0.0
+      max       : 30.0
+      v         : 5.0
+    - name      : min_add_scan_shift
+      desc      : min_add_scan_shift desc sample
+      label     : Minimum Add Scan Shift
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
     - name      : use_openmp
       desc      : use_openmp desc sample
       label     : Use OpenMP

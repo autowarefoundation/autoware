@@ -2,16 +2,12 @@
 <launch>
 
   <!-- send table.xml to param server -->
-  <arg name="range" default="5.0" />
-  <arg name="shift" default="1.0" />
   <arg name="reference_map_size" default="3" />
   <arg name="use_openmp" default="false" />
 
   <!-- rosrun ndt_localizer lazy_ndt_mapping  -->
   <node pkg="ndt_localizer" type="queue_counter" name="queue_counter" output="screen" />
-  <node pkg="ndt_localizer" type="lazy_ndt_mapping" name="lazy_ndt_mapping" output="log">
-  	<param name="range" value="$(arg range)" />
-    <param name="shift" value="$(arg shift)" />
+  <node pkg="ndt_localizer" type="lazy_ndt_mapping" name="lazy_ndt_mapping" output="screen">
     <param name="reference_map_size" value="$(arg reference_map_size)" />
     <param name="use_openmp" value="$(arg use_openmp)" />
   </node>

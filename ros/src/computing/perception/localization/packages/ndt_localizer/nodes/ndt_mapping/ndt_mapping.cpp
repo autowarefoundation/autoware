@@ -109,8 +109,8 @@ static int initial_scan_loaded = 0;
 
 static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
-static double RANGE = 0.0;
-static double SHIFT = 0.0;
+static double min_scan_range = 5.0;
+static double min_add_scan_shift = 1.0;
 
 static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
@@ -127,6 +127,8 @@ static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& in
   trans_eps = input->trans_epsilon;
   max_iter = input->max_iterations;
   voxel_leaf_size = input->leaf_size;
+  min_scan_range = input->min_scan_range;
+  min_add_scan_shift = input->min_add_scan_shift;
 
   std::cout << "param_callback" << std::endl;
   std::cout << "ndt_res: " << ndt_res << std::endl;
@@ -134,6 +136,8 @@ static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& in
   std::cout << "trans_epsilon: " << trans_eps << std::endl;
   std::cout << "max_iter: " << max_iter << std::endl;
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
+  std::cout << "min_scan_range: " << min_scan_range << std::endl;
+  std::cout << "min_add_scan_shift: " << min_add_scan_shift << std::endl;
 }
 
 static void output_callback(const runtime_manager::ConfigNdtMappingOutput::ConstPtr& input)
@@ -208,7 +212,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     p.intensity = (double)item->intensity;
 
     r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
-    if (r > RANGE)
+    if (r > min_scan_range)
     {
       scan.push_back(p);
     }
@@ -341,7 +345,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   // Calculate the shift between added_pos and current_pos
   double shift = sqrt(pow(current_pose.x - added_pose.x, 2.0) + pow(current_pose.y - added_pose.y, 2.0));
-  if (shift >= SHIFT)
+  if (shift >= min_add_scan_shift)
   {
     map += *transformed_scan_ptr;
     added_pose.x = current_pose.x;
@@ -436,10 +440,6 @@ int main(int argc, char** argv)
   ros::NodeHandle private_nh("~");
 
   // setting parameters
-  private_nh.getParam("range", RANGE);
-  std::cout << "RANGE: " << RANGE << std::endl;
-  private_nh.getParam("shift", SHIFT);
-  std::cout << "SHIFT: " << SHIFT << std::endl;
   private_nh.getParam("use_openmp", _use_openmp);
   std::cout << "use_openmp: " << _use_openmp << std::endl;
 
