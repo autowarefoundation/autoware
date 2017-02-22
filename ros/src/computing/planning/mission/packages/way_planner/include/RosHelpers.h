@@ -47,11 +47,13 @@ class HMI_MSG
 public:
 	MSG_TYPE type;
 	std::vector<PlannerHNS::ACTION_TYPE> options;
+	PlannerHNS::ACTION_TYPE current;
 	bool bErr;
 	std::string err_msg;
 	HMI_MSG()
 	{
 		type = OPTIONS_MSG;
+		current = PlannerHNS::FORWARD_ACTION;
 		bErr = false;
 	}
 

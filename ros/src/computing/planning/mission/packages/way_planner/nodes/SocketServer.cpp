@@ -155,6 +155,7 @@ void* HMISocketServer::ThreadMainSend(void* pSock)
 		  for(unsigned int i=0; i< msg.options.size(); i++)
 			  oss << msg.options.at(i) << ";";
 
+		  oss << "," << msg.current;
 		  oss << "," << msg.bErr << ",";
 		  oss << msg.err_msg << ",";
 

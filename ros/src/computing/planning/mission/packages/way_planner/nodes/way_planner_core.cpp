@@ -576,11 +576,12 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 					std::cout << "R,";
 				std::cout <<std::endl;
 
-				HMI_MSG currOpMsg;
-				currOpMsg.type = CURR_OPTION_MSG;
-				currOpMsg.options.clear();
-				currOpMsg.options.push_back(currOptions->actionCost.at(0).first);
-				m_SocketServer.SendMSG(currOpMsg);
+//				HMI_MSG currOpMsg;
+//				currOpMsg.type = CURR_OPTION_MSG;
+//				currOpMsg.options.clear();
+//				currOpMsg.options.push_back(currOptions->actionCost.at(0).first);
+//				m_SocketServer.SendMSG(currOpMsg);
+				msg.current = currOptions->actionCost.at(0).first;
 
 			}
 
