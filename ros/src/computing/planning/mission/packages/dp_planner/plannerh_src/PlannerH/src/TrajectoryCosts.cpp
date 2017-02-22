@@ -87,7 +87,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 		bestTrajectory.index = smallestIndex;
 	}
 
-	cout << "Blockage Test: " << smallestIndex << ", currentTrajIndex: " << currTrajectoryIndex << ", Trajectory Cost Size: " << m_TrajectoryCosts.size() << ", Best Block: " << bestTrajectory.bBlocked <<", Best Index: " << bestTrajectory.index<< endl;
+	cout << "Blockage Test: " << smallestIndex << ", currentTrajIndex: " << currTrajectoryIndex << ", Trajectory Cost Size: " << m_TrajectoryCosts.size() << ", Best Block: " << bestTrajectory.bBlocked <<", Best Index: " << bestTrajectory.index<< ", D: " << bestTrajectory.closest_obj_distance << endl;
 
 	return bestTrajectory;
 }
@@ -145,7 +145,10 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 
 		for(unsigned int it=0; it< rollOuts.at(il).size(); it++)
 		{
-			int iCurrIndex = PlanningHelpers::GetClosestPointIndex(totalPaths.at(il), currState);
+			int iCurrIndex = PlanningHelpers::GetClosestNextPointIndex(totalPaths.at(il), currState);
+			double long_diff_distance = 0;
+			WayPoint perpWP = PlanningHelpers::GetPerpendicularOnTrajectory(totalPaths.at(il), currState, long_diff_distance);
+			double longitudinalDist = hypot(totalPaths.at(il).at(iCurrIndex).pos.y - perpWP.pos.y, totalPaths.at(il).at(iCurrIndex).pos.x - perpWP.pos.x);
 			//int iCurrLocalIndex = PlanningHelpers::GetClosestPointIndex(rollOuts.at(il).at(it), currState);
 //			double distanceOnLocal = 0;
 //			for(int iLocalTraj = 1; iLocalTraj <= iCurrLocalIndex; iLocalTraj++)
@@ -155,7 +158,7 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 
 			for(unsigned int icon = 0; icon < contourPoints.size(); icon++)
 			{
-				double longitudinalDist = PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon));
+				longitudinalDist += PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon));
 
 				if(longitudinalDist< -carInfo.length)
 				{
@@ -182,24 +185,25 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 				double lateralDist =  fabs(PlanningHelpers::GetPerpDistanceToTrajectorySimple(totalPaths.at(il), contourPoints.at(icon), iCurrIndex) - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
 
 
-				longitudinalDist = longitudinalDist - critical_long_back_distance;
+				longitudinalDist = longitudinalDist - critical_long_front_distance;
+
 				if((lateralDist <= critical_lateral_distance && longitudinalDist >= 0 &&  longitudinalDist < params.minFollowingDistance) || (m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos) == true))// || (longitudinalDist < params.maxDistanceToAvoid && fabs(relative_point.y) <= critical_lateral_distance ))
 					trajectoryCosts.at(iCostIndex).bBlocked = true;
 
-				cout << ", Lat D: " << lateralDist << ", Lat C: " << critical_lateral_distance <<", Lon D: " << longitudinalDist << ", Lon C: "<< critical_long_back_distance << ", Safety Box: " << m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos)<< endl;
+				//cout << ", Lat D: " << lateralDist << ", Lat C: " << critical_lateral_distance <<", Lon D: " << longitudinalDist << ", Lon C: "<< critical_long_back_distance << ", Safety Box: " << m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos)<< endl;
 
 
-				if(lateralDist==0)
-					trajectoryCosts.at(iCostIndex).lateral_cost += 999999;
-				else
+//				if(lateralDist==0)
+//					trajectoryCosts.at(iCostIndex).lateral_cost += 999999;
+//				else
 					trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
 
-				if(longitudinalDist==0)
-					trajectoryCosts.at(iCostIndex).longitudinal_cost += 999999;
-				else
+//				if(longitudinalDist==0)
+//					trajectoryCosts.at(iCostIndex).longitudinal_cost += 999999;
+//				else
 					trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/longitudinalDist;
 
-				if(longitudinalDist >= 0 && longitudinalDist < trajectoryCosts.at(iCostIndex).closest_obj_distance)
+				if(longitudinalDist >= -critical_long_front_distance && longitudinalDist < trajectoryCosts.at(iCostIndex).closest_obj_distance)
 				{
 					trajectoryCosts.at(iCostIndex).closest_obj_distance = longitudinalDist;
 					trajectoryCosts.at(iCostIndex).closest_obj_velocity = contourPoints.at(icon).v;

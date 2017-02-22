@@ -400,7 +400,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 			  point.x = trackedObstacles.at(i).contour.at(p).x;
 			  point.y = trackedObstacles.at(i).contour.at(p).y;
-			  //point.z = trackedObstacles.at(i).contour.at(p).z;
+			  point.z = trackedObstacles.at(i).contour.at(p).z;
 
 			  lane_waypoint_marker.points.push_back(point);
 

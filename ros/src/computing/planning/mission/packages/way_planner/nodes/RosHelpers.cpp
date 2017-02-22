@@ -51,7 +51,7 @@ void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector
 		waypoint_follower::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).x;
 		wp.pose.pose.position.y = path.at(i).y;
-		//wp.pose.pose.position.z = path.at(i).z;
+		wp.pose.pose.position.z = path.at(i).z;
 		//wp.pose.pose.position.z = 5;
 		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).a));
 
@@ -72,7 +72,7 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		waypoint_follower::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
-		//wp.pose.pose.position.z = path.at(i).pos.z;
+		wp.pose.pose.position.z = path.at(i).pos.z;
 		//wp.pose.pose.position.z = 5;
 		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
 		wp.twist.twist.linear.x = path.at(i).v;
@@ -227,7 +227,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 
 		  point.x = paths.at(i).at(j).pos.x;
 		  point.y = paths.at(i).at(j).pos.y;
-		  //point.z = paths.at(i).at(j).pos.z;
+		  point.z = paths.at(i).at(j).pos.z;
 
 		  lane_waypoint_marker.points.push_back(point);
 		}
@@ -252,7 +252,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 
 	  point.x = curr_path.at(j).pos.x;
 	  point.y = curr_path.at(j).pos.y;
-	  //point.z = curr_path.at(j).pos.z;
+	  point.z = curr_path.at(j).pos.z;
 
 	  lane_waypoint_marker.points.push_back(point);
 	}
@@ -296,7 +296,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 
 		  point.x = globalPaths.at(i).at(j).pos.x;
 		  point.y = globalPaths.at(i).at(j).pos.y;
-		  //point.z = globalPaths.at(i).at(j).pos.z;
+		  point.z = globalPaths.at(i).at(j).pos.z;
 
 		  lane_waypoint_marker.points.push_back(point);
 		}
@@ -475,7 +475,7 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
 }
 
 void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose,const double& min_distance,
-			std::vector<PlannerHNS::WayPoint*>& branches)
+			std::vector<PlannerHNS::WayPoint*>& branches, PlannerHNS::WayPoint* currOptions)
 {
 	static int detection_range = 20; // meter
 	if(globalPaths.size() > 0)
@@ -488,13 +488,15 @@ void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS:
 			d += hypot(globalPaths.at(0).at(i).pos.y - globalPaths.at(0).at(i-1).pos.y, globalPaths.at(0).at(i).pos.x - globalPaths.at(0).at(i-1).pos.x);
 
 			if(d - min_distance > detection_range)
-				return;
+				break;
 
 			if(d > min_distance && globalPaths.at(0).at(i).pFronts.size() > 1)
 			{
 				for(unsigned int j = 0; j< globalPaths.at(0).at(i).pFronts.size(); j++)
 				{
 					PlannerHNS::WayPoint* wp =  globalPaths.at(0).at(i).pFronts.at(j);
+
+
 					bool bFound = false;
 					for(unsigned int ib=0; ib< branches.size(); ib++)
 					{

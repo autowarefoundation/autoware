@@ -520,7 +520,8 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 			}
   		}
 
-  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches);
+  		PlannerHNS::WayPoint* currOptions = 0;
+  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);
   		if(branches.size() > 0)
   		{
 			HMI_MSG msg;
@@ -529,17 +530,60 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 			for(unsigned int i = 0; i< branches.size(); i++)
 				msg.options.push_back(branches.at(i)->actionCost.at(0).first);
 
-//			std::cout << "Send Message (" <<  branches.size() << ") Branches (" ;
-//			for(unsigned int i=0; i< branches.size(); i++)
-//			{
-//				if(branches.at(i).actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
-//					std::cout << "F,";
-//				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
-//					std::cout << "L,";
-//				else if(branches.at(i).actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
-//					std::cout << "R,";
-//			}
-//			std::cout << ")" << std::endl;
+			std::cout << "Send Message (" <<  branches.size() << ") Branches (" ;
+			for(unsigned int i=0; i< branches.size(); i++)
+			{
+				if(branches.at(i)->actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
+					std::cout << "F,";
+				else if(branches.at(i)->actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
+					std::cout << "L,";
+				else if(branches.at(i)->actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
+					std::cout << "R,";
+
+			}
+
+			std::cout << ")" << std::endl;
+
+			int close_index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_GeneratedTotalPaths.at(0), startPoint);
+
+			for(unsigned int i=close_index+1; i < m_GeneratedTotalPaths.at(0).size(); i++)
+			{
+				bool bFound = false;
+				for(unsigned int j=0; j< branches.size(); j++)
+				{
+					//if(wp != 0)sadasd
+					{
+						if(branches.at(j)->id == m_GeneratedTotalPaths.at(0).at(i).id)
+						{
+							currOptions = branches.at(j);
+							bFound = true;
+							break;
+						}
+					}
+				}
+				if(bFound)
+					break;
+			}
+
+			if(currOptions !=0 )
+			{
+				std::cout <<" Current Option : " ;
+				if(currOptions->actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
+					std::cout << "F,";
+				else if(currOptions->actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
+					std::cout << "L,";
+				else if(currOptions->actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
+					std::cout << "R,";
+				std::cout <<std::endl;
+
+				HMI_MSG currOpMsg;
+				currOpMsg.type = CURR_OPTION_MSG;
+				currOpMsg.options.clear();
+				currOpMsg.options.push_back(currOptions->actionCost.at(0).first);
+				m_SocketServer.SendMSG(currOpMsg);
+
+			}
+
 			m_SocketServer.SendMSG(msg);
 
 			double total_d = 0;

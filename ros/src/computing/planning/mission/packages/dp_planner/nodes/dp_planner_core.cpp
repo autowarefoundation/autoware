@@ -113,7 +113,7 @@ PlannerX::PlannerX()
 
 
 	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&PlannerX::callbackGetInitPose, 		this);
-	sub_current_pose 	= nh.subscribe("/current_pose", 			100,	&PlannerX::callbackGetCurrentPose, 		this);
+	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&PlannerX::callbackGetCurrentPose, 		this);
 	sub_cluster_cloud 	= nh.subscribe("/cloud_clusters",			1,		&PlannerX::callbackGetCloudClusters, 	this);
 	sub_bounding_boxs  	= nh.subscribe("/bounding_boxes",			1,		&PlannerX::callbackGetBoundingBoxes, 	this);
 #ifdef DATASET_GENERATION_BLOCK

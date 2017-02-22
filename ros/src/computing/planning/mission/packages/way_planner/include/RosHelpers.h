@@ -40,7 +40,7 @@
 namespace WayPlannerNS
 {
 
-enum MSG_TYPE{COMMAND_MSG = 0, CONFIRM_MSG = 1, OPTIONS_MSG = 2, UNKNOWN_MSG = 5};
+enum MSG_TYPE{COMMAND_MSG = 0, CONFIRM_MSG = 1, OPTIONS_MSG = 2, CURR_OPTION_MSG = 3, UNKNOWN_MSG = 5};
 
 class HMI_MSG
 {
@@ -72,6 +72,9 @@ public:
 				break;
 			case 2:
 				recieved_msg.type = OPTIONS_MSG;
+				break;
+			case 3:
+				recieved_msg.type = CURR_OPTION_MSG;
 				break;
 			default:
 				recieved_msg.type = UNKNOWN_MSG;
@@ -142,7 +145,7 @@ public:
 			waypoint_follower::LaneArray& laneArray);
 
 	static void FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose, const double& min_distance,
-			std::vector<PlannerHNS::WayPoint*>& branches);
+			std::vector<PlannerHNS::WayPoint*>& branches, PlannerHNS::WayPoint* currOptions);
 };
 
 }
