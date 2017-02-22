@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
     threshold_dist = 2.0;
   }
   ros::Subscriber cluster_centroids_sub =
-      n.subscribe("/cloud_cluster_class", 1, cluster_cb);
+      n.subscribe("/cloud_clusters_class", 1, cluster_cb);
   tracked_pub =
       n.advertise<lidar_tracker::DetectedObjectArray>("/detected_objects", 1);
   tracked_bba_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>(
