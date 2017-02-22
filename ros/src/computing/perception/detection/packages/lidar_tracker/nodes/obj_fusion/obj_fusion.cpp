@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
   obj_pose_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>(
       "obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   cluster_class_pub = n.advertise<lidar_tracker::CloudClusterArray>(
-      "/cloud_cluster_class", ADVERTISE_QUEUE_SIZE);
+      "/cloud_clusters_class", ADVERTISE_QUEUE_SIZE);
   obj_pose_timestamp_pub =
       n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
   ros::spin();
