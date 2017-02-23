@@ -70,11 +70,12 @@ subs :
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
+             prop  : 1
            topic_twist_stamped:
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
-           stat_topic : [ lf ]
+             prop  : 1
 
   - name : Detection
     desc : Detection desc sample
@@ -1261,7 +1262,7 @@ params :
     vars  :
     - name      : topic_pose_stamped
       desc      : topic_pose_stamped desc sample
-      label     : geometry_msgs/PoseStamped
+      label     : /current_pose (geometry_msgs/PoseStamped)
       kind      : str
       v         : /ndt_pose
       cmd_param :
@@ -1269,7 +1270,7 @@ params :
         delim   : ':='
     - name      : topic_twist_stamped
       desc      : topic_twist_stamped desc sample
-      label     : geometry_msgs/TwistStamped
+      label     : /current_velocity (geometry_msgs/TwistStamped)
       kind      : str
       v         : /estimate_twist
       cmd_param :
