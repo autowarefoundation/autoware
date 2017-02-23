@@ -521,7 +521,7 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
   		}
 
   		PlannerHNS::WayPoint* currOptions = 0;
-  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);
+  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, 0, branches, currOptions);
   		if(branches.size() > 0)
   		{
 			HMI_MSG msg;
@@ -567,14 +567,14 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 
 			if(currOptions !=0 )
 			{
-				std::cout <<" Current Option : " ;
-				if(currOptions->actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
-					std::cout << "F,";
-				else if(currOptions->actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
-					std::cout << "L,";
-				else if(currOptions->actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
-					std::cout << "R,";
-				std::cout <<std::endl;
+//				std::cout <<" Current Option : " ;
+//				if(currOptions->actionCost.at(0).first == PlannerHNS::FORWARD_ACTION)
+//					std::cout << "F,";
+//				else if(currOptions->actionCost.at(0).first == PlannerHNS::LEFT_TURN_ACTION)
+//					std::cout << "L,";
+//				else if(currOptions->actionCost.at(0).first == PlannerHNS::RIGHT_TURN_ACTION)
+//					std::cout << "R,";
+//				std::cout <<std::endl;
 
 //				HMI_MSG currOpMsg;
 //				currOpMsg.type = CURR_OPTION_MSG;
@@ -582,6 +582,7 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 //				currOpMsg.options.push_back(currOptions->actionCost.at(0).first);
 //				m_SocketServer.SendMSG(currOpMsg);
 				msg.current = currOptions->actionCost.at(0).first;
+				msg.currID = currOptions->laneId;
 
 			}
 

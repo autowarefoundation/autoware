@@ -477,7 +477,7 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
 void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose,const double& min_distance,
 			std::vector<PlannerHNS::WayPoint*>& branches, PlannerHNS::WayPoint* currOptions)
 {
-	static int detection_range = 20; // meter
+	static int detection_range = 30; // meter
 	if(globalPaths.size() > 0)
 	{
 		int close_index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(globalPaths.at(0), currPose);
