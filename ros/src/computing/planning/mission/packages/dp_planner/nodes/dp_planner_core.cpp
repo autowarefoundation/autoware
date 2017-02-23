@@ -824,6 +824,29 @@ void PlannerX::PlannerMainLoop()
 			visualization_msgs::MarkerArray detectedPolygons;
 			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, m_TrackedClusters, detectedPolygons);
 			pub_DetectedPolygonsRviz.publish(detectedPolygons);
+
+			if(m_TrackedClusters.size()>0)
+			{
+				jsk_recognition_msgs::BoundingBoxArray boxes_array;
+				jsk_recognition_msgs::BoundingBox box;
+				box.header.frame_id = "map";
+				box.header.stamp = ros::Time();
+				box.pose.position.x = m_TrackedClusters.at(0).center.pos.x;
+				box.pose.position.y = m_TrackedClusters.at(0).center.pos.y;
+				box.pose.position.z = m_TrackedClusters.at(0).center.pos.z;
+
+
+				box.value = 1;
+
+				//box.pose.orientation = detectedPolygons.markers.at(0)
+				box.dimensions.x = 2;
+				box.dimensions.y = 4;
+				box.dimensions.z = 1.5;
+				boxes_array.boxes.push_back(box);
+
+				pub_TrackedObstaclesRviz.publish(boxes_array);
+			}
+
 			visualization_msgs::Marker safety_box;
 			RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBox, safety_box);
 			pub_SafetyBorderRviz.publish(safety_box);
