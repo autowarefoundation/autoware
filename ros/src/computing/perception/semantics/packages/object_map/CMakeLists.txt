@@ -44,4 +44,5 @@ add_executable(points2costmap nodes/points2costmap/points2costmap.cpp)
 target_link_libraries(points2costmap ${catkin_LIBRARIES})
 
 add_executable(potential_field nodes/potential_field/potential_field.cpp)
+add_dependencies(potential_field lidar_tracker_generate_messages_cpp)
 target_link_libraries(potential_field ${catkin_LIBRARIES})
