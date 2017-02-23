@@ -443,8 +443,8 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	timespec t;
 	UtilityHNS::UtilityH::GetTickCount(t);
 	srand(t.tv_nsec);
-	double width = 0.25;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
-	double length = 0.25;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
+	double width = 1;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
+	double length = 0.5;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
 
 	geometry_msgs::PointStamped point;
 	point.point.x = msg->point.x+m_OriginPos.position.x;

@@ -47,11 +47,15 @@ class HMI_MSG
 public:
 	MSG_TYPE type;
 	std::vector<PlannerHNS::ACTION_TYPE> options;
+	PlannerHNS::ACTION_TYPE current;
+	int currID;
 	bool bErr;
 	std::string err_msg;
 	HMI_MSG()
 	{
+		currID = -1;
 		type = OPTIONS_MSG;
+		current = PlannerHNS::FORWARD_ACTION;
 		bErr = false;
 	}
 
@@ -59,7 +63,7 @@ public:
 	{
 		HMI_MSG recieved_msg;
 		std::vector<std::string> sections = SplitString(msg, ",");
-		if (sections.size() == 4)
+		if (sections.size() == 6)
 		{
 			int type_str = atoi(sections.at(0).c_str());
 			switch (type_str)
@@ -92,8 +96,8 @@ public:
 				else if (idirect == 4)
 					recieved_msg.options.push_back(PlannerHNS::RIGHT_TURN_ACTION);
 			}
-			recieved_msg.bErr = atoi(sections.at(2).c_str());
-			recieved_msg.err_msg = sections.at(3);
+			recieved_msg.bErr = atoi(sections.at(4).c_str());
+			recieved_msg.err_msg = sections.at(5);
 		}
 		return recieved_msg;
 	}

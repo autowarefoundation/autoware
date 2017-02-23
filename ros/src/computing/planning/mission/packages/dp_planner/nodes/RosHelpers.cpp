@@ -324,8 +324,8 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	lane_waypoint_marker.ns = "detected_polygons";
 	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = .05;
-	lane_waypoint_marker.scale.y = .05;
+	lane_waypoint_marker.scale.x = .1;
+	lane_waypoint_marker.scale.y = .1;
 	//lane_waypoint_marker.scale.z = .05;
 	lane_waypoint_marker.color.a = 0.8;
 	lane_waypoint_marker.frame_locked = false;
@@ -349,8 +349,8 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	quarters_marker.ns = "Quarters_Lines";
 	quarters_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	quarters_marker.action = visualization_msgs::Marker::ADD;
-	quarters_marker.scale.x = .03;
-	quarters_marker.scale.y = .03;
+	quarters_marker.scale.x = .1;
+	quarters_marker.scale.y = .1;
 	//quarters_marker.scale.z = .1;
 	quarters_marker.color.a = 0.8;
 	quarters_marker.color.r = 0.6;
@@ -366,8 +366,8 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	//velocity_marker.action = visualization_msgs::Marker::ADD;
 	//velocity_marker.scale.z = 0.2;
-	velocity_marker.scale.x = 0.2;
-	velocity_marker.scale.y = 0.2;
+	velocity_marker.scale.x = 0.5;
+	velocity_marker.scale.y = 0.5;
 	velocity_marker.color.a = 0.5;
 
 	velocity_marker.frame_locked = false;
@@ -400,7 +400,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 			  point.x = trackedObstacles.at(i).contour.at(p).x;
 			  point.y = trackedObstacles.at(i).contour.at(p).y;
-			  point.z = trackedObstacles.at(i).contour.at(p).z;
+			  point.z = trackedObstacles.at(i).contour.at(p).z+1;
 
 			  lane_waypoint_marker.points.push_back(point);
 
@@ -421,7 +421,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 		  point.x = trackedObstacles.at(i).contour.at(0).x;
 		  point.y = trackedObstacles.at(i).contour.at(0).y;
-		  point.z = trackedObstacles.at(i).contour.at(0).z;
+		  point.z = trackedObstacles.at(i).contour.at(0).z+1;
 
 		  lane_waypoint_marker.points.push_back(point);
 
@@ -432,7 +432,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 		point.x = trackedObstacles.at(i).center.pos.x;
 		point.y = trackedObstacles.at(i).center.pos.y;
-		point.z = trackedObstacles.at(i).center.pos.z;
+		point.z = trackedObstacles.at(i).center.pos.z+1;
 
 //		geometry_msgs::Point relative_p;
 		//relative_p.y = 0.5;
@@ -448,8 +448,8 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 			quarters_marker.points.push_back(point);
 			geometry_msgs::Point point2 = point;
 			double a_q = UtilityHNS::UtilityH::SplitPositiveAngle(trackedObstacles.at(i).center.pos.a+(iq*M_PI_4));
-			point2.x += 2.5*cos(a_q);
-			point2.y += 2.5*sin(a_q);
+			point2.x += 1.5*cos(a_q);
+			point2.y += 1.5*sin(a_q);
 			quarters_marker.points.push_back(point2);
 
 			quartersIds++;
