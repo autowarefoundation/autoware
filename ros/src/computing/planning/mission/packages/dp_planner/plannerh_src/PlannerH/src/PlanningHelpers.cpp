@@ -29,91 +29,128 @@ PlanningHelpers::~PlanningHelpers()
 {
 }
 
-bool PlanningHelpers::CompareTrajectories(const std::vector<WayPoint>& path1, const std::vector<WayPoint>& path2)
+bool PlanningHelpers::GetRelativeInfo(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex )
 {
-	if(path1.size() != path2.size())
-		return false;
+	if(trajectory.size() < 2) return false;
 
-	for(unsigned int i=0; i< path1.size(); i++)
+	WayPoint p0, p1;
+	if(trajectory.size()==2)
 	{
-		if(path1.at(i).v != path2.at(i).v || path1.at(i).pos.x != path2.at(i).pos.x || path1.at(i).pos.y != path2.at(i).pos.y || path1.at(i).pos.alt != path2.at(i).pos.alt || path1.at(i).pos.lon != path2.at(i).pos.lon)
-			return false;
+		p0 = trajectory.at(0);
+		p1 = WayPoint((trajectory.at(0).pos.x+trajectory.at(1).pos.x)/2.0,
+					  (trajectory.at(0).pos.y+trajectory.at(1).pos.y)/2.0,
+					  (trajectory.at(0).pos.z+trajectory.at(1).pos.z)/2.0, trajectory.at(0).pos.a);
+		info.iFront = 1;
+		info.iBack = 0;
 	}
+	else
+	{
+		info.iFront = GetClosestNextPointIndex(trajectory, p, prevIndex);
+
+		if(info.iFront > 0)
+			info.iBack = info.iFront -1;
+		else
+			info.iBack = 0;
+
+		if(info.iFront == 0)
+		{
+			p0 = trajectory.at(info.iFront);
+			p1 = trajectory.at(info.iFront+1);
+		}
+		else if(info.iFront > 0 && info.iFront < trajectory.size()-1)
+		{
+			p0 = trajectory.at(info.iFront-1);
+			p1 = trajectory.at(info.iFront);
+		}
+		else
+		{
+			p0 = trajectory.at(info.iFront-1);
+			p1 = WayPoint((p0.pos.x+trajectory.at(info.iFront).pos.x)/2.0, (p0.pos.y+trajectory.at(info.iFront).pos.y)/2.0, (p0.pos.z+trajectory.at(info.iFront).pos.z)/2.0, p0.pos.a);
+		}
+	}
+
+	WayPoint prevWP = p0;
+	Mat3 rotationMat(-p1.pos.a);
+	Mat3 translationMat(-p.pos.x, -p.pos.y);
+	Mat3 invRotationMat(p1.pos.a);
+	Mat3 invTranslationMat(p.pos.x, p.pos.y);
+
+	p0.pos = translationMat*p0.pos;
+	p0.pos = rotationMat*p0.pos;
+
+	p1.pos = translationMat*p1.pos;
+	p1.pos = rotationMat*p1.pos;
+
+	double m = (p1.pos.y-p0.pos.y)/(p1.pos.x-p0.pos.x);
+	info.perp_distance = p1.pos.y - m*p1.pos.x; // solve for x = 0
+
+	if(isnan(info.perp_distance) || isinf(info.perp_distance)) info.perp_distance = 0;
+
+	info.to_front_distance = fabs(p1.pos.x); // distance on the x axes
+
+
+	info.perp_point = p1;
+	info.perp_point.pos.x = 0; // on the same y axis of the car
+	info.perp_point.pos.y = info.perp_distance; //perp distance between the car and the trajectory
+
+	info.perp_point.pos = invRotationMat  * info.perp_point.pos;
+	info.perp_point.pos = invTranslationMat  * info.perp_point.pos;
+
+	info.from_back_distance = hypot(info.perp_point.pos.y - prevWP.pos.y, info.perp_point.pos.x - prevWP.pos.x);
 
 	return true;
 }
 
-double PlanningHelpers::GetDistanceToClosestStopLineAndCheck(const std::vector<WayPoint>& path, const WayPoint& p, int& stopLineID, int& stopSignID, int& trafficLightID, const int& prevIndex)
+WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance)
 {
+	WayPoint follow_point;
 
-	trafficLightID = stopSignID = stopLineID = -1;
+	if(trajectory.size()==0) return follow_point;
 
-	int pIndex = GetClosestNextPointIndex(path, p, prevIndex);
-	double localDistance = distance2points(p.pos, path.at(pIndex).pos);
-
-	for(unsigned int i=pIndex; i<path.size(); i++)
+	//condition 1, if far behind the first point on the trajectory
+	if(init_p.iBack == 0 && init_p.iBack == init_p.iFront && init_p.from_back_distance > distance)
 	{
-		if(i>0)
-			localDistance += distance2points(path.at(i-1).pos, path.at(i).pos);
-		if(path.at(i).stopLineID > 0)
+		follow_point = trajectory.at(init_p.iFront);
+		follow_point.pos.x = init_p.perp_point.pos.x + distance * cos(follow_point.pos.a);
+		follow_point.pos.y = init_p.perp_point.pos.y + distance * sin(follow_point.pos.a);
+	}
+	//condition 2, if far after the last point on the trajectory
+	else if(init_p.iFront == trajectory.size() -1)
+	{
+		follow_point = trajectory.at(init_p.iFront);
+		follow_point.pos.x = init_p.perp_point.pos.x + distance * cos(follow_point.pos.a);
+		follow_point.pos.y = init_p.perp_point.pos.y + distance * sin(follow_point.pos.a);
+	}
+	else
+	{
+		double d = init_p.to_front_distance;
+		int local_i = init_p.iFront;
+		while(local_i < trajectory.size()-1 && d < distance)
 		{
-			stopLineID = path.at(i).stopLineID;
-			if(path.at(i).pLane)
-			{
-				for(unsigned int j = 0; j < path.at(i).pLane->stopLines.size(); j++)
-				{
-					if(path.at(i).pLane->stopLines.at(j).id == stopLineID)
-					{
-						stopSignID = path.at(i).pLane->stopLines.at(j).stopSignID;
-						trafficLightID = path.at(i).pLane->stopLines.at(j).trafficLightID;
-					}
-				}
-			}
-			return localDistance;
+			local_i++;
+			d += hypot(trajectory.at(local_i).pos.y - trajectory.at(local_i-1).pos.y, trajectory.at(local_i).pos.x - trajectory.at(local_i-1).pos.x);
 		}
+
+		double d_part = distance - d;
+
+		follow_point = trajectory.at(local_i);
+		follow_point.pos.x = follow_point.pos.x + d_part * cos(follow_point.pos.a);
+		follow_point.pos.y = follow_point.pos.y + d_part * sin(follow_point.pos.a);
 	}
 
-	return -1;
-}
-
-int PlanningHelpers::GetClosestPointIndex(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
-{
-	if(trajectory.size() == 0)
-		return 0;
-
-	double d = 0, minD = 9999999999;
-	if(prevIndex < 0) return 0;
-
-	double min_index  = prevIndex;
-
-	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
-	{
-		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
-		//if((p.pLane == 0 || trajectory.at(i).pLane == p.pLane) && d < minD)
-		if(d < minD)
-		{
-			min_index = i;
-			minD = d;
-		}
-	}
-
-	return min_index;
+	return follow_point;
 }
 
 int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
 {
-	if(trajectory.size() == 0)
-		return 0;
+	if(trajectory.size() == 0 || prevIndex < 0) return 0;
 
 	double d = 0, minD = 9999999999;
-	if(prevIndex < 0) return 0;
-
-	double min_index  = prevIndex;
+	int min_index  = prevIndex;
 
 	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
 	{
 		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
-		//if((p.pLane == 0 || trajectory.at(i).pLane == p.pLane) && d < minD)
 		if(d < minD)
 		{
 			min_index = i;
@@ -130,11 +167,8 @@ int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory
 		double norm1 = pointNorm(v_1);
 		POINT2D v_2(next.x - curr.x,next.y - curr.y);
 		double norm2 = pointNorm(v_2);
-
 		double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
-
 		double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
-
 		if(a <= M_PI_2)
 			min_index = min_index+1;
 	}
@@ -142,86 +176,21 @@ int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory
 	return min_index;
 }
 
-int PlanningHelpers::GetClosestPointIndexWithDirection(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+int PlanningHelpers::GetClosestPointIndex(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
 {
-	if(trajectory.size() == 0)
-		return 0;
+	if(trajectory.size() == 0 || prevIndex < 0) return 0;
 
 	double d = 0, minD = 9999999999;
-	if(prevIndex < 0) return 0;
-
-	double min_index  = prevIndex;
+	int min_index  = prevIndex;
 
 	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
 	{
 		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
-		//if((p.pLane == 0 || trajectory.at(i).pLane == p.pLane) && d < minD)
 		if(d < minD)
 		{
 			min_index = i;
 			minD = d;
 		}
-	}
-
-//	double a  = 0;
-//	if(min_index >= trajectory.size())
-//	{
-//		WayPoint prevP = trajectory.at(min_index-1);
-//		a = angle2points(prevP, trajectory.at(min_index));
-//	}
-//	else
-//	{
-//
-//	}
-//
-//	double a_diff = UtilityH::AngleBetweenTwoAnglesPositive(a, p.pos.a);
-//	if(a <= M_PI_4)
-
-
-	return min_index;
-}
-
-int PlanningHelpers::GetClosestNextPointIndexWithDirection(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
-{
-	if(trajectory.size() == 0)
-		return 0;
-
-	double d = 0, minD = 9999999999;
-	if(prevIndex < 0) return 0;
-
-	double localPrevIndex = prevIndex;
-	if(localPrevIndex>0)
-		localPrevIndex = localPrevIndex - 1;
-
-	double min_index  = localPrevIndex;
-
-	for(unsigned int i=localPrevIndex; i< trajectory.size(); i++)
-	{
-		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
-		//if((p.pLane == 0 || trajectory.at(i).pLane == p.pLane) && d < minD)
-		if(d < minD)
-		{
-			min_index = i;
-			minD = d;
-		}
-	}
-
-	if(min_index < trajectory.size()-2)
-	{
-		GPSPoint curr, next;
-		curr = trajectory.at(min_index).pos;
-		next = trajectory.at(min_index+1).pos;
-		POINT2D v_1(p.pos.x - curr.x   ,p.pos.y - curr.y);
-		double norm1 = pointNorm(v_1);
-		POINT2D v_2(next.x - curr.x,next.y - curr.y);
-		double norm2 = pointNorm(v_2);
-
-		double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
-
-		double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
-
-		if(a <= M_PI_2)
-			min_index = min_index+1;
 	}
 
 	return min_index;
@@ -229,12 +198,9 @@ int PlanningHelpers::GetClosestNextPointIndexWithDirection(const vector<WayPoint
 
 WayPoint PlanningHelpers::GetPerpendicularOnTrajectory(const vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex )
 {
-
-	if(trajectory.size() < 2)
-		return p;
+	if(trajectory.size() < 2) return p;
 
 	WayPoint p0, p1, p2, perp;
-
 	if(trajectory.size()==2)
 	{
 		p0 = trajectory.at(0);
@@ -269,9 +235,9 @@ WayPoint PlanningHelpers::GetPerpendicularOnTrajectory(const vector<WayPoint>& t
 		}
 	}
 
-	Mat3 rotationMat(-p.pos.a);
+	Mat3 rotationMat(-p1.pos.a);
 	Mat3 translationMat(-p.pos.x, -p.pos.y);
-	Mat3 invRotationMat(p.pos.a);
+	Mat3 invRotationMat(p1.pos.a);
 	Mat3 invTranslationMat(p.pos.x, p.pos.y);
 
 	p0.pos = translationMat*p0.pos;
@@ -295,30 +261,6 @@ WayPoint PlanningHelpers::GetPerpendicularOnTrajectory(const vector<WayPoint>& t
 	perp.pos = invTranslationMat  * perp.pos;
 
 	return perp;
-}
-
-double PlanningHelpers::GetPerpDistanceToVectorSimple(const WayPoint& point1, const WayPoint& point2, const WayPoint& pose)
-{
-	WayPoint p1 = point1, p2 = point2;
-	Mat3 rotationMat(-p1.pos.a);
-	Mat3 translationMat(-pose.pos.x, -pose.pos.y);
-
-	p1.pos = translationMat*p1.pos;
-	p1.pos = rotationMat*p1.pos;
-
-	p2.pos = translationMat*p2.pos;
-	p2.pos = rotationMat*p2.pos;
-
-	double m = (p2.pos.y-p1.pos.y)/(p2.pos.x-p1.pos.x);
-	double d = p2.pos.y - m*p2.pos.x;
-
-	if(isnan(d) || isinf(d))
-	{
-	  //assert(false);
-	  d = 0;
-	}
-
-	return d;
 }
 
 double PlanningHelpers::GetPerpDistanceToTrajectorySimple(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex)
@@ -386,6 +328,79 @@ double PlanningHelpers::GetPerpDistanceToTrajectorySimple(const vector<WayPoint>
 
 	return d;
 }
+
+bool PlanningHelpers::CompareTrajectories(const std::vector<WayPoint>& path1, const std::vector<WayPoint>& path2)
+{
+	if(path1.size() != path2.size())
+		return false;
+
+	for(unsigned int i=0; i< path1.size(); i++)
+	{
+		if(path1.at(i).v != path2.at(i).v || path1.at(i).pos.x != path2.at(i).pos.x || path1.at(i).pos.y != path2.at(i).pos.y || path1.at(i).pos.alt != path2.at(i).pos.alt || path1.at(i).pos.lon != path2.at(i).pos.lon)
+			return false;
+	}
+
+	return true;
+}
+
+double PlanningHelpers::GetDistanceToClosestStopLineAndCheck(const std::vector<WayPoint>& path, const WayPoint& p, int& stopLineID, int& stopSignID, int& trafficLightID, const int& prevIndex)
+{
+
+	trafficLightID = stopSignID = stopLineID = -1;
+
+	int pIndex = GetClosestNextPointIndex(path, p, prevIndex);
+	double localDistance = distance2points(p.pos, path.at(pIndex).pos);
+
+	for(unsigned int i=pIndex; i<path.size(); i++)
+	{
+		if(i>0)
+			localDistance += distance2points(path.at(i-1).pos, path.at(i).pos);
+		if(path.at(i).stopLineID > 0)
+		{
+			stopLineID = path.at(i).stopLineID;
+			if(path.at(i).pLane)
+			{
+				for(unsigned int j = 0; j < path.at(i).pLane->stopLines.size(); j++)
+				{
+					if(path.at(i).pLane->stopLines.at(j).id == stopLineID)
+					{
+						stopSignID = path.at(i).pLane->stopLines.at(j).stopSignID;
+						trafficLightID = path.at(i).pLane->stopLines.at(j).trafficLightID;
+					}
+				}
+			}
+			return localDistance;
+		}
+	}
+
+	return -1;
+}
+
+double PlanningHelpers::GetPerpDistanceToVectorSimple(const WayPoint& point1, const WayPoint& point2, const WayPoint& pose)
+{
+	WayPoint p1 = point1, p2 = point2;
+	Mat3 rotationMat(-p1.pos.a);
+	Mat3 translationMat(-pose.pos.x, -pose.pos.y);
+
+	p1.pos = translationMat*p1.pos;
+	p1.pos = rotationMat*p1.pos;
+
+	p2.pos = translationMat*p2.pos;
+	p2.pos = rotationMat*p2.pos;
+
+	double m = (p2.pos.y-p1.pos.y)/(p2.pos.x-p1.pos.x);
+	double d = p2.pos.y - m*p2.pos.x;
+
+	if(isnan(d) || isinf(d))
+	{
+	  //assert(false);
+	  d = 0;
+	}
+
+	return d;
+}
+
+
 
 WayPoint PlanningHelpers::GetNextPointOnTrajectory(const vector<WayPoint>& trajectory, const double& distance, const int& currIndex)
 {

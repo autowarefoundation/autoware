@@ -73,6 +73,30 @@ std::vector<GPSPoint> PolygonGenerator::EstimateClusterPolygon(const pcl::PointC
 		}
 	}
 
+	//Fix Resolution:
+	bool bChange = true;
+	while (bChange && polygon.size()>1)
+	{
+		bChange = false;
+		GPSPoint p1 =  polygon.at(polygon.size()-1);
+		for(unsigned int i=0; i< polygon.size(); i++)
+		{
+			GPSPoint p2 = polygon.at(i);
+			double d = hypot(p2.y- p1.y, p2.x - p1.x);
+			if(d > MIN_DISTANCE_BETWEEN_CORNERS)
+			{
+				GPSPoint center_p = p1;
+				center_p.x = (p2.x + p1.x)/2.0;
+				center_p.y = (p2.y + p1.y)/2.0;
+				polygon.insert(polygon.begin()+i, center_p);
+				bChange = true;
+				break;
+			}
+
+			p1 = p2;
+		}
+	}
+
 	return polygon;
 
 }

@@ -107,6 +107,7 @@ PlannerX::PlannerX()
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1, true);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
+	pub_TestLineRviz	= nh.advertise<visualization_msgs::MarkerArray>("testing_line", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
 	pub_SafetyBorderRviz  = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
 	pub_cluster_cloud = nh.advertise<sensor_msgs::PointCloud2>("simu_points_cluster",1);
@@ -439,31 +440,91 @@ void PlannerX::callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampe
 
 void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg)
 {
-	//Add Simulated Obstacle polygon
-	timespec t;
-	UtilityHNS::UtilityH::GetTickCount(t);
-	srand(t.tv_nsec);
-	double width = 1;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
-	double length = 0.5;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
+//	//Add Simulated Obstacle polygon
+//	timespec t;
+//	UtilityHNS::UtilityH::GetTickCount(t);
+//	srand(t.tv_nsec);
+//	double width = SIMU_OBSTACLE_WIDTH;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
+//	double length = SIMU_OBSTACLE_LENGTH;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
+//
+//	geometry_msgs::PointStamped point;
+//	point.point.x = msg->point.x+m_OriginPos.position.x;
+//	point.point.y = msg->point.y+m_OriginPos.position.y;
+//	point.point.z = msg->point.z+m_OriginPos.position.z;
+//
+//	lidar_tracker::CloudClusterArray clusters_array;
+//	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 50, point));
+//	m_OriginalClusters.clear();
+//	int nNum1, nNum2;
+//	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
+//	m_TrackedClusters = m_OriginalClusters;
+//
+//	pcl::PointCloud<pcl::PointXYZ> point_cloud;
+//	pcl::fromROSMsg(clusters_array.clusters.at(0).cloud, point_cloud);
+//	sensor_msgs::PointCloud2 cloud_msg;
+//	pcl::toROSMsg(point_cloud, cloud_msg);
+//	cloud_msg.header.frame_id = "map";
+//	pub_cluster_cloud.publish(cloud_msg);
+//
+//	if(m_TrackedClusters.size()>0)
+//	{
+//		jsk_recognition_msgs::BoundingBoxArray boxes_array;
+//		boxes_array.header.frame_id = "map";
+//		boxes_array.header.stamp  = ros::Time();
+//		jsk_recognition_msgs::BoundingBox box;
+//		box.header.frame_id = "map";
+//		box.header.stamp = ros::Time();
+//		box.pose.position.x = m_TrackedClusters.at(0).center.pos.x;
+//		box.pose.position.y = m_TrackedClusters.at(0).center.pos.y;
+//		box.pose.position.z = m_TrackedClusters.at(0).center.pos.z;
+//
+//		box.value = 0.9;
+//
+//		//box.pose.orientation = detectedPolygons.markers.at(0)
+//		box.dimensions.x = SIMU_OBSTACLE_WIDTH;
+//		box.dimensions.y = SIMU_OBSTACLE_LENGTH;
+//		box.dimensions.z = SIMU_OBSTACLE_HEIGHT;
+//		boxes_array.boxes.push_back(box);
+//
+//		pub_TrackedObstaclesRviz.publish(boxes_array);
+//	}
 
-	geometry_msgs::PointStamped point;
-	point.point.x = msg->point.x+m_OriginPos.position.x;
-	point.point.y = msg->point.y+m_OriginPos.position.y;
-	point.point.z = msg->point.z+m_OriginPos.position.z;
+	if(m_LocalPlanner.m_TotalPath.size() > 0)
+	{
+		vector<PlannerHNS::WayPoint> line;
+		PlannerHNS::WayPoint p1(msg->point.x+m_OriginPos.position.x, msg->point.y+m_OriginPos.position.y, msg->point.z+m_OriginPos.position.z, 0);
 
-	lidar_tracker::CloudClusterArray clusters_array;
-	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 50, point));
-	m_OriginalClusters.clear();
-	int nNum1, nNum2;
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
-	m_TrackedClusters = m_OriginalClusters;
+		//int index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_LocalPlanner.m_TotalPath.at(0), p1);
+//		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index);
+//		if(index > 0)
+//			p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index-1);
+//
+//
+//		double distance = 0;
+//		PlannerHNS::WayPoint p2 = PlannerHNS::PlanningHelpers::GetPerpendicularOnTrajectory(m_LocalPlanner.m_TotalPath.at(0), p1, distance);
+//
+//		double perpDistance = PlannerHNS::PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_LocalPlanner.m_TotalPath.at(0), p1);
+//
+//		double back_distance = hypot(p2.pos.y - p_prev.pos.y, p2.pos.x - p_prev.pos.x);
+//		double direct_distance = hypot(p2.pos.y - p1.pos.y, p2.pos.x - p1.pos.x);
 
-	pcl::PointCloud<pcl::PointXYZ> point_cloud;
-	pcl::fromROSMsg(clusters_array.clusters.at(0).cloud, point_cloud);
-	sensor_msgs::PointCloud2 cloud_msg;
-	pcl::toROSMsg(point_cloud, cloud_msg);
-	cloud_msg.header.frame_id = "map";
-	pub_cluster_cloud.publish(cloud_msg);
+
+		PlannerHNS::RelativeInfo info;
+		bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_TotalPath.at(0), p1, info);
+		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(info.iBack);
+
+		std::cout << "Perp D: " << info.perp_distance << ", F D: "<< info.to_front_distance << ", B D: " << info.from_back_distance << ", F Index: "<< info.iFront << ", B Index: " << info.iBack << ", Size: "<< m_LocalPlanner.m_TotalPath.at(0).size() << std::endl;
+
+		line.push_back(p1);
+		line.push_back(info.perp_point);
+		line.push_back(p_prev);
+
+		std::vector<std::vector<PlannerHNS::WayPoint> > lines;
+		lines.push_back(line);
+		visualization_msgs::MarkerArray line_vis;
+		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(lines, line_vis);
+		pub_TestLineRviz.publish(line_vis);
+	}
 }
 
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -824,28 +885,6 @@ void PlannerX::PlannerMainLoop()
 			visualization_msgs::MarkerArray detectedPolygons;
 			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, m_TrackedClusters, detectedPolygons);
 			pub_DetectedPolygonsRviz.publish(detectedPolygons);
-
-			if(m_TrackedClusters.size()>0)
-			{
-				jsk_recognition_msgs::BoundingBoxArray boxes_array;
-				jsk_recognition_msgs::BoundingBox box;
-				box.header.frame_id = "map";
-				box.header.stamp = ros::Time();
-				box.pose.position.x = m_TrackedClusters.at(0).center.pos.x;
-				box.pose.position.y = m_TrackedClusters.at(0).center.pos.y;
-				box.pose.position.z = m_TrackedClusters.at(0).center.pos.z;
-
-
-				box.value = 1;
-
-				//box.pose.orientation = detectedPolygons.markers.at(0)
-				box.dimensions.x = 2;
-				box.dimensions.y = 4;
-				box.dimensions.z = 1.5;
-				boxes_array.boxes.push_back(box);
-
-				pub_TrackedObstaclesRviz.publish(boxes_array);
-			}
 
 			visualization_msgs::Marker safety_box;
 			RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBox, safety_box);

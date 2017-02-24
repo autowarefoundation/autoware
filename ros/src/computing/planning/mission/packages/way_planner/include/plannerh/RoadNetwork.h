@@ -422,6 +422,26 @@ public:
 	}
 };
 
+class RelativeInfo
+{
+public:
+	double perp_distance;
+	double to_front_distance; //negative
+	double from_back_distance; //
+	int iFront;
+	int iBack;
+	WayPoint perp_point;
+
+	RelativeInfo()
+	{
+		perp_distance = 0;
+		to_front_distance = 0;
+		from_back_distance = 0;
+		iFront = 0;
+		iBack = 0;
+	}
+};
+
 class StopLine
 {
 public:

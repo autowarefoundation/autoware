@@ -686,6 +686,9 @@ void MainWindowWrapper::MouseCommand(int button, int state, int x, int y)
 			m_DisplayParam.zoom = m_DisplayParam.prespective_z/10.0;
 	}
 
+	if(m_DrawAndControl)
+		m_DrawAndControl->OnLeftClick(x,y);
+
 }
 
 void MainWindowWrapper::KeyboardExitCommand(unsigned char key, int x, int y)

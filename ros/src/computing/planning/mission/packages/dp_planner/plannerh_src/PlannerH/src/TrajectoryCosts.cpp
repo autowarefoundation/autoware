@@ -87,7 +87,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 		bestTrajectory.index = smallestIndex;
 	}
 
-	cout << "Blockage Test: " << smallestIndex << ", currentTrajIndex: " << currTrajectoryIndex << ", Trajectory Cost Size: " << m_TrajectoryCosts.size() << ", Best Block: " << bestTrajectory.bBlocked <<", Best Index: " << bestTrajectory.index<< ", D: " << bestTrajectory.closest_obj_distance << endl;
+//	cout << "Blockage Test: " << smallestIndex << ", currentTrajIndex: " << currTrajectoryIndex << ", Trajectory Cost Size: " << m_TrajectoryCosts.size() << ", Best Block: " << bestTrajectory.bBlocked <<", Best Index: " << bestTrajectory.index<< ", D: " << bestTrajectory.closest_obj_distance << endl;
 
 	return bestTrajectory;
 }

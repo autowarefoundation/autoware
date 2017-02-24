@@ -20,7 +20,7 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMap "/home/user/data/ToyotaCity2/map/vector_map/"
+#define VectorMap "/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
 #define kmlMapPath	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/kml/ToyotaCityCustomInfo.kml"
@@ -66,7 +66,7 @@ PlannerTestDraw::PlannerTestDraw()
 
 //	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/path1016_3.csv", 105, 1.5, trafficLights, stopLines);
 
-//	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMap, m_RoadMap);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(VectorMap, m_RoadMap);
 //	string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
 //	PlannerHNS::MappingHelpers::WriteKML("/home/user/data/Moriyama2/map/kml/Moriyama_Test.kml",kml_templateFilePath , roadMap);
 
@@ -74,7 +74,7 @@ PlannerTestDraw::PlannerTestDraw()
 	//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+ "ToyotaCityCustomInfo.kml";
 	//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
-	PlannerHNS::MappingHelpers::LoadKML(kmlMapPath, m_RoadMap);
+	//PlannerHNS::MappingHelpers::LoadKML(kmlMapPath, m_RoadMap);
 
 	//stop line : 554.318849669619908,183.992441420792119,31.8523999999999994
 	//Traffic Light : 552.116878887182907,187.472750477604876,27.5702239999999996
@@ -1305,7 +1305,20 @@ void PlannerTestDraw::DrawInfo(const int& centerX, const int& centerY, const int
 }
 
 void PlannerTestDraw::OnLeftClick(const double& x, const double& y)
-{}
+{
+//	if(m_LocalPlanner.m_TotalPath.size() > 0)
+//	{
+//		PlannerHNS::WayPoint wp1(x,y,0,0);
+//		int index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_LocalPlanner.m_TotalPath.at(0), wp1);
+//		PlannerHNS::WayPoint wp2 = m_LocalPlanner.m_TotalPath.at(0).at(index);
+//		vector<PlannerHNS::WayPoint> line;
+//		line.push_back(wp1);
+//		line.push_back(wp2);
+//		float color[3] = {0.99, 0.0, 0.0};
+//		DrawingHelpers::DrawWidePath(line,0.1,1, color);
+//	}
+
+}
 
 void PlannerTestDraw::OnRightClick(const double& x, const double& y)
 {}

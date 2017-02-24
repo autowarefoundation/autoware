@@ -284,8 +284,8 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	std_msgs::ColorRGBA roll_color, total_color, curr_color;
 	lane_waypoint_marker.points.clear();
 	lane_waypoint_marker.id = 1;
-	lane_waypoint_marker.scale.x = 0.35;
-	lane_waypoint_marker.scale.y = 0.35;
+	lane_waypoint_marker.scale.x = 0.1;
+	lane_waypoint_marker.scale.y = 0.1;
 	total_color.r = 1;
 	total_color.g = 0;
 	total_color.b = 0;
@@ -400,7 +400,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 
 			  point.x = trackedObstacles.at(i).contour.at(p).x;
 			  point.y = trackedObstacles.at(i).contour.at(p).y;
-			  point.z = trackedObstacles.at(i).contour.at(p).z+1;
+			  point.z = trackedObstacles.at(i).contour.at(p).z;
 
 			  lane_waypoint_marker.points.push_back(point);
 
@@ -527,9 +527,9 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 	behaviorMarker.header.stamp = ros::Time();
 	behaviorMarker.ns = "detected_polygons_velocity";
 	behaviorMarker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-	behaviorMarker.scale.z = 1.3;
-	behaviorMarker.scale.x = 1.3;
-	behaviorMarker.scale.y = 1.3;
+	behaviorMarker.scale.z = 1.0;
+	behaviorMarker.scale.x = 1.0;
+	behaviorMarker.scale.y = 1.0;
 	behaviorMarker.color.a = 0.9;
 	behaviorMarker.frame_locked = false;
 	if(bGreenLight)

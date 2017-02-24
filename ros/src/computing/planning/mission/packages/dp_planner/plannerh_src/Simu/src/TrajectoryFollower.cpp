@@ -108,21 +108,28 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 	if(follow_distance < m_Params.minPursuiteDistance)
 		follow_distance = m_Params.minPursuiteDistance;
 
-	int iWayPoint =  PlanningHelpers::GetClosestNextPointIndex(path, state);
-	m_iCalculatedIndex = iWayPoint;
+//	int iWayPoint =  PlanningHelpers::GetClosestNextPointIndex(path, state);
+//	m_iCalculatedIndex = iWayPoint;
+//
+//
+//	if(m_iPrevWayPoint >=0  && m_iPrevWayPoint < path.size() && iWayPoint < m_iPrevWayPoint)
+//		iWayPoint = m_iPrevWayPoint;
+//
+//	m_iPrevWayPoint = iWayPoint;
+//
+//	double distance_to_perp = 0;
+//	prep = PlanningHelpers::GetPerpendicularOnTrajectory(path, state, distance_to_perp, iWayPoint);
+//	//m_LateralError = MathUtil::Distance(m_PerpendicularPoint.p, state.p);
+//	lateral_err = PlanningHelpers::GetPerpDistanceToTrajectorySimple(path, state, iWayPoint );
+//	//m_LateralError = CalculateLateralDistanceToCurve(m_Path, state, m_iNextWayPoint);
+//	pursuite_point = PlanningHelpers::GetNextPointOnTrajectory(path, follow_distance - distance_to_perp, iWayPoint);
 
-
-	if(m_iPrevWayPoint >=0  && m_iPrevWayPoint < path.size() && iWayPoint < m_iPrevWayPoint)
-		iWayPoint = m_iPrevWayPoint;
-
-	m_iPrevWayPoint = iWayPoint;
-
-	double distance_to_perp = 0;
-	prep = PlanningHelpers::GetPerpendicularOnTrajectory(path, state, distance_to_perp, iWayPoint);
-	//m_LateralError = MathUtil::Distance(m_PerpendicularPoint.p, state.p);
-	lateral_err = PlanningHelpers::GetPerpDistanceToTrajectorySimple(path, state, iWayPoint );
-	//m_LateralError = CalculateLateralDistanceToCurve(m_Path, state, m_iNextWayPoint);
-	pursuite_point = PlanningHelpers::GetNextPointOnTrajectory(path, follow_distance - distance_to_perp, iWayPoint);
+	RelativeInfo info;
+	PlanningHelpers::GetRelativeInfo(path, state, info);
+	pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(path, info, follow_distance);
+	prep = info.perp_point;
+	lateral_err = info.perp_distance;
+	m_iPrevWayPoint = info.iFront;
 
 
 	double d_critical = (-velocity*velocity)/2.0*m_VehicleInfo.max_deceleration;

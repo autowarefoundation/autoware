@@ -553,7 +553,9 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 
  bool LocalPlannerH::NoWayTest(const double& min_distance)
  {
-	 m_iGlobalPathPrevID = PlanningHelpers::GetClosestNextPointIndexWithDirection(m_TotalPath.at(m_iCurrentTotalPathId), state, m_iGlobalPathPrevID);
+	 if(m_TotalPath.size()==0) return false;
+
+	 m_iGlobalPathPrevID = PlanningHelpers::GetClosestNextPointIndex(m_TotalPath.at(m_iCurrentTotalPathId), state, m_iGlobalPathPrevID);
 
 	 double d = 0;
 	 for(unsigned int i = m_iGlobalPathPrevID; i < m_TotalPath.at(m_iCurrentTotalPathId).size()-1; i++)

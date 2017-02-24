@@ -23,6 +23,7 @@ using namespace PlannerHNS;
 
 #define QUARTERS_NUMBER 8
 #define MIN_POINTS_PER_QUARTER 1
+#define MIN_DISTANCE_BETWEEN_CORNERS 0.5
 
 class QuarterView
 {

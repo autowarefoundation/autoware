@@ -28,16 +28,57 @@ public:
 	PlanningHelpers();
 	virtual ~PlanningHelpers();
 
+	/**
+	 * @brief Find all relative information from the point p to the trajectory such as (perpendicular distance , closest next point , closest back point, distance from perpendicular intersection point to next point, distance from perpendicular intersection point to previous point)
+	 * @param trajectory list of waypoints
+	 * @param p query point
+	 * @param info collection of calculated information
+	 * @param prevIndex initial search index
+	 * @return true if success without errors, false otherwise
+	 */
+	static bool GetRelativeInfo(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex = 0);
 
+	/**
+	 * @brief Find point on the trajectory after initial relative point with specific distance
+	 * @param trajectory list of waypoints
+	 * @param init_p initial relative point on trajectory
+	 * @param distance distance from initial relative point to follow point
+	 * @return point on trajectory
+	 */
+	static WayPoint GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance);
+
+	/**
+	 * @brief Find the closest next point on the trajectory index
+	 * @param trajectory list of waypoints
+	 * @param p query point
+	 * @param prevIndex initial search index
+	 * @return index of the closest next point from trajectory
+	 */
 	static int GetClosestNextPointIndex(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+
+	/**
+	 * @brief Find the closes point on trajectory (either next or previous, direction doesn't matter )
+	 * @param trajectory list of waypoints
+	 * @param p query point
+	 * @param prevIndex initial search index
+	 * @return index of the closest point from trajectory
+	 */
 	static int GetClosestPointIndex(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
 
-	static int GetClosestNextPointIndexWithDirection(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
-	static int GetClosestPointIndexWithDirection(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
-
+	/**
+	 * @brief Find the Perpendicular Point on trajectory
+	 * @param trajectory list of waypoints
+	 * @param p query point
+	 * @param distance Distance from perpendicular point to previous closest point on the trajectory
+	 * @param prevIndex initial search index
+	 * @return perpendicular point on trajectory
+	 */
 	static WayPoint GetPerpendicularOnTrajectory(const std::vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex = 0);
+
 	static double GetPerpDistanceToTrajectorySimple(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+
 	static double GetPerpDistanceToVectorSimple(const WayPoint& p1, const WayPoint& p2, const WayPoint& pose);
+
 	static WayPoint GetNextPointOnTrajectory(const std::vector<WayPoint>& trajectory, const double& distance, const int& currIndex = 0);
 
 	static void FixPathDensity(std::vector<WayPoint>& path, const double& distanceDensity);

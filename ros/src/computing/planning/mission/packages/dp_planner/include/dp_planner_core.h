@@ -73,6 +73,9 @@ namespace PlannerXNS
 {
 
 #define _DATASET_GENERATION_BLOCK
+#define SIMU_OBSTACLE_WIDTH 0.8
+#define SIMU_OBSTACLE_HEIGHT 1
+#define SIMU_OBSTACLE_LENGTH 1.5
 
 enum SIGNAL_TYPE{SIMULATION_SIGNAL, ROBOT_SIGNAL};
 enum MAP_SOURCE_TYPE{MAP_AUTOWARE, MAP_FOLDER, MAP_KML_FILE};
@@ -165,6 +168,7 @@ protected:
 	ros::Publisher pub_DetectedPolygonsRviz;
 	ros::Publisher pub_TrackedObstaclesRviz;
 	ros::Publisher pub_LocalTrajectoriesRviz;
+	ros::Publisher pub_TestLineRviz;
 	ros::Publisher pub_BehaviorStateRviz;
 	ros::Publisher pub_SafetyBorderRviz;
 	ros::Publisher pub_cluster_cloud;

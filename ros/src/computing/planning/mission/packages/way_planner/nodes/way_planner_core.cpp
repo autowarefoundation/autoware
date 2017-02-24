@@ -107,7 +107,7 @@ way_planner_core::way_planner_core()
 #endif
 
 #ifdef ENABLE_HMI
-	m_AvgResponseTime = 3.5;
+	m_AvgResponseTime = 0;
 	m_SocketServer.InitSocket(10001, 10002);
 
 #endif
@@ -392,7 +392,7 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	total_color.r = 0;
 	total_color.g = 0.7;
 	total_color.b = 1.0;
-	total_color.a = 0.4;
+	total_color.a = 0.9;
 	RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
 
 	RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
@@ -521,7 +521,7 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
   		}
 
   		PlannerHNS::WayPoint* currOptions = 0;
-  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, 0, branches, currOptions);
+  		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);
   		if(branches.size() > 0)
   		{
 			HMI_MSG msg;
