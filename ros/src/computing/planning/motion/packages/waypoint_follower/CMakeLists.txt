@@ -24,11 +24,13 @@ add_message_files(
   waypoint.msg
   dtlane.msg
   LaneArray.msg
+  ControlCommand.msg
+  ControlCommandStamped.msg
 )
 
 generate_messages(
   DEPENDENCIES
-  std_msgs 
+  std_msgs
   geometry_msgs
 )
 
@@ -39,7 +41,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES libwaypoint_follower
   CATKIN_DEPENDS roscpp std_msgs tf runtime_manager vehicle_socket message_runtime geometry_msgs
-  DEPENDS gnss
+ # DEPENDS
 )
 
 ###########
@@ -57,7 +59,12 @@ add_library(libwaypoint_follower lib/libwaypoint_follower.cpp)
 add_dependencies(libwaypoint_follower
 waypoint_follower_generate_messages_cpp)
 
-add_executable(pure_pursuit nodes/pure_pursuit/pure_pursuit.cpp nodes/pure_pursuit/pure_pursuit_core.cpp nodes/pure_pursuit/pure_pursuit_viz.cpp)
+add_executable(pure_pursuit
+  nodes/pure_pursuit/pure_pursuit_node.cpp
+  nodes/pure_pursuit/pure_pursuit.cpp
+  nodes/pure_pursuit/pure_pursuit_core.cpp
+  nodes/pure_pursuit/pure_pursuit_viz.cpp
+  )
 target_link_libraries(pure_pursuit libwaypoint_follower ${catkin_LIBRARIES})
 add_dependencies(pure_pursuit 
 waypoint_follower_generate_messages_cpp

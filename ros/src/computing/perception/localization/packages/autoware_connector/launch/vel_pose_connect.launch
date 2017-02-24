@@ -1,0 +1,20 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="topic_pose_stamped" default="" />
+  <arg name="topic_twist_stamped" default="" />
+  <arg name="sim_mode" default="false" />
+
+  <group unless="$(arg sim_mode)">
+    <node pkg="autoware_connector" type="can_info_translator" name="can_info_translator" output="screen" />
+    <node pkg="topic_tools" type="relay" name="pose_relay" output="screen" args="$(arg topic_pose_stamped) /current_pose"/>
+    <node pkg="topic_tools" type="relay" name="vel_relay" output="screen" args="$(arg topic_twist_stamped) /current_velocity"/>
+  </group>
+
+  <group if="$(arg sim_mode)">
+    <node pkg="topic_tools" type="relay" name="pose_relay" output="screen" args="/sim_pose /current_pose"/>
+    <node pkg="topic_tools" type="relay" name="vel_relay" output="screen" args="/sim_velocity /current_velocity"/>
+  </group>
+
+</launch>

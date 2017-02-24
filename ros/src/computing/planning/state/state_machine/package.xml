@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>state_machine</name>
+  <version>0.0.0</version>
+  <description>The state_machine package</description>
+  <maintainer email="h_ohta@ertl.jp">Hiroki OHTA</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <depend>roscpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>runtime_manager</depend>
+
+  <export>
+  </export>
+</package>

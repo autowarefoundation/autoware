@@ -163,6 +163,14 @@ TARGET_LINK_LIBRARIES(kf_track
   kf
 )
 
+## dummy_tracker ##
+ADD_EXECUTABLE(dummy_track
+  nodes/dummy_track/dummy_track.cpp
+)
+TARGET_LINK_LIBRARIES(dummy_track
+  ${catkin_LIBRARIES}
+)
+
 ## obj_reproj ##
 ADD_EXECUTABLE(obj_reproj
   nodes/obj_reproj/obj_reproj.cpp
@@ -217,7 +225,7 @@ ADD_DEPENDENCIES(klt_track
 ############# RCNN#############
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
-##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	 	### 
+##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	 	###
 set(RCNN_CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")
 ####################################################################################################
 
