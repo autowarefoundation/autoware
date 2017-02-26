@@ -9,7 +9,12 @@
 
 Cluster::Cluster()
 {
+	valid_cluster_ = true;
+}
 
+geometry_msgs::PolygonStamped Cluster::GetPolygon()
+{
+	return polygon_;
 }
 
 jsk_recognition_msgs::BoundingBox Cluster::GetBoundingBox()
@@ -92,6 +97,8 @@ void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudC
 	out_cluster_message.dimensions = this->GetBoundingBox().dimensions;
 
 	out_cluster_message.bounding_box = this->GetBoundingBox();
+
+	out_cluster_message.convex_hull = this->GetPolygon();
 
 	Eigen::Vector3f eigen_values = this->GetEigenValues();
 	out_cluster_message.eigen_values.x = eigen_values.x();
@@ -182,22 +189,65 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 	//pose estimation
 	double rz = 0;
 
-	if (in_estimate_pose)
 	{
-		//pose estimation for the cluster
-		//test using linear regression
-		//Slope(b) = (NΣXY - (ΣX)(ΣY)) / (NΣX2 - (ΣX)2)
-		float sum_x=0, sum_y=0, sum_xy=0, sum_xx=0;
+		std::vector<cv::Point2f> points;
 		for (unsigned int i=0; i<current_cluster->points.size(); i++)
 		{
-			sum_x+= current_cluster->points[i].x;
-			sum_y+= current_cluster->points[i].y;
-			sum_xy+= current_cluster->points[i].x*current_cluster->points[i].y;
-			sum_xx+= current_cluster->points[i].x*current_cluster->points[i].x;
+			cv::Point2f pt;
+			pt.x = current_cluster->points[i].x;
+			pt.y = current_cluster->points[i].y;
+			points.push_back(pt);
 		}
-		double slope= (current_cluster->points.size()*sum_xy - (sum_x*sum_y))/(current_cluster->points.size()*sum_xx - sum_x*sum_x);
 
-		rz = atan(-slope);
+		if (in_estimate_pose)
+		{
+			//pose estimation for the cluster
+			//test using linear regressionwidth
+			//Slope(b) = (NΣXY - (ΣX)(ΣY)) / (NΣX2 - (ΣX)2)
+
+			//float sum_x=0, sum_y=0, sum_xy=0, sum_xx=0;
+			//for (unsigned int i=0; i<current_cluster->points.size(); i++)
+			//{
+			//	sum_x+= current_cluster->points[i].x;
+			//	sum_y+= current_cluster->points[i].y;
+			//	sum_xy+= current_cluster->points[i].x*current_cluster->points[i].y;
+			//	sum_xx+= current_cluster->points[i].x*current_cluster->points[i].x;
+			//}
+			//double slope= (current_cluster->points.size()*sum_xy - (sum_x*sum_y))/(current_cluster->points.size()*sum_xx - sum_x*sum_x);
+			//rz = atan(-slope);
+			cv::RotatedRect box = minAreaRect(points);
+			rz = box.angle*3.14/180;
+			bounding_box_.pose.position.x = box.center.x;
+			bounding_box_.pose.position.y = box.center.y;
+			//std::cout << bounding_box_.pose.position.y << " " << bounding_box_.pose.position.x  << std::endl;
+			bounding_box_.dimensions.x = box.size.width;
+			bounding_box_.dimensions.y = box.size.height;
+		}
+
+		std::vector<cv::Point2f> hull;
+		cv::convexHull(points, hull);
+
+		polygon_.header = in_ros_header;
+		for (size_t i = 0; i< hull.size() + 1 ; i++)
+		{
+			geometry_msgs::Point32 point;
+			point.x = hull[i%hull.size()].x;
+			point.y = hull[i%hull.size()].y;
+			point.z = min_point_.z;
+			polygon_.polygon.points.push_back(point);
+		}
+
+		for (size_t i = 0; i< hull.size() + 1 ; i++)
+		{
+			geometry_msgs::Point32 point;
+			point.x = hull[i%hull.size()].x;
+			point.y = hull[i%hull.size()].y;
+			point.z = max_point_.z;
+			polygon_.polygon.points.push_back(point);
+		}
+
+		/*cv::Point2f rect_points[4];
+		box.points(rect_points);*/
 	}
 
 	//set bounding box direction
@@ -284,6 +334,11 @@ bool Cluster::IsValid()
 void Cluster::SetValidity(bool in_valid)
 {
 	valid_cluster_ = in_valid;
+}
+
+int Cluster::GetId()
+{
+	return id_;
 }
 
 Cluster::~Cluster() {

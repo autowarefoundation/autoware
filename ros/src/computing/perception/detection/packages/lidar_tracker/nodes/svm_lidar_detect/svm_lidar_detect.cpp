@@ -107,7 +107,7 @@ void SvmDetect::Run()
 	cloud_clusters_sub_ = node_handle_.subscribe(clusters_node_name, 10, &SvmDetect::CloudClustersCallback, this);
 	cloud_clusters_pub_ = node_handle_.advertise<lidar_tracker::CloudClusterArray>(out_clusters_topic_name, 10); ROS_INFO("output clusters topic: %s", out_clusters_topic_name.c_str());
 
-	text_pictogram_pub_ = node_handle_.advertise<jsk_rviz_plugins::PictogramArray>(out_pictograms_topic_name, 10); ROS_INFO("output pictograms topic: %s", out_pictograms_topic_name.c_str());
+	/*text_pictogram_pub_ = node_handle_.advertise<jsk_rviz_plugins::PictogramArray>(out_pictograms_topic_name, 10); ROS_INFO("output pictograms topic: %s", out_pictograms_topic_name.c_str());
 
 	model_ptr_ = LoadSvmModel(model_file_path_);
 
@@ -118,7 +118,7 @@ void SvmDetect::Run()
 	else
 	{
 		ROS_INFO("SvmDetect. Ready, waiting for clusters...");
-	}
+	}*/
 	ros::spin();
 
 }
@@ -159,6 +159,9 @@ void SvmDetect::ClassifyFpfhDescriptor(const std::vector<float>& in_fpfh_descrip
 
 void SvmDetect::CloudClustersCallback(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
 {
+	cloud_clusters_pub_.publish(*in_cloud_cluster_array_ptr);
+	return;
+	/*
 	if(model_ptr_ == NULL)
 	{
 		ROS_INFO("SvmDetect. Cannot perform classification. Invalid model file. Passing-through the clustered data.");
@@ -230,7 +233,7 @@ void SvmDetect::CloudClustersCallback(const lidar_tracker::CloudClusterArray::Pt
 		}
 		cloud_clusters_pub_.publish(classified_clusters);
 		text_pictogram_pub_.publish(pictograms_clusters);
-	}
+	}*/
 }
 
 int main(int argc, char **argv)

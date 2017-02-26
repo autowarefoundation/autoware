@@ -21,3 +21,4 @@ geometry_msgs/Vector3[] eigen_vectors
 std_msgs/Float32MultiArray fpfh_descriptor 
 
 jsk_recognition_msgs/BoundingBox bounding_box
+geometry_msgs/PolygonStamped convex_hull

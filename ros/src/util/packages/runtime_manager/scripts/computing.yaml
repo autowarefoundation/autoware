@@ -251,6 +251,13 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+      - name : kf_lidar_track
+        desc : kf_lidar_track desc sample
+        cmd  : roslaunch lidar_tracker kf_lidar_track.launch
+        param: kf_lidar_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : pf_lidar_track
         desc : pf_lidar_track desc sample
         cmd  : roslaunch lidar_tracker pf_lidar_track.launch
@@ -889,6 +896,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : points_node
+      desc    : points_node desc sample
+      label   : 'input_points_node'
+      kind    : str
+      v       : points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : leaf_size
       desc    : leaf_size desc sample
       label   : 'leaf size'
@@ -1006,6 +1021,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : cluster_merge_threshold
+      desc    : cluster_merge_threshold desc sample
+      label   : 'cluster_merge_threshold'
+      min       : 0
+      max       : 10
+      v       : 1.5
+      cmd_param :
+        dash        : ''
+        delim       : ':=' 
     - name      : sync
       kind      : hide
       v         : False

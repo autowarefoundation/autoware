@@ -18,6 +18,7 @@
 	<arg name="clustering_distances" default="[15,30,45,60]" /><!-- Distances to segment pointcloud -->
 	<arg name="clustering_thresholds" default="[0.5,1.1,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
 	<arg name="max_boundingbox_side" default="10" />
+	<arg name="cluster_merge_threshold" default="1.5" />
 	
 	<arg name="use_vector_map" default="true" />
 	<arg name="vectormap_frame" default="map" />
@@ -49,6 +50,7 @@
 		<param name="use_vector_map" value="$(arg use_vector_map)" />
 		<param name="vectormap_frame" value="$(arg vectormap_frame)" />
 		<param name="remove_points_upto" value="$(arg remove_points_upto)" />
+		<param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
 		<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
 	</node>
 

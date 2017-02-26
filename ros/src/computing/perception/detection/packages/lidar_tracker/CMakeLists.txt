@@ -99,6 +99,11 @@ include_directories(
 )
 link_directories(${PCL_LIBRARY_DIRS})
 
+#LidarFuser
+add_executable(lidar_fuser nodes/lidar_fuser/lidar_fuser.cpp)
+target_link_libraries(lidar_fuser opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(lidar_fuser lidar_tracker_generate_messages_cpp)
+
 #Euclidean Cluster
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
 target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
@@ -123,7 +128,13 @@ target_link_libraries(pf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(pf_lidar_track lidar_tracker_generate_messages_cpp)
 
 #KalmanFilter Track
-add_executable(kf_lidar_track nodes/kf_lidar_track/kf_lidar_track.cpp)
+add_executable(kf_lidar_track 
+				nodes/kf_lidar_track/kf_lidar_track.cpp 
+				nodes/kf_lidar_track/KfLidarTracker.cpp 
+				nodes/kf_lidar_track/HungarianAlg.cpp
+				nodes/kf_lidar_track/Kalman.cpp
+				)
+target_include_directories(kf_lidar_track PRIVATE nodes/kf_lidar_track/includes)
 target_link_libraries(kf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(kf_lidar_track lidar_tracker_generate_messages_cpp)
 

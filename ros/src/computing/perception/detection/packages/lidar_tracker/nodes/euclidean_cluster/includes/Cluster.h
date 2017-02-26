@@ -42,8 +42,13 @@
 #include <pcl/segmentation/extract_clusters.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/PolygonArray.h>
+#include <jsk_rviz_plugins/PictogramArray.h>
 
 #include <lidar_tracker/CloudCluster.h>
+
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 #include <limits>
 #include <cmath>
@@ -58,6 +63,7 @@ class Cluster {
 	float 								length_, width_, height_;
 
 	jsk_recognition_msgs::BoundingBox 	bounding_box_;
+	geometry_msgs::PolygonStamped 		polygon_;
 
 	std::string							label_;
 	int									id_;
@@ -98,6 +104,8 @@ public:
 	pcl::PointXYZ 						GetCentroid();
 	/* \brief Returns the calculated BoundingBox of the object */
 	jsk_recognition_msgs::BoundingBox	GetBoundingBox();
+	/* \brief Returns the calculated PolygonArray of the object */
+	geometry_msgs::PolygonStamped GetPolygon();
 	/* \brief Returns the angle in radians of the BoundingBox. 0 if pose estimation was not enabled. */
 	double								GetOrientationAngle();
 	/* \brief Returns the Length of the Cluster */
