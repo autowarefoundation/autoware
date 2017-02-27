@@ -125,9 +125,12 @@ private:
 
   // functions
   void resetLaneIdx();
+  void resetSubscriptionFlag();
   bool isAllTopicsSubscribed();
   void processing();
-  void publish(const waypoint_follower::lane &lane, const int32_t clst_wp, const ChangeFlag flag);
+  void publishLane(const waypoint_follower::lane &lane);
+  void publishClosestWaypoint(const int32_t clst_wp);
+  void publishChangeFlag(const ChangeFlag flag);
   bool getClosestWaypointNumberForEachLanes();
   int32_t findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p);
   void findCurrentLane();
