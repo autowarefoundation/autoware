@@ -427,10 +427,11 @@ class RelativeInfo
 public:
 	double perp_distance;
 	double to_front_distance; //negative
-	double from_back_distance; //
+	double from_back_distance;
 	int iFront;
 	int iBack;
 	WayPoint perp_point;
+	double angle_diff; // degrees
 
 	RelativeInfo()
 	{
@@ -439,6 +440,7 @@ public:
 		from_back_distance = 0;
 		iFront = 0;
 		iBack = 0;
+		angle_diff = 0;
 	}
 };
 

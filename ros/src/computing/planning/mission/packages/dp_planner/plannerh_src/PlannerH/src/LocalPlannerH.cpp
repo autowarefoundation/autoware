@@ -270,9 +270,10 @@ void LocalPlannerH::InitPolygons()
  	double distanceToClosestStopLine = 0;
 
  	if(m_TotalPath.size()>0)
- 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(m_iCurrentTotalPathId), state, stopLineID, stopSignID, trafficLightID) - m_CarInfo.length/2.0;
+ 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(m_iCurrentTotalPathId), state, stopLineID, stopSignID, trafficLightID);
 
- 	if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance  && m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
+ 	//if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance  && m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
+ 	if(m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
  	{
 		pValues->currentTrafficLightID = trafficLightID;
 		pValues->currentStopSignID = stopSignID;
@@ -555,7 +556,10 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
  {
 	 if(m_TotalPath.size()==0) return false;
 
-	 m_iGlobalPathPrevID = PlanningHelpers::GetClosestNextPointIndex(m_TotalPath.at(m_iCurrentTotalPathId), state, m_iGlobalPathPrevID);
+	 PlannerHNS::RelativeInfo info;
+	 PlanningHelpers::GetRelativeInfo(m_TotalPath.at(m_iCurrentTotalPathId), state, info);
+
+	 m_iGlobalPathPrevID = info.iFront;
 
 	 double d = 0;
 	 for(unsigned int i = m_iGlobalPathPrevID; i < m_TotalPath.at(m_iCurrentTotalPathId).size()-1; i++)
@@ -580,7 +584,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 		if(m_RollOuts.size()>0)
 			localRollouts = m_RollOuts.at(0);
 
-		int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_Path, state);
+		int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_Path, state);
 		int index_limit = 0;//m_Path.size() - 20;
 		if(index_limit<=0)
 			index_limit =  m_Path.size()/2.0;

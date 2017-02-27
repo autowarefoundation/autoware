@@ -60,10 +60,11 @@ way_planner_core::way_planner_core()
 {
 
 	m_pCurrGoal = 0;
-	m_iCurrentGoalIndex = -1;
+	m_iCurrentGoalIndex = 1;
 	m_bKmlMap = false;
-	bStartPos = false;
-	bUsingCurrentPose = false;
+	//bStartPos = false;
+	//bGoalPos = false;
+	//bUsingCurrentPose = false;
 	bEnableReplanning = false;
 	m_ReplanDistanceFromEnd = 20; // meters
 	nh.getParam("/way_planner/pathDensity" 			, m_params.pathDensity);
@@ -144,26 +145,51 @@ way_planner_core::~way_planner_core(){
 
 void way_planner_core::callbackGetGoalPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-	ROS_INFO("Received Goal Pose");
-	m_GoalsPos.push_back(msg->pose);
+	PlannerHNS::WayPoint wp;
+	wp = PlannerHNS::WayPoint(msg->pose.position.x+m_OriginPos.position.x, msg->pose.position.y+m_OriginPos.position.y,
+			msg->pose.position.z+m_OriginPos.position.z, tf::getYaw(msg->pose.orientation));
+
+	if(m_GoalsPos.size()==0)
+	{
+		ROS_INFO("Can Not add Goal, Select Start Position Fist !");
+	}
+	else
+	{
+		m_GoalsPos.push_back(wp);
+		ROS_INFO("Received Goal Pose");
+	}
 }
 
 void way_planner_core::callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
 {
-	if(!bStartPos)
+//	if(m_GeneratedTotalPaths.size()>0)
+//	{
+//		PlannerHNS::RelativeInfo info;
+//		PlannerHNS::WayPoint p1(msg->pose.pose.position.x+m_OriginPos.position.x, msg->pose.pose.position.y+m_OriginPos.position.y, msg->pose.pose.position.z+m_OriginPos.position.z, tf::getYaw(msg->pose.pose.orientation));
+//		bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfo(m_GeneratedTotalPaths.at(0), p1, info);
+//		std::cout << "Perp D: " << info.perp_distance << ", F D: "<< info.to_front_distance << ", B D: " << info.from_back_distance << ", F Index: "<< info.iFront << ", B Index: " << info.iBack << ", Angle: "<< info.angle_diff  << std::endl;
+//	}
+
+	m_CurrentPose = PlannerHNS::WayPoint(msg->pose.pose.position.x+m_OriginPos.position.x, msg->pose.pose.position.y+m_OriginPos.position.y,
+			msg->pose.pose.position.z+m_OriginPos.position.z, tf::getYaw(msg->pose.pose.orientation));
+
+	if(m_GoalsPos.size() <= 1)
 	{
+		m_GoalsPos.clear();
+		m_GoalsPos.push_back(m_CurrentPose);
 		ROS_INFO("Received Start pose");
-		m_StartPos = msg->pose.pose;
-		bStartPos = true;
 	}
 }
 
 void way_planner_core::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
-	//if(m_params.bEnableRvizInput)
+	m_CurrentPose = PlannerHNS::WayPoint(msg->pose.position.x, msg->pose.position.y,
+			msg->pose.position.z, tf::getYaw(msg->pose.orientation));
+
+	if(m_GoalsPos.size() <= 1)
 	{
-		m_CurrentPose = msg->pose;
-		bUsingCurrentPose = true;
+		m_GoalsPos.clear();
+		m_GoalsPos.push_back(m_CurrentPose);
 	}
 }
 
@@ -358,10 +384,10 @@ bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, Plan
 				{
 					PlannerHNS::PlanningHelpers::FixPathDensity(generatedTotalPaths.at(i), m_params.pathDensity);
 					PlannerHNS::PlanningHelpers::SmoothPath(generatedTotalPaths.at(i), 0.49, 0.35 , 0.01);
-					PlannerHNS::PlanningHelpers::CalcAngleAndCost(generatedTotalPaths.at(i));
 				}
 			}
 
+			PlannerHNS::PlanningHelpers::CalcAngleAndCost(generatedTotalPaths.at(0));
 			std::cout << "New DP Path -> " << generatedTotalPaths.size() << std::endl;
 			return true;
 		}
@@ -387,6 +413,7 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 		RosHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
+
 
 	std_msgs::ColorRGBA total_color;
 	total_color.r = 0;
@@ -672,76 +699,38 @@ void way_planner_core::PlannerMainLoop()
 			 }
 		}
 
-		if(bStartPos || bUsingCurrentPose)
+		if(m_GoalsPos.size() > 1)
 		{
-			PlannerHNS::WayPoint startPoint;
-			PlannerHNS::WayPoint goalPoint;
+			PlannerHNS::WayPoint startPoint = m_CurrentPose;
+			PlannerHNS::WayPoint goalPoint = m_GoalsPos.at(m_iCurrentGoalIndex);
 
-			if(bUsingCurrentPose)
+			if(m_GeneratedTotalPaths.size() > 0 && m_GeneratedTotalPaths.at(0).size() > 3)
 			{
-				startPoint = PlannerHNS::WayPoint(m_CurrentPose.position.x,
-						m_CurrentPose.position.y,
-						m_CurrentPose.position.z, tf::getYaw(m_CurrentPose.orientation));
-			}
-			else
-			{
-				startPoint = PlannerHNS::WayPoint(m_StartPos.position.x+m_OriginPos.position.x,
-						m_StartPos.position.y+m_OriginPos.position.y,
-						m_StartPos.position.z+m_OriginPos.position.z, tf::getYaw(m_StartPos.orientation));
-			}
-
-
-			if(bEnableReplanning)
-			{
-				if(m_GeneratedTotalPaths.size() > 0 && m_GeneratedTotalPaths.at(0).size() > 3)
+				if(bEnableReplanning)
 				{
-					double calcDensity = hypot(m_GeneratedTotalPaths.at(0).at(1).pos.y - m_GeneratedTotalPaths.at(0).at(0).pos.y,
-							m_GeneratedTotalPaths.at(0).at(1).pos.x - m_GeneratedTotalPaths.at(0).at(0).pos.x);
-
-					if(calcDensity < 0.1)
-						calcDensity = hypot(m_GeneratedTotalPaths.at(0).at(2).pos.y - m_GeneratedTotalPaths.at(0).at(1).pos.y,
-										m_GeneratedTotalPaths.at(0).at(2).pos.x - m_GeneratedTotalPaths.at(0).at(1).pos.x);
-
-					if(calcDensity == 0)
-						calcDensity = 0.25;
-
-					int nReplanIndex = m_ReplanDistanceFromEnd / calcDensity;
-					int nToEndPoints = m_GeneratedTotalPaths.at(0).size() - PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_GeneratedTotalPaths.at(0), startPoint);
-					if(nToEndPoints <= nReplanIndex)
+					PlannerHNS::RelativeInfo info;
+					PlannerHNS::PlanningHelpers::GetRelativeInfo(m_GeneratedTotalPaths.at(0), startPoint, info);
+					double remaining_distance =    m_GeneratedTotalPaths.at(0).at(m_GeneratedTotalPaths.at(0).size()-1).cost - (m_GeneratedTotalPaths.at(0).at(info.iFront).cost + info.to_front_distance);
+					if(remaining_distance <= REPLANNING_DISTANCE)
 					{
-						m_iCurrentGoalIndex = m_iCurrentGoalIndex + 1;
+						m_iCurrentGoalIndex++;
+						if(m_iCurrentGoalIndex >= m_GoalsPos.size())
+							m_iCurrentGoalIndex = 0;
 						bMakeNewPlan = true;
 					}
 				}
-				else if(m_GoalsPos.size() > 0)
-				{
-					m_iCurrentGoalIndex = 0;
-					bMakeNewPlan = true;
-				}
 			}
 			else
-			{
-				if(m_GeneratedTotalPaths.size() == 0 && m_GoalsPos.size() > 0)
-				{
-					m_iCurrentGoalIndex = 0;
-					bMakeNewPlan = true;
-				}
-			}
+				bMakeNewPlan = true;
 
 			if(bMakeNewPlan)
 			{
-				int gIndex = m_iCurrentGoalIndex%m_GoalsPos.size();
-				if( gIndex < (int)m_GoalsPos.size())
-				{
-					goalPoint = PlannerHNS::WayPoint(m_GoalsPos.at(gIndex).position.x+m_OriginPos.position.x,
-										m_GoalsPos.at(gIndex).position.y+m_OriginPos.position.y,
-										m_GoalsPos.at(gIndex).position.z+m_OriginPos.position.z,
-										tf::getYaw(m_GoalsPos.at(gIndex).orientation));
 
 					bool bNewPlan = GenerateGlobalPlan(startPoint, goalPoint, m_GeneratedTotalPaths);
 
 					if(bNewPlan)
 					{
+						bMakeNewPlan = false;
 						VisualizeAndSend(m_GeneratedTotalPaths);
 #ifdef ENABLE_VISUALIZE_PLAN
 						//calculate new max_cost
@@ -757,7 +746,6 @@ void way_planner_core::PlannerMainLoop()
 						}
 #endif
 					}
-				}
 			}
 
 #ifdef ENABLE_VISUALIZE_PLAN

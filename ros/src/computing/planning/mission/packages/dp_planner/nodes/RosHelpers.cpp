@@ -555,7 +555,8 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 
 	std::ostringstream str_out;
 
-	str_out << "(" << (int)(beh.followDistance * 100) / 100 <<")";
+	//str_out << "(" << (int)(beh.followDistance * 100) / 100 <<")";
+	str_out << "(" << (int)(beh.stopDistance * 100.0) / 100.0 <<")";
 
 	if(avoidDirection == -1)
 		str_out << "<< ";

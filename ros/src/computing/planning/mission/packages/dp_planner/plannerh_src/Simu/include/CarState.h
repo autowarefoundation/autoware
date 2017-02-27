@@ -95,15 +95,15 @@ public:
 			const bool& bEmergencyStop,
 			const bool& bGreenTrafficLight);
 
-	PlannerHNS::BehaviorState DoOneStep(
-			const double& dt,
-			const PlannerHNS::VehicleState& state,
-			const std::vector<PlannerHNS::DetectedObject>& obj_list,
-			const PlannerHNS::GPSPoint& goal,
-			PlannerHNS::RoadNetwork& map,
-			const bool& bEmergencyStop,
-			const bool& bGreenTrafficLight,
-			const bool& bLive = false);
+//	PlannerHNS::BehaviorState DoOneStep(
+//			const double& dt,
+//			const PlannerHNS::VehicleState& state,
+//			const std::vector<PlannerHNS::DetectedObject>& obj_list,
+//			const PlannerHNS::GPSPoint& goal,
+//			PlannerHNS::RoadNetwork& map,
+//			const bool& bEmergencyStop,
+//			const bool& bGreenTrafficLight,
+//			const bool& bLive = false);
 
 	void SimulateOdoPosition(const double& dt, const PlannerHNS::VehicleState& vehicleState);
 
@@ -112,7 +112,7 @@ private:
 	//Obstacle avoidance functionalities
 	void InitializeTrajectoryCosts();
 	void CalculateTransitionCosts();
-	void CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list);
+	//void CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list);
 	bool CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
 	double PredictTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>& path,

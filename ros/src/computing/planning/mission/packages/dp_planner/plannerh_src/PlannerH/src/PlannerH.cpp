@@ -165,9 +165,10 @@ PlannerH::PlannerH()
 
  	WayPoint* pLaneCell = 0;
 
- 	int closest_index = PlanningHelpers::GetClosestPointIndex(l->points, carPos);
- 	WayPoint closest_p = l->points.at(closest_index);
- 	WayPoint* pStartWP = &l->points.at(closest_index);
+ 	RelativeInfo info;
+ 	PlanningHelpers::GetRelativeInfo(l->points, carPos, info);
+ 	WayPoint closest_p = l->points.at(info.iBack);
+ 	WayPoint* pStartWP = &l->points.at(info.iBack);
 
  	if(distance2points(closest_p.pos, carPos.pos) > 8)
  	{
@@ -236,9 +237,10 @@ PlannerH::PlannerH()
   	vector<WayPoint*> all_cell_to_delete;
   	vector<int> globalPath;
 
-  	int closest_index = PlanningHelpers::GetClosestPointIndex(l->points, carPos);
-  	WayPoint closest_p = l->points.at(closest_index);
-  	WayPoint* pStartWP = &l->points.at(closest_index);
+  	RelativeInfo info;
+  	PlanningHelpers::GetRelativeInfo(l->points, carPos, info);
+  	WayPoint closest_p = l->points.at(info.iBack);
+  	WayPoint* pStartWP = &l->points.at(info.iBack);
 
   	if(distance2points(closest_p.pos, carPos.pos) > 8)
   	{

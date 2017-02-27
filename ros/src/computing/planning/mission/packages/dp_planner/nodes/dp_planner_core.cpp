@@ -440,91 +440,91 @@ void PlannerX::callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampe
 
 void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg)
 {
-//	//Add Simulated Obstacle polygon
-//	timespec t;
-//	UtilityHNS::UtilityH::GetTickCount(t);
-//	srand(t.tv_nsec);
-//	double width = SIMU_OBSTACLE_WIDTH;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
-//	double length = SIMU_OBSTACLE_LENGTH;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
-//
-//	geometry_msgs::PointStamped point;
-//	point.point.x = msg->point.x+m_OriginPos.position.x;
-//	point.point.y = msg->point.y+m_OriginPos.position.y;
-//	point.point.z = msg->point.z+m_OriginPos.position.z;
-//
-//	lidar_tracker::CloudClusterArray clusters_array;
-//	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 50, point));
-//	m_OriginalClusters.clear();
-//	int nNum1, nNum2;
-//	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
-//	m_TrackedClusters = m_OriginalClusters;
-//
-//	pcl::PointCloud<pcl::PointXYZ> point_cloud;
-//	pcl::fromROSMsg(clusters_array.clusters.at(0).cloud, point_cloud);
-//	sensor_msgs::PointCloud2 cloud_msg;
-//	pcl::toROSMsg(point_cloud, cloud_msg);
-//	cloud_msg.header.frame_id = "map";
-//	pub_cluster_cloud.publish(cloud_msg);
-//
-//	if(m_TrackedClusters.size()>0)
-//	{
-//		jsk_recognition_msgs::BoundingBoxArray boxes_array;
-//		boxes_array.header.frame_id = "map";
-//		boxes_array.header.stamp  = ros::Time();
-//		jsk_recognition_msgs::BoundingBox box;
-//		box.header.frame_id = "map";
-//		box.header.stamp = ros::Time();
-//		box.pose.position.x = m_TrackedClusters.at(0).center.pos.x;
-//		box.pose.position.y = m_TrackedClusters.at(0).center.pos.y;
-//		box.pose.position.z = m_TrackedClusters.at(0).center.pos.z;
-//
-//		box.value = 0.9;
-//
-//		//box.pose.orientation = detectedPolygons.markers.at(0)
-//		box.dimensions.x = SIMU_OBSTACLE_WIDTH;
-//		box.dimensions.y = SIMU_OBSTACLE_LENGTH;
-//		box.dimensions.z = SIMU_OBSTACLE_HEIGHT;
-//		boxes_array.boxes.push_back(box);
-//
-//		pub_TrackedObstaclesRviz.publish(boxes_array);
-//	}
+	//Add Simulated Obstacle polygon
+	timespec t;
+	UtilityHNS::UtilityH::GetTickCount(t);
+	srand(t.tv_nsec);
+	double width = SIMU_OBSTACLE_WIDTH;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
+	double length = SIMU_OBSTACLE_LENGTH;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
 
-	if(m_LocalPlanner.m_TotalPath.size() > 0)
+	geometry_msgs::PointStamped point;
+	point.point.x = msg->point.x+m_OriginPos.position.x;
+	point.point.y = msg->point.y+m_OriginPos.position.y;
+	point.point.z = msg->point.z+m_OriginPos.position.z;
+
+	lidar_tracker::CloudClusterArray clusters_array;
+	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 50, point));
+	m_OriginalClusters.clear();
+	int nNum1, nNum2;
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
+	m_TrackedClusters = m_OriginalClusters;
+
+	pcl::PointCloud<pcl::PointXYZ> point_cloud;
+	pcl::fromROSMsg(clusters_array.clusters.at(0).cloud, point_cloud);
+	sensor_msgs::PointCloud2 cloud_msg;
+	pcl::toROSMsg(point_cloud, cloud_msg);
+	cloud_msg.header.frame_id = "map";
+	pub_cluster_cloud.publish(cloud_msg);
+
+	if(m_TrackedClusters.size()>0)
 	{
-		vector<PlannerHNS::WayPoint> line;
-		PlannerHNS::WayPoint p1(msg->point.x+m_OriginPos.position.x, msg->point.y+m_OriginPos.position.y, msg->point.z+m_OriginPos.position.z, 0);
+		jsk_recognition_msgs::BoundingBoxArray boxes_array;
+		boxes_array.header.frame_id = "map";
+		boxes_array.header.stamp  = ros::Time();
+		jsk_recognition_msgs::BoundingBox box;
+		box.header.frame_id = "map";
+		box.header.stamp = ros::Time();
+		box.pose.position.x = m_TrackedClusters.at(0).center.pos.x;
+		box.pose.position.y = m_TrackedClusters.at(0).center.pos.y;
+		box.pose.position.z = m_TrackedClusters.at(0).center.pos.z;
 
-		//int index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_LocalPlanner.m_TotalPath.at(0), p1);
-//		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index);
-//		if(index > 0)
-//			p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index-1);
-//
-//
-//		double distance = 0;
-//		PlannerHNS::WayPoint p2 = PlannerHNS::PlanningHelpers::GetPerpendicularOnTrajectory(m_LocalPlanner.m_TotalPath.at(0), p1, distance);
-//
-//		double perpDistance = PlannerHNS::PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_LocalPlanner.m_TotalPath.at(0), p1);
-//
-//		double back_distance = hypot(p2.pos.y - p_prev.pos.y, p2.pos.x - p_prev.pos.x);
-//		double direct_distance = hypot(p2.pos.y - p1.pos.y, p2.pos.x - p1.pos.x);
+		box.value = 0.9;
 
+		//box.pose.orientation = detectedPolygons.markers.at(0)
+		box.dimensions.x = SIMU_OBSTACLE_WIDTH;
+		box.dimensions.y = SIMU_OBSTACLE_LENGTH;
+		box.dimensions.z = SIMU_OBSTACLE_HEIGHT;
+		boxes_array.boxes.push_back(box);
 
-		PlannerHNS::RelativeInfo info;
-		bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_TotalPath.at(0), p1, info);
-		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(info.iBack);
-
-		std::cout << "Perp D: " << info.perp_distance << ", F D: "<< info.to_front_distance << ", B D: " << info.from_back_distance << ", F Index: "<< info.iFront << ", B Index: " << info.iBack << ", Size: "<< m_LocalPlanner.m_TotalPath.at(0).size() << std::endl;
-
-		line.push_back(p1);
-		line.push_back(info.perp_point);
-		line.push_back(p_prev);
-
-		std::vector<std::vector<PlannerHNS::WayPoint> > lines;
-		lines.push_back(line);
-		visualization_msgs::MarkerArray line_vis;
-		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(lines, line_vis);
-		pub_TestLineRviz.publish(line_vis);
+		pub_TrackedObstaclesRviz.publish(boxes_array);
 	}
+
+//	if(m_LocalPlanner.m_TotalPath.size() > 0)
+//	{
+//		vector<PlannerHNS::WayPoint> line;
+//		PlannerHNS::WayPoint p1(msg->point.x+m_OriginPos.position.x, msg->point.y+m_OriginPos.position.y, msg->point.z+m_OriginPos.position.z, 0);
+//
+//		//int index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_LocalPlanner.m_TotalPath.at(0), p1);
+////		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index);
+////		if(index > 0)
+////			p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index-1);
+////
+////
+////		double distance = 0;
+////		PlannerHNS::WayPoint p2 = PlannerHNS::PlanningHelpers::GetPerpendicularOnTrajectory(m_LocalPlanner.m_TotalPath.at(0), p1, distance);
+////
+////		double perpDistance = PlannerHNS::PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_LocalPlanner.m_TotalPath.at(0), p1);
+////
+////		double back_distance = hypot(p2.pos.y - p_prev.pos.y, p2.pos.x - p_prev.pos.x);
+////		double direct_distance = hypot(p2.pos.y - p1.pos.y, p2.pos.x - p1.pos.x);
+//
+//
+//		PlannerHNS::RelativeInfo info;
+//		bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_TotalPath.at(0), p1, info);
+//		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(info.iBack);
+//
+//		std::cout << "Perp D: " << info.perp_distance << ", F D: "<< info.to_front_distance << ", B D: " << info.from_back_distance << ", F Index: "<< info.iFront << ", B Index: " << info.iBack << ", Size: "<< m_LocalPlanner.m_TotalPath.at(0).size() << std::endl;
+//
+//		line.push_back(p1);
+//		line.push_back(info.perp_point);
+//		line.push_back(p_prev);
+//
+//		std::vector<std::vector<PlannerHNS::WayPoint> > lines;
+//		lines.push_back(line);
+//		visualization_msgs::MarkerArray line_vis;
+//		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(lines, line_vis);
+//		pub_TestLineRviz.publish(line_vis);
+//	}
 }
 
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -735,6 +735,7 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 	if(msg->lanes.size() > 0)
 	{
 		m_WayPlannerPaths.clear();
+		bool bOldGlobalPath = m_LocalPlanner.m_TotalPath.size() == msg->lanes.size();
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
 			std::vector<PlannerHNS::WayPoint> path;
@@ -747,7 +748,7 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 						tf::getYaw(msg->lanes.at(i).waypoints.at(j).pose.pose.orientation));
 				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
 				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
-				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
+				wp.stopLineID = -1;//msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
 				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
 				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
 				if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 0)
@@ -784,13 +785,57 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 
 				path.push_back(wp);
 			}
+
+			PlannerHNS::PlanningHelpers::CalcAngleAndCost(path);
+			int prevStopID = -1;
+			for(unsigned int k= 0; k < path.size(); k++)
+			{
+				if(path.at(k).pLane)
+				{
+					for(unsigned int si = 0; si < path.at(k).pLane->stopLines.size(); si++)
+					{
+						if(prevStopID != path.at(k).pLane->stopLines.at(si).id)
+						{
+							PlannerHNS::WayPoint stopLineWP;
+							stopLineWP.pos = path.at(k).pLane->stopLines.at(si).points.at(0);
+							PlannerHNS::RelativeInfo info;
+							PlannerHNS::PlanningHelpers::GetRelativeInfo(path, stopLineWP, info, k);
+
+							path.at(info.iFront).stopLineID = path.at(k).pLane->stopLines.at(si).id;
+							prevStopID = path.at(info.iFront).stopLineID;
+						}
+					}
+				}
+			}
+
 			m_WayPlannerPaths.push_back(path);
+
+			if(bOldGlobalPath)
+			{
+				bOldGlobalPath = PlannerHNS::PlanningHelpers::CompareTrajectories(path, m_LocalPlanner.m_TotalPath.at(i));
+			}
 		}
 
-		bWayPlannerPath = true;
-		m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = true;
-		//m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
-		m_LocalPlanner.m_TotalPath = m_WayPlannerPaths;
+
+		if(!bOldGlobalPath)
+		{
+			bWayPlannerPath = true;
+			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = true;
+			//m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
+			m_LocalPlanner.m_TotalPath = m_WayPlannerPaths;
+
+			cout << "Global Lanes Size = " << msg->lanes.size() <<", Conv Size= " << m_WayPlannerPaths.size() << ", First Lane Size: " << m_WayPlannerPaths.at(0).size() << endl;
+			PlannerHNS::WayPoint* pPrev = 0;
+			for(unsigned int k= 0; k < m_WayPlannerPaths.at(0).size(); k++)
+			{
+				if(m_WayPlannerPaths.at(0).at(k).stopLineID > 0 && m_WayPlannerPaths.at(0).at(k).pLane && m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size()>0)
+				{
+					cout << "Stop Line IDs: " << m_WayPlannerPaths.at(0).at(k).stopLineID << ", Lane: " << m_WayPlannerPaths.at(0).at(k).pLane << ", Stop Lines: "<< m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size() << endl;
+				}
+
+				//pPrev = &m_WayPlannerPaths.at(0).at(k);
+			}
+		}
 	}
 }
 

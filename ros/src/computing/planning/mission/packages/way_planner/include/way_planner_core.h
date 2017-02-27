@@ -72,8 +72,8 @@ namespace WayPlannerNS {
 
 #define MAX_GLOBAL_PLAN_DISTANCE 10000
 #define _ENABLE_VISUALIZE_PLAN
-#define ENABLE_HMI
-
+#define _ENABLE_HMI
+#define REPLANNING_DISTANCE 25
 class AutowareRoadNetwork
 {
 public:
@@ -140,13 +140,13 @@ protected:
 
 	WayPlannerParams m_params;
 	AutowareRoadNetwork m_AwMap;
-	geometry_msgs::Pose m_StartPos;
-	geometry_msgs::Pose m_CurrentPose;
-	bool bStartPos;
-	bool bUsingCurrentPose;
+	//geometry_msgs::Pose m_StartPos;
+	PlannerHNS::WayPoint m_CurrentPose;
+	//bool bStartPos;
+	//bool bUsingCurrentPose;
 	bool bEnableReplanning;
 	int m_iCurrentGoalIndex;
-	std::vector<geometry_msgs::Pose> m_GoalsPos;
+	std::vector<PlannerHNS::WayPoint> m_GoalsPos;
 	//bool bGoalPos;
 	geometry_msgs::Pose m_OriginPos;
 	PlannerHNS::VehicleState m_VehicleState;

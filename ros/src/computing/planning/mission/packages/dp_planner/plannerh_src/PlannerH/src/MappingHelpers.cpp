@@ -178,7 +178,18 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 
 
 		if(bFound)
-			lane_obj.points.push_back(wp);
+		{
+//			if(lane_obj.points.size() > 0)
+//			{
+//				if(lane_obj.points.at(lane_obj.points.size()-1).pos.x == wp.pos.x && lane_obj.points.at(lane_obj.points.size()-1).pos.y == wp.pos.y)
+//					cout << "Skip Redundant Map Points !!! " << endl;
+//				else
+//					lane_obj.points.push_back(wp);
+//			}
+//			else
+				lane_obj.points.push_back(wp);
+
+		}
 
 		prev_FLID = lanes_data.at(l).FLID;
 
@@ -410,7 +421,7 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 							map.stopLines.at(isl).stopSignID = conn_data.at(ic).SSID;
 							map.roadSegments.at(rs).Lanes.at(i).stopLines.push_back(map.stopLines.at(isl));
 							WayPoint wp((map.stopLines.at(isl).points.at(0).x+map.stopLines.at(isl).points.at(1).x)/2.0, (map.stopLines.at(isl).points.at(0).y+map.stopLines.at(isl).points.at(1).y)/2.0, (map.stopLines.at(isl).points.at(0).z+map.stopLines.at(isl).points.at(1).z)/2.0, (map.stopLines.at(isl).points.at(0).a+map.stopLines.at(isl).points.at(1).a)/2.0);
-							map.roadSegments.at(rs).Lanes.at(i).points.at(PlanningHelpers::GetClosestPointIndex(map.roadSegments.at(rs).Lanes.at(i).points, wp)).stopLineID = map.stopLines.at(isl).id;
+							map.roadSegments.at(rs).Lanes.at(i).points.at(PlanningHelpers::GetClosestNextPointIndex(map.roadSegments.at(rs).Lanes.at(i).points, wp)).stopLineID = map.stopLines.at(isl).id;
 						}
 					}
 				}
@@ -780,7 +791,7 @@ void MappingHelpers::LoadKML(const std::string& kmlFile, RoadNetwork& map)
 					map.stopLines.at(isl).pLane = &map.roadSegments.at(rs).Lanes.at(i);
 					map.roadSegments.at(rs).Lanes.at(i).stopLines.push_back(map.stopLines.at(isl));
 					WayPoint wp((map.stopLines.at(isl).points.at(0).x+map.stopLines.at(isl).points.at(1).x)/2.0, (map.stopLines.at(isl).points.at(0).y+map.stopLines.at(isl).points.at(1).y)/2.0, (map.stopLines.at(isl).points.at(0).z+map.stopLines.at(isl).points.at(1).z)/2.0, (map.stopLines.at(isl).points.at(0).a+map.stopLines.at(isl).points.at(1).a)/2.0);
-					map.roadSegments.at(rs).Lanes.at(i).points.at(PlanningHelpers::GetClosestPointIndex(map.roadSegments.at(rs).Lanes.at(i).points, wp)).stopLineID = map.stopLines.at(isl).id;
+					map.roadSegments.at(rs).Lanes.at(i).points.at(PlanningHelpers::GetClosestNextPointIndex(map.roadSegments.at(rs).Lanes.at(i).points, wp)).stopLineID = map.stopLines.at(isl).id;
 				}
 			}
 		}
@@ -1142,12 +1153,12 @@ WayPoint* MappingHelpers::GetClosestWaypointFromMap(const WayPoint& pos, RoadNet
 	while(distance_to_nearest_lane < 100 && pLane == 0)
 	{
 		pLane = GetClosestLaneFromMap(pos, map, distance_to_nearest_lane);
-		distance_to_nearest_lane += 2;
+		distance_to_nearest_lane += 1;
 	}
 
 	if(!pLane) return 0;
 
-	int closest_index = PlanningHelpers::GetClosestPointIndex(pLane->points, pos);
+	int closest_index = PlanningHelpers::GetClosestNextPointIndex(pLane->points, pos);
 
 	return &pLane->points.at(closest_index);
 }
@@ -1179,17 +1190,19 @@ Lane* MappingHelpers::GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& ma
 
 	if(laneLinksList.size() == 0) return 0;
 
-	d = 0, min_d = 999999999;
+	min_d = 999999999;
 	Lane* closest_lane = 0;
 	for(unsigned int i = 0; i < laneLinksList.size(); i++)
 	{
-		d = PlanningHelpers::GetPerpDistanceToTrajectorySimple(laneLinksList.at(i).second->points, pos);
-		if(d == 0 && laneLinksList.at(i).first != 0)
+		RelativeInfo info;
+		PlanningHelpers::GetRelativeInfo(laneLinksList.at(i).second->points, pos, info);
+
+		if(info.perp_distance == 0 && laneLinksList.at(i).first != 0)
 			continue;
 
-		if(abs(d)<min_d)
+		if(fabs(info.perp_distance) < min_d && fabs(info.angle_diff) < 45)
 		{
-			min_d = abs(d);
+			min_d = fabs(info.perp_distance);
 			closest_lane = laneLinksList.at(i).second;
 		}
 	}
@@ -1228,20 +1241,21 @@ Lane* MappingHelpers::GetClosestLaneFromMapDirectionBased(const WayPoint& pos, R
 
 	if(laneLinksList.size() == 0) return 0;
 
-	d = 0, min_d = 999999999;
+	min_d = 999999999;
 	Lane* closest_lane = 0;
 	double a_diff = 0;
 	for(unsigned int i = 0; i < laneLinksList.size(); i++)
 	{
-		d = PlanningHelpers::GetPerpDistanceToTrajectorySimple(laneLinksList.at(i).second->pLane->points, pos);
-		if(d == 0 && laneLinksList.at(i).first != 0)
+		RelativeInfo info;
+		PlanningHelpers::GetRelativeInfo(laneLinksList.at(i).second->pLane->points, pos, info);
+		if(info.perp_distance == 0 && laneLinksList.at(i).first != 0)
 			continue;
 
 		a_diff = UtilityH::AngleBetweenTwoAnglesPositive(laneLinksList.at(i).second->pos.a, pos.pos.a);
 
-		if(abs(d)<min_d && a_diff <= M_PI_4)
+		if(fabs(info.perp_distance)<min_d && a_diff <= M_PI_4)
 		{
-			min_d = abs(d);
+			min_d = fabs(info.perp_distance);
 			closest_lane = laneLinksList.at(i).second->pLane;
 		}
 	}

@@ -361,7 +361,7 @@ double CarState::PredictTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>&
 		path.at(i).timeCost = -1;
 	}
 
-	int startIndex = PlanningHelpers::GetClosestPointIndex(path, state);
+	int startIndex = PlanningHelpers::GetClosestNextPointIndex(path, state);
 	double total_distance = 0;
 	path.at(startIndex).timeCost = 0;
 	for(unsigned int i=startIndex+1; i<path.size(); i++)
@@ -566,63 +566,63 @@ bool CarState::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const Planne
 	return bObstacleDetected;
 }
 
-void CarState::CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list)
-{
-	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
-	double critical_lateral_distance = pParams->rollOutDensity + m_CarInfo.width/2.0;
-
-	if(m_TotalPath.size()==0) return;
-
-	//First Filtering
-	int iEgoIndex = PlanningHelpers::GetClosestPointIndex(m_TotalPath, state);
-	for(unsigned int i = 0 ; i < obj_list.size(); i++)
-	{
-		std::vector<WayPoint> contourPoints;
-		AddAndTransformContourPoints(obj_list.at(i), contourPoints);
-
-		double distance_direct_smallest = 9999999;
-		double distance_on_trajectory_smallest = 9999999;
-		for(unsigned int j = 0; j < contourPoints.size(); j++)
-		{
-			double distance_direct = distance2points(state.pos, contourPoints.at(j).pos);
-			if(distance_direct < distance_direct_smallest)
-				distance_direct_smallest = distance_direct;
-
-			double distance_on_trajectory  = PlanningHelpers::GetDistanceOnTrajectory(m_TotalPath, iEgoIndex, contourPoints.at(j)) - m_CarInfo.length/2.0;
-			if(distance_on_trajectory > 0 && distance_on_trajectory < distance_on_trajectory_smallest)
-				distance_on_trajectory_smallest = distance_on_trajectory;
-		}
-
-		for(unsigned int j = 0; j < contourPoints.size(); j++)
-		{
-			PlannerHNS::WayPoint wp;
-			wp = contourPoints.at(j);
-
-			double distance_lateral = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_TotalPath, wp, iEgoIndex);
-
-//			if(distance_direct > pParams->horizonDistance)
-//				continue;
-
-			for(unsigned int c = 0; c < m_TrajectoryCosts.size(); c++)
-			{
-				double normalized_cost = 1.0 - (distance_on_trajectory_smallest / pParams->minFollowingDistance);
-				double d_diff = fabs(distance_lateral - m_TrajectoryCosts.at(c).distance_from_center);
-				m_TrajectoryCosts.at(c).lateral_costs.push_back(std::make_pair(j,d_diff));
-
-				if(d_diff < critical_lateral_distance && (distance_on_trajectory_smallest < m_TrajectoryCosts.at(c).closest_obj_distance || m_TrajectoryCosts.at(c).closest_obj_distance <= 0))
-				{
-					//if(normalized_cost > m_TrajectoryCosts.at(c).closest_obj_cost)
-					{
-						m_TrajectoryCosts.at(c).closest_obj_cost = normalized_cost;
-						m_TrajectoryCosts.at(c).closest_obj_distance = distance_on_trajectory_smallest;
-						m_TrajectoryCosts.at(c).closest_obj_velocity = obj_list.at(i).center.v;
-
-					}
-				}
-			}
-		}
-	}
-}
+//void CarState::CalculateDistanceCosts(const PlannerHNS::VehicleState& vstatus, const std::vector<PlannerHNS::DetectedObject>& obj_list)
+//{
+//	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
+//	double critical_lateral_distance = pParams->rollOutDensity + m_CarInfo.width/2.0;
+//
+//	if(m_TotalPath.size()==0) return;
+//
+//	//First Filtering
+//	int iEgoIndex = PlanningHelpers::GetClosestPointIndex(m_TotalPath, state);
+//	for(unsigned int i = 0 ; i < obj_list.size(); i++)
+//	{
+//		std::vector<WayPoint> contourPoints;
+//		AddAndTransformContourPoints(obj_list.at(i), contourPoints);
+//
+//		double distance_direct_smallest = 9999999;
+//		double distance_on_trajectory_smallest = 9999999;
+//		for(unsigned int j = 0; j < contourPoints.size(); j++)
+//		{
+//			double distance_direct = distance2points(state.pos, contourPoints.at(j).pos);
+//			if(distance_direct < distance_direct_smallest)
+//				distance_direct_smallest = distance_direct;
+//
+//			double distance_on_trajectory  = PlanningHelpers::GetDistanceOnTrajectory(m_TotalPath, iEgoIndex, contourPoints.at(j)) - m_CarInfo.length/2.0;
+//			if(distance_on_trajectory > 0 && distance_on_trajectory < distance_on_trajectory_smallest)
+//				distance_on_trajectory_smallest = distance_on_trajectory;
+//		}
+//
+//		for(unsigned int j = 0; j < contourPoints.size(); j++)
+//		{
+//			PlannerHNS::WayPoint wp;
+//			wp = contourPoints.at(j);
+//
+//			double distance_lateral = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_TotalPath, wp, iEgoIndex);
+//
+////			if(distance_direct > pParams->horizonDistance)
+////				continue;
+//
+//			for(unsigned int c = 0; c < m_TrajectoryCosts.size(); c++)
+//			{
+//				double normalized_cost = 1.0 - (distance_on_trajectory_smallest / pParams->minFollowingDistance);
+//				double d_diff = fabs(distance_lateral - m_TrajectoryCosts.at(c).distance_from_center);
+//				m_TrajectoryCosts.at(c).lateral_costs.push_back(std::make_pair(j,d_diff));
+//
+//				if(d_diff < critical_lateral_distance && (distance_on_trajectory_smallest < m_TrajectoryCosts.at(c).closest_obj_distance || m_TrajectoryCosts.at(c).closest_obj_distance <= 0))
+//				{
+//					//if(normalized_cost > m_TrajectoryCosts.at(c).closest_obj_cost)
+//					{
+//						m_TrajectoryCosts.at(c).closest_obj_cost = normalized_cost;
+//						m_TrajectoryCosts.at(c).closest_obj_distance = distance_on_trajectory_smallest;
+//						m_TrajectoryCosts.at(c).closest_obj_velocity = obj_list.at(i).center.v;
+//
+//					}
+//				}
+//			}
+//		}
+//	}
+//}
 
 void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, double& closest_velocity)
 {
@@ -731,7 +731,7 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 	bool bNewTrajectory = false;
 	if(m_TotalPath.size()>0)
 	{
-		int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_Path, state);
+		int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_Path, state);
 		int index_limit = 0;//m_Path.size() - 20;
 		if(index_limit<=0)
 			index_limit =  m_Path.size()/2.0;
@@ -827,61 +827,61 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 	return currentBehavior;
  }
 
- PlannerHNS::BehaviorState CarState::DoOneStep(const double& dt,
-		 const PlannerHNS::VehicleState& vehicleState,
-		 const std::vector<PlannerHNS::DetectedObject>& obj_list,
-		 const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map	,
-		const bool& bEmergencyStop,
-		const bool& bGreenTrafficLight,
-		const bool& bLive)
-{
-	 if(!bLive)
-		 SimulateOdoPosition(dt, vehicleState);
-
-	UpdateCurrentLane(map, 3.0);
-
-	InitializeTrajectoryCosts();
-
-	CalculateTransitionCosts();
-
-	CalculateDistanceCosts(vehicleState, obj_list);
-
-	CalculateImportantParameterForDecisionMaking(vehicleState, goal, bEmergencyStop, bGreenTrafficLight);
-
-	PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
-
-	beh.bNewPlan = SelectSafeTrajectoryAndSpeedProfile(vehicleState);
-
-
-//	timespec predictionTime;
-//	UtilityH::GetTickCount(predictionTime);
-	//if(UtilityH::GetTimeDiffNow(m_PredictionTimer) > 0.5 || beh.bNewPlan)
-	{
-		//CalculateObstacleCosts(map, vehicleState, obj_list);
-		//m_PredictionTime = UtilityH::GetTimeDiffNow(predictionTime);
-	}
-
-
-//	bool bCollision = false;
-//	int wp_id = -1;
-//	for(unsigned int i=0; i < m_Path.size(); i++)
+// PlannerHNS::BehaviorState CarState::DoOneStep(const double& dt,
+//		 const PlannerHNS::VehicleState& vehicleState,
+//		 const std::vector<PlannerHNS::DetectedObject>& obj_list,
+//		 const PlannerHNS::GPSPoint& goal, PlannerHNS::RoadNetwork& map	,
+//		const bool& bEmergencyStop,
+//		const bool& bGreenTrafficLight,
+//		const bool& bLive)
+//{
+//	 if(!bLive)
+//		 SimulateOdoPosition(dt, vehicleState);
+//
+//	UpdateCurrentLane(map, 3.0);
+//
+//	InitializeTrajectoryCosts();
+//
+//	CalculateTransitionCosts();
+//
+//	CalculateDistanceCosts(vehicleState, obj_list);
+//
+//	CalculateImportantParameterForDecisionMaking(vehicleState, goal, bEmergencyStop, bGreenTrafficLight);
+//
+//	PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
+//
+//	beh.bNewPlan = SelectSafeTrajectoryAndSpeedProfile(vehicleState);
+//
+//
+////	timespec predictionTime;
+////	UtilityH::GetTickCount(predictionTime);
+//	//if(UtilityH::GetTimeDiffNow(m_PredictionTimer) > 0.5 || beh.bNewPlan)
 //	{
-//		if(m_Path.at(i).collisionCost > 0)
-//		{
-//			bCollision = true;
-//			wp_id = i;
-//			beh.maxVelocity = m_Path.at(i).v;//PlannerHNS::PlanningHelpers::GetVelocityAhead(m_Path, state, 1.5*vehicleState.speed*3.6);
-//			break;
-//		}
+//		//CalculateObstacleCosts(map, vehicleState, obj_list);
+//		//m_PredictionTime = UtilityH::GetTimeDiffNow(predictionTime);
 //	}
-
-//	std::cout << "------------------------------------------------" <<  std::endl;
-//	std::cout << "Max Velocity = " << beh.maxVelocity << ", New Plan : " << beh.bNewPlan <<  std::endl;
-//	std::cout << "Collision = " << bCollision << ", @ WayPoint : " << wp_id <<  std::endl;
-//	std::cout << "------------------------------------------------" <<  std::endl;
-
-	return beh;
- }
+//
+//
+////	bool bCollision = false;
+////	int wp_id = -1;
+////	for(unsigned int i=0; i < m_Path.size(); i++)
+////	{
+////		if(m_Path.at(i).collisionCost > 0)
+////		{
+////			bCollision = true;
+////			wp_id = i;
+////			beh.maxVelocity = m_Path.at(i).v;//PlannerHNS::PlanningHelpers::GetVelocityAhead(m_Path, state, 1.5*vehicleState.speed*3.6);
+////			break;
+////		}
+////	}
+//
+////	std::cout << "------------------------------------------------" <<  std::endl;
+////	std::cout << "Max Velocity = " << beh.maxVelocity << ", New Plan : " << beh.bNewPlan <<  std::endl;
+////	std::cout << "Collision = " << bCollision << ", @ WayPoint : " << wp_id <<  std::endl;
+////	std::cout << "------------------------------------------------" <<  std::endl;
+//
+//	return beh;
+// }
 
 
  SimulatedCarState::SimulatedCarState()
@@ -1035,7 +1035,7 @@ bool SimulatedCarState::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::Ve
 	PlannerHNS::PlanningParams planningDefaultParams;
 	planningDefaultParams.rollOutNumber = 0;
 
-	int currIndex = PlannerHNS::PlanningHelpers::GetClosestPointIndex(m_Path, state);
+	int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_Path, state);
 	int index_limit = 0;//m_Path.size() - 15;
 	if(index_limit<=0)
 		index_limit =  m_Path.size()/2.0;

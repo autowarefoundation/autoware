@@ -141,24 +141,22 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 
 	for(unsigned int il=0; il < rollOuts.size(); il++)
 	{
-		//int iCurrIndex = PlanningHelpers::GetClosestPointIndex(totalPaths.at(il), currState);
+		RelativeInfo car_info;
+		PlanningHelpers::GetRelativeInfo(totalPaths.at(il), currState, car_info);
 
 		for(unsigned int it=0; it< rollOuts.at(il).size(); it++)
 		{
-			int iCurrIndex = PlanningHelpers::GetClosestNextPointIndex(totalPaths.at(il), currState);
-			double long_diff_distance = 0;
-			WayPoint perpWP = PlanningHelpers::GetPerpendicularOnTrajectory(totalPaths.at(il), currState, long_diff_distance);
-			double longitudinalDist = hypot(totalPaths.at(il).at(iCurrIndex).pos.y - perpWP.pos.y, totalPaths.at(il).at(iCurrIndex).pos.x - perpWP.pos.x);
-			//int iCurrLocalIndex = PlanningHelpers::GetClosestPointIndex(rollOuts.at(il).at(it), currState);
-//			double distanceOnLocal = 0;
-//			for(int iLocalTraj = 1; iLocalTraj <= iCurrLocalIndex; iLocalTraj++)
-//				distanceOnLocal += hypot(rollOuts.at(il).at(it).at(iLocalTraj).pos.y - rollOuts.at(il).at(it).at(iLocalTraj-1).pos.y , rollOuts.at(il).at(it).at(iLocalTraj).pos.x - rollOuts.at(il).at(it).at(iLocalTraj-1).pos.x);
-
-
+//			int iCurrIndex = PlanningHelpers::GetClosestNextPointIndex(totalPaths.at(il), currState);
+//			double long_diff_distance = 0;
+//			WayPoint perpWP = PlanningHelpers::GetPerpendicularOnTrajectory(totalPaths.at(il), currState, long_diff_distance);
+//			double longitudinalDist = hypot(totalPaths.at(il).at(iCurrIndex).pos.y - perpWP.pos.y, totalPaths.at(il).at(iCurrIndex).pos.x - perpWP.pos.x);
 
 			for(unsigned int icon = 0; icon < contourPoints.size(); icon++)
 			{
-				longitudinalDist += PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon));
+				RelativeInfo obj_info;
+				PlanningHelpers::GetRelativeInfo(totalPaths.at(il), contourPoints.at(icon), obj_info);
+				double longitudinalDist = PlanningHelpers::GetExactDistanceOnTrajectory(totalPaths.at(il), car_info, obj_info);
+				//longitudinalDist += PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon));
 
 				if(longitudinalDist< -carInfo.length)
 				{
@@ -182,7 +180,8 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 //				relative_point = rotationMat*relative_point;
 
 
-				double lateralDist =  fabs(PlanningHelpers::GetPerpDistanceToTrajectorySimple(totalPaths.at(il), contourPoints.at(icon), iCurrIndex) - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
+				//double lateralDist =  fabs(PlanningHelpers::GetPerpDistanceToTrajectorySimple(totalPaths.at(il), contourPoints.at(icon), iCurrIndex) - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
+				double lateralDist = fabs(obj_info.perp_distance - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
 
 
 				longitudinalDist = longitudinalDist - critical_long_front_distance;

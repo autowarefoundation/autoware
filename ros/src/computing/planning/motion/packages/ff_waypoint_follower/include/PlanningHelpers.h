@@ -48,6 +48,15 @@ public:
 	static WayPoint GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance);
 
 	/**
+	 * @brief Calculate the precise distance from projection of point p2 (relative) to projection of point 1 (relative)
+	 * @param trajectory list of waypoints
+	 * @param p1 first relative point
+	 * @param p2 second relative point
+	 * @return distance on trajectory
+	 */
+	static double GetExactDistanceOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& p1,const RelativeInfo& p2);
+
+	/**
 	 * @brief Find the closest next point on the trajectory index
 	 * @param trajectory list of waypoints
 	 * @param p query point
@@ -63,7 +72,7 @@ public:
 	 * @param prevIndex initial search index
 	 * @return index of the closest point from trajectory
 	 */
-	static int GetClosestPointIndex(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
+	static int GetClosestPointIndex_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
 
 	/**
 	 * @brief Find the Perpendicular Point on trajectory
@@ -73,20 +82,22 @@ public:
 	 * @param prevIndex initial search index
 	 * @return perpendicular point on trajectory
 	 */
-	static WayPoint GetPerpendicularOnTrajectory(const std::vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex = 0);
+	static WayPoint GetPerpendicularOnTrajectory_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex = 0);
 
-	static double GetPerpDistanceToTrajectorySimple(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+	static double GetPerpDistanceToTrajectorySimple_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
 
-	static double GetPerpDistanceToVectorSimple(const WayPoint& p1, const WayPoint& p2, const WayPoint& pose);
+	static double GetPerpDistanceToVectorSimple_obsolete(const WayPoint& p1, const WayPoint& p2, const WayPoint& pose);
 
-	static WayPoint GetNextPointOnTrajectory(const std::vector<WayPoint>& trajectory, const double& distance, const int& currIndex = 0);
+	static WayPoint GetNextPointOnTrajectory_obsolete(const std::vector<WayPoint>& trajectory, const double& distance, const int& currIndex = 0);
+	static double GetDistanceOnTrajectory_obsolete(const std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
+
 
 	static void FixPathDensity(std::vector<WayPoint>& path, const double& distanceDensity);
 	static void SmoothPath(std::vector<WayPoint>& path, double weight_data =0.25,double weight_smooth = 0.25,double tolerance = 0.01);
 	static double CalcCircle(const GPSPoint& pt1, const GPSPoint& pt2, const GPSPoint& pt3, GPSPoint& center);
 	static double CalcAngleAndCost(std::vector<WayPoint>& path, const double& lastCost = 0, const bool& bSmooth = true );
 	static double CalcAngleAndCostAndCurvatureAnd2D(std::vector<WayPoint>& path, const double& lastCost = 0, const bool& bSmooth = true );
-	static double GetDistanceOnTrajectory(const std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
+
 	static double GetAccurateDistanceOnTrajectory(std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
 
 	static void ExtractPartFromPointToDistance(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
