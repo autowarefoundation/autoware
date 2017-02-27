@@ -1,0 +1,7 @@
+<launch>
+	<node pkg="twist_cmd_converter" name="twist_cmd_converter" type="twist_cmd_converter_node" >
+		<remap from="points_in" to="/twist_cmd"/>
+		<remap from="points_out" to="/catvehicle/twist_cmd" />
+
+	</node>
+</launch>

@@ -48,7 +48,8 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map
+% sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
 ```
 
@@ -59,11 +60,13 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 
 ```
 % sudo apt-get install ros-jade-desktop-full ros-jade-nmea-msgs ros-jade-nmea-navsat-driver ros-jade-sound-play
+% sudo apt-get install ros-jade-controller-manager ros-jade-ros-control ros-jade-ros-controllers ros-jade-gazebo-ros-control ros-jade-sicktoolbox ros-jade-sicktoolbox-wrapper ros-jade-joystick-drivers ros-jade-novatel-span-driver
 % sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
 ```
 
-**NOTE: jsk_visualization is not provided in Ubuntu15.04 Jade. Please download it from the following repository and build it by yourself.  
+**NOTE: jsk_visualization and grid_map is not provided in Ubuntu15.04 Jade. Please download it from the following repository and build it by yourself.
 https://github.com/jsk-ros-pkg/jsk_visualization**
+https://github.com/ethz-asl/grid_map
 
 ## How to Build
 
@@ -96,6 +99,16 @@ Be careful for changing files under `ros/src/sensing/drivers/lidar/packages/velo
 Original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
 repository, you must use **git subtree push**. (Please never change and push code if you don't understand
 `git subtree` well).
+
+GitFlow, git branching model, is introduced in Autoware repository.
+- When you adding new features, you can branch off your feature branch from `develop`.  
+  you can use the following command.  
+  `$ git checkout -b feature/[your_branch_name] develop`
+- When you find bugs in `master` branch, you can branch off your hotfix branch from `master`.  
+  you can use the following command.  
+  `$ git checkout -b hotfix/[your_branch_name] master`
+
+More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## Documents
 
@@ -130,13 +143,18 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 
 1. S. Kato, E. Takeuchi, Y. Ishiguro, Y. Ninomiya, K. Takeda, and T. Hamada. "An Open Approach to Autonomous Vehicles", IEEE Micro, Vol. 35, No. 6, pp. 60-69, 2015. [![Link](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)
 
+## Demo Videos
+
+### Public Road Testing
+[![Public Road Testing](http://img.youtube.com/vi/EcRdoJATdzE/0.jpg)](https://www.youtube.com/watch?v=EcRdoJATdzE)
+
 ## Instruction Videos
 
 ### Quick Start
 [![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
-### Loading map data
-[![Loading map data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
+### Loading Map Data
+[![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
 
 ### Localization with GNSS
 [![Localization with GNSS](http://img.youtube.com/vi/5bj7gkFlul0/0.jpg)](https://www.youtube.com/watch?v=5bj7gkFlul0)

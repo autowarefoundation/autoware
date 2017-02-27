@@ -134,8 +134,9 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose, double ve
   // first subscribe
   if (!receive_once)
   {
+    ofs << "x,y,z,yaw,velocity,change_flag" << std::endl;
     ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-        << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << std::endl;
+        << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << ",0,0" << std::endl;
     receive_once = true;
     displayMarker(current_pose, 0);
     previous_pose = current_pose;
@@ -149,7 +150,7 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose, double ve
     if (distance > interval_)
     {
       ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-          << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << "," << velocity << std::endl;
+          << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << "," << velocity << ",0" << std::endl;
 
       displayMarker(current_pose, velocity);
       previous_pose = current_pose;

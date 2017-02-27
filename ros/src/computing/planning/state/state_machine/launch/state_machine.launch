@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+
+	<arg name="is_manual_light_detection" default="True"/>
+	<!-- rosrun state_machine state_machine -->
+	<node pkg="state_machine" type="state_machine" name="state_machine" output="screen">
+		<param name="is_manual_light_detection" value="$(arg is_manual_light_detection)"/>
+	</node>
+
+</launch>

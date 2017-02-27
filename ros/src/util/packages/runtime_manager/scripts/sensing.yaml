@@ -65,7 +65,7 @@ subs :
       - name : Javad Delta 3 (TTY1)
         desc : Javad Delta 3 (TTY1) desc sample
         probe: 'lsusb -d 0584: > /dev/null' # probed if serial converter is connected
-        run  : rosrun javad_navsat_driver gnss.sh
+        run  : roslaunch javad_navsat_driver javad_navsat.launch
         param: serial
         gui  :
           flags : [ kill_children ]

@@ -87,7 +87,7 @@ static pcl::PointCloud<pcl::PointXYZI> reference_map;
 
 static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
 // Default values
-static int iter = 30; // Maximum iterations
+static int max_iter = 30; // Maximum iterations
 static float ndt_res = 1.0; // Resolution
 static double step_size = 0.1; // Step size
 static double trans_eps = 0.01; // Transformation epsilon
@@ -110,8 +110,8 @@ static int initial_scan_loaded = 0;
 
 static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
-static double RANGE = 0.0;
-static double SHIFT = 0.0;
+static double min_scan_range = 5.0;
+static double min_add_scan_shift = 1.0;
 static int REFERENCE_MAP_SIZE = 3;
 
 static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
@@ -129,14 +129,20 @@ static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& in
 {
   ndt_res = input->resolution;
   step_size = input->step_size;
-  trans_eps = input->trans_eps;
+  trans_eps = input->trans_epsilon;
+  max_iter = input->max_iterations;
   voxel_leaf_size = input->leaf_size;
+  min_scan_range = input->min_scan_range;
+  min_add_scan_shift = input->min_add_scan_shift;
 
   std::cout << "param_callback" << std::endl;
   std::cout << "ndt_res: " << ndt_res << std::endl;
   std::cout << "step_size: " << step_size << std::endl;
-  std::cout << "trans_eps: " << trans_eps << std::endl;
+  std::cout << "trans_epsilon: " << trans_eps << std::endl;
+  std::cout << "max_iter: " << max_iter << std::endl;
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
+  std::cout << "min_scan_range: " << min_scan_range << std::endl;
+  std::cout << "min_add_scan_shift: " << min_add_scan_shift << std::endl;
 }
 
 static void output_callback(const runtime_manager::ConfigNdtMappingOutput::ConstPtr& input)
@@ -204,7 +210,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     	p.intensity = (double) item->intensity;
 
     	r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
-    	if(r > RANGE){
+    	if(r > min_scan_range){
     		scan.push_back(p);
     	}
     }
@@ -230,7 +236,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt.setTransformationEpsilon(trans_eps);
     ndt.setStepSize(step_size);
     ndt.setResolution(ndt_res);
-    ndt.setMaximumIterations(iter);
+    ndt.setMaximumIterations(max_iter);
     ndt.setInputSource(filtered_scan_ptr);
     
     if(isMapUpdate == true){
@@ -329,7 +335,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     
     // Calculate the shift between added_pose and current_pose
     double shift = sqrt(pow(current_pose.x-added_pose.x, 2.0) + pow(current_pose.y-added_pose.y, 2.0));
-    if(shift >= SHIFT){
+    if(shift >= min_add_scan_shift){
       map += *transformed_scan_ptr;
 
       if(previous_scans.size() >= (unsigned int)REFERENCE_MAP_SIZE){
@@ -441,10 +447,6 @@ int main(int argc, char **argv)
     ros::NodeHandle private_nh("~");
 
     // setting parameters
-    private_nh.getParam("range", RANGE);
-    std::cout << "RANGE: " << RANGE << std::endl;
-    private_nh.getParam("shift", SHIFT);
-    std::cout << "SHIFT: " << SHIFT << std::endl;
     private_nh.getParam("reference_map_size", REFERENCE_MAP_SIZE);
     std::cout << "REFERENCE_MAP_SIZE: " << REFERENCE_MAP_SIZE << std::endl;
     private_nh.getParam("use_openmp", _use_openmp);
