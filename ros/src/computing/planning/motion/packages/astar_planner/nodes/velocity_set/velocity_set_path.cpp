@@ -144,7 +144,7 @@ void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, doub
   double square_vel = (current_vel_ - velocity_change_limit) * (current_vel_ - velocity_change_limit);
   for (int i = 0;; i++)
   {
-    if (!checkWaypoint(i, __FUNCTION__))
+    if (!checkWaypoint(closest_waypoint + i, __FUNCTION__))
       return;
 
     // sqrt(v^2 - 2ax)
