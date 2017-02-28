@@ -45,13 +45,6 @@
 #endif // HAVE_PNG
 #endif // HAVE_JPEG
 
-#ifdef HAVE_OPENEXR
-#error "XYZ"
-#include <ImfOutputFile.h>
-#include <ImfInputFile.h>
-#include <ImfChannelList.h>
-#endif // HAVE_OPENEXR
-
 #ifdef _WIN_
 // Undef windows Macro polution from jpeglib.h
 #undef LoadImage

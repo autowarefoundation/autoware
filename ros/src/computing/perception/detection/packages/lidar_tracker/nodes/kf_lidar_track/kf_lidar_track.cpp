@@ -45,10 +45,12 @@ private:
 	ros::Publisher pub_jsk_pictograms_;
 
 	bool pose_estimation_;
+	int keep_alive_;
 
 	boost::shared_ptr<KfLidarTracker> tracker_ptr;
 
 	double distance_matching_threshold_;
+	double tracker_merging_threshold_;
 
 	void CloudClustersCallback(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
 };
@@ -63,15 +65,19 @@ KfLidarTrackNode::KfLidarTrackNode() :
 	pub_jsk_hulls_ = node_handle_.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls_tracked",1);
 	pub_jsk_pictograms_ = node_handle_.advertise<jsk_rviz_plugins::PictogramArray>("/cluster_ids_tracked",1);
 
-	node_handle_.param("distance_matching_threshold", distance_matching_threshold_, 1.0);	ROS_INFO("distance_matching_threshold: %f", distance_matching_threshold_);// distance threshold to match objects between scans
+	node_handle_.param("distance_matching_threshold", distance_matching_threshold_, 3.0);	ROS_INFO("distance_matching_threshold: %f", distance_matching_threshold_);// distance threshold to match objects between scans
+	node_handle_.param("tracker_merging_threshold", tracker_merging_threshold_, 2.0);	ROS_INFO("tracker_merging_threshold: %f", tracker_merging_threshold_);// distance threshold to match objects between scans
 	node_handle_.param("pose_estimation", pose_estimation_, false);	ROS_INFO("pose_estimation: %d", pose_estimation_);// whether or not to estimate pose
+	node_handle_.param("keep_alive", keep_alive_, 2);	ROS_INFO("keep_alive: %d", keep_alive_);// frames to keep an object
+
 
 
 	tracker_ptr = boost::shared_ptr<KfLidarTracker>(new KfLidarTracker(0.2f,  //dt
 							0.1f, 			//acceleration_noise
-							15.0f, 			//matching distance threshold
-							5, 				//life span
-							5));			//trace length
+							distance_matching_threshold_, 			//matching distance threshold
+							tracker_merging_threshold_, //tracker merging threshold
+							keep_alive_, 				//life span
+							keep_alive_));			//trace length
 }
 
 KfLidarTrackNode::~KfLidarTrackNode()
@@ -86,9 +92,9 @@ void KfLidarTrackNode::CloudClustersCallback(const lidar_tracker::CloudClusterAr
 	detected_objects.header = in_cloud_cluster_array_ptr->header;
 
 
-	std::cout << "Update start" << std::endl;
+	//std::cout << "Update start" << std::endl;
 	tracker_ptr->Update(*in_cloud_cluster_array_ptr, KfLidarTracker::CentersDist);
-	std::cout << "Update end" << std::endl;
+	//std::cout << "Update end" << std::endl;
 
 	jsk_recognition_msgs::BoundingBoxArray tracked_boxes;
 	jsk_recognition_msgs::PolygonArray tracked_hulls;

@@ -6,6 +6,7 @@ import rospy
 from copy import copy, deepcopy
 from exceptions import KeyError, ValueError
 from segway_rmp.msg import SegwayStatusStamped
+from geometry_msgs.msg import PoseStamped
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from math import cos, sin, tan, exp
@@ -470,6 +471,22 @@ class PoseTable :
             bagRecord[i] = pose 
             i += 1
         return bagRecord
+    
+    
+    @staticmethod
+    def loadFromPoseStampedBag (filename, topicName=None):
+        bagsrc = rosbag.Bag (filename, mode='r')
+        poseRecord = PoseTable()
+        for topic, msg, msgTimestamp in bagsrc.read_messages():
+            if (topicName is not None and topic != topicName):
+                continue
+            if (msg._type != 'geometry_msgs/PoseStamped') :
+                continue
+            cpose = Pose(msgTimestamp.to_sec(), msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, 
+                msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
+            poseRecord.append(cpose)
+        return poseRecord
+        
         
     @staticmethod
     def loadFromArray (msrc):
@@ -675,7 +692,28 @@ class PoseTable :
             print ("{} / {}".format(i, len(self.table)))
             i+=1
         bagfile.close()
-            
+    
+    
+    def saveToPoseStampedBag (self, filename, topic, frame, append=False):
+        bagfile = None
+        if (append==False) :
+            bagfile = rosbag.Bag (filename, mode='w')
+        else:
+            bagfile = rosbag.Bag (filename, mode='a')
+        for pose in self.table:
+            posemsg = PoseStamped()
+            posemsg.header.frame_id = frame
+            posemsg.header.stamp = rospy.Time.from_sec(pose.timestamp)
+            posemsg.pose.position.x = pose.x
+            posemsg.pose.position.y = pose.y
+            posemsg.pose.position.z = pose.z
+            posemsg.pose.orientation.x = pose.qx
+            posemsg.pose.orientation.y = pose.qy
+            posemsg.pose.orientation.z = pose.qz
+            posemsg.pose.orientation.w = pose.qw
+            bagfile.write(topic, posemsg, t=rospy.Time.from_sec(pose.timestamp))
+        bagfile.close()
+    
             
     @staticmethod
     def loadSegwayStatusFromBag (bagFilename, limitMsg=0) :
@@ -874,11 +912,7 @@ def readMessage (bag, topic, timestamp):
 
 
 if __name__ == '__main__' :
-    imageList = BagReader ('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map2/resultz.bag', '/orbslamdebug/compressed')
-    msg = imageList.readByTime(1454648393.2110474)
-#     testmap1 = PoseTable.loadFromBagFile('/home/sujiwo/Data/Road_Datasets/2016-02-05-13-32-06/localizationResults/map1/slowrate.bag', '/ORB_SLAM/World', '/ORB_SLAM/ExtCamera')
-#     testpose = testmap1[19333]
-#     erz = testpose.measureErrorLateral (groundTruth, timeTolerance=0.25)
+    poseBag = PoseTable.loadFromPoseStampedBag("/home/sujiwo/Tsukuba2016/data/nagoya/2016-11-18-14-34-25/pose.bag")
     
     pass
     

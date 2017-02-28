@@ -72,7 +72,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   std_msgs 
+   std_msgs
    geometry_msgs
    sensor_msgs
    jsk_recognition_msgs
@@ -137,6 +137,11 @@ add_executable(kf_lidar_track
 target_include_directories(kf_lidar_track PRIVATE nodes/kf_lidar_track/includes)
 target_link_libraries(kf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(kf_lidar_track lidar_tracker_generate_messages_cpp)
+
+#Euclidean Track
+add_executable(euclidean_lidar_track nodes/euclidean_lidar_track/euclidean_lidar_track.cpp)
+target_link_libraries(euclidean_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(euclidean_lidar_track lidar_tracker_generate_messages_cpp)
 
 #Vscan Filling
 add_executable(vscan_filling nodes/vscan_filling/vscan_filling.cpp)
@@ -225,18 +230,18 @@ if(EXISTS "/usr/local/cuda")
     "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/rbsspfvehicletracker.h"
     )
   add_custom_target(vehicle_tracker_moc_rbsspfvehicletracker DEPENDS moc_rbsspfvehicletracker.cpp)
-  
+
   # find_package(Qt5Core REQUIRED)
   # find_package(Qt5Widgets REQUIRED)
-  
+
   #QT Stuff
-  
+
   FIND_PACKAGE(CUDA REQUIRED)
   INCLUDE(FindCUDA)
-  
+
   # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
-  
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11)
+
   INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS})
 
@@ -256,7 +261,7 @@ if(EXISTS "/usr/local/cuda")
 
   add_definitions(${Qt5Core_DEFINITIONS})
   add_definitions(${Qt5Widgets_DEFINITIONS})
-  
+
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
   add_executable(vscan_lidar_track

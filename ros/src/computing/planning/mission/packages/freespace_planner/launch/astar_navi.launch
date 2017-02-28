@@ -36,4 +36,7 @@
           <param name="map_topic" value="$(arg map_topic)" />
 	</node>
 
+	<!-- Visualization node-->
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher"/>
+
 </launch>

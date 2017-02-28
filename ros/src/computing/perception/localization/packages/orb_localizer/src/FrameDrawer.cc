@@ -118,6 +118,11 @@ cv::Mat FrameDrawer::DrawFrame()
         }
     }
 
+    // Put ORB points in frame
+	for (auto &kp: vCurrentKeys) {
+		cv::circle (workingFrame, kp.pt, 1, cv::Scalar(255,0,0),-1);
+	}
+
     cv::Mat imWithInfo;
     DrawTextInfo(workingFrame,state, imWithInfo);
 

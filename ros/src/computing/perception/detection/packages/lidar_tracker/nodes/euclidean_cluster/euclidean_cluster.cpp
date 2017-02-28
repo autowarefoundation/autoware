@@ -356,7 +356,7 @@ void checkClusterMerge(size_t in_cluster_id, std::vector<ClusterPtr>& in_cluster
 		if (i != in_cluster_id && !in_out_visited_clusters[i])
 		{
 			pcl::PointXYZ point_b = in_clusters[i]->GetCentroid();
-			double distance = fabs( sqrt( pow(point_b.x - point_a.x,2) + pow(point_b.y - point_a.y,2) ) );
+			double distance = sqrt( pow(point_b.x - point_a.x,2) + pow(point_b.y - point_a.y,2) );
 			if (distance <= in_merge_threshold)
 			{
 				in_out_visited_clusters[i] = true;
