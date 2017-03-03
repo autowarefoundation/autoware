@@ -65,29 +65,13 @@ public:
 	 */
 	static int GetClosestNextPointIndex(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
 
-	/**
-	 * @brief Find the closes point on trajectory (either next or previous, direction doesn't matter )
-	 * @param trajectory list of waypoints
-	 * @param p query point
-	 * @param prevIndex initial search index
-	 * @return index of the closest point from trajectory
-	 */
+	static int GetClosestNextPointIndexDirection(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+
+
 	static int GetClosestPointIndex_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
-
-	/**
-	 * @brief Find the Perpendicular Point on trajectory
-	 * @param trajectory list of waypoints
-	 * @param p query point
-	 * @param distance Distance from perpendicular point to previous closest point on the trajectory
-	 * @param prevIndex initial search index
-	 * @return perpendicular point on trajectory
-	 */
 	static WayPoint GetPerpendicularOnTrajectory_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex = 0);
-
 	static double GetPerpDistanceToTrajectorySimple_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
-
 	static double GetPerpDistanceToVectorSimple_obsolete(const WayPoint& p1, const WayPoint& p2, const WayPoint& pose);
-
 	static WayPoint GetNextPointOnTrajectory_obsolete(const std::vector<WayPoint>& trajectory, const double& distance, const int& currIndex = 0);
 	static double GetDistanceOnTrajectory_obsolete(const std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
 

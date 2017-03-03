@@ -190,7 +190,44 @@ int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory
 		}
 	}
 
-	if(min_index < trajectory.size()-2)
+	if(min_index < (int)trajectory.size()-2)
+	{
+		GPSPoint curr, next;
+		curr = trajectory.at(min_index).pos;
+		next = trajectory.at(min_index+1).pos;
+		POINT2D v_1(p.pos.x - curr.x   ,p.pos.y - curr.y);
+		double norm1 = pointNorm(v_1);
+		POINT2D v_2(next.x - curr.x,next.y - curr.y);
+		double norm2 = pointNorm(v_2);
+		double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
+		double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
+		if(a <= M_PI_2)
+			min_index = min_index+1;
+	}
+
+	return min_index;
+}
+
+int PlanningHelpers::GetClosestNextPointIndexDirection(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+{
+	if(trajectory.size() == 0 || prevIndex < 0) return 0;
+
+	double d = 0, minD = 9999999999;
+	int min_index  = prevIndex;
+
+	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
+	{
+		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
+		double angle_diff = UtilityH::AngleBetweenTwoAnglesPositive(trajectory.at(i).pos.a, p.pos.a)*RAD2DEG;
+
+		if(d < minD && angle_diff < 45)
+		{
+			min_index = i;
+			minD = d;
+		}
+	}
+
+	if(min_index < (int)trajectory.size()-2)
 	{
 		GPSPoint curr, next;
 		curr = trajectory.at(min_index).pos;
@@ -522,12 +559,13 @@ double PlanningHelpers::GetDistanceToClosestStopLineAndCheck(const std::vector<W
 			{
 				if(path.at(i).pLane->stopLines.at(j).id == path.at(i).stopLineID)
 				{
+					stopLineID = path.at(i).stopLineID;
+
 					RelativeInfo stop_info;
 					WayPoint stopLineWP ;
 					stopLineWP.pos = path.at(i).pLane->stopLines.at(j).points.at(0);
 					GetRelativeInfo(path, stopLineWP, stop_info);
 					double localDistance = GetExactDistanceOnTrajectory(path, info, stop_info);
-					cout << "Distance To Stop Line: " << localDistance << ", Index: " << info.iBack << endl;
 
 					if(localDistance>0)
 					{
@@ -651,19 +689,21 @@ double PlanningHelpers::CalcAngleAndCost(vector<WayPoint>& path, const double& l
 	path[0].pos.a = UtilityH::FixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x ));
 	path[0].cost = lastCost;
 
-	for(unsigned int j = 1; j < path.size()-1; j++)
+	for(int j = 1; j < path.size()-1; j++)
 	{
 		path[j].pos.a 		= UtilityH::FixNegativeAngle(atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x ));
 		path[j].cost 	= path[j-1].cost +  distance2points(path[j-1].pos, path[j].pos);
 	}
-	unsigned int j = path.size()-1;
+
+	int j = (int)path.size()-1;
 
 	path[j].pos.a 		= path[j-1].pos.a;
 	path[j].cost 	= path[j-1].cost + distance2points(path[j-1].pos, path[j].pos);
 
-	if(bSmooth)
+	for(int j = 0; j < path.size()-1; j++)
 	{
-		//SmoothWayPointsDirections(path, 0.1, 0.4, 0.1);
+		if(path.at(j).pos.x == path.at(j+1).pos.x && path.at(j).pos.y == path.at(j+1).pos.y)
+			path.at(j).pos.a = path.at(j+1).pos.a;
 	}
 
 	return path[j].cost;
@@ -748,7 +788,7 @@ void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& ori
 		const double& pathDensity, vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance)
 {
 	extractedPath.clear();
-	unsigned int close_index = GetClosestNextPointIndex(originalPath, pos);
+	unsigned int close_index = GetClosestNextPointIndexDirection(originalPath, pos);
 	vector<WayPoint> tempPath;
 	double d_limit = 0;
 	if(close_index >= 5) close_index -=5;

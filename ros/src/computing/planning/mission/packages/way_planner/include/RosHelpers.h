@@ -96,6 +96,7 @@ public:
 				else if (idirect == 4)
 					recieved_msg.options.push_back(PlannerHNS::RIGHT_TURN_ACTION);
 			}
+			recieved_msg.currID = atoi(sections.at(3).c_str());
 			recieved_msg.bErr = atoi(sections.at(4).c_str());
 			recieved_msg.err_msg = sections.at(5);
 		}

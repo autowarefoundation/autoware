@@ -77,6 +77,20 @@ int MappingHelpers::GetLaneIdByWaypointId(const int& id,std::vector<Lane>& lanes
 	return 0;
 }
 
+int MappingHelpers::ReplaceMyID(int& id,const std::vector<std::pair<int,int> >& rep_list)
+{
+	for(unsigned int i=0; i < rep_list.size(); i++)
+	{
+		if(rep_list.at(i).first == id)
+		{
+			id = rep_list.at(i).second;
+			return id;
+		}
+	}
+
+	return -1;
+}
+
 void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 		const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
 		const std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine>& dt_data,
@@ -91,18 +105,85 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 {
 	vector<Lane> roadLanes;
 	Lane lane_obj;
-	int prev_FLID = -1;
 	int laneIDSeq = 0;
-	//WayPoint prevWayPoint;
+	WayPoint prevWayPoint;
+	UtilityHNS::AisanLanesFileReader::AisanLane prev_lane_point;
+	UtilityHNS::AisanLanesFileReader::AisanLane curr_lane_point;
+	UtilityHNS::AisanLanesFileReader::AisanLane next_lane_point;
+	vector<pair<int,int> > id_replace_list;
+
 	for(unsigned int l= 0; l < lanes_data.size(); l++)
 	{
-		if(lanes_data.at(l).LnID != prev_FLID)
+		curr_lane_point = lanes_data.at(l);
+
+		if(l+1 < lanes_data.size())
+		{
+			next_lane_point = lanes_data.at(l+1);
+			if(curr_lane_point.FLID == next_lane_point.LnID && curr_lane_point.DID == next_lane_point.DID)
+			{
+				next_lane_point.BLID = curr_lane_point.BLID;
+				if(next_lane_point.LaneDir == 'F')
+					next_lane_point.LaneDir = curr_lane_point.LaneDir;
+
+				if(curr_lane_point.BLID2 != 0)
+				{
+					if(next_lane_point.BLID2 == 0)	next_lane_point.BLID2 = curr_lane_point.BLID2;
+					else if(next_lane_point.BLID3 == 0)	next_lane_point.BLID3 = curr_lane_point.BLID2;
+					else if(next_lane_point.BLID4 == 0)	next_lane_point.BLID4 = curr_lane_point.BLID2;
+				}
+
+				if(curr_lane_point.BLID3 != 0)
+				{
+					if(next_lane_point.BLID2 == 0)	next_lane_point.BLID2 = curr_lane_point.BLID3;
+					else if(next_lane_point.BLID3 == 0)	next_lane_point.BLID3 = curr_lane_point.BLID3;
+					else if(next_lane_point.BLID4 == 0)	next_lane_point.BLID4 = curr_lane_point.BLID3;
+				}
+
+				if(curr_lane_point.BLID3 != 0)
+				{
+					if(next_lane_point.BLID2 == 0)	next_lane_point.BLID2 = curr_lane_point.BLID4;
+					else if(next_lane_point.BLID3 == 0)	next_lane_point.BLID3 = curr_lane_point.BLID4;
+					else if(next_lane_point.BLID4 == 0)	next_lane_point.BLID4 = curr_lane_point.BLID4;
+				}
+
+				if(curr_lane_point.FLID2 != 0)
+				{
+					if(next_lane_point.FLID2 == 0)	next_lane_point.FLID2 = curr_lane_point.FLID2;
+					else if(next_lane_point.FLID3 == 0)	next_lane_point.FLID3 = curr_lane_point.FLID2;
+					else if(next_lane_point.FLID4 == 0)	next_lane_point.FLID4 = curr_lane_point.FLID2;
+				}
+
+				if(curr_lane_point.FLID3 != 0)
+				{
+					if(next_lane_point.FLID2 == 0)	next_lane_point.FLID2 = curr_lane_point.FLID3;
+					else if(next_lane_point.FLID3 == 0)	next_lane_point.FLID3 = curr_lane_point.FLID3;
+					else if(next_lane_point.FLID4 == 0)	next_lane_point.FLID4 = curr_lane_point.FLID3;
+				}
+
+				if(curr_lane_point.FLID3 != 0)
+				{
+					if(next_lane_point.FLID2 == 0)	next_lane_point.FLID2 = curr_lane_point.FLID4;
+					else if(next_lane_point.FLID3 == 0)	next_lane_point.FLID3 = curr_lane_point.FLID4;
+					else if(next_lane_point.FLID4 == 0)	next_lane_point.FLID4 = curr_lane_point.FLID4;
+				}
+
+				if(prev_lane_point.FLID == curr_lane_point.LnID)
+					prev_lane_point.FLID = next_lane_point.LnID;
+
+				id_replace_list.push_back(make_pair(curr_lane_point.LnID, next_lane_point.LnID));
+				curr_lane_point = next_lane_point;
+				l++;
+			}
+		}
+
+		if(curr_lane_point.LnID != prev_lane_point.FLID)
 		{
 			if(laneIDSeq != 0) //first lane
 			{
-				lane_obj.toIds.push_back(prev_FLID);
+				lane_obj.toIds.push_back(prev_lane_point.FLID);
 #ifdef SMOOTH_MAP_WAYPOINTS
 				PlanningHelpers::SmoothPath(lane_obj.points, 0.49, 0.15 , 0.01);
+				PlanningHelpers::CalcAngleAndCost(lane_obj.points);
 #endif
 				roadLanes.push_back(lane_obj);
 //				if(lane_obj.points.size() <= 1)
@@ -111,111 +192,145 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 
 			laneIDSeq++;
 			lane_obj = Lane();
-			lane_obj.speed = lanes_data.at(l).LimitVel;
-			lane_obj.id = lanes_data.at(l).LnID;
-			lane_obj.fromIds.push_back(lanes_data.at(l).BLID);
+			lane_obj.speed = curr_lane_point.LimitVel;
+			lane_obj.id = curr_lane_point.LnID;
+			lane_obj.fromIds.push_back(curr_lane_point.BLID);
 			lane_obj.roadId = laneIDSeq;
 		}
 
-//		if(lanes_data.at(l).LnID == 41)
-//			prev_FLID = 0;
-
 		WayPoint wp;
-		bool bFound = GetWayPoint(lanes_data.at(l).LnID, lane_obj.id, lanes_data.at(l).RefVel,lanes_data.at(l).DID,
+		bool bFound = GetWayPoint(curr_lane_point.LnID, lane_obj.id, curr_lane_point.RefVel,curr_lane_point.DID,
 				dt_data, points_data,origin, wp);
 
-		if(lanes_data.at(l).LaneDir == 'L')
+
+		if(curr_lane_point.LaneDir == 'L')
 		{
 			wp.actionCost.push_back(make_pair(LEFT_TURN_ACTION, 0));
-			//std::cout << " Left Lane : " << lanes_data.at(l).LnID << std::endl ;
+			//std::cout << " Left Lane : " << curr_lane_point.LnID << std::endl ;
 		}
-		else  if(lanes_data.at(l).LaneDir == 'R')
+		else  if(curr_lane_point.LaneDir == 'R')
 		{
 			wp.actionCost.push_back(make_pair(RIGHT_TURN_ACTION, 0));
-			//std::cout << " Right Lane : " << lanes_data.at(l).LnID << std::endl ;
+			//std::cout << " Right Lane : " << curr_lane_point.LnID << std::endl ;
 		}
 		else
 		{
 			wp.actionCost.push_back(make_pair(FORWARD_ACTION, 0));
 		}
 
-		wp.fromIds.push_back(lanes_data.at(l).BLID);
-		wp.toIds.push_back(lanes_data.at(l).FLID);
+		wp.fromIds.push_back(curr_lane_point.BLID);
+		wp.toIds.push_back(curr_lane_point.FLID);
 
-		//if(lanes_data.at(l).JCT > 0)
-		if(lanes_data.at(l).FLID2 > 0)
+		//if(curr_lane_point.JCT > 0)
+		if(curr_lane_point.FLID2 > 0)
 		{
-			lane_obj.toIds.push_back(lanes_data.at(l).FLID2);
-			wp.toIds.push_back(lanes_data.at(l).FLID2);
+			lane_obj.toIds.push_back(curr_lane_point.FLID2);
+			wp.toIds.push_back(curr_lane_point.FLID2);
 		}
-		if(lanes_data.at(l).FLID3 > 0)
+		if(curr_lane_point.FLID3 > 0)
 		{
-			lane_obj.toIds.push_back(lanes_data.at(l).FLID3);
-			wp.toIds.push_back(lanes_data.at(l).FLID3);
+			lane_obj.toIds.push_back(curr_lane_point.FLID3);
+			wp.toIds.push_back(curr_lane_point.FLID3);
 		}
-		if(lanes_data.at(l).FLID4 > 0)
+		if(curr_lane_point.FLID4 > 0)
 		{
-			lane_obj.toIds.push_back(lanes_data.at(l).FLID4);
-			wp.toIds.push_back(lanes_data.at(l).FLID4);
-		}
-
-		if(lanes_data.at(l).BLID2 > 0)
-		{
-			lane_obj.fromIds.push_back(lanes_data.at(l).BLID2);
-			wp.fromIds.push_back(lanes_data.at(l).BLID2);
-		}
-		if(lanes_data.at(l).BLID3 > 0)
-		{
-			lane_obj.fromIds.push_back(lanes_data.at(l).BLID3);
-			wp.fromIds.push_back(lanes_data.at(l).BLID3);
-		}
-		if(lanes_data.at(l).BLID4 > 0)
-		{
-			lane_obj.fromIds.push_back(lanes_data.at(l).BLID4);
-			wp.fromIds.push_back(lanes_data.at(l).BLID4);
+			lane_obj.toIds.push_back(curr_lane_point.FLID4);
+			wp.toIds.push_back(curr_lane_point.FLID4);
 		}
 
+		if(curr_lane_point.BLID2 > 0)
+		{
+			lane_obj.fromIds.push_back(curr_lane_point.BLID2);
+			wp.fromIds.push_back(curr_lane_point.BLID2);
+		}
+		if(curr_lane_point.BLID3 > 0)
+		{
+			lane_obj.fromIds.push_back(curr_lane_point.BLID3);
+			wp.fromIds.push_back(curr_lane_point.BLID3);
+		}
+		if(curr_lane_point.BLID4 > 0)
+		{
+			lane_obj.fromIds.push_back(curr_lane_point.BLID4);
+			wp.fromIds.push_back(curr_lane_point.BLID4);
+		}
 
+		//if(prev_lane_point.DID == curr_lane_point.DID && curr_lane_point.LnID == prev_lane_point.FLID)
+		if(prevWayPoint.pos.x == wp.pos.x && prevWayPoint.pos.y == wp.pos.y)
+		{
+			//if((prev_lane_point.FLID2 != 0 && curr_lane_point.FLID2 != 0) || (prev_lane_point.FLID3 != 0 && curr_lane_point.FLID3 != 0) || (prev_lane_point.FLID4 != 0 && curr_lane_point.FLID4 != 0))
+			{
+				cout << "Prev WP, LnID: " << prev_lane_point.LnID << ",BLID: " << prev_lane_point.BLID << ",FLID: " << prev_lane_point.FLID << ",DID: " << prev_lane_point.DID
+						<< ", Begin: " << prev_lane_point.BLID2 << "," << prev_lane_point.BLID3 << "," << prev_lane_point.BLID4
+						<< ", End: " << prev_lane_point.FLID2 << "," << prev_lane_point.FLID3 << "," << prev_lane_point.FLID4 << ": " << prev_lane_point.LaneDir <<   endl;
+				cout << "Curr WP, LnID: " << curr_lane_point.LnID << ",BLID: " << curr_lane_point.BLID << ",FLID: " << curr_lane_point.FLID << ",DID: " << curr_lane_point.DID
+						<< ", Begin: " << curr_lane_point.BLID2 <<  "," << curr_lane_point.BLID3 <<  "," << curr_lane_point.BLID4
+						<< ", End: " << curr_lane_point.FLID2 <<  "," <<curr_lane_point.FLID3 <<  "," << curr_lane_point.FLID4 <<   ": " << curr_lane_point.LaneDir << endl << endl;
+			}
+		}
 
 		if(bFound)
 		{
-//			if(lane_obj.points.size() > 0)
-//			{
-//				if(lane_obj.points.at(lane_obj.points.size()-1).pos.x == wp.pos.x && lane_obj.points.at(lane_obj.points.size()-1).pos.y == wp.pos.y)
-//					cout << "Skip Redundant Map Points !!! " << endl;
-//				else
-//					lane_obj.points.push_back(wp);
-//			}
-//			else
-				lane_obj.points.push_back(wp);
-
+			lane_obj.points.push_back(wp);
+			prevWayPoint = wp;
 		}
+		else
+			cout << " Strange ! point is not in the map !! " << endl;
 
-		prev_FLID = lanes_data.at(l).FLID;
-
-		//std::cout << "Map WP Dir : " <<  wp.pos.a*RAD2DEG << ", Actual WP Dir : " << UtilityH::FixNegativeAngle(angle2points(prevWayPoint.pos, wp.pos))*RAD2DEG << std::endl;
-		//prevWayPoint = wp;
-
-
-//			cout << " ID = " << lanes_data.at(l).LnID << ", BLID: " << lanes_data.at(l).BLID << ", FLID:" << lanes_data.at(l).FLID<<
-//					", JCT:" << lanes_data.at(l).JCT << ", LCnt:" << lanes_data.at(l).LCnt << ", LNo:" << lanes_data.at(l).Lno <<
-//					", SecID:" << lanes_data.at(l).RoadSecID <<
-//					", BLID2: " << lanes_data.at(l).BLID2 << ", FLID2: " << lanes_data.at(l).FLID2 <<
-//					", BLID3: " << lanes_data.at(l).BLID3 << ", FLID3: " << lanes_data.at(l).FLID3 <<
-//					", BLID4: " << lanes_data.at(l).BLID4 << ", FLID4: " << lanes_data.at(l).FLID4 << endl;
+		prev_lane_point = curr_lane_point;
 	}
 
 //	//delete first two lanes !!!!! Don't know why , you don't know why ! , these two line cost you a lot .. ! why why , works for toyota map , but not with moriyama
-	if(bSpecialFlag)
-	{
-		if(roadLanes.size() > 0)
-			roadLanes.erase(roadLanes.begin()+0);
-		if(roadLanes.size() > 0)
-			roadLanes.erase(roadLanes.begin()+0);
-	}
+//	if(bSpecialFlag)
+//	{
+//		if(roadLanes.size() > 0)
+//			roadLanes.erase(roadLanes.begin()+0);
+//		if(roadLanes.size() > 0)
+//			roadLanes.erase(roadLanes.begin()+0);
+//	}
 
 	roadLanes.push_back(lane_obj);
 
+	for(unsigned int i =0; i < roadLanes.size(); i++)
+	{
+		Lane* pL = &roadLanes.at(i);
+		ReplaceMyID(pL->id, id_replace_list);
+
+		for(unsigned int j = 0 ; j < pL->fromIds.size(); j++)
+		{
+			int id = ReplaceMyID(pL->fromIds.at(j), id_replace_list);
+			if(id != -1)
+				pL->fromIds.at(j) = id;
+		}
+
+		for(unsigned int j = 0 ; j < pL->toIds.size(); j++)
+		{
+			int id = ReplaceMyID(pL->toIds.at(j), id_replace_list);
+			if(id != -1)
+				pL->toIds.at(j) = id;
+		}
+
+		for(unsigned int j = 0 ; j < pL->points.size(); j++)
+		{
+			ReplaceMyID(pL->points.at(j).id, id_replace_list);
+			ReplaceMyID(pL->points.at(j).laneId, id_replace_list);
+
+			for(unsigned int jj = 0 ; jj < pL->points.at(j).fromIds.size(); jj++)
+			{
+				int id = ReplaceMyID(pL->points.at(j).fromIds.at(jj), id_replace_list);
+				if(id != -1)
+					pL->points.at(j).fromIds.at(jj) = id;
+			}
+
+			for(unsigned int jj = 0 ; jj < pL->points.at(j).toIds.size(); jj++)
+			{
+				int id = ReplaceMyID(pL->points.at(j).toIds.at(jj), id_replace_list);
+				if(id != -1)
+					pL->points.at(j).toIds.at(jj) = id;
+			}
+		}
+	}
+
+	//Link Lanes and lane's waypoints by pointers
 	//For each lane, the previous code set the fromId as the id of the last waypoint of the previos lane.
 	//here we fix that by finding from each fromID the corresponding point and replace the fromId by the LaneID associated with that point.
 	for(unsigned int l= 0; l < roadLanes.size(); l++)
@@ -365,6 +480,7 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 	{
 		StopLine sl;
 		sl.id = stop_line_data.at(ist).ID;
+
 		for(unsigned int il=0; il < line_data.size(); il++)
 		{
 			if(stop_line_data.at(ist).LID == line_data.at(il).LID)
@@ -399,11 +515,14 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 
 			for(unsigned int ic = 0; ic < conn_data.size(); ic++)
 			{
-				if(map.roadSegments.at(rs).Lanes.at(i).id == conn_data.at(ic).LID)
+				UtilityHNS::AisanDataConnFileReader::DataConn data_conn = conn_data.at(ic);
+				ReplaceMyID(data_conn.LID , id_replace_list);
+
+				if(map.roadSegments.at(rs).Lanes.at(i).id == data_conn.LID)
 				{
 					for(unsigned int itl = 0; itl < map.trafficLights.size(); itl++)
 					{
-						if(map.trafficLights.at(itl).id == conn_data.at(ic).SID)
+						if(map.trafficLights.at(itl).id == data_conn.SID)
 						{
 							map.trafficLights.at(itl).laneIds.push_back(map.roadSegments.at(rs).Lanes.at(i).id);
 							map.trafficLights.at(itl).pLanes.push_back(&map.roadSegments.at(rs).Lanes.at(i));
@@ -413,12 +532,12 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 
 					for(unsigned int isl = 0; isl < map.stopLines.size(); isl++)
 					{
-						if(map.stopLines.at(isl).id == conn_data.at(ic).SLID)
+						if(map.stopLines.at(isl).id == data_conn.SLID)
 						{
 							map.stopLines.at(isl).laneId = map.roadSegments.at(rs).Lanes.at(i).id;
 							map.stopLines.at(isl).pLane = &map.roadSegments.at(rs).Lanes.at(i);
-							map.stopLines.at(isl).trafficLightID = conn_data.at(ic).SID;
-							map.stopLines.at(isl).stopSignID = conn_data.at(ic).SSID;
+							map.stopLines.at(isl).trafficLightID = data_conn.SID;
+							map.stopLines.at(isl).stopSignID = data_conn.SSID;
 							map.roadSegments.at(rs).Lanes.at(i).stopLines.push_back(map.stopLines.at(isl));
 							WayPoint wp((map.stopLines.at(isl).points.at(0).x+map.stopLines.at(isl).points.at(1).x)/2.0, (map.stopLines.at(isl).points.at(0).y+map.stopLines.at(isl).points.at(1).y)/2.0, (map.stopLines.at(isl).points.at(0).z+map.stopLines.at(isl).points.at(1).z)/2.0, (map.stopLines.at(isl).points.at(0).a+map.stopLines.at(isl).points.at(1).a)/2.0);
 							map.roadSegments.at(rs).Lanes.at(i).points.at(PlanningHelpers::GetClosestNextPointIndex(map.roadSegments.at(rs).Lanes.at(i).points, wp)).stopLineID = map.stopLines.at(isl).id;

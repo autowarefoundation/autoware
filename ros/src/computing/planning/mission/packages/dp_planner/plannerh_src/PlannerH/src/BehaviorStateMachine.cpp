@@ -7,8 +7,10 @@
 
 #include "BehaviorStateMachine.h"
 #include "UtilityH.h"
+#include <iostream>
 
 using namespace UtilityHNS;
+
 
 namespace PlannerHNS {
 
@@ -176,6 +178,8 @@ BehaviorStateMachine* StopSignStopState::GetNextState()
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
+	//std::cout << "From Stop Beh D: " << pCParams->distanceToStop() << ", Prev LineID: " << pCParams->prevStopSignID << ", Curr SignID: " << pCParams->currentStopSignID << std::endl;
+
 	if(pCParams->currentVelocity < ZERO_VELOCITY)
 		return FindBehaviorState(STOP_SIGN_WAIT_STATE);
 
@@ -190,7 +194,10 @@ BehaviorStateMachine* StopSignWaitState::GetNextState()
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
+	//std::cout << "From Wait Beh D: " << pCParams->distanceToStop() << ", Prev LineID: " << pCParams->prevStopSignID << ", Curr SignID: " << pCParams->currentStopSignID << std::endl;
+
 	pCParams->prevStopSignID = pCParams->currentStopSignID;
+
 	return FindBehaviorState(FORWARD_STATE);
 }
 

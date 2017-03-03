@@ -156,7 +156,6 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 		visualization_msgs::Marker stop_waypoint_marker;
 		  stop_waypoint_marker.header.frame_id = "map";
 		  stop_waypoint_marker.header.stamp = ros::Time();
-		  stop_waypoint_marker.ns = "stop_lines_rviz";
 		  stop_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 		  stop_waypoint_marker.action = visualization_msgs::Marker::ADD;
 		  stop_waypoint_marker.scale.x = 0.4;
@@ -168,6 +167,11 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 
 		  for (unsigned int i=0; i<  map.stopLines.size(); i++)
 		  {
+			  std::ostringstream ns_id;
+			  ns_id << "stop_lines_rviz_" ;
+			  ns_id << map.stopLines.at(i).id;
+			  stop_waypoint_marker.ns =ns_id.str();
+
 			  waypoint_follower::LaneArray lane_array_2;
 			  RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(map.stopLines.at(i).points, lane_array_2);
 

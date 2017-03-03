@@ -369,6 +369,7 @@ void PlannerX::UpdatePlanningParams()
 
 	nh.getParam("/dp_planner/enableHeadingSmoothing", params.enableHeadingSmoothing);
 	nh.getParam("/dp_planner/enableTrafficLightBehavior", params.enableTrafficLightBehavior);
+	nh.getParam("/dp_planner/enableStopSignBehavior", params.enableStopSignBehavior);
 
 	nh.getParam("/dp_planner/maxVelocity", params.maxSpeed);
 	nh.getParam("/dp_planner/minVelocity", params.minSpeed);
@@ -748,7 +749,7 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 						tf::getYaw(msg->lanes.at(i).waypoints.at(j).pose.pose.orientation));
 				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
 				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
-				wp.stopLineID = -1;//msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
+				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
 				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
 				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
 				if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 0)
@@ -787,26 +788,27 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 			}
 
 			PlannerHNS::PlanningHelpers::CalcAngleAndCost(path);
-			int prevStopID = -1;
-			for(unsigned int k= 0; k < path.size(); k++)
-			{
-				if(path.at(k).pLane)
-				{
-					for(unsigned int si = 0; si < path.at(k).pLane->stopLines.size(); si++)
-					{
-						if(prevStopID != path.at(k).pLane->stopLines.at(si).id)
-						{
-							PlannerHNS::WayPoint stopLineWP;
-							stopLineWP.pos = path.at(k).pLane->stopLines.at(si).points.at(0);
-							PlannerHNS::RelativeInfo info;
-							PlannerHNS::PlanningHelpers::GetRelativeInfo(path, stopLineWP, info, k);
 
-							path.at(info.iFront).stopLineID = path.at(k).pLane->stopLines.at(si).id;
-							prevStopID = path.at(info.iFront).stopLineID;
-						}
-					}
-				}
-			}
+//			int prevStopID = -1;
+//			for(unsigned int k= 0; k < path.size(); k++)
+//			{
+//				if(path.at(k).pLane)
+//				{
+//					for(unsigned int si = 0; si < path.at(k).pLane->stopLines.size(); si++)
+//					{
+//						if(prevStopID != path.at(k).pLane->stopLines.at(si).id)
+//						{
+//							PlannerHNS::WayPoint stopLineWP;
+//							stopLineWP.pos = path.at(k).pLane->stopLines.at(si).points.at(0);
+//							PlannerHNS::RelativeInfo info;
+//							PlannerHNS::PlanningHelpers::GetRelativeInfo(path, stopLineWP, info, k);
+//
+//							path.at(info.iFront).stopLineID = path.at(k).pLane->stopLines.at(si).id;
+//							prevStopID = path.at(info.iFront).stopLineID;
+//						}
+//					}
+//				}
+//			}
 
 			m_WayPlannerPaths.push_back(path);
 
@@ -825,15 +827,13 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 			m_LocalPlanner.m_TotalPath = m_WayPlannerPaths;
 
 			cout << "Global Lanes Size = " << msg->lanes.size() <<", Conv Size= " << m_WayPlannerPaths.size() << ", First Lane Size: " << m_WayPlannerPaths.at(0).size() << endl;
-			PlannerHNS::WayPoint* pPrev = 0;
+
 			for(unsigned int k= 0; k < m_WayPlannerPaths.at(0).size(); k++)
 			{
 				if(m_WayPlannerPaths.at(0).at(k).stopLineID > 0 && m_WayPlannerPaths.at(0).at(k).pLane && m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size()>0)
 				{
 					cout << "Stop Line IDs: " << m_WayPlannerPaths.at(0).at(k).stopLineID << ", Lane: " << m_WayPlannerPaths.at(0).at(k).pLane << ", Stop Lines: "<< m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size() << endl;
 				}
-
-				//pPrev = &m_WayPlannerPaths.at(0).at(k);
 			}
 		}
 	}

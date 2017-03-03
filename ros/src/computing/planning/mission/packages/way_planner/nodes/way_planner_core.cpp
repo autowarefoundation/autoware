@@ -414,14 +414,12 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 		RosHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
 
-
 	std_msgs::ColorRGBA total_color;
 	total_color.r = 0;
 	total_color.g = 0.7;
 	total_color.b = 1.0;
 	total_color.a = 0.9;
 	RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
-
 	RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
 	RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
 	//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
@@ -531,21 +529,8 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 
   		PlannerHNS::WayPoint startPoint;
 
-  		if(bStartPos || bUsingCurrentPose)
-  		{
-			if(bUsingCurrentPose)
-			{
-				startPoint = PlannerHNS::WayPoint(m_CurrentPose.position.x,
-						m_CurrentPose.position.y,
-						m_CurrentPose.position.z, tf::getYaw(m_CurrentPose.orientation));
-			}
-			else
-			{
-				startPoint = PlannerHNS::WayPoint(m_StartPos.position.x+m_OriginPos.position.x,
-						m_StartPos.position.y+m_OriginPos.position.y,
-						m_StartPos.position.z+m_OriginPos.position.z, tf::getYaw(m_StartPos.orientation));
-			}
-  		}
+  		if(m_GoalsPos.size() > 1)
+  			startPoint = m_CurrentPose;
 
   		PlannerHNS::WayPoint* currOptions = 0;
   		RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);

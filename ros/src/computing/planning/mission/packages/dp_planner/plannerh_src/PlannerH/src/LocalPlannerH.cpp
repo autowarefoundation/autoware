@@ -227,9 +227,12 @@ void LocalPlannerH::InitPolygons()
  {
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
 
- 	pValues->minStoppingDistance = 0;//(-car_state.speed*car_state.speed)/2.0*m_CarInfo.max_deceleration + m_CarInfo.length/2.0;
- 	if(pValues->distanceToNext > 0 || pValues->distanceToStop()>0)
- 		pValues->minStoppingDistance += 0.5;
+ 	double critical_long_front_distance =  m_CarInfo.wheel_base/2.0 + m_CarInfo.length/2.0 + m_params.verticalSafetyDistance;
+	//double critical_long_back_distance =  m_CarInfo.length/2.0 + m_params.verticalSafetyDistance - m_CarInfo.wheel_base/2.0;
+
+ 	pValues->minStoppingDistance = (-car_state.speed*car_state.speed)/2.0*m_CarInfo.max_deceleration;
+// 	if(pValues->distanceToNext > 0 || pValues->distanceToStop()>0)
+// 		pValues->minStoppingDistance += 0.5;
 
  	if(NoWayTest(pValues->minStoppingDistance))
  		pValues->currentGoalID = -1;
@@ -248,7 +251,7 @@ void LocalPlannerH::InitPolygons()
  	pValues->currentVelocity 		= car_state.speed;
  	pValues->bTrafficIsRed 			= false;
  	pValues->currentTrafficLightID 	= -1;
- 	pValues->currentStopSignID		= -1;
+// 	pValues->currentStopSignID		= -1;
  	pValues->bRePlan 				= false;
  	pValues->bFullyBlock 			= false;
 
@@ -270,17 +273,23 @@ void LocalPlannerH::InitPolygons()
  	double distanceToClosestStopLine = 0;
 
  	if(m_TotalPath.size()>0)
- 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(m_iCurrentTotalPathId), state, stopLineID, stopSignID, trafficLightID);
+ 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(m_iCurrentTotalPathId), state, stopLineID, stopSignID, trafficLightID) - critical_long_front_distance;
 
- 	//if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance  && m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
- 	if(m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
+ 	if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance)
  	{
-		pValues->currentTrafficLightID = trafficLightID;
-		pValues->currentStopSignID = stopSignID;
+ 		if(m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
+ 			pValues->currentTrafficLightID = trafficLightID;
+
+ 		if(m_pCurrentBehaviorState->m_PlanningParams.enableStopSignBehavior)
+ 			pValues->currentStopSignID = stopSignID;
+
 		pValues->stoppingDistances.push_back(distanceToClosestStopLine);
+		//std::cout << "From Local Planner => D: " << pValues->distanceToStop() << ", Prev SignID: " << pValues->prevStopSignID << ", Curr SignID: " << pValues->currentStopSignID << endl;
  	}
 
- 	//cout << "Distance To Closest: " << distanceToClosestStopLine << ", Stop LineID: " << stopLineID << ", TFID: " << trafficLightID << endl;
+
+
+// 	cout << "Distance To Closest: " << distanceToClosestStopLine << ", Stop LineID: " << stopLineID << ", Stop SignID: " << stopSignID << ", TFID: " << trafficLightID << endl;
 
  	pValues->bTrafficIsRed = !bGreenTrafficLight;
 

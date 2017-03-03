@@ -96,6 +96,7 @@ public:
 
 	static void CreateKmlFromLocalizationPathFile(const std::string& pathFileName,const double& maxLaneDistance, const double& density,const std::vector<TrafficLight>& trafficLights, const std::vector<GPSPoint>& stopLines);
 
+	static int ReplaceMyID(int& id, const std::vector<std::pair<int,int> >& rep_list);
 
 	static double m_USING_VER_ZERO;
 
