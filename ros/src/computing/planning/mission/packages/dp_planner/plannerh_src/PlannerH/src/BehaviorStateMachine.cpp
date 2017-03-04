@@ -235,10 +235,10 @@ BehaviorStateMachine* FollowState::GetNextState()
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
+	//std::cout << "Following State >> followDistance: " << pCParams->distanceToNext << ", followSpeed: " << pCParams->velocityOfNext << std::endl;
+
 	if(pCParams->currentGoalID != pCParams->prevGoalID
-			|| !pCParams->bFullyBlock
-			|| pCParams->currentStopSignID > 0
-			|| pCParams->currentTrafficLightID > 0)
+			|| !pCParams->bFullyBlock)
 		return FindBehaviorState(FORWARD_STATE);
 
 	else

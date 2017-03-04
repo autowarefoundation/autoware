@@ -938,6 +938,7 @@ void PlannerX::PlannerMainLoop()
 			timespec log_t;
 			UtilityHNS::UtilityH::GetTickCount(log_t);
 			std::ostringstream dataLine;
+			std::ostringstream dataLineToOut;
 			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) << "," << m_CurrentBehavior.state << ","<< RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
 					m_nTrackObjects << "," << m_nOriginalPoints << "," << m_nContourPoints << "," << m_TrackingTime << "," <<
 					m_LocalPlanner.m_CostCalculationTime << "," << m_LocalPlanner.m_BehaviorGenTime << "," << m_LocalPlanner.m_RollOutsGenerationTime << "," <<
@@ -953,9 +954,19 @@ void PlannerX::PlannerMainLoop()
 					m_VehicleState.speed << "," <<
 					m_VehicleState.steer << "," <<
 					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a)+M_PI << ",";
-
-
 			m_LogData.push_back(dataLine.str());
+
+			dataLineToOut << RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << ","
+					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << ","
+					<< m_LocalPlanner.m_iSafeTrajectory << ","
+					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->minStoppingDistance << ","
+					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->distanceToNext << ","
+					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->velocityOfNext << ","
+					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentStopSignID << ","
+					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentTrafficLightID << ",";
+
+			cout << dataLineToOut.str() << endl;
+
 
 		}
 		else

@@ -14,7 +14,7 @@
 	<arg name="horizonDistance" 			default="200"  />
 	
 	<arg name="minFollowingDistance" 		default="8.0"  />
-	<arg name="maxFollowingDistance" 		default="10.0" />
+	<arg name="maxFollowingDistance" 		default="2.0" />
 	<arg name="minDistanceToAvoid" 			default="16.0" />
 	<arg name="maxDistanceToAvoid" 			default="6.0"  />
 	<arg name="speedProfileFactor"			default="1.0"  />
@@ -23,7 +23,7 @@
 	<arg name="verticalSafetyDistance"		default="0.5"  />
 	
 	<arg name="enableSwerving" 				default="false"  />
-	<arg name="enableFollowing" 			default="false" />
+	<arg name="enableFollowing" 			default="true" />
 	<arg name="enableHeadingSmoothing" 		default="false" />
 	<arg name="enableTrafficLightBehavior" 	default="true" />
 	<arg name="enableStopSignBehavior" 		default="true" />	

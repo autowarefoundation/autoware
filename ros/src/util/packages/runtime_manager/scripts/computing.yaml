@@ -2167,12 +2167,20 @@ params :
       v    : 15.0
       cmd_param:
         dash     : ''
+        delim    : ':=' 
+    - name : enableStopSignBehavior
+      desc : Enable stop sign check  
+      label: Enable Stop Sign Stop
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
         delim    : ':='
     - name : enableTrafficLightBehavior
       desc : Enable traffic light check  
       label: Enable Traffic Light
       kind : checkbox
-      v    : False
+      v    : TRUE
       cmd_param:
         dash     : ''
         delim    : ':='

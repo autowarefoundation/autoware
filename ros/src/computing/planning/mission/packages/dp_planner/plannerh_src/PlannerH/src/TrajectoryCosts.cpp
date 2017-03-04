@@ -160,7 +160,7 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 
 				if(longitudinalDist< -carInfo.length)
 				{
-					cout << "Skip , long Dist: " << longitudinalDist << endl;
+					//cout << "Skip , long Dist: " << longitudinalDist << endl;
 					continue;
 				}
 

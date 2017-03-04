@@ -261,6 +261,8 @@ void LocalPlannerH::InitPolygons()
  	if(bestTrajectory.index>=0)
  		pValues->iCurrSafeTrajectory = bestTrajectory.index;
 
+
+
 // 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_PlanningParams.minFollowingDistance)
 // 		pValues->bFullyBlock = true;
 
@@ -286,7 +288,6 @@ void LocalPlannerH::InitPolygons()
 		pValues->stoppingDistances.push_back(distanceToClosestStopLine);
 		//std::cout << "From Local Planner => D: " << pValues->distanceToStop() << ", Prev SignID: " << pValues->prevStopSignID << ", Curr SignID: " << pValues->currentStopSignID << endl;
  	}
-
 
 
 // 	cout << "Distance To Closest: " << distanceToClosestStopLine << ", Stop LineID: " << stopLineID << ", Stop SignID: " << stopSignID << ", TFID: " << trafficLightID << endl;
