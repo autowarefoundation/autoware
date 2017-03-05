@@ -409,10 +409,12 @@ int main (int argc, char *argv[])
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe (cameraInfo_topic_name, 100, cameraInfoCallback);
   ros::Subscriber adjust_xySubscriber  = rosnode.subscribe("/config/adjust_xy", 100, adjust_xyCallback);
+  ros::Subscriber current_pose_subscriber;
+  ros::Subscriber waypoint_subscriber;
   if (g_use_vector_map_server) {
     /* Create subscribers which deliver informations requested by server */
-    ros::Subscriber current_pose_subscriber = rosnode.subscribe("/current_pose", 1, &VectorMapClient::set_pose, &g_vector_map_client);
-    ros::Subscriber waypoint_subscriber     = rosnode.subscribe("/final_waypoints", 1, &VectorMapClient::set_waypoints, &g_vector_map_client);
+    current_pose_subscriber = rosnode.subscribe("/current_pose", 1, &VectorMapClient::set_pose, &g_vector_map_client);
+    waypoint_subscriber     = rosnode.subscribe("/final_waypoints", 1, &VectorMapClient::set_waypoints, &g_vector_map_client);
 
     /* Create ros client to use Server-Client communication */
     g_ros_client = rosnode.serviceClient<vector_map_server::GetSignal>("vector_map_server/get_signal");
