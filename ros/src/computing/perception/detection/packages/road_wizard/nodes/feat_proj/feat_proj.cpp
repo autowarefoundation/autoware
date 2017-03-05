@@ -224,6 +224,38 @@ bool project2 (const Point3 &pt, int &u, int &v, bool useOpenGLCoord=false)
   return true;
 }
 
+double ConvertDegreeToRadian(double degree)
+{
+  return degree * M_PI / 180.0f;
+}
+
+
+double ConvertRadianToDegree(double radian)
+{
+  return radian * 180.0f / M_PI;
+}
+
+
+double GetSignalAngleInCameraSystem(double hang, double vang)
+{
+  // Fit the vector map format into ROS style
+  double signal_pitch_in_map = ConvertDegreeToRadian(vang - 90);
+  double signal_yaw_in_map   = ConvertDegreeToRadian(-hang + 90);
+
+  tf::Quaternion signal_orientation_in_map_system;
+  signal_orientation_in_map_system.setRPY(0, signal_pitch_in_map, signal_yaw_in_map);
+
+  tf::Quaternion signal_orientation_in_cam_system = trf * signal_orientation_in_map_system;
+  double signal_roll_in_cam;
+  double signal_pitch_in_cam;
+  double signal_yaw_in_cam;
+  tf::Matrix3x3(signal_orientation_in_cam_system).getRPY(signal_roll_in_cam,
+                                                         signal_pitch_in_cam,
+                                                         signal_yaw_in_cam);
+
+  return ConvertRadianToDegree(signal_pitch_in_cam);   // holizontal angle of camera is represented by pitch
+}  // double GetSignalAngleInCameraSystem()
+
 
 void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 {
@@ -288,26 +320,13 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       sign.type = signal.type, sign.linkId = signal.linkid;
       sign.plId = signal.plid;
 
-      /* convert signal's horizontal angle to yaw */
-      double reversed_signalYaw = setDegree0to360(sign.hang + 180.0f);
+      // Get holizontal angle of signal in camera corrdinate system
+      double signal_angle = GetSignalAngleInCameraSystem(vmap.vectors[signal.vid].hang + 180.0f,
+                                                         vmap.vectors[signal.vid].vang + 180.0f);
 
-      get_cameraRollPitchYaw(&cameraOrientation.thiX,
-                             &cameraOrientation.thiY,
-                             &cameraOrientation.thiZ);
-
-      // std::cout << "signal : " << reversed_signalYaw << ", car : " << cameraOrientation.thiZ << std::endl;
-
-      /*
-        check whether this signal is oriented to the camera
-        interested signals have below condition orientation:
-        (camera_orientation - 70deg) < (signal_orientation + 180deg) < (camera_orientatin + 70deg)
-      */
-      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 70);
-      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 70);
-
-      // std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
-
-      if (isRange(conditionRange_lower, conditionRange_upper, reversed_signalYaw)) {
+      // signal_angle will be zero if signal faces to x-axis
+      // Target signal should be face to -50 <= z-axis (= 90 degree) <= +50
+      if (isRange(-50, 50, signal_angle - 90)) {
         signalsInFrame.Signals.push_back (sign);
       }
     }
