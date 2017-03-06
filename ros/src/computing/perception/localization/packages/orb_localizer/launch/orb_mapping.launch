@@ -5,6 +5,7 @@
 	<arg name="map_file" default="/tmp/orbx.map" />
 	<arg name="mask_image" default="$(find orb_localizer)/config/mask.png" />
 	<arg name="image_topic" default="/camera/image_raw" />
+	<arg name="external_pose_topic" default="/current_pose" />
 	<arg name="image_rate" default="10" />
 
 	<!-- slow down -->
@@ -26,7 +27,7 @@
 	<node name="orb_mapping_1" pkg="orb_localizer" type="orb_mapping" output="screen">
 		<param name="map_file"                    value="$(arg map_file)" />
 		<param name="configuration_file"          value="$(arg orb_config)" />
-		<param name="external_localization_topic" value="/filtered_ndt_current_pose"   />
+		<param name="external_localization_topic" value="$(arg external_pose_topic)"   />
 		<param name="image_topic"                 value="/camera/image_hs" />
 	</node>
 

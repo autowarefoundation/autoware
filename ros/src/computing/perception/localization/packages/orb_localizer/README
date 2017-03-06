@@ -9,3 +9,22 @@ Requirements:
 - OpenGL
 - GLEW
 - GLUT
+
+
+Mapping HOWTO
+
+1) Prepare ROS bag files containing both image streams and ground truth pose 
+   (may be separated)
+2) Make a copy of configuration file config/orb-slam2.yaml.in to some place, and
+   edit it to put your configurations regarding:
+   - Camera parameters
+   - Localization output
+3) Run the script orb_mapping.launch:
+   $ roslaunch orb_localizer orb_mapping.launch \
+   config_file:=<path_to_orb-slam-config> \
+   external_pose_topic:=<topic_of_map_ground_truth_pose> \
+
+   Please wait until visualization windows is open
+   
+4) Play the bags
+5) To stop mapping, press Ctrl+C in the console
