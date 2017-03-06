@@ -1,0 +1,100 @@
+<!--
+
+Author: Jonathan Sprinkle
+Copyright (c) 2015-2016 Arizona Board of Regents
+All rights reserved.
+
+Permission is hereby granted, without written agreement and without
+license or royalty fees, to use, copy, modify, and distribute this
+software and its documentation for any purpose, provided that the
+above copyright notice and the following two paragraphs appear in
+all copies of this software.
+
+IN NO EVENT SHALL THE ARIZONA BOARD OF REGENTS BE LIABLE TO ANY PARTY
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN
+IF THE ARIZONA BOARD OF REGENTS HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+THE ARIZONA BOARD OF REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER
+IS ON AN "AS IS" BASIS, AND THE ARIZONA BOARD OF REGENTS HAS NO OBLIGATION
+TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+Summary:
+=======
+This launch file loads the worlds and models for the catvehicle
+
+How to execute it:
+=================
+roslaunch catvehicle catvehicle_empty.launch
+
+-->
+
+<launch>
+<arg name="robot_name"/>
+<arg name="init_pose"/>
+<arg name="config_file"/>
+
+<rosparam param="/use_sim_time">true</rosparam>
+
+<node name="urdf_spawner$(arg robot_name)" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+args="$(arg init_pose) -urdf -model $(arg robot_name) -param robot_description"/>
+
+
+<!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find catvehicle)/config/$(arg config_file)" command="load" ns="/$(arg robot_name)"/>
+  <!--<param name="tf_prefix" value="$(arg robot_name)"/> -->
+
+<!-- load the controllers -->
+<node name="controller_spawner$(arg robot_name)" pkg="controller_manager" type="spawner" respawn="false"
+output="screen" ns="/$(arg robot_name)" args="joint1_velocity_controller joint2_velocity_controller front_left_steering_position_controller front_right_steering_position_controller  joint_state_controller"/>
+
+<!-- convert joint states to TF transforms for rviz, etc -->
+<node name="robot_state_publisher$(arg robot_name)" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <remap from="/joint_states" to="/$(arg robot_name)/joint_states" />
+</node>
+
+
+<!-- need for publishing joint states that are not controlled -->
+<node name="joint_state_publisher$(arg robot_name)" pkg="joint_state_publisher" type="joint_state_publisher" respawn="false" output="screen">
+    <remap from="/joint_states" to="/$(arg robot_name)/joint_states" />
+</node>
+
+<!-- set up a static TF transform for publishing SLAM localization estimates wrt base_link -->
+<!--<node pkg="tf" type="static_transform_publisher" name="base_link2slamodom_tf_$(arg robot_name)"
+    args="0 0 0 0 0 0 $(arg robot_name)/base_link $(arg robot_name)/slamodom 5" /> -->
+
+<!-- we run the python version, so we can be slower-than-real-time -->
+<node name="cmdvel2gazebo$(arg robot_name)" pkg="catvehicle" type="cmdvel2gazebo.py" respawn="false" output="screen">
+<remap from="/catvehicle/cmd_vel" to="/catvehicle/twist_cmd" />
+</node>
+
+<!-- JMS removing simulink version so we can run slower than real-time
+<node name="cmdvel2gazebo$(arg robot_name)" pkg="cmdvel2gazebo" type="cmdvel2gazebo_node" respawn="false" output="screen">
+<remap from="/catvehicle/cmd_vel" to="/$(arg robot_name)/cmd_vel_safe" />
+<remap from="/catvehicle/joint1_velocity_controller/command" to="/$(arg robot_name)/joint1_velocity_controller/command" />
+<remap from="/catvehicle/joint2_velocity_controller/command" to="/$(arg robot_name)/joint2_velocity_controller/command" />
+<remap from="/catvehicle/front_left_steering_position_controller/command" to="/$(arg robot_name)/front_left_steering_position_controller/command" />
+<remap from="/catvehicle/front_right_steering_position_controller/command" to="/$(arg robot_name)/front_right_steering_position_controller/command" />
+</node>
+-->
+
+<!--<node name="distanceEstimator" pkg="catvehicle" type="distanceEstimator" output="screen">
+	<param name="scan_topic" value="/$(arg robot_name)/front_laser_points"/>
+</node>-->
+
+<!-- Let's be safe with obstacles by stopping when we get too close -->
+<!--<node name="obstacleStopper$(arg robot_name)" pkg="obstaclestopper" type="obstaclestopper_node" output="screen">
+    <remap from="/catvehicle/cmd_vel" to="/twist_cmd" />
+    <remap from="/catvehicle/distanceEstimator" to="/$(arg robot_name)/distanceEstimator" />
+    <remap from="/catvehicle/cmd_vel_safe" to="/$(arg robot_name)/cmd_vel_safe" />
+</node>-->
+
+<!-- publish the path information of this vehicle -->
+<node name="odom2path$(arg robot_name)" pkg="catvehicle" type="odom2path.py" respawn="true" output="screen" args="-n /$(arg robot_name)">
+</node>
+
+
+</launch>

@@ -1054,7 +1054,7 @@ class MyFrame(rtmgr.MyFrame):
 	def camera_ids(self):
 		if self.button_synchronization.GetValue():
 			return []
-		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed s/^$//"
+		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed 's/^$/\//'"
 		return subprocess.check_output(cmd, shell=True).strip().split()
 
 	def cam_id_to_obj(self, cam_id, v):
@@ -2300,6 +2300,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
+		set_size_gdic(self, gdic)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -2340,6 +2341,7 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+		set_size_gdic(self, gdic)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -2387,6 +2389,7 @@ class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 		self.gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogCarPedestrian.__init__(self, *args, **kwds)
+		set_size_gdic(self)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -2416,6 +2419,7 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogLaneStop.__init__(self, *args, **kwds)
+		set_size_gdic(self)
 		self.frame = self.GetParent()
 
 		name = 'lane_stop'
@@ -2457,6 +2461,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogNdtMapping.__init__(self, *args, **kwds)
+		set_size_gdic(self)
 
 		parent = self.panel_v
 		frame = self.GetParent()
@@ -2741,6 +2746,15 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		if mb <= 0:
 			tc.SetValue('')
 		return [ '--size=' + str(int(mb * 1024 * 1024)) ] if mb > 0 else []
+
+def set_size_gdic(dlg, gdic={}):
+	(w, h) = dlg.GetSize()
+	if not gdic:
+		gdic = getattr(dlg, 'gdic', {})
+	nw = gdic.get('dialog_width', w)
+	nh = gdic.get('dialog_height', h)
+	if (w, h) != (nw, nh):
+		dlg.SetSize((nw, nh))
 
 def file_dialog(parent, tc, path_inf_dic={}):
 	path = tc.GetValue()
