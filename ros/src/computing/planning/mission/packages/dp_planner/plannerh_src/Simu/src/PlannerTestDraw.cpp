@@ -20,7 +20,7 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMap "/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/"
+#define VectorMap "/home/hatem/data/ToyotaCity/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
 #define kmlMapPath	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/kml/ToyotaCityCustomInfo.kml"
@@ -244,50 +244,56 @@ PlannerTestDraw::PlannerTestDraw()
 
 	m_pMap = new PlannerHNS::GridMap(0,0,60,60,5.0, true);
 
-//	//Tsukuba Test
-//	m_ControlParams.Steering_Gain = PID_CONST(0.4, 0.1, 0.1);
-//	m_ControlParams.minPursuiteDistance = 2.0;
-//	m_ControlParams.SteeringDelay = 0.6;
-//	m_CarInfo.width = 0.9;
-//	m_CarInfo.length = 1.4;
-//	m_CarInfo.max_speed_forward = 3.5;
-//	m_CarInfo.max_steer_angle = 1.0;
+	m_CarInfo.width = 2.0;
+	m_CarInfo.length = 4.2;
+	m_CarInfo.wheel_base = 2.5;
+	m_CarInfo.turning_radius = 5.2;
+	m_CarInfo.max_steer_angle = 0.5;
 
-	m_ControlParams.Steering_Gain = PlannerHNS::PID_CONST(0.07, 0.02, 0.01);
-//	m_ControlParams.SimulationSteeringDelay = 0.1;
+	// 6 -> 8.3, 5 -> 6.8 , 4 -> 5.4 , 3 -> 3.9, 2 -> 2.6
+	//1.3, 1.3, 1.35, 1.36, 1.38
 
-	m_ControlParams.SteeringDelay = 0.85;
-//	m_ControlParams.Steering_Gain.kD = 0.5;
-//	m_ControlParams.Steering_Gain.kP = 0.1;
-//	m_ControlParams.Steering_Gain.kI = 0.03;
-//	m_ControlParams.Velocity_Gain = PID_CONST(0.1, 0.005, 0.1);
+	m_CarInfo.max_speed_forward = 3.0;
 
-//	m_CarInfo.width = 1.9;
-//	m_CarInfo.length = 4.2;
-//	m_CarInfo.max_speed_forward = 2.0;
-//	m_PlanningParams.pathDensity = 0.25;
-	m_LocalPlanner.m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
-	m_PlanningParams.enableTrafficLightBehavior = true;
-	m_PlanningParams.pathDensity = 0.5;
+	m_CarInfo.min_speed_forward = 0.2;
+	m_ControlParams.SteeringDelay = 1.2;
+	m_ControlParams.minPursuiteDistance = 3.0;
+	m_ControlParams.Steering_Gain = PlannerHNS::PID_CONST(0.07, 0.02, 0.001);
+	m_ControlParams.maxAccel = 0.6;
+	m_ControlParams.maxDecel = -1.0;
+
+	m_PlanningParams.maxSpeed = 3.0;
+
+	m_PlanningParams.minSpeed = 0.2;
+	m_PlanningParams.microPlanDistance = 50;
+
+	m_LocalPlanner.m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay = 0;
 	m_PlanningParams.smoothingDataWeight = 0.45;
 	m_PlanningParams.smoothingSmoothWeight = 0.35;
 	m_PlanningParams.smoothingToleranceError = 0.01;
-	m_PlanningParams.microPlanDistance = 40;
+	//m_PlanningParams.carTipMargin = 3.0;
+	//m_PlanningParams.rollInMargin = 12.0;
+	//m_PlanningParams.rollInSpeedFactor = 0.25;
+	m_PlanningParams.pathDensity = 0.25;
+	m_PlanningParams.rollOutDensity = 0.25;
+	m_PlanningParams.rollOutNumber = 8;
+	m_PlanningParams.horizonDistance = 200;
+	m_PlanningParams.minFollowingDistance = 8.0;
+	m_PlanningParams.maxFollowingDistance = 1000.0;
+	m_PlanningParams.minDistanceToAvoid = 16.0;
+	m_PlanningParams.maxDistanceToAvoid = 6.0;
+	//m_PlanningParams.speedProfileFactor = 1.0;
+	m_PlanningParams.horizonDistance = 0.2;
+	m_PlanningParams.verticalSafetyDistance = 0.4;
+
+	m_PlanningParams.enableSwerving = true;
+	m_PlanningParams.enableFollowing = true;
+	m_PlanningParams.enableTrafficLightBehavior = true;
+	m_PlanningParams.enableStopSignBehavior = true;
+	m_PlanningParams.enableLaneChange = false;
+
 	m_LocalPlanner.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
 	m_LocalPlanner.InitPolygons();
-
-
-	/**
-	 * Planning using predefind path (sequence of lane IDs)
-	 */
-//	stringstream str_stream(PreDefinedPath);
-//	string strLine, innerToken;
-//	m_LanesIds.clear();
-//	while(getline(str_stream, innerToken, ','))
-//	{
-//		int id = strtol(innerToken.c_str(), NULL, 10);
-//		m_LanesIds.push_back(id);
-//	}
 
 	m_start =  PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
 	m_followX = m_start.pos.x;
@@ -303,12 +309,9 @@ PlannerTestDraw::PlannerTestDraw()
 	m_pSteeringGraph = new Graph2dBase(20, 200,1000, m_CarInfo.max_steer_angle*RAD2DEG, -m_CarInfo.max_steer_angle*RAD2DEG, "Car Steering", "T s", "A deg", axes_color, graph_color );
 	m_pLateralErrGraph  = new Graph2dBase(20, 200,1000, 1.0, -1.0, "Lateral Error", "T s", "D meter", axes_color, graph_color );
 
-
 	pthread_create(&planning_thread_tid, NULL, &PlannerTestDraw::PlanningThreadStaticEntryPoint, this);
 	pthread_create(&control_thread_tid, NULL, &PlannerTestDraw::ControlThreadStaticEntryPoint, this);
-	pthread_create(&simulation_thread_tid, NULL, &PlannerTestDraw::SimulationThreadStaticEntryPoint, this);
-
-
+	//pthread_create(&simulation_thread_tid, NULL, &PlannerTestDraw::SimulationThreadStaticEntryPoint, this);
 	//InitStartAndGoal(2, -50, M_PI, 100, 100, M_PI_2);
 
 	PrepareVectorMapForDrawing();
@@ -1622,62 +1625,75 @@ void* PlannerTestDraw::ControlThreadStaticEntryPoint(void* pThis)
 
 			pthread_mutex_unlock(&pR->planning_mutex);
 
-			if(bCalibrationMode)
+//			if(bCalibrationMode)
+//			{
+//				if(!bStartCalibration)
+//				{
+//					calibrationTargetState.speed = 0;
+//					if(counter == 0)
+//						calibrationTargetState.steer = pR->m_LocalPlanner.m_CarInfo.max_steer_angle/2.0;
+//					else if(counter == 1)
+//						calibrationTargetState.steer = 0;
+//					else if(counter == 2)
+//						calibrationTargetState.steer = -pR->m_LocalPlanner.m_CarInfo.max_steer_angle/2.0;
+//					else if(counter == 3)
+//						calibrationTargetState.steer = 0;
+//
+//					UtilityH::GetTickCount(delayTimer);
+//					timeOfHalf = 0;
+//					bStartCalibration = true;
+//				}
+//				else
+//				{
+//					if(abs(abs(currState.steer*RAD2DEG) - abs(calibrationTargetState.steer*RAD2DEG)) < 0.5)
+//					{
+//						timeOfHalf = UtilityH::GetTimeDiffNow(delayTimer);
+//						counter++;
+//						timeTotal += timeOfHalf;
+//						bStartCalibration = false;
+//						if(counter==4)
+//						{
+//							bCalibrationMode = false;
+//							timeDelay = (timeTotal / (double)counter) / (pR->m_LocalPlanner.m_CarInfo.max_steer_angle*RAD2DEG/2.0);
+//							timeDelay = timeDelay*17.5;
+//
+//						}
+//					}
+//				}
+//
+//				targetState = calibrationTargetState;
+//			}
+//			else if(!bCalibrationMode)
+//			{
+//				timespec controlTimer;
+//				UtilityH::GetTickCount(controlTimer);
+//				bool bNewPath = false;
+//				if(PlannerHNS::PlanningHelpers::CompareTrajectories(generatedPath, pR->m_LocalPlanner.m_Path) == false && pR->m_LocalPlanner.m_Path.size()>0)
+//				{
+//					generatedPath = pR->m_LocalPlanner.m_Path;
+//					bNewPath = true;
+//					cout << "Path is Updated in the controller .. " << pR->m_LocalPlanner.m_Path.size() << endl;
+//				}
+//
+//				PlannerHNS::ControllerParams c_params = pR->m_ControlParams;
+//				c_params.SteeringDelay = pR->m_ControlParams.SteeringDelay / (1.0-UtilityH::GetMomentumScaleFactor(currState.speed));
+//				predControl.Init(c_params, pR->m_CarInfo);
+//				targetState = predControl.DoOneStep(dt, currMessage, generatedPath, pR->m_LocalPlanner.state, currState, bNewPath);
+//				pR->m_ControllingTime = UtilityH::GetTimeDiffNow(controlTimer);
+//			}
+
+			timespec controlTimer;
+			UtilityH::GetTickCount(controlTimer);
+			bool bNewPath = false;
+			if(PlannerHNS::PlanningHelpers::CompareTrajectories(generatedPath, pR->m_LocalPlanner.m_Path) == false && pR->m_LocalPlanner.m_Path.size()>0)
 			{
-				if(!bStartCalibration)
-				{
-					calibrationTargetState.speed = 0;
-					if(counter == 0)
-						calibrationTargetState.steer = pR->m_LocalPlanner.m_CarInfo.max_steer_angle/2.0;
-					else if(counter == 1)
-						calibrationTargetState.steer = 0;
-					else if(counter == 2)
-						calibrationTargetState.steer = -pR->m_LocalPlanner.m_CarInfo.max_steer_angle/2.0;
-					else if(counter == 3)
-						calibrationTargetState.steer = 0;
-
-					UtilityH::GetTickCount(delayTimer);
-					timeOfHalf = 0;
-					bStartCalibration = true;
-				}
-				else
-				{
-					if(abs(abs(currState.steer*RAD2DEG) - abs(calibrationTargetState.steer*RAD2DEG)) < 0.5)
-					{
-						timeOfHalf = UtilityH::GetTimeDiffNow(delayTimer);
-						counter++;
-						timeTotal += timeOfHalf;
-						bStartCalibration = false;
-						if(counter==4)
-						{
-							bCalibrationMode = false;
-							timeDelay = (timeTotal / (double)counter) / (pR->m_LocalPlanner.m_CarInfo.max_steer_angle*RAD2DEG/2.0);
-							timeDelay = timeDelay*17.5;
-
-						}
-					}
-				}
-
-				targetState = calibrationTargetState;
+				generatedPath = pR->m_LocalPlanner.m_Path;
+				bNewPath = true;
+				cout << "Path is Updated in the controller .. " << pR->m_LocalPlanner.m_Path.size() << endl;
 			}
-			else if(!bCalibrationMode)
-			{
-				timespec controlTimer;
-				UtilityH::GetTickCount(controlTimer);
-				bool bNewPath = false;
-				if(PlannerHNS::PlanningHelpers::CompareTrajectories(generatedPath, pR->m_LocalPlanner.m_Path) == false && pR->m_LocalPlanner.m_Path.size()>0)
-				{
-					generatedPath = pR->m_LocalPlanner.m_Path;
-					bNewPath = true;
-					cout << "Path is Updated in the controller .. " << pR->m_LocalPlanner.m_Path.size() << endl;
-				}
 
-				PlannerHNS::ControllerParams c_params = pR->m_ControlParams;
-				c_params.SteeringDelay = pR->m_ControlParams.SteeringDelay / (1.0-UtilityH::GetMomentumScaleFactor(currState.speed));
-				predControl.Init(c_params, pR->m_CarInfo);
-				targetState = predControl.DoOneStep(dt, currMessage, generatedPath, pR->m_LocalPlanner.state, currState, bNewPath);
-				pR->m_ControllingTime = UtilityH::GetTimeDiffNow(controlTimer);
-			}
+			targetState = predControl.DoOneStep(dt, currMessage, generatedPath, pR->m_LocalPlanner.state, currState, bNewPath);
+			pR->m_ControllingTime = UtilityH::GetTimeDiffNow(controlTimer);
 
 			//cout << pR->m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->ToString(currMessage.state) << endl;
 

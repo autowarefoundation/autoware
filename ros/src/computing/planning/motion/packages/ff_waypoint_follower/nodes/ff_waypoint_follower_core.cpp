@@ -250,7 +250,9 @@ void FFSteerControl::callbackGetCurrentVelocity(const geometry_msgs::TwistStampe
 {
 	m_CurrVehicleStatus.shift = PlannerHNS::SHIFT_POS_DD;
 	m_CurrVehicleStatus.speed = msg->twist.linear.x;
-	m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
+	if(msg->twist.linear.x != 0)
+		m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
+
 	UtilityHNS::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
 }
 
@@ -308,7 +310,8 @@ void FFSteerControl::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 
 		m_CurrVehicleStatus.shift = PlannerHNS::SHIFT_POS_DD;
 		m_CurrVehicleStatus.speed = msg->twist.twist.linear.x;
-		m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+		if(msg->twist.twist.linear.x!=0)
+			m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
 		UtilityHNS::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
 
 //		std::cout << "###### Current Status From Robot Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;

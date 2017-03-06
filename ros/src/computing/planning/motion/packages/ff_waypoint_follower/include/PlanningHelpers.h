@@ -22,6 +22,7 @@ namespace PlannerHNS {
 #define pointNorm(v) sqrt(v.x*v.x + v.y*v.y)
 #define angle2points(from , to) atan2(to.y - from.y, to.x - from.x )
 #define LANE_CHANGE_SPEED_FACTOR 0.5
+#define LANE_CHANGE_COST 3.0 // meters
 
 class PlanningHelpers {
 public:

@@ -14,15 +14,15 @@
 	<arg name="horizonDistance" 			default="200"  />
 	
 	<arg name="minFollowingDistance" 		default="8.0"  />
-	<arg name="maxFollowingDistance" 		default="2.0" />
+	<arg name="maxFollowingDistance" 		default="1000.0" />
 	<arg name="minDistanceToAvoid" 			default="16.0" />
 	<arg name="maxDistanceToAvoid" 			default="6.0"  />
 	<arg name="speedProfileFactor"			default="1.0"  />
 	
-	<arg name="horizontalSafetyDistancel"	default="0.2"  />
-	<arg name="verticalSafetyDistance"		default="0.5"  />
+	<arg name="horizontalSafetyDistancel"	default="0.4"  />
+	<arg name="verticalSafetyDistance"		default="0.75"  />
 	
-	<arg name="enableSwerving" 				default="false"  />
+	<arg name="enableSwerving" 				default="true"  />
 	<arg name="enableFollowing" 			default="true" />
 	<arg name="enableHeadingSmoothing" 		default="false" />
 	<arg name="enableTrafficLightBehavior" 	default="true" />
@@ -40,7 +40,7 @@
 	<arg name="enableOdometryStatus"		default="false" /> <!-- read velocities from Odometry from robot "" -->
 	
 	<arg name="mapSource" 					default="1" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
-	<arg name="mapFileName" 				default="/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
+	<arg name="mapFileName" 				default="/home/hatem/data/ToyotaCity/map/vector_map/" />
 
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />

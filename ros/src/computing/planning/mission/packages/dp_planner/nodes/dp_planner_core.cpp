@@ -649,7 +649,10 @@ void PlannerX::callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxA
 void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
 {
 	m_VehicleState.speed = msg->twist.linear.x;
-	m_VehicleState.steer = atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
+
+	if(msg->twist.linear.x != 0)
+		m_VehicleState.steer = atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
+
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 
 	// If steering is in angular velocity
@@ -956,16 +959,16 @@ void PlannerX::PlannerMainLoop()
 					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a)+M_PI << ",";
 			m_LogData.push_back(dataLine.str());
 
-			dataLineToOut << RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << ","
-					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << ","
-					<< m_LocalPlanner.m_iSafeTrajectory << ","
-					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->minStoppingDistance << ","
-					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->distanceToNext << ","
-					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->velocityOfNext << ","
-					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentStopSignID << ","
-					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentTrafficLightID << ",";
-
-			cout << dataLineToOut.str() << endl;
+//			dataLineToOut << RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << ","
+//					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << ","
+//					<< m_LocalPlanner.m_iSafeTrajectory << ","
+//					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->minStoppingDistance << ","
+//					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->distanceToNext << ","
+//					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->velocityOfNext << ","
+//					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentStopSignID << ","
+//					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->currentTrafficLightID << ",";
+//
+//			cout << dataLineToOut.str() << endl;
 
 
 		}

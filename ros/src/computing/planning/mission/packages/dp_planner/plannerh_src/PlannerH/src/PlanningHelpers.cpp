@@ -1259,11 +1259,11 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 
 				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
 				{
-					if(wp->actionCost.at(a).first == LEFT_TURN_ACTION)
+					//if(wp->actionCost.at(a).first == LEFT_TURN_ACTION)
 						d += wp->actionCost.at(a).second;
 				}
 
-				wp->cost = pH->cost + d;
+				wp->cost = pH->cost + d + LANE_CHANGE_COST;
 				wp->pRight = pH;
 				wp->pRight = 0;
 
@@ -1280,11 +1280,11 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 
 				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
 				{
-					if(wp->actionCost.at(a).first == RIGHT_TURN_ACTION)
+					//if(wp->actionCost.at(a).first == RIGHT_TURN_ACTION)
 						d += wp->actionCost.at(a).second;
 				}
 
-				wp->cost = pH->cost + d;
+				wp->cost = pH->cost + d + LANE_CHANGE_COST;
 				wp->pLeft = pH;
 				wp->pRight = 0;
 				nextLeafToTrace.push_back(make_pair(pH, wp));
@@ -1305,7 +1305,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart, const Way
 
 					for(unsigned int a = 0; a < wp->actionCost.size(); a++)
 					{
-						if(wp->actionCost.at(a).first == FORWARD_ACTION)
+						//if(wp->actionCost.at(a).first == FORWARD_ACTION)
 							d += wp->actionCost.at(a).second;
 					}
 
@@ -1558,7 +1558,7 @@ vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths)
 			//vector<Vector2D> forward_path;
 			//TravesePathTreeForwards(pHead->pLeft, forward_path, FORWARD_RIGHT);
 			//localPaths.push_back(forward_path);
-
+			cout << "Global Lane Change  Right " << endl;
 			TraversePathTreeBackwards(pHead->pLeft,pStartWP, globalPathIds, localPath, localPaths);
 			pHead->bDir = FORWARD_RIGHT_DIR;
 			localPath.push_back(*pHead);
@@ -1569,6 +1569,7 @@ vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths)
 			//TravesePathTreeForwards(pHead->pRight, forward_path, FORWARD_LEFT);
 			//localPaths.push_back(forward_path);
 
+			cout << "Global Lane Change  Left " << endl;
 			TraversePathTreeBackwards(pHead->pRight,pStartWP, globalPathIds, localPath, localPaths);
 			pHead->bDir = FORWARD_LEFT_DIR;
 			localPath.push_back(*pHead);

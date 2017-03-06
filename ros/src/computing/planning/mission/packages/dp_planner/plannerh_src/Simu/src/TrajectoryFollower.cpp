@@ -42,7 +42,7 @@ void TrajectoryFollower::Init(const ControllerParams& params, const CAR_BASIC_IN
 	//m_pidSteer.Init(0.07, 0.02, 0.01); // for 3 m/s
 	//m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
 	//m_pidVelocity.Init(0.1, 0.005, 0.1);
-	//m_lowpassSteer.Init(2, 100, 5);
+	m_lowpassSteer.Init(2, 100, 4);
 
 	m_pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD); // for 3 m/s
 	m_pidSteer.Setlimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
@@ -98,31 +98,9 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 {
 	if(path.size()==0) return false;
 
-	if(velocity > 3.0)
-		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.5;
-	else
-		follow_distance = m_Params.minPursuiteDistance + fabs(velocity) * 0.25;
-	//follow_distance = m_Params.minPursuiteDistance + m_Params.SteeringDelay*fabs(velocity);
-
-
+	follow_distance = fabs(velocity) * 1.5;
 	if(follow_distance < m_Params.minPursuiteDistance)
 		follow_distance = m_Params.minPursuiteDistance;
-
-//	int iWayPoint =  PlanningHelpers::GetClosestNextPointIndex(path, state);
-//	m_iCalculatedIndex = iWayPoint;
-//
-//
-//	if(m_iPrevWayPoint >=0  && m_iPrevWayPoint < path.size() && iWayPoint < m_iPrevWayPoint)
-//		iWayPoint = m_iPrevWayPoint;
-//
-//	m_iPrevWayPoint = iWayPoint;
-//
-//	double distance_to_perp = 0;
-//	prep = PlanningHelpers::GetPerpendicularOnTrajectory(path, state, distance_to_perp, iWayPoint);
-//	//m_LateralError = MathUtil::Distance(m_PerpendicularPoint.p, state.p);
-//	lateral_err = PlanningHelpers::GetPerpDistanceToTrajectorySimple(path, state, iWayPoint );
-//	//m_LateralError = CalculateLateralDistanceToCurve(m_Path, state, m_iNextWayPoint);
-//	pursuite_point = PlanningHelpers::GetNextPointOnTrajectory(path, follow_distance - distance_to_perp, iWayPoint);
 
 	RelativeInfo info;
 	PlanningHelpers::GetRelativeInfo(path, state, info);
@@ -130,7 +108,6 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 	prep = info.perp_point;
 	lateral_err = info.perp_distance;
 	m_iPrevWayPoint = info.iFront;
-
 
 	double d_critical = (-velocity*velocity)/2.0*m_VehicleInfo.max_deceleration;
 	int nPointToEnd = path.size() - m_iPrevWayPoint;
@@ -177,8 +154,9 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 
 
 	double before_lowpass = m_pidSteer.getPID(e);
+	//cout << m_pidSteer.ToString() << endl;
 
-	//m_LogSteerPIDData.push_back(m_pidSteer.ToString());
+//	m_LogSteerPIDData.push_back(m_pidSteer.ToString());
 
 	//TODO use lateral error instead of angle error
 	//double future_lateral_error = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_Path, m_ForwardSimulation,0);
@@ -219,11 +197,14 @@ void TrajectoryFollower::PredictMotion(double& x, double &y, double& heading, do
 int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const PlannerHNS::VehicleState& CurrStatus,
 		const PlannerHNS::BehaviorState& CurrBehavior, double& desiredVelocity, PlannerHNS::SHIFT_POS& desiredShift)
 {
-	double critical_long_front_distance =  m_VehicleInfo.wheel_base/2.0 + m_VehicleInfo.length/2.0;
+	double critical_long_front_distance =  2.0;
 
 	if(CurrBehavior.state == TRAFFIC_LIGHT_STOP_STATE || CurrBehavior.state == STOP_SIGN_STOP_STATE || m_bEndPath)
 	{
-		double deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.stopDistance);
+		double deceleration_critical = m_VehicleInfo.max_deceleration;
+		if(CurrBehavior.stopDistance != 0)
+			deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.stopDistance);
+
 		desiredVelocity = (deceleration_critical * dt) + CurrStatus.speed;
 		//desiredVelocity = (m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
 		//desiredVelocity = 0;
@@ -258,23 +239,25 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 	}
 	else if(CurrBehavior.state == FOLLOW_STATE)
 	{
-		if(m_StartFollowDistance == 0)
-		{
-			m_StartFollowDistance = CurrBehavior.followDistance;
-		}
+		double deceleration_critical = 0;
+		double inv_time = 2.0*((CurrBehavior.followDistance-critical_long_front_distance)-CurrStatus.speed);
+		if(inv_time == 0)
+			deceleration_critical = MAX_ACCELERATION_2G;
+		else
+			deceleration_critical = CurrStatus.speed*CurrStatus.speed/inv_time;
 
-		double e = CurrBehavior.followVelocity - CurrStatus.speed;
-
-		double deceleration_critical = m_VehicleInfo.max_acceleration;
-		if(e < 0)
-			deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.followDistance - critical_long_front_distance);
+		if(deceleration_critical > 0) deceleration_critical = -deceleration_critical;
+		if(deceleration_critical < -MAX_ACCELERATION_2G) deceleration_critical = -MAX_ACCELERATION_2G;
 
 		desiredVelocity = (deceleration_critical * dt) + CurrStatus.speed;
 
 		if(desiredVelocity > CurrBehavior.maxVelocity)
 			desiredVelocity = CurrBehavior.maxVelocity;
 
-		cout << "Follow State:  acceleration = " << deceleration_critical << ", speed = " << desiredVelocity <<  endl;
+		if((desiredVelocity < 0.1 && desiredVelocity > -0.1) || CurrBehavior.followDistance <= 0) //use only effective velocities
+			desiredVelocity = 0;
+
+		//cout << "Follow State:  acceleration = " << deceleration_critical << ", speed = " << desiredVelocity <<  ", Distance = " << CurrBehavior.followDistance<< endl;
 	}
 	else
 	{

@@ -22,7 +22,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define _FIND_LEFT_RIGHT_LANES
+#define FIND_LEFT_RIGHT_LANES
 #define _SMOOTH_MAP_WAYPOINTS
 
 
@@ -279,14 +279,14 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		prev_lane_point = curr_lane_point;
 	}
 
-//	//delete first two lanes !!!!! Don't know why , you don't know why ! , these two line cost you a lot .. ! why why , works for toyota map , but not with moriyama
-//	if(bSpecialFlag)
-//	{
-//		if(roadLanes.size() > 0)
-//			roadLanes.erase(roadLanes.begin()+0);
-//		if(roadLanes.size() > 0)
-//			roadLanes.erase(roadLanes.begin()+0);
-//	}
+	//delete first two lanes !!!!! Don't know why , you don't know why ! , these two line cost you a lot .. ! why why , works for toyota map , but not with moriyama
+	if(bSpecialFlag)
+	{
+		if(roadLanes.size() > 0)
+			roadLanes.erase(roadLanes.begin()+0);
+		if(roadLanes.size() > 0)
+			roadLanes.erase(roadLanes.begin()+0);
+	}
 
 	roadLanes.push_back(lane_obj);
 
@@ -401,7 +401,7 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 				{
 					int iCenter1 = pL->points.size()/2;
 					WayPoint wp_1 = pL->points.at(iCenter1);
-					int iCenter2 = PlanningHelpers::GetClosestPointIndex(map.roadSegments.at(rs_2).Lanes.at(i2).points, wp_1 );
+					int iCenter2 = PlanningHelpers::GetClosestNextPointIndex(map.roadSegments.at(rs_2).Lanes.at(i2).points, wp_1 );
 					WayPoint closest_p = map.roadSegments.at(rs_2).Lanes.at(i2).points.at(iCenter2);
 					double mid_a1 = wp_1.pos.a;
 					double mid_a2 = closest_p.pos.a;
@@ -412,7 +412,12 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 					{
 						double perp_distance = 99999;
 						if(pL->points.size() > 2 && map.roadSegments.at(rs_2).Lanes.at(i2).points.size()>2)
-							perp_distance = PlanningHelpers::GetPerpDistanceToVectorSimple(pL->points.at(iCenter1-1), pL->points.at(iCenter1+1), closest_p);
+						{
+							RelativeInfo info;
+							PlanningHelpers::GetRelativeInfo(pL->points, closest_p, info);
+							perp_distance = info.perp_distance;
+							//perp_distance = PlanningHelpers::GetPerpDistanceToVectorSimple(pL->points.at(iCenter1-1), pL->points.at(iCenter1+1), closest_p);
+						}
 
 						if(perp_distance > 1.0 && perp_distance < 10.0)
 						{

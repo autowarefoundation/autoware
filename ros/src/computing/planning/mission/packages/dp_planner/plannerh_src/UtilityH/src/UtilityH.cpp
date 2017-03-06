@@ -301,6 +301,7 @@ double PIDController::getPID(const double& e)
 
 	if(pid_v < upper_limit && pid_v > lower_limit)
 		accumErr += e;
+
 	double edot= e - prevErr;
 
 	kp_v = kp * e;
@@ -348,12 +349,12 @@ std::string PIDController::ToString()
 
 void PIDController::ResetD()
 {
-	bResetI = true;
+	bResetD = true;
 }
 
 void PIDController::ResetI()
 {
-	bResetD = true;
+	bResetI = true;
 }
 
 void PIDController::Init(const double& kp, const double& ki, const double& kd)

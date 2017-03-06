@@ -11,6 +11,8 @@
 #include "UtilityH.h"
 #include "PlannerCommonDef.h"
 
+
+#define MAX_ACCELERATION_2G 20 // meter /sec/sec
 namespace SimulationNS
 {
 

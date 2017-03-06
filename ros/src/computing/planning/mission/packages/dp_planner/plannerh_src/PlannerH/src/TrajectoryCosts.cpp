@@ -260,7 +260,7 @@ void TrajectoryCosts::NormalizeCosts(vector<TrajectoryCost>& trajectoryCosts)
 			trajectoryCosts.at(ic).transition_cost = 0;
 
 		trajectoryCosts.at(ic).cost = (
-				trajectoryCosts.at(ic).priority_cost +
+				0.25*trajectoryCosts.at(ic).priority_cost +
 				trajectoryCosts.at(ic).lane_change_cost +
 				trajectoryCosts.at(ic).lateral_cost +
 				trajectoryCosts.at(ic).longitudinal_cost +
