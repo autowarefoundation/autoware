@@ -168,7 +168,12 @@ protected:
     void UpdateLastFrame();
     bool TrackWithMotionModel();
 
-    bool Relocalization();
+    enum RelocalizationMode {
+    	SEARCH_DB = 1,
+		SEARCH_MAPPING = 2,
+		SEARCH_LOCAL_MAP = 3
+    };
+    bool Relocalization (RelocalizationMode=SEARCH_DB);
 
     void UpdateLocalMap();
     void UpdateLocalPoints();

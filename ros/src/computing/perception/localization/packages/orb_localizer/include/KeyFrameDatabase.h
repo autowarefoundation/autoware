@@ -52,13 +52,14 @@ namespace ORB_SLAM2
 
 class KeyFrame;
 class Frame;
+class Map;
 
 
 class KeyFrameDatabase
 {
 public:
 
-    KeyFrameDatabase(const ORBVocabulary &voc);
+    KeyFrameDatabase(ORBVocabulary &voc);
 
    void add(KeyFrame* pKF);
 
@@ -72,8 +73,12 @@ public:
    // Relocalization
    std::vector<KeyFrame*> DetectRelocalizationCandidates(Frame* F);
 
+   std::vector<KeyFrame*> DetectRelocalizationCandidatesSimple (Frame* F);
+
 	ORBVocabulary* getVocabulary ()
 	{ return const_cast<ORBVocabulary*> (mpVoc); }
+
+	void replaceVocabulary (ORBVocabulary *newvoc, Map *cmap);
 
 protected:
 
@@ -85,7 +90,7 @@ protected:
 
 
   // Associated vocabulary
-  const ORBVocabulary* mpVoc;
+  ORBVocabulary* mpVoc;
 
   // Inverted file
   std::vector<list<KeyFrame*> > mvInvertedFile;

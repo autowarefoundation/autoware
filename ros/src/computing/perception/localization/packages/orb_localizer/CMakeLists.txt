@@ -17,7 +17,7 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 # Force using C++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
-find_package (Boost REQUIRED COMPONENTS system python)
+find_package (Boost REQUIRED COMPONENTS system serialization python)
 find_package (OpenCV REQUIRED)
 find_package (OpenGL REQUIRED)
 find_package (GLEW REQUIRED)
@@ -154,6 +154,8 @@ target_link_libraries (
 add_executable (
 	orb_matching
 		nodes/orb_matching/orb_matching.cpp
+		nodes/orb_matching/Matcher.cpp
+#		nodes/orb_matching/FusionOdometry.cpp
 		nodes/common.cpp
 )
 
@@ -163,6 +165,23 @@ target_link_libraries (
 		${LINK_LIBRARIES}
 )
 
+
+add_executable (
+	orb_matching_pf
+		nodes/orb_matching/orb_matching_pf.cpp
+		nodes/orb_matching/Matcher.cpp
+		nodes/orb_matching/FusionOdometry.cpp
+		nodes/common.cpp
+)
+
+target_link_libraries (
+	orb_matching_pf
+		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}
+)
+
+
+
 add_executable (dumpmap
 	nodes/dumpmap/dumpmap.cc
 )
@@ -170,30 +189,6 @@ add_executable (dumpmap
 target_link_libraries (dumpmap
 	${ORB_BIN_LINKS}
 	${LINK_LIBRARIES}
-)
-
-add_executable (
-	orb_evaluator
-		nodes/orb_evaluator/orb_evaluator.cpp
-)
-
-target_link_libraries (
-	orb_evaluator
-		${catkin_LIBRARIES}
-		${ORB_BIN_LINKS}
-		${LINK_LIBRARIES}
-)
-
-
-add_executable (
-	test_single
-		nodes/test_single.cpp
-)
-
-target_link_libraries (
-	test_single
-		${ORB_BIN_LINKS}
-		${LINK_LIBRARIES}
 )
 
 
@@ -212,12 +207,29 @@ target_link_libraries (
 
 
 add_executable (
-	test_debayer
-		nodes/test_debayer.cpp
+        map_publisher
+                nodes/visualization/map_publisher.cc
+                nodes/common.cpp
 )
 
 target_link_libraries (
-	test_debayer
-		${catkin_LIBRARIES}
-		raw
+        map_publisher
+                ${catkin_LIBRARIES}
+                ${ORB_BIN_LINKS}
+                ${LINK_LIBRARIES}
 )
+
+
+
+add_executable (
+	imgprocx
+		nodes/imgprocx/imgprocx.cpp
+		nodes/imgprocx/ImagePreprocessor.cpp
+)
+
+target_link_libraries (
+	imgprocx
+		${catkin_LIBRARIES}
+)
+
+

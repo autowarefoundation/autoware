@@ -683,8 +683,16 @@ cv::Mat Frame::UnprojectStereo(const int &i)
 
 void Frame::getDirectionVector (float &dirX, float &dirY, float &dirZ)
 {
-
+	cv::Mat orient = this->mTcw.t();
+	dirX = orient.at<float>(0,2);
+	dirY = orient.at<float>(1,2);
+	dirZ = orient.at<float>(2,2);
+	float norm = sqrtf(dirX*dirX + dirY*dirY + dirZ*dirZ);
+	dirX /= norm;
+	dirY /= norm;
+	dirZ /= norm;
 }
+
 
 const string frameDebugImage ("frame.jpg");
 

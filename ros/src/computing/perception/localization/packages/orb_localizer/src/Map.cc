@@ -20,8 +20,10 @@
 
 #include "Map.h"
 #include "KeyFrame.h"
+#include "Frame.h"
 #include "MapPoint.h"
 #include "KeyFrameDatabase.h"
+#include "ORBVocabulary.h"
 #include <mutex>
 #include <cstdio>
 #include <exception>
@@ -29,10 +31,22 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/filesystem.hpp>
 #include "MapObjectSerialization.h"
 
 
 using std::string;
+
+
+template<class T>
+vector<T> set2vector (const set<T> &st)
+{
+	vector<T> rt;
+	for (auto &smember: st) {
+		rt.push_back(smember);
+	}
+	return rt;
+}
 
 
 namespace ORB_SLAM2
@@ -146,8 +160,7 @@ KeyFrame* Map::offsetKeyframe (KeyFrame* kfSrc, int offset)
 
 const char *signature = "ORBSLAM";
 
-
-void Map::saveToDisk(const string &filename, KeyFrameDatabase *keyframeDatabase)
+void Map::saveToDisk(const string &mapfilename, KeyFrameDatabase *keyframeDatabase)
 {
 	MapFileHeader header;
 	memcpy (header.signature, signature, sizeof(header.signature));
@@ -156,7 +169,7 @@ void Map::saveToDisk(const string &filename, KeyFrameDatabase *keyframeDatabase)
 	header.numOfReferencePoint = this->mvpReferenceMapPoints.size();
 
 	fstream mapFileFd;
-	mapFileFd.open(filename.c_str(), fstream::out | fstream::trunc);
+	mapFileFd.open(mapfilename.c_str(), fstream::out | fstream::trunc);
 	if (!mapFileFd.is_open())
 		throw MapFileException();
 	mapFileFd.write ((const char*)&header, sizeof(header));
@@ -165,6 +178,13 @@ void Map::saveToDisk(const string &filename, KeyFrameDatabase *keyframeDatabase)
 
 	boost::archive::binary_oarchive mapArchive (mapFileFd);
 
+	// Create new vocabulary
+	cout << "Creating new vocabulary... ";
+	ORBVocabulary mapVoc(10, 6);
+	extractVocabulary (&mapVoc);
+	keyframeDatabase->replaceVocabulary(&mapVoc, this);
+	cout << "Done\n";
+
 	int p = 0;
 	for (set<KeyFrame*>::const_iterator kfit=mspKeyFrames.begin(); kfit!=mspKeyFrames.end(); kfit++) {
 		const KeyFrame *kf = *kfit;
@@ -172,11 +192,13 @@ void Map::saveToDisk(const string &filename, KeyFrameDatabase *keyframeDatabase)
 			cerr << endl << "NULL KF found" << endl;
 			continue;
 		}
+
 		mapArchive << *kf;
 		cout << "Keyframes: " << ++p << "/" << mspKeyFrames.size() << "\r";
 	}
 	cout << endl;
 
+	p = 0;
 	for (set<MapPoint*>::iterator mpit=mspMapPoints.begin(); mpit!=mspMapPoints.end(); mpit++) {
 		const MapPoint *mp = *mpit;
 		if (mp==NULL) {
@@ -184,14 +206,22 @@ void Map::saveToDisk(const string &filename, KeyFrameDatabase *keyframeDatabase)
 			continue;
 		}
 		mapArchive << *mp;
+		cout << "Map Points: " << ++p << "/" << mspMapPoints.size() << "\r";
 	}
+	cout << endl;
 
 	vector<idtype> vmvpReferenceMapPoints = createIdList (mvpReferenceMapPoints);
 	mapArchive << vmvpReferenceMapPoints;
 
 	mapArchive << *keyframeDatabase;
-
 	mapFileFd.close();
+
+	cout << "Saving vocabulary... ";
+	boost::filesystem::path mapPath (mapfilename);
+	boost::filesystem::path mapDir = mapPath.parent_path();
+	string mapVocab = mapPath.string() + ".voc";
+	mapVoc.saveToTextFile (mapVocab);
+	cout << "Done\n";
 }
 
 
@@ -226,6 +256,12 @@ void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb)
 		if (!kf->isBad())
 			mspKeyFrames.insert (kf);
 		kfListSorted.push_back(kf);
+
+//		const cv::Mat camCenter = kf->GetCameraCenter();
+//		const float
+//			x = camCenter.at<float>(0),
+//			y = camCenter.at<float>(1),
+//			z = camCenter.at<float>(2);
 
 		// XXX: Need to increase KeyFrame::nNextId
 		// Also, adjust Frame::nNextId
@@ -304,42 +340,107 @@ void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb)
 	kfOctree = pcl::octree::OctreePointCloudSearch<KeyFramePt>::Ptr (new pcl::octree::OctreePointCloudSearch<KeyFramePt> (MapOctreeResolution));
 	kfOctree->setInputCloud(kfCloud);
 	kfOctree->addPointsFromInputCloud();
+	mKeyFrameDb = kfMemDb;
 //	cout << "Done restoring Octree" << endl;
 }
 
 
 // we expect direction vector has been normalized,
 // as returned by Frame::getDirectionVector()
-KeyFrame* Map::getNearestKeyFrame (const float &x, const float &y, const float &z,
-	const float fdir_x, const float fdir_y, const float fdir_z)
+//KeyFrame* Map::getNearestKeyFrame (const float &x, const float &y, const float &z,
+//	const float fdir_x, const float fdir_y, const float fdir_z,
+//	vector<KeyFrame*> *kfSelectors)
+KeyFrame*
+Map::getNearestKeyFrame (const Eigen::Vector3f &position,
+	const Eigen::Quaternionf &orientation,
+	vector<KeyFrame*> *kfSelectors
+)
 {
 	KeyFramePt queryPoint;
-	queryPoint.x = x, queryPoint.y = y, queryPoint.z = z;
+	queryPoint.x = position.x(), queryPoint.y = position.y(), queryPoint.z = position.z();
 
-	const int k = 10;
+	const int k = 15;
 	vector<int> idcs;
 	vector<float> sqrDist;
 	idcs.resize(k);
 	sqrDist.resize(k);
 
 	int r = kfOctree->nearestKSearch(queryPoint, k, idcs, sqrDist);
-	if (r==0)
+	if (r==0) {
+		cerr << "*\n";
 		return NULL;
-
-	for (auto ip: idcs) {
-		float dirx, diry, dirz, cosT;
-		KeyFrame *ckf = kfCloud->at(ip).kf;
-		ckf->getDirectionVector(dirx, diry, dirz);
-		cosT = dirx*fdir_x + diry*fdir_y + dirz*fdir_z;
-		if (cosT <= 0.86)
-			continue;
-		else
-			return ckf;
 	}
 
-	return NULL;
-//	KeyFrame *kfn = kfCloud->at(idcs[0]).kf;
-//	return kfn;
+	Eigen::Matrix3f mOrient = orientation.toRotationMatrix();
+	float
+		fdir_x = mOrient(0,2),
+		fdir_y = mOrient(1,2),
+		fdir_z = mOrient(2,2);
+
+	float cosd = 0;
+	KeyFrame *ckf = NULL;
+	int i = 0;
+	for (auto ip: idcs) {
+
+		float dirx, diry, dirz, cosT;
+		KeyFrame *checkKF = kfCloud->at(ip).kf;
+
+		// get direction vector
+		cv::Mat orient = checkKF->GetRotation().t();
+		dirx = orient.at<float>(0,2);
+		diry = orient.at<float>(1,2);
+		dirz = orient.at<float>(2,2);
+		float norm = sqrtf(dirx*dirx + diry*diry + dirz*dirz);
+		dirx /= norm;
+		diry /= norm;
+		dirz /= norm;
+
+		cosT = (dirx*fdir_x + diry*fdir_y + dirz*fdir_z) / (sqrtf(fdir_x*fdir_x + fdir_y*fdir_y + fdir_z*fdir_z) * sqrtf(dirx*dirx + diry*diry + dirz*dirz));
+
+		if (cosT < 0)
+			continue;
+		else
+			return checkKF;
+//		if (cosT > cosd) {
+//			cosd = cosT;
+//			ckf = checkKF;
+//		}
+//		if (kfSelectors!=NULL)
+//			kfSelectors->at(i) = checkKF;
+//		i+=1;
+	}
+
+	return ckf;
+}
+
+
+void Map::extractVocabulary (ORBVocabulary *mapVoc)
+{
+	vector<vector<DBoW2::FORB::TDescriptor> > keymapFeatures;
+	keymapFeatures.reserve (mspKeyFrames.size());
+
+	vector<KeyFrame*> allKeyFrames = GetAllKeyFrames();
+	fprintf (stderr, "KF: %d\n", allKeyFrames.size());
+
+	for (vector<KeyFrame*>::const_iterator it=allKeyFrames.begin(); it!=allKeyFrames.end(); it++) {
+
+		KeyFrame *kf = *it;
+		vector<cv::Mat> kfDescriptor;
+
+		// take map points that are belong to this keyframe
+		set<MapPoint*> mapSet = kf->GetMapPoints();
+		vector<MapPoint*> mapPointList = set2vector(mapSet);
+
+		// for each map points, pick best descriptor and add to descriptors of this keyframe
+		for (auto &mpp: mapPointList) {
+			cv::Mat mpDescriptor = mpp->GetDescriptor();
+			kfDescriptor.push_back(mpDescriptor);
+		}
+
+		keymapFeatures.push_back (kfDescriptor);
+	}
+
+	mapVoc->create (keymapFeatures);
 }
 
 

@@ -77,6 +77,7 @@ public:
 
     // Bag of Words Representation
     void ComputeBoW();
+    void RecomputeBoW (ORBVocabulary *newvoc);
 
     // Covisibility graph functions
     void AddConnection(KeyFrame* pKF, const int &weight);

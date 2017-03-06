@@ -65,6 +65,7 @@ void loadData (const string &dataDir, imagePose& dataset)
 
 	closedir(fd);
 	std::sort(dataset.imagePaths.begin(), dataset.imagePaths.end());
+	cout << "Found " << dataset.imagePaths.size() << " images" << endl;
 
 	// XXX: load pose
 	while (!feof(posefd)) {
@@ -90,6 +91,7 @@ void loadData (const string &dataDir, imagePose& dataset)
 		dataset.timestamps.push_back(timestamp);
 		dataset.poses.push_back(cpose);
 	}
+	cout << "Found " << dataset.poses.size() << " positions" << endl;
 
 	fclose (posefd);
 }
@@ -132,9 +134,10 @@ int main (int argc, char *argv[])
 		startNum = 0;
 	}
 
+	cout << "Loading data..." << endl;
 	imagePose mDataSet;
-
 	loadData (dataDir, mDataSet);
+	cout << "Loading complete" << endl;
 //	stopNum = mDataSet.poses.size();
 	try {
 		stopNum = mapperOptMap["stop"].as<int>();
@@ -177,7 +180,7 @@ int main (int argc, char *argv[])
 
 	signal (SIGINT, interruptHandler);
 
-	for (int i=startNum; i<stopNum; i++) {
+	for (int i=startNum; i<stopNum-2; i++) {
 
 		cout << "Processing Frame# " << i << "\r";
 		cout.flush();
