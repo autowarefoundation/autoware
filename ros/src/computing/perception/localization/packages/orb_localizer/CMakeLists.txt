@@ -58,12 +58,6 @@ add_definitions (
 	-DORB_SLAM_VOCABULARY="${orb_slam_vocabulary_file}"
 )
 
-# Configuration file
-configure_file (
-	config/orb-slam2.yaml.in
-	${CATKIN_DEVEL_PREFIX}/share/${PROJECT_NAME}/orb-slam2.yaml
-)
-
 # For building Pangolin
 add_subdirectory (Thirdparty/Pangolin)
 
