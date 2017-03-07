@@ -337,72 +337,65 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 
 bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, PlannerHNS::WayPoint& goalPoint, std::vector<std::vector<PlannerHNS::WayPoint> >& generatedTotalPaths)
 {
-	PlannerHNS::WayPoint* pStart = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(startPoint, m_Map);
-	PlannerHNS::WayPoint* pGoal = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(goalPoint, m_Map);
-	std::vector<int> predefinedLanesIds;
 
-	if(pStart && pGoal)
-	{
-		generatedTotalPaths.clear();
+	generatedTotalPaths.clear();
 #ifdef ENABLE_VISUALIZE_PLAN
-		if(m_PlanningVisualizeTree.size() > 0)
-		{
-			m_PlannerH.DeleteWaypoints(m_PlanningVisualizeTree);
-			m_AccumPlanLevels.markers.clear();
-			m_iCurrLevel = 0;
-			m_nLevelSize = 1;
-		}
+	if(m_PlanningVisualizeTree.size() > 0)
+	{
+		m_PlannerH.DeleteWaypoints(m_PlanningVisualizeTree);
+		m_AccumPlanLevels.markers.clear();
+		m_iCurrLevel = 0;
+		m_nLevelSize = 1;
+	}
 
-		double ret = m_PlannerH.PlanUsingDP(pStart->pLane,
-				*pStart, *pGoal,
-				*pStart, MAX_GLOBAL_PLAN_DISTANCE,
-				predefinedLanesIds, generatedTotalPaths, &m_PlanningVisualizeTree);
+	std::vector<int> predefinedLanesIds;
+	double ret = m_PlannerH.PlanUsingDP(startPoint, goalPoint,
+			MAX_GLOBAL_PLAN_DISTANCE, predefinedLanesIds,
+			m_Map, generatedTotalPaths, &m_PlanningVisualizeTree);
 
-		m_pCurrGoal = pGoal;
+	m_pCurrGoal = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(goalPoint, m_Map);
 
 #else
-		double ret = m_PlannerH.PlanUsingDP(pStart->pLane,
-						*pStart, *pGoal,
-						*pStart, MAX_GLOBAL_PLAN_DISTANCE,
-						predefinedLanesIds, generatedTotalPaths);
+	std::vector<int> predefinedLanesIds;
+
+	double ret = m_PlannerH.PlanUsingDP(startPoint, goalPoint,
+					MAX_GLOBAL_PLAN_DISTANCE, predefinedLanesIds,
+					m_Map, generatedTotalPaths);
 #endif
 
 #ifdef ENABLE_HMI
-		for(unsigned int im = 0; im < m_ModifiedWayPointsCosts.size(); im++)
-			m_ModifiedWayPointsCosts.at(im)->actionCost.at(0).second = 0;
+	for(unsigned int im = 0; im < m_ModifiedWayPointsCosts.size(); im++)
+		m_ModifiedWayPointsCosts.at(im)->actionCost.at(0).second = 0;
 
-		m_ModifiedWayPointsCosts.clear();
+	m_ModifiedWayPointsCosts.clear();
 #endif
-		if(ret == 0) generatedTotalPaths.clear();
+	if(ret == 0) generatedTotalPaths.clear();
 
 
-		if(generatedTotalPaths.size() > 0 && generatedTotalPaths.at(0).size()>0)
+	if(generatedTotalPaths.size() > 0 && generatedTotalPaths.at(0).size()>0)
+	{
+		if(m_params.bEnableSmoothing)
 		{
-			if(m_params.bEnableSmoothing)
+			for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 			{
-				for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
-				{
-					PlannerHNS::PlanningHelpers::FixPathDensity(generatedTotalPaths.at(i), m_params.pathDensity);
-					PlannerHNS::PlanningHelpers::SmoothPath(generatedTotalPaths.at(i), 0.49, 0.35 , 0.01);
-				}
+				PlannerHNS::PlanningHelpers::FixPathDensity(generatedTotalPaths.at(i), m_params.pathDensity);
+				PlannerHNS::PlanningHelpers::SmoothPath(generatedTotalPaths.at(i), 0.49, 0.35 , 0.01);
 			}
+		}
 
-			PlannerHNS::PlanningHelpers::CalcAngleAndCost(generatedTotalPaths.at(0));
-			std::cout << "New DP Path -> " << generatedTotalPaths.size() << std::endl;
-			return true;
-		}
-		else
+		for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 		{
-			std::cout << "Can't Generate Global Path for Start (" << startPoint.pos.ToString()
-								<< ") and Goal (" << goalPoint.pos.ToString() << ")" << std::endl;
+			PlannerHNS::PlanningHelpers::CalcAngleAndCost(generatedTotalPaths.at(i));
+			std::cout << "New DP Path -> " << generatedTotalPaths.at(i).size() << std::endl;
 		}
+
+		return true;
 	}
 	else
 	{
-		std::cout << "Can't Find Global Waypoint Nodes in the Map for Start (" << startPoint.pos.ToString()
+		std::cout << "Can't Generate Global Path for Start (" << startPoint.pos.ToString()
 							<< ") and Goal (" << goalPoint.pos.ToString() << ")" << std::endl;
 	}
-
 	return false;
 }
 
@@ -694,8 +687,8 @@ void way_planner_core::PlannerMainLoop()
 				if(bEnableReplanning)
 				{
 					PlannerHNS::RelativeInfo info;
-					PlannerHNS::PlanningHelpers::GetRelativeInfo(m_GeneratedTotalPaths.at(0), startPoint, info);
-					double remaining_distance =    m_GeneratedTotalPaths.at(0).at(m_GeneratedTotalPaths.at(0).size()-1).cost - (m_GeneratedTotalPaths.at(0).at(info.iFront).cost + info.to_front_distance);
+					PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GeneratedTotalPaths, startPoint, info);
+					double remaining_distance =    m_GeneratedTotalPaths.at(info.iGlobalPath).at(m_GeneratedTotalPaths.at(info.iGlobalPath).size()-1).cost - (m_GeneratedTotalPaths.at(info.iGlobalPath).at(info.iFront).cost + info.to_front_distance);
 					if(remaining_distance <= REPLANNING_DISTANCE)
 					{
 						m_iCurrentGoalIndex++;

@@ -24,6 +24,7 @@ using namespace UtilityHNS;
 using namespace std;
 #define FIND_LEFT_RIGHT_LANES
 #define _SMOOTH_MAP_WAYPOINTS
+#define LEFT_RIGHT_INITIAL_TURNS_COST 10
 
 
 namespace PlannerHNS {
@@ -205,12 +206,12 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 
 		if(curr_lane_point.LaneDir == 'L')
 		{
-			wp.actionCost.push_back(make_pair(LEFT_TURN_ACTION, 0));
+			wp.actionCost.push_back(make_pair(LEFT_TURN_ACTION, LEFT_RIGHT_INITIAL_TURNS_COST));
 			//std::cout << " Left Lane : " << curr_lane_point.LnID << std::endl ;
 		}
 		else  if(curr_lane_point.LaneDir == 'R')
 		{
-			wp.actionCost.push_back(make_pair(RIGHT_TURN_ACTION, 0));
+			wp.actionCost.push_back(make_pair(RIGHT_TURN_ACTION, LEFT_RIGHT_INITIAL_TURNS_COST));
 			//std::cout << " Right Lane : " << curr_lane_point.LnID << std::endl ;
 		}
 		else

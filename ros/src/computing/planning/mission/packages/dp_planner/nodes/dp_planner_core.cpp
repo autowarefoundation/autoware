@@ -753,8 +753,8 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
 				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
 				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
-				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
-				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
+				wp.cost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
+				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
 				if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 0)
 					wp.bDir = PlannerHNS::FORWARD_DIR;
 				else if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 1)
@@ -831,13 +831,13 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 
 			cout << "Global Lanes Size = " << msg->lanes.size() <<", Conv Size= " << m_WayPlannerPaths.size() << ", First Lane Size: " << m_WayPlannerPaths.at(0).size() << endl;
 
-			for(unsigned int k= 0; k < m_WayPlannerPaths.at(0).size(); k++)
-			{
-				if(m_WayPlannerPaths.at(0).at(k).stopLineID > 0 && m_WayPlannerPaths.at(0).at(k).pLane && m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size()>0)
-				{
-					cout << "Stop Line IDs: " << m_WayPlannerPaths.at(0).at(k).stopLineID << ", Lane: " << m_WayPlannerPaths.at(0).at(k).pLane << ", Stop Lines: "<< m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size() << endl;
-				}
-			}
+//			for(unsigned int k= 0; k < m_WayPlannerPaths.at(0).size(); k++)
+//			{
+//				if(m_WayPlannerPaths.at(0).at(k).stopLineID > 0 && m_WayPlannerPaths.at(0).at(k).pLane && m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size()>0)
+//				{
+//					cout << "Stop Line IDs: " << m_WayPlannerPaths.at(0).at(k).stopLineID << ", Lane: " << m_WayPlannerPaths.at(0).at(k).pLane << ", Stop Lines: "<< m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size() << endl;
+//				}
+//			}
 		}
 	}
 }
@@ -992,7 +992,7 @@ void PlannerX::PlannerMainLoop()
 
 			visualization_msgs::MarkerArray all_rollOuts;
 
-			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts.at(0), m_LocalPlanner, all_rollOuts);
+			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 			pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 		}
 

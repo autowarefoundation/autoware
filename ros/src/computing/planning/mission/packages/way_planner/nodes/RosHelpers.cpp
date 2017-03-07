@@ -78,8 +78,8 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		wp.twist.twist.linear.x = path.at(i).v;
 		wp.twist.twist.linear.y = path.at(i).laneId;
 		wp.twist.twist.linear.z = path.at(i).stopLineID;
-		wp.twist.twist.angular.x = path.at(i).LeftLaneId;
-		wp.twist.twist.angular.y = path.at(i).RightLaneId;
+		wp.twist.twist.angular.x = path.at(i).cost;
+		wp.twist.twist.angular.y = path.at(i).laneChangeCost;
 		for(unsigned int iaction = 0; iaction < path.at(i).actionCost.size(); iaction++)
 		{
 			if(path.at(i).actionCost.at(iaction).first == PlannerHNS::RIGHT_TURN_ACTION)
@@ -431,7 +431,6 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
   lane_waypoint_marker.header.stamp = ros::Time();
-  lane_waypoint_marker.ns = "global_lane_waypoint_orientation_marker";
   lane_waypoint_marker.type = visualization_msgs::Marker::ARROW;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
   lane_waypoint_marker.scale.x = 0.3;
@@ -445,6 +444,11 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
   int count = 1;
   for (unsigned int i=0; i<  lane_waypoints_array.lanes.size(); i++)
   {
+	  std::ostringstream str_ns;
+	  str_ns << "global_lane_waypoint_orientation_marker_";
+	  str_ns << i;
+	 lane_waypoint_marker.ns = str_ns.str();
+
     for (unsigned int j=0; j < lane_waypoints_array.lanes.at(i).waypoints.size(); j++)
     {
     	if(lane_waypoints_array.lanes.at(i).waypoints.at(j).twist.twist.angular.z == 1)
@@ -474,8 +478,7 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower:
   }
 
   markerArray.markers.insert(markerArray.markers.end(), tmp_marker_array.markers.begin(),
-                                         tmp_marker_array.markers.end());
-
+										   tmp_marker_array.markers.end());
 }
 
 void RosHelpers::FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose,const double& min_distance,

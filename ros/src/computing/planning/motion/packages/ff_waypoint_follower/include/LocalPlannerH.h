@@ -145,7 +145,7 @@ private:
 	void TransformPoint(const WayPoint& refPose, GPSPoint& p);
 	void AddAndTransformContourPoints(const DetectedObject& obj, std::vector<WayPoint>& contourPoints);
 
-	bool NoWayTest(const double& min_distance);
+	bool NoWayTest(const double& min_distance, const int& iGlobalPathIndex);
 
 	PlannerHNS::PlanningParams m_params;
 };

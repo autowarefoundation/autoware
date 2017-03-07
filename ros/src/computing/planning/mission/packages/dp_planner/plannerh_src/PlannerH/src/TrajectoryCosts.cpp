@@ -22,7 +22,8 @@ TrajectoryCosts::~TrajectoryCosts()
 }
 
 TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> > >& rollOuts,
-		const vector<vector<WayPoint> >& totalPaths, const WayPoint& currState, const int& currTrajectoryIndex,
+		const vector<vector<WayPoint> >& totalPaths, const WayPoint& currState, const int& currIndex,
+		const int& currLaneIndex,
 		const PlanningParams& params, const CAR_BASIC_INFO& carInfo,
 		const std::vector<PlannerHNS::DetectedObject>& obj_list)
 {
@@ -37,7 +38,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 	if(m_TrajectoryCosts.size() != rollOuts.size())
 		m_CurrentTrajectoryIndex = -1;
 	else
-		m_CurrentTrajectoryIndex = currTrajectoryIndex;
+		m_CurrentTrajectoryIndex = params.rollOutNumber*currLaneIndex+currIndex;
 
 	m_TrajectoryCosts.clear();
 
@@ -76,18 +77,20 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 	}
 
 	//All is blocked !
-	if(smallestIndex == -1 && currTrajectoryIndex < (int)m_TrajectoryCosts.size())
+	if(smallestIndex == -1 && m_CurrentTrajectoryIndex < (int)m_TrajectoryCosts.size())
 	{
-		bestTrajectory =  m_TrajectoryCosts.at(currTrajectoryIndex);
-		bestTrajectory.index = smallestIndex;
+		bestTrajectory =  m_TrajectoryCosts.at(m_CurrentTrajectoryIndex);
+		//bestTrajectory.index = smallestIndex;
 	}
 	else if(smallestIndex >= 0)
 	{
 		bestTrajectory = m_TrajectoryCosts.at(smallestIndex);
-		bestTrajectory.index = smallestIndex;
+		//bestTrajectory.index = smallestIndex;
 	}
 
-//	cout << "Blockage Test: " << smallestIndex << ", currentTrajIndex: " << currTrajectoryIndex << ", Trajectory Cost Size: " << m_TrajectoryCosts.size() << ", Best Block: " << bestTrajectory.bBlocked <<", Best Index: " << bestTrajectory.index<< ", D: " << bestTrajectory.closest_obj_distance << endl;
+	cout << "LaneIndex: " << bestTrajectory.lane_index << "LocalIndex: " << bestTrajectory.index
+			<< ", currentTrajIndex: " << m_CurrentTrajectoryIndex << ", Trajectory Cost: " << bestTrajectory.closest_obj_distance
+			<<", SmallestIndex: " <<  smallestIndex << endl;
 
 	return bestTrajectory;
 }
@@ -135,9 +138,6 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 	m_SafetyBorder.points.push_back(bottom_right) ;
 	m_SafetyBorder.points.push_back(top_right) ;
 	m_SafetyBorder.points.push_back(top_left) ;
-
-
-
 
 	for(unsigned int il=0; il < rollOuts.size(); il++)
 	{
@@ -283,13 +283,14 @@ vector<TrajectoryCost> TrajectoryCosts::CalculatePriorityAndLaneChangeCosts(cons
 		tc.distance_from_center = params.rollOutDensity*tc.relative_index;
 		tc.priority_cost = fabs(tc.distance_from_center);
 		tc.closest_obj_distance = params.horizonDistance;
+		tc.lane_change_cost = laneRollOuts.at(it).at(0).laneChangeCost;
 
-		if(laneRollOuts.at(it).at(0).bDir == FORWARD_LEFT_DIR || laneRollOuts.at(it).at(0).bDir == FORWARD_RIGHT_DIR)
-			tc.lane_change_cost = 1;
-		else if(laneRollOuts.at(it).at(0).bDir == BACKWARD_DIR || laneRollOuts.at(it).at(0).bDir == BACKWARD_RIGHT_DIR || laneRollOuts.at(it).at(0).bDir == BACKWARD_LEFT_DIR)
-			tc.lane_change_cost = 2;
-		else
-			tc.lane_change_cost = 0;
+//		if(laneRollOuts.at(it).at(0).bDir == FORWARD_LEFT_DIR || laneRollOuts.at(it).at(0).bDir == FORWARD_RIGHT_DIR)
+//			tc.lane_change_cost = 1;
+//		else if(laneRollOuts.at(it).at(0).bDir == BACKWARD_DIR || laneRollOuts.at(it).at(0).bDir == BACKWARD_RIGHT_DIR || laneRollOuts.at(it).at(0).bDir == BACKWARD_LEFT_DIR)
+//			tc.lane_change_cost = 2;
+//		else
+//			tc.lane_change_cost = 0;
 
 		costs.push_back(tc);
 	}

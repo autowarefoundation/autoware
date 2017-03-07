@@ -20,7 +20,7 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMap "/home/hatem/data/ToyotaCity/map/vector_map/"
+#define VectorMap "/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
 #define kmlMapPath	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/kml/ToyotaCityCustomInfo.kml"
@@ -1475,9 +1475,12 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				//planner.PlanUsingReedShepp(pR->m_LocalPlanner.state, pR->m_goal, generatedPath);
 				timespec planTime;
 				UtilityH::GetTickCount(planTime);
-				planner.PlanUsingDP(pR->m_LocalPlanner.pLane, pR->m_LocalPlanner.state,
-						pR->m_goals.at(pR->m_iCurrentGoal), pR->m_LocalPlanner.state,
-						1000000,pR->m_LanesIds, generatedTotalPath, &pR->m_all_cell_to_delete);
+				planner.PlanUsingDP(pR->m_LocalPlanner.state,
+						pR->m_goals.at(pR->m_iCurrentGoal),
+						1000000,
+						pR->m_LanesIds,
+						pR->m_RoadMap,
+						generatedTotalPath, &pR->m_all_cell_to_delete);
 				pR->m_GlobalPlanningTime = UtilityH::GetTimeDiffNow(planTime);
 
 				if(generatedTotalPath.size()>0 && generatedTotalPath.at(0).size()>0)

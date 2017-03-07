@@ -183,7 +183,7 @@ public:
 			visualization_msgs::Marker& marker);
 
 	static void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
-			const std::vector<std::vector<PlannerHNS::WayPoint> >& paths, const PlannerHNS::LocalPlannerH& localPlanner,
+			const std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > >& paths, const PlannerHNS::LocalPlannerH& localPlanner,
 				visualization_msgs::MarkerArray& markerArray);
 
 	static void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths,

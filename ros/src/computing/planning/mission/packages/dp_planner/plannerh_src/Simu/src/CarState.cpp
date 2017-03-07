@@ -729,73 +729,73 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 	 PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
 
 	bool bNewTrajectory = false;
-	if(m_TotalPath.size()>0)
-	{
-		int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_Path, state);
-		int index_limit = 0;//m_Path.size() - 20;
-		if(index_limit<=0)
-			index_limit =  m_Path.size()/2.0;
-		if(m_RollOuts.size() == 0
-				|| currIndex > index_limit
-				|| m_pCurrentBehaviorState->GetCalcParams()->bRePlan
-				|| m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
-		{
-			PlannerHNS::PlannerH planner;
-			std::vector<PlannerHNS::WayPoint> tempSec, tempSampledPoints;
-
-			planner.GenerateRunoffTrajectory(m_TotalPath, state,
-					m_pCurrentBehaviorState->m_PlanningParams.enableLaneChange,
-					vehicleState.speed,
-					m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
-					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-					m_pCurrentBehaviorState->m_PlanningParams.minSpeed,
-					m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
-					m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
-					m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
-					m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
-					m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
-					m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
-					m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
-					m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
-					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
-					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-					m_pCurrentBehaviorState->m_PlanningParams.enableHeadingSmoothing,
-					m_RollOuts,tempSec, tempSampledPoints);
-
-			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
-
-			//FindNextBestSafeTrajectory(pValues->iCurrSafeTrajectory);
-			if(preCalcPrams->iCurrSafeTrajectory >= 0
-					&& preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size()
-					&& m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
-			{
-				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
-				m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
-				bNewTrajectory = true;
-			}
-			else
-			{
-				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCentralTrajectory;
-				m_Path = m_RollOuts.at(preCalcPrams->iCentralTrajectory);
-				bNewTrajectory = true;
-			}
-
-			PlanningHelpers::GenerateRecommendedSpeed(m_Path,
-					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
-			PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
-			std::ostringstream str_out;
-			str_out << UtilityH::GetHomeDirectory();
-			str_out << DataRW::LoggingMainfolderName;
-			str_out << DataRW::PathLogFolderName;
-			str_out << "_";
-			PlanningHelpers::WritePathToFile(str_out.str(), m_Path);
+//	if(m_TotalPath.size()>0)
+//	{
+//		int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_Path, state);
+//		int index_limit = 0;//m_Path.size() - 20;
+//		if(index_limit<=0)
+//			index_limit =  m_Path.size()/2.0;
+//		if(m_RollOuts.size() == 0
+//				|| currIndex > index_limit
+//				|| m_pCurrentBehaviorState->GetCalcParams()->bRePlan
+//				|| m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
+//		{
+//			PlannerHNS::PlannerH planner;
+//			std::vector<PlannerHNS::WayPoint> tempSec, tempSampledPoints;
+//
+//			planner.GenerateRunoffTrajectory(m_TotalPath, state,
+//					m_pCurrentBehaviorState->m_PlanningParams.enableLaneChange,
+//					vehicleState.speed,
+//					m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
+//					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
+//					m_pCurrentBehaviorState->m_PlanningParams.minSpeed,
+//					m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
+//					m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
+//					m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
+//					m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
+//					m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
+//					m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
+//					m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
+//					m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
+//					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
+//					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
+//					m_pCurrentBehaviorState->m_PlanningParams.enableHeadingSmoothing,
+//					m_RollOuts,tempSec, tempSampledPoints);
+//
+//			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
+//
+//			//FindNextBestSafeTrajectory(pValues->iCurrSafeTrajectory);
+//			if(preCalcPrams->iCurrSafeTrajectory >= 0
+//					&& preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size()
+//					&& m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
+//			{
+//				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
+//				m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+//				bNewTrajectory = true;
 //			}
-//			else if(m_RollOuts.size() > 0)
-//				std::cout << "Error .. Error .. Slected Trajectory is out of range !! ( " << preCalcPrams->iCurrSafeTrajectory << ")" << std::endl;
-
-		}
-	}
+//			else
+//			{
+//				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCentralTrajectory;
+//				m_Path = m_RollOuts.at(preCalcPrams->iCentralTrajectory);
+//				bNewTrajectory = true;
+//			}
+//
+//			PlanningHelpers::GenerateRecommendedSpeed(m_Path,
+//					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
+//					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
+//			PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
+//			std::ostringstream str_out;
+//			str_out << UtilityH::GetHomeDirectory();
+//			str_out << DataRW::LoggingMainfolderName;
+//			str_out << DataRW::PathLogFolderName;
+//			str_out << "_";
+//			PlanningHelpers::WritePathToFile(str_out.str(), m_Path);
+////			}
+////			else if(m_RollOuts.size() > 0)
+////				std::cout << "Error .. Error .. Slected Trajectory is out of range !! ( " << preCalcPrams->iCurrSafeTrajectory << ")" << std::endl;
+//
+//		}
+//	}
 
 	return bNewTrajectory;
  }
@@ -1045,33 +1045,33 @@ bool SimulatedCarState::SelectSafeTrajectoryAndSpeedProfile(const PlannerHNS::Ve
 		std::vector<int> LanesIds;
 
 		std::vector<std::vector<PlannerHNS::WayPoint> > generatedPath;
-		planner.PlanUsingDP(pLane, state, PlannerHNS::WayPoint(),
-				state, 150, LanesIds, generatedPath);
-		m_RollOuts.clear();
-		if(generatedPath.size()>0)
-			m_TotalPath = generatedPath.at(0);
+//		planner.PlanUsingDP(state, PlannerHNS::WayPoint(),
+//				150, LanesIds, m_ generatedPath);
+//		m_RollOuts.clear();
+//		if(generatedPath.size()>0)
+//			m_TotalPath = generatedPath.at(0);
 
 		std::vector<PlannerHNS::WayPoint> tempSec, tempSampledPoints;
 
 
-		planner.GenerateRunoffTrajectory(m_TotalPath, state,
-				planningDefaultParams.enableLaneChange,
-				vehicleState.speed,
-				planningDefaultParams.microPlanDistance,
-				m_CarInfo.max_speed_forward,
-				planningDefaultParams.minSpeed,
-				planningDefaultParams.carTipMargin,
-				planningDefaultParams.rollInMargin,
-				planningDefaultParams.rollInSpeedFactor,
-				planningDefaultParams.pathDensity,
-				planningDefaultParams.rollOutDensity,
-				planningDefaultParams.rollOutNumber,
-				planningDefaultParams.smoothingDataWeight,
-				planningDefaultParams.smoothingSmoothWeight,
-				planningDefaultParams.smoothingToleranceError,
-				planningDefaultParams.speedProfileFactor,
-				planningDefaultParams.enableHeadingSmoothing,
-				m_RollOuts, tempSec, tempSampledPoints);
+//		planner.GenerateRunoffTrajectory(generatedPath, state,
+//				planningDefaultParams.enableLaneChange,
+//				vehicleState.speed,
+//				planningDefaultParams.microPlanDistance,
+//				m_CarInfo.max_speed_forward,
+//				planningDefaultParams.minSpeed,
+//				planningDefaultParams.carTipMargin,
+//				planningDefaultParams.rollInMargin,
+//				planningDefaultParams.rollInSpeedFactor,
+//				planningDefaultParams.pathDensity,
+//				planningDefaultParams.rollOutDensity,
+//				planningDefaultParams.rollOutNumber,
+//				planningDefaultParams.smoothingDataWeight,
+//				planningDefaultParams.smoothingSmoothWeight,
+//				planningDefaultParams.smoothingToleranceError,
+//				planningDefaultParams.speedProfileFactor,
+//				planningDefaultParams.enableHeadingSmoothing,
+//				m_RollOuts, tempSec, tempSampledPoints);
 
 		if(m_RollOuts.size() > 0)
 		{

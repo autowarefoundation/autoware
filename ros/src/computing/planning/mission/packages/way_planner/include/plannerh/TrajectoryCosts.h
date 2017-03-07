@@ -24,7 +24,7 @@ public:
 	virtual ~TrajectoryCosts();
 
 	TrajectoryCost DoOneStep(const vector<vector<vector<WayPoint> > >& rollOuts, const vector<vector<WayPoint> >& totalPaths,
-			const WayPoint& currState, const int& currTrajectoryIndex, const PlanningParams& params,
+			const WayPoint& currState, const int& currTrajectoryIndex, const int& currLaneIndex, const PlanningParams& params,
 			const CAR_BASIC_INFO& carInfo,const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
 public:

@@ -365,6 +365,7 @@ public:
 	double  	timeCost;
 	double  	totalReward;
 	double  	collisionCost;
+	double 		laneChangeCost;
 	int 		laneId;
 	int 		id;
 	int 		LeftLaneId;
@@ -396,6 +397,7 @@ public:
 		timeCost = 0;
 		totalReward = 0;
 		collisionCost = 0;
+		laneChangeCost = 0;
 		stopLineID = -1;
 	}
 
@@ -419,6 +421,8 @@ public:
 		timeCost = 0;
 		totalReward = 0;
 		collisionCost = 0;
+		laneChangeCost = 0;
+		stopLineID = -1;
 	}
 };
 
@@ -430,6 +434,7 @@ public:
 	double from_back_distance;
 	int iFront;
 	int iBack;
+	int iGlobalPath;
 	WayPoint perp_point;
 	double angle_diff; // degrees
 
@@ -440,6 +445,7 @@ public:
 		from_back_distance = 0;
 		iFront = 0;
 		iBack = 0;
+		iGlobalPath = 0;
 		angle_diff = 0;
 	}
 };

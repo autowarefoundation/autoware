@@ -8,59 +8,14 @@
 #include "RSPlanner.h"
 #include "GridMap.h"
 
+#define START_POINT_MAX_DISTANCE 8 // meters
+#define GOAL_POINT_MAX_DISTANCE 8 // meters
+
 namespace PlannerHNS
 {
 
 enum PLANDIRECTION {MOVE_FORWARD_ONLY, MOVE_BACKWARD_ONLY, 	MOVE_FREE};
 enum HeuristicConstrains {EUCLIDEAN, NEIGBORHOOD,DIRECTION };
-
-//class PlanningInternalParams
-//{
-//public:
-//	double 	pathDensity;
-//	double 	dataWeight;
-//	double 	smoothWeight;
-//	double 	tolerance;
-//	double 	SpeedCurvatureCoefficient;
-//
-//	double 	turning_radius;
-//	double 	wheel_base;
-//	double 	max_speed;
-//	double 	min_speed;
-//	double 	max_steer;
-//
-//	double car_width;
-//	double car_length;
-//
-//	double ReedSheppSmoothnessFactor;
-//
-//	PLANDIRECTION dir;
-//	HeuristicConstrains heuristics;
-//
-//	PlanningInternalParams()
-//	{
-//
-//
-//		pathDensity = 0.25;
-//		dataWeight = 0.3;
-//		smoothWeight = 0.35;
-//		tolerance = 0.1;
-//		SpeedCurvatureCoefficient = 1.0;
-//		turning_radius = 3.2;
-//		wheel_base = 1.53;
-//		max_speed = 5;
-//		min_speed = -1;
-//		max_steer = 0.42;
-//
-//		car_width = 1.2;
-//		car_length = 3.0;
-//
-//		ReedSheppSmoothnessFactor = 12.0; //From 1 - 20
-//
-//		dir = MOVE_FORWARD_ONLY;
-//		heuristics = EUCLIDEAN;
-//	}
-//};
 
 class PlannerH
 {
@@ -112,11 +67,12 @@ public:
 	 * @param speedProfileFactor how car should slow for corners
 	 * @param bHeadingSmooth follow car heading direction or center line path heading for sampling direction
 	 */
-	void GenerateRunoffTrajectory(const std::vector<WayPoint>& referencePath, const WayPoint& carPos, const bool& bEnableLaneChange, const double& speed, const double& microPlanDistance,
+	void GenerateRunoffTrajectory(const std::vector<std::vector<WayPoint> >& referencePaths, const WayPoint& carPos, const bool& bEnableLaneChange, const double& speed, const double& microPlanDistance,
 				const double& maxSpeed,const double& minSpeed, const double&  carTipMargin, const double& rollInMargin,
 				const double& rollInSpeedFactor, const double& pathDensity, const double& rollOutDensity,
 				const int& rollOutNumber, const double& SmoothDataWeight, const double& SmoothWeight,
-				const double& SmoothTolerance, const double& speedProfileFactor, const bool& bHeadingSmooth, std::vector<std::vector<WayPoint> >& rollOutPaths,
+				const double& SmoothTolerance, const double& speedProfileFactor, const bool& bHeadingSmooth,
+				std::vector<std::vector<std::vector<WayPoint> > >& rollOutsPaths,
 				std::vector<WayPoint>& sectionPath, std::vector<WayPoint>& sampledPoints);
 
 	/**
@@ -130,9 +86,9 @@ public:
 	 * @param path
 	 * @return generated path length
 	 */
-	double PlanUsingDP(Lane* lane, const WayPoint& carPos,const WayPoint& goalPos,
-			const WayPoint& prevWayPoint, const double& maxPlanningDistance,
-			const std::vector<int>& globalPath, std::vector<std::vector<WayPoint> >& paths, std::vector<WayPoint*>* all_cell_to_delete = 0);
+	double PlanUsingDP(const WayPoint& carPos,const WayPoint& goalPos,
+			const double& maxPlanningDistance, const std::vector<int>& globalPath,
+			RoadNetwork& map, std::vector<std::vector<WayPoint> >& paths, std::vector<WayPoint*>* all_cell_to_delete = 0);
 
 
 	/**

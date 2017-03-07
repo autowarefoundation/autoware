@@ -23,6 +23,7 @@ namespace PlannerHNS {
 #define angle2points(from , to) atan2(to.y - from.y, to.x - from.x )
 #define LANE_CHANGE_SPEED_FACTOR 0.5
 #define LANE_CHANGE_COST 3.0 // meters
+#define BACKUP_STRAIGHT_PLAN_DISTANCE 60 //meters
 
 class PlanningHelpers {
 public:
@@ -38,6 +39,8 @@ public:
 	 * @return true if success without errors, false otherwise
 	 */
 	static bool GetRelativeInfo(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex = 0);
+
+	static bool GetRelativeInfoRange(const std::vector<std::vector<WayPoint> >& trajectories, const WayPoint& p, RelativeInfo& info);
 
 	/**
 	 * @brief Find point on the trajectory after initial relative point with specific distance
@@ -110,10 +113,12 @@ public:
 //			std::vector<WayPoint*>& all_cells_to_delete );
 
 	static WayPoint* BuildPlanningSearchTreeV2(WayPoint* pStart,
-			const WayPoint& prevWayPointIndex,
 			const WayPoint& goalPos,
 			const std::vector<int>& globalPath, const double& DistanceLimit,
-			int& nMaxLeftBranches, int& nMaxRightBranches,
+			std::vector<WayPoint*>& all_cells_to_delete );
+
+	static WayPoint* BuildPlanningSearchTreeStraight(WayPoint* pStart,
+			const double& DistanceLimit,
 			std::vector<WayPoint*>& all_cells_to_delete );
 
 	static int PredictiveDP(WayPoint* pStart, const double& DistanceLimit,
@@ -132,6 +137,8 @@ public:
 
 	static void TraversePathTreeBackwards(WayPoint* pHead, WayPoint* pStartWP, const std::vector<int>& globalPathIds,
 			std::vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths);
+
+	static void ExtractPlanAlernatives(const std::vector<WayPoint>& singlePath, std::vector<std::vector<WayPoint> >& allPaths);
 
 	static ACTION_TYPE GetBranchingDirection(WayPoint& currWP, WayPoint& nextWP);
 
