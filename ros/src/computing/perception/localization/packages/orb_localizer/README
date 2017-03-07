@@ -14,7 +14,8 @@ Requirements:
 Mapping HOWTO
 
 1) Prepare ROS bag files containing both image streams and ground truth pose 
-   (may be separated)
+   (may be separated). Ground truth pose must be in message type "geometry_msgs/
+   PoseStamped".
 2) Make a copy of configuration file config/orb-slam2.yaml.in to some place, and
    edit it to put your configurations regarding:
    - Camera parameters
