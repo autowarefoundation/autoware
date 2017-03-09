@@ -2004,6 +2004,22 @@ params :
 
   - name  : way_planner
     vars  :
+    - name : enableLaneChange
+      desc : global plan extended by lane changes
+      label: Enable Lane Changing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableReplan
+      desc : infinite replanning to multiple goals including the start position
+      label: Enable Replanning
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : pathDensity
       desc : distance between each two waypoints
       label: Path Density

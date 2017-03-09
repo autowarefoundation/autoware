@@ -257,7 +257,7 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		if((desiredVelocity < 0.1 && desiredVelocity > -0.1) || CurrBehavior.followDistance <= 0) //use only effective velocities
 			desiredVelocity = 0;
 
-		//cout << "Follow State:  acceleration = " << deceleration_critical << ", speed = " << desiredVelocity <<  ", Distance = " << CurrBehavior.followDistance<< endl;
+		cout << "Follow State:  acceleration = " << deceleration_critical << ", speed = " << desiredVelocity <<  ", Distance = " << CurrBehavior.followDistance<< endl;
 	}
 	else
 	{

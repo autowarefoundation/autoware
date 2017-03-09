@@ -29,7 +29,7 @@ PlanningHelpers::~PlanningHelpers()
 {
 }
 
-bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoint> >& trajectories, const WayPoint& p, RelativeInfo& info)
+bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoint> >& trajectories, const WayPoint& p,const double& searchDistance, RelativeInfo& info)
 {
 	if(trajectories.size() == 0) return false;
 
@@ -48,15 +48,27 @@ bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoin
 		return true;
 	}
 
-	double minD = 9999999999;
+	double minCost = 9999999999;
 	int min_index = 0;
 
 	for(unsigned int i=0 ; i< infos.size(); i++)
 	{
-		if(infos.at(i).perp_distance < minD)
+		if(searchDistance > 0)
 		{
-			min_index = i;
-			minD = infos.at(i).perp_distance;
+			double laneChangeCost = trajectories.at(infos.at(i).iGlobalPath).at(infos.at(i).iFront).laneChangeCost;
+			if(fabs(infos.at(i).perp_distance) < searchDistance && laneChangeCost < minCost)
+			{
+				min_index = i;
+				minCost = laneChangeCost;
+			}
+		}
+		else
+		{
+			if(fabs(infos.at(i).perp_distance) < minCost)
+			{
+				min_index = i;
+				minCost = infos.at(i).perp_distance;
+			}
 		}
 	}
 
@@ -1109,6 +1121,69 @@ void PlanningHelpers::CalculateRollInTrajectories(const WayPoint& carPos, const 
 
 //	for(unsigned int i=0; i< rollInPaths.size(); i++)
 //		CalcAngleAndCost(rollInPaths.at(i));
+}
+
+bool PlanningHelpers::FindInList(const std::vector<int>& list,const int& x)
+{
+	for(unsigned int i = 0 ; i < list.size(); i++)
+	{
+		if(list.at(i) == x)
+			return true;
+	}
+	return false;
+}
+
+void PlanningHelpers::RemoveWithValue(std::vector<int>& list,const int& x)
+{
+	for(unsigned int i = 0 ; i < list.size(); i++)
+	{
+		if(list.at(i) == x)
+		{
+			list.erase(list.begin()+i);
+		}
+	}
+}
+
+std::vector<int> PlanningHelpers::GetUniqueLeftRightIds(const std::vector<WayPoint>& path)
+{
+	 vector<int> sideLanes;
+	for(unsigned int iwp = 0; iwp < path.size(); iwp++)
+	 {
+		 if(path.at(iwp).LeftLaneId>0)
+		 {
+			 bool bFound = false;
+			 for(unsigned int is = 0 ; is < sideLanes.size(); is++)
+			 {
+				 if(sideLanes.at(is) == path.at(iwp).LeftLaneId)
+				 {
+					 bFound = true;
+					 break;
+				 }
+			 }
+
+			 if(!bFound)
+				 sideLanes.push_back(path.at(iwp).LeftLaneId);
+		 }
+
+		 if(path.at(iwp).RightLaneId>0)
+		 {
+			 bool bFound = false;
+			 for(unsigned int is = 0 ; is < sideLanes.size(); is++)
+			 {
+				 if(sideLanes.at(is) == path.at(iwp).RightLaneId)
+				 {
+					 bFound = true;
+					 break;
+				 }
+			 }
+
+			 if(!bFound)
+				 sideLanes.push_back(path.at(iwp).RightLaneId);
+		 }
+
+		 //RemoveWithValue(sideLanes, path.at(iwp).laneId);
+	 }
+	return sideLanes;
 }
 
 void PlanningHelpers::SmoothSpeedProfiles(vector<WayPoint>& path_in, double weight_data, double weight_smooth, double tolerance	)

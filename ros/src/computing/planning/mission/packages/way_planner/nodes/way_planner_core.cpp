@@ -687,7 +687,7 @@ void way_planner_core::PlannerMainLoop()
 				if(bEnableReplanning)
 				{
 					PlannerHNS::RelativeInfo info;
-					PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GeneratedTotalPaths, startPoint, info);
+					PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GeneratedTotalPaths, startPoint, 0, info);
 					double remaining_distance =    m_GeneratedTotalPaths.at(info.iGlobalPath).at(m_GeneratedTotalPaths.at(info.iGlobalPath).size()-1).cost - (m_GeneratedTotalPaths.at(info.iGlobalPath).at(info.iFront).cost + info.to_front_distance);
 					if(remaining_distance <= REPLANNING_DISTANCE)
 					{

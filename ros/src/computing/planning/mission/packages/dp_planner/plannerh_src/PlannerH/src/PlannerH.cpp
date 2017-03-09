@@ -120,33 +120,110 @@ PlannerH::PlannerH()
  				const double& maxSpeed,const double& minSpeed, const double&  carTipMargin, const double& rollInMargin,
  				const double& rollInSpeedFactor, const double& pathDensity, const double& rollOutDensity,
  				const int& rollOutNumber, const double& SmoothDataWeight, const double& SmoothWeight,
- 				const double& SmoothTolerance, const double& speedProfileFactor, const bool& bHeadingSmooth, std::vector<std::vector<std::vector<WayPoint> > >& rollOutsPaths,
+ 				const double& SmoothTolerance, const double& speedProfileFactor, const bool& bHeadingSmooth,
+ 				const int& iCurrGlobalPath, const int& iCurrLocalTraj,
+ 				std::vector<std::vector<std::vector<WayPoint> > >& rollOutsPaths,
  				std::vector<WayPoint>& sectionPath, std::vector<WayPoint>& sampledPoints)
  {
 
 	 if(referencePaths.size()==0) return;
 	 if(microPlanDistance <=0 ) return;
 	 rollOutsPaths.clear();
+	 vector<vector<WayPoint> > referenceSections;
 
-	 for(unsigned int i = 0; i < referencePaths.size(); i++)
+	 if(iCurrGlobalPath > -1 && iCurrGlobalPath < referencePaths.size())
 	 {
-		vector<WayPoint> centerTrajectorySmoothed;
-		int s_index = 0, e_index = 0;
-		vector<double> e_distances;
-		 //Get position of the rear axe:
-		 PlanningHelpers::ExtractPartFromPointToDistance(referencePaths.at(i), carPos,
-				 microPlanDistance, pathDensity, centerTrajectorySmoothed,
+		 //1- extract current
+		 vector<WayPoint> currExtracted;
+		 vector<WayPoint> sideExtracted;
+
+		 PlanningHelpers::ExtractPartFromPointToDistance(referencePaths.at(iCurrGlobalPath), carPos,
+				 microPlanDistance, pathDensity, currExtracted,
 				 SmoothDataWeight, SmoothWeight, SmoothTolerance);
 
-		sectionPath = centerTrajectorySmoothed;
+		 //2- Find Left and Right lane change options Ids
+		 vector<int> sideLanes = PlanningHelpers::GetUniqueLeftRightIds(currExtracted);
+//		 cout << "Current Global ID: " << iCurrGlobalPath;
+//		 for(int k=0; k < sideLanes.size(); k++)
+//			 cout << sideLanes.at(k);
+//		 cout << endl;
 
-		//rollOutPaths.push_back(centerTrajectorySmoothed);
+		 for(unsigned int i = 0; i < referencePaths.size(); i++)
+		 {
+			 if(i == iCurrGlobalPath)
+				 referenceSections.push_back(currExtracted);
+			 else
+			 {
+				 sideExtracted.clear();
+				 PlanningHelpers::ExtractPartFromPointToDistance(referencePaths.at(i), carPos,
+						 microPlanDistance, pathDensity, sideExtracted,
+						 SmoothDataWeight, SmoothWeight, SmoothTolerance);
 
+				 double d = 0;
+				 double can_lane_id = 0;
+				 bool bCanChangeLane = false;
+				 for(unsigned int iwp = 1; iwp < sideExtracted.size(); iwp++)
+				 {
+					 d += hypot(sideExtracted.at(iwp).pos.y - sideExtracted.at(iwp-1).pos.y,
+							 sideExtracted.at(iwp).pos.x - sideExtracted.at(iwp-1).pos.x);
+					 if(d > LANE_CHANGE_SMOOTH_FACTOR_DISTANCE)
+					 {
+						 if(PlanningHelpers::FindInList(sideLanes, sideExtracted.at(iwp).laneId) == true)
+						 {
+							 can_lane_id = sideExtracted.at(iwp).laneId;
+							 bCanChangeLane = true;
+							 break;
+						 }
+					 }
+				 }
+
+				 if(bCanChangeLane)
+				 {
+					 referenceSections.push_back(sideExtracted);
+					// cout << "Can Change To This Lane : " << can_lane_id  << ", Index: " << i << endl;
+				 }
+				 else
+				 {
+					// cout << "Skip This Lane Index : " << i << endl;
+					 referenceSections.push_back(vector<WayPoint>());
+				 }
+			 }
+		 }
+	 }
+	 else
+	 {
+		 for(unsigned int i = 0; i < referencePaths.size(); i++)
+		 {
+			vector<WayPoint> centerTrajectorySmoothed;
+			 //Get position of the rear axe:
+			 PlanningHelpers::ExtractPartFromPointToDistance(referencePaths.at(i), carPos,
+					 microPlanDistance, pathDensity, centerTrajectorySmoothed,
+					 SmoothDataWeight, SmoothWeight, SmoothTolerance);
+
+			//sectionPath = centerTrajectorySmoothed; // for testing and visualization
+			 referenceSections.push_back(centerTrajectorySmoothed);
+		 }
+	 }
+
+	 for(unsigned int i = 0; i < referenceSections.size(); i++)
+	 {
 		std::vector<std::vector<WayPoint> > local_rollOutPaths;
-		PlanningHelpers::CalculateRollInTrajectories(carPos, speed, centerTrajectorySmoothed, s_index, e_index, e_distances,
-				local_rollOutPaths, microPlanDistance, maxSpeed, carTipMargin, rollInMargin,
-					 rollInSpeedFactor, pathDensity, rollOutDensity,rollOutNumber,
-					 SmoothDataWeight, SmoothWeight, SmoothTolerance, bHeadingSmooth, sampledPoints);
+		int s_index = 0, e_index = 0;
+		vector<double> e_distances;
+		if(referenceSections.at(i).size()>0)
+		{
+			PlanningHelpers::CalculateRollInTrajectories(carPos, speed, referenceSections.at(i), s_index, e_index, e_distances,
+					local_rollOutPaths, microPlanDistance, maxSpeed, carTipMargin, rollInMargin,
+						 rollInSpeedFactor, pathDensity, rollOutDensity,rollOutNumber,
+						 SmoothDataWeight, SmoothWeight, SmoothTolerance, bHeadingSmooth, sampledPoints);
+		}
+		else
+		{
+			for(unsigned int j=0; j< rollOutNumber+1; j++)
+			{
+				local_rollOutPaths.push_back(vector<WayPoint>());
+			}
+		}
 
 		rollOutsPaths.push_back(local_rollOutPaths);
 	 }

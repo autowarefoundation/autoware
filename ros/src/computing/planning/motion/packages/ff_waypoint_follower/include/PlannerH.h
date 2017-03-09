@@ -10,6 +10,7 @@
 
 #define START_POINT_MAX_DISTANCE 8 // meters
 #define GOAL_POINT_MAX_DISTANCE 8 // meters
+#define LANE_CHANGE_SMOOTH_FACTOR_DISTANCE 8 // meters
 
 namespace PlannerHNS
 {
@@ -72,6 +73,7 @@ public:
 				const double& rollInSpeedFactor, const double& pathDensity, const double& rollOutDensity,
 				const int& rollOutNumber, const double& SmoothDataWeight, const double& SmoothWeight,
 				const double& SmoothTolerance, const double& speedProfileFactor, const bool& bHeadingSmooth,
+				const int& iCurrGlobalPath, const int& iCurrLocalTraj,
 				std::vector<std::vector<std::vector<WayPoint> > >& rollOutsPaths,
 				std::vector<WayPoint>& sectionPath, std::vector<WayPoint>& sampledPoints);
 

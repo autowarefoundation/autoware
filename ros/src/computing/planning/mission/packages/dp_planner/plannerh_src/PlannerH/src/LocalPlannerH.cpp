@@ -253,13 +253,14 @@ void LocalPlannerH::InitPolygons()
  	pValues->velocityOfNext = bestTrajectory.closest_obj_velocity;
  	if(bestTrajectory.index>=0)
  		pValues->iCurrSafeTrajectory = bestTrajectory.index;
+	pValues->bFullyBlock = bestTrajectory.bBlocked;
 
  	if(bestTrajectory.lane_index >=0)
  		m_iCurrentTotalPathId = bestTrajectory.lane_index;
  	else
  	{
  		PlannerHNS::RelativeInfo info;
- 		PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_TotalPath, state, info);
+ 		PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_TotalPath, state, m_params.rollOutDensity*m_params.rollOutNumber/2.0 + 0.1, info);
  		m_iCurrentTotalPathId = info.iGlobalPath;
  	}
 
@@ -274,8 +275,7 @@ void LocalPlannerH::InitPolygons()
 // 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_PlanningParams.minFollowingDistance)
 // 		pValues->bFullyBlock = true;
 
-  	if(bestTrajectory.index == -1)
- 		pValues->bFullyBlock = true;
+
 
  	int stopLineID = -1;
  	int stopSignID = -1;
@@ -577,10 +577,8 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 	 PlannerHNS::RelativeInfo info;
 	 PlanningHelpers::GetRelativeInfo(m_TotalPath.at(iGlobalPathIndex), state, info);
 
-	 m_iGlobalPathPrevID = info.iFront;
-
 	 double d = 0;
-	 for(unsigned int i = m_iGlobalPathPrevID; i < m_TotalPath.at(iGlobalPathIndex).size()-1; i++)
+	 for(unsigned int i = info.iFront; i < m_TotalPath.at(iGlobalPathIndex).size()-1; i++)
 	 {
 		 d+= hypot(m_TotalPath.at(iGlobalPathIndex).at(i+1).pos.y - m_TotalPath.at(iGlobalPathIndex).at(i).pos.y, m_TotalPath.at(iGlobalPathIndex).at(i+1).pos.x - m_TotalPath.at(iGlobalPathIndex).at(i).pos.x);
 		 if(d > min_distance)
@@ -604,6 +602,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 			index_limit =  m_Path.size()/2.0;
 		if(m_RollOuts.size() == 0
 				|| currIndex > index_limit
+				|| m_iCurrentTotalPathId != m_iGlobalPathPrevID
 				|| m_pCurrentBehaviorState->GetCalcParams()->bRePlan
 				|| m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath
 				|| m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
@@ -626,42 +625,32 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
 					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
 					m_pCurrentBehaviorState->m_PlanningParams.enableHeadingSmoothing,
+					m_iCurrentTotalPathId, preCalcPrams->iCurrSafeTrajectory,
 					m_RollOuts, m_PathSection, m_SampledPoints);
 
 			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
 			m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = false;
 
-//			if(preCalcPrams->iCurrSafeTrajectory >= 0 && preCalcPrams->iCurrSafeTrajectory < m_RollOuts.size() && m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
-//			{
-//				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
-//				m_Path = localRollouts.at(preCalcPrams->iCurrSafeTrajectory);
-//				bNewTrajectory = true;
-//			}
-//			else
-//			{
-//				preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCentralTrajectory;
-//				m_Path = localRollouts.at(preCalcPrams->iCentralTrajectory);
-//				bNewTrajectory = true;
-//			}
-
 			preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
+			m_iGlobalPathPrevID = m_iCurrentTotalPathId;
 
-			if(m_iCurrentTotalPathId < m_RollOuts.size() && preCalcPrams->iPrevSafeTrajectory < m_RollOuts.at(m_iCurrentTotalPathId).size())
+			if(m_iCurrentTotalPathId >= 0
+					&& m_iCurrentTotalPathId < m_RollOuts.size()
+					&& preCalcPrams->iPrevSafeTrajectory >= 0
+					&& preCalcPrams->iPrevSafeTrajectory < m_RollOuts.at(m_iCurrentTotalPathId).size())
 			{
 				m_Path = m_RollOuts.at(m_iCurrentTotalPathId).at(preCalcPrams->iPrevSafeTrajectory);
 				bNewTrajectory = true;
 			}
 
 
-			PlanningHelpers::GenerateRecommendedSpeed(m_Path,
-					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
-			PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
-
-//			if(m_RollOuts.size() > 0)
-//				m_RollOuts.at(0) = localRollouts;
-//			else
-//				m_RollOuts.push_back(localRollouts);
+			if(bNewTrajectory)
+			{
+				PlanningHelpers::GenerateRecommendedSpeed(m_Path,
+						m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
+						m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
+				PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
+			}
 		}
 	}
 

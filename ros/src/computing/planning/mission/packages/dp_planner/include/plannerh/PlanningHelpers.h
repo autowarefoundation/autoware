@@ -40,7 +40,7 @@ public:
 	 */
 	static bool GetRelativeInfo(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex = 0);
 
-	static bool GetRelativeInfoRange(const std::vector<std::vector<WayPoint> >& trajectories, const WayPoint& p, RelativeInfo& info);
+	static bool GetRelativeInfoRange(const std::vector<std::vector<WayPoint> >& trajectories, const WayPoint& p, const double& searchDistance, RelativeInfo& info);
 
 	/**
 	 * @brief Find point on the trajectory after initial relative point with specific distance
@@ -139,6 +139,11 @@ public:
 			std::vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths);
 
 	static void ExtractPlanAlernatives(const std::vector<WayPoint>& singlePath, std::vector<std::vector<WayPoint> >& allPaths);
+
+	static std::vector<int> GetUniqueLeftRightIds(const std::vector<WayPoint>& path);
+
+	static bool FindInList(const std::vector<int>& list,const int& x);
+	static void RemoveWithValue(std::vector<int>& list,const int& x);
 
 	static ACTION_TYPE GetBranchingDirection(WayPoint& currWP, WayPoint& nextWP);
 

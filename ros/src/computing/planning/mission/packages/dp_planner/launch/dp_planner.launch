@@ -4,9 +4,9 @@
 	<arg name="minVelocity" 				default="0.0" />
 	<arg name="velocityProfileFactor" 		default="1.0" />
 	<arg name="maxPlanningDistance" 		default="1000000.0" />
-	<arg name="maxLocalPlanDistance" 		default="50.0" />
-	<arg name="samplingTipMargin" 			default="3.0"  />
-	<arg name="samplingOutMargin" 			default="12.0" />
+	<arg name="maxLocalPlanDistance" 		default="40.0" />
+	<arg name="samplingTipMargin" 			default="2.0"  />
+	<arg name="samplingOutMargin" 			default="10.0" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
 	<arg name="pathDensity" 				default="0.25" />
 	<arg name="rollOutDensity" 				default="0.5" />
@@ -40,7 +40,7 @@
 	<arg name="enableOdometryStatus"		default="false" /> <!-- read velocities from Odometry from robot "" -->
 	
 	<arg name="mapSource" 					default="1" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
-	<arg name="mapFileName" 				default="/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
+	<arg name="mapFileName" 				default="/home/hatem/data/ToyotaCity/map/vector_map/" />
 
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />

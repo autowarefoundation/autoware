@@ -753,13 +753,15 @@ void PlannerX::callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConst
 				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
 				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
 				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
-				wp.cost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
-				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
-				if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 0)
+				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
+				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
+				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z;
+
+				if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 0)
 					wp.bDir = PlannerHNS::FORWARD_DIR;
-				else if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 1)
+				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 1)
 					wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
-				else if(msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z == 2)
+				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 2)
 					wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
 
 				PlannerHNS::Lane* pLane = 0;
