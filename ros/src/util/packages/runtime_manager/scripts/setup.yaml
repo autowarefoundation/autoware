@@ -4,6 +4,7 @@ buttons:
     run    : roslaunch runtime_manager setup_tf.launch
     param  : setup_tf
     gui    :
+      panel  : self.panel_setup_tf
       localizer_rosparam :
         func : '[ "velodyne", "hokuyo" ][ self.radio_box_localizer.GetSelection() ]'
       localizer_cmd_param :
@@ -13,10 +14,14 @@ buttons:
   vehicle_model:
     run    : roslaunch model_publisher vehicle_model.launch
     param  : vehicle_model
+    gui    :
+      panel  : self.panel_vehicle_model
 
   vehicle_info:
     run    : roslaunch runtime_manager setup_vehicle_info.launch
     param  : vehicle_info
+    gui    :
+      panel  : self.panel_vehicle_info
 
 params:
   - name: setup_tf

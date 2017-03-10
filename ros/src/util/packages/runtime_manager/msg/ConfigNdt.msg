@@ -14,7 +14,8 @@ int32 use_predict_pose
 float32 error_threshold
 float32 resolution
 float32 step_size
-float32 trans_esp
+float32 trans_epsilon
+int32 max_iterations
 #float32 leaf_size
 #float32 angle_error
 #float32 shift_x

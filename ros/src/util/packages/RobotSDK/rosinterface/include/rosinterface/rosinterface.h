@@ -33,10 +33,10 @@
 
 #include<QObject>
 #include<qglobal.h>
-#include<ros/ros.h>
 #include<qstring.h>
 #include<qstringlist.h>
 #include<qqueue.h>
+//#include<QApplication>
 #include<qapplication.h>
 #include<qtimer.h>
 #include<ros/callback_queue.h>
@@ -44,27 +44,35 @@
 #include<qfileinfo.h>
 #include<qthread.h>
 #include<qdebug.h>
+//#include<QRegExp>
+#include<qregexp.h>
 
-#ifndef INITROSMASTERURI
-#define INITROSMASTERURI "http://localhost:11311"
-#endif
+#include<ros/ros.h>
+#include<tf/transform_broadcaster.h>
+#include<tf/transform_listener.h>
+
+#include<stdlib.h>
+
+// namespace RobotSDK
+// {
 
 class ROSInterfaceBase : public QObject
 {
     Q_OBJECT
 public:
-    explicit ROSInterfaceBase(QString NodeName, QString ROSMasterURI, QObject *parent);
+    explicit ROSInterfaceBase(QObject *parent);
     ~ROSInterfaceBase();
 protected:
     ros::NodeHandle * nh;
-    QThread thread;
+public:
+    static bool initflag;
 };
 
 template<class MSGTYPE>
 class ROSPub : public ROSInterfaceBase
 {
 public:
-    ROSPub(QString Topic, u_int32_t QueueSize, QString NodeName=QString(), QString ROSMasterURi=INITROSMASTERURI, QObject * parent=0);
+    ROSPub(QString Topic, u_int32_t QueueSize, QObject * parent=0);
     ~ROSPub();
 protected:
     ros::Publisher pub;
@@ -75,8 +83,8 @@ public:
 };
 
 template<class MSGTYPE>
-ROSPub<MSGTYPE>::ROSPub(QString Topic, u_int32_t QueueSize, QString NodeName, QString ROSMasterURi, QObject *parent)
-    : ROSInterfaceBase(NodeName,ROSMasterURi,parent)
+ROSPub<MSGTYPE>::ROSPub(QString Topic, u_int32_t QueueSize, QObject *parent)
+    : ROSInterfaceBase(parent)
 {
     pub=nh->advertise<MSGTYPE>(Topic.toStdString(),QueueSize);
 }
@@ -118,32 +126,33 @@ class ROSSubBase : public ROSInterfaceBase
 {
     Q_OBJECT
 public:
-    ROSSubBase(int Interval, QString NodeName, QString ROSMasterURi, QObject * parent);
+    ROSSubBase(int QueryInterval, QObject * parent);
     ~ROSSubBase();
 protected:
     ros::CallbackQueue queue;
-    QTimer timer;
+    QTimer * timer;
     bool receiveflag;
     QReadWriteLock lock;
 signals:
     void receiveMessageSignal();
     void startReceiveSignal();
     void stopReceiveSignal();
+    void resetQueryIntervalSignal(int QueryInterval);
 public slots:
     void startReceiveSlot();
     void stopReceiveSlot();
+protected slots:
+    void receiveMessageSlot();
 protected:
     void receiveMessage(ros::CallbackQueue::CallOneResult result);
     virtual void clearMessage()=0;
-protected slots:
-    void receiveMessageSlot();
 };
 
 template<class MSGTYPE>
 class ROSSub : public ROSSubBase
 {
 public:
-    ROSSub(QString Topic, u_int32_t QueueSize, int Interval, QString NodeName=QString(), QString ROSMasterURi=INITROSMASTERURI, QObject * parent=0);
+    ROSSub(QString Topic, u_int32_t QueueSize, int QueryInterval, QObject * parent=0);
     ~ROSSub();
 public:
     void receiveMessageCallback(const MSGTYPE & msg);
@@ -156,11 +165,12 @@ public:
     MSGTYPE getMessage();
     QString getTopic();
     void resetTopic(QString Topic, u_int32_t QueueSize);
+    void resetQueryInterval(int QueryInterval);
 };
 
 template<class MSGTYPE>
-ROSSub<MSGTYPE>::ROSSub(QString Topic, u_int32_t QueueSize, int Interval, QString NodeName, QString ROSMasterURi, QObject *parent)
-    : ROSSubBase(Interval,NodeName,ROSMasterURi,parent)
+ROSSub<MSGTYPE>::ROSSub(QString Topic, u_int32_t QueueSize, int QueryInterval, QObject *parent)
+    : ROSSubBase(QueryInterval,parent)
 {
     sub=nh->subscribe(Topic.toStdString(),QueueSize,&ROSSub<MSGTYPE>::receiveMessageCallback,this);
 }
@@ -192,7 +202,7 @@ template<class MSGTYPE>
 MSGTYPE ROSSub<MSGTYPE>::getMessage()
 {
     MSGTYPE msg;
-    lock.lockForRead();
+    lock.lockForWrite();
     if(receiveflag&&!msgs.isEmpty())
     {
         msg=msgs.front();
@@ -216,5 +226,67 @@ void ROSSub<MSGTYPE>::resetTopic(QString Topic, u_int32_t QueueSize)
     sub=nh->subscribe(Topic.toStdString(),QueueSize,&ROSSub<MSGTYPE>::receiveMessageCallback,this);
     lock.unlock();
 }
+
+template<class MSGTYPE>
+void ROSSub<MSGTYPE>::resetQueryInterval(int QueryInterval)
+{
+    emit resetQueryIntervalSignal(QueryInterval);
+}
+
+class ROSTFPub : public ROSInterfaceBase
+{
+    Q_OBJECT
+public:
+    ROSTFPub(QString childFrameID, QString frameID="world", QObject * parent=0);
+protected:
+    QString childframeid;
+    QString frameid;
+    tf::TransformBroadcaster br;
+public:
+    bool sendTF(tf::Transform & transform);
+    QString getChildFrameID();
+    void resetChildFrameID(QString childFrameID);
+    QString getFrameID();
+    void resetFrameID(QString frameID="world");
+};
+
+class ROSTFSub : public ROSInterfaceBase
+{
+    Q_OBJECT
+public:
+    ROSTFSub(QString destinationFrame, QString originalFrame="world", int QueryInterval=10, QObject * parent=0);
+    ~ROSTFSub();
+protected:
+    QString destinationframe;
+    QString originalframe;
+    QTimer * timer;
+    bool receiveflag;
+    QReadWriteLock lock;
+    tf::TransformListener listener;
+    QQueue<tf::StampedTransform> tfs;
+    tf::StampedTransform lasttf;
+    bool lastflag;
+signals:
+    void receiveTFSignal();
+    void startReceiveSignal();
+    void stopReceiveSignal();
+    void resetQueryIntervalSignal(int QueryInterval);
+public slots:
+    void startReceiveSlot();
+    void stopReceiveSlot();
+protected slots:
+    void receiveTFSlot();
+protected:
+    void clearTFs();
+public:
+    bool getTF(tf::StampedTransform & transform);
+    QString getDestinationFrame();
+    void resetDestinationFrame(QString destinationFrame);
+    QString getOriginalFrame();
+    void resetOriginalFrame(QString orignalFrame="world");
+    void resetQueryInterval(int QueryInterval);
+};
+
+//}
 
 #endif // ROSINTERFACE_H

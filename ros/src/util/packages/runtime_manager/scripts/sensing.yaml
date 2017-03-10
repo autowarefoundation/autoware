@@ -65,7 +65,7 @@ subs :
       - name : Javad Delta 3 (TTY1)
         desc : Javad Delta 3 (TTY1) desc sample
         probe: 'lsusb -d 0584: > /dev/null' # probed if serial converter is connected
-        run  : rosrun javad_navsat_driver gnss.sh
+        run  : roslaunch javad_navsat_driver javad_navsat.launch
         param: serial
         gui  :
           flags : [ kill_children ]
@@ -150,33 +150,33 @@ subs :
 
 cmds:
   subs :
-  - name : Points Filter
-    desc : Points Filter desc sample
+  - name : Points Downsampler
+    desc : Points Downsampler desc sample
     subs :
     - name : voxel_grid_filter
       desc : voxel_grid_filter desc sample
-      cmd  : roslaunch points_filter filter.launch node_name:=voxel_grid_filter
+      cmd  : roslaunch points_downsampler points_downsample.launch node_name:=voxel_grid_filter
       param: voxel_grid_filter
       gui  :
         sync :
           func : self.button_synchronization.GetValue()
     - name : ring_filter
       desc : ring_filter desc sample
-      cmd  : roslaunch points_filter filter.launch node_name:=ring_filter
+      cmd  : roslaunch points_downsampler points_downsample.launch node_name:=ring_filter
       param: ring_filter
       gui  :
         sync :
           func : self.button_synchronization.GetValue()
     - name : distance_filter
       desc : distance_filter desc sample
-      cmd  : roslaunch points_filter filter.launch node_name:=distance_filter
+      cmd  : roslaunch points_downsampler points_downsample.launch node_name:=distance_filter
       param: distance_filter
       gui  :
         sync :
           func : self.button_synchronization.GetValue()
     - name : random_filter
       desc : random_filter desc sample
-      cmd  : roslaunch points_filter filter.launch node_name:=random_filter
+      cmd  : roslaunch points_downsampler points_downsample.launch node_name:=random_filter
       param: random_filter
       gui  :
         sync :

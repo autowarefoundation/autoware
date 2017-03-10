@@ -85,7 +85,7 @@ void setOccupancyGrid(nav_msgs::OccupancyGrid *og)
   og->info.origin.orientation.x = 0.0;
   og->info.origin.orientation.y = 0.0;
   og->info.origin.orientation.z = 0.0;
-  og->info.origin.orientation.w = 0.0;
+  og->info.origin.orientation.w = 1.0;
 }
 
 void createOccupancyGrid(const sensor_msgs::PointCloud2::ConstPtr &input)
@@ -116,12 +116,16 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
+  // Subscribing topic of PointCloud2 message
+  std::string points_topic;
+
   private_nh.param<double>("resolution", g_resolution, 1.0);
   private_nh.param<int>("cell_width", g_cell_width, 50);
   private_nh.param<int>("cell_height", g_cell_height, 50);
+  private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
 
   g_costmap_pub = nh.advertise<nav_msgs::OccupancyGrid>("realtime_cost_map", 10);
-  ros::Subscriber velodyne_sub = nh.subscribe("points_filtered", 10, createOccupancyGrid);
+  ros::Subscriber points_sub = nh.subscribe(points_topic, 10, createOccupancyGrid);
 
   ros::spin();
 }

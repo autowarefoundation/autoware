@@ -36,11 +36,7 @@
 
 #include <ros/console.h>
 
-#include <map_file/PointClassArray.h>
-#include <map_file/LaneArray.h>
-#include <map_file/NodeArray.h>
-#include <map_file/StopLineArray.h>
-#include <map_file/DTLaneArray.h>
+#include <vector_map/vector_map.h>
 #include <runtime_manager/ConfigLaneRule.h>
 #include <waypoint_follower/LaneArray.h>
 
@@ -49,6 +45,7 @@
 namespace {
 
 double config_acceleration = 1; // m/s^2
+double config_stopline_search_radius = 1; // meter
 int config_number_of_zeros_ahead = 0;
 int config_number_of_zeros_behind = 0;
 
@@ -127,7 +124,7 @@ waypoint_follower::lane apply_crossroad_acceleration(const waypoint_follower::la
 	std::vector<size_t> start_indexes;
 	std::vector<size_t> end_indexes;
 	for (size_t i = 0; i < l.waypoints.size(); ++i) {
-		map_file::DTLane dtlane = lane_planner::vmap::create_map_file_dtlane(l.waypoints[i].dtlane);
+		vector_map::DTLane dtlane = lane_planner::vmap::create_vector_map_dtlane(l.waypoints[i].dtlane);
 		if (i == 0) {
 			crossroad = lane_planner::vmap::is_crossroad_dtlane(dtlane);
 			continue;
@@ -197,9 +194,107 @@ waypoint_follower::lane apply_stopline_acceleration(const waypoint_follower::lan
 	return l;
 }
 
+std::vector<vector_map::Point> create_stop_points(const lane_planner::vmap::VectorMap& vmap)
+{
+	std::vector<vector_map::Point> stop_points;
+	for (const vector_map::StopLine& s : vmap.stoplines) {
+		for (const vector_map::Lane& l : vmap.lanes) {
+			if (l.lnid != s.linkid)
+				continue;
+			for (const vector_map::Node& n : vmap.nodes) {
+				if (n.nid != l.bnid)
+					continue;
+				for (const vector_map::Point& p : vmap.points) {
+					if (p.pid != n.pid)
+						continue;
+					bool hit = false;
+					for (const vector_map::Point& sp : stop_points) {
+						if (sp.pid == p.pid) {
+							hit = true;
+							break;
+						}
+					}
+					if (!hit)
+						stop_points.push_back(p);
+				}
+			}
+		}
+	}
+
+	return stop_points;
+}
+
+std::vector<size_t> create_stop_indexes(const lane_planner::vmap::VectorMap& vmap,
+					const waypoint_follower::lane& lane, double stopline_search_radius)
+{
+	std::vector<size_t> stop_indexes;
+	for (const vector_map::Point& p : create_stop_points(vmap)) {
+		size_t index = SIZE_MAX;
+		double distance = DBL_MAX;
+		for (size_t i = 0; i < lane.waypoints.size(); ++i) {
+			vector_map::Point point =
+				lane_planner::vmap::create_vector_map_point(lane.waypoints[i].pose.pose.position);
+			double d = hypot(p.bx - point.bx, p.ly - point.ly);
+			if (d <= distance) {
+				index = i;
+				distance = d;
+			}
+		}
+		if (index != SIZE_MAX && distance <= stopline_search_radius) {
+			stop_indexes.push_back(index);
+		}
+	}
+	std::sort(stop_indexes.begin(), stop_indexes.end());
+
+	return stop_indexes;
+}
+
+waypoint_follower::lane apply_stopline_acceleration(const waypoint_follower::lane& lane, double acceleration,
+						    double stopline_search_radius, size_t ahead_cnt, size_t behind_cnt)
+{
+	waypoint_follower::lane l = lane;
+
+	std::vector<size_t> indexes = create_stop_indexes(lane_vmap, l, stopline_search_radius);
+	if (indexes.empty())
+		return l;
+
+	for (const size_t i : indexes)
+		l = apply_acceleration(l, acceleration, i, behind_cnt + 1, 0);
+
+	std::reverse(l.waypoints.begin(), l.waypoints.end());
+
+	std::vector<size_t> reverse_indexes;
+	for (const size_t i : indexes)
+		reverse_indexes.push_back(l.waypoints.size() - i - 1);
+	std::reverse(reverse_indexes.begin(), reverse_indexes.end());
+
+	for (const size_t i : reverse_indexes)
+		l = apply_acceleration(l, acceleration, i, ahead_cnt + 1, 0);
+
+	std::reverse(l.waypoints.begin(), l.waypoints.end());
+
+	return l;
+}
+
+bool is_fine_vmap(const lane_planner::vmap::VectorMap& fine_vmap, const waypoint_follower::lane& lane)
+{
+	if (fine_vmap.points.size() != lane.waypoints.size())
+		return false;
+
+	for (size_t i = 0; i < fine_vmap.points.size(); ++i) {
+		vector_map::Point point =
+			lane_planner::vmap::create_vector_map_point(lane.waypoints[i].pose.pose.position);
+		double distance = hypot(fine_vmap.points[i].bx - point.bx, fine_vmap.points[i].ly - point.ly);
+		if (distance > 0.1)
+			return false;
+	}
+
+	return true;
+}
+
 double create_reduction(const lane_planner::vmap::VectorMap& fine_vmap, int index)
 {
-	const map_file::DTLane& dtlane = fine_vmap.dtlanes[index];
+	const vector_map::DTLane& dtlane = fine_vmap.dtlanes[index];
 
 	if (lane_planner::vmap::is_straight_dtlane(dtlane))
 		return 1;
@@ -307,8 +402,13 @@ void create_waypoint(const waypoint_follower::LaneArray& msg)
 		lane_planner::vmap::VectorMap fine_vmap =
 			lane_planner::vmap::create_fine_vmap(lane_vmap, lane_planner::vmap::LNO_ALL, coarse_vmap,
 							     search_radius, waypoint_max);
-		if (fine_vmap.points.size() < 2 || fine_vmap.points.size() != lane.waypoints.size()) {
+		if (fine_vmap.points.size() < 2 || !is_fine_vmap(fine_vmap, lane)) {
 			traffic_waypoint.lanes.push_back(lane);
+			green_waypoint.lanes.push_back(lane);
+			lane = apply_stopline_acceleration(lane, config_acceleration, config_stopline_search_radius,
+							   config_number_of_zeros_ahead,
+							   config_number_of_zeros_behind);
+			red_waypoint.lanes.push_back(lane);
 			continue;
 		}
 
@@ -358,7 +458,7 @@ void update_values()
 	curve_radius_min = lane_planner::vmap::RADIUS_MAX;
 	crossroad_radius_min = lane_planner::vmap::RADIUS_MAX;
 	clothoid_radius_min = lane_planner::vmap::RADIUS_MAX;
-	for (const map_file::DTLane& d : lane_vmap.dtlanes) {
+	for (const vector_map::DTLane& d : lane_vmap.dtlanes) {
 		double radius_min = fabs(d.r);
 		if (lane_planner::vmap::is_curve_dtlane(d)) {
 			if (lane_planner::vmap::is_crossroad_dtlane(d)) {
@@ -393,39 +493,40 @@ void update_values()
 	}
 }
 
-void cache_point(const map_file::PointClassArray& msg)
+void cache_point(const vector_map::PointArray& msg)
 {
-	all_vmap.points = msg.point_classes;
+	all_vmap.points = msg.data;
 	update_values();
 }
 
-void cache_lane(const map_file::LaneArray& msg)
+void cache_lane(const vector_map::LaneArray& msg)
 {
-	all_vmap.lanes = msg.lanes;
+	all_vmap.lanes = msg.data;
 	update_values();
 }
 
-void cache_node(const map_file::NodeArray& msg)
+void cache_node(const vector_map::NodeArray& msg)
 {
-	all_vmap.nodes = msg.nodes;
+	all_vmap.nodes = msg.data;
 	update_values();
 }
 
-void cache_stopline(const map_file::StopLineArray& msg)
+void cache_stopline(const vector_map::StopLineArray& msg)
 {
-	all_vmap.stoplines = msg.stop_lines;
+	all_vmap.stoplines = msg.data;
 	update_values();
 }
 
-void cache_dtlane(const map_file::DTLaneArray& msg)
+void cache_dtlane(const vector_map::DTLaneArray& msg)
 {
-	all_vmap.dtlanes = msg.dtlanes;
+	all_vmap.dtlanes = msg.data;
 	update_values();
 }
 
 void config_parameter(const runtime_manager::ConfigLaneRule& msg)
 {
 	config_acceleration = msg.acceleration;
+	config_stopline_search_radius = msg.stopline_search_radius;
 	config_number_of_zeros_ahead = msg.number_of_zeros_ahead;
 	config_number_of_zeros_behind = msg.number_of_zeros_behind;
 
@@ -487,7 +588,7 @@ int main(int argc, char **argv)
 #endif // DEBUG
 
 	ros::Subscriber waypoint_sub = n.subscribe("/lane_waypoints_array", sub_waypoint_queue_size, create_waypoint);
-	ros::Subscriber point_sub = n.subscribe("/vector_map_info/point_class", sub_vmap_queue_size, cache_point);
+	ros::Subscriber point_sub = n.subscribe("/vector_map_info/point", sub_vmap_queue_size, cache_point);
 	ros::Subscriber lane_sub = n.subscribe("/vector_map_info/lane", sub_vmap_queue_size, cache_lane);
 	ros::Subscriber node_sub = n.subscribe("/vector_map_info/node", sub_vmap_queue_size, cache_node);
 	ros::Subscriber stopline_sub = n.subscribe("/vector_map_info/stop_line", sub_vmap_queue_size, cache_stopline);

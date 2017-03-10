@@ -39,7 +39,7 @@
 
 #include <waypoint_follower/LaneArray.h>
 
-#include <map_db.h> // XXX wrong name
+#include <map_file/get_file.h>
 
 namespace {
 

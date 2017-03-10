@@ -36,6 +36,8 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <iostream>
+#include <std_msgs/Int32.h>
+#include <random>
 
 #include "waypoint_follower/libwaypoint_follower.h"
 
@@ -50,13 +52,46 @@ geometry_msgs::Pose _initial_pose;
 bool _initial_set = false;
 bool _pose_set = false;
 bool _waypoint_set = false;
+bool g_is_closest_waypoint_subscribed = false;
 WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
 ros::Publisher g_velocity_publisher;
+int32_t g_closest_waypoint = -1;
+double g_position_error;
+double g_angle_error;
 
-void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg)
+constexpr int LOOP_RATE = 50; // 50Hz
+
+void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_rate)
 {
-  _current_velocity = msg->twist;
+
+  static double previous_linear_velocity = 0;
+
+  if(_current_velocity.linear.x < msg->twist.linear.x)
+  {
+    _current_velocity.linear.x = previous_linear_velocity + accel_rate / (double)LOOP_RATE;
+
+    if(_current_velocity.linear.x > msg->twist.linear.x)
+    {
+      _current_velocity.linear.x = msg->twist.linear.x;
+    }
+  }
+  else
+  {
+    _current_velocity.linear.x = previous_linear_velocity - accel_rate / (double)LOOP_RATE;
+
+    if(_current_velocity.linear.x < msg->twist.linear.x)
+    {
+      _current_velocity.linear.x = msg->twist.linear.x;
+    }
+  }
+
+  previous_linear_velocity = _current_velocity.linear.x;
+
+  _current_velocity.angular.z = msg->twist.angular.z;
+
+
+  //_current_velocity = msg->twist;
 }
 
 void getTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
@@ -103,7 +138,13 @@ void waypointCallback(const waypoint_follower::laneConstPtr &msg)
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
-  ROS_INFO_STREAM("waypoint subscribed");
+  //ROS_INFO_STREAM("waypoint subscribed");
+}
+
+void callbackFromClosestWaypoint(const std_msgs::Int32ConstPtr &msg)
+{
+  g_closest_waypoint = msg->data;
+  g_is_closest_waypoint_subscribed = true;
 }
 
 void publishOdometry()
@@ -124,7 +165,7 @@ void publishOdometry()
     _pose_set = true;
   }
 
-  int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), pose);
+  /*int closest_waypoint = getClosestWaypoint(_current_waypoints.getCurrentWaypoints(), pose);
   if (closest_waypoint == -1)
   {
     ROS_INFO("cannot publish odometry because closest waypoint is -1.");
@@ -134,16 +175,25 @@ void publishOdometry()
   {
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
   }
+*/if(_waypoint_set && g_is_closest_waypoint_subscribed)
+    pose.position.z = _current_waypoints.getWaypointPosition(g_closest_waypoint).z;
 
   double vx = _current_velocity.linear.x;
   double vth = _current_velocity.angular.z;
   current_time = ros::Time::now();
 
   // compute odometry in a typical way given the velocities of the robot
+  std::random_device rnd;
+  std::mt19937 mt(rnd());
+  std::uniform_real_distribution<double> rnd_dist(0.0, 2.0);
+  double rnd_value_x = rnd_dist(mt) - 1.0;
+  double rnd_value_y = rnd_dist(mt) - 1.0;
+  double rnd_value_th = rnd_dist(mt) - 1.0;
+
   double dt = (current_time - last_time).toSec();
-  double delta_x = (vx * cos(th)) * dt;
-  double delta_y = (vx * sin(th)) * dt;
-  double delta_th = vth * dt;
+  double delta_x = (vx * cos(th)) * dt + rnd_value_x * g_position_error;
+  double delta_y = (vx * sin(th)) * dt + rnd_value_y * g_position_error;
+  double delta_th = vth * dt + rnd_value_th * g_angle_error * M_PI / 180;
 
   pose.position.x += delta_x;
   pose.position.y += delta_y;
@@ -202,13 +252,21 @@ int main(int argc, char **argv)
   private_nh.getParam("initialize_source", initialize_source);
   ROS_INFO_STREAM("initialize_source : " << initialize_source);
 
+  double accel_rate;
+  private_nh.param("accel_rate",accel_rate,double(1.0));
+  ROS_INFO_STREAM("accel_rate : " << accel_rate);
+
+
+  private_nh.param("position_error", g_position_error, double(0.0));
+  private_nh.param("angle_error", g_angle_error, double(0.0));
   // publish topic
   g_odometry_publisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
   g_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("sim_velocity", 10);
 
   // subscribe topic
-  ros::Subscriber cmd_subscriber = nh.subscribe("twist_cmd", 10, CmdCallBack);
+  ros::Subscriber cmd_subscriber = nh.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 10, boost::bind(CmdCallBack, _1, accel_rate));
   ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
+  ros::Subscriber closest_sub = nh.subscribe("closest_waypoint", 10, callbackFromClosestWaypoint);
   ros::Subscriber initialpose_subscriber;
 
   if (initialize_source == "Rviz")
@@ -228,16 +286,16 @@ int main(int argc, char **argv)
     ROS_INFO("Set pose initializer!!");
   }
 
-  ros::Rate loop_rate(50);  // 50Hz
+  ros::Rate loop_rate(LOOP_RATE);
   while (ros::ok())
   {
     ros::spinOnce();  // check subscribe topic
 
-    if (!_waypoint_set)
+    /*if (!_waypoint_set)
     {
       loop_rate.sleep();
       continue;
-    }
+    }*/
 
     if (!_initial_set)
     {

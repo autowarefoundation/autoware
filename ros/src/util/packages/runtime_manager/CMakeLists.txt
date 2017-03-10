@@ -25,6 +25,7 @@ add_message_files(
   ConfigWaypointFollower.msg
   ConfigTwistFilter.msg
   ConfigVelocitySet.msg
+  ConfigLatticeVelocitySet.msg
   ConfigCarKf.msg
   ConfigPedestrianKf.msg
   ConfigLaneRule.msg

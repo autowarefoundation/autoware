@@ -13,7 +13,7 @@
   <build_depend>vehicle_socket</build_depend>
   <build_depend>waypoint_follower</build_depend>
   <build_depend>runtime_manager</build_depend>
-  <build_depend>map_file</build_depend>
+  <build_depend>vector_map</build_depend>
   <build_depend>lane_planner</build_depend>
   <run_depend>gnss</run_depend>
   <run_depend>roscpp</run_depend>
@@ -22,7 +22,7 @@
   <run_depend>vehicle_socket</run_depend>
   <run_depend>waypoint_follower</run_depend>
   <run_depend>runtime_manager</run_depend>
-  <run_depend>map_file</run_depend>
+  <run_depend>vector_map</run_depend>
   <run_depend>lane_planner</run_depend>
   <export>
   </export>

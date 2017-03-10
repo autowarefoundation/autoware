@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>orb_localizer</name>
+  <version>2.0.0</version>
+  <description>Vision-based Localization Derived from ORB-SLAM2</description>
+
+  <maintainer email="sujiwo@ertl.jp">Adi Sujiwo</maintainer>
+
+  <license>GPL</license>
+  <depend>roscpp</depend>
+  <depend>tf</depend>
+  <depend>image_transport</depend>
+  <depend>message_runtime</depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend> message_generation </build_depend>
+  <export>
+
+  </export>
+</package>

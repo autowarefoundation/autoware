@@ -1,0 +1,16 @@
+<!-- -->
+<launch>
+    <arg name="use_crosswalk_detection" default="true" />
+    <arg name="points_topic" default="points_lanes" />
+    <arg name="velocity_offset" default="1.2" />
+    <arg name="decelerate_vel_min" default="1.3" />
+
+	<node pkg="astar_planner" type="velocity_set" name="velocity_set" output="log">
+        <param name="use_crosswalk_detection" value="$(arg use_crosswalk_detection)" />
+        <param name="points_topic" value="$(arg points_topic)" />
+        <param name="velocity_offset" value="$(arg velocity_offset)" />
+        <param name="decelerate_vel_min" value="$(arg decelerate_vel_min)" />
+
+	</node>
+
+</launch>

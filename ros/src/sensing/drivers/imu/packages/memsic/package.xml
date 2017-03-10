@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>memsic_imu</name>
+  <version>0.0.0</version>
+  <description>The memsic_imu package</description>
+  <maintainer email="yuki@ertl.jp">kitsukawa</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>tf</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>tf</run_depend>
+
+  <export>
+  </export>
+</package>

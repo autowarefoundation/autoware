@@ -38,11 +38,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 
-#include <map_file/PointClass.h>
-#include <map_file/Lane.h>
-#include <map_file/Node.h>
-#include <map_file/StopLine.h>
-#include <map_file/DTLane.h>
+#include <vector_map/vector_map.h>
 #include <tablet_socket/route_cmd.h>
 #include <waypoint_follower/dtlane.h>
 #include <waypoint_follower/lane.h>
@@ -62,27 +58,27 @@ constexpr int TRAFFIC_LIGHT_UNKNOWN = 2;
 constexpr double RADIUS_MAX = 90000000000;
 
 struct VectorMap {
-	std::vector<map_file::PointClass> points;
-	std::vector<map_file::Lane> lanes;
-	std::vector<map_file::Node> nodes;
-	std::vector<map_file::StopLine> stoplines;
-	std::vector<map_file::DTLane> dtlanes;
+	std::vector<vector_map::Point> points;
+	std::vector<vector_map::Lane> lanes;
+	std::vector<vector_map::Node> nodes;
+	std::vector<vector_map::StopLine> stoplines;
+	std::vector<vector_map::DTLane> dtlanes;
 };
 
-void write_waypoints(const std::vector<map_file::PointClass>& points, double velocity, const std::string& path);
+void write_waypoints(const std::vector<vector_map::Point>& points, double velocity, const std::string& path);
 
-double compute_reduction(const map_file::DTLane& d, double w);
+double compute_reduction(const vector_map::DTLane& d, double w);
 
-bool is_straight_dtlane(const map_file::DTLane& dtlane);
-bool is_curve_dtlane(const map_file::DTLane& dtlane);
-bool is_crossroad_dtlane(const map_file::DTLane& dtlane);
-bool is_clothoid_dtlane(const map_file::DTLane& dtlane);
+bool is_straight_dtlane(const vector_map::DTLane& dtlane);
+bool is_curve_dtlane(const vector_map::DTLane& dtlane);
+bool is_crossroad_dtlane(const vector_map::DTLane& dtlane);
+bool is_clothoid_dtlane(const vector_map::DTLane& dtlane);
 bool is_connection_dtlane(const VectorMap& fine_vmap, int index);
 
-geometry_msgs::Point create_geometry_msgs_point(const map_file::PointClass& mp);
-map_file::PointClass create_map_file_pointclass(const geometry_msgs::Point& gp);
-waypoint_follower::dtlane create_waypoint_follower_dtlane(const map_file::DTLane& md);
-map_file::DTLane create_map_file_dtlane(const waypoint_follower::dtlane& wd);
+geometry_msgs::Point create_geometry_msgs_point(const vector_map::Point& vp);
+vector_map::Point create_vector_map_point(const geometry_msgs::Point& gp);
+waypoint_follower::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& vd);
+vector_map::DTLane create_vector_map_dtlane(const waypoint_follower::dtlane& wd);
 
 VectorMap create_lane_vmap(const VectorMap& vmap, int lno);
 VectorMap create_coarse_vmap_from_lane(const waypoint_follower::lane& lane);
@@ -90,11 +86,11 @@ VectorMap create_coarse_vmap_from_route(const tablet_socket::route_cmd& route);
 VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap& coarse_vmap, double search_radius,
 			   int waypoint_max);
 
-std::vector<map_file::PointClass> create_branching_points(const VectorMap& vmap);
-std::vector<map_file::PointClass> create_merging_points(const VectorMap& vmap);
+std::vector<vector_map::Point> create_branching_points(const VectorMap& vmap);
+std::vector<vector_map::Point> create_merging_points(const VectorMap& vmap);
 
 void publish_add_marker(const ros::Publisher& pub, const visualization_msgs::Marker& marker,
-			const std::vector<map_file::PointClass>& points);
+			const std::vector<vector_map::Point>& points);
 void publish_delete_marker(const ros::Publisher& pub, const visualization_msgs::Marker& marker);
 
 } // namespace vmap

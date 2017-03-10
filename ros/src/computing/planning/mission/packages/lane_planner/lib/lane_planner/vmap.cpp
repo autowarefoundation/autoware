@@ -44,35 +44,35 @@ namespace vmap {
 
 namespace {
 
-void write_waypoint(const map_file::PointClass& point, double yaw, double velocity, const std::string& path,
+void write_waypoint(const vector_map::Point& point, double yaw, double velocity, const std::string& path,
 		    bool first);
 
-double compute_direction_angle(const map_file::PointClass& p1, const map_file::PointClass& p2);
+double compute_direction_angle(const vector_map::Point& p1, const vector_map::Point& p2);
 
-bool is_branching_point(const VectorMap& vmap, const map_file::PointClass& point);
-bool is_merging_point(const VectorMap& vmap, const map_file::PointClass& point);
-bool is_branching_lane(const map_file::Lane& lane);
-bool is_merging_lane(const map_file::Lane& lane);
+bool is_branching_point(const VectorMap& vmap, const vector_map::Point& point);
+bool is_merging_point(const VectorMap& vmap, const vector_map::Point& point);
+bool is_branching_lane(const vector_map::Lane& lane);
+bool is_merging_lane(const vector_map::Lane& lane);
 
-map_file::PointClass find_start_point(const VectorMap& vmap, const map_file::Lane& lane);
-map_file::PointClass find_end_point(const VectorMap& vmap, const map_file::Lane& lane);
-map_file::PointClass find_departure_point(const VectorMap& lane_vmap, int lno,
-					  const std::vector<map_file::PointClass>& coarse_points,
-					  double search_radius);
-map_file::PointClass find_arrival_point(const VectorMap& lane_vmap, int lno,
-					const std::vector<map_file::PointClass>& coarse_points,
-					double search_radius);
-map_file::PointClass find_nearest_point(const VectorMap& vmap, const map_file::PointClass& point);
-std::vector<map_file::PointClass> find_near_points(const VectorMap& vmap, const map_file::PointClass& point,
-						   double search_radius);
+vector_map::Point find_start_point(const VectorMap& vmap, const vector_map::Lane& lane);
+vector_map::Point find_end_point(const VectorMap& vmap, const vector_map::Lane& lane);
+vector_map::Point find_departure_point(const VectorMap& lane_vmap, int lno,
+				       const std::vector<vector_map::Point>& coarse_points,
+				       double search_radius);
+vector_map::Point find_arrival_point(const VectorMap& lane_vmap, int lno,
+				     const std::vector<vector_map::Point>& coarse_points,
+				     double search_radius);
+vector_map::Point find_nearest_point(const VectorMap& vmap, const vector_map::Point& point);
+std::vector<vector_map::Point> find_near_points(const VectorMap& vmap, const vector_map::Point& point,
+						double search_radius);
 
-map_file::Lane find_lane(const VectorMap& vmap, int lno, const map_file::PointClass& point);
-map_file::Lane find_prev_lane(const VectorMap& vmap, int lno, const map_file::Lane& lane);
-map_file::Lane find_next_lane(const VectorMap& vmap, int lno, const map_file::Lane& lane);
-map_file::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const map_file::Lane& lane,
-					double coarse_angle, double search_radius);
+vector_map::Lane find_lane(const VectorMap& vmap, int lno, const vector_map::Point& point);
+vector_map::Lane find_prev_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane);
+vector_map::Lane find_next_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane);
+vector_map::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane,
+					  double coarse_angle, double search_radius);
 
-void write_waypoint(const map_file::PointClass& point, double yaw, double velocity, const std::string& path,
+void write_waypoint(const vector_map::Point& point, double yaw, double velocity, const std::string& path,
 		    bool first)
 {
 	// reverse X-Y axis
@@ -92,14 +92,14 @@ void write_waypoint(const map_file::PointClass& point, double yaw, double veloci
 	}
 }
 
-double compute_direction_angle(const map_file::PointClass& p1, const map_file::PointClass& p2)
+double compute_direction_angle(const vector_map::Point& p1, const vector_map::Point& p2)
 {
 	return (atan2(p2.ly - p1.ly, p2.bx - p1.bx) * (180 / M_PI)); // -180 to 180 degrees
 }
 
-bool is_branching_point(const VectorMap& vmap, const map_file::PointClass& point)
+bool is_branching_point(const VectorMap& vmap, const vector_map::Point& point)
 {
-	map_file::Lane lane = find_lane(vmap, LNO_ALL, point);
+	vector_map::Lane lane = find_lane(vmap, LNO_ALL, point);
 	if (lane.lnid < 0)
 		return false;
 
@@ -110,34 +110,34 @@ bool is_branching_point(const VectorMap& vmap, const map_file::PointClass& point
 	return is_branching_lane(lane);
 }
 
-bool is_merging_point(const VectorMap& vmap, const map_file::PointClass& point)
+bool is_merging_point(const VectorMap& vmap, const vector_map::Point& point)
 {
-	map_file::Lane lane = find_lane(vmap, LNO_ALL, point);
+	vector_map::Lane lane = find_lane(vmap, LNO_ALL, point);
 	if (lane.lnid < 0)
 		return false;
 
 	return is_merging_lane(lane);
 }
 
-bool is_branching_lane(const map_file::Lane& lane)
+bool is_branching_lane(const vector_map::Lane& lane)
 {
 	return (lane.jct == 1 || lane.jct == 2 || lane.jct == 5);
 }
 
-bool is_merging_lane(const map_file::Lane& lane)
+bool is_merging_lane(const vector_map::Lane& lane)
 {
 	return (lane.jct == 3 || lane.jct == 4 || lane.jct == 5);
 }
 
-map_file::PointClass find_start_point(const VectorMap& vmap, const map_file::Lane& lane)
+vector_map::Point find_start_point(const VectorMap& vmap, const vector_map::Lane& lane)
 {
-	map_file::PointClass error;
+	vector_map::Point error;
 	error.pid = -1;
 
-	for (const map_file::Node& n : vmap.nodes) {
+	for (const vector_map::Node& n : vmap.nodes) {
 		if (n.nid != lane.bnid)
 			continue;
-		for (const map_file::PointClass& p : vmap.points) {
+		for (const vector_map::Point& p : vmap.points) {
 			if (p.pid != n.pid)
 				continue;
 			return p;
@@ -147,15 +147,15 @@ map_file::PointClass find_start_point(const VectorMap& vmap, const map_file::Lan
 	return error;
 }
 
-map_file::PointClass find_end_point(const VectorMap& vmap, const map_file::Lane& lane)
+vector_map::Point find_end_point(const VectorMap& vmap, const vector_map::Lane& lane)
 {
-	map_file::PointClass error;
+	vector_map::Point error;
 	error.pid = -1;
 
-	for (const map_file::Node& n : vmap.nodes) {
+	for (const vector_map::Node& n : vmap.nodes) {
 		if (n.nid != lane.fnid)
 			continue;
-		for (const map_file::PointClass& p : vmap.points) {
+		for (const vector_map::Point& p : vmap.points) {
 			if (p.pid != n.pid)
 				continue;
 			return p;
@@ -165,26 +165,26 @@ map_file::PointClass find_end_point(const VectorMap& vmap, const map_file::Lane&
 	return error;
 }
 
-map_file::PointClass find_departure_point(const VectorMap& lane_vmap, int lno,
-					  const std::vector<map_file::PointClass>& coarse_points,
-					  double search_radius)
+vector_map::Point find_departure_point(const VectorMap& lane_vmap, int lno,
+				       const std::vector<vector_map::Point>& coarse_points,
+				       double search_radius)
 {
-	map_file::PointClass coarse_p1 = coarse_points[0];
-	map_file::PointClass coarse_p2 = coarse_points[1];
+	vector_map::Point coarse_p1 = coarse_points[0];
+	vector_map::Point coarse_p2 = coarse_points[1];
 
-	map_file::PointClass nearest_point = find_nearest_point(lane_vmap, coarse_p1);
+	vector_map::Point nearest_point = find_nearest_point(lane_vmap, coarse_p1);
 	if (nearest_point.pid < 0)
 		return nearest_point;
 
-	std::vector<map_file::PointClass> near_points = find_near_points(lane_vmap, coarse_p1, search_radius);
+	std::vector<vector_map::Point> near_points = find_near_points(lane_vmap, coarse_p1, search_radius);
 	double coarse_angle = compute_direction_angle(coarse_p1, coarse_p2);
 	double score = 180 + search_radius; // XXX better way?
-	for (const map_file::PointClass& p1 : near_points) {
-		map_file::Lane l = find_lane(lane_vmap, lno, p1);
+	for (const vector_map::Point& p1 : near_points) {
+		vector_map::Lane l = find_lane(lane_vmap, lno, p1);
 		if (l.lnid < 0)
 			continue;
 
-		map_file::PointClass p2 = find_end_point(lane_vmap, l);
+		vector_map::Point p2 = find_end_point(lane_vmap, l);
 		if (p2.pid < 0)
 			continue;
 
@@ -203,22 +203,22 @@ map_file::PointClass find_departure_point(const VectorMap& lane_vmap, int lno,
 	return nearest_point;
 }
 
-map_file::PointClass find_arrival_point(const VectorMap& lane_vmap, int lno,
-					const std::vector<map_file::PointClass>& coarse_points,
-					double search_radius)
+vector_map::Point find_arrival_point(const VectorMap& lane_vmap, int lno,
+				     const std::vector<vector_map::Point>& coarse_points,
+				     double search_radius)
 {
-	map_file::PointClass coarse_p1 = coarse_points[coarse_points.size() - 1];
-	map_file::PointClass coarse_p2 = coarse_points[coarse_points.size() - 2];
+	vector_map::Point coarse_p1 = coarse_points[coarse_points.size() - 1];
+	vector_map::Point coarse_p2 = coarse_points[coarse_points.size() - 2];
 
-	map_file::PointClass nearest_point = find_nearest_point(lane_vmap, coarse_p1);
+	vector_map::Point nearest_point = find_nearest_point(lane_vmap, coarse_p1);
 	if (nearest_point.pid < 0)
 		return nearest_point;
 
-	std::vector<map_file::PointClass> near_points = find_near_points(lane_vmap, coarse_p1, search_radius);
+	std::vector<vector_map::Point> near_points = find_near_points(lane_vmap, coarse_p1, search_radius);
 	double coarse_angle = compute_direction_angle(coarse_p1, coarse_p2);
 	double score = 180 + search_radius; // XXX better way?
-	for (const map_file::PointClass& p1 : near_points) {
-		map_file::Lane l = find_lane(lane_vmap, lno, p1);
+	for (const vector_map::Point& p1 : near_points) {
+		vector_map::Lane l = find_lane(lane_vmap, lno, p1);
 		if (l.lnid < 0)
 			continue;
 
@@ -226,7 +226,7 @@ map_file::PointClass find_arrival_point(const VectorMap& lane_vmap, int lno,
 		if (l.lnid < 0)
 			continue;
 
-		map_file::PointClass p2 = find_start_point(lane_vmap, l);
+		vector_map::Point p2 = find_start_point(lane_vmap, l);
 		if (p2.pid < 0)
 			continue;
 
@@ -245,13 +245,13 @@ map_file::PointClass find_arrival_point(const VectorMap& lane_vmap, int lno,
 	return nearest_point;
 }
 
-map_file::PointClass find_nearest_point(const VectorMap& vmap, const map_file::PointClass& point)
+vector_map::Point find_nearest_point(const VectorMap& vmap, const vector_map::Point& point)
 {
-	map_file::PointClass nearest_point;
+	vector_map::Point nearest_point;
 	nearest_point.pid = -1;
 
 	double distance = DBL_MAX;
-	for (const map_file::PointClass& p : vmap.points) {
+	for (const vector_map::Point& p : vmap.points) {
 		double d = hypot(p.bx - point.bx, p.ly - point.ly);
 		if (d <= distance) {
 			nearest_point = p;
@@ -262,11 +262,11 @@ map_file::PointClass find_nearest_point(const VectorMap& vmap, const map_file::P
 	return nearest_point;
 }
 
-std::vector<map_file::PointClass> find_near_points(const VectorMap& vmap, const map_file::PointClass& point,
-						   double search_radius)
+std::vector<vector_map::Point> find_near_points(const VectorMap& vmap, const vector_map::Point& point,
+						double search_radius)
 {
-	std::vector<map_file::PointClass> near_points;
-	for (const map_file::PointClass& p : vmap.points) {
+	std::vector<vector_map::Point> near_points;
+	for (const vector_map::Point& p : vmap.points) {
 		double d = hypot(p.bx - point.bx, p.ly - point.ly);
 		if (d <= search_radius)
 			near_points.push_back(p);
@@ -275,15 +275,15 @@ std::vector<map_file::PointClass> find_near_points(const VectorMap& vmap, const 
 	return near_points;
 }
 
-map_file::Lane find_lane(const VectorMap& vmap, int lno, const map_file::PointClass& point)
+vector_map::Lane find_lane(const VectorMap& vmap, int lno, const vector_map::Point& point)
 {
-	map_file::Lane error;
+	vector_map::Lane error;
 	error.lnid = -1;
 
-	for (const map_file::Node& n : vmap.nodes) {
+	for (const vector_map::Node& n : vmap.nodes) {
 		if (n.pid != point.pid)
 			continue;
-		for (const map_file::Lane& l : vmap.lanes) {
+		for (const vector_map::Lane& l : vmap.lanes) {
 			if (lno != LNO_ALL && l.lno != lno)
 				continue;
 			if (l.bnid != n.nid)
@@ -295,13 +295,13 @@ map_file::Lane find_lane(const VectorMap& vmap, int lno, const map_file::PointCl
 	return error;
 }
 
-map_file::Lane find_prev_lane(const VectorMap& vmap, int lno, const map_file::Lane& lane)
+vector_map::Lane find_prev_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane)
 {
-	map_file::Lane error;
+	vector_map::Lane error;
 	error.lnid = -1;
 
 	if (is_merging_lane(lane)) {
-		for (const map_file::Lane& l : vmap.lanes) {
+		for (const vector_map::Lane& l : vmap.lanes) {
 			if (lno != LNO_ALL && l.lno != lno)
 				continue;
 			if (l.lnid != lane.blid && l.lnid != lane.blid2 && l.lnid != lane.blid3 &&
@@ -310,7 +310,7 @@ map_file::Lane find_prev_lane(const VectorMap& vmap, int lno, const map_file::La
 			return l;
 		}
 	} else {
-		for (const map_file::Lane& l : vmap.lanes) {
+		for (const vector_map::Lane& l : vmap.lanes) {
 			if (l.lnid != lane.blid)
 				continue;
 			return l;
@@ -320,13 +320,13 @@ map_file::Lane find_prev_lane(const VectorMap& vmap, int lno, const map_file::La
 	return error;
 }
 
-map_file::Lane find_next_lane(const VectorMap& vmap, int lno, const map_file::Lane& lane)
+vector_map::Lane find_next_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane)
 {
-	map_file::Lane error;
+	vector_map::Lane error;
 	error.lnid = -1;
 
 	if (is_branching_lane(lane)) {
-		for (const map_file::Lane& l : vmap.lanes) {
+		for (const vector_map::Lane& l : vmap.lanes) {
 			if (lno != LNO_ALL && l.lno != lno)
 				continue;
 			if (l.lnid != lane.flid && l.lnid != lane.flid2 && l.lnid != lane.flid3 &&
@@ -335,7 +335,7 @@ map_file::Lane find_next_lane(const VectorMap& vmap, int lno, const map_file::La
 			return l;
 		}
 	} else {
-		for (const map_file::Lane& l : vmap.lanes) {
+		for (const vector_map::Lane& l : vmap.lanes) {
 			if (l.lnid != lane.flid)
 				continue;
 			return l;
@@ -345,26 +345,26 @@ map_file::Lane find_next_lane(const VectorMap& vmap, int lno, const map_file::La
 	return error;
 }
 
-map_file::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const map_file::Lane& lane,
-					double coarse_angle, double search_radius)
+vector_map::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane,
+					  double coarse_angle, double search_radius)
 {
-	map_file::Lane error;
+	vector_map::Lane error;
 	error.lnid = -1;
 
-	map_file::PointClass p1 = find_end_point(vmap, lane);
+	vector_map::Point p1 = find_end_point(vmap, lane);
 	if (p1.pid < 0)
 		return error;
 
-	std::vector<std::tuple<map_file::PointClass, map_file::Lane>> candidates;
-	for (const map_file::Lane& l1 : vmap.lanes) {
+	std::vector<std::tuple<vector_map::Point, vector_map::Lane>> candidates;
+	for (const vector_map::Lane& l1 : vmap.lanes) {
 		if (lno != LNO_ALL && l1.lno != lno)
 			continue;
 		if (l1.lnid == lane.flid || l1.lnid == lane.flid2 || l1.lnid == lane.flid3 || l1.lnid == lane.flid4) {
-			map_file::Lane l2 = l1;
-			map_file::PointClass p = find_end_point(vmap, l2);
+			vector_map::Lane l2 = l1;
+			vector_map::Point p = find_end_point(vmap, l2);
 			if (p.pid < 0)
 				continue;
-			map_file::PointClass p2 = p;
+			vector_map::Point p2 = p;
 			double d = hypot(p2.bx - p1.bx, p2.ly - p1.ly);
 			while (d <= search_radius && l2.flid != 0 && !is_branching_lane(l2)) {
 				l2 = find_next_lane(vmap, LNO_ALL, l2);
@@ -383,10 +383,10 @@ map_file::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const ma
 	if (candidates.empty())
 		return error;
 
-	map_file::Lane branching_lane;
+	vector_map::Lane branching_lane;
 	double angle = 180;
-	for (const std::tuple<map_file::PointClass, map_file::Lane>& c : candidates) {
-		map_file::PointClass p2 = std::get<0>(c);
+	for (const std::tuple<vector_map::Point, vector_map::Lane>& c : candidates) {
+		vector_map::Point p2 = std::get<0>(c);
 		double a = compute_direction_angle(p1, p2);
 		a = fabs(a - coarse_angle);
 		if (a > 180)
@@ -402,7 +402,7 @@ map_file::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const ma
 
 } // namespace
 
-void write_waypoints(const std::vector<map_file::PointClass>& points, double velocity, const std::string& path)
+void write_waypoints(const std::vector<vector_map::Point>& points, double velocity, const std::string& path)
 {
 	if (points.size() < 2)
 		return;
@@ -425,29 +425,29 @@ void write_waypoints(const std::vector<map_file::PointClass>& points, double vel
 	}
 }
 
-double compute_reduction(const map_file::DTLane& d, double w)
+double compute_reduction(const vector_map::DTLane& d, double w)
 {
 	return (1 - fabs(1 / d.r) * w); // 0 to 1 rates
 }
 
-bool is_straight_dtlane(const map_file::DTLane& dtlane)
+bool is_straight_dtlane(const vector_map::DTLane& dtlane)
 {
 	return (dtlane.apara == 0 && dtlane.r == RADIUS_MAX);
 }
 
-bool is_curve_dtlane(const map_file::DTLane& dtlane)
+bool is_curve_dtlane(const vector_map::DTLane& dtlane)
 {
 	return (dtlane.apara == 0 && dtlane.r != RADIUS_MAX);
 }
 
 // XXX better way?
-bool is_crossroad_dtlane(const map_file::DTLane& dtlane)
+bool is_crossroad_dtlane(const vector_map::DTLane& dtlane)
 {
 	// take crossroad for 10 radius or less
 	return (fabs(dtlane.r) <= 10);
 }
 
-bool is_clothoid_dtlane(const map_file::DTLane& dtlane)
+bool is_clothoid_dtlane(const vector_map::DTLane& dtlane)
 {
 	return (dtlane.apara != 0);
 }
@@ -455,7 +455,7 @@ bool is_clothoid_dtlane(const map_file::DTLane& dtlane)
 // XXX better way?
 bool is_connection_dtlane(const VectorMap& fine_vmap, int index)
 {
-	const map_file::DTLane& dtlane = fine_vmap.dtlanes[index];
+	const vector_map::DTLane& dtlane = fine_vmap.dtlanes[index];
 	int size = fine_vmap.dtlanes.size();
 
 	int change = 0;
@@ -484,85 +484,85 @@ bool is_connection_dtlane(const VectorMap& fine_vmap, int index)
 	return false;
 }
 
-geometry_msgs::Point create_geometry_msgs_point(const map_file::PointClass& mp)
+geometry_msgs::Point create_geometry_msgs_point(const vector_map::Point& vp)
 {
 	// reverse X-Y axis
 	geometry_msgs::Point gp;
-	gp.x = mp.ly;
-	gp.y = mp.bx;
-	gp.z = mp.h;
+	gp.x = vp.ly;
+	gp.y = vp.bx;
+	gp.z = vp.h;
 
 	return gp;
 }
 
-map_file::PointClass create_map_file_pointclass(const geometry_msgs::Point& gp)
+vector_map::Point create_vector_map_point(const geometry_msgs::Point& gp)
 {
 	// reverse X-Y axis
-	map_file::PointClass mp;
-	mp.bx = gp.y;
-	mp.ly = gp.x;
-	mp.h = gp.z;
+	vector_map::Point vp;
+	vp.bx = gp.y;
+	vp.ly = gp.x;
+	vp.h = gp.z;
 
-	return mp;
+	return vp;
 }
 
-waypoint_follower::dtlane create_waypoint_follower_dtlane(const map_file::DTLane& md)
+waypoint_follower::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& vd)
 {
 	waypoint_follower::dtlane wd;
-	wd.dist = md.dist;
-	wd.dir = md.dir;
-	wd.apara = md.apara;
-	wd.r = md.r;
-	wd.slope = md.slope;
-	wd.cant = md.cant;
-	wd.lw = md.lw;
-	wd.rw = md.rw;
+	wd.dist = vd.dist;
+	wd.dir = vd.dir;
+	wd.apara = vd.apara;
+	wd.r = vd.r;
+	wd.slope = vd.slope;
+	wd.cant = vd.cant;
+	wd.lw = vd.lw;
+	wd.rw = vd.rw;
 
 	return wd;
 }
 
-map_file::DTLane create_map_file_dtlane(const waypoint_follower::dtlane& wd)
+vector_map::DTLane create_vector_map_dtlane(const waypoint_follower::dtlane& wd)
 {
-	map_file::DTLane md;
-	md.dist = wd.dist;
-	md.dir = wd.dir;
-	md.apara = wd.apara;
-	md.r = wd.r;
-	md.slope = wd.slope;
-	md.cant = wd.cant;
-	md.lw = wd.lw;
-	md.rw = wd.rw;
+	vector_map::DTLane vd;
+	vd.dist = wd.dist;
+	vd.dir = wd.dir;
+	vd.apara = wd.apara;
+	vd.r = wd.r;
+	vd.slope = wd.slope;
+	vd.cant = wd.cant;
+	vd.lw = wd.lw;
+	vd.rw = wd.rw;
 
-	return md;
+	return vd;
 }
 
 VectorMap create_lane_vmap(const VectorMap& vmap, int lno)
 {
 	VectorMap lane_vmap;
-	for (const map_file::Lane& l : vmap.lanes) {
+	for (const vector_map::Lane& l : vmap.lanes) {
 		if (lno != LNO_ALL && l.lno != lno)
 			continue;
 		lane_vmap.lanes.push_back(l);
 
-		for (const map_file::Node& n : vmap.nodes) {
+		for (const vector_map::Node& n : vmap.nodes) {
 			if (n.nid != l.bnid && n.nid != l.fnid)
 				continue;
 			lane_vmap.nodes.push_back(n);
 
-			for (const map_file::PointClass& p : vmap.points) {
+			for (const vector_map::Point& p : vmap.points) {
 				if (p.pid != n.pid)
 					continue;
 				lane_vmap.points.push_back(p);
 			}
 		}
 
-		for (const map_file::StopLine& s : vmap.stoplines) {
+		for (const vector_map::StopLine& s : vmap.stoplines) {
 			if (s.linkid != l.lnid)
 				continue;
 			lane_vmap.stoplines.push_back(s);
 		}
 
-		for (const map_file::DTLane& d : vmap.dtlanes) {
+		for (const vector_map::DTLane& d : vmap.dtlanes) {
 			if (d.did != l.did)
 				continue;
 			lane_vmap.dtlanes.push_back(d);
@@ -576,7 +576,7 @@ VectorMap create_coarse_vmap_from_lane(const waypoint_follower::lane& lane)
 {
 	VectorMap coarse_vmap;
 	for (const waypoint_follower::waypoint& w : lane.waypoints)
-		coarse_vmap.points.push_back(create_map_file_pointclass(w.pose.pose.position));
+		coarse_vmap.points.push_back(create_vector_map_point(w.pose.pose.position));
 
 	return coarse_vmap;
 }
@@ -590,7 +590,7 @@ VectorMap create_coarse_vmap_from_route(const tablet_socket::route_cmd& route)
 	for (const tablet_socket::Waypoint& w : route.point) {
 		geo.llh_to_xyz(w.lat, w.lon, 0);
 
-		map_file::PointClass p;
+		vector_map::Point p;
 		p.bx = geo.x();
 		p.ly = geo.y();
 		coarse_vmap.points.push_back(p);
@@ -605,7 +605,7 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 	VectorMap fine_vmap;
 	VectorMap null_vmap;
 
-	map_file::PointClass departure_point;
+	vector_map::Point departure_point;
 	departure_point.pid = -1;
 	if (lno == LNO_ALL)
 		departure_point = find_nearest_point(lane_vmap, coarse_vmap.points.front());
@@ -619,7 +619,7 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 	if (departure_point.pid < 0)
 		return null_vmap;
 
-	map_file::PointClass arrival_point;
+	vector_map::Point arrival_point;
 	arrival_point.pid = -1;
 	if (lno == LNO_ALL)
 		arrival_point = find_nearest_point(lane_vmap, coarse_vmap.points.back());
@@ -633,8 +633,8 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 	if (arrival_point.pid < 0)
 		return null_vmap;
 
-	map_file::PointClass point = departure_point;
-	map_file::Lane lane = find_lane(lane_vmap, LNO_ALL, point);
+	vector_map::Point point = departure_point;
+	vector_map::Lane lane = find_lane(lane_vmap, LNO_ALL, point);
 	if (lane.lnid < 0)
 		return null_vmap;
 
@@ -643,9 +643,9 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 		fine_vmap.points.push_back(point);
 
 		// last is equal to previous dtlane
-		map_file::DTLane dtlane;
+		vector_map::DTLane dtlane;
 		dtlane.did = -1;
-		for (const map_file::DTLane& d : lane_vmap.dtlanes) {
+		for (const vector_map::DTLane& d : lane_vmap.dtlanes) {
 			if (d.did == lane.did) {
 				dtlane = d;
 				break;
@@ -654,9 +654,9 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 		fine_vmap.dtlanes.push_back(dtlane);
 
 		// last is equal to previous stopline
-		map_file::StopLine stopline;
+		vector_map::StopLine stopline;
 		stopline.id = -1;
-		for (const map_file::StopLine& s : lane_vmap.stoplines) {
+		for (const vector_map::StopLine& s : lane_vmap.stoplines) {
 			if (s.linkid == lane.lnid) {
 				stopline = s;
 				break;
@@ -678,7 +678,7 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 		}
 
 		if (is_branching_lane(lane)) {
-			map_file::PointClass coarse_p1 = find_end_point(lane_vmap, lane);
+			vector_map::Point coarse_p1 = find_end_point(lane_vmap, lane);
 			if (coarse_p1.pid < 0)
 				return null_vmap;
 
@@ -686,9 +686,9 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 			if (coarse_p1.pid < 0)
 				return null_vmap;
 
-			map_file::PointClass coarse_p2;
+			vector_map::Point coarse_p2;
 			double distance = -1;
-			for (const map_file::PointClass& p : coarse_vmap.points) {
+			for (const vector_map::Point& p : coarse_vmap.points) {
 				if (distance == -1) {
 					if (p.bx == coarse_p1.bx && p.ly == coarse_p1.ly)
 						distance = 0;
@@ -706,7 +706,7 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 			if (lno == LNO_ALL) {
 				lane = find_next_branching_lane(lane_vmap, LNO_ALL, lane, coarse_angle, search_radius);
 			} else {
-				map_file::Lane l;
+				vector_map::Lane l;
 				l.lnid = -1;
 				for (int j = lno; j >= LNO_CROSSING; --j) {
 					l = find_next_branching_lane(lane_vmap, j, lane, coarse_angle, search_radius);
@@ -730,10 +730,10 @@ VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap&
 	return fine_vmap;
 }
 
-std::vector<map_file::PointClass> create_branching_points(const VectorMap& vmap)
+std::vector<vector_map::Point> create_branching_points(const VectorMap& vmap)
 {
-	std::vector<map_file::PointClass> branching_points;
-	for (const map_file::PointClass& p : vmap.points) {
+	std::vector<vector_map::Point> branching_points;
+	for (const vector_map::Point& p : vmap.points) {
 		if (!is_branching_point(vmap, p))
 			continue;
 		branching_points.push_back(p);
@@ -742,10 +742,10 @@ std::vector<map_file::PointClass> create_branching_points(const VectorMap& vmap)
 	return branching_points;
 }
 
-std::vector<map_file::PointClass> create_merging_points(const VectorMap& vmap)
+std::vector<vector_map::Point> create_merging_points(const VectorMap& vmap)
 {
-	std::vector<map_file::PointClass> merging_points;
-	for (const map_file::PointClass& p : vmap.points) {
+	std::vector<vector_map::Point> merging_points;
+	for (const vector_map::Point& p : vmap.points) {
 		if (!is_merging_point(vmap, p))
 			continue;
 		merging_points.push_back(p);
@@ -755,7 +755,7 @@ std::vector<map_file::PointClass> create_merging_points(const VectorMap& vmap)
 }
 
 void publish_add_marker(const ros::Publisher& pub, const visualization_msgs::Marker& marker,
-			const std::vector<map_file::PointClass>& points)
+			const std::vector<vector_map::Point>& points)
 {
 	visualization_msgs::Marker m;
 	m.header.frame_id = marker.header.frame_id;
@@ -765,7 +765,7 @@ void publish_add_marker(const ros::Publisher& pub, const visualization_msgs::Mar
 	m.scale = marker.scale;
 	m.color = marker.color;
 	m.frame_locked = marker.frame_locked;
-	for (const map_file::PointClass& p : points)
+	for (const vector_map::Point& p : points)
 		m.points.push_back(create_geometry_msgs_point(p));
 
 	m.header.stamp = ros::Time::now();

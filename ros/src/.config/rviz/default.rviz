@@ -59,6 +59,8 @@ Visualization Manager:
           Value: true
         map:
           Value: true
+        mobility:
+          Value: true
         velodyne:
           Value: true
         world:
@@ -71,7 +73,11 @@ Visualization Manager:
       Tree:
         world:
           map:
-            {}
+            base_link:
+              velodyne:
+                {}
+            mobility:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 0.05
@@ -109,8 +115,26 @@ Visualization Manager:
       Marker Topic: /vector_map
       Name: Vector Map
       Namespaces:
-        streetlight: true
-        utilitypole: true
+        cross_road: true
+        cross_walk: true
+        curb: true
+        curve_mirror: true
+        fence: true
+        guard_rail: true
+        gutter: true
+        rail_crossing: true
+        road_edge: true
+        road_mark: true
+        road_pole: true
+        road_sign: true
+        side_walk: true
+        signal: true
+        stop_line: true
+        street_light: true
+        utility_pole: true
+        wall: true
+        white_line: true
+        zebra_zone: true
       Queue Size: 100
       Value: true
     - Class: rviz/Image
@@ -137,6 +161,7 @@ Visualization Manager:
       Value: false
       Visibility:
         "": true
+        Bounding Boxes: true
         Control Pose: true
         Current Pose: true
         Detection Range: true
@@ -146,7 +171,6 @@ Visualization Manager:
         Local Waypoints: true
         Next Waypoint Mark: true
         Object Pose: true
-        Obstacle: true
         PP Trajectory Mark: true
         Points Cluster: true
         Points Map: true
@@ -157,6 +181,8 @@ Visualization Manager:
         Vector Map: true
         Vehicle Model: true
         Vscan Points: true
+        Waypoint Guide: true
+        km/h: true
       Zoom Factor: 1
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
@@ -173,7 +199,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 255
+      Max Intensity: 250
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Points Raw
@@ -258,14 +284,6 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /obstacle
-      Name: Obstacle
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
       Marker Topic: /next_target_mark
       Name: Next Waypoint Mark
       Namespaces:
@@ -321,7 +339,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -338,7 +356,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /obj_car/obj_pose
@@ -360,7 +378,9 @@ Visualization Manager:
       Marker Topic: /global_waypoints_mark
       Name: Global Waypoints
       Namespaces:
-        {}
+        global_lane_array_marker: true
+        global_lane_waypoint_orientation_marker_1: true
+        global_velocity_lane_1: true
       Queue Size: 100
       Value: true
     - Buffer length: 100
@@ -388,6 +408,35 @@ Visualization Manager:
       top: 10
       update interval: 0.04
       width: 100
+    - Class: jsk_rviz_plugin/BoundingBoxArray
+      Enabled: true
+      Name: Bounding Boxes
+      Topic: /bounding_boxes
+      Unreliable: false
+      Value: true
+      alpha: 0.8
+      color: 25; 255; 0
+      coloring: Auto
+      line width: 0.005
+      only edge: false
+      show coords: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /waypoint_guide
+      Name: Waypoint Guide
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Laserscan Costmap
+      Topic: /ring_ogm
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -420,7 +469,7 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 4.54267
+      Scale: 10
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
       X: 0
@@ -436,7 +485,7 @@ Window Geometry:
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000338fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000002800000260000000dd00fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000000ffffffff0000006500000065fb000000100044006900730070006c0061007900730100000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000001600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000001600fffffffb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb0000000000000000000000010000010f00000338fc0200000003fb0000000a00560069006500770073010000002800000338000000b000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005a10000003dfc0100000002fb0000000800540069006d00650100000000000005a1000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000031c0000033800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000338fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000002800000260000000dd00fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000000ffffffff0000006500fffffffb000000100044006900730070006c0061007900730100000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000001600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb0000000000000000000000010000010f00000338fc0200000003fb0000000a00560069006500770073010000002800000338000000b000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000005a00000003dfc0100000002fb0000000800540069006d00650100000000000005a0000002f600fffffffb0000000800540069006d006501000000000000045000000000000000000000031b0000033800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -445,6 +494,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1441
-  X: 296
-  Y: 512
+  Width: 1440
+  X: 1895
+  Y: 44

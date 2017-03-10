@@ -1,0 +1,12 @@
+<launch>
+	<param name="use_sim_time" value="true" />
+
+	<arg name="orb_config" default="$(find orb_localizer)/share/orb_localizer/orb-slam2.yaml" />
+
+	<node name="camera_localizer_1" pkg="orb_localizer" type="orb_matching" output="screen">
+		<param name="map_file"                    value="/tmp/orbx.map" />
+		<param name="configuration_file"          value="$(arg orb_config)" />
+		<param name="image_topic"                 value="/camera/image_raw" />
+	</node>
+
+</launch>

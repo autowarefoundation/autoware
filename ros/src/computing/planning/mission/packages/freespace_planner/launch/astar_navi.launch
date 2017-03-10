@@ -1,0 +1,42 @@
+<launch>
+
+    <arg name="use_2dnav_goal" default="true" />
+    <arg name="path_frame" default="map" />
+    <arg name="angle_size" default="40" />
+    <arg name="minimum_turning_radius" default="5.5" />
+    <arg name="obstacle_threshold" default="15" />
+    <arg name="goal_radius" default="0.25" /> <!-- meter-->
+    <arg name="goal_angle" default="6.0" /> <!-- degree-->
+    <arg name="robot_length" default="4.5" />
+    <arg name="robot_width" default="2.7" />
+    <arg name="base2back" default="0.8" />
+    <arg name="curve_weight" default="1.04" />
+    <arg name="reverse_weight" default="2.50" />
+    <arg name="use_back" default="false" />
+    <arg name="use_wavefront_heuristic" default="true" />
+    <arg name="waypoint_velocity_kmph" default="5.0" />
+    <arg name="map_topic" default="ring_ogm" />
+
+	<node pkg="freespace_planner" type="astar_navi" name="astar_navi" output="screen">
+          <param name="use_2dnav_goal" value="$(arg use_2dnav_goal)" />
+          <param name="path_frame" value="$(arg path_frame)" />
+          <param name="angle_size" value="$(arg angle_size)" />
+          <param name="minimum_turning_radius" value="$(arg minimum_turning_radius)" />
+          <param name="obstacle_threshold" value="$(arg obstacle_threshold)" />
+          <param name="goal_radius" value="$(arg goal_radius)" />
+          <param name="goal_angle" value="$(arg goal_angle)" />
+          <param name="use_back" value="$(arg use_back)" />
+          <param name="robot_length" value="$(arg robot_length)" />
+          <param name="robot_width" value="$(arg robot_width)" />
+          <param name="base2back" value="$(arg base2back)" />
+          <param name="curve_weight" value="$(arg curve_weight)" />
+          <param name="reverse_weight" value="$(arg reverse_weight)" />
+          <param name="use_wavefront_heuristic" value="$(arg use_wavefront_heuristic)" />
+          <param name="waypoint_velocity_kmph" value="$(arg waypoint_velocity_kmph)" />
+          <param name="map_topic" value="$(arg map_topic)" />
+	</node>
+
+	<!-- Visualization node-->
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher"/>
+
+</launch>

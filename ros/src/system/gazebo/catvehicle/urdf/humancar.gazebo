@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<!--
+
+Author: Jonathan Sprinkle, Sam Taylor, Alex Warren
+Copyright (c) 2015 Arizona Board of Regents
+All rights reserved.
+
+Permission is hereby granted, without written agreement and without 
+license or royalty fees, to use, copy, modify, and distribute this
+software and its documentation for any purpose, provided that the 
+above copyright notice and the following two paragraphs appear in 
+all copies of this software.
+
+IN NO EVENT SHALL THE ARIZONA BOARD OF REGENTS BE LIABLE TO ANY PARTY 
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES 
+ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN 
+IF THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF 
+SUCH DAMAGE.
+
+THE ARIZONA BOARD OF REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER
+IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATION
+TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+Summary: 
+This file includes the control interfaces for ROS-based control
+through Gazebo. For more information and for the tutorials used to create
+this file, see
+http://gazebosim.org/tutorials/?tut=ros_control#Prerequisites
+
+-->
+<robot>
+
+
+<gazebo reference="back_right_wheel_link">
+	      <mu1>10000</mu1>
+              <mu2>10000</mu2>
+		<kp>10000000</kp>
+		<kd>1</kd>
+		<minDepth>0.01</minDepth>
+		<maxVel>10.0</maxVel>            
+</gazebo>
+
+<gazebo reference="back_left_wheel_link">
+              <mu1>10000</mu1>
+              <mu2>10000</mu2>
+		<kp>10000000</kp>
+                <kd>1</kd> 
+                <minDepth>0.01</minDepth>
+                <maxVel>10.0</maxVel>  
+</gazebo>
+
+<gazebo reference="front_right_wheel_link">
+	      <mu1>10000</mu1>
+              <mu2>10000</mu2>
+                <kp>1000000</kp>
+                <kd>1</kd> 
+                <minDepth>0.01</minDepth>
+                <maxVel>100.0</maxVel> 
+</gazebo>
+
+<gazebo reference="front_left_wheel_link">
+	      <mu1>10000</mu1>
+              <mu2>10000</mu2>
+                <kp>1000000</kp>
+                <kd>1</kd> 
+                <minDepth>0.01</minDepth>
+                <maxVel>100.0</maxVel> 
+</gazebo>
+
+<gazebo reference="front_right_steering_link">
+   <mu1>0.6</mu1>
+   <mu2>0.5</mu2>
+                <kp>1000000</kp>
+                <kd>0.1</kd>
+                <minDepth>0.01</minDepth>
+                <maxVel>10.0</maxVel>
+</gazebo>
+
+<gazebo reference="front_left_steering_link">
+   <mu1>0.6</mu1>
+   <mu2>0.5</mu2>
+                <kp>1000000</kp>
+                <kd>0.1</kd>
+                <minDepth>0.01</minDepth>
+                <maxVel>10.0</maxVel>
+</gazebo>
+
+
+<gazebo>
+  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <robotNamespace>/$(arg roboname)</robotNamespace>
+    <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+  </plugin>
+</gazebo>
+
+<!--Rear Wheel Drive, cuz why not-->
+<!--
+<gazebo>
+  <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+      <robotNamespace>/catvehicle</robotNamespace>
+      <rosDebugLevel>Debug</rosDebugLevel>
+      <publishWheelTF>false</publishWheelTF>
+      <publishWheelJointState>true</publishWheelJointState>
+      <alwaysOn>true</alwaysOn>
+      <leftJoint>back_left_wheel_joint</leftJoint>
+      <rightJoint>back_right_wheel_joint</rightJoint>
+      <wheelSeparation>1.73</wheelSeparation>
+      <wheelDiameter>0.712</wheelDiameter>
+      <wheelTorque>350</wheelTorque>
+      <wheelAcceleration>1.0</wheelAcceleration>
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometrySource>world</odometrySource>
+      <robotBaseFrame>base_link</robotBaseFrame>
+      <cmd_vel_timeout>0.20</cmd_vel_timeout>
+      <updateRate>10.0</updateRate>
+  </plugin>
+</gazebo>
+-->
+
+<gazebo>
+    <plugin filename="libgazebo_ros_joint_state_publisher.so" name="joint_state_publisher">
+      <jointName>back_left_wheel_joint, back_right_wheel_joint, front_left_steering_joint, front_right_steering_joint, front_right_wheel_joint, front_left_wheel_joint</jointName>
+      <updateRate>5.0</updateRate>
+      <robotNamespace>/$(arg roboname)</robotNamespace>
+      <alwaysOn>true</alwaysOn>
+    </plugin>
+</gazebo>
+
+<gazebo>
+  <plugin name="cmdvel_controller" filename="libcatvehiclegazebo.so">
+	<robotNamespace>/$(arg roboname)</robotNamespace>
+    <updateRate>100.0</updateRate>
+  </plugin>
+</gazebo>
+</robot>
