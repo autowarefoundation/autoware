@@ -795,6 +795,8 @@ public:
 	double				velocityOfNext;
 	//-------------------------------------------//
 	//For Lane Change
+	int 				iPrevSafeLane;
+	int 				iCurrSafeLane;
 	double				distanceToGoBack;
 	double 				timeToGoBack;
 	double 				distanceToChangeLane;
@@ -879,6 +881,8 @@ public:
 		targetLaneID			= -1;
 		currentLaneID			= -1;
 		originalLaneID			= -1;
+		iCurrSafeLane 			= -1;
+		iPrevSafeLane			= -1;
 
 		indicator 				= INDICATOR_NONE;
 	}

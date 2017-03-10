@@ -38,8 +38,12 @@ bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoin
 	{
 		RelativeInfo info_item;
 		GetRelativeInfo(trajectories.at(i), p, info_item);
-		info_item.iGlobalPath = i;
-		infos.push_back(info_item);
+		double angle_diff = UtilityH::AngleBetweenTwoAnglesPositive(info_item.perp_point.pos.a, p.pos.a)*RAD2DEG;
+		if(angle_diff < 75)
+		{
+			info_item.iGlobalPath = i;
+			infos.push_back(info_item);
+		}
 	}
 
 	if(infos.size() == 1)

@@ -81,7 +81,8 @@ BehaviorStateMachine* ForwardState::GetNextState()
 	else if(m_PlanningParams.enableSwerving
 			&& pCParams->distanceToNext <= m_PlanningParams.minDistanceToAvoid
 			&& !pCParams->bFullyBlock
-			&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory)
+			&& (pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory || pCParams->iCurrSafeLane != pCParams->iPrevSafeLane)
+			)
 		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
 
 	else if(m_PlanningParams.enableTrafficLightBehavior

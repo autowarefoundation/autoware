@@ -66,7 +66,6 @@ way_planner_core::way_planner_core()
 	//bGoalPos = false;
 	//bUsingCurrentPose = false;
 	bEnableReplanning = false;
-	m_ReplanDistanceFromEnd = 20; // meters
 	nh.getParam("/way_planner/pathDensity" 			, m_params.pathDensity);
 	nh.getParam("/way_planner/enableSmoothing" 		, m_params.bEnableSmoothing);
 	nh.getParam("/way_planner/enableLaneChange" 	, m_params.bEnableLaneChange);
@@ -687,14 +686,17 @@ void way_planner_core::PlannerMainLoop()
 				if(bEnableReplanning)
 				{
 					PlannerHNS::RelativeInfo info;
-					PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GeneratedTotalPaths, startPoint, 0, info);
-					double remaining_distance =    m_GeneratedTotalPaths.at(info.iGlobalPath).at(m_GeneratedTotalPaths.at(info.iGlobalPath).size()-1).cost - (m_GeneratedTotalPaths.at(info.iGlobalPath).at(info.iFront).cost + info.to_front_distance);
-					if(remaining_distance <= REPLANNING_DISTANCE)
+					PlannerHNS::PlanningHelpers::GetRelativeInfoRange(m_GeneratedTotalPaths, startPoint, 0.75, info);
+					if(info.iGlobalPath >= 0 &&  info.iGlobalPath < m_GeneratedTotalPaths.size() && info.iFront > 0 && info.iFront < m_GeneratedTotalPaths.at(info.iGlobalPath).size())
 					{
-						m_iCurrentGoalIndex++;
-						if(m_iCurrentGoalIndex >= m_GoalsPos.size())
-							m_iCurrentGoalIndex = 0;
-						bMakeNewPlan = true;
+						double remaining_distance =    m_GeneratedTotalPaths.at(info.iGlobalPath).at(m_GeneratedTotalPaths.at(info.iGlobalPath).size()-1).cost - (m_GeneratedTotalPaths.at(info.iGlobalPath).at(info.iFront).cost + info.to_front_distance);
+						if(remaining_distance <= REPLANNING_DISTANCE)
+						{
+							m_iCurrentGoalIndex++;
+							if(m_iCurrentGoalIndex >= m_GoalsPos.size())
+								m_iCurrentGoalIndex = 0;
+							bMakeNewPlan = true;
+						}
 					}
 				}
 			}

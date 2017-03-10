@@ -26,6 +26,8 @@ public:
 	std::vector<WayPoint> m_Path;
 	std::vector<std::vector<WayPoint> > m_TotalPath;
 	int m_iCurrentTotalPathId;
+	int m_iSafeTrajectory;
+//	int m_iGlobalPathPrevID;
 	std::vector<std::vector<WayPoint> > m_PredictedPath;
 	std::vector<std::vector<std::vector<WayPoint> > > m_RollOuts;
 	std::string carId;
@@ -52,8 +54,7 @@ public:
 	StopSignWaitState* 			m_pStopSignWaitState;
 
 	TrajectoryCosts m_TrajectoryCostsCalculatotor;
-	int m_iSafeTrajectory;
-	int m_iGlobalPathPrevID;
+
 
 
 	//for debugging

@@ -73,7 +73,7 @@ namespace WayPlannerNS {
 #define MAX_GLOBAL_PLAN_DISTANCE 10000
 #define _ENABLE_VISUALIZE_PLAN
 #define _ENABLE_HMI
-#define REPLANNING_DISTANCE 25
+#define REPLANNING_DISTANCE 15
 class AutowareRoadNetwork
 {
 public:
@@ -202,7 +202,6 @@ private:
   	PlannerHNS::RoadNetwork m_Map;
   	bool	m_bKmlMap;
   	PlannerHNS::PlannerH m_PlannerH;
-  	double m_ReplanDistanceFromEnd;
   	std::vector<std::vector<PlannerHNS::WayPoint> > m_GeneratedTotalPaths;
 
   	void UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map);

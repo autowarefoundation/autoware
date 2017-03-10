@@ -28,7 +28,7 @@ public:
 			const CAR_BASIC_INFO& carInfo,const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
 public:
-	int m_CurrentTrajectoryIndex;
+	int m_PrevCostIndex;
 	vector<TrajectoryCost> m_TrajectoryCosts;
 	PlanningParams m_Params;
 	PolygonShape m_SafetyBorder;

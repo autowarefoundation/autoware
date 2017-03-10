@@ -14,7 +14,7 @@ namespace PlannerHNS
 
 TrajectoryCosts::TrajectoryCosts()
 {
-	m_CurrentTrajectoryIndex = -1;
+	m_PrevCostIndex = -1;
 }
 
 TrajectoryCosts::~TrajectoryCosts()
@@ -35,11 +35,10 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 
 	if(!ValidateRollOutsInput(rollOuts) || rollOuts.size() != totalPaths.size()) return bestTrajectory;
 
-	if(m_CurrentTrajectoryIndex == -1)
-		m_CurrentTrajectoryIndex = params.rollOutNumber*currLaneIndex+currIndex;
+	if(m_PrevCostIndex == -1)
+		m_PrevCostIndex = params.rollOutNumber/2;
 
 	m_TrajectoryCosts.clear();
-
 
 	for(unsigned int il = 0; il < rollOuts.size(); il++)
 	{
@@ -70,6 +69,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 	double smallestCost = 9999999999;
 	double smallestDistance = 9999999999;
 	double velo_of_next = 0;
+	double closest_distance_from_center = 0;
 	for(unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++)
 	{
 		if(!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost)
@@ -86,7 +86,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 	}
 
 	//All is blocked !
-	if(smallestIndex == -1 && m_CurrentTrajectoryIndex < (int)m_TrajectoryCosts.size())
+	if(smallestIndex == -1 && m_PrevCostIndex < (int)m_TrajectoryCosts.size())
 	{
 		bestTrajectory.bBlocked = true;
 		bestTrajectory.lane_index = currLaneIndex;
@@ -101,11 +101,13 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 		//bestTrajectory.index = smallestIndex;
 	}
 
-	m_CurrentTrajectoryIndex = smallestIndex;
+//	cout << "smallestI: " <<  smallestIndex << ", C_Size: " << m_TrajectoryCosts.size()
+//			<< ", LaneI: " << bestTrajectory.lane_index << "TrajI: " << bestTrajectory.index
+//			<< ", prevSmalI: " << m_PrevCostIndex << ", distance: " << bestTrajectory.closest_obj_distance
+//			<< ", Blocked: " << bestTrajectory.bBlocked
+//			<< endl;
 
-//	cout << "LaneIndex: " << bestTrajectory.lane_index << "LocalIndex: " << bestTrajectory.index
-//			<< ", currentTrajIndex: " << m_CurrentTrajectoryIndex << ", Trajectory Cost: " << bestTrajectory.closest_obj_distance
-//			<<", SmallestIndex: " <<  smallestIndex << endl;
+	m_PrevCostIndex = smallestIndex;
 
 	return bestTrajectory;
 }
@@ -176,7 +178,8 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 					double longitudinalDist = PlanningHelpers::GetExactDistanceOnTrajectory(totalPaths.at(il), car_info, obj_info);
 					//longitudinalDist += PlanningHelpers::GetDistanceOnTrajectory(totalPaths.at(il), iCurrIndex, contourPoints.at(icon));
 
-					if(longitudinalDist< -carInfo.length)
+
+					if(longitudinalDist < -carInfo.length)
 					{
 						//cout << "Skip , long Dist: " << longitudinalDist << endl;
 						continue;
@@ -201,13 +204,15 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 					//double lateralDist =  fabs(PlanningHelpers::GetPerpDistanceToTrajectorySimple(totalPaths.at(il), contourPoints.at(icon), iCurrIndex) - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
 					double lateralDist = fabs(obj_info.perp_distance - (trajectoryCosts.at(iCostIndex).distance_from_center*close_in_percentage));
 
-
 					longitudinalDist = longitudinalDist - critical_long_front_distance;
 
-					if((lateralDist <= critical_lateral_distance && longitudinalDist >= 0 &&  longitudinalDist < params.minFollowingDistance) || (m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos) == true))// || (longitudinalDist < params.maxDistanceToAvoid && fabs(relative_point.y) <= critical_lateral_distance ))
+					if((lateralDist <= critical_lateral_distance && longitudinalDist >= -carInfo.length/1.5 &&  longitudinalDist < params.minFollowingDistance) || (m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos) == true))// || (longitudinalDist < params.maxDistanceToAvoid && fabs(relative_point.y) <= critical_lateral_distance ))
 						trajectoryCosts.at(iCostIndex).bBlocked = true;
 
-					//cout << ", Lat D: " << lateralDist << ", Lat C: " << critical_lateral_distance <<", Lon D: " << longitudinalDist << ", Lon C: "<< critical_long_back_distance << ", Safety Box: " << m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos)<< endl;
+//					cout << ", Lat D: " << lateralDist << ", Lat C: " << critical_lateral_distance
+//							<<", D from Center: " << trajectoryCosts.at(iCostIndex).distance_from_center
+//							<<", Lon D: " << longitudinalDist << ", Lon C: "<< critical_long_back_distance
+//							<< ", Safety Box: " << m_SafetyBorder.PointInsidePolygon(m_SafetyBorder, contourPoints.at(icon).pos)<< endl;
 
 
 	//				if(lateralDist==0)
@@ -279,7 +284,7 @@ void TrajectoryCosts::NormalizeCosts(vector<TrajectoryCost>& trajectoryCosts)
 			trajectoryCosts.at(ic).transition_cost = 0;
 
 		trajectoryCosts.at(ic).cost = (
-				0.25*trajectoryCosts.at(ic).priority_cost +
+				0.1*trajectoryCosts.at(ic).priority_cost +
 				trajectoryCosts.at(ic).lane_change_cost +
 				trajectoryCosts.at(ic).lateral_cost +
 				trajectoryCosts.at(ic).longitudinal_cost +
