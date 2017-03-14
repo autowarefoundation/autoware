@@ -418,6 +418,7 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	pub_PathsRviz.publish(pathsToVisualize);
 	pub_Paths.publish(lane_array);
 
+#ifdef OPENPLANNER_ENABLE_LOGS
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 	{
 		std::ostringstream str_out;
@@ -428,6 +429,7 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 		str_out << "_";
 		PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), generatedTotalPaths.at(i));
 	}
+#endif
 }
 
 #ifdef ENABLE_VISUALIZE_PLAN

@@ -51,12 +51,14 @@ void TrajectoryFollower::Init(const ControllerParams& params, const CAR_BASIC_IN
 
 TrajectoryFollower::~TrajectoryFollower()
 {
-//	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "ControlLog",
-//			"time,X,Y,heading, Target, error,LateralError,SteerBeforLowPass,Steer,iIndex, pathSize",
-//			m_LogData);
-//
-//	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "SteeringPIDLog",m_pidSteer.ToStringHeader(), m_LogSteerPIDData );
-//	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "VelocityPIDLog",m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData );
+#ifdef OPENPLANNER_ENABLE_LOGS
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "ControlLog",
+			"time,X,Y,heading, Target, error,LateralError,SteerBeforLowPass,Steer,iIndex, pathSize",
+			m_LogData);
+
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "SteeringPIDLog",m_pidSteer.ToStringHeader(), m_LogSteerPIDData );
+	DataRW::WriteLogData(UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName+DataRW::ControlLogFolderName, "VelocityPIDLog",m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData );
+#endif
 }
 
 void TrajectoryFollower::PrepareNextWaypoint(const PlannerHNS::WayPoint& CurPos, const double& currVelocity, const double& currSteering)
@@ -156,7 +158,9 @@ int TrajectoryFollower::SteerControllerPart(const PlannerHNS::WayPoint& state, c
 	double before_lowpass = m_pidSteer.getPID(e);
 	//cout << m_pidSteer.ToString() << endl;
 
-//	m_LogSteerPIDData.push_back(m_pidSteer.ToString());
+#ifdef OPENPLANNER_ENABLE_LOGS
+	m_LogSteerPIDData.push_back(m_pidSteer.ToString());
+#endif
 
 	//TODO use lateral error instead of angle error
 	//double future_lateral_error = PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_Path, m_ForwardSimulation,0);
@@ -273,7 +277,9 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;
-	//m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
+#ifdef OPENPLANNER_ENABLE_LOGS
+	m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
+#endif
 	return 1;
 }
 

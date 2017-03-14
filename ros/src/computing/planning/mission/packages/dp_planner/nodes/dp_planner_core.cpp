@@ -182,9 +182,11 @@ PlannerX::PlannerX()
 
 PlannerX::~PlannerX()
 {
+#ifdef OPENPLANNER_ENABLE_LOGS
 	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName, "MainLog",
 			"time,Behavior State,behavior,num_Tracked_Objects,num_Cluster_Points,num_Contour_Points,t_Tracking,t_Calc_Cost, t_Behavior_Gen, t_Roll_Out_Gen, num_RollOuts, Full_Block, idx_Central_traj, iTrajectory, Stop Sign, Traffic Light, Min_Stop_Distance, follow_distance, follow_velocity, Velocity, Steering, X, Y, Z, heading,"
 			, m_LogData);
+#endif
 
 #ifdef DATASET_GENERATION_BLOCK
 	m_ImagesVectors.close();

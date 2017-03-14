@@ -65,9 +65,9 @@ private:
 	UtilityHNS::PIDController 	m_pidVelocity;
 	UtilityHNS::LowpassFilter 	m_lowpassVelocity;
 
-	//std::vector<std::string>    m_LogData;
-	//std::vector<std::string>    m_LogSteerPIDData;
-	//std::vector<std::string>    m_LogVelocityPIDData;
+	std::vector<std::string>    m_LogData;
+	std::vector<std::string>    m_LogSteerPIDData;
+	std::vector<std::string>    m_LogVelocityPIDData;
 
 	bool FindNextWayPoint(const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
 			const double& velocity, PlannerHNS::WayPoint& pursuite_point, PlannerHNS::WayPoint& prep,

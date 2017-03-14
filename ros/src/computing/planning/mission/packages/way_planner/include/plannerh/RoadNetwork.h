@@ -13,6 +13,7 @@
 #include <sstream>
 #include "UtilityH.h"
 
+#define OPENPLANNER_ENABLE_LOGS
 
 namespace PlannerHNS
 {
