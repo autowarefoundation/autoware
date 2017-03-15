@@ -181,6 +181,7 @@ void Update(void *p)
 
 void SetState(int mode, int gear, void* p) 
 {
+  // 0=manual, 1=str, 2=drv, 3=str+drv
   if (mode != current_mode) {
     current_mode = mode;
     pthread_create(&_modesetter, NULL, MainWindow::ModeSetterEntry, p);
@@ -317,10 +318,11 @@ void *MainWindow::ModeSetterEntry(void *a)
   mode_is_setting = true; // loose critical section
 
   main->ClearCntDiag();
+  // 0=manual, 1=str, 2=drv, 3=str+drv
   sleep(1);
-  main->SetStrMode(current_mode); // steering
+  main->SetStrMode(((current_mode & CAN_MODE_STR) != 0) ? 1:0); // steering
   sleep(1);
-  main->SetDrvMode(current_mode); // accel/brake
+  main->SetDrvMode(((current_mode & CAN_MODE_DRV) != 0) ? 1:0); // accel/brake
   sleep(1);
 
   mode_is_setting = false; // loose critical section
