@@ -484,11 +484,6 @@ class MyFrame(rtmgr.MyFrame):
 		pass
 
 	def OnClose(self, event):
-		# kill_all
-		for proc in self.all_procs[:]: # copy
-			(_, obj) = self.proc_to_cmd_dic_obj(proc)
-			self.launch_kill(False, 'dmy', proc, obj=obj)
-
 		save_dic = {}
 		for (name, pdic) in self.load_dic.items():
 			if pdic and pdic != {}:
@@ -507,6 +502,11 @@ class MyFrame(rtmgr.MyFrame):
 			#print 'save\n', s # for debug
 			f.write(s)
 			f.close()
+
+		# kill_all
+		for proc in self.all_procs[:]: # copy
+			(_, obj) = self.proc_to_cmd_dic_obj(proc)
+			self.launch_kill(False, 'dmy', proc, obj=obj)
 
 		shutdown_proc_manager()
 
