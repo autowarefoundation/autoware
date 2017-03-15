@@ -182,7 +182,7 @@ void Update(void *p)
 void SetState(int mode, int gear, void* p) 
 {
   // 0=manual, 1=str, 2=drv, 3=str+drv
-  if (mode != current_mode) {
+  if (mode >= 0 && mode != current_mode) {
     current_mode = mode;
     pthread_create(&_modesetter, NULL, MainWindow::ModeSetterEntry, p);
   }
