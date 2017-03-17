@@ -1843,7 +1843,8 @@ class MyFrame(rtmgr.MyFrame):
 			if kill_children:
 				terminate_children(proc, sigint)
 			terminate(proc, sigint)
-			proc.wait()
+			enables_set(obj, 'proc_wait', False)
+			th_start( proc_wait_thread, {'proc': proc, 'obj': obj} )
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
 			proc = None
@@ -2853,6 +2854,11 @@ def terminate(proc, sigint=False):
 	else:
 		proc.terminate()
 
+def proc_wait_thread(ev, proc, obj):
+	proc.wait()
+	wx.CallAfter(enables_set, obj, 'proc_wait', True)
+	th_end((None, ev))
+
 def th_start(target, kwargs={}):
 	ev = threading.Event()
 	kwargs['ev'] = ev
@@ -2862,6 +2868,10 @@ def th_start(target, kwargs={}):
 	return (th, ev)
 
 def th_end((th, ev)):
+	if not th:
+		th = threading.current_thread()
+		threading.Timer( 1.0, th_end, ((th, ev),) ).start()
+		return
 	ev.set()
 	th.join()
 
@@ -2989,6 +2999,7 @@ def enables_set(obj, k, en):
 	d[k] = en
 	d['last_key'] = k
 	obj.Enable( all( d.values() ) )
+	obj_refresh(obj)
 	if isinstance(obj, wx.HyperlinkCtrl):
 		if not hasattr(obj, 'coLor'):
 			obj.coLor = { True:obj.GetNormalColour(), False:'#808080' }
