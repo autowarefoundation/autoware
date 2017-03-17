@@ -21,7 +21,7 @@ Integrated open-source software for urban autonomous driving, maintained by [Tie
 - Software Simulation
 - Virtual Reality
 
-Autoware is protected by BSD License. Please use it on your own responsibility. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case that you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
+Autoware is protected by the BSD License. Please use it on at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
 ## License
 
@@ -95,12 +95,12 @@ $ ./run
 
 ## For Developers
 
-Be careful for changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
-Original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
+Be careful when changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
+The original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
 repository, you must use **git subtree push**. (Please never change and push code if you don't understand
 `git subtree` well).
 
-GitFlow, git branching model, is introduced in Autoware repository.
+GitFlow, git branching model, is used in the Autoware repository.
 - When you adding new features, you can branch off your feature branch from `develop`.  
   you can use the following command.  
   `$ git checkout -b feature/[your_branch_name] develop`
@@ -112,7 +112,7 @@ More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## Documents
 
-See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English documents will be added shortly.
+See Autoware/docs. As of Aug 2015, we only provide Japanese documents. English documents will be added shortly.
 
 ## Main Packages
 
@@ -207,6 +207,6 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 
 Autoware Developers (<autoware@googlegroups.com>)
 
-To subscribe the Autoware Developers ML,
+To subscribe to the Autoware Developers mailing list,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
 - If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
