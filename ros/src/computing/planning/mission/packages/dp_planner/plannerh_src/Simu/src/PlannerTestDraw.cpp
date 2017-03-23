@@ -1478,6 +1478,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				planner.PlanUsingDP(pR->m_LocalPlanner.state,
 						pR->m_goals.at(pR->m_iCurrentGoal),
 						1000000,
+						false,
 						pR->m_LanesIds,
 						pR->m_RoadMap,
 						generatedTotalPath, &pR->m_all_cell_to_delete);
