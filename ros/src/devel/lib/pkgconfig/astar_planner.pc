@@ -3,6 +3,6 @@ prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
 Name: astar_planner
 Description: Description of astar_planner
 Version: 0.0.0
-Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/astar_planner/include
-Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -llibvelocity_set
-Requires: roscpp std_msgs tf runtime_manager waypoint_follower vehicle_socket vector_map gnss
+Cflags: 
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: roscpp std_msgs tf runtime_manager waypoint_follower vector_map

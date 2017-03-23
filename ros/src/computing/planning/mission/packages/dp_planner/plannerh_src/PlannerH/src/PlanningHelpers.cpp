@@ -46,7 +46,9 @@ bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoin
 		}
 	}
 
-	if(infos.size() == 1)
+	if(infos.size() == 0)
+		return false;
+	else if(infos.size() == 1)
 	{
 		info = infos.at(0);
 		return true;
@@ -1312,6 +1314,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 		const WayPoint& goalPos,
 		const vector<int>& globalPath,
 		const double& DistanceLimit,
+		const bool& bEnableLaneChange,
 		vector<WayPoint*>& all_cells_to_delete)
 {
 	if(!pStart) return NULL;
@@ -1362,7 +1365,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 		else
 		{
 
-			if(pH->pLeft && !CheckLaneExits(all_cells_to_delete, pH->pLeft->pLane))
+			if(pH->pLeft && !CheckLaneExits(all_cells_to_delete, pH->pLeft->pLane) && bEnableLaneChange)
 			{
 				wp = new WayPoint();
 				*wp = *pH->pLeft;
@@ -1383,7 +1386,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 				all_cells_to_delete.push_back(wp);
 			}
 
-			if(pH->pRight && !CheckLaneExits(all_cells_to_delete, pH->pRight->pLane))
+			if(pH->pRight && !CheckLaneExits(all_cells_to_delete, pH->pRight->pLane) && bEnableLaneChange)
 			{
 				wp = new WayPoint();
 				*wp = *pH->pRight;

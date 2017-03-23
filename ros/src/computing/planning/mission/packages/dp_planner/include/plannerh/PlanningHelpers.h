@@ -115,6 +115,7 @@ public:
 	static WayPoint* BuildPlanningSearchTreeV2(WayPoint* pStart,
 			const WayPoint& goalPos,
 			const std::vector<int>& globalPath, const double& DistanceLimit,
+			const bool& bEnableLaneChange,
 			std::vector<WayPoint*>& all_cells_to_delete );
 
 	static WayPoint* BuildPlanningSearchTreeStraight(WayPoint* pStart,

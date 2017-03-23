@@ -166,8 +166,12 @@ if(gencpp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/la
     DESTINATION ${gencpp_INSTALL_DIR}
   )
 endif()
-add_dependencies(lane_detector_generate_messages_cpp sensor_msgs_generate_messages_cpp)
-add_dependencies(lane_detector_generate_messages_cpp std_msgs_generate_messages_cpp)
+if(TARGET sensor_msgs_generate_messages_cpp)
+  add_dependencies(lane_detector_generate_messages_cpp sensor_msgs_generate_messages_cpp)
+endif()
+if(TARGET std_msgs_generate_messages_cpp)
+  add_dependencies(lane_detector_generate_messages_cpp std_msgs_generate_messages_cpp)
+endif()
 
 if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/lane_detector)
   # install generated code
@@ -176,8 +180,12 @@ if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/la
     DESTINATION ${geneus_INSTALL_DIR}
   )
 endif()
-add_dependencies(lane_detector_generate_messages_eus sensor_msgs_generate_messages_eus)
-add_dependencies(lane_detector_generate_messages_eus std_msgs_generate_messages_eus)
+if(TARGET sensor_msgs_generate_messages_eus)
+  add_dependencies(lane_detector_generate_messages_eus sensor_msgs_generate_messages_eus)
+endif()
+if(TARGET std_msgs_generate_messages_eus)
+  add_dependencies(lane_detector_generate_messages_eus std_msgs_generate_messages_eus)
+endif()
 
 if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/lane_detector)
   # install generated code
@@ -186,8 +194,12 @@ if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/
     DESTINATION ${genlisp_INSTALL_DIR}
   )
 endif()
-add_dependencies(lane_detector_generate_messages_lisp sensor_msgs_generate_messages_lisp)
-add_dependencies(lane_detector_generate_messages_lisp std_msgs_generate_messages_lisp)
+if(TARGET sensor_msgs_generate_messages_lisp)
+  add_dependencies(lane_detector_generate_messages_lisp sensor_msgs_generate_messages_lisp)
+endif()
+if(TARGET std_msgs_generate_messages_lisp)
+  add_dependencies(lane_detector_generate_messages_lisp std_msgs_generate_messages_lisp)
+endif()
 
 if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/lane_detector)
   install(CODE "execute_process(COMMAND \"/usr/bin/python\" -m compileall \"${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/lane_detector\")")
@@ -197,5 +209,9 @@ if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/lane
     DESTINATION ${genpy_INSTALL_DIR}
   )
 endif()
-add_dependencies(lane_detector_generate_messages_py sensor_msgs_generate_messages_py)
-add_dependencies(lane_detector_generate_messages_py std_msgs_generate_messages_py)
+if(TARGET sensor_msgs_generate_messages_py)
+  add_dependencies(lane_detector_generate_messages_py sensor_msgs_generate_messages_py)
+endif()
+if(TARGET std_msgs_generate_messages_py)
+  add_dependencies(lane_detector_generate_messages_py std_msgs_generate_messages_py)
+endif()

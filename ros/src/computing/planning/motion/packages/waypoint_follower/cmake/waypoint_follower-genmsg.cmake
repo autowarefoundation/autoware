@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.cmake.em
 
-message(STATUS "waypoint_follower: 4 messages, 0 services")
+message(STATUS "waypoint_follower: 6 messages, 0 services")
 
 set(MSG_I_FLAGS "-Iwaypoint_follower:/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg;-Istd_msgs:/opt/ros/indigo/share/std_msgs/cmake/../msg;-Igeometry_msgs:/opt/ros/indigo/share/geometry_msgs/cmake/../msg")
 
@@ -21,11 +21,6 @@ add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
   COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "waypoint_follower" "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg" "geometry_msgs/TwistStamped:geometry_msgs/Point:waypoint_follower/dtlane:geometry_msgs/Vector3:geometry_msgs/Quaternion:geometry_msgs/Twist:geometry_msgs/Pose:geometry_msgs/PoseStamped:std_msgs/Header"
 )
 
-get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
-add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
-  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "waypoint_follower" "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" "geometry_msgs/TwistStamped:geometry_msgs/Point:geometry_msgs/Vector3:waypoint_follower/dtlane:geometry_msgs/Pose:geometry_msgs/Quaternion:geometry_msgs/Twist:waypoint_follower/waypoint:geometry_msgs/PoseStamped:std_msgs/Header"
-)
-
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg" NAME_WE)
 add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
   COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "waypoint_follower" "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg" ""
@@ -34,6 +29,21 @@ add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg" NAME_WE)
 add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
   COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "waypoint_follower" "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg" "geometry_msgs/TwistStamped:waypoint_follower/lane:geometry_msgs/Point:geometry_msgs/Quaternion:waypoint_follower/dtlane:geometry_msgs/Vector3:std_msgs/Header:geometry_msgs/Twist:waypoint_follower/waypoint:geometry_msgs/PoseStamped:geometry_msgs/Pose"
+)
+
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg" NAME_WE)
+add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "waypoint_follower" "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg" "waypoint_follower/ControlCommand:std_msgs/Header"
+)
+
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg" NAME_WE)
+add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "waypoint_follower" "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg" ""
+)
+
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
+add_custom_target(_waypoint_follower_generate_messages_check_deps_${_filename}
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "waypoint_follower" "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" "geometry_msgs/TwistStamped:geometry_msgs/Point:geometry_msgs/Vector3:waypoint_follower/dtlane:geometry_msgs/Pose:geometry_msgs/Quaternion:geometry_msgs/Twist:waypoint_follower/waypoint:geometry_msgs/PoseStamped:std_msgs/Header"
 )
 
 #
@@ -49,12 +59,6 @@ _generate_msg_cpp(waypoint_follower
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/waypoint_follower
 )
 _generate_msg_cpp(waypoint_follower
-  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
-  "${MSG_I_FLAGS}"
-  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
-  ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/waypoint_follower
-)
-_generate_msg_cpp(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg"
   "${MSG_I_FLAGS}"
   ""
@@ -64,6 +68,24 @@ _generate_msg_cpp(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg"
+  ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_cpp(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg"
+  "${MSG_I_FLAGS}"
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_cpp(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg"
+  "${MSG_I_FLAGS}"
+  ""
+  ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_cpp(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/waypoint_follower
 )
 
@@ -83,11 +105,15 @@ add_dependencies(waypoint_follower_generate_messages waypoint_follower_generate_
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_cpp _waypoint_follower_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
-add_dependencies(waypoint_follower_generate_messages_cpp _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_cpp _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_cpp _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_cpp _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_cpp _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_cpp _waypoint_follower_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
@@ -106,12 +132,6 @@ _generate_msg_eus(waypoint_follower
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/waypoint_follower
 )
 _generate_msg_eus(waypoint_follower
-  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
-  "${MSG_I_FLAGS}"
-  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
-  ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/waypoint_follower
-)
-_generate_msg_eus(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg"
   "${MSG_I_FLAGS}"
   ""
@@ -121,6 +141,24 @@ _generate_msg_eus(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg"
+  ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_eus(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg"
+  "${MSG_I_FLAGS}"
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_eus(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg"
+  "${MSG_I_FLAGS}"
+  ""
+  ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_eus(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/waypoint_follower
 )
 
@@ -140,11 +178,15 @@ add_dependencies(waypoint_follower_generate_messages waypoint_follower_generate_
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_eus _waypoint_follower_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
-add_dependencies(waypoint_follower_generate_messages_eus _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_eus _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_eus _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_eus _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_eus _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_eus _waypoint_follower_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
@@ -163,12 +205,6 @@ _generate_msg_lisp(waypoint_follower
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/waypoint_follower
 )
 _generate_msg_lisp(waypoint_follower
-  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
-  "${MSG_I_FLAGS}"
-  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
-  ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/waypoint_follower
-)
-_generate_msg_lisp(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg"
   "${MSG_I_FLAGS}"
   ""
@@ -178,6 +214,24 @@ _generate_msg_lisp(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_lisp(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg"
+  "${MSG_I_FLAGS}"
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_lisp(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg"
+  "${MSG_I_FLAGS}"
+  ""
+  ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_lisp(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/waypoint_follower
 )
 
@@ -197,11 +251,15 @@ add_dependencies(waypoint_follower_generate_messages waypoint_follower_generate_
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_lisp _waypoint_follower_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
-add_dependencies(waypoint_follower_generate_messages_lisp _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_lisp _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_lisp _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_lisp _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_lisp _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_lisp _waypoint_follower_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
@@ -220,12 +278,6 @@ _generate_msg_py(waypoint_follower
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower
 )
 _generate_msg_py(waypoint_follower
-  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
-  "${MSG_I_FLAGS}"
-  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
-  ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower
-)
-_generate_msg_py(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg"
   "${MSG_I_FLAGS}"
   ""
@@ -235,6 +287,24 @@ _generate_msg_py(waypoint_follower
   "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_py(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg"
+  "${MSG_I_FLAGS}"
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_py(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg"
+  "${MSG_I_FLAGS}"
+  ""
+  ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower
+)
+_generate_msg_py(waypoint_follower
+  "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/indigo/share/geometry_msgs/cmake/../msg/TwistStamped.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Point.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Vector3.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Pose.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Quaternion.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/Twist.msg;/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg;/opt/ros/indigo/share/geometry_msgs/cmake/../msg/PoseStamped.msg;/opt/ros/indigo/share/std_msgs/cmake/../msg/Header.msg"
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower
 )
 
@@ -254,11 +324,15 @@ add_dependencies(waypoint_follower_generate_messages waypoint_follower_generate_
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/waypoint.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_py _waypoint_follower_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
-add_dependencies(waypoint_follower_generate_messages_py _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/dtlane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_py _waypoint_follower_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/LaneArray.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_py _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommandStamped.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_py _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/ControlCommand.msg" NAME_WE)
+add_dependencies(waypoint_follower_generate_messages_py _waypoint_follower_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/msg/lane.msg" NAME_WE)
 add_dependencies(waypoint_follower_generate_messages_py _waypoint_follower_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
@@ -277,8 +351,12 @@ if(gencpp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/wa
     DESTINATION ${gencpp_INSTALL_DIR}
   )
 endif()
-add_dependencies(waypoint_follower_generate_messages_cpp std_msgs_generate_messages_cpp)
-add_dependencies(waypoint_follower_generate_messages_cpp geometry_msgs_generate_messages_cpp)
+if(TARGET std_msgs_generate_messages_cpp)
+  add_dependencies(waypoint_follower_generate_messages_cpp std_msgs_generate_messages_cpp)
+endif()
+if(TARGET geometry_msgs_generate_messages_cpp)
+  add_dependencies(waypoint_follower_generate_messages_cpp geometry_msgs_generate_messages_cpp)
+endif()
 
 if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/waypoint_follower)
   # install generated code
@@ -287,8 +365,12 @@ if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/wa
     DESTINATION ${geneus_INSTALL_DIR}
   )
 endif()
-add_dependencies(waypoint_follower_generate_messages_eus std_msgs_generate_messages_eus)
-add_dependencies(waypoint_follower_generate_messages_eus geometry_msgs_generate_messages_eus)
+if(TARGET std_msgs_generate_messages_eus)
+  add_dependencies(waypoint_follower_generate_messages_eus std_msgs_generate_messages_eus)
+endif()
+if(TARGET geometry_msgs_generate_messages_eus)
+  add_dependencies(waypoint_follower_generate_messages_eus geometry_msgs_generate_messages_eus)
+endif()
 
 if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/waypoint_follower)
   # install generated code
@@ -297,8 +379,12 @@ if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/
     DESTINATION ${genlisp_INSTALL_DIR}
   )
 endif()
-add_dependencies(waypoint_follower_generate_messages_lisp std_msgs_generate_messages_lisp)
-add_dependencies(waypoint_follower_generate_messages_lisp geometry_msgs_generate_messages_lisp)
+if(TARGET std_msgs_generate_messages_lisp)
+  add_dependencies(waypoint_follower_generate_messages_lisp std_msgs_generate_messages_lisp)
+endif()
+if(TARGET geometry_msgs_generate_messages_lisp)
+  add_dependencies(waypoint_follower_generate_messages_lisp geometry_msgs_generate_messages_lisp)
+endif()
 
 if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower)
   install(CODE "execute_process(COMMAND \"/usr/bin/python\" -m compileall \"${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/waypoint_follower\")")
@@ -308,5 +394,9 @@ if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/wayp
     DESTINATION ${genpy_INSTALL_DIR}
   )
 endif()
-add_dependencies(waypoint_follower_generate_messages_py std_msgs_generate_messages_py)
-add_dependencies(waypoint_follower_generate_messages_py geometry_msgs_generate_messages_py)
+if(TARGET std_msgs_generate_messages_py)
+  add_dependencies(waypoint_follower_generate_messages_py std_msgs_generate_messages_py)
+endif()
+if(TARGET geometry_msgs_generate_messages_py)
+  add_dependencies(waypoint_follower_generate_messages_py geometry_msgs_generate_messages_py)
+endif()

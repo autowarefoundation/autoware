@@ -166,8 +166,12 @@ if(gencpp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/kv
     DESTINATION ${gencpp_INSTALL_DIR}
   )
 endif()
-add_dependencies(kvaser_generate_messages_cpp std_msgs_generate_messages_cpp)
-add_dependencies(kvaser_generate_messages_cpp visualization_msgs_generate_messages_cpp)
+if(TARGET std_msgs_generate_messages_cpp)
+  add_dependencies(kvaser_generate_messages_cpp std_msgs_generate_messages_cpp)
+endif()
+if(TARGET visualization_msgs_generate_messages_cpp)
+  add_dependencies(kvaser_generate_messages_cpp visualization_msgs_generate_messages_cpp)
+endif()
 
 if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/kvaser)
   # install generated code
@@ -176,8 +180,12 @@ if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/kv
     DESTINATION ${geneus_INSTALL_DIR}
   )
 endif()
-add_dependencies(kvaser_generate_messages_eus std_msgs_generate_messages_eus)
-add_dependencies(kvaser_generate_messages_eus visualization_msgs_generate_messages_eus)
+if(TARGET std_msgs_generate_messages_eus)
+  add_dependencies(kvaser_generate_messages_eus std_msgs_generate_messages_eus)
+endif()
+if(TARGET visualization_msgs_generate_messages_eus)
+  add_dependencies(kvaser_generate_messages_eus visualization_msgs_generate_messages_eus)
+endif()
 
 if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/kvaser)
   # install generated code
@@ -186,8 +194,12 @@ if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/
     DESTINATION ${genlisp_INSTALL_DIR}
   )
 endif()
-add_dependencies(kvaser_generate_messages_lisp std_msgs_generate_messages_lisp)
-add_dependencies(kvaser_generate_messages_lisp visualization_msgs_generate_messages_lisp)
+if(TARGET std_msgs_generate_messages_lisp)
+  add_dependencies(kvaser_generate_messages_lisp std_msgs_generate_messages_lisp)
+endif()
+if(TARGET visualization_msgs_generate_messages_lisp)
+  add_dependencies(kvaser_generate_messages_lisp visualization_msgs_generate_messages_lisp)
+endif()
 
 if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/kvaser)
   install(CODE "execute_process(COMMAND \"/usr/bin/python\" -m compileall \"${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/kvaser\")")
@@ -197,5 +209,9 @@ if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/kvas
     DESTINATION ${genpy_INSTALL_DIR}
   )
 endif()
-add_dependencies(kvaser_generate_messages_py std_msgs_generate_messages_py)
-add_dependencies(kvaser_generate_messages_py visualization_msgs_generate_messages_py)
+if(TARGET std_msgs_generate_messages_py)
+  add_dependencies(kvaser_generate_messages_py std_msgs_generate_messages_py)
+endif()
+if(TARGET visualization_msgs_generate_messages_py)
+  add_dependencies(kvaser_generate_messages_py visualization_msgs_generate_messages_py)
+endif()

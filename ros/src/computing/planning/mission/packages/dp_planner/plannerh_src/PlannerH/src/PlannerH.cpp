@@ -232,6 +232,7 @@ PlannerH::PlannerH()
 double PlannerH::PlanUsingDP(const WayPoint& start,
 		 const WayPoint& goalPos,
 		 const double& maxPlanningDistance,
+		 const bool bEnableLaneChange,
 		 const std::vector<int>& globalPath,
 		 RoadNetwork& map,
 		 std::vector<std::vector<WayPoint> >& paths, vector<WayPoint*>* all_cell_to_delete)
@@ -280,9 +281,9 @@ double PlannerH::PlanUsingDP(const WayPoint& start,
  	char bPlan = 'A';
 
  	if(all_cell_to_delete)
- 		pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStart, *pGoal, globalPath, maxPlanningDistance, *all_cell_to_delete);
+ 		pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStart, *pGoal, globalPath, maxPlanningDistance,bEnableLaneChange, *all_cell_to_delete);
  	else
- 		pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStart, *pGoal, globalPath, maxPlanningDistance, local_cell_to_delete);
+ 		pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeV2(pStart, *pGoal, globalPath, maxPlanningDistance,bEnableLaneChange, local_cell_to_delete);
 
  	if(!pLaneCell)
  	{

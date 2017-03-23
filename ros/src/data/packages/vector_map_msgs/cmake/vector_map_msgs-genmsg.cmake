@@ -2497,7 +2497,9 @@ if(gencpp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/ve
     DESTINATION ${gencpp_INSTALL_DIR}
   )
 endif()
-add_dependencies(vector_map_msgs_generate_messages_cpp std_msgs_generate_messages_cpp)
+if(TARGET std_msgs_generate_messages_cpp)
+  add_dependencies(vector_map_msgs_generate_messages_cpp std_msgs_generate_messages_cpp)
+endif()
 
 if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/vector_map_msgs)
   # install generated code
@@ -2506,7 +2508,9 @@ if(geneus_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/ve
     DESTINATION ${geneus_INSTALL_DIR}
   )
 endif()
-add_dependencies(vector_map_msgs_generate_messages_eus std_msgs_generate_messages_eus)
+if(TARGET std_msgs_generate_messages_eus)
+  add_dependencies(vector_map_msgs_generate_messages_eus std_msgs_generate_messages_eus)
+endif()
 
 if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/vector_map_msgs)
   # install generated code
@@ -2515,7 +2519,9 @@ if(genlisp_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/
     DESTINATION ${genlisp_INSTALL_DIR}
   )
 endif()
-add_dependencies(vector_map_msgs_generate_messages_lisp std_msgs_generate_messages_lisp)
+if(TARGET std_msgs_generate_messages_lisp)
+  add_dependencies(vector_map_msgs_generate_messages_lisp std_msgs_generate_messages_lisp)
+endif()
 
 if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/vector_map_msgs)
   install(CODE "execute_process(COMMAND \"/usr/bin/python\" -m compileall \"${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/vector_map_msgs\")")
@@ -2525,4 +2531,6 @@ if(genpy_INSTALL_DIR AND EXISTS ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/vect
     DESTINATION ${genpy_INSTALL_DIR}
   )
 endif()
-add_dependencies(vector_map_msgs_generate_messages_py std_msgs_generate_messages_py)
+if(TARGET std_msgs_generate_messages_py)
+  add_dependencies(vector_map_msgs_generate_messages_py std_msgs_generate_messages_py)
+endif()

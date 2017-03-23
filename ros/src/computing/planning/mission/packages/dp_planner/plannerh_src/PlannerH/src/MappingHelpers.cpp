@@ -24,7 +24,7 @@ using namespace UtilityHNS;
 using namespace std;
 #define FIND_LEFT_RIGHT_LANES
 #define _SMOOTH_MAP_WAYPOINTS
-#define LEFT_RIGHT_INITIAL_TURNS_COST 10
+#define LEFT_RIGHT_INITIAL_TURNS_COST 0
 
 
 namespace PlannerHNS {

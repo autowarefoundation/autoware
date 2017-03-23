@@ -2020,6 +2020,14 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name : enableHMI
+      desc : Enable connection to Human Machine Interface (HMI)
+      label: Enable HMI
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : pathDensity
       desc : distance between each two waypoints
       label: Path Density

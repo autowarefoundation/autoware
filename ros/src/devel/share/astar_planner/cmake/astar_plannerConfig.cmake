@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(astar_planner_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/astar_planner/include " STREQUAL " ")
+if(NOT " " STREQUAL " ")
   set(astar_planner_INCLUDE_DIRS "")
-  set(_include_dirs "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/packages/astar_planner/include")
+  set(_include_dirs "")
   foreach(idir ${_include_dirs})
     if(IS_ABSOLUTE ${idir} AND IS_DIRECTORY ${idir})
       set(include ${idir})
@@ -109,7 +109,7 @@ if(NOT "/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/motion/pack
   endforeach()
 endif()
 
-set(libraries "libvelocity_set")
+set(libraries "")
 foreach(library ${libraries})
   # keep build configuration keywords, target names and absolute libraries as-is
   if("${library}" MATCHES "^(debug|optimized|general)$")
@@ -122,7 +122,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/hatem/autoware-dev/Autoware/ros/src/devel/lib;/opt/ros/indigo/lib)
+    foreach(path /home/hatem/autoware-dev/Autoware/ros/src/devel/lib;/home/hatem/autoware-dev/Autoware/ros/devel/lib;/opt/ros/indigo/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
@@ -153,7 +153,7 @@ foreach(t ${astar_planner_EXPORTED_TARGETS})
   endif()
 endforeach()
 
-set(depends "roscpp;std_msgs;tf;runtime_manager;waypoint_follower;vehicle_socket;vector_map;gnss")
+set(depends "roscpp;std_msgs;tf;runtime_manager;waypoint_follower;vector_map")
 foreach(depend ${depends})
   string(REPLACE " " ";" depend_list ${depend})
   # the package name of the dependency must be kept in a unique variable so that it is not overwritten in recursive calls

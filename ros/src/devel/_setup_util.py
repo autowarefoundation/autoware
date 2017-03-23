@@ -72,42 +72,42 @@ def rollback_env_variables(environ, env_var_subfolders):
         subfolders = env_var_subfolders[key]
         if not isinstance(subfolders, list):
             subfolders = [subfolders]
-        for subfolder in subfolders:
-            value = _rollback_env_variable(unmodified_environ, key, subfolder)
-            if value is not None:
-                environ[key] = value
-                lines.append(assignment(key, value))
+        value = _rollback_env_variable(unmodified_environ, key, subfolders)
+        if value is not None:
+            environ[key] = value
+            lines.append(assignment(key, value))
     if lines:
         lines.insert(0, comment('reset environment variables by unrolling modifications based on all workspaces in CMAKE_PREFIX_PATH'))
     return lines
 
 
-def _rollback_env_variable(environ, name, subfolder):
+def _rollback_env_variable(environ, name, subfolders):
     '''
     For each catkin workspace in CMAKE_PREFIX_PATH remove the first entry from env[NAME] matching workspace + subfolder.
 
-    :param subfolder: str '' or subfoldername that may start with '/'
+    :param subfolders: list of str '' or subfoldername that may start with '/'
     :returns: the updated value of the environment variable.
     '''
     value = environ[name] if name in environ else ''
     env_paths = [path for path in value.split(os.pathsep) if path]
     value_modified = False
-    if subfolder:
-        if subfolder.startswith(os.path.sep) or (os.path.altsep and subfolder.startswith(os.path.altsep)):
-            subfolder = subfolder[1:]
-        if subfolder.endswith(os.path.sep) or (os.path.altsep and subfolder.endswith(os.path.altsep)):
-            subfolder = subfolder[:-1]
-    for ws_path in _get_workspaces(environ, include_fuerte=True, include_non_existing=True):
-        path_to_find = os.path.join(ws_path, subfolder) if subfolder else ws_path
-        path_to_remove = None
-        for env_path in env_paths:
-            env_path_clean = env_path[:-1] if env_path and env_path[-1] in [os.path.sep, os.path.altsep] else env_path
-            if env_path_clean == path_to_find:
-                path_to_remove = env_path
-                break
-        if path_to_remove:
-            env_paths.remove(path_to_remove)
-            value_modified = True
+    for subfolder in subfolders:
+        if subfolder:
+            if subfolder.startswith(os.path.sep) or (os.path.altsep and subfolder.startswith(os.path.altsep)):
+                subfolder = subfolder[1:]
+            if subfolder.endswith(os.path.sep) or (os.path.altsep and subfolder.endswith(os.path.altsep)):
+                subfolder = subfolder[:-1]
+        for ws_path in _get_workspaces(environ, include_fuerte=True, include_non_existing=True):
+            path_to_find = os.path.join(ws_path, subfolder) if subfolder else ws_path
+            path_to_remove = None
+            for env_path in env_paths:
+                env_path_clean = env_path[:-1] if env_path and env_path[-1] in [os.path.sep, os.path.altsep] else env_path
+                if env_path_clean == path_to_find:
+                    path_to_remove = env_path
+                    break
+            if path_to_remove:
+                env_paths.remove(path_to_remove)
+                value_modified = True
     new_value = os.pathsep.join(env_paths)
     return new_value if value_modified else None
 
@@ -263,7 +263,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
         # environment at generation time
-        CMAKE_PREFIX_PATH = '/opt/ros/indigo'.split(';')
+        CMAKE_PREFIX_PATH = '/home/hatem/autoware-dev/Autoware/ros/devel;/opt/ros/indigo'.split(';')
         # prepend current workspace if not already part of CPP
         base_path = os.path.dirname(__file__)
         if base_path not in CMAKE_PREFIX_PATH:

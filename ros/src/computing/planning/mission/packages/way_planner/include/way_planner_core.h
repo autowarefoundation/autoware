@@ -72,7 +72,6 @@ namespace WayPlannerNS {
 
 #define MAX_GLOBAL_PLAN_DISTANCE 10000
 #define _ENABLE_VISUALIZE_PLAN
-#define _ENABLE_HMI
 #define REPLANNING_DISTANCE 15
 class AutowareRoadNetwork
 {
@@ -119,13 +118,17 @@ public:
 	std::string 	KmlMapPath;
 	bool 			bEnableSmoothing;
 	bool 			bEnableLaneChange;
+	bool 			bEnableHMI;
 	bool 			bEnableRvizInput;
+	bool 			bEnableReplanning;
 	double 			pathDensity;
 	MAP_SOURCE_TYPE	mapSource;
 
 
 	WayPlannerParams()
 	{
+		bEnableReplanning	= false;
+		bEnableHMI			= false;
 		bEnableSmoothing 	= false;
 		bEnableLaneChange 	= false;
 		bEnableRvizInput 	= true;
@@ -144,7 +147,6 @@ protected:
 	PlannerHNS::WayPoint m_CurrentPose;
 	//bool bStartPos;
 	//bool bUsingCurrentPose;
-	bool bEnableReplanning;
 	int m_iCurrentGoalIndex;
 	std::vector<PlannerHNS::WayPoint> m_GoalsPos;
 	//bool bGoalPos;
@@ -224,12 +226,11 @@ private:
   	int m_bSwitch;
 #endif
 
-#ifdef ENABLE_HMI
+
   	double m_AvgResponseTime; //seconds
   	HMISocketServer m_SocketServer;
   	std::vector<PlannerHNS::WayPoint*> m_ModifiedWayPointsCosts;
   	bool HMI_DoOneStep();
-#endif
 
 };
 
