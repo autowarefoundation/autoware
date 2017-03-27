@@ -2004,7 +2004,7 @@ class ParamPanel(wx.Panel):
 					szr = static_box_sizer(self, 'topic : ' + self.prm.get('topic'))
 					bak[0].Add(szr, 0, wx.EXPAND | wx.ALL, 4)
 			targ_szr = szr
-			if vp.is_nl():
+			if vp.is_nl() or 'nl' in var.get('flags', []):
 				hszr = None if hszr else hszr
 				flag |= wx.EXPAND
 			else:
