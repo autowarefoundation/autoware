@@ -480,8 +480,30 @@ class MyFrame(rtmgr.MyFrame):
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
 
+		wx.CallAfter( self.boot_booted_cmds )
+
 	def __do_layout(self):
 		pass
+
+	def boot_booted_cmds(self):
+		names = self.load_dic.get('booted_cmds', {}).get('names', [])
+		if not names:
+			return
+
+		dlg = wx.MultiChoiceDialog(self, 'boot command ?', '', names)
+		dlg.SetSelections( range( len(names) ) )
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+		sidxs = dlg.GetSelections()
+		names = [ name for (i, name) in enumerate(names) if i in sidxs ]
+		if not names:
+			return
+
+		for name in names:
+			obj = self.cfg_dic( { 'name': name } ).get('obj')
+			if not obj:
+				continue
+			post_evt_toggle_obj(self, obj, True)
 
 	def OnClose(self, event):
 		if self.quit_select() != 'quit':
@@ -551,6 +573,15 @@ class MyFrame(rtmgr.MyFrame):
 					if k in no_saves:
 						del pdic[k]
 				save_dic[name] = pdic
+
+		names = []
+		for proc in self.all_procs:
+			(_, obj) = self.proc_to_cmd_dic_obj(proc)
+			name = self.cfg_dic( { 'obj': obj } ).get('name')
+			names.append(name)
+		if names:
+			save_dic['booted_cmds'] = { 'names': names }
+
 		if save_dic != {}:
 			dir = rtmgr_src_dir()
 			print('saving param.yaml')
@@ -2889,6 +2920,24 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		set_path(tc, path)
 	dlg.Destroy()
 	return ret
+
+def post_evt_toggle_obj(win, obj, v):
+	evt_id = {
+		CT.GenericTreeItem : CT.wxEVT_TREE_ITEM_CHECKED,
+		wx.CheckBox : wx.EVT_CHECKBOX.typeId,
+		wx.ToggleButton : wx.EVT_TOGGLEBUTTON.typeId,
+		wx.Button : wx.EVT_BUTTON.typeId,
+	}.get( type(obj) )
+
+	if evt_id == CT.wxEVT_TREE_ITEM_CHECKED:
+		evt = CT.TreeEvent( evt_id, win.GetId() )
+		evt.SetItem(obj)
+	else:
+		evt = wx.PyCommandEvent( evt_id, obj.GetId() )
+		evt.SetEventObject(obj)
+
+	set_val(obj, v)
+	wx.PostEvent(win, evt)
 
 def button_color_change(btn, v=None):
 	if v is None and type(btn) is wx.ToggleButton:
