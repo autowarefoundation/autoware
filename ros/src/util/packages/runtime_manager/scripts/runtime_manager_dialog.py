@@ -487,23 +487,20 @@ class MyFrame(rtmgr.MyFrame):
 
 	def boot_booted_cmds(self):
 		names = self.load_dic.get('booted_cmds', {}).get('names', [])
-		if not names:
+		lst = [ ( name, self.cfg_dic( { 'name': name } ).get('obj') ) for name in names ]
+		lst = [ (name, obj) for (name, obj) in lst if obj ]
+		if not lst:
 			return
 
-		dlg = wx.MultiChoiceDialog(self, 'boot command ?', '', names)
+		choices = [ obj.GetLabel() if hasattr(obj, 'GetLabel') else name for (name, obj) in lst ]
+		dlg = wx.MultiChoiceDialog(self, 'boot command ?', '', choices)
 		dlg.SetSelections( range( len(names) ) )
 		if dlg.ShowModal() != wx.ID_OK:
 			return
-		sidxs = dlg.GetSelections()
-		names = [ name for (i, name) in enumerate(names) if i in sidxs ]
-		if not names:
-			return
 
-		for name in names:
-			obj = self.cfg_dic( { 'name': name } ).get('obj')
-			if not obj:
-				continue
-			post_evt_toggle_obj(self, obj, True)
+		for i in dlg.GetSelections():
+			(_, obj) = lst[i]
+                        post_evt_toggle_obj(self, obj, True)
 
 	def OnClose(self, event):
 		if self.quit_select() != 'quit':
@@ -581,6 +578,8 @@ class MyFrame(rtmgr.MyFrame):
 			names.append(name)
 		if names:
 			save_dic['booted_cmds'] = { 'names': names }
+		elif 'booted_cmds' in save_dic:
+			del save_dic['booted_cmds']
 
 		if save_dic != {}:
 			dir = rtmgr_src_dir()
