@@ -76,6 +76,8 @@ public:
 	bool bTorqueMode; // true -> torque and stroke mode, false -> angle and velocity mode
 	bool bAngleMode;
 	bool bVelocityMode;
+	bool bEnableLogs;
+	bool bCalibration;
 
 	ControlCommandParams()
 	{
@@ -86,6 +88,9 @@ public:
 		recordDensity = 0.5;
 		bAngleMode = true;
 		bVelocityMode = true;
+		bEnableLogs = false;
+		bCalibration = false;
+
 	}
 };
 

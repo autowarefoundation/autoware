@@ -45,8 +45,6 @@ namespace FFSteerControlNS
 
 FFSteerControl::FFSteerControl()
 {
-
-
 	clock_gettime(0, &m_Timer);
 
 	int iSignal = 0;
@@ -57,6 +55,11 @@ FFSteerControl::FFSteerControl()
 		m_CmdParams.statusSource = FFSteerControlNS::CONTROL_BOX_STATUS;
 	else if(iSignal == 2)
 		m_CmdParams.statusSource = FFSteerControlNS::ROBOT_STATUS;
+
+	nh.getParam("/ff_waypoint_follower/bEnableLogs", m_CmdParams.bEnableLogs);
+	nh.getParam("/ff_waypoint_follower/bCalibrationMode", m_CmdParams.bCalibration);
+	if(m_CmdParams.bCalibration)
+		m_CmdParams.bEnableLogs = true;
 
 	string steerModeStr;
 	nh.getParam("/ff_waypoint_follower/steerMode", steerModeStr );
@@ -86,10 +89,11 @@ FFSteerControl::FFSteerControl()
 
 	ReadParamFromLaunchFile(m_CarInfo, m_ControlParams);
 
-	m_PredControl.Init(m_ControlParams, m_CarInfo);
+	m_PredControl.Init(m_ControlParams, m_CarInfo, m_CmdParams.bEnableLogs, m_CmdParams.bCalibration);
 
 	m_State.Init(m_ControlParams, m_PlanningParams, m_CarInfo);
-	m_State.m_SimulationSteeringDelayFactor = m_ControlParams.SimulationSteeringDelay;
+	m_State.m_SimulationSteeringDelayFactor = 0.2;
+	cout << "Current Steering Delay Factor = " << m_State.m_SimulationSteeringDelayFactor << endl;
 
 	m_counter = 0;
 	m_frequency = 0;
@@ -492,8 +496,13 @@ void FFSteerControl::PlannerMainLoop()
 			}
 			else if(m_CmdParams.statusSource == SIMULATION_STATUS)
 			{
-				m_CurrVehicleStatus = m_PrevStepTargetStatus;
-				m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
+				//m_CurrVehicleStatus = m_PrevStepTargetStatus;
+				//m_State.SimulateOdoPosition(dt, m_CurrVehicleStatus);
+
+				m_State.SimulateOdoPosition(dt, m_PrevStepTargetStatus);
+				m_CurrVehicleStatus.steer = m_State.m_CurrentSteering;
+				m_CurrVehicleStatus.speed = m_State.m_CurrentVelocity;
+				m_CurrVehicleStatus.shift = m_PrevStepTargetStatus.shift;
 				m_CurrentPos = m_State.state;
 
 				geometry_msgs::TwistStamped vehicle_status;

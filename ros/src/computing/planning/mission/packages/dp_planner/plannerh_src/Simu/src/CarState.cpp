@@ -157,22 +157,27 @@ void CarState::InitPolygons()
 
  void CarState::UpdateState(const PlannerHNS::VehicleState& state, const bool& bUseDelay)
   {
-	 if(!bUseDelay || m_SimulationSteeringDelayFactor == 0)
+	 if(!bUseDelay)
 	 {
 		 m_CurrentSteering 	= m_CurrentSteeringD;
+		 std::cout << " No Delay " << std::endl;
 	 }
 	 else
 	 {
 		 double currSteerDeg = RAD2DEG * m_CurrentSteering;
 		 double desiredSteerDeg = RAD2DEG * m_CurrentSteeringD;
 
-		 double mFact = 1.0 - UtilityH::GetMomentumScaleFactor(state.speed);
+		 double mFact = UtilityH::GetMomentumScaleFactor(state.speed);
 		 double diff = desiredSteerDeg - currSteerDeg;
 		 double diffSign = UtilityH::GetSign(diff);
 		 double inc = 1.0*diffSign;
 		 if(abs(diff) < 1.0 )
 			 inc = diff;
 
+		 std::cout << "Delay: " << m_SimulationSteeringDelayFactor
+				 << ", Fact: " << mFact
+				 << ", Diff: " << diff
+				 << ", inc: " << inc << std::endl;
 		 if(UtilityH::GetTimeDiffNow(m_SteerDelayTimer) > m_SimulationSteeringDelayFactor*mFact)
 		 {
 			 UtilityH::GetTickCount(m_SteerDelayTimer);

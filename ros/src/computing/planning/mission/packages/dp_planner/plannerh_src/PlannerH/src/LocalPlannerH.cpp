@@ -148,6 +148,7 @@ void LocalPlannerH::InitPolygons()
 	 if(!bUseDelay || m_SimulationSteeringDelayFactor == 0)
 	 {
 		 m_CurrentSteering 	= m_CurrentSteeringD;
+		 m_CurrentVelocity 	= m_CurrentVelocityD;
 	 }
 	 else
 	 {
@@ -168,10 +169,10 @@ void LocalPlannerH::InitPolygons()
 		 }
 
 		 m_CurrentSteering = DEG2RAD * currSteerDeg;
+		 m_CurrentVelocity 	= m_CurrentVelocityD;
 	 }
 
 	 m_CurrentShift 	= m_CurrentShiftD;
-	 m_CurrentVelocity = m_CurrentVelocityD;
   }
 
  void LocalPlannerH::AddAndTransformContourPoints(const PlannerHNS::DetectedObject& obj, std::vector<PlannerHNS::WayPoint>& contourPoints)

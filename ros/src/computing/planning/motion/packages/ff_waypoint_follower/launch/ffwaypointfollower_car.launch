@@ -30,7 +30,9 @@
 	<arg name="signal" 						default="0" /> <!-- 0 : simulation or 1 : vehicle or 2 : robot -->
 	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
 	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
-	
+	<arg name="bEnableLogs" 				default="true" /> 
+	<arg name="bCalibrationMode" 			default="false" /> 
+
 	<arg name="mapRecorder" 				default="0" /><!-- 0 or 1  -->
 	<arg name="mapDistance" 				default="100.0" /> <!-- meters -->
 	<arg name="mapDensity" 					default="0.5" /> <!-- meters -->
@@ -66,6 +68,9 @@
 		<param name="signal" 						value="$(arg signal)" />
 		<param name="steerMode" 					value="$(arg steerMode)" />
 		<param name="driveMode" 					value="$(arg driveMode)" />
+		<param name="bEnableLogs" 					value="$(arg bEnableLogs)" />
+		<param name="bCalibrationMode" 				value="$(arg bCalibrationMode)" />
+		
 		<param name="mapRecorder" 					value="$(arg mapRecorder)" />
 		<param name="mapDistance" 					value="$(arg mapDistance)" />
 		<param name="mapDensity" 					value="$(arg mapDensity)" />
