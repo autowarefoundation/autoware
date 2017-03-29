@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(cv_tracker)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include(FindPkgConfig)
+
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
@@ -9,14 +16,30 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
-  libdpm_ocv
   libdpm_ttic
   fusion
+  tf
+  libdpm_ocv
   kf
+  runtime_manager
+  calibration_camera_lidar
+)
+elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
+FIND_PACKAGE(catkin REQUIRED COMPONENTS
+  std_msgs
+  cv_bridge
+  image_transport
+  roscpp
+  sensor_msgs
+  message_generation
+  libdpm_ttic
+  fusion
   tf
   runtime_manager
   calibration_camera_lidar
 )
+endif()
+
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
 
@@ -44,10 +67,15 @@ generate_messages(
   geometry_msgs
 )
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 catkin_package(
   CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
 )
-
+elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
+catkin_package(
+  CATKIN_DEPENDS libdpm_ttic scan2image fusion runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
+)
+endif()
 ###########
 ## Build ##
 ###########
@@ -102,6 +130,7 @@ ADD_DEPENDENCIES(dpm_ttic
 )
 
 ## dpm_ocv
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 INCLUDE_DIRECTORIES(../../lib/image/dpm_ocv/src)
 
 ADD_EXECUTABLE(dpm_ocv
@@ -131,7 +160,7 @@ SET_TARGET_PROPERTIES(dpm_ocv
   "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
 )
 ENDIF()
-
+endif()
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
@@ -153,6 +182,7 @@ ADD_DEPENDENCIES(range_fusion
 )
 
 ## kf_tracker ##
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ADD_EXECUTABLE(kf_track
   nodes/kf_track/kf_track.cpp
 )
@@ -162,6 +192,7 @@ TARGET_LINK_LIBRARIES(kf_track
   ${OpenCV_LIBS}
   kf
 )
+endif()
 
 ## dummy_tracker ##
 ADD_EXECUTABLE(dummy_track
@@ -196,6 +227,7 @@ if (jsk_recognition_msgs_FOUND)
 endif (jsk_recognition_msgs_FOUND)
 
 ## klt_tracker ##
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
 )
@@ -221,7 +253,7 @@ TARGET_LINK_LIBRARIES(klt_track
 ADD_DEPENDENCIES(klt_track
   libdpm_ocv_generate_messages_cpp
 )
-
+endif()
 ############# RCNN#############
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################

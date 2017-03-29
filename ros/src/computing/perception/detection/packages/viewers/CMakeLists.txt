@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(viewers)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
@@ -94,3 +100,4 @@ target_link_libraries(traffic_light_viewer
    opencv_highgui opencv_core opencv_imgproc
 )
 add_dependencies(traffic_light_viewer runtime_manager_generate_messages_cpp)
+endif()

@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(catvehicle)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -79,7 +85,7 @@ target_link_libraries( distanceEstimator ${catkin_LIBRARIES} )
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
-# added for running the simulation details without need to have 
+# added for running the simulation details without need to have
 # the information locally sourced
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
@@ -112,4 +118,4 @@ install(TARGETS catvehiclegazebo
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
+endif()

@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(points2polygon)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
@@ -27,3 +33,4 @@ add_definitions(${PCL_DEFINITIONS})
 add_executable(points2polygon nodes/points2polygon/points2polygon.cpp)
 target_link_libraries(points2polygon ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(points2polygon runtime_manager_generate_messages_cpp)
+endif()
