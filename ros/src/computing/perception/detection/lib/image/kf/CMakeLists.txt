@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kf)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
@@ -44,3 +50,4 @@ target_link_libraries(kf
 )
 
 add_dependencies(kf runtime_manager_generate_messages_cpp  cv_tracker_generate_messages_cpp)
+endif()

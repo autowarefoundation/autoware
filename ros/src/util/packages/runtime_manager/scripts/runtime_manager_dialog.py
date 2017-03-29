@@ -152,7 +152,7 @@ class MyFrame(rtmgr.MyFrame):
 		setup_cmd = {}
 		self.all_cmd_dics.append(setup_cmd)
 		dic = self.load_yaml('setup.yaml')
-		
+
 		self.add_params(dic.get('params', []))
 		self.setup_buttons(dic.get('buttons', {}), setup_cmd)
 
@@ -424,7 +424,7 @@ class MyFrame(rtmgr.MyFrame):
 		backup = os.path.expanduser('~/.toprc-autoware-backup')
 		self.toprc_setup(toprc, backup)
 
-		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(psutil.NUM_CPUS) ]
+		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(psutil.cpu_count()) ]
 		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
@@ -439,7 +439,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
 
 		th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
-			   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl, 
+			   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl,
 			   'toprc':toprc, 'backup':backup }
 		thinf = th_start(self.top_cmd_th, th_arg)
 		self.all_th_infs.append(thinf)
@@ -736,7 +736,7 @@ class MyFrame(rtmgr.MyFrame):
 				dlg_ret = show_modal(dlg)
 				dic_list_pop(gdic, 'dialog_type')
 				if dlg_ret != 0:
-					return False			
+					return False
 			else:
 				pdic['camera_id'] = ''
 
@@ -747,7 +747,7 @@ class MyFrame(rtmgr.MyFrame):
 			dlg_ret = show_modal(dlg)
 			dic_list_pop(gdic, 'dialog_type')
 			if dlg_ret != 0:
-				return False			
+				return False
 
 		self.update_func(pdic, gdic, prm)
 		s = ''
@@ -891,8 +891,8 @@ class MyFrame(rtmgr.MyFrame):
 			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj, sys=True)
 
 		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
-		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
-		cpus = [ i for i in range(psutil.NUM_CPUS) if cpu_chks[i] ]
+		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.cpu_count()) ]
+		cpus = [ i for i in range(psutil.cpu_count()) if cpu_chks[i] ]
 		nice = self.param_value_get(pdic, prm, 'nice', 0)
 
 		d = { 'OTHER':SCHED_OTHER, 'FIFO':SCHED_FIFO, 'RR':SCHED_RR }
@@ -956,7 +956,7 @@ class MyFrame(rtmgr.MyFrame):
 			if obj and attr in obj.__slots__:
 				type_str = obj._slot_types[ obj.__slots__.index(attr) ]
 				setattr(obj, attr, str_to_rosval(v, type_str, v))
-		
+
 		if 'stamp' in prm.get('flags', []):
 			(obj, attr) = msg_path_to_obj_attr(msg, 'header.stamp')
 			setattr(obj, attr, rospy.get_rostime())
@@ -1070,7 +1070,7 @@ class MyFrame(rtmgr.MyFrame):
 		if new_id not in ids:
 			return
 		idx = ids.index(new_id)
-		
+
 		pp = args.get('param_panel')
 		if pp:
 			pp.detach_func()
@@ -1183,7 +1183,7 @@ class MyFrame(rtmgr.MyFrame):
 	def info_col(self, v, v_yellow, v_red, col_normal, col_red):
 		if v < v_yellow:
 			return col_normal
-		if v < v_red:		
+		if v < v_red:
 			(nr,ng,nb) = col_normal
 			(rr,rg,rb) = col_red
 			return ( (nr+rr)/2, (ng+rg)/2, (nb+rb)/2 )
@@ -1230,7 +1230,7 @@ class MyFrame(rtmgr.MyFrame):
 		mem_ibl.lmt_bar_prg = rate_mem
 
 		alerted = False
-		cpu_n = psutil.NUM_CPUS
+		cpu_n = psutil.cpu_count()
 
 		while not ev.wait(interval):
 			s = subprocess.check_output(['sh', '-c', 'env COLUMNS=512 top -b -n 2 -d 0.1']).strip()
@@ -1302,7 +1302,7 @@ class MyFrame(rtmgr.MyFrame):
 
 			i = hd.find('%CPU')
 			loads = [ line[i-1:].strip().split(' ')[0] for line in top5 ]
-			
+
 			for (lb, cmd, load) in zip(self.lb_top5, cmds, loads):
 				col = self.info_col(str_to_float(load), rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
 				wx.CallAfter(lb.SetForegroundColour, col)
@@ -1414,7 +1414,7 @@ class MyFrame(rtmgr.MyFrame):
 		# info clear
 		lb = self.label_topics_info
 		lb.SetLabel('')
-		
+
 		# echo clear
 		self.topics_proc_th_end()
 
@@ -1457,7 +1457,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.topics_echo_proc = psutil.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
 
 		self.topics_echo_thinf = th_start(self.topics_echo_th)
-		
+
 	def topics_proc_th_end(self):
 		thinf = self.topics_echo_thinf
 		if thinf:
@@ -1559,7 +1559,7 @@ class MyFrame(rtmgr.MyFrame):
 		return gdic
 
 	def add_cfg_info(self, cfg_obj, obj, name, pdic, gdic, run_disable, prm):
-		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'gdic':gdic, 
+		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'gdic':gdic,
 					       'run_disable':run_disable , 'param':prm }
 
 	def get_param(self, prm_name):
@@ -1624,7 +1624,7 @@ class MyFrame(rtmgr.MyFrame):
 			(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(play)
 			if proc:
 				proc.stdin.write(' ')
-			
+
 	def OnFtrace(self, event):
 		obj = event.GetEventObject()
 		cmd = 'rosrun runtime_manager ftrace.py'
@@ -1704,7 +1704,7 @@ class MyFrame(rtmgr.MyFrame):
 		for o in grp:
 			if o is obj:
 				continue
-			
+
 			if en is not None and o.IsEnabled() != en and not self.is_toggle_button(o):
 				if key:
 					enable_set(o, key, en)
@@ -1860,7 +1860,7 @@ class MyFrame(rtmgr.MyFrame):
 	def set_bg_all_tabs(self, col=wx.NullColour):
 
 		add_pnls = [
-			self, 
+			self,
 			self.tree_ctrl_0,
 			self.tree_ctrl_1,
 			self.tree_ctrl_data ]
@@ -1882,7 +1882,7 @@ class MyFrame(rtmgr.MyFrame):
 		key = self.obj_key_get(obj, pfs)
 		if key:
 			objs += self.key_objs_get(pfs, key)
-			
+
 		gdic = self.obj_to_gdic(obj, {})
 		objs += [ eval_if_str(self, e) for e in gdic.get('ext_toggle_enables', []) ]
 
@@ -2435,7 +2435,7 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnTrafficRedLight(self, event):
 		self.pdic['traffic_light'] = 0
 		self.update()
-		
+
 	def OnTrafficGreenLight(self, event):
 		self.pdic['traffic_light'] = 1
 		self.update()
@@ -2498,7 +2498,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		msg.filename = self.text_ctrl_path.GetValue()
 		msg.filter_res = str_to_float(v)
 		self.pub.publish(msg)
-		
+
 	def OnOk(self, event):
 		self.panel.detach_func()
 		self.EndModal(0)
@@ -2511,7 +2511,7 @@ class InfoBarLabel(wx.BoxSizer):
 		bt = wx.StaticText(parent, wx.ID_ANY, btm_txt) if btm_txt else None
 
 		self.Add(self.lb, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
-		if bar_orient == wx.VERTICAL:		
+		if bar_orient == wx.VERTICAL:
 			sz = self.bar.GetSize()
 			sz.SetWidth(20)
 			self.bar.SetMinSize(sz)
@@ -2535,7 +2535,7 @@ class InfoBarLabel(wx.BoxSizer):
 	def bar_set(self, prg):
 		(col1, col2) = (wx.Colour(0,0,250), wx.Colour(0,0,128))
 		if prg >= self.lmt_bar_prg:
-			(col1, col2) = (wx.Colour(250,0,0), wx.Colour(128,0,0)) 
+			(col1, col2) = (wx.Colour(250,0,0), wx.Colour(128,0,0))
 		self.bar.set_col(col1, col2)
 		self.bar.set(prg)
 
@@ -2771,7 +2771,7 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		dlg = wx.DirDialog(parent, defaultPath=path)
 	else:
 		st_dic = { 'save' : wx.FD_SAVE, 'multi' : wx.FD_MULTIPLE }
-		dlg = wx.FileDialog(parent, defaultDir=dn, defaultFile=fn, 
+		dlg = wx.FileDialog(parent, defaultDir=dn, defaultFile=fn,
 				    style=st_dic.get(path_type, wx.FD_DEFAULT_STYLE))
 	ret = show_modal(dlg)
 	if ret == wx.ID_OK:
@@ -2793,7 +2793,7 @@ def button_color_change(btn, v=None):
 
 def OnButtonColorHdr(event):
 	btn = event.GetEventObject()
-	dic = { wx.EVT_TOGGLEBUTTON.typeId : None, 
+	dic = { wx.EVT_TOGGLEBUTTON.typeId : None,
 		wx.EVT_LEFT_DOWN.typeId	   : True,
 		wx.EVT_LEFT_UP.typeId	   : False }
 	v = dic.get(event.GetEventType(), '?')
@@ -2843,9 +2843,16 @@ def load_yaml(filename, def_ret=None):
 	return d
 
 def terminate_children(proc, sigint=False):
-	for child in psutil.Process(proc.pid).get_children():
-		terminate_children(child, sigint)
-		terminate(child, sigint)
+    try:
+        for child in psutil.Process(proc.pid).get_children():
+            terminate_children(child, sigint)
+            terminate(child, sigint)
+
+    except AttributeError:
+        # fix for newer psutil
+        for child in psutil.Process(proc.pid).children():
+            terminate_children(child, sigint)
+            terminate(child, sigint)
 
 def terminate(proc, sigint=False):
 	if sigint:
@@ -2944,7 +2951,7 @@ def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	return wx.StaticBoxSizer(sb, orient)
 
 def wx_flag_get(flags):
-	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT, 
+	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT,
 		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE,
 		'center_v' : wx.ALIGN_CENTER_VERTICAL, 'center_h' : wx.ALIGN_CENTER_HORIZONTAL,
 		'passwd' : wx.TE_PASSWORD }

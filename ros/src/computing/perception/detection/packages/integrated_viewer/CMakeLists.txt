@@ -1,7 +1,13 @@
 # cmake_minimum_required(VERSION 2.8.3)
 cmake_minimum_required(VERSION 2.8.7)
 project(integrated_viewer)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
@@ -21,7 +27,7 @@ catkin_package(
   DEPENDS rviz
   )
 
-# We specify Qt4 will be used as RViz using them and 
+# We specify Qt4 will be used as RViz using them and
 # Libraries conflict will be happen if we specify Qt5.
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 include(${QT_USE_FILE})
@@ -68,7 +74,7 @@ set(SOURCE_FILES
 # "rviz_plugin_tutorials", or whatever your version of this project
 # is called) and specify the list of source files we collected above
 # in ``${SOURCE_FILES}``.
-# 
+#
 add_library(${PROJECT_NAME}
   ${SOURCE_FILES}
 )
@@ -98,7 +104,8 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES rviz_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-add_dependencies(${PROJECT_NAME} 
+add_dependencies(${PROJECT_NAME}
   runtime_manager_generate_messages_cpp
   cv_tracker_generate_messages_cpp
   points2image_generate_messages_cpp)
+endif()
