@@ -50,7 +50,7 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ```
 % sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map
 % sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
 ```
 
 **NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
@@ -61,12 +61,31 @@ Autoware is protected by BSD License. Please use it on your own responsibility. 
 ```
 % sudo apt-get install ros-jade-desktop-full ros-jade-nmea-msgs ros-jade-nmea-navsat-driver ros-jade-sound-play
 % sudo apt-get install ros-jade-controller-manager ros-jade-ros-control ros-jade-ros-controllers ros-jade-gazebo-ros-control ros-jade-sicktoolbox ros-jade-sicktoolbox-wrapper ros-jade-joystick-drivers ros-jade-novatel-span-driver
-% sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
 ```
 
 **NOTE: jsk_visualization and grid_map is not provided in Ubuntu15.04 Jade. Please download it from the following repository and build it by yourself.
 https://github.com/jsk-ros-pkg/jsk_visualization**
 https://github.com/ethz-asl/grid_map
+
+### Install dependencies for Ubuntu 16.04 kinetic
+%sudo apt-get install ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map
+%sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
+%sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
+
+**NOTE: In kinetic, following packages cannnot use**
+- gazebo
+- orb slam
+- klt
+- image viewers
+- points2polygon
+- calibtoolkit
+- dpm ocv
+- kf
+- road wizard
+- ndt tku
+- traffic light plugin
+- image viewer plugin
 
 ## How to Build
 
@@ -206,6 +225,7 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ## Contact
 
 Autoware Developers (<autoware@googlegroups.com>)
+Autoware Developers Slack Team (https://autoware.herokuapp.com/)
 
 To subscribe the Autoware Developers ML,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
