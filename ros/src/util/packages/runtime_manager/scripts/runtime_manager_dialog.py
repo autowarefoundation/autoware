@@ -486,6 +486,8 @@ class MyFrame(rtmgr.MyFrame):
 		pass
 
 	def boot_booted_cmds(self):
+		if not self.load_dic.get('booted_cmds', {}).get('enable', False):
+			return
 		names = self.load_dic.get('booted_cmds', {}).get('names', [])
 		lst = [ ( name, self.cfg_dic( { 'name': name } ).get('obj') ) for name in names ]
 		lst = [ (name, obj) for (name, obj) in lst if obj ]
@@ -545,6 +547,7 @@ class MyFrame(rtmgr.MyFrame):
 			( 'Save to param.yaml', [ 'save' ] ),
 			( 'Quit without saving', [ 'quit' ] ),
 			( 'Reload computing.yaml', [ 'reload' ] ),
+			( self.get_booted_cmds_enable_msg()[1], [ 'toggle_booted_cmds' ] ),
 		]
 		choices = [ s for (s, _) in lst ]
 		dlg = wx.SingleChoiceDialog(self, 'select command', '', choices)
@@ -557,6 +560,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.save_param_yaml()
 		if 'reload' in f:
 			self.reload_computing_yaml()
+		if 'toggle_booted_cmds' in f:
+			self.toggle_booted_cmds()
 		return 'quit' if 'quit' in f else 'not quit'
 
 	def save_param_yaml(self):
@@ -576,10 +581,9 @@ class MyFrame(rtmgr.MyFrame):
 			(_, obj) = self.proc_to_cmd_dic_obj(proc)
 			name = self.cfg_dic( { 'obj': obj } ).get('name')
 			names.append(name)
-		if names:
-			save_dic['booted_cmds'] = { 'names': names }
-		elif 'booted_cmds' in save_dic:
-			del save_dic['booted_cmds']
+		if 'booted_cmds' not in save_dic:
+			save_dic['booted_cmds'] = {}
+		save_dic.get('booted_cmds')['names'] = names
 
 		if save_dic != {}:
 			dir = rtmgr_src_dir()
@@ -655,6 +659,22 @@ class MyFrame(rtmgr.MyFrame):
 				set_val(obj, True)
 
 		parent.Layout()
+
+	def toggle_booted_cmds(self):
+		(enable, msg) = self.get_booted_cmds_enable_msg()
+		style = wx.OK | wx.CANCEL | wx.ICON_QUESTION
+		dlg = wx.MessageDialog(self, msg, '', style)
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+		if 'booted_cmds' not in self.load_dic:
+			self.load_dic['booted_cmds'] = {}
+		self.load_dic.get('booted_cmds')['enable'] = not enable
+
+	def get_booted_cmds_enable_msg(self):
+		enable = self.load_dic.get('booted_cmds', {}).get('enable', False)
+		s = 'Enable' if not enable else 'Disable'
+		msg = '{} booted commands menu ?'.format(s)
+		return (enable, msg)
 
 	def RosCb(self, data):
 		print('recv topic msg : ' + data.data)
