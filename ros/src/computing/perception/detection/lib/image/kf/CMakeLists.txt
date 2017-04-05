@@ -36,8 +36,8 @@ catkin_package(
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(src)
+include_directories(${catkin_INCLUDE_DIRS}
+ include)
 
 ## Declare a cpp library
 add_library(kf

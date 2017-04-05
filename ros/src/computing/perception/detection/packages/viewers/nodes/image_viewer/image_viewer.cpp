@@ -31,9 +31,8 @@
 #include <string>
 #include <vector>
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv2/contrib/contrib.hpp>
+//#include <opencv2/contrib/contrib.hpp>
+#include "gencolors.cpp"
 
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
@@ -293,7 +292,7 @@ int main(int argc, char **argv)
 		image_topic_name = "/image_raw";
 	}
 
-	cv::generateColors(_colors, 25);
+	generateColors(_colors, 25);
 
 	ros::Subscriber scriber = n.subscribe(image_topic_name, 1, image_viewer_callback);
 

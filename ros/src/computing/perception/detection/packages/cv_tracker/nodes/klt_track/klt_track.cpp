@@ -45,7 +45,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/contrib/contrib.hpp>
+//#include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
@@ -59,6 +59,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "gencolors.cpp"
 
 class RosTrackerApp
 {
@@ -78,7 +79,7 @@ class RosTrackerApp
 	int					num_trackers_;
 
 	std::vector<LkTracker*> obj_trackers_;
-	std::vector<cv::LatentSvmDetector::ObjectDetection> obj_detections_;
+	std::vector<ObjectDetection> obj_detections_;
 
 	std::vector<float> ranges_;
 	std::vector<float> min_heights_;
@@ -121,7 +122,7 @@ class RosTrackerApp
 
 		for(unsigned int i = 0; i< in_out_source.size(); i++)
 		{
-			cv::LatentSvmDetector::ObjectDetection tmp = in_out_source[i]->GetTrackedObject();
+			ObjectDetection tmp = in_out_source[i]->GetTrackedObject();
 			area[i] = tmp.rect.width * tmp.rect.height;
 			if (area[i]>0)
 				is_suppresed[i] = false;
@@ -187,7 +188,10 @@ public:
 	{
 		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 		cv::Mat image_track = cv_image->image;
-		cv::LatentSvmDetector::ObjectDetection empty_detection(cv::Rect(0,0,0,0),0,0);
+		
+		ObjectDetection empty_detection;
+		empty_detection.rect=cv::Rect(0,0,0,0);
+		empty_detection.score=0;
 		unsigned int i;
 
 		std::vector<bool> tracker_matched(obj_trackers_.size(), false);
@@ -201,7 +205,7 @@ public:
 				if (tracker_matched[j] || object_matched[i])
 					continue;
 
-				cv::LatentSvmDetector::ObjectDetection tmp_detection = obj_detections_[i];
+				ObjectDetection tmp_detection = obj_detections_[i];
 				int area = tmp_detection.rect.width * tmp_detection.rect.height;
 				cv::Rect intersection = tmp_detection.rect & obj_trackers_[j]->GetTrackedObject().rect;
 				if ( (intersection.width * intersection.height) > area*0.3 )
@@ -333,7 +337,9 @@ public:
 				tmp.y = objects.at(i).rect.y;
 				tmp.width = objects.at(i).rect.width;
 				tmp.height = objects.at(i).rect.height;
-				obj_detections_.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+				ObjectDetection tmp_obj;
+				tmp_obj.rect=tmp; tmp_obj.score=0;
+				obj_detections_.push_back(tmp_obj);
 				ranges_.push_back(objects.at(i).range);
 				min_heights_.push_back(objects.at(i).min_height);
 				max_heights_.push_back(objects.at(i).max_height);
@@ -362,7 +368,7 @@ public:
 			tmp.y = objects.at(i).y;
 			tmp.width = objects.at(i).width;
 			tmp.height = objects.at(i).height;
-			obj_detections_.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+			obj_detections_.push_back(ObjectDetection(tmp, 0));
 		}
 		ready_ = true;
 	}*/
