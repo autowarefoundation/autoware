@@ -21,6 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
   velodyne_pointcloud
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 

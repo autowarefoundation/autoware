@@ -31,7 +31,8 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv2/opencv.hpp>
-#include <opencv2/contrib/contrib.hpp>
+//#include <opencv2/contrib/contrib.hpp>
+#include "gencolors.cpp"
 
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
@@ -178,7 +179,7 @@ void show(void)
   cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
   IplImage frame = cv_image->image;
 
-  cv::Mat matImage(&frame, false);
+  cv::Mat matImage = cv::cvarrToMat(&frame);//(&frame, false);
 
   /* DRAW RECTANGLES of detected objects */
 #if 0
@@ -366,7 +367,7 @@ int main(int argc, char **argv)
     points_node = "/points_image";
   }
 
-  cv::generateColors(_colors, 25);
+  generateColors(_colors, 25);
 
   ros::Subscriber scriber = n.subscribe(image_topic_name, 1,
                                         image_cb);

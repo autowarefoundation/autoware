@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <QString>
 #include <QImage>
 

@@ -41,6 +41,10 @@
 #include <math.h>
 #include <float.h>
 
+#include <opencv2/core/core.hpp>
+
+#include "gencolors.cpp"
+
 #define NO_DATA 0
 static char window_name[] = "vscan_image_d_viewer";
 
@@ -148,7 +152,7 @@ static void show(void)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
 	IplImage frame = cv_image->image;
 
-	cv::Mat matImage(&frame, false);
+	cv::Mat matImage=cv::cvarrToMat(&frame);//(&frame, false);
 
 	//Draw VScan Points
 	drawVScanPoints(matImage);
@@ -253,7 +257,7 @@ int main(int argc, char **argv)
 		points_node = "/vscan_image";
 	}
 
-	cv::generateColors(_colors, 25);
+	generateColors(_colors, 25);
 
 	ros::Subscriber scriber = n.subscribe(image_topic_name, 1,
 					    image_cb);

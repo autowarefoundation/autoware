@@ -9,7 +9,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
-  libdpm_ocv
+#  libdpm_ocv
   libdpm_ttic
   fusion
   kf
@@ -36,6 +36,8 @@ add_message_files(
   image_rect.msg
   image_rect_ranged.msg
   obj_label.msg
+
+  ImageObjects.msg
 )
 
 generate_messages(
@@ -45,7 +47,8 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
+  CATKIN_DEPENDS #libdpm_ocv 
+  libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
 )
 
 ###########
@@ -57,6 +60,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
   lib
+  include
 )
 
 IF(CUDA_FOUND)
@@ -102,35 +106,35 @@ ADD_DEPENDENCIES(dpm_ttic
 )
 
 ## dpm_ocv
-INCLUDE_DIRECTORIES(../../lib/image/dpm_ocv/src)
+##INCLUDE_DIRECTORIES(../../lib/image/dpm_ocv/src)
 
-ADD_EXECUTABLE(dpm_ocv
-  nodes/dpm_ocv/dpm_ocv.cpp
-)
+##ADD_EXECUTABLE(dpm_ocv
+##  nodes/dpm_ocv/dpm_ocv.cpp
+##)
 
-TARGET_LINK_LIBRARIES(dpm_ocv
-  libdpm_ocv
-  ${catkin_LIBRARIES}
-  #${OpenCV_LIBS}
-)
+##TARGET_LINK_LIBRARIES(dpm_ocv
+##  libdpm_ocv
+##  ${catkin_LIBRARIES}
+##  #${OpenCV_LIBS}
+##)
 
-ADD_DEPENDENCIES(dpm_ocv
-  runtime_manager_generate_messages_cpp
-)
+##ADD_DEPENDENCIES(dpm_ocv
+##  runtime_manager_generate_messages_cpp
+##)
 
-IF(CUDA_FOUND)
-SET_TARGET_PROPERTIES(dpm_ocv
-  PROPERTIES
-  COMPILE_FLAGS
-  "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/model/models_VOC2007/"
-)
-ELSE()
-SET_TARGET_PROPERTIES(dpm_ocv
-  PROPERTIES
-  COMPILE_FLAGS
-  "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
-)
-ENDIF()
+##IF(CUDA_FOUND)
+##SET_TARGET_PROPERTIES(dpm_ocv
+##  PROPERTIES
+##  COMPILE_FLAGS
+##  "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/model/models_VOC2007/"
+##)
+##ELSE()
+##SET_TARGET_PROPERTIES(dpm_ocv
+##  PROPERTIES
+##  COMPILE_FLAGS
+##  "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
+##)
+##ENDIF()
 
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
@@ -198,6 +202,7 @@ endif (jsk_recognition_msgs_FOUND)
 ## klt_tracker ##
 ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
+  
 )
 
 INCLUDE_DIRECTORIES(lib/lktracker)

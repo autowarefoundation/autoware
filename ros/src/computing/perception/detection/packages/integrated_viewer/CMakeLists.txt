@@ -30,7 +30,9 @@ include_directories(
   lib/
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${catkin_INCLUDE_DIRS})
+  ${catkin_INCLUDE_DIRS}
+  include
+)
 
 link_directories(${catkin_LIBRARY_DIRS})
 

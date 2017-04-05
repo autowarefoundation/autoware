@@ -47,7 +47,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
@@ -60,6 +59,18 @@
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
+
+
+#include "gencolors.cpp"
+
+struct ObjectDetection_
+{
+	//ObjectDetection_();
+	//ObjectDetection_(const cv::Rect& rect, float score, int classId=1);
+	cv::Rect rect;
+	float score;
+	int classID;
+};
 
 ros::Publisher image_objects;//ROS
 
@@ -88,7 +99,7 @@ struct kstate
 	unsigned int		id;//id of this tracked object
 	cv::Mat			image;//image containing the detected and tracked object
 	int			lifespan;//remaining lifespan before deprecate
-	cv::LatentSvmDetector::ObjectDetection obj;//currently not used
+	//ObjectDetection_ obj;//currently not used
 	cv::Scalar	color;
 	int		real_data;
 	//std::vector<KeyPoint> orbKeypoints;
@@ -102,7 +113,7 @@ struct kstate
 std::vector<kstate> 	_kstates;
 std::vector<bool> 	_active;
 std::vector<cv::Scalar>	_colors;
-std::vector<cv::LatentSvmDetector::ObjectDetection> _dpm_detections;
+std::vector<ObjectDetection_> _dpm_detections;
 
 std::string object_type;
 std::vector<float> _ranges;
@@ -143,7 +154,7 @@ void getRectFromPoints(std::vector< cv::Point2f > corners, cv::Rect& outBounding
 
 }
 
-bool orbMatch(cv::Mat& inImageScene, cv::Mat& inImageObj, cv::Rect& outBoundingBox, unsigned int inMinMatches=2, float inKnnRatio=0.7)
+/*bool orbMatch(cv::Mat& inImageScene, cv::Mat& inImageObj, cv::Rect& outBoundingBox, unsigned int inMinMatches=2, float inKnnRatio=0.7)
 {
 	//vector of keypoints
 	std::vector< cv::KeyPoint > keypointsO;
@@ -230,7 +241,7 @@ bool orbMatch(cv::Mat& inImageScene, cv::Mat& inImageObj, cv::Rect& outBoundingB
 	}
 
 	return false;
-}
+}*/
 
 ///Returns true if an im1 is contained in im2 or viceversa
 bool crossCorr(cv::Mat im1, cv::Mat im2)
@@ -328,8 +339,8 @@ void posScaleToBbox(std::vector<kstate> kstates, std::vector<kstate>& trackedDet
 			tmp.max_height = kstates[i].max_height;
 
 			//fill in also LAtentSvm object
-			tmp.obj.rect = tmp.pos;
-			tmp.obj.score = tmp.score;
+			//tmp.obj.rect = tmp.pos;
+			//tmp.obj.score = tmp.score;
 
 			if (tmp.pos.x < 0)
 				tmp.pos.x = 0;
@@ -360,8 +371,8 @@ int getAvailableIndex(std::vector<kstate>& kstates)
 	return cur_size;
 }
 
-void initTracking(cv::LatentSvmDetector::ObjectDetection object, std::vector<kstate>& kstates,
-		  cv::LatentSvmDetector::ObjectDetection detection,
+void initTracking(ObjectDetection_ object, std::vector<kstate>& kstates,
+		  ObjectDetection_ detection,
 		  cv::Mat& image, std::vector<cv::Scalar> colors, float range)
 {
 	kstate new_state;
@@ -567,12 +578,12 @@ void ApplyNonMaximumSuppresion(std::vector< kstate >& in_source, float in_nms_th
 	in_source = filtered_detections;
 }
 
-void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections, int frameNumber,
+void doTracking(std::vector<ObjectDetection_>& detections, int frameNumber,
 		std::vector<kstate>& kstates, std::vector<bool>& active, cv::Mat& image,
 		std::vector<kstate>& trackedDetections, std::vector<cv::Scalar> & colors)
 {
-	std::vector<cv::LatentSvmDetector::ObjectDetection> objects;
-	//vector<LatentSvmDetector::ObjectDetection> tracked_objects;
+	std::vector<ObjectDetection_> objects;
+	//vector<LatentSvmDetector::ObjectDetection_> tracked_objects;
 	std::vector<bool> predict_indices;//this will correspond to kstates i
 	std::vector<bool> correct_indices;//this will correspond to kstates i
 	std::vector<int> correct_detection_indices;//this will correspond to kstates i, used to store the index of the corresponding object
@@ -620,10 +631,10 @@ void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections,
 				cv::Rect boundingbox;
 				bool matched = false;
 				//try to match with previous frame
-				if ( !USE_ORB )
+				//if ( !USE_ORB )
 					matched = ( !alreadyMatched(j, already_matched) && crossCorr(kstates[i].image, currentObjectROI));
-				else
-					matched = (!alreadyMatched(j, already_matched) && orbMatch(currentObjectROI, kstates[i].image, boundingbox, ORB_MIN_MATCHES, ORB_KNN_RATIO));
+				//else
+				//	matched = (!alreadyMatched(j, already_matched) && orbMatch(currentObjectROI, kstates[i].image, boundingbox, ORB_MIN_MATCHES, ORB_KNN_RATIO));
 
 				if(matched)
 				{
@@ -789,7 +800,7 @@ void publish_if_possible()
 	}
 }
 
-void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::LatentSvmDetector::ObjectDetection> detections,
+void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<ObjectDetection_> detections,
 			 std::vector<kstate>& kstates, std::vector<bool>& active,
 			 std::vector<cv::Scalar> colors, const sensor_msgs::Image& image_source)
 {
@@ -888,7 +899,9 @@ void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
 			tmp.y = objects.at(i).rect.y;
 			tmp.width = objects.at(i).rect.width;
 			tmp.height = objects.at(i).rect.height;
-			_dpm_detections.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+			ObjectDetection_ obj_tmp;
+			obj_tmp.rect = tmp; obj_tmp.score=0;
+			_dpm_detections.push_back(obj_tmp);
 			_ranges.push_back(objects.at(i).range);
 			_min_heights.push_back(objects.at(i).min_height);
 			_max_heights.push_back(objects.at(i).max_height);
@@ -947,7 +960,7 @@ int kf_main(int argc, char* argv[])
 
 	image_objects = n.advertise<cv_tracker::image_obj_tracked>("image_obj_tracked", 1);
 
-	cv::generateColors(_colors, 25);
+	generateColors(_colors, 25);
 
 	std::string image_topic;
 	std::string obj_topic;
