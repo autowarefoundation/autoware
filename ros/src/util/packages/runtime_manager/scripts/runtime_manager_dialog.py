@@ -92,6 +92,7 @@ from runtime_manager.msg import indicator_cmd
 from runtime_manager.msg import lamp_cmd
 from runtime_manager.msg import traffic_light
 from runtime_manager.msg import adjust_xy
+from types import MethodType
 
 SCHED_OTHER = 0
 SCHED_FIFO = 1
@@ -1833,6 +1834,10 @@ class MyFrame(rtmgr.MyFrame):
 		if tree is None:
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, agwStyle=style)
+
+			# for disable wrong scrolling at checked
+			tree.AcceptsFocus = MethodType(lambda self: False, tree, CT.CustomTreeCtrl)
+
 			item = tree.AddRoot(name, data=tree)
 			tree.Bind(wx.EVT_MOTION, self.OnTreeMotion)
 		else:
