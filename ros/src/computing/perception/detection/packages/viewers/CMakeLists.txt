@@ -93,6 +93,7 @@ add_dependencies(vscan_image_d_viewer points2image_generate_messages_cpp)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include
 )
 add_executable(traffic_light_viewer nodes/traffic_light_viewer/traffic_light_viewer.cpp)
 target_link_libraries(traffic_light_viewer

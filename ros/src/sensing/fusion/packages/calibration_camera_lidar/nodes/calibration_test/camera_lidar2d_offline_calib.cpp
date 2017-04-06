@@ -35,9 +35,6 @@
 #include <time.h>
 
 #include <math.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
 #include "ros/ros.h"
 #include <libxml/xmlreader.h>
 #include <image_transport/image_transport.h>
@@ -53,6 +50,8 @@
 #include "common_2d_calib.h"
 #include "image_window.h"
 #include "data_struct.h"
+#include <opencv/highgui.h>
+#include "opencv2/highgui/highgui.hpp"
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
@@ -88,7 +87,7 @@ static void on_mouse(int event, int x, int y, int flags, void *param = NULL)
         g_on_calib_flag = true;
         g_on_save_flag = false;
         switch(event) {
-        case CV_EVENT_LBUTTONDOWN:
+        case cv::EVENT_LBUTTONDOWN:
             g_calib_flag = true;
             break;
 
@@ -99,7 +98,7 @@ static void on_mouse(int event, int x, int y, int flags, void *param = NULL)
         g_on_save_flag = true;
         g_on_calib_flag = false;
         switch(event) {
-        case CV_EVENT_LBUTTONDOWN:
+        case cv::EVENT_LBUTTONDOWN:
             g_save_flag = true;
             break;
 
@@ -209,7 +208,7 @@ static void imageCallback(const sensor_msgs::Image& image_raw) {
         cvmSet(affine_g2c, 2, 3, cvmGet(v_g2c, 0, 2));
         cvmSet(affine_g2c, 3, 3, 1);
 
-        cvmMul(affine_g2c, affine_l2g, affine_l2c);
+        cvMatMulAdd(affine_g2c, affine_l2g, 0, affine_l2c);
 
         printf("--transration v_g2l\n");
         print_param(v_g2l);
@@ -228,9 +227,13 @@ static void imageCallback(const sensor_msgs::Image& image_raw) {
 
         cv::Size image_size(image_raw.width, image_raw.height);
 
-        fs << "CameraExtrinsicMat" << affine_l2c;
-        fs << "CameraMat" << m_intrinsic;
-        fs << "DistCoeff" << m_dist;
+	cv::Mat affine_l2c_mat=cv::cvarrToMat(affine_l2c);
+	cv::Mat m_intrinsic_mat=cv::cvarrToMat(m_intrinsic);
+	cv::Mat m_dist_mat=cv::cvarrToMat(m_dist);
+	
+        fs << "CameraExtrinsicMat" << affine_l2c_mat;
+        fs << "CameraMat" << m_intrinsic_mat;
+        fs << "DistCoeff" << m_dist_mat;
         fs << "ImageSize" << image_size;
         fs << "ReprojectionError" << 0;
 

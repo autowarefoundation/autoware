@@ -23,6 +23,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   kf
   runtime_manager
   calibration_camera_lidar
+#  libdpm_ocv
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
@@ -59,6 +60,8 @@ add_message_files(
   image_rect.msg
   image_rect_ranged.msg
   obj_label.msg
+
+  ImageObjects.msg
 )
 
 generate_messages(
@@ -69,7 +72,8 @@ generate_messages(
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 catkin_package(
-  CATKIN_DEPENDS libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
+  CATKIN_DEPENDS #libdpm_ocv 
+  libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
 catkin_package(
@@ -85,6 +89,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
   lib
+  include
 )
 
 IF(CUDA_FOUND)
@@ -230,6 +235,7 @@ endif (jsk_recognition_msgs_FOUND)
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
+  
 )
 
 INCLUDE_DIRECTORIES(lib/lktracker)

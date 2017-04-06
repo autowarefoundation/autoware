@@ -49,7 +49,8 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <opencv2/contrib/contrib.hpp>
+//#include <opencv2/contrib/contrib.hpp>
+#include "gencolors.cpp"
 
 #include <chrono>
 #include <iostream>
@@ -675,7 +676,7 @@ int main (int argc, char** argv)
 	_transform = &transform;
 	_transform_listener = &listener;
 
-	cv::generateColors(_colors, 100);
+	generateColors(_colors, 100);
 
 	_pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster",1);
 	_pub_ground_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
