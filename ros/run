@@ -1,13 +1,19 @@
 #!/bin/bash
 # get where I am
 MY_PATH=$(readlink -f  $(dirname $0))
+MY_DISTRO=$(lsb_release -a 2>>/dev/null | grep Codename | sed -e "s/^\S*\s*//")
 
 # what type of terminal
-OPTION_TITLE='--title'
 OPTION_WORKING_DIR='working-directory'
 OPTION_CORE_GEOMETRY='--geometry=50x10+0+0'
 OPTION_RM_GEOMETRY='--geometry=50x10+500+0'
 OPTION_COMMAND='--command'
+
+if [ $MY_DISTRO == "xenial" ]; then
+OPTION_TITLE=
+else
+OPTION_TITLE='--title'
+fi
 
 if [ $(which gnome-terminal) ]; then
     TERMINAL=gnome-terminal
