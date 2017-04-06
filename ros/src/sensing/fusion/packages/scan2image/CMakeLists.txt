@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   calibration_camera_lidar
 )
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 add_message_files(
   FILES
@@ -32,7 +32,6 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
   CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs calibration_camera_lidar message_runtime
-  DEPENDS system_lib
 )
 
 ###########

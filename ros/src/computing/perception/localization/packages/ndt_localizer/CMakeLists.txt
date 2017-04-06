@@ -72,9 +72,9 @@ target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 
-target_link_libraries(ndt_matching_tku ndt_tku ${catkin_LIBRARIES})
-target_link_libraries(ndt_mapping_tku ndt_tku ${catkin_LIBRARIES})
-target_link_libraries(mapping ndt_tku ${catkin_LIBRARIES})
+target_link_libraries(ndt_matching_tku ${catkin_LIBRARIES})
+target_link_libraries(ndt_mapping_tku ${catkin_LIBRARIES})
+target_link_libraries(mapping ${catkin_LIBRARIES})
 target_link_libraries(tf_mapping ${catkin_LIBRARIES})
 
 add_dependencies(ndt_matching runtime_manager_generate_messages_cpp ndt_localizer_generate_messages_cpp)

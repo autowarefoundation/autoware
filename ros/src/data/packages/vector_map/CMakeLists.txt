@@ -23,8 +23,8 @@ include_directories(
 )
 
 add_library(vector_map lib/vector_map/vector_map.cpp)
-add_dependencies(vector_map
-  geometry_msgs_generate_messages_cpp
-  visualization_msgs_generate_messages_cpp
-  vector_map_msgs_generate_messages_cpp
-)
+#add_dependencies(vector_map
+  #geometry_msgs_generate_messages_cpp
+  #visualization_msgs_generate_messages_cpp
+  #vector_map_msgs_generate_messages_cpp
+  #)

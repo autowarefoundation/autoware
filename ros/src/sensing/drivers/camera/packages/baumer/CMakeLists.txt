@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## pkg-config libraries
 find_package(PkgConfig REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 #pkg_check_modules(bgapi libbgapi REQUIRED)
 
 

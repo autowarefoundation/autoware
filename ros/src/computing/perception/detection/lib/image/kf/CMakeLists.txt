@@ -9,16 +9,17 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   runtime_manager
+  cv_tracker_msgs
 )
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES dpm
+  LIBRARIES kf
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
   CATKIN_DEPENDS runtime_manager
@@ -30,7 +31,7 @@ catkin_package(
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 include_directories(src)
 
 ## Declare a cpp library
@@ -43,4 +44,4 @@ target_link_libraries(kf
   ${OpenCV_LIBS}
 )
 
-add_dependencies(kf runtime_manager_generate_messages_cpp  cv_tracker_generate_messages_cpp)
+add_dependencies(kf runtime_manager_generate_messages_cpp)

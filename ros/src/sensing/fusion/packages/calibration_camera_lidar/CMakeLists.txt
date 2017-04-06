@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
 )
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
@@ -87,15 +87,12 @@ add_library(calibrationtoolkit
   CalibrationToolkit/selectionwidget.cpp
 )
 add_dependencies(calibrationtoolkit
-  glviewer
   calibrationtoolkit_moc
   selectionwidget_moc
 )
 target_link_libraries(calibrationtoolkit
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  glviewer
-  rosinterface
   nlopt
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
@@ -172,8 +169,6 @@ add_dependencies(calibration_toolkit
 target_link_libraries(calibration_toolkit
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  glviewer
-  rosinterface
   calibrationtoolkit
   glut
   GLU

@@ -4,7 +4,6 @@ project(points2image)
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rosinterface
   std_msgs
   sensor_msgs
   rosinterface
@@ -17,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   calibration_camera_lidar
 )
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
@@ -106,7 +105,6 @@ add_dependencies(points2vscan
 
 target_link_libraries(points2vscan
   ${catkin_LIBRARIES}
-  rosinterface
   nlopt
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}

@@ -10,10 +10,12 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   runtime_manager
   points2image
+  scan2image
+  cv_tracker_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -34,7 +36,6 @@ target_link_libraries(image_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(image_viewer cv_tracker_generate_messages_cpp)
 
 add_executable(scan_image_viewer nodes/scan_image_viewer/scan_image_viewer.cpp)
 target_link_libraries(scan_image_viewer
@@ -48,7 +49,7 @@ target_link_libraries(scan_image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(scan_image_d_viewer cv_tracker_generate_messages_cpp scan2image_generate_messages_cpp)
+add_dependencies(scan_image_d_viewer scan2image_generate_messages_cpp)
 
 add_executable(points_image_viewer nodes/points_image_viewer/points_image_viewer.cpp)
 target_link_libraries(points_image_viewer
@@ -62,14 +63,13 @@ target_link_libraries(image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(image_d_viewer cv_tracker_generate_messages_cpp)
 
 add_executable(points_image_d_viewer nodes/points_image_d_viewer/points_image_d_viewer.cpp)
 target_link_libraries(points_image_d_viewer
    ${catkin_LIBRARIES}
    opencv_highgui opencv_core opencv_imgproc
 )
-add_dependencies(points_image_d_viewer points2image_generate_messages_cpp cv_tracker_generate_messages_cpp)
+add_dependencies(points_image_d_viewer points2image_generate_messages_cpp)
 
 add_executable(vscan_image_viewer nodes/vscan_image_viewer/vscan_image_viewer.cpp)
 target_link_libraries(vscan_image_viewer
