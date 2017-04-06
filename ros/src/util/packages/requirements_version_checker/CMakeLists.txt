@@ -19,9 +19,22 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+
+
 if ("${OPENCV_VERSION}" VERSION_LESS "2.4.8")
+execute_process(
+  COMMAND pkg-config --modversion opencv-3.2.0-dev
+  OUTPUT_VARIABLE KINETIC_OPENCV_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if (DEFINED KINETIC_OPENCV_VERSION)
+message(
+  STATUS
+  "${KINETIC_OPENCV_VERSION}")
+else()
 message(
   FATAL_ERROR
   "You must need OpenCV 2.4.8 or higher(Your version is '${OPENCV_VERSION})'"
 )
+endif()
 endif()

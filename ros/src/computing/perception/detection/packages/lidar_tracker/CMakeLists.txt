@@ -19,6 +19,13 @@ find_package(catkin REQUIRED COMPONENTS
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 
+if ("${ROS_VERSION}" MATCHES "(kinetic)")
+	pkg_check_modules(OpenCV REQUIRED opencv-3.2.0-dev)
+else()
+	pkg_check_modules(OpenCV REQUIRED)
+
+endif()
+
 execute_process(
   COMMAND pkg-config --variable=host_bins Qt5Core
   OUTPUT_VARIABLE Qt5BIN
@@ -94,13 +101,15 @@ catkin_package(
 include_directories(
   nodes/euclidean_cluster/includes
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   include
 )
 link_directories(${PCL_LIBRARY_DIRS})
+link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
-target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(euclidean_cluster ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
 
 #SVM Detect
