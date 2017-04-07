@@ -2277,7 +2277,7 @@ params :
       desc     : network_definition_file sample
       label    : 'network_file (ssd)'
       kind     : path
-      v        : $(echo $HOME)/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/deploy.prototxt
+      v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/deploy.prototxt
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -2285,16 +2285,15 @@ params :
       desc     : pretrained_model_file sample
       label    : 'pattern_file (ssd)'
       kind     : path
-      v        : $(echo $HOME)/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/VGG_VOC0712Plus_SSD_300x300_iter_240000.caffemodel
+      v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/VGG_VOC0712Plus_SSD_300x300_iter_240000.caffemodel
       cmd_param:
         dash     : ''
         delim    : ':='
     - name      : use_gpu
       desc      : use_gpu desc sample
       label     : use_gpu
-      kind     : menu
-      choices  : ['OFF', 'ON']
-      v        : 1
+      kind     : checkbox
+      v        : True
       cmd_param :
         dash      : ''
         delim     : ':='
