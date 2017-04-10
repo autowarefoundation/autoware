@@ -37,7 +37,7 @@
 #include <std_msgs/Bool.h>
 #include <tf/transform_listener.h>
 
-#include <waypoint_follower/LaneArray.h>
+#include <waypoint_follower_msgs/LaneArray.h>
 
 #include <map_file/get_file.h>
 
@@ -419,11 +419,11 @@ void publish_dragged_pcd(const geometry_msgs::PoseWithCovarianceStamped& msg)
 	publish_pcd(create_pcd(p));
 }
 
-void request_lookahead_download(const waypoint_follower::LaneArray& msg)
+void request_lookahead_download(const waypoint_follower_msgs::LaneArray& msg)
 {
 	request_queue.clear_look_ahead();
 
-	for (const waypoint_follower::lane& l : msg.lanes) {
+	for (const waypoint_follower_msgs::lane& l : msg.lanes) {
 		size_t end = l.waypoints.size() - 1;
 		double distance = 0;
 		double threshold = (MARGIN_UNIT / 2) + margin; // XXX better way?

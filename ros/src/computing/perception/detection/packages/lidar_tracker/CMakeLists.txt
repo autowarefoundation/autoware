@@ -14,11 +14,17 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   jsk_recognition_msgs
   rosinterface
+  cv_tracker_msgs
 )
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 if ("${ROS_VERSION}" MATCHES "(kinetic)")
 	pkg_check_modules(OpenCV REQUIRED opencv-3.2.0-dev)
 else()
@@ -139,7 +145,7 @@ target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 #Object Fusion
 add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
 target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
-add_dependencies(obj_fusion lidar_tracker_generate_messages_cpp cv_tracker_generate_messages_cpp)
+add_dependencies(obj_fusion lidar_tracker_generate_messages_cpp)
 
 # Vscan Track
 execute_process(
@@ -268,12 +274,11 @@ if(EXISTS "/usr/local/cuda")
     vehicle_tracker_moc_mainwindow
     vehicle_tracker_moc_rbsspfvehicletracker
     vehicle_tracker_ui_mainwindow
-    cv_tracker_generate_messages_cpp
+    cv_tracker_msgs_generate_messages_cpp
     )
 
   target_link_libraries(vscan_lidar_track
     ${catkin_LIBRARIES}
-    rosinterface
     ${Qt5Core_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     rbsspfvehicletracker

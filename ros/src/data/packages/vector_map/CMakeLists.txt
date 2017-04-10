@@ -27,4 +27,4 @@ add_dependencies(vector_map
   geometry_msgs_generate_messages_cpp
   visualization_msgs_generate_messages_cpp
   vector_map_msgs_generate_messages_cpp
-)
+  )

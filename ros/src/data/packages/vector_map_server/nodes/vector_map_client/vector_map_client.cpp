@@ -29,7 +29,7 @@
 */
 
 #include <geometry_msgs/PoseStamped.h>
-#include <waypoint_follower/lane.h>
+#include <waypoint_follower_msgs/lane.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <vector_map/vector_map.h>
 
@@ -61,7 +61,7 @@ class VectorMapClient
 {
 private:
   geometry_msgs::PoseStamped pose_;
-  waypoint_follower::lane waypoints_;
+  waypoint_follower_msgs::lane waypoints_;
 
 public:
   VectorMapClient()
@@ -73,7 +73,7 @@ public:
     return pose_;
   }
 
-  waypoint_follower::lane getWaypoints() const
+  waypoint_follower_msgs::lane getWaypoints() const
   {
     return waypoints_;
   }
@@ -83,7 +83,7 @@ public:
     pose_ = pose;
   }
 
-  void setWaypoints(const waypoint_follower::lane& waypoints)
+  void setWaypoints(const waypoint_follower_msgs::lane& waypoints)
   {
     waypoints_ = waypoints;
   }

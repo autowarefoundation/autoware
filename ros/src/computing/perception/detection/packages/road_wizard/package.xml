@@ -9,7 +9,6 @@
   <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>libvectormap</build_depend>
-  <build_depend>message_runtime</build_depend>
   <build_depend>runtime_manager</build_depend>
   <run_depend>runtime_manager</run_depend>
   <run_depend>std_msgs</run_depend>

@@ -41,7 +41,7 @@ add_executable(sample_points_map_update nodes/sample_points_map_update/sample_po
 target_link_libraries(sample_points_map_update ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES})
 
 add_executable(sample_trajectory nodes/sample_trajectory/sample_trajectory.cpp)
-target_link_libraries(sample_trajectory ${catkin_LIBRARIES} gnss)
+target_link_libraries(sample_trajectory ${catkin_LIBRARIES})
 
 add_executable(sample_mobility nodes/sample_mobility/sample_mobility.cpp)
-target_link_libraries(sample_mobility ${catkin_LIBRARIES} gnss)
+target_link_libraries(sample_mobility ${catkin_LIBRARIES})

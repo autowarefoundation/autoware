@@ -30,12 +30,12 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <tablet_socket/mode_cmd.h>
-#include <tablet_socket/gear_cmd.h>
+#include <tablet_socket_msgs/mode_cmd.h>
+#include <tablet_socket_msgs/gear_cmd.h>
 #include <runtime_manager/accel_cmd.h>
 #include <runtime_manager/brake_cmd.h>
 #include <runtime_manager/steer_cmd.h>
-#include <waypoint_follower/ControlCommandStamped.h>
+#include <waypoint_follower_msgs/ControlCommandStamped.h>
 
 #include <iostream>
 #include <string>
@@ -82,7 +82,7 @@ static void twistCMDCallback(const geometry_msgs::TwistStamped& msg)
   command_data.angular_z = msg.twist.angular.z;
 }
 
-static void modeCMDCallback(const tablet_socket::mode_cmd& mode)
+static void modeCMDCallback(const tablet_socket_msgs::mode_cmd& mode)
 {
   if(mode.mode == -1 || mode.mode == 0){
     command_data.reset();
@@ -91,7 +91,7 @@ static void modeCMDCallback(const tablet_socket::mode_cmd& mode)
   command_data.modeValue = mode.mode;
 }
 
-static void gearCMDCallback(const tablet_socket::gear_cmd& gear)
+static void gearCMDCallback(const tablet_socket_msgs::gear_cmd& gear)
 {
   command_data.gearValue = gear.gear;
 }
@@ -111,7 +111,7 @@ static void brakeCMDCallback(const runtime_manager::brake_cmd &brake)
   command_data.brakeValue = brake.brake;
 }
 
-static void ctrlCMDCallback(const waypoint_follower::ControlCommandStamped& msg)
+static void ctrlCMDCallback(const waypoint_follower_msgs::ControlCommandStamped& msg)
 {
   command_data.linear_velocity = msg.cmd.linear_velocity;
   command_data.steering_angle = msg.cmd.steering_angle;

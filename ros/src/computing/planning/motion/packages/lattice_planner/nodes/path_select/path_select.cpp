@@ -29,12 +29,12 @@
  */
 
 #include <ros/ros.h>
-#include <waypoint_follower/lane.h>
+#include <waypoint_follower_msgs/lane.h>
 #include <iostream>
 
 static ros::Publisher _pub;
 
-void callback(const waypoint_follower::lane &msg)
+void callback(const waypoint_follower_msgs::lane &msg)
 {
     _pub.publish(msg);
 }
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
     ros::Subscriber twist_sub = nh.subscribe("temporal_waypoints", 1, callback);
-    _pub = nh.advertise<waypoint_follower::lane>("final_waypoints", 1000,true);
+    _pub = nh.advertise<waypoint_follower_msgs::lane>("final_waypoints", 1000,true);
 
     ros::spin();
 
