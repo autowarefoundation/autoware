@@ -57,9 +57,6 @@ class RosSsdApp
 
 	//The minimum score required to filter the detected objects by the ConvNet
 	float score_threshold_;
-	std::string image_raw_topic_str_;
-	std::string network_definition_file_;
-	std::string pretrained_model_file_;
 
 	//If GPU is enabled, stores the GPU Device to use
 	unsigned int gpu_device_id_;
@@ -142,12 +139,6 @@ class RosSsdApp
 	void config_cb(const runtime_manager::ConfigSsd::ConstPtr& param)
 	{
 		score_threshold_ 	= param->score_threshold;
-		//image_raw_topic_str_		= param->image_raw_topic_str;
-		//network_definition_file_	= param->network_definition_file;
-		//pretrained_model_file_	= param->pretrained_model_file;
-		//use_gpu_ 			= param->use_gpu;
-		//gpu_device_id_ 	 	= param->gpu_device_id;
-
 	}
 
 public:
@@ -157,29 +148,32 @@ public:
 		ros::NodeHandle private_node_handle("~");//to receive args
 
 		//RECEIVE IMAGE TOPIC NAME
-		if (private_node_handle.getParam("image_raw_node", image_raw_topic_str_))
+		std::string image_raw_topic_str;
+		if (private_node_handle.getParam("image_raw_node", image_raw_topic_str))
 		{
-			ROS_INFO("Setting image node to %s", image_raw_topic_str_.c_str());
+			ROS_INFO("Setting image node to %s", image_raw_topic_str.c_str());
 		}
 		else
 		{
 			ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_raw_node:=YOUR_TOPIC");
-			image_raw_topic_str_ = "/image_raw";
+			image_raw_topic_str = "/image_raw";
 		}
 
 		//RECEIVE CONVNET FILENAMES
-		if (private_node_handle.getParam("network_definition_file", network_definition_file_))
+		std::string network_definition_file;
+		std::string pretrained_model_file;
+		if (private_node_handle.getParam("network_definition_file", network_definition_file))
 		{
-			ROS_INFO("Network Definition File: %s", network_definition_file_.c_str());
+			ROS_INFO("Network Definition File: %s", network_definition_file.c_str());
 		}
 		else
 		{
 			ROS_INFO("No Network Definition File was received. Finishing execution.");
 			return;
 		}
-		if (private_node_handle.getParam("pretrained_model_file", pretrained_model_file_))
+		if (private_node_handle.getParam("pretrained_model_file", pretrained_model_file))
 		{
-			ROS_INFO("Pretrained Model File: %s", pretrained_model_file_.c_str());
+			ROS_INFO("Pretrained Model File: %s", pretrained_model_file.c_str());
 		}
 		else
 		{
@@ -204,7 +198,7 @@ public:
 		}
 
 		//SSD STUFF
-		ssd_detector_ = new SsdDetector(network_definition_file_, pretrained_model_file_, pixel_mean_, use_gpu_, gpu_device_id_);
+		ssd_detector_ = new SsdDetector(network_definition_file, pretrained_model_file, pixel_mean_, use_gpu_, gpu_device_id_);
 
 		if (NULL == ssd_detector_)
 		{
@@ -216,12 +210,12 @@ public:
 		publisher_car_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_car/image_obj", 1);
 		publisher_person_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_person/image_obj", 1);
 
-		ROS_INFO("Subscribing to... %s", image_raw_topic_str_.c_str());
-		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str_, 1, &RosSsdApp::image_callback, this);
+		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
 
 		std::string config_topic("/config");
 		config_topic += "/ssd";
-		subscriber_ssd_config_ =node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);
+		subscriber_ssd_config_ = node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);
 
 		ros::spin();
 		ROS_INFO("END Ssd");

@@ -2265,6 +2265,9 @@ params :
       min   : 0.0
       max   : 1.0
       v     : 0.6
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : image_raw_topic_str
       desc      : image_raw_topic_str desc sample
       label     : image_raw_topic_str
