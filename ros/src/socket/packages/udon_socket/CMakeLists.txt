@@ -3,7 +3,7 @@ project(udon_socket)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  tablet_socket
+  tablet_socket_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES udon
-  CATKIN_DEPENDS tablet_socket
+  CATKIN_DEPENDS tablet_socket_msgs
 )
 
 include_directories(
@@ -27,5 +27,5 @@ target_link_libraries(udon_receiver udon ${catkin_LIBRARIES})
 add_executable(udon_sender nodes/udon_sender/udon_sender.cpp)
 target_link_libraries(udon_sender udon ${catkin_LIBRARIES})
 add_dependencies(udon_sender
-  tablet_socket_generate_messages_cpp
+  tablet_socket_msgs_generate_messages_cpp
 )

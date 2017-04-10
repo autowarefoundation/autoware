@@ -6,9 +6,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <rviz/panel.h>
-#include <cv_tracker/image_obj.h>
-#include <cv_tracker/image_obj_ranged.h>
-#include <cv_tracker/image_obj_tracked.h>
+#include <cv_tracker_msgs/image_obj.h>
+#include <cv_tracker_msgs/image_obj_ranged.h>
+#include <cv_tracker_msgs/image_obj_tracked.h>
 #include <points2image/PointsImage.h>
 
 #include <string>
@@ -47,9 +47,9 @@ namespace integrated_viewer
     
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
-    void ImageObjCallback(const cv_tracker::image_obj::ConstPtr& msg);
-    void ImageObjRangedCallback(const cv_tracker::image_obj_ranged::ConstPtr& msg);
-    void ImageObjTrackedCallback(const cv_tracker::image_obj_tracked::ConstPtr& msg);
+    void ImageObjCallback(const cv_tracker_msgs::image_obj::ConstPtr& msg);
+    void ImageObjRangedCallback(const cv_tracker_msgs::image_obj_ranged::ConstPtr& msg);
+    void ImageObjTrackedCallback(const cv_tracker_msgs::image_obj_tracked::ConstPtr& msg);
     void PointCallback(const points2image::PointsImage::ConstPtr &msg);
 
    // The function to refrect modified image on UI
@@ -85,9 +85,9 @@ namespace integrated_viewer
 
     // Data pointer to hold subscribed data
     points2image::PointsImage::ConstPtr points_msg_;
-    cv_tracker::image_obj::ConstPtr image_obj_msg_;
-    cv_tracker::image_obj_ranged::ConstPtr image_obj_ranged_msg_;
-    cv_tracker::image_obj_tracked::ConstPtr image_obj_tracked_msg_;
+    cv_tracker_msgs::image_obj::ConstPtr image_obj_msg_;
+    cv_tracker_msgs::image_obj_ranged::ConstPtr image_obj_ranged_msg_;
+    cv_tracker_msgs::image_obj_tracked::ConstPtr image_obj_tracked_msg_;
 
     // data structure to hold topic information for detection result
     std::map<std::string, std::string> rect_topic_info_;

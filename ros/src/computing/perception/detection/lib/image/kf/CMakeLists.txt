@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   runtime_manager
+  cv_tracker_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -24,7 +25,7 @@ find_package(OpenCV REQUIRED)
 ###################################
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES dpm
+  LIBRARIES kf
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
   CATKIN_DEPENDS runtime_manager
@@ -49,5 +50,5 @@ target_link_libraries(kf
   ${OpenCV_LIBS}
 )
 
-add_dependencies(kf runtime_manager_generate_messages_cpp  cv_tracker_generate_messages_cpp)
+add_dependencies(kf runtime_manager_generate_messages_cpp  cv_tracker_msgs_generate_messages_cpp)
 endif()

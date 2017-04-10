@@ -15,7 +15,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  message_generation
   libdpm_ttic
   fusion
   tf
@@ -32,7 +31,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   image_transport
   roscpp
   sensor_msgs
-  message_generation
   libdpm_ttic
   fusion
   tf
@@ -52,32 +50,14 @@ EXECUTE_PROCESS(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-add_message_files(
-  FILES
-  image_obj.msg
-  image_obj_ranged.msg
-  image_obj_tracked.msg
-  image_rect.msg
-  image_rect_ranged.msg
-  obj_label.msg
-
-  ImageObjects.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-)
-
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 catkin_package(
   CATKIN_DEPENDS #libdpm_ocv 
-  libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
+  libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar std_msgs geometry_msgs
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
 catkin_package(
-  CATKIN_DEPENDS libdpm_ttic scan2image fusion runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs
+  CATKIN_DEPENDS libdpm_ttic scan2image fusion runtime_manager calibration_camera_lidar std_msgs geometry_msgs
 )
 endif()
 ###########
@@ -111,7 +91,6 @@ ADD_EXECUTABLE(dpm_ttic
 TARGET_LINK_LIBRARIES(dpm_ttic
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  libdpm_ttic
 )
 
 IF(CUDA_FOUND)
@@ -130,7 +109,6 @@ ENDIF()
 
 
 ADD_DEPENDENCIES(dpm_ttic
-  cv_tracker_generate_messages_cpp
   runtime_manager_generate_messages_cpp
 )
 
@@ -143,7 +121,6 @@ ADD_EXECUTABLE(dpm_ocv
 )
 
 TARGET_LINK_LIBRARIES(dpm_ocv
-  libdpm_ocv
   ${catkin_LIBRARIES}
   #${OpenCV_LIBS}
 )
@@ -178,11 +155,10 @@ ADD_EXECUTABLE(range_fusion
 TARGET_LINK_LIBRARIES(range_fusion
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  fusion
 )
 
 ADD_DEPENDENCIES(range_fusion
-  cv_tracker_generate_messages_cpp
+  cv_tracker_msgs_generate_messages_cpp
   runtime_manager_generate_messages_cpp
 )
 
@@ -195,7 +171,6 @@ ADD_EXECUTABLE(kf_track
 TARGET_LINK_LIBRARIES(kf_track
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  kf
 )
 endif()
 
@@ -218,7 +193,6 @@ TARGET_LINK_LIBRARIES(obj_reproj
 )
 
 ADD_DEPENDENCIES(obj_reproj
-  cv_tracker_generate_messages_cpp
   calibration_camera_lidar_generate_messages_cpp
 )
 
@@ -247,7 +221,7 @@ TARGET_LINK_LIBRARIES(lktracker
   ${OpenCV_LIBS}
 )
 ADD_DEPENDENCIES(lktracker
-  cv_tracker_generate_messages_cpp
+  cv_tracker_msgs_generate_messages_cpp
 )
 
 TARGET_LINK_LIBRARIES(klt_track
@@ -297,7 +271,7 @@ ENDIF()
   )
 
   ADD_DEPENDENCIES(rcnn_msr
-    cv_tracker_generate_messages_cpp
+    cv_tracker_msgs_generate_messages_cpp
     runtime_manager_generate_messages_cpp
     librcnn
   )
@@ -341,7 +315,7 @@ ENDIF()
   )
 
   ADD_DEPENDENCIES(ssd_unc
-    cv_tracker_generate_messages_cpp
+    cv_tracker_msgs_generate_messages_cpp
     runtime_manager_generate_messages_cpp
   )
 else()

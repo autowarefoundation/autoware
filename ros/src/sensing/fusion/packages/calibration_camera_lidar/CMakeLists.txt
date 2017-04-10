@@ -93,15 +93,12 @@ add_library(calibrationtoolkit
   CalibrationToolkit/selectionwidget.cpp
 )
 add_dependencies(calibrationtoolkit
-  glviewer
   calibrationtoolkit_moc
   selectionwidget_moc
 )
 target_link_libraries(calibrationtoolkit
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  glviewer
-  rosinterface
   nlopt
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
@@ -181,8 +178,6 @@ add_dependencies(calibration_toolkit
 target_link_libraries(calibration_toolkit
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-  glviewer
-  rosinterface
   calibrationtoolkit
   glut
   GLU

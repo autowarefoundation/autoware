@@ -78,10 +78,10 @@ from runtime_manager.msg import ConfigLaneSelect
 from runtime_manager.msg import ConfigLaneStop
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
-from tablet_socket.msg import mode_cmd
-from tablet_socket.msg import gear_cmd
-from tablet_socket.msg import Waypoint
-from tablet_socket.msg import route_cmd
+from tablet_socket_msgs.msg import mode_cmd
+from tablet_socket_msgs.msg import gear_cmd
+from tablet_socket_msgs.msg import Waypoint
+from tablet_socket_msgs.msg import route_cmd
 from ndt_localizer.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
