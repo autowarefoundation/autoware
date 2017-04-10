@@ -18,7 +18,7 @@ namespace integrated_viewer
   } // DrawRects::DrawRects()
 
 
-  void DrawRects::DrawImageObj(const cv_tracker::image_obj::ConstPtr& rect_data,
+  void DrawRects::DrawImageObj(const cv_tracker_msgs::image_obj::ConstPtr& rect_data,
                                cv::Mat &image) {
     if (rect_data == NULL) {
       return;
@@ -52,7 +52,7 @@ namespace integrated_viewer
   } // DrawRects::DrawImageObj()
 
 
-  void DrawRects::DrawImageObjRanged(const cv_tracker::image_obj_ranged::ConstPtr& rect_data,
+  void DrawRects::DrawImageObjRanged(const cv_tracker_msgs::image_obj_ranged::ConstPtr& rect_data,
                                      cv::Mat &image) {
     if (rect_data == NULL) {
       return;
@@ -86,7 +86,7 @@ namespace integrated_viewer
   } // DrawRects::DrawImageObjRanged()
 
 
-  void DrawRects::DrawImageObjTracked(const cv_tracker::image_obj_tracked::ConstPtr& rect_data,
+  void DrawRects::DrawImageObjTracked(const cv_tracker_msgs::image_obj_tracked::ConstPtr& rect_data,
                                       cv::Mat &image) {
     if (rect_data == NULL) {
       return;

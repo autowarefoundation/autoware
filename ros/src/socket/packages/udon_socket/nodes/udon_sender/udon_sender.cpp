@@ -41,7 +41,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_datatypes.h>
 
-#include <tablet_socket/mode_info.h>
+#include <tablet_socket_msgs/mode_info.h>
 
 #include <udon_socket/udon.hpp>
 
@@ -55,7 +55,7 @@ struct Vehicle {
 Vehicle vehicle;
 boost::shared_mutex vehicle_mtx;
 
-void cache_mode(const tablet_socket::mode_info& msg)
+void cache_mode(const tablet_socket_msgs::mode_info& msg)
 {
 	boost::upgrade_lock<boost::shared_mutex> up_lock(vehicle_mtx);
 	boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(up_lock);

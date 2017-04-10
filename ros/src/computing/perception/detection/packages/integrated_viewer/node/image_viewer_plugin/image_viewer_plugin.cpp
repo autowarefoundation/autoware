@@ -15,11 +15,11 @@
 namespace integrated_viewer
 {
   const QString     ImageViewerPlugin::kImageDataType               = "sensor_msgs/Image";
-  const QString     ImageViewerPlugin::kRectDataTypeBase            = "cv_tracker/image_obj";
+  const QString     ImageViewerPlugin::kRectDataTypeBase            = "cv_tracker_msgs/image_obj";
   const QString     ImageViewerPlugin::kPointDataType               = "points2image/PointsImage";
   const QString     ImageViewerPlugin::kBlankTopic                  = "-----";
-  const std::string ImageViewerPlugin::kRectDataTypeImageObjRanged  = "cv_tracker/image_obj_ranged";
-  const std::string ImageViewerPlugin::kRectDataTypeImageObjTracked = "cv_tracker/image_obj_tracked";
+  const std::string ImageViewerPlugin::kRectDataTypeImageObjRanged  = "cv_tracker_msgs/image_obj_ranged";
+  const std::string ImageViewerPlugin::kRectDataTypeImageObjTracked = "cv_tracker_msgs/image_obj_tracked";
 
   ImageViewerPlugin::ImageViewerPlugin(QWidget* parent)
     : rviz::Panel(parent) {
@@ -200,7 +200,7 @@ namespace integrated_viewer
       image_obj_ranged_msg_  = NULL;
       image_obj_tracked_msg_ = NULL;
       // this topic type is image_obj_ranged
-      rect_sub_ = node_handle_.subscribe<cv_tracker::image_obj_ranged>(selected_topic,
+      rect_sub_ = node_handle_.subscribe<cv_tracker_msgs::image_obj_ranged>(selected_topic,
                                                                        1,
                                                                        &ImageViewerPlugin::ImageObjRangedCallback,
                                                                        this);
@@ -210,7 +210,7 @@ namespace integrated_viewer
       image_obj_ranged_msg_  = NULL;
       image_obj_tracked_msg_ = NULL;
       // this topic type is image_obj_tracked
-      rect_sub_ = node_handle_.subscribe<cv_tracker::image_obj_tracked>(selected_topic,
+      rect_sub_ = node_handle_.subscribe<cv_tracker_msgs::image_obj_tracked>(selected_topic,
                                                                        1,
                                                                        &ImageViewerPlugin::ImageObjTrackedCallback,
                                                                        this);
@@ -219,7 +219,7 @@ namespace integrated_viewer
       image_obj_ranged_msg_  = NULL;
       image_obj_tracked_msg_ = NULL;
       // this topic type is image_obj
-      rect_sub_ = node_handle_.subscribe<cv_tracker::image_obj>(selected_topic,
+      rect_sub_ = node_handle_.subscribe<cv_tracker_msgs::image_obj>(selected_topic,
                                                                 1,
                                                                 &ImageViewerPlugin::ImageObjCallback,
                                                                 this);
@@ -229,15 +229,15 @@ namespace integrated_viewer
   } // ImageViewerPlugin::on_rect_topic_combo_box__activated()
   
 
-  void ImageViewerPlugin::ImageObjCallback(const cv_tracker::image_obj::ConstPtr& msg) {
+  void ImageViewerPlugin::ImageObjCallback(const cv_tracker_msgs::image_obj::ConstPtr& msg) {
     image_obj_msg_ = msg;
   } // ImageViewerPlugin::ImageObjCallback()
 
-  void ImageViewerPlugin::ImageObjRangedCallback(const cv_tracker::image_obj_ranged::ConstPtr &msg) {
+  void ImageViewerPlugin::ImageObjRangedCallback(const cv_tracker_msgs::image_obj_ranged::ConstPtr &msg) {
     image_obj_ranged_msg_ = msg;
   } // ImageViewerPlugin::ImageObjRangedCallback()
 
-  void ImageViewerPlugin::ImageObjTrackedCallback(const cv_tracker::image_obj_tracked::ConstPtr &msg) {
+  void ImageViewerPlugin::ImageObjTrackedCallback(const cv_tracker_msgs::image_obj_tracked::ConstPtr &msg) {
     image_obj_tracked_msg_ = msg;
   } // ImageViewerPlugin::ImageObjTrackedCallback()
 

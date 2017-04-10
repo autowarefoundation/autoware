@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   runtime_manager
   points2image
   rviz
+  cv_tracker_msgs
   )
 
 set(CMAKE_CXX_FLAGS
@@ -108,6 +109,6 @@ install(FILES rviz_plugin_description.xml
 
 add_dependencies(${PROJECT_NAME}
   runtime_manager_generate_messages_cpp
-  cv_tracker_generate_messages_cpp
+  cv_tracker_msgs_generate_messages_cpp
   points2image_generate_messages_cpp)
 endif()

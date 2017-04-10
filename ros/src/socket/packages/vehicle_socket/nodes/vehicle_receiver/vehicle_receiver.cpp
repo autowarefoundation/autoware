@@ -30,7 +30,7 @@
 
 #include <ros/ros.h>
 #include <vehicle_socket/CanInfo.h>
-#include <tablet_socket/mode_info.h>
+#include <tablet_socket_msgs/mode_info.h>
 
 #include <iostream>
 #include <string>
@@ -150,7 +150,7 @@ static void* getCanValue(void *arg)
   can_msg.header.stamp = ros::Time::now();
   can_pub.publish(can_msg);
 
-  tablet_socket::mode_info mode_msg;
+  tablet_socket_msgs::mode_info mode_msg;
   mode_msg.header.frame_id = "/mode";
   mode_msg.header.stamp = ros::Time::now();
   mode_msg.mode = mode;
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
   std::cout << "vehicle receiver" << std::endl;
 
   can_pub = nh.advertise<vehicle_socket::CanInfo>("can_info", 100);
-  mode_pub = nh.advertise<tablet_socket::mode_info>("mode_info", 100);
+  mode_pub = nh.advertise<tablet_socket_msgs::mode_info>("mode_info", 100);
 
   pthread_t th;
   int ret = pthread_create(&th, nullptr, receiverCaller, nullptr);
