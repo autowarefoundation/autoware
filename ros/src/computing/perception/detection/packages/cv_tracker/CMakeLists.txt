@@ -51,7 +51,7 @@ EXECUTE_PROCESS(
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 catkin_package(
-  CATKIN_DEPENDS #libdpm_ocv 
+  CATKIN_DEPENDS libdpm_ocv 
   libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar std_msgs geometry_msgs
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
@@ -140,8 +140,13 @@ SET_TARGET_PROPERTIES(dpm_ocv
   COMPILE_FLAGS
   "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
 )
+
 ENDIF()
-endif()
+#CUDAENDIF
+
+ENDIF()
+#ROS_VERSION_ENDIF
+
 #SET_TARGET_PROPERTIES(car_locate
 #  PROPERTIES COMPILE_FLAGS
 #  "-DCAMERA_YAML=${CAMERA_YAML}")
