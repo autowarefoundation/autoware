@@ -902,15 +902,15 @@ class MyFrame(rtmgr.MyFrame):
 			policy = d.get(self.param_value_get(pdic, prm, 'policy', 'FIFO'), SCHED_FIFO)
 			priority = self.param_value_get(pdic, prm, 'prio', 0)
 
-		procs = [ proc ] + proc.get_children(recursive=True)
+		procs = [ proc ] + proc.children(recursive=True)
 		for proc in procs:
 			print 'pid={}'.format(proc.pid)
-			if proc.get_nice() != nice:
-				print 'nice {} -> {}'.format(proc.get_nice(), nice)
+			if proc.nice() != nice:
+				print 'nice {} -> {}'.format(proc.nice(), nice)
 				if set_process_nice(proc, nice) is False:
 					print 'Err set_process_nice()'
-			if proc.get_cpu_affinity() != cpus:
-				print 'cpus {} -> {}'.format(proc.get_cpu_affinity(), cpus)
+			if proc.cpu_affinity() != cpus:
+				print 'cpus {} -> {}'.format(proc.cpu_affinity(), cpus)
 				if set_process_cpu_affinity(proc, cpus) is False:
 					print 'Err set_process_cpu_affinity()'
 
@@ -2844,7 +2844,7 @@ def load_yaml(filename, def_ret=None):
 
 def terminate_children(proc, sigint=False):
     try:
-        for child in psutil.Process(proc.pid).get_children():
+        for child in psutil.Process(proc.pid).children():
             terminate_children(child, sigint)
             terminate(child, sigint)
 
