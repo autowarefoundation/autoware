@@ -41,6 +41,7 @@ include_directories(
 )
 
 add_library(libwaypoint_follower lib/libwaypoint_follower.cpp)
+add_dependencies(libwaypoint_follower waypoint_follower_msgs_generate_messages_cpp)
 
 add_executable(pure_pursuit
   nodes/pure_pursuit/pure_pursuit_node.cpp
