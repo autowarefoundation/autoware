@@ -60,8 +60,12 @@
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
 
-
+#include <opencv2/core/version.hpp>
+#if (CV_MAJOR_VERSION == 3)
 #include "gencolors.cpp"
+#else
+#include <opencv2/contrib/contrib.hpp>
+#endif
 
 struct ObjectDetection_
 {
@@ -960,8 +964,12 @@ int kf_main(int argc, char* argv[])
 
 	image_objects = n.advertise<cv_tracker_msgs::image_obj_tracked>("image_obj_tracked", 1);
 
+#if (CV_MAJOR_VERSION == 3)
 	generateColors(_colors, 25);
+#else
+	cv::generateColors(_colors, 25);
 
+#endif
 	std::string image_topic;
 	std::string obj_topic;
 	if (private_nh.getParam("image_node", image_topic))

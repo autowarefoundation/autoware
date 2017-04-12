@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   jsk_recognition_msgs
   rosinterface
+  cv_bridge
   cv_tracker_msgs
 )
 
@@ -29,7 +30,6 @@ if ("${ROS_VERSION}" MATCHES "(kinetic)")
 	pkg_check_modules(OpenCV REQUIRED opencv-3.2.0-dev)
 else()
 	pkg_check_modules(OpenCV REQUIRED)
-
 endif()
 
 execute_process(
@@ -226,16 +226,14 @@ if(EXISTS "/usr/local/cuda")
     )
   add_custom_target(vehicle_tracker_moc_rbsspfvehicletracker DEPENDS moc_rbsspfvehicletracker.cpp)
 
-  # find_package(Qt5Core REQUIRED)
-  # find_package(Qt5Widgets REQUIRED)
-
-  #QT Stuff
-
   FIND_PACKAGE(CUDA REQUIRED)
   INCLUDE(FindCUDA)
 
-  # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
-  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=${CUDA_ARCH}")
+  if ("${ROS_VERSION}" MATCHES "(kinetic)")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH})
+  else()
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11)
+  endif()
 
   INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS})

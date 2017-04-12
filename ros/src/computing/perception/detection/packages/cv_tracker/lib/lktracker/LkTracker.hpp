@@ -9,12 +9,16 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
-//#include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+#include <opencv2/core/version.hpp>
+#if (CV_MAJOR_VERSION == 3)
 #include "gencolors.cpp"
+#else
+#include <opencv2/contrib/contrib.hpp>
+#endif
 
 struct ObjectDetection
 {

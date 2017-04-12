@@ -126,6 +126,7 @@ TARGET_LINK_LIBRARIES(dpm_ocv
 
 ADD_DEPENDENCIES(dpm_ocv
   runtime_manager_generate_messages_cpp
+  cv_tracker_msgs_generate_messages_cpp
 )
 
 IF(CUDA_FOUND)
@@ -175,6 +176,9 @@ ADD_EXECUTABLE(kf_track
 TARGET_LINK_LIBRARIES(kf_track
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
+)
+ADD_DEPENDENCIES(kf_track
+  cv_tracker_msgs_generate_messages_cpp
 )
 endif()
 

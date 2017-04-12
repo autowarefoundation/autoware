@@ -22,7 +22,11 @@ LkTracker::LkTracker(int in_id, float in_min_height, float in_max_height, float 
 	previous_centroid_x_	= 0;
 	previous_centroid_y_	= 0;
 
+#if (CV_MAJOR_VERSION == 3)
 	generateColors(colors_, 2);
+#else
+	cv::generateColors(colors_, 2);
+#endif
 	lifespan_				= 45;
 	DEFAULT_LIFESPAN_		= 45;
 	object_id				= in_id;

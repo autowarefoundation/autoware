@@ -256,8 +256,11 @@ int main(int argc, char **argv)
 		ROS_INFO("No points node received, defaulting to points_image, you can use _points_node:=YOUR_TOPIC");
 		points_node = "/vscan_image";
 	}
-
+#if (CV_MAJOR_VERSION == 3)
 	generateColors(_colors, 25);
+#else
+	cv::generateColors(_colors, 25);
+#endif
 
 	ros::Subscriber scriber = n.subscribe(image_topic_name, 1,
 					    image_cb);

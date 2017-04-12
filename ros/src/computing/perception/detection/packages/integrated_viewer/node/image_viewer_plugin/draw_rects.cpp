@@ -1,9 +1,15 @@
 #include "draw_rects.h"
 #include <string>
 #include <vector>
-//#include <opencv2/contrib/contrib.hpp>
-#include "gencolors.cpp"
 
+
+#include <opencv2/core/version.hpp>
+
+#if (CV_MAJOR_VERSION == 3)
+#include "gencolors.cpp"
+#else
+#include <opencv2/contrib/contrib.hpp>
+#endif
 
 namespace integrated_viewer
 {
@@ -13,7 +19,11 @@ namespace integrated_viewer
   
   DrawRects::DrawRects(void) {
     // Generate color map to represent tracked object
+#if (CV_MAJOR_VERSION == 3)
     generateColors(color_map_, 25);
+#else
+    cv::generateColors(color_map_, 25);
+#endif
 
   } // DrawRects::DrawRects()
 

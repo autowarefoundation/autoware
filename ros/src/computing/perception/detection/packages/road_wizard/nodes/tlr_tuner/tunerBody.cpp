@@ -1,6 +1,15 @@
 #include "tunerBody.h"
 #include "road_wizard/TunedResult.h"
 
+
+#include <opencv2/core/version.hpp>
+#if (CV_MAJOR_VERSION != 3)
+#define CV cv
+#else
+#define CV cv::internal
+#endif
+
+
 static constexpr int32_t ADVERTISE_QUEUE_SIZE = 10;
 static constexpr bool    ADVERTISE_LATCH      = true;
 
@@ -396,63 +405,69 @@ void TunerBody::saveResult(std::string fileName)
 
   /* write data to file */
   {
-    cv::internal::WriteStructContext st_red(cvfs, "RED", CV_NODE_MAP);
+    CV::WriteStructContext st_red(cvfs, "RED", CV_NODE_MAP);
+    //cv::internal::WriteStructContext st_red(cvfs, "RED", CV_NODE_MAP);
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
+      //cv::internal::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
       cv::write(cvfs, "center", Red_set.hue.center);
       cv::write(cvfs, "range", Red_set.hue.range);
     }
 
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Saturation", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Saturation", CV_NODE_MAP);
       cv::write(cvfs, "center", Red_set.sat.center);
       cv::write(cvfs, "range", Red_set.sat.range);
     }
 
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Value", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Value", CV_NODE_MAP);
       cv::write(cvfs, "center", Red_set.val.center);
       cv::write(cvfs, "range", Red_set.val.range);
     }
   }
 
   {
-    cv::internal::WriteStructContext st_yellow(cvfs, "YELLOW", CV_NODE_MAP);
+    CV::WriteStructContext st_yellow(cvfs, "YELLOW", CV_NODE_MAP);
+    //CV::WriteStructContext st_yellow(cvfs, "YELLOW", CV_NODE_MAP);
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
+      //CV::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
       cv::write(cvfs, "center", Yellow_set.hue.center);
       cv::write(cvfs, "range", Yellow_set.hue.range);
     }
 
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Saturation", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Saturation", CV_NODE_MAP);
+      //CV::WriteStructContext st_hue(cvfs, "Saturation", CV_NODE_MAP);
       cv::write(cvfs, "center", Yellow_set.sat.center);
       cv::write(cvfs, "range", Yellow_set.sat.range);
     }
 
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Value", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Value", CV_NODE_MAP);
+     // CV::WriteStructContext st_hue(cvfs, "Value", CV_NODE_MAP);
       cv::write(cvfs, "center", Yellow_set.val.center);
       cv::write(cvfs, "range", Yellow_set.val.range);
     }
   }
 
   {
-    cv::internal::WriteStructContext st_green(cvfs, "GREEN", CV_NODE_MAP);
+    CV::WriteStructContext st_green(cvfs, "GREEN", CV_NODE_MAP);
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Hue", CV_NODE_MAP);
       cv::write(cvfs, "center", Green_set.hue.center);
       cv::write(cvfs, "range", Green_set.hue.range);
     }
 
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Saturation", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Saturation", CV_NODE_MAP);
       cv::write(cvfs, "center", Green_set.sat.center);
       cv::write(cvfs, "range", Green_set.sat.range);
     }
 
     {
-      cv::internal::WriteStructContext st_hue(cvfs, "Value", CV_NODE_MAP);
+      CV::WriteStructContext st_hue(cvfs, "Value", CV_NODE_MAP);
       cv::write(cvfs, "center", Green_set.val.center);
       cv::write(cvfs, "range", Green_set.val.range);
     }

@@ -49,6 +49,7 @@ add_message_files(
   image_rect_ranged.msg
   obj_label.msg
   obj_pose.msg
+  ImageObjects.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -31,8 +31,14 @@
 #include <string>
 #include <vector>
 
-//#include <opencv2/contrib/contrib.hpp>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <opencv2/core/version.hpp>
+#if (CV_MAJOR_VERSION == 3)
 #include "gencolors.cpp"
+#else
+#include <opencv2/contrib/contrib.hpp>
+#endif
 
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
@@ -292,7 +298,11 @@ int main(int argc, char **argv)
 		image_topic_name = "/image_raw";
 	}
 
+#if (CV_MAJOR_VERSION == 3)
 	generateColors(_colors, 25);
+#else
+	cv::generateColors(_colors, 25);
+#endif
 
 	ros::Subscriber scriber = n.subscribe(image_topic_name, 1, image_viewer_callback);
 
