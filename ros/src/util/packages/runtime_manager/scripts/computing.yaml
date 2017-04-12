@@ -2255,6 +2255,71 @@ params :
         delim        : ':='
         only_enable  : True
 
+  - name  : ssd
+    topic : /config/ssd
+    msg   : ConfigSsd
+    vars  :
+    - name  : score_threshold
+      desc  : score_threshold desc sample
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.6
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : image_raw_topic_str
+      desc      : image_raw_topic_str desc sample
+      label     : image_raw_topic_str
+      kind      : str
+      v         : /image_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : network_definition_file sample
+      label    : 'network_file (ssd)'
+      kind     : path
+      v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/deploy.prototxt
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : pretrained_model_file sample
+      label    : 'pattern_file (ssd)'
+      kind     : path
+      v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/VGG_VOC0712Plus_SSD_300x300_iter_240000.caffemodel
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : use_gpu
+      desc      : use_gpu desc sample
+      label     : use_gpu
+      kind     : checkbox
+      v        : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id desc sample
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+
   - name : viewer_sel_cam
     vars :
     - name         : camera_id
