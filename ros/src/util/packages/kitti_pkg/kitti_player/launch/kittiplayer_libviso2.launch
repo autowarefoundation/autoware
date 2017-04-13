@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+
+<launch>
+    <!-- USEFUL ROS LAUNCH STUFF -->
+    <!--
+            output = "screen"
+
+    -->
+
+    <!-- The namespace where images are published -->
+    <arg name="camera" default="/kitti_player/grayscale" />
+    <arg    name="directory"
+            default="$(find kitti_player)/dataset/2011_10_03/2011_10_03_drive_0058_extract/"
+            />
+
+    <node   name="kitti_player" pkg="kitti_player" type="kitti_player"
+            required="true"
+            args= "-d $(arg directory) -f 1 -a -s -l -v -V"
+            />
+
+    <!--TYPE THIS LINE TO VIEW SOMETHING-->
+    <!--rosrun image_view stereo_view stereo:=/kitti_player/grayscale image:=image_rect _approximate_sync:=True-->
+    <group ns="$(arg camera)" >
+            <node   pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" required="true" output = "screen">
+                    <param name="approximate_sync"           value="true"/>
+                    <param name="stereo_algorithm"           value="1"/>        <!-- 0=BlockMachingGlobal 1=SemiGlobalBMl -->
+
+                    <!--ISIS Lab Magic Numbers-->
+                    <param name="correlation_window_size"    value="9"  />      <!-- SAD correlation window width, pixels -->
+                    <param name="disparity_range"            value="112"  />    <!-- Number of disparities to search, pixels-->
+                    <param name="prefilter_size"             value="5"  />      <!-- Normalization window size, pixels-->
+                    <param name="prefilter_cap "             value="63" />      <!-- Bound on normalized pixel values-->
+                    <param name="min_disparity"              value="0"  />    <!-- Disparity to begin search at, pixels (may be negative)-->
+                    <param name="texture_threshold"          value="100"/>      <!-- Filter out if SAD window response does not exceed texture threshold-->
+                    <param name="uniqueness_ratio"           value="5"  />      <!-- Filter out if best match does not sufficiently exceed the next-best match-->
+                    <param name="speckle_size"               value="196"/>      <!-- Reject regions smaller than this size, pixels-->
+                    <param name="speckle_range"              value="128"  />    <!-- Max allowed difference between detected disparities-->
+                    <param name="disp12MaxDiff"              value="90"  />     <!-- Maximum allowed difference (in integer pixel units) in the left-right disparity check, only available in SGBM-->
+                    <param name="P1"                         value="0"  />      <!-- The first parameter controlling the disparity smoothness, only available in SGBM-->
+                    <param name="P2"                         value="128"/>      <!-- The second parameter controlling the disparity smoothness., only available in SGBM-->
+                    <param name="fullDP"                     value="0"  />      <!-- Run the full variant of the algorithm, only available in SGBM -->
+            </node>
+
+    </group>
+
+    <!--This transform is also defined in the RLE launchers, useless-->
+    <!--    <node pkg="tf" type="static_transform_publisher" name="visual_odometry_camera_frame_to_visual_odometry_car_frame"
+          args="0 0 0 -1.570796 0 -1.570796 base_link kitti_player 50" />-->
+
+    <!-- Run the viso2_ros package -->
+<!--
+    <node pkg="viso2_ros" type="stereo_odometer" name="stereo_odometer" required="true">
+            <rosparam param="base_link_frame_id">visual_odometry_camera_frame</rosparam>
+            <remap from="stereo" to="$(arg camera)"/>
+            <remap from="image" to="image_rect"/>
+    </node>
+-->
+
+</launch>
