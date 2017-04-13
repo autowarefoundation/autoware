@@ -20,20 +20,25 @@
 #include <boost/geometry/algorithms/disjoint.hpp>
 #include <boost/assign/std/vector.hpp>
 
+#include <pcl_ros/point_cloud.h>
+#include <pcl/point_types.h>
+
+#include "Cluster.h"
+
 // --------------------------------------------------------------------------
 class CTrack
 {
 
 	cv::Point2f prediction_point_;
 	TKalmanFilter kf_;
-
-	lidar_tracker::CloudCluster cluster_;
 public:
+	lidar_tracker::CloudCluster cluster;
 
 	std::vector<cv::Point2f> trace;
 	size_t track_id;
 	size_t skipped_frames;
 	size_t life_span;
+	double area;
 
 	CTrack(const lidar_tracker::CloudCluster& in_cluster, float in_time_delta, float in_acceleration_noise_magnitude, size_t in_track_id)
 		: kf_(cv::Point2f(in_cluster.centroid_point.point.x, in_cluster.centroid_point.point.y), in_time_delta, in_acceleration_noise_magnitude)
@@ -41,8 +46,9 @@ public:
 		track_id = in_track_id;
 		skipped_frames = 0;
 		prediction_point_ = cv::Point2f(in_cluster.centroid_point.point.x, in_cluster.centroid_point.point.y);
-		cluster_ = in_cluster;
+		cluster = in_cluster;
 		life_span = 0;
+		area = 0;
 	}
 
 	float CalculateDistance(const cv::Point2f& in_point)
@@ -61,9 +67,10 @@ public:
 		kf_.GetPrediction();
 		prediction_point_ = kf_.Update(cv::Point2f(in_cluster.centroid_point.point.x, in_cluster.centroid_point.point.y), in_data_correct);
 
-		if (in_data_correct)
+		if (in_data_correct
+			)
 		{
-			cluster_ = in_cluster;
+			cluster = in_cluster;
 		}
 
 		if (trace.size() > in_max_trace_length)
@@ -76,7 +83,7 @@ public:
 
 	lidar_tracker::CloudCluster GetCluster()
 	{
-		return cluster_;
+		return cluster;
 	}
 
 };
@@ -99,7 +106,7 @@ class KfLidarTracker
 	bool pose_estimation_;
 	void CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>& in_trackers, std::vector<bool>& in_out_visited_trackers, std::vector<size_t>& out_merge_indices, double in_merge_threshold);
 	void CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers);
-	void MergeTrackers(const std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers);
+	void MergeTrackers(std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers);
 	void CreatePolygonFromPoints(const geometry_msgs::Polygon& in_points, boost_polygon& out_polygon);
 public:
 	KfLidarTracker(float in_time_delta, float accel_noise_mag, float dist_thres = 3, float tracker_merging_threshold=2, size_t maximum_allowed_skipped_frames = 10, size_t max_trace_length = 10, bool in_pose_estimation = false);

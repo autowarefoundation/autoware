@@ -361,7 +361,7 @@ void checkClusterMerge(size_t in_cluster_id, std::vector<ClusterPtr>& in_cluster
 			{
 				in_out_visited_clusters[i] = true;
 				out_merge_indices.push_back(i);
-				std::cout << "Merging " << in_cluster_id << " with " << i << " dist:" << distance << std::endl;
+				//std::cout << "Merging " << in_cluster_id << " with " << i << " dist:" << distance << std::endl;
 				checkClusterMerge(i, in_clusters, in_out_visited_clusters, out_merge_indices, in_merge_threshold);
 			}
 		}
@@ -577,8 +577,8 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		bounding_box.header = _velodyne_header;
 		polygon.header = _velodyne_header;
 
-		if (	final_clusters[i]->IsValid() &&
-				bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0
+		if (	final_clusters[i]->IsValid()
+				//&& bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0
 				//&&	bounding_box.dimensions.x < _max_boundingbox_side && bounding_box.dimensions.y < _max_boundingbox_side
 				)
 		{
@@ -833,7 +833,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		timer.reset();timer.start();
 		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters, polygon_array, pictograms_array);
-		timer.stop(); std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
+		//timer.stop(); std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		timer.reset();timer.start();
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);

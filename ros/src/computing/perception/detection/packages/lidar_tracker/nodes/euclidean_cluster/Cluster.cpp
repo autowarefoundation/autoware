@@ -115,8 +115,8 @@ void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudC
 		out_cluster_message.eigen_vectors.push_back(eigen_vector);
 	}
 
-	std::vector<float> fpfh_descriptor = GetFpfhDescriptor(8, 0.3, 0.3);
-	out_cluster_message.fpfh_descriptor.data = fpfh_descriptor;
+	/*std::vector<float> fpfh_descriptor = GetFpfhDescriptor(8, 0.3, 0.3);
+	out_cluster_message.fpfh_descriptor.data = fpfh_descriptor;*/
 }
 
 void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose)

@@ -65,8 +65,8 @@ KfLidarTrackNode::KfLidarTrackNode() :
 	pub_jsk_hulls_ = node_handle_.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls_tracked",1);
 	pub_jsk_pictograms_ = node_handle_.advertise<jsk_rviz_plugins::PictogramArray>("/cluster_ids_tracked",1);
 
-	node_handle_.param("distance_matching_threshold", distance_matching_threshold_, 3.0);	ROS_INFO("distance_matching_threshold: %f", distance_matching_threshold_);// distance threshold to match objects between scans
-	node_handle_.param("tracker_merging_threshold", tracker_merging_threshold_, 2.0);	ROS_INFO("tracker_merging_threshold: %f", tracker_merging_threshold_);// distance threshold to match objects between scans
+	node_handle_.param("distance_matching_threshold", distance_matching_threshold_, 1.5);	ROS_INFO("distance_matching_threshold: %f", distance_matching_threshold_);// distance threshold to match objects between scans
+	node_handle_.param("tracker_merging_threshold", tracker_merging_threshold_, 1.0);	ROS_INFO("tracker_merging_threshold: %f", tracker_merging_threshold_);// distance threshold to match objects between scans
 	node_handle_.param("pose_estimation", pose_estimation_, false);	ROS_INFO("pose_estimation: %d", pose_estimation_);// whether or not to estimate pose
 	node_handle_.param("keep_alive", keep_alive_, 2);	ROS_INFO("keep_alive: %d", keep_alive_);// frames to keep an object
 

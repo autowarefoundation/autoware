@@ -36,6 +36,7 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 	std::vector<int> track_assignments(num_tracks, -1);
 	std::vector< std::vector<size_t> > track_assignments_vector(num_tracks);
 	std::vector<size_t> detections_assignments;
+	std::vector<double> detections_areas(num_detections, 0.0f);
 
 	std::vector< CTrack > final_tracks;
 
@@ -53,7 +54,7 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 							);
 		}
 	}
-	else if (num_tracks > 0 && num_detections>0)
+	//else
 	{
 		//std::cout << "Trying to match " << num_tracks << " tracks with " << num_detections << std::endl;
 
@@ -66,6 +67,7 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 			//detection polygon
 			boost_polygon hull_detection_polygon;
 			CreatePolygonFromPoints(in_cloud_cluster_array.clusters[i].convex_hull.polygon, hull_detection_polygon);
+			detections_areas[i] = boost::geometry::area(hull_detection_polygon);
 
 			for (size_t j = 0; j < num_tracks; j++)
 			{
@@ -83,8 +85,7 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 				if (!boost::geometry::disjoint(hull_detection_polygon, hull_track_polygon)
 					||  (current_distance < current_distance_threshold)
 					)
-				{//assign the closest detection
-					//std::cout << "best match T:" << j << "  D:" << i << " so far "<< " dist:" << current_distance << std::endl;
+				{//assign the closest detection or overlapping
 					current_distance_threshold = current_distance;
 					track_assignments[j] = i;//assign detection i to track j
 					track_assignments_vector[j].push_back(i);//add current detection as a match
@@ -100,14 +101,37 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 			{
 				//keep oldest
 				tracks[i].skipped_frames = 0;
-				tracks[i].Update(in_cloud_cluster_array.clusters[track_assignments[i]],
+
+				//join all assigned detections to update the tracker
+				/*lidar_tracker::CloudClusterPtr summed_cloud_cluster(new lidar_tracker::CloudCluster());
+				pcl::PointCloud<pcl::PointXYZ>::Ptr summed_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+				for (size_t j = 0; j < track_assignments_vector[i].size(); j++)
+				{
+					pcl::PointCloud<pcl::PointXYZ>::Ptr current_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+					pcl::fromROSMsg(in_cloud_cluster_array.clusters[track_assignments_vector[i][j]].cloud, *current_cloud_ptr);
+					*summed_cloud_ptr += *current_cloud_ptr;
+				}
+				ClusterPtr merged_cluster(new Cluster());
+				std::vector<int> indices(summed_cloud_ptr->points.size(), 0);
+				for (size_t j=0; j<summed_cloud_ptr->points.size(); j++)
+				{
+					indices[j]=j;
+				}
+				merged_cluster->SetCloud(summed_cloud_ptr, indices, in_cloud_cluster_array.clusters[track_assignments[i]].header, i,255, 255, 255, "", pose_estimation_);
+
+				merged_cluster->ToRosMessage(in_cloud_cluster_array.clusters[track_assignments[i]].header, *summed_cloud_cluster);*/
+
+				tracks[i].Update(in_cloud_cluster_array.clusters[track_assignments[i]],//*summed_cloud_cluster,
 								true,
 								maximum_trace_length_);
 				//detections_assignments.push_back(track_assignments[i]);
 			}
 			else				     // if not matched continue using predictions, and increase life
 			{
-				tracks[i].Update(lidar_tracker::CloudCluster(), false, maximum_trace_length_);
+				tracks[i].Update(lidar_tracker::CloudCluster(), //empty cluster
+									false, //not matched,
+									maximum_trace_length_
+								);
 				tracks[i].skipped_frames++;
 			}
 			tracks[i].life_span++;
@@ -161,9 +185,11 @@ void KfLidarTracker::CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>
 								);
 			boost_polygon in_tracker_poly;
 			CreatePolygonFromPoints(in_trackers[in_tracker_id].GetCluster().convex_hull.polygon, in_tracker_poly);
+			in_trackers[in_tracker_id].area = boost::geometry::area(in_tracker_poly);
 
 			boost_polygon current_tracker_poly;
 			CreatePolygonFromPoints(in_trackers[i].GetCluster().convex_hull.polygon, current_tracker_poly);
+			in_trackers[i].area = boost::geometry::area(current_tracker_poly);
 
 			if (!boost::geometry::disjoint(in_tracker_poly, current_tracker_poly)
 				|| distance <= in_merge_threshold)
@@ -176,10 +202,12 @@ void KfLidarTracker::CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>
 	}
 }
 
-void KfLidarTracker::MergeTrackers(const std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers)
+void KfLidarTracker::MergeTrackers(std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers)
 {
 	size_t oldest_life =0;
 	size_t oldest_index = 0;
+	double largest_area = 0.0f;
+	size_t largest_index = 0;
 	for (size_t i=0; i<in_merge_indices.size(); i++)
 	{
 		if (in_trackers[in_merge_indices[i]].life_span> oldest_life)
@@ -187,9 +215,15 @@ void KfLidarTracker::MergeTrackers(const std::vector<CTrack>& in_trackers, std::
 			oldest_life = in_trackers[in_merge_indices[i]].life_span;
 			oldest_index = in_merge_indices[i];
 		}
+		if (in_trackers[in_merge_indices[i]].area> largest_area)
+		{
+			largest_index = in_merge_indices[i];
+		}
 		in_out_merged_trackers[in_merge_indices[i]] = true;
 	}
+
 	out_trackers.push_back(in_trackers[oldest_index]);
+	//out_trackers.back().cluster = in_trackers[largest_index].GetCluster();
 }
 
 void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)

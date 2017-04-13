@@ -133,6 +133,7 @@ add_executable(kf_lidar_track
 				nodes/kf_lidar_track/KfLidarTracker.cpp 
 				nodes/kf_lidar_track/HungarianAlg.cpp
 				nodes/kf_lidar_track/Kalman.cpp
+				nodes/euclidean_cluster/Cluster.cpp
 				)
 target_include_directories(kf_lidar_track PRIVATE nodes/kf_lidar_track/includes)
 target_link_libraries(kf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
