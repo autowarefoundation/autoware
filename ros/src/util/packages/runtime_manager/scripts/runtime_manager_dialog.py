@@ -57,6 +57,7 @@ import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
 from runtime_manager.msg import ConfigRcnn
+from runtime_manager.msg import ConfigSsd
 from runtime_manager.msg import ConfigCarDpm
 from runtime_manager.msg import ConfigPedestrianDpm
 from runtime_manager.msg import ConfigNdt
@@ -92,6 +93,7 @@ from runtime_manager.msg import indicator_cmd
 from runtime_manager.msg import lamp_cmd
 from runtime_manager.msg import traffic_light
 from runtime_manager.msg import adjust_xy
+from types import MethodType
 
 SCHED_OTHER = 0
 SCHED_FIFO = 1
@@ -484,11 +486,63 @@ class MyFrame(rtmgr.MyFrame):
 		pass
 
 	def OnClose(self, event):
+		if self.quit_select() != 'quit':
+			return
+
 		# kill_all
 		for proc in self.all_procs[:]: # copy
 			(_, obj) = self.proc_to_cmd_dic_obj(proc)
 			self.launch_kill(False, 'dmy', proc, obj=obj)
 
+		shutdown_proc_manager()
+
+		shutdown_sh = self.get_autoware_dir() + '/ros/shutdown'
+		if os.path.exists(shutdown_sh):
+			os.system(shutdown_sh)
+
+		for thinf in self.all_th_infs:
+			th_end(thinf)
+
+		self.Destroy()
+
+	def quit_select(self):
+		def timer_func():
+			if self.quit_timer:
+				self.quit_timer = 'timeout'
+				evt = wx.PyCommandEvent( wx.EVT_CLOSE.typeId, self.GetId() )
+				wx.PostEvent(self, evt)
+
+		if not hasattr(self, 'quit_timer') or not self.quit_timer:
+			self.quit_timer = threading.Timer(2.0, timer_func)
+			self.quit_timer.start()
+			return 'not quit'
+
+		if self.quit_timer == 'timeout':
+			self.save_param_yaml()
+			return 'quit'
+
+		self.quit_timer.cancel()
+		self.quit_timer = None
+		lst = [
+			( 'Save and Quit', [ 'save', 'quit' ] ),
+			( 'Save to param.yaml', [ 'save' ] ),
+			( 'Quit without saving', [ 'quit' ] ),
+			( 'Reload computing.yaml', [ 'reload' ] ),
+		]
+		choices = [ s for (s, _) in lst ]
+		dlg = wx.SingleChoiceDialog(self, 'select command', '', choices)
+		if dlg.ShowModal() != wx.ID_OK:
+			return 'not quit'
+
+		i = dlg.GetSelection() # index of choices
+		(_, f) = lst[i]
+		if 'save' in f:
+			self.save_param_yaml()
+		if 'reload' in f:
+			self.reload_computing_yaml()
+		return 'quit' if 'quit' in f else 'not quit'
+
+	def save_param_yaml(self):
 		save_dic = {}
 		for (name, pdic) in self.load_dic.items():
 			if pdic and pdic != {}:
@@ -508,16 +562,71 @@ class MyFrame(rtmgr.MyFrame):
 			f.write(s)
 			f.close()
 
-		shutdown_proc_manager()
+	def reload_computing_yaml(self):
+		parent = self.tree_ctrl_0.GetParent()
+		sizer = self.tree_ctrl_0.GetContainingSizer()
 
-		shutdown_sh = self.get_autoware_dir() + '/ros/shutdown'
-		if os.path.exists(shutdown_sh):
-			os.system(shutdown_sh)
+		items = self.load_yaml('computing.yaml')
 
-		for thinf in self.all_th_infs:
-			th_end(thinf)
+		# backup cmd_dic proc
+		cmd_dic = self.computing_cmd
+		to_name = lambda obj: next( ( d.get('name') for d in self.config_dic.values() if d.get('obj') == obj ), None )
+		procs = [ ( to_name(obj), proc ) for (obj, (cmd, proc)) in cmd_dic.items() if proc ]
 
-		self.Destroy()
+		# remove old tree ctrl
+		for i in range(2):
+			self.obj_get('tree_ctrl_' + str(i)).Destroy()
+
+		# remove old params
+		names = [ prm.get('name') for prm in items.get('params', []) ]
+		for prm in self.params[:]: # copy
+			if prm.get('name') in names:
+				self.params.remove(prm)
+
+		self.add_params(items.get('params', []))
+
+		# overwrite sys_gdic
+		old = self.sys_gdic
+		self.sys_gdic = items.get('sys_gui')
+		self.sys_gdic['update_func'] = self.update_func
+		for d in self.config_dic.values():
+			if d.get('gdic') == old:
+				d['gdic'] = self.sys_gdic
+
+		# listing update names
+		def subs_names(subs):
+			f2 = lambda s: subs_names( s.get('subs') ) if 'subs' in s else [ s.get('name') ]
+			f = lambda lst, s: lst + f2(s)
+			return reduce(f, subs, [])
+
+		names = subs_names( items.get('subs') )
+		names += items.get('buttons', {}).keys()
+
+		# remove old data of name in config_dic
+		for (k, v) in self.config_dic.items():
+			if v.get('name') in names:
+				self.config_dic.pop(k, None)
+
+		# rebuild tree ctrl
+		cmd_dic.clear()
+		for i in range(2):
+			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
+			tree_ctrl.ExpandAll()
+			tree_ctrl.SetBackgroundColour(wx.NullColour)
+			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
+			sizer.Add(tree_ctrl, 1, wx.EXPAND, 0)
+
+		self.setup_buttons(items.get('buttons', {}), self.computing_cmd)
+
+		# restore cmd_dic proc
+		to_obj = lambda name: next( ( d.get('obj') for d in self.config_dic.values() if d.get('name') == name ), None )
+		for (name, proc) in procs:
+			obj = to_obj(name)
+			if obj and obj in cmd_dic:
+				cmd_dic[ obj ] = ( cmd_dic.get(obj)[0], proc )
+				set_val(obj, True)
+
+		parent.Layout()
 
 	def RosCb(self, data):
 		print('recv topic msg : ' + data.data)
@@ -1726,6 +1835,10 @@ class MyFrame(rtmgr.MyFrame):
 		if tree is None:
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, agwStyle=style)
+
+			# for disable wrong scrolling at checked
+			tree.AcceptsFocus = MethodType(lambda self: False, tree, CT.CustomTreeCtrl)
+
 			item = tree.AddRoot(name, data=tree)
 			tree.Bind(wx.EVT_MOTION, self.OnTreeMotion)
 		else:
@@ -1843,7 +1956,8 @@ class MyFrame(rtmgr.MyFrame):
 			if kill_children:
 				terminate_children(proc, sigint)
 			terminate(proc, sigint)
-			proc.wait()
+			enables_set(obj, 'proc_wait', False)
+			th_start( proc_wait_thread, {'proc': proc, 'obj': obj} )
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
 			proc = None
@@ -2853,6 +2967,11 @@ def terminate(proc, sigint=False):
 	else:
 		proc.terminate()
 
+def proc_wait_thread(ev, proc, obj):
+	proc.wait()
+	wx.CallAfter(enables_set, obj, 'proc_wait', True)
+	th_end((None, ev))
+
 def th_start(target, kwargs={}):
 	ev = threading.Event()
 	kwargs['ev'] = ev
@@ -2862,6 +2981,10 @@ def th_start(target, kwargs={}):
 	return (th, ev)
 
 def th_end((th, ev)):
+	if not th:
+		th = threading.current_thread()
+		threading.Timer( 1.0, th_end, ((th, ev),) ).start()
+		return
 	ev.set()
 	th.join()
 
@@ -2989,6 +3112,7 @@ def enables_set(obj, k, en):
 	d[k] = en
 	d['last_key'] = k
 	obj.Enable( all( d.values() ) )
+	obj_refresh(obj)
 	if isinstance(obj, wx.HyperlinkCtrl):
 		if not hasattr(obj, 'coLor'):
 			obj.coLor = { True:obj.GetNormalColour(), False:'#808080' }

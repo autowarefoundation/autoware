@@ -121,7 +121,7 @@ ssize_t send_mode(int fd, std::int32_t mode)
 {
 	std::uint8_t buf[SIZE_MODE];
 	set_type(buf, TYPE_MODE);
-	set_value(buf, mode);
+	set_value(buf, (mode > 0) ? 1:0);
 
 	return send(fd, &buf, sizeof(buf), 0);
 }

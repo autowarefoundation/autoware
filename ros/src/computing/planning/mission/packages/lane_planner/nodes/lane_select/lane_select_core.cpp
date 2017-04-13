@@ -97,6 +97,7 @@ void LaneSelectNode::initForLaneSelect()
   // search closest waypoint number for each lanes
   if (!getClosestWaypointNumberForEachLanes())
   {
+    publishClosestWaypoint(-1);
     resetLaneIdx();
     return;
   }
@@ -105,9 +106,13 @@ void LaneSelectNode::initForLaneSelect()
   findNeighborLanes();
   updateChangeFlag();
   createLaneForChange();
-  publish(std::get<0>(tuple_vec_.at(current_lane_idx_)), std::get<1>(tuple_vec_.at(current_lane_idx_)),
-          std::get<2>(tuple_vec_.at(current_lane_idx_)));
+
+  publishLane(std::get<0>(tuple_vec_.at(current_lane_idx_)));
+  publishClosestWaypoint(std::get<1>(tuple_vec_.at(current_lane_idx_)));
+  publishChangeFlag(std::get<2>(tuple_vec_.at(current_lane_idx_)));
   publishVisualizer();
+
+  resetSubscriptionFlag();
   return;
 }
 
@@ -119,6 +124,13 @@ void LaneSelectNode::resetLaneIdx()
   publishVisualizer();
 }
 
+void LaneSelectNode::resetSubscriptionFlag()
+{
+  is_current_pose_subscribed_ = false;
+  is_current_velocity_subscribed_ = false;
+  is_current_state_subscribed_ = false;
+}
+
 void LaneSelectNode::processing()
 {
   if(!isAllTopicsSubscribed())
@@ -127,6 +139,7 @@ void LaneSelectNode::processing()
   // search closest waypoint number for each lanes
   if (!getClosestWaypointNumberForEachLanes())
   {
+    publishClosestWaypoint(-1);
     resetLaneIdx();
     return;
   }
@@ -134,6 +147,7 @@ void LaneSelectNode::processing()
   // if closest waypoint on current lane is -1,
   if (std::get<1>(tuple_vec_.at(current_lane_idx_)) == -1)
   {
+    publishClosestWaypoint(-1);
     resetLaneIdx();
     return;
   }
@@ -152,16 +166,21 @@ void LaneSelectNode::processing()
     std::get<2>(lane_for_change_) =
         static_cast<ChangeFlag>(std::get<0>(lane_for_change_).waypoints.at(std::get<1>(lane_for_change_)).change_flag);
     ROS_INFO("closest: %d", std::get<1>(lane_for_change_));
-    publish(std::get<0>(lane_for_change_), std::get<1>(lane_for_change_), std::get<2>(lane_for_change_));
+    publishLane(std::get<0>(lane_for_change_));
+    publishClosestWaypoint(std::get<1>(lane_for_change_));
+    publishChangeFlag(std::get<2>(lane_for_change_));
   }
   else
   {
     updateChangeFlag();
     createLaneForChange();
-    publish(std::get<0>(tuple_vec_.at(current_lane_idx_)), std::get<1>(tuple_vec_.at(current_lane_idx_)),
-            std::get<2>(tuple_vec_.at(current_lane_idx_)));
+
+    publishLane(std::get<0>(tuple_vec_.at(current_lane_idx_)));
+    publishClosestWaypoint(std::get<1>(tuple_vec_.at(current_lane_idx_)));
+    publishChangeFlag(std::get<2>(tuple_vec_.at(current_lane_idx_)));
   }
   publishVisualizer();
+  resetSubscriptionFlag();
 }
 
 int32_t LaneSelectNode::getClosestLaneChangeWaypointNumber(const std::vector<waypoint_follower::waypoint> &wps, int32_t cl_wp)
@@ -563,23 +582,25 @@ void LaneSelectNode::publishVisualizer()
   vis_pub1_.publish(marker_array);
 }
 
-void LaneSelectNode::publish(const waypoint_follower::lane &lane, const int32_t clst_wp, const ChangeFlag flag)
+void LaneSelectNode::publishLane(const waypoint_follower::lane &lane)
 {
   // publish global lane
   pub1_.publish(lane);
+}
 
+void LaneSelectNode::publishClosestWaypoint(const int32_t clst_wp)
+{
   // publish closest waypoint
   std_msgs::Int32 closest_waypoint;
   closest_waypoint.data = clst_wp;
   pub2_.publish(closest_waypoint);
+}
 
+void LaneSelectNode::publishChangeFlag(const ChangeFlag flag)
+{
   std_msgs::Int32 change_flag;
   change_flag.data = enumToInteger(flag);
   pub3_.publish(change_flag);
-
-  is_current_pose_subscribed_ = false;
-  is_current_velocity_subscribed_ = false;
-  is_current_state_subscribed_ = false;
 }
 
 void LaneSelectNode::callbackFromLaneArray(const waypoint_follower::LaneArrayConstPtr &msg)

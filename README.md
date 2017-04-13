@@ -21,7 +21,7 @@ Integrated open-source software for urban autonomous driving, maintained by [Tie
 - Software Simulation
 - Virtual Reality
 
-Autoware is protected by BSD License. Please use it on your own responsibility. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case that you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
+Autoware is protected by the BSD License. Please use it on at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
 ## License
 
@@ -95,12 +95,12 @@ $ ./run
 
 ## For Developers
 
-Be careful for changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
-Original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
+Be careful when changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
+The original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
 repository, you must use **git subtree push**. (Please never change and push code if you don't understand
 `git subtree` well).
 
-GitFlow, git branching model, is introduced in Autoware repository.
+GitFlow, git branching model, is used in the Autoware repository.
 - When you adding new features, you can branch off your feature branch from `develop`.  
   you can use the following command.  
   `$ git checkout -b feature/[your_branch_name] develop`
@@ -112,7 +112,7 @@ More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## Documents
 
-See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English documents will be added shortly.
+See Autoware/docs. As of Aug 2015, we only provide Japanese documents. English documents will be added shortly.
 
 ## Main Packages
 
@@ -143,13 +143,18 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 
 1. S. Kato, E. Takeuchi, Y. Ishiguro, Y. Ninomiya, K. Takeda, and T. Hamada. "An Open Approach to Autonomous Vehicles", IEEE Micro, Vol. 35, No. 6, pp. 60-69, 2015. [![Link](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)
 
+## Demo Videos
+
+### Public Road Demonstration
+[![Public Road Demonstration](http://img.youtube.com/vi/5DaQBZvZwAI/0.jpg)](https://www.youtube.com/watch?v=5DaQBZvZwAI)
+
 ## Instruction Videos
 
 ### Quick Start
 [![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
-### Loading map data
-[![Loading map data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
+### Loading Map Data
+[![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
 
 ### Localization with GNSS
 [![Localization with GNSS](http://img.youtube.com/vi/5bj7gkFlul0/0.jpg)](https://www.youtube.com/watch?v=5bj7gkFlul0)
@@ -202,6 +207,6 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 
 Autoware Developers (<autoware@googlegroups.com>)
 
-To subscribe the Autoware Developers ML,
+To subscribe to the Autoware Developers mailing list,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
 - If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
