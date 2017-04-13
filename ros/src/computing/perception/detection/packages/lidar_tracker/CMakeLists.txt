@@ -100,9 +100,9 @@ include_directories(
 link_directories(${PCL_LIBRARY_DIRS})
 
 #LidarFuser
-add_executable(lidar_fuser nodes/lidar_fuser/lidar_fuser.cpp)
-target_link_libraries(lidar_fuser opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(lidar_fuser lidar_tracker_generate_messages_cpp)
+#add_executable(lidar_fuser nodes/lidar_fuser/lidar_fuser.cpp)
+#target_link_libraries(lidar_fuser opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+#add_dependencies(lidar_fuser lidar_tracker_generate_messages_cpp)
 
 #Euclidean Cluster
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
@@ -111,15 +111,15 @@ add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_ma
 
 #SVM Detect
 add_executable(svm_lidar_detect nodes/svm_lidar_detect/svm_lidar_detect.cpp)
-add_library(svm SHARED nodes/svm_lidar_detect/libsvm/svm.cpp)
+#add_library(svm SHARED nodes/svm_lidar_detect/libsvm/svm.cpp)
 target_link_libraries (svm_lidar_detect PRIVATE
 	${catkin_LIBRARIES} 
 	${PCL_LIBRARIES} 
-	svm
+#	svm
 	opencv_highgui opencv_core opencv_contrib
 )
 
-target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)
+#target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)
 add_dependencies(svm_lidar_detect lidar_tracker_generate_messages_cpp)
 
 #ParticleFilter Track
