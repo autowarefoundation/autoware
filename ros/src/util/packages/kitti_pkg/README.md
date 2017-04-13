@@ -1,7 +1,7 @@
 # How to use KITTI Player in Autoware
 
 1. Download any of the KITTI Dataset RAW rectified sets and its tracklets (http://www.cvlibs.net/datasets/kitti/raw_data.php)
-You should a directory structure that looks like this:
+You should have a directory structure that looks like this:
 ```
 kitti_download_dir/2011_09_26/2011_09_26_drive_0001_sync
 ├── image_00
