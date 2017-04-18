@@ -1215,6 +1215,9 @@ class MyFrame(rtmgr.MyFrame):
 			gdic['flags'] = flags
 
 			cam_id_obj = self.cam_id_to_obj(cam_id, obj.GetValue())
+			if not hasattr(cam_id_obj, 'enables_proxy'):
+				cam_id_obj.enables_proxy = (obj, cam_id_obj.s)
+
 			if not pdic_a or not gdic_a:
 				self.add_cfg_info(cam_id_obj, cam_id_obj, cam_id, pdic, gdic, False, prm)
 			if not cam_id_obj in cmd_dic:
@@ -3108,10 +3111,13 @@ def set_val(obj, v):
 		button_color_change(obj)
 
 def enables_set(obj, k, en):
+	if hasattr(obj, 'enables_proxy'):
+		(obj, k) = obj.enables_proxy
 	d = attr_getset(obj, 'enabLes', {})
 	d[k] = en
 	d['last_key'] = k
-	obj.Enable( all( d.values() ) )
+	if hasattr(obj, 'Enable'):
+		obj.Enable( all( d.values() ) )
 	obj_refresh(obj)
 	if isinstance(obj, wx.HyperlinkCtrl):
 		if not hasattr(obj, 'coLor'):
