@@ -323,6 +323,12 @@ params :
       min   : 0
       max   : 10
       v     : 2.0
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
@@ -347,6 +353,12 @@ params :
       min   : 0
       max   : 10
       v     : 2.0
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
@@ -365,6 +377,12 @@ params :
       min   : 100
       max   : 30000
       v     : 10000
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
@@ -383,6 +401,12 @@ params :
       min   : 100
       max   : 30000
       v     : 10000
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
