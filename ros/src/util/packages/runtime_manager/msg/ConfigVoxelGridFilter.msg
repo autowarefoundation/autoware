@@ -1,2 +1,2 @@
 float32 voxel_leaf_size
-
+float32 measurement_range
