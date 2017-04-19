@@ -39,7 +39,10 @@
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
+#include <algorithm> // For std::min()
 #include <chrono>
+
+#include "points_downsampler.h"
 
 ros::Publisher filtered_points_pub;
 
@@ -55,10 +58,12 @@ static std::ofstream ofs;
 static std::string filename;
 
 static std::string POINTS_TOPIC;
+static double measurement_range;
 
 static void config_callback(const runtime_manager::ConfigDistanceFilter::ConstPtr& input)
 {
   sample_num = input->sample_num;
+  measurement_range = input->measurement_range;
 }
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -67,6 +72,8 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   pcl::PointCloud<pcl::PointXYZI> scan;
 
   pcl::fromROSMsg(*input, scan);
+  scan = removePointsByRange(scan, 0, measurement_range);
+
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
   filtered_scan_ptr->header = scan.header;
 
@@ -110,8 +117,9 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   points_downsampler_info_msg.header = input->header;
   points_downsampler_info_msg.filter_name = "distance_filter";
+  points_downsampler_info_msg.measurement_range = measurement_range;
   points_downsampler_info_msg.original_points_size = points_num;
-  points_downsampler_info_msg.filtered_points_size = filtered_scan_ptr->size();
+  points_downsampler_info_msg.filtered_points_size = std::min((int)filtered_scan_ptr->size(), points_num);
   points_downsampler_info_msg.original_ring_size = 0;
   points_downsampler_info_msg.original_ring_size = 0;
   points_downsampler_info_msg.exe_time = std::chrono::duration_cast<std::chrono::microseconds>(filter_end - filter_start).count() / 1000.0;

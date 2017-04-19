@@ -41,6 +41,8 @@
 
 #include <chrono>
 
+#include "points_downsampler.h"
+
 ros::Publisher filtered_points_pub;
 
 // Leaf size of VoxelGrid filter.
@@ -56,16 +58,21 @@ static std::ofstream ofs;
 static std::string filename;
 
 static std::string POINTS_TOPIC;
+static double measurement_range;
 
 static void config_callback(const runtime_manager::ConfigVoxelGridFilter::ConstPtr& input)
 {
   voxel_leaf_size = input->voxel_leaf_size;
+  measurement_range = input->measurement_range;
 }
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
   pcl::PointCloud<pcl::PointXYZI> scan;
   pcl::fromROSMsg(*input, scan);
+
+  scan = removePointsByRange(scan, 0, measurement_range);
+
   pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
 
@@ -81,7 +88,6 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
     voxel_grid_filter.setInputCloud(scan_ptr);
     voxel_grid_filter.filter(*filtered_scan_ptr);
-
     pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
   }
   else
@@ -96,6 +102,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   points_downsampler_info_msg.header = input->header;
   points_downsampler_info_msg.filter_name = "voxel_grid_filter";
+  points_downsampler_info_msg.measurement_range = measurement_range;
   points_downsampler_info_msg.original_points_size = scan.size();
   if (voxel_leaf_size >= 0.1)
   {
