@@ -40,7 +40,9 @@
 
 #include <chrono>
 
-#include <points_downsampler.h>
+#include "points_downsampler.h"
+
+#define MAX_MEASUREMENT_RANGE 200.0
 
 ros::Publisher filtered_points_pub;
 
@@ -70,7 +72,10 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   pcl::PointCloud<pcl::PointXYZI> scan;
 
   pcl::fromROSMsg(*input, scan);
-  scan = removePointsByRange(scan, 0, measurement_range);
+
+  if(measurement_range != MAX_MEASUREMENT_RANGE){
+    scan = removePointsByRange(scan, 0, measurement_range);
+  }
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
   filtered_scan_ptr->header = scan.header;

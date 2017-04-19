@@ -4,8 +4,10 @@
 static pcl::PointCloud<pcl::PointXYZI> removePointsByRange(pcl::PointCloud<pcl::PointXYZI> scan, double min_range, double max_range)
 {
   pcl::PointCloud<pcl::PointXYZI> narrowed_scan;
-
   narrowed_scan.header = scan.header;
+
+  double square_min_range = min_range * min_range;
+  double square_max_range = max_range * max_range;
 
   for(pcl::PointCloud<pcl::PointXYZI>::const_iterator iter = scan.begin(); iter != scan.end(); ++iter)
   {
@@ -14,9 +16,9 @@ static pcl::PointCloud<pcl::PointXYZI> removePointsByRange(pcl::PointCloud<pcl::
     p.y = iter->y;
     p.z = iter->z;
     p.intensity = iter->intensity;
-    double distance = sqrt(p.x * p.x + p.y * p.y);
+    double square_distance = p.x * p.x + p.y * p.y;
 
-    if(min_range <= distance && distance <= max_range){
+    if(square_min_range <= square_distance && square_distance <= square_max_range){
       narrowed_scan.points.push_back(p);
     }
   }
