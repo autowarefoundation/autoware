@@ -58,7 +58,6 @@ void way_planner_core::GetTransformFromTF(const std::string parent_frame, const 
 
 way_planner_core::way_planner_core()
 {
-
 	m_pCurrGoal = 0;
 	m_iCurrentGoalIndex = 1;
 	m_bKmlMap = false;
@@ -70,7 +69,7 @@ way_planner_core::way_planner_core()
 	nh.getParam("/way_planner/enableLaneChange" 	, m_params.bEnableLaneChange);
 	nh.getParam("/way_planner/enableRvizInput" 		, m_params.bEnableRvizInput);
 	nh.getParam("/way_planner/enableReplan" 		, m_params.bEnableReplanning);
-	nh.getParam("/way_planner/enableReplan" 		, m_params.bEnableHMI);
+	nh.getParam("/way_planner/enableHMI" 			, m_params.bEnableHMI);
 
 	int iSource = 0;
 	nh.getParam("/way_planner/mapSource" 			, iSource);
@@ -679,6 +678,7 @@ void way_planner_core::PlannerMainLoop()
 
 		if(m_GoalsPos.size() > 1)
 		{
+			std::cout << m_CurrentPose.pos.ToString() << std::endl;
 			PlannerHNS::WayPoint startPoint = m_CurrentPose;
 			PlannerHNS::WayPoint goalPoint = m_GoalsPos.at(m_iCurrentGoalIndex);
 

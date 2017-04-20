@@ -59,24 +59,24 @@ void LocalPlannerH::Init(const ControllerParams& ctrlParams, const PlannerHNS::P
  		m_params = params;
 
  		if(m_pCurrentBehaviorState)
- 			m_pCurrentBehaviorState->SetBehaviorsParams(params);
+ 			m_pCurrentBehaviorState->SetBehaviorsParams(&m_params);
  	}
 
 void LocalPlannerH::InitBehaviorStates()
 {
 
-	m_pStopState 				= new StopState(0);
-	m_pMissionCompleteState 	= new MissionAccomplishedState(0);
-	m_pGoalState				= new GoalState(m_pMissionCompleteState);
-	m_pGoToGoalState 			= new ForwardState(m_pGoalState);
-	m_pWaitState 				= new WaitState(m_pGoToGoalState);
-	m_pInitState 				= new InitState(m_pGoToGoalState);
-	m_pFollowState			= new FollowState(m_pGoToGoalState);
-	m_pAvoidObstacleState	= new SwerveState(m_pGoToGoalState);
-	m_pTrafficLightStopState	= new TrafficLightStopState(m_pGoToGoalState);
-	m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pGoToGoalState);
-	m_pStopSignWaitState		= new StopSignWaitState(m_pGoToGoalState);
-	m_pStopSignStopState		= new StopSignStopState(m_pStopSignWaitState);
+	m_pStopState 				= new StopState(&m_params, 0, 0);
+	m_pMissionCompleteState 	= new MissionAccomplishedState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), 0);
+	m_pGoalState				= new GoalState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pMissionCompleteState);
+	m_pGoToGoalState 			= new ForwardState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoalState);
+	m_pWaitState 				= new WaitState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pInitState 				= new InitState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pFollowState				= new FollowState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pAvoidObstacleState		= new SwerveState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pTrafficLightStopState	= new TrafficLightStopState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pStopSignWaitState		= new StopSignWaitState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pStopSignStopState		= new StopSignStopState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pStopSignWaitState);
 
 	m_pGoToGoalState->InsertNextState(m_pStopState);
 	m_pGoToGoalState->InsertNextState(m_pWaitState);
@@ -145,23 +145,27 @@ void LocalPlannerH::InitPolygons()
 
  void LocalPlannerH::UpdateState(const PlannerHNS::VehicleState& state, const bool& bUseDelay)
   {
-	 if(!bUseDelay || m_SimulationSteeringDelayFactor == 0)
+	 if(!bUseDelay)
 	 {
 		 m_CurrentSteering 	= m_CurrentSteeringD;
-		 m_CurrentVelocity 	= m_CurrentVelocityD;
+		// std::cout << " No Delay " << std::endl;
 	 }
 	 else
 	 {
 		 double currSteerDeg = RAD2DEG * m_CurrentSteering;
 		 double desiredSteerDeg = RAD2DEG * m_CurrentSteeringD;
 
-		 double mFact = 1.0 - UtilityH::GetMomentumScaleFactor(state.speed);
+		 double mFact = UtilityH::GetMomentumScaleFactor(state.speed);
 		 double diff = desiredSteerDeg - currSteerDeg;
 		 double diffSign = UtilityH::GetSign(diff);
 		 double inc = 1.0*diffSign;
 		 if(abs(diff) < 1.0 )
 			 inc = diff;
 
+//		 std::cout << "Delay: " << m_SimulationSteeringDelayFactor
+//				 << ", Fact: " << mFact
+//				 << ", Diff: " << diff
+//				 << ", inc: " << inc << std::endl;
 		 if(UtilityH::GetTimeDiffNow(m_SteerDelayTimer) > m_SimulationSteeringDelayFactor*mFact)
 		 {
 			 UtilityH::GetTickCount(m_SteerDelayTimer);
@@ -169,10 +173,10 @@ void LocalPlannerH::InitPolygons()
 		 }
 
 		 m_CurrentSteering = DEG2RAD * currSteerDeg;
-		 m_CurrentVelocity 	= m_CurrentVelocityD;
 	 }
 
 	 m_CurrentShift 	= m_CurrentShiftD;
+	 m_CurrentVelocity = m_CurrentVelocityD;
   }
 
  void LocalPlannerH::AddAndTransformContourPoints(const PlannerHNS::DetectedObject& obj, std::vector<PlannerHNS::WayPoint>& contourPoints)
@@ -231,7 +235,7 @@ void LocalPlannerH::InitPolygons()
 
  	pValues->minStoppingDistance = (-car_state.speed*car_state.speed)/2.0*m_CarInfo.max_deceleration;
 
- 	pValues->iCentralTrajectory		= m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber/2;
+ 	pValues->iCentralTrajectory		= m_pCurrentBehaviorState->m_pParams->rollOutNumber/2;
 
  	if(pValues->iCurrSafeTrajectory < 0)
  			pValues->iCurrSafeTrajectory = pValues->iCentralTrajectory;
@@ -273,7 +277,7 @@ void LocalPlannerH::InitPolygons()
  	m_iCurrentTotalPathId = pValues->iCurrSafeLane;
 
 
-// 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_PlanningParams.minFollowingDistance)
+// 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_pParams->minFollowingDistance)
 // 		pValues->bFullyBlock = true;
 
 
@@ -288,10 +292,10 @@ void LocalPlannerH::InitPolygons()
 
  	if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance)
  	{
- 		if(m_pCurrentBehaviorState->m_PlanningParams.enableTrafficLightBehavior)
+ 		if(m_pCurrentBehaviorState->m_pParams->enableTrafficLightBehavior)
  			pValues->currentTrafficLightID = trafficLightID;
 
- 		if(m_pCurrentBehaviorState->m_PlanningParams.enableStopSignBehavior)
+ 		if(m_pCurrentBehaviorState->m_pParams->enableStopSignBehavior)
  			pValues->currentStopSignID = stopSignID;
 
 		pValues->stoppingDistances.push_back(distanceToClosestStopLine);
@@ -314,7 +318,7 @@ void LocalPlannerH::InitPolygons()
 
 double LocalPlannerH::PredictTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::VehicleState& vstatus, const PlannerHNS::WayPoint& currState)
 {
-	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
+	PlanningParams* pParams = m_pCurrentBehaviorState->m_pParams;
 
 		//1- Calculate time prediction for each trajectory
 	if(path.size() == 0) return 0;
@@ -609,22 +613,22 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 		{
 			PlannerHNS::PlannerH planner;
 			planner.GenerateRunoffTrajectory(m_TotalPath, state,
-					m_pCurrentBehaviorState->m_PlanningParams.enableLaneChange,
+					m_pCurrentBehaviorState->m_pParams->enableLaneChange,
 					vehicleState.speed,
-					m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
-					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-					m_pCurrentBehaviorState->m_PlanningParams.minSpeed,
-					m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
-					m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
-					m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
-					m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
-					m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
-					m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
-					m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
-					m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
-					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
-					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-					m_pCurrentBehaviorState->m_PlanningParams.enableHeadingSmoothing,
+					m_pCurrentBehaviorState->m_pParams->microPlanDistance,
+					m_pCurrentBehaviorState->m_pParams->maxSpeed,
+					m_pCurrentBehaviorState->m_pParams->minSpeed,
+					m_pCurrentBehaviorState->m_pParams->carTipMargin,
+					m_pCurrentBehaviorState->m_pParams->rollInMargin,
+					m_pCurrentBehaviorState->m_pParams->rollInSpeedFactor,
+					m_pCurrentBehaviorState->m_pParams->pathDensity,
+					m_pCurrentBehaviorState->m_pParams->rollOutDensity,
+					m_pCurrentBehaviorState->m_pParams->rollOutNumber,
+					m_pCurrentBehaviorState->m_pParams->smoothingDataWeight,
+					m_pCurrentBehaviorState->m_pParams->smoothingSmoothWeight,
+					m_pCurrentBehaviorState->m_pParams->smoothingToleranceError,
+					m_pCurrentBehaviorState->m_pParams->speedProfileFactor,
+					m_pCurrentBehaviorState->m_pParams->enableHeadingSmoothing,
 					preCalcPrams->iCurrSafeLane , preCalcPrams->iCurrSafeTrajectory,
 					m_RollOuts, m_PathSection, m_SampledPoints);
 
@@ -645,8 +649,8 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 			{
 				m_Path = m_RollOuts.at(preCalcPrams->iPrevSafeLane).at(preCalcPrams->iPrevSafeTrajectory);
 				PlanningHelpers::GenerateRecommendedSpeed(m_Path,
-						m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-						m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
+						m_pCurrentBehaviorState->m_pParams->maxSpeed,
+						m_pCurrentBehaviorState->m_pParams->speedProfileFactor);
 				PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
 				bNewTrajectory = true;
 			}
@@ -701,7 +705,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 	timespec costTimer;
 	UtilityH::GetTickCount(costTimer);
 	TrajectoryCost tc = m_TrajectoryCostsCalculatotor.DoOneStep(m_RollOuts, m_TotalPath, state,
-			m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory, m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeLane, m_pCurrentBehaviorState->m_PlanningParams,
+			m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory, m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeLane, *m_pCurrentBehaviorState->m_pParams,
 			m_CarInfo, obj_list);
 	m_CostCalculationTime = UtilityH::GetTimeDiffNow(costTimer);
 

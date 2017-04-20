@@ -229,6 +229,74 @@ PlannerH::PlannerH()
 	 }
  }
 
+ double PlannerH::PlanUsingDPRandom(const WayPoint& start,
+ 		 const double& maxPlanningDistance,
+ 		 RoadNetwork& map,
+ 		 std::vector<std::vector<WayPoint> >& paths)
+  {
+ 	PlannerHNS::WayPoint* pStart = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(start, map);
+
+ 	if(!pStart)
+ 	{
+ 		GPSPoint sp = start.pos;
+ 		cout << endl << "Error: PlannerH -> Can't Find Global Waypoint Nodes in the Map for Start (" <<  sp.ToString() << ")" << endl;
+ 		return 0;
+ 	}
+
+ 	if(!pStart->pLane)
+ 	{
+ 		cout << endl << "Error: PlannerH -> Null Lane, Start (" << pStart->pLane << ")" << endl;
+ 		return 0;
+ 	}
+
+  	RelativeInfo start_info;
+  	PlanningHelpers::GetRelativeInfo(pStart->pLane->points, start, start_info);
+
+  	if(start_info.perp_distance > START_POINT_MAX_DISTANCE)
+  	{
+  		GPSPoint sp = start.pos;
+ 		cout << endl << "Error: PlannerH -> Start Distance to Lane is: " << start_info.perp_distance
+ 		<< ", Pose: " << sp.ToString() << ", LanePose:" << start_info.perp_point.pos.ToString()
+ 		<< ", LaneID: " << pStart->pLane->id << " -> Check origin and vector map. " << endl;
+  		return 0;
+  	}
+
+  	vector<WayPoint*> local_cell_to_delete;
+  	WayPoint* pLaneCell = 0;
+ 	pLaneCell =  PlanningHelpers::BuildPlanningSearchTreeStraight(pStart, BACKUP_STRAIGHT_PLAN_DISTANCE, local_cell_to_delete);
+
+	if(!pLaneCell)
+	{
+		cout << endl << "PlannerH -> Plan (B) Failed, Sorry we Don't have plan (C) This is the END." << endl;
+		return 0;
+	}
+
+
+  	vector<WayPoint> path;
+  	vector<vector<WayPoint> > tempCurrentForwardPathss;
+  	const std::vector<int> globalPath;
+  	PlanningHelpers::TraversePathTreeBackwards(pLaneCell, pStart, globalPath, path, tempCurrentForwardPathss);
+  	paths.push_back(path);
+
+
+  	cout << endl <<"Info: PlannerH -> Plan (B) Path With Size (" << (int)path.size() << "), MultiPaths No(" << paths.size() << ") Extraction Time : " << endl;
+
+
+  	if(path.size()<2)
+  	{
+  		cout << endl << "Err: PlannerH -> Invalid Path, Car Should Stop." << endl;
+  		if(pLaneCell)
+  			DeleteWaypoints(local_cell_to_delete);
+  		return 0 ;
+  	}
+
+  	if(pLaneCell)
+  		DeleteWaypoints(local_cell_to_delete);
+
+  	double totalPlanningDistance = path.at(path.size()-1).cost;
+  	return totalPlanningDistance;
+  }
+
 double PlannerH::PlanUsingDP(const WayPoint& start,
 		 const WayPoint& goalPos,
 		 const double& maxPlanningDistance,

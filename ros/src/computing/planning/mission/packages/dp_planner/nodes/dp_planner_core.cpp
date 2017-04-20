@@ -949,7 +949,7 @@ void PlannerX::PlannerMainLoop()
 			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) << "," << m_CurrentBehavior.state << ","<< RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
 					m_nTrackObjects << "," << m_nOriginalPoints << "," << m_nContourPoints << "," << m_TrackingTime << "," <<
 					m_LocalPlanner.m_CostCalculationTime << "," << m_LocalPlanner.m_BehaviorGenTime << "," << m_LocalPlanner.m_RollOutsGenerationTime << "," <<
-					m_LocalPlanner.m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber << "," <<
+					m_LocalPlanner.m_pCurrentBehaviorState->m_pParams->rollOutNumber << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory << "," <<
 					m_LocalPlanner.m_iSafeTrajectory << "," <<

@@ -18,6 +18,7 @@ namespace SimulationNS
 class CarState
 {
 public:
+	PlannerHNS::PlanningParams m_Params;
 	PlannerHNS::WayPoint state;
 	PlannerHNS::CAR_BASIC_INFO m_CarInfo;
 	PlannerHNS::ControllerParams m_ControlParams;

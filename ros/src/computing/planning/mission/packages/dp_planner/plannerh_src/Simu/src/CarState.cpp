@@ -56,23 +56,24 @@ void CarState::Init(const ControllerParams ctrlParams, const PlannerHNS::Plannin
  		m_CurrentSteering = m_CurrentSteeringD =0;
  		m_CurrentShift 		=  m_CurrentShiftD = SHIFT_POS_NN;
  		m_CurrentAccSteerAngle = m_CurrentAccVelocity = 0;
+ 		m_Params = params;
 
  		if(m_pCurrentBehaviorState)
- 			m_pCurrentBehaviorState->SetBehaviorsParams(params);
+ 			m_pCurrentBehaviorState->SetBehaviorsParams(&m_Params);
  	}
 
 void CarState::InitBehaviorStates()
 {
 
-	m_pStopState 				= new StopState(0);
-	m_pMissionCompleteState 	= new MissionAccomplishedState(0);
-	m_pGoToGoalState 			= new ForwardState(m_pMissionCompleteState);
-	m_pWaitState 				= new WaitState(m_pGoToGoalState);
-	m_pInitState 				= new InitState(m_pGoToGoalState);
-	m_pFollowState				= new FollowState(m_pGoToGoalState);
-	m_pAvoidObstacleState		= new SwerveState(m_pGoToGoalState);
-	m_pTrafficLightStopState	= new TrafficLightStopState(m_pGoToGoalState);
-	m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pGoToGoalState);
+	m_pStopState 				= new StopState(0, 0, 0);
+	m_pMissionCompleteState 	= new MissionAccomplishedState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), 0);
+	m_pGoToGoalState 			= new ForwardState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pMissionCompleteState);
+	m_pWaitState 				= new WaitState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pInitState 				= new InitState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pFollowState				= new FollowState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pAvoidObstacleState		= new SwerveState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pTrafficLightStopState	= new TrafficLightStopState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
+	m_pTrafficLightWaitState	= new TrafficLightWaitState(m_pStopState->m_pParams, m_pStopState->GetCalcParams(), m_pGoToGoalState);
 
 
 	m_pGoToGoalState->InsertNextState(m_pStopState);
@@ -248,7 +249,7 @@ void CarState::InitPolygons()
  	pValues->minStoppingDistance	= car_state.speed * 3.6 * 1.5;
  	if(pValues->distanceToNext > 0 || pValues->distanceToStop()>0)
  		pValues->minStoppingDistance += 1.0;
- 	pValues->iCentralTrajectory		= m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber/2;
+ 	pValues->iCentralTrajectory		= m_pCurrentBehaviorState->m_pParams->rollOutNumber/2;
  	pValues->stoppingDistances.clear();
  	pValues->currentVelocity 		= car_state.speed;
  	pValues->bTrafficIsRed 			= false;
@@ -257,7 +258,7 @@ void CarState::InitPolygons()
  	pValues->bFullyBlock 			= false;
 
  	FindSafeTrajectory(pValues->iCurrSafeTrajectory, pValues->distanceToNext, pValues->velocityOfNext);
- 	if((pValues->iCurrSafeTrajectory == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_PlanningParams.minFollowingDistance) || bEmergencyStop )
+ 	if((pValues->iCurrSafeTrajectory == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_pParams->minFollowingDistance) || bEmergencyStop )
  		pValues->bFullyBlock = true;
 
 
@@ -276,7 +277,7 @@ void CarState::InitPolygons()
 
 void CarState::InitializeTrajectoryCosts()
 {
-	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
+	PlanningParams* pParams = m_pCurrentBehaviorState->m_pParams;
 	int centralIndex = pParams->rollOutNumber/2;
 	std::vector<double> end_distance_list;
 
@@ -307,7 +308,7 @@ void CarState::InitializeTrajectoryCosts()
 void CarState::CalculateTransitionCosts()
 {
 	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
-	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
+	PlanningParams* pParams = m_pCurrentBehaviorState->m_pParams;
 
 	double totalDistance = 0;
 	//pValues->iCurrSafeTrajectory = 4;
@@ -337,7 +338,7 @@ void CarState::CalculateTransitionCosts()
 
 double CarState::PredictTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::VehicleState& vstatus, const PlannerHNS::WayPoint& currState)
 {
-	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
+	PlanningParams* pParams = m_pCurrentBehaviorState->m_pParams;
 
 		//1- Calculate time prediction for each trajectory
 	if(path.size() == 0) return 0;
@@ -631,7 +632,7 @@ bool CarState::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const Planne
 
 void  CarState::FindSafeTrajectory(int& safe_index, double& closest_distance, double& closest_velocity)
 {
-	PlanningParams* pParams = &m_pCurrentBehaviorState->m_PlanningParams;
+	PlanningParams* pParams = m_pCurrentBehaviorState->m_pParams;
 
 	//if the  closest_obj_cost is less than 0.9 (12 meter) consider this trajectory blocked
 	closest_distance = pParams->horizonDistance;
@@ -749,22 +750,22 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 //			std::vector<PlannerHNS::WayPoint> tempSec, tempSampledPoints;
 //
 //			planner.GenerateRunoffTrajectory(m_TotalPath, state,
-//					m_pCurrentBehaviorState->m_PlanningParams.enableLaneChange,
+//					m_pCurrentBehaviorState->m_pParams->enableLaneChange,
 //					vehicleState.speed,
-//					m_pCurrentBehaviorState->m_PlanningParams.microPlanDistance,
-//					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-//					m_pCurrentBehaviorState->m_PlanningParams.minSpeed,
-//					m_pCurrentBehaviorState->m_PlanningParams.carTipMargin,
-//					m_pCurrentBehaviorState->m_PlanningParams.rollInMargin,
-//					m_pCurrentBehaviorState->m_PlanningParams.rollInSpeedFactor,
-//					m_pCurrentBehaviorState->m_PlanningParams.pathDensity,
-//					m_pCurrentBehaviorState->m_PlanningParams.rollOutDensity,
-//					m_pCurrentBehaviorState->m_PlanningParams.rollOutNumber,
-//					m_pCurrentBehaviorState->m_PlanningParams.smoothingDataWeight,
-//					m_pCurrentBehaviorState->m_PlanningParams.smoothingSmoothWeight,
-//					m_pCurrentBehaviorState->m_PlanningParams.smoothingToleranceError,
-//					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor,
-//					m_pCurrentBehaviorState->m_PlanningParams.enableHeadingSmoothing,
+//					m_pCurrentBehaviorState->m_pParams->microPlanDistance,
+//					m_pCurrentBehaviorState->m_pParams->maxSpeed,
+//					m_pCurrentBehaviorState->m_pParams->minSpeed,
+//					m_pCurrentBehaviorState->m_pParams->carTipMargin,
+//					m_pCurrentBehaviorState->m_pParams->rollInMargin,
+//					m_pCurrentBehaviorState->m_pParams->rollInSpeedFactor,
+//					m_pCurrentBehaviorState->m_pParams->pathDensity,
+//					m_pCurrentBehaviorState->m_pParams->rollOutDensity,
+//					m_pCurrentBehaviorState->m_pParams->rollOutNumber,
+//					m_pCurrentBehaviorState->m_pParams->smoothingDataWeight,
+//					m_pCurrentBehaviorState->m_pParams->smoothingSmoothWeight,
+//					m_pCurrentBehaviorState->m_pParams->smoothingToleranceError,
+//					m_pCurrentBehaviorState->m_pParams->speedProfileFactor,
+//					m_pCurrentBehaviorState->m_pParams->enableHeadingSmoothing,
 //					m_RollOuts,tempSec, tempSampledPoints);
 //
 //			m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
@@ -786,8 +787,8 @@ void CarState::FindNextBestSafeTrajectory(int& safe_index)
 //			}
 //
 //			PlanningHelpers::GenerateRecommendedSpeed(m_Path,
-//					m_pCurrentBehaviorState->m_PlanningParams.maxSpeed,
-//					m_pCurrentBehaviorState->m_PlanningParams.speedProfileFactor);
+//					m_pCurrentBehaviorState->m_pParams->maxSpeed,
+//					m_pCurrentBehaviorState->m_pParams->speedProfileFactor);
 //			PlanningHelpers::SmoothSpeedProfiles(m_Path, 0.15,0.35, 0.1);
 //			std::ostringstream str_out;
 //			str_out << UtilityH::GetHomeDirectory();

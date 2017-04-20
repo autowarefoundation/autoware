@@ -24,14 +24,13 @@ public:
 	virtual void Init();
 	virtual void ResetTimer();
 	virtual void InsertNextState(BehaviorStateMachine* nextState);
-	BehaviorStateMachine(BehaviorStateMachine* nextState);
+	BehaviorStateMachine(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* nextState);
 	virtual ~BehaviorStateMachine() ;
 
 	STATE_TYPE m_Behavior;
 	int m_currentStopSignID	;
 	int m_currentTrafficLightID ;
 	double decisionMakingTime;
-
 
 	PreCalculatedConditions* GetCalcParams()
 	{
@@ -41,16 +40,18 @@ public:
 		return m_pCalculatedValues;
 	}
 
-	void SetBehaviorsParams(const PlanningParams& params)
+	void SetBehaviorsParams(PlanningParams* pParams)
 	{
-		m_PlanningParams = params;
+		if(!pParams)
+			m_pParams = new PlanningParams;
+		else
+			m_pParams = pParams;
 	}
 
-
-	static PreCalculatedConditions* m_pCalculatedValues;
+	PreCalculatedConditions* m_pCalculatedValues;
+	PlanningParams* m_pParams;
 	timespec m_StateTimer;
 	std::vector<BehaviorStateMachine*> pNextStates;
-	static PlanningParams m_PlanningParams;
 
 	BehaviorStateMachine* FindBehaviorState(const STATE_TYPE& behavior);
 };
@@ -58,8 +59,8 @@ public:
 class ForwardState : public BehaviorStateMachine
 {
 public:
-	ForwardState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = FORWARD_STATE;}
+	ForwardState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FORWARD_STATE;}
 	virtual ~ForwardState(){}
 	virtual BehaviorStateMachine* GetNextState();
 };
@@ -67,8 +68,8 @@ public:
 class MissionAccomplishedState : public BehaviorStateMachine
 {
 public:
-	MissionAccomplishedState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = FINISH_STATE;}
+	MissionAccomplishedState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FINISH_STATE;}
 	virtual ~MissionAccomplishedState(){}
 	virtual BehaviorStateMachine* GetNextState();
 };
@@ -76,8 +77,8 @@ public:
 class FollowState : public BehaviorStateMachine
 {
 public:
-	FollowState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = FOLLOW_STATE;}
+	FollowState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FOLLOW_STATE;}
 	virtual ~FollowState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -86,8 +87,8 @@ public:
 class SwerveState : public BehaviorStateMachine
 {
 public:
-	SwerveState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = OBSTACLE_AVOIDANCE_STATE;}
+	SwerveState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = OBSTACLE_AVOIDANCE_STATE;}
 	virtual ~SwerveState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -96,9 +97,8 @@ public:
 class StopState : public BehaviorStateMachine
 {
 public:
-	StopState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = STOPPING_STATE;}
-	virtual ~StopState(){}
+	StopState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOPPING_STATE;}
 	virtual BehaviorStateMachine* GetNextState();
 
 };
@@ -106,8 +106,8 @@ public:
 class TrafficLightStopState : public BehaviorStateMachine
 {
 public:
-	TrafficLightStopState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = TRAFFIC_LIGHT_STOP_STATE;}
+	TrafficLightStopState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = TRAFFIC_LIGHT_STOP_STATE;}
 	virtual ~TrafficLightStopState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -116,8 +116,8 @@ public:
 class TrafficLightWaitState : public BehaviorStateMachine
 {
 public:
-	TrafficLightWaitState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = TRAFFIC_LIGHT_WAIT_STATE;}
+	TrafficLightWaitState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = TRAFFIC_LIGHT_WAIT_STATE;}
 	virtual ~TrafficLightWaitState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -126,8 +126,8 @@ public:
 class StopSignStopState : public BehaviorStateMachine
 {
 public:
-	StopSignStopState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = STOP_SIGN_STOP_STATE;}
+	StopSignStopState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_STOP_STATE;}
 	virtual ~StopSignStopState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -136,8 +136,8 @@ public:
 class StopSignWaitState : public BehaviorStateMachine
 {
 public:
-	StopSignWaitState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = STOP_SIGN_WAIT_STATE;}
+	StopSignWaitState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_WAIT_STATE;}
 	virtual ~StopSignWaitState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -146,8 +146,8 @@ public:
 class WaitState : public BehaviorStateMachine
 {
 public:
-	WaitState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = WAITING_STATE;}
+	WaitState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = WAITING_STATE;}
 	virtual ~WaitState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -156,8 +156,8 @@ public:
 class InitState : public BehaviorStateMachine
 {
 public:
-	InitState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = INITIAL_STATE;}
+	InitState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = INITIAL_STATE;}
 	virtual ~InitState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
@@ -166,8 +166,8 @@ public:
 class GoalState : public BehaviorStateMachine
 {
 public:
-	GoalState(BehaviorStateMachine* pNextState)
-	: BehaviorStateMachine(pNextState){m_Behavior = GOAL_STATE;}
+	GoalState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = GOAL_STATE;}
 	virtual ~GoalState(){}
 	virtual BehaviorStateMachine* GetNextState();
 

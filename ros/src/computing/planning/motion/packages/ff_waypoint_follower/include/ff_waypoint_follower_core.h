@@ -48,7 +48,8 @@
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "TrajectoryFollower.h"
-#include "CarState.h"
+//#include "CarState.h"
+#include "LocalPlannerH.h"
 #include "PlannerH.h"
 #include "MappingHelpers.h"
 
@@ -119,7 +120,8 @@ protected:
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	bool bNewVelocity;
 	//double m_CurrentVelocity;
-	SimulationNS::CarState m_State;
+	//SimulationNS::CarState m_State;
+	PlannerHNS::LocalPlannerH m_State;
 	struct timespec m_PlanningTimer;
 	PlannerHNS::WayPoint m_FollowPoint;
 	PlannerHNS::WayPoint m_PerpPoint;

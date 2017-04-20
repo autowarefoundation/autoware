@@ -14,16 +14,26 @@ using namespace UtilityHNS;
 
 namespace PlannerHNS {
 
-PreCalculatedConditions* BehaviorStateMachine::m_pCalculatedValues = 0;
-PlanningParams BehaviorStateMachine::m_PlanningParams;
+//PreCalculatedConditions* BehaviorStateMachine::m_pCalculatedValues = 0;
+//PlanningParams BehaviorStateMachine::m_PlanningParams;
 
-BehaviorStateMachine::BehaviorStateMachine(BehaviorStateMachine* nextState)
+BehaviorStateMachine::BehaviorStateMachine(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* nextState)
 {
 	m_Behavior = INITIAL_STATE;
 
 	m_currentStopSignID		= -1;
 	m_currentTrafficLightID	= -1;
 	decisionMakingTime		= 0.0;
+
+	if(!pPreCalcVal)
+		m_pCalculatedValues = new PreCalculatedConditions();
+	else
+		m_pCalculatedValues = pPreCalcVal;
+
+	if(!pParams)
+		m_pParams = new PlanningParams;
+	else
+		m_pParams = pParams;
 
 	if(nextState)
 		pNextStates.push_back(nextState);
@@ -78,29 +88,29 @@ BehaviorStateMachine* ForwardState::GetNextState()
 	if(pCParams->currentGoalID != pCParams->prevGoalID)
 		return FindBehaviorState(GOAL_STATE);
 
-	else if(m_PlanningParams.enableSwerving
-			&& pCParams->distanceToNext <= m_PlanningParams.minDistanceToAvoid
+	else if(m_pParams->enableSwerving
+			&& pCParams->distanceToNext <= m_pParams->minDistanceToAvoid
 			&& !pCParams->bFullyBlock
 			&& (pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory || pCParams->iCurrSafeLane != pCParams->iPrevSafeLane)
 			)
 		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
 
-	else if(m_PlanningParams.enableTrafficLightBehavior
+	else if(m_pParams->enableTrafficLightBehavior
 			&& pCParams->currentTrafficLightID > 0
 			&& pCParams->bTrafficIsRed
 			&& pCParams->currentTrafficLightID != pCParams->prevTrafficLightID)
 		return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
 
-	else if(m_PlanningParams.enableStopSignBehavior
+	else if(m_pParams->enableStopSignBehavior
 			&& pCParams->currentStopSignID > 0
 			&& pCParams->currentStopSignID != pCParams->prevStopSignID)
 			return FindBehaviorState(STOP_SIGN_STOP_STATE);
 
-	else if(m_PlanningParams.enableFollowing
+	else if(m_pParams->enableFollowing
 			&& pCParams->bFullyBlock)
 			return FindBehaviorState(FOLLOW_STATE);
 
-//	else if(pCParams->distanceToNext <= m_PlanningParams.maxDistanceToAvoid)
+//	else if(pCParams->distanceToNext <= m_pParams->maxDistanceToAvoid)
 //		return FindBehaviorState(STOPPING_STATE);
 
 	else
@@ -125,7 +135,7 @@ BehaviorStateMachine* StopState::GetNextState()
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
-	if(pCParams->distanceToNext > m_PlanningParams.maxDistanceToAvoid)
+	if(pCParams->distanceToNext > m_pParams->maxDistanceToAvoid)
 		return FindBehaviorState(FORWARD_STATE);
 
 	else
@@ -254,7 +264,7 @@ BehaviorStateMachine* SwerveState::GetNextState()
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
 	if(pCParams->distanceToNext > 0
-				&& pCParams->distanceToNext < m_PlanningParams.minDistanceToAvoid
+				&& pCParams->distanceToNext < m_pParams->minDistanceToAvoid
 				&& !pCParams->bFullyBlock
 				&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory)
 		return FindBehaviorState(this->m_Behavior);
